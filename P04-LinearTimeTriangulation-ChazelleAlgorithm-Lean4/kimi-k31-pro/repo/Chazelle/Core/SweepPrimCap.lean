@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepPrimDir
+public import Chazelle.RewriteTactics
 
 /-!
 # Sweep RAM primitives (WP-D2), part 14: the cap data of a shared vertex (for WP-F)
@@ -33,7 +34,7 @@ open Machine Machine.Stmt Programs SignK WalkKey NFLoc
 theorem det_lerp (v f p : Point) (hne : f.2 ≠ v.2) :
     det v f p = (f.2 - v.2) * ((Geometry.lerp v f ((p.2 - v.2) / (f.2 - v.2))).1 - p.1) := by
   have : f.2 - v.2 ≠ 0 := sub_ne_zero.2 hne
-  simp only [det, Geometry.lerp_fst]
+  simp [det, Geometry.lerp_fst]
   field_simp
   ring
 
@@ -57,7 +58,7 @@ theorem capx_iff (v f p : Point) (hne : f.2 ≠ v.2) :
       · by_contra hc; push Not at hc
         rcases hc.lt_or_eq with hc | hc
         · exact h2 (by nlinarith)
-        · exact h3 (by rw [hc]; ring)
+        · exact h3 (by rwring [hc])
   · have hp' : 0 < f.2 - v.2 := by linarith
     constructor
     · intro hp; left; exact ⟨h, by nlinarith⟩
@@ -85,7 +86,7 @@ def Bcv (dst r : ℕ) : Bool := r == 50091 || Bhost r || decide (dst ≤ r ∧ r
 
 theorem wr_cvLoad (dst : ℕ) : wr (Bcv dst) (cvLoad dst) = true := by
   have h2 := wr_mono wr_hostPt (B' := Bcv dst) (fun r hr => by simp [Bcv, hr])
-  simp only [cvLoad, copies, List.map_cons, List.map_nil, block_cons, block_nil, wr, wrOK, h2]
+  simp [cvLoad, copies, List.map_cons, List.map_nil, block_cons, block_nil, wr, wrOK, h2]
   simp [Bcv]
 
 /-- **The host point of a chain vertex.** -/
@@ -105,14 +106,14 @@ theorem cvLoad_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hE₂ : CEnv P W H C c₂ := hE₁.of_host E₂ f₂
   obtain ⟨c₃, e₃, h3, h3', _h3r, h3m, _h3rm, _h3o⟩ := copies_exec (P := P)
     [(dst, 50046), (dst + 1, 50047), (dst + 2, 50048)] c₂ e₂.wb_right
-    (by intro p hp q hq; simp only [List.mem_cons, List.not_mem_nil, or_false] at hp hq
+    (by intro p hp q hq; simp [List.mem_cons, List.not_mem_nil, or_false] at hp hq
         rcases hp with rfl | rfl | rfl <;> rcases hq with rfl | rfl | rfl <;> simp <;> omega)
     (by simp)
   have ex : Exec P W (cvLoad dst) c c₃ (1 + (k₂ + 3)) := .seq e₁ (.seq e₂ e₃)
   refine ⟨c₃, _, ex, by omega, exec_frameB ex (wr_cvLoad dst), ?_, sp, ?_, ?_, ?_⟩
   · refine hE₂.keep e₃.wb_right h3m fun r hr => h3' r ?_
-    simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
-    simp only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
+    simp [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
+    simp [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
     omega
   · exact symPtIn_copy hin (h3 (dst, 50046) (by simp)) (h3 (dst + 1, 50047) (by simp))
       (h3 (dst + 2, 50048) (by simp))

@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.ClusterFinal
 public import Chazelle.Core.ClusterLabelRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-I, part 65: the final labelling
@@ -29,7 +33,7 @@ theorem labLay_good {g : GV} {W : ℕ} (hμ : g.μ ≤ g.N) (hO : g.bO + g.N ≤
   have b0 := g.base_eq 0; have b1 := g.base_eq 1; have b2 := g.base_eq 2; have b3 := g.base_eq 3
   have b4 := g.base_eq 4; have b5 := g.base_eq 5; have b48 := g.base_eq 48
   refine ⟨fun b n h => ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  all_goals simp only [labLay, Disj] at *
+  all_goals simp [labLay, Disj] at *
   · rcases h with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
       refine ⟨?_, ?_, ?_, ?_⟩ <;> omega
   all_goals first | omega
@@ -50,7 +54,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     {M : CombMap (Fin g.μ) F (Fin g.N)} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (hmap : MapArrays c.nmem g.bO g.bR g.bV g.μ g.N M)
@@ -76,7 +79,7 @@ theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have g1 : ∀ r, (r < 130100 ∨ 130110 < r) → c1.nreg r = c.nreg r := fun r hr =>
     h2 r (fun p hp h => by
       have := (show ∀ p ∈ labCopies, 130100 ≤ p.1 ∧ p.1 ≤ 130110 by decide) p hp; omega)
-  have hG1 : GR g c1 := hG.frame (fun r hr => g1 r (by unfold GRReg at hr; omega))
+  have hG1 : GR g c1 := hG.frame (fun r hr => g1 r (by ufo GRReg at hr))
   have cp : ∀ d s, (d, s) ∈ labCopies → c1.nreg d = c.nreg s := fun d s h => h1 _ h
   have hR0 : Regs0 Y c1 := ⟨hG1.one,
     by rw [cp 130100 130021 (by decide)]; exact hG.rO,
@@ -92,7 +95,7 @@ theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     by rw [cp 130110 130011 (by decide)]; exact hG.rμ⟩
   have henv : Y.env c1.nmem =
       primalEnv c.nmem g.bO g.bR g.bV (g.base 0) (g.base 1) (g.base 48) g.μ g.N := by
-    rw [hm1]; rfl
+    rwr [hm1]
   have hok : (Y.env c1.nmem).OK := by rw [henv]; exact primalEnv_ok hmap hF
   have hsym : (Y.env c1.nmem).Sym := by
     rw [henv]
@@ -102,23 +105,23 @@ theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   obtain ⟨c', k, e, hk, hw', hfr, hlt, hlab⟩ := labelStmt_exec (P := P) hYg hw1 hR0 hok hsym
   have hnv : Y.nv = g.μ := rfl
   have hYN : Y.N = g.N := rfl
-  refine ⟨c', labCopies.length + k, .seq e1 e, by rw [show labCopies.length = 11 from rfl]; omega, hw', fun r hr => ?_, by rw [hfr.2.1, hr1],
+  refine ⟨c', labCopies.length + k, .seq e1 e, by rwo [show labCopies.length = 11 from rfl], hw', fun r hr => ?_, by rw [hfr.2.1, hr1],
     by rw [hfr.2.2.1, hrm1], by rw [hfr.2.2.2.1, ho1], fun a ha => ?_, fun x y hx hy h1x h1y => ?_⟩
-  · rw [hfr.1 r (by unfold LScr Scr; unfold LabRG at hr; omega)]
-    exact g1 r (by unfold LabRG at hr; omega)
+  · rw [hfr.1 r (by unfold LScr Scr; ufo LabRG at hr)]
+    exact g1 r (by ufo LabRG at hr)
   · rw [hfr.2.2.2.2 a (by
-      simp only [Lay.Written, hY, labLay]
+      simp [Lay.Written, hY, labLay]
       have : g.μ + 3 ≤ g.U := by omega
       omega), hm1]
   · have hx' : (Y.env c1.nmem).vb x ≠ 1 := by
       show view c1.nmem (g.base 48) g.μ x ≠ 1
-      rw [view_lt hx, hm1]; exact h1x
+      rwx [view_lt hx, hm1]
     have hy' : (Y.env c1.nmem).vb y ≠ 1 := by
       show view c1.nmem (g.base 48) g.μ y ≠ 1
-      rw [view_lt hy, hm1]; exact h1y
-    have := hlab x y (by rw [hnv]; exact hx) (by rw [hnv]; exact hy) hx' hy'
+      rwx [view_lt hy, hm1]
+    have := hlab x y (by rwx [hnv]) (by rwx [hnv]) hx' hy'
     rw [henv] at this
-    simp only [labV, hY, labLay, view_lt hx, view_lt hy] at this
+    simp [labV, hY, labLay, view_lt hx, view_lt hy] at this
     exact this
 
 end proofs

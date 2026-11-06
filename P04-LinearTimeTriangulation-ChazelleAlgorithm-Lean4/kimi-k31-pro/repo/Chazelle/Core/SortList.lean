@@ -3,6 +3,8 @@ module
 public import Mathlib.Data.Nat.Log
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.Linarith
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Sorting on the RAM, part 1: the list model (WP-C)
@@ -133,11 +135,11 @@ variable {le}
 
 /-- A pass of width `0` does nothing. -/
 theorem mpass_zero (l : List α) : mpass le 0 l = l := by
-  rw [mpass]; simp
+  rws [mpass]
 
 /-- A pass of the empty list. -/
 theorem mpass_nil (w : ℕ) : mpass le w ([] : List α) = [] := by
-  rw [mpass]; simp
+  rws [mpass]
 
 /-- The defining equation of a pass on a nonempty list. -/
 theorem mpass_eq {w : ℕ} {l : List α} (hw : 0 < w) (hl : l ≠ []) :
@@ -165,7 +167,7 @@ theorem mpass_perm (w : ℕ) (l : List α) : (mpass le w l).Perm l := by
     rw [mpass_eq hw hl]
     have hlen : (l.drop (2 * w)).length < n := by
       have : l.length ≠ 0 := by simpa using hl
-      simp only [List.length_drop]; omega
+      sio only [List.length_drop]
     have h1 := (List.merge_perm_append le (xs := l.take w) (ys := (l.drop w).take w)).append
       (ih _ hlen (l.drop (2 * w)) rfl)
     exact h1.trans (by rw [take_append_take_drop])
@@ -190,17 +192,17 @@ theorem mpass_append {w : ℕ} (hw : 0 < w) (t : ℕ) (l₁ l₂ : List α)
     have h2w : 2 * w ≤ l₁.length := by
       rw [h]; exact Nat.le_mul_of_pos_left _ (Nat.succ_pos t)
     have hl₁ : l₁ ≠ [] := by
-      intro h'; subst h'; simp at h2w; omega
+      intro h'; subst h'; sio at h2w
     have hl : l₁ ++ l₂ ≠ [] := by simp [hl₁]
     rw [mpass_eq hw hl, mpass_eq hw hl₁]
     have ht1 : (l₁ ++ l₂).take w = l₁.take w := by
       rw [List.take_append_of_le_length (by omega)]
     have ht2 : ((l₁ ++ l₂).drop w).take w = (l₁.drop w).take w := by
       rw [List.drop_append_of_le_length (by omega),
-        List.take_append_of_le_length (by simp only [List.length_drop]; omega)]
+        List.take_append_of_le_length (by sio only [List.length_drop])]
     have ht3 : (l₁ ++ l₂).drop (2 * w) = l₁.drop (2 * w) ++ l₂ := by
       rw [List.drop_append_of_le_length (by omega)]
-    rw [ht1, ht2, ht3, ih _ (by simp only [List.length_drop]; rw [h, Nat.succ_mul]; omega),
+    rw [ht1, ht2, ht3, ih _ (by simp only [List.length_drop]; rwo [h, Nat.succ_mul]),
       List.append_assoc]
 
 /-- A list of at most two blocks is passed by one merge. -/
@@ -209,7 +211,7 @@ theorem mpass_small {w : ℕ} (hw : 0 < w) (l : List α) (hl : l.length ≤ 2 * 
   by_cases hne : l = []
   · subst hne; simp [mpass_nil]
   rw [mpass_eq hw hne, List.drop_of_length_le hl, mpass_nil, List.append_nil,
-    List.take_of_length_le (l := l.drop w) (by simp only [List.length_drop]; omega)]
+    List.take_of_length_le (l := l.drop w) (by sio only [List.length_drop])]
 
 /-- Dropping whole double blocks commutes with a pass. -/
 theorem mpass_drop {w : ℕ} (hw : 0 < w) (t : ℕ) (l : List α) :
@@ -223,9 +225,9 @@ theorem mpass_drop {w : ℕ} (hw : 0 < w) (t : ℕ) (l : List α) :
     have hB := merge_block_length (le := le) w l
     have e1 : (t + 1) * (2 * w) = 2 * w + t * (2 * w) := by ring
     by_cases hlen : 2 * w ≤ l.length
-    · rw [e1, ← List.drop_drop, List.drop_left' (by rw [hB]; omega), ih, List.drop_drop]
+    · rw [e1, ← List.drop_drop, List.drop_left' (by rwo [hB]), ih, List.drop_drop]
     · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le (by omega)
-      rw [h1, mpass_nil, List.append_nil, List.drop_of_length_le (by rw [hB]; omega),
+      rw [h1, mpass_nil, List.append_nil, List.drop_of_length_le (by rwo [hB]),
         List.drop_of_length_le (l := l) (by omega), mpass_nil]
 
 /-- The first double block of a pass. -/
@@ -236,9 +238,9 @@ theorem take_mpass {w : ℕ} (hw : 0 < w) (l : List α) :
   rw [mpass_eq hw hne]
   have hB := merge_block_length (le := le) w l
   by_cases hlen : 2 * w ≤ l.length
-  · rw [List.take_left' (by rw [hB]; omega)]
+  · rw [List.take_left' (by rwo [hB])]
   · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le (by omega)
-    rw [h1, mpass_nil, List.append_nil, List.take_of_length_le (by rw [hB]; omega)]
+    rw [h1, mpass_nil, List.append_nil, List.take_of_length_le (by rwo [hB])]
 
 /-! ## Sorted blocks -/
 
@@ -281,7 +283,7 @@ theorem merge_step_left {out a b xs ys : List α} {x : α}
   rw [← h]
   cases ys with
   | nil => simp
-  | cons y ys' => rw [List.cons_merge_cons_pos _ _ _ (hxy y ys' rfl)]; simp
+  | cons y ys' => rws [List.cons_merge_cons_pos _ _ _ (hxy y ys' rfl)]
 
 /-- Taking the head of the right list in a merge. -/
 theorem merge_step_right {out a b xs ys : List α} {y : α}
@@ -291,7 +293,7 @@ theorem merge_step_right {out a b xs ys : List α} {y : α}
   rw [← h]
   cases xs with
   | nil => simp
-  | cons x xs' => rw [List.cons_merge_cons_neg _ _ _ (hxy x xs' rfl)]; simp
+  | cons x xs' => rws [List.cons_merge_cons_neg _ _ _ (hxy x xs' rfl)]
 
 end
 

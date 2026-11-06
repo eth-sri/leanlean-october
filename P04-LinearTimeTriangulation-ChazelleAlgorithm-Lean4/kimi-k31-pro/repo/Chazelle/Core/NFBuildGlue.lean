@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFBuildValid
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-C (BuildNF), RAM part 3: `buildNF` in the terms of the machine pass
@@ -52,16 +54,16 @@ theorem first_e1 {i : ℕ} (hi : i < L.length) :
       (evs M Q L E).idxOf (e1 M Q L i) = (word M Q L E).idxOf i := by
   have hc := h.ctx
   set S := evs M Q L E with hS
-  have hmem : e1 M Q L i ∈ S := hc.e1_mem hi
+  have hmem  := hc.e1_mem hi
   set k := S.idxOf (e1 M Q L i) with hk
-  have hkl : k < S.length := idxOf_lt_length_of_mem hmem
-  have hSk : S[k] = e1 M Q L i := getElem_idxOf hkl
+  have hkl  := idxOf_lt_length_of_mem hmem
+  have hSk  := getElem_idxOf hkl
   have hsplit : S = S.take k ++ e1 M Q L i :: S.drop (k + 1) := by
     conv_lhs => rw [← take_append_drop k S]
     rw [drop_eq_getElem_cons hkl, hSk]
   have hcnt := hc.count_prefix_self hsplit hi
   have hni : i ∉ (S.take k).map Prod.fst := fun h' => by
-    rw [← count_pos_iff] at h'; omega
+    rwo [← count_pos_iff] at h'
   have hw : word M Q L E = (S.take k).map Prod.fst ++ i :: (S.drop (k + 1)).map Prod.fst := by
     show S.map Prod.fst = _
     conv_lhs => rw [hsplit]
@@ -71,7 +73,7 @@ theorem first_e1 {i : ℕ} (hi : i < L.length) :
     rw [hw, idxOf_append_of_notMem hni, idxOf_cons_self, length_map, length_take]
     omega
   have hlen : S.length = E.length := length_map _
-  refine ⟨by rw [hidx]; omega, ?_, hidx.symm⟩
+  refine ⟨by rwo [hidx], ?_, hidx.symm⟩
   rw [hidx, getElem?_eq_getElem hkl, hSk]
 
 /-- **The label outside chord `i`** is the label before its first occurrence. -/
@@ -158,7 +160,7 @@ theorem push_iff {w : List ℕ} (htw : BuildStack.Twice w) (hnc : BuildStack.NoC
   have hxw : w.count w[m] = 2 := htw _ (getElem_mem hm)
   have hcx : (w.take m).count w[m] ≤ 1 := by
     have := congrArg (count w[m]) hpre
-    rw [count_append, count_append, count_singleton_self] at this; omega
+    rwo [count_append, count_append, count_singleton_self] at this
   rw [BuildStack.run_eq_openList htw hnc (take_prefix m w), ← count_pos_iff]
   constructor
   · intro hh
@@ -166,7 +168,7 @@ theorem push_iff {w : List ℕ} (htw : BuildStack.Twice w) (hnc : BuildStack.NoC
     omega
   · intro hpos
     obtain ⟨rest, hrest⟩ := BuildStack.head_openList htw hnc hpre.symm (by omega)
-    rw [hrest]; rfl
+    rwr [hrest]
 
 /-- The first occurrence of a new letter. -/
 theorem idxOf_new {w : List ℕ} {m : ℕ} (hm : m < w.length) (hn : w[m] ∉ w.take m) :
@@ -191,12 +193,12 @@ theorem Input.gap_iff (h : Input M Q L E) {m : ℕ} (hm : m < E.length) :
     · exact Or.inl h1
     · by_cases hm1 : m + 1 = E.length
       · exact Or.inl hm1
-      · right; rw [h.key_s hm, h.key_s (by omega)]; exact h1
+      · right; rwx [h.key_s hm, h.key_s (by omega)]
   · rintro (h1 | h1)
     · exact Or.inl h1
     · by_cases hm1 : m + 1 = E.length
       · exact Or.inl hm1
-      · right; rw [← h.key_s hm, ← h.key_s (by omega)]; exact h1
+      · right; rwx [← h.key_s hm, ← h.key_s (by omega)]
 
 end
 

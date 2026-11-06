@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.NFDecompRamLoop
+public import Chazelle.Rwx
 
 /-!
 # Tree decomposition (WP-C), part 21: glue for the specification
@@ -43,9 +44,8 @@ theorem kids_deg (h : Rooted R K up dn ord pos prg pch) {lst : ℕ → List ℕ}
     rcases h.ends c c1 c2 with ⟨a1, -⟩ | ⟨-, a2⟩
     · left; rw [a1, c3]
     · right; rw [a2, c3]
-  have hcard1 : ((kids R prg pch rem0 v).image pch).card = (kids R prg pch rem0 v).card :=
-    Finset.card_image_of_injOn hinj
-  have hlen : (lst v).toFinset.card = (lst v).length := List.toFinset_card_of_nodup (hnd v hv)
+  have hcard1  := Finset.card_image_of_injOn hinj
+  have hlen  := List.toFinset_card_of_nodup (hnd v hv)
   by_cases hv0 : v = 0
   · rw [ite_eq_left hv0, Nat.add_zero, ← hcard1, ← hlen]
     exact Finset.card_le_card himg
@@ -67,8 +67,7 @@ theorem kids_deg (h : Rooted R K up dn ord pos prg pch) {lst : ℕ → List ℕ}
       have := h.pos_prg c c1 c2
       rw [c3] at this
       omega
-    have hsub : insert (pch v) ((kids R prg pch rem0 v).image pch) ⊆ (lst v).toFinset :=
-      Finset.insert_subset hpv himg
+    have hsub  := Finset.insert_subset hpv himg
     have := Finset.card_le_card hsub
     rw [Finset.card_insert_of_notMem hnot, hcard1, hlen] at this
     exact this
@@ -89,7 +88,7 @@ theorem Rooted.congr (h : Rooted R K up dn ord pos prg pch) {ord' prg' pch' : �
   ends s hs hs0 := by rw [hc s hs, hp s hs]; exact h.ends s hs hs0
   pch_surj i hi := by
     obtain ⟨s, s1, s2, s3⟩ := h.pch_surj i hi
-    exact ⟨s, s1, s2, by rw [hc s s1]; exact s3⟩
+    exact ⟨s, s1, s2, by rwx [hc s s1]⟩
   ends_lt := h.ends_lt
 
 end kids
@@ -112,14 +111,14 @@ theorem rb_addr2 {E : ℕ} {m : ℕ → ℕ} {b o v : ℕ}
     have := h (Function.update (Function.update m b (E + b + 1)) (E + b + 1 + o) (v + 1))
       (fun a ha => by
         rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
-    simp only at this
+    simp at this
     rw [Function.update_of_ne hX, Function.update_self, Function.update_self] at this
     omega
   refine ⟨hb, ?_⟩
   by_contra hge
   have := h (Function.update m (m b + o) (v + 1)) (fun a ha => by
     rw [Function.update_of_ne (by omega)])
-  simp only at this
+  simp at this
   rw [Function.update_of_ne (show b ≠ m b + o by omega), Function.update_self] at this
   omega
 
@@ -128,7 +127,7 @@ theorem rb_fix {E : ℕ} {m : ℕ → ℕ} {c : ℕ} (hc : c < E) {Φ : ℕ → 
     (h : Robust E m fun m' => Φ (m' c) m') : Robust E m fun m' => Φ (m c) m' :=
   fun m' hm' => by
     have := h m' hm'
-    simp only at this ⊢
+    simp at this ⊢
     rwa [hm' c hc] at this
 
 end robust
@@ -207,7 +206,7 @@ theorem list_ext_getD {l l' : List ℕ} (hl : l'.length = l.length)
 /-- The layout determines the chord records. -/
 theorem nfAt_chords_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
     N'.chords = N.chords := by
-  have hl : N'.chords.length = N.chords.length := h'.1.symm.trans h.1
+  have hl  := h'.1.symm.trans h.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.1 j hj'
@@ -221,7 +220,7 @@ theorem nfAt_chords_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N)
 /-- The layout determines the arc records. -/
 theorem nfAt_arcs_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
     N'.arcs = N.arcs := by
-  have hl : N'.arcs.length = N.arcs.length := h'.2.1.symm.trans h.2.1
+  have hl  := h'.2.1.symm.trans h.2.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.2.1 j hj'
@@ -235,7 +234,7 @@ theorem nfAt_arcs_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (
 /-- The layout determines the region records. -/
 theorem nfAt_regions_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
     N'.regions = N.regions := by
-  have hl : N'.regions.length = N.regions.length := h'.2.2.1.symm.trans h.2.2.1
+  have hl  := h'.2.2.1.symm.trans h.2.2.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.2.2.1 j hj'
@@ -245,9 +244,9 @@ theorem nfAt_regions_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N
   rw [← a1, ← a2]
   refine rRec_ext' ?_ ?_ (e'.2.2.1.symm.trans e.2.2.1)
   · exact list_ext_getD (e'.1.symm.trans e.1) fun t ht => by
-      rw [← e.2.2.2.1 t ht, ← e'.2.2.2.1 t (by rw [← e'.1, e.1]; exact ht)]
+      rw [← e.2.2.2.1 t ht, ← e'.2.2.2.1 t (by rwx [← e'.1, e.1])]
   · exact list_ext_getD (e'.2.1.symm.trans e.2.1) fun t ht => by
-      rw [← e.2.2.2.2 t ht, ← e'.2.2.2.2 t (by rw [← e'.2.1, e.2.1]; exact ht)]
+      rw [← e.2.2.2.2 t ht, ← e'.2.2.2.2 t (by rwx [← e'.2.1, e.2.1])]
 
 end env
 

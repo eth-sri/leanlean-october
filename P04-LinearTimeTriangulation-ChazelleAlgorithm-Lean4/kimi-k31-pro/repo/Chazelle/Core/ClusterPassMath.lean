@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.ClusterPassRam
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-I, part 30: what a partition pass computes
@@ -77,8 +78,8 @@ theorem passMem_ptr_eq (j : ℕ) :
   | succ j ih =>
     rw [passMem_succ, show lo + (j + 1) = lo + j + 1 by omega, cntS_succ (by omega)]
     split_ifs with hs
-    · simp only; rw [ih]; omega
-    · rw [ih]; omega
+    · simp only; rwo [ih]
+    · rwo [ih]
 
 /-- **Selected items land at their rank.** -/
 theorem passMem_act (j : ℕ)
@@ -97,7 +98,7 @@ theorem passMem_act (j : ℕ)
     have hcm := cntS_succ (sel := sel) (lo := lo) (show lo ≤ lo + j by omega)
     rw [show lo + j + 1 = lo + (j + 1) by omega] at hcm
     have hci : lo ≤ i → i < lo + j → sel i → cntS sel lo i < cntS sel lo (lo + j) :=
-      fun a b c => cntS_lt a b c
+      cntS_lt
     rw [passMem_succ]
     by_cases hsj : sel (lo + j)
     · rw [ite_eq_left hsj]
@@ -139,7 +140,7 @@ theorem passMem_pos (j : ℕ)
     have hcm := cntS_succ (sel := sel) (lo := lo) (show lo ≤ lo + j by omega)
     rw [show lo + j + 1 = lo + (j + 1) by omega] at hcm
     have hci : lo ≤ i → i < lo + j → sel i → cntS sel lo i < cntS sel lo (lo + j) :=
-      fun a b c => cntS_lt a b c
+      cntS_lt
     rw [passMem_succ]
     by_cases hsj : sel (lo + j)
     · rw [ite_eq_left hsj]
@@ -181,7 +182,7 @@ theorem passMem_keep (j : ℕ) {x : ℕ}
     · rw [ite_eq_left hsj] at hA ⊢
       simp only
       rw [Machine.upd_other _ _ _ (hP _ (by omega) (by omega) hsj),
-        Machine.upd_other _ _ _ (by rw [hp]; omega)]
+        Machine.upd_other _ _ _ (by rwo [hp])]
       exact ih (by omega) (fun i a b c => hP i a (by omega) c)
     · rw [ite_eq_right hsj] at hA ⊢
       exact ih (by omega) (fun i a b c => hP i a (by omega) c)
@@ -215,7 +216,7 @@ theorem cntS_surj {sel : ℕ → Prop} {hi : ℕ} (hlh : lo ≤ hi) :
     ∀ r, r < cntS sel lo hi → ∃ i, lo ≤ i ∧ i < hi ∧ sel i ∧ cntS sel lo i = r := by
   classical
   induction hi, hlh using Nat.le_induction with
-  | base => intro r hr; rw [cntS_self] at hr; omega
+  | base => intro r hr; rwo [cntS_self] at hr
   | succ n hn ih =>
     intro r hr
     rw [cntS_succ hn] at hr
@@ -225,7 +226,7 @@ theorem cntS_surj {sel : ℕ → Prop} {hi : ℕ} (hlh : lo ≤ hi) :
     · by_cases hs : sel n
       · rw [ite_eq_left hs] at hr
         exact ⟨n, hn, by omega, hs, by omega⟩
-      · rw [ite_eq_right hs] at hr; omega
+      · rwo [ite_eq_right hs] at hr
 
 end
 

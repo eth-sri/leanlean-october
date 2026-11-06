@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.OraclePrepDarts
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 21: sorting items by pairs of arrays
@@ -43,7 +47,7 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
       c₂.nreg = upd (upd c.nreg 30003 A₀) 9999 (A₀ + n) ∧ c₂.nmem = c.nmem ∧
       c₂.rreg = c.rreg ∧ c₂.rmem = c.rmem ∧ c₂.output = c.output := by
     exec_block
-    · config_simp; rw [hAl, h6]; omega
+    · config_simp; rwo [hAl, h6]
     · exact ⟨rfl, by config_simp; rw [hAl, h6], rfl, rfl, rfl, rfl⟩
   have a30 : c₂.nreg 30003 = A₀ := by rw [n₂]; config_simp
   have a6 : c₂.nreg 60006 = n := by rw [n₂]; config_simp; exact h6
@@ -56,18 +60,18 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
     (fun d d' hJ hr hm => JK.stable (rs := [60020]) (fun r hr' => by
       simp only [decide_eq_true_eq] at hr'; subst hr'; decide) hJ
       (fun r a b => hr r a (by simpa using b)) hm)
-    (n := n) (κ := 2) (fun i => A₀ + i) (fun i => i) (fun i _ => by omega)
+    (n := n) (κ := 2) (fun i => A₀ + i) (id) (fun i _ => by omega)
     (fun i d hi hJ hwd hri => by
       have g30 : d.nreg 30003 = A₀ := by rw [hJ.1 _ (by decide), a30]
       obtain ⟨d', k, e, hk, v1, v2⟩ : ∃ d' k, Exec P W (block [.addN 60016 30003 60020,
           .copyN 60017 60020]) d d' k ∧ k = 2 ∧ d'.nreg 60016 = A₀ + i ∧ d'.nreg 60017 = i := by
         exec_block
-        · rw [g30, hri]; omega
+        · rwo [g30, hri]
         · exact ⟨rfl, by config_simp; rw [g30, hri], by config_simp; exact hri⟩
       exact ⟨d', k, e, by omega, exec_frameB e (by decide), v1, v2⟩)
     e₂.wb_right (JK.refl _ _ _) a6 a11 (by omega)
   have R₃ : ∀ r, r ≠ 60016 → r ≠ 60017 → r ≠ 60020 → c₃.nreg r = c₂.nreg r := fun r a b c' =>
-    r₃ r (by simp; omega) c'
+    r₃ r (by sio) c'
   -- 2. the inputs of the sort
   obtain ⟨c₄, k₄, e₄, hk₄, n₄⟩ : ∃ c₄ k₄, Exec P W sortSet c₃ c₄ k₄ ∧ k₄ = 4 ∧
       c₄.nreg = upd (upd (upd (upd c₃.nreg 30004 n) 115000 Z1) 115001 Z2) 115005 n := by
@@ -95,7 +99,7 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
     intro t h1 h2
     simp only [List.getElem_map, List.getElem_range]
     simp only [List.length_map, List.length_range] at h1
-    exact scat_at (g := fun i => A₀ + i) (f := fun i => i) h1 (fun j _ hj => by omega)
+    exact scat_at (g := fun i => A₀ + i) (f := id) h1 (fun j _ hj => by omega)
   -- 3. the sort
   have hW' : A₀ + n ≤ W := by have := SortR.sortCost_ge 20 n; omega
   have hmem₄ : ∀ a, a < A₀ → c₄.nmem a = c.nmem a := fun a ha => by
@@ -106,7 +110,7 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
     (fun a b d h h' => lexLe_trans _ _ _ _ _ _ _ h h') (lexLe_total _ _ _ _)
     e₄.wb_right ⟨by rw [n₄]; config_simp, by rw [n₄]; config_simp, by rw [n₄]; config_simp,
       fun _ _ => rfl⟩ (by rw [show ALLOC = 9999 from rfl, g9]; exact lexJ_stable _ _ _ _ _) (List.range n) hitems
-    (by rw [n₄]; simp [upd]) (by rw [g30, show ALLOC = 9999 from rfl, g9, List.length_range]) (by rw [show ALLOC = 9999 from rfl, g9, List.length_range]; omega)
+    (by rw [n₄]; simp [upd]) (by rw [g30, show ALLOC = 9999 from rfl, g9, List.length_range]) (by rwo [show ALLOC = 9999 from rfl, g9, List.length_range])
   rw [List.length_range] at hseg s₂ hk₅
   rw [show ALLOC = 9999 from rfl, g9] at s₁
   -- 4. the base of the sorted items
@@ -136,8 +140,8 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
         rw [R₄ r (by omega) (by omega), R₃ r (by omega) (by omega) (by omega), n₂]
         simp only [upd]; split_ifs <;> first | omega
       · have := (exec_frameB e₄ (B := fun r => decide (r = 30004 ∨ 115000 ≤ r ∧ r ≤ 115005))
-          (by decide)).2.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega)
-        rw [this, rr₃ r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
+          (by decide)).2.1 r (by sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢)
+        rw [this, rr₃ r (by sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢),
           rr₂]
       · rw [hmem₄ a (by rw [hAl'] at ha; exact ha)]
       · rw [(exec_frameB e₄ (B := fun r => decide (r = 30004 ∨ 115000 ≤ r ∧ r ≤ 115005))
@@ -147,9 +151,9 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
       · simp only [Bool.or_eq_true, decide_eq_true_eq] at hr
         rcases hr with ((h | h) | h) | h
         · exact Or.inr h
-        · left; simp [dBands, bDecomp, bandOf]; omega
-        · left; simp [dBands, bSort, bandOf]; omega
-        · left; simp [dBands, bOPrep, bandOf]; omega
+        · left; sio [dBands, bDecomp, bandOf]
+        · left; sio [dBands, bSort, bandOf]
+        · left; sio [dBands, bOPrep, bandOf]
       · have := (exec_frameB e₄ (B := fun r => decide (r = 30004 ∨ 115000 ≤ r ∧ r ≤ 115005))
           (by decide)).2.1 ALLOC (by decide)
         rw [this, rr₃ _ (by decide), rr₂]
@@ -158,19 +162,19 @@ theorem sortCore_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
         (by decide)) (fun r hr => by
           simp at hr; subst hr; exact ⟨by simp [dBands, bDecomp, bandOf], by decide⟩) 1)
     exact (F14.trans (FrameN.mono (Frame.toN F₅) (by decide))
-      (by rw [hAl', g9']; omega)).trans F56
-      (by rw [hAl']; have := F₅.2.2.2.2.2.1; rw [g9'] at this; omega)
+      (by rwo [hAl', g9'])).trans F56
+      (by rw [hAl']; have := F₅.2.2.2.2.2.1; rwo [g9'] at this)
   · have := F₅.2.2.2.2.2.1; rw [g9'] at this
-    rw [hc₆]; exact this
+    rwx [hc₆]
   · have := F₅.2.2.2.2.2.2; rw [g9'] at this
     rw [hc₆]; show c₅.nreg ALLOC ≤ _; omega
   · intro r hr a b c' d
     rw [hc₆]; config_simp
-    rw [upd_other _ _ _ a, hF5 r hr, R₄ r (by unfold bandOf at hr; omega)
-      (by unfold bandOf at hr; omega), R₃ r b c' d, n₂]
-    rw [upd_other _ _ _ (by unfold bandOf at hr; omega),
-      upd_other _ _ _ (by unfold bandOf at hr; omega)]
-  · rw [v7]; exact s₁
+    rw [upd_other _ _ _ a, hF5 r hr, R₄ r (by ufo bandOf at hr)
+      (by ufo bandOf at hr), R₃ r b c' d, n₂]
+    rw [upd_other _ _ _ (by ufo bandOf at hr),
+      upd_other _ _ _ (by ufo bandOf at hr)]
+  · rwx [v7]
   · rw [v7, hc₆]; config_simp; exact s₂
   · -- sorted
     intro t t' htt ht'

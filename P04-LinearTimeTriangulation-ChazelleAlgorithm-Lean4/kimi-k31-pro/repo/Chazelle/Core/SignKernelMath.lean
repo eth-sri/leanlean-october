@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.ShearGood
 public import Chazelle.Core.SpecKernels
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sign kernel, part 1: the mathematics of the lexicographic sign rules (WP-A)
@@ -95,7 +97,7 @@ theorem pe_pos_of_lexPos {L : List ℝ} (h : lexPos L) :
     rcases h with h | ⟨h1, h2⟩
     · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), (0 : ℝ) < pe (c :: L) ε :=
         continuous_const.continuousAt.eventually_lt (continuous_pe (c :: L)).continuousAt
-          (by rw [pe_cons_zero]; exact h)
+          (by rwx [pe_cons_zero])
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
       simp only [pe, h1, zero_add]
@@ -110,7 +112,7 @@ theorem pe_neg_of_lexNeg {L : List ℝ} (h : lexNeg L) :
     rcases h with h | ⟨h1, h2⟩
     · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), pe (c :: L) ε < (0 : ℝ) :=
         (continuous_pe (c :: L)).continuousAt.eventually_lt continuous_const.continuousAt
-          (by rw [pe_cons_zero]; exact h)
+          (by rwx [pe_cons_zero])
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
       simp only [pe, h1, zero_add]
@@ -240,7 +242,7 @@ theorem edgeRep_spec (u w v : Point) :
     dsimp only
     linear_combination (-1 : ℝ) * this
   simp only [h2, ↓reduceIte]
-  have h0 : w.2 - u.2 = 0 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
+  have h0  := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
   by_cases h3 : w.1 - u.1 < 0
   · simp only [h3, ↓reduceIte]
     filter_upwards [self_mem_nhdsWithin] with ε (hε : 0 < ε)
@@ -260,7 +262,7 @@ theorem edgeRep_spec (u w v : Point) :
     dsimp only
     linear_combination (-1 : ℝ) * this
   simp only [h4, ↓reduceIte]
-  have h5 : w.1 - u.1 = 0 := le_antisymm (not_lt.1 h4) (not_lt.1 h3)
+  have h5  := le_antisymm (not_lt.1 h4) (not_lt.1 h3)
   refine Eventually.of_forall fun ε => ⟨by norm_num, ?_, rfl⟩
   dsimp only
   rw [h5]
@@ -338,7 +340,7 @@ theorem pe_xPoly {a b : Rep} {p q : Point} {ε : ℝ} (ha : RepOK a p ε) (hb : 
     pe (xPoly a b) ε = (q.1 - p.1) * ((a.d0 + ε * a.d1) * (b.d0 + ε * b.d1)) := by
   have e : pe (xPoly a b) ε =
       (b.x0 + ε * b.x1) * (a.d0 + ε * a.d1) - (a.x0 + ε * a.x1) * (b.d0 + ε * b.d1) := by
-    rw [xPoly, pe_five]; ring
+    rwring [xPoly, pe_five]
   rw [e, ha.2.1, hb.2.1]
   ring
 
@@ -358,7 +360,7 @@ theorem pe_dPoly {a b c : Rep} {p q r : Point} {ε : ℝ} (ha : RepOK a p ε) (h
           ((c.d0 + ε * c.d1) * ((c.y0 + ε * c.y1) - (a.y0 + ε * a.y1))) -
         ((c.x0 + ε * c.x1) * (a.d0 + ε * a.d1) - (a.x0 + ε * a.x1) * (c.d0 + ε * c.d1)) *
           ((b.d0 + ε * b.d1) * ((b.y0 + ε * b.y1) - (a.y0 + ε * a.y1))) := by
-    rw [dPoly, pe_five]; ring
+    rwring [dPoly, pe_five]
   rw [e, ha.2.1, hb.2.1, hc.2.1, ← ha.2.2, ← hb.2.2, ← hc.2.2]
   simp only [det]
   ring

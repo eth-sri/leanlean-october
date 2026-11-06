@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Cost.Oracle
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 2: the query budget of the cluster scan
@@ -31,8 +33,8 @@ theorem le_of_le_min {x g M : ℝ} (hg : 0 ≤ g) (hM : 0 ≤ M) (hxg : x ≤ 8 
   rcases le_total g M with h | h
   · have e : g = g ^ ((1 : ℝ) / 3) * g ^ ((2 : ℝ) / 3) := by
       rcases hg.lt_or_eq with hg' | hg'
-      · rw [← Real.rpow_add hg']; norm_num
-      · subst hg'; rw [Real.zero_rpow (by norm_num)]; ring
+      · rwn [← Real.rpow_add hg']
+      · subst hg'; rwring [Real.zero_rpow (by norm_num)]
     have : g ^ ((2 : ℝ) / 3) ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_le_rpow hg h (by norm_num)
     have h13 : 0 ≤ g ^ ((1 : ℝ) / 3) := Real.rpow_nonneg hg _
     calc x ≤ 8 * g := hxg
@@ -40,8 +42,8 @@ theorem le_of_le_min {x g M : ℝ} (hg : 0 ≤ g) (hM : 0 ≤ M) (hxg : x ≤ 8 
       _ ≤ 8 * (g ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3)) := by gcongr
   · have e : M = M ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3) := by
       rcases hM.lt_or_eq with hM' | hM'
-      · rw [← Real.rpow_add hM']; norm_num
-      · subst hM'; rw [Real.zero_rpow (by norm_num)]; ring
+      · rwn [← Real.rpow_add hM']
+      · subst hM'; rwring [Real.zero_rpow (by norm_num)]
     have : M ^ ((1 : ℝ) / 3) ≤ g ^ ((1 : ℝ) / 3) := Real.rpow_le_rpow hM h (by norm_num)
     have h23 : 0 ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_nonneg hM _
     calc x ≤ 8 * M := hxM
@@ -54,19 +56,19 @@ theorem sq_le_of_min {μ k : ℕ} (hk : k = 1 ∨ (k - 1) ^ 3 < μ) :
   have hμ0 : (0 : ℝ) ≤ μ := Nat.cast_nonneg μ
   have h13 : 0 ≤ (μ : ℝ) ^ ((1 : ℝ) / 3) := Real.rpow_nonneg hμ0 _
   have hsq : ((μ : ℝ) ^ ((1 : ℝ) / 3)) ^ 2 = (μ : ℝ) ^ ((2 : ℝ) / 3) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul hμ0]; norm_num
+    rwn [← Real.rpow_natCast, ← Real.rpow_mul hμ0]
   have hk1 : (k : ℝ) ≤ (μ : ℝ) ^ ((1 : ℝ) / 3) + 1 := by
     rcases hk with rfl | hk
-    · push_cast; linarith
+    · pcl
     · rcases Nat.eq_zero_or_pos k with h0 | hpos
-      · subst h0; push_cast; linarith
+      · subst h0; pcl
       · have hc : (((k - 1 : ℕ) : ℝ)) ^ 3 < μ := by exact_mod_cast hk
         have hkm : ((k - 1 : ℕ) : ℝ) = (k : ℝ) - 1 := by
-          rw [Nat.cast_sub (by omega)]; push_cast; ring
+          rw [Nat.cast_sub (by omega)]; pcr
         have hroot : ((k - 1 : ℕ) : ℝ) ≤ (μ : ℝ) ^ ((1 : ℝ) / 3) := by
           have h0 : (0 : ℝ) ≤ ((k - 1 : ℕ) : ℝ) := Nat.cast_nonneg _
           have e : ((k - 1 : ℕ) : ℝ) = ((((k - 1 : ℕ) : ℝ)) ^ 3) ^ ((1 : ℝ) / 3) := by
-            rw [← Real.rpow_natCast, ← Real.rpow_mul h0]; norm_num
+            rwn [← Real.rpow_natCast, ← Real.rpow_mul h0]
           rw [e]
           exact Real.rpow_le_rpow (by positivity) hc.le (by norm_num)
         linarith
@@ -94,7 +96,7 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
   have hw0 : (0 : ℝ) ≤ w := Nat.cast_nonneg w
   have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   have hw1 : (w : ℝ) + 1 ≤ 8 * A :=
-    le_of_le_min (by linarith) (by linarith) (by linarith) (by rw [hM]; linarith)
+    le_of_le_min (by linarith) (by linarith) (by linarith) (by rwli [hM])
   have hμR : (μ : ℝ) * (g + 1) ≤ (c : ℝ) * (2 * (m : ℝ) + 1) + d * (g + 1) := by
     rw [hg]; exact_mod_cast hμ
   have hμ0 : (0 : ℝ) ≤ μ := Nat.cast_nonneg μ
@@ -102,13 +104,13 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
   have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
   have hμ23 : 0 ≤ (μ : ℝ) ^ ((2 : ℝ) / 3) := Real.rpow_nonneg hμ0 _
   set e : ℝ := 2 * (c : ℝ) + 2 * d + 1 with he
-  have he1 : 1 ≤ e := by rw [he]; linarith
+  have he1 : 1 ≤ e := by rwli [he]
   have hmain : ((w : ℝ) + 1) * (μ : ℝ) ^ ((2 : ℝ) / 3) ≤ 8 * e * A := by
     rcases le_total g M with hgM | hMg
     · have hgpos : 0 < g := by linarith
       have hμb : (μ : ℝ) ≤ e * (M / g) := by
         have h1 : (μ : ℝ) * g ≤ (c : ℝ) * (2 * (m : ℝ) + 1) + d * (g + 1) := by nlinarith
-        have h2 : (c : ℝ) * (2 * (m : ℝ) + 1) ≤ 2 * c * M := by rw [hM]; nlinarith
+        have h2 : (c : ℝ) * (2 * (m : ℝ) + 1) ≤ 2 * c * M := by rwnl [hM]
         have h3 : (d : ℝ) * (g + 1) ≤ 2 * d * M := by nlinarith
         rw [mul_div_assoc', le_div_iff₀ hgpos, he]
         nlinarith
@@ -120,7 +122,7 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
       have hc23 : e ^ ((2 : ℝ) / 3) ≤ e := Real.rpow_le_self_of_one_le he1 (by norm_num)
       have hg23 : 0 < g ^ ((2 : ℝ) / 3) := Real.rpow_pos_of_pos hgpos _
       have hg13 : g / g ^ ((2 : ℝ) / 3) = g ^ ((1 : ℝ) / 3) := by
-        rw [div_eq_iff hg23.ne', ← Real.rpow_add hgpos]; norm_num
+        rwn [div_eq_iff hg23.ne', ← Real.rpow_add hgpos]
       have hM23 : 0 ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_nonneg (by linarith) _
       have hw2 : (w : ℝ) + 1 ≤ 2 * g := by linarith
       calc ((w : ℝ) + 1) * (μ : ℝ) ^ ((2 : ℝ) / 3)
@@ -136,7 +138,7 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
       have hμb : (μ : ℝ) ≤ e := by
         have h1 : (μ : ℝ) * g ≤ (c : ℝ) * (2 * (m : ℝ) + 1) + d * (g + 1) := by nlinarith
         have h2 : (c : ℝ) * (2 * (m : ℝ) + 1) ≤ 2 * c * g := by
-          have : 2 * (m : ℝ) + 1 ≤ 2 * g := by rw [hM] at hMg; linarith
+          have : 2 * (m : ℝ) + 1 ≤ 2 * g := by rwli [hM] at hMg
           nlinarith
         have h3 : (d : ℝ) * (g + 1) ≤ 2 * d * g := by nlinarith
         by_contra hcon
@@ -157,7 +159,7 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
         mul_le_mul_of_nonneg_left hk2 (by linarith)
     _ = 2 * (((w : ℝ) + 1) * (μ : ℝ) ^ ((2 : ℝ) / 3)) + 2 * ((w : ℝ) + 1) := by ring
     _ ≤ 2 * (8 * e * A) + 2 * (8 * A) := by gcongr
-    _ = (32 * (c : ℝ) + 32 * d + 32) * A := by rw [he]; ring
+    _ = (32 * (c : ℝ) + 32 * d + 32) * A := by rwring [he]
 
 end OracleQ
 

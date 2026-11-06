@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.RestoreTIntKey
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, the candidate test on the RAM, part 16: dispatching on the model
@@ -34,22 +37,22 @@ theorem TGood.kind (hE : TGood P W M N c₀) :
 
 /-- The walk of the interior model has `n` vertices. -/
 theorem interior_n : (interiorModel (Qof P)).W.n = P.n := by
-  simp only [interiorModel]; rw [interiorWalk_n]; exact shear_n _ _
+  simp [interiorModel]; rw [interiorWalk_n]; exact shear_n _ _
 
 theorem Bik_band (r : ℕ) (h : Bik r = true) : bandOf r ∈ primBands ∧ r ≠ ALLOC := by
   unfold Bik at h
-  simp only [Bool.or_eq_true, beq_iff_eq, Bool.and_eq_true, decide_eq_true_eq] at h
+  simp [Bool.or_eq_true, beq_iff_eq, Bool.and_eq_true, decide_eq_true_eq] at h
   rcases h with ((((h | h) | h) | h) | h) | h
   · have := Bdir_band r h
     refine ⟨?_, this.2⟩
     have h1 := this.1
-    simp only [Finset.mem_insert, Finset.mem_singleton] at h1
-    simp only [primBands, Finset.mem_insert, Finset.mem_singleton]
+    simp [Finset.mem_insert, Finset.mem_singleton] at h1
+    simp [primBands, Finset.mem_insert, Finset.mem_singleton]
     tauto
   all_goals first
-    | (subst h; exact ⟨by simp [primBands, bandOf, bLocate], by unfold ALLOC; omega⟩)
-    | exact ⟨by simp only [primBands, bandOf, bLocate, bSign, Finset.mem_insert,
-        Finset.mem_singleton]; omega, by unfold ALLOC; omega⟩
+    | (subst h; exact ⟨by simp [primBands, bandOf, bLocate], by ufo ALLOC⟩)
+    | exact ⟨by simp [primBands, bandOf, bLocate, bSign, Finset.mem_insert,
+        Finset.mem_singleton]; omega, by ufo ALLOC⟩
 
 /-- **The key comparison of both models.** -/
 def gKey (a b d e : ℕ) : Stmt := .ifLtN 83021 83023 (keyCmp a b d e) (iKey a b d e)
@@ -67,14 +70,14 @@ theorem gKey_ok : KeyOK gKey 11010 := by
       subst hM'; exact ⟨hx.1, hx.2.1, hx.2.2 C' rfl⟩
     have hy' : PosOK C' (Qof P) P.n ⟨c.nreg d, c.nreg e⟩ := by
       subst hM'; exact ⟨hy.1, hy.2.1, hy.2.2 C' rfl⟩
-    obtain ⟨c', k, ex, hk, b1, b2, hf⟩ := keyCmp_exec (by unfold InR; omega) (by unfold InR; omega)
-      (by unfold InR; omega) (by unfold InR; omega) hI.hw hE.hG hE.hW hwf hC hI.h22 hx' hy'
+    obtain ⟨c', k, ex, hk, b1, b2, hf⟩ := keyCmp_exec (by ufo InR) (by ufo InR)
+      (by ufo InR) (by ufo InR) hI.hw hE.hG hE.hW hwf hC hI.h22 hx' hy'
       (hE.hWm C' hM') (by omega)
     obtain ⟨hI', hrf, h8⟩ := hI.prim ex.wb_right hf
-    refine ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, by omega, ?_, ?_,
+    refine ⟨c', k + 1, .ifLtN_true (by rwo [h21, h23, h0]) ex, by omega, ?_, ?_,
       hI', hrf.mono subset_rfl (by omega), h8⟩
-    · rw [hM']; exact b1
-    · rw [hM']; exact b2
+    · rwx [hM']
+    · rwx [hM']
   · -- the interior model
     subst hMi
     have hn := interior_n (P := P)
@@ -83,13 +86,13 @@ theorem gKey_ok : KeyOK gKey 11010 := by
     have hmd : c.nmem (c.nreg 83000 + 1) = c₀.nmem (c₀.nreg 83000 + 1) := by
       rw [i0, hI.hm _ (by have := hE.hwfMD.1; omega)]
     obtain ⟨c', k, ex, hk, b1, b2⟩ := iKey_exec (P := P) (a := a) (b := b) (d := d) (e := e)
-      hE.hG (by have := hE.hW; unfold hostWords at this; omega) hI.hw hbit hmd hD
-      (by intro r hr; simp only [List.mem_cons, List.not_mem_nil, or_false] at hr
+      hE.hG (by have := hE.hW; ufo hostWords at this) hI.hw hbit hmd hD
+      (by intro r hr; simp [List.mem_cons, List.not_mem_nil, or_false] at hr
           rcases hr with rfl | rfl | rfl | rfl <;> omega)
       hx.2.1 hy.2.1 (by rw [← hn]; exact hx.1) (by rw [← hn]; exact hy.1)
     have hfr : FrameB Bik c c' := exec_frameB ex (wr_iKey a b d e)
     obtain ⟨hI', hrf, h8⟩ := hI.prim ex.wb_right (frame_of_frameB hfr Bik_band k)
-    refine ⟨c', k + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) ex, by omega, b1, b2,
+    refine ⟨c', k + 2, .ifLtN_false (by rwo [h21, h23, h1]) ex, by omega, b1, b2,
       hI', hrf.mono subset_rfl (by omega), h8⟩
 
 end

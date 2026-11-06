@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepIface
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # The sweep (WP-D), answers: side-generic lemmas, candidates, records from arrival positions
@@ -107,17 +111,17 @@ theorem not_sideLeft_horizontal {W : Polygon} {p : ℕ} {t : ℝ} (ht0 : 0 < t) 
   set b := sideNext W p with hb
   have hb' : b = W.vtx ((p + 1) % W.n) := rfl
   set v := sidePt W p t with hv
-  have hv1 : v.1 = a.1 + t * (b.1 - a.1) := by rw [hv, hb']; rfl
+  have hv1 : v.1 = a.1 + t * (b.1 - a.1) := by rwr [hv, hb']
   have hv2 : v.2 = a.2 := by
-    rw [hv]; show a.2 + t * ((W.vtx ((p + 1) % W.n)).2 - a.2) = a.2; rw [← hh]; ring
+    rw [hv]; show a.2 + t * ((W.vtx ((p + 1) % W.n)).2 - a.2) = a.2; rwring [← hh]
   have hb2 : b.2 = a.2 := by rw [hb']; exact hh.symm
-  have eB1 : (b - v).1 = (1 - t) * (b.1 - a.1) := by simp only [Prod.fst_sub]; rw [hv1]; ring
-  have eB2 : (b - v).2 = 0 := by simp only [Prod.snd_sub]; rw [hb2, hv2]; ring
-  have eA1 : (a - v).1 = -t * (b.1 - a.1) := by simp only [Prod.fst_sub]; rw [hv1]; ring
-  have eA2 : (a - v).2 = 0 := by simp only [Prod.snd_sub]; rw [hv2]; ring
-  have eX2 : (rayPt v σ 1 - v).2 = 0 := by simp only [Prod.snd_sub, rayPt_snd]; ring
-  have hBA : sideCross (b - v) (a - v) = 0 := by unfold sideCross; rw [eB2, eA2]; ring
-  have hBX : sideCross (b - v) (rayPt v σ 1 - v) = 0 := by unfold sideCross; rw [eB2, eX2]; ring
+  have eB1 : (b - v).1 = (1 - t) * (b.1 - a.1) := by simp only [Prod.fst_sub]; rwring [hv1]
+  have eB2 : (b - v).2 = 0 := by simp only [Prod.snd_sub]; rwring [hb2, hv2]
+  have eA1 : (a - v).1 = -t * (b.1 - a.1) := by simp only [Prod.fst_sub]; rwring [hv1]
+  have eA2 : (a - v).2 = 0 := by simp only [Prod.snd_sub]; rwring [hv2]
+  have eX2 : (rayPt v σ 1 - v).2 = 0 := by sir only [Prod.snd_sub, rayPt_snd]
+  have hBA : sideCross (b - v) (a - v) = 0 := by urring sideCross [eB2, eA2]
+  have hBX : sideCross (b - v) (rayPt v σ 1 - v) = 0 := by urring sideCross [eB2, eX2]
   have hdot : sideDot (b - v) (a - v) ≤ 0 := by
     unfold sideDot; rw [eB1, eB2, eA1, eA2]
     have h1 : 0 ≤ (1 - t) * t := mul_nonneg (by linarith) ht0.le
@@ -183,10 +187,10 @@ theorem recordData_of_arrival (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
   obtain ⟨hpz, htz0, htz1, hptz, hsecz⟩ := hAz
   obtain ⟨hpw, htw0, htw1, hptw, hsecw⟩ := hAw
   rw [neg_neg] at hsecz
-  have hsz : sideLeft M.W pz tz (rayPt (sidePt M.W pz tz) σ 1) := by rw [hptz]; exact hsecz
-  have hsw : sideLeft M.W pw tw (rayPt (sidePt M.W pw tw) (-σ) 1) := by rw [hptw]; exact hsecw
-  have hyz : (Q.vtx h).2 = (sidePt M.W pz tz).2 := by rw [hptz]; exact hh
-  have hyw : (Q.vtx h).2 = (sidePt M.W pw tw).2 := by rw [hptw]; exact hh
+  have hsz : sideLeft M.W pz tz (rayPt (sidePt M.W pz tz) σ 1) := by rwx [hptz]
+  have hsw : sideLeft M.W pw tw (rayPt (sidePt M.W pw tw) (-σ) 1) := by rwx [hptw]
+  have hyz : (Q.vtx h).2 = (sidePt M.W pz tz).2 := by rwx [hptz]
+  have hyw : (Q.vtx h).2 = (sidePt M.W pw tw).2 := by rwx [hptw]
   have ez := param_of_arrival Q htz0 htz1 hyz hsz
   have ew := param_of_arrival Q htw0 htw1 hyw hsw
   -- the attachments
@@ -195,7 +199,7 @@ theorem recordData_of_arrival (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
   have hAz' : Arrival M.W (rayPt (rayPt z σ T) (-σ) T) (-σ) pz tz := by
     rw [hw']
     refine ⟨hpz, htz0, htz1, hptz, ?_⟩
-    rw [neg_neg]; exact hsecz
+    rwx [neg_neg]
   have att_z := attach_left_of_arrival hnσ hT hAz'
   rw [hw', Geometry.segment_comm] at att_z
   have att_w := attach_left_of_arrival hσ hT ⟨hpw, htw0, htw1, hptw, hsecw⟩
@@ -205,7 +209,7 @@ theorem recordData_of_arrival (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
   · rw [ez]; exact att_z
   · rw [ew]; exact att_w
   · simp [h1]
-  · have : σ ≠ 1 := by rw [h1]; norm_num
+  · have : σ ≠ 1 := by rwn [h1]
     simp [this]
 
 end RecordJ

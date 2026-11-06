@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.GranCost
 public import Chazelle.Core.GranRamLoop
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # WP-F, part 19: the main path
@@ -23,13 +28,12 @@ open Machine Machine.Stmt Programs SignK
 def mainStmt : Stmt := .seq initStmt (.seq loopStmt outStmt)
 
 theorem wrS_loop : wrS Bbody loopStmt = true := by
-  simp only [loopStmt, wrS]; exact wrS_body
+  simp [loopStmt, wrS]; exact wrS_body
 
 theorem natOnly_loop : natOnly loopStmt = true := by decide
 
 theorem natOnly_out : natOnly outStmt = true := by decide
 
-set_option maxHeartbeats 2000000 in
 /-- **The main path.** -/
 theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     {MD NFH D γ : ℕ} {M : Model} {N : NF}
@@ -55,7 +59,7 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hroomI := room_le N.nChords N.arcs.length N.nRegions D
   obtain ⟨c₈, k₈, e₈, hk₈, hMS, hI, hE, hDim, r52, r00, -, r02, -, r10, r13, r28, hal, G₈⟩ :=
     init_exec (P := P) hw h0 h1 h2 h3 hG hWh hwf hMD hGM hNW hNF hRC hCS hRO hne hdeg hsemi
-      (by unfold costMain at hroom; omega)
+      (by ufo costMain at hroom)
   set E := envOf M P N reg γ D (c.nmem MD) (c.nmem (MD + 3)) with hEd
   set d := dmOf N.nChords N.arcs.length N.nRegions D (c.nreg ALLOC) with hd
   set K := N.nChords with hKd
@@ -65,7 +69,7 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have FS₉ := exec_frameS e₉ wrS_loop
   have G₉ : GF (c.nreg ALLOC) c₈ c₉ k₉ := GF.of_nat e₉ natOnly_loop wrS_loop
     (fun r hr => by
-      simp only [Bbody, Bool.or_eq_true, decide_eq_true_eq] at hr
+      simp [Bbody, Bool.or_eq_true, decide_eq_true_eq] at hr
       exact band9_gran (by omega) (by omega))
     (fun a ha => by rw [hMS'.low a ha, hMS.low a ha])
   -- the output
@@ -79,7 +83,7 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hdK : d.K = K := rfl
   have hLB : d.oList + 3 * K = d.oEnd := rfl
   have hoL : K ≤ d.oList := by
-    simp only [hd, dmOf, Dm.oList, Dm.oTmp, Dm.oStk, Dm.oPz, Dm.oEg, Dm.oPrv, Dm.oNxt, Dm.oCnt,
+    simp [hd, dmOf, Dm.oList, Dm.oTmp, Dm.oStk, Dm.oPz, Dm.oEg, Dm.oPrv, Dm.oNxt, Dm.oCnt,
       Dm.oEx]
     omega
   have hbase := hDim.base
@@ -88,8 +92,8 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       r19 := hMS'.cst.one
       r21 := hMS'.cst.two
       r10 := by rw [hR₉ _ (by decide), r10]
-      hlive := fun u hu => hMS'.enc.live u hu
-      hl01 := fun u hu => hI'.live01 u hu
+      hlive := hMS'.enc.live
+      hl01 := hI'.live01
       hrec := fun u hu => by
         have hb := hNA.2.1 u hu
         have hr := (hNW.nfAt.2.2.2.2.2.1 u hu)
@@ -105,7 +109,7 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (by unfold costMain at hroom; have := dmOf_oEnd N.nChords N.arcs.length N.nRegions D 0; omega)
   have G₁₀ : GF (c.nreg ALLOC) c₉ c₁₀ k₁₀ := GF.of_nat e₁₀ natOnly_out wrS_outStmt
     (fun r hr => by
-      simp only [Binit, decide_eq_true_eq] at hr
+      simp [Binit, decide_eq_true_eq] at hr
       exact band9_gran (by omega) (by omega))
     (fun a ha => hmem a (by left; omega))
   have q28 : c₁₀.nreg 90028 = c.nreg ALLOC + d.oList := by
@@ -117,11 +121,11 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hlset : lset M (Qof P) (outList N st'.live K) = st'.F E := hFeq
   have hlen := outList_length_le N st'.live K
   refine ⟨c₁₀, _, outList N st'.live K, .seq e₈ (.seq e₉ e₁₀), ?_, ?_, ?_, r95, hlen,
-    by rw [q28]; exact hlist, by rw [q28, qA]; omega, hok, ?_, ?_, ?_,
+    by rwx [q28], by rwo [q28, qA], hok, ?_, ?_, ?_,
     (G₈.trans (G₉.trans G₁₀)).mono le_rfl⟩
   · have hm : st0 E d c₈.nmem = initSt E _ _ _ _ := rfl
     have hmeas : (st0 E d c₈.nmem).meas E = K + (D + 1) * K := by
-      simp only [St.meas, st0, initSt]; rfl
+      sirfl only [St.meas, st0, initSt]
     have hED : E.D = D := rfl
     rw [hmeas, hED] at hk₉
     unfold costMain
@@ -129,8 +133,8 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · rw [FS₁₀.1 _ (by decide), hR₉ _ (by decide), r00]
   · rw [FS₁₀.1 _ (by decide), hR₉ _ (by decide), r02]
   · rw [hlset]; exact St.F_sub
-  · rw [hlset]; exact hdg
-  · rw [hlset]; exact hgran
+  · rwx [hlset]
+  · rwx [hlset]
 
 end
 

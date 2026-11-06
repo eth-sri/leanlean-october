@@ -5,6 +5,7 @@ public import Mathlib.GroupTheory.Perm.Cycle.Type
 public import Mathlib.Combinatorics.SimpleGraph.Basic
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Tactic.Linarith
+public import Chazelle.UnfoldTactics
 
 /-!
 # Combinatorial maps (planar separators, part 1)
@@ -130,7 +131,7 @@ omit [Fintype V] [Fintype F] in
 /-- Every edge has two darts: `|D| = 2E`. -/
 theorem two_mul_numE : 2 * M.numE = Fintype.card D := by
   have := M.card_darts_even
-  unfold numE; omega
+  ufo numE
 
 /-- The Euler characteristic in dart form: `2χ = 2V - |D| + 2F`. -/
 theorem two_mul_euler : 2 * M.euler =
@@ -196,7 +197,6 @@ def dual : CombMap F V D where
   vert_rot := M.face_fperm_apply
   sameCycle_of_vert := M.sameCycle_of_face
   face_fperm d := by
-    show M.vert (M.fperm (M.opp d)) = M.vert d
     rw [fperm_apply, M.opp_opp, M.vert_rot]
   sameCycle_of_face d e h := by rw [M.fperm_mul_opp]; exact M.sameCycle_of_vert d e h
   vert_surj := M.face_surj

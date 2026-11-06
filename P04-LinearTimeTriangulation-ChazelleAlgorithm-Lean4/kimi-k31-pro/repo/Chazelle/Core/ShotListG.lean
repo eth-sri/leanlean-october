@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.ShotListMain
+public import Chazelle.Rwx
 
 /-!
 # The model-generic shot list, part 1: the operation contracts and the context
@@ -102,7 +103,7 @@ theorem modelDescG_keep {P : Polygon} {m m' : ℕ → ℕ} {D E E' : ℕ} {M : M
     have e0 : m' D = m D := he _ (by omega)
     have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
     refine ⟨⟨by omega, fun h => by rw [e0, h1] at h; exact absurd h (by norm_num)⟩,
-      Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hbit, rfl⟩⟩
+      Or.inr ⟨by rw [e0, h1], by rwx [e1], rfl⟩⟩
 
 /-! ## Host regularity of the descriptor (spec amendment G10) -/
 
@@ -118,10 +119,10 @@ theorem hreg_keep {P : Polygon} {m m' : ℕ → ℕ} {D E : ℕ} {M : Model}
     (he : ∀ a, a < E → m' a = m a) : HReg P m' D := by
   intro h0 H C hC
   have hD := hwf.1
-  have h0' : m D = 0 := by rw [← he D (by omega)]; exact h0
+  have h0' : m D = 0 := by rwx [← he D (by omega)]
   rcases hMD with ⟨-, H₀, C₀, hC₀, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, hEb, -⟩ := (hwf.2 h0').2 H₀ C₀ hC₀
-    have hH : HostAt m' (m (D + 1)) H₀ := hostAt_agree hC₀.1 hEb he
+    have hH  := hostAt_agree hC₀.1 hEb he
     have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
     have : H = H₀ := NFLoc.hostAt_unique (by rw [← e1]; exact hC.1) hH
     subst this
@@ -152,10 +153,10 @@ theorem ShotCtxG.frame {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Mo
   obtain ⟨⟨hE, hG, hHW, hMD, hmwf, h30, h31, h34⟩, hX, hcap, hOk, hσ, hreg⟩ := h
   have hf' := hf.mono le_rfl hWr le_rfl
   obtain ⟨-, -, hmem, -, -, hA, -⟩ := hf
-  have he : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a := hmem
+  have he  := hmem
   have r0 : c'.nreg R = c.nreg R := by simpa using hr 0 (Or.inl (by omega))
   obtain ⟨mw', hMD'⟩ := modelDescG_keep hmwf hMD he hA
-  refine ⟨⟨hS c c' k hE hw' hf', hG, hHW, by rw [r0]; exact hMD', by rw [r0]; exact mw',
+  refine ⟨⟨hS c c' k hE hw' hf', hG, hHW, by rwx [r0], by rw [r0]; exact mw',
     by rw [hr 30 (Or.inr (by omega)), h30], by rw [hr 31 (Or.inr (by omega)), h31],
     by rw [hr 34 (Or.inr (by omega)), r0, h34]⟩, ?_, ?_, hOk,
     ⟨by rw [hr 35 (Or.inr (by omega))]; exact hσ.1,
@@ -169,7 +170,7 @@ theorem ShotCtxG.frame {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Mo
 /-- A register of the caller's block is outside a band set avoiding the block's band. -/
 theorem band_RB {R : ℕ} (hR : RegsOK R) {Bo : Finset ℕ} (hRB : bandOf R ∉ Bo) {i : ℕ}
     (hi : i < 300) : bandOf (R + i) ∉ Bo := by
-  rw [band_block hR (by omega) (by omega)]; exact hRB
+  rwx [band_block hR (by omega) (by omega)]
 
 /-- A register of the caller's block is not written by an operation. -/
 theorem opW_R {B : ℕ → Bool} (hB : OpW B) {R : ℕ} (hR : RegsOK R) {r : ℕ} (h1 : R ≤ r)
@@ -206,9 +207,9 @@ theorem BestG.congr {P : Polygon} {M : Model} {R : ℕ} {c c' : Config} {S : Set
     (e1 : c'.nreg (R + 21) = c.nreg (R + 21)) (e2 : c'.nreg (R + 22) = c.nreg (R + 22)) :
     BestG P M R c' S z σ := by
   obtain ⟨h0, h1, h2⟩ := h
-  refine ⟨by rw [e0]; exact h0, fun hf => ?_, fun hf => h2 (by rw [← e0]; exact hf)⟩
-  obtain ⟨t, ht, hp, he, hpos⟩ := h1 (by rw [← e0]; exact hf)
-  exact ⟨t, ht, by rw [e1, e2]; exact hp, by rw [e1]; exact he, by rw [e1, e2]; exact hpos⟩
+  refine ⟨by rwx [e0], fun hf => ?_, fun hf => h2 (by rwx [← e0])⟩
+  obtain ⟨t, ht, hp, he, hpos⟩ := h1 (by rwx [← e0])
+  exact ⟨t, ht, by rwx [e1, e2], by rwx [e1], by rwx [e1, e2]⟩
 
 end
 

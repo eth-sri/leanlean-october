@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.UpPhase20
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-J up phase, part 21: the initialisation
@@ -46,7 +51,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
 theorem initA_exec {c : Config} (hw : WordsBounded W c) {S p : ℕ}
     (h00 : c.nreg 230000 = S) (hS1 : c.nmem (S + 1) = p) (hWS : S + 1 ≤ W) (hWp : p + 1 ≤ W)
     (hWn : P.n ≤ W) (hW8 : 8 ≤ W) :
@@ -68,7 +72,6 @@ theorem initA_exec {c : Config} (hw : WordsBounded W c) {S p : ℕ}
   simp only
   repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 16000000 in
 theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg ALLOC = A)
     (hn : 1 ≤ P.n) (hW : A + 7 ≤ W) (hWn : P.n ≤ W) (hW8 : 8 ≤ W) :
     ∃ c' k, Exec P W initH c c' k ∧ k = 16 ∧ WordsBounded W c' ∧
@@ -89,7 +92,7 @@ theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg A
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   have hA1 : c1.nreg ALLOC = A := by
-    rw [fr1 _ (by rw [hAl]; omega) (by rw [hAl]; omega) (by rw [hAl]; omega)]; exact hA
+    rw [fr1 _ (by rwo [hAl]) (by rwo [hAl]) (by rwo [hAl])]; exact hA
   obtain ⟨c2, k2, e2, hk2, hw2, A2, j27, j15, hH, hm2, fr2, hrr2, hrm2, ho2⟩ :=
     proH_exec (P := P) hw1 hA1 i24 i29 i86 hn hW hWn
   obtain ⟨c3, k3, e3, hk3, hw3, j04, fr3, hm3, hrr3, hrm3, ho3⟩ : ∃ c3 k3, Exec P W
@@ -101,14 +104,13 @@ theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg A
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3,
-    by rw [fr3 _ (by rw [hAl]; omega)]; exact A2, by rw [j04, j27], by rw [hm3]; exact hH,
+    by rw [fr3 _ (by rwo [hAl])]; exact A2, by rw [j04, j27], by rwx [hm3],
     fun a ha => by rw [hm3, hm2 a ha, hm1], fun r h1 h2 h3 => ?_, by rw [hrr3, hrr2, hrr1],
     by rw [hrm3, hrm2, hrm1], by rw [ho3, ho2, ho1]⟩
-  have : r < 160000 ∨ 170000 ≤ r := by unfold bandOf bL41 at h1; omega
+  have : r < 160000 ∨ 170000 ≤ r := by ufo bandOf bL41 at h1
   rw [fr3 r h2, fr2 r (by omega) (by omega) (by omega) (by omega) h3,
     fr1 r (by omega) (by omega) (by omega)]
 
-set_option maxHeartbeats 16000000 in
 theorem initR_exec {c : Config} (hw : WordsBounded W c) {H S D n1 : ℕ}
     (hA : c.nreg ALLOC = H) (h00 : c.nreg 170000 = S) (h03 : c.nreg 170003 = D)
     (h28 : c.nreg 170028 = n1) (h20 : c.nreg 170020 = 1) (h21 : c.nreg 170021 = 2)

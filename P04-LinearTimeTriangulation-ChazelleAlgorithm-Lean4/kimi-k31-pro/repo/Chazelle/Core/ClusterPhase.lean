@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ClusterBfsRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-I, part 9: phase frames and the fill procedure
@@ -47,14 +51,14 @@ theorem nmem {c0 c : Config} (h : PFr Rg Am c0 c) {a x : ℕ} (ha : Am a) :
     PFr Rg Am c0 { c with nmem := upd c.nmem a x } :=
   ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, fun b hb => by
     show upd c.nmem a x b = c0.nmem b
-    rw [Machine.upd_other _ _ _ (fun e => hb (by rw [e]; exact ha))]; exact h.2.2.2.2 b hb⟩
+    rw [Machine.upd_other _ _ _ (fun e => hb (by rwx [e]))]; exact h.2.2.2.2 b hb⟩
 
 theorem nreg_nmem {c0 c : Config} (h : PFr Rg Am c0 c) {f : ℕ → ℕ}
     (hf : ∀ r, ¬ Rg r → f r = c.nreg r) {a x : ℕ} (ha : Am a) :
     PFr Rg Am c0 { c with nreg := f, nmem := upd c.nmem a x } :=
   ⟨fun r hr => (hf r hr).trans (h.1 r hr), h.2.1, h.2.2.1, h.2.2.2.1, fun b hb => by
     show upd c.nmem a x b = c0.nmem b
-    rw [Machine.upd_other _ _ _ (fun e => hb (by rw [e]; exact ha))]; exact h.2.2.2.2 b hb⟩
+    rw [Machine.upd_other _ _ _ (fun e => hb (by rwx [e]))]; exact h.2.2.2.2 b hb⟩
 
 theorem of_eq {c0 c : Config} (h : PFr Rg Am c0 c) {f g : ℕ → ℕ}
     (hf : ∀ r, ¬ Rg r → f r = c.nreg r) (hg : ∀ a, ¬ Am a → g a = c.nmem a) :
@@ -96,18 +100,18 @@ theorem fillStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001
       ∀ i, i < j → c'.nmem (c.nreg 130150 + i) = c.nreg 130152)
     (c.nreg 130151) 3 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c2 hj ⟨hw2, hi2, hn2, hf2, hm2⟩ => by
-      have r1 : c2.nreg 130150 = c.nreg 130150 := hf2.1 _ (by unfold FillScr; omega)
-      have r2 : c2.nreg 130152 = c.nreg 130152 := hf2.1 _ (by unfold FillScr; omega)
-      have r3 : c2.nreg 130001 = 1 := (hf2.1 _ (by unfold FillScr; omega)).trans hone
+      have r1 : c2.nreg 130150 = c.nreg 130150 := hf2.1 _ (by ufo FillScr)
+      have r2 : c2.nreg 130152 = c.nreg 130152 := hf2.1 _ (by ufo FillScr)
+      have r3 : c2.nreg 130001 = 1 := (hf2.1 _ (by ufo FillScr)).trans hone
       unfold fillCell
       exec_block
-      · rw [r1, hi2]; omega
-      · config_simp; rw [hi2, r3]; omega
+      · rwo [r1, hi2]
+      · config_simp; rwo [hi2, r3]
       · refine ⟨le_refl _, ‹_›, by config_simp; rw [hi2, r3], by config_simp; exact hn2, ?_,
           fun i hi => ?_⟩
         · refine PFr.nreg_nmem hf2 (fun r hr => ?_) ?_
-          · simp only [Machine.upd_apply]; unfold FillScr at hr; split_ifs <;> omega
-          · rw [r1, hi2]; omega
+          · simp only [Machine.upd_apply]; unfold FillScr at hr; splao
+          · rwo [r1, hi2]
         · config_simp
           rw [r1, hi2, r2]
           rw [Machine.upd_apply]
@@ -115,7 +119,7 @@ theorem fillStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001
           · rfl
           · exact hm2 i (by omega))
     (j₀ := 0) ⟨e0.wb_right, by simp [c1], by simp [c1], PFr.nreg (PFr.refl c) (fun r hr => by
-      simp only [Machine.upd_apply]; unfold FillScr at hr; split_ifs <;> omega),
+      simp only [Machine.upd_apply]; unfold FillScr at hr; splao),
       fun i hi => by omega⟩ (Nat.zero_le _)
   exact ⟨c', 1 + k, .seq e0 e, by omega, hI.2.2.2.1, hI.2.2.2.2⟩
 

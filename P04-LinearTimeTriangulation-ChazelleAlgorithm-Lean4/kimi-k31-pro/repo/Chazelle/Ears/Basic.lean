@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Existence.SplitDiagonal
 public import Chazelle.Existence.Base
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Ears of a simple polygon
@@ -104,7 +106,7 @@ theorem four_le_of_isEar (he : IsEar P i) : 4 ≤ P.n := he.1.2.1
 
 /-- The clipped polygon has `n - 1` vertices. -/
 theorem n_clip (hn : 2 ≤ P.n) : (clip P i).n = P.n - 1 := by
-  unfold clip; rw [n_arc]; omega
+  uro clip [n_arc]
 
 /-- **Clipping an ear preserves simplicity.** -/
 theorem simple_clip (hP : P.Simple) (he : IsEar P i) : (clip P i).Simple :=
@@ -136,7 +138,7 @@ theorem det_ear_ne_zero (hP : P.Simple) (hi : i < P.n) (he : IsEar P i) :
 theorem relabel_ear (hi : i < P.n) :
     relabel (prevIdx P i) P.n (0, 1, 2) = earTriangle P i := by
   unfold relabel earTriangle
-  simp only [Nat.add_zero, prevIdx_mod P hi, prevIdx_add_one_mod P hi, prevIdx_add_two_mod P hi]
+  simp [Nat.add_zero, prevIdx_mod P hi, prevIdx_add_one_mod P hi, prevIdx_add_two_mod P hi]
 
 /-- **Ear clipping preserves weak triangulations.**  A weak triangulation `T` of `clip P i`,
 relabelled to the indices of `P` and preceded by the ear triangle, weakly triangulates `P`. -/

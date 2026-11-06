@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepIoConv
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the classes of walk positions
@@ -149,7 +151,7 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
     omega) with hlt | hmid | hend
   · rcases (show x.edge = 0 ∨ x.edge = 1 ∨ x.edge = 2 ∨ x.edge = 3 ∨ x.edge = 4 ∨ x.edge = 5 by
       omega) with h | h | h | h | h | h
-    · rw [hW, h, b0] at htop; simp only at htop; linarith
+    · rw [hW, h, b0] at htop; sil only at htop
     · rw [hW, h, b1]; simp only
       rw [hW, h, b1] at htop; simp only at htop
       rw [abs_lt]; constructor <;> nlinarith
@@ -158,7 +160,7 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
         rcases h0.lt_or_eq with h0 | h0
         · exfalso
           apply Sweep.not_sideLeft_horizontal h0 h1 (W := (chainModel C).W) (p := 2) _ σ
-          · rw [← h]; exact hsec
+          · rwx [← h]
           · rw [hW, C.sideWalk_vtx_two, show (2 + 1) % (C.sideWalk C.sideBeta).n = 3 by
               rw [C.sideWalk_n]; exact Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_three]
         · exact h0.symm
@@ -170,16 +172,16 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
       · exfalso
         rw [h, ← h0'] at hsec
         exact not_sideLeft_bottom C hσ (Or.inr rfl) hsec
-    · rw [hW, h, b4] at htop; simp only at htop; linarith
-    · rw [hW, h, b5] at htop; simp only at htop; nlinarith
+    · rw [hW, h, b4] at htop; sil only at htop
+    · rw [hW, h, b5] at htop; sinl only at htop
   · have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := t) (by omega)
       (fun h => by omega) h0 h1
     rw [show x.edge - 6 + 6 = x.edge by omega] at this
-    exact absy_lt C (by rw [hW]; exact this)
+    exact absy_lt C (by rwx [hW])
   · rw [hW, hend, b6] at htop ⊢; simp only at htop ⊢
     have : t * (C.radius - C.top.2) ≤ 0 := by linarith
     have ht0 : t = 0 := by nlinarith
-    rw [ht0, zero_mul, add_zero]; exact htm
+    rwx [ht0, zero_mul, add_zero]
 
 end
 

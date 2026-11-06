@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ClusterSplitRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-I, part 34: the tail of the split step on the RAM
@@ -170,11 +173,11 @@ theorem splitTail_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c
   -- the passes
   have hfp2 : c2.nmem (S.bFP + f) = c.nmem (S.bFP + f) := hst2 _ (by omega)
   obtain ⟨c3, k3, x3, hk3, hw3, hm3, h3e0, h3e1, h3e2, h3e3, hr3, h3f, h3lo, h3hi, hrr3, hrm3,
-    ho3⟩ := passesS_exec (P := P) hw2 hR2 hL (by rw [hg2 _ (by omega)]; exact h1lo)
-    (by rw [hg2 _ (by omega)]; exact h1hi) (by rw [hg2 _ (by omega)]; exact h1f) hfN
-    (by rw [hfp2]; exact hfp) (CpMem.of_static hL hst2 hCp) hlh hhiμ
+    ho3⟩ := passesS_exec (P := P) hw2 hR2 hL (by rwx [hg2 _ (by omega)])
+    (by rwx [hg2 _ (by omega)]) (by rwx [hg2 _ (by omega)]) hfN
+    (by rwx [hfp2]) (CpMem.of_static hL hst2 hCp) hlh hhiμ
     (fun i h1 h2 => by rw [htmp2 i h1 h2]; exact hact i h1 h2)
-    (fun v hv => by rw [hst2 _ (by omega)]; exact hfirst v hv) (by rw [hm2']; exact hsum)
+    (fun v hv => by rw [hst2 _ (by omega)]; exact hfirst v hv) (by rwx [hm2'])
   rw [hm2'] at hm3 h3e1 h3e2 h3e3
   have hR3 := hR2.of_frame hr3
   -- the pass pointers
@@ -189,8 +192,8 @@ theorem splitTail_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c
   -- `TMP` after the passes
   have htmp3 : ∀ i, lo ≤ i → i < hi → c3.nmem (S.bTMP + i) = c.nmem (S.bACT + i) := by
     intro i h1 h2
-    rw [hm3, passC_tmp hL hlh hhiμ hit2 ⟨by omega, by omega⟩ ⟨by rw [hpB]; omega,
-      by rw [hpA]; omega⟩, ← hm2', htmp2 i h1 h2]
+    rw [hm3, passC_tmp hL hlh hhiμ hit2 ⟨by omega, by omega⟩ ⟨by rwo [hpB],
+      by rwo [hpA]⟩, ← hm2', htmp2 i h1 h2]
   -- the release of the separator
   obtain ⟨c4, k4, x4, hk4, hw4, hm4, hr4, hrr4, hrm4, ho4⟩ := sepStmt_exec (P := P) hw3 hR3.one
     h3lo h3hi hR3.aTMP hR3.aPOS hR3.aDF hR3.rμ hlh
@@ -198,32 +201,32 @@ theorem splitTail_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c
     (by omega) (by omega) (by omega)
   -- the pushes
   have g4 : ∀ r, r = 130670 ∨ r = 130671 ∨ r = 130672 ∨ r = 130673 ∨ r = 130701 ∨ r = 130704 →
-      c4.nreg r = c3.nreg r := fun r hr => hr4 r (by unfold SepRG; omega)
+      c4.nreg r = c3.nreg r := fun r hr => hr4 r (by ufo SepRG)
   have htp3 : c3.nreg 130701 = tp := by
-    rw [hr3 _ (by unfold SplitRG; omega), hr2 _ (by unfold SplitRG; omega),
-      hr1 _ (by unfold SplitRG; omega)]; exact htp
+    rw [hr3 _ (by ufo SplitRG), hr2 _ (by ufo SplitRG),
+      hr1 _ (by ufo SplitRG)]; exact htp
   have hnsp3 : c3.nreg 130704 = nsp := by
-    rw [hr3 _ (by unfold SplitRG; omega), hr2 _ (by unfold SplitRG; omega),
-      hr1 _ (by unfold SplitRG; omega)]; exact hnsp
-  have hR4 := hR3.of_frame (fun r hr => hr4 r (by unfold SepRG; unfold SplitRG at hr; omega))
+    rw [hr3 _ (by ufo SplitRG), hr2 _ (by ufo SplitRG),
+      hr1 _ (by ufo SplitRG)]; exact hnsp
+  have hR4 := hR3.of_frame (fun r hr => hr4 r (by unfold SepRG; ufo SplitRG at hr))
   obtain ⟨c5, k5, x5, hk5, hw5, hq5, hr5, hrr5, hrm5, ho5⟩ := pushS_exec (P := P) hw4 hR4
     ((g4 _ (by omega)).trans h3e0) ((g4 _ (by omega)).trans h3e1)
     ((g4 _ (by omega)).trans h3e2) ((g4 _ (by omega)).trans h3e3)
     ((g4 _ (by omega)).trans htp3) hwS
   -- the counter
   have h5n : c5.nreg 130704 = nsp := by
-    rw [hr5 _ (by omega) (by omega) (by omega), g4 _ (by omega)]; exact hnsp3
+    rwx [hr5 _ (by omega) (by omega) (by omega), g4 _ (by omega)]
   have h51 : c5.nreg 130001 = 1 := (hr5 _ (by omega) (by omega) (by omega)).trans hR4.one
-  have x6 := Exec.addN (P := P) hw5 130704 130704 130001 (by rw [h5n, h51]; omega)
+  have x6 := Exec.addN (P := P) hw5 130704 130704 130001 (by rwo [h5n, h51])
   have hm4' : c4.nmem = sepMem (passC m2 S lo hi f).1 S.bTMP S.bPOS S.bDF S.μ lo (hi - lo) := by
     rw [hm4, hm3]
   refine ⟨_, k1 + (k2 + (k3 + (k4 + (k5 + 1)))), .seq x1 (.seq x2 (.seq x3 (.seq x4 (.seq x5
     x6)))), by omega, x6.wb_right, ?_, by simp [h5n, h51], fun r hr h1 h2 => ?_, ?_, ?_, ?_⟩
   · show (c5.nmem, upd c5.nreg 130704 (c5.nreg 130704 + c5.nreg 130001) 130701) = _
     rw [Machine.upd_other _ _ _ (by omega), hq5, hm4']
-  · simp only [Machine.upd_apply]
-    rw [ite_eq_right h2, hr5 r h1 (by unfold SplitRG at hr; omega) (by unfold SplitRG at hr; omega),
-      hr4 r (by unfold SepRG; unfold SplitRG at hr; omega), hr3 r hr, hr2 r hr, hr1 r hr]
+  · simp [Machine.upd_apply]
+    rw [ite_eq_right h2, hr5 r h1 (by ufo SplitRG at hr) (by ufo SplitRG at hr),
+      hr4 r (by unfold SepRG; ufo SplitRG at hr), hr3 r hr, hr2 r hr, hr1 r hr]
   · show c5.rreg = c.rreg; rw [hrr5, hrr4, hrr3, hrr2, hrr1]
   · show c5.rmem = c.rmem; rw [hrm5, hrm4, hrm3, hrm2, hrm1]
   · show c5.output = c.output; rw [ho5, ho4, ho3, ho2, ho1]

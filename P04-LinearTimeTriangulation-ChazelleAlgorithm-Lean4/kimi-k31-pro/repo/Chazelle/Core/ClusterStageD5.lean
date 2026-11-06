@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.ClusterInit
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # WP-I, part 58: stage D — the placement, composed
@@ -31,18 +33,17 @@ theorem surj_range {N : ℕ} {f : ℕ → ℕ} (hlt : ∀ i, i < N → f i < N)
     (hinj : ∀ i j, i < N → j < N → f i = f j → i = j) : ∀ p, p < N → ∃ i, i < N ∧ f i = p := by
   intro p hp
   have := Finset.surjOn_of_injOn_of_card_le f (s := Finset.range N) (t := Finset.range N)
-    (fun i hi => by simp only [Finset.coe_range, Set.mem_Iio] at hi ⊢; exact hlt i hi)
+    (fun i hi => by simp [Finset.coe_range, Set.mem_Iio] at hi ⊢; exact hlt i hi)
     (fun i hi j hj h => by
-      simp only [Finset.coe_range, Set.mem_Iio] at hi hj; exact hinj i j hi hj h) le_rfl
+      simp [Finset.coe_range, Set.mem_Iio] at hi hj; exact hinj i j hi hj h) le_rfl
   obtain ⟨i, hi, hfi⟩ := this (by simp [hp] : p ∈ (Finset.range N : Set ℕ))
-  simp only [Finset.coe_range, Set.mem_Iio] at hi
+  simp [Finset.coe_range, Set.mem_Iio] at hi
   exact ⟨i, hi, hfi⟩
 
 section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 /-- **Stage D.** -/
 theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     {lev hl blk : ℕ → ℕ}
@@ -78,16 +79,16 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have rd : ∀ c' : Config, PFr StDRG (DMem g) c c' →
       (∀ a, a < g.base 32 → c'.nmem a = c.nmem a) ∧
       (∀ a, g.base 33 ≤ a → a < g.base 42 → c'.nmem a = c.nmem a) := fun c' h =>
-    ⟨fun a ha => h.2.2.2.2 a (by unfold DMem; omega),
-     fun a h1 h2 => h.2.2.2.2 a (by unfold DMem; omega)⟩
+    ⟨fun a ha => h.2.2.2.2 a (by ufo DMem),
+     fun a h1 h2 => h.2.2.2.2 a (by ufo DMem)⟩
   unfold stageD
   -- POS := μ
   obtain ⟨c1, k1, x1, hk1, hw1, hf1, hz1⟩ := fillWith_exec (P := P) hw hG.one
-    (hG.rbase 44 (by omega)) hG.rμ hG.rμ (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
-  have f1 : PFr StDRG (DMem g) c c1 := hf1.mono (fun r h => by unfold FillRG at h; unfold StDRG; omega)
-    (fun a h => by unfold DMem; omega)
-  have hG1 : GR g c1 := hG.frame (fun r hr => f1.1 r (by unfold GRReg at hr; unfold StDRG; omega))
+    (hG.rbase 44 (by omega)) hG.rμ hG.rμ (by ufo FillRG) (by ufo FillRG)
+    (by ufo FillRG) (by omega) (by omega)
+  have f1 : PFr StDRG (DMem g) c c1 := hf1.mono (fun r h => by unfold FillRG at h; ufo StDRG)
+    (fun a h => by ufo DMem)
+  have hG1 : GR g c1 := hG.frame (fun r hr => f1.1 r (by unfold GRReg at hr; ufo StDRG))
   -- the inversion
   obtain ⟨c2, k2, e2, hk2, hw2, h800, h801, h802, hf2, hm2⟩ : ∃ c2 k2, Exec P W
       (block [.copyN 130800 130059, .copyN 130801 130062, .copyN 130802 130014]) c1 c2 k2 ∧
@@ -97,18 +98,18 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     exec_block
     refine ⟨rfl, ‹_›, by config_simp; exact r59, by config_simp; exact r62, by config_simp; exact rN,
       ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, rfl⟩
-    simp only; unfold StDRG at hr
+    simp; unfold StDRG at hr
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   have f2 := f1.trans hf2
-  have hG2 : GR g c2 := hG.frame (fun r hr => f2.1 r (by unfold GRReg at hr; unfold StDRG; omega))
+  have hG2 : GR g c2 := hG.frame (fun r hr => f2.1 r (by unfold GRReg at hr; ufo StDRG))
   have rd2 := rd c2 f2
   obtain ⟨c3, k3, e3, hk3, hw3, hf3, hinv3⟩ := invStmt_exec (P := P) hw2 hG2.one h800 h801 h802
     (fun i hi => by rw [rd2.1 _ (by omega)]; exact hpre_lt i hi)
     (fun i j hi hj h => hpre_inj i j hi hj (by rwa [rd2.1 _ (by omega), rd2.1 _ (by omega)] at h))
     (by omega) (by omega) (by omega) (by omega)
   have f3 : PFr StDRG (DMem g) c c3 := f2.trans (hf3.mono (fun r h => by
-    unfold InvRG at h; unfold StDRG; omega) (fun a h => by unfold DMem; omega))
-  have hG3 : GR g c3 := hG.frame (fun r hr => f3.1 r (by unfold GRReg at hr; unfold StDRG; omega))
+    unfold InvRG at h; ufo StDRG) (fun a h => by ufo DMem))
+  have hG3 : GR g c3 := hG.frame (fun r hr => f3.1 r (by unfold GRReg at hr; ufo StDRG))
   have rd3 := rd c3 f3
   set inv : ℕ → ℕ := fun p => c3.nmem (g.base 32 + p) with hinvd
   have hinvpre : ∀ i, i < g.N → inv (c.nmem (g.base 29 + i)) = i := fun i hi => by
@@ -126,14 +127,14 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     rw [rd3.2 _ (by omega) (by omega)]; exact hblk l hl'
   obtain ⟨c4, k4, e4, hk4, hw4, hf4, hcnt4⟩ := bcS_exec (P := P) hw3 hG3 hlev3 hlt hhl3 hhl1 hblk3
     hblt hW
-  have f4 : PFr StDRG (DMem g) c c4 := f3.trans (hf4.mono (fun r h => h)
-    (fun a h => by unfold DMem; omega))
-  have hG4 : GR g c4 := hG.frame (fun r hr => f4.1 r (by unfold GRReg at hr; unfold StDRG; omega))
+  have f4 : PFr StDRG (DMem g) c c4 := f3.trans (hf4.mono (fun _ => id)
+    (fun a h => by ufo DMem))
+  have hG4 : GR g c4 := hG.frame (fun r hr => f4.1 r (by unfold GRReg at hr; ufo StDRG))
   obtain ⟨c5, k5, e5, hk5, hw5, hf5, hcnt5⟩ := pfxS_exec (P := P) hw4 hG4 hcnt4 hW
   have f45 : PFr StDRG (fun a => g.base 42 ≤ a ∧ a < g.base 42 + g.μ) c3 c5 := hf4.trans hf5
-  have f5 : PFr StDRG (DMem g) c c5 := f3.trans (f45.mono (fun r h => h)
-    (fun a h => by unfold DMem; omega))
-  have hG5 : GR g c5 := hG.frame (fun r hr => f5.1 r (by unfold GRReg at hr; unfold StDRG; omega))
+  have f5 : PFr StDRG (DMem g) c c5 := f3.trans (f45.mono (fun _ => id)
+    (fun a h => by ufo DMem))
+  have hG5 : GR g c5 := hG.frame (fun r hr => f5.1 r (by unfold GRReg at hr; ufo StDRG))
   have rd5 := rd c5 f5
   have k35 : ∀ a, (a < g.base 42 ∨ g.base 42 + g.μ ≤ a) → c5.nmem a = c3.nmem a := fun a ha =>
     f45.2.2.2.2 a (by omega)
@@ -150,23 +151,23 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (fun l hl' => by rw [rd5.2 _ (by omega) (by omega)]; exact hblk l hl') hblt
     (fun v hv => ⟨hpre_lt _ (hfst_lt v hv), hinvpre _ (hfst_lt v hv), hvf v hv⟩)
     (fun p hp h => by
-      simp only [hkey]; rw [h]; exact (hinv_lt p hp).2)
+      simp [hkey]; rw [h]; exact (hinv_lt p hp).2)
     hcnt5 hW
-  have f6 : PFr StDRG (DMem g) c c6 := f5.trans (hf6.mono (fun r h => h)
-    (fun a h => by unfold PlMem at h; unfold DMem; omega))
-  have hG6 : GR g c6 := hG.frame (fun r hr => f6.1 r (by unfold GRReg at hr; unfold StDRG; omega))
+  have f6 : PFr StDRG (DMem g) c c6 := f5.trans (hf6.mono (fun _ => id)
+    (fun a h => by unfold PlMem at h; ufo DMem))
+  have hG6 : GR g c6 := hG.frame (fun r hr => f6.1 r (by unfold GRReg at hr; ufo StDRG))
   -- DF := 0
   obtain ⟨c7, k7, x7, hk7, hw7, hf7, hz7⟩ := fillWith_exec (P := P) hw6 hG6.one
-    (hG6.rbase 48 (by omega)) hG6.rμ hG6.zero (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
+    (hG6.rbase 48 (by omega)) hG6.rμ hG6.zero (by ufo FillRG) (by ufo FillRG)
+    (by ufo FillRG) (by omega) (by omega)
   have f7 : PFr StDRG (DMem g) c c7 := f6.trans (hf7.mono (fun r h => by
-    unfold FillRG at h; unfold StDRG; omega) (fun a h => by unfold DMem; omega))
+    unfold FillRG at h; ufo StDRG) (fun a h => by ufo DMem))
   have k67 : ∀ a, a < g.base 48 → c7.nmem a = c6.nmem a := fun a ha =>
     hf7.2.2.2.2 a (by omega)
   have hnk : ∀ w, w < g.μ → key w < g.N := fun w hw => hpre_lt _ (hfst_lt w hw)
   refine ⟨c7, k1 + (k2 + (k3 + (k4 + (k5 + (k6 + k7))))),
     .seq x1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 (.seq e6 x7))))), by omega, hw7, f7,
-    fun b hb => ?_, fun v hv => ?_, fun v hv hbv => ?_, fun v hv => hz7 v hv⟩
+    fun b hb => ?_, fun v hv => ?_, fun v hv hbv => ?_, hz7⟩
   · rw [k67 _ (by omega)]; exact hI6.full hnk hb
   · rw [k67 _ (by omega), hI6.pos v hv]
     by_cases h : bo v < g.μ

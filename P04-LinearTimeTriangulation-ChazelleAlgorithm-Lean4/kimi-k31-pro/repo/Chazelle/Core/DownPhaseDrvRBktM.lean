@@ -8,6 +8,10 @@ public import Mathlib.Data.List.GetD
 public import Mathlib.Data.Fintype.Card
 public import Mathlib.Data.Fintype.EquivFin
 public import Mathlib.Data.Fintype.Basic
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Down-phase driver (RAM side): the mathematics of the bucket distribution
@@ -65,7 +69,7 @@ theorem bcnt_zero (b : ℕ) : bcnt bk 0 b = 0 := rfl
 theorem bcnt_mono {q q' : ℕ} (h : q ≤ q') (b : ℕ) : bcnt bk q b ≤ bcnt bk q' b := by
   induction h with
   | refl => exact le_rfl
-  | step _ ih => rw [bcnt_succ]; omega
+  | step _ ih => rwo [bcnt_succ]
 
 theorem bstart_succ (n b : ℕ) : bstart bk n (b + 1) = bstart bk n b + bcnt bk n b := by
   unfold bstart; rw [Finset.sum_range_succ]
@@ -73,11 +77,11 @@ theorem bstart_succ (n b : ℕ) : bstart bk n (b + 1) = bstart bk n b + bcnt bk 
 theorem bstart_mono (n : ℕ) {b b' : ℕ} (h : b ≤ b') : bstart bk n b ≤ bstart bk n b' := by
   induction h with
   | refl => exact le_rfl
-  | step _ ih => rw [bstart_succ]; omega
+  | step _ ih => rwo [bstart_succ]
 
 /-- Elements of `bfilt` are below `n` and in the bucket. -/
 theorem mem_bfilt {n b q : ℕ} : q ∈ bfilt bk n b ↔ q < n ∧ bk q = b := by
-  unfold bfilt; simp
+  ufs bfilt
 
 /-- The sum of the bucket sizes is `n` when every bucket is at most `A`. -/
 theorem bstart_all {n A : ℕ} (hA : ∀ q, q < n → bk q ≤ A) : bstart bk n (A + 1) = n := by
@@ -100,12 +104,12 @@ theorem getD_append_right' {l₁ l₂ : List ℕ} {i d : ℕ} (h : l₁.length �
 
 theorem bktPre_succ (n b base : ℕ) :
     bktPre bk n (b + 1) base = bktPre bk n b base ++ (bfilt bk n b).map (base + ·) := by
-  unfold bktPre; rw [List.range_succ, List.flatMap_append]; simp
+  urs bktPre [List.range_succ, List.flatMap_append]
 
 theorem bktPre_length (n b base : ℕ) : (bktPre bk n b base).length = bstart bk n b := by
   induction b with
   | zero => rfl
-  | succ b ih => rw [bktPre_succ, List.length_append, ih, bstart_succ, List.length_map]; rfl
+  | succ b ih => rwr [bktPre_succ, List.length_append, ih, bstart_succ, List.length_map]
 
 theorem bktList_eq (n A base : ℕ) : bktList bk n A base = bktPre bk n (A + 1) base := rfl
 
@@ -145,20 +149,20 @@ theorem bktList_getD_slot {n A base q : ℕ} (hq : q < n) (hA : bk q ≤ A) :
         (List.range' (bk q + 1) e).flatMap (fun b' => (bfilt bk n b').map (base + ·)) := by
     intro e
     induction e with
-    | zero => rw [Nat.add_zero, bktPre_succ]; simp
+    | zero => rws [Nat.add_zero, bktPre_succ]
     | succ e ih =>
       rw [show bk q + 1 + (e + 1) = (bk q + 1 + e) + 1 by omega, bktPre_succ, ih,
         List.range'_concat, List.flatMap_append]
       simp
   rw [hd, hpre, List.append_assoc, getD_append_right' (by
-    rw [bktPre_length]; unfold slot; omega)]
-  rw [bktPre_length, show slot bk n q - bstart bk n (bk q) = bcnt bk q (bk q) by unfold slot; omega]
+    ruo [bktPre_length] slot)]
+  rw [bktPre_length, show slot bk n q - bstart bk n (bk q) = bcnt bk q (bk q) by ufo slot]
   have hlt : bcnt bk q (bk q) < (bfilt bk n (bk q)).length := by
     have h1 := bcnt_mono (bk := bk) (show q + 1 ≤ n by omega) (bk q)
     rw [bcnt_succ, ite_eq_left rfl] at h1
-    unfold bcnt at h1 ⊢; omega
-  rw [List.getD_append _ _ _ _ (by rw [List.length_map]; exact hlt)]
-  rw [List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hlt), List.getElem_map]
+    ufo bcnt at h1 ⊢
+  rw [List.getD_append _ _ _ _ (by rwx [List.length_map])]
+  rw [List.getD_eq_getElem _ _ (by rwx [List.length_map]), List.getElem_map]
   have := bfilt_getD (bk := bk) hq rfl
   rw [List.getD_eq_getElem _ _ hlt] at this
   rw [this]
@@ -169,14 +173,14 @@ theorem slot_lt {n A q : ℕ} (hq : q < n) (hA : ∀ q, q < n → bk q ≤ A) : 
   rw [bcnt_succ, ite_eq_left rfl] at h1
   have h2 := bstart_mono (bk := bk) n (show bk q + 1 ≤ A + 1 by have := hA q hq; omega)
   rw [bstart_succ, bstart_all hA] at h2
-  unfold slot; omega
+  ufo slot
 
 /-- The slot lies in the range of its bucket. -/
 theorem slot_range {n q : ℕ} (hq : q < n) :
     bstart bk n (bk q) ≤ slot bk n q ∧ slot bk n q < bstart bk n (bk q + 1) := by
   have h1 := bcnt_mono (bk := bk) (show q + 1 ≤ n by omega) (bk q)
   rw [bcnt_succ, ite_eq_left rfl] at h1
-  rw [bstart_succ]; unfold slot; omega
+  ruo [bstart_succ] slot
 
 /-- Slots are injective. -/
 theorem slot_inj {n q q' : ℕ} (hq : q < n) (hq' : q' < n) (h : slot bk n q = slot bk n q') :
@@ -188,13 +192,13 @@ theorem slot_inj {n q q' : ℕ} (hq : q < n) (hq' : q' < n) (h : slot bk n q = s
     · exact he
     · have := slot_range (bk := bk) hq; have := slot_range (bk := bk) hq'
       have := bstart_mono (bk := bk) n (show bk q' + 1 ≤ bk q by omega); omega
-  have hc : bcnt bk q (bk q) = bcnt bk q' (bk q) := by unfold slot at h; rw [hb] at h ⊢; omega
+  have hc : bcnt bk q (bk q) = bcnt bk q' (bk q) := by unfold slot at h; rwo [hb] at h ⊢
   rcases Nat.lt_trichotomy q q' with hl | he | hl
   · have := bcnt_mono (bk := bk) (show q + 1 ≤ q' by omega) (bk q)
-    rw [bcnt_succ, ite_eq_left rfl] at this; omega
+    rwo [bcnt_succ, ite_eq_left rfl] at this
   · exact he
   · have := bcnt_mono (bk := bk) (show q' + 1 ≤ q by omega) (bk q)
-    rw [bcnt_succ, ite_eq_left hb.symm] at this; omega
+    rwo [bcnt_succ, ite_eq_left hb.symm] at this
 
 /-- Every position below `n` is a slot. -/
 theorem exists_slot {n A p : ℕ} (hA : ∀ q, q < n → bk q ≤ A) (hp : p < n) :
@@ -211,10 +215,10 @@ theorem seg_eq_bktList {m : ℕ → ℕ} {R n A base : ℕ} (hA : ∀ q, q < n �
   intro p hp _
   rw [seg_length] at hp
   obtain ⟨q, hq, rfl⟩ := exists_slot hA hp
-  have e1 : (seg m R n)[slot bk n q]'(by rw [seg_length]; exact hp) = m (R + slot bk n q) := by
+  have e1 : (seg m R n)[slot bk n q]'(by rwx [seg_length]) = m (R + slot bk n q) := by
     simp [seg]
   have e2 := bktList_getD_slot (bk := bk) (base := base) hq (hA q hq)
-  rw [List.getD_eq_getElem _ _ (by rw [bktList_length hA]; exact hp)] at e2
+  rw [List.getD_eq_getElem _ _ (by rwx [bktList_length hA])] at e2
   rw [e1, e2, h q hq]
 
 end

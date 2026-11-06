@@ -1,6 +1,13 @@
 module
 
 public import Chazelle.Core.SweepIoLHit3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep RAM (WP-D), answers: the local hit, part 4 (the scan loops)
@@ -113,8 +120,8 @@ theorem SEnv.transport {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {
   have r4 := hr lE (Or.inr (Or.inr (Or.inr (Or.inl rfl))))
   have r5 := hr lH (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
   have r6 := hr lD (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr rfl)))))
-  exact ⟨hG, hW3, hctx.transport r1 hm hA, hNF, by rw [r2]; exact htag, by rw [r2]; exact hMod, hR,
-    by rw [r3]; exact hn, by rw [r4]; exact hE, by rw [r5]; exact hH, by rw [r6]; exact hD, hy⟩
+  exact ⟨hG, hW3, hctx.transport r1 hm hA, hNF, by rwx [r2], by rwx [r2], hR,
+    by rwx [r3], by rwx [r4], by rwx [r5], by rwx [r6], hy⟩
 
 /-- The registers of the environment lie outside the scan's writes. -/
 theorem SEnv.keep {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
@@ -165,8 +172,6 @@ theorem AccStep.trans {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x
 
 /-! ## The test of a chord -/
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **The test of a chord** read into `sLp, sRp, sH1`. -/
 theorem scanTest_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
     (hI : IInv W c₀ c) (hK : Consts c₀) (hS : SEnv P W C N Mod R₀ x d c) {k : ℕ}
@@ -180,7 +185,7 @@ theorem scanTest_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
   obtain ⟨hG, hW3, hctx, hNF, htag, hMod, hR, hn, hE, hH, hD, hy⟩ := hS
   simp only at hE hH
   subst hE hH hD
-  have hk1 : c.nreg K1 = 1 := (hK.fix hI).2.1
+  have hk1  := (hK.fix hI).2.1
   have hiffR : c.nreg lD ≠ 1 → ((c.nreg sRp = c.nreg lE ∧ c.nreg sH1 = c.nreg lH) ↔
       Sweep.ChordAt (N.chord k) ⟨c.nreg lE, c.nreg lH⟩ (c.nreg lD)) := by
     intro hd
@@ -205,7 +210,7 @@ theorem scanTest_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
     intro hd; unfold Sweep.farPos CRec.lpos; rw [ite_eq_right hd, hlp, hh1]
   have hfarL : c.nreg lD = 1 → Sweep.farPos (N.chord k) (c.nreg lD) = ⟨c.nreg sRp, c.nreg sH1⟩ := by
     intro hd; unfold Sweep.farPos CRec.rpos; rw [ite_eq_left hd, hrp, hh1]
-  have r1 : c.nreg ALLOC + (10 + offerFK) ≤ W := by unfold scanTestK at hroom; omega
+  have r1 : c.nreg ALLOC + (10 + offerFK) ≤ W := by ufo scanTestK at hroom
   have conv : ∀ c', ((∃ L', AccOK P accA Mod R₀ ((chainModel C).pos (Qof P) ⟨c.nreg lE, c.nreg lH⟩)
         (dirOf (c.nreg lD)) L' c' ∧ L ⊆ L' ∧
         (∀ τ ∈ L', τ ∈ L ∨ (0 < τ ∧ OnCB C (rayPt ((chainModel C).pos (Qof P)
@@ -223,9 +228,9 @@ theorem scanTest_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
   by_cases h1 : c.nreg lD < c.nreg K1
   · exact (IRS.ifT h1 (eqOffer_irs (Or.inr rfl) (Or.inl rfl) hk hI hK hG hW3 hctx hNF hacc htag
       hMod hR hn rfl hy (hiffR (by omega)) (hfarR (by omega)) r1)).mono
-      (by unfold scanTestK; omega) conv
-  refine IRS.mono (K := (12 + offerFK) + 2) (IRS.ifF h1 ?_) (by unfold scanTestK; omega)
-    (fun _ h => h)
+      (by ufo scanTestK) conv
+  refine IRS.mono (K := (12 + offerFK) + 2) (IRS.ifF h1 ?_) (by ufo scanTestK)
+    (fun _ => id)
   by_cases h2 : c.nreg K1 < c.nreg lD
   · exact (IRS.ifT h2 (eqOffer_irs (Or.inr rfl) (Or.inl rfl) hk hI hK hG hW3 hctx hNF hacc htag
       hMod hR hn rfl hy (hiffR (by omega)) (hfarR (by omega)) r1)).mono (by omega) conv
@@ -237,8 +242,6 @@ theorem scanTest_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
 /-- The cost of the body. -/
 def scanBodyK : ℕ := 13 + scanTestK
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **One chord of the region `r`**: read the chord at place `sT` of its list, test, offer. -/
 theorem scanBody_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
     (hI : IInv W c₀ c) (hK : Consts c₀) (hS : SEnv P W C N Mod R₀ x d c) {r B E : ℕ}
@@ -278,21 +281,21 @@ theorem scanBody_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
   have hhk := hhlt k hk
   rw [hQn] at hhk
   have hW3 := hS.hW3
-  have hAW : c.nreg ALLOC ≤ W := by unfold scanBodyK at hroom; omega
+  have hAW : c.nreg ALLOC ≤ W := by ufo scanBodyK at hroom
   have e2 : c.nmem (B + 5) + 5 * r + 3 = c.nmem (B + 5) + (5 * r + 3) := by ring
-  have hb : c.nreg sCl + c.nreg sT ≤ W := by rw [hCl, e2]; omega
-  have hb2 : c.nreg sC3 + 5 * c.nmem (c.nreg sCl + c.nreg sT) + 2 ≤ W := by rw [hC3, rk]; omega
+  have hb : c.nreg sCl + c.nreg sT ≤ W := by rwo [hCl, e2]
+  have hb2 : c.nreg sC3 + 5 * c.nmem (c.nreg sCl + c.nreg sT) + 2 ≤ W := by rwo [hC3, rk]
   have hb3 : c.nmem (c.nreg sC3 + 5 * c.nmem (c.nreg sCl + c.nreg sT)) + 1 ≤ W := by
-    rw [hC3, rk, wh]; omega
+    rwo [hC3, rk, wh]
   have hok := scanReadL_ok c.nmem c.nreg hk1 hb hb2 hb3
   unfold scanBody
   refine IRS.seq (K₂ := scanTestK + 1) (IRS.block _ hI hok) ?_ |>.mono
-    (by simp only [scanReadL, List.length_cons, List.length_nil, scanBodyK]; omega) (fun _ h => h)
+    (by sio only [scanReadL, List.length_cons, List.length_nil, scanBodyK]) (fun _ => id)
   rintro c₁ hI₁ - - hc1
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have kk : ∀ q, ¬ RSet q → c₁.nreg q = c.nreg q := fun q hq => by
     rw [hc1]; exact scanReadL_other' _ _ hq
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := kk ALLOC (by unfold RSet sX sY sK sCh sLp sRp sH1 ALLOC sw; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := kk ALLOC (by ufo RSet sX sY sK sCh sLp sRp sH1 ALLOC sw)
   obtain ⟨v1, v2, v3⟩ := scanReadL_val c.nmem c.nreg hk1
   have vLp : c₁.nreg sLp = (N.chord k).lp := by
     rw [hc1]; show regB c.nmem scanReadL c.nreg sLp = _; rw [v1, hC3, rk, wl]
@@ -305,19 +308,19 @@ theorem scanBody_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
         simp only [RSet, sX, sY, sK, sCh, sLp, sRp, sH1, lCD, lT, lN, lE, lH, lD, sw] <;> omega))
     (fun a _ => by rw [hm1]) hA1.ge
   have hacc₁ := hacc.transport (c' := c₁) (fun j hj => kk _ (by
-    unfold RSet sX sY sK sCh sLp sRp sH1 accA sw; omega))
+    ufo RSet sX sY sK sCh sLp sRp sH1 accA sw))
   refine IRS.seq (K₂ := 1) (scanTest_irs hI₁ hK hS₁ hk hacc₁ vLp vRp vH1
-    (by rw [hA1]; unfold scanBodyK at hroom; omega)) ?_
+    (by ruo [hA1] scanBodyK at hroom)) ?_
   rintro c₂ hI₂ - - ⟨hst, fr2⟩
   have t2 : c₂.nreg sT = c.nreg sT := by
-    rw [fr2.1 sT (not_oracle_sw (by unfold sT sw; norm_num) (by unfold sT sw; norm_num))
-      (by unfold sT sFe sFh sw; omega) (by unfold sT accA sw; omega) (by unfold sT lO sw; omega)
-      (by unfold sT lO sw; omega) (by unfold sT ALLOC sw; omega)]
-    exact kk sT (by unfold RSet sX sY sK sCh sLp sRp sH1 sT sw; omega)
+    rw [fr2.1 sT (not_oracle_sw (by ufn sT sw) (by ufn sT sw))
+      (by ufo sT sFe sFh sw) (by ufo sT accA sw) (by ufo sT lO sw)
+      (by ufo sT lO sw) (by ufo sT ALLOC sw)]
+    exact kk sT (by ufo RSet sX sY sK sCh sLp sRp sH1 sT sw)
   have k12 : c₂.nreg K1 = 1 := (hK.fix hI₂).2.1
   have hok3 : okB W c₂.nmem [.addN sT sT K1] c₂.nreg :=
-    ⟨⟨iscr_sw (by unfold sT sw; norm_num) (by unfold sT sw; norm_num), by
-      rw [t2, k12]; rw [hCl, e2] at hb; omega⟩, trivial⟩
+    ⟨⟨iscr_sw (by ufn sT sw) (by ufn sT sw), by
+      rw [t2, k12]; rwo [hCl, e2] at hb⟩, trivial⟩
   refine (IRS.block _ hI₂ hok3).mono le_rfl ?_
   intro c₃ hc3
   have r3 : ∀ q, q ≠ sT → c₃.nreg q = c₂.nreg q := by
@@ -327,14 +330,14 @@ theorem scanBody_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x 
     rw [hc3]; show regB c₂.nmem [.addN sT sT K1] c₂.nreg sT = _
     simp only [regB, regI, upd_same]; rw [k12]
   have hm3 : c₃.nmem = c₂.nmem := by rw [hc3]
-  refine ⟨hst.transport (fun j hj => r3 _ (by unfold sT accA sw; omega)), by rw [t3, t2], ?_,
+  refine ⟨hst.transport (fun j hj => r3 _ (by ufo sT accA sw)), by rw [t3, t2], ?_,
     ?_, ?_⟩
   · intro q hq hX hqa hqo hqo1 hqA
     rw [r3 q (fun h => hX (Or.inr h)), fr2.1 q hq (fun h => hX (Or.inl (Or.inr h))) hqa hqo hqo1 hqA]
     exact kk q (fun h => hX (Or.inl (Or.inl h)))
-  · rw [r3 ALLOC (by unfold sT ALLOC sw; omega), ← hA1]; exact fr2.2.1
+  · rw [r3 ALLOC (by ufo sT ALLOC sw), ← hA1]; exact fr2.2.1
   · intro a ha
-    rw [hm3, fr2.2.2 a (by rw [hA1]; exact ha), hm1]
+    rw [hm3, fr2.2.2 a (by rwx [hA1]), hm1]
 
 /-! ## The head of the loop over the chords of a region -/
 
@@ -387,8 +390,6 @@ theorem scanHeadL_ok (m f : ℕ → ℕ) {rr : ℕ} (hrr : ¬ SSet rr) (hk2 : f 
     ⟨s 1131 (by norm_num) (by norm_num), by omega⟩, s 1133 (by norm_num) (by norm_num),
     ⟨s 1134 (by norm_num) (by norm_num), by omega⟩, trivial⟩
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **The head of the scan of region `r`**: its number of chords, the start of its chord list
 (when there is one) and the place `0`. -/
 theorem scanHead_irs {rr : ℕ} (hrr : ¬ SSet rr) {N : NF} (hI : IInv W c₀ c) (hK : Consts c₀)
@@ -407,11 +408,11 @@ theorem scanHead_irs {rr : ℕ} (hrr : ¬ SSet rr) {N : NF} (hI : IInv W c₀ c)
   have hk3 : c.nreg K3 = 3 := hKc.2.2.2.2.2.2
   have b1 : B + 5 < E ∧ c.nmem (B + 5) + (5 * r + 4) < E := NFLoc.robust_addr2 (fun m' hm' => by
     simpa only [Nat.add_assoc] using ((hNW m' hm').2.2.2.2.2.2.2.1 r hrl).2.2.1)
-  have hok := scanHeadL_ok (W := W) c.nmem c.nreg hrr hk2 hk3 (by rw [hR5, hrv]; omega)
+  have hok := scanHeadL_ok (W := W) c.nmem c.nreg hrr hk2 hk3 (by rwo [hR5, hrv])
   obtain ⟨v1, v2, v3⟩ := scanHeadL_val c.nmem c.nreg hrr hk2 hk3
   unfold scanHead
   refine IRS.seq (K₂ := 3) (IRS.block _ hI hok) ?_ |>.mono
-    (by simp only [scanHeadL, List.length_cons, List.length_nil]; omega) (fun _ h => h)
+    (by sio only [scanHeadL, List.length_cons, List.length_nil]) (fun _ => id)
   rintro c₁ hI₁ - - hc1
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have kk : ∀ q, ¬ HdSet q → c₁.nreg q = c.nreg q := fun q hq => by
@@ -435,21 +436,21 @@ theorem scanHead_irs {rr : ℕ} (hrr : ¬ SSet rr) {N : NF} (hI : IInv W c₀ c)
         simpa only [Nat.add_assoc] using this) b1.1 (by omega)
     have e2 : c.nmem (B + 5) + 5 * r + 3 = c.nmem (B + 5) + (5 * r + 3) := by ring
     have l7 : c₁.nreg sL7 = c.nmem (B + 7) := by
-      rw [kk sL7 (by simp only [HdSet, sX, sY, sNc, sCl, sT, sL7, sw]; omega), hL7]
+      rw [kk sL7 (by sio only [HdSet, sX, sY, sNc, sCl, sT, sL7, sw]), hL7]
     have hok2 : okI W c₁.nreg (.addN sCl sCl sL7) :=
-      ⟨iscr_sw (by unfold sCl sw; norm_num) (by unfold sCl sw; norm_num), by
-        rw [w2, l7, e2]; omega⟩
+      ⟨iscr_sw (by ufn sCl sw) (by ufn sCl sw), by
+        rwo [w2, l7, e2]⟩
     refine (IRS.ifT hpos (IRS.instr1 hI₁ hok2)).mono le_rfl ?_
     intro c' hc'
     have r' : ∀ q, q ≠ sCl → c'.nreg q = c₁.nreg q := by
       intro q hq; rw [hc']; show regI c₁.nmem (.addN sCl sCl sL7) c₁.nreg q = _
       simp only [regI]; rw [upd_other _ _ _ hq]
-    refine ⟨by rw [r' sNc (by unfold sNc sCl sw; omega), w1], fun _ => ?_,
-      by rw [r' sT (by unfold sT sCl sw; omega), w3], fun q hq => ?_, by rw [hc', hm1]⟩
+    refine ⟨by rw [r' sNc (by ufo sNc sCl sw), w1], fun _ => ?_,
+      by rw [r' sT (by ufo sT sCl sw), w3], fun q hq => ?_, by rw [hc', hm1]⟩
     · rw [hc']; show regI c₁.nmem (.addN sCl sCl sL7) c₁.nreg sCl = _
-      simp only [regI, upd_same]; rw [w2, l7]; ring
+      simp only [regI, upd_same]; rwring [w2, l7]
     · rw [r' q (fun h => hq (Or.inr (Or.inr (Or.inr (Or.inl h))))), kk q hq]
-  · refine (IRS.ifF hpos (IRS.skip hI₁ ?_)).mono le_rfl (fun _ h => h)
+  · refine (IRS.ifF hpos (IRS.skip hI₁ ?_)).mono le_rfl (fun _ => id)
     refine ⟨w1, fun h => absurd (by omega : c₁.nreg K0 < c₁.nreg sNc) hpos, w3, kk, hm1⟩
 
 /-! ## The loop over the chords of a region -/
@@ -461,8 +462,6 @@ theorem XFr.of_regs {X : ℕ → Prop} {c c' : Config} (hr : ∀ q, ¬ X q → c
     (hX : ¬ X ALLOC) (hm : c'.nmem = c.nmem) : XFr X c c' :=
   ⟨fun q _ hq _ _ _ _ => hr q hq, (hr ALLOC hX).ge, fun a _ => by rw [hm]⟩
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **The scan of the exit chords of the region `r`** (register `rr`). -/
 theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ}
     {x : WPos} {d : ℕ} (hI : IInv W c₀ c) (hK : Consts c₀) (hS : SEnv P W C N Mod R₀ x d c)
@@ -478,7 +477,7 @@ theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ 
   have hrl : r < N.regions.length := hr
   have b1 : B + 5 < E ∧ c.nmem (B + 5) + (5 * r + 4) < E := NFLoc.robust_addr2 (fun m' hm' => by
     simpa only [Nat.add_assoc] using ((hNW m' hm').2.2.2.2.2.2.2.1 r hrl).2.2.1)
-  have hAW : c.nreg ALLOC ≤ W := by unfold scanRK at hroom; omega
+  have hAW : c.nreg ALLOC ≤ W := by ufo scanRK at hroom
   unfold scanR
   refine IRS.seq (K₂ := (scanBodyK + 2) * n + 2)
     (scanHead_irs hrr hI hK hNW hEA hAW hr hrv hR5 hL7) ?_
@@ -488,12 +487,12 @@ theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ 
     (by simp only [ScanW, WSet, RSet, HdSet, sX, sY, sK, sCh, sLp, sRp, sH1, sFe, sFh, sNc, sCl, sT,
       ALLOC, sw]; omega) hm1
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC :=
-    kk ALLOC (by simp only [HdSet, sX, sY, sNc, sCl, sT, ALLOC, sw]; omega)
+    kk ALLOC (by sio only [HdSet, sX, sY, sNc, sCl, sT, ALLOC, sw])
   have c31 : c₁.nreg sC3 = c.nreg sC3 :=
-    kk sC3 (by simp only [HdSet, sX, sY, sNc, sCl, sT, sC3, sw]; omega)
+    kk sC3 (by sio only [HdSet, sX, sY, sNc, sCl, sT, sC3, sw])
   have hS₁ : SEnv P W C N Mod R₀ x d c₁ := hS.keep (fr1.mono fun q h => scanW_sset h)
   have hacc₁ := hacc.transport (c' := c₁) (fun j hj => kk _ (by
-    simp only [HdSet, sX, sY, sNc, sCl, sT, accA, sw]; omega))
+    sio only [HdSet, sX, sY, sNc, sCl, sT, accA, sw]))
   have hreg : ∀ c', XFr (fun q => WSet q ∨ q = sT) c₁ c' → ∀ q, q = sNc ∨ q = sCl ∨ q = sC3 →
       c'.nreg q = c₁.nreg q := by
     intro c' fr q hq
@@ -517,7 +516,7 @@ theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ 
       obtain ⟨fr, hle, hst⟩ := hc
       rw [hreg c' fr sNc (Or.inl rfl), w1] at ht
       have hn0 : 0 < n := by omega
-      have hn0' : 0 < (N.region r).chords.length := by rw [← hn]; exact hn0
+      have hn0' : 0 < (N.region r).chords.length := by rwx [← hn]
       have b2 := robust_addr3 (b := B + 7) (a := B + 5) (o := 5 * r + 3) (t := 0)
         (v := (N.region r).chords.getD 0 0)
         (fun m' hm' => by
@@ -533,16 +532,16 @@ theorem scanR_irs {rr : ℕ} (hrr : ¬ SSet rr) {C : Chain} {N : NF} {Mod : ℕ 
         rw [hreg c' fr sC3 (Or.inr (Or.inr rfl)), c31, hC3, m' _ (by omega)]
       have hCl' : c'.nreg sCl = c'.nmem (B + 7) + c'.nmem (c'.nmem (B + 5) + 5 * r + 3) := by
         rw [hreg c' fr sCl (Or.inr (Or.inl rfl)), w2 hn0, m' (B + 7) (by omega),
-          m' (B + 5) (by omega), m' _ (by rw [e2]; omega)]
+          m' (B + 5) (by omega), m' _ (by rwo [e2])]
       obtain ⟨L', a', s', g', d'⟩ := hst
-      refine (scanBody_irs hI' hK hS' hr hNW' hEA' hC3' hCl' (by rw [← hn]; exact ht) a'
+      refine (scanBody_irs hI' hK hS' hr hNW' hEA' hC3' hCl' (by rwx [← hn]) a'
         hroom').mono le_rfl ?_
       rintro c'' ⟨hst2, t2, fr2⟩
-      refine ⟨⟨fr.trans fr2, by rw [t2]; omega, ?_⟩, by rw [t2]; omega⟩
-      rw [t2, take_succ_getD (l := (N.region r).chords) (by rw [← hn]; exact ht)]
+      refine ⟨⟨fr.trans fr2, by rwo [t2], ?_⟩, by rwo [t2]⟩
+      rw [t2, take_succ_getD (l := (N.region r).chords) (by rwx [← hn])]
       exact AccStep.trans s' g' d' hst2)
-    hI₁ ⟨XFr.refl _ _, by rw [w3]; omega, by rw [w3]; exact AccStep.init hacc₁⟩ (by
-      rw [w3, hA1, Nat.sub_zero]; unfold scanRK at hroom; omega)
+    hI₁ ⟨XFr.refl _ _, by rwo [w3], by rw [w3]; exact AccStep.init hacc₁⟩ (by
+      ruo [w3, hA1, Nat.sub_zero] scanRK at hroom)
   rw [w3, Nat.sub_zero] at hW
   refine hW.mono le_rfl ?_
   rintro c' ⟨⟨fr, hle, hst⟩, hnot⟩
@@ -603,8 +602,6 @@ theorem XFr.scanKeep {c c' : Config} (fr : XFr ScanW c c') {q : ℕ}
 /-- The cost of the scan of the three regions. -/
 def lhScanK (n0 n1 n2 : ℕ) : ℕ := 6 + (scanRK n0 + (scanRK n1 + scanRK n2))
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **The scan of the exit chords of the three regions** `lR0, lR1, lR2`. -/
 theorem lhScan_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : WPos} {d : ℕ}
     (hI : IInv W c₀ c) (hK : Consts c₀) (hS : SEnv P W C N Mod R₀ x d c) {B E : ℕ}
@@ -621,24 +618,24 @@ theorem lhScan_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : 
       XFr SSet c c') := by
   have hKc := hK.fix hI
   have hB11 : B + 11 < E := robust_addr1 (fun m' hm' => (hNW m' hm').2.2.2.2.1)
-  have hAW : c.nreg ALLOC ≤ W := by unfold lhScanK at hroom; omega
+  have hAW : c.nreg ALLOC ≤ W := by ufo lhScanK at hroom
   have hok : okB W c.nmem scanInitL c.nreg := scanInitL_ok c.nmem c.nreg hKc.2.2.2.2.2.1
-    hKc.2.2.2.2.2.2 hKc.2.2.2.2.1 (by rw [hB]; omega)
+    hKc.2.2.2.2.2.2 hKc.2.2.2.2.1 (by rwo [hB])
   obtain ⟨v1, v2, v3⟩ := scanInitL_val c.nmem c.nreg hKc.2.2.2.2.2.1 hKc.2.2.2.2.2.2
     hKc.2.2.2.2.1
   unfold lhScan
   refine IRS.seq (K₂ := scanRK (N.region r0).chords.length + (scanRK (N.region r1).chords.length +
     scanRK (N.region r2).chords.length)) (IRS.block _ hI hok) ?_ |>.mono
-    (by simp only [scanInitL, List.length_cons, List.length_nil, lhScanK]; omega) (fun _ h => h)
+    (by sio only [scanInitL, List.length_cons, List.length_nil, lhScanK]) (fun _ => id)
   rintro c₁ hI₁ - - hc1
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have kk : ∀ q, ¬ ISet q → c₁.nreg q = c.nreg q := fun q hq => by
     rw [hc1]; exact scanInitL_other _ _ hq
   have fr1 : XFr SSet c c₁ := XFr.of_regs (fun q hq => kk q (fun h => hq (by
       rcases h with rfl | rfl | rfl | rfl <;> simp only [SSet, sX, sR5, sL7, sC3, sw] <;> omega)))
-    (by simp only [SSet, ALLOC, sw]; omega) hm1
+    (by sio only [SSet, ALLOC, sw]) hm1
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := kk ALLOC (by
-    simp only [ISet, sX, sR5, sL7, sC3, ALLOC, sw]; omega)
+    sio only [ISet, sX, sR5, sL7, sC3, ALLOC, sw])
   have w5 : c₁.nreg sR5 = c.nmem (B + 5) := by
     rw [hc1]; show regB c.nmem scanInitL c.nreg sR5 = _; rw [v1, hB]
   have w7 : c₁.nreg sL7 = c.nmem (B + 7) := by
@@ -647,21 +644,21 @@ theorem lhScan_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : 
     rw [hc1]; show regB c.nmem scanInitL c.nreg sC3 = _; rw [v3, hB]
   have hS₁ := hS.keep fr1
   have hacc₁ := hacc.transport (c' := c₁) (fun j hj => kk _ (by
-    simp only [ISet, sX, sR5, sL7, sC3, accA, sw]; omega))
+    sio only [ISet, sX, sR5, sL7, sC3, accA, sw]))
   have nr : ∀ q, q = lR0 ∨ q = lR1 ∨ q = lR2 → ¬ SSet q := by
     intro q hq; rcases hq with rfl | rfl | rfl <;> simp only [SSet, lR0, lR1, lR2, sw] <;> omega
   have g0 : c₁.nreg lR0 = r0 := by
-    rw [kk lR0 (by simp only [ISet, sX, sR5, sL7, sC3, lR0, sw]; omega), h0]
+    rw [kk lR0 (by sio only [ISet, sX, sR5, sL7, sC3, lR0, sw]), h0]
   have g1 : c₁.nreg lR1 = r1 := by
-    rw [kk lR1 (by simp only [ISet, sX, sR5, sL7, sC3, lR1, sw]; omega), h1]
+    rw [kk lR1 (by sio only [ISet, sX, sR5, sL7, sC3, lR1, sw]), h1]
   have g2 : c₁.nreg lR2 = r2 := by
-    rw [kk lR2 (by simp only [ISet, sX, sR5, sL7, sC3, lR2, sw]; omega), h2]
+    rw [kk lR2 (by sio only [ISet, sX, sR5, sL7, sC3, lR2, sw]), h2]
   -- region `r0`
   refine IRS.seq (K₂ := scanRK (N.region r1).chords.length + scanRK (N.region r2).chords.length)
     (scanR_irs (nr lR0 (Or.inl rfl)) hI₁ hK hS₁ hr0
       (hNW.transport (fun a ha => by rw [hm1])) (by omega) g0 (by rw [w5, hm1])
       (by rw [w7, hm1]) (by rw [w3, hm1]) hacc₁
-      (by rw [hA1]; unfold lhScanK at hroom; omega)) ?_
+      (by ruo [hA1] lhScanK at hroom)) ?_
   rintro c₂ hI₂ hA2 hA2' ⟨hst2, fr2⟩
   obtain ⟨L₁, a₁, s₁, gg₁, d₁⟩ := hst2
   have m2 : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
@@ -674,7 +671,7 @@ theorem lhScan_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : 
       (by rw [fr2.scanKeep (by simp), w5, m2 _ (by omega)])
       (by rw [fr2.scanKeep (by simp), w7, m2 _ (by omega)])
       (by rw [fr2.scanKeep (by simp), w3, m2 _ (by omega)]) a₁
-      (by unfold lhScanK at hroom; omega)) ?_
+      (by ufo lhScanK at hroom)) ?_
   rintro c₃ hI₃ hA3 hA3' ⟨hst3, fr3⟩
   obtain ⟨L₂, a₂, s₂, gg₂, d₂⟩ := hst3
   have m3 : ∀ a, a < c.nreg ALLOC → c₃.nmem a = c.nmem a := fun a ha => by
@@ -686,7 +683,7 @@ theorem lhScan_irs {C : Chain} {N : NF} {Mod : ℕ → Chain} {R₀ : ℝ} {x : 
       (by rw [fr3.scanKeep (by simp), fr2.scanKeep (by simp), w5, m3 _ (by omega)])
       (by rw [fr3.scanKeep (by simp), fr2.scanKeep (by simp), w7, m3 _ (by omega)])
       (by rw [fr3.scanKeep (by simp), fr2.scanKeep (by simp), w3, m3 _ (by omega)]) a₂
-      (by unfold lhScanK at hroom; omega)).mono le_rfl ?_
+      (by ufo lhScanK at hroom)).mono le_rfl ?_
   rintro c₄ ⟨hst4, fr4⟩
   refine ⟨AccStep.trans s₁ gg₁ d₁ (AccStep.trans s₂ gg₂ d₂ hst4), ?_⟩
   exact fr1.trans ((fr2.mono fun q h => scanW_sset h).trans

@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.FactsL23
+public import Chazelle.Rwx
 
 /-!
 # WP-B: the two sides of a chord and the region tree (review finding C5)
@@ -30,11 +31,11 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
   set S := F \ {c} with hSdef
   have hS : S ⊆ F := fun d hd => hd.1
   have hcS : c ∉ S := fun h => h.2 rfl
-  have hins : insert c S = F := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
+  have hins  := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
   obtain ⟨R, hR, hcR, R₁, R₂, hne, hunion, hR₁, hR₂, heq⟩ := hF.regionsIn_insert hS hc hcS
   have htouch := hF.touches_iff_of_split hS hc hcS hR hcR hunion hR₁ hR₂ heq
-  have hRo : IsOpen R := hF.regionsIn_open hS hR
-  have hRS : R ⊆ freeIn D S := Chazelle.Chain.regionsIn_subset hR
+  have hRo  := hF.regionsIn_open hS hR
+  have hRS  := Chazelle.Chain.regionsIn_subset hR
   obtain ⟨z₀, hz₀c, hz₀D⟩ := (hF.chord_inter_nonempty_isPreconnected hc).1
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hRo z₀ (hcR ⟨hz₀c, hz₀D⟩)
   obtain ⟨ε₀, hε₀, hsep⟩ := hF.chord_separates_in subset_rfl hc hz₀c hz₀D
@@ -47,8 +48,8 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
   set V := connectedComponentIn (freeIn D F) (z₀.1, z₀.2 - ε) with hV
   have hUr : U ∈ regionsIn D F := ⟨_, hp, rfl⟩
   have hVr : V ∈ regionsIn D F := ⟨_, hm, rfl⟩
-  have hUr' : U ∈ regionsIn D (insert c S) := by rw [hins]; exact hUr
-  have hVr' : V ∈ regionsIn D (insert c S) := by rw [hins]; exact hVr
+  have hUr' : U ∈ regionsIn D (insert c S) := by rwx [hins]
+  have hVr' : V ∈ regionsIn D (insert c S) := by rwx [hins]
   -- the half-disks at `z₀`
   have hhalf : ∀ τ : ℝ, (τ = 1 ∨ τ = -1) → ∀ X ∈ regionsIn D (insert c S),
       ((z₀.1, z₀.2 + τ * ε) : Point) ∈ X → halfDisk z₀ r τ ⊆ X := by
@@ -69,7 +70,7 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
     obtain ⟨r', hr', hball'⟩ := Metric.isOpen_iff.1 hRo z (hcR ⟨hzc, hzD⟩)
     filter_upwards [Ioo_mem_nhdsGT hr'] with δ hδ
     exact hall z ⟨hzc, hzD⟩ r' hr' hball' (Chazelle.Chain.vert_mem_halfDisk hτ hδ.1 hδ.2)
-  have hUne : U ≠ V := hpm
+  have hUne  := hpm
   -- `U` and `V` touch `c`
   have hcU : TouchesIn D c U :=
     ⟨z₀, ⟨hz₀c, hz₀D⟩, closure_mono hUhalf (Chazelle.Chain.mem_closure_halfDisk (Or.inl rfl) hr)⟩

@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.NFBuildRegCnt
 public import Chazelle.Core.SortRam
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-C (BuildNF), RAM part 16: the region records and the fill pointers
@@ -29,7 +30,7 @@ def offF (cA cC : ℕ → ℕ) (r : ℕ) : ℕ := ((List.range r).map fun r' => 
 theorem offF_succ (cA cC : ℕ → ℕ) (r : ℕ) : offF cA cC (r + 1) = offF cA cC r + cA r + cC r := by
   unfold offF
   rw [List.range_succ, List.map_append, List.sum_append]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+  simp [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
   try omega
 
 theorem offF_mono (cA cC : ℕ → ℕ) {r r' : ℕ} (h : r ≤ r') : offF cA cC r ≤ offF cA cC r' := by
@@ -67,7 +68,7 @@ theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) 
       (RT + 5 * n + 3) (offF cA cC n + cA n)) (RT + 5 * n + 4) (wR n))
       (FA + n) (offF cA cC n)) (FA + R + n) (offF cA cC n + cA n) a =
       recRMem m₁ RT FA R cA cC wR (n + 1) a := by
-  simp only [upd_apply]
+  simp [upd_apply]
   unfold recRMem
   have hr : a < RT ∨ (RT ≤ a ∧ a < RT + 5 * n) ∨ (∃ f, f < 5 ∧ a = RT + 5 * n + f) ∨
       (RT + 5 * n + 5 ≤ a ∧ a < RT + 5 * R) ∨ RT + 5 * R ≤ a := by
@@ -83,16 +84,11 @@ theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) 
   · interval_cases f <;> ifs_omega <;>
       first
         | rfl
-        | (rw [show RT + 5 * n + 0 - RT = 5 * n + 0 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
-           rfl)
-        | (rw [show RT + 5 * n + 1 - RT = 5 * n + 1 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
-           rfl)
-        | (rw [show RT + 5 * n + 2 - RT = 5 * n + 2 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
-           rfl)
-        | (rw [show RT + 5 * n + 3 - RT = 5 * n + 3 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
-           rfl)
-        | (rw [show RT + 5 * n + 4 - RT = 5 * n + 4 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
-           rfl)
+        | (rwr [show RT + 5 * n + 0 - RT = 5 * n + 0 by omega, rtv_eq _ _ _ _ _ (by norm_num)])
+        | (rwr [show RT + 5 * n + 1 - RT = 5 * n + 1 by omega, rtv_eq _ _ _ _ _ (by norm_num)])
+        | (rwr [show RT + 5 * n + 2 - RT = 5 * n + 2 by omega, rtv_eq _ _ _ _ _ (by norm_num)])
+        | (rwr [show RT + 5 * n + 3 - RT = 5 * n + 3 by omega, rtv_eq _ _ _ _ _ (by norm_num)])
+        | (rwr [show RT + 5 * n + 4 - RT = 5 * n + 4 by omega, rtv_eq _ _ _ _ _ (by norm_num)])
   · rcases hq with h' | h' | rfl | h' | h' | rfl | h' <;> ifs_omega <;>
       first | rfl | omega
   · rcases hq with h' | h' | rfl | h' | h' | rfl | h' <;> ifs_omega <;>
@@ -200,21 +196,21 @@ theorem regRecLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
           | skip
         refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp
         · rw [hne, r4]
-        · rw [r1, r2, hne, hPe, ma, mc]; omega
+        · rwo [r1, r2, hne, hPe, ma, mc]
         · rw [r1, r2, r4, r5, r6, hne, hPe, ma, mc, mw]
           exact recR_step' _ cA cC wR htest hlay hme (by omega) (by omega) (by omega) (by omega)
             (by omega) (by omega) (by omega) rfl rfl rfl rfl rfl rfl rfl
       obtain ⟨e', k, x, hk, hn', hP', hm'⟩ := X
       exact ⟨e', k, x, ⟨x.wb_right, n + 1, hn', by omega, hP',
-        hfe.trans (exec_frameM x (by decide)), hm'⟩, by rw [hn', hne]; omega,
-        by rw [hn', hne]; omega⟩)
-    ⟨hw, 0, hi, Nat.zero_le _, by rw [hP]; rfl, FrameM.refl _ _, by
+        hfe.trans (exec_frameM x (by decide)), hm'⟩, by rwo [hn', hne],
+        by rwo [hn', hne]⟩)
+    ⟨hw, 0, hi, Nat.zero_le _, by rwr [hP], FrameM.refl _ _, by
       rw [hm]; funext a; unfold recRMem; rw [ite_eq_right (by omega), ite_eq_right (by omega),
         ite_eq_right (by omega)]⟩
   have hnR' : n = R := by
-    rw [hn', hf.1 _ (by decide), hR] at htest; omega
+    rwo [hn', hf.1 _ (by decide), hR] at htest
   subst hnR'
-  exact ⟨d', k, e, by rw [hi] at hk; omega, by rw [hi, hn'] at hψ; omega, hw', hf, hm'⟩
+  exact ⟨d', k, e, by rwo [hi] at hk, by rwo [hi, hn'] at hψ, hw', hf, hm'⟩
 
 end exec
 

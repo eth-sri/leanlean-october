@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXRamH
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down phase, extraction (D6), RAM part 9: one chord record
@@ -23,7 +27,6 @@ section ch
 
 variable {P : Polygon} {W : ℕ} {v : XV} {N NR : NF} {ras : ℕ → ℕ} {A0 : ℕ} {mem0 : ℕ → ℕ}
 
-set_option maxHeartbeats 8000000 in
 open Classical in
 /-- **One chord record of `N_R`.** -/
 theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded W d)
@@ -60,10 +63,10 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
     have k1' : ∀ a, a = v.CB + 5 * i + 1 → d.nmem a = (NR.chord i).lp := fun a ha => ha ▸ mlp
     have k2' : ∀ a, a = v.CB + 5 * i + 2 → d.nmem a = (NR.chord i).rp := fun a ha => ha ▸ mrp
     exec_block
-    · config_simp; rw [h40, hg.r27]; omega
-    · config_simp; rw [h40, hg.r27]; omega
-    · config_simp; rw [h40, mh, hg.r27]; omega
-    · refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h40, hg.r27]
+    · config_simp; rwo [h40, hg.r27]
+    · config_simp; rwo [h40, hg.r27]
+    · config_simp; rwo [h40, mh, hg.r27]
+    · refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp [h40, hg.r27]
       · exact mh
       · exact k1' _ (by omega)
       · exact k2' _ (by omega)
@@ -73,7 +76,7 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
     exec_frameB e1 (by decide)
   have hw1 := e1.wb_right
   have g1 : XG P v d1 := hg.frameM (FrameB.toM f1) (by decide)
-  have m1 : d1.nmem = d.nmem := f1.2.2.1
+  have m1  := f1.2.2.1
   -- step 2: the left end
   obtain ⟨d2, k2, e2, hk2, bL, encL, f2⟩ := clsS_exec (P := P) d1 hw1 (n := (Qof P).n)
     (m := v.m) (T := v.T) (HB := v.HB) (h := (NR.chord i).h) (p := (NR.chord i).lp) (β := v.β)
@@ -115,10 +118,10 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
   -- the registers kept from `d`
   have q4 : ∀ r, (r = 217038 ∨ r = 217039 ∨ r = 217040 ∨ r = 217045 ∨ r = 217046) →
       d4.nreg r = d.nreg r := fun r hr => by
-    rw [f4.1 _ (by simp only [Bcls, decide_eq_false_iff_not]; omega),
-      f3.1 _ (by simp only [decide_eq_false_iff_not]; omega),
-      f2.1 _ (by simp only [Bcls, decide_eq_false_iff_not]; omega),
-      f1.1 _ (by simp only [decide_eq_false_iff_not]; omega)]
+    rw [f4.1 _ (by sio only [Bcls, decide_eq_false_iff_not]),
+      f3.1 _ (by sio only [decide_eq_false_iff_not]),
+      f2.1 _ (by sio only [Bcls, decide_eq_false_iff_not]),
+      f1.1 _ (by sio only [decide_eq_false_iff_not])]
   have c53 : d4.nreg 217053 = (NR.chord i).h + 1 := by
     rw [f4.1 _ (by decide), f3.1 _ (by decide), f2.1 _ (by decide), a53]
   have c50' : d4.nreg 217050 = (NR.chord i).h := by rw [f4.1 _ (by decide), c50]
@@ -160,23 +163,23 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
       have p40 : d5.nreg 217040 = v.CB + 5 * i := by
         rw [f5.1 _ (by decide), q4 _ (by omega), h40]
       have out : d5.nmem = stMem P v N d.nmem cnt (NR.chord i) := by
-        rw [m5, m4]; rfl
+        rwr [m5, m4]
       have hk5' : k5 ≤ 19448 := by have := E.hnRA; omega
       have hk' : RegIn (Qof P).n v.H v.li v.m v.T v.β (NR.chord i).h (NR.chord i).lp ∨
           RegIn (Qof P).n v.H v.li v.m v.T v.β (NR.chord i).h (NR.chord i).rp := hk
       by_cases hl : RegIn (Qof P).n v.H v.li v.m v.T v.β (NR.chord i).h (NR.chord i).lp
-      · exact ⟨d5, k5 + 2, .ifLtN_false (by rw [hbL, ite_eq_left hl, g4.r27]; omega) e5, by omega,
+      · exact ⟨d5, k5 + 2, .ifLtN_false (by rwo [hbL, ite_eq_left hl, g4.r27]) e5, by omega,
           fun _ => ⟨out, c38, c45, c46⟩, fun h => absurd hk h, p39, p40⟩
       · have hr := hk'.resolve_left hl
-        exact ⟨d5, k5 + 2 + 1, .ifLtN_true (by rw [hbL, ite_eq_right hl, g4.r27]; omega)
-          (.ifLtN_false (by rw [bR, ite_eq_left hr, g4.r27]; omega) e5), by omega,
+        exact ⟨d5, k5 + 2 + 1, .ifLtN_true (by rwo [hbL, ite_eq_right hl, g4.r27])
+          (.ifLtN_false (by rwo [bR, ite_eq_left hr, g4.r27]) e5), by omega,
           fun _ => ⟨out, c38, c45, c46⟩, fun h => absurd hk h, p39, p40⟩
     · have hl : ¬ RegIn (Qof P).n v.H v.li v.m v.T v.β (NR.chord i).h (NR.chord i).lp :=
         fun h => hk (Or.inl h)
       have hr : ¬ RegIn (Qof P).n v.H v.li v.m v.T v.β (NR.chord i).h (NR.chord i).rp :=
         fun h => hk (Or.inr h)
-      exact ⟨d4, 0 + 1 + 1, .ifLtN_true (by rw [hbL, ite_eq_right hl, g4.r27]; omega)
-        (.ifLtN_true (by rw [bR, ite_eq_right hr, g4.r27]; omega) (.skip hw4)), by omega,
+      exact ⟨d4, 0 + 1 + 1, .ifLtN_true (by rwo [hbL, ite_eq_right hl, g4.r27])
+        (.ifLtN_true (by rwo [bR, ite_eq_right hr, g4.r27]) (.skip hw4)), by omega,
         fun h => absurd h hk, fun _ => ⟨m4, by rw [q4 _ (by omega), h38],
           by rw [q4 _ (by omega), h45], by rw [q4 _ (by omega), h46]⟩,
         by rw [q4 _ (by omega), h39], by rw [q4 _ (by omega), h40]⟩
@@ -194,7 +197,7 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
     all_goals (try (config_simp; omega))
   have f6 : FrameB (fun r => decide (r = 217039 ∨ r = 217040)) d5 d6 := exec_frameB e6 (by decide)
   have ex : Exec P W chS d d6 (k1 + (k2 + (k3 + (k4 + (k5 + k6))))) := by
-    simp only [chS, seqs_cons₂, seqs_one]
+    simp [chS, seqs_cons₂, seqs_one]
     exact .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6))))
   have hk : k1 + (k2 + (k3 + (k4 + (k5 + k6)))) ≤ 24000 := by omega
   refine ⟨d6, _, ex, hk, w39, w40, fun hk => ?_, fun hk => ?_, exec_frameM ex wrM_ch⟩

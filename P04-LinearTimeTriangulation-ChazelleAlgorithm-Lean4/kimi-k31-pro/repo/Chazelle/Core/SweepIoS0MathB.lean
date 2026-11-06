@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepIoS0MathA
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # The side-0 answer cases (sweep, `Side0MathSpec`), part 2: labels from the event log
@@ -25,15 +28,14 @@ open WalkEmbed Sweep
 variable (J : Merge.Junction)
 
 theorem gW_lt : gW J < (chainModel J.whole).W.n := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn  := cm_n J.whole
   have := tpos_lt J.whole J.m₁
-  unfold gW; omega
+  ufo gW
 
 theorem getD_mem {α : Type*} {l : List α} {i : ℕ} (hi : i < l.length) (d : α) :
     l.getD i d ∈ l := by
   rw [List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi
 
-set_option maxHeartbeats 2000000 in
 /-- **The labels of the region faced at a position, from the event log.** -/
 theorem labels_of_log (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
@@ -107,8 +109,8 @@ theorem labels_of_log (hP : J.P.Simple) {S₂ : Set (Set Point)}
         near_after hM hF hfin hg hpz htz0 htz1 hA (ε := ub - x) (by linarith)
       have hoff' : oW J ((pz : ℝ) + (tz + s)) = x + s := hoff
       refine finI (viaNear pz (tz + s) hpz hts hnc hf ?_ ?_)
-      · rw [hoff']; linarith
-      · rw [hoff']; linarith
+      · rwli [hoff']
+      · rwli [hoff']
     · obtain ⟨e1, e2⟩ := hpos_eq heq.symm
       rw [e1, e2] at hA
       exact finI hA

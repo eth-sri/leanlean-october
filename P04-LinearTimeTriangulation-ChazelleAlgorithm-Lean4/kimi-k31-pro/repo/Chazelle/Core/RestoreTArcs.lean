@@ -3,6 +3,11 @@ module
 public import Chazelle.Core.RestoreTNorm
 public import Chazelle.Core.RestoreTShotOps
 public import Chazelle.Core.RestoreTPos
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-E, the candidate test on the RAM: the arc array of the region
@@ -96,12 +101,12 @@ theorem storeRec_rs (hI : TInv W c₀ c) (hroom : c.nreg ALLOC + 8 ≤ W) :
     rw [hm]; simp only [upd]
     rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
   refine ⟨c', k, ex, by omega, ⟨ex.wb_right, fun q h1 h2 => by
-      rw [hr q (by unfold ALLOC; omega)]; exact hI.hin q h1 h2, by omega,
+      rw [hr q (by ufo ALLOC)]; exact hI.hin q h1 h2, by omega,
       fun a ha => by rw [mlow a (by omega)]; exact hI.hm a ha,
-      by rw [hr _ (by unfold ALLOC; omega)]; exact hI.h20,
-      by rw [hr _ (by unfold ALLOC; omega)]; exact hI.h21,
-      by rw [hr _ (by unfold ALLOC; omega)]; exact hI.h22,
-      by rw [hr _ (by unfold ALLOC; omega)]; exact hI.h23⟩,
+      by rw [hr _ (by ufo ALLOC)]; exact hI.h20,
+      by rw [hr _ (by ufo ALLOC)]; exact hI.h21,
+      by rw [hr _ (by ufo ALLOC)]; exact hI.h22,
+      by rw [hr _ (by ufo ALLOC)]; exact hI.h23⟩,
     ⟨fun r _ hra => hr r hra, fun r _ => by rw [hrr], fun a ha => mlow a (by omega),
       fun a _ => by rw [hrm], ho, by omega, by omega⟩, hA', hm, hr⟩
 
@@ -190,7 +195,6 @@ theorem arcAt_upd4_new {m : ℕ → ℕ} {base t : ℕ} {v0 v1 v2 v3 : ℕ} :
   simp only [ShotList.arcAt, upd]
   simp (disch := omega) only [ite_eq_right, ↓reduceIte]
 
-set_option maxHeartbeats 1000000 in
 /-- **One arc of the loop.** -/
 theorem buildBody_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) {K base : ℕ}
     {cB : Config} (hI : TInv W c₀ c)
@@ -202,7 +206,7 @@ theorem buildBody_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) 
   obtain ⟨h31, h81, htK, hA, hrec, hag⟩ := hB
   set t := c.nreg 83030 with ht
   set r := c₀.nreg 83002
-  have htl : t < (N.region r).arcs.length := by rw [← hK]; omega
+  have htl : t < (N.region r).arcs.length := by rwo [← hK]
   obtain ⟨hjl, -⟩ := arcAt_lt hE htl
   set j := arcAt N r t with hj
   have hQn : (Qof P).n = P.n := shear_n _ _
@@ -215,10 +219,10 @@ theorem buildBody_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) 
   obtain ⟨ys, ye⟩ := hE.arc_abs hne hjl
   have sc : ∀ q, q ∈ buildL → Scr q := by
     intro q hq; simp only [buildL, List.mem_cons, List.not_mem_nil, or_false] at hq
-    unfold Scr; omega
+    ufo Scr
   unfold bodyK at hroom ⊢
   refine RS.mono (K := 80 + (1 + (1 + (1 + (1 + (normK + (normK + (8 + 1)))))))) ?_
-    (by omega) (fun _ h => h)
+    (by omega) (fun _ => id)
   refine RS.seq (RS.keepA wr_notA_arcRead (arcRead_rs hE hI (by omega) (by omega)))
     fun c₁ hI₁ hA₁ ⟨⟨v33, v34, v35, v36, a₁⟩, m₁, al₁⟩ => ?_
   have cp : ∀ {cc : Config} (r a : ℕ), TInv W c₀ cc → r ∈ buildL →
@@ -226,7 +230,7 @@ theorem buildBody_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) 
         c'.nmem = cc.nmem ∧ c'.nreg ALLOC = cc.nreg ALLOC) := fun r a hIc hr =>
     (RS.keepA (by
       have : r ≠ ALLOC := by
-        simp only [buildL, List.mem_cons, List.not_mem_nil, or_false] at hr; unfold ALLOC; omega
+        simp only [buildL, List.mem_cons, List.not_mem_nil, or_false] at hr; ufo ALLOC
       simp [wr, wrOK, NotA, this]) (RS.copy hIc (sc r hr)))
   refine RS.seq (cp 83060 83033 hI₁ (by simp [buildL])) fun c₂ hI₂ hA₂ ⟨hc₂, m₂, al₂⟩ => ?_
   refine RS.seq (cp 83061 83034 hI₂ (by simp [buildL])) fun c₃ hI₃ hA₃ ⟨hc₃, m₃, al₃⟩ => ?_
@@ -248,25 +252,25 @@ theorem buildBody_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) 
       (Agr.of_upd hc₅)).mono (by simp)
   -- normalise the start
   have ps : (⟨c₅.nreg 83060, c₅.nreg 83061⟩ : WPos) = (N.arc j).s := by rw [v60, v61]
-  refine RS.seq (RS.keepA (wr_notA_tNorm (by unfold ALLOC; omega)) (tNorm_rs (s := 83060)
+  refine RS.seq (RS.keepA (wr_notA_tNorm (by ufo ALLOC)) (tNorm_rs (s := 83060)
     ⟨sc _ (by simp [buildL]), sc _ (by simp [buildL]), sc _ (by simp [buildL]),
-      sc _ (by simp [buildL]), sc _ (by simp [buildL])⟩ hE hI₅ (by rw [ps]; exact hps)
-    (by rw [v60]; exact gs.1) (by rw [ps]; exact ys) (by rw [A15]; omega)))
+      sc _ (by simp [buildL]), sc _ (by simp [buildL])⟩ hE hI₅ (by rwx [ps])
+    (by rw [v60]; exact gs.1) (by rw [ps]; exact ys) (by rwo [A15])))
     fun c₆ hI₆ hA₆ ⟨⟨n60, n6, a₆⟩, m₆, al₆⟩ => ?_
   have k6 : ∀ q, 80000 ≤ q → q < 90000 → q ≠ 83061 → q ≠ 83062 → q ≠ 83063 → q ≠ 83064 →
-      c₆.nreg q = c₅.nreg q := fun q h1 h2 h3 h4 h5 h6 => a₆ q h1 h2 (by simp; omega)
+      c₆.nreg q = c₅.nreg q := fun q h1 h2 h3 h4 h5 h6 => a₆ q h1 h2 (by sio)
   have pe : (⟨c₆.nreg 83070, c₆.nreg 83071⟩ : WPos) = (N.arc j).e := by
     rw [k6 83070 (by norm_num) (by norm_num) (by omega) (by omega) (by omega) (by omega),
       k6 83071 (by norm_num) (by norm_num) (by omega) (by omega) (by omega) (by omega), v70, v71]
-  refine RS.seq (RS.keepA (wr_notA_tNorm (by unfold ALLOC; omega)) (tNorm_rs (s := 83070)
+  refine RS.seq (RS.keepA (wr_notA_tNorm (by ufo ALLOC)) (tNorm_rs (s := 83070)
     ⟨sc _ (by simp [buildL]), sc _ (by simp [buildL]), sc _ (by simp [buildL]),
-      sc _ (by simp [buildL]), sc _ (by simp [buildL])⟩ hE hI₆ (by rw [pe]; exact hpe)
+      sc _ (by simp [buildL]), sc _ (by simp [buildL])⟩ hE hI₆ (by rwx [pe])
     (by rw [k6 83070 (by norm_num) (by norm_num) (by omega) (by omega) (by omega) (by omega),
       v70]; exact ge.1) (by rw [pe]; exact ye)
-      (by rw [al₆, A15]; omega)))
+      (by rwo [al₆, A15])))
     fun c₇ hI₇ hA₇ ⟨⟨n70, n7, a₇⟩, m₇, al₇⟩ => ?_
   have k7 : ∀ q, 80000 ≤ q → q < 90000 → q ≠ 83071 → q ≠ 83072 → q ≠ 83073 → q ≠ 83074 →
-      c₇.nreg q = c₆.nreg q := fun q h1 h2 h3 h4 h5 h6 => a₇ q h1 h2 (by simp; omega)
+      c₇.nreg q = c₆.nreg q := fun q h1 h2 h3 h4 h5 h6 => a₇ q h1 h2 (by sio)
   have A7 : c₇.nreg ALLOC = c.nreg ALLOC := by rw [al₇, al₆, A15]
   have M7 : c₇.nmem = c.nmem := by rw [m₇, m₆, m15]
   have w60 : c₇.nreg 83060 = c₆.nreg 83060 :=
@@ -278,28 +282,28 @@ theorem buildBody_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) 
   have ne' : (⟨c₇.nreg 83070, c₇.nreg 83071⟩ : WPos) = normOf M (Qof P) (N.arc j).e := by
     rw [n7, pe]
   -- store the record
-  refine RS.seq (storeRec_rs hI₇ (by rw [A7]; omega))
+  refine RS.seq (storeRec_rs hI₇ (by rwo [A7]))
     fun c₈ hI₈ hA₈ ⟨A8, M8, R8⟩ => ?_
   have k8 : c₈.nreg 83030 = t := by
-    rw [R8 _ (by unfold ALLOC; omega), k7 _ (by norm_num) (by norm_num) (by omega) (by omega)
+    rw [R8 _ (by ufo ALLOC), k7 _ (by norm_num) (by norm_num) (by omega) (by omega)
       (by omega) (by omega), k6 _ (by norm_num) (by norm_num) (by omega) (by omega) (by omega)
       (by omega), ag5 _ (by norm_num) (by norm_num) (by simp)]
   refine (RS.nomem rfl (RS.add hI₈ (r := 83030) (a := 83030) (b := 83023) (sc _ (by simp [buildL]))
-    (by rw [k8, hI₈.h23]; omega))).mono le_rfl fun c₉ ⟨hc₉, M9⟩ => ?_
+    (by rwo [k8, hI₈.h23]))).mono le_rfl fun c₉ ⟨hc₉, M9⟩ => ?_
   have ag9 : Agr c c₉ buildL := by
-    have a78 : Agr c₇ c₈ [] := fun q h1 h2 _ => R8 q (by unfold ALLOC; omega)
+    have a78 : Agr c₇ c₈ [] := fun q h1 h2 _ => R8 q (by ufo ALLOC)
     exact ((((ag5.trans a₆).trans a₇).trans a78).trans (Agr.of_upd hc₉)).mono (by
       intro q hq; simp only [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hq
-      simp only [buildL, List.mem_cons, List.not_mem_nil, or_false]; omega)
+      sio only [buildL, List.mem_cons, List.not_mem_nil, or_false])
   have q30 : c₉.nreg 83030 = t + 1 := by rw [hc₉, upd_eq, k8, hI₈.h23]
   have hA9 : c₉.nreg ALLOC = c.nreg ALLOC + 4 := by
-    rw [hc₉, upd_ne (by unfold ALLOC; omega), A8, A7]
+    rw [hc₉, upd_ne (by ufo ALLOC), A8, A7]
   have hM9 : c₉.nmem = upd (upd (upd (upd c.nmem (base + 4 * t) (c₇.nreg 83060))
       (base + 4 * t + 1) (c₇.nreg 83061)) (base + 4 * t + 2) (c₇.nreg 83070))
       (base + 4 * t + 3) (c₇.nreg 83071) := by rw [M9, M8, A7, hA, M7]
   refine ⟨⟨by rw [ag9 _ (by norm_num) (by norm_num) (by simp [buildL]), h31],
     by rw [ag9 _ (by norm_num) (by norm_num) (by simp [buildL]), h81], by omega,
-    by rw [hA9, hA, q30]; ring, fun j' hj' => ?_, (hag.trans ag9).mono (by simp)⟩, q30⟩
+    by rwring [hA9, hA, q30], fun j' hj' => ?_, (hag.trans ag9).mono (by simp)⟩, q30⟩
   rw [q30] at hj'
   rw [hM9]
   rcases Nat.lt_or_ge j' t with hl | hg
@@ -332,21 +336,21 @@ theorem arcBuild_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) (
   set base := c.nreg ALLOC with hbase
   have sc : ∀ q, q ∈ buildL → Scr q := by
     intro q hq; simp only [buildL, List.mem_cons, List.not_mem_nil, or_false] at hq
-    unfold Scr; omega
+    ufo Scr
   unfold buildK at hroom ⊢
-  refine RS.mono (K := 1 + (1 + (13 + (1 + ((bodyK + 2) * K + 2))))) ?_ (by omega) (fun _ h => h)
+  refine RS.mono (K := 1 + (1 + (13 + (1 + ((bodyK + 2) * K + 2))))) ?_ (by omega) (fun _ => id)
   refine RS.seq (RS.const hI (r := 83030) (v := 0) (sc _ (by simp [buildL])) (Nat.zero_le _))
     fun c₁ hI₁ hA₁ hc₁ => ?_
-  have A1 : c₁.nreg ALLOC = base := by rw [hc₁, upd_ne (by unfold ALLOC; omega)]
-  refine RS.seq (RS.copy hI₁ (r := 83081) (a := ALLOC) (by unfold Scr; omega))
+  have A1 : c₁.nreg ALLOC = base := by rw [hc₁, upd_ne (by ufo ALLOC)]
+  refine RS.seq (RS.copy hI₁ (r := 83081) (a := ALLOC) (by ufo Scr))
     fun c₂ hI₂ hA₂ hc₂ => ?_
-  have A2 : c₂.nreg ALLOC = base := by rw [hc₂, upd_ne (by unfold ALLOC; omega), A1]
+  have A2 : c₂.nreg ALLOC = base := by rw [hc₂, upd_ne (by ufo ALLOC), A1]
   obtain ⟨c₃, k₃, e₃, hk₃, v₃, st₃⟩ := tRegLen_exec (f := 0) (Or.inl rfl) hE hI₂ (by omega)
   refine RS.seq (RS.keepA (by decide) (RS.op (Q := fun c' => c'.nreg 50210 = K)
     ⟨c₃, k₃, e₃, hk₃, v₃, st₃⟩)) fun c₃ hI₃ hA₃ ⟨⟨v3, h83⟩, _, A3⟩ => ?_
-  refine RS.seq (RS.copy hI₃ (r := 83031) (a := 50210) (by unfold Scr; omega))
+  refine RS.seq (RS.copy hI₃ (r := 83031) (a := 50210) (by ufo Scr))
     fun c₄ hI₄ hA₄ hc₄ => ?_
-  have A4 : c₄.nreg ALLOC = base := by rw [hc₄, upd_ne (by unfold ALLOC; omega), A3, A2]
+  have A4 : c₄.nreg ALLOC = base := by rw [hc₄, upd_ne (by ufo ALLOC), A3, A2]
   have ag4 : Agr c c₄ [83030, 83081, 83031] :=
     (((Agr.of_upd hc₁).trans (Agr.of_upd hc₂)).trans ((Agr.of_band h83 []).trans
       (Agr.of_upd hc₄))).mono (by simp)
@@ -357,13 +361,13 @@ theorem arcBuild_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) (
     rw [hc₄, upd_ne (by omega), h83 _ (by norm_num) (by norm_num), hc₂, upd_ne (by omega), hc₁,
       upd_eq]
   have I4 : BuildI M (Qof P) N (c₀.nreg 83002) K base c₄ c₄ :=
-    ⟨q31, q81, by omega, by rw [A4, q30]; ring, fun j hj => by omega, Agr.refl _ _⟩
+    ⟨q31, q81, by omega, by rwring [A4, q30], fun j hj => by omega, Agr.refl _ _⟩
   refine (RS.while (BuildI M (Qof P) N (c₀.nreg 83002) K base c₄)
     (fun cc => K - cc.nreg 83030) bodyK
     (fun cc hcc hlt => by obtain ⟨h1, -, -, -, -, -⟩ := hcc; omega)
     (fun cc hIc hcc hlt hr => (buildBody_rs hE hne hIc hcc hKd hlt hr).mono le_rfl
       fun c' ⟨h1, h2⟩ => ⟨h1, by obtain ⟨h31, -, h3, -⟩ := hcc; omega⟩)
-    hI₄ I4 (by rw [A4, q30, Nat.sub_zero]; omega)).mono (by rw [q30, Nat.sub_zero])
+    hI₄ I4 (by rwo [A4, q30, Nat.sub_zero])).mono (by rw [q30, Nat.sub_zero])
     fun c' ⟨hB, hnlt⟩ => ?_
   obtain ⟨h31, h81, htK, hA', hrec, hag⟩ := hB
   have ht : c'.nreg 83030 = K := by omega
@@ -371,7 +375,7 @@ theorem arcBuild_rs (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty) (
   exact (ag4.trans hag).mono (by
     intro q hq
     simp only [buildL, List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hq
-    simp only [buildL, List.mem_cons, List.not_mem_nil, or_false]; omega)
+    sio only [buildL, List.mem_cons, List.not_mem_nil, or_false])
 
 end
 

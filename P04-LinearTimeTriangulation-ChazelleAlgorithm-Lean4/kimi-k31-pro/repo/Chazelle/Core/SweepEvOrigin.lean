@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.SweepEvTasks2
 public import Chazelle.Core.SweepEvLabM
 public import Chazelle.Core.SweepMachine14
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep (WP-D), stage 3: the chord seen from a valid origin (Task O, mathematics)
@@ -65,9 +68,9 @@ theorem start_key_pt (hP : J.P.Simple) :
 theorem Lst_lt_of_dom (hP : J.P.Simple) {p : ℕ} {t : ℝ} (hp : p < (chainModel J.whole).W.n)
     (ht0 : 0 ≤ t) (ht1 : t < 1) (hD : sidePt (chainModel J.whole).W p t ∈ J.right.dom) :
     (Lst J : ℝ) < oW J (p + t) := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn  := cm_n J.whole
   have hτw := tpos_lt J.whole J.m₁
-  have hg : gW J < (chainModel J.whole).W.n := by unfold gW; omega
+  have hg : gW J < (chainModel J.whole).W.n := by ufo gW
   have hvD : J.shared ∉ J.right.dom := fun h =>
     J.right.not_mem_set_of_mem_dom h J.shared_mem_right
   set D := dOf (chainModel J.whole).W.n (gW J) p with hDdef
@@ -81,7 +84,7 @@ theorem Lst_lt_of_dom (hP : J.P.Simple) {p : ℕ} {t : ℝ} (hp : p < (chainMode
       have e : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) ((p : ℝ) + t) =
           (D : ℝ) + t := hoW
       exact stretch_not_dom₂ J hP (S₂ := ∅) (empty_subset _) finite_empty hp ht0 ht1
-        ⟨by rw [e]; exact h0, by rw [e]; exact hL⟩ hD
+        ⟨by rwx [e], by rwx [e]⟩ hD
     · -- at the start key: the shared vertex
       have hDL : D = Lst J := by
         have h1 : (D : ℝ) ≤ Lst J := by linarith
@@ -89,7 +92,7 @@ theorem Lst_lt_of_dom (hP : J.P.Simple) {p : ℕ} {t : ℝ} (hp : p < (chainMode
         have h1' : D ≤ Lst J := by exact_mod_cast h1
         have h2' : Lst J < D + 1 := by exact_mod_cast h2
         omega
-      have ht : t = 0 := by rw [hDL] at hL; linarith
+      have ht : t = 0 := by rwli [hDL] at hL
       have hpD : p = (gW J + Lst J) % (chainModel J.whole).W.n := by
         rw [← hDL, hDdef, add_dOf hg hp]
       rw [hpD, ht, start_key_pt hP] at hD
@@ -142,7 +145,7 @@ theorem origin_not_stop (hP : J.P.Simple) {S₂ : Set (Set Point)}
     ¬ StopChord2 J S₂ (Merge.shoot J.whole a σ) := by
   obtain ⟨-, -, -, -, -, hwR⟩ := origin_hit hP hc ha haR hav hlt
   have key : ∀ b, b ∈ Merge.shoot J.whole a σ → b ∉ J.whole.dom → b ≠ a → b ∈ J.right.dom :=
-    fun b hb hbD hba => by rw [origin_end hP hc ha haR hav hlt hb hbD hba]; exact hwR
+    fun b hb hbD hba => by rwx [origin_end hP hc ha haR hav hlt hb hbD hba]
   have hset : ∀ b, b ∈ J.right.set → b ∉ J.whole.dom := fun b hb hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset hb)
   rintro ((⟨σ', -, -, he⟩ | ⟨c', hc', b, σ', hb, hbR, -, he⟩) | ⟨σ', -, -, he⟩)
@@ -175,14 +178,14 @@ theorem origin_attach (hP : J.P.Simple) {S₂ : Set (Set Point)}
       sidePt (chainModel J.whole).W p t = rayPt a σ (J.whole.hitParam a σ) ∧
       (Lst J : ℝ) < oW J (p + t) ∧ sidePt (chainModel J.whole).W p t ≠ J.shared := by
   obtain ⟨-, hfree, -, hwD, -, hwR⟩ := origin_hit hP (hS₂ hc) ha haR hav hlt
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have he : Merge.shoot J.whole a σ ∈ F₂plus J S₂ := shoot_end_mem hc ha hfree
+  have hM  := FactsChain.walkAx J.whole hP
+  have he  := shoot_end_mem hc ha hfree
   have hadm := F₂plus_subset J hS₂ he
   have hw : rayPt a σ (J.whole.hitParam a σ) ∈ Merge.shoot J.whole a σ :=
     Geometry.right_mem_segment _ _
   obtain ⟨p, t, hA, hpt⟩ := endpoint_attach hM hadm hw hwD
   refine ⟨p, t, hA.1, hA.2.1, hA.2.2.1, hA, hpt,
-    Lst_lt_of_dom hP hA.1 hA.2.1 hA.2.2.1 (by rw [hpt]; exact hwR), fun h => ?_⟩
+    Lst_lt_of_dom hP hA.1 hA.2.1 hA.2.2.1 (by rwx [hpt]), fun h => ?_⟩
   rw [hpt] at h
   rw [h] at hwR
   exact J.right.not_mem_set_of_mem_dom hwR J.shared_mem_right
@@ -198,12 +201,12 @@ theorem chord_of_end {c c' : Set Point} (hc : c ∈ Merge.augChords J.right)
   obtain ⟨y', l', r', -, -, rfl, hl', hr'⟩ := Merge.augChords_spec hc'
   rw [hl, hr] at hR
   rw [hl', hr'] at hR'
-  simp only at hR hR'
+  simp at hR hR'
   rcases ha with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
   · rcases ha' with ⟨-, h⟩ | ⟨h, -⟩
     · rw [hl, hl'] at h
       obtain ⟨h1, h2⟩ := Prod.ext_iff.1 h
-      simp only at h1 h2
+      simp at h1 h2
       subst h1 h2
       rw [show r = r' by linarith]
     · norm_num at h
@@ -211,7 +214,7 @@ theorem chord_of_end {c c' : Set Point} (hc : c ∈ Merge.augChords J.right)
     · norm_num at h
     · rw [hr, hr'] at h
       obtain ⟨h1, h2⟩ := Prod.ext_iff.1 h
-      simp only at h1 h2
+      simp at h1 h2
       subst h1 h2
       rw [show l = l' by linarith]
 
@@ -277,7 +280,7 @@ end Origin
 /-- **Task O: the chord seen from a valid origin.** -/
 theorem originTask : SweepEv.OriginTask := by
   intro J Q N hP hN _hF
-  have hS₂ : N.F (chainModel J.right) Q ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂  := hN.1.2.1
   refine ⟨fun j hj haR hav hat hlt => ?_, fun j j' hj hj' haR hav _hat hlt haR' hav' _hat' hlt'
     heq => ?_⟩
   · obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Q) hj

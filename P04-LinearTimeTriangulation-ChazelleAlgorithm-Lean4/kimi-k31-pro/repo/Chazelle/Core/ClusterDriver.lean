@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.ClusterSplitTail
 public import Chazelle.Core.ClusterSplitCorrect
 public import Chazelle.Core.ClusterStack
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-I, part 35: the split driver
@@ -147,9 +149,9 @@ theorem marksF_df {a : F → Fin N} {m0 : ℕ → ℕ} {S : SS} {lo hi lbot ltop
     intro m u hu hm y hy
     rw [markStep_other hupl hu (hDF y hy).1, markStep_other hupl hu (hDF y hy).2]
     exact hm y hy
-  have hv0 : m0 (S.bVERT + f) = M.vert f := hvert f
+  have hv0  := hvert f
   have hv1 : m0 (S.bVERT + m0 (S.bOPP + f)) = M.head f := by
-    rw [hopp f, hvert]; rfl
+    rwr [hopp f, hvert]
   have hv2 : m0 (S.bVERT + m0 (S.bATT + f)) = M.vert (a (M.face f)) := by rw [hatt f, hvert]
   unfold marksF
   rw [hv0, hv1, hv2]
@@ -278,8 +280,8 @@ theorem enc_surj {x : ℕ} (hx : x < 3 * N) : ∃ y, enc N y = x := by
   by_cases h1 : x < N
   · exact ⟨.inl ⟨x, h1⟩, rfl⟩
   · by_cases h2 : x < 2 * N
-    · exact ⟨.inr (.inl ⟨x - N, by omega⟩), by simp only [enc]; omega⟩
-    · exact ⟨.inr (.inr ⟨x - 2 * N, by omega⟩), by simp only [enc]; omega⟩
+    · exact ⟨.inr (.inl ⟨x - N, by omega⟩), by sio only [enc]⟩
+    · exact ⟨.inr (.inr ⟨x - 2 * N, by omega⟩), by sio only [enc]⟩
 
 /-- The class-test memory facts. -/
 theorem SFacts.cpMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
@@ -297,7 +299,7 @@ theorem SFacts.cpMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
     rw [h.sf, h.hN]; exact Fin.isLt _
   · rw [h.hN]; exact h.fpar_lt g (by omega)
   · rw [h.pre g (by omega), h.sz g (by omega)]
-    obtain ⟨hp1, hp2⟩ := h.R_ok.pos_spec (show g < R.n by rw [h.R_n]; omega)
+    obtain ⟨hp1, hp2⟩ := h.R_ok.pos_spec (show g < R.n by rwo [h.R_n])
     have hb := h.R_pre.bound (R.pos g) hp1
     rw [hp2, h.R_n] at hb
     omega
@@ -317,9 +319,9 @@ theorem SFacts.markMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
     fun x hx => ?_,
     by omega, by omega, by omega, by omega, by omega, by omega, by omega, by omega, by omega,
     by omega, by omega⟩
-  · have := h.lev ⟨x, by omega⟩; simp only at this; rw [this]
+  · have := h.lev ⟨x, by omega⟩; simp at this; rw [this]
     have := h.lev_lt ⟨x, by omega⟩; omega
-  · have := h.lev ⟨x, by omega⟩; simp only at this; rw [this]
+  · have := h.lev ⟨x, by omega⟩; simp at this; rw [this]
     have := h.lev_lt ⟨x, by omega⟩; omega
 
 end derived

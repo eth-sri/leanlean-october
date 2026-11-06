@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.OraclePosSem
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 19: moving the origin of a ray to the box
@@ -38,11 +40,11 @@ theorem firstHitOpt_shift (hA : A ⊆ Chain.box R) (hd : 0 ≤ d)
     have hdv : d < v := by
       by_contra hc; push Not at hc
       exact hout v hv hc (hA hm)
-    refine ⟨by simp only; linarith, ?_, fun t ht hlt hm' => ?_⟩
-    · simp only
-      rw [rayPt_rayPt, show d + (v - d) = v by ring]; exact hm
+    refine ⟨by sil only, ?_, fun t ht hlt hm' => ?_⟩
+    · simp
+      rwx [rayPt_rayPt, show d + (v - d) = v by ring]
     · rw [rayPt_rayPt] at hm'
-      simp only at hlt
+      simp at hlt
       exact hfirst (d + t) (by linarith) (by linarith) hm'
 
 /-- A first hit from the entry point is a first hit from the origin. -/
@@ -55,7 +57,7 @@ theorem firstHit_unshift (hA : A ⊆ Chain.box R) (hd : 0 ≤ d)
   · exact hout s hs hsd (hA hm')
   · push Not at hsd
     refine hfirst (s - d) (by linarith) (by linarith) ?_
-    rw [rayPt_rayPt, show d + (s - d) = s by ring]; exact hm'
+    rwx [rayPt_rayPt, show d + (s - d) = s by ring]
 
 /-- No hit from the entry point is no hit from the origin. -/
 theorem noHit_unshift (hA : A ⊆ Chain.box R) (_hd : 0 ≤ d)
@@ -66,14 +68,14 @@ theorem noHit_unshift (hA : A ⊆ Chain.box R) (_hd : 0 ≤ d)
   · exact hout s hs hsd (hA hm)
   · push Not at hsd
     refine h (s - d) (by linarith) ?_
-    rw [rayPt_rayPt, show d + (s - d) = s by ring]; exact hm
+    rwx [rayPt_rayPt, show d + (s - d) = s by ring]
 
 /-- **An origin past the box**: the ray never meets the box. -/
 theorem noHit_past (hA : A ⊆ Chain.box R) (hσ : σ = 1 ∨ σ = -1) (hpast : R ≤ σ * z.1) :
     NoHit A z σ := by
   intro s hs hm
   have := (abs_lt.1 (hA hm).1)
-  simp only [rayPt_fst] at this
+  simp [rayPt_fst] at this
   rcases hσ with rfl | rfl
   · linarith [this.2]
   · linarith [this.1]

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDropWt
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (X, part 1): arc transfer between two models
@@ -74,7 +77,7 @@ theorem nonVtx_wrapK {n : ℕ} {x : ℝ} (hx : NonVtx x) : NonVtx (wrapK n x) :=
   unfold wrapK at e
   split_ifs at e
   · exact hx k e
-  · exact hx (k + n) (by push_cast; linarith)
+  · exact hx (k + n) (by pcl)
 
 theorem nonVtx_of_wrapK {n : ℕ} {x : ℝ} (hx : NonVtx (wrapK n x)) : NonVtx x := by
   intro k e
@@ -101,7 +104,7 @@ theorem floor_eq {x x' : ℝ} (hx : x ∈ Ioo lo hi) (hx' : x' ∈ Ioo lo hi) (h
       ⌊κ z⌋₊ = ⌊κ z'⌋₊ → ⌊z⌋₊ = ⌊z'⌋₊ := by
     intro z z' hz hz' hvz hvz' hle hf
     by_contra hne
-    have hlt : ⌊z⌋₊ < ⌊z'⌋₊ := lt_of_le_of_ne (Nat.floor_le_floor hle) hne
+    have hlt  := lt_of_le_of_ne (Nat.floor_le_floor hle) hne
     set k : ℕ := ⌊z⌋₊ + 1
     have hz1 := floor_lt_of_nonVtx (h0 z hz) hvz
     have hz2 := floor_lt_of_nonVtx (h0 z' hz') hvz'
@@ -117,11 +120,11 @@ theorem floor_eq {x x' : ℝ} (hx : x ∈ Ioo lo hi) (hx' : x' ∈ Ioo lo hi) (h
     have hIcc : ∀ w ∈ Ioo lo hi, w ∈ Icc lo hi := fun w hw => ⟨hw.1.le, hw.2.le⟩
     have m1 : κ z < κ k := h.mono (hIcc z hz) (hIcc _ hkI) hk1
     have m2 : κ k < κ z' := h.mono (hIcc _ hkI) (hIcc z' hz') hk2
-    have hy0 : 0 ≤ κ z := (h.range z (hIcc z hz)).1
-    have hy0' : 0 ≤ κ z' := (h.range z' (hIcc z' hz')).1
+    have hy0  := (h.range z (hIcc z hz)).1
+    have hy0'  := (h.range z' (hIcc z' hz')).1
     have f1 : (⌊κ z⌋₊ : ℝ) + 1 ≤ K := by
       have : ⌊κ z⌋₊ < K := by
-        rw [Nat.floor_lt hy0]; rw [← hK]; exact m1
+        rw [Nat.floor_lt hy0]; rwx [← hK]
       exact_mod_cast this
     have f2 : (K : ℝ) ≤ ⌊κ z'⌋₊ := by
       have : K ≤ ⌊κ z'⌋₊ := Nat.le_floor (by rw [← hK]; exact m2.le)
@@ -139,8 +142,8 @@ theorem image_free {a b : ℝ} (hlo : lo ≤ a) (hab : a < b) (hhi : b ≤ hi)
   intro y hy hc
   have hIa : a ∈ Icc lo hi := ⟨hlo, le_trans hab.le hhi⟩
   have hIb : b ∈ Icc lo hi := ⟨le_trans hlo hab.le, hhi⟩
-  have hlo' : κ lo ≤ κ a := h.mono.monotoneOn ⟨le_rfl, le_trans hlo hIa.2⟩ hIa hlo
-  have hhi' : κ b ≤ κ hi := h.mono.monotoneOn hIb ⟨le_trans hIb.1 hIb.2, le_rfl⟩ hhi
+  have hlo'  := h.mono.monotoneOn ⟨le_rfl, le_trans hlo hIa.2⟩ hIa hlo
+  have hhi'  := h.mono.monotoneOn hIb ⟨le_trans hIb.1 hIb.2, le_rfl⟩ hhi
   obtain ⟨x, hx, rfl⟩ := h.onto y (by linarith [hy.1]) (by linarith [hy.2])
   have hxa : a < x := by
     by_contra hxa; push Not at hxa
@@ -215,7 +218,7 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
     have hvw : NonVtx (wrapK n₂ xx) := by
       rw [hw]; intro k e
       have hk1 : (p : ℝ) < k := by linarith
-      have hk2 : (k : ℝ) < ((p + 1 : ℕ) : ℝ) := by push_cast; linarith
+      have hk2 : (k : ℝ) < ((p + 1 : ℕ) : ℝ) := by pcl
       have := Nat.cast_lt.1 hk1; have := Nat.cast_lt.1 hk2; omega
     have hex : ∃ xx ∈ Ioo aa bb, NonVtx xx ∧ ⌊wrapK n₂ xx⌋₊ = p := by
       refine ⟨xx, hxx, nonVtx_of_wrapK hvw, ?_⟩
@@ -276,7 +279,7 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
           exact_mod_cast this
         have ht0 : 0 < y₀ - ⌊y₀⌋₊ := by linarith [hy₀p.1]
         have ht1 : y₀ - ⌊y₀⌋₊ < 1 := by linarith [hy₀p.2]
-        have hfX := harcX.2.2.2.2.2.2 _ _ hpn ht0 ht1 (by rw [add_sub_cancel]; exact hin₀)
+        have hfX := harcX.2.2.2.2.2.2 _ _ hpn ht0 ht1 (by rwx [add_sub_cancel])
         exact WalkAx.faces_unique hX hU hfX (hfac₀ y₀ ⟨hya, hyb⟩ hy₀v)
       subst hXU
       refine ⟨l, r, harcX, ?_⟩
@@ -305,12 +308,12 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
           obtain ⟨x, hx, rfl⟩ := hX
           obtain ⟨u, hu, rfl⟩ := hU
           have hfr : Chazelle.Chain.freeIn M₁.D F₁ = M₁.D := by
-            rw [hF]; unfold Chazelle.Chain.freeIn; simp
-          have hpre : IsPreconnected M₁.D := hM₁.preconn
+            rw [hF]; ufs Chazelle.Chain.freeIn
+          have hpre  := hM₁.preconn
           rw [hfr] at hx hu ⊢
           rw [connectedComponentIn_eq (hpre.subset_connectedComponentIn hx subset_rfl
             (show u ∈ M₁.D from hu) |> fun h' => by exact h')]
-        rw [← hXU]; exact hfX
+        rwx [← hXU]
       · intro y hy
         unfold sideInArc
         rw [ite_eq_right (lt_irrefl _)]

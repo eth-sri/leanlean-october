@@ -7,6 +7,11 @@ public import Chazelle.Core.SweepPrimArr
 public import Chazelle.Core.RestoreTChainLeft
 public import Chazelle.Core.DownPhaseDropWt
 public import Chazelle.Core.ShotListGMain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-E, the candidate test on the RAM: the shot
@@ -68,19 +73,19 @@ theorem innerPt_mi_edge {Q : Polygon} (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) 
   simp only [Geometry.lerp_fst, Geometry.lerp_snd]
   refine ⟨?_, ?_⟩
   · rcases lt_or_gt_of_ne hy with hab | hab
-    · refine ⟨p, (p + 1) % Q.n, by rw [hn']; exact hp, by rw [hn']; exact hq, ?_, ?_⟩
-      · rw [va]; nlinarith
-      · rw [vb]; nlinarith
-    · refine ⟨(p + 1) % Q.n, p, by rw [hn']; exact hq, by rw [hn']; exact hp, ?_, ?_⟩
-      · rw [vb]; nlinarith
-      · rw [va]; nlinarith
+    · refine ⟨p, (p + 1) % Q.n, by rwx [hn'], by rwx [hn'], ?_, ?_⟩
+      · rwnl [va]
+      · rwnl [vb]
+    · refine ⟨(p + 1) % Q.n, p, by rwx [hn'], by rwx [hn'], ?_, ?_⟩
+      · rwnl [vb]
+      · rwnl [va]
   · rcases le_total a.1 b.1 with hab | hab
-    · refine ⟨p, (p + 1) % Q.n, by rw [hn']; exact hp, by rw [hn']; exact hq, ?_, ?_⟩
-      · rw [va]; nlinarith
-      · rw [vb]; nlinarith
-    · refine ⟨(p + 1) % Q.n, p, by rw [hn']; exact hq, by rw [hn']; exact hp, ?_, ?_⟩
-      · rw [vb]; nlinarith
-      · rw [va]; nlinarith
+    · refine ⟨p, (p + 1) % Q.n, by rwx [hn'], by rwx [hn'], ?_, ?_⟩
+      · rwnl [va]
+      · rwnl [vb]
+    · refine ⟨(p + 1) % Q.n, p, by rwx [hn'], by rwx [hn'], ?_, ?_⟩
+      · rwnl [vb]
+      · rwnl [va]
 
 
 /-! ## Walk points of a chain model lie between the vertical sides of the box -/
@@ -95,12 +100,12 @@ theorem chain_vtx_abs_fst (C : Chain) {p : ℕ} (hp : p < (chainModel C).W.n) :
   rw [hW]
   rcases (by omega : p = 0 ∨ p = 1 ∨ p = 2 ∨ p = 3 ∨ p = 4 ∨ p = 5 ∨ 6 ≤ p) with
     rfl | rfl | rfl | rfl | rfl | rfl | h6
-  · rw [C.sideWalk_vtx_zero]; exact htop
+  · rwx [C.sideWalk_vtx_zero]
   · rw [C.sideWalk_vtx_one]; simp only [abs_neg]; exact (abs_of_nonneg hRp).le
   · rw [C.sideWalk_vtx_two]; simp only [abs_neg]; exact (abs_of_nonneg hRp).le
   · rw [C.sideWalk_vtx_three]; exact (abs_of_nonneg hRp).le
   · rw [C.sideWalk_vtx_four]; exact (abs_of_nonneg hRp).le
-  · rw [C.sideWalk_vtx_five]; exact htop
+  · rwx [C.sideWalk_vtx_five]
   · obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
     rw [C.sideWalk_vtx_tour _ (by omega), Chain.sideTour]
     exact (C.abs_le_coordBound_of_mem_set (C.vertex_mem_set (C.sideIdx_le _ _))).1.trans hR.le
@@ -130,10 +135,10 @@ theorem innerPt_chain_walk (C : Chain) (Q : Polygon) {x : WPos}
   have v2 : (chainModel C).W.vtx 2 = (-C.radius, -C.radius) := rfl
   have v3 : (chainModel C).W.vtx 3 = (C.radius, -C.radius) := rfl
   refine ⟨⟨2, 1, by omega, by omega, ?_, ?_⟩, ⟨1, 3, by omega, by omega, ?_, ?_⟩⟩
-  · rw [v2]; simp only; linarith
-  · rw [v1]; simp only; linarith
-  · rw [v1]; simp only; linarith
-  · rw [v3]; simp only; linarith
+  · rw [v2]; sil only
+  · rw [v1]; sil only
+  · rw [v1]; sil only
+  · rw [v3]; sil only
 
 /-- **The box vertices are on the boundary of the height band**: walk vertices `0 … 5` of a
 chain model are at height `± radius`. -/
@@ -189,7 +194,7 @@ theorem TGood.end_ok (hE : TGood P W M N c₀) {x : WPos}
   have hxe : x.edge < M.W.n := by
     have : (x.edge : ℝ) < M.W.n := by linarith [hx.1]
     exact_mod_cast this
-  refine ⟨hN, by rw [he]; exact hxe, ?_⟩
+  refine ⟨hN, by rwx [he], ?_⟩
   rcases hcase with h0 | hp
   · exact Or.inl h0
   right
@@ -215,7 +220,7 @@ theorem TGood.arc_piece (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempt
       M.arcWt (M.key (Qof P) (nArc M (Qof P) N (c₀.nreg 83002) t).1)
         (M.key (Qof P) (nArc M (Qof P) N (c₀.nreg 83002) t).2) ≤ γ := by
   set r := c₀.nreg 83002
-  have hr : r < N.nRegions := hE.hr
+  have hr  := hE.hr
   obtain ⟨-, -, -, reg, hRC, -, hArcs, -, -, -, hpp⟩ := hE.hNF
   set j := arcAt N r t with hjdef
   have hjm : j ∈ (N.region r).arcs := by
@@ -257,7 +262,7 @@ def shPrep : Stmt := .seq (block (SweepPrim.copies shL)) (.instr (.constN 84003 
 def shW : List ℕ := [84000, 84001, 84002, 84003, 84004, 84005, 84006, 84007, 84008]
 
 theorem shW_scr : ∀ r ∈ shW, Scr r := by
-  intro r hr; simp only [shW, List.mem_cons, List.not_mem_nil, or_false] at hr; unfold Scr; omega
+  intro r hr; simp only [shW, List.mem_cons, List.not_mem_nil, or_false] at hr; ufo Scr
 
 theorem shPrep_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
     RS P W c₀ shPrep c 9 (fun c' => (∀ p ∈ shL, c'.nreg p.1 = c.nreg p.2) ∧
@@ -268,12 +273,12 @@ theorem shPrep_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
           q (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;> simp)
     (by simp [shL])
   obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.constN e₁.wb_right 84003 2 (by
-    have := hE.hW; unfold hostWords at this; omega))
+    have := hE.hW; ufo hostWords at this))
   have o₁ : Out c c₁ shW := ⟨fun r hr => h2 r (by
     simp only [shW, shL, List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil,
       or_false] at hr ⊢; omega), h3, h4, h5, h6⟩
   have ho : Out c c₂ shW := (o₁.trans o₂).mono (fun r hr => by
-    simp only [shW, List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr ⊢; omega)
+    sio only [shW, List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr ⊢)
   refine RS.out hI shW_scr (.seq e₁ e₂) (by simp [shL]) ho ⟨fun p hp => ?_, v₂, ho⟩
   have hp1 : p.1 ≠ 84003 := by
     simp only [shL, List.mem_cons, List.not_mem_nil, or_false] at hp
@@ -296,7 +301,7 @@ theorem shotPre_of {X : MemCtx} {Ok : Polygon → Model → Prop} (hE : TGood P 
       ShotList.arcAt c.nmem B j = nArc M (Qof P) N (c₀.nreg 83002) j)
     (hho : HoleOut M (Qof P) c (M.pos (Qof P) ⟨c₀.nreg 83005, c₀.nreg 83006⟩)) :
     ShotPreG X Ok RS0 P W M (TInv W c₀) (YR M) c := by
-  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
+  have hm  := hI.hm
   have hA := hI.hA
   have i00 : c.nreg 83000 = c₀.nreg 83000 := hI.hin _ (by norm_num) (by norm_num)
   obtain ⟨hMD, hwf⟩ := hI.modelDesc hE
@@ -305,8 +310,7 @@ theorem shotPre_of {X : MemCtx} {Ok : Polygon → Model → Prop} (hE : TGood P 
     X.mono _ _ _ _ _ hA (X.local_ _ _ _ _ _ (fun a ha => (hm a ha).symm) hX)
   have hcap' : X.cap P c.nmem (c₀.nreg 83004) = X.cap P c₀.nmem (c₀.nreg 83004) :=
     hXl _ _ _ _ _ hm hX
-  have hreg : HReg P c.nmem (c₀.nreg 83000) :=
-    hreg_keep hE.hwfMD hE.hMD hE.hreg hm
+  have hreg  := hreg_keep hE.hwfMD hE.hMD hE.hreg hm
   set x : WPos := ⟨c₀.nreg 83005, c₀.nreg 83006⟩ with hxdef
   have hyR : YR M (M.pos (Qof P) x).2 := fun C hM =>
     lt_of_le_of_lt (C.abs_le_coordBound_of_mem_set (hE.hxC C hM)).2 C.coordBound_lt_radius
@@ -336,12 +340,12 @@ theorem shotPre_of {X : MemCtx} {Ok : Polygon → Model → Prop} (hE : TGood P 
     exact ⟨rfl, (hhl j (by have : j < min (c.nreg 84009) 3 := hj; omega)).1⟩
   refine ⟨hE.hG, hE.hW, ?_, ?_, ?_, ?_, ?_, hI, hOk, ?_, h9, ?_, hhl, Origin.walk x,
     ⟨h03, h04, h05⟩, ⟨hE.hxe, hE.hxp.2.2⟩, horig, hyR, ?_⟩
-  · show X.holds P c.nmem (c.nreg 84008) (c.nreg ALLOC); rw [h08]; exact hX'
-  · show c.nreg 84007 ≤ X.cap P c.nmem (c.nreg 84008); rw [h07, h08, hcap']; exact hcap
-  · show ModelDescWF P (c.nreg ALLOC) c.nmem (c.nreg 84000); rw [h00]; exact hwf
-  · show ModelDescAt c.nmem (c.nreg 84000) (Qof P) M; rw [h00]; exact hMD
-  · show HReg P c.nmem (c.nreg 84000); rw [h00]; exact hreg
-  · show c.nreg 84001 + 4 * c.nreg 84002 ≤ c.nreg ALLOC; rw [h01, h02]; exact hB
+  · show X.holds P c.nmem (c.nreg 84008) (c.nreg ALLOC); rwx [h08]
+  · show c.nreg 84007 ≤ X.cap P c.nmem (c.nreg 84008); rwx [h07, h08, hcap']
+  · show ModelDescWF P (c.nreg ALLOC) c.nmem (c.nreg 84000); rwx [h00]
+  · show ModelDescAt c.nmem (c.nreg 84000) (Qof P) M; rwx [h00]
+  · show HReg P c.nmem (c.nreg 84000); rwx [h00]
+  · show c.nreg 84001 + 4 * c.nreg 84002 ≤ c.nreg ALLOC; rwx [h01, h02]
   · intro j hj
     change j < c.nreg 84002 at hj
     rw [h02] at hj
@@ -369,7 +373,7 @@ def tArrC : Stmt := .seq (.instr (.subN 83120 83023 83008)) (.seq (.seq (block (
 def tArr : Stmt := .ifLtN 83021 83023 tArrC .skip
 
 theorem rho_dir {v : ℕ} (hv : v ≤ 1) : -dirOf (1 - v) = dirOf v := by
-  have : 1 - v = if v = 1 then 0 else 1 := by split_ifs <;> omega
+  have : 1 - v = if v = 1 then 0 else 1 := by splao
   rw [this, SweepPrim.neg_dirOf_flip]
 
 /-- **The arrival step.**  From a proper position `f` (registers `83012`, `83013`) of a point at
@@ -393,7 +397,7 @@ theorem tArr_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
       Agr c c' [83012, 83013, 83120]) := by
   rcases hE.kind with ⟨h0, C₀, hM₀⟩ | ⟨h1, hMi, -⟩
   · -- a chain model
-    have g21 : c.nreg 83021 < c.nreg 83023 := by rw [hI.h21, hI.h23, h0]; omega
+    have g21 : c.nreg 83021 < c.nreg 83023 := by rwo [hI.h21, hI.h23, h0]
     obtain ⟨H, C, hC, hM, hwf, hsimp, -⟩ := hI.chainS hE hM₀
     subst hM
     have h8 : c.nreg 83008 = c₀.nreg 83008 := hI.hin _ (by norm_num) (by norm_num)
@@ -401,14 +405,14 @@ theorem tArr_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     -- ρ = 1 - σb
     obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hI.hw 83120 83023 83008)
     obtain ⟨hI₁, rf₁⟩ := hI.regs e₁.wb_right (fun r hr => o₁.1 r (by
-      simp only [List.mem_singleton]; omega)) o₁.2.1 o₁.2.2.1 o₁.2.2.2.1 o₁.2.2.2.2 (k := 1)
+      sio only [List.mem_singleton])) o₁.2.1 o₁.2.2.1 o₁.2.2.2.1 o₁.2.2.2.2 (k := 1)
     have k₁ : ∀ r, r ≠ 83120 → c₁.nreg r = c.nreg r := fun r hr => o₁.1 r (by simpa using hr)
     have r120 : c₁.nreg 83120 = 1 - c₀.nreg 83008 := by rw [v₁, hI.h23, h8]
-    have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := k₁ _ (by unfold ALLOC; omega)
+    have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := k₁ _ (by ufo ALLOC)
     have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 83020) (Qof P) H C := by
-      rw [o₁.2.2.1, k₁ 83020 (by norm_num)]; exact hC
+      rwx [o₁.2.2.1, k₁ 83020 (by norm_num)]
     have hwf₁ : ChainWF P (c₁.nreg ALLOC) c₁.nmem (c₁.nreg 83020) := by
-      rw [hA₁, o₁.2.2.1, k₁ 83020 (by norm_num)]; exact hwf
+      rwx [hA₁, o₁.2.2.1, k₁ 83020 (by norm_num)]
     have f12 : c₁.nreg 83012 = c.nreg 83012 := k₁ _ (by omega)
     have f13 : c₁.nreg 83013 = c.nreg 83013 := k₁ _ (by omega)
     obtain ⟨c₂', c₂, k₂, q, -, -, ex₂, hk₂, hout, hf₂⟩ := callPrim SweepPrim.arrivalPos_meets arrL
@@ -419,10 +423,10 @@ theorem tArr_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
         have q1 := h1 (50201, 83012) (by simp [arrL])
         have q2 := h1 (50202, 83013) (by simp [arrL])
         simp only at q1 q2
-        refine ⟨⟨by rw [q1, f12]; exact he, by rw [q1, q2, f12, f13]; exact hp, ?_⟩, ?_, ?_⟩
+        refine ⟨⟨by rwx [q1, f12], by rwx [q1, q2, f12, f13], ?_⟩, ?_, ?_⟩
         · rw [q1, q2, f12, f13]; exact hy C rfl
         · exact hsimp
-        · exact hE.hWm C rfl) (by rw [hA₁]; omega)
+        · exact hE.hWm C rfl) (by rwo [hA₁])
     have q1 := q (50201, 83012) (by simp [arrL])
     have q2 := q (50202, 83013) (by simp [arrL])
     have q3 := q (50203, 83120) (by simp [arrL])
@@ -439,16 +443,16 @@ theorem tArr_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     -- copy the arrival position back
     obtain ⟨c₃, e₃, v₃, o₃⟩ := out_instr (P := P) (Exec.copyN ex₂.wb_right 83012 50211)
     obtain ⟨hI₃, rf₃⟩ := T₂.1.regs e₃.wb_right (fun r hr => o₃.1 r (by
-      simp only [List.mem_singleton]; omega)) o₃.2.1 o₃.2.2.1 o₃.2.2.2.1 o₃.2.2.2.2 (k := 1)
+      sio only [List.mem_singleton])) o₃.2.1 o₃.2.2.1 o₃.2.2.2.1 o₃.2.2.2.2 (k := 1)
     obtain ⟨c₄, e₄, v₄, o₄⟩ := out_instr (P := P) (Exec.copyN e₃.wb_right 83013 50212)
     obtain ⟨hI₄, rf₄⟩ := hI₃.regs e₄.wb_right (fun r hr => o₄.1 r (by
-      simp only [List.mem_singleton]; omega)) o₄.2.1 o₄.2.2.1 o₄.2.2.2.1 o₄.2.2.2.2 (k := 1)
+      sio only [List.mem_singleton])) o₄.2.1 o₄.2.2.1 o₄.2.2.2.1 o₄.2.2.2.2 (k := 1)
     have w12 : c₄.nreg 83012 = c₂.nreg 50211 := by rw [o₄.1 _ (by simp), v₃]
     have w13 : c₄.nreg 83013 = c₂.nreg 50212 := by rw [v₄, o₃.1 _ (by simp)]
     refine ⟨c₄, 1 + (k₂ + (1 + 1)) + 1,
       .ifLtN_true g21 (.seq e₁ (.seq ex₂ (.seq e₃ e₄))), ?_, hI₄,
       ((rf₁.trans (T₂.2.1.trans (rf₃.trans rf₄)))).mono subset_rfl (by omega), ?_⟩
-    · simp [arrL] at hk₂; omega
+    · sio [arrL] at hk₂
     show _ ∧ _
     rw [w12, w13]
     refine ⟨hpp, hpe, harr.2.2.2.1, fun _ _ => harr, fun h => absurd h
@@ -457,7 +461,7 @@ theorem tArr_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     rw [o₄.1 r (by simpa using hr.2.1), o₃.1 r (by simpa using hr.1),
       T₂.2.2 r h1 h2, k₁ r hr.2.2]
   · -- the interior model: nothing to do
-    have g21 : ¬ c.nreg 83021 < c.nreg 83023 := by rw [hI.h21, hI.h23, h1]; omega
+    have g21 : ¬ c.nreg 83021 < c.nreg 83023 := by rwo [hI.h21, hI.h23, h1]
     refine RS.ifF g21 (RS.skip (K := 0) hI ⟨hp, he, rfl, fun C hC => absurd (hC.symm.trans hMi)
       (chainModel_ne_interior C (Qof P)), fun _ => ⟨rfl, rfl⟩, Agr.refl _ _⟩) |>.mono
       (by omega) (fun _ h => h)

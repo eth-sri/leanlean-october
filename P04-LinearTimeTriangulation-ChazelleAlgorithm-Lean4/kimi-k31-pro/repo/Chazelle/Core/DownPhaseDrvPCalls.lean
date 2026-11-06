@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvPCost
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Down-phase pieces (D4), part 9: the sub-procedures and the program
@@ -11,9 +14,6 @@ given program and constant), the program `pieceS sL sB sBd sG` of a piece, and t
 `clogS` (`218019 := ⌈log₂ m⌉`, `clogS_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -151,12 +151,12 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
     exec_block
     all_goals first | omega | skip
     refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
+    simp [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
   let I : Config → Prop := fun d => WordsBounded W d ∧ d.nreg 218023 = 2 ^ d.nreg 218019 ∧
     (1 ≤ d.nreg 218019 → 2 ^ (d.nreg 218019 - 1) < m) ∧
     (∀ r, r ≠ 218019 → r ≠ 218023 → d.nreg r = c.nreg r) ∧ d.nmem = c.nmem ∧
     d.rreg = c.rreg ∧ d.rmem = c.rmem ∧ d.output = c.output
-  have hI₁ : I c₁ := ⟨e₁.wb_right, by rw [v23, v19]; rfl, by rw [v19]; omega, r₁, m₁⟩
+  have hI₁ : I c₁ := ⟨e₁.wb_right, by rwr [v23, v19], by rwo [v19], r₁, m₁⟩
   obtain ⟨c₂, k₂, e₂, ⟨w₂, p₂, l₂, r₂, m₂, rr₂, rm₂, o₂⟩, hx₂, hk₂⟩ :=
     Exec.whileLtN_bounded (P := P) (W := W) (a := 218023) (b := 218002)
     (body := block [.addN 218023 218023 218023, .addN 218019 218019 218021]) I
@@ -171,18 +171,18 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
           (∀ r, r ≠ 218019 → r ≠ 218023 → d'.nreg r = d.nreg r) ∧
           (d'.nmem = d.nmem ∧ d'.rreg = d.rreg ∧ d'.rmem = d.rmem ∧ d'.output = d.output) := by
         exec_block
-        · config_simp; omega
+        · cso
         · config_simp; rw [h21']
           have : d.nreg 218019 < 2 ^ d.nreg 218019 := Nat.lt_two_pow_self
           omega
-        refine ⟨rfl, by config_simp; ring, by config_simp; rw [h21'], fun r h1 h2 => ?_,
+        refine ⟨rfl, by csring, by config_simp; rw [h21'], fun r h1 h2 => ?_,
           rfl, rfl, rfl, rfl⟩
-        simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
+        simp [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
       obtain ⟨m'', rr'', rm'', o''⟩ := m'
       refine ⟨d', k, e, ⟨e.wb_right, ?_, ?_, fun r h1 h2 => (r' r h1 h2).trans (rd' r h1 h2),
         m''.trans md, rr''.trans rrd, rm''.trans rmd, o''.trans od⟩, by omega, ?_⟩
-      · rw [v23', v19', pd, pow_succ]; ring
-      · intro _; rw [v19', Nat.add_sub_cancel, ← pd]; exact ht
+      · rwring [v23', v19', pd, pow_succ]
+      · intro _; rwx [v19', Nat.add_sub_cancel, ← pd]
       · rw [v19']
         rw [pd] at ht
         have : d.nreg 218019 < Nat.clog 2 m := by
@@ -205,7 +205,7 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
       omega
     · exact Nat.clog_le_of_le_pow (by omega)
   have hk₂' : k₂ ≤ 4 * Nat.clog 2 m + 2 := by
-    rw [v19, Nat.sub_zero] at hk₂; omega
+    rwo [v19, Nat.sub_zero] at hk₂
   refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, hg, r₂, m₂, rr₂, rm₂, o₂⟩
 
 end exec

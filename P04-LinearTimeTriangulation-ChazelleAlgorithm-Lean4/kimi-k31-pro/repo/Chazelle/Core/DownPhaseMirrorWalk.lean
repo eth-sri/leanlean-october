@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.DownPhaseMirrorBase
 public import Chazelle.Core.DownPhaseMirrorKey
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Mirror symmetry (F-D7), part 3: mirrored walks
@@ -30,24 +33,24 @@ open Chazelle.Chain (sideCcw sideCross sideDot sideLeft sideLeftOf sidePt sidePr
 /-! ## Local geometry -/
 
 theorem sideCross_mir (u v : Point) : sideCross (mir u) (mir v) = sideCross v u := by
-  unfold sideCross mir; simp; ring
+  ufs sideCross mir; ring
 
 theorem sideDot_mir (u v : Point) : sideDot (mir u) (mir v) = sideDot u v := by
-  unfold sideDot mir; simp
+  ufs sideDot mir
 
 /-- **The mirror reverses the arc of directions.** -/
 theorem sideCcw_mir (B X A : Point) : sideCcw (mir A) (mir X) (mir B) ↔ sideCcw B X A := by
   have e1 : sideCross X A * sideDot B B = -(sideCross B X * sideDot B A) +
-      sideDot X B * sideCross B A := by unfold sideCross sideDot; ring
+      sideDot X B * sideCross B A := by ufring sideCross sideDot
   have e2 : sideDot A X * sideDot B B = sideDot B A * sideDot B X +
-      sideCross B A * sideCross B X := by unfold sideCross sideDot; ring
+      sideCross B A * sideCross B X := by ufring sideCross sideDot
   have hBB : 0 ≤ sideDot B B := by unfold sideDot; nlinarith [sq_nonneg B.1, sq_nonneg B.2]
   have hB0 : sideDot B B = 0 → sideDot B A = 0 := by
     intro h; unfold sideDot at h ⊢
     have h1 : B.1 = 0 := by nlinarith [sq_nonneg B.1, sq_nonneg B.2]
     have h2 : B.2 = 0 := by nlinarith [sq_nonneg B.1, sq_nonneg B.2]
-    rw [h1, h2]; ring
-  have hdAB : sideDot A B = sideDot B A := by unfold sideDot; ring
+    rwring [h1, h2]
+  have hdAB : sideDot A B = sideDot B A := by ufring sideDot
   unfold sideCcw
   simp only [sideCross_mir, sideDot_mir, hdAB]
   constructor
@@ -101,8 +104,8 @@ theorem sideLeftOf_mir (a v b x : Point) :
 /-- Reversing an edge flips the offset side. -/
 theorem offset_rev (u v : Point) (t δ : ℝ) : offset v u t (-δ) = offset u v (1 - t) δ := by
   apply Prod.ext
-  · simp only [Chazelle.Jordan.offset_fst]; ring
-  · simp only [Chazelle.Jordan.offset_snd]; ring
+  · sir only [Chazelle.Jordan.offset_fst]
+  · sir only [Chazelle.Jordan.offset_snd]
 
 /-! ## Mirrored walks -/
 
@@ -187,7 +190,7 @@ theorem posMir_bounds {n c p' : ℕ} (hn : 0 < n) {t' : ℝ} (ht0 : 0 ≤ t') (h
   split_ifs with h
   · exact ⟨Nat.mod_lt _ hn, le_refl _, one_pos⟩
   · have : 0 < t' := lt_of_le_of_ne ht0 (Ne.symm h)
-    exact ⟨Nat.mod_lt _ hn, by simp only; linarith, by simp only; linarith⟩
+    exact ⟨Nat.mod_lt _ hn, by sil only, by sil only⟩
 
 /-- **`posMir` is an involution.** -/
 theorem posMir_posMir {n c p' : ℕ} (hc : c < n) (hp : p' < n) {t' : ℝ} (ht1 : t' < 1) :

@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.MergeAsmMath
 public import Chazelle.Core.GranNFBounds
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F merge assembly, part 2: the straight-line pieces of the merge program
@@ -193,29 +194,29 @@ theorem gamS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     fun c₂ hw₂ h45 h20' => by
       have e := Exec.addN (P := P) hw₂ 100045 100045 100020 (by
         rw [h45, h20']; have := min_le_left g (2 * m); omega)
-      exact ⟨_, .seq e (.skip e.wb_right), by simp only [upd_same]; rw [h45, h20'],
-        fun r hr => by simp only [upd_other _ _ _ hr]⟩
+      exact ⟨_, .seq e (.skip e.wb_right), by simp [upd_same]; rw [h45, h20'],
+        fun r hr => by simp [upd_other _ _ _ hr]⟩
   by_cases hlt : c₁.nreg 100040 < c₁.nreg 100043
   · have e₂ := Exec.copyN (P := P) hw₁ 100045 100040
     obtain ⟨c₃, e₃, v₃, r₃⟩ := tail _ e₂.wb_right (by
-        simp only [upd_same]; rw [v40]; rw [v40, v43] at hlt; omega)
-      (by simp only [upd_other _ _ _ (show (100020 : ℕ) ≠ 100045 by decide)]
+        simp [upd_same]; rw [v40]; rwo [v40, v43] at hlt)
+      (by simp [upd_other _ _ _ (show (100020 : ℕ) ≠ 100045 by decide)]
           rw [r₁ _ (by decide), h20])
     have ex : Exec P W gamS c c₃ (k₁ + ((1 + 0) + 1 + 1)) :=
       .seq e₁ (.seq (.ifLtN_true hlt (.seq e₂ (.skip e₂.wb_right))) e₃)
     refine ⟨c₃, _, ex, by omega, v₃, exec_frameB ex wr_gamS, fun r hr => ?_⟩
     rw [r₃ r (by omega)]
-    simp only [upd_other _ _ _ (show r ≠ 100045 by omega)]; exact r₁ r hr
+    simp [upd_other _ _ _ (show r ≠ 100045 by omega)]; exact r₁ r hr
   · have e₂ := Exec.copyN (P := P) hw₁ 100045 100043
     obtain ⟨c₃, e₃, v₃, r₃⟩ := tail _ e₂.wb_right (by
-        simp only [upd_same]; rw [v43]; rw [v40, v43] at hlt; omega)
-      (by simp only [upd_other _ _ _ (show (100020 : ℕ) ≠ 100045 by decide)]
+        simp [upd_same]; rw [v43]; rwo [v40, v43] at hlt)
+      (by simp [upd_other _ _ _ (show (100020 : ℕ) ≠ 100045 by decide)]
           rw [r₁ _ (by decide), h20])
     have ex : Exec P W gamS c c₃ (k₁ + ((1 + 0) + 2 + 1)) :=
       .seq e₁ (.seq (.ifLtN_false hlt (.seq e₂ (.skip e₂.wb_right))) e₃)
     refine ⟨c₃, _, ex, by omega, v₃, exec_frameB ex wr_gamS, fun r hr => ?_⟩
     rw [r₃ r (by omega)]
-    simp only [upd_other _ _ _ (show r ≠ 100045 by omega)]; exact r₁ r hr
+    simp [upd_other _ _ _ (show r ≠ 100045 by omega)]; exact r₁ r hr
 
 end
 

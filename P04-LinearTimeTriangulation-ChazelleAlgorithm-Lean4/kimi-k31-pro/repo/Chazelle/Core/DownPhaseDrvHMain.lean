@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvHLoop
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase driver, host RAM (D3a), part 8: the contract
@@ -43,7 +46,7 @@ theorem nfAt_recs {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' :
     rcases hy : N'.chord i with ⟨y1, y2, y3, y4, y5⟩
     rw [hx] at a1 a2 a3 a4 a5; rw [hy] at b1 b2 b3 b4 b5
     simp only at a1 a2 a3 a4 a5 b1 b2 b3 b4 b5
-    simp only [CRec.mk.injEq]; omega
+    sio only [CRec.mk.injEq]
   · obtain ⟨a1, a2, a3, a4, a5⟩ := ha j hj
     obtain ⟨b1, b2, b3, b4, b5⟩ := ha' j (by omega)
     change N.arc j = N'.arc j
@@ -51,7 +54,7 @@ theorem nfAt_recs {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' :
     rcases hy : N'.arc j with ⟨y1, ⟨y2, y3⟩, ⟨y4, y5⟩⟩
     rw [hx] at a1 a2 a3 a4 a5; rw [hy] at b1 b2 b3 b4 b5
     simp only at a1 a2 a3 a4 a5 b1 b2 b3 b4 b5
-    simp only [ARec.mk.injEq, WPos.mk.injEq]; omega
+    sio only [ARec.mk.injEq, WPos.mk.injEq]
   · obtain ⟨a1, a2, a3, a4, a5⟩ := hr q hq
     obtain ⟨b1, b2, b3, b4, b5⟩ := hr' q (by omega)
     change N.region q = N'.region q
@@ -78,7 +81,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 /-- **The setup**: constants, bases of the normal form and the record of region `r`. -/
 theorem setupS_exec (c : Config) (hw : WordsBounded W c) {B r A₀ : ℕ}
     (h00 : c.nreg 215000 = B) (h01 : c.nreg 215001 = r) (hA₀ : c.nreg 9999 = A₀)
@@ -118,7 +120,6 @@ theorem setupS_exec (c : Config) (hw : WordsBounded W c) {B r A₀ : ℕ}
 
 end exec
 
-set_option maxHeartbeats 4000000 in
 /-- **D3a: the host RAM.** -/
 theorem hostRamSpec : DrvR.HostRamSpec := by
   refine ⟨hostS, 3000, ?_⟩
@@ -139,7 +140,7 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
     subst hlidef
     by_cases h : c.nreg 215002 = 1
     · simp [h]
-    · simp only [h, decide_false, Bool.false_eq_true, ↓reduceIte]; omega
+    · sio only [h, decide_false, Bool.false_eq_true, ↓reduceIte]
   have hN := hNW.nfAt
   obtain ⟨hb7, hbc, hba, hbr, hbra, hbrc⟩ := Restore.nf_bounds hNW
   obtain ⟨-, -, -, -, -, hNc, hNa, hNr, -⟩ := hN
@@ -162,8 +163,8 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
     · rw [sm, s25]
       obtain ⟨a1, a2, a3, a4, a5⟩ := hNc i hi
       exact ⟨a1, a2, a3, by have := hbc i hi; omega⟩
-  have hB₁ : Buf P.n (c.nreg 9999) [] d₁ := ⟨ItemsAt.nil _ _, by rw [s40]; simp,
-    by rw [s11]; rfl, by rw [s12]; rfl⟩
+  have hB₁ : Buf P.n (c.nreg 9999) [] d₁ := ⟨ItemsAt.nil _ _, by rws [s40],
+    by rwr [s11], by rwr [s12]⟩
   -- the arc loop
   obtain ⟨d₂, k₂, e₂, hk₂, B₂, E₂, m₂, f₂⟩ := arcLoop_exec (P := P) d₁ e₁.wb_right hE₁ s41 hB₁
   have hK20 : (walkItems li P.n N (c.nreg 215001)).length ≤ 20 := by
@@ -208,14 +209,14 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
   refine ⟨_, _, ex, show _ ≤ 3000 by omega, ⟨fun q hq hq' => fA.1 q ?_,
     fun L' E' hLne' hL' hperm' hsort' hNA' => ?_⟩,
     ⟨fun q hq hqA => fA.1 q ?_, fun q _ => fR q rfl, hmem, fun a _ => by rw [fA.2.2.1],
-      fA.2.2.2, by simp only [hAL, a99]; omega,
-      by simp only [hAL, a99]; omega⟩⟩
+      fA.2.2.2, by sio only [hAL, a99],
+      by sio only [hAL, a99]⟩⟩
   · simp only [bandOf, bDownDrv] at hq
-    simp only [Ball, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+    sio only [Ball, Bool.or_eq_false_iff, decide_eq_false_iff_not]
   · have hrec := nfAt_recs hNA' hNW.nfAt
     have hH : regHost li (Qof P).n (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L' E')
         (c.nreg 215001) = if li then xs else xs.reverse := by
-      rw [regHost_congr hrec.1 hrec.2.1 hrec.2.2, hqn, ← hxs]; rfl
+      rwr [regHost_congr hrec.1 hrec.2.1 hrec.2.2, hqn, ← hxs]
     dsimp only
     rw [hlidef, hH]
     have hl : (if li then xs else xs.reverse).length = xs.length := by split_ifs <;> simp
@@ -227,7 +228,7 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
     · exact (ptsLen_reverse P.n xs).symm
   · simp only [Finset.mem_singleton, bandOf, bDownDrv] at hq
     simp only [Ball, Bool.or_eq_false_iff, decide_eq_false_iff_not]
-    rw [hAL] at hqA; omega
+    rwo [hAL] at hqA
 
 end
 

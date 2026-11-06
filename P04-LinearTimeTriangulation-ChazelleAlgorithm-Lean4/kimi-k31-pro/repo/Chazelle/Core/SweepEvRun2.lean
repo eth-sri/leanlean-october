@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepEvRunCost
+set_option maxHeartbeats 8000000
 
 /-!
 # The sweep (WP-D), stages 2–3: the run steps (`RunTask`)
@@ -23,7 +24,6 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim WalkEmbed SweepRam Sweep
 def runProg (prep start win key : Stmt) (mk2 orgs mkG : Stmt → Stmt) (sh : Stmt) : Stmt :=
   .seq prep (.seq (mk2 sh) (.seq start (.whileLtN dF K1 (iter win key orgs sh (mkG sh)))))
 
-set_option maxHeartbeats 8000000 in
 /-- **The run steps meet `RunTask`.** -/
 theorem runTask_of (hGen : GenTask) (hStop : StopTask) (hWin : WinTask) (hOrgs : OrgsTask)
     (hKey : KeyTask) (hPrep : PrepTask) (hL0 : LoopStartTask) (hL1 : StepTask) (hL2 : DoneTask)
@@ -56,7 +56,7 @@ theorem runTask_of (hGen : GenTask) (hStop : StopTask) (hWin : WinTask) (hOrgs :
   unfold runProg
   refine IRS.mono (IRS.seq (hPr sh Bs F X Ok P W c₀ c₀ J N₁ N₂ E hI0 E.hTA.symm (by
       have := Nat.mul_le_mul_left κP (Nat.le_refl (N₁.nChords + N₂.nChords + 1)); omega)) ?_)
-    hsum (fun _ h => h)
+    hsum (fun _ => id)
   rintro c₁ hI₁ hA₁ hA₁' hPO
   refine IRS.seq (hS sh Bs F X Ok P W c₀ c₁ J N₁ N₂ E hI₁ (by omega)) ?_
   rintro c₂ hI₂ hA₂ hA₂' hSO

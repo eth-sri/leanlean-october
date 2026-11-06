@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SweepEvMap3
 public import Chazelle.Core.SweepIoLocal
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), stages 2–3: the ends of the chords of `N₂` (mathematics)
@@ -58,7 +59,7 @@ theorem endOrigin_eq (J : Merge.Junction) {Q : Polygon} {N : NF}
   by_cases h : j % 2 = 0
   · rw [ite_eq_left h, ite_eq_left h, ite_eq_left h, Merge.lend_hseg hab.le, hl]; exact ⟨rfl, by simp [h]⟩
   · rw [ite_eq_right h, ite_eq_right h, ite_eq_right h, Merge.rend_hseg hab.le, hr]
-    exact ⟨rfl, by simp only [h, iff_false]; norm_num⟩
+    exact ⟨rfl, by sin only [h, iff_false]⟩
 
 /-- The far end of an end is the other end of the chord. -/
 theorem farOrigin_eq (J : Merge.Junction) {Q : Polygon} {N : NF}
@@ -110,12 +111,12 @@ theorem pos_vertex {Q : Polygon} {x : WPos} (h6 : 6 ≤ x.edge) (he : x.edge ≤
     (h0 : x.hgt = 0) :
     (chainModel C).pos Q x = C.vertex (C.sideIdx C.sideBeta (x.edge - 6)) := by
   obtain ⟨e, hgt⟩ := x
-  simp only at h6 he h0
+  simp at h6 he h0
   subst h0
   show sidePt (chainModel C).W e ((chainModel C).param Q ⟨e, 0⟩) = _
   rw [show (chainModel C).param Q ⟨e, 0⟩ = 0 from rfl, Chazelle.Chain.sidePt_zero, cm_W,
     show e = (e - 6) + 6 by omega, C.sideWalk_vtx_tour _ (by omega)]
-  simp only [Nat.add_sub_cancel]
+  simp [Nat.add_sub_cancel]
   rfl
 
 /-- **Inside a tour edge** no position is a vertex of the chain. -/
@@ -123,7 +124,7 @@ theorem pos_ne_vertex (hP : C.P.Simple) {Q : Polygon} {x : WPos} (h6 : 6 ≤ x.e
     (he : x.edge ≤ 2 * C.m + 5) (h0 : 0 < (chainModel C).param Q x)
     (h1 : (chainModel C).param Q x < 1) (k : ℕ) : (chainModel C).pos Q x ≠ C.vertex k := by
   obtain ⟨e, hgt⟩ := x
-  simp only at h6 he
+  simp at h6 he
   show sidePt (chainModel C).W e ((chainModel C).param Q ⟨e, hgt⟩) ≠ _
   rw [cm_W]
   obtain ⟨k', -, s, hs, hpt, -⟩ := C.sideTour_open C.sideBeta (i := e - 6) (by omega)

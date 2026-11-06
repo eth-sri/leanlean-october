@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepEvAnchor
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep (WP-D), stage 3: no tie at a copy of the shared vertex beyond the start
@@ -112,15 +113,15 @@ variable {J : Merge.Junction}
 theorem noTieV (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) :
     NoTieV J S₂ := by
   intro e he e' he' hne p t hA hA' hpt hL
-  have hF : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := F₂plus_subset J hS₂
+  have hF  := F₂plus_subset J hS₂
   have hm1 : J.m₁ ≤ J.whole.m := by
     show J.m₁ ≤ J.m₁ + J.m₂; omega
   obtain ⟨rfl, i, hi, rfl, hidx⟩ := pos_eq_vertex J.whole hP J.whole.sideBeta hA.1 hA.2.1 hA.2.2.1 hm1
     (hpt.trans J.whole_vertex_m₁.symm)
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn  := cm_n J.whole
   have hτ := tpos_lt J.whole J.m₁
-  have hp : i + 6 < (chainModel J.whole).W.n := hA.1
-  have hg : gW J < (chainModel J.whole).W.n := by unfold gW; omega
+  have hp  := hA.1
+  have hg : gW J < (chainModel J.whole).W.n := by ufo gW
   have hoff : oW J (((i + 6 : ℕ) : ℝ) + 0) = (dOf (chainModel J.whole).W.n (gW J) (i + 6) : ℝ) :=
     by rw [oW, off_key' hg hp le_rfl one_pos, add_zero]
   rw [hoff, Lst, rL1_add_rL2] at hL

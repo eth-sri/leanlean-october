@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.OracleRamChord
 public import Chazelle.Core.NFLocateSpec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Lemma 3.6 (WP-H), RAM part 11: double identification without writing memory
@@ -66,7 +70,7 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   set AB := c.nmem (B + 4) with hABdef
   set SB := c.nmem (B + 6) with hSBdef
   set x : WPos := ⟨c.nreg 50002, c.nreg 50003⟩ with hxdef
-  have hA1 : c.nmem (B + 1) = A := hN.2.1
+  have hA1  := hN.2.1
   have hsl : N.seq.length = A := seq_length hNF
   have hseq : ∀ i, i < A → c.nmem (SB + i) = N.seq.getD i 0 := fun i hi =>
     hN.2.2.2.2.2.2.2.2.1 i (by omega)
@@ -82,7 +86,7 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   have b1 : c₁.nreg 50001 = B := f₁.1 _ (by decide)
   have b2 : c₁.nreg 50002 = c.nreg 50002 := f₁.1 _ (by decide)
   have b3 : c₁.nreg 50003 = c.nreg 50003 := f₁.1 _ (by decide)
-  have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have m₁  := f₁.2.2.1
   -- 2. the setup
   obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W locSetup c₁ c₂ k₂ ∧ k₂ = 14 ∧
       (c₂.nreg 10500 = c.nreg 50002 ∧ c₂.nreg 10501 = c.nreg 50003 ∧
@@ -91,12 +95,12 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
     unfold locSetup
     exec_block
     · omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
     · refine ⟨rfl, ?_⟩
       config_simp
       rw [b1, b2, b3, m₁]
@@ -117,11 +121,11 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
     rw [hseq i hi]
     exact cmpPr_eq hN x hx hst (seq_lt hNF hi)
   obtain ⟨c₃, k₃, e₃, hk₃, hJ₃, hL₃, m₃, a₃, ht₃, hpre₃, hpost₃⟩ := tsearch_exec (P := P) hcmp
-    (by decide) (rT := 120041) (rL := 120042) (T := TB) (L := L) (by unfold bandOf bLocate; omega)
-    (by unfold bandOf bLocate; omega) w₂ hJ₂ (cmpJ_stable x d AB A SB TB c.nmem)
-    (by rw [R₂ _ (by decide) (by decide)]; exact hTBr) (by rw [R₂ _ (by decide) (by decide)]; exact hLr)
-    (fun j hj => by rw [m₂]; exact htab j hj) (by rw [q104]; exact hbig)
-    (by rw [q103, q104]; exact hSB) hTW
+    (by decide) (rT := 120041) (rL := 120042) (T := TB) (L := L) (by ufo bandOf bLocate)
+    (by ufo bandOf bLocate) w₂ hJ₂ (cmpJ_stable x d AB A SB TB c.nmem)
+    (by rwx [R₂ _ (by decide) (by decide)]) (by rwx [R₂ _ (by decide) (by decide)])
+    (fun j hj => by rw [m₂]; exact htab j hj) (by rwx [q104])
+    (by rwx [q103, q104]) hTW
     (fun i j hij hj hprj => by
       rw [q103, m₂] at hprj ⊢
       rw [q104] at hj
@@ -132,7 +136,7 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   obtain ⟨-, -, -, -, h504, -, -⟩ := hJ₃
   -- 4. the spine position
   set t := c₃.nreg 50105 with htdef
-  have hpick := locate_pick (fun y hy => hcov2 y hy) hNF x hA0 ht₃
+  have hpick := locate_pick (hcov2) hNF x hA0 ht₃
     (fun i hi => (hpr i (by omega)).1 (hpre₃ i hi))
     (fun hi hk => by
       have := (hpr t hi).2 hk
@@ -149,9 +153,9 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
       c₄.nreg 120170 = (if 0 < t then t - 1 else A - 1) := by
     unfold myFinish
     by_cases h0 : 0 < t
-    · exact ⟨_, _, .ifLtN_true (by rw [c12]; exact h0) (Exec.subN w₃ _ _ _), by omega,
+    · exact ⟨_, _, .ifLtN_true (by rwx [c12]) (Exec.subN w₃ _ _ _), by omega,
         by config_simp; rw [c11, ite_eq_left h0]⟩
-    · exact ⟨_, _, .ifLtN_false (by rw [c12]; exact h0) (Exec.subN w₃ _ _ _), by omega,
+    · exact ⟨_, _, .ifLtN_false (by rwx [c12]) (Exec.subN w₃ _ _ _), by omega,
         by config_simp; rw [c11, h504, ite_eq_right h0]⟩
   have ex : Exec P W myLoc c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have f₃ := exec_frameB e₃ (B := fun r => Bcmp r || decide (50100 ≤ r ∧ r ≤ 50116)) (by decide)
@@ -160,12 +164,12 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
     (FrameB.mono f₁ fun r hr => by simp [BL, hr]).trans
       ((FrameB.mono f₂ fun r hr => by simp [BL, hr]).trans
         ((FrameB.mono f₃ fun r hr => by
-          simp only [Bool.or_eq_true] at hr
+          simp [Bool.or_eq_true] at hr
           rcases hr with hr | hr <;> simp [BL, hr]).trans
-          (FrameB.mono f₄ fun r hr => by simp only [decide_eq_true_eq] at hr; simp [BL, hr])))
+          (FrameB.mono f₄ fun r hr => by simp [decide_eq_true_eq] at hr; simp [BL, hr])))
   refine ⟨c₄, _, ex, ?_, fr, ?_, ?_⟩
   · omega
-  · rw [v₄]; split_ifs <;> omega
+  · rw [v₄]; splao
   · rw [v₄]; exact hpick.2
 end
 

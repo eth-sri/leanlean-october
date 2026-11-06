@@ -5,6 +5,8 @@ public import Chazelle.Core.SweepIoLHit5
 public import Chazelle.Core.SweepIoQPos
 public import Chazelle.Core.SweepEvSym
 public import Chazelle.Core.RestoreTestMath
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), stage 3: the genuineness check, mathematics
@@ -35,7 +37,7 @@ open Chazelle.Chain (sidePt sideLeft)
 
 theorem rayPt_rev (a : Point) (σ τ u : ℝ) : rayPt (rayPt a σ τ) (-σ) u = rayPt a σ (τ - u) := by
   refine Prod.ext ?_ rfl
-  simp only [rayPt]; ring
+  sir only [rayPt]
 
 /-- Points of the chain or of the boundary of its box are off its domain. -/
 theorem not_dom_of_onCB {C : Chain} {p : Point} (h : OnCB C p) : p ∉ C.dom := by
@@ -81,7 +83,7 @@ theorem genuine_iff_abs {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ 
     (σ = -1 → (Genuine C a σ τ ↔
       a.1 < (rayPt (rayPt a σ τ) (-σ) (C.hitParam (rayPt a σ τ) (-σ))).1)) := by
   rw [genuine_iff_rev hσ ha hw h0 htop hfree]
-  refine ⟨fun h1 => ?_, fun h1 => ?_⟩ <;> subst h1 <;> simp only [rayPt_fst] <;>
+  refine ⟨fun h1 => ?_, fun h1 => ?_⟩ <;> subst h1 <;> simp [rayPt_fst] <;>
     constructor <;> intro h <;> linarith
 
 /-- **The least candidate of the local hit is the hit**: candidates are positive parameters of
@@ -111,8 +113,8 @@ theorem arr_facts {C : Chain} {Q : Polygon} {N : ℕ} {x : WPos} {w : Point} {σ
       w ∉ C.dom := by
   have hpos : (chainModel C).pos Q x = w := by
     rw [pos_eq_sidePt']; exact harr.2.2.2.1
-  have hcl : PosClass C Q x := posClass_of he hpp.1 hpp.2.1 (by rw [hpos]; exact hy)
-    (Or.inl (by rw [hpos]; exact htop))
+  have hcl : PosClass C Q x := posClass_of he hpp.1 hpp.2.1 (by rwx [hpos])
+    (Or.inl (by rwx [hpos]))
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
   have hloc : (x.edge = 1 ∨ x.edge = 3) ∨ (6 ≤ x.edge ∧ (chainModel C).pos Q x ∈ C.set) := by
     rcases hcl with h | ⟨h6, hlt⟩ | ⟨hend, hz⟩
@@ -128,7 +130,7 @@ theorem arr_facts {C : Chain} {Q : Polygon} {N : ℕ} {x : WPos} {w : Point} {σ
         le_rfl one_pos
   refine ⟨hpos, hcl, hloc, ?_⟩
   rw [← hpos]
-  rcases posClass_pt hcl hpp.1 hpp.2.1 (by rw [hpos]; exact hy) with h | ⟨h, -⟩
+  rcases posClass_pt hcl hpp.1 hpp.2.1 (by rwx [hpos]) with h | ⟨h, -⟩
   · exact not_dom_of_onCB (Or.inl h)
   · exact not_dom_of_onCB (Or.inr (Or.inl h))
 
@@ -149,7 +151,7 @@ theorem vtx_fix {M : Model} {Q : Polygon} {e h' : ℕ} (hht : (Q.vtx h').2 = (M.
     unfold Model.pos; rw [hp0, Geometry.lerp_zero]
   have hpar : M.param Q ⟨e, h' + 1⟩ = 0 :=
     (param_eq_zero_iff M Q ⟨e, h' + 1⟩).2 (Or.inr (Or.inr (by
-      simp only [Nat.add_sub_cancel]; rw [hht, hwa])))
+      simp [Nat.add_sub_cancel]; rw [hht, hwa])))
   refine ⟨hpar, ?_⟩
   unfold Model.pos
   rw [hpar, hp0]
@@ -161,7 +163,7 @@ theorem pos_top_copies (C : Chain) (Q : Polygon) :
   have h0 : (chainModel C).param Q ⟨2 * C.m + 6, 0⟩ = 0 := rfl
   have h0' : (chainModel C).param Q ⟨6, 0⟩ = 0 := rfl
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
-  simp only [h0, h0', Chazelle.Chain.sidePt_zero, hW]
+  simp [h0, h0', Chazelle.Chain.sidePt_zero, hW]
   have e1 := C.sideWalk_vtx_tour C.sideBeta (i := 2 * C.m) le_rfl
   have e2 := C.sideWalk_vtx_tour C.sideBeta (i := 0) (by omega)
   rw [show 0 + 6 = 6 by rfl] at e2

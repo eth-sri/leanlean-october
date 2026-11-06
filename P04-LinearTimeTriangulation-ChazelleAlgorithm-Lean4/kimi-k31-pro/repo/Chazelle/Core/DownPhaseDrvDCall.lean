@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.DownPhaseDrvDGlue
 public import Chazelle.Core.DownPhaseDrvRObl
 public import Chazelle.Core.DownPhaseDrvRInv
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase restoration rounds (D8), part 7: the region loop, data and straight-line pieces
@@ -173,7 +176,6 @@ def BappT (r : ℕ) : Bool :=
 
 theorem wrM_appT : wrM BappT appT = true := by decide
 
-set_option maxHeartbeats 2000000 in
 /-- Appending the triple and the region data of the scans. -/
 theorem appT_exec (c : Config) (hw : WordsBounded W c) {d n p LB : ℕ}
     (h21 : c.nreg 216021 = d) (h20 : c.nreg 216020 = n) (h02 : c.nreg 216002 = 1)
@@ -196,14 +198,14 @@ theorem appT_exec (c : Config) (hw : WordsBounded W c) {d n p LB : ℕ}
       c'.nreg 216040 = c.nreg 81009) := by
     unfold appT
     exec_block
-    all_goals try (config_simp; simp only [h21, h20, h02, h05, h31, h16]; omega)
+    all_goals try (config_simp; sio only [h21, h20, h02, h05, h31, h16])
     · config_simp
-      simp only [h21, h02, h05, h31, h16, Machine.upd_apply]
-      split_ifs <;> first | omega | (rw [show p - 2 + 1 = p - 1 by omega]; exact hLB)
+      simp [h21, h02, h05, h31, h16, Machine.upd_apply]
+      split_ifs <;> first | omega | (rwx [show p - 2 + 1 = p - 1 by omega])
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     all_goals config_simp
-    all_goals try simp only [h21, h20, h02, h05, h31, h16]
-    all_goals try simp only [Machine.upd_apply]
+    all_goals try simp [h21, h20, h02, h05, h31, h16]
+    all_goals try simp [Machine.upd_apply]
     all_goals try split_ifs
     all_goals first | omega | rfl | (congr 2; omega)
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
@@ -220,8 +222,8 @@ theorem stB_exec (c : Config) (hw : WordsBounded W c) {d : ℕ} (h22 : c.nreg 21
       (c'.nmem = upd c.nmem d (c.nreg 216053) ∧ c'.nreg 216022 = d + 1) := by
     unfold stB
     exec_block
-    · config_simp; rw [h22, h02]; exact hd
-    · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h22, h02]
+    · config_simp; rwx [h22, h02]
+    · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h22, h02]
   exact ⟨c', k, ex, hk, q.1, q.2, exec_frameM ex wrM_stB⟩
 
 end exec

@@ -26,7 +26,6 @@ public import Chazelle.Existence.Convex
 public import Chazelle.Existence.Diagonal
 public import Chazelle.Programs.RayScan
 public import Chazelle.Programs.RayScanSpec
-public import Chazelle.Existence.Main
 public import Chazelle.Ears.Basic
 public import Chazelle.Ears.Exists
 public import Chazelle.Ears.Test
@@ -36,15 +35,9 @@ public import Chazelle.Visibility.Map
 public import Chazelle.EarClip.SubPoly
 public import Chazelle.EarClip.Abstract
 public import Chazelle.EarClip.RamDet
-public import Chazelle.EarClip.RamInTriangle
-public import Chazelle.EarClip.RamParity
-public import Chazelle.EarClip.RamKernels
 public import Chazelle.Visibility.HSeg
 public import Chazelle.Visibility.Trapezoid
-public import Chazelle.EarClip.RamMain
-public import Chazelle.EarClip.Theorem
 public import Chazelle.Visibility.Submap
-public import Chazelle.Visibility.DualTree
 public import Chazelle.Mountain.Lex
 public import Chazelle.Mountain.Orientation
 public import Chazelle.Mountain.Stack
@@ -56,7 +49,6 @@ public import Chazelle.Chain.Chord
 public import Chazelle.Chain.Separation
 public import Chazelle.Chain.Submap
 public import Chazelle.Chain.DualTree
-public import Chazelle.Chain.Restrict
 public import Chazelle.Chain.Contraction
 public import Chazelle.Chain.Boundary
 public import Chazelle.Chain.Granular
@@ -76,7 +68,6 @@ public import Chazelle.Split.Multi
 public import Chazelle.Final.Interface
 public import Chazelle.Final.Degree
 public import Chazelle.Separator.Graph
-public import Chazelle.Cost.Grades
 public import Chazelle.Cost.UpPhase
 public import Chazelle.Cost.DownPhase
 public import Chazelle.Cost.Oracle
@@ -84,7 +75,6 @@ public import Chazelle.Merge.Union
 public import Chazelle.Merge.Removal
 public import Chazelle.Merge.Augmented
 public import Chazelle.Merge.Fusion
-public import Chazelle.Chain.ArcsVertex
 public import Chazelle.Merge.Conformal
 public import Chazelle.Merge.Granularity
 public import Chazelle.Final.PieceTri
@@ -92,9 +82,6 @@ public import Chazelle.Final.RamPieceTri
 public import Chazelle.Final.Wedge
 public import Chazelle.Final.LinkSplit
 public import Chazelle.Final.RamSplit
-public import Chazelle.Exec.Interp
-public import Chazelle.Exec.Simulation
-public import Chazelle.Exec.Certified
 public import Chazelle.Core.SpecBase
 public import Chazelle.Core.SpecNF
 public import Chazelle.Core.SpecRam
@@ -105,7 +92,6 @@ public import Chazelle.Core.SpecAssembly
 public import Chazelle.Core.SpecPhases
 public import Chazelle.Core.ShearInv
 public import Chazelle.Core.ShearGood
-public import Chazelle.Core.TopIdx
 public import Chazelle.Core.Reduction
 public import Chazelle.Core.SignKernel
 public import Chazelle.Final.Transfer
@@ -145,7 +131,6 @@ public import Chazelle.Core.Facts2Trap
 public import Chazelle.Core.Facts2TrapDeg
 public import Chazelle.Core.Facts2Chain
 public import Chazelle.Core.Facts2
-public import Chazelle.Core.Locate
 public import Chazelle.Core.WalkEmbed
 public import Chazelle.Core.WalkEmbedChain
 public import Chazelle.Core.FuseMathCut
@@ -242,7 +227,6 @@ public import Chazelle.Core.SweepEvStepL0
 public import Chazelle.Core.SweepEvOrgs2
 public import Chazelle.Core.SweepIoCand1Shr
 public import Chazelle.Core.DownPhaseDrvBExpD
-public import Chazelle.Core.DownPhaseDrvBMain
 public import Chazelle.Core.SweepIoAsm5
 public import Chazelle.Core.SweepEvStepDone
 public import Chazelle.Core.SweepEvMain

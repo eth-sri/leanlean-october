@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.DownPhaseDegCount
 public import Chazelle.Core.Facts2Chain
 public import Chazelle.Core.SpecPhases
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Degree bound on host curves, part 5: `HostFullDegSpec`
@@ -63,8 +66,8 @@ theorem goodH (hP : C.P.Simple) {t : ℕ}
     · simp only [mem_insert_iff, mem_singleton_iff] at hs
       rcases hs with rfl | rfl | rfl
       · exact htop.le
-      · simp only [sideL]; linarith
-      · simp only [sideR]; linarith
+      · sil only [sideL]
+      · sil only [sideR]
   · intro s hs p hp
     rcases seg_cases hs hp with ⟨h, -⟩ | ⟨-, h⟩ | ⟨-, h, h'⟩ | ⟨-, h, h'⟩
     · have := C.abs_le_coordBound_of_mem_set h
@@ -121,15 +124,15 @@ theorem goodH (hP : C.P.Simple) {t : ℕ}
     · exact (hsetL h2 h1).elim
     · exact (hslitL h2 h1).elim
     · exact (hne rfl).elim
-    · rw [h1] at h2; linarith
+    · rwli [h1] at h2
     · exact (hsetR h2 h1).elim
     · exact (hslitR h2 h1).elim
-    · rw [h1] at h2; linarith
+    · rwli [h1] at h2
     · exact (hne rfl).elim
   · intro y hy
     have hsub : {v | IsVert (segs C) v ∧ v.2 = y} ⊆ {p | p ∈ C.P.vertices ∧ p.2 = y} := by
       rintro v ⟨hv, hvy⟩
-      obtain ⟨j, -, rfl⟩ := vert_eq_vertex hv (by rw [hvy]; exact hy)
+      obtain ⟨j, -, rfl⟩ := vert_eq_vertex hv (by rwx [hvy])
       exact ⟨vtx_mem_vertices (C.edgeIdx_lt j), hvy⟩
     exact (ncard_le_ncard hsub ((List.finite_toSet _).subset fun p hp => hp.1)).trans (ht y)
 
@@ -146,12 +149,12 @@ theorem fullDegLe_host {C : Chain} (hP : C.P.Simple) {t : ℕ}
   show {c | c ∈ C.chords ∪ F ∧ TouchesIn C.dom c U}.ncard ≤ 2 * (t + 1)
   rw [← hdom]
   refine HSegObs.deg_leH (ChainObs.goodH hP ht) (G := C.chords ∪ F) ?_
-    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rw [hdom]; exact hU)
+    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rwx [hdom])
   rintro c (hc | hc)
   · obtain ⟨k, σ, -, -, -, rfl, hh⟩ := C.chords_spec hc
-    exact ⟨_, _, _, by rw [hdom]; exact hh, C.chordSet_eq_hseg k σ⟩
+    exact ⟨_, _, _, by rwx [hdom], C.chordSet_eq_hseg k σ⟩
   · obtain ⟨y, a, b, hh, -, rfl⟩ := hF.2.1 hc
-    exact ⟨y, a, b, by rw [hdom]; exact hh, rfl⟩
+    exact ⟨y, a, b, by rwx [hdom], rfl⟩
 
 /-! ## Host vertices at one height -/
 
@@ -201,7 +204,7 @@ theorem host_ncard_le (Q : Polygon) (hDH : DistinctHeights Q) (H : Host) (y : �
           ((((List.finite_toSet _).subset fun p hp => hp.1)).union
             ((List.finite_toSet _).subset fun p hp => hp.1))
       _ ≤ _ := ncard_union_le _ _
-      _ ≤ (it :: H).length := by simp only [List.length_cons]; omega
+      _ ≤ (it :: H).length := by sio only [List.length_cons]
 
 end
 

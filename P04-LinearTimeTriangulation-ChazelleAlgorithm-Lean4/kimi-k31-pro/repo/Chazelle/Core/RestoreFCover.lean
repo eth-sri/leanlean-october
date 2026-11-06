@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.RestoreFTile
 public import Chazelle.Core.RestoreFPieceGeo
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-E, the search: the walk vertices of a light key interval
@@ -44,24 +47,24 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
   set y : ℝ := (max a j + (j + 1)) / 2 with hy
   have hy1 : a < y := by
     have := le_max_left a (j : ℝ); have := max_lt (show a < (j : ℝ) + 1 by linarith)
-      (show (j : ℝ) < (j : ℝ) + 1 by linarith); rw [hy]; linarith
+      (show (j : ℝ) < (j : ℝ) + 1 by linarith); rwli [hy]
   have hy2 : (j : ℝ) < y := by
     have := le_max_right a (j : ℝ)
     rw [hy]
     rcases le_or_gt a j with h | h
-    · rw [max_eq_right h]; linarith
-    · rw [max_eq_left h.le]; linarith
+    · rwli [max_eq_right h]
+    · rwli [max_eq_left h.le]
   have hy3 : y < j + 1 := by
     have := max_lt (show a < (j : ℝ) + 1 by linarith) (show (j : ℝ) < (j : ℝ) + 1 by linarith)
-    rw [hy]; linarith
+    rwli [hy]
   have hub := (unwrapK_bounds ha hb).2
   -- the wrapped point
   have hyb : 0 ≤ y ∧ y < 2 * n := ⟨by linarith [ha.1], by linarith⟩
   have hw := wrapK_bounds hyb.1 hyb.2
   have huw : unwrapK n a (wrapK n y) = y := unwrapK_wrapK ha hy1.le (by linarith)
   have hin : sideInArc a b (wrapK n y) :=
-    (cyc_unwrap ha ha hb hw (by rw [unwrapK_self]; exact hab)).2
-      ⟨by rw [unwrapK_self, huw]; exact hy1, by rw [huw]; linarith⟩
+    (cyc_unwrap ha ha hb hw (by rwx [unwrapK_self])).2
+      ⟨by rwx [unwrapK_self, huw], by rwli [huw]⟩
   refine ⟨Nat.mod_lt _ hnN, y - j, by linarith, by linarith, ?_⟩
   have e : ((j % n : ℕ) : ℝ) + (y - j) = wrapK n y := by
     unfold wrapK
@@ -70,7 +73,7 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
       have : y < n := by
         have : (j : ℝ) + 1 ≤ n := by exact_mod_cast hj
         linarith
-      rw [ite_eq_left this]; ring
+      rwring [ite_eq_left this]
     · have hj2 : j - n < n := by
         have : (j : ℝ) < 2 * n := by linarith
         have : j < 2 * n := by exact_mod_cast this
@@ -79,8 +82,8 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
       have : ¬ y < n := by
         have : (n : ℝ) ≤ j := by exact_mod_cast (by omega : n ≤ j)
         linarith
-      rw [ite_eq_right this, Nat.cast_sub (by omega)]; ring
-  rw [e]; exact hin
+      rwring [ite_eq_right this, Nat.cast_sub (by omega)]
+  rwx [e]
 
 /-- **The walk vertices of a light closed key interval** are within `9` steps of its start edge. -/
 theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
@@ -109,7 +112,7 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
   set P := unwrapK n a p with hPdef
   have hPb : a ≤ P ∧ P ≤ unwrapK n a b := by
     rcases hx with hx | hx | hx
-    · have := (cyc_unwrap ha ha hke hpn (by rw [unwrapK_self]; exact hab)).1 hx
+    · have := (cyc_unwrap ha ha hke hpn (by rwx [unwrapK_self])).1 hx
       rw [unwrapK_self] at this; exact ⟨this.1.le, this.2.le⟩
     · rw [hPdef, hx, unwrapK_self]; exact ⟨le_rfl, hab.le⟩
     · rw [hPdef, hx]; exact ⟨hab.le, le_rfl⟩
@@ -118,7 +121,7 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
     rw [hPdef]; unfold unwrapK
     split_ifs
     · exact ⟨p, rfl, Nat.mod_eq_of_lt hp⟩
-    · exact ⟨p + n, by push_cast; ring, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
+    · exact ⟨p + n, by pcr, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
   have hsP : s.edge ≤ Pn := by
     have : (s.edge : ℝ) ≤ Pn := by rw [hPn]; linarith [hPb.1, hs.1]
     exact_mod_cast this
@@ -141,8 +144,8 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
   set S : Set ℕ := (fun d => (s.edge + d) % n) '' Set.Iio t with hS
   have hinj : Set.InjOn (fun d => (s.edge + d) % n) (Set.Iio t) := by
     intro x hx y hy hxy
-    simp only [Set.mem_Iio] at hx hy
-    simp only at hxy
+    simp [Set.mem_Iio] at hx hy
+    simp at hxy
     by_contra hne'
     rcases Nat.lt_or_gt_of_ne hne' with h | h
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy)
@@ -203,7 +206,7 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
   set P := unwrapK n a p with hPdef
   have hPb : a ≤ P ∧ P ≤ unwrapK n a b := by
     rcases hx with hx | hx | hx
-    · have := (cyc_unwrap ha ha hke hpn (by rw [unwrapK_self]; exact hab)).1 hx
+    · have := (cyc_unwrap ha ha hke hpn (by rwx [unwrapK_self])).1 hx
       rw [unwrapK_self] at this; exact ⟨this.1.le, this.2.le⟩
     · rw [hPdef, hx, unwrapK_self]; exact ⟨le_rfl, hab.le⟩
     · rw [hPdef, hx]; exact ⟨hab.le, le_rfl⟩
@@ -212,7 +215,7 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
     rw [hPdef]; unfold unwrapK
     split_ifs
     · exact ⟨p, rfl, Nat.mod_eq_of_lt hp⟩
-    · exact ⟨p + n, by push_cast; ring, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
+    · exact ⟨p + n, by pcr, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
   have hsP : s.edge ≤ Pn := by
     have : (s.edge : ℝ) ≤ Pn := by rw [hPn]; linarith [hPb.1, hs.1]
     exact_mod_cast this
@@ -235,8 +238,8 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
   set S : Set ℕ := (fun d => (s.edge + d) % n) '' Set.Iio t with hS
   have hinj : Set.InjOn (fun d => (s.edge + d) % n) (Set.Iio t) := by
     intro x hx y hy hxy
-    simp only [Set.mem_Iio] at hx hy
-    simp only at hxy
+    simp [Set.mem_Iio] at hx hy
+    simp at hxy
     by_contra hne'
     rcases Nat.lt_or_gt_of_ne hne' with h | h
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy)

@@ -62,7 +62,7 @@ theorem no_label_of_bracket (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hn := hC.n_pos
   set n := (chainModel J.whole).W.n with hndef
   set g := 6 + tpos J.whole J.m₁ with hgdef
-  have hg : g < n := hC.hg
+  have hg  := hC.hg
   have hg0 : (0 : ℝ) ≤ (g : ℝ) := Nat.cast_nonneg _
   have hgn : (g : ℝ) < n := by exact_mod_cast hg
   have hne := (hC.hM.eq_iff_not_separates hC.hF hC.hfin hG hG hpx (Nat.mod_lt _ hn) htx ht hcx

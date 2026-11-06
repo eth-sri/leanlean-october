@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Chain.Basic
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Vertex chords of the subchain visibility model
@@ -92,7 +95,7 @@ theorem hit_of_initial {v : Point} (hv : v ∈ box C.radius) {σ : ℝ} (hσ : �
     intro t ht
     by_contra h
     exact ht.2 (hint t ht.1 (not_le.1 h))
-  have h1 : t₀ ≤ C.hitParam v σ := le_csInf hne hge
+  have h1  := le_csInf hne hge
   have hset : C.hitSet v σ = {t : ℝ | t₀ ≤ t ∧ rayPt v σ t ∈ C.domᶜ} := by
     ext t
     constructor
@@ -101,8 +104,7 @@ theorem hit_of_initial {v : Point} (hv : v ∈ box C.radius) {σ : ℝ} (hσ : �
   have hclosed : IsClosed (C.hitSet v σ) := by
     rw [hset]
     exact isClosed_Ici.inter (C.isClosed_dom_compl.preimage (continuous_rayPt v σ))
-  have h2 : rayPt v σ (C.hitParam v σ) ∈ C.domᶜ :=
-    (hclosed.csInf_mem hne (C.hitSet_bddBelow v σ)).2
+  have h2  := (hclosed.csInf_mem hne (C.hitSet_bddBelow v σ)).2
   refine ⟨h1, h2, fun t ht1 ht2 => ?_⟩
   by_contra hmem
   have : t ∈ C.hitSet v σ := ⟨ht1, hmem⟩
@@ -216,8 +218,8 @@ theorem chordEnd_fst_eq_of_not_mem_box {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (h�
       rw [neg_one_mul, abs_lt] at this
       linarith [this.1]
   have hnot : ¬ |(C.chordEnd k σ).1| < C.radius := fun hlt => hbox ⟨hlt, by
-    rw [chordEnd_snd]; exact hv2⟩
-  have habs : |(C.chordEnd k σ).1| = C.radius := le_antisymm hle (not_lt.1 hnot)
+    rwx [chordEnd_snd]⟩
+  have habs  := le_antisymm hle (not_lt.1 hnot)
   rcases hσ with rfl | rfl
   · simp only [chordEnd_fst, one_mul] at habs ⊢
     rcases abs_eq (C.radius_pos.le) |>.1 habs with h | h
@@ -285,7 +287,7 @@ theorem chordSet_eq_openChordSet_union {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (h�
     rcases ht0.lt_or_eq with h0 | h0
     · rcases ht1.lt_or_eq with h1 | h1
       · exact Or.inl ⟨t, ⟨h0, h1⟩, rfl⟩
-      · right; right; rw [h1]; rfl
+      · right; right; rwr [h1]
     · right; left; rw [← h0, rayPt_zero]
   · rintro (⟨t, ht, rfl⟩ | rfl | rfl)
     · exact ⟨t, ⟨ht.1.le, ht.2.le⟩, rfl⟩
@@ -309,7 +311,7 @@ theorem hchordIn_inter {D : Set Point} {y a b y' a' b' : ℝ} (h : IsHChordIn D 
       ((p = (a, y) ∨ p = (b, y)) ∧ (p = (a', y') ∨ p = (b', y'))) := by
   obtain ⟨hpy, hpa, hpb⟩ := hp
   obtain ⟨hpy', hpa', hpb'⟩ := hp'
-  have hyy : y = y' := hpy.symm.trans hpy'
+  have hyy  := hpy.symm.trans hpy'
   subst hyy
   by_cases hend : p.1 = a ∨ p.1 = b
   · have hpD : p ∉ D := by
@@ -331,8 +333,8 @@ theorem hchordIn_inter {D : Set Point} {y a b y' a' b' : ℝ} (h : IsHChordIn D 
       rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at this
       exact hpD this
   · push Not at hend
-    have ha : a < p.1 := lt_of_le_of_ne hpa (Ne.symm hend.1)
-    have hb : p.1 < b := lt_of_le_of_ne hpb hend.2
+    have ha  := lt_of_le_of_ne hpa (Ne.symm hend.1)
+    have hb  := lt_of_le_of_ne hpb hend.2
     have hint := h.open_mem p.1 ha hb
     rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at hint
     have ha' : a' < p.1 := by
@@ -383,19 +385,19 @@ theorem isHChordIn_chord {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨
   have hvD : C.vertex k ∉ C.dom := fun hd => C.not_mem_set_of_mem_dom hd (C.vertex_mem_set hk)
   rcases hσ with rfl | rfl
   · have hlt : (C.vertex k).1 < (C.chordEnd k 1).1 := by
-      simp only [chordEnd_fst, one_mul]; linarith
+      sil only [chordEnd_fst, one_mul]
     rw [min_eq_left hlt.le, max_eq_right hlt.le]
     refine ⟨hlt, hv ▸ hvD, he ▸ hend, fun x hx1 hx2 => ?_⟩
     have := hint (x - (C.vertex k).1) (by linarith)
-      (by simp only [chordEnd_fst, one_mul] at hx2; linarith)
+      (by sil only [chordEnd_fst, one_mul] at hx2)
     simp only [rayPt, one_mul, add_sub_cancel] at this
     exact this
   · have hlt : (C.chordEnd k (-1)).1 < (C.vertex k).1 := by
-      simp only [chordEnd_fst, neg_one_mul]; linarith
+      sil only [chordEnd_fst, neg_one_mul]
     rw [min_eq_right hlt.le, max_eq_left hlt.le]
     refine ⟨hlt, he ▸ hend, hv ▸ hvD, fun x hx1 hx2 => ?_⟩
     have := hint ((C.vertex k).1 - x) (by linarith)
-      (by simp only [chordEnd_fst, neg_one_mul] at hx1; linarith)
+      (by sil only [chordEnd_fst, neg_one_mul] at hx1)
     simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel] at this
     exact this
 

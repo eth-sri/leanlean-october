@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFDecompRamRound
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Tree decomposition (WP-C), part 20: the loop of rounds on the RAM
@@ -38,10 +40,10 @@ theorem rinv_start (h : Rooted R K up dn ord pos prg pch) {σ : RS}
     (hact : σ.act 0 = 1) (hside : σ.side 0 = 2) (hfin : σ.fin = 0)
     (gc : ℕ → Finset ℕ) (cr : ℕ → ℕ) :
     RInv R K D prg pch isdn chOf 0 σ gc cr where
-  i0 e he hp := by rw [hpend e he] at hp; omega
-  i1 e he hr := by rw [hrem e he] at hr; omega
-  i2 e he hr := by rw [hrem e he] at hr; omega
-  i3 e he hp := by rw [hpend e he] at hp; omega
+  i0 e he hp := by rwo [hpend e he] at hp
+  i1 e he hr := by rwo [hrem e he] at hr
+  i2 e he hr := by rwo [hrem e he] at hr
+  i3 e he hp := by rwo [hpend e he] at hp
   i4 t ht htop _ := by
     rw [istop_start h hrem ht] at htop
     subst htop
@@ -59,7 +61,7 @@ theorem rinv_start (h : Rooted R K up dn ord pos prg pch) {σ : RS}
     have := h.hR
     simp only [Function.iterate_zero, id]
     omega
-  i7 _ := ⟨fun e he => by rw [hrem e he]; omega, hact, hside⟩
+  i7 _ := ⟨fun e he => by rwo [hrem e he], hact, hside⟩
   i8 hj := absurd hj (by norm_num)
   i9 := by
     rw [hfin]
@@ -143,8 +145,8 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
       (fun e he => by
         show tv c3.nmem A R 12 e = 0
         rw [tv_lt (by omega), m3]; exact h12 e (by omega))
-      (by show tv c3.nmem A R 13 0 = 1; rw [tv_lt hR0, m3]; exact h13)
-      (by show tv c3.nmem A R 15 0 = 2; rw [tv_lt hR0, m3]; exact h15)
+      (by show tv c3.nmem A R 13 0 = 1; rwx [tv_lt hR0, m3])
+      (by show tv c3.nmem A R 15 0 = 2; rwx [tv_lt hR0, m3])
       (by show c3.nreg 60023 = 0; exact r23) _ _
   -- the loop
   obtain ⟨c', k, e, ⟨hw', hf', hst', h7', hjr, j, hjd, gc, cr, hI'⟩, htest, hk⟩ :=
@@ -167,7 +169,7 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
       have : rounds D K + 1 - j = (rounds D K + 1 - (j + 1)) + 1 := by omega
       rw [this, Nat.mul_add]
       omega)
-    ⟨e3.wb_right, hf3, by rw [m3]; exact hst, by rw [m3]; exact h7, by omega, 0, r22, _, _, hI0⟩
+    ⟨e3.wb_right, hf3, by rwx [m3], by rwx [m3], by omega, 0, r22, _, _, hI0⟩
   have hR' := hR.frame hf'
   rw [hR'.rR] at htest
   subst hjd

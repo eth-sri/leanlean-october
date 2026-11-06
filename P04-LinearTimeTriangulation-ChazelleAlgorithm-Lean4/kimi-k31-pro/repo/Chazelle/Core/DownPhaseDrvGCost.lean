@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.Lemma41Bridge
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down-phase driver, region procedure (D5), part 2: the cost of one merge
@@ -36,7 +39,7 @@ def mcK (κM κ : ℕ) : ℕ := κM * κ ^ 2 * 14704 * 3 * 19368 * 121 * 8192 * 
 theorem ceilBeta_add_65 (μ : ℕ) : ceilBeta μ + 13 ≤ ceilBeta (μ + 65) := by
   unfold ceilBeta
   rw [beta_eq]
-  have e : (1 / 5 : ℝ) * ((μ + 65 : ℕ) : ℝ) = (1 / 5 : ℝ) * μ + (13 : ℕ) := by push_cast; ring
+  have e : (1 / 5 : ℝ) * ((μ + 65 : ℕ) : ℝ) = (1 / 5 : ℝ) * μ + (13 : ℕ) := by pcr
   rw [e, Nat.ceil_add_natCast (by positivity)]
 
 /-- The granularity of the merges is served at grade `μ + 65`. -/
@@ -44,7 +47,7 @@ theorem gamma_le_gradeGran {μ γ₀ γ : ℕ} (hg1 : γ₀ ≤ 4096 * 2 ^ ceilB
     γ + fuseLoss ≤ gradeGran (μ + 65) := by
   have h1 : 2 ^ (ceilBeta μ + 13) ≤ 2 ^ ceilBeta (μ + 65) :=
     Nat.pow_le_pow_right (by norm_num) (ceilBeta_add_65 μ)
-  have h2 : 2 ^ ceilBeta (μ + 65) ≤ gradeGran (μ + 65) := by unfold gradeGran; omega
+  have h2 : 2 ^ ceilBeta (μ + 65) ≤ gradeGran (μ + 65) := by ufo gradeGran
   have h3 : 1 ≤ 2 ^ ceilBeta μ := Nat.one_le_two_pow
   rw [pow_add] at h1
   unfold fuseLoss
@@ -76,7 +79,7 @@ theorem mcost_le_phiL (κM κ : ℕ) {μ γ₀ γ M x y : ℕ} (hg1 : γ₀ ≤ 
 
 /-- `E^75 = 2^μ`. -/
 theorem E_pow_75 (μ : ℕ) : ((2 : ℝ) ^ ((μ : ℝ) / 75)) ^ 75 = (2 : ℝ) ^ μ := by
-  rw [E_pow, ← Real.rpow_natCast]; congr 1; push_cast; ring
+  rw [E_pow, ← Real.rpow_natCast]; congr 1; pcr
 
 /-- **The cost of one merge of the region chain is `O(lemma41Nat μ)`.** -/
 theorem mcost_le (κM κ : ℕ) {μ γ₀ γ M x y : ℕ} (h7 : 7 ≤ μ) (hg0 : 2 * gradeGran μ ≤ γ₀)
@@ -92,7 +95,7 @@ theorem mcost_le (κM κ : ℕ) {μ γ₀ γ M x y : ℕ} (h7 : 7 ≤ μ) (hg0 :
     rw [E_pow, hE, E_pow]
     have : (2 : ℝ) ^ ((14 : ℕ) * ((μ + 65 : ℕ) : ℝ) / 75) =
         (2 : ℝ) ^ ((910 : ℝ) / 75) * (2 : ℝ) ^ ((14 : ℕ) * (μ : ℝ) / 75) := by
-      rw [← Real.rpow_add (by norm_num)]; congr 1; push_cast; ring
+      rw [← Real.rpow_add (by norm_num)]; congr 1; pcr
     rw [this]
     have h13 : (2 : ℝ) ^ ((910 : ℝ) / 75) ≤ (2 : ℝ) ^ (13 : ℝ) :=
       Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
@@ -103,20 +106,20 @@ theorem mcost_le (κM κ : ℕ) {μ γ₀ γ M x y : ℕ} (h7 : 7 ≤ μ) (hg0 :
   -- `(μ + 65)² ≤ 121 μ²`
   have hμ : (((μ + 65 : ℕ) : ℝ)) ^ 2 ≤ 121 * (μ : ℝ) ^ 2 := by
     have : (7 : ℝ) ≤ μ := by exact_mod_cast h7
-    push_cast; nlinarith
+    pcnl
   -- the chords
   have hgg : (2 : ℝ) ^ ceilBeta μ ≤ gradeGran μ := by
-    have : 2 ^ ceilBeta μ ≤ gradeGran μ := by unfold gradeGran; omega
+    have : 2 ^ ceilBeta μ ≤ gradeGran μ := by ufo gradeGran
     exact_mod_cast this
   have hcb : (2 : ℝ) ^ ((μ : ℝ) / 5) ≤ (2 : ℝ) ^ ceilBeta μ := by
     rw [← Real.rpow_natCast]
     apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
     have := le_ceilBeta_real μ; linarith
   have hE15 : E ^ 15 = (2 : ℝ) ^ ((μ : ℝ) / 5) := by
-    rw [hE, E_pow]; congr 1; push_cast; ring
+    rw [hE, E_pow]; congr 1; pcr
   have hγ₀ : 2 * E ^ 15 ≤ (γ₀ : ℝ) + 1 := by
     have : (2 * gradeGran μ : ℝ) ≤ γ₀ := by exact_mod_cast hg0
-    rw [hE15]; linarith
+    rwli [hE15]
   have hM2 : 2 * (M : ℝ) + 1 ≤ 121 * E ^ 75 := by
     rw [E_pow_75]
     have : (M : ℝ) ≤ 20 * (2 * 2 ^ μ + 1) := by exact_mod_cast hM
@@ -125,7 +128,7 @@ theorem mcost_le (κM κ : ℕ) {μ γ₀ γ M x y : ℕ} (h7 : 7 ≤ μ) (hg0 :
   have hxyR : ((x + y + 1 : ℕ) : ℝ) * ((γ₀ : ℝ) + 1) ≤ 36960 * (121 * E ^ 75) + ((γ₀ : ℝ) + 1) := by
     have hx' : (x : ℝ) * ((γ₀ : ℝ) + 1) ≤ 18480 * (2 * (M : ℝ) + 1) := by exact_mod_cast hx
     have hy' : (y : ℝ) * ((γ₀ : ℝ) + 1) ≤ 18480 * (2 * (M : ℝ) + 1) := by exact_mod_cast hy
-    push_cast; nlinarith
+    pcnl
   have hxy : ((x + y + 1 : ℕ) : ℝ) ≤ 2236081 * E ^ 60 := by
     have hg0' : (0 : ℝ) < (γ₀ : ℝ) + 1 := by positivity
     have e75 : E ^ 75 = E ^ 15 * E ^ 60 := by rw [← pow_add]
@@ -145,7 +148,7 @@ theorem mcost_le (κM κ : ℕ) {μ γ₀ γ M x y : ℕ} (h7 : 7 ≤ μ) (hg0 :
   have hN : (μ : ℝ) ^ 2 * E ^ 74 ≤ lemma41Nat μ := by
     unfold lemma41Nat
     have e : E ^ 74 = (2 : ℝ) ^ ((74 : ℝ) / 75 * μ) := by
-      rw [hE, E_pow]; congr 1; push_cast; ring
+      rw [hE, E_pow]; congr 1; pcr
     rw [e]
     calc (μ : ℝ) ^ 2 * (2 : ℝ) ^ ((74 : ℝ) / 75 * μ)
         ≤ (μ : ℝ) ^ 2 * ((Nat.clog 2 μ : ℝ) + 1) * (2 : ℝ) ^ ((74 : ℝ) / 75 * μ) := by
@@ -176,7 +179,7 @@ theorem mcost_le (κM κ : ℕ) {μ γ₀ γ M x y : ℕ} (h7 : 7 ≤ μ) (hg0 :
   have hfin : (mcost κM (scF κ) (scG κ) cutGran x y γ M : ℝ) ≤
       ((mcK κM κ * lemma41Nat μ : ℕ) : ℝ) := by
     have hKK : K1 * 121 * 8192 * 2236081 ≤ (mcK κM κ : ℝ) := by
-      unfold mcK; rw [hK1]; push_cast; linarith
+      unfold mcK; rw [hK1]; pcl
     have h0 : (0 : ℝ) ≤ (μ : ℝ) ^ 2 * E ^ 74 := by positivity
     push_cast
     calc _ ≤ (K1 * 121 * 8192 * 2236081) * ((μ : ℝ) ^ 2 * E ^ 74) := hmain

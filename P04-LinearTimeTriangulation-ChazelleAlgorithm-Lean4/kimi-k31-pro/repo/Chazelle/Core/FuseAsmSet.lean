@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SpecMerge
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F fusion assembly, part 2: the fused family as a set of shots
@@ -82,7 +83,7 @@ theorem shots_vtxQ (k : ℕ) :
     · exact ⟨_, Or.inr rfl, (freeAt_vertex _ _ _).2 hf, (shoot_vertex _ _ _).symm⟩
 
 theorem shared_eq_shots : J.sharedChords = shots J (vtxQ J J.m₁) := by
-  rw [shots_vtxQ]; rfl
+  rwr [shots_vtxQ]
 
 theorem top_eq_shots : topChords J = shots J (topQ J) := by
   rw [topQ, shots_union, shots_vtxQ, shots_vtxQ]

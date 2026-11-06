@@ -3,6 +3,12 @@ module
 public import Chazelle.Core.NFBuildZero
 public import Chazelle.Core.NFBuildPhaseA
 public import Chazelle.Core.NFBuildSpec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-C (BuildNF), RAM part 26: the procedure and `BuildNFSpec`
@@ -33,7 +39,7 @@ def κBuild : ℕ := 70000
 theorem clog_two_mul_le (K : ℕ) : Nat.clog 2 (2 * K) ≤ Nat.clog 2 K + 1 := by
   apply Nat.clog_le_of_le_pow
   have := Nat.le_pow_clog (by norm_num : 1 < 2) K
-  rw [pow_succ]; omega
+  rwo [pow_succ]
 
 theorem sortCost_le (K : ℕ) :
     SortR.sortCost 11010 (2 * K) ≤ 44160 * (K * (Nat.clog 2 K + 1) + 1) := by
@@ -146,10 +152,10 @@ theorem wrM2_phaseB : wrM2 BphaseB BRb phaseB = true := by
   have h4 : wrM2 BphaseB BRb regPhase = true := wrM2_of_wrM (B := BregPhase)
     (fun r hr => by
       simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq] at hr
-      simp only [BphaseB, decide_eq_true_eq]; omega)
+      sio only [BphaseB, decide_eq_true_eq])
     (fun r hr => by
       simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq] at hr
-      unfold BRb bandOf bSign bBuild; simp only [decide_eq_true_eq]; omega) wr_regPhase
+      unfold BRb bandOf bSign bBuild; sio only [decide_eq_true_eq]) wr_regPhase
   simp only [phaseB, phaseB1, wrM2, h1, h2, h3, h4, Bool.and_self]
 
 theorem wrM2_zeroCase : wrM2 BphaseB BRb zeroCase = true := by decide
@@ -181,7 +187,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The RAM part of `BuildNFSpec`.** -/
 theorem buildNFRam : BuildNF.BuildNFRamSpec := by
   unfold BuildNF.BuildNFRamSpec
@@ -211,7 +216,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
   by_cases hK : 0 < K
   · -- phase A
     have t₀ : c₀.nreg 43250 < c₀.nreg 40002 := by
-      rw [g₀ 40002 (by norm_num), hlen, hc₀]; simp; exact hK
+      rws [g₀ 40002 (by norm_num), hlen, hc₀]; exact hK
     obtain ⟨c₁, k₁, x₁, hk₁, w₁, F₁, d1, d2, d3, d4, d5, d6, d7, hrec, e1, e2, E, hE, hperm,
       hsort⟩ := phaseA_exec (P := P) hG hWn c₀ w₀ (M := M) (L := L) (D := c.nreg 40000)
         (B := c.nreg 40001) hwf hM hok hCL hBL (g₀ _ (by norm_num)) (g₀ _ (by norm_num))
@@ -225,7 +230,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
     have e2' : SE + 2 * K ≤ H := e2
     have hElen : E.length = 2 * K := by rw [hperm.length_eq, List.length_range]
     have hlow₁ : ∀ a, a < A₀ → c₁.nmem a = c.nmem a := fun a ha => by
-      rw [F₁.2.2.1 a (by rw [hc0A]; exact ha), hm₀]
+      rw [F₁.2.2.1 a (by rwx [hc0A]), hm₀]
     have hAH : A₀ ≤ H := by have := F₁.2.2.2.2.2.1; rw [hc0A] at this; exact this
     have hHk : H ≤ A₀ + k₁ := by have := F₁.2.2.2.2.2.2; rw [hc0A] at this; exact this
     obtain ⟨hM₁, hwf₁⟩ := desc_agree hwf hM hlow₁
@@ -241,42 +246,42 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
       (B := c.nreg 40001) (H := H) hI hK d1 d2 d3 d4 d5 d6 d7 rfl rfl
       (modelDescWF_mono hwf₁ hAH) hM₁ hrec (by omega) hCL₁ (by omega)
       (fun j hj => seg_getD hE (by omega)) (by omega)
-      (by unfold sizeB; unfold costA at hk₁; nlinarith)
+      (by unfold sizeB; ufnl costA at hk₁)
     have X : Exec P W buildStmt c c₂ (1 + (k₁ + k₂ + 1)) :=
       .seq x₀ (.ifLtN_true t₀ (.seq x₁ x₂))
     refine ⟨c₂, _, X, ?_, fun M' L' hM' hlen' hL' => ?_, ?_⟩
-    · rw [hlen]; unfold costA at hk₁; unfold κBuild; nlinarith
+    · rw [hlen]; unfold costA at hk₁; ufnl κBuild
     · obtain rfl := NFLoc.modelDesc_unique hM hM'
       obtain rfl := BuildNF.chordListAt_unique hCL hL' (hlen.symm.trans hlen')
-      exact ⟨E, hperm, hsort, by rw [h40003]; exact hAH, by rw [h40003]; exact hNF⟩
+      exact ⟨E, hperm, hsort, by rwx [h40003], by rwx [h40003]⟩
     · refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
       · rw [F₂.1 r (BphaseB_false hr hra), F₁.1 r hr hra, g₀ r (by
           intro h; subst h; simp [bandOf, bSort, bSign] at hr)]
       · rw [exec_frameM2 x₂ wrM2_phaseB r (BRb_false hr), F₁.2.1 r hr]
       · rw [hlow a (by omega), hlow₁ a ha]
-      · rw [F₂.2.2.1, F₁.2.2.2.1 a (by rw [hc0A]; exact ha)]
+      · rw [F₂.2.2.1, F₁.2.2.2.1 a (by rwx [hc0A])]
       · rw [F₂.2.2.2, F₁.2.2.2.2.1]
-      · show A₀ ≤ c₂.nreg 9999; rw [h9999]; omega
-      · show c₂.nreg 9999 ≤ A₀ + _; rw [h9999]; omega
+      · show A₀ ≤ c₂.nreg 9999; rwo [h9999]
+      · show c₂.nreg 9999 ≤ A₀ + _; rwo [h9999]
   · -- `K = 0`
     have hK0 : K = 0 := by omega
     have t₀ : ¬ c₀.nreg 43250 < c₀.nreg 40002 := by
-      rw [g₀ 40002 (by norm_num), hlen, hc₀]; simp; omega
+      rws [g₀ 40002 (by norm_num), hlen, hc₀]; omega
     obtain ⟨c', k, x, hk, hk', w', F', h40003, h9999, hlow, hNF⟩ := zeroCase_exec (P := P) hWn c₀
       w₀ (M := M) (L := L) (E := []) (D := c.nreg 40000) (H := A₀) hK0
-      (g₀ _ (by norm_num)) (by rw [g₀ 9999 (by norm_num)]; rfl) hwf hM (by nlinarith)
+      (g₀ _ (by norm_num)) (by rwr [g₀ 9999 (by norm_num)]) hwf hM (by nlinarith)
     have X : Exec P W buildStmt c c' (1 + (k + 2)) := .seq x₀ (.ifLtN_false t₀ x)
-    refine ⟨c', _, X, by rw [hlen, hK0]; unfold κBuild; omega, fun M' L' hM' hlen' hL' => ?_, ?_⟩
+    refine ⟨c', _, X, by ruo [hlen, hK0] κBuild, fun M' L' hM' hlen' hL' => ?_, ?_⟩
     · obtain rfl := NFLoc.modelDesc_unique hM hM'
       obtain rfl := BuildNF.chordListAt_unique hCL hL' (hlen.symm.trans hlen')
-      refine ⟨[], by rw [show L.length = 0 from hK0]; simp, List.Pairwise.nil, by rw [h40003], ?_⟩
-      rw [h40003]; exact hNF
+      refine ⟨[], by rws [show L.length = 0 from hK0], List.Pairwise.nil, by rw [h40003], ?_⟩
+      rwx [h40003]
     · have F₀ : FrameM BphaseB c c₀ := exec_frameM x₀ (by decide)
       have R' : ∀ r, BRb r = false → c'.rreg r = c.rreg r := fun r hr =>
         (exec_frameM2 x wrM2_zeroCase r hr).trans (by rw [hc₀])
       refine frame_of_frameM (F₀.trans F') R' (fun a ha => by rw [hlow a ha]) ?_ ?_
-      · show A₀ ≤ c'.nreg 9999; rw [h9999]; omega
-      · show c'.nreg 9999 ≤ A₀ + _; rw [h9999]; omega
+      · show A₀ ≤ c'.nreg 9999; rwo [h9999]
+      · show c'.nreg 9999 ≤ A₀ + _; rwo [h9999]
 
 end exec
 

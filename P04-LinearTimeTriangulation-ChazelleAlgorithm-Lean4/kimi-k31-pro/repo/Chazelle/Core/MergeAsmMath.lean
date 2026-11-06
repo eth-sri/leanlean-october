@@ -60,7 +60,7 @@ theorem chainModel_size (C : Chain) : (chainModel C).size = 2 * C.m := by
   have e : {p : ℕ | p < (chainModel C).W.n ∧ (chainModel C).counted p} =
       ((Finset.Ico 6 (2 * C.m + 6) : Finset ℕ) : Set ℕ) := by
     ext p
-    simp only [mem_ofPred_eq, Finset.coe_Ico, Set.mem_Ico, chainModel_n]
+    simp [mem_ofPred_eq, Finset.coe_Ico, Set.mem_Ico, chainModel_n]
     show p < 2 * C.m + 7 ∧ (6 ≤ p ∧ p < 2 * C.m + 6) ↔ _
     omega
   rw [e, Set.ncard_coe_finset, Nat.card_Ico]

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXRamI
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down phase, extraction (D6), RAM part 10: the loop over the chord records
@@ -40,7 +43,7 @@ theorem kl_succ (P : Polygon) (v : XV) (NR : NF) (i : ℕ) :
 
 theorem xL_kept {P : Polygon} {v : XV} {NR : NF} {i : ℕ} (h : kR P v (NR.chord i)) :
     xL P v NR (i + 1) = xL P v NR i ++ [xT P v NR i] := by
-  unfold xL; rw [kl_succ, ite_eq_left h, List.map_append]; rfl
+  urr xL [kl_succ, ite_eq_left h, List.map_append]
 
 theorem xL_not {P : Polygon} {v : XV} {NR : NF} {i : ℕ} (h : ¬ kR P v (NR.chord i)) :
     xL P v NR (i + 1) = xL P v NR i := by
@@ -84,7 +87,6 @@ section loop
 
 variable {P : Polygon} {W : ℕ} {v : XV} {N NR : NF} {ras : ℕ → ℕ} {A0 : ℕ} {mem0 : ℕ → ℕ}
 
-set_option maxHeartbeats 8000000 in
 /-- **The loop over the chord records.** -/
 theorem loopS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded W d)
     (hmem : ∀ a, a < A0 → d.nmem a = mem0 a) (hg : XG P v d) (h39 : d.nreg 217039 = 0)
@@ -161,7 +163,7 @@ theorem loopS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBound
     hI0 (Nat.zero_le _)
   have hk : k' ≤ 24002 * v.K + 2 := by
     have : v.K - 0 = v.K := Nat.sub_zero _
-    rw [this] at hk'; omega
+    rwo [this] at hk'
   exact ⟨d', k', e', hk, g', c38, cm, cl, cb, f'⟩
 
 end loop

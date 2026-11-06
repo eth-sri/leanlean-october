@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.ShootCutDecide
 public import Chazelle.Core.ShootCutTile
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-G, part 28: the plan of the general case
@@ -35,17 +38,17 @@ theorem arcWt_ge (C : Chain) {a b A T : ℝ}
   have hn0 : (0 : ℝ) < (n : ℝ) := by rw [hn]; positivity
   set c := v % n with hc
   unfold Model.arcWt
-  have hW : (chainModel C).W.n = n := chainModel_n C
+  have hW  := chainModel_n C
   have hsub : ((Finset.Ico c (c + L) : Finset ℕ) : Set ℕ) ⊆
       {p : ℕ | p < (chainModel C).W.n ∧ (chainModel C).counted p ∧
         ∃ t : ℝ, 0 < t ∧ t < 1 ∧ sideInArc a b (p + t)} := by
     intro p hp
-    simp only [Finset.coe_Ico, Set.mem_Ico] at hp
-    refine ⟨by rw [hW]; omega, (chainModel_counted_iff C p (by rw [hW]; omega)).2 ⟨by omega,
+    simp [Finset.coe_Ico, Set.mem_Ico] at hp
+    refine ⟨by rwo [hW], (chainModel_counted_iff C p (by rwo [hW])).2 ⟨by omega,
       by omega⟩, 1 / 2, by norm_num, by norm_num, ?_⟩
     have ev : (v : ℝ) = (c : ℝ) + ((v / n : ℕ) : ℝ) * n := by
       have := Nat.mod_add_div v n
-      exact_mod_cast (show v = c + v / n * n by rw [Nat.mul_comm]; omega)
+      exact_mod_cast (show v = c + v / n * n by rwo [Nat.mul_comm])
     have hpn : ((p : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast (show p + 1 ≤ n by omega)
     refine sideInArc_unw hn0 ha.1 ha.2 hb.1 hb.2 (by positivity) (by linarith) hA
       (X := (v : ℝ) + ((p - c : ℕ) : ℝ) + 1 / 2) ⟨((v / n : ℕ) : ℤ), ?_⟩ hT ?_ ?_ hTA
@@ -66,7 +69,7 @@ theorem arcWt_ge (C : Chain) {a b A T : ℝ}
 /-- **Two keys congruent modulo `n`** in `[0, n)` are equal. -/
 theorem key_eq_of_unw {n x y : ℝ} (hn : 0 < n) (hx : 0 ≤ x ∧ x < n) (hy : 0 ≤ y ∧ y < n)
     {i j : ℤ} (h : x + i * n = y + j * n) : x = y := by
-  have hij : ((i - j : ℤ) : ℝ) * n = y - x := by push_cast; linarith
+  have hij : ((i - j : ℤ) : ℝ) * n = y - x := by pcl
   have h1 : ((i - j : ℤ) : ℝ) > -1 := by
     by_contra hc; push Not at hc; nlinarith
   have h2 : ((i - j : ℤ) : ℝ) < 1 := by
@@ -122,12 +125,12 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
   have hkeq : ke = e.edge + M.param Q e := rfl
   have hp0 := he.1
   have hp1 := he.2.1
-  have hT1 : ks < ke → ks + len (n : ℝ) ks ke = ke := fun h => by unfold len; rw [ite_eq_left h]; ring
+  have hT1 : ks < ke → ks + len (n : ℝ) ks ke = ke := fun h => by urring len [ite_eq_left h]
   have hT2 : ¬ ks < ke → ks + len (n : ℝ) ks ke = ke + n := fun h => by
-    unfold len; rw [ite_eq_right h]; ring
+    urring len [ite_eq_right h]
   set e₁ := s.edge with he₁
   set e₂ := e.edge with he₂
-  have cn : ((n : ℕ) : ℝ) = 2 * (C.m : ℝ) + 7 := by rw [hn]; push_cast; ring
+  have cn : ((n : ℕ) : ℝ) = 2 * (C.m : ℝ) + 7 := by rw [hn]; pcr
   unfold c0Of fOf
   unfold Done InUB uIx at hdone
   rcases (show e₁ ≤ 5 ∨ e₁ = 2 * C.m + 6 ∨ (6 ≤ e₁ ∧ e₁ ≤ 2 * C.m + 5) by omega) with
@@ -139,7 +142,7 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
     have hle : e₂ ≤ e₁ := by
       by_contra hc; apply hdone; left
       refine ⟨Or.inl h1, Or.inl h2, ?_⟩
-      rw [ite_eq_left h1, ite_eq_left h2]; omega
+      rwo [ite_eq_left h1, ite_eq_left h2]
     have hT : ¬ ks < ke := by
       rcases hle.lt_or_eq with hlt | heq
       · have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast hlt
@@ -187,9 +190,9 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
     · rw [hT1 hT, hkeq]
       have : M.param Q e = 0 := by
         by_contra hc; exact h (Or.inr (lt_of_le_of_ne hp0 (Ne.symm hc)))
-      rw [this]; ring
+      rwring [this]
   -- the start on `2m + 6`
-  · exact absurd (Or.inl ⟨Or.inr h1, Or.inl h2, by rw [ite_eq_right (by omega), ite_eq_left h2]; omega⟩)
+  · exact absurd (Or.inl ⟨Or.inr h1, Or.inl h2, by rwo [ite_eq_right (by omega), ite_eq_left h2]⟩)
       hdone
   · -- both on `2m + 6`
     have hT : ¬ ks < ke := by intro h; exact hsame ⟨by omega, h⟩
@@ -221,11 +224,11 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
     · rw [hT2 hT, hkeq]
       rcases h with h | h
       · exact absurd h hnU
-      · push_cast; linarith
+      · pcl
     · rw [hT2 hT, hkeq]
       have : M.param Q e = 0 := by
         by_contra hc; exact h (Or.inr (lt_of_le_of_ne hp0 (Ne.symm hc)))
-      rw [this]; push_cast; ring
+      rw [this]; pcr
   -- the start on the double boundary
   · -- the end in `0 … 5`
     have hne : e₁ + 1 < 2 * C.m + 6 := by
@@ -276,7 +279,7 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
       · rw [hT1 hT, hkeq]
         have : M.param Q e = 0 := by
           by_contra hc; exact h (Or.inr (lt_of_le_of_ne hp0 (Ne.symm hc)))
-        rw [this]; ring
+        rwring [this]
     · have hT : ¬ ks < ke := by
         rcases h3.lt_or_eq with hlt | heq
         · have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast hlt
@@ -290,11 +293,11 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
       · rw [hT2 hT, hkeq]
         rcases h with h | h
         · exact absurd h hnU
-        · push_cast; linarith
+        · pcl
       · rw [hT2 hT, hkeq]
         have : M.param Q e = 0 := by
           by_contra hc; exact h (Or.inr (lt_of_le_of_ne hp0 (Ne.symm hc)))
-        rw [this]; push_cast; ring
+        rw [this]; pcr
 
 end ShootCut
 

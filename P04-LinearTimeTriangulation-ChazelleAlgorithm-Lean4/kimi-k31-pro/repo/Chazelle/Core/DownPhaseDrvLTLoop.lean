@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvLTGat
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase level tail (D12), part 4: the gather loop
@@ -84,18 +88,17 @@ theorem seg_pt {m m' : ℕ → ℕ} {a b n q : ℕ} (h : seg m' a n = seg m b n)
   exact this
 
 theorem B1_BL : ∀ r, B1 r = true → BL r = true := by
-  intro r h; simp only [B1, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  intro r h; sio only [B1, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
 theorem B2_BL : ∀ r, B2 r = true → BL r = true := by
-  intro r h; simp only [B2, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  intro r h; sio only [B2, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
 theorem B3_BL : ∀ r, B3 r = true → BL r = true := by
-  intro r h; simp only [B3, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  intro r h; sio only [B3, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
 theorem Bcp_BL : ∀ r, DrvR.Bcp r = true → BL r = true := by
-  intro r h; simp only [DrvR.Bcp, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  intro r h; sio only [DrvR.Bcp, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
-set_option maxHeartbeats 4000000 in
 /-- **One region of the gather.** -/
 theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G j e)
     (hj : j < G.R) :
@@ -110,7 +113,7 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
   rw [hℓ] at g1 g3 g6
   have hF1 : (G.flat (j + 1)).length = F + ℓ := by
     show ((List.range (j + 1)).flatMap G.Lx).length = _
-    rw [flat_succ, List.length_append, ← hℓ, ← hF]; rfl
+    rwr [flat_succ, List.length_append, ← hℓ, ← hF]
   have hFK : F + ℓ ≤ G.K₂ := by
     rw [← hF1]; exact flat_length_mono G.Lx (by omega)
   have hℓM : ℓ ≤ G.Mx := hℓ ▸ hG.hMx j hj
@@ -119,11 +122,11 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
   rw [hF] at r13 r14
   -- the table entry
   have t0 : e.nmem (G.T + 3 * j) = G.m₀ (G.T + 3 * j) := hI.low _ (by omega)
-  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by rw [hI.low _ (by omega)]; exact g1
+  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by rwx [hI.low _ (by omega)]
   have t2 : e.nmem (G.T + 3 * j + 1 + 1) = G.m₀ (G.T + 3 * j + 2) := hI.low _ (by omega)
   -- 1. the entry
   obtain ⟨e₁, k₁, x₁, hk₁, a40, a43, a44, a45, a61, a62, a63, m₁, f₁⟩ :=
-    ltB1_exec (P := G.P) e hI.wb hI.r31 hI.r00 r13 (by omega) (by rw [t1]; omega)
+    ltB1_exec (P := G.P) e hI.wb hI.r31 hI.r00 r13 (by omega) (by rwo [t1])
   rw [t0] at a40 a62
   rw [t1] at a44 a45 a61
   rw [t2] at a43
@@ -181,23 +184,23 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
     ((((BL_mono B1_BL (BuildRam.FrameB.toM f₁)).trans (BL_mono Bcp_BL f₂)).trans
       (BL_mono B2_BL (BuildRam.FrameB.toM f₃))).trans
       (BL_mono Bcp_BL f₄)).trans (BL_mono B3_BL (BuildRam.FrameB.toM f₅))
-  have r5 : ∀ r, BL r = false → e₅.nreg r = e.nreg r := fun r hr => fr.1 r hr
+  have r5 : ∀ r, BL r = false → e₅.nreg r = e.nreg r := fr.1
   have r5' : ∀ r, B1 r = false → DrvR.Bcp r = false → B2 r = false → B3 r = false →
       e₅.nreg r = e.nreg r := fun r h1 h2 h3 h4 => by rw [k₅r r h4, r4 r h1 h2 h3]
   refine ⟨e₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), Exec.seq x₁ (Exec.seq x₂ (Exec.seq x₃
     (Exec.seq x₄ x₅))), ?_, DrvD.rf_of_frameM inDrv_BL fr low5, by omega⟩
-  refine ⟨x₅.wb_right, by rw [c30], by rw [r5 _ (by decide), hI.r11], by rw [c31]; omega,
+  refine ⟨x₅.wb_right, by rw [c30], by rw [r5 _ (by decide), hI.r11], by rwo [c31],
     by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r00],
     by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r01],
     by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r34],
     by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r10],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r12], ?_, by rw [c14, hF1]; omega,
+    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r12], ?_, by rwo [c14, hF1],
     by rw [r5 _ (by decide), hI.alloc],
     fun r hr hra => by rw [r5 r hr, hI.keep r hr hra], fun a ha => by rw [low5 a ha, hI.low a ha],
     ?_, ?_, by omega⟩
   · -- the triple pointer
     have : e₅.nreg 211113 = e₄.nreg 211113 := k₅r _ (by decide)
-    rw [this, k₄r _ (by decide), a13, hF1]; ring
+    rwring [this, k₄r _ (by decide), a13, hF1]
   · -- the triples
     show ChordListAt e₅.nmem G.A₀ ((List.range (j + 1)).flatMap G.Lx)
     rw [flat_succ]
@@ -230,7 +233,6 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
         seg_pt sg₄ (by omega), m₃, mo₂ _ (by omega), m₁, hI.low _ (by omega)]
       exact g7 q' (by omega)
 
-set_option maxHeartbeats 1000000 in
 /-- **The gather loop.** -/
 theorem loop_exec {G : GEnv} (hG : GGood G) {e : Config} (hI : LInv G 0 e) :
     ∃ e' k, Exec G.P G.W ltLoop e e' k ∧ LInv G G.R e' ∧
@@ -242,7 +244,7 @@ theorem loop_exec {G : GEnv} (hG : GGood G) {e : Config} (hI : LInv G 0 e) :
     (fun e ⟨j, hJ⟩ ht => by
       rw [hJ.r30, hJ.r11] at ht
       obtain ⟨e', k, ex, hJ', RF', hk⟩ := body_step hG hJ ht
-      exact ⟨e', k, ex, ⟨j + 1, hJ'⟩, RF', hk, by rw [hJ.r30, hJ'.r30]; omega⟩) ⟨0, hI⟩
+      exact ⟨e', k, ex, ⟨j + 1, hJ'⟩, RF', hk, by rwo [hJ.r30, hJ'.r30]⟩) ⟨0, hI⟩
   have hjR : j = G.R := by rw [hJ.r30, hJ.r11] at hx; have := hJ.jle; omega
   subst hjR
   refine ⟨e', k, ex, hJ, RFl, ?_⟩

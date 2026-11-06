@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepEvStep
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), stage 3: the `C₁` part of the walk of `C` read in the walk of `C₁`
@@ -63,7 +64,7 @@ theorem vtx_tpos' (C : Chain) {k : ℕ} (hk : k ≤ C.m) :
   have hτ := tpos_lt C k
   have h1 := C.one_le
   have := walk_tour C k 0 (by omega)
-  rw [Nat.add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
+  rw [Nat.add_zero, Nat.mod_eq_of_lt (by rwo [hn])] at this
   rw [this]
   unfold tourV
   rw [Nat.add_zero, Nat.mod_eq_of_lt (by omega)]
@@ -97,11 +98,11 @@ theorem nvt_left (hP : J.P.Simple) (hv : ¬ VNotTop J) :
     rcases vtop_cases J hv with h | h
     · rw [h, zero_add, Nat.mod_eq_of_lt (show 2 * J.m₂ < 2 * J.whole.m by omega)]
       omega
-    · rw [h, Nat.mod_self]; omega
+    · rwo [h, Nat.mod_self]
   refine ⟨hτ, ?_, ?_, ?_, ?_⟩
-  · unfold lδ; rw [ite_eq_right hA, ite_eq_left (by rw [hτ, hm1]; omega)]
-  · unfold lL1; rw [ite_eq_right hA, ite_eq_left (by rw [hτ, hm1]; omega)]
-  · unfold lL2; rw [ite_eq_right hA, ite_eq_left (by rw [hτ, hm1]; omega)]
+  · unfold lδ; rw [ite_eq_right hA, ite_eq_left (by rwo [hτ, hm1])]
+  · unfold lL1; rw [ite_eq_right hA, ite_eq_left (by rwo [hτ, hm1])]
+  · unfold lL2; rw [ite_eq_right hA, ite_eq_left (by rwo [hτ, hm1])]
   · unfold llen; rw [ite_eq_right hA]
 
 /-- Case b: the box block of `M` precedes the left stretch. -/
@@ -129,7 +130,7 @@ theorem caseC_facts (hv : ¬ VNotTop J) (hle : ¬ Lst J < lOff J) :
 
 /-- The base of the left stretch is `gW + lOff`. -/
 theorem gL_eq : (gW J + lOff J) % (chainModel J.whole).W.n = 6 + tpos J.whole (J.m₁ + 2 * J.m₂) := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn  := cm_n J.whole
   have hτ := tpos_lt J.whole J.m₁
   have hτ' := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   unfold gW lOff

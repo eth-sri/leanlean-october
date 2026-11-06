@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.FuseAsmPtRam
 public import Chazelle.Core.MergeAsmDesc
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-F fusion assembly, part 18: the vertex queries
@@ -43,16 +48,16 @@ def Bpt (r : ℕ) : Bool := Bprim r || decide (50200 ≤ r ∧ r < 50210) ||
 def BR (r : ℕ) : Bool := Bprim r || Btp r
 
 theorem br_prim {r : ℕ} (h : BR r = false) : Bprim r = false := by
-  simp only [BR, Bool.or_eq_false_iff] at h; exact h.1
+  simp [BR, Bool.or_eq_false_iff] at h; exact h.1
 
 theorem br_tp {r : ℕ} (h : BR r = false) : Btp r = false := by
-  simp only [BR, Bool.or_eq_false_iff] at h; exact h.2
+  simp [BR, Bool.or_eq_false_iff] at h; exact h.2
 
 theorem bprim_of {r : ℕ} (h : Bpt r = false) : Bprim r = false := by
-  simp only [Bpt, Bool.or_eq_false_iff] at h; exact h.1.1.1.1
+  simp [Bpt, Bool.or_eq_false_iff] at h; exact h.1.1.1.1
 
 theorem btp_of {r : ℕ} (h : Bpt r = false) : Btp r = false := by
-  simp only [Bpt, Bprim, Btp, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
+  simp [Bpt, Bprim, Btp, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
     at h ⊢
   omega
 
@@ -67,7 +72,6 @@ def vtxPts (D off : ℕ) : Stmt :=
 /-- The cost bound of `vtxPts`. -/
 def vtxCost : ℕ := 74000
 
-set_option maxHeartbeats 16000000 in
 theorem vtxPts_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
     (hHW : hostWords P.n ≤ W) {D off : ℕ} (hD : 70000 ≤ D ∧ D < 70100) (hoff : off ≤ 4)
     (hwf : ChainWF P (c.nreg ALLOC) c.nmem (c.nreg D)) (J : Merge.Junction) (i : ℕ)
@@ -117,9 +121,9 @@ theorem vtxPts_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     (by decide) (by decide)
   -- the height of the vertex
   obtain ⟨c₂, k₂, e₂, hk₂, ⟨hv₁, hv₂⟩, F₂⟩ := primRun hvPrim_meets wr_hvPrim c₁ w₁ hG
-    (by unfold hostWords; omega) (by rw [q00, a₁, qm₁]; exact ⟨hB5, hwf'⟩)
-    (by rw [q00, qm₁]; exact hC) (show c₁.nreg 50201 ≤ C.m by rw [q01]; exact hkk)
-    (by rw [a₁]; unfold vtxCost at hroom; omega)
+    (by ufo hostWords) (by rw [q00, a₁, qm₁]; exact ⟨hB5, hwf'⟩)
+    (by rwx [q00, qm₁]) (show c₁.nreg 50201 ≤ C.m by rwx [q01])
+    (by ruo [a₁] vtxCost at hroom)
   rw [q01] at hv₂
   have w₂ := e₂.wb_right
   obtain ⟨hv, hhv⟩ : ∃ hv, c₂.nreg 50210 = hv := ⟨_, rfl⟩
@@ -140,8 +144,8 @@ theorem vtxPts_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   have r00 : c₃.nreg 50200 = X := by
     rw [qr₃ _ (by decide) (by decide), frameB_reg F₂ (by omega), q00]
   -- the walk position
-  obtain ⟨c₄, k₄, e₄, hk₄, q41, F₄⟩ := tposS_exec (P := P) c₃ w₃ (by rw [r00, m₃]; exact hC)
-    q10 hkk (by rw [r00]; omega) hmW
+  obtain ⟨c₄, k₄, e₄, hk₄, q41, F₄⟩ := tposS_exec (P := P) c₃ w₃ (by rwx [r00, m₃])
+    q10 hkk (by rwo [r00]) hmW
   have w₄ := e₄.wb_right
   obtain ⟨c₅, k₅, e₅, hk₅, q⟩ : ∃ c₅ k₅, Exec P W (block [.constN 50202 0, .constN 50203 1])
       c₄ c₅ k₅ ∧ k₅ = 2 ∧
@@ -158,7 +162,7 @@ theorem vtxPts_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   -- registers kept from `c` to `c₅`
   have k₅r : ∀ r, Bpt r = false → c₅.nreg r = c.nreg r := fun r hr => by
     have hr' := hr
-    simp only [Bpt, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
+    simp [Bpt, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
       at hr'
     rw [qr₅ r (by omega) (by omega), F₄.1 r (btp_of hr), qr₃ r (by omega) (by omega),
       F₂.1 r (bprim_of hr), qr₁ r (by omega) (by omega) (by omega) (by omega) (by omega)]
@@ -178,8 +182,8 @@ theorem vtxPts_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       h28]
   -- the geometry of the query
   have hvpos : (chainModel C).pos (Qof P) ⟨6 + tpos C kk, 0⟩ = C.vertex kk := vpos C _ hkk
-  have hzs : C.vertex kk ∈ C.set := C.vertex_mem_set hkk
-  have hPC : C.P.Simple := by rw [hCdef, sideChain_P]; exact hP
+  have hzs  := C.vertex_mem_set hkk
+  have hPC : C.P.Simple := by rwx [hCdef, sideChain_P]
   have hin : ∀ c' : Config, c'.nreg 50201 = 6 + tpos C kk → c'.nreg 50202 = 0 →
       ArrIn P W C c' := fun c' h1 h2 => ⟨⟨by rw [h1]; exact vpos_edge C kk,
       ⟨by rw [h1, h2]; exact le_refl 0, by rw [h1, h2]; exact zero_lt_one,
@@ -187,11 +191,11 @@ theorem vtxPts_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       by rw [h1, h2, hvpos]; exact abs_snd_lt_radius C hzs⟩, hPC, hmW⟩
   -- direction `1`
   obtain ⟨c₆, k₆, l₁, e₆, hk₆, hk₆', hl₁, a₆, n₆, L₆, m₆, r₆, rr₆, rm₆, o₆, res₁⟩ :=
-    ptQ_exec (P := P) c₅ w₅ hG (by unfold hostWords; omega)
-      (by rw [r500, a₅, m₅]; exact ⟨hB5, hwf'⟩) (by rw [r500, m₅]; exact hC)
+    ptQ_exec (P := P) c₅ w₅ hG (by ufo hostWords)
+      (by rw [r500, a₅, m₅]; exact ⟨hB5, hwf'⟩) (by rwx [r500, m₅])
       (hin c₅ r501 q52) (by rw [k₅r _ (by decide), h05]) (by rw [k₅r _ (by decide), h08])
-      (by rw [a₅, hA]) r528 (by rw [m₅]; exact hL)
-      (by rw [a₅]; unfold vtxCost at hroom; omega) (by rw [r524]; omega)
+      (by rw [a₅, hA]) r528 (by rwx [m₅])
+      (by ruo [a₅] vtxCost at hroom) (by rwo [r524])
       (by omega)
   rw [r501, q52, q53, r524] at res₁
   have w₆ := e₆.wb_right
@@ -209,17 +213,17 @@ theorem vtxPts_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   have a₇ : c₇.nreg ALLOC = LB + 3 * (pre ++ l₁).length := by rw [qr₇ _ (by decide), a₆]
   -- direction `0`
   obtain ⟨c₈, k₈, l₀, e₈, hk₈, hk₈', hl₀, a₈, n₈, L₈, m₈, r₈, rr₈, rm₈, o₈, res₀⟩ :=
-    ptQ_exec (P := P) c₇ w₇ hG (by unfold hostWords; omega)
+    ptQ_exec (P := P) c₇ w₇ hG (by ufo hostWords)
       (by
         rw [k67 50200 (by decide) (by decide) (by decide) (by decide) (by decide), r500, qm₇]
-        exact chainWF_copy ⟨hB5, hwf'⟩ hC (fun a ha => by rw [m₆ a (by rw [a₅]; exact ha), m₅])
-          (fun j hj => by rw [m₆ _ (by rw [a₅]; omega), m₅])
-          (by rw [a₇, List.length_append]; omega) (by rw [a₇, List.length_append]; omega))
+        exact chainWF_copy ⟨hB5, hwf'⟩ hC (fun a ha => by rw [m₆ a (by rwx [a₅]), m₅])
+          (fun j hj => by rw [m₆ _ (by rwo [a₅]), m₅])
+          (by rwo [a₇, List.length_append]) (by rwo [a₇, List.length_append]))
       (by
         rw [k67 50200 (by decide) (by decide) (by decide) (by decide) (by decide), r500, qm₇]
         obtain ⟨-, -, hEb, -⟩ := hwf' H C hC
-        exact chainDescAt_copy hC hEb (fun a ha => by rw [m₆ a (by rw [a₅]; exact ha), m₅])
-          (fun j hj => by rw [m₆ _ (by rw [a₅]; omega), m₅]))
+        exact chainDescAt_copy hC hEb (fun a ha => by rw [m₆ a (by rwx [a₅]), m₅])
+          (fun j hj => by rw [m₆ _ (by rwo [a₅]), m₅]))
       (hin c₇ (by rw [k67 50201 (by decide) (by decide) (by decide) (by decide) (by decide), r501])
         (by rw [k67 50202 (by decide) (by decide) (by decide) (by decide) (by decide), q52]))
       (by rw [k67 70105 (by decide) (by decide) (by decide) (by decide) (by decide),
@@ -227,9 +231,9 @@ theorem vtxPts_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       (by rw [k67 70108 (by decide) (by decide) (by decide) (by decide) (by decide),
         k₅r _ (by decide), h08])
       a₇ (by rw [qr₇ _ (by decide), n₆]) (by rw [qm₇]; exact L₆)
-      (by rw [a₇]; unfold vtxCost at hroom; rw [List.length_append]; omega)
-      (by rw [k67 70124 (by decide) (by decide) (by decide) (by decide) (by decide), r524]; omega)
-      (by rw [List.length_append]; omega)
+      (by rw [a₇]; unfold vtxCost at hroom; rwo [List.length_append])
+      (by rwo [k67 70124 (by decide) (by decide) (by decide) (by decide) (by decide), r524])
+      (by rwo [List.length_append])
   rw [k67 50201 (by decide) (by decide) (by decide) (by decide) (by decide),
     k67 50202 (by decide) (by decide) (by decide) (by decide) (by decide),
     k67 70124 (by decide) (by decide) (by decide) (by decide) (by decide), r501, q52, r524, q73]
@@ -237,13 +241,13 @@ theorem vtxPts_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   have ex : Exec P W (vtxPts D off) c c₈
       (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + k₈))))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈))))))
-  have hvn : hv < (Qof P).n := by rw [hn]; exact hv₁
-  refine ⟨c₈, _, l₁, l₀, ex, by unfold vtxCost; omega, by omega, hl₁, hl₀, a₈, n₈, L₈,
+  have hvn : hv < (Qof P).n := by rwx [hn]
+  refine ⟨c₈, _, l₁, l₀, ex, by ufo vtxCost, by omega, hl₁, hl₀, a₈, n₈, L₈,
     fun a ha => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_, ?_⟩
-  · rw [m₈ a (by rw [a₇, List.length_append]; rw [hA] at ha; omega), qm₇,
-      m₆ a (by rw [a₅]; exact ha), m₅]
+  · rw [m₈ a (by rw [a₇, List.length_append]; rwo [hA] at ha), qm₇,
+      m₆ a (by rwx [a₅]), m₅]
   · have hr' := hr
-    simp only [Bpt, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
+    simp [Bpt, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
       at hr'
     rw [r₈ r (bprim_of hr) (by omega) (by omega) (by omega), qr₇ r (by omega),
       r₆ r (bprim_of hr) (by omega) (by omega) (by omega), k₅r r hr]

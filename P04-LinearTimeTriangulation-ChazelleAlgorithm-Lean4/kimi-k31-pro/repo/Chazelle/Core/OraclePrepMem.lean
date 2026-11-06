@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.OraclePrepPhB
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 30: descriptors and tables in memory
@@ -26,7 +28,7 @@ theorem robust_addrF {E : ℕ} {m : ℕ → ℕ} {f : (ℕ → ℕ) → ℕ} {v 
   have hm' : ∀ a, a < E → Function.update m (f m) (v + 1) a = m a := fun a ha => by
     rw [Function.update_of_ne (by omega)]
   have := h _ hm'
-  dsimp only at this
+  dsimp at this
   rw [hf _ hm', Function.update_self] at this
   omega
 
@@ -51,8 +53,8 @@ theorem chainDescAt_agree {m m' : ℕ → ℕ} {D X : ℕ} {Q : Polygon} {H : Ho
     (h : ChainDescAt m D Q H C) (hD : D + 5 ≤ X) (hH : m D + 3 * H.length + 4 ≤ X)
     (hm : ∀ a, a < X → m' a = m a) : ChainDescAt m' D Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := h
-  refine ⟨?_, h1, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-    by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
+  refine ⟨?_, h1, by rwx [hm _ (by omega)], by rwx [hm _ (by omega)],
+    by rwx [hm _ (by omega)], by rwx [hm _ (by omega)]⟩
   rw [hm _ (by omega)]
   exact hostAt_agree h0 hH hm
 
@@ -63,9 +65,9 @@ theorem chainDescAt_copy {m : ℕ → ℕ} {D D' : ℕ} {Q : Polygon} {H : Host}
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := h
   have e0 := hc 0 (by omega); have e1 := hc 1 (by omega); have e2 := hc 2 (by omega)
   have e3 := hc 3 (by omega); have e4 := hc 4 (by omega)
-  simp only [Nat.add_zero] at e0
-  exact ⟨by rw [e0]; exact h0, h1, by rw [e1]; exact h2, by rw [e2]; exact h3, by rw [e3]; exact h4,
-    by rw [e4]; exact h5⟩
+  simp [Nat.add_zero] at e0
+  exact ⟨by rwx [e0], h1, by rwx [e1], by rwx [e2], by rwx [e3],
+    by rwx [e4]⟩
 
 /-- A well-formed chain descriptor stays well formed under a change above the bound. -/
 theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {D X : ℕ} {H : Host} {C : Chain}
@@ -75,8 +77,8 @@ theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {D X : ℕ} {H : Host} 
   obtain ⟨h1, h2, h3, h4⟩ := hall H C hD
   refine ⟨hDX, fun H' C' hC' => ?_⟩
   have hD' := chainDescAt_agree hD hDX h3 hm
-  have hH : H' = H := NFLoc.hostAt_unique hC'.1 hD'.1
-  have hC : C' = C := NFLoc.chain_eq_of_desc hC' hD'
+  have hH  := NFLoc.hostAt_unique hC'.1 hD'.1
+  have hC  := NFLoc.chain_eq_of_desc hC' hD'
   subst hH hC
   rw [hm _ (by omega)]
   exact ⟨h1, h2, h3, h4⟩
@@ -86,21 +88,21 @@ theorem modelDesc_of {P : Polygon} {m : ℕ → ℕ} {D MD X : ℕ} {H : Host} {
     (hD : ChainDescAt m D (Qof P) H C) (hwf : ChainWF P X m D) (h0 : m MD = 0)
     (hc : ∀ i, i < 5 → m (MD + 1 + i) = m (D + i)) (hMX : MD + 6 ≤ X) :
     ModelDescAt m MD (Qof P) (chainModel C) ∧ ModelDescWF P X m MD := by
-  have hD' : ChainDescAt m (MD + 1) (Qof P) H C := chainDescAt_copy hD hc
+  have hD'  := chainDescAt_copy hD hc
   refine ⟨Or.inl ⟨h0, H, C, hD', rfl⟩, hMX, fun _ => ⟨by omega, fun H' C' hC' => ?_⟩⟩
-  have hH : H' = H := NFLoc.hostAt_unique hC'.1 hD'.1
-  have hC : C' = C := NFLoc.chain_eq_of_desc hC' hD'
+  have hH  := NFLoc.hostAt_unique hC'.1 hD'.1
+  have hC  := NFLoc.chain_eq_of_desc hC' hD'
   subst hH hC
   have e0 : m (MD + 1) = m D := by have := hc 0 (by omega); simpa using this
   obtain ⟨h1, h2, h3, h4⟩ := hwf.2 H' C' hD
-  exact ⟨h1, h2, by rw [e0]; exact h3, h4⟩
+  exact ⟨h1, h2, by rwx [e0], h4⟩
 
 /-- The region table of the star chords from the normal form. -/
 theorem rgMem_of {m : ℕ → ℕ} {B : ℕ} {M : Model} {Q : Polygon} {N : NF} (hNF : NFAt m B N)
     (hN : IsNF M Q N) :
     RgMem m (m (B + 4)) (m (B + 6)) N.arcs.length (fun p => N.seq.getD p 0)
       (fun j => (N.arc j).reg) :=
-  ⟨fun p hp => hNF.2.2.2.2.2.2.2.2.1 p (by rw [NFLoc.seq_length hN]; exact hp),
+  ⟨fun p hp => hNF.2.2.2.2.2.2.2.2.1 p (by rwx [NFLoc.seq_length hN]),
     fun p hp => NFLoc.seq_lt hN hp, fun j hj => (hNF.2.2.2.2.2.2.1 j hj).1⟩
 
 /-- **The locator facts of the zipper** from the descriptors and tables of phase A. -/
@@ -123,10 +125,10 @@ theorem zloc_of {P : Polygon} {W : ℕ} {m₀ m : ℕ → ℕ} {D NB MD TB L A�
     rw [hm' a (by omega), hagree a ha]
   have hA0 := OracleR.arcs_pos hsimp hN
   obtain ⟨hNB7, hABb, hSBb⟩ := NFLoc.nfWithin_bounds hNFw hN hA0
-  have hNF' : NFAt m' NB N := hNFw m' agree0
+  have hNF'  := hNFw m' agree0
   obtain ⟨hDA, hall⟩ := hwf
   obtain ⟨h1, h2, h3, h4⟩ := hall H C hD
-  have hD' : ChainDescAt m' D (Qof P) H C := chainDescAt_agree hD hDA h3 agree0
+  have hD'  := chainDescAt_agree hD hDA h3 agree0
   have hwf' : ChainWF P X m' D :=
     ChainWF.mono (chainWF_agree ⟨hDA, hall⟩ hD agree0) (by omega)
   obtain ⟨hmd, hmdwf⟩ := modelDesc_of (m := m') (MD := MD) hD' hwf'
@@ -135,12 +137,12 @@ theorem zloc_of {P : Polygon} {W : ℕ} {m₀ m : ℕ → ℕ} {D NB MD TB L A�
   obtain ⟨hMDW, hlwf⟩ := NFLoc.locChainWF_of hmdwf hXW hHW
   have e4 : m' (NB + 4) = m₀ (NB + 4) := agree0 _ (by omega)
   have e6 : m' (NB + 6) = m₀ (NB + 6) := agree0 _ (by omega)
-  refine ⟨⟨by rw [hVMD]; exact hmd, Or.inl ⟨C, hsimp, rfl⟩, by rw [hVMD]; exact hMDW,
-    by rw [hVMD]; exact hlwf, by rw [hVNB]; exact hNF', hN, hVA, fun j hj => ?_,
+  refine ⟨⟨by rwx [hVMD], Or.inl ⟨C, hsimp, rfl⟩, by rwx [hVMD],
+    by rwx [hVMD], by rwx [hVNB], hN, hVA, fun j hj => ?_,
     fun j hj => by rw [hVTB, hm' _ (by omega)]; rw [hVL] at hj; exact htab j hj,
-    by rw [hVA, hVL]; exact hAlt, by rw [hVNB, hVTB]; omega,
-    by rw [hVNB, hVTB, hVA, e4]; omega, by rw [hVNB, hVTB, hVA, e6]; omega,
-    by rw [hVTB, hVL]; omega, by rw [hVA]; exact hVμ⟩, by rw [hVNB, hVAB, e4],
+    by rwx [hVA, hVL], by rwo [hVNB, hVTB],
+    by rwo [hVNB, hVTB, hVA, e4], by rwo [hVNB, hVTB, hVA, e6],
+    by rwo [hVTB, hVL], by rw [hVA]; exact hVμ⟩, by rw [hVNB, hVAB, e4],
     by rw [hVNB, hVSB, e6]⟩
   obtain ⟨-, -, -, reg, -, -, -, -, -, -, hpp⟩ := hN
   have := (hpp j hj).1

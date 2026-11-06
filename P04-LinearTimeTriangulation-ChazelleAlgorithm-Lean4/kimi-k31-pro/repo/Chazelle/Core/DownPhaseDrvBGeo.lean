@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.FactsInterior
 public import Chazelle.Core.BruteCorner
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Down-phase base (D9), geometry part 1: the corner test at a vertex of a polygon
@@ -51,7 +54,7 @@ theorem dirInterior_iff_corner {W : Polygon} (hW : W.Simple) (hL : Mountain.orie
         (rayPt (W.vtx p) σ 1) := by
   obtain ⟨r, hr, hloc⟩ := FactsInterior.vertex_local hW hL hp
   have hball : ∀ s, 0 ≤ s → s < r → rayPt (W.vtx p) σ s ∈ ball (W.vtx p) r := fun s hs0 hsr => by
-    rw [mem_ball, FuseMath.dist_rayPt _ hσ hs0]; exact hsr
+    rwx [mem_ball, FuseMath.dist_rayPt _ hσ hs0]
   constructor
   · intro h
     obtain ⟨s, hs, ⟨hs0, hsr⟩⟩ := (h.and (Ioo_mem_nhdsGT hr)).exists
@@ -89,9 +92,9 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
     (hns : sideNonSpike (b - v) (a - v)) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     sideLeftOf a v b (rayPt v σ 1) ↔ emitG a v b σ := by
   have eBX : sideCross (b - v) ((σ, 0) : Point) = -σ * (b.2 - v.2) := by
-    unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]; ring
+    unfold sideCross; sir only [Prod.snd_sub, Prod.fst_sub]
   have eXA : sideCross ((σ, 0) : Point) (a - v) = σ * (a.2 - v.2) := by
-    unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]; ring
+    unfold sideCross; sir only [Prod.snd_sub, Prod.fst_sub]
   have eBA : sideCross (b - v) (a - v) =
       (b.1 - v.1) * (a.2 - v.2) - (b.2 - v.2) * (a.1 - v.1) := by
     unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]
@@ -111,7 +114,7 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
       rw [ite_eq_left hb]
       have hb' : b.2 - v.2 = 0 := by rw [hb, sub_self]
       have cBX : sideCross (b - v) ((σ, 0) : Point) = 0 := by rw [eBX, hb', mul_zero]
-      have cBA : sideCross (b - v) (a - v) = 0 := by rw [eBA, ha', hb']; ring
+      have cBA : sideCross (b - v) (a - v) = 0 := by rwring [eBA, ha', hb']
       rw [cBX, cBA]
       simp only [iff_false]
       rintro (⟨-, h, -⟩ | ⟨h, -⟩ | ⟨-, -, h⟩ | ⟨-, hd, -⟩)
@@ -120,10 +123,10 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
       · exact lt_irrefl _ h
       · exact hns ⟨cBA, hd⟩
     · rw [ite_eq_right hb]
-      have hb0 : b.2 - v.2 ≠ 0 := sub_ne_zero.2 hb
+      have hb0  := sub_ne_zero.2 hb
       have cBA : sideCross (b - v) (a - v) = -((b.2 - v.2) * (a.1 - v.1)) := by
-        rw [eBA, ha']; ring
-      have hne : (b.2 - v.2) * (a.1 - v.1) ≠ 0 := mul_ne_zero hb0 ha1
+        rwring [eBA, ha']
+      have hne  := mul_ne_zero hb0 ha1
       rw [cXA, cBA, eBX]
       by_cases hvb : v.2 < b.2
       · rw [ite_eq_left hvb]
@@ -170,15 +173,15 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
             linarith
           · linarith
   · rw [ite_eq_right ha]
-    have ha0 : a.2 - v.2 ≠ 0 := sub_ne_zero.2 ha
+    have ha0  := sub_ne_zero.2 ha
     by_cases hb : b.2 = v.2
     · rw [ite_eq_left hb]
       have hb' : b.2 - v.2 = 0 := by rw [hb, sub_self]
       have hb1 : b.1 - v.1 ≠ 0 := fun h => hbv (Prod.ext (by linarith) hb)
       have cBX : sideCross (b - v) ((σ, 0) : Point) = 0 := by rw [eBX, hb', mul_zero]
       have cBA : sideCross (b - v) (a - v) = (b.1 - v.1) * (a.2 - v.2) := by
-        rw [eBA, hb']; ring
-      have hne : (b.1 - v.1) * (a.2 - v.2) ≠ 0 := mul_ne_zero hb1 ha0
+        rwring [eBA, hb']
+      have hne  := mul_ne_zero hb1 ha0
       rw [cBX, cBA, eXA]
       by_cases hva : v.2 < a.2
       · rw [ite_eq_left hva]
@@ -236,9 +239,8 @@ theorem dirInterior_iff_emitG {W : Polygon} (hW : W.Simple) (hL : Mountain.orien
       emitG (W.vtx (Chazelle.Jordan.prevIdx W p)) (W.vtx p) (W.vtx ((p + 1) % W.n)) σ := by
   rw [dirInterior_iff_corner hW hL hp hσ]
   have hn := simple_three_le hW
-  have hav : W.vtx (Chazelle.Jordan.prevIdx W p) ≠ W.vtx p :=
-    simple_vtx_ne hW (Chazelle.Jordan.prevIdx_lt W hp) hp (Chazelle.Jordan.prevIdx_ne W hn hp)
-  have hbv : W.vtx ((p + 1) % W.n) ≠ W.vtx p := (simple_vtx_succ_ne hW hp).symm
+  have hav  := simple_vtx_ne hW (Chazelle.Jordan.prevIdx_lt W hp) hp (Chazelle.Jordan.prevIdx_ne W hn hp)
+  have hbv  := (simple_vtx_succ_ne hW hp).symm
   exact sideLeftOf_iff_emitG hav hbv (FactsInterior.corner_nonSpike hW hp) hσ
 
 end

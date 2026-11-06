@@ -3,6 +3,11 @@ module
 public import Chazelle.Core.DownPhaseDrvBArc
 public import Chazelle.Core.FactsArcs
 public import Chazelle.Core.DownPhaseDrvCount
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Down-phase base (D9): sizes of the regions
@@ -69,7 +74,7 @@ theorem region_arcs_nodup (r : ℕ) :
     exact List.nodup_range.filter _
   · rw [List.getD_eq_getElem?_getD]
     simp only [BuildNF.buildNF, List.getElem?_map]
-    rw [List.getElem?_eq_none (by simp; omega)]
+    rw [List.getElem?_eq_none (by sio)]
     simp
 
 /-- **A region has at most `deg + 1` arcs.** -/
@@ -142,7 +147,7 @@ theorem regPts_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
     rw [wlist_length, DownMath.regHost_pts]
     split_ifs
     · exact hlen
-    · rw [List.length_reverse]; exact hlen
+    · rwx [List.length_reverse]
   rw [hlenP]
   have hM := walkAx_interiorModel B.hQ
   have hnk := DownDrv.nk_le hM B.fam.2.1 B.fam.1 (reg r)
@@ -182,7 +187,7 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
     (hwt _ hR))
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := interiorModel Q) (Q := Q) (E := E) B.hK
-  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rw [← hA]; exact hjA
+  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rwx [← hA]
   obtain ⟨sn, s0, s1⟩ := evPos_ok B (DrvD.gs_lt_len hjA')
   obtain ⟨en, e0, e1⟩ := evPos_ok B (Nat.mod_lt (DrvD.gs (interiorModel Q) Q L E j + 1) hE)
   rw [← DrvD.arc_s B.hK hjA'] at sn s0 s1
@@ -208,7 +213,7 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
           ((interiorModel Q).key Q e) := by
       intro v hv
       simp only [Finset.coe_Ioo, Set.mem_Ioo] at hv
-      refine ⟨by rw [hn]; omega, ?_⟩
+      refine ⟨by rwo [hn], ?_⟩
       unfold sideInArc; rw [ite_eq_left hk]
       have h1 : (s.edge : ℝ) + 1 ≤ v := by exact_mod_cast hv.1
       have h2 : (v : ℝ) + 1 ≤ e.edge := by exact_mod_cast hv.2
@@ -236,7 +241,7 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
       intro v hv
       simp only [Finset.coe_union, Finset.coe_Ioo, Finset.coe_Ico, Set.mem_union, Set.mem_Ioo,
         Set.mem_Ico] at hv
-      refine ⟨by rw [hn]; omega, ?_⟩
+      refine ⟨by rwo [hn], ?_⟩
       unfold sideInArc; rw [ite_eq_right (not_lt.2 hge)]
       rcases hv with hv | hv
       · left
@@ -287,12 +292,12 @@ theorem n_le_of_empty {Q : Polygon} (hQ : Q.Simple) {E : List ℕ} (hE : E = [])
     show BuildNF.arcList I Q [] [] = _
     unfold BuildNF.arcList
     rw [ite_eq_left (show ([] : List (ℕ × ℕ × ℕ)).length = 0 from rfl)]
-  have h0 : 0 < N.arcs.length := by rw [hA]; simp
+  have h0 : 0 < N.arcs.length := by rws [hA]
   obtain ⟨hreg, harc⟩ := hAO.1 0 h0
-  have ha : N.arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by unfold NF.arc; rw [hA]; rfl
+  have ha : N.arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by urr NF.arc [hA]
   rw [ha] at hreg harc
   have hk : I.key Q ⟨0, 0⟩ = 0 := by
-    unfold Model.key Model.param; simp
+    ufs Model.key Model.param
   rw [hk] at harc
   have hR := hRC.1 _ hreg
   have := (arcWt_le_weight hQ hNF.1 hR harc).trans (hwt _ hR)

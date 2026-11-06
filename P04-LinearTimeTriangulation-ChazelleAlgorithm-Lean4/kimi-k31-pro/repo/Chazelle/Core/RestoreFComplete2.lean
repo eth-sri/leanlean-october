@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.RestoreFComplete
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-E, the search: completeness (part 2)
@@ -68,13 +71,13 @@ theorem unwrap_off {n s k : ℕ} {t : ℝ} (hs : s < n) (ht0 : 0 ≤ t) (hkn : (
     exact_mod_cast this
   unfold unwrapK
   by_cases h : s + k < n
-  · rw [Nat.mod_eq_of_lt h, ite_eq_left (by push_cast; linarith)]; push_cast; ring
+  · rw [Nat.mod_eq_of_lt h, ite_eq_left (by pcl)]; pcr
   · have e : (s + k) % n = s + k - n := by
       rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
     rw [e, ite_eq_right (by
-      have : ((s + k - n : ℕ) : ℝ) = (s : ℝ) + k - n := by rw [Nat.cast_sub (by omega)]; push_cast; ring
-      rw [this]; linarith)]
-    rw [Nat.cast_sub (by omega)]; push_cast; ring
+      have : ((s + k - n : ℕ) : ℝ) = (s : ℝ) + k - n := by rw [Nat.cast_sub (by omega)]; pcr
+      rwli [this])]
+    rw [Nat.cast_sub (by omega)]; pcr
 
 /-- **A key strictly inside a piece's walk.** -/
 theorem off_sideInArc {n s m k : ℕ} {t : ℝ} (hs : s < n) (hmn : m < n) (ht0 : 0 ≤ t) (ht1 : t < 1)
@@ -96,8 +99,8 @@ theorem off_sideInArc {n s m k : ℕ} {t : ℝ} (hs : s < n) (hmn : m < n) (ht0 
     have h1' : (((s + k) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast h1
     exact ⟨by positivity, by linarith⟩
   have hm0 : (0 : ℝ) < m := by linarith
-  exact (cyc_unwrap hs0 hs0 hb hyb (by rw [unwrapK_self, he]; linarith)).2
-    ⟨by rw [unwrapK_self, hy]; linarith, by rw [hy, he]; linarith⟩
+  exact (cyc_unwrap hs0 hs0 hb hyb (by rwli [unwrapK_self, he])).2
+    ⟨by rwli [unwrapK_self, hy], by rwli [hy, he]⟩
 
 /-- **A walk vertex in the closed key interval of a piece** is `d ≤ m` steps from its start. -/
 theorem closed_offset {n s m p : ℕ} (hs : s < n) (hmn : m < n) (hm : 0 < m) (hp : p < n)
@@ -114,8 +117,8 @@ theorem closed_offset {n s m p : ℕ} (hs : s < n) (hmn : m < n) (hm : 0 < m) (h
     intro h'
     have h'' : s = (s + m) % n := by exact_mod_cast h'
     by_cases hw : s + m < n
-    · rw [Nat.mod_eq_of_lt hw] at h''; omega
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h''; omega
+    · rwo [Nat.mod_eq_of_lt hw] at h''
+    · rwo [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h''
   obtain ⟨h1, h2⟩ := (closedArc_unwrap hs0 hb hpb hne).1 h
   rw [he] at h2
   -- the unwrapped vertex is `p` or `p + n`
@@ -123,7 +126,7 @@ theorem closed_offset {n s m p : ℕ} (hs : s < n) (hmn : m < n) (hm : 0 < m) (h
     unfold unwrapK
     split_ifs
     · exact ⟨p, rfl, Nat.mod_eq_of_lt hp⟩
-    · exact ⟨p + n, by push_cast; ring, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
+    · exact ⟨p + n, by pcr, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
   rw [← hPn] at h1 h2
   have h1' : s ≤ Pn := by exact_mod_cast h1
   have h2' : Pn ≤ s + m := by exact_mod_cast (by push_cast; linarith : (Pn : ℝ) ≤ ((s + m : ℕ) : ℝ))
@@ -162,16 +165,16 @@ theorem descGood_mk (hE : FGood E c₀) {reg : ℕ → Set Point}
   obtain ⟨-, -, -, regα, hRC, hCS, hArcs, hRg, -⟩ := hcan.1
   have hGα : GoodModel (chainModel Cα) :=
     Or.inl ⟨Cα, by rw [hK.hQ]; exact qof_simple hE, rfl⟩
-  have hn7 : (chainModel Cα).W.n = 2 * Cα.m + 7 := chainModel_n Cα
-  obtain ⟨U, hU, hfU⟩ := faced_after hGα hcan.1.1 (p := g' + dX) (by rw [hn7]; exact hg')
+  have hn7  := chainModel_n Cα
+  obtain ⟨U, hU, hfU⟩ := faced_after hGα hcan.1.1 (p := g' + dX) (by rwx [hn7])
   obtain ⟨Tα, hTα, hTU⟩ := hRC.2.2 U hU
   have hsn : ∀ d', (g + d') % E.M.W.n = (s + (d0 + d')) % E.M.W.n := fun d' => by
     rw [hg, Nat.mod_add_mod, Nat.add_assoc]
   refine ⟨regα, Tα, ⟨hregs, hch, hAi, hAj, hij, fun d' hd' t ht0 ht1 hpos => ?_,
-    fun d' hd' => ?_, hsetD, hinB, hX0, hXL, ⟨σb, hσb, T, by rw [hdσ]; exact hgc⟩,
+    fun d' hd' => ?_, hsetD, hinB, hX0, hXL, ⟨σb, hσb, T, by rwx [hdσ]⟩,
     ⟨_, po, tq, hgc.2.2.2.2.2.2.2.1, hXA, hOA, hne, hXi, hXj, hcount⟩,
     ⟨hRC, hCS, hArcs, hRg⟩, ⟨4, Dec.recTree_of hGα hcan.1 hcan.2.1⟩, hTα,
-    by rw [hTU]; exact hfU⟩⟩
+    by rwx [hTU]⟩⟩
   · rw [hsn]
     exact hin _ t ht0 ht1 (by push_cast; linarith [(Nat.cast_nonneg d0 : (0 : ℝ) ≤ d0)])
       (by have : ((d0 + d' : ℕ) : ℝ) + 1 ≤ Cα.m := by exact_mod_cast (by omega)

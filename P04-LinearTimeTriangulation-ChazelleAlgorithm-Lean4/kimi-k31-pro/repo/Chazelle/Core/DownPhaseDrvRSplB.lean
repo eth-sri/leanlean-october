@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.DownPhaseDrvRSplA
 public import Chazelle.Core.NFBuildMain
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase driver (RAM side): the splice, part 1 (the new chord list)
@@ -29,7 +32,7 @@ theorem chordListAt_of_seg {m m' : ℕ → ℕ} {B A : ℕ} {L : List (ℕ × �
     exact this
   obtain ⟨h1, h2, h3⟩ := h i hi
   refine ⟨?_, ?_, ?_⟩
-  · rw [e (3 * i) (by omega)]; exact h1
+  · rwx [e (3 * i) (by omega)]
   · rw [show A + 3 * i + 1 = A + (3 * i + 1) by ring, e _ (by omega),
       show B + (3 * i + 1) = B + 3 * i + 1 by ring]; exact h2
   · rw [show A + 3 * i + 2 = A + (3 * i + 2) by ring, e _ (by omega),
@@ -64,10 +67,10 @@ theorem wrM_spl1 : wrM Bs1 spl1 = true := by decide
 
 theorem FrameM.of_s1 {c c' : Config} (h : FrameM Bs1 c c') : FrameM BsA c c' :=
   h.mono fun r hr => by
-    simp only [Bs1, BsA, Bool.or_eq_true, decide_eq_true_eq] at hr ⊢; omega
+    sio only [Bs1, BsA, Bool.or_eq_true, decide_eq_true_eq] at hr ⊢
 
 theorem Bcp_BsA {r : ℕ} (h : Bcp r = true) : BsA r = true := by
-  simp only [Bcp, BsA, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  sio only [Bcp, BsA, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
 theorem FrameM.of_cp {c c' : Config} (h : FrameM Bcp c c') : FrameM BsA c c' :=
   h.mono fun _r hr => Bcp_BsA hr
@@ -76,7 +79,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The new chord list.** -/
 theorem splA_exec (c : Config) (hw : WordsBounded W c) {B K B₂ K₂ : ℕ}
     {L L₂ : List (ℕ × ℕ × ℕ)} (h02 : c.nreg 210002 = B) (h03 : c.nreg 210003 = K)
@@ -108,7 +110,7 @@ theorem splA_exec (c : Config) (hw : WordsBounded W c) {B K B₂ K₂ : ℕ}
   -- copy `L`
   obtain ⟨c₂, k₂, e₂, hk₂, w₂, hs₂, hm₂, f₂⟩ := cpS_exec (P := P) e₁.wb_right v61 v62 v63 v34
     (Or.inl (by omega)) (by omega) (by omega)
-  have g₂ : ∀ r, Bcp r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have g₂  := f₂.1
   -- the second copy's arguments
   obtain ⟨c₃, k₃, e₃, hk₃, w61, w62, w63, hm₃⟩ : ∃ c₃ k₃, Exec P W spl1 c₂ c₃ k₃ ∧ k₃ = 4 ∧
       c₃.nreg 210061 = 3 * K₂ ∧ c₃.nreg 210062 = B₂ ∧ c₃.nreg 210063 = A₀ + 3 * K ∧
@@ -123,17 +125,17 @@ theorem splA_exec (c : Config) (hw : WordsBounded W c) {B K B₂ K₂ : ℕ}
     refine ⟨rfl, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> (try simp only [h21', h20', h26', h67']);
       omega
   have f₃ := exec_frameM e₃ wrM_spl1
-  have g₃ : ∀ r, Bs1 r = false → c₃.nreg r = c₂.nreg r := f₃.1
+  have g₃  := f₃.1
   -- copy `L₂`
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, hs₄, hm₄, f₄⟩ := cpS_exec (P := P) e₃.wb_right w61 w62 w63
     (by rw [g₃ _ (by decide), g₂ _ (by decide), v34]) (Or.inl (by omega)) (by omega) (by omega)
-  have g₄ : ∀ r, Bcp r = false → c₄.nreg r = c₃.nreg r := f₄.1
+  have g₄  := f₄.1
   have k : ∀ r, Bcp r = false → Bs1 r = false → c₄.nreg r = c₁.nreg r := fun r h1 h2 => by
     rw [g₄ r h1, g₃ r h2, g₂ r h1]
   refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, w₄,
-    by rw [k _ (by decide) (by decide)]; exact v25, by rw [k _ (by decide) (by decide)]; exact v26,
-    by rw [k _ (by decide) (by decide)]; exact v27, by rw [k _ (by decide) (by decide)]; exact v28,
-    by rw [k _ (by decide) (by decide)]; exact v29, by rw [k _ (by decide) (by decide)]; exact v34,
+    by rwx [k _ (by decide) (by decide)], by rwx [k _ (by decide) (by decide)],
+    by rwx [k _ (by decide) (by decide)], by rwx [k _ (by decide) (by decide)],
+    by rwx [k _ (by decide) (by decide)], by rwx [k _ (by decide) (by decide)],
     by rw [k _ (by decide) (by decide)]; exact vA, ?_, fun a ha => ?_,
     ((f₁.trans (FrameM.of_cp f₂)).trans (FrameM.of_s1 f₃)).trans (FrameM.of_cp f₄), ?_⟩
   · refine chordListAt_append (chordListAt_of_seg hL ?_) (chordListAt_of_seg hL₂ ?_)

@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvRSplC
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase driver (RAM side): the splice, part 3 (the merge)
@@ -39,7 +43,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The merged event list.** -/
 theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     (hw : WordsBounded W c) {D T SE Rb K K₂ : ℕ} {M : Model} {L' : List (ℕ × ℕ × ℕ)}
@@ -74,15 +77,15 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       c₁.nmem = c.nmem := by
     unfold spl5
     exec_block
-    all_goals try (config_simp; (try simp only [h29, h27, h04, show c.nreg 9999 = A₃ from rfl]); omega)
+    all_goals try (config_simp; (try simp [h29, h27, h04, show c.nreg 9999 = A₃ from rfl]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;>
-      (try simp only [show ALLOC = 9999 from rfl]) <;> config_simp <;>
-      (try simp only [h29, h27, h04, show c.nreg 9999 = A₃ from rfl])
+      (try simp [show ALLOC = 9999 from rfl]) <;> config_simp <;>
+      (try simp [h29, h27, h04, show c.nreg 9999 = A₃ from rfl])
   have g₁ : ∀ r, Bs56 r = false → c₁.nreg r = c.nreg r := (exec_frameM e₁ (by decide : wrM Bs56 spl5 = true)).1
   -- copy `E`
   obtain ⟨c₂, k₂, e₂, hk₂, w₂, hs₂, hm₂, f₂⟩ := cpS_exec (P := P) e₁.wb_right v61 v62 v63
     (by rw [g₁ _ (by decide), h34]) (Or.inl (by omega)) (by omega) (by omega)
-  have g₂ : ∀ r, Bcp r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have g₂  := f₂.1
   -- the arguments of the second copy
   obtain ⟨c₃, k₃, e₃, hk₃, u61, u62, u63, hm₃⟩ : ∃ c₃ k₃, Exec P W spl6 c₂ c₃ k₃ ∧ k₃ = 3 ∧
       c₃.nreg 210061 = 2 * K₂ ∧ c₃.nreg 210062 = Rb ∧ c₃.nreg 210063 = A₃ + 2 * K ∧
@@ -93,22 +96,22 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     have a27 : c₂.nreg 210027 = 2 * K := by rw [g₂ _ (by decide), g₁ _ (by decide), h27]
     unfold spl6
     exec_block
-    all_goals try (config_simp; (try simp only [a28, a48, a30, a27]); omega)
-    refine ⟨rfl, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> (try simp only [a28, a48, a30, a27])
+    all_goals try (config_simp; (try simp [a28, a48, a30, a27]); omega)
+    refine ⟨rfl, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> (try simp [a28, a48, a30, a27])
   have g₃ : ∀ r, Bs6 r = false → c₃.nreg r = c₂.nreg r :=
     (exec_frameM e₃ (by decide : wrM Bs6 spl6 = true)).1
   -- copy the new codes
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, hs₄, hm₄, f₄⟩ := cpS_exec (P := P) e₃.wb_right u61 u62 u63
     (by rw [g₃ _ (by decide), g₂ _ (by decide), g₁ _ (by decide), h34]) (Or.inl (by omega))
     (by omega) (by omega)
-  have g₄ : ∀ r, Bcp r = false → c₄.nreg r = c₃.nreg r := f₄.1
+  have g₄  := f₄.1
   -- registers before the merge
   have k5 : ∀ r, Bcp r = false → Bs6 r = false → c₄.nreg r = c₁.nreg r := fun r h1 h2 => by
     rw [g₄ r h1, g₃ r h2, g₂ r h1]
   have k : ∀ r, Bcp r = false → Bs56 r = false → c₄.nreg r = c.nreg r := fun r h1 h2 => by
     rw [k5 r h1 (by
-      simp only [Bs56, Bool.or_eq_false_iff, decide_eq_false_iff_not] at h2
-      simp only [Bs6, decide_eq_false_iff_not]; omega), g₁ r h2]
+      simp [Bs56, Bool.or_eq_false_iff, decide_eq_false_iff_not] at h2
+      sio only [Bs6, decide_eq_false_iff_not]), g₁ r h2]
   have hlow4 : ∀ a, a < A₃ → c₄.nmem a = c.nmem a := fun a ha => by
     rw [hm₄ a (Or.inl (by omega)), hm₃, hm₂ a (Or.inl (by omega)), hm₁]
   have hseg4 : seg c₄.nmem A₃ (2 * K) = E := by
@@ -116,11 +119,11 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have hseg4' : seg c₄.nmem (A₃ + 2 * K) (h - 2 * K) = E₂ := by
     rw [show h - 2 * K = 2 * K₂ by omega, hs₄, hm₃]
     rw [seg_congr (m' := c.nmem) fun i hi => by rw [hm₂ _ (Or.inl (by omega)), hm₁], hE₂]
-  obtain ⟨hM₄, hwf₄⟩ := desc_agree hwf hM (m' := c₄.nmem) fun a ha => hlow4 a ha
+  obtain ⟨hM₄, hwf₄⟩ := desc_agree hwf hM (m' := c₄.nmem) hlow4
   have hrec4 : RecsAt c₄.nmem T L' := fun q hq => by
     obtain ⟨r1, r2, r3, r4⟩ := hrec q hq
-    exact ⟨by rw [hlow4 _ (by omega)]; exact r1, by rw [hlow4 _ (by omega)]; exact r2,
-      by rw [hlow4 _ (by omega)]; exact r3, by rw [hlow4 _ (by omega)]; exact r4⟩
+    exact ⟨by rwx [hlow4 _ (by omega)], by rwx [hlow4 _ (by omega)],
+      by rwx [hlow4 _ (by omega)], by rwx [hlow4 _ (by omega)]⟩
   -- the merge
   obtain ⟨c₅, k₅, e₅, hk₅, w₅, hseg5, hm₅, fr₅, hA₅, rr₅, rm₅, o₅, -, -, -, -⟩ :=
     mergeE_exec (P := P) (W := W) hG hWn c₄ w₄ (S := A₃) (Dst := A₃ + h) (mid := 2 * K) (hi := h)
@@ -132,7 +135,7 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (hwf₄.mono (by omega)) hM₄ hok hrec4 (by omega) hseg4 hseg4' hcodes (by omega) (by omega)
   have hA₄ : c₄.nreg ALLOC = A₃ + h + h := by rw [k5 _ (by decide) (by decide), vA]
   refine ⟨c₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))),
-    by unfold splCCost; omega, w₅, ?_, by rw [hA₅, hA₄], ?_, fun a ha => ?_,
+    by ufo splCCost, w₅, ?_, by rw [hA₅, hA₄], ?_, fun a ha => ?_,
     fun r hr h1 h2 hra => ?_, fun r hr => ?_, ?_, ?_⟩
   · rw [fr₅ _ (by simp [bandOf, bSort, bSign, bBuild]) (by decide), k5 _ (by decide) (by decide), v71]
   · rw [fr₅ _ (by simp [bandOf, bSort, bSign, bBuild]) (by decide), k5 _ (by decide) (by decide), v71]

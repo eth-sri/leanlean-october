@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFBuildArcs
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-C (BuildNF): the normal form computed from the sorted events
@@ -53,8 +55,8 @@ theorem lab_ridx (ℓ : Option ℕ) : lab (ridx ℓ) = ℓ := by
 
 theorem ridx_lab (r : ℕ) : ridx (lab r) = r := by
   unfold lab; split_ifs with h
-  · rw [h]; rfl
-  · simp only [ridx]; omega
+  · rwr [h]
+  · sio only [ridx]
 
 variable (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ)
 

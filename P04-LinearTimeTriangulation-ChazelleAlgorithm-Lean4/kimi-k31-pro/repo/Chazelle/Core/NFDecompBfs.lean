@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.NFDecompFinal2
 public import Chazelle.Core.NFDecompTree
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Tree decomposition (WP-C), part 10: the breadth-first search
@@ -19,7 +21,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
 
 /-- The state of the search. -/
 structure BS where
@@ -95,7 +96,7 @@ theorem binv_start (hR : 1 ≤ R) {st : BS} (hv : ∀ r, r < R → st.vis r = if
     subst this; rw [ho, hv 0 hR]; exact ⟨hR, rfl⟩
   ord_inj q q' hq hq' _ := by omega
   vis_ord r hr hvr := by
-    have : r = 0 := by by_contra h0; rw [hv r hr, ite_eq_right h0] at hvr; omega
+    have : r = 0 := by by_contra h0; rwo [hv r hr, ite_eq_right h0] at hvr
     exact ⟨0, by omega, by rw [ho, this]⟩
   root := ho
   disc q hq hq' := by omega
@@ -161,10 +162,10 @@ theorem bstep_inv {h : ℕ} {done : List ℕ} {st : BS} (hI : BInv R K up dn lst
       have hv2 : st.vis (st.prg (st.ord q)) = 1 := by rw [hpq]; exact (hI.ord_lt q' (by omega)).2
       apply hvs
       rcases hends' with ⟨a1, a2⟩ | ⟨a1, a2⟩ <;> rcases hpair with ⟨b1, b2⟩ | ⟨b1, b2⟩
-      · rw [← b2, a2]; exact hv1
-      · rw [← b1, a1]; exact hv2
-      · rw [← b2, a2]; exact hv2
-      · rw [← b1, a1]; exact hv1
+      · rwx [← b2, a2]
+      · rwx [← b1, a1]
+      · rwx [← b2, a2]
+      · rwx [← b1, a1]
     have hord_old : ∀ q, q < st.tl → Function.update st.ord st.tl s q = st.ord q :=
       fun q hq => Function.update_of_ne (by omega) _ _
     constructor
@@ -235,17 +236,17 @@ theorem bstep_inv {h : ℕ} {done : List ℕ} {st : BS} (hI : BInv R K up dn lst
       constructor
       · by_cases e : up i' = s
         · rw [e, Function.update_self]
-        · rw [Function.update_of_ne e]; exact c1
+        · rwx [Function.update_of_ne e]
       · by_cases e : dn i' = s
         · rw [e, Function.update_self]
-        · rw [Function.update_of_ne e]; exact c2
+        · rwx [Function.update_of_ne e]
     · intro i' hi'
       dsimp only
       have hvis : ∀ v, st.vis v = 1 → Function.update st.vis s 1 v = 1 := by
         intro v hv
         by_cases e : v = s
         · rw [e, Function.update_self]
-        · rw [Function.update_of_ne e]; exact hv
+        · rwx [Function.update_of_ne e]
       rcases List.mem_cons.1 hi' with rfl | hi'
       · rcases hpair with ⟨a1, a2⟩ | ⟨a1, a2⟩
         · rw [a1, a2, Function.update_self]; exact ⟨hvis r hrv, rfl⟩
@@ -286,7 +287,7 @@ theorem fold_inv {h : ℕ} {st : BS} (hh : h < st.tl) :
     rw [List.foldl_cons]
     have h1 := bstep_inv hends hlists hI hh (hl i (List.mem_cons_self))
     obtain ⟨m1, m2⟩ := bstep_mono hends hlists (st.ord h) st i
-    have hord : (bstep up dn (st.ord h) st i).ord h = st.ord h := m2 h hh
+    have hord  := m2 h hh
     have := ih (st := bstep up dn (st.ord h) st i) (by omega) (i :: done)
       (fun j hj => by rw [hord]; exact hl j (List.mem_cons_of_mem _ hj)) h1
     rw [hord] at this
@@ -295,12 +296,12 @@ theorem fold_inv {h : ℕ} {st : BS} (hh : h < st.tl) :
 /-- **Dequeuing one region** preserves the invariant (with the next head). -/
 theorem bouter_inv {h : ℕ} {st : BS} (hI : BInv R K up dn lst h [] st) (hh : h < st.tl) :
     BInv R K up dn lst (h + 1) [] (bouter up dn lst st h) := by
-  have hI' := fold_inv hends hlists hh (lst (st.ord h)) [] (fun _ hi => hi) hI
+  have hI' := fold_inv hends hlists hh (lst (st.ord h)) [] (fun _ => id) hI
   rw [List.append_nil] at hI'
   obtain ⟨m1, m2⟩ := fold_mono hends hlists (st.ord h) (lst (st.ord h)) st
   unfold bouter
   set st' := (lst (st.ord h)).foldl (bstep up dn (st.ord h)) st with hst'
-  have hord : st'.ord h = st.ord h := m2 h hh
+  have hord  := m2 h hh
   refine { hI' with h_lt := ?_, closed := ?_, closed_cur := fun i hi => by simp at hi }
   · by_cases e : h + 1 < st'.tl
     · exact Or.inl e
@@ -338,8 +339,8 @@ theorem bfs_all {st : BS} (hI : BInv R K up dn lst st.tl [] st) : st.tl = R := b
         · exact ⟨hi, Or.inr e⟩
       obtain ⟨c1, c2⟩ := hI.closed q hq i hmem
       rcases hh with ⟨-, e⟩ | ⟨e, -⟩
-      · rw [← e]; exact c2
-      · rw [← e]; exact c1
+      · rwx [← e]
+      · rwx [← e]
   -- so the queue holds all regions
   have himg : range R ⊆ (range st.tl).image st.ord := by
     intro r hr
@@ -373,8 +374,8 @@ theorem bfs_cover {st : BS} (hI : BInv R K up dn lst st.tl [] st) :
         · exact ⟨hi, Or.inr e⟩
       obtain ⟨c1, c2⟩ := hI.closed q hq i hmem
       rcases hh with ⟨-, e⟩ | ⟨e, -⟩
-      · rw [← e]; exact c2
-      · rw [← e]; exact c1
+      · rwx [← e]
+      · rwx [← e]
   exact fun r hr => hI.vis_ord r hr (hvis r hr)
 
 open Classical in
@@ -393,7 +394,7 @@ theorem bfs_rooted {st : BS} (hI : BInv R K up dn lst st.tl [] st) :
   -- positions
   have hposs : ∀ r, r < R → bpos st r < st.tl ∧ st.ord (bpos st r) = r := by
     intro r hr
-    have hex : ∃ q, q < st.tl ∧ st.ord q = r := hcov r hr
+    have hex  := hcov r hr
     unfold bpos
     rw [dite_eq_left hex]
     exact Nat.find_spec hex
@@ -416,7 +417,7 @@ theorem bfs_rooted {st : BS} (hI : BInv R K up dn lst st.tl [] st) :
     rw [(hposs s hs).2] at hpq
     have hq'R : q' < R := by have := (hposs s hs).1; omega
     refine ⟨by rw [hpq]; exact (hI.ord_lt q' (by omega)).1, ?_⟩
-    rw [hpq, hpos_ord q' hq'R]; exact hq'
+    rwx [hpq, hpos_ord q' hq'R]
   have hdisc' : ∀ s, s < R → s ≠ 0 → st.pch s < K ∧
       ((up (st.pch s) = st.prg s ∧ dn (st.pch s) = s) ∨ (up (st.pch s) = s ∧ dn (st.pch s) = st.prg s)) ∧
       (st.isdn s = 1 ↔ dn (st.pch s) = s) ∧ st.chOf (st.pch s) = s := by
@@ -434,11 +435,11 @@ theorem bfs_rooted {st : BS} (hI : BInv R K up dn lst st.tl [] st) :
       rcases (hdisc' s' hs' h0').2.1 with ⟨b1, b2⟩ | ⟨b1, b2⟩ <;> rw [he] at a1 a2
     · exact hne (a2.symm.trans b2)
     · have e1 : s = st.prg s' := a2.symm.trans b2
-      have e2 : s' = st.prg s := b1.symm.trans a1
-      rw [← e1] at p2; rw [← e2] at p1; omega
+      have e2  := b1.symm.trans a1
+      rw [← e1] at p2; rwo [← e2] at p1
     · have e1 : s = st.prg s' := a1.symm.trans b1
-      have e2 : s' = st.prg s := b2.symm.trans a2
-      rw [← e1] at p2; rw [← e2] at p1; omega
+      have e2  := b2.symm.trans a2
+      rw [← e1] at p2; rwo [← e2] at p1
     · exact hne (a1.symm.trans b1)
   -- so they are onto the chords
   have hsurj : ∀ i, i < K → ∃ s, s < R ∧ s ≠ 0 ∧ st.pch s = i := by

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXRamE
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # Down phase, extraction (D6), RAM part 6: the main program; a kept chord
@@ -35,7 +37,7 @@ theorem regHost_length_ge (li : Bool) (n : ℕ) (N : NF) (r : ℕ) :
     have := two_mul_le_flatMap (List.range (N.region r).arcs.length)
       (fun t => DrvR.arcItems li n N r ((N.region r).arcs.getD t 0)
         ((N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0))
-      (fun t => by unfold DrvR.arcItems; simp only [List.length_append, List.length_singleton]; omega)
+      (fun t => by unfold DrvR.arcItems; sio only [List.length_append, List.length_singleton])
     rwa [List.length_range] at this
   unfold DrvR.regHost
   split_ifs
@@ -55,7 +57,7 @@ theorem hpt_lt {n : ℕ} {H : Host} (hwf : HostWF n H) (hn : 0 < n) {k : ℕ}
     obtain ⟨t, -, ht⟩ := hin
     rw [← ht]; exact Nat.mod_lt _ hn
   · simp only [HostItem.pts, List.mem_singleton] at hin
-    rw [hin]; exact hw
+    rwx [hin]
 
 theorem pEdge_lt (li : Bool) {n : ℕ} {s : SymPt} (hs : s.Lt n) : pEdge li n s < n := by
   have hn : 0 < n := by cases s <;> simp only [SymPt.Lt] at hs <;> omega

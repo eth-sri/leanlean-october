@@ -39,13 +39,12 @@ theorem OutOther.mono {H : Set (Set Point)} (h : OutOther D S G T R) (hGH : G �
 theorem region_restrict (hSG : S ⊆ G) (hGT : G ⊆ T) (hR : R ∈ regionsIn D S)
     (hK : OutOther D S G T R) (hV : V ∈ regionsIn D T) (hVR : V ⊆ R) : V ∈ regionsIn D G := by
   obtain ⟨v, hv⟩ := Chazelle.Chain.regionsIn_nonempty hV
-  have hVG : V ⊆ freeIn D G :=
-    (Chazelle.Chain.regionsIn_subset hV).trans (Chazelle.Chain.freeIn_anti D hGT)
+  have hVG  := (Chazelle.Chain.regionsIn_subset hV).trans (Chazelle.Chain.freeIn_anti D hGT)
   set W := connectedComponentIn (freeIn D G) v with hW
-  have hvW : v ∈ W := mem_connectedComponentIn (hVG hv)
+  have hvW  := mem_connectedComponentIn (hVG hv)
   have hWS : W ⊆ freeIn D S :=
     (connectedComponentIn_subset _ _).trans (Chazelle.Chain.freeIn_anti D hSG)
-  have hWR : W ⊆ R := Chazelle.Chain.subset_regionsIn_of_inter hR
+  have hWR  := Chazelle.Chain.subset_regionsIn_of_inter hR
     isPreconnected_connectedComponentIn hWS ⟨v, hvW, hVR hv⟩
   have hWT : W ⊆ freeIn D T := fun w hw => by
     have hwG : w ∈ freeIn D G := connectedComponentIn_subset _ _ hw
@@ -59,7 +58,7 @@ theorem region_restrict (hSG : S ⊆ G) (hGT : G ⊆ T) (hR : R ∈ regionsIn D 
   have hWV : W ⊆ V := by
     rw [Chazelle.Chain.regionsIn_eq_component hV hv]
     exact isPreconnected_connectedComponentIn.subset_connectedComponentIn hvW hWT
-  have hVW : V ⊆ W := (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVG
+  have hVW  := (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVG
   exact ⟨v, hVG hv, Subset.antisymm hVW hWV⟩
 
 /-- **The chords of the other regions do not touch `V`.** -/
@@ -68,7 +67,7 @@ theorem touch_restrict (hsys : ChordSystem D T) (hST : S ⊆ T) (hR : R ∈ regi
     ¬ TouchesIn D c V := by
   rintro ⟨z, ⟨hzc, hzD⟩, hzV⟩
   obtain ⟨R', hR', hne, hsub⟩ := hK c hc hcG
-  have hRo : IsOpen R' := hsys.regionsIn_open hST hR'
+  have hRo  := hsys.regionsIn_open hST hR'
   obtain ⟨w, hwR', hwV⟩ := mem_closure_iff.1 hzV R' hRo (hsub ⟨hzc, hzD⟩)
   exact (Chazelle.Chain.regionsIn_disjoint_of_ne hR' hR hne).le_bot ⟨hwR', hVR hwV⟩
 
@@ -90,7 +89,7 @@ theorem weight_restrict {M : Model} (hM : WalkAx M) (hT : T ⊆ M.Adm) (hfin : T
     (hV : V ∈ M.regions T) (hVR : V ⊆ R) : M.weight T V = M.weight G V := by
   have hloc := Gran.weightLocal hM hT hfin
   have hsys := hM.sys T hT hfin
-  have hST : S ⊆ T := hSG.trans hGT
+  have hST  := hSG.trans hGT
   have key : ∀ K : Set (Set Point), K.Finite → K ⊆ T \ G →
       M.weight (G ∪ K) V = M.weight G V := by
     intro K hKf
@@ -98,8 +97,8 @@ theorem weight_restrict {M : Model} (hM : WalkAx M) (hT : T ⊆ M.Adm) (hfin : T
       (motive := fun K _ => K ⊆ T \ G → M.weight (G ∪ K) V = M.weight G V) K hKf ?_ ?_
     · intro _; rw [union_empty]
     · intro c K hcK _ ih hsub
-      have hcT : c ∈ T := (hsub (mem_insert c K)).1
-      have hcG : c ∉ G := (hsub (mem_insert c K)).2
+      have hcT  := (hsub (mem_insert c K)).1
+      have hcG  := (hsub (mem_insert c K)).2
       have hKsub : K ⊆ T \ G := fun d hd => hsub (mem_insert_of_mem c hd)
       set H := G ∪ insert c K with hH
       have hHT : H ⊆ T := union_subset hGT (insert_subset hcT fun d hd => (hKsub hd).1)
@@ -114,13 +113,12 @@ theorem weight_restrict {M : Model} (hM : WalkAx M) (hT : T ⊆ M.Adm) (hfin : T
         · rintro (h1 | h1)
           · exact ⟨Or.inl h1, fun e => hcG (e ▸ h1)⟩
           · exact ⟨Or.inr (Or.inr h1), fun e => hcK (e ▸ h1)⟩
-      have hVH : V ∈ M.regions H :=
-        region_restrict (hSG.trans subset_union_left) hHT hR (hK.mono subset_union_left) hV hVR
-      have hnt : ¬ TouchesIn M.D c V := touch_restrict hsys hST hR hK hVR hcT hcG
+      have hVH  := region_restrict (hSG.trans subset_union_left) hHT hR (hK.mono subset_union_left) hV hVR
+      have hnt  := touch_restrict hsys hST hR hK hVR hcT hcG
       have := hloc H hHT c (Or.inr (mem_insert c K)) V hVH hnt
       rw [hHd] at this
       rw [← this, ih hKsub]
-  have hTG : T = G ∪ (T \ G) := (union_sdiff_cancel hGT).symm
+  have hTG  := (union_sdiff_cancel hGT).symm
   rw [hTG]
   exact key _ (hfin.subset sdiff_subset) subset_rfl
 

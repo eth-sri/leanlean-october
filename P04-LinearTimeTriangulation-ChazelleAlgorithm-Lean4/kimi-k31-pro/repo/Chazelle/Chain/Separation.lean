@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Chain.Chord
 public import Chazelle.Visibility.Submap
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Chord separation in the subchain model (Chazelle's Lemma 2.1)
@@ -264,7 +266,7 @@ theorem exists_anchor {q : Point} (hq : C.Anchorable q) :
     refine ⟨fun i => if i = 0 then q else if i = 1 then (C.radius, q.2)
       else if i = 2 then (C.radius, C.radius) else C.slitTop, 3, by simp, by simp, ?_⟩
     intro i hi
-    have hR : |C.radius| = C.radius := abs_of_pos C.radius_pos
+    have hR  := abs_of_pos C.radius_pos
     rcases Nat.lt_succ_iff.1 hi |>.lt_or_eq with h | h
     · rcases Nat.lt_succ_iff.1 h |>.lt_or_eq with h' | h'
       · have : i = 0 := by omega
@@ -345,7 +347,7 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
   obtain ⟨fb, Lb, hb0, hbL, hfb⟩ := C.exists_anchor hb
   set path := concatPath fb (revPath fa La) Lb with hpath_def
   have hjoin : fb Lb = revPath fa La 0 := by simp [revPath, hbL, haL]
-  have hpath : C.GoodPath path (Lb + La) := C.goodPath_concat hfb (C.goodPath_reverse hfa) hjoin
+  have hpath  := C.goodPath_concat hfb (C.goodPath_reverse hfa) hjoin
   have hend : path (Lb + La) = a := by
     rw [hpath_def, concatPath_last _ _ hjoin]
     simp [revPath, ha0]
@@ -361,9 +363,9 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
   refine ⟨walkPoly a path (Lb + La), ?_, ?_⟩
   · rw [← hp0]
     exact C.walkPoly_boundary_subset hpath hend hM
-  · have h0n : 0 < (walkPoly a path (Lb + La)).n := by rw [walkPoly_n]; omega
+  · have h0n : 0 < (walkPoly a path (Lb + La)).n := by rwo [walkPoly_n]
     have hzΓ : z ∈ (walkPoly a path (Lb + La)).edge 0 := by
-      rw [walkPoly_edge_zero a path hM, hp0]; exact hz
+      rwx [walkPoly_edge_zero a path hM, hp0]
     have hv0 : (walkPoly a path (Lb + La)).vtx 0 = a := by
       rw [walkPoly, funPoly_vtx _ (by omega), walkFun_zero]
     have hv1 : (walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n) = b := by
@@ -371,7 +373,7 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
         walkFun_succ, hp0]
     have hne : ((walkPoly a path (Lb + La)).vtx 0).1 ≠
         ((walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n)).1 := by
-      rw [hv0, hv1]; exact hab
+      rwx [hv0, hv1]
     have hzu : z ≠ (walkPoly a path (Lb + La)).vtx 0 := by
       rw [hv0]; rintro rfl; exact Anchorable.not_mem_dom C ha hzd
     have hzv : z ≠ (walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n) := by

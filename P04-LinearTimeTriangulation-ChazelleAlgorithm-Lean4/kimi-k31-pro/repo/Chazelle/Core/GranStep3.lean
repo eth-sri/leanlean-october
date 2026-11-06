@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.GranStep2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F, part 9: the removal preserves the invariant
@@ -191,7 +193,7 @@ theorem ref_cases {x : ℕ} (μ : ℕ) (hx : (st.remove c μ).Ref E x) :
       st.cl E x ≠ st.cl E (st.s1 c)) := by
   obtain ⟨i, hi, hx⟩ := hx
   rw [rm_L hE h hc] at hi
-  have hic : i ≠ c := fun e => hi.2 (by rw [e]; rfl)
+  have hic : i ≠ c := fun e => hi.2 (by rwr [e])
   have hiL := hi.1
   have hX : st.Ref E (st.s0 c) := ⟨c, hc, Or.inl rfl⟩
   have hY : st.Ref E (st.s1 c) := ⟨c, hc, Or.inr rfl⟩
@@ -257,7 +259,7 @@ theorem cls_rm (hlow : st.deg (st.s0 c) < 3 ∨ st.deg (st.s1 c) < 3) {x : ℕ}
       tauto
   · have hxX : x ≠ st.s0 c := fun e => h1 (by rw [e])
     obtain ⟨hcx, hxP⟩ := cl_out hE h hc hs hxlt h1 h2
-    have hcl : (st.remove c μ).cl E x = st.cl E x := rm_cl_out hE h hc hs hxlt h1 h2 μ
+    have hcl  := rm_cl_out hE h hc hs hxlt h1 h2 μ
     have hdeg : (st.remove c μ).deg x = st.deg x := by
       show Function.update st.deg (st.s0 c) _ x = _
       rw [Function.update_of_ne hxX]
@@ -271,7 +273,7 @@ theorem cls_rm (hlow : st.deg (st.s0 c) < 3 ∨ st.deg (st.s1 c) < 3) {x : ℕ}
       rw [ite_eq_right (fun h' => hxX h'.1)]
     obtain ⟨d1, w1, n1, m1, l1⟩ := h.cls x hxR
     rw [hcl, hdeg, hexl]
-    refine ⟨by rw [deg_other hE h hc hs hcx hxP]; exact d1, ?_, n1, fun i => ?_, l1⟩
+    refine ⟨by rwx [deg_other hE h hc hs hcx hxP], ?_, n1, fun i => ?_, l1⟩
     · show Function.update st.wt (st.s0 c) μ x = _
       rw [Function.update_of_ne hxX, weight_other' hE h hc hs hcx hxP]
       exact w1
@@ -292,8 +294,7 @@ theorem cls_rm (hlow : st.deg (st.s0 c) < 3 ∨ st.deg (st.s1 c) < 3) {x : ℕ}
 theorem refInj_rm {x y : ℕ} (μ : ℕ) (hx : (st.remove c μ).Ref E x)
     (hy : (st.remove c μ).Ref E y)
     (he : (st.remove c μ).cl E x = (st.remove c μ).cl E y) : x = y := by
-  have hP : (st.remove c μ).cl E (st.s0 c) = P :=
-    rm_cl_in hE h hc hs (h.sides c hc).1 (Or.inl rfl) μ
+  have hP  := rm_cl_in hE h hc hs (h.sides c hc).1 (Or.inl rfl) μ
   rcases ref_cases hE h hc hs μ hx with rfl | ⟨hxR, hxlt, h1, h2⟩ <;>
     rcases ref_cases hE h hc hs μ hy with rfl | ⟨hyR, hylt, h1', h2'⟩
   · rfl

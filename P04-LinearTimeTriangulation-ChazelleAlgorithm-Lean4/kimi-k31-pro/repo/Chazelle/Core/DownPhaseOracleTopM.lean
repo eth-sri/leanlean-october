@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseOracleRamB
 public import Chazelle.Core.ShootCutWalk
 public import Chazelle.Core.ShootCutGrade
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-M (E7-B, part 7): the top of a chain from the grade table (mathematics of O5)
@@ -58,13 +60,12 @@ theorem block_top {m : ℕ → ℕ} {h A : ℕ} (hR : Robust A m fun m' => Grade
     rw [hQ, hlen, hsC]
     have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
     omega
-  refine ⟨h2, hr, by unfold ShootCut.entryAddr at hE; omega, by omega, ?_, fun k hk => ?_⟩
+  refine ⟨h2, hr, by ufo ShootCut.entryAddr at hE, by omega, ?_, fun k hk => ?_⟩
   · rw [hT, ← hlen]; exact C.topIdx_le
-  · have hk' : k ≤ C.m := by rw [hlen]; exact hk
+  · have hk' : k ≤ C.m := by rwx [hlen]
     have h1 := C.vertex_snd_le_top hk'
     rw [ShootCut.grade_vertex hP hx hk', hsC] at h1
     rw [hT]
-    show _ ≤ ((Qof P).vtx (b * 2 ^ g + C.topIdx)).2
     have := ShootCut.grade_vertex hP hx C.topIdx_le
     rw [hsC] at this
     rw [← this]
@@ -77,9 +78,9 @@ theorem topIdx_of_max {C : Chain} (hD : DistinctHeights C.P) {j : ℕ} (hj : j �
   have h1 := C.topIdx_min hj hmax
   have h2 := C.vertex_snd_le_top hj
   have h3 := hmax C.topIdx C.topIdx_le
-  have heq : (C.vertex j).2 = (C.vertex C.topIdx).2 := le_antisymm h2 h3
+  have heq  := le_antisymm h2 h3
   by_contra hne
-  have hlt : C.topIdx < j := lt_of_le_of_ne h1 hne
+  have hlt  := lt_of_le_of_ne h1 hne
   refine hD _ _ (C.edgeIdx_lt j) (C.edgeIdx_lt C.topIdx) ?_ heq
   intro he
   have := C.sideEdgeIdx_inj hj C.topIdx_le he

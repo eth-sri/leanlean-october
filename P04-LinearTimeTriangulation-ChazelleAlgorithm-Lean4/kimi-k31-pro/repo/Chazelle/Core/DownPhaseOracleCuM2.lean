@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseOracleCuM
 public import Chazelle.Core.ShootCutKey
 public import Chazelle.Core.ShootCutGen
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (E7-B, part 14): the pieces of the chain cutter along a stretch
@@ -43,8 +45,8 @@ theorem kpath_of_idx {M : Model} {Q : Polygon} {n : ℝ} :
     obtain ⟨h1, h2, h3⟩ := h 0 (by simp)
     refine ⟨h1, Ve 0, h3, h2, ?_⟩
     have ih := kpath_of_idx (q :: qs) (fun i => Vs (i + 1)) (fun i => Ve (i + 1))
-      (List.cons_ne_nil q qs) (fun i hi => h (i + 1) (by simp at hi ⊢; omega))
-      (fun i hi => hc (i + 1) (by simp at hi ⊢; omega))
+      (List.cons_ne_nil q qs) (fun i hi => h (i + 1) (by sio at hi ⊢))
+      (fun i hi => hc (i + 1) (by sio at hi ⊢))
     rw [hc 0 (by simp)] at ih
     simpa using ih
 
@@ -120,8 +122,8 @@ theorem chainDesc_uniq {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H : Host} {C C
   obtain ⟨P', s', m', a', b'⟩ := C'
   simp only at h2 h2' h3 h3' h4 h4'
   subst h2 h2'
-  have e1 : s = s' := h3.symm.trans h3'
-  have e2 : m = m' := h4.symm.trans h4'
+  have e1  := h3.symm.trans h3'
+  have e2  := h4.symm.trans h4'
   subst e1 e2
   rfl
 
@@ -139,11 +141,11 @@ theorem PcV.keep {P : Polygon} {M : Model} {m m' : ℕ → ℕ} {E E' Hγ : ℕ}
   refine ⟨?_, Hs, Cα, N, hCD', (hNF.transport he).mono hE, hrest⟩
   refine ⟨by omega, fun H' C' hC' => ?_⟩
   have hb : m' pc.entry = m pc.entry := he _ (by omega)
-  have hH : H' = Hs := NFLoc.hostAt_unique hC'.1 hCD'.1
+  have hH  := NFLoc.hostAt_unique hC'.1 hCD'.1
   subst hH
-  have hC : C' = Cα := chainDesc_uniq hC' hCD'
+  have hC  := chainDesc_uniq hC' hCD'
   subst hC
-  exact ⟨hlen, hHwf, by rw [hb]; omega, hs⟩
+  exact ⟨hlen, hHwf, by rwo [hb], hs⟩
 
 /-- **A chain piece inside the stretch, translated, is a piece of the interior walk.** -/
 theorem pcV_tr {P : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch (Qof P) C u₀ g₀ ℓ)

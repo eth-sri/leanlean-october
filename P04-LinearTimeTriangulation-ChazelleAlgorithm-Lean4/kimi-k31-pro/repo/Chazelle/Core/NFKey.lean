@@ -81,7 +81,7 @@ theorem key_lt_key_iff_of_same_edge {x y : WPos} (he : x.edge = y.edge)
     M.key Q x < M.key Q y ↔
       ((M.wa x.edge).2 < (M.wb x.edge).2 ∧ M.hgtY Q x < M.hgtY Q y) ∨
         ((M.wb x.edge).2 < (M.wa x.edge).2 ∧ M.hgtY Q y < M.hgtY Q x) := by
-  have hy : (M.wa y.edge).2 ≠ (M.wb y.edge).2 := he ▸ h
+  have hy  := he ▸ h
   unfold key
   rw [param_eq h, param_eq hy, ← he, add_lt_add_iff_left]
   set a := (M.wa x.edge).2

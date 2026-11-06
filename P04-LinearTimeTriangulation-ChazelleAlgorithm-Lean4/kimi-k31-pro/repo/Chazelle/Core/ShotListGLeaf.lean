@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ShotListGCut
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The model-generic shot list, part 3: one shot and the running minimum
@@ -72,12 +76,12 @@ theorem leafAccG_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : Words
   obtain ⟨a1, a2⟩ := v₂
   refine ⟨c₂, _, .seq e₁ e₂, rfl, ?_, by rw [a1, r₁ _ (by omega)], by rw [a2, r₁ _ (by omega)],
     ?_⟩
-  · rw [f₂.1 _ (by simp), hc₁]; simp
+  · rws [f₂.1 _ (by simp), hc₁]
   · have fa : FrameB (fun r => decide (R + 20 ≤ r ∧ r < R + 23)) c c₁ :=
       frameB_mono (exec_frameB e₁ (show wr (Bone (R + 20)) (.instr (.constN (R + 20) 1)) = true by
         simp [wr, wrOK, Bone])) (fun r hr => by simp only [Bone, beq_iff_eq] at hr; simp [hr])
     have fb : FrameB (fun r => decide (R + 20 ≤ r ∧ r < R + 23)) c₁ c₂ :=
-      frameB_mono f₂ (fun r hr => by simp at hr; simp only [decide_eq_true_eq]; omega)
+      frameB_mono f₂ (fun r hr => by simp at hr; sio only [decide_eq_true_eq])
     exact fa.trans fb
 
 /-- The write set of `leafCmpG`. -/
@@ -118,7 +122,7 @@ theorem leafCmpG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
     fun r h1 h2 h3 => by
       rw [hc₂]; simp only [upd, h3, ↓reduceIte]; exact kR1 r h1 h2
   have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := by
-    rw [hc₂]; simp only [upd, show ALLOC ≠ R + 246 by unfold ALLOC; omega, ↓reduceIte]
+    rw [hc₂]; simp only [upd, show ALLOC ≠ R + 246 by ufo ALLOC, ↓reduceIte]
     exact f₁.1 _ (opW_alloc hBx)
   have F12 : FrameB (BcmpG R Bx) c c₂ := by
     have g1 : FrameB (BcmpG R Bx) c c₁ := frameB_mono f₁ (fun r hr => by simp [BcmpG, hr])
@@ -136,14 +140,14 @@ theorem leafCmpG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
   have q := fun i (hi : i < 300) (hne : i ≠ 246) => keep2 (R + i) (by omega) (by omega) (by omega)
   obtain ⟨c₃, k₃, e₃, hk₃, b₃, f₃⟩ := hx (R + 21) (R + 22) (R + 244) (R + 245) (iB _ (by omega))
     (iB _ (by omega)) (iB _ (by omega)) (iB _ (by omega)) c₂ w₂ ctx₂
-    (by rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega)]; exact hpb)
-    (by rw [q 21 (by omega) (by omega)]; exact heb)
-    (by rw [q 244 (by omega) (by omega), q 245 (by omega) (by omega)]; exact hpc)
-    (by rw [q 244 (by omega) (by omega)]; exact hec)
+    (by rwx [q 21 (by omega) (by omega), q 22 (by omega) (by omega)])
+    (by rwx [q 21 (by omega) (by omega)])
+    (by rwx [q 244 (by omega) (by omega), q 245 (by omega) (by omega)])
+    (by rwx [q 244 (by omega) (by omega)])
     (by rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega), q 244 (by omega) (by omega),
       q 245 (by omega) (by omega)]; exact hy.symm)
-    (by rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega), ← hy]; exact hY)
-    (by rw [hA2]; exact hroom)
+    (by rwx [q 21 (by omega) (by omega), q 22 (by omega) (by omega), ← hy])
+    (by rwx [hA2])
   rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega), q 244 (by omega) (by omega),
     q 245 (by omega) (by omega)] at b₃
   have e₄ := Exec.copyN (P := P) e₃.wb_right (R + 247) 50210
@@ -204,12 +208,12 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
   obtain ⟨p44, p45⟩ := v₁
   have k1 : ∀ r, r ≠ R + 244 → r ≠ R + 245 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     f₁.1 r (by simp [candList, h1, h2])
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by ufo ALLOC) (by ufo ALLOC)
   have best₁ : BestG P M R c₁ S z σ := hbest.congr (k1 _ (by omega) (by omega))
     (k1 _ (by omega) (by omega)) (k1 _ (by omega) (by omega))
   have w₁ := e₁.wb_right
   have fB : ∀ {B : ℕ → Bool} {c₀ c' : Config}, FrameB B c₀ c' → (∀ r, B r = true → BhitG R Bx r) →
-      FrameB (BhitG R Bx) c₀ c' := fun h hB => frameB_mono h hB
+      FrameB (BhitG R Bx) c₀ c' := frameB_mono
   have f₁' : FrameB (BhitG R Bx) c c₁ := fB f₁ (fun r hr => by
     simp [candList] at hr; simp only [BhitG, Bool.or_eq_true, decide_eq_true_eq]; left; right
     omega)
@@ -222,7 +226,7 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
         FrameB (BhitG R Bx) c c' := by
     intro cc hcc fcc h44 h45 hS'
     obtain ⟨c', k, ex, hk, a0, a1, a2, fa⟩ := leafAccG_exec (P := P) (R := R) cc hcc (by
-      unfold hostWords at hHW; omega)
+      ufo hostWords at hHW)
     refine ⟨c', k, ex, hk, ⟨by rw [a0], fun _ => ⟨t, ?_, ?_, ?_, ?_⟩, fun h' => absurd a0 h'⟩,
       fcc.trans (fB fa (fun r hr => by
         simp only [decide_eq_true_eq] at hr
@@ -230,9 +234,9 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
     · rcases hS' with hS' | ⟨tb, htb, hle⟩
       · exact firstHit_union_right hS' hA
       · exact firstHit_union_le' htb hA hle
-    · rw [a1, a2, h44, h45]; exact hp
-    · rw [a1, h44]; exact he
-    · rw [a1, a2, h44, h45]; exact hpos
+    · rwx [a1, a2, h44, h45]
+    · rwx [a1, h44]
+    · rwx [a1, a2, h44, h45]
   have c31 : c₁.nreg (R + 31) = 1 := by rw [k1 _ (by omega) (by omega), h31]
   by_cases hf : c₁.nreg (R + 20) < c₁.nreg (R + 31)
   · -- no minimum yet
@@ -243,12 +247,12 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
   have hf1 : c₁.nreg (R + 20) = 1 := by have := best₁.1; omega
   obtain ⟨tb, htb, hpb, heb, hposb⟩ := best₁.2.1 hf1
   have hyc : (M.pos (Qof P) ⟨c₁.nreg (R + 244), c₁.nreg (R + 245)⟩).2 = z.2 := by
-    rw [p44, p45, hpos]; simp
+    rws [p44, p45, hpos]
   have hyb : (M.pos (Qof P) ⟨c₁.nreg (R + 21), c₁.nreg (R + 22)⟩).2 = z.2 := by
-    rw [hposb]; simp
+    rws [hposb]
   obtain ⟨c₂, k₂, e₂, hk₂, b46, b47, f₂⟩ := leafCmpG_exec (P := P) hR hBo hS hx hBx c₁ w₁ ctx₁
-    (by rw [p44, p45]; exact hp) (by rw [p44]; exact he) hpb heb (by rw [hyc, hyb])
-    (by rw [hyc]; exact hz) (by rw [hA1]; exact hroom)
+    (by rwx [p44, p45]) (by rwx [p44]) hpb heb (by rw [hyc, hyb])
+    (by rwx [hyc]) (by rwx [hA1])
   rw [p44, p45, hpos, hposb] at b46 b47
   have k2 : ∀ r, R ≤ r → r < R + 246 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
     f₂.1 r (by simp only [BcmpG, opW_R hBx hR h1 (by omega), Bool.or_false,
@@ -261,11 +265,11 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
   -- keeping the minimum
   have keep : tb ≤ t → BestG P M R c₂ (S ∪ A) z σ := fun hle => by
     refine ⟨by rw [k2 _ (by omega) (by omega)]; exact best₁.1, fun _ => ⟨tb, ?_, ?_, ?_, ?_⟩,
-      fun h' => absurd (by rw [k2 _ (by omega) (by omega)]; exact hf1) h'⟩
+      fun h' => absurd (by rwx [k2 _ (by omega) (by omega)]) h'⟩
     · exact firstHit_union_le htb hA hle
-    · rw [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]; exact hpb
-    · rw [k2 _ (by omega) (by omega)]; exact heb
-    · rw [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]; exact hposb
+    · rwx [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]
+    · rwx [k2 _ (by omega) (by omega)]
+    · rwx [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]
   have r35 : c₂.nreg (R + 35) = c.nreg (R + 35) := by
     rw [k2 _ (by omega) (by omega), k1 _ (by omega) (by omega)]
   have r30 : c₂.nreg (R + 30) = 0 := by
@@ -276,7 +280,7 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
   have hσ1 : σ = 1 ∨ σ = -1 := by rw [hσ]; unfold dirOf; split_ifs <;> simp
   by_cases hs : c₂.nreg (R + 30) < c₂.nreg (R + 35)
   · -- `σ = 1`: accept iff `xc < xb`
-    have hv : c.nreg (R + 6) = 1 := hσb.2.1 (by have := hσb.1; rw [← r35]; omega)
+    have hv : c.nreg (R + 6) = 1 := hσb.2.1 (by have := hσb.1; rwo [← r35])
     have hσe : σ = 1 := by rw [hσ]; exact dirOf_eq_one hv
     have ord := ray_lt_iff (p := z) (t := t) (t' := tb) hσ1
     rw [ite_yes _ _ hσe] at ord
@@ -292,7 +296,7 @@ theorem leafHitG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
         (.skip w₂))))), by omega, keep hge, f₂'⟩
   · -- `σ = -1`: accept iff `xb < xc`
     have hv : c.nreg (R + 6) ≠ 1 := fun h' => hs (by rw [r30, r35]; have := hσb.2.2 h'; omega)
-    have hσe : σ ≠ 1 := by rw [hσ, dirOf_ne_one hv]; norm_num
+    have hσe : σ ≠ 1 := by rwn [hσ, dirOf_ne_one hv]
     have ord := ray_lt_iff (p := z) (t := t) (t' := tb) hσ1
     rw [ite_no _ _ hσe] at ord
     by_cases hb : c₂.nreg (R + 30) < c₂.nreg (R + 247)
@@ -346,8 +350,8 @@ theorem leafG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     forall_eq] at v₁
   obtain ⟨s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s13⟩ := v₁
   have k1 : ∀ r, ¬ (140000 ≤ r ∧ r < 140014) → c₁.nreg r = c.nreg r := fun r hr =>
-    f₁.1 r (by simp [setList]; omega)
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold ALLOC; omega)
+    f₁.1 r (by sio [setList])
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by ufo ALLOC)
   have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
   have hR1 : ∀ i, i < 300 → c₁.nreg (R + i) = c.nreg (R + i) := fun i hi => k1 _ (by omega)
   have hctx0 := hctx
@@ -359,29 +363,29 @@ theorem leafG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     · exact s7
   -- the shot
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, fr₂⟩ := hsh P W c₁ e₁.wb_right
-    ⟨hG, hHW, by rw [rd_shoot, s13, hM1, hA1]; exact hX,
-      by rw [rd_shoot, rd_shoot, s9, s13, hM1]; exact hcap,
-      by rw [rd_shoot, s0, hM1, hA1]; exact hmwf, by rw [rd_shoot, s0, hM1]; exact hreg, M,
-      by rw [rd_shoot, s0, hM1]; exact hMD, hOk,
-      by rw [rd_shoot, rd_shoot, s1, s2]; exact hp1, by rw [rd_shoot, rd_shoot, s3, s4]; exact hp2,
-      by rw [rd_shoot, s1]; exact he1, by rw [rd_shoot, s3]; exact he2,
-      by rw [rd_shoot, rd_shoot, s1, s2]; exact hi1, by rw [rd_shoot, rd_shoot, s3, s4]; exact hi2,
-      by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4, s9]; exact hwt,
-      o, hol, hO1, hof, by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4]; exact hon⟩
-    (by rw [hA1]; show _ + F (rd c₁ bShoot 9) ≤ W; rw [rd_shoot, s9]; omega)
+    ⟨hG, hHW, by rwx [rd_shoot, s13, hM1, hA1],
+      by rwx [rd_shoot, rd_shoot, s9, s13, hM1],
+      by rwx [rd_shoot, s0, hM1, hA1], by rwx [rd_shoot, s0, hM1], M,
+      by rwx [rd_shoot, s0, hM1], hOk,
+      by rwx [rd_shoot, rd_shoot, s1, s2], by rwx [rd_shoot, rd_shoot, s3, s4],
+      by rwx [rd_shoot, s1], by rwx [rd_shoot, s3],
+      by rwx [rd_shoot, rd_shoot, s1, s2], by rwx [rd_shoot, rd_shoot, s3, s4],
+      by rwx [rd_shoot, rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4, s9],
+      o, hol, hO1, hof, by rwx [rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4]⟩
+    (by rw [hA1]; show _ + F (rd c₁ bShoot 9) ≤ W; rwo [rd_shoot, s9])
   replace hk₂ : k₂ ≤ F (c.nreg (R + 7)) := by
     have h2 : k₂ ≤ F (rd c₁ bShoot 9) := hk₂
     rw [rd_shoot, s9] at h2; exact h2
-  have post := post₂ M o (by rw [rd_shoot, s0, hM1]; exact hMD) hO1
+  have post := post₂ M o (by rwx [rd_shoot, s0, hM1]) hO1
   simp only [rd_shoot, Nat.reduceAdd, s1, s2, s3, s4, s8] at post
   obtain ⟨hhit, hnoh⟩ := post
   -- registers of the caller's block survive the shot
   have hR2 : ∀ i, i < 300 → c₂.nreg (R + i) = c.nreg (R + i) := fun i hi => by
-    rw [fr₂.1 _ (fun hb => band_RB hR hRB hi (hBs hb)) (by unfold ALLOC; omega), hR1 i hi]
+    rw [fr₂.1 _ (fun hb => band_RB hR hRB hi (hBs hb)) (by ufo ALLOC), hR1 i hi]
   have F01 : FrameR Bo (fun _ => False) c c₁ k₁ := FrameR.of_frameB f₁ (fun r hr => by
     right; simp [setList] at hr; exact hBo (band_shoot (by omega))) (by simp [setList, ALLOC]) _
   have F12 : FrameR Bo (fun _ => False) c₁ c₂ k₂ :=
-    (FrameR.of_frame fr₂).mono hBs (fun _ h => h) le_rfl
+    (FrameR.of_frame fr₂).mono hBs (fun _ => id) le_rfl
   have F02 := F01.trans F12
   have w₂ := e₂.wb_right
   have ctx₂ : ShotCtxG P W X Ok R M E c₂ :=
@@ -389,7 +393,7 @@ theorem leafG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have best₂ : BestG P M R c₂ S z σ := hbest.congr (hR2 20 (by omega)) (hR2 21 (by omega))
     (hR2 22 (by omega))
   have hA2 : c₂.nreg ALLOC ≤ c.nreg ALLOC + F (c.nreg (R + 7)) := by
-    have := F12.2.2.2.2.2.2; rw [hA1] at this; omega
+    have := F12.2.2.2.2.2.2; rwo [hA1] at this
   have Fw : ∀ {cc cc' : Config} {kk : ℕ}, FrameR Bo (fun _ => False) cc cc' kk →
       FrameR Bo (fun r => (R + 20 ≤ r ∧ r < R + 23) ∨ (R + 244 ≤ r ∧ r < R + 248))
         cc cc' kk := fun hf => hf.mono le_rfl (fun _ h => h.elim) le_rfl
@@ -403,11 +407,11 @@ theorem leafG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   by_cases g1 : c₂.nreg (R + 31) < c₂.nreg 140010
   · refine ⟨c₂, _, .seq e₁ (.seq e₂ (.ifLtN_true g1 (.skip w₂))), by omega,
       nohit (by omega), ?_⟩
-    exact (Fw F02).mono le_rfl (fun _ h => h) (by omega)
+    exact (Fw F02).mono le_rfl (fun _ => id) (by omega)
   by_cases g2 : c₂.nreg 140010 < c₂.nreg (R + 31)
   · refine ⟨c₂, _, .seq e₁ (.seq e₂ (.ifLtN_false g1 (.ifLtN_true g2 (.skip w₂)))), by omega,
       nohit (by omega), ?_⟩
-    exact (Fw F02).mono le_rfl (fun _ h => h) (by omega)
+    exact (Fw F02).mono le_rfl (fun _ => id) (by omega)
   -- a hit
   have hflag : c₂.nreg 140010 = 1 := by omega
   obtain ⟨t, htA, hpp, hpe, hpos⟩ := hhit hflag
@@ -421,7 +425,7 @@ theorem leafG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     · exact Or.inl (Or.inl h')
     · exact Or.inl (Or.inr h')
     · exact Or.inr (hBo (hBx r h').1)) ((wrG_hit hBx).alloc hR) _
-  exact ((Fw F02).trans F23).mono le_rfl (fun _ h => h) (by omega)
+  exact ((Fw F02).trans F23).mono le_rfl (fun _ => id) (by omega)
 
 end
 

@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepEvStepL4
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), stage 3: the chords at the next key (Task L1)
@@ -128,14 +129,14 @@ theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.ri
   have hmem := hok.2.1 e he hs _ _ hA hL
   obtain ⟨r, hr, hreq⟩ := List.mem_map.1 hmem
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
-  simp only [Prod.mk.injEq] at hreq
+  simp [Prod.mk.injEq] at hreq
   obtain ⟨h1, h2, h3⟩ := hreq
   have ho : stopOff P J c i = keyOff P J c' := by
     rw [S.stopOff_rs hi]
     unfold soff
     rw [h2, h1]
     rfl
-  have hic : i < c.nreg sC := hlen ▸ hi
+  have hic  := hlen ▸ hi
   obtain ⟨-, -, hptr, -⟩ := stp_ptr_c' S.E S.L S.hI S.hd
   obtain ⟨-, -, esC', -, -⟩ := stp_arrays_c' S.E S.L S.hI S.hd
   have hso := (stp_stops_c' S.E S.L S.hI S.hd).2 i hic
@@ -164,14 +165,14 @@ theorem nonstop_acc {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J
   obtain ⟨-, -, hKb, -, hKw, -⟩ := hK.2.2.2 hsome
   obtain ⟨k, hk, a, σ, ha, haR, hav, hat, hfree, rfl, hlt', j, hj, hjk, hjO, hjD, h, hh, hmA⟩ :=
     stp_accepted_of_found S.E S.L hW hR S.hBA he hA hlt S.gapK hs (fun h0 => by
-      have := hKw (by rw [ewX]; exact h0)
+      have := hKw (by rwx [ewX])
       rw [ewE, ewH] at this
       exact this)
   have hoT : offT P J (j, c'.nreg kE, h) = keyOff P J c' := by
     show oW J (_ + (chainModel J.whole).param (Qof P) ⟨_, h⟩) = _
     rw [hh]
     rfl
-  obtain ⟨hbF, hle⟩ := S.hBA.bMin _ hmA (by rw [hoT, ekE, ekH]; exact hlt)
+  obtain ⟨hbF, hle⟩ := S.hBA.bMin _ hmA (by rwx [hoT, ekE, ekH])
   have hge := hKb hbF
   exact ⟨_, hmA, hoT, by rw [hjO, hjD], hbF, le_antisymm (hle.trans hoT.le) hge⟩
 
@@ -190,16 +191,16 @@ theorem triple_at {t : ℕ × ℕ × ℕ} (ht : t ∈ A) (hto : offT P J t = key
   obtain ⟨-, hj, hfree, hmemF, hAt, -, -, hpw, hlt'⟩ := S.hBA.acc t ht
   obtain ⟨haR, hav, hat⟩ := S.hval t ht
   obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Qof P) hj
-  have hS₂a : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := S.E.hNF₂.1.2.1
+  have hS₂a  := S.E.hNF₂.1.2.1
   obtain ⟨e1, e2⟩ := S.posEq hpw.1 hpw.2.1.1 hpw.2.1.2.1 hto
-  refine ⟨hmemF, by rw [← e2, ← e1]; exact hAt,
+  refine ⟨hmemF, by rwx [← e2, ← e1],
     origin_not_stop hP hS₂a (hS₂a hc) ha haR hav hat hlt', fun hbr => ?_⟩
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM  := FactsChain.walkAx J.whole hP
   have haD : endOrigin J (Qof P) N₂ t.1 ∉ J.whole.dom := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset haR)
   obtain ⟨q, s, hq, hqpt⟩ := endpoint_attach hM (F₂plus_subset J hS₂a hmemF) (origin_mem J) haD
   have := off_right_pt J hP (S₂ := ∅) (empty_subset _) finite_empty hq.1 hq.2.1 hq.2.2.1
-    (by rw [hqpt]; exact haR) (by rw [hqpt]; exact hav)
+    (by rwx [hqpt]) (by rwx [hqpt])
   rw [← oW_eq, ← Lst_eq] at this
   have := hbr q s hq
   linarith

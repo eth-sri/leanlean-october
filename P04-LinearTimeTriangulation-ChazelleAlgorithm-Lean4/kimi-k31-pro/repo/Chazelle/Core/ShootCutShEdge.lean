@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.ShootCutShCmp
 public import Chazelle.Core.ShootCutShPiece
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 42: the answer on one segment, as the machine decides it
@@ -54,43 +56,43 @@ theorem edge_cand {U V z X : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hzS :
     · have hc := seg_on hσ hUV hzU hzS
       by_cases hA : 0 < σ * (U.1 - z.1)
       · by_cases hn : σ * U.1 ≤ σ * V.1
-        · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, hn, ↓reduceIte]
-          rw [this]; simp only [one_ne_zero, ↓reduceIte, selX]
+        · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp [hUV, hzU, hA, hn, ↓reduceIte]
+          rw [this]; simp [one_ne_zero, ↓reduceIte, selX]
           simpa [hA, hn] using hc
-        · have : sel = 2 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, hn, ↓reduceIte]
-          rw [this]; simp only [OfNat.ofNat_ne_zero, ↓reduceIte, selX]
+        · have : sel = 2 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp [hUV, hzU, hA, hn, ↓reduceIte]
+          rw [this]; simp [OfNat.ofNat_ne_zero, ↓reduceIte, selX]
           simpa [hA, hn] using hc
-      · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, ↓reduceIte]
-        rw [this]; simp only [↓reduceIte]
+      · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp [hUV, hzU, hA, ↓reduceIte]
+        rw [this]; simp [↓reduceIte]
         exact e0 0 _ (by simpa [hA] using hc)
     · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; rw [ite_eq_left hUV, ite_eq_right hzU]
-      rw [this]; simp only [↓reduceIte]
+      rw [this]; simp [↓reduceIte]
       exact e0 0 0 (seg_off hUV hzU 0)
   -- ends at different heights
   by_cases hzU : z.2 = U.2
   · have hc := seg_at hσ hUV (U_mem_seg U V) hzU.symm
     by_cases hA : 0 < σ * (U.1 - z.1)
-    · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, ↓reduceIte]
+    · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp [hUV, hzU, hA, ↓reduceIte]
       rw [this]; simpa [selX, hA] using hc
-    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, ↓reduceIte]
-      rw [this]; simp only [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
+    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp [hUV, hzU, hA, ↓reduceIte]
+      rw [this]; simp [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
   by_cases hzV : z.2 = V.2
   · have hc := seg_at hσ hUV (V_mem_seg U V) hzV.symm
     by_cases hA : 0 < σ * (V.1 - z.1)
     · have : sel = 2 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; rw [ite_eq_right hUV, ite_eq_right hzU, ite_eq_left hzV, ite_eq_left hA]
       rw [this]; simpa [selX, hA] using hc
     · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; rw [ite_eq_right hUV, ite_eq_right hzU, ite_eq_left hzV, ite_eq_right hA]
-      rw [this]; simp only [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
+      rw [this]; simp [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
   by_cases hmid : (U.2 < z.2 ∧ z.2 < V.2) ∨ (V.2 < z.2 ∧ z.2 < U.2)
   · obtain ⟨hXS, hXy⟩ := hX hmid
     have hc := seg_at hσ hUV hXS hXy
     by_cases hA : 0 < σ * (X.1 - z.1)
-    · have : sel = 3 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hzV, hmid, hA, ↓reduceIte]
+    · have : sel = 3 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp [hUV, hzU, hzV, hmid, hA, ↓reduceIte]
       rw [this]; simpa [selX, hA] using hc
-    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hzV, hmid, hA, ↓reduceIte]
-      rw [this]; simp only [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
-  · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hzV, hmid, ↓reduceIte]
-    rw [this]; simp only [↓reduceIte]
+    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp [hUV, hzU, hzV, hmid, hA, ↓reduceIte]
+      rw [this]; simp [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
+  · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp [hUV, hzU, hzV, hmid, ↓reduceIte]
+    rw [this]; simp [↓reduceIte]
     refine e0 0 0 (seg_out ?_ 0)
     rintro ⟨h1, h2⟩
     apply hmid
@@ -114,7 +116,7 @@ theorem mid_pos (M : Model) (Q : Polygon) {p h : ℕ} {α β : ℝ} (hα : 0 ≤
   set b := M.wb p
   have hne : a.2 ≠ b.2 := by
     intro he
-    simp only [lerp_snd] at hmid
+    simp [lerp_snd] at hmid
     rw [he] at hmid
     rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
   have hd : b.2 - a.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hne)
@@ -123,19 +125,19 @@ theorem mid_pos (M : Model) (Q : Polygon) {p h : ℕ} {α β : ℝ} (hα : 0 ≤
     rw [ite_eq_right hne]
   set t := M.param Q ⟨p, h + 1⟩
   have hpos : M.pos Q ⟨p, h + 1⟩ = lerp a b t := rfl
-  have hty : a.2 + t * (b.2 - a.2) = (Q.vtx h).2 := by rw [hpar]; field_simp; ring
+  have hty : a.2 + t * (b.2 - a.2) = (Q.vtx h).2 := by rw [hpar]; fsr
   -- `t` strictly between `α` and `β`
-  simp only [lerp_snd] at hmid
+  simp [lerp_snd] at hmid
   have hαt : α < t ∧ t < β := by
     rcases lt_or_gt_of_ne hd with hs | hs
     · rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩
-      · exfalso; rw [← hty] at h1 h2; nlinarith
+      · exfalso; rwnl [← hty] at h1 h2
       · rw [← hty] at h1 h2
         constructor <;> nlinarith
     · rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩
       · rw [← hty] at h1 h2
         constructor <;> nlinarith
-      · exfalso; rw [← hty] at h1 h2; nlinarith
+      · exfalso; rwnl [← hty] at h1 h2
   refine ⟨?_, by rw [hpos, lerp_snd, hty], by linarith [hαt.1], by linarith [hαt.2]⟩
   rw [hpos, ← subSeg_eq_seg M p hαβ]
   exact ⟨t, hαt.1.le, hαt.2.le, rfl⟩

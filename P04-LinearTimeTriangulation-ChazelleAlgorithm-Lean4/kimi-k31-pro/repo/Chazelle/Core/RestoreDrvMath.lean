@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.RestoreDrvReg
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, part 9: the restoration driver — the mathematics of one round
@@ -32,7 +34,7 @@ def newSet (M : Model) (Q : Polygon) (newL : List (ℕ × (ℕ × ℕ × ℕ))) 
   {c | ∃ p ∈ newL, c = (recOf p.2).toSet M Q}
 
 theorem mem_highList {D r r' : ℕ} : r' ∈ highList N D r ↔ r' < r ∧ D < degOf N r' := by
-  unfold highList; simp
+  ufs highList
 
 theorem highList_nodup (D r : ℕ) : (highList N D r).Nodup := List.nodup_range.filter _
 
@@ -191,7 +193,7 @@ theorem round_all (hN : IsNF M Q N) (hregs : NFRegs M Q N reg) {D : ℕ}
   have hdeg : (exitsIn M.D (N.F M Q) (reg r)).ncard = degOf N r :=
     Gran.deg_region hN hRC hRO hr
   have : r ∈ newL.map Prod.fst := by
-    rw [h.fst, mem_highList]; exact ⟨hr, by rw [← hdeg]; exact hD⟩
+    rw [h.fst, mem_highList]; exact ⟨hr, by rwx [← hdeg]⟩
   obtain ⟨p, hp, rfl⟩ := List.mem_map.1 this
   exact ⟨_, ⟨p, hp, rfl⟩, (h.good p hp).2.2.2⟩
 

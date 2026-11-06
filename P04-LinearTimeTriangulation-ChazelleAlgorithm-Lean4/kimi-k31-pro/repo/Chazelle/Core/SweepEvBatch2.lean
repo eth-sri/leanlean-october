@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepEvBatch
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep (WP-D), stage 3: one origin as a step of a batch (RAM)
@@ -26,17 +30,16 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 /-- The regions of a chord record differ. -/
 theorem up_ne_dn (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {k : ℕ} (hk : k < N₂.nChords) :
     (N₂.chord k).up ≠ (N₂.chord k).dn := by
-  have hPr : J.right.P.Simple := E.ctx2.2.2.2.2.1
+  have hPr  := E.ctx2.2.2.2.2.1
   obtain ⟨hRC, hCS, -⟩ := regOf_spec E.hNF₂
   exact (Gran.touch_iff_side E.hNF₂ (FactsChain.walkAx J.right hPr) hRC hCS hk).1
 
 theorem not_orgR {r : ℕ} (h : (LR r ∧ r ≠ oK ∧ r ≠ oS) ∨ ER r) : ¬ OrgR r := by
   unfold OrgR CandR BestR LblR bF bE bH bN bL
   rcases h with ⟨h, h1, h2⟩ | h
-  · simp only [LR, oK, oS, sw] at h h1 h2; unfold sw; omega
-  · unfold ER kN kL gN gR sP sC aB sw at h; unfold sw; omega
+  · simp [LR, oK, oS, sw] at h h1 h2; ufo sw
+  · unfold ER kN kL gN gR sP sC aB sw at h; ufo sw
 
-set_option maxHeartbeats 4000000 in
 /-- **One origin as a step of a batch.** -/
 theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG : ℕ}
     (hgen : GenOK P W c₀ J g KG) {cs : Config} {L : List ℕ}
@@ -63,22 +66,22 @@ theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG
   have hInv' := hInv
   obtain ⟨hreg, hAc, A, hB⟩ := hInv
   have keepS : ∀ r, 240000 ≤ r → r < 250000 → ¬ OrgR r → ¬ LR r → c.nreg r = cs.nreg r :=
-    fun r h1 h2 h3 h4 => hreg r (band_sw_not ⟨h1, h2⟩) h3 h4 (by unfold ALLOC; omega)
-  have eGK : c.nreg wGK = cs.nreg wGK := keepS _ (by unfold wGK sw; omega)
-    (by unfold wGK sw; omega) (by unfold OrgR CandR BestR LblR wGK bF bE bH bN bL sw; omega)
-    (by unfold LR wGK oK oS sw; omega)
-  have eGB : c.nreg wGB = cs.nreg wGB := keepS _ (by unfold wGB sw; omega)
-    (by unfold wGB sw; omega) (by unfold OrgR CandR BestR LblR wGB bF bE bH bN bL sw; omega)
-    (by unfold LR wGB oK oS sw; omega)
-  have eKE : c.nreg kE = cs.nreg kE := keepS _ (by unfold kE sw; omega)
-    (by unfold kE sw; omega) (by unfold OrgR CandR BestR LblR kE bF bE bH bN bL sw; omega)
-    (by unfold LR kE oK oS sw; omega)
-  have eKH : c.nreg kH = cs.nreg kH := keepS _ (by unfold kH sw; omega)
-    (by unfold kH sw; omega) (by unfold OrgR CandR BestR LblR kH bF bE bH bN bL sw; omega)
-    (by unfold LR kH oK oS sw; omega)
-  have eTB : c.nreg cTB = cs.nreg cTB := keepS _ (by unfold cTB sw; omega)
-    (by unfold cTB sw; omega) (by unfold OrgR CandR BestR LblR cTB bF bE bH bN bL sw; omega)
-    (by unfold LR cTB oK oS sw; omega)
+    fun r h1 h2 h3 h4 => hreg r (band_sw_not ⟨h1, h2⟩) h3 h4 (by ufo ALLOC)
+  have eGK : c.nreg wGK = cs.nreg wGK := keepS _ (by ufo wGK sw)
+    (by ufo wGK sw) (by ufo OrgR CandR BestR LblR wGK bF bE bH bN bL sw)
+    (by ufo LR wGK oK oS sw)
+  have eGB : c.nreg wGB = cs.nreg wGB := keepS _ (by ufo wGB sw)
+    (by ufo wGB sw) (by ufo OrgR CandR BestR LblR wGB bF bE bH bN bL sw)
+    (by ufo LR wGB oK oS sw)
+  have eKE : c.nreg kE = cs.nreg kE := keepS _ (by ufo kE sw)
+    (by ufo kE sw) (by ufo OrgR CandR BestR LblR kE bF bE bH bN bL sw)
+    (by ufo LR kE oK oS sw)
+  have eKH : c.nreg kH = cs.nreg kH := keepS _ (by ufo kH sw)
+    (by ufo kH sw) (by ufo OrgR CandR BestR LblR kH bF bE bH bN bL sw)
+    (by ufo LR kH oK oS sw)
+  have eTB : c.nreg cTB = cs.nreg cTB := keepS _ (by ufo cTB sw)
+    (by ufo cTB sw) (by ufo OrgR CandR BestR LblR cTB bF bE bH bN bL sw)
+    (by ufo LR cTB oK oS sw)
   have hmc : ∀ x, cs.nreg cTB + 6 * N₂.nChords ≤ x → x < cs.nreg ALLOC → c.nmem x = cs.nmem x :=
     fun x h1 h2 => hB.memT x h2 (Or.inr h1)
   have harcs' : ∀ k, k < L.length → ShotList.arcAt c.nmem (c.nreg wGB) k =
@@ -93,29 +96,29 @@ theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG
   have hb : c.nreg bF = 1 → PosW P J (c.nreg bE) (c.nreg bH) := fun h => by
     obtain ⟨⟨j, hj⟩, -⟩ := hB.bAcc h
     exact (hB.acc _ hj).2.2.2.2.2.2.2.1
-  refine (orgDo_irs E hI hgen hL (by rw [eGK, hgK]) (by rw [eGB]; omega) harcs' rfl rfl hk hs
-    (by rw [eKE, eKH]; exact hkey) hb hB.fF hB.fN hroom).mono le_rfl ?_
+  refine (orgDo_irs E hI hgen hL (by rw [eGK, hgK]) (by rwo [eGB]) harcs' rfl rfl hk hs
+    (by rwx [eKE, eKH]) hb hB.fF hB.fN hroom).mono le_rfl ?_
   rintro c' ⟨hres, hcomp, hrej, hfr, hA'⟩
   refine ⟨batch_step hInv' (by omega) hs (up_ne_dn E hk) hT hres
     (fun hv => hlo ▸ hcomp hv.1 hv.2.1 hv.2.2) hrej hfr hA', fun r hr => ?_, fun x h1 h2 => ?_⟩
   · refine hfr r (band_sw_not ?_) (not_orgR hr) (by
       rcases hr with ⟨h, -, -⟩ | h
-      · unfold LR oK oS sw at h; unfold ALLOC; omega
-      · unfold ER kN kL gN gR sP sC aB sw at h; unfold ALLOC; omega)
+      · unfold LR oK oS sw at h; ufo ALLOC
+      · unfold ER kN kL gN gR sP sC aB sw at h; ufo ALLOC)
     rcases hr with ⟨h, -, -⟩ | h
-    · unfold LR oK oS sw at h; omega
-    · unfold ER kN kL gN gR sP sC aB sw at h; omega
-  · have eaB : c.nreg aB = cs.nreg aB := keepS _ (by unfold aB sw; omega)
-      (by unfold aB sw; omega) (by unfold OrgR CandR BestR LblR aB bF bE bH bN bL sw; omega)
-      (by unfold LR aB oK oS sw; omega)
-    have eC : c.nreg sC = cs.nreg sC := keepS _ (by unfold sC sw; omega)
-      (by unfold sC sw; omega) (by unfold OrgR CandR BestR LblR sC bF bE bH bN bL sw; omega)
-      (by unfold LR sC oK oS sw; omega)
+    · ufo LR oK oS sw at h
+    · ufo ER kN kL gN gR sP sC aB sw at h
+  · have eaB : c.nreg aB = cs.nreg aB := keepS _ (by ufo aB sw)
+      (by ufo aB sw) (by ufo OrgR CandR BestR LblR aB bF bE bH bN bL sw)
+      (by ufo LR aB oK oS sw)
+    have eC : c.nreg sC = cs.nreg sC := keepS _ (by ufo sC sw)
+      (by ufo sC sw) (by ufo OrgR CandR BestR LblR sC bF bE bH bN bL sw)
+      (by ufo LR sC oK oS sw)
     rw [eaB] at h1; rw [eaB, eC] at h2
     rcases hres with ⟨hm, -⟩ | ⟨e, h, -, hm, -⟩
     · exact hm x (by omega)
-    · rw [hm x (by omega), tabUpd_o _ (by rw [eTB]; omega) (by rw [eTB]; omega)
-        (by rw [eTB]; omega)]
+    · rw [hm x (by omega), tabUpd_o _ (by rwo [eTB]) (by rwo [eTB])
+        (by rwo [eTB])]
 
 end
 

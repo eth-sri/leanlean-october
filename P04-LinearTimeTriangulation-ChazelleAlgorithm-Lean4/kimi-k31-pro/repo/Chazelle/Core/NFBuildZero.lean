@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.NFBuildPhaseB
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-C (BuildNF), RAM part 25: the empty chord list
@@ -93,9 +97,9 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
     (hm : ∀ f, f < 24 → m (H + f) =
       zeroW H (BuildNF.regWt M Q L E 0) f) :
     NFAt m H (BuildNF.buildNF M Q L E) := by
-  have hL' : L = [] := List.length_eq_zero_iff.1 hL
+  have hL'  := List.length_eq_zero_iff.1 hL
   subst hL'
-  have hz : ∀ f, f < 24 → m (H + f) = zeroW H (BuildNF.regWt M Q [] E 0) f := hm
+  have hz  := hm
   have v : ∀ f, f < 24 → m (H + f) = [0, 1, 1, H + 12, H + 12, H + 17, H + 22, H + 23, H, 0, H, 0,
       0, 0, 0, 0, 0, 1, 0, 0, 1, BuildNF.regWt M Q [] E 0, 0, 0].getD f 0 := fun f hf => by
     rw [hz f hf, zeroW_eq _ _ _ hf]
@@ -121,25 +125,25 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
   have e22 : m (H + 22) = 0 := v 22 (by norm_num)
   have e23 : m (H + 23) = 0 := v 23 (by norm_num)
   have hA : BuildNF.arcList M Q [] E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
-    unfold BuildNF.arcList; simp
+    ufs BuildNF.arcList
   have hRA : BuildNF.regArcs M Q [] E 0 = [0] := by
-    unfold BuildNF.regArcs; rw [hA]; decide
+    unfold BuildNF.regArcs; rwd [hA]
   have hRC : BuildNF.regChords M Q [] E 0 = [] := by
-    unfold BuildNF.regChords; simp
+    ufs BuildNF.regChords
   refine ⟨?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun j hj => ?_, fun r hr => ?_, fun j hj => ?_,
     fun k hk => ?_, fun r hr => ?_⟩
   · rw [e0]; simp [BuildNF.buildNF]
-  · rw [e1]; show 1 = (BuildNF.arcList M Q [] E).length; rw [hA]; rfl
+  · rw [e1]; show 1 = (BuildNF.arcList M Q [] E).length; rwr [hA]
   · rw [e2]; simp [BuildNF.buildNF]
-  · rw [e9]; rfl
-  · rw [e11]; rfl
+  · rwr [e9]
+  · rwr [e11]
   · simp [BuildNF.buildNF] at hi
   · have hj' : j = 0 := by
       have : (BuildNF.buildNF M Q [] E).arcs = BuildNF.arcList M Q [] E := rfl
       rw [this, hA] at hj; simp at hj; exact hj
     subst hj'
     have ha : (BuildNF.buildNF M Q [] E).arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by
-      unfold NF.arc; show (BuildNF.arcList M Q [] E).getD 0 _ = _; rw [hA]; rfl
+      unfold NF.arc; show (BuildNF.arcList M Q [] E).getD 0 _ = _; rwr [hA]
     rw [e4, ha]
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
     · rw [Nat.mul_zero, Nat.add_zero, show H + 12 = H + 12 from rfl, e12]
@@ -151,12 +155,12 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
     subst hr'
     have hreg := (show (BuildNF.buildNF M Q [] E).region 0 =
       ⟨BuildNF.regArcs M Q [] E 0, BuildNF.regChords M Q [] E 0, BuildNF.regWt M Q [] E 0⟩ by
-        unfold NF.region BuildNF.buildNF; rfl)
+        ufr NF.region BuildNF.buildNF)
     rw [e5, hreg, hRA, hRC]
     simp only [Nat.mul_zero, Nat.add_zero]
     refine ⟨?_, ?_, ?_, fun t ht => ?_, fun t ht => ?_⟩
-    · rw [show H + 17 = H + 17 from rfl, e17]; rfl
-    · rw [show H + 17 + 2 = H + 19 from rfl, e19]; rfl
+    · rwr [show H + 17 = H + 17 from rfl, e17]
+    · rwr [show H + 17 + 2 = H + 19 from rfl, e19]
     · rw [show H + 17 + 4 = H + 21 from rfl, e21]
     · simp only [List.length_singleton, Nat.lt_one_iff] at ht
       subst ht
@@ -185,7 +189,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 theorem zeroStores_exec (d : Config) (hw : WordsBounded W d) {H hd : ℕ}
     (hH : d.nreg 44000 = H) (hhd : d.nreg 44021 = hd) (hW : H + 24 ≤ W) :
     ∃ d' k, Exec P W zeroStores d d' k ∧ k ≤ 90 ∧ 24 ≤ k ∧ d'.nreg 40003 = H ∧
@@ -213,14 +216,14 @@ end exec
 theorem regWt_zero {M : Model} {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     (hL : L.length = 0) {m : ℕ → ℕ} {D : ℕ} (hM : ModelDescAt m D (Qof P) M) :
     BuildNF.regWt M (Qof P) L E 0 = hdOf m D P.n := by
-  have hL' : L = [] := List.length_eq_zero_iff.1 hL
+  have hL'  := List.length_eq_zero_iff.1 hL
   subst hL'
   have hA : BuildNF.arcList M (Qof P) [] E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
-    unfold BuildNF.arcList; simp
+    ufs BuildNF.arcList
   have hRA : BuildNF.regArcs M (Qof P) [] E 0 = [0] := by
-    unfold BuildNF.regArcs; rw [hA]; decide
+    unfold BuildNF.regArcs; rwd [hA]
   obtain ⟨hc, hhi⟩ := countedIv (P := P) hM
-  have hlohi : loOf m D ≤ hiOf m D P.n := by unfold loOf hiOf; split_ifs <;> omega
+  have hlohi : loOf m D ≤ hiOf m D P.n := by unfold loOf hiOf; splao
   unfold BuildNF.regWt
   rw [hRA, hA]
   simp only [List.map_cons, List.map_nil, List.foldr_cons, List.foldr_nil, List.getD_cons_zero]
@@ -234,7 +237,6 @@ variable {P : Polygon} {W : ℕ}
 
 theorem wr_zeroCase : wrM BphaseB zeroCase = true := by decide
 
-set_option maxHeartbeats 1000000 in
 /-- **The empty chord list.** -/
 theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounded W c)
     {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {D H : ℕ} (hL : L.length = 0)
@@ -253,7 +255,7 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
       c₁.nmem = c.nmem := by
     exec_block
     · omega
-    · config_simp; rw [hH]; omega
+    · config_simp; rwo [hH]
     · refine ⟨rfl, ?_, ?_, fun r h1 h2 h3 => ?_, rfl⟩ <;> config_simp
       · rw [hH]
       · rw [hH]
@@ -261,8 +263,8 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
   have w₁ := x₁.wb_right
   obtain ⟨c₂, k₂, x₂, hk₂, l1, l2, l3, l4, f₂⟩ := lohiS_exec (P := P) c₁ w₁ (D := D)
     (by rw [g₁ _ (by norm_num) (by norm_num) (by norm_num), hD])
-    (by rw [mm₁]; exact twice_m_le hM hCW) (by omega) (by unfold hostWords at hWn; omega)
-    (by unfold hostWords at hWn; omega)
+    (by rw [mm₁]; exact twice_m_le hM hCW) (by omega) (by ufo hostWords at hWn)
+    (by ufo hostWords at hWn)
   rw [mm₁] at l1 l2 l3
   have w₂ := x₂.wb_right
   obtain ⟨c₃, k₃, x₃, hk₃, hk₃', v40003, g₃, T1, T2⟩ := zeroStores_exec (P := P) c₂ w₂ (H := H)

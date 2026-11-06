@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.ClusterRegsRam
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # WP-I, part 62: the initial state of the split driver
@@ -44,7 +46,6 @@ theorem div_eq_of_adj {a b k : ℕ} (hk : 0 < k) (h1 : b ≤ a + 1) (h2 : a ≤ 
 
 variable {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 /-- **The initial driver invariant.** -/
 theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M} {a : F → Fin g.N}
@@ -147,7 +148,7 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   refine ⟨hsinv, fun v hv => ?_, fun v hv => by simp at hv, fun p hp i h1 h2 => ?_,
     fun w hw => ?_, fun p hp => ?_, hstk, fun p hp => ?_⟩
   · show m (g.base 48 + v) = 1 ↔ v ∈ (∅ : Finset ℕ)
-    rw [hdf v hv]; simp
+    rws [hdf v hv]
   · obtain ⟨b, hb, rfl⟩ := lv_iff.mp hp
     obtain ⟨v, hv, hbv, rfl⟩ := exists_plPos (key := key) hinj h1 h2
     show m (g.base 44 + m (g.base 43 + plPos g.μ bo key v)) = plPos g.μ bo key v

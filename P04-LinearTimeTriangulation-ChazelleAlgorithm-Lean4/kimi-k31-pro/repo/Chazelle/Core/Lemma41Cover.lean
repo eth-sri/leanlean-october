@@ -5,6 +5,8 @@ public import Mathlib.Data.List.Basic
 public import Mathlib.Algebra.Order.BigOperators.Group.List
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.Linarith
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-J, part 1: the greedy dyadic cover of Lemma 4.1
@@ -27,7 +29,7 @@ instance (b x g : ℕ) : Decidable (GradeOK b x g) := by unfold GradeOK; infer_i
 /-- **The greedy grade**: the largest `g ≤ λ - 1` with `2^g ∣ x` and `x + 2^g ≤ b`. -/
 def nextG (lam b x : ℕ) : ℕ := Nat.findGreatest (GradeOK b x) (lam - 1)
 
-theorem gradeOK_zero {b x : ℕ} (h : x < b) : GradeOK b x 0 := ⟨by simp, by simp; omega⟩
+theorem gradeOK_zero {b x : ℕ} (h : x < b) : GradeOK b x 0 := ⟨by simp, by sio⟩
 
 theorem gradeOK_mono {b x g g' : ℕ} (h : GradeOK b x g) (hg : g' ≤ g) : GradeOK b x g' :=
   ⟨(Nat.pow_dvd_pow 2 hg).trans h.1, by
@@ -93,8 +95,8 @@ theorem cover_sum {lam b : ℕ} (x : ℕ) :
   | h x ih =>
     by_cases hx : x < b
     · rw [cover_of_lt hx, List.map_cons, List.sum_cons, ih _ (step_lt hx)]
-      have := (nextG_spec (lam := lam) hx).2; dsimp only; omega
-    · rw [cover_of_ge (by omega)]; simp; omega
+      have := (nextG_spec (lam := lam) hx).2; dsimp; omega
+    · rws [cover_of_ge (by omega)]; omega
 
 /-- The descending phase: from a position aligned to `2^h` with less than `2^h` to go, at most
 `h` pieces. -/
@@ -117,15 +119,15 @@ theorem cover_length_desc {lam b : ℕ} (h : ℕ) : ∀ x, h ≤ lam → 2 ^ h �
         have hgh1 : g + 1 < h := by
           by_contra hc2
           have := Nat.pow_le_pow_right (show 0 < 2 by norm_num) (not_lt.mp hc2)
-          rw [pow_succ] at this; omega
+          rwo [pow_succ] at this
         have hok : GradeOK b x (g + 1) := by
           refine ⟨(Nat.pow_dvd_pow 2 (by omega)).trans hd, ?_⟩
-          rw [pow_succ]; omega
+          rwo [pow_succ]
         have := le_nextG (lam := lam) (by omega) hok
         omega
       have := ih g hgh (x + 2 ^ g) (by omega) (Nat.dvd_add hs.1 dvd_rfl) hrest
       omega
-    · rw [cover_of_ge (by omega)]; simp
+    · rws [cover_of_ge (by omega)]
 
 /-- The ascending phase. -/
 theorem cover_length_asc {lam b : ℕ} (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < lam → 2 ^ h ∣ x →
@@ -141,7 +143,7 @@ theorem cover_length_asc {lam b : ℕ} (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < l
       have hgl : g ≤ lam - 1 := nextG_le _ _ _
       have hd' : 2 ^ g ∣ x + 2 ^ g := Nat.dvd_add hs.1 dvd_rfl
       by_cases hA : b < x + 2 ^ (g + 1)
-      · have hr : b - (x + 2 ^ g) < 2 ^ g := by rw [pow_succ] at hA; omega
+      · have hr : b - (x + 2 ^ g) < 2 ^ g := by rwo [pow_succ] at hA
         have := cover_length_desc (lam := lam) (b := b) g (x + 2 ^ g) (by omega) hd' hr
         omega
       · push Not at hA
@@ -187,8 +189,8 @@ theorem cover_length_asc {lam b : ℕ} (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < l
               have h2 := nextG_le lam b (x + 2 ^ g)
               omega
             rw [hng, cover_of_ge (by omega)]
-            simp; omega
-    · rw [cover_of_ge (by omega)]; simp
+            sio
+    · rws [cover_of_ge (by omega)]
 
 /-- **At most `2λ` pieces.** -/
 theorem cover_length_le {lam b x : ℕ} (hl : 1 ≤ lam) (hb : b - x ≤ 2 ^ lam) :

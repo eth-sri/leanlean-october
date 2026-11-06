@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.GranStep
+public import Chazelle.Rwx
 
 /-!
 # WP-F, part 8: one step of the worklist — the removal
@@ -76,7 +77,7 @@ omit hE h hc in
 theorem rm_L (_hE : E.Good) (_h : Inv E st) (hc : c ∈ st.L E)
     (μ : ℕ) : (st.remove c μ).L E = st.L E \ {c} := by
   ext i
-  simp only [St.L, St.remove, mem_sdiff, mem_ofPred_eq, mem_singleton_iff]
+  simp [St.L, St.remove, mem_sdiff, mem_ofPred_eq, mem_singleton_iff]
   by_cases hic : i = c
   · subst hic; simp
   · rw [Function.update_of_ne hic]; tauto
@@ -110,7 +111,7 @@ theorem deg_list (hE : E.Good) {L' : Set ℕ} (hL' : ∀ i ∈ L', i < E.K) {Z :
   have e : {d | d ∈ fam E.M E.Q E.N L' ∧ TouchesIn E.M.D d Z} =
       (fun i => cs E.M E.Q E.N i) '' {i | i ∈ l} := by
     ext d
-    simp only [mem_ofPred_eq, mem_image]
+    simp [mem_ofPred_eq, mem_image]
     constructor
     · rintro ⟨⟨i, hiL, hi, rfl⟩, ht⟩
       exact ⟨i, (hl i).2 ⟨hiL, ht⟩, rfl⟩
@@ -184,7 +185,7 @@ theorem touch_P {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) :
   have e := hs.exits_eq_union (hsys_F hE h hc hs) sdiff_subset (St.cs_mem_F hc)
     not_mem_sdiff_self (W := st.F E \ {cs E.M E.Q E.N c}) subset_rfl
   have hiS : cs E.M E.Q E.N i ∈ st.F E \ {cs E.M E.Q E.N c} := by
-    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rw [mem_singleton_iff]; exact hic⟩, hi.1, rfl⟩
+    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rwx [mem_singleton_iff]⟩, hi.1, rfl⟩
   constructor
   · intro ht
     have : cs E.M E.Q E.N i ∈ Merge.exitsIn E.M.D (st.F E \ {cs E.M E.Q E.N c}) P := ⟨hiS, ht⟩
@@ -207,13 +208,13 @@ theorem not_both {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c)
   have hd := hs.exits_disjoint (hsys_F hE h hc hs) sdiff_subset (St.cs_mem_F hc)
     (W := st.F E \ {cs E.M E.Q E.N c}) subset_rfl
   have hiS : cs E.M E.Q E.N i ∈ st.F E \ {cs E.M E.Q E.N c} := by
-    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rw [mem_singleton_iff]; exact hic⟩, hi.1, rfl⟩
+    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rwx [mem_singleton_iff]⟩, hi.1, rfl⟩
   exact Set.disjoint_left.1 hd ⟨hiS, h1⟩ ⟨hiS, h2⟩
 
 theorem mem_newEx (i : ℕ) :
     i ∈ st.newEx c ↔ i ∈ st.L E ∧ i ≠ c ∧ TouchesIn E.M.D (cs E.M E.Q E.N i) P := by
   unfold St.newEx
-  simp only [List.mem_append, List.mem_filter, bne_iff_ne, ne_eq]
+  simp [List.mem_append, List.mem_filter, bne_iff_ne, ne_eq]
   rw [exl_X hE h hc, exl_Y hE h hc]
   constructor
   · rintro (⟨⟨hi, ht⟩, hic⟩ | ⟨⟨hi, ht⟩, hic⟩)
@@ -251,7 +252,7 @@ theorem newEx_length (hE : E.Good) (h : Inv E st) (hc : c ∈ st.L E)
   have l1 := List.length_pos_of_mem hcX
   have l2 := List.length_pos_of_mem hcY
   unfold St.exl at l1 l2 ⊢
-  simp only [List.length_ofFn] at l1 l2 ⊢
+  simp [List.length_ofFn] at l1 l2 ⊢
   omega
 
 theorem deg_P :
@@ -259,7 +260,7 @@ theorem deg_P :
   rw [← fam_diff hE hc]
   refine (deg_list hE (fun i hi => hi.1.1) (newEx_nodup hE h hc hs) fun i => ?_).symm
   rw [mem_newEx hE h hc hs]
-  simp only [mem_sdiff, mem_singleton_iff]
+  simp [mem_sdiff, mem_singleton_iff]
   tauto
 
 theorem other_ne {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E.N c}))

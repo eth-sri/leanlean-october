@@ -3,6 +3,7 @@ module
 public import Mathlib.Data.Nat.Log
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.Linarith
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-G, part 7: the dyadic cover of an interval, in two sweeps
@@ -28,7 +29,7 @@ namespace ShootCut
 
 /-! ## Upward -/
 
-theorem pow_succ' (g : ℕ) : 2 ^ (g + 1) = 2 * 2 ^ g := by rw [pow_succ]; ring
+theorem pow_succ' (g : ℕ) : 2 ^ (g + 1) = 2 * 2 ^ g := by rwring [pow_succ]
 
 /-! ## Downward -/
 

@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.NFBuildOut
 public import Chazelle.Core.NFBuildPassMath
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-C (BuildNF), RAM part 19: the layout of `buildNF` from the tables
@@ -46,7 +48,7 @@ theorem ridx_label_le {w : List ℕ} {K : ℕ} (hw : ∀ x ∈ w, x < K) (m : �
   unfold BuildStack.label
   rcases hh : (BuildStack.run (w.take m)).head? with _ | x
   · simp [ridx]
-  · simp only [ridx]
+  · simp [ridx]
     have hx := mem_of_mem_head? hh
     unfold BuildStack.run at hx
     rcases mem_foldl_step hx with h' | h'
@@ -69,7 +71,7 @@ theorem chordRec_up_le (h : Input M Q L E) {i : ℕ} (hi : i < L.length) :
   rw [word_eq]
   have := ridx_label_le (w := E.map (· / 2)) (cw_lt h)
     ((evs M Q L E).idxOf (BuildRegions.e1 M Q L i))
-  split_ifs <;> constructor <;> dsimp only <;> omega
+  split_ifs <;> constructor <;> dsimp <;> omega
 
 /-- Every chord occurs in the word. -/
 theorem mem_cw (h : Input M Q L E) {x : ℕ} (hx : x < L.length) : x ∈ cw E := by
@@ -162,22 +164,22 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
   have h3 := hH 3 (by norm_num); have h4 := hH 4 (by norm_num); have h5 := hH 5 (by norm_num)
   have h6 := hH 6 (by norm_num); have h7 := hH 7 (by norm_num); have h9 := hH 9 (by norm_num)
   have h11 := hH 11 (by norm_num)
-  simp only [hdrW, Nat.add_zero] at h0 h1 h2 h3 h4 h5 h6 h7 h9 h11
+  simp [hdrW, Nat.add_zero] at h0 h1 h2 h3 h4 h5 h6 h7 h9 h11
   norm_num at h0 h1 h2 h3 h4 h5 h6 h7 h9 h11
   refine ⟨?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun j hj => ?_, fun r hr => ?_, fun j hj => ?_,
     fun k hk => ?_, fun r hr => ?_⟩
   · rw [h0]; simp [buildNF]
   · rw [h1, hlenA]
   · rw [h2]; simp [buildNF]
-  · rw [h9]; rfl
-  · rw [h11]; rfl
+  · rwr [h9]
+  · rwr [h11]
   · -- chords
     have hi' : i < L.length := by simpa [buildNF] using hi
     rw [h3, Input.chord_eq hi']
     have c0 := hC i hi' 0 (by norm_num); have c1 := hC i hi' 1 (by norm_num)
     have c2 := hC i hi' 2 (by norm_num); have c3 := hC i hi' 3 (by norm_num)
     have c4 := hC i hi' 4 (by norm_num)
-    simp only [cf, Nat.add_zero] at c0 c1 c2 c3 c4
+    simp [cf, Nat.add_zero] at c0 c1 c2 c3 c4
     norm_num at c0 c1 c2 c3 c4
     exact ⟨c0, c1, c2, c3, c4⟩
   · -- arcs
@@ -188,21 +190,21 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
     have c0 := hA j hj 0 (by norm_num); have c1 := hA j hj 1 (by norm_num)
     have c2 := hA j hj 2 (by norm_num); have c3 := hA j hj 3 (by norm_num)
     have c4 := hA j hj 4 (by norm_num)
-    simp only [af, Nat.add_zero] at c0 c1 c2 c3 c4
+    simp [af, Nat.add_zero] at c0 c1 c2 c3 c4
     norm_num at c0 c1 c2 c3 c4
     exact ⟨c0, c1, c2, c3, c4⟩
   · -- regions
     have hr' : r < L.length + 1 := by simpa [buildNF] using hr
     rw [h5, h.region_eq hr']
-    simp only
+    simp
     have c0 := hR r hr' 0 (by norm_num); have c1 := hR r hr' 1 (by norm_num)
     have c2 := hR r hr' 2 (by norm_num); have c3 := hR r hr' 3 (by norm_num)
     have c4 := hR r hr' 4 (by norm_num)
     rw [BuildRam.rtv_eq _ _ _ _ _ (by norm_num)] at c0 c1 c2 c3 c4
     norm_num at c0 c1 c2 c3 c4
     refine ⟨?_, ?_, ?_, fun t ht => ?_, fun t ht => ?_⟩
-    · rw [c0, regArcs_eq hK]; rfl
-    · rw [c2, regChords_eq]; rfl
+    · rwr [c0, regArcs_eq hK]
+    · rwr [c2, regChords_eq]
     · rw [c4, regWt_eq hK]
     · rw [h7, c1]
       rw [regArcs_eq hK] at ht ⊢
@@ -216,7 +218,7 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
       rw [this, length_range, arcList_pos hK, length_map] at hj; exact hj
     rw [h6, hQ j hj']
     show j = (range (arcList M Q L E).length).getD j 0
-    rw [getD_eq_getElem?_getD, getElem?_range (by rw [arcList_pos hK, length_map]; exact hj'),
+    rw [getD_eq_getElem?_getD, getElem?_range (by rwx [arcList_pos hK, length_map]),
       Option.getD_some]
   · simp [buildNF] at hk
   · simp [buildNF] at hr

@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.GranInitL3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # WP-F, init part 9: the ring arrays
@@ -49,15 +55,15 @@ theorem desc_agree' {P : Polygon} {E : ℕ} {m m' : ℕ → ℕ} {D : ℕ} {M : 
     have hH' : HostAt m' (m' (D + 1)) H := by
       rw [e1]; exact hostAt_agree' hH (by omega) hm
     have hC' : ChainDescAt m' (D + 1) (Qof P) H C :=
-      ⟨hH', hP, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-        by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
-    refine ⟨Or.inl ⟨by rw [e0]; exact h0, H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
+      ⟨hH', hP, by rwx [hm _ (by omega)], by rwx [hm _ (by omega)],
+        by rwx [hm _ (by omega)], by rwx [hm _ (by omega)]⟩
+    refine ⟨Or.inl ⟨by rwx [e0], H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
     have hHH := NFLoc.hostAt_unique hC''.1 hC'.1
     subst hHH
     have hCC := NFLoc.chain_eq_of_desc hC'' hC'
     subst hCC
-    exact ⟨hl, hwfH, by rw [e1]; exact hHE, hs⟩
-  · refine ⟨Or.inr ⟨by rw [e0]; exact h1, by rw [hm _ (by omega)]; exact hbit, rfl⟩, hD,
+    exact ⟨hl, hwfH, by rwx [e1], hs⟩
+  · refine ⟨Or.inr ⟨by rwx [e0], by rwx [hm _ (by omega)], rfl⟩, hD,
       fun h0 => absurd (e0.symm.trans h0) (by omega)⟩
 
 /-! ## The stages of one position -/
@@ -108,9 +114,9 @@ theorem posA_exec (c : Config) (hw : WordsBounded W c) {j Cb : ℕ} (h70 : c.nre
       (∀ q, q ≠ 90072 → q ≠ 90073 → q ≠ 90085 → c'.nreg q = c.nreg q) := by
   unfold posA
   exec_block
-  · rw [h38, h70]; omega
+  · rwo [h38, h70]
   · omega
-  · config_simp; rw [h70, h19]; omega
+  · config_simp; rwo [h70, h19]
   · refine ⟨rfl, ?_, ?_, fun q a1 a2 a3 => by simp [upd, a1, a2, a3]⟩ <;> config_simp
     · rw [h38, h70]
     · rw [h70, h19]
@@ -130,17 +136,17 @@ theorem posB_exec (c : Config) (hw : WordsBounded W c) {j A Nb : ℕ} (h70 : c.n
         (∀ q, q ≠ 90072 → q ≠ 90085 → c'.nreg q = c.nreg q) := by
     intro c₁ k₁ hw₁ v85 v70 v39 vm vr hk₁
     exec_block
-    · rw [v39, v70]; omega
+    · rwo [v39, v70]
     · refine ⟨by omega, ?_, fun q a1 a2 => by simp [upd, a1, vr q a2]⟩
       config_simp; rw [v39, v70, v85, vm]
   by_cases hlt : j + 1 < A
   · obtain ⟨c', k, e, hk, hm, hr⟩ := fin c 1 hw (by rw [h85, ite_eq_left hlt]) h70 h39 rfl
       (fun _ _ => rfl) (by omega)
-    exact ⟨c', _, .seq (.ifLtN_true (by rw [h85, h11]; exact hlt) (.skip hw)) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_true (by rwx [h85, h11]) (.skip hw)) e, by omega, hm, hr⟩
   · have e₁ := Exec.constN (P := P) hw 90085 0 (by omega)
     obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 3 e₁.wb_right (by simp [upd, ite_eq_right hlt])
       (by simp [upd, h70]) (by simp [upd, h39]) rfl (fun q hq => by simp [upd, hq]) le_rfl
-    exact ⟨c', _, .seq (.ifLtN_false (by rw [h85, h11]; exact hlt) e₁) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_false (by rwx [h85, h11]) e₁) e, by omega, hm, hr⟩
 
 theorem posC_exec (c : Config) (hw : WordsBounded W c) {j A Pb : ℕ} (h70 : c.nreg 90070 = j)
     (h11 : c.nreg 90011 = A) (h19 : c.nreg 90019 = 1) (h40 : c.nreg 90040 = Pb)
@@ -157,7 +163,7 @@ theorem posC_exec (c : Config) (hw : WordsBounded W c) {j A Pb : ℕ} (h70 : c.n
         (∀ q, q ≠ 90072 → q ≠ 90085 → c'.nreg q = c.nreg q) := by
     intro c₁ k₁ hw₁ v85 v70 v40 vm vr hk₁
     exec_block
-    · rw [v40, v70]; omega
+    · rwo [v40, v70]
     · refine ⟨by omega, ?_, fun q a1 a2 => by simp [upd, a1, vr q a2]⟩
       config_simp; rw [v40, v70, v85, vm]
   by_cases hj : j < 1
@@ -165,12 +171,12 @@ theorem posC_exec (c : Config) (hw : WordsBounded W c) {j A Pb : ℕ} (h70 : c.n
     obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 2 e₁.wb_right
       (by simp [upd, h11, h19, show ¬ 0 < j by omega]) (by simp [upd, h70]) (by simp [upd, h40])
       rfl (fun q hq => by simp [upd, hq]) (by omega)
-    exact ⟨c', _, .seq (.ifLtN_true (by rw [h70, h19]; exact hj) e₁) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_true (by rwx [h70, h19]) e₁) e, by omega, hm, hr⟩
   · have e₁ := Exec.subN (P := P) hw 90085 90070 90019
     obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 3 e₁.wb_right
       (by simp [upd, h70, h19, show 0 < j by omega]) (by simp [upd, h70]) (by simp [upd, h40])
       rfl (fun q hq => by simp [upd, hq]) le_rfl
-    exact ⟨c', _, .seq (.ifLtN_false (by rw [h70, h19]; exact hj) e₁) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_false (by rwx [h70, h19]) e₁) e, by omega, hm, hr⟩
 
 theorem posD_exec (c : Config) (hw : WordsBounded W c) {j SB AB : ℕ} (h70 : c.nreg 90070 = j)
     (h17 : c.nreg 90017 = SB) (h15 : c.nreg 90015 = AB) (h19 : c.nreg 90019 = 1)
@@ -182,10 +188,10 @@ theorem posD_exec (c : Config) (hw : WordsBounded W c) {j SB AB : ℕ} (h70 : c.
         c'.nreg q = c.nreg q) := by
   unfold posD
   exec_block
-  all_goals try (config_simp; simp only [h70, h17, h15, h19]; omega)
+  all_goals try (config_simp; sio only [h70, h17, h15, h19])
   refine ⟨rfl, ?_, ?_, rfl, fun q a1 a2 a3 a4 a5 => by
     config_simp; simp [upd, a1, a2, a3, a4, a5]⟩ <;> config_simp <;>
-    simp only [h70, h17, h15, h19] <;> ring_nf
+    simp [h70, h17, h15, h19] <;> ring_nf
 
 theorem posE_exec (c : Config) (hw : WordsBounded W c) {j kind e Gb : ℕ}
     (h70 : c.nreg 90070 = j) (h23 : c.nreg 90023 = kind) (h19 : c.nreg 90019 = 1)
@@ -203,7 +209,7 @@ theorem posE_exec (c : Config) (hw : WordsBounded W c) {j kind e Gb : ℕ}
         (∀ q, q ≠ 90072 → q ≠ 90088 → c'.nreg q = c.nreg q) := by
     intro c₁ k₁ hw₁ v88 v70 v41 vm vr hk₁
     exec_block
-    · rw [v41, v70]; omega
+    · rwo [v41, v70]
     · refine ⟨by omega, ?_, fun q a1 a2 => by simp [upd, a1, vr q a2]⟩
       config_simp; rw [v41, v70, v88, vm]
   by_cases hk : kind < 1
@@ -211,12 +217,12 @@ theorem posE_exec (c : Config) (hw : WordsBounded W c) {j kind e Gb : ℕ}
     obtain ⟨c', k, e', hk', hm, hr⟩ := fin _ 2 e₁.wb_right
       (by simp [upd, h110, h89, bB, show kind = 0 by omega]) (by simp [upd, h70])
       (by simp [upd, h41]) rfl (fun q hq => by simp [upd, hq]) (by omega)
-    exact ⟨c', _, .seq (.ifLtN_true (by rw [h23, h19]; exact hk) e₁) e', by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_true (by rwx [h23, h19]) e₁) e', by omega, hm, hr⟩
   · have e₁ := Exec.copyN (P := P) hw 90088 90110
     obtain ⟨c', k, e', hk', hm, hr⟩ := fin _ 3 e₁.wb_right
       (by simp [upd, h110, bB, show kind ≠ 0 by omega]) (by simp [upd, h70])
       (by simp [upd, h41]) rfl (fun q hq => by simp [upd, hq]) le_rfl
-    exact ⟨c', _, .seq (.ifLtN_false (by rw [h23, h19]; exact hk) e₁) e', by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_false (by rwx [h23, h19]) e₁) e', by omega, hm, hr⟩
 
 theorem posF_exec (c : Config) (hw : WordsBounded W c) {j Zb : ℕ} (h70 : c.nreg 90070 = j)
     (h42 : c.nreg 90042 = Zb) (h19 : c.nreg 90019 = 1) (hb : Zb + j + 1 ≤ W) :
@@ -224,8 +230,8 @@ theorem posF_exec (c : Config) (hw : WordsBounded W c) {j Zb : ℕ} (h70 : c.nre
       c'.nreg 90070 = j + 1 ∧ (∀ q, q ≠ 90072 → q ≠ 90070 → c'.nreg q = c.nreg q) := by
   unfold posF
   exec_block
-  · rw [h42, h70]; omega
-  · config_simp; rw [h70, h19]; omega
+  · rwo [h42, h70]
+  · config_simp; rwo [h70, h19]
   · refine ⟨rfl, ?_, ?_, fun q a1 a2 => by simp [upd, a1, a2]⟩ <;> config_simp
     · rw [h42, h70]
     · rw [h70, h19]
@@ -271,7 +277,6 @@ structure PosEnv (P : Polygon) (W A MD SB AB : ℕ) (d : Dm) (M : Model) (edge h
   edge_lt : ∀ u, u < A → edge u < M.W.n
   hgt_le : ∀ u, u < A → hgt u ≤ P.n
 
-set_option maxHeartbeats 2000000 in
 theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {edge hgt : ℕ → ℕ}
     {c₀ c : Config} (hE : PosEnv P W A MD SB AB d M edge hgt c₀)
     (hI : PosI W A (c₀.nmem MD) d M (Qof P) edge hgt c₀ c) (ht : c.nreg 90070 < A) :
@@ -282,7 +287,7 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
   have hbW := hE.bW
   have hAd := hE.hA
   generalize hjj : c.nreg 90070 = j at ht hle hcnt hnxt hprv heg hpz
-  have hB : Bases c d := hE.bases.frame fun q a1 a2 => hr q (by simp [Bpos, Binit, Bpz, NFLoc.Bdir]; omega)
+  have hB : Bases c d := hE.bases.frame fun q a1 a2 => hr q (by sio [Bpos, Binit, Bpz, NFLoc.Bdir])
   have c19 : c.nreg 90019 = 1 := by rw [hr _ (by decide), hE.h19]
   have c11 : c.nreg 90011 = A := by rw [hr _ (by decide), hE.h11]
   have c15 : c.nreg 90015 = AB := by rw [hr _ (by decide), hE.h15]
@@ -319,7 +324,7 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
     (by rw [g₃ _ (by decide) (by decide) (by decide), hjj])
     (by rw [g₃ _ (by decide) (by decide) (by decide), c17])
     (by rw [g₃ _ (by decide) (by decide) (by decide), c15])
-    (by rw [g₃ _ (by decide) (by decide) (by decide), c19]) (by omega) (by rw [n₃]; omega)
+    (by rw [g₃ _ (by decide) (by decide) (by decide), c19]) (by omega) (by rwo [n₃])
   rw [n₃, n₃' _ (by omega), a3] at v110
   rw [n₃, n₃' _ (by omega), a4] at v111
   have g₄ : ∀ q, q < 90110 → q ≠ 90072 → q ≠ 90073 → q ≠ 90085 → q ≠ 90074 → q ≠ 90086 →
@@ -340,9 +345,9 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
   -- the pz bit
   have hmem5 : ∀ a, a < d.b0 → c₅.nmem a = c₀.nmem a := fun a ha => by
     rw [m₅, Machine.upd_other _ _ _ (by omega), m₄, n₃' a ha]
-  obtain ⟨hdesc, hwf⟩ := desc_agree' hE.wf hE.desc (fun a ha => hmem5 a ha)
+  obtain ⟨hdesc, hwf⟩ := desc_agree' hE.wf hE.desc (hmem5)
   obtain ⟨hDW, hCW⟩ := NFLoc.locChainWF_of hwf (by omega) hE.hW
-  have hW3 : P.n + 3 ≤ W := by have := hE.hW; unfold hostWords at this; omega
+  have hW3 : P.n + 3 ≤ W := by have := hE.hW; ufo hostWords at this
   have g₅ : ∀ q, q < 90110 → q ≠ 90072 → q ≠ 90073 → q ≠ 90085 → q ≠ 90074 → q ≠ 90086 →
       q ≠ 90087 → q ≠ 90088 → c₅.nreg q = c.nreg q := fun q b0 b1 b2 b3 b4 b5 b6 b7 => by
     rw [r₅ q b1 b7, g₄ q b0 b1 b2 b3 b4 b5 b6]
@@ -356,7 +361,7 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
       (by decide) (by decide), c19])
     (by rw [r₅ _ (by decide) (by decide), v110])
     (by rw [r₅ _ (by decide) (by decide), v111]) (hE.edge_lt j ht) (hE.hgt_le j ht) hDW hCW
-  have g₆ : ∀ q, Bpz q = false → c₆.nreg q = c₅.nreg q := F₆.1
+  have g₆  := F₆.1
   -- F: pz and the counter
   obtain ⟨c₇, k₇, e₇, hk₇, m₇, v70, r₇⟩ := posF_exec (P := P) c₆ e₆.wb_right (j := j)
     (by rw [g₆ _ (by decide), g₅ _ (by decide) (by decide) (by decide) (by decide) (by decide)
@@ -376,14 +381,14 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
       fun u hu => ?_, fun u hu => ?_, fun a ha => ?_⟩, by omega, by rw [v70]⟩
   · rw [r₇ _ (by decide) (by decide), g₆ _ (by decide), g₅ _ (by decide) (by decide) (by decide)
       (by decide) (by decide) (by decide) (by decide) (by decide), h89]
-  · simp only [Bpos, Bool.or_eq_false_iff] at hq
+  · simp [Bpos, Bool.or_eq_false_iff] at hq
     have hq1 := hq.1
-    simp only [Binit, decide_eq_false_iff_not] at hq1
+    simp [Binit, decide_eq_false_iff_not] at hq1
     rw [r₇ q (by omega) (by omega), g₆ q hq.2, r₅ q (by omega) (by omega)]
     have hq2 := hq.2
-    simp only [Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hq2
+    simp [Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hq2
     rw [r₄ q (by omega) (by omega) (by omega) (by omega) (by omega), g₃ q (by omega) (by omega)
-      (by omega), hr q (by simp only [Bpos, Bool.or_eq_false_iff]; exact hq)]
+      (by omega), hr q (by simp [Bpos, Bool.or_eq_false_iff]; exact hq)]
   · rw [v70] at hu
     rw [M7]
     by_cases huj : u = j
@@ -430,7 +435,7 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
     rw [M7]
     by_cases huj : u = j
     · subst huj
-      simp only [Machine.upd_same]
+      simp [Machine.upd_same]
       exact ⟨p1, p2⟩
     · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
@@ -462,10 +467,10 @@ theorem posLoop_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
     · omega
     · refine ⟨rfl, ⟨by assumption, ?_, ?_, fun r hr => ?_, fun u hu => ?_, fun u hu => ?_,
         fun u hu => ?_, fun u hu => ?_, fun u hu => ?_, fun a _ => rfl⟩, ?_⟩
-      · config_simp; omega
+      · cso
       · config_simp
-      · simp only [Bpos, Binit, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-        config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
+      · simp [Bpos, Binit, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+        config_simp; simp [upd]; split_ifs <;> first | rfl | omega
       all_goals first | (simp [upd] at hu) | config_simp
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90070) (b := 90011)
     (body := posBody) (PosI W A (c₀.nmem MD) d M (Qof P) edge hgt c₀)

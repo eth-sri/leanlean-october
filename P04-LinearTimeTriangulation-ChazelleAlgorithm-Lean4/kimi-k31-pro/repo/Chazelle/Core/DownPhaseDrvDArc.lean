@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseDrvSplice
 public import Chazelle.Core.RestoreSearchArc
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase restoration rounds (D8), part 1: the arcs of `buildNF` and the buckets of new events
@@ -51,7 +53,7 @@ theorem kap_evs {m : ℕ} (hm : m < E.length) :
     BuildSort.kap (evs M Q L E) m = kE M Q L E m := by
   have hm' : m < (evs M Q L E).length := by simp [evs, hm]
   rw [BuildSort.kap_eq hm']
-  simp only [evs, List.getElem_map]
+  simp [evs, List.getElem_map]
   unfold kE evOf wposOf
   rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hm, Option.getD_some]
   split_ifs <;> rfl
@@ -107,12 +109,12 @@ theorem gs_last (hE : 0 < E.length) :
   obtain ⟨j₀, hj₀, hj₀e⟩ := List.mem_iff_getElem.1 hmem
   have hA : 0 < (gapStarts M Q L E).length := by omega
   refine ⟨hA, ?_⟩
-  have h0 : gs M Q L E j₀ = E.length - 1 := by rw [gs_eq hj₀]; exact hj₀e
+  have h0 : gs M Q L E j₀ = E.length - 1 := by rwx [gs_eq hj₀]
   by_contra hne
   have hlt : j₀ < (gapStarts M Q L E).length - 1 := by
     rcases Nat.lt_or_ge j₀ ((gapStarts M Q L E).length - 1) with h | h
     · exact h
-    · exact absurd (by rw [show (gapStarts M Q L E).length - 1 = j₀ by omega]; exact h0) hne
+    · exact absurd (by rwx [show (gapStarts M Q L E).length - 1 = j₀ by omega]) hne
   have h1 := gs_lt_gs (M := M) (Q := Q) (L := L) (E := E) hlt (by omega)
   have h2 := gs_lt_len (M := M) (Q := Q) (L := L) (E := E)
     (j := (gapStarts M Q L E).length - 1) (by omega)
@@ -153,13 +155,13 @@ theorem arc_e (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length
 
 theorem key_s (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
     M.key Q ((buildNF M Q L E).arc j).s = kE M Q L E (gs M Q L E j) := by
-  rw [arc_s hK hj]; rfl
+  rwr [arc_s hK hj]
 
 /-- The end of an arc other than the last one is the next event. -/
 theorem key_e (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
     (hj : j + 1 < (gapStarts M Q L E).length) :
     M.key Q ((buildNF M Q L E).arc j).e = kE M Q L E (gs M Q L E j + 1) := by
-  rw [arc_e hK (by omega), Nat.mod_eq_of_lt (gs_succ hE hj).1]; rfl
+  rwr [arc_e hK (by omega), Nat.mod_eq_of_lt (gs_succ hE hj).1]
 
 /-- **An arc other than the last one does not wrap.** -/
 theorem key_s_lt_e (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
@@ -171,7 +173,7 @@ theorem key_s_lt_e (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
 theorem key_e_last (hK : 0 < L.length) (hE : 0 < E.length) :
     M.key Q ((buildNF M Q L E).arc ((gapStarts M Q L E).length - 1)).e = kE M Q L E 0 := by
   obtain ⟨hA, hlast⟩ := gs_last (M := M) (Q := Q) (L := L) hE
-  rw [arc_e hK (by omega), hlast, Nat.sub_add_cancel hE, Nat.mod_self]; rfl
+  rwr [arc_e hK (by omega), hlast, Nat.sub_add_cancel hE, Nat.mod_self]
 
 /-- The last arc starts at the last event. -/
 theorem key_s_last (hK : 0 < L.length) (hE : 0 < E.length) :
@@ -273,7 +275,7 @@ theorem pos_eq_of_key (hok : ChordTriplesOK M Q L) {a a' : ℕ} (ha : a < 2 * L.
   have h2' : (wposOf L a').edge < (wposOf L a).edge + 1 := by exact_mod_cast h2
   have he : (wposOf L a).edge = (wposOf L a').edge := by omega
   refine ⟨he, ?_⟩
-  rw [he] at h; linarith
+  rwli [he] at h
 
 /-- The chords of a valid list are admissible. -/
 theorem chordSet_adm (hok : ChordTriplesOK M Q L) {k : ℕ} (hk : k < L.length) :
@@ -304,13 +306,13 @@ theorem codeLe_of_bkt (hM : WalkAx M) {L₂ : List (ℕ × ℕ × ℕ)} (hok : C
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
       exact List.getElem_mem hi
     simpa using hperm.mem_iff.1 hmem
-  have hc₀' : E.getD i 0 < 2 * (L ++ L₂).length := by rw [hlen]; omega
+  have hc₀' : E.getD i 0 < 2 * (L ++ L₂).length := by rwo [hlen]
   have hkc : M.key Q (wposOf (L ++ L₂) (E.getD i 0)) = kE M Q L E i := by
-    rw [DownDrv.wposOf_append hc₀]; rfl
+    rwr [DownDrv.wposOf_append hc₀]
   have hxa : M.key Q (wposOf (L ++ L₂) a) = M.key Q (wposOf (L ++ L₂) (E.getD i 0)) := by
-    rw [hkc]; linarith
+    rwli [hkc]
   have hya : M.key Q (wposOf (L ++ L₂) a') = M.key Q (wposOf (L ++ L₂) (E.getD i 0)) := by
-    rw [hkc]; linarith
+    rwli [hkc]
   obtain ⟨e1, p1⟩ := pos_eq_of_key hok ha2 hc₀' hxa
   obtain ⟨e2, p2⟩ := pos_eq_of_key hok ha2' hc₀' hya
   by_cases hii : a / 2 = a' / 2

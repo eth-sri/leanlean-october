@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.WalkKey
+public import Chazelle.Rwx
+public import Chazelle.MiscTactics
 
 /-!
 # Double identification: the mathematics (WP-C, target 2)
@@ -97,7 +99,7 @@ theorem seq_surj {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {j : ℕ}
     (hj : j < N.arcs.length) : ∃ i, i < N.arcs.length ∧ N.seq.getD i 0 = j := by
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
   have hl := seq_length h
-  have hm : j ∈ N.seq := hS.1.symm.subset (List.mem_range.2 hj)
+  have hm  := hS.1.symm.subset (List.mem_range.2 hj)
   obtain ⟨i, hi, e⟩ := List.mem_iff_getElem.1 hm
   exact ⟨i, by omega, by rw [getD_of_lt 0 hi, e]⟩
 
@@ -190,8 +192,8 @@ theorem locate_pick {M : Model} {Q : Polygon} {N : NF} (hcov : ∀ y : ℝ, M.Is
         M.key Q (N.arc j).s = M.key Q x ∨ M.key Q (N.arc j).e = M.key Q x) := by
   intro j
   have hpos : (if 0 < t then t - 1 else N.arcs.length - 1) < N.arcs.length := by
-    split_ifs <;> omega
-  have hj : j < N.arcs.length := seq_lt h hpos
+    splao
+  have hj  := seq_lt h hpos
   refine ⟨hj, ?_⟩
   have hgap := pick_gap h x hA ht hpre hpost
   obtain ⟨U, hU⟩ := isArc_of_listed h hj
@@ -219,7 +221,7 @@ theorem locate_pick {M : Model} {Q : Polygon} {N : NF} (hcov : ∀ y : ℝ, M.Is
     have hin := sideInArc_swap hab haq hcon.2.1 hcon.1
     obtain ⟨V, hV, b', hb'⟩ := hcov b hcb
     obtain ⟨j', hj', hs', -⟩ := listed_of_isArc h hV hb'
-    exact hgap' j' hj' (by rw [hs']; exact hin)
+    exact hgap' j' hj' (by rwx [hs'])
   refine ⟨fun hq => ?_, fun hq => ?_⟩
   · rcases claim with c1 | c1 | c1
     · exact Or.inr c1

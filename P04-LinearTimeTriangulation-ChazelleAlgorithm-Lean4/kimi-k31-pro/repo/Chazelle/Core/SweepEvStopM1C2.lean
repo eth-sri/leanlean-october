@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepEvStopM1C
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep (WP-D), stage 2: the candidate of `C₁` of a stop origin, the program
@@ -81,15 +83,15 @@ variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 theorem m1c_noRes {C : Chain} {a : Point} {σ : ℝ} {G : Prop} (hI : IInv W c₀ c) (hng : ¬ G) :
     IRS P W c₀ (noRes r1F) c 1 (fun c' => ResOK P C a σ G r1F c' ∧
       (∀ r, r ≠ r1F → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
-  refine (IRS.instr1 (i := .constN r1F 0) hI ⟨iscr_sw (by unfold r1F sw; omega)
-    (by unfold r1F sw; omega), Nat.zero_le _⟩).mono le_rfl ?_
+  refine (IRS.instr1 (i := .constN r1F 0) hI ⟨iscr_sw (by ufo r1F sw)
+    (by ufo r1F sw), Nat.zero_le _⟩).mono le_rfl ?_
   rintro c' rfl
   have h0 : c.nreg r1F = c.nreg r1F := rfl
   have e0 : regI c.nmem (.constN r1F 0) c.nreg r1F = 0 := upd_same _ _ _
-  refine ⟨⟨by show regI c.nmem (.constN r1F 0) c.nreg r1F ≤ 1; rw [e0]; omega,
+  refine ⟨⟨by show regI c.nmem (.constN r1F 0) c.nreg r1F ≤ 1; rwo [e0],
     fun h => by
       have h' : regI c.nmem (.constN r1F 0) c.nreg r1F = 1 := h
-      rw [e0] at h'; omega,
+      rwo [e0] at h',
     fun g => absurd g hng⟩, fun r hr => upd_other _ _ _ hr, rfl⟩
 
 theorem m1cL0_val (m f : ℕ → ℕ) :
@@ -115,7 +117,7 @@ theorem m1cL1_val (m f : ℕ → ℕ) :
 
 theorem m1cL_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m m1cL0 f ∧ okB W m m1cL1 f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw (by ufo sw) (by ufo sw)
   simp only [m1cL0, m1cL1, okB, okI]
   exact ⟨⟨s 1103 (by norm_num) (by norm_num), s 1104 (by norm_num) (by norm_num),
     s 1105 (by norm_num) (by norm_num), trivial⟩, ⟨s 1103 (by norm_num) (by norm_num),
@@ -134,7 +136,7 @@ theorem m1cCp_val (m f : ℕ → ℕ) :
 
 theorem m1cCp_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m m1cCp f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw (by ufo sw) (by ufo sw)
   simp only [m1cCp, okB, okI]
   exact ⟨s 4030 (by norm_num) (by norm_num), s 4031 (by norm_num) (by norm_num),
     s 4032 (by norm_num) (by norm_num), s 4033 (by norm_num) (by norm_num),
@@ -142,10 +144,10 @@ theorem m1cCp_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m m1cCp f := by
     s 4036 (by norm_num) (by norm_num), trivial⟩
 
 theorem stOrig_zero (J : Merge.Junction) (Q : Polygon) (N : NF) (k b : ℕ) :
-    stOrig J Q N 0 k b = J.shared := by unfold stOrig; simp
+    stOrig J Q N 0 k b = J.shared := by ufs stOrig
 
 theorem stOrig_two (J : Merge.Junction) (Q : Polygon) (N : NF) (k b : ℕ) :
-    stOrig J Q N 2 k b = J.right.top := by unfold stOrig; simp
+    stOrig J Q N 2 k b = J.right.top := by ufs stOrig
 
 end
 

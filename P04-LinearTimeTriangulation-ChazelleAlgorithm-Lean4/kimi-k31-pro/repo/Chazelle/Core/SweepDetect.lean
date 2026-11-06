@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepLocal
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), part 13: detection shots (soundness)

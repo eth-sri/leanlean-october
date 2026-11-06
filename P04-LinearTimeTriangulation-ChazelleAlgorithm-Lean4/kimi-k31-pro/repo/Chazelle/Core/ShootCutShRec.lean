@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.ShootCutShOrg
 public import Chazelle.Core.ShootCutCutter2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 56: the ray-shooter's piece records
@@ -17,10 +21,6 @@ the core).  A guard `ptr < LIM` keeps the pointer below the word bound.
 * `shFin_exec`: the allocator raised to the end of the records.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -108,12 +108,12 @@ theorem rec9_append {mem mem' : ℕ → ℕ} {L : ℕ} {ps : List Pc} {pc : Pc}
   rcases (show i < ps.length ∨ i = ps.length by omega) with hlt | rfl
   · rw [List.getElem_append_left hlt]
     obtain ⟨a0, a1, a2, a3, a4, a58⟩ := hold i hlt
-    refine ⟨by rw [hsame _ (by omega)]; exact a0, by rw [hsame _ (by omega)]; exact a1,
-      by rw [hsame _ (by omega)]; exact a2, by rw [hsame _ (by omega)]; exact a3,
-      by rw [hsame _ (by omega)]; exact a4, fun hk => ?_⟩
+    refine ⟨by rwx [hsame _ (by omega)], by rwx [hsame _ (by omega)],
+      by rwx [hsame _ (by omega)], by rwx [hsame _ (by omega)],
+      by rwx [hsame _ (by omega)], fun hk => ?_⟩
     obtain ⟨b5, b6, b7, b8⟩ := a58 hk
-    exact ⟨by rw [hsame _ (by omega)]; exact b5, by rw [hsame _ (by omega)]; exact b6,
-      by rw [hsame _ (by omega)]; exact b7, by rw [hsame _ (by omega)]; exact b8⟩
+    exact ⟨by rwx [hsame _ (by omega)], by rwx [hsame _ (by omega)],
+      by rwx [hsame _ (by omega)], by rwx [hsame _ (by omega)]⟩
   · rw [List.getElem_append_right (le_refl _)]
     simp only [Nat.sub_self, List.getElem_cons_zero]
     exact ⟨h0, h1, h2, h3, h4, h58⟩
@@ -129,7 +129,7 @@ theorem shStoreA_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       (∀ x, x ≠ 140100 → c'.nreg x = c.nreg x) := by
   unfold shStoreA
   exec_block
-  all_goals first | (config_simp; rw [h00, h03]; omega) | skip
+  all_goals first | (config_simp; rwo [h00, h03]) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, fun a ha => ?_, fun x hx => ?_⟩
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h00, h03]
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
@@ -143,7 +143,7 @@ theorem shStoreB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       (∀ x, x ≠ 140100 → c'.nreg x = c.nreg x) := by
   unfold shStoreB
   exec_block
-  all_goals first | (config_simp; rw [h00, h03]; omega) | skip
+  all_goals first | (config_simp; rwo [h00, h03]) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun a ha => ?_, fun x hx => ?_⟩
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h00, h03]
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
@@ -178,7 +178,7 @@ theorem shEmit_ok {P : Polygon} {W A₀ : ℕ} {m₀ : ℕ → ℕ} {c₀ : Conf
       by rw [k _ (by decide)]; exact hI.one, by rw [k _ (by decide)]; exact hI.lim, hI.limW,
       fun a ha => by rw [hmm]; exact hI.mem a ha, by rw [k _ (by decide)]; exact hI.ptr,
       by rw [hmm]; exact hI.recs,
-      fun r h1 h2 => by rw [k r (by unfold Scr; simp; omega)]; exact hI.keep r h1 h2⟩
+      fun r h1 h2 => by rw [k r (by ufs Scr; omega)]; exact hI.keep r h1 h2⟩
   · obtain ⟨hA, hB, h1, hL, hLW, hm, hp, hrec, hkeep⟩ := hI
     obtain ⟨r50, r51, r52, r53, r54, r55⟩ := hR
     by_cases hlt : ps.length < Nmax
@@ -187,7 +187,7 @@ theorem shEmit_ok {P : Polygon} {W A₀ : ℕ} {m₀ : ℕ → ℕ} {c₀ : Conf
       have htake : ps.take Nmax = ps := List.take_of_length_le hlt.le
       rw [htake] at hrec
       set p := A₀ + 1 + 9 * ps.length with hpdef
-      have t₀ : c.nreg 140100 < c.nreg 140107 := by rw [hp, hL]; omega
+      have t₀ : c.nreg 140100 < c.nreg 140107 := by rwo [hp, hL]
       obtain ⟨c₁, k₁, e₁, hk₁, q00, q0, q1, q2, q3, q4, q5, q6, q7, q8, qm, qr⟩ :=
         shStore_exec (P := P) c hw hp h1 (by omega)
       have ex : Exec P W shEmit c c₁ (k₁ + 1) := .ifLtN_true t₀ e₁
@@ -195,14 +195,14 @@ theorem shEmit_ok {P : Polygon} {W A₀ : ℕ} {m₀ : ℕ → ℕ} {c₀ : Conf
         fun a ha => by rw [qm a (by omega)]; exact hm a ha, ?_, ?_,
         fun r a b => by rw [qr r (by omega)]; exact hkeep r a b⟩, fun r hr => ?_,
         fun a ha => qm a (by omega)⟩
-      · rw [qr _ (by decide)]; exact hA
-      · rw [qr _ (by omega)]; exact hB
-      · rw [qr _ (by omega)]; exact h1
-      · rw [qr _ (by omega)]; exact hL
+      · rwx [qr _ (by decide)]
+      · rwx [qr _ (by omega)]
+      · rwx [qr _ (by omega)]
+      · rwx [qr _ (by omega)]
       · rw [q00, List.length_append, List.length_singleton, min_eq_left (by omega)]
         omega
-      · rw [List.take_of_length_le (by simp; omega)]
-        refine rec9_append hrec (fun a ha => qm a ha) ?_ ?_ ?_ ?_ ?_ ?_
+      · rw [List.take_of_length_le (by sio)]
+        refine rec9_append hrec (qm) ?_ ?_ ?_ ?_ ?_ ?_
         · rw [q0, r50]
         · rw [q1, r51]
         · rw [q2, r52]
@@ -215,11 +215,11 @@ theorem shEmit_ok {P : Polygon} {W A₀ : ℕ} {m₀ : ℕ → ℕ} {c₀ : Conf
         exact qr r (by omega)
     · have hmin : min ps.length Nmax = Nmax := min_eq_right (by omega)
       rw [hmin] at hp
-      have t₀ : ¬ c.nreg 140100 < c.nreg 140107 := by rw [hp, hL]; omega
+      have t₀ : ¬ c.nreg 140100 < c.nreg 140107 := by rwo [hp, hL]
       refine ⟨c, _, .ifLtN_false t₀ (.skip hw), by omega, ⟨hA, hB, h1, hL, hLW, hm, ?_, ?_,
         hkeep⟩, fun _ _ => rfl, fun _ _ => rfl⟩
       · rw [hp, List.length_append, List.length_singleton, min_eq_right (by omega)]
-      · rw [List.take_append_of_le_length (by omega)]; exact hrec
+      · rwx [List.take_append_of_le_length (by omega)]
 
 /-! ## The set-up and the finish -/
 
@@ -244,7 +244,7 @@ theorem shInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
     refine ⟨rfl, ?_, ?_, ?_, fun x hx => ?_, rfl⟩
     all_goals first | (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
-  have hAa : da.nreg 9999 = A₀ := by rw [ra _ (by omega)]; exact hA
+  have hAa : da.nreg 9999 = A₀ := by rwx [ra _ (by omega)]
   obtain ⟨db, kb, eb, hkb, b01, b00, rb, mb⟩ : ∃ d₁ k₁, Exec P W shInitB da d₁ k₁ ∧
       k₁ = 2 ∧ d₁.nreg 140101 = A₀ ∧ d₁.nreg 140100 = A₀ + 1 ∧
       (∀ x, x ≠ 140101 → x ≠ 140100 → d₁.nreg x = da.nreg x) ∧ d₁ = { da with nreg := d₁.nreg } := by
@@ -253,14 +253,14 @@ theorem shInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
     unfold shInitB
     rw [hAl]
     exec_block
-    all_goals first | (config_simp; rw [hAa, a03]; omega) | skip
+    all_goals first | (config_simp; rwo [hAa, a03]) | skip
     refine ⟨rfl, ?_, ?_, fun x h1 h2 => ?_, rfl⟩
     · config_simp; exact hAa
     · config_simp; rw [hAa, a03]
     · simp only [upd]; split_ifs <;> first | rfl | omega
   have b03 : db.nreg 140103 = 1 := by rw [rb _ (by omega) (by omega), a03]
   have b08 : db.nreg 140108 = 18900 := by rw [rb _ (by omega) (by omega), a08]
-  have ec := Exec.addN (P := P) eb.wb_right 140107 140100 140108 (by rw [b00, b08]; omega)
+  have ec := Exec.addN (P := P) eb.wb_right 140107 140100 140108 (by rwo [b00, b08])
   set d₁ := ({ db with nreg := upd db.nreg 140107 (db.nreg 140100 + db.nreg 140108) } : Config)
     with hd₁
   have r₁ : ∀ x, ¬ (140100 ≤ x ∧ x < 140110) → d₁.nreg x = d.nreg x := fun x hx => by
@@ -268,11 +268,11 @@ theorem shInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
     rw [ite_eq_right (by omega), rb x (by omega) (by omega), ra x hx]
   have g₁ : ∀ x, x ≠ 140107 → d₁.nreg x = db.nreg x := fun x hx => by
     simp only [hd₁, upd]; rw [ite_eq_right hx]
-  have o03 : d₁.nreg 140103 = 1 := by rw [g₁ _ (by omega)]; exact b03
-  have o08 : d₁.nreg 140108 = 18900 := by rw [g₁ _ (by omega)]; exact b08
-  have o01 : d₁.nreg 140101 = A₀ := by rw [g₁ _ (by omega)]; exact b01
-  have o00 : d₁.nreg 140100 = A₀ + 1 := by rw [g₁ _ (by omega)]; exact b00
-  have o09 : d₁.nreg 140109 = 1 := by rw [g₁ _ (by omega), rb _ (by omega) (by omega)]; exact a09
+  have o03 : d₁.nreg 140103 = 1 := by rwx [g₁ _ (by omega)]
+  have o08 : d₁.nreg 140108 = 18900 := by rwx [g₁ _ (by omega)]
+  have o01 : d₁.nreg 140101 = A₀ := by rwx [g₁ _ (by omega)]
+  have o00 : d₁.nreg 140100 = A₀ + 1 := by rwx [g₁ _ (by omega)]
+  have o09 : d₁.nreg 140109 = 1 := by rwx [g₁ _ (by omega), rb _ (by omega) (by omega)]
   have o07 : d₁.nreg 140107 = A₀ + 1 + 18900 := by
     simp only [hd₁, upd, ↓reduceIte]; rw [b00, b08]
   have m₁ : d₁ = { d with nreg := d₁.nreg } := by
@@ -296,7 +296,7 @@ theorem shInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
       have htc : t < T := by rw [← hT]; exact (Nat.lt_clog_iff_pow_lt (by norm_num)).2 hlt
       have hmul := Nat.mul_le_mul_left 18900 (show t + 1 ≤ T from htc)
       have hW7 : A₀ + 1 + (18900 * t + 18900) + 18900 ≤ W := by
-        rw [Nat.mul_succ] at hmul; omega
+        rwo [Nat.mul_succ] at hmul
       unfold shLimBody
       obtain ⟨c', k, e, hk, o9, o7, r', m'⟩ : ∃ c' k, Exec P W (block [.addN 140109 140109 140109,
           .addN 140107 140107 140108]) c c' k ∧ k = 2 ∧ c'.nreg 140109 = 2 ^ (t + 1) ∧
@@ -306,16 +306,16 @@ theorem shInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
         have h2W : 2 ^ t + 2 ^ t ≤ W := by omega
         clear hroom hγW hm hmul hlt
         exec_block
-        all_goals first | (config_simp; rw [h9]; omega) | (config_simp; rw [h7, h8]; omega) |
+        all_goals first | (config_simp; rwo [h9]) | (config_simp; rwo [h7, h8]) |
           skip
         refine ⟨rfl, ?_, ?_, fun x h1 h2 => ?_, rfl⟩
-        · config_simp; rw [h9, pow_succ]; ring
+        · config_simp; rwring [h9, pow_succ]
         · config_simp; rw [h7, h8]
         · simp only [upd]; split_ifs <;> first | rfl | omega
       refine ⟨c', k, e, ⟨e.wb_right, by rw [m', hm'], fun x hx => by
         rw [r' x (by omega) (by omega), hr' x hx], by rw [r' _ (by omega) (by omega), h3],
         by rw [r' _ (by omega) (by omega), h8], by rw [r' _ (by omega) (by omega), h1],
-        by rw [r' _ (by omega) (by omega), h0], t + 1, o9, by rw [o7]; ring, by omega⟩,
+        by rw [r' _ (by omega) (by omega), h0], t + 1, o9, by rwring [o7], by omega⟩,
         by omega, ?_⟩
       rw [o9, h9, Nat.log_pow (by norm_num), Nat.log_pow (by norm_num)]
       omega) I₁
@@ -324,15 +324,15 @@ theorem shInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
   rw [h9, g9] at hx₂
   have hlog : Nat.log 2 γ ≤ t := by
     rcases Nat.eq_zero_or_pos γ with h0' | hpos
-    · rw [h0']; simp
+    · rws [h0']
     · have := Nat.log_lt_of_lt_pow (b := 2) (x := t + 1) (y := γ) (by omega)
-        (by rw [pow_succ]; omega)
+        (by rwo [pow_succ])
       omega
   have hmul := Nat.mul_le_mul_left 18900 ht
   have hlog' := Nat.mul_le_mul_left 2100 hlog
   have hmem : d₂.nmem = d.nmem := by rw [hm₂]
   refine ⟨d₂, ka + (kb + (1 + k₂)), 2100 * t + 2100, .seq ea (.seq eb (.seq ec e₂)), ?_,
-    ⟨by rw [hr₂ _ (by rw [hAl]; omega)]; exact hA, h1, h3, by rw [h7]; ring, by linarith,
+    ⟨by rw [hr₂ _ (by rwo [hAl])]; exact hA, h1, h3, by rwring [h7], by linarith,
     fun a ha => by rw [hmem]; exact hm a ha,
     by rw [h0, List.length_nil, Nat.zero_min, Nat.mul_zero, Nat.add_zero],
     fun i hi => by simp at hi, fun r h1 h2 => hr₂ r (by omega)⟩, by omega, hr₂, hmem,
@@ -360,21 +360,21 @@ theorem shFin_exec {P : Polygon} {W A₀ Nmax : ℕ} {m₀ : ℕ → ℕ} {c₀ 
     (body := .instr (.addN ALLOC ALLOC 140103)) Inv (fun c => 3 * (E - c.nreg ALLOC))
     (fun c => c.nreg ALLOC) (fun c h => h.1)
     (fun c ⟨hw', hA', hr', hm'⟩ ht => by
-      have e3 : c.nreg 140103 = 1 := by rw [hr' _ (by rw [hAl]; omega), h1]
-      have e0 : c.nreg 140100 = E := by rw [hr' _ (by rw [hAl]; omega), hp]
+      have e3 : c.nreg 140103 = 1 := by rw [hr' _ (by rwo [hAl]), h1]
+      have e0 : c.nreg 140100 = E := by rw [hr' _ (by rwo [hAl]), hp]
       rw [e0] at ht
-      have ex := Exec.addN (P := P) hw' ALLOC ALLOC 140103 (by rw [e3]; omega)
+      have ex := Exec.addN (P := P) hw' ALLOC ALLOC 140103 (by rwo [e3])
       refine ⟨_, 1, ex, ⟨ex.wb_right, ?_, fun x hx => ?_, ?_⟩, ?_, ?_⟩
-      · simp only [Config.nreg_mk, Machine.upd_same]; rw [e3]; omega
+      · simp only [Config.nreg_mk, Machine.upd_same]; rwo [e3]
       · simp only [Config.nreg_mk]; rw [Machine.upd_other _ _ _ hx]; exact hr' x hx
       · rw [hm']
-      · simp only [Config.nreg_mk, Machine.upd_same]; rw [e3]; omega
+      · simp only [Config.nreg_mk, Machine.upd_same]; rwo [e3]
       · simp only [Config.nreg_mk, Machine.upd_same]; rw [e3])
-    ⟨hw, by rw [hA]; omega, fun _ _ => rfl, rfl⟩
-  have e0 : d₂.nreg 140100 = E := by rw [hr₂ _ (by rw [hAl]; omega), hp]
+    ⟨hw, by rwo [hA], fun _ _ => rfl, rfl⟩
+  have e0 : d₂.nreg 140100 = E := by rw [hr₂ _ (by rwo [hAl]), hp]
   rw [e0] at hx₂
   refine ⟨d₂, k₂, e₂, ?_, by omega, by omega, hr₂, hm₂⟩
-  rw [hA] at hk₂; omega
+  rwo [hA] at hk₂
 
 end
 

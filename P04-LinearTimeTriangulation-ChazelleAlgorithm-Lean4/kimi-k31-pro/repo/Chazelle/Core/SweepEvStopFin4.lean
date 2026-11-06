@@ -3,6 +3,11 @@ module
 public import Chazelle.Core.SweepEvStopFin3
 public import Chazelle.Core.SweepEvStopM3
 public import Chazelle.Core.SweepEvStopM4
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep (WP-D), stage 2, the finish of a stop origin: the parent (RAM)
@@ -49,7 +54,7 @@ theorem slfParOK_scan (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
       (endPos N₂ i (1 - b)) ≠ (chainModel J.right).key (Qof P) ⟨p, h⟩) :
     SlfParOK P J N₂ (stopSet J (Qof P) N₂ kind k b) par := by
   have hok := hD.ok
-  have hb : b ≤ 1 := hok.2.1
+  have hb  := hok.2.1
   obtain ⟨-, -, -, haR, -⟩ := stOrig_facts hP hN hok
   have hiff := fun i (hi : i < N₂.nChords) =>
     parent_key_iff hP hN (haR h1) hb hD.free hA hi
@@ -70,14 +75,13 @@ theorem slfParOK_scan (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
 theorem slfParOK_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
     {k b : ℕ} (hD : OrgD P J N₂ 1 k b) :
     SlfParOK P J N₂ (stopSet J (Qof P) N₂ 1 k b) (k + 1) := by
-  have hk : k < N₂.nChords := (hD.ok.2.2.1 rfl).1
+  have hk  := (hD.ok.2.2.1 rfl).1
   have hw := parent_wall hP hN hD
   unfold SlfParOK
   simp only [Nat.add_sub_cancel]
   exact ⟨hk, fun cc hcc hec => ⟨Nat.succ_pos _, parent_eq hP hN hD (chord_mem hk) hcc hw hec⟩,
     fun _ => hw⟩
 
-set_option maxHeartbeats 4000000 in
 /-- **The parent step.** -/
 theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c) {ps : Stmt}
     {κp : ℕ} (hps : ∀ c, IInv W c₀ c → c.nreg pE2 < (chainModel J.right).W.n →
@@ -98,8 +102,8 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hP := E.hP
   have hN := E.hNF₂
   obtain ⟨k0, k1, -⟩ := E.hK.fix hI
-  have hk2 : c.nreg oKd ≤ 2 := hD.ok.1
-  have hb : c.nreg oB ≤ 1 := hD.ok.2.1
+  have hk2  := hD.ok.1
+  have hb  := hD.ok.2.1
   -- the scan
   have scan : c.nreg oKd ≠ 1 → IRS P W c₀ ps c (κp * (N₂.nChords + 1))
       (fun c' => SlfParOK P J N₂ (stopSet J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
@@ -109,7 +113,7 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     obtain ⟨-, -, hy, -, -⟩ := stOrig_facts hP hN hD.ok
     have h6 : c.nreg pH2 = 0 → 6 ≤ c.nreg pE2 := fun h0 =>
       h6_of_abs J.right (Qof P) (x := ⟨c.nreg pE2, c.nreg pH2⟩) (by
-        rw [pos_eq_sidePt', hA.2.2.2.1, radius_right]; exact hy) h0
+        rwx [pos_eq_sidePt', hA.2.2.2.1, radius_right]) h0
     refine (hps c hI he hpp h6 hb (hroom h1)).mono le_rfl ?_
     rintro c' ⟨hle, hpos, hzero, hm, hA', fr⟩
     exact ⟨slfParOK_scan hP hN hD h1 hA hle hpos hzero, fr, hA', hm⟩
@@ -117,21 +121,21 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   by_cases h0 : c.nreg oKd < c.nreg K1
   · have hk : c.nreg oKd ≠ 1 := by omega
     rw [ite_eq_right hk]
-    exact (IRS.ifT h0 (scan hk)).mono (by omega) (fun _ h => h)
+    exact (IRS.ifT h0 (scan hk)).mono (by omega) (fun _ => id)
   · refine (IRS.ifF (K := if c.nreg oKd = 1 then 3 else κp * (N₂.nChords + 1) + 2) h0 ?_).mono
-      (by split_ifs <;> omega) (fun _ h => h)
+      (by splao) (fun _ => id)
     by_cases h2 : c.nreg K1 < c.nreg oKd
     · have hk : c.nreg oKd ≠ 1 := by omega
       rw [ite_eq_right hk]
       exact IRS.ifT h2 (scan hk)
     · have hk : c.nreg oKd = 1 := by omega
       rw [ite_eq_left hk]
-      have hD1 : OrgD P J N₂ 1 (c.nreg oKk) (c.nreg oB) := hk ▸ hD
-      have hkK : c.nreg oKk < N₂.nChords := (hD1.ok.2.2.1 rfl).1
+      have hD1  := hk ▸ hD
+      have hkK  := (hD1.ok.2.2.1 rfl).1
       have hTW := E.hTW
       have hpar : IScr oPar := iscr_sw' (by norm_num) (by norm_num)
       refine IRS.ifF h2 ((IRS.block [.addN oPar oKk K1] hI
-        ⟨⟨hpar, by first | (rw [k1]; omega)⟩, trivial⟩).mono (by simp) ?_)
+        ⟨⟨hpar, by first | (rwo [k1])⟩, trivial⟩).mono (by simp) ?_)
       rintro c' rfl
       have hv : regB c.nmem [.addN oPar oKk K1] c.nreg oPar = c.nreg oKk + 1 := by
         simp only [regB, regI, upd_same]; rw [k1]
@@ -140,7 +144,7 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       · simp only [regB, regI]
         rw [upd_other _ _ _ (fun h => hr (Or.inl h))]
       · simp only [regB, regI]
-        rw [upd_other _ _ _ (by unfold ALLOC oPar sw; omega)]
+        rw [upd_other _ _ _ (by ufo ALLOC oPar sw)]
 
 end
 

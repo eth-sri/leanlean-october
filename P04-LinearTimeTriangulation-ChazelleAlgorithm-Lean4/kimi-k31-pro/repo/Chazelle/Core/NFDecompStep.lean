@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.NFDecompRound
+public import Chazelle.Rwx
 
 /-!
 # Tree decomposition (WP-C), part 5: the round invariant is preserved
@@ -15,7 +16,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
 
 section step
 
@@ -77,12 +77,12 @@ theorem cut_chosen {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ
   obtain ⟨-, hB2⟩ := hB t ht htop
   rcases hB2 with ⟨e, -⟩ | ⟨b1, b2, b3, -⟩
   · exact absurd e hbt
-  have hnt : ¬ IsTop pch σ.rem (best t) := AncX.not_top b2 (Ne.symm b3)
-  simp only [IsTop, not_or] at hnt
+  have hnt  := AncX.not_top b2 (Ne.symm b3)
+  simp [IsTop, not_or] at hnt
   have hch' := chOf_pch h hch hT hB hI b1 hnt.1
   have htop' := top_of h hch hT hB hI b1 htop b2
   refine ⟨b1, b2, hnt.1, h.pch_lt _ b1 hnt.1, hch', htop', ⟨hnt.2, ?_, ?_⟩, hnt.2⟩
-  · rw [hch', htop']; exact hact
+  · rwx [hch', htop']
   · rw [hch', htop']
 
 /-- A chosen chord is the parent chord of the best candidate of its component. -/
@@ -96,24 +96,24 @@ theorem chosen_unique {w : ℕ} (hw : w < R) (hw0 : w ≠ 0) (hc : Chosen σ top
 theorem rem_next {e : ℕ} (he : e < K) :
     (next R K prg pch isdn chOf top best σ).rem e = 1 ↔
       σ.rem e = 1 ∨ Chosen σ top best chOf e := by
-  simp only [next, ite_eq_left he]
+  simp [next, ite_eq_left he]
   by_cases hp : σ.pend e = 1
   · rw [ite_eq_left hp]
     have := hI.i0 e he hp
-    exact ⟨fun h1 => Or.inl h1, fun _ => this⟩
+    exact ⟨Or.inl, fun _ => this⟩
   · rw [ite_eq_right hp]
     by_cases hc : Chosen σ top best chOf e
     · rw [ite_eq_left hc]; exact ⟨fun _ => Or.inr hc, fun _ => rfl⟩
-    · rw [ite_eq_right hc]; exact ⟨fun h1 => Or.inl h1, fun h1 => h1.resolve_right hc⟩
+    · rw [ite_eq_right hc]; exact ⟨Or.inl, fun h1 => h1.resolve_right hc⟩
 
 theorem rem_mono {e : ℕ} (hr : σ.rem e = 1) : (next R K prg pch isdn chOf top best σ).rem e = 1 := by
   by_cases he : e < K
   · exact (rem_next h hch hT hB hI he).2 (Or.inl hr)
-  · simp only [next, ite_eq_right he]; exact hr
+  · simp [next, ite_eq_right he]; exact hr
 
 theorem pend_next {e : ℕ} (he : e < K) :
     nPend K chOf top best σ e = 1 ↔ Chosen σ top best chOf e := by
-  simp only [nPend, ite_eq_left he]
+  simp [nPend, ite_eq_left he]
   by_cases hp : σ.pend e = 1
   · rw [ite_eq_left hp]
     have := hI.i0 e he hp
@@ -129,7 +129,7 @@ theorem istop_next {u : ℕ} (hu : u < R) :
   by_cases h0 : u = 0
   · subst h0; exact ⟨fun _ => Or.inl (Or.inl rfl), fun _ => Or.inl rfl⟩
   · have hpk := h.pch_lt u hu h0
-    simp only [IsTop, h0, false_or, rem_next h hch hT hB hI hpk, ne_eq, not_false_eq_true, true_and]
+    simp [IsTop, h0, false_or, rem_next h hch hT hB hI hpk, ne_eq, not_false_eq_true, true_and]
 
 /-- The ancestor relation after the round: the old one, avoiding the chosen chords. -/
 theorem ancX_next {a v : ℕ} (hv : v < R) :
@@ -228,7 +228,7 @@ theorem sub_cut_t {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
   · rintro ⟨hv, hav⟩
     obtain ⟨htv, hkeep⟩ := (ancX_next h hch hT hB hI hv).1 hav
     refine ⟨⟨hv, htv⟩, fun hcv => ?_⟩
-    have hcv' : AncX R prg pch σ.rem (best t) v := (anc_member h b2 hv).2 ⟨htv, hcv⟩
+    have hcv'  := (anc_member h b2 hv).2 ⟨htv, hcv⟩
     exact hkeep (best t) b2 hcv' hbt hcho
   · rintro ⟨⟨hv, htv⟩, hncv⟩
     refine ⟨hv, (ancX_next h hch hT hB hI hv).2 ⟨htv, fun w htw hwv hwt hc => ?_⟩⟩

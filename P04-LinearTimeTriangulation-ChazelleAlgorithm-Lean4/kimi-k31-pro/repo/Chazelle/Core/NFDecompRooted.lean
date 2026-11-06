@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SpecNF
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Tree decomposition (WP-C), part 1: rooted trees, components and the edge separator
@@ -69,7 +71,7 @@ include h
 theorem Rooted.pos_inj {r s : ℕ} (hr : r < R) (hs : s < R) (he : pos r = pos s) : r = s := by
   rw [← h.ord_pos r hr, ← h.ord_pos s hs, he]
 
-theorem Rooted.R_pos : 0 < R := by rw [h.hR]; omega
+theorem Rooted.R_pos : 0 < R := by rwo [h.hR]
 
 variable {rem : ℕ → ℕ}
 
@@ -81,8 +83,8 @@ theorem AncX.pos_le {a b : ℕ} (hab : AncX R prg pch rem a b) (hb : b < R) :
   | tail hax hxc ih =>
     rename_i x c
     obtain ⟨hc, hc0, hpc, -⟩ := hxc
-    have hxR : x < R := hpc ▸ h.prg_lt c hc hc0
-    have hlt : pos x < pos c := hpc ▸ h.pos_prg c hc hc0
+    have hxR  := hpc ▸ h.prg_lt c hc hc0
+    have hlt  := hpc ▸ h.pos_prg c hc hc0
     obtain ⟨ha, hle, -⟩ := ih hxR
     exact ⟨ha, by omega, fun _ => by omega⟩
 
@@ -146,7 +148,7 @@ theorem exists_top {u : ℕ} (hu : u < R) : ∃ t, IsTop pch rem t ∧ AncX R pr
   | _ n ih =>
     by_cases ht : IsTop pch rem u
     · exact ⟨u, ht, ReflTransGen.refl⟩
-    · simp only [IsTop, not_or] at ht
+    · simp [IsTop, not_or] at ht
       have hpR := h.prg_lt u hu ht.1
       obtain ⟨t, htt, hta⟩ := ih (pos (prg u)) (hp ▸ h.pos_prg u hu ht.1) hpR rfl
       exact ⟨t, htt, hta.tail ⟨hu, ht.1, rfl, ht.2⟩⟩
@@ -180,12 +182,12 @@ theorem AncX.of_keep {rem' : ℕ → ℕ} {a b : ℕ} (hab : AncX R prg pch rem 
   | refl => exact ReflTransGen.refl
   | tail hax hxc ih =>
     rename_i x c
-    have hc : AncX R prg pch rem a c := hax.tail hxc
+    have hc  := hax.tail hxc
     refine (ih fun w hw1 hw2 hw3 => hkeep w hw1 (hw2.tail hxc) hw3).tail ?_
     obtain ⟨h1, h2, h3, _⟩ := hxc
     refine ⟨h1, h2, h3, hkeep c hc ReflTransGen.refl ?_⟩
     intro hca
-    have hxR : x < R := h3 ▸ h.prg_lt c h1 h2
+    have hxR  := h3 ▸ h.prg_lt c h1 h2
     have h5 := (AncX.pos_le h hax hxR).2.1
     have h6 := h.pos_prg c h1 h2
     rw [h3, hca] at h6
@@ -234,12 +236,12 @@ theorem Rooted.pch_inj {s s' : ℕ} (hs : s < R) (hs' : s' < R) (h0 : s ≠ 0) (
     rcases h.ends s' hs' h0' with ⟨b1, b2⟩ | ⟨b1, b2⟩ <;> rw [he] at a1 a2
   · exact hne (a2.symm.trans b2)
   · -- `s = prg s'` and `s' = prg s`
-    have e1 : s = prg s' := a2.symm.trans b2
-    have e2 : s' = prg s := b1.symm.trans a1
-    rw [← e1] at p2; rw [← e2] at p1; omega
+    have e1  := a2.symm.trans b2
+    have e2  := b1.symm.trans a1
+    rw [← e1] at p2; rwo [← e2] at p1
   · have e1 : s = prg s' := a1.symm.trans b1
-    have e2 : s' = prg s := b2.symm.trans a2
-    rw [← e1] at p2; rw [← e2] at p1; omega
+    have e2  := b2.symm.trans a2
+    rw [← e1] at p2; rwo [← e2] at p1
   · exact hne (a1.symm.trans b1)
 
 /-- With no chord removed below `K`, every region is in the component of the root. -/
@@ -291,7 +293,7 @@ theorem mem_sub {u v : ℕ} : v ∈ sub R prg pch rem u ↔ v < R ∧ AncX R prg
 omit h in
 theorem mem_kids {u c : ℕ} : c ∈ kids R prg pch rem u ↔ ChX R prg pch rem u c := by
   classical
-  simp only [kids, mem_filter, mem_range, and_iff_right_iff_imp]
+  simp [kids, mem_filter, mem_range, and_iff_right_iff_imp]
   exact fun hc => hc.1
 
 omit h in
@@ -386,14 +388,14 @@ theorem pigeon {s : Finset ℕ} (f : ℕ → ℕ) (u m D : ℕ) (e : Prop) [Deci
     (∃ c ∈ s, m ≤ D * f c) ∨ (e ∧ m ≤ D * u) := by
   classical
   by_contra hno
-  simp only [not_or, not_exists, not_and, not_le] at hno
+  simp [not_or, not_exists, not_and, not_le] at hno
   obtain ⟨h1, h2⟩ := hno
   have hs : ∑ c ∈ s, D * f c ≤ ∑ c ∈ s, m := Finset.sum_le_sum fun c hc => (h1 c hc).le
   rw [← Finset.mul_sum, Finset.sum_const, smul_eq_mul] at hs
   by_cases he : e
   · have h2' := h2 he
     rw [ite_eq_left he] at hcard
-    have : D * m = D * (∑ c ∈ s, f c) + D * u := by rw [← hsum]; ring
+    have : D * m = D * (∑ c ∈ s, f c) + D * u := by rwring [← hsum]
     have h3 : D * m < (s.card + 1) * m := by nlinarith
     have h4 : (s.card + 1) * m ≤ D * m := Nat.mul_le_mul_right _ hcard
     omega
@@ -402,9 +404,9 @@ theorem pigeon {s : Finset ℕ} (f : ℕ → ℕ) (u m D : ℕ) (e : Prop) [Deci
     rw [hu0, add_zero] at hsum
     have hne : s.Nonempty := by
       rcases Finset.eq_empty_or_nonempty s with h0 | h0
-      · rw [h0, Finset.sum_empty] at hsum; omega
+      · rwo [h0, Finset.sum_empty] at hsum
       · exact h0
-    have hs' : ∑ c ∈ s, D * f c < ∑ c ∈ s, m := Finset.sum_lt_sum_of_nonempty hne h1
+    have hs'  := Finset.sum_lt_sum_of_nonempty hne h1
     rw [← Finset.mul_sum, Finset.sum_const, smul_eq_mul, hsum] at hs'
     have h4 : s.card * m ≤ D * m := Nat.mul_le_mul_right _ hcard
     omega
@@ -472,7 +474,7 @@ theorem exists_good
       (if v ≠ t then n - sz R prg pch rem v else 0) = n - 1 := by
     by_cases e : v = t
     · rw [ite_eq_right (not_not.2 e), add_zero]
-      rw [e] at hrec ⊢; omega
+      rwo [e] at hrec ⊢
     · rw [ite_eq_left e]
       omega
   rcases pigeon (fun c => sz R prg pch rem c) _ (n - 1) D (v ≠ t) hsum hcard
@@ -489,12 +491,12 @@ theorem exists_good
       omega
     · have : min (sz R prg pch rem c) (n - sz R prg pch rem c) = sz R prg pch rem c :=
         min_eq_left (by omega)
-      rw [this]; exact hc'
+      rwx [this]
   · rw [ite_eq_left hne] at hu
     refine ⟨v, hvR, htv, hne, ?_⟩
     have : min (sz R prg pch rem v) (n - sz R prg pch rem v) = n - sz R prg pch rem v :=
       min_eq_right (by omega)
-    rw [this]; exact hu
+    rwx [this]
 
 end sep
 

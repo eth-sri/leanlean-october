@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.Lemma41Tab
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-J, part 23: the prologue of Lemma 4.1
@@ -63,7 +68,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 theorem proC_exec {c : Config} (hw : WordsBounded W c) (hW : 8 ≤ W) :
     ∃ c' k, Exec P W proC c c' k ∧ k = 9 ∧ WordsBounded W c' ∧
       c'.nreg 160024 = 1 ∧ c'.nreg 160080 = 2 ∧ c'.nreg 160081 = 5 ∧ c'.nreg 160082 = 6 ∧
@@ -81,7 +85,6 @@ theorem proC_exec {c : Config} (hw : WordsBounded W c) (hW : 8 ≤ W) :
   simp only
   repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 16000000 in
 theorem proL_exec {c : Config} (hw : WordsBounded W c) {h a L lam : ℕ}
     (h00 : c.nreg 160000 = h) (h01 : c.nreg 160001 = a) (h02 : c.nreg 160002 = L)
     (h03 : c.nreg 160003 = lam) (h24 : c.nreg 160024 = 1) (h80 : c.nreg 160080 = 2)
@@ -130,7 +133,6 @@ theorem proL_exec {c : Config} (hw : WordsBounded W c) {h a L lam : ℕ}
 theorem clog_eq_of {lam c : ℕ} (h1 : lam ≤ 2 ^ c) (h2 : c ≤ Nat.clog 2 lam) :
     c = Nat.clog 2 lam := le_antisymm h2 (Nat.clog_le_of_le_pow h1)
 
-set_option maxHeartbeats 8000000 in
 theorem clogS_exec {c : Config} (hw : WordsBounded W c) {PW lam : ℕ}
     (h21 : c.nreg 160021 = PW) (h03 : c.nreg 160003 = lam) (h24 : c.nreg 160024 = 1)
     (hpow : ∀ i, i ≤ lam → c.nmem (PW + i) = 2 ^ i) (hl : 1 ≤ lam) (hW : PW + lam ≤ W) :
@@ -161,9 +163,9 @@ theorem clogS_exec {c : Config} (hw : WordsBounded W c) {PW lam : ℕ}
         .loadN 160105 160031]) I (fun c' => 5 * (Nat.clog 2 lam - c'.nreg 160104))
       (fun c' h => h.1)
       (fun c2 ⟨hw2, i, hi, h04, h05, fr2, hm2, hrr2, hrm2, ho2⟩ htest => by
-        have c03 : c2.nreg 160003 = lam := by rw [fr2 _ (by omega) (by omega) (by omega)]; exact h03
-        have c21 : c2.nreg 160021 = PW := by rw [fr2 _ (by omega) (by omega) (by omega)]; exact h21
-        have c24 : c2.nreg 160024 = 1 := by rw [fr2 _ (by omega) (by omega) (by omega)]; exact h24
+        have c03 : c2.nreg 160003 = lam := by rwx [fr2 _ (by omega) (by omega) (by omega)]
+        have c21 : c2.nreg 160021 = PW := by rwx [fr2 _ (by omega) (by omega) (by omega)]
+        have c24 : c2.nreg 160024 = 1 := by rwx [fr2 _ (by omega) (by omega) (by omega)]
         rw [h05, c03] at htest
         have hil : i < Nat.clog 2 lam := by
           by_contra hc
@@ -187,17 +189,15 @@ theorem clogS_exec {c : Config} (hw : WordsBounded W c) {PW lam : ℕ}
         refine ⟨c3, k3, e3, ⟨hw3, i + 1, by omega, q04, q05,
           fun r a1 a2 a3 => by rw [fr3 r a1 a2 a3]; exact fr2 r a1 a2 a3, by rw [hm3, hm2],
           by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩, ?_⟩
-        show 5 * (Nat.clog 2 lam - c3.nreg 160104) + k3 + 2 ≤ 5 * (Nat.clog 2 lam - c2.nreg 160104)
-        rw [q04, h04]; omega)
+        rwo [q04, h04])
       ⟨hw1, 0, Nat.zero_le _, i04, i05, fun r a1 a2 _ => fr1 r a1 a2, hm1, hrr1, hrm1, ho1⟩
-  have c03 : c'.nreg 160003 = lam := by rw [fr' _ (by omega) (by omega) (by omega)]; exact h03
+  have c03 : c'.nreg 160003 = lam := by rwx [fr' _ (by omega) (by omega) (by omega)]
   rw [h05, c03] at htest
   have hk' : k ≤ 5 * Nat.clog 2 lam + 2 := by
     have := hk; simp only [i04, Nat.sub_zero] at this; exact this
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw', ?_, fr', hm', hrr', hrm', ho'⟩
   rw [h04]; exact clog_eq_of (by omega) hi
 
-set_option maxHeartbeats 8000000 in
 theorem mulS_exec {c : Config} (hw : WordsBounded W c) {lam cl G2 : ℕ}
     (h04 : c.nreg 160104 = cl) (h03 : c.nreg 160003 = lam) (h32 : c.nreg 160032 = G2)
     (h24 : c.nreg 160024 = 1) (h80 : c.nreg 160080 = 2)
@@ -226,26 +226,26 @@ theorem mulS_exec {c : Config} (hw : WordsBounded W c) {lam cl G2 : ℕ}
         c'.rreg = c1.rreg ∧ c'.rmem = c1.rmem ∧ c'.output = c1.output)
       lam 2 (fun i c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
       (fun i c2 hi ⟨hw2, h08, c03, h07, fr2, hm2, hrr2, hrm2, ho2⟩ => by
-        have c06 : c2.nreg 160106 = cl + 2 := by rw [fr2 _ (by omega) (by omega)]; exact i06
+        have c06 : c2.nreg 160106 = cl + 2 := by rwx [fr2 _ (by omega) (by omega)]
         have c24 : c2.nreg 160024 = 1 := by
-          rw [fr2 _ (by omega) (by omega), fr1 _ (by omega) (by omega) (by omega)]; exact h24
+          rwx [fr2 _ (by omega) (by omega), fr1 _ (by omega) (by omega) (by omega)]
         have hbound : (i + 1) * (cl + 2) ≤ lam * (cl + 2) := Nat.mul_le_mul_right _ (by omega)
         exec_block
         all_goals try (config_simp; (try simp only [h08, h07, c06, c24]); nlinarith)
         refine ⟨by omega, ‹_›, by config_simp; simp only [h08, c24], c03 ▸ by config_simp, ?_,
           fun r a1 a2 => ?_, hm2, hrr2, hrm2, ho2⟩
-        · config_simp; simp only [h07, c06]; ring
+        · config_simp; sir only [h07, c06]
         · simp only
           repeat (rw [Machine.upd_other _ _ _ (by omega)])
           exact fr2 r a1 a2)
-      (j₀ := 0) ⟨hw1, i08, by rw [fr1 _ (by omega) (by omega) (by omega)]; exact h03,
-        by rw [i07]; ring, fun _ _ _ => rfl, rfl, rfl, rfl, rfl⟩ (Nat.zero_le _)
+      (j₀ := 0) ⟨hw1, i08, by rwx [fr1 _ (by omega) (by omega) (by omega)],
+        by rwring [i07], fun _ _ _ => rfl, rfl, rfl, rfl, rfl⟩ (Nat.zero_le _)
   obtain ⟨c3, k3, e3, hk3, hw3, q32, fr3, hm3, hrr3, hrm3, ho3⟩ : ∃ c3 k3, Exec P W
       (block [.addN 160032 160032 160107]) c2 c3 k3 ∧ k3 = 1 ∧ WordsBounded W c3 ∧
       c3.nreg 160032 = G2 + lam * (cl + 2) ∧ (∀ r, r ≠ 160032 → c3.nreg r = c2.nreg r) ∧
       c3.nmem = c2.nmem ∧ c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output := by
     have c32 : c2.nreg 160032 = G2 := by
-      rw [fr2 _ (by omega) (by omega), fr1 _ (by omega) (by omega) (by omega)]; exact h32
+      rwx [fr2 _ (by omega) (by omega), fr1 _ (by omega) (by omega) (by omega)]
     exec_block
     all_goals try (config_simp; (try simp only [c32, h07]); nlinarith)
     refine ⟨rfl, ‹_›, by config_simp; simp only [c32, h07], fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
@@ -256,7 +256,6 @@ theorem mulS_exec {c : Config} (hw : WordsBounded W c) {lam cl G2 : ℕ}
     by rw [hrm3, hrm2, hrm1], by rw [ho3, ho2, ho1]⟩
   rw [fr3 r a1, fr2 r a3 a4, fr1 r a2 a3 a4]
 
-set_option maxHeartbeats 16000000 in
 theorem proH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ}
     (hA : c.nreg ALLOC = A) (h24 : c.nreg 160024 = 1) (h29 : c.nreg 160029 = 0)
     (h86 : c.nreg 160086 = 7) (hn : 1 ≤ P.n) (hW : A + 7 ≤ W) (hWn : P.n ≤ W) :
@@ -278,7 +277,7 @@ theorem proH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ}
   · config_simp; simp only [hA]
   · config_simp; simp only [hA, h86]
   · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega | simp [Host.whole]
-  · have hi0 : i = 0 := by simp [Host.whole] at hi; omega
+  · have hi0 : i = 0 := by sio [Host.whole] at hi
     subst hi0
     simp only [Host.whole, List.getD_cons_zero]
     simp only [hA, h24, h29, Machine.upd_apply]

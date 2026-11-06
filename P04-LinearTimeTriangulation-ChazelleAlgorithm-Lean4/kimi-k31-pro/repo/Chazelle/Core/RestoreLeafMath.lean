@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.RestoreNodeDec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the search: the leaf of the descent (mathematics)
@@ -42,14 +44,14 @@ theorem arc_int {N se ee w : ℕ} {a b : ℝ} (hse : se < N) (hee : ee < N) (ha0
     omega
   rw [ite_eq_right hsp]
   have hxa : ∀ y : ℕ, (y : ℝ) = a → y = se := fun y h => by
-    have h1 : (se : ℝ) ≤ y := h ▸ ha0
-    have h2 : (y : ℝ) < se + 1 := h ▸ ha1
+    have h1  := h ▸ ha0
+    have h2  := h ▸ ha1
     have h1' : se ≤ y := by exact_mod_cast h1
     have h2' : y < se + 1 := by exact_mod_cast h2
     omega
   have hxb : ∀ y : ℕ, (y : ℝ) = b → y = ee := fun y h => by
-    have h1 : (ee : ℝ) ≤ y := h ▸ hb0
-    have h2 : (y : ℝ) < ee + 1 := h ▸ hb1
+    have h1  := h ▸ hb0
+    have h2  := h ▸ hb1
     have h1' : ee ≤ y := by exact_mod_cast h1
     have h2' : y < ee + 1 := by exact_mod_cast h2
     omega
@@ -129,14 +131,14 @@ theorem arc_of_target (hGα : GoodModel (chainModel Cα)) {Nα : NF}
   have hTU := hcorr.1 T hD.hT
   obtain ⟨ε, ⟨h1, h2⟩, h3⟩ := ((hD.hfT.and hev).and (Ioo_mem_nhdsGT one_pos)).exists
   have hfU := harc.2.2.2.2.2.2 _ ε hXn h3.1 h3.2 h2
-  have hUT : U = regα T := WalkAx.faces_unique hU hTU hfU h1
+  have hUT  := WalkAx.faces_unique hU hTU hfU h1
   subst hUT
   obtain ⟨j, hj, hjr, hjs, hje⟩ := harcs.2.2.1 T hD.hT a b harc
-  have hmem : j ∈ (Nα.region T).arcs := (harcs.2.2.2 T hD.hT j).2 ⟨hj, hjr⟩
+  have hmem  := (harcs.2.2.2 T hD.hT j).2 ⟨hj, hjr⟩
   obtain ⟨t, ht, htj⟩ := List.mem_iff_getElem.1 hmem
   have hget : (Nα.region T).arcs.getD t 0 = j := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, htj]; rfl
-  refine ⟨t, ht, by rw [hget]; exact hj, ?_⟩
+    rwr [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, htj]
+  refine ⟨t, ht, by rwx [hget], ?_⟩
   rw [hget, hjs, hje]
   exact hcl
 

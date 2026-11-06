@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.ShotListCut2
 public import Chazelle.Core.SweepPrimAbs
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Shooting at a list of arcs with holes, part 5: one shot and the running minimum
@@ -75,7 +79,7 @@ theorem absRec_copy {P : Polygon} {c c' : Config} {r r' : ℕ} {x R : ℝ} (h : 
     have e2 : r + 1 + 1 = r + 2 := by omega
     have e3 : r' + 1 + 2 = r' + 3 := by omega
     have e4 : r + 1 + 2 = r + 3 := by omega
-    exact NFLoc.symPtIn_copy hs h1 (by rw [e1, e2]; exact h2) (by rw [e3, e4]; exact h3)
+    exact NFLoc.symPtIn_copy hs h1 (by rwx [e1, e2]) (by rwx [e3, e4])
 
 /-- An origin survives a copy of its three words. -/
 theorem originIn_copy {c c' : Config} {r r' : ℕ} {o : Origin} (h : OriginIn c r o)
@@ -247,20 +251,20 @@ theorem leafKey_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
   obtain ⟨c₁, e₁, v₁, f₁⟩ := copies_run (P := P) (keyList R) c hw (by
     simp only [keyList, List.mem_cons, List.not_mem_nil, or_false]
     rintro p (rfl | rfl | rfl | rfl | rfl) q (rfl | rfl | rfl | rfl | rfl) <;> simp <;> omega)
-    (by simp [keyList]; omega)
+    (by sio [keyList])
   simp only [keyList, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
     forall_eq] at v₁
   obtain ⟨v44, v45, v00, v01, v02⟩ := v₁
   have k₁ : ∀ r, r ≠ R + 244 → r ≠ R + 245 → ¬ (50200 ≤ r ∧ r < 50203) → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => f₁.1 r (by simp [keyList]; omega)
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k₁ _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => f₁.1 r (by sio [keyList])
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k₁ _ (by ufo ALLOC)
+    (by ufo ALLOC) (by ufo ALLOC)
   have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
-  have hC1 : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hM1, v00]; exact hC
+  have hC1 : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwx [hM1, v00]
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, -⟩ := absKey_meets P W c₁ e₁.wb_right
-    ⟨hG, hHW, by rw [hA1, hM1, v00]; exact hwf, H, C, hC1,
-      ⟨by rw [v01]; exact he, by rw [v01, v02]; exact hp, by rw [v01, v02]; exact hy⟩,
-      by rw [hM1, v00]; exact hreg⟩ (by rw [hA1]; show _ + 16700 ≤ W; omega)
+    ⟨hG, hHW, by rwx [hA1, hM1, v00], H, C, hC1,
+      ⟨by rwx [v01], by rwx [v01, v02], by rwx [v01, v02]⟩,
+      by rwx [hM1, v00]⟩ (by rw [hA1]; show _ + 16700 ≤ W; omega)
   replace hk₂ : k₂ ≤ 16700 := hk₂
   have ar := post₂ H C hC1
   have F₂ := exec_frameB e₂ wr_absKey
@@ -272,7 +276,7 @@ theorem leafKey_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
     forall_eq] at v₃
   obtain ⟨w0, w1, w2, w3⟩ := v₃
   have k₃ : ∀ r, ¬ (R + 240 ≤ r ∧ r < R + 244) → c₃.nreg r = c₂.nreg r :=
-    fun r hr => f₃.1 r (by simp [recList]; omega)
+    fun r hr => f₃.1 r (by sio [recList])
   have r₂ : ∀ r, Bprim r = false → c₂.nreg r = c₁.nreg r := F₂.1
   have l1 : (keyList R).length = 5 := rfl
   have l3 : (recList R).length = 4 := rfl
@@ -285,9 +289,9 @@ theorem leafKey_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
     exact absRec_copy ar' w0 (by rw [w1]) (by rw [w2]) (by rw [w3])
   · refine ((frameB_mono f₁ (fun r hr => ?_)).trans (frameB_mono F₂ (fun r hr => ?_))).trans
       (frameB_mono f₃ (fun r hr => ?_))
-    · simp [keyList] at hr; simp only [Bkey, Bool.or_eq_true, decide_eq_true_eq]; omega
+    · simp [keyList] at hr; sio only [Bkey, Bool.or_eq_true, decide_eq_true_eq]
     · simp only [Bkey, hr, Bool.or_true, Bool.true_or]
-    · simp [recList] at hr; simp only [Bkey, Bool.or_eq_true, decide_eq_true_eq]; omega
+    · simp [recList] at hr; sio only [Bkey, Bool.or_eq_true, decide_eq_true_eq]
 
 /-- **Accepting the candidate.** -/
 theorem leafAcc_exec {P : Polygon} {W : ℕ} {R : ℕ} (_hR : RegsOK R) (c : Config)
@@ -313,13 +317,13 @@ theorem leafAcc_exec {P : Polygon} {W : ℕ} {R : ℕ} (_hR : RegsOK R) (c : Con
     by rw [a4, r₁ _ (by omega)], by rw [a5, r₁ _ (by omega)], by rw [a6, r₁ _ (by omega)],
     by rw [a7, r₁ _ (by omega)], ?_⟩
   · have g : ((accList R).map Prod.fst).contains (R + 20) = false := by simp [accList]
-    rw [f₂.1 _ g, hc₁]; simp
+    rws [f₂.1 _ g, hc₁]
   · have fa : FrameB (fun r => decide (R + 20 ≤ r ∧ r < R + 28)) c c₁ :=
       frameB_mono (exec_frameB e₁ (show wr (Bone (R + 20)) (.instr (.constN (R + 20) 1)) = true by
         simp [wr, wrOK, Bone])) (fun r hr => by simp only [Bone, beq_iff_eq] at hr; simp [hr])
     have fb : FrameB (fun r => decide (R + 20 ≤ r ∧ r < R + 28)) c₁ c₂ :=
       frameB_mono f₂ (fun r hr => by
-        simp [accList] at hr; simp only [decide_eq_true_eq]; omega)
+        simp [accList] at hr; sio only [decide_eq_true_eq])
     exact fa.trans fb
 
 /-- The write set of `leafCmp`. -/
@@ -342,7 +346,7 @@ theorem cmpLoad_run {P : Polygon} {W : ℕ} {R u v : ℕ} (hR : RegsOK R) (hu : 
     forall_eq] at v'
   obtain ⟨a0, a1, a2, a3, b0, b1, b2, b3⟩ := v'
   refine ⟨c', e, fun i hi => ?_, fun i hi => ?_, frameB_mono f (fun r hr => by
-    simp [cmpLoad] at hr; simp only [decide_eq_true_eq]; omega)⟩
+    simp [cmpLoad] at hr; sio only [decide_eq_true_eq])⟩
   · interval_cases i
     · exact a0
     · exact a1
@@ -386,9 +390,9 @@ theorem leafCmp_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
   -- registers of `c` in the band of `R` survive
   have keep3 : ∀ r, R ≤ r → r < R + 300 → r ≠ R + 246 → c₃.nreg r = c.nreg r := fun r h1 h2 h3 => by
     rw [hc₃]; simp only [upd, h3, ↓reduceIte]
-    rw [F₂.1 r (bprim_R' hR h1 h2), f₁.1 r (by simp only [decide_eq_false_iff_not]; omega)]
+    rw [F₂.1 r (bprim_R' hR h1 h2), f₁.1 r (by sio only [decide_eq_false_iff_not])]
   have hA3 : c₃.nreg ALLOC = c.nreg ALLOC := by
-    rw [hc₃]; simp only [upd, show ALLOC ≠ R + 246 by unfold ALLOC; omega, ↓reduceIte]
+    rw [hc₃]; simp only [upd, show ALLOC ≠ R + 246 by ufo ALLOC, ↓reduceIte]
     rw [F₂.1 _ (by simp [Bprim, ALLOC]), hA1]
   -- second comparison
   obtain ⟨c₄, e₄, a₄, b₄, f₄⟩ := cmpLoad_run (P := P) (u := 24) (v := 240) hR (by omega)
@@ -417,7 +421,7 @@ theorem leafCmp_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
     refine b3.of_eq ?_
     · simp only [upd, show R + 246 ≠ R + 247 by omega, ↓reduceIte]
       rw [F₅.1 _ (bprim_R' hR (by omega) (by omega)),
-        f₄.1 _ (by simp only [decide_eq_false_iff_not]; omega)]
+        f₄.1 _ (by sio only [decide_eq_false_iff_not])]
   · exact ⟨by simp only [upd_same]; exact bit₅.1, by simp only [upd_same]; exact bit₅.2⟩
   · have g1 : FrameB (Bcmp2 R) c c₁ := frameB_mono f₁ (fun r hr => by simp [Bcmp2, hr])
     have g2 : FrameB (Bcmp2 R) c₁ c₂ := frameB_mono F₂ (fun r hr => by simp [Bcmp2, hr])
@@ -443,9 +447,9 @@ theorem BestOK.congr {P : Polygon} {C : Chain} {R : ℕ} {c c' : Config} {S : Se
     (e6 : c'.nreg (R + 24 + 2) = c.nreg (R + 24 + 2))
     (e7 : c'.nreg (R + 24 + 3) = c.nreg (R + 24 + 3)) : BestOK P C R c' S z σ := by
   obtain ⟨h0, h1, h2⟩ := h
-  refine ⟨by rw [e0]; exact h0, fun hf => ?_, fun hf => h2 (by rw [← e0]; exact hf)⟩
-  obtain ⟨t, ht, hp, he, hpos, ha⟩ := h1 (by rw [← e0]; exact hf)
-  exact ⟨t, ht, by rw [e1, e2]; exact hp, by rw [e1]; exact he, by rw [e1, e2]; exact hpos,
+  refine ⟨by rwx [e0], fun hf => ?_, fun hf => h2 (by rwx [← e0])⟩
+  obtain ⟨t, ht, hp, he, hpos, ha⟩ := h1 (by rwx [← e0])
+  exact ⟨t, ht, by rwx [e1, e2], by rwx [e1], by rwx [e1, e2],
     absRec_copy ha e4 e5 e6 e7⟩
 
 theorem dirOf_eq_one {v : ℕ} (h : v = 1) : dirOf v = 1 := by simp [dirOf, h]
@@ -480,7 +484,7 @@ theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
     ∃ c' k, Exec P W (leafHit R) c c' k ∧ k ≤ 17400 ∧ BestOK P C R c' (S ∪ A) z σ ∧
       FrameB (Bhit R) c c' := by
   have h := hR; unfold RegsOK at h
-  have hP3 : P.n + 3 ≤ W := by unfold hostWords at hHW; omega
+  have hP3 : P.n + 3 ≤ W := by ufo hostWords at hHW
   have hy : |((chainModel C).pos (Qof P) ⟨c.nreg 140011, c.nreg 140012⟩).2| < C.radius := by
     rw [hpos]; simpa using hz
   obtain ⟨c₁, k₁, e₁, hk₁, p44, p45, rc, f₁⟩ := leafKey_exec (P := P) hR c hw hG hHW hwf hC
@@ -498,7 +502,7 @@ theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
     (k1 _ (by omega) (by omega)) (k1 _ (by omega) (by omega)) (k1 _ (by omega) (by omega))
   have w₁ := e₁.wb_right
   have fB : ∀ {B : ℕ → Bool} {c₀ c' : Config}, FrameB B c₀ c' → (∀ r, B r = true → Bhit R r) →
-      FrameB (Bhit R) c₀ c' := fun h hB => frameB_mono h hB
+      FrameB (Bhit R) c₀ c' := frameB_mono
   have f₁' : FrameB (Bhit R) c c₁ := fB f₁ (fun r hr => by
     simp only [Bkey, Bool.or_eq_true, decide_eq_true_eq] at hr
     rcases hr with (h | h) | h
@@ -520,9 +524,9 @@ theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
     · rcases hS with hS | ⟨tb, htb, hle⟩
       · exact firstHit_union_right hS hA
       · exact firstHit_union_le' htb hA hle
-    · rw [a1, a2, hr _ (by omega) (by omega), hr _ (by omega) (by omega), p44, p45]; exact hp
-    · rw [a1, hr _ (by omega) (by omega), p44]; exact he
-    · rw [a1, a2, hr _ (by omega) (by omega), hr _ (by omega) (by omega), p44, p45]; exact hpos
+    · rwx [a1, a2, hr _ (by omega) (by omega), hr _ (by omega) (by omega), p44, p45]
+    · rwx [a1, hr _ (by omega) (by omega), p44]
+    · rwx [a1, a2, hr _ (by omega) (by omega), hr _ (by omega) (by omega), p44, p45]
     · exact absRec_copy rc (by rw [a4, hr _ (by omega) (by omega)])
         (by rw [show R + 24 + 1 = R + 25 by omega, a5, hr _ (by omega) (by omega)])
         (by rw [show R + 24 + 2 = R + 26 by omega, a6, hr _ (by omega) (by omega)])
@@ -538,7 +542,7 @@ theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
   have hf1 : c₁.nreg (R + 20) = 1 := by have := best₁.1; omega
   obtain ⟨tb, htb, hpb, heb, hposb, rb⟩ := best₁.2.1 hf1
   obtain ⟨c₂, k₂, e₂, hk₂, b46, b47, f₂⟩ := leafCmp_exec (P := P) hR c₁ w₁ hG hP3 rc rb
-    (by rw [hA1]; omega)
+    (by rwo [hA1])
   have k2 : ∀ r, R ≤ r → r < R + 246 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
     f₂.1 r (by simp only [Bcmp2, bprim_R' hR h1 (by omega), Bool.or_false, Bool.or_eq_false_iff,
       decide_eq_false_iff_not]; omega)
@@ -551,11 +555,11 @@ theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
   -- keeping the minimum
   have keep : tb ≤ t → BestOK P C R c₂ (S ∪ A) z σ := fun hle => by
     refine ⟨by rw [k2 _ (by omega) (by omega)]; exact best₁.1, fun _ => ⟨tb, ?_, ?_, ?_, ?_, ?_⟩,
-      fun h' => absurd (by rw [k2 _ (by omega) (by omega)]; exact hf1) h'⟩
+      fun h' => absurd (by rwx [k2 _ (by omega) (by omega)]) h'⟩
     · exact firstHit_union_le htb hA hle
-    · rw [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]; exact hpb
-    · rw [k2 _ (by omega) (by omega)]; exact heb
-    · rw [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]; exact hposb
+    · rwx [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]
+    · rwx [k2 _ (by omega) (by omega)]
+    · rwx [k2 _ (by omega) (by omega), k2 _ (by omega) (by omega)]
     · exact absRec_copy rb (k2 _ (by omega) (by omega)) (k2 _ (by omega) (by omega))
         (k2 _ (by omega) (by omega)) (k2 _ (by omega) (by omega))
   have r35 : c₂.nreg (R + 35) = c.nreg (R + 35) := by
@@ -568,7 +572,7 @@ theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
   have hσ1 : σ = 1 ∨ σ = -1 := by rw [hσ]; unfold dirOf; split_ifs <;> simp
   by_cases hs : c₂.nreg (R + 30) < c₂.nreg (R + 35)
   · -- `σ = 1`: accept iff `xc < xb`
-    have hv : c.nreg (R + 6) = 1 := hσb.2.1 (by have := hσb.1; rw [← r35]; omega)
+    have hv : c.nreg (R + 6) = 1 := hσb.2.1 (by have := hσb.1; rwo [← r35])
     have hσe : σ = 1 := by rw [hσ]; exact dirOf_eq_one hv
     have ord := ray_lt_iff (p := z) (t := t) (t' := tb) hσ1
     rw [ite_yes _ _ hσe] at ord
@@ -584,7 +588,7 @@ theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
         (.skip w₂))))), by omega, keep hge, f₂'⟩
   · -- `σ = -1`: accept iff `xb < xc`
     have hv : c.nreg (R + 6) ≠ 1 := fun h' => hs (by rw [r30, r35]; have := hσb.2.2 h'; omega)
-    have hσe : σ ≠ 1 := by rw [hσ, dirOf_ne_one hv]; norm_num
+    have hσe : σ ≠ 1 := by rwn [hσ, dirOf_ne_one hv]
     have ord := ray_lt_iff (p := z) (t := t) (t' := tb) hσ1
     rw [ite_no _ _ hσe] at ord
     by_cases hb : c₂.nreg (R + 30) < c₂.nreg (R + 247)

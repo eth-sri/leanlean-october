@@ -2,6 +2,12 @@ module
 
 public import Chazelle.Core.ClusterSetupRam
 public import Chazelle.Core.ClusterFirst
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-I, part 44: stage A — the first darts, the primal search and the level-ancestor table
@@ -46,14 +52,14 @@ theorem fillWith_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001
       c3.nreg 130001 = 1 ∧ PFr FillRG (fun a => b ≤ a ∧ a < b + n) c c3 := by
     exec_block
     refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩⟩
-    all_goals (simp only [Machine.upd_apply]; (try unfold FillRG at hr); split_ifs <;> omega)
+    all_goals (simp only [Machine.upd_apply]; (try unfold FillRG at hr); splao)
   obtain ⟨c', k, e, hk, hf', hv⟩ := fillStmt_exec (P := P) hw3 hone3
-    (by rw [r150, r151]; exact hwb) (by rw [r151]; exact hwn)
+    (by rwx [r150, r151]) (by rwx [r151])
   rw [r150, r151] at hf'
   rw [r150, r151, r152] at hv
   rw [r151] at hk
   have hf'' : PFr FillRG (fun a => b ≤ a ∧ a < b + n) c3 c' :=
-    hf'.mono (fun r h => by unfold FillScr at h; unfold FillRG; omega) (fun a h => h)
+    hf'.mono (fun r h => by unfold FillScr at h; ufo FillRG) (fun _ => id)
   exact ⟨c', k3 + k, .seq e3 e, by omega, e.wb_right, hf3.trans hf'', hv⟩
 
 end proofs
@@ -80,7 +86,7 @@ theorem primalEnv_enc {m : ℕ → ℕ} {bO bR bV bF bDB bVB : ℕ}
   · obtain ⟨h1, h2⟩ := hF v v.2
     refine ⟨⟨m (bF + v), h1⟩, by show view m bF μ v = _; rw [view_lt v.2], ?_⟩
     apply Fin.ext
-    rw [← h.vert h1]; exact h2
+    rwx [← h.vert h1]
 
 end enc
 
@@ -129,7 +135,7 @@ theorem firstP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       ∀ u, u < g.μ → c'.nmem (g.base 0 + u) < g.N ∧ c.nmem (g.bV + c'.nmem (g.base 0 + u)) = u := by
   have hU := g.U_ge
   have hEND := g.END_eq
-  have hb0 : g.base 0 = g.A0 := by rw [g.base_eq]; ring
+  have hb0 : g.base 0 = g.A0 := by rwring [g.base_eq]
   have hb00 := hG.rbase 0 (by omega)
   unfold firstP
   obtain ⟨c1, k1, e1, hk1, hw1, r1, r2, r3, hone1, hf1⟩ : ∃ c1 k1, Exec P W
@@ -143,16 +149,16 @@ theorem firstP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     · config_simp; exact hb00
     · config_simp; exact hG.rN
     · config_simp; exact hG.one
-    · simp only [Machine.upd_apply]; unfold StARG at hr; split_ifs <;> omega
+    · simp only [Machine.upd_apply]; unfold StARG at hr; splao
   obtain ⟨c', k, e, hk, hf', hI⟩ := firstStmt_exec (P := P) hw1 hone1 (bV := g.bV)
     (bF := g.base 0) (N := g.N) r1 r2 r3
     (nv := g.μ) (fun d hd => by rw [hf1.2.2.2.2 _ (by omega)]; exact hvlt d hd)
     (fun u hu => by
       obtain ⟨d, hd, hdu⟩ := hsurj u hu
-      exact ⟨d, hd, by rw [hf1.2.2.2.2 _ (by omega)]; exact hdu⟩)
+      exact ⟨d, hd, by rwx [hf1.2.2.2.2 _ (by omega)]⟩)
     (by right; omega) (by omega) (by omega) (by omega)
   refine ⟨c', k1 + k, .seq e1 e, by omega, e.wb_right,
-    hf1.trans (hf'.mono (fun r h => by unfold FirstRG at h; unfold StARG; omega) (fun a h => h)),
+    hf1.trans (hf'.mono (fun r h => by unfold FirstRG at h; ufo StARG) (fun _ => id)),
     fun u hu => ⟨(hI u hu).1, ?_⟩⟩
   have := (hI u hu).2
   rw [hf1.2.2.2.2 _ (by have := (hI u hu).1; omega)] at this
@@ -228,16 +234,16 @@ theorem bfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
                    | exact hG.rbase 3 (by omega)
                    | exact hG.rbase 4 (by omega)
                    | exact hG.rbase 5 (by omega))
-  have hm1' : MapArrays c1.nmem g.bO g.bR g.bV g.μ g.N M := by rw [hm1]; exact hmap
+  have hm1' : MapArrays c1.nmem g.bO g.bR g.bV g.μ g.N M := by rwx [hm1]
   have henv : Y.env c1.nmem = primalEnv c1.nmem g.bO g.bR g.bV (g.base 0) (g.base 1) (g.base 1)
       g.μ g.N := rfl
   have hF1 : ∀ u, u < g.μ → c1.nmem (g.base 0 + u) < g.N ∧
-      c1.nmem (g.bV + c1.nmem (g.base 0 + u)) = u := by rw [hm1]; exact hfirst
+      c1.nmem (g.bV + c1.nmem (g.base 0 + u)) = u := by rwx [hm1]
   have hok : (Y.env c1.nmem).OK := by rw [henv]; exact primalEnv_ok hm1' hF1
   have hpre : (Y.env c1.nmem).Pre 0 0 (labV Y c1.nmem) := by
     refine ⟨hok, hμ, ?_, hμ, fun w hw' _ => ?_⟩
     · show view c1.nmem (g.base 1) g.μ 0 ≠ 1
-      rw [view_lt hμ, hm1, hzero 0 (by omega)]; omega
+      rwo [view_lt hμ, hm1, hzero 0 (by omega)]
     · show view c1.nmem (g.base 2) g.μ w = g.μ
       rw [view_lt (show w < g.μ from hw'), hm1]; exact hlab w hw'
   obtain ⟨c', k, e, hk, ⟨hw', hfr', hI⟩, hht⟩ := bfs_exec (P := P) hYg hR1 hpre hw1
@@ -247,19 +253,19 @@ theorem bfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hdb : ∀ d, d < g.N → (Y.env c1.nmem).db d ≠ 1 := by
     intro d hd
     show view c1.nmem (g.base 1) g.N d ≠ 1
-    rw [view_lt hd, hm1, hzero d hd]; omega
+    rwo [view_lt hd, hm1, hzero d hd]
   have hvb : ∀ v, v < g.μ → (Y.env c1.nmem).vb v ≠ 1 := by
     intro v hv
     show view c1.nmem (g.base 1) g.μ v ≠ 1
-    rw [view_lt hv, hm1, hzero v (by omega)]; omega
+    rwo [view_lt hv, hm1, hzero v (by omega)]
   obtain ⟨T, hroot, hlev, hpar, hhead, hlt⟩ := primal_tree hM hμ rfl hGenc hdb hvb hI
   -- the cost
   have hsum := hI.sum_deg_le hok (le_refl _)
   have htn := hI.tn
   refine ⟨c', k1 + k, .seq e1 e, ?_, hw', hf1.trans ⟨fun r hr => hfr'.1 r (fun h => hr (by
-      unfold Scr at h; unfold StARG; omega)), hfr'.2.1, hfr'.2.2.1, hfr'.2.2.2.1,
+      unfold Scr at h; ufo StARG)), hfr'.2.1, hfr'.2.2.1, hfr'.2.2.2.1,
       fun a ha => hfr'.2.2.2.2 a (fun h => ha (by
-        unfold Lay.Written at h; simp only [hY, primalLay] at h; omega))⟩, T, hroot,
+        unfold Lay.Written at h; sio only [hY, primalLay] at h))⟩, T, hroot,
       fun v => ?_, hlt, fun v hv => ?_, hhead⟩
   · have : (Y.env c1.nmem).N = g.N := rfl
     have : (Y.env c1.nmem).nv = g.μ := rfl
@@ -308,7 +314,7 @@ theorem parP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
     hμ (by omega) (by omega) (by omega) (fun x h1 h2 => by
       rw [hm1]; have := hpar x h1 h2; omega)
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw',
-    hf1.trans (hf'.mono (fun r h => by unfold ParRG at h; unfold StARG; omega) (fun a h => h)),
+    hf1.trans (hf'.mono (fun r h => by unfold ParRG at h; ufo StARG) (fun _ => id)),
     by rw [show g.base 6 = g.base 6 + 0 by omega] at h0 ⊢; simpa using h0,
     fun x h1 h2 => by rw [hx x h1 h2, hm1]⟩
 
@@ -338,14 +344,14 @@ theorem upP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h�
                    | exact hG.rL
                    | exact hG.rμ
                    | exact hG.rbase 6 (by omega)
-                   | (rw [hG.rbase 54 (by omega)]; rfl))
+                   | (rwr [hG.rbase 54 (by omega)]))
     simp only
     unfold StARG at hr
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   obtain ⟨c', k, e, hk, hw', hf', htab⟩ := upStmt_exec (P := P) hw1 hone1 r0 r1 r2 r3 hL
     (fun x hx => by rw [hm1]; exact hpv x hx) (by omega) (by omega) (by omega) (by omega) hμ
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw',
-    hf1.trans (hf'.mono (fun r h => by unfold UpRG at h; unfold StARG; omega) (fun a h => h)),
+    hf1.trans (hf'.mono (fun r h => by unfold UpRG at h; ufo StARG) (fun _ => id)),
     fun j hj x hx => by rw [htab j hj x hx, hm1]⟩
 
 /-- Iterates of functions agreeing on an invariant range agree there. -/
@@ -397,28 +403,27 @@ theorem AF.congr {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {T : S
   refine ⟨fun d => ?_, fun d hd => ?_, fun u hu => ?_, fun u hu => ?_, h.root, fun v => ?_,
     h.lev_lt, fun v hv => ?_, fun v hv => ?_, fun v => ?_, fun j hj x hx => ?_, h.head_le⟩
   · have hd := d.2
-    rw [he _ (by unfold KeepA; omega), he (g.bR + d) (by unfold KeepA; omega),
-      he (g.bV + d) (by unfold KeepA; omega)]
+    rw [he _ (by ufo KeepA), he (g.bR + d) (by ufo KeepA),
+      he (g.bV + d) (by ufo KeepA)]
     exact h.map d
-  · rw [he _ (by unfold KeepA; omega)]; exact h.zero d hd
-  · rw [he _ (by unfold KeepA; omega)]; exact h.first_lt u hu
+  · rw [he _ (by ufo KeepA)]; exact h.zero d hd
+  · rw [he _ (by ufo KeepA)]; exact h.first_lt u hu
   · have := h.first_lt u hu
-    rw [he (g.base 0 + u) (by unfold KeepA; omega), he _ (by unfold KeepA; omega)]
+    rw [he (g.base 0 + u) (by ufo KeepA), he _ (by ufo KeepA)]
     exact h.first_v u hu
-  · have := v.2; rw [he _ (by unfold KeepA; omega)]; exact h.lev v
-  · have := v.2; rw [he _ (by unfold KeepA; omega)]; exact h.par_lt v hv
+  · have := v.2; rw [he _ (by ufo KeepA)]; exact h.lev v
+  · have := v.2; rw [he _ (by ufo KeepA)]; exact h.par_lt v hv
   · have := v.2; have := h.par_lt v hv
-    rw [he (g.base 4 + v) (by unfold KeepA; omega), he _ (by unfold KeepA; omega)]
+    rw [he (g.base 4 + v) (by ufo KeepA), he _ (by ufo KeepA)]
     exact h.par_eq v hv
-  · have := v.2; rw [he _ (by unfold KeepA; omega)]; exact h.pv v
+  · have := v.2; rw [he _ (by ufo KeepA)]; exact h.pv v
   · have := hLμ j hj
-    rw [he _ (by unfold KeepA; omega)]; exact h.upt j hj x hx
+    rw [he _ (by ufo KeepA)]; exact h.upt j hj x hx
 
 /-- The memory written by stage A. -/
 def WrA (g : GV) (a : ℕ) : Prop :=
   (g.A0 ≤ a ∧ a < g.A0 + 7 * g.U) ∨ (g.A0 + 54 * g.U ≤ a ∧ a < g.A0 + 54 * g.U + g.L * g.U)
 
-set_option maxHeartbeats 4000000 in
 theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     {M : CombMap (Fin g.μ) F (Fin g.N)} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (hmap : MapArrays c.nmem g.bO g.bR g.bV g.μ g.N M) (hM : M.Connected) (hμ : 0 < g.μ)
@@ -433,25 +438,25 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have b0 := g.base_eq 0; have b1 := g.base_eq 1; have b2 := g.base_eq 2; have b3 := g.base_eq 3
   have b4 := g.base_eq 4; have b5 := g.base_eq 5; have b6 := g.base_eq 6; have b7 := g.base_eq 7
   have hGR : ∀ {c1 : Config} {Am : ℕ → Prop}, PFr StARG Am c c1 → GR g c1 := fun hf =>
-    hG.frame (fun r hr => hf.1 r (by unfold GRReg at hr; unfold StARG; omega))
+    hG.frame (fun r hr => hf.1 r (by unfold GRReg at hr; ufo StARG))
   have hmono : ∀ {c0 c1 : Config} {Am : ℕ → Prop}, PFr StARG Am c0 c1 → (∀ a, Am a → WrA g a) →
-      PFr StARG (WrA g) c0 c1 := fun hf hA => hf.mono (fun r h => h) hA
+      PFr StARG (WrA g) c0 c1 := fun hf hA => hf.mono (fun _ => id) hA
   -- `ZERO := 0`
   obtain ⟨c1, k1, x1, hk1, hw1, hf1, hz1⟩ := fillWith_exec (P := P) hw hG.one
-    (hG.rbase 1 (by omega)) hG.rN hG.zero (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
+    (hG.rbase 1 (by omega)) hG.rN hG.zero (by ufo FillRG) (by ufo FillRG)
+    (by ufo FillRG) (by omega) (by omega)
   have hf1' : PFr StARG (WrA g) c c1 := hmono (hf1.mono (fun r h => by
-    unfold FillRG at h; unfold StARG; omega) (fun a h => h)) (fun a h => by unfold WrA; omega)
+    unfold FillRG at h; ufo StARG) (fun _ => id)) (fun a h => by ufo WrA)
   have hG1 := hGR hf1'
   -- `LAB := μ`
   obtain ⟨c2, k2, x2, hk2, hw2, hf2, hl2⟩ := fillWith_exec (P := P) hw1 hG1.one
-    (hG1.rbase 2 (by omega)) hG1.rμ hG1.rμ (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
+    (hG1.rbase 2 (by omega)) hG1.rμ hG1.rμ (by ufo FillRG) (by ufo FillRG)
+    (by ufo FillRG) (by omega) (by omega)
   have hf2' : PFr StARG (WrA g) c1 c2 := hmono (hf2.mono (fun r h => by
-    unfold FillRG at h; unfold StARG; omega) (fun a h => h)) (fun a h => by unfold WrA; omega)
+    unfold FillRG at h; ufo StARG) (fun _ => id)) (fun a h => by ufo WrA)
   have hG2 := hGR (hf1'.trans hf2')
   have m2 : ∀ a, a < g.A0 → c2.nmem a = c.nmem a := fun a ha =>
-    (hf1'.trans hf2').2.2.2.2 a (by unfold WrA; omega)
+    (hf1'.trans hf2').2.2.2.2 a (by ufo WrA)
   have hmap2 : MapArrays c2.nmem g.bO g.bR g.bV g.μ g.N M := fun d => by
     have := d.2
     rw [m2 _ (by omega), m2 (g.bR + d) (by omega), m2 (g.bV + d) (by omega)]; exact hmap d
@@ -461,10 +466,10 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     (fun u hu => by
       obtain ⟨d, hd⟩ := M.vert_surj ⟨u, hu⟩
       exact ⟨d, d.2, by rw [hmap2.vert d.2, hd]⟩) hV hW
-  have hf3' : PFr StARG (WrA g) c2 c3 := hmono hf3 (fun a h => by unfold WrA; omega)
+  have hf3' : PFr StARG (WrA g) c2 c3 := hmono hf3 (fun a h => by ufo WrA)
   have hG3 := hGR ((hf1'.trans hf2').trans hf3')
   have m3 : ∀ a, a < g.A0 → c3.nmem a = c.nmem a := fun a ha =>
-    ((hf1'.trans hf2').trans hf3').2.2.2.2 a (by unfold WrA; omega)
+    ((hf1'.trans hf2').trans hf3').2.2.2.2 a (by ufo WrA)
   have hmap3 : MapArrays c3.nmem g.bO g.bR g.bV g.μ g.N M := fun d => by
     have := d.2
     rw [m3 _ (by omega), m3 (g.bR + d) (by omega), m3 (g.bV + d) (by omega)]; exact hmap d
@@ -481,16 +486,16 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   -- the primal search
   obtain ⟨c4, k4, x4, hk4, hw4, hf4, T, hroot, hlev, hlt, hpar, hhead⟩ :=
     bfsP_exec (P := P) hw3 hG3 hmap3 hM hμ hμN hO hR hV hF3' hz3 hl3 hW
-  have hf4' : PFr StARG (WrA g) c3 c4 := hmono hf4 (fun a h => by unfold WrA; omega)
+  have hf4' : PFr StARG (WrA g) c3 c4 := hmono hf4 (fun a h => by ufo WrA)
   have hG4 := hGR (((hf1'.trans hf2').trans hf3').trans hf4')
   have hrootv : ∀ x (_ : 1 ≤ x) (h2 : x < g.μ), (⟨x, h2⟩ : Fin g.μ) ≠ T.root := by
-    intro x h1 h2 h; have := congrArg Fin.val h; rw [hroot] at this; simp at this; omega
+    intro x h1 h2 h; have := congrArg Fin.val h; rw [hroot] at this; sio at this
   have m4 : ∀ a, a < g.A0 → c4.nmem a = c.nmem a := fun a ha =>
-    (((hf1'.trans hf2').trans hf3').trans hf4').2.2.2.2 a (by unfold WrA; omega)
+    (((hf1'.trans hf2').trans hf3').trans hf4').2.2.2.2 a (by ufo WrA)
   -- the parent array
   obtain ⟨c5, k5, x5, hk5, hw5, hf5, hp0, hp5⟩ := parP_exec (P := P) hw4 hG4 hμ hV
     (fun x h1 h2 => (hpar ⟨x, h2⟩ (hrootv x h1 h2)).1) hW
-  have hf5' : PFr StARG (WrA g) c4 c5 := hmono hf5 (fun a h => by unfold WrA; omega)
+  have hf5' : PFr StARG (WrA g) c4 c5 := hmono hf5 (fun a h => by ufo WrA)
   have hG5 := hGR ((((hf1'.trans hf2').trans hf3').trans hf4').trans hf5')
   have hpv5 : ∀ v : Fin g.μ, c5.nmem (g.base 6 + v) = T.parent v := by
     intro v
@@ -500,19 +505,19 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       have := hp0; simpa using this
     · have h1 : 1 ≤ (v : ℕ) := by
         by_contra h0
-        exact hv (Fin.ext (by rw [hroot]; omega))
+        exact hv (Fin.ext (by rwo [hroot]))
       rw [hp5 v h1 v.2, (hpar v hv).2.2]
       have := (hpar v hv).1
       rw [m4 _ (by omega), m3 _ (by omega)]
   -- the table
   obtain ⟨c6, k6, x6, hk6, hw6, hf6, ht6⟩ := upP_exec (P := P) hw5 hG5 hμ hL
     (fun x hx => by rw [hpv5 ⟨x, hx⟩]; exact Fin.isLt _) hW
-  have hf6' : PFr StARG (WrA g) c5 c6 := hmono hf6 (fun a h => by unfold WrA; omega)
+  have hf6' : PFr StARG (WrA g) c5 c6 := hmono hf6 (fun a h => by ufo WrA)
   have hfall := ((((hf1'.trans hf2').trans hf3').trans hf4').trans hf5').trans hf6'
   refine ⟨c6, k1 + (k2 + (k3 + (k4 + (k5 + k6)))),
     .seq x1 (.seq x2 (.seq x3 (.seq x4 (.seq x5 x6)))), by omega, hw6, hGR hfall, hfall, T, ?_⟩
   have m6 : ∀ a, a < g.A0 → c6.nmem a = c.nmem a := fun a ha =>
-    hfall.2.2.2.2 a (by unfold WrA; omega)
+    hfall.2.2.2.2 a (by ufo WrA)
   refine ⟨fun d => ?_, fun d hd => ?_, fun u hu => ?_, fun u hu => ?_, hroot, fun v => ?_, hlt,
     fun v hv => ?_, fun v hv => ?_, fun v => ?_, fun j hj x hx => ?_, hhead⟩
   · have := d.2

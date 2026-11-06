@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.Lemma41Desc
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-J, part 5: the whole-polygon host
@@ -45,13 +47,13 @@ theorem poly_whole (Q : Polygon) (hQ : 1 ≤ Q.n) : (Host.whole Q.n).poly Q = Q 
     have hQ' : 1 ≤ l.length := hQ
     rw [hn]
     apply List.ext_getElem
-    · simp; omega
+    · sio
     · intro i h1 h2
       simp only [List.getElem_map, List.getElem_range, Function.comp]
       simp only [List.length_map, List.length_range] at h1
       rw [Nat.mod_eq_of_lt (by omega)]
       simp only [SymPt.eval, Polygon.vtx]
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h2]; rfl
+      rwr [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h2]
 
 end
 

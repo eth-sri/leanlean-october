@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Existence.Split
 public import Chazelle.Existence.Combine
+public import Chazelle.Rwx
 
 /-!
 # Splitting along an interior diagonal
@@ -76,7 +77,7 @@ theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤
       obtain ⟨h₁, h₂⟩ := hmem
       rw [mod_add_one_mod] at h₁
       rw [mod_add_one_mod] at h₂
-      simp only [Nat.add_assoc] at h₂
+      simp [Nat.add_assoc] at h₂
       have key : ∀ k m, k ≤ L → L ≤ m → m ≤ P.n → p = P.vtx ((s + k) % P.n) →
           p = P.vtx ((s + m) % P.n) →
           p ∈ segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) := by
@@ -91,7 +92,7 @@ theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤
       · exact key (i + 1) (L + j) (by omega) (by omega) (by omega) h₁ h₂
       · exact key (i + 1) (L + (j + 1)) (by omega) (by omega) (by omega) h₁ h₂
     · exact hpc
-  · rw [segment_comm]; exact hpc
+  · rwx [segment_comm]
 
 /-! ### The hypotheses of the splitting lemma -/
 

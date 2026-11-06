@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutShSeg
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 39: a kind-0 piece, walk edge by walk edge
@@ -59,8 +62,8 @@ theorem pcSet_congr (M : Model) (sE : ℕ) (a : ℝ) {D D' : ℕ} {b b' : ℝ} {
   ext x
   simp only [mem_iUnion, List.mem_range, exists_prop]
   constructor
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [← h d (by omega)]; exact hx⟩
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [h d (by omega)]; exact hx⟩
+  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rwx [← h d (by omega)]⟩
+  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rwx [h d (by omega)]⟩
 
 theorem nat_split (k n : ℕ) : (k : ℝ) = ((k % n : ℕ) : ℝ) + ((k / n : ℕ) : ℤ) * (n : ℝ) := by
   rw [Int.cast_natCast]; exact_mod_cast (Nat.mod_add_div' k n).symm
@@ -92,16 +95,16 @@ theorem wset_decomp (M : Model) {sE : ℕ} (hn : 0 < M.W.n) {a : ℝ} (ha0 : 0 �
       have hq := nat_split q M.W.n
       have e1 : (sE : ℝ) + D + 1 = ((q % M.W.n : ℕ) : ℝ) + 0 + ((q / M.W.n : ℕ) : ℤ) * M.W.n := by
         rw [show ((q % M.W.n : ℕ) : ℝ) + 0 + ((q / M.W.n : ℕ) : ℤ) * (M.W.n : ℝ) = (q : ℝ) by
-          rw [hq]; ring]
-        simp only [q]; push_cast; ring
+          rwring [hq]]
+        simp only [q]; pcr
       have e2 : (sE : ℝ) + ↑(D + 1) + b =
           ((q % M.W.n : ℕ) : ℝ) + b + ((q / M.W.n : ℕ) : ℤ) * M.W.n := by
         rw [show ((q % M.W.n : ℕ) : ℝ) + b + ((q / M.W.n : ℕ) : ℤ) * (M.W.n : ℝ) = (q : ℝ) + b by
-          rw [hq]; ring]
-        simp only [q]; push_cast; ring
+          rwring [hq]]
+        simp only [q]; pcr
       rw [e1, e2]
       exact wset_edge M (Nat.mod_lt _ hn) le_rfl hb0 hb1 _
-    rw [← hlast, wset_union M (by linarith) (by push_cast; linarith)]
+    rw [← hlast, wset_union M (by linarith) (by pcl)]
 
 /-! ## The number of edges -/
 
@@ -161,7 +164,7 @@ theorem piece0_D_le {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
     rcases hle.lt_or_eq with hlt' | heq
     · rw [Nat.mod_eq_of_lt (by omega)]
       omega
-    · rw [heq, Nat.add_sub_cancel_left, Nat.mod_self]; omega
+    · rwo [heq, Nat.add_sub_cancel_left, Nat.mod_self]
 
 /-- **The unwrapped end** of a kind-0 piece. -/
 theorem piece0_end {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
@@ -197,7 +200,7 @@ theorem piece0_end {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
       ring
     · exfalso
       have := hnw heq.symm hxn hwt
-      exact hlt (by rw [heq]; linarith)
+      exact hlt (by rwli [heq])
 
 /-- **A kind-0 piece is the union of its edge segments.** -/
 theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
@@ -225,7 +228,7 @@ theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x
   have hxy : x.edge = y.edge := by
     unfold pcD at hD
     rcases Nat.lt_or_ge y.edge x.edge with h | h
-    · rw [Nat.mod_eq_of_lt (by omega)] at hD; omega
+    · rwo [Nat.mod_eq_of_lt (by omega)] at hD
     · rw [show y.edge + (2 * C.m + 7) - x.edge = (y.edge - x.edge) + (2 * C.m + 7) by omega,
         Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)] at hD
       omega

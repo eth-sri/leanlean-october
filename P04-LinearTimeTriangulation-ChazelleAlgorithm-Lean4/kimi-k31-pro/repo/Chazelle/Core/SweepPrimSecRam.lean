@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepPrimSec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Sweep RAM primitives (WP-D2), part 4: the left sector at a tour vertex on the RAM
@@ -38,7 +41,7 @@ def BitIs (c : Config) (r : ℕ) (p : Prop) : Prop := c.nreg r ≤ 1 ∧ (c.nreg
 
 theorem BitIs.of_eq {c c' : Config} {r r' : ℕ} {p : Prop} (h : BitIs c r p)
     (he : c'.nreg r' = c.nreg r) : BitIs c' r' p := by
-  unfold BitIs at *; rw [he]; exact h
+  unfold BitIs at *; rwx [he]
 
 theorem BitIs.congr {c : Config} {r : ℕ} {p q : Prop} (h : BitIs c r p) (hpq : p ↔ q) :
     BitIs c r q := ⟨h.1, h.2.trans hpq⟩
@@ -53,7 +56,7 @@ theorem BitIs.const_zero {c : Config} {r : ℕ} {p : Prop} (h : c.nreg r = 0) (h
     BitIs c r p := ⟨by omega, fun h' => by omega, fun h' => absurd h' hp⟩
 
 theorem bk_false {r : ℕ} (h : 10500 ≤ r) : Bk r = false := by
-  simp only [Bk, decide_eq_false_iff_not, not_and, not_lt]; omega
+  sio only [Bk, decide_eq_false_iff_not, not_and, not_lt]
 
 /-! ## Four comparison bits -/
 
@@ -246,12 +249,12 @@ theorem BitIs.of_bf {c : Config} {r : ℕ} {f : BF} {v : ℕ → Bool} {p : Prop
 /-- The orientation at the first top corner (`slitTop → top → b`). -/
 theorem det_slitTop_first (C : Chain) (b : Point) :
     det C.slitTop C.top b = (C.radius - C.top.2) * (b.1 - C.top.1) := by
-  simp only [det, Chain.slitTop]; ring
+  sir only [det, Chain.slitTop]
 
 /-- The orientation at the last top corner (`a → top → slitTop`). -/
 theorem det_slitTop_last (C : Chain) (a : Point) :
     det a C.top C.slitTop = (C.radius - C.top.2) * (C.top.1 - a.1) := by
-  simp only [det, Chain.slitTop]; ring
+  sir only [det, Chain.slitTop]
 
 theorem walk_vtx_six (C : Chain) : (chainModel C).W.vtx 6 = C.top := C.sideWalk_vtx_six _
 
@@ -283,7 +286,7 @@ theorem secFirst_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config
     (i := 0) (by simp [h121]) (by omega) (dst := 50133) (by norm_num)
   have r121₂ : c₂.nreg 50121 = 0 := by rw [f₂.1 _ (by decide)]; simp [h121]
   have e₃ := Exec.addN (P := P) e₂.wb_right 50120 50121 50032
-    (by rw [r121₂, hE₂.r32]; omega)
+    (by rwo [r121₂, hE₂.r32])
   have hE₃ := hE₂.step e₃ (by decide)
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, hE₄, sb, ib, lb, vb, -⟩ := tvLoad_exec _ hE₃
     (i := 1) (by simp [r121₂, hE₂.r32]) (by omega) (dst := 50136) (by norm_num)
@@ -317,12 +320,12 @@ theorem secFirst_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config
   have hE₇ := hE₆.frame f₇ e₇.wb_right (by decide)
   have hlen := hE.hlen
   have hsz : (BF.and (.not (.var 50143)) (.not (.var 50144))).size = 5 := rfl
-  refine ⟨c₇, _, ex, by rw [hsz] at hk₇; omega, exec_frameB ex wr_secFirst, hE₇, ?_⟩
+  refine ⟨c₇, _, ex, by rwo [hsz] at hk₇, exec_frameB ex wr_secFirst, hE₇, ?_⟩
   have v6 : (chainModel C).W.vtx (0 + 6) = C.top := walk_vtx_six C
   simp only [Ys, Xs, vv, v6, vb] at b1 b2 b3 b4
   have hR := C.top_snd_lt_radius
   have k₆₇ : ∀ r, r < 50150 → c₇.nreg r = c₆.nreg r := fun r hr =>
-    f₇.1 r (by simp only [BF.wset, decide_eq_false_iff_not]; omega)
+    f₇.1 r (by sio only [BF.wset, decide_eq_false_iff_not])
   have k₅₇ : ∀ r, r < 50145 → c₇.nreg r = c₅.nreg r := fun r hr => by
     rw [k₆₇ r (by omega), qr r (by omega) (by omega) (by omega) (by omega) (by omega)]
   have hb3 := b3.dec
@@ -350,9 +353,9 @@ theorem secFirst_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config
     have hd : 0 < C.radius - C.top.2 := by linarith
     set x := ((chainModel C).W.vtx (1 + 6)).1
     have e3 : (decide (c₆.nreg 50143 = 1)) = false ↔ ¬ (C.top.1 < x) := by
-      rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), ← hb3]; simp
+      rws [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), ← hb3]
     have e4 : (decide (c₆.nreg 50144 = 1)) = false ↔ ¬ (x < C.top.1) := by
-      rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), ← hb4]; simp
+      rws [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), ← hb4]
     rw [e3, e4]
     constructor
     · rintro ⟨h1, h2⟩
@@ -422,12 +425,12 @@ theorem secLast_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hE₇ := hE₆.frame f₇ e₇.wb_right (by decide)
   have hlen := hE.hlen
   have hsz : (BF.and (.not (.var 50147)) (.not (.var 50148))).size = 5 := rfl
-  refine ⟨c₇, _, ex, by rw [hsz] at hk₇; omega, exec_frameB ex wr_secLast, hE₇, ?_⟩
+  refine ⟨c₇, _, ex, by rwo [hsz] at hk₇, exec_frameB ex wr_secLast, hE₇, ?_⟩
   have vl : (chainModel C).W.vtx (2 * C.m + 6) = C.top := walk_vtx_last C
   simp only [Ys, Xs, vv, vl, va] at b5 b6 b7 b8
   have hR := C.top_snd_lt_radius
   have k₆₇ : ∀ r, r < 50150 → c₇.nreg r = c₆.nreg r := fun r hr =>
-    f₇.1 r (by simp only [BF.wset, decide_eq_false_iff_not]; omega)
+    f₇.1 r (by sio only [BF.wset, decide_eq_false_iff_not])
   have hb7 := b7.dec
   have hb8 := b8.dec
   refine ⟨?_, ?_, ?_, ?_, b5.of_eq (by rw [k₆₇ _ (by norm_num), qr _ (by decide) (by decide)
@@ -457,9 +460,9 @@ theorem secLast_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have hd : 0 < C.radius - C.top.2 := by linarith
     set x := ((chainModel C).W.vtx ((2 * C.m - 1) + 6)).1
     have e7 : (decide (c₆.nreg 50147 = 1)) = false ↔ ¬ (C.top.1 < x) := by
-      rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), ← hb7]; simp
+      rws [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), ← hb7]
     have e8 : (decide (c₆.nreg 50148 = 1)) = false ↔ ¬ (x < C.top.1) := by
-      rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), ← hb8]; simp
+      rws [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), ← hb8]
     rw [e7, e8]
     constructor
     · rintro ⟨h1, h2⟩
@@ -541,7 +544,7 @@ theorem secAt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hE₁ : CEnv P W H C c₁ := hE.frame (exec_frameB e₁ (B := fun r => r == 50123)
     (by decide)) e₁.wb_right (by decide)
   have q121 : c₁.nreg 50121 = i := by rw [hc₁]; simp [h121]
-  have q123 : c₁.nreg 50123 = 2 * C.m := by rw [hc₁]; simp [hE.r53]; ring
+  have q123 : c₁.nreg 50123 = 2 * C.m := by rw [hc₁]; sir [hE.r53]
   have q32 : c₁.nreg 50032 = 1 := hE₁.r32
   -- the ten bits
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, a, b, hab, hbits⟩ : ∃ c₂ k₂, Exec P W
@@ -553,21 +556,21 @@ theorem secAt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     by_cases h0 : i = 0
     · subst h0
       obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, hb⟩ := secFirst_exec c₁ hE₁ q121
-      refine ⟨c₂, _, .ifLtN_true (by rw [q121, q32]; omega) e₂, by omega, f₂, hE₂, C.slitTop,
-        (chainModel C).W.vtx (1 + 6), fun x => ?_, by rw [walk_vtx_six]; exact hb⟩
+      refine ⟨c₂, _, .ifLtN_true (by rwo [q121, q32]) e₂, by omega, f₂, hE₂, C.slitTop,
+        (chainModel C).W.vtx (1 + 6), fun x => ?_, by rwx [walk_vtx_six]⟩
       rw [sideLeft_tour_iff C (by omega), ite_eq_left rfl, ite_eq_right (by omega)]
     · by_cases h2 : i < 2 * C.m
       · obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, hb⟩ := secGen_exec c₁ hE₁ q121 (by omega) h2
-        refine ⟨c₂, _, .ifLtN_false (by rw [q121, q32]; omega)
-          (.ifLtN_true (by rw [q121, q123]; exact h2) e₂), by omega, f₂, hE₂, _, _,
+        refine ⟨c₂, _, .ifLtN_false (by rwo [q121, q32])
+          (.ifLtN_true (by rwx [q121, q123]) e₂), by omega, f₂, hE₂, _, _,
           fun x => ?_, hb⟩
         rw [sideLeft_tour_iff C hi, ite_eq_right h0, ite_eq_right (by omega)]
       · have hi2 : i = 2 * C.m := by omega
         obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, hb⟩ := secLast_exec c₁ hE₁ (by rw [q121, hi2])
-        refine ⟨c₂, _, .ifLtN_false (by rw [q121, q32]; omega)
-          (.ifLtN_false (by rw [q121, q123]; exact h2) e₂), by omega, f₂, hE₂,
+        refine ⟨c₂, _, .ifLtN_false (by rwo [q121, q32])
+          (.ifLtN_false (by rwx [q121, q123]) e₂), by omega, f₂, hE₂,
           (chainModel C).W.vtx ((2 * C.m - 1) + 6), C.slitTop, fun x => ?_,
-          by rw [hi2, walk_vtx_last]; exact hb⟩
+          by rwx [hi2, walk_vtx_last]⟩
         rw [sideLeft_tour_iff C hi, ite_eq_right h0, ite_eq_left hi2]
         subst hi2; rfl
   have w₂ := e₂.wb_right
@@ -624,7 +627,7 @@ theorem secAt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have := exec_frameB e₃ (B := fun r => r == 50140) (by decide); exact this.2.2.1)
     (fun r hr => r₃ r (by intro h; subst h; revert hr; decide))
   have hE₄ : CEnv P W H C c₄ := hE₃.frame f₄ w₄ (by decide)
-  refine ⟨_, _, ex, by rw [hszF] at hk₄; omega, exec_frameB ex wr_secAt,
+  refine ⟨_, _, ex, by rwo [hszF] at hk₄, exec_frameB ex wr_secAt,
     hE₄.keep e₅.wb_right rfl (fun r hr => by
       simp only [upd]; rw [ite_eq_right]; intro h; subst h; revert hr; decide), ?_⟩
   refine BitIs.of_bf (f := secF) (v := fun r => decide (c₃.nreg r = 1)) (by simp [v₄]) ?_

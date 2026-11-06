@@ -4,6 +4,7 @@ public import Chazelle.Core.RestoreFind
 public import Chazelle.Core.RestoreRound
 public import Chazelle.Core.RestoreCost
 public import Chazelle.Core.GranBD
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, part 6: the restoration driver — the program
@@ -150,7 +151,7 @@ theorem RF.to_frame {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : RF B (c.nreg
 def dBands : Finset ℕ := restoreBands ∪ oracleBands
 
 theorem band8 {r : ℕ} (h1 : 80000 ≤ r) (h2 : r < 90000) : bandOf r = bRestore := by
-  unfold bandOf bRestore; omega
+  ufo bandOf bRestore
 
 theorem mem_dBands_8 : bRestore ∈ dBands := by decide
 
@@ -187,7 +188,7 @@ theorem rf_of_regs' {A₀ : ℕ} {c c' : Config} {k : ℕ}
     (hr : ∀ r, bandOf r ∉ dBands → c'.nreg r = c.nreg r) (hrr : c'.rreg = c.rreg)
     (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     RF dBands A₀ c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_notin
+  have hA  := hr ALLOC alloc_notin
   exact ⟨fun r hr' _ => hr r hr', fun r _ => by rw [hrr], fun a _ => by rw [hm],
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
 

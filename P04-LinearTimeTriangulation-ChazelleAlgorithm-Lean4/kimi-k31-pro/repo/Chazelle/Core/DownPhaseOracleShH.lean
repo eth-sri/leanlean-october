@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleShG
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (E7-B): the interior shooter
@@ -14,9 +18,6 @@ cost `F`), `shI sh` is a shooter for `OkI` (chain models and the interior model 
 bands `ioBands = insert bUp oracleBands` and cost `FI F γ = 4 F γ + 3000 (⌈log₂ γ⌉ + 1) + 20000`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -80,7 +81,7 @@ theorem load_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
 
 theorem load_io {r : ℕ} (h : decide (r = 170098 ∨ r = 170099) = true) :
     bandOf r ∈ ioBands ∧ r ≠ ALLOC :=
-  io_of_band (Or.inl (by simp at h; omega))
+  io_of_band (Or.inl (by sio at h))
 
 /-- **The interior shooter.** -/
 theorem interiorShooter_of {sh : Stmt} {F : ℕ → ℕ}
@@ -99,7 +100,7 @@ theorem interiorShooter_of {sh : Stmt} {F : ℕ → ℕ}
     F₁.1 r (by simp [h1, h2])
   have Fr₁ : Frame ioBands c c₁ k₁ := frameIO_of_frameB (fun r h => load_io h) F₁ k₁
   have rk : ∀ i, i < 20 → rd c₁ bShoot i = rd c bShoot i := fun i hi =>
-    f₁ _ (by unfold bandReg bShoot; omega) (by unfold bandReg bShoot; omega)
+    f₁ _ (by ufo bandReg bShoot) (by ufo bandReg bShoot)
   have hm₁ : c₁.nmem = c.nmem := F₁.2.2.1
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by decide) (by decide)
   have r0 := rk 0 (by norm_num)
@@ -114,30 +115,30 @@ theorem interiorShooter_of {sh : Stmt} {F : ℕ → ℕ}
     (f₁ _ (by decide) (by decide)) (f₁ _ (by decide) (by decide)) (f₁ _ (by decide) (by decide))
   by_cases hk : c.nmem (c.nreg 140000) = 0
   · -- a chain descriptor: the chain shooter itself
-    have hlt : c₁.nreg 170099 < c₁.nreg 170098 := by rw [a99, a98, hk]; omega
+    have hlt : c₁.nreg 170099 < c₁.nreg 170098 := by rwo [a99, a98, hk]
     have hOk' := okModel_of_okI hMD hk hOk
     obtain ⟨c₂, k₂, e₂, hk₂, hpost, F₂⟩ := hsh P W c₁ w₁ (by
       beta_reduce
-      simp only [r0, r1, r2, r3, r4, r9, r13, hm₁, hA₁]
+      simp [r0, r1, r2, r3, r4, r9, r13, hm₁, hA₁]
       exact ⟨hG, hHW, hX, hcap, hMDWF, hreg, M, hMD, hOk', hsP, heP, hs1, he1, hin1, hin2, hwt, o,
         hol, ho₁, hof, hoA⟩) (by
       beta_reduce
       rw [r9, hA₁]
-      have : F (rd c bShoot 9) ≤ FI F (rd c bShoot 9) := by unfold FI; omega
+      have : F (rd c bShoot 9) ≤ FI F (rd c bShoot 9) := by ufo FI
       omega)
     refine ⟨c₂, _, .seq e₁ (.ifLtN_true hlt e₂), ?_, fun M' o' hM' ho' => ?_,
       (Fr₁.trans (F₂.mono oracleBands_sub_io le_rfl)).mono (by simp) (by omega)⟩
     · beta_reduce at hk₂ ⊢
       rw [r9] at hk₂
-      have : F (rd c bShoot 9) + 3 ≤ FI F (rd c bShoot 9) := by unfold FI; omega
+      have : F (rd c bShoot 9) + 3 ≤ FI F (rd c bShoot 9) := by ufo FI
       omega
-    · have hp := hpost M' o' (by rw [r0, hm₁]; exact hM') (ShotList.originIn_copy ho'
+    · have hp := hpost M' o' (by rwx [r0, hm₁]) (ShotList.originIn_copy ho'
         (f₁ _ (by decide) (by decide)) (f₁ _ (by decide) (by decide))
         (f₁ _ (by decide) (by decide)))
-      simp only [r1, r2, r3, r4, r8] at hp
+      simp [r1, r2, r3, r4, r8] at hp
       exact hp
   · -- the interior model
-    have hge : ¬ c₁.nreg 170099 < c₁.nreg 170098 := by rw [a99, a98]; omega
+    have hge : ¬ c₁.nreg 170099 < c₁.nreg 170098 := by rwo [a99, a98]
     obtain ⟨hk1, hbit, hMI⟩ : c.nmem (rd c bShoot 0) = 1 ∧
         (c.nmem (rd c bShoot 0 + 1) = 1 ↔ Mountain.LeftInside (Qof P)) ∧
         M = interiorModel (Qof P) := by
@@ -148,19 +149,19 @@ theorem interiorShooter_of {sh : Stmt} {F : ℕ → ℕ}
     have hD : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
     have hn3 : 3 ≤ (Qof P).n := by rw [hQ]; exact Chazelle.Jordan.simple_three_le hG.1
     have hmn : (interiorModel (Qof P)).W.n = (Qof P).n := mi_n
-    have hol' : o.Lt (Qof P).n (interiorModel (Qof P)) := by rw [hQ]; exact hol
-    obtain ⟨hoL, hoE, hb1, hb2⟩ := oSym_spec hD hn3 hol' (by rw [hQ]; exact hof)
+    have hol' : o.Lt (Qof P).n (interiorModel (Qof P)) := by rwx [hQ]
+    obtain ⟨hoL, hoE, hb1, hb2⟩ := oSym_spec hD hn3 hol' (by rwx [hQ])
     -- the set-up
     obtain ⟨c₂, k₂, e₂, hk₂, S₂, h70, hA₂, F₂⟩ := frontI_exec (O := O) c₁ w₁ hG hHW
       (by show (gradeCtx O).holds P c₁.nmem (rd c₁ bShoot 13) (c₁.nreg ALLOC)
-          rw [hm₁, hA₁, r13]; exact hX)
+          rwx [hm₁, hA₁, r13])
       (by show rd c₁ bShoot 9 ≤ (gradeCtx O).cap P c₁.nmem (rd c₁ bShoot 13)
-          rw [hm₁, r9, r13]; exact hcap)
+          rwx [hm₁, r9, r13])
       (by show rd c₁ bShoot 0 + 6 ≤ c₁.nreg ALLOC
           rw [hA₁, r0]; exact hMDWF.1)
       (by show c₁.nmem (rd c₁ bShoot 0 + 1) = 1 ↔ _
-          rw [hm₁, r0]; exact hbit) ho₁ hol (by
-        rw [hA₁]; have : 8 ≤ FI F (rd c bShoot 9) := by unfold FI; omega
+          rwx [hm₁, r0]) ho₁ hol (by
+        rw [hA₁]; have : 8 ≤ FI F (rd c bShoot 9) := by ufo FI
         omega)
     have w₂ := e₂.wb_right
     have se1 : (statOf P c₁ o).e₁ = rd c bShoot 1 := r1
@@ -173,12 +174,12 @@ theorem interiorShooter_of {sh : Stmt} {F : ℕ → ℕ}
     have q : QFacts (Qof P) (statOf P c₁ o).e₁ (statOf P c₁ o).h₁ (statOf P c₁ o).e₂
         (statOf P c₁ o).h₂ := by
       rw [se1, sh1, se2, sh2]
-      exact ⟨hn3, hD, by rw [← hmn]; exact hs1, by rw [← hmn]; exact he1,
-        by rw [hQ]; exact hsP, by rw [hQ]; exact heP⟩
+      exact ⟨hn3, hD, by rwx [← hmn], by rwx [← hmn],
+        by rwx [hQ], by rwx [hQ]⟩
     obtain ⟨c₃, k₃, e₃, hk₃, hhit, hno, F₃⟩ := queryI_exec hsh c₂ w₂ S₂ h70 q
-      (by rw [se1, sh1, se2, sh2, sγ]; exact hwt) (by rw [so, hoE]; exact hb1)
-      (by rw [so, hoE]; exact hb2) (by rw [so, ← hQ]; exact hoL)
-      (by rw [so, hoE, se1, sh1, se2, sh2]; exact hoA) (by
+      (by rwx [se1, sh1, se2, sh2, sγ]) (by rwx [so, hoE])
+      (by rwx [so, hoE]) (by rwx [so, ← hQ])
+      (by rwx [so, hoE, se1, sh1, se2, sh2]) (by
         rw [hA₂, hA₁, sγ]
         unfold FI at hcost
         exact room_q hcost)

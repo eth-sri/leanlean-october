@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.ClusterPhase1
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-I, part 68: the first phase, executed
@@ -19,7 +24,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
 open Classical in
 /-- **The first phase.** -/
 theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = g)
@@ -40,7 +44,7 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
   have hL : 0 < g.L := by
     by_contra h0
     have : g.L = 0 := by omega
-    rw [this] at hP; simp at hP; omega
+    rw [this] at hP; sio at hP
   have hk' : 0 < g.k' := by show 0 < min g.k g.μ; omega
   have hkμ : g.k' ≤ g.μ := min_le_right _ _
   have hN : 0 < g.N := by omega
@@ -54,109 +58,109 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
   rw [hg] at hk1 hG1
   -- stage A
   obtain ⟨c2, k2, e2, hk2, hw2, hG2, hf2, T, hA2⟩ := stageA_exec (P := P) hw1 hG1
-    (by rw [hm1]; exact hmap) hpl.1 hμ hμN hO hR hV hL hEND
+    (by rwx [hm1]) hpl.1 hμ hμN hO hR hV hL hEND
   -- stage B1
   obtain ⟨c3, k3, e3, hk3, hw3, hf3, a, ha, hB3⟩ := stageB1_exec (P := P) hw2 hG2 hA2 hμ hO hR
     hV hEND
-  have hG3 : GR g c3 := hG2.frame (fun r hr => hf3.1 r (by unfold GRReg at hr; unfold StBRG; omega))
+  have hG3 : GR g c3 := hG2.frame (fun r hr => hf3.1 r (by unfold GRReg at hr; ufo StBRG))
   have hA3 : AF g M T c3.nmem := hA2.congr ⟨hO, hR, hV⟩ (fun x hx => hf3.2.2.2.2 x (by
-    unfold KeepA at hx; omega))
+    ufo KeepA at hx))
   -- stage B2
   obtain ⟨c4, k4, e4, hk4, hw4, hf4, C, R, preE, slot, hB4⟩ := stageB2_exec (P := P) hw3 hG3 hA3
     hB3 hpl.1 hN hL hO hR hV hEND
-  have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by unfold GRReg at hr; unfold StBRG; omega))
+  have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by unfold GRReg at hr; ufo StBRG))
   have hLU' : g.L * g.U ≥ 0 := Nat.zero_le _
   have hA4 : AF g M T c4.nmem := hA3.congr ⟨hO, hR, hV⟩ (fun x hx => hf4.2.2.2.2 x (by
-    unfold KeepA at hx; omega))
+    ufo KeepA at hx))
   have hB14 : B1F g M T a ha c4.nmem := hB3.congr (fun x h1 h2 => hf4.2.2.2.2 x (by omega))
   -- stage C
   obtain ⟨c5, k5, e5, hk5, hw5, hf5, hhalf5, hpow5, ρ, hρ, hlv5, hmin5⟩ := stageC_exec (P := P)
     hw4 hG4 hk' hkμ (lev := fun v => c4.nmem (g.base 3 + v)) (fun v hv => rfl)
     (fun v hv => by have := hA4.lev ⟨v, hv⟩; have := hA4.lev_lt ⟨v, hv⟩; simp_all) hEND
-  have hG5 : GR g c5 := hG4.frame (fun r hr => hf5.1 r (by unfold GRReg at hr; unfold StCRG; omega))
-  have k45 : ∀ x, ¬ CMem g x → c5.nmem x = c4.nmem x := fun x hx => hf5.2.2.2.2 x hx
+  have hG5 : GR g c5 := hG4.frame (fun r hr => hf5.1 r (by unfold GRReg at hr; ufo StCRG))
+  have k45 : ∀ x, ¬ CMem g x → c5.nmem x = c4.nmem x := hf5.2.2.2.2
   have hA5 : AF g M T c5.nmem := hA4.congr ⟨hO, hR, hV⟩ (fun x hx => k45 x (by
-    unfold KeepA at hx; unfold CMem; omega))
-  have hB15 : B1F g M T a ha c5.nmem := hB14.congr (fun x h1 h2 => k45 x (by unfold CMem; omega))
+    unfold KeepA at hx; ufo CMem))
+  have hB15 : B1F g M T a ha c5.nmem := hB14.congr (fun x h1 h2 => k45 x (by ufo CMem))
   have hB25 : B2F g C R preE slot c5.nmem := hB4.congr (fun x hx => k45 x (by
-    unfold CMem; omega))
+    ufo CMem))
   have hlev5 : ∀ v, v < g.μ → c5.nmem (g.base 3 + v) = c4.nmem (g.base 3 + v) := fun v hv =>
-    k45 _ (by unfold CMem; omega)
+    k45 _ (by ufo CMem)
   -- stage D
   have hRn := hB25.R_n
   have hpre_lt : ∀ i, i < g.N → c5.nmem (g.base 29 + i) < g.N := fun i hi => by
-    rw [hB25.pre i hi, ← hRn]; exact hB25.R_pre.pre_lt hB25.R_ok (by rw [hRn]; exact hi)
+    rw [hB25.pre i hi, ← hRn]; exact hB25.R_pre.pre_lt hB25.R_ok (by rwx [hRn])
   have hpre_inj : ∀ i j, i < g.N → j < g.N → c5.nmem (g.base 29 + i) = c5.nmem (g.base 29 + j) →
       i = j := fun i j hi hj h => by
     rw [hB25.pre i hi, hB25.pre j hj] at h
-    exact BTree.PreInv.pre_inj hB25.R_ok hB25.R_pre (by rw [hRn]; exact hi) (by rw [hRn]; exact hj) h
-  have hlvx : ∀ l, l < g.μ → LvOK g c5.nmem (g.k' - 1 - ρ) l := hlv5
+    exact BTree.PreInv.pre_inj hB25.R_ok hB25.R_pre (by rwx [hRn]) (by rwx [hRn]) h
+  have hlvx  := hlv5
   obtain ⟨c6, k6, e6, hk6, hw6, hf6, hcnt6, hpos6, hact6, hdf6⟩ := stageD_exec (P := P) hw5 hG5
     (lev := fun v => c5.nmem (g.base 3 + v)) (hl := fun l => c5.nmem (g.base 36 + l))
     (blk := fun l => c5.nmem (g.base 35 + l)) hpre_lt hpre_inj
-    (fun v hv => hA5.first_lt v hv) (fun v hv => hA5.first_v v hv)
+    (hA5.first_lt) (hA5.first_v)
     (fun i hi => by rw [(hA5.map ⟨i, hi⟩).2.2]; exact (M.vert ⟨i, hi⟩).2) hV
     (fun v hv => rfl) (fun v hv => by have := hA5.lev ⟨v, hv⟩; have := hA5.lev_lt ⟨v, hv⟩; simp_all)
     (fun l hl => rfl)
-    (fun l hl => by obtain ⟨-, -, -, h36⟩ := hlvx l hl; rw [h36]; split_ifs <;> omega)
+    (fun l hl => by obtain ⟨-, -, -, h36⟩ := hlvx l hl; rw [h36]; splao)
     (fun l hl => rfl)
     (fun l hl hne => by
       obtain ⟨-, -, h35, h36⟩ := hlvx l hl
       rw [h35]
       rw [h36] at hne
       exact shift_div_lt hk' (by omega) hkμ hl) hEND
-  have hG6 : GR g c6 := hG5.frame (fun r hr => hf6.1 r (by unfold GRReg at hr; unfold StDRG; omega))
-  have k56 : ∀ x, ¬ DMem g x → c6.nmem x = c5.nmem x := fun x hx => hf6.2.2.2.2 x hx
+  have hG6 : GR g c6 := hG5.frame (fun r hr => hf6.1 r (by unfold GRReg at hr; ufo StDRG))
+  have k56 : ∀ x, ¬ DMem g x → c6.nmem x = c5.nmem x := hf6.2.2.2.2
   have hA6 : AF g M T c6.nmem := hA5.congr ⟨hO, hR, hV⟩ (fun x hx => k56 x (by
-    unfold KeepA at hx; unfold DMem; omega))
-  have hB16 : B1F g M T a ha c6.nmem := hB15.congr (fun x h1 h2 => k56 x (by unfold DMem; omega))
+    unfold KeepA at hx; ufo DMem))
+  have hB16 : B1F g M T a ha c6.nmem := hB15.congr (fun x h1 h2 => k56 x (by ufo DMem))
   have hB26 : B2F g C R preE slot c6.nmem := hB25.congr (fun x hx => k56 x (by
-    unfold DMem; omega))
+    ufo DMem))
   have hlv6 : ∀ l, l < g.μ → LvOK g c6.nmem (g.k' - 1 - ρ) l := fun l hl => by
     obtain ⟨h1, h2, h3, h4⟩ := hlvx l hl
     refine ⟨?_, ?_, ?_, ?_⟩
-    · rw [k56 _ (by unfold DMem; omega)]; exact h1
-    · rw [k56 _ (by unfold DMem; omega)]; exact h2
-    · rw [k56 _ (by unfold DMem; omega)]; exact h3
-    · rw [k56 _ (by unfold DMem; omega)]; exact h4
+    · rwx [k56 _ (by ufo DMem)]
+    · rwx [k56 _ (by ufo DMem)]
+    · rwx [k56 _ (by ufo DMem)]
+    · rwx [k56 _ (by ufo DMem)]
   have hSF := sfacts_of (W := W) hA6 hB16 hB26 hpl hμN hO hV hEND hL
-    (fun w hw' => by rw [k56 _ (by unfold DMem; omega)]; exact hhalf5 w hw')
-    (fun j hj => by rw [k56 _ (by unfold DMem; omega)]; exact hpow5 j hj) hk' hlv6
+    (fun w hw' => by rw [k56 _ (by ufo DMem)]; exact hhalf5 w hw')
+    (fun j hj => by rw [k56 _ (by ufo DMem)]; exact hpow5 j hj) hk' hlv6
   have hbo : ∀ w, w < g.μ → blkOf g.μ (fun v => c5.nmem (g.base 3 + v))
       (fun l => c5.nmem (g.base 36 + l)) (fun l => c5.nmem (g.base 35 + l)) w =
       boOf g c6.nmem w := fun w hw => by
     have hl := hA5.lev_lt ⟨w, hw⟩; have e := hA5.lev ⟨w, hw⟩
-    simp only at e
-    have hlw : c5.nmem (g.base 3 + w) < g.μ := by rw [e]; exact hl
-    simp only [boOf, blkOf]
-    rw [k56 (g.base 3 + w) (by unfold DMem; omega), k56 (g.base 36 + c5.nmem (g.base 3 + w))
-      (by unfold DMem; omega), k56 (g.base 35 + c5.nmem (g.base 3 + w)) (by unfold DMem; omega)]
+    simp at e
+    have hlw : c5.nmem (g.base 3 + w) < g.μ := by rwx [e]
+    simp [boOf, blkOf]
+    rw [k56 (g.base 3 + w) (by ufo DMem), k56 (g.base 36 + c5.nmem (g.base 3 + w))
+      (by ufo DMem), k56 (g.base 35 + c5.nmem (g.base 3 + w)) (by ufo DMem)]
   have hkey : ∀ w, w < g.μ → c5.nmem (g.base 29 + c5.nmem (g.base 0 + w)) =
       keyOf' g c6.nmem w := fun w hw => by
     have := hA5.first_lt w hw
-    simp only [keyOf']
-    rw [k56 (g.base 0 + w) (by unfold DMem; omega), k56 (g.base 29 + c5.nmem (g.base 0 + w))
-      (by unfold DMem; omega)]
+    simp [keyOf']
+    rw [k56 (g.base 0 + w) (by ufo DMem), k56 (g.base 29 + c5.nmem (g.base 0 + w))
+      (by ufo DMem)]
   have hm06 : ∀ x, x < g.A0 → c6.nmem x = c.nmem x := fun x hx => by
-    rw [k56 x (by unfold DMem; omega), k45 x (by unfold CMem; omega),
-      hf4.2.2.2.2 x (by omega), hf3.2.2.2.2 x (by omega), hf2.2.2.2.2 x (by unfold WrA; omega), hm1]
+    rw [k56 x (by ufo DMem), k45 x (by ufo CMem),
+      hf4.2.2.2.2 x (by omega), hf3.2.2.2.2 x (by omega), hf2.2.2.2.2 x (by ufo WrA), hm1]
   refine ⟨c6, k1 + (k2 + (k3 + (k4 + (k5 + k6)))),
-    .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6)))), by unfold cost1; omega, hw6, hG6,
+    .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6)))), by ufo cost1, hw6, hG6,
     fun r hr => ?_, by rw [hf6.2.1, hf5.2.1, hf4.2.1, hf3.2.1, hf2.2.1, hrr1],
     by rw [hf6.2.2.1, hf5.2.2.1, hf4.2.2.1, hf3.2.2.1, hf2.2.2.1, hrm1],
     by rw [hf6.2.2.2.1, hf5.2.2.2.1, hf4.2.2.2.1, hf3.2.2.2.1, hf2.2.2.2.1, ho1], hm06,
     T, a, ha, C, R, _, preE, slot, ρ, ⟨hSF, hA6.head_le, hlv6, hρ, fun r hr => ?_,
     fun b hb => ?_, fun v hv => ?_, fun v hv hbv => ?_, hdf6, hA6.map,
     fun u hu => ⟨hA6.first_lt u hu, hA6.first_v u hu⟩, hA6.zero⟩⟩
-  · rw [hf6.1 r (by unfold StDRG; omega), hf5.1 r (by unfold StCRG; omega),
-      hf4.1 r (by unfold StBRG; omega), hf3.1 r (by unfold StBRG; omega),
-      hf2.1 r (by unfold StARG; omega), hr1 r (by unfold SetRG; omega)]
+  · rw [hf6.1 r (by ufo StDRG), hf5.1 r (by ufo StCRG),
+      hf4.1 r (by ufo StBRG), hf3.1 r (by ufo StBRG),
+      hf2.1 r (by ufo StARG), hr1 r (by ufo SetRG)]
   · have h1 : ∀ v, v < g.μ → c6.nmem (g.base 3 + v) % g.k' = c4.nmem (g.base 3 + v) % g.k' :=
-      fun v hv => by rw [k56 _ (by unfold DMem; omega), hlev5 v hv]
+      fun v hv => by rw [k56 _ (by ufo DMem), hlev5 v hv]
     rw [cntBelow_congr h1, cntBelow_congr h1]; exact hmin5 r hr
   · rw [hcnt6 b hb]; exact cntLt_congr hbo
   · rw [hpos6 v hv, hbo v hv, plPos_congr hbo hkey hv]
-  · have := hact6 v hv (by rw [hbo v hv]; exact hbv)
+  · have := hact6 v hv (by rwx [hbo v hv])
     rw [plPos_congr hbo hkey hv] at this; exact this
 
 end proofs

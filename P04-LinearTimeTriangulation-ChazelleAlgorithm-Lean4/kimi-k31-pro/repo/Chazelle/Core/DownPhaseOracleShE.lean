@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleQPlan
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (E7-B, RAM part 12): the parameters of the sub-queries and the answer
@@ -12,9 +14,6 @@ public import Chazelle.Core.DownPhaseOracleQPlan
   `140012` (`outI_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -120,15 +119,15 @@ theorem setTwoB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   unfold setTwoB
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [hS.r1, hS.r18]; omega
+  · config_simp; rwo [hS.r1, hS.r18]
   · omega
   by_cases h : s.e₁ + 2 < P.n
-  · refine spec_ifLtN_true (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
+  · refine spec_ifLtN_true (by config_simp; rwx [hS.r1, hS.r18, hS.r10]) ?_
     refine spec_skip ‹_› ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
     · rw [hS.r1, hS.r18, Nat.mod_eq_of_lt h]
     · rw [hS.r18]
     · rw [hS.r18]
-  · refine spec_ifLtN_false (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
+  · refine spec_ifLtN_false (by config_simp; rwx [hS.r1, hS.r18, hS.r10]) ?_
     exec_block
     refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
     · rw [hS.r1, hS.r18, hS.r10, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
@@ -163,9 +162,9 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
   · refine spec_ifLtN_true g ?_
     exec_block
     · omega
-    refine ⟨by omega, fun h => by config_simp at h, fun _ => hb3 (by rw [hS.r11] at g; omega)⟩
+    refine ⟨by omega, fun h => by config_simp at h, fun _ => hb3 (by rwo [hS.r11] at g)⟩
   refine spec_ifLtN_false g ?_
-  obtain ⟨sb, t, hsb, hbs, hfh, hev⟩ := hb2 (by rw [hS.r11] at g; omega)
+  obtain ⟨sb, t, hsb, hbs, hfh, hev⟩ := hb2 (by rwo [hS.r11] at g)
   have hbsQ := hbs
   rw [← hQ] at hn
   obtain ⟨hpp, hlt, hpos⟩ := iPos_spec hD hn hbsQ
@@ -173,7 +172,7 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
   cases sb with
   | vtx q =>
     obtain ⟨k0, kq⟩ := hsb
-    refine spec_ifLtN_true (by rw [k0, hS.r11]; omega) ?_
+    refine spec_ifLtN_true (by rwo [k0, hS.r11]) ?_
     unfold outV
     refine spec_seq ?_
     exec_block
@@ -188,11 +187,11 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
       rw [kq]; exact hS.ivv q
     refine ⟨by omega, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
     · config_simp; rw [hiv]; rw [hQ] at hpp; exact hpp
-    · config_simp; rw [hiv, mi_n]; exact hlt
-    · config_simp; rw [hiv]; exact hpos
+    · config_simp; rwx [hiv, mi_n]
+    · config_simp; rwx [hiv]
   | onEdge e h =>
     obtain ⟨k0, ke, kh⟩ := hsb
-    refine spec_ifLtN_false (by rw [k0, hS.r11]; omega) ?_
+    refine spec_ifLtN_false (by rwo [k0, hS.r11]) ?_
     unfold outE
     refine spec_seq ?_
     exec_block
@@ -201,7 +200,7 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
     have hh : h < P.n := by have := hbs.2.1; rw [hQ] at this; exact this
     obtain ⟨c₂, k₂, e₂, hk₂, i96, ir, im, irr, irm, io⟩ := iEdgeF_exec (P := P) _ w
       (by config_simp; exact hS.r11) (by config_simp; exact hS.r10) (by config_simp; exact hS.r19)
-      (by config_simp; rw [ke]; omega)
+      (by config_simp; rwo [ke])
     refine spec_seq ⟨c₂, k₂, e₂, ?_⟩
     have w₂ := e₂.wb_right
     have b73 : c₂.nreg 170073 = h := by rw [ir _ (by decide) (by decide)]; config_simp; exact kh
@@ -210,11 +209,11 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
       rw [i96]; config_simp; rw [ke, ← hS.iev e]
     exec_block
     · omega
-    · config_simp; rw [b73, b11]; omega
+    · config_simp; rwo [b73, b11]
     refine ⟨by omega, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
     · config_simp; rw [hie, b73, b11]; rw [hQ] at hpp; exact hpp
-    · config_simp; rw [hie, mi_n]; exact hlt
-    · config_simp; rw [hie, b73, b11]; exact hpos
+    · config_simp; rwx [hie, mi_n]
+    · config_simp; rwx [hie, b73, b11]
 
 
 end exec

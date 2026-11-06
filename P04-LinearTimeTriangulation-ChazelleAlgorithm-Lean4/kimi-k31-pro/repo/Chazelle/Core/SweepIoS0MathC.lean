@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepIoS0MathB
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The side-0 answer cases (sweep, `Side0MathSpec`), part 3: rays along a chord of `F₂⁺`
@@ -44,10 +46,10 @@ theorem F₂plus_origin {S₂ : Set (Set Point)} {e : Set Point} (he : e ∈ F�
     exact ⟨_, -1, Or.inr rfl, hfr, rfl, Or.inr (Or.inr ⟨c₀, hc₀', Or.inr ⟨rfl, rfl⟩⟩)⟩
   · exact ⟨J.shared, σ, hσ, hfr, rfl, Or.inl rfl⟩
   · have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
-      rw [Merge.Junction.whole_vertex_add]; rfl
+      rwr [Merge.Junction.whole_vertex_add]
     refine ⟨J.right.top, σ, hσ, ?_, ?_, Or.inr (Or.inl rfl)⟩
-    · rw [← hv]; exact hfr
-    · rw [← hv]; rfl
+    · rwx [← hv]
+    · rwr [← hv]
 
 /-- **A ray along a shot chord from its far end.** -/
 theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Point} {σ d : ℝ}
@@ -59,7 +61,7 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
       (∀ p ∈ e, p.2 = z.2) := by
   obtain ⟨y, l, r, hH, hy, hcd, -, -⟩ := Merge.augChords_spec he
   have hmem : ∀ p : Point, p ∈ e ↔ p.2 = y ∧ l ≤ p.1 ∧ p.1 ≤ r := by
-    intro p; rw [hcd]; rfl
+    intro p; rwr [hcd]
   have hlr := hH.lt
   have hends : ∀ p ∈ e, p ∉ J.whole.dom → p.1 = l ∨ p.1 = r := by
     intro p hp hpD
@@ -98,7 +100,7 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
         have hs2 := min_le_right (δ / 2) ((z.1 - r) / 2)
         have := (hray s hs0 (by linarith)).2.2
         rcases hσ with rfl | rfl <;> nlinarith
-    have hze : z ∈ e := (hmem z).2 ⟨hzy, hz1⟩
+    have hze  := (hmem z).2 ⟨hzy, hz1⟩
     have hs0 : (0 : ℝ) < min (δ / 2) ((r - l) / 2) := lt_min (by linarith) (by linarith)
     have hs1 := min_le_left (δ / 2) ((r - l) / 2)
     have h := hray (min (δ / 2) ((r - l) / 2)) hs0 (by linarith)
@@ -123,11 +125,11 @@ theorem along_end {e : Set Point} (he : e ∈ Merge.augChords J.whole) {z o : Po
         first | (exfalso; exact hoz1 (by linarith)) | linarith
     · rw [rayPt_snd, hzy, hoy]
   have hg : Genuine J.whole z σ τ :=
-    genuine_along_chord J.whole he hze hzD hσ hτ0 (by rw [hwo]; exact hoe) (by rw [hwo]; exact hoD)
+    genuine_along_chord J.whole he hze hzD hσ hτ0 (by rwx [hwo]) (by rwx [hwo])
   have hT : J.whole.hitParam z σ = τ :=
-    ((genuine_iff J.whole (by rw [hzy]; exact hy) hσ).1 hg).2
+    ((genuine_iff J.whole (by rwx [hzy]) hσ).1 hg).2
   -- the shot from the origin ends at `z`
-  have ho2 : o.2 ≤ J.whole.top.2 := by rw [hoy]; exact hy
+  have ho2 : o.2 ≤ J.whole.top.2 := by rwx [hoy]
   obtain ⟨hτo, hhD, -⟩ := Merge.hit_of_freeAt J.whole ho2 hd hfo
   have hhe : rayPt o d (J.whole.hitParam o d) ∈ e := by
     rw [heo]; exact Geometry.right_mem_segment _ _
@@ -167,11 +169,11 @@ theorem arrival_of_attach {W : Polygon} {e : Set Point} {p : ℕ} {t : ℝ} {z :
   refine ⟨hp, ht0, ht1, hpt, ?_⟩
   rw [neg_neg]
   obtain ⟨s, ⟨hse, hsr⟩, hs0⟩ := ((hev.and (Ioo_mem_nhdsGT hr)).and self_mem_nhdsWithin).exists
-  have hs0' : (0 : ℝ) < s := hs0
-  have hdist : dist (rayPt z σ s) z = s := dist_rayPt z hσ hs0'.le
+  have hs0'  := hs0
+  have hdist  := dist_rayPt z hσ hs0'.le
   have h1 : sideLeft W p t (rayPt z σ s) := by
     refine hcl _ hse ?_ ?_
-    · rw [hpt]; intro h; rw [h, dist_self] at hdist; linarith
+    · rw [hpt]; intro h; rwli [h, dist_self] at hdist
     · rw [hpt, hdist]; exact hsr.2
   rw [← hpt] at h1 ⊢
   exact (sideLeft_rayPt_iff W p t σ hs0' one_pos).1 h1
@@ -197,20 +199,20 @@ theorem endOrigin_big (Q : Polygon) (N : NF) {j : ℕ} (hj : N.nChords ≤ j / 2
       rfl
     have hpar : (chainModel J.right).param Q ⟨0, 0 + 1⟩ = 0 := by
       show (if ((chainModel J.right).wa 0).2 = ((chainModel J.right).wb 0).2 then 0 else _) = _
-      rw [ite_eq_left (by rw [hwa, hwb]; rfl)]
+      rw [ite_eq_left (by rwr [hwa, hwb])]
     unfold Model.pos
-    simp only [hpar, Geometry.lerp_zero]
+    simp [hpar, Geometry.lerp_zero]
     exact hwa
   have hset : (N.chord (j / 2)).toSet (chainModel J.right) Q =
       hseg (Q.vtx 0).2 J.right.slitTop.1 J.right.slitTop.1 := by
     rw [hch]
     unfold CRec.toSet CRec.lpos CRec.rpos
-    simp only
+    simp
     rw [hpos]
   unfold endOrigin
   split_ifs
-  · rw [hset, Merge.lend_hseg le_rfl]; rfl
-  · rw [hset, Merge.rend_hseg le_rfl]; rfl
+  · rwr [hset, Merge.lend_hseg le_rfl]
+  · rwr [hset, Merge.rend_hseg le_rfl]
 
 end
 

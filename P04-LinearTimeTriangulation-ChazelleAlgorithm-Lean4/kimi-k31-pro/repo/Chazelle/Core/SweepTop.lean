@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepBracketT
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), part 10: labels from faced sides (top chords, shared chords, the start)
@@ -51,8 +54,8 @@ theorem rlabel_before0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hC := corr_right0 J hP hS₂ hS₂f
   obtain ⟨δ, hδ, -, h1b⟩ := hW
   obtain ⟨δ₂, hδ₂, -, h2b⟩ := hW₂
-  have hn0 : 0 < (chainModel J.whole).W.n := hC.n_pos
-  have hn₂ : 0 < (chainModel J.right).W.n := hC.n₂_pos
+  have hn0  := hC.n_pos
+  have hn₂  := hC.n₂_pos
   set P := (6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n with hPdef
   set P' := (P + (chainModel J.whole).W.n - 1) % (chainModel J.whole).W.n with hP'def
   have hPm : (6 + tpos J.whole J.m₁ + (d - 1)) % (chainModel J.whole).W.n = P' := by
@@ -70,7 +73,7 @@ theorem rlabel_before0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
   have hs3 : s < 1 := lt_of_lt_of_le hs.2 (min_le_right _ _)
   refine ⟨d - 1, by omega, 1 - s, ⟨by linarith, by linarith [hs.1]⟩, ?_, ?_, ?_⟩
-  · rw [hPm, show ((P' : ℕ) : ℝ) + (1 - s) = ((P' : ℕ) : ℝ) + 1 - s by ring]; exact hnc
+  · rwx [hPm, show ((P' : ℕ) : ℝ) + (1 - s) = ((P' : ℕ) : ℝ) + 1 - s by ring]
   · rw [hPm]; exact h1b rfl s hs.1 hs1
   · rw [hPm₂]; exact h2b rfl s hs.1 hs2
 
@@ -132,7 +135,7 @@ theorem tie_unlabelled (hP : J.P.Simple) {Q : Polygon}
   rintro V ⟨d'', hd'', t'', ht'', hnc, hfG, -⟩
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs  := hC.hF
   set W := (chainModel J.whole).W with hWdef
   set g := 6 + tpos J.whole J.m₁ with hgdef
   set A := (g + d) % W.n with hAdef
@@ -227,7 +230,7 @@ theorem touches_of_sideOf {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augCh
   obtain ⟨y, a, b, hH, -, hcdef, -, -⟩ := Merge.augChords_spec (hS₂ hc)
   have hab := hH.lt
   have hz : (((a + b) / 2, y) : Point) ∈ c := by
-    rw [hcdef]; exact ⟨rfl, by simp only; linarith, by simp only; linarith⟩
+    rw [hcdef]; exact ⟨rfl, by sil only, by sil only⟩
   have hzD : (((a + b) / 2, y) : Point) ∈ (chainModel J.right).D :=
     hH.open_mem _ (by linarith) (by linarith)
   exact touches_of_side hz hzD (hVs _ hz hzD)
@@ -306,7 +309,7 @@ theorem bracket_tie (hP : J.P.Simple) {Q : Polygon}
       off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) ≠ 0 → False := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs  := hC.hF
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
@@ -346,7 +349,7 @@ theorem bracket_tie (hP : J.P.Simple) {Q : Polygon}
   rcases hfe with hz | ⟨hLz, hz⟩
   · have hB0' : 0 < o (pb + tb) := lt_of_le_of_ne (off_nonneg kB0 hgn) (Ne.symm hB0)
     have := no_cross_off hM hFs hF.1 hff he (Ne.symm hef) hfF hfA (Ne.symm hfne) hB hW hg0 hgn
-      (by rw [hz]; linarith) (by rw [hz]; exact hB0') hBA
+      (by rwli [hz]) (by rwx [hz]) hBA
     linarith [this.2]
   · rcases hoZ with h | h
     · linarith

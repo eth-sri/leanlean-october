@@ -131,7 +131,7 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
         sideInArc (ea + fa) (eb + fb) (p + t)} =
         ↑(Finset.Ico (max ea lo) (min (keyCeil eb fb) hi)) := by
       ext p
-      simp only [mem_ofPred_eq, Finset.coe_Ico, mem_Ico, mem_arcEdges_iff, ite_eq_left h,
+      simp [mem_ofPred_eq, Finset.coe_Ico, mem_Ico, mem_arcEdges_iff, ite_eq_left h,
         lt_key_iff hfb, key_lt_succ_iff hfa, max_le_iff, lt_min_iff]
       constructor
       · rintro ⟨hp, hcp, h3, h4⟩
@@ -144,7 +144,7 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
         sideInArc (ea + fa) (eb + fb) (p + t)} =
         ↑(Finset.Ico lo hi \ Finset.Ico (max (keyCeil eb fb) lo) (min ea hi)) := by
       ext p
-      simp only [mem_ofPred_eq, Finset.coe_sdiff, Finset.coe_Ico, mem_sdiff, mem_Ico,
+      simp [mem_ofPred_eq, Finset.coe_sdiff, Finset.coe_Ico, mem_sdiff, mem_Ico,
         mem_arcEdges_iff, ite_eq_right h, lt_key_iff hfb, key_lt_succ_iff hfa, max_le_iff,
         lt_min_iff]
       constructor
@@ -155,7 +155,7 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
         refine ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, ?_⟩; omega
     rw [hset, ncard_coe_finset, Finset.card_sdiff_of_subset, Nat.card_Ico, Nat.card_Ico]
     intro p
-    simp only [Finset.mem_Ico, max_le_iff, lt_min_iff]
+    simp [Finset.mem_Ico, max_le_iff, lt_min_iff]
     omega
 
 /-- **The weight of an arc between two walk positions** of the walk proper (parameters in
@@ -182,7 +182,7 @@ theorem chainModel_n (C : Chain) : (chainModel C).W.n = 2 * C.m + 7 :=
 
 /-- The walk of the interior model has `n` edges. -/
 theorem interiorModel_n (Q : Polygon) : (interiorModel Q).W.n = Q.n := by
-  simp only [interiorModel, interiorWalk]
+  simp [interiorModel, interiorWalk]
   split_ifs <;> simp [Polygon.n]
 
 /-- The interior model counts every walk edge. -/

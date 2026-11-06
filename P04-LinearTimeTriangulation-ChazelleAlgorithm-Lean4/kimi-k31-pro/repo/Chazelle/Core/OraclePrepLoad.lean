@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OraclePrepSort
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 2: loading the constants
@@ -92,7 +95,7 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     exec_block
     all_goals (try omega)
     exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
-      by config_simp; rfl, by config_simp; rfl, rfl⟩
+      by csr, by csr, rfl⟩
   obtain ⟨a10, a11, a12, a48, a28, a13, a14, m₁⟩ := v₁
   have f₁ := exec_frameB e₁ (B := BPL) (by decide)
   -- the chain descriptor and the areas
@@ -105,10 +108,10 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     have w₁ := e₁.wb_right
     unfold qLoadB
     exec_block
-    all_goals (config_simp; (try simp only [a11, a13, a14, m₁, hd2, Nat.add_assoc] at *); (try norm_num); (try omega))
+    all_goals (config_simp; (try simp [a11, a13, a14, m₁, hd2, Nat.add_assoc] at *); (try norm_num); (try omega))
   obtain ⟨b15, b16, b17, b18, b19, b20, b29, b43, b44, b45, b46, b47⟩ := v₂
   have f₂ := exec_frameB e₂ (B := BLdB) wr_qLoadB
-  have g₂ : ∀ r, BLdB r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have g₂  := f₂.1
   have w₂ := e₂.wb_right
   have m₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans m₁
   -- sideS and the top vertex
@@ -116,8 +119,8 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       c₃.nreg 120021 = (if c.nmem (D + 4) = 1 then C.topIdx else 2 * C.m - C.topIdx) ∧
       c₃.nreg 120022 = (C.s + C.topIdx) % P.n ∧
       (∀ r, r ≠ 120021 → r ≠ 120022 → c₃.nreg r = c₂.nreg r) ∧ c₃.nmem = c₂.nmem := by
-    have h11 : c₂.nreg 120011 = 1 := by rw [g₂ _ (by decide)]; exact a11
-    have h10 : c₂.nreg 120010 = P.n := by rw [g₂ _ (by decide)]; exact a10
+    have h11 : c₂.nreg 120011 = 1 := by rwx [g₂ _ (by decide)]
+    have h10 : c₂.nreg 120010 = P.n := by rwx [g₂ _ (by decide)]
     obtain ⟨c₁', k₁', e₁', hk₁', v₁', r₁'⟩ : ∃ c₁' k₁', Exec P W (ifEq 120018 120011
         (.instr (.copyN 120021 120017)) (.instr (.subN 120021 120019 120017))) c₂ c₁' k₁' ∧
         k₁' ≤ 5 ∧ c₁'.nreg 120021 = (if c.nmem (D + 4) = 1 then C.topIdx else 2 * C.m - C.topIdx) ∧
@@ -127,20 +130,20 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
         exact ⟨cc, _, ifEq_eq_exec (by rw [b18, h11, hb]) ec, by omega,
           by rw [vc, b17, ite_eq_left hb], rc⟩
       · obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (S := .instr (.copyN 120021 120017))
-          (show c₂.nreg 120018 ≠ c₂.nreg 120011 by rw [b18, h11]; exact hb)
+          (show c₂.nreg 120018 ≠ c₂.nreg 120011 by rwx [b18, h11])
           (Exec.subN (P := P) w₂ 120021 120019 120017)
         refine ⟨_, _, e', by omega, ?_, fun r hr => ?_⟩
         · config_simp; rw [b19, b17, ite_eq_right hb]
         · config_simp; rw [Machine.upd_other _ _ _ hr]
     have w₁' := e₁'.wb_right
     obtain ⟨cA, eA, vA, rA, mA⟩ := add_exec (P := P) w₁' 120022 120015 120017 (by
-      rw [r₁' _ (by decide), r₁' _ (by decide), b15, b17]; omega)
+      rwo [r₁' _ (by decide), r₁' _ (by decide), b15, b17])
     rw [r₁' _ (by decide), r₁' _ (by decide), b15, b17] at vA
     obtain ⟨cB, kB, eB, hkB, vB, rB, mB, -⟩ := modSub_exec (P := P) (r := 120022) (nr := 120010)
-      (by decide) cA eA.wb_right (by rw [vA, rA _ (by decide), r₁' _ (by decide), h10]; omega)
+      (by decide) cA eA.wb_right (by rwo [vA, rA _ (by decide), r₁' _ (by decide), h10])
     rw [vA, rA _ (by decide), r₁' _ (by decide), h10] at vB
     have v21' : cB.nreg 120021 = (if c.nmem (D + 4) = 1 then C.topIdx else 2 * C.m - C.topIdx) := by
-      rw [rB _ (by decide), rA _ (by decide)]; exact v₁'
+      rwx [rB _ (by decide), rA _ (by decide)]
     refine ⟨cB, _, .seq e₁' (.seq eA eB), by omega, v21', vB, fun r h1 h2 => ?_, ?_⟩
     · rw [rB r h2, rA r h2, r₁' r h1]
     · rw [mB, mA]
@@ -150,11 +153,11 @@ theorem pLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   obtain ⟨c₄, k₄, e₄, hk₄, v30, v39, r₄⟩ : ∃ c₄ k₄, Exec P W pLoadD c₃ c₄ k₄ ∧ k₄ = 3 ∧
       c₄.nreg 120030 = N.arcs.length ∧ c₄.nreg 120039 = N.chords.length ∧
       (∀ r, r ≠ 120190 → r ≠ 120030 → r ≠ 120039 → c₄.nreg r = c₃.nreg r) := by
-    have h14 : c₃.nreg 120014 = NB := by rw [r₃ _ (by decide) (by decide), g₂ _ (by decide)]; exact a14
-    have h11 : c₃.nreg 120011 = 1 := by rw [r₃ _ (by decide) (by decide), g₂ _ (by decide)]; exact a11
+    have h14 : c₃.nreg 120014 = NB := by rwx [r₃ _ (by decide) (by decide), g₂ _ (by decide)]
+    have h11 : c₃.nreg 120011 = 1 := by rwx [r₃ _ (by decide) (by decide), g₂ _ (by decide)]
     unfold pLoadD
     exec_block
-    · rw [h14, h11]; omega
+    · rwo [h14, h11]
     · refine ⟨rfl, ?_, ?_, fun r h1 h2 h3 => ?_⟩
       · config_simp; rw [h14, h11, m₃, m₂]; exact hNF.2.1
       · config_simp; rw [h14, m₃, m₂]; exact hNF.1

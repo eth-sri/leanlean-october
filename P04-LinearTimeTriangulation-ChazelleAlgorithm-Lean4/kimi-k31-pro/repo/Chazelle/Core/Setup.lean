@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.SpecPhases
 public import Chazelle.Programs.Tactics
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # WP-L: the setup phase
@@ -81,7 +84,7 @@ theorem ceilBeta_eq (i : ℕ) : Cost.ceilBeta i = (i + 4) / 5 := by
 theorem pow_topGrade_le {n : ℕ} (hn : 1 ≤ n) : 2 ^ topGrade n ≤ 2 * n := by
   unfold topGrade
   rcases Nat.eq_zero_or_pos (Nat.clog 2 (n - 1)) with h0 | hpos
-  · rw [h0]; omega
+  · rwo [h0]
   · have hlt : 2 ^ (Nat.clog 2 (n - 1) - 1) < n - 1 :=
       (Nat.lt_clog_iff_pow_lt (by norm_num)).mp (by omega)
     have : 2 ^ Nat.clog 2 (n - 1) = 2 * 2 ^ (Nat.clog 2 (n - 1) - 1) := by
@@ -173,7 +176,7 @@ theorem initS_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c) 
   · omega
   · refine ⟨rfl, ⟨‹_›, ⟨fun r hr h1 h2 => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, rfl, rfl,
       by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
-      by config_simp; rfl, by config_simp; exact Nat.zero_le _⟩, by config_simp⟩
+      by csr, by config_simp; exact Nat.zero_le _⟩, by config_simp⟩
     simp (disch := omega) only [Machine.upd_other]
 
 
@@ -194,20 +197,20 @@ theorem loopA_spec {P : Polygon} {W : ℕ} (c0 c : Config) (hI : InvA W P.n c0 c
         exact htest
       have hpow : 2 ^ (c.nreg 20004 + 1) ≤ 2 ^ topGrade P.n := Nat.pow_le_pow_right (by norm_num) hlt
       have hpow' : 2 ^ (c.nreg 20004 + 1) = 2 ^ c.nreg 20004 + 2 ^ c.nreg 20004 := by
-        rw [pow_succ]; ring
+        rwring [pow_succ]
       have hq : c.nreg 20004 < 2 ^ c.nreg 20004 := Nat.lt_two_pow_self
       exec_block
-      · rw [h3]; omega
-      · config_simp; rw [h1]; omega
+      · rwo [h3]
+      · config_simp; rwo [h1]
       · obtain ⟨hr, hrr, hrm, ho, hmem⟩ := hfr
         refine ⟨⟨‹_›, ⟨fun r hr' h1' h2' => ?_, hrr, hrm, ho, hmem⟩, hA, hm, by config_simp; exact h0,
           by config_simp; exact h1, by config_simp; exact h2, by config_simp; exact h9,
           by config_simp; exact h13, ?_, ?_⟩, by omega, ?_⟩
         · simp (disch := omega) only [Machine.upd_other]; exact hr r hr' h1' h2'
-        · config_simp; rw [h1, h3, pow_succ]; ring
-        · config_simp; rw [h1]; omega
-        · config_simp; rw [h1]; omega) hI
-  refine ⟨c', k, he, by rw [hq0] at hk; omega, hI', ?_⟩
+        · config_simp; rwring [h1, h3, pow_succ]
+        · config_simp; rwo [h1]
+        · config_simp; rwo [h1]) hI
+  refine ⟨c', k, he, by rwo [hq0] at hk, hI', ?_⟩
   obtain ⟨-, -, -, -, -, -, h2, -, -, h3, h4⟩ := hI'
   refine le_antisymm h4 ?_
   unfold topGrade
@@ -224,23 +227,23 @@ theorem headerS_spec {P : Polygon} {W : ℕ} (c0 c : Config) (hI : InvA W P.n c0
   obtain ⟨hw, ⟨hr, hrr, hrm, ho, hmem⟩, hA, hm, h0, h1, h2, h9, h13, h3, h4⟩ := hI
   unfold headerS
   exec_block
-  · config_simp; rw [hA, h1]; omega
-  · config_simp; rw [hA, h13]; omega
-  · config_simp; rw [hA, h1]; omega
-  · config_simp; rw [hA, h1, hp]; omega
-  · config_simp; rw [hA, h1, hp, h13]; omega
+  · config_simp; rwo [hA, h1]
+  · config_simp; rwo [hA, h13]
+  · config_simp; rwo [hA, h1]
+  · config_simp; rwo [hA, h1, hp]
+  · config_simp; rwo [hA, h1, hp, h13]
   · omega
   · omega
   · omega
   · omega
-  · config_simp; rw [hp, h13]; omega
+  · config_simp; rwo [hp, h13]
   · refine ⟨rfl, ⟨‹_›, ⟨fun r hr' h1' h2' => ?_, hrr, hrm, ho, fun a ha => ?_⟩, rfl,
       by config_simp; exact h0, by config_simp; exact h1, by config_simp; exact h9,
       by config_simp; exact h13, by config_simp; exact hp, by config_simp; exact hA,
-      by config_simp; rw [hp, h13], by config_simp; omega, by config_simp; rfl,
-      by config_simp; rw [hA, h1], by config_simp; rw [hA, h1, hp, h13]; omega,
+      by config_simp; rw [hp, h13], by cso, by csr,
+      by config_simp; rw [hA, h1], by config_simp; rwo [hA, h1, hp, h13],
       by config_simp, by config_simp, by config_simp; rw [hA, h13],
-      ?_, ?_, fun j hj => by config_simp at hj; omega⟩, by config_simp⟩
+      ?_, ?_, fun j hj => by cso at hj⟩, by config_simp⟩
     · simp (disch := omega) only [Machine.upd_other]; exact hr r hr' h1' h2'
     · config_simp
       rw [hA, h1, hp]
@@ -251,7 +254,7 @@ theorem headerS_spec {P : Polygon} {W : ℕ} (c0 c : Config) (hI : InvA W P.n c0
       simp (disch := omega) only [Machine.upd_other, Machine.upd_same]
     · config_simp
       rw [hA, h1, hp]
-      simp only [Machine.upd_same]
+      simp [Machine.upd_same]
 
 
 /-- An `if` with a false condition. -/
@@ -302,11 +305,11 @@ theorem bodyB_post {W n S : ℕ} {c0 c c' : Config} (hI : InvB W n S c0 c)
   · rw [hreg _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
       (by decide)]; exact g6
   · omega
-  · rw [h3, h5, g3, pow_succ]; ring
+  · rwring [h3, h5, g3, pow_succ]
   · omega
   · omega
   · rw [h7, h5]
-  · rw [h5]; omega
+  · rwo [h5]
   · omega
   · rw [hmem', iteF (by omega), iteF (by omega)]; exact gm0
   · rw [hmem', iteF (by omega), iteF (by omega)]; exact gm1
@@ -334,34 +337,34 @@ theorem bodyB_spec {P : Polygon} {W S : ℕ} (c0 c : Config) (hI : InvB W P.n S 
   have hpl := topGrade_lt hn
   have hpow : 2 ^ (c.nreg 20005 + 1) ≤ 2 ^ (topGrade P.n + 2) :=
     Nat.pow_le_pow_right (by norm_num) (by omega)
-  have hpow2 : 2 ^ (topGrade P.n + 2) = 4 * 2 ^ topGrade P.n := by rw [pow_add]; ring
+  have hpow2 : 2 ^ (topGrade P.n + 2) = 4 * 2 ^ topGrade P.n := by rwring [pow_add]
   have hpow' : 2 ^ (c.nreg 20005 + 1) = 2 ^ c.nreg 20005 + 2 ^ c.nreg 20005 := by
-    rw [pow_succ]; ring
+    rwring [pow_succ]
   unfold bodyB
   refine spec_seq ?_
   exec_block
-  · rw [g3]; omega
-  · config_simp; rw [g10, g1]; omega
-  · config_simp; rw [g11, g1]; omega
-  · config_simp; rw [gA, g13]; omega
-  · config_simp; rw [g1]; omega
+  · rwo [g3]
+  · config_simp; rwo [g10, g1]
+  · config_simp; rwo [g11, g1]
+  · config_simp; rwo [gA, g13]
+  · config_simp; rwo [g1]
   · by_cases hT : c.nreg 20008 < 1
     · refine spec_seq ?_
-      refine spec_ifLtN_true (by config_simp; rw [g1]; exact hT) ?_
+      refine spec_ifLtN_true (by config_simp; rwx [g1]) ?_
       exec_block
-      · config_simp; rw [g7, g1]; omega
-      · config_simp; rw [g9]; omega
+      · config_simp; rwo [g7, g1]
+      · config_simp; rwo [g9]
       · refine ⟨bodyB_post hI0 ‹_› (fun r a b c d e f g => ?_) rfl rfl rfl ?_ hlt
           (by config_simp) (by config_simp; rw [g1]) (by config_simp; rw [g1])
           (by config_simp; rw [g13]) (by config_simp; rw [g1]) ?_ ?_, by omega, ?_, ?_⟩
         · config_simp; simp (disch := omega) only [Machine.upd_other]
         · config_simp
-        · config_simp; rw [g7, g1]; omega
-        · config_simp; rw [g1, g9]; omega
-        · config_simp; rw [g1]; omega
-        · config_simp; rw [g13]; omega
+        · config_simp; rwo [g7, g1]
+        · config_simp; rwo [g1, g9]
+        · config_simp; rwo [g1]
+        · config_simp; rwo [g13]
     · refine spec_seq ?_
-      refine spec_ifLtN_false (by config_simp; rw [g1]; exact hT) ?_
+      refine spec_ifLtN_false (by config_simp; rwx [g1]) ?_
       refine spec_skip ‹_› ?_
       exec_block
       refine ⟨bodyB_post hI0 ‹_› (fun r a b c d e f g => ?_) rfl rfl rfl ?_ hlt
@@ -369,10 +372,10 @@ theorem bodyB_spec {P : Polygon} {W S : ℕ} (c0 c : Config) (hI : InvB W P.n S 
         (by config_simp; rw [g13]) (by config_simp; rw [g1]) ?_ ?_, by omega, ?_, ?_⟩
       · config_simp; simp (disch := omega) only [Machine.upd_other]
       · config_simp
-      · config_simp; rw [g7]; omega
-      · config_simp; rw [g1]; omega
-      · config_simp; rw [g1]; omega
-      · config_simp; rw [g13]; omega
+      · config_simp; rwo [g7]
+      · config_simp; rwo [g1]
+      · config_simp; rwo [g1]
+      · config_simp; rwo [g13]
 
 
 /-- The table loop writes both tables. -/
@@ -384,7 +387,7 @@ theorem loopB_spec {P : Polygon} {W S : ℕ} (c0 c : Config) (hI : InvB W P.n S 
     (body := bodyB) (InvB W P.n S c0) (fun c => topGrade P.n + 2 - c.nreg 20005) 11
     (fun c => c.nreg 9999) (fun c h => h.1)
     (fun c h htest => bodyB_spec c0 c h htest hn hW) hI
-  refine ⟨c', k, he, by rw [hi] at hk; omega, hI', ?_, hΨ⟩
+  refine ⟨c', k, he, by rwo [hi] at hk, hI', ?_, hΨ⟩
   obtain ⟨-, -, -, -, -, -, -, -, -, h6, hle, -⟩ := hI'
   rw [h6] at ht
   omega
@@ -407,7 +410,7 @@ theorem prog_meets : SetupSpec := by
   obtain ⟨c3, k3, e3, hk3, hI3, hi3⟩ := headerS_spec c c2 hI2 hq2 (by nlinarith)
   have hA3 : c3.nreg 9999 = c.nreg 9999 + 2 := by
     have := hI3.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
-    rw [hi3] at this; omega
+    rwo [hi3] at this
   obtain ⟨c4, k4, e4, hk4, hI4, hi4, hΨ⟩ := loopB_spec c c3 hI3 hi3 (by omega) (by nlinarith)
   obtain ⟨hw4, ⟨hr, hrr, hrm, ho, hmem⟩, -, -, -, -, -, -, g12, -, -, -, -, -, -, -, gA, gm0,
     gm1, gmj⟩ := hI4
@@ -417,7 +420,7 @@ theorem prog_meets : SetupSpec := by
   refine ⟨_, k1 + (k2 + (k3 + (k4 + 1))), e1.seq (e2.seq (e3.seq (e4.seq e5))), by nlinarith,
     ?_, ?_⟩
   · rw [hAL, hc0]
-    simp only [Machine.upd_same, ne_eq, not_false_eq_true, Machine.upd_other,
+    simp [Machine.upd_same, ne_eq, not_false_eq_true, Machine.upd_other,
       Nat.reduceEqDiff]
     rw [g12, gA, hi4]
     intro m hm
@@ -427,10 +430,10 @@ theorem prog_meets : SetupSpec := by
     · rw [hr' _ (by omega)]; exact gm1
     · rw [hr' _ (by omega), hr' _ (by omega), ceilBeta_eq]
       exact gmj i (by omega)
-  · refine ⟨fun r hr1 hr2 => ?_, fun r _ => congrFun hrr r, fun a ha => hmem a ha,
+  · refine ⟨fun r hr1 hr2 => ?_, fun r _ => congrFun hrr r, hmem,
       fun a _ => congrFun hrm a,
       ho, ?_, ?_⟩
-    · simp only [phaseBands, bandOf, Finset.mem_Icc, not_and_or, not_le] at hr1
+    · simp [phaseBands, bandOf, Finset.mem_Icc, not_and_or, not_le] at hr1
       rw [hAL] at hr2
       simp (disch := omega) only [Machine.upd_other]
       exact hr r (by omega) hr2 (by omega)

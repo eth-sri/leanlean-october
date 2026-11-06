@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.UpPhase8
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-J up phase, part 9: the invariants of the grade table
@@ -83,10 +86,10 @@ theorem chainWF_of_node {m : ℕ → ℕ} {A hp d f γ : ℕ} {C : Chain} (hn : 
   obtain ⟨hd, -, hdh, hd5, hhp, hfit, -⟩ := hN
   have hQn : (Qof P).n = P.n := shear_n _ _
   refine ⟨hd5, fun H C' hC => ?_⟩
-  have hH' : H = Host.whole P.n := hostAt_unique hC.1 (by rw [hdh]; exact hH)
+  have hH' : H = Host.whole P.n := hostAt_unique hC.1 (by rwx [hdh])
   subst hH'
-  refine ⟨by simp [Host.whole], hostWF_whole hn, by rw [hdh]; simp [Host.whole]; omega, ?_⟩
-  have hs : C'.s = C.s := hC.2.2.1.symm.trans hd.2.2.1
+  refine ⟨by simp [Host.whole], hostWF_whole hn, by rsio [hdh] [Host.whole], ?_⟩
+  have hs  := hC.2.2.1.symm.trans hd.2.2.1
   have hP : C'.P = Qof P := by
     rw [hC.2.1]; have := L41.poly_whole (Qof P) (by omega); rw [hQn] at this; exact this
   rw [hs, hP, hQn]; have := C.one_le; omega

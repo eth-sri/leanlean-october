@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OraclePrepLib
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 4: walk keys in natural arithmetic
@@ -88,8 +91,8 @@ theorem vaIdx_succ_ne {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
     have hX : (S + i) % (2 * C.m) < 2 * C.m := Nat.mod_lt _ (by omega)
     generalize (S + i) % (2 * C.m) = X at hX ⊢
     rcases Nat.lt_or_ge (X + 1) (2 * C.m) with h | h
-    · rw [Nat.mod_eq_of_lt h]; unfold sideE; split_ifs <;> omega
-    · rw [show X + 1 = 2 * C.m by omega, Nat.mod_self]; unfold sideE; split_ifs <;> omega
+    · rw [Nat.mod_eq_of_lt h]; unfold sideE; splao
+    · rw [show X + 1 = 2 * C.m by omega, Nat.mod_self]; unfold sideE; splao
   rw [hk, hk']
   have hkm : k ≤ C.m := by rw [← hk]; exact Chazelle.Chain.sideE_le (Nat.mod_lt _ (by omega)).le
   have hkm' : k' ≤ C.m := by rw [← hk']; exact Chazelle.Chain.sideE_le (Nat.mod_lt _ (by omega)).le
@@ -98,10 +101,10 @@ theorem vaIdx_succ_ne {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
   rcases hkk with rfl | rfl
   · have := Nat.sub_mod_eq_zero_of_mod_eq h.symm
     rw [show C.s + (k + 1) - (C.s + k) = 1 by omega] at this
-    rw [Nat.one_mod_eq_zero_iff] at this; omega
+    rwo [Nat.one_mod_eq_zero_iff] at this
   · have := Nat.sub_mod_eq_zero_of_mod_eq h
     rw [show C.s + (k' + 1) - (C.s + k') = 1 by omega] at this
-    rw [Nat.one_mod_eq_zero_iff] at this; omega
+    rwo [Nat.one_mod_eq_zero_iff] at this
 
 /-- The walk edges `6 … 2 m + 6` are not horizontal. -/
 theorem walk_nonhoriz (hD : DistinctHeights C.P) {w : ℕ} (h6 : 6 ≤ w) (h7 : w ≤ 2 * C.m + 6) :
@@ -230,7 +233,7 @@ noncomputable def mirW1 (w : ℕ) : ℕ :=
 noncomputable def mirPos (w hc : ℕ) : WPos :=
   if nz C w hc = 0 then ⟨mirW0 C w, 0⟩ else ⟨mirW1 C w, hc⟩
 
-theorem rT_def : (rT C : ℝ) + 6 = κT C := by unfold κT; ring
+theorem rT_def : (rT C : ℝ) + 6 = κT C := by ufring κT
 
 /-- **The tour reversal**: the mirrored walk edge runs along the same chain edge backwards. -/
 theorem rev_idx {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
@@ -248,9 +251,9 @@ theorem rev_idx {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
   -- the mirrored tour index
   obtain ⟨i', hi', hi'M⟩ : ∃ i', mirW1 C w - 6 = i' ∧ (i' = (if i < R then R - 1 - i else R + M - 1 - i)) := by
     refine ⟨_, rfl, ?_⟩
-    unfold mirW1; split_ifs <;> omega
+    unfold mirW1; splao
   have e1 : mirW1 C w + 1 - 6 = i' + 1 := by
-    have : 6 ≤ mirW1 C w := by unfold mirW1; split_ifs <;> omega
+    have : 6 ≤ mirW1 C w := by unfold mirW1; splao
     omega
   rw [e1, hi', show w + 1 - 6 = i + 1 by omega]
   -- the residues
@@ -271,7 +274,7 @@ theorem rev_idx {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
     rw [← Nat.add_assoc, Nat.add_mod, hYd, Nat.mod_eq_of_lt (show 1 < M by omega)]
   rw [hYd, hXd, e2, e3, hXY]
   have sym : ∀ j, j ≤ M → sideE C.m (M - j) = sideE C.m j := by
-    intro j hj; unfold sideE; split_ifs <;> omega
+    intro j hj; unfold sideE; splao
   constructor
   · rcases Nat.lt_or_ge (X + 1) M with h | h
     · rw [Nat.mod_eq_of_lt h, show M - 1 - X = M - (X + 1) by omega, sym _ h.le]
@@ -298,20 +301,20 @@ theorem mir_key (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w <
   · -- a vertex position
     have hpar := (param_eq_zero_iff C hD h6 h7.le hh).2 h0
     rw [show (chainModel C).key C.P ⟨w, hc⟩ = w by rw [key_eq_param, hpar, add_zero], key_zero]
-    have hm0 : 6 ≤ mirW0 C w ∧ mirW0 C w ≤ 2 * C.m + 6 := by unfold mirW0; split_ifs <;> omega
+    have hm0 : 6 ≤ mirW0 C w ∧ mirW0 C w ≤ 2 * C.m + 6 := by unfold mirW0; splao
     refine ⟨?_, by simp [Model.param], by simp [Model.param], Nat.zero_le _, hm0.1, hm0.2,
       fun h => absurd h0 h⟩
     unfold mk mirW0
     by_cases hw : w ≤ 6 + rT C
     · have hw' : (w : ℝ) ≤ κT C := by rw [← hT]; exact_mod_cast (show w ≤ rT C + 6 by omega)
-      rw [ite_eq_left hw, ite_eq_left hw', Nat.cast_sub (by omega)]; push_cast; rw [← hT]; ring
+      rw [ite_eq_left hw, ite_eq_left hw', Nat.cast_sub (by omega)]; push_cast; rwring [← hT]
     · have hw' : ¬ (w : ℝ) ≤ κT C := by
         rw [← hT]; push Not; exact_mod_cast (show rT C + 6 < w by omega)
-      rw [ite_eq_right hw, ite_eq_right hw', Nat.cast_sub (by omega)]; push_cast; rw [← hT]; ring
+      rw [ite_eq_right hw, ite_eq_right hw', Nat.cast_sub (by omega)]; push_cast; rwring [← hT]
   · -- an inner position
     have hc0 : hc ≠ 0 := fun e => h0 (by unfold nz; rw [ite_eq_left (Or.inl e)])
     obtain ⟨h, rfl⟩ : ∃ h, hc = h + 1 := ⟨hc - 1, by omega⟩
-    have hm1 : 6 ≤ mirW1 C w ∧ mirW1 C w < 2 * C.m + 6 := by unfold mirW1; split_ifs <;> omega
+    have hm1 : 6 ≤ mirW1 C w ∧ mirW1 C w < 2 * C.m + 6 := by unfold mirW1; splao
     obtain ⟨r1, r2⟩ := rev_idx C h6 h7
     have ht := param_of_ne C hD h6 h7.le h
     have ht' := param_of_ne C hD hm1.1 hm1.2.le h
@@ -326,10 +329,10 @@ theorem mir_key (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w <
     have hba : a - b ≠ 0 := fun e => hab (by linarith)
     set t := (chainModel C).param C.P ⟨w, h + 1⟩ with htdef
     have hpt : (chainModel C).param C.P ⟨mirW1 C w, h + 1⟩ = 1 - t := by
-      rw [ht', ht]; field_simp; ring
+      rw [ht', ht]; fsr
     have ht0 : t ≠ 0 := fun e => h0 ((param_eq_zero_iff C hD h6 h7.le hh).1 e)
-    have htp : 0 < t := lt_of_le_of_ne hp.1 (Ne.symm ht0)
-    refine ⟨?_, by rw [hpt]; linarith [hp.2], by rw [hpt]; linarith, hh, hm1.1, hm1.2.le,
+    have htp  := lt_of_le_of_ne hp.1 (Ne.symm ht0)
+    refine ⟨?_, by rw [hpt]; linarith [hp.2], by rwli [hpt], hh, hm1.1, hm1.2.le,
       fun _ => by rw [hpt]; linarith [hp.2]⟩
     rw [key_eq_param, key_eq_param, hpt, ← htdef]
     unfold mk mirW1
@@ -338,12 +341,12 @@ theorem mir_key (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w <
         rw [← hT]
         have : (w : ℝ) + 1 ≤ rT C + 6 := by exact_mod_cast (show w + 1 ≤ rT C + 6 by omega)
         linarith [hp.2]
-      rw [ite_eq_left hw, ite_eq_left hw', Nat.cast_sub (by omega)]; push_cast; rw [← hT]; ring
+      rw [ite_eq_left hw, ite_eq_left hw', Nat.cast_sub (by omega)]; push_cast; rwring [← hT]
     · have hw' : ¬ (w : ℝ) + t ≤ κT C := by
         rw [← hT]; push Not
         have : (rT C : ℝ) + 6 ≤ w := by exact_mod_cast (show rT C + 6 ≤ w by omega)
         linarith
-      rw [ite_eq_right hw, ite_eq_right hw', Nat.cast_sub (by omega)]; push_cast; rw [← hT]; ring
+      rw [ite_eq_right hw, ite_eq_right hw', Nat.cast_sub (by omega)]; push_cast; rwring [← hT]
 
 /-- The normalised code of the mirror is its height code. -/
 theorem nz_mir (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6)
@@ -353,7 +356,7 @@ theorem nz_mir (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w < 
   obtain ⟨-, -, -, ph, e6, e7, hpos⟩ := mir_key C hD h6 h7 hh hp
   by_cases h0 : nz C w hc = 0
   · have : (mirPos C w hc).hgt = 0 := by unfold mirPos; rw [ite_eq_left h0]
-    rw [this]; unfold nz; simp
+    rw [this]; ufs nz
   · have hp0 := hpos h0
     have hne : nz C (mirPos C w hc).edge (mirPos C w hc).hgt ≠ 0 := fun e =>
       hp0.ne' ((param_eq_zero_iff C hD e6 e7 ph).2 e)
@@ -392,7 +395,7 @@ theorem inI_iff (hD : DistinctHeights C.P) {w hc : ℕ} (hw : w < 2 * C.m + 7) (
         · right; refine ⟨?_, by exact_mod_cast b⟩
           exact_mod_cast (show rT C + 6 < w by omega)
     · have ht0 : t ≠ 0 := fun e => h0 ((param_eq_zero_iff C hD hin.1 hin.2.le hh).1 e)
-      have htp : 0 < t := lt_of_le_of_ne hp.1 (Ne.symm ht0)
+      have htp  := lt_of_le_of_ne hp.1 (Ne.symm ht0)
       rw [ite_eq_right h0]
       simp only [hin, and_self, iff_true]
       have h6 : (6 : ℝ) ≤ w := by exact_mod_cast hin.1
@@ -406,7 +409,7 @@ theorem inI_iff (hD : DistinctHeights C.P) {w hc : ℕ} (hw : w < 2 * C.m + 7) (
         linarith
   · have hfalse : ¬ ((if nz C w hc = 0 then (6 < w ∧ w < 6 + rT C) ∨
         (6 + rT C < w ∧ w < 2 * C.m + 6) else 6 ≤ w ∧ w < 2 * C.m + 6)) := by
-      split_ifs <;> omega
+      splao
     simp only [hfalse, iff_false]
     rcases Nat.lt_or_ge w 6 with h | h
     · have : (w : ℝ) + 1 ≤ 6 := by exact_mod_cast (show w + 1 ≤ 6 by omega)
@@ -414,7 +417,7 @@ theorem inI_iff (hD : DistinctHeights C.P) {w hc : ℕ} (hw : w < 2 * C.m + 7) (
       · linarith [hp.2]
       · linarith [hp.2, (Nat.cast_nonneg (rT C) : (0 : ℝ) ≤ _)]
     · have hw' : w = 2 * C.m + 6 := by omega
-      have : (2 * C.m + 6 : ℝ) = w := by rw [hw']; push_cast; ring
+      have : (2 * C.m + 6 : ℝ) = w := by rw [hw']; pcr
       have hRl : (rT C : ℝ) + 1 ≤ 2 * C.m := by exact_mod_cast hR
       rintro (⟨-, b⟩ | ⟨-, b⟩)
       · linarith [hp.1]

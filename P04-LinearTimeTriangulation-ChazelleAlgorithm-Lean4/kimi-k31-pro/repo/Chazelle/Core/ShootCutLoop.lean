@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.ShootCutPath
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-G, part 22: the main loop
@@ -13,9 +15,6 @@ public import Chazelle.Core.ShootCutPath
   the whole loop, from the first walk vertex `U₀` to the final one `F` (`F - U₀ < 2m + 7`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -61,10 +60,10 @@ theorem resid_gap {n U F : ℕ} (hn : 0 < n) (hU : U < F) (hF : F < U + n) :
   split_ifs at e with h
   · rw [e]; constructor
     · omega
-    · rw [ite_eq_left (by omega)]; omega
+    · rwo [ite_eq_left (by omega)]
   · rw [e]; constructor
     · omega
-    · rw [ite_eq_right (by omega)]; omega
+    · rwo [ite_eq_right (by omega)]
 
 /-! ## The piece through the uncounted block -/
 
@@ -76,8 +75,8 @@ theorem uPc_ok (P : Polygon) (C : Chain) (m₀ : ℕ → ℕ) (h γ : ℕ) : PcO
     Or.inl rfl, fun _ => ?_, fun h1 => by simp [uPc] at h1⟩
   have := wt_U_to_six C (Qof P) (n := P.n) (x := ⟨2 * C.m + 6, 0⟩) (proper_vtx' P C _)
     (Or.inr rfl)
-  simp only [uPc, key_hgt0] at this ⊢
-  rw [this]; omega
+  simp [uPc, key_hgt0] at this ⊢
+  rwo [this]
 
 /-- **The step through the uncounted block.** -/
 theorem uStep_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
@@ -98,18 +97,18 @@ theorem uStep_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Pro
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl⟩
     all_goals first | (config_simp; rw [h32]; done) | (config_simp; rw [h96]; done) |
       (config_simp; done) | skip
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    simp [upd]; split_ifs <;> first | rfl | omega
   have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
   have hR : PcRegs d₁ (uPc m) := ⟨v50, v51, v52, v53, v54, fun h => by simp [uPc] at h⟩
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp, mem₂⟩ := hE.run _ (uPc m) d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
   have q96 : d₂.nreg 150096 = 6 := by
-    rw [kp _ (by unfold Keep; omega), r₁ _ (by omega), h96]
+    rw [kp _ (by ufo Keep), r₁ _ (by omega), h96]
   have e₃ := Exec.copyN (P := P) e₂.wb_right 150040 150096
   refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega,
     hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), by config_simp; rw [q96],
     fun r hr h1 => ?_, fun a ha => ?_⟩
   · config_simp
-    rw [upd_other _ _ _ h1, kp r hr, r₁ r (by unfold Keep at hr; omega)]
+    rw [upd_other _ _ _ h1, kp r hr, r₁ r (by ufo Keep at hr)]
   · config_simp; rw [mem₂ a ha, m₁]
 
 /-- **The loop flag**: `150042 := [c ≠ f]`. -/

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.RestoreTEnv
+public import Chazelle.UnfoldTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # WP-E, the candidate test on the RAM, part 21: the start of a run
@@ -32,7 +34,7 @@ theorem walk_le_W {m : ℕ → ℕ} {MD A : ℕ} (hMD : ModelDescAt m MD (Qof P)
   have hm := C'.m_lt
   have e : C.m = C'.m := by
     have := congrArg (fun M : Model => M.W.n) (hM.symm.trans hM')
-    simp only [chainModel_n'] at this
+    simp [chainModel_n'] at this
     omega
   unfold hostWords at hW
   omega
@@ -73,13 +75,13 @@ theorem tSetup_exec (hw : WordsBounded W c) (hMD : c.nreg 83000 + 6 ≤ c.nreg A
     exec_block
     · omega
     · omega
-    · config_simp; omega
+    · cso
     · refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, ?_, rfl, rfl,
         rfl, rfl⟩
       intro r h1 h2 h3 h4
       simp [upd, h1, h2, h3, h4]
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by ufo ALLOC)
+    (by ufo ALLOC) (by ufo ALLOC) (by ufo ALLOC)
   refine ⟨c', k, ex, hk, ⟨ex.wb_right, fun q h1 h2 => hr q (by omega) (by omega) (by omega)
     (by omega), by omega, fun a _ => by rw [hm], q20, q21, q22, q23⟩, ?_⟩
   exact rf_of_regs (fun r hr' => hr r (by omega) (by omega) (by omega) (by omega)) hrr hm hrm ho

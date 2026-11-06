@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.SweepEvWinM2
 public import Chazelle.Core.RestoreFPGood
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 16000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 3: the window of the event loop (task C1)
@@ -34,13 +39,13 @@ def κW (D : ℕ) : ℕ := 30000 + 22062 * (D + 1)
 theorem DecOut.congr {J : Merge.Junction} {Pw : Prop} {d₀ eE hE : ℕ} {c c' : Config}
     (h : DecOut J Pw d₀ eE hE c) (hX : c'.nreg wX = c.nreg wX) (hE' : c'.nreg wE = c.nreg wE)
     (hH : c'.nreg wH = c.nreg wH) : DecOut J Pw d₀ eE hE c' := by
-  unfold DecOut at *; rw [hX, hE', hH]; exact h
+  unfold DecOut at *; rwx [hX, hE', hH]
 
 theorem gatherK_single_le {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hNF : IsNF M Q N)
     {D : ℕ} (hD : M.DegLe (N.F M Q) D) {r : ℕ} (hr : r < N.nRegions) :
     gatherK N [r] ≤ 33 + 22062 * (D + 1) := by
   have := Restore.region_arcs_le hM hNF hD hr
-  simp only [gatherK, regK, arcK, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+  simp [gatherK, regK, arcK, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
   nlinarith
 
 
@@ -72,8 +77,6 @@ theorem wr_of_gathW {q : ℕ} (h : GathW q) : WR q := by
   rw [e1, e2] at h; rw [e3, e4, e5, e6]; rw [e7, e8, e9, e10, e11] at h
   omega
 
-set_option maxHeartbeats 16000000 in
-set_option maxRecDepth 20000 in
 /-- **Task C1: the window.** -/
 theorem winTask : WinTask := by
   refine ⟨win, κW, ?_⟩
@@ -87,8 +90,8 @@ theorem winTask : WinTask := by
   generalize hKdef : κW (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) = K at hroom hcost0 ⊢
   have hcost : 12 + ((5500 * (c₀.nreg TLR + 1) + 9) + (16 + (1 + (22100 +
       ((33 + 22062 * (c₀.nreg (sw 6) + 1)) + 10))))) ≤ K := hcost0
-  have hn₁ : 0 < (chainModel J.left).W.n := by rw [win_n₁_eq]; omega
-  refine IRS.mono (IRS.seq (wKeyS_irs (P := P) hI E.hM hpw.1 hP E.hWn hkdE) ?_) hcost (fun _ h => h)
+  have hn₁ : 0 < (chainModel J.left).W.n := by rwo [win_n₁_eq]
+  refine IRS.mono (IRS.seq (wKeyS_irs (P := P) hI E.hM hpw.1 hP E.hWn hkdE) ?_) hcost (fun _ => id)
   rintro c₁ hI₁ - - ⟨v1D, v1E, o1, m1⟩
   have a1 : c₁.nreg ALLOC = c.nreg ALLOC := o1 _ (by rne) (by rne)
   have k1H : c₁.nreg kH = c.nreg kH := o1 _ (by rne) (by rne)
@@ -124,7 +127,7 @@ theorem winTask : WinTask := by
     have hq' : 240000 ≤ q ∧ q < 250000 ∧ q ≠ wO ∧ q ≠ wT ∧ q ≠ wA ∧ q ≠ wR ∧ q ≠ wEE ∧
         q ≠ wEH ∧ q ≠ wCh := by
       rcases hq with h | h | h <;> subst h <;>
-        simp only [sw, wE1, kH, wD, wO, wT, wA, wR, wEE, wEH, wCh] <;> omega
+        simp [sw, wE1, kH, wD, wO, wT, wA, wR, wEE, wEH, wCh] <;> omega
     obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9⟩ := hq'
     rw [k4 q h9, e3 q h1 h2 h3 h4 h5 h6 h7 h8]
   have hE4 : c₄.nreg wE1 = ke₁ J (c.nreg kE) := by rw [e4 _ (by simp), v1E]
@@ -155,9 +158,9 @@ theorem winTask : WinTask := by
     · rw [k4 _ (by rne), r3]
     · rw [k4 _ (by rne), r4]
   have hnoA : bandOf ALLOC ∉ oracleBands := fun h => alloc_not_io (oracle_sub h)
-  have hwA : ¬ WR ALLOC := by unfold WR ALLOC sw; omega
+  have hwA : ¬ WR ALLOC := by ufo WR ALLOC sw
   refine IRS.seq (bodyS_irs E hI₄ (by rw [hE4]; exact Nat.mod_lt _ hn₁) hpx4 h6x
-    (by rw [hO4]; exact ho2) har4 hl1' hl2' hch (win_room_body hroom hcost a4)) ?_
+    (by rwx [hO4]) har4 hl1' hl2' hch (win_room_body hroom hcost a4)) ?_
   rintro c₅ hI₅ - - ⟨o', ho', ⟨w1, w2, w3, w4⟩, hne5, hemp5, k5, m5⟩
   have hR : c₅.nreg wR < N₁.nRegions := by
     rw [w2]; exact (arc_mem_region hNF (NFLoc.seq_lt hNF ho')).1
@@ -170,11 +173,11 @@ theorem winTask : WinTask := by
     intro q hq h'
     unfold GathW GSet at h'
     rcases hq with h | h | h <;> subst h <;>
-      simp only [wX, wE, wH, gL, gC, gNF, wGB, wGK, sw] at h' <;> omega
+      simp [wX, wE, wH, gL, gC, gNF, wGB, wGK, sw] at h' <;> omega
   have kg : ∀ q, (q = wX ∨ q = wE ∨ q = wH) → c₆.nreg q = c₅.nreg q := by
     intro q hq
     have h1 : 240000 ≤ q ∧ q < 250000 ∧ q ≠ ALLOC := by
-      rcases hq with h | h | h <;> subst h <;> simp only [wX, wE, wH, ALLOC, sw] <;> omega
+      rcases hq with h | h | h <;> subst h <;> simp [wX, wE, wH, ALLOC, sw] <;> omega
     exact g6 q (not_oracle_sw h1.1 h1.2.1) (ng q hq) h1.2.2
   have hx4 : (chainModel J.left).key (Qof P) ⟨c₄.nreg wE1, c₄.nreg kH⟩ =
       (chainModel J.left).key (Qof P) ⟨ke₁ J (c.nreg kE), c.nreg kH⟩ := by rw [hE4, hH4]
@@ -186,9 +189,9 @@ theorem winTask : WinTask := by
     (fun hF => by rw [kg _ (by simp)]; exact hemp5 hF)
     (by rw [w2] at g4; exact g4)
   rw [← w2] at wm3
-  refine ⟨[c₅.nreg wR], by simp, fun r hr => by rw [List.mem_singleton.1 hr]; exact hR, g2,
-    by rw [← a5]; exact g1, g3, g4, wm1, wm2, wm3, fun a ha => ?_, fun r hr hw hra => ?_⟩
-  · rw [g5 a (by rw [a5]; exact ha), m5, hm4]
+  refine ⟨[c₅.nreg wR], by simp, fun r hr => by rwx [List.mem_singleton.1 hr], g2,
+    by rwx [← a5], g3, g4, wm1, wm2, wm3, fun a ha => ?_, fun r hr hw hra => ?_⟩
+  · rw [g5 a (by rwx [a5]), m5, hm4]
   · rw [g6 r hr (fun h => hw (wr_of_gathW h)) hra, k5 r hr hw,
       k4 r (ne_of_wr hw (wr_sw (by norm_num) (by norm_num))),
       k3 r (ne_of_wr hw (wr_sw (by norm_num) (by norm_num))) (ne_of_wr hw (wr_sw (by norm_num) (by norm_num)))

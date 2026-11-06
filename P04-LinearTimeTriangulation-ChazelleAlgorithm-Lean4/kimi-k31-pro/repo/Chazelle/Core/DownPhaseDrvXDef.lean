@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.DownPhaseDrvRExtSpec
 public import Chazelle.Core.DownPhaseMathHR1
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down phase, extraction (D6): the index arithmetic of the extraction RAM
@@ -127,12 +130,12 @@ theorem tK_eq_of_ge {m T : ℕ} {β : Bool} {p : ℕ} (h : m ≤ tU m T β p) :
 theorem tK_eq_zero_iff {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) :
     tK m T β p = 0 ↔ tU m T β p = 0 := by
   have := tU_lt (T := T) β hm p
-  unfold tK sideE; split_ifs <;> omega
+  unfold tK sideE; splao
 
 theorem tK_eq_m_iff {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) :
     tK m T β p = m ↔ tU m T β p = m := by
   have := tU_lt (T := T) β hm p
-  unfold tK sideE; split_ifs <;> omega
+  unfold tK sideE; splao
 
 /-- The last walk edge (up the slit) has the tour position of the first one. -/
 theorem tU_last (m T : ℕ) (β : Bool) : tU m T β (2 * m + 6) = tU m T β 6 := by
@@ -150,10 +153,10 @@ theorem ivB_ivB (li : Bool) {n p : ℕ} (hp : p < n) : ivB li n (ivB li n p) = p
 theorem qE_qE (li : Bool) {n e : ℕ} (he : e < n) : qE li n (qE li n e) = e := by
   unfold qE
   cases li
-  · simp only [Bool.false_eq_true, ite_false]
+  · simp [Bool.false_eq_true, ite_false]
     by_cases h : e + 1 < n
-    · rw [ite_eq_left h, ite_eq_left (by omega)]; omega
-    · rw [ite_eq_right h, ite_eq_right (by omega)]; omega
+    · rwo [ite_eq_left h, ite_eq_left (by omega)]
+    · rwo [ite_eq_right h, ite_eq_right (by omega)]
   · simp
 
 end

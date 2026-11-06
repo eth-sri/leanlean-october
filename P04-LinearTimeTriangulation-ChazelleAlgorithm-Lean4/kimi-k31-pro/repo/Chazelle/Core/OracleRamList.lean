@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.OracleRamNode
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), RAM part 6: the scan of the nodes of `D*`
@@ -32,7 +36,7 @@ def dstarS : Stmt := .seq (.instr (.constN 120100 0)) (.whileLtN 120100 120035 d
 def BD (r : ℕ) : Bool := BN r || decide (r = 120090) || decide (120100 ≤ r ∧ r ≤ 120101)
 
 theorem BD_const (r : ℕ) (h1 : 120010 ≤ r) (h2 : r ≤ 120049) : BD r = false := by
-  simp only [BD, BN, BA, BW, BE, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+  sio only [BD, BN, BA, BW, BE, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]
 
 /-- The cost of the listed nodes from the `i`-th on. -/
 def dstarCostFrom (m : ℕ → ℕ) (V : QV) (i : ℕ) : ℕ :=
@@ -64,7 +68,7 @@ theorem dstarBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
       dstarCostFrom c₀.nmem V (c'.nreg 120100) + k + 2 ≤ dstarCostFrom c₀.nmem V (c.nreg 120100) := by
   set i := c.nreg 120100 with hi_def
   have hin : i < V.nD := by rw [h.q.nD] at ht; exact ht
-  have hmem : c.nmem = c₀.nmem := h.fr.2.2.1
+  have hmem  := h.fr.2.2.1
   -- 1. read the node
   obtain ⟨c₁, k₁, e₁, hk₁, v₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.addN 120101 120034 120100, .loadN 120090 120101]) c c₁ k₁ ∧ k₁ = 2 ∧
@@ -72,7 +76,7 @@ theorem dstarBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
         c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output) := by
     have hw := h.wb
     exec_block
-    · rw [h.q.DL]; omega
+    · rwo [h.q.DL]
     · refine ⟨rfl, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
       · config_simp; rw [h.q.DL, hmem]
       · config_simp; upd_solve
@@ -88,15 +92,15 @@ theorem dstarBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
   have hm₁ : c₁.nmem = c₀.nmem := m₁.trans hmem
   -- 2. scan it
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hit₂⟩ := nodeScan_exec (P := P) hG hW hs c₁ e₁.wb_right hq₁ hb₁
-    (by rw [hm₁]; exact hm) (S := S ∪ dstarPts c₀.nmem V C i) (by rw [hbo₁]; exact h.hit)
+    (by rwx [hm₁]) (S := S ∪ dstarPts c₀.nmem V C i) (by rw [hbo₁]; exact h.hit)
   rw [x90, hm₁] at hk₂ hit₂
-  have R₂ : ∀ r, BN r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have R₂  := f₂.1
   have hq₂ : QConst P V c₂ := hq₁.frame f₂ BN_const
   -- 3. next
   have x100 : c₂.nreg 120100 = i := (R₂ _ (by decide)).trans (r₁ _ (by decide) (by decide))
-  have hW1 : i + 1 ≤ W := by have := h.wb.1 120035; rw [h.q.nD] at this; omega
+  have hW1 : i + 1 ≤ W := by have := h.wb.1 120035; rwo [h.q.nD] at this
   obtain ⟨c₃, e₃, v₃, r₃, m₃⟩ := add_exec (P := P) e₂.wb_right 120100 120100 120011
-    (by rw [x100, hq₂.one]; exact hW1)
+    (by rwx [x100, hq₂.one])
   rw [x100, hq₂.one] at v₃
   have ex : Exec P W dstarBody c c₃ (k₁ + (k₂ + 1)) := .seq e₁ (.seq e₂ e₃)
   have fb := exec_frameB ex (B := BD) (by decide)
@@ -139,26 +143,26 @@ theorem dstarS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
         (bestVal (Qof P) V.s V.hz (sgnOf V.σb) z (bestOf c')) := by
   obtain ⟨c₁, e₁, v₁, r₁⟩ := const_exec (P := P) hw 120100 0 (by omega)
   have I₀ : DInv P W C V z c S c₁ := by
-    refine ⟨e₁.wb_right, hq.congr fun r h1 h2 => r₁ r (by omega), ?_, by rw [v₁]; omega, ?_, ?_⟩
+    refine ⟨e₁.wb_right, hq.congr fun r h1 h2 => r₁ r (by omega), ?_, by rwo [v₁], ?_, ?_⟩
     · unfold BestOK
-      rw [r₁ 120050 (by decide), r₁ 120051 (by decide), r₁ 120052 (by decide)]; exact hb
+      rwx [r₁ 120050 (by decide), r₁ 120051 (by decide), r₁ 120052 (by decide)]
     · have hbo : bestOf c₁ = bestOf c := by
         unfold bestOf; rw [r₁ 120050 (by decide), r₁ 120052 (by decide)]
       rw [hbo, v₁]
       have : dstarPts c.nmem V C 0 = ∅ := by ext x; simp [dstarPts]
-      rw [this, Set.union_empty]; exact hS
+      rwx [this, Set.union_empty]
     · exact FrameB.mono (exec_frameB e₁ (B := fun r => decide (r = 120100)) (by decide))
         fun r hr => by
           simp only [decide_eq_true_eq] at hr
-          simp only [BD, Bool.or_eq_true, decide_eq_true_eq]; omega
+          sio only [BD, Bool.or_eq_true, decide_eq_true_eq]
   obtain ⟨c₂, k₂, e₂, I₂, hex, hk₂⟩ := Exec.whileLtN_potential (a := 120100) (b := 120035)
     (DInv P W C V z c S) (fun d => dstarCostFrom c.nmem V (d.nreg 120100)) (fun _ h => h.wb)
     (fun d hd ht => dstarBody_inv (P := P) hG hW hs hm hDL hd ht) I₀
   have hi2 : c₂.nreg 120100 = V.nD := by
-    have := I₂.i_le; rw [I₂.q.nD] at hex; omega
+    have := I₂.i_le; rwo [I₂.q.nD] at hex
   refine ⟨c₂, _, .seq e₁ e₂, ?_, I₂.fr, I₂.b, by rw [← hi2]; exact I₂.hit⟩
   rw [v₁] at hk₂
-  unfold dstarCost; omega
+  ufo dstarCost
 
 end
 

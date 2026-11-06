@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepLabelJ
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), mirror part 5: label consistency for the left side of a junction
@@ -45,7 +48,7 @@ theorem vertexEnd_arith {m b i : ℕ} (hm : 0 < m) (hb : b ≤ 2 * m) (hi : i �
         (i + 6 + (2 * m + 7) - (6 + (m + 2 * m - b) % (2 * m))) % (2 * m + 7) = 2 * m) := by
   have hq : b + i = (b + i) / (2 * m) * (2 * m) + m := by
     have := Nat.div_add_mod (b + i) (2 * m)
-    rw [h] at this; linarith
+    rwli [h] at this
   have hq2 : (b + i) / (2 * m) ≤ 1 := by
     by_contra hc; push Not at hc
     have : 2 * (2 * m) ≤ (b + i) / (2 * m) * (2 * m) := Nat.mul_le_mul_right _ hc
@@ -73,7 +76,7 @@ theorem off_vertexEnd (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) 
   have hn := cm_n C
   have hτ := tpos_lt C C.m
   have hm := C.two_m_pos
-  rw [off_key' (by rw [hn]; omega) hp le_rfl zero_lt_one, add_zero]
+  rw [off_key' (by rwo [hn]) hp le_rfl zero_lt_one, add_zero]
   have h0 : (bS C + i) % (2 * C.m) = C.m := by
     rw [Chain.sideIdx_eq] at hidx
     unfold Chain.sideE at hidx
@@ -86,8 +89,8 @@ theorem off_vertexEnd (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) 
   rw [hn]
   unfold tpos
   rcases this with h | ⟨h1, h2⟩
-  · left; rw [h]; simp
-  · right; exact ⟨h1, by rw [h2]; push_cast; ring⟩
+  · left; rws [h]
+  · right; exact ⟨h1, by rw [h2]; pcr⟩
 
 end VertexEnd
 
@@ -109,7 +112,7 @@ def F₁plus (S₁ : Set (Set Point)) : Set (Set Point) := J.fusion S₁ ∅ ∪
 theorem topChords₁_subset_chords : topChords₁ J ⊆ J.whole.chords := by
   rintro d ⟨σ, hσ, hfree, rfl⟩
   have := J.left.topIdx_le
-  exact ⟨_, σ, by simp only [Merge.Junction.whole_m, Merge.Junction.left_m] at this ⊢; omega,
+  exact ⟨_, σ, by sio only [Merge.Junction.whole_m, Merge.Junction.left_m] at this ⊢,
     hσ, hfree, rfl⟩
 
 theorem F₁plus_subset {S₁ : Set (Set Point)} (hS₁ : S₁ ⊆ Merge.augChords J.left) :
@@ -177,7 +180,7 @@ theorem lL1_add_lL2 : lL1 J + lL2 J = llen J := by
   have := tpos_lt J.left J.m₁
   have hm1 : J.left.m = J.m₁ := rfl
   unfold lL1 lL2 llen
-  split_ifs <;> omega
+  splao
 
 end CorrLeft
 

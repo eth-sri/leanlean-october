@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.ShootCutArc
 public import Chazelle.Core.SweepHit
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 37: the ray-shooter's subarc is the union of its pieces
@@ -54,7 +55,7 @@ theorem kpath_wset {M : Model} {Q : Polygon} (hn : 0 < M.W.n) :
     have hL' := len_le (M.W.n : ℝ) (M.key Q pc.s) (M.key Q pc.e) hk₀.1.1 hk₀.2.2
     have hstep : V₁ - V = len (M.W.n : ℝ) (M.key Q pc.s) (M.key Q pc.e) :=
       eq_of_unw_pos hn' ⟨by linarith, by linarith⟩ ⟨hL, hL'⟩ (i := j' + i) (j := j)
-        (by push_cast; linarith)
+        (by pcl)
     have hpc : M.arcSet (M.key Q pc.s) (M.key Q pc.e) = wset M V V₁ := by
       rw [arcSet_step M hk₀.1.1 hk₀.1.2 hk₀.2.1 hk₀.2.2 i, ← hi]
       congr 1; linarith

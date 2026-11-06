@@ -110,8 +110,8 @@ theorem piece3_between_aux {m M x x' z : ℝ} (hmM : m ≤ M) (hxm : x ≠ m) (h
     · rw [ite_eq_right ha, ite_eq_left hb] at h
       split_ifs at h <;> exact absurd h (by decide)
     · rw [ite_eq_right ha, ite_eq_right hb] at h
-      have h1 : m < x := lt_of_le_of_ne (not_lt.1 ha) (Ne.symm hxm)
-      have h2 : m < x' := lt_of_le_of_ne (not_lt.1 hb) (Ne.symm hxm')
+      have h1  := lt_of_le_of_ne (not_lt.1 ha) (Ne.symm hxm)
+      have h2  := lt_of_le_of_ne (not_lt.1 hb) (Ne.symm hxm')
       by_cases hc : x < M
       · by_cases hd : x' < M
         · have h3 := lt_min h1 h2
@@ -123,7 +123,7 @@ theorem piece3_between_aux {m M x x' z : ℝ} (hmM : m ≤ M) (hxm : x ≠ m) (h
         · rw [ite_eq_right hc, ite_eq_left hd] at h
           exact absurd h (by decide)
         · have h5 : M < x := lt_of_le_of_ne (not_lt.1 hc) (Ne.symm hxM)
-          have h6 : M < x' := lt_of_le_of_ne (not_lt.1 hd) (Ne.symm hxM')
+          have h6  := lt_of_le_of_ne (not_lt.1 hd) (Ne.symm hxM')
           have h3 := lt_min h5 h6
           constructor <;> intro hz <;> linarith
 
@@ -155,13 +155,13 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
   set v := P.vtx k with hv
   set a := P.vtx (prevIdx P k) with ha
   set b := P.vtx ((k + 1) % P.n) with hb
-  have hSfin : S.Finite := (regions_finite hP).subset hS
-  have hF' : F ≤ 𝓝 v.2 := hF.trans nhdsWithin_le_nhds
+  have hSfin  := (regions_finite hP).subset hS
+  have hF'  := hF.trans nhdsWithin_le_nhds
   -- a common height `h`
   have hev1 : ∀ᶠ h in F, ∀ R ∈ S, ∃ x, |x - v.1| < r ∧ ((x, h) : Point) ∈ R ∧
       x ≠ crossX v a h ∧ x ≠ crossX v b h :=
     hSfin.eventually_all.2 fun R hR => hnear R hR r hr _ _
-  have hev2 : ∀ᶠ h in F, h ≠ v.2 := Filter.mem_of_superset (hF self_mem_nhdsWithin) fun _ h => h
+  have hev2 : ∀ᶠ h in F, h ≠ v.2 := Filter.mem_of_superset (hF self_mem_nhdsWithin) fun _ => id
   have hev3 : ∀ᶠ h in F, |h - v.2| < r := by
     refine hF' (Filter.mem_of_superset (Metric.ball_mem_nhds v.2 hr) fun h hh => ?_)
     rw [Metric.mem_ball, Real.dist_eq] at hh
@@ -204,9 +204,8 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
       · rw [Geometry.segment_comm] at hq
         exact hzne.1 (fst_eq_crossX hq h2)
       · exact hzne.2 (fst_eq_crossX hq h2)
-    have hRfree : ((x R, h) : Point) ∈ freeRegion P := regions_subset (hS hR) hxR2
-    have hTi : T ⊆ P.filled \ P.boundary :=
-      subset_interior_of_isPreconnected hP hTc hTb hpT hRfree.1
+    have hRfree  := regions_subset (hS hR) hxR2
+    have hTi  := subset_interior_of_isPreconnected hP hTc hTb hpT hRfree.1
     have hTf : T ⊆ freeRegion P := by
       intro q hq
       refine ⟨hTi hq, fun hqc => ?_⟩
@@ -241,7 +240,7 @@ theorem trapData_eventually_below {P : Polygon} (hP : P.Simple) (D : TrapData P)
       x ≠ c₁ h ∧ x ≠ c₂ h := by
   obtain ⟨-, hky, hk1, hk2⟩ := hk
   rw [hky]
-  have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
+  have h12  := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have e2 : ∀ᶠ h in 𝓝 D.y₂, edgeX P D.i h < (P.vtx k).1 + r :=
     (continuous_edgeX P D.i).continuousAt.eventually_lt continuousAt_const (by linarith)
   have e3 : ∀ᶠ h in 𝓝 D.y₂, (P.vtx k).1 - r < edgeX P D.j h :=
@@ -268,7 +267,7 @@ theorem trapData_eventually_above {P : Polygon} (hP : P.Simple) (D : TrapData P)
       x ≠ c₁ h ∧ x ≠ c₂ h := by
   obtain ⟨-, hky, hk1, hk2⟩ := hk
   rw [hky]
-  have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
+  have h12  := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have e2 : ∀ᶠ h in 𝓝 D.y₁, edgeX P D.i h < (P.vtx k).1 + r :=
     (continuous_edgeX P D.i).continuousAt.eventually_lt continuousAt_const (by linarith)
   have e3 : ∀ᶠ h in 𝓝 D.y₁, (P.vtx k).1 - r < edgeX P D.j h :=
@@ -436,7 +435,7 @@ theorem ncard_vtxChords_snd_dir_le {P : Polygon} (hP : P.Simple) (v : ℕ) (σ :
       chordEnd P d.1 σ = P.vtx d.2}.ncard ≤ 1 := by
   rw [ncard_le_one_iff ((vtxChords_finite hP).subset fun _ h => h.1)]
   rintro d d' ⟨hd, hdv, hdir, hend⟩ ⟨hd', hdv', hdir', hend'⟩
-  have h1 : d.1 = d'.1 := chord_src_unique hP hd.1 hd'.1 hdir hdir'
+  have h1  := chord_src_unique hP hd.1 hd'.1 hdir hdir'
     (by rw [hend, hend', hdv, hdv'])
   exact Prod.ext h1 (hdv.trans hdv'.symm)
 

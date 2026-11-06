@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleCuR1
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (E7-B, RAM part 16): one sub-query of the interior cutter
@@ -16,9 +21,6 @@ as slots `b`, `b + 1`.
   its end.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -41,7 +43,7 @@ theorem str_one (hs : tau Q u L h1 h2 ≤ L) :
     Stretch Q (ch Q u L h1 h2) u (6 + tau Q u L h1 h2) L := by
   have hA := agree_pre hu h1 h2
   rw [min_eq_left (by omega)] at hA
-  exact ⟨hu, by omega, by rw [ch_m]; omega, ch_P, hD, hn, by omega, hA⟩
+  exact ⟨hu, by omega, by rwo [ch_m], ch_P, hD, hn, by omega, hA⟩
 
 include hu hD hn in
 /-- **The stretch of the first of two chain arcs.** -/
@@ -50,7 +52,7 @@ theorem str_twoA (hs : L < tau Q u L h1 h2) :
   have hA := agree_pre hu h1 h2
   have ht : tau Q u L h1 h2 < 2 * L := tau_lt
   rw [min_eq_right (by omega)] at hA
-  exact ⟨hu, by omega, by rw [ch_m]; omega, ch_P, hD, hn, by omega, hA⟩
+  exact ⟨hu, by omega, by rwo [ch_m], ch_P, hD, hn, by omega, hA⟩
 
 include hu hD hn in
 /-- **The stretch of the second of two chain arcs.** -/
@@ -60,7 +62,7 @@ theorem str_twoB (hs : L < tau Q u L h1 h2) :
   have hA := agree_post hu h1 h2 hs
   have ht : tau Q u L h1 h2 < 2 * L := tau_lt
   have hiw : (interiorWalk Q).n = Q.n := Trans.iw_n
-  refine ⟨Nat.mod_lt _ (by omega), le_rfl, by rw [ch_m]; omega, ch_P, hD, hn, by omega,
+  refine ⟨Nat.mod_lt _ (by omega), le_rfl, by rwo [ch_m], ch_P, hD, hn, by omega,
     fun d hd => ?_⟩
   rw [hiw, Nat.mod_add_mod, ← hiw]
   exact hA d hd
@@ -128,48 +130,48 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
   set C := ch (Qof P) u L h1 h2 with hCd
   -- the chain
   obtain ⟨c₁, k₁, e₁, hk₁, hk₁', C₁, d78, dA, dm, dr, drr, drm, dout⟩ := chainI_exec c hw hS h33 h37
-    (by rw [← hQ]; exact hu) h1 h2 hcap (by omega)
+    (by rwx [← hQ]) h1 h2 hcap (by omega)
   have F₁ : Frame ioBands c c₁ k₁ := frame_chainI hk₁' dA dm dr drr drm dout
   have w₁ := e₁.wb_right
   have g₁ : ∀ r, 170000 ≤ r → r < 180000 → BSQC r = false → c₁.nreg r = c.nreg r :=
     fun r r1 r2 hr => dr r (by
-      simp only [BSQC, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-      simp only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
-      (by unfold ALLOC; omega)
+      simp [BSQC, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+      sio only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not])
+      (by ufo ALLOC)
   have T₁ : SlotSt P (H s.γ) (G s.γ) s.e₁ V0 ((s.e₁ : ℝ) + off + x) b c₁ :=
     hT.keep (fun r r1 r2 => dr r (by
-      simp only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
-      (by unfold ALLOC; omega)) dm (by omega)
-  have b34 : c₁.nreg 170034 = sh₀ := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h34
-  have b35 : c₁.nreg 170035 = ee := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h35
-  have b36 : c₁.nreg 170036 = eh := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h36
+      sio only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not])
+      (by ufo ALLOC)) dm (by omega)
+  have b34 : c₁.nreg 170034 = sh₀ := by rwx [g₁ _ (by norm_num) (by norm_num) (by decide)]
+  have b35 : c₁.nreg 170035 = ee := by rwx [g₁ _ (by norm_num) (by norm_num) (by decide)]
+  have b36 : c₁.nreg 170036 = eh := by rwx [g₁ _ (by norm_num) (by norm_num) (by decide)]
   have hτ : tau (Qof P) u L h1 h2 < 2 * L := tau_lt
   -- the arc blocks keep the chain state and the slot state
   have keepArc : ∀ {d d' : Config}, FrameB BarcC d d' → CEnv P W O s u L h1 h2 d →
       CEnv P W O s u L h1 h2 d' := fun F hC => hC.keep (fun r hr => F.1 r (by
-        unfold CRegs at hr; simp only [BarcC, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
+        unfold CRegs at hr; sio only [BarcC, Bool.or_eq_false_iff, decide_eq_false_iff_not]))
       (fun a _ => by rw [F.2.2.1]) (by rw [F.1 _ (by decide)])
   have keepArcT : ∀ {d d' : Config} {V : ℝ} {k : ℕ}, FrameB BarcC d d' →
       SlotSt P (H s.γ) (G s.γ) s.e₁ V0 V k d → SlotSt P (H s.γ) (G s.γ) s.e₁ V0 V k d' :=
     fun F hT' => hT'.keep (fun r r1 r2 => F.1 r (by
-        simp only [BarcC, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
+        sio only [BarcC, Bool.or_eq_false_iff, decide_eq_false_iff_not]))
       (fun a _ => by rw [F.2.2.1]) (by rw [F.1 _ (by decide)])
   have bandArc : ∀ {d d' : Config}, FrameB BarcC d d' → ∀ r, 170000 ≤ r → r < 180000 →
       BSQC r = false → d'.nreg r = d.nreg r := fun F r r1 r2 hr => F.1 r (by
-        simp only [BSQC, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-        simp only [BarcC, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+        simp [BSQC, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+        sio only [BarcC, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   have bandCut : ∀ {d d' : Config} {k : ℕ}, (∀ r, 170000 ≤ r → r < 180000 →
       (r < 170200 + 5 * k ∨ 170205 + 5 * k ≤ r) → d'.nreg r = d.nreg r) → k < 4 →
       ∀ r, 170000 ≤ r → r < 180000 → BSQC r = false → d'.nreg r = d.nreg r :=
     fun F hk r r1 r2 hr => F r r1 r2 (by
-        simp only [BSQC, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega)
+        sio only [BSQC, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr)
   have hps := param_start hu h1 h2 sh₀
   have ks : (chainModel C).key (Qof P) ⟨6 + tau (Qof P) u L h1 h2, sh₀⟩ =
       ((6 + tau (Qof P) u L h1 h2 : ℕ) : ℝ) + x := by rw [key_eq, hps]
   by_cases hs : tau (Qof P) u L h1 h2 ≤ L
   · -- one chain arc
     set τ := tau (Qof P) u L h1 h2 with hτd
-    have hb' : ¬ c₁.nreg 170037 < c₁.nreg 170077 := by rw [C₁.r37, C₁.r77]; omega
+    have hb' : ¬ c₁.nreg 170037 < c₁.nreg 170077 := by rwo [C₁.r37, C₁.r77]
     obtain ⟨c₂, k₂, e₂, hk₂, a1, a2, a3, a4, a45, a46, Fa⟩ := arcOneC_exec (P := P) c₁ w₁
       C₁.r77 b34 b35 b36 C₁.r33 (by omega)
     have C₂ := keepArc Fa C₁
@@ -178,17 +180,17 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
     have ke : (chainModel C).key (Qof P) ⟨6 + τ + ee, eh⟩ = ((6 + τ + ee : ℕ) : ℝ) + t := by
       rw [key_eq, hpe]
     have hV : (s.e₁ : ℝ) + off - ((6 + τ : ℕ) : ℝ) +
-        (chainModel C).key (Qof P) ⟨6 + τ, sh₀⟩ = s.e₁ + off + x := by rw [ks]; ring
+        (chainModel C).key (Qof P) ⟨6 + τ, sh₀⟩ = s.e₁ + off + x := by rwring [ks]
     have hV' : (s.e₁ : ℝ) + off - ((6 + τ : ℕ) : ℝ) +
         (chainModel C).key (Qof P) ⟨6 + τ + ee, eh⟩ = s.e₁ + off + ee + t := by
-      rw [ke]; push_cast; ring
+      rw [ke]; pcr
     obtain ⟨c₃, k₃, e₃, hk₃, T₃, C₃, F₃, g₃⟩ := cutR_exec hcu c₂ e₂.wb_right C₂
       (sa := ⟨6 + τ, sh₀⟩) (ea := ⟨6 + τ + ee, eh⟩) a1 a2 a3 a4 harc a45 a46
       (str_one hu h1 h2 hD hn3 hs) hoff
-      (by rw [ks]; push_cast; linarith)
-      (by rw [ke]; push_cast; linarith)
-      (by rw [ks, ke]; push_cast; linarith) (k := b) (by omega)
-      (by rw [hV]; exact keepArcT Fa T₁) (by rw [Fa.1 _ (by decide), dA]; omega)
+      (by rw [ks]; pcl)
+      (by rw [ke]; pcl)
+      (by rw [ks, ke]; pcl) (k := b) (by omega)
+      (by rw [hV]; exact keepArcT Fa T₁) (by rwo [Fa.1 _ (by decide), dA])
     rw [hV'] at T₃
     have ex : Exec P W (sqC cu b) c c₃ (k₁ + (k₂ + k₃ + 2)) :=
       .seq e₁ (.ifLtN_false hb' (.seq e₂ e₃))
@@ -199,7 +201,7 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
   · -- two chain arcs meeting at the top
     push Not at hs
     set τ := tau (Qof P) u L h1 h2 with hτd
-    have hb' : c₁.nreg 170037 < c₁.nreg 170077 := by rw [C₁.r37, C₁.r77]; exact hs
+    have hb' : c₁.nreg 170037 < c₁.nreg 170077 := by rwx [C₁.r37, C₁.r77]
     obtain ⟨harcA, harcB⟩ := chainArcs_two hsub hs hLγ
     set L₁ := 2 * L - τ with hL₁
     have hle : L₁ ≤ ee := by rcases hsub.hee with ⟨-, h'⟩ | ⟨-, h', -⟩ <;> omega
@@ -210,26 +212,26 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
       rw [key_eq, param_hgt_zero, add_zero]
     have keB : (chainModel C).key (Qof P) ⟨6 + (ee - L₁), eh⟩ = ((6 + (ee - L₁) : ℕ) : ℝ) + t := by
       rw [key_eq, hpe]
-    have hL₁r : ((L₁ : ℕ) : ℝ) = 2 * L - τ := by rw [hL₁, Nat.cast_sub (by omega)]; push_cast; ring
+    have hL₁r : ((L₁ : ℕ) : ℝ) = 2 * L - τ := by rw [hL₁, Nat.cast_sub (by omega)]; pcr
     have hel : ((ee - L₁ : ℕ) : ℝ) = ee - L₁ := Nat.cast_sub hle
     -- the first arc
     obtain ⟨c₂, k₂, e₂, hk₂, a1, a2, a3, a4, a45, a46, Fa⟩ := arcTwoAC_exec (P := P) c₁ w₁
       C₁.r77 b34 C₁.r89 C₁.r33 (by omega) (by omega)
     have C₂ := keepArc Fa C₁
     have hVA : (s.e₁ : ℝ) + off - ((6 + τ : ℕ) : ℝ) +
-        (chainModel C).key (Qof P) ⟨6 + τ, sh₀⟩ = s.e₁ + off + x := by rw [ks]; ring
+        (chainModel C).key (Qof P) ⟨6 + τ, sh₀⟩ = s.e₁ + off + x := by rwring [ks]
     have hVA' : (s.e₁ : ℝ) + off - ((6 + τ : ℕ) : ℝ) +
         (chainModel C).key (Qof P) ⟨2 * L + 6, 0⟩ = s.e₁ + ((off + L₁ : ℕ) : ℝ) := by
-      rw [ke]; push_cast; rw [hL₁r]; ring
+      rw [ke]; push_cast; rwring [hL₁r]
     obtain ⟨c₃, k₃, e₃, hk₃, T₃, C₃, F₃, g₃⟩ := cutR_exec hcu c₂ e₂.wb_right C₂
       (sa := ⟨6 + τ, sh₀⟩) (ea := ⟨2 * L + 6, 0⟩) a1 a2 a3 a4 harcA a45 a46
       (str_twoA hu h1 h2 hD hn3 hs) hoff
-      (by rw [ks]; push_cast; linarith)
-      (by rw [ke]; push_cast; rw [hL₁r]; linarith)
+      (by rw [ks]; pcl)
+      (by rw [ke]; push_cast; rwli [hL₁r])
       (by rw [ks, ke]; push_cast
           have : (τ : ℝ) + 1 ≤ 2 * L := by exact_mod_cast (show τ + 1 ≤ 2 * L by omega)
           linarith) (k := b) (by omega)
-      (by rw [hVA]; exact keepArcT Fa T₁) (by rw [Fa.1 _ (by decide), dA]; omega)
+      (by rw [hVA]; exact keepArcT Fa T₁) (by rwo [Fa.1 _ (by decide), dA])
     rw [hVA'] at T₃
     -- the second arc
     have c35 : c₃.nreg 170035 = ee := by
@@ -246,10 +248,10 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
     have hoff' : (u + L₁) % (Qof P).n = (s.e₁ + (off + L₁)) % (Qof P).n := by
       rw [hoff, Nat.mod_add_mod, Nat.add_assoc]
     have hVB : (s.e₁ : ℝ) + ((off + L₁ : ℕ) : ℝ) - ((6 : ℕ) : ℝ) +
-        (chainModel C).key (Qof P) ⟨6, 0⟩ = s.e₁ + ((off + L₁ : ℕ) : ℝ) := by rw [k6]; ring
+        (chainModel C).key (Qof P) ⟨6, 0⟩ = s.e₁ + ((off + L₁ : ℕ) : ℝ) := by rwring [k6]
     have hVB' : (s.e₁ : ℝ) + ((off + L₁ : ℕ) : ℝ) - ((6 : ℕ) : ℝ) +
         (chainModel C).key (Qof P) ⟨6 + (ee - L₁), eh⟩ = s.e₁ + off + ee + t := by
-      rw [keB]; push_cast; rw [hel]; ring
+      rw [keB]; push_cast; rwring [hel]
     obtain ⟨c₅, k₅, e₅, hk₅, T₅, C₅, F₅, g₅⟩ := cutR_exec hcu c₄ e₄.wb_right C₄
       (sa := ⟨6, 0⟩) (ea := ⟨6 + (ee - L₁), eh⟩) a1' a2' a3' a4' harcB a45' a46'
       (str_twoB hu h1 h2 hD hn3 hs) hoff' (off := off + L₁)
@@ -257,7 +259,7 @@ theorem sqC_exec {cu : Stmt} {G H : ℕ → ℕ}
       (by rw [keB]; push_cast; rw [hel]
           have : (L₁ : ℝ) ≤ ee := by exact_mod_cast hle
           have : ((L - L₁ : ℕ) : ℝ) = L - L₁ := Nat.cast_sub (by omega)
-          rw [this]; linarith)
+          rwli [this])
       (by rw [k6, keB]; push_cast; rw [hel]
           have : (L₁ : ℝ) < ee + t := by
             rcases hsub.hee with ⟨h0, h'⟩ | ⟨h0, h', hp⟩

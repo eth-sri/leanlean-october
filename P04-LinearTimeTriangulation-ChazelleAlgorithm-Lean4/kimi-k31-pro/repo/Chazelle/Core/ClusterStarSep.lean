@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.ClusterStar
 public import Chazelle.Core.ClusterCentroid
+public import Chazelle.Rwx
 
 /-!
 # WP-I, part 16: separators in the star map
@@ -93,10 +94,10 @@ theorem star_face_iff (f : D) (e : D ⊕ D ⊕ D) :
   constructor
   · intro h
     rcases e with d | d | d
-    · exact ⟨0, by omega, by simp only [star_face, starFace_inl] at h; subst h; rfl⟩
-    · exact ⟨2, by omega, by simp only [star_face, starFace_inl_inr] at h; subst h; rfl⟩
+    · exact ⟨0, by omega, by simp [star_face, starFace_inl] at h; subst h; rfl⟩
+    · exact ⟨2, by omega, by simp [star_face, starFace_inl_inr] at h; subst h; rfl⟩
     · refine ⟨1, by omega, ?_⟩
-      simp only [star_face, starFace_inr_inr] at h
+      simp [star_face, starFace_inr_inr] at h
       subst h
       simp [starDarts]
   · rintro ⟨t, ht, rfl⟩
@@ -121,18 +122,18 @@ theorem star_mem_sepSet_inl (f : D) (v : V) :
     rcases (show t = 0 ∨ t = 1 ∨ t = 2 by omega) with rfl | rfl | rfl
     · left; simpa [starDarts, starTree_isAnc_inl] using hanc
     · right; left
-      simp only [starDarts, star_vert, starVert_inr_inr] at hanc
+      simp [starDarts, star_vert, starVert_inr_inr] at hanc
       rw [starTree_isAnc_inl, M.vert_fperm] at hanc
       exact hanc
     · right; right
-      simp only [starDarts, star_vert, starVert_inl_inr] at hanc
+      simp [starDarts, star_vert, starVert_inl_inr] at hanc
       exact (starTree_isAnc_inr T a ha v _).mp hanc
   · rintro (h | h | h)
     · exact ⟨.inl f, rfl, by simpa [starTree_isAnc_inl] using h⟩
     · refine ⟨.inr (.inr (M.fperm f)), ?_, ?_⟩
       · simp
-      · simp only [star_vert, starVert_inr_inr]
-        rw [starTree_isAnc_inl, M.vert_fperm]; exact h
+      · simp [star_vert, starVert_inr_inr]
+        rwx [starTree_isAnc_inl, M.vert_fperm]
     · exact ⟨.inr (.inl f), rfl, (starTree_isAnc_inr T a ha v _).mpr h⟩
 
 /-- **The separator in a slab**: at most `3 k` real vertices whose levels (shifted by `c`) lie in

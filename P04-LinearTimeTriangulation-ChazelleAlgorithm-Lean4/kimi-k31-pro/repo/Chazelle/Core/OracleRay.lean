@@ -221,7 +221,7 @@ theorem interval_subset_region (C : Chain) {F : Set (Set Point)} {V : Set Point}
     (hV : V ∈ (chainModel C).regions F) {z : Point} {σ a b : ℝ}
     (hfree : ∀ t, a < t → t < b → rayPt z σ t ∈ freeIn C.dom F) {t₀ : ℝ} (ht₀a : a < t₀)
     (ht₀b : t₀ < b) (hin : rayPt z σ t₀ ∈ V) : ∀ t, a < t → t < b → rayPt z σ t ∈ V := by
-  have hV' : V ∈ regionsIn C.dom F := hV
+  have hV'  := hV
   have hc : IsPreconnected (rayPt z σ '' Ioo a b) :=
     isPreconnected_Ioo.image _ (Chazelle.Visibility.continuous_rayPt z σ).continuousOn
   have hsub := Sweep.subset_region hV' hc (by rintro _ ⟨t, ht, rfl⟩; exact hfree t ht.1 ht.2)
@@ -279,8 +279,8 @@ theorem ray_path (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point
   rcases hsX with rfl | ⟨hspos, hsX⟩
   · -- no crossing: the ray is in one region on `(0, t₁)`
     obtain ⟨t'', ht''U, ht''⟩ := (hUi.and (Ioo_mem_nhdsGT ht₁)).exists
-    have hU' : U ∈ regionsIn C.dom F := hU
-    have hR' : R ∈ regionsIn C.dom F := hR
+    have hU'  := hU
+    have hR'  := hR
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hU' hR' with e | hdis
     · rw [e]
     · exact absurd (hRall t'' ht''.1 ht''.2) (Set.disjoint_left.1 hdis ht''U)
@@ -349,14 +349,14 @@ theorem finite_crossings (C : Chain)
     exact ⟨k, hk, hmem⟩
   refine Set.Finite.subset (Set.Finite.biUnion (Finset.range C.m).finite_toSet fun k hk => ?_) hsub
   refine Set.Subsingleton.finite fun a ha b hb => ?_
-  have hk : k < C.m := Finset.mem_range.1 hk
+  have hk  := Finset.mem_range.1 hk
   simp only [mem_ofPred_eq, C.chainEdge_eq] at ha hb
   obtain ⟨s₁, -, -, h₁⟩ := ha
   obtain ⟨s₂, -, -, h₂⟩ := hb
   have hy1 := congrArg Prod.snd h₁
   have hy2 := congrArg Prod.snd h₂
   simp only [rayPt_snd] at hy1 hy2
-  have hd : (C.vertex (k + 1)).2 - (C.vertex k).2 ≠ 0 := sub_ne_zero.2 (hne k hk).symm
+  have hd  := sub_ne_zero.2 (hne k hk).symm
   have hs : s₁ = s₂ := by
     have : s₁ * ((C.vertex (k + 1)).2 - (C.vertex k).2) =
         s₂ * ((C.vertex (k + 1)).2 - (C.vertex k).2) := by linarith

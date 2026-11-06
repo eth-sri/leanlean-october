@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.GranRamRm
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F, RAM part 7: the removal, second half
@@ -116,13 +117,13 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
         rw [hm₂ _ (by right; omega), qm, htmp t ht]
       unfold wbBody
       exec_block
-      · rw [r44]; omega
-      · config_simp; rw [r103]; omega
-      · config_simp; rw [r43, r108]; omega
-      · config_simp; rw [r43, r108]; omega
-      · config_simp; rw [r19]; omega
+      · rwo [r44]
+      · config_simp; rwo [r103]
+      · config_simp; rwo [r43, r108]
+      · config_simp; rwo [r43, r108]
+      · config_simp; rwo [r19]
       · refine ⟨⟨by assumption, ?_, ?_, ?_, ?_⟩, by omega, ?_⟩
-        · config_simp; rw [r19]; omega
+        · config_simp; rwo [r19]
         · config_simp
           rw [r44, r103, r43, r108, r19, htdef, vt]
           have E1 := henc₂.set_ex hX (show t < d.D by omega) (L.getD t 0)
@@ -158,9 +159,9 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
         · intro a ha
           config_simp
           simp only [upd]
-          rw [ite_eq_right (by rw [r43, r108]; omega), ite_eq_right (by rw [r103]; omega)]
+          rw [ite_eq_right (by rwo [r43, r108]), ite_eq_right (by rwo [r103])]
           exact hm₂ a ha
-        · config_simp; rw [r19]; omega) I0
+        · config_simp; rwo [r19]) I0
   obtain ⟨hw', ht', henc', hr', hm'⟩ := I'
   rw [hr' 90100 (by decide) (by decide) (by decide), k100] at hx
   have hfull : c'.nreg 90101 = L.length := by omega
@@ -204,11 +205,11 @@ theorem tailStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : C
   rw [← hD.K] at hcc
   unfold tailStmt
   exec_block
-  · rw [hC.bDeg, h64]; omega
-  · config_simp; rw [hC.bWt, h64]; omega
-  · config_simp; rw [hC.bLive, h62]; omega
+  · rwo [hC.bDeg, h64]
+  · config_simp; rwo [hC.bWt, h64]
+  · config_simp; rwo [hC.bLive, h62]
   · omega
-  · config_simp; rw [h108, h100]; omega
+  · config_simp; rwo [h108, h100]
   · refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 a4 => by simp [upd, a1, a2, a3, a4], ?_⟩ <;>
       config_simp
     · rw [hC.bDeg, h64, hC.bWt, hC.bLive, h62, h100, h78]
@@ -241,14 +242,14 @@ theorem unlinkS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Co
       (∀ a, (a < d.b0 + d.oNxt ∨ d.b0 + d.oEg ≤ a) → c'.nmem a = c.nmem a) := by
   have hb := hD.base
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
-  have ep : c.nmem (d.b0 + d.oPrv + j) = S.prv j := henc.prv j hjA
-  have en : c.nmem (d.b0 + d.oNxt + j) = S.nxt j := henc.nxt j hjA
+  have ep  := henc.prv j hjA
+  have en  := henc.nxt j hjA
   unfold unlinkS
   exec_block
-  · rw [hC.bPrv, hj]; omega
-  · config_simp; simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]; rw [hC.bNxt, hj]; omega
-  · config_simp; rw [hC.bNxt, hC.bPrv, hj, ep]; omega
-  · config_simp; simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]; rw [hC.bPrv, hC.bNxt, hj, en]; omega
+  · rwo [hC.bPrv, hj]
+  · config_simp; simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]; rwo [hC.bNxt, hj]
+  · config_simp; rwo [hC.bNxt, hC.bPrv, hj, ep]
+  · config_simp; simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]; rwo [hC.bPrv, hC.bNxt, hj, en]
   · refine ⟨rfl, ?_, fun r a1 a2 a3 => by simp [upd, a1, a2, a3], ?_⟩ <;> config_simp <;>
       simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]
     · rw [hC.bPrv, hC.bNxt, hj, ep, en]
@@ -271,10 +272,10 @@ theorem decS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Confi
       (∀ a, (a < d.b0 + d.oCnt ∨ d.b0 + d.oNxt ≤ a) → c'.nmem a = c.nmem a) := by
   have hb := hD.base
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
-  have ec : c.nmem (d.b0 + d.oCnt + j) = S.cnt j := henc.cnt j hjA
+  have ec  := henc.cnt j hjA
   unfold decS
   exec_block
-  · rw [hC.bCnt, hj]; omega
+  · rwo [hC.bCnt, hj]
   · refine ⟨rfl, ?_, fun r a1 a2 => by simp [upd, a1, a2], ?_⟩ <;> config_simp
     · rw [hC.bCnt, hj, ec, hC.one]
       exact henc.set_cnt hjA _
@@ -295,11 +296,11 @@ theorem optUnl_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
       (∀ a, (a < d.b0 + d.oNxt ∨ d.b0 + d.oEg ≤ a) → c'.nmem a = c.nmem a) := by
   cases b with
   | false =>
-    exact ⟨c, _, .ifLtN_true (by rw [hbit, hC.one]; decide) (.skip hw), by omega, henc,
+    exact ⟨c, _, .ifLtN_true (by rwd [hbit, hC.one]) (.skip hw), by omega, henc,
       fun _ _ _ _ => rfl, fun _ _ => rfl⟩
   | true =>
     obtain ⟨c', k, e, hk, h1, h2, h3⟩ := unlinkS_exec (P := P) hw hC henc hD h5 h6 h7 hj hjA hp hn
-    exact ⟨c', _, .ifLtN_false (by rw [hbit, hC.one]; decide) e, by omega, h1, h2, h3⟩
+    exact ⟨c', _, .ifLtN_false (by rwd [hbit, hC.one]) e, by omega, h1, h2, h3⟩
 
 /-- Unlink the dying positions and decrement the counts. -/
 def ringStmt : Stmt :=

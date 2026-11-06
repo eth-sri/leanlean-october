@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvRPlD
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Down-phase driver, region procedure (D5), part 1: the gaps between the leaves
@@ -70,7 +75,7 @@ theorem chunks_gaps {C : ℕ} (hC : 1 ≤ C) : ∀ (L s a e B : ℕ), 1 ≤ L �
     rw [chunks_cons hC hL]
     by_cases h : L ≤ C
     · rw [min_eq_right h, Nat.sub_self, chunks_zero]
-      refine ⟨⟨he, hB, ?_, ?_⟩, rfl⟩ <;> simp only <;> omega
+      refine ⟨⟨he, hB, ?_, ?_⟩, rfl⟩ <;> simp <;> omega
     · rw [min_eq_left (by omega)]
       obtain ⟨h1, h2⟩ := ih (L - C) (by omega) (s + C) (a + C) (s + C) B (by omega) (le_refl _)
         (by omega)
@@ -133,7 +138,7 @@ theorem runLeaves_gaps {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (hℓ :
           rw [lastEnd_append, g2, k2]
         rw [hl]
         refine ⟨gapsLe_append _ _ e _ _ g1 ?_, by omega, by omega⟩
-        rw [g2]; exact k1
+        rwx [g2]
 
 /-! ## The gaps of a host -/
 
@@ -148,16 +153,16 @@ theorem hostLeaves_gapsG {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) : ∀ (H : Ho
     e + 1 ≤ p + (H.pts n).length →
     GapsLe 64 (hostLeaves n C p H) e (p + (H.pts n).length - 1)
   | [], p, e, k, d, _, h1, h2, h3, h4, h5 => by
-    simp only [hostLeaves, Host.pts, List.flatMap_nil, List.length_nil, Nat.add_zero] at h5 ⊢
-    simp only [List.length_nil] at h3
+    simp [hostLeaves, Host.pts, List.flatMap_nil, List.length_nil, Nat.add_zero] at h5 ⊢
+    simp [List.length_nil] at h3
     exact ⟨by omega, by omega⟩
   | .pt x :: H, p, e, k, d, hwf, h1, h2, h3, h4, h5 => by
     have hwf' : HostWF n H := fun it h => hwf it (List.mem_cons_of_mem _ h)
     have hl : (Host.pts n (HostItem.pt x :: H)).length = (Host.pts n H).length + 1 := by
-      rw [DownMath.pts_cons, List.length_append]; simp [HostItem.pts]; omega
+      rsio [DownMath.pts_cons, List.length_append] [HostItem.pts]
     rw [hl] at h5 ⊢
-    simp only [List.length_cons] at h3
-    simp only [degCount] at h4
+    simp [List.length_cons] at h3
+    simp [degCount] at h4
     rw [hostLeaves, show p + ((Host.pts n H).length + 1) - 1 = p + 1 + (Host.pts n H).length - 1 by
       omega]
     exact hostLeaves_gapsG hC hn H (p + 1) e (k + 1) d hwf' (by omega) (by omega) (by omega) h4
@@ -165,19 +170,19 @@ theorem hostLeaves_gapsG {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) : ∀ (H : Ho
   | .run a ℓ :: H, p, e, k, d, hwf, h1, h2, h3, h4, h5 => by
     have hwf' : HostWF n H := fun it h => hwf it (List.mem_cons_of_mem _ h)
     have hit := hwf (.run a ℓ) (List.mem_cons_self ..)
-    simp only at hit
+    simp at hit
     have hl : (Host.pts n (HostItem.run a ℓ :: H)).length = (Host.pts n H).length + ℓ + 1 := by
-      rw [DownMath.pts_cons, List.length_append, DownMath.run_pts_length]; omega
+      rwo [DownMath.pts_cons, List.length_append, DownMath.run_pts_length]
     rw [hl] at h5 ⊢
-    simp only [List.length_cons] at h3
-    simp only [degCount] at h4
+    simp [List.length_cons] at h3
+    simp [degCount] at h4
     rw [hostLeaves, show p + ((Host.pts n H).length + ℓ + 1) - 1 =
       p + ℓ + 1 + (Host.pts n H).length - 1 by omega]
     rcases runLeaves_gaps (p := p) hC hn hit.2 with ⟨he, hsh⟩ | ⟨h3l, hdg, hg⟩
     · rw [he, List.nil_append]
       have hd : ℓ + 1 ≤ 3 + (if Degen n a ℓ then 1 else 0) := by
         rcases hsh with h | hdg'
-        · split_ifs <;> omega
+        · splao
         · rw [ite_eq_left hdg']; have := hdg'.1; omega
       exact hostLeaves_gapsG hC hn H (p + ℓ + 1) e (k + 1) (d + if Degen n a ℓ then 1 else 0)
         hwf' (by omega) (by omega) (by omega) (by omega) (by omega)
@@ -203,16 +208,16 @@ theorem degCount_first (n : ℕ) : ∀ H : Host, 1 ≤ degCount n H →
       degCount n H₂ + 1 = degCount n H
   | [], h => by simp [degCount] at h
   | .pt x :: H, h => by
-    simp only [degCount] at h
+    simp [degCount] at h
     obtain ⟨H₁, a, ℓ, H₂, e, hd, hc⟩ := degCount_first n H h
-    exact ⟨.pt x :: H₁, a, ℓ, H₂, by rw [e]; rfl, hd, by simp only [degCount]; omega⟩
+    exact ⟨.pt x :: H₁, a, ℓ, H₂, by rwr [e], hd, by sio only [degCount]⟩
   | .run a ℓ :: H, h => by
-    simp only [degCount] at h ⊢
+    simp [degCount] at h ⊢
     by_cases hd : Degen n a ℓ
-    · exact ⟨[], a, ℓ, H, rfl, hd, by rw [ite_eq_left hd]; omega⟩
+    · exact ⟨[], a, ℓ, H, rfl, hd, by rwo [ite_eq_left hd]⟩
     · rw [ite_eq_right hd] at h
       obtain ⟨H₁, a', ℓ', H₂, e, hd', hc⟩ := degCount_first n H (by omega)
-      exact ⟨.run a ℓ :: H₁, a', ℓ', H₂, by rw [e]; rfl, hd', by rw [ite_eq_right hd]; omega⟩
+      exact ⟨.run a ℓ :: H₁, a', ℓ', H₂, by rwr [e], hd', by rwo [ite_eq_right hd]⟩
 
 /-- **A simple host polygon has at most one degenerate run** (two would both contain the vertex
 `v_{n-1}`). -/
@@ -228,7 +233,7 @@ theorem degCount_le_one {Q : Polygon} {H : Host} (hS : (H.poly Q).Simple) :
   subst hl hl'
   set G := H₁ ++ HostItem.run a 3 :: (H₃ ++ HostItem.run a' 3 :: H₄) with hG
   have hG' : G = (H₁ ++ HostItem.run a 3 :: H₃) ++ HostItem.run a' 3 :: H₄ := by
-    rw [hG]; simp
+    rws [hG]
   have p1 := DownMath.pts_append_run Q.n H₁ (H₃ ++ HostItem.run a' 3 :: H₄) a 3
     (k := 1) (by omega)
   have p2 := DownMath.pts_append_run Q.n (H₁ ++ HostItem.run a 3 :: H₃) H₄ a' 3
@@ -245,7 +250,7 @@ theorem degCount_le_one {Q : Polygon} {H : Host} (hS : (H.poly Q).Simple) :
     (i := ((H₁ ++ HostItem.run a 3 :: H₃).pts Q.n).length + 1) (by omega)
   rw [p1, hm] at v1
   rw [p2, hm'] at v2
-  have := hS.2.1 _ _ (by rw [DownMath.host_poly_n]; omega) (by rw [DownMath.host_poly_n]; omega)
+  have := hS.2.1 _ _ (by rwo [DownMath.host_poly_n]) (by rwo [DownMath.host_poly_n])
     (v1.trans v2.symm)
   omega
 
@@ -265,7 +270,7 @@ theorem runLeaves_length_le {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hℓ : ℓ ≤ 2
     have h2 := chunks_length hC (ℓ - 2 - (n - (a + 1) % n)) (p + 1 + (n - (a + 1) % n)) 0
     have h : ((chunks C (p + 1) ((a + 1) % n) (n - 1 - (a + 1) % n)).length +
         (chunks C (p + 1 + (n - (a + 1) % n)) 0 (ℓ - 2 - (n - (a + 1) % n))).length) * C <
-        4 * C := by rw [Nat.add_mul]; omega
+        4 * C := by rwo [Nat.add_mul]
     have := Nat.lt_of_mul_lt_mul_right h
     omega
 

@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseMathHR1a
 public import Chazelle.Core.ShearInv
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Down phase, math: **H-R1 / H-R2** (`DrvR.HostR1Spec`)
@@ -46,13 +50,13 @@ theorem hostR1Spec : DrvR.HostR1Spec := by
   have hFam : (interiorModel Q).ChordFamily Q S := hN.1
   have hnc : N.nChords = L.length := nChords_build hQ hL hperm hsort
   have hne : S.Nonempty :=
-    ⟨_, (chordPos_attach hN (show 0 < N.nChords by rw [hnc]; exact hK) (Or.inl rfl)).1⟩
+    ⟨_, (chordPos_attach hN (show 0 < N.nChords by rwx [hnc]) (Or.inl rfl)).1⟩
   have hR : reg r ∈ (interiorModel Q).regions S := hregs.1.1 r hr
   have Xc : Extract.Ctx Q S (reg r) := ⟨hQ, hFam, hne, hR⟩
   set K := nk (interiorModel Q) S (reg r) with hKdef
   have h3 : 3 ≤ K := three_le_nk hQ hFam hne hR
   have hrep' : ∀ j, j < K → RepPt li Q S (reg r) ((i0 + j) % K) (WP.getD j (.vtx 0)) :=
-    fun j hj => hrep j (by rw [hlen]; exact hj)
+    fun j hj => hrep j (by rwx [hlen])
   have hrot : (⟨WP.map (SymPt.eval Q)⟩ : Polygon) = (hostPoly Q S (reg r)).rotate i0 :=
     poly_of_rep hQ hFam hne hR hli hdh hlen hrep'
   have hedge := edgeOK_of_rep hQ hFam hne hR hdh hlen hrep'
@@ -65,10 +69,10 @@ theorem hostR1Spec : DrvR.HostR1Spec := by
     have hpoly : (regHost li Q.n N r).poly Q = (hostPoly Q S (reg r)).rotate i0 := by
       rw [← hrot]; unfold Host.poly; rw [hpts]
     obtain ⟨hs, hint, hbd, hvx⟩ := polyFacts_rotate hQ hFam hne hR i0
-    refine ⟨by rw [hH]; exact hwf, ?_, by rw [hpoly]; exact hs, by rw [hpoly]; exact hint,
-      by rw [hpoly]; exact hbd, by rw [hpoly]; exact hvx, ?_⟩
+    refine ⟨by rwx [hH], ?_, by rwx [hpoly], by rwx [hpoly],
+      by rwx [hpoly], by rwx [hpoly], ?_⟩
     · apply hostRegular_of_list
-      rw [hpts]; exact hedge
+      rwx [hpts]
     · intro C hP hs0 hm
       exact extractOK_rot Xc hgK hgc hgi (hP.trans hpoly) hs0 hm
   · -- clockwise
@@ -77,9 +81,9 @@ theorem hostR1Spec : DrvR.HostR1Spec := by
       · rfl
       · exact absurd (hli.1 h) hLI
     have hH : regHost li Q.n N r = (walkItems li Q.n N r).reverse := by
-      unfold regHost; rw [hl]; rfl
+      urr regHost [hl]
     rw [hl] at hpts
-    simp only [Bool.false_eq_true, ite_false] at hpts
+    simp [Bool.false_eq_true, ite_false] at hpts
     rw [← hl] at hpts
     set P' := (regHost li Q.n N r).poly Q with hP'
     have hverts : P'.vertices = (WP.map (SymPt.eval Q)).reverse := by
@@ -97,7 +101,7 @@ theorem hostR1Spec : DrvR.HostR1Spec := by
       rw [hrn, ← hrot]
       show P'.vertices.getD k (0, 0) = (WP.map (SymPt.eval Q)).getD (K - 1 - k) (0, 0)
       rw [hverts, List.getD_eq_getElem _ _ (by simp [hlen]; exact hk), List.getElem_reverse,
-        List.getD_eq_getElem _ _ (by simp [hlen]; omega)]
+        List.getD_eq_getElem _ _ (by sio [hlen])]
       simp [hlen]
     have hfacts : PolyFacts Q S (reg r) P' := polyFacts_rev hQ hFam hne hR i0
       (by rw [hP'n, Existence.n_rotate, hostPoly_n])
@@ -109,8 +113,8 @@ theorem hostR1Spec : DrvR.HostR1Spec := by
       rw [hpts, ← hWP]
       exact regular_reverse hedge
     · intro C hP hs0 hm
-      refine extractOK_rev Xc hgK hgc hgi (by rw [hP]; exact hP'n) (fun k hk => ?_) (hP ▸ hs) hs0 hm
-      rw [hP, hP'v k hk, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; omega), hostPoly_n,
+      refine extractOK_rev Xc hgK hgc hgi (by rwx [hP]) (fun k hk => ?_) (hP ▸ hs) hs0 hm
+      rw [hP, hP'v k hk, Existence.vtx_rotate _ _ (by rwo [hostPoly_n]), hostPoly_n,
         Existence.n_rotate, hostPoly_n]
 
 end

@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.WalkKey
 public import Chazelle.Core.BruteOK
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # WP-K: sign tests on symbolic points held in registers
@@ -117,7 +119,7 @@ theorem testS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     exact symPtIn_of_eq s₃ fun j h1 h2 => by rw [q₄ j (by omega)]
   have hop₄ : c₄.nreg 10009 = op := by simp [c₄]
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ e₄.wb_right hG hW
-    (by rw [hop₄]; exact hop) hlx hly hlz S₁ S₂ S₃
+    (by rwx [hop₄]) hlx hly hlz S₁ S₂ S₃
   rw [hop₄] at sig₅
   have e₆ := Exec.copyN (P := P) e₅.wb_right d 10010
   set c₆ : Config := { c₅ with nreg := upd c₅.nreg d (c₅.nreg 10010) }
@@ -129,7 +131,7 @@ theorem testS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   · have hr' : Bk r = false ∧ r ≠ d := by
       unfold Bt at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; exact hr
     have hnk : r < 10000 ∨ 10500 ≤ r := by
-      have := hr'.1; unfold Bk at this; simp only [decide_eq_false_iff_not] at this; omega
+      have := hr'.1; unfold Bk at this; sio only [decide_eq_false_iff_not] at this
     simp only [c₆]
     rw [upd_other _ _ _ hr'.2, f₅.1 r hr'.1, q₄ r (by omega), r₃ r (by omega), r₂ r (by omega),
       r₁ r (by omega)]

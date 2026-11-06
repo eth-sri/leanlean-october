@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.FuseAsmMain
+public import Chazelle.Rwx
 
 /-!
 # WP-F fusion assembly, part 29: the fusion specification
@@ -38,15 +39,15 @@ theorem fuseSpec_of (hS : SweepSpecH) (hBd : BuildNFSpec) : FuseSpec := by
   have hF : FCtx P W J H N₁ N₂ (c.nreg ALLOC) c :=
     ⟨hG, hHW, hJ, hJWF, hPs, hgen, hN1, hN2, hi1, hi2, le_rfl⟩
   have hP : FPre P X Ok J N₁ N₂ c := ⟨hOk1, hOk2, hOkw, hd1, hd2, hs1, hs2, hX, hcap⟩
-  have hK1 : c.nmem (rd c bFuse 3) = N₁.nChords := hN1.nfAt.1
-  have hK2 : c.nmem (rd c bFuse 4) = N₂.nChords := hN2.nfAt.1
+  have hK1  := hN1.nfAt.1
+  have hK2  := hN2.nfAt.1
   beta_reduce at hroom
   rw [hK1, hK2] at hroom
   obtain ⟨c', k, N, ex, hk, Fr, hle, hNW, hIs, hNF, hNk⟩ :=
     fuseRun_exec (hSw sh Bs F X Ok hloc hBs hsh) hBM hloc c hw hF hP hroom
-  refine ⟨c', k, ex, by beta_reduce; rw [hK1, hK2]; exact hk, ?_, Fr⟩
+  refine ⟨c', k, ex, by beta_reduce; rwx [hK1, hK2], ?_, Fr⟩
   intro H' J' N₁' N₂' hJ' hA1 hA2
-  have eJ : J = J' := junction_eq hJ hJ'
+  have eJ  := junction_eq hJ hJ'
   subst eJ
   have e1 := chords_eq_of_nfAt hN1.nfAt hA1
   have e2 := chords_eq_of_nfAt hN2.nfAt hA2

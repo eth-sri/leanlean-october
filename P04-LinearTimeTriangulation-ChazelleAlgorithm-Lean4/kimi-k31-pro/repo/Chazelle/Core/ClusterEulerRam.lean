@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.ClusterEuler
 public import Chazelle.Core.ClusterPhase
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-I, part 10: preorder intervals on the RAM
@@ -121,9 +126,9 @@ end ELay
 
 theorem Regs_of_pfr {L : ELay} {c0 c : Config} (h : L.Regs c0) (hf : PFr ERG L.WR c0 c) :
     L.Regs c := by
-  have k : ∀ r, ¬ ERG r → c.nreg r = c0.nreg r := hf.1
+  have k  := hf.1
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> (rwa [k _ (by unfold ERG; omega)])
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> (rwa [k _ (by ufo ERG)])
 
 /-! ## Proofs -/
 
@@ -157,7 +162,7 @@ theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
   have hqr : R.q i ≠ R.root := by
     intro h; have := hR.q_inj i hin 0 hR.n_pos h; omega
   have hqr' : c0.nmem (L.bQ + i) ≠ c0.nmem L.bQ := by
-    rw [← L.tree_root c0.nmem]; exact hqr
+    rwx [← L.tree_root c0.nmem]
   have hpn : R.par (R.q i) < L.n := (hR.par_spec hqn hqr).1
   -- reads
   have r1 : c.nmem (L.bQ + i) = R.q i := hf.2.2.2.2 _ (hL.rq i hin)
@@ -177,11 +182,11 @@ theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
   exec_block
   all_goals try (config_simp; simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hi, hRc.one,
     Nat.add_sub_cancel, r1, r2, r3]; omega)
-  refine ⟨rfl, ‹_›, ?_, by config_simp; rw [hi, hRc.one]; omega, ?_⟩
+  refine ⟨rfl, ‹_›, ?_, by config_simp; rwo [hi, hRc.one], ?_⟩
   · refine PFr.nreg_nmem hf (fun r hr => ?_) ?_
-    · simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega
+    · simp only [Machine.upd_apply]; unfold ERG at hr; splao
     · simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hi, hRc.one, Nat.add_sub_cancel, r1, r2, r3]
-      unfold ELay.WR; omega
+      ufo ELay.WR
   · config_simp
     simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hi, hRc.one, Nat.add_sub_cancel, r1, r2, r3]
     rw [fun_upd]
@@ -198,7 +203,7 @@ theorem sizeLoop_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
   have e0 := Exec.copyN (P := P) hw 130210 130206
   set c1 := { c with nreg := upd c.nreg 130210 (c.nreg 130206) }
   have hf1 : PFr ERG L.WR c0 c1 := PFr.nreg hf (fun r hr => by
-    simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega)
+    simp only [Machine.upd_apply]; unfold ERG at hr; splao)
   obtain ⟨c', k, e, ⟨hw', hf', i, hi, hi1, hin, hS⟩, htest, hk⟩ := Exec.whileLtN_potential
     (P := P) (W := W) (a := 130001) (b := 130210) (body := sizeBody)
     (fun c' => WordsBounded W c' ∧ PFr ERG L.WR c0 c' ∧ ∃ i, c'.nreg 130210 = i ∧ 1 ≤ i ∧
@@ -210,9 +215,9 @@ theorem sizeLoop_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
       obtain ⟨i', rfl⟩ : ∃ i', i = i' + 1 := ⟨i - 1, by omega⟩
       obtain ⟨c3, k3, e3, hk3, hw3, hf3, hi3, hS3⟩ :=
         sizeBody_exec (P := P) hL hR0 hR hw2 hf2 hi (by omega) (by omega) hS
-      exact ⟨c3, k3, e3, ⟨hw3, hf3, i', hi3, by omega, by omega, hS3⟩, by rw [hi3, hi]; omega⟩)
+      exact ⟨c3, k3, e3, ⟨hw3, hf3, i', hi3, by omega, by omega, hS3⟩, by rwo [hi3, hi]⟩)
     ⟨e0.wb_right, hf1, L.n, by simp [c1, hRc.rn], hR.n_pos, le_rfl,
-      BTree.SizeInv.init (fun g hg => h1 g hg) hR⟩
+      BTree.SizeInv.init (h1) hR⟩
   have hone := (Regs_of_pfr hR0 hf').one
   rw [hone, hi] at htest
   have hi1' : i = 1 := by omega
@@ -238,10 +243,10 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
   have hqr : R.q i ≠ R.root := by
     intro h; have := hR.q_inj i hin 0 hR.n_pos h; omega
   have hqr' : c0.nmem (L.bQ + i) ≠ c0.nmem L.bQ := by
-    rw [← L.tree_root c0.nmem]; exact hqr
+    rwx [← L.tree_root c0.nmem]
   have hpn : R.par (R.q i) < L.n := (hR.par_spec hqn hqr).1
   have hpq : R.par (R.q i) ≠ R.q i := by
-    intro h; have := (hR.par_spec hqn hqr).2; rw [h] at this; omega
+    intro h; have := (hR.par_spec hqn hqr).2; rwo [h] at this
   -- reads
   have r1 : c.nmem (L.bQ + i) = R.q i := hf.2.2.2.2 _ (hL.rq i hin)
   have r2 : c.nmem (L.bPar + R.q i) = c0.nmem (L.bPar + R.q i) :=
@@ -268,11 +273,11 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
     hRc.rSlot, hi, hRc.one, r1, r2, r3, r4, r5']; omega)
   refine ⟨rfl, ‹_›, ?_, by config_simp; rw [hi, hRc.one], ?_, ?_⟩
   · refine PFr.of_eq hf (fun r hr => ?_) (fun a ha => ?_)
-    · simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega
+    · simp only [Machine.upd_apply]; unfold ERG at hr; splao
     · simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hRc.rPre, hRc.rSlot, hi, hRc.one, r1, r2,
         r3, r4, r5', Machine.upd_apply]
       unfold ELay.WR at ha
-      split_ifs <;> omega
+      splao
   · intro g hg
     config_simp
     simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hRc.rPre, hRc.rSlot, hi, hRc.one, r1, r2,
@@ -313,13 +318,13 @@ theorem preInit_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
   unfold preInit
   exec_block
   all_goals try omega
-  all_goals try (config_simp; simp only [hRc.rQ, hRc.rPre, hRc.rSlot, r1]; omega)
+  all_goals try (config_simp; sio only [hRc.rQ, hRc.rPre, hRc.rSlot, r1])
   refine ⟨rfl, ‹_›, ?_, by config_simp, ?_, ?_⟩
   · refine PFr.of_eq hf (fun r hr => ?_) (fun a ha => ?_)
-    · simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega
+    · simp only [Machine.upd_apply]; unfold ERG at hr; splao
     · simp only [hRc.rQ, hRc.rPre, hRc.rSlot, r1, Machine.upd_apply]
       unfold ELay.WR at ha
-      split_ifs <;> omega
+      splao
   · intro g hg
     config_simp
     simp only [hRc.rQ, hRc.rPre, hRc.rSlot, r1, Machine.upd_apply]
@@ -355,13 +360,13 @@ theorem eulerStmt_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c
     · simp [hR0.rn]
     · simp
     · refine PFr.nreg (PFr.refl c0) (fun r hr => ?_)
-      simp only [Machine.upd_apply]; unfold ERG at hr; split_ifs <;> omega
+      simp only [Machine.upd_apply]; unfold ERG at hr; splao
   have hone1 : c1.nreg 130001 = 1 := (Regs_of_pfr hR0 hr1).one
   obtain ⟨c2, k2, e2, hk2, hf2, hfill⟩ := fillStmt_exec (P := P) hw1 hone1
-    (by rw [h150, h151]; exact hL.wSz) (by rw [h151]; omega)
+    (by rw [h150, h151]; exact hL.wSz) (by rwo [h151])
   have hr2 : PFr ERG L.WR c0 c2 := hr1.trans (hf2.mono (fun r hr => by
-    unfold FillScr at hr; unfold ERG; omega) (fun a ha => by
-      rw [h150, h151] at ha; unfold ELay.WR; omega))
+    unfold FillScr at hr; ufo ERG) (fun a ha => by
+      rw [h150, h151] at ha; ufo ELay.WR))
   rw [h150, h151, h152] at hfill
   rw [h151] at hk2
   obtain ⟨c3, k3, e3, hk3, hw3, hr3, hsz3⟩ := sizeLoop_exec (P := P) hL hR0 hR e2.wb_right hr2

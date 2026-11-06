@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXBkt
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
 
 /-!
 # Down phase, extraction (D6): buckets and arc tests by comparisons
@@ -153,7 +155,7 @@ theorem arc_facts :
       (interiorModel (Qof P)).key (Qof P) x < (Qof P).n → x.edge < (Qof P).n := by
     intro x hx hk
     have : (x.edge : ℝ) < (Qof P).n := by
-      have := hx.1; unfold Model.key at hk; linarith
+      have := hx.1; ufl Model.key at hk
     exact_mod_cast this
   refine ⟨fun j hj => ?_, fun j j' hjj hj' => key_s_strict hK X.hsort hE hjj hj',
     fun j hj => key_e_next hK X.hsort hE hj, fun j j' hj hj' hin => ?_⟩
@@ -175,7 +177,7 @@ theorem hlt_iff {P : Polygon} (hG : GoodEnv P) {u v : ℕ} (hu : u < (Qof P).n) 
     ((Qof P).vtx u).2 < ((Qof P).vtx v).2 ↔ Mountain.ylexLT (P.vtx u) (P.vtx v) := by
   have hgood := goodShear_epsOf hG.2
   have hn : (Qof P).n = P.n := shear_n _ P
-  rw [hgood.2.2.1 u v (by rw [← hn]; exact hu) (by rw [← hn]; exact hv)]
+  rw [hgood.2.2.1 u v (by rwx [← hn]) (by rwx [← hn])]
   show _ ↔ ((Qof P).vtx u).2 < ((Qof P).vtx v).2 ∨
     (((Qof P).vtx u).2 = ((Qof P).vtx v).2 ∧ ((Qof P).vtx u).1 < ((Qof P).vtx v).1)
   constructor

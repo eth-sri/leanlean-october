@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Separator.Maps
 public import Mathlib.Combinatorics.SimpleGraph.Metric
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Rooted spanning trees of a combinatorial map (planar separators, part 3a)
@@ -83,12 +85,12 @@ theorem level_iterate_parent (n : ℕ) (u : V) :
     T.level (T.parent^[n] u) = T.level u - n := by
   induction n with
   | zero => simp
-  | succ n ih => rw [Function.iterate_succ_apply', T.level_parent, ih]; omega
+  | succ n ih => rwo [Function.iterate_succ_apply', T.level_parent, ih]
 
 /-- Enough steps up reach the root. -/
 theorem iterate_parent_eq_root {n : ℕ} {u : V} (hn : T.level u ≤ n) :
     T.parent^[n] u = T.root :=
-  T.eq_root_of_level_eq_zero (by rw [T.level_iterate_parent]; omega)
+  T.eq_root_of_level_eq_zero (by rwo [T.level_iterate_parent])
 
 /-- Every vertex is its own ancestor. -/
 theorem isAnc_refl (u : V) : T.IsAnc u u := ⟨0, rfl⟩
@@ -105,7 +107,7 @@ theorem IsAnc.trans {w v u : V} (h1 : T.IsAnc w v) (h2 : T.IsAnc v u) : T.IsAnc 
 /-- Ancestors have smaller levels. -/
 theorem IsAnc.level_le {v u : V} (h : T.IsAnc v u) : T.level v ≤ T.level u := by
   obtain ⟨n, rfl⟩ := h
-  rw [T.level_iterate_parent]; omega
+  rwo [T.level_iterate_parent]
 
 /-- An ancestor of the parent is an ancestor. -/
 theorem IsAnc.of_parent {v u : V} (h : T.IsAnc v (T.parent u)) : T.IsAnc v u :=
@@ -117,7 +119,7 @@ theorem eq_of_isAnc_of_not_parent {v u : V} (h : T.IsAnc v u) (hp : ¬ T.IsAnc v
   obtain ⟨n, hn⟩ := h
   rcases n with _ | n
   · exact hn
-  · exact absurd ⟨n, by rw [← Function.iterate_succ_apply]; exact hn⟩ hp
+  · exact absurd ⟨n, by rwx [← Function.iterate_succ_apply]⟩ hp
 
 /-- A non-root vertex is not an ancestor of its parent. -/
 theorem not_isAnc_parent {v : V} (hv : v ≠ T.root) : ¬ T.IsAnc v (T.parent v) := by
@@ -153,10 +155,10 @@ def IsTreeDart (d : D) : Prop := ∃ v, v ≠ T.root ∧ (d = T.par v ∨ d = M.
 theorem par_ne_opp_par {v w : V} (hv : v ≠ T.root) (hw : w ≠ T.root) :
     T.par v ≠ M.opp (T.par w) := by
   intro h
-  have h1 : T.level (M.head (T.par w)) + 1 = T.level w := T.level_head_par w hw
-  have h2 : T.level (M.head (T.par v)) + 1 = T.level v := T.level_head_par v hv
+  have h1  := T.level_head_par w hw
+  have h2  := T.level_head_par v hv
   have e1 : M.head (T.par w) = v := by
-    rw [← T.vert_par v hv, h]; rfl
+    rwr [← T.vert_par v hv, h]
   have e2 : M.head (T.par v) = w := by
     rw [← T.vert_par w hw, h, head, M.opp_opp]
   rw [e1] at h1; rw [e2] at h2
@@ -176,7 +178,7 @@ def treeDarts : Finset D :=
 
 /-- Membership in the tree darts. -/
 theorem mem_treeDarts {d : D} : d ∈ T.treeDarts ↔ T.IsTreeDart d := by
-  simp only [treeDarts, Finset.mem_union, Finset.mem_image, Finset.mem_filter,
+  simp [treeDarts, Finset.mem_union, Finset.mem_image, Finset.mem_filter,
     Finset.mem_univ, true_and, IsTreeDart]
   constructor
   · rintro (⟨v, hv, rfl⟩ | ⟨v, hv, rfl⟩)
@@ -203,14 +205,14 @@ theorem card_treeDarts : T.treeDarts.card = 2 * (Fintype.card V - 1) := by
           Finset.card_univ]
       omega
     · intro v hv w hw h
-      simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv hw
+      simp [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv hw
       exact T.par_injective hv hw (M.opp_injective h)
     · intro v hv w hw h
-      simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv hw
+      simp [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv hw
       exact T.par_injective hv hw h
   · rw [Finset.disjoint_left]
     intro d hd hd'
-    simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and] at hd hd'
+    simp [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and] at hd hd'
     obtain ⟨v, hv, rfl⟩ := hd
     obtain ⟨w, hw, h⟩ := hd'
     exact T.par_ne_opp_par hv hw h.symm
@@ -232,7 +234,7 @@ theorem reachable_of_connected (hM : M.Connected) (r u : V) : M.graph.Reachable 
   refine hM {x | M.graph.Reachable r (M.vert x)} ?_ ?_ d0 (by simp [hd0]) d
   · intro x hx; simpa [M.vert_rot] using hx
   · intro x hx
-    simp only [Set.mem_ofPred_eq] at hx ⊢
+    simp [Set.mem_ofPred_eq] at hx ⊢
     by_cases h : M.vert x = M.vert (M.opp x)
     · rwa [← h]
     · exact hx.trans (SimpleGraph.Adj.reachable ⟨h, x, rfl, rfl⟩)
@@ -268,10 +270,10 @@ theorem exists_bfsTree (hM : M.Connected) (r : V) :
     if hv : v = r then d0 else Classical.choose (M.exists_dart_toward hM r v hv)
   refine ⟨⟨r, fun v => M.graph.dist r v, par, by simp, ?_, ?_⟩, rfl, fun v => rfl⟩
   · intro v hv
-    simp only [par, dite_eq_right hv]
+    simp [par, dite_eq_right hv]
     exact (Classical.choose_spec (M.exists_dart_toward hM r v hv)).1
   · intro v hv
-    simp only [par, dite_eq_right hv]
+    simp [par, dite_eq_right hv]
     exact (Classical.choose_spec (M.exists_dart_toward hM r v hv)).2
 
 end BFS

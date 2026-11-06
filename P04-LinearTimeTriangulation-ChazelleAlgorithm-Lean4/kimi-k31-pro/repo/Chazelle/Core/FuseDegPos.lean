@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.FuseDegGen
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The degree of the revised fusion, part 2: keys, offsets and faced regions (general models)
@@ -164,7 +167,7 @@ theorem ncard_attKeys_le (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
     rcases hs0.lt_or_eq with h0 | h0
     · rcases hs1.lt_or_eq with h1 | h1
       · exact absurd (hs ▸ hop s ⟨h0, h1⟩) hnD
-      · right; rw [hs, h1, Geometry.lerp_one]; rfl
+      · right; rwr [hs, h1, Geometry.lerp_one]
     · left; rw [hs, ← h0, Geometry.lerp_zero]
   have hinj : InjOn f (attKeys M c) := by
     rintro x ⟨p, t, hA, rfl⟩ y ⟨p', t', hA', rfl⟩ hxy
@@ -189,20 +192,20 @@ theorem faced_before_zero {F : Set (Set Point)} {V : Set Point} {l : ℝ} {p : �
   rcases Nat.eq_zero_or_pos p with h0 | h0
   · have hl0 : 0 ≤ l := harcV.1
     have hln : l < M.W.n := harcV.2.1
-    have hl0' : 0 < l := lt_of_le_of_ne hl0 (fun h => hVne (by rw [← h, h0]; simp))
+    have hl0' : 0 < l := lt_of_le_of_ne hl0 (fun h => hVne (by rws [← h, h0]))
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < min 1 (M.W.n - l) from
       lt_min one_pos (by linarith))] with s hs hs'
     have hs0 : (0 : ℝ) < s := hs
     have hs1 : s < 1 := hs'.2.trans_le (min_le_left _ _)
     have hs2 : s < M.W.n - l := hs'.2.trans_le (min_le_right _ _)
     have e : (0 + M.W.n - 1) % M.W.n = M.W.n - 1 := by
-      rw [Nat.mod_eq_of_lt (show 0 + M.W.n - 1 < M.W.n by omega)]; omega
+      rwo [Nat.mod_eq_of_lt (show 0 + M.W.n - 1 < M.W.n by omega)]
     rw [h0, e]
     refine harcV.2.2.2.2.2.2 _ _ (by omega) (by linarith) (by linarith) ?_
-    have hc : ((M.W.n - 1 : ℕ) : ℝ) = M.W.n - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hc : ((M.W.n - 1 : ℕ) : ℝ) = M.W.n - 1 := by rws [Nat.cast_sub (by omega)]
     rw [hc, h0]
     unfold sideInArc
-    rw [ite_eq_right (by push_cast; linarith)]
+    rw [ite_eq_right (by pcl)]
     left; linarith
   · filter_upwards [eventually_before_end hVne, Ioo_mem_nhdsGT one_pos] with s h1 h2
     have e : (p + M.W.n - 1) % M.W.n = p - 1 := by
@@ -210,7 +213,7 @@ theorem faced_before_zero {F : Set (Set Point)} {V : Set Point} {l : ℝ} {p : �
         Nat.mod_eq_of_lt (by omega)]
     rw [e]
     refine harcV.2.2.2.2.2.2 _ _ (by omega) (by linarith [h2.2]) (by linarith [h2.1]) ?_
-    have hc : ((p - 1 : ℕ) : ℝ) = p - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hc : ((p - 1 : ℕ) : ℝ) = p - 1 := by rws [Nat.cast_sub (by omega)]
     rw [hc, show (p : ℝ) - 1 + (1 - s) = p + 0 - s by ring]
     exact h1
 
@@ -303,11 +306,11 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     obtain ⟨s, ⟨⟨hs1, hs2⟩, hs3⟩, hs4⟩ := (((h1.and (eventually_not_cut_after hM hF hfin
       ((p : ℝ) + t))).and self_mem_nhdsWithin).and (Ioo_mem_nhdsGT (show (0 : ℝ) <
         min (1 - t) (b - (d + t)) from lt_min (by linarith) (by linarith)))).exists
-    have hs0 : (0 : ℝ) < s := hs3
+    have hs0  := hs3
     have hs5 : s < 1 - t := hs4.2.trans_le (min_le_left _ _)
     have hs6 : s < b - (d + t) := hs4.2.trans_le (min_le_right _ _)
     refine ⟨d, t + s, le_rfl, ⟨by linarith, by linarith⟩, by linarith, by linarith, ?_, hs1⟩
-    rw [← add_assoc]; exact hs2
+    rwx [← add_assoc]
   · right
     intro a ha
     rcases ht0.lt_or_eq with ht0' | ht0'
@@ -315,28 +318,28 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
       obtain ⟨s, ⟨⟨hs1, hs2⟩, hs3⟩, hs4⟩ := (((h1.and (eventually_not_cut_before hM hF hfin
         ((p : ℝ) + t))).and self_mem_nhdsWithin).and (Ioo_mem_nhdsGT (show (0 : ℝ) <
           min t ((d + t) - a) from lt_min ht0' (by linarith)))).exists
-      have hs0 : (0 : ℝ) < s := hs3
+      have hs0  := hs3
       have hs5 : s < t := hs4.2.trans_le (min_le_left _ _)
       have hs6 : s < (d + t) - a := hs4.2.trans_le (min_le_right _ _)
       refine ⟨d, t - s, le_rfl, ⟨by linarith, by linarith⟩, by linarith, by linarith, ?_, hs1⟩
-      rw [show (p : ℝ) + (t - s) = p + t - s by ring]; exact hs2
+      rwx [show (p : ℝ) + (t - s) = p + t - s by ring]
     · subst ht0'
       have hd1 : 1 ≤ d := by
         have : (0 : ℝ) < d := by linarith
         exact_mod_cast this
       have h1 := faced_before_zero (Nat.mod_lt _ hn) harc (WalkAx.arc_cuts hne harc).2.2
-      have hpm : (p + M.W.n - 1) % M.W.n = (g + (d - 1)) % M.W.n := mod_pred_mod hn g hd1
+      have hpm  := mod_pred_mod hn g hd1
       rw [hpm] at h1
       obtain ⟨s, ⟨⟨hs1, hs2⟩, hs3⟩, hs4⟩ := (((h1.and (eventually_not_cut_before hM hF hfin
         ((((g + (d - 1)) % M.W.n : ℕ) : ℝ) + 1))).and self_mem_nhdsWithin).and
         (Ioo_mem_nhdsGT (show (0 : ℝ) < min 1 ((d + 0) - a) from
           lt_min one_pos (by linarith)))).exists
-      have hs0 : (0 : ℝ) < s := hs3
+      have hs0  := hs3
       have hs5 : s < 1 := hs4.2.trans_le (min_le_left _ _)
       have hs6 : s < (d + 0) - a := hs4.2.trans_le (min_le_right _ _)
-      have hc : ((d - 1 : ℕ) : ℝ) = d - 1 := by rw [Nat.cast_sub hd1]; simp
-      refine ⟨d - 1, 1 - s, by omega, ⟨by linarith, by linarith⟩, by rw [hc]; linarith,
-        by rw [hc]; linarith, ?_, hs1⟩
+      have hc : ((d - 1 : ℕ) : ℝ) = d - 1 := by rws [Nat.cast_sub hd1]
+      refine ⟨d - 1, 1 - s, by omega, ⟨by linarith, by linarith⟩, by rwli [hc],
+        by rwli [hc], ?_, hs1⟩
       rw [show (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + (1 - s) =
         (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + 1 - s by ring]
       exact hs2
@@ -370,7 +373,7 @@ theorem ncard_at_off_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and, not_exists]
       intro _ d t _ ht ht1 ho _
       exact h ⟨d, t, ht, ht1, ho⟩
-    rw [this, Set.ncard_empty]; omega
+    rwo [this, Set.ncard_empty]
 
 /-- **At most four crossing chords per piece**: the positions of crossing chords next to which
 `R` is faced are at most two (the first and the last of `R`'s positions in the stretch), by the
@@ -407,8 +410,8 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
         ¬ M.IsCut F (((g + dx) % n : ℕ) + tx) → M.Faces ((g + dx) % n) tx R →
         ¬ M.IsCut F (((g + dy) % n : ℕ) + ty) → M.Faces ((g + dy) % n) ty R → False := by
       intro dx dy tx ty hdx hdy htx hty h0 h1 h2 h3 hcx hfx hcy hfy
-      have hox : off n g (((g + dx) % n : ℕ) + tx) = dx + tx := off_key hg hdx htx.1.le htx.2
-      have hoy : off n g (((g + dy) % n : ℕ) + ty) = dy + ty := off_key hg hdy hty.1.le hty.2
+      have hox  := off_key hg hdx htx.1.le htx.2
+      have hoy  := off_key hg hdy hty.1.le hty.2
       have hoA : off n g (((g + d₂) % n : ℕ) + t₂) = d₂ + t₂ :=
         off_key hg (by omega) ht₂ ht₂1
       have hKx := hkey (Nat.mod_lt (g + dx) hn) htx.1.le htx.2
@@ -418,10 +421,10 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       have hs : M.Separates f₂ (((g + dx) % n : ℕ) + tx) (((g + dy) % n : ℕ) + ty) := by
         refine ⟨(g + d₂) % n, pb, t₂, tb, hA₂, hB, Ne.symm hBne, ?_⟩
         refine off_sep (Nat.cast_nonneg g) hgR hKA.1 hKA.2 hKB.1 hKB.2 hKx.1 hKx.2 hKy.1 hKy.2
-          ⟨by rw [hox, hoA]; exact h1, by rw [hoy, hoA]; exact h2⟩ ?_
+          ⟨by rwx [hox, hoA], by rwx [hoy, hoA]⟩ ?_
         rw [hox, hoy]
         rcases hBo with h | h
-        · left; rw [h]; exact h0
+        · left; rwx [h]
         · right; linarith
       exact ((hM.eq_iff_not_separates hF hfin hR hR (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) htx hty
         hcx hcy hfx hfy).1 rfl) f₂ hf₂.1 hs
@@ -453,7 +456,7 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     refine ((hM.finite_cuts hF hfin).image (off n g)).subset ?_
     rintro _ ⟨f, hf, d, t, hd, ht, ht1, -, hA, -, -, rfl⟩
     exact ⟨_, ⟨f, hf.1, _, _, hA, rfl⟩, off_key hg (by omega) ht ht1⟩
-  have hO2 : O.ncard ≤ 2 := ncard_le_two_of_no_three hno3
+  have hO2  := ncard_le_two_of_no_three hno3
   have hsub : CrossX M F R g L ⊆ ⋃ o ∈ O, {f | f ∈ F ∧ ∃ (d : ℕ) (t : ℝ), d < L ∧ 0 ≤ t ∧
       t < 1 ∧ o = d + t ∧ SideAttach M.W f ((g + d) % M.W.n) t} := by
     rintro f ⟨hf, d, t, hd, ht, ht1, hdt, hA, hadj, hX⟩

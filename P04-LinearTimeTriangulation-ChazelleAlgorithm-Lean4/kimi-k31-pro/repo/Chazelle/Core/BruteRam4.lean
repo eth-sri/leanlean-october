@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.BruteRam3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-K on the RAM, part 4: the far-end scan
@@ -10,9 +14,6 @@ For the vertex `v_k` (index `qk = a + k` in `180035`) and the direction of code 
 (`found` in `180051`, `best` in `180052`), exactly as `Brute.scan` (`scanS_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -27,14 +28,14 @@ open Machine Machine.Stmt Programs SignK WalkKey
 theorem vtxQ {P : Polygon} {C : Chain} (hC : C.P = Qof P) (_hsn : C.s + C.m + 1 ≤ P.n) {j : ℕ}
     (_hj : j ≤ C.m + 1) (hjn : C.s + j < P.n) : (Qof P).vtx (C.s + j) = C.vertex j := by
   have hn : C.P.n = P.n := by rw [hC]; exact shear_n _ _
-  rw [vertex_eq (by rw [hn]; exact hjn), hC]
+  rw [vertex_eq (by rwx [hn]), hC]
 
 theorem edgeXQ {P : Polygon} {C : Chain} (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n) {j k : ℕ}
     (hj : j < C.m) (hk : k ≤ C.m) :
     edgeXAt (Qof P) (C.s + j) (C.s + k) = edgeXk C j k := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   unfold edgeXAt edgeXk Visibility.edgeX
-  rw [Nat.mod_eq_of_lt (by rw [hQn]; omega), vtxQ hC hsn (by omega) (by omega),
+  rw [Nat.mod_eq_of_lt (by rwo [hQn]), vtxQ hC hsn (by omega) (by omega),
     show C.s + j + 1 = C.s + (j + 1) by ring, vtxQ hC hsn (by omega) (by omega),
     vtxQ hC hsn (by omega) (by omega)]
 
@@ -131,8 +132,8 @@ theorem sideS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     obtain ⟨c', k', e, hk', F, b, hb⟩ := testS_exec (P := P) hG hW (op := 0) (by omega)
       (x := .v 180035) (y := .e 180053 180035) (z := .v 180053) (d := 180077) (Or.inr (by omega))
       ⟨Or.inr (by omega), Or.inr (by omega)⟩ (Or.inr (by omega)) c hw
-      (by simp only [Src.pt, SymPt.Lt]; omega) (by simp only [Src.pt, SymPt.Lt]; omega)
-      (by simp only [Src.pt, SymPt.Lt]; omega)
+      (by sio only [Src.pt, SymPt.Lt]) (by sio only [Src.pt, SymPt.Lt])
+      (by sio only [Src.pt, SymPt.Lt])
     simp only [Src.pt, SymPt.eval, SignTest, h35, h53] at hb
     rw [edgeXQ hC hsn hj hk, vtxQ hC hsn (by omega) lk] at hb
     refine ⟨c', k', e, hk', F, b, ?_⟩
@@ -140,8 +141,8 @@ theorem sideS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   · obtain ⟨c', k', e, hk', F, b, hb⟩ := testS_exec (P := P) hG hW (op := 0) (by omega)
       (x := .e 180053 180035) (y := .v 180035) (z := .v 180053) (d := 180077)
       ⟨Or.inr (by omega), Or.inr (by omega)⟩ (Or.inr (by omega)) (Or.inr (by omega)) c hw
-      (by simp only [Src.pt, SymPt.Lt]; omega) (by simp only [Src.pt, SymPt.Lt]; omega)
-      (by simp only [Src.pt, SymPt.Lt]; omega)
+      (by sio only [Src.pt, SymPt.Lt]) (by sio only [Src.pt, SymPt.Lt])
+      (by sio only [Src.pt, SymPt.Lt])
     simp only [Src.pt, SymPt.eval, SignTest, h35, h53] at hb
     rw [edgeXQ hC hsn hj hk, vtxQ hC hsn (by omega) lk] at hb
     refine ⟨c', k', by unfold sideS; rw [ite_eq_right hd]; exact e, hk', F, b, ?_⟩
@@ -161,8 +162,8 @@ theorem nearS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
       (x := .e 180053 180035) (y := .e 180055 180035) (z := .v 180053) (d := 180078)
       ⟨Or.inr (by omega), Or.inr (by omega)⟩ ⟨Or.inr (by omega), Or.inr (by omega)⟩
       (Or.inr (by omega)) c hw
-      (by simp only [Src.pt, SymPt.Lt]; omega) (by simp only [Src.pt, SymPt.Lt]; omega)
-      (by simp only [Src.pt, SymPt.Lt]; omega)
+      (by sio only [Src.pt, SymPt.Lt]) (by sio only [Src.pt, SymPt.Lt])
+      (by sio only [Src.pt, SymPt.Lt])
     simp only [Src.pt, SymPt.eval, SignTest, h35, h53, h55] at hb'
     rw [edgeXQ hC hsn hj hk, edgeXQ hC hsn hb hk] at hb'
     refine ⟨c', k', e, hk', F, b', ?_⟩
@@ -171,8 +172,8 @@ theorem nearS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
       (x := .e 180055 180035) (y := .e 180053 180035) (z := .v 180053) (d := 180078)
       ⟨Or.inr (by omega), Or.inr (by omega)⟩ ⟨Or.inr (by omega), Or.inr (by omega)⟩
       (Or.inr (by omega)) c hw
-      (by simp only [Src.pt, SymPt.Lt]; omega) (by simp only [Src.pt, SymPt.Lt]; omega)
-      (by simp only [Src.pt, SymPt.Lt]; omega)
+      (by sio only [Src.pt, SymPt.Lt]) (by sio only [Src.pt, SymPt.Lt])
+      (by sio only [Src.pt, SymPt.Lt])
     simp only [Src.pt, SymPt.eval, SignTest, h35, h53, h55] at hb'
     rw [edgeXQ hC hsn hj hk, edgeXQ hC hsn hb hk] at hb'
     refine ⟨c', k', by unfold nearS; rw [ite_eq_right hd]; exact e, hk', F, b', ?_⟩
@@ -225,7 +226,7 @@ theorem candS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
         · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
         · simp only [decide_eq_false_iff_not, not_or] at hr
           simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
-    refine ⟨c', _, .ifLtN_true (by rw [hE, h11]; omega) e, by omega, sc_of_two (by omega)
+    refine ⟨c', _, .ifLtN_true (by rwo [hE, h11]) e, by omega, sc_of_two (by omega)
       (by omega) R, by rw [R.1 _ (by decide), h50], ?_⟩
     simp only [upd1, Enc]
     exact ⟨q51, q52⟩
@@ -246,30 +247,29 @@ theorem candS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     have k51 : c₂.nreg 180051 = 1 := by rw [F₂.1 _ (by decide), R₁ _ (by decide), hf]
     have w₂ := e₂.wb_right
     have F₁ : FrameB Bsc c c₁ := ⟨fun r hr => R₁ r (by
-      unfold Bsc at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega),
+      unfold Bsc at hr; sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr),
       fun r _ => rfl, rfl, rfl, rfl⟩
     by_cases hn : sig d * edgeXk C j k < sig d * edgeXk C b k
     · have e₃ := Exec.copyN (P := P) w₂ 180052 180050
-      refine ⟨_, _, .ifLtN_false (by rw [hf, h11]; omega) (.seq e₁ (.seq e₂
-        (.ifLtN_false (by rw [t₂.2 hn, k11]; omega) e₃))), by omega,
+      refine ⟨_, _, .ifLtN_false (by rwo [hf, h11]) (.seq e₁ (.seq e₂
+        (.ifLtN_false (by rwo [t₂.2 hn, k11]) e₃))), by omega,
         (F₁.trans (sc_of_bt (by omega) F₂)).trans ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩,
         ?_, ?_⟩
       · have : r ≠ 180052 := by
-          unfold Bsc at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega
+          unfold Bsc at hr; sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
         simp [this]
       · simp [k50]
       · simp only [upd1, Enc, ite_eq_left hn]
         simp [k51, k50]
     · have h0' : c₂.nreg 180078 = 0 := by have := mt t₂.1 hn; omega
-      refine ⟨_, _, .ifLtN_false (by rw [hf, h11]; omega) (.seq e₁ (.seq e₂
-        (.ifLtN_true (by rw [h0', k11]; omega) (.skip w₂)))), by omega,
+      refine ⟨_, _, .ifLtN_false (by rwo [hf, h11]) (.seq e₁ (.seq e₂
+        (.ifLtN_true (by rwo [h0', k11]) (.skip w₂)))), by omega,
         F₁.trans (sc_of_bt (by omega) F₂), k50, ?_⟩
       simp only [upd1, Enc, ite_eq_right hn]
       exact ⟨k51, k52⟩
 
 /-! ## One step of the scan -/
 
-set_option maxHeartbeats 1000000 in
 theorem scanBody_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) {C : Chain}
     (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n) {d j k : ℕ} (hj : j < C.m) (hk : k ≤ C.m)
     (c : Config) (hw : WordsBounded W c) (hS : SI C (C.s + k) c) (h50 : c.nreg 180050 = j)
@@ -289,8 +289,8 @@ theorem scanBody_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤
       c₁.nreg 180053 = C.s + j ∧ c₁.nreg 180054 = C.s + j + 1 ∧
       FrameB (fun r => decide (r = 180053 ∨ r = 180054)) c c₁ := by
     exec_block
-    · config_simp; rw [h0, h50]; omega
-    · config_simp; rw [h0, h50, h11]; omega
+    · config_simp; rwo [h0, h50]
+    · config_simp; rwo [h0, h50, h11]
     · refine ⟨rfl, ?_, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
       · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
         rw [h0, h50]
@@ -341,10 +341,10 @@ theorem scanBody_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤
   rw [← v₆, t56, t57] at A₆
   have S₆ := S₅.keep (sc_of_one (by omega) F₆)
   obtain ⟨c₇, k₇, e₇, hk₇, v₇, F₇⟩ := andS_exec (P := P) W2 c₆ e₆.wb_right (d := 180058)
-    (x := 180058) (y := 180059) (by decide) S₆.2.2.1 (by rw [fr1 F₆ (by decide)]; exact b58)
-    (by rw [fr1 F₆ (by decide)]; exact b59)
-  have A₇ := and_bit (show c₆.nreg 180058 ≤ 1 by rw [fr1 F₆ (by decide)]; exact b58)
-    (show c₆.nreg 180059 ≤ 1 by rw [fr1 F₆ (by decide)]; exact b59)
+    (x := 180058) (y := 180059) (by decide) S₆.2.2.1 (by rwx [fr1 F₆ (by decide)])
+    (by rwx [fr1 F₆ (by decide)])
+  have A₇ := and_bit (show c₆.nreg 180058 ≤ 1 by rwx [fr1 F₆ (by decide)])
+    (show c₆.nreg 180059 ≤ 1 by rwx [fr1 F₆ (by decide)])
   rw [← v₇, fr1 F₆ (by decide), fr1 F₆ (by decide), t58, t59] at A₇
   have S₇ := S₆.keep (sc_of_one (by omega) F₇)
   have x56 : c₇.nreg 180056 = c₆.nreg 180056 := fr1 F₇ (by decide)
@@ -395,14 +395,14 @@ theorem scanBody_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤
       Enc (c₁₁.nreg 180051) (c₁₁.nreg 180052) (scan C k (sig d) (j + 1)) := by
     by_cases hc : Cand C k (sig d) j
     · obtain ⟨c', k', e', hk', F', q50', hE''⟩ := candS_exec (P := P) (d := d) hG (by omega) hC
-        hsn hj hk c₁₀ w₁₀ S₁₀ p50 p53 (by rw [p51, p52]; exact hE) hsc
-      refine ⟨c', _, .ifLtN_false (by rw [hcand.2 hc, S₁₀.2.2.1]; omega) e', by omega, F', q50',
+        hsn hj hk c₁₀ w₁₀ S₁₀ p50 p53 (by rwx [p51, p52]) hsc
+      refine ⟨c', _, .ifLtN_false (by rwo [hcand.2 hc, S₁₀.2.2.1]) e', by omega, F', q50',
         ?_⟩
-      rw [scan_succ_cand hc]; exact hE''
+      rwx [scan_succ_cand hc]
     · have h0' : c₁₀.nreg 180076 = 0 := by have := mt hcand.1 hc; have := A₁₀.1; omega
-      refine ⟨c₁₀, _, .ifLtN_true (by rw [h0', S₁₀.2.2.1]; omega) (.skip w₁₀), by omega,
+      refine ⟨c₁₀, _, .ifLtN_true (by rwo [h0', S₁₀.2.2.1]) (.skip w₁₀), by omega,
         FrameB.refl _ _, p50, ?_⟩
-      rw [scan_succ_not hc, p51, p52]; exact hE
+      rwx [scan_succ_not hc, p51, p52]
   have S₁₁ := S₁₀.keep F₁₁
   have e₁₂ := Exec.addN (P := P) e₁₁.wb_right 180050 180050 180011 (by
     rw [p50', S₁₁.2.2.1]; have := S₁₁.2.1; omega)
@@ -410,7 +410,7 @@ theorem scanBody_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤
     (.seq e₁₀ (.seq e₁₁ e₁₂)))))))))), by omega, ?_, ?_, ?_⟩
   · refine ((G₁.trans G₁₀).trans F₁₁).trans ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩
     have : r ≠ 180050 := by
-      unfold Bsc at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega
+      unfold Bsc at hr; sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
     simp [this]
   · simp only [Config.nreg_mk, Machine.upd_same]; rw [p50', S₁₁.2.2.1]
   · simp only [Config.nreg_mk]
@@ -437,7 +437,7 @@ theorem scanS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
       simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
   let I : Config → Prop := fun e => WordsBounded W e ∧ FrameB Bsc c e ∧ SI C (C.s + k) e ∧
     e.nreg 180050 ≤ C.m ∧ Enc (e.nreg 180051) (e.nreg 180052) (scan C k (sig d) (e.nreg 180050))
-  have hI : I c₁ := ⟨e₁.wb_right, R₁, hS.keep R₁, by omega, by rw [q50, q51]; rfl⟩
+  have hI : I c₁ := ⟨e₁.wb_right, R₁, hS.keep R₁, by omega, by rwr [q50, q51]⟩
   obtain ⟨c₂, k₂, e₂, ⟨w₂, F₂, S₂, l₂, E₂⟩, hex, hk₂⟩ :=
     Exec.whileLtN_bounded (P := P) (W := W) (a := 180050) (b := 180001) (body := scanBody d) I
       (fun e => C.m - e.nreg 180050) 1600 (fun e he => he.1)
@@ -454,7 +454,7 @@ theorem scanS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
   have hm : c₂.nreg 180050 = C.m := by omega
   rw [hm] at E₂
   refine ⟨c₂, _, .seq e₁ e₂, ?_, F₂, E₂⟩
-  rw [q50] at hk₂; omega
+  rwo [q50] at hk₂
 
 end
 

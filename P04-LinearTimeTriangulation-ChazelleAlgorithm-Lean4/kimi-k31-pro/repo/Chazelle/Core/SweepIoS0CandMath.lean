@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.SweepEvOrgM
 public import Chazelle.Core.SweepIoClass
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep RAM (WP-D), answers: stop and table candidates of a side-0 query (mathematics)
@@ -50,7 +54,7 @@ theorem origin_ray (C : Chain) {o z : Point} {d : ℝ} (_hd : d = 1 ∨ d = -1)
     rcases (mul_nonneg hs0 h0).lt_or_eq with h1 | h1
     · exact h1
     · exfalso; apply hne; rw [hzs', ← h1]; ext <;> simp
-  have hle : h ≤ s * h := Chain.hitParam_le_of_not_mem_dom C o d hsh (by rw [← hzs']; exact hzd)
+  have hle : h ≤ s * h := Chain.hitParam_le_of_not_mem_dom C o d hsh (by rwx [← hzs'])
   have hpos : 0 < h := by
     rcases h0.lt_or_eq with h1 | h1
     · exact h1
@@ -104,12 +108,12 @@ theorem cand_unique {J : Merge.Junction} {o₁ o₂ z : Point} {d : ℝ} (hd : d
       · simp only [rayPt_fst]; linear_combination hxab
       · simp only [rayPt_snd]; exact hab
     have := Chain.hitParam_le_of_not_mem_dom J.whole b d (t := tb - ta) (by linarith)
-      (by rw [← hpt]; exact ha)
+      (by rwx [← hpt])
     linarith
   rcases lt_trichotomy t₁ t₂ with hl | he | hl
   · exact (key o₁ o₂ t₁ t₂ hy hx p₁ hl rfl h₁.1).elim
   · ext
-    · rw [he] at hx; linarith
+    · rwli [he] at hx
     · exact hy
   · exact (key o₂ o₁ t₂ t₁ hy.symm hx.symm p₂ hl rfl h₂.1).elim
 
@@ -173,7 +177,7 @@ theorem stopOrig_not_dom (J : Merge.Junction) {Q : Polygon} {N : NF}
     by_cases h1 : kind = 1
     · rw [ite_eq_left h1]
       have := hk h1
-      exact endOrigin_not_dom J hN (by split_ifs <;> omega)
+      exact endOrigin_not_dom J hN (by splao)
     · rw [ite_eq_right h1]; exact right_not_dom J J.right.top_mem_set
 
 /-- The chord of a stop record is the chord seen from its origin. -/

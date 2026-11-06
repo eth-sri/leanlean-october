@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.RestoreDrvRound
 public import Chazelle.Core.OutputWalk
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, part 12: the oracle costs are positive in the context of `RestoreSpec`
@@ -47,7 +51,7 @@ theorem one_le_gamma (hG : GoodModel M) {Q : Polygon} {S : Set (Set Point)} {γ 
   rcases S.eq_empty_or_nonempty with rfl | hne
   · have hD : M.D ∈ M.regions ∅ := by
       show M.D ∈ Chazelle.Chain.regionsIn M.D ∅
-      rw [Chazelle.Chain.regionsIn_empty hM.preconn hM.nonempty]; rfl
+      rwr [Chazelle.Chain.regionsIn_empty hM.preconn hM.nonempty]
     have h1 := h M.D hD
     rw [Gran.weight_empty hM hD] at h1
     have : 1 ≤ M.size := by
@@ -70,10 +74,10 @@ theorem arcWt01 (Q : Polygon) : M.arcWt (M.key Q ⟨0, 0⟩) (M.key Q ⟨1, 0⟩
   calc _ ≤ ({0} : Set ℕ).ncard := by
         refine Set.ncard_le_ncard ?_ (Set.finite_singleton 0)
         rintro p ⟨-, -, t, ht0, ht1, hin⟩
-        simp only [sideInArc, zero_lt_one, ite_true] at hin
+        simp [sideInArc, zero_lt_one, ite_true] at hin
         have : (p : ℝ) < 1 := by linarith [hin.2]
         have : p < 1 := by exact_mod_cast this
-        simp only [Set.mem_singleton_iff]; omega
+        sio only [Set.mem_singleton_iff]
     _ = 1 := Set.ncard_singleton 0
 
 theorem properPos0 (Q : Polygon) (n : ℕ) (e : ℕ) : ProperPos M Q n ⟨e, 0⟩ :=
@@ -87,7 +91,7 @@ theorem arcSet01_sub {x : Point} (hn : 2 ≤ M.W.n)
     show M.W.vtx ((q + 1) % M.W.n) = _; rw [Nat.mod_eq_of_lt hq]
   have hkey : (p : ℝ) + t ≤ 1 := by
     rcases hk with h | h | h
-    · simp only [sideInArc, zero_lt_one, ite_true] at h; linarith [h.2]
+    · simp [sideInArc, zero_lt_one, ite_true] at h; linarith [h.2]
     · linarith
     · linarith
   have hp1 : p ≤ 1 := by
@@ -103,7 +107,7 @@ theorem arcSet01_sub {x : Point} (hn : 2 ≤ M.W.n)
     have ht : t = 0 := by push_cast at hkey; linarith
     subst ht
     refine ⟨1, by norm_num, le_rfl, ?_⟩
-    rw [Geometry.lerp_zero, Geometry.lerp_one]; rfl
+    rwr [Geometry.lerp_zero, Geometry.lerp_one]
 
 /-- **The walk vertex `2` is not on the first walk edge** of a good model. -/
 theorem vtx2_not_mem (hG : GoodModel M) (Q : Polygon) :
@@ -115,14 +119,14 @@ theorem vtx2_not_mem (hG : GoodModel M) (Q : Polygon) :
   intro hx
   rcases hG with ⟨C, -, rfl⟩ | ⟨Q', hQ', rfl⟩
   · have hn : 2 ≤ (chainModel C).W.n := by
-      show 2 ≤ (C.sideWalk C.sideBeta).n; rw [C.sideWalk_n]; omega
+      show 2 ≤ (C.sideWalk C.sideBeta).n; rwo [C.sideWalk_n]
     obtain ⟨s, hs0, hs1, he⟩ := arcSet01_sub hn hx
     have e2 : (chainModel C).W.vtx 2 = (-C.radius, -C.radius) := rfl
     have e0 : (chainModel C).W.vtx 0 = C.slitTop := rfl
     have e1 : (chainModel C).W.vtx 1 = (-C.radius, C.radius) := rfl
     rw [e2, e0, e1] at he
     have hy := congrArg Prod.snd he
-    simp only [Geometry.lerp_snd, Chain.slitTop, sub_self, mul_zero, add_zero] at hy
+    simp [Geometry.lerp_snd, Chain.slitTop, sub_self, mul_zero, add_zero] at hy
     have := C.radius_pos
     linarith
   · have hsimp := (FactsInterior.interiorWalk_spec hQ').1
@@ -136,7 +140,7 @@ theorem vtx2_not_mem (hG : GoodModel M) (Q : Polygon) :
     rcases hs1.lt_or_eq with hs1 | rfl
     · have := FactsInterior.pos_unique hsimp (p := 2) (p' := 0) (t := 0) (t' := s)
         (by omega) (by omega) le_rfl (by norm_num) hs0 hs1
-        (by rw [hv 2 (by omega), ← hs01]; exact he)
+        (by rwx [hv 2 (by omega), ← hs01])
       omega
     · have := FactsInterior.pos_unique hsimp (p := 2) (p' := 1) (t := 0) (t' := 0)
         (by omega) (by omega) le_rfl (by norm_num) le_rfl (by norm_num)
@@ -157,15 +161,15 @@ def setQ (c : Config) (b MD γ g : ℕ) : Config :=
 theorem setQ_wb {W : ℕ} {c : Config} (hw : WordsBounded W c) {b MD γ g : ℕ} (h2 : 2 ≤ W)
     (hMD : MD ≤ W) (hγ : γ ≤ W) (hg : g ≤ W) : WordsBounded W (setQ c b MD γ g) := by
   refine ⟨fun r => ?_, hw.2⟩
-  simp only [setQ]
+  simp [setQ]
   split_ifs <;> first | assumption | omega | exact hw.1 r
 
 theorem setQ_alloc (c : Config) {b MD γ g : ℕ} (hb : 1 ≤ b) :
     (setQ c b MD γ g).nreg ALLOC = c.nreg ALLOC := by
   unfold setQ
-  simp only
+  simp
   split_ifs with h1 h2 h3 h4 h5 h6 h7 <;>
-    first | rfl | (exfalso; simp only [bandReg, ALLOC] at *; omega)
+    first | rfl | (exfalso; sio only [bandReg, ALLOC] at *)
 
 /-- **The oracle costs are positive** in the context of `RestoreSpec`. -/
 theorem oracle_pos {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → ℕ} {X : MemCtx}
@@ -177,10 +181,10 @@ theorem oracle_pos {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → ℕ} {X 
       HostRegular (Qof P).n H)
     (hMD : ModelDescAt c.nmem MD (Qof P) M) (hGM : GoodModel M) (hOk : Ok P M) (hγ : 1 ≤ γ)
     (hMDW : MD ≤ W) (hγW : γ ≤ W) (hgW : g ≤ W) : 1 ≤ F γ ∧ 1 ≤ G γ := by
-  have h2 : 2 ≤ W := le_trans (by unfold hostWords; omega) hWh
+  have h2 : 2 ≤ W := le_trans (by ufo hostWords) hWh
   have hn2 : 2 < M.W.n := by
     rcases hGM with ⟨C, -, rfl⟩ | ⟨Q, hQ, rfl⟩
-    · show 2 < (C.sideWalk C.sideBeta).n; rw [C.sideWalk_n]; omega
+    · show 2 < (C.sideWalk C.sideBeta).n; rwo [C.sideWalk_n]
     · show 2 < (interiorWalk Q).n
       rw [OutWalk.walk_n]; have := Jordan.simple_three_le hQ; omega
   constructor
@@ -198,16 +202,16 @@ theorem oracle_pos {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → ℕ} {X 
     have hO : OriginIn cS (bandReg bShoot 5) (.walk ⟨2, 0⟩) :=
       ⟨by simp [hcS, setQ, bandReg, bShoot], by simp [hcS, setQ, bandReg, bShoot],
        by simp [hcS, setQ, bandReg, bShoot]⟩
-    have hWA : c.nreg ALLOC ≤ W := hw.1 ALLOC
+    have hWA  := hw.1 ALLOC
     have := shooter_cost_pos hsh (W := W + F γ) hwS ⟨hG, by omega,
-      by rw [r13, hA]; exact hX, by rw [r9, r13]; exact hcap,
-      by rw [r0, hA]; exact hwf, by rw [r0]; exact hreg, M, by rw [r0]; exact hMD, hOk,
+      by rwx [r13, hA], by rwx [r9, r13],
+      by rwx [r0, hA], by rwx [r0], M, by rwx [r0], hOk,
       by rw [r1, r2]; exact properPos0 _ _ _, by rw [r3, r4]; exact properPos0 _ _ _,
-      by rw [r1]; omega, by rw [r3]; omega, Or.inl r2, Or.inl r4,
+      by rwo [r1], by rwo [r3], Or.inl r2, Or.inl r4,
       by rw [r1, r2, r3, r4, r9]; exact (arcWt01 _).trans hγ,
       .walk ⟨2, 0⟩, ⟨hn2, Nat.zero_le _⟩, hO, Or.inl ⟨2, rfl⟩,
       by rw [r1, r2, r3, r4]; exact vtx2_not_mem hGM _⟩
-      (by rw [hA, r9]; omega)
+      (by rwo [hA, r9])
     rw [r9] at this
     exact this
   · set cC := setQ c bCut MD γ g with hcC
@@ -221,14 +225,14 @@ theorem oracle_pos {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → ℕ} {X 
     have hwC : WordsBounded (W + G γ) cC :=
       Machine.WordsBounded.mono (setQ_wb hw h2 hMDW hγW hgW) (by omega)
     have hA : cC.nreg ALLOC = c.nreg ALLOC := setQ_alloc c (by decide)
-    have hWA : c.nreg ALLOC ≤ W := hw.1 ALLOC
+    have hWA  := hw.1 ALLOC
     have := cutter_cost_pos hcu (W := W + G γ) hwC ⟨hG, by omega,
-      by rw [r13, hA]; exact hX, by rw [r9, r13]; exact hcap,
-      by rw [r0, hA]; exact hwf, M, by rw [r0]; exact hMD, hOk,
+      by rwx [r13, hA], by rwx [r9, r13],
+      by rwx [r0, hA], M, by rwx [r0], hOk,
       by rw [r1, r2]; exact properPos0 _ _ _, by rw [r3, r4]; exact properPos0 _ _ _,
-      by rw [r1]; omega, by rw [r3]; omega, Or.inl r2, Or.inl r4,
+      by rwo [r1], by rwo [r3], Or.inl r2, Or.inl r4,
       by rw [r1, r2, r3, r4, r9]; exact (arcWt01 _).trans hγ⟩
-      (by rw [hA, r9]; omega)
+      (by rwo [hA, r9])
     rw [r9] at this
     exact this
 

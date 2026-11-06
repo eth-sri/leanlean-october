@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Jordan.Local
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The polygonal Jordan curve theorem
@@ -218,9 +221,9 @@ theorem side_component_exists {P : Polygon} (hP : P.Simple) {σ : ℝ} (hσ : σ
       connectedComponentIn P.boundaryᶜ (c (i + 1)) = connectedComponentIn P.boundaryᶜ (c i) := by
     intro i hi1
     have hi : i < P.n := by omega
-    have hmod : (i + 1) % P.n = i + 1 := Nat.mod_eq_of_lt hi1
+    have hmod  := Nat.mod_eq_of_lt hi1
     have hprev : prevIdx P (i + 1) = i := by
-      rw [prevIdx_eq P hi1]; simp
+      rws [prevIdx_eq P hi1]
     obtain ⟨U, hU1, hU2, hU3⟩ := vertex_sector hP hi1 hσ
     rw [hprev] at hU3
     have hci := (hc i hi).2
@@ -259,8 +262,8 @@ theorem isPreconnected_punctured_ball (q : Point) {r : ℝ} (hr : 0 < r) :
     ((convex_ball q r).inter (convex_snd_lt q.2)).isPreconnected
   have hA4 : IsPreconnected (ball q r ∩ {x : Point | x.1 < q.1}) :=
     ((convex_ball q r).inter (convex_fst_lt q.1)).isPreconnected
-  have hr2 : |r / 2| < r := by rw [abs_of_pos (by positivity)]; linarith
-  have hr2' : |-(r / 2)| < r := by rw [abs_neg]; exact hr2
+  have hr2 : |r / 2| < r := by rwli [abs_of_pos (by positivity)]
+  have hr2' : |-(r / 2)| < r := by rwx [abs_neg]
   have hp12 : ((q.1 + r / 2, q.2 + r / 2) : Point) ∈ ball q r := by
     rw [mem_ball_iff_abs]; simp only [add_sub_cancel_left]; exact ⟨hr2, hr2⟩
   have hp23 : ((q.1 + r / 2, q.2 - r / 2) : Point) ∈ ball q r := by
@@ -309,11 +312,9 @@ theorem frontier_component_subset_boundary (P : Polygon) (z : Point) :
     frontier (connectedComponentIn P.boundaryᶜ z) ⊆ P.boundary := by
   intro q hq
   by_contra hqb
-  have hU : IsOpen (connectedComponentIn P.boundaryᶜ z) :=
-    isOpen_connectedComponentIn_boundary_compl P z
+  have hU  := isOpen_connectedComponentIn_boundary_compl P z
   rw [hU.frontier_eq] at hq
-  have hnhds : connectedComponentIn P.boundaryᶜ q ∈ 𝓝 q :=
-    connectedComponentIn_mem_nhds ((isOpen_boundary_compl P).mem_nhds hqb)
+  have hnhds  := connectedComponentIn_mem_nhds ((isOpen_boundary_compl P).mem_nhds hqb)
   obtain ⟨y, hy1, hy2⟩ := mem_closure_iff_nhds.1 hq.1 _ hnhds
   have : connectedComponentIn P.boundaryᶜ z = connectedComponentIn P.boundaryᶜ q := by
     rw [connectedComponentIn_eq hy2, connectedComponentIn_eq hy1]
@@ -462,15 +463,15 @@ theorem exists_nonvertical_edge {P : Polygon} (hP : P.Simple) :
     ⟨0, Finset.mem_range.2 (by omega)⟩
   rw [Finset.mem_range] at hk
   set j := prevIdx P k with hj
-  have hjn : j < P.n := prevIdx_lt P hk
-  have hji : j ≠ k := prevIdx_ne P hn hk
-  have hks : (k + 1) % P.n < P.n := succIdx_lt P hk
+  have hjn  := prevIdx_lt P hk
+  have hji  := prevIdx_ne P hn hk
+  have hks  := succIdx_lt P hk
   set a := P.vtx j with ha
   set v := P.vtx k with hv
   set b := P.vtx ((k + 1) % P.n) with hb
-  have hav : a ≠ v := simple_vtx_ne hP hjn hk hji
-  have hvb : v ≠ b := simple_vtx_succ_ne hP hk
-  have hab : a ≠ b := simple_vtx_ne hP hjn hks (prevIdx_ne_succIdx P hn hk)
+  have hav  := simple_vtx_ne hP hjn hk hji
+  have hvb  := simple_vtx_succ_ne hP hk
+  have hab  := simple_vtx_ne hP hjn hks (prevIdx_ne_succIdx P hn hk)
   have ha1 : a.1 = v.1 := by rw [ha, hv, hall j hjn, hall k hk]
   have hb1 : b.1 = v.1 := by rw [hb, hv, hall _ hks, hall k hk]
   have ha2 : a.2 < v.2 := by
@@ -487,23 +488,23 @@ theorem exists_nonvertical_edge {P : Polygon} (hP : P.Simple) :
   have hεb : ε < v.2 - b.2 := by rw [hε]; have := min_le_right (v.2 - a.2) (v.2 - b.2); linarith
   set p : Point := (v.1, v.2 - ε) with hp
   have hp1 : p ∈ Chazelle.segment a v :=
-    mem_segment_of_vertical ha1 (by rw [hp, ha1]) (by rw [hp]; simp only; linarith)
-      (by rw [hp]; simp only; linarith)
+    mem_segment_of_vertical ha1 (by rw [hp, ha1]) (by rw [hp]; sil only)
+      (by rw [hp]; sil only)
   have hp2 : p ∈ Chazelle.segment v b := by
     rw [Geometry.segment_comm]
-    exact mem_segment_of_vertical hb1 (by rw [hp, hb1]) (by rw [hp]; simp only; linarith)
-      (by rw [hp]; simp only; linarith)
+    exact mem_segment_of_vertical hb1 (by rw [hp, hb1]) (by rw [hp]; sil only)
+      (by rw [hp]; sil only)
   have hmem : p ∈ P.edge j ∩ P.edge k := by
     rw [edge_prevIdx P hk]; exact ⟨hp1, hp2⟩
   rw [simple_edge_inter hP hjn hk hji] at hmem
   obtain ⟨h1, h2⟩ := hmem
   rw [prevIdx_succ P hk] at h1
   have hpv : p ≠ v := fun h => by
-    have := congrArg Prod.snd h; simp only [hp] at this; linarith
+    have := congrArg Prod.snd h; sil only [hp] at this
   have hpa : p ≠ a := fun h => by
-    have := congrArg Prod.snd h; simp only [hp] at this; linarith
+    have := congrArg Prod.snd h; sil only [hp] at this
   have hpb : p ≠ b := fun h => by
-    have := congrArg Prod.snd h; simp only [hp] at this; linarith
+    have := congrArg Prod.snd h; sil only [hp] at this
   rcases h1 with h1 | h1
   · exact hpa h1
   · exact hpv h1
@@ -535,7 +536,7 @@ theorem two_components {P : Polygon} (hP : P.Simple) :
     obtain ⟨i, hi, hne⟩ := exists_nonvertical_edge hP
     set u := P.vtx i with hu
     set v := P.vtx ((i + 1) % P.n) with hv
-    have huv : u ≠ v := simple_vtx_succ_ne hP hi
+    have huv  := simple_vtx_succ_ne hP hi
     have hmid : (1 / 2 : ℝ) ∈ Ioo (0 : ℝ) 1 := by norm_num
     set m := lerp u v (1 / 2) with hm
     obtain ⟨ε₀, hε₀, hflip⟩ := parity_flip P hi (lerp_mem_segment u v hmid.1.le hmid.2.le) hne
@@ -577,15 +578,15 @@ theorem two_components {P : Polygon} (hP : P.Simple) :
     rcases lt_or_gt_of_ne hne with h | h
     · -- `u.1 < v.1`: the upper point is on the left
       have h1 : ((m.1, m.2 + ε) : Point) ∈ connectedComponentIn P.boundaryᶜ cL :=
-        hLsub ⟨hpb, by show 0 < 1 * det u v (m.1, m.2 + ε); rw [hd1]; nlinarith⟩
+        hLsub ⟨hpb, by show 0 < 1 * det u v (m.1, m.2 + ε); rwnl [hd1]⟩
       have h2 : ((m.1, m.2 - ε) : Point) ∈ connectedComponentIn P.boundaryᶜ cR :=
-        hRsub ⟨hmb, by show 0 < (-1) * det u v (m.1, m.2 - ε); rw [hd2]; nlinarith⟩
+        hRsub ⟨hmb, by show 0 < (-1) * det u v (m.1, m.2 - ε); rwnl [hd2]⟩
       rw [parity_eq_of_mem_connectedComponentIn P h1, parity_eq_of_mem_connectedComponentIn P h2,
         hpar']
     · have h1 : ((m.1, m.2 + ε) : Point) ∈ connectedComponentIn P.boundaryᶜ cR :=
-        hRsub ⟨hpb, by show 0 < (-1) * det u v (m.1, m.2 + ε); rw [hd1]; nlinarith⟩
+        hRsub ⟨hpb, by show 0 < (-1) * det u v (m.1, m.2 + ε); rwnl [hd1]⟩
       have h2 : ((m.1, m.2 - ε) : Point) ∈ connectedComponentIn P.boundaryᶜ cL :=
-        hLsub ⟨hmb, by show 0 < 1 * det u v (m.1, m.2 - ε); rw [hd2]; nlinarith⟩
+        hLsub ⟨hmb, by show 0 < 1 * det u v (m.1, m.2 - ε); rwnl [hd2]⟩
       rw [parity_eq_of_mem_connectedComponentIn P h1, parity_eq_of_mem_connectedComponentIn P h2,
         hpar']
   · -- every component is one of the two
@@ -607,7 +608,7 @@ theorem two_components {P : Polygon} (hP : P.Simple) :
 theorem parity_eq_of_connectedComponentIn_eq (P : Polygon) {z w : Point} (hz : z ∉ P.boundary)
     (h : connectedComponentIn P.boundaryᶜ z = connectedComponentIn P.boundaryᶜ w) :
     parity P z = parity P w := by
-  have hzw : z ∈ connectedComponentIn P.boundaryᶜ w := h ▸ mem_connectedComponentIn hz
+  have hzw  := h ▸ mem_connectedComponentIn hz
   exact parity_eq_of_mem_connectedComponentIn P hzw
 
 /-- **Two points off the boundary with the same parity lie in the same component.** -/
@@ -636,7 +637,7 @@ theorem far_point_spec (P : Polygon) :
       ((0, -coordBound P - 1) : Point).1 < -coordBound P ∨
       coordBound P < ((0, -coordBound P - 1) : Point).2 ∨
       ((0, -coordBound P - 1) : Point).2 < -coordBound P :=
-    Or.inr (Or.inr (Or.inr (by simp only; linarith)))
+    Or.inr (Or.inr (Or.inr (by sil only)))
   exact ⟨not_mem_boundary_of_far P hfar, parity_eq_false_of_far_any P hfar,
     not_isBoundedSet_connectedComponentIn_of_far P hfar⟩
 
@@ -779,7 +780,7 @@ theorem boundary_subset_closure_component {P : Polygon} (hP : P.Simple) {σ : �
   intro q hq
   by_cases hv : ∃ j, j < P.n ∧ q = P.vtx j
   · obtain ⟨j, hj, rfl⟩ := hv
-    have hw : P.vtx j ≠ P.vtx ((j + 1) % P.n) := simple_vtx_succ_ne hP hj
+    have hw  := simple_vtx_succ_ne hP hj
     rw [← closure_closure]
     refine mem_closure_of_tendsto (tendsto_lerp_zero (P.vtx j) (P.vtx ((j + 1) % P.n))) ?_
     filter_upwards [Ioo_mem_nhdsGT (zero_lt_one' ℝ)] with s hs
@@ -850,7 +851,7 @@ theorem interior_filled {P : Polygon} (hP : P.Simple) :
   apply Subset.antisymm
   · intro x hx
     refine ⟨interior_subset hx, fun hxb => ?_⟩
-    have h1 : x ∈ closure P.filledᶜ := boundary_subset_closure_compl hP hxb
+    have h1  := boundary_subset_closure_compl hP hxb
     rw [closure_compl] at h1
     exact h1 hx
   · exact interior_maximal sdiff_subset (isOpen_filled_sdiff_boundary hP)

@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseBoxChord
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (B3′, part 6): attachment of twin chords
@@ -38,11 +39,11 @@ theorem pos_mul_iff {p c : ℝ} (hp : 0 < p) :
 
 theorem sideCross_smul (a b : ℝ) (u v : Point) :
     sideCross (a • u) (b • v) = (a * b) * sideCross u v := by
-  unfold sideCross; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]; ring
+  unfold sideCross; sir only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
 
 theorem sideDot_smul (a b : ℝ) (u v : Point) :
     sideDot (a • u) (b • v) = (a * b) * sideDot u v := by
-  unfold sideDot; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]; ring
+  unfold sideDot; sir only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
 
 /-- **The sector test is invariant under positive scalings.** -/
 theorem sideCcw_smul {l k m : ℝ} (hl : 0 < l) (hk : 0 < k) (hm : 0 < m) (B X A : Point) :
@@ -54,7 +55,7 @@ theorem sideCcw_smul {l k m : ℝ} (hl : 0 < l) (hk : 0 < k) (hm : 0 < m) (B X A
   obtain ⟨c1, -, -⟩ := pos_mul_iff (c := sideCross X A) (mul_pos hk hm)
   obtain ⟨d1, d2, -⟩ := pos_mul_iff (c := sideDot B A) (mul_pos hl hm)
   obtain ⟨-, e2, -⟩ := pos_mul_iff (c := sideDot B X) (mul_pos hl hk)
-  simp only [a1, a2, a3, b1, b3, c1, d1, d2, e2, ne_eq]
+  simp [a1, a2, a3, b1, b3, c1, d1, d2, e2, ne_eq]
 
 /-- The left sector test at a walk position, in terms of the corner vectors. -/
 theorem sideLeft_eq (W : Polygon) (p : ℕ) (t : ℝ) (x : Point) :
@@ -144,7 +145,7 @@ theorem sector_scale {p : ℕ} {t t' : ℝ} (hp : p < (C.sideWalk C.sideBeta).n)
           β • (sidePrev (C.sideWalk C.sideBeta) p t - sidePt (C.sideWalk C.sideBeta) p t) := by
   set W := C.sideWalk C.sideBeta
   set W' := C'.sideWalk C'.sideBeta
-  have hn : W'.n = W.n := h.walk_n
+  have hn  := h.walk_n
   obtain ⟨l, hl, e⟩ := h.edge_scale hp
   have hα : 0 < (1 - t') * l / (1 - t) := div_pos (mul_pos (by linarith) hl) (by linarith)
   have eN : sideNext W' p - sidePt W' p t' =
@@ -160,13 +161,13 @@ theorem sector_scale {p : ℕ} {t t' : ℝ} (hp : p < (C.sideWalk C.sideBeta).n)
     have hnpos : 0 < W.n := by omega
     have hq : q < W.n := Nat.mod_lt _ hnpos
     obtain ⟨l', hl', e'⟩ := h.edge_scale hq
-    have hqp : (q + 1) % W.n = p := prev_succ hp
+    have hqp  := prev_succ hp
     rw [hqp] at e'
     refine ⟨l', hl', eN, ?_⟩
     rw [prev_sub_pt_zero, prev_sub_pt_zero, hn, e', smul_smul, smul_smul, mul_comm]
   · have ht0' : t' ≠ 0 := fun e0 => ht0 (h0.2 e0)
-    have htp : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htp' : 0 < t' := lt_of_le_of_ne ht'.1 (Ne.symm ht0')
+    have htp  := lt_of_le_of_ne ht.1 (Ne.symm ht0)
+    have htp'  := lt_of_le_of_ne ht'.1 (Ne.symm ht0')
     refine ⟨t' * l / t, div_pos (mul_pos htp' hl) htp, eN, ?_⟩
     rw [prev_sub_pt _ _ ht0, prev_sub_pt _ _ ht0', hn, e, smul_smul, smul_smul]
     congr 1
@@ -195,7 +196,7 @@ theorem attach_transfer {d : Set Point} {y : ℝ} (hdy : ∀ z ∈ d, z.2 = y) {
     rwa [hψ z, hpt, hψ s] at this
   have hzne : z ≠ s := fun e => hne (by rw [e, hpt])
   have hL := hnear z hz hzne hzd
-  have hz2 : s.2 = z.2 := (hdy s hmem).trans (hdy z hz).symm
+  have hz2  := (hdy s hmem).trans (hdy z hz).symm
   obtain ⟨κ, hκ, eX⟩ := h.scale_pt (Or.inl hz2)
   rw [sideLeft_eq, eN, eP, hpt, eX, sideCcw_smul hα hκ hβ]
   exact hL

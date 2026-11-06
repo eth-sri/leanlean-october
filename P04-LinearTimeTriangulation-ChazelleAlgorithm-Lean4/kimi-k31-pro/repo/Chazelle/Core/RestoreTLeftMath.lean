@@ -40,15 +40,15 @@ theorem sector_horiz {a v b : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hb :
   obtain ⟨a1, a2⟩ := a
   obtain ⟨v1, v2⟩ := v
   simp only [sideCross, sideDot, Prod.fst_sub, Prod.snd_sub, ne_eq] at hb ha ⊢
-  have hB : b2 - v2 ≠ 0 := sub_ne_zero.2 hb
-  have hA : a2 - v2 ≠ 0 := sub_ne_zero.2 ha
+  have hB  := sub_ne_zero.2 hb
+  have hA  := sub_ne_zero.2 ha
   set B1 := b1 - v1
   set B2 := b2 - v2
   set A1 := a1 - v1
   set A2 := a2 - v2
   have hS : 0 < A1 ^ 2 + A2 ^ 2 := by positivity
   have hA2 : 0 < A2 ^ 2 := by positivity
-  have hBA : B2 * A2 ≠ 0 := mul_ne_zero hB hA
+  have hBA  := mul_ne_zero hB hA
   rcases lt_trichotomy (B1 * A2 - B2 * A1) 0 with hd | hd | hd
   · -- reflex
     constructor

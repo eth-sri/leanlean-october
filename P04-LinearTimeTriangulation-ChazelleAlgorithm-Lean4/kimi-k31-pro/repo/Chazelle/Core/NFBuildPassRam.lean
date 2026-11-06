@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.NFBuildPassProg
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-C (BuildNF), RAM part 9: executions of the pieces of the main pass (stack part)
@@ -163,8 +166,8 @@ theorem curS_exec (d : Config) (hw : WordsBounded W d) {c T : ℕ} (hc : d.nmem 
       d₂.nreg 43114 = d.nmem (T + 4 * c + 3) + 1 ∧
       (∀ r, r ≠ 43111 → r ≠ 43113 → r ≠ 43114 → d₂.nreg r = d₁.nreg r) := by
     exec_block
-    · rw [a₁, o₁]; omega
-    · config_simp; rw [a₁, o₁, o₁', mm₁]; exact hxW
+    · rwo [a₁, o₁]
+    · config_simp; rwx [a₁, o₁, o₁', mm₁]
     · refine ⟨rfl, ?_, ?_, fun r r1 r2 r3 => ?_⟩ <;> config_simp
       · rw [a₁, o₁, mm₁]
       · rw [a₁, o₁, o₁', mm₁]
@@ -191,10 +194,10 @@ theorem topS_exec (d : Config) (hw : WordsBounded W d) {dst : ℕ} (h0 : d.nreg 
     exact ⟨d', k, x, hk, hv, exec_frameB x (wr_topS dst)⟩
   unfold topS
   by_cases hs : d.nreg 43101 = 0
-  · refine spec_ifLtN_false (by rw [h0, hs]; omega) (spec_instr (Exec.constN hw _ _ (by
+  · refine spec_ifLtN_false (by rwo [h0, hs]) (spec_instr (Exec.constN hw _ _ (by
       have := hw.1 43010; omega)) fun _ => ⟨by omega, ?_⟩)
     simp [hs]
-  · refine spec_ifLtN_true (by rw [h0]; omega) ?_
+  · refine spec_ifLtN_true (by rwo [h0]) ?_
     exec_block
     · exact hSW
     · refine ⟨by omega, ?_⟩
@@ -232,7 +235,7 @@ theorem chordS_exec (d : Config) (hw : WordsBounded W d) {x B CT : ℕ} (hx : d.
     | (config_simp; simp (config := { failIfUnchanged := false }) only [hx, hB, hCT, h1]; omega)
     | skip
   by_cases hp : d.nreg 42112 < 1
-  · refine spec_ifLtN_true (by config_simp; rw [h1]; exact hp) ?_
+  · refine spec_ifLtN_true (by config_simp; rwx [h1]) ?_
     exec_block
     all_goals first
       | (config_simp; simp (config := { failIfUnchanged := false }) only [hx, hB, hCT, h1]; omega)
@@ -252,7 +255,7 @@ theorem chordS_exec (d : Config) (hw : WordsBounded W d) {x B CT : ℕ} (hx : d.
     by_cases e4 : a = CT + 5 * x + 4
     · subst e4; ifs_omega
     ifs_omega
-  · refine spec_ifLtN_false (by config_simp; rw [h1]; exact hp) ?_
+  · refine spec_ifLtN_false (by config_simp; rwx [h1]) ?_
     exec_block
     all_goals first
       | (config_simp; simp (config := { failIfUnchanged := false }) only [hx, hB, hCT, h1]; omega)
@@ -300,15 +303,15 @@ theorem stepS_exec (d : Config) (hw : WordsBounded W d) {x B CT ST : ℕ} (hx : 
     obtain ⟨d₁, k₁, x₁, hk₁, m₁, f₁⟩ := chordS_exec (P := P) d hw hx hB hCT h1 hBW hCW
     have w₁ := x₁.wb_right
     have r₁ : ∀ r, (r < 43130 ∨ 43135 ≤ r) → d₁.nreg r = d.nreg r := fun r hr =>
-      f₁.1 r (by simp only [decide_eq_false_iff_not]; omega)
+      f₁.1 r (by sio only [decide_eq_false_iff_not])
     unfold pushS
     refine spec_seq ⟨d₁, k₁, x₁, ?_⟩
     exec_block
-    · rw [r₁ _ (by norm_num), r₁ _ (by norm_num), hST]; exact hSW
-    · config_simp; rw [r₁ _ (by norm_num), r₁ _ (by norm_num), h1]; exact hsW
+    · rwx [r₁ _ (by norm_num), r₁ _ (by norm_num), hST]
+    · config_simp; rwx [r₁ _ (by norm_num), r₁ _ (by norm_num), h1]
     · refine ⟨by omega, ?_, ?_⟩ <;> config_simp
       · rw [r₁ _ (by norm_num), r₁ _ (by norm_num), h1]
-      · rw [r₁ _ (by norm_num), r₁ _ (by norm_num), r₁ _ (by norm_num), hST, m₁]; rfl
+      · rwr [r₁ _ (by norm_num), r₁ _ (by norm_num), r₁ _ (by norm_num), hST, m₁]
   unfold stepS
   by_cases a1 : d.nreg 43115 < d.nreg 43114
   · obtain ⟨d', k, x', hk, h2, h3⟩ := push

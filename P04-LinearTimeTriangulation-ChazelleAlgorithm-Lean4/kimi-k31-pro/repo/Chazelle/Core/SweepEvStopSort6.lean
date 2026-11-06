@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.SweepEvStopSort5
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 1000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 2: sorting the raw stop records, part 6 (task S)
@@ -36,8 +42,6 @@ theorem ss_seg_getD {m : ℕ → ℕ} {A S i : ℕ} (hi : i < S) : (seg m A S).g
 theorem ss_clog_mono (S : ℕ) : S * (Nat.clog 2 S + 1) ≤ (S + 1) * (Nat.clog 2 (S + 1) + 1) :=
   Nat.mul_le_mul (by omega) (by have := Nat.clog_mono_right 2 (show S ≤ S + 1 by omega); omega)
 
-set_option maxHeartbeats 1000000 in
-set_option maxRecDepth 20000 in
 /-- **Task S: sort and dedupe the raw stop records.** -/
 theorem sortTask : SortTask := by
   refine ⟨ssSrt, 40000, fun sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hrec hRB hroom => ?_⟩
@@ -67,7 +71,7 @@ theorem sortTask : SortTask := by
     ssIdx_exec (P := P) hw k1 (by omega)
   have kr₁ : ∀ r, 240000 ≤ r → r < 250000 → r < sw 3000 ∨ sw 3003 < r →
       c₁.nreg r = c.nreg r := fun r h1 h2 h3 =>
-    r₁ r (by unfold ALLOC; omega) (by sshSrt) (by sshSrt) (by sshSrt) (by sshSrt)
+    r₁ r (by ufo ALLOC) (by sshSrt) (by sshSrt) (by sshSrt) (by sshSrt)
   -- 2. the inputs of the sort
   have e₂ := exec_regB (P := P) ssSortIn e₁.wb_right (by
     simp only [ssSortIn, okW, okWI]; exact ⟨trivial, trivial, trivial⟩)
@@ -82,13 +86,13 @@ theorem sortTask : SortTask := by
   have kr₂ : ∀ r, 240000 ≤ r → r < 250000 → r < sw 3000 ∨ sw 3003 < r →
       c₂.nreg r = c.nreg r := fun r h1 h2 h3 => by
     rw [r₂ r (by omega) (by omega)]; exact kr₁ r h1 h2 h3
-  have A₂ : c₂.nreg ALLOC = A + S := by rw [r₂ ALLOC (by ssoSrt) (by ssoSrt)]; exact a₁
+  have A₂ : c₂.nreg ALLOC = A + S := by rwx [r₂ ALLOC (by ssoSrt) (by ssoSrt)]
   have ctx₂ : SsCtx J d2 RB S A m₀ c₂ := by
     refine ⟨kr₂ (sw 2) (by ssoSrt) (by ssoSrt) (by ssoSrt),
       (kr₂ cGW (by simp [cGW, sw]) (by simp [cGW, sw]) (by simp [cGW, sw])).trans hgw,
       kr₂ gRB (by ssoSrt) (by ssoSrt) (by ssoSrt), kr₂ gRC (by ssoSrt) (by ssoSrt) (by ssoSrt),
       (kr₂ K0 (by ssoSrt) (by ssoSrt) (by ssoSrt)).trans k0, (kr₂ K1 (by ssoSrt) (by ssoSrt) (by ssoSrt)).trans k1,
-      (r₂ srA0 (by ssoSrt) (by ssoSrt)).trans q0₁, fun a ha => m₁ a ha⟩
+      (r₂ srA0 (by ssoSrt) (by ssoSrt)).trans q0₁, m₁⟩
   -- 3. the sort
   have hsortroom : c₂.nreg ALLOC + sortCost 12000 (rd c₂ bSort 4) ≤ W := by
     show c₂.nreg ALLOC + sortCost 12000 (c₂.nreg 30004) ≤ W
@@ -98,11 +102,11 @@ theorem sortTask : SortTask := by
   obtain ⟨c₃, k₃, e₃, hk₃, ⟨p1, p2, pperm, ppair⟩, fr₃⟩ :=
     sort_meets (cmp := ssCmp) bSort_not_ssBc 12000 (fun _ _ _ d => SsCtx J d2 RB S A m₀ d)
       (fun _ _ => ssLe P J m₀ RB S) P W c₂ e₂.wb_right
-      ⟨ctx₂, hcmp, ssCtx_stable (by rw [A₂]; omega), ssLe_trans, ssLe_total,
+      ⟨ctx₂, hcmp, ssCtx_stable (by rwo [A₂]), ssLe_trans, ssLe_total,
         by show c₂.nreg 30003 + c₂.nreg 30004 ≤ c₂.nreg ALLOC; rw [v3, v4, A₂]⟩ hsortroom
   have hk₃' : k₃ ≤ 12030 * (Y + 1) := by
     have : k₃ ≤ sortCost 12000 (c₂.nreg 30004) := hk₃
-    rw [v4, hsc] at this; omega
+    rwo [v4, hsc] at this
   set SBv := c₃.nreg 30005 with hSBv
   have p1' : A + S ≤ SBv := by have := p1; rw [A₂] at this; exact this
   have p2' : SBv + S ≤ c₃.nreg ALLOC := by have := p2; rw [show rd c₂ bSort 4 = S from v4] at this
@@ -110,7 +114,7 @@ theorem sortTask : SortTask := by
   set L := seg c₃.nmem SBv S with hL
   have hLr : seg c₂.nmem (rd c₂ bSort 3) S = List.range S := by
     rw [show rd c₂ bSort 3 = A from v3]
-    exact ss_seg_range (fun i hi => t₁ i hi)
+    exact ss_seg_range (t₁)
   have pperm' : L.Perm (List.range S) := by
     have := pperm; rw [show rd c₂ bSort 4 = S from v4] at this; rw [hLr] at this; exact this
   have ppair' : L.Pairwise fun a b => ssLe P J m₀ RB S a b = true := by
@@ -121,15 +125,15 @@ theorem sortTask : SortTask := by
     ppair'.imp_of_mem fun hx hy h => (ssLe_in (hLm _ hx) (hLm _ hy)).1 h
   -- frame of the sort
   have fb : ∀ r, 240000 ≤ r → r < 250000 → bandOf r ∉ insert bSort ssBc := fun r h1 h2 => by
-    rw [band_sw h1 h2]; decide
+    rwd [band_sw h1 h2]
   have kr₃ : ∀ r, 240000 ≤ r → r < 250000 → c₃.nreg r = c₂.nreg r := fun r h1 h2 =>
-    fr₃.1 r (fb r h1 h2) (by unfold ALLOC; omega)
+    fr₃.1 r (fb r h1 h2) (by ufo ALLOC)
   have hB1 : A + S ≤ c₃.nreg ALLOC := le_trans (by rw [A₂]) fr₃.2.2.2.2.2.1
   have hB1' : c₃.nreg ALLOC ≤ A + S + k₃ := by have := fr₃.2.2.2.2.2.2; rw [A₂] at this; exact this
   set B1 := c₃.nreg ALLOC with hB1d
   -- 4. the output arrays
   have e₄ := exec_regB (P := P) ssAllocL e₃.wb_right (ssAllocL_ok c₃.nmem c₃.nreg (by
-    rw [kr₃ gRC (by ssoSrt) (by ssoSrt), kr₂ gRC (by ssoSrt) (by ssoSrt) (by ssoSrt)]; omega))
+    rwo [kr₃ gRC (by ssoSrt) (by ssoSrt), kr₂ gRC (by ssoSrt) (by ssoSrt) (by ssoSrt)]))
   set c₄ : Config := { c₃ with nreg := regB c₃.nmem ssAllocL c₃.nreg } with hc₄
   obtain ⟨vSB, vsB, vaB, vAl, vsC, vqJ, vo⟩ := ssAllocL_val c₃.nmem c₃.nreg
   have gS₃ : c₃.nreg gRC = S := by
@@ -139,14 +143,14 @@ theorem sortTask : SortTask := by
       c₄.nreg r = c₃.nreg r := vo
   have kr₄ : ∀ r, 240000 ≤ r → r < 250000 → (r < sw 2600 ∨ sw 2602 < r) →
       (r < sw 3000 ∨ sw 3016 < r) → c₄.nreg r = c.nreg r := fun r h1 h2 h3 h4 => by
-    rw [k₄ r (by sshSrt) (by sshSrt) (by sshSrt) (by sshSrt) (by unfold ALLOC; omega) (by sshSrt) (by sshSrt),
+    rw [k₄ r (by sshSrt) (by sshSrt) (by sshSrt) (by sshSrt) (by ufo ALLOC) (by sshSrt) (by sshSrt),
       kr₃ r h1 h2, kr₂ r h1 h2 (by sshSrt)]
   have q0₄ : c₄.nreg srA0 = A := by
     rw [k₄ srA0 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt),
       kr₃ srA0 (by ssoSrt) (by ssoSrt), r₂ srA0 (by ssoSrt) (by ssoSrt), q0₁]
   have mA₄ : ∀ a, a < A → c₄.nmem a = m₀ a := fun a ha => by
     show c₃.nmem a = _
-    rw [fr₃.2.2.1 a (by rw [A₂]; omega)]; exact m₁ a ha
+    rw [fr₃.2.2.1 a (by rwo [A₂])]; exact m₁ a ha
   have ctx₄ : SsCtx J d2 RB S A m₀ c₄ :=
     ⟨kr₄ (sw 2) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt),
       (kr₄ cGW (by simp [cGW, sw]) (by simp [cGW, sw]) (by simp [cGW, sw])
@@ -157,7 +161,7 @@ theorem sortTask : SortTask := by
   have hw₄ := e₄.wb_right
   have I₀ : SsDI P W J d2 RB S A m₀ L SBv B1 c₄ 0 c₄ :=
     { wb := hw₄, qj := vqJ, ctx := ctx₄, sb := vSB, b1 := vsB,
-      b2 := by show regB _ _ _ aB = _; rw [vaB]; omega,
+      b2 := by show regB _ _ _ aB = _; rwo [vaB],
       mem := fun _ _ => rfl,
       recs := ⟨[], DInv.start L, vsC, le_rfl, fun h => absurd h (lt_irrefl 0),
         fun i hi => absurd hi (by simp), fun i hi => absurd hi (by simp)⟩,
@@ -169,18 +173,18 @@ theorem sortTask : SortTask := by
   obtain ⟨c₅, k₅, e₅, hk5a, hk5b, I5⟩ := ssDedup_exec hcmp hLlen hLm hLs hLmem p2' hRB
     (by omega) (by omega) I₀
   obtain ⟨w₅, -, -, -, b1₅, b2₅, mem₅, ⟨O, hD, hC₅, hO, -, hst, hax⟩, regs₅, rr₅, rm₅, out₅⟩ := I5
-  have A₄ : c₄.nreg ALLOC = B1 + 10 * S := by show regB _ _ _ ALLOC = _; rw [vAl]; omega
+  have A₄ : c₄.nreg ALLOC = B1 + 10 * S := by show regB _ _ _ ALLOC = _; rwo [vAl]
   have A₅ : c₅.nreg ALLOC = B1 + 10 * S := by
-    rw [regs₅ _ (by decide) (by unfold ALLOC sw; omega) (by unfold ALLOC sC sw; omega), A₄]
+    rw [regs₅ _ (by decide) (by ufo ALLOC sw) (by ufo ALLOC sC sw), A₄]
   -- registers of the band of the sweep outside the writes, through all steps
   have kr₅ : ∀ r, bandOf r ∉ oracleBands → r ≠ ALLOC → ¬ SoR r → c₅.nreg r = c.nreg r := by
     intro r ho hA hS
     unfold SoR at hS
     simp only [sw] at hS
-    have hn : r ≠ sC := by rintro rfl; exact hS (Or.inr (Or.inl (by simp only [sC, sw]; omega)))
-    rw [regs₅ r ho (by simp only [sw]; omega) hn]
+    have hn : r ≠ sC := by rintro rfl; exact hS (Or.inr (Or.inl (by sio only [sC, sw])))
+    rw [regs₅ r ho (by sio only [sw]) hn]
     by_cases hb : 240000 ≤ r ∧ r < 250000
-    · exact kr₄ r hb.1 hb.2 (by simp only [sw]; omega) (by simp only [sw]; omega)
+    · exact kr₄ r hb.1 hb.2 (by sio only [sw]) (by sio only [sw])
     · have nb : ∀ q, 240000 ≤ q → q < 250000 → r ≠ q := fun q h1 h2 h => hb ⟨h ▸ h1, h ▸ h2⟩
       rw [k₄ r (nb _ (by ssoSrt) (by ssoSrt)) (nb _ (by ssoSrt) (by ssoSrt)) (nb _ (by ssoSrt) (by ssoSrt))
           (nb _ (by ssoSrt) (by ssoSrt)) hA (nb _ (by ssoSrt) (by ssoSrt)) (nb _ (by ssoSrt) (by ssoSrt)),
@@ -200,14 +204,14 @@ theorem sortTask : SortTask := by
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), ?_, ⟨w₅, fun q hq => ?_, ?_,
     fun a ha => ?_, fun a ha => ?_⟩, ⟨fun r hr hrA => ?_, fun r hr => ?_, ?_, ?_, ?_⟩,
     ⟨O, fun i hi => hLm i (hD.sub i hi), hD.inc, fun i hi => ?_, hC₅, ?_, ?_, ?_, ?_, ?_, ?_,
-      fun a ha => mem₅' a ha, fun r h1 h2 h3 => kr₅ r h1 h3 h2⟩⟩
+      mem₅', fun r h1 h2 h3 => kr₅ r h1 h3 h2⟩⟩
   · simp only [ssSortIn, ssAllocL, List.length_cons, List.length_nil]
     clear * - hk₁' hk₃' hk5b hY hX1
     omega
   · unfold IFix at hq
-    rw [kr₅ q (not_oracle_sw (by omega) (by omega)) (by unfold ALLOC; omega) (by
-      unfold SoR; simp only [sw]; omega)]
-    exact hI.hin q (by unfold IFix; omega)
+    rw [kr₅ q (not_oracle_sw (by omega) (by omega)) (by ufo ALLOC) (by
+      unfold SoR; sio only [sw])]
+    exact hI.hin q (by ufo IFix)
   · rw [A₅]; have := hI.hA; omega
   · rw [mem₅' a (by have := hI.hA; omega)]; exact hI.hm a ha
   · rw [rm₅]
@@ -229,7 +233,7 @@ theorem sortTask : SortTask := by
     show c₁.rreg r = _
     rw [rr₁]
   · rw [out₅]; show c₃.output = _; rw [fr₃.2.2.2.2.1]; show c₁.output = _; rw [o₁]
-  · rw [A₅]; omega
+  · rwo [A₅]
   · rw [A₅]; simp only [ssSortIn, ssAllocL, List.length_cons, List.length_nil]
     clear * - hk₁' hB1' hk5a
     omega
@@ -240,12 +244,12 @@ theorem sortTask : SortTask := by
       by_contra h; rw [List.getElem?_eq_none (by omega)] at hn; cases hn
     obtain ⟨y, hy, hk⟩ := hD.cov n (by omega) i hn
     exact ⟨y, hy, hk⟩
-  · rw [b1₅]; exact hst
-  · rw [b2₅]; exact hax
-  · rw [b1₅]; omega
-  · rw [b1₅, A₅]; omega
-  · rw [b2₅]; omega
-  · rw [b2₅, A₅]; omega
+  · rwx [b1₅]
+  · rwx [b2₅]
+  · rwo [b1₅]
+  · rwo [b1₅, A₅]
+  · rwo [b2₅]
+  · rwo [b2₅, A₅]
 
 end
 

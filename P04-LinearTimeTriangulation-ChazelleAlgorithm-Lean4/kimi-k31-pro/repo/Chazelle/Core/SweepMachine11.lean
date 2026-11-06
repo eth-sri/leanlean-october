@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepMachine10
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), part 27: the abstract machine, the answer record of a query
@@ -46,19 +47,19 @@ theorem record_ok (M : Model) (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
   · obtain ⟨rfl, rfl⟩ := hlr.1 rfl
     have hset : (recOf (h, lp, rp)).toSet M Q = Chazelle.segment z (rayPt z 1 T) := by
       unfold CRec.toSet recOf CRec.lpos CRec.rpos
-      simp only
+      simp
       rw [hz, hw, hwpt, hh, FactsChain.hseg_eq_segment (by linarith)]
     refine ⟨hset, ?_, ?_⟩
-    · rw [hset]; exact hAz
-    · rw [hset]; exact hAw
+    · rwx [hset]
+    · rwx [hset]
   · obtain ⟨rfl, rfl⟩ := hlr.2 rfl
     have hset : (recOf (h, lp, rp)).toSet M Q = Chazelle.segment z (rayPt z (-1) T) := by
       unfold CRec.toSet recOf CRec.lpos CRec.rpos
-      simp only
+      simp
       rw [hz, hw, hwpt, hh, FactsChain.hseg_eq_segment (by linarith), Geometry.segment_comm]
     refine ⟨hset, ?_, ?_⟩
-    · rw [hset]; exact hAw
-    · rw [hset]; exact hAz
+    · rwx [hset]
+    · rwx [hset]
 
 /-- **`SeesInWhole` from the answer**: the flag is `1` iff the direction is free for `C`, and when it
 is, the record is the one of `record_ok` at the first hit of `C`. -/

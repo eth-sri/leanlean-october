@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepEvStopTasks
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 2: the fixed facts, conversions, the attachment at the origin (RAM)
@@ -47,10 +51,10 @@ theorem EvEnv.fx (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
   obtain ⟨H, -, hst⟩ := E.hst
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, h45, h33, h34, h35, -⟩ := hst
   have fix : ∀ i, i < 700 → c.nreg (sw i) = c₀.nreg (sw i) := fun i hi =>
-    hI.hin _ (by unfold IFix sw; omega)
+    hI.hin _ (by ufo IFix sw)
   refine ⟨E.hK.fix hI, fun k hk => by rw [fix _ (by omega)]; exact h40 k hk,
-    fun k hk => by rw [fix _ (by omega)]; exact h45 k hk, by rw [fix _ (by omega)]; exact h33,
-    by rw [fix _ (by omega)]; exact h34, by rw [fix _ (by omega)]; exact h35, E.gw' hI,
+    fun k hk => by rw [fix _ (by omega)]; exact h45 k hk, by rwx [fix _ (by omega)],
+    by rwx [fix _ (by omega)], by rwx [fix _ (by omega)], E.gw' hI,
     E.hM.fix hI, E.ctxW' hI, E.ctx2' hI, E.ctx1' hI⟩
 
 /-! ## Conversions -/
@@ -82,8 +86,8 @@ theorem convR_irs (hP : J.P.Simple) (hI : IInv W c₀ c) (hK : Consts c₀) (hfx
   have hmm : J.whole.m = J.left.m + J.right.m := rfl
   rw [hn] at hW
   refine (convS_irs (Or.inl rfl) (Or.inr rfl) ⟨hpe.1, hpe.2.1, hpe.2.2.1⟩ hpo hI hK hpen
-    (by show c.nreg (sw (40 + 1)) < _; rw [g1, hfx.n2]; omega) (by rw [hfx.n2]; omega)
-    (by show c.nreg (sw (40 + 0)) < _; rw [g0, hfx.nw]; omega) (by rw [hfx.nw]; omega)).mono
+    (by show c.nreg (sw (40 + 1)) < _; rwo [g1, hfx.n2]) (by rwo [hfx.n2])
+    (by show c.nreg (sw (40 + 0)) < _; rwo [g0, hfx.nw]) (by rwo [hfx.nw])).mono
     le_rfl ?_
   rintro c' ⟨hv, hr, hm⟩
   have hS := sideConvR J hP
@@ -127,8 +131,8 @@ theorem convL_irs (hP : J.P.Simple) (hI : IInv W c₀ c) (hK : Consts c₀) (hfx
   have hmm : J.whole.m = J.left.m + J.right.m := rfl
   rw [hn] at hW
   refine (convS_irs (Or.inr rfl) (Or.inl rfl) ⟨hpe.1, hpe.2.1, hpe.2.2.1⟩ hpo hI hK hpen
-    (by show c.nreg (sw (45 + 1)) < _; rw [g1, hfx.n1]; omega) (by rw [hfx.n1]; omega)
-    (by show c.nreg (sw (45 + 0)) < _; rw [g0, hfx.nw]; omega) (by rw [hfx.nw]; omega)).mono
+    (by show c.nreg (sw (45 + 1)) < _; rwo [g1, hfx.n1]) (by rwo [hfx.n1])
+    (by show c.nreg (sw (45 + 0)) < _; rwo [g0, hfx.nw]) (by rwo [hfx.nw])).mono
     le_rfl ?_
   rintro c' ⟨hv, hr, hm⟩
   have hS := sideConvL J hP
@@ -162,7 +166,6 @@ def stA : Stmt := .seq (convS (sw 40) (sw 34) oPE oXE) (callArr (sw 2) oXE oPH o
 /-- The registers `stA` writes (besides the oracle bands). -/
 def StAW (r : ℕ) : Prop := CvSet oXE r ∨ (oF0 ≤ r ∧ r ≤ oF0 + 2)
 
-set_option maxRecDepth 20000 in
 theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
     (hI : IInv W c₀ c) (hK : Consts c₀) (hfx : Fx P W J c)
     {kind k b : ℕ} (hok : StOK P J N₂ kind k b) (hb : c.nreg oB = b)
@@ -182,31 +185,31 @@ theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
   set a := stOrig J (Qof P) N₂ kind k b with ha
   unfold stA
   refine IRS.seq (K₁ := 22) (K₂ := 35007) (convR_irs hP hI hK hfx
-    ⟨by unfold oPE cX sw; omega, by unfold oPE cT sw; omega, by unfold oPE cDd sw; omega,
-      by unfold oPE sw; omega⟩
-    ⟨iscr_sw (by unfold oXE sw; omega) (by unfold oXE sw; omega), by unfold oXE cX sw; omega,
-      by unfold oXE cT sw; omega, by unfold oXE cDd sw; omega⟩ hcl hW) ?_
+    ⟨by ufo oPE cX sw, by ufo oPE cT sw, by ufo oPE cDd sw,
+      by ufo oPE sw⟩
+    ⟨iscr_sw (by ufo oXE sw) (by ufo oXE sw), by ufo oXE cX sw,
+      by ufo oXE cT sw, by ufo oXE cDd sw⟩ hcl hW) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨hxn, hxpar, hxpos, hr1, hm1⟩
   have k1 : ∀ r, r ≠ oXE → r ≠ cX → r ≠ cT → r ≠ cDd → c₁.nreg r = c.nreg r :=
-    fun r a b d e => hr1 r (by unfold CvSet; omega)
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold oXE ALLOC sw; omega)
-    (by unfold cX ALLOC sw; omega) (by unfold cT ALLOC sw; omega) (by unfold cDd ALLOC sw; omega)
-  have hH1 : c₁.nreg oPH = c.nreg oPH := k1 _ (by unfold oXE oPH sw; omega)
-    (by unfold cX oPH sw; omega) (by unfold cT oPH sw; omega) (by unfold cDd oPH sw; omega)
-  have hB1 : c₁.nreg oB = c.nreg oB := k1 _ (by unfold oXE oB sw; omega)
-    (by unfold cX oB sw; omega) (by unfold cT oB sw; omega) (by unfold cDd oB sw; omega)
+    fun r a b d e => hr1 r (by ufo CvSet)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by ufo oXE ALLOC sw)
+    (by ufo cX ALLOC sw) (by ufo cT ALLOC sw) (by ufo cDd ALLOC sw)
+  have hH1 : c₁.nreg oPH = c.nreg oPH := k1 _ (by ufo oXE oPH sw)
+    (by ufo cX oPH sw) (by ufo cT oPH sw) (by ufo cDd oPH sw)
+  have hB1 : c₁.nreg oB = c.nreg oB := k1 _ (by ufo oXE oB sw)
+    (by ufo cX oB sw) (by ufo cT oB sw) (by ufo cDd oB sw)
   have hctx : ChainCtx P W c₁ (sw 2) J.whole := hfx.ctxW.transport
-    (k1 _ (by unfold oXE sw; omega) (by unfold cX sw; omega) (by unfold cT sw; omega)
-      (by unfold cDd sw; omega)) (fun x _ => by rw [hm1]) (by rw [hA1])
+    (k1 _ (by ufo oXE sw) (by ufo cX sw) (by ufo cT sw)
+      (by ufo cDd sw)) (fun x _ => by rw [hm1]) (by rw [hA1])
   have hposM : (chainModel J.whole).pos (Qof P) ⟨c₁.nreg oXE, c₁.nreg oPH⟩ = a := by
     rw [hH1, hxpos, hpos]
   have hR : J.right.radius = J.whole.radius := rfl
   refine (callArr_irs (o := oF0) hI₁ hctx
-    ⟨by unfold sw; omega, by unfold sw; omega, by unfold oXE sw; omega, by unfold oXE sw; omega,
-      by unfold oPH sw; omega, by unfold oPH sw; omega, by unfold oB sw; omega,
-      by unfold oB sw; omega⟩ ⟨by unfold oF0 sw; omega, by unfold oF0 sw; omega⟩ hxn
+    ⟨by ufo sw, by ufo sw, by ufo oXE sw, by ufo oXE sw,
+      by ufo oPH sw, by ufo oPH sw, by ufo oB sw,
+      by ufo oB sw⟩ ⟨by ufo oF0 sw, by ufo oF0 sw⟩ hxn
     ⟨by rw [hH1, hxpar]; exact hpp.1, by rw [hH1, hxpar]; exact hpp.2.1,
-      by rw [hH1]; exact hpp.2.2⟩ (by rw [hposM]; exact hay) (by rw [hA1]; omega)).mono le_rfl ?_
+      by rw [hH1]; exact hpp.2.2⟩ (by rwx [hposM]) (by rwo [hA1])).mono le_rfl ?_
   rintro c' ⟨⟨hf1, hf2, hf3⟩, hr2, hA2, hm2⟩
   rw [hposM, hB1, hb] at hf2 hf3
   have hσ := SweepStop.dirOf_cases' b
@@ -219,8 +222,8 @@ theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
   · by_contra hne
     obtain ⟨p, t, harr⟩ := hiff.1 h
     exact hf3 hne p t harr
-  · refine ⟨fun r h1 h2 h3 => ?_, by rw [← hA1]; exact hA2, fun x hx => by
-      rw [hm2 x (by rw [hA1]; exact hx), hm1]⟩
+  · refine ⟨fun r h1 h2 h3 => ?_, by rwx [← hA1], fun x hx => by
+      rw [hm2 x (by rwx [hA1]), hm1]⟩
     have h2' : ¬ (CvSet oXE r ∨ (oF0 ≤ r ∧ r ≤ oF0 + 2)) := h2
     rw [hr2 r h1 (fun h => h2' (Or.inr (by omega))) (fun h => h2' (Or.inr (by omega)))
       (fun h => h2' (Or.inr (by omega))) h3]

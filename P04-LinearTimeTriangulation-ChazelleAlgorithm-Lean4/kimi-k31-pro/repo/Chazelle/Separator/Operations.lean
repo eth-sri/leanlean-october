@@ -3,6 +3,8 @@ module
 public import Chazelle.Separator.Maps
 public import Mathlib.Data.Fintype.BigOperators
 public import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Operations on combinatorial maps (planar separators, part 2)
@@ -177,7 +179,7 @@ theorem addOpp_inr (t : Bool) : M.addOpp (inr t) = inr (!t) := by
 /-- The new face permutation on an old dart. -/
 theorem addFperm_inl (hab : a ≠ b) (x : D) : (M.addRot a b * M.addOpp) (inl x) =
     if M.fperm x = a then inr true else if M.fperm x = b then inr false else inl (M.fperm x) := by
-  rw [Perm.mul_apply, addOpp_inl, addRot_inl M hab]; rfl
+  rwr [Perm.mul_apply, addOpp_inl, addRot_inl M hab]
 
 /-- The new face permutation at `inr true`. -/
 theorem addFperm_true : (M.addRot a b * M.addOpp) (inr true) = inl b := by
@@ -268,11 +270,11 @@ theorem addFace_addFperm (hab : a ≠ b) (hk : (M.fperm ^ k) a = b)
     split_ifs with h1 h2
     · -- `x = fperm⁻¹ a`
       have hx : x = M.fperm.symm a := by rw [← h1, Equiv.symm_apply_apply]
-      have hxn : x ∉ M.arc a k := hx ▸ fperm_symm_start_notMem_arc hk hmin
+      have hxn  := hx ▸ fperm_symm_start_notMem_arc hk hmin
       simp only [addFace, Sum.elim_inr, Sum.elim_inl, ite_true, ite_eq_right hxn]
       rw [← h1, M.face_fperm_apply]
     · have hx : x = M.fperm.symm b := by rw [← h2, Equiv.symm_apply_apply]
-      have hxm : x ∈ M.arc a k := hx ▸ fperm_symm_end_mem_arc hab hk
+      have hxm  := hx ▸ fperm_symm_end_mem_arc hab hk
       simp [addFace, hxm]
     · simp only [addFace, Sum.elim_inl, M.face_fperm_apply]
       by_cases hx : x ∈ M.arc a k
@@ -300,13 +302,13 @@ theorem addFace_sameCycle (hab : a ≠ b) (hk : (M.fperm ^ k) a = b)
         refine sameCycle_follow M.fperm ψ inl (fun y => y ∈ M.arc a k)
           (t := M.fperm.symm b) hx ?_ ?_
         · have hab' : M.fperm.SameCycle a b := ⟨(k : ℤ), by rw [zpow_natCast, hk]⟩
-          have hbb : M.fperm.SameCycle b (M.fperm.symm b) := ⟨-1, by rw [zpow_neg_one]; rfl⟩
+          have hbb : M.fperm.SameCycle b (M.fperm.symm b) := ⟨-1, by rwr [zpow_neg_one]⟩
           exact ((sameCycle_of_mem_arc hx).symm.trans hab').trans hbb
         · intro y hy hyb
           have hya : M.fperm y ≠ a := by
             rintro h; apply fperm_symm_start_notMem_arc hk hmin
             have hy' : M.fperm.symm a = y := by rw [← h, Equiv.symm_apply_apply]
-            rw [hy']; exact hy
+            rwx [hy']
           have hyb' : M.fperm y ≠ b := by
             rintro h; apply hyb; rw [← h, Equiv.symm_apply_apply]
           exact ⟨addFperm_inl_of_ne M hab hya hyb', fperm_mem_arc hk hy hyb'⟩
@@ -324,7 +326,7 @@ theorem addFace_sameCycle (hab : a ≠ b) (hk : (M.fperm ^ k) a = b)
       have h1 : ψ.SameCycle (inl x) (inl (M.fperm.symm a)) := by
         refine sameCycle_follow M.fperm ψ inl
           (fun y => y ∉ M.arc a k ∧ M.face y = M.face a) (t := M.fperm.symm a) ⟨hx, hfx⟩ ?_ ?_
-        · have haa : M.fperm.SameCycle a (M.fperm.symm a) := ⟨-1, by rw [zpow_neg_one]; rfl⟩
+        · have haa : M.fperm.SameCycle a (M.fperm.symm a) := ⟨-1, by rwr [zpow_neg_one]⟩
           exact (M.sameCycle_of_face x a hfx).trans haa
         · rintro y ⟨hy, hfy⟩ hya
           have hya' : M.fperm y ≠ a := by

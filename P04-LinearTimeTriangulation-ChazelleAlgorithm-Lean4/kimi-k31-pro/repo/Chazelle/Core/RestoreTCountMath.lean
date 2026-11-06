@@ -97,13 +97,13 @@ theorem sideExits_ncard (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ 
     constructor
     · rintro ⟨⟨hcF, htouch⟩, p, t, hA, hin⟩
       obtain ⟨i, hi, rfl⟩ := mem_F_iff hcF
-      have hmem : i ∈ L := (hlist i).2 ⟨hi, htouch⟩
+      have hmem  := (hlist i).2 ⟨hi, htouch⟩
       obtain ⟨t', ht', hti⟩ := List.getElem_of_mem hmem
       have hat : chordAt N r t' = i := by
         unfold chordAt
         rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht', Option.getD_some]
         exact hti
-      refine ⟨t', ⟨ht', ?_⟩, by simp only [hat]⟩
+      refine ⟨t', ⟨ht', ?_⟩, by simp [hat]⟩
       rw [hat]
       exact (attach_side_iff hGM hNF hi k₁ k₂).1 ⟨p, t, hA, hin⟩
     · rintro ⟨t', ⟨ht', hs⟩, rfl⟩

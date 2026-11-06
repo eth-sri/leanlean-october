@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvBExpC
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Down-phase base (D9), RAM: expansion of a host block, part 4 (the program)
@@ -59,18 +62,18 @@ theorem initS_exec (c : Config) (hw : WordsBounded W c) (li : Bool) (NP : ℕ)
   unfold initS
   refine spec_seq ?_
   exec_block
-  · rw [h0]; omega
+  · rwo [h0]
   · cases li
-    · refine spec_ifLtN_false (by config_simp; rw [h1, h11]; simp) ?_
+    · refine spec_ifLtN_false (by config_simp; rws [h1, h11]) ?_
       exec_block
-      · config_simp; rw [h16]; omega
-      · config_simp; rw [h16]; omega
-      · config_simp; rw [h16]; omega
+      · config_simp; rwo [h16]
+      · config_simp; rwo [h16]
+      · config_simp; rwo [h16]
       · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
         · rw [h0]
         · rw [h1]
-        · rw [h16]; simp only [ptrE, Bool.false_eq_true, ↓reduceIte]; omega
-    · refine spec_ifLtN_true (by config_simp; rw [h1, h11]; simp) ?_
+        · rsio [h16] only [ptrE, Bool.false_eq_true, ↓reduceIte]
+    · refine spec_ifLtN_true (by config_simp; rws [h1, h11]) ?_
       refine spec_instr (Machine.Exec.copyN ‹_› _ _) fun _ => ?_
       refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
       · rw [h0]
@@ -101,7 +104,7 @@ theorem expSpec : ExpSpec := by
   have hfull : H.take H.length = H := List.take_of_length_le le_rfl
   rw [hfull] at hS' hk₂
   rw [hz] at hk₂
-  refine ⟨c', k₁ + k₂, .seq x₁ x₂, ?_, hS'.arr, fun a ha => hS'.mem a ha, hS'.fr⟩
+  refine ⟨c', k₁ + k₂, .seq x₁ x₂, ?_, hS'.arr, hS'.mem, hS'.fr⟩
   simp only [Host.pts] at hk₂ ⊢
   omega
 

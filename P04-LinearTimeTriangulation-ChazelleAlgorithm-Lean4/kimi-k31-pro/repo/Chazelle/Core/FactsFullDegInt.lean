@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.FactsAttach
 public import Chazelle.Core.ShearInv
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-B: degree `≤ 4` of the full augmented map of the interior (distinct heights)
@@ -50,9 +52,9 @@ theorem open_of_mem {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b)
   obtain ⟨hzy, hza, hzb⟩ := hz
   refine ⟨lt_of_le_of_ne hza fun e => h.left_not ?_, lt_of_le_of_ne hzb fun e => h.right_not ?_⟩
   · have : ((a, y) : Point) = z := point_ext e hzy.symm
-    rw [this]; exact hzD
+    rwx [this]
   · have : ((b, y) : Point) = z := point_ext e.symm hzy.symm
-    rw [this]; exact hzD
+    rwx [this]
 
 /-- Two chords sharing a point of the domain are equal. -/
 theorem eq_of_common {c c' : Set Point} (hc : HC Q c) (hc' : HC Q c') {z : Point} (hz : z ∈ c)
@@ -95,12 +97,12 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
     ∃ m < Q.n, w = Q.vtx m := by
   by_contra hno
   push Not at hno
-  obtain ⟨e, he, t, ht, rfl⟩ := exists_openEdge_of_mem_boundary Q hw fun m hm h => hno m hm h
+  obtain ⟨e, he, t, ht, rfl⟩ := exists_openEdge_of_mem_boundary Q hw hno
   set u := Q.vtx e
   set v := Q.vtx ((e + 1) % Q.n)
   have hn := simple_three_le hQ
   have huv : u.2 ≠ v.2 := hDH e _ he (Nat.mod_lt _ (by omega)) (succIdx_ne Q hn he).symm
-  have hd : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huv)
+  have hd  := sub_ne_zero.2 (Ne.symm huv)
   obtain ⟨ε, hε, hball⟩ := Metric.eventually_nhds_iff.1 hnear
   set L := dist u v + 1 with hL
   have hL0 : 0 < L := by positivity
@@ -134,7 +136,7 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
     rw [this, norm_smul, Real.norm_eq_abs, abs_mul, abs_of_pos hδ0, ← dist_eq_norm, dist_comm]
     have : |σ| = 1 := by rcases hσ1 with h | h <;> rw [h] <;> norm_num
     rw [this, one_mul]
-    calc δ * dist u v ≤ δ * L := by rw [hL]; nlinarith
+    calc δ * dist u v ≤ δ * L := by rwnl [hL]
       _ < ε := hδε
   · simp only [lerp_snd, hs]
     have : u.2 + (t + σ * δ) * (v.2 - u.2) - (u.2 + t * (v.2 - u.2)) =
@@ -176,9 +178,9 @@ theorem side_chords_eq (hQ : Q.Simple) (hDH : DistinctHeights Q) {T : Set Point}
       push Not at hall
       obtain ⟨s, hs1, hs2, hsD⟩ := hall
       have hs1' : z.1 < s := lt_of_le_of_ne hs1 fun e => hsD (by
-        rw [← e, ← hzy]; exact hzD)
+        rwx [← e, ← hzy])
       have hs2' : s < z'.1 := lt_of_le_of_ne hs2 fun e => hsD (by
-        rw [e, ← hz'y]; exact hz'D)
+        rwx [e, ← hz'y])
       have hsl : xl < s := by linarith
       have hsr : s < xr := by linarith
       have hb : ((s, y₀) : Point) ∈ Q.boundary := by
@@ -208,11 +210,11 @@ theorem side_iff {c : Set Point} (hc : HC Q c) {y₀ : ℝ} {w₀ : Point}
     by_contra hge
     push Not at hge
     have hne : z.1 ≠ w₀.1 := fun e => hw₀ (by
-      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
+      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rwx [this])
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
     apply hw₀
     have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
-    rw [← e]; exact this
+    rwx [← e]
   · intro hlt; exact ⟨z, hz, hzD, hzy, hlt⟩
 
 /-- **Degree `≤ 4`** in the interior visibility map augmented by finitely many horizontal chords,
@@ -234,13 +236,13 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
     rw [hTdef, ← h.region_eq hQ hqR]
     exact isPreconnected_connectedComponentIn.subset_connectedComponentIn
       (mem_connectedComponentIn hqf) ((connectedComponentIn_subset _ _).trans hfreeR)
-  have hTD : T ⊆ D := h.trapSet_subset_interior hQ hqR
-  have hqT : q ∈ T := hUT (mem_connectedComponentIn hqf)
+  have hTD  := h.trapSet_subset_interior hQ hqR
+  have hqT  := hUT (mem_connectedComponentIn hqf)
   have hfreeU : U ⊆ freeIn D G := connectedComponentIn_subset _ _
   have hcl : closure U ⊆ closedTrap Q i j y₁ y₂ :=
     (closure_mono hUT).trans (Visibility.closure_trapSet_subset _ _ _ _ _)
-  have hqy₁ : y₁ < q.2 := hqT.1
-  have hqy₂ : q.2 < y₂ := hqT.2.1
+  have hqy₁  := hqT.1
+  have hqy₂  := hqT.2.1
   -- a domain point of the closed trapezoid at a middle height is inside
   have hmid : ∀ z ∈ D, z ∈ closedTrap Q i j y₁ y₂ → y₁ < z.2 → z.2 < y₂ → z ∈ T := by
     intro z hzD hzC hz1 hz2
@@ -251,7 +253,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
   have hslice : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ w ∈ T, w.2 = z.2 → w ∈ c := by
     intro c hc z hz hzT w hwT hwz
     obtain ⟨y, a, b, hh, rfl⟩ := hG c hc
-    have hzy : z.2 = y := hz.1
+    have hzy  := hz.1
     refine mem_of_joined hh hz (hTD hzT) (hwz.trans hzy) fun s h1 h2 => hTD ?_
     have hseg : Chazelle.segment z w ⊆ T :=
       Geometry.segment_subset_of_convex (Visibility.convex_trapSet _ _ _ _ _) hzT hwT
@@ -303,7 +305,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
       · exact Or.inr ⟨hc, z, hz, hzD, hzU, Or.inl h1.symm⟩
     · exact Or.inl ⟨hc, z, hz, hzD, hzU, Or.inl h2⟩
   have hBool : (Set.univ : Set Bool).ncard = 2 := by
-    rw [ncard_univ, Nat.card_eq_fintype_card]; rfl
+    rwr [ncard_univ, Nat.card_eq_fintype_card]
   -- at most two chords above
   have hE₁ : E₁.ncard ≤ 2 := by
     by_cases hA : ∃ c₀ ∈ E₁, ∃ z₀ ∈ c₀, z₀ ∈ D ∧ z₀ ∈ closure U ∧ q.2 < z₀.2 ∧ z₀.2 < y₂
@@ -315,16 +317,16 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have hz0 := hclle _ hU0 z hzU
         have hmz : q.2 < z.2 ∧ z.2 < y₂ := by
           rcases hzc with e | e
-          · rw [e] at hz0; linarith
+          · rwli [e] at hz0
           · exact e
         have hzT := hmid z hzD (hcl hzU) (hqy₁.trans hmz.1) hmz.2
         have hUz := hbelow c hc z hz hzT hmz.1
         have hz0' := hclle _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0' hz0
+        have heq  := le_antisymm hz0' hz0
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₁.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ 2 := by rw [ncard_singleton]; norm_num
+        _ ≤ 2 := by rwn [ncard_singleton]
     · push Not at hA
       obtain ⟨k₀, hk₀, hk₀y, -⟩ := h.top_vertex
       set w₀ := Q.vtx k₀ with hw₀
@@ -368,16 +370,16 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have hz0 := hclge _ hU0 z hzU
         have hmz : y₁ < z.2 ∧ z.2 < q.2 := by
           rcases hzc with e | e
-          · rw [e] at hz0; linarith
+          · rwli [e] at hz0
           · exact e
         have hzT := hmid z hzD (hcl hzU) hmz.1 (hmz.2.trans hqy₂)
         have hUz := habove c hc z hz hzT hmz.2
         have hz0' := hclge _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0 hz0'
+        have heq  := le_antisymm hz0 hz0'
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₂.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ 2 := by rw [ncard_singleton]; norm_num
+        _ ≤ 2 := by rwn [ncard_singleton]
     · push Not at hA
       obtain ⟨k₀, hk₀, hk₀y, -⟩ := h.bot_vertex
       set w₀ := Q.vtx k₀ with hw₀

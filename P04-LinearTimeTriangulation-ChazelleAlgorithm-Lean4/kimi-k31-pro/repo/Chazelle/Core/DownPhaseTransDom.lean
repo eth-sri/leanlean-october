@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseTourB
 public import Chazelle.Core.DownPhaseFrontier
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (T, part 2): the top chain and the interior of `Q`
@@ -56,7 +58,7 @@ theorem Top.boundary_le_top (T : Top Q C) {z : Point} (hz : z ∈ Q.boundary) : 
   obtain ⟨i, hi, t, ht0, ht1, rfl⟩ := hz
   have h1 := T.vtx_le_top hi
   have h2 := T.vtx_le_top (Nat.mod_lt (i + 1) T.n_pos)
-  simp only
+  simp
   nlinarith
 
 /-- **The filled polygon lies below the top vertex** (a point above it sees the far exterior along
@@ -66,17 +68,17 @@ theorem Top.filled_below_top (hQ : Q.Simple) (T : Top Q C) {z : Point} (hz : z �
   by_contra hlt
   push Not at hlt
   set L : ℝ := coordBound Q + |z.2| + 1 with hL
-  have hL0 : 0 ≤ L := by rw [hL]; have := abs_nonneg z.2; have := C.coordBound_nonneg; rw [T.hP] at this; linarith
+  have hL0 : 0 ≤ L := by rw [hL]; have := abs_nonneg z.2; have := C.coordBound_nonneg; rwli [T.hP] at this
   set f : ℝ → Point := fun t => (z.1, z.2 + t) with hf
   have hpre : IsPreconnected (f '' Icc 0 L) :=
     isPreconnected_Icc.image _ (by fun_prop : Continuous f).continuousOn
   have hsub : f '' Icc 0 L ⊆ Q.boundaryᶜ := by
     rintro _ ⟨t, ht, rfl⟩ hb
     have := T.boundary_le_top hb
-    simp only [hf] at this
+    simp [hf] at this
     linarith [ht.1]
   have hw : f L ∉ Q.filled := Chazelle.Jordan.far_not_mem_filled Q (Or.inr (Or.inr (Or.inl (by
-    simp only [hf, hL]; linarith [le_abs_self z.2, neg_abs_le z.2]))))
+    simp [hf, hL]; linarith [le_abs_self z.2, neg_abs_le z.2]))))
   have hzT : z ∈ f '' Icc 0 L := ⟨0, ⟨le_rfl, hL0⟩, by simp [hf]⟩
   exact FactsInterior.subset_exterior hQ hpre hsub ⟨L, ⟨hL0, le_rfl⟩, rfl⟩ hw hzT hz
 
@@ -97,7 +99,7 @@ theorem Top.interior_sub_dom (hQ : Q.Simple) (T : Top Q C) :
     exact ⟨lt_of_le_of_lt hsq.1 this, lt_of_le_of_lt hsq.2 this⟩
   · obtain ⟨h1, h2, -⟩ := C.mem_slit_iff.1 hs
     have h3 := T.filled_below_top hQ hzf
-    have hzt : z = C.top := Prod.ext h1 (le_antisymm h3 h2)
+    have hzt  := Prod.ext h1 (le_antisymm h3 h2)
     exact hzb (T.set_sub (hzt ▸ C.top_mem_set))
 
 /-- The last edge of `Q`. -/
@@ -112,12 +114,12 @@ theorem Top.boundary_dom (T : Top Q C) {z : Point} (hz : z ∈ Q.boundary) (hzD 
   obtain ⟨i, hi, hzi⟩ := hz
   have him : i = C.m := by
     by_contra h
-    exact hzs ⟨i, by have := T.hm; omega, by rw [T.chainEdge_eq' (by have := T.hm; omega)]; exact hzi⟩
+    exact hzs ⟨i, by have := T.hm; omega, by rwx [T.chainEdge_eq' (by have := T.hm; omega)]⟩
   subst him
   rw [T.last_edge] at hzi
   obtain ⟨s, hs0, hs1, rfl⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hzi
   have hm0 : C.vertex C.m = Q.vtx C.m := T.vertex_eq (by have := T.hm; omega)
-  have h00 : C.vertex 0 = Q.vtx 0 := T.vertex_eq T.n_pos
+  have h00  := T.vertex_eq T.n_pos
   refine ⟨s, ⟨?_, ?_⟩, rfl⟩
   · rcases hs0.lt_or_eq with h | h
     · exact h

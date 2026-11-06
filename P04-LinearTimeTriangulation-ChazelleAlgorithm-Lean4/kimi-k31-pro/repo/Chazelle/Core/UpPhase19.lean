@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.UpPhase18
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 64000000
 
 /-!
 # WP-J up phase, part 19: the execution of one grade
@@ -58,7 +62,6 @@ section proofs
 
 variable {O : OracleIface} {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 64000000 in
 /-- **One grade.** -/
 theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : BruteM sB κB)
     (hL : L41M O sL κL) (hGr : GranM sG κG) (hV : O.Valid) (hG : GoodEnv P)
@@ -75,8 +78,8 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
       (∀ r, GK r → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) := by
   have hAl : ALLOC = 9999 := rfl
-  have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
-  have hW128 : 128 * P.n + 8 ≤ W := by unfold hostWords at hWh; omega
+  have hWn : P.n + 3 ≤ W := by ufo hostWords at hWh
+  have hW128 : 128 * P.n + 8 ≤ W := by ufo hostWords at hWh
   obtain ⟨hu, i00, i02, i03, i06, i09, i15, i16, i35, i36, hM⟩ := hI
   obtain ⟨A, hA⟩ : ∃ A, c.nreg ALLOC = A := ⟨_, rfl⟩
   rw [hA] at hM hW
@@ -104,16 +107,16 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
   unfold L41M at hL
   unfold GranM at hGr
   obtain ⟨c1, k1, e1, hk1, hw1, a11, a12, hu1, hM1, m1, r1, o1, f1, ff1⟩ :=
-    chainsL_exec (O := O) hB hL hGr hV hG hWh hn hw hu hA i15 i16 rfl i35 i36 h2g hMc (by rw [← hK]; exact hb1)
+    chainsL_exec (O := O) hB hL hGr hV hG hWh hn hw hu hA i15 i16 rfl i35 i36 h2g hMc (by rwx [← hK])
   have g1 : ∀ r, GK r → c1.nreg r = c.nreg r := fun r hr => by
     obtain ⟨k, a, b, c', d, e, f⟩ := hr.kept; exact f1 r k a b c' d e f
   have u1 : ∀ r, URegR r → c1.nreg r = c.nreg r := fun r hr =>
-    f1 r hr.kept (by unfold URegR at hr; omega) (by unfold URegR at hr; omega)
-      (by unfold URegR at hr; omega) (by unfold URegR at hr; omega)
-      (by unfold URegR at hr; omega) (by unfold URegR at hr; omega)
+    f1 r hr.kept (by ufo URegR at hr) (by ufo URegR at hr)
+      (by ufo URegR at hr) (by ufo URegR at hr)
+      (by ufo URegR at hr) (by ufo URegR at hr)
   obtain ⟨A1, hA1⟩ : ∃ A1, c1.nreg ALLOC = A1 := ⟨_, rfl⟩
   rw [hA1] at a11 a12 hM1
-  have hk1' : k1 ≤ cnt * (K + 2) + 2 := by rw [hK]; exact hk1
+  have hk1' : k1 ≤ cnt * (K + 2) + 2 := by rwx [hK]
   have hKc := Nat.mul_le_mul_left cnt (show K + 2 ≤ K + 19 by omega)
   have hc19 : cnt * (K + 19) = cnt * (K + 2) + 17 * cnt := by ring
   -- the row
@@ -121,39 +124,39 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
     rowS_exec (O := O) (P := P) (hp := hp) (g := g) hw1 hA1 hu1.r08 rfl hu1.r20 hu1.r21 hu1.r22
       hu1.r29 (robust_of hM1 le_rfl fun m h' => h'.2.2.2) (by omega)
   have g2 : ∀ r, GK r → c2.nreg r = c1.nreg r := fun r hr =>
-    fr2 r (by have := hr.range; unfold RowRG; omega) hr.ne_alloc
+    fr2 r (by have := hr.range; ufo RowRG) hr.ne_alloc
   have u2 : ∀ r, URegR r → c2.nreg r = c1.nreg r := fun r hr =>
-    fr2 r (by unfold URegR at hr; unfold RowRG; omega) (by unfold URegR at hr; rw [hAl]; omega)
+    fr2 r (by unfold URegR at hr; ufo RowRG) (by unfold URegR at hr; rwo [hAl])
   have hmc2 : ∀ a, a < A → c2.nmem a = c.nmem a := fun a ha => by
     rw [m2 a (Or.inl (by omega)), m1 a ha]
   have U2 : ∀ r, URegR r → c2.nreg r = c.nreg r := fun r hr => (u2 r hr).trans (u1 r hr)
   -- the header
   obtain ⟨c3, k3, e3, hk3, hw3, A3e, j51, j52, j56, j57, j50, w0, w1, w2, w3, m3, fr3, hrr3,
       hrm3, ho3⟩ :=
-    recA_exec (P := P) (h := h) (g := g) hw2 A2e ((U2 170005 (by unfold URegR; omega)).trans hu.r05)
-      ((U2 170007 (by unfold URegR; omega)).trans hu.r07)
-      ((U2 170020 (by unfold URegR; omega)).trans hu.r20)
-      ((U2 170021 (by unfold URegR; omega)).trans hu.r21)
-      ((U2 170022 (by unfold URegR; omega)).trans hu.r22)
-      ((U2 170025 (by unfold URegR; omega)).trans hu.r25)
+    recA_exec (P := P) (h := h) (g := g) hw2 A2e ((U2 170005 (by ufo URegR)).trans hu.r05)
+      ((U2 170007 (by ufo URegR)).trans hu.r07)
+      ((U2 170020 (by ufo URegR)).trans hu.r20)
+      ((U2 170021 (by ufo URegR)).trans hu.r21)
+      ((U2 170022 (by ufo URegR)).trans hu.r22)
+      ((U2 170025 (by ufo URegR)).trans hu.r25)
       (by omega) (by omega) (by omega)
   have u3 : ∀ r, URegR r → c3.nreg r = c2.nreg r := fun r hr =>
-    fr3 r (by unfold URegR at hr; unfold RecRG; omega) (by unfold URegR at hr; rw [hAl]; omega)
+    fr3 r (by unfold URegR at hr; ufo RecRG) (by unfold URegR at hr; rwo [hAl])
   have g3 : ∀ r, GK r → c3.nreg r = c2.nreg r := fun r hr =>
-    fr3 r (by have := hr.range; unfold RecRG; omega) hr.ne_alloc
+    fr3 r (by have := hr.range; ufo RecRG) hr.ne_alloc
   -- the old rows
-  have hT : c2.nmem (h + 2) + g ≤ A := by rw [hmc2 _ (by omega)]; omega
+  have hT : c2.nmem (h + 2) + g ≤ A := by rwo [hmc2 _ (by omega)]
   obtain ⟨c4, k4, e4, hk4, hw4, A4e, a42, hcp, m4, fr4, hrr4, hrm4, ho4⟩ :=
     copyL_exec (P := P) hw3 j50
-      (((u3 170007 (by unfold URegR; omega)).trans (U2 170007 (by unfold URegR; omega))).trans hu.r07)
+      (((u3 170007 (by ufo URegR)).trans (U2 170007 (by ufo URegR))).trans hu.r07)
       j57 j56 A3e
-      (((u3 170020 (by unfold URegR; omega)).trans (U2 170020 (by unfold URegR; omega))).trans hu.r20)
+      (((u3 170020 (by ufo URegR)).trans (U2 170020 (by ufo URegR))).trans hu.r20)
       (by omega) (by omega) (by omega) (by omega)
   have u4 : ∀ r, URegR r → c4.nreg r = c.nreg r := fun r hr => by
-    rw [fr4 r (by unfold URegR at hr; unfold CopyRG; omega) (by unfold URegR at hr; rw [hAl]; omega),
+    rw [fr4 r (by unfold URegR at hr; ufo CopyRG) (by unfold URegR at hr; rwo [hAl]),
       u3 r hr, u2 r hr, u1 r hr]
   have g4 : ∀ r, GK r → c4.nreg r = c.nreg r := fun r hr => by
-    rw [fr4 r (by have := hr.range; unfold CopyRG; omega) hr.ne_alloc,
+    rw [fr4 r (by have := hr.range; ufo CopyRG) hr.ne_alloc,
       g3 r hr, g2 r hr, g1 r hr]
   have hmc4 : ∀ a, a < A → c4.nmem a = c.nmem a := fun a ha => by
     rw [m4 a (Or.inl (by omega)), m3 a (Or.inl (by omega)), hmc2 a ha]
@@ -163,27 +166,27 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
   have hQn : Q ≤ P.n := by rw [hQ]; have := Nat.div_le_self (P.n - 2) (2 ^ g); omega
   have hQ2 : c4.nmem (D + Q) = Q / 2 := by rw [hmc4 _ (by omega)]; exact hHalf Q hQn
   have hj44 : c4.nreg 170044 = A1 := by
-    rw [fr4 _ (by unfold CopyRG; omega) (by rw [hAl]; omega),
-      fr3 _ (by unfold RecRG; omega) (by rw [hAl]; omega)]; exact j44
+    rw [fr4 _ (by ufo CopyRG) (by rwo [hAl]),
+      fr3 _ (by ufo RecRG) (by rwo [hAl])]; exact j44
   have hTT : A + 1 ≤ A1 + 3 * cnt + 4 := by omega
   obtain ⟨c5, k5, e5, hk5, hw5, w5, A5e, j05, j12, j14, j19, j10, j09, j08, j07, j15, j16, j35,
       j36, m5, fr5, hrr5, hrm5, ho5⟩ :=
     recB_exec (P := P) (T' := A1 + 3 * cnt + 4) (g := g) (R' := A1) (h' := A1 + 3 * cnt)
       (cnt := cnt) (pg := 2 ^ g) (D := D) (Q := Q) (g1 := g + 1) hw4 A4e
-      ((fr4 170056 (by unfold CopyRG; omega) (by rw [hAl]; omega)).trans j56)
-      ((u4 170007 (by unfold URegR; omega)).trans hu.r07) hj44
-      ((fr4 170051 (by unfold CopyRG; omega) (by rw [hAl]; omega)).trans j51)
-      ((u4 170008 (by unfold URegR; omega)).trans hu.r08)
-      ((u4 170010 (by unfold URegR; omega)).trans hu.r10)
-      ((u4 170003 (by unfold URegR; omega)).trans i03)
-      ((u4 170009 (by unfold URegR; omega)).trans i09)
-      ((fr4 170052 (by unfold CopyRG; omega) (by rw [hAl]; omega)).trans j52)
-      ((u4 170020 (by unfold URegR; omega)).trans hu.r20) (by omega) (by omega) (by omega)
-      (by omega) (by omega) (by rw [hQ2]; omega)
+      ((fr4 170056 (by ufo CopyRG) (by rwo [hAl])).trans j56)
+      ((u4 170007 (by ufo URegR)).trans hu.r07) hj44
+      ((fr4 170051 (by ufo CopyRG) (by rwo [hAl])).trans j51)
+      ((u4 170008 (by ufo URegR)).trans hu.r08)
+      ((u4 170010 (by ufo URegR)).trans hu.r10)
+      ((u4 170003 (by ufo URegR)).trans i03)
+      ((u4 170009 (by ufo URegR)).trans i09)
+      ((fr4 170052 (by ufo CopyRG) (by rwo [hAl])).trans j52)
+      ((u4 170020 (by ufo URegR)).trans hu.r20) (by omega) (by omega) (by omega)
+      (by omega) (by omega) (by rwo [hQ2])
   have w5r : ∀ r, URegR r → ¬ RecBRG r → c5.nreg r = c.nreg r := fun r h1 h2 => by
-    rw [fr5 r h2 (by unfold URegR at h1; rw [hAl]; omega), u4 r h1]
+    rw [fr5 r h2 (by unfold URegR at h1; rwo [hAl]), u4 r h1]
   have g5 : ∀ r, GK r → c5.nreg r = c.nreg r := fun r hr => by
-    rw [fr5 r (by have := hr.range; unfold RecBRG; omega) hr.ne_alloc,
+    rw [fr5 r (by have := hr.range; ufo RecBRG) hr.ne_alloc,
       g4 r hr]
   have hSc : ∀ i, i ≤ topGrade P.n + 1 → c5.nmem (S + 2 + i) = 2 ^ i ∧
       c5.nmem (S + topGrade P.n + 4 + i) = Cost.ceilBeta i := fun i hi => by
@@ -191,10 +194,10 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
     exact hSet.2.2.1 i hi
   obtain ⟨c6, k6, e6, hk6, hw6, j11, fr6, hm6, hrr6, hrm6, ho6⟩ :=
     gamS_exec (P := P) (S := S) (p := topGrade P.n) (g1 := g + 1) hw5
-      ((w5r 170000 (by unfold URegR; omega) (by unfold RecBRG; omega)).trans i00)
-      ((w5r 170002 (by unfold URegR; omega) (by unfold RecBRG; omega)).trans i02) j07
-      ((w5r 170021 (by unfold URegR; omega) (by unfold RecBRG; omega)).trans hu.r21)
-      ((w5r 170025 (by unfold URegR; omega) (by unfold RecBRG; omega)).trans hu.r25)
+      ((w5r 170000 (by ufo URegR) (by ufo RecBRG)).trans i00)
+      ((w5r 170002 (by ufo URegR) (by ufo RecBRG)).trans i02) j07
+      ((w5r 170021 (by ufo URegR) (by ufo RecBRG)).trans hu.r21)
+      ((w5r 170025 (by ufo URegR) (by ufo RecBRG)).trans hu.r25)
       (by omega) (by omega) hSc (by omega) (by omega) (by omega)
   have v6 : ∀ r, 170000 ≤ r → r ≠ 170053 → r ≠ 170054 → r ≠ 170011 → c6.nreg r = c5.nreg r :=
     fun r a b d e => fr6 r (Or.inr a) b d e
@@ -225,28 +228,28 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
       rw [hrr6, hrr5, hrr4, hrr3, hrr2, ff1 r hr]⟩
   · unfold gradeC; rw [← hcnt, ← hK]
     clear * - hk1' hk2 hk3 hk4 hk5 hk6 hc19; omega
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r01
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r04
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r01
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r04
   · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j05]
   · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j07]
   · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j08, hQ2, gradeCount_succ, ← hQ]
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j10, pow_succ]; ring
+  · rwring [v6 _ (by decide) (by decide) (by decide) (by decide), j10, pow_succ]
   · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j12, Nat.add_sub_cancel]; try rfl
   · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j14]
   · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j19, Nat.add_sub_cancel]
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r20
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r21
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r22
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r23
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r25
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r26
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r28
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r29
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact hu.r37
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact i00
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact i02
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact i03
-  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by unfold URegR; decide) (by unfold RecBRG; decide)]; exact i06
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r20
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r21
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r22
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r23
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r25
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r26
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r28
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r29
+  · rw [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]; exact hu.r37
+  · rwx [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]
+  · rwx [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]
+  · rwx [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]
+  · rwx [v6 _ (by decide) (by decide) (by decide) (by decide), w5r _ (by ufd URegR) (by ufd RecBRG)]
   · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j09, hQ2, hQ']
   · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j15]
   · rw [v6 _ (by decide) (by decide) (by decide) (by decide), j16]
@@ -275,9 +278,9 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
       rw [hmc (h + 2) (by omega), hmc (c.nmem (h + 2) + j) (by omega),
         hm (A1 + 3 * cnt + 4 + j) (by omega), hm6, m5 _ (by omega), hcp j hj,
         m3 _ (Or.inl (by omega)), hTc, hmc2 _ (by omega)]
-    have eg : m (A1 + 3 * cnt + 4 + g) = A1 := (hm _ (by omega)).trans (by rw [hm6]; exact w5)
-    refine ⟨⟨by rw [e0]; omega, by rw [e1]; exact hSetm, by rw [e3]; exact hHalfm, hHm,
-      by omega, ⟨by omega, by rw [e1]; omega, by rw [e3]; omega⟩, by rw [e2, e0]; omega,
+    have eg : m (A1 + 3 * cnt + 4 + g) = A1 := (hm _ (by omega)).trans (by rwx [hm6])
+    refine ⟨⟨by rwo [e0], by rwx [e1], by rwx [e3], hHm,
+      by omega, ⟨by omega, by rwo [e1], by rwo [e3]⟩, by rwo [e2, e0],
       fun g' hg' => ?_, fun g' i hg' hi => ?_⟩, e0, fun _ => by
         rw [e2, Nat.add_sub_cancel, eg], e1, e3⟩
     · rw [e0] at hg'
@@ -286,13 +289,13 @@ theorem gradeB_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB : 
       · rw [et g' h1]; have := hrowm g' h1; clear * - this a11; omega
       · rw [show g' = g by clear * - hg' h1; omega, eg, ← hcnt]; clear * -; omega
     · rw [e0] at hg'
-      simp only [rowE]
+      simp [rowE]
       rw [e2]
       rcases Nat.lt_or_ge g' g with h1 | h1
       · rw [et g' h1]; exact (hEm g' i h1 hi).mono (by clear * - a11; omega)
       · have hgg : g' = g := by clear * - hg' h1; omega
         rw [hgg] at hi ⊢
-        have hi' : i < cnt := by rw [hcnt]; exact hi
+        have hi' : i < cnt := by rwx [hcnt]
         have b0 : A1 + 3 * i < A1 + 3 * cnt := by clear * - hi'; omega
         have b1 : A1 + 3 * i + 1 < A1 + 3 * cnt := by clear * - hi'; omega
         have b2 : A1 + 3 * i + 2 < A1 + 3 * cnt := by clear * - hi'; omega

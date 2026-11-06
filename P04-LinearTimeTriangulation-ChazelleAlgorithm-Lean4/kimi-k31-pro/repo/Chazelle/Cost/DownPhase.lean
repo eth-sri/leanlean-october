@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Cost.UpPhase
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The down-phase arithmetic (Chazelle §4.2, Lemma 4.2) and the linear total (Theorem 4.3)
@@ -58,7 +60,7 @@ theorem downOverhead_eq (lam : ℕ) :
   congr 2
   have := downPhase_exponent
   calc beta ^ 2 * lam * (4 * beta / 3 - 1 / 3) = (beta ^ 2 * (4 * beta / 3 - 1 / 3)) * lam := by ring
-    _ = -(lam : ℝ) / 375 := by rw [this]; ring
+    _ = -(lam : ℝ) / 375 := by rwring [this]
 
 theorem downOverhead_nonneg (lam : ℕ) : 0 ≤ downOverhead lam := by
   rw [downOverhead_eq]
@@ -85,7 +87,7 @@ theorem sum_downOverhead_le (n : ℕ) :
         Finset.sum_le_sum (fun j _ => downOverhead_le_cubic j)
     _ ≤ (4 * ((3 : ℕ) : ℝ) * ((375 : ℕ) : ℝ)) ^ 3 * (8 * ((375 : ℕ) : ℝ)) :=
         sum_natPow_mul_two_rpow_neg_le 3 375 (by norm_num) n
-    _ = 4500 ^ 3 * 3000 := by push_cast; ring
+    _ = 4500 ^ 3 * 3000 := by pcr
 
 /-! ### The cost of one refinement step of Lemma 4.2 -/
 
@@ -99,7 +101,7 @@ theorem two_rpow_neg_ceilBeta_le (lam : ℕ) :
 
 /-- `⌈βλ⌉ + 11 ≤ λ` for `λ ≥ 14`. -/
 theorem ceilBeta_add_eleven_le {lam : ℕ} (h : 14 ≤ lam) : ceilBeta lam + 11 ≤ lam := by
-  have hb0 : (0 : ℝ) ≤ beta := by rw [beta_eq]; norm_num
+  have hb0 : (0 : ℝ) ≤ beta := by rwn [beta_eq]
   have hc : ((ceilBeta lam : ℕ) : ℝ) < beta * lam + 1 :=
     Nat.ceil_lt_add_one (mul_nonneg hb0 (Nat.cast_nonneg lam))
   have hl : (14 : ℝ) ≤ lam := by exact_mod_cast h
@@ -110,7 +112,7 @@ theorem ceilBeta_add_eleven_le {lam : ℕ} (h : 14 ≤ lam) : ceilBeta lam + 11 
 
 /-- `⌈βλ⌉ + 11 < λ` for `λ ≥ 16` (the shifted recursion index decreases). -/
 theorem ceilBeta_add_eleven_lt {lam : ℕ} (h : 16 ≤ lam) : ceilBeta lam + 11 < lam := by
-  have hb0 : (0 : ℝ) ≤ beta := by rw [beta_eq]; norm_num
+  have hb0 : (0 : ℝ) ≤ beta := by rwn [beta_eq]
   have hc : ((ceilBeta lam : ℕ) : ℝ) < beta * lam + 1 :=
     Nat.ceil_lt_add_one (mul_nonneg hb0 (Nat.cast_nonneg lam))
   have hl : (16 : ℝ) ≤ lam := by exact_mod_cast h
@@ -148,7 +150,7 @@ theorem downStep_cost_le {K k : ℝ} (hK : 0 ≤ K) (hk : 0 ≤ k) {lam l : ℕ}
   -- exponential part: (2^l/2^c + 1) 2^((74/75)μ) ≤ 4096 · 2^l 2^(-λ/375)
   have hexp : ((2 : ℝ) ^ l / (2 : ℝ) ^ c + 1) * (2 : ℝ) ^ ((74 / 75 : ℝ) * μ) ≤
       4096 * ((2 : ℝ) ^ l * (2 : ℝ) ^ (-(lam : ℝ) / 375)) := by
-    have hμR : ((μ : ℕ) : ℝ) = (c : ℝ) + 11 := by rw [hμdef]; push_cast; ring
+    have hμR : ((μ : ℕ) : ℝ) = (c : ℝ) + 11 := by rw [hμdef]; pcr
     have hsplit : (2 : ℝ) ^ ((74 / 75 : ℝ) * μ) =
         (2 : ℝ) ^ c * ((2 : ℝ) ^ (11 : ℝ) * (2 : ℝ) ^ (-((μ : ℕ) : ℝ) / 75)) := by
       rw [← Real.rpow_natCast (2 : ℝ) c, two_rpow_mul_two_rpow, two_rpow_mul_two_rpow]

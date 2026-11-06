@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvMap2
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
 
 /-!
 # The sweep (WP-D), stages 2–3: the walk edges of `M₁` and `M` along the `C₁` part
@@ -63,7 +66,7 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
     have hlen : Lst J + llen J = (chainModel J.whole).W.n := by
       rw [Lst_rlen]; exact rlen_add_llen J hVNT
     have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right (by omega)]
-    have hE₁ : E₁ J = llen J + lδ J := by unfold E₁; omega
+    have hE₁ : E₁ J = llen J + lδ J := by ufo E₁
     have hL := lL1_add_lL2 J
     rw [hE₁] at hdE
     rw [hb] at viaGen ⊢
@@ -88,19 +91,19 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
     by_cases hbox : Lst J < lOff J
     · obtain ⟨-, hlo, hτs, hLst⟩ := caseB_facts J hbox
       have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; rw [ite_eq_left hbox]
-      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
+      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by uro E₁ [hn, hδ0]
       rw [hE₁] at hdE
       rw [hb] at viaGen ⊢
       by_cases hd7 : d < 7
-      · have := viaBox d hVNT hd7 (by rw [hb]) (by rw [hψ]; unfold gW; omega)
+      · have := viaBox d hVNT hd7 (by rw [hb]) (by ruo [hψ] gW)
         rwa [hb] at this
-      · refine viaGen (d - 7) (by omega) ?_ (by rw [hψ]; omega)
+      · refine viaGen (d - 7) (by omega) ?_ (by rwo [hψ])
         unfold dq; rw [ite_eq_left (by omega), hτ0, hn₁]
         rw [show 2 * J.left.m + 6 + d = (6 + 0 + (d - 7)) + (2 * J.left.m + 7) by omega,
           Nat.add_mod_right]
     · obtain ⟨hτs, hlo, hLst⟩ := caseC_facts J hVNT hbox
       have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right hbox]
-      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
+      have hE₁ : E₁ J = 2 * J.m₁ + 7 := by uro E₁ [hn, hδ0]
       rw [hE₁] at hdE
       rw [hb, hτ0] at viaGen ⊢
       by_cases hd2 : d < 2 * J.m₁
@@ -109,7 +112,7 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
       · have := viaBox (d - 2 * J.m₁) hVNT (by omega) (by
           rw [hb, hτ0]
           congr 1
-          omega) (by rw [hψ]; unfold gW; omega)
+          omega) (by ruo [hψ] gW)
         rwa [hb, hτ0] at this
 
 /-- **A height code has the same parameter** in `M` at `mEdge d` and in `M₁` at `(b₁ + d) % n₁`
@@ -120,7 +123,7 @@ theorem param_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (ht
       (chainModel J.left).param Q ⟨(b₁ J + d) % (chainModel J.left).W.n, h⟩ := by
   have e0 := edge_corr hP hv htp 0
   have e1 := edge_corr hP hv htp 1
-  simp only [Chazelle.Chain.sidePt_zero] at e0
+  simp [Chazelle.Chain.sidePt_zero] at e0
   have hwa : (chainModel J.whole).wa (mEdge J d) =
       (chainModel J.left).wa ((b₁ J + d) % (chainModel J.left).W.n) := e0
   have hwb : (chainModel J.whole).wb (mEdge J d) =

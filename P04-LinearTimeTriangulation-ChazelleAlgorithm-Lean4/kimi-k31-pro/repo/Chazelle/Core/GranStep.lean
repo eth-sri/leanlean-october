@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.GranState
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-F, part 7: one step of the worklist — popping, and the removability test
@@ -66,15 +69,15 @@ theorem Inv.pop_of (h : Inv E st) (htop : 0 < st.top)
       (cs E.M E.Q E.N st.cur)) : Inv E st.pop := by
   show Inv E { st with top := st.top - 1 }
   refine ⟨h.stat.congr rfl rfl rfl rfl, h.live01, h.nlive, h.degLe, h.semi, h.sides, h.cls, h.refInj, h.cnt, h.ring,
-    fun t ht => h.stk t (by simp only at ht; omega), ?_, ?_⟩
-  · have := h.topLe; simp only; omega
+    fun t ht => h.stk t (by sio only at ht), ?_, ?_⟩
+  · have := h.topLe; sio only
   · intro i hi hno
     by_cases hic : i = st.cur
     · subst hic; exact hc hi
     · refine h.work i hi fun t ht => ?_
       by_cases htt : t = st.top - 1
       · subst htt; exact fun e => hic e.symm
-      · exact hno t (by simp only; omega)
+      · exact hno t (by sio only)
 
 /-- **Popping a dead chord.** -/
 theorem Inv.pop_dead (h : Inv E st) (htop : 0 < st.top) (hd : st.live st.cur ≠ 1) :
@@ -138,7 +141,7 @@ theorem card_filter_two (K : ℕ) (P₀ P₁ : ℕ → Prop) [DecidablePred P₀
       by_cases hic : i = c
       · subst hic; exact h1 hp
       · exact (h i hi hic).2 hp
-    rw [e0, e1]; rfl
+    rwr [e0, e1]
 
 /-- The two positions of a live chord differ. -/
 theorem Inv.nd_ne (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) :
@@ -196,7 +199,7 @@ theorem Inv.cut_sdiff_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.
   rw [← fam_diff hE hc, isCut_fam_iff hE.hNF hE.hM]
   constructor
   · rintro ⟨i, ⟨hiL, hic⟩, hi, hk⟩
-    have hic' : i ≠ c := fun e => hic (by rw [e]; rfl)
+    have hic' : i ≠ c := fun e => hic (by rwr [e])
     -- the position of the attachment
     have hpos : ∃ j, (j = st.nd0 i ∨ j = st.nd1 i) ∧ j < E.A ∧ E.key j = k := by
       rcases hk with hk | hk
@@ -244,10 +247,10 @@ theorem Inv.cut_sdiff_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.
         rcases hj' with e | e
         · rcases h0 with h0 | h0
           · exact absurd e h0
-          · rw [e]; exact h0
+          · rwx [e]
         · rcases h1 with h1 | h1
           · exact absurd e h1
-          · rw [e]; exact h1
+          · rwx [e]
       have hnot' := mt (h.cnt_eq_one_iff hE hiL hj').2 hnot
       push Not at hnot'
       replace hnot := hnot'
@@ -256,8 +259,8 @@ theorem Inv.cut_sdiff_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.
         by_cases e : st.nd0 i' = j
         · exact Or.inl e
         · exact Or.inr (hi'j e)
-      exact ⟨i', ⟨hi', by rw [mem_singleton_iff]; exact hi'c⟩, hi'.1, hkey i' hi' hi'j'⟩
-    · exact ⟨i, ⟨hiL, by rw [mem_singleton_iff]; exact hic⟩, hiL.1, hkey i hiL hij⟩
+      exact ⟨i', ⟨hi', by rwx [mem_singleton_iff]⟩, hi'.1, hkey i' hi' hi'j'⟩
+    · exact ⟨i, ⟨hiL, by rwx [mem_singleton_iff]⟩, hiL.1, hkey i hiL hij⟩
 
 /-! ## The removal split of a live chord -/
 
@@ -302,12 +305,12 @@ theorem Inv.removable_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.
   · rintro ⟨-, U, hU, V, hV, hUV, hcU, hcV, hlow, hW⟩
     rcases (htouch U hU).1 hcU with rfl | rfl <;> rcases (htouch V hV).1 hcV with rfl | rfl
     · exact absurd rfl hUV
-    · exact ⟨by rw [dX, dY]; exact hlow, hW P hs.mem hs.sub₁⟩
+    · exact ⟨by rwx [dX, dY], hW P hs.mem hs.sub₁⟩
     · exact ⟨by rw [dX, dY]; exact hlow.symm, hW P hs.mem hs.sub₂⟩
     · exact absurd rfl hUV
   · rintro ⟨hlow, hw⟩
     refine ⟨St.cs_mem_F hc, _, hX, _, hY, hne, (htouch _ hX).2 (Or.inl rfl),
-      (htouch _ hY).2 (Or.inr rfl), by rw [← dX, ← dY]; exact hlow, fun W hW hsub => ?_⟩
+      (htouch _ hY).2 (Or.inr rfl), by rwx [← dX, ← dY], fun W hW hsub => ?_⟩
     rw [Chazelle.Chain.regionsIn_eq_of_subset hW hs.mem (Chazelle.Chain.regionsIn_nonempty hX)
       hsub hs.sub₁]
     exact hw
@@ -460,7 +463,7 @@ theorem Inv.mu_eq (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P 
         omega
       obtain ⟨a, ha, hac⟩ := Set.exists_ne_of_one_lt_ncard h2 c
       rw [← fam_diff hE hc]
-      exact ⟨cs E.M E.Q E.N a, a, ⟨ha, by rw [mem_singleton_iff]; exact hac⟩, ha.1, rfl⟩
+      exact ⟨cs E.M E.Q E.N a, a, ⟨ha, by rwx [mem_singleton_iff]⟩, ha.1, rfl⟩
     have wX : st.wt (st.s0 c) = E.M.weight (st.F E) (st.cl E (st.s0 c)) :=
       (h.cls _ ⟨c, hc, Or.inl rfl⟩).2.1
     have wY : st.wt (st.s1 c) = E.M.weight (st.F E) (st.cl E (st.s1 c)) :=

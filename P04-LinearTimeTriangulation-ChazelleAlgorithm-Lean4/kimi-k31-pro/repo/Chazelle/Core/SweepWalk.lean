@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepLoop
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), part 12: the walk along the `C₁` part (detection of the next event)
@@ -50,7 +53,7 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
   have hn : 0 < n := by omega
   obtain ⟨x0, x1⟩ := Corr.key_mem hp₀ ht₀.1.le ht₀.2
   obtain ⟨k0, k1⟩ := Corr.key_mem hpK htK0 htK1
-  have hx0o : 0 ≤ o ((p₀ : ℝ) + t₀) := off_nonneg x0 hgn
+  have hx0o  := off_nonneg x0 hgn
   set δ := o ((pK : ℝ) + tK) - o ((p₀ : ℝ) + t₀) with hδ
   have hδ0 : 0 < δ := by linarith
   -- a position just before `K` faces `G`
@@ -63,7 +66,7 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
       off_sub hg0 hgn k0 k1 hqu y0 y1 hs0 (by linarith)
     have hnc : ¬ M.IsCut F ((q : ℝ) + u) := by
       intro hc
-      exact hgap _ hc y0 y1 ⟨by rw [hoy]; linarith, by rw [hoy]; linarith⟩
+      exact hgap _ hc y0 y1 ⟨by rwli [hoy], by rwli [hoy]⟩
     obtain ⟨U, hU, hfU⟩ := hM.exists_faces_of_not_cut hF hfin hq hu hnc
     have heq : G = U := by
       refine (hM.eq_iff_not_separates hF hfin hG hU hp₀ hq ht₀ hu hnc₀ hnc hfG₀ hfU).2
@@ -75,7 +78,7 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
       have hya : (q : ℝ) + u ≠ qa + sa := fun h => hnc ⟨c, hc, qa, sa, hQA, h⟩
       have hyb : (q : ℝ) + u ≠ qb + sb := fun h => hnc ⟨c, hc, qb, sb, hQB, h⟩
       have hxy : (p₀ : ℝ) + t₀ ≠ q + u := by
-        intro h; have := congrArg o h; rw [hoy] at this; linarith
+        intro h; have := congrArg o h; rwli [hoy] at this
       have hkab := WalkAx.key_ne_of_pt_ne hQA hQB hQAB
       have hsep' := (sep_iff_btw hg0 hgn a0 a1 b0 b1 x0 x1 y0 y1 hkab hxy hxa hxb hya hyb).1 hsep
       have hnot : ∀ {r : ℕ} {v : ℝ}, SideAttach M.W c r v →
@@ -85,10 +88,10 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
         have hcut : M.IsCut F ((r : ℝ) + v) := ⟨c, hc, r, v, hR, rfl⟩
         unfold Btw at hb
         rcases hb with ⟨h1, h2⟩ | ⟨h1, h2⟩
-        · exact hgap _ hcut r0 r1 ⟨h1, by rw [hoy] at h2; linarith⟩
-        · rw [hoy] at h1; linarith
+        · exact hgap _ hcut r0 r1 ⟨h1, by rwli [hoy] at h2⟩
+        · rwli [hoy] at h1
       exact hnot hQA (hsep'.2 (hnot hQB))
-    rw [heq]; exact hfU
+    rwx [heq]
   refine ⟨min δ 1, lt_min hδ0 one_pos, fun htp s hs0 hs1 hs2 => ?_, fun ht s hs0 hs1 => ?_⟩
   · refine key pK (tK - s) s hpK ⟨by linarith, by linarith⟩ hs0
       (lt_of_lt_of_le hs1 (min_le_left _ _)) (Or.inl (by ring))
@@ -99,14 +102,14 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
     rcases Nat.eq_zero_or_pos pK with h0 | h0
     · subst h0
       right
-      rw [show (0 + n - 1) % n = n - 1 by rw [Nat.mod_eq_of_lt (by omega)]; omega,
+      rw [show (0 + n - 1) % n = n - 1 by rwo [Nat.mod_eq_of_lt (by omega)],
         Nat.cast_sub (by omega)]
-      push_cast; ring
+      pcr
     · left
       rw [show (pK + n - 1) % n = pK - 1 by
         rw [show pK + n - 1 = (pK - 1) + n by omega, Nat.add_mod_right,
           Nat.mod_eq_of_lt (by omega)], Nat.cast_sub (by omega)]
-      push_cast; ring
+      pcr
 
 section Cand
 
@@ -133,7 +136,7 @@ theorem sidePt_off_zero (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨k0, k1⟩ := Corr.key_mem hp ht0 ht1
   have hk := off_inj hg0 hgn k0 k1 hg0 hgn (by rw [h0, off_self])
   obtain ⟨rfl, rfl⟩ := sideKey_inj ht0 ht1 le_rfl zero_lt_one
-    (show (p : ℝ) + t = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) + 0 by rw [add_zero]; exact hk)
+    (show (p : ℝ) + t = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) + 0 by rwx [add_zero])
   rw [Chazelle.Chain.sidePt_zero]
   have := hC.A1 0 (Nat.zero_le _)
   rw [add_zero, add_zero, Nat.mod_eq_of_lt hC.hg, Nat.mod_eq_of_lt hC.hg'] at this
@@ -175,7 +178,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
   obtain ⟨k0, k1⟩ := Corr.key_mem hB.1 hB.2.1 hB.2.2.1
-  have hBpt : sidePt (chainModel J.whole).W pB tB ∈ h := hB.2.2.2.1
+  have hBpt  := hB.2.2.2.1
   rcases F₂plus_cases J hS₂.2.1 hh with ⟨c, hc, hhc⟩ | ⟨hv, -⟩ | ⟨ht, -⟩
   · rcases (off_nonneg k0 hgn).lt_or_eq with hpos | hzero
     · -- a proper position of the stretch, or the split vertex
@@ -263,7 +266,7 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
     ∃ h ∈ Cand J S₂ L, SideAttach (chainModel J.whole).W h pK tK := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs  := hC.hF
   have hGM : GoodModel (chainModel J.whole) := Or.inl ⟨J.whole, hP, rfl⟩
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by

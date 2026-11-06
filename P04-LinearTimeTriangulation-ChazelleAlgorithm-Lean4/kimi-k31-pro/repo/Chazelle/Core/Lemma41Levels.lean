@@ -3,6 +3,7 @@ module
 public import Mathlib.Data.Nat.Log
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.Linarith
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-J, part 2: the levels of the balanced merge tree of Lemma 4.1
@@ -22,7 +23,7 @@ theorem clog_le_of_le_two_mul {j lam : ℕ} (hj : j ≤ 2 * lam) :
     Nat.clog 2 j ≤ Nat.clog 2 lam + 1 := by
   apply Nat.clog_le_of_le_pow
   have := Nat.le_pow_clog (b := 2) (by norm_num) lam
-  rw [pow_succ]; omega
+  rwo [pow_succ]
 
 end
 

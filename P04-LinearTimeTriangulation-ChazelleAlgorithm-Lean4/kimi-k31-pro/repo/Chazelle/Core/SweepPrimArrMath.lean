@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepPrimLeft
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Sweep RAM primitives (WP-D2), part 7: the mathematics of `arrivalPos`
@@ -52,10 +54,10 @@ theorem sideIdx_candIdx (C : Chain) (β : Bool) {j : ℕ} (hj : j ≤ 2 * C.m) :
     rw [ite_eq_right (by omega)]
     refine ⟨by omega, ?_⟩
     rw [C.sideIdx_eq, show C.sideS β + (2 * C.m - C.sideS β) = 2 * C.m by omega, Nat.mod_self]
-    unfold sideE; split_ifs <;> omega
+    unfold sideE; splao
 
 theorem sideE_rev {m j : ℕ} (hj : j ≤ m) : sideE m (2 * m - j) = j := by
-  unfold sideE; split_ifs <;> omega
+  unfold sideE; splao
 
 /-- **The candidate tour steps of a chain vertex.** -/
 theorem cand_vertex (C : Chain) (β : Bool) {k : ℕ} (hk : k ≤ C.m) :
@@ -82,11 +84,11 @@ theorem cand_complete (C : Chain) (β : Bool) {i k : ℕ} (hi : i ≤ 2 * C.m)
       unfold candIdx
       by_cases h : C.sideS β + i < 2 * C.m
       · rw [Nat.mod_eq_of_lt h] at hjdef
-        rw [ite_eq_right (by omega)]; omega
+        rwo [ite_eq_right (by omega)]
       · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at hjdef
-        rw [ite_eq_left (by omega)]; omega
+        rwo [ite_eq_left (by omega)]
     have hjk : j = k ∨ j = 2 * C.m - k := by
-      rw [← hk]; unfold sideE; split_ifs <;> omega
+      rw [← hk]; unfold sideE; splao
     rcases hjk with h | h
     · left; rw [hji, h]
     · right; left; rw [hji, h]
@@ -100,8 +102,8 @@ theorem twin_pos_param (M : Model) (Q : Polygon) {p p' h : ℕ} (hh : 1 ≤ h)
     (h1 : M.wa p' = M.wb p) (h2 : M.wb p' = M.wa p) (hne : (M.wa p).2 ≠ (M.wb p).2) :
     M.pos Q ⟨p', h⟩ = M.pos Q ⟨p, h⟩ ∧ M.param Q ⟨p', h⟩ = 1 - M.param Q ⟨p, h⟩ := by
   obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
-  have hne' : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 hne.symm
-  have hne'' : (M.wa p).2 - (M.wb p).2 ≠ 0 := sub_ne_zero.2 hne
+  have hne'  := sub_ne_zero.2 hne.symm
+  have hne''  := sub_ne_zero.2 hne
   have hpar : M.param Q ⟨p', h' + 1⟩ = 1 - M.param Q ⟨p, h' + 1⟩ := by
     unfold Model.param
     simp only
@@ -154,14 +156,14 @@ theorem tour_twin (C : Chain) {i : ℕ} (hi : i < 2 * C.m) :
     unfold Chain.sideTour
     congr 1
     rw [C.sideIdx_eq, h1, C.sideIdx_succ, ← hjdef]
-    unfold sideE; split_ifs <;> omega
+    unfold sideE; splao
   · simp only [Model.wa, Model.wb]
     rw [show (chainModel C).W = C.sideWalk C.sideBeta from rfl, C.sideWalk_next_tour _ h2,
       C.sideWalk_vtx_tour _ (by omega), C.sideWalk_vtx_tour _ hi.le]
     unfold Chain.sideTour
     congr 1
     rw [C.sideIdx_succ, h1, C.sideIdx_eq, ← hjdef]
-    unfold sideE; split_ifs <;> omega
+    unfold sideE; splao
 
 /-! ## The positions of a point of a vertical side of the box -/
 

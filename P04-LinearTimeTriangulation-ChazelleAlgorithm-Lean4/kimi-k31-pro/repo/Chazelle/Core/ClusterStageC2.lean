@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ClusterStageC1
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-I, part 50: stage C2 — the residue counts and the lightest residue
@@ -68,16 +72,16 @@ theorem rcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
   have b3 := g.base_eq 3
   unfold rcS
   obtain ⟨c1, k1, x1, hk1, hw1, hf1, hz1⟩ := fillWith_exec (P := P) hw hG.one
-    (hG.rbase 34 (by omega)) hG.rk' hG.zero (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
+    (hG.rbase 34 (by omega)) hG.rk' hG.zero (by ufo FillRG) (by ufo FillRG)
+    (by ufo FillRG) (by omega) (by omega)
   have f1 : PFr StCRG (fun a => g.base 34 ≤ a ∧ a < g.base 34 + g.k') c c1 :=
-    hf1.mono (fun r h => by unfold FillRG at h; unfold StCRG; omega) (fun a h => h)
+    hf1.mono (fun r h => by unfold FillRG at h; ufo StCRG) (fun _ => id)
   have e2 := Exec.constN (P := P) hw1 130831 0 (by omega)
   set c2 := { c1 with nreg := upd c1.nreg 130831 0 } with hc2
   have f2 : PFr StCRG (fun a => g.base 34 ≤ a ∧ a < g.base 34 + g.k') c c2 :=
     f1.trans ⟨fun r hr => by simp only [c2, Machine.upd_other _ _ _ (show r ≠ 130831 by
-      unfold StCRG at hr; omega)], rfl, rfl, rfl, fun a _ => rfl⟩
-  have hG2 : GR g c2 := hG.frame (fun r hr => f2.1 r (by unfold GRReg at hr; unfold StCRG; omega))
+      ufo StCRG at hr)], rfl, rfl, rfl, fun a _ => rfl⟩
+  have hG2 : GR g c2 := hG.frame (fun r hr => f2.1 r (by unfold GRReg at hr; ufo StCRG))
   obtain ⟨c', k, e, hk', hw', hi', hn', hf', hm'⟩ := forN (P := P) (W := W)
     (ri := 130831) (rn := 130011) (body := rcBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130831 = j ∧ c'.nreg 130011 = g.μ ∧
@@ -86,7 +90,7 @@ theorem rcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
     g.μ 9 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c3 hj ⟨hw3, hi3, hn3, hf3, hm3⟩ => by
       have hG3 : GR g c3 := hG.frame (fun r hr => hf3.1 r (by
-        unfold GRReg at hr; unfold StCRG; omega))
+        unfold GRReg at hr; ufo StCRG))
       have r33 := hG3.rbase 3 (by omega)
       have r63 := hG3.rbase 33 (by omega)
       have r64 := hG3.rbase 34 (by omega)
@@ -101,11 +105,11 @@ theorem rcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
       have hcle := cntBelow_le (fun v => lev v % g.k') j (lev j % g.k')
       unfold rcBody
       exec_block
-      · rw [r33, hi3]; omega
-      · config_simp; rw [r63, r33, hi3, ml]; omega
-      · config_simp; rw [r64, r63, r33, hi3, ml, mr]; omega
-      · config_simp; rw [r64, r63, r33, hi3, ml, mr, hcnt, r1]; omega
-      · config_simp; rw [hi3, r1]; omega
+      · rwo [r33, hi3]
+      · config_simp; rwo [r63, r33, hi3, ml]
+      · config_simp; rwo [r64, r63, r33, hi3, ml, mr]
+      · config_simp; rwo [r64, r63, r33, hi3, ml, mr, hcnt, r1]
+      · config_simp; rwo [hi3, r1]
       · refine ⟨le_refl _, ‹_›, by config_simp; rw [hi3, r1], by config_simp; exact hn3,
           hf3.trans ⟨fun r hr => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, fun r hr => ?_⟩
         · simp only; simp only [StCRG] at hr ⊢
@@ -136,14 +140,14 @@ theorem argS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
       k1 = 3 ∧ WordsBounded W c1 ∧ c1.nreg 130834 = 0 ∧ c1.nreg 130835 = g.μ + 1 ∧
       c1.nreg 130836 = 0 ∧ PFr StCRG (fun _ => False) c c1 := by
     exec_block
-    all_goals try (config_simp; rw [hG.rμ, hG.one]; omega)
+    all_goals try (config_simp; rwo [hG.rμ, hG.one])
     all_goals try omega
     refine ⟨rfl, ‹_›, by config_simp, by config_simp; rw [hG.rμ, hG.one], by config_simp,
       ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩⟩
     simp only; unfold StCRG at hr
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   have hk1' : c1.nreg 130015 = g.k' := (hG.frame (fun r hr => hf1.1 r (by
-    unfold GRReg at hr; unfold StCRG; omega))).rk'
+    unfold GRReg at hr; ufo StCRG))).rk'
   obtain ⟨c', k, e, hk', hw', hi', hn', hb', hr', hf'⟩ := forN (P := P) (W := W)
     (ri := 130834) (rn := 130015) (body := argBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130834 = j ∧ c'.nreg 130015 = g.k' ∧
@@ -154,7 +158,7 @@ theorem argS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
     g.k' 7 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c2 hj ⟨hw2, hi2, hn2, hst2, hmin2, hf2⟩ => by
       have hG2 : GR g c2 := hG.frame (fun r hr => hf2.1 r (by
-        unfold GRReg at hr; unfold StCRG; omega))
+        unfold GRReg at hr; ufo StCRG))
       have r64 := hG2.rbase 34 (by omega)
       have r1 := hG2.one
       have mj : c2.nmem (g.base 34 + j) = cnt j := by
@@ -165,7 +169,7 @@ theorem argS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
           WordsBounded W c3 ∧ PFr ARG (fun _ => False) c2 c3 ∧ c3.nreg 130837 = cnt j ∧
           (∀ r, r ≠ 130837 → c3.nreg r = c2.nreg r) := by
         exec_block
-        · rw [r64, hi2]; omega
+        · rwo [r64, hi2]
         · refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, ?_, fun r hr => ?_⟩
           · simp only; unfold ARG at hr
             repeat (rw [Machine.upd_other _ _ _ (by omega)])
@@ -187,8 +191,8 @@ theorem argS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
             · simp only; unfold ARG at hr
               repeat (rw [Machine.upd_other _ _ _ (by omega)])
             · config_simp; exact h37
-            · config_simp; rw [h3 _ (by omega)]; exact hi2
-            · config_simp; rw [h3 _ (by omega)]; exact hi2
+            · config_simp; rwx [h3 _ (by omega)]
+            · config_simp; rwx [h3 _ (by omega)]
           refine ⟨c5, k5 + 1, .ifLtN_true hp e5, by omega, hw5, hf5, h5c, ⟨by omega, by omega,
             by rw [h5a, h5b]⟩, fun r hr => ?_⟩
           rw [h5a]
@@ -197,31 +201,31 @@ theorem argS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
           · exact le_trans (le_of_lt hp) (hmin2 r h)
           · rw [show r = j by omega]
         · refine ⟨c3, 0 + 2, .ifLtN_false hp (.skip hw3), by omega, hw3, PFr.refl c3,
-            by rw [h3 _ (by omega)]; exact hi2, ?_, fun r hr => ?_⟩
+            by rwx [h3 _ (by omega)], ?_, fun r hr => ?_⟩
           · rw [h37, h3 _ (by omega)] at hp
             rw [h3 _ (by omega), h3 _ (by omega)]
             rcases hst2 with ⟨h0, hb, -⟩ | ⟨h0, hl, hb⟩
-            · rw [hb] at hp; omega
+            · rwo [hb] at hp
             · exact ⟨by omega, by omega, hb⟩
           · rw [h37, h3 _ (by omega)] at hp
             rw [h3 _ (by omega)]
             rcases Nat.lt_or_ge r j with h | h
             · exact hmin2 r h
-            · rw [show r = j by omega]; omega
+            · rwo [show r = j by omega]
       have e6 := Exec.addN (P := P) hw4 130834 130834 130001 (by
-        rw [h4.1, hf4.1 _ (by unfold ARG; omega), h3 _ (by omega), r1]; omega)
+        rwo [h4.1, hf4.1 _ (by ufo ARG), h3 _ (by omega), r1])
       have hf6 : PFr ARG (fun _ => False) c4
           { c4 with nreg := upd c4.nreg 130834 (c4.nreg 130834 + c4.nreg 130001) } :=
           ⟨fun r hr => by
             simp only [Machine.upd_other _ _ _ (show r ≠ 130834 by
-              unfold ARG at hr; omega)], rfl, rfl, rfl, fun a _ => rfl⟩
+              ufo ARG at hr)], rfl, rfl, rfl, fun a _ => rfl⟩
       refine ⟨_, k3 + (k4 + 1), .seq e3 (.seq e4 e6), by omega, e6.wb_right, ?_, ?_, Or.inr ?_,
         ?_, hf2.trans ((hf3.trans (hf4.trans hf6)).mono
-          (fun r h => by simp only [ARG, StCRG] at h ⊢; omega) (fun a h => h))⟩
+          (fun r h => by sio only [ARG, StCRG] at h ⊢) (fun _ => id))⟩
       · simp only [Machine.upd_same]
-        rw [h4.1, hf4.1 _ (by unfold ARG; omega), h3 _ (by omega), r1]
+        rw [h4.1, hf4.1 _ (by ufo ARG), h3 _ (by omega), r1]
       · simp only [Machine.upd_other _ _ _ (show (130015 : ℕ) ≠ 130834 by omega)]
-        rw [hf4.1 _ (by unfold ARG; omega), h3 _ (by omega)]; exact hn2
+        rwx [hf4.1 _ (by ufo ARG), h3 _ (by omega)]
       · simp only [Machine.upd_other _ _ _ (show (130836 : ℕ) ≠ 130834 by omega),
           Machine.upd_other _ _ _ (show (130835 : ℕ) ≠ 130834 by omega)]
         exact h4.2.1

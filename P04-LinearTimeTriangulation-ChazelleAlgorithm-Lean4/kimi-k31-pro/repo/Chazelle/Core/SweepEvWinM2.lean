@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepEvWinR3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # The sweep (WP-D), stage 3: the window of the event loop (mathematics of the post)
@@ -25,7 +29,6 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 theorem regArcs_single (N : NF) (r : ℕ) : regArcs N [r] = (N.region r).arcs := by
   simp [regArcs]
 
-set_option maxHeartbeats 8000000 in
 /-- **The mathematics of the window.** -/
 theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw : PosW P J e h)
     (hL : (Lst J : ℝ) ≤ offK P J e h) {o' : ℕ} (ho' : o' < N₁.arcs.length) {c' : Config}
@@ -63,7 +66,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
   have ht01 : t₀ < 1 := hpw.2.1.2.1
   have hu0 : off M.W.n (b₁ J) x₀ = (kd J e : ℝ) + t₀ := key₁_off hP hpw hL
   have hoL : offK P J e h = (Lst J : ℝ) + ψ J (kd J e) + t₀ := by rw [hoff, hψ0]
-  have hn₁ : 0 < M.W.n := by rw [hMd, win_n₁_eq]; omega
+  have hn₁ : 0 < M.W.n := by rwo [hMd, win_n₁_eq]
   have hke : ke₁ J e < M.W.n := Nat.mod_lt _ hn₁
   have hppx : ProperPos M (Qof P) P.n ⟨ke₁ J e, h⟩ := by
     refine ⟨?_, ?_, hpw.2.1.2.2⟩ <;> rw [hpar] <;> [exact ht00; exact ht01]
@@ -77,7 +80,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
     rw [hl, regArcs_single] at hj
     obtain ⟨-, -, -, reg, -, -, hA, -⟩ := hNF
     exact ((hA.2.2.2 _ hreg j).1 hj).1
-  have hol : a ∈ l := by rw [hl, regArcs_single]; exact hmem
+  have hol : a ∈ l := by rwx [hl, regArcs_single]
   -- the valid offsets beyond the key are beyond it in the walk of `C₁`
   have hbeyond : ∀ (d : ℕ) (t : ℝ), MValid J d t → 0 ≤ t → t < 1 →
       offK P J e h < (Lst J : ℝ) + ψ J d + t → off M.W.n (b₁ J) x₀ < d + t := by
@@ -124,7 +127,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
       ((d : ℝ) + t ≤ dE + tE ∨ (dE : ℝ) + tE < kd J e + t₀) →
       sidePt M.W ((b₁ J + d) % M.W.n) t ∈ ShotList.loSet M (Qof P) c'.nmem (c'.nreg wGB) l.length [] :=
     fun d t hd ht0 ht1 hlt hup => cover_arc hP hNF hg hll ho' hol hxr.1 hxr.2 hab hin hd ht0 ht1
-      (by rw [hu0]; exact hlt) (by rw [hUE, hu0]; exact hup)
+      (by rwx [hu0]) (by rwx [hUE, hu0])
   rw [hUE', hUx] at hdec
   rcases hdec with ⟨hX, hc⟩ | ⟨hX, hnp, hδ, hd0, hl1d, hdE, hwE, hwH⟩ |
       ⟨hX, hnp, hncl, hdE, hwE, hwH⟩
@@ -151,7 +154,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
     refine ⟨by omega, fun _ => ?_, fun d t hv ht0 ht1 hlt hle => ?_⟩
     · rw [hwE, hwH]
       refine ⟨hPW, ?_, Or.inl hoffG⟩
-      rw [hoffG, hoL, hψk]; linarith
+      rwli [hoffG, hoL, hψk]
     · have hle' := hle hX
       rw [hwE, hwH, hoffG] at hle'
       have hb := hbeyond d t hv ht0 ht1 hlt
@@ -188,9 +191,9 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
     have hψE : (if dE < lL1 J + lδ J then dE else dE - lδ J) = ψ J dE := by
       unfold ψ
       rcases win_lδ_cases (J := J) with h7 | h7
-      · split_ifs <;> omega
+      · splao
       · have := hgE (by omega)
-        split_ifs <;> omega
+        splao
     have hwE' : c'.nreg wE = mEdge J dE := by
       rw [hwE, hψE]; unfold mEdge; rw [Nat.mod_add_mod, add_assoc]
     have heE : (b₁ J + dE) % M.W.n = eE := add_dOf b₁_lt hee
@@ -201,7 +204,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
       refine ⟨hPW, ?_, Or.inr ?_⟩
       · rw [hoffE, hoL]
         rcases eq_or_lt_of_le hkdE with h1 | h1
-        · rw [h1] at hlt0 ⊢; linarith
+        · rwli [h1] at hlt0 ⊢
         · have := ψ_step h1 hgap0
           have : (ψ J (kd J e) : ℝ) + 1 ≤ ψ J dE := by exact_mod_cast this
           linarith
@@ -221,7 +224,7 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
           · right
             have : ¬ kd J e < lL1 J := fun h2 => hncl ⟨hδ, h2, by omega⟩
             have h3 : lL1 J + lδ J ≤ kd J e := by rcases hgap0 hδ with h3 | h3 <;> omega
-            have : (kd J e : ℝ) < dE := by rw [h0] at hlt0; linarith
+            have : (kd J e : ℝ) < dE := by rwli [h0] at hlt0
             have : kd J e < dE := by exact_mod_cast this
             omega
     · have hle' := hle hX

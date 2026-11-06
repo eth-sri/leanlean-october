@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.NFBuildStack
 public import Chazelle.Chain.Sides
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-C (BuildNF): the sorted attachment events form a parenthesis word
@@ -85,7 +87,7 @@ theorem partner_of_sublist {L : List Ev} (hkey : ∀ e ∈ L, e.2.1 ≠ e.2.2)
     rw [hF, sublist_filter_iff]
     refine ⟨[e₁, e₂], h, ?_⟩
     simp [hi]
-  have heq : [e₁, e₂] = F := hsub.eq_of_length (by rw [hlen]; rfl)
+  have heq : [e₁, e₂] = F := hsub.eq_of_length (by rwr [hlen])
   have hp : (e₁.1, e₁.2.2, e₁.2.1) ∈ F := by
     rw [hF, mem_filter]
     exact ⟨hpair e₁ he₁, by simp⟩
@@ -115,9 +117,9 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
     have hmem : ∀ e ∈ [e₁, f₁, e₂, f₂], e ∈ L := fun e he => hl'.subset he
     have hne : ∀ e ∈ L, e.2.1 ≠ e.2.2 := fun e he => (hkey e he).2.2.2.2
     -- the partners
-    have he₂ : e₂ = (e₁.1, e₁.2.2, e₁.2.1) := partner_of_sublist hne hpair htwice
+    have he₂  := partner_of_sublist hne hpair htwice
       ((by simp : [e₁, e₂] <+ [e₁, f₁, e₂, f₂]).trans hl') (by rw [← h1, ← h3])
-    have hf₂ : f₂ = (f₁.1, f₁.2.2, f₁.2.1) := partner_of_sublist hne hpair htwice
+    have hf₂  := partner_of_sublist hne hpair htwice
       ((by simp : [f₁, f₂] <+ [e₁, f₁, e₂, f₂]).trans hl') (by rw [← h2, ← h4])
     -- the order
     have hpr : ∀ x y : Ev, [x, y] <+ [e₁, f₁, e₂, f₂] → EvLe n x y := fun x y h =>
@@ -134,8 +136,8 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
     rw [he₂] at hfe hff
     rw [hf₂] at hff
     unfold EvLe at hef hfe hff
-    simp only at hef hfe hff
-    have hij' : e₁.1 ≠ f₁.1 := by rw [← h1, ← h2]; exact hij
+    simp at hef hfe hff
+    have hij' : e₁.1 ≠ f₁.1 := by rwx [← h1, ← h2]
     have hX := hcross e₁ (hmem e₁ (by simp)) f₁ (hmem f₁ (by simp)) hij'
     have hsame' : ¬ (a = c ∧ b = d) := fun ⟨h5, h6⟩ =>
       hij' (hsame e₁ (hmem e₁ (by simp)) f₁ (hmem f₁ (by simp)) (Prod.ext h5 h6))
@@ -143,7 +145,7 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
     have hac : a ≤ c := by rcases hef with h | h; exact h.le; exact h.1.le
     have hcb : c ≤ b := by rcases hfe with h | h; exact h.le; exact h.1.le
     have hbd : b ≤ d := by rcases hff with h | h; exact h.le; exact h.1.le
-    have hab' : a < b := lt_of_le_of_ne (hac.trans hcb) hab
+    have hab'  := lt_of_le_of_ne (hac.trans hcb) hab
     rcases hac.lt_or_eq with hac | hac
     · rcases hcb.lt_or_eq with hcb | hcb
       · rcases hbd.lt_or_eq with hbd | hbd

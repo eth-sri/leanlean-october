@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepEvAnchor
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), stage 3: the invariant after a key with an anchored chord (main lemma)
@@ -97,7 +99,7 @@ theorem anchor_caseA (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
               exact_mod_cast hC.hg
             have hkey := off_inj hg0 hgn hk.1 hk.2 k0 k1 (by rw [← oW_eq, ← oW_eq]; exact h.symm)
             exact hncy ⟨Y, hY, pb, tb, hB, hkey⟩
-      exact hEy ⟨Y, hY, pK, pb, tK, tb, hYK, hB, hBne.symm, hLst, by rw [hoy]; linarith,
+      exact hEy ⟨Y, hY, pK, pb, tK, tb, hYK, hB, hBne.symm, hLst, by rwli [hoy],
         Or.inl hyB⟩
   · obtain ⟨ρ, hρ⟩ : ∃ ρ : ℝ, ρ = -dY := ⟨_, rfl⟩
     have hρ : -dY = 1 ∨ -dY = -1 := by rcases hdY.cases with h | h <;> simp [h]
@@ -130,7 +132,7 @@ theorem alone_far (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ M
     · exact (hNTV c hc s' hs' hcs qb sb hcB hsB h hLB).elim
   obtain ⟨p₁, hp₁, hs'1, he1⟩ := tie_parent J hP hS₂ hs' he hne hsC hE hDC
   obtain ⟨p₂, hp₂, hc2, hs'2⟩ := tie_parent J hP hS₂ hc hs' (Ne.symm hcs) hcB hsB hDB
-  have hpp : p₁ = p₂ := parent_unique hS₂ hp₁ hp₂
+  have hpp  := parent_unique hS₂ hp₁ hp₂
     (pt_ne_of_off_ne hP hS₂ hS₂f hs' hsB hsC (Ne.symm hCb)) (hs'1 hsB.2.2.2.1)
     (hs'1 hsC.2.2.2.1) (hs'2 hsB.2.2.2.1) (hs'2 hsC.2.2.2.1)
   subst hpp
@@ -239,7 +241,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hYZ : Y ≠ Z := by
     rintro rfl
     exact side_comp_off hP hS₂a hS₂f hc hY hA hB hKqb hZz (Or.inl (by linarith)) hRa hRaY hpK
-      ⟨by linarith, hs1⟩ (by rw [← hoydef, hoy]; linarith) (by rw [← hoydef]; linarith) hfy
+      ⟨by linarith, hs1⟩ (by rwli [← hoydef, hoy]) (by rwli [← hoydef]) hfy
   have hXZ : X = Z := by
     rcases hall Z hZ hZK with h | h
     · exact h.symm
@@ -260,8 +262,8 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     hlab X hX hXK hZnb (Or.inr fun e' he' hA' hne => by
       rcases hall e' he' hA' with h | h
       · exact absurd h hne
-      · rw [h]; exact hcbrk) Mk hMk (-dX) (by rcases hdX.cases with h | h <;> simp [h]) hMkZ
-  suffices hGM' : G = Mk by rw [hGM']; exact hMval
+      · rwx [h]) Mk hMk (-dX) (by rcases hdX.cases with h | h <;> simp [h]) hMkZ
+  suffices hGM' : G = Mk by rwx [hGM']
   -- `c` at `qb`
   have hcA := F₂plus_subset J hS₂a hc
   have hdq : DirAt (chainModel J.whole).W Y qb sb (-dY) := dirAt_other hP hcA hA hB hAB hdY
@@ -279,7 +281,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     hB.2.2.1
   obtain ⟨s₁, hs₁0, hs₁ε, hs₁1, hfy₁, hncy₁, hoy₁, hgapy₁⟩ := after_pos_eps hP hS₂a hS₂f hB.1
     hB.2.1 hB.2.2.1 hWa' hqbx
-  have hy₁x : oW J (qb + (sb + s₁)) < ox := by rw [hoy₁]; linarith
+  have hy₁x : oW J (qb + (sb + s₁)) < ox := by rwli [hoy₁]
   -- the region at `x` from a non-enclosed position before it
   have hGfrom : ∀ {q : ℕ} {u : ℝ} {R : Set Point}, q < (chainModel J.whole).W.n →
       u ∈ Ioo (0 : ℝ) 1 → ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (q + u) →
@@ -316,7 +318,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       rw [hdY', neg_neg, ← hYX'] at this
       exact this
     have hnE : ¬ EvEncl J S₂ (oW J (qb + (sb + s₁))) := by
-      refine noEncl_of_closed hP hS₂a hS₂f hZ hZK hZz hzL hLst hKqb.le ?_ (by rw [hoy₁]; linarith)
+      refine noEncl_of_closed hP hS₂a hS₂f hZ hZK hZz hzL hLst hKqb.le ?_ (by rwli [hoy₁])
         hy₁x (fun e he q u hQ h => hgapy₁ _ ⟨e, he, q, u, hQ, rfl⟩ (attach_key_mem hQ).1
           (attach_key_mem hQ).2 h) hEx
       intro e he heZ q u hQ h1 h2 q' u' hQ'
@@ -331,7 +333,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         · exact absurd h heZ
         · exact absurd h hec
     rw [← hMeq Ra' hRa' hRa'c]
-    exact (hGfrom hB.1 ⟨by linarith [hB.2.1], hs₁1⟩ hncy₁ (by rw [hoy₁]; linarith) hy₁x hnE hRa'
+    exact (hGfrom hB.1 ⟨by linarith [hB.2.1], hs₁1⟩ hncy₁ (by rwli [hoy₁]) hy₁x hnE hRa'
       hfy₁).symm
   · -- a tie at `qb`: `c` and the other chord `s'`
     obtain ⟨s', hs', hs'B, hs'c, hcase⟩ : ∃ s' ∈ F₂plus J S₂,
@@ -413,7 +415,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         have heq := hs'eq hRb' hRa' hRb's hRa's
         subst heq
         exact faced_both_off hP hS₂a hS₂f hc hA hB hKqb hRb' hw hB.1 hu
-          ⟨by linarith [hB.2.1], hs₁1⟩ (by linarith) (by linarith) (Or.inr (by rw [hoy₁]; linarith))
+          ⟨by linarith [hB.2.1], hs₁1⟩ (by linarith) (by linarith) (Or.inr (by rwli [hoy₁]))
           hfw hfy₁
       · -- (iv) `qc` after `qb`: the region after `qc` is the middle region at `K`
         have hMs : SideOf (chainModel J.whole) dY X'' Mk := by
@@ -429,7 +431,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
           hC'.2.1 hC'.2.2.1 hWa'' (show 0 < ox - oW J (qc + sc) by linarith)
         have hnE : ¬ EvEncl J S₂ (oW J (qc + (sc + s₂))) := by
           refine noEncl_of_closed hP hS₂a hS₂f hZ hZK hZz hzL hLst (by linarith) ?_
-            (by rw [hoy₂]; linarith) (by rw [hoy₂]; linarith)
+            (by rwli [hoy₂]) (by rwli [hoy₂])
             (fun e he q u hQ h => hgapy₂ _ ⟨e, he, q, u, hQ, rfl⟩ (attach_key_mem hQ).1
               (attach_key_mem hQ).2 h) hEx
           intro e he heZ q u hQ h1 h2 q' u' hQ'
@@ -457,8 +459,8 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
             · exact absurd h heZ
             · exact absurd h hec
         rw [← hRM]
-        exact (hGfrom hC'.1 ⟨by linarith [hC'.2.1], hs₂1⟩ hncy₂ (by rw [hoy₂]; linarith)
-          (by rw [hoy₂]; linarith) hnE hRa'' hfy₂).symm
+        exact (hGfrom hC'.1 ⟨by linarith [hC'.2.1], hs₂1⟩ hncy₂ (by rwli [hoy₂])
+          (by rwli [hoy₂]) hnE hRa'' hfy₂).symm
     · -- (b) `s'` bounds the region before `qb`, `c` the one after
       have hdY'e : dY' = -dY := by
         rw [← hYY'] at hdY'; exact dirAt_unique hP hcA hB hdY' hdq
@@ -472,7 +474,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       · -- (iii) `qc` before `qb`: the position after `qb` is not enclosed
         have hnE : ¬ EvEncl J S₂ (oW J (qb + (sb + s₁))) := by
           refine noEncl_of_closed hP hS₂a hS₂f hZ hZK hZz hzL hLst hKqb.le ?_
-            (by rw [hoy₁]; linarith) hy₁x (fun e he q u hQ h => hgapy₁ _ ⟨e, he, q, u, hQ, rfl⟩
+            (by rwli [hoy₁]) hy₁x (fun e he q u hQ h => hgapy₁ _ ⟨e, he, q, u, hQ, rfl⟩
               (attach_key_mem hQ).1 (attach_key_mem hQ).2 h) hEx
           intro e he heZ q u hQ h1 h2 q' u' hQ'
           by_cases hec : e = Y
@@ -492,7 +494,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
             · exact absurd h heZ
             · exact absurd h hec
         rw [← hRM]
-        exact (hGfrom hB.1 ⟨by linarith [hB.2.1], hs₁1⟩ hncy₁ (by rw [hoy₁]; linarith) hy₁x hnE
+        exact (hGfrom hB.1 ⟨by linarith [hB.2.1], hs₁1⟩ hncy₁ (by rwli [hoy₁]) hy₁x hnE
           hRa' hfy₁).symm
       · -- (iv) `qc` after `qb`: the region after `qc` is the region before `qb`: impossible
         exfalso
@@ -510,7 +512,7 @@ theorem anchor_caseB (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
           hC'.2.1 hC'.2.2.1 hWa'' (show (0 : ℝ) < 1 by norm_num)
         exact faced_both_off hP hS₂a hS₂f hc hA hB hKqb hRa'' hw hC'.1 hu
           ⟨by linarith [hC'.2.1], hs₂1⟩ (by linarith) (by linarith)
-          (Or.inr (by rw [hoy₂]; linarith)) hfw hfy₂
+          (Or.inr (by rwli [hoy₂])) hfw hfy₂
 
 /-- **The invariant after a key with an anchored chord.**  At a key `K` of the `C₁` part carrying an
 anchored chord `Z` (attached also at offset in `(0, Lst)`) and no chord attached at offset `0`, a
@@ -540,12 +542,12 @@ theorem evInv_anchor (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   obtain ⟨-, -, -, -, Ra, hRa, hWa⟩ := after_region_exists hC.hM hC.hF hC.hfin hC.hg hpK htK0 htK1
   obtain ⟨s, hs0, hsε, hs1, hfy, hncy, hoy, hgapy⟩ := after_pos_eps hP hS₂a hS₂f hpK htK0 htK1 hWa
     (show 0 < oW J (p + t) - oW J (pK + tK) by linarith)
-  have hyx : oW J (pK + (tK + s)) < oW J (p + t) := by rw [hoy]; linarith
+  have hyx : oW J (pK + (tK + s)) < oW J (p + t) := by rwli [hoy]
   by_cases hEy : EvEncl J S₂ (oW J (pK + (tK + s)))
   · exact anchor_caseB hP hS₂ hF hNTV hpK htK0 htK1 hLst hZ hZK hZz hzL hnp hlab hp ht hnc hbr hEx
       hG hf hs0 hs1 hncy hoy hyx hgapy hRa hWa hfy hEy
   · have hRaG : Ra = G := evGL hP hS₂a hS₂f hpK hp ⟨by linarith, hs1⟩ ht hncy hnc hyx hEy hEx
-      (fun e he q u hQ h1 h2 => hbr e he q u hQ (by rw [hoy] at h1; linarith) h2) hRa hG hfy hf
+      (fun e he q u hQ h1 h2 => hbr e he q u hQ (by rwli [hoy] at h1) h2) hRa hG hfy hf
     rw [← hRaG]
     exact anchor_caseA hP hS₂ hF hpK htK0 htK1 hLst hZ hZK hZz hzL hlab hRa hWa hncy hoy hs0 hs1
       hgapy hEy

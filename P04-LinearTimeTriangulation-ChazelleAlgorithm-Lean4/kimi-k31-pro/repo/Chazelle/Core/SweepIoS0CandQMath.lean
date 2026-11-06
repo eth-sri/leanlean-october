@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepIoS0CandAux
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the side-0 stop and table candidates of a query (mathematics)
@@ -45,7 +47,7 @@ theorem dS_inj {s s' : ℕ} (hs : s ≤ 1) (hs' : s' ≤ 1) (h : dS s = dS s') :
 theorem dS_sOf (b : ℕ) : dS (sOf b) = dirOf b := by
   unfold dS sOf dirOf; split_ifs <;> simp_all
 
-theorem sOf_le (b : ℕ) : sOf b ≤ 1 := by unfold sOf; split_ifs <;> omega
+theorem sOf_le (b : ℕ) : sOf b ≤ 1 := by unfold sOf; splao
 
 theorem dS_mod (j : ℕ) : dS (j % 2) = endDir j := by
   unfold dS endDir; split_ifs <;> simp_all
@@ -56,7 +58,7 @@ def qS (d : ℕ) : ℕ := if d = 1 then 1 else 0
 theorem dS_qS (d : ℕ) : dS (qS d) = -dirOf d := by
   unfold dS qS dirOf; split_ifs <;> simp_all
 
-theorem qS_le (d : ℕ) : qS d ≤ 1 := by unfold qS; split_ifs <;> omega
+theorem qS_le (d : ℕ) : qS d ≤ 1 := by unfold qS; splao
 
 /-! ## The query position -/
 
@@ -105,7 +107,7 @@ theorem log_sorted (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {i j : ℕ} (hij : 
   have hi : i < ls.length := by omega
   have hj' : j < ls.length := by omega
   have hsort := hL.2.2.2.1
-  have hlen : (logOf J (Qof P) N₂ ls).length = ls.length := by unfold logOf; simp
+  have hlen : (logOf J (Qof P) N₂ ls).length = ls.length := by ufs logOf
   have hp := List.pairwise_iff_getElem.1 hsort i j (by omega) (by omega) hij
   rw [← List.getD_eq_getElem _ (0, 0, ∅), ← List.getD_eq_getElem _ (0, 0, ∅)] at hp
   obtain ⟨a1, a2⟩ := logOf_getD J (Qof P) N₂ hi
@@ -115,7 +117,7 @@ theorem log_sorted (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {i j : ℕ} (hij : 
   obtain ⟨n1, n2, -⟩ := hls j hj'
   rw [aenv_gW hA]
   unfold logPos Model.key
-  simp only
+  simp
   rw [m1, m2, n1, n2]
   exact hp
 
@@ -233,7 +235,7 @@ theorem stop_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N
   obtain ⟨-, hk, -, hk1⟩ := hW0 r hr
   obtain ⟨hc, -⟩ := stop_cand J hA.hNF₂ hS hr hk hk1
   refine ⟨i, hi, ?_, e2.trans hr2, e3, ?_⟩
-  · unfold logPos; simp only; rw [e1]
+  · ufs logPos; rw [e1]
   · rw [hr2, hr1, harr.2.2.2.1] at hc; exact hc
 
 /-- **A regular table entry at the query position** is attached at a log record with that
@@ -258,7 +260,7 @@ theorem tab_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   have hT' := hT
   unfold tabOf at hT'
   rw [ite_eq_left hflag] at hT'
-  simp only [Option.some.injEq, Prod.mk.injEq] at hT'
+  simp [Option.some.injEq, Prod.mk.injEq] at hT'
   obtain ⟨g1, g2⟩ := hT'
   obtain ⟨-, -, -, -, -, -, htb⟩ := hX
   obtain ⟨i, hi, e1, e2, e3⟩ := htb j hj hv hflag
@@ -266,7 +268,7 @@ theorem tab_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   rw [g2] at e2
   obtain ⟨hc, -⟩ := tab_cand J hTab hj hv.1 hv.2.1 hv.2.2 hT
   refine ⟨i, hi, ?_, e2, e3, ?_⟩
-  · unfold logPos; simp only; rw [e1]
+  · ufs logPos; rw [e1]
   · rw [harr.2.2.2.1] at hc; exact hc
 
 end

@@ -30,7 +30,7 @@ theorem ncard_F (hN : IsNF M Q N) : (N.F M Q).ncard = N.nChords := by
   have e : N.F M Q = (fun i => cs M Q N i) '' {i | i < N.nChords} := by
     ext c
     rw [mem_F_iff]
-    simp only [mem_image, mem_ofPred_eq]
+    simp [mem_image, mem_ofPred_eq]
     constructor
     · rintro ⟨i, hi, rfl⟩; exact ⟨i, hi, rfl⟩
     · rintro ⟨i, hi, rfl⟩; exact ⟨i, hi, rfl⟩
@@ -47,7 +47,7 @@ theorem nRegions_eq (hN : IsNF M Q N) (hM : WalkAx M) : N.nRegions = N.nChords +
   rw [ncard_F hN] at hcard
   have e : M.regions (N.F M Q) = reg '' {r | r < N.nRegions} := by
     ext U
-    simp only [mem_image, mem_ofPred_eq]
+    simp [mem_image, mem_ofPred_eq]
     constructor
     · intro hU
       obtain ⟨r, hr, rfl⟩ := hRC.2.2 U hU

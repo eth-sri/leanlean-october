@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.GranInit
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # WP-F, part 16: the chord list of the result
@@ -38,7 +43,7 @@ theorem liveList_succ (live : ℕ → ℕ) (i : ℕ) :
   by_cases h : live i = 1 <;> simp [h]
 
 theorem mem_liveList {live : ℕ → ℕ} {i u : ℕ} : u ∈ liveList live i ↔ u < i ∧ live u = 1 := by
-  unfold liveList; simp
+  ufs liveList
 
 theorem liveList_nodup (live : ℕ → ℕ) (i : ℕ) : (liveList live i).Nodup :=
   (List.nodup_range).filter _
@@ -88,7 +93,6 @@ def outStmt : Stmt := .seq (block [.constN 90070 0, .copyN 90071 90013, .constN 
 
 theorem wrS_outStmt : wrS Binit outStmt = true := by decide
 
-set_option maxHeartbeats 2000000 in
 theorem writeT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {p q L : ℕ}
     (h71 : c.nreg 90071 = p) (h96 : c.nreg 90096 = q) (h95 : c.nreg 90095 = L)
     (h19 : c.nreg 90019 = 1) (h21 : c.nreg 90021 = 2) (hpq : p + 2 < q) (hq : q + 3 ≤ W)
@@ -189,7 +193,6 @@ structure OutEnv (W K CB LB0 b0 : ℕ) (N : NF) (live : ℕ → ℕ) (c₀ : Con
   hb0 : b0 + K ≤ LB0
   hW : LB0 + 3 * K ≤ W
 
-set_option maxHeartbeats 1000000 in
 theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ → ℕ} {c₀ c : Config}
     (hE : OutEnv W K CB LB0 b0 N live c₀) (hI : OutI W K CB LB0 N live c₀ c)
     (ht : c.nreg 90070 < K) :
@@ -206,7 +209,7 @@ theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ �
   set L := outList N live i with hL_def
   have hLi : L.length ≤ i := outList_length_le N live i
   have mlive : c.nmem (b0 + i) = live i := by rw [hm _ (by left; omega), hE.hlive i ht]
-  obtain ⟨c₁, k₁, e₁, hk₁, r73, m₁, R₁⟩ := outHead_exec (P := P) c hw (by rw [c30]; omega)
+  obtain ⟨c₁, k₁, e₁, hk₁, r73, m₁, R₁⟩ := outHead_exec (P := P) c hw (by rwo [c30])
   rw [c30, mlive] at r73
   have w₁ := e₁.wb_right
   -- the conditional write
@@ -229,30 +232,30 @@ theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ �
         (by rw [R₁ _ (by decide) (by decide), hcnt]) h1
         (by rw [R₁ _ (by decide) (by decide), c21]) (by omega) (by omega) (by omega)
       have e₂' : Exec P W (.ifLtN 90073 90019 .skip writeT) c₁ c₂ (k₂ + 2) :=
-        .ifLtN_false (by rw [r73, h1, hl]; omega) e₂
+        .ifLtN_false (by rwo [r73, h1, hl]) e₂
       have v0 : c₁.nmem (CB + 5 * i) = (N.chord i).h := by rw [m₁, hm _ (by left; omega), hrec.1]
       have v1 : c₁.nmem (CB + 5 * i + 1) = (N.chord i).lp := by
         rw [m₁, hm _ (by left; omega), hrec.2.1]
       have v2 : c₁.nmem (CB + 5 * i + 2) = (N.chord i).rp := by
         rw [m₁, hm _ (by left; omega), hrec.2.2]
-      refine ⟨c₂, _, e₂', by omega, e₂.wb_right, by rw [r95']; simp, by rw [r96']; simp; omega,
+      refine ⟨c₂, _, e₂', by omega, e₂.wb_right, by rws [r95'], by rws [r96']; omega,
         ?_, fun a ha => ?_, fun r a1 a2 a3 a4 a5 a6 => ?_⟩
       · refine ChordListAt.snoc hlist (fun a a1 a2 => ?_) ?_ ?_ ?_
         · rw [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
             Machine.upd_other _ _ _ (by omega), m₁]
         · rw [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
             Machine.upd_same, v0]; rfl
-        · rw [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_same, v1]; rfl
-        · rw [m₂, Machine.upd_same, v2]; rfl
+        · rwr [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_same, v1]
+        · rwr [m₂, Machine.upd_same, v2]
       · have hL : L.length < K := by omega
         rw [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
           Machine.upd_other _ _ _ (by omega), m₁, hm a ha]
       · rw [R₂' r a3 a4 a5 a6, R₁ r a1 a2]
     · have h0 : live i = 0 := by have := hE.hl01 i ht; omega
       simp only [hl, ite_false, List.append_nil]
-      refine ⟨c₁, _, .ifLtN_true (by rw [r73, h1, h0]; omega) (.skip w₁), by omega, w₁,
+      refine ⟨c₁, _, .ifLtN_true (by rwo [r73, h1, h0]) (.skip w₁), by omega, w₁,
         by rw [R₁ _ (by decide) (by decide), hcnt], by rw [R₁ _ (by decide) (by decide), hdst],
-        by rw [m₁]; exact hlist, fun a ha => by rw [m₁, hm a ha],
+        by rwx [m₁], fun a ha => by rw [m₁, hm a ha],
         fun r a1 a2 _ _ _ _ => R₁ r a1 a2⟩
   have c71 : c₂.nreg 90071 = CB + 5 * i := by rw [R₂ _ (by decide) (by decide) (by decide)
     (by decide) (by decide) (by decide), hp]
@@ -263,10 +266,10 @@ theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ �
   have d19 : c₂.nreg 90019 = 1 := by rw [R₂ _ (by decide) (by decide) (by decide)
     (by decide) (by decide) (by decide), c19]
   obtain ⟨c₃, k₃, e₃, hk₃, r71, r70, m₃, R₃⟩ := outTail_exec (P := P) c₂ w₂
-    (by rw [c71, c76]; omega) (by rw [c70, d19]; omega)
+    (by rwo [c71, c76]) (by rwo [c70, d19])
   rw [c71, c76] at r71
   rw [c70, d19] at r70
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, by omega, by rw [r71, r70]; ring, by
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, by omega, by rwring [r71, r70], by
     rw [R₃ _ (by decide) (by decide), c76], by rw [R₃ _ (by decide) (by decide), r95, r70],
     by rw [R₃ _ (by decide) (by decide), r96, r70], fun r hr' => ?_, by rw [m₃, r70]; exact lst,
     fun a ha => by rw [m₃, mm a ha]⟩, by omega, r70⟩
@@ -295,11 +298,11 @@ theorem out_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ → �
     · omega
     · omega
     · refine ⟨rfl, ⟨by assumption, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, ?_, fun a _ => rfl⟩, ?_⟩
-      · config_simp; omega
-      · config_simp; rw [h13]; omega
+      · cso
+      · config_simp; rwo [h13]
       · config_simp
-      · config_simp; rfl
-      · config_simp; rw [h28]; rfl
+      · csr
+      · config_simp; rwr [h28]
       · simp only [Binit, decide_eq_false_iff_not] at hr
         config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
       · config_simp; intro i hi; simp [outList, liveList] at hi

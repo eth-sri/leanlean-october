@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.Lemma41Ram7
 public import Chazelle.Core.FactsL23
 public import Chazelle.Core.FactsInterior
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-J, part 16: the pair loop of a level
@@ -64,13 +68,13 @@ theorem NodeOK.chords_le {P : Polygon} {m : ℕ → ℕ} {A hp d f : ℕ} {C : C
     (hG : GoodEnv P) (h : NodeOK P m A hp d f C γ) : m f * γ ≤ 60 * (2 * C.m + 7) := by
   obtain ⟨-, hCP, -, -, -, -, N, hN, hc⟩ := h
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hGM : GoodModel (chainModel C) := Or.inl ⟨C, by rw [hCP]; exact hQ, rfl⟩
+  have hGM : GoodModel (chainModel C) := Or.inl ⟨C, by rwx [hCP], rfl⟩
   have hM := walkAx_of_goodModel hGM
   have hF := hc.1.1
   have := hM.lemma23_walk hF.2.1 hF.1 hc.2.1 hc.2.2.1
   have hn : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n C.sideBeta
   rw [nf_chords_ncard hc.1, hn] at this
-  rw [hN.holds.1]; omega
+  rwo [hN.holds.1]
 
 theorem NodeOK.chords_kb {P : Polygon} {m : ℕ → ℕ} {A hp d f : ℕ} {C : Chain} {x : Shp}
     (hG : GoodEnv P) (h : NodeOK P m A hp d f C x.2.2) (hm : C.m = x.2.1) (hγ : 1 ≤ x.2.2) :
@@ -112,7 +116,7 @@ theorem forStep2 {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (N : 
         Finset.sum_eq_sum_Ico_succ_bot (show p < (N + 1) / 2 by omega)]
       omega) ⟨0, hc, Nat.zero_le _⟩
   obtain ⟨-, hri, hrn⟩ := hI p' c' hIp
-  have hpn : p' = (N + 1) / 2 := by rw [hri, hrn] at htest; omega
+  have hpn : p' = (N + 1) / 2 := by rwo [hri, hrn] at htest
   subst hpn
   refine ⟨c', k, e, ?_, hIp, hψ⟩
   obtain ⟨-, hri0, -⟩ := hI 0 c hc
@@ -152,13 +156,12 @@ variable {P : Polygon} {W : ℕ}
 
 theorem not_pairRG {r : ℕ} (h : r < 160035 ∨ (160056 < r ∧ r < 160062) ∨ (160065 < r ∧ r < 160090)
     ∨ 160093 < r) : ¬ PairRG r := by
-  unfold PairRG DescRG; omega
+  ufo PairRG DescRG
 
 theorem bandOK_l41 {r : ℕ} (h1 : 160000 ≤ r) (h2 : r < 170000) :
     bandOf r ∉ mergeBands ∪ oracleBands := by
   rw [bandOf_l41 h1 h2]; exact band_l41_notin
 
-set_option maxHeartbeats 16000000 in
 /-- **The pair loop of a level.** -/
 theorem pairL_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 ≤ W)
     {sM : Stmt} {κ F G H : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
@@ -191,13 +194,13 @@ theorem pairL_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
     (body := pairS sM) (PairSt P W X c0 A0 B hp hX tgt ns pcs) (j - 1) (fun q => pcs q + 329)
     (fun p c h => ⟨h.1, h.2.1, by
       rw [h.2.2.2.2.2.2.2.2.2.1 _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega))
-        (by rw [hAl]; omega)]; exact h67⟩)
+        (by rwo [hAl])]; exact h67⟩)
     (fun p c hp h => by
       obtain ⟨hwc, c62, c65, c64, cA0, cA1, cm, crm, co, cr, crr, cX, ccap, ee, hee, hprev⟩ := h
       have cr' : ∀ r, 160000 ≤ r → r < 160035 → c.nreg r = c0.nreg r := fun r a b =>
-        cr r (bandOK_l41 a (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)
+        cr r (bandOK_l41 a (by omega)) (not_pairRG (by omega)) (by rwo [hAl])
       have cr'' : ∀ r, 160065 < r → r < 160090 → c.nreg r = c0.nreg r := fun r a b =>
-        cr r (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)
+        cr r (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rwo [hAl])
       set A := c.nreg ALLOC with hAdef
       have hp1 : 2 * p + 1 < j := by omega
       obtain ⟨C1, s1, m1', n1⟩ := hL (2 * p) (by omega)
@@ -225,49 +228,49 @@ theorem pairL_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
           (d1 := c0.nmem (B + 2 * (2 * p))) (f1 := c0.nmem (B + 2 * (2 * p) + 1))
           (d2 := c0.nmem (B + 2 * (2 * p + 1))) (f2 := c0.nmem (B + 2 * (2 * p + 1) + 1))
           (prev := c.nreg 160063) (i := 2 * p) (j := p) (hX := hX) (γ₀ := γ₀) (tgt := tgt)
-          rfl c65 rfl c62 c64 (by rw [cr' _ (by omega) (by omega)]; exact h33)
-          (by rw [cr' _ (by omega) (by omega)]; exact h34)
-          (by rw [cr' _ (by omega) (by omega)]; exact h00)
-          (by rw [cr' _ (by omega) (by omega)]; exact h24)
-          (by rw [cr'' _ (by omega) (by omega)]; exact h80)
-          (by rw [cr'' _ (by omega) (by omega)]; exact h81)
-          (by rw [cr'' _ (by omega) (by omega)]; exact h83)
-          (by rw [cr'' _ (by omega) (by omega)]; exact h84)
+          rfl c65 rfl c62 c64 (by rwx [cr' _ (by omega) (by omega)])
+          (by rwx [cr' _ (by omega) (by omega)])
+          (by rwx [cr' _ (by omega) (by omega)])
+          (by rwx [cr' _ (by omega) (by omega)])
+          (by rwx [cr'' _ (by omega) (by omega)])
+          (by rwx [cr'' _ (by omega) (by omega)])
+          (by rwx [cr'' _ (by omega) (by omega)])
+          (by rwx [cr'' _ (by omega) (by omega)])
           (by rw [cmA _ (by omega)]; congr 1; omega)
           (by rw [cmA _ (by omega)]; congr 1; omega)
           (by rw [cmA _ (by omega)]; congr 1; omega)
           (by rw [cmA _ (by omega)]; congr 1; omega)
           n1c n2c (by rw [← s1] at *; exact hγ _ (by omega)) (hγ _ hp1) hcons cX
-          (by rw [ccap]; exact hcap) htg (by omega) (by omega) (by omega) (by omega)
+          (by rwx [ccap]) htg (by omega) (by omega) (by omega) (by omega)
       refine ⟨c'', k'', e'', by omega, ?_, hAk''⟩
-      refine ⟨hw'', by rw [q62]; ring, by rw [q65]; ring, q64, by omega, ?_,
+      refine ⟨hw'', by rwring [q62], by rwring [q65], q64, by omega, ?_,
         fun a ha => by rw [mem'' a (by omega)]; exact cm a ha,
         fun a ha => by rw [rmem'' a (by omega)]; exact crm a ha, by rw [out'']; exact co,
         fun r h1 h2 h3 => by rw [fr'' r h1 h2 h3]; exact cr r h1 h2 h3,
         fun r h1 h2 => by rw [frr'' r h1 h2]; exact crr r h1 h2,
-        by rw [hA'']; exact hX'', by rw [cap'']; exact ccap,
+        by rwx [hA''], by rw [cap'']; exact ccap,
         fun q => if q = p then E else ee q, fun q hq => ?_, fun _ => by simp [q63]⟩
-      · rw [hA'', Finset.sum_range_succ]; omega
+      · rwo [hA'', Finset.sum_range_succ]
       · rcases Nat.lt_or_ge q p with hqp | hqp
         · obtain ⟨a1, a2, a3, C', b1, b2, b3⟩ := hee q hqp
-          simp only [show q ≠ p by omega, ite_false]
+          simp [show q ≠ p by omega, ite_false]
           refine ⟨a1, by omega, fun hq1 => ?_, C', b1, b2, ?_⟩
-          · simp only [show q - 1 ≠ p by omega, ite_false]
+          · simp [show q - 1 ≠ p by omega, ite_false]
             rw [mem'' _ (by omega)]; exact a3 hq1
           · rw [mem'' _ (by omega), mem'' _ (by omega), hA'']
             exact (b3.agree mem'').mono (by omega)
         · have hqe : q = p := by omega
           subst hqe
-          simp only [ite_true]
+          simp [ite_true]
           refine ⟨by omega, by omega, fun hq1 => ?_, C, ?_, ?_, ?_⟩
-          · simp only [show q - 1 ≠ q by omega, ite_false]
+          · simp [show q - 1 ≠ q by omega, ite_false]
             rw [w2, hprev hq1]
           · rw [hCs, s1]
           · rw [hCm, m1', m2']
-          · rw [w0, w1, hA'']; exact hN)
-    (⟨hw, by rw [h62], by rw [h65]; ring, h64, by omega, by rw [hA]; simp,
+          · rwx [w0, w1, hA''])
+    (⟨hw, by rw [h62], by rwring [h65], h64, by omega, by rws [hA],
       fun _ _ => rfl, fun _ _ => rfl, rfl, fun _ _ _ _ => rfl, fun _ _ _ => rfl,
-      by rw [hA]; exact hXh, rfl, fun _ => 0, fun q hq => by omega, fun h => by omega⟩)
+      by rwx [hA], rfl, fun _ => 0, fun q hq => by omega, fun h => by omega⟩)
   rw [hnp] at hk hI
   refine ⟨c', k, e, ?_, by rw [← hA]; exact hψ, hI⟩
   have : ∑ q ∈ range (j / 2), (pcs q + 329 + 2) = ∑ q ∈ range (j / 2), (pcs q + 331) :=

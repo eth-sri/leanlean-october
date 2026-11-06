@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseDrvBSig
 public import Chazelle.Core.DownPhaseDrvBGeo
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase base (D9), RAM: the corner test at a host point
@@ -120,7 +124,6 @@ theorem bt_cor {d : ℕ} (hd : 212071 ≤ d ∧ d ≤ 212085) (r : ℕ) (h : Bru
 
 theorem wr_decideS : wr (fun r => decide (212082 ≤ r ∧ r ≤ 212085)) decideS = true := by decide
 
-set_option maxHeartbeats 4000000 in
 /-- **The nine tests.** -/
 theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c)
     {sa sv sb : SymPt} (ia : SymPtIn c 212060 sa) (iv : SymPtIn c 212063 sv)
@@ -144,7 +147,7 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
       ∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ d → c₂.nreg r = c₁.nreg r := by
     intro d c₁ c₂ _ _ f r hr hrd
     refine f.1 r ?_
-    unfold Brute.Bt Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+    unfold Brute.Bt Bk; sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not]
   have tr : ∀ {c₁ c₂ : Config} {x : ℕ} {s : SymPt}, SymPtIn c₁ x s → x = 212060 ∨ x = 212063 ∨
       x = 212066 → (∀ r, 212060 ≤ r → r < 212069 → c₂.nreg r = c₁.nreg r) → SymPtIn c₂ x s := by
     intro c₁ c₂ x s h hx hr
@@ -238,25 +241,25 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
       (hh (by norm_num) f₉)
   refine ⟨c₉, k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + (k₈ + k₉))))))),
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))))),
-    by omega, hf, ?_, by rw [v1]; exact t₁, by rw [v2]; exact t₂, by rw [v3]; exact t₃,
-    by rw [v4]; exact t₄, by rw [v5]; exact t₅, by rw [v6]; exact t₆, by rw [v7]; exact t₇,
-    by rw [v8]; exact t₈, t₉⟩
+    by omega, hf, ?_, by rwx [v1], by rwx [v2], by rwx [v3],
+    by rwx [v4], by rwx [v5], by rwx [v6], by rwx [v7],
+    by rwx [v8], t₉⟩
   intro r h1 h2
   interval_cases r
-  · rw [v1]; exact b₁
-  · rw [v2]; exact b₂
-  · rw [v3]; exact b₃
-  · rw [v4]; exact b₄
-  · rw [v5]; exact b₅
-  · rw [v6]; exact b₆
-  · rw [v7]; exact b₇
-  · rw [v8]; exact b₈
+  · rwx [v1]
+  · rwx [v2]
+  · rwx [v3]
+  · rwx [v4]
+  · rwx [v5]
+  · rwx [v6]
+  · rwx [v7]
+  · rwx [v8]
   · exact b₉
 
 /-- The value of a bit. -/
 def bv (b : Bool) : ℕ := if b then 1 else 0
 
-theorem bv_le (b : Bool) : bv b ≤ 1 := by unfold bv; split_ifs <;> omega
+theorem bv_le (b : Bool) : bv b ≤ 1 := by unfold bv; splao
 
 theorem bv_eq_one (b : Bool) : bv b = 1 ↔ b = true := by unfold bv; cases b <;> simp
 
@@ -264,7 +267,6 @@ theorem bv_eq_one (b : Bool) : bv b = 1 ↔ b = true := by unfold bv; cases b <;
 theorem bv_of_bit {n : ℕ} (h : n ≤ 1) : n = bv (decide (n = 1)) := by
   unfold bv; by_cases h1 : n = 1 <;> simp [h1]; omega
 
-set_option maxHeartbeats 4000000 in
 /-- **The decision tree.** -/
 theorem decideS_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
     {A1 A2 B1 B2 D X1 X2 X3 X4 : Bool}
@@ -287,8 +289,8 @@ theorem decideS_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
     · cases A1 <;> cases A2 <;> cases B1 <;> cases B2 <;>
         simp only [bv, ite_true, ite_false, Bool.false_eq_true] at h1 h2 h3 h4 ⊢ <;>
         (repeat (first
-          | refine spec_ifLtN_true (by config_simp; simp only [h1, h2, h3, h4, c1]; omega) ?_
-          | refine spec_ifLtN_false (by config_simp; simp only [h1, h2, h3, h4, c1]; omega) ?_)) <;>
+          | refine spec_ifLtN_true (by config_simp; sio only [h1, h2, h3, h4, c1]) ?_
+          | refine spec_ifLtN_false (by config_simp; sio only [h1, h2, h3, h4, c1]) ?_)) <;>
         (try unfold setE) <;> exec_block <;> (try omega) <;>
         refine ⟨by omega, ?_, ?_⟩ <;> config_simp <;>
         (try simp only [c0, h5, h6, h7, h8, h9]) <;>
@@ -296,9 +298,8 @@ theorem decideS_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
   exact ⟨c', k, ex, hk, q1, q2, exec_frameB ex wr_decideS⟩
 
 theorem bcor_dec (r : ℕ) (h : decide (212082 ≤ r ∧ r ≤ 212085) = true) : Bcor r = true := by
-  simp only [Bcor, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  sio only [Bcor, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
-set_option maxHeartbeats 2000000 in
 /-- **The corner test** (at most `2300` steps). -/
 theorem cornerS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c)
     {sa sv sb : SymPt} (ia : SymPtIn c 212060 sa) (iv : SymPtIn c 212063 sv)
@@ -328,15 +329,15 @@ theorem cornerS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
     (D := decide (c₁.nreg 212075 = 1)) (X1 := decide (c₁.nreg 212076 = 1))
     (X2 := decide (c₁.nreg 212077 = 1)) (X3 := decide (c₁.nreg 212078 = 1))
     (X4 := decide (c₁.nreg 212079 = 1))
-    (by rw [decide_eq_true_iff]; exact t1) (by rw [decide_eq_true_iff]; exact t2)
-    (by rw [decide_eq_true_iff]; exact t3) (by rw [decide_eq_true_iff]; exact t4)
-    (by rw [decide_eq_true_iff]; exact t5) (by rw [decide_eq_true_iff]; exact t6)
-    (by rw [decide_eq_true_iff]; exact t7) (by rw [decide_eq_true_iff]; exact t8)
-    (by rw [decide_eq_true_iff]; exact t9)
+    (by rwx [decide_eq_true_iff]) (by rwx [decide_eq_true_iff])
+    (by rwx [decide_eq_true_iff]) (by rwx [decide_eq_true_iff])
+    (by rwx [decide_eq_true_iff]) (by rwx [decide_eq_true_iff])
+    (by rwx [decide_eq_true_iff]) (by rwx [decide_eq_true_iff])
+    (by rwx [decide_eq_true_iff])
   refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, fbTrans f₁ (fbMono f₂ bcor_dec),
     by rw [q1]; exact bv_le _, by rw [q2]; exact bv_le _, ?_, ?_⟩
-  · rw [q1, bv_eq_one]; exact m1
-  · rw [q2, bv_eq_one]; exact m2
+  · rwx [q1, bv_eq_one]
+  · rwx [q2, bv_eq_one]
 
 end exec
 

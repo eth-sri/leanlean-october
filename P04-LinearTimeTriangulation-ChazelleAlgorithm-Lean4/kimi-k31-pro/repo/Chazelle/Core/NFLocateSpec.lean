@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFLocateChain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Double identification: the specification (WP-C, target 2)
@@ -76,13 +78,13 @@ def LocDPre (P : Polygon) (W : ℕ) (c : Config) : Prop :=
 /-- The layout determines the chain. -/
 theorem chain_eq_of_desc {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H H' : Host} {C C' : Chain}
     (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H' C') : C = C' := by
-  have hH : H = H' := hostAt_unique h.1 h'.1
+  have hH  := hostAt_unique h.1 h'.1
   have hP : C.P = C'.P := by rw [h.2.1, h'.2.1, hH]
-  have hs : C.s = C'.s := h.2.2.1.symm.trans h'.2.2.1
-  have hm : C.m = C'.m := h.2.2.2.1.symm.trans h'.2.2.2.1
+  have hs  := h.2.2.1.symm.trans h'.2.2.1
+  have hm  := h.2.2.2.1.symm.trans h'.2.2.2.1
   cases C
   cases C'
-  simp only at hP hs hm
+  simp at hP hs hm
   subst hP hs hm
   rfl
 
@@ -120,20 +122,20 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
     have he' : c₁.nreg 50002 < 2 * C.m + 7 := by
       rw [x₁]; simpa [chainModel, C.sideWalk_n] using he
     obtain ⟨c₂, k₂, e₂, hk₂, -, d₂⟩ := chainDir_exec (P := P) hG hW c₁ w₁ (H := H) (C := C)
-      (by rw [d₁, m₁]; exact hC) (by rw [d₁]; exact hDW) (by rw [d₁, m₁]; exact hHW) hwf hs hNW
+      (by rwx [d₁, m₁]) (by rwx [d₁]) (by rwx [d₁, m₁]) hwf hs hNW
       he'
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [q33, q32, h0]; omega) e₂), by omega, ?_⟩
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rwo [q33, q32, h0]) e₂), by omega, ?_⟩
     rw [d₂, x₁]
   · have he' : c₁.nreg 50002 < P.n := by
       rw [x₁]
       have := interiorWalk_n (Qof P)
-      simp only [interiorModel] at he
+      simp [interiorModel] at he
       rw [this] at he
       have hn : (Qof P).n = P.n := shear_n _ _
       omega
     obtain ⟨c₂, k₂, e₂, hk₂, -, d₂⟩ := intDir_exec (P := P) hG hW c₁ w₁ he'
-      (by rw [d₁]; omega) (by rw [d₁, m₁]; exact hbit)
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [q33, q32, h1]; omega) e₂), by omega, ?_⟩
+      (by rwo [d₁]) (by rwx [d₁, m₁])
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rwo [q33, q32, h1]) e₂), by omega, ?_⟩
     rw [d₂, x₁]
 
 /-! ## The specification -/
@@ -158,14 +160,14 @@ theorem robust_addr2 {E : ℕ} {m : ℕ → ℕ} {b o v : ℕ}
     have := h (Function.update (Function.update m b (E + b + 1)) (E + b + 1 + o) (v + 1))
       (fun a ha => by
         rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
-    simp only at this
+    simp at this
     rw [Function.update_of_ne hX, Function.update_self, Function.update_self] at this
     omega
   refine ⟨hb, ?_⟩
   by_contra hge
   have := h (Function.update m (m b + o) (v + 1)) (fun a ha => by
     rw [Function.update_of_ne (by omega)])
-  simp only at this
+  simp at this
   rw [Function.update_of_ne (show b ≠ m b + o by omega), Function.update_self] at this
   omega
 

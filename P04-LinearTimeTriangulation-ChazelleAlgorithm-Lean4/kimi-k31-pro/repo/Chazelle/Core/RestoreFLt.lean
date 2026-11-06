@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.RestoreFKey
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 8: key comparisons into registers
@@ -95,20 +98,20 @@ theorem cmpA_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have r22 : c₁.nreg 83022 = 0 := by rw [e₁]; simp [cmpAL, regB, regI, upd]
   have f₁ : ∀ q, q ≠ 83020 → q ≠ 83022 → c₁.nreg q = c.nreg q := fun q h1 h2 => by
     rw [e₁]; simp [cmpAL, regB, regI, upd, h1, h2]
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega)
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by ufo ALLOC)
+    (by ufo ALLOC)
   have kf : ∀ q, ¬ KeyW q → c₁.nreg q = c.nreg q := fun q hq => by
     unfold KeyW at hq; exact f₁ q (by omega) (by omega)
   have hx₁ : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg a, c₁.nreg b⟩ := by
-    rw [kf a hka, kf b hkb]; exact hx
+    rwx [kf a hka, kf b hkb]
   have hy₁ : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by
-    rw [kf d hkd, kf e hke]; exact hy
+    rwx [kf d hkd, kf e hke]
   obtain ⟨c₂, k₂, ex, hk, b1, b2, hf⟩ := keyCmp_exec ha hb hd he hI₁.hw hE.hG hE.hWh
-    (by rw [m₁, r20, hA₁']; exact hwf) (by rw [m₁, r20]; exact hC) r22 hx₁ hy₁ hWm
-    (by rw [hA₁']; omega)
+    (by rwx [m₁, r20, hA₁']) (by rwx [m₁, r20]) r22 hx₁ hy₁ hWm
+    (by rwo [hA₁'])
   have h8 : ∀ q, 80000 ≤ q → q < 90000 → c₂.nreg q = c₁.nreg q := fun q h1 h2 =>
     hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])
-      (by unfold ALLOC; omega)
+      (by ufo ALLOC)
   refine FRS.seq (K₂ := 2) (FRS.prim (Q := fun c' => c' = c₂) hB hI₁ ex hf le_rfl (by omega) rfl)
     (fun c₃ hI₃ _ h₃ => ?_)
   subst h₃

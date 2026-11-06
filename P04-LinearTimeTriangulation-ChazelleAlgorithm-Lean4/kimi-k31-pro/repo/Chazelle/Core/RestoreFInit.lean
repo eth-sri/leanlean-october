@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.RestoreFPairs
 public import Chazelle.Core.DownPhaseOracleHit
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 28: the initialisation
@@ -98,56 +101,56 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
   -- the input size
   have e1 := Exec.inputSize (P := P) hw 81020 hnW
   set c₁ : Config := { c with nreg := upd c.nreg 81020 P.n } with hc₁
-  have hw₁ : WordsBounded W c₁ := e1.wb_right
+  have hw₁  := e1.wb_right
   have r₁ : ∀ q, q ≠ 81020 → c₁.nreg q = c.nreg q := fun q h => by simp [hc₁, upd, h]
   have n₁ : c₁.nreg 81020 = P.n := by simp [hc₁, upd]
   -- the constants
   have ok2 : okXB W c₁.nmem fIniL c₁.nreg := by
-    simp only [fIniL, okXB, okX, regI]
-    simp only [upd, n₁, r₁ 81004 (by norm_num), show c₁.nmem = c.nmem from rfl]
+    simp [fIniL, okXB, okX, regI]
+    simp [upd, n₁, r₁ 81004 (by norm_num), show c₁.nmem = c.nmem from rfl]
     norm_num [hTv]
     (repeat' apply And.intro) <;> omega
   have e2 := execB (P := P) fIniL hw₁ ok2
   set c₂ : Config := { c₁ with nreg := regB c₁.nmem fIniL c₁.nreg } with hc₂
-  have hw₂ : WordsBounded W c₂ := e2.wb_right
+  have hw₂  := e2.wb_right
   have v₂ : ∀ q, c₂.nreg q = regB c.nmem fIniL c₁.nreg q := fun q => rfl
   have f₂ : ∀ q, ¬ IniW q → c₂.nreg q = c.nreg q := fun q hq => by
-    rw [v₂, regB_other _ _ _ (fun i hi => ?_), r₁ q (fun h => hq (by unfold IniW; omega))]
-    simp only [fIniL, List.mem_cons, List.not_mem_nil, or_false] at hi
+    rw [v₂, regB_other _ _ _ (fun i hi => ?_), r₁ q (fun h => hq (by ufo IniW))]
+    simp [fIniL, List.mem_cons, List.not_mem_nil, or_false] at hi
     unfold IniW at hq
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl <;> simp only [dstI] <;> omega
+      rfl <;> simp [dstI] <;> omega
   have z : c₂.nreg 81011 = 0 := by rw [v₂]; simp [fIniL, regB, regI, upd]
   have kd : c₂.nreg 81029 = c.nmem (c.nreg 81000) := by
     rw [v₂]; simp [fIniL, regB, regI, upd, r₁ 81000 (by norm_num)]
   have c20 : c₂.nreg 81020 = P.n := by rw [v₂]; simp [fIniL, regB, regI, upd, n₁]
-  have c00 : c₂.nreg 81000 = c.nreg 81000 := f₂ _ (by unfold IniW; omega)
+  have c00 : c₂.nreg 81000 = c.nreg 81000 := f₂ _ (by ufo IniW)
   have c12 : c₂.nreg 81012 = 1 := by rw [v₂]; simp [fIniL, regB, regI, upd]
   have c14 : c₂.nreg 81014 = 3 := by rw [v₂]; simp [fIniL, regB, regI, upd]
   have hv : ∀ q, q ∈ [81007, 81011, 81012, 81013, 81014, 81015, 81016, 81024, 81023, 81022] →
       ∀ c' : Config, (∀ r, r ∉ [81017, 81019, 81021, 81025, 81028] → c'.nreg r = c₂.nreg r) →
-      c'.nreg q = c₂.nreg q := fun q hq c' h => h q (by simp at hq ⊢; omega)
+      c'.nreg q = c₂.nreg q := fun q hq c' h => h q (by sio at hq ⊢)
   have vals : c₂.nreg 81007 = 0 ∧ c₂.nreg 81011 = 0 ∧ c₂.nreg 81012 = 1 ∧ c₂.nreg 81013 = 2 ∧
       c₂.nreg 81014 = 3 ∧ c₂.nreg 81015 = 5 ∧ c₂.nreg 81016 = 7 ∧ c₂.nreg 81024 = 10 ∧
       c₂.nreg 81020 = P.n ∧ c₂.nreg 81023 = P.n / 2 ∧ c₂.nreg 81022 = 2 * (P.n / 2) := by
     refine ⟨?_, z, c12, ?_, c14, ?_, ?_, ?_, c20, ?_, ?_⟩ <;>
       (rw [v₂]; simp [fIniL, regB, regI, upd, n₁, r₁ 81004 (by norm_num)])
     · exact hTv
-    · rw [hTv]; ring
+    · rwring [hTv]
   -- the walk data
   by_cases a : c₂.nreg 81011 < c₂.nreg 81029
-  · have hk1 : c.nmem (c.nreg 81000) ≠ 0 := by rw [← kd]; omega
+  · have hk1 : c.nmem (c.nreg 81000) ≠ 0 := by rwo [← kd]
     have ok3 : okXB W c₂.nmem fIntL c₂.nreg := by
-      simp only [fIntL, okXB, okX]; norm_num
+      sin only [fIntL, okXB, okX]
     have e3 := execB (P := P) fIntL hw₂ ok3
     refine ⟨_, _, .seq e1 (.seq e2 (.ifLtN_true a e3)), by simp [fIniL, fIntL], rfl, rfl, rfl, rfl,
       fun q hq => ?_,
       ?_⟩
     · show regB c₂.nmem fIntL c₂.nreg q = _
       rw [regB_other _ _ _ (fun i hi => ?_), f₂ q hq]
-      simp only [fIntL, List.mem_cons, List.not_mem_nil, or_false] at hi
+      simp [fIntL, List.mem_cons, List.not_mem_nil, or_false] at hi
       unfold IniW at hq
-      rcases hi with rfl | rfl | rfl | rfl <;> simp only [dstI] <;> omega
+      rcases hi with rfl | rfl | rfl | rfl <;> simp [dstI] <;> omega
     · have g : ∀ q, q ≠ 81021 → q ≠ 81017 → q ≠ 81019 → q ≠ 81025 →
           regB c₂.nmem fIntL c₂.nreg q = c₂.nreg q := fun q a b d e => by
         simp [fIntL, regB, regI, upd, a, b, d, e]
@@ -171,11 +174,11 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
         fun h => absurd h hk1, fun _ => ⟨(w 81021 (by norm_num)).trans (by norm_num),
           (w 81019 (by norm_num)).trans (by norm_num), (w 81025 (by norm_num)).trans (by norm_num),
           (w 81017 (by norm_num)).trans (by norm_num)⟩⟩
-  · have hk0 : c.nmem (c.nreg 81000) = 0 := by rw [← kd]; omega
+  · have hk0 : c.nmem (c.nreg 81000) = 0 := by rwo [← kd]
     have hm := hk hk0
     have ok3 : okXB W c₂.nmem fChL c₂.nreg := by
-      simp only [fChL, okXB, okX, regI]
-      simp only [upd, c00, c14, c12, show c₂.nmem = c.nmem from rfl]
+      simp [fChL, okXB, okX, regI]
+      simp [upd, c00, c14, c12, show c₂.nmem = c.nmem from rfl]
       norm_num
       refine ⟨by omega, by omega, by omega, by omega⟩
     have e3 := execB (P := P) fChL hw₂ ok3
@@ -184,9 +187,9 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
       ?_⟩
     · show regB c₂.nmem fChL c₂.nreg q = _
       rw [regB_other _ _ _ (fun i hi => ?_), f₂ q hq]
-      simp only [fChL, List.mem_cons, List.not_mem_nil, or_false] at hi
+      simp [fChL, List.mem_cons, List.not_mem_nil, or_false] at hi
       unfold IniW at hq
-      rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> omega
+      rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp [dstI] <;> omega
     · have g : ∀ q, q ≠ 81028 → q ≠ 81021 → q ≠ 81017 → q ≠ 81019 → q ≠ 81025 →
           regB c₂.nmem fChL c₂.nreg q = c₂.nreg q := fun q a b d e f => by
         simp [fChL, regB, regI, upd, a, b, d, e, f]
@@ -196,11 +199,11 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
         rw [g q a b d e f, h]
       have w21 : regB c₂.nmem fChL c₂.nreg 81021 = 6 := by simp [fChL, regB, regI, upd]
       have w19 : regB c₂.nmem fChL c₂.nreg 81019 = 2 * c.nmem (c.nreg 81000 + 3) + 6 := by
-        simp [fChL, regB, regI, upd, c00, c14, show c₂.nmem = c.nmem from rfl]; ring
+        sir [fChL, regB, regI, upd, c00, c14, show c₂.nmem = c.nmem from rfl]
       have w25 : regB c₂.nmem fChL c₂.nreg 81025 = 2 * c.nmem (c.nreg 81000 + 3) + 6 := by
-        simp [fChL, regB, regI, upd, c00, c14, show c₂.nmem = c.nmem from rfl]; ring
+        sir [fChL, regB, regI, upd, c00, c14, show c₂.nmem = c.nmem from rfl]
       have w17 : regB c₂.nmem fChL c₂.nreg 81017 = 2 * c.nmem (c.nreg 81000 + 3) + 7 := by
-        simp [fChL, regB, regI, upd, c00, c14, c12, show c₂.nmem = c.nmem from rfl]; ring
+        sir [fChL, regB, regI, upd, c00, c14, c12, show c₂.nmem = c.nmem from rfl]
       exact ⟨G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v07,
         G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v11,
         G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v12,

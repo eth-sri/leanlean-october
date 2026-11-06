@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXRamDef
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down phase, extraction (D6), RAM part 1: height order, walk indices, key order
@@ -31,7 +36,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 /-- **`hltS`**: the height order of the input vertices. -/
 theorem hltS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) :
     ∃ d' k, Exec P W hltS d d' k ∧ k ≤ 12 ∧
@@ -60,8 +64,7 @@ theorem hltS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) :
           · exact hy h
           · rw [h] at hy'; exact lt_irrefl _ hy'
       · refine spec_ifLtR_false (by config_simp; exact hy') ?_
-        have heq : (P.vtx (d.nreg 217160)).2 = (P.vtx (d.nreg 217161)).2 :=
-          le_antisymm (not_lt.1 hy') (not_lt.1 hy)
+        have heq  := le_antisymm (not_lt.1 hy') (not_lt.1 hy)
         refine spec_seq ?_
         exec_block
         by_cases hx : (P.vtx (d.nreg 217160)).1 < (P.vtx (d.nreg 217161)).1
@@ -85,9 +88,8 @@ theorem hltS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) :
 /-- The register value of the `li` bit. -/
 def liV (li : Bool) : ℕ := if li then 1 else 0
 
-theorem liV_le (li : Bool) : liV li ≤ 1 := by unfold liV; split_ifs <;> omega
+theorem liV_le (li : Bool) : liV li ≤ 1 := by unfold liV; splao
 
-set_option maxHeartbeats 1000000 in
 /-- **`ivBS`**: `dst := ivB li n src`. -/
 theorem ivBS_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : Bool}
     (h20 : d.nreg 217020 = n) (h26 : d.nreg 217026 = liV li) (h27 : d.nreg 217027 = 1)
@@ -108,7 +110,6 @@ theorem ivBS_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : B
     refine spec_nil hw₁ ⟨by omega, ?_, rfl, rfl, rfl, rfl⟩
     simp [DrvR.ivB]
 
-set_option maxHeartbeats 1000000 in
 /-- **`succS`**: `dst := (src + 1) mod n` for `src < n`. -/
 theorem succS_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ}
     (h20 : d.nreg 217020 = n) (h27 : d.nreg 217027 = 1) (hs : d.nreg src < n) (hnW : n ≤ W)
@@ -118,7 +119,7 @@ theorem succS_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ}
       d'.nmem = d.nmem ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
   unfold succS
   refine spec_seq ?_
-  refine spec_step (Machine.Exec.addN hw _ _ _ (by rw [h27]; omega)) (fun hw₁ => ?_)
+  refine spec_step (Machine.Exec.addN hw _ _ _ (by rwo [h27])) (fun hw₁ => ?_)
   refine spec_nil hw₁ ?_
   by_cases h : d.nreg src + 1 < n
   · refine spec_ifLtN_true (by simp only [Machine.upd_same,
@@ -132,7 +133,6 @@ theorem succS_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ}
     simp only [Machine.upd_upd_same, h27]
     rw [show d.nreg src + 1 = n by omega, Nat.mod_self]
 
-set_option maxHeartbeats 1000000 in
 /-- **`qES`**: `dst := qE li n src` (scratch `217104`). -/
 theorem qES_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : Bool}
     (h20 : d.nreg 217020 = n) (h26 : d.nreg 217026 = liV li) (h27 : d.nreg 217027 = 1)
@@ -146,16 +146,16 @@ theorem qES_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : Bo
   cases li
   · refine spec_ifLtN_true (by rw [h26, h27]; simp [liV]) ?_
     refine spec_seq ?_
-    refine spec_step (Machine.Exec.addN hw _ _ _ (by rw [h27]; omega)) (fun hw₁ => ?_)
+    refine spec_step (Machine.Exec.addN hw _ _ _ (by rwo [h27])) (fun hw₁ => ?_)
     refine spec_nil hw₁ ?_
     set f := upd d.nreg 217104 (d.nreg src + d.nreg 217027) with hf
     have g : ∀ r, r ≠ 217104 → f r = d.nreg r := fun r hr => Machine.upd_other _ _ _ hr
     have g04 : f 217104 = d.nreg src + 1 := by rw [hf, Machine.upd_same, h27]
     have g20 : f 217020 = n := by rw [g 217020 (by decide), h20]
     have g27 : f 217027 = 1 := by rw [g 217027 (by decide), h27]
-    have gs : f src = d.nreg src := g src hs04
+    have gs  := g src hs04
     by_cases h : d.nreg src + 1 < n
-    · refine spec_ifLtN_true (by show f 217104 < f 217020; rw [g04, g20]; exact h) ?_
+    · refine spec_ifLtN_true (by show f 217104 < f 217020; rwx [g04, g20]) ?_
       refine spec_step (Machine.Exec.subN hw₁ _ _ _) (fun hw₂ => ?_)
       refine spec_step (Machine.Exec.subN hw₂ _ _ _) (fun hw₃ => ?_)
       refine spec_step (Machine.Exec.subN hw₃ _ _ _) (fun hw₄ => ?_)
@@ -165,7 +165,7 @@ theorem qES_exec (d : Config) (hw : WordsBounded W d) {src dst n : ℕ} {li : Bo
           ite_eq_left h]
         omega
       · simp only [Machine.upd_other _ _ _ h1, g _ h2]
-    · refine spec_ifLtN_false (by show ¬ f 217104 < f 217020; rw [g04, g20]; exact h) ?_
+    · refine spec_ifLtN_false (by show ¬ f 217104 < f 217020; rwx [g04, g20]) ?_
       refine spec_step (Machine.Exec.subN hw₁ _ _ _) (fun hw₂ => ?_)
       refine spec_nil hw₂ ⟨by omega, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
       · simp only [Machine.upd_same, g20, g27, DrvR.qE, Bool.false_eq_true,
@@ -190,7 +190,6 @@ def BposLt (r : ℕ) : Bool :=
 
 theorem wr_posLt : wr BposLt posLtS = true := by decide
 
-set_option maxHeartbeats 2000000 in
 /-- The core of `posLtS`. -/
 theorem posLtCore_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool}
     (h20 : d.nreg 217020 = n) (h26 : d.nreg 217026 = liV li) (h27 : d.nreg 217027 = 1)
@@ -206,7 +205,7 @@ theorem posLtCore_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool
   -- `q1 := (ae + 1) mod n`
   obtain ⟨d2, k2, e2, hk2, n2, -, -, -, -⟩ := succS_exec (P := P) d1 e1.wb_right (src := 217150)
     (dst := 217155) (by rw [v1 _ (by decide), h20]) (by rw [v1 _ (by decide), h27])
-    (by rw [v1 _ (by decide)]; exact hae) hnW (by decide)
+    (by rwx [v1 _ (by decide)]) hnW (by decide)
   have v2 : ∀ r, r ≠ 217155 → d2.nreg r = d1.nreg r := fun r hr => by rw [n2, Machine.upd_other _ _ _ hr]
   -- `u2 := ivB q1`
   obtain ⟨d3, k3, e3, hk3, n3, -, -, -, -⟩ := ivBS_exec (P := P) d2 e2.wb_right (src := 217155)
@@ -220,10 +219,10 @@ theorem posLtCore_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool
     rw [n3, Machine.upd_same, n2, Machine.upd_same, v1 _ (by decide)]
   -- `up`
   obtain ⟨d4, k4, e4, hk4, up4, f4⟩ := hltS_exec (P := P) d3 e3.wb_right hW
-  have v4 : ∀ r, Bhlt r = false → d4.nreg r = d3.nreg r := f4.1
+  have v4  := f4.1
   have g4 : ∀ r, Bhlt r = false → r ≠ 217155 → d4.nreg r = d.nreg r := fun r hr h55 => by
-    rw [v4 r hr, v3 r (by simp only [Bhlt, decide_eq_false_iff_not] at hr; omega),
-      v2 r h55, v1 r (by simp only [Bhlt, decide_eq_false_iff_not] at hr; omega)]
+    rw [v4 r hr, v3 r (by sio only [Bhlt, decide_eq_false_iff_not] at hr),
+      v2 r h55, v1 r (by sio only [Bhlt, decide_eq_false_iff_not] at hr)]
   -- heights
   obtain ⟨d5, k5, e5, hk5, a56, a60, a61, g5⟩ : ∃ d5 k5, Exec P W (block [.copyN 217156 217162,
       .subN 217160 217151 217027, .subN 217161 217153 217027]) d4 d5 k5 ∧ k5 = 3 ∧
@@ -266,7 +265,6 @@ theorem posLtCore_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool
     .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 (.seq e6 e7))))), by omega, ?_⟩
   rw [h7, b56, hc6]
 
-set_option maxHeartbeats 2000000 in
 /-- **`posLtS`**: the key order of two interior positions. -/
 theorem posLtS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {li : Bool}
     (h20 : d.nreg 217020 = n) (h26 : d.nreg 217026 = liV li) (h27 : d.nreg 217027 = 1)

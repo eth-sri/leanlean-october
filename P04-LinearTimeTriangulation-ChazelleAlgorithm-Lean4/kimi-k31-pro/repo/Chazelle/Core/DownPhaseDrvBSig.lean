@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.BruteSig
 public import Chazelle.Core.DownPhaseDrvRLib
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase base (D9), RAM: sign tests on points held in register triples
@@ -60,7 +63,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 /-- **A sign test on register triples** (at most `245` steps). -/
 theorem tstR_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ} (hop : op ≤ 3) {x y z d : ℕ}
     (hx : OutK x) (hy : OutK y) (hz : OutK z) (c : Config) (hw : WordsBounded W c)
@@ -96,12 +98,12 @@ theorem tstR_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ} (hop : op ≤
     refine ⟨c₁, k₁, e₁, hk₁, symPtIn_copy i₁ r0 r1 r2, symPtIn_copy i₂ r3 r4 r5,
       symPtIn_copy i₃ r6 r7 r8, r9, ⟨fun r hr => ?_, fun r _ => by rw [fr.2.1], fr.2.2.1,
       fr.2.2.2.1, fr.2.2.2.2⟩⟩
-    · have : r < 10000 ∨ 10500 ≤ r := by unfold Bk at hr; simp at hr; omega
+    · have : r < 10000 ∨ 10500 ≤ r := by unfold Bk at hr; sio at hr
       exact fr.1 r (by omega)
   have i₁' := i₁
   -- the kernel
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, s₂'⟩ := sig_exec (P := P) c₁ e₁.wb_right hG hW
-    (by rw [q₉]; exact hop) l₁ l₂ l₃ q₁ q₂ q₃
+    (by rwx [q₉]) l₁ l₂ l₃ q₁ q₂ q₃
   rw [q₉] at s₂'
   -- the answer
   have e₃ := Exec.copyN (P := P) e₂.wb_right d 10010

@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ClusterPhase2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-I, part 70: the second phase up to the flags
@@ -27,7 +31,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
 theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     {F : Type} [Fintype F] [DecidableEq F] {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M}
     {a : F → Fin g.N} {ha : ∀ f, M.face (a f) = f} {C : CoTree (starTree T a ha)} {R : BTree}
@@ -57,14 +60,14 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   -- registers
   obtain ⟨c1, k1, e1, hk1, hw1, hR1, h704, hr1, hm1, hrr1, hrm1, ho1⟩ :=
     regsS_exec (P := P) hw hG hEND
-  have hG1 : GR g c1 := hG.frame (fun r hr => hr1 r (by unfold GRReg at hr; unfold RegRG; omega))
+  have hG1 : GR g c1 := hG.frame (fun r hr => hr1 r (by unfold GRReg at hr; ufo RegRG))
   -- stack
   obtain ⟨c2, k2, e2, hk2, hw2, hf2, htp2, hstk2⟩ := stkS_exec (P := P) hw1 hG1
     (s := g.s) (bo := boOf g c.nmem) hR1.rs hR1.rSTK
     (fun b hb => by rw [hm1]; exact hD.cnt b hb) hEND
   have hR2 : (ssOf g).Regs c2 := hR1.of_frameR (fun r hr => hf2.1 r (by
-    unfold RegsR at hr; unfold StkRG; omega))
-  have hG2 : GR g c2 := hG1.frame (fun r hr => hf2.1 r (by unfold GRReg at hr; unfold StkRG; omega))
+    unfold RegsR at hr; ufo StkRG))
+  have hG2 : GR g c2 := hG1.frame (fun r hr => hf2.1 r (by unfold GRReg at hr; ufo StkRG))
   have hst2 : StaticEq g.A0 g.U c.nmem c2.nmem := fun x hx => by
     rw [hf2.2.2.2.2 x (by omega), hm1]
   have k2m : ∀ x, ¬ (g.base 46 ≤ x ∧ x < g.base 46 + 2 * g.μ) → c2.nmem x = c.nmem x :=
@@ -86,14 +89,14 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     rw [k2m (g.base 0 + w) (by omega), k2m (g.base 29 + c.nmem (g.base 0 + w)) (by omega)]
   have hstk' : segL g.s g.μ (boOf g c2.nmem) g.μ = stkList c2.nmem (g.base 46)
       (segL g.s g.μ (boOf g c2.nmem) g.μ).length := by
-    rw [segL_congr hbo2]; exact hstk2
+    rwx [segL_congr hbo2]
   have hlv2 : ∀ l, l < g.μ → LvOK g c2.nmem cs l := fun l hl => by
     obtain ⟨h1, h2, h3, h4⟩ := hD.lv l hl
     refine ⟨?_, ?_, ?_, ?_⟩
-    · rw [k2m _ (by omega)]; exact h1
-    · rw [k2m _ (by omega)]; exact h2
-    · rw [k2m _ (by omega)]; exact h3
-    · rw [k2m _ (by omega)]; exact h4
+    · rwx [k2m _ (by omega)]
+    · rwx [k2m _ (by omega)]
+    · rwx [k2m _ (by omega)]
+    · rwx [k2m _ (by omega)]
   have hpc : ∀ v, v < g.μ → plPos g.μ (boOf g c2.nmem) (keyOf' g c2.nmem) v =
       plPos g.μ (boOf g c.nmem) (keyOf' g c.nmem) v := fun v hv => plPos_congr hbo2 hkey2 hv
   have hI := dinv_init (W := W) hSF2 hD.head hk' (by omega) hkμ hlv2
@@ -109,13 +112,13 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       rw [hpc v hv, k2m _ (by omega)]; exact hD.act v hv hb)
     (fun v hv => by rw [k2m _ (by omega)]; exact hD.df v hv) hstk'
   have htp2' : c2.nreg 130701 = 2 * (segL g.s g.μ (boOf g c2.nmem) g.μ).length := by
-    rw [segL_congr hbo2]; exact htp2
-  have hnsp2 : c2.nreg 130704 = 0 := by rw [hf2.1 _ (by unfold StkRG; omega)]; exact h704
+    rwx [segL_congr hbo2]
+  have hnsp2 : c2.nreg 130704 = 0 := by rwx [hf2.1 _ (by ufo StkRG)]
   -- the driver
   obtain ⟨c3, K, e3, hK, hw3, hR3, ⟨fin, D, nsp, hI3⟩, htp3, hst3, hr3, hrr3, hrm3, ho3⟩ :=
     driver_exec (P := P) hw2 hR2 hSF2 hI htp2' hnsp2 hk' hs
-  have hG3 : GR g c3 := hG2.frame (fun r hr => hr3 r (by unfold GRReg at hr; unfold SplitRG; omega)
-    (by unfold GRReg at hr; omega) (by unfold GRReg at hr; omega))
+  have hG3 : GR g c3 := hG2.frame (fun r hr => hr3 r (by unfold GRReg at hr; ufo SplitRG)
+    (by ufo GRReg at hr) (by ufo GRReg at hr))
   have hst03 : StaticEq g.A0 g.U c.nmem c3.nmem := hst2.trans hst3
   have hsp : segPot (segL g.s g.μ (boOf g c2.nmem) g.μ) ≤ g.L * g.μ := by
     have x1 := segPot_segL (s := g.s) (μ := g.μ) (L := g.L) (bo := boOf g c2.nmem)
@@ -126,7 +129,7 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   -- the flags
   obtain ⟨c4, k4, e4, hk4, hw4, hf4, hdf4⟩ := flagS_exec (P := P) hw3 hG3
     (fun v hv => by rw [hst03 _ (by omega)]; exact hlevlt v hv) hEND
-  have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by unfold GRReg at hr; unfold FlRG; omega))
+  have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by unfold GRReg at hr; ufo FlRG))
   set H := Hset T cs g.k' with hH
   have hflag : ∀ v, v < g.μ → (c4.nmem (g.base 48 + v) = 1 ↔ v ∈ D ∨ v ∈ H) := fun v hv => by
     rw [hdf4 v hv, hst03 (g.base 3 + v) (by omega), hlevc v hv]
@@ -179,10 +182,10 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   · unfold cost2a
     have hK' : K ≤ 120 * (g.L * g.μ) + splitC g.L g.k' * (2 * g.μ / g.s) + 2 :=
       le_trans hK (Nat.add_le_add_right (Nat.add_le_add (Nat.mul_le_mul_left 120 hsp)
-        (le_of_eq (by rw [Nat.sub_zero]; rfl))) 2)
+        (le_of_eq (by rwr [Nat.sub_zero]))) 2)
     omega
-  · rw [hf4.1 r (by unfold FlRG; omega), hr3 r (by unfold SplitRG; omega) (by omega) (by omega),
-      hf2.1 r (by unfold StkRG; omega), hr1 r (by unfold RegRG; omega)]
+  · rw [hf4.1 r (by ufo FlRG), hr3 r (by ufo SplitRG) (by omega) (by omega),
+      hf2.1 r (by ufo StkRG), hr1 r (by ufo RegRG)]
   · rw [hf4.2.2.2.2 x (by omega)]; exact hst03 x (by omega)
 
 end proofs

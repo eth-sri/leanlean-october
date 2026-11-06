@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.RestoreFComplete
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-E, the search: the leaf's step count
@@ -58,7 +61,7 @@ theorem arcCnt_le_wt {M : Model} {Q : Polygon} {n0 : ℕ}
       have hu1 : unwrapK n a (e.edge : ℝ) = e.edge + n := by
         unfold unwrapK; rw [ite_eq_right (by linarith [he.1])]
       have hu2 : unwrapK n a b = b + n := by unfold unwrapK; rw [ite_eq_right (by linarith)]
-      exact (closedArc_unwrap ha hb hpe hne).2 ⟨by rw [hu1]; linarith, by
+      exact (closedArc_unwrap ha hb hpe hne).2 ⟨by rwli [hu1], by
         rw [hu1, hu2]; linarith [he.1]⟩
     · have hle : (e.edge : ℝ) + 1 ≤ s.edge := by exact_mod_cast hgt
       have hu1 : unwrapK n a (e.edge : ℝ) = e.edge + n := by
@@ -87,7 +90,7 @@ theorem arcCnt_le_wt {M : Model} {Q : Polygon} {n0 : ℕ}
         unfold unwrapK; rw [ite_eq_right (by linarith [he.1])]
       rw [hu1] at htu
       have : s.edge + t = e.edge + n := by exact_mod_cast htu
-      rw [ite_eq_left ⟨heq, rfl⟩, heq, show e.edge + n - e.edge = n by omega, Nat.mod_self]; omega
+      rwo [ite_eq_left ⟨heq, rfl⟩, heq, show e.edge + n - e.edge = n by omega, Nat.mod_self]
     · have hu1 : unwrapK n a (e.edge : ℝ) = e.edge + n := by
         have hle : (e.edge : ℝ) + 1 ≤ s.edge := by exact_mod_cast hgt
         unfold unwrapK; rw [ite_eq_right (by linarith [hs.1])]
@@ -95,13 +98,13 @@ theorem arcCnt_le_wt {M : Model} {Q : Polygon} {n0 : ℕ}
       have h2 : s.edge + t = e.edge + n := by exact_mod_cast htu
       have h3 : e.edge + n - s.edge = t := by omega
       rw [ite_eq_right (by omega), h3, Nat.mod_eq_of_lt (by omega)]
-  rw [hcnt]; omega
+  rwo [hcnt]
 
 
 /-- At most seven walk edges of a chain model are uncounted. -/
 theorem chain_uncounted_le (C : Chain) :
     {p | p < (chainModel C).W.n ∧ ¬ (chainModel C).counted p}.ncard ≤ 7 := by
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hn  := chainModel_n C
   have hsub : {p | p < (chainModel C).W.n ∧ ¬ (chainModel C).counted p} ⊆
       (([0, 1, 2, 3, 4, 5, 2 * C.m + 6].toFinset : Finset ℕ) : Set ℕ) := by
     rintro p ⟨hp, hc⟩
@@ -199,7 +202,7 @@ theorem lcnt_le {Cα : Chain} {Q : Polygon} {N : NF} {γ' : ℕ}
       unfold wBit
       rw [ite_eq_right]; rintro ⟨h0, -⟩
       have h1 := Gran.ncard_F hnf
-      rw [hF, Set.ncard_empty] at h1; omega
+      rwo [hF, Set.ncard_empty] at h1
     rw [hw, hs0, he0]
     rw [ha, hb, arcWt_zero_zero] at hwt
     unfold arcCnt
@@ -233,7 +236,6 @@ theorem l23_explicit (M : Model) (Q : Polygon) (F : Set (Set Point)) (γ D : ℕ
   have hW := walkAx_of_goodModel hM
   obtain ⟨hfin, hAdm, -⟩ := hF
   obtain ⟨hn, p₀, hp₀, hc₀⟩ := goodModel_walk M hM
-  show F.ncard * (γ + 1) ≤ 140 * (D + 2) * (M.size + 1)
   rcases Nat.eq_zero_or_pos γ with rfl | hγ
   · rcases F.eq_empty_or_nonempty with rfl | hne
     · simp
@@ -255,7 +257,7 @@ def pK (E : FEnv) : ℕ := 10 ^ 9 * (tK E * (E.H E.γ + Nat.clog 2 E.γ + 1))
 variable {E : FEnv} {c₀ : Config}
 
 theorem k0K_le : k0K E ≤ pK E := by
-  have hT : 20 ≤ tK E := by unfold tK; omega
+  have hT : 20 ≤ tK E := by ufo tK
   have hP : tK E ≤ tK E * (E.H E.γ + Nat.clog 2 E.γ + 1) := Nat.le_mul_of_pos_right _ (by omega)
   unfold pK k0K tvK hvK
   omega
@@ -270,17 +272,17 @@ theorem k1K_le (hE : FGood E c₀) {Cα : Chain} {N : NF} {γ' : ℕ} (hQ : Cα.
   set T := tK E with hTdef
   set a := Nat.clog 2 E.γ with hadef
   set h := E.H E.γ with hhdef
-  have hT : 20 ≤ T := by rw [hTdef]; unfold tK; omega
+  have hT : 20 ≤ T := by ruo [hTdef] tK
   have hm1 := Cα.one_le
   have hQn : (Qof E.P).n = E.P.n := shear_n _ _
   have hmP : Cα.m < E.P.n := by have := Cα.m_lt; rw [hQ, hQn] at this; exact this
-  have hn3 : 3 ≤ E.P.n := hE.hG.1.1
+  have hn3  := hE.hG.1.1
   -- the chords
   have hnc : N.nChords ≤ 140 * (4 + 2) * (2 * Cα.m + 8) :=
     MergeAsm.nChords_le_canonical (c := fun D => 140 * (D + 2)) l23_explicit hP hcan
-  have hreg : N.nRegions = N.nChords + 1 := Gran.nRegions_eq hcan.1 hMα
+  have hreg  := Gran.nRegions_eq hcan.1 hMα
   -- the halving cost
-  have hX : halfK E.P.n (maxCode N) ≤ 120011 := halfK_le hn3 (by unfold maxCode; omega)
+  have hX : halfK E.P.n (maxCode N) ≤ 120011 := halfK_le hn3 (by ufo maxCode)
   -- the depth
   have hdd : decDepth 4 N.nChords + 1 ≤ 58 * (a + 1) := by
     unfold decDepth
@@ -296,10 +298,10 @@ theorem k1K_le (hE : FGood E c₀) {Cα : Chain} {N : NF} {γ' : ℕ} (hQ : Cα.
   -- the step costs
   have hdb : dbK E N + 2 ≤ 30000 * T := by
     unfold dbK ndK clK paK efK etK erK ehK wsK wcK scK
-    rw [← hTdef]; omega
+    rwo [← hTdef]
   have hlb : lbK E + 2 ≤ 2000 * T := by
     unfold lbK vsK tvK hvK csK
-    rw [← hTdef]; omega
+    rwo [← hTdef]
   have hC : (dbK E N + 2) * (decDepth 4 N.nChords + 1) ≤ 30000 * 58 * (T * (a + 1)) := by
     calc (dbK E N + 2) * (decDepth 4 N.nChords + 1) ≤ (30000 * T) * (58 * (a + 1)) :=
           Nat.mul_le_mul hdb hdd
@@ -314,7 +316,7 @@ theorem k1K_le (hE : FGood E c₀) {Cα : Chain} {N : NF} {γ' : ℕ} (hQ : Cα.
   have hR3 : T ≤ T * (h + a + 1) := Nat.le_mul_of_pos_right _ (by omega)
   have hdesc : descK E Cα N (decDepth 4 N.nChords) ≤ 10 ^ 8 * (T * (h + a + 1)) := by
     unfold descK
-    have hpa : paK E (maxCode N) ≤ 120013 := by unfold paK; omega
+    have hpa : paK E (maxCode N) ≤ 120013 := by ufo paK
     omega
   unfold k1K pK voK tvK hvK
   rw [← hTdef, ← hadef, ← hhdef]

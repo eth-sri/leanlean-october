@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.OracleMainAns
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 23: the proof contexts from the structure
@@ -50,8 +52,8 @@ theorem rest_answer {B : BookData} (X : MainCtx P C V N B m) {z : Point} (hs : S
   have hQn : (Qof P).n = P.n := shear_n _ _
   rcases tr with ⟨hab, h0⟩ | ⟨hab, t, hpart, hf, hdg, h1, h2⟩ |
       ⟨hab, t, hpart, hnd, bD, hD, hbD, pk, hloc, hbest, hb, o5, o6⟩
-  · refine ⟨fun h => by rw [h0] at h; omega, fun _ => noHit_of_above C ?_ _⟩
-    rw [hs.zy, ← hT.top]; exact hab
+  · refine ⟨fun h => by rwo [h0] at h, fun _ => noHit_of_above C ?_ _⟩
+    rwx [hs.zy, ← hT.top]
   · exact deg_answer X.ch hs hpart hf hdg h1 h2
   · obtain ⟨q1, q2⟩ := main_answer X hs hab hpart hnd hD hbD hloc hbest
     obtain ⟨hb1, hb2⟩ := hb
@@ -72,12 +74,12 @@ theorem rest_answer {B : BookData} (X : MainCtx P C V N B m) {z : Point} (hs : S
             ((xe (Qof P) (eIdx (Qof P).n V.s (c'.nreg 120052)) V.hz, ((Qof P).vtx V.hz).2) : Point) := by
           simp only [rayPt]
           ext
-          · simp only; rw [← mul_assoc, hσ2, one_mul]; ring
+          · simp only; rwring [← mul_assoc, hσ2, one_mul]
           · simp only; rw [hs.zy]
         rw [hpt]
         rw [hQn] at hsp ⊢
         have hn2 : 2 ≤ P.n := by
-          have := C.add_one_le; have := C.one_le; rw [hv.CQ, hQn] at *; omega
+          have := C.add_one_le; have := C.one_le; rwo [hv.CQ, hQn] at *
         exact xe_mem_edge hT (Nat.mod_lt _ (by omega)) hsp hn2
     · rw [o5] at hf
       have hbo : bestOf c' = none := by unfold bestOf; rw [ite_eq_right hf]

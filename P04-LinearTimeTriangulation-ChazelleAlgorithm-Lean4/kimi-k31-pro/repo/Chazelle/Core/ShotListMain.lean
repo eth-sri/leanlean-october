@@ -28,7 +28,7 @@ theorem sofJ_zero (M : Model) (Q : Polygon) (hs : List (WPos × WPos)) (m : ℕ 
 
 theorem sofJ_succ (M : Model) (Q : Polygon) (hs : List (WPos × WPos)) (m : ℕ → ℕ) (A j : ℕ) :
     sofJ M Q hs m A (j + 1) = sofJ M Q hs m A j ∪ pcSet M Q (leaves (M.key Q) hs (arcAt m A j)) := by
-  simp only [sofJ, Finset.range_add_one, Finset.set_biUnion_insert]
+  simp [sofJ, Finset.range_add_one, Finset.set_biUnion_insert]
   exact Set.union_comm _ _
 
 /-- The arc `j` read at the moving pointer. -/

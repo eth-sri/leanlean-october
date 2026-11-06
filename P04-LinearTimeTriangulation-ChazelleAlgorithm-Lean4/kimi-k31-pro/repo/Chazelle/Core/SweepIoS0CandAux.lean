@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepIoS0CandBsSpec
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the slot table of the side-0 stop and table candidates
@@ -108,8 +111,8 @@ theorem aux_iinv {P : Polygon} {W : ℕ} {J : Merge.Junction} {N₂ : NF} {c₀ 
 theorem aux_sw11 {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config} {v : ℕ}
     (h : Aux P J N₂ c) : Aux P J N₂ { c with nreg := upd c.nreg (sw 11) v } := by
   obtain ⟨A₀, hA₀, h⟩ := h
-  have hAl : upd c.nreg (sw 11) v ALLOC = c.nreg ALLOC := upd_other _ _ _ (by unfold ALLOC sw; omega)
-  refine ⟨A₀, by simp only; rw [hAl]; exact hA₀,
+  have hAl : upd c.nreg (sw 11) v ALLOC = c.nreg ALLOC := upd_other _ _ _ (by ufo ALLOC sw)
+  refine ⟨A₀, by simp; rwx [hAl],
     fun c' hr hm hA => h c' (fun q hq hq11 => ?_) hm hA⟩
   rw [hr q hq hq11]
   exact upd_other _ _ _ hq11
@@ -123,9 +126,9 @@ theorem auxCore_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' :
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     AuxCore P J N₂ c' := by
   have fx : ∀ k, k < 700 → k ≠ 11 → c'.nreg (sw k) = c.nreg (sw k) := fun k hk h11 =>
-    hr _ (by unfold IFix sw; omega) (by unfold sw; omega)
+    hr _ (by ufo IFix sw) (by ufo sw)
   obtain ⟨b1, b2, b3, b4, hsl, hst, htb⟩ := h
-  simp only [AuxCore, rd_sw] at *
+  simp [AuxCore, rd_sw] at *
   have eB : c'.nreg sB = c.nreg sB := fx 620 (by norm_num) (by norm_num)
   have e200 := fx 200 (by norm_num) (by norm_num)
   have e201 := fx 201 (by norm_num) (by norm_num)
@@ -153,7 +156,7 @@ theorem auxCore_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' :
     simpa using mT j hj 0 (by norm_num)
   have mB : ∀ i, i < E → ∀ s, s ≤ 1 → ∀ d, d < 3 →
       c'.nmem (slotA B i s + d) = c.nmem (slotA B i s + d) :=
-    fun i hi s hs d hd => hm _ (by unfold slotA; nlinarith)
+    fun i hi s hs d hd => hm _ (by ufnl slotA)
   have mB0 : ∀ i, i < E → ∀ s, s ≤ 1 → c'.nmem (slotA B i s) = c.nmem (slotA B i s) :=
     fun i hi s hs => by simpa using mB i hi s hs 0 (by norm_num)
   have hlogPos : ∀ i, i < E → logPos c'.nmem AL i = logPos c.nmem AL i := fun i hi => by
@@ -171,8 +174,8 @@ theorem auxCore_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' :
     refine ⟨i, hi, ?_, ?_, ?_⟩
     · rw [mL0 i hi, mS0 x hx, e1]
     · rw [hlogPos i hi, mS0 x hx, mS x hx 1 (by norm_num), e2]
-    · rw [mS x hx 4 (by norm_num), mB0 i hi _ (by unfold sOf; split_ifs <;> omega), e3]
-  · obtain ⟨i, hi, e1, e2, e3⟩ := htb j hj hv (by rw [← mT0 j hj]; exact hf)
+    · rw [mS x hx 4 (by norm_num), mB0 i hi _ (by unfold sOf; splao), e3]
+  · obtain ⟨i, hi, e1, e2, e3⟩ := htb j hj hv (by rwx [← mT0 j hj])
     refine ⟨i, hi, ?_, ?_, ?_⟩
     · rw [mL0 i hi, mT j hj 1 (by norm_num), e1]
     · rw [hlogPos i hi, mT j hj 1 (by norm_num), mT j hj 2 (by norm_num), e2]

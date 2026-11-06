@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.SweepIoLab0M
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # The sweep RAM (WP-D), answers: the label candidates of a side-0 query, the slots
@@ -77,7 +82,7 @@ theorem put1_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 1 
     exec_block
     all_goals try (config_simp; omega)
     refine ⟨rfl, ?_, fun r hr => ?_, ?_, rfl, rfl, rfl⟩
-    · config_simp; omega
+    · cso
     · config_simp
       simp only [upd, ite_eq_right hr]
     · config_simp
@@ -142,7 +147,6 @@ theorem labL_ok (m f : ℕ → ℕ) (k : ℕ) (hb : f sA + f k ≤ W) : okB W m 
   simp only [labL, okB, okI, sA, sV, sw] at hb ⊢
   exact ⟨⟨s 4034 (by norm_num) (by norm_num), hb⟩, s 4033 (by norm_num) (by norm_num), trivial⟩
 
-set_option maxHeartbeats 1000000 in
 /-- **One slot**: its value is stored at the allocator. -/
 theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ SlotW e) (hk : ¬ SlotW k)
     (hk3 : c.nreg k ≤ 3) (hAL : c.nreg (sw 300) + 7 * c.nreg (sw 301) ≤ W)
@@ -168,7 +172,7 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
   rintro c₁ hI₁ hA₁ hA₁' rfl
   set c₁ : Config := { c with nreg := regB c.nmem [.loadN sV gL] c.nreg } with hc₁
   have v1 : c₁.nreg sV = c.nmem (c.nreg gL) := by
-    simp only [hc₁, regB, regI, upd, sV, sw]; simp
+    sis only [hc₁, regB, regI, upd, sV, sw]
   have o1 : ∀ q, ¬ SlotW q → c₁.nreg q = c.nreg q := fun q hq =>
     regB_other _ _ _ (fun i hi => by
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hi
@@ -179,7 +183,7 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
   · refine IRS.ite (K := 14) (fun hlt => ?_) (fun hlt => ?_)
     · rw [o1 e he, o1 _ (nW _ (by simp))] at hlt
       have hb : c₁.nreg (sw 300) + 7 * c₁.nreg e + 3 ≤ W := by
-        rw [o1 e he, o1 _ (nW _ (by simp))]; omega
+        rwo [o1 e he, o1 _ (nW _ (by simp))]
       refine IRS.seq (K₁ := 10) (K₂ := 4)
         (IRS.block (addrL e) hI₁ (addrL_ok _ _ e hK₁.2.2.2.2.2.1
           hK₁.2.2.2.2.2.2 hb)) ?_
@@ -199,7 +203,7 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
         rw [a2, o1 e he, o1 _ (nW _ (by simp))]
       refine IRS.ite (K := 2) (fun hlt' => ?_) (fun hlt' => ?_)
       · rw [o3 k hk, eN] at hlt'
-        refine (IRS.block (labL k) hI₃ (labL_ok _ _ k (by rw [eA, o3 k hk]; omega))).mono
+        refine (IRS.block (labL k) hI₃ (labL_ok _ _ k (by rwo [eA, o3 k hk]))).mono
           (by simp [labL]) ?_
         rintro _ rfl
         refine ⟨?_, fun q hq => ?_, rfl⟩
@@ -226,7 +230,7 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
   · rintro c₂ hI₂ hA₂ hA₂' ⟨v2, o2, m2⟩
     have hK₂ := hK.fix hI₂
     have eA2 : c₂.nreg ALLOC = c.nreg ALLOC := o2 _ (nW _ (by simp))
-    refine (put1_irs hI₂ hK₂ (by rw [eA2]; omega)).mono le_rfl ?_
+    refine (put1_irs hI₂ hK₂ (by rwo [eA2])).mono le_rfl ?_
     rintro c' ⟨p1, p2, p3⟩
     refine ⟨by rw [p1, eA2], fun r hr hrA => by rw [p2 r hrA, o2 r hr], ?_⟩
     rw [p3, m2, eA2, v2]
@@ -251,7 +255,6 @@ theorem slotVal_congr {m m' : ℕ → ℕ} {AL E g e k : ℕ} (hk : k ≤ 3)
   · rw [h _ (by omega), h _ (by omega)]
   · simp [he]
 
-set_option maxHeartbeats 1000000 in
 /-- **A list of slots**: the values in order at the allocator. -/
 theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → Consts c₀ →
     (∀ p ∈ l, ¬ SlotW p.1 ∧ ¬ SlotW p.2 ∧ p.1 ≠ ALLOC ∧ p.2 ≠ ALLOC ∧ c.nreg p.2 ≤ 3) →
@@ -272,7 +275,7 @@ theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → 
     simp only [List.length_cons] at hroom ⊢
     refine (IRS.seq (K₁ := slotK) (K₂ := slotK * l.length)
       (slot_irs hI hK he hk hk3 (by omega) (by nlinarith)) ?_).mono (by ring_nf; omega)
-      (fun _ h => h)
+      (fun _ => id)
     rintro c₁ hI₁ hA₁ hA₁' ⟨e1, o1, m1⟩
     have nW : ∀ q, (q = ALLOC ∨ q = gL ∨ q = sw 300 ∨ q = sw 301) → ¬ SlotW q := by
       intro q hq h
@@ -280,26 +283,26 @@ theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → 
       rcases hq with rfl | rfl | rfl | rfl <;>
         rcases h with h | h | h | h | h <;> simp [ALLOC, gL, sV, sA, sX, sN, sE, sw] at h
     have r300 : c₁.nreg (sw 300) = c.nreg (sw 300) :=
-      o1 _ (nW _ (by simp)) (by unfold ALLOC sw; omega)
+      o1 _ (nW _ (by simp)) (by ufo ALLOC sw)
     have r301 : c₁.nreg (sw 301) = c.nreg (sw 301) :=
-      o1 _ (nW _ (by simp)) (by unfold ALLOC sw; omega)
-    have rgL : c₁.nreg gL = c.nreg gL := o1 _ (nW _ (by simp)) (by unfold ALLOC gL sw; omega)
+      o1 _ (nW _ (by simp)) (by ufo ALLOC sw)
+    have rgL : c₁.nreg gL = c.nreg gL := o1 _ (nW _ (by simp)) (by ufo ALLOC gL sw)
     have hmlow : ∀ a, a < c.nreg ALLOC → c₁.nmem a = c.nmem a := fun a ha => by
       rw [m1]; simp only [upd]; rw [ite_eq_right (by omega)]
     have hl' : ∀ q ∈ l, ¬ SlotW q.1 ∧ ¬ SlotW q.2 ∧ q.1 ≠ ALLOC ∧ q.2 ≠ ALLOC ∧
         c₁.nreg q.2 ≤ 3 := fun q hq => by
       obtain ⟨a, b, d, f, g⟩ := hl q (List.mem_cons_of_mem _ hq)
       exact ⟨a, b, d, f, by rw [o1 _ b f]; exact g⟩
-    refine (slots_irs l hI₁ hK hl' (by rw [r300, r301, e1]; omega) (by rw [rgL, e1]; omega)
-      (by rw [e1]; nlinarith)).mono le_rfl ?_
+    refine (slots_irs l hI₁ hK hl' (by rwo [r300, r301, e1]) (by rwo [rgL, e1])
+      (by rwnl [e1])).mono le_rfl ?_
     rintro c' ⟨f1, f2, f3, f4⟩
-    refine ⟨by rw [f1, e1]; ring, fun r hr hrA => by rw [f2 r hr hrA, o1 r hr hrA],
+    refine ⟨by rwring [f1, e1], fun r hr hrA => by rw [f2 r hr hrA, o1 r hr hrA],
       fun a ha => by rw [f3 a (by omega), hmlow a ha], fun i hi => ?_⟩
     rcases i with _ | i
     · rw [f3 _ (by omega), m1]
       simp only [upd, add_zero, ite_true, List.getD_cons_zero]
-    · have hi' : i < l.length := by simp at hi; omega
-      rw [show c.nreg ALLOC + (i + 1) = c₁.nreg ALLOC + i by rw [e1]; ring, f4 i hi',
+    · have hi' : i < l.length := by sio at hi
+      rw [show c.nreg ALLOC + (i + 1) = c₁.nreg ALLOC + i by rwring [e1], f4 i hi',
         r300, r301, rgL, hmlow _ hgL]
       simp only [List.getD_cons_succ]
       have hmem : l.getD i (0, 0) ∈ l := by

@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.RestoreFCover
 public import Chazelle.Core.MergeAsmMath
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the search: the obligations of the pieces
@@ -31,7 +32,7 @@ theorem region_arcs_le {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hNF :
   obtain ⟨hFam, -, -, reg, hRC, -, hArcs, hRg, -, -, -⟩ := hNF
   have hU := hRC.1 r hr
   set l := (N.region r).arcs
-  have hnd : l.Nodup := (hRg r hr).2.2.1
+  have hnd  := (hRg r hr).2.2.1
   set f : ℕ → ℝ × ℝ := fun j => (M.key Q (N.arc j).s, M.key Q (N.arc j).e)
   have hinj : Set.InjOn f (↑l.toFinset : Set ℕ) := by
     intro j hj j' hj' he
@@ -80,7 +81,7 @@ theorem arc_isArc (hE : FGood E c₀) {reg : ℕ → Set Point}
     E.M.IsArc (E.N.F E.M (Qof E.P)) (reg E.r) (E.M.key (Qof E.P) (arcOf E.N E.r t).s)
       (E.M.key (Qof E.P) (arcOf E.N E.r t).e) := by
   obtain ⟨-, -, hArcs, -⟩ := hregs
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr  := hE.hr
   set j := (E.N.region E.r).arcs.getD t 0 with hjdef
   have hjm : j ∈ (E.N.region E.r).arcs := by
     rw [hjdef, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
@@ -99,7 +100,7 @@ theorem arc_ne (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : �
   rcases hc with ⟨-, -, h⟩ | ⟨hF, -, -⟩
   · exact h
   · exfalso
-    have hr : E.r < E.N.nRegions := hE.hr
+    have hr  := hE.hr
     obtain ⟨-, -, -, hRg⟩ := hregs
     obtain ⟨i, hi⟩ := List.exists_mem_of_ne_nil _ hch
     obtain ⟨hi', -⟩ := ((hRg E.r hr).1 i).1 hi
@@ -125,7 +126,7 @@ theorem tile_of_cut (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {
   have ku := (normOf_facts hAi.sp).2.2.2.1
   have kv := (normOf_facts hAi.ep).2.2.2.1
   refine ⟨⟨ha0, ha1⟩, ⟨hb0, hb1⟩, arc_ne hE hch ht, hq1, fun i hi => ?_, fun i hi => ?_,
-    ?_, ?_, fun i hi => hcons i hi, fun i hi => ?_⟩
+    ?_, ?_, hcons, fun i hi => ?_⟩
   · obtain ⟨h1, -, h3, -⟩ := hpos i hi
     exact key_bounds h1 h3
   · obtain ⟨-, h2, -, h4⟩ := hpos i hi
@@ -145,7 +146,7 @@ theorem piece_wt_le {n a b : ℝ} {q : ℕ} {s e : ℕ → ℝ} {M : Model} (hn 
   refine Set.ncard_le_ncard (fun p hp => ?_) ((Set.finite_Iio M.W.n).subset fun x hx => hx.1)
   obtain ⟨hp, hc, τ, h0, h1, hin⟩ := hp
   have hpn : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
-  exact ⟨hp, hc, τ, h0, h1, tile_inner h hi ⟨by positivity, by rw [hn]; linarith⟩ hin⟩
+  exact ⟨hp, hc, τ, h0, h1, tile_inner h hi ⟨by positivity, by rwli [hn]⟩ hin⟩
 
 
 /-! ## A kind-1 piece -/

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepIoS0CandQ1
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the side-0 stop and table candidates of a query, part 2
@@ -142,20 +145,20 @@ theorem cRead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f kS + 2 ≤ W) : ok
 theorem cDir_irs (hI : IInv W c₀ c) (hK : Consts c) (hb : c.nreg kS + 3 ≤ W) :
     IRS P W c₀ cDir c 5 (fun c' => c'.nreg kS = c.nreg kS + 3 * qS (c.nreg qD) ∧
       (∀ q, q ≠ kS → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
-  have k1 : c.nreg K1 = 1 := hK.2.1
-  have k3 : c.nreg K3 = 3 := hK.2.2.2.2.2.2
+  have k1  := hK.2.1
+  have k3  := hK.2.2.2.2.2.2
   unfold cDir
   by_cases h0 : c.nreg qD < c.nreg K1
   · refine (IRS.ifT h0 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by norm_num)
-      (fun _ h => h)
-    rw [k1] at h0; unfold qS; rw [ite_eq_right (by omega)]; ring
-  · refine (IRS.ifF h0 ?_).mono (K := 3 + 2) (by norm_num) (fun _ h => h)
+      (fun _ => id)
+    rw [k1] at h0; urring qS [ite_eq_right (by omega)]
+  · refine (IRS.ifF h0 ?_).mono (K := 3 + 2) (by norm_num) (fun _ => id)
     by_cases h1 : c.nreg K1 < c.nreg qD
     · refine (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by norm_num)
-        (fun _ h => h)
-      rw [k1] at h1; unfold qS; rw [ite_eq_right (by omega)]; ring
+        (fun _ => id)
+      rw [k1] at h1; urring qS [ite_eq_right (by omega)]
     · refine (IRS.ifF h1 (IRS.instr1 (i := .addN kS kS K3) hI
-        ⟨iscr_sw (by simp [kS, sw]) (by simp [kS, sw]), by rw [k3]; exact hb⟩)).mono
+        ⟨iscr_sw (by simp [kS, sw]) (by simp [kS, sw]), by rwx [k3]⟩)).mono
         (by norm_num) ?_
       rintro c' rfl
       rw [k1] at h0 h1

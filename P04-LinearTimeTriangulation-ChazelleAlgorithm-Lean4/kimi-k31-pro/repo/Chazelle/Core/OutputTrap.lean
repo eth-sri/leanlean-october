@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.OutputNF
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-N, part 4: the trapezoid record of a region, computed from its chord records
@@ -282,7 +283,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
       inp (revOf Q) Q.n D.i := by
     cases hLa : a.hL
     · cases hTa : a.hT
-      · have hRa : a.hR = true := hLR.resolve_left (by rw [hLa]; decide)
+      · have hRa : a.hR = true := hLR.resolve_left (by rwd [hLa])
         simp only [Bool.false_eq_true, ite_false]
         rw [vR hRa]
         exact (wv_inj (nxt_lt hpj) hpi ((peak hTa).2.trans (peak hTa).1.symm))
@@ -319,15 +320,15 @@ theorem table_ok (H : RegCtx Q N reg) :
     Classical.choose (exists_trapData hQ (hregQ s (List.mem_range.1 hs))) with hDof
   have hDspec : ∀ s hs, (Dof s hs).region = reg s := fun s hs =>
     Classical.choose_spec (exists_trapData hQ (hregQ s (List.mem_range.1 hs)))
-  refine ⟨(List.range N.nRegions).pmap Dof (fun _ h => h), ?_, ?_, fun R => ⟨fun hR => ?_, ?_⟩⟩
+  refine ⟨(List.range N.nRegions).pmap Dof (fun _ => id), ?_, ?_, fun R => ⟨fun hR => ?_, ?_⟩⟩
   · rw [List.map_pmap]
     rw [List.pmap_congr_left (q := fun s => s ∈ List.range N.nRegions)
-      (g := fun s _ => trapOf (revOf Q) Q.n N s) _ (H₂ := fun _ h => h)
+      (g := fun s _ => trapOf (revOf Q) Q.n N s) _ (H₂ := fun _ => id)
       (fun s hs h1 _ => (trapOf_eq H (List.mem_range.1 hs) (Dof s h1) (hDspec s h1)).symm)]
     exact List.pmap_eq_map _
   · rw [List.map_pmap]
     rw [List.pmap_congr_left (q := fun s => s ∈ List.range N.nRegions) (g := fun s _ => reg s) _
-      (H₂ := fun _ h => h) (fun s _ h1 _ => hDspec s h1), List.pmap_eq_map]
+      (H₂ := fun _ => id) (fun s _ h1 _ => hDspec s h1), List.pmap_eq_map]
     refine List.Nodup.map_on (fun x hx y hy hxy => ?_) List.nodup_range
     exact H.corr.2.1 x y (List.mem_range.1 hx) (List.mem_range.1 hy) hxy
   · rw [← model_regions H.full] at hR
@@ -365,14 +366,14 @@ theorem chords_length_le (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) 
     intro x hx
     rw [List.mem_toFinset, List.mem_map] at hx
     obtain ⟨k, hk, rfl⟩ := hx
-    have hkN : k < N.nChords := (((H.regs ri hr).1 k).1 hk).1
+    have hkN  := (((H.regs ri hr).1 k).1 hk).1
     obtain ⟨v, σ, hv, hσ, -, hS, -⟩ := chords_spec hQ (rec_chords H.full hkN)
     have hvh : v = (N.chord k).h := by
       have e : hseg (Q.vtx v).2 (min (Q.vtx v).1 (chordEnd Q v σ).1)
           (max (Q.vtx v).1 (chordEnd Q v σ).1) = hseg (Q.vtx (N.chord k).h).2
             ((interiorModel Q).pos Q (N.chord k).lpos).1
             ((interiorModel Q).pos Q (N.chord k).rpos).1 := by
-        rw [← chordSet_eq_hseg, ← hS]; rfl
+        rwr [← chordSet_eq_hseg, ← hS]
       obtain ⟨e1, -⟩ := Merge.hseg_inj (min_le_max) e
       by_contra hne
       exact H.dh _ _ hv (H.hlt k hkN) hne e1

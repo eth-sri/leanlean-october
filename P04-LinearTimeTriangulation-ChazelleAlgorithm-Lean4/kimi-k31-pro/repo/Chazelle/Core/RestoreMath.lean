@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.GranRemove
 public import Chazelle.Core.FactsInterior
+public import Chazelle.Rwx
 
 /-!
 # WP-E, part 1: the mathematics of conformality restoration (Lemmas 3.3, 3.4) for disk models
@@ -59,21 +60,21 @@ replaced by two regions whose arcs lie inside its arcs, and the other regions ke
 theorem semigranular_insert (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm)
     (hfin : S.Finite) {e : Set Point} (he : e ∈ M.Adm) (heS : e ∉ S) {γ : ℕ}
     (h : M.Semigranular S γ) : M.Semigranular (insert e S) γ := by
-  have hT : insert e S ⊆ M.Adm := insert_subset he hS
-  have hTfin : (insert e S).Finite := hfin.insert e
+  have hT  := insert_subset he hS
+  have hTfin  := hfin.insert e
   have hsys := hM.sys _ hT hTfin
-  have heT : e ∈ insert e S := mem_insert e S
+  have heT  := mem_insert e S
   have hsd : insert e S \ {e} = S := insert_sdiff_self_of_notMem heS
   obtain ⟨P, hP, heP⟩ := Merge.exists_region_of_chord hsys (subset_insert e S) heT heS
   obtain ⟨R₁, R₂, hs⟩ := Merge.exists_split hsys (subset_insert e S) heT heS hP heP
-  have hs' : IsSplit M.D (insert e S \ {e}) e P R₁ R₂ := by rw [hsd]; exact hs
+  have hs' : IsSplit M.D (insert e S \ {e}) e P R₁ R₂ := by rwx [hsd]
   have hPγ : M.weight (insert e S \ {e}) P ≤ γ := by rw [hsd]; exact h P hP
   intro U hU
   rcases Gran.split_cases heT hs' hU with rfl | rfl | ⟨hU', hUP⟩
   · exact (Gran.weight_le_merged₁ hM hT hTfin heT hs').trans hPγ
   · exact (Gran.weight_le_merged₂ hM hT hTfin heT hs').trans hPγ
   · have h1 : U ≠ R₁ := hs'.ne_of_mem_old hU' hUP
-    have h2 : U ≠ R₂ := hs'.symm.ne_of_mem_old hU' hUP
+    have h2  := hs'.symm.ne_of_mem_old hU' hUP
     rw [← Gran.weight_other hM hT hTfin heT hs' hU h1 h2]
     rw [hsd] at hU' ⊢
     exact h U hU'
@@ -88,15 +89,14 @@ theorem semigranular_mono (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T
   induction k with
   | zero =>
     intro S hST hk hS
-    have he : T \ S = ∅ :=
-      (ncard_eq_zero (hTfin.subset sdiff_subset)).1 (Nat.le_zero.1 hk)
+    have he  := (ncard_eq_zero (hTfin.subset sdiff_subset)).1 (Nat.le_zero.1 hk)
     have : T = S := Subset.antisymm (sdiff_eq_empty.1 he) hST
-    rw [this]; exact hS
+    rwx [this]
   | succ k ih =>
     intro S hST hk hS
     by_cases he : (T \ S).Nonempty
     · obtain ⟨e, heT, heS⟩ := he
-      have hins : insert e S ⊆ T := insert_subset heT hST
+      have hins  := insert_subset heT hST
       refine ih (insert e S) hins ?_ ?_
       · have hsub : T \ insert e S ⊆ (T \ S) \ {e} := by
           rintro x ⟨hxT, hx⟩
@@ -108,7 +108,7 @@ theorem semigranular_mono (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T
       · exact semigranular_insert hM (hST.trans hT) (hTfin.subset hST) (hT heT) heS hS
     · rw [not_nonempty_iff_eq_empty] at he
       have : T = S := Subset.antisymm (sdiff_eq_empty.1 he) hST
-      rw [this]; exact hS
+      rwx [this]
 
 /-! ## The full map of a good model -/
 
@@ -118,7 +118,7 @@ theorem chords_subset_interiorAdm {Q : Polygon} (hQ : Q.Simple) :
   intro c hc
   obtain ⟨i, σ, -, -, -, rfl, hch⟩ := Visibility.chords_spec hQ hc
   refine ⟨_, _, _, ⟨hch.lt, fun h => h.2 hch.left_mem, fun h => h.2 hch.right_mem,
-    fun x h1 h2 => hch.open_int x h1 h2⟩, Visibility.chordSet_eq_hseg Q i σ⟩
+    hch.open_int⟩, Visibility.chordSet_eq_hseg Q i σ⟩
 
 /-- **The full map of a good model is admissible.** -/
 theorem full_subset_adm (hG : GoodModel M) : M.Full ⊆ M.Adm := by
@@ -165,8 +165,8 @@ theorem splitsWell_degrees (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.A
         (exitsIn M.D (insert e S) P).ncard < (exitsIn M.D S R).ncard := by
   obtain ⟨heS, heR, hsplit⟩ := hw
   have hF := hM.sys _ (insert_subset he hS) (hfin.insert e)
-  have hSF : S ⊆ insert e S := subset_insert e S
-  have heF : e ∈ insert e S := mem_insert e S
+  have hSF  := subset_insert e S
+  have heF  := mem_insert e S
   intro P hP hPR
   obtain ⟨R₁, R₂, h⟩ := Merge.exists_split hF hSF heF heS hR heR
   have e0 := h.ncard_exits hF hSF heF heS (subset_refl S)

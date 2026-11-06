@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseDrvXRamJ
 public import Chazelle.Core.NFBuildMain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down phase, extraction (D6), RAM part 11: set-up, padding, outputs; the program `xS`
@@ -76,7 +80,6 @@ section setup
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 /-- **The set-up.** -/
 theorem setupS_exec (d : Config) (hw : WordsBounded W d)
     {MD HB BN BR r v2 m T b5 HL K CB A AB RB LB nRA off : ℕ}
@@ -151,7 +154,7 @@ theorem setupS_exec (d : Config) (hw : WordsBounded W d)
   by_cases h1 : b5 = 1
   · rw [ite_eq_left h1, ite_eq_right (by omega), ite_eq_right (by omega)]
   · rw [ite_eq_right h1]
-    split_ifs <;> omega
+    splao
 
 end setup
 
@@ -167,12 +170,12 @@ theorem padS_exec (d : Config) (hw : WordsBounded W d) {N j : ℕ} (h43 : d.nreg
   | zero =>
     have hjN : j = N := by omega
     subst hjN
-    refine ⟨d, 2, .whileLtN_false (by rw [h43, h47]; omega) hw, by omega, ?_⟩
+    refine ⟨d, 2, .whileLtN_false (by rwo [h43, h47]) hw, by omega, ?_⟩
     refine ⟨?_, rfl, rfl, rfl, rfl⟩
     rw [← h43, Machine.upd_eq_self]
   | succ t ih =>
     have hlt : j < N := by omega
-    have hb : d.nreg 217043 + d.nreg 217027 ≤ W := by rw [h43, h27]; omega
+    have hb : d.nreg 217043 + d.nreg 217027 ≤ W := by rwo [h43, h27]
     have ea := Machine.Exec.addN (P := P) hw 217043 217043 217027 hb
     have e1 : Exec P W (block [.addN 217043 217043 217027]) d
         { d with nreg := upd d.nreg 217043 (d.nreg 217043 + d.nreg 217027) } (0 + 1) :=
@@ -181,10 +184,10 @@ theorem padS_exec (d : Config) (hw : WordsBounded W d) {N j : ℕ} (h43 : d.nreg
         217043 = j + 1 := by simp [h43, h27]
     obtain ⟨d', k', e', hk', n'⟩ := ih _ e1.wb_right b43 (by simp [h47]) (by simp [h27]) (by omega)
       (by omega)
-    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by rw [h43, h47]; exact hlt) e1 e', by omega, ?_⟩
+    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by rwx [h43, h47]) e1 e', by omega, ?_⟩
     obtain ⟨n1, n2, n3, n4, n5⟩ := n'
     refine ⟨?_, n2, n3, n4, n5⟩
-    rw [n1]; simp
+    rws [n1]
 
 end pad
 

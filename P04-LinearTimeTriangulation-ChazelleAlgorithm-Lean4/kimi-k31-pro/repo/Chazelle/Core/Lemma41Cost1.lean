@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.Lemma41Ram12
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-J, part 21: the cost of the merge tree, combinatorially
@@ -35,8 +39,8 @@ theorem sum_range_nd (f : Shp → ℕ) : ∀ ns : List Shp,
   | [] => by simp
   | a :: l => by
     rw [List.length_cons, Finset.sum_range_succ', List.map_cons, List.sum_cons]
-    simp only [nd_cons_succ, nd_cons_zero]
-    rw [sum_range_nd f l]; ring
+    simp [nd_cons_succ, nd_cons_zero]
+    rwring [sum_range_nd f l]
 
 theorem sum_pairs (g : ℕ → ℕ) : ∀ p : ℕ,
     ∑ q ∈ range p, (g (2 * q) + g (2 * q + 1)) = ∑ k ∈ range (2 * p), g k
@@ -48,16 +52,16 @@ theorem sum_pairs (g : ℕ → ℕ) : ∀ p : ℕ,
 theorem sublist_sum_le {l₁ l₂ : List ℕ} (h : l₁.Sublist l₂) : l₁.sum ≤ l₂.sum := by
   induction h with
   | slnil => simp
-  | cons a _ ih => simp only [List.sum_cons]; omega
-  | cons_cons a _ ih => simp only [List.sum_cons]; omega
+  | cons a _ ih => sio only [List.sum_cons]
+  | cons_cons a _ ih => sio only [List.sum_cons]
 
 /-- Two entries weigh at most the total. -/
 theorem pair_le_sum (ns : List Shp) {q : ℕ} (hq : q < ns.length / 2) :
     (nd ns (2 * q)).2.1 + (nd ns (2 * q + 1)).2.1 ≤ (ns.map fun x => x.2.1).sum := by
   rw [← sum_range_nd]
   have hsub : ({2 * q, 2 * q + 1} : Finset ℕ) ⊆ range ns.length := by
-    intro x hx; simp only [Finset.mem_insert, Finset.mem_singleton] at hx
-    simp only [Finset.mem_range]; omega
+    intro x hx; simp [Finset.mem_insert, Finset.mem_singleton] at hx
+    sio only [Finset.mem_range]
   have := Finset.sum_le_sum_of_subset (f := fun k => (nd ns k).2.1) hsub
   rw [Finset.sum_pair (by omega)] at this
   exact this
@@ -119,7 +123,7 @@ theorem sum_lin : ∀ ns : List Shp, (ns.map fun x => 60 * (2 * x.2.1 + 7)).sum 
     120 * (ns.map fun x => x.2.1).sum + 420 * ns.length
   | [] => by simp
   | a :: l => by
-    simp only [List.map_cons, List.sum_cons, List.length_cons, sum_lin l]; ring
+    sir only [List.map_cons, List.sum_cons, List.length_cons, sum_lin l]
 
 /-- The merged nodes. -/
 theorem nonleaf_le (G0 : ℕ) : ∀ ns : List Shp, (∀ x ∈ ns, leafP G0 x = false → G0 + 1 ≤ x.2.2) →
@@ -133,11 +137,11 @@ theorem nonleaf_le (G0 : ℕ) : ∀ ns : List Shp, (∀ x ∈ ns, leafP G0 x = f
         ≤ (60 * (2 * a.2.1 + 7) + (l.map fun x => 60 * (2 * x.2.1 + 7)).sum) / (G0 + 1) :=
       Nat.div_add_div_le_add_div
     cases hl : leafP G0 a
-    · simp only [Bool.not_false, ite_true, List.map_cons, List.sum_cons]
+    · simp [Bool.not_false, ite_true, List.map_cons, List.sum_cons]
       have ha := h a List.mem_cons_self hl
       have hk : kb a ≤ 60 * (2 * a.2.1 + 7) / (G0 + 1) := Nat.div_le_div_left ha (by omega)
       omega
-    · simp only [Bool.not_true, Bool.false_eq_true, ite_false]
+    · simp [Bool.not_true, Bool.false_eq_true, ite_false]
       have : (l.map fun x => 60 * (2 * x.2.1 + 7)).sum / (G0 + 1) ≤
           (60 * (2 * a.2.1 + 7) + (l.map fun x => 60 * (2 * x.2.1 + 7)).sum) / (G0 + 1) :=
         Nat.div_le_div_right (by omega)
@@ -151,8 +155,8 @@ theorem leaves_pairUp_sublist {G0 t : ℕ} (ht : G0 < t) : ∀ ns : List Shp,
   | a :: b :: rest => by
     have ih := leaves_pairUp_sublist ht rest
     have hm : leafP G0 (a.1, a.2.1 + b.2.1, t) = false := by
-      unfold leafP; simp only [decide_eq_false_iff_not]; omega
-    simp only [pairUp, List.filter_cons, hm, Bool.false_eq_true, ite_false]
+      unfold leafP; sio only [decide_eq_false_iff_not]
+    simp [pairUp, List.filter_cons, hm, Bool.false_eq_true, ite_false]
     refine ih.trans ?_
     have h1 : rest.Sublist (a :: b :: rest) :=
       (List.sublist_cons_self b rest).trans (List.sublist_cons_self a _)
@@ -163,7 +167,7 @@ theorem mem_pairUp {t : ℕ} : ∀ {ns : List Shp} {x : Shp}, x ∈ pairUp ns t 
   | [], _, h => by simp [pairUp] at h
   | [_], _, h => by simp [pairUp] at h; simp [h]
   | a :: b :: rest, x, h => by
-    simp only [pairUp, List.mem_cons] at h
+    simp [pairUp, List.mem_cons] at h
     rcases h with h | h
     · right; rw [h]
     · rcases mem_pairUp h with h' | h'
@@ -193,7 +197,7 @@ theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) 
       set t := lvTgt Gl ns.length γ₀ with ht
       have hcl2 := clog_half hj2
       have hfl : fuseLoss = 1 := rfl
-      have htγ : γ₀ + 1 ≤ t := by rw [ht]; unfold lvTgt; split_ifs <;> omega
+      have htγ : γ₀ + 1 ≤ t := by rw [ht]; unfold lvTgt; splao
       rw [totCost, ite_eq_right hlen]
       rw [← ht]
       -- this level
@@ -215,11 +219,11 @@ theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) 
       -- the next level
       have hlen' : (pairUp ns t).length = (ns.length + 1) / 2 := pairUp_length ns t
       have hinv : PInv G0 Gl J L LS0 (pairUp ns t) t := by
-        refine ⟨by omega, by omega, by rw [pairUp_sum]; exact hL, ?_, by omega,
+        refine ⟨by omega, by omega, by rwx [pairUp_sum], ?_, by omega,
           le_trans (sublist_sum_le ((leaves_pairUp_sublist (by omega) ns).map kb)) hLS,
           fun x hx hxl => ?_⟩
         · rw [hlen', ht]; unfold lvTgt; split_ifs with h3
-          · rw [show (ns.length + 1) / 2 = 1 by omega, Nat.clog_one_right]; omega
+          · rwo [show (ns.length + 1) / 2 = 1 by omega, Nat.clog_one_right]
           · omega
         · rcases mem_pairUp hx with h' | h'
           · exact hnl x h' hxl

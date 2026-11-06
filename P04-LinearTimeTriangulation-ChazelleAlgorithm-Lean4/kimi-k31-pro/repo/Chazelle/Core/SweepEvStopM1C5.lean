@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.SweepEvStopM1C4
 public import Chazelle.Core.SweepEvGen
+public import Chazelle.MiscTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 2: the candidate of `C₁` of a stop origin (`M1Task`)
@@ -27,19 +29,18 @@ theorem m1c_lhRunK_le (T Fg D : ℕ) : lhRunK T Fg D ≤ κGen D * (Fg + T + 1) 
   unfold lhRunK
   omega
 
-set_option maxRecDepth 20000 in
 /-- **Task M1: the candidate of `C₁`** of a stop origin. -/
 theorem m1Task : M1Task := by
   obtain ⟨br, κB, hBr⟩ := stbBody_of bruteTask
   refine ⟨m1cP br, fun D => κGen D + κB + 60000, ?_⟩
   intro sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hD hpos hroom
   beta_reduce at hroom ⊢
-  have hkd : c.nreg oKd ≤ 2 := hD.ok.1
+  have hkd  := hD.ok.1
   have hK := E.hK.fix hI
   obtain ⟨M, hMd⟩ : ∃ M, M = (if c.nreg oKd = 1 then 1 else N₁.nChords + N₂.nChords + 1) :=
     ⟨_, rfl⟩
   rw [← hMd] at hroom ⊢
-  have hM1 : 1 ≤ M := by rw [hMd]; split_ifs <;> omega
+  have hM1 : 1 ≤ M := by rw [hMd]; splao
   have hLK := m1c_lhRunK_le (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))
   set Q := F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1 with hQ
   set G := κGen (c₀.nreg (sw 6)) with hG
@@ -50,11 +51,11 @@ theorem m1Task : M1Task := by
     rw [show G * M * Q = M * (G * Q) by ring]; exact Nat.le_mul_of_pos_left _ (by omega)
   set B := (G + κB + 60000) * M * Q with hB
   unfold m1cP
-  refine (IRS.ite (K := B - 2) (fun h0 => ?_) (fun h0 => ?_)).mono (by omega) (fun _ h => h)
+  refine (IRS.ite (K := B - 2) (fun h0 => ?_) (fun h0 => ?_)).mono (by omega) (fun _ => id)
   · rw [hK.2.1] at h0
     exact m1cK0_irs E hI hD (by omega) (by omega) (by omega)
   · rw [hK.2.1] at h0
-    refine (IRS.ite (K := B - 4) (fun h1 => ?_) (fun h1 => ?_)).mono (by omega) (fun _ h => h)
+    refine (IRS.ite (K := B - 4) (fun h1 => ?_) (fun h1 => ?_)).mono (by omega) (fun _ => id)
     · rw [hK.2.2.2.2.2.1] at h1
       exact m1cK1_irs E hI hD hpos (by omega) (by omega) (by omega)
     · rw [hK.2.2.2.2.2.1] at h1

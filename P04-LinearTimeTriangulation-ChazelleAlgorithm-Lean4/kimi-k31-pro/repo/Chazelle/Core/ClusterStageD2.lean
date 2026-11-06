@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ClusterStageD1
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # WP-I, part 53: stage D2 — placing the items (one step)
@@ -46,7 +50,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 theorem placeB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     {v l b q : ℕ} (h63 : c.nreg 130863 = v) (hv : v < g.μ) (h65 : c.nreg 130865 = l)
     (hl : l < g.μ) (hb : c.nmem (g.base 35 + l) = b) (hbμ : b < g.μ)
@@ -62,13 +65,13 @@ theorem placeB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have r1 := hG.one
   unfold placeB
   exec_block
-  · rw [r65, h65]; omega
-  · config_simp; rw [r72, r65, h65, hb]; omega
-  · config_simp; rw [r73, r72, r65, h65, hb, hq]; omega
-  · config_simp; rw [r74, h63]; omega
-  · config_simp; rw [r72, r65, h65, hb, hq, r1]; omega
+  · rwo [r65, h65]
+  · config_simp; rwo [r72, r65, h65, hb]
+  · config_simp; rwo [r73, r72, r65, h65, hb, hq]
+  · config_simp; rwo [r74, h63]
+  · config_simp; rwo [r72, r65, h65, hb, hq, r1]
   · refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, by config_simp, ?_⟩
-    · simp only; unfold PLRG at hr
+    · simp; unfold PLRG at hr
       repeat (rw [Machine.upd_other _ _ _ (by omega)])
     · config_simp; unfold PlMem at ha
       rw [r74, r73, r72, r65, h65, hb, hq, h63]
@@ -76,7 +79,6 @@ theorem placeB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
         Machine.upd_other _ _ _ (by omega)]
     · config_simp; rw [r74, r73, r72, r65, h65, hb, hq, h63, r1]
 
-set_option maxHeartbeats 2000000 in
 theorem lightB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     {v l h b q : ℕ} (h63 : c.nreg 130863 = v) (hv : v < g.μ)
     (hlev : c.nmem (g.base 3 + v) = l) (hl : l < g.μ) (hh : c.nmem (g.base 36 + l) = h)
@@ -95,31 +97,30 @@ theorem lightB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       PFr PLRG (PlMem g) c c1 ∧ c1.nreg 130865 = l ∧ c1.nreg 130866 = h ∧
       c1.nreg 130863 = v ∧ c1.nreg 130860 = c.nreg 130860 ∧ c1.nmem = c.nmem := by
     exec_block
-    · rw [r33, h63]; omega
-    · config_simp; rw [r66, r33, h63, hlev]; omega
+    · rwo [r33, h63]
+    · config_simp; rwo [r66, r33, h63, hlev]
     · refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, ?_, ?_, ?_,
         by config_simp, rfl⟩
-      · simp only; unfold PLRG at hr
+      · simp; unfold PLRG at hr
         repeat (rw [Machine.upd_other _ _ _ (by omega)])
       · config_simp; rw [r33, h63, hlev]
       · config_simp; rw [r66, r33, h63, hlev, hh]
       · config_simp; exact h63
-  have hG1 : GR g c1 := hG.frame (fun r hr => hf1.1 r (by unfold GRReg at hr; unfold PLRG; omega))
+  have hG1 : GR g c1 := hG.frame (fun r hr => hf1.1 r (by unfold GRReg at hr; ufo PLRG))
   have r1' := hG1.one
   unfold lightB
   by_cases hp : h < 1
   · have hne : h ≠ 1 := by omega
     obtain ⟨c2, k2, e2, hk2, hw2, hf2, h60', hm2⟩ := placeB_exec (P := P) hw1 hG1 h63' hv h65 hl
-      (by rw [hm1]; exact hb) (hbμ hne) (by rw [hm1]; exact hq) (hqμ hne) hW
-    refine ⟨c2, k1 + (k2 + 1), .seq e1 (.ifLtN_true (by rw [h66, r1']; exact hp) e2), by omega,
+      (by rwx [hm1]) (hbμ hne) (by rwx [hm1]) (hqμ hne) hW
+    refine ⟨c2, k1 + (k2 + 1), .seq e1 (.ifLtN_true (by rwx [h66, r1']) e2), by omega,
       hw2, hf1.trans hf2, by rw [h60', h60], ?_⟩
     rw [ite_eq_left hne, hm2, hm1]
   · have he : h = 1 := by omega
-    refine ⟨c1, k1 + (0 + 2), .seq e1 (.ifLtN_false (by rw [h66, r1']; exact hp) (.skip hw1)),
+    refine ⟨c1, k1 + (0 + 2), .seq e1 (.ifLtN_false (by rwx [h66, r1']) (.skip hw1)),
       by omega, hw1, hf1, h60, ?_⟩
     rw [ite_eq_right (by omega), hm1]
 
-set_option maxHeartbeats 2000000 in
 /-- **One placement step.** -/
 theorem placeBody_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     {p gg v f l h b q : ℕ} (h60 : c.nreg 130860 = p) (hpN : p < g.N)
@@ -145,49 +146,49 @@ theorem placeBody_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g 
       PFr PLRG (PlMem g) c c1 ∧ c1.nreg 130862 = gg ∧ c1.nreg 130863 = v ∧
       c1.nreg 130864 = f ∧ c1.nreg 130860 = p ∧ c1.nmem = c.nmem := by
     exec_block
-    · rw [r62, h60]; omega
-    · config_simp; rw [r23, r62, h60, hinv]; omega
-    · config_simp; rw [r30, r23, r62, h60, hinv, hvert]; omega
+    · rwo [r62, h60]
+    · config_simp; rwo [r23, r62, h60, hinv]
+    · config_simp; rwo [r30, r23, r62, h60, hinv, hvert]
     · refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, ?_, ?_, ?_, ?_, rfl⟩
-      · simp only; unfold PLRG at hr
+      · simp; unfold PLRG at hr
         repeat (rw [Machine.upd_other _ _ _ (by omega)])
       · config_simp; rw [r62, h60, hinv]
       · config_simp; rw [r23, r62, h60, hinv, hvert]
       · config_simp; rw [r30, r23, r62, h60, hinv, hvert, hfst]
       · config_simp; exact h60
-  have hG1 : GR g c1 := hG.frame (fun r hr => hf1.1 r (by unfold GRReg at hr; unfold PLRG; omega))
+  have hG1 : GR g c1 := hG.frame (fun r hr => hf1.1 r (by unfold GRReg at hr; ufo PLRG))
   obtain ⟨c2, k2, e2, hk2, hw2, hf2, h60'', hm2⟩ : ∃ c2 k2, Exec P W
       (.ifLtN 130864 130862 .skip (.ifLtN 130862 130864 .skip lightB)) c1 c2 k2 ∧ k2 ≤ 20 ∧
       WordsBounded W c2 ∧ PFr PLRG (PlMem g) c1 c2 ∧ c2.nreg 130860 = p ∧
       c2.nmem = if f = gg ∧ h ≠ 1 then upd (upd (upd c.nmem (g.base 43 + q) v)
         (g.base 44 + v) q) (g.base 42 + b) (q + 1) else c.nmem := by
     by_cases h1 : f < gg
-    · refine ⟨c1, 0 + 1, .ifLtN_true (by rw [h64, h62]; exact h1) (.skip hw1), by omega, hw1,
+    · refine ⟨c1, 0 + 1, .ifLtN_true (by rwx [h64, h62]) (.skip hw1), by omega, hw1,
         PFr.refl c1, h60', ?_⟩
       rw [ite_eq_right (by omega), hm1]
     by_cases h2 : gg < f
-    · refine ⟨c1, (0 + 1) + 2, .ifLtN_false (by rw [h64, h62]; exact h1)
-        (.ifLtN_true (by rw [h64, h62]; exact h2) (.skip hw1)), by omega, hw1,
+    · refine ⟨c1, (0 + 1) + 2, .ifLtN_false (by rwx [h64, h62])
+        (.ifLtN_true (by rwx [h64, h62]) (.skip hw1)), by omega, hw1,
         PFr.refl c1, h60', ?_⟩
       rw [ite_eq_right (by omega), hm1]
     have hfg : f = gg := by omega
     obtain ⟨c3, k3, e3, hk3, hw3, hf3, h603, hm3⟩ := lightB_exec (P := P) hw1 hG1 h63 hv
       (by rw [hm1]; exact hlev hfg) (hl hfg) (by rw [hm1]; exact hh hfg) (hh1 hfg)
       (by rw [hm1]; exact hb hfg) (hbμ hfg) (by rw [hm1]; exact hq hfg) (hqμ hfg) hW
-    refine ⟨c3, (k3 + 2) + 2, .ifLtN_false (by rw [h64, h62]; exact h1)
-      (.ifLtN_false (by rw [h64, h62]; exact h2) e3), by omega, hw3, hf3,
-      by rw [h603]; exact h60', ?_⟩
+    refine ⟨c3, (k3 + 2) + 2, .ifLtN_false (by rwx [h64, h62])
+      (.ifLtN_false (by rwx [h64, h62]) e3), by omega, hw3, hf3,
+      by rwx [h603], ?_⟩
     rw [hm3, hm1]
     by_cases hh' : h ≠ 1
     · rw [ite_eq_left hh', ite_eq_left ⟨hfg, hh'⟩]
     · rw [ite_eq_right hh', ite_eq_right (fun hc => hh' hc.2)]
   have r1' : c2.nreg 130001 = 1 := by
-    rw [hf2.1 _ (by unfold PLRG; omega), hf1.1 _ (by unfold PLRG; omega)]; exact r1
-  have e3 := Exec.addN (P := P) hw2 130860 130860 130001 (by rw [h60'', r1']; omega)
+    rwx [hf2.1 _ (by ufo PLRG), hf1.1 _ (by ufo PLRG)]
+  have e3 := Exec.addN (P := P) hw2 130860 130860 130001 (by rwo [h60'', r1'])
   refine ⟨_, k1 + (k2 + 1), .seq e1 (.seq e2 e3), by omega, e3.wb_right,
     (hf1.trans hf2).trans ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, ?_, hm2⟩
-  · simp only [Machine.upd_other _ _ _ (show r ≠ 130860 by unfold PLRG at hr; omega)]
-  · simp only [Machine.upd_same]; rw [h60'', r1']
+  · simp [Machine.upd_other _ _ _ (show r ≠ 130860 by ufo PLRG at hr)]
+  · simp [Machine.upd_same]; rw [h60'', r1']
 
 end proofs
 

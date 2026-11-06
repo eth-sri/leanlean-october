@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFDecompStep3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Tree decomposition (WP-C), part 8: start, loop test and the final decomposition
@@ -20,7 +22,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
 
 section init
 
@@ -61,7 +62,7 @@ theorem fin_lt_iff : σ.fin < R ↔ ∃ t, t < R ∧ IsTop pch σ.rem t ∧ σ.a
     · refine ⟨t, ht, htop, ?_⟩
       by_contra hact
       have := (hI.i5 t ht htop hact).1
-      have hmem : u ∈ sub R prg pch σ.rem t := (mem_sub).2 ⟨hu, htu⟩
+      have hmem  := (mem_sub).2 ⟨hu, htu⟩
       rw [this, Finset.mem_singleton] at hmem
       exact htu' hmem.symm
   · rintro ⟨t, ht, htop, hact⟩
@@ -230,7 +231,7 @@ theorem final_cut {e : ℕ} (he : e < K) : σ.rem e = 1 ∧ σ.pend e ≠ 1 := b
   obtain ⟨t, htop, htc⟩ := exists_top h (rem := σ.rem) c1
   have ht := (AncX.pos_le h htc c1).1
   have hsing := (hI.i5 t ht htop (hna t ht htop)).1
-  have hmem : chOf e ∈ sub R prg pch σ.rem t := (mem_sub).2 ⟨c1, htc⟩
+  have hmem  := (mem_sub).2 ⟨c1, htc⟩
   rw [hsing, Finset.mem_singleton] at hmem
   rw [← hmem] at htop
   have hr : σ.rem e = 1 := by
@@ -280,28 +281,28 @@ theorem up_step {x : ℕ} (hx : ValidC R K pch σ x) :
   · obtain ⟨-, -, -, -, -, h6⟩ := hI.i1 _ b c
     have hp : pcode σ x = σ.dpar (x / 2) := by unfold pcode; rw [ite_eq_left a]
     rcases h6 with ⟨e1, -, -, -⟩ | ⟨p, hp', hrp, e1, -, e3⟩
-    · have : pcode σ x = x := by rw [hp, e1]; omega
+    · have : pcode σ x = x := by rwo [hp, e1]
       rw [this]; exact ⟨Or.inl ⟨a, b, c⟩, le_rfl⟩
     · rw [hp, e1]
       have h2 : 2 * p % 2 = 0 := by omega
       have h3 : 2 * p / 2 = p := by omega
-      refine ⟨Or.inl ⟨h2, by rw [h3]; exact hp', by rw [h3]; exact hrp⟩, ?_⟩
+      refine ⟨Or.inl ⟨h2, by rwx [h3], by rwx [h3]⟩, ?_⟩
       simp only [compOf, ite_eq_left a, ite_eq_left h2, h3]
       exact e3
   · obtain ⟨-, h2⟩ := hI.i5 _ b c d
     have a' : x % 2 ≠ 0 := by omega
     have hp : pcode σ x = σ.lpar (x / 2) := by unfold pcode; rw [ite_eq_right a']
     rcases h2 with ⟨e1, -, -⟩ | ⟨p, hp', hrp, e1, -, e3⟩
-    · have : pcode σ x = x := by rw [hp, e1]; omega
+    · have : pcode σ x = x := by rwo [hp, e1]
       rw [this]; exact ⟨Or.inr ⟨a, b, c, d⟩, le_rfl⟩
     · rw [hp, e1]
       have h2 : 2 * p % 2 = 0 := by omega
       have h3 : 2 * p / 2 = p := by omega
-      refine ⟨Or.inl ⟨h2, by rw [h3]; exact hp', by rw [h3]; exact hrp⟩, ?_⟩
+      refine ⟨Or.inl ⟨h2, by rwx [h3], by rwx [h3]⟩, ?_⟩
       simp only [compOf, ite_eq_right a', ite_eq_left h2, h3]
       intro v hv
       rw [Finset.mem_singleton] at hv
-      rw [hv]; exact e3
+      rwx [hv]
 
 /-- The chain of parents from a leaf stays among placed codes containing the leaf. -/
 theorem chain_mem {r : ℕ} (hr : r < R) (i : ℕ) :
@@ -312,7 +313,7 @@ theorem chain_mem {r : ℕ} (hr : r < R) (i : ℕ) :
     simp only [Function.iterate_zero, id]
     have a : (2 * r + 1) % 2 = 1 := by omega
     have b : (2 * r + 1) / 2 = r := by omega
-    refine ⟨valid_of_range hK hRR h hch hisdn hI hna (Or.inr ⟨a, by rw [b]; exact hr⟩), ?_⟩
+    refine ⟨valid_of_range hK hRR h hch hisdn hI hna (Or.inr ⟨a, by rwx [b]⟩), ?_⟩
     simp only [compOf, ite_eq_right (show (2 * r + 1) % 2 ≠ 0 by omega), b,
       Finset.mem_singleton]
   | succ i ih =>

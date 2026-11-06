@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.SweepPrimAbs
 public import Chazelle.Core.SweepIoPrim
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stages 2–3: the symbolic point of a tour position (`symAt`)
@@ -112,7 +116,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     hlt.le (dst := 50130) (by norm_num)
   have w₂ := e₂.wb_right
   have e₃ := Exec.addN (P := P) w₂ 50120 50120 50032
-    (by rw [f₂.1 _ (by decide), q20, hE₂.r32]; omega)
+    (by rwo [f₂.1 _ (by decide), q20, hE₂.r32])
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50120 + c₂.nreg 50032) }
     with hc₃
   have hE₃ : CEnv P W H C c₃ := hE₂.step e₃ (by decide)
@@ -133,7 +137,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have q32 : c₅.nreg 50032 = 1 := by
     rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
   have ht' : 0 < (chainModel C).param (Qof P) ⟨i + 6, hc⟩ := by
-    rw [show i + 6 = e by omega]; exact ht
+    rwx [show i + 6 = e by omega]
   obtain ⟨hEi, hpt⟩ := tour_pt hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂ ht'
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
@@ -168,7 +172,7 @@ def SymOut (P : Polygon) (C : Chain) (c c' : Config) : Prop :=
 /-- **Contract of `symAt`.** -/
 theorem symAt_meets : Meets symAt primBands (PrimPre SymIn) (PrimPost SymOut)
     (fun _ _ => 1000 + 60 * 0 + 30000) := by
-  refine prim_meets (K := 30200) (fun r h => h) wr_symAt ?_
+  refine prim_meets (K := 30200) (fun _ => id) wr_symAt ?_
   intro P W H C c₀ c hC hE ⟨h6, hen, ⟨hp0, hp1, hhn⟩, hnorm, hreg⟩ hinp
   have hregH := hreg H hC.1
   have hlen := hE.hlen
@@ -176,10 +180,10 @@ theorem symAt_meets : Meets symAt primBands (PrimPre SymIn) (PrimPost SymOut)
   have i02 := hinp 50202 (by norm_num) (by norm_num)
   unfold SymOut symCore
   by_cases hz : c.nreg 50202 < c.nreg 50032
-  · have hc0 : c₀.nreg 50202 = 0 := by rw [← i02]; rw [hE.r32] at hz; omega
+  · have hc0 : c₀.nreg 50202 = 0 := by rw [← i02]; rwo [hE.r32] at hz
     obtain ⟨c', k, ex, hk, s, hs⟩ := symVtx_exec c hE i01 h6 (by omega) (hnorm.1 hc0)
     exact ⟨c', _, .ifLtN_true hz ex, by omega, s, hs⟩
-  · have hc0 : c₀.nreg 50202 ≠ 0 := by rw [← i02]; rw [hE.r32] at hz; omega
+  · have hc0 : c₀.nreg 50202 ≠ 0 := by rw [← i02]; rwo [hE.r32] at hz
     have hpos : 0 < (chainModel C).param (Qof P) ⟨c₀.nreg 50201, c₀.nreg 50202⟩ :=
       lt_of_le_of_ne hp0 (fun h => hc0 (hnorm.2 h.symm))
     obtain ⟨c', k, ex, hk, s, hs⟩ := symInt_exec c hE hregH i01 i02 h6 hen hpos hhn
@@ -209,7 +213,6 @@ theorem symPtIn_transport {c c' : Config} {r r' : ℕ} {s : SymPt} (h : SymPtIn 
 def callSym (dsc re rh o : ℕ) : Stmt :=
   callP [(50200, dsc), (50201, re), (50202, rh)] symAt [(o, 50210), (o + 1, 50211), (o + 2, 50212)]
 
-set_option maxRecDepth 20000 in
 theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (hctx : ChainCtx P W c dsc C)
     (hr : 240000 ≤ dsc ∧ dsc < 250000 ∧ 240000 ≤ re ∧ re < 250000 ∧ 240000 ≤ rh ∧ rh < 250000)
@@ -228,35 +231,35 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (outs := [(o, 50210), (o + 1, 50211), (o + 2, 50212)]) symAt_meets
     primBands_oracle hI
     (nodup3 (by norm_num) (by norm_num) (by norm_num))
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
+    (by sio only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq])
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
         exact ⟨band5_oracle (by norm_num) (by norm_num), band5_oracle (by norm_num) (by norm_num),
           band5_oracle (by norm_num) (by norm_num)⟩)
     (nodup3 (by omega) (by omega) (by omega))
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
+    (by sio only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq])
+    (by sio only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq])
     (fun c₁ hm hA e1 e2 => by
       simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1
       obtain ⟨g0, g1, g2⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨?_, ?_, ?_, ?_, ?_⟩
-      · rw [g1]; exact h6
-      · rw [g1]; exact hen
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hnorm
+      · rwx [g1]
+      · rwx [g1]
+      · rwx [g1, g2]
+      · rwx [g1, g2]
       · rw [hm, g0]; exact hctx.hostReg)
-    (by simp only [List.length_cons, List.length_nil]; omega)
+    (by sio only [List.length_cons, List.length_nil])
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2⟩ := e1
   obtain ⟨k0, k1, k2⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwx [hm, g0]
   obtain ⟨s, hs, hsl, hse⟩ := hpost H C hC₁
   rw [g1, g2] at hse
   refine ⟨⟨s, symPtIn_transport hs k0 k1 k2, hsl, hse⟩, fun r hr h0 hra => hk r hr
-    (by simp only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]; omega)
+    (by sio only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false])
     hra, hA, hm'⟩
 
 end

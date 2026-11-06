@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.ShootCutValid
 public import Chazelle.Core.ShootCutWt
 public import Chazelle.Core.ShootCutDyadic
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 13: the pieces of one step of the core
@@ -30,10 +32,10 @@ theorem proper_vtx' (P : Polygon) (C : Chain) (p : ℕ) :
 /-- **A single edge** between two walk vertices is a valid kind-0 piece. -/
 theorem single_ok (e x0 dir pw : ℕ) {c : ℕ} (hc : c + 1 < 2 * C.m + 7) :
     PcOK P C m h γ ⟨⟨c, 0⟩, ⟨c + 1, 0⟩, 0, e, x0, dir, pw⟩ := by
-  refine ⟨proper_vtx' P C _, proper_vtx' P C _, by simp; omega, by simp; omega, Or.inl rfl,
+  refine ⟨proper_vtx' P C _, proper_vtx' P C _, by sio, by sio, Or.inl rfl,
     fun _ => ?_, fun h1 => by simp at h1⟩
   simp only [key_hgt0]
-  exact wt_within (chainModel C) (e := c) (by push_cast; linarith) le_rfl (by push_cast; linarith)
+  exact wt_within (chainModel C) (e := c) (by pcl) le_rfl (by pcl)
 
 /-- **The grade of a block of weight at most `γ ≤ cap`** is processed and its granularity is
 at most `cutGran γ`. -/
@@ -47,7 +49,7 @@ theorem block_grade {g Λ : ℕ} (hg : 1 ≤ g) (hγ : 2 ^ g ≤ γ) (hcap : γ 
       _ ≤ 2 ^ g := Nat.pow_le_pow_right (by norm_num) hg
   refine ⟨by
     rcases Nat.eq_zero_or_pos Λ with h0 | h0
-    · subst h0; simp at hcap; omega
+    · subst h0; sio at hcap
     · omega, ?_⟩
   unfold cutGran
   apply gradeGran_mono
@@ -66,13 +68,13 @@ theorem blockUp_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
   have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
   rcases Nat.eq_zero_or_pos g with rfl | hg
   · simp only [pow_zero, lt_irrefl, ite_false]
-    exact single_ok e (b * 1) 1 1 (by simp at e1 hhi; omega)
+    exact single_ok e (b * 1) 1 1 (by sio at e1 hhi)
   · simp only [hg, ite_true]
     have hγ : 2 ^ g ≤ γ := by omega
     obtain ⟨hΛ, hgran⟩ := block_grade hg hγ hcap
-    refine ⟨proper_vtx' P C _, proper_vtx' P C _, by simp; omega, by simp; omega, Or.inr rfl,
+    refine ⟨proper_vtx' P C _, proper_vtx' P C _, by sio, by sio, Or.inr rfl,
       fun h1 => by simp at h1, fun _ => ⟨g, b, hg, hΛ, ?_, he hg, rfl, rfl, by omega, hgran,
-        rfl, rfl, by simp; omega, rfl, by simp; omega, Or.inl rfl, fun d hd => ?_⟩⟩
+        rfl, rfl, by sio, rfl, by sio, Or.inl rfl, fun d hd => ?_⟩⟩
     · unfold gradeCount
       have : b * 2 ^ g + 2 ^ g ≤ P.n - 1 := by omega
       have : b * 2 ^ g ≤ P.n - 2 := by omega
@@ -94,13 +96,13 @@ theorem blockDn_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
   have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
   rcases Nat.eq_zero_or_pos g with rfl | hg
   · simp only [pow_zero, lt_irrefl, ite_false]
-    exact single_ok e (b * 1) 0 1 (by simp at e1 hhi; omega)
+    exact single_ok e (b * 1) 0 1 (by sio at e1 hhi)
   · simp only [hg, ite_true]
     have hγ : 2 ^ g ≤ γ := by omega
     obtain ⟨hΛ, hgran⟩ := block_grade hg hγ hcap
-    refine ⟨proper_vtx' P C _, proper_vtx' P C _, by simp; omega, by simp; omega, Or.inr rfl,
+    refine ⟨proper_vtx' P C _, proper_vtx' P C _, by sio, by sio, Or.inr rfl,
       fun h1 => by simp at h1, fun _ => ⟨g, b, hg, hΛ, ?_, he hg, rfl, rfl, by omega, hgran,
-        rfl, rfl, by simp; omega, rfl, by simp; omega, Or.inr rfl, fun d hd => ?_⟩⟩
+        rfl, rfl, by sio, rfl, by sio, Or.inr rfl, fun d hd => ?_⟩⟩
     · unfold gradeCount
       have : b * 2 ^ g ≤ P.n - 2 := by omega
       have := (Nat.le_div_iff_mul_le hp).2 this

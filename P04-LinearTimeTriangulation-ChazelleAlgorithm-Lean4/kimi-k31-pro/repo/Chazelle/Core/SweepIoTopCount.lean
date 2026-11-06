@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.SweepEvOrgM
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep RAM (WP-D), answers: endpoint queries at the top of `C₂` (`TopCountSpec`)
@@ -90,7 +91,7 @@ theorem topCount : TopCountSpec := by
     exact hj
   calc l.toFinset.card ≤ (Finset.range 2).card :=
         Finset.card_le_card_of_injOn (fun j => j % 2)
-          (fun j _ => by simp only [Finset.coe_range, Set.mem_Iio]; omega)
+          (fun j _ => by sio only [Finset.coe_range, Set.mem_Iio])
           (fun j hj j' hj' h => by
             obtain ⟨h1, h2⟩ := hmem j hj
             obtain ⟨h1', h2'⟩ := hmem j' hj'

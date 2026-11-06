@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Geometry.Triangle
 public import Mathlib.Analysis.LocallyConvex.Separation
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The conformity criterion
@@ -35,8 +37,8 @@ open Topology
 /-- The linear functional `p ↦ α * p.1 + β * p.2`. -/
 def lin (α β : ℝ) : Point →ₗ[ℝ] ℝ where
   toFun p := α * p.1 + β * p.2
-  map_add' := by intro p q; simp only [add_fst, add_snd]; ring
-  map_smul' := by intro t p; simp only [smul_fst, smul_snd, smul_eq_mul, RingHom.id_apply]; ring
+  map_add' := by intro p q; sir only [add_fst, add_snd]
+  map_smul' := by intro t p; sir only [smul_fst, smul_snd, smul_eq_mul, RingHom.id_apply]
 
 @[simp] theorem lin_apply (α β : ℝ) (p : Point) : lin α β p = α * p.1 + β * p.2 := rfl
 
@@ -72,10 +74,10 @@ theorem exists_injOn_level {φ : Point →ₗ[ℝ] ℝ} (hφ : φ ≠ 0) (u : �
     constructor <;> nlinarith [sq_nonneg α, sq_nonneg β]
   refine ⟨lin (-β) α, ?_⟩
   intro x hx y hy hxy
-  simp only [Set.mem_ofPred_eq] at hx hy
+  simp [Set.mem_ofPred_eq] at hx hy
   rw [linearMap_apply_eq φ x, ← hα, ← hβ] at hx
   rw [linearMap_apply_eq φ y, ← hα, ← hβ] at hy
-  simp only [lin_apply] at hxy
+  simp [lin_apply] at hxy
   have e1 : α * x.1 + β * x.2 = α * y.1 + β * y.2 := by rw [hx, hy]
   have h1 : (α ^ 2 + β ^ 2) * (x.1 - y.1) = 0 := by linear_combination α * e1 - β * hxy
   have h2 : (α ^ 2 + β ^ 2) * (x.2 - y.2) = 0 := by linear_combination β * e1 + α * hxy
@@ -96,20 +98,19 @@ theorem convexHull_inter_level_le (s : Finset Point) (φ : Point →ₗ[ℝ] ℝ
   classical
   apply Set.Subset.antisymm
   · rintro x ⟨hx, hxu⟩
-    simp only [Set.mem_ofPred_eq] at hxu
+    simp [Set.mem_ofPred_eq] at hxu
     obtain ⟨w, hw0, hw1, hwx⟩ := Finset.mem_convexHull'.1 hx
     -- all weight sits on vertices with `φ y = u`
     have hsum : ∑ y ∈ s, w y * (u - φ y) = 0 := by
       have hφx : φ x = ∑ y ∈ s, w y * φ y := by
         rw [← hwx, map_sum]
-        simp only [map_smul, smul_eq_mul]
+        simp [map_smul, smul_eq_mul]
       have : ∑ y ∈ s, w y * (u - φ y) = u * ∑ y ∈ s, w y - ∑ y ∈ s, w y * φ y := by
         rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
         apply Finset.sum_congr rfl
         intro y _; ring
-      rw [this, hw1, ← hφx, hxu]; ring
-    have hzero : ∀ y ∈ s, w y * (u - φ y) = 0 :=
-      (Finset.sum_eq_zero_iff_of_nonneg
+      rwring [this, hw1, ← hφx, hxu]
+    have hzero  := (Finset.sum_eq_zero_iff_of_nonneg
         (fun y hy => mul_nonneg (hw0 y hy) (sub_nonneg.2 (hs y hy)))).1 hsum
     have hw' : ∀ y ∈ s, w y ≠ 0 → φ y = u := by
       intro y hy hwy
@@ -118,10 +119,10 @@ theorem convexHull_inter_level_le (s : Finset Point) (φ : Point →ₗ[ℝ] ℝ
       · linarith
     have hcoe : ((s.filter (fun y => φ y = u) : Finset Point) : Set Point) =
         (s : Set Point) ∩ {x | φ x = u} := by
-      rw [Finset.coe_filter]; rfl
+      rwr [Finset.coe_filter]
     rw [← hcoe, Finset.mem_convexHull']
     refine ⟨w, fun y hy => hw0 y (Finset.mem_filter.1 hy).1, ?_, ?_⟩
-    · rw [Finset.sum_filter_of_ne (fun y hy hne => hw' y hy hne), hw1]
+    · rw [Finset.sum_filter_of_ne (hw'), hw1]
     · rw [Finset.sum_filter_of_ne, hwx]
       intro y hy hne
       apply hw' y hy
@@ -138,7 +139,7 @@ theorem convexHull_inter_level_ge (s : Finset Point) (φ : Point →ₗ[ℝ] ℝ
     convexHull ℝ (s : Set Point) ∩ {x | φ x = u} =
       convexHull ℝ ((s : Set Point) ∩ {x | φ x = u}) := by
   have hL : {x : Point | (-φ) x = -u} = {x | φ x = u} := by
-    ext x; simp only [Set.mem_ofPred_eq, LinearMap.neg_apply, neg_inj]
+    ext x; simp [Set.mem_ofPred_eq, LinearMap.neg_apply, neg_inj]
   rw [← hL]
   exact convexHull_inter_level_le s (-φ) (-u)
     (fun y hy => by rw [LinearMap.neg_apply]; linarith [hs y hy])
@@ -151,7 +152,7 @@ theorem triangle_inter_level_le (a b c : Point) (φ : Point →ₗ[ℝ] ℝ) (u 
   classical
   have h := convexHull_inter_level_le ({a, b, c} : Finset Point) φ u (by
     intro y hy
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hy
+    simp [Finset.mem_insert, Finset.mem_singleton] at hy
     rcases hy with rfl | rfl | rfl <;> assumption)
   simpa only [Finset.coe_insert, Finset.coe_singleton] using h
 
@@ -163,7 +164,7 @@ theorem triangle_inter_level_ge (a b c : Point) (φ : Point →ₗ[ℝ] ℝ) (u 
   classical
   have h := convexHull_inter_level_ge ({a, b, c} : Finset Point) φ u (by
     intro y hy
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hy
+    simp [Finset.mem_insert, Finset.mem_singleton] at hy
     rcases hy with rfl | rfl | rfl <;> assumption)
   simpa only [Finset.coe_insert, Finset.coe_singleton] using h
 
@@ -295,7 +296,7 @@ theorem conforming_of_disjoint_interiors {a b c d e f : Point}
     simp at h1 h2
     linarith
   set L : Set Point := {x | φl x = u} with hLdef
-  have hL : Convex ℝ L := convex_level φl u
+  have hL  := convex_level φl u
   obtain ⟨ψ, hψ⟩ := exists_injOn_level hφ0 u
   -- the intersection lies on the line
   have hsub : convexHull ℝ ({a, b, c} : Set Point) ∩ convexHull ℝ ({d, e, f} : Set Point) ⊆ L :=

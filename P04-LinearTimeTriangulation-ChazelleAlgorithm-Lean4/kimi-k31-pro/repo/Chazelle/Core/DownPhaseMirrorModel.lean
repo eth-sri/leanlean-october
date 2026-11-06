@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseMirrorWalk
 public import Chazelle.Core.SpecBase
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # Mirror symmetry (F-D7), part 4: mirrored disk models
@@ -48,8 +50,8 @@ theorem isHChordIn_mir {D : Set Point} {y a b : ℝ} :
   · intro h
     refine ⟨by linarith [h.lt], fun hm => h.right_not ?_, fun hm => h.left_not ?_,
       fun x h1 h2 => ?_⟩
-    · rw [mem_image_mir, mir_pt, neg_neg]; exact hm
-    · rw [mem_image_mir, mir_pt, neg_neg]; exact hm
+    · rwx [mem_image_mir, mir_pt, neg_neg]
+    · rwx [mem_image_mir, mir_pt, neg_neg]
     · have := h.open_mem (-x) (by linarith) (by linarith)
       rwa [mem_image_mir, mir_pt, neg_neg] at this
   · intro h
@@ -209,7 +211,7 @@ theorem deg (F : Set (Set Point)) (U : Set Point) : M'.deg (mirF F) (mir '' U) =
     · rintro ⟨he, ht⟩
       refine ⟨mir '' e', ⟨mem_mirF.1 he, ?_⟩, image_mir_image_mir e'⟩
       rw [h.D] at ht
-      rw [← touchesIn_mir, image_mir_image_mir]; exact ht
+      rwx [← touchesIn_mir, image_mir_image_mir]
     · rintro ⟨e, ⟨he, ht⟩, rfl⟩
       exact ⟨⟨e, he, rfl⟩, by rw [h.D]; exact touchesIn_mir.2 ht⟩
   rw [e, Set.ncard_image_of_injective _ mirF_injective]
@@ -223,12 +225,12 @@ theorem isCut (F : Set (Set Point)) {x' : ℝ} (hx0 : 0 ≤ x') (hxn : x' < M.W.
     M'.IsCut (mirF F) x' ↔ M.IsCut F (rk M.W.n c x') := by
   constructor
   · rintro ⟨e', he', p', t', hA, rfl⟩
-    have hp : p' < M.W.n := h.n_eq ▸ hA.1
+    have hp  := h.n_eq ▸ hA.1
     have hA' : SideAttach M'.W (mir '' (mir '' e')) p' t' := by rwa [image_mir_image_mir]
     rw [h.walk.sideAttach_mir hp hA.2.1 hA.2.2.1] at hA'
     exact ⟨_, mem_mirF.1 he', _, _, hA', (posMir_key h.walk.c_lt hp hA.2.1 hA.2.2.1).symm⟩
   · rintro ⟨e, he, p, t, hA, hx⟩
-    have hp : p < M'.W.n := h.n_eq.symm ▸ hA.1
+    have hp  := h.n_eq.symm ▸ hA.1
     have hA' : SideAttach M.W (mir '' (mir '' e)) p t := by rwa [image_mir_image_mir]
     rw [h.walk.symm.sideAttach_mir hp hA.2.1 hA.2.2.1] at hA'
     refine ⟨_, ⟨e, he, rfl⟩, _, _, hA', ?_⟩
@@ -272,8 +274,8 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
   set n := M.W.n with hn_def
   obtain ⟨ra0, ran⟩ := h.rk_lt ha0 han
   obtain ⟨rb0, rbn⟩ := h.rk_lt hb0 hbn
-  have hF' : mirF F ≠ ∅ := (mirF_nonempty.2 hF).ne_empty
-  have hF0 : F ≠ ∅ := hF.ne_empty
+  have hF'  := (mirF_nonempty.2 hF).ne_empty
+  have hF0  := hF.ne_empty
   have hcut : ((M'.IsCut (mirF F) a' ∧ M'.IsCut (mirF F) b' ∧ a' ≠ b') ∨
       (mirF F = ∅ ∧ a' = 0 ∧ b' = 0)) ↔
       ((M.IsCut F (rk n c b') ∧ M.IsCut F (rk n c a') ∧ rk n c b' ≠ rk n c a') ∨
@@ -300,8 +302,8 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
       obtain ⟨hx0, hxn⟩ := isCut_bounds hcx
       obtain ⟨r0, rn⟩ := h.rk_lt hx0 hxn
       apply H (rk n c x)
-      · rw [sideInArc_rk hc ha0 han hb0 hbn r0 rn, rk_rk hc hx0 hxn]; exact hx
-      · rw [h.isCut F r0 rn, rk_rk hc hx0 hxn]; exact hcx
+      · rwx [sideInArc_rk hc ha0 han hb0 hbn r0 rn, rk_rk hc hx0 hxn]
+      · rwx [h.isCut F r0 rn, rk_rk hc hx0 hxn]
     · intro H x' hx' hcx'
       obtain ⟨hx0, hxn⟩ := isCut_bounds hcx'
       rw [h.n_eq] at hxn
@@ -332,7 +334,7 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
   · rintro ⟨-, -, -, -, h1, h2, h3⟩
     exact ⟨rb0, rbn, ra0, ran, hcut.1 h1, hnocut.1 h2, hfaces.1 h3⟩
   · rintro ⟨-, -, -, -, h1, h2, h3⟩
-    exact ⟨ha0, by rw [h.n_eq]; exact han, hb0, by rw [h.n_eq]; exact hbn, hcut.2 h1, hnocut.2 h2,
+    exact ⟨ha0, by rwx [h.n_eq], hb0, by rwx [h.n_eq], hcut.2 h1, hnocut.2 h2,
       hfaces.2 h3⟩
 
 /-- **Arc weights correspond.** -/
@@ -357,7 +359,7 @@ theorem arcWt {a' b' : ℝ} (ha0 : 0 ≤ a') (han : a' < M.W.n) (hb0 : 0 ≤ b')
     have hql : (((c + 2 * n - 1 - p) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hq
     refine ⟨(c + 2 * n - 1 - p) % n, ⟨hq, ?_, 1 - t, by linarith, by linarith, ?_⟩,
       idx_q_invol hc hp⟩
-    · rw [h.counted _ hq, idx_q_invol hc hp]; exact hcnt
+    · rwx [h.counted _ hq, idx_q_invol hc hp]
     · rw [sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith),
         rk_edge hc hq (by linarith) (by linarith), idx_q_invol hc hp, sub_sub_cancel]
       exact hin

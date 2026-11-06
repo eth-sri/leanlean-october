@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.RestoreDrvMath
+set_option maxHeartbeats 2000000
 
 /-!
 # WP-E, part 10: the restoration driver — straight-line segments of a round
@@ -19,7 +20,6 @@ open Machine Machine.Stmt Programs
 
 @[expose] public section
 
-set_option maxHeartbeats 2000000 in
 theorem head_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {H : ℕ}
     (h12 : c.nreg 80012 = H) (h21 : c.nreg 80021 = 2) (h22 : c.nreg 80022 = 3)
     (hH : H + 5 ≤ W) :
@@ -90,7 +90,6 @@ theorem incr_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   · refine ⟨rfl, ?_, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩ <;>
       simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
 
-set_option maxHeartbeats 2000000 in
 theorem init_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     (hW : 5 ≤ W) (h1 : c.nreg 80002 + 1 ≤ W) (h2 : c.nreg 80002 + c.nreg 80003 ≤ W) :
     ∃ c' k, Exec P W initS c c' k ∧ k = 9 ∧

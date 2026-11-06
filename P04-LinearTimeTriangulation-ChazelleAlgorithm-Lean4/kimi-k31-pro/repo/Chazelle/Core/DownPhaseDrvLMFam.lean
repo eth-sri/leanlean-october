@@ -4,6 +4,7 @@ public import Chazelle.Core.DownPhaseDrvLMBkt
 public import Chazelle.Core.DownPhaseMathLevel
 public import Chazelle.Core.DownPhaseMathHR1
 public import Chazelle.Core.GranBD
+public import Chazelle.Rwx
 
 /-!
 # Down-phase level math (D7), part 3: the family after the splice
@@ -38,7 +39,7 @@ theorem ncard_lset {α β : Type*} {l : List α} {f : α → β} (hnd : (l.map f
   classical
   have : {x | ∃ y ∈ l, x = f y} = ↑(l.map f).toFinset := by
     ext x
-    simp only [mem_ofPred_eq, Finset.mem_coe, List.mem_toFinset, List.mem_map]
+    simp [mem_ofPred_eq, Finset.mem_coe, List.mem_toFinset, List.mem_map]
     constructor <;> rintro ⟨y, hy, h⟩ <;> exact ⟨y, hy, h.symm⟩
   rw [this, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
 
@@ -75,7 +76,7 @@ theorem rOf_spec {R : ℕ} {reg : ℕ → Set Point} {U : Set Point} (h : ∃ r,
     rOf R reg U < R ∧ reg (rOf R reg U) = U := by
   classical
   unfold rOf
-  simp only [dite_eq_left h]
+  simp [dite_eq_left h]
   exact h.choose_spec
 
 theorem rOf_reg {R : ℕ} {reg : ℕ → Set Point}
@@ -98,7 +99,7 @@ theorem lx_size {Q : Polygon} {C : Chain} (hP : C.P.Simple) {F₁ : Set (Set Poi
     Set.ncard_le_ncard (fun c hc => hc.1) hcan.1.1
   have h3 := DownMath.lemma23_chain hP hcan.1 hcan.2.1 hcan.2.2
   calc l.length * (γ₀ + 1) ≤ F₁.ncard * (γR + 1) :=
-        Nat.mul_le_mul (by rw [h1]; exact h2) (by omega)
+        Nat.mul_le_mul (by rwx [h1]) (by omega)
     _ ≤ _ := h3
 
 /-! ## The abstract level -/
@@ -193,7 +194,7 @@ theorem down (X : LvlCtx Q L R reg C F Lx D γ) :
 /-- **The spliced list is valid.** -/
 theorem ok (X : LvlCtx Q L R reg C F Lx D γ) :
     ChordTriplesOK (interiorModel Q) Q (L ++ (List.range R).flatMap Lx) := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel X.hQ
+  have hM  := walkAx_interiorModel X.hQ
   refine ⟨?_, ?_, ?_, ?_⟩
   · show (interiorModel Q).ChordFamily Q (Gran.lset (interiorModel Q) Q _)
     rw [X.step]; exact X.down.1

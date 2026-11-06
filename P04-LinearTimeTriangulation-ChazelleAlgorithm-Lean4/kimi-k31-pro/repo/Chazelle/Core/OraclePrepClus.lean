@@ -2,6 +2,12 @@ module
 
 public import Chazelle.Core.OraclePrepMap
 public import Chazelle.Core.ClusterMeets
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 24: the cluster decomposition of the book
@@ -78,7 +84,7 @@ theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ
     ∃ j, 1 ≤ j ∧ d.nreg 60090 = j ∧ d.nreg 60091 = j ^ 2 ∧ d.nreg 60092 = j ^ 3 ∧
       (j = 1 ∨ (j - 1) ^ 3 < μ)
   have hI₁ : I c₁ := ⟨e₁.wb_right, by rw [R₁ _ (by decide), hμ], by rw [R₁ _ (by decide), hone],
-    1, le_rfl, a0, by rw [a1]; norm_num, by rw [a2]; norm_num, Or.inl rfl⟩
+    1, le_rfl, a0, by rwn [a1], by rwn [a2], Or.inl rfl⟩
   obtain ⟨c₂, k₂, e₂, ⟨-, -, -, j, hj1, b0, -, b2, hjm⟩, hn, hk₂, -⟩ :=
     SortR.whileLtN_potential_lb (P := P) (W := W) (a := 60092) (b := 60034) (body := kBody) I
       (fun d => 16 * (μ - d.nreg 60090)) (fun _ => 0) (fun d h => h.1)
@@ -88,14 +94,14 @@ theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ
         have hjμ : j < μ := lt_of_le_of_lt (by nlinarith [pow_pos (by omega : 0 < j) 2]) ht
         refine ⟨d', k, ex, ⟨ex.wb_right, by rw [F.1 _ (by decide), dμ], by rw [F.1 _ (by decide), d1],
           j + 1, by omega, v0, v1, v2, Or.inr (by simpa using ht)⟩, ?_, Nat.zero_le _⟩
-        rw [v0, d0]; omega) hI₁
-  refine ⟨c₂, _, .seq e₁ e₂, ?_, exec_frameB (.seq e₁ e₂) hwr, by rw [b0]; exact hj1, ?_, ?_⟩
-  · rw [a0] at hk₂; omega
+        rwo [v0, d0]) hI₁
+  refine ⟨c₂, _, .seq e₁ e₂, ?_, exec_frameB (.seq e₁ e₂) hwr, by rwx [b0], ?_, ?_⟩
+  · rwo [a0] at hk₂
   · rw [b0]; rw [b2] at hn
     have : c₂.nreg 60034 = μ := by
       rw [(exec_frameB e₂ (B := BK3) (by decide)).1 _ (by decide), R₁ _ (by decide), hμ]
-    rw [this] at hn; omega
-  · rw [b0]; exact hjm
+    rwo [this] at hn
+  · rwx [b0]
 
 /-! ## The call -/
 
@@ -121,7 +127,6 @@ theorem card_fin_filter (n : ℕ) (p : ℕ → Prop) [DecidablePred p]
   · rintro ⟨v, hv, rfl⟩; exact ⟨v.2, hv⟩
   · rintro ⟨h, hp⟩; exact ⟨⟨x, h⟩, hp, rfl⟩
 
-set_option maxHeartbeats 2000000 in
 open Classical in
 theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {B : BookData}
     {Bh A : ℕ} (hBh : c.nreg 60071 = Bh) (hμ : c.nreg 60034 = B.N) (hE : c.nreg 60037 = B.E)
@@ -159,21 +164,21 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
     exec_block
     exact ⟨rfl, by config_simp; rw [F₁.1 _ (by decide), hBh],
       by config_simp; rw [F₁.1 _ (by decide), hμ], by config_simp; rw [F₁.1 _ (by decide), hE],
-      by config_simp; rfl⟩
+      by csr⟩
   have m₂ : c₂.nmem = c.nmem := F₂.2.2.1.trans F₁.2.2.1
   have A₂ : c₂.nreg ALLOC = A := by
-    rw [hAL, F₂.1 _ (by decide), F₁.1 _ (by decide)]; exact hA
+    rwx [hAL, F₂.1 _ (by decide), F₁.1 _ (by decide)]
   have r0 : rd c₂ bCluster 0 = Bh := s0
   have r1 : rd c₂ bCluster 1 = B.N := s1
   have r2 : rd c₂ bCluster 2 = B.E := s2
   have r3 : rd c₂ bCluster 3 = kk := s3
   have hcost : c₂.nreg ALLOC + Cluster.clusterK * ((rd c₂ bCluster 1 + rd c₂ bCluster 2) *
       (Nat.clog 2 (rd c₂ bCluster 1 + rd c₂ bCluster 2) + 1) + 1) ≤ W := by
-    rw [A₂, r1, r2]; exact hroom
+    rwx [A₂, r1, r2]
   obtain ⟨c₃, k₃, e₃, hk₃, post, F₃⟩ := clusterProg_meets P W c₂ e₂.wb_right
     ⟨hPW, by rw [r3]; exact kpos, by rw [r1, r3]; exact kcube, fun m' hm' => by
       rw [r0, r1, r2]
-      exact (hR m' (fun a ha => by rw [hm' a (by rw [A₂]; exact ha), m₂])).1⟩ hcost
+      exact (hR m' (fun a ha => by rw [hm' a (by rwx [A₂]), m₂])).1⟩ hcost
   beta_reduce at hk₃
   rw [r1, r2] at hk₃
   obtain ⟨p4, p5, p4', p5', pcard, pwalk, pclus⟩ := post
@@ -185,12 +190,12 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
   have K6 : ∀ r, bandOf r = 6 → c₃.nreg r = c₂.nreg r := fun r hr =>
     F₃.1 r (by simp [hr, bCluster]) (by rw [hAL]; intro h; rw [h] at hr; simp [bandOf] at hr)
   have k3 : c₃.nreg 60090 = kk := by
-    rw [K6 _ (by unfold bandOf; norm_num), F₂.1 _ (by decide)]
+    rw [K6 _ (by ufn bandOf), F₂.1 _ (by decide)]
   have A₃a : A ≤ c₃.nreg ALLOC := by have := F₃.2.2.2.2.2.1; omega
   have A₃b : c₃.nreg ALLOC ≤ A + k₃ := by have := F₃.2.2.2.2.2.2; omega
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by unfold clCost; omega, ?_, A₃a, by omega, ?_,
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by ufo clCost, ?_, A₃a, by omega, ?_,
     by rw [k3]; exact kpos, by rw [k3]; exact kcube, by rw [k3]; exact kmin,
-    by rw [← A₂]; exact p4, by rw [← A₂]; exact p5, p4', p5', ?_, pwalk, ?_⟩
+    by rwx [← A₂], by rwx [← A₂], p4', p5', ?_, pwalk, ?_⟩
   · have FA : FrameN {bDecomp, bCluster} c c₂ :=
       PF.frameN (B := fun r => BK3 r || decide (130000 ≤ r ∧ r ≤ 130003))
         ⟨fun r hr => by
@@ -205,13 +210,13 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
           simp only [BK3, Bool.or_eq_true, decide_eq_true_eq] at hr
           left
           rcases hr with h | h
-          · simp [bDecomp, bandOf]; omega
-          · simp [bCluster, bandOf]; omega)
+          · sio [bDecomp, bandOf]
+          · sio [bCluster, bandOf])
         (by rw [hAL, F₂.2.1 _ (by decide), F₁.2.1 _ (by decide)])
     exact FA.trans (FrameN.mono (Frame.toN F₃) (by decide)) (by rw [A₂, ← hA])
   · intro r hr hr'
-    rw [K6 r hr, F₂.1 r (by simp only [decide_eq_false_iff_not]; unfold bandOf at hr; omega),
-      F₁.1 r (by unfold BK3; simp only [decide_eq_false_iff_not]; omega)]
+    rw [K6 r hr, F₂.1 r (by simp only [decide_eq_false_iff_not]; ufo bandOf at hr),
+      F₁.1 r (by unfold BK3; sio only [decide_eq_false_iff_not])]
   · rw [k3]; refine le_trans (le_of_eq ?_) pcard
     refine Eq.trans ?_ (card_fin_filter B.N (fun v => c₃.nmem (c₃.nreg 130004 + v) = 1)).symm
     congr 1

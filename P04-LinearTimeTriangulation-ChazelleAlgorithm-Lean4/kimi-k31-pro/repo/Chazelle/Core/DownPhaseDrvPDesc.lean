@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvPBit
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase pieces (D4), part 5: the model descriptor
@@ -11,9 +12,6 @@ edges, top index, orientation bit), puts `A` into `218010` and raises the alloca
 (`descS_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -52,12 +50,12 @@ theorem descS_exec (c : Config) (hw : WordsBounded W c) (h20 : c.nreg 218020 = 0
   unfold descS
   rw [e]
   exec_block
-  all_goals first | (config_simp; rw [hA', h21]; omega) | skip
+  all_goals first | (config_simp; rwo [hA', h21]) | skip
   refine ⟨rfl, ?_, ?_, fun r h1 h2 h3 => ?_, rfl, rfl, rfl, fun a ha => ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   all_goals rw [e] at *
   all_goals config_simp
-  all_goals simp only [hA', h20, h21]
-  all_goals (simp only [upd]; split_ifs <;> first | rfl | omega)
+  all_goals simp [hA', h20, h21]
+  all_goals (simp [upd]; split_ifs <;> first | rfl | omega)
 
 end exec
 

@@ -46,7 +46,7 @@ theorem chainModel_size (C : Chain) : (chainModel C).size = 2 * C.m := by
   have : {p : ℕ | p < (chainModel C).W.n ∧ (chainModel C).counted p} =
       Set.Ico 6 (2 * C.m + 6) := by
     ext p
-    simp only [Set.mem_ofPred_eq, Set.mem_Ico, hn]
+    simp [Set.mem_ofPred_eq, Set.mem_Ico, hn]
     change p < 2 * C.m + 7 ∧ (6 ≤ p ∧ p < 2 * C.m + 6) ↔ _
     omega
   rw [this, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]

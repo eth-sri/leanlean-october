@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvBLoop
+set_option maxHeartbeats 8000000
 
 /-!
 # Down-phase base (D9): the region loop meets its contract
@@ -31,12 +32,11 @@ theorem room_aux {κR K X r : ℕ} (hr : r + 1 ≤ K + 1) :
   have e : (κR + 60) * (K + 1) * X = (K + 1) * (κR * X) + 60 * ((K + 1) * X) := by ring
   omega
 
-set_option maxHeartbeats 8000000 in
 /-- **The region loop of the base case.** -/
 theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoopSpec := by
   refine ⟨regLoopS s, κR + 60, ?_⟩
   intro P W c L E S₀ Cm hw hpre hroom
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hpre.hG.1
+  have hQ  := (shearInvariance (epsOf P) P).1 hpre.hG.1
   obtain ⟨-, -, -, reg, g1, g2, g3, g4, -⟩ := DownMath.isNF_build hQ hpre.hok hpre.hperm hpre.hsort
   set Ev : BEnv := ⟨P, W, L, E, reg, c.nmem, c.nreg 210001, c.nreg 210005, c.nreg 212019, S₀, Cm⟩
     with hEv
@@ -79,16 +79,16 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
     (by have := hpre.hWh; unfold hostWords at this; omega) (by omega) (by omega) (by omega)
     (by omega) (by have := hpre.hMDW; omega)
   have hw1 := e1.wb_right
-  have q1 : ∀ r, Binit r = false → d1.nreg r = c.nreg r := f1.1
+  have q1  := f1.1
   have hfix : ∀ q, (210000 ≤ q ∧ q < 210030) ∨ q = 212019 → Binit q = false := fun q hq => by
-    simp only [Binit, decide_eq_false_iff_not]; omega
+    simp [Binit, decide_eq_false_iff_not]; omega
   have hregs : BRegs Ev d1 := by
     refine ⟨a00, a01, a02, a10, ?_, a12, b02, b03, b05, b14, b16, ?_,
       by rw [q1 _ (by decide)], by rw [q1 _ (by decide)]⟩
     · rw [a11]; show _ = if decide (c.nmem (c.nreg 210001 + 1) = 1) = true then 1 else 0
       by_cases h : c.nmem (c.nreg 210001 + 1) = 1 <;> simp [h]
     · rw [b17]; exact hNw.nfAt.2.1
-  have hmem1 : d1.nmem = c.nmem := f1.2.2.1
+  have hmem1  := f1.2.2.1
   have hal1 : d1.nreg ALLOC = c.nreg ALLOC := f1.1 9999 (by decide)
   have hrst0 : RSt Ev 0 d1 := by
     refine ⟨hw1, hregs, b06, a14, by rw [b31]; show _ = c.nmem (c.nreg 210005 + 5) + 2 + 5 * 0; ring,
@@ -101,7 +101,7 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
     · intro a _; rw [hmem1]
   have hRF1 : Restore.RF DrvR.drvBands (c.nreg 212019) c d1 k1 := by
     have hB : ∀ r, bandOf r ∉ DrvR.drvBands → Binit r = false := fun r hr => by
-      simp only [Binit, decide_eq_false_iff_not]
+      simp [Binit, decide_eq_false_iff_not]
       have : r / 10000 ≠ 21 := fun h => hr (by
         show r / 10000 ∈ DrvR.drvBands
         rw [h]; decide)
@@ -148,14 +148,14 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
   refine ⟨d', k1 + k', .seq e1 e', hk, ?_, hRF1.trans rf'⟩
   -- the postcondition
   have hout := rst'.out
-  have hTL : Ev.TL (Ev.K + 1) = tagLB Ev.li Ev.Q Ev.L Ev.E := Ev.TL_all
+  have hTL  := Ev.TL_all
   obtain ⟨m1, m2, m3, m4⟩ := bktMath Ev hE (fun q => d'.nmem (Ev.BK + q)) (d'.nreg 212018)
     hout.bk hout.bk0 rst'.mx
   have hnl : (newLB (liBit c.nmem (c.nreg 210001)) (Qof P) L E).length =
       (Ev.TL (L.length + 1)).length := by
     show ((tagLB Ev.li Ev.Q Ev.L Ev.E).map Prod.snd).length = _
     rw [List.length_map]; rfl
-  refine ⟨fun q hq1 hq2 => ?_, ?_, ?_, m1, hout.list, fun q hq => m2 q hq,
+  refine ⟨fun q hq1 hq2 => ?_, ?_, ?_, m1, hout.list, m2,
     fun q q' hq hq' h => m3 q q' hq hq' h, m4, rst'.mxS⟩
   · rw [keep' q (Or.inl (Or.inl ⟨hq1, hq2⟩)), q1 q (hfix q (Or.inl ⟨hq1, hq2⟩))]
   · rw [keep' 212019 (Or.inl (Or.inr (Or.inr (Or.inl rfl)))), q1 _ (hfix _ (Or.inr rfl))]

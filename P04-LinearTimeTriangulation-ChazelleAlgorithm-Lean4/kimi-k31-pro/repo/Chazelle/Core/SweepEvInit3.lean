@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepEvInit2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stages 2–3: the initialisation, part 3 (the table of powers)
@@ -63,19 +67,17 @@ theorem while_exact {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : ℕ �
     obtain ⟨d', e', hI'⟩ := ih (j + 1) d₁ hI₁ (by omega) (by omega)
     refine ⟨d', (Exec.whileLtN_true ((htest j d hI).2 hlt) e₁ e').cast (by ring), hI'⟩
 
-set_option maxRecDepth 20000 in
 theorem tabHead_val (m f : ℕ → ℕ) :
     regB m tabHead f TBR = f ALLOC ∧ regB m tabHead f TLR = 0 ∧ regB m tabHead f iX = 1 ∧
       (f K1 = 1 → regB m tabHead f iN = m (f (sw 3) + 1) + m (f (sw 4) + 1) + 1) ∧
       ∀ r, r ≠ TBR → r ≠ TLR → r ≠ iX → r ≠ iA → r ≠ iN → r ≠ iV → regB m tabHead f r = f r := by
   refine ⟨?_, ?_, ?_, fun h1 => ?_, fun r a b d e g i => ?_⟩
-  all_goals simp only [tabHead, regB, regI, TBR, TLR, iX, iA, iN, iV, K1, ALLOC, sw,
+  all_goals simp [tabHead, regB, regI, TBR, TLR, iX, iA, iN, iV, K1, ALLOC, sw,
     Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true]
-  · simp only [K1, sw, Nat.reduceAdd] at h1; rw [h1]
-  · simp only [TBR, TLR, iX, iA, iN, iV, sw, Nat.reduceAdd] at a b d e g i
-    simp only [upd_apply, ite_eq_right a, ite_eq_right b, ite_eq_right d, ite_eq_right e, ite_eq_right g, ite_eq_right i]
+  · simp [K1, sw, Nat.reduceAdd] at h1; rw [h1]
+  · simp [TBR, TLR, iX, iA, iN, iV, sw, Nat.reduceAdd] at a b d e g i
+    simp [upd_apply, ite_eq_right a, ite_eq_right b, ite_eq_right d, ite_eq_right e, ite_eq_right g, ite_eq_right i]
 
-set_option maxRecDepth 20000 in
 /-- **The table of powers**: base `A₀` (the allocator), length `L = ⌈log₂ (a₁ + a₂ + 1)⌉`. -/
 theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (hK1 : c.nreg K1 = 1) (h3 : c.nreg (sw 3) + 1 ≤ W) (h4 : c.nreg (sw 4) + 1 ≤ W)
@@ -102,9 +104,9 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   -- the head
   obtain ⟨vB, vL, vX, vN, vo⟩ := tabHead_val c.nmem c.nreg
   have e₁ := exec_regB (P := P) tabHead hw (by
-    simp only [tabHead, okW, okWI, regI, TBR, TLR, iX, iA, iN, iV, K1, ALLOC, sw, Nat.reduceAdd,
+    simp [tabHead, okW, okWI, regI, TBR, TLR, iX, iA, iN, iV, K1, ALLOC, sw, Nat.reduceAdd,
       upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true, true_and, and_true]
-    simp only [K1, sw, Nat.reduceAdd] at hK1 h3 h4 ha₁ ha₂
+    simp [K1, sw, Nat.reduceAdd] at hK1 h3 h4 ha₁ ha₂
     rw [hK1]; refine ⟨by omega, by omega, by omega, by omega, by omega⟩)
   set c₁ : Config := { c with nreg := regB c.nmem tabHead c.nreg } with hc₁
   have n₁ : ∀ r, r ≠ TBR → r ≠ TLR → r ≠ iX → r ≠ iA → r ≠ iN → r ≠ iV → c₁.nreg r = c.nreg r :=
@@ -133,52 +135,52 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         have dB : d.nreg TBR = A₀ := by rw [hr _ (by swoInit3) (by swoInit3) (by swoInit3), gB]
         have d11 : d.nreg K1 = 1 := by rw [hr _ (by swoInit3) (by swoInit3) (by swoInit3), g11]
         have ht : 2 ^ j < a₁ + a₂ + 1 := by
-          rw [← Nat.lt_clog_iff_pow_lt (by norm_num)]; exact hjl
+          rwx [← Nat.lt_clog_iff_pow_lt (by norm_num)]
         have hjL : j ≤ Lf := hjl.le
-        have e₁ := Exec.addN (P := P) hwd iP TBR TLR (by rw [dB, hj]; omega)
+        have e₁ := Exec.addN (P := P) hwd iP TBR TLR (by rwo [dB, hj])
         have e₂ := Exec.storeN (P := P) e₁.wb_right iP iX
         have e₃ := Exec.addN (P := P) e₂.wb_right iX iX iX (by
-          simp only
-          rw [upd_other _ _ _ (by swoInit3), hx]; omega)
+          simp
+          rwo [upd_other _ _ _ (by swoInit3), hx])
         have e₄ := Exec.addN (P := P) e₃.wb_right TLR TLR K1 (by
-          simp only
+          simp
           rw [upd_other _ _ _ (by swoInit3), upd_other _ _ _ (by swoInit3), upd_other _ _ _ (by swoInit3),
             upd_other _ _ _ (by swoInit3), hj, d11]; omega)
         refine ⟨_, Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_cons e₃
           (Exec.block_cons e₄ (Exec.block_nil e₄.wb_right)))), e₄.wb_right, ?_, ?_,
           fun t ht' => ?_, fun r a b c' => ?_, fun a ha => ?_, rr, rm, o⟩
-        · simp only [upd_same]
+        · simp [upd_same]
           rw [upd_other _ _ _ (by swoInit3), upd_other _ _ _ (by swoInit3), upd_other _ _ _ (by swoInit3),
             upd_other _ _ _ (by swoInit3), hj, d11]
-        · simp only
-          rw [upd_other _ _ _ (by swoInit3), upd_same, upd_other _ _ _ (by swoInit3), hx, pow_succ]; ring
-        · simp only [upd_same]
+        · simp
+          rwring [upd_other _ _ _ (by swoInit3), upd_same, upd_other _ _ _ (by swoInit3), hx, pow_succ]
+        · simp [upd_same]
           rw [upd_other _ _ _ (show iX ≠ iP by swoInit3), dB, hj]
           rcases Nat.lt_or_ge t j with h | h
           · rw [upd_other _ _ _ (by omega)]; exact htab t h
           · rw [show t = j by omega, upd_same, hx]
-        · simp only
+        · simp
           rw [upd_other _ _ _ c', upd_other _ _ _ a, upd_other _ _ _ b]; exact hr r a b c'
-        · simp only
-          rw [upd_other _ _ _ (by simp only [upd_same]; rw [dB, hj]; omega)]
+        · simp
+          rw [upd_other _ _ _ (by simp [upd_same]; rwo [dB, hj])]
           exact hm a ha)
       0 c₁ I₁ (Nat.zero_le _)
   -- the end of the loop
   have g9 : c₂.nreg ALLOC = A₀ := by rw [hr₂ _ (by swoInit3) (by swoInit3) (by swoInit3), gA]
-  have e₃ := Exec.addN (P := P) w₂ ALLOC ALLOC TLR (by rw [hj, g9]; omega)
+  have e₃ := Exec.addN (P := P) w₂ ALLOC ALLOC TLR (by rwo [hj, g9])
   refine ⟨_, _, .seq e₁ (.seq e₂ e₃), ?_, ?_, ?_, ?_, fun t ht => ?_, fun a ha => ?_,
-    fun r h0 h1 h2 h3 h4 h5 h6 h7 => ?_, by simp only; rw [rr₂], by simp only; rw [rm₂],
-    by simp only; rw [o₂]⟩
-  · simp only [tabHead, List.length_cons, List.length_nil]; omega
-  · simp only; rw [upd_other _ _ _ (by swoInit3), hr₂ _ (by swoInit3) (by swoInit3) (by swoInit3), gB]
-  · simp only; rw [upd_other _ _ _ (by swoInit3), hj]
-  · simp only [upd_same]; rw [upd_other _ _ _ (by swoInit3), hj, g9]
-  · simp only
-    simp only at ht
+    fun r h0 h1 h2 h3 h4 h5 h6 h7 => ?_, by simp; rw [rr₂], by simp; rw [rm₂],
+    by simp; rw [o₂]⟩
+  · sio only [tabHead, List.length_cons, List.length_nil]
+  · simp; rw [upd_other _ _ _ (by swoInit3), hr₂ _ (by swoInit3) (by swoInit3) (by swoInit3), gB]
+  · simp; rw [upd_other _ _ _ (by swoInit3), hj]
+  · simp [upd_same]; rw [upd_other _ _ _ (by swoInit3), hj, g9]
+  · simp
+    simp at ht
     rw [upd_other _ _ _ (by swoInit3), hj] at ht
     exact htab t ht
-  · simp only; rw [hm₂ a ha]
-  · simp only
+  · simp; rw [hm₂ a ha]
+  · simp
     rw [upd_other _ _ _ h0, hr₂ r h3 h7 h2]
     exact n₁ r h1 h2 h3 h4 h5 h6
 

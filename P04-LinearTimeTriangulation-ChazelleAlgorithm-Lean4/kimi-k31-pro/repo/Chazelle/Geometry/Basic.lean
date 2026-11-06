@@ -5,6 +5,7 @@ public import Mathlib.Analysis.Convex.Segment
 public import Mathlib.Analysis.Convex.Topology
 public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Analysis.Normed.Group.Bounded
+public import Chazelle.RewriteTactics
 
 /-!
 # Planar geometry: points, segments, bounded sets
@@ -123,7 +124,7 @@ theorem segment_eq (a b : Point) : Chazelle.segment a b = _root_.segment ℝ a b
 theorem mem_segment_iff_weights {a b p : Point} :
     p ∈ Chazelle.segment a b ↔
       ∃ s t : ℝ, 0 ≤ s ∧ 0 ≤ t ∧ s + t = 1 ∧ s • a + t • b = p := by
-  rw [segment_eq]; rfl
+  rwr [segment_eq]
 
 /-- The segment is symmetric. -/
 theorem segment_comm (a b : Point) : Chazelle.segment a b = Chazelle.segment b a := by

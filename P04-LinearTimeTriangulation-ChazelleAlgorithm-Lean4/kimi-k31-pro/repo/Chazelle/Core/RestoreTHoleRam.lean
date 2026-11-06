@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.RestoreTHoleMath
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-E, the candidate test on the RAM: small register programs for the holes
@@ -31,7 +35,7 @@ theorem Out.refl (c : Config) (L : List ℕ) : Out c c L :=
 theorem Out.trans {c c₁ c₂ : Config} {L₁ L₂ : List ℕ} (h₁ : Out c c₁ L₁) (h₂ : Out c₁ c₂ L₂) :
     Out c c₂ (L₁ ++ L₂) :=
   ⟨fun r hr => by
-    simp only [List.mem_append, not_or] at hr
+    simp [List.mem_append, not_or] at hr
     rw [h₂.1 r hr.2, h₁.1 r hr.1], h₂.2.1.trans h₁.2.1, h₂.2.2.1.trans h₁.2.2.1,
     h₂.2.2.2.1.trans h₁.2.2.2.1, h₂.2.2.2.2.trans h₁.2.2.2.2⟩
 
@@ -42,7 +46,7 @@ theorem Out.mono {c c' : Config} {L L' : List ℕ} (h : Out c c' L) (hL : ∀ r 
 theorem out_instr {i : Instr} {r v : ℕ}
     (hex : Exec P W (.instr i) c { c with nreg := upd c.nreg r v } 1) :
     ∃ c', Exec P W (.instr i) c c' 1 ∧ c'.nreg r = v ∧ Out c c' [r] :=
-  ⟨_, hex, by simp, fun q hq => by simp only [List.mem_singleton] at hq; simp [upd, hq],
+  ⟨_, hex, by simp, fun q hq => by simp [List.mem_singleton] at hq; simp [upd, hq],
     rfl, rfl, rfl, rfl⟩
 
 /-- **A run step** from an execution changing only scratch registers. -/
@@ -50,7 +54,7 @@ theorem RS.out {s : Stmt} {K : ℕ} {L : List ℕ} {Q : Config → Prop} (hI : T
     (hL : ∀ r ∈ L, Scr r) {c' : Config} {k : ℕ} (ex : Exec P W s c c' k) (hk : k ≤ K)
     (ho : Out c c' L) (hq : Q c') : RS P W c₀ s c K Q := by
   obtain ⟨hI', hrf⟩ := hI.regs (c' := c') (k := k) ex.wb_right (fun r hr => ho.1 r (fun h => by
-    have := hL r h; unfold Scr at this; omega)) ho.2.1 ho.2.2.1 ho.2.2.2.1 ho.2.2.2.2
+    have := hL r h; ufo Scr at this)) ho.2.1 ho.2.2.1 ho.2.2.2.1 ho.2.2.2.2
   exact ⟨c', k, ex, hk, hI', hrf, hq⟩
 
 /-! ## A conditional subtraction -/
@@ -85,11 +89,11 @@ theorem candS_exec (hw : WordsBounded W c) {dst jr sr mr : ℕ} (hd1 : dst ≠ j
   by_cases h : c.nreg jr < c.nreg sr
   · obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hw dst mr sr)
     obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.addN e₁.wb_right dst dst jr
-      (by rw [v₁, o₁.1 jr (by simp [hd1.symm]), hm, hs, hj]; rw [hj, hs] at h; omega))
+      (by rw [v₁, o₁.1 jr (by simp [hd1.symm]), hm, hs, hj]; rwo [hj, hs] at h))
     refine ⟨c₂, _, by omega, .ifLtN_true h (.seq e₁ e₂), ?_, (o₁.trans o₂).mono (by simp)⟩
     rw [v₂, v₁, o₁.1 jr (by simp [hd1.symm]), hm, hs, hj]
     rw [hj, hs] at h
-    unfold candIdx; rw [ite_eq_left h]; omega
+    uro candIdx [ite_eq_left h]
   · obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hw dst jr sr)
     refine ⟨c₁, _, by omega, .ifLtN_false h e₁, ?_, o₁⟩
     rw [v₁, hj, hs]
@@ -135,7 +139,7 @@ theorem intH_exec (hw : WordsBounded W c) (hW : P.n + 2 ≤ W) (h22 : c.nreg 830
   obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.inputSize hw 83090 (by omega))
   have k1 := fun r (h : r ≠ 83090) => o₁.1 r (by simp [h])
   obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.addN e₁.wb_right 83092 83005 83023
-    (by rw [k1 _ (by omega), k1 _ (by omega), h23]; omega))
+    (by rwo [k1 _ (by omega), k1 _ (by omega), h23]))
   have k2 := fun r (h : r ≠ 83092) => o₂.1 r (by simp [h])
   obtain ⟨c₃, k₃, hk₃, e₃, v₃, o₃⟩ := nxtS_exec (P := P) e₂.wb_right 83092 83090
   have k3 := fun r (h : r ≠ 83092) => o₃.1 r (by simp [h])
@@ -190,8 +194,8 @@ theorem intH_exec (hw : WordsBounded W c) (hW : P.n + 2 ≤ W) (h22 : c.nreg 830
   · rw [o₇.1 _ (by simp), v₆]
   · rw [v₇, o₆.1 _ (by simp), k5 _ (by omega), k4 _ (by omega), q92]
   · exact ((((((o₁.trans o₂).trans o₃).trans o₄).trans o₅).trans o₆).trans o₇).mono
-      (by intro r hr; simp only [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr
-          simp only [List.mem_cons, List.not_mem_nil, or_false]; omega)
+      (by intro r hr; simp [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr
+          sio only [List.mem_cons, List.not_mem_nil, or_false])
 
 end
 

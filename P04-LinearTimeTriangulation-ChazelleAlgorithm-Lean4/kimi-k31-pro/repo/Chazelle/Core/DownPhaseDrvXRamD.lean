@@ -1,6 +1,13 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXRamC
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down phase, extraction (D6), RAM part 4: the bucket of a position
@@ -21,7 +28,7 @@ open DrvR (ivB qE)
 @[expose] public section
 
 theorem hltF_le (P : Polygon) (u v : ℕ) : hltF P u v ≤ 1 := by
-  unfold hltF; split_ifs <;> omega
+  unfold hltF; splao
 
 theorem hltF_eq_one {P : Polygon} (hG : GoodEnv P) {u v : ℕ} (hu : u < (Qof P).n)
     (hv : v < (Qof P).n) : hltF P u v = 1 ↔ ((Qof P).vtx u).2 < ((Qof P).vtx v).2 := by
@@ -42,16 +49,15 @@ theorem posLtF_iff {P : Polygon} (hG : GoodEnv P) (li : Bool) {x y : WPos}
       ((Qof P).vtx (x.hgt - 1)).2 < ((Qof P).vtx (y.hgt - 1)).2) ↔
       hltF P (ivB li (Qof P).n x.edge) (ivB li (Qof P).n ((x.edge + 1) % (Qof P).n)) =
         hltF P (x.hgt - 1) (y.hgt - 1) := by
-    unfold EdgeUp; rw [← h1, ← h2]; omega
+    uro EdgeUp [← h1, ← h2]
   unfold posLtF PosLt
   rw [hiff]
-  split_ifs <;> omega
+  splao
 
 section pieces
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 /-- `dst := [a = b ∧ c = e]`. -/
 theorem eq2S_exec (d : Config) (hw : WordsBounded W d) {a b c e dst : ℕ} (ha : a ≠ dst)
     (hb : b ≠ dst) (hc : c ≠ dst) (he : e ≠ dst) (hW : 1 ≤ W) :
@@ -70,12 +76,11 @@ theorem eq2S_exec (d : Config) (hw : WordsBounded W d) {a b c e dst : ℕ} (ha :
   refine ⟨?_, n2.2.1.trans n1.2.1, n2.2.2.1.trans n1.2.2.1, n2.2.2.2.1.trans n1.2.2.2.1,
     n2.2.2.2.2.trans n1.2.2.2.2⟩
   rw [n2.1, n1.1, Machine.upd_upd_same]
-  simp only [Machine.upd_other _ _ _ ha, Machine.upd_other _ _ _ hb, Machine.upd_other _ _ _ hc,
+  simp [Machine.upd_other _ _ _ ha, Machine.upd_other _ _ _ hb, Machine.upd_other _ _ _ hc,
     Machine.upd_other _ _ _ he, Machine.upd_same]
   congr 1
-  split_ifs <;> omega
+  splao
 
-set_option maxHeartbeats 2000000 in
 /-- `dst := posLt (a, b) (c, e)`. -/
 theorem posLtOn_exec (d : Config) (hw : WordsBounded W d) {a b c e dst n : ℕ} {li : Bool}
     (h20 : d.nreg 217020 = n) (h26 : d.nreg 217026 = liV li) (h27 : d.nreg 217027 = 1)
@@ -102,12 +107,11 @@ theorem posLtOn_exec (d : Config) (hw : WordsBounded W d) {a b c e dst n : ℕ} 
         Machine.upd_other _ _ _ (show r ≠ 217150 by omega)]
   obtain ⟨d2, k2, e2, hk2, v2, -⟩ := posLtS_exec (P := P) d1 e1.wb_right
     (by rw [g1 _ (by omega), h20]) (by rw [g1 _ (by omega), h26]) (by rw [g1 _ (by omega), h27])
-    (by rw [a50]; exact hae) hnW hW
+    (by rwx [a50]) hnW hW
   obtain ⟨d3, k3, e3, hk3, n3⟩ := x_copy (P := P) d2 e2.wb_right dst 217154
   refine ⟨d3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, ?_⟩
   rw [n3.same, v2, a50, a51, a52, a53]
 
-set_option maxHeartbeats 2000000 in
 /-- The arc test `onS` on bits. -/
 theorem onS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) (h27 : d.nreg 217027 = 1) :
     ∃ d' k, Exec P W onS d d' k ∧ k ≤ 16 ∧
@@ -133,14 +137,13 @@ theorem onS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) (h27 : d.nr
     n2.2.2.2.2.trans n1.2.2.2.2⟩
   rw [n2.1, n1.1, Machine.upd_upd_same]
   config_simp
-  simp only [h27]
+  simp [h27]
 
 /-- The registers `bktFS` writes. -/
 def BbktF (r : ℕ) : Bool := decide (r = 217112 ∨ r = 217128)
 
 theorem wr_bktF : wr BbktF bktFS = true := by decide
 
-set_option maxHeartbeats 2000000 in
 /-- **The bucket formula.** -/
 theorem bktFS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} (hj : j < A)
     (hAW : 2 * A + 2 ≤ W) (h27 : d.nreg 217027 = 1) (h30 : d.nreg 217030 = A)
@@ -155,41 +158,41 @@ theorem bktFS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} (hj : j < A)
           else 2 * j + 1) := by
     unfold bktFS
     by_cases c1 : d.nreg 217122 < 1
-    · refine spec_ifLtN_true (by rw [h27]; exact c1) ?_
+    · refine spec_ifLtN_true (by rwx [h27]) ?_
       by_cases c2 : d.nreg 217123 < 1
-      · refine spec_ifLtN_true (by rw [h27]; exact c2) ?_
+      · refine spec_ifLtN_true (by rwx [h27]) ?_
         by_cases c3 : d.nreg 217125 < 1
-        · refine spec_ifLtN_true (by rw [h27]; exact c3) ?_
+        · refine spec_ifLtN_true (by rwx [h27]) ?_
           exec_block
           · omega
           · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_left c3]
-        · refine spec_ifLtN_false (by rw [h27]; exact c3) ?_
+        · refine spec_ifLtN_false (by rwx [h27]) ?_
           exec_block
           · omega
-          · config_simp; omega
-          · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_right c3]; omega
-      · refine spec_ifLtN_false (by rw [h27]; exact c2) ?_
+          · cso
+          · refine ⟨by omega, ?_⟩; config_simp; rwo [ite_eq_left c1, ite_eq_left c2, ite_eq_right c3]
+      · refine spec_ifLtN_false (by rwx [h27]) ?_
         refine spec_seq ?_
         exec_block
         · omega
         by_cases c4 : j + 1 < A
-        · refine spec_ifLtN_true (by config_simp; omega) ?_
+        · refine spec_ifLtN_true (by cso) ?_
           exec_block
-          · config_simp; omega
-          · config_simp; omega
+          · cso
+          · cso
           · refine ⟨by omega, ?_⟩; config_simp
-            rw [ite_eq_left c1, ite_eq_right c2, Nat.mod_eq_of_lt c4]; omega
-        · refine spec_ifLtN_false (by config_simp; omega) ?_
+            rwo [ite_eq_left c1, ite_eq_right c2, Nat.mod_eq_of_lt c4]
+        · refine spec_ifLtN_false (by cso) ?_
           exec_block
           · omega
           · refine ⟨by omega, ?_⟩; config_simp
             have h0 : (j + 1) % A = 0 := by rw [show j + 1 = A by omega, Nat.mod_self]
             rw [ite_eq_left c1, ite_eq_right c2, h0]
-    · refine spec_ifLtN_false (by rw [h27]; exact c1) ?_
+    · refine spec_ifLtN_false (by rwx [h27]) ?_
       exec_block
       · omega
-      · config_simp; omega
-      · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right c1]; omega
+      · cso
+      · refine ⟨by omega, ?_⟩; config_simp; rwo [ite_eq_right c1]
   exact ⟨d', k, ex, hk, hv, exec_frameB ex wr_bktF⟩
 
 /-- The registers `arcRdS` writes. -/
@@ -197,7 +200,6 @@ def Brd (r : ℕ) : Bool := decide ((217116 ≤ r ∧ r ≤ 217121) ∨ r = 2171
 
 theorem wr_arcRd : wr Brd arcRdS = true := by decide
 
-set_option maxHeartbeats 2000000 in
 /-- **Read arc `j`** (the region list entry at `217114`). -/
 theorem arcRd_exec (d : Config) (hw : WordsBounded W d) {AB j se sh ee eh : ℕ}
     (h14 : d.nmem (d.nreg 217114) = j) (h27 : d.nreg 217027 = 1) (h31 : d.nreg 217031 = AB)
@@ -215,8 +217,8 @@ theorem arcRd_exec (d : Config) (hw : WordsBounded W d) {AB j se sh ee eh : ℕ}
       d'.nreg 217121 = eh := by
     unfold arcRdS
     exec_block
-    all_goals (try (config_simp; simp only [h14, h27, h31]; omega))
-    refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h14, h27, h31]
+    all_goals (try (config_simp; sio only [h14, h27, h31]))
+    refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp [h14, h27, h31]
     · exact k1 _ (by omega)
     · exact k2 _ (by omega)
     · exact k3 _ (by omega)

@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SweepEvStopRC
 public import Chazelle.Core.RestoreTShot
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), stage 2: mathematics for the per-origin step (part 4)
@@ -35,7 +36,7 @@ variable {J : Merge.Junction}
 theorem h6_of_abs (C : Chain) (Q : Polygon) {x : WPos}
     (hy : |((chainModel C).pos Q x).2| < C.radius) (h0 : x.hgt = 0) : 6 ≤ x.edge := by
   obtain ⟨e, h⟩ := x
-  simp only at h0
+  simp at h0
   subst h0
   by_contra hlt
   push Not at hlt
@@ -87,7 +88,7 @@ theorem win_min {a : Point} (ha : a.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 
     (h1g : FreeAt J.left a σ ∧ a.2 ≤ J.left.top.2 → τ₁ = J.left.hitParam a σ)
     (h2 : 0 < τ₂) (h2o : OnCB J.right (rayPt a σ τ₂)) (h2g : τ₂ = J.right.hitParam a σ)
     (hτ : τ = τ₁ ∨ τ = τ₂) (hτ1 : τ ≤ τ₁) (hτ2 : τ ≤ τ₂) : τ = J.whole.hitParam a σ := by
-  have haW : a.2 ≤ J.whole.top.2 := le_trans ha J.right_top_le
+  have haW  := le_trans ha J.right_top_le
   refine hit_min hσ haW hf (L := {τ₁, τ₂}) ?_ ?_ ?_ ?_
   · intro x hx
     rcases hx with rfl | hx
@@ -199,8 +200,8 @@ theorem parent_key_iff (hP : J.P.Simple) {P : Polygon} {N : NF}
       show (chainModel J.right).pos (Qof P) (endPos N i (1 - b)) = a
       rw [hpt]
       rcases hend with ⟨rfl, h⟩ | ⟨rfl, h⟩
-      · rw [ite_eq_left rfl]; exact h
-      · rw [ite_eq_right (by norm_num)]; exact h
+      · rwx [ite_eq_left rfl]
+      · rwx [ite_eq_right (by norm_num)]
     obtain ⟨e1, e2⟩ := hM.attach_unique (hS₂ hc) hAt hA' (by rw [hpa, hA.2.2.2.1])
     rw [e1, e2]
 

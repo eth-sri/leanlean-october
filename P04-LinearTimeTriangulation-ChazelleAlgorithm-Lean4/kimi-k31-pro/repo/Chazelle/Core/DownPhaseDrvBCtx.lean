@@ -5,6 +5,9 @@ public import Chazelle.Core.DownPhaseDrvMBase
 public import Chazelle.Core.DownPhaseDrvOrient
 public import Chazelle.Core.DownPhaseMathWalkAll
 public import Chazelle.Core.DownPhaseMathHostList
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down-phase base (D9): the polygon in which a region shoots
@@ -68,12 +71,12 @@ theorem orient_rotate {P : Polygon} (hP : P.Simple) (s : ℕ) :
     Mountain.orient (P.rotate s) = Mountain.orient P := by
   have hn := Chazelle.Jordan.simple_three_le hP
   have hs := Existence.simple_rotate P s hP
-  have h0 : 0 < (P.rotate s).n := by rw [Existence.n_rotate]; omega
+  have h0 : 0 < (P.rotate s).n := by rwo [Existence.n_rotate]
   have h1 : (0 + 1) % (P.rotate s).n < P.n := by rw [Existence.n_rotate]; exact Nat.mod_lt _ (by omega)
   refine Mountain.orient_eq_of_filled_subset hP hs (i := s % P.n) (j := 0)
     (Nat.mod_lt _ (by omega)) h0 ?_ ?_ (by rw [Existence.filled_rotate])
   · rw [Existence.vtx_rotate _ _ (by omega), Nat.add_zero]
-  · rw [Existence.vtx_rotate_succ _ _ (by omega)]; simp
+  · rws [Existence.vtx_rotate_succ _ _ (by omega)]
 
 /-! ## The walk-order list of a host -/
 
@@ -123,7 +126,7 @@ theorem regOK_host {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → 
   have hR : reg r ∈ (interiorModel Q).regions S := X.hregs.1.1 r X.hr
   set K := DownHost.nk (interiorModel Q) S (reg r) with hKdef
   have hrep' : ∀ j, j < K → DownMath.RepPt li Q S (reg r) ((i0 + j) % K) (WP.getD j (.vtx 0)) :=
-    fun j hj => hrep j (by rw [hlen]; exact hj)
+    fun j hj => hrep j (by rwx [hlen])
   have hrot : (⟨WP.map (SymPt.eval Q)⟩ : Polygon) = (DownHost.hostPoly Q S (reg r)).rotate i0 :=
     DownMath.poly_of_rep hQ hFam hne hR hli X.hdh hlen hrep'
   have hwl : wlist li ((regHost li Q.n N r).pts Q.n) = WP := by
@@ -132,7 +135,7 @@ theorem regOK_host {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → 
     cases li <;> simp [hWP]
   have hP : polyOf Q (wlist li ((regHost li Q.n N r).pts Q.n)) =
       (DownHost.hostPoly Q S (reg r)).rotate i0 := by
-    rw [hwl]; exact hrot
+    rwx [hwl]
   rw [hP]
   obtain ⟨hs, hint, hbd, -⟩ := DownMath.polyFacts_rotate hQ hFam hne hR i0
   have hHs : (DownHost.hostPoly Q S (reg r)).Simple := DownHost.hostPts_simple hQ hFam hne hR
@@ -152,7 +155,7 @@ theorem regOK_host {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → 
     subst hRR
     have hn0 : 0 < (DownHost.hostPoly Q S (reg r)).n := by omega
     obtain ⟨k, hk, hkj⟩ := Existence.exists_rot_index hn0 i0 j hj
-    refine ⟨k, by rw [Existence.n_rotate]; exact hk, ?_, ?_⟩
+    refine ⟨k, by rwx [Existence.n_rotate], ?_, ?_⟩
     · rw [Existence.vtx_rotate _ _ hk, hkj, hjv]
     · unfold DirInterior
       rw [Existence.vtx_rotate _ _ hk, hkj, Existence.filled_rotate, Existence.boundary_rotate]
@@ -167,7 +170,7 @@ theorem region_empty (hQ : Q.Simple) :
   obtain ⟨z, hz⟩ := hM.nonempty
   have hfree : freeIn (interiorModel Q).D (∅ : Set (Set Point)) = (interiorModel Q).D := by
     ext x; simp [freeIn]
-  refine ⟨z, by rw [hfree]; exact hz, ?_⟩
+  refine ⟨z, by rwx [hfree], ?_⟩
   rw [hfree]
   exact (hM.preconn.connectedComponentIn hz).symm
 
@@ -175,10 +178,10 @@ theorem region_empty (hQ : Q.Simple) :
 theorem regOK_empty (hQ : Q.Simple) {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) :
     RegOK Q ∅ (interiorModel Q).D (interiorWalk Q) := by
   obtain ⟨hs, hb, hf, ho⟩ := FactsInterior.interiorWalk_spec hQ
-  refine ⟨hs, ho, by rw [hb, hf]; rfl, by rw [hb]; exact subset_union_left, region_empty hQ, ?_⟩
+  refine ⟨hs, ho, by rwr [hb, hf], by rw [hb]; exact subset_union_left, region_empty hQ, ?_⟩
   intro i σ hi hσ hdir _ _
   have hk := DownMath.ivB_lt li hi
-  refine ⟨ivB li Q.n i, by rw [DownMath.walk_n]; exact hk, ?_, ?_⟩
+  refine ⟨ivB li Q.n i, by rwx [DownMath.walk_n], ?_, ?_⟩
   · rw [DownMath.walk_vtx hli hk, ivB_ivB li hi]
   · unfold DirInterior
     rw [DownMath.walk_vtx hli hk, ivB_ivB li hi, hf, hb]
@@ -202,11 +205,11 @@ theorem polyOf_wlist_run (hQ : Q.Simple) {li : Bool} (hli : li = true ↔ Mounta
   · rw [polyOf_n, hlen, DownMath.walk_n]
   · intro k hk
     rw [polyOf_n, hlen] at hk
-    rw [polyOf_vtx Q (by rw [hlen]; exact hk), DownMath.walk_vtx hli hk,
-      wlist_getD li (by rw [hpts, List.length_map, List.length_range]; exact hk), hpts]
+    rw [polyOf_vtx Q (by rwx [hlen]), DownMath.walk_vtx hli hk,
+      wlist_getD li (by rwx [hpts, List.length_map, List.length_range]), hpts]
     simp only [List.length_map, List.length_range]
     rw [List.getD_eq_getElem?_getD, List.getElem?_map,
-      List.getElem?_range (by split_ifs <;> omega)]
+      List.getElem?_range (by splao)]
     simp only [Option.map_some, Option.getD_some, SymPt.eval]
     unfold ivB; split_ifs <;> rfl
 

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvHPart
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase driver, host RAM (D3a), part 6: one arc
@@ -50,7 +53,7 @@ structure HEnv (W n : ℕ) (N : NF) (r : ℕ) (li : Bool) (T : ℕ) (d : Config)
 theorem HEnv.keep {W n : ℕ} {N : NF} {r : ℕ} {li : Bool} {T : ℕ} {d d' : Config}
     (h : HEnv W n N r li T d) (hf : FrameM Bdyn d d') (hm : ∀ a, a < T → d'.nmem a = d.nmem a) :
     HEnv W n N r li T d' := by
-  have g : ∀ q, Bdyn q = false → d'.nreg q = d.nreg q := hf.1
+  have g  := hf.1
   have g25 : d'.nreg 215025 = d.nreg 215025 := g _ (by decide)
   have g26 : d'.nreg 215026 = d.nreg 215026 := g _ (by decide)
   have g27 : d'.nreg 215027 = d.nreg 215027 := g _ (by decide)
@@ -82,7 +85,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 /-- **Loading the arcs of iteration `t`** and their ends. -/
 theorem ldS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r : ℕ} {li : Bool} {T t : ℕ}
     (hE : HEnv W n N r li T d) (h41 : d.nreg 215041 = t) (ht : t < (N.region r).arcs.length) :
@@ -118,7 +120,7 @@ theorem ldS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r : �
       exec_block
       all_goals try (config_simp; (try simp only [h41, K.one]); omega)
       refine spec_seq ?_
-      refine spec_ifLtN_true (by config_simp; simp only [h41, K.one, hE.aR]; omega) ?_
+      refine spec_ifLtN_true (by config_simp; sio only [h41, K.one, hE.aR]) ?_
       refine spec_skip ‹_› ?_
       exec_block
       all_goals try (config_simp; (try simp only [h41, K.one, K.three, b1, c1, add_5, add_1_1]); omega)
@@ -144,7 +146,7 @@ theorem ldS_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r : �
       exec_block
       all_goals try (config_simp; (try simp only [h41, K.one]); omega)
       refine spec_seq ?_
-      refine spec_ifLtN_false (by config_simp; simp only [h41, K.one, hE.aR]; omega) ?_
+      refine spec_ifLtN_false (by config_simp; sio only [h41, K.one, hE.aR]) ?_
       exec_block
       all_goals try (config_simp; (try simp only [h41, K.one, K.three, b1, c1, add_5, add_1_1,
         Nat.add_zero]); omega)
@@ -190,7 +192,7 @@ theorem cpEm_exec (a b : ℕ) (hb : b ≠ 215064) (d : Config)
     hW1 hW2 hW3
   refine ⟨d₃, 2 + k₃, .seq eb e₃, by omega, B₃, fun x hx => by rw [m₃ x hx], ?_⟩
   exact (fb.mono fun q hq => by
-      simp only [Bool.or_eq_true, decide_eq_true_eq] at hq ⊢; omega).trans
+      sio only [Bool.or_eq_true, decide_eq_true_eq] at hq ⊢).trans
     (f₃.mono fun q hq => by simp only [Bool.or_eq_true] at hq ⊢; exact Or.inl (Or.inl hq))
 
 theorem wpos_ne {p s : WPos} (h : p ≠ s) : ¬ (p.edge = s.edge ∧ p.hgt = s.hgt) := by
@@ -220,18 +222,18 @@ theorem junS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ} {
   have K₁ := hK.frame f₁ (by decide)
   have B₁ := hB.frame f₁ (by decide) m₁
   have F₁ : FrameM Bjun d d₁ := f₁.mono fun q hq => by
-    simp only [Bjun, Bem, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢; omega
+    sio only [Bjun, Bem, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢
   by_cases hps : p = s
-  · have h0 : d₁.nreg 215060 = 0 := by rw [v60, hps]; omega
-    refine ⟨d₁, 7 + (0 + 1), (Exec.seq e₁ (.ifLtN_true (by rw [h0, K₁.one]; omega)
+  · have h0 : d₁.nreg 215060 = 0 := by rwo [v60, hps]
+    refine ⟨d₁, 7 + (0 + 1), (Exec.seq e₁ (.ifLtN_true (by rwo [h0, K₁.one])
       (.skip e₁.wb_right))).cast (by omega), by omega, ?_, fun x _ => by rw [m₁], F₁⟩
     simp only [hps, ↓reduceIte, List.append_nil]; exact B₁
   · have hne := wpos_ne hps
-    have h1 : 1 ≤ d₁.nreg 215060 := by rw [v60]; omega
+    have h1 : 1 ≤ d₁.nreg 215060 := by rwo [v60]
     obtain ⟨d₂, k₂, e₂, hk₂, B₂, m₂, f₂⟩ := cpEm_exec (P := P) 215052 215053 (by decide) d₁
       e₁.wb_right K₁ (by rw [f₁.1 _ (by decide), h52]) (by rw [f₁.1 _ (by decide), h53]) B₁ hW1
       hW2 (by omega)
-    refine ⟨d₂, k₁ + (k₂ + 2), .seq e₁ (.ifLtN_false (by rw [K₁.one]; omega) e₂), by omega, ?_,
+    refine ⟨d₂, k₁ + (k₂ + 2), .seq e₁ (.ifLtN_false (by rwo [K₁.one]) e₂), by omega, ?_,
       fun x hx => by rw [m₂ x hx, m₁], F₁.trans (f₂.mono fun q hq => ?_)⟩
     · simp only [hps, ↓reduceIte]; exact B₂
     · simp only [Bjun, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢
@@ -261,7 +263,6 @@ theorem sub_Bdyn {B : ℕ → Bool} (h : ∀ q, B q = true → q = 215011 ∨ q 
     · exact Or.inl (Or.inr h)
     · exact Or.inr h
 
-set_option maxHeartbeats 2000000 in
 /-- **One iteration of the arc loop**: appends `arcIt li n N r t`. -/
 theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r : ℕ} {li : Bool}
     {T t : ℕ} (hE : HEnv W n N r li T d) (h41 : d.nreg 215041 = t)
@@ -289,7 +290,7 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
   obtain ⟨d₁, k₁, e₁, hk₁, v46, v47, v48, v49, v50, v51, m₁, f₁⟩ := ldS_exec (P := P) d hw hE h41 ht
   have K₁ := hE.K.frame f₁ (by decide)
   have B₁ := hB.frame f₁ (by decide) m₁
-  have g₁ : ∀ q, Bld q = false → d₁.nreg q = d.nreg q := f₁.1
+  have g₁  := f₁.1
   -- the partner
   obtain ⟨d₂, k₂, e₂, hk₂, v52, v53, m₂, f₂⟩ := partS_exec (P := P) d₁ e₁.wb_right K₁ hE.F v46 v47
     hxe hxh (by rw [g₁ _ (by decide), hE.kR])
@@ -301,14 +302,14 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
       rw [m₁, g₁ _ (by decide)]; exact ⟨a1, a2, a3, by omega⟩) (by omega)
   have K₂ := K₁.frame f₂ (by decide)
   have B₂ := B₁.frame f₂ (by decide) m₂
-  have g₂ : ∀ q, Bpart q = false → d₂.nreg q = d₁.nreg q := f₂.1
+  have g₂  := f₂.1
   obtain ⟨hpe, hph⟩ := partner_bounds hE.F hxe hxh
   -- the junction
   obtain ⟨d₃, k₃, e₃, hk₃, B₃, m₃, f₃⟩ := junS_exec (P := P) d₂ e₂.wb_right K₂ v52 v53
     (by rw [g₂ _ (by decide), v48]) (by rw [g₂ _ (by decide), v49]) hpe hph hse hsh B₂
     (by omega) (by omega) (by omega)
   have K₃ := K₂.frame f₃ (by decide)
-  have g₃ : ∀ q, Bjun q = false → d₃.nreg q = d₂.nreg q := f₃.1
+  have g₃  := f₃.1
   set ys := xs ++ (if partner N r (N.arc jp).e = (N.arc j).s then []
     else [ptI li n (partner N r (N.arc jp).e) false]) with hys
   have hyl : ys.length ≤ xs.length + 1 := by rw [hys, List.length_append]; split_ifs <;> simp
@@ -329,10 +330,10 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
     (by rw [g₄ _ (by decide), g₃ _ (by decide), g₂ _ (by decide), v48])
     (by rw [g₄ _ (by decide), g₃ _ (by decide), g₂ _ (by decide), v50])
     (by rw [g₄ _ (by decide), g₃ _ (by decide), g₂ _ (by decide), v51]) hse hee B₄
-    (by simp only [List.length_append, List.length_singleton]; omega)
-    (by rw [ptsLen_append, ptE, ptsLen_pt]; omega) (by omega)
+    (by sio only [List.length_append, List.length_singleton])
+    (by rwo [ptsLen_append, ptE, ptsLen_pt]) (by omega)
   have K₅ := K₄.frame f₅ (by decide)
-  have g₅ : ∀ q, Brun q = false → d₅.nreg q = d₄.nreg q := f₅.1
+  have g₅  := f₅.1
   have hrl := runItems_length_le li n (N.arc j).s (N.arc j).e
   have hrp : ptsLen n (runItems li n (N.arc j).s (N.arc j).e) < n :=
     (ptsLen_runItems li hE.hn0 _ _).symm ▸ runCnt_lt li hE.hn0 _ _
@@ -342,8 +343,8 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
     (h := (N.arc j).e.hgt)
     e₅.wb_right K₅ v72
     (by rw [g₅ _ (by decide), g₄ _ (by decide), g₃ _ (by decide), g₂ _ (by decide), v51]) B₅
-    (by simp only [List.length_append, List.length_singleton]; omega)
-    (by simp only [ptsLen_append, ptE, ptsLen_pt]; omega)
+    (by sio only [List.length_append, List.length_singleton])
+    (by sio only [ptsLen_append, ptE, ptsLen_pt])
     (by split_ifs <;> [have := Nat.mod_lt ((N.arc j).e.edge + n - 1) hE.hn0; skip] <;> omega)
   have K₆ := K₅.frame f₆ (by decide)
   have g₆ : ∀ q, (Bem q || decide (q = 215064) || decide (q = 215065)) = false →
@@ -352,7 +353,7 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
   have r41 : d₆.nreg 215041 = t := by
     rw [g₆ _ (by decide), g₅ _ (by decide), g₄ _ (by decide), g₃ _ (by decide), g₂ _ (by decide),
       g₁ _ (by decide), h41]
-  have e₇ := Exec.addN (P := P) e₆.wb_right 215041 215041 215020 (by rw [r41, K₆.one]; omega)
+  have e₇ := Exec.addN (P := P) e₆.wb_right 215041 215041 215020 (by rwo [r41, K₆.one])
   set d₇ : Config := { d₆ with nreg := upd d₆.nreg 215041 (d₆.nreg 215041 + d₆.nreg 215020) }
     with hd₇
   have f₇ : FrameM (fun q => decide (q = 215041)) d₆ d₇ :=
@@ -371,7 +372,7 @@ theorem arcBody_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
       rfl
     rw [e]; exact B₇
   · show d₆.nmem a = d.nmem a
-    rw [m₆ a (by simp only [List.length_append]; omega), m₅ a (by simp only [List.length_append]; omega),
+    rw [m₆ a (by sio only [List.length_append]), m₅ a (by sio only [List.length_append]),
       m₄ a (by omega), m₃ a (by omega), m₂, m₁]
   · refine ((((((sub_Bdyn ?_ f₁).trans (sub_Bdyn ?_ f₂)).trans (sub_Bdyn ?_ f₃)).trans
       (sub_Bdyn ?_ f₄)).trans (sub_Bdyn ?_ f₅)).trans (sub_Bdyn ?_ f₆)).trans (sub_Bdyn ?_ f₇) <;>

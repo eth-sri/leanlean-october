@@ -5,6 +5,8 @@ public import Chazelle.Core.SweepRamInit
 public import Chazelle.Core.RestoreTKey
 public import Chazelle.Core.MergeAsmDesc
 public import Chazelle.Core.SweepIoBruteMath
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the candidate step of side `1`, the environment
@@ -45,8 +47,8 @@ theorem hreg : HostRegular P.n H := by
 include hA hI in
 theorem ctxW : ChainCtx P W c (sw 2) J.whole := by
   obtain ⟨-, -, -, -, hJ, hJWF, -⟩ := hA.hst
-  obtain ⟨hC, hw⟩ := chainDesc_keep hJWF.2.2.1 hJ.2.2 (fun a ha => hI.hm a ha) hI.hA
-  rw [← fixr hI (show IFix (sw 2) by unfold IFix sw; omega)] at hC hw
+  obtain ⟨hC, hw⟩ := chainDesc_keep hJWF.2.2.1 hJ.2.2 (hI.hm) hI.hA
+  rw [← fixr hI (show IFix (sw 2) by ufo IFix sw)] at hC hw
   exact ⟨hA.hG, hA.hWh, hw, ⟨H, hC, hA.hreg⟩, hA.hP, hA.hWm⟩
 
 include hA hI in
@@ -60,20 +62,20 @@ theorem lctxR (h1 : c.nreg lMD = c₀.nreg (sw 31)) (h2 : c.nreg lCD = c₀.nreg
     · exact absurd hM (Restore.chainModel_ne_interior _ _)
   obtain ⟨-, -, hEb, -⟩ := w21.2 H J.right d21
   have hcd : ChainDescAt c₀.nmem (c₀.nreg (sw 31) + 1) (Qof P) H J.right :=
-    MergeAsm.chainDescAt_copy d21 hEb (fun a _ => rfl) (fun j hj => hA.hmd₂ j hj)
+    MergeAsm.chainDescAt_copy d21 hEb (fun a _ => rfl) (hA.hmd₂)
   have hwf' : ChainWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg (sw 31) + 1) :=
-    MergeAsm.chainWF_copy w21 d21 (fun a _ => rfl) (fun j hj => hA.hmd₂ j hj)
+    MergeAsm.chainWF_copy w21 d21 (fun a _ => rfl) (hA.hmd₂)
       (by have := w31.1; omega) le_rfl
   have hmwf : ModelDescWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg (sw 31)) := ⟨w31.1, fun _ => hwf'⟩
-  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := fun a ha => hI.hm a ha
+  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
   obtain ⟨hC, hw⟩ := chainDesc_keep hwf' hcd hm hI.hA
   obtain ⟨mwfc, m0c, mdc⟩ := ShotList.modelDesc_keep hmwf h0 hcd hm hI.hA
-  have hTB := fixr hI (show IFix TBR by unfold IFix TBR sw; omega)
-  have hTL := fixr hI (show IFix TLR by unfold IFix TLR sw; omega)
+  have hTB := fixr hI (show IFix TBR by ufo IFix TBR sw)
+  have hTL := fixr hI (show IFix TLR by ufo IFix TLR sw)
   refine
     { hG := hA.hG
       hWh := hA.hWh
-      hctx := ⟨hA.hG, hA.hWh, by rw [h2]; exact hw, ⟨H, by rw [h2]; exact hC, hA.hreg⟩,
+      hctx := ⟨hA.hG, hA.hWh, by rwx [h2], ⟨H, by rwx [h2], hA.hreg⟩,
         hA.hP, by have := hA.hWm; have : J.right.m ≤ J.whole.m := by
                     show J.m₂ ≤ J.m₁ + J.m₂; omega
                   omega⟩
@@ -102,20 +104,20 @@ theorem lctxL (h1 : c.nreg lMD = c₀.nreg (sw 30)) (h2 : c.nreg lCD = c₀.nreg
     · exact absurd hM (Restore.chainModel_ne_interior _ _)
   obtain ⟨-, -, hEb, -⟩ := w20.2 H J.left d20
   have hcd : ChainDescAt c₀.nmem (c₀.nreg (sw 30) + 1) (Qof P) H J.left :=
-    MergeAsm.chainDescAt_copy d20 hEb (fun a _ => rfl) (fun j hj => hA.hmd₁ j hj)
+    MergeAsm.chainDescAt_copy d20 hEb (fun a _ => rfl) (hA.hmd₁)
   have hwf' : ChainWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg (sw 30) + 1) :=
-    MergeAsm.chainWF_copy w20 d20 (fun a _ => rfl) (fun j hj => hA.hmd₁ j hj)
+    MergeAsm.chainWF_copy w20 d20 (fun a _ => rfl) (hA.hmd₁)
       (by have := w30.1; omega) le_rfl
   have hmwf : ModelDescWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg (sw 30)) := ⟨w30.1, fun _ => hwf'⟩
-  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := fun a ha => hI.hm a ha
+  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
   obtain ⟨hC, hw⟩ := chainDesc_keep hwf' hcd hm hI.hA
   obtain ⟨mwfc, m0c, mdc⟩ := ShotList.modelDesc_keep hmwf h0 hcd hm hI.hA
-  have hTB := fixr hI (show IFix TBR by unfold IFix TBR sw; omega)
-  have hTL := fixr hI (show IFix TLR by unfold IFix TLR sw; omega)
+  have hTB := fixr hI (show IFix TBR by ufo IFix TBR sw)
+  have hTL := fixr hI (show IFix TLR by ufo IFix TLR sw)
   refine
     { hG := hA.hG
       hWh := hA.hWh
-      hctx := ⟨hA.hG, hA.hWh, by rw [h2]; exact hw, ⟨H, by rw [h2]; exact hC, hA.hreg⟩,
+      hctx := ⟨hA.hG, hA.hWh, by rwx [h2], ⟨H, by rwx [h2], hA.hreg⟩,
         hA.hP, by have := hA.hWm; have : J.left.m ≤ J.whole.m := by
                     show J.m₁ ≤ J.m₁ + J.m₂; omega
                   omega⟩
@@ -149,8 +151,8 @@ theorem q1_facts {z : Point} (hq : QState P J 1 z c) :
   obtain ⟨h1, h2, h3, h4, h5, h6, h7⟩ := hq.hq
   have hz := hq.hz
   have hht := hq.hht
-  simp only [sideChain_one] at h1 h4 h5 h6 h7 hz hht
-  simp only at h2 h3
+  simp [sideChain_one] at h1 h4 h5 h6 h7 hz hht
+  simp at h2 h3
   have hσ : dirOf (c.nreg qD) = 1 ∨ dirOf (c.nreg qD) = -1 := SweepPrim.dirOf_cases _
   have hsec : sideLeft (chainModel J.right).W (c.nreg qE)
       ((chainModel J.right).param (Qof P) ⟨c.nreg qE, c.nreg qH⟩)
@@ -159,13 +161,12 @@ theorem q1_facts {z : Point} (hq : QState P J 1 z c) :
         (((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).1 + dirOf (c.nreg qD),
           ((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).2) := by
       simp [Chazelle.Visibility.rayPt]
-    rw [e]; exact h7
-  have habs : |((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).2| < J.right.radius :=
-    query_abs h1 h4 h5 h6 hσ hsec
+    rwx [e]
+  have habs  := query_abs h1 h4 h5 h6 hσ hsec
   have hpc := posClass_of h1 h4 h5 habs (Or.inl h6)
   rw [hz] at habs h6 hht
-  refine ⟨hz, h1, ⟨h4, h5, by rw [← hQn]; exact h3⟩, habs, h6, hpc,
-    ⟨c.nreg qH - 1, by show c.nreg qH = _; omega, by omega, by rw [hz, hht], hsec, by rw [hz]; exact h6⟩,
+  refine ⟨hz, h1, ⟨h4, h5, by rwx [← hQn]⟩, habs, h6, hpc,
+    ⟨c.nreg qH - 1, by show c.nreg qH = _; omega, by omega, by rw [hz, hht], hsec, by rwx [hz]⟩,
     hσ, h2, by omega, hht.symm⟩
 
 end

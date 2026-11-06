@@ -98,7 +98,7 @@ theorem sum_dart_fst_filter (s : Finset V) (f : V → ℕ) :
 theorem sum_dart_fst (f : V → ℕ) :
     ∑ d : G.Dart, f d.fst = ∑ v, G.degree v * f v := by
   have h := sum_dart_fst_filter G univ f
-  simp only [mem_univ, filter_true] at h
+  simp [mem_univ, filter_true] at h
   exact h
 
 omit [DecidableEq V] in
@@ -114,7 +114,7 @@ theorem sum_dart_snd (f : V → ℕ) :
 theorem card_dart_fst_filter (s : Finset V) :
     #((univ : Finset G.Dart).filter (fun d => d.fst ∈ s)) = ∑ v ∈ s, G.degree v := by
   have h := sum_dart_fst_filter G s (fun _ => 1)
-  simp only [mul_one, sum_const, smul_eq_mul] at h
+  simp [mul_one, sum_const, smul_eq_mul] at h
   simpa using h
 
 omit [DecidableEq V] in

@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Separator.Clusters
 public import Mathlib.Data.Nat.Size
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-I, part 18: the work stack of pieces
@@ -45,7 +49,7 @@ theorem items_card {act : ℕ → ℕ} {p : ℕ × ℕ} (h : Set.InjOn act (Fins
 theorem mem_items {act : ℕ → ℕ} {p : ℕ × ℕ} {v : ℕ} :
     v ∈ items act p ↔ ∃ i, p.1 ≤ i ∧ i < p.2 ∧ act i = v := by
   unfold items
-  simp only [Finset.mem_image, Finset.mem_Ico]
+  simp [Finset.mem_image, Finset.mem_Ico]
   constructor
   · rintro ⟨i, ⟨a, b⟩, c⟩; exact ⟨i, a, b, c⟩
   · rintro ⟨i, a, b, c⟩; exact ⟨i, ⟨a, b⟩, c⟩
@@ -54,7 +58,7 @@ theorem mem_items {act : ℕ → ℕ} {p : ℕ × ℕ} {v : ℕ} :
 theorem items_congr {act act' : ℕ → ℕ} {p : ℕ × ℕ}
     (h : ∀ i, p.1 ≤ i → i < p.2 → act' i = act i) : items act' p = items act p := by
   ext v
-  simp only [mem_items]
+  simp [mem_items]
   constructor
   · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rw [← h i a b]; exact c⟩
   · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rw [h i a b]; exact c⟩
@@ -136,9 +140,9 @@ theorem SplitOK.scls_inj {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → 
   have a := hS.e_mono (Nat.zero_le t) (by omega)
   have b := hS.e_mono (show t + 1 ≤ 3 by omega) le_rfl
   intro x hx y hy hxy
-  simp only [Finset.coe_Ico, Set.mem_Ico] at hx hy
-  exact hS.inj (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega)
-    (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega) hxy
+  simp [Finset.coe_Ico, Set.mem_Ico] at hx hy
+  exact hS.inj (by sio only [Finset.coe_Ico, Set.mem_Ico])
+    (by sio only [Finset.coe_Ico, Set.mem_Ico]) hxy
 
 /-- Distinct classes are disjoint. -/
 theorem SplitOK.scls_disj {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → ℕ} {sep : Finset ℕ}
@@ -148,13 +152,13 @@ theorem SplitOK.scls_disj {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ →
   intro v hv hv'
   obtain ⟨i, a, b, c⟩ := mem_items.mp hv
   obtain ⟨i', a', b', c'⟩ := mem_items.mp hv'
-  simp only [scls] at a b a' b'
+  simp [scls] at a b a' b'
   have h0 := hS.e_mono (Nat.zero_le t) (by omega)
   have h0' := hS.e_mono (Nat.zero_le t') (by omega)
   have h3 := hS.e_mono (show t + 1 ≤ 3 by omega) le_rfl
   have h3' := hS.e_mono (show t' + 1 ≤ 3 by omega) le_rfl
-  have := hS.inj (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega)
-    (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega) (c.trans c'.symm)
+  have := hS.inj (by sio only [Finset.coe_Ico, Set.mem_Ico])
+    (by sio only [Finset.coe_Ico, Set.mem_Ico]) (c.trans c'.symm)
   subst this
   rcases Nat.lt_or_gt_of_ne hne with h | h
   · have := hS.e_mono (show t + 1 ≤ t' by omega) (by omega); omega
@@ -185,7 +189,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     · left; omega
     · right; omega
     · omega
-    · unfold len at hbig; omega
+    · ufo len at hbig
   -- classification of the new live segments
   have hlive : ∀ q, Lv (news ++ rest) fin' q →
       (Lv (p :: rest) fin q ∧ q ≠ p) ∨ (∃ t, t < 3 ∧ q = scls e t ∧ 0 < len q) := by
@@ -219,20 +223,20 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
   have hclsp : ∀ t, t < 3 → scls e t ≠ p ∧ len (scls e t) < len p := by
     intro t ht
     have := hS.half t ht
-    have hl : len (scls e t) < len p := by unfold len at *; simp only [scls] at *; omega
-    exact ⟨fun h => by rw [h] at hl; omega, hl⟩
+    have hl : len (scls e t) < len p := by unfold len at *; sio only [scls] at *
+    exact ⟨fun h => by rwo [h] at hl, hl⟩
   have hnew_items : ∀ t, t < 3 → ∀ v ∈ items act' (scls e t), v ∈ items act p ∧ v ∉ sep :=
-    fun t ht => hS.inparts t ht
+    hS.inparts
   have hsep_off : ∀ v ∈ sep, v ∉ D ∧ v ∉ H := fun v hv => hoffp v (hS.sub hv)
   -- range disjointness of a class and an old segment
   have hrd_cls_old : ∀ t, t < 3 → ∀ q, Lv (p :: rest) fin q → q ≠ p → RDisj (scls e t) q := by
     intro t ht q hq hqp
     obtain ⟨a, b, c⟩ := hS.scls_in ht
     rcases hI.rdisj q p hq hLp hqp with h | h | h | h
-    · right; left; simp only [scls]; omega
-    · left; simp only [scls]; omega
+    · right; left; sio only [scls]
+    · left; sio only [scls]
     · right; right; right; omega
-    · unfold len at hbig; omega
+    · ufo len at hbig
   refine ⟨fun q hq => ?_, fun q hq => ?_, fun q hq v hv => ?_, ?_, fun q hq hqf => ?_,
     fun q q' hq hq' hne => ?_, fun q q' hq hq' hne => ?_, fun q hq => ?_, fun q hq => ?_,
     fun v hv h1 h2 => ?_, fun q hq v hv => ?_, fun q hq v hv w hw => ?_,
@@ -244,7 +248,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
   · -- injective
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩
     · intro i hi j hj hij
-      simp only [Finset.coe_Ico, Set.mem_Ico] at hi hj
+      simp [Finset.coe_Ico, Set.mem_Ico] at hi hj
       have ho : ∀ i, q.1 ≤ i → i < q.2 → act' i = act i := by
         intro i a b
         refine hS.out i ?_ (by have := hrng q h1; omega)
@@ -252,7 +256,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         · left; omega
         · right; omega
         · omega
-        · unfold len at hbig; omega
+        · ufo len at hbig
       rw [ho i hi.1 hi.2, ho j hj.1 hj.2] at hij
       exact hI.inj q h1 (by simp [hi.1, hi.2]) (by simp [hj.1, hj.2]) hij
     · exact hS.scls_inj ht
@@ -269,7 +273,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     have hrd := hI.rdisj _ p hq2' hLp hne
     obtain ⟨a, b, c⟩ := hS.scls_in ht
     unfold len at hb hbig
-    simp only [scls] at hrd hb
+    simp [scls] at hrd hb
     rcases hrd with h | h | h | h <;> omega
   · -- stack and finished disjoint
     rcases List.mem_append.mp hq with hq | hq
@@ -280,7 +284,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         have hrd := hI.rdisj _ p hL' hLp (hclsp t ht).1
         obtain ⟨a, b, c⟩ := hS.scls_in ht
         unfold len at hb hbig
-        simp only [scls] at hrd hb
+        simp [scls] at hrd hb
         rcases hrd with h | h | h | h <;> omega
       · have := (Finset.mem_filter.mp h).2.2; omega
     · rcases Finset.mem_union.mp hqf with h | h
@@ -292,17 +296,17 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         obtain ⟨a, b, c⟩ := hS.scls_in (Finset.mem_range.mp ht)
         have := hq2.1
         unfold len at this hbig
-        simp only [scls] at hrd this
+        simp [scls] at hrd this
         rcases hrd with h | h | h | h <;> omega
   · -- range disjointness
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩ <;>
       rcases hlive q' hq' with ⟨h1', h2'⟩ | ⟨t', ht', rfl, _⟩
     · exact hI.rdisj q q' h1 h1' hne
     · have := hrd_cls_old t' ht' q h1 h2
-      unfold RDisj at this ⊢; omega
+      ufo RDisj at this ⊢
     · exact hrd_cls_old t ht q' h1' h2'
     · have htt : t ≠ t' := fun h => hne (by rw [h])
-      simp only [RDisj, scls]
+      simp [RDisj, scls]
       rcases Nat.lt_or_gt_of_ne htt with h | h
       · left; exact hS.e_mono (show t + 1 ≤ t' by omega) (by omega)
       · right; left; exact hS.e_mono (show t' + 1 ≤ t by omega) (by omega)
@@ -333,9 +337,9 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
       obtain ⟨t, ht, hvt⟩ := hS.parts v hvq h2.2
       have hpos : 0 < len (scls e t) := by
         obtain ⟨i, a, b, _⟩ := mem_items.mp hvt
-        unfold len scls; simp only at a b; omega
+        unfold len scls; sio only at a b
       exact ⟨scls e t, hcls_live t ht hpos, hvt⟩
-    · exact ⟨q, hold_live q hq hqp, by rw [hold q hq hqp]; exact hvq⟩
+    · exact ⟨q, hold_live q hq hqp, by rwx [hold q hq hqp]⟩
   · -- off
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩
     · rw [hold q h1 h2] at hv
@@ -362,10 +366,10 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
       subst this
       have hpos : 0 < len (scls e t) := by
         obtain ⟨i, a, b, _⟩ := mem_items.mp hxt
-        unfold len scls; simp only at a b; omega
+        unfold len scls; sio only at a b
       exact ⟨scls e t, hcls_live t ht hpos, hxt, hyt⟩
-    · exact ⟨q, hold_live q hq hqp, by rw [hold q hq hqp]; exact hxq,
-        by rw [hold q hq hqp]; exact hyq⟩
+    · exact ⟨q, hold_live q hq hqp, by rwx [hold q hq hqp],
+        by rwx [hold q hq hqp]⟩
   · -- `D ∪ sep` stays off `H`
     rw [Finset.disjoint_union_left]
     exact ⟨hI.hD, Finset.disjoint_left.mpr (fun v hv => (hsep_off v hv).2)⟩
@@ -387,7 +391,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
           have hrd := hI.rdisj _ p hq2' hLp (hclsp t ht).1
           obtain ⟨a, b, c⟩ := hS.scls_in ht
           unfold len at hb hbig
-          simp only [scls] at hrd hb
+          simp [scls] at hrd hb
           rcases hrd with h | h | h | h <;> omega)) (List.mem_toFinset.mp h1)
           (List.mem_toFinset.mp h2)
     rw [Finset.sum_union hdn]
@@ -434,7 +438,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
       have hrd := hI.rdisj _ p hq2' hLp (hclsp t ht).1
       obtain ⟨a, b, c⟩ := hS.scls_in ht
       unfold len at hb hbig
-      simp only [scls] at hrd hb
+      simp [scls] at hrd hb
       rcases hrd with h | h | h | h <;> omega
     rw [Finset.sum_union hdn]
     have hsub : news.toFinset ⊆ (Finset.range 3).image (scls e) := by
@@ -468,10 +472,10 @@ theorem split_size_pot (m : ℕ → ℕ) (M : ℕ) (hsum : ∑ t ∈ Finset.rang
   have hsz : ∀ t, t < 3 → m t * Nat.size (m t) + m t ≤ m t * Nat.size M := by
     intro t ht
     rcases Nat.eq_zero_or_pos (m t) with h0 | hpos
-    · rw [h0]; simp
+    · rws [h0]
     · have h2 : Nat.size (2 * m t) ≤ Nat.size M := Nat.size_le_size (hhalf t ht)
       have h3 : Nat.size (2 * m t) = Nat.size (m t) + 1 := by
-        rw [show 2 * m t = m t <<< 1 by rw [Nat.shiftLeft_eq_mul_pow]; ring]
+        rw [show 2 * m t = m t <<< 1 by rwring [Nat.shiftLeft_eq_mul_pow]]
         exact Nat.size_shiftLeft (by omega) 1
       calc m t * Nat.size (m t) + m t = m t * (Nat.size (m t) + 1) := by ring
         _ ≤ m t * Nat.size M := Nat.mul_le_mul_left _ (by omega)

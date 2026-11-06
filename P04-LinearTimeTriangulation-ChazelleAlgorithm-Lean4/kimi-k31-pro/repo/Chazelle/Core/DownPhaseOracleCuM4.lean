@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleCuM3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (E7-B, part 16): the answer of the interior cutter, and the slot registers
@@ -38,8 +42,8 @@ theorem kpath_idx {M : Model} {Q : Polygon} {n : ℝ} : ∀ {V : ℝ} {ps : List
   | _, pc :: q :: qs, _, ⟨_, V₁, _, ⟨j, hj⟩, hp⟩, i, hi => by
     rcases i with _ | i
     · obtain ⟨⟨j', hj'⟩, -⟩ := hp
-      exact ⟨j, j', by simp only [List.getElem_cons_zero, List.getElem_cons_succ]; linarith⟩
-    · have := kpath_idx hp i (by simp at hi ⊢; omega)
+      exact ⟨j, j', by sil only [List.getElem_cons_zero, List.getElem_cons_succ]⟩
+    · have := kpath_idx hp i (by sio at hi ⊢)
       simpa using this
 
 /-- Keys of proper positions on the walk lie in `[0, n)`. -/
@@ -90,7 +94,7 @@ theorem cut_out {P : Polygon} {ps : List Pc} {V0 V1 : ℝ} {m : ℕ → ℕ} {E 
     obtain ⟨⟨i, hi⟩, -⟩ := hk
     simp only [List.getElem_cons_zero]
     exact (ShootCut.key_eq_of_unw hn0 (hb pc (by simp)).1 hsb (i := i) (j := 0)
-      (by rw [← hi, hs]; simp)).symm.symm
+      (by rws [← hi, hs])).symm.symm
   · -- the last key
     obtain ⟨j, hj⟩ := KPath.last hk hne
     obtain ⟨j', hj'⟩ := he
@@ -123,14 +127,14 @@ theorem slotOK_edges {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb :
   set ps := (List.range sl.q).map (rdPc m sl.L) with hps
   have hlen : ps.length = sl.q := by simp [hps]
   have hne : ps ≠ [] := by
-    intro h; have := congrArg List.length h; rw [hlen] at this; simp at this; omega
+    intro h; have := congrArg List.length h; rw [hlen] at this; sio at this
   have hget : ∀ i (hi : i < ps.length), ps[i]'hi = rdPc m sl.L i := fun i hi => by
     simp [hps]
   have h0' : (chainModel C).key (Qof P) (ps[0]'(List.length_pos_iff.2 hne)).s =
-      (chainModel C).key (Qof P) sa := by rw [hget]; exact h0
+      (chainModel C).key (Qof P) sa := by rwx [hget]
   have hl' : (chainModel C).key (Qof P) (ps[ps.length - 1]'(by
       have := List.length_pos_iff.2 hne; omega)).e = (chainModel C).key (Qof P) ea := by
-    rw [hget, hlen]; exact hl
+    rwx [hget, hlen]
   have hc' : ∀ i (hi : i + 1 < ps.length), (chainModel C).key (Qof P) (ps[i]'(by omega)).e =
       (chainModel C).key (Qof P) (ps[i + 1]'hi).s := fun i hi => by
     rw [hget, hget]; exact hc i (by omega)
@@ -217,7 +221,7 @@ theorem SlotSt.keep {P : Polygon} {Hγ Gγ e₁ : ℕ} {V0 V : ℝ} {k : ℕ} {c
     SlotSt P Hγ Gγ e₁ V0 V k c' := by
   have hs : slotsOf c' 4 = slotsOf c 4 := slotsOf_congr (fun j f hj hf => hr _ (by omega)
     (by omega))
-  refine ⟨?_, fun j h1 h2 => ?_, fun j hj => ?_, fun sl hsl => h.qG sl (by rw [← hs]; exact hsl)⟩
+  refine ⟨?_, fun j h1 h2 => ?_, fun j hj => ?_, fun sl hsl => h.qG sl (by rwx [← hs])⟩
   · rw [hs]; exact h.ok.keep hm ha
   · rw [hr _ (by omega) (by omega)]; exact h.free j h1 h2
   · rw [hr _ (by omega) (by omega)]; exact h.bit j hj
@@ -229,7 +233,7 @@ theorem SlotSt.add {P : Polygon} {Hγ Gγ e₁ : ℕ} {V0 V V' : ℝ} {k : ℕ} 
     (hf : c'.nreg (170200 + 5 * k) = 1) (hm : c'.nmem = c.nmem)
     (hs : SlotOK P c.nmem (c.nreg ALLOC) Hγ e₁ V V' (slotAt c' k)) (hq : (slotAt c' k).q ≤ Gγ) :
     SlotSt P Hγ Gγ e₁ V0 V' (k + 1) c' := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr _ (Or.inl (by unfold ALLOC; omega))
+  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr _ (Or.inl (by ufo ALLOC))
   have hfree' : ∀ j, k + 1 ≤ j → j < 4 → c'.nreg (170200 + 5 * j) = 0 := fun j h1 h2 => by
     rw [hr _ (Or.inr (by omega))]; exact h.free j (by omega) h2
   have he := slotsOf_rec hk h.free hfree' (fun r hr' => hr r (Or.inl hr')) hf
@@ -238,7 +242,7 @@ theorem SlotSt.add {P : Polygon} {Hγ Gγ e₁ : ℕ} {V0 V V' : ℝ} {k : ℕ} 
   · rcases (show j < k ∨ j = k ∨ k < j by omega) with h1 | h1 | h1
     · rw [hr _ (Or.inl (by omega))]; exact h.bit j hj
     · subst h1; rw [hf]
-    · rw [hfree' j (by omega) hj]; omega
+    · rwo [hfree' j (by omega) hj]
   · rw [he, List.mem_append, List.mem_singleton] at hsl
     rcases hsl with hsl | rfl
     · exact h.qG sl hsl

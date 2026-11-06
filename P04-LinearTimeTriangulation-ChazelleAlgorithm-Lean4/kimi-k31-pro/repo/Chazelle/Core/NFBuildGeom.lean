@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.FactsTie
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # WP-C (BuildNF): walk-axiom facts for the region identification
@@ -35,7 +37,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     {U : Set Point} (hU : U ∈ M.regions F) :
     ∃ (p : ℕ) (t : ℝ), p < M.W.n ∧ 0 < t ∧ t < 1 ∧ ¬ M.IsCut F (p + t) ∧ M.Faces p t U := by
   have hsys := hM.sys F hF hfin
-  have hUo : IsOpen U := hsys.regionsIn_open subset_rfl hU
+  have hUo  := hsys.regionsIn_open subset_rfl hU
   obtain ⟨z₀, hz₀⟩ := Chazelle.Chain.regionsIn_nonempty hU
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hUo z₀ hz₀
   -- a point of `U` at a generic height
@@ -54,8 +56,8 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     simp only [hz, sub_self, abs_zero]
     rw [max_lt_iff, abs_of_pos (by linarith [hyI.1])]
     exact ⟨hr, by linarith [hyI.2]⟩
-  have hUfree : U ⊆ freeIn M.D F := Chazelle.Chain.regionsIn_subset hU
-  have hzD : z ∈ M.D := (hUfree hzU).1
+  have hUfree  := Chazelle.Chain.regionsIn_subset hU
+  have hzD  := (hUfree hzU).1
   have hzv : ∀ i < M.W.n, z.2 ≠ (M.W.vtx i).2 := fun i hi h => hyB (Or.inl ⟨i, hi, h.symm⟩)
   have hzc : ∀ x : Point, x.2 = y → x ∉ ⋃₀ F := by
     rintro x hx ⟨c, hc, hxc⟩
@@ -74,7 +76,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     rw [Chazelle.Chain.regionsIn_eq_component hU hzU]
     exact hLc.subset_connectedComponentIn hzL hLF
   -- a half-disk on the left of the edge at `q` is free
-  have hqF : q ∉ ⋃₀ F := hzc q rfl
+  have hqF  := hzc q rfl
   obtain ⟨r₁, hr₁, hb₁⟩ := Metric.isOpen_iff.1 (hsys.isClosed_sUnion subset_rfl).isOpen_compl q hqF
   obtain ⟨r₂, hr₂, hcl⟩ := hM.clean p hp t ht.1.le ht.2
   have hne := hM.nd p hp
@@ -89,7 +91,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     by_contra hxD
     refine hcl x ?_ hxD ?_
     · rw [hq]; exact ball_subset_ball (min_le_right _ _) hx1
-    · rw [sideLeft_edge hne ht]; exact hx2
+    · rwx [sideLeft_edge hne ht]
   -- a point of the segment lies in the half-disk
   have hq0 : det u v q = 0 := by
     rw [← hq]; exact Geometry.det_lerp_self _ _ _
@@ -105,7 +107,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       exact ⟨hεr, lt_of_le_of_lt le_rfl (lt_min (lt_min hr₁ hr₂) hr₂ |>.trans_le (min_le_left _ _))⟩
     · simp only [mem_ofPred_eq, one_mul]
       have e : det u v ((z.1 + (s - ε), z.2) : Point) = det u v q + ε * (v.2 - u.2) := by
-        simp only [hqdef, det]; ring
+        sir only [hqdef, det]
       rw [e, hq0]
       have : 0 < v.2 - u.2 := by linarith
       nlinarith
@@ -136,7 +138,7 @@ theorem separates_iff (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {pa pb 
   constructor
   · rintro ⟨pa', pb', ta', tb', hA', hB', hAB', hiff⟩
     obtain ⟨e, -, -, -, -, -, hoth⟩ := hM.attach_other_end hc hA
-    have hBe : sidePt M.W pb tb = e := hoth pb tb hB (Ne.symm hAB)
+    have hBe  := hoth pb tb hB (Ne.symm hAB)
     -- every attachment of `c` is `A` or `B`
     have hcase : ∀ (q : ℕ) (τ : ℝ), SideAttach M.W c q τ →
         (q = pa ∧ τ = ta) ∨ (q = pb ∧ τ = tb) := by
@@ -144,7 +146,7 @@ theorem separates_iff (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {pa pb 
       by_cases h : sidePt M.W q τ = sidePt M.W pa ta
       · exact Or.inl (hM.attach_unique hc hQ hA h)
       · exact Or.inr (hM.attach_unique hc hQ hB (by rw [hoth q τ hQ h, hBe]))
-    have hkab : (pa : ℝ) + ta ≠ pb + tb := key_ne_of_pt_ne hA hB hAB
+    have hkab  := key_ne_of_pt_ne hA hB hAB
     rcases hcase pa' ta' hA' with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
       rcases hcase pb' tb' hB' with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
     · exact absurd rfl hAB'
@@ -175,7 +177,7 @@ theorem not_touches_of_split (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   set x := lerp (sidePt M.W pc tc) e s
   have hxi : x ∈ i ∩ M.D := ⟨by rw [hie]; exact lerp_mem_segment _ _ hs0.le hs1.le,
     hopen s ⟨hs0, hs1⟩⟩
-  have hxK : x ∈ connectedComponentIn (M.D \ j) k₂ := hsecr _ (by rw [mem_ball]; exact hdist) hleft
+  have hxK : x ∈ connectedComponentIn (M.D \ j) k₂ := hsecr _ (by rwx [mem_ball]) hleft
   have hsub : i ∩ M.D ⊆ M.D \ j := fun y hy =>
     ⟨hy.2, fun hyj => hsys.inter_subset_compl hi hj hij ⟨hy.1, hyj⟩ hy.2⟩
   have hcon := (hsys.chord_inter_nonempty_isPreconnected hi).2.subset_connectedComponentIn

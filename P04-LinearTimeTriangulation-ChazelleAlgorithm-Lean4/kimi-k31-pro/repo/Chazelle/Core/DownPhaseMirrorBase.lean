@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Mountain.Orientation
 public import Chazelle.Chain.Sides
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Mirror symmetry (F-D7), part 1: the reflection `x ↦ -x` of points and polygons
@@ -35,7 +38,7 @@ def mir (p : Point) : Point := (-p.1, p.2)
 @[simp] theorem mir_snd (p : Point) : (mir p).2 = p.2 := rfl
 
 @[simp] theorem mir_mir (p : Point) : mir (mir p) = p := by
-  unfold mir; simp
+  ufs mir
 
 theorem mir_injective : Function.Injective mir := fun p q h => by
   rw [← mir_mir p, h, mir_mir]
@@ -77,7 +80,7 @@ theorem image_connectedComponentIn_mir (A : Set Point) (x : Point) :
   by_cases hx : x ∈ A
   · exact mirHomeo.image_connectedComponentIn hx
   · rw [connectedComponentIn_eq_empty hx, image_empty, connectedComponentIn_eq_empty]
-    rw [mem_image_mir, mir_mir]; exact hx
+    rwx [mem_image_mir, mir_mir]
 
 theorem mir_lerp (a b : Point) (t : ℝ) : mir (lerp a b t) = lerp (mir a) (mir b) t := by
   unfold mir; simp only [lerp]; ext <;> simp; ring
@@ -85,8 +88,8 @@ theorem mir_lerp (a b : Point) (t : ℝ) : mir (lerp a b t) = lerp (mir a) (mir 
 theorem mir_offset (u v : Point) (t δ : ℝ) :
     mir (offset u v t δ) = offset (mir u) (mir v) t (-δ) := by
   apply Prod.ext
-  · simp only [mir_fst, mir_snd, Chazelle.Jordan.offset_fst]; ring
-  · simp only [mir_fst, mir_snd, Chazelle.Jordan.offset_snd]; ring
+  · sir only [mir_fst, mir_snd, Chazelle.Jordan.offset_fst]
+  · sir only [mir_fst, mir_snd, Chazelle.Jordan.offset_snd]
 
 theorem mir_sub (p q : Point) : mir p - mir q = mir (p - q) := by
   unfold mir; ext <;> simp; ring
@@ -131,8 +134,8 @@ theorem mir_boundary : P.mir.boundary = mir '' P.boundary := by
     rw [mir_edge, mem_image_mir] at hx
     exact ⟨i, hi, hx⟩
   · rintro ⟨i, hi, hx⟩
-    refine ⟨i, by rw [mir_n]; exact hi, ?_⟩
-    rw [mir_edge, mem_image_mir]; exact hx
+    refine ⟨i, by rwx [mir_n], ?_⟩
+    rwx [mir_edge, mem_image_mir]
 
 theorem mir_commonEndpoints (i j : ℕ) :
     P.mir.commonEndpoints i j = mir '' P.commonEndpoints i j := by
@@ -143,7 +146,7 @@ theorem mir_commonEndpoints (i j : ℕ) :
 /-- **The mirror image of a simple polygon is simple.** -/
 theorem mir_simple (hP : P.Simple) : P.mir.Simple := by
   obtain ⟨h3, hinj, hedge⟩ := hP
-  refine ⟨by rw [mir_n]; exact h3, fun i j hi hj h => ?_, fun i j hi hj hij => ?_⟩
+  refine ⟨by rwx [mir_n], fun i j hi hj h => ?_, fun i j hi hj hij => ?_⟩
   · rw [mir_n] at hi hj
     rw [mir_vtx, mir_vtx] at h
     exact hinj i j hi hj (mir_injective h)
@@ -198,13 +201,13 @@ theorem leftInside_mir (hP : P.Simple) : Mountain.LeftInside P.mir ↔ ¬ Mounta
   simp only [e]
   constructor
   · intro h hL
-    have ho : Mountain.orient P = 1 := ho1 hL
+    have ho  := ho1 hL
     rw [ho] at hev
     obtain ⟨δ, h1, h2⟩ := (h.and hev).exists
     simp only [one_mul] at h2
     exact h2.2 h1
   · intro hL
-    have ho : Mountain.orient P = -1 := ho2 hL
+    have ho  := ho2 hL
     rw [ho] at hev
     filter_upwards [hev] with δ hδ
     have := hδ.1.1

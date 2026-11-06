@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.ClusterStageD5
 public import Chazelle.Core.ClusterStageC4
 public import Chazelle.Core.ClusterStageB2S
+public import Chazelle.Rwx
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-I, part 60: the static facts of the split driver
@@ -71,7 +73,6 @@ theorem lv_win {k cs l l' : ℕ} (hk : 0 < k) (h : (l' + cs) / k = (l + cs) / k)
 
 variable {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The static facts.** -/
 theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M} {a : F → Fin g.N}
@@ -95,8 +96,8 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   · apply Fin.ext
     have h1 := (hA.map (firstOf g m hA.first_lt v)).2.2
     have h2 := hA.first_v v v.2
-    simp only [firstOf] at h1 ⊢
-    rw [← h1]; exact h2
+    simp [firstOf] at h1 ⊢
+    rwx [← h1]
   · rcases x with d | d | d
     · show m (g.base 11 + d) = (M.opp d : ℕ)
       exact (hB1.so d).1
@@ -112,12 +113,12 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     · show m (g.base 17 + (2 * g.N + d)) = ((M.fperm⁻¹ d : Fin g.N) : ℕ)
       rw [← Nat.add_assoc]; exact (hB1.sf d).2.2
   · unfold upTf; rw [dite_eq_left v.2]
-  · have := hA.pv ⟨x, hx⟩; simp only at this
+  · have := hA.pv ⟨x, hx⟩; simp at this
     show m (g.base 6 + x) = upTf T x
-    unfold upTf; rw [dite_eq_left hx]; exact this
+    unfold upTf; rwx [dite_eq_left hx]
   · have hlvv := hlv _ (hA.lev_lt v)
     obtain ⟨hb, ht, -, -⟩ := hlvv
-    simp only [slabN, dite_eq_left v.2, dite_eq_left x.2] at hvx
+    simp [slabN, dite_eq_left v.2, dite_eq_left x.2] at hvx
     show m (g.base 37 + T.level v) ≤ T.level x ∧ T.level x ≤ m (g.base 38 + T.level v)
     rw [hb, ht]; exact lv_win hk hvx
   · have hlvv := hlv _ (hA.lev_lt v)

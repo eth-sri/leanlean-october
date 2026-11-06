@@ -5,6 +5,8 @@ public import Chazelle.Core.DownPhaseDrvGCost
 public import Chazelle.Core.GradeCtx
 public import Chazelle.Core.DownPhaseDegHost
 public import Chazelle.Core.DownPhaseMathLevel
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase driver, region procedure (D5), part 5: the environment of the piece loop
@@ -35,14 +37,13 @@ theorem fullDegLe_mono {M : Model} {Q : Polygon} {D D' : ℕ} (h : M.FullDegLe Q
 /-- The capacity of the up-phase data is at most `2 n`. -/
 theorem gradeCtx_cap_le {O : OracleIface} {P : Polygon} {m : ℕ → ℕ} {g A : ℕ} (hn : 1 ≤ P.n)
     (h : (gradeCtx O).holds P m g A) : (gradeCtx O).cap P m g ≤ 2 * P.n := by
-  have h1 : m g ≤ topGrade P.n + 1 := h.holds.1
-  show 2 ^ (m g - 1) ≤ 2 * P.n
+  have h1  := h.holds.1
   have h2 : 2 ^ (m g - 1) ≤ 2 ^ topGrade P.n := Nat.pow_le_pow_right (by norm_num) (by omega)
   refine h2.trans ?_
   unfold topGrade
   rcases Nat.lt_or_ge (P.n - 1) 2 with h3 | h3
   · have : Nat.clog 2 (P.n - 1) = 0 := Nat.clog_of_right_le_one (by omega) 2
-    rw [this]; simp; omega
+    rws [this]; omega
   · have h4 := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (show 1 < P.n - 1 by omega)
     have h5 : 1 ≤ Nat.clog 2 (P.n - 1) := Nat.clog_pos (by norm_num) (by omega)
     have e : 2 ^ Nat.clog 2 (P.n - 1) = 2 * 2 ^ (Nat.clog 2 (P.n - 1)).pred := by
@@ -134,7 +135,7 @@ theorem envRegs_band2 : ∀ q ∈ envRegs, q ≠ 219220 ∧ q ≠ 219221 ∧ q �
 theorem REnv.keep {R : RData} {d d' : Config} (h : REnv R d)
     (hr : ∀ q ∈ envRegs, d'.nreg q = d.nreg q) (hm : ∀ a, a < R.A₁ → d'.nmem a = d.nmem a)
     (hA : d.nreg ALLOC ≤ d'.nreg ALLOC) : REnv R d' := by
-  have e : ∀ q, q ∈ envRegs → d'.nreg q = d.nreg q := hr
+  have e  := hr
   exact ⟨by rw [e _ (by simp [envRegs]), h.r200], by rw [e _ (by simp [envRegs]), h.r201],
     by rw [e _ (by simp [envRegs]), h.r202], by rw [e _ (by simp [envRegs]), h.r204],
     by rw [e _ (by simp [envRegs]), h.r205], by rw [e _ (by simp [envRegs]), h.r230],
@@ -178,9 +179,9 @@ theorem REnv.table (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
   obtain ⟨a1, a2, a3⟩ := hF.hT i hi
   have := hF.hTA
   refine ⟨?_, ?_, ?_⟩
-  · rw [h.low _ (by omega)]; exact a1
-  · rw [h.low _ (by omega)]; exact a2
-  · rw [h.low _ (by omega)]; exact a3
+  · rwx [h.low _ (by omega)]
+  · rwx [h.low _ (by omega)]
+  · rwx [h.low _ (by omega)]
 
 end facts
 

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.ShootCutSeg
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-G, part 6: origins and hit points as symbolic points
@@ -40,8 +42,8 @@ theorem xAt_eq_of_line {u w a b : Point} (huw : u.2 ≠ w.2) (hab : a.2 ≠ b.2)
     (hb : OnLine u w b) (y : ℝ) : xAt a b y = xAt u w y := by
   unfold OnLine at ha hb
   unfold xAt at ha hb ⊢
-  have h1 : w.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huw)
-  have h2 : b.2 - a.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hab)
+  have h1  := sub_ne_zero.2 (Ne.symm huw)
+  have h2  := sub_ne_zero.2 (Ne.symm hab)
   rw [ha, hb]
   field_simp
   ring
@@ -61,8 +63,8 @@ theorem vtx_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e : ℕ} (he : e <
     hD _ _ he (Nat.mod_lt _ (by omega)) (by
       intro h
       rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h' | h'
-      · rw [Nat.mod_eq_of_lt h'] at h; omega
-      · rw [h', Nat.mod_self] at h; omega)
+      · rwo [Nat.mod_eq_of_lt h'] at h
+      · rwo [h', Nat.mod_self] at h)
   exact ⟨(xAt_left _ _).symm, (xAt_right hne).symm⟩
 
 /-- The edges of `Q` are not horizontal. -/
@@ -71,8 +73,8 @@ theorem edge_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e : ℕ} (he : e < Q.
   hD _ _ he (Nat.mod_lt _ (by omega)) (by
       intro h
       rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h' | h'
-      · rw [Nat.mod_eq_of_lt h'] at h; omega
-      · rw [h', Nat.mod_self] at h; omega)
+      · rwo [Nat.mod_eq_of_lt h'] at h
+      · rwo [h', Nat.mod_self] at h)
 
 /-- **The symbolic points of a regular host edge lie on the line of its edge of `Q`.** -/
 theorem hostEdge_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {sp₁ sp₂ : SymPt}
@@ -87,8 +89,8 @@ theorem hostEdge_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {sp₁ sp₂ :
   | vtx i =>
     cases sp₂ with
     | vtx j =>
-      simp only [HostEdgeOK] at hok
-      simp only [SymPt.Lt] at hl₁ hl₂
+      simp [HostEdgeOK] at hok
+      simp [SymPt.Lt] at hl₁ hl₂
       by_cases hj : j = (i + 1) % Q.n
       · have e : edgeOf Q.n (.vtx i) (.vtx j) = i := by simp [edgeOf, hj]
         rw [e]
@@ -96,27 +98,27 @@ theorem hostEdge_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {sp₁ sp₂ :
         exact ⟨hl₁, (vtx_onLine hD hn hl₁).1, (vtx_onLine hD hn hl₁).2⟩
       · have e : edgeOf Q.n (.vtx i) (.vtx j) = j := by simp [edgeOf, hj]
         rw [e]
-        have hi : i = (j + 1) % Q.n := hok.resolve_left hj
+        have hi  := hok.resolve_left hj
         subst hi
         exact ⟨hl₂, (vtx_onLine hD hn hl₂).2, (vtx_onLine hD hn hl₂).1⟩
     | onEdge e h =>
-      simp only [HostEdgeOK] at hok
-      simp only [SymPt.Lt] at hl₁ hl₂
+      simp [HostEdgeOK] at hok
+      simp [SymPt.Lt] at hl₁ hl₂
       refine ⟨hl₂.1, ?_, onE e h hl₂.1⟩
       rcases hok with rfl | rfl
       · exact (vtx_onLine hD hn hl₂.1).1
       · exact (vtx_onLine hD hn hl₂.1).2
   | onEdge e h =>
-    simp only [SymPt.Lt] at hl₁
+    simp [SymPt.Lt] at hl₁
     refine ⟨hl₁.1, onE e h hl₁.1, ?_⟩
     cases sp₂ with
     | vtx j =>
-      simp only [HostEdgeOK] at hok
+      simp [HostEdgeOK] at hok
       rcases hok with rfl | rfl
       · exact (vtx_onLine hD hn hl₁.1).1
       · exact (vtx_onLine hD hn hl₁.1).2
     | onEdge e' h' =>
-      simp only [HostEdgeOK] at hok
+      simp [HostEdgeOK] at hok
       rcases hok with rfl | rfl
       · exact absurd rfl hnh
       · exact onE e h' hl₁.1
@@ -131,16 +133,16 @@ theorem pos_eq_onEdge (M : Model) (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {p h
   obtain ⟨he, h1, h2⟩ := hostEdge_onLine hD hn hl₁ hl₂ hok hnh
   have hQnh := edge_nh hD hn he
   unfold Model.pos Model.param
-  simp only
-  rw [ite_eq_right (by rw [ha, hb]; exact hnh), ha, hb]
+  simp
+  rw [ite_eq_right (by rwx [ha, hb]), ha, hb]
   have hy : (lerp (sp₁.eval Q) (sp₂.eval Q)
       (((Q.vtx h).2 - (sp₁.eval Q).2) / ((sp₂.eval Q).2 - (sp₁.eval Q).2))).2 = (Q.vtx h).2 :=
     hpar_snd hnh _
   have hx := xAt_lerp hnh (((Q.vtx h).2 - (sp₁.eval Q).2) / ((sp₂.eval Q).2 - (sp₁.eval Q).2))
   rw [hy, xAt_eq_of_line hQnh hnh h1 h2] at hx
   ext
-  · rw [← hx]; rfl
-  · rw [hy]; rfl
+  · rwr [← hx]
+  · rwr [hy]
 
 /-! ## Shifting the origin along the ray line -/
 
@@ -154,23 +156,23 @@ theorem firstHit_shift {S : Set Point} {z z' : Point} {σ : ℝ} (hσ : σ = 1 �
   have key : ∀ t, rayPt z σ t = rayPt z' σ (t - σ * (z'.1 - z.1)) := by
     intro t
     ext
-    · simp only [rayPt_fst]; rw [mul_sub, ← mul_assoc, hσ2, one_mul]; ring
-    · simp only [rayPt_snd]; exact hy
+    · simp [rayPt_fst]; rwring [mul_sub, ← mul_assoc, hσ2, one_mul]
+    · simp [rayPt_snd]; exact hy
   -- parameters of points of `S` on the line
   have ahead_z : ∀ t, rayPt z σ t ∈ S → 0 < t := by
     intro t ht
     have := (hahead _ ht rfl).1
-    simp only [rayPt_fst] at this
+    simp [rayPt_fst] at this
     have : σ * (σ * t) = t := by rw [← mul_assoc, hσ2, one_mul]
     nlinarith
   refine ⟨fun t' ht' => ⟨?_, ?_, fun s hs1 hs2 hsS => ?_⟩, fun hN t ht hS => ?_⟩
   · apply ahead_z
-    rw [key]; simp only [add_sub_cancel_right]; exact ht'.2.1
-  · rw [key]; simp only [add_sub_cancel_right]; exact ht'.2.1
+    rw [key]; simp [add_sub_cancel_right]; exact ht'.2.1
+  · rw [key]; simp [add_sub_cancel_right]; exact ht'.2.1
   · rw [key] at hsS
     have hpos : 0 < s - σ * (z'.1 - z.1) := by
       have := (hahead _ hsS (by simp [rayPt_snd, hy])).2
-      simp only [rayPt_fst] at this
+      simp [rayPt_fst] at this
       have e : σ * (σ * (s - σ * (z'.1 - z.1))) = s - σ * (z'.1 - z.1) := by
         rw [← mul_assoc, hσ2, one_mul]
       nlinarith
@@ -178,7 +180,7 @@ theorem firstHit_shift {S : Set Point} {z z' : Point} {σ : ℝ} (hσ : σ = 1 �
   · rw [key] at hS
     have hpos : 0 < t - σ * (z'.1 - z.1) := by
       have := (hahead _ hS (by simp [rayPt_snd, hy])).2
-      simp only [rayPt_fst] at this
+      simp [rayPt_fst] at this
       have e : σ * (σ * (t - σ * (z'.1 - z.1))) = t - σ * (z'.1 - z.1) := by
         rw [← mul_assoc, hσ2, one_mul]
       nlinarith

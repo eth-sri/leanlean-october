@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvStopSort4
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 2: sorting the raw stop records, part 5 (task S)
@@ -49,7 +52,6 @@ def ssSrt : Stmt :=
 
 /-! ## The indices -/
 
-set_option maxRecDepth 20000 in
 theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (hK1 : c.nreg K1 = 1) (hroom : c.nreg ALLOC + c.nreg gRC + 1 ≤ W) :
     ∃ c' k, Exec P W ssIdx c c' k ∧ k = 5 * c.nreg gRC + 6 ∧
@@ -89,11 +91,11 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       (fun i d ⟨hwd, hi, ht, hm, hr, rr, rm, o⟩ hlt => by
         have dB : d.nreg srIB = A := by rw [hr _ (by ssoSrt) (by ssoSrt), vB]
         have dK : d.nreg K1 = 1 := by rw [hr _ (by ssoSrt) (by ssoSrt), vK]
-        have x₁ := Exec.addN (P := P) hwd srA srIB srI (by rw [dB, hi]; omega)
+        have x₁ := Exec.addN (P := P) hwd srA srIB srI (by rwo [dB, hi])
         have x₂ := Exec.storeN (P := P) x₁.wb_right srA srI
         have x₃ := Exec.addN (P := P) x₂.wb_right srI srI K1 (by
           simp only
-          rw [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), hi, dK]; omega)
+          rwo [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), hi, dK])
         refine ⟨_, Exec.block_cons x₁ (Exec.block_cons x₂ (Exec.block_cons x₃
           (Exec.block_nil x₃.wb_right))), x₃.wb_right, ?_, fun t ht' => ?_, fun a ha => ?_,
           fun r h1 h2 => ?_, rr, rm, o⟩
@@ -105,14 +107,14 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
           · rw [upd_other _ _ _ (by omega)]; exact ht t h
           · rw [show t = i by omega, upd_same]
         · simp only [upd_same]
-          rw [upd_other _ _ _ (by rw [dB, hi]; omega)]; exact hm a ha
+          rw [upd_other _ _ _ (by rwo [dB, hi])]; exact hm a ha
         · simp only
           rw [upd_other _ _ _ h1, upd_other _ _ _ h2]; exact hr r h1 h2)
       0 c₁ I₀ (Nat.zero_le _)
   have gA : c₂.nreg ALLOC = A := by rw [hr2 _ (by ssoSrt) (by ssoSrt), vA]
   have gS : c₂.nreg gRC = S := by rw [hr2 _ (by ssoSrt) (by ssoSrt), vS]
-  have x₄ := Exec.addN (P := P) w₂ ALLOC ALLOC gRC (by rw [gA, gS]; omega)
-  refine ⟨_, _, .seq e₀ (.seq e₁ x₄), by simp [ssIdxHead]; ring, ?_, ?_, ?_, ?_, ?_,
+  have x₄ := Exec.addN (P := P) w₂ ALLOC ALLOC gRC (by rwo [gA, gS])
+  refine ⟨_, _, .seq e₀ (.seq e₁ x₄), by sir [ssIdxHead], ?_, ?_, ?_, ?_, ?_,
     fun r h0 h1 h2 h3 h4 => ?_, rr2, rm2, o2⟩
   · simp only [upd_same]; rw [gA, gS]
   · simp only
@@ -124,7 +126,6 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · simp only
     rw [upd_other _ _ _ h0, hr2 r h3 h4, v1 r h1 h2 h3]
 
-set_option maxRecDepth 20000 in
 theorem ssAllocL_val (m f : ℕ → ℕ) :
     regB m ssAllocL f srSB = f 30005 ∧ regB m ssAllocL f sB = f ALLOC ∧
     regB m ssAllocL f aB = f ALLOC + (f gRC + f gRC + (f gRC + f gRC) + f gRC) ∧
@@ -140,7 +141,6 @@ theorem ssAllocL_val (m f : ℕ → ℕ) :
   simp only [upd_apply]
   repeat rw [ite_eq_right (by omega)]
 
-set_option maxRecDepth 20000 in
 theorem ssAllocL_ok {W : ℕ} (m f : ℕ → ℕ)
     (h : f ALLOC + 10 * f gRC ≤ W) : okW W m ssAllocL f := by
   simp only [ALLOC, gRC, sw, Nat.reduceAdd] at h

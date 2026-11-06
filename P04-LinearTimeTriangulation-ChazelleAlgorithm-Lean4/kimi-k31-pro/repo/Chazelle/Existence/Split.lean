@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Jordan.Jordan
+public import Chazelle.Rwx
 
 /-!
 # The abstract splitting lemma
@@ -52,24 +53,24 @@ theorem filled_inter_subset_of_interior_disjoint {Q₁ Q₂ : Polygon} (h₁ : Q
       z ∈ A.filled → z ∈ B.filled → z ∈ A.boundary := by
     intro A B hA hB hAB hzA hzB
     by_contra hzb
-    have hopen : IsOpen (A.filled \ A.boundary) := isOpen_filled_sdiff_boundary hA
-    have hnhds : A.filled \ A.boundary ∈ 𝓝 z := hopen.mem_nhds ⟨hzA, hzb⟩
-    have hcl : z ∈ closure (B.filled \ B.boundary) := filled_subset_closure_interior hB hzB
+    have hopen  := isOpen_filled_sdiff_boundary hA
+    have hnhds  := hopen.mem_nhds ⟨hzA, hzb⟩
+    have hcl  := filled_subset_closure_interior hB hzB
     obtain ⟨y, hy⟩ := mem_closure_iff_nhds.1 hcl _ hnhds
     have : y ∈ (A.filled \ A.boundary) ∩ (B.filled \ B.boundary) := hy
     rw [hAB] at this
     exact this
   refine ⟨key Q₁ Q₂ h₁ h₂ hI hz₁ hz₂, key Q₂ Q₁ h₂ h₁ ?_ hz₂ hz₁⟩
-  rw [inter_comm]; exact hI
+  rwx [inter_comm]
 
 /-- The exterior of a simple polygon is not contained in the filled region of any polygon. -/
 theorem filled_compl_not_subset_filled (P Q : Polygon) : ¬ P.filledᶜ ⊆ Q.filled := by
   intro h
   set w : Point := (max (coordBound P) (coordBound Q) + 1, 0) with hw
   have hP : coordBound P < w.1 := by
-    simp only [hw]; linarith [le_max_left (coordBound P) (coordBound Q)]
+    simp [hw]; linarith [le_max_left (coordBound P) (coordBound Q)]
   have hQ : coordBound Q < w.1 := by
-    simp only [hw]; linarith [le_max_right (coordBound P) (coordBound Q)]
+    simp [hw]; linarith [le_max_right (coordBound P) (coordBound Q)]
   exact far_not_mem_filled Q (Or.inl hQ) (h (far_not_mem_filled P (Or.inl hP)))
 
 /-- **The common interior is empty.**  Under the hypotheses of the splitting lemma, the

@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.ClusterTables
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-I, part 26: three generic array loops
@@ -56,7 +61,7 @@ theorem arr_start {c : Config} (hw : WordsBounded W c) {bO n : ℕ} :
     Exec P W (.instr (.constN 130554 0)) c { c with nreg := upd c.nreg 130554 0 } 1 ∧
     PFr ArrRG (fun a => bO + 0 ≤ a ∧ a < bO + n) c { c with nreg := upd c.nreg 130554 0 } := by
   refine ⟨Exec.constN (P := P) hw 130554 0 (by omega), PFr.nreg (PFr.refl c) (fun r hr => ?_)⟩
-  simp only [Machine.upd_apply]; unfold ArrRG at hr; split_ifs <;> omega
+  simp only [Machine.upd_apply]; unfold ArrRG at hr; splao
 
 /-- **Affine fill**: `OUT[i] = a + i` for `i < n`. -/
 theorem affStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
@@ -66,22 +71,22 @@ theorem affStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       PFr ArrRG (fun x => bO ≤ x ∧ x < bO + n) c c' ∧ ∀ i, i < n → c'.nmem (bO + i) = a + i := by
   obtain ⟨e0, hf1⟩ := arr_start (P := P) (bO := bO) (n := n) hw
   obtain ⟨c', k, e, hk, hw', -, hf', hI⟩ := mapLoop (P := P) (W := W) (ri := 130554)
-    (rn := 130552) (body := affBody) (Rg := ArrRG) (by unfold ArrRG; omega)
-    (by unfold ArrRG; omega) (bOut := bO) (n := n) (j₀ := 0) (B := 4) (fun i => a + i)
+    (rn := 130552) (body := affBody) (Rg := ArrRG) (by ufo ArrRG)
+    (by ufo ArrRG) (bOut := bO) (n := n) (j₀ := 0) (B := 4) (fun i => a + i)
     e0.wb_right (by simp only [Machine.upd_same])
-    (by simp only; rw [Machine.upd_other _ _ _ (by omega)]; exact hn) (Nat.zero_le _)
+    (by simp only; rwx [Machine.upd_other _ _ _ (by omega)]) (Nat.zero_le _)
     (fun j c2 _ hjn hw2 hi2 hf2 => by
-      have r0 : ∀ r, ¬ ArrRG r → c2.nreg r = c.nreg r := (hf1.trans hf2).1
-      have rO := (r0 130550 (by unfold ArrRG; omega)).trans hO
-      have ra := (r0 130553 (by unfold ArrRG; omega)).trans ha
-      have r1 := (r0 130001 (by unfold ArrRG; omega)).trans hone
+      have r0  := (hf1.trans hf2).1
+      have rO := (r0 130550 (by ufo ArrRG)).trans hO
+      have ra := (r0 130553 (by ufo ArrRG)).trans ha
+      have r1 := (r0 130001 (by ufo ArrRG)).trans hone
       unfold affBody
       exec_block
-      all_goals try (config_simp; simp only [rO, ra, r1, hi2]; omega)
+      all_goals try (config_simp; sio only [rO, ra, r1, hi2])
       refine ⟨le_refl _, by config_simp; rw [hi2, r1], fun r hr => ?_, rfl, rfl, rfl, ?_⟩
-      · simp only [Machine.upd_apply]; unfold ArrRG at hr; split_ifs <;> omega
+      · simp only [Machine.upd_apply]; unfold ArrRG at hr; splao
       · config_simp; simp only [rO, ra, hi2])
-  refine ⟨c', 1 + k, .seq e0 e, by omega, hw', (hf1.trans hf').mono (fun r h => h)
+  refine ⟨c', 1 + k, .seq e0 e, by omega, hw', (hf1.trans hf').mono (fun _ => id)
     (fun x hx => by obtain ⟨h1, h2⟩ := hx; exact ⟨by omega, h2⟩),
     fun i hi => hI i (Nat.zero_le _) hi⟩
 
@@ -96,26 +101,26 @@ theorem shStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
       ∀ i, i < n → c'.nmem (bO + i) = a + c.nmem (bI + i) := by
   obtain ⟨e0, hf1⟩ := arr_start (P := P) (bO := bO) (n := n) hw
   obtain ⟨c', k, e, hk, hw', -, hf', hI'⟩ := mapLoop (P := P) (W := W) (ri := 130554)
-    (rn := 130552) (body := shBody) (Rg := ArrRG) (by unfold ArrRG; omega)
-    (by unfold ArrRG; omega) (bOut := bO) (n := n) (j₀ := 0) (B := 6)
+    (rn := 130552) (body := shBody) (Rg := ArrRG) (by ufo ArrRG)
+    (by ufo ArrRG) (bOut := bO) (n := n) (j₀ := 0) (B := 6)
     (fun i => a + c.nmem (bI + i)) e0.wb_right (by simp only [Machine.upd_same])
-    (by simp only; rw [Machine.upd_other _ _ _ (by omega)]; exact hn) (Nat.zero_le _)
+    (by simp only; rwx [Machine.upd_other _ _ _ (by omega)]) (Nat.zero_le _)
     (fun j c2 _ hjn hw2 hi2 hf2 => by
       have hf12 := hf1.trans hf2
-      have r0 : ∀ r, ¬ ArrRG r → c2.nreg r = c.nreg r := hf12.1
-      have rO := (r0 130550 (by unfold ArrRG; omega)).trans hO
-      have rI := (r0 130551 (by unfold ArrRG; omega)).trans hI
-      have ra := (r0 130553 (by unfold ArrRG; omega)).trans ha
-      have r1 := (r0 130001 (by unfold ArrRG; omega)).trans hone
+      have r0  := hf12.1
+      have rO := (r0 130550 (by ufo ArrRG)).trans hO
+      have rI := (r0 130551 (by ufo ArrRG)).trans hI
+      have ra := (r0 130553 (by ufo ArrRG)).trans ha
+      have r1 := (r0 130001 (by ufo ArrRG)).trans hone
       have mI : c2.nmem (bI + j) = c.nmem (bI + j) := hf12.2.2.2.2 _ (by omega)
       have := hwa j hjn
       unfold shBody
       exec_block
-      all_goals try (config_simp; simp only [rO, rI, ra, r1, hi2, mI]; omega)
+      all_goals try (config_simp; sio only [rO, rI, ra, r1, hi2, mI])
       refine ⟨le_refl _, by config_simp; rw [hi2, r1], fun r hr => ?_, rfl, rfl, rfl, ?_⟩
-      · simp only [Machine.upd_apply]; unfold ArrRG at hr; split_ifs <;> omega
+      · simp only [Machine.upd_apply]; unfold ArrRG at hr; splao
       · config_simp; simp only [rO, rI, ra, hi2, mI])
-  refine ⟨c', 1 + k, .seq e0 e, by omega, hw', (hf1.trans hf').mono (fun r h => h)
+  refine ⟨c', 1 + k, .seq e0 e, by omega, hw', (hf1.trans hf').mono (fun _ => id)
     (fun x hx => by obtain ⟨h1, h2⟩ := hx; exact ⟨by omega, h2⟩),
     fun i hi => hI' i (Nat.zero_le _) hi⟩
 
@@ -129,17 +134,17 @@ theorem eqStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
       ∀ i, i < n → c'.nmem (bO + i) = if c.nmem (bI + i) = i then 1 else 0 := by
   obtain ⟨e0, hf1⟩ := arr_start (P := P) (bO := bO) (n := n) hw
   obtain ⟨c', k, e, hk, hw', -, hf', hI'⟩ := mapLoop (P := P) (W := W) (ri := 130554)
-    (rn := 130552) (body := eqBody) (Rg := ArrRG) (by unfold ArrRG; omega)
-    (by unfold ArrRG; omega) (bOut := bO) (n := n) (j₀ := 0) (B := 10)
+    (rn := 130552) (body := eqBody) (Rg := ArrRG) (by ufo ArrRG)
+    (by ufo ArrRG) (bOut := bO) (n := n) (j₀ := 0) (B := 10)
     (fun i => if c.nmem (bI + i) = i then 1 else 0) e0.wb_right (by simp only [Machine.upd_same])
-    (by simp only; rw [Machine.upd_other _ _ _ (by omega)]; exact hn) (Nat.zero_le _)
+    (by simp only; rwx [Machine.upd_other _ _ _ (by omega)]) (Nat.zero_le _)
     (fun j c2 _ hjn hw2 hi2 hf2 => by
       have hf12 := hf1.trans hf2
-      have r0 : ∀ r, ¬ ArrRG r → c2.nreg r = c.nreg r := hf12.1
-      have rO := (r0 130550 (by unfold ArrRG; omega)).trans hO
-      have rI := (r0 130551 (by unfold ArrRG; omega)).trans hI
-      have r0' := (r0 130009 (by unfold ArrRG; omega)).trans hzero
-      have r1 := (r0 130001 (by unfold ArrRG; omega)).trans hone
+      have r0  := hf12.1
+      have rO := (r0 130550 (by ufo ArrRG)).trans hO
+      have rI := (r0 130551 (by ufo ArrRG)).trans hI
+      have r0' := (r0 130009 (by ufo ArrRG)).trans hzero
+      have r1 := (r0 130001 (by ufo ArrRG)).trans hone
       have mI : c2.nmem (bI + j) = c.nmem (bI + j) := hf12.2.2.2.2 _ (by omega)
       obtain ⟨c3, k3, e3, hk3, hw3, h3v, h3a, h3i, h3r, hrr3, hrm3, ho3, hm3⟩ : ∃ c3 k3,
           Exec P W (block [.addN 130555 130551 130554, .loadN 130555 130555,
@@ -149,14 +154,14 @@ theorem eqStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
           c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output ∧
           c3.nmem = upd c2.nmem (bO + j) 0 := by
         exec_block
-        all_goals try (config_simp; simp only [rO, rI, hi2, mI]; omega)
+        all_goals try (config_simp; sio only [rO, rI, hi2, mI])
         refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, ?_⟩
         · config_simp; simp only [rI, hi2, mI]
         · config_simp; simp only [rO, hi2]
         · config_simp; exact hi2
-        · simp only [Machine.upd_apply]; unfold ArrRG at hr; split_ifs <;> omega
+        · simp only [Machine.upd_apply]; unfold ArrRG at hr; splao
         · config_simp; simp only [rO, hi2, r0']
-      have hone3 : c3.nreg 130001 = 1 := (h3r _ (by unfold ArrRG; omega)).trans r1
+      have hone3 : c3.nreg 130001 = 1 := (h3r _ (by ufo ArrRG)).trans r1
       -- the test and the increment
       have hfin : ∀ c4 k4, Exec P W (.ifLtN 130555 130554 .skip
           (.ifLtN 130554 130555 .skip (.instr (.storeN 130556 130001)))) c3 c4 k4 →
@@ -169,27 +174,26 @@ theorem eqStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
         intro c4 k4 e4 hr4 hrr4 hrm4 ho4 hm4 hk4
         have hw4 := e4.wb_right
         have e5 := Exec.addN (P := P) hw4 130554 130554 130001 (by
-          rw [hr4, h3i, hone3]; omega)
+          rwo [hr4, h3i, hone3])
         refine ⟨_, k3 + (k4 + 1), .seq e3 (.seq e4 e5), by omega, by simp [hr4, h3i, hone3],
           fun r hr => ?_, hrr4.trans hrr3, hrm4.trans hrm3, ho4.trans ho3, by simp [hm4]⟩
         simp only [Machine.upd_apply]
-        rw [ite_eq_right (by unfold ArrRG at hr; omega), hr4, h3r r hr]
+        rw [ite_eq_right (by ufo ArrRG at hr), hr4, h3r r hr]
       by_cases h1 : c3.nreg 130555 < c3.nreg 130554
       · refine hfin c3 (0 + 1) (.ifLtN_true h1 (.skip hw3)) rfl rfl rfl rfl ?_ (by omega)
-        rw [hm3, ite_eq_right (by rw [h3v, h3i] at h1; omega)]
+        rw [hm3, ite_eq_right (by rwo [h3v, h3i] at h1)]
       · by_cases h2 : c3.nreg 130554 < c3.nreg 130555
         · refine hfin c3 (0 + 1 + 2) (.ifLtN_false h1 (.ifLtN_true h2 (.skip hw3))) rfl rfl rfl
             rfl ?_ (by omega)
-          rw [hm3, ite_eq_right (by rw [h3v, h3i] at h2; omega)]
+          rw [hm3, ite_eq_right (by rwo [h3v, h3i] at h2)]
         · have e4 := Exec.storeN (P := P) hw3 130556 130001
           refine hfin _ (1 + 2 + 2) (.ifLtN_false h1 (.ifLtN_false h2 e4)) rfl rfl rfl rfl ?_
             (by omega)
-          show upd c3.nmem (c3.nreg 130556) (c3.nreg 130001) = _
-          rw [hm3, h3a, hone3, ite_eq_left (by rw [h3v, h3i] at h1 h2; omega)]
+          rw [hm3, h3a, hone3, ite_eq_left (by rwo [h3v, h3i] at h1 h2)]
           funext x
           simp only [Machine.upd_apply]
           split_ifs <;> rfl)
-  refine ⟨c', 1 + k, .seq e0 e, by omega, hw', (hf1.trans hf').mono (fun r h => h)
+  refine ⟨c', 1 + k, .seq e0 e, by omega, hw', (hf1.trans hf').mono (fun _ => id)
     (fun x hx => by obtain ⟨h1, h2⟩ := hx; exact ⟨by omega, h2⟩),
     fun i hi => hI' i (Nat.zero_le _) hi⟩
 

@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.Lemma41Node
 public import Chazelle.Core.Lemma41Ram5
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # WP-J, part 14: the straight-line pieces of one merge step
@@ -48,7 +50,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 theorem preB_exec {c : Config} (hw : WordsBounded W c) {ptr A : ℕ}
     (h65 : c.nreg 160065 = ptr) (h24 : c.nreg 160024 = 1) (h81 : c.nreg 160081 = 5)
     (hA : c.nreg ALLOC = A) (hW : ptr + 3 ≤ W) (hWA : A + 5 ≤ W) :
@@ -74,7 +75,6 @@ theorem preB_exec {c : Config} (hw : WordsBounded W c) {ptr A : ℕ}
   · simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 8000000 in
 theorem setupB_exec {c : Config} (hw : WordsBounded W c) :
     ∃ c' k, Exec P W setupB c c' k ∧ k = 9 ∧ WordsBounded W c' ∧
       rd c' bMerge 0 = c.nreg 160035 ∧ rd c' bMerge 1 = c.nreg 160036 ∧
@@ -93,7 +93,6 @@ theorem setupB_exec {c : Config} (hw : WordsBounded W c) :
   simp only
   repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 8000000 in
 theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : ℕ}
     (hA : c.nreg ALLOC = E) (h37 : c.nreg 160037 = TD) (h8 : c.nreg 100008 = f)
     (h63 : c.nreg 160063 = prev) (h65 : c.nreg 160065 = ptr) (h62 : c.nreg 160062 = i)
@@ -116,9 +115,9 @@ theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : �
   all_goals try (config_simp; (try simp only [hA, h65, h62, h64, h24, h80, h83, h84]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun a ha => ?_, ?_, ?_, ?_, ?_, ?_,
     fun r a1 a2 a3 a4 a5 a6 a7 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h37, h24, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h8, h24, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h63, h24, Machine.upd_apply]; split_ifs <;> omega
+  · config_simp; simp only [hA, h37, h24, Machine.upd_apply]; splao
+  · config_simp; simp only [hA, h8, h24, Machine.upd_apply]; splao
+  · config_simp; simp only [hA, h63, h24, Machine.upd_apply]; splao
   · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega
   · config_simp; simp only [hA, h83]
   · config_simp; simp only [hA]

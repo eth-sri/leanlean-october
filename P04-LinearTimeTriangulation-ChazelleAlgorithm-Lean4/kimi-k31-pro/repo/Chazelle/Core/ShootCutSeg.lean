@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.ShootCutTile
 public import Chazelle.Core.SweepHit
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 5: first hits on walk edges
@@ -65,11 +66,11 @@ theorem wset_edge (M : Model) {p : ℕ} (hp : p < M.W.n) {s₀ s₁ : ℝ} (h0 :
       have hp'0 : (p' : ℝ) = 0 ∧ t = 0 := by constructor <;> linarith
       have hp'0' : p' = 0 := by exact_mod_cast hp'0.1
       have hpn1 : p = M.W.n - 1 := by
-        have : ((p + 1 : ℕ) : ℝ) = M.W.n := by push_cast; linarith
+        have : ((p + 1 : ℕ) : ℝ) = M.W.n := by pcl
         have := (Nat.cast_inj (R := ℝ)).1 this; omega
       refine ⟨1, by linarith, by linarith, ?_⟩
       rw [hp'0', hp'0.2, lerp_zero', lerp_one', hpn1, wb_last M hn']
-    · simp only [Int.cast_zero, zero_mul, add_zero] at hj
+    · simp [Int.cast_zero, zero_mul, add_zero] at hj
       -- `p' + t ∈ [p, p + 1]`
       have hlo : (p : ℝ) ≤ p' + t := by linarith
       have hhi : (p' : ℝ) + t ≤ p + 1 := by linarith
@@ -100,7 +101,7 @@ theorem wset_edge (M : Model) {p : ℕ} (hp : p < M.W.n) {s₀ s₁ : ℝ} (h0 :
         have := lt_of_le_of_ne ht1 hne
         linarith
       have hp'n1 : p' = M.W.n - 1 := by
-        have : ((p' + 1 : ℕ) : ℝ) = M.W.n := by push_cast; linarith
+        have : ((p' + 1 : ℕ) : ℝ) = M.W.n := by pcl
         have := (Nat.cast_inj (R := ℝ)).1 this; omega
       refine ⟨0, by linarith, by linarith, ?_⟩
       rw [ht, lerp_zero', lerp_one', hp'n1, wb_last M hn', hp0']
@@ -114,7 +115,7 @@ noncomputable def hpar (u v : Point) (y : ℝ) : ℝ := (y - u.2) / (v.2 - u.2)
 
 theorem hpar_snd {u v : Point} (huv : u.2 ≠ v.2) (y : ℝ) : (lerp u v (hpar u v y)).2 = y := by
   unfold hpar
-  simp only [lerp_snd]
+  simp [lerp_snd]
   have : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huv)
   field_simp
   ring

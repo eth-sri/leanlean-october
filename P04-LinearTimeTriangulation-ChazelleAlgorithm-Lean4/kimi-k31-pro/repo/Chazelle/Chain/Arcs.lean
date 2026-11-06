@@ -110,8 +110,8 @@ theorem vertex_succ_eq (k : ℕ) : C.vertex (k + 1) = C.P.vtx ((C.edgeIdx k + 1)
 theorem edgeIdx_inj {j k : ℕ} (hj : j < C.m) (hk : k < C.m) (h : C.edgeIdx j = C.edgeIdx k) :
     j = k := by
   unfold edgeIdx at h
-  have h1 : C.s + j ≡ C.s + k [MOD C.P.n] := h
-  have h2 : j ≡ k [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h1
+  have h1  := h
+  have h2  := Nat.ModEq.add_left_cancel' C.s h1
   exact Nat.ModEq.eq_of_lt_of_lt h2 (by have := C.m_lt; omega) (by have := C.m_lt; omega)
 
 /-! ### Cut parameters -/

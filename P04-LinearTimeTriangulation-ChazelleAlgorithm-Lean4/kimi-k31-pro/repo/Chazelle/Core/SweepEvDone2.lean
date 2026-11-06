@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.SweepEvDone
 public import Chazelle.Core.SweepEvStepL0
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # The sweep (WP-D), stage 3: the last iteration (task L2), the outputs
@@ -28,7 +31,6 @@ section done
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {P : Polygon} {W : ℕ} {J : Merge.Junction} {N₁ N₂ : NF} {c₀ c cw cs co c' : Config}
 
-set_option maxHeartbeats 8000000 in
 /-- **The outputs of the last iteration.** -/
 theorem done_out (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hL : LoopInv P J N₁ N₂ c₀ c)
     (hIt : IterRel P J N₁ N₂ c cw cs co c') (hd : c'.nreg dF = 1)
@@ -48,41 +50,41 @@ theorem done_out (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hL : LoopInv P J
   obtain ⟨-, hlC, hmK⟩ := hK.2.2.1 hnone
   -- registers
   have keepK : ∀ r, 240000 ≤ r ∧ r < 250000 → ¬ KR r → c'.nreg r = co.nreg r := fun r hr hk =>
-    hK.1 r (band_sw_not hr) hk (by unfold ALLOC; omega)
+    hK.1 r (band_sw_not hr) hk (by ufo ALLOC)
   have eSB : c'.nreg sB = c.nreg sB := by
-    rw [keepK _ (by unfold sB sw; omega) (by unfold KR kE kH kN kL sP dF lC sB sw; omega)]
-    exact done_iter_keep hIt (by unfold sB sw; omega) (by unfold WR sB sw; omega)
-      ⟨by unfold sB bF sw; omega, by unfold sB bN sw; omega⟩
-      (by unfold OrgR CandR BestR LblR sB bF bE bH bN bL sw; omega) (by unfold LR oK oS sB sw; omega)
+    rw [keepK _ (by ufo sB sw) (by ufo KR kE kH kN kL sP dF lC sB sw)]
+    exact done_iter_keep hIt (by ufo sB sw) (by ufo WR sB sw)
+      ⟨by ufo sB bF sw, by ufo sB bN sw⟩
+      (by ufo OrgR CandR BestR LblR sB bF bE bH bN bL sw) (by ufo LR oK oS sB sw)
   have eSC : c'.nreg sC = c.nreg sC := by
-    rw [keepK _ (by unfold sC sw; omega) (by unfold KR kE kH kN kL sP dF lC sC sw; omega)]
-    exact done_iter_keep hIt (by unfold sC sw; omega) (by unfold WR sC sw; omega)
-      ⟨by unfold sC bF sw; omega, by unfold sC bN sw; omega⟩
-      (by unfold OrgR CandR BestR LblR sC bF bE bH bN bL sw; omega) (by unfold LR oK oS sC sw; omega)
+    rw [keepK _ (by ufo sC sw) (by ufo KR kE kH kN kL sP dF lC sC sw)]
+    exact done_iter_keep hIt (by ufo sC sw) (by ufo WR sC sw)
+      ⟨by ufo sC bF sw, by ufo sC bN sw⟩
+      (by ufo OrgR CandR BestR LblR sC bF bE bH bN bL sw) (by ufo LR oK oS sC sw)
   have eLB : c'.nreg lB = c.nreg lB := by
-    rw [keepK _ (by unfold lB sw; omega) (by unfold KR kE kH kN kL sP dF lC lB sw; omega)]
-    exact done_iter_keep hIt (by unfold lB sw; omega) (by unfold WR lB sw; omega)
-      ⟨by unfold lB bF sw; omega, by unfold lB bN sw; omega⟩
-      (by unfold OrgR CandR BestR LblR lB bF bE bH bN bL sw; omega) (by unfold LR oK oS lB sw; omega)
+    rw [keepK _ (by ufo lB sw) (by ufo KR kE kH kN kL sP dF lC lB sw)]
+    exact done_iter_keep hIt (by ufo lB sw) (by ufo WR lB sw)
+      ⟨by ufo lB bF sw, by ufo lB bN sw⟩
+      (by ufo OrgR CandR BestR LblR lB bF bE bH bN bL sw) (by ufo LR oK oS lB sw)
   have eTB : c'.nreg cTB = c.nreg cTB := by
-    rw [keepK _ (by unfold cTB sw; omega) (by unfold KR kE kH kN kL sP dF lC cTB sw; omega)]
-    exact done_iter_keep hIt (by unfold cTB sw; omega) (by unfold WR cTB sw; omega)
-      ⟨by unfold cTB bF sw; omega, by unfold cTB bN sw; omega⟩
-      (by unfold OrgR CandR BestR LblR cTB bF bE bH bN bL sw; omega)
-      (by unfold LR oK oS cTB sw; omega)
+    rw [keepK _ (by ufo cTB sw) (by ufo KR kE kH kN kL sP dF lC cTB sw)]
+    exact done_iter_keep hIt (by ufo cTB sw) (by ufo WR cTB sw)
+      ⟨by ufo cTB bF sw, by ufo cTB bN sw⟩
+      (by ufo OrgR CandR BestR LblR cTB bF bE bH bN bL sw)
+      (by ufo LR oK oS cTB sw)
   have eLC : c'.nreg lC = c.nreg lC := by
     rw [hlC]
-    exact done_iter_keep hIt (by unfold lC sw; omega) (by unfold WR lC sw; omega)
-      ⟨by unfold lC bF sw; omega, by unfold lC bN sw; omega⟩
-      (by unfold OrgR CandR BestR LblR lC bF bE bH bN bL sw; omega) (by unfold LR oK oS lC sw; omega)
+    exact done_iter_keep hIt (by ufo lC sw) (by ufo WR lC sw)
+      ⟨by ufo lC bF sw, by ufo lC bN sw⟩
+      (by ufo OrgR CandR BestR LblR lC bF bE bH bN bL sw) (by ufo LR oK oS lC sw)
   have eTBs : cs.nreg cTB = c.nreg cTB := by
-    rw [hRr _ (by unfold cTB bF sw; omega) (by unfold cTB bN sw; omega),
-      hWr _ (band_sw_not (by unfold cTB sw; omega)) (by unfold WR cTB sw; omega)
-        (by unfold cTB ALLOC sw; omega)]
+    rw [hRr _ (by ufo cTB bF sw) (by ufo cTB bN sw),
+      hWr _ (band_sw_not (by ufo cTB sw)) (by ufo WR cTB sw)
+        (by ufo cTB ALLOC sw)]
   have hT0 : c.nreg cTB = c₀.nreg cTB := by rw [hL.tab0, E.hTA]
   -- the allocators
-  have hAs : cs.nreg ALLOC = cw.nreg ALLOC := hRr ALLOC (by unfold ALLOC bF sw; omega)
-    (by unfold ALLOC bN sw; omega)
+  have hAs : cs.nreg ALLOC = cw.nreg ALLOC := hRr ALLOC (by ufo ALLOC bF sw)
+    (by ufo ALLOC bN sw)
   have hAco : c.nreg ALLOC ≤ co.nreg ALLOC := by omega
   -- the memory outside the table
   have memC : ∀ x, x < c.nreg ALLOC → (x < c.nreg cTB ∨ c.nreg cTB + 6 * N₂.nChords ≤ x) →
@@ -98,7 +100,7 @@ theorem done_out (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hL : LoopInv P J
   have hmeas := hL.meas
   have hcap : c.nreg lC ≤ logCap N₁ N₂ := by
     have : (keyS P J N₁ N₂).ncard ≤ 4 * N₂.nChords + 2 * N₁.nChords + 9 := hcnt
-    unfold logCap; omega
+    ufo logCap
   -- the table
   set T := c.nreg cTB with hTdef
   have tabF : ∀ j, j < 2 * N₂.nChords →
@@ -124,45 +126,45 @@ theorem done_out (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hL : LoopInv P J
   obtain ⟨rs, ax, hrl, -, hsr, -, hsok, hsw, -, -⟩ := hL.stops
   obtain ⟨ls, hll, hlr, hlw, hlp, hlast⟩ := hL.log
   obtain ⟨f200, f201, f300, f301, f302, fm⟩ := fin_rd c'
-  refine ⟨⟨rs, ls, ?_, ?_, hsok, hsw, ?_, ?_, ?_, hlw, ?_, ?_⟩, by rw [eLC]; exact hcap⟩
-  · rw [f201, eSC]; exact hrl
+  refine ⟨⟨rs, ls, ?_, ?_, hsok, hsw, ?_, ?_, ?_, hlw, ?_, ?_⟩, by rwx [eLC]⟩
+  · rwx [f201, eSC]
   · rw [fm, f200, eSB]
     intro i hi
-    have hiS : i < c.nreg sC := by rw [← hrl]; exact hi
+    have hiS : i < c.nreg sC := by rwx [← hrl]
     obtain ⟨a0, a1, a2, a3, a4⟩ := hsr i hi
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a0
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a1
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a2
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a3
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a4
-  · rw [f301, eLC]; exact hll
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+  · rwx [f301, eLC]
   · rw [fm, f300, eLB]
     intro i hi
-    have hiL : i < c.nreg lC := by rw [← hll]; exact hi
-    have hlog : c.nreg lB + 7 * c.nreg lC ≤ c.nreg ALLOC := by unfold logCap at l2 hcap; omega
+    have hiL : i < c.nreg lC := by rwx [← hll]
+    have hlog : c.nreg lB + 7 * c.nreg lC ≤ c.nreg ALLOC := by ufo logCap at l2 hcap
     obtain ⟨a0, a1, a2, a3, a4, a5, a6⟩ := hlr i hi
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a0
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a1
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a2
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a3
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a4
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a5
-    · rw [memC _ (by omega) (Or.inr (by omega))]; exact a6
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
+    · rwx [memC _ (by omega) (Or.inr (by omega))]
   · -- the log
     obtain ⟨p1, p2, p3, p4, p5, p6⟩ := hlp
     refine ⟨p1, p2, p3, p4, p5, fun x hx => ?_, p6⟩
     unfold logOf at hx
     rw [List.getLast?_map, hlast] at hx
-    simp only [Option.map_some, Option.mem_def, Option.some.injEq] at hx
+    simp [Option.map_some, Option.mem_def, Option.some.injEq] at hx
     subst hx
     exact hnc
   · -- the table
     rw [fm, f302, eTB]
     intro j hj haR hav hat
     obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Qof P) (N := N₂) hj
-    have hS₂sub : S₂ ⊆ Merge.augChords J.right := E.hNF₂.1.2.1
+    have hS₂sub  := E.hNF₂.1.2.1
     obtain ⟨hfr, ha₂, -, -, -, -⟩ := right_hit_end (hS₂sub hc) ha
     have hfree := whole_free_end E.hP haR hav hfr
     obtain ⟨g0, g1, g2⟩ := tabF j hj
@@ -173,7 +175,7 @@ theorem done_out (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hL : LoopInv P J
       exact ⟨hatt, hpt, hLst⟩
     · have hσ : endDir j = 1 ∨ endDir j = -1 := by
         rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
-      have haw : (endOrigin J (Qof P) N₂ j).2 ≤ J.whole.top.2 := le_trans ha₂ J.right_top_le
+      have haw  := le_trans ha₂ J.right_top_le
       have hle : J.whole.hitParam (endOrigin J (Qof P) N₂ j) (endDir j) ≤
           J.right.hitParam (endOrigin J (Qof P) N₂ j) (endDir j) := by
         rw [whole_hitParam_eq_min J haw hσ, ← right_hitParam_eq J ha₂]

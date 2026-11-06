@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.SpecRam
 public import Chazelle.Core.SignKernelRam
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-C (BuildNF), RAM part 0: renaming registers
@@ -73,7 +75,7 @@ theorem upd_ren {α : Type} (hf : ∀ r, f (f r) = r) (g : ℕ → α) (i : ℕ)
   funext r
   simp only [upd_apply]
   by_cases h : r = f i
-  · subst h; rw [hf]; simp
+  · subst h; rws [hf]
   · have : f r ≠ i := fun h' => h (by rw [← h', hf])
     simp [h, this]
 
@@ -158,7 +160,7 @@ def σ (r : ℕ) : ℕ :=
   else r
 
 theorem σ_σ (r : ℕ) : σ (σ r) = r := by
-  unfold σ; split_ifs <;> omega
+  unfold σ; splao
 
 /-- The renamed view: register `r` of the view holds register `σ r`. -/
 theorem cfgRen_nreg (c : Config) (r : ℕ) : (cfgRen σ c).nreg r = c.nreg (σ r) := rfl

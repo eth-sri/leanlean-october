@@ -3,6 +3,7 @@ module
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Algebra.Order.Field.GeomSum
 public import Mathlib.Data.Nat.Log
+public import Chazelle.Rwx
 
 /-!
 # Explicit-constant analytic toolkit for the cost analysis of Chazelle §4
@@ -69,7 +70,7 @@ theorem two_rpow_one_div_le_two (N : ℕ) (hN : N ≠ 0) : (2 : ℝ) ^ ((1 : ℝ
   have hN1 : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
   calc (2 : ℝ) ^ ((1 : ℝ) / N) ≤ (2 : ℝ) ^ (1 : ℝ) :=
         Real.rpow_le_rpow_of_exponent_le (by norm_num) (by
-          rw [div_le_one (by linarith)]; exact hN1)
+          rwx [div_le_one (by linarith)])
     _ = 2 := Real.rpow_one 2
 
 /-- `n ≤ 2M · 2^(n/M)` for every natural `n` and `M ≥ 1`. -/
@@ -86,8 +87,7 @@ theorem nat_le_two_rpow (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
     congr 1
     ring
   rw [← hun]
-  have h1 : (n : ℝ) * (1 / (2 * M)) ≤ u ^ n :=
-    le_trans (mul_le_mul_of_nonneg_left hsub (Nat.cast_nonneg n)) hb
+  have h1  := le_trans (mul_le_mul_of_nonneg_left hsub (Nat.cast_nonneg n)) hb
   rw [mul_one_div, div_le_iff₀ (by positivity)] at h1
   linarith
 
@@ -97,14 +97,13 @@ theorem natPow_le_two_rpow (k M : ℕ) (hM : M ≠ 0) (n : ℕ) :
     (n : ℝ) ^ k ≤ (2 * k * M : ℝ) ^ k * (2 : ℝ) ^ ((n : ℝ) / M) := by
   rcases Nat.eq_zero_or_pos k with hk | hk
   · subst hk
-    simp only [pow_zero, one_mul]
+    simp [pow_zero, one_mul]
     exact Real.one_le_rpow (by norm_num) (by positivity)
   · have hkM : k * M ≠ 0 := Nat.mul_ne_zero (Nat.pos_iff_ne_zero.mp hk) hM
     have hkR : (k : ℝ) ≠ 0 := by exact_mod_cast (Nat.pos_iff_ne_zero.mp hk)
     have hMR : (M : ℝ) ≠ 0 := by exact_mod_cast hM
     have h1 := nat_le_two_rpow (k * M) hkM n
-    have h2 : (n : ℝ) ^ k ≤ (2 * ((k * M : ℕ) : ℝ) * (2 : ℝ) ^ ((n : ℝ) / ((k * M : ℕ) : ℝ))) ^ k :=
-      pow_le_pow_left₀ (Nat.cast_nonneg n) h1 k
+    have h2  := pow_le_pow_left₀ (Nat.cast_nonneg n) h1 k
     rw [mul_pow] at h2
     have h3 : ((2 : ℝ) ^ ((n : ℝ) / ((k * M : ℕ) : ℝ))) ^ k = (2 : ℝ) ^ ((n : ℝ) / M) := by
       rw [← Real.rpow_mul_natCast (by norm_num)]

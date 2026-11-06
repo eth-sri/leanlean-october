@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.DownPhaseNFSorted
 public import Chazelle.Core.SpecPhases
 public import Chazelle.Cost.DownPhase
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # Down-phase driver (RAM side), D1 part 1: the level invariant and the component contracts
@@ -63,10 +66,10 @@ band (so the handles of `coreReg 0 … 2` survive every component). -/
 def drvBands : Finset ℕ := phaseBands.erase bCore
 
 theorem bCore_notin_drvBands : bCore ∉ drvBands := by
-  unfold drvBands; simp
+  ufs drvBands
 
 theorem bDownDrv_mem_drvBands : bDownDrv ∈ drvBands := by
-  unfold drvBands phaseBands bDownDrv bCore; decide
+  ufd drvBands phaseBands bDownDrv bCore
 
 theorem drvBands_subset : drvBands ⊆ phaseBands := Finset.erase_subset _ _
 
@@ -85,7 +88,7 @@ theorem coreReg_band (i : ℕ) (hi : i < 10000) : bandOf (coreReg i) = bCore := 
   unfold coreReg; exact bandOf_bandReg _ _ hi
 
 theorem coreReg_ne_alloc (i : ℕ) (hi : i < 10000) : coreReg i ≠ ALLOC := by
-  unfold coreReg bandReg bCore ALLOC; omega
+  ufo coreReg bandReg bCore ALLOC
 
 /-- The setup record survives a change of memory at or above its bound and a larger bound. -/
 theorem setup_transport {A A' : ℕ} {m m' : ℕ → ℕ} {S n : ℕ}
@@ -105,14 +108,14 @@ theorem EnvD.transport {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {c
   · rw [h0]; exact setup_transport hS hm hA
   · rw [h1]
     exact X.mono P _ _ _ _ hA (X.local_ P c.nmem c'.nmem _ _ (fun a ha => (hm a ha).symm) hXh)
-  · rw [h1, hX P c.nmem c'.nmem _ _ hm hXh]; exact hcap
+  · rwx [h1, hX P c.nmem c'.nmem _ _ hm hXh]
 
 /-- **The environment survives every frame that does not write the core band.** -/
 theorem EnvD.frame {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {B : Finset ℕ}
     {c c' : Config} {k : ℕ} (h : EnvD X P W c) (hf : Frame B c c' k) (hB : bCore ∉ B) :
     EnvD X P W c' := by
   have hr : ∀ i, i < 10000 → c'.nreg (coreReg i) = c.nreg (coreReg i) := fun i hi =>
-    hf.1 _ (by rw [coreReg_band i hi]; exact hB) (coreReg_ne_alloc i hi)
+    hf.1 _ (by rwx [coreReg_band i hi]) (coreReg_ne_alloc i hi)
   exact h.transport hX (hr 0 (by norm_num)) (hr 1 (by norm_num)) hf.2.2.2.2.2.1 hf.2.2.1
 
 /-! ## The level invariant -/
@@ -155,12 +158,12 @@ theorem InvAt.transport {cnt : ℕ → ℕ} {P : Polygon} {c c' : Config} {lam :
     InvAt cnt P c' lam := by
   obtain ⟨hD, hDa, L, E, hK, hLb, hLa, hEb, hEa, hok, hperm, hsort, hN, hdeg, hwt, hcnt⟩ := h
   have h1 := hr 1 le_rfl (by norm_num)
-  refine ⟨by rw [h1]; omega, by rw [h1]; exact (hDa.transport hm).mono hA, L, E, ?_, ?_, ?_, ?_, ?_, hok, hperm, hsort, ?_,
+  refine ⟨by rwo [h1], by rw [h1]; exact (hDa.transport hm).mono hA, L, E, ?_, ?_, ?_, ?_, ?_, hok, hperm, hsort, ?_,
     hdeg, hwt, hcnt⟩
-  · rw [hr 3 (by norm_num) (by norm_num)]; exact hK
-  · rw [hr 2 (by norm_num) (by norm_num)]; omega
+  · rwx [hr 3 (by norm_num) (by norm_num)]
+  · rwo [hr 2 (by norm_num) (by norm_num)]
   · rw [hr 2 (by norm_num) (by norm_num)]; exact (hLa.transport hm).mono hA
-  · rw [hr 4 (by norm_num) (by norm_num)]; omega
+  · rwo [hr 4 (by norm_num) (by norm_num)]
   · rw [hr 4 (by norm_num) (by norm_num)]; exact (hEa.transport hm).mono hA
   · rw [hr 5 (by norm_num) (by norm_num)]; exact (hN.transport hm).mono hA
 

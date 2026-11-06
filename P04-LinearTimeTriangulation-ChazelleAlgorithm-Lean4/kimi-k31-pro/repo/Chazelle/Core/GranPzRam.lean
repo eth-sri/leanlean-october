@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.GranPz
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F, init part 2: the bit `pz` on the RAM
@@ -60,7 +62,7 @@ theorem chPts_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   have g₁ := fun r (hr : Bl [50058, 50059, 50089, 50077, 50078, 50090, 50079] r = false) =>
     f₁.1 r hr
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, n63, E₂⟩ := cnt_exec (P := P) (n := P.n) c₁ w₁
-    (by rw [f₁.2.2.1]; exact hH) ((g₁ _ (by decide)).trans h60) haW (by omega)
+    (by rwx [f₁.2.2.1]) ((g₁ _ (by decide)).trans h60) haW (by omega)
   have g₂ := fun r (hr : Bhost r = false) => f₂.1 r hr
   obtain ⟨c₃, k₃, e₃, hk₃, q87, q91, r₃⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 50087 50063, .copyN 50091 50078]) c₂ c₃ k₃ ∧ k₃ = 2 ∧
@@ -133,11 +135,11 @@ theorem hvS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d
   cases sp with
   | vtx i =>
     obtain ⟨h0, h1⟩ := hsp
-    exact ⟨_, _, .ifLtN_true (by rw [h0, h32]; omega) (Exec.copyN hw _ _), by omega,
+    exact ⟨_, _, .ifLtN_true (by rwo [h0, h32]) (Exec.copyN hw _ _), by omega,
       by simp [upd, h1, hv], fun q hq => by simp [upd, hq], rfl⟩
   | onEdge e k =>
     obtain ⟨h0, -, h2⟩ := hsp
-    exact ⟨_, _, .ifLtN_false (by rw [h0, h32]; omega) (Exec.copyN hw _ _), by omega,
+    exact ⟨_, _, .ifLtN_false (by rwo [h0, h32]) (Exec.copyN hw _ _), by omega,
       by simp [upd, h2, hv], fun q hq => by simp [upd, hq], rfl⟩
 
 /-- `s` if `r a ≠ r b`, else `t`. -/
@@ -167,9 +169,9 @@ theorem tail3_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       (∀ q, q ≠ 90112 → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem := by
   unfold tail3
   by_cases h0 : c.nreg 90111 = 0
-  · exact ⟨c, _, .ifLtN_true (by rw [h19]; omega) (.skip hw), by omega, by omega,
+  · exact ⟨c, _, .ifLtN_true (by rwo [h19]) (.skip hw), by omega, by omega,
       by simp [h0, h112], fun _ _ => rfl, rfl⟩
-  have e0 : ¬ c.nreg 90111 < c.nreg 90019 := by rw [h19]; omega
+  have e0 : ¬ c.nreg 90111 < c.nreg 90019 := by rwo [h19]
   by_cases h1 : c.nreg ra = c.nreg rb
   · exact ⟨c, _, .ifLtN_false e0 (ifNe_eq h1 (.skip hw)), by omega, by omega,
       by simp [h1, h112], fun _ _ => rfl, rfl⟩

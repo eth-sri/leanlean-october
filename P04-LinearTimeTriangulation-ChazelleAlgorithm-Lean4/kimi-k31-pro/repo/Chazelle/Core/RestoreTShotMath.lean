@@ -4,6 +4,8 @@ public import Chazelle.Core.RestoreShoot
 public import Chazelle.Core.RestoreHoles
 public import Chazelle.Core.RestoreTNear
 public import Chazelle.Core.ShotListTop
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the candidate test: the shot is the first exit
@@ -41,7 +43,7 @@ variable {M : Model}
 theorem hiSet_off (hGM : GoodModel M) (Q : Polygon) (m : ℕ → ℕ) (B K : ℕ) :
     hiSet M Q m B K ⊆ (M.D)ᶜ := by
   intro x hx
-  simp only [hiSet, mem_iUnion] at hx
+  simp [hiSet, mem_iUnion] at hx
   obtain ⟨j, -, p, t, hp, h0, h1, -, rfl⟩ := hx
   exact (walkAx_of_goodModel hGM).trace p hp t h0 h1
 
@@ -63,9 +65,9 @@ theorem exit_lo (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
   refine ⟨T, hT, hTt, hTD, hdomU, hadm, hatt, ?_⟩
   obtain ⟨p, τ, hp, h0, h1, hk, hx⟩ := hmem
   obtain ⟨j, hj, hja, hjb⟩ := harr a b harc
-  refine ⟨p, τ, hp, h0, h1, ⟨j, hj, by rw [hja, hjb]; exact hk⟩, fun g hg hin => ?_, hx⟩
+  refine ⟨p, τ, hp, h0, h1, ⟨j, hj, by rwx [hja, hjb]⟩, fun g hg hin => ?_, hx⟩
   obtain ⟨p', hp', ⟨s₁, a1, a2, e1⟩, s₂, b1, b2, e2⟩ := hnear g hg p τ hp h0 h1 hin
-  have hUfree : U ⊆ Chazelle.Chain.freeIn M.D F := Chazelle.Chain.regionsIn_subset hU
+  have hUfree  := Chazelle.Chain.regionsIn_subset hU
   have hdom : ∀ t, 0 < t → t < T → rayPt z σ t ∈ M.D := fun t h1 h2 => (hUfree (hdomU t h1 h2)).1
   exact no_common_edge (walkAx_of_goodModel hGM) hσ hT hdom hp' a1 a2 b1 b2 e1
     (by rw [e2]; exact hx.symm)
@@ -82,7 +84,7 @@ theorem firstHit_exit (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
     (hhi : A ⊆ hiSet M Q m B K) {t : ℝ} (hfh : FirstHit A z σ t) :
     rayPt z σ t ∉ M.D ∧ (∀ s, 0 < s → s < t → rayPt z σ s ∈ U) ∧ chordOf z σ t ∈ M.Adm ∧
       (∃ p t', SideAttach M.W (chordOf z σ t) p t' ∧ sidePt M.W p t' = rayPt z σ t) := by
-  have hout : rayPt z σ t ∉ M.D := hiSet_off hGM Q m B K (hhi hfh.2.1)
+  have hout  := hiSet_off hGM Q m B K (hhi hfh.2.1)
   obtain ⟨T, hT, hTt, hTD, hdomU, hadm, hatt, hlo'⟩ :=
     exit_lo hGM hFam hU hσ hzD hini htop harr hnear hfh.1 hout
   have hTe : T = t := by
@@ -117,15 +119,15 @@ theorem arrival_of_attach {W : Polygon} {z : Point} {σ T : ℝ} (hσ : σ = 1 �
   refine ⟨hp, h0, h1, hw, ?_⟩
   have hσ' : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   set s := min (r / 2) (T / 2) with hsdef
-  have hs : 0 < s := lt_min (half_pos hr) (half_pos hT)
+  have hs  := lt_min (half_pos hr) (half_pos hT)
   have hsr : s ≤ r / 2 := min_le_left _ _
   have hsT : s ≤ T / 2 := min_le_right _ _
   have hmem : rayPt (rayPt z σ T) (-σ) s ∈ chordOf z σ T := by
     rw [rayPt_back]; exact (mem_chordOf hσ hT.le).2 ⟨T - s, by linarith, by linarith, rfl⟩
   have hd : dist (rayPt (rayPt z σ T) (-σ) s) (rayPt z σ T) = s := Sweep.dist_rayPt _ hσ' hs.le
   have hne : rayPt (rayPt z σ T) (-σ) s ≠ sidePt W p t := by
-    rw [hw]; intro h; rw [h, dist_self] at hd; linarith
-  have hsl := hsec _ hmem hne (by rw [hw, hd]; linarith)
+    rw [hw]; intro h; rwli [h, dist_self] at hd
+  have hsl := hsec _ hmem hne (by rwli [hw, hd])
   rw [← hw] at hsl ⊢
   exact (Sweep.sideLeft_rayPt_iff W p t (-σ) one_pos hs).2 hsl
 

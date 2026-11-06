@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.NFBuildPassRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-C (BuildNF), RAM part 10: executions of the pieces of the main pass (arc part)
@@ -23,10 +27,10 @@ def Barc (r : ℕ) : Bool :=
 
 theorem wr_arcS : wrM Barc arcS = true := by
   have h1 : wrM Barc pzR = true := wrM_of_wr (wr_mono (fun r hr => by
-    simp only [Barc, hr, Bool.true_or]) wr_pzR)
+    simp [Barc, hr, Bool.true_or]) wr_pzR)
   have h2 : wrM Barc wtS = true := wrM_of_wr (wr_mono (fun r hr => by
-    simp only [Barc, Bool.or_eq_true, decide_eq_true_eq] at hr ⊢; omega) wr_wtS)
-  simp only [arcS, wrM, block, h1, h2, Bool.and_true, Bool.true_and]
+    sio only [Barc, Bool.or_eq_true, decide_eq_true_eq] at hr ⊢) wr_wtS)
+  simp [arcS, wrM, block, h1, h2, Bool.and_true, Bool.true_and]
   decide
 
 theorem Barc_false {r : ℕ} (h : r < 10000 ∨ (10503 ≤ r ∧ r ≤ 40000) ∨ (40100 ≤ r ∧ r < 41110) ∨
@@ -36,7 +40,7 @@ theorem Barc_false {r : ℕ} (h : r < 10000 ∨ (10503 ≤ r ∧ r ≤ 40000) �
     cases hb : BpzR r
     · rfl
     · have := BpzR_true hb; omega
-  simp only [Barc, this, Bool.false_or, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+  simp [Barc, this, Bool.false_or, Bool.or_eq_false_iff, decide_eq_false_iff_not]
   omega
 
 section exec
@@ -99,7 +103,7 @@ theorem arcS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
     refine ⟨rfl, ?_, by config_simp, by config_simp⟩
     config_simp
     funext a
-    simp only [hA, hAT, h1, upd_apply, wr5]
+    simp [hA, hAT, h1, upd_apply, wr5]
     by_cases e0 : a = AT + 5 * A
     · subst e0; ifs_omega
     by_cases e1 : a = AT + 5 * A + 1
@@ -113,13 +117,13 @@ theorem arcS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
     ifs_omega
   have w₁ := x₁.wb_right
   have g₁ : ∀ r, r ≠ 43150 → r ≠ 41110 → r ≠ 41111 → d₁.nreg r = d.nreg r := fun r a1 a2 a3 =>
-    r₁.1 r (by simp only [decide_eq_false_iff_not]; omega)
+    r₁.1 r (by sio only [decide_eq_false_iff_not])
   have mH₁ : ∀ a, a < H → d₁.nmem a = d.nmem a := fun a ha => by
     rw [m₁]; unfold wr5; ifs_omega
   obtain ⟨hM₁, hwf₁⟩ := desc_agree hwf hM mH₁
   obtain ⟨hDW, hCW⟩ := locChainWF_of hwf₁ hHW hWn
   have hD6 := hwf.1
-  have hW' : P.n + 3 ≤ W := by unfold hostWords at hWn; omega
+  have hW' : P.n + 3 ≤ W := by ufo hostWords at hWn
   -- the parameter test
   obtain ⟨d₂, k₂, x₂, hk₂, f₂, pz1, pziff⟩ := pzR_exec (P := P) (M := M) hG hW' d₁ w₁
     (D := D) (e := d.nreg 42113) (h := d.nreg 42114)
@@ -127,7 +131,7 @@ theorem arcS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
     (by rw [g₁ _ (by norm_num) (by norm_num) (by norm_num), h23, mH₁ D (by omega)])
     (by rw [g₁ _ (by norm_num) (by norm_num) (by norm_num), h19]) v110 v111 he hh hDW hCW
   have w₂ := x₂.wb_right
-  have g₂ : ∀ r, BpzR r = false → d₂.nreg r = d₁.nreg r := f₂.1
+  have g₂  := f₂.1
   have bz : ∀ r, (r < 10000 ∨ (10503 ≤ r ∧ r ≤ 40000) ∨ (40100 ≤ r ∧ r < 41110) ∨
       41120 ≤ r) → BpzR r = false := fun r hr => by
     cases hb : BpzR r
@@ -153,11 +157,11 @@ theorem arcS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
       omega
     · have := hw.1 42113
       omega
-  obtain ⟨d₃, k₃, x₃, hk₃, v₃, f₃⟩ := wtS_exec (P := P) d₂ w₂ e₁₁ (by rw [e₁₂₀]; exact hlt)
-    (by rw [e₁₁₃, e₂₀]; exact hbound)
+  obtain ⟨d₃, k₃, x₃, hk₃, v₃, f₃⟩ := wtS_exec (P := P) d₂ w₂ e₁₁ (by rwx [e₁₂₀])
+    (by rwx [e₁₁₃, e₂₀])
   have w₃ := x₃.wb_right
   have g₃ : ∀ r, (r < 43121 ∨ 43128 ≤ r) → d₃.nreg r = d₂.nreg r := fun r hr =>
-    f₃.1 r (by simp only [decide_eq_false_iff_not]; omega)
+    f₃.1 r (by sio only [decide_eq_false_iff_not])
   have g₃₁ : ∀ r, (r < 10000 ∨ (10503 ≤ r ∧ r ≤ 40000) ∨ (40100 ≤ r ∧ r < 41110) ∨
       (41120 ≤ r ∧ r < 43121) ∨ 43128 ≤ r) → r ≠ 43150 → d₃.nreg r = d.nreg r := fun r hr hr' => by
     rw [g₃ r (by omega), g₂ _ (bz _ (by omega)), g₁ _ hr' (by omega) (by omega)]
@@ -170,8 +174,8 @@ theorem arcS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
     have r2 := g₃₁ 43102 (by omega) (by norm_num)
     have r3 := g₃₁ 43011 (by omega) (by norm_num)
     exec_block
-    · rw [r1, r2, hWT, hA]; omega
-    · config_simp; rw [r2, r3, hA, h1]; omega
+    · rwo [r1, r2, hWT, hA]
+    · config_simp; rwo [r2, r3, hA, h1]
     · refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_⟩ <;> config_simp
       · rw [r2, r3, hA, h1]
       · rw [r1, r2, hWT, hA]

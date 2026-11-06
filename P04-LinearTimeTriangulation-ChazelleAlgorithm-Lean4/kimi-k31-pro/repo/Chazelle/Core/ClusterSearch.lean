@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.ClusterMap
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-I, part 11: binary lifting, the invariants
@@ -42,15 +44,15 @@ theorem LbInv.step {κ : ℕ → ℕ} {lo hi x pos j : ℕ} (hs : Sorted κ lo h
     (pos + 2 ^ j ≤ hi ∧ κ (pos + 2 ^ j - 1) < x → LbInv κ lo hi x (pos + 2 ^ j) j) ∧
     (¬ (pos + 2 ^ j ≤ hi ∧ κ (pos + 2 ^ j - 1) < x) → LbInv κ lo hi x pos j) := by
   have hp := Nat.one_le_two_pow (n := j)
-  have hpow : 2 ^ (j + 1) = 2 ^ j + 2 ^ j := by rw [pow_succ]; ring
+  have hpow : 2 ^ (j + 1) = 2 ^ j + 2 ^ j := by rwring [pow_succ]
   constructor
   · rintro ⟨h1, h2⟩
     refine ⟨by have := hI.lo_le; omega, h1, fun i hi1 hi2 => ?_, fun h => ?_⟩
     · by_cases hip : i < pos
       · exact hI.below i hi1 hip
       · exact lt_of_le_of_lt (hs i (pos + 2 ^ j - 1) hi1 (by omega) (by omega)) h2
-    · have := hI.above (by rw [hpow]; omega)
-      rw [show pos + 2 ^ j + 2 ^ j - 1 = pos + 2 ^ (j + 1) - 1 by rw [hpow]; omega]
+    · have := hI.above (by rwo [hpow])
+      rw [show pos + 2 ^ j + 2 ^ j - 1 = pos + 2 ^ (j + 1) - 1 by rwo [hpow]]
       exact this
   · intro h
     refine ⟨hI.lo_le, hI.le_hi, hI.below, fun hin => ?_⟩
@@ -63,8 +65,8 @@ theorem LbInv.final {κ : ℕ → ℕ} {lo hi x pos : ℕ} (hs : Sorted κ lo hi
     (hI : LbInv κ lo hi x pos 0) :
     (∀ i, lo ≤ i → i < pos → κ i < x) ∧ (∀ i, pos ≤ i → i < hi → x ≤ κ i) := by
   refine ⟨hI.below, fun i hi1 hi2 => ?_⟩
-  have := hI.above (by simp; omega)
-  simp only [pow_zero, Nat.add_sub_cancel] at this
+  have := hI.above (by sio)
+  simp [pow_zero, Nat.add_sub_cancel] at this
   exact le_trans this (hs pos i (hI.lo_le) hi1 hi2)
 
 /-! ## Climb -/
@@ -82,7 +84,7 @@ theorem ClimbInv.step {up : ℕ → ℕ} {Good : ℕ → Prop} {x j : ℕ} (hI :
   constructor
   · intro h
     refine ⟨h, ?_⟩
-    rw [← Function.iterate_add_apply, show 2 ^ j + 2 ^ j = 2 ^ (j + 1) by rw [pow_succ]; ring]
+    rw [← Function.iterate_add_apply, show 2 ^ j + 2 ^ j = 2 ^ (j + 1) by rwring [pow_succ]]
     exact hI.good
   · intro h
     exact ⟨hI.bad, h⟩

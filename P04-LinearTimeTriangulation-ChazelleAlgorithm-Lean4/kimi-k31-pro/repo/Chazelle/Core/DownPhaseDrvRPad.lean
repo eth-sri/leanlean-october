@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvRLib
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase driver (RAM side): padding
@@ -44,10 +46,10 @@ theorem padLoop_exec : ∀ (d : ℕ) (c : Config), WordsBounded W c → c.nreg 2
       upd_other _ _ _ (by decide)
     have h3 : (upd c.nreg 210068 (c.nreg 210068 + c.nreg 210069)) 210068 = c.nreg 210068 + 1 := by
       rw [upd_same, h69]
-    have e' := padLoop_exec d _ e.wb_right h1 (by dsimp only; rw [h2, h3]; omega)
-      (by dsimp only; rw [h2, h3]; omega)
+    have e' := padLoop_exec d _ e.wb_right h1 (by dsimp; rwo [h2, h3])
+      (by dsimp; rwo [h2, h3])
     refine ((Exec.whileLtN_true (by omega) e e').cast (by ring)).cast_end ?_
-    simp only [h2, upd_upd_same]
+    simp [h2, upd_upd_same]
 
 /-- **The padding**: exactly `3 (r9999 - r_src) + 4` steps, only `210068`, `210069` written. -/
 theorem padS_exec {src : ℕ} {c : Config} (hw : WordsBounded W c) (hs : c.nreg src ≤ c.nreg 9999)
@@ -62,10 +64,10 @@ theorem padS_exec {src : ℕ} {c : Config} (hw : WordsBounded W c) (hs : c.nreg 
   have a69 : (upd (upd c.nreg 210068 (c.nreg src)) 210069 1) 210069 = 1 := upd_same _ _ _
   have aA : (upd (upd c.nreg 210068 (c.nreg src)) 210069 1) 9999 = c.nreg 9999 := by
     rw [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide)]
-  have e₃ := padLoop_exec (P := P) _ _ e₂.wb_right a69 (by dsimp only; rw [a68, aA]; exact hs) rfl
-  refine ⟨_, (Exec.seq e₁ (Exec.seq e₂ e₃)).cast (by dsimp only; rw [a68, aA]; ring),
+  have e₃ := padLoop_exec (P := P) _ _ e₂.wb_right a69 (by dsimp; rwx [a68, aA]) rfl
+  refine ⟨_, (Exec.seq e₁ (Exec.seq e₂ e₃)).cast (by dsimp; rwring [a68, aA]),
     fun r h1 h2 => ?_, rfl, rfl, rfl, rfl, e₃.wb_right⟩
-  simp only [upd_other _ _ _ h1, upd_other _ _ _ h2]
+  simp [upd_other _ _ _ h1, upd_other _ _ _ h2]
 
 end exec
 

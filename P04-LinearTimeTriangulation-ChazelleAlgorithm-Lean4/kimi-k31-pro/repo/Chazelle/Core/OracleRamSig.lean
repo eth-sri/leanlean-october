@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.WalkKey
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Lemma 3.6 (WP-H), RAM part 1: calling the sign kernel on registers
@@ -71,18 +74,18 @@ theorem wr_load (t : ℕ) (ht : 10000 ≤ t ∧ t + 2 < 10500) (s : SymSrc) :
 theorem holds_congr {c c' : Config} {s : SymSrc} {p : SymPt} (hs : s.Out)
     (hc : ∀ r, Bk r = false → c'.nreg r = c.nreg r) (h : s.Holds c p) : s.Holds c' p := by
   cases s with
-  | vtx r => simp only [SymSrc.Holds] at h ⊢; rw [hc r hs]; exact h
+  | vtx r => simp only [SymSrc.Holds] at h ⊢; rwx [hc r hs]
   | edge re rh =>
-    simp only [SymSrc.Holds] at h ⊢; rw [hc re hs.1, hc rh hs.2]; exact h
+    simp only [SymSrc.Holds] at h ⊢; rwx [hc re hs.1, hc rh hs.2]
   | regs r =>
     simp only [SymSrc.Holds] at h ⊢
     cases p with
     | vtx i =>
       simp only [SymPtIn] at h ⊢
-      rw [hc r hs.1, hc (r + 1) hs.2.1]; exact h
+      rwx [hc r hs.1, hc (r + 1) hs.2.1]
     | onEdge e h' =>
       simp only [SymPtIn] at h ⊢
-      rw [hc r hs.1, hc (r + 1) hs.2.1, hc (r + 2) hs.2.2]; exact h
+      rwx [hc r hs.1, hc (r + 1) hs.2.1, hc (r + 2) hs.2.2]
 
 /-- Close a goal about explicit register updates by case analysis. -/
 macro "upd_solve" : tactic =>
@@ -178,7 +181,7 @@ theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     cases q with
     | vtx i =>
       simp only [SymPtIn] at hq ⊢
-      rw [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl))]; exact hq
+      rwx [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl))]
     | onEdge e h =>
       simp only [SymPtIn] at hq ⊢
       rw [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl)), hd (t + 2) (Or.inr (Or.inr rfl))]
@@ -194,13 +197,13 @@ theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     rw [hc₄]; config_simp
     rw [Machine.upd_other _ _ _ (by omega)]
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ w₄ hG hW
-    (by rw [hc₄]; config_simp; omega) l₁ l₂ l₃ j₁ j₂ j₃
+    (by rw [hc₄]; cso) l₁ l₂ l₃ j₁ j₂ j₃
   have op₄ : c₄.nreg 10009 = op := by rw [hc₄]; config_simp
   rw [op₄] at sig₅
   have f₄ : FrameB Bk c₃ c₄ := by
     refine ⟨fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
     rw [hc₄]; config_simp
-    rw [Machine.upd_other _ _ _ (by simp only [Bk, decide_eq_false_iff_not, not_and, not_lt] at hr; omega)]
+    rw [Machine.upd_other _ _ _ (by sio only [Bk, decide_eq_false_iff_not, not_and, not_lt] at hr)]
   refine ⟨c₅, k₁ + (k₂ + (k₃ + (1 + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega,
     f₁.trans (f₂.trans (f₃.trans (f₄.trans f₅))), bit₅, sig₅⟩
 

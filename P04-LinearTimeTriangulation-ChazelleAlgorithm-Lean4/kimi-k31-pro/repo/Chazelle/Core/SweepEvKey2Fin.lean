@@ -1,6 +1,13 @@
 module
 
 public import Chazelle.Core.SweepEvKey2Skip
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 16000000
+set_option maxRecDepth 100000
 
 /-!
 # The sweep (WP-D), stage 3: the next key (task K), the other steps
@@ -79,8 +86,6 @@ theorem kqLblOf_copy {c c' : Config} {N L N' L' : ℕ} (hN : c'.nreg N' = c.nreg
   rw [List.mem_range] at hi
   exact hL i (by omega)
 
-set_option maxHeartbeats 16000000 in
-set_option maxRecDepth 100000 in
 /-- **The steps before the skipping.** -/
 theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀ d)
     (hpk : PosW P J (d.nreg kqE) (d.nreg kqH))
@@ -102,7 +107,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
     exact ⟨iscr_sw' (by norm_num) (by norm_num), iscr_sw' (by norm_num) (by norm_num),
       ⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩, ⟨iscr_sw' (by norm_num) (by norm_num),
         by omega⟩, ⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩, trivial⟩)) ?_).mono le_rfl
-    (fun _ h => h)
+    (fun _ => id)
   rintro d₁ hI₁ hA₁ hA₁' hd₁
   have v1 : d₁.nreg kE = d.nreg kqE := by rw [hd₁]; simp [setKL, regB, regI, upd, kE, kH, dF, kqB, kqA, kqE, sw]
   have v2 : d₁.nreg kH = d.nreg kqH := by rw [hd₁]; simp [setKL, regB, regI, upd, kE, kH, dF, kqB, kqA, kqH, sw]
@@ -130,11 +135,11 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       have hgw₁' : ((d₁.nreg cGW : ℕ) : ℝ) = (gW J : ℝ) := by rw [hgw₁]
       refine IRS.seq (K₁ := 11008) (K₂ := 3) (callOff_irs (dsc := sw 2) (ex := kE) (hx := kH)
         (ey := bE) (hy := bH) (g := cGW) (o := kqO) hI₁ (E.ctxW' hI₁)
-        ⟨by norm_num [sw], by norm_num [sw], by unfold kE sw; norm_num, by unfold kE sw; norm_num,
-          by unfold kH sw; norm_num, by unfold kH sw; norm_num, by unfold bE sw; norm_num,
-          by unfold bE sw; norm_num, by unfold bH sw; norm_num, by unfold bH sw; norm_num,
-          by unfold cGW sw; norm_num, by unfold cGW sw; norm_num⟩
-        ⟨by unfold kqO sw; norm_num, by unfold kqO sw; norm_num⟩ (by rw [v1]; exact hpk.1)
+        ⟨by norm_num [sw], by norm_num [sw], by ufn kE sw, by ufn kE sw,
+          by ufn kH sw, by ufn kH sw, by ufn bE sw,
+          by ufn bE sw, by ufn bH sw, by ufn bH sw,
+          by ufn cGW sw, by ufn cGW sw⟩
+        ⟨by ufn kqO sw, by ufn kqO sw⟩ (by rw [v1]; exact hpk.1)
         (by rw [eBE]; exact hbp.1) (by rw [hgw₁]; exact kqGW_lt J) (by rw [v1, v2]; exact hpk.2.1)
         (by rw [eBE, eBH]; exact hbp.2.1) (by rw [v1, v2]; exact hpk.2.2)
         (by rw [eBE, eBH]; exact hbp.2.2) (by omega)) ?_
@@ -148,14 +153,14 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       have kp2 : ∀ r, r = kE ∨ r = kH ∨ r = dF ∨ r = kqA ∨ r = kqB → d₂.nreg r = d₁.nreg r := by
         intro r hr
         have hr' : r = 242400 ∨ r = 242401 ∨ r = 242451 ∨ r = 242488 ∨ r = 242487 := by
-          simp only [kE, kH, dF, kqA, kqB, sw] at hr; omega
-        exact k₂ r (not_oracle_sw (by omega) (by omega)) (by unfold kqO sw; omega)
-          (by unfold kqO sw; omega) (by unfold ALLOC; omega)
+          sio only [kE, kH, dF, kqA, kqB, sw] at hr
+        exact k₂ r (not_oracle_sw (by omega) (by omega)) (by ufo kqO sw)
+          (by ufo kqO sw) (by ufo ALLOC)
       have k02 : d₂.nreg K0 = 0 := (E.hK.fix hI₂).1
       by_cases h2 : d₂.nreg K0 < d₂.nreg kqO
       · rw [k02] at h2
         have hlt := b1.2.1 (by have := b1.1; omega)
-        refine IRS.mono (K := 0 + 2) (IRS.ifT (by rw [k02]; exact h2) (IRS.skip hI₂ rfl))
+        refine IRS.mono (K := 0 + 2) (IRS.ifT (by rwx [k02]) (IRS.skip hI₂ rfl))
           (by norm_num) ?_
         rintro d' rfl
         have eB : d₂.nreg kqB = 0 := (kp2 _ (by simp)).trans v4
@@ -166,7 +171,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
           fun h => by have := b1.2.2 h; omega
         have heq : offK P J (d.nreg bE) (d.nreg bH) = offK P J (d.nreg kqE) (d.nreg kqH) :=
           le_antisymm (not_lt.1 hnlt) (hmin h1)
-        refine IRS.mono (K := 1 + 2) (IRS.ifF (by rw [k02]; exact h2) (IRS.block _ hI₂
+        refine IRS.mono (K := 1 + 2) (IRS.ifF (by rwx [k02]) (IRS.block _ hI₂
           ⟨⟨iscr_sw' (by norm_num) (by norm_num), hW⟩, trivial⟩)) (by norm_num) ?_
         rintro d' hd'
         have w1 : d'.nreg kqB = 1 := by rw [hd']; simp [regB, regI]
@@ -194,7 +199,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       (d'.nreg kqB = 1 ↔ (d.nreg bF = 1 ∧
         offK P J (d.nreg bE) (d.nreg bH) = offK P J (d.nreg kqE) (d.nreg kqH))) := by
     intro d' fr hB' hk
-    refine ⟨fr1.trans (fr2.trans fr), ?_, ?_, ?_, ?_, by omega, by rw [hB']; exact hbiff⟩
+    refine ⟨fr1.trans (fr2.trans fr), ?_, ?_, ?_, ?_, by omega, by rwx [hB']⟩
     · rw [hk _ (Or.inl rfl), kp2 _ (Or.inl rfl), v1]
     · rw [hk _ (Or.inr (Or.inl rfl)), kp2 _ (Or.inr (Or.inl rfl)), v2]
     · rw [hk _ (Or.inr (Or.inr (Or.inl rfl))), kp2 _ (Or.inr (Or.inr (Or.inl rfl))), v3]
@@ -203,12 +208,12 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
   by_cases h3 : d₂.nreg K0 < d₂.nreg kqB
   · rw [hK₂.1] at h3
     have hB1 : d₂.nreg kqB = 1 := by omega
-    refine IRS.mono (K := 5 + 2) (IRS.ifT (by rw [hK₂.1]; exact h3) (IRS.block cpBestL hI₂ (by
+    refine IRS.mono (K := 5 + 2) (IRS.ifT (by rwx [hK₂.1]) (IRS.block cpBestL hI₂ (by
       simp only [cpBestL, okB, okI]
       exact ⟨iscr_sw' (by norm_num) (by norm_num), iscr_sw' (by norm_num) (by norm_num),
-        iscr_sw (by unfold kqL sw; norm_num) (by unfold kqL sw; norm_num),
-        iscr_sw (by unfold kqL sw; norm_num) (by unfold kqL sw; norm_num),
-        iscr_sw (by unfold kqL sw; norm_num) (by unfold kqL sw; norm_num), trivial⟩)))
+        iscr_sw (by ufn kqL sw) (by ufn kqL sw),
+        iscr_sw (by ufn kqL sw) (by ufn kqL sw),
+        iscr_sw (by ufn kqL sw) (by ufn kqL sw), trivial⟩)))
       (by norm_num) ?_
     rintro d' hd'
     have fr3 : EFr PreR d₂ d' := by
@@ -229,7 +234,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
     rw [w0 _ (by simp)] at h; exact absurd hB1 h
   · rw [hK₂.1] at h3
     have hB0 : d₂.nreg kqB ≠ 1 := by omega
-    refine IRS.mono (K := 1 + 2) (IRS.ifF (by rw [hK₂.1]; exact h3) (IRS.block _ hI₂
+    refine IRS.mono (K := 1 + 2) (IRS.ifF (by rwx [hK₂.1]) (IRS.block _ hI₂
       ⟨⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩, trivial⟩)) (by norm_num) ?_
     rintro d' hd'
     have fr3 : EFr PreR d₂ d' := by
@@ -241,9 +246,8 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
       (fun r hr => w0 r (by rcases hr with rfl | rfl | rfl | rfl <;> kqr))
     refine ⟨c1, c2, c3, c4, c5, c6, c7, fun h => ?_, fun _ => ⟨?_, wN⟩⟩
     · rw [w0 _ (by kqr)] at h; exact absurd h hB0
-    · unfold lblOf; rw [wN]; rfl
+    · urr lblOf [wN]
 
-set_option maxHeartbeats 4000000 in
 /-- **The new label list.** -/
 theorem fin_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hB : d.nreg kqB ≤ 1)
     (hA : d.nreg kqA ≤ 1) :
@@ -260,9 +264,9 @@ theorem fin_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hB : d.nreg kqB ≤
     refine (IRS.block cpLabL hId (by
       simp only [cpLabL, okB, okI]
       exact ⟨iscr_sw' (by norm_num) (by norm_num), iscr_sw' (by norm_num) (by norm_num),
-        iscr_sw (by unfold kL sw; norm_num) (by unfold kL sw; norm_num),
-        iscr_sw (by unfold kL sw; norm_num) (by unfold kL sw; norm_num),
-        iscr_sw (by unfold kL sw; norm_num) (by unfold kL sw; norm_num), trivial⟩)).mono le_rfl ?_
+        iscr_sw (by ufn kL sw) (by ufn kL sw),
+        iscr_sw (by ufn kL sw) (by ufn kL sw),
+        iscr_sw (by ufn kL sw) (by ufn kL sw), trivial⟩)).mono le_rfl ?_
     rintro d' hd'
     have wN : d'.nreg kN = d.nreg kqN := by
       rw [hd']; simp [cpLabL, regB, regI, upd, kN, kL, kqN, kqL, sw]
@@ -282,14 +286,13 @@ theorem fin_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hB : d.nreg kqB ≤
   by_cases h1 : d.nreg K0 < d.nreg kqB
   · refine (IRS.ifT h1 cp).mono (by norm_num) (fun _ ⟨a, b, e⟩ => ⟨a, b, e, fun h => ?_⟩)
     rw [hK.1] at h1; exact absurd (Or.inl (by omega)) h
-  · refine (IRS.ifF (K := 5 + 2) h1 ?_).mono (by norm_num) (fun _ h => h)
+  · refine (IRS.ifF (K := 5 + 2) h1 ?_).mono (by norm_num) (fun _ => id)
     by_cases h2 : d.nreg K0 < d.nreg kqA
     · refine (IRS.ifT h2 cp).mono le_rfl (fun _ ⟨a, b, e⟩ => ⟨a, b, e, fun h => ?_⟩)
       rw [hK.1] at h2; exact absurd (Or.inr (by omega)) h
     · refine IRS.ifF h2 (IRS.skip hId ⟨fun _ _ => rfl, rfl, fun h => ?_, fun _ _ => rfl⟩)
-      rw [hK.1] at h1 h2; omega
+      rwo [hK.1] at h1 h2
 
-set_option maxHeartbeats 4000000 in
 /-- **The log record.** -/
 theorem writeLog_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hA : c₀.nreg ALLOC ≤ d.nreg lB)
     (hW : d.nreg lB + 7 * d.nreg lC + 7 ≤ W) :
@@ -310,19 +313,19 @@ theorem writeLog_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hA : c₀.nreg
     omega)) ?_
   rintro d₁ hI₁ - - hd₁
   have a1 : d₁.nreg kqX = d.nreg lB + 7 * d.nreg lC := by
-    rw [hd₁]; simp [logAddrL, regB, regI, upd, kqX, kqY, lC, lB, sw]; ring
+    rw [hd₁]; sir [logAddrL, regB, regI, upd, kqX, kqY, lC, lB, sw]
   have a2 : ∀ r, r ≠ kqX → r ≠ kqY → d₁.nreg r = d.nreg r := fun r h1 h2 => by
     rw [hd₁]; simp [logAddrL, regB, regI, upd, h1, h2]
   have m1 : d₁.nmem = d.nmem := by rw [hd₁]
   have hK₁ := hK₀.fix hI₁
   refine IRS.seq (K₁ := 14) (K₂ := 1) (storeL_irs (x := kqX) (iscr_sw' (by norm_num) (by norm_num))
     (by kqr) logRegs hI₁ hK₁.2.1 (by simp [logRegs, kE, kH, kN, kL, kqX, sw])
-    (by rw [a1]; omega) (by rw [a1]; simp [logRegs]; omega)) ?_
+    (by rwo [a1]) (by rsio [a1] [logRegs])) ?_
   rintro d₂ hI₂ - - ⟨s1, s2, s3⟩
   have hK₂ := hK₀.fix hI₂
   have eLC : d₂.nreg lC = d.nreg lC := (s3 _ (by kqr)).trans (a2 _ (by kqr) (by kqr))
   refine (IRS.block [.addN lC lC K1] hI₂ ⟨⟨iscr_sw' (by norm_num) (by norm_num),
-    by rw [eLC, hK₂.2.1]; omega⟩, trivial⟩).mono le_rfl ?_
+    by rwo [eLC, hK₂.2.1]⟩, trivial⟩).mono le_rfl ?_
   rintro d' hd'
   have w2 : ∀ r, r ≠ lC → d'.nreg r = d₂.nreg r := fun r hr => by
     rw [hd']; simp [regB, regI, upd, hr]
@@ -340,7 +343,7 @@ theorem writeLog_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hA : c₀.nreg
     by simpa [logRegs] using st 0 (by simp [logRegs]), by simpa [logRegs] using st 1 (by simp [logRegs]),
     by simpa [logRegs] using st 2 (by simp [logRegs]), fun i hi => ?_,
     fun y hy => by rw [wm, s2 y (by rw [a1]; simpa [logRegs] using hy), m1]⟩
-  have := st (3 + i) (by simp [logRegs]; omega)
+  have := st (3 + i) (by sio [logRegs])
   rw [← Nat.add_assoc] at this
   rw [this]
   interval_cases i <;> simp [logRegs]

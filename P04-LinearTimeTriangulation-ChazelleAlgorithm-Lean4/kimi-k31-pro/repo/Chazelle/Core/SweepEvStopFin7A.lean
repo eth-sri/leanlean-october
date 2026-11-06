@@ -27,7 +27,7 @@ theorem slfRec_words {m : ℕ → ℕ} {RB j pe ph dc : ℕ} {cc : Config}
     rawRec m RB j = (cc.nreg pe, cc.nreg ph, cc.nreg oKd, cc.nreg oKk, cc.nreg oB) ∧
       rawDc m RB j = cc.nreg dc ∧
       rawAux m RB j = (cc.nreg slfA, cc.nreg slfN, cc.nreg slfL0, cc.nreg slfL1, cc.nreg oPar) := by
-  have w : ∀ i, i < 11 → m (RB + 11 * j + i) = cc.nreg ((slfWords pe ph dc).getD i 0) := hw
+  have w  := hw
   have w0 := w 0 (by norm_num)
   have w1 := w 1 (by norm_num)
   have w2 := w 2 (by norm_num)
@@ -39,9 +39,9 @@ theorem slfRec_words {m : ℕ → ℕ} {RB j pe ph dc : ℕ} {cc : Config}
   have w8 := w 8 (by norm_num)
   have w9 := w 9 (by norm_num)
   have w10 := w 10 (by norm_num)
-  simp only [slfWords, List.getD_cons_zero, List.getD_cons_succ, Nat.add_zero] at w0 w1 w2 w3
-  simp only [slfWords, List.getD_cons_zero, List.getD_cons_succ] at w4 w5 w6 w7
-  simp only [slfWords, List.getD_cons_zero, List.getD_cons_succ] at w8 w9 w10
+  simp [slfWords, List.getD_cons_zero, List.getD_cons_succ, Nat.add_zero] at w0 w1 w2 w3
+  simp [slfWords, List.getD_cons_zero, List.getD_cons_succ] at w4 w5 w6 w7
+  simp [slfWords, List.getD_cons_zero, List.getD_cons_succ] at w8 w9 w10
   unfold rawRec rawDc rawAux
   rw [w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10]
   exact ⟨rfl, rfl, rfl⟩

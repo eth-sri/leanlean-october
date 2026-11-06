@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.OracleQueryCost
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 28: the query meets its specification
@@ -23,17 +25,17 @@ open OracleQ OracleBook NFLoc
 theorem qOriginIn_unique {c : Config} {r : ℕ} {o o' : QOrigin} (h : QOriginIn c r o)
     (h' : QOriginIn c r o') : o = o' := by
   rcases o with (i | ⟨e, hh⟩) | hh <;> rcases o' with (i' | ⟨e', hh'⟩) | hh' <;>
-    simp only [QOriginIn, SymPtIn] at h h' <;>
+    simp [QOriginIn, SymPtIn] at h h' <;>
     first
       | (exfalso; omega)
-      | (simp only [QOrigin.sym.injEq, SymPt.vtx.injEq, SymPt.onEdge.injEq, QOrigin.box.injEq]
+      | (simp [QOrigin.sym.injEq, SymPt.vtx.injEq, SymPt.onEdge.injEq, QOrigin.box.injEq]
          omega)
 
 /-- The registers written by the query lie in the bands `bSign`, `bLocate`, `bOQuery`. -/
 theorem BQ_band {r : ℕ} (h : BQ r = true) : bandOf r = bSign ∨ bandOf r = bLocate ∨
     bandOf r = bOQuery := by
   unfold bandOf bSign bLocate bOQuery
-  simp only [BQ, BLd, BRest, Bk, BCS, BP, BX2, BCP, BDg, BX, BMain, BD, BN, BA, BW, BE, BT, BPo,
+  simp [BQ, BLd, BRest, Bk, BCS, BP, BX2, BCP, BDg, BX, BMain, BD, BN, BA, BW, BE, BT, BPo,
     BCa, BL, Bdir, Bloc, Bcmp, BC, Bool.or_eq_true, decide_eq_true_eq] at h
   omega
 
@@ -58,8 +60,8 @@ theorem query_meets {bands : Finset ℕ} (hb : bSign ∈ bands ∧ bLocate ∈ b
   obtain ⟨V, H, C, N, B, k, hA⟩ := hrob.holds
   have hEW : E ≤ W := by rw [← hE]; exact hw.2 _
   have hn : 1 ≤ P.n := by
-    have := C.add_one_le; rw [hA.CQ, show (Qof P).n = P.n from shear_n _ _] at this; omega
-  have hW : 8 * P.n + 32 ≤ W := by unfold hostWords at hHW; omega
+    have := C.add_one_le; rwo [hA.CQ, show (Qof P).n = P.n from shear_n _ _] at this
+  have hW : 8 * P.n + 32 ≤ W := by ufo hostWords at hHW
   obtain ⟨c', k', ex, hk, hf, hans⟩ := qry_exec hG hW hA hEW hHW c hw rfl rfl ho hol
     (NC := NCof (min (c.nmem (O + 2)) (2 * V.m + 7))) (CS := 8 * k ^ 2)
     (fun u _ => (hA.withQ o _).nodeCost_le hA.simple)
@@ -82,7 +84,7 @@ theorem query_meets {bands : Finset ℕ} (hb : bSign ∈ bands ∧ bLocate ∈ b
   · -- the answer
     intro H' C' o' hC' ho'
     have hCC : C' = C := NFLoc.chain_eq_of_desc hC' (by rw [hA.lD]; exact hA.desc)
-    have hoo : o' = o := qOriginIn_unique ho' ho
+    have hoo  := qOriginIn_unique ho' ho
     subst hCC hoo
     exact hans
   · rcases BQ_band hr with h | h | h <;> rw [h]

@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ClusterPhase2Exec
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-I, part 71: the cost bound
@@ -22,7 +26,7 @@ theorem GV.two_pow_L_le (g : GV) (hμ : 0 < g.μ) : 2 ^ g.L ≤ 2 * (g.N + g.μ 
     have hP := g.two_pow_L
     by_contra h0
     have : g.L = 0 := by omega
-    rw [this] at hP; simp at hP; omega
+    rw [this] at hP; sio at hP
   have e : 2 ^ g.L = 2 * 2 ^ (g.L - 1) := by
     rw [← pow_succ']; congr 1; omega
   change 2 ^ (Nat.clog 2 (g.N + g.μ + 1)).pred < g.N + g.μ + 1 at h
@@ -48,7 +52,7 @@ theorem cube_le (L : ℕ) : (L + 2) ^ 3 ≤ 64 * 2 ^ L := by
     · have h2 := Nat.mul_le_mul h h
       have h3 := Nat.mul_le_mul h2 h
       have : (n + 1 + 2) ^ 3 ≤ 2 * (n + 2) ^ 3 := by ring_nf; nlinarith
-      rw [pow_succ 2 n]; omega
+      rwo [pow_succ 2 n]
 
 /-- The number of split steps times their cost. -/
 theorem q_bounds {μ k k' s L : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : μ ≤ k ^ 3)
@@ -64,7 +68,7 @@ theorem q_bounds {μ k k' s L : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : μ �
   by_cases h : μ ≤ k' * k'
   · have e : s = μ := by rw [hs]; exact min_eq_right h
     have : 2 * μ / s = 2 := by rw [e]; exact Nat.mul_div_cancel _ hμ
-    rw [this]; nlinarith
+    rwnl [this]
   · push Not at h
     have e : s = k' * k' := by rw [hs]; exact min_eq_left h.le
     have hkk : k' = k := by
@@ -72,7 +76,7 @@ theorem q_bounds {μ k k' s L : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : μ �
       · rw [hk']; exact min_eq_left h2
       · exfalso
         have : k' = μ := by rw [hk']; exact min_eq_right h2
-        rw [this] at h; nlinarith
+        rwnl [this] at h
     rcases Nat.le_total (L + 2) s with h3 | h3
     · have := Nat.mul_le_mul_left (2 * μ / s) h3; omega
     · have hq : 2 * μ / s ≤ 2 * k := by
@@ -81,7 +85,7 @@ theorem q_bounds {μ k k' s L : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : μ �
         calc 2 * μ ≤ 2 * k ^ 3 := by omega
           _ = k * k * (2 * k) := by ring
       have hkL : k ≤ L + 2 := by
-        rw [e, hkk] at h3; nlinarith
+        rwnl [e, hkk] at h3
       calc 2 * μ / s * (L + 2) ≤ 2 * k * (L + 2) := Nat.mul_le_mul_right _ hq
         _ ≤ 2 * (L + 2) * (L + 2) := by nlinarith
         _ ≤ 2 * μ + 2 * (L + 2) ^ 2 := by nlinarith
@@ -91,7 +95,6 @@ raise of the allocator). -/
 def totalCost (g : GV) : ℕ := cost1 g + (cost2a g + ((120 * g.μ + 50 * g.N + 30) +
   (2 + (3 * (g.END - g.A0) + 2))))
 
-set_option maxHeartbeats 4000000 in
 theorem totalCost_le (g : GV) (hμ : 0 < g.μ) (hE : 0 < g.E) (hk : 1 ≤ g.k)
     (hμk : g.μ ≤ g.k ^ 3) :
     totalCost g ≤ clusterK * ((g.μ + g.E) * (Nat.clog 2 (g.μ + g.E) + 1) + 1) := by
@@ -112,13 +115,13 @@ theorem totalCost_le (g : GV) (hμ : 0 < g.μ) (hE : 0 < g.E) (hk : 1 ≤ g.k)
     have := g.END_eq; omega
   have T1 : g.μ * g.L ≤ 3 * Pp := by
     calc g.μ * g.L ≤ X * (3 * Λ) := Nat.mul_le_mul (by omega) hL3
-      _ = 3 * Pp := by rw [hPp]; ring
+      _ = 3 * Pp := by rwring [hPp]
   have T2 : g.N * g.L ≤ 6 * Pp := by
     calc g.N * g.L ≤ (2 * X) * (3 * Λ) := Nat.mul_le_mul (by omega) hL3
-      _ = 6 * Pp := by rw [hPp]; ring
+      _ = 6 * Pp := by rwring [hPp]
   have T3 : g.L * g.U ≤ 24 * Pp := by
     calc g.L * g.U ≤ (3 * Λ) * (8 * X) := Nat.mul_le_mul hL3 hU8
-      _ = 24 * Pp := by rw [hPp]; ring
+      _ = 24 * Pp := by rwring [hPp]
   obtain ⟨hq1, hq2, hq3⟩ := q_bounds (L := g.L) (k' := g.k') (s := g.s) hk hμ hμk rfl rfl
   set q := 2 * g.μ / g.s with hq
   have C3 : (g.L + 2) ^ 3 ≤ 384 * X := by
@@ -139,9 +142,9 @@ theorem totalCost_le (g : GV) (hμ : 0 < g.μ) (hE : 0 < g.E) (hk : 1 ≤ g.k)
     calc 36 * g.L * q = 36 * (g.L * q) := by ring
       _ ≤ 36 * (q * (g.L + 2)) := Nat.mul_le_mul_left _ this
   have S5 : splitC g.L g.k' * q = (34 * g.L + 34) * (g.L + 2) * q + 36 * g.L * q +
-      36 * (q * g.k') + 340 * q := by unfold splitC; ring
+      36 * (q * g.k') + 340 * q := by ufring splitC
   have T4 : splitC g.L g.k' * q ≤ 60000 * Pp := by
-    rw [S5]; omega
+    rwo [S5]
   have e1 : 12 * g.μ * g.L = 12 * (g.μ * g.L) := by ring
   have e2 : 12 * g.N * g.L = 12 * (g.N * g.L) := by ring
   have e3 : g.L * g.μ = g.μ * g.L := Nat.mul_comm _ _

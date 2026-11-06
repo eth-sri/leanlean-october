@@ -1,6 +1,13 @@
 module
 
 public import Chazelle.Core.SweepEvLoopStartR
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 16000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 3: the start of the event loop (task L0, RAM part 2: one stop step)
@@ -27,8 +34,6 @@ theorem getD_d5 {l : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {i : ℕ} (h : i < 
 theorem getD_d5' {l : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {i : ℕ} (h : i < l.length) :
     l.getD i d5 = l[i] := List.getD_eq_getElem _ _ h
 
-set_option maxHeartbeats 16000000 in
-set_option maxRecDepth 20000 in
 /-- **One stop step.** -/
 theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} {J : Merge.Junction} {N₁ N₂ : NF}
@@ -49,18 +54,18 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have hK₀ := E.hK.fix hI
   have hP := E.hP
   have hNF := E.hNF₂
-  have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
-  have hW4 : 4 ≤ W := by have := E.hWh; unfold hostWords at this; omega
+  have hAW  := hI.hw.1 ALLOC
+  have hW4 : 4 ≤ W := by have := E.hWh; ufo hostWords at this
   obtain ⟨⟨hpKn, hpKp, hpK6⟩, hoK, -⟩ := startMathTask P J N₂ hP hNF
   have hoK' : offK P J (pK0 J) 0 = Lst J := by
     have : offK P J (pK0 J) 0 = oW J (((pK0 J : ℕ) : ℝ) + 0) := by
-      unfold offK oW; rfl
+      ufr offK oW
     rw [this]; unfold pK0; exact_mod_cast hoK
   set i := c.nreg sP with hid
-  have nob : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)
+  have nob : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => not_oracle_sw (by ufo sw) (by ufo sw)
   unfold stStep
   refine (IRS.ite (K := 11990) (fun hlt => ?_) (fun hge => ?_)).mono
-    (by unfold stStepK; omega) (fun _ h => h)
+    (by ufo stStepK) (fun _ => id)
   swap
   · refine IRS.skip hI ⟨⟨sN, sP2, sPl, sAt, sLen, sLab, sReg, aF1, aFi⟩,
       fun hi => absurd hi (by omega), fun _ => rfl, fun _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
@@ -73,7 +78,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   -- 1. load the stop
   have hok1 : okB W c.nmem lsStLoad c.nreg := stLoad_ok _ _ hK₀.2.1 (by omega)
   refine IRS.seq (K₁ := 7) (K₂ := 11008 + 84) (IRS.block lsStLoad hI hok1) ?_ |>.mono
-    (by simp) (fun _ h => h)
+    (by simp) (fun _ => id)
   rintro c₁ hI₁ hA₁ - hc₁
   obtain ⟨v1E, v1H⟩ := stLoad_val c.nmem c.nreg hK₀.2.1
   have hm1 : c₁.nmem = c.nmem := by rw [hc₁]
@@ -93,10 +98,10 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   refine IRS.seq (K₁ := 11008) (K₂ := 84) (callOff_irs (dsc := sw 2) (ex := kE) (hx := kH)
     (ey := zE) (hy := zH) (g := cGW) (o := zO) (C := J.whole) hI₁ (E.ctxW' hI₁)
     (by simp [kE, kH, zE, zH, cGW, sw]) (by simp [zO, sw])
-    (by rw [e1kE]; exact hpKn) (by rw [e1E]; exact hpw.1) (by rw [hgw]; exact hC.hg)
-    (by rw [e1kE, e1kH]; exact hpKp) (by rw [e1E, e1H]; exact hpw.2.1)
+    (by rwx [e1kE]) (by rw [e1E]; exact hpw.1) (by rw [hgw]; exact hC.hg)
+    (by rwx [e1kE, e1kH]) (by rw [e1E, e1H]; exact hpw.2.1)
     (by rw [e1kE, e1kH]; exact fun _ => hpK6 rfl) (by rw [e1E, e1H]; exact hpw.2.2)
-    (by rw [hA1]; unfold stStepK at hroom; omega)) ?_
+    (by ruo [hA1] stStepK at hroom)) ?_
   rintro c₂ hI₂ hA₂ - ⟨b2, -, k2, hal2, hm2⟩
   rw [hgw, e1kE, e1kH, e1E, e1H] at b2
   have hb2 : BitIs c₂ zO (Lst J < soff P J rs[i]) := by
@@ -107,7 +112,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have k12 : ∀ q, bandOf q ∉ oracleBands → q ≠ zX → q ≠ zE → q ≠ zH → q ≠ zO → q ≠ zO + 1 →
       q ≠ ALLOC → c₂.nreg q = c.nreg q := fun q hq h1 h2 h3 h4 h5 h6 => by
     rw [k2 q hq h4 h5 h6, k1 q h1 h2 h3]
-  have k0₂ : c₂.nreg K0 = 0 := (E.hK.fix hI₂).1
+  have k0₂  := (E.hK.fix hI₂).1
   have hm12 : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
     rw [hm2 a (by omega), hm1]
   -- the registers of the state, kept so far
@@ -118,7 +123,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       simp only [kN, kL, aF, sP, sw] at hq
       omega
     refine k12 q (not_oracle_sw (by omega) (by omega)) ?_ ?_ ?_ ?_ ?_ ?_
-    all_goals first | (simp only [ALLOC]; omega) | (intro h; subst h; unfold LblR at hq; simp [kN, kL, aF, sP, zX, zE, zH, zO, sw] at hq)
+    all_goals first | (sio only [ALLOC]) | (intro h; subst h; unfold LblR at hq; simp [kN, kL, aF, sP, zX, zE, zH, zO, sw] at hq)
   have fr12 : ∀ r, bandOf r ∉ oracleBands → ¬ WS r → r ≠ ALLOC → c₂.nreg r = c.nreg r :=
     fun r hr hws hra => k12 r hr (fun h => hws (Or.inl h)) (fun h => hws (Or.inr (Or.inl h)))
       (fun h => hws (Or.inr (Or.inr (Or.inl h)))) (fun h => hws (Or.inr (Or.inr (Or.inr (Or.inl h)))))
@@ -144,7 +149,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       simp only [Nat.zero_add] at this
       have e2 : soff P J rs[2] = Lst J := by
         have : rs[i] = rs[2] := by simp [hi2]
-        rw [← this]; exact hat
+        rwx [← this]
       linarith
     have hax := hAR i (by omega)
     rw [getD_d5 (by omega)] at hax
@@ -153,14 +158,14 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     rw [getD_d5 hi, getD_d5 (show i < ax.length by omega)] at haux'
     obtain ⟨ax1, -, axn, axl, axm, -⟩ := haux'
     -- the auxiliary record
-    have sP2' : c₂.nreg sP = i := keepS sP (Or.inr (Or.inr rfl))
+    have sP2'  := keepS sP (Or.inr (Or.inr rfl))
     have aB2 : c₂.nreg aB = c.nreg aB := k12 _ (nob _ (by norm_num)) (by simp [aB, zX, sw])
       (by simp [aB, zE, sw]) (by simp [aB, zH, sw]) (by simp [aB, zO, sw]) (by simp [aB, zO, sw])
       (by simp [aB, ALLOC, sw])
     have hok3 : okB W c₂.nmem stAux c₂.nreg := stAux_ok _ _ (E.hK.fix hI₂).2.1 (by
       rw [aB2, sP2']; have := hlay.2; omega)
     refine IRS.seq (K₁ := 11) (K₂ := 70 + 1) (IRS.block stAux hI₂ hok3) ?_ |>.mono
-      (by simp) (fun _ h => h)
+      (by simp) (fun _ => id)
     rintro c₃ hI₃ - - hc₃
     obtain ⟨v3A, v3N, v3L, v3M⟩ := stAux_val c₂.nmem c₂.nreg (E.hK.fix hI₂).2.1
     have mm : ∀ k, k < 5 → c₂.nmem (c.nreg aB + 5 * i + k) = c.nmem (c.nreg aB + 5 * i + k) :=
@@ -199,7 +204,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         sP2']
     have k1₄ := (E.hK.fix hI₄).2.1
     refine (IRS.instr1 (i := .addN sP sP K1) hI₄ ⟨iscr_sw (by simp [sP, sw]) (by simp [sP, sw]),
-      by rw [sP4, k1₄]; omega⟩).mono le_rfl ?_
+      by rwo [sP4, k1₄]⟩).mono le_rfl ?_
     rintro c₅ hc₅
     have f5 : ∀ q, q ≠ sP → c₅.nreg q = c₄.nreg q := fun q hq => by
       rw [hc₅]; simp [regI, upd_other _ _ _ hq]
@@ -209,7 +214,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     have hlab3 : lblOf c₃ kN kL = lblOf c kN kL := by
       rw [lblOf_congrK (fun q hq => keep3 q (Or.inl hq)), lblOf_congrK (fun q hq => keepS q (Or.inl hq))]
     have hlab5 : lblOf c₅ kN kL = lblOf c₄ kN kL :=
-      lblOf_congrK (fun q hq => f5 q (by unfold LblR at hq; simp only [kN, kL, sP, sw] at hq ⊢; omega))
+      lblOf_congrK (fun q hq => f5 q (by unfold LblR at hq; sio only [kN, kL, sP, sw] at hq ⊢))
     rw [hlab3] at l4
     have e3A' : c₃.nreg zA = 1 ↔ (ax[i]'(by omega)).1 = 1 := by rw [e3A]
     have hlen2 : (lblOf c kN kL).length ≤ 2 := by omega
@@ -218,8 +223,8 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, fun _ _ => by rw [v5], fun hn => absurd hat (hn hi),
       fun r hr hws hra => ?_, ?_, fun a ha => ?_⟩
     · rw [f5 _ (by simp [kN, sP, sw])]; exact n4
-    · rw [v5]; omega
-    · rw [v5]; omega
+    · rwo [v5]
+    · rwo [v5]
     · intro j hj hj'
       rw [v5] at hj'
       rcases Nat.lt_succ_iff_lt_or_eq.1 hj' with h' | rfl

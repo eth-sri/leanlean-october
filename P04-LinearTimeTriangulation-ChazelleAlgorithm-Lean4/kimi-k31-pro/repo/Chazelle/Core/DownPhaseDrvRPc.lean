@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseMathJunc
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase driver (RAM side): the leaves of a region chain
@@ -51,7 +52,7 @@ def hostLeaves (n C : ℕ) : ℕ → Host → List (ℕ × ℕ × ℕ)
 /-! ## Chunks -/
 
 theorem chunks_zero (C s a : ℕ) : chunks C s a 0 = [] := by
-  rw [chunks]; simp
+  rws [chunks]
 
 theorem chunks_le {C s a L : ℕ} (h0 : L ≠ 0) (h : L ≤ C ∨ C = 0) :
     chunks C s a L = [(s, L, a)] := by
@@ -73,11 +74,11 @@ theorem mem_chunks {C : ℕ} (hC : 1 ≤ C) : ∀ (L s a : ℕ) (x : ℕ × ℕ 
     · rw [h0, chunks_zero] at hx; simp at hx
     by_cases hle : L ≤ C
     · rw [chunks_le h0 (Or.inl hle)] at hx
-      simp only [List.mem_singleton] at hx
-      subst hx; dsimp only; omega
+      simp [List.mem_singleton] at hx
+      subst hx; dsimp; omega
     · rw [chunks_gt h0 (by omega) (by omega)] at hx
       rcases List.mem_cons.1 hx with rfl | hx
-      · dsimp only; omega
+      · dsimp; omega
       · have := ih (L - C) (by omega) (s + C) (a + C) x hx
         omega
 
@@ -88,12 +89,12 @@ theorem chunks_length {C : ℕ} (hC : 1 ≤ C) : ∀ (L s a : ℕ), (chunks C s 
   | _ L ih =>
     intro s a
     by_cases h0 : L = 0
-    · rw [h0, chunks_zero]; simp
+    · rws [h0, chunks_zero]
     by_cases hle : L ≤ C
-    · rw [chunks_le h0 (Or.inl hle)]; simp; omega
+    · rws [chunks_le h0 (Or.inl hle)]; omega
     · rw [chunks_gt h0 (by omega) (by omega)]
       have := ih (L - C) (by omega) (s + C) (a + C)
-      simp only [List.length_cons, Nat.succ_mul]
+      simp [List.length_cons, Nat.succ_mul]
       omega
 
 /-! ## Leaves of a run -/
@@ -128,7 +129,7 @@ theorem mem_runLeaves {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hn : 1 ≤ n) (hℓ : 
         (by rw [show a + (p + 1 - p) = a + 1 by omega])
     · refine leafIn_of_seg hC hx (by omega) (by omega) (by omega) ?_
       rw [show a + (p + 1 + (n - (a + 1) % n) - p) = 0 + n * ((a + 1) / n + 1) by
-        rw [Nat.mul_add, Nat.mul_one]; omega, Nat.add_mul_mod_self_left, Nat.zero_mod]
+        rwo [Nat.mul_add, Nat.mul_one], Nat.add_mul_mod_self_left, Nat.zero_mod]
 
 /-! ## Leaves of a host -/
 
@@ -139,19 +140,19 @@ theorem mem_hostLeaves {n C : ℕ} (hC : 1 ≤ C) (hn : 1 ≤ n) : ∀ (H : Host
   | .run a ℓ :: H, p, hwf, x, hx => by
     rw [hostLeaves, List.mem_append] at hx
     have hit := hwf (.run a ℓ) (List.mem_cons_self ..)
-    simp only at hit
+    simp at hit
     have hwf' : HostWF n H := fun it h => hwf it (List.mem_cons_of_mem _ h)
     rcases hx with hx | hx
     · exact ⟨[], a, ℓ, H, rfl, by simpa [Host.pts] using mem_runLeaves hC hn hit.2 hx⟩
     · obtain ⟨H₁, a', ℓ', H₂, e, hL⟩ := mem_hostLeaves hC hn H (p + ℓ + 1) hwf' x hx
-      refine ⟨HostItem.run a ℓ :: H₁, a', ℓ', H₂, by rw [e]; rfl, ?_⟩
+      refine ⟨HostItem.run a ℓ :: H₁, a', ℓ', H₂, by rwr [e], ?_⟩
       rw [DownMath.pts_cons, List.length_append, DownMath.run_pts_length]
       rwa [show p + (ℓ + 1 + (H₁.pts n).length) = p + ℓ + 1 + (H₁.pts n).length by omega]
   | .pt y :: H, p, hwf, x, hx => by
     rw [hostLeaves] at hx
     have hwf' : HostWF n H := fun it h => hwf it (List.mem_cons_of_mem _ h)
     obtain ⟨H₁, a', ℓ', H₂, e, hL⟩ := mem_hostLeaves hC hn H (p + 1) hwf' x hx
-    refine ⟨HostItem.pt y :: H₁, a', ℓ', H₂, by rw [e]; rfl, ?_⟩
+    refine ⟨HostItem.pt y :: H₁, a', ℓ', H₂, by rwr [e], ?_⟩
     rw [DownMath.pts_cons, List.length_append]
     rwa [show ((HostItem.pt y).pts n).length = 1 from rfl,
       show p + (1 + (H₁.pts n).length) = p + 1 + (H₁.pts n).length by omega]

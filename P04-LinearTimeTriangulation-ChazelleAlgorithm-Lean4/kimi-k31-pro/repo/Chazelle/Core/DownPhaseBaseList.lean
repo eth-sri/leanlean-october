@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.DownPhaseBaseFull
 public import Chazelle.Core.NFBuildCmp
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Down phase, A1 (math, part 2): the kept chord list and the renumbered event list
@@ -51,7 +54,7 @@ theorem getD_filter_rank {L : List α} {i : ℕ} (d : α) (hi : i < L.length)
       simp [rankF, hf]
     | succ k =>
       simp only [List.getD_cons_succ] at hf ⊢
-      have ih' := ih (by simp at hi; omega) hf
+      have ih' := ih (by sio at hi) hf
       unfold rankF at ih' ⊢
       simp only [List.take_succ_cons, List.filter_cons]
       split_ifs <;> (try simp only [List.length_cons, List.getD_cons_succ]) <;> exact ih'
@@ -65,7 +68,7 @@ theorem rankF_lt_of {L : List α} {i j : ℕ} (d : α) (hij : i < j) (hi : i < L
     (hf : f (L.getD i d) = true) : rankF f L i < rankF f L j := by
   obtain ⟨m, rfl⟩ : ∃ m, j = i + (m + 1) := ⟨j - i - 1, by omega⟩
   rw [rankF_add]
-  have hd : L.drop i = L[i] :: L.drop (i + 1) := List.drop_eq_getElem_cons hi
+  have hd  := List.drop_eq_getElem_cons hi
   have hLi : L.getD i d = L[i] := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
   rw [hLi] at hf
@@ -86,7 +89,7 @@ theorem rankF_length (L : List α) : rankF f L L.length = (L.filter f).length :=
 theorem rankF_succ {L : List α} {i : ℕ} (d : α) (hi : i < L.length) :
     rankF f L (i + 1) = rankF f L i + if f (L.getD i d) then 1 else 0 := by
   rw [rankF_add]
-  have hd : L.drop i = L[i] :: L.drop (i + 1) := List.drop_eq_getElem_cons hi
+  have hd  := List.drop_eq_getElem_cons hi
   have hLi : L.getD i d = L[i] := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
   rw [hLi, hd, List.take_succ_cons, List.take_zero, List.filter_cons]
@@ -134,8 +137,8 @@ theorem getD_keepL {L : List (ℕ × ℕ × ℕ)} {i : ℕ} (hi : i < L.length)
 
 theorem wposOf_newCode {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.length)
     (hk : keptC li n L c = true) : wposOf (keepL li n L) (newCode li n L c) = wposOf L c := by
-  have h1 : newCode li n L c % 2 = c % 2 := by unfold newCode; omega
-  have h2 : newCode li n L c / 2 = rankF (keepX li n) L (c / 2) := by unfold newCode; omega
+  have h1 : newCode li n L c % 2 = c % 2 := by ufo newCode
+  have h2 : newCode li n L c / 2 = rankF (keepX li n) L (c / 2) := by ufo newCode
   unfold wposOf
   rw [h1, h2]
   simp only [BuildRegions.crec]
@@ -143,7 +146,7 @@ theorem wposOf_newCode {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.
 
 theorem tieBit_newCode (M : Model) {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.length)
     (hk : keptC li n L c = true) : tieBit M (keepL li n L) (newCode li n L c) = tieBit M L c := by
-  have h1 : newCode li n L c % 2 = c % 2 := by unfold newCode; omega
+  have h1 : newCode li n L c % 2 = c % 2 := by ufo newCode
   unfold tieBit
   rw [wposOf_newCode hc hk, h1]
 
@@ -168,7 +171,7 @@ theorem newCode_inj {L : List (ℕ × ℕ × ℕ)} {c c' : ℕ} (hc : c < 2 * L.
   rcases lt_trichotomy (c / 2) (c' / 2) with h1 | h1 | h1
   · have := rankF_lt_of (keepX li n) (0, 0, 0) h1 (by omega) hk
     omega
-  · rw [h1] at h; omega
+  · rwo [h1] at h
   · have := rankF_lt_of (keepX li n) (0, 0, 0) h1 (by omega) hk'
     omega
 
@@ -190,7 +193,7 @@ theorem dropE_pairwise (M : Model) (Q : Polygon) (hperm : E.Perm (List.range (2 
 /-- **The renumbered event list is a permutation of the new codes.** -/
 theorem dropE_perm (hperm : E.Perm (List.range (2 * L.length))) :
     (dropE li n L E).Perm (List.range (2 * (keepL li n L).length)) := by
-  have hnd : E.Nodup := hperm.nodup_iff.2 List.nodup_range
+  have hnd  := hperm.nodup_iff.2 List.nodup_range
   have hnd' : (dropE li n L E).Nodup := by
     unfold dropE
     refine (hnd.filter _).map_on fun a ha b hb hab => ?_

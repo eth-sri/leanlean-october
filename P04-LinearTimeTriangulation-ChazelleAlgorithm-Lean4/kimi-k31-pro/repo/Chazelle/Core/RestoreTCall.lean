@@ -6,6 +6,9 @@ public import Chazelle.Core.SweepPrimAbs
 public import Chazelle.Core.SweepPrimArr
 public import Chazelle.Core.SweepPrimLeft
 public import Chazelle.Core.SweepPrimNF
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, the candidate test on the RAM, part 1: calling the chain primitives
@@ -37,14 +40,14 @@ theorem frame_copies {l : List (ℕ × ℕ)} {c c₁ : Config} {k : ℕ}
     intro h
     obtain ⟨q, hq, hq'⟩ := List.mem_map.1 h
     have := hl q hq
-    unfold ALLOC at hq'; omega)
+    ufo ALLOC at hq')
   refine ⟨fun r hr _ => h1 r ?_, fun r _ => by rw [h2], fun a _ => by rw [h3], fun a _ => by rw [h4],
     h5, by omega, by omega⟩
   intro h
   obtain ⟨q, hq, rfl⟩ := List.mem_map.1 h
   apply hr
   have := hl q hq
-  simp only [bandOf, bLocate, Finset.mem_singleton]
+  simp [bandOf, bLocate, Finset.mem_singleton]
   omega
 
 /-- **Calling a chain primitive**: copy the inputs (among them the descriptor address), run the
@@ -71,19 +74,19 @@ theorem callPrim {p : Stmt} {K : ℕ} {Inp : Polygon → ℕ → Chain → Confi
     intro h
     obtain ⟨q, hq, hq'⟩ := List.mem_map.1 h
     have := hl q hq
-    unfold ALLOC at hq'; omega)
+    ufo ALLOC at hq')
   have h00 : c₁.nreg 50200 = c.nreg src := h1 _ hsrc
   have hpre : PrimPre Inp P W c₁ := by
     refine ⟨hG, hW, ?_, H, C, ?_, hInp c₁ h1 h2 h4⟩
-    · rw [h00, hA₁, h4]; exact hwf
-    · rw [h00, h4]; exact hC
-  obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right hpre (by rw [hA₁]; exact hroom)
-  refine ⟨c₁, c', l.length + k, h1, h2, h4, .seq e₁ e, by simp only at hk; omega, hpost H C ?_, ?_⟩
-  · rw [h00, h4]; exact hC
+    · rwx [h00, hA₁, h4]
+    · rwx [h00, h4]
+  obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right hpre (by rwx [hA₁])
+  refine ⟨c₁, c', l.length + k, h1, h2, h4, .seq e₁ e, by sio only at hk, hpost H C ?_, ?_⟩
+  · rwx [h00, h4]
   · have := hf₁.trans hf
     exact this.mono (by
       intro b hb
-      simp only [Finset.mem_union, Finset.mem_singleton] at hb
+      simp [Finset.mem_union, Finset.mem_singleton] at hb
       rcases hb with rfl | hb
       · simp [primBands]
       · exact hb) le_rfl

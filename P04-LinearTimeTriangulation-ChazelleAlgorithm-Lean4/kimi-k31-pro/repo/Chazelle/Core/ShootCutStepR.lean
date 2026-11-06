@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutRun
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # WP-G, part 18: the pieces of one step of the main loop on the RAM
@@ -11,9 +14,6 @@ public import Chazelle.Core.ShootCutRun
   `L = min (m - J) (ℓ - t) (n - 1 - q) lim` (`L = min (2m - J) t q lim`) and its dyadic cover.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -40,7 +40,7 @@ theorem single_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Pr
       (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) ∧ d₁.nmem = d.nmem := by
     unfold pcSingle
     exec_block
-    all_goals first | omega | (config_simp; rw [h40, h91]; omega) | skip
+    all_goals first | omega | (config_simp; rwo [h40, h91]) | skip
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl⟩
     all_goals first | (config_simp; rw [h40, h91]; done) | (config_simp; rw [h40]; done) |
       (config_simp; done) | skip
@@ -49,15 +49,15 @@ theorem single_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Pr
   have hR : PcRegs d₁ (sgPc c) := ⟨v50, v51, v52, v53, v54, fun h => by simp [sgPc] at h⟩
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp, mem₂⟩ := hE.run _ (sgPc c) d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
   have q40 : d₂.nreg 150040 = c := by
-    rw [kp _ (by unfold Keep; omega), r₁ _ (by omega), h40]
+    rw [kp _ (by ufo Keep), r₁ _ (by omega), h40]
   have q91 : d₂.nreg 150091 = 1 := by
-    rw [kp _ (by unfold Keep; omega), r₁ _ (by omega), h91]
-  have e₃ := Exec.addN (P := P) e₂.wb_right 150040 150040 150091 (by rw [q40, q91]; omega)
+    rw [kp _ (by ufo Keep), r₁ _ (by omega), h91]
+  have e₃ := Exec.addN (P := P) e₂.wb_right 150040 150040 150091 (by rwo [q40, q91])
   refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega,
     hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), by config_simp; rw [q40, q91],
     fun r hr h1 => ?_, fun a ha => ?_⟩
   · config_simp
-    rw [upd_other _ _ _ h1, kp r hr, r₁ r (by unfold Keep at hr; omega)]
+    rw [upd_other _ _ _ h1, kp r hr, r₁ r (by ufo Keep at hr)]
   · config_simp; rw [mem₂ a ha, m₁]
 
 /-- **`150071 := min 150071 r`.** -/
@@ -69,7 +69,7 @@ theorem minTo_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
   by_cases h : d.nreg r < d.nreg 150071
   · refine spec_ifLtN_true h (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by omega, ?_,
       fun x hx => by simp [hx], rfl⟩)
-    config_simp; omega
+    cso
   · refine spec_ifLtN_false h (spec_skip hw ⟨by omega, by omega, fun _ _ => rfl, rfl⟩)
 
 /-- The straight part of a climbing stretch: `L` into `150071`. -/
@@ -177,7 +177,7 @@ theorem upStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc →
   set L := min (min (min (mC - J) (ℓ - t)) (P.n - q - 1)) lim with hL
   obtain ⟨d₁, k₁, e₁, hk₁, o71, r₁, m₁⟩ := upLen_exec (P := P) d hw h23 h61 h69 h66 h27 h70 h72 h91
   have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
-  have k₁' : ∀ r, r ≠ 150071 → r ≠ 150075 → d₁.nreg r = d.nreg r := r₁
+  have k₁'  := r₁
   obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, a90, a91, m₂⟩ :=
     dyUp_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (by omega)
       (by have : L ≤ P.n := by omega
@@ -223,7 +223,7 @@ theorem dnStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc →
   set L := min (min (min (m2 - J) t) q) lim with hL
   obtain ⟨d₁, k₁, e₁, hk₁, o71, r₁, m₁⟩ := dnLen_exec (P := P) d hw h29 h61 h66 h70 h72
   have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
-  have k₁' : ∀ r, r ≠ 150071 → d₁.nreg r = d.nreg r := r₁
+  have k₁'  := r₁
   obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, a90, a91, m₂⟩ :=
     dyDn_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (by omega)
       (by omega) (by omega) (by omega) (by omega) e₁.wb_right

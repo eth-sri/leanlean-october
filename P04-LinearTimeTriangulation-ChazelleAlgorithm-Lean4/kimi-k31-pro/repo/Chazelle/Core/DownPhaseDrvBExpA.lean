@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseDrvBPieces
 public import Chazelle.Core.DownPhaseDrvRLib
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down-phase base (D9), RAM: expansion of a host block, part 1 (point writes)
@@ -16,7 +18,6 @@ forwards (`li`) or backwards (`¬ li`).
   (`wrV_exec`, `wrE_exec`).
 -/
 
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -147,14 +148,14 @@ theorem wrV_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
     have hp := hS.ptr
     rw [hx]
     cases li
-    · refine spec_ifLtN_false (by simp only [h1, hl]; simp) ?_
+    · refine spec_ifLtN_false (by sis only [h1, hl]) ?_
       exec_block
       simp only [ptrE, slotE, Bool.false_eq_true, ite_false] at hp ⊢
       simp only [h0, h1, hp, PtAtB, Machine.upd_same]
       refine ⟨by omega, fun a ha => ?_, ?_, by omega⟩
-      · simp only [upd]; split_ifs <;> omega
-      · simp only [upd]; split_ifs <;> omega
-    · refine spec_ifLtN_true (by simp only [h1, hl]; simp) ?_
+      · simp only [upd]; splao
+      · simp only [upd]; splao
+    · refine spec_ifLtN_true (by sis only [h1, hl]) ?_
       simp only [ptrE, slotE, ↓reduceIte] at hp ⊢
       exec_block
       all_goals config_simp
@@ -163,7 +164,7 @@ theorem wrV_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
       · omega
       · omega
       refine ⟨by omega, fun a ha => ?_, ?_, by omega⟩
-      · simp only [upd]; split_ifs <;> omega
+      · simp only [upd]; splao
       · refine ⟨?_, ?_⟩ <;> simp only [upd] <;> (try split_ifs) <;> omega
   exact ⟨c', k, ex, hk, hS.step hK ex.wb_right (exec_frameM ex wr_wrV) hm hp hptr,
     exec_frameM ex wr_wrV⟩
@@ -187,14 +188,14 @@ theorem wrE_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
     have hp := hS.ptr
     rw [hx]
     cases li
-    · refine spec_ifLtN_false (by simp only [h1, hl]; simp) ?_
+    · refine spec_ifLtN_false (by sis only [h1, hl]) ?_
       exec_block
       simp only [ptrE, slotE, Bool.false_eq_true, ite_false] at hp ⊢
       simp only [h0, hp, PtAtB, Machine.upd_same]
       refine ⟨by omega, fun a ha => ?_, ?_, by omega⟩
-      · simp only [upd]; split_ifs <;> omega
+      · simp only [upd]; splao
       · refine ⟨?_, ?_, ?_⟩ <;> simp only [upd] <;> (try split_ifs) <;> omega
-    · refine spec_ifLtN_true (by simp only [h1, hl]; simp) ?_
+    · refine spec_ifLtN_true (by sis only [h1, hl]) ?_
       simp only [ptrE, slotE, ↓reduceIte] at hp ⊢
       exec_block
       all_goals config_simp
@@ -203,7 +204,7 @@ theorem wrE_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
       · omega
       · omega
       refine ⟨by omega, fun a ha => ?_, ?_, by omega⟩
-      · simp only [upd]; split_ifs <;> omega
+      · simp only [upd]; splao
       · refine ⟨?_, ?_, ?_⟩ <;> simp only [upd] <;> (try split_ifs) <;> omega
   exact ⟨c', k, ex, hk, hS.step hK ex.wb_right (exec_frameM ex wr_wrE) hm hp hptr,
     exec_frameM ex wr_wrE⟩

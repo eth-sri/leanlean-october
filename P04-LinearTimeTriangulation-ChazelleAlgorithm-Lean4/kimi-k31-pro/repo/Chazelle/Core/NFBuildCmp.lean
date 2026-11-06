@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFBuildValid
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-C (BuildNF): the comparator of the event sort
@@ -125,12 +127,12 @@ theorem tie_codes (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {e o : ℕ}
   -- directions
   have hptE : sidePt M.W p t = M.pos Q (crec L i).lpos := rfl
   have hE : ∀ z ∈ chordSet M Q L i, (sidePt M.W p t).1 ≤ z.1 := by
-    rintro z ⟨-, hz, -⟩; rw [hptE]; exact hz
+    rintro z ⟨-, hz, -⟩; rwx [hptE]
   have hptW : sidePt M.W p t = M.pos Q (crec L i').rpos := by
     show sidePt M.W p t = sidePt M.W (crec L i').rp (M.param Q (crec L i').rpos)
     rw [hpos'.1, hpos'.2]
   have hW : ∀ z ∈ chordSet M Q L i', z.1 ≤ (sidePt M.W p t).1 := by
-    rintro z ⟨-, -, hz⟩; rw [hptW]; exact hz
+    rintro z ⟨-, -, hz⟩; rwx [hptW]
   -- the other ends
   have hBe := hattI.2
   have hBe' : sidePt M.W (crec L i).rp (M.param Q (crec L i).rpos) ≠ sidePt M.W p t := by
@@ -141,13 +143,13 @@ theorem tie_codes (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {e o : ℕ}
   have hBw := hattI'.1
   have hBw' : sidePt M.W (crec L i').lp (M.param Q (crec L i').lpos) ≠ sidePt M.W p t := by
     intro h'
-    have : M.pos Q (crec L i').lpos = M.pos Q (crec L i').rpos := by rw [← hptW]; exact h'
+    have : M.pos Q (crec L i').lpos = M.pos Q (crec L i').rpos := by rwx [← hptW]
     have hlt := pos_lt' hM hL hi'
     rw [this] at hlt; exact lt_irrefl _ hlt
-  have hedge : (wposOf L e).edge = p := by rw [wposOf_even hee]; rfl
+  have hedge : (wposOf L e).edge = p := by rwr [wposOf_even hee]
   obtain ⟨-, hhor, -⟩ := hM.tie_shape hadm (chordSet_mem hi) (chordSet_mem hi') hAe hAw hE hW
-  have hev : evOf M Q L e = (i, kl M Q L i, kr M Q L i) := by rw [evOf_even hee]; rfl
-  have hov : evOf M Q L o = (i', kr M Q L i', kl M Q L i') := by rw [evOf_odd hoo]; rfl
+  have hev : evOf M Q L e = (i, kl M Q L i, kr M Q L i) := by rwr [evOf_even hee]
+  have hov : evOf M Q L o = (i', kr M Q L i', kl M Q L i') := by rwr [evOf_odd hoo]
   have hkl : kl M Q L i = (p : ℝ) + t := rfl
   have hkr' : kr M Q L i' = (p : ℝ) + t := by
     show ((crec L i').rp : ℝ) + M.param Q (crec L i').rpos = p + t
@@ -156,12 +158,12 @@ theorem tie_codes (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {e o : ℕ}
   refine ⟨hhor, fun hdown => ?_, fun hup => ?_⟩
   · obtain ⟨ht0, hlt⟩ := BuildOrder.tie_rule_down hM hadm hfin (chordSet_mem hi) (chordSet_mem hi')
       hAe hAw hE hW hdown hBe hBe' hBw hBw'
-    simp only
+    simp
     rw [hkl, hkr', ht0, add_zero]
     exact hlt
   · obtain ⟨ht0, hlt⟩ := BuildOrder.tie_rule_up hM hadm hfin (chordSet_mem hi) (chordSet_mem hi')
       hAe hAw hE hW hup hBe hBe' hBw hBw'
-    simp only
+    simp
     rw [hkl, hkr', ht0, add_zero]
     exact hlt
 
@@ -178,7 +180,7 @@ theorem evLe_of_codeLe (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {c c' : ℕ}
     have hA' := attach_wposOf hL hc'
     have heq' : ((wposOf L c).edge : ℝ) + M.param Q (wposOf L c) =
         (wposOf L c').edge + M.param Q (wposOf L c') := by
-      rw [← Model.key, ← Model.key, key_wposOf, key_wposOf]; exact heq
+      rwx [← Model.key, ← Model.key, key_wposOf, key_wposOf]
     obtain ⟨hpe, hpt⟩ := sideKey_inj hA.2.1 hA.2.2.1 hA'.2.1 hA'.2.2.1 heq'
     have hi : c / 2 < L.length := by omega
     have hi' : c' / 2 < L.length := by omega
@@ -199,7 +201,7 @@ theorem evLe_of_codeLe (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {c c' : ℕ}
     have hadm : famOf M Q L ⊆ M.Adm := hL.1.2.1
     -- the common position
     have hA'' : SideAttach M.W (chordSet M Q L (c' / 2)) (wposOf L c).edge
-        (M.param Q (wposOf L c)) := by rw [hpe, hpt]; exact hA'
+        (M.param Q (wposOf L c)) := by rwx [hpe, hpt]
     have hsp : sidePt M.W (wposOf L c).edge (M.param Q (wposOf L c)) = M.pos Q (wposOf L c) := rfl
     have hEast : ∀ d, d % 2 = 0 → ∀ z ∈ chordSet M Q L (d / 2), (M.pos Q (wposOf L d)).1 ≤ z.1 := by
       intro d hd z hz; rw [wposOf_even hd]; exact hz.2.1
@@ -242,7 +244,7 @@ theorem evLe_of_codeLe (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {c c' : ℕ}
 theorem sorted_of_codeLe (hM : WalkAx M) (hL : ChordTriplesOK M Q L) {E : List ℕ}
     (hperm : E.Perm (List.range (2 * L.length))) (hsort : E.Pairwise (codeLe M Q L)) :
     (E.map (evOf M Q L)).Pairwise (EvLe M.W.n) := by
-  have hnd : E.Nodup := hperm.nodup_iff.2 nodup_range
+  have hnd  := hperm.nodup_iff.2 nodup_range
   rw [pairwise_map]
   refine (hsort.and hnd).imp_of_mem fun {a b} ha hb hab => ?_
   exact evLe_of_codeLe hM hL (List.mem_range.1 (hperm.mem_iff.1 ha))

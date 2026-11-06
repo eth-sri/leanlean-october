@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.ShootCutPiece
 public import Chazelle.Core.NFLocateChain
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-G, part 2: run stretches of the walk of a host chain
@@ -67,14 +70,14 @@ theorem sideE_down {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : tJ C i + d ≤ 2 * C.
   rcases (show tJ C i + d < 2 * C.m ∨ tJ C i + d = 2 * C.m by omega) with h | h
   · rw [tJ_add C h]
     unfold sideE
-    split_ifs <;> omega
+    splao
   · have e : tJ C (i + d) = 0 := by
       have e1 : tJ C (i + d) = (tJ C i + d) % (2 * C.m) := by
         unfold tJ; rw [← Nat.add_assoc, ← Nat.mod_add_mod]
       rw [e1, h, Nat.mod_self]
     rw [e]
     unfold sideE
-    split_ifs <;> omega
+    splao
 
 /-- **A run stretch, climbing.** -/
 theorem run_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) (hi : i + d ≤ 2 * C.m)
@@ -87,7 +90,7 @@ theorem run_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) (hi :
   have hlen := NFLoc.preLen_mono Q.n H (show r + 1 ≤ H.length by omega)
   rw [NFLoc.preLen_length] at hlen
   rw [hrun] at hsucc
-  simp only [NFLoc.itemCnt] at hsucc
+  simp [NFLoc.itemCnt] at hsucc
   -- host index
   have hidx : (C.s + sideE C.m (tJ C (i + d))) % C.P.n = NFLoc.preLen Q.n H r + (t + d) := by
     rw [sideE_up C hJ, ← Nat.add_assoc, Nat.add_mod, hu, Nat.mod_eq_of_lt (show d < C.P.n by omega)]
@@ -95,7 +98,7 @@ theorem run_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) (hi :
     omega
   have hpt : (H.pts Q.n)[(C.s + sideE C.m (tJ C (i + d))) % C.P.n]? =
       some (SymPt.vtx ((a + (t + d)) % Q.n)) := by
-    rw [hidx, NFLoc.pts_getElem? Q.n H hr (by omega) (by rw [hrun]; simp [NFLoc.itemCnt]; omega),
+    rw [hidx, NFLoc.pts_getElem? Q.n H hr (by omega) (by rsio [hrun] [NFLoc.itemCnt]),
       hrun, show NFLoc.preLen Q.n H r + (t + d) - NFLoc.preLen Q.n H r = t + d by omega,
       NFLoc.run_pts_getElem? _ _ _ ht]
   rw [show i + d + 6 = (i + d) + 6 by ring, walk_vtx C _ hi,
@@ -118,7 +121,7 @@ theorem run_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
   have hlen := NFLoc.preLen_mono Q.n H (show r + 1 ≤ H.length by omega)
   rw [NFLoc.preLen_length] at hlen
   rw [hrun] at hsucc
-  simp only [NFLoc.itemCnt] at hsucc
+  simp [NFLoc.itemCnt] at hsucc
   have hkd : d ≤ sideE C.m (tJ C i) := by
     have := sideE_down C (d := d) hm hJ
     have hle := Chazelle.Chain.sideE_le (m := C.m) (j := tJ C i) (tJ_lt C i).le
@@ -126,7 +129,7 @@ theorem run_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
     split_ifs at * <;> omega
   have hidx : (C.s + sideE C.m (tJ C (i + d))) % C.P.n = NFLoc.preLen Q.n H r + (t - d) := by
     rw [sideE_down C hm hJ]
-    have hpos : 0 < C.P.n := C.n_pos
+    have hpos  := C.n_pos
     have e := Nat.div_add_mod (C.s + sideE C.m (tJ C i)) C.P.n
     rw [hu] at e
     have e2 : C.s + (sideE C.m (tJ C i) - d) =
@@ -136,7 +139,7 @@ theorem run_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
   have hpt : (H.pts Q.n)[(C.s + sideE C.m (tJ C (i + d))) % C.P.n]? =
       some (SymPt.vtx ((a + (t - d)) % Q.n)) := by
     rw [hidx, NFLoc.pts_getElem? (p := NFLoc.preLen Q.n H r + (t - d)) Q.n H hr (by omega)
-        (by rw [hrun]; simp only [NFLoc.itemCnt]; omega),
+        (by rsio [hrun] only [NFLoc.itemCnt]),
       hrun, show NFLoc.preLen Q.n H r + (t - d) - NFLoc.preLen Q.n H r = t - d by omega,
       NFLoc.run_pts_getElem? _ _ _ (by omega)]
   rw [show i + d + 6 = (i + d) + 6 by ring, walk_vtx C _ hi,

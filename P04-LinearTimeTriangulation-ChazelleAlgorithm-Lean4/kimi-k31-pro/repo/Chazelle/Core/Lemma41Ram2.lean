@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.Lemma41Ram1
 public import Mathlib.Tactic.IntervalCases
 public import Mathlib.Data.List.GetD
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-J, part 7: the cover loop on the RAM
@@ -63,7 +65,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 /-- The entry of chain `(g, q)`. -/
 theorem entB_exec {c : Config} (hw : WordsBounded W c) {T g q : ℕ}
     (h22 : c.nreg 160022 = T) (h12 : c.nreg 160012 = g) (h13 : c.nreg 160013 = q)
@@ -76,7 +77,7 @@ theorem entB_exec {c : Config} (hw : WordsBounded W c) {T g q : ℕ}
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold entB
   exec_block
-  all_goals try (config_simp; simp only [h22, h12, h13, h24]; omega)
+  all_goals try (config_simp; sio only [h22, h12, h13, h24])
   refine ⟨rfl, ‹_›, ?_, ?_, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
   · config_simp; simp only [h22, h12, h13]
     rw [show c.nmem (T + g) + q + q + q = c.nmem (T + g) + 3 * q by ring]
@@ -85,7 +86,6 @@ theorem entB_exec {c : Config} (hw : WordsBounded W c) {T g q : ℕ}
   · simp only [Machine.upd_apply]
     split_ifs <;> first | omega
 
-set_option maxHeartbeats 16000000 in
 /-- The record stores. -/
 theorem recB_exec {c : Config} (hw : WordsBounded W c) {rp d nf hp : ℕ}
     (h15 : c.nreg 160015 = rp) (h17 : c.nreg 160017 = d) (h18 : c.nreg 160018 = nf)
@@ -99,7 +99,7 @@ theorem recB_exec {c : Config} (hw : WordsBounded W c) {rp d nf hp : ℕ}
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold recB
   exec_block
-  all_goals try (config_simp; simp only [h15, h17, h18, h27, h24]; omega)
+  all_goals try (config_simp; sio only [h15, h17, h18, h27, h24])
   refine ⟨rfl, ‹_›, ?_, fun j hj1 hj4 => ?_, ?_, fun a ha => ?_, ?_, fun r a1 a2 a3 => ?_, rfl, rfl,
     rfl⟩
   · config_simp; simp only [h15, h17, h18, h27, h24, Machine.upd_apply]
@@ -115,7 +115,6 @@ theorem recB_exec {c : Config} (hw : WordsBounded W c) {rp d nf hp : ℕ}
   · simp only [Machine.upd_apply]
     split_ifs <;> first | omega
 
-set_option maxHeartbeats 4000000 in
 /-- The advance. -/
 theorem advB_exec {c : Config} (hw : WordsBounded W c) {rp cnt PW g x : ℕ}
     (h19 : c.nreg 160019 = rp) (h14 : c.nreg 160014 = cnt) (h21 : c.nreg 160021 = PW)
@@ -128,7 +127,7 @@ theorem advB_exec {c : Config} (hw : WordsBounded W c) {rp cnt PW g x : ℕ}
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold advB
   exec_block
-  all_goals try (config_simp; simp only [h19, h14, h21, h12, h10, h24, hp]; omega)
+  all_goals try (config_simp; sio only [h19, h14, h21, h12, h10, h24, hp])
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun r a1 a2 a3 a4 => ?_, rfl, rfl, rfl, rfl⟩
   · config_simp; simp only [h19, h24]
   · config_simp; simp only [h14, h24]

@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.SweepIoCand1ShrSpec
 public import Chazelle.Core.SweepIoCand1TabSpec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # The sweep RAM (WP-D), answers: the candidate step of side `1`, the program and its frame
@@ -102,8 +107,8 @@ theorem irs_ifEq {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     IRS P W c₀ (ifEq a b t e) c (K + 4) Q := by
   unfold ifEq
   by_cases h1 : c.nreg a < c.nreg b
-  · exact (IRS.ifT h1 (he (by omega))).mono (by omega) (fun _ h => h)
-  · refine (IRS.ifF h1 ?_).mono (K := K + 2 + 2) (by omega) (fun _ h => h)
+  · exact (IRS.ifT h1 (he (by omega))).mono (by omega) (fun _ => id)
+  · refine (IRS.ifF h1 ?_).mono (K := K + 2 + 2) (by omega) (fun _ => id)
     by_cases h2 : c.nreg b < c.nreg a
     · exact IRS.ifT h2 (he (by omega))
     · exact IRS.ifF h2 (ht (by omega))
@@ -134,12 +139,12 @@ theorem candFr_lhw {c c' : Config}
     (h : ∀ r, bandOf r ∉ oracleBands → ¬ LHW r → r ≠ ALLOC → c'.nreg r = c.nreg r)
     (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) :
     CandFr c c' :=
-  candFr_of (fun r a b d => h r a (by unfold LHW; unfold Alw sw at b; unfold sw; omega) d) ha hm
+  candFr_of (fun r a b d => h r a (by unfold LHW; unfold Alw sw at b; ufo sw) d) ha hm
 
 /-- The frame of a part. -/
 theorem candFr_part {c c' : Config} (h : PartFr c c') : CandFr c c' :=
-  candFr_of (fun r a b d => h.1 r a (by unfold Alw sw at b; unfold sw; omega)
-    (by unfold Alw sw at b; unfold sw; omega) (by unfold Alw sw at b; unfold sw; omega) d)
+  candFr_of (fun r a b d => h.1 r a (by unfold Alw sw at b; ufo sw)
+    (by unfold Alw sw at b; ufo sw) (by unfold Alw sw at b; ufo sw) d)
     h.2.1 h.2.2
 
 /-- A frame that writes only allowed registers. -/
@@ -152,21 +157,21 @@ theorem candFr_regs {c c' : Config} {S : ℕ → Prop} (hS : ∀ r, S r → Alw 
 /-- The pipeline registers are kept. -/
 theorem candFr_pipe {c c' : Config} (h : CandFr c c') {r : ℕ} (hr : sw 3200 ≤ r ∧ r < sw 3230) :
     c'.nreg r = c.nreg r :=
-  candFr_alw h r (not_oracle_sw (by unfold sw at hr; omega) (by unfold sw at hr; omega))
-    (by unfold Alw; unfold sw at hr ⊢; omega) (by unfold ALLOC; unfold sw at hr; omega)
+  candFr_alw h r (not_oracle_sw (by ufo sw at hr) (by ufo sw at hr))
+    (by unfold Alw; ufo sw at hr ⊢) (by unfold ALLOC; ufo sw at hr)
 
 theorem candFr_qE {c c' : Config} (h : CandFr c c') : c'.nreg qE = c.nreg qE :=
-  candFr_pipe h (by unfold qE sw; omega)
+  candFr_pipe h (by ufo qE sw)
 theorem candFr_qH {c c' : Config} (h : CandFr c c') : c'.nreg qH = c.nreg qH :=
-  candFr_pipe h (by unfold qH sw; omega)
+  candFr_pipe h (by ufo qH sw)
 theorem candFr_qD {c c' : Config} (h : CandFr c c') : c'.nreg qD = c.nreg qD :=
-  candFr_pipe h (by unfold qD sw; omega)
+  candFr_pipe h (by ufo qD sw)
 theorem candFr_bL {c c' : Config} (h : CandFr c c') : c'.nreg bL = c.nreg bL :=
-  candFr_pipe h (by unfold bL sw; omega)
+  candFr_pipe h (by ufo bL sw)
 theorem candFr_bR {c c' : Config} (h : CandFr c c') : c'.nreg bR = c.nreg bR :=
-  candFr_pipe h (by unfold bR sw; omega)
+  candFr_pipe h (by ufo bR sw)
 theorem candFr_qJ {c c' : Config} (h : CandFr c c') : c'.nreg qJ = c.nreg qJ :=
-  candFr_pipe h (by unfold qJ sw; omega)
+  candFr_pipe h (by ufo qJ sw)
 
 /-! ## The state after the local hit in the model of `C₂` -/
 
@@ -210,7 +215,6 @@ theorem fin2 {z : Point} {c' : Config} {L : Set ℝ} (hM : Mid P J z c c' L)
 /-- A register outside `sw 4807 … 4813`. -/
 def OutM (r : ℕ) : Prop := r < sw 4807 ∨ sw 4813 < r
 
-set_option maxHeartbeats 1000000 in
 theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw 21) J.right) :
     IRS P W c₀ midB c 20 (fun c' => c'.nreg tgt = 6 + midT J.right ∧
       (∀ r, OutM r → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
@@ -227,7 +231,7 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
   have kk3 : c.nreg 240616 = 3 := k3
   have kk4 : c.nreg 240613 = 4 := k4
   have s : ∀ j, 4807 ≤ j → j ≤ 4813 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw (by ufo sw) (by ufo sw)
   -- the block
   have v : regB c.nmem midL c.nreg m2 = J.right.m ∧
       regB c.nmem midL c.nreg ti = J.right.topIdx ∧
@@ -240,8 +244,8 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
     · simp [kk2, a2]
     · simp [kk3, a3]
     · simp [kk4, a4]
-    · simp [kk3, a3]; ring
-    · simp [kk2, a2]; ring
+    · sir [kk3, a3]
+    · sir [kk2, a2]
     · unfold OutM sw at hr
       simp only [show r ≠ 244811 by omega, show r ≠ 244808 by omega, show r ≠ 244809 by omega,
         show r ≠ 244810 by omega, show r ≠ 244812 by omega, show r ≠ 244813 by omega,
@@ -254,15 +258,15 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
       ⟨s 4811 (by norm_num) (by norm_num), ?_⟩, s 4810 (by norm_num) (by norm_num),
       ⟨s 4812 (by norm_num) (by norm_num), ?_⟩, ⟨s 4813 (by norm_num) (by norm_num), ?_⟩, trivial⟩
     all_goals simp [upd, tmp, m2, ti, bt, dd, sw, K2, K3, K4, kk2, kk3, kk4, a2, a3]
-    all_goals (have := J.right.topIdx_le; simp only [Merge.Junction.right_m] at hWm this; omega)
+    all_goals (have := J.right.topIdx_le; sio only [Merge.Junction.right_m] at hWm this)
   refine IRS.seq (K₁ := 8) (K₂ := 12) ((IRS.block midL hI ok).mono (by simp [midL])
-    (fun _ h => h)) ?_
+    (fun _ => id)) ?_
   rintro c₁ hI₁ - - rfl
   have hb6 : c.nreg K6 = 6 := k6
   have e6 : regB c.nmem midL c.nreg K6 = 6 := by
-    rw [vo _ (by unfold OutM K6 sw; omega)]; exact k6
+    rwx [vo _ (by ufo OutM K6 sw)]
   have e1 : regB c.nmem midL c.nreg K1 = 1 := by
-    rw [vo _ (by unfold OutM K1 sw; omega)]; exact k1
+    rwx [vo _ (by ufo OutM K1 sw)]
   have fin : ∀ (l : List Instr) (c₂ : Config), c₂ = { c with nreg := regB c.nmem midL c.nreg } →
       IInv W c₀ c₂ → l.length ≤ 2 → okB W c₂.nmem l c₂.nreg →
       (∀ i ∈ l, dstI i = tgt) →
@@ -275,25 +279,25 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
     refine ⟨hv, fun r hr => ?_, by rw [hc₂]⟩
     simp only
     rw [regB_other _ l _ (fun i hi h => by
-      rw [hd i hi] at h; subst h; unfold OutM tgt sw at hr; omega)]
+      rw [hd i hi] at h; subst h; ufo OutM tgt sw at hr)]
     rw [hc₂]; exact vo r hr
   have st : IScr tgt := s 4807 le_rfl (by norm_num)
   refine irs_ifEq (K := 8) (fun hb => ?_) (fun hb => ?_)
   · simp only at hb
-    have hβ : J.right.sideBeta = true := vb.1 (by rw [hb]; exact e1)
+    have hβ : J.right.sideBeta = true := vb.1 (by rwx [hb])
     have hmid : midT J.right = 2 * J.right.m - 2 * J.right.topIdx := by unfold midT; rw [ite_eq_left hβ]
     refine (fin [.subN tgt m2x dd, .addN tgt tgt K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
-      (by norm_num) (fun _ h => h)
+      (by norm_num) (fun _ => id)
     · simp only [okB, okI, regI]
       refine ⟨st, ⟨st, ?_⟩, trivial⟩
       simp only [upd, tgt, m2x, dd, K6, sw] at *
       simp
-      rw [vx, vd, e6]; omega
+      rwo [vx, vd, e6]
     · simp [dstI]
     · simp only [regB, regI]
       simp only [upd, tgt, m2x, dd, K6, sw] at *
       simp
-      rw [vx, vd, e6, hmid]; omega
+      rwo [vx, vd, e6, hmid]
   · simp only at hb
     have hβ : J.right.sideBeta ≠ true := fun h => hb ((vb.2 h).trans e1.symm)
     refine IRS.ite (K := 6) (fun hl => ?_) (fun hl => ?_)
@@ -302,21 +306,21 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
       have hmid : midT J.right = 2 * J.right.topIdx := by
         unfold midT; rw [ite_eq_right hβ, ite_eq_left hl]
       refine (fin [.addN tgt dd K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
-        (by norm_num) (fun _ h => h)
+        (by norm_num) (fun _ => id)
       · simp only [okB, okI]
         refine ⟨⟨st, ?_⟩, trivial⟩
-        rw [vd, e6]; omega
+        rwo [vd, e6]
       · simp [dstI]
       · simp only [regB, regI]
         simp only [upd, tgt, dd, K6, sw] at *
         simp
-        rw [vd, e6, hmid]; omega
+        rwo [vd, e6, hmid]
     · simp only at hl
       rw [vi, vm] at hl
       have hmid : midT J.right = 0 := by
         unfold midT; rw [ite_eq_right hβ, ite_eq_right hl]
       refine (fin [.copyN tgt K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
-        (by norm_num) (fun _ h => h)
+        (by norm_num) (fun _ => id)
       · simp only [okB, okI]
         exact ⟨st, trivial⟩
       · simp [dstI]

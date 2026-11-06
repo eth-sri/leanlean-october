@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseExtractCorr
 public import Chazelle.Core.DownPhaseFrontier
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (X, part 17): the extraction theorem
@@ -48,7 +50,7 @@ theorem unwrap_sub {n l r a b x₀ : ℝ} (hl : 0 ≤ l ∧ l < n) (hr : 0 ≤ r
     (hlr : l < unwrapK n l r) (hab : a ≠ b) (hxab : sideInArc a b x₀)
     (hxlr : sideInArc l r x₀) (hla : ¬ sideInArc a b l) (hra : ¬ sideInArc a b r) :
     unwrapK n l a < unwrapK n l b ∧ unwrapK n l b ≤ unwrapK n l r := by
-  have e2 := (cyc_unwrap hl hl hr hx (by rw [unwrapK_self]; exact hlr)).1 hxlr
+  have e2 := (cyc_unwrap hl hl hr hx (by rwx [unwrapK_self])).1 hxlr
   rw [unwrapK_self] at e2
   have hbx := unwrapK_bounds hl hx
   have hbb := unwrapK_bounds hl hb
@@ -125,7 +127,7 @@ theorem arcWt_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     (aa := unwrapK (interiorModel Q).W.n l a) (bb := unwrapK (interiorModel Q).W.n l b)
     ?_ h1 ?_ ?_ ?_ harc.2.2.2.2.2.1 harc.2.2.2.2.2.2
   · rw [hl0]; exact (unwrapK_bounds hlb ha).1
-  · rw [hA.hud]; exact h2
+  · rwx [hA.hud]
   · intro x hx0 hxn hx
     exact ⟨unwrapK (interiorModel Q).W.n l x, (cyc_unwrap hlb ha hb ⟨hx0, hxn⟩ h1).1 hx,
       wrapK_unwrapK ⟨hx0, hxn⟩⟩
@@ -139,7 +141,7 @@ theorem arcWt_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
       ⟨ArcT.wrapK_nonneg hxx0 hxx2, ArcT.wrapK_lt hn hxx0 hxx2⟩
     have e := unwrapK_wrapK hlb.1 hn hlo hhi
     refine (cyc_unwrap hlb ha hb hy h1).2 ?_
-    rw [e]; exact hxx
+    rwx [e]
 
 /-- **(X2) The weight transfer.** -/
 theorem weight_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
@@ -168,7 +170,7 @@ theorem interiorWalk_vtx {k : ℕ} (hk : k < (interiorWalk Q).n) :
     unfold interiorWalk; split_ifs
     · rfl
     · exact FactsInterior.rev_n Q
-  have hk' : k < Q.n := hWn ▸ hk
+  have hk'  := hWn ▸ hk
   unfold interiorWalk
   split_ifs
   · exact ⟨k, hk', rfl⟩
@@ -185,7 +187,7 @@ theorem host_height (X : Ctx Q S R) {i : ℕ} (hi : i < nk (interiorModel Q) S R
   · rw [e, show ((k : ℕ) : ℝ) = (k : ℝ) + 0 by ring, hostPt_eq _ le_rfl one_pos,
       Chazelle.Chain.sidePt_zero]
     obtain ⟨h, hh, e'⟩ := interiorWalk_vtx (Q := Q) hk
-    exact ⟨h, hh, by rw [← e']; rfl⟩
+    exact ⟨h, hh, by rwr [← e']⟩
 
 /-- **Every region of the extended family inside `R` lies in a region of `F₁`.** -/
 theorem exists_chain_region (X : Ctx Q S R) {F₁ : Set (Set Point)} {V : Set Point}

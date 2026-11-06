@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvStepL9
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # The sweep (WP-D), stage 3: Task L1 (one iteration of the event loop)
@@ -19,7 +22,6 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim WalkEmbed SweepRam Sweep
 
 @[expose] public section
 
-set_option maxHeartbeats 2000000 in
 /-- **Task L1: one iteration that does not finish.** -/
 theorem stepTask : StepTask := by
   intro sh Bs F X Ok P W c₀ J N₁ N₂ c cw cs co c' E L hI hd
@@ -40,7 +42,7 @@ theorem stepTask : StepTask := by
   have egN : c'.nreg gN = c.nreg gN := stp_iter_keep hI (k := 2440) (by omega)
   have egR : ∀ u, u < 2 → c'.nreg (gR + u) = c.nreg (gR + u) := fun u hu => by
     have := stp_iter_keep hI (k := 2441 + u) (by omega)
-    rwa [show sw (2441 + u) = gR + u by unfold gR sw; omega] at this
+    rwa [show sw (2441 + u) = gR + u by ufo gR sw] at this
   have hAl := stp_alloc_mono hI
   have hgN := L.gapN
   refine ⟨{
@@ -71,7 +73,7 @@ theorem stepTask : StepTask := by
       exact L.gapR i hi
     gap := fun V hV => by
       obtain ⟨i, hi, hiV⟩ := L.gap V hV
-      exact ⟨i, by rw [egN]; exact hi, by rw [egR i (by omega)]; exact hiV⟩
+      exact ⟨i, by rwx [egN], by rwx [egR i (by omega)]⟩
     ptr := hptr
     ptrL := hptrL
     log := S.log'

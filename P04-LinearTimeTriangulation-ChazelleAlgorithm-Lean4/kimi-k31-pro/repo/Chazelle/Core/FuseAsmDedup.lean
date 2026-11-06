@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.FuseAsmSort
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # WP-F fusion assembly, part 6: removing duplicate triples
@@ -54,9 +56,9 @@ theorem mem_dd (l : List α) (d : α) (x : α) : x ∈ dd l d ↔ x ∈ l := by
     -- the first occurrence
     classical
     let P : ℕ → Prop := fun i => i < l.length ∧ l.getD i d = l[j]
-    have hP : ∃ i, P i := ⟨j, hj, by rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj]; rfl⟩
+    have hP : ∃ i, P i := ⟨j, hj, by rwr [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj]⟩
     let i := Nat.find hP
-    have hi : P i := Nat.find_spec hP
+    have hi  := Nat.find_spec hP
     refine ⟨i, ⟨hi.1, ?_⟩, hi.2⟩
     unfold keep
     by_cases h0 : i = 0
@@ -86,11 +88,11 @@ theorem dd_nodup {r : α → α → Prop} (hanti : ∀ x y, r x y → r y x → 
     apply hk
     -- `l[a] = l[b]` and `a ≤ b - 1 < b`: sorted, so `l[b - 1] = l[b]`
     have ga : l.getD a d = l[a] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
+      rwr [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]
     have gb : l.getD b d = l[b] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hb]; rfl
+      rwr [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hb]
     have gc : l.getD (b - 1) d = l[b - 1] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
+      rwr [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]
     rw [gb, gc]
     rw [ga, gb] at heq
     rcases Nat.lt_or_ge a (b - 1) with h | h
@@ -124,14 +126,13 @@ structure IXI (W K S : ℕ) (c₀ c : Config) : Prop where
   rm : c.rmem = c₀.rmem
   out : c.output = c₀.output
 
-set_option maxHeartbeats 2000000 in
 theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg 70105 = 1)
     (h01 : c₀.nreg 70201 = K) (hW : S + K + 1 ≤ W) :
     ∀ (n : ℕ) (c : Config), IXI W K S c₀ c → c.nreg 70200 + n = K →
       ∃ c' k, Exec P W ixLoop c c' k ∧ k ≤ 5 * n + 2 ∧ n ≤ k ∧ IXI W K S c₀ c' ∧ c'.nreg 70200 = K
   | 0, c, hI, hn => by
     have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 (by decide) (by decide), h01]
-    exact ⟨c, 2, .whileLtN_false (by rw [h01']; omega) hI.wb, by omega, by omega, hI, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by rwo [h01']) hI.wb, by omega, by omega, hI, by omega⟩
   | n + 1, c, hI, hn => by
     have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 (by decide) (by decide), h01]
     have h05' : c.nreg 70105 = 1 := by rw [hI.regs 70105 (by decide) (by decide), h05]
@@ -167,7 +168,7 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
       · have : j = i := by omega
         subst this; rw [upd_same]
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := ixLoop_exec h05 h01 hW n c' hI' (by omega)
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [hi, h01']; omega) e e₂, by omega, by omega, hI'', hK⟩
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rwo [hi, h01']) e e₂, by omega, by omega, hI'', hK⟩
 
 theorem seg_range {m : ℕ → ℕ} {S K : ℕ} (h : ∀ j, j < K → m (S + j) = j) :
     SortL.seg m S K = List.range K := by

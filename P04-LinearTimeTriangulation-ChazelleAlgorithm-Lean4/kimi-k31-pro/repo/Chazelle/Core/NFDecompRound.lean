@@ -27,7 +27,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
 
 /-- The state of the decomposition between rounds. -/
 structure RS where

@@ -4,6 +4,9 @@ public import Chazelle.Core.DownPhaseDrvKept
 public import Chazelle.Core.DownPhaseRegionBox
 public import Chazelle.Core.DownPhaseExtractMain
 public import Chazelle.Core.DownPhaseExtractGeom
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down-phase driver, X-R1 (part 2): the host polygon is counterclockwise
@@ -51,7 +54,7 @@ theorem arcEdge_pair (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a < W.n) (
       by_contra h
       push Not at h
       have hk : p + 1 < W.n := by
-        have : ((p + 1 : ℕ) : ℝ) < W.n := by push_cast; linarith
+        have : ((p + 1 : ℕ) : ℝ) < W.n := by pcl
         exact_mod_cast this
       apply hnv (p + 1) hk
       unfold sideInArc; rw [ite_eq_left hlt]; push_cast; exact ⟨hp1, h⟩
@@ -60,11 +63,11 @@ theorem arcEdge_pair (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a < W.n) (
     · have := hostPt_eq W (p := p) (t := b - p) (by linarith) (by linarith)
       rwa [show (p : ℝ) + (b - p) = b by ring] at this
     · have hk : p + 1 < W.n := by
-        have : ((p + 1 : ℕ) : ℝ) < W.n := by push_cast; linarith
+        have : ((p + 1 : ℕ) : ℝ) < W.n := by pcl
         exact_mod_cast this
-      have e : b = ((p + 1 : ℕ) : ℝ) + 0 := by push_cast; linarith
+      have e : b = ((p + 1 : ℕ) : ℝ) + 0 := by pcl
       rw [e, hostPt_eq W le_rfl one_pos, Chazelle.Chain.sidePt_zero,
-        show ((p + 1 : ℕ) : ℝ) + 0 - p = 1 by push_cast; ring, sidePt_one,
+        show ((p + 1 : ℕ) : ℝ) + 0 - p = 1 by pcr, sidePt_one,
         Nat.mod_eq_of_lt hk]
   · have hb0' : b = 0 := by
       by_contra h
@@ -116,7 +119,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
     exact hvQ ha hha (by rw [← hAy]; simpa [hPdef] using hPy)
   have hlam1 : lam ≠ 1 := by
     intro h1; rw [h1] at hPy
-    exact hvQ hb hhb (by rw [← hBy]; simp [hPdef] at hPy ⊢; linarith)
+    exact hvQ hb hhb (by rw [← hBy]; sil [hPdef] at hPy ⊢)
   have hlam' : lam ∈ Ioo (0 : ℝ) 1 :=
     ⟨lt_of_le_of_ne hlam.1 (Ne.symm hlam0), lt_of_le_of_ne hlam.2 hlam1⟩
   -- the gap is an arc gap
@@ -148,7 +151,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   have hvi : (hostPoly Q S R).vtx i = A := hostPoly_vtx hi
   have hvi' : (hostPoly Q S R).vtx ((i + 1) % (hostPoly Q S R).n) = B := by
     rw [hHn]; exact hostPoly_vtx hsi
-  have hiH : i < (hostPoly Q S R).n := by rw [hHn]; exact hi
+  have hiH : i < (hostPoly Q S R).n := by rwx [hHn]
   have hcpos : 0 < t'' - τ₀ := by linarith
   set t' := τ₀ + lam * (t'' - τ₀) with ht'
   have ht'I : t' ∈ Ioo (0 : ℝ) 1 := by

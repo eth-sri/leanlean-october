@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.GranStep3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F, part 10: the removal preserves the invariant (counts, ring, worklist) — `Inv.remove`
@@ -91,7 +93,7 @@ theorem lv_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
       refine ⟨hL, ?_⟩
       by_contra hdd
       simp only [Bool.not_eq_false] at hdd
-      rw [hd.1 hdd] at hp; omega
+      rwo [hd.1 hdd] at hp
     · rintro ⟨-, hdd⟩
       have : st.cnt (st.nd1 c) ≠ 1 := fun e => by rw [hd.2 e] at hdd; exact Bool.noConfusion hdd
       omega
@@ -107,7 +109,7 @@ theorem lv_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
         refine ⟨hL, ?_⟩
         by_contra hdd
         simp only [Bool.not_eq_false] at hdd
-        rw [hd.1 hdd] at hp; omega
+        rwo [hd.1 hdd] at hp
       · rintro ⟨-, hdd⟩
         have : st.cnt (st.nd0 c) ≠ 1 := fun e => by rw [hd.2 e] at hdd; exact Bool.noConfusion hdd
         omega
@@ -212,7 +214,7 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
   set c := st.cur with hcdef
   obtain ⟨P, hs⟩ := h.split hE hc
   obtain ⟨hlow, hw⟩ := (h.removable_iff hE hc hs).1 hrem
-  have hmu : st.mu E c ≤ E.γ := by rw [h.mu_eq hE hc hs]; exact hw
+  have hmu : st.mu E c ≤ E.γ := by rwx [h.mu_eq hE hc hs]
   set μ := st.mu E c
   set st' := st.remove c μ
   have hL' : st'.L E = st.L E \ {c} := rm_L hE h hc μ
@@ -235,20 +237,20 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
     rw [hF']
     intro Z hZ
     by_cases hZP : Z = P
-    · subst hZP; rw [deg_P hE h hc hs]; exact hlen
+    · subst hZP; rwx [deg_P hE h hc hs]
     · rw [deg_other hE h hc hs hZ hZP]
       exact h.degLe Z (other_ne hE h hc hs hZ hZP).1
   · -- weights
     rw [hF']
     intro Z hZ
     by_cases hZP : Z = P
-    · subst hZP; rw [← h.mu_eq hE hc hs]; exact hmu
+    · subst hZP; rwx [← h.mu_eq hE hc hs]
     · rw [weight_other' hE h hc hs hZ hZP]
       exact h.semi Z (other_ne hE h hc hs hZ hZP).1
   · -- sides
     intro i hi
     rw [hL'] at hi
-    exact sides_rm hE h hc hs hi.1 (fun e => hi.2 (by rw [e]; rfl)) μ
+    exact sides_rm hE h hc hs hi.1 (fun e => hi.2 (by rwr [e])) μ
   · -- classes
     intro x hx
     exact cls_rm hE h hc hs hlow hx
@@ -279,7 +281,7 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
   · -- the worklist property
     intro i hi hno
     rw [hL'] at hi
-    have hic : i ≠ c := fun e => hi.2 (by rw [e]; rfl)
+    have hic : i ≠ c := fun e => hi.2 (by rwr [e])
     have hiL := hi.1
     -- `i` is not a new exit
     have hnotnew : i ∉ st.newEx c := by

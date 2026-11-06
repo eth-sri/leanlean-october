@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseDegSide
+public import Chazelle.RewriteTactics
 
 /-!
 # Degree bound on host curves, part 4: the degree bound
@@ -40,14 +41,14 @@ theorem deg_leH (hS : GoodH R S t) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD 
   obtain ⟨sL, sR, y₁, y₂, h⟩ := exists_trapH hS hfull hqf.1 hqf.2
   set T := tr sL sR y₁ y₂ with hTdef
   set U := connectedComponentIn (freeIn D G) q with hUdef
-  have hUT : U ⊆ T := h.region_subsetH hS hfull hqf
-  have hTD : T ⊆ D := h.tr_subset_domH hS
-  have hqT : q ∈ T := hUT (mem_connectedComponentIn hqf)
+  have hUT  := h.region_subsetH hS hfull hqf
+  have hTD  := h.tr_subset_domH hS
+  have hqT  := hUT (mem_connectedComponentIn hqf)
   have hfreeU : U ⊆ freeIn D G := connectedComponentIn_subset _ _
   have hcl : closure U ⊆ ctr sL sR y₁ y₂ :=
     (closure_mono hUT).trans (closure_tr_subset _ _ _ _)
-  have hqy₁ : y₁ < q.2 := hqT.1
-  have hqy₂ : q.2 < y₂ := hqT.2.1
+  have hqy₁  := hqT.1
+  have hqy₂  := hqT.2.1
   -- a domain point of the closed trapezoid at a middle height is inside
   have hmid : ∀ z ∈ D, z ∈ ctr sL sR y₁ y₂ → y₁ < z.2 → z.2 < y₂ → z ∈ T := by
     intro z hzD hzC hz1 hz2
@@ -58,7 +59,7 @@ theorem deg_leH (hS : GoodH R S t) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD 
   have hslice : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ w ∈ T, w.2 = z.2 → w ∈ c := by
     intro c hc z hz hzT w hwT hwz
     obtain ⟨y, a, b, hh, rfl⟩ := hG c hc
-    have hzy : z.2 = y := hz.1
+    have hzy  := hz.1
     refine mem_of_joined hh hz (hTD hzT) (hwz.trans hzy) fun s h1 h2 => hTD ?_
     have hseg : Chazelle.segment z w ⊆ T :=
       Geometry.segment_subset_of_convex (convex_tr _ _ _ _) hzT hwT
@@ -120,16 +121,16 @@ theorem deg_leH (hS : GoodH R S t) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD 
         have hz0 := hclle _ hU0 z hzU
         have hmz : q.2 < z.2 ∧ z.2 < y₂ := by
           rcases hzc with e | e
-          · rw [e] at hz0; linarith
+          · rwli [e] at hz0
           · exact e
         have hzT := hmid z hzD (hcl hzU) (hqy₁.trans hmz.1) hmz.2
         have hUz := hbelow c hc z hz hzT hmz.1
         have hz0' := hclle _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0' hz0
+        have heq  := le_antisymm hz0' hz0
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₁.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ t + 1 := by rw [ncard_singleton]; omega
+        _ ≤ t + 1 := by rwo [ncard_singleton]
     · push Not at hA
       have htop : ∀ c ∈ E₁, ∃ z ∈ c, z ∈ D ∧ z ∈ closure U ∧ z.2 = y₂ := by
         rintro c hc
@@ -153,16 +154,16 @@ theorem deg_leH (hS : GoodH R S t) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD 
         have hz0 := hclge _ hU0 z hzU
         have hmz : y₁ < z.2 ∧ z.2 < q.2 := by
           rcases hzc with e | e
-          · rw [e] at hz0; linarith
+          · rwli [e] at hz0
           · exact e
         have hzT := hmid z hzD (hcl hzU) hmz.1 (hmz.2.trans hqy₂)
         have hUz := habove c hc z hz hzT hmz.2
         have hz0' := hclge _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0 hz0'
+        have heq  := le_antisymm hz0 hz0'
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₂.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ t + 1 := by rw [ncard_singleton]; omega
+        _ ≤ t + 1 := by rwo [ncard_singleton]
     · push Not at hA
       have hbot : ∀ c ∈ E₂, ∃ z ∈ c, z ∈ D ∧ z ∈ closure U ∧ z.2 = y₁ := by
         rintro c hc

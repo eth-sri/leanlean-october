@@ -74,18 +74,18 @@ theorem band_of_edge {e : ℕ} (he : e < (C.sideWalk C.sideBeta).n) (h1 : e ≠ 
     rw [hmod] at hpy
     interval_cases e
     · rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one] at hpy
-      simp only [Chain.slitTop] at hpy
+      simp [Chain.slitTop] at hpy
       linarith
     · exact absurd rfl h1
     · rw [C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hpy
-      simp only at hpy
+      simp at hpy
       linarith
     · exact absurd rfl h3
     · rw [C.sideWalk_vtx_four, C.sideWalk_vtx_five] at hpy
-      simp only [Chain.slitTop] at hpy
+      simp [Chain.slitTop] at hpy
       linarith
     · rw [C.sideWalk_vtx_five, C.sideWalk_vtx_six] at hpy
-      simp only [Chain.slitTop] at hpy
+      simp [Chain.slitTop] at hpy
       nlinarith
   · rcases Nat.lt_or_ge e (2 * C.m + 6) with h' | h'
     · have hmod : (e + 1) % (C.sideWalk C.sideBeta).n = e + 1 := by
@@ -99,7 +99,7 @@ theorem band_of_edge {e : ℕ} (he : e < (C.sideWalk C.sideBeta).n) (h1 : e ≠ 
     · have he' : e = 2 * C.m + 6 := by omega
       subst he'
       rw [C.sideWalk_vtx_wrap, walk_last] at hpy
-      simp only [Chain.slitTop] at hpy
+      simp [Chain.slitTop] at hpy
       have hy : y = C.top.2 := by nlinarith
       rw [hy]; exact htop.2
 
@@ -117,8 +117,8 @@ theorem band_of_end {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} (hL : ChordTrip
   rw [e] at hmem'
   have hy1 : (sidePt (C.sideWalk C.sideBeta) w.edge ((chainModel C).param Q w)).2 =
       (Q.vtx x.1).2 := hmem.1
-  have hy2 : (sidePt (C.sideWalk C.sideBeta) w.edge ((chainModel C).param Q w)).2 = y' := hmem'.1
-  have hyy : (Q.vtx x.1).2 = y' := hy1.symm.trans hy2
+  have hy2  := hmem'.1
+  have hyy  := hy1.symm.trans hy2
   have hR : |y'| < C.radius := by
     have hm := hh.open_mem ((a + b) / 2) (by linarith [hh.lt]) (by linarith [hh.lt])
     exact (C.dom_subset_box hm).2

@@ -2,6 +2,12 @@ module
 
 public import Chazelle.Core.OraclePrepPhB2
 public import Chazelle.Core.OracleQueryMeets
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 33: the clusters of the book
@@ -53,9 +59,9 @@ theorem ClFacts.mono {m m' : ℕ → ℕ} {B : BookData} {FL LAB k X : ℕ} (h :
     simp only [Finset.mem_filter, Finset.mem_range]
     constructor
     · rintro ⟨hv, e1, e2⟩
-      exact ⟨hv, by rw [← hX _ (by omega)]; exact e1, by rw [← hX _ (by omega)]; exact e2⟩
+      exact ⟨hv, by rwx [← hX _ (by omega)], by rwx [← hX _ (by omega)]⟩
     · rintro ⟨hv, e1, e2⟩
-      exact ⟨hv, by rw [hX _ (by omega)]; exact e1, by rw [hX _ (by omega)]; exact e2⟩
+      exact ⟨hv, by rwx [hX _ (by omega)], by rwx [hX _ (by omega)]⟩
 
 /-- The trivial cluster facts: every node in `D*`, `k = 2` (at most `8` nodes, at least `2`). -/
 theorem ClFacts.triv {m : ℕ → ℕ} {B : BookData} {FL LAB : ℕ} (h2 : 2 ≤ B.N) (h8 : B.N ≤ 8)
@@ -65,7 +71,7 @@ theorem ClFacts.triv {m : ℕ → ℕ} {B : BookData} {FL LAB : ℕ} (h2 : 2 ≤
   k_min := Or.inr (by norm_num; omega)
   card := by
     refine le_trans (Finset.card_filter_le _ _) ?_
-    simp; omega
+    sio
   hlab u v w hw := absurd (hfl u u.2) (hw u w.start_mem_support)
   clus l := by
     rw [Finset.card_eq_zero.2]
@@ -109,14 +115,14 @@ theorem fill_exec {P : Polygon} {W : ℕ} {rb rv0 : ℕ} (hrb : rb = 130004 ∨ 
         unfold fillBody
         rcases hrb with rfl | rfl <;> rcases hrv with rfl | rfl <;>
         · exec_block
-          · rw [hJ.1, hri]; omega
+          · rwo [hJ.1, hri]
           · exact ⟨rfl, by config_simp; rw [hJ.1, hri],
               by config_simp; exact hJ.2⟩
       have hwr : wr (fun r => decide (r = 60094 ∨ r = 60095)) (fillBody rb rv0) = true := by
         rcases hrb with rfl | rfl <;> rcases hrv with rfl | rfl <;> decide
       exact ⟨d', k, e, by omega, exec_frameB e hwr, v1, v2⟩)
     hw ⟨hb, hv⟩ hμ h1 (by omega)
-  refine ⟨c', k, ex, by nlinarith, fun r a b' d => r' r (by simp; omega) a, ?_, mm, rm, o⟩
+  refine ⟨c', k, ex, by nlinarith, fun r a b' d => r' r (by sio) a, ?_, mm, rm, o⟩
   exact funext fun r => exec_rframeS ex (B := fun _ => false)
     (by rcases hrb with rfl | rfl <;> rcases hrv with rfl | rfl <;> decide) r rfl
 
@@ -138,12 +144,12 @@ theorem trivS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
       c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     exec_block
     all_goals first
-      | (config_simp; rw [hAl, hμ]; omega)
+      | (config_simp; rwo [hAl, hμ])
       | (config_simp; omega)
       | omega
       | skip
     · refine ⟨rfl, by config_simp; exact hAl, by config_simp; rw [hAl, hμ],
-        by config_simp; rw [hAl, hμ]; ring, by config_simp, fun r a b d e => ?_, rfl, rfl, rfl, rfl⟩
+        by config_simp; rwring [hAl, hμ], by config_simp, fun r a b d e => ?_, rfl, rfl, rfl, rfl⟩
       config_simp; simp only [upd_apply, a, b, d, e, ite_false]
   obtain ⟨c₂, k₂, e₂, hk₂, R₂, rr₂, m₂, rm₂, o₂⟩ := fill_exec (P := P) (rb := 130004) (rv0 := 120011)
     (Or.inl rfl) (Or.inl rfl) e₁.wb_right (by rw [R₁ _ (by decide) (by decide) (by decide)
@@ -176,7 +182,6 @@ def bookS : Stmt := .ifLtN 120012 120039 (.seq mapS clStage) trivS
 /-- The bands of `bookS`. -/
 def kBands : Finset ℕ := {bSort, bDecomp, bOPrep, bCluster}
 
-set_option maxHeartbeats 8000000 in
 theorem bookS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (hG : GoodEnv P)
     {C : Chain} {N : NF} (hCQ : C.P = Qof P) {γ : ℕ}
     (hcan : IsCanonicalNF (chainModel C) (Qof P) N γ 4)
@@ -201,36 +206,36 @@ theorem bookS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
   have hN := hcan.1
   have hsimp : C.P.Simple := by rw [hCQ]; exact (shearInvariance (epsOf P) P).1 hG.1
   have hBE : B.E = B.N + (B.I ++ B.O).length := by
-    unfold BookData.E; simp only [List.length_append]; omega
+    unfold BookData.E; sio only [List.length_append]
   by_cases hK0 : 0 < N.chords.length
   · -- the planar map and the clusters
     have hne : (N.F (chainModel C) (Qof P)).Nonempty := by
       apply Set.nonempty_of_ncard_ne_zero
-      rw [OracleR.chords_ncard hN]; omega
+      rwo [OracleR.chords_ncard hN]
     have hV := OracleQ.valid_of_graphOK hsimp hN hne hgok
     obtain ⟨c₁, k₁, e₁, hk₁, F₁, al1a, al1b, h71, MP, hR⟩ := mapS_exec (P := P) hw hV hμ hI h1r h2r
-      hone htwo hE hAl hP hC1 hC2 (by unfold clCost at hroom; omega)
+      hone htwo hE hAl hP hC1 hC2 (by ufo clCost at hroom)
       (by omega)
     have mp : ∀ r, (r = 60034 ∨ r = 60037 ∨ r = 120011) → MPres r := fun r hr => by
       rcases hr with rfl | rfl | rfl
       · exact Or.inl (by omega)
       · exact Or.inl (by omega)
-      · exact Or.inr (by unfold bandOf; omega)
+      · exact Or.inr (by ufo bandOf)
     obtain ⟨c₂, k₂, e₂, hk₂, F₂, al2a, al2b, K6₂, kpos, kcube, kmin, p4, p5, p4', p5', pcard, pwalk,
         pclus⟩ := clStage_exec (P := P) e₁.wb_right (B := B) rfl (by rw [MP _ (mp _ (by omega)), hμ])
       (by rw [MP _ (mp _ (by omega)), hE]) (by rw [MP _ (mp _ (by omega)), hone]) rfl hR hPW hNW
       (by omega)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hzero, hK]; exact hK0) (.seq e₁ e₂), ?_, ?_, ?_, ?_, ?_, ?_,
+    refine ⟨c₂, _, .ifLtN_true (by rwx [hzero, hK]) (.seq e₁ e₂), ?_, ?_, ?_, ?_, ?_, ?_,
       by omega, by omega, p4', p5', ⟨kpos, kcube, kmin, pcard, pwalk, pclus⟩⟩
-    · rw [hAL] at al1b; omega
+    · rwo [hAL] at al1b
     · refine (FrameN.gf (FrameN.mono F₁ (by decide)) (by rw [hAL, hAl])).trans
-        (FrameN.gf (FrameN.mono F₂ (by decide)) (by rw [hAL] at al1a ⊢; omega))
+        (FrameN.gf (FrameN.mono F₂ (by decide)) (by rwo [hAL] at al1a ⊢))
     · intro r a b
-      rw [F₂.1 r (by simp [bDecomp, bCluster, bandOf]; omega) (by rw [hAL]; omega),
-        F₁.1 r (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]; omega) (by rw [hAL]; omega)]
-    · rw [K6₂ _ (by unfold bandOf; norm_num) (by omega), MP _ (mp _ (by omega)), hμ]
-    · rw [hAL] at al1a al2a ⊢; omega
-    · rw [hAL] at al1b al2b ⊢; omega
+      rw [F₂.1 r (by sio [bDecomp, bCluster, bandOf]) (by rwo [hAL]),
+        F₁.1 r (by sio [dBands, bSort, bDecomp, bOPrep, bandOf]) (by rwo [hAL])]
+    · rw [K6₂ _ (by ufn bandOf) (by omega), MP _ (mp _ (by omega)), hμ]
+    · rwo [hAL] at al1a al2a ⊢
+    · rwo [hAL] at al1b al2b ⊢
   · -- the trivial decomposition
     have hK00 : N.chords.length = 0 := by omega
     have hA5 : N.arcs.length ≤ 5 := by
@@ -238,19 +243,19 @@ theorem bookS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
       rw [regions_eq hsimp hN, hK00] at h1
       omega
     obtain ⟨c₁, k₁, e₁, hk₁, v4, v5, v90, v9, hfl, mem₁, R₁, rr₁, rm₁, o₁⟩ := trivS_exec (P := P) hw
-      hμ hone hzero hAl (by unfold clCost at hroom; omega) (by omega)
+      hμ hone hzero hAl (by ufo clCost at hroom) (by omega)
     have hB8 : B.N ≤ 8 := by omega
-    refine ⟨c₁, _, .ifLtN_false (by rw [hzero, hK]; omega) e₁, by omega, ?_, ?_, ?_, ?_, ?_,
-      by rw [v4], by rw [v5]; omega, by rw [v4, hAL, v9]; omega, by rw [v5, hAL, v9]; omega, ?_⟩
+    refine ⟨c₁, _, .ifLtN_false (by rwo [hzero, hK]) e₁, by omega, ?_, ?_, ?_, ?_, ?_,
+      by rw [v4], by rwo [v5], by rwo [v4, hAL, v9], by rwo [v5, hAL, v9], ?_⟩
     · refine ⟨fun r hr hra => R₁ r ?_ ?_ (by rw [hAL] at hra; exact hra) ?_ ?_ ?_ ?_,
-        fun r _ => by rw [rr₁], fun a ha => mem₁ a ha, fun a _ => by rw [rm₁], o₁⟩ <;>
+        fun r _ => by rw [rr₁], mem₁, fun a _ => by rw [rm₁], o₁⟩ <;>
       · intro h; subst h; apply hr; simp [kBands, bDecomp, bCluster, bandOf]
     · intro r a b; exact R₁ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
         (by omega)
     · rw [R₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
         (by decide), hμ]
-    · rw [hAL, v9]; omega
-    · rw [hAL, v9]; omega
+    · rwo [hAL, v9]
+    · rwo [hAL, v9]
     · rw [v4, v5, v90]
       exact ClFacts.triv (by omega) hB8 (fun v hv => hfl v (by omega))
 

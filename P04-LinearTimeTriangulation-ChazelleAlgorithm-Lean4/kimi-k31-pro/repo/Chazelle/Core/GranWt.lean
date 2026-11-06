@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.GranRemove
+public import Chazelle.MiscTactics
 
 /-!
 # WP-F, part 3: the weight of a key interval by integer arithmetic
@@ -131,7 +132,7 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
         · right; exact h
         · left; exact h
   · -- `a < b`
-    have hr : eb + bump tb ≤ M.W.n := by unfold bump; split_ifs <;> omega
+    have hr : eb + bump tb ≤ M.W.n := by unfold bump; splao
     rw [← ncard_counted hD hr]
     congr 1
     ext p
@@ -162,7 +163,7 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
         have : hi ≤ (eb : ℝ) + tb := min_le_left _ _
         constructor <;> linarith
   · -- `b < a`: the wrap-around
-    have hlt : (eb : ℝ) + tb < ea + ta := lt_of_le_of_ne (not_lt.1 h2) (Ne.symm h1)
+    have hlt  := lt_of_le_of_ne (not_lt.1 h2) (Ne.symm h1)
     have hle : eb ≤ ea := by
       by_contra h'
       have : (ea : ℝ) + 1 ≤ eb := by exact_mod_cast (show ea + 1 ≤ eb by omega)

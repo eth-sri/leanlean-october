@@ -2,6 +2,12 @@ module
 
 public import Chazelle.Mountain.RamSub
 public import Chazelle.Mountain.RamTheorem
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 800000
 
 /-!
 # The monotone-mountain stack walk on a sub-polygon given by an index table, part 2
@@ -88,20 +94,19 @@ theorem sOuterInv_push {σ : ℝ} {c₀ : Config} {out : List Polygon.Triangle} 
     unfold stackS
     rw [e61, e63, enm, stk_shift_push]
     exact congrArg _ hst₂
-  have hkQ : c.nreg 64 < (subPoly P l).n := by rw [n_subPoly]; exact hk
+  have hkQ : c.nreg 64 < (subPoly P l).n := by rwx [n_subPoly]
   have hwalk := walk_of_lt (subPoly P l) σ hkQ (stackS c)
   refine ⟨⟨hw', hC', hT', hF', by omega, ?_, ?_⟩, ?_⟩
   · intro x hx
     rw [hs'] at hx
     rcases List.mem_cons.1 hx with rfl | hx
     · exact hk
-    · exact hlt₂ x (by rw [hst₂]; exact hx)
+    · exact hlt₂ x (by rwx [hst₂])
   · rw [e64, hs', eout, hout₂, List.append_assoc, ← List.map_append, ← hout, hwalk]
   · unfold subOuterPot
     rw [e64, hs', hwalk, List.length_append]
     omega
 
-set_option maxHeartbeats 800000 in
 /-- **One iteration of the walk** (`k < m`) preserves `SOuterInv` and decreases the potential
 `subOuterPot` by at least its cost plus `2`. -/
 theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ : Config}
@@ -124,7 +129,7 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
     ⟨by config_simp; exact h60, by config_simp; exact h61, by config_simp; exact h62,
       by config_simp; exact h65, by config_simp; exact h68, by config_simp; exact h70,
       by config_simp; exact hr70, by config_simp; exact hr72⟩
-    hT (by config_simp) (by config_simp; exact htop) (by rw [hs₁]; exact hlt)
+    hT (by config_simp) (by config_simp; exact htop) (by rwx [hs₁])
     (by config_simp)) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨hC₂, hT₂, hF₂, h64₂, htop₂, hlt₂, hout₂, hst₂⟩
   rw [hs₁] at hk₂ hout₂ hst₂
@@ -133,11 +138,11 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
   unfold subPushStmt
   exec_block
   · -- `addN 71 61 63`: `sbase + top ≤ W`
-    rw [g61]; omega
+    rwo [g61]
   · -- `addN 63 63 65`: `top + 1 ≤ W`
-    config_simp; rw [g65]; omega
+    config_simp; rwo [g65]
   · -- `addN 64 64 65`: `k + 1 ≤ W`
-    config_simp; rw [g65, h64₂]; omega
+    config_simp; rwo [g65, h64₂]
   · have hF₃ : SFrame c₂ { c₂ with
         nreg := upd (upd (upd c₂.nreg 71 (c₂.nreg 61 + c₂.nreg 63)) 63 (c₂.nreg 63 + c₂.nreg 65))
           64 (c₂.nreg 64 + c₂.nreg 65),
@@ -155,7 +160,7 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
         by config_simp; exact gr70, by config_simp; exact gr72⟩
       (fun i hi => by
         config_simp
-        rw [Machine.upd_other _ _ _ (by rw [g61]; omega)]
+        rw [Machine.upd_other _ _ _ (by rwo [g61])]
         exact hT₂ i hi)
       (sFrame_trans hF (sFrame_trans hF₁ (sFrame_trans hF₂ hF₃)))
       hk htop₂ hlt₂ hout hout₂ hst₂ (by config_simp)
@@ -180,7 +185,7 @@ theorem subOuterLoop_exec (hL : SLayout W base sbase l.length) {σ : ℝ} (c : C
       (c.output ++ (walk (subPoly P l) σ (c.nreg 64) (stackS c)).1.map (relabelList l)))
     (subOuterPot P l σ) (fun _ h => h.1) (fun d hd ht => subOuterBody_inv hL d hd ht)
     ⟨hw, hC, hT, sFrame_refl c, htop, hlt, rfl⟩
-  have hkn : (subPoly P l).n ≤ c'.nreg 64 := by rw [n_subPoly, ← hC'.2.2.1]; omega
+  have hkn : (subPoly P l).n ≤ c'.nreg 64 := by rwo [n_subPoly, ← hC'.2.2.1]
   rw [walk_of_le _ σ hkn, List.map_nil, List.append_nil] at hout'
   exact ⟨c', k', ex, hk, hout', hC', hT', hF'⟩
 
@@ -191,7 +196,6 @@ end walkLoop
 section init
 variable {P : Polygon} {W : ℕ} {l : List ℕ}
 
-set_option maxHeartbeats 800000 in
 /-- **Spec lemma for `subInitBlock`.**  With `3 ≤ m`, the layout hypothesis and the index
 table: cost `≤ 21` (exactly `21`); `top = 2`, `k = 2`, the constants `nreg 65 = 1`,
 `nreg 68 = 2`, `nreg 70 = 0`, the inputs `nreg 60, 61, 62` kept, the stack `[1, 0]`, the table
@@ -228,9 +232,9 @@ theorem subInitBlock_exec (h3 : 3 ≤ l.length) (c : Config) (hc : WordsBounded 
   · omega
   · omega
   · omega
-  · config_simp; omega
-  · config_simp; omega
-  · config_simp; omega
+  · cso
+  · cso
+  · cso
   · refine ⟨by omega, by config_simp, by config_simp, by config_simp; exact h62, by config_simp,
       by config_simp, by config_simp, by config_simp, by config_simp, ?_,
       fun i hi => by config_simp; exact hg i hi, ?_, by config_simp; rw [gA],
@@ -261,7 +265,6 @@ theorem subInitBlock_exec (h3 : 3 ≤ l.length) (c : Config) (hc : WordsBounded 
       · config_simp
         rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
 
-set_option linter.unusedSimpArgs false in
 /-- **Spec lemma for `subSignStmt`.**  With `rreg 72 = 0`: cost `≤ 10`;
 `rreg 70 = if 0 < det (rreg 61, rreg 62) (rreg 63, rreg 64) (rreg 65, rreg 66) then 1 else -1`;
 real registers outside `61 … 72` and `rreg 72`, the natural registers, both memories and the
@@ -279,7 +282,7 @@ theorem subSignStmt_exec (c : Config) (hc : WordsBounded W c) (h72 : c.rreg 72 =
   rintro c₁ k₁ hk₁ hw₁ ⟨hdet, hfr, hn, hnm, hrm, hout⟩
   have e72 : c₁.rreg 72 = c.rreg 72 := hfr 72 (by decide) (by decide) (by decide)
   by_cases hpos : 0 < det (c.rreg 61, c.rreg 62) (c.rreg 63, c.rreg 64) (c.rreg 65, c.rreg 66)
-  · refine spec_ifLtR_true (by rw [e72, h72, hdet]; exact hpos)
+  · refine spec_ifLtR_true (by rwx [e72, h72, hdet])
       (spec_instr (Exec.constR hw₁ 70 1) fun hw₂ => ?_)
     refine ⟨by omega, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
       by config_simp; exact hnm, by config_simp; exact hrm, by config_simp; exact hout⟩
@@ -289,7 +292,7 @@ theorem subSignStmt_exec (c : Config) (hc : WordsBounded W c) (h72 : c.rreg 72 =
     · config_simp
       rw [Machine.upd_other _ _ _ (by omega)]
       exact hfr r (by omega) (by omega) (by omega)
-  · refine spec_ifLtR_false (by rw [e72, h72, hdet]; exact hpos)
+  · refine spec_ifLtR_false (by rwx [e72, h72, hdet])
       (spec_instr (Exec.constR hw₁ 70 (-1)) fun hw₂ => ?_)
     refine ⟨by omega, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
       by config_simp; exact hnm, by config_simp; exact hrm, by config_simp; exact hout⟩
@@ -341,13 +344,13 @@ theorem mountainSubStmt_exec_sign (h3 : 3 ≤ l.length) (c : Config) (hc : Words
   have hF₂ : SFrame c₁ c₂ := sFrame_of_regs (fun r _ => by rw [hn]) erf hnm hrm
   refine spec_use (subOuterLoop_exec (P := P) hL c₂ hw₂ hC
     (fun i hi => by rw [hnm]; exact hT₁ i hi) (by rw [hn, n63, n64])
-    (by rw [hs₂]; intro x hx; simp at hx; omega)) ?_
+    (by rw [hs₂]; intro x hx; sio at hx)) ?_
   rintro c₃ k₃ hk₃ hw₃ ⟨hout₃, -, -, hF₃⟩
   unfold subOuterPot at hk₃
   rw [h64, hs₂] at hk₃
   refine ⟨?_, ?_, sFrame_trans hF₁ (sFrame_trans hF₂ hF₃)⟩
-  · unfold mountainTriangulation; omega
-  · rw [hout₃, h64, hs₂, hout₂, hout₁]; rfl
+  · ufo mountainTriangulation
+  · rwr [hout₃, h64, hs₂, hout₂, hout₁]
 
 /-- **Spec lemma for `mountainSubStmt`** on a monotone mountain `Q = subPoly P l` whose index
 table `nmem (base + i) = l[i]` (`i < m = l.length`) sits at `base = nreg 60`, with `m` in
@@ -380,7 +383,7 @@ theorem mountainSub_exec (hM : IsMountain (subPoly P l)) (c : Config) (hc : Word
   rw [n_subPoly] at hlen
   obtain ⟨hn, hr, hnm, hrm⟩ := hF
   refine ⟨c', k, mountainSign (subPoly P l), ex, hσ, hpos, by omega, hout, hn, hr,
-    fun a ha => hnm a (by rw [hm]; exact ha), hrm⟩
+    fun a ha => hnm a (by rwx [hm]), hrm⟩
 
 end main
 
@@ -396,7 +399,7 @@ theorem weakTriangulates_mountainTriangulation_of_sign {Q : Polygon} (hM : IsMou
     have h := mountain_orient_det Q hM
     rcases sign_eq_or_eq_neg hσ (orient_eq Q) with h' | h'
     · exact h'
-    · rw [h', neg_mul] at hpos; linarith
+    · rwli [h', neg_mul] at hpos
   exact mountain_weakTriangulates Q hM hor
 
 /-- **Spec lemma for `mountainSubStmt`, composable form**: under the hypotheses of

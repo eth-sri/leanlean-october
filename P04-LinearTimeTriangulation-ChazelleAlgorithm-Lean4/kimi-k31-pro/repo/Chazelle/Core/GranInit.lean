@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.GranInitB
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-F, init part 15: the initial machine state
@@ -30,7 +33,6 @@ noncomputable def st0 (E : Env) (d : Dm) (m : ℕ → ℕ) : St :=
   initSt E (rdArr m (d.b0 + d.oNd0)) (rdArr m (d.b0 + d.oNd1)) (rdArr m (d.b0 + d.oEg))
     (rdArr m (d.b0 + d.oPz))
 
-set_option maxHeartbeats 4000000 in
 theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     {MD NFH D γ : ℕ} {M : Model} {N : NF} {reg : ℕ → Set Point}
     (h0 : c.nreg 90000 = MD) (h1 : c.nreg 90001 = NFH) (h2 : c.nreg 90002 = D)
@@ -65,7 +67,7 @@ theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     obtain ⟨i, hi, -⟩ := mem_F_iff.1 hx
     omega
   have hM : WalkAx M := walkAx_of_goodModel hGM
-  have hR1 : 1 ≤ N.nRegions := by rw [nRegions_eq hNF hM]; omega
+  have hR1 : 1 ≤ N.nRegions := by rwo [nRegions_eq hNF hM]
   obtain ⟨c₅, k₅, e₅, hk₅, I₅, G₅⟩ := initA_exec (P := P) hw h0 h1 h2 h3 hWh hwf hMD hNW hNF hRC
     hRO hdeg (by omega) hK1 hR1
   obtain ⟨c₈, k₈, e₈, hk₈, I₈, G₈⟩ := initB_exec (P := P) I₅ hG hWh hwf hMD hGM hNW hNF hne
@@ -80,14 +82,14 @@ theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       fun i hi => (I₈.live i hi).2.2, fun i _ => rfl, fun i _ => rfl,
       fun x hx => (I₈.cls x hx).1, fun x hx => (I₈.cls x hx).2.1,
       fun x hx => (I₈.cls x hx).2.2.1, fun x t hx ht => (I₈.cls x hx).2.2.2 t ht,
-      fun j hj => I₈.cnt j hj, fun j hj => (I₈.ring j hj).1, fun j hj => (I₈.ring j hj).2.1,
-      fun j _ => rfl, fun j _ => rfl, fun t ht => I₈.stk t ht⟩
+      I₈.cnt, fun j hj => (I₈.ring j hj).1, fun j hj => (I₈.ring j hj).2.1,
+      fun j _ => rfl, fun j _ => rfl, I₈.stk⟩
   have hstat : StatOK E st :=
-    ⟨fun i hi => I₈.nd0 i hi, fun i hi => I₈.nd1 i hi, fun j hj => (I₈.ring j hj).2.2.1,
+    ⟨I₈.nd0, I₈.nd1, fun j hj => (I₈.ring j hj).2.2.1,
       fun j hj => ⟨(I₈.ring j hj).2.2.2.1, (I₈.ring j hj).2.2.2.2⟩⟩
   have hI : Inv E st := Inv.init hE hstat hdeg hsemi
   have hsz : E.sz ≤ W := by rw [envOf_sz hMD]; exact szOf_le hwf hMD hWh
-  have hW3 : 3 ≤ W := by unfold hostWords at hWh; omega
+  have hW3 : 3 ≤ W := by ufo hostWords at hWh
   have hEnd : d.oEnd = (dmOf N.nChords N.arcs.length N.nRegions D 0).oEnd := rfl
   have hDim : DimOK E d W := ⟨rfl, rfl, rfl, rfl, by show c.nreg ALLOC + d.oEnd ≤ W; omega, hsz,
     hW3⟩

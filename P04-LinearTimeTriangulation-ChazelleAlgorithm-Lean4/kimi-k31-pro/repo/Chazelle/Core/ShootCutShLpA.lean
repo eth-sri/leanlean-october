@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.ShootCutShRec
 public import Chazelle.Core.ShootCutShK0
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-G, part 57: the loop over the piece records
@@ -17,10 +19,6 @@ hit so far is kept in `140210 …` (`CandAt`).
   step bound.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -71,7 +69,7 @@ theorem wr_lpLoad : wr Blpl lpLoad = true := by decide
 
 variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 
-theorem noHit_empty : NoHit (∅ : Set Point) z σ := fun _ _ hm => hm
+theorem noHit_empty : NoHit (∅ : Set Point) z σ := fun _ _ => id
 
 theorem lpInit_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {D A₀ m : ℕ}
     (h403 : c.nreg 140403 = D) (hm : c.nmem (D + 2) = m) (h101 : c.nreg 140101 = A₀)
@@ -84,9 +82,9 @@ theorem lpInit_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {D
     unfold lpInit
     simp only [K1]
     exec_block
-    all_goals first | omega | (config_simp; rw [h403, h1']; omega) |
-      (config_simp; rw [h403, h1', show D + 1 + 1 = D + 2 by omega, hm]; omega) |
-      (config_simp; rw [h101, h1']; omega) | skip
+    all_goals first | omega | (config_simp; rwo [h403, h1']) |
+      (config_simp; rwo [h403, h1', show D + 1 + 1 = D + 2 by omega, hm]) |
+      (config_simp; rwo [h101, h1']) | skip
   exact ⟨c', k, ex, hk, v34, v10, v210, exec_frameB ex wr_lpInit⟩
 
 theorem lpLoadA_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ}
@@ -99,7 +97,7 @@ theorem lpLoadA_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
   unfold lpLoadA
   simp only [K1]
   exec_block
-  all_goals first | (config_simp; rw [h10, h1']; omega) | skip
+  all_goals first | (config_simp; rwo [h10, h1']) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h10, h1']
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
@@ -113,7 +111,7 @@ theorem lpLoadB_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
   unfold lpLoadB
   simp only [K1]
   exec_block
-  all_goals first | (config_simp; rw [h10, h1']; omega) | skip
+  all_goals first | (config_simp; rwo [h10, h1']) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h10, h1']
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
@@ -128,7 +126,7 @@ theorem lpLoad_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p
       c'.nreg 140258 = c.nmem (p + 8) ∧ FrameB Blpl c c' := by
   obtain ⟨c₁, k₁, e₁, hk₁, q10, q0, q1, q2, q3, q4⟩ := lpLoadA_exec (P := P) c hw h1 h10 hp
   have f₁ := exec_frameB (B := Blpl) e₁ (by decide)
-  have g1 : c₁.nreg K1 = 1 := by rw [f₁.1 _ (by decide)]; exact h1
+  have g1 : c₁.nreg K1 = 1 := by rwx [f₁.1 _ (by decide)]
   obtain ⟨c₂, k₂, e₂, hk₂, u10, u5, u6, u7, u8⟩ := lpLoadB_exec (P := P) c₁ e₁.wb_right g1 q10
     (by omega)
   have f₂ := exec_frameB (B := fun r => decide (140255 ≤ r ∧ r < 140259) || r == 140110) e₂

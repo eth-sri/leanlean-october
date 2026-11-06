@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SpecPhases
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-G, part 11: reading the grade table
@@ -85,22 +87,22 @@ theorem grade_entry (hR : Robust A m fun m' => GradeRaw O P m' h A) {g i : ℕ} 
     rintro Z hZA hZn D hD ⟨H, C, hC, hm⟩
     have e2 := hC.2.2.2.1
     rw [pad_ge (by omega)] at e2
-    have : gradeLen P.n g i ≤ P.n := by unfold gradeLen; omega
+    have : gradeLen P.n g i ≤ P.n := by ufo gradeLen
     omega
   have h2 : h + 2 < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
+      (by rwx [pad_lt hh]) hi
     refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
-    simp only [pad_ge (show A ≤ h + 2 by omega)]
+    simp [pad_ge (show A ≤ h + 2 by omega)]
     rw [pad_ge (show A ≤ Z + g by omega), pad_ge (show A ≤ Z + 3 * i by omega)]
     omega
   have hr : m (h + 2) + g < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
+      (by rwx [pad_lt hh]) hi
     refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
     rw [pad_lt h2, pad_ge (show A ≤ m (h + 2) + g by omega), pad_ge (show A ≤ Z + 3 * i by omega)]
     omega
@@ -108,7 +110,7 @@ theorem grade_entry (hR : Robust A m fun m' => GradeRaw O P m' h A) {g i : ℕ} 
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
+      (by rwx [pad_lt hh]) hi
     refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
     unfold entryAddr at hA
     rw [pad_lt h2, pad_lt hr, pad_ge (show A ≤ m (m (h + 2) + g) + 3 * i by omega)]
@@ -120,7 +122,7 @@ theorem grade_entry (hR : Robust A m fun m' => GradeRaw O P m' h A) {g i : ℕ} 
     by_contra hA
     set Z := A + m (entryAddr m h g i) + 1
     obtain ⟨H, C, N, -, -, -, -, -, -, -, -, -, -, e1, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
+      (by rwx [pad_lt hh]) hi
     have eE : m (m (h + 2) + g) + 3 * i = entryAddr m h g i := rfl
     rw [pad_lt h2, pad_lt hr, eE, pad_ge (show A ≤ entryAddr m h g i + 2 by omega),
       pad_ge (show A ≤ Z by omega), pad_lt hE] at e1

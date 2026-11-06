@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SweepEvFace
 public import Chazelle.Core.ShootCutBox
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), stage 2: the regions faced at a position of the walk of `C₂` (task F, math)
@@ -84,7 +85,7 @@ theorem frc_box_noncut (hP : C.P.Simple) (hN : IsNF (chainModel C) (Qof P) N) {e
   have hpar : (chainModel C).param (Qof P) (N.arc i).s = 0 := by
     have hk : (chainModel C).key (Qof P) (N.arc i).s =
         (N.arc i).s.edge + (chainModel C).param (Qof P) (N.arc i).s := rfl
-    rw [his, hedge] at hk; linarith
+    rwli [his, hedge] at hk
   have hv : (chainModel C).pos (Qof P) (N.arc i).s = (chainModel C).W.vtx e := by
     show sidePt (chainModel C).W (N.arc i).s.edge ((chainModel C).param (Qof P) (N.arc i).s) = _
     rw [hpar, hedge, Chazelle.Chain.sidePt_zero]

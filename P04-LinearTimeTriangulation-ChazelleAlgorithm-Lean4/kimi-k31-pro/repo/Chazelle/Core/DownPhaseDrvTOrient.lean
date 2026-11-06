@@ -3,6 +3,10 @@ module
 public import Chazelle.Final.RamOrient
 public import Chazelle.Core.DownPhaseDrvTList
 public import Chazelle.Core.NFBuildMain
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase transition (D2), RAM part 1: the `LeftInside` bit
@@ -75,7 +79,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 theorem saveN_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W saveN c c' k ∧ k = 7 ∧
       (∀ i, 230 ≤ i → i ≤ 236 → c'.nreg (190000 + i) = c.nreg i) ∧
@@ -89,7 +92,6 @@ theorem saveN_exec (c : Config) (hw : WordsBounded W c) :
     interval_cases i <;> config_simp
   exact ⟨c', k, e, hk, h1, exec_frameM e wrM_saveN, h2, hm⟩
 
-set_option maxHeartbeats 2000000 in
 theorem saveR_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W saveR c c' k ∧ k = 15 ∧
       (∀ i, (i = 100 ∨ (230 ≤ i ∧ i ≤ 243)) → c'.rreg (190000 + i) = c.rreg i) ∧
@@ -105,7 +107,6 @@ theorem saveR_exec (c : Config) (hw : WordsBounded W c) :
     · interval_cases i <;> config_simp
   exact ⟨c', k, e, hk, h1, exec_frameM e wrM_saveR, h2, hm⟩
 
-set_option maxHeartbeats 2000000 in
 theorem restN_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W restN c c' k ∧ k = 7 ∧
       (∀ i, 230 ≤ i → i ≤ 236 → c'.nreg i = c.nreg (190000 + i)) ∧
@@ -119,7 +120,6 @@ theorem restN_exec (c : Config) (hw : WordsBounded W c) :
     interval_cases i <;> config_simp
   exact ⟨c', k, e, hk, h1, exec_frameM e wrM_restN, h2, hm⟩
 
-set_option maxHeartbeats 2000000 in
 theorem restR_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W restR c c' k ∧ k = 15 ∧
       (∀ i, (i = 100 ∨ (230 ≤ i ∧ i ≤ 243)) → c'.rreg i = c.rreg (190000 + i)) ∧
@@ -149,11 +149,11 @@ theorem bitO_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
     by_cases h : (0 : ℝ) < c.rreg 100
     · refine spec_ifLtR_true (by config_simp; simpa using h) ?_
       refine spec_instr (Exec.constN ‹WordsBounded _ _› _ _ hW) fun _ => ?_
-      refine ⟨by omega, by config_simp; omega, by config_simp; simp [h], by config_simp,
+      refine ⟨by omega, by cso, by config_simp; simp [h], by config_simp,
         rfl⟩
     · refine spec_ifLtR_false (by config_simp; simpa using h) ?_
       refine spec_skip ‹WordsBounded _ _› ?_
-      refine ⟨by omega, by config_simp; omega, by config_simp; simp [h],
+      refine ⟨by omega, by cso, by config_simp; simp [h],
         by config_simp, rfl⟩
   exact ⟨c', k, e, hk, h1, h2, h3, exec_frameM e wrM_bitO, hm⟩
 
@@ -162,7 +162,7 @@ theorem orientT_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
     ∃ c' k, Exec P W orientT c c' k ∧ k ≤ 14 * P.n + 120 ∧
       c'.nreg 190001 ≤ 1 ∧ (c'.nreg 190001 = 1 ↔ Mountain.LeftInside (Qof P)) ∧
       FrameM B19 c c' ∧ c'.nmem = c.nmem := by
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
+  have hQ  := (shearInvariance (epsOf P) P).1 hG.1
   obtain ⟨c₀, k₀, e₀, hk₀, s1, F₀, rr₀, m₀⟩ := saveN_exec (P := P) c hw
   obtain ⟨c₁, k₁, e₁, hk₁, s2, F₁, nr₁, m₁⟩ := saveR_exec (P := P) c₀ e₀.wb_right
   obtain ⟨c₂, k₂, e₂, hk₂, ho, f2n, f2r, m₂, rm₂, o₂⟩ :=
@@ -173,27 +173,27 @@ theorem orientT_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
   refine ⟨c₅, k₀ + (k₁ + (k₂ + (k₃ + (k₄ + k₅)))),
     .seq e₀ (.seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))), by omega, ?_, ?_,
     ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_⟩, by rw [m₅, m₄, m₃, m₂, m₁, m₀]⟩
-  · rw [nr₅, F₄.1 _ (by decide)]; exact b1
+  · rwx [nr₅, F₄.1 _ (by decide)]
   · rw [nr₅, F₄.1 _ (by decide), b2, ho]
     unfold Mountain.orient
     split_ifs with h <;> simp [h]
   · -- natural registers outside band `19`
     unfold B19 at hr
-    simp only [decide_eq_false_iff_not, not_and, not_lt] at hr
+    simp [decide_eq_false_iff_not, not_and, not_lt] at hr
     rw [nr₅]
     by_cases hres : 230 ≤ r ∧ r ≤ 236
-    · rw [r1 r hres.1 hres.2, F₃.1 (190000 + r) (by unfold Bbit; simp; omega),
+    · rw [r1 r hres.1 hres.2, F₃.1 (190000 + r) (by ufs Bbit; omega),
         f2n (190000 + r) (by omega), nr₁, s1 r hres.1 hres.2]
-    · rw [F₄.1 r (by unfold BrN; simp; omega), F₃.1 r (by unfold Bbit; simp; omega),
-        f2n r (by omega), nr₁, F₀.1 r (by unfold B19; simp; omega)]
+    · rw [F₄.1 r (by ufs BrN; omega), F₃.1 r (by ufs Bbit; omega),
+        f2n r (by omega), nr₁, F₀.1 r (by ufs B19; omega)]
   · -- real registers outside band `19`
     unfold B19 at hr
-    simp only [decide_eq_false_iff_not, not_and, not_lt] at hr
+    simp [decide_eq_false_iff_not, not_and, not_lt] at hr
     by_cases hres : r = 100 ∨ (230 ≤ r ∧ r ≤ 243)
-    · rw [r2 r hres, rr₄, F₃.2.1 (190000 + r) (by unfold Bbit; simp; omega),
+    · rw [r2 r hres, rr₄, F₃.2.1 (190000 + r) (by ufs Bbit; omega),
         f2r (190000 + r) (by omega) (by omega), s2 r hres, rr₀]
-    · rw [F₅.2.1 r (by unfold BrR; simp; omega), rr₄, F₃.2.1 r (by unfold Bbit; simp; omega),
-        f2r r (by omega) (by omega), F₁.2.1 r (by unfold B19; simp; omega), rr₀]
+    · rw [F₅.2.1 r (by ufs BrR; omega), rr₄, F₃.2.1 r (by ufs Bbit; omega),
+        f2r r (by omega) (by omega), F₁.2.1 r (by ufs B19; omega), rr₀]
   · rw [F₅.2.2.1, F₄.2.2.1, F₃.2.2.1, rm₂, F₁.2.2.1, F₀.2.2.1]
   · rw [F₅.2.2.2, F₄.2.2.2, F₃.2.2.2, o₂, F₁.2.2.2, F₀.2.2.2]
 

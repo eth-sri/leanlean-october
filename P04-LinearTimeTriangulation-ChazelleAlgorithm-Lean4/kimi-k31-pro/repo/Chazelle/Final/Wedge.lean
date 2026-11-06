@@ -3,6 +3,8 @@ module
 public import Chazelle.Mountain.Orientation
 public import Chazelle.Existence.Convex
 public import Chazelle.Split.Once
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The wedge test at a vertex of a simple polygon
@@ -121,9 +123,9 @@ theorem wedgeSign_cases {s D L₁ L₂ : ℝ} (hs : s = 1 ∨ s = -1) (h₁ : ¬
 theorem wedgeTest_lerp (s : ℝ) (p a q b : Point) {ε : ℝ} (hε : 0 < ε) :
     wedgeTest s p a q (lerp a b ε) ↔ wedgeTest s p a q b := by
   have h1 : det p a (lerp a b ε) = ε * det p a b := by
-    rw [det_lerp, det_self_right]; ring
+    rwring [det_lerp, det_self_right]
   have h2 : det a q (lerp a b ε) = ε * det a q b := by
-    rw [det_lerp, det_self_outer]; ring
+    rwring [det_lerp, det_self_outer]
   have k : ∀ u : ℝ, 0 < s * (ε * u) ↔ 0 < s * u := by
     intro u
     rw [show s * (ε * u) = ε * (s * u) by ring]
@@ -134,12 +136,12 @@ theorem wedgeTest_lerp (s : ℝ) (p a q b : Point) {ε : ℝ} (hε : 0 < ε) :
 /-- A point on the segment `p a` or `a q` fails the wedge test (on either side). -/
 theorem not_wedgeTest_of_mem_edges {s : ℝ} {p a q x : Point}
     (hx : x ∈ Chazelle.segment p a ∨ x ∈ Chazelle.segment a q) : ¬ wedgeTest s p a q x := by
-  have hc : det a q p = det p a q := det_cyclic p a q
+  have hc  := det_cyclic p a q
   rcases hx with hx | hx
   · obtain ⟨t, ht0, ht1, rfl⟩ := mem_segment_iff_lerp.1 hx
-    have e1 : det p a (lerp p a t) = 0 := by rw [det_lerp]; simp
+    have e1 : det p a (lerp p a t) = 0 := by rws [det_lerp]
     have e2 : det a q (lerp p a t) = (1 - t) * det p a q := by
-      rw [det_lerp, det_self_outer, hc]; ring
+      rwring [det_lerp, det_self_outer, hc]
     unfold wedgeTest
     rw [e1, e2, mul_zero]
     split_ifs with h h'
@@ -152,8 +154,8 @@ theorem not_wedgeTest_of_mem_edges {s : ℝ} {p a q x : Point}
       nlinarith
   · obtain ⟨t, ht0, ht1, rfl⟩ := mem_segment_iff_lerp.1 hx
     have e1 : det p a (lerp a q t) = t * det p a q := by
-      rw [det_lerp, det_self_right]; ring
-    have e2 : det a q (lerp a q t) = 0 := by rw [det_lerp]; simp
+      rwring [det_lerp, det_self_right]
+    have e2 : det a q (lerp a q t) = 0 := by rws [det_lerp]
     unfold wedgeTest
     rw [e1, e2, mul_zero]
     split_ifs with h h'
@@ -183,7 +185,7 @@ theorem sector_spec {s : ℝ} (hs : s = 1 ∨ s = -1) :
   set a := Q.vtx k with ha
   set q := Q.vtx ((k + 1) % Q.n) with hq
   have hss : s * s = 1 := by rcases hs with rfl | rfl <;> norm_num
-  have haq : a ≠ q := simple_vtx_succ_ne hQ hk
+  have haq  := simple_vtx_succ_ne hQ hk
   set S : Set Point := ball a r ∩ {x | wedgeTest s p a q x} with hS
   -- the sector avoids the boundary
   have hSb : S ⊆ Q.boundaryᶜ := by
@@ -218,9 +220,9 @@ theorem sector_spec {s : ℝ} (hs : s = 1 ∨ s = -1) :
           ((convex_ball a r).inter (convex_det_pos p a s)).isPreconnected
           ((convex_ball a r).inter (convex_det_pos a q s)).isPreconnected
         · show 0 < s * det p a (a + ε • ((a - p) - (q - a)))
-          rw [e1]; nlinarith
+          rwnl [e1]
         · show 0 < s * det a q (a + ε • ((a - p) - (q - a)))
-          rw [e2]; nlinarith
+          rwnl [e2]
       · have e : S = ball a r ∩ {x | 0 < s * det a q x} := by
           ext x; simp only [hS, mem_inter_iff, Set.mem_ofPred_eq, wedgeTest, hc, hc', ite_false]
         rw [e]
@@ -239,7 +241,6 @@ theorem sector_spec {s : ℝ} (hs : s = 1 ∨ s = -1) :
     filter_upwards [(tendsto_lerp_zero a q).eventually (isOpen_ball.mem_nhds (mem_ball_self hr)),
       Ioo_mem_nhdsGT (zero_lt_one' ℝ)] with t htb ht
     refine ⟨⟨htb, fun hc => ?_⟩, ht⟩
-    show 0 < s * det p a (lerp a q t)
     rw [det_lerp, det_self_right]
     nlinarith [mul_pos ht.1 hc]
   obtain ⟨t, htU, ht01⟩ := ht_ev.exists
@@ -253,13 +254,12 @@ theorem sector_spec {s : ℝ} (hs : s = 1 ∨ s = -1) :
       rw [hy, det_offset, show s * (s * δ * sqLen a q) = (s * s) * (δ * sqLen a q) by ring, hss,
         one_mul]
       exact mul_pos hδ0' (sqLen_pos haq)
-    show wedgeTest s p a q y
     unfold wedgeTest
     split_ifs with hc hc'
     · exact ⟨hδU.2 hc, hdet⟩
     · exact Or.inr hdet
     · exact hdet
-  have hyb : y ∉ Q.boundary := hSb hyS
+  have hyb  := hSb hyS
   have hyf : y ∈ Q.filled ↔ s = orient Q := by
     rcases sign_eq_or_eq_neg hs (orient_eq Q) with e | e
     · refine iff_of_true ?_ e
@@ -271,7 +271,7 @@ theorem sector_spec {s : ℝ} (hs : s = 1 ∨ s = -1) :
         exact orient_ne_zero Q this
   refine ⟨r, hr, fun x hxb hxw => ?_⟩
   have hxS : x ∈ S := ⟨hxb, hxw⟩
-  have hxB : x ∉ Q.boundary := hSb hxS
+  have hxB  := hSb hxS
   refine ⟨hxB, ?_⟩
   rw [mem_filled_iff hQ hxB, parity_eq_of_isPreconnected Q hSc hSb hxS hyS,
     ← mem_filled_iff hQ hyb]
@@ -331,19 +331,19 @@ theorem wedge_of_interior {b : Point} (hba : b ≠ Q.vtx k)
       rw [hb]
       apply point_ext <;> simp only [Chazelle.Geometry.lerp_fst, Chazelle.Geometry.lerp_snd] <;>
         field_simp <;> ring
-    have h1 : 1 / (μ + 1) < 1 := by rw [div_lt_one (by linarith)]; linarith
-    have h2 : μ / (μ + 1) ≤ 1 := by rw [div_le_one (by linarith)]; linarith
+    have h1 : 1 / (μ + 1) < 1 := by rwli [div_lt_one (by linarith)]
+    have h2 : μ / (μ + 1) ≤ 1 := by rwli [div_le_one (by linarith)]
     exact hbd _ ⟨by positivity, h1⟩ (by rw [e]; exact hw _ (by positivity) h2)
   -- the case of a point on the line through `a` and `q`
   have line_case : det a q b = 0 → 0 ≤ det p a b * det p a q → False := by
     intro hL2 hL1
     obtain ⟨μ, hμ⟩ := exists_lerp_of_det_eq_zero haq hL2
-    have eL1 : det p a b = μ * det p a q := by rw [hμ, det_lerp, det_self_right]; ring
+    have eL1 : det p a b = μ * det p a q := by rwring [hμ, det_lerp, det_self_right]
     rw [eL1] at hL1
     rcases lt_trichotomy μ 0 with h | h | h
     · have hDD : det p a q * det p a q ≤ 0 := by nlinarith
       have hD : det p a q = 0 := mul_self_eq_zero.1 (le_antisymm hDD (mul_self_nonneg _))
-      have hD' : det a q p = 0 := by rw [det_cyclic]; exact hD
+      have hD' : det a q p = 0 := by rwx [det_cyclic]
       obtain ⟨ν, hν⟩ := exists_lerp_of_det_eq_zero haq hD'
       rcases lt_trichotomy ν 0 with hν0 | hν0 | hν0
       · have hν' : ν ≠ 0 := hν0.ne
@@ -391,7 +391,7 @@ theorem wedge_of_interior {b : Point} (hba : b ≠ Q.vtx k)
     · exact line_case hL2 hL1
     · obtain ⟨μ, hμ⟩ := exists_lerp_of_det_eq_zero hpa hL1
       have eL2 : det a q b = (1 - μ) * det p a q := by
-        rw [hμ, det_lerp, det_self_outer, det_cyclic]; ring
+        rwring [hμ, det_lerp, det_self_outer, det_cyclic]
       rw [eL2] at hL2
       rcases lt_trichotomy μ 1 with h | h | h
       · refine ray p seg_ap (1 - μ) (by linarith) ?_
@@ -442,7 +442,7 @@ theorem wedge_of_isDiag {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × �
     {i : ℕ} (hi : i < l.length) (hx : l.getD i 0 = d.1) :
     wedgeTest (orient (subPoly P l)) ((subPoly P l).vtx (prevIdx (subPoly P l) i))
       ((subPoly P l).vtx i) ((subPoly P l).vtx ((i + 1) % (subPoly P l).n)) (P.vtx d.2) := by
-  have hi' : i < (subPoly P l).n := by rw [n_subPoly]; exact hi
+  have hi' : i < (subPoly P l).n := by rwx [n_subPoly]
   have ha : (subPoly P l).vtx i = P.vtx d.1 := by rw [vtx_subPoly_getD P l hi, hx]
   refine wedge_of_interior hQ hi' (by rw [ha]; exact (hd.vtx_ne P hQ).symm) ?_
   intro ε hε
@@ -459,11 +459,11 @@ theorem orient_arcList {l : List ℕ} (hQ : (subPoly P l).Simple) {s L : ℕ} (h
   have hlen := length_arcList (s := s) hL
   have hn1 : ((0 + 1) % (subPoly P (arcList l s L)).n) = 1 := by
     rw [n_subPoly, hlen]; exact Nat.mod_eq_of_lt (by omega)
-  refine (orient_eq_of_filled_subset hA hQ (i := 0) (j := s) (by rw [n_subPoly, hlen]; omega)
-    (by rw [n_subPoly]; exact hs) ?_ ?_ hsub).symm
-  · rw [vtx_subPoly_getD P _ (by rw [hlen]; omega), vtx_subPoly_getD P _ hs,
+  refine (orient_eq_of_filled_subset hA hQ (i := 0) (j := s) (by rwo [n_subPoly, hlen])
+    (by rwx [n_subPoly]) ?_ ?_ hsub).symm
+  · rw [vtx_subPoly_getD P _ (by rwo [hlen]), vtx_subPoly_getD P _ hs,
       getD_arcList hL (Nat.zero_le _), Nat.add_zero, Nat.mod_eq_of_lt hs]
-  · rw [hn1, vtx_subPoly_getD P _ (by rw [hlen]; omega), n_subPoly,
+  · rw [hn1, vtx_subPoly_getD P _ (by rwo [hlen]), n_subPoly,
       vtx_subPoly_getD P _ (Nat.mod_lt _ (by omega)), getD_arcList hL hL1]
 
 /-- **The first piece of a split inherits the orientation.** -/

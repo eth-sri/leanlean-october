@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseHostSimple
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (X, part 5): the sorted host keys of a region
@@ -83,8 +84,8 @@ theorem hk_succ_ne (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U) :
   intro h
   have := hk_inj hM hF hfin hi (Nat.mod_lt _ (by omega)) h
   by_cases h1 : i + 1 < nk M F U
-  · rw [Nat.mod_eq_of_lt h1] at this; omega
-  · rw [show i + 1 = nk M F U by omega, Nat.mod_self] at this; omega
+  · rwo [Nat.mod_eq_of_lt h1] at this
+  · rwo [show i + 1 = nk M F U by omega, Nat.mod_self] at this
 
 end
 

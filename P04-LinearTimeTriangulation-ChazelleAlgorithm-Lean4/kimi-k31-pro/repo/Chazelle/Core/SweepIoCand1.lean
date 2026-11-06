@@ -4,6 +4,8 @@ public import Chazelle.Core.SweepIoCand1R
 public import Chazelle.Core.SweepIoCand1Tab
 public import Chazelle.Core.SweepIoCand1Shr
 public import Chazelle.Core.SweepEvGen
+public import Chazelle.UnfoldTactics
+set_option maxRecDepth 200000
 
 /-!
 # The sweep RAM (WP-D), answers: the candidate step of side `1`
@@ -35,7 +37,6 @@ theorem lhsK_le (T Fg D : ℕ) : lhsK T Fg D ≤ SweepEv.κGen D * (Fg + T + 1) 
 
 end Cand1
 
-set_option maxRecDepth 200000 in
 open Classical in
 /-- **The candidate step of side `1`**, from the contracts of its parts. -/
 theorem cand1Spec_of (hB : BruteSpec) (hT : TabStepSpec) (hS : ShrStepSpec) : Cand1Spec := by
@@ -68,9 +69,9 @@ theorem cand1Spec_of (hB : BruteSpec) (hT : TabStepSpec) (hS : ShrStepSpec) : Ca
         11076) ≤
       (2 * SweepEv.κGen (c₀.nreg (sw 6)) + κB + κT + κS + 30000) *
         (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) + KB := by
-    unfold Cand1.kD; omega
+    ufo Cand1.kD
   exact (Cand1.cand1P_irs hTb hSb hBr hsh hBs hXl hA hI hq hend hKB' hacc0
-    (by omega)).mono hcost (fun _ h => h)
+    (by omega)).mono hcost (fun _ => id)
 
 /-- **The candidate step of side `1`** (piece F). -/
 theorem cand1Spec (hB : BruteSpec) : Cand1Spec := cand1Spec_of hB tabStep shrStep

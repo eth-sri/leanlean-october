@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.GranNF
+public import Chazelle.MiscTactics
 
 /-!
 # WP-F, part 5: the ring of live cut positions
@@ -193,7 +194,7 @@ theorem ringOK_unlink {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h :
   constructor
   · by_cases hjp : j = p
     · rw [hjp, Function.update_self]
-      exact ⟨hs.1, ⟨hs.2.1, hs.2.2.1⟩, hne.symm, fun i hi hiL => hgap2 i hi hiL⟩
+      exact ⟨hs.1, ⟨hs.2.1, hs.2.2.1⟩, hne.symm, hgap2⟩
     · rw [Function.update_of_ne hjp]
       obtain ⟨a, b, c, e⟩ := (h j hj hjL).1
       have hnd : nxt j ≠ d := by
@@ -203,7 +204,7 @@ theorem ringOK_unlink {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h :
       exact ⟨a, ⟨b, hnd⟩, c, fun i hi hiL => e i hi hiL.1⟩
   · by_cases hjs : j = s
     · rw [hjs, Function.update_self]
-      exact ⟨hp.1, ⟨hp.2.1, hp.2.2.1⟩, hne, fun i hi hiL => hgap2 i hi hiL⟩
+      exact ⟨hp.1, ⟨hp.2.1, hp.2.2.1⟩, hne, hgap2⟩
     · rw [Function.update_of_ne hjs]
       obtain ⟨a, b, c, e⟩ := (h j hj hjL).2
       have hpd : prv j ≠ d := by
@@ -235,7 +236,7 @@ theorem not_cyc_succ (j i : ℕ) : ¬ cyc j (j + 1) i := by
   rw [ite_eq_left (by linarith)]
   rintro ⟨a, b⟩
   have h1 : j < i := by exact_mod_cast a
-  have h2 : (i : ℝ) < ((j + 1 : ℕ) : ℝ) := by push_cast; linarith
+  have h2 : (i : ℝ) < ((j + 1 : ℕ) : ℝ) := by pcl
   have h3 : i < j + 1 := by exact_mod_cast h2
   omega
 
@@ -261,8 +262,8 @@ theorem ringOK_full {A : ℕ} (hA : 2 ≤ A) :
       (fun i => if 0 < i then i - 1 else A - 1) := by
   intro j hj _
   simp only
-  refine ⟨⟨by split_ifs <;> omega, trivial, by split_ifs <;> omega, fun i hi _ => ?_⟩,
-    ⟨by split_ifs <;> omega, trivial, by split_ifs <;> omega, fun i hi _ => ?_⟩⟩
+  refine ⟨⟨by splao, trivial, by splao, fun i hi _ => ?_⟩,
+    ⟨by splao, trivial, by splao, fun i hi _ => ?_⟩⟩
   · by_cases h : j + 1 < A
     · rw [ite_eq_left h]; exact not_cyc_succ j i
     · rw [ite_eq_right h, show j = A - 1 by omega]; exact not_cyc_wrap (by omega) hi
@@ -282,7 +283,7 @@ theorem pred_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
   set p := prv n
   by_cases hDp : Dd p
   · rw [ite_eq_left hDp]
-    have hpm : p = m := (hD p hDp).resolve_left hp.2.2.1
+    have hpm  := (hD p hDp).resolve_left hp.2.2.1
     have hpp := h.pred hp.1 hp.2.1
     set pp := prv p
     obtain ⟨i, hi, hiL, hiD⟩ := hex
@@ -322,7 +323,7 @@ theorem succ_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
   set s := nxt n
   by_cases hDs : Dd s
   · rw [ite_eq_left hDs]
-    have hsm : s = m := (hD s hDs).resolve_left hs.2.2.1
+    have hsm  := (hD s hDs).resolve_left hs.2.2.1
     have hss := h.succ hs.1 hs.2.1
     set ss := nxt s
     obtain ⟨i, hi, hiL, hiD⟩ := hex

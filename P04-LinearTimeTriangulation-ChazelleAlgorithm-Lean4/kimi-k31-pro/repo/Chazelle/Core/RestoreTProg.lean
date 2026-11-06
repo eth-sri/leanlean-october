@@ -6,6 +6,10 @@ public import Chazelle.Core.RestoreTValid2
 public import Chazelle.Core.RestoreTLeft
 public import Chazelle.Core.RestoreTDir
 public import Chazelle.Core.RestoreTSetup
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, the candidate test on the RAM: the program
@@ -60,7 +64,7 @@ variable {P : Polygon} {W : ℕ} {M : Model} {N : NF} {c₀ c : Config}
 
 /-! ## The chord triple -/
 
-theorem scr_out {r : ℕ} (h1 : 83010 ≤ r) (h2 : r < 83020) : Scr r := by unfold Scr; omega
+theorem scr_out {r : ℕ} (h1 : 83010 ≤ r) (h2 : r < 83020) : Scr r := by ufo Scr
 
 /-- **The chord triple.** -/
 theorem writeT_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
@@ -78,10 +82,10 @@ theorem writeT_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
   have k₁ : ∀ r, r ≠ 83015 → c₁.nreg r = c.nreg r := fun r hr => by rw [h₁, upd_ne hr]
   by_cases hs : c₀.nreg 83008 = 1
   · have g : c₁.nreg 83022 < c₁.nreg 83008 := by
-      rw [k₁ _ (by norm_num), k₁ _ (by norm_num), hI.h22, i08, hs]; omega
+      rwo [k₁ _ (by norm_num), k₁ _ (by norm_num), hI.h22, i08, hs]
     refine (RS.ifT g (RS.seq (K₂ := 1) (RS.copy hI₁ (r := 83016) (a := 83005)
       (scr_out (by norm_num) (by norm_num))) (fun c₂ hI₂ _ h₂ => ?_))).mono (by norm_num)
-      (fun _ h => h)
+      (fun _ => id)
     refine (RS.copy hI₂ (r := 83017) (a := 83012) (scr_out (by norm_num) (by norm_num))).mono
       le_rfl (fun c₃ h₃ => ?_)
     have k₂ : ∀ r, r ≠ 83016 → c₂.nreg r = c₁.nreg r := fun r hr => by rw [h₂, upd_ne hr]
@@ -89,13 +93,13 @@ theorem writeT_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
       fun h => absurd hs h, fun q _ _ hq => ?_⟩
     · rw [h₃, upd_ne (by norm_num), h₂, upd_eq, k₁ _ (by norm_num), i05]
     · rw [h₃, upd_eq, k₂ _ (by norm_num), k₁ _ (by norm_num)]
-    · simp only [List.mem_cons, List.not_mem_nil, or_false, not_or] at hq
+    · simp [List.mem_cons, List.not_mem_nil, or_false, not_or] at hq
       rw [h₃, upd_ne hq.2.2, k₂ _ hq.2.1, k₁ _ hq.1]
   · have g : ¬ c₁.nreg 83022 < c₁.nreg 83008 := by
-      rw [k₁ _ (by norm_num), k₁ _ (by norm_num), hI.h22, i08]; omega
+      rwo [k₁ _ (by norm_num), k₁ _ (by norm_num), hI.h22, i08]
     refine (RS.ifF g (RS.seq (K₂ := 1) (RS.copy hI₁ (r := 83016) (a := 83012)
       (scr_out (by norm_num) (by norm_num))) (fun c₂ hI₂ _ h₂ => ?_))).mono (by norm_num)
-      (fun _ h => h)
+      (fun _ => id)
     refine (RS.copy hI₂ (r := 83017) (a := 83005) (scr_out (by norm_num) (by norm_num))).mono
       le_rfl (fun c₃ h₃ => ?_)
     have k₂ : ∀ r, r ≠ 83016 → c₂.nreg r = c₁.nreg r := fun r hr => by rw [h₂, upd_ne hr]
@@ -103,7 +107,7 @@ theorem writeT_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
       fun _ => ⟨?_, ?_⟩, fun q _ _ hq => ?_⟩
     · rw [h₃, upd_ne (by norm_num), h₂, upd_eq, k₁ _ (by norm_num)]
     · rw [h₃, upd_eq, k₂ _ (by norm_num), k₁ _ (by norm_num), i05]
-    · simp only [List.mem_cons, List.not_mem_nil, or_false, not_or] at hq
+    · simp [List.mem_cons, List.not_mem_nil, or_false, not_or] at hq
       rw [h₃, upd_ne hq.2.2, k₂ _ hq.2.1, k₁ _ hq.1]
 
 
@@ -149,9 +153,9 @@ theorem postHit_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
   refine RS.seq (count_rs gKey_ok hE hf hI₁ rfl rfl (by omega)) (fun c₂ hI₂ hA₂ h₂ => ?_)
   obtain ⟨b14, i14, ag₂⟩ := h₂
   have k₂ : ∀ r, r ∈ [83010, 83011, 83012, 83013] → c₂.nreg r = c₁.nreg r := fun r hr =>
-    ag₂ r (by simp at hr; omega) (by simp at hr; omega) (by simp [countW] at hr ⊢; omega)
+    ag₂ r (by sio at hr) (by sio at hr) (by sio [countW] at hr ⊢)
   have k₁ : ∀ r, r ∈ [83010, 83011] → c₁.nreg r = c.nreg r := fun r hr =>
-    ag₁ r (by simp at hr; omega) (by simp at hr; omega) (by simp at hr ⊢; omega)
+    ag₁ r (by sio at hr) (by sio at hr) (by sio at hr ⊢)
   have r12 : c₂.nreg 83012 = c₁.nreg 83012 := k₂ _ (by simp)
   have r13 : c₂.nreg 83013 = c₁.nreg 83013 := k₂ _ (by simp)
   have r10 : c₂.nreg 83010 = c.nreg 83010 := by rw [k₂ _ (by simp), k₁ _ (by simp)]
@@ -178,18 +182,18 @@ theorem postHit_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     exact ⟨p₁, e₁, q₁, arr₁, int₁, b14, i14, rfl, rfl⟩
   by_cases hs : c₂.nreg 83014 = 1
   · have g : c₂.nreg 83022 < c₂.nreg 83014 := by
-      rw [hI₂.h22, hs]; omega
+      rwo [hI₂.h22, hs]
     refine (RS.ifT g (writeT_rs hE hI₂)).mono (by omega) (fun c₃ h₃ => ?_)
     obtain ⟨w15, w1, w2, ag₃⟩ := h₃
     have k₃ : ∀ r, r ∈ [83010, 83011, 83012, 83013, 83014] → c₃.nreg r = c₂.nreg r :=
-      fun r hr => ag₃ r (by simp at hr; omega) (by simp at hr; omega) (by simp at hr ⊢; omega)
+      fun r hr => ag₃ r (by sio at hr) (by sio at hr) (by sio at hr ⊢)
     obtain ⟨f1, f2, f3, f4, f5, f6, f7, f8, f9⟩ := F c₃ k₃
     have e12 : c₃.nreg 83012 = c₂.nreg 83012 := k₃ _ (by simp)
     refine ⟨f1, f2, f3, f4, f5, f6, f7, fun _ => ⟨w15, fun h => ?_, fun h => ?_⟩, f8, f9⟩
     · rw [e12]; exact w1 h
     · rw [e12]; exact w2 h
   · have g : ¬ c₂.nreg 83022 < c₂.nreg 83014 := by
-      rw [hI₂.h22]; omega
+      rwo [hI₂.h22]
     refine (RS.ifF g (RS.skip (K := 0) (Q := fun c' => c' = c₂) hI₂ rfl)).mono (by omega)
       (fun c₃ h₃ => ?_)
     rw [h₃]
@@ -209,7 +213,7 @@ theorem tInit_rs (_hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
     le_rfl (fun c₂ h₂ => ⟨?_, ?_, fun q _ _ hq => ?_⟩)
   · rw [h₂, upd_ne (by norm_num), h₁, upd_eq]
   · rw [h₂, upd_eq]
-  · simp only [List.mem_cons, List.not_mem_nil, or_false, not_or] at hq
+  · simp [List.mem_cons, List.not_mem_nil, or_false, not_or] at hq
     rw [h₂, upd_ne hq.2, h₁, upd_ne hq.1]
 
 /-! ## The shot stage -/
@@ -220,7 +224,7 @@ theorem holeList_congr {c c' : Config} (h : ∀ r, 84009 ≤ r → r ≤ 84015 �
   rw [show c'.nreg (84000 + 9) = c.nreg (84000 + 9) from h _ (by norm_num) (by norm_num)]
   apply List.map_congr_left
   intro j hj
-  simp only [List.mem_range] at hj
+  simp [List.mem_range] at hj
   unfold ShotList.holeAt
   rw [h (84000 + 10 + 2 * j) (by omega) (by omega), h (84000 + 11 + 2 * j) (by omega) (by omega)]
 
@@ -229,8 +233,8 @@ theorem holeOut_congr {Q : Polygon} {z : Point} {c c' : Config}
     HoleOut M Q c' z := by
   obtain ⟨h9, hb, hcov, hnear⟩ := ho
   have hl := holeList_congr h
-  refine ⟨by rw [h _ (by norm_num) (by norm_num)]; exact h9, fun j hj => ?_, by rw [hl]; exact hcov,
-    by rw [hl]; exact hnear⟩
+  refine ⟨by rwx [h _ (by norm_num) (by norm_num)], fun j hj => ?_, by rwx [hl],
+    by rwx [hl]⟩
   have hj' : j < c.nreg 84009 := by rwa [h _ (by norm_num) (by norm_num)] at hj
   have h3 : j < 3 := by omega
   rw [h (84000 + 10 + 2 * j) (by omega) (by omega), h (84000 + 11 + 2 * j) (by omega) (by omega)]
@@ -246,9 +250,9 @@ theorem hitCp_rs (hI : TInv W c₀ c) :
   obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.copyN e₁.wb_right 83012 84021)
   obtain ⟨c₃, e₃, v₃, o₃⟩ := out_instr (P := P) (Exec.copyN e₂.wb_right 83013 84022)
   have ho : Out c c₃ hitW := ((o₁.trans o₂).trans o₃).mono (fun r hr => by
-    simp only [hitW, List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr ⊢; omega)
+    sio only [hitW, List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr ⊢)
   refine RS.out hI (fun r hr => by
-      simp only [hitW, List.mem_cons, List.not_mem_nil, or_false] at hr; unfold Scr; omega)
+      simp [hitW, List.mem_cons, List.not_mem_nil, or_false] at hr; ufo Scr)
     (.seq e₁ (.seq e₂ e₃)) (by omega) ho ⟨?_, ?_, ?_, ho⟩
   · rw [o₃.1 _ (by simp), o₂.1 _ (by simp), v₁]
   · rw [o₃.1 _ (by simp), v₂, o₁.1 _ (by simp)]
@@ -290,9 +294,9 @@ theorem shotA_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
       (fun c' => ShotRes P M N c₀ c' ∧ c'.nreg 83010 = c.nreg 83010 ∧
         c'.nreg 83014 = c.nreg 83014) := by
   set K := (N.region (c₀.nreg 83002)).arcs.length with hK
-  have h4K : 4 * K ≤ buildK K := by unfold buildK bodyK normK; nlinarith
+  have h4K : 4 * K ≤ buildK K := by ufnl buildK bodyK normK
   unfold shotAK at hroom ⊢
-  refine RSB.seq (RSB.of_RS Finset.subset_union_left (arcBuild_rs hE hne hI (by rw [← hK]; omega)))
+  refine RSB.seq (RSB.of_RS Finset.subset_union_left (arcBuild_rs hE hne hI (by rwo [← hK])))
     (fun c₁ hI₁ hA₁ h₁ => ?_)
   obtain ⟨b81, bA, b31, barr, ag₁⟩ := h₁
   refine RSB.seq (RSB.of_RS Finset.subset_union_left (holeS_rs hE hI₁))
@@ -302,13 +306,13 @@ theorem shotA_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
     (fun c₃ hI₃ hA₃ h₃ => ?_)
   obtain ⟨hcp, h03, o₃⟩ := h₃
   -- the registers of the shot block
-  have cp : ∀ p ∈ shL, c₃.nreg p.1 = c₂.nreg p.2 := hcp
-  have in2 : ∀ q, 80000 ≤ q → q < 83010 → c₂.nreg q = c₀.nreg q := hI₂.hin
-  have k12 : ∀ r, r ∉ holeL → c₂.nreg r = c₁.nreg r := o₂.1
+  have cp  := hcp
+  have in2  := hI₂.hin
+  have k12  := o₂.1
   have hA21 : c₂.nreg ALLOC = c₁.nreg ALLOC := k12 _ (by simp [holeL, chainHL, ALLOC])
   have hA32 : c₃.nreg ALLOC = c₂.nreg ALLOC := o₃.1 _ (by simp [shW, ALLOC])
-  have hm21 : c₂.nmem = c₁.nmem := o₂.2.2.1
-  have hm32 : c₃.nmem = c₂.nmem := o₃.2.2.1
+  have hm21  := o₂.2.2.1
+  have hm32  := o₃.2.2.1
   have h00 : c₃.nreg 84000 = c₀.nreg 83000 := by
     rw [cp (84000, 83000) (by simp [shL]), in2 _ (by norm_num) (by norm_num)]
   have h01 : c₃.nreg 84001 = c.nreg ALLOC := by
@@ -329,35 +333,35 @@ theorem shotA_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
   have harr : ∀ j, j < K → ShotList.arcAt c₃.nmem (c.nreg ALLOC) j =
       nArc M (Qof P) N (c₀.nreg 83002) j := fun j hj => by rw [hm32, hm21]; exact barr j hj
   have hho₃ : HoleOut M (Qof P) c₃ (M.pos (Qof P) ⟨c₀.nreg 83005, c₀.nreg 83006⟩) :=
-    holeOut_congr (fun r h1 h2 => o₃.1 r (by simp [shW]; omega)) hho
+    holeOut_congr (fun r h1 h2 => o₃.1 r (by sio [shW])) hho
   have hpre := shotPre_of (X := X) (Ok := Ok) hE hI₃ hX hcap hXl hOk hne hsg h00 h01 h02 h03 h04
     h05 h07 h08 hB harr hho₃
   have hroom₃ : c₃.nreg ALLOC + shotCostG (F (c₃.nreg 84007)) shK (c₃.nreg 84002) ≤ W := by
-    rw [h07, h02, hA32, hA21, bA]; omega
+    rwo [h07, h02, hA32, hA21, bA]
   refine RSB.seq ((shot_rsb hE hI₃ hsh hBs hXl hB8 hBo hpre hroom₃).mono
-    (le_of_eq (by rw [h07, h02])) (fun _ h => h)) (fun c₄ hI₄ hA₄ h₄ => ?_)
+    (le_of_eq (by rw [h07, h02])) (fun _ => id)) (fun c₄ hI₄ hA₄ h₄ => ?_)
   obtain ⟨hpost, keep⟩ := h₄
   refine RSB.of_RS Finset.subset_union_left ((hitCp_rs hI₄).mono le_rfl (fun c₅ h₅ => ?_))
   obtain ⟨v11, v12, v13, o₅⟩ := h₅
   -- the wrapper's postcondition at the model and the candidate
-  have hMD : ModelDescAt c₃.nmem (c₃.nreg RS0) (Qof P) M := hpre.2.2.2.2.2.1
+  have hMD  := hpre.2.2.2.2.2.1
   have hOI : OriginIn c₃ (RS0 + 3) (.walk (xOf c₀)) := ⟨h03, h04, h05⟩
   obtain ⟨hfl, A, hlo, hhi, hyes, hno⟩ := hpost M (.walk (xOf c₀)) hMD hOI
   have hdir : dirOf (c₃.nreg (RS0 + 6)) = dirOf (c₀.nreg 83008) := by
     show dirOf (c₃.nreg 84006) = _; rw [h06]
   rw [hdir] at hyes hno
   have hl3 : ShotList.holeList c₃ RS0 = ShotList.holeList c₂ 84000 :=
-    holeList_congr (fun r h1 h2 => o₃.1 r (by simp [shW]; omega))
-  refine ⟨⟨by rw [v11]; exact hfl, c₃.nmem, c.nreg ALLOC, ShotList.holeList c₃ RS0, A, harr, ?_,
+    holeList_congr (fun r h1 h2 => o₃.1 r (by sio [shW]))
+  refine ⟨⟨by rwx [v11], c₃.nmem, c.nreg ALLOC, ShotList.holeList c₃ RS0, A, harr, ?_,
     ?_, ?_, fun h => ?_, fun h => ?_⟩, ?_, ?_⟩
   · rw [hl3]; exact hho.2.2.2
   · have := hlo; rw [show c₃.nreg (RS0 + 1) = c.nreg ALLOC from h01,
       show c₃.nreg (RS0 + 2) = K from h02] at this; exact this
   · have := hhi; rw [show c₃.nreg (RS0 + 1) = c.nreg ALLOC from h01,
       show c₃.nreg (RS0 + 2) = K from h02] at this; exact this
-  · obtain ⟨t, hfh, hpp, hpe, hpos⟩ := hyes (by show c₄.nreg 84020 = 1; rw [← v11]; exact h)
-    exact ⟨t, hfh, by rw [v12, v13]; exact hpp, by rw [v12]; exact hpe, by rw [v12, v13]; exact hpos⟩
-  · exact hno (by show c₄.nreg 84020 ≠ 1; rw [← v11]; exact h)
+  · obtain ⟨t, hfh, hpp, hpe, hpos⟩ := hyes (by show c₄.nreg 84020 = 1; rwx [← v11])
+    exact ⟨t, hfh, by rwx [v12, v13], by rwx [v12], by rwx [v12, v13]⟩
+  · exact hno (by show c₄.nreg 84020 ≠ 1; rwx [← v11])
   · rw [o₅.1 _ (by simp [hitW]), keep _ (by norm_num) (by norm_num), o₃.1 _ (by simp [shW]),
       k12 _ (by simp [holeL, chainHL]), ag₁ _ (by norm_num) (by norm_num) (by simp [buildL])]
   · rw [o₅.1 _ (by simp [hitW]), keep _ (by norm_num) (by norm_num), o₃.1 _ (by simp [shW]),

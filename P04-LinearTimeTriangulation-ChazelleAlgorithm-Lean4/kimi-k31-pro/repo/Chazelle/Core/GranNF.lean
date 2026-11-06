@@ -113,7 +113,7 @@ theorem lpt_ne_rpt (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
     sidePt M.W (N.chord i).lp (M.param Q (N.chord i).lpos) ≠
       sidePt M.W (N.chord i).rp (M.param Q (N.chord i).rpos) := by
   intro he
-  have hc : cs M Q N i ∈ M.Adm := F_adm hN (cs_mem hi)
+  have hc  := F_adm hN (cs_mem hi)
   obtain ⟨a, b, hab, hcab, -, -, -, -⟩ := hM.ends _ hc
   -- the chord is `hseg y x₁ x₂` with `x₁ = x₂`: a single point
   have hset : cs M Q N i = Visibility.hseg (Q.vtx (N.chord i).h).2
@@ -133,7 +133,7 @@ theorem lpt_ne_rpt (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
 theorem attach_keys (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) {p : ℕ} {t : ℝ}
     (hA : SideAttach M.W (cs M Q N i) p t) :
     (p : ℝ) + t = M.key Q (N.chord i).lpos ∨ (p : ℝ) + t = M.key Q (N.chord i).rpos := by
-  have hc : cs M Q N i ∈ M.Adm := F_adm hN (cs_mem hi)
+  have hc  := F_adm hN (cs_mem hi)
   have hL := attach_l hN hi
   have hR := attach_r hN hi
   obtain ⟨hceq, -, hopen, -, -⟩ := hM.attach_seg hc hL hR (lpt_ne_rpt hN hM hi)
@@ -229,7 +229,7 @@ theorem deg_region (hNF : IsNF M Q N) (_hRC : RegionCorr M Q N reg)
   have e : {c | c ∈ N.F M Q ∧ TouchesIn M.D c (reg r)} =
       (fun i => cs M Q N i) '' {i | i ∈ (N.region r).chords} := by
     ext c
-    simp only [mem_ofPred_eq, mem_image]
+    simp [mem_ofPred_eq, mem_image]
     constructor
     · rintro ⟨hc, ht⟩
       obtain ⟨i, hi, rfl⟩ := mem_F_iff.1 hc
@@ -255,7 +255,7 @@ theorem touch_iff_side (hNF : IsNF M Q N) (hM : WalkAx M) (hRC : RegionCorr M Q 
   obtain ⟨U, V, hU, hV, hUV, hside, htouch⟩ := Chazelle.Core.chordSides_of_system hsys (cs_mem hi)
   obtain ⟨hup, hdn, hCSi⟩ := hCS i hi
   -- a point of the open part of the chord
-  have hc : cs M Q N i ∈ M.Adm := F_adm hNF (cs_mem hi)
+  have hc  := F_adm hNF (cs_mem hi)
   obtain ⟨a, b, -, hcab, -, hopen, -, -⟩ := hM.ends _ hc
   set z := Geometry.lerp a b (1 / 2) with hz
   have hzD : z ∈ M.D := hopen _ ⟨by norm_num, by norm_num⟩

@@ -4,6 +4,7 @@ public import Chazelle.Core.Facts2
 public import Chazelle.Core.FactsL23
 public import Chazelle.Merge.Granularity
 public import Chazelle.Core.SpecMerge
+public import Chazelle.Rwx
 
 /-!
 # WP-F, part 1: arcs as gaps between cut keys, and weights
@@ -89,8 +90,8 @@ theorem exists_pos_after_both {p : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) {
     ∃ t' ∈ Ioo (0 : ℝ) 1, A (p + t') ∧ B (p + t') := by
   obtain ⟨ε, h1, h2, h3⟩ := ((WalkAx.exists_pos_after ht ht1).and (hA.and hB)).exists
   refine ⟨t + ε, h1, ?_, ?_⟩
-  · rw [← add_assoc]; exact h2
-  · rw [← add_assoc]; exact h3
+  · rwx [← add_assoc]
+  · rwx [← add_assoc]
 
 /-! ## Weights -/
 
@@ -173,7 +174,7 @@ theorem isArc_empty_iff (hM : WalkAx M) {U : Set Point} (hU : U ∈ M.regions �
       have hD : M.regions ∅ = {M.D} := Chazelle.Chain.regionsIn_empty hM.preconn hM.nonempty
       have e1 : U = M.D := by rw [hD] at hU; exact hU
       have e2 : V = M.D := by rw [hD] at hV; exact hV
-      rw [e1, ← e2]; exact hfV
+      rwx [e1, ← e2]
 
 /-- The weight of the only region of the empty family is `size`. -/
 theorem weight_empty (hM : WalkAx M) {U : Set Point} (hU : U ∈ M.regions ∅) :

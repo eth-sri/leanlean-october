@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutWalk
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-G, part 8: breakpoints of the walk of a host chain
@@ -139,9 +142,9 @@ theorem tJ_inj {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m) (h : tJ C i 
     with h1 | h1 <;>
   rcases (show C.sideS C.sideBeta + i' < 2 * C.m ∨ 2 * C.m ≤ C.sideS C.sideBeta + i' by omega)
     with h2 | h2
-  · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at h; omega
-  · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt (by omega)] at h; omega
-  · rw [Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt h2] at h; omega
+  · rwo [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at h
+  · rwo [Nat.mod_eq_of_lt h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt (by omega)] at h
+  · rwo [Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt h2] at h
   · rw [Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega), Nat.mod_eq_sub_mod h2,
       Nat.mod_eq_of_lt (by omega)] at h; omega
 
@@ -196,10 +199,10 @@ theorem card_fiber_le (u : ℕ) :
   have hlt := tJ_lt C i
   unfold sideE at hki
   split_ifs at hki with h1 h2 h2
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_left h2]; exact hki⟩
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_right h2]; exact hki⟩
-  · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_left h2]; omega
-  · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_right h2]; omega
+  · left; exact ⟨hi.1, by unfold sideE; rwx [ite_eq_left h2]⟩
+  · left; exact ⟨hi.1, by unfold sideE; rwx [ite_eq_right h2]⟩
+  · right; refine ⟨hi.1, ?_⟩; uro sideE [ite_eq_left h2]
+  · right; refine ⟨hi.1, ?_⟩; uro sideE [ite_eq_right h2]
 
 /-- **Few tour positions are breaks**: turns of the tour or break host points. -/
 theorem card_brk_le {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) :

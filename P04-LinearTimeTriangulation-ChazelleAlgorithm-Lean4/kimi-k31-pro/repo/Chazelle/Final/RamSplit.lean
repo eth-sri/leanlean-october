@@ -3,6 +3,10 @@ module
 public import Chazelle.Final.LinkSplit
 public import Chazelle.EarClip.RamDet
 public import Chazelle.Programs.Tactics
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Splitting along the diagonal list on the RAM
@@ -88,9 +92,9 @@ theorem chain_unique {mem : ℕ → ℕ} {SB : ℕ} :
     ∀ {e : ℕ} {l l' : List ℕ}, Chain mem SB e l → Chain mem SB e l' → l = l'
   | _, [], [], _, _ => rfl
   | _, [], _ :: _, h, h' => by
-      simp only [Chain] at h h'; omega
+      sio only [Chain] at h h'
   | _, _ :: _, [], h, h' => by
-      simp only [Chain] at h h'; omega
+      sio only [Chain] at h h'
   | _, z :: l, z' :: l', ⟨h1, h2⟩, ⟨h1', h2'⟩ => by
       have hz : z = z' := by omega
       subst hz
@@ -160,47 +164,47 @@ theorem wedgeLogic_exec (c : Config) (hc : WordsBounded W c) (h1 : 1 ≤ W)
   simp only [one_mul]
   by_cases hD : c.rreg 117 < c.rreg 114
   · rw [h117] at hD
-    refine spec_ifLtR_true (by rw [h117]; exact hD) ?_
+    refine spec_ifLtR_true (by rwx [h117]) ?_
     rw [ite_eq_left hD]
     by_cases hL1 : 0 < c.rreg 115
-    · refine spec_ifLtR_true (by rw [h117]; exact hL1) ?_
+    · refine spec_ifLtR_true (by rwx [h117]) ?_
       by_cases hL2 : 0 < c.rreg 116
-      · refine spec_ifLtR_true (by rw [h117]; exact hL2) ?_
+      · refine spec_ifLtR_true (by rwx [h117]) ?_
         obtain ⟨c', k, ex, hk, hf, hr⟩ := hset 2
         exact ⟨c', k, ex, by omega, fun _ => hf, fun h => absurd ⟨hL1, hL2⟩ h, hr⟩
-      · refine spec_ifLtR_false (by rw [h117]; exact hL2) (spec_skip hc ?_)
+      · refine spec_ifLtR_false (by rwx [h117]) (spec_skip hc ?_)
         exact ⟨by omega, fun h => absurd h.2 hL2, fun _ => h127, fun _ _ => rfl, rfl, rfl, rfl,
           rfl⟩
-    · refine spec_ifLtR_false (by rw [h117]; exact hL1) (spec_skip hc ?_)
+    · refine spec_ifLtR_false (by rwx [h117]) (spec_skip hc ?_)
       exact ⟨by omega, fun h => absurd h.1 hL1, fun _ => h127, fun _ _ => rfl, rfl, rfl, rfl,
         rfl⟩
   · rw [h117] at hD
-    refine spec_ifLtR_false (by rw [h117]; exact hD) ?_
+    refine spec_ifLtR_false (by rwx [h117]) ?_
     rw [ite_eq_right hD]
     by_cases hD' : c.rreg 114 < 0
-    · refine spec_ifLtR_true (by rw [h117]; exact hD') ?_
+    · refine spec_ifLtR_true (by rwx [h117]) ?_
       rw [ite_eq_left hD']
       by_cases hL1 : 0 < c.rreg 115
-      · refine spec_ifLtR_true (by rw [h117]; exact hL1) ?_
+      · refine spec_ifLtR_true (by rwx [h117]) ?_
         obtain ⟨c', k, ex, hk, hf, hr⟩ := hset 2
         exact ⟨c', k, ex, by omega, fun _ => hf, fun h => absurd (Or.inl hL1) h, hr⟩
-      · refine spec_ifLtR_false (by rw [h117]; exact hL1) ?_
+      · refine spec_ifLtR_false (by rwx [h117]) ?_
         by_cases hL2 : 0 < c.rreg 116
-        · refine spec_ifLtR_true (by rw [h117]; exact hL2) ?_
+        · refine spec_ifLtR_true (by rwx [h117]) ?_
           obtain ⟨c', k, ex, hk, hf, hr⟩ := hset 5
           exact ⟨c', k, ex, by omega, fun _ => hf, fun h => absurd (Or.inr hL2) h, hr⟩
-        · refine spec_ifLtR_false (by rw [h117]; exact hL2) (spec_skip hc ?_)
+        · refine spec_ifLtR_false (by rwx [h117]) (spec_skip hc ?_)
           refine ⟨by omega, fun h => ?_, fun _ => h127, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
           rcases h with h | h
           · exact absurd h hL1
           · exact absurd h hL2
-    · refine spec_ifLtR_false (by rw [h117]; exact hD') ?_
+    · refine spec_ifLtR_false (by rwx [h117]) ?_
       rw [ite_eq_right hD']
       by_cases hL2 : 0 < c.rreg 116
-      · refine spec_ifLtR_true (by rw [h117]; exact hL2) ?_
+      · refine spec_ifLtR_true (by rwx [h117]) ?_
         obtain ⟨c', k, ex, hk, hf, hr⟩ := hset 4
         exact ⟨c', k, ex, by omega, fun _ => hf, fun h => absurd hL2 h, hr⟩
-      · refine spec_ifLtR_false (by rw [h117]; exact hL2) (spec_skip hc ?_)
+      · refine spec_ifLtR_false (by rwx [h117]) (spec_skip hc ?_)
         exact ⟨by omega, fun h => absurd h hL2, fun _ => h127, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
 
 /-- The wedge test in terms of the three signed determinants. -/
@@ -417,10 +421,10 @@ theorem findBody_inv {v w : ℕ} {c₀ c : Config} (hI : FindInv P W B NN n σ S
   rw [hH.r112] at ht
   obtain ⟨z, rest', rfl⟩ : ∃ z rest', rest = z :: rest' := by
     cases rest with
-    | nil => simp only [Chain] at hchain; omega
+    | nil => sio only [Chain] at hchain
     | cons z rest' => exact ⟨z, rest', rfl⟩
   obtain ⟨he, hchain'⟩ := hchain
-  have hzmem : z ∈ S.cop v := by rw [hsplit]; simp
+  have hzmem : z ∈ S.cop v := by rws [hsplit]
   have hz : z < S.cnt := hH.closed.cop v z hzmem
   have hpz := hH.closed.prv z hz
   have hnz := hH.closed.nxt z hz
@@ -431,13 +435,13 @@ theorem findBody_inv {v w : ℕ} {c₀ c : Config} (hI : FindInv P W B NN n σ S
   refine spec_seq (spec_instr (Exec.subN hw 124 123 113) fun hw₁ => ?_)
   have hH₁ := hH.congr (c' := { c with nreg := upd c.nreg 124 (c.nreg 123 - c.nreg 113) })
     (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp) ⟨rfl, rfl⟩ rfl
-  have hnode : c.nreg 123 - c.nreg 113 = z := by rw [hH.r113, he]; omega
+  have hnode : c.nreg 123 - c.nreg 113 = z := by rwo [hH.r113, he]
   refine spec_seq (spec_use (wedgeStmt_exec (P := P) _ hw₁ hW1 hH₁.s117 ?_ ?_ ?_ ?_ ?_) ?_)
-  · config_simp; rw [hnode, hH.r107]; omega
-  · config_simp; rw [hnode, hH.r107, hH.r105, hH.mem.prv z hz]; omega
-  · config_simp; rw [hnode, hH.r105]; omega
-  · config_simp; rw [hnode, hH.r106]; omega
-  · config_simp; rw [hnode, hH.r106, hH.r105, hH.mem.nxt z hz]; omega
+  · config_simp; rwo [hnode, hH.r107]
+  · config_simp; rwo [hnode, hH.r107, hH.r105, hH.mem.prv z hz]
+  · config_simp; rwo [hnode, hH.r105]
+  · config_simp; rwo [hnode, hH.r106]
+  · config_simp; rwo [hnode, hH.r106, hH.r105, hH.mem.nxt z hz]
   rintro c₂ k₂ hk₂ hw₂ ⟨hyes, hno, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
   config_simp at hyes
   config_simp at hno
@@ -454,12 +458,12 @@ theorem findBody_inv {v w : ℕ} {c₀ c : Config} (hI : FindInv P W B NN n σ S
       c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
     by_cases hp : nodeWedge P σ S z w
     · have h127 := hyes hp
-      refine spec_ifLtN_true (by rw [h112₂, h127]; omega)
+      refine spec_ifLtN_true (by rwo [h112₂, h127])
         (spec_instr (Exec.copyN hw₂ 126 124) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
       rw [ite_eq_left (wedgeP_eq_true.2 hp)]; config_simp; exact h124₂
     · have h127 := hno hp
-      refine spec_ifLtN_false (by rw [h112₂, h127]; omega) (spec_skip hw₂ ?_)
+      refine spec_ifLtN_false (by rwo [h112₂, h127]) (spec_skip hw₂ ?_)
       refine ⟨by omega, ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
       rw [ite_eq_right (fun h => hp (wedgeP_eq_true.1 h)), hfn₂ 126 (by decide) (by decide) (by decide)]
       config_simp
@@ -468,17 +472,17 @@ theorem findBody_inv {v w : ℕ} {c₀ c : Config} (hI : FindInv P W B NN n σ S
   have h108₃ : c₃.nreg 108 = B + 3 * NN := by
     rw [hfn₃ 108 (by decide), hfn₂ 108 (by decide) (by decide) (by decide)]
     config_simp; exact hH.r108
-  have h124₃ : c₃.nreg 124 = z := by rw [hfn₃ 124 (by decide)]; exact h124₂
+  have h124₃ : c₃.nreg 124 = z := by rwx [hfn₃ 124 (by decide)]
   have hmem₃ : c₃.nmem = c.nmem := by rw [hnm₃, hnm₂]
   exec_block
-  · rw [h108₃, h124₃]; omega
+  · rwo [h108₃, h124₃]
   have e1 : chainLen c₀.nmem (B + 3 * NN) (c.nmem (B + 3 * NN + z)) = rest'.length :=
-    chainLen_eq (by rw [← hnm]; exact hchain')
+    chainLen_eq (by rwx [← hnm])
   have e2 : chainLen c₀.nmem (B + 3 * NN) (c.nreg 123) = rest'.length + 1 := by
     rw [chainLen_eq (l := z :: rest') (by rw [← hnm]; exact ⟨he, hchain'⟩)]; simp
   refine ⟨?_, by omega, ?_⟩
   · refine ⟨‹_›, hH.congr (fun r hr => ?_) ⟨?_, ?_⟩ ?_, ?_, fun r h123 h124 h126 h127 h129 h130 => ?_,
-      fun r hr => ?_, ?_, ?_, ?_, done ++ [z], rest', by rw [hsplit]; simp, ?_, ?_⟩
+      fun r hr => ?_, ?_, ?_, ?_, done ++ [z], rest', by rws [hsplit], ?_, ?_⟩
     · rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
       · config_simp
         rw [hfn₃ _ (by decide), hfn₂ _ (by decide) (by decide) (by decide)]
@@ -523,7 +527,7 @@ theorem findStmt_exec {v w : ℕ} (c : Config) (hc : WordsBounded W c)
   refine spec_seq ?_
   exec_block
   · omega
-  · config_simp; rw [hH.r109, hv]; omega
+  · config_simp; rwo [hH.r109, hv]
   set c₁ : Config := { c with nreg := (upd (upd (upd c.nreg 126 0) 129
     (c.nreg 109 + c.nreg 128)) 123 (c.nmem (c.nreg 109 + c.nreg 128))) } with hc₁
   have hH₁ : ScanHyp P W B NN n σ S c₁ := hH.congr (fun r hr => by
@@ -534,7 +538,7 @@ theorem findStmt_exec {v w : ℕ} (c : Config) (hc : WordsBounded W c)
   have hI₀ : FindInv P W B NN n σ S v w c₁ c₁ := by
     refine ⟨‹_›, hH₁, by simp only [hc₁]; config_simp; exact h125, fun _ _ _ _ _ _ _ => rfl,
       fun _ _ => rfl, rfl, rfl, rfl, [], S.cop v, rfl, hchain₁, ?_⟩
-    simp only [hc₁]; config_simp; rfl
+    simp only [hc₁]; csr
   refine spec_imp (Exec.whileLtN_bounded (FindInv P W B NN n σ S v w c₁)
     (fun d => chainLen c₁.nmem (B + 3 * NN) (d.nreg 123)) 60 (fun _ h => h.1)
     (fun d hI ht => findBody_inv hI ht) hI₀) ?_
@@ -544,12 +548,12 @@ theorem findStmt_exec {v w : ℕ} (c : Config) (hc : WordsBounded W c)
     rw [hH'.r112] at hexit
     cases rest with
     | nil => rfl
-    | cons z l => exact absurd (by rw [hchain.1]; omega) hexit
+    | cons z l => exact absurd (by rwo [hchain.1]) hexit
   subst hrest
   rw [List.append_nil] at hsplit
   have hμ : chainLen c₁.nmem (B + 3 * NN) (c₁.nreg 123) = (S.cop v).length :=
     chainLen_eq hchain₁
-  refine ⟨by rw [hμ] at hk; omega, by rw [hres, ← hsplit]; rfl, hH', ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨by rwo [hμ] at hk, by rwr [hres, ← hsplit], hH', ?_, ?_, ?_, ?_, ?_⟩
   · intro r h123 h124 h126 h127 h129 h130
     rw [hfn' r h123 h124 h126 h127 h129 h130]
     simp only [hc₁]
@@ -610,7 +614,7 @@ theorem memRel_surgery {mem : ℕ → ℕ} {B NN n : ℕ} {S : LState} (hM : Mem
       (mem (B + 4 * NN + b))) B NN n (surgery S a b x y) := by
   obtain ⟨e1, e2, e3, e4, e5, e6, e7, e8, e9⟩ := surgMem_bands mem (B := B) (ha := mem (B + 4 * NN + a))
     (hb := mem (B + 4 * NN + b)) hN hab hx hy (hS.prv x hx) (hS.nxt y hy)
-  have hvtx : ∀ z < S.cnt, (fun t => mem (B + t)) z = S.vtx z := fun z hz => hM.vtx z hz
+  have hvtx : ∀ z < S.cnt, (fun t => mem (B + t)) z = S.vtx z := hM.vtx
   refine ⟨fun z hz => ?_, fun z hz => ?_, fun z hz => ?_, fun v hv => ?_⟩
   · have hz' : z < S.cnt + 2 := hz
     rw [e1 z hz']
@@ -763,9 +767,9 @@ theorem mainBody_exec {d : ℕ × ℕ} {k DB : ℕ} (c : Config) (hc : WordsBoun
   unfold mainBody mainLoadStmt
   refine spec_seq ?_
   exec_block
-  · rw [h101, h116]; omega
-  · config_simp; rw [h101, h116]; omega
-  · config_simp; rw [h101, h116, hH.r113]; omega
+  · rwo [h101, h116]
+  · config_simp; rwo [h101, h116]
+  · config_simp; rwo [h101, h116, hH.r113]
   -- first scan
   refine spec_seq (spec_use (findStmt_exec (P := P) (v := d.1) (w := d.2) _ ‹_›
     (hH.congr (fun r hr => ?_) ⟨rfl, rfl⟩ rfl) ?_ ha ?_) ?_)
@@ -824,7 +828,7 @@ theorem mainBody_exec {d : ℕ × ℕ} {k DB : ℕ} (c : Config) (hc : WordsBoun
       (by decide) (by decide) (by decide) (by decide) (by decide), h116]
   refine spec_use (mainSurg_exec (a := d.1) (b := d.2) (x := findCopy P σ S d.1 d.2)
     (y := findCopy P σ S d.2 d.1) c₄ hw₄ hH₄ h115₄ h117₄ h118₄ h119₄ hres₄ ha hb hx hy hcnt
-    (by rw [h116₄]; exact hkW)) ?_
+    (by rwx [h116₄])) ?_
   rintro c₅ k₅ hk₅ hw₅ ⟨hnm₅, h115₅, h116₅, hfn₅, hfr₅, hrm₅, hout₅⟩
   have hmemrel := memRel_surgery (hH₄.mem) hS hcnt ha hb hab hx hy
   rw [← hnm₅] at hmemrel
@@ -909,10 +913,10 @@ theorem mainLoop_exec {DB ND : ℕ} {D : List (ℕ × ℕ)} (hlen : D.length = N
       mainBody_exec (P := P) (d := D[k]) (k := k) (DB := DB) c hw hH h101 (by rw [h115, hcnt])
         rfl hdk1 hdk2 hd1n hd2n hdne (by omega) (by omega) (by omega)
     refine ⟨c', k', ex, ⟨ex.wb_right, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_⟩
-    · rw [h116', runState_take_succ σ _ hkD]; exact hH'
-    · rw [h115', h116', hcnt]; ring
-    · rw [hfn' 101 (by omega)]; exact h101
-    · rw [hfn' 102 (by omega)]; exact h102
+    · rwx [h116', runState_take_succ σ _ hkD]
+    · rwring [h115', h116', hcnt]
+    · rwx [hfn' 101 (by omega)]
+    · rwx [hfn' 102 (by omega)]
     · intro r hr; rw [hfn' r hr, hfn r hr]
     · intro r hr; rw [hfr' r hr, hfr r hr]
     · intro t ht; rw [hnm' t ht, hnm t ht]
@@ -997,10 +1001,10 @@ theorem initBody_inv {B NN : ℕ} (hNN : P.n ≤ NN) (hW : B + 4 * NN + P.n ≤ 
   unfold initBody
   exec_block
   all_goals first
-    | (config_simp; simp only [h105, h106, h107, h108, h109, h112, h113]; omega)
+    | (config_simp; sio only [h105, h106, h107, h108, h109, h112, h113])
     | skip
   refine ⟨⟨‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, by omega, ?_⟩
-  · config_simp; rw [h113]; omega
+  · config_simp; rwo [h113]
   · config_simp; exact h103
   · config_simp; exact h105
   · config_simp; exact h106
@@ -1029,7 +1033,7 @@ theorem initBody_inv {B NN : ℕ} (hNN : P.n ≤ NN) (hW : B + 4 * NN + P.n ≤ 
     exact hnm t ht
   · config_simp; exact hrm
   · config_simp; exact hout
-  · config_simp; rw [h113]; omega
+  · config_simp; rwo [h113]
 
 /-- **Spec of the initialisation loop**: from `k = 0` it fills the five bands for the `n`
 vertices, at cost `≤ 16 n + 2`. -/
@@ -1054,7 +1058,7 @@ theorem memRel_init {mem : ℕ → ℕ} {B NN n : ℕ} (_hn : 0 < n)
     (hp : ∀ z < n, mem (B + 2 * NN + z) = (z + n - 1) % n)
     (hs : ∀ z < n, mem (B + 3 * NN + z) = 0) (hh : ∀ z < n, mem (B + 4 * NN + z) = z + 1) :
     MemRel mem B NN n (initState n) := by
-  refine ⟨fun z hz => hv z hz, fun z hz => hx z hz, fun z hz => hp z hz, fun v hv' => ?_⟩
+  refine ⟨hv, hx, hp, fun v hv' => ?_⟩
   show Chain mem (B + 3 * NN) (mem (B + 4 * NN + v)) (if v < n then [v] else [])
   rw [ite_eq_left hv', hh v hv']
   exact ⟨rfl, hs v hv'⟩
@@ -1088,12 +1092,12 @@ theorem splitStmt_exec {B DB ND NN : ℕ} {σ : ℝ} {D : List (ℕ × ℕ)} (c 
   · omega
   · omega
   · omega
-  · config_simp; rw [h102]; omega
-  · config_simp; rw [h102]; omega
-  · config_simp; rw [h100, h102]; omega
-  · config_simp; rw [h100, h102]; omega
-  · config_simp; rw [h100, h102]; omega
-  · config_simp; rw [h100, h102]; omega
+  · config_simp; rwo [h102]
+  · config_simp; rwo [h102]
+  · config_simp; rwo [h100, h102]
+  · config_simp; rwo [h100, h102]
+  · config_simp; rwo [h100, h102]
+  · config_simp; rwo [h100, h102]
   · omega
   refine spec_name fun c₁ hc₁ => ?_
   -- the initialisation loop
@@ -1103,10 +1107,10 @@ theorem splitStmt_exec {B DB ND NN : ℕ} {σ : ℝ} {D : List (ℕ × ℕ)} (c 
       rfl, rfl⟩ <;> simp only [hc₁] <;> config_simp
     · omega
     · rw [h100]
-    · rw [h100, h102, hNN]; ring
-    · rw [h100, h102, hNN]; ring
-    · rw [h100, h102, hNN]; ring
-    · rw [h100, h102, hNN]; ring
+    · rwring [h100, h102, hNN]
+    · rwring [h100, h102, hNN]
+    · rwring [h100, h102, hNN]
+    · rwring [h100, h102, hNN]
     · intro z hz; omega
   refine spec_seq (spec_use (initLoop_exec hNNn hW c₁ hI₀ (by simp only [hc₁]; config_simp)) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨⟨-, -, h103, h105, h106, h107, h108, h109, h112, h113, hbands, hfn, hfr,
@@ -1115,7 +1119,7 @@ theorem splitStmt_exec {B DB ND NN : ℕ} {σ : ℝ} {D : List (ℕ × ℕ)} (c 
   unfold initFix
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [h106, h103, h113]; omega
+  · config_simp; rwo [h106, h103, h113]
   · omega
   refine spec_name fun c₃ hc₃ => ?_
   have e₁ : ∀ r, r ≠ 103 → r ≠ 104 → r ≠ 105 → r ≠ 106 → r ≠ 107 → r ≠ 108 → r ≠ 109 →
@@ -1138,9 +1142,9 @@ theorem splitStmt_exec {B DB ND NN : ℕ} {σ : ℝ} {D : List (ℕ × ℕ)} (c 
     · exact h112
     · exact h113
     · rw [hfr]; simp only [hc₁]; config_simp; exact hσ
-    · rw [hfr]; simp only [hc₁]; config_simp; simp
+    · rw [hfr]; simp only [hc₁]; css
     · rw [h106, h103, h113, h112, h107]
-      have hb := fun z (hz : z < P.n) => hbands z (by rw [h116]; exact hz)
+      have hb := fun z (hz : z < P.n) => hbands z (by rwx [h116])
       refine memRel_init hn (fun z hz => ?_) (fun z hz => ?_) (fun z hz => ?_) (fun z hz => ?_)
         (fun z hz => ?_) <;> simp only [Machine.upd_apply]
       · rw [ite_eq_right (by omega), ite_eq_right (by omega)]; exact (hb z hz).1
@@ -1158,9 +1162,9 @@ theorem splitStmt_exec {B DB ND NN : ℕ} {σ : ℝ} {D : List (ℕ × ℕ)} (c 
   have hMI : MainInv P W B NN P.n DB ND σ D c₃ c₃ := by
     refine ⟨by rw [hc₃]; assumption, ?_, ?_, ?_, ?_, ?_, fun _ _ => rfl, fun _ _ => rfl,
       fun _ _ => rfl, rfl, rfl⟩
-    · simp only [hc₃]; config_simp; omega
+    · simp only [hc₃]; cso
     · have e : c₃.nreg 116 = 0 := by simp only [hc₃]; config_simp
-      rw [e]; exact hS₀
+      rwx [e]
     · simp only [hc₃]; config_simp; exact h103
     · simp only [hc₃]; config_simp
       rw [hfn 101 (by decide) (by decide) (by decide), e₁ 101 (by decide) (by decide) (by decide)

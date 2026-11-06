@@ -4,6 +4,8 @@ public import Chazelle.Core.SweepEvTasks3
 public import Chazelle.Core.SweepEvCand3
 public import Chazelle.Core.GranSize
 public import Chazelle.Core.FactsArcs
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), stage 3: the number of keys (Task C, mathematics)
@@ -109,7 +111,7 @@ theorem F₂plus_ncard_le (J : Merge.Junction) {S₂ : Set (Set Point)} (hS₂f 
 theorem cutOffs_ncard (J : Merge.Junction) (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) :
     (cutOffs J S₂).Finite ∧ (cutOffs J S₂).ncard ≤ 4 * S₂.ncard + 8 := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM  := FactsChain.walkAx J.whole hP
   obtain ⟨hfin, hle⟩ := cut_keys_ncard hM (F₂plus_subset J hS₂) (F₂plus_finite J hS₂f)
   have hsub : cutOffs J S₂ ⊆ oW J '' {x : ℝ | (chainModel J.whole).IsCut (F₂plus J S₂) x} := by
     rintro o ⟨x, hx, -, -, rfl⟩
@@ -140,9 +142,9 @@ theorem pred_mod' {b d n e : ℕ} (hb : b < n) (hd : d < n) (h1 : 1 ≤ d)
     (he : (b + d) % n = e) (he0 : e ≠ 0) : (b + (d - 1)) % n + 1 = e := by
   by_cases h : b + d < n
   · rw [Nat.mod_eq_of_lt h] at he
-    rw [Nat.mod_eq_of_lt (by omega)]; omega
+    rwo [Nat.mod_eq_of_lt (by omega)]
   · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at he
-    rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+    rwo [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
 
 /-- The two readings `(d, 1)` and `(d + 1, 0)` of a vertex key give the same offset. -/
 theorem win_uniq_step (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ}
@@ -164,7 +166,7 @@ theorem win_uniq_step (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ}
   obtain ⟨-, hg', -, -⟩ := hv'
   have hl' : ¬ (0 < lδ J ∧ d' - 1 = lL1 J) := fun h => hl ⟨h.1, h.2, one_ne_zero⟩
   unfold ψ
-  split_ifs <;> omega
+  splao
 
 /-- **A cut key of `N₁` gives at most one window offset.** -/
 theorem win_uniq (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ} {t t' : ℝ}
@@ -184,7 +186,7 @@ theorem win_uniq (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ} {t t' : ℝ
   have hlo' : k < k' + 2 := by exact_mod_cast hlo
   have hhi' : k' < k + 2 := by exact_mod_cast hhi
   rcases (show k = k' ∨ k' = k + 1 ∨ k = k' + 1 by omega) with h | h | h
-  · have htt : t = t' := by rw [h] at hx; linarith
+  · have htt : t = t' := by rwli [h] at hx
     have hdd : d = d' := add_mod_inj hd hd' h
     rw [htt, hdd]
   · have e : (k' : ℝ) = k + 1 := by exact_mod_cast h
@@ -208,8 +210,8 @@ theorem win_uniq (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ} {t t' : ℝ
 theorem winOffs_ncard (P : Polygon) (J : Merge.Junction) (hP : J.P.Simple) (N₁ : NF)
     (hN₁ : IsNF (chainModel J.left) (Qof P) N₁) :
     (winOffs P J N₁).Finite ∧ (winOffs P J N₁).ncard ≤ 2 * N₁.nChords + 1 := by
-  have hP₁ : J.left.P.Simple := hP
-  have hM : WalkAx (chainModel J.left) := FactsChain.walkAx J.left hP₁
+  have hP₁  := hP
+  have hM  := FactsChain.walkAx J.left hP₁
   obtain ⟨hfin, hle⟩ := cut_keys_ncard hM hN₁.1.2.1 hN₁.1.1
   rw [Gran.ncard_F hN₁] at hle
   obtain ⟨hf2, hl2⟩ := finite_ncard_le_of_rel hfin
@@ -227,7 +229,7 @@ theorem winOffs_ncard (P : Polygon) (J : Merge.Junction) (hP : J.P.Simple) (N₁
       linarith)
   refine ⟨(finite_singleton _).union hf2, ?_⟩
   calc (winOffs P J N₁).ncard ≤ ({(Lst J : ℝ) + lL1 J} : Set ℝ).ncard + _ := ncard_union_le _ _
-    _ ≤ 2 * N₁.nChords + 1 := by rw [ncard_singleton]; omega
+    _ ≤ 2 * N₁.nChords + 1 := by rwo [ncard_singleton]
 
 /-- **Task C (mathematics): the number of keys.** -/
 theorem countTask : CountTask := by

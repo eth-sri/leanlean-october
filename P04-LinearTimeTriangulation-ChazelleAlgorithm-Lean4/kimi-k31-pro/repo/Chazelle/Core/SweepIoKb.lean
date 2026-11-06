@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.SweepIoSym
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep RAM (WP-D), answers: symbolic points and sign tests from the run-step framework
@@ -36,7 +41,6 @@ theorem symPtIn_copy {c c' : Config} {r r' : ℕ} {s : SymPt} (h : SymPtIn c r s
   | vtx i => obtain ⟨a, b⟩ := h; exact ⟨h0.trans a, h1.trans b⟩
   | onEdge e hh => obtain ⟨a, b, d⟩ := h; exact ⟨h0.trans a, h1.trans b, h2.trans d⟩
 
-set_option maxRecDepth 20000 in
 /-- **The symbolic point of a tour or top position.** -/
 theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (hctx : ChainCtx P W c dsc C)
@@ -59,36 +63,36 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (outs := [(o, 50210), (o + 1, 50211), (o + 2, 50212), (o + 3, 50213)]) symKey_meets
     primBands_oracle hI
     (nodup3 (by norm_num) (by norm_num) (by norm_num))
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
+    (by sio only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq])
+    (by simp [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
         exact ⟨band5_oracle (by norm_num) (by norm_num), band5_oracle (by norm_num) (by norm_num),
           band5_oracle (by norm_num) (by norm_num)⟩)
     (nodup4 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega))
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
+    (by sio only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq])
+    (by sio only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq])
     (fun c₁ hm hA e1 e2 => by
-      simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1
+      simp [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1
       obtain ⟨g0, g1, g2⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨⟨⟨?_, ?_, ?_⟩, ?_⟩, ?_⟩
-      · rw [g1]; exact he
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hy
+      · rwx [g1]
+      · rwx [g1, g2]
+      · rwx [g1, g2]
       · rw [hm, g0]; exact hctx.hostReg
-      · rw [g1, g2]; exact hcls)
-    (by simp only [List.length_cons, List.length_nil]; omega)
+      · rwx [g1, g2])
+    (by sio only [List.length_cons, List.length_nil])
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
-  simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
+  simp [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2⟩ := e1
   obtain ⟨k0, k1, k2, k3⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwx [hm, g0]
   obtain ⟨-, sp, hsp, hlt, hev⟩ := hpost H C hC₁
   rw [g1, g2] at hev
   refine ⟨sp, symPtIn_copy hsp k1 (by rw [show o + 1 + 1 = o + 2 by omega, k2])
     (by rw [show o + 1 + 2 = o + 3 by omega, k3]), hlt, hev, fun r hr h0 hra => hk r hr
-    (by simp only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]; omega)
+    (by sio only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false])
     hra, hA, hm'⟩
 
 /-! ## One sign test -/
@@ -113,11 +117,11 @@ theorem kbit_meets {op : ℕ} (hop : op ≤ 3) :
     (by norm_num) (by norm_num) hop la lb ld ha hb hd
   refine ⟨c', k, ex, hk, ⟨hle, fun sa' sb' sd' ha' hb' hd' => ?_⟩, NFLoc.frame_of_frameB hfr
     (fun r hr => ?_) k⟩
-  · rw [symPtIn_unique ha' ha, symPtIn_unique hb' hb, symPtIn_unique hd' hd]; exact hiff
-  · simp only [Bkb, WalkKey.Bk, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at hr
+  · rwx [symPtIn_unique ha' ha, symPtIn_unique hb' hb, symPtIn_unique hd' hd]
+  · simp [Bkb, WalkKey.Bk, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at hr
     refine ⟨?_, ?_⟩
     · have : bandOf r = 1 := by unfold bandOf; rcases hr with h | h <;> omega
-      rw [this]; decide
+      rwd [this]
     · unfold ALLOC; rcases hr with h | h <;> omega
 
 /-- The sign test `op` of the symbolic points at `a` and `b` into `o`. -/
@@ -126,10 +130,9 @@ def callKb (a b op o : ℕ) : Stmt :=
     (10506, a), (10507, a + 1), (10508, a + 2)] (kbit 10500 10503 10506 op 10520) [(o, 10520)]
 
 theorem bSign_oracle {r : ℕ} (h1 : 10000 ≤ r) (h2 : r < 20000) : bandOf r ∈ oracleBands := by
-  have : bandOf r = 1 := by unfold bandOf; omega
-  rw [this]; decide
+  have : bandOf r = 1 := by ufo bandOf
+  rwd [this]
 
-set_option maxRecDepth 20000 in
 /-- **One sign test.** -/
 theorem callKb_irs {a b op o : ℕ} (hop : op ≤ 3) (hI : IInv W c₀ c) (hG : GoodEnv P)
     (hW : P.n + 3 ≤ W) (ha : 240000 ≤ a ∧ a + 2 < 250000) (hb : 240000 ≤ b ∧ b + 2 < 250000)
@@ -146,27 +149,27 @@ theorem callKb_irs {a b op o : ℕ} (hop : op ≤ 3) (hI : IInv W c₀ c) (hG : 
       (10505, b + 2), (10506, a), (10507, a + 1), (10508, a + 2)])
     (outs := [(o, 10520)]) (kbit_meets hop) (by decide) hI
     (by simp)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
+    (by sio only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq])
+    (by simp [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
         refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> exact bSign_oracle (by norm_num) (by norm_num))
     (by simp)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq]; omega)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq]; omega)
+    (by sio only [List.mem_cons, List.not_mem_nil, or_false, forall_eq])
+    (by sio only [List.mem_cons, List.not_mem_nil, or_false, forall_eq])
     (fun c₁ hm hA e1 e2 => by
-      simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1
+      simp [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1
       obtain ⟨g0, g1, g2, g3, g4, g5, g6, g7, g8⟩ := e1
       exact ⟨hG, hW, sa, sb, sa, symPtIn_copy hsa g0 g1 g2, symPtIn_copy hsb g3 g4 g5,
         symPtIn_copy hsa g6 g7 g8, hla, hlb, hla⟩)
-    (by simp only [List.length_cons, List.length_nil]; omega)
+    (by sio only [List.length_cons, List.length_nil])
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
-  simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
+  simp [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2, g3, g4, g5, g6, g7, g8⟩ := e1
   obtain ⟨hle, hiff⟩ := hpost
   have := hiff sa sb sa (symPtIn_copy hsa g0 g1 g2) (symPtIn_copy hsb g3 g4 g5)
     (symPtIn_copy hsa g6 g7 g8)
-  refine ⟨by rw [f1]; exact hle, by rw [f1]; exact this, fun r hr h0 hra => hk r hr
-    (by simp only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
+  refine ⟨by rwx [f1], by rwx [f1], fun r hr h0 hra => hk r hr
+    (by simp [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
         exact h0) hra, hA, hm'⟩
 
 end

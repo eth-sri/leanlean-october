@@ -31,7 +31,7 @@ open WalkEmbed Sweep
 /-- The walk edge of the start key is at least `6`. -/
 theorem start_key_ge_six (J : Merge.Junction) :
     6 ≤ (gW J + Lst J) % (chainModel J.whole).W.n := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn  := cm_n J.whole
   have hτ' := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   by_cases hlt : Lst J < lOff J
   · obtain ⟨-, -, hτ, hL⟩ := caseB_facts J hlt
@@ -51,7 +51,7 @@ theorem start_key_ge_six (J : Merge.Junction) :
 /-- **Task S (mathematics): the start key.** -/
 theorem startMathTask : StartMathTask := by
   intro P J N hP hN
-  have hS₂ : N.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂  := hN.1.2.1
   refine ⟨⟨Nat.mod_lt _ (by have := Lst_lt_n J; omega), ShootCut.proper_vtx _ _ _ _,
     fun _ => start_key_ge_six J⟩, oW_start J hP (S₂ := ∅) (empty_subset _) finite_empty, ?_⟩
   intro e he hA

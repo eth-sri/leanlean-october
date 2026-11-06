@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseBaseLoop2
 public import Chazelle.Core.NFBuildMain
+public import Chazelle.Rwx
+set_option maxHeartbeats 8000000
 
 /-!
 # Down phase, A1: dropping the augmented chords (`DropAugSpec`)
@@ -80,7 +82,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 /-- The setup block. -/
 theorem dSetup_exec (c : Config) (hw : WordsBounded W c) {D B K A₀ : ℕ}
     (h0 : c.nreg 200000 = D) (h1 : c.nreg 200001 = B) (h2 : c.nreg 200002 = K)
@@ -115,20 +116,19 @@ theorem dBit_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {b : ℕ}
       (∀ r, r ≠ 200103 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
       c'.rmem = c.rmem ∧ c'.output = c.output := by
   by_cases hb1 : b < 2
-  · have t1 : c.nreg 200106 < c.nreg 200105 := by rw [h106, h105]; exact hb1
+  · have t1 : c.nreg 200106 < c.nreg 200105 := by rwx [h106, h105]
     by_cases hb0 : 0 < b
-    · have t2 : c.nreg 200101 < c.nreg 200106 := by rw [h101, h106]; exact hb0
+    · have t2 : c.nreg 200101 < c.nreg 200106 := by rwx [h101, h106]
       have e := Exec.constN (P := P) hw 200103 1 hW
       exact ⟨_, _, .ifLtN_true t1 (.ifLtN_true t2 e), by omega,
         by simp [show b = 1 by omega], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
-    · have t2 : ¬ c.nreg 200101 < c.nreg 200106 := by rw [h101, h106]; exact hb0
+    · have t2 : ¬ c.nreg 200101 < c.nreg 200106 := by rwx [h101, h106]
       exact ⟨c, _, .ifLtN_true t1 (.ifLtN_false t2 (.skip hw)), by omega,
         by rw [h103]; simp [show b ≠ 1 by omega], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-  · have t1 : ¬ c.nreg 200106 < c.nreg 200105 := by rw [h106, h105]; exact hb1
+  · have t1 : ¬ c.nreg 200106 < c.nreg 200105 := by rwx [h106, h105]
     exact ⟨c, _, .ifLtN_false t1 (.skip hw), by omega,
       by rw [h103]; simp [show b ≠ 1 by omega], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
 
-set_option maxHeartbeats 4000000 in
 /-- Between the passes. -/
 theorem dMid_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W dMid c c' k ∧ k = 4 ∧ c'.nreg 200005 = c.nreg 200118 ∧

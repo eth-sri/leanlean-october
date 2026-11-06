@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Mountain.Decompose
 public import Chazelle.Mountain.Stack
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Pieces of the mountain decomposition, local extrema and monotone chains
@@ -97,8 +100,8 @@ theorem pred_mod_ne {n k : ℕ} (hn : 2 ≤ n) (hk : k < n) : (k + n - 1) % n �
 /-- Cyclic successor is different from the index (for `2 ≤ n`). -/
 theorem succ_mod_ne {n k : ℕ} (hn : 2 ≤ n) (hk : k < n) : (k + 1) % n ≠ k := by
   by_cases h : k + 1 = n
-  · rw [h, Nat.mod_self]; omega
-  · rw [Nat.mod_eq_of_lt (by omega)]; omega
+  · rwo [h, Nat.mod_self]
+  · rwo [Nat.mod_eq_of_lt (by omega)]
 
 end Cyclic
 
@@ -151,7 +154,7 @@ theorem isMountainAt_iff {Q : Polygon} {a : ℕ} (ha : a < Q.n) :
     exact hc i hi
   · rintro ⟨hR, hc⟩
     refine ⟨simple_of_simple_rotate hR, ha, fun p hp => ?_⟩
-    have := hc p (by rw [n_rotate]; exact hp)
+    have := hc p (by rwx [n_rotate])
     rwa [key p (by omega), key (p + 1) hp] at this
 
 /-- The global `ylexLT`-minimum of a simple polygon is a strict local minimum. -/
@@ -229,7 +232,7 @@ above the given point. -/
 theorem exists_free_of_isOpen {P : Polygon} (hP : P.Simple) {U : Set Point} (hU : IsOpen U)
     {z : Point} (hz : z ∈ U) (hzi : z ∈ P.filled \ P.boundary) :
     ∃ p ∈ U, p ∈ freeRegion P ∧ p.1 = z.1 ∧ z.2 < p.2 := by
-  have hV : IsOpen (U ∩ (P.filled \ P.boundary)) := hU.inter (isOpen_filled_sdiff_boundary hP)
+  have hV  := hU.inter (isOpen_filled_sdiff_boundary hP)
   obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.1 hV z ⟨hz, hzi⟩
   have hfin : (((Finset.range P.n).image (fun k => (P.vtx k).2 - z.2) : Finset ℝ) :
       Set ℝ).Finite := Finset.finite_toSet _
@@ -244,7 +247,7 @@ theorem exists_free_of_isOpen {P : Polygon} (hP : P.Simple) {U : Set Point} (hU 
   obtain ⟨k, hk, hks⟩ := chordUnion_snd hc
   apply hsnot
   simp only [Finset.coe_image, Finset.coe_range, Set.mem_image, Set.mem_Iio]
-  exact ⟨k, hk, by simp only at hks; linarith⟩
+  exact ⟨k, hk, by sil only at hks⟩
 
 /-! ### (c) The regions touching a vertex -/
 
@@ -340,7 +343,7 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
       have h1 := hgle j hj (by
         show 0 < |(P.vtx j).2 - v.2|
         rw [← hjy]; exact abs_pos.2 hne)
-      have h1' : g ≤ |(Geometry.lerp p v t).2 - v.2| := by rw [hjy]; exact h1
+      have h1' : g ≤ |(Geometry.lerp p v t).2 - v.2| := by rwx [hjy]
       linarith [hxv.2]
     have hsub : S ⊆ connectedComponentIn (freeRegion P) p :=
       hSc.subset_connectedComponentIn hpS hSf
@@ -361,10 +364,10 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
     have hp' : ((p.1, p.2 + δ / 2) : Point) ∈ ball p δ := by
       rw [mem_ball_iff_abs]
       simp only [sub_self, abs_zero, add_sub_cancel_left]
-      exact ⟨hδ, by rw [abs_of_pos (by linarith)]; linarith⟩
+      exact ⟨hδ, by rwli [abs_of_pos (by linarith)]⟩
     obtain ⟨hp'C, hp'b⟩ := hδsub hp'
     have hp'f : ((p.1, p.2 + δ / 2) : Point) ∈ freeRegion P := connectedComponentIn_subset _ _ hp'C
-    have := key _ hp'b hp'f (by simp only; rw [hpy]; linarith)
+    have := key _ hp'b hp'f (by simp only; rwli [hpy])
     rwa [← connectedComponentIn_eq hp'C] at this
   · exact key p hp hpf hpy
 
@@ -438,7 +441,7 @@ theorem gap_adjacent_or_chord {P : Polygon} (hP : P.Simple) {y₀ ε : ℝ} (hε
       intro j hj h
       have h1 : (P.vtx j).1 = x := (congrArg Prod.fst h).symm
       have h2 : (P.vtx j).2 = y₀ := (congrArg Prod.snd h).symm
-      exact hgap j hj h2 (by rw [h1]; exact hx1) (by rw [h1]; exact hx2)
+      exact hgap j hj h2 (by rwx [h1]) (by rwx [h1])
     obtain ⟨g, hg, t, ht, hxe⟩ := exists_openEdge_of_mem_boundary P hxb hnv
     by_cases hh : NonHoriz P g
     · exact absurd (side_edge_false hε hU (e := (x, y₀)) rfl (hnear x hx1 hx2) hg hh
@@ -449,7 +452,7 @@ theorem gap_adjacent_or_chord {P : Polygon} (hP : P.Simple) {y₀ ε : ℝ} (hε
       set e2 := P.vtx ((g + 1) % P.n) with he2
       have hx1e : x = e1.1 + t * (e2.1 - e1.1) := congrArg Prod.fst hxe
       have hy1e : y₀ = e1.2 + t * (e2.2 - e1.2) := congrArg Prod.snd hxe
-      have he1y : e1.2 = y₀ := by rw [hy1e, ← hh]; ring
+      have he1y : e1.2 = y₀ := by rwring [hy1e, ← hh]
       have he2y : e2.2 = y₀ := by rw [← hh, he1y]
       have hne12 : e1.1 ≠ e2.1 := by
         intro h
@@ -524,7 +527,7 @@ theorem gap_adjacent_or_chord {P : Polygon} (hP : P.Simple) {y₀ ε : ℝ} (hε
         unfold DirInterior
         filter_upwards [Ioo_mem_nhdsGT hd] with t ht
         have : rayPt (P.vtx k) (-1) t = (((P.vtx k).1 - t, y₀) : Point) := by
-          rw [Geometry.point_ext_iff]; simp [hky]; ring
+          rw [Geometry.point_ext_iff]; sir [hky]
         rw [this]
         exact hint _ (by linarith [ht.2]) (by linarith [ht.1])
       have hpar : chordParam P k (-1) = (P.vtx k).1 - (P.vtx m).1 := by
@@ -534,7 +537,7 @@ theorem gap_adjacent_or_chord {P : Polygon} (hP : P.Simple) {y₀ ε : ℝ} (hε
           rw [this]; exact vtx_mem_boundary P hm
         · intro s hs0 hs1
           have : rayPt (P.vtx k) (-1) s = (((P.vtx k).1 - s, y₀) : Point) := by
-            rw [Geometry.point_ext_iff]; simp [hky]; ring
+            rw [Geometry.point_ext_iff]; sir [hky]
           rw [this]
           exact hB _ (by linarith) (by linarith)
       refine ⟨hk, hm, -1, Or.inr rfl, hdir, ?_⟩
@@ -610,19 +613,19 @@ theorem ylexLE_of_mem_segment {a b p : Point} (hab : ylexLE a b)
   obtain ⟨t, ht0, ht1, rfl⟩ := hp
   rcases hab with h | ⟨h1, h2⟩
   · rcases ht0.lt_or_eq with ht | ht
-    · left; simp only; nlinarith
+    · left; sinl only
     · right; subst ht; simp
   · right; simp only; constructor
-    · rw [h1]; ring
+    · rwring [h1]
     · nlinarith
 
 /-- Moving from `x` towards a strictly `ylexLT`-smaller point decreases strictly. -/
 theorem ylexLT_lerp_lower {x c : Point} (hc : ylexLT c x) {s : ℝ} (hs : 0 < s) :
     ylexLT (Geometry.lerp x c s) x := by
   rcases hc with h | ⟨h1, h2⟩
-  · left; simp only [Geometry.lerp_snd]; nlinarith
+  · left; sinl only [Geometry.lerp_snd]
   · right; simp only [Geometry.lerp_snd, Geometry.lerp_fst]
-    exact ⟨by rw [h1]; ring, by nlinarith⟩
+    exact ⟨by rwring [h1], by nlinarith⟩
 
 /-- The strict `ylexLT`-lower set of a point is convex. -/
 theorem convex_ylexLT_lower (x : Point) : Convex ℝ {y : Point | ylexLT y x} := by
@@ -679,10 +682,10 @@ theorem IsPiece.not_mem_attached {P : Polygon} {l : List ℕ} (hl : IsPiece P l)
     (hK : K < P.n) (hm : m < P.n) (he : IsPieceEdge P K m) {y : Point}
     (hy : y ∈ Chazelle.segment (P.vtx K) (P.vtx m))
     (hyi : y ∈ (subPoly P l).filled \ (subPoly P l).boundary) : False := by
-  have hyi' : y ∈ interior (subPoly P l).filled := by rw [interior_filled hl.simple]; exact hyi
+  have hyi' : y ∈ interior (subPoly P l).filled := by rwx [interior_filled hl.simple]
   rcases he.segment_cases hK hm with h | ⟨d, hd, h⟩
   · exact hl.not_boundary y hyi' (h hy)
-  · exact hl.not_diag d hd y hyi' (by rw [← h]; exact hy)
+  · exact hl.not_diag d hd y hyi' (by rwx [← h])
 
 /-- **A piece has no reflex local minimum.**  If vertex `k` of a piece `Q = subPoly P l` is a
 strict `ylexLT`-local minimum, then near `Q.vtx k` no point strictly `ylexLT`-below it is
@@ -694,14 +697,14 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
     ∃ r > 0, ∀ y ∈ ball ((subPoly P l).vtx k) r, ylexLT y ((subPoly P l).vtx k) →
       y ∉ (subPoly P l).filled \ (subPoly P l).boundary := by
   set Q := subPoly P l with hQdef
-  have hQ : Q.Simple := hl.simple
+  have hQ  := hl.simple
   have hkQ : k < l.length := by have := hk.1; rwa [hQdef, n_subPoly] at this
   set K := l.getD k 0 with hKdef
   have hK : K < P.n := by
     apply hl.lt
     rw [hKdef, EarClip.getD_eq_getElem_of_lt _ _ hkQ]
     exact List.getElem_mem hkQ
-  have hxK : Q.vtx k = P.vtx K := vtx_subPoly_getD P l hkQ
+  have hxK  := vtx_subPoly_getD P l hkQ
   obtain ⟨r₁, hr₁, hr₁b⟩ := lower_halfBall_not_boundary hQ hk
   obtain ⟨r₂, hr₂, hr₂D⟩ := exists_ball_vtx_trapData hP hK
   refine ⟨min r₁ r₂, lt_min hr₁ hr₂, fun y₀ hy₀ hy₀lt hy₀i => ?_⟩
@@ -717,9 +720,9 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
   -- a free point of `P` just below `x`
   have hWo : IsOpen (ball x r ∩ {y : Point | y.2 < x.2}) :=
     isOpen_ball.inter (isOpen_lt continuous_snd continuous_const)
-  have hr0 : 0 < r := lt_min hr₁ hr₂
+  have hr0  := lt_min hr₁ hr₂
   have hz : ((x.1, x.2 - r / 2) : Point) ∈ ball x r ∩ {y : Point | y.2 < x.2} := by
-    refine ⟨?_, by simp only [Set.mem_ofPred_eq]; linarith⟩
+    refine ⟨?_, by sil only [Set.mem_ofPred_eq]⟩
     rw [mem_ball_iff_abs]
     simp only [sub_self, abs_zero]
     refine ⟨hr0, ?_⟩
@@ -730,7 +733,7 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
   obtain ⟨p, ⟨hpb, hpy⟩, hpf, -, -⟩ := exists_free_of_isOpen hP hWo hz hzi
   obtain ⟨D, -, hpD, hvD, -⟩ := hr₂D p (by rw [← hxK]; exact ball_subset_ball (min_le_right _ _) hpb) hpf
   have hKtop : K ∈ sideVtxSet P D.i D.j D.y₂ :=
-    D.mem_top_of_lt hK hvD hpD (by rw [← hxK]; exact hpy)
+    D.mem_top_of_lt hK hvD hpD (by rwx [← hxK])
   obtain ⟨m, hm, hmlt, hme⟩ := D.attached_top hP hKtop
   rw [← hxK] at hmlt
   -- a point of the attached segment close to `x`

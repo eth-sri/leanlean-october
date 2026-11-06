@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.OracleRamNode
+public import Chazelle.Rwx
 
 /-!
 # Lemma 3.6 (WP-H), part 13: the points scanned for a node are its `nodeScan`
@@ -34,13 +35,13 @@ variable {C : Chain} {Q : Polygon} {N : NF} {m : ℕ → ℕ} {V : QV}
 
 theorem arcSe_eq (hm : NodeMemOK m V N) {j : ℕ} (hj : j < V.A) :
     arcSe m V j = (N.arc j).s.edge := by
-  have := (hm.nf.2.2.2.2.2.2.1 j (by rw [← hm.A]; exact hj)).2.1
-  unfold arcSe; rw [← hm.AB]; exact this
+  have := (hm.nf.2.2.2.2.2.2.1 j (by rwx [← hm.A])).2.1
+  unfold arcSe; rwx [← hm.AB]
 
 theorem arcEe_eq (hm : NodeMemOK m V N) {j : ℕ} (hj : j < V.A) :
     arcEe m V j = (N.arc j).e.edge := by
-  have := (hm.nf.2.2.2.2.2.2.1 j (by rw [← hm.A]; exact hj)).2.2.2.1
-  unfold arcEe; rw [← hm.AB]; exact this
+  have := (hm.nf.2.2.2.2.2.2.1 j (by rwx [← hm.A])).2.2.2.1
+  unfold arcEe; rwx [← hm.AB]
 
 /-- **The points scanned for an arc record** are the scanned points of its spine position. -/
 theorem arcPts_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) (hm : NodeMemOK m V N)
@@ -50,9 +51,9 @@ theorem arcPts_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) (hm : NodeMem
   have hnW : (chainModel C).W.n = 2 * V.m + 7 := by rw [walk_n, hVm]
   have hsj : sj N (arcPos m V j) = j := hpj
   ext x
-  rw [mem_scanSet_iff, scanLen_eq C Q N hN hP (by rw [← hm.A]; exact hpA)]
+  rw [mem_scanSet_iff, scanLen_eq C Q N hN hP (by rwx [← hm.A])]
   unfold arcPts scanned
-  simp only [mem_ofPred_eq]
+  simp [mem_ofPred_eq]
   have hlen : scanLenR N (chainModel C).W.n N.arcs.length (arcPos m V j) = arcLenM m V j := by
     unfold scanLenR arcLenM lenOf
     rw [hsj, hnW, ← hm.A, arcSe_eq hm hj, arcEe_eq hm hj]
@@ -61,8 +62,8 @@ theorem arcPts_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) (hm : NodeMem
     intro k; unfold scanIdx scanW; rw [hsj, hnW, arcSe_eq hm hj]
   rw [hlen]
   constructor
-  · rintro ⟨k, hk, hx⟩; exact ⟨k, by omega, by rw [hidx]; exact hx⟩
-  · rintro ⟨k, hk, hx⟩; exact ⟨k, by omega, by rw [← hidx]; exact hx⟩
+  · rintro ⟨k, hk, hx⟩; exact ⟨k, by omega, by rwx [hidx]⟩
+  · rintro ⟨k, hk, hx⟩; exact ⟨k, by omega, by rwx [← hidx]⟩
 
 /-- **The points scanned for a node are its `nodeScan`.** -/
 theorem nodePts_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) (hm : NodeMemOK m V N)
@@ -70,24 +71,24 @@ theorem nodePts_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) (hm : NodeMe
   obtain ⟨reg, hR, hA, -⟩ := NFLoc.isNF_arcs hN
   have hsl := NFLoc.seq_length hN
   ext x
-  simp only [nodePts, nodeScan, mem_ofPred_eq]
+  simp [nodePts, nodeScan, mem_ofPred_eq]
   rw [← hm.A]
   by_cases hv : v < V.A
   swap
   · exact ⟨fun h => absurd h.1 hv, fun h => absurd h.1 hv⟩
-  have hvA : v < N.arcs.length := by rw [← hm.A]; exact hv
+  have hvA : v < N.arcs.length := by rwx [← hm.A]
   -- the region of the node
   have hj0 : nodeArc0 m V v = sj N v := by
     have := hm.nf.2.2.2.2.2.2.2.2.1 v (by omega)
-    unfold nodeArc0 sj; rw [← hm.SB]; exact this
-  have hj0A : sj N v < N.arcs.length := NFLoc.seq_lt hN hvA
+    unfold nodeArc0 sj; rwx [← hm.SB]
+  have hj0A  := NFLoc.seq_lt hN hvA
   have hr : nodeReg m V v = rgi N v := by
     have := (hm.nf.2.2.2.2.2.2.1 _ hj0A).1
-    unfold nodeReg rgi; rw [hj0, ← hm.AB]; exact this
+    unfold nodeReg rgi; rwx [hj0, ← hm.AB]
   have hrR : rgi N v < N.regions.length := (hA.1 _ hj0A).1
   obtain ⟨hna, -, -, hlist, -⟩ := hm.nf.2.2.2.2.2.2.2.1 _ hrR
   have hna' : nodeNa m V v = (N.region (rgi N v)).arcs.length := by
-    unfold nodeNa; rw [hr, ← hm.RB]; exact hna
+    unfold nodeNa; rwx [hr, ← hm.RB]
   have hls : ∀ t, t < (N.region (rgi N v)).arcs.length →
       nodeArc m V v t = (N.region (rgi N v)).arcs.getD t 0 := by
     intro t ht
@@ -102,23 +103,23 @@ theorem nodePts_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) (hm : NodeMe
     have hjmem : j ∈ (N.region (rgi N v)).arcs := by
       rw [hj, NFLoc.getD_of_lt 0 ht]; exact List.getElem_mem ht
     obtain ⟨hjA, hjr⟩ := (hmemR j).1 hjmem
-    have hjA' : j < V.A := by rw [hm.A]; exact hjA
+    have hjA' : j < V.A := by rwx [hm.A]
     obtain ⟨hpA, hpj⟩ := hm.pos j hjA'
     refine ⟨arcPos m V j, hpA, ?_, ?_⟩
     · show (N.arc (N.seq.getD (m (V.POS + j)) 0)).reg = rgi N v
       rw [hpj, hjr]
-    · rw [← arcPts_eq hN hP hm hVm hjA']; exact hx
+    · rwx [← arcPts_eq hN hP hm hVm hjA']
   · rintro ⟨-, p, hp, hrp, hx⟩
     refine ⟨hv, ?_⟩
-    have hpN : p < N.arcs.length := by rw [← hm.A]; exact hp
+    have hpN : p < N.arcs.length := by rwx [← hm.A]
     set j := sj N p with hj
-    have hjA : j < N.arcs.length := NFLoc.seq_lt hN hpN
-    have hjA' : j < V.A := by rw [hm.A]; exact hjA
-    have hjmem : j ∈ (N.region (rgi N v)).arcs := (hmemR j).2 ⟨hjA, hrp⟩
+    have hjA  := NFLoc.seq_lt hN hpN
+    have hjA' : j < V.A := by rwx [hm.A]
+    have hjmem  := (hmemR j).2 ⟨hjA, hrp⟩
     obtain ⟨t, ht, htj⟩ := List.getElem_of_mem hjmem
     obtain ⟨hpA, hpj⟩ := hm.pos j hjA'
-    have hpp : arcPos m V j = p := sj_inj hN (by rw [← hm.A]; exact hpA) hpN hpj
-    refine ⟨t, by rw [hna']; exact ht, ?_⟩
+    have hpp : arcPos m V j = p := sj_inj hN (by rwx [← hm.A]) hpN hpj
+    refine ⟨t, by rwx [hna'], ?_⟩
     rw [hls t ht, NFLoc.getD_of_lt 0 ht, htj, arcPts_eq hN hP hm hVm hjA', hpp]
     exact hx
 

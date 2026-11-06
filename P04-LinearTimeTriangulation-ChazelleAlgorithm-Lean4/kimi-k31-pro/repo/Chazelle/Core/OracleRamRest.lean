@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OracleRamTop
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), RAM part 16: the query after loading, as a trace
@@ -66,59 +69,59 @@ theorem restS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   -- 1. the top test
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, t₁, z₁⟩ := topS_exec (P := P) hG hW hv htv c hw hq
   have hq₁ : QConst P V c₁ := hq.frame f₁ fun r h1 h2 => by
-    simp only [Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
+    sio only [Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+  have m₁  := f₁.2.2.1
   have g₁ : FrameB BRest c c₁ := FrameB.mono f₁ fun r hr => by
-    simp only [Bool.or_eq_true, decide_eq_true_eq] at hr
+    simp [Bool.or_eq_true, decide_eq_true_eq] at hr
     rcases hr with (hr | hr) | hr <;> simp [BRest, hr]
   by_cases hab : ((Qof P).vtx V.tv).2 < ((Qof P).vtx V.hz).2
   · have hd : c₁.nreg 120053 = 1 := t₁.2 hab
-    refine ⟨c₁, _, .seq e₁ (.ifLtN_false (by rw [hd, hq₁.one]; omega) (.skip e₁.wb_right)),
+    refine ⟨c₁, _, .seq e₁ (.ifLtN_false (by rwo [hd, hq₁.one]) (.skip e₁.wb_right)),
       by omega, g₁, Or.inl ⟨hab, z₁ hd⟩⟩
   have hd : c₁.nreg 120053 = 0 := by have := mt t₁.1 hab; omega
   -- 2. the chord search
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, ht₂, hpre₂, hpost₂⟩ := chordSearch_exec (P := P) hG hW hv htv c₁
-    e₁.wb_right hq₁ (by rw [m₁]; exact hCM) (by rw [m₁]; exact hmono)
+    e₁.wb_right hq₁ (by rwx [m₁]) (by rwx [m₁])
   rw [m₁] at hpre₂ hpost₂
   have hq₂ : QConst P V c₂ := hq₁.frame f₂ fun r h1 h2 => by
-    simp only [BCS, BP, BX2, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  have m₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans m₁
+    sio only [BCS, BP, BX2, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+  have m₂  := f₂.2.2.1.trans m₁
   obtain ⟨t, htd⟩ : ∃ t, c₂.nreg 50105 = t := ⟨_, rfl⟩
   rw [htd] at ht₂ hpre₂ hpost₂
   have hpart : PartC P C V c.nmem t := ⟨ht₂, hpre₂, hpost₂⟩
   -- 3. the chord next to the origin
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, b₃, fd₃, nf₃⟩ := chordPost_exec (P := P) hG hW hv htv c₂
-    e₂.wb_right hq₂ (by rw [m₂]; exact hCT) (by rw [htd]; exact ht₂)
+    e₂.wb_right hq₂ (by rwx [m₂]) (by rwx [htd])
   rw [htd, m₂] at fd₃ nf₃
   have hq₃ : QConst P V c₃ := hq₂.frame f₃ fun r h1 h2 => by
-    simp only [BCP, BX2, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  have m₃ : c₃.nmem = c.nmem := f₃.2.2.1.trans m₂
+    sio only [BCP, BX2, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+  have m₃  := f₃.2.2.1.trans m₂
   -- 4. a degenerate start
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, nd₄, d₄⟩ := degS_exec (P := P) hW hv c₃ e₃.wb_right hq₃
     (found := FoundC V c.nmem t) (deg := DegC P C V c.nmem t) (far := farC V c.nmem t) b₃ fd₃
     (fun h => (nf₃ h).2.1) (fun h => (nf₃ h).2.2.1) (fun h => (nf₃ h).2.2.2)
   have hq₄ : QConst P V c₄ := hq₃.frame f₄ fun r h1 h2 => by
-    simp only [BDg, BX, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  have m₄ : c₄.nmem = c.nmem := f₄.2.2.1.trans m₃
+    sio only [BDg, BX, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+  have m₄  := f₄.2.2.1.trans m₃
   have x53 : c₃.nreg 120053 = 0 := by
-    rw [f₃.1 _ (by decide), f₂.1 _ (by decide)]; exact hd
+    rwx [f₃.1 _ (by decide), f₂.1 _ (by decide)]
   have g₂ : FrameB BRest c₁ c₂ := FrameB.mono f₂ fun r hr => by simp [BRest, hr]
   have g₃ : FrameB BRest c₂ c₃ := FrameB.mono f₃ fun r hr => by simp [BRest, hr]
   have g₄ : FrameB BRest c₃ c₄ := FrameB.mono f₄ fun r hr => by simp [BRest, hr]
   by_cases hdg : FoundC V c.nmem t ∧ DegC P C V c.nmem t
   · obtain ⟨h53, hA, hB⟩ := d₄ hdg
-    refine ⟨c₄, _, .seq e₁ (.ifLtN_true (by rw [hd, hq₁.one]; omega) (.seq e₂ (.seq e₃ (.seq e₄
-      (.ifLtN_false (by rw [h53, hq₄.one]; omega) (.skip e₄.wb_right)))))), by omega,
+    refine ⟨c₄, _, .seq e₁ (.ifLtN_true (by rwo [hd, hq₁.one]) (.seq e₂ (.seq e₃ (.seq e₄
+      (.ifLtN_false (by rwo [h53, hq₄.one]) (.skip e₄.wb_right)))))), by omega,
       g₁.trans (g₂.trans (g₃.trans g₄)), Or.inr (Or.inl ⟨hab, t, hpart, hdg.1, hdg.2, hA, hB⟩)⟩
   -- 5. the main phase
-  have x53' : c₄.nreg 120053 = 0 := by rw [nd₄ hdg]; exact x53
+  have x53' : c₄.nreg 120053 = 0 := by rwx [nd₄ hdg]
   have x140 : c₄.nreg 120140 = c₃.nreg 120140 := nd₄ hdg _
   have x141 : c₄.nreg 120141 = c₃.nreg 120141 := nd₄ hdg _
   obtain ⟨c₅, k₅, bD, e₅, hk₅, f₅, hD₅, hbD₅, pk, hloc₅, hit₅, hb₅, o5, o6⟩ :=
-    mainS_exec hcov (P := P) hG hW hs c₄ e₄.wb_right hq₄ (by rw [m₄]; exact hm)
-      (by rw [m₄]; exact hO) (by rw [m₄]; exact hL) hDL htv (NC := NC) (CS := CS)
+    mainS_exec hcov (P := P) hG hW hs c₄ e₄.wb_right hq₄ (by rwx [m₄])
+      (by rwx [m₄]) (by rwx [m₄]) hDL htv (NC := NC) (CS := CS)
       (fun u hu => by rw [m₄]; exact hNC u hu) (fun u hu => by rw [m₄]; exact hCS u hu)
-      (by rw [x140]; exact b₃) (by
+      (by rwx [x140]) (by
         intro bD hbD hbm k hk
         rw [m₄] at hbD
         have := hvalid t hpart hdg bD hbD hbm k hk
@@ -126,18 +129,18 @@ theorem restS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
         rwa [selOf_congr (C := C) (V := V) (bD := bD) (f := c₄.nreg 120140 = 1)
           (f' := FoundC V c.nmem t) (w := c₄.nreg 120141) (w' := nearC V c.nmem t)
           (cb := CBof P C V bD (c₄.nreg 120141)) (cb' := CBof P C V bD (nearC V c.nmem t))
-          (by rw [x140]; exact fd₃) (fun h => by rw [x141]; exact (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1)
-          (fun h => by rw [x141, (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1])])
+          (by rw [x140]; exact fd₃) (fun h => by rw [x141]; exact (nf₃ (fd₃.1 (by rwx [← x140]))).1)
+          (fun h => by rw [x141, (nf₃ (fd₃.1 (by rwx [← x140]))).1])])
   rw [m₄] at hD₅ hit₅ hk₅
   have hsel : selOf C V bD (c₄.nreg 120140 = 1) (c₄.nreg 120141) (CBof P C V bD (c₄.nreg 120141)) =
       selOf C V bD (FoundC V c.nmem t) (nearC V c.nmem t) (CBof P C V bD (nearC V c.nmem t)) :=
     selOf_congr (by rw [x140]; exact fd₃)
-      (fun h => by rw [x141]; exact (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1)
-      (fun h => by rw [x141, (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1])
+      (fun h => by rw [x141]; exact (nf₃ (fd₃.1 (by rwx [← x140]))).1)
+      (fun h => by rw [x141, (nf₃ (fd₃.1 (by rwx [← x140]))).1])
   rw [hsel] at hloc₅
   have g₅ : FrameB BRest c₄ c₅ := FrameB.mono f₅ fun r hr => by simp [BRest, hr]
-  refine ⟨c₅, _, .seq e₁ (.ifLtN_true (by rw [hd, hq₁.one]; omega) (.seq e₂ (.seq e₃ (.seq e₄
-    (.ifLtN_true (by rw [x53', hq₄.one]; omega) e₅))))), by omega,
+  refine ⟨c₅, _, .seq e₁ (.ifLtN_true (by rwo [hd, hq₁.one]) (.seq e₂ (.seq e₃ (.seq e₄
+    (.ifLtN_true (by rwo [x53', hq₄.one]) e₅))))), by omega,
     g₁.trans (g₂.trans (g₃.trans (g₄.trans g₅))),
     Or.inr (Or.inr ⟨hab, t, hpart, hdg, bD, hD₅, hbD₅, pk, fun k hk => ?_, hit₅, hb₅, o5, o6⟩)⟩
   unfold mainPos; exact hloc₅ k hk

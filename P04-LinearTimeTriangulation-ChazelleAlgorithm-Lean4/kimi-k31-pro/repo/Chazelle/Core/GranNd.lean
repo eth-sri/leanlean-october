@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.GranPzExec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F, init part 4: the ring position of a chord end
@@ -69,8 +71,8 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   set SB := c.nmem (B + 6) with hSBdef
   set x : WPos := ⟨c.nreg 50002, c.nreg 50003⟩ with hxdef
   set A₀ := c.nreg ALLOC with hA₀
-  have hA1 : c.nmem (B + 1) = A := hN.2.1
-  have hsl : N.seq.length = A := seq_length hNF
+  have hA1  := hN.2.1
+  have hsl  := seq_length hNF
   have hseq : ∀ i, i < A → c.nmem (SB + i) = N.seq.getD i 0 := fun i hi =>
     hN.2.2.2.2.2.2.2.2.1 i (by omega)
   have hA0 : 0 < A := by
@@ -90,7 +92,7 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have b2 : c₁.nreg 50002 = c.nreg 50002 := f₁.1 _ (by decide)
   have b3 : c₁.nreg 50003 = c.nreg 50003 := f₁.1 _ (by decide)
   have al₁ : c₁.nreg ALLOC = A₀ := f₁.1 _ (by decide)
-  have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have m₁  := f₁.2.2.1
   -- 2. the setup
   obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W locSetup c₁ c₂ k₂ ∧ k₂ = 14 ∧
       (c₂.nreg 10500 = c.nreg 50002 ∧ c₂.nreg 10501 = c.nreg 50003 ∧
@@ -99,12 +101,12 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     unfold locSetup
     exec_block
     · omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
-    · config_simp; rw [b1]; omega
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
+    · config_simp; rwo [b1]
     · refine ⟨rfl, ?_⟩
       config_simp
       rw [b1, b2, b3, m₁]
@@ -113,7 +115,7 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have w₂ := e₂.wb_right
   have f₂ := exec_frameB e₂ wr_locSetup
   have al₂ : c₂.nreg ALLOC = A₀ := (f₂.1 _ (by decide)).trans al₁
-  have m₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans m₁
+  have m₂  := f₂.2.2.1.trans m₁
   -- 3. the search
   set d := dirCode M x.edge with hd
   have hJ₂ : CmpJ x d AB A SB A₀ c.nmem c₂ :=
@@ -125,12 +127,12 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     exact cmpPr_eq hN x hx hst (seq_lt hNF hi)
   obtain ⟨c₃, k₃, e₃, hk₃, hJ₃, hF₃, ht₃, hpre₃, hpost₃⟩ := searchStmt_exec hcmp
     (by decide) w₂ hJ₂ (by rw [al₂]; exact cmpJ_stable x d AB A SB A₀ c.nmem)
-    (by rw [q103, q104, al₂]; exact hSB)
+    (by rwx [q103, q104, al₂])
     (fun i j hij hj hprj => by
       rw [q103, m₂] at hprj ⊢
       rw [q104] at hj
       exact (hpr i (by omega)).2 (KeyPred.mono ((hpr j hj).1 hprj) (seq_sorted hNF hij hj)))
-    (by rw [al₂, q104]; omega)
+    (by rwo [al₂, q104])
   rw [q104] at ht₃ hk₃ hpost₃
   rw [q103, m₂] at hpre₃ hpost₃
   set t := c₃.nreg 50105 with htdef

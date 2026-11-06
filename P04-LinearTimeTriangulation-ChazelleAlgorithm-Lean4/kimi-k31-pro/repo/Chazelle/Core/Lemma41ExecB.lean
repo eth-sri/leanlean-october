@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.Lemma41ExecA
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-J, part 26b: the leaves of Lemma 4.1, executed
@@ -19,7 +23,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
 /-- **The leaves on the RAM.** -/
 theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     {c c5 : Config} (hw5 : WordsBounded W c5) {A h a L lam : ℕ}
@@ -46,7 +49,7 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
       c8.rreg = c5.rreg ∧ c8.rmem = c5.rmem ∧ c8.output = c5.output := by
   have hAl : ALLOC = 9999 := rfl
   have hn3 : 3 ≤ P.n := hG.1.1
-  have hWn' : 128 * P.n + 3 ≤ W := by unfold hostWords at hWh; omega
+  have hWn' : 128 * P.n + 3 ≤ W := by ufo hostWords at hWh
   have hRaw := hR.holds
   have hΛ : 1 ≤ c.nmem h := by omega
   obtain ⟨t0, t1, t2, t3, tS0, tS1, tS1lt, tpow, thalf, tent⟩ := tab_lt hR (by omega) hΛ
@@ -98,22 +101,22 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
   have c75 : ∀ r, r ≠ 160066 → ¬ CovRG r → c7.nreg r = c5.nreg r := fun r a1 a2 => by
     rw [fr7 r a1, fr6 r a2]
   have c7A : c7.nreg ALLOC = A + 7 := by
-    rw [c75 _ (by rw [hAl]; decide) (by rw [hAl]; unfold CovRG AscRG; decide)]; exact h5A
+    rw [c75 _ (by rwd [hAl]) (by rw [hAl]; ufd CovRG AscRG)]; exact h5A
   -- 8. the level array of the leaves
   obtain ⟨c8, k8, e8, hk8, hw8, h8A, h8Ak, hent8, hm87, fr8, hrr8, hrm8, ho8⟩ :=
-    l0S_exec (P := P) hw7 c7A (by rw [fr7 _ (by decide)]; exact h615)
-      (by rw [fr7 _ (by decide)]; exact h614)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s24)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s81)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s82)
-      (by rw [c75 _ (by decide) (by unfold CovRG AscRG; decide)]; exact s87)
+    l0S_exec (P := P) hw7 c7A (by rwx [fr7 _ (by decide)])
+      (by rwx [fr7 _ (by decide)])
+      (by rwx [c75 _ (by decide) (by ufd CovRG AscRG)])
+      (by rwx [c75 _ (by decide) (by ufd CovRG AscRG)])
+      (by rwx [c75 _ (by decide) (by ufd CovRG AscRG)])
+      (by rwx [c75 _ (by decide) (by ufd CovRG AscRG)])
       (by nlinarith)
   have m65 : ∀ x, x < A + 7 → c6.nmem x = c5.nmem x := fun x hx => hm65 x (Or.inl hx)
   have m86 : ∀ x, x < A + 7 + 6 * j → c8.nmem x = c6.nmem x := fun x hx => by
     rw [hm87 x (Or.inl hx), hm7]
   have hLev : LevelAt P c8.nmem (A + 7 + 8 * j) (A + 7 + 6 * j) A (leafShp lam (a + L) a) :=
     leaves_levelAt hR (by omega) hlΛ (by omega) (by omega) (by omega)
-      (fun x hx => m5c x hx) hhost (by rw [hT]; exact hrec) m65
+      (m5c) hhost (by rwx [hT]) m65
       (fun k hk => by
         obtain ⟨u1, u2⟩ := hent8 k hk
         exact ⟨u1, by rw [u2, hm7]⟩)
@@ -122,8 +125,8 @@ theorem l41B_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     fun x hx => by rw [m86 x (by omega), m65 x (by omega), m5c x hx], ?_, ?_,
     fun r a1 a2 a3 a4 => by rw [fr8 r a2 a4]; exact c75 r a3 a1, by rw [hrr8, hrr7, hrr6],
     by rw [hrm8, hrm7, hrm6], by rw [ho8, ho7, ho6]⟩
-  · rw [fr8 _ (by unfold L0RG; decide) (by rw [hAl]; decide), fr7 _ (by decide)]; exact h614
-  · rw [fr8 _ (by unfold L0RG; decide) (by rw [hAl]; decide), b66]; exact h615
+  · rw [fr8 _ (by ufd L0RG) (by rwd [hAl]), fr7 _ (by decide)]; exact h614
+  · rw [fr8 _ (by ufd L0RG) (by rwd [hAl]), b66]; exact h615
 
 end proofs
 

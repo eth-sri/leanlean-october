@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.GranRamApp
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F, RAM part 6: the removal, first half
@@ -89,9 +91,9 @@ theorem mem_take_succ {l : List ℕ} {t : ℕ} (ht : t < l.length) (a : ℕ) :
   simp only [List.mem_append, Option.toList_some, List.mem_singleton, Option.getD_some]
 
 theorem slot_le {D x t R : ℕ} (hx : x < R) (ht : t ≤ D) : D * x + t ≤ R * D := by
-  have : D * x + t ≤ D * (x + 1) := by rw [Nat.mul_succ]; omega
+  have : D * x + t ≤ D * (x + 1) := by rwo [Nat.mul_succ]
   have : D * (x + 1) ≤ D * R := Nat.mul_le_mul_left _ (by omega)
-  rw [Nat.mul_comm R]; omega
+  rwo [Nat.mul_comm R]
 
 /-- Layout facts. -/
 theorem Dm.lay (d : Dm) : d.oExb + d.R = d.oEx ∧ d.oEx + d.R * d.D ≤ d.oTmp ∧
@@ -159,8 +161,8 @@ theorem gather_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Co
           c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem) := by
     unfold rmHead
     exec_block
-    · rw [hC.bExb, h64]; omega
-    · config_simp; rw [hC.bExb, h65]; omega
+    · rwo [hC.bExb, h64]
+    · config_simp; rwo [hC.bExb, h65]
     · omega
     · omega
     · refine ⟨rfl, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 a5 => by simp [upd, a1, a2, a3, a4, a5],
@@ -185,7 +187,7 @@ theorem gather_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Co
       rw [exl_length] at ht
       rw [qm, henc.ex X t hX (by omega), exl_getD _ ht])
     (fun t ht => by rw [exl_length] at ht; left; omega)
-    (by rw [exl_length]; omega) (by omega) (by rw [exl_length]; omega)
+    (by rwo [exl_length]) (by omega) (by rwo [exl_length])
   have hw₂ := e₂.wb_right
   have g₂ : ∀ r, Bapp r = false → c₂.nreg r = c₁.nreg r := F₂.1
   -- reset the counter
@@ -196,7 +198,7 @@ theorem gather_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Co
     (S := d.b0 + d.oEx + d.D * Y) (T := d.b0 + d.oTmp) (D' := d.D + 1) (cc := cc)
     (ℓ₀ := ((st.exl X).filter (· != cc)).length) (l := st.exl Y)
     (P₀ := (st.exl X).filter (· != cc)) _ (by decide) (by decide) hw₃ (by simp [upd])
-    (by config_simp; rw [l₂]; simp) rfl
+    (by config_simp; rws [l₂]) rfl
     (fun i hi => by
       config_simp
       rw [t₂ i (by rw [l₂]; simpa using hi)]; simp)
@@ -214,10 +216,10 @@ theorem gather_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Co
     (fun t ht => by
       rw [exl_length] at ht; left; have := slot_lt (R := d.R) hY (show t < d.D by omega)
       omega)
-    (by rw [exl_length]; omega) (by omega)
-    (by rw [exl_length]; omega)
+    (by rwo [exl_length]) (by omega)
+    (by rwo [exl_length])
   refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · have := exl_length st X; have := exl_length st Y; rw [← hD.D]; omega
+  · have := exl_length st X; have := exl_length st Y; rwo [← hD.D]
   · rw [l₄, List.length_append]
   · rw [F₄.1 _ (by decide)]; config_simp; rw [g₂ _ (by decide), q103]
   · rw [F₄.1 _ (by decide)]; config_simp; rw [g₂ _ (by decide), q104]
@@ -257,14 +259,14 @@ theorem Enc.cond_s0 {m : ℕ → ℕ} {d : Dm} {S : St} (h : Enc m d S) {e : ℕ
       { S with s0 := Function.update S.s0 e (if S.s0 e = Y then X else S.s0 e) } := by
   split_ifs
   · exact h.set_s0 he X
-  · rw [Function.update_eq_self]; exact h
+  · rwx [Function.update_eq_self]
 
 theorem Enc.cond_s1 {m : ℕ → ℕ} {d : Dm} {S : St} (h : Enc m d S) {e : ℕ} (he : e < d.K)
     (X Y : ℕ) : Enc (if S.s1 e = Y then upd m (d.b0 + d.oS1 + e) X else m) d
       { S with s1 := Function.update S.s1 e (if S.s1 e = Y then X else S.s1 e) } := by
   split_ifs
   · exact h.set_s1 he X
-  · rw [Function.update_eq_self]; exact h
+  · rwx [Function.update_eq_self]
 
 /-- Relabel the chord `e` from class `Y` to `X` on either side. -/
 def St.relab (S : St) (e X Y : ℕ) : St :=
@@ -298,7 +300,7 @@ theorem relOne_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
       c₁.nreg 90106 = S.s0 e ∧ (∀ r, r ≠ 90105 → r ≠ 90106 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem) := by
     exec_block
-    · rw [hC.bS0, h102]; omega
+    · rwo [hC.bS0, h102]
     · refine ⟨rfl, ?_, ?_, fun r a1 a2 => by simp [upd, a1, a2], rfl⟩ <;> config_simp
       · rw [hC.bS0, h102]
       · rw [hC.bS0, h102, henc.s0 e he]
@@ -317,7 +319,7 @@ theorem relOne_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
       rw [r₂, qr _ (by decide) (by decide), hC.bS1]
     have c102 : c₂.nreg 90102 = e := by rw [r₂, qr _ (by decide) (by decide), h102]
     exec_block
-    · rw [c32, c102]; omega
+    · rwo [c32, c102]
     · refine ⟨rfl, ?_, ?_, fun r a1 a2 => by simp [upd, a1, a2, r₂, qr r a1 a2], rfl⟩ <;>
         config_simp
       · rw [c32, c102]
@@ -394,7 +396,7 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
       rw [hr₁ 90067 (by decide) (by decide) (by decide) (by decide), h67] at ht
       set t := c₁.nreg 90101 with htdef
       set l := st.exl (st.s1 cc) with hldef
-      have htl : t < l.length := by rw [exl_length]; exact ht
+      have htl : t < l.length := by rwx [exl_length]
       set e₀ := l.getD t 0 with he₀
       have he₀K : e₀ < d.K := hKd _ (by
         rw [he₀, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem htl, Option.getD_some]
@@ -406,7 +408,7 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
           (∀ r, r ≠ 90105 → r ≠ 90102 → c₂.nreg r = c₁.nreg r) ∧ c₂.nmem = c₁.nmem) := by
         have s := slot_le (R := d.R) (D := d.D) hY (show t ≤ d.D by omega)
         exec_block
-        · rw [hr₁ _ (by decide) (by decide) (by decide) (by decide), h104]; omega
+        · rwo [hr₁ _ (by decide) (by decide) (by decide) (by decide), h104]
         · refine ⟨rfl, ?_, fun r a1 a2 => by simp [upd, a1, a2], rfl⟩
           config_simp
           rw [hr₁ _ (by decide) (by decide) (by decide) (by decide), h104,
@@ -424,8 +426,8 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
           (∀ r, r ≠ 90105 → r ≠ 90106 → c₃.nreg r = c₂.nreg r) ∧
           (∀ a, (a < d.b0 + d.oS0 ∨ d.b0 + d.oNd0 ≤ a) → c₃.nmem a = c₂.nmem a) := by
         by_cases hec : e₀ = cc
-        · have n1 : ¬ c₂.nreg 90102 < c₂.nreg 90062 := by rw [q102, c62, hec]; omega
-          have n2 : ¬ c₂.nreg 90062 < c₂.nreg 90102 := by rw [q102, c62, hec]; omega
+        · have n1 : ¬ c₂.nreg 90102 < c₂.nreg 90062 := by rwo [q102, c62, hec]
+          have n2 : ¬ c₂.nreg 90062 < c₂.nreg 90102 := by rwo [q102, c62, hec]
           refine ⟨c₂, _, .ifLtN_false n1 (.ifLtN_false n2 (.skip hw₂)), by omega, ?_,
             fun _ _ _ => rfl, fun _ _ => rfl⟩
           rw [qm]
@@ -446,7 +448,7 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
             rw [qr _ (by decide) (by decide), hr₁ _ (by decide) (by decide) (by decide) (by decide),
               h65]
           obtain ⟨c₃, k₃, ex₃, hk₃, enc₃, r₃, m₃⟩ := relOne_exec (P := P) hw₂ hC₂
-            (by rw [qm]; exact henc₁) hD he₀K q102 c64 c65
+            (by rwx [qm]) hD he₀K q102 c64 c65
           have fin : Enc c₃.nmem d (st.rel cc (l.take (t + 1))) := by
             refine enc₃.st_congr (fun _ _ => rfl) (fun i _ => ?_) (fun i _ => ?_)
               (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
@@ -459,23 +461,23 @@ theorem relStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : C
               · rw [Function.update_of_ne hi]
                 simp [hi]
           by_cases hlt : e₀ < cc
-          · exact ⟨c₃, _, .ifLtN_true (by rw [q102, c62]; exact hlt) ex₃, by omega, fin, r₃, m₃⟩
-          · exact ⟨c₃, _, .ifLtN_false (by rw [q102, c62]; exact hlt)
-              (.ifLtN_true (by rw [q102, c62]; omega) ex₃), by omega, fin, r₃, m₃⟩
+          · exact ⟨c₃, _, .ifLtN_true (by rwx [q102, c62]) ex₃, by omega, fin, r₃, m₃⟩
+          · exact ⟨c₃, _, .ifLtN_false (by rwx [q102, c62])
+              (.ifLtN_true (by rwo [q102, c62]) ex₃), by omega, fin, r₃, m₃⟩
       have hw₃ := ex₃.wb_right
       have c101 : c₃.nreg 90101 = t := by rw [r₃ _ (by decide) (by decide), qr _ (by decide) (by decide)]
       have c19 : c₃.nreg 90019 = 1 := by
         rw [r₃ _ (by decide) (by decide), qr _ (by decide) (by decide),
           hr₁ _ (by decide) (by decide) (by decide) (by decide), hC.one]
-      have ex₄ := Exec.addN (P := P) hw₃ 90101 90101 90019 (by rw [c101, c19]; omega)
+      have ex₄ := Exec.addN (P := P) hw₃ 90101 90101 90019 (by rwo [c101, c19])
       refine ⟨_, _, .seq ex₂ (.seq ex₃ ex₄), ⟨ex₄.wb_right, ?_, ?_, ?_, ?_⟩, by omega, ?_⟩
-      · config_simp; rw [c101, c19]; omega
+      · config_simp; rwo [c101, c19]
       · config_simp; rw [c101, c19]; exact enc₃
       · intro r a1 a2 a3 a4
         config_simp
         rw [upd_other _ _ _ a1, r₃ r a3 a4, qr r a3 a2, hr₁ r a1 a2 a3 a4]
       · intro a ha; config_simp; rw [m₃ a ha, qm, hm₁ a ha]
-      · config_simp; rw [c101, c19]; omega) I0
+      · config_simp; rwo [c101, c19]) I0
   obtain ⟨hw', ht', henc', hr', hm'⟩ := I'
   rw [hr' 90067 (by decide) (by decide) (by decide) (by decide)] at hx
   rw [h67] at hx

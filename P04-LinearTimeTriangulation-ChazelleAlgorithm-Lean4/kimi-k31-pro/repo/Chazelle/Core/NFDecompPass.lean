@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.NFDecompRooted
+public import Chazelle.RewriteTactics
 
 /-!
 # Tree decomposition (WP-C), part 2: the size and top passes
@@ -58,7 +59,7 @@ theorem sum_kids_split {v p r : ℕ} (hr : r < R) (hpr : pos r = p) :
       simp [hpr]
     · have hne : pos c ≠ p := fun e => hcr (h.pos_inj hc.1 hr (e.trans hpr.symm))
       by_cases h1 : p ≤ pos c
-      · rw [ite_eq_left h1, ite_eq_right hcr, ite_eq_left (by omega)]; simp
+      · rws [ite_eq_left h1, ite_eq_right hcr, ite_eq_left (by omega)]
       · rw [ite_eq_right h1, ite_eq_right hcr, ite_eq_right (by omega)]
   rw [Finset.sum_congr rfl hpt, Finset.sum_add_distrib, Finset.sum_ite_eq']
   congr 1
@@ -87,7 +88,7 @@ theorem p1_fold {j : ℕ} (hj : j ≤ R) {u : ℕ} (hu : u < R) :
     have hjR : j < R := by omega
     have hp : R - 1 - j < R := by omega
     have hr : ord (R - 1 - j) < R := h.ord_lt _ hp
-    have hpr : pos (ord (R - 1 - j)) = R - (j + 1) := by rw [h.pos_ord _ hp]; omega
+    have hpr : pos (ord (R - 1 - j)) = R - (j + 1) := by rwo [h.pos_ord _ hp]
     have ih' : ∀ v, v < R → ((List.range j).foldl (p1 R ord prg pch rem) ones) v =
         1 + ∑ c ∈ (kids R prg pch rem v).filter (fun c => R - j ≤ pos c), sz R prg pch rem c :=
       fun v hv => ih (by omega) hv
@@ -188,8 +189,8 @@ theorem cval_pos {t c : ℕ} (hc : c < R) (htc : AncX R prg pch rem t c) (hne : 
 theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch rem u) {st : T3}
     (hI : P2Inv R pos prg pch rem i st) : P2Inv R pos prg pch rem (i + 1) (p2 ord prg pch rem S st i) := by
   obtain ⟨hA, hB⟩ := hI
-  have hr : ord i < R := h.ord_lt i hi
-  have hpr : pos (ord i) = i := h.pos_ord i hi
+  have hr  := h.ord_lt i hi
+  have hpr  := h.pos_ord i hi
   unfold p2
   generalize ord i = r at hr hpr ⊢
   -- positions `< i + 1` are positions `< i` or `r`
@@ -240,14 +241,14 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
         · have := (AncX.pos_le h htc hc).2.2 (Ne.symm hct)
           omega
   · rw [ite_eq_right htop]
-    have hrnt : ¬ IsTop pch rem r := htop
+    have hrnt  := htop
     simp only [not_or] at htop
     have hr0 := htop.1
-    have hprR : prg r < R := h.prg_lt r hr hr0
+    have hprR  := h.prg_lt r hr hr0
     have hppr : pos (prg r) < i := by rw [← hpr]; exact h.pos_prg r hr hr0
     obtain ⟨htR, httop, htanc⟩ := hA (prg r) hprR hppr
     generalize st.top (prg r) = t at htR httop htanc ⊢
-    have htr : AncX R prg pch rem t r := htanc.tail ⟨hr, hr0, rfl, htop.2⟩
+    have htr  := htanc.tail ⟨hr, hr0, rfl, htop.2⟩
     have htne : t ≠ r := by
       intro e
       rw [e] at httop
@@ -256,7 +257,7 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
       have := (AncX.pos_le h htr hr).2.2 htne
       omega
     have hval : min (S r) (S t - S r) = cval R prg pch rem t r := by
-      rw [hS r hr, hS t htR]; rfl
+      rwr [hS r hr, hS t htR]
     rw [hval]
     -- the top of `r`
     have hA' : ∀ u, u < R → pos u < i + 1 → Function.update st.top r t u < R ∧
@@ -314,7 +315,7 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
           refine ⟨fun c hc htc hct hpc => ?_, ?_⟩
           · rcases hlt c hc hpc with h2 | h2
             · exact hB1 c hc htc hct h2
-            · rw [h2]; omega
+            · rwo [h2]
           · rcases hB2 with ⟨b1, b2, b3⟩ | ⟨b1, b2, b3, b4, b5⟩
             · omega
             · exact Or.inr ⟨b1, b2, b3, by omega, b5⟩

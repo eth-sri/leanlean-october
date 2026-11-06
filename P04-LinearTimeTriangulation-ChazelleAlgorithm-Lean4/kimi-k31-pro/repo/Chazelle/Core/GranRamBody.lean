@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.GranRamJw
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-F, RAM part 4: the front of the worklist body and the merged weight
@@ -50,7 +53,7 @@ theorem bx_le {E : Env} {st : St} (hE : E.Good) (h : StatOK E st) {j : ℕ} (hj 
   unfold Env.sz cntIn bB
   have hnE : E.n = E.M.W.n := rfl
   cases hch : E.ch with
-  | false => simp only [Bool.false_eq_true, ite_false]; omega
+  | false => sio only [Bool.false_eq_true, ite_false]
   | true =>
     have hn := hE.hn hch
     simp only [ite_true]
@@ -105,9 +108,9 @@ theorem front_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀
   · config_simp; rw [hC.bStk, h.top, hC.one]; dm_simp; omega
   · config_simp; rw [hC.bStk, h.top, hC.one, hC.bLive, show d.b0 + d.oStk + (st.top - 1) =
       d.b0 + d.oStk + (st.top - 1) from rfl, h.enc.stk _ (by omega)]
-    unfold St.cur at hcurK; dm_simp; rw [hD.K] at *; omega
+    unfold St.cur at hcurK; dm_simp; rwo [hD.K] at *
   · have e1 : c.nmem (d.b0 + d.oStk + (st.top - 1)) = st.cur := h.enc.stk _ (by omega)
-    have e2 : c.nmem (d.b0 + st.cur) = st.live st.cur := h.enc.live _ (by rw [hD.K]; exact hcurK)
+    have e2 : c.nmem (d.b0 + st.cur) = st.live st.cur := h.enc.live _ (by rwx [hD.K])
     refine ⟨rfl, ?_, ?_, hcurK, fun r a1 a2 a3 a4 => by simp [upd, a1, a2, a3, a4], rfl⟩
     · config_simp; rw [hC.bStk, h.top, hC.one, e1]
     · config_simp; rw [hC.bStk, h.top, hC.one, e1, hC.bLive, e2]
@@ -130,9 +133,9 @@ theorem xy_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
   have e1 : c.nmem (d.b0 + d.oS0 + cc) = st.s0 cc := henc.s0 _ hcK
   have e2 : c.nmem (d.b0 + d.oS1 + cc) = st.s1 cc := henc.s1 _ hcK
   have e3 : c.nmem (d.b0 + d.oDeg + st.s0 cc) = st.deg (st.s0 cc) :=
-    henc.deg _ (by rw [hD.R]; exact hX)
+    henc.deg _ (by rwx [hD.R])
   have e4 : c.nmem (d.b0 + d.oDeg + st.s1 cc) = st.deg (st.s1 cc) :=
-    henc.deg _ (by rw [hD.R]; exact hY)
+    henc.deg _ (by rwx [hD.R])
   have hR : st.s0 cc < d.R ∧ st.s1 cc < d.R := by rw [hD.R]; exact ⟨hX, hY⟩
   have hb := hD.base
   unfold xyStmt
@@ -166,9 +169,9 @@ theorem bitSet_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       k ≤ 3 ∧ c'.nreg rd = bit (decide (c.nreg rk = 1)) ∧
       (∀ r, r ≠ rd → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   by_cases h : c.nreg rk < 2
-  · exact ⟨_, _, .ifLtN_true (by rw [h21]; exact h) (Exec.constN hw rd 1 hW), by omega,
+  · exact ⟨_, _, .ifLtN_true (by rwx [h21]) (Exec.constN hw rd 1 hW), by omega,
       by simp [upd, bit, show c.nreg rk = 1 by omega], fun r hr => by simp [upd, hr], rfl⟩
-  · exact ⟨_, _, .ifLtN_false (by rw [h21]; exact h) (Exec.constN hw rd 0 (by omega)),
+  · exact ⟨_, _, .ifLtN_false (by rwx [h21]) (Exec.constN hw rd 0 (by omega)),
       by omega, by simp [upd, bit, show c.nreg rk ≠ 1 by omega], fun r hr => by simp [upd, hr],
       rfl⟩
 
@@ -216,10 +219,10 @@ theorem nd_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
       · exact hC.two
   obtain ⟨q68, q69, q70, q71, q21⟩ := q
   obtain ⟨c₂, k₂, ex₂, hk₂, b₂, r₂, -⟩ := bitSet_exec (P := P) (rk := 90070) (rd := 90072) c₁
-    ex₁.wb_right (by have := hD.W1; omega) q21 (by rw [q70]; exact hL0)
+    ex₁.wb_right (by have := hD.W1; omega) q21 (by rwx [q70])
   obtain ⟨c₃, k₃, ex₃, hk₃, b₃, r₃, -⟩ := bitSet_exec (P := P) (rk := 90071) (rd := 90073) c₂
     ex₂.wb_right (by have := hD.W1; omega) (by rw [r₂ _ (by decide), q21])
-    (by rw [r₂ _ (by decide), q71]; exact hL1)
+    (by rwx [r₂ _ (by decide), q71])
   refine ⟨c₃, _, .seq ex₁ (.seq ex₂ ex₃), by omega, ?_, ?_, ?_, ?_⟩
   · rw [r₃ _ (by decide), r₂ _ (by decide), q68]
   · rw [r₃ _ (by decide), r₂ _ (by decide), q69]
@@ -291,10 +294,10 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
   have hnl : 1 ≤ st.nlive := by rw [hI.nlive]; exact (Set.ncard_pos hfin).2 ⟨cc, hc⟩
   unfold muStmt St.mu
   by_cases h1 : st.nlive = 1
-  · refine spec_ifLtN_false (by rw [hC.one, h51]; omega)
+  · refine spec_ifLtN_false (by rwo [hC.one, h51])
       (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by omega, ?_⟩)
-    config_simp; rw [ite_eq_left h1, hC.sz]; rfl
-  refine spec_ifLtN_true (by rw [hC.one, h51]; omega) ?_
+    config_simp; rwr [ite_eq_left h1, hC.sz]
+  refine spec_ifLtN_true (by rwo [hC.one, h51]) ?_
   rw [ite_eq_right h1]
   obtain ⟨hX, hY, -, -⟩ := hI.sides cc hc
   rw [← hD.R] at hX hY
@@ -325,7 +328,7 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
     obtain ⟨⟨a, b, -, -⟩, ⟨a', b', -, -⟩⟩ := hI.ring j hj hL
     exact ⟨a', b', a, b⟩
   have hbx : ∀ j, j < d.A → st.eg j + st.pz j ≤ E.sz := fun j hj =>
-    bx_le hE hI.stat (by rw [← hD.A]; exact hj)
+    bx_le hE hI.stat (by rwx [← hD.A])
   obtain ⟨hn0, -⟩ := hI.stat.nd0 cc hc.1
   obtain ⟨hn1, -⟩ := hI.stat.nd1 cc hc.1
   have hL0 := (hI.lv_iff hn0).2 ⟨cc, hc, Or.inl rfl⟩
@@ -334,7 +337,7 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
   have hC₁ : Cst c₁ E d := hC.frame fun r hr _ => qr r (by omega) (by omega) (by omega)
     (by omega) (by omega)
   obtain ⟨c₂, k₂, ex₂, hk₂, j₂, f₂⟩ := jwStmt_exec (P := P) c₁ ex₁.wb_right hW1 hC₁
-    (by rw [qm]; exact henc) (cc := cc) (k := st.nd0 cc) q86 q87
+    (by rwx [qm]) (cc := cc) (k := st.nd0 cc) q86 q87
     (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h68])
     (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h69])
     (by rw [qr _ (by decide) (by decide) (by decide) (by decide) (by decide), h72])
@@ -367,7 +370,7 @@ theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
     (by omega) (by omega)
   have m4 : c₄.nmem = c.nmem := by rw [qm', q3m, f₂.2.2.1, qm]
   obtain ⟨c₅, k₅, ex₅, hk₅, j₅, f₅⟩ := jwStmt_exec (P := P) c₄ ex₄.wb_right hW1 hC₄
-    (by rw [m4]; exact henc) (cc := cc) (k := st.nd1 cc) q86' q87'
+    (by rwx [m4]) (cc := cc) (k := st.nd1 cc) q86' q87'
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h68])
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h69])
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h72])

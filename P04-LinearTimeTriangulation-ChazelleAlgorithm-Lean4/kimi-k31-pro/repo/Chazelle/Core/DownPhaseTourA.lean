@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseLocal
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (X, part 4): side `A` of the tour of a chain
@@ -85,7 +87,7 @@ theorem tourA_succ {k : ℕ} (hk : k + 1 < 2 * C.m) (hne : k + 1 ≠ sA C β) :
   rcases Nat.lt_or_ge k (sA C β) with h | h
   · -- `k < sA`, so `k + 1 < sA`
     have h' : k + 1 < sA C β := lt_of_le_of_ne h hne
-    rw [Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+    rwo [Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)]
   · rw [show k + 1 + 2 * C.m - sA C β = (k + 1 - sA C β) + 2 * C.m by omega,
       show k + 2 * C.m - sA C β = (k - sA C β) + 2 * C.m by omega,
       Nat.add_mod_right, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega),
@@ -107,7 +109,7 @@ theorem sideLeft_tourA_vtx {k : ℕ} (h0 : 0 < k) (hk : k < C.m) (hne : k ≠ sA
       sideLeftOf (C.vertex (k - 1)) (C.vertex k) (C.vertex (k + 1)) x := by
   have hpos := tourA_pos (C := C) (β := β) (show k < 2 * C.m by omega) hne
   have hsucc : tourA C β k = tourA C β (k - 1) + 1 := by
-    have := tourA_succ (C := C) (β := β) (k := k - 1) (by omega) (by rw [Nat.sub_add_cancel h0]; exact hne)
+    have := tourA_succ (C := C) (β := β) (k := k - 1) (by omega) (by rwx [Nat.sub_add_cancel h0])
     rw [Nat.sub_add_cancel h0] at this; exact this
   rw [C.sideLeft_tour_inner β hpos (tourA_lt k)]
   unfold Chain.sideTour

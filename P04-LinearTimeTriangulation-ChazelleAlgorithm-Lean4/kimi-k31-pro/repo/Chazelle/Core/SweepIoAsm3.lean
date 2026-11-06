@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SweepIoAsm2
 public import Chazelle.Core.NFBuildPassRam
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep RAM (WP-D), the assembly (piece I), part 3: the program and the cost
@@ -78,18 +79,18 @@ theorem asm_cost {κE κ0 κL f Λ l₁ n₁ nT K₁ K₂ Lq S Lg TLR A₁ k₂ 
     calc k₅ ≤ κ0 * (S + Lg + 2 * K₂ + 1) * (TLR + 1) := h₅
       _ ≤ κ0 * (34 * nT) * (7 * (f + Λ + 1)) := by
         apply Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
-      _ = 238 * κ0 * X := by rw [hX]; ring
+      _ = 238 * κ0 * X := by rwring [hX]
   have e7 : k₇ ≤ 10 * κL * X := by
     have a : κL * (Lq + 1) * (f + TLR + 1) ≤ κL * nT * (7 * (f + Λ + 1)) :=
       Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
     have b : κL * (A₁ + 1) * (f + 1) ≤ κL * (3 * nT) * (f + Λ + 1) :=
       Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
     calc k₇ ≤ κL * nT * (7 * (f + Λ + 1)) + κL * (3 * nT) * (f + Λ + 1) := by omega
-      _ = 10 * κL * X := by rw [hX]; ring
+      _ = 10 * κL * X := by rwring [hX]
   have e0 : 2 + k₂ + k₄ + 1 ≤ 1000 * X := by omega
   calc 2 + (k₂ + (k₃ + (k₄ + (k₅ + (1 + k₇))))) ≤
         κE * X + 238 * κ0 * X + 10 * κL * X + 1000 * X := by omega
-    _ = (κE + 238 * κ0 + 10 * κL + 1000) * nT * (f + Λ + 1) := by rw [hX]; ring
+    _ = (κE + 238 * κ0 + 10 * κL + 1000) * nT * (f + Λ + 1) := by rwring [hX]
 
 end
 

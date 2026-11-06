@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.SweepEvDet
 public import Chazelle.Core.SweepEvNoTie
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), stage 3: the step of the event loop
@@ -51,10 +53,10 @@ theorem f2_cases {S₂ : Set (Set Point)} (_hS₂ : S₂ ⊆ Merge.augChords J.r
     exact Or.inr (Or.inl ⟨σ, hσ, (Merge.freeAt_vertex _ _ _).2 hfree, rfl⟩)
   · obtain ⟨σ, hσ, hfree, rfl⟩ := htop
     have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
-      rw [Merge.Junction.whole_vertex_add]; rfl
+      rwr [Merge.Junction.whole_vertex_add]
     refine Or.inr (Or.inr ⟨σ, hσ, ?_, ?_⟩)
     · rw [← hv]; exact (Merge.freeAt_vertex _ _ _).2 hfree
-    · rw [← hv]; rfl
+    · rwr [← hv]
 
 /-- A chord seen from an end of a chord of `S₂` along it lies in it. -/
 theorem shoot_sub_end {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) {c : Set Point}
@@ -109,7 +111,7 @@ theorem nonstop_found (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
           s ⊆ c)) := by
   have hS₂a := hS₂.2.1
   have hS₂f := hS₂.1
-  have hNTV : NoTieV J S₂ := noTieV hP hS₂a
+  have hNTV  := noTieV hP hS₂a
   have hLt : (Lst J : ℝ) < oW J (pK + tK) := by linarith
   obtain ⟨c, hc, a, σ, ha, haR, hav, hat, hfree, rfl⟩ := nonstop_cases hS₂a he hns
   have hsub := shoot_sub_end hS₂a hc ha
@@ -161,7 +163,7 @@ theorem Lst_pos (J : Merge.Junction) : (0 : ℝ) < Lst J := by
   have h2 : J.right.m = J.m₂ := rfl
   have : 0 < Lst J := by
     unfold Lst; rw [rL1_add_rL2]; unfold rlen
-    split_ifs <;> omega
+    splao
   exact_mod_cast this
 
 /-- **The label rule at a key.**  From the invariant at `oL`, at the next key `K` (no cut in

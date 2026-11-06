@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.OraclePrepClus
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 25: the list of `D*`, the order by label, the ranks
@@ -54,7 +59,7 @@ theorem flBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c₁.nreg 60107 = c.nmem (FL + v) ∧ (∀ r, r ≠ 60107 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem := by
     exec_block
-    · rw [hFL, hv]; exact hW
+    · rwx [hFL, hv]
     · refine ⟨rfl, by config_simp; rw [hFL, hv], fun r hr => ?_, rfl⟩
       config_simp; simp only [upd_apply, ite_eq_right hr]
   have hW1 : 1 ≤ W := by have := hw.1 120011; rw [h1] at this; exact this
@@ -69,17 +74,17 @@ theorem flBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       exec_block
       · omega
       · exact ⟨rfl, by config_simp, by config_simp; exact gv⟩
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [v7, g1, hf]; omega)
-      (.ifLtN_false (by rw [v7, g1, hf]; omega) e₂)), by omega, fun x hx => ?_⟩
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rwo [v7, g1, hf])
+      (.ifLtN_false (by rwo [v7, g1, hf]) e₂)), by omega, fun x hx => ?_⟩
     subst hx; exact ⟨a, b, b⟩
   · simp only [hf, ite_false, forall_const, reduceCtorEq, false_imp_iff, and_true]
     rcases Nat.lt_or_gt_of_ne hf with h | h
     · have e₂ := Exec.constN (P := P) w₁ 60104 0 (Nat.zero_le _)
-      exact ⟨_, _, .seq e₁ (.ifLtN_true (by rw [v7, g1]; exact h) e₂), by omega,
+      exact ⟨_, _, .seq e₁ (.ifLtN_true (by rwx [v7, g1]) e₂), by omega,
         by config_simp⟩
     · have e₂ := Exec.constN (P := P) w₁ 60104 0 (Nat.zero_le _)
-      exact ⟨_, _, .seq e₁ (.ifLtN_false (by rw [v7, g1]; omega)
-        (.ifLtN_true (by rw [v7, g1]; exact h) e₂)), by omega, by config_simp⟩
+      exact ⟨_, _, .seq e₁ (.ifLtN_false (by rwo [v7, g1])
+        (.ifLtN_true (by rwx [v7, g1]) e₂)), by omega, by config_simp⟩
 
 /-- **The list of `D*`.** -/
 def dlS : Stmt :=
@@ -104,11 +109,11 @@ theorem dlS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {�
       (∀ r, r ≠ 60100 → r ≠ 60101 → r ≠ 9999 → r ≠ 60102 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     exec_block
-    · config_simp; rw [hAl, hμ]; omega
-    · config_simp; rw [hAl, hμ]; omega
+    · config_simp; rwo [hAl, hμ]
+    · config_simp; rwo [hAl, hμ]
     · omega
     · refine ⟨rfl, by config_simp; exact hAl, by config_simp; rw [hAl, hμ],
-        by config_simp; rw [hAl, hμ]; ring, by config_simp, fun r a b d e => ?_, rfl, rfl, rfl, rfl⟩
+        by config_simp; rwring [hAl, hμ], by config_simp, fun r a b d e => ?_, rfl, rfl, rfl, rfl⟩
       config_simp; simp only [upd_apply]
       rw [ite_eq_right e, ite_eq_right d, ite_eq_right b, ite_eq_right a]
   let J : Config → Prop := fun d => d.nreg 130004 = FL ∧ d.nreg 120011 = 1 ∧
@@ -135,7 +140,7 @@ theorem dlS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {�
   simp only [Nat.add_zero, Nat.zero_add] at cnt pairs mem
   refine ⟨c', _, .seq e₁ ex, by omega, fun r hr h9 => ?_, fun r hr => by rw [rr' r hr, rr₁],
     fun a ha => by rw [mem a (Or.inl ha), m₁], by rw [rm, rm₁], by rw [o, o₁], ?_, ?_, cnt, pairs⟩
-  · rw [r' r (by unfold BFl; simp only [decide_eq_false_iff_not]; omega) (by omega) (by omega)
+  · rw [r' r (by unfold BFl; sio only [decide_eq_false_iff_not]) (by omega) (by omega)
       (by omega), K₁ r (by omega) (by omega) h9 (by omega)]
   · rw [r' _ (by decide) (by decide) (by decide) (by decide), a99]
   · rw [r' _ (by decide) (by decide) (by decide) (by decide), a100]
@@ -241,8 +246,8 @@ theorem rkBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b⟩
   unfold rkBody
   exec_block
-  · rw [h7, hi]; exact hb1
-  · config_simp; rw [h7, hi, h10]; exact hb2
+  · rwx [h7, hi]
+  · config_simp; rwx [h7, hi, h10]
   · exact ⟨by omega, by config_simp; rw [h7, hi, h10], by config_simp; exact hi⟩
 
 theorem rkS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ ORD A : ℕ}
@@ -253,10 +258,10 @@ theorem rkS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {�
       (∀ r, (r < 60110 ∨ 60114 < r) → r ≠ 9999 → c'.nreg r = c.nreg r) ∧
       (∀ r, (r < 60110 ∨ 60114 < r) → c'.rreg r = c.rreg r) ∧ c'.rmem = c.rmem ∧ c'.output = c.output ∧
       c'.nreg 60110 = A ∧ c'.nreg 9999 = A + μ ∧
-      c'.nmem = scat c.nmem (fun i => A + c.nmem (ORD + i)) (fun i => i) μ := by
+      c'.nmem = scat c.nmem (fun i => A + c.nmem (ORD + i)) (id) μ := by
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, rr₁, a10, a99⟩ := allocS_exec (P := P) hw (rb := 60110) (rn := 60034)
     (A := A) (n := μ) (by decide) hAl hμ (by decide) hW
-  have hm₁ : c₁.nmem = c.nmem := F₁.2.2.1
+  have hm₁  := F₁.2.2.1
   obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, -, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60112) (rn := 60034) (r1 := 120011) (ra := 60113) (rv := 60114) (body := rkBody)
     (B := fun r => decide (r = 60111 ∨ r = 60113 ∨ r = 60114)) (by decide) (by decide)
@@ -265,7 +270,7 @@ theorem rkS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {�
     (fun d d' hJ hr hm => ⟨by rw [hr _ (by decide) (by decide)]; exact hJ.1,
       by rw [hr _ (by decide) (by decide)]; exact hJ.2.1,
       fun a ha => by rw [hm a ha]; exact hJ.2.2 a ha⟩)
-    (n := μ) (κ := 4) (fun i => A + c.nmem (ORD + i)) (fun i => i) (fun i _ => by omega)
+    (n := μ) (κ := 4) (fun i => A + c.nmem (ORD + i)) (id) (fun i _ => by omega)
     (fun i d hi hJd hwd hri => by
       have e : d.nmem (ORD + i) = c.nmem (ORD + i) := hJd.2.2 _ (by omega)
       obtain ⟨d', k, ex, hk, F, v1, v2⟩ := rkBody_exec (P := P) hwd hJd.1 hJd.2.1 hri (by omega)
@@ -276,16 +281,15 @@ theorem rkS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {�
   refine ⟨c', _, .seq e₁ ex, by nlinarith, fun r hr h9 => ?_, ?_, by rw [rm, F₁.2.2.2.1],
     by rw [o, F₁.2.2.2.2], by rw [r' _ (by decide) (by decide), a10],
     by rw [r' _ (by decide) (by decide), a99], by rw [mm, hm₁]⟩
-  · rw [r' r (by simp only [decide_eq_false_iff_not]; omega) (by omega),
-      F₁.1 r (by simp only [decide_eq_false_iff_not]; omega)]
+  · rw [r' r (by sio only [decide_eq_false_iff_not]) (by omega),
+      F₁.1 r (by sio only [decide_eq_false_iff_not])]
   · intro r hr
-    rw [rr' r (by simp only [decide_eq_false_iff_not]; omega), rr₁]
+    rw [rr' r (by sio only [decide_eq_false_iff_not]), rr₁]
 
 /-- The band-`6` registers kept by `ordStage`. -/
 def OKeep (r : ℕ) : Prop :=
   r < 60004 ∨ (60008 ≤ r ∧ r ≤ 60015) ∨ (60021 ≤ r ∧ r ≤ 60099) ∨ 60115 ≤ r
 
-set_option maxHeartbeats 4000000 in
 theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     {μ FL LAB A₀ : ℕ} (hμ : c.nreg 60034 = μ) (hFL : c.nreg 130004 = FL)
     (hLAB : c.nreg 130005 = LAB) (h1 : c.nreg 120011 = 1) (hAl : c.nreg ALLOC = A₀)
@@ -333,10 +337,10 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
   set ORD := c₃.nreg 60007 with hORD
   set A₃ := c₃.nreg 9999 with hA₃
   have mem₃ : ∀ a, a < A₀ + 2 * μ → c₃.nmem a = c₁.nmem a := fun a ha => by
-    rw [F₃.2.2.1 a (by rw [hAL, c99]; exact ha), hm₂]
+    rw [F₃.2.2.1 a (by rwx [hAL, c99]), hm₂]
   -- 4. the ranks
   have d34 : c₃.nreg 60034 = μ := by
-    rw [R₃ _ (by unfold bandOf; norm_num) (by decide) (by decide) (by decide) (by decide),
+    rw [R₃ _ (by ufn bandOf) (by decide) (by decide) (by decide) (by decide),
       F₂.1 _ (by decide), b60034]
   have d1 : c₃.nreg 120011 = 1 := by
     rw [F₃.1 _ (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]) (by decide), c1]
@@ -347,14 +351,14 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
   have ex : Exec P W ordStage c c₄ _ := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have K6 : ∀ r, bandOf r = 6 → OKeep r → c₄.nreg r = c.nreg r := fun r hr hk => by
     unfold OKeep at hk; unfold bandOf at hr
-    rw [r₄ r (by omega) (by omega), R₃ r (by unfold bandOf; omega) (by omega) (by omega) (by omega)
-      (by omega), F₂.1 r (by simp only [decide_eq_false_iff_not]; omega),
+    rw [r₄ r (by omega) (by omega), R₃ r (by ufo bandOf) (by omega) (by omega) (by omega)
+      (by omega), F₂.1 r (by sio only [decide_eq_false_iff_not]),
       r₁ r (by omega) (by omega)]
   have g100 : c₄.nreg 60100 = A₀ := by
-    rw [r₄ _ (by omega) (by omega), R₃ _ (by unfold bandOf; norm_num) (by decide) (by decide)
+    rw [r₄ _ (by omega) (by omega), R₃ _ (by ufn bandOf) (by decide) (by decide)
       (by decide) (by decide), F₂.1 _ (by decide), a100]
   have g102 : c₄.nreg 60102 = L.length := by
-    rw [r₄ _ (by omega) (by omega), R₃ _ (by unfold bandOf; norm_num) (by decide) (by decide)
+    rw [r₄ _ (by omega) (by omega), R₃ _ (by ufn bandOf) (by decide) (by decide)
       (by decide) (by decide), F₂.1 _ (by decide), cnt]
   have g7 : c₄.nreg 60007 = ORD := r₄ _ (by omega) (by omega)
   have mem : ∀ a, a < A₀ → c₄.nmem a = c.nmem a := fun a ha => by
@@ -376,11 +380,11 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
     have FA : FrameN dBands c c₂ := PF.frameN (B := fun r => decide (bandOf r = 6) || decide (r = 9999))
       ⟨fun r hr => by
         have := b6_ne hr
-        rw [F₂.1 r (by simp only [decide_eq_false_iff_not]; omega), r₁ r (by omega) this.1],
+        rw [F₂.1 r (by sio only [decide_eq_false_iff_not]), r₁ r (by omega) this.1],
       fun r hr => by
         have := b6_ne hr
-        rw [F₂.2.1 r (by simp only [decide_eq_false_iff_not]; omega),
-          rr₁ r (by unfold BFl; simp only [decide_eq_false_iff_not]; omega)],
+        rw [F₂.2.1 r (by sio only [decide_eq_false_iff_not]),
+          rr₁ r (by unfold BFl; sio only [decide_eq_false_iff_not])],
       fun a ha => by rw [hAL, hAl'] at ha; rw [hm₂, mem₁ a ha],
       fun a _ => by rw [F₂.2.2.2.1, rm₁], by rw [F₂.2.2.2.2, o₁]⟩ B6
       (by rw [hAL, F₂.2.1 _ (by decide), rr₁ _ (by decide)])
@@ -393,12 +397,12 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
         exact rr₄ r (by omega),
       fun a ha => by rw [hAL] at ha; exact below₄ a ha,
       fun a _ => by rw [rm₄], by rw [o₄]⟩ B6 (by rw [hAL]; exact rr₄ _ (by omega))
-    exact (FA.trans F₃ (by rw [hAL, hAl', c99]; omega)).trans FC
-      (by rw [hAL, hAl']; omega)
-  · rw [hAL, v99]; omega
-  · rw [hAL, v99]; omega
-  · rw [g100, g102, hAL, v99]; omega
-  · rw [g7, hAL, v99]; omega
+    exact (FA.trans F₃ (by rwo [hAL, hAl', c99])).trans FC
+      (by rwo [hAL, hAl'])
+  · rwo [hAL, v99]
+  · rwo [hAL, v99]
+  · rwo [g100, g102, hAL, v99]
+  · rwo [g7, hAL, v99]
   · rw [v110, hAL, v99]
   · rw [g100, g102, g7, v110]
     have hFLm : ∀ v, v < μ → c₄.nmem (FL + v) = c.nmem (FL + v) := fun v hv => mem _ (by omega)
@@ -437,9 +441,9 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
           rw [hORDm i (by omega), hORDm j hj, below₄ (LAB + c₃.nmem (ORD + i)) (by omega),
             below₄ (LAB + c₃.nmem (ORD + j)) (by omega)]
           simp only at hs
-          rw [F₃.2.2.1 (LAB + c₃.nmem (ORD + i)) (by rw [hAL, c99]; omega),
-            F₃.2.2.1 (LAB + c₃.nmem (ORD + j)) (by rw [hAL, c99]; omega)]
-          unfold PLe at hs; simp only at hs; omega }
+          rw [F₃.2.2.1 (LAB + c₃.nmem (ORD + i)) (by rwo [hAL, c99]),
+            F₃.2.2.1 (LAB + c₃.nmem (ORD + j)) (by rwo [hAL, c99])]
+          unfold PLe at hs; sio only at hs }
 
 end
 

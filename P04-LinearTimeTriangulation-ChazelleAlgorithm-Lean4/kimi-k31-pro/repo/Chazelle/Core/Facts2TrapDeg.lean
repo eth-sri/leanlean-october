@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.Facts2Trap
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-B, part 2: degree `≤ 4` for a box with segment obstacles
@@ -46,9 +48,9 @@ theorem open_of_mem {y a b : ℝ} (h : IsHChordIn D y a b) {z : Point} (hz : z �
   obtain ⟨hzy, hza, hzb⟩ := hz
   refine ⟨lt_of_le_of_ne hza fun e => h.left_not ?_, lt_of_le_of_ne hzb fun e => h.right_not ?_⟩
   · have : ((a, y) : Point) = z := point_ext e hzy.symm
-    rw [this]; exact hzD
+    rwx [this]
   · have : ((b, y) : Point) = z := point_ext e.symm hzy.symm
-    rw [this]; exact hzD
+    rwx [this]
 
 /-- Two chords sharing a point of the domain are equal. -/
 theorem eq_of_common {c c' : Set Point} (hc : HCD D c) (hc' : HCD D c') {z : Point} (hz : z ∈ c)
@@ -93,11 +95,11 @@ theorem side_iff {c : Set Point} (hc : HCD D c) {y₀ : ℝ} {w₀ : Point} (hw�
     by_contra hge
     push Not at hge
     have hne : z.1 ≠ w₀.1 := fun e => hw₀ (by
-      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
+      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rwx [this])
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
     apply hw₀
     have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
-    rw [← e]; exact this
+    rwx [← e]
   · intro hlt; exact ⟨z, hz, hzD, hzy, hlt⟩
 
 end Chords
@@ -121,7 +123,7 @@ theorem side_chords_eq (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
     (hzy : z.2 = Y) (hz'y : z'.2 = Y) (hzx : xAt sL Y ≤ z.1 ∧ z.1 ≤ xAt sR Y)
     (hz'x : xAt sL Y ≤ z'.1 ∧ z'.1 ≤ xAt sR Y) (hside : z.1 < v.1 ↔ z'.1 < v.1) : c = c' := by
   have hvD : v ∉ dom R S := fun hm => hm.2 (vert_mem_obs hv)
-  have hYR : |Y| < R := hzy ▸ (box_of_dom hzD).2
+  have hYR  := hzy ▸ (box_of_dom hzD).2
   have hLb := (abs_le.1 (abs_xAt_le hS h.hL (h.botL.trans hY1) (hY2.trans h.topL))).1
   have hRb := (abs_le.1 (abs_xAt_le hS h.hR (h.botR.trans hY1) (hY2.trans h.topR))).2
   -- strictness at a domain point
@@ -148,9 +150,9 @@ theorem side_chords_eq (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
       have he := hS.distinct v _ hv hw (hvY ▸ hYR) hvY
       have hsv : s = v.1 := by rw [he]
       have hzv : z.1 ≠ v.1 := fun e => hvD (by
-        rw [show v = z from point_ext e.symm (hvY.trans hzy.symm)]; exact hzD)
+        rwx [show v = z from point_ext e.symm (hvY.trans hzy.symm)])
       have hz'v : z'.1 ≠ v.1 := fun e => hvD (by
-        rw [show v = z' from point_ext e.symm (hvY.trans hz'y.symm)]; exact hz'D)
+        rwx [show v = z' from point_ext e.symm (hvY.trans hz'y.symm)])
       rcases lt_or_gt_of_ne hzv with h3 | h3
       · have := hside.1 h3; linarith [lt_of_le_of_ne h2 (hsv ▸ hz'v.symm)]
       · linarith [lt_of_le_of_ne h1 (hsv ▸ hzv)]
@@ -185,7 +187,7 @@ theorem ncard_side_le_two (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : 
       exact hff
     exact h.side_chords_eq hS hY1 hY2 hvert hv hvY hcH hc'H hz hz' hzD hz'D hzy hz'y hzx hz'x hside
   have hBool : (Set.univ : Set Bool).ncard = 2 := by
-    rw [ncard_univ, Nat.card_eq_fintype_card]; rfl
+    rwr [ncard_univ, Nat.card_eq_fintype_card]
   calc E.ncard ≤ (Set.univ : Set Bool).ncard :=
         ncard_le_ncard_of_injOn f (fun _ _ => mem_univ _) hinj
     _ = 2 := hBool
@@ -206,14 +208,14 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
   obtain ⟨sL, sR, y₁, y₂, h⟩ := exists_trap hS hfull hqf.1 hqf.2
   set T := tr sL sR y₁ y₂ with hTdef
   set U := connectedComponentIn (freeIn D G) q with hUdef
-  have hUT : U ⊆ T := h.region_subset hS hfull hqf
-  have hTD : T ⊆ D := h.tr_subset_dom hS
-  have hqT : q ∈ T := hUT (mem_connectedComponentIn hqf)
+  have hUT  := h.region_subset hS hfull hqf
+  have hTD  := h.tr_subset_dom hS
+  have hqT  := hUT (mem_connectedComponentIn hqf)
   have hfreeU : U ⊆ freeIn D G := connectedComponentIn_subset _ _
   have hcl : closure U ⊆ ctr sL sR y₁ y₂ :=
     (closure_mono hUT).trans (closure_tr_subset _ _ _ _)
-  have hqy₁ : y₁ < q.2 := hqT.1
-  have hqy₂ : q.2 < y₂ := hqT.2.1
+  have hqy₁  := hqT.1
+  have hqy₂  := hqT.2.1
   -- a domain point of the closed trapezoid at a middle height is inside
   have hmid : ∀ z ∈ D, z ∈ ctr sL sR y₁ y₂ → y₁ < z.2 → z.2 < y₂ → z ∈ T := by
     intro z hzD hzC hz1 hz2
@@ -224,7 +226,7 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
   have hslice : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ w ∈ T, w.2 = z.2 → w ∈ c := by
     intro c hc z hz hzT w hwT hwz
     obtain ⟨y, a, b, hh, rfl⟩ := hG c hc
-    have hzy : z.2 = y := hz.1
+    have hzy  := hz.1
     refine mem_of_joined hh hz (hTD hzT) (hwz.trans hzy) fun s h1 h2 => hTD ?_
     have hseg : Chazelle.segment z w ⊆ T :=
       Geometry.segment_subset_of_convex (convex_tr _ _ _ _) hzT hwT
@@ -286,16 +288,16 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
         have hz0 := hclle _ hU0 z hzU
         have hmz : q.2 < z.2 ∧ z.2 < y₂ := by
           rcases hzc with e | e
-          · rw [e] at hz0; linarith
+          · rwli [e] at hz0
           · exact e
         have hzT := hmid z hzD (hcl hzU) (hqy₁.trans hmz.1) hmz.2
         have hUz := hbelow c hc z hz hzT hmz.1
         have hz0' := hclle _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0' hz0
+        have heq  := le_antisymm hz0' hz0
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₁.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ 2 := by rw [ncard_singleton]; norm_num
+        _ ≤ 2 := by rwn [ncard_singleton]
     · push Not at hA
       have htop : ∀ c ∈ E₁, ∃ z ∈ c, z ∈ D ∧ z ∈ closure U ∧ z.2 = y₂ := by
         rintro c hc
@@ -321,16 +323,16 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
         have hz0 := hclge _ hU0 z hzU
         have hmz : y₁ < z.2 ∧ z.2 < q.2 := by
           rcases hzc with e | e
-          · rw [e] at hz0; linarith
+          · rwli [e] at hz0
           · exact e
         have hzT := hmid z hzD (hcl hzU) hmz.1 (hmz.2.trans hqy₂)
         have hUz := habove c hc z hz hzT hmz.2
         have hz0' := hclge _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0 hz0'
+        have heq  := le_antisymm hz0 hz0'
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₂.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ 2 := by rw [ncard_singleton]; norm_num
+        _ ≤ 2 := by rwn [ncard_singleton]
     · push Not at hA
       have hbot : ∀ c ∈ E₂, ∃ z ∈ c, z ∈ D ∧ z ∈ closure U ∧ z.2 = y₁ := by
         rintro c hc

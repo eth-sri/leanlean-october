@@ -4,6 +4,9 @@ public import Chazelle.Core.DownPhaseDrvBPieces
 public import Chazelle.Core.DownPhaseDrvBFam
 public import Chazelle.Core.DownPhaseDrvDRMath
 public import Chazelle.Core.DownPhaseDrvDLoc
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Down-phase base (D9): the bucket mathematics of the region-loop output (`BktMathSpec`)
@@ -132,11 +135,11 @@ theorem bktMath : BktMathSpec := by
           E.I.key E.Q (wposOf (E.L ++ newLB E.li E.Q E.L E.E) (2 * E.L.length + q)) =
             E.I.key E.Q (DrvD.endPos (TLk.getD (q / 2) DrvD.dflt).2 (q % 2)) := by
         intro q hq
-        rw [DrvD.wposOf_new (by rw [hlen]; exact hq), hnew, DrvD.getD_map_snd]
+        rw [DrvD.wposOf_new (by rwx [hlen]), hnew, DrvD.getD_map_snd]
       have hlen' : (E.L ++ newLB E.li E.Q E.L E.E).length = E.L.length + TLk.length := by
         rw [List.length_append, hlen]
-      refine DrvD.codeLe_of_bkt hM hok' hK hE.hperm hE.hsort (by omega) (by rw [hlen']; omega)
-        (by omega) (by rw [hlen']; omega) ?_ ?_ hbb
+      refine DrvD.codeLe_of_bkt hM hok' hK hE.hperm hE.hsort (by omega) (by rwo [hlen'])
+        (by omega) (by rwo [hlen']) ?_ ?_ hbb
       · rw [hkey q hq]; exact hB.key q hq
       · rw [hkey q' hq']; exact hB.key q' hq'
   · -- at most `4 MX` codes per bucket
@@ -172,13 +175,13 @@ theorem bktMath : BktMathSpec := by
           rw [hb₀] at ha₀
           have e1 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q hq) _).1 ha).2
           have e2 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q₀ hq₀) _).1 ha₀).2
-          rw [← e1]; exact e2
+          rwx [← e1]
         have hr₀K : r₀ < E.K + 1 := hmem _ (by omega)
         calc (List.range (2 * TLk.length)).countP (fun q => decide (bk q = b))
             ≤ (List.range (2 * TLk.length)).countP
                 (fun q => decide ((TLk.getD (q / 2) DrvD.dflt).1 = r₀)) := by
               refine List.countP_mono_left fun q hq hbq => ?_
-              simp only [decide_eq_true_eq] at hbq ⊢
+              simp [decide_eq_true_eq] at hbq ⊢
               exact hone q (List.mem_range.1 hq) hbq
           _ = 2 * TLk.countP (fun x => decide (x.1 = r₀)) := by
               rw [countP_half (fun i => decide ((TLk.getD i DrvD.dflt).1 = r₀)),

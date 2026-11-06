@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.SweepEvStopM2C
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 2: the candidate of `C₂` of a stop origin (task M2, part 2)
@@ -28,21 +33,19 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 theorem m2c_M2R_lh {r : ℕ} (h : LHSW r2F r) : M2R r := by
   rcases h with (h | h) | h
   · exact Or.inl h
-  · exact Or.inr (Or.inl ⟨by unfold sw at *; omega, by unfold sw at *; omega⟩)
-  · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨by unfold r2F at h; omega,
-      by unfold r2F at h; unfold sw at *; omega⟩)))
+  · exact Or.inr (Or.inl ⟨by ufo sw at *, by ufo sw at *⟩)
+  · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨by ufo r2F at h,
+      by unfold r2F at h; ufo sw at *⟩)))
 
 theorem m2c_M2R_set {r : ℕ} (h : r = lE ∨ r = lH ∨ r = lD) : M2R r := by
   left; rcases h with rfl | rfl | rfl <;> simp [lE, lH, lD, sw]
 
 theorem m2c_nr (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c) :
     c.nreg (sw 34) = 2 * J.right.m + 7 := by
-  rw [hI.hin _ (by unfold IFix sw; omega)]
+  rw [hI.hin _ (by ufo IFix sw)]
   obtain ⟨H, -, hst⟩ := E.hst
   exact hst.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **The local hit of `C₂` from a position** `(e, h)`, saved at `r2F`. -/
 theorem m2c_lh_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
     (hM : MCtx P W J.right N₂ (c₀.nreg TBR) gMD2 gCD2 (sw 4) c) {e h : ℕ}
@@ -74,21 +77,21 @@ theorem m2c_lh_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have k1 : ∀ q, q ≠ lE → q ≠ lH → q ≠ lD → c₁.nreg q = c.nreg q := fun q a b d => by
     rw [hc1]; exact vo q a b d
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold lE ALLOC sw; omega)
-    (by unfold lH ALLOC sw; omega) (by unfold lD ALLOC sw; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by ufo lE ALLOC sw)
+    (by ufo lH ALLOC sw) (by ufo lD ALLOC sw)
   have hM₁ : MCtx P W J.right N₂ (c₀.nreg TBR) gMD2 gCD2 (sw 4) c₁ :=
     MCtx.transport hM (fun r hr => by
       rcases hr with rfl | rfl | rfl | rfl | rfl <;>
         exact k1 _ (by simp [gMD2, gCD2, TBR, TLR, lE, sw]) (by simp [gMD2, gCD2, TBR, TLR, lH, sw])
           (by simp [gMD2, gCD2, TBR, TLR, lD, sw]))
       (fun a _ => by rw [hm1]) (by rw [hA1])
-  have hnr : c₁.nreg (sw 34) = 2 * J.right.m + 7 := m2c_nr E hI₁
+  have hnr  := m2c_nr E hI₁
   refine (lhSave_irs E.hsh E.hBs E.hXl (Or.inr ⟨by simp [gMD2, sw], by simp [gMD2, sw]⟩)
     (Or.inr ⟨by simp [gCD2, sw], by simp [gCD2, sw]⟩) (Or.inl ⟨by simp [sw], by simp [sw]⟩)
     (Or.inl ⟨by simp [sw], by simp [sw]⟩) ⟨by simp [r2F, sw], by simp [r2F, sw]⟩ hI₁ E.hK E.hG
     E.hWh hM₁ E.hP E.hNF₂ E.hX E.hcap E.hOk₂ E.hsg₂ E.hdeg₂ hnr (x := ⟨c.nreg e, c.nreg h⟩) v1E v1H
-    (by rw [v1D]; exact hb) hxe hpp hcl hy hon (Gd := Gd) (by rw [v1D]; exact hGd)
-    (by rw [hA1]; omega)).mono le_rfl ?_
+    (by rwx [v1D]) hxe hpp hcl hy hon (Gd := Gd) (by rwx [v1D])
+    (by rwo [hA1])).mono le_rfl ?_
   rintro c' ⟨hres, hfr⟩
   rw [v1D] at hres
   refine ⟨hres, EFr.trans ⟨fun r h1 h2 h3 => k1 r ?_ ?_ ?_, by rw [hA1], fun a _ => by rw [hm1]⟩

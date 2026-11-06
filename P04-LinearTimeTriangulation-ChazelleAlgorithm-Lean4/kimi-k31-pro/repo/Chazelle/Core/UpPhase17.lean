@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.UpPhase16
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-J up phase, part 17: the registers of the next grade
@@ -24,7 +28,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
 theorem recB_exec {c : Config} (hw : WordsBounded W c) {Al T' g R' h' cnt pg D Q g1 : ℕ}
     (hA : c.nreg ALLOC = Al) (h56 : c.nreg 170056 = T') (h07 : c.nreg 170007 = g)
     (h44 : c.nreg 170044 = R') (h51 : c.nreg 170051 = h') (h08 : c.nreg 170008 = cnt)
@@ -64,7 +67,7 @@ theorem recB_exec {c : Config} (hw : WordsBounded W c) {Al T' g R' h' cnt pg D Q
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   have c20 : c1.nreg 170020 = 1 := by
-    rw [fr1 _ (by unfold RecBRG; omega) (by rw [hAl]; omega)]; exact h20
+    rw [fr1 _ (by ufo RecBRG) (by rwo [hAl])]; exact h20
   obtain ⟨c2, k2, e2, hk2, hw2, j08, fr2, hm2, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
       (block [.addN 170008 170009 170020]) c1 c2 k2 ∧ k2 = 1 ∧ WordsBounded W c2 ∧
       c2.nreg 170008 = c.nmem (D + Q) + 1 ∧ (∀ r, r ≠ 170008 → c2.nreg r = c1.nreg r) ∧
@@ -75,18 +78,17 @@ theorem recB_exec {c : Config} (hw : WordsBounded W c) {Al T' g R' h' cnt pg D Q
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   have g2 : ∀ r, r ≠ 170008 → c2.nreg r = c1.nreg r := fr2
-  refine ⟨c2, k1 + k2, .seq e1 e2, by omega, hw2, by rw [hm2]; exact w1,
-    by rw [g2 _ (by rw [hAl]; omega)]; exact A1, by rw [g2 _ (by omega)]; exact i05,
-    by rw [g2 _ (by omega)]; exact i12, by rw [g2 _ (by omega)]; exact i14,
-    by rw [g2 _ (by omega)]; exact i19, by rw [g2 _ (by omega)]; exact i10,
-    by rw [g2 _ (by omega)]; exact i09, j08, by rw [g2 _ (by omega)]; exact i07,
-    by rw [g2 _ (by omega)]; exact i15, by rw [g2 _ (by omega)]; exact i16,
-    by rw [g2 _ (by omega)]; exact i35, by rw [g2 _ (by omega)]; exact i36,
+  refine ⟨c2, k1 + k2, .seq e1 e2, by omega, hw2, by rwx [hm2],
+    by rw [g2 _ (by rwo [hAl])]; exact A1, by rwx [g2 _ (by omega)],
+    by rwx [g2 _ (by omega)], by rwx [g2 _ (by omega)],
+    by rwx [g2 _ (by omega)], by rwx [g2 _ (by omega)],
+    by rwx [g2 _ (by omega)], j08, by rwx [g2 _ (by omega)],
+    by rwx [g2 _ (by omega)], by rwx [g2 _ (by omega)],
+    by rwx [g2 _ (by omega)], by rwx [g2 _ (by omega)],
     fun a ha => by rw [hm2, m1 a ha], fun r h1 h2 => ?_, by rw [hrr2, hrr1], by rw [hrm2, hrm1],
     by rw [ho2, ho1]⟩
-  rw [g2 r (fun e => h1 (by unfold RecBRG; omega)), fr1 r h1 h2]
+  rw [g2 r (fun e => h1 (by ufo RecBRG)), fr1 r h1 h2]
 
-set_option maxHeartbeats 16000000 in
 theorem gamA_exec {c : Config} (hw : WordsBounded W c) {S p g1 cb G2 : ℕ}
     (h00 : c.nreg 170000 = S) (h02 : c.nreg 170002 = p) (h07 : c.nreg 170007 = g1)
     (h21 : c.nreg 170021 = 2) (h25 : c.nreg 170025 = 4)
@@ -107,7 +109,6 @@ theorem gamA_exec {c : Config} (hw : WordsBounded W c) {S p g1 cb G2 : ℕ}
   · simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 16000000 in
 /-- **`γ'_{g}`** for the grade in `170007`. -/
 theorem gamS_exec {c : Config} (hw : WordsBounded W c) {S p g1 : ℕ}
     (h00 : c.nreg 170000 = S) (h02 : c.nreg 170002 = p) (h07 : c.nreg 170007 = g1)
@@ -124,18 +125,18 @@ theorem gamS_exec {c : Config} (hw : WordsBounded W c) {S p g1 : ℕ}
   have hG2 := (hS (Cost.ceilBeta g1) (by omega)).1
   obtain ⟨c1, k1, e1, hk1, hw1, i24, i80, i21, i03, i32, fr1, hm1, hrr1, hrm1, ho1⟩ :=
     gamA_exec (P := P) hw h00 h02 h07 h21 h25 hcb hG2 (by omega) (by omega) hW8
-  have hGg : 2 ^ Cost.ceilBeta g1 ≤ gradeGran g1 := by unfold gradeGran; omega
+  have hGg : 2 ^ Cost.ceilBeta g1 ≤ gradeGran g1 := by ufo gradeGran
   obtain ⟨c2, k2, e2, hk2, hw2, j04, fr2, hm2, hrr2, hrm2, ho2⟩ :=
     clogS_exec (P := P) hw1 i21 i03 i24 (fun i hi => by rw [hm1]; exact (hS i (by omega)).1)
       hg1 (by omega)
   have hcl : Nat.clog 2 g1 ≤ g1 := Nat.clog_le_of_le_pow Nat.lt_two_pow_self.le
   have hgg : gradeGran g1 = 2 ^ Cost.ceilBeta g1 + g1 * (Nat.clog 2 g1 + 2) := by
-    unfold gradeGran fuseLoss; ring
+    ufring gradeGran fuseLoss
   obtain ⟨c3, k3, e3, hk3, hw3, j32, fr3, hm3, hrr3, hrm3, ho3⟩ :=
-    mulS_exec (P := P) (lam := g1) (G2 := 2 ^ Cost.ceilBeta g1) hw2 j04 (by rw [fr2 _ (by omega) (by omega) (by omega)]; exact i03)
-      (by rw [fr2 _ (by omega) (by omega) (by omega)]; exact i32)
-      (by rw [fr2 _ (by omega) (by omega) (by omega)]; exact i24)
-      (by rw [fr2 _ (by omega) (by omega) (by omega)]; exact i80) (by rw [← hgg]; omega)
+    mulS_exec (P := P) (lam := g1) (G2 := 2 ^ Cost.ceilBeta g1) hw2 j04 (by rwx [fr2 _ (by omega) (by omega) (by omega)])
+      (by rwx [fr2 _ (by omega) (by omega) (by omega)])
+      (by rwx [fr2 _ (by omega) (by omega) (by omega)])
+      (by rwx [fr2 _ (by omega) (by omega) (by omega)]) (by rwo [← hgg])
   obtain ⟨c4, k4, e4, hk4, hw4, j11, fr4, hm4, hrr4, hrm4, ho4⟩ : ∃ c4 k4, Exec P W
       (block [.copyN 170011 160032]) c3 c4 k4 ∧ k4 = 1 ∧ WordsBounded W c4 ∧
       c4.nreg 170011 = c3.nreg 160032 ∧ (∀ r, r ≠ 170011 → c4.nreg r = c3.nreg r) ∧

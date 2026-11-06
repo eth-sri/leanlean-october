@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ShootCutKey
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 25: the symbolic point of a walk vertex
@@ -9,10 +13,6 @@ public import Chazelle.Core.ShootCutKey
 `150045 …` the symbolic point of its host point, whose point is the walk vertex.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -37,8 +37,8 @@ theorem chainDesc_agree' {m m' : ℕ → ℕ} {B E : ℕ} {Q : Polygon} {H : Hos
     (h : ChainDescAt m B Q H C) (hB : B + 5 ≤ E) (hH : m B + 3 * H.length + 4 ≤ E)
     (hm : ∀ a, a < E → m' a = m a) : ChainDescAt m' B Q H C := by
   obtain ⟨h1, h2, h3, h4, h5, h6⟩ := h
-  refine ⟨?_, h2, by rw [hm _ (by omega)]; exact h3, by rw [hm _ (by omega)]; exact h4,
-    by rw [hm _ (by omega)]; exact h5, by rw [hm _ (by omega)]; exact h6⟩
+  refine ⟨?_, h2, by rwx [hm _ (by omega)], by rwx [hm _ (by omega)],
+    by rwx [hm _ (by omega)], by rwx [hm _ (by omega)]⟩
   rw [hm _ (by omega)]
   exact hostAt_agree' h1 hH hm
 
@@ -105,12 +105,12 @@ theorem vtxPt_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) (d : Config) (hw : Wor
     exact ⟨d₂, _, sp, ex, by omega, exec_frameB ex wr_vtxPt, hin, hlt, hwalk sp hsp⟩
   by_cases hc0 : d₁.nreg 150067 < d₁.nreg 150091
   · -- a run
-    have hk0 : m₀ (Hh + 1 + 3 * r) = 0 := by rw [← e67]; omega
+    have hk0 : m₀ (Hh + 1 + 3 * r) = 0 := by rwo [← e67]
     set a := m₀ (Hh + 2 + 3 * r)
     set ℓ := m₀ (Hh + 3 + 3 * r)
-    have hrun : H[r] = .run a ℓ := by rw [hit, hk0]; rfl
+    have hrun : H[r] = .run a ℓ := by rwr [hit, hk0]
     rw [hrun] at hwf hsucc hpts
-    simp only [NFLoc.itemCnt] at hsucc
+    simp [NFLoc.itemCnt] at hsucc
     obtain ⟨ha, hℓ⟩ := hwf
     set t := u - NFLoc.preLen P.n H r
     have ht : t ≤ ℓ := by omega
@@ -120,28 +120,28 @@ theorem vtxPt_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) (d : Config) (hw : Wor
               (.instr (.subN 150046 150075 150027)))
             (.instr (.constN 150045 0)))) d₁ d₂ k₂ ∧ k₂ ≤ 5 ∧
         d₂.nreg 150045 = 0 ∧ d₂.nreg 150046 = (a + t) % P.n := by
-      refine spec_seq (spec_instr (Exec.addN w₁ _ _ _ (by rw [e68, h66]; omega)) fun w' => ?_)
+      refine spec_seq (spec_instr (Exec.addN w₁ _ _ _ (by rwo [e68, h66])) fun w' => ?_)
       by_cases hlt : a + t < P.n
-      · refine spec_seq (spec_ifLtN_true (by config_simp; rw [e68, h66, b27]; exact hlt)
+      · refine spec_seq (spec_ifLtN_true (by config_simp; rwx [e68, h66, b27])
           (spec_instr (Exec.copyN w' _ _) fun w'' => ?_))
         refine spec_instr (Exec.constN w'' _ _ (by omega)) fun _ => ⟨by omega, by config_simp, ?_⟩
         config_simp; rw [e68, h66, Nat.mod_eq_of_lt hlt]
-      · refine spec_seq (spec_ifLtN_false (by config_simp; rw [e68, h66, b27]; exact hlt)
+      · refine spec_seq (spec_ifLtN_false (by config_simp; rwx [e68, h66, b27])
           (spec_instr (Exec.subN w' _ _ _) fun w'' => ?_))
         refine spec_instr (Exec.constN w'' _ _ (by omega)) fun _ => ⟨by omega, by config_simp, ?_⟩
         config_simp
         rw [e68, h66, b27, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
     exact fin d₂ (k₂ + 1) (.vtx ((a + t) % P.n)) (.ifLtN_true hc0 ex₂) (by omega) ⟨o45, o46⟩
       (Nat.mod_lt _ (by have := S.hn; omega)) (by rw [hpts, NFLoc.run_pts_getElem? _ _ _ ht])
-  · have hk1 : 1 ≤ m₀ (Hh + 1 + 3 * r) := by rw [← e67]; omega
+  · have hk1 : 1 ≤ m₀ (Hh + 1 + 3 * r) := by rwo [← e67]
     rcases hH : H[r] with ⟨a, ℓ⟩ | x
     · exfalso; rw [hit] at hH; unfold NFLoc.itemOf at hH; rw [ite_eq_right (by omega)] at hH
       split_ifs at hH
     rw [hH] at hwf hsucc hpts
-    simp only [NFLoc.itemCnt] at hsucc
+    simp [NFLoc.itemCnt] at hsucc
     have ht0 : u - NFLoc.preLen P.n H r = 0 := by omega
     rw [ht0] at hpts
-    have hsp : (H.pts P.n)[u]? = some x := by rw [hpts]; rfl
+    have hsp : (H.pts P.n)[u]? = some x := by rwr [hpts]
     by_cases hc1 : d₁.nreg 150067 < d₁.nreg 150092
     · have hx : x = .vtx (m₀ (Hh + 2 + 3 * r)) := by
         rw [hit] at hH; unfold NFLoc.itemOf at hH
@@ -194,19 +194,19 @@ theorem dirP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ} (hD : ChainD
       (∀ r, r ≠ 50000 → r ≠ 50002 → d₁.nreg r = d.nreg r) ∧ d₁.nmem = d.nmem := by
     exec_block
     refine ⟨rfl, by config_simp; exact h00, by config_simp; exact h49, fun r h1 h2 => ?_, rfl⟩
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    simp [upd]; split_ifs <;> first | rfl | omega
   have hC : ChainDescAt d₁.nmem (d₁.nreg 50000 + 1) (Qof P) H C := by
     rw [o0, m₁]
     exact chainDesc_agree' hD (by omega) (by rw [hHh]; exact le_trans S.hHA le_rfl)
-      (fun a ha => hm a (by have := S.hHA; rw [hHh] at *; omega))
+      (fun a ha => hm a (by have := S.hHA; rwo [hHh] at *))
   obtain ⟨d₂, k₂, e₂, hk₂, fr₂, o₂⟩ := NFLoc.chainDir_exec (P := P) S.hG (by omega) d₁ e₁.wb_right
     hC (by rw [o0]; have := S.hAW; omega)
     (by rw [o0, m₁, hm _ (by omega), hHh]; have := S.hHA; have := S.hAW; omega) S.hwf S.hs
-    (by rw [hN]; omega) (by rw [o2]; exact hp)
+    (by rwo [hN]) (by rwx [o2])
   have e₃ := Exec.copyN (P := P) e₂.wb_right 150059 10502
   refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by have := S.hlen; omega, ?_,
     fun r h1 h2 h3 h4 => ?_, ?_⟩
-  · config_simp; rw [o₂, o2]; rfl
+  · config_simp; rwr [o₂, o2]
   · config_simp
     rw [upd_other _ _ _ (by omega), fr₂.1 r h2, r₁ r h3 h4]
   · config_simp; rw [fr₂.2.2.1, m₁]
@@ -234,7 +234,7 @@ theorem posP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
   unfold hostWords at hWn
   obtain ⟨d₁, k₁, ex₁, hk₁, o59, r₁, m₁⟩ := dirP_exec S hD hMD hHh d hw hm h00 h49 (by omega)
   have g₁ : ∀ r, 150000 ≤ r → r < 150100 → r ≠ 150059 → d₁.nreg r = d.nreg r :=
-    fun r h1 h2 h3 => r₁ r (by omega) (by unfold Bdir; simp; omega) (by omega) (by omega)
+    fun r h1 h2 h3 => r₁ r (by omega) (by ufs Bdir; omega) (by omega) (by omega)
   have w₁ := ex₁.wb_right
   have hfin : ∀ (d' : Config) (k : ℕ), Exec P W posP d d' k → k ≤ 100 * H.length + 2000 →
       (d'.nreg 150089 = 1 ↔ (((chainModel C).wa p).2 ≠ ((chainModel C).wb p).2 ∧
@@ -245,26 +245,26 @@ theorem posP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     fun d' k ex hk h1 h2 => ⟨d', k, ex, hk, exec_frameB ex wr_posP, h1, h2⟩
   by_cases h59 : d₁.nreg 150059 < d₁.nreg 150091
   · have hz : NFLoc.dirOf ((chainModel C).wa p).2 ((chainModel C).wb p).2 = 0 := by
-      rw [g₁ 150091 (by omega) (by omega) (by omega), R.h91, o59] at h59; omega
+      rwo [g₁ 150091 (by omega) (by omega) (by omega), R.h91, o59] at h59
     have e₂ := Exec.constN (P := P) w₁ 150089 0 (by omega)
     refine hfin _ _ (by unfold posP; exact .seq ex₁ (.ifLtN_true h59 e₂)) (by omega) ?_
       (by config_simp <;> omega)
     config_simp
     rw [dirOf_eq_zero] at hz
-    simp only [zero_ne_one, false_iff, not_and, not_not]
+    simp [zero_ne_one, false_iff, not_and, not_not]
     intro h; exact absurd hz h
   · have hnz : NFLoc.dirOf ((chainModel C).wa p).2 ((chainModel C).wb p).2 ≠ 0 := by
-      rw [g₁ 150091 (by omega) (by omega) (by omega), R.h91, o59] at h59; omega
+      rwo [g₁ 150091 (by omega) (by omega) (by omega), R.h91, o59] at h59
     rw [Ne, dirOf_eq_zero] at hnz
     have e₂ := Exec.copyN (P := P) w₁ 150044 150049
     set d₂ := ({ d₁ with nreg := upd d₁.nreg 150044 (d₁.nreg 150049) } : Config) with hd₂
     have g₂ : ∀ r, 150000 ≤ r → r < 150100 → r ≠ 150059 → r ≠ 150044 → d₂.nreg r = d.nreg r :=
-      fun r h1 h2 h3 h4 => by simp only [hd₂, upd]; rw [ite_eq_right h4]; exact g₁ r h1 h2 h3
+      fun r h1 h2 h3 h4 => by simp [hd₂, upd]; rw [ite_eq_right h4]; exact g₁ r h1 h2 h3
     have R₂ : ChainRegs C (H.pts P.n).length Hh d₂ := R.of_frame fun r hr => g₂ r (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega) (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega) (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega) (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
+      sio only [List.mem_cons, List.not_mem_nil, or_false] at hr) (by
+      sio only [List.mem_cons, List.not_mem_nil, or_false] at hr) (by
+      sio only [List.mem_cons, List.not_mem_nil, or_false] at hr) (by
+      sio only [List.mem_cons, List.not_mem_nil, or_false] at hr)
     obtain ⟨d₃, k₃, sp, ex₃, hk₃, fr₃, in₃, lt₃, ev₃⟩ := vtxPt_exec S d₂ e₂.wb_right
       (fun a ha => by rw [show d₂.nmem = d₁.nmem from rfl, m₁]; exact hm a ha) R₂
       (by rw [g₂ _ (by omega) (by omega) (by omega) (by omega), h27])
@@ -289,7 +289,7 @@ theorem posP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     have e₆ := Exec.copyN (P := P) ex₅.wb_right 150089 10502
     set d₆ := ({ d₅ with nreg := upd d₅.nreg 150089 (d₅.nreg 10502) } : Config) with hd₆
     have o89 : d₆.nreg 150089 = NFLoc.dirOf ((chainModel C).W.vtx p).2 ((Qof P).vtx j).2 := by
-      simp only [hd₆, upd, ↓reduceIte]; rw [o₅, ev₃]; rfl
+      simp [hd₆, upd, ↓reduceIte]; rwr [o₅, ev₃]
     have c90 : d₆.nreg 150090 = 0 := by
       simp only [hd₆, upd]; rw [ite_eq_right (by omega), fr₅.1 _ (by decide), r₄]
     have w₆ := e₆.wb_right
@@ -300,12 +300,12 @@ theorem posP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
       unfold posP hcmp
       exact .seq ex₁ (.ifLtN_false h59 (.seq e₂ (.seq ex₃ (.seq (.seq ex₄ (.seq ex₅ e₆)) e₇))))
     by_cases hy : ((chainModel C).W.vtx p).2 = ((Qof P).vtx j).2
-    · have hz : d₆.nreg 150089 = 0 := by rw [o89, dirOf_eq_zero]; exact hy
+    · have hz : d₆.nreg 150089 = 0 := by rwx [o89, dirOf_eq_zero]
       have ht : ¬ d₆.nreg 150090 < d₆.nreg 150089 := by omega
       refine hfin d₆ _ (ex_pre d₆ 2 (.ifLtN_false ht (.skip w₆))) (by have := S.hlen; omega)
         ?_ (by omega)
-      rw [hz]; simp only [zero_ne_one, false_iff, not_and, not_not]; intro _; exact hy
-    · have hz : d₆.nreg 150089 ≠ 0 := by rw [o89, Ne, dirOf_eq_zero]; exact hy
+      rw [hz]; simp [zero_ne_one, false_iff, not_and, not_not]; intro _; exact hy
+    · have hz : d₆.nreg 150089 ≠ 0 := by rwx [o89, Ne, dirOf_eq_zero]
       have ht : d₆.nreg 150090 < d₆.nreg 150089 := by omega
       have e₇ := Exec.constN (P := P) w₆ 150089 1 (by omega)
       refine hfin _ _ (ex_pre _ 2 (.ifLtN_true ht e₇)) (by have := S.hlen; omega) ?_
@@ -331,7 +331,7 @@ theorem keyLess_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
   unfold hostWords at hWn
   obtain ⟨d₁, k₁, ex₁, hk₁, o59, r₁, m₁⟩ := dirP_exec S hD hMD hHh d hw hm h00 h49 hp
   have g₁ : ∀ r, 150000 ≤ r → r < 150100 → r ≠ 150059 → d₁.nreg r = d.nreg r :=
-    fun r h1 h2 h3 => r₁ r (by omega) (by unfold Bdir; simp; omega) (by omega) (by omega)
+    fun r h1 h2 h3 => r₁ r (by omega) (by ufs Bdir; omega) (by omega) (by omega)
   have w₁ := ex₁.wb_right
   set D := NFLoc.dirOf ((chainModel C).wa p).2 ((chainModel C).wb p).2 with hDdef
   have hfin : ∀ (d' : Config) (k : ℕ), Exec P W keyLess d d' k → k ≤ 100 * H.length + 2000 →
@@ -345,15 +345,15 @@ theorem keyLess_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     fun d' k ex hk h1 h2 => ⟨d', k, ex, hk, exec_frameB ex wr_keyLess, h1, h2⟩
   have b91 : d₁.nreg 150091 = 1 := by rw [g₁ 150091 (by omega) (by omega) (by omega), h91]
   by_cases h59 : d₁.nreg 150059 < d₁.nreg 150091
-  · have hz : D = 0 := by rw [b91, o59] at h59; omega
+  · have hz : D = 0 := by rwo [b91, o59] at h59
     have e₂ := Exec.constN (P := P) w₁ 150089 0 (by omega)
     refine hfin _ _ (by unfold keyLess; exact .seq ex₁ (.ifLtN_true h59 e₂)) (by omega) ?_
       (by config_simp <;> omega)
     config_simp
     rw [hDdef, dirOf_eq_zero] at hz
-    simp only [zero_ne_one, false_iff, not_and]
+    simp [zero_ne_one, false_iff, not_and]
     intro h; exact absurd hz h
-  · have hnz : D ≠ 0 := by rw [b91, o59] at h59; omega
+  · have hnz : D ≠ 0 := by rwo [b91, o59] at h59
     have hnz' := hnz
     rw [hDdef, Ne, dirOf_eq_zero] at hnz'
     obtain ⟨d₂, k₂, ex₂, hk₂, a₂, b₂, c₂⟩ : ∃ d₂ k₂, Exec P W (block [.constN 50040 0,
@@ -384,21 +384,21 @@ theorem keyLess_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
       refine hfin _ _ (pre _ _ (.ifLtN_true hlt e₄)) (by have := S.hlen; omega) ?_
         (by config_simp <;> omega)
       config_simp
-      simp only [zero_ne_one, false_iff, not_and]
-      intro _ h; rw [o10, c59] at hlt; omega
+      simp [zero_ne_one, false_iff, not_and]
+      intro _ h; rwo [o10, c59] at hlt
     · by_cases hgt : d₃.nreg 150059 < d₃.nreg 10502
       · have e₄ := Exec.constN (P := P) w₃ 150089 0 (by omega)
         refine hfin _ _ (pre _ _ (.ifLtN_false hlt (.ifLtN_true hgt e₄)))
           (by have := S.hlen; omega) ?_ (by config_simp <;> omega)
         config_simp
-        simp only [zero_ne_one, false_iff, not_and]
-        intro _ h; rw [o10, c59] at hgt; omega
+        simp [zero_ne_one, false_iff, not_and]
+        intro _ h; rwo [o10, c59] at hgt
       · have e₄ := Exec.constN (P := P) w₃ 150089 1 (by omega)
         refine hfin _ _ (pre _ _ (.ifLtN_false hlt (.ifLtN_false hgt e₄)))
           (by have := S.hlen; omega) ?_ (by config_simp <;> omega)
         config_simp
         refine ⟨fun _ => ⟨hnz', ?_⟩, fun _ => trivial⟩
-        rw [o10, c59] at hlt hgt; omega
+        rwo [o10, c59] at hlt hgt
 
 end
 

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.RestoreNodeMath
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the search: the witness offset of a node
@@ -55,7 +57,7 @@ theorem gend_transfer {d d' α : ℝ} {s : Prop} (hα0 : 0 ≤ α) (hα : 0 < α
       · left; linarith
       · right; push Not at h; by_contra h'; push Not at h'; exact hd' ⟨h, h'⟩
     · rcases out_of hα0 hin with h | h
-      · left; rw [h]; linarith
+      · left; rwli [h]
       · right; linarith
 
 /-- **Transfer of the test conditions** from `x` to an offset `u ≤ x` with no end in
@@ -65,8 +67,8 @@ theorem wok_transfer (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa = d
     (hda : ¬ (ℓ < da ∧ da ≤ x)) (hdb : ¬ (ℓ < db ∧ db ≤ x))
     (hx : WOK L da db αa αb sa sb x) : WOK L da db αa αb sa sb u := by
   obtain ⟨hx0, hxL, -, -, ga, gb⟩ := hx
-  refine ⟨by linarith, by linarith, fun h => hda ⟨by rw [← h]; exact hℓu, by rw [← h]; exact hux⟩,
-    fun h => hdb ⟨by rw [← h]; exact hℓu, by rw [← h]; exact hux⟩,
+  refine ⟨by linarith, by linarith, fun h => hda ⟨by rw [← h]; exact hℓu, by rwx [← h]⟩,
+    fun h => hdb ⟨by rw [← h]; exact hℓu, by rwx [← h]⟩,
     gend_transfer hαa0 hαa hℓ hℓu hux hxL hda hdb ga,
     gend_transfer hαb0 hαb hℓ hℓu hux hxL hdb hda gb⟩
 

@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.RestoreTShotOps
 public import Chazelle.Core.RestoreTIRec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, the candidate test on the RAM: the abscissa comparison of the shot wrapper
@@ -57,7 +61,7 @@ theorem wr_gRec (a b : ℕ) : wr BgK (gRec a b) = true := by
   have h1 : wr BgK absKey = true := wr_mono wr_absKey (fun r h => by simp [BgK, h])
   have h2 : wr BgK (iRec a b) = true := wr_mono (wr_iRec a b) (fun r h => by
     simp only [BiR, decide_eq_true_eq] at h
-    simp only [BgK, Bprim, Bool.or_eq_true, decide_eq_true_eq]; omega)
+    sio only [BgK, Bprim, Bool.or_eq_true, decide_eq_true_eq])
   simp only [gRec, cRec, cRecL, copies, wr, block, wrOK, h1, h2, List.map_cons, List.map_nil,
     Bool.and_true]
   decide
@@ -76,9 +80,9 @@ theorem opW_BxR : OpW BxR := fun r hr => by
   rcases hr with (hr | hr) | hr
   · exact (opW_BgK r (by simp [BgK, hr]))
   · exact (opW_BgK r (by simp [BgK, hr]))
-  · refine ⟨?_, by unfold ALLOC; omega⟩
-    have : bandOf r = bSign := by unfold bandOf bSign; omega
-    rw [this]; decide
+  · refine ⟨?_, by ufo ALLOC⟩
+    have : bandOf r = bSign := by ufo bandOf bSign
+    rwd [this]
 
 /-! ## The radius of the model -/
 
@@ -102,17 +106,17 @@ theorem kindRad_run (hE : TGood P W M N c₀) (hI : TInv W c₀ c) : ∃ Rd, Kin
   · obtain ⟨H, C', hC, hM', hwf⟩ := hI.chain hE hM
     refine ⟨C'.radius, Or.inl ⟨by rw [h21, h0], H, C', hC, hM', hwf, ?_, rfl⟩⟩
     have hr : HReg P c.nmem (c₀.nreg 83000) :=
-      hreg_keep hE.hwfMD hE.hMD hE.hreg (fun a ha => hI.hm a ha)
-    exact hr (by rw [hI.hm _ (by omega)]; exact h0) H C' (by rw [← h20]; exact hC)
+      hreg_keep hE.hwfMD hE.hMD hE.hreg (hI.hm)
+    exact hr (by rwx [hI.hm _ (by omega)]) H C' (by rwx [← h20])
   · refine ⟨_, Or.inr ⟨by rw [h21, h1], hMi, ?_, rfl⟩⟩
-    rw [h20, hI.hm _ (by omega)]; exact hbit
+    rwx [h20, hI.hm _ (by omega)]
 
 /-- The radius survives a frame that keeps the memory and the registers `83020`, `83021` and the
 allocator. -/
 theorem KindRad.frame {Rd : ℝ} {c' : Config} (h : KindRad P M c Rd) (hm : c'.nmem = c.nmem)
     (h20 : c'.nreg 83020 = c.nreg 83020) (h21 : c'.nreg 83021 = c.nreg 83021)
     (hA : c'.nreg ALLOC = c.nreg ALLOC) : KindRad P M c' Rd := by
-  unfold KindRad; rw [hm, h20, h21, hA]; exact h
+  unfold KindRad; rwx [hm, h20, h21, hA]
 
 /-! ## One record -/
 
@@ -139,13 +143,13 @@ theorem gRec_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {Rd : ℝ} (hK 
         have q1 := h1 (50201, a) (by simp [cRecL])
         have q2 := h1 (50202, b) (by simp [cRecL])
         simp only at q0 q1 q2
-        refine ⟨⟨by rw [q1, ← hMC]; exact he, by rw [q1, q2, ← hMC]; exact hp,
+        refine ⟨⟨by rwx [q1, ← hMC], by rwx [q1, q2, ← hMC],
           by rw [q1, q2, ← hMC]; exact hy C hMC⟩, fun H' hH' => ?_⟩
         rw [hm, q0] at hH'
         have := NFLoc.hostAt_unique hH' hC.1
         subst this
         have hn : (Qof P).n = P.n := shear_n _ _
-        rw [← hn]; exact hreg)
+        rwx [← hn])
       (by omega)
     have q1 := h1 (50201, a) (by simp [cRecL])
     have q2 := h1 (50202, b) (by simp [cRecL])
@@ -153,15 +157,15 @@ theorem gRec_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {Rd : ℝ} (hK 
     have hr : AbsRec P c' 50210 ((chainModel C).pos (Qof P) ⟨c₁.nreg 50201, c₁.nreg 50202⟩).1
       C.radius := hout
     rw [q1, q2, ← hMC] at hr
-    have ex' : Exec P W (gRec a b) c c' (k + 1) := .ifLtN_true (by rw [h21, h23]; omega) ex
-    exact ⟨c', _, ex', by simp [cRecL] at hk; omega, hr, exec_frameB ex' (wr_gRec a b)⟩
+    have ex' : Exec P W (gRec a b) c c' (k + 1) := .ifLtN_true (by rwo [h21, h23]) ex
+    exact ⟨c', _, ex', by sio [cRecL] at hk, hr, exec_frameB ex' (wr_gRec a b)⟩
   · -- the interior model: `iRec`
     subst hMi
     have hn := interior_n (P := P)
     obtain ⟨c', k, ex, hk, hr, -⟩ := iRec_exec (P := P) (W := W) hG
-      (by unfold hostWords at hHW; omega) hI.hw (a := a) (b := b) hbit rfl hI.h22 ha hb hp
-      (by rw [← hn]; exact he)
-    have ex' : Exec P W (gRec a b) c c' (k + 2) := .ifLtN_false (by rw [h21, h23]; omega) ex
+      (by ufo hostWords at hHW) hI.hw (a := a) (b := b) hbit rfl hI.h22 ha hb hp
+      (by rwx [← hn])
+    have ex' : Exec P W (gRec a b) c c' (k + 2) := .ifLtN_false (by rwo [h21, h23]) ex
     exact ⟨c', _, ex', by omega, hr, exec_frameB ex' (wr_gRec a b)⟩
 
 /-! ## The comparison -/
@@ -173,8 +177,8 @@ def YR (M : Model) (y : ℝ) : Prop := ∀ C : Chain, M = chainModel C → |y| <
 theorem xcR_xG (hE : TGood P W M N c₀) :
     XG P W M RS0 (TInv W c₀) (YR M) xcR BxR 34000 := by
   intro a b d e ha hb hd he c hw hctx hp1 he1 hp2 he2 hyy hY hroom
-  have hI : TInv W c₀ c := hctx.1
-  have inR : ∀ r, InB RS0 r → InR r := fun r h => by unfold InB RS0 at h; unfold InR; omega
+  have hI  := hctx.1
+  have inR : ∀ r, InB RS0 r → InR r := fun r h => by unfold InB RS0 at h; ufo InR
   have ha' := inR a ha
   have hb' := inR b hb
   have hd' := inR d hd
@@ -185,7 +189,7 @@ theorem xcR_xG (hE : TGood P W M N c₀) :
   obtain ⟨c₁, k₁, e₁, hk₁, r₁, f₁⟩ := gRec_exec hE hI hK (inR a ha) (inR b hb) hp1 he1 hY
     (by omega)
   have g₁ : ∀ r, 80000 ≤ r → r < 90000 → c₁.nreg r = c.nreg r := fun r h1 h2 => f₁.1 r (by
-    simp only [BgK, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    sio only [BgK, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := f₁.1 _ (by simp [BgK, Bprim, ALLOC])
   -- save it
   obtain ⟨c₂, e₂, v₂, f₂⟩ := copies_run (P := P) recSave c₁ e₁.wb_right
@@ -196,7 +200,7 @@ theorem xcR_xG (hE : TGood P W M N c₀) :
     forall_eq] at v₂
   obtain ⟨s0, s1, s2, s3⟩ := v₂
   have k2 : ∀ r, ¬ (10700 ≤ r ∧ r < 10704) → c₂.nreg r = c₁.nreg r := fun r hr =>
-    f₂.1 r (by simp [recSave]; omega)
+    f₂.1 r (by sio [recSave])
   have r₂ : AbsRec P c₂ 10700 (M.pos (Qof P) ⟨c.nreg a, c.nreg b⟩).1 Rd :=
     absRec_copy r₁ s0 (by rw [s1]) (by rw [s2]) (by rw [s3])
   have f₁' : FrameB BxR c c₁ := frameB_mono f₁ (fun r h => by
@@ -205,17 +209,17 @@ theorem xcR_xG (hE : TGood P W M N c₀) :
     simp [recSave] at hr; simp only [BxR, Bool.or_eq_true, decide_eq_true_eq]; right; omega))
   have g₂ : ∀ r, 80000 ≤ r → r < 90000 → c₂.nreg r = c.nreg r := fun r h1 h2 => by
     rw [k2 r (by omega)]; exact g₁ r h1 h2
-  have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := by rw [k2 _ (by unfold ALLOC; omega), hA1]
+  have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := by rw [k2 _ (by ufo ALLOC), hA1]
   have hI2 : TInv W c₀ c₂ := stable_tinv (Bo := oracleBands) (by decide) c c₂ 0 hI e₂.wb_right
     (FrameR.of_frameB F02 (fun r hr => Or.inr (opW_BxR r hr).1) (opW_alloc opW_BxR) 0)
   have hK2 : KindRad P M c₂ Rd := hK.frame F02.2.2.1 (g₂ _ (by norm_num) (by norm_num))
     (g₂ _ (by norm_num) (by norm_num)) hA2
   -- the second record
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, f₃⟩ := gRec_exec hE hI2 hK2 (inR d hd) (inR e he)
-    (by rw [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2]; exact hp2)
-    (by rw [g₂ d hd'.1 hd'.2]; exact he2)
+    (by rwx [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2])
+    (by rwx [g₂ d hd'.1 hd'.2])
     (fun C hC => by rw [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2, ← hyy]; exact hY C hC)
-    (by rw [hA2]; omega)
+    (by rwo [hA2])
   rw [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2] at r₃
   have r₂' : AbsRec P c₃ 10700 (M.pos (Qof P) ⟨c.nreg a, c.nreg b⟩).1 Rd :=
     absRec_copy r₂ (f₃.1 _ (by decide)) (f₃.1 _ (by decide)) (f₃.1 _ (by decide))
@@ -235,13 +239,13 @@ theorem xcR_xG (hE : TGood P W M N c₀) :
     absRec_copy r₃ l5 (by rw [l6]) (by rw [l7]) (by rw [l8])
   have hA4 : c₄.nreg ALLOC = c.nreg ALLOC := by
     rw [f₄.1 _ (by simp [recLoad, ALLOC]), f₃.1 _ (by simp [BgK, Bprim, ALLOC]), hA2]
-  have hP3 : P.n + 3 ≤ W := by have := hE.hW; unfold hostWords at this; omega
+  have hP3 : P.n + 3 ≤ W := by have := hE.hW; ufo hostWords at this
   obtain ⟨c₅, k₅, e₅, hk₅, post₅, -⟩ := absCmp_meets P W c₄ e₄.wb_right
     ⟨hE.hG, hP3, _, _, Rd, x1, x2⟩ (by rw [hA4]; show _ + 260 ≤ W; omega)
   replace hk₅ : k₅ ≤ 260 := hk₅
   have bit := post₅ _ _ Rd x1 x2
   have ex : Exec P W (xcR a b d e) c c₅ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
-  refine ⟨c₅, _, ex, by simp only [recSave, recLoad, List.length_cons, List.length_nil]; omega,
+  refine ⟨c₅, _, ex, by sio only [recSave, recLoad, List.length_cons, List.length_nil],
     bit, exec_frameB ex (wr_xcR a b d e)⟩
 
 end

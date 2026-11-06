@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutCore2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 34: the arc-cutter's `emit`
@@ -15,10 +18,6 @@ from the list base `A₀ + 1` on.  A guard `ptr < LIM` keeps the pointer below t
 * `CutI`: the invariant of `cutEmit`; `cutEmit_ok`: its contract (`EmitOK`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -86,7 +85,7 @@ theorem cutStore_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       (∀ x, x ≠ 140000 → c'.nreg x = c.nreg x) := by
   unfold cutStore
   exec_block
-  all_goals first | (config_simp; rw [h00, h03]; omega) | skip
+  all_goals first | (config_simp; rwo [h00, h03]) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, fun a ha => ?_, fun x hx => ?_⟩
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h00, h03]
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
@@ -99,7 +98,7 @@ theorem cutK0_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       (∀ x, x ≠ 140000 → c'.nreg x = c.nreg x) := by
   unfold cutK0
   exec_block
-  all_goals first | (config_simp; rw [h00, h03]; omega) | skip
+  all_goals first | (config_simp; rwo [h00, h03]) | skip
   refine ⟨rfl, ?_, ?_, ?_, fun a ha => ?_, fun x hx => ?_⟩
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h00, h03, h06]
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
@@ -113,7 +112,7 @@ theorem cutK1_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       (∀ x, x ≠ 140000 → x ≠ 140004 → x ≠ 140005 → c'.nreg x = c.nreg x) := by
   unfold cutK1
   exec_block
-  all_goals first | (config_simp; rw [h00, h03]; omega) | (config_simp; rw [h55, h03]; omega) |
+  all_goals first | (config_simp; rwo [h00, h03]) | (config_simp; rwo [h55, h03]) |
     skip
   refine ⟨rfl, ?_, ?_, ?_, fun a ha => ?_, fun x h1 h2 h3 => ?_⟩
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h00, h03, h55]
@@ -146,11 +145,11 @@ theorem recOK_append {m₀ mem mem' : ℕ → ℕ} {L : ℕ} {ps : List Pc} {pc 
   rcases (show i < ps.length ∨ i = ps.length by omega) with hlt | rfl
   · rw [List.getElem_append_left hlt]
     obtain ⟨a0, a1, a2, a3, a4, a56⟩ := hold i hlt
-    refine ⟨by rw [hsame _ (by omega)]; exact a0, by rw [hsame _ (by omega)]; exact a1,
-      by rw [hsame _ (by omega)]; exact a2, by rw [hsame _ (by omega)]; exact a3,
-      by rw [hsame _ (by omega)]; exact a4, fun hk => ?_⟩
+    refine ⟨by rwx [hsame _ (by omega)], by rwx [hsame _ (by omega)],
+      by rwx [hsame _ (by omega)], by rwx [hsame _ (by omega)],
+      by rwx [hsame _ (by omega)], fun hk => ?_⟩
     obtain ⟨b5, b6⟩ := a56 hk
-    exact ⟨by rw [hsame _ (by omega)]; exact b5, by rw [hsame _ (by omega)]; exact b6⟩
+    exact ⟨by rwx [hsame _ (by omega)], by rwx [hsame _ (by omega)]⟩
   · rw [List.getElem_append_right (le_refl _)]
     simp only [Nat.sub_self, List.getElem_cons_zero]
     exact ⟨h0, h1, h2, h3, h4, h56⟩
@@ -160,7 +159,7 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
     EmitOK P W cutEmit A₀ (PcOK P C m₀ h γ) (CutI W A₀ Nmax m₀) 30 := by
   refine ⟨fun ps c c' hI fr => ?_, fun ps pc c hw hI hR hv => ?_⟩
   · have k : ∀ r, Scr r = false → c'.nreg r = c.nreg r := fr.1
-    have hmm : c'.nmem = c.nmem := fr.2.2.1
+    have hmm  := fr.2.2.1
     exact ⟨by rw [k ALLOC (by decide)]; exact hI.alloc, by rw [k _ (by decide)]; exact hI.base,
       by rw [k _ (by decide)]; exact hI.one, by rw [k _ (by decide)]; exact hI.zero,
       by rw [k _ (by decide)]; exact hI.lim, hI.limW, fun a ha => by rw [hmm]; exact hI.mem a ha,
@@ -172,10 +171,10 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
     by_cases hlt : ps.length < Nmax
     · have hmin : min ps.length Nmax = ps.length := min_eq_left hlt.le
       rw [hmin] at hp hc
-      have htake : ps.take Nmax = ps := List.take_of_length_le hlt.le
+      have htake  := List.take_of_length_le hlt.le
       rw [htake] at hrec
       set p := A₀ + 1 + 7 * ps.length with hpdef
-      have t₀ : c.nreg 140000 < c.nreg 140007 := by rw [hp, hL]; omega
+      have t₀ : c.nreg 140000 < c.nreg 140007 := by rwo [hp, hL]
       obtain ⟨c₁, k₁, e₁, hk₁, q00, q0, q1, q2, q3, q4, qm, qr⟩ := cutStore_exec (P := P) c hw hp h1
         (by omega)
       have w₁ := e₁.wb_right
@@ -188,13 +187,13 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
           (∀ x, x ≠ 140000 → x ≠ 140004 → x ≠ 140005 → c₂.nreg x = c₁.nreg x) := by
         rcases hkind with hk0 | hk1
         · have t : c₁.nreg 150054 < c₁.nreg 140003 := by
-            rw [qr _ (by omega), r54, hk0, b03]; omega
+            rwo [qr _ (by omega), r54, hk0, b03]
           obtain ⟨c₂, k₂, e₂, hk₂, a0, -, -, am, ar⟩ := cutK0_exec (P := P) c₁ w₁ q00 b03
             (by rw [qr _ (by omega), h0]) (by omega)
           exact ⟨c₂, _, .ifLtN_true t e₂, by omega, by rw [a0],
             fun h => absurd (hk0.symm.trans h) (by decide), trivial, am, fun x h1 _ _ => ar x h1⟩
         · have t : ¬ c₁.nreg 150054 < c₁.nreg 140003 := by
-            rw [qr _ (by omega), r54, hk1, b03]; omega
+            rwo [qr _ (by omega), r54, hk1, b03]
           have he := entry_lt S hv hk1
           obtain ⟨c₂, k₂, e₂, hk₂, a0, a5, a6, am, ar⟩ := cutK1_exec (P := P)
             (en := pc.entry) c₁ w₁ q00 b03
@@ -207,7 +206,7 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
       have b02 : c₂.nreg 140002 = ps.length := by
         rw [qr₂ _ (by omega) (by omega) (by omega), qr _ (by omega), hc]
       have b03' : c₂.nreg 140003 = 1 := by rw [qr₂ _ (by omega) (by omega) (by omega), b03]
-      have e₃ := Exec.addN (P := P) w₂ 140002 140002 140003 (by rw [b02, b03']; omega)
+      have e₃ := Exec.addN (P := P) w₂ 140002 140002 140003 (by rwo [b02, b03'])
       set c₃ := ({ c₂ with nreg := upd c₂.nreg 140002 (c₂.nreg 140002 + c₂.nreg 140003) } :
         Config) with hc₃
       have g₃ : ∀ x, x ≠ 140000 → x ≠ 140002 → x ≠ 140004 → x ≠ 140005 →
@@ -218,19 +217,19 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
       refine ⟨c₃, _, .ifLtN_true t₀ (.seq e₁ (.seq e₂ e₃)), by omega, ⟨?_, ?_, ?_, ?_, ?_, hLW,
         fun a ha => by rw [mem3 a (by omega)]; exact hm a ha, ?_, ?_, ?_⟩, fun r hr => ?_,
         fun a ha => mem3 a (by omega)⟩
-      · rw [g₃ _ (by decide) (by decide) (by decide) (by decide)]; exact hA
-      · rw [g₃ _ (by omega) (by omega) (by omega) (by omega)]; exact hB
-      · rw [g₃ _ (by omega) (by omega) (by omega) (by omega)]; exact h1
-      · rw [g₃ _ (by omega) (by omega) (by omega) (by omega)]; exact h0
-      · rw [g₃ _ (by omega) (by omega) (by omega) (by omega)]; exact hL
+      · rwx [g₃ _ (by decide) (by decide) (by decide) (by decide)]
+      · rwx [g₃ _ (by omega) (by omega) (by omega) (by omega)]
+      · rwx [g₃ _ (by omega) (by omega) (by omega) (by omega)]
+      · rwx [g₃ _ (by omega) (by omega) (by omega) (by omega)]
+      · rwx [g₃ _ (by omega) (by omega) (by omega) (by omega)]
       · simp only [hc₃, upd]
         rw [ite_eq_right (by omega), q20, List.length_append, List.length_singleton,
           min_eq_left (by omega)]
         omega
       · simp only [hc₃, upd, ↓reduceIte]
         rw [b02, b03', List.length_append, List.length_singleton, min_eq_left (by omega)]
-      · rw [List.take_of_length_le (by simp; omega)]
-        refine recOK_append hrec (fun a ha => mem3 a ha) ?_ ?_ ?_ ?_ ?_ ?_
+      · rw [List.take_of_length_le (by sio)]
+        refine recOK_append hrec (mem3) ?_ ?_ ?_ ?_ ?_ ?_
         · show c₂.nmem p = _; rw [qm₂ _ (by omega), q0, r50]
         · show c₂.nmem (p + 1) = _; rw [qm₂ _ (by omega), q1, r51]
         · show c₂.nmem (p + 2) = _; rw [qm₂ _ (by omega), q2, r52]
@@ -241,12 +240,12 @@ theorem cutEmit_ok (S : SEnv O P C H Hh h γ m₀ A₀ W) (Nmax : ℕ) :
         exact g₃ r (by omega) (by omega) (by omega) (by omega)
     · have hmin : min ps.length Nmax = Nmax := min_eq_right (by omega)
       rw [hmin] at hp hc
-      have t₀ : ¬ c.nreg 140000 < c.nreg 140007 := by rw [hp, hL]; omega
+      have t₀ : ¬ c.nreg 140000 < c.nreg 140007 := by rwo [hp, hL]
       refine ⟨c, _, .ifLtN_false t₀ (.skip hw), by omega, ⟨hA, hB, h1, h0, hL, hLW, hm, ?_, ?_, ?_⟩,
         fun _ _ => rfl, fun _ _ => rfl⟩
       · rw [hp, List.length_append, List.length_singleton, min_eq_right (by omega)]
       · rw [hc, List.length_append, List.length_singleton, min_eq_right (by omega)]
-      · rw [List.take_append_of_le_length (by omega)]; exact hrec
+      · rwx [List.take_append_of_le_length (by omega)]
 
 end
 

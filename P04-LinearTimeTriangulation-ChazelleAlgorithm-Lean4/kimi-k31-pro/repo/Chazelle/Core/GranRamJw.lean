@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.GranRamMu
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-F, RAM part 3: the joined-gap weights on the RAM
@@ -97,9 +100,9 @@ theorem gwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
   · rw [hEg]; dm_simp; omega
   · config_simp; rw [hEg]; dm_simp; omega
   · config_simp; rw [hPz]; dm_simp; omega
-  · config_simp; rw [hEg, hPz, rb, rx]; omega
+  · config_simp; rwo [hEg, hPz, rb, rx]
   -- after the loads
-  have la : c.nmem (d.b0 + d.oEg + a) = st.eg a := ra
+  have la  := ra
   unfold gwt
   by_cases hab : a < b
   · refine spec_ifLtN_true (by config_simp; exact hab)
@@ -115,21 +118,21 @@ theorem gwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
           ∃ c' k, Exec P W (.instr (.addN 90092 90098 90099)) c₁ c' k ∧ k = 1 ∧
             c'.nreg 90092 = (E.sz - st.eg a) + min (st.eg b + st.pz b) (st.eg a) := by
         intro c₁ hw₁ h99 h98
-        refine ⟨_, 1, Exec.addN hw₁ _ _ _ (by rw [h99, h98]; omega), rfl, ?_⟩
+        refine ⟨_, 1, Exec.addN hw₁ _ _ _ (by rwo [h99, h98]), rfl, ?_⟩
         config_simp; rw [h98, h99]
       by_cases hm : st.eg b + st.pz b < st.eg a
       · have e1 := Exec.copyN (P := P) hw₁ 90099 90097
         obtain ⟨c', k₂, e2, hk₂, hr⟩ := hmin _ e1.wb_right
           (by config_simp; rw [hEg, hPz, rb, rx, min_eq_left hm.le])
           (by config_simp; rw [hsz, hEg, ra])
-        refine ⟨c', _, .seq (Exec.ifLtN_true (by config_simp; rw [hEg, hPz, rb, rx, ra]; exact hm)
+        refine ⟨c', _, .seq (Exec.ifLtN_true (by config_simp; rwx [hEg, hPz, rb, rx, ra])
           e1) e2, by omega, ?_⟩
         rw [hr, ite_eq_right (by omega), ite_eq_right hab]
       · have e1 := Exec.copyN (P := P) hw₁ 90099 90094
         obtain ⟨c', k₂, e2, hk₂, hr⟩ := hmin _ e1.wb_right
           (by config_simp; rw [hEg, ra, min_eq_right (by omega)])
           (by config_simp; rw [hsz, hEg, ra])
-        refine ⟨c', _, .seq (Exec.ifLtN_false (by config_simp; rw [hEg, hPz, rb, rx, ra]; exact hm)
+        refine ⟨c', _, .seq (Exec.ifLtN_false (by config_simp; rwx [hEg, hPz, rb, rx, ra])
           e1) e2, by omega, ?_⟩
         rw [hr, ite_eq_right (by omega), ite_eq_right hab]
     · refine spec_ifLtN_false (by config_simp; exact hba)
@@ -165,12 +168,12 @@ theorem ddOne_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       by rw [ite_eq_right (by omega)], fun _ _ => rfl⟩
   cases b with
   | false =>
-    exact ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true (by rw [hb, h19]; decide)
+    exact ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true (by rwd [hb, h19])
       (.skip hw))), by omega, by simp, fun _ _ => rfl⟩
   | true =>
-    refine ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false (by rw [hb, h19]; decide)
+    refine ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false (by rwd [hb, h19])
       (Exec.constN hw 90089 1 hW))), by omega, ?_, fun r hr => by simp [upd, hr]⟩
-    rw [ite_eq_left ⟨by omega, rfl⟩]; simp
+    rws [ite_eq_left ⟨by omega, rfl⟩]
 
 /-- **The death test.** -/
 theorem ddStmt_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
@@ -194,7 +197,7 @@ theorem ddStmt_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     (by rw [f₁ _ (by decide)]; simp [c₀, upd, h73]) (by rw [h₁]; split_ifs <;> simp [c₀, upd])
   refine ⟨c₂, _, .seq e0 (.seq e₁ e₂), by omega, ?_⟩
   rw [h₂, h₁, f₁ _ (by decide), f₁ _ (by decide)]
-  simp only [c₀, upd, ite_eq_right (show (90088 : ℕ) ≠ 90089 by decide),
+  simp [c₀, upd, ite_eq_right (show (90088 : ℕ) ≠ 90089 by decide),
     ite_eq_right (show (90068 : ℕ) ≠ 90089 by decide), ite_eq_right (show (90069 : ℕ) ≠ 90089 by decide)]
   unfold bit
   cases b1 <;> cases b2 <;> by_cases x1 : c.nreg 90088 = c.nreg 90068 <;>
@@ -203,7 +206,7 @@ theorem ddStmt_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
 /-! ## The weight of the gap around a dying position -/
 
 theorem Bin_false {a b r : ℕ} (h : r < a ∨ b ≤ r) : Bin a b r = false := by
-  unfold Bin; simp only [decide_eq_false_iff_not]; omega
+  unfold Bin; sio only [decide_eq_false_iff_not]
 
 /-- The skip-or-load step of `jwStmt`. -/
 theorem skipLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {rb rp : ℕ}
@@ -216,10 +219,10 @@ theorem skipLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       (∀ r, r ≠ 90080 → r ≠ rp → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   cases b with
   | false =>
-    exact ⟨c, _, .ifLtN_true (by rw [h89, h19]; decide) (.skip hw), by omega, by simp,
+    exact ⟨c, _, .ifLtN_true (by rwd [h89, h19]) (.skip hw), by omega, by simp,
       fun _ _ _ => rfl, rfl⟩
   | true =>
-    refine spec_ifLtN_false (by rw [h89, h19]; decide) ?_
+    refine spec_ifLtN_false (by rwd [h89, h19]) ?_
     exec_block
     · exact hW rfl
     · refine ⟨by omega, ?_, fun r h1 h2 => ?_, rfl⟩
@@ -284,7 +287,7 @@ theorem jwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
     (by rw [qr _ (by decide) (by decide) (by decide), h72])
     (by rw [qr _ (by decide) (by decide) (by decide), h73])
   have w₂ := e₂.wb_right
-  have g₂ : ∀ r, Bin 90089 90090 r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have g₂  := f₂.1
   have hdd1 : c₂.nreg 90089 = bit (st.dd cc (st.prv k)) := by
     rw [d₂, q88, qr _ (by decide) (by decide) (by decide),
       qr _ (by decide) (by decide) (by decide), h68, h69]
@@ -331,7 +334,7 @@ theorem jwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h72])
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h73])
   have w₅ := e₅.wb_right
-  have g₅ : ∀ r, Bin 90089 90090 r = false → c₅.nreg r = c₄.nreg r := f₅.1
+  have g₅  := f₅.1
   have hdd2 : c₅.nreg 90089 = bit (st.dd cc (st.nxt k)) := by
     rw [d₅, q88', c4r _ (by decide) (by decide) (by decide) (by decide) (by decide),
       c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h68, h69]
@@ -383,9 +386,9 @@ theorem jwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
     rw [r₇ r (by omega) (by omega), c6r r (by omega)]
   have henc₇ : Enc c₇.nmem d st := by
     have : c₇.nmem = c₆.nmem := (exec_frameB e₇ (B := Bin 90090 90092) (by decide)).2.2.1
-    rw [this, m6]; exact henc
+    rwx [this, m6]
   obtain ⟨c₈, k₈, e₈, hk₈, g₈, -⟩ := gwStmt_exec (P := P) c₇ e₇.wb_right hC₇ henc₇
-    (by rw [q90]; exact hpD) (by rw [q91]; exact hsD) (by rw [q91]; exact hbx _ hsD) hszW hbase
+    (by rwx [q90]) (by rwx [q91]) (by rw [q91]; exact hbx _ hsD) hszW hbase
   refine ⟨_, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈
     (Exec.copyN e₈.wb_right 90085 90092)))))))), by omega, ?_⟩
   config_simp

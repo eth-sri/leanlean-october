@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.NFBuildPhaseBAux
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-C (BuildNF), RAM part 22: phase B up to the end of the main pass
@@ -25,7 +30,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 /-- **Phase B up to the end of the main pass.** -/
 theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     (hw : WordsBounded W c) {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {D T SE B H : ℕ}
@@ -44,7 +48,7 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
           (H + 17 + 26 * L.length) (H + 17 + 28 * L.length) (loOf c.nmem D)
           (hdOf c.nmem D P.n) c.nmem) (c₂ : Config), PassInv F c₂ c₃ E.length := by
   set K := L.length with hKdef
-  have hHW : H ≤ W := by unfold sizeB at hroom; omega
+  have hHW : H ≤ W := by ufo sizeB at hroom
   obtain ⟨hDW, hCW⟩ := locChainWF_of hwf hHW hWn
   have hD6 := hwf.1
   -- 1. setup
@@ -52,16 +56,16 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     s16, s17, s18, s19, s20⟩ := setupB_exec (P := P) c hw hK hN h1 hH hSEr hroom
   have w₁ := x₁.wb_right
   have f₁ := exec_frameB x₁ wr_setupB
-  have g₁ : ∀ r, BsetupB r = false → c₁.nreg r = c.nreg r := f₁.1
+  have g₁  := f₁.1
   -- 2. the counted interval
   obtain ⟨c₂, k₂, x₂, hk₂, l1, l2, l3, l4, f₂⟩ := lohiS_exec (P := P) c₁ w₁ (D := D)
     (by rw [g₁ _ (by decide), hD]) (by rw [f₁.2.2.1]; exact twice_m_le hM hCW)
-    (by omega) (by unfold hostWords at hWn; omega) (by unfold hostWords at hWn; omega)
+    (by omega) (by ufo hostWords at hWn) (by ufo hostWords at hWn)
   rw [f₁.2.2.1] at l1 l2 l3
   have w₂ := x₂.wb_right
   have g₂ : ∀ r, r ≠ 41023 → r ≠ 41019 → r ≠ 44020 → r ≠ 44021 → r ≠ 44022 →
       c₂.nreg r = c₁.nreg r := fun r a1 a2 a3 a4 a5 => f₂.1 r (by
-    simp only [decide_eq_false_iff_not]; omega)
+    sio only [decide_eq_false_iff_not])
   have mm₂ : c₂.nmem = c.nmem := by rw [f₂.2.2.1, f₁.2.2.1]
   have G₂ : ∀ r, BsetupB r = false → r ≠ 41023 → r ≠ 41019 → r ≠ 44020 → r ≠ 44021 →
       r ≠ 44022 → c₂.nreg r = c.nreg r := fun r h a1 a2 a3 a4 a5 => by
@@ -103,15 +107,15 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   -- 3. the main pass
   obtain ⟨hcI, hcW⟩ := BuildRam.countedIv (P := P) hM
   have hlohi : loOf c.nmem D ≤ hiOf c.nmem D P.n := by
-    unfold loOf hiOf; split_ifs <;> omega
+    unfold loOf hiOf; splao
   have F : PassFix P W M L E D H T SE B (H + 12) (H + 12 + 5 * K) (H + 17 + 26 * K)
       (H + 17 + 28 * K) (loOf c.nmem D) (hdOf c.nmem D P.n) c.nmem :=
     { inp := hI, good := hG, hwords := hWn, len := hlen, wf := hwf, desc := hM, HW := hHW,
       recs := hR, TH := hTH, chl := hCL, BH := hBH, codes := hSE, SEH := hSEH,
       l1 := by omega, l2 := by omega, l3 := by omega, l4 := by omega,
-      l5 := by unfold sizeB at hroom; omega
-      cnt := fun p hp => by rw [hcI p hp, hdOf_eq]; omega
-      cntW := by rw [hdOf_eq]; omega }
+      l5 := by ufo sizeB at hroom
+      cnt := fun p hp => by rwo [hcI p hp, hdOf_eq]
+      cntW := by rwo [hdOf_eq] }
   have n100 : c₂.nreg 43100 = 0 := by
     rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s16]
   have n103 : c₂.nreg 43103 = SE + 0 := by
@@ -120,9 +124,9 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have n104 : c₂.nreg 43104 = SE := by
     rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s20]
   have n101 : c₂.nreg 43101 = (stk E 0).length := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s17]; rfl
+    rwr [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s17]
   have n102 : c₂.nreg 43102 = (gapsB M (Qof P) L E 0).length := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s18]; rfl
+    rwr [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s18]
   have nN : c₂.nreg 42001 = E.length := by rw [C₂.rN, hlen]
   have I₀ : PassInv F c₂ c₂ 0 :=
     { m_le := Nat.zero_le _, r100 := n100, r103 := n103, r104 := n104, r101 := n101,

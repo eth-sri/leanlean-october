@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvGL
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), stage 3: the local structure at a key
@@ -73,7 +76,7 @@ theorem keyStruct {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
       (X ≠ Y → ∀ R ∈ M.regions F, (SideOf M dY Y R ↔ SideOf M (-dX) X R)) ∧
       (X = Y → dX = dY) := by
   have hM := walkAx_of_goodModel hGM
-  have hF : F ⊆ M.Adm := hFam.2.1
+  have hF  := hFam.2.1
   by_cases htie : ∃ e' ∈ F, e' ≠ e ∧ SideAttach M.W e' p t
   · obtain ⟨e', he', hne, hA'⟩ := htie
     -- the east chord and the west chord
@@ -173,7 +176,7 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hC := corr_right0 J hP hS₂ hS₂f
   have hM := hC.hM
   set n := (chainModel J.whole).W.n with hndef
-  have hg : 6 + tpos J.whole J.m₁ < n := hC.hg
+  have hg  := hC.hg
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < n := by exact_mod_cast hg
   have hn0 : 0 < n := by omega
@@ -187,18 +190,18 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
     intro s hs0 hs1 hst
     rcases ht0.lt_or_eq with htp | rfl
     · refine ⟨p, t - s, hp, ⟨by linarith [hst htp], by linarith⟩, ?_, ?_⟩
-      · rw [hX, ite_eq_left (Or.inl htp)]; ring
+      · rwring [hX, ite_eq_left (Or.inl htp)]
       · exact off_before_edge hg hp hs0 (hst htp) ht1
     · refine ⟨(p + n - 1) % n, 1 - s, Nat.mod_lt _ hn0, ⟨by linarith, by linarith⟩, ?_,
         off_before_vertex hg hp hs0 hs1 hpos⟩
       rcases Nat.eq_zero_or_pos p with rfl | hp1
       · rw [hX, ite_eq_right (by simp), show (0 + n - 1) % n = n - 1 by
-          rw [Nat.mod_eq_of_lt (by omega)]; omega, Nat.cast_sub (by omega)]
-        push_cast; ring
+          rwo [Nat.mod_eq_of_lt (by omega)], Nat.cast_sub (by omega)]
+        pcr
       · rw [hX, ite_eq_left (Or.inr (show 1 ≤ p by omega)), show (p + n - 1) % n = p - 1 by
           rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right,
             Nat.mod_eq_of_lt (by omega)], Nat.cast_sub (by omega)]
-        push_cast; ring
+        pcr
   obtain ⟨δ₀, hδ₀, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_before hM hC.hF hC.hfin X)
   have hδ₀' : (0 : ℝ) < δ₀ := hδ₀
@@ -211,7 +214,7 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hδ4 : 0 < t → δ ≤ t := fun h => by
     have := le_trans (min_le_right (min δ₀ ε) _) (min_le_right 1 (if 0 < t then t else 1))
     rw [ite_eq_left h] at this
-    rw [hδ, ite_eq_left h]; exact this
+    rwx [hδ, ite_eq_left h]
   have hnc : ∀ s, 0 < s → s < δ → ∀ (q : ℕ) (u : ℝ), (q : ℝ) + u = X - s →
       ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (q + u) := by
     intro s hs0 hs1 q u hqu
@@ -231,11 +234,11 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
       (fun h => by linarith [hδ4 h])
     have hk := Corr.key_mem hq' hu'.1.le hu'.2
     have hxeq : x = (q' : ℝ) + u' :=
-      off_inj hg0 hgn hx0 hxn hk.1 hk.2 (by rw [← oW_eq, ← oW_eq, hoff', hs']; ring)
+      off_inj hg0 hgn hx0 hxn hk.1 hk.2 (by rwring [← oW_eq, ← oW_eq, hoff', hs'])
     exact hnc s' (by linarith) (by linarith) q' u' hqu' (hxeq ▸ hx)
   refine ⟨R, hR, before_faces_of_gap hM hC.hF hC.hfin hg0 hgn hR hq hu hnc0 hfR hp ht0 ht1
-    (by rw [← oW_eq, ← oW_eq, hoff]; linarith) hgap, q, u, hq, hu, hnc0, hfR,
-    by rw [hoff]; linarith, by rw [hoff]; linarith, hgap⟩
+    (by rwli [← oW_eq, ← oW_eq, hoff]) hgap, q, u, hq, hu, hnc0, hfR,
+    by rwli [hoff], by rwli [hoff], hgap⟩
 
 end Junction
 

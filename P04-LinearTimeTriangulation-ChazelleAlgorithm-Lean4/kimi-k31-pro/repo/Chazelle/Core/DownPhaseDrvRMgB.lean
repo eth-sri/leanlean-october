@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseDrvRMgA
 public import Chazelle.Core.DownPhaseDrvRPlD
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase driver (RAM side): merges on a region host, the top of the union
@@ -78,7 +82,6 @@ theorem pts_getD_of_get? {l : List SymPt} {i : ℕ} {sp : SymPt} (h : l[i]? = so
     l.getD i (.vtx 0) = sp := by
   rw [List.getD_eq_getElem?_getD, h, Option.getD_some]
 
-set_option maxHeartbeats 4000000 in
 /-- **The top of the union** of two consecutive sub-chains of the host. -/
 theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     (hw : WordsBounded W c) (hK : MgConst c) {H : Host} {HB NP ma : ℕ} {C1 C2 : Chain}
@@ -100,7 +103,7 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have hNW : 2 * NP ≤ W := by
     have h1 := Host.pts_length_le hwf
     have h2 : H.length * P.n ≤ 64 * P.n := Nat.mul_le_mul_right _ hHok
-    rw [hNP]; omega
+    rwo [hNP]
   have hn3 : 3 ≤ P.n := hG.1.1
   have hn0 : 0 < P.n := by omega
   have hLt := NFLoc.hostWF_pts hwf hn0
@@ -118,8 +121,8 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       c₁.nreg 50091 = C1.topIdx ∧ FrameB Btop c c₁ := by
     have q44 := hK.r44; have q45 := hK.r45
     have hD1W : D1 + 4 ≤ W := by omega
-    have t1' : c.nmem (D1 + 4) = C1.topIdx := by rw [show D1 + 4 = D1 + 1 + 3 by ring]; exact t1
-    have t2' : c.nmem (D2 + 4) = C2.topIdx := by rw [show D2 + 4 = D2 + 1 + 3 by ring]; exact t2
+    have t1' : c.nmem (D1 + 4) = C1.topIdx := by rwx [show D1 + 4 = D1 + 1 + 3 by ring]
+    have t2' : c.nmem (D2 + 4) = C2.topIdx := by rwx [show D2 + 4 = D2 + 1 + 3 by ring]
     obtain ⟨c₁, k₁, e₁, hk₁, v20, v23, v21, v25, v60, v61, v67, v68, v69, s52, n87, k91, m₁⟩ :
         ∃ c₁ k₁, Exec P W mgLoad c c₁ k₁ ∧ k₁ = 17 ∧ c₁.nreg 219120 = C1.topIdx ∧
         c₁.nreg 219123 = c.nmem (D1 + 5) ∧ c₁.nreg 219121 = ma + C2.topIdx ∧
@@ -238,7 +241,7 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   · have F3 : FrameB Btop c₂ c₃ := exec_frameB e₃ (by decide)
     have F5 : FrameB Btop c₄ c₅ := exec_frameB e₅ (by decide)
     have hb : ∀ r, Btop r = false → NFLoc.Bhost r = false := fun r hr => by
-      simp only [Btop, NFLoc.Bhost, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega
+      sio only [Btop, NFLoc.Bhost, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢
     have hk : ∀ r, Btop r = false → SweepPrim.Bkb 219136 r = false := fun r hr => by
       simp only [Btop, SweepPrim.Bkb, WalkKey.Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
         beq_eq_false_iff_ne, ne_eq] at hr ⊢; omega

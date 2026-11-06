@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvBExpA
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase base (D9), RAM: expansion of a host block, part 2 (runs)
@@ -75,13 +77,13 @@ theorem forLoopPot {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (
     have hjN : j = N := by omega
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by rwo [h1, h2]) hw, hc, by omega⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    exact ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', by omega⟩
+    exact ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwx [h1, h2]) e₁ e₂, hI', by omega⟩
 
 end loops
 
@@ -104,7 +106,7 @@ theorem runBody_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config}
   have h0 := hS₁.r0
   have h1 := hS₁.r1
   have hrn := hS₁.rn
-  have hnW : n ≤ W := hrn ▸ hw₁.1 212010
+  have hnW  := hrn ▸ hw₁.1 212010
   have hmod := Nat.mod_lt (a + t) hn
   have hLW := hS₁.hW
   have hsucc := succ_mod_ite (a + t) n hn
@@ -115,20 +117,20 @@ theorem runBody_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config}
       e₂.nreg 212025 = e₁.nreg 212025 ∧ e₂.nmem = e₁.nmem := by
     refine spec_seq ?_
     exec_block
-    · rw [r30, h0]; omega
-    · config_simp; rw [r29, h0]; omega
+    · rwo [r30, h0]
+    · config_simp; rwo [r29, h0]
     · rw [← Nat.add_assoc, hsucc]
       by_cases hlt : (a + t) % n + 1 < n
-      · refine spec_ifLtN_true (by config_simp; rw [r30, h0, hrn]; exact hlt) ?_
+      · refine spec_ifLtN_true (by config_simp; rwx [r30, h0, hrn]) ?_
         refine spec_skip ‹_› ?_
         refine ⟨by omega, ?_, ?_, by config_simp, rfl⟩
         · config_simp; rw [r29, h0]
-        · config_simp; simp only [hlt, ↓reduceIte]; rw [r30, h0]
-      · refine spec_ifLtN_false (by config_simp; rw [r30, h0, hrn]; exact hlt) ?_
+        · config_simp; simp [hlt, ↓reduceIte]; rw [r30, h0]
+      · refine spec_ifLtN_false (by config_simp; rwx [r30, h0, hrn]) ?_
         refine spec_instr (Machine.Exec.copyN ‹_› _ _) fun _ => ?_
         refine ⟨by omega, ?_, ?_, by config_simp, rfl⟩
         · config_simp; rw [r29, h0]
-        · config_simp; simp only [hlt, ↓reduceIte]; rw [h1]
+        · config_simp; simp [hlt, ↓reduceIte]; rw [h1]
   have hS₂ := hS₁.frame x₂.wb_right (exec_frameM x₂ wr_runTail) h25' hm'
   have X := Exec.seq x₁ x₂
   exact ⟨e₂, _, X, by omega, hS₂, h29', h30', exec_frameM X wr_runBody⟩
@@ -144,14 +146,14 @@ theorem runS_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config} {K
   have hw := hS.wb
   have h0 := hS.r0
   have h1 := hS.r1
-  have hnW : n ≤ W := hS.rn ▸ hw.1 212010
+  have hnW  := hS.rn ▸ hw.1 212010
   have hn : 0 < n := by omega
   obtain ⟨e₁, k₁, x₁, hk₁, h28', h29', h30', h25', hm'⟩ : ∃ e₁ k₁, Exec P W
       (block [.addN 212028 212028 212000, .copyN 212029 212001, .copyN 212030 212027]) e e₁ k₁ ∧
       k₁ ≤ 3 ∧ e₁.nreg 212028 = ℓ + 1 ∧ e₁.nreg 212029 = 0 ∧ e₁.nreg 212030 = a ∧
       e₁.nreg 212025 = e.nreg 212025 ∧ e₁.nmem = e.nmem := by
     exec_block
-    · rw [h28, h0]; omega
+    · rwo [h28, h0]
     · config_simp
       rw [h28, h0, h1, h27]
       exact ⟨by omega, rfl, rfl, rfl⟩
@@ -170,7 +172,7 @@ theorem runS_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ e : Config} {K
         (f.1 _ (by decide)).trans h2, h30⟩, hk'⟩)
     I0 (Nat.zero_le _)
   have X := Exec.seq x₁ x₂
-  exact ⟨e', _, X, by rw [Nat.sub_zero] at hk₂; omega, hS', exec_frameM X wr_runS⟩
+  exact ⟨e', _, X, by rwo [Nat.sub_zero] at hk₂, hS', exec_frameM X wr_runS⟩
 
 end exec
 

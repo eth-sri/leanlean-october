@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutPiece
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 3: the weights of the kind-0 pieces of the arc-cutter
@@ -40,13 +43,13 @@ theorem key_bounds {M : Model} {Q : Polygon} {n : ℕ} {x : WPos} (hx : ProperPo
 theorem wt_to_next (M : Model) (Q : Polygon) {n : ℕ} {x : WPos} (hx : ProperPos M Q n x) :
     M.arcWt (M.key Q x) ((x.edge + 1 : ℕ) : ℝ) ≤ 1 := by
   have := key_bounds hx
-  exact wt_within M (e := x.edge) (by push_cast; linarith) this.1 (by push_cast; linarith)
+  exact wt_within M (e := x.edge) (by pcl) this.1 (by pcl)
 
 /-- **From the start vertex of an edge to a position strictly inside it.** -/
 theorem wt_from_start (M : Model) (Q : Polygon) {n : ℕ} {y : WPos} (hy : ProperPos M Q n y)
     (hpos : 0 < M.param Q y) : M.arcWt (y.edge : ℝ) (M.key Q y) ≤ 1 := by
   have := key_bounds hy
-  exact wt_within M (e := y.edge) (by unfold Model.key; linarith) le_rfl this.2.le
+  exact wt_within M (e := y.edge) (by ufl Model.key) le_rfl this.2.le
 
 /-- **Two positions of one edge, in order.** -/
 theorem wt_same (M : Model) (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos M Q n x)
@@ -71,13 +74,13 @@ theorem arcWt_chain (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainM
       arcWtNat 6 (2 * C.m + 6) x.edge ((chainModel C).param Q x) y.edge
         ((chainModel C).param Q y) :=
   (chainModel C).arcWt_key (fun p hp => chainModel_counted_iff C p hp)
-    (by rw [chainModel_n]; omega) Q ⟨hx.1, hx.2.1⟩ ⟨hy.1, hy.2.1⟩
+    (by rwo [chainModel_n]) Q ⟨hx.1, hx.2.1⟩ ⟨hy.1, hy.2.1⟩
 
 theorem keyCeil_le (e : ℕ) (f : ℝ) : keyCeil e f ≤ e + 1 := by
-  unfold keyCeil; split_ifs <;> omega
+  unfold keyCeil; splao
 
 theorem le_keyCeil (e : ℕ) (f : ℝ) : e ≤ keyCeil e f := by
-  unfold keyCeil; split_ifs <;> omega
+  unfold keyCeil; splao
 
 /-- The vertex position `⟨p, 0⟩` is proper. -/
 theorem proper_vtx (M : Model) (Q : Polygon) (n p : ℕ) : ProperPos M Q n ⟨p, 0⟩ :=
@@ -157,11 +160,11 @@ theorem wt_U_U (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel 
     have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast (by omega : x.edge + 1 ≤ y.edge)
     rw [ite_eq_left (by linarith)]
     omega
-  · rw [ite_eq_left hyU] at hlt; omega
+  · rwo [ite_eq_left hyU] at hlt
   · have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast (by omega : y.edge + 1 ≤ x.edge)
     rw [ite_eq_right (by linarith [hx.1, hy.2.1])]
     omega
-  · rw [ite_eq_left hyU] at hlt; omega
+  · rwo [ite_eq_left hyU] at hlt
 
 end ShootCut
 

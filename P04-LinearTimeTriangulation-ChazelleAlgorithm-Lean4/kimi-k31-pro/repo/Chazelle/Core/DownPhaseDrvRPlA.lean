@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.DownPhaseDrvRPc
 public import Chazelle.Core.DownPhaseDrvRLib
 public import Chazelle.Core.NFBuildMain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Down-phase driver (RAM side): the leaf planner, part 1 (the chunk loop)
@@ -51,7 +54,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 theorem plChBody_exec (d : Config) (hw : WordsBounded W d) {C L s a k ptr : ℕ}
     (h02 : d.nreg 219002 = C) (h14 : d.nreg 219014 = L) (h12 : d.nreg 219012 = s)
     (h13 : d.nreg 219013 = a) (h16 : d.nreg 219016 = ptr) (h04 : d.nreg 219004 = k)
@@ -67,10 +69,10 @@ theorem plChBody_exec (d : Config) (hw : WordsBounded W d) {C L s a k ptr : ℕ}
       d d₁ j₁ ∧ j₁ ≤ 3 ∧ d₁.nreg 219015 = min C L ∧ (∀ r, r ≠ 219015 → d₁.nreg r = d.nreg r) ∧
       d₁.nmem = d.nmem := by
     by_cases h : C < L
-    · refine ⟨_, _, .ifLtN_true (by rw [h02, h14]; exact h) (Exec.copyN (P := P) hw 219015 219002),
+    · refine ⟨_, _, .ifLtN_true (by rwx [h02, h14]) (Exec.copyN (P := P) hw 219015 219002),
         by omega, ?_, fun r hr => by simp [hr], rfl⟩
       simp only [Machine.upd_same, h02]; rw [min_eq_left h.le]
-    · refine ⟨_, _, .ifLtN_false (by rw [h02, h14]; exact h) (Exec.copyN (P := P) hw 219015 219014),
+    · refine ⟨_, _, .ifLtN_false (by rwx [h02, h14]) (Exec.copyN (P := P) hw 219015 219014),
         by omega, ?_, fun r hr => by simp [hr], rfl⟩
       simp only [Machine.upd_same, h14]; rw [min_eq_right (by omega)]
   have w₁ := e₁.wb_right
@@ -116,7 +118,7 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
     by_cases hL : L = 0
     · subst hL
       rw [chunks_zero]
-      refine ⟨d, 2, .whileLtN_false (by rw [h17, h14]; omega) hw, by simp, by simp [h16],
+      refine ⟨d, 2, .whileLtN_false (by rwo [h17, h14]) hw, by simp, by simp [h16],
         by simp [h04], fun i hi => by simp at hi, fun _ _ => rfl, FrameM.refl _ _⟩
     · have hcons := chunks_cons (s := s) (a := a) hC (by omega : 1 ≤ L)
       set len := min C L with hlen
@@ -126,16 +128,16 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
       simp only [List.length_cons] at hWp hWk
       obtain ⟨d₁, j₁, e₁, hj₁, b12, b13, b14, b16, b04, bm, f₁⟩ :=
         plChBody_exec (P := P) d hw h02 h14 h12 h13 h16 h04 h18 h20 (by omega) hWs hWa (by omega)
-      have g₁ : ∀ r, Bch r = false → d₁.nreg r = d.nreg r := f₁.1
+      have g₁  := f₁.1
       obtain ⟨d', j₂, e₂, hj₂, c16, c04, cL, cm, cf⟩ := ih (L - len) (by omega) d₁ (s + len)
         (a + len) (k + 1) (ptr + 3) e₁.wb_right (by rw [g₁ _ (by decide), h02]) b14 b12 b13 b16
         b04 (by rw [g₁ _ (by decide), h17]) (by rw [g₁ _ (by decide), h18])
         (by rw [g₁ _ (by decide), h20]) (by omega) (by omega) (by omega) (by omega)
-      refine ⟨d', j₁ + 2 + j₂, .whileLtN_true (by rw [h17, h14]; omega) e₁ e₂, ?_, ?_, ?_, ?_,
+      refine ⟨d', j₁ + 2 + j₂, .whileLtN_true (by rwo [h17, h14]) e₁ e₂, ?_, ?_, ?_, ?_,
         ?_, f₁.trans cf⟩
-      · rw [hcons, List.length_cons]; omega
-      · rw [c16, hcons, List.length_cons]; ring
-      · rw [c04, hcons, List.length_cons]; ring
+      · rwo [hcons, List.length_cons]
+      · rwring [c16, hcons, List.length_cons]
+      · rwring [c04, hcons, List.length_cons]
       · rw [hcons]
         intro i hi
         rcases i with _ | i
@@ -150,9 +152,9 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
           obtain ⟨x1, x2, x3⟩ := cL i (by omega)
           simp only [List.getD_cons_succ]
           refine ⟨?_, ?_, ?_⟩
-          · rw [show ptr + 3 * (i + 1) = ptr + 3 + 3 * i by ring]; exact x1
-          · rw [show ptr + 3 * (i + 1) + 1 = ptr + 3 + 3 * i + 1 by ring]; exact x2
-          · rw [show ptr + 3 * (i + 1) + 2 = ptr + 3 + 3 * i + 2 by ring]; exact x3
+          · rwx [show ptr + 3 * (i + 1) = ptr + 3 + 3 * i by ring]
+          · rwx [show ptr + 3 * (i + 1) + 1 = ptr + 3 + 3 * i + 1 by ring]
+          · rwx [show ptr + 3 * (i + 1) + 2 = ptr + 3 + 3 * i + 2 by ring]
       · intro x hx
         rw [hcons, List.length_cons] at hx
         rw [cm x (by omega), bm, Machine.upd_other _ _ _ (by omega),

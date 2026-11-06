@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.RestoreDescGeo
 public import Chazelle.Core.RestoreTestSpec
 public import Chazelle.Core.RestoreTEnv
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 1: run steps
@@ -88,11 +90,11 @@ theorem FInv.regs (hB : dBands ⊆ B) {c' : Config} {k : ℕ} (hI : FInv W c₀ 
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : FInv W c₀ c' ∧ RF B (c₀.nreg ALLOC) c c' k := by
   have keep : ∀ q, FFix q → c'.nreg q = c.nreg q := fun q hq => hr q
-    (by unfold FOut; unfold FFix at hq; omega)
+    (by unfold FOut; ufo FFix at hq)
     (by unfold FScr; unfold FFix at hq; rintro (h | h)
         · omega
         · exact band8_not_oracle (by omega) (by omega) h)
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold FOut ALLOC; omega)
+  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by ufo FOut ALLOC)
     (by unfold FScr ALLOC; rintro (h | h)
         · omega
         · exact absurd h (by decide))
@@ -100,9 +102,9 @@ theorem FInv.regs (hB : dBands ⊆ B) {c' : Config} {k : ℕ} (hI : FInv W c₀ 
     fun a ha => by rw [hm]; exact hI.hm a ha⟩,
     (rf_of_regs' (fun r hr' => hr r ?_ ?_) hrr hm hrm ho).mono hB le_rfl⟩
   · unfold FOut; intro h
-    exact hr' (by rw [band8 (by omega) (by omega)]; decide)
+    exact hr' (by rwd [band8 (by omega) (by omega)])
   · unfold FScr; rintro (h | h)
-    · exact hr' (by rw [band8 (by omega) (by omega)]; decide)
+    · exact hr' (by rwd [band8 (by omega) (by omega)])
     · exact hr' (Finset.mem_union_right _ h)
 
 /-- **One register instruction** on a scratch or output register. -/
@@ -254,12 +256,12 @@ theorem FRS.prim (hB : dBands ⊆ B) {s : Stmt} {c' : Config} {k k' K : ℕ} {Q 
   have h8 : ∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
     hf.1 q (by
       rw [band8 h1 h2]
-      simp [SweepPrim.primBands, bRestore, bSign, bLocate]) (by unfold ALLOC; omega)
+      simp [SweepPrim.primBands, bRestore, bSign, bLocate]) (by ufo ALLOC)
   refine ⟨c', k, hex, hk, ⟨hex.wb_right, fun q hq => ?_, hI.hA.trans hf.2.2.2.2.2.1,
     fun a ha => (hf.2.2.1 a (by have := hI.hA; omega)).trans (hI.hm a ha)⟩,
     (RF.of_frame hf hI.hA).mono (primBands_sub.trans hB) le_rfl, hq⟩
   unfold FFix at hq
-  rw [h8 q (by omega) (by omega)]; exact hI.hin q (by unfold FFix; omega)
+  rw [h8 q (by omega) (by omega)]; exact hI.hin q (by ufo FFix)
 
 end
 

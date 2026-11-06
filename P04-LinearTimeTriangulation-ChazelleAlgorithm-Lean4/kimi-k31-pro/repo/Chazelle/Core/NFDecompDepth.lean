@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFDecompPass
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Tree decomposition (WP-C), part 3: the shrinking of components and the number of rounds
@@ -27,7 +29,7 @@ theorem hstep_le (D m : ℕ) : hstep D m ≤ m := by
 theorem hstep_lt (D m : ℕ) (hm : 1 ≤ m) : hstep D m < m := by
   unfold hstep
   rcases Nat.eq_zero_or_pos D with rfl | hD
-  · simp; omega
+  · sio
   · apply Nat.div_lt_of_lt_mul
     have : (D - 1) * m < D * m := Nat.mul_lt_mul_of_pos_right (by omega) (by omega)
     linarith [Nat.mul_comm m D]
@@ -94,7 +96,7 @@ theorem iter_D_half {D : ℕ} (hD : 1 ≤ D) (m : ℕ) : 2 * (hstep D)^[D] m ≤
     | succ i ih =>
       rw [Function.iterate_succ_apply']
       set x := (hstep D)^[i] m
-      have hx : hstep D x ≤ x := hstep_le D x
+      have hx  := hstep_le D x
       have hDx : D * hstep D x ≤ (D - 1) * x := by
         unfold hstep
         have := Nat.div_mul_le_self ((D - 1) * x) D
@@ -122,7 +124,7 @@ theorem rounds_le {D : ℕ} (hD : 1 ≤ D) (K : ℕ) : rounds D K ≤ D * Nat.cl
       rw [Nat.mul_succ, Function.iterate_add_apply]
       have h1 := iter_D_half hD m
       have h2 : (hstep D)^[D] m + 1 ≤ 2 ^ c := by
-        rw [pow_succ] at hm; omega
+        rwo [pow_succ] at hm
       exact Nat.le_zero.1 ((hstep_iter_mono D (D * c) le_rfl).trans (ih _ h2).le)
   exact Nat.find_min' _ (key _ K (Nat.le_pow_clog (by norm_num) _))
 

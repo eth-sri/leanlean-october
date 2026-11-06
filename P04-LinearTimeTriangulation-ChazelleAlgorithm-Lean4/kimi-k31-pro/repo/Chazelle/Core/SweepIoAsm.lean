@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SweepIoSpec2
 public import Chazelle.Core.SweepRamStage0
+public import Chazelle.Rwx
 
 /-!
 # The sweep RAM (WP-D), the assembly (piece I), part 1: transports
@@ -38,7 +39,7 @@ theorem asm_modelDesc {m m' : ℕ → ℕ} {D E E' : ℕ} {M : Model}
   · have hD6 := hwf.1
     have e0 : m' D = m D := he _ (by omega)
     have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    refine ⟨Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hL, hM⟩, by omega, fun h => ?_⟩
+    refine ⟨Or.inr ⟨by rw [e0, h1], by rwx [e1], hM⟩, by omega, fun h => ?_⟩
     rw [e0, h1] at h; exact absurd h one_ne_zero
 
 /-- A junction survives a change of the memory above its bound. -/
@@ -54,7 +55,7 @@ theorem asm_junction {m m' : ℕ → ℕ} {b0 b1 b2 E E' : ℕ} {H : Host} {J : 
   have hb : m' b2 = m b2 := he _ (by have := ww.1; omega)
   rw [hb] at hH'
   obtain ⟨-, -, hEb, -⟩ := ww.2 H J.whole hJ.2.2
-  have hH : HostAt m' (m b2) H := ShotList.hostAt_agree hJ.2.2.1 hEb he
+  have hH  := ShotList.hostAt_agree hJ.2.2.1 hEb he
   rw [NFLoc.hostAt_unique hH' hH]
   exact hreg H hJ.2.2.1
 
@@ -71,7 +72,7 @@ theorem st0S_md {c c' : Config} {H : Host} {J : Merge.Junction} (h : SweepEv.St0
     SweepEv.St0S P c' H J := by
   obtain ⟨h90, h91, h92, h93, hJ, hwf, d20, w20, d21, w21, h23, h24, h40, h45, h33, h34, h35,
     -, -, -, -⟩ := h
-  have r : ∀ j, j < 96 → j ≠ 11 → j ≠ 30 → j ≠ 31 → c'.nreg (sw j) = c.nreg (sw j) := hr
+  have r  := hr
   obtain ⟨hJ', hwf'⟩ := asm_junction hJ hwf hm hA
   obtain ⟨d20', w20'⟩ := chainDesc_keep w20 d20 hm hA
   obtain ⟨d21', w21'⟩ := chainDesc_keep w21 d21 hm hA
@@ -90,10 +91,10 @@ theorem st0S_md {c c' : Config} {H : Host} {J : Merge.Junction} (h : SweepEv.St0
       r 2 (by omega) (by omega) (by omega) (by omega)]; exact hJ'
   · rw [r 0 (by omega) (by omega) (by omega) (by omega), r 1 (by omega) (by omega) (by omega) (by omega),
       r 2 (by omega) (by omega) (by omega) (by omega)]; exact hwf'
-  · rw [r 20 (by omega) (by omega) (by omega) (by omega)]; exact d20'
-  · rw [r 20 (by omega) (by omega) (by omega) (by omega)]; exact w20'
-  · rw [r 21 (by omega) (by omega) (by omega) (by omega)]; exact d21'
-  · rw [r 21 (by omega) (by omega) (by omega) (by omega)]; exact w21'
+  · rwx [r 20 (by omega) (by omega) (by omega) (by omega)]
+  · rwx [r 20 (by omega) (by omega) (by omega) (by omega)]
+  · rwx [r 21 (by omega) (by omega) (by omega) (by omega)]
+  · rwx [r 21 (by omega) (by omega) (by omega) (by omega)]
 
 /-- **`St0S` survives** a step keeping `sw 0 … 99`, the memory below the allocator, and growing
 the allocator. -/
@@ -122,7 +123,7 @@ theorem out_transport {c c' : Config} {J : Merge.Junction} {N₂ : NF}
     (ht : rd c bSweep 302 + 3 * (2 * N₂.nChords) ≤ c.nreg ALLOC) :
     SweepEv.Out P J N₂ c' := by
   have e : ∀ j, j = 200 ∨ j = 201 ∨ j = 300 ∨ j = 301 ∨ j = 302 → rd c' bSweep j = rd c bSweep j :=
-    fun j hj => hr j hj
+    hr
   unfold SweepEv.Out at h ⊢
   rw [show rd c' bSweep 200 = rd c bSweep 200 from e 200 (by simp),
     show rd c' bSweep 201 = rd c bSweep 201 from e 201 (by simp),
@@ -137,12 +138,12 @@ theorem out_transport {c c' : Config} {J : Merge.Junction} {N₂ : NF}
     rw [hm _ (by omega), hm (rd c bSweep 302 + 3 * j + 1) (by omega),
       hm (rd c bSweep 302 + 3 * j + 2) (by omega)]
   refine ⟨rs, ls, hrl, fun i hi => ?_, hsok, hrw, hll, fun i hi => ?_, hlok, hlw, ?_, fun j hj => ?_⟩
-  · have hi' : i < rd c bSweep 201 := by rw [← hrl]; exact hi
+  · have hi' : i < rd c bSweep 201 := by rwx [← hrl]
     rw [hm _ (by omega), hm (rd c bSweep 200 + 5 * i + 1) (by omega),
       hm (rd c bSweep 200 + 5 * i + 2) (by omega), hm (rd c bSweep 200 + 5 * i + 3) (by omega),
       hm (rd c bSweep 200 + 5 * i + 4) (by omega)]
     exact hrs i hi
-  · have hi' : i < rd c bSweep 301 := by rw [← hll]; exact hi
+  · have hi' : i < rd c bSweep 301 := by rwx [← hll]
     rw [hm _ (by omega), hm (rd c bSweep 300 + 7 * i + 1) (by omega),
       hm (rd c bSweep 300 + 7 * i + 2) (by omega), hm (rd c bSweep 300 + 7 * i + 3) (by omega),
       hm (rd c bSweep 300 + 7 * i + 4) (by omega), hm (rd c bSweep 300 + 7 * i + 5) (by omega),
@@ -150,7 +151,7 @@ theorem out_transport {c c' : Config} {J : Merge.Junction} {N₂ : NF}
     exact hls i hi
   · intro j hj h1 h2 h3
     have := htab j hj h1 h2 h3
-    rw [htabeq j hj]; exact this
+    rwx [htabeq j hj]
   · rw [hm _ (by omega), hm (rd c bSweep 302 + 3 * j + 1) (by omega),
       hm (rd c bSweep 302 + 3 * j + 2) (by omega)]
     exact htw j hj

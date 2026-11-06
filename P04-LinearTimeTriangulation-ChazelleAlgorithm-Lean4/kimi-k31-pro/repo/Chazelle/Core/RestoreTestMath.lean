@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.RestoreTProg
 public import Chazelle.Core.FactsArcs
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the candidate test: the mathematics of a hit
@@ -45,7 +47,7 @@ theorem arcs_listed (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
   obtain ⟨-, -, hArcs, -⟩ := hregs
   obtain ⟨-, -, -, -, -, -, -, -, -, -, hpp⟩ := hNF
   obtain ⟨i, hi, hir, hia, hib⟩ := hArcs.2.2.1 r hr a b hab
-  have hmem : i ∈ (N.region r).arcs := (hArcs.2.2.2 r hr i).2 ⟨hi, hir⟩
+  have hmem  := (hArcs.2.2.2 r hr i).2 ⟨hi, hir⟩
   obtain ⟨j, hj, hji⟩ := List.getElem_of_mem hmem
   have hat : arcAt N r j = i := by
     rw [arcAt, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some, hji]
@@ -106,7 +108,7 @@ theorem length_le_ncard {α β : Type*} {L : List α} (hL : L.Nodup) {f : α →
     rw [List.toFinset_card_of_nodup hnd, List.length_map]
   rw [hlen, ← Set.ncard_coe_finset]
   exact Set.ncard_le_ncard (fun y hy => by
-    simp only [Finset.mem_coe, List.mem_toFinset, List.mem_map] at hy
+    simp [Finset.mem_coe, List.mem_toFinset, List.mem_map] at hy
     obtain ⟨a, ha, rfl⟩ := hy
     exact hmem a ha) hS
 
@@ -227,8 +229,8 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
   have y14 : c₃.nreg 83014 = 0 := by
     rw [ag₃ _ (by norm_num) (by norm_num) (by simp [validScr]), z14]
   by_cases hv : c₃.nreg 83010 = 1
-  · have g : c₃.nreg 83022 < c₃.nreg 83010 := by rw [hI₃.h22, hv]; omega
-    have hV : ValidB M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008) := i10.1 hv
+  · have g : c₃.nreg 83022 < c₃.nreg 83010 := by rwo [hI₃.h22, hv]
+    have hV  := i10.1 hv
     have hne := family_ne hE.hNF hE.hr hV.1
     obtain ⟨reg, hregs⟩ := hE.regs
     refine RSB.ifT g (RSB.seq (shotA_rsb hE hI₃ hX hcap hXl hOk hne hsg hsh hBs hB8 hBo
@@ -236,7 +238,7 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
     obtain ⟨⟨h11, m, B, hs, A, harr, hnear, hlo, hhi, hyes, hno⟩, e10, e14⟩ := h₄
     by_cases hh : c₄.nreg 83011 = 1
     · obtain ⟨t, hfh, hpp, hpe, hpos⟩ := hyes hh
-      have g' : c₄.nreg 83022 < c₄.nreg 83011 := by rw [hI₄.h22, hh]; omega
+      have g' : c₄.nreg 83022 < c₄.nreg 83011 := by rwo [hI₄.h22, hh]
       obtain ⟨-, -, -, p', t', hatt, hw'⟩ := hit_math hE.hGM hE.hNF hregs hE.hr hE.hxp hE.hxe hV
         hE.x_top harr hnear hlo hhi hfh
       have harrival := arrival_of_attach (dir_pm _) hfh.1 hatt hw'
@@ -247,7 +249,7 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
           C.coordBound_lt_radius
       have hex : ∀ C : Chain, M = chainModel C → ∃ p t, Sweep.Arrival M.W
           (M.pos (Qof P) ⟨c₄.nreg 83012, c₄.nreg 83013⟩) (dirOf (c₀.nreg 83008)) p t :=
-        fun _ _ => ⟨p', t', by rw [hpos]; exact harrival⟩
+        fun _ _ => ⟨p', t', by rwx [hpos]⟩
       refine RSB.ifT g' (RSB.of_RS Finset.subset_union_left
         (postHit_rs hE hI₄ hpp hpe hy hex (by omega))) |>.mono le_rfl (fun c₅ h₅ => ?_)
       obtain ⟨q1, q2, q3, q4, q5, q6, q7, q8, q9, q10⟩ := h₅
@@ -257,22 +259,22 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
         fun _ => ⟨m, B, hs, A, harr, hnear, hlo, hhi, fun _ => ⟨t, _, hfh, hpp, hpe, hpos, q1, q2,
           q3, q4, q5, q7, q8⟩, fun h => absurd v11 h⟩⟩
     · have h0 : c₄.nreg 83011 = 0 := by omega
-      have g' : ¬ c₄.nreg 83022 < c₄.nreg 83011 := by rw [h0]; omega
+      have g' : ¬ c₄.nreg 83022 < c₄.nreg 83011 := by rwo [h0]
       refine (RSB.ifF g' (RSB.skip (K := postHitK (N.region (c₀.nreg 83002)).chords.length)
         (Q := fun c' => c' = c₄) hI₄ rfl)).mono le_rfl (fun c₅ h₅ => ?_)
       rw [h₅]
       have v10 : c₄.nreg 83010 = 1 := by rw [e10, hv]
-      refine ⟨by omega, ⟨fun _ => hV, fun _ => v10⟩, by omega, by rw [e14, y14]; omega,
-        fun h => absurd h hh, fun h => by rw [e14, y14] at h; omega,
+      refine ⟨by omega, ⟨fun _ => hV, fun _ => v10⟩, by omega, by rwo [e14, y14],
+        fun h => absurd h hh, fun h => by rwo [e14, y14] at h,
         fun _ => ⟨m, B, hs, A, harr, hnear, hlo, hhi, fun h => absurd h hh, fun _ => hno hh⟩⟩
-  · have g : ¬ c₃.nreg 83022 < c₃.nreg 83010 := by rw [hI₃.h22]; omega
+  · have g : ¬ c₃.nreg 83022 < c₃.nreg 83010 := by rwo [hI₃.h22]
     refine (RSB.ifF g (RSB.skip (K := shotAK (F (c₀.nreg 83003))
       (N.region (c₀.nreg 83002)).arcs.length +
         (postHitK (N.region (c₀.nreg 83002)).chords.length + 2))
       (Q := fun c' => c' = c₃) hI₃ rfl)).mono le_rfl (fun c₅ h₅ => ?_)
     rw [h₅]
-    refine ⟨b10, i10, by omega, by omega, fun h => by rw [y11] at h; omega,
-      fun h => by rw [y14] at h; omega, fun h => absurd h hv⟩
+    refine ⟨b10, i10, by omega, by omega, fun h => by rwo [y11] at h,
+      fun h => by rwo [y14] at h, fun h => absurd h hv⟩
 
 end
 

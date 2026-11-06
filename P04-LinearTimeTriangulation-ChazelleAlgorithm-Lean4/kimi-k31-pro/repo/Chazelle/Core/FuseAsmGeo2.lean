@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.FuseAsmGeo
 public import Chazelle.Core.FuseAsmCover
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-F fusion assembly, part 16: the input positions of the point queries
@@ -28,7 +30,7 @@ theorem walk_vtx_tpos (C : Chain) {k : ℕ} (hk : k ≤ C.m) :
   have hτ := tpos_lt C k
   have h1 := C.one_le
   have := walk_tour C k 0 (by omega)
-  rw [Nat.add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
+  rw [Nat.add_zero, Nat.mod_eq_of_lt (by rwo [hn])] at this
   rw [this]
   unfold tourV
   rw [Nat.add_zero, Nat.mod_eq_of_lt (by omega)]
@@ -42,7 +44,7 @@ theorem vpos (C : Chain) (Q : Polygon) {k : ℕ} (hk : k ≤ C.m) :
   exact walk_vtx_tpos C hk
 
 theorem vpos_edge (C : Chain) (k : ℕ) : 6 + tpos C k < (chainModel C).W.n := by
-  have := tpos_lt C k; rw [cm_n]; omega
+  have := tpos_lt C k; rwo [cm_n]
 
 theorem lerp_mem_set (C : Chain) {k : ℕ} (hk : k < C.m) {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) :
     Geometry.lerp (C.vertex k) (C.vertex (k + 1)) t ∈ C.set :=
@@ -60,7 +62,7 @@ variable (J : Merge.Junction)
 theorem sharedV_left : sharedV J = J.left.vertex J.m₁ := rfl
 
 theorem sharedU_left : sharedU J = J.left.vertex (J.m₁ - 1 + 1 - 1) := by
-  rw [show J.m₁ - 1 + 1 - 1 = J.m₁ - 1 by omega]; rfl
+  rwr [show J.m₁ - 1 + 1 - 1 = J.m₁ - 1 by omega]
 
 theorem sharedV_right : sharedV J = J.right.vertex 0 := by
   unfold sharedV; rw [← Merge.Junction.whole_vertex_add, Nat.add_zero]
@@ -102,12 +104,12 @@ theorem capPos₀ (Q : Polygon) (hgen : SharedGeneric J) (hx : SharedExtremum J)
     have := tpos_lt J.left J.m₁
     have hlm : J.left.m = J.m₁ := rfl
     rw [hlm] at this
-    rw [Nat.mod_eq_of_lt (by rw [cm_n, hlm]; omega)]
+    rw [Nat.mod_eq_of_lt (by rwo [cm_n, hlm])]
     exact left_next J
   have hpos := pos_edge (Q := Q) (h := h) ha hb (Ne.symm g1)
   have hpar : M.param Q ⟨6 + tpos J.left J.m₁, h + 1⟩ =
       ((sharedW J).2 - (sharedV J).2) / ((sharedU J).2 - (sharedV J).2) := by
-    unfold Model.param Model.wa Model.wb; simp only
+    ufs Model.param Model.wa Model.wb
     rw [ha, hb, ite_eq_right (Ne.symm g1), hh, hnear]
   have hr := ratio_mem (a := (sharedU J).2 - (sharedV J).2) (b := (sharedW J).2 - (sharedV J).2)
     hx (not_lt.1 hu) (fun h => g3 (by linarith))
@@ -137,12 +139,12 @@ theorem capPos₁ (Q : Polygon) (hgen : SharedGeneric J) (hx : SharedExtremum J)
     have := tpos_lt J.right 0
     have hrm : J.right.m = J.m₂ := rfl
     rw [hrm] at this
-    rw [Nat.mod_eq_of_lt (by rw [cm_n, hrm]; omega)]
+    rw [Nat.mod_eq_of_lt (by rwo [cm_n, hrm])]
     exact right_next J
   have hpos := pos_edge (Q := Q) (h := h) ha hb (Ne.symm g2)
   have hpar : M.param Q ⟨6 + tpos J.right 0, h + 1⟩ =
       ((sharedU J).2 - (sharedV J).2) / ((sharedW J).2 - (sharedV J).2) := by
-    unfold Model.param Model.wa Model.wb; simp only
+    ufs Model.param Model.wa Model.wb
     rw [ha, hb, ite_eq_right (Ne.symm g2), hh, hnear]
   have hx' : 0 < ((sharedW J).2 - (sharedV J).2) * ((sharedU J).2 - (sharedV J).2) := by
     have := hx; unfold SharedExtremum at this; linarith [mul_comm ((sharedU J).2 - (sharedV J).2)

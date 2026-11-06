@@ -4,6 +4,9 @@ public import Chazelle.Core.RestoreSearchGood
 public import Chazelle.Core.FactsAttach
 public import Chazelle.Core.FactsTree
 public import Chazelle.Core.SweepLocal
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-E, Lemma 3.2 part 15: the ends of a new chord lie on closed arcs of its region
@@ -174,8 +177,8 @@ theorem attach_ray (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ} 
   rcases hM.attach_endpoint hopen hA' with h | h
   · refine ⟨b, by rw [h]; exact hab.symm, by rw [h]; exact hy.symm, by rw [hcab, h],
       hout b hb, ?_⟩
-    rw [h]; exact hopen
-  · refine ⟨a, by rw [h]; exact hab, by rw [h]; exact hy, by rw [hcab, h, Geometry.segment_comm],
+    rwx [h]
+  · refine ⟨a, by rwx [h], by rwx [h], by rw [hcab, h, Geometry.segment_comm],
       hout a ha, ?_⟩
     intro s hs
     rw [h, Geometry.lerp_symm]
@@ -184,7 +187,7 @@ theorem attach_ray (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ} 
 /-- A point of the segment `[w, v]` between `w` and `v` on a horizontal line. -/
 theorem lerp_hit {w u v : Point} (hu : u.2 = w.2) (hv : v.2 = w.2) {s : ℝ}
     (hs : u.1 = w.1 + s * (v.1 - w.1)) : lerp w v s = u :=
-  point_ext (by rw [lerp_fst, hs]) (by rw [lerp_snd, hv, hu]; ring)
+  point_ext (by rw [lerp_fst, hs]) (by rwring [lerp_snd, hv, hu])
 
 /-- **Two horizontal segments from `w` in the same direction, with open parts in `D` and far ends
 outside `D`, are equal.** -/
@@ -199,13 +202,13 @@ theorem ray_eq {D : Set Point} {w o o' : Point} (ho : o.2 = w.2) (ho' : o'.2 = w
       have hs : (o.1 - w.1) / (o'.1 - w.1) ∈ Ioo (0 : ℝ) 1 :=
         ⟨div_pos h1 h2, (div_lt_one h2).2 (by linarith)⟩
       refine hoD ?_
-      rw [← lerp_hit ho ho' (s := (o.1 - w.1) / (o'.1 - w.1)) (by have := h1.ne; have := h2.ne; field_simp; ring)]
+      rw [← lerp_hit ho ho' (s := (o.1 - w.1) / (o'.1 - w.1)) (by have := h1.ne; have := h2.ne; fsr)]
       exact hopen' _ hs
     · -- `o'` inside `[w, o]`
       have hs : (o'.1 - w.1) / (o.1 - w.1) ∈ Ioo (0 : ℝ) 1 :=
         ⟨div_pos_of_neg_of_neg h2 h1, (div_lt_one_of_neg h1).2 (by linarith)⟩
       refine ho'D ?_
-      rw [← lerp_hit ho' ho (s := (o'.1 - w.1) / (o.1 - w.1)) (by have := h1.ne; have := h2.ne; field_simp; ring)]
+      rw [← lerp_hit ho' ho (s := (o'.1 - w.1) / (o.1 - w.1)) (by have := h1.ne; have := h2.ne; fsr)]
       exact hopen _ hs
   · exact point_ext h (ho.trans ho'.symm)
   · exfalso
@@ -213,12 +216,12 @@ theorem ray_eq {D : Set Point} {w o o' : Point} (ho : o.2 = w.2) (ho' : o'.2 = w
     · have hs : (o'.1 - w.1) / (o.1 - w.1) ∈ Ioo (0 : ℝ) 1 :=
         ⟨div_pos h2 h1, (div_lt_one h1).2 (by linarith)⟩
       refine ho'D ?_
-      rw [← lerp_hit ho' ho (s := (o'.1 - w.1) / (o.1 - w.1)) (by have := h1.ne; have := h2.ne; field_simp; ring)]
+      rw [← lerp_hit ho' ho (s := (o'.1 - w.1) / (o.1 - w.1)) (by have := h1.ne; have := h2.ne; fsr)]
       exact hopen _ hs
     · have hs : (o.1 - w.1) / (o'.1 - w.1) ∈ Ioo (0 : ℝ) 1 :=
         ⟨div_pos_of_neg_of_neg h1 h2, (div_lt_one_of_neg h2).2 (by linarith)⟩
       refine hoD ?_
-      rw [← lerp_hit ho ho' (s := (o.1 - w.1) / (o'.1 - w.1)) (by have := h1.ne; have := h2.ne; field_simp; ring)]
+      rw [← lerp_hit ho ho' (s := (o.1 - w.1) / (o'.1 - w.1)) (by have := h1.ne; have := h2.ne; fsr)]
       exact hopen' _ hs
 
 /-- The points of a segment from `w` eventually approach `w`. -/
@@ -241,7 +244,7 @@ theorem attach_ccw (_hM : WalkAx M) {c : Set Point} {p : ℕ} {t : ℝ}
       (sidePrev M.W p t - sidePt M.W p t) := by
   obtain ⟨-, -, -, -, r, hr, hleft⟩ := hA
   obtain ⟨s, ⟨hs1, hd⟩, hs0⟩ := ((lerp_near (sidePt M.W p t) o hr).and self_mem_nhdsWithin).exists
-  have hs0' : (0 : ℝ) < s := hs0
+  have hs0'  := hs0
   have hx : lerp (sidePt M.W p t) o s ∈ c := by
     rw [hco]; exact Geometry.mem_segment_iff_lerp.2 ⟨s, hs0'.le, hs1.le, rfl⟩
   have hl := hleft _ hx (Chazelle.Jordan.lerp_ne_left (Ne.symm ho) hs0') hd
@@ -317,7 +320,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
     ∃ a b, M.IsArc S R a b ∧ ClosedArc a b (p + t) := by
   obtain ⟨hp, ht0, ht1, -, rA, hrA, hleftA⟩ := id hA
   have hsys := hM.sys S hS hfin
-  have hRo : IsOpen R := hsys.regionsIn_open subset_rfl hR
+  have hRo  := hsys.regionsIn_open subset_rfl hR
   obtain ⟨oe, hoe, hoe2, hes, hoeD, hoeo⟩ := attach_ray hM he hA
   obtain ⟨r₁, hr₁, hfree⟩ := Sweep.sector_free hM hS hfin hp ht0 ht1
   have hav := sidePrev_ne hM hp ht0
@@ -325,14 +328,13 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
   -- a point of `e` near the attachment, in `R`
   obtain ⟨se, ⟨hse1, hsed⟩, hse0⟩ := ((lerp_near (sidePt M.W p t) oe (lt_min hr₁ hrA)).and
     self_mem_nhdsWithin).exists
-  have hse0' : (0 : ℝ) < se := hse0
+  have hse0'  := hse0
   set ze := lerp (sidePt M.W p t) oe se with hze
-  have hzeD : ze ∈ M.D := hoeo se ⟨hse0', hse1⟩
+  have hzeD  := hoeo se ⟨hse0', hse1⟩
   have hzee : ze ∈ e := by
     rw [hes]; exact Geometry.mem_segment_iff_lerp.2 ⟨se, hse0'.le, hse1.le, rfl⟩
-  have hzeR : ze ∈ R := heR ⟨hzee, hzeD⟩
-  have hzel : sideLeft M.W p t ze :=
-    hleftA ze hzee (Chazelle.Jordan.lerp_ne_left (Ne.symm hoe) hse0')
+  have hzeR  := heR ⟨hzee, hzeD⟩
+  have hzel  := hleftA ze hzee (Chazelle.Jordan.lerp_ne_left (Ne.symm hoe) hse0')
       (lt_of_lt_of_le hsed (min_le_right _ _))
   replace hsed : dist ze (sidePt M.W p t) < r₁ := lt_of_lt_of_le hsed (min_le_left _ _)
   by_cases hB : ∃ c ∈ S, SideAttach M.W c p t
@@ -407,7 +409,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
       rw [Prod.dist_eq, ← Real.dist_eq]
       exact le_max_left _ _
     have hy2 : ∀ s : ℝ, ∀ o : Point, o.2 = w.2 → (lerp w o s).2 = w.2 := by
-      intro s o ho; rw [lerp_snd, ho]; ring
+      intro s o ho; rwring [lerp_snd, ho]
     -- the half-disk is in `R`
     have hHR : halfDisk w r₁ τ ⊆ R := by
       refine Chazelle.Chain.subset_regionsIn_of_inter hR (isPreconnected_halfDisk _ _ _) hH ?_
@@ -417,7 +419,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
     -- `R` touches `c`
     obtain ⟨sc, ⟨hsc1, hscd⟩, hsc0⟩ := ((lerp_near w oc hr₁).and
       self_mem_nhdsWithin).exists
-    have hsc0' : (0 : ℝ) < sc := hsc0
+    have hsc0'  := hsc0
     have htR : TouchesIn M.D c R := by
       refine ⟨lerp w oc sc, ⟨?_, hoco sc ⟨hsc0', hsc1⟩⟩, closure_mono hHR
         (mem_closure_halfDisk' hτ hr₁ (hy2 sc oc hoc2) (hx1 sc oc hoc2 hscd))⟩
@@ -457,8 +459,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
       obtain ⟨hxD, hxc⟩ := hfree x hx.1 hx.2
       exact ⟨hxD, fun ⟨c, hc, hxc'⟩ => hB c hc (hxc c hc hxc')⟩
     have hzeL : ze ∈ L := ⟨hsed, hzel⟩
-    have hLR : L ⊆ R :=
-      Chazelle.Chain.subset_regionsIn_of_inter hR hpre hLfree ⟨ze, hzeL, hzeR⟩
+    have hLR  := Chazelle.Chain.subset_regionsIn_of_inter hR hpre hLfree ⟨ze, hzeL, hzeR⟩
     -- the arc around the key
     obtain ⟨X, hX, l, r, harc, hin⟩ := hM.arc_around hS hfin hne hcut
     have hscale : Tendsto (fun s : ℝ => s * (1 - t)) (𝓝[>] (0 : ℝ)) (𝓝[>] (0 : ℝ)) := by
@@ -470,9 +471,9 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
       · exact mul_pos hx (by linarith)
     have hfX : ∀ᶠ s in 𝓝[>] (0 : ℝ), s < 1 ∧ M.Faces p (t + s * (1 - t)) X := by
       filter_upwards [Ioo_mem_nhdsGT one_pos, hscale.eventually (cyc_open hin)] with s hs hk
-      have hs0 : (0 : ℝ) < s := hs.1
+      have hs0  := hs.1
       refine ⟨hs.2, harc.2.2.2.2.2.2 p _ hp (by nlinarith) (by nlinarith [mul_pos (sub_pos.2 hs.2) (sub_pos.2 ht1)]) ?_⟩
-      rw [← add_assoc]; exact hk
+      rwx [← add_assoc]
     obtain ⟨s, hs1, hs2⟩ := (hoff.and hfX).exists
     have h2 : ∀ᶠ δ in 𝓝[>] (0 : ℝ),
         offset (M.wa p) (M.wb p) (t + s * (1 - t)) (δ * (1 - t)) ∈ X :=
@@ -485,7 +486,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
     have hXR : X = R := by
       rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
       · exact h
-      · exact absurd (h.le_bot ⟨hδ2, hLR (e ▸ hδ1.2)⟩) (fun h => h)
+      · exact absurd (h.le_bot ⟨hδ2, hLR (e ▸ hδ1.2)⟩) (id)
     rw [hXR] at harc
     exact ⟨l, r, harc, Or.inl hin⟩
 

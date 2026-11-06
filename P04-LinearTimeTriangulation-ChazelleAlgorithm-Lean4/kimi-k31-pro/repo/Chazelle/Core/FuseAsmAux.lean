@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.FuseAsmBuild
 public import Chazelle.Core.FuseAsmCost
 public import Chazelle.Core.FuseAsmDedupRun
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F fusion assembly, part 27: auxiliary facts of the driver
@@ -24,9 +25,9 @@ open Machine Machine.Stmt Programs SignK SweepPrim
 
 theorem bside_of_band {S r : ℕ} (hS : S = 70150 ∨ S = 70151) (hr : bandOf r ∉ FB)
     (ha : r ≠ ALLOC) : Bside S r = false := by
-  have h1 : bandOf r ≠ 1 := fun h => hr (by rw [h]; decide)
-  have h5 : bandOf r ≠ 5 := fun h => hr (by rw [h]; decide)
-  have h7 : bandOf r ≠ 7 := fun h => hr (by rw [h]; decide)
+  have h1 : bandOf r ≠ 1 := fun h => hr (by rwd [h])
+  have h5 : bandOf r ≠ 5 := fun h => hr (by rwd [h])
+  have h7 : bandOf r ≠ 7 := fun h => hr (by rwd [h])
   unfold bandOf at h1 h5 h7
   unfold ALLOC at ha
   simp only [Bside, Bend, Bpt, Bcs, Bprim, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not,
@@ -40,8 +41,8 @@ theorem bside_lo {S r : ℕ} (hS : S = 70150 ∨ S = 70151) (h1 : 70000 ≤ r) (
   omega
 
 theorem br_of_band {r : ℕ} (hr : bandOf r ∉ FB) : BR r = false := by
-  have h1 : bandOf r ≠ 1 := fun h => hr (by rw [h]; decide)
-  have h5 : bandOf r ≠ 5 := fun h => hr (by rw [h]; decide)
+  have h1 : bandOf r ≠ 1 := fun h => hr (by rwd [h])
+  have h5 : bandOf r ≠ 5 := fun h => hr (by rwd [h])
   unfold bandOf at h1 h5
   simp only [BR, Btp, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
   omega
@@ -103,7 +104,7 @@ theorem side₀_ok (J : Merge.Junction) (Q : Polygon) {N : NF}
     (pk : SharedExtremum J → ¬ NearU J → PtAns J Q 0 (capOrigin J) (capDir J) k₀)
     (nk : ¬ (SharedExtremum J ∧ ¬ NearU J) → k₀ = []) :
     ∀ q ∈ endQL N.chords ++ (v₁ ++ v₀ ++ t₁ ++ t₀ ++ k₀), QueryOK J Q 0 q ∧ HeightOK J Q 0 q := by
-  have hN' : IsNF (chainModel (sideChain J 0)) Q N := hN
+  have hN'  := hN
   intro q hq
   simp only [List.mem_append] at hq
   rcases hq with h | ((((h | h) | h) | h) | h)
@@ -123,7 +124,7 @@ theorem side₁_ok (J : Merge.Junction) (Q : Polygon) {N : NF}
     (pk : SharedExtremum J → NearU J → PtAns J Q 1 (capOrigin J) (capDir J) k₁)
     (nk : ¬ (SharedExtremum J ∧ NearU J) → k₁ = []) :
     ∀ q ∈ endQL N.chords ++ (t₁ ++ t₀ ++ k₁), QueryOK J Q 1 q ∧ HeightOK J Q 1 q := by
-  have hN' : IsNF (chainModel (sideChain J 1)) Q N := hN
+  have hN'  := hN
   intro q hq
   simp only [List.mem_append] at hq
   rcases hq with h | ((h | h) | h)

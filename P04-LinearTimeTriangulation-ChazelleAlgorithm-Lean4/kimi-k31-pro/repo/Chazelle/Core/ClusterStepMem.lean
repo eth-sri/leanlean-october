@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.ClusterSplitStep
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-I, part 37: the memory after the passes and the release of the separator
@@ -69,7 +70,7 @@ theorem pushF_stk {bS s a b : ℕ} {q : (ℕ → ℕ) × ℕ} {L : List (ℕ × 
   unfold pushF optSeg
   by_cases hs : s < b - a
   · simp only [ite_eq_left hs, List.singleton_append, List.length_cons]
-    refine ⟨?_, by rw [htp]; ring, fun x hx => ?_⟩
+    refine ⟨?_, by rwring [htp], fun x hx => ?_⟩
     · simp only [stkList]
       have e1 : upd (upd q.1 (bS + q.2) a) (bS + q.2 + 1) b (bS + 2 * L.length) = a := by
         rw [upd_apply, upd_apply, ite_eq_right (by omega), ite_eq_left (by omega)]

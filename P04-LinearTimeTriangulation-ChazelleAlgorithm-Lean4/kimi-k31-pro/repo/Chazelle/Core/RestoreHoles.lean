@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.RestoreShoot
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, Lemma 3.2 part 11: the exit point avoids the walk edges at the origin
@@ -39,10 +40,10 @@ theorem no_common_edge (hM : WalkAx M) {z : Point} {σ T : ℝ} (_hσ : σ = 1 �
     have e3 := congrArg Prod.fst hw
     have e4 := congrArg Prod.snd hw
     unfold sidePt at *
-    simp only [Geometry.lerp_fst, Geometry.lerp_snd, rayPt_fst, rayPt_snd] at *
+    simp [Geometry.lerp_fst, Geometry.lerp_snd, rayPt_fst, rayPt_snd] at *
     apply point_ext
-    · simp only [Geometry.lerp_fst, rayPt_fst]; linarith
-    · simp only [Geometry.lerp_snd, rayPt_snd]; linarith
+    · sil only [Geometry.lerp_fst, rayPt_fst]
+    · sil only [Geometry.lerp_snd, rayPt_snd]
   exact hM.trace p hp _ (by linarith) (by linarith) (hmid ▸ hdom (T / 2) (by linarith)
     (by linarith))
 

@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.SweepEvStopLab2
 public import Chazelle.Core.SweepEvStep
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), stage 2: the side labels of an anchored stop chord (part 3)
@@ -36,7 +38,7 @@ theorem slb_shoot_pt {C : Chain} {a w : Point} {σ : ℝ} (hw : w ∈ Merge.shoo
   have hT : 0 ≤ C.hitParam a σ := Real.sInf_nonneg fun _ ht => ht.1.le
   refine ⟨by simp [Geometry.lerp_snd, Visibility.rayPt_snd], u * C.hitParam a σ,
     mul_nonneg hu0 hT, ?_⟩
-  simp only [Geometry.lerp_fst, Visibility.rayPt_fst]
+  simp [Geometry.lerp_fst, Visibility.rayPt_fst]
   ring
 
 /-- A chord of `F₂⁺` in no chord of `S₂`: a shared chord or a top chord. -/
@@ -69,12 +71,12 @@ theorem slb_nonfused_pt {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChor
   have hσσ : σ' ≠ σ := fun h => hne (by rw [h])
   have hσ' : σ' = -σ := by
     rcases hσ with rfl | rfl <;> rcases hσ' with rfl | rfl <;> simp_all
-  have hss : σ * (s + s') = 0 := by rw [hσ'] at h1'; linarith
+  have hss : σ * (s + s') = 0 := by rwli [hσ'] at h1'
   have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
   have hs0 : s = 0 := by
     have := (mul_eq_zero.1 hss).resolve_left hσ0
     linarith
-  have hwa : w = a := Prod.ext (by rw [h1, hs0]; ring) h2
+  have hwa : w = a := Prod.ext (by rwring [h1, hs0]) h2
   rcases ha with rfl | rfl
   · exact hwv hwa
   · exact hwt hwa
@@ -146,7 +148,7 @@ theorem slb_tieOut (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     have : (rL1 J : ℝ) < (Lst J : ℝ) := by exact_mod_cast hlt
     linarith
   refine ⟨e, e', rL1 J, q, pb', s, tb', ρ, he, he', hne, hd0, hlt, hA, hA', hB, hB', hBne,
-    by first | (rw [hsplit']; exact hBne'), fun h => ?_, hOff pb' tb' hB' (by first | (rw [hsplit]; exact hBne')), hρ,
+    by first | (rwx [hsplit']), fun h => ?_, hOff pb' tb' hB' (by first | (rwx [hsplit])), hρ,
     hS, hS', hsplit ▸ hA.2.2.2.1, hsplit ▸ hA'.2.2.2.1⟩
   have : (Lst J : ℝ) ≤ off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (q + s) :=
     hBo

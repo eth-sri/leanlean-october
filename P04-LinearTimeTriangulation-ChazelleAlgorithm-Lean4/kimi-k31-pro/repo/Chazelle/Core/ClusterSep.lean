@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Separator.Clusters
+public import Chazelle.Rwx
 
 /-!
 # WP-I, part 7: the face separator with a rooted cotree
@@ -61,10 +62,9 @@ theorem exists_label' (hM : M.Planar) (δ : V → D) (hδ : ∀ v, M.vert (δ v)
     · by_cases h1 : e = d
       · subst h1; exact absurd hxd (T.face_notMem_cross hM hd)
       · by_cases h2 : e = M.opp d
-        · subst h2; left; rw [M.opp_opp]; exact hdf
+        · subst h2; left; rwx [M.opp_opp]
         · exact Or.inr ⟨d, hd, hdf, T.cross_closed (T.mem_Sd.mpr ⟨he, h1, h2⟩) hxd⟩
-  have hmem : M.face (δ v) ∈ U :=
-    mem_of_eqvGen (M.faceRel T.coDarts) U hstep
+  have hmem  := mem_of_eqvGen (M.faceRel T.coDarts) U hstep
       (fun x y hxy hy => hstep y x (faceRel_opp T.coDarts_oppClosed hxy) hy)
       (T.eqvGen_faceRel_coDarts hM.1 f (M.face (δ v))) (Or.inl rfl)
   rcases hmem with h | h
@@ -119,7 +119,7 @@ theorem isDesc_parent_iff {h g : F} (hh : h ≠ g) : C.IsDesc h g ↔ C.IsDesc (
     · exact absurd hn hh
     · exact ⟨n, by rw [Function.iterate_succ_apply] at hn; exact hn⟩
   · rintro ⟨n, hn⟩
-    exact ⟨n + 1, by rw [Function.iterate_succ_apply]; exact hn⟩
+    exact ⟨n + 1, by rwx [Function.iterate_succ_apply]⟩
 
 /-- The parent darts and their opposites. -/
 noncomputable def treeDarts : Finset D :=
@@ -167,14 +167,14 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
       Finset.card_univ]
     omega
   have hco := T.card_coDarts hM
-  have hF : 0 < Fintype.card F := Fintype.card_pos_iff.mpr ⟨C.r0⟩
+  have hF  := Fintype.card_pos_iff.mpr ⟨C.r0⟩
   exact (Finset.eq_of_subset_of_card_le hsub (by omega)).symm
 
 theorem mem_coDarts_iff (hM : M.Planar) {e : D} :
     e ∈ T.coDarts ↔ ∃ g, g ≠ C.r0 ∧ (e = C.fpar g ∨ e = M.opp (C.fpar g)) := by
   rw [C.coDarts_eq hM]
   unfold treeDarts
-  simp only [Finset.mem_union, Finset.mem_image, Finset.mem_erase, Finset.mem_univ, and_true]
+  simp [Finset.mem_union, Finset.mem_image, Finset.mem_erase, Finset.mem_univ, and_true]
   constructor
   · rintro (⟨g, hg, rfl⟩ | ⟨g, hg, rfl⟩)
     · exact ⟨g, hg, Or.inl rfl⟩
@@ -203,7 +203,7 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
       · -- crossing up to the parent
         have hx'g : x' ≠ g := fun h => hne2 (by rw [h])
         show C.IsDesc _ g
-        simp only [Set.mem_ofPred_eq] at hx
+        simp [Set.mem_ofPred_eq] at hx
         rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0] at hx
         rw [M.opp_opp]
         exact hx
@@ -212,12 +212,12 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
       obtain ⟨x', hx'0, rfl | rfl⟩ := (C.mem_coDarts_iff hM).mp he1
       · have hx'g : x' ≠ g := fun h => hne1 (by rw [h])
         show C.IsDesc _ g
-        simp only [Set.mem_ofPred_eq] at hy
+        simp [Set.mem_ofPred_eq] at hy
         rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0] at hy
         exact hy
       · have hx'g : x' ≠ g := fun h => hne2 (by rw [h])
         show C.IsDesc _ g
-        simp only [Set.mem_ofPred_eq] at hy
+        simp [Set.mem_ofPred_eq] at hy
         rw [M.opp_opp] at hy
         rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
         exact hy

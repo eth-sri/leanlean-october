@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepIface
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), stage 3: the invariant of the event loop (label sets)
@@ -156,7 +157,7 @@ theorem labIn_of_evInv (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (h : EvInv J S₂ (oW J (p + t)) Λ) : LabIn J S₂ p t Λ := by
   intro G hG hW V hV hR
   obtain ⟨s, hs0, hs1, hf, hnc, hoff, hgap⟩ := after_pos_exists hP hS₂ hS₂f hp ht0 ht1 hW
-  have hpos := h p (t + s) hp ⟨by linarith, hs1⟩ hnc (by rw [hoff]; linarith)
+  have hpos := h p (t + s) hp ⟨by linarith, hs1⟩ hnc (by rwli [hoff])
     (fun e he q s' hA h1 h2 => by
       obtain ⟨k0, k1⟩ := Corr.key_mem hA.1 hA.2.1 hA.2.2.1
       exact absurd ⟨h1, h2⟩ (hgap _ ⟨e, he, q, s', hA, rfl⟩ k0 k1))

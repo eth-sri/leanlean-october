@@ -50,7 +50,7 @@ theorem end_facts (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) 
     w.edge < (chainModel C).W.n ∧ BandPos C C' Q w ∧
       (0 ≤ (chainModel C).param Q w ∧ (chainModel C).param Q w < 1) := by
   obtain ⟨hl, hr⟩ := hL.2.2.1 x hx
-  have hb : |(Q.vtx x.1).2| < bnd C C' := hband x hx
+  have hb  := hband x hx
   rcases hw with rfl | rfl
   · exact ⟨hl.1, Or.inr ⟨x.1, rfl, hb⟩, hl.2.1, hl.2.2.1⟩
   · exact ⟨hr.1, Or.inr ⟨x.1, rfl, hb⟩, hr.2.1, hr.2.2.1⟩

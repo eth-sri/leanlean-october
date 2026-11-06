@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.ClusterSep
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-I, part 15: the centroid split of a piece
@@ -45,13 +47,13 @@ theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f
   classical
   obtain ⟨g, hg, rfl | rfl⟩ := (C.mem_coDarts_iff hM).mp hd
   · -- `g` is a child of `f`
-    have hpar : C.parent g = f := by rw [C.parent_of_ne hg]; exact hdf
+    have hpar : C.parent g = f := by rwx [C.parent_of_ne hg]
     have hng := hch g hg hpar
     unfold Good cnt at hng
     push Not at hng
     have : P.filter (fun v => M.face (δ v) ∈ T.cross (C.fpar g)) =
         P.filter (fun v => C.IsDesc (M.face (δ v)) g) := by
-      ext v; simp only [Finset.mem_filter, C.cross_fpar hM hg]
+      ext v; simp [Finset.mem_filter, C.cross_fpar hM hg]
     rw [this]
     convert hng using 3
   · -- the parent side of `f`
@@ -62,7 +64,7 @@ theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f
       (fun v => C.IsDesc (M.face (δ v)) g)
     have : P.filter (fun v => M.face (δ v) ∈ T.cross (M.opp (C.fpar g))) =
         P.filter (fun v => ¬ C.IsDesc (M.face (δ v)) g) := by
-      ext v; simp only [Finset.mem_filter, C.cross_opp_fpar hM hg]
+      ext v; simp [Finset.mem_filter, C.cross_opp_fpar hM hg]
     rw [this]
     have e : (P.filter (fun v => C.IsDesc (M.face (δ v)) g)).card =
         (haveI := Classical.decPred (fun v => C.IsDesc (M.face (δ v)) g);
@@ -124,8 +126,8 @@ theorem cls_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f)
     obtain ⟨a, -, -, b⟩ := mem_cls.mp hv
     exact Finset.mem_filter.mpr ⟨a, b⟩
   · have : cls T δ P f x t = ∅ := by
-      ext v; simp only [mem_cls, Finset.notMem_empty, iff_false]; tauto
-    rw [this]; simp
+      ext v; simp [mem_cls, Finset.notMem_empty, iff_false]; tauto
+    rws [this]
 
 end
 

@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.SweepEvStopSort2
 public import Chazelle.Core.SweepEvInit3
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 2: sorting the raw stop records, part 3 (the dedupe pass)
@@ -29,7 +34,7 @@ theorem ss_getD_snoc {α : Type} (l : List α) (x d : α) (i : ℕ) :
   split_ifs with h1 h2
   · simp [List.getD_eq_getElem?_getD, List.getElem?_append_left h1]
   · subst h2; simp [List.getD_eq_getElem?_getD]
-  · rw [List.getD_eq_default]; simp; omega
+  · rws [List.getD_eq_default]; omega
 
 theorem KLe.antisymm' {a b : ℝ × ℕ} (h1 : KLe a b) (h2 : KLe b a) : a = b := by
   rcases h1 with h1 | ⟨h1, h1'⟩ <;> rcases h2 with h2 | ⟨h2, h2'⟩
@@ -109,7 +114,6 @@ structure SsDI (P : Polygon) (W : ℕ) (J : Merge.Junction) (d2 RB S A₀ : ℕ)
   rm : d.rmem = d₀.rmem
   out : d.output = d₀.output
 
-set_option maxRecDepth 20000 in
 /-- **Writing a record keeps the invariant** (the item `x = L[j]` with a new key). -/
 theorem ssWr_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : ℕ} {m₀ : ℕ → ℕ}
     {B1 : ℕ} {d₀ d : Config} {O : List ℕ} {x : ℕ}
@@ -127,8 +131,8 @@ theorem ssWr_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
         d'.nreg r = d.nreg r) ∧ d'.rreg = d.rreg ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
   obtain ⟨-, -, hRB, -, -, hK1, -, hm⟩ := hctx
   obtain ⟨d', k, ex, hk, hmem', hsC, hr, hrr, hrm, ho⟩ := ssWr_exec (P := P) hw hK1
-    (by rw [hRB, hx, hb1, hC]; omega) (by rw [hb1, hb2, hC]; omega)
-    (by rw [hb2, hC]; omega)
+    (by rwo [hRB, hx, hb1, hC]) (by rwo [hb1, hb2, hC])
+    (by rwo [hb2, hC])
   rw [hRB, hx, hb1, hb2, hC] at hmem'
   have src : ∀ u, u < 11 → d.nmem (RB + 11 * x + u) = m₀ (RB + 11 * x + u) := fun u hu =>
     hm _ (by have : 11 * x + 11 ≤ 11 * S := by omega
@@ -137,7 +141,7 @@ theorem ssWr_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
     fun t ht => by
       rw [hmem']; unfold ssWM
       rw [ite_eq_left (by omega), show B1 + 5 * O.length + t - (B1 + 5 * O.length) = t by omega]
-      exact src _ (by unfold ssOff; split_ifs <;> omega)
+      exact src _ (by unfold ssOff; splao)
   have wE : ∀ t, t < 5 → d'.nmem (B1 + 5 * S + 5 * O.length + t) = m₀ (RB + 11 * x + 6 + t) :=
     fun t ht => by
       rw [hmem']; unfold ssWM
@@ -150,7 +154,7 @@ theorem ssWr_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
   have kE : ∀ a, a < B1 + 5 * S + 5 * O.length → (a < B1 + 5 * O.length ∨
       B1 + 5 * O.length + 5 ≤ a) → d'.nmem a = d.nmem a := fun a ha ha' => by
     rw [hmem']; unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
-  refine ⟨d', k, ex, hk, by rw [hsC, hC]; simp, ?_, ?_, fun a ha => kD a (by omega),
+  refine ⟨d', k, ex, hk, by rws [hsC, hC], ?_, ?_, fun a ha => kD a (by omega),
     hr, hrr, hrm, ho⟩
   · rw [List.map_append, List.map_singleton]
     refine stopRecs_snoc hst (fun a _ ha => kD a (by simpa using ha)) ?_
@@ -163,7 +167,7 @@ theorem ssWr_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
     · have := wD 4 (by norm_num); simp only [ssOff] at this; simpa using this
   · rw [List.map_append, List.map_singleton]
     refine auxRecs_snoc hax (fun a ha0 ha => kE a (by simpa using ha) (by
-      simp only [List.length_map] at ha; omega)) ?_
+      sio only [List.length_map] at ha)) ?_
     simp only [List.length_map, rawAux]
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
     · have := wE 0 (by norm_num); simpa using this
@@ -182,8 +186,8 @@ theorem ssCtx_keep {J : Merge.Junction} {d2 RB S A₀ : ℕ} {m₀ : ℕ → ℕ
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩ := h
   have k : ∀ i, (i < 3003 ∨ (3016 < i ∧ i < 10000)) ∧ i ≠ 2601 →
       d'.nreg (sw i) = d.nreg (sw i) :=
-    fun i hi => hr (sw i) (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)
-      (by unfold sC sw; omega)
+    fun i hi => hr (sw i) (by ufo sw) (by ufo sw) (by ufo sw)
+      (by ufo sC sw)
   exact ⟨(k 2 (by norm_num)).trans h1, (k 659 (by norm_num)).trans h2,
     (k 4000 (by norm_num)).trans h3, (k 4001 (by norm_num)).trans h4,
     (k 610 (by norm_num)).trans h5, (k 611 (by norm_num)).trans h6,
@@ -200,14 +204,12 @@ def ssRd : List Instr := [.addN srA srSB srJ, .loadN srX srA]
 /-- The advance. -/
 def ssAdv : List Instr := [.copyN srP srX, .addN srJ srJ K1]
 
-set_option maxRecDepth 20000 in
 theorem ssRd_val (m f : ℕ → ℕ) : regB m ssRd f srX = m (f srSB + f srJ) ∧
     ∀ r, r ≠ srA → r ≠ srX → regB m ssRd f r = f r := by
   refine ⟨?_, fun r h1 h2 => ?_⟩
   · simp only [ssRd, regB, regI, srA, srX, srSB, srJ, sw, Nat.reduceAdd, upd_same]
   · simp only [ssRd, regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
 
-set_option maxRecDepth 20000 in
 theorem ssAdv_val (m f : ℕ → ℕ) : regB m ssAdv f srP = f srX ∧ regB m ssAdv f srJ = f srJ + f K1 ∧
     ∀ r, r ≠ srP → r ≠ srJ → regB m ssAdv f r = f r := by
   refine ⟨?_, ?_, fun r h1 h2 => ?_⟩
@@ -217,7 +219,6 @@ theorem ssAdv_val (m f : ℕ → ℕ) : regB m ssAdv f srP = f srX ∧ regB m ss
       Nat.reduceEqDiff, not_false_eq_true]
   · simp only [ssAdv, regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
 
-set_option maxRecDepth 20000 in
 theorem ssCp_val (m f : ℕ → ℕ) :
     regB m [.copyN 30000 srX, .copyN 30001 srP] f 30000 = f srX ∧
     regB m [.copyN 30000 srX, .copyN 30001 srP] f 30001 = f srP ∧

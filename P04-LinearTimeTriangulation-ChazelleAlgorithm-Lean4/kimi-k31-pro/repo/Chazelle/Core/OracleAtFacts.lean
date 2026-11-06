@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.OracleAt
 public import Chazelle.Core.OracleNodeSem
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 15: the memory facts of the query from the structure
@@ -62,29 +64,29 @@ theorem QAt.qmem (h : QAt P m O E V H C N B k) {W : ℕ} (hEW : E ≤ W) : QMem 
   have hPOS := h.POS_le
   refine ⟨?_, fun j hj => ?_, fun v hv => ?_⟩
   · have := h.POS_le; omega
-  · have hjN : j < N.arcs.length := by rw [← h.hA]; exact hj
+  · have hjN : j < N.arcs.length := by rwx [← h.hA]
     obtain ⟨e1, e2⟩ := h.edges_lt hjN
-    refine ⟨by rw [arcSe_eq hm hj]; exact e1, by rw [arcEe_eq hm hj]; exact e2,
+    refine ⟨by rwx [arcSe_eq hm hj], by rwx [arcEe_eq hm hj],
       (h.pos j hj).1, by omega, by omega⟩
-  · have hvA : v < N.arcs.length := by rw [← h.hA]; exact hv
+  · have hvA : v < N.arcs.length := by rwx [← h.hA]
     have hj0 : nodeArc0 m V v = sj N v := by
-      have := hm.nf.2.2.2.2.2.2.2.2.1 v (by rw [NFLoc.seq_length hN]; exact hvA)
-      unfold nodeArc0 sj; rw [← hm.SB]; exact this
-    have hj0A : sj N v < N.arcs.length := NFLoc.seq_lt hN hvA
+      have := hm.nf.2.2.2.2.2.2.2.2.1 v (by rwx [NFLoc.seq_length hN])
+      unfold nodeArc0 sj; rwx [← hm.SB]
+    have hj0A  := NFLoc.seq_lt hN hvA
     have hr : nodeReg m V v = rgi N v := by
       have := (hm.nf.2.2.2.2.2.2.1 _ hj0A).1
-      unfold nodeReg rgi; rw [hj0, ← hm.AB]; exact this
+      unfold nodeReg rgi; rwx [hj0, ← hm.AB]
     have hrR : rgi N v < N.regions.length := (hA.1 _ hj0A).1
     obtain ⟨hna, -, -, hlist, -⟩ := hm.nf.2.2.2.2.2.2.2.1 _ hrR
     have hna' : nodeNa m V v = (N.region (rgi N v)).arcs.length := by
-      unfold nodeNa; rw [hr, ← hm.RB]; exact hna
+      unfold nodeNa; rwx [hr, ← hm.RB]
     obtain ⟨hr1, hr2⟩ := h.regs _ hrR
     have hls : nodeLs m V v = m (V.RB + 5 * rgi N v + 1) := by unfold nodeLs; rw [hr]
     have hne : 0 < (N.region (rgi N v)).arcs.length := by
       have hmem : sj N v ∈ (N.region (rgi N v)).arcs := ((hA.2.2.2 _ hrR _).2 ⟨hj0A, rfl⟩)
       exact List.length_pos_of_mem hmem
     have h0 := hr2 0 hne
-    refine ⟨by omega, by rw [hj0, ← h.hA] at *; exact hj0A, by rw [hr]; omega, by rw [hls]; omega,
+    refine ⟨by omega, by rw [hj0, ← h.hA] at *; exact hj0A, by rwo [hr], by rwo [hls],
       fun t ht => ⟨?_, by rw [hls]; rw [hna'] at ht; have := hr2 t ht; omega⟩⟩
     rw [hna'] at ht
     have hlt : nodeArc m V v t = (N.region (rgi N v)).arcs.getD t 0 := by
@@ -111,14 +113,14 @@ theorem QAt.chordTab (h : QAt P m O E V H C N B k) {W : ℕ} (hEW : E ≤ W) :
 /-- The chain descriptor copied into the model descriptor. -/
 theorem QAt.mdDesc (h : QAt P m O E V H C N B k) : ChainDescAt m (V.MD + 1) (Qof P) H C := by
   obtain ⟨hH, hP, h1, h2, h3, h4⟩ := h.desc
-  have e : ∀ i, i < 5 → m (V.MD + 1 + i) = m (V.D + i) := h.md
+  have e  := h.md
   have e0 := e 0 (by omega); have e1 := e 1 (by omega); have e2 := e 2 (by omega)
   have e3 := e 3 (by omega); have e4 := e 4 (by omega)
-  simp only [Nat.add_zero] at e0
-  refine ⟨by rw [e0]; exact hH, hP, by rw [e1]; exact h1, ?_, ?_, ?_⟩
-  · rw [show V.MD + 1 + 2 = V.MD + 1 + 2 from rfl, e2]; exact h2
-  · rw [e3]; exact h3
-  · rw [e4]; exact h4
+  simp [Nat.add_zero] at e0
+  refine ⟨by rwx [e0], hP, by rwx [e1], ?_, ?_, ?_⟩
+  · rwx [show V.MD + 1 + 2 = V.MD + 1 + 2 from rfl, e2]
+  · rwx [e3]
+  · rwx [e4]
 
 theorem QAt.modelDesc (h : QAt P m O E V H C N B k) :
     ModelDescAt m V.MD (Qof P) (chainModel C) :=
@@ -126,8 +128,8 @@ theorem QAt.modelDesc (h : QAt P m O E V H C N B k) :
 
 theorem QAt.modelDescWF (h : QAt P m O E V H C N B k) : ModelDescWF P E m V.MD := by
   refine ⟨h.MD_le, fun _ => ⟨by have := h.MD_le; omega, fun H' C' hC' => ?_⟩⟩
-  have hH : H' = H := NFLoc.hostAt_unique hC'.1 h.mdDesc.1
-  have hC : C' = C := NFLoc.chain_eq_of_desc hC' h.mdDesc
+  have hH  := NFLoc.hostAt_unique hC'.1 h.mdDesc.1
+  have hC  := NFLoc.chain_eq_of_desc hC' h.mdDesc
   subst hH hC
   have e0 : m (V.MD + 1) = m V.D := by have := h.md 0 (by omega); simpa using this
   exact ⟨h.hostLen, h.hostWF, by rw [e0]; exact h.host_le, h.s_lt⟩
@@ -140,7 +142,7 @@ theorem QAt.locMem (h : QAt P m O E V H C N B k) {W : ℕ} (hEW : E ≤ W)
   have := h.TB_le; have := h.NB_TB; have := h.AB_TB; have := h.SB_TB
   have hAμ : V.A ≤ V.μ := by rw [h.hA, ← h.μ]; exact h.gOK.arcs_le
   refine ⟨h.modelDesc, Or.inl ⟨C, h.simple, rfl⟩, hMD, hwf, h.nf, hN, h.hA, fun j hj => ?_,
-    h.tab, h.A_lt, by omega, by rw [h.nAB]; omega, by rw [h.nSB]; omega, by omega, hAμ⟩
+    h.tab, h.A_lt, by omega, by rwo [h.nAB], by rwo [h.nSB], by omega, hAμ⟩
   obtain ⟨-, -, -, reg, -, -, -, -, -, -, hpp⟩ := hN
   have := (hpp j hj).1
   rwa [show (Qof P).n = P.n from shear_n _ _] at this

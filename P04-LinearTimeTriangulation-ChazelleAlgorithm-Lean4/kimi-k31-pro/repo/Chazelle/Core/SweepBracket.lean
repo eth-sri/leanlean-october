@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepChain
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), part 9: chain brackets (events in unlabelled regions)
@@ -56,7 +57,7 @@ theorem side_arc {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   · intro hθ1
     subst hθ1
     have hleft := left_of_side hρ hS (a := sidePt M.W pf tf) (b := sidePt M.W pn tn) hy.symm
-      (by rw [hsym]; exact hmid) (by rw [hsym]; exact hmidD) (by linarith)
+      (by rwx [hsym]) (by rwx [hsym]) (by linarith)
     exact fun hin => hM.not_left_of_after hF hf hFr hN (Ne.symm hNF) hG hp ht hin hfG hleft
   · intro hθ1
     subst hθ1

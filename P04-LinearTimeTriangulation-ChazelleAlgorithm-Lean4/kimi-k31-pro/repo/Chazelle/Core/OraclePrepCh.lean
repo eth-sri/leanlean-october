@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.OraclePrepChCmp
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 27: the chord table
@@ -36,7 +42,6 @@ def chSortS : Stmt :=
 /-- The bands of the chord table. -/
 def chBands : Finset ℕ := {bSort, bSign, bDecomp, bOPrep, bOQuery}
 
-set_option maxHeartbeats 4000000 in
 theorem chSort_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤ W) {C : Chain}
     {c : Config} (hw : WordsBounded W c) {A₀ : ℕ} (hv : QVOK P C (qvOf c))
     (hq : QConst P (qvOf c) c) (hAl : c.nreg 9999 = A₀)
@@ -74,7 +79,7 @@ theorem chSort_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
       obtain ⟨c₁, k₁, ex, hk, a, b, d⟩ := H
       exact ⟨c₁, k₁, ex, hk, exec_frameB ex hwr, a, b, d⟩
     exec_block
-    exact ⟨rfl, by config_simp; rfl, by config_simp; rfl, by config_simp; rfl⟩
+    exact ⟨rfl, by csr, by csr, by csr⟩
   have h1 : c.nreg 120011 = 1 := hq.one
   -- 2. the items
   obtain ⟨c₂, k₂, e₂, hk₂, n₂, m₂, rr₂, rm₂, o₂⟩ : ∃ c₂ k₂, Exec P W
@@ -95,9 +100,9 @@ theorem chSort_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
     (B := fun r => decide (r = 60016 ∨ r = 60017)) (by decide) (by decide) (by decide) (by decide)
     (by decide) (JK c₂ (fun r => decide (r = 30003)) A₀) A₀
     (fun d d' hJ hr hm => JK.stable (rs := [60020]) (fun r hr' => by
-      simp only [decide_eq_true_eq] at hr'; subst hr'; decide) hJ
+      simp [decide_eq_true_eq] at hr'; subst hr'; decide) hJ
       (fun r a b => hr r a (by simpa using b)) hm)
-    (n := K) (κ := 2) (fun i => A₀ + i) (fun i => i) (fun i _ => by omega)
+    (n := K) (κ := 2) (fun i => A₀ + i) (id) (fun i _ => by omega)
     (fun i d hi hJ hwd hri => by
       have g30 : d.nreg 30003 = A₀ := by rw [hJ.1 _ (by decide), b30]
       obtain ⟨d', k, e, hk, v1, v2⟩ : ∃ d' k, Exec P W (block [.addN 60016 30003 60020,
@@ -108,7 +113,7 @@ theorem chSort_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
       exact ⟨d', k, e, by omega, exec_frameB e (by decide), v1, v2⟩)
     e₂.wb_right (JK.refl _ _ _) b6 b11 (by have := SortR.sortCost_ge 500 K; omega)
   have R₃ : ∀ r, r ≠ 60016 → r ≠ 60017 → r ≠ 60020 → c₃.nreg r = c₂.nreg r := fun r a b c' =>
-    r₃ r (by simp; omega) c'
+    r₃ r (by sio) c'
   -- 3. the count of the sort
   have e₄ := Exec.copyN (P := P) e₃.wb_right 30004 60006
   set c₄ : Config := { c₃ with nreg := upd c₃.nreg 30004 (c₃.nreg 60006) } with hc₄
@@ -126,16 +131,16 @@ theorem chSort_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
     unfold SortL.seg
     apply List.ext_getElem (by simp)
     intro t h1 h2
-    simp only [List.getElem_map, List.getElem_range]
-    simp only [List.length_map, List.length_range] at h1
-    exact scat_at (g := fun i => A₀ + i) (f := fun i => i) h1 (fun j _ hj => by omega)
+    simp [List.getElem_map, List.getElem_range]
+    simp [List.length_map, List.length_range] at h1
+    exact scat_at (g := fun i => A₀ + i) (f := id) h1 (fun j _ hj => by omega)
   have hmem₄ : ∀ a, a < A₀ → c₄.nmem a = c.nmem a := fun a ha => by
     rw [hm₄, mm₃, scat_below (fun i _ => by omega) ha, m₂, F₁.2.2.1]
   -- 4. the sort
   have hband : ∀ r, 120010 ≤ r → r ≤ 120049 → c₄.nreg r = c.nreg r := fun r a b => by
     rw [R₄ r (by omega), R₃ r (by omega) (by omega) (by omega), n₂]
     rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
-      F₁.1 r (by simp only [decide_eq_false_iff_not]; omega)]
+      F₁.1 r (by sio only [decide_eq_false_iff_not])]
   have hJ₄ : ChCJ c c₄.nmem (A₀ + K) K c₄ :=
     ⟨by rw [R₄ _ (by decide), R₃ _ (by decide) (by decide) (by decide), n₂]; config_simp; exact a0,
       by rw [R₄ _ (by decide), R₃ _ (by decide) (by decide) (by decide), n₂]; config_simp; exact a1,
@@ -151,7 +156,7 @@ theorem chSort_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
     (fun a b d h h' => chLeB_trans _ _ _ _ _ _ _ _ h h') (chLeB_total _ _ _ _ _)
     e₄.wb_right hJ₄ (by rw [hAL, g9]; exact chCJ_stable _ _ _ _) (List.range K) hitems
     (by rw [g304, List.length_range]) (by rw [g30, hAL, g9, List.length_range])
-    (by rw [hAL, g9, List.length_range]; omega)
+    (by rwo [hAL, g9, List.length_range])
   rw [List.length_range] at hseg s₂ hk₅
   rw [hAL, g9] at s₁
   -- 5. the base of the table
@@ -185,23 +190,23 @@ theorem chSort_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
       refine PF.frameN (B := fun r => decide (r = 9999) || decide (60001 ≤ r ∧ r ≤ 60020) ||
         decide (116000 ≤ r ∧ r ≤ 116001) || decide (30003 ≤ r ∧ r ≤ 30004))
         ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_⟩ (fun r hr => ?_) ?_
-      · simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+      · simp [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
         rw [R₄ r (by omega), R₃ r (by omega) (by omega) (by omega), n₂]
-        simp only [upd]; split_ifs <;> first | omega | exact F₁.1 r (by
-          simp only [decide_eq_false_iff_not]; omega)
-      · simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+        simp [upd]; split_ifs <;> first | omega | exact F₁.1 r (by
+          sio only [decide_eq_false_iff_not])
+      · simp [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
         show c₃.rreg r = c.rreg r
-        rw [rr₃ r (by simp only [decide_eq_false_iff_not]; omega), rr₂,
-          F₁.2.1 r (by simp only [decide_eq_false_iff_not]; omega)]
+        rw [rr₃ r (by sio only [decide_eq_false_iff_not]), rr₂,
+          F₁.2.1 r (by sio only [decide_eq_false_iff_not])]
       · rw [hmem₄ a (by rw [hAl'] at ha; exact ha)]
       · show c₃.rmem a = c.rmem a; rw [rm₃, rm₂, F₁.2.2.2.1]
       · show c₃.output = c.output; rw [o₃, o₂, F₁.2.2.2.2]
-      · simp only [Bool.or_eq_true, decide_eq_true_eq] at hr
+      · simp [Bool.or_eq_true, decide_eq_true_eq] at hr
         rcases hr with ((h | h) | h) | h
         · exact Or.inr h
-        · left; simp [chBands, bDecomp, bandOf]; omega
-        · left; simp [chBands, bOPrep, bandOf]; omega
-        · left; simp [chBands, bSort, bandOf]; omega
+        · left; sio [chBands, bDecomp, bandOf]
+        · left; sio [chBands, bOPrep, bandOf]
+        · left; sio [chBands, bSort, bandOf]
       · show c₃.rreg ALLOC = c.rreg ALLOC
         rw [rr₃ _ (by decide), rr₂, F₁.2.1 _ (by decide)]
     have F56 : FrameN chBands c₅ c₆ :=
@@ -210,20 +215,20 @@ theorem chSort_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
           simp at hr; subst hr; exact ⟨by simp [chBands, bDecomp, bandOf], by decide⟩) 1)
     have g9' : c₄.nreg ALLOC = A₀ + K := g9
     exact (F14.trans (FrameN.mono (Frame.toN F₅) (by decide))
-      (by rw [hAl', g9']; omega)).trans F56
-      (by rw [hAl']; have := F₅.2.2.2.2.2.1; rw [g9'] at this; omega)
-  · have := F₅.2.2.2.2.2.1; rw [hAL, g9] at this; rw [hc₆]; exact this
+      (by rwo [hAl', g9'])).trans F56
+      (by rw [hAl']; have := F₅.2.2.2.2.2.1; rwo [g9'] at this)
+  · have := F₅.2.2.2.2.2.1; rw [hAL, g9] at this; rwx [hc₆]
   · have := F₅.2.2.2.2.2.2; rw [hAL, g9] at this; rw [hc₆]; show c₅.nreg 9999 ≤ _; omega
   · intro r hr a b d e f
     rw [hc₆]; config_simp
-    rw [upd_other _ _ _ f, hF5 r hr, R₄ r (by unfold bandOf at hr; omega),
+    rw [upd_other _ _ _ f, hF5 r hr, R₄ r (by ufo bandOf at hr),
       R₃ r b d e, n₂]
-    rw [upd_other _ _ _ (by unfold bandOf at hr; omega),
-      upd_other _ _ _ (by unfold bandOf at hr; omega),
-      F₁.1 r (by simp only [decide_eq_false_iff_not]; unfold bandOf at hr; omega)]
+    rw [upd_other _ _ _ (by ufo bandOf at hr),
+      upd_other _ _ _ (by ufo bandOf at hr),
+      F₁.1 r (by simp [decide_eq_false_iff_not]; ufo bandOf at hr)]
   · intro r a b
     rw [hc₆]; config_simp; rw [upd_other _ _ _ (by omega)]; exact J₅.2.2.1 r a b
-  · rw [v120]; exact s₁
+  · rwx [v120]
   · rw [v120, hc₆]; config_simp; exact s₂
   · intro q q' hqq hq'
     rw [hsd q (by omega), hsd q' hq']
@@ -241,7 +246,7 @@ theorem chSort_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
       rw [← NFLoc.getD_of_lt 0 (by omega), ← NFLoc.getD_of_lt 0 (by omega)] at this
       unfold chLeB at this
       rw [ite_eq_left hA, ite_eq_left hB] at this
-      simp only [decide_eq_true_eq] at this
+      simp [decide_eq_true_eq] at this
       exact (hconv _ _ hA hB).1 this
 
 end

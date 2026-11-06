@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepAnswer2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), part 16: rays leaving a walk position; the box-gap queries (gap S5)
@@ -55,9 +57,9 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
           (chainModel C).W.vtx p) ((-σ, 0) : Point) ∨
         0 < sideCross ((-σ, 0) : Point) ((chainModel C).W.vtx
           ((p + (chainModel C).W.n - 1) % (chainModel C).W.n) - (chainModel C).W.vtx p)) := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
-  have hF : F ⊆ (chainModel C).Adm := hFam.2.1
-  have hfin : F.Finite := hFam.1
+  have hM  := FactsChain.walkAx C hP
+  have hF  := hFam.2.1
+  have hfin  := hFam.1
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   obtain ⟨hp, -, -, hpt, hsec⟩ := hA
   have hnot : ∀ c ∈ F, ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w (-σ) s ∉ c := by
@@ -71,11 +73,10 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hsec' : ∀ s > 0, sideLeft (chainModel C).W p 0 (rayPt w (-σ) s) := by
     intro s hs
     have h1 : sideLeft (chainModel C).W p 0 (rayPt (sidePt (chainModel C).W p 0) (-σ) 1) := by
-      rw [hpt]; exact hsec
+      rwx [hpt]
     have := (sideLeft_rayPt_iff _ p 0 (-σ) one_pos hs).1 h1
     rwa [hpt] at this
-  have hall : ∀ᶠ s in 𝓝[>] (0 : ℝ), ∀ c ∈ F, rayPt w (-σ) s ∉ c :=
-    (hfin.eventually_all).2 hnot
+  have hall  := (hfin.eventually_all).2 hnot
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (hall.and (Ioo_mem_nhdsGT hr₀))
   have hδ0 : (0 : ℝ) < δ := hδ
@@ -90,7 +91,7 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   set z := rayPt w (-σ) (δ / 2) with hz
   have hzfree : z ∈ freeIn C.dom F := hfree _ ⟨by linarith, by linarith⟩
   set U := connectedComponentIn (freeIn C.dom F) z with hU
-  have hUreg : U ∈ (chainModel C).regions F := Chazelle.Chain.mem_regionsIn hzfree
+  have hUreg  := Chazelle.Chain.mem_regionsIn hzfree
   have hconn : IsPreconnected ((fun s => rayPt w (-σ) s) '' Ioo (0 : ℝ) δ) :=
     isPreconnected_Ioo.image _ (by unfold rayPt; fun_prop)
   have hsubU : (fun s => rayPt w (-σ) s) '' Ioo (0 : ℝ) δ ⊆ U :=
@@ -110,13 +111,13 @@ theorem freeAt_of_leave (hP : C.P.Simple) {z : Point} {σ : ℝ} (hσ : σ = 1 �
     {t : ℝ} (hp : p < (chainModel C).W.n) (ht : 0 ≤ t) (ht1 : t < 1)
     (hpt : sidePt (chainModel C).W p t = z) (hsec : sideLeft (chainModel C).W p t (rayPt z σ 1)) :
     FreeAt C z σ := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
+  have hM  := FactsChain.walkAx C hP
   obtain ⟨r, hr, hsf⟩ := sector_free hM (F := ∅) (empty_subset _) finite_empty hp ht ht1
   filter_upwards [Ioo_mem_nhdsGT hr] with s hs
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ s) := by
     rw [hpt]
     have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-      rw [hpt]; exact hsec
+      rwx [hpt]
     have := (sideLeft_rayPt_iff _ p t σ one_pos hs.1).1 h1
     rwa [hpt] at this
   have hball : rayPt (sidePt (chainModel C).W p t) σ s ∈ ball (sidePt (chainModel C).W p t) r := by
@@ -141,14 +142,14 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
             (chainModel C).W.vtx p) ((σ, 0) : Point) ∨
           0 < sideCross ((σ, 0) : Point) ((chainModel C).W.vtx
             ((p + (chainModel C).W.n - 1) % (chainModel C).W.n) - (chainModel C).W.vtx p))) := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
-  have hF : F ⊆ (chainModel C).Adm := hFam.2.1
+  have hM  := FactsChain.walkAx C hP
+  have hF  := hFam.2.1
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
-  have hA : Arrival (chainModel C).W z (-σ) p t := ⟨hp, ht, ht1, hpt, by rw [neg_neg]; exact hsec⟩
+  have hA : Arrival (chainModel C).W z (-σ) p t := ⟨hp, ht, ht1, hpt, by rwx [neg_neg]⟩
   have hsec' : ∀ s > 0, sideLeft (chainModel C).W p t (rayPt z σ s) := by
     intro s hs
     have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-      rw [hpt]; exact hsec
+      rwx [hpt]
     have := (sideLeft_rayPt_iff _ p t σ one_pos hs).1 h1
     rwa [hpt] at this
   have hzD : z ∉ C.dom := by rw [← hpt]; exact hM.trace p hp t ht ht1.le
@@ -156,7 +157,7 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   · left
     obtain ⟨e, he, hev⟩ := hch
     refine ⟨e, he, ?_, hev⟩
-    have heA : e ∈ Merge.augChords C := hF he
+    have heA  := hF he
     obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec heA
     have hlr := hH.lt
     obtain ⟨s₁, hs₁, hs₁0⟩ := (hev.and self_mem_nhdsWithin).exists
@@ -238,9 +239,9 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
           have hp0 : p = 0 := by omega
           subst hp0
           have h0 : sidePt (chainModel C).W 0 0 = C.slitTop := by
-            rw [Chazelle.Chain.sidePt_zero]; rfl
+            rwr [Chazelle.Chain.sidePt_zero]
           have := congrArg Prod.snd (hpt.symm.trans h0)
-          simp only [Chain.slitTop] at this
+          simp [Chain.slitTop] at this
           rw [this] at hzR
           have hR := C.radius_pos
           rw [abs_of_pos hR] at hzR

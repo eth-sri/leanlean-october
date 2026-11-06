@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleChR3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (E7-B, RAM part 8): the boundary symbolic point of a chain-model hit
@@ -19,9 +23,6 @@ registers `170130 …` (kind, then one or two indices):
 Scratch: `170133 … 170140`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -132,7 +133,7 @@ theorem cvI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HRe
   have hS := hR.hS
   have hLn := hR.hLn
   have hL1 := hR.hL
-  have e₀ := exec_addN_upd (P := P) hw 170136 170076 170134 (by rw [hR.r76, hi]; omega)
+  have e₀ := exec_addN_upd (P := P) hw 170136 170076 170134 (by rwo [hR.r76, hi])
   obtain ⟨k₁, e₁, hk₁⟩ := condSub_exec (P := P) e₀.wb_right 170136 170089
   obtain ⟨k₂, e₂, hk₂⟩ := condSub_exec (P := P) e₁.wb_right 170136 170089
   obtain ⟨k₃, e₃, hk₃⟩ := condRef_exec (P := P) e₂.wb_right 170136 170037 170089
@@ -145,13 +146,13 @@ theorem cvI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HRe
       (if S + i < 2 * L then S + i else S + i - 2 * L) else
       (if S + i < 2 * L then S + i else S + i - 2 * L) - 2 * L with hj
   have hjm : j = mod2 L (S + i) := by
-    unfold mod2; rw [hj]; split_ifs <;> omega
+    unfold mod2; rw [hj]; splao
   have hjL : (if L < j then 2 * L - j else j) = sideE L j := by
-    unfold sideE; split_ifs <;> omega
+    unfold sideE; splao
   have hj2 : j < 2 * L := by rw [hjm, mod2_eq hR.hL (by omega)]; exact Nat.mod_lt _ (by omega)
-  have hjE : sideE L j ≤ L := by unfold sideE; split_ifs <;> omega
+  have hjE : sideE L j ≤ L := by unfold sideE; splao
   have e₄ := exec_addN_upd (P := P) e₃.wb_right 170136 170038 170136 (by
-    config_simp; rw [hR.r38, hjL]; omega)
+    config_simp; rwo [hR.r38, hjL])
   config_simp at e₄
   rw [hR.r38, hjL] at e₄
   rw [hjL] at e₃
@@ -195,23 +196,23 @@ theorem onETail_exec (c : Config) (hw : WordsBounded W c) {a a' : ℕ} (h37 : c.
   by_cases hne : q = a'
   · have h1 : ¬ q < a' := by omega
     have h2 : ¬ a' < q := by omega
-    refine spec_ifLtN_false (by rw [h38, h40]; exact h1) ?_
-    refine spec_ifLtN_false (by rw [h38, h40]; exact h2) ?_
+    refine spec_ifLtN_false (by rwx [h38, h40]) ?_
+    refine spec_ifLtN_false (by rwx [h38, h40]) ?_
     exec_block
     · omega
     refine ⟨by omega, by config_simp, ?_, ?_⟩
     · config_simp; rw [h37]; simp only [ShootCut.edgeOf]; rw [ite_eq_left hne.symm]
     · config_simp
   · by_cases h1 : q < a'
-    · refine spec_ifLtN_true (by rw [h38, h40]; exact h1) ?_
+    · refine spec_ifLtN_true (by rwx [h38, h40]) ?_
       exec_block
       · omega
       refine ⟨by omega, by config_simp, ?_, ?_⟩
       · config_simp; rw [h38]; simp only [ShootCut.edgeOf]; rw [ite_eq_right (by omega)]
       · config_simp
     · have h2 : a' < q := by omega
-      refine spec_ifLtN_false (by rw [h38, h40]; exact h1) ?_
-      refine spec_ifLtN_true (by rw [h38, h40]; exact h2) ?_
+      refine spec_ifLtN_false (by rwx [h38, h40]) ?_
+      refine spec_ifLtN_true (by rwx [h38, h40]) ?_
       exec_block
       · omega
       refine ⟨by omega, by config_simp, ?_, ?_⟩
@@ -227,16 +228,16 @@ theorem onE_exec (c : Config) (hw : WordsBounded W c) {a a' : ℕ} (h37 : c.nreg
   unfold onE
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [h37, h11]; omega
+  · config_simp; rwo [h37, h11]
   refine spec_seq ?_
   by_cases hq1 : a + 1 < P.n
-  · refine spec_ifLtN_true (by config_simp; rw [h37, h11, h10]; exact hq1) ?_
+  · refine spec_ifLtN_true (by config_simp; rwx [h37, h11, h10]) ?_
     refine spec_skip ‹_› ?_
     obtain ⟨c', k, e, hk, s'⟩ := onETail_exec (P := P) (a := a) (a' := a') _ ‹_›
       (by config_simp; exact h37) (by config_simp; exact h38)
       (by config_simp; rw [h37, h11, Nat.mod_eq_of_lt hq1]) (by omega)
     exact ⟨c', k, e, by omega, by config_simp at s'; exact s'⟩
-  · refine spec_ifLtN_false (by config_simp; rw [h37, h11, h10]; exact hq1) ?_
+  · refine spec_ifLtN_false (by config_simp; rwx [h37, h11, h10]) ?_
     exec_block
     · omega
     obtain ⟨c', k, e, hk, s'⟩ := onETail_exec (P := P) (a := a) (a' := a') _ ‹_›
@@ -260,7 +261,7 @@ theorem genI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HR
   have kR : ∀ {c c' : Config}, HRegs P W c cs L S v →
       (∀ r, (r < 170130 ∨ 170141 ≤ r) → c'.nreg r = c.nreg r) → HRegs P W c' cs L S v :=
     fun h hk => h.keep (fun r hr => hk r (by
-      unfold Bhs at hr; simp only [decide_eq_false_iff_not] at hr; omega))
+      unfold Bhs at hr; sio only [decide_eq_false_iff_not] at hr))
   set a := cVtxV P.n cs L S (e - 6) with had
   set a' := cVtxV P.n cs L S (e - 6 + 1) with had'
   have ha : a < P.n := by rw [had]; unfold cVtxV; exact Nat.mod_lt _ (by omega)
@@ -280,7 +281,7 @@ theorem genI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HR
       c₃.nreg 170134 = e - 6 + 1 ∧ (∀ r, r ≠ 170137 → r ≠ 170134 → r ≠ 170136 →
         c₃.nreg r = c₁.nreg r) := by
     exec_block
-    · config_simp; rw [b34, R₁.r11]; omega
+    · config_simp; rwo [b34, R₁.r11]
     refine ⟨rfl, by config_simp, by config_simp; rw [b34, R₁.r11], fun r h1 h2 h3 => ?_⟩
     simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2, ite_eq_right h3]
   have R₃ := kR R₁ (fun r hr => r₃ r (by omega) (by omega) (by omega))
@@ -297,8 +298,8 @@ theorem genI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HR
   have w₅ := e₅.wb_right
   have k₅' : ∀ r, (r < 170130 ∨ 170141 ≤ r) → c₅.nreg r = c.nreg r := fun r hr => by
     rw [r₅ r (by omega) (by omega), r₃ r (by omega) (by omega) (by omega), r₁ r (by omega)]
-  have h12' : c₅.nreg 170012 = 0 := R₅.r12
-  have hh' : c₅.nreg 140012 = h := by rw [k₅' _ (by omega)]; exact hh
+  have h12'  := R₅.r12
+  have hh' : c₅.nreg 140012 = h := by rwx [k₅' _ (by omega)]
   -- the decision
   by_cases hv : h = 0 ∨ h - 1 = a
   · rw [ite_eq_left hv]
@@ -308,18 +309,18 @@ theorem genI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HR
           (.ifLtN 170139 170137 onE (.ifLtN 170137 170139 onE vtxA))) vtxA) c₅ c' k ∧ k ≤ 9 ∧
         SymPtIn c' 170130 (.vtx a) := by
       rcases hv with h0 | h0
-      · refine spec_ifLtN_false (by rw [h12', hh', h0]; omega) ?_
+      · refine spec_ifLtN_false (by rwo [h12', hh', h0]) ?_
         obtain ⟨c', k, e', hk, s'⟩ := vtxA_exec (P := P) c₅ w₅ (by omega)
         exact ⟨c', k, e', by omega, by rw [b37'] at s'; exact s'⟩
       · by_cases hz : h = 0
-        · refine spec_ifLtN_false (by rw [h12', hh', hz]; omega) ?_
+        · refine spec_ifLtN_false (by rwo [h12', hh', hz]) ?_
           obtain ⟨c', k, e', hk, s'⟩ := vtxA_exec (P := P) c₅ w₅ (by omega)
           exact ⟨c', k, e', by omega, by rw [b37'] at s'; exact s'⟩
-        refine spec_ifLtN_true (by rw [h12', hh']; omega) ?_
+        refine spec_ifLtN_true (by rwo [h12', hh']) ?_
         refine spec_seq ?_
         exec_block
-        refine spec_ifLtN_false (by config_simp; rw [hh', R₅.r11, b37']; omega) ?_
-        refine spec_ifLtN_false (by config_simp; rw [hh', R₅.r11, b37']; omega) ?_
+        refine spec_ifLtN_false (by config_simp; rwo [hh', R₅.r11, b37']) ?_
+        refine spec_ifLtN_false (by config_simp; rwo [hh', R₅.r11, b37']) ?_
         obtain ⟨c', k, e', hk, s'⟩ := vtxA_exec (P := P) _ ‹_› (by omega)
         refine ⟨c', k, e', by omega, ?_⟩
         config_simp at s'; rw [b37'] at s'; exact s'
@@ -331,7 +332,7 @@ theorem genI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HR
         (.seq (block [.subN 170139 140012 170011])
           (.ifLtN 170139 170137 onE (.ifLtN 170137 170139 onE vtxA))) vtxA) c₅ c' k ∧ k ≤ 18 ∧
         SymPtIn c' 170130 (.onEdge (ShootCut.edgeOf P.n (.vtx a) (.vtx a')) (h - 1)) := by
-      refine spec_ifLtN_true (by rw [h12', hh']; omega) ?_
+      refine spec_ifLtN_true (by rwo [h12', hh']) ?_
       refine spec_seq ?_
       exec_block
       have w := ‹WordsBounded W { c₅ with nreg := upd c₅.nreg 170139 (c₅.nreg 140012 - c₅.nreg 170011) }›
@@ -342,10 +343,10 @@ theorem genI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HR
       config_simp at s'
       rw [hh', R₅.r11] at s'
       by_cases hlt : h - 1 < a
-      · refine spec_ifLtN_true (by config_simp; rw [hh', R₅.r11, b37']; exact hlt) ?_
+      · refine spec_ifLtN_true (by config_simp; rwx [hh', R₅.r11, b37']) ?_
         exact ⟨c', k, e', by omega, s'⟩
-      · refine spec_ifLtN_false (by config_simp; rw [hh', R₅.r11, b37']; exact hlt) ?_
-        refine spec_ifLtN_true (by config_simp; rw [hh', R₅.r11, b37']; omega) ?_
+      · refine spec_ifLtN_false (by config_simp; rwx [hh', R₅.r11, b37']) ?_
+        refine spec_ifLtN_true (by config_simp; rwo [hh', R₅.r11, b37']) ?_
         exact ⟨c', k, e', by omega, s'⟩
     obtain ⟨c', k, e', hk, s'⟩ := hB
     exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e')))), by omega, s'⟩
@@ -364,15 +365,15 @@ theorem hsI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HRe
       (∀ r, r ≠ 170133 → r ≠ 170135 → c₁.nreg r = c.nreg r) := by
     exec_block
     · omega
-    · config_simp; rw [hR.r89]; omega
+    · config_simp; rwo [hR.r89]
     refine ⟨rfl, by config_simp, by config_simp; rw [hR.r89], hR.keep (fun r hr => ?_),
       fun r h1 h2 => ?_⟩
     · unfold Bhs at hr; simp only [decide_eq_false_iff_not] at hr
       simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
   have w₁ := e₁.wb_right
-  have b11 : c₁.nreg 140011 = e := by rw [f₁ _ (by decide) (by decide)]; exact he
-  have b12 : c₁.nreg 140012 = h := by rw [f₁ _ (by decide) (by decide)]; exact hh
+  have b11 : c₁.nreg 140011 = e := by rwx [f₁ _ (by decide) (by decide)]
+  have b12 : c₁.nreg 140012 = h := by rwx [f₁ _ (by decide) (by decide)]
   suffices hX : ∃ c' k, Exec P W hsI c c' k ∧ k ≤ 90 ∧
       SymPtIn c' 170130 (hitSymV P.n cs L S v e h) by
     obtain ⟨c', k, ex, hk, s'⟩ := hX
@@ -380,20 +381,20 @@ theorem hsI_exec (c : Config) (hw : WordsBounded W c) {cs L S v : ℕ} (hR : HRe
   unfold hsI hitSymV
   refine spec_seq ⟨c₁, k₁, e₁, ?_⟩
   by_cases h6 : e < 6
-  · refine spec_ifLtN_true (by rw [b11, a33]; exact h6) ?_
+  · refine spec_ifLtN_true (by rwx [b11, a33]) ?_
     obtain ⟨c₂, k₂, e₂, hk₂, s₂⟩ := vtxV_exec (P := P) c₁ w₁ (by omega)
     refine ⟨c₂, k₂, e₂, by omega, ?_⟩
     rw [ite_eq_left (Or.inl h6)]
     rw [R₁.r79] at s₂
     exact s₂
-  refine spec_ifLtN_false (by rw [b11, a33]; exact h6) ?_
+  refine spec_ifLtN_false (by rwx [b11, a33]) ?_
   by_cases h7 : e < 2 * L + 6
-  · refine spec_ifLtN_true (by rw [b11, a35]; exact h7) ?_
+  · refine spec_ifLtN_true (by rwx [b11, a35]) ?_
     obtain ⟨c₂, k₂, e₂, hk₂, s₂⟩ := genI_exec (P := P) c₁ w₁ R₁ b11 b12 a33 (by omega) h7
     refine ⟨c₂, k₂, e₂, by omega, ?_⟩
     rw [ite_eq_right (by omega)]
     exact s₂
-  · refine spec_ifLtN_false (by rw [b11, a35]; exact h7) ?_
+  · refine spec_ifLtN_false (by rwx [b11, a35]) ?_
     obtain ⟨c₂, k₂, e₂, hk₂, s₂⟩ := vtxV_exec (P := P) c₁ w₁ (by omega)
     refine ⟨c₂, k₂, e₂, by omega, ?_⟩
     rw [ite_eq_left (Or.inr (by omega))]

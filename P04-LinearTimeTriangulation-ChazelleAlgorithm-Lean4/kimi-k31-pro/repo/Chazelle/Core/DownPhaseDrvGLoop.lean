@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvGLeaf
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down-phase driver, region procedure (D5), part 8: the leaf loop
@@ -43,13 +49,12 @@ theorem leaves_length_le {O : OracleIface} {P : Polygon} {W : ℕ} {R : RData}
     (hF : RFacts O P W R) : (R.leaves P).length ≤ 60 := by
   have := hostLeaves_length_le (n := (Qof P).n) (C := 2 ^ R.μ) Nat.one_le_two_pow R.H 0 hF.hruns
   have := hF.hHl
-  unfold RData.leaves; omega
+  ufo RData.leaves
 
 section exec
 
 variable {O : OracleIface} {P : Polygon} {W : ℕ} {R : RData}
 
-set_option maxHeartbeats 8000000 in
 /-- **One iteration of the leaf loop.** -/
 theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets O sp κP)
     (hM : L41.MergeMeets sM κ (L41.scF κs) (L41.scG κs) cutGran (gradeCtx O) OkModel)
@@ -97,13 +102,13 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
       all_goals try (config_simp; (try simp only [hI.r24, E.r230]); omega)
     exact ⟨e₁, k₁, ex₁, hk₁, v26, v27, v28, m₁, exec_frameM ex₁ (by decide)⟩
   have fr₁ : Frame drvBands e e₁ k₁ := frame_band (fun q hq => by
-    simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) f₁ m₁ k₁
+    simp only [decide_eq_true_eq] at hq; sio only [bandOf, bDownDrv]) f₁ m₁ k₁
   have hA₁ : e₁.nreg ALLOC = e.nreg ALLOC := f₁.1 ALLOC (by decide)
   have E₁ : REnv R e₁ := E.keep (fun q hq => f₁.1 q (by
     obtain ⟨-, -, -, b4, -⟩ := envRegs_band2 q hq
-    simp only [decide_eq_false_iff_not]; omega)) (fun a _ => by rw [m₁]) (by omega)
+    sio only [decide_eq_false_iff_not])) (fun a _ => by rw [m₁]) (by omega)
   have u₁ : ∀ q, (q < 219226 ∨ 219229 < q) → e₁.nreg q = e.nreg q := fun q hq => f₁.1 q (by
-    simp only [decide_eq_false_iff_not]; omega)
+    sio only [decide_eq_false_iff_not])
   have hw₁ := ex₁.wb_right
   have p₁ : e₁.nreg 219221 = pos := by rw [u₁ _ (by omega), hpos]
   -- the connector
@@ -130,13 +135,13 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
           refine ⟨rfl, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> simp only [p₁, v26]
         exact ⟨e₂, k₂, ex₂, hk₂, w40, w41, w42, w43, m₂, exec_frameM ex₂ (by decide)⟩
       have fr₂ : Frame drvBands e₁ e₂ k₂ := frame_band (fun q hq => by
-        simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) f₂ m₂ k₂
+        simp only [decide_eq_true_eq] at hq; sio only [bandOf, bDownDrv]) f₂ m₂ k₂
       have hA₂ : e₂.nreg ALLOC = e₁.nreg ALLOC := f₂.1 ALLOC (by decide)
       have E₂ : REnv R e₂ := E₁.keep (fun q hq => f₂.1 q (by
         obtain ⟨-, -, -, -, b5⟩ := envRegs_band2 q hq
-        simp only [decide_eq_false_iff_not]; omega)) (fun a _ => by rw [m₂]) (by omega)
+        sio only [decide_eq_false_iff_not])) (fun a _ => by rw [m₂]) (by omega)
       have u₂ : ∀ q, (q < 219240 ∨ 219243 < q) → e₂.nreg q = e₁.nreg q := fun q hq => f₂.1 q (by
-        simp only [decide_eq_false_iff_not]; omega)
+        sio only [decide_eq_false_iff_not])
       have hacc : (e₂.nreg 219222 = 0 ∧ pos = 0 ∧ (if pos = 0 then R.γ₀ else γ) = R.γ₀) ∨
           (0 < pos ∧ AccOK P R e₂ pos (if pos = 0 then R.γ₀ else γ)) := by
         rcases hst with ⟨-, hp0, h22⟩ | ⟨-, hp0, A, -⟩
@@ -148,26 +153,26 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
       have hγb : R.γ₀ ≤ (if pos = 0 then R.γ₀ else γ) ∧
           (if pos = 0 then R.γ₀ else γ) + 1 ≤ R.γ₀ + 2 * i + 1 := by
         rcases hst with ⟨-, hp0, -⟩ | ⟨hi0, hp0, -, h1, h2, -⟩
-        · rw [ite_eq_left hp0]; omega
-        · rw [ite_eq_right (by omega)]; omega
+        · rwo [ite_eq_left hp0]
+        · rwo [ite_eq_right (by omega)]
       obtain ⟨e₃, k₃, ex₃, hk₃, E₃, A₃, u₃, fr₃⟩ := pcS_exec (P := P) (W := W) hsp hM hF e₂
         ex₂.wb_right E₂ w40 w41 w42 w43 hacc hγb.1 (by omega) (by omega)
-        (by rw [hNP]; omega) (by omega) (fun h => absurd h (by norm_num))
+        (by rwo [hNP]) (by omega) (fun h => absurd h (by norm_num))
         (fun _ => by omega)
         (fun hp => by
           rcases hst with ⟨-, hp0, -⟩ | ⟨-, -, -, -, -, hj⟩
           · omega
           · exact hj)
-        (by have h1 : lfB pc = 2 * pc + 30 := rfl; rw [hA₂, hA₁]; omega)
+        (by have h1 : lfB pc = 2 * pc + 30 := rfl; rwo [hA₂, hA₁])
       refine ⟨e₃, k₂ + k₃ + 1, if pos = 0 then R.γ₀ else γ + 1, .ifLtN_true (by
-        rw [p₁, v26]; exact hlt) (.seq ex₂ ex₃), by omega, ex₃.wb_right, E₃,
+        rwx [p₁, v26]) (.seq ex₂ ex₃), by omega, ex₃.wb_right, E₃,
         by rw [show pos + (x.1 - pos) = x.1 by omega] at A₃; split_ifs at A₃ ⊢ <;> exact A₃,
         ?_, ?_, fun q hq => ?_, fun q hq hq' => ?_, ?_⟩
-      · split_ifs <;> omega
+      · splao
       · rcases hst with ⟨hi0, hp0, -⟩ | ⟨-, hp0, -, -, h2, -⟩
-        · rw [ite_eq_left hp0]; omega
-        · rw [ite_eq_right (by omega)]; omega
-      · rw [u₃ q (by simp only [bandOf, bDownDrv]; omega) (by omega), u₂ q (by omega)]
+        · rwo [ite_eq_left hp0]
+        · rwo [ite_eq_right (by omega)]
+      · rw [u₃ q (by sio only [bandOf, bDownDrv]) (by omega), u₂ q (by omega)]
       · rw [u₃ q hq (by omega), u₂ q (by omega)]
       · have := fr₂.trans fr₃
         rw [Finset.union_self] at this
@@ -175,7 +180,7 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
     · have heq : pos = x.1 := by omega
       rcases hst with ⟨-, hp0, -⟩ | ⟨hi0, hp0, A, h1, h2, -⟩
       · omega
-      refine ⟨e₁, 0 + 2, γ, .ifLtN_false (by rw [p₁, v26]; exact hlt) (.skip hw₁), by omega, hw₁,
+      refine ⟨e₁, 0 + 2, γ, .ifLtN_false (by rwx [p₁, v26]) (.skip hw₁), by omega, hw₁,
         E₁, by rw [← heq]; exact A.keep fr₁ fun q hq => u₁ q (by omega), h1, by omega,
         fun q _ => rfl, fun q _ _ => rfl, ?_⟩
       exact frame_refl _ _ _
@@ -200,19 +205,19 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
       refine ⟨rfl, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> simp only [p26, p27, p28]
     exact ⟨e₄, k₄, ex₄, hk₄, w40, w41, w42, w43, m₄, exec_frameM ex₄ (by decide)⟩
   have fr₄ : Frame drvBands e₃ e₄ k₄ := frame_band (fun q hq => by
-    simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) f₄ m₄ k₄
+    simp only [decide_eq_true_eq] at hq; sio only [bandOf, bDownDrv]) f₄ m₄ k₄
   have hA₄ : e₄.nreg ALLOC = e₃.nreg ALLOC := f₄.1 ALLOC (by decide)
   have E₄ : REnv R e₄ := E₃.keep (fun q hq => f₄.1 q (by
     obtain ⟨-, -, -, -, b5⟩ := envRegs_band2 q hq
-    simp only [decide_eq_false_iff_not]; omega)) (fun a _ => by rw [m₄]) (by omega)
+    sio only [decide_eq_false_iff_not])) (fun a _ => by rw [m₄]) (by omega)
   have u₄ : ∀ q, (q < 219240 ∨ 219243 < q) → e₄.nreg q = e₃.nreg q := fun q hq => f₄.1 q (by
-    simp only [decide_eq_false_iff_not]; omega)
+    sio only [decide_eq_false_iff_not])
   have A₄ : AccOK P R e₄ x.1 γ₁ := A₃.keep fr₄ fun q hq => u₄ q (by omega)
   obtain ⟨e₅, k₅, ex₅, hk₅, E₅, A₅, u₅, fr₅⟩ := pcS_exec (P := P) (W := W) hsp hM hF e₄
     ex₄.wb_right E₄ w40 w41 w42 w43 (Or.inr ⟨by omega, A₄⟩) hγ₁ (by omega) x2
-    (by rw [hNP]; omega) (by omega) (fun _ => ⟨x3, x4, x6⟩) (fun h => absurd h (by norm_num))
+    (by rwo [hNP]) (by omega) (fun _ => ⟨x3, x4, x6⟩) (fun h => absurd h (by norm_num))
     (fun _ => x7)
-    (by have h1 : lfB pc = 2 * pc + 30 := rfl; rw [hA₄]; omega)
+    (by have h1 : lfB pc = 2 * pc + 30 := rfl; rwo [hA₄])
   rw [ite_eq_right (by omega)] at A₅
   have hA₅ := fr₅.2.2.2.2.2.2
   have hw₅ := ex₅.wb_right
@@ -246,19 +251,19 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
         simp only [s26, s27, s20, s24, E₅.r230, E₅.r231]; ring
     exact ⟨e₆, k₆, ex₆, hk₆, y21, y20, y24, m₆, exec_frameM ex₆ (by decide)⟩
   have fr₆ : Frame drvBands e₅ e₆ k₆ := frame_band (fun q hq => by
-    simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) f₆ m₆ k₆
+    simp only [decide_eq_true_eq] at hq; sio only [bandOf, bDownDrv]) f₆ m₆ k₆
   have hA₆ : e₆.nreg ALLOC = e₅.nreg ALLOC := f₆.1 ALLOC (by decide)
   have E₆ : REnv R e₆ := E₅.keep (fun q hq => f₆.1 q (by
     obtain ⟨b1, b2, -, b4, -⟩ := envRegs_band2 q hq
-    simp only [decide_eq_false_iff_not]; omega)) (fun a _ => by rw [m₆]) (by omega)
+    sio only [decide_eq_false_iff_not])) (fun a _ => by rw [m₆]) (by omega)
   have A₆ : AccOK P R e₆ (x.1 + x.2.1) (γ₁ + 1) := A₅.keep fr₆ fun q hq => f₆.1 q (by
-    simp only [decide_eq_false_iff_not]; omega)
+    sio only [decide_eq_false_iff_not])
   refine ⟨e₆, k₁ + (k₃ + ((k₄ + k₅) + k₆)), .seq ex₁ (.seq ex₃ (.seq (.seq ex₄ ex₅) ex₆)),
     ⟨ex₆.wb_right, fun q hq hq' => ?_, y20, by rw [f₆.1 _ (by decide), s04], E₆, y24, by omega,
       ?_,
       x.1 + x.2.1, γ₁ + 1, y21, g3, Or.inr ⟨by omega, by omega, A₆, by omega, by omega, x8⟩⟩,
-    by unfold lfB; omega, ?_⟩
-  · rw [f₆.1 q (by simp only [decide_eq_false_iff_not]; omega),
+    by ufo lfB, ?_⟩
+  · rw [f₆.1 q (by sio only [decide_eq_false_iff_not]),
       u₅ q hq (by omega), u₄ q (by omega), o₃ q hq hq', u₁ q (by omega)]
     exact hI.keep q hq hq'
   · have h1 : lfB pc = 2 * pc + 30 := rfl
@@ -288,7 +293,6 @@ theorem lfLoop_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
     (fun j c hj h => lfBody_exec hsp hM hF c hj h) hI (Nat.zero_le _)
   exact ⟨e', k, ex, hI', by simpa using hk, fr⟩
 
-set_option maxHeartbeats 4000000 in
 /-- **The last connector.** -/
 theorem finCon_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets O sp κP)
     (hM : L41.MergeMeets sM κ (L41.scF κs) (L41.scG κs) cutGran (gradeCtx O) OkModel)
@@ -323,13 +327,13 @@ theorem finCon_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
         refine ⟨rfl, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> simp only [hpos, E.r223]
       exact ⟨e₂, k₂, ex₂, hk₂, w40, w41, w42, w43, m₂, exec_frameM ex₂ (by decide)⟩
     have fr₂ : Frame drvBands e e₂ k₂ := frame_band (fun q hq => by
-      simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) f₂ m₂ k₂
+      simp only [decide_eq_true_eq] at hq; sio only [bandOf, bDownDrv]) f₂ m₂ k₂
     have hA₂ : e₂.nreg ALLOC = e.nreg ALLOC := f₂.1 ALLOC (by decide)
     have E₂ : REnv R e₂ := E.keep (fun q hq => f₂.1 q (by
       obtain ⟨-, -, -, -, b5⟩ := envRegs_band2 q hq
-      simp only [decide_eq_false_iff_not]; omega)) (fun a _ => by rw [m₂]) (by omega)
+      sio only [decide_eq_false_iff_not])) (fun a _ => by rw [m₂]) (by omega)
     have u₂ : ∀ q, (q < 219240 ∨ 219243 < q) → e₂.nreg q = e.nreg q := fun q hq => f₂.1 q (by
-      simp only [decide_eq_false_iff_not]; omega)
+      sio only [decide_eq_false_iff_not])
     have hacc : (e₂.nreg 219222 = 0 ∧ pos = 0 ∧ (if pos = 0 then R.γ₀ else γ) = R.γ₀) ∨
         (0 < pos ∧ AccOK P R e₂ pos (if pos = 0 then R.γ₀ else γ)) := by
       rcases hst with ⟨-, hp0, h22⟩ | ⟨-, hp0, A, -⟩
@@ -342,8 +346,8 @@ theorem finCon_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
     have hγb : R.γ₀ ≤ (if pos = 0 then R.γ₀ else γ) ∧
         (if pos = 0 then R.γ₀ else γ) + 1 ≤ R.γ₀ + 2 * (R.leaves P).length + 1 := by
       rcases hst with ⟨-, hp0, -⟩ | ⟨hi0, hp0, -, h1, h2, -⟩
-      · rw [ite_eq_left hp0]; omega
-      · rw [ite_eq_right (by omega)]; omega
+      · rwo [ite_eq_left hp0]
+      · rwo [ite_eq_right (by omega)]
     obtain ⟨e₃, k₃, ex₃, hk₃, E₃, A₃, u₃, fr₃⟩ := pcS_exec (P := P) (W := W) hsp hM hF e₂
       ex₂.wb_right E₂ w40 w41 w42 w43 hacc hγb.1 (by omega) (by omega) (by omega) (by omega)
       (fun h => absurd h (by norm_num)) (fun _ => by omega)
@@ -351,22 +355,22 @@ theorem finCon_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
         rcases hst with ⟨-, hp0, -⟩ | ⟨-, -, -, -, -, hj⟩
         · omega
         · exact hj)
-      (by rw [hA₂]; omega)
+      (by rwo [hA₂])
     refine ⟨e₃, k₂ + k₃ + 1, if pos = 0 then R.γ₀ else γ + 1, .ifLtN_true (by
-      rw [hpos, E.r223]; exact hlt) (.seq ex₂ ex₃), by omega, ex₃.wb_right, E₃,
+      rwx [hpos, E.r223]) (.seq ex₂ ex₃), by omega, ex₃.wb_right, E₃,
       by rw [show pos + (R.NP - 1 - pos) = R.NP - 1 by omega] at A₃; split_ifs at A₃ ⊢ <;> exact A₃,
       ?_, ?_, fun q hq hq' => by rw [u₃ q hq (by omega), u₂ q (by omega)], ?_⟩
-    · split_ifs <;> omega
+    · splao
     · rcases hst with ⟨hi0, hp0, -⟩ | ⟨-, hp0, -, -, h2, -⟩
-      · rw [ite_eq_left hp0]; omega
-      · rw [ite_eq_right (by omega)]; omega
+      · rwo [ite_eq_left hp0]
+      · rwo [ite_eq_right (by omega)]
     · have := fr₂.trans fr₃
       rw [Finset.union_self] at this
       exact this.mono (le_refl _) (by omega)
   · have heq : pos = R.NP - 1 := by omega
     rcases hst with ⟨-, hp0, -⟩ | ⟨hi0, hp0, A, h1, h2, -⟩
     · omega
-    refine ⟨e, 0 + 2, γ, .ifLtN_false (by rw [hpos, E.r223]; exact hlt) (.skip hw), by omega, hw,
+    refine ⟨e, 0 + 2, γ, .ifLtN_false (by rwx [hpos, E.r223]) (.skip hw), by omega, hw,
       E, by rw [← heq]; exact A, h1, by omega, fun q _ _ => rfl, frame_refl _ _ _⟩
 
 end exec

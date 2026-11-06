@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseDrvXContracts
 public import Chazelle.Core.DownPhaseDrvXPos2
 public import Chazelle.Core.DownPhaseDrvXKept
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
 
 /-!
 # Down phase, extraction (D6): glue B (`PostMath`)
@@ -33,7 +35,7 @@ variable {P : Polygon} {v : XV} {NR : NF}
 
 /-- Membership in the kept record list. -/
 theorem mem_kl {i t : ℕ} : t ∈ kl P v NR i ↔ t < i ∧ kR P v (NR.chord t) := by
-  unfold kl; simp
+  ufs kl
 
 /-- The kept record list has no repetition. -/
 theorem kl_nodup (i : ℕ) : (kl P v NR i).Nodup := List.nodup_range.filter _
@@ -97,7 +99,7 @@ theorem postMath : PostMath := by
       obtain ⟨t, htK, rfl⟩ := List.getElem_of_mem hc
       have hct : NR.chord t = NR.chords[t] := by
         unfold NF.chord; rw [List.getD_eq_getElem _ _ htK]
-      have ht : t ∈ kl P v NR K := mem_kl.2 ⟨htK, (hkR t htK).2 (by rw [hct]; exact hne)⟩
+      have ht : t ∈ kl P v NR K := mem_kl.2 ⟨htK, (hkR t htK).2 (by rwx [hct])⟩
       refine ⟨xT P v NR t, List.mem_map.2 ⟨t, ht, rfl⟩, ?_⟩
       rw [hset t ht, hct]
   · -- no repetition
@@ -105,7 +107,7 @@ theorem postMath : PostMath := by
         (kl P v NR K).map (fun t => (NR.chord t).toSet (chainModel C) (Qof P)) := by
       unfold xL
       rw [List.map_map]
-      exact List.map_congr_left fun t ht => hset t ht
+      exact List.map_congr_left hset
     rw [e]
     exact (kl_nodup K).map_on fun t ht t' ht' h =>
       X.hNR.2.1 t t' (mem_kl.1 ht).1 (mem_kl.1 ht').1 h
@@ -119,10 +121,10 @@ theorem postMath : PostMath := by
     have hlen : (xL P v NR K).length = (kl P v NR K).length := by
       unfold xL; rw [List.length_map]
     have hq2 : q / 2 < (kl P v NR K).length := by omega
-    have ht : (kl P v NR K)[q / 2] ∈ kl P v NR K := List.getElem_mem hq2
+    have ht  := List.getElem_mem hq2
     have hget : (xL P v NR K).getD (q / 2) (0, 0, 0) = xT P v NR ((kl P v NR K)[q / 2]) := by
       unfold xL
-      rw [List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hq2), List.getElem_map]
+      rw [List.getD_eq_getElem _ _ (by rwx [List.length_map]), List.getElem_map]
     unfold endPos
     rw [hget]
     split_ifs

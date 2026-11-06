@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFBuildCmp
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (B3′, part 5): congruence of `buildNF`
@@ -65,11 +67,11 @@ theorem wposOf_odd (L : List (ℕ × ℕ × ℕ)) (i : ℕ) : wposOf L (2 * i + 
 
 theorem kl_eq (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (i : ℕ) :
     kl M Q L i = M.key Q (wposOf L (2 * i)) := by
-  rw [wposOf_even]; rfl
+  rwr [wposOf_even]
 
 theorem kr_eq (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (i : ℕ) :
     kr M Q L i = M.key Q (wposOf L (2 * i + 1)) := by
-  rw [wposOf_odd]; rfl
+  rwr [wposOf_odd]
 
 /-- The keys of the chord endpoints. -/
 def InS (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (x : ℝ) : Prop :=
@@ -251,7 +253,7 @@ theorem arcW_eq {a : ARec} (ha : a ∈ arcList M Q L E) : arcW M' Q a = arcW M Q
     subst ha
     exact hK.wt0 (length_eq_zero_iff.1 h0)
   · obtain ⟨m, hm, rfl⟩ := mem_map.1 ha
-    have hmE : m < E.length := mem_range.1 (mem_filter.1 hm).1
+    have hmE  := mem_range.1 (mem_filter.1 hm).1
     have hpos : 0 < E.length := by omega
     have hs : E.getD m 0 < 2 * L.length := by
       rw [getD_eq_getElem _ _ hmE]; exact hE _ (getElem_mem _)
@@ -265,7 +267,7 @@ theorem regWt_eq (r : ℕ) : regWt M' Q L E r = regWt M Q L E r := by
   congr 1
   apply map_congr_left
   intro j hj
-  have hj' : j < (arcList M Q L E).length := mem_range.1 (mem_filter.1 hj).1
+  have hj'  := mem_range.1 (mem_filter.1 hj).1
   rw [getD_eq_getElem _ _ hj']
   exact hK.arcW_eq hE (getElem_mem _)
 
@@ -296,8 +298,8 @@ theorem sorted {E : List ℕ} (hperm : E.Perm (List.range (2 * L.length)))
     (hsort : E.Pairwise (codeLe M Q L)) : E.Pairwise (codeLe M' Q L) := by
   apply hsort.imp_of_mem
   intro a b ha hb h
-  have ha' : a < 2 * L.length := mem_range.1 (hperm.subset ha)
-  have hb' : b < 2 * L.length := mem_range.1 (hperm.subset hb)
+  have ha'  := mem_range.1 (hperm.subset ha)
+  have hb'  := mem_range.1 (hperm.subset hb)
   exact (hK.codeLe_iff ha' hb').2 h
 
 end KeyCongr
@@ -324,7 +326,7 @@ theorem exits_eq {reg : ℕ → Set Point} (hN : ∀ i i', i < N.nChords → i' 
       have hc : N.chord i = N.chords[i] := by
         unfold NF.chord; rw [getD_eq_getElem _ _ hi]
       refine ⟨i, (hmem i).2 ⟨hi, ?_⟩, ?_⟩
-      · rw [hc]; exact ht
+      · rwx [hc]
       · simp only [hc]
     · rintro ⟨i, hi, rfl⟩
       obtain ⟨hi', ht⟩ := (hmem i).1 hi

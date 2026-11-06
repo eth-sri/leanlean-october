@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Visibility.Chord
 public import Chazelle.Existence.Arc
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Subchains of a simple polygon and their box domain
@@ -149,8 +153,8 @@ theorem missingIdx_lt : C.missingIdx < C.P.n := C.edgeIdx_lt _
 theorem edgeIdx_ne_missingIdx {k : ℕ} (hk : k < C.m) : C.edgeIdx k ≠ C.missingIdx := by
   intro h
   unfold missingIdx edgeIdx at h
-  have h1 : C.s + k ≡ C.s + C.m [MOD C.P.n] := h
-  have h2 : k ≡ C.m [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h1
+  have h1  := h
+  have h2  := Nat.ModEq.add_left_cancel' C.s h1
   have := Nat.ModEq.eq_of_lt_of_lt h2 (by have := C.m_lt; omega) C.m_lt
   omega
 
@@ -176,8 +180,8 @@ theorem missingMid_not_mem_set (hP : C.P.Simple) : C.missingMid ∉ C.set :=
 /-- **The complement of a simple open chain is connected.** -/
 theorem compl_connected (hP : C.P.Simple) : IsPreconnected C.setᶜ := by
   set q := C.missingMid with hq
-  have hqb : q ∈ C.P.boundary := C.missingMid_mem_boundary
-  have hqC : q ∉ C.set := C.missingMid_not_mem_set hP
+  have hqb  := C.missingMid_mem_boundary
+  have hqC  := C.missingMid_not_mem_set hP
   set I := C.P.filled \ C.P.boundary with hI
   set E := C.P.filledᶜ with hE
   have hIq : IsPreconnected (I ∪ {q}) :=
@@ -309,13 +313,12 @@ theorem box_sdiff_set_connected (hP : C.P.Simple) {r : ℝ} (hr : coordBound C.P
   refine isPreconnected_of_forall_pair fun x hx y hy => ?_
   set B := coordBound C.P with hB
   set r' := (max (max |x.1| |x.2|) (max (max |y.1| |y.2|) B) + r) / 2 with hr'
-  have hx1 : |x.1| < r := hx.1.1
-  have hx2 : |x.2| < r := hx.1.2
-  have hy1 : |y.1| < r := hy.1.1
-  have hy2 : |y.2| < r := hy.1.2
-  have hmax : max (max |x.1| |x.2|) (max (max |y.1| |y.2|) B) < r :=
-    max_lt (max_lt hx1 hx2) (max_lt (max_lt hy1 hy2) hr)
-  have hr'r : r' < r := by rw [hr']; linarith
+  have hx1  := hx.1.1
+  have hx2  := hx.1.2
+  have hy1  := hy.1.1
+  have hy2  := hy.1.2
+  have hmax  := max_lt (max_lt hx1 hx2) (max_lt (max_lt hy1 hy2) hr)
+  have hr'r : r' < r := by rwli [hr']
   have hBr' : B < r' := by
     rw [hr']
     linarith [(le_max_right (max |y.1| |y.2|) B).trans
@@ -334,7 +337,7 @@ theorem box_sdiff_set_connected (hP : C.P.Simple) {r : ℝ} (hr : coordBound C.P
     rw [hr']
     linarith [((le_max_right |y.1| |y.2|).trans (le_max_left (max |y.1| |y.2|) B)).trans
       (le_max_right (max |x.1| |x.2|) (max (max |y.1| |y.2|) B))]
-  have hr'0 : 0 ≤ r' := (C.coordBound_nonneg.trans hBr'.le)
+  have hr'0  := (C.coordBound_nonneg.trans hBr'.le)
   refine ⟨clampPt r' '' C.setᶜ, ?_, ?_, ?_,
     (C.compl_connected hP).image _ (continuous_clampPt r').continuousOn⟩
   · rintro _ ⟨p, hp, rfl⟩
@@ -360,7 +363,7 @@ theorem box_sdiff_set_connected (hP : C.P.Simple) {r : ℝ} (hr : coordBound C.P
 noncomputable def radius : ℝ := coordBound C.P + 1
 
 theorem coordBound_lt_radius : coordBound C.P < C.radius := by
-  unfold radius; linarith
+  ufl radius
 
 theorem radius_pos : 0 < C.radius := lt_of_le_of_lt C.coordBound_nonneg C.coordBound_lt_radius
 
@@ -437,9 +440,9 @@ theorem dom_nonempty : C.dom.Nonempty := by
   have hB := C.coordBound_nonneg
   have hBr := C.coordBound_lt_radius
   have htop := (abs_le.1 (C.abs_le_coordBound_of_mem_set C.top_mem_set).1).2
-  refine C.mem_dom_of_high ⟨?_, ?_⟩ (by simp only; linarith) (by simp only; linarith)
-  · simp only; rw [abs_of_nonneg (by linarith)]; linarith
-  · simp only; rw [abs_of_nonneg (by linarith)]; linarith
+  refine C.mem_dom_of_high ⟨?_, ?_⟩ (by sil only) (by sil only)
+  · simp only; rwli [abs_of_nonneg (by linarith)]
+  · simp only; rwli [abs_of_nonneg (by linarith)]
 
 /-! ### Corridors of the box around the chain -/
 
@@ -663,7 +666,7 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
       exact this
     · -- `p` is in the upper corridor and off the slit: in one of the two halves
       have hslit := C.not_mem_slit_of_mem_dom hpD
-      have hy : C.top.2 < p.2 := hpu.2
+      have hy  := hpu.2
       have hx : p.1 ≠ C.top.1 := by
         intro hx
         exact hslit (C.mem_slit_iff.2 ⟨hx, hy.le, (abs_le.1 hpu.1.2.le).2⟩)
@@ -696,21 +699,21 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
 theorem dom_connected (hP : C.P.Simple) : IsPreconnected C.dom := by
   intro u v hu hv hcov hneu hnev
   by_contra hempty'
-  have hempty : C.dom ∩ (u ∩ v) = ∅ := not_nonempty_iff_eq_empty.1 hempty'
+  have hempty  := not_nonempty_iff_eq_empty.1 hempty'
   -- the chain of corridors lies on one side
   have hchain : ∀ w w' : Set Point, IsOpen w → IsOpen w' → C.dom ⊆ w ∪ w' →
       C.dom ∩ (w ∩ w') = ∅ → C.upperL ⊆ w → C.upperR ⊆ w := by
     intro w w' hw hw' hcov' hempty' hL
-    have h1 : C.corrL ⊆ w := convex_same_side hw hw' C.convex_corrL C.corrL_subset_dom hcov'
+    have h1  := convex_same_side hw hw' C.convex_corrL C.corrL_subset_dom hcov'
       hempty' C.upperL_inter_corrL hL C.upperL_subset_dom
-    have h2 : C.corrB ⊆ w := convex_same_side hw hw' C.convex_corrB C.corrB_subset_dom hcov'
+    have h2  := convex_same_side hw hw' C.convex_corrB C.corrB_subset_dom hcov'
       hempty' C.corrL_inter_corrB h1 C.corrL_subset_dom
-    have h3 : C.corrR ⊆ w := convex_same_side hw hw' C.convex_corrR C.corrR_subset_dom hcov'
+    have h3  := convex_same_side hw hw' C.convex_corrR C.corrR_subset_dom hcov'
       hempty' C.corrB_inter_corrR h2 C.corrB_subset_dom
     exact convex_same_side hw hw' C.convex_upperR C.upperR_subset_dom hcov' hempty'
       C.corrR_inter_upperR h3 C.corrR_subset_dom
-  have hempty_symm : C.dom ∩ (v ∩ u) = ∅ := by rw [inter_comm v u]; exact hempty
-  have hcov_symm : C.dom ⊆ v ∪ u := by rw [union_comm]; exact hcov
+  have hempty_symm : C.dom ∩ (v ∩ u) = ∅ := by rwx [inter_comm v u]
+  have hcov_symm : C.dom ⊆ v ∪ u := by rwx [union_comm]
   rcases convex_side hu hv C.convex_upperL C.upperL_subset_dom hcov hempty with hL | hL
   · exact C.dom_connected_aux hP hu hv hcov hnev hempty hL (hchain u v hu hv hcov hempty hL)
   · exact C.dom_connected_aux hP hv hu hcov_symm hneu hempty_symm hL

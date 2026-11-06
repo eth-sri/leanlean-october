@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.OracleRay
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 4: the two sides of the chain (fold coordinates)
@@ -77,7 +81,7 @@ theorem cp_inj (hP : C.P.Simple) {k k' : ℕ} {τ τ' : ℝ} (h : CCoord C k τ)
       simp only at h1 h2
       by_contra hne'
       apply hne
-      have hd : τ - τ' ≠ 0 := sub_ne_zero.2 hne'
+      have hd  := sub_ne_zero.2 hne'
       apply Prod.ext
       · have : (τ - τ') * ((C.vertex (k + 1)).1 - (C.vertex k).1) = 0 := by linarith
         have := (mul_eq_zero.1 this).resolve_left hd
@@ -133,7 +137,7 @@ theorem tour_pt (i : ℕ) (hi : i < 2 * C.m) (t : ℝ) :
   have sE3 : ∀ x, C.m ≤ x → sideE C.m x = 2 * C.m - x := fun x hx => by
     unfold sideE
     rcases eq_or_lt_of_le hx with e | e
-    · subst e; simp only [le_refl, ↓reduceIte]; omega
+    · subst e; sio only [le_refl, ↓reduceIte]
     · simp [show ¬ x ≤ C.m by omega]
   split_ifs with h1 h2
   · simp only
@@ -227,19 +231,19 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
     intro p t hp ht ht1 hx
     rcases pos_on_chain C hp ht ht1 hx with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · refine ⟨p - 6, 0, by omega, Or.inl rfl, ?_, by rw [show p - 6 + 6 = p by omega], by omega⟩
-      rw [Nat.cast_sub (by omega)]; push_cast; ring
+      rw [Nat.cast_sub (by omega)]; pcr
     · subst h1; subst h2
-      refine ⟨0, 2 * C.m, by omega, Or.inr rfl, by push_cast; ring, sidePt_last C, fun _ => ⟨rfl, rfl⟩⟩
+      refine ⟨0, 2 * C.m, by omega, Or.inr rfl, by pcr, sidePt_last C, fun _ => ⟨rfl, rfl⟩⟩
   obtain ⟨i, e, hi, he, hk, hpt, he2⟩ := norm hp ht ht1 hx
   obtain ⟨i', e', hi', he', hk', hpt', he2'⟩ := norm hp' ht' ht1' hx'
   have heq' : sidePt (C.sideWalk C.sideBeta) (i + 6) t = sidePt (C.sideWalk C.sideBeta) (i' + 6) t' := by
-    rw [← hpt, ← hpt']; exact heq
+    rwx [← hpt, ← hpt']
   obtain ⟨q, hq⟩ := tu_eq C i t
   obtain ⟨q', hq'⟩ := tu_eq C i' t'
   rcases same_point C hP hi hi' ht ht1 ht' ht1' heq' with h | h
   · -- equal tour coordinates: the keys differ by a multiple of `2 m`, hence are `6` and `2 m + 6`
     have hdiff : ((i : ℝ) + t) - (i' + t') = 2 * C.m * ((q : ℝ) - q') := by
-      rw [hq, hq'] at h; linarith
+      rwli [hq, hq'] at h
     -- `|(i + t) - (i' + t')| < 2 m`, so the multiple is `0`
     have hlt1 : (i : ℝ) + t < 2 * C.m := by
       have : (i : ℝ) + 1 ≤ 2 * C.m := by exact_mod_cast hi
@@ -255,37 +259,37 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
       have h2 : -(2 * (C.m : ℝ)) < 2 * C.m * ((q : ℝ) - q') := by linarith
       have h3 : ((q : ℝ) - q') < 1 := by nlinarith
       have h4 : -1 < ((q : ℝ) - q') := by nlinarith
-      have h5 : ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) < 1 := by push_cast; linarith
-      have h6 : -1 < ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) := by push_cast; linarith
+      have h5 : ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) < 1 := by pcl
+      have h6 : -1 < ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) := by pcl
       have h7 : (q : ℤ) - q' < 1 := by exact_mod_cast h5
       have h8 : -1 < (q : ℤ) - q' := by exact_mod_cast h6
       omega
     have hqq' : (q : ℝ) = q' := by exact_mod_cast hqq
-    have hsame : (i : ℝ) + t = i' + t' := by rw [hqq'] at hdiff; linarith
+    have hsame : (i : ℝ) + t = i' + t' := by rwli [hqq'] at hdiff
     -- so the keys differ only by the shifts `e, e'`
     right
     rcases he with rfl | rfl <;> rcases he' with rfl | rfl
-    · exact absurd (by rw [hk, hk']; push_cast; linarith) hne
+    · exact absurd (by rw [hk, hk']; pcl) hne
     · obtain ⟨rfl, rfl⟩ := he2' rfl
       have : (i : ℝ) + t = 0 := by simpa using hsame
       left; constructor <;> [rw [hk]; rw [hk']] <;> push_cast <;> linarith
     · obtain ⟨rfl, rfl⟩ := he2 rfl
       have : (i' : ℝ) + t' = 0 := by simpa using hsame.symm
       right; constructor <;> [rw [hk]; rw [hk']] <;> push_cast <;> linarith
-    · exact absurd (by rw [hk, hk']; push_cast; linarith) hne
+    · exact absurd (by rw [hk, hk']; pcl) hne
   · -- opposite tour coordinates
     left
     have hsum : ((C.sideS C.sideBeta : ℝ) + i + t - 2 * C.m * q) + ((C.sideS C.sideBeta : ℝ) + i' + t' - 2 * C.m * q') = 2 * C.m := by
-      rw [← hq, ← hq']; exact h
+      rwx [← hq, ← hq']
     rcases he with rfl | rfl <;> rcases he' with rfl | rfl
     · refine ⟨1 + q + q', ?_⟩
-      rw [hk, hk']; push_cast; linarith
+      rw [hk, hk']; pcl
     · refine ⟨2 + q + q', ?_⟩
-      rw [hk, hk']; push_cast; linarith
+      rw [hk, hk']; pcl
     · refine ⟨2 + q + q', ?_⟩
-      rw [hk, hk']; push_cast; linarith
+      rw [hk, hk']; pcl
     · refine ⟨3 + q + q', ?_⟩
-      rw [hk, hk']; push_cast; linarith
+      rw [hk, hk']; pcl
 
 end OracleQ
 

@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.SweepEvStopLabSG
 public import Chazelle.Core.SweepChainT
 public import Chazelle.Core.SweepEvKey
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep (WP-D), stage 2: the middle of a split tie with a partner ending on `C₂` (Task SG)
@@ -96,12 +99,12 @@ theorem sg_top_not_mem {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set P
     (hA2 : SideAttach (chainModel J.whole).W e' q s)
     (hne2 : sidePt (chainModel J.whole).W q s ≠ sidePt (chainModel J.whole).W Pu 0)
     (hf'A : SideAttach (chainModel J.whole).W f' q s) (hu : J.right.top ∈ f') : False := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM  := FactsChain.walkAx J.whole hP
   have huD := hM.trace _ hA1.1 0 le_rfl zero_le_one
   have hYD := hM.trace _ hA2.1 s hA2.2.1 hA2.2.2.1.le
-  have hue : sidePt (chainModel J.whole).W Pu 0 ∈ e' := hA1.2.2.2.1
-  have hYe : sidePt (chainModel J.whole).W q s ∈ e' := hA2.2.2.2.1
-  have hYf : sidePt (chainModel J.whole).W q s ∈ f' := hf'A.2.2.2.1
+  have hue  := hA1.2.2.2.1
+  have hYe  := hA2.2.2.2.1
+  have hYf  := hf'A.2.2.2.1
   rw [hpt1] at hue huD hne2
   set u := J.right.top
   set Y := sidePt (chainModel J.whole).W q s
@@ -144,7 +147,6 @@ theorem sg_top_not_mem {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set P
       · exact absurd (h.trans h'.symm) huY
   exact hne (augChords_nest he'A hf'Ad hsub).symm
 
-set_option maxHeartbeats 4000000 in
 /-- **Task SG: the middle region of a split tie with a partner ending on `C₂`.** -/
 theorem splitGapTask : SplitGapTask := by
   intro J Q S₂ hP hS₂ hF hδ e he e' he' hne heA he'A ⟨qe, se, heB, heL⟩
@@ -212,7 +214,7 @@ theorem splitGapTask : SplitGapTask := by
           Or.inl ⟨rfl, fun z hz => by rw [hp2]; exact hcE z hz⟩
         have hFV := (faced_or_middle hGM₂ hSx hc hAk (Or.inl rfl) hU₂ hU₂s hdirC).1
           (fun c'' hc'' hA'' => oneAt_right J hP (S₂x_subset J hS₂a) hδ (rL1 J + rδ J)
-            (Or.inr rfl) c'' hc'' e' hc (by rw [hk₂']; exact hA'') (by rw [hk₂']; exact hAk))
+            (Or.inr rfl) c'' hc'' e' hc (by rwx [hk₂']) (by rwx [hk₂']))
         exact ⟨hδ, hV, Or.inr (beforeFaces_mono (hFV.2 (by norm_num)) hU₂V)⟩
     refine ⟨V, hgap, ?_⟩
     -- at the far end `Y`
@@ -223,14 +225,14 @@ theorem splitGapTask : SplitGapTask := by
       refine ⟨hdY0 hs0, fun hdr => hYne' ?_⟩
       rw [hqY, hs0, hdr]
     have hYA2 : SideAttach W e' ((6 + tpos J.whole J.m₁ + dY) % W.n) s := by
-      rw [← hqY]; exact hYA
+      rwx [← hqY]
     rcases local_step2 J hP hS₂ hF hdY hYA.2.1 hYA.2.2.1 hsecY he' hc subset_rfl hYA2
       (Or.inl rfl) hG hV hGe' hVs with hR | ⟨hs0, f', hf', hfne, hf'A, hf'G, hcase⟩
     · exact Or.inl hR
     · subst hs0
       have hnotu : J.right.top ∉ f' := fun hu =>
         sg_top_not_mem hP hS₂a he' hf' hfne he'A' hpt hYA hYne'
-          (by rw [hqY]; exact hf'A) hu
+          (by rwx [hqY]) hu
       have hnotv : J.shared ∉ f' := by
         intro hv
         apply hnotu
@@ -272,7 +274,7 @@ theorem splitGapTask : SplitGapTask := by
     exfalso
     -- the tie at the split vertex descends
     have hwa : (chainModel J.whole).wa Pu = J.right.top := by
-      rw [← hpt, Chazelle.Chain.sidePt_zero]; rfl
+      rwr [← hpt, Chazelle.Chain.sidePt_zero]
     have hn₂ := cm_n J.right
     have hwb : ((chainModel J.whole).wb Pu).2 ≤ J.right.top.2 := by
       have e0 := hC.sideNext_eq hd
@@ -281,7 +283,7 @@ theorem splitGapTask : SplitGapTask := by
       obtain ⟨-, g2, -, -, -, -, -, v7⟩ := gap_walk J hδ
       rw [edq, g2] at e0
       have e7 : Chazelle.Chain.sideNext W₂ 6 = J.right.sideTour J.right.sideBeta 1 := by
-        unfold Chazelle.Chain.sideNext; rw [hn₂, Nat.mod_eq_of_lt (by omega)]; exact v7
+        unfold Chazelle.Chain.sideNext; rwx [hn₂, Nat.mod_eq_of_lt (by omega)]
       show (Chazelle.Chain.sideNext W Pu).2 ≤ J.right.top.2
       rw [e0, e7]
       have := sideTour_sub_top_snd J.right J.right.sideBeta 1
@@ -306,7 +308,7 @@ theorem splitGapTask : SplitGapTask := by
       exact h2.1.trans h1.1.symm
     have hzu : z.1 ≠ (sidePt W Pu 0).1 := fun h =>
       huD (show sidePt W Pu 0 ∈ (chainModel J.whole).D by
-        rw [show sidePt W Pu 0 = z from Prod.ext h.symm hzy.symm]; exact hzD)
+        rwx [show sidePt W Pu 0 = z from Prod.ext h.symm hzy.symm])
     have hze : ∀ w ∈ e, w.1 ≠ z.1 := by
       rcases hM.tie_pair hFs he he' hne.symm heA' he'A' with ⟨h1, h2⟩ | ⟨h1, h2⟩
       · intro w hw hwz

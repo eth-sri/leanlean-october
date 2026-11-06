@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.RestoreLink
+public import Chazelle.Rwx
 
 /-!
 # WP-E, part 5: one round of the restoration driver
@@ -148,16 +149,16 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
     exact ⟨hU, by rw [union_empty], fun e he => absurd he (notMem_empty e)⟩
   | @insert e E₀ heE₀ hE₀fin ih =>
     intro hsub U hU
-    have hE₀sub : E₀ ⊆ E := (subset_insert e E₀).trans hsub
-    have heE : e ∈ E := hsub (mem_insert e E₀)
+    have hE₀sub  := (subset_insert e E₀).trans hsub
+    have heE  := hsub (mem_insert e E₀)
     set T := S ∪ E₀ with hTd
-    have hT : T ⊆ M.Adm := union_subset hS (hE₀sub.trans hE.adm)
-    have hTfin : T.Finite := hfin.union hE₀fin
+    have hT  := union_subset hS (hE₀sub.trans hE.adm)
+    have hTfin  := hfin.union hE₀fin
     have hTe : S ∪ insert e E₀ = insert e T := by
       rw [hTd]; ext x; simp only [mem_union, mem_insert_iff]; tauto
     obtain ⟨R, hR, hw⟩ := hE.split e heE
     have he := hE.adm heE
-    have heS : e ∉ S := hw.1
+    have heS  := hw.1
     have heT : e ∉ T := by
       rintro (h | h)
       · exact heS h
@@ -169,8 +170,8 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
       push Not at hcon
       obtain ⟨hzR, hzD⟩ := hcon
       obtain ⟨R₀, hR₀, hw₀⟩ := hE.split e₀ (hE₀sub he₀)
-      have hzR₀ : z ∈ R₀ := hw₀.2.1 ⟨hz, hzD⟩
-      have hopen : IsOpen R₀ := (hM.sys S hS hfin).regionsIn_open subset_rfl hR₀
+      have hzR₀  := hw₀.2.1 ⟨hz, hzD⟩
+      have hopen  := (hM.sys S hS hfin).regionsIn_open subset_rfl hR₀
       obtain ⟨y, hyR₀, hyR⟩ := mem_closure_iff.1 hzR R₀ hopen hzR₀
       have hRR₀ : R = R₀ := by
         rw [regionsIn_eq_component hR hyR, regionsIn_eq_component hR₀ hyR₀]
@@ -185,7 +186,7 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
       · rcases hE₀R c hcE z hzc with h | h
         · exact h (subset_closure hz)
         · exact h (regionsIn_subset hR hz).1
-    have hRT : R ∈ regionsIn M.D T := region_of_subset_free subset_union_left hR hRfree
+    have hRT  := region_of_subset_free subset_union_left hR hRfree
     have hexR : exitsIn M.D T R = exitsIn M.D S R := by
       ext c
       refine ⟨fun ⟨hcT, hcR⟩ => ⟨?_, hcR⟩, fun ⟨hcS, hcR⟩ => ⟨Or.inl hcS, hcR⟩⟩
@@ -196,8 +197,7 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
         rcases hE₀R c hcE z hz with h | h
         · exact h hzR
         · exact h hzD
-    have hwT : SplitsWell M T R e :=
-      splitsWell_mono hM subset_union_left hT hTfin hR hRT he heT hw
+    have hwT  := splitsWell_mono hM subset_union_left hT hTfin hR hRT he heT hw
     have hFT := hM.sys _ (insert_subset he hT) (hTfin.insert e)
     obtain ⟨R₁, R₂, hs⟩ := Merge.exists_split hFT (subset_insert e T) (mem_insert e T) heT hRT
       hw.2.1
@@ -220,13 +220,13 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
           exact hUR this
         · exact hno e'' he''
       · right
-        exact ⟨R', hR', e', mem_insert_of_mem e he', hw', hUR', by rw [hex]; exact h3,
-          by rw [hex]; exact hlt⟩
+        exact ⟨R', hR', e', mem_insert_of_mem e he', hw', hUR', by rwx [hex],
+          by rwx [hex]⟩
     · -- a half of `R`
       right
       have hUsub : U ⊆ R := by rcases hU12 with rfl | rfl; exacts [hs.sub₁, hs.sub₂]
       obtain ⟨h3, hlt⟩ := splitsWell_degrees hM hT hTfin hRT he hwT U hU hUsub
-      exact ⟨R, hR, e, mem_insert e E₀, hw, hUsub, h3, by rw [← hexR]; exact hlt⟩
+      exact ⟨R, hR, e, mem_insert e E₀, hw, hUsub, h3, by rwx [← hexR]⟩
 
 /-- **The degree after a round.**  If `S` has degree `≤ d` and every region of `S` with more
 than `D` exit chords received a chord of `E`, then `S ∪ E` has degree `≤ max D (d - 1)`. -/

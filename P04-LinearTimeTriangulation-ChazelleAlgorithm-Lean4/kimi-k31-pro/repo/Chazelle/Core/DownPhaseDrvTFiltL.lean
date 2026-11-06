@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvTFilt
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down-phase transition (D2), RAM part 4: the loop of the filter pass
@@ -49,7 +52,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 /-- **One record.** -/
 theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B' : ℕ}
     (hR : RecsT m₀ CB L₀) (hCB : L₀.length = 0 ∨ CB + 5 * L₀.length ≤ B')
@@ -145,33 +147,33 @@ theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
     have hr := DownBase.rankF_succ (keepT li n c₀) (0, 0, 0) (L := L₀) ht
     cases hk : keepT li n c₀ x
     · rw [hk] at f5
-      simp only [Bool.false_eq_true, ite_false] at f5
-      have hn : ¬ d₅.nreg 190018 < d₅.nreg 190037 := by rw [h18, f5]; omega
+      simp [Bool.false_eq_true, ite_false] at f5
+      have hn : ¬ d₅.nreg 190018 < d₅.nreg 190037 := by rwo [h18, f5]
       rw [← hx, hk] at hr
-      simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
+      simp [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
       refine ⟨d₅, _, .ifLtN_false hn (.skip e₅.wb_right), by omega, by omega,
         fun _ _ _ => rfl, fun a => ?_, by rw [h35, hr], by rw [h36, hr], rfl, rfl, rfl⟩
       rw [hm5, hI.mem a, ← hi]
-      exact memT_drop ht (by rw [← hx]; exact hk) a
+      exact memT_drop ht (by rwx [← hx]) a
     · rw [hk] at f5
-      simp only [ite_true] at f5
-      have hp : d₅.nreg 190018 < d₅.nreg 190037 := by rw [h18, f5]; omega
+      simp [ite_true] at f5
+      have hp : d₅.nreg 190018 < d₅.nreg 190037 := by rwo [h18, f5]
       have hjK : j + 1 ≤ L₀.length := by
-        have := DownBase.rankF_lt_length (keepT li n c₀) (0, 0, 0) ht (by rw [← hx]; exact hk)
+        have := DownBase.rankF_lt_length (keepT li n c₀) (0, 0, 0) ht (by rwx [← hx])
         have h2 := (List.length_filter_le (keepT li n c₀) L₀)
         omega
       obtain ⟨d₆, k₆, e₆', hk₆, w35, w36, r₆, mm₆, rr₆, rm₆, o₆⟩ :=
         fKeep_exec (P := P) d₅ e₅.wb_right h35 h36 h17 (by omega) (by omega)
       rw [← hx, hk] at hr
-      simp only [ite_true] at hr
+      simp [ite_true] at hr
       refine ⟨d₆, _, .ifLtN_true hp e₆', by omega, by omega, r₆, fun a => ?_,
-        by rw [w35, hr]; ring, by rw [w36, hr], rr₆, rm₆, o₆⟩
+        by rwring [w35, hr], by rw [w36, hr], rr₆, rm₆, o₆⟩
       rw [mm₆, e32, e38, e39, hm5]
       have := memT_keep (m₀ := m₀) (m := d.nmem) (B' := B') (hI.mem) ht
-        (by rw [← hx]; exact hk) a
+        (by rwx [← hx]) a
       rw [← hi, ← hj] at this
       rw [← this]
-      simp only [trT, hx]
+      simp [trT, hx]
   -- the increment
   have h30 : d₆.nreg 190030 = i := by
     rw [g6 _ (by norm_num) (by norm_num), g5 _ (by norm_num) (by norm_num) (by norm_num)
@@ -179,7 +181,7 @@ theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
   have h17' : d₆.nreg 190017 = 1 := by
     rw [g6 _ (by norm_num) (by norm_num), g5 _ (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num) (by norm_num) (by norm_num), hI.r17]
-  have e₇ := Exec.addN (P := P) e₆.wb_right 190030 190030 190017 (by rw [h30, h17']; omega)
+  have e₇ := Exec.addN (P := P) e₆.wb_right 190030 190030 190017 (by rwo [h30, h17'])
   set d₇ : Config := { d₆ with nreg := upd d₆.nreg 190030 (d₆.nreg 190030 + d₆.nreg 190017) }
     with hd₇
   have g7 : ∀ r, r ≠ 190030 → d₇.nreg r = d₆.nreg r := fun r hr => by rw [hd₇]; simp [hr]
@@ -190,7 +192,7 @@ theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
   have X' : Exec P W fBody d d₇ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + 1)))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇)))))
   refine ⟨d₇, _, X', e₇.wb_right, ?_, v7, by omega, by omega⟩
-  refine ⟨by rw [v7]; omega, by rw [g _ (by norm_num), hI.rK], ?_, ?_, ?_,
+  refine ⟨by rwo [v7], by rw [g _ (by norm_num), hI.rK], ?_, ?_, ?_,
     by rw [g _ (by norm_num), hI.r10], by rw [g _ (by norm_num), hI.r14],
     by rw [g _ (by norm_num), hI.r15], by rw [g _ (by norm_num), hI.r16],
     by rw [g _ (by norm_num), hI.r17], by rw [g _ (by norm_num), hI.r18],
@@ -220,15 +222,15 @@ theorem fLoop_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
       obtain ⟨d', k, e, hw', hI', hi', hk1, hk2⟩ := fBody_exec hR hCB hBW hwd hId ht
       have := hId.rK
       refine ⟨d', k, e, ⟨hw', hI'⟩, ?_, ?_⟩
-      · rw [hi']; rw [this] at ht; omega
-      · rw [hi']; omega)
+      · rw [hi']; rwo [this] at ht
+      · rwo [hi'])
     ⟨hw, hI⟩
   have hi := hI'.i_le
   rw [hI'.rK] at htest
   refine ⟨d', k, e, hw', hI', by omega, ?_, ?_⟩
   · rw [h0] at hψ; have : d'.nreg 190030 = L₀.length := by omega
-    rw [this] at hψ; omega
-  · rw [h0] at hk; omega
+    rwo [this] at hψ
+  · rwo [h0] at hk
 
 end exec
 

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutStepR
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-G, part 19: the outcomes of one step of the main loop
@@ -13,9 +16,6 @@ public import Chazelle.Core.ShootCutStepR
 * `single_post`, `up_post`, `dn_post`: a single edge, a climbing and a descending stretch.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -63,7 +63,7 @@ theorem SEnv.hm2' (S : SEnv O P C H Hh h γ m₀ A₀ W) : 2 * C.m + 9 ≤ 128 *
 
 theorem SEnv.hm2 (S : SEnv O P C H Hh h γ m₀ A₀ W) : 2 * C.m + 9 ≤ hostWords P.n := by
   have := S.hm2'
-  unfold hostWords; omega
+  ufo hostWords
 
 /-- **The tables of the sweeps.** -/
 theorem swEnv_of (S : SEnv O P C H Hh h γ m₀ A₀ W) :
@@ -116,11 +116,11 @@ theorem single_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have kk : ∀ r, 150089 ≤ r → r < 150100 → d'.nreg r = e.nreg r := fun r h1 h2 =>
     kp r (Or.inr ⟨by omega, h2⟩) (by omega)
   refine ⟨d', k, ex, hk', ⟨hI', ⟨rfl, rfl⟩, fun p hp => by
-      simp only [List.mem_singleton] at hp; rw [hp]; exact hpv, by simp, le_rfl, hlim,
+      simp [List.mem_singleton] at hp; rwx [hp], by simp, le_rfl, hlim,
     Or.inr (Or.inr ⟨rfl, hb⟩), o40, fun r h1 h2 h3 => (kp r (Or.inl ⟨h1, h2⟩) h3).trans
-      (hk r h1 h2 h3), by rw [kk _ (by omega) (by omega)]; exact h90,
-    by rw [kk _ (by omega) (by omega)]; exact h91, by rw [kk _ (by omega) (by omega)]; exact h92,
-    by rw [kk _ (by omega) (by omega)]; exact h93, by rw [kk _ (by omega) (by omega)]; exact h96,
+      (hk r h1 h2 h3), by rwx [kk _ (by omega) (by omega)],
+    by rwx [kk _ (by omega) (by omega)], by rwx [kk _ (by omega) (by omega)],
+    by rwx [kk _ (by omega) (by omega)], by rwx [kk _ (by omega) (by omega)],
     ex.wb_right, fun a ha => by rw [mem' a ha]; exact hm a ha⟩⟩
 
 /-- `(a + t + L) mod n` from `q = (a + t) mod n` without wrap. -/
@@ -165,15 +165,15 @@ theorem up_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hwalk : ∀ d, d ≤ L → (chainModel C).W.vtx (c + d) = (Qof P).vtx (q + d) := by
     intro d hd
     have := run_up C S.hP (i := c - 6) (d := d) (by omega) (by omega) hr hrun hu (by omega)
-      (by rw [hq, hQn]; omega)
+      (by rwo [hq, hQn])
     rw [show c - 6 + d + 6 = c + d by omega, hq] at this
     exact this
   have hblk := upBlocks_of (O := O) S.hR S.hAW (W := W) hwalk hc6 (by omega) (by omega)
     (by omega) S.hcap
-  have hW' : 5 * P.n + 6 ≤ W := by have := S.hW; unfold hostWords at this; omega
+  have hW' : 5 * P.n + 6 ≤ W := by have := S.hW; ufo hostWords at this
   have hcW : c + lim + 2 ≤ W := by have := S.hm2; have := S.hW; omega
   obtain ⟨d', k, ps', ex, hk', hI', hch, hv, hlen, o40, kp, a90, a91, a92, a93, a96, w', m'⟩ :=
-    upStretch_exec (hE.mono fun pc hp => hp) (swEnv_of S) e hw hm h90 h91 h34 h35 h36 h23 h61
+    upStretch_exec (hE.mono fun _ => id) (swEnv_of S) e hw hm h90 h91 h34 h35 h36 h23 h61
       h69 h66 h27 h70 h72 h40 hI hq1 hJm ht (tg_ok S.hn) hcW hW' hblk
   have hLγ : Nat.log 2 L ≤ Nat.log 2 γ := Nat.log_mono_right (by omega)
   have hk'' : k ≤ (2 * K + 90) * (Nat.log 2 L + 1) + 40 := hk'
@@ -189,12 +189,12 @@ theorem up_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hLe : L = min (min (C.m - J) (ℓ - t)) (P.n - q - 1) := by omega
   rcases (show L = C.m - J ∨ L = ℓ - t ∨ L = P.n - q - 1 by omega) with h2 | h2 | h2
   · right; left
-    rw [tJ_add C (by rw [hJ]; omega), hJ]; omega
+    rw [tJ_add C (by rwo [hJ]), hJ]; omega
   · have hu' := uOf_up C S.hP (i := c - 6) (d := L) (by omega) hr hrun hu (by omega)
     exact brk_run C hr hrun (t := t + L) hu' (by omega) (Or.inr (Or.inl (by omega)))
   · have hu' := uOf_up C S.hP (i := c - 6) (d := L) (by omega) hr hrun hu (by omega)
     refine brk_run C hr hrun (t := t + L) hu' (by omega) (Or.inr (Or.inr (Or.inr ?_)))
-    rw [mod_add_of hq (by rw [hQn]; omega), hQn]; omega
+    rw [mod_add_of hq (by rwo [hQn]), hQn]; omega
 
 /-- **A descending stretch** from the walk vertex `c` (host point in the run `H[r] = run a ℓ` at
 offset `0 < t`, `0 < q = (a + t) mod n`). -/
@@ -226,15 +226,15 @@ theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hwalk : ∀ d, d ≤ L → (chainModel C).W.vtx (c + d) = (Qof P).vtx (q - d) := by
     intro d hd
     have := run_down C S.hP (i := c - 6) (d := d) (by omega) (by omega) (by omega) hr hrun hu
-      ht (by omega) (by rw [hq]; omega) hn
+      ht (by omega) (by rwo [hq]) hn
     rw [show c - 6 + d + 6 = c + d by omega, hq] at this
     exact this
   have hblk := dnBlocks_of (O := O) S.hR S.hAW (W := W) hwalk hc6 (by omega) hqn (by omega)
     (by omega) S.hcap
-  have hW' : 5 * P.n + 6 ≤ W := by have := S.hW; unfold hostWords at this; omega
+  have hW' : 5 * P.n + 6 ≤ W := by have := S.hW; ufo hostWords at this
   have hcW : c + lim + 2 ≤ W := by have := S.hm2; have := S.hW; omega
   obtain ⟨d', k, ps', ex, hk', hI', hch, hv, hlen, o40, kp, a90, a91, a92, a93, a96, w', m'⟩ :=
-    dnStretch_exec (hE.mono fun pc hp => hp) (swEnv_of S) e hw hm h90 h91 h34 h35 h36 h29 h61
+    dnStretch_exec (hE.mono fun _ => id) (swEnv_of S) e hw hm h90 h91 h34 h35 h36 h29 h61
       h66 h70 h72 h40 hI hqn (tg_ok S.hn) hcW hW' hblk
   have hLγ : Nat.log 2 L ≤ Nat.log 2 γ := Nat.log_mono_right (by omega)
   have hk'' : k ≤ (2 * K + 90) * (Nat.log 2 L + 1) + 40 := hk'
@@ -256,7 +256,7 @@ theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   · have hu' := uOf_down C S.hP (i := c - 6) (d := L) (by omega) (by omega) hr hrun hu ht
       (by omega)
     refine brk_run C hr hrun (t := t - L) hu' (by omega) (Or.inr (Or.inr (Or.inl ?_)))
-    rw [mod_sub_of hn hq (by omega) (by omega)]; omega
+    rwo [mod_sub_of hn hq (by omega) (by omega)]
 
 end
 

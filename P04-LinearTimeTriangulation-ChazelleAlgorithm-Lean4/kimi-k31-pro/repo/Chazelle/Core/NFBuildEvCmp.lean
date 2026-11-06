@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.NFBuildCmpRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-C (BuildNF), RAM part 2: the comparator of the event sort
@@ -117,7 +122,7 @@ theorem keyDec_ev (hL : ChordTriplesOK M (Qof P) L) {a b : ℕ} (ha : a < 2 * L.
       M.key (Qof P) (wposOf L a) ≤ M.key (Qof P) (wposOf L b) := by
   rw [keyDec_iff (properPos_ev hL hb) (properPos_ev hL ha)]
   unfold KeyPred
-  rw [ite_eq_right (by rw [wposOf_hgt]; omega)]
+  rw [ite_eq_right (by rwo [wposOf_hgt])]
 
 /-- The tie bit from the direction code. -/
 theorem tieBit_eq (M : Model) (L : List (ℕ × ℕ × ℕ)) (c : ℕ) :
@@ -131,7 +136,7 @@ theorem tieBit_eq (M : Model) (L : List (ℕ × ℕ × ℕ)) (c : ℕ) :
     · rw [ite_eq_right h2, ite_eq_right h2, ite_eq_right (by norm_num)]
 
 theorem dirCode_le (M : Model) (e : ℕ) : dirCode M e ≤ 2 := by
-  unfold dirCode; split_ifs <;> omega
+  unfold dirCode; splao
 
 end math
 
@@ -155,17 +160,17 @@ theorem loadRec_exec (d : Config) (hw : WordsBounded W d) {src ad o : ℕ} {c T 
   obtain ⟨o1, o2, o3⟩ := ho
   unfold loadRec
   exec_block
-  · rw [hs]; omega
-  · config_simp; rw [hs]; omega
+  · rwo [hs]
+  · config_simp; rwo [hs]
   · config_simp
     simp (disch := omega) only [upd_other]
-    rw [hs, hT]; omega
+    rwo [hs, hT]
   · config_simp
     simp (disch := omega) only [upd_other, upd_same]
-    rw [hs, hT, h1]; omega
+    rwo [hs, hT, h1]
   · config_simp
     simp (disch := omega) only [upd_other, upd_same]
-    rw [hs, hT, h1]; omega
+    rwo [hs, hT, h1]
   · refine ⟨rfl, ?_, ?_, ?_, fun r r1 r2 r3 r4 => ?_, rfl, rfl, rfl, rfl, ?_⟩
     · simp (disch := omega) only [upd_other, upd_same]
       rw [hs, hT]; congr 1; omega
@@ -175,7 +180,7 @@ theorem loadRec_exec (d : Config) (hw : WordsBounded W d) {src ad o : ℕ} {c T 
       rw [hs, hT, h1]; congr 1; omega
     · simp (disch := omega) only [upd_other]
     · simp (disch := omega) only [upd_other, upd_same]
-      rw [hs, hT, h1]; omega
+      rwo [hs, hT, h1]
 
 /-- The tie bit on the machine. -/
 theorem tbS_exec (d : Config) (hw : WordsBounded W d) {dd par dst : ℕ} (h1 : d.nreg 42102 = 1)
@@ -184,12 +189,12 @@ theorem tbS_exec (d : Config) (hw : WordsBounded W d) {dd par dst : ℕ} (h1 : d
       d'.nreg dst = (if d.nreg dd = 2 then 1 - d.nreg par else d.nreg par) := by
   unfold tbS
   by_cases a1 : d.nreg dd < 2
-  · refine spec_ifLtN_true (by rw [h2]; exact a1)
+  · refine spec_ifLtN_true (by rwx [h2])
       (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by omega, ?_⟩)
     simp only [upd_same]; rw [ite_eq_right (by omega)]
   · have : d.nreg dd = 2 := by omega
-    refine spec_ifLtN_false (by rw [h2]; exact a1)
-      (spec_ifLtN_false (by rw [h2, this]; omega)
+    refine spec_ifLtN_false (by rwx [h2])
+      (spec_ifLtN_false (by rwo [h2, this])
         (spec_instr (Exec.subN hw _ _ _) fun _ => ⟨by omega, ?_⟩))
     simp only [upd_same]; rw [ite_eq_left this, h1]
 
@@ -202,18 +207,18 @@ theorem final_exec (d : Config) (hw : WordsBounded W d) (h1 : d.nreg 42102 = 1) 
       k ≤ 7 ∧ d'.nreg 30002 = (if d.nreg 42117 < 1 then 0 else if d.nreg 42119 < 1 then 1 else
         if d.nreg 42121 < d.nreg 42120 then 0 else 1) := by
   by_cases a1 : d.nreg 42117 < 1
-  · exact spec_ifLtN_true (by rw [h1]; exact a1) (spec_instr (Exec.constN hw _ _ (by
-      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_left a1]; simp⟩)
-  refine spec_ifLtN_false (by rw [h1]; exact a1) ?_
+  · exact spec_ifLtN_true (by rwx [h1]) (spec_instr (Exec.constN hw _ _ (by
+      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rws [ite_eq_left a1]⟩)
+  refine spec_ifLtN_false (by rwx [h1]) ?_
   by_cases a2 : d.nreg 42119 < 1
-  · exact spec_ifLtN_true (by rw [h1]; exact a2) (spec_instr (Exec.constN hw _ _ (by
-      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_right a1, ite_eq_left a2]; simp⟩)
-  refine spec_ifLtN_false (by rw [h1]; exact a2) ?_
+  · exact spec_ifLtN_true (by rwx [h1]) (spec_instr (Exec.constN hw _ _ (by
+      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rws [ite_eq_right a1, ite_eq_left a2]⟩)
+  refine spec_ifLtN_false (by rwx [h1]) ?_
   by_cases a3 : d.nreg 42121 < d.nreg 42120
   · exact spec_ifLtN_true a3 (spec_instr (Exec.constN hw _ _ (by
-      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_right a1, ite_eq_right a2, ite_eq_left a3]; simp⟩)
+      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rws [ite_eq_right a1, ite_eq_right a2, ite_eq_left a3]⟩)
   · exact spec_ifLtN_false a3 (spec_instr (Exec.constN hw _ _ (by
-      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rw [ite_eq_right a1, ite_eq_right a2, ite_eq_right a3]; simp⟩)
+      have := hw.1 42102; omega)) fun _ => ⟨by omega, by rws [ite_eq_right a1, ite_eq_right a2, ite_eq_right a3]⟩)
 
 /-- The registers `inCmp` writes. -/
 def BinCmp (r : ℕ) : Bool :=
@@ -225,7 +230,7 @@ theorem wr_inCmp : wr BinCmp inCmp = true := by
       wr BinCmp (halfS qe qh se sh dd dst) = true := fun _ _ _ _ _ _ h1 h2 h3 h4 =>
     wr_mono (fun r hr => by
       simp only [BhalfS, Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
-      simp only [BinCmp, Bool.or_eq_true, decide_eq_true_eq]; omega) wr_halfS
+      sio only [BinCmp, Bool.or_eq_true, decide_eq_true_eq]) wr_halfS
   have e1 := h1 42113 42114 42110 42111 42116 42117 (by norm_num) (by norm_num) (by norm_num)
     (by norm_num)
   have e2 := h1 42110 42111 42113 42114 42118 42119 (by norm_num) (by norm_num) (by norm_num)
@@ -284,8 +289,8 @@ theorem inCmp_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (d : Config) (hw : Word
   have w₀ := x₀.wb_right
   have g₀ : ∀ r, r ≠ 42102 → r ≠ 42104 → d₀.nreg r = d.nreg r := fun r h1 h2 => by
     rw [r₀]; simp [upd_other _ _ _ h1, upd_other _ _ _ h2]
-  have o₀ : d₀.nreg 42102 = 1 := by rw [r₀]; simp
-  have t₀ : d₀.nreg 42104 = 2 := by rw [r₀]; simp
+  have o₀ : d₀.nreg 42102 = 1 := by rws [r₀]
+  have t₀ : d₀.nreg 42104 = 2 := by rws [r₀]
   have m₀ : d₀.nmem = d.nmem := by rw [r₀]
   -- record of `a`
   obtain ⟨ha1, ha2, ha3, -⟩ := hR a ha
@@ -333,21 +338,21 @@ theorem inCmp_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (d : Config) (hw : Word
   -- first half: key a ≤ key b
   obtain ⟨d₃, k₃, x₃, hk₃, dd₃, dst₃, f₃⟩ := halfS_exec (P := P) hG hW d₂ w₂
     (qe := 42113) (qh := 42114) (se := 42110) (sh := 42111) (dd := 42116) (dst := 42117)
-    (by decide) (by decide) (by decide) (by rw [D₂]; exact hDW) (by rw [D₂, mm₂]; exact hCW)
-    (M := M) (by rw [D₂, mm₂]; exact hM) (by rw [v13]; exact edge_lt hL hb)
+    (by decide) (by decide) (by decide) (by rwx [D₂]) (by rwx [D₂, mm₂])
+    (M := M) (by rwx [D₂, mm₂]) (by rw [v13]; exact edge_lt hL hb)
     (by rw [v14]; exact ppb.2.2)
   have w₃ := x₃.wb_right
-  have g₃ : ∀ r, BhalfS 42116 42117 r = false → d₃.nreg r = d₂.nreg r := f₃.1
+  have g₃  := f₃.1
   have mm₃ : d₃.nmem = d.nmem := by rw [f₃.2.2.1, mm₂]
   have D₃ : d₃.nreg 40000 = D := by rw [g₃ _ (by decide), D₂]
   -- second half: key b ≤ key a
   obtain ⟨d₄, k₄, x₄, hk₄, dd₄, dst₄, f₄⟩ := halfS_exec (P := P) hG hW d₃ w₃
     (qe := 42110) (qh := 42111) (se := 42113) (sh := 42114) (dd := 42118) (dst := 42119)
-    (by decide) (by decide) (by decide) (by rw [D₃]; exact hDW) (by rw [D₃, mm₃]; exact hCW)
-    (M := M) (by rw [D₃, mm₃]; exact hM) (by rw [g₃ _ (by decide), v10]; exact edge_lt hL ha)
+    (by decide) (by decide) (by decide) (by rwx [D₃]) (by rwx [D₃, mm₃])
+    (M := M) (by rwx [D₃, mm₃]) (by rw [g₃ _ (by decide), v10]; exact edge_lt hL ha)
     (by rw [g₃ _ (by decide), v11]; exact ppa.2.2)
   have w₄ := x₄.wb_right
-  have g₄ : ∀ r, BhalfS 42118 42119 r = false → d₄.nreg r = d₃.nreg r := f₄.1
+  have g₄  := f₄.1
   -- tie bits
   have o₄ : d₄.nreg 42102 = 1 := by rw [g₄ _ (by decide), g₃ _ (by decide), o₂]
   have t₄ : d₄.nreg 42104 = 2 := by rw [g₄ _ (by decide), g₃ _ (by decide), t₂]
@@ -466,7 +471,7 @@ theorem wr2_evCmp : wr2 BinCmp BRb evCmp = true := by
     wr2_of_wr (B := BhalfS _ _)
       (fun r hr => by
         simp only [BhalfS, Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
-        simp only [BinCmp, Bool.or_eq_true, decide_eq_true_eq]; omega)
+        sio only [BinCmp, Bool.or_eq_true, decide_eq_true_eq])
       (fun r hr => by
         simp only [BhalfS, Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
         rw [BRb, decide_eq_true_iff]; unfold bandOf bSign bBuild
@@ -491,10 +496,10 @@ theorem evJ_stable (m₀ : ℕ → ℕ) (A₀ D T N : ℕ) (R : ℕ → ℕ) :
     SortR.JStable (EvJ m₀ A₀ D T N R) A₀ := by
   intro c c' ⟨h1, h2, h3, h4, h5⟩ hr _ hm _ _
   refine ⟨?_, ?_, ?_, fun a ha => (hm a ha).trans (h4 a ha), fun r r1 r2 => ?_⟩
-  · rw [hr _ (by unfold bandOf bSort; norm_num) (by unfold ALLOC; norm_num), h1]
-  · rw [hr _ (by unfold bandOf bSort; norm_num) (by unfold ALLOC; norm_num), h2]
-  · rw [hr _ (by unfold bandOf bSort; norm_num) (by unfold ALLOC; norm_num), h3]
-  · rw [hr _ (by unfold bandOf bSort; omega) (by unfold ALLOC; omega), h5 r r1 r2]
+  · rw [hr _ (by ufn bandOf bSort) (by ufn ALLOC), h1]
+  · rw [hr _ (by ufn bandOf bSort) (by ufn ALLOC), h2]
+  · rw [hr _ (by ufn bandOf bSort) (by ufn ALLOC), h3]
+  · rw [hr _ (by ufo bandOf bSort) (by ufo ALLOC), h5 r r1 r2]
 
 theorem binCmp_band {r : ℕ} (h : BinCmp r = true) : bandOf r ∈ ({bSign, bBuild} : Finset ℕ) ∨
     r = 30002 := by
@@ -510,11 +515,11 @@ theorem evCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWn : hostWords P.n �
     (R : ℕ → ℕ) : SortR.CmpOK P W evCmp {bSign, bBuild} (EvJ m₀ A₀ D T (2 * L.length) R)
       (evLeB M (Qof P) L (2 * L.length)) 11010 := by
   intro d hw ⟨j1, j2, j3, j4, j5⟩
-  have hW1 : 1 ≤ W := by unfold hostWords at hWn; omega
-  have hW : P.n + 3 ≤ W := by unfold hostWords at hWn; omega
+  have hW1 : 1 ≤ W := by ufo hostWords at hWn
+  have hW : P.n + 3 ≤ W := by ufo hostWords at hWn
   -- the frame part, from the write set
   have wr_ev : wr BinCmp evCmp = true := by
-    simp only [evCmp, wr, wr_inCmp, Bool.true_and]; decide
+    sid only [evCmp, wr, wr_inCmp, Bool.true_and]
   have wr2_ev := wr2_evCmp
   suffices H : ∃ d' k, Exec P W evCmp d d' k ∧ k ≤ 11010 ∧
       d'.nreg 30002 = (if evLeB M (Qof P) L (2 * L.length) (d.nreg 30000) (d.nreg 30001) = true
@@ -527,7 +532,7 @@ theorem evCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWn : hostWords P.n �
     · rw [f.1 _ (by decide), j2]
     · rw [f.1 _ (by decide), j3]
     · rw [f.2.2.1]; exact j4 a ha
-    · rw [f.1 r (by simp only [BinCmp, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
+    · rw [f.1 r (by sio only [BinCmp, Bool.or_eq_false_iff, decide_eq_false_iff_not]),
         j5 r r1 r2]
     · apply f.1
       by_contra hb
@@ -538,10 +543,10 @@ theorem evCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWn : hostWords P.n �
       · exact r2 h
   unfold evCmp evLeB
   by_cases ha : d.nreg 30000 < 2 * L.length
-  · refine spec_ifLtN_true (by rw [j3]; exact ha) ?_
+  · refine spec_ifLtN_true (by rwx [j3]) ?_
     by_cases hb : d.nreg 30001 < 2 * L.length
-    · refine spec_ifLtN_true (by rw [j3]; exact hb) ?_
-      have hm : ∀ a, a < A₀ → d.nmem a = m₀ a := j4
+    · refine spec_ifLtN_true (by rwx [j3]) ?_
+      have hm  := j4
       obtain ⟨hM', hwf'⟩ := desc_agree hwf hM hm
       obtain ⟨hDW, hCW⟩ := locChainWF_of hwf' hAW hWn
       have hR' : RecsAt d.nmem T L := fun c hc => by
@@ -553,15 +558,15 @@ theorem evCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWn : hostWords P.n �
       refine ⟨d', k, x, by omega, ?_⟩
       rw [hv, ite_eq_left ha, ite_eq_left hb]
       by_cases hc : codeLe M (Qof P) L (d.nreg 30000) (d.nreg 30001) <;> simp [hc]
-    · refine spec_ifLtN_false (by rw [j3]; exact hb) (spec_instr (Exec.constN hw _ _ hW1)
+    · refine spec_ifLtN_false (by rwx [j3]) (spec_instr (Exec.constN hw _ _ hW1)
         fun _ => ⟨by omega, ?_⟩)
       simp [ha, hb]
-  · refine spec_ifLtN_false (by rw [j3]; exact ha) ?_
+  · refine spec_ifLtN_false (by rwx [j3]) ?_
     by_cases hb : d.nreg 30001 < 2 * L.length
-    · refine spec_ifLtN_true (by rw [j3]; exact hb) (spec_instr (Exec.constN hw _ _ (by omega))
+    · refine spec_ifLtN_true (by rwx [j3]) (spec_instr (Exec.constN hw _ _ (by omega))
         fun _ => ⟨by omega, ?_⟩)
       simp [ha, hb]
-    · refine spec_ifLtN_false (by rw [j3]; exact hb) ?_
+    · refine spec_ifLtN_false (by rwx [j3]) ?_
       by_cases hc : d.nreg 30001 < d.nreg 30000
       · refine spec_ifLtN_true hc (spec_instr (Exec.constN hw _ _ (by omega))
           fun _ => ⟨by omega, ?_⟩)

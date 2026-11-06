@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.GranRamRm3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-F, RAM part 9: the worklist loop
@@ -93,13 +96,13 @@ theorem try_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ :
     h68 h69 h72 h73 hM.nlive
   have F₁ := exec_frameB e₁ wr_mu_fine
   have g : ∀ r, r < 90100 → r ≠ 90061 → (r < 90074) → c₁.nreg r = c.nreg r := fun r a1 a2 a3 =>
-    F₁.1 r (by simp [Bmu]; omega)
+    F₁.1 r (by sio [Bmu])
   have hM₁ : MS W E d A₀ m₀ c₁ st := hM.frameT e₁.wb_right (fun r hr => g r (by omega) (by omega)
     (by omega)) F₁.2.2.1
   by_cases hm : E.γ < st.mu E st.cur
   · obtain ⟨c₂, k₂, e₂, hk₂, hM₂, -, -⟩ := hM₁.pop (P := P)
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [hM₁.cst.γ, m78]; exact hm) e₂), by omega, ?_⟩
-    rw [step_heavy hc.2 hlow hm]; exact hM₂
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rwx [hM₁.cst.γ, m78]) e₂), by omega, ?_⟩
+    rwx [step_heavy hc.2 hlow hm]
   · have hlow' : st.deg (st.s0 st.cur) < 3 ∨ st.deg (st.s1 st.cur) < 3 := by omega
     have hI' := hI.step hE htop
     rw [step_rm hc.2 hlow hm] at hI' ⊢
@@ -114,7 +117,7 @@ theorem try_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ :
       (by rw [g _ (by decide) (by decide) (by decide), h69])
       (by rw [g _ (by decide) (by decide) (by decide), h72])
       (by rw [g _ (by decide) (by decide) (by decide), h73]) m78
-    exact ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [hM₁.cst.γ, m78]; exact hm) e₂), by omega, hM₂⟩
+    exact ⟨c₂, _, .seq e₁ (.ifLtN_false (by rwx [hM₁.cst.γ, m78]) e₂), by omega, hM₂⟩
 
 /-- **One step of the worklist on the RAM.** -/
 theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : ℕ → ℕ} {c : Config}
@@ -133,8 +136,8 @@ theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
   by_cases hl : st.live st.cur = 1
   swap
   · obtain ⟨c₂, k₂, e₂, hk₂, hM₂, -, -⟩ := hM₁.pop (P := P)
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [f63, hM₁.cst.one]; omega) e₂), by omega, ?_⟩
-    rw [step_dead hl]; exact hM₂
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rwo [f63, hM₁.cst.one]) e₂), by omega, ?_⟩
+    rwx [step_dead hl]
   have hc : st.cur ∈ st.L E := ⟨hcK, hl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, x64, x65, x66, x67, xr, xm⟩ := xy_exec (P := P) hM₁.wb hM₁.cst
     hM₁.enc hI hD hc f62
@@ -146,7 +149,7 @@ theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
     (by omega))) F₃.2.2.1
   have F₃' := exec_frameB e₃ wr_nd_fine
   have g : ∀ r, 90061 < r → r < 90068 → c₃.nreg r = c₂.nreg r := fun r a1 a2 =>
-    F₃'.1 r (by simp [Bnd]; omega)
+    F₃'.1 r (by sio [Bnd])
   have t62 : c₃.nreg 90062 = st.cur := by
     rw [g _ (by decide) (by decide), xr _ (by decide) (by decide) (by decide) (by decide)
       (by decide), f62]
@@ -156,21 +159,21 @@ theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
   have t67 : c₃.nreg 90067 = st.deg (st.s1 st.cur) := by rw [g _ (by decide) (by decide), x67]
   have tryE := fun (hlow : ¬ (3 ≤ st.deg (st.s0 st.cur) ∧ 3 ≤ st.deg (st.s1 st.cur))) =>
     try_exec (P := P) hE hM₃ hI hD hA hc htop hlow t62 t64 t65 t66 t67 n68 n69 n72 n73
-  have hnl : ¬ c₁.nreg 90063 < c₁.nreg 90019 := by rw [f63, hM₁.cst.one, hl]; omega
+  have hnl : ¬ c₁.nreg 90063 < c₁.nreg 90019 := by rwo [f63, hM₁.cst.one, hl]
   by_cases h3X : 3 ≤ st.deg (st.s0 st.cur)
   · by_cases h3Y : 3 ≤ st.deg (st.s1 st.cur)
     · obtain ⟨c₄, k₄, e₄, hk₄, hM₄, -, -⟩ := hM₃.pop (P := P)
       refine ⟨c₄, _, .seq e₁ (.ifLtN_false hnl (.seq e₂ (.seq e₃ (.ifLtN_false
-        (by rw [t66, hM₃.cst.three]; omega) (.ifLtN_false (by rw [t67, hM₃.cst.three]; omega)
+        (by rwo [t66, hM₃.cst.three]) (.ifLtN_false (by rwo [t67, hM₃.cst.three])
           e₄))))), by omega, ?_⟩
-      rw [step_keep hl ⟨h3X, h3Y⟩]; exact hM₄
+      rwx [step_keep hl ⟨h3X, h3Y⟩]
     · obtain ⟨c₄, k₄, e₄, hk₄, hM₄⟩ := tryE (by omega)
       exact ⟨c₄, _, .seq e₁ (.ifLtN_false hnl (.seq e₂ (.seq e₃ (.ifLtN_false
-        (by rw [t66, hM₃.cst.three]; omega) (.ifLtN_true (by rw [t67, hM₃.cst.three]; omega)
+        (by rwo [t66, hM₃.cst.three]) (.ifLtN_true (by rwo [t67, hM₃.cst.three])
           e₄))))), by omega, hM₄⟩
   · obtain ⟨c₄, k₄, e₄, hk₄, hM₄⟩ := tryE (by omega)
     exact ⟨c₄, _, .seq e₁ (.ifLtN_false hnl (.seq e₂ (.seq e₃ (.ifLtN_true
-      (by rw [t66, hM₃.cst.three]; omega) e₄)))), by omega, hM₄⟩
+      (by rwo [t66, hM₃.cst.three]) e₄)))), by omega, hM₄⟩
 
 /-! ## The loop -/
 
@@ -203,7 +206,7 @@ theorem loop_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
   · rw [hM.top, hM.nlive] at hk
     unfold St.meas
     exact hk
-  · rw [h52', hM'.top] at hx; omega
+  · rwo [h52', hM'.top] at hx
 
 end
 

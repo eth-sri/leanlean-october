@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OraclePrepStar
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 8: the raw zipper pairs
@@ -45,7 +48,7 @@ theorem normP_of_lt {a b : ℕ} (h : a + 2 ≤ b) : normP a b = some (a, b) := b
 
 theorem normP_none_of_le_one {A a b : ℕ} (hA : A ≤ 1) (ha : a < max A 1) (hb : b < max A 1) :
     normP a b = none := by
-  unfold normP; rw [ite_eq_right]; omega
+  uro normP [ite_eq_right]
 
 open Classical in
 /-- The arc containing the keys just before `y`. -/
@@ -248,7 +251,7 @@ theorem zipRaw_sound (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {c : ℕ �
 
 theorem mem_zipSp {o : Option (ℕ × ℕ)} (ho : o ∈ zipSpO C Q N) {c : ℕ × ℕ} (h : o = some c) :
     c ∈ zipSp C Q N := by
-  unfold zipSp; rw [List.mem_filterMap]; exact ⟨o, ho, by rw [h]; rfl⟩
+  unfold zipSp; rw [List.mem_filterMap]; exact ⟨o, ho, by rwr [h]⟩
 
 /-- **Every zipper pair that is not a spine edge is raw.** -/
 theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : ℕ} (hpq : p < q)
@@ -264,7 +267,7 @@ theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : 
     have := arcs_le_one_of_empty hN hGM (Set.not_nonempty_iff_eq_empty.1 hF)
     omega
   have hn : normP p q = some (p, q) := normP_of_lt h2
-  have hn' : normP q p = some (p, q) := by rw [normP_comm]; exact hn
+  have hn' : normP q p = some (p, q) := by rwx [normP_comm]
   have hT6 := κT_ge C
   have hT7 := κT_lt C
   have hTdef := rT_def C
@@ -279,7 +282,7 @@ theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : 
     subst h2
     by_contra h0
     have : rT C = 0 := by omega
-    apply h1; rw [← hTdef, this]; norm_num
+    apply h1; rwn [← hTdef, this]
   unfold zipRaw
   simp only [List.mem_append, OracleR.mem_emitted]
   rcases zip_cases hN hP hne hp hq (by omega) hZ with

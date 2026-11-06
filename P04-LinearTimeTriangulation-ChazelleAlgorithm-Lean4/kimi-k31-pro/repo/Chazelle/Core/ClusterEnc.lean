@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.ClusterMap
 public import Chazelle.Separator.Maps
+public import Chazelle.Rwx
 
 /-!
 # WP-I, part 22: rotation systems encoding a combinatorial map
@@ -115,7 +116,7 @@ theorem reach_iff (h : EnvEnc G M' eV eD) (u w : V') :
         refine ⟨M'.head d, rfl, Relation.ReflTransGen.tail hw' ⟨d, hdb, h.eV_inj hve, rfl,
           by first | exact hu, hw⟩⟩
     obtain ⟨w', hw', hr'⟩ := key _ hr
-    rw [h.eV_inj hw']; exact hr'
+    rwx [h.eV_inj hw']
   · intro hr
     induction hr with
     | refl => exact Relation.ReflTransGen.refl

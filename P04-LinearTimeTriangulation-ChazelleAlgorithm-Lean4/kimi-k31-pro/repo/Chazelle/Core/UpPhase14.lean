@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.UpPhase13
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 32000000
 
 /-!
 # WP-J up phase, part 14: the chains of a grade
@@ -22,7 +26,6 @@ section proofs
 
 variable {O : OracleIface} {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 32000000 in
 /-- **All chains of grade `g`.** -/
 theorem chainsL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     (hB : Meets sB bruteBands
@@ -89,8 +92,8 @@ theorem chainsL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     (∀ r, Kept r → r ≠ 170015 → r ≠ 170016 → r ≠ 170017 → r ≠ 170018 → r ≠ 170035 →
       r ≠ 170036 → c'.nreg r = c.nreg r) ∧
     (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r)
-  have hI0 : I c := ⟨0, by omega, hw, hu, h15, by rw [h16]; unfold gradeStart; ring,
-    by rw [h35], by rw [h36], by omega, by omega, by rw [h18, hA]; exact hM,
+  have hI0 : I c := ⟨0, by omega, hw, hu, h15, by rw [h16]; ufring gradeStart,
+    by rw [h35], by rw [h36], by omega, by omega, by rwx [h18, hA],
     fun _ _ => rfl, fun _ _ => rfl, rfl, fun _ _ _ _ _ _ _ _ => rfl, fun _ _ => rfl⟩
   obtain ⟨c', k, e, ⟨i, hic, hw', hu', i15, i16, i35, i36, a1, a2, hM', mm, mr, mo, fr, frr⟩,
       htest, hk, hψ⟩ :=
@@ -113,12 +116,12 @@ theorem chainsL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
           fun a ha => by rw [r3 a (by omega), mr a ha], by rw [o3, mo],
           fun r hr a1 a2 a3 a4 a5 a6 => by rw [f3 r hr a1 a2 a3 a4 a5 a6, fr r hr a1 a2 a3 a4 a5 a6],
           fun r hr => by rw [ff3 r hr, frr r hr]⟩, ?_, by omega⟩
-        · rw [Nat.succ_mul]; omega
+        · rwo [Nat.succ_mul]
         · rw [j15, i15]
           have : (cnt - i) * (K + 2) = (cnt - (i + 1)) * (K + 2) + (K + 2) := by
             rw [← Nat.succ_mul]; congr 1; omega
           omega) hI0
-  have hic' : i = cnt := by rw [i15, hu'.r08] at htest; omega
+  have hic' : i = cnt := by rwo [i15, hu'.r08] at htest
   subst hic'
   refine ⟨c', k, e, by rw [h15] at hk; simpa using hk, hw', a1, by omega, hu', hM', mm, mr, mo,
     fr, frr⟩

@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.SweepEvKey2Fin
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 32000000
+set_option maxRecDepth 100000
 
 /-!
 # The sweep (WP-D), stage 3: the next key (task K)
@@ -33,25 +39,25 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 /-! ## Register sets -/
 
 theorem selR_KR {r : ℕ} (h : SelR r) : KR r := by
-  simp only [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw] at h
-  simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
+  simp [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw] at h
+  sio only [KR, kE, kH, kN, kL, sP, dF, lC, sw]
 
 theorem preR_KR {r : ℕ} (h : PreR r) : KR r := by
-  simp only [PreR, LblR, kE, kH, dF, kqB, kqA, kqO, kqN, kqL, sw] at h
-  simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
+  simp [PreR, LblR, kE, kH, dF, kqB, kqA, kqO, kqN, kqL, sw] at h
+  sio only [KR, kE, kH, kN, kL, sP, dF, lC, sw]
 
 theorem skR_KR {r : ℕ} (h : SkR r) : KR r := by
-  simp only [SkR, KStR, LblR, sP, kqSE, kqSH, kqO, kqA, kqX, kqV, kqY, kqN, kqL, sw] at h
-  simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
+  simp [SkR, KStR, LblR, sP, kqSE, kqSH, kqO, kqA, kqX, kqV, kqY, kqN, kqL, sw] at h
+  sio only [KR, kE, kH, kN, kL, sP, dF, lC, sw]
 
 theorem lbl_KR {r : ℕ} (h : LblR kN kL r) : KR r := by
-  simp only [LblR, kN, kL, sw] at h
-  simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
+  simp [LblR, kN, kL, sw] at h
+  sio only [KR, kE, kH, kN, kL, sP, dF, lC, sw]
 
 theorem lbl_not {r : ℕ} (h : LblR kN kL r) :
     ¬ SelR r ∧ ¬ PreR r ∧ ¬ SkR r ∧ r ≠ kqX ∧ r ≠ kqY ∧ r ≠ lC ∧ 240000 ≤ r ∧ r < 250000 := by
-  simp only [LblR, kN, kL, sw] at h
-  simp only [SelR, OffR, PreR, SkR, KStR, LblR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, kqV, kqY,
+  simp [LblR, kN, kL, sw] at h
+  simp [SelR, OffR, PreR, SkR, KStR, LblR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, kqV, kqY,
     kE, kH, dF, kqB, kqA, kqN, kqL, sP, lC, sw]
   omega
 
@@ -70,8 +76,6 @@ theorem sel_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
 
 /-! ## The next key -/
 
-set_option maxHeartbeats 32000000 in
-set_option maxRecDepth 100000 in
 /-- **The next key.** -/
 theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
     (hb : c.nreg bF = 1 → PosW P J (c.nreg bE) (c.nreg bH))
@@ -89,7 +93,7 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
   have hH : CandHyp P J c := ⟨hb, hw, hst, hsB⟩
   unfold keyProg
   refine (IRS.seq (K₁ := 22061) (K₂ := 33461) (sel_irs E hI hH (by omega)) ?_).mono (by norm_num)
-    (fun _ h => h)
+    (fun _ => id)
   rintro d₁ hI₁ hA₁ hA₁' ⟨frS, hF, hFiff, hFmin⟩
   have hK₁ := E.hK.fix hI₁
   have kS : ∀ r, ¬ SelR r → 240000 ≤ r ∧ r < 250000 → d₁.nreg r = c.nreg r :=
@@ -97,29 +101,29 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
   have nS : ∀ r, (r = bF ∨ r = bE ∨ r = bH ∨ r = bN ∨ r = sP ∨ r = sC ∨ r = sB ∨ r = aB ∨
       r = lB ∨ r = lC ∨ r = kN ∨ r = dF) → ¬ SelR r ∧ 240000 ≤ r ∧ r < 250000 := by
     intro r hr
-    simp only [bF, bE, bH, bN, sP, sC, sB, aB, lB, lC, kN, dF, sw] at hr
-    simp only [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw]
+    simp [bF, bE, bH, bN, sP, sC, sB, aB, lB, lC, kN, dF, sw] at hr
+    simp [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw]
     omega
   have e1 : ∀ r, (r = bF ∨ r = bE ∨ r = bH ∨ r = bN ∨ r = sP ∨ r = sC ∨ r = sB ∨ r = aB ∨
       r = lB ∨ r = lC ∨ r = kN ∨ r = dF) → d₁.nreg r = c.nreg r :=
     fun r hr => kS r (nS r hr).1 (nS r hr).2
   by_cases hc : d₁.nreg K0 < d₁.nreg kqF
   · -- a candidate exists
-    have hF1 : d₁.nreg kqF = 1 := by rw [hK₁.1] at hc; omega
+    have hF1 : d₁.nreg kqF = 1 := by rwo [hK₁.1] at hc
     have hcand := hFiff.1 hF1
     obtain ⟨hCK, hm1, hm2, hm3⟩ := hFmin hF1
     have hpk := candK_posW hH hCK
-    refine IRS.mono (K := 33459 + 2) (IRS.ifT hc ?_) (by norm_num) (fun _ h => h)
+    refine IRS.mono (K := 33459 + 2) (IRS.ifT hc ?_) (by norm_num) (fun _ => id)
     unfold keyMain
     refine IRS.seq (K₁ := 11030) (K₂ := 22429) (pre_irs E hI₁ hpk
-      (by rw [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]; exact hb)
-      (by rw [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]; exact hm1) (by omega)) ?_
+      (by rwx [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)])
+      (by rwx [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]) (by omega)) ?_
     rintro d₀ hI₀ hA₀ hA₀' ⟨frP, eKE, eKH, eDF, eKA, hB1, hBiff, hBlab, hBlab0⟩
     have nP : ∀ r, (r = bF ∨ r = bE ∨ r = bH ∨ r = bN ∨ r = sP ∨ r = sC ∨ r = sB ∨ r = aB ∨
         r = lB ∨ r = lC ∨ r = kN) → ¬ PreR r := by
       intro r hr
-      simp only [bF, bE, bH, bN, sP, sC, sB, aB, lB, lC, kN, sw] at hr
-      simp only [PreR, LblR, kE, kH, dF, kqB, kqA, kqO, kqN, kqL, sw]
+      simp [bF, bE, bH, bN, sP, sC, sB, aB, lB, lC, kN, sw] at hr
+      simp [PreR, LblR, kE, kH, dF, kqB, kqA, kqO, kqN, kqL, sw]
       omega
     have e0 : ∀ r, (r = bF ∨ r = bE ∨ r = bH ∨ r = bN ∨ r = sP ∨ r = sC ∨ r = sB ∨ r = aB ∨
         r = lB ∨ r = lC ∨ r = kN) → d₀.nreg r = c.nreg r := fun r hr =>
@@ -127,13 +131,13 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
         (e1 r (by rcases hr with h|h|h|h|h|h|h|h|h|h|h <;> simp [h]))
     have hN0 : d₀.nreg kqN ≤ 4 := by
       by_cases h : d₀.nreg kqB = 1
-      · rw [(hBlab h).1, e1 bN (by simp)]; exact hbN
-      · rw [(hBlab0 h).2]; omega
+      · rwx [(hBlab h).1, e1 bN (by simp)]
+      · rwo [(hBlab0 h).2]
     have hS : SkCtx P J c d₀ :=
       { hsP := e0 sP (by simp), hsC := e0 sC (by simp), hsB := e0 sB (by simp),
         haB := e0 aB (by simp), hA := frS.2.1.trans frP.2.1,
         hm := fun x hx => (frP.2.2 x (lt_of_lt_of_le hx frS.2.1)).trans (frS.2.2 x hx),
-        hpk := by rw [eKE, eKH]; exact hpk,
+        hpk := by rwx [eKE, eKH],
         hmin := fun h => by rw [eKE, eKH]; exact hm2 trivial h,
         hps := hst, hsort := hsort, htwo := htwo, hsBA := hsB, haBA := haB }
     refine IRS.seq (K₁ := 22400) (K₂ := 29) (skip2_irs E hS hI₀ (skInv_zero hS hsPC hN0 eKA)
@@ -142,23 +146,23 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     have nK : ∀ r, (r = kE ∨ r = kH ∨ r = dF ∨ r = kqB ∨ r = lB ∨ r = lC ∨ r = kN) →
         ¬ SkR r ∧ 240000 ≤ r ∧ r < 250000 := by
       intro r hr
-      simp only [kE, kH, dF, kqB, lB, lC, kN, sw] at hr
-      simp only [SkR, KStR, LblR, sP, kqSE, kqSH, kqO, kqA, kqX, kqV, kqY, kqN, kqL, sw]
+      simp [kE, kH, dF, kqB, lB, lC, kN, sw] at hr
+      simp [SkR, KStR, LblR, sP, kqSE, kqSH, kqO, kqA, kqX, kqV, kqY, kqN, kqL, sw]
       omega
     have e5 : ∀ r, (r = kE ∨ r = kH ∨ r = dF ∨ r = kqB ∨ r = lB ∨ r = lC ∨ r = kN) →
         d₅.nreg r = d₀.nreg r := fun r hr => frK.kkeep (nK r hr).1 (nK r hr).2
-    have hB5 : d₅.nreg kqB ≤ 1 := by rw [e5 kqB (by simp)]; exact hB1
+    have hB5 : d₅.nreg kqB ≤ 1 := by rwx [e5 kqB (by simp)]
     refine IRS.seq (K₁ := 9) (K₂ := 20) (fin_irs hI₅ E.hK hB5 hA5) ?_
     rintro d₆ hI₆ hA₆ hA₆' ⟨f1, f2, f3, f4⟩
-    have e6 : ∀ r, ¬ LblR kN kL r → d₆.nreg r = d₅.nreg r := f1
+    have e6  := f1
     have eLB6 : d₆.nreg lB = c.nreg lB := by
-      rw [e6 lB (by simp only [LblR, lB, kN, kL, sw]; omega), e5 lB (by simp), e0 lB (by simp)]
+      rw [e6 lB (by sio only [LblR, lB, kN, kL, sw]), e5 lB (by simp), e0 lB (by simp)]
     have eLC6 : d₆.nreg lC = c.nreg lC := by
-      rw [e6 lC (by simp only [LblR, lC, kN, kL, sw]; omega), e5 lC (by simp), e0 lC (by simp)]
+      rw [e6 lC (by sio only [LblR, lC, kN, kL, sw]), e5 lC (by simp), e0 lC (by simp)]
     have hc'A : c.nreg ALLOC ≤ d₆.nreg ALLOC := by
-      rw [e6 ALLOC (by simp only [LblR, ALLOC, kN, kL, sw]; omega)]
+      rw [e6 ALLOC (by sio only [LblR, ALLOC, kN, kL, sw])]
       exact frS.2.1.trans (frP.2.1.trans frK.2.1)
-    refine (writeLog_irs hI₆ E.hK (by rw [eLB6]; exact hlB) (by rw [eLB6, eLC6]; omega)).mono
+    refine (writeLog_irs hI₆ E.hK (by rwx [eLB6]) (by rwo [eLB6, eLC6])).mono
       le_rfl ?_
     rintro c' ⟨w1, w2, w3, w4, w5, w6, w7⟩
     rw [eLB6, eLC6] at w3 w4 w5 w6 w7
@@ -168,8 +172,8 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     have nW : ∀ r, (r = kE ∨ r = kH ∨ r = dF ∨ r = kqB ∨ r = sP) →
         r ≠ kqX ∧ r ≠ kqY ∧ r ≠ lC ∧ ¬ LblR kN kL r := by
       intro r hr
-      simp only [kE, kH, dF, kqB, sP, sw] at hr
-      simp only [LblR, kqX, kqY, lC, kN, kL, sw]
+      simp [kE, kH, dF, kqB, sP, sw] at hr
+      simp [LblR, kqX, kqY, lC, kN, kL, sw]
       omega
     have g : ∀ r, (r = kE ∨ r = kH ∨ r = dF ∨ r = kqB ∨ r = sP) → c'.nreg r = d₅.nreg r :=
       fun r hr => g6 r (nW r hr).1 (nW r hr).2.1 (nW r hr).2.2.1 (nW r hr).2.2.2
@@ -182,27 +186,27 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
       rw [cKE, cKH, eKE, eKH]
     have lblC : ∀ (d d' : Config) (X : ℕ → Prop), EFr X d d' → (∀ r, LblR bN bL r → ¬ X r) →
         lblOf d' bN bL = lblOf d bN bL := fun d d' X h hX => kqLblOf_eq fun q hq =>
-      h.kkeep (hX q hq) (by simp only [LblR, bN, bL, sw] at hq ⊢; omega)
+      h.kkeep (hX q hq) (by sio only [LblR, bN, bL, sw] at hq ⊢)
     -- the label condition
     have hCb : (d₅.nreg kqB = 1) ↔ (c.nreg bF = 1 ∧
         offK P J (c.nreg bE) (c.nreg bH) = offK P J (c'.nreg kE) (c'.nreg kH)) := by
       rw [cKB, hBiff, ok, e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]
     have hCa : (d₅.nreg kqA = 1) ↔ ∃ i, c.nreg sP ≤ i ∧ i < c'.nreg sP ∧
-        c.nmem (c.nreg aB + 5 * i) = 1 := by rw [cSP]; exact hAiff5
+        c.nmem (c.nreg aB + 5 * i) = 1 := by rwx [cSP]
     have lab0 : lblOf d₀ kqN kqL = if c.nreg bF = 1 ∧
         offK P J (c.nreg bE) (c.nreg bH) = offK P J (c'.nreg kE) (c'.nreg kH)
         then lblOf c bN bL else [] := by
       split_ifs with h
       · rw [(hBlab (cKB ▸ hCb.2 h)).2, lblC c d₁ SelR frS (fun r hr => by
-          simp only [LblR, bN, bL, sw] at hr
-          simp only [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw]; omega)]
+          simp [LblR, bN, bL, sw] at hr
+          sio only [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw])]
       · exact (hBlab0 (fun h' => h (hCb.1 (cKB ▸ h')))).1
     have nKR : ∀ r, ¬ KR r → r ≠ kqX ∧ r ≠ kqY ∧ r ≠ lC ∧ ¬ LblR kN kL r ∧ ¬ SkR r ∧
         ¬ PreR r ∧ ¬ SelR r := by
       intro r hr
       refine ⟨fun h => hr ?_, fun h => hr ?_, fun h => hr ?_, fun h => hr (lbl_KR h),
         fun h => hr (skR_KR h), fun h => hr (preR_KR h), fun h => hr (selR_KR h)⟩ <;>
-        subst h <;> simp only [KR, kqX, kqY, lC, kE, kH, kN, kL, sP, dF, sw] <;> norm_num
+        subst h <;> simp [KR, kqX, kqY, lC, kE, kH, kN, kL, sP, dF, sw] <;> norm_num
     refine ⟨fun r hb hr hra => ?_, ?_, fun h => by
       rcases hcand with h1 | ⟨-, h1⟩ | ⟨-, h1⟩
       · exact absurd h1 h.1
@@ -210,7 +214,7 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
       · exact absurd h1 h.2.2, fun _ => ?_⟩
     · obtain ⟨n1, n2, n3, n4, n5, n6, n7⟩ := nKR r hr
       rw [g6 r n1 n2 n3 n4, frK.1 r hb n5 hra, frP.1 r hb n6 hra, frS.1 r hb n7 hra]
-    · rw [w2 ALLOC (by kqr) (by kqr) (by kqr)]; exact hc'A
+    · rwx [w2 ALLOC (by kqr) (by kqr) (by kqr)]
     -- the candidate case
     have hlbK : ∀ r, LblR kN kL r → d₅.nreg r = c.nreg r := fun r hr => by
       obtain ⟨n1, n2, n3, -, -, -, n7, n8⟩ := lbl_not hr
@@ -224,11 +228,11 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     have hkN' : c'.nreg kN ≤ 4 := by
       rw [hlbC kN (Or.inl rfl)]
       by_cases hC : d₅.nreg kqB = 1 ∨ d₅.nreg kqA = 1
-      · rw [(f3 hC).2]; exact hN5
-      · rw [f4 hC kN, hlbK kN (Or.inl rfl)]; exact hkN
-    refine ⟨cDF, by rw [cKE, cKH, eKE, eKH]; exact hCK, fun h => by rw [ok]; exact hm1 h,
+      · rwx [(f3 hC).2]
+      · rwx [f4 hC kN, hlbK kN (Or.inl rfl)]
+    refine ⟨cDF, by rwx [cKE, cKH, eKE, eKH], fun h => by rw [ok]; exact hm1 h,
       fun h => by rw [ok]; exact hm2 trivial h, fun h => by rw [ok]; exact hm3 trivial h,
-      by rw [cSP]; omega, by rw [cSP]; exact hjC, fun i h1 h2 => ?_, fun h => ?_, hkN',
+      by rwo [cSP], by rwx [cSP], fun i h1 h2 => ?_, fun h => ?_, hkN',
       fun hC => ?_, fun hC => ?_, by rw [w1, eLC6], ?_, ?_, ?_, ?_, ?_⟩
     · rw [cSP] at h2; rw [hoff i h1 h2, cKE, cKH]
     · rw [g sP (by simp)] at h ⊢; rw [cKE, cKH]; exact hnext h
@@ -248,12 +252,12 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     · rw [w4, w2 kH (by kqr) (by kqr) (by kqr)]
     · rw [w5, w2 kN (by kqr) (by kqr) (by kqr)]
     · intro i hi
-      rw [w6 i hi, w2 (kL + i) (by unfold kL kqX sw; omega) (by unfold kL kqY sw; omega)
-        (by unfold kL lC sw; omega)]
+      rw [w6 i hi, w2 (kL + i) (by ufo kL kqX sw) (by ufo kL kqY sw)
+        (by ufo kL lC sw)]
     · intro x hx hx'
       rw [w7 x hx', hmemC x hx]
   · -- no candidate
-    have hF0 : d₁.nreg kqF ≠ 1 := by rw [hK₁.1] at hc; omega
+    have hF0 : d₁.nreg kqF ≠ 1 := by rwo [hK₁.1] at hc
     refine IRS.mono (K := 1 + 2) (IRS.ifF hc (IRS.block [.constN dF 1] hI₁
       ⟨⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩, trivial⟩)) (by norm_num) ?_
     rintro c' hc'

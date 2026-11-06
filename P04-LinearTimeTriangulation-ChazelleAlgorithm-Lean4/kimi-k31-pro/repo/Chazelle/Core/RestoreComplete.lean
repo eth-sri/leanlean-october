@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.RestoreValid
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, Lemma 3.2 part 8: the validity checks accept the good chords
@@ -67,10 +69,10 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
       · linarith
       · rcases hτ with rfl | rfl <;> norm_num at h
     set k := -(τ * (b.1 - v.1)) with hk
-    have hk0 : 0 < k := by rw [hk]; nlinarith
+    have hk0 : 0 < k := by rwnl [hk]
     set s := min d k / 2 with hs
-    have hmin : 0 < min d k := lt_min hd hk0
-    have hs0 : 0 < s := by rw [hs]; linarith
+    have hmin  := lt_min hd hk0
+    have hs0 : 0 < s := by rwli [hs]
     have hsd : s < d := by rw [hs]; linarith [min_le_left d k]
     have hsk : s ≤ k := by rw [hs]; linarith [min_le_right d k]
     have hmem : rayPt v (-τ) s ∈ M.D := by rw [← hwv]; exact hcD s hs0 hsd
@@ -84,8 +86,8 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
           linear_combination (-(s * (b.1 - v.1))) * hττ
         rw [← h3]
       · simp only [lerp_snd, rayPt_snd]
-        rw [show (M.W.vtx ((p + 1) % M.W.n)).2 = b.2 from rfl, hb2]; ring
-    rw [e]; exact hmem
+        rwring [show (M.W.vtx ((p + 1) % M.W.n)).2 = b.2 from rfl, hb2]
+    rwx [e]
   rcases hdp with ⟨-, h2, -⟩ | ⟨-, h2⟩ | ⟨-, -, h3⟩ | ⟨h1, h2, h3⟩
   · exact Or.inl h2
   · exact h2
@@ -137,7 +139,7 @@ theorem valid_complete (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)}
   -- the ray points are in `R`
   have hrayR : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0  := hs
     refine heR ⟨?_, hdom s hs0 hsT.2⟩
     rw [heq]; exact (mem_chordOf hσ hT.le).2 ⟨s, hs0.le, hsT.2.le, rfl⟩
   have same : ∀ X ∈ M.regions S, (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∈ X) →

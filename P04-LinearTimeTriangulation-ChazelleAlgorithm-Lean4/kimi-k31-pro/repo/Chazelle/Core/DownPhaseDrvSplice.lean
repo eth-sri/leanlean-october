@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFBuildCmp
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # Down-phase driver, S-M1 and S-M2: arcs as gaps of the event list, and splicing
@@ -77,7 +79,7 @@ noncomputable def codeLeB (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ
   decide (codeLe M Q L a b)
 
 theorem codeLeB_iff (a b : ℕ) : codeLeB M Q L a b = true ↔ codeLe M Q L a b := by
-  unfold codeLeB; simp
+  ufs codeLeB
 
 /-- **The spliced event list.** -/
 noncomputable def splice (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E E₂ : List ℕ) :
@@ -110,7 +112,7 @@ theorem splice_ok (hperm : E.Perm (List.range (2 * L.length)))
         exact BuildNF.codeLe_trans M Q (L ++ L₂) h1 h2)
       (fun a b => by
         rcases BuildNF.codeLe_total M Q (L ++ L₂) a b with h | h
-        · rw [(codeLeB_iff a b).2 h]; rfl
+        · rwr [(codeLeB_iff a b).2 h]
         · rw [(codeLeB_iff b a).2 h, Bool.or_true])
       E E₂ hE hE₂
     unfold splice

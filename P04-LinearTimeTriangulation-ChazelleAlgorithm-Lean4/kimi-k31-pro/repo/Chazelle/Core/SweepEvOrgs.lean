@@ -3,6 +3,12 @@ module
 public import Chazelle.Core.SweepEvTasks3
 public import Chazelle.Core.GranSize
 public import Chazelle.Core.RestoreTRead
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep (WP-D), stage 3: the origin enumeration (task E), part 1
@@ -81,8 +87,8 @@ theorem er_blk {l : List Instr} (hl : ∀ i ∈ l, LR (dstI i)) {m f : ℕ → �
 
 theorem auxKeep_trans {c c₁ c₂ : Config} (h₁ : AuxKeep c c₁) (hr : ∀ r, ER r → c₁.nreg r = c.nreg r)
     (h₂ : AuxKeep c₁ c₂) : AuxKeep c c₂ := fun x hx1 hx2 => by
-  have ea : c₁.nreg aB = c.nreg aB := hr _ (by unfold ER; simp)
-  have es : c₁.nreg sC = c.nreg sC := hr _ (by unfold ER; simp)
+  have ea : c₁.nreg aB = c.nreg aB := hr _ (by ufs ER)
+  have es : c₁.nreg sC = c.nreg sC := hr _ (by ufs ER)
   rw [h₂ x (by omega) (by omega), h₁ x hx1 hx2]
 
 /-! ## Both ends of one chord -/
@@ -125,10 +131,10 @@ theorem odPair_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Ko
     IRS P W c₀ (odPair od) c (2 * Kod + 4) (fun c' => Inv (O ∪ pairS k) c' ∧
       (∀ r, ER r ∨ (LR r ∧ r ≠ oK ∧ r ≠ oS) → c'.nreg r = c.nreg r) ∧ AuxKeep c c') := by
   have hK := E.hK.fix hI
-  have k0 : c.nreg K0 = 0 := hK.1
-  have k1 : c.nreg K1 = 1 := hK.2.1
+  have k0  := hK.1
+  have k1  := hK.2.1
   refine IRS.mono (K := 2 + (Kod + (2 + Kod))) (IRS.seq (IRS.block uPre0 hI ?_) ?_) (by omega)
-    (fun _ h => h)
+    (fun _ => id)
   · simp [uPre0, okB, okI, IScr, oK, oS, sw]
   rintro c₁ hI₁ hA1 hA1' hc1
   have r1 : c₁.nreg = regB c.nmem uPre0 c.nreg := by rw [hc1]
@@ -145,17 +151,17 @@ theorem odPair_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Ko
       · exact h1 he.symm
       · exact h2 he.symm)
   have inv1 : Inv O c₁ := by rw [hc1]; exact inv_blk hst uPre0_lr hinv
-  have nAk : ALLOC ≠ oK := by unfold ALLOC oK sw; omega
-  have nAs : ALLOC ≠ oS := by unfold ALLOC oS sw; omega
+  have nAk : ALLOC ≠ oK := by ufo ALLOC oK sw
+  have nAs : ALLOC ≠ oS := by ufo ALLOC oS sw
   have eA1 : c₁.nreg ALLOC = c.nreg ALLOC := o1 _ nAk nAs
-  refine IRS.seq (hod O _ hI₁ inv1 (by rw [v1k]; exact hkn) (by rw [v1s]; omega)
+  refine IRS.seq (hod O _ hI₁ inv1 (by rwx [v1k]) (by rwo [v1s])
     (by omega)) ?_
   rw [v1k, v1s]
   rintro c₂ hI₂ hA2 hA2' ⟨inv2, keep2, aux2⟩
   have hk2 : c₂.nreg uK = k := by
-    rw [keep2 _ (Or.inl ⟨by unfold LR uK; simp [sw], by unfold uK oK sw; omega,
-      by unfold uK oS sw; omega⟩)]
-    rw [o1 _ (by unfold uK oK sw; omega) (by unfold uK oS sw; omega), hk]
+    rw [keep2 _ (Or.inl ⟨by unfold LR uK; simp [sw], by ufo uK oK sw,
+      by ufo uK oS sw⟩)]
+    rw [o1 _ (by ufo uK oK sw) (by ufo uK oS sw), hk]
   have hK2 := E.hK.fix hI₂
   refine IRS.seq (IRS.block uPre1 hI₂ ?_) ?_
   · simp [uPre1, okB, okI, IScr, oK, oS, sw]
@@ -176,7 +182,7 @@ theorem odPair_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Ko
       · exact h2 he.symm)
   have inv3 : Inv (insert (2 * k + 0) O) c₃ := by rw [hc3]; exact inv_blk hst uPre1_lr inv2
   have eA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := o3 _ nAk nAs
-  refine (hod _ _ hI₃ inv3 (by rw [v3k]; exact hkn) (by rw [v3s])
+  refine (hod _ _ hI₃ inv3 (by rwx [v3k]) (by rw [v3s])
     (by omega)).mono le_rfl ?_
   rintro c' ⟨inv', keep', aux'⟩
   rw [v3k, v3s] at inv'
@@ -196,11 +202,11 @@ theorem odPair_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Ko
   have e3 : ∀ r, ER r → c₃.nreg r = c.nreg r := fun r h => by
     rw [o3 r (ER_ne r h).1 (ER_ne r h).2, keep2 r (Or.inr h), o1 r (ER_ne r h).1 (ER_ne r h).2]
   have e1 : ∀ r, ER r → c₁.nreg r = c.nreg r := fun r h => o1 r (ER_ne r h).1 (ER_ne r h).2
-  have hEa : ER aB := by unfold ER; simp
-  have hEs : ER sC := by unfold ER; simp
+  have hEa : ER aB := by ufs ER
+  have hEs : ER sC := by ufs ER
   intro x hx1 hx2
-  rw [aux' x (by rw [e3 _ hEa]; exact hx1) (by rw [e3 _ hEa, e3 _ hEs]; exact hx2), m3,
-    aux2 x (by rw [e1 _ hEa]; exact hx1) (by rw [e1 _ hEa, e1 _ hEs]; exact hx2), m1]
+  rw [aux' x (by rwx [e3 _ hEa]) (by rwx [e3 _ hEa, e3 _ hEs]), m3,
+    aux2 x (by rwx [e1 _ hEa]) (by rwx [e1 _ hEa, e1 _ hEs]), m1]
 
 /-! ## The chords of one region -/
 
@@ -286,7 +292,6 @@ theorem pre_succ (l : List ℕ) (t : ℕ) :
     · exact ⟨t', by omega, hj⟩
     · exact ⟨t, by omega, hj⟩
 
-set_option maxHeartbeats 4000000 in
 /-- **Both ends of every chord of a region.** -/
 theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod : ℕ}
     {Inv : Set ℕ → Config → Prop} (hod : OdOK P W c₀ N₂ od Kod Inv) (hst : InvStab Inv)
@@ -298,7 +303,7 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   obtain ⟨k0, k1, k6, k4, k5, k2, k3⟩ := hK
   set D := c₀.nreg (sw 6) with hD
   set B := c₀.nreg (sw 4) with hBd
-  have hB : c.nreg (sw 4) = B := hI.hin _ (by unfold IFix sw; omega)
+  have hB : c.nreg (sw 4) = B := hI.hin _ (by ufo IFix sw)
   have hNW := E.hNW₂
   have hNA : NFAt c₀.nmem B N₂ := hNW.holds
   obtain ⟨b1, -, -, b4, -, b6⟩ := Restore.nf_bounds hNW
@@ -311,7 +316,7 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   have hreg := hNA.2.2.2.2.2.2.2.1 r hrn
   have hlen0 : c₀.nmem (R5 + 5 * r + 2) = len := hreg.2.1
   have hch : ∀ t, t < len → c₀.nmem (R7 + off + t) = (N₂.region r).chords.getD t 0 :=
-    fun t ht => hreg.2.2.2.2 t ht
+    hreg.2.2.2.2
   have hb4 := b4 r hrn
   have hb6 : ∀ t, t < len → R7 + off + t < c₀.nreg ALLOC := b6 r hrn
   have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
@@ -319,16 +324,16 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   have hm5 : c.nmem (B + 5) = R5 := hI.hm _ (by omega)
   -- the head
   have hok : okB W c.nmem regHead c.nreg := regHead_ok _ _ k5 k2 k3 k6 k1
-    (by rw [hB]; omega) (by rw [hB, hm5, hr]; omega)
+    (by rwo [hB]) (by rwo [hB, hm5, hr])
   obtain ⟨vLen, vOff, vR7, vT⟩ := regHead_val c.nmem c.nreg k5 k2 k3 k6 k1
   rw [hB, hm5, hr, hI.hm _ (by omega)] at vLen vOff
   rw [hB, hI.hm _ (by omega)] at vR7
   rw [hlen0] at vLen
   refine IRS.mono (K := regHead.length + ((2 * Kod + 8 + 2) * len + 2))
-    (IRS.seq (IRS.block regHead hI hok) ?_) ?_ (fun _ h => h)
+    (IRS.seq (IRS.block regHead hI hok) ?_) ?_ (fun _ => id)
   rotate_left
   · have : (2 * Kod + 8 + 2) * len ≤ (2 * Kod + 10) * D := Nat.mul_le_mul_left _ hlenD
-    simp only [regHead, List.length_cons, List.length_nil, regK]; omega
+    sio only [regHead, List.length_cons, List.length_nil, regK]
   rintro c₁ hI₁ hA1 hA1' hc1
   have r1 : c₁.nreg = regB c.nmem regHead c.nreg := by rw [hc1]
   have m1 : c₁.nmem = c.nmem := by rw [hc1]
@@ -348,16 +353,16 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   have hI1 : I c₁ := by
     refine ⟨?_, ?_, ?_, ?_, ?_, e1, fun x _ _ => by rw [m1]⟩
     · rw [r1, vT, S0, Set.union_empty]; exact inv1
-    · rw [r1, vT]; omega
+    · rwo [r1, vT]
     · rw [r1, vLen]
     · rw [r1, vOff]
     · rw [r1, vR7]
   have hroomL : c₁.nreg ALLOC + (2 * Kod + 8 + 2) * (len - c₁.nreg uT) ≤ W := by
     have : (2 * Kod + 8 + 2) * len ≤ (2 * Kod + 10) * D := Nat.mul_le_mul_left _ hlenD
-    rw [eA1, r1, vT, Nat.sub_zero]; unfold regK at hroom; omega
+    ruo [eA1, r1, vT, Nat.sub_zero] regK at hroom
   have hw := IRS.while (P := P) (c₀ := c₀) (a := uT) (b := uLen) (body := regBody od) I
     (fun c' => len - c'.nreg uT) (2 * Kod + 8)
-    (fun c' hc hlt => by rw [hc.2.2.1] at hlt; omega) ?_ hI₁ hI1 hroomL
+    (fun c' hc hlt => by rwo [hc.2.2.1] at hlt) ?_ hI₁ hI1 hroomL
   · refine (hw.mono (by rw [r1, vT, Nat.sub_zero]) ?_)
     rintro c' ⟨⟨hinv', hle, hlen', -, -, he', hax'⟩, hnlt⟩
     rw [hlen'] at hnlt
@@ -376,7 +381,7 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
     rw [hR72, hoff2]; have := hI₂.hw.1 ALLOC; have := hI₂.hA; omega)
   unfold regBody
   refine IRS.mono (K := regBody0.length + (2 * Kod + 4 + uInc.length)) ?_
-    (by simp [regBody0, uInc]; omega) (fun _ h => h)
+    (by sio [regBody0, uInc]) (fun _ => id)
   refine IRS.seq (K₁ := regBody0.length) (K₂ := 2 * Kod + 4 + uInc.length)
     (IRS.block regBody0 hI₂ hok0) ?_
   rintro c₃ hI₃ hA3 hA3' hc3
@@ -398,7 +403,7 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
     have hmem : (N₂.region r).chords.getD t 0 ∈ (N₂.region r).chords := by
       rw [List.getD_eq_getElem _ _ hlt]; exact List.getElem_mem hlt
     exact (((hRO r hrn).1 _).1 hmem).1
-  have nA : ALLOC ≠ uA ∧ ALLOC ≠ uK := by unfold ALLOC uA uK sw; omega
+  have nA : ALLOC ≠ uA ∧ ALLOC ≠ uK := by ufo ALLOC uA uK sw
   have eA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := keepL3 _ nA.1 nA.2
   have hl0 : regBody0.length = 3 := rfl
   have hl1 : uInc.length = 1 := rfl
@@ -418,9 +423,8 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   have hT4 : c₄.nreg uT = t := lr4 _ (Or.inl rfl)
   refine (IRS.block uInc hI₄ ?_).mono le_rfl ?_
   · simp only [uInc, okB, okI]
-    exact ⟨⟨iscr_sw (by unfold uT sw; omega) (by unfold uT sw; omega),
-      by rw [hT4, k14]; have := hI₄.hw.1 uLen; rw [lr4 _ (Or.inr (Or.inl rfl)), hlen2] at this;
-         omega⟩, trivial⟩
+    exact ⟨⟨iscr_sw (by ufo uT sw) (by ufo uT sw),
+      by rw [hT4, k14]; have := hI₄.hw.1 uLen; rwo [lr4 _ (Or.inr (Or.inl rfl)), hlen2] at this⟩, trivial⟩
   rintro c' hc'
   have r' : c'.nreg = regB c₄.nmem uInc c₄.nreg := by rw [hc']
   have vT' : c'.nreg uT = t + 1 := by
@@ -431,7 +435,7 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   have eER : ∀ q, ER q → c'.nreg q = c.nreg q := fun q h => by
     rw [o' q (fun e => er_not_lr h (e ▸ Or.inr (Or.inr ⟨by simp [uT, sw], by simp [uT, sw]⟩))),
       keep4 q (Or.inl h), e3 q h]
-  refine ⟨⟨?_, by rw [vT']; omega, ?_, ?_, ?_, eER, ?_⟩, by rw [vT']; omega⟩
+  refine ⟨⟨?_, by rwo [vT'], ?_, ?_, ?_, eER, ?_⟩, by rwo [vT']⟩
   · have hS : S (t + 1) = S t ∪ pairS ((N₂.region r).chords.getD t 0) := pre_succ _ t
     rw [vT', hS, ← Set.union_assoc]
     rw [hc']; exact inv_blk hst uInc_lr inv4

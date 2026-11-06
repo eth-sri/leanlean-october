@@ -65,7 +65,7 @@ theorem inKeyIv_inter {κ : ℕ → ℝ} {N i j : ℕ} (hmono : ∀ a b, a < b �
   unfold InKeyIv at hxi hxj
   -- wlog-free case analysis
   by_cases hi1 : i + 1 < N <;> by_cases hj1 : j + 1 < N <;>
-    simp only [hi1, hj1, ↓reduceIte] at hxi hxj
+    simp [hi1, hj1, ↓reduceIte] at hxi hxj
   · -- both unwrapped
     rcases Nat.lt_or_gt_of_ne hij with h | h
     · -- i < j: κ i ≤ x ≤ κ (i+1) ≤ κ j ≤ x
@@ -217,7 +217,7 @@ theorem simple : (⟨V⟩ : Polygon).Simple := by
   · intro i j hi hj hij
     apply Set.Subset.antisymm
     · rintro z ⟨hzi, hzj⟩
-      simp only [Polygon.edge, hn, hv] at hzi hzj
+      simp [Polygon.edge, hn, hv] at hzi hzj
       by_cases hzD : z ∈ D
       · -- both edges are chord edges, and `z` is in both open parts
         exfalso
@@ -252,7 +252,7 @@ theorem simple : (⟨V⟩ : Polygon).Simple := by
           (hzp.symm.trans hzp')
         obtain ⟨k, hk, hki', hkj', hx⟩ := inKeyIv_inter h.mono hi hj hij hki hkj
         have hzk : z = V.getD k (0, 0) := hzp.trans (h.eq_vtx_of_key hk ht0 ht1 hx)
-        simp only [Polygon.commonEndpoints, hn, hv]
+        simp [Polygon.commonEndpoints, hn, hv]
         refine ⟨?_, ?_⟩
         · rcases hki' with rfl | rfl
           · exact Or.inl hzk
@@ -261,7 +261,7 @@ theorem simple : (⟨V⟩ : Polygon).Simple := by
           · exact Or.inl hzk
           · exact Or.inr hzk
     · rintro z ⟨hz1, hz2⟩
-      simp only [Polygon.edge, hn, hv]
+      simp [Polygon.edge, hn, hv]
       refine ⟨?_, ?_⟩
       · rcases hz1 with rfl | rfl
         · exact Chazelle.Geometry.left_mem_segment _ _

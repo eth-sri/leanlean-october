@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseExtractGeom
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (X, part 12): the pieces of an arc on the host chain
@@ -70,7 +72,7 @@ theorem wrapK_edge {n p : ℕ} (_hn : 0 < n) (hp : p < 2 * n) {y : ℝ} (hy1 : (
   · have hpn : p < n := by
       have : (p : ℝ) < n := lt_of_le_of_lt hy1 h
       exact_mod_cast this
-    rw [Nat.mod_eq_of_lt hpn]; ring
+    rwring [Nat.mod_eq_of_lt hpn]
   · push Not at h
     have hpn : n ≤ p := by
       by_contra hpn; push Not at hpn
@@ -123,7 +125,7 @@ theorem ukey_inner_int (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   unfold unwrapK
   split_ifs
   · exact ⟨k, rfl⟩
-  · exact ⟨k + (interiorModel Q).W.n, by push_cast; ring⟩
+  · exact ⟨k + (interiorModel Q).W.n, by pcr⟩
 
 /-- **At an inner host key the pieces meet at a walk vertex**: the piece before ends at the end of
 its walk edge, the piece after starts at the start of the next one. -/
@@ -140,7 +142,7 @@ theorem piece_inner {i_l j p p' : ℕ} (K : ℕ)
   rw [hK] at hp1 hlt hp2' hlt'
   constructor
   · have h1 : p ≤ K := by exact_mod_cast hp1
-    have h2 : (K : ℝ) < p + 1 := lt_of_lt_of_le hlt hp2
+    have h2  := lt_of_lt_of_le hlt hp2
     have h2' : K < p + 1 := by exact_mod_cast h2
     omega
   · have h1 : (p' : ℝ) < K := lt_of_le_of_lt hp1' hlt'

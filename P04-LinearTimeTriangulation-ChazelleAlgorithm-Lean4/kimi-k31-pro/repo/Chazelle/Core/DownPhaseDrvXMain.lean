@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.DownPhaseDrvXRamK
 public import Chazelle.Core.DownPhaseDrvXContracts
 public import Chazelle.Core.DownPhaseDrvHMain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down phase, extraction (D6): the contract
@@ -26,14 +30,13 @@ theorem keyBkt_congr {Q : Polygon} {N N' : NF} (ha : N.arcs = N'.arcs) (x : WPos
     keyBkt Q N x = keyBkt Q N' x := by
   obtain ⟨c, a, g, s, d, o, l⟩ := N
   obtain ⟨c', a', g', s', d', o', l'⟩ := N'
-  simp only at ha
+  simp at ha
   subst ha
   rfl
 
 theorem liV_decide {x : ℕ} (hx : x ≤ 1) : liV (decide (x = 1)) = x := by
   unfold liV; by_cases h : x = 1 <;> simp [h]; omega
 
-set_option maxHeartbeats 8000000 in
 /-- **The extraction meets its contract**, given the two pieces of glue. -/
 theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec := by
   refine ⟨xS, xKappa, ?_⟩
@@ -87,9 +90,9 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
     unfold finS
     exec_block
     refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, rfl⟩ <;> config_simp
-    simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2, Machine.upd_other _ _ _ h3]
+    simp [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2, Machine.upd_other _ _ _ h3]
   have ex : Exec P W xS c d4 (k1 + (k2 + (k3 + k4))) := by
-    simp only [xS, seqs_cons₂, seqs_one]
+    simp [xS, seqs_cons₂, seqs_one]
     exact .seq e1 (.seq e2 (.seq e3 e4))
   have fm := exec_frameM ex wrM_x
   have fr := exec_frameM2 ex wrM2_x
@@ -108,7 +111,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
     omega
   · -- registers of the band outside the reserved range
     refine fm.1 q ?_
-    simp only [Bx, decide_eq_false_iff_not]
+    simp [Bx, decide_eq_false_iff_not]
     have : q / 10000 = 21 := hq1
     omega
   · -- the outputs
@@ -121,21 +124,21 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
     have hP : C'.P = C.P := by rw [hCP', hCP, hreg]
     have hCC : C' = C := by
       have hs : C'.s = C.s := by rw [hCs', hCs]
-      have hm : C'.m = C.m := by have h1 := hCm'; rw [hP] at h1; omega
+      have hm : C'.m = C.m := by have h1 := hCm'; rwo [hP] at h1
       cases C; cases C'
-      simp only [Chain.mk.injEq]
+      simp [Chain.mk.injEq]
       exact ⟨hP, hs, hm⟩
     subst hCC
     obtain ⟨rcR, -, -⟩ := DrvH.nfAt_recs hNRw.nfAt hNRat'
-    have hchR : ∀ t, NR'.chord t = NR.chord t := fun t => by simp only [NF.chord, rcR]
+    have hchR : ∀ t, NR'.chord t = NR.chord t := fun t => by simp [NF.chord, rcR]
     have hxL : xL P v NR' NR'.chords.length = xL P v NR v.K := by
       show _ = xL P v NR NR.chords.length
       unfold xL kl xT
       rw [← rcR]
-      simp only [hchR]
+      simp [hchR]
     have X' : XHyp P (decide (c.nreg 217002 = 1)) L' E' reg' (c.nreg 217001) C' NR' :=
-      ⟨hG, by rw [decide_eq_true_iff]; exact hli2, hLne', hL', hperm', hsort', hregs',
-        by have := hr; simp only [NF.nRegions] at this ⊢; rw [← rr]; exact this, hCP', hCs',
+      ⟨hG, by rwx [decide_eq_true_iff], hLne', hL', hperm', hsort', hregs',
+        by have := hr; simp [NF.nRegions] at this ⊢; rwx [← rr], hCP', hCs',
         hCm', hNR'⟩
     obtain ⟨pS, pN, pA, pO⟩ := hB P (decide (c.nreg 217002 = 1)) L' E' reg' (c.nreg 217001) C'
       NR' v X' rfl rfl rfl rfl hreg
@@ -152,17 +155,17 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
       fm.2.2.2, ?_, ?_⟩
     · have h21 : r / 10000 ≠ 21 := fun h => hr (by
         show r / 10000 ∈ ({bDownDrv, bSign, bLocate, bBuild, bSort} : Finset ℕ)
-        rw [h]; decide)
+        rwd [h])
       have h99 : r ≠ 9999 := hra
-      simp only [Bx, decide_eq_false_iff_not]; omega
+      sio only [Bx, decide_eq_false_iff_not]
     · have h21 : r / 10000 ≠ 21 := fun h => hr (by
         show r / 10000 ∈ ({bDownDrv, bSign, bLocate, bBuild, bSort} : Finset ℕ)
-        rw [h]; decide)
-      simp only [BxR, decide_eq_false_iff_not]; omega
+        rwd [h])
+      sio only [BxR, decide_eq_false_iff_not]
     · rw [m4]; exact cm a ha
     · rw [fm.2.2.1]
-    · rw [hal]; omega
-    · rw [hal]; omega
+    · rwo [hal]
+    · rwo [hal]
 
 end
 

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.RestoreTHoleMath
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
 
 /-!
 # The sweep RAM (WP-D), answers: small register programs for the holes (copied from WP-E)
@@ -31,7 +33,7 @@ theorem Out.refl (c : Config) (L : List ℕ) : Out c c L :=
 theorem Out.trans {c c₁ c₂ : Config} {L₁ L₂ : List ℕ} (h₁ : Out c c₁ L₁) (h₂ : Out c₁ c₂ L₂) :
     Out c c₂ (L₁ ++ L₂) :=
   ⟨fun r hr => by
-    simp only [List.mem_append, not_or] at hr
+    simp [List.mem_append, not_or] at hr
     rw [h₂.1 r hr.2, h₁.1 r hr.1], h₂.2.1.trans h₁.2.1, h₂.2.2.1.trans h₁.2.2.1,
     h₂.2.2.2.1.trans h₁.2.2.2.1, h₂.2.2.2.2.trans h₁.2.2.2.2⟩
 
@@ -42,7 +44,7 @@ theorem Out.mono {c c' : Config} {L L' : List ℕ} (h : Out c c' L) (hL : ∀ r 
 theorem out_instr {i : Instr} {r v : ℕ}
     (hex : Exec P W (.instr i) c { c with nreg := upd c.nreg r v } 1) :
     ∃ c', Exec P W (.instr i) c c' 1 ∧ c'.nreg r = v ∧ Out c c' [r] :=
-  ⟨_, hex, by simp, fun q hq => by simp only [List.mem_singleton] at hq; simp [upd, hq],
+  ⟨_, hex, by simp, fun q hq => by simp [List.mem_singleton] at hq; simp [upd, hq],
     rfl, rfl, rfl, rfl⟩
 
 /-! ## A conditional subtraction -/
@@ -77,11 +79,11 @@ theorem candS_exec (hw : WordsBounded W c) {dst jr sr mr : ℕ} (hd1 : dst ≠ j
   by_cases h : c.nreg jr < c.nreg sr
   · obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hw dst mr sr)
     obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.addN e₁.wb_right dst dst jr
-      (by rw [v₁, o₁.1 jr (by simp [hd1.symm]), hm, hs, hj]; rw [hj, hs] at h; omega))
+      (by rw [v₁, o₁.1 jr (by simp [hd1.symm]), hm, hs, hj]; rwo [hj, hs] at h))
     refine ⟨c₂, _, by omega, .ifLtN_true h (.seq e₁ e₂), ?_, (o₁.trans o₂).mono (by simp)⟩
     rw [v₂, v₁, o₁.1 jr (by simp [hd1.symm]), hm, hs, hj]
     rw [hj, hs] at h
-    unfold candIdx; rw [ite_eq_left h]; omega
+    uro candIdx [ite_eq_left h]
   · obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hw dst jr sr)
     refine ⟨c₁, _, by omega, .ifLtN_false h e₁, ?_, o₁⟩
     rw [v₁, hj, hs]

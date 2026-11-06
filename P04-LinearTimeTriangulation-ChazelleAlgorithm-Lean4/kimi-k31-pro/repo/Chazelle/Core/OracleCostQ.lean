@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.OracleQueryExec
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 25: the sizes behind the query cost
@@ -32,7 +34,7 @@ theorem arcWt_le_gamma {M : Model} (hGM : GoodModel M) {F : Set (Set Point)}
   have hM := walkAx_of_goodModel hGM
   have hbdd : BddAbove ((fun ab : ℝ × ℝ => M.arcWt ab.1 ab.2) '' {ab | M.IsArc F U ab.1 ab.2}) :=
     ((hM.arcs_bound hF.2.1 hF.1 hU).1.image _).bddAbove
-  have hle : M.arcWt a b ≤ M.weight F U := le_csSup hbdd ⟨(a, b), harc, rfl⟩
+  have hle  := le_csSup hbdd ⟨(a, b), harc, rfl⟩
   exact hle.trans (hsg U hU)
 
 /-- A finite set of counted edges met by an interval bounds its weight from below. -/
@@ -57,7 +59,7 @@ theorem gamma_pos (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4)
   have hγ : γ = 0 := by omega
   subst hγ
   by_cases hne : (N.F (chainModel C) Q).Nonempty
-  · exact hM.not_semigranular_zero hF.2.1 hF.1 hne (p₀ := 6) (by rw [hnW]; omega)
+  · exact hM.not_semigranular_zero hF.2.1 hF.1 hne (p₀ := 6) (by rwo [hnW])
       (show 6 ≤ 6 ∧ 6 < 2 * C.m + 6 by omega) hsg
   · rw [Set.not_nonempty_iff_eq_empty] at hne
     obtain ⟨U, hU, a, b, harc⟩ := (arcCover (chainModel C) Q _ hGM hF).1
@@ -69,10 +71,10 @@ theorem gamma_pos (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4)
     have := card_le_arcWt (M := chainModel C) (a := 0) (b := 0) {6} (by
       intro q hq
       rw [Finset.mem_singleton] at hq; subst hq
-      refine ⟨by rw [hnW]; omega, show 6 ≤ 6 ∧ 6 < 2 * C.m + 6 by omega, ?_⟩
+      refine ⟨by rwo [hnW], show 6 ≤ 6 ∧ 6 < 2 * C.m + 6 by omega, ?_⟩
       unfold sideInArc; rw [ite_eq_right (lt_irrefl _)]; left; norm_num)
     have := arcWt_le_gamma hGM hF hsg hU harc
-    simp at *; omega
+    sio at *
 
 /-- All but at most seven walk edges of a set are counted edges. -/
 theorem card_counted_ge (m : ℕ) (S : Finset ℕ) (hS : ∀ q ∈ S, q < 2 * m + 7) :
@@ -134,13 +136,13 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
       (b := ek (chainModel C) Q N p) ((Finset.Ioo se ee).filter fun q => 6 ≤ q ∧ q < 2 * C.m + 6) (by
         intro q hq
         rw [Finset.mem_filter, Finset.mem_Ioo] at hq
-        refine ⟨by rw [hnW]; omega, hq.2, ?_⟩
+        refine ⟨by rwo [hnW], hq.2, ?_⟩
         rw [hsk, hek]; unfold sideInArc; rw [ite_eq_left hab]
         have h1 : (se : ℝ) + 1 ≤ q := by exact_mod_cast hq.1.1
         have h2 : (q : ℝ) + 1 ≤ ee := by exact_mod_cast hq.1.2
         constructor <;> linarith)
     have hc := card_counted_ge C.m (Finset.Ioo se ee) (fun q hq => by
-      rw [Finset.mem_Ioo] at hq; omega)
+      rwo [Finset.mem_Ioo] at hq)
     rw [Nat.card_Ioo] at hc
     constructor <;> omega
   · rw [ite_eq_right hwr]
@@ -156,7 +158,7 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
       fun q => 6 ≤ q ∧ q < 2 * C.m + 6) (by
         intro q hq
         rw [Finset.mem_filter, Finset.mem_union, Finset.mem_Ioo, Finset.mem_range] at hq
-        refine ⟨by rw [hnW]; omega, hq.2, ?_⟩
+        refine ⟨by rwo [hnW], hq.2, ?_⟩
         unfold sideInArc; rw [ite_eq_right hab, hsk, hek]
         rcases hq.1 with h | h
         · left
@@ -168,9 +170,9 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
     have hdis : Disjoint (Finset.Ioo se (2 * C.m + 7)) (Finset.range ee) := by
       rw [Finset.disjoint_left]
       intro q h1 h2
-      rw [Finset.mem_Ioo] at h1; rw [Finset.mem_range] at h2; omega
+      rw [Finset.mem_Ioo] at h1; rwo [Finset.mem_range] at h2
     have hc := card_counted_ge C.m (Finset.Ioo se (2 * C.m + 7) ∪ Finset.range ee) (fun q hq => by
-      rw [Finset.mem_union, Finset.mem_Ioo, Finset.mem_range] at hq; omega)
+      rwo [Finset.mem_union, Finset.mem_Ioo, Finset.mem_range] at hq)
     rw [Finset.card_union_of_disjoint hdis, Nat.card_Ioo, Finset.card_range] at hc
     constructor <;> omega
 

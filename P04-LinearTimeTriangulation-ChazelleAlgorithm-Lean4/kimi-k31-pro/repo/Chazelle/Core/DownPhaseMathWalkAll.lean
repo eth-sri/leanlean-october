@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseMathGroup3
+public import Chazelle.UnfoldTactics
 
 /-!
 # Down phase, math (H-R1): the whole walk-order point list of the driver's host
@@ -69,7 +70,7 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
 theorem exists_arc {Q : Polygon} {S : Set (Set Point)} {R : Set Point} (hQ : Q.Simple)
     (hFam : (interiorModel Q).ChordFamily Q S) (hne : S.Nonempty)
     (hR : R ∈ (interiorModel Q).regions S) : ∃ a b, (interiorModel Q).IsArc S R a b := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM  := walkAx_interiorModel hQ
   obtain ⟨p, t, hp, ht0, ht1, hnc, hfac⟩ := DownHost.exists_faces_nc hM hFam.2.1 hFam.1 hR
   obtain ⟨X, hX, l, r', harc, hin⟩ := hM.arc_around hFam.2.1 hFam.1 hne hnc
   have hfacX := harc.2.2.2.2.2.2 p t hp ht0 ht1 hin
@@ -115,7 +116,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
   have hQ := X.hQ
   have hdh := X.hdh
   have hN : IsNF I Q N := isNF_build X.hQ X.hL X.hperm X.hsort
-  have hFam : I.ChordFamily Q S := hN.1
+  have hFam  := hN.1
   have hnc : N.nChords = L.length := nChords_build X.hQ X.hL X.hperm X.hsort
   have hne : S.Nonempty :=
     ⟨_, (chordPos_attach hN (show 0 < N.nChords by rw [hnc]; exact X.hK) (Or.inl rfl)).1⟩
@@ -146,7 +147,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
   have hnext : ∀ t, t < k → I.key Q (xs ((t + 1) % k)) = hk I S R ((i t + d t + 1 + J t) % K) := by
     intro t ht
     have hst : i t + d t + 1 + J t = i 0 + grpOff d J (t + 1) := by
-      rw [grpOff_succ, hoff t ht]; unfold grpLen; ring
+      rw [grpOff_succ, hoff t ht]; ufring grpLen
     by_cases ht1 : t + 1 < k
     · rw [Nat.mod_eq_of_lt ht1, hst, ← hoff (t + 1) ht1, Nat.mod_eq_of_lt (hil (t + 1) ht1)]
       exact (hD (t + 1) ht1).hl.symm
@@ -210,7 +211,6 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
       obtain ⟨c, hc, hxc⟩ := hx
       obtain ⟨-, hAx, -, eh, hh, -⟩ := chordPos_attach hN hc hxc
       have hxn : x.edge < Q.n := walk_n Q ▸ hAx.1
-      show qE li Q.n _ < Q.n ∧ x.hgt - 1 < Q.n
       refine ⟨qE_lt li ?_, by rw [eh]; simpa using hh⟩
       split_ifs
       · exact Nat.mod_lt _ (by omega)

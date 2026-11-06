@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.NFBuildNF
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-C (BuildNF): the computed normal form is valid
@@ -78,7 +82,7 @@ theorem sSup_list (l : List ℕ) : sSup {x | x ∈ l} = l.foldr max 0 := by
         rcases le_total x ((y :: l).foldr max 0) with h1 | h1
         · rw [max_eq_right h1]; exact mem_cons_of_mem _ (ih y)
         · rw [max_eq_left h1]; exact mem_cons_self
-    exact IsGreatest.csSup_eq ⟨hmem x l, fun y hy => hle y hy⟩
+    exact IsGreatest.csSup_eq ⟨hmem x l, hle⟩
 
 namespace Input
 
@@ -104,7 +108,7 @@ theorem length_evs (_h : Input M Q L E) : (evs M Q L E).length = E.length := len
 /-- The key of the walk position of the `m`-th event is the `m`-th key. -/
 theorem key_s {m : ℕ} (hm : m < E.length) :
     M.key Q (wposOf L (E.getD m 0)) = kap (evs M Q L E) m := by
-  rw [key_wposOf, BuildSort.kap_eq (by rw [h.length_evs]; exact hm)]
+  rw [key_wposOf, BuildSort.kap_eq (by rwx [h.length_evs])]
   unfold evs
   rw [getElem_map, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hm, Option.getD_some]
 
@@ -171,7 +175,7 @@ omit h in
 theorem ridx_lt {ℓ : Option ℕ} (hℓ : LabelOK L.length ℓ) : ridx ℓ < L.length + 1 := by
   cases ℓ with
   | none => simp [ridx]
-  | some i => have := hℓ i rfl; simp only [ridx]; omega
+  | some i => have := hℓ i rfl; sio only [ridx]
 
 /-- **The region correspondence** of the computed normal form. -/
 theorem regionCorr : RegionCorr M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (E := E)) := by
@@ -181,7 +185,7 @@ theorem regionCorr : RegionCorr M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L
   · have := h2 _ _ (labelOK_lab hr) (labelOK_lab hr') heq
     rw [← ridx_lab r, ← ridx_lab r', this]
   · obtain ⟨ℓ, hℓ, hU⟩ := h3 U hU
-    exact ⟨ridx ℓ, ridx_lt hℓ, by unfold regF; rw [lab_ridx]; exact hU⟩
+    exact ⟨ridx ℓ, ridx_lt hℓ, by unfold regF; rwx [lab_ridx]⟩
 
 /-- **The sides of the chord records.** -/
 theorem sides_rec {i : ℕ} (hi : i < L.length) :
@@ -284,13 +288,13 @@ theorem arcRec_isArc {m : ℕ} (hK : L.length ≠ 0) (hm : m ∈ gapStarts M Q L
       rcases lt_or_ge (m + 1) E.length with h1 | h1
       · exact h1
       · exfalso
-        have h1' : m + 1 = (evs M Q L E).length := by rw [hlev]; omega
+        have h1' : m + 1 = (evs M Q L E).length := by rwo [hlev]
         have h0 : kap (evs M Q L E) (m + 1) = 0 := by
           unfold kap; rw [List.getD_eq_default _ _ (by omega)]
-        have := (hC.kap_bounds (m := m) (by rw [hlev]; exact hml)).1
+        have := (hC.kap_bounds (m := m) (by rwx [hlev])).1
         linarith
     rw [Nat.mod_eq_of_lt hm1]
-    exact hC.arc_of_gap (by rw [hlev]; exact hm1) hlt
+    exact hC.arc_of_gap (by rwx [hlev]) hlt
 
 /-- Two arcs with the same keys of regions of the computed normal form have the same region. -/
 theorem reg_eq_of_arcs (hK : L.length ≠ 0) {r r' : ℕ} (hr : r < L.length + 1)
@@ -332,7 +336,7 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
     have hA : arcList M Q L E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by unfold arcList; rw [ite_eq_left hK]
     have hkey0 : M.key Q ⟨0, 0⟩ = 0 := by simp [Model.key, Model.param]
     have harc0 : (buildNF M Q L E).arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by
-      unfold NF.arc; rw [harcsN, hA]; rfl
+      urr NF.arc [harcsN, hA]
     have hreg0 : regF (M := M) (Q := Q) (L := L) (E := E) 0 = reg M Q L (evs M Q L E) none := rfl
     refine ⟨fun j hj => ?_, fun j j' hj hj' _ _ => ?_, fun r hr a b harc => ?_, ?_⟩
     · rw [hA, length_singleton] at hj
@@ -343,13 +347,13 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
       show M.IsArc _ (regF 0) (M.key Q ⟨0, 0⟩) (M.key Q ⟨0, 0⟩)
       rw [hkey0, hreg0]
       exact hC.arc_of_empty hK
-    · rw [hA, length_singleton] at hj hj'; omega
+    · rwo [hA, length_singleton] at hj hj'
     · obtain ⟨rfl, rfl⟩ := hC.gap_of_arc_empty hK harc
-      refine ⟨0, by rw [hA]; simp, ?_, ?_, ?_⟩
+      refine ⟨0, by rws [hA], ?_, ?_, ?_⟩
       · rw [harc0]; show 0 = r; omega
-      · rw [harc0]; exact hkey0
-      · rw [harc0]; exact hkey0
-    · intro r hr j; rw [← harcsN]; exact hlast r (by rw [nRegions]; exact hr) j
+      · rwx [harc0]
+      · rwx [harc0]
+    · intro r hr j; rw [← harcsN]; exact hlast r (by rwx [nRegions]) j
   · have hA : arcList M Q L E = (gapStarts M Q L E).map (arcRec M Q L E) := by
       unfold arcList; rw [ite_eq_right hK]
     have hlenA : (arcList M Q L E).length = (gapStarts M Q L E).length := by rw [hA, length_map]
@@ -374,7 +378,7 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
         have hml' := (hmem k' hk').1
         rcases hgap with hlast | hgap
         · omega
-        · exact hgap.trans_le (BuildSort.kap_mono hC.sorted hlt (by rw [hlev]; exact hml'))
+        · exact hgap.trans_le (BuildSort.kap_mono hC.sorted hlt (by rwx [hlev]))
       rcases lt_or_gt_of_ne hne with hlt | hlt
       · exact (key_lt j j' hj1 hj1' hlt).ne hkey
       · exact (key_lt j' j hj1' hj1 hlt).ne hkey.symm
@@ -386,7 +390,7 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
         · refine ⟨m, (mem_gapStarts (M := M) (Q := Q) (L := L) (E := E)).2
             ⟨by omega, Or.inr hlt⟩, rfl, ?_⟩
           rw [Nat.mod_eq_of_lt (by omega)]
-        · have hE : 0 < E.length := by rw [h.length_E]; omega
+        · have hE : 0 < E.length := by rwo [h.length_E]
           refine ⟨E.length - 1, (mem_gapStarts (M := M) (Q := Q) (L := L) (E := E)).2
             ⟨by omega, Or.inl (by omega)⟩, by rw [hS], ?_⟩
           rw [Nat.sub_add_cancel hE, Nat.mod_self]
@@ -401,7 +405,7 @@ theorem arcsOK : ArcsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L := L) (
         exact (h.reg_eq_of_arcs hK hr hreg harc harc').symm
       · rw [arc_eq hK hjA]; simp only [hjm]; exact h.key_arcRec_s hmE
       · rw [arc_eq hK hjA]; simp only [hjm]; exact h.key_arcRec_e hmE
-    · intro r hr j; rw [← harcsN]; exact hlast r (by rw [nRegions]; exact hr) j
+    · intro r hr j; rw [← harcsN]; exact hlast r (by rwx [nRegions]) j
 
 /-! ## Regions and the sequence -/
 
@@ -428,12 +432,12 @@ theorem touches_iff {i : ℕ} (hi : i < L.length) {r : ℕ} (hr : r < L.length +
     obtain ⟨δ, h1, h2, -⟩ := ((hA z hzc hzD).and (hside z hzc hzD)).exists
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint (hcorr.1 _ hup) hUp with h' | h'
     · exact h'
-    · exact absurd (h'.le_bot ⟨h1, h2⟩) (fun h => h)
+    · exact absurd (h'.le_bot ⟨h1, h2⟩) (id)
   have heqD : regF (M := M) (Q := Q) (L := L) (E := E) (chordRec M Q L E i).dn = Dn := by
     obtain ⟨δ, h1, -, h2⟩ := ((hB z hzc hzD).and (hside z hzc hzD)).exists
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint (hcorr.1 _ hdn) hDn with h' | h'
     · exact h'
-    · exact absurd (h'.le_bot ⟨h1, h2⟩) (fun h => h)
+    · exact absurd (h'.le_bot ⟨h1, h2⟩) (id)
   rw [htouch _ (hcorr.1 r hr), ← heqU, ← heqD]
   constructor
   · rintro (h1 | h1)
@@ -472,13 +476,13 @@ theorem regionsOK : RegionsOK M Q (buildNF M Q L E) (regF (M := M) (Q := Q) (L :
     constructor
     · intro hx
       obtain ⟨j, hj, rfl⟩ := List.mem_map.1 hx
-      have hj' := (h4 r (by rw [nRegions]; exact hr) j).1 (by rw [h.region_eq hr]; exact hj)
+      have hj' := (h4 r (by rwx [nRegions]) j).1 (by rwx [h.region_eq hr])
       obtain ⟨-, harc⟩ := h1 j hj'.1
       rw [hj'.2] at harc
       exact ⟨(M.key Q ((buildNF M Q L E).arc j).s, M.key Q ((buildNF M Q L E).arc j).e), harc, rfl⟩
     · rintro ⟨ab, harc, rfl⟩
       obtain ⟨j, hj, hjr, hs, he⟩ := h3 r hr ab.1 ab.2 harc
-      have hjr' := (h4 r (by rw [nRegions]; exact hr) j).2 ⟨hj, hjr⟩
+      have hjr' := (h4 r (by rwx [nRegions]) j).2 ⟨hj, hjr⟩
       rw [h.region_eq hr] at hjr'
       refine List.mem_map.2 ⟨j, hjr', ?_⟩
       show M.arcWt (M.key Q ((buildNF M Q L E).arc j).s) (M.key Q ((buildNF M Q L E).arc j).e) = _
@@ -494,7 +498,7 @@ theorem seqOK : SeqOK M Q (buildNF M Q L E) := by
   simp only [getElem_range]
   rw [length_range] at hj hj'
   by_cases hK : L.length = 0
-  · have : (arcList M Q L E).length = 1 := by unfold arcList; rw [ite_eq_left hK]; rfl
+  · have : (arcList M Q L E).length = 1 := by urr arcList [ite_eq_left hK]
     omega
   · have hC := h.ctx
     have hlenA : (arcList M Q L E).length = (gapStarts M Q L E).length := by
@@ -511,7 +515,7 @@ theorem seqOK : SeqOK M Q (buildNF M Q L E) := by
 
 /-- The walk positions of the events are positions of the walk proper. -/
 theorem properPos_wposOf {c : ℕ} (hc : c ∈ E) : ProperPos M Q Q.n (wposOf L c) := by
-  have hc2 : c < 2 * L.length := List.mem_range.1 (h.perm.mem_iff.1 hc)
+  have hc2  := List.mem_range.1 (h.perm.mem_iff.1 hc)
   have hi : c / 2 < L.length := by omega
   have hC := h.ctx
   have hh : (crec L (c / 2)).h < Q.n := h.valid.2.2.2 _ (getD_mem hi)
@@ -531,7 +535,7 @@ theorem properPos_arcs {j : ℕ} (hj : j < (arcList M Q L E).length) :
     have : j = 0 := by omega
     subst this
     have harc0 : (buildNF M Q L E).arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by
-      unfold NF.arc; show (arcList M Q L E).getD 0 _ = _; rw [hA]; rfl
+      unfold NF.arc; show (arcList M Q L E).getD 0 _ = _; rwr [hA]
     rw [harc0]
     have hp : ProperPos M Q Q.n ⟨0, 0⟩ := ⟨le_refl _, by simp [Model.param], Nat.zero_le _⟩
     exact ⟨hp, hp⟩

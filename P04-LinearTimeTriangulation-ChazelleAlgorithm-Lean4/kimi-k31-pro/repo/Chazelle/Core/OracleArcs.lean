@@ -4,6 +4,7 @@ public import Chazelle.Core.OracleFold
 public import Chazelle.Core.NFLocateMath
 public import Chazelle.Core.FactsArcs
 public import Chazelle.Core.OracleBook
+public import Chazelle.RewriteTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 5: the arcs of a normal form on the spine
@@ -66,7 +67,7 @@ theorem sideInArc_interleave {a b x₁ x₂ x₃ x₄ : ℝ}
     let P : ℝ → Prop := fun x => ¬ sideInArc a b x
     have hP : ∀ x ∈ ({x₁, x₂, x₃, x₄} : Set ℝ), P x ↔ (b ≤ x ∧ x ≤ a) := by
       intro x hx
-      simp only [P, sideInArc, ite_eq_right hab, not_or, not_lt]
+      simp [P, sideInArc, ite_eq_right hab, not_or, not_lt]
       exact ⟨fun h => ⟨h.2, h.1⟩, fun h => ⟨h.2, h.1⟩⟩
     have m1 : x₁ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by simp
     have m2 : x₂ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by simp
@@ -77,7 +78,7 @@ theorem sideInArc_interleave {a b x₁ x₂ x₃ x₄ : ℝ}
     · rw [← hP _ m1, ← hP _ m3]; exact not_congr h13
     · rw [← hP _ m2, ← hP _ m4]; exact not_congr h24
     · rw [← hP _ m1, ← hP _ m2]
-      simp only [P]
+      simp [P]
       tauto
 
 /-- **Pairs of keys of chain points do not interleave.**  Keys lie in `[lo, lo + L]`; each pair
@@ -94,7 +95,7 @@ theorem mirror_noncross {L K lo : ℝ} (hL : 0 < L) {k₁ k₂ k₃ k₄ : ℝ}
   rcases P13 with ⟨n, hn⟩ | ⟨e1, e3⟩ | ⟨e1, e3⟩
   · rcases P24 with ⟨n', hn'⟩ | ⟨e2, e4⟩ | ⟨e2, e4⟩
     · -- the two sums differ by a multiple of `L` strictly between `-L` and `L`, and not by `0`
-      have hdiff : (k₂ + k₄) - (k₁ + k₃) = L * ((n' : ℝ) - n) := by rw [hn, hn']; ring
+      have hdiff : (k₂ + k₄) - (k₁ + k₃) = L * ((n' : ℝ) - n) := by rwring [hn, hn']
       have key : ∀ z : ℤ, 0 < L * (z : ℝ) → L * (z : ℝ) < L → False := by
         intro z h1 h2
         have h3 : (0 : ℝ) < z := by
@@ -105,7 +106,7 @@ theorem mirror_noncross {L K lo : ℝ} (hL : 0 < L) {k₁ k₂ k₃ k₄ : ℝ}
         have h6 : z < (1 : ℤ) := by exact_mod_cast h4
         omega
       rcases hord with ⟨a, b, c⟩ | ⟨a, b, c⟩
-      · exact key (n' - n) (by push_cast; rw [← hdiff]; linarith) (by push_cast; rw [← hdiff]; linarith)
+      · exact key (n' - n) (by push_cast; rwli [← hdiff]) (by push_cast; rwli [← hdiff])
       · exact key (n - n') (by push_cast; nlinarith [hdiff]) (by push_cast; nlinarith [hdiff])
     · rcases hord with ⟨a, b, c⟩ | ⟨a, b, c⟩ <;> linarith
     · rcases hord with ⟨a, b, c⟩ | ⟨a, b, c⟩ <;> linarith
@@ -151,7 +152,7 @@ theorem sj_inj (hN : IsNF M Q N) {p q : ℕ} (hp : p < N.arcs.length) (hq : q < 
 /-- **Start keys strictly increase along the table** (nonempty family). -/
 theorem starts_lt (hN : IsNF M Q N) (_hGM : GoodModel M) (hne : (N.F M Q).Nonempty) {p q : ℕ}
     (hpq : p < q) (hq : q < N.arcs.length) : sk M Q N p < sk M Q N q := by
-  have hle : sk M Q N p ≤ sk M Q N q := NFLoc.seq_sorted hN hpq.le hq
+  have hle  := NFLoc.seq_sorted hN hpq.le hq
   refine lt_of_le_of_ne hle fun heq => ?_
   obtain ⟨reg, hR, hA, harc⟩ := isArc_sj hN (hpq.trans hq)
   have harc' : M.IsArc (N.F M Q) (reg (N.arc (sj N q)).reg) (sk M Q N q) (ek M Q N q) :=
@@ -335,7 +336,7 @@ theorem regions_noninterleave (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F 
   have hcutB : M.IsCut (N.F M Q) (pb + tb) := ⟨c, hc, pb, tb, hAb, rfl⟩
   refine sideInArc_interleave (a := pa + ta) (b := pb + tb) ?_ hord e13 e24 hiff
   intro x hx
-  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+  simp [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
   rcases hx with rfl | rfl | rfl | rfl
   · exact ⟨fun h => c₁ (h ▸ hcutA), fun h => c₁ (h ▸ hcutB)⟩
   · exact ⟨fun h => c₂ (h ▸ hcutA), fun h => c₂ (h ▸ hcutB)⟩
@@ -404,16 +405,16 @@ theorem zips_nonCross (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     (by have := C.one_le; positivity) (k₁ := pa + ta) (k₂ := pc + tc) (k₃ := pb + tb)
     (k₄ := pd + td) ?_ ?_ ?_ hord
   · intro k hk
-    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hk
+    simp [Set.mem_insert_iff, Set.mem_singleton_iff] at hk
     rcases hk with rfl | rfl | rfl | rfl <;> constructor <;> linarith
   · rcases m1 with ⟨n, hn'⟩ | h | h
     · exact Or.inl ⟨n, by rw [hn']⟩
-    · exact Or.inr (Or.inl ⟨h.1, by rw [h.2]; ring⟩)
-    · exact Or.inr (Or.inr ⟨by rw [h.1]; ring, h.2⟩)
+    · exact Or.inr (Or.inl ⟨h.1, by rwring [h.2]⟩)
+    · exact Or.inr (Or.inr ⟨by rwring [h.1], h.2⟩)
   · rcases m2 with ⟨n, hn'⟩ | h | h
     · exact Or.inl ⟨n, by rw [hn']⟩
-    · exact Or.inr (Or.inl ⟨h.1, by rw [h.2]; ring⟩)
-    · exact Or.inr (Or.inr ⟨by rw [h.1]; ring, h.2⟩)
+    · exact Or.inr (Or.inl ⟨h.1, by rwring [h.2]⟩)
+    · exact Or.inr (Or.inr ⟨by rwring [h.1], h.2⟩)
 
 end Pages
 

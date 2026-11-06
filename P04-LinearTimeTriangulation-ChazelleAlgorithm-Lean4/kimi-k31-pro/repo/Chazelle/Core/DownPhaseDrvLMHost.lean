@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseDrvBSize
 public import Chazelle.Core.DownPhaseDrvRLvlSpec
 public import Chazelle.Core.DownPhaseMathRec2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase level math (D7), part 1: the sizes of the region hosts
@@ -119,7 +121,7 @@ theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
   obtain ⟨hjA, -⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := interiorModel Q) (Q := Q) (E := E) B.hK
-  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rw [← hA]; exact hjA
+  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rwx [← hA]
   obtain ⟨sn, s0, s1⟩ := DrvB.evPos_ok B (DrvD.gs_lt_len hjA')
   obtain ⟨en, e0, e1⟩ := DrvB.evPos_ok B (Nat.mod_lt (DrvD.gs (interiorModel Q) Q L E j + 1) hE)
   rw [← DrvD.arc_s B.hK hjA'] at sn s0 s1
@@ -151,14 +153,14 @@ theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
       have hk : (interiorModel Q).key Q e = (e.edge : ℝ) := by
         have h1 := hvtx.1 hv
         rw [kb, DownHost.floor_add e0 e1] at h1
-        rw [kb]; exact h1
+        rwx [kb]
       by_cases hlast : j + 1 < (gapStarts (interiorModel Q) Q L E).length
       · have hlt := DrvD.key_s_lt_e (M := interiorModel Q) (Q := Q) B.hK hE hlast
         rw [hsg, heg, hk, ka, hxe] at hlt
         linarith
       · have hne' := DrvB.last_arc_edges B
         have hjl : j = (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length - 1 := by
-          rw [hA]; omega
+          rwo [hA]
         rw [← hjl, hsg, heg] at hne'
         exact hne' hxe
   · rw [ite_eq_right hv] at hne ⊢
@@ -187,7 +189,7 @@ theorem pts_length (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
   rw [DownMath.regHost_pts]
   split_ifs
   · exact hlen
-  · rw [List.length_reverse]; exact hlen
+  · rwx [List.length_reverse]
 
 /-- **The sizes of a region host** (degree `≤ 4`, weight `≤ γ`). -/
 theorem host_facts (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}

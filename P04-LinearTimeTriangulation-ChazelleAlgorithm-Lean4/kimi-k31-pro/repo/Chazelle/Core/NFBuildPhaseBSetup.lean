@@ -81,7 +81,7 @@ theorem BConst.frame {D T K B H lo hd kd : ℕ} {d d' : Config} {Bw : ℕ → Bo
     (h : BConst D T K B H lo hd kd d) (hf : FrameM Bw d d')
     (hB : ∀ r ∈ constRegs, Bw r = false) : BConst D T K B H lo hd kd d' := by
   have g : ∀ r ∈ constRegs, d'.nreg r = d.nreg r := fun r hr => hf.1 r (hB r hr)
-  simp only [constRegs, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
+  simp [constRegs, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
     forall_eq] at g
   obtain ⟨g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14, g15, g16, g17, g18, g19,
     g20, g21, g22, g23, g24, g25, g26⟩ := g

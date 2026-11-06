@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseHostData
+public import Chazelle.Rwx
 
 /-!
 # WP-M (X, part 15): every exit chord of a region is a chord edge of its host polygon
@@ -45,7 +46,7 @@ theorem exit_chordGap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
       sidePt M.W p t ≠ sidePt M.W p' t' ∧
       c = Chazelle.segment (sidePt M.W p t) (sidePt M.W p' t') := by
   obtain ⟨a, b, hab, -, -, -, ⟨⟨pa, ta, hA, hAa⟩, -⟩, ⟨⟨pb, tb, hB, hBb⟩, -⟩⟩ := hM.ends c (hF hc)
-  have hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb := by rw [hAa, hBb]; exact hab
+  have hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb := by rwx [hAa, hBb]
   have hcA : (pa : ℝ) + ta ∈ hostKeys M F U := Or.inl ⟨c, hc, ht, pa, ta, hA, rfl⟩
   have hcB : (pb : ℝ) + tb ∈ hostKeys M F U := Or.inl ⟨c, hc, ht, pb, tb, hB, rfl⟩
   have hkne := WalkAx.key_ne_of_pt_ne hA hB hAB

@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.DownPhaseBaseSpec
 public import Chazelle.Core.ShearInv
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # Down phase, A1: `dropAug : DropAugSpec`
@@ -54,7 +59,6 @@ theorem mem2_in {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ
   unfold mem2
   rw [ite_eq_left ⟨h1, h2⟩]
 
-set_option maxHeartbeats 16000000 in
 /-- **A1: `DropAugSpec`.** -/
 theorem dropAug : DropAugSpec := by
   refine ⟨dropStmt, 80, ?_⟩
@@ -77,7 +81,7 @@ theorem dropAug : DropAugSpec := by
     beta_reduce at h
     rw [hlen] at h
     exact h
-  have hnW : P.n ≤ W := by unfold hostWords at hWn; omega
+  have hnW : P.n ≤ W := by ufo hostWords at hWn
   have hQn : (Qof P).n = P.n := shear_n _ _
   -- setup
   obtain ⟨c₁, k₁, e₁, hk₁, s100, s101, s105, s104, s106, s103, s136, s004, s121, s122, s9999,
@@ -89,17 +93,17 @@ theorem dropAug : DropAugSpec := by
   have g21 : ∀ r, r ≠ 200103 → c₂.nreg r = c₁.nreg r := bfr
   -- the chord pass
   have hI₁ : Inv1 c.nmem li P.n L B A₀ X c₂ c₂ :=
-    { i_le := by rw [g21 _ (by norm_num), s110]; omega
+    { i_le := by rwo [g21 _ (by norm_num), s110]
       rK := by rw [g21 _ (by norm_num), sin _ ⟨by norm_num, by norm_num⟩, hlen]
-      r111 := by rw [g21 _ (by norm_num), g21 _ (by norm_num), s111, s110]; ring
-      r117 := by rw [g21 _ (by norm_num), g21 _ (by norm_num), s117, s110, hX]; ring
+      r111 := by rwring [g21 _ (by norm_num), g21 _ (by norm_num), s111, s110]
+      r117 := by rwring [g21 _ (by norm_num), g21 _ (by norm_num), s117, s110, hX]
       r118 := by
         rw [g21 _ (by norm_num), g21 _ (by norm_num), s118, s110]; simp [rankF]
       r119 := by
         rw [g21 _ (by norm_num), g21 _ (by norm_num), s119, s110]; simp [rankF]
       r100 := by rw [g21 _ (by norm_num), s100]
       r101 := by rw [g21 _ (by norm_num), s101]
-      r103 := by rw [b103]; simp [hlidef, liBit]; rfl
+      r103 := by rw [b103]; sirfl [hlidef, liBit]
       r104 := by rw [g21 _ (by norm_num), s104]
       fr := fun _ _ => rfl
       rr := rfl
@@ -118,7 +122,7 @@ theorem dropAug : DropAugSpec := by
     fun r hr h103 => by rw [hI₃.fr r hr, g21 r h103]
   set m₁ := mem1 c.nmem li P.n L A₀ X K with hm₁
   have hI₂ : Inv2 m₁ li P.n L E SE X SE' c₄ c₄ :=
-    { t_le := by rw [m130]; omega
+    { t_le := by rwo [m130]
       r136 := by
         rw [mfr _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
           g3 _ (by norm_num) (by norm_num), s136, hEl]
@@ -170,7 +174,7 @@ theorem dropAug : DropAugSpec := by
   have hL'len : L'.length = rankF (keepX li P.n) L K := (rankF_length _ _).symm
   have f005 : c₅.nreg 200005 = L'.length := by
     rw [g5 _ (by norm_num), m005, hI₃.r118, h3i, hL'len]
-  have hK' : L'.length ≤ K := by rw [hL'len]; exact hrk
+  have hK' : L'.length ≤ K := by rwx [hL'len]
   have hK2 : (keepL li P.n L).length ≤ K := hK'
   have hmem5 : ∀ a, c₅.nmem a = mem2 m₁ li P.n L E SE' E.length a := fun a => by
     rw [hI₅.mem, h5t]
@@ -182,7 +186,7 @@ theorem dropAug : DropAugSpec := by
   have hCL' : ChordListAt c₅.nmem A₀ L' := by
     intro i hi
     have hm : ∀ q, q < 3 → c₅.nmem (A₀ + 3 * i + q) = tw L' (3 * i + q) := fun q hq => by
-      rw [hmem5, mem2_low (by omega), hm₁, mem1_list (by omega) (by rw [← hL'len]; omega),
+      rw [hmem5, mem2_low (by omega), hm₁, mem1_list (by omega) (by rwo [← hL'len]),
         show A₀ + 3 * i + q - A₀ = 3 * i + q by omega]
     refine ⟨?_, ?_, ?_⟩
     · have := hm 0 (by norm_num)
@@ -198,7 +202,7 @@ theorem dropAug : DropAugSpec := by
     · rw [seg_length, hdlen]
     · intro u h1 h2
       simp only [seg, List.getElem_map, List.getElem_range]
-      rw [hmem5, mem2_in (by omega) (by rw [hEt]; omega), hEt, List.getD_eq_getElem?_getD,
+      rw [hmem5, mem2_in (by omega) (by rwo [hEt]), hEt, List.getD_eq_getElem?_getD,
         Nat.add_sub_cancel_left, List.getElem?_eq_getElem h2, Option.getD_some]
   -- the math
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
@@ -217,11 +221,11 @@ theorem dropAug : DropAugSpec := by
     omega
   · obtain rfl := BuildNF.chordListAt_unique hCL hL₂ (hlen.symm.trans hlen₂)
     rw [hQn]
-    refine ⟨by rw [f004], ?_, by rw [f004]; exact hCL', f005, ?_, ?_, by rw [f006]; exact hseg,
+    refine ⟨by rw [f004], ?_, by rwx [f004], f005, ?_, ?_, by rwx [f006],
       hfam, chordTriplesOK_keepL hok, dropE_perm hperm, dropE_pairwise _ _ hperm hsort⟩
-    · rw [f004]; show _ ≤ c₅.nreg 9999; rw [f9999]; omega
+    · rw [f004]; show _ ≤ c₅.nreg 9999; rwo [f9999]
     · rw [f006]; show A₀ ≤ A₀ + 5 * K; omega
-    · rw [f006]; show _ ≤ c₅.nreg 9999; rw [f9999]; omega
+    · rw [f006]; show _ ≤ c₅.nreg 9999; rwo [f9999]
   · refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
     · have hr' : r < 200000 ∨ 210000 ≤ r := by
         simp only [Finset.mem_singleton, bandOf] at hr

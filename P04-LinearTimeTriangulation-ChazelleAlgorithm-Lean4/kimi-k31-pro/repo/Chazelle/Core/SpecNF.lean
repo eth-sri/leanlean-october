@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SpecBase
+public import Chazelle.SimpTactics
 
 /-!
 # Core specification, part 2: normal forms and host curves
@@ -329,13 +330,13 @@ theorem Host.pts_length_le {n : ℕ} {H : Host} (h : HostWF n H) :
     have hi : (it.pts n).length ≤ n := by
       cases it with
       | run a l =>
-        simp only [HostItem.pts, List.length_map, List.length_range]
+        simp [HostItem.pts, List.length_map, List.length_range]
         exact hit.2
       | pt x =>
-        simp only [HostItem.pts, List.length_singleton]
+        simp [HostItem.pts, List.length_singleton]
         cases x with
-        | vtx i => simp only [SymPt.Lt] at hit; omega
-        | onEdge e' h' => simp only [SymPt.Lt] at hit; omega
+        | vtx i => sio only [SymPt.Lt] at hit
+        | onEdge e' h' => sio only [SymPt.Lt] at hit
     rw [e, List.length_cons, Nat.succ_mul]
     omega
 

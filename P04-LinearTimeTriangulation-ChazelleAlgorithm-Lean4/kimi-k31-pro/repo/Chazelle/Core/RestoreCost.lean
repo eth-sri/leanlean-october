@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SpecMerge
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, part 3: the oracle costs are positive
@@ -146,7 +149,7 @@ theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : Mem
   have hF0 : F (rd c bShoot 9) = 0 := by omega
   obtain ⟨hG, hWh, hX, hcap, hwf, hreg, M, hM, hOk, hp1, hp2, he1, he2, hi1, hi2, hwt, o, hoLt,
     hoIn, hoK, hoA⟩ := hpre
-  have hW1 : 1 ≤ W := le_trans (by unfold hostWords; omega) hWh
+  have hW1 : 1 ≤ W := le_trans (by ufo hostWords) hWh
   have r : ∀ v i, i ≠ 10 → i < 10000 → rd (withFlag c v) bShoot i = rd c bShoot i :=
     fun v i h1 h2 => withFlag_rd c v h1 h2
   -- run the shooter from `c` with flag `v`
@@ -194,14 +197,14 @@ theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : Mem
       exact ⟨hG, hWh, hX, hcap, hwf, hreg, M, hM, hOk, hp1, hp2, he1, he2, hi1, hi2, hwt, o, hoLt,
         hoIn, hoK, hoA⟩
     obtain ⟨c', k, ex, hk, hpost, -⟩ := h P W (withFlag c v) hwv pre'
-      (by beta_reduce; rw [withFlag_alloc, r v 9 (by decide) (by decide)]; exact hroom)
+      (by beta_reduce; rwx [withFlag_alloc, r v 9 (by decide) (by decide)])
     beta_reduce at hk
     rw [r v 9 (by decide) (by decide), hF0] at hk
     have hc' := exec_zero ex (by omega)
     refine ⟨c', hc', fun M' o' hM' ho' => ?_⟩
     have hM'' : ModelDescAt (withFlag c v).nmem (rd (withFlag c v) bShoot 0) (Qof P) M' := by
-      rw [r v 0 (by decide) (by decide)]; exact hM'
-    have ho'' : OriginIn (withFlag c v) (bandReg bShoot 5) o' := (withFlag_originIn c v o').2 ho'
+      rwx [r v 0 (by decide) (by decide)]
+    have ho''  := (withFlag_originIn c v o').2 ho'
     have := hpost M' o' hM'' ho''
     simp only [r v 1 (by decide) (by decide), r v 2 (by decide) (by decide),
       r v 3 (by decide) (by decide), r v 4 (by decide) (by decide),
@@ -210,7 +213,7 @@ theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : Mem
   obtain ⟨c₁, rfl, h₁⟩ := run 1 le_rfl
   obtain ⟨c₀, rfl, h₀⟩ := run 0 (by omega)
   obtain ⟨t, ht0, htA, -⟩ := (h₁ M o hM hoIn).1 (withFlag_flag c 1)
-  exact (h₀ M o hM hoIn).2 (by rw [withFlag_flag]; omega) t ht0 htA
+  exact (h₀ M o hM hoIn).2 (by rwo [withFlag_flag]) t ht0 htA
 
 end
 

@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.SweepTop
 public import Chazelle.Core.SweepChainT2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), part 11: the event-loop invariant (stack rule for wall pieces)
@@ -146,8 +148,8 @@ theorem after_side_tie {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : Go
     ((M.wa p).2 < (M.wb p).2 → AfterFaces M p t G → SideOf M 1 cw G) ∧
     ((M.wa p).2 < (M.wb p).2 → BeforeFaces M p t G → SideOf M 1 ce G) := by
   have hM := walkAx_of_goodModel hGM
-  have hF : F ⊆ M.Adm := hFam.2.1
-  have hfin : F.Finite := hFam.1
+  have hF  := hFam.2.1
+  have hfin  := hFam.1
   obtain ⟨Ue, hUe, hSe⟩ := side_region_exists hM hF hfin hce (Or.inr rfl : (-1 : ℝ) = 1 ∨ _)
   obtain ⟨Uw, hUw, hSw⟩ := side_region_exists hM hF hfin hcw (Or.inr rfl : (-1 : ℝ) = 1 ∨ _)
   obtain ⟨Ue', hUe', hSe'⟩ := side_region_exists hM hF hfin hce (Or.inl rfl : (1 : ℝ) = 1 ∨ _)
@@ -159,16 +161,16 @@ theorem after_side_tie {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : Go
   refine ⟨fun hdn hW => ?_, fun hdn hW => ?_, fun hup hW => ?_, fun hup hW => ?_⟩
   · obtain ⟨-, -, h, -⟩ := fe (Or.inr rfl) hUe hSe
     have hfac := (h hdn).2 rfl
-    rw [after_unique hAe.2.2.1 hG hUe hW (hfac.1 (by norm_num))]; exact hSe
+    rwx [after_unique hAe.2.2.1 hG hUe hW (hfac.1 (by norm_num))]
   · obtain ⟨-, -, h, -⟩ := fw (Or.inr rfl) hUw hSw
     have hfac := (h hdn).2 rfl
-    rw [before_unique hAw.2.1 hG hUw hW (hfac.2 (by norm_num))]; exact hSw
+    rwx [before_unique hAw.2.1 hG hUw hW (hfac.2 (by norm_num))]
   · obtain ⟨-, -, -, h⟩ := fw (Or.inl rfl) hUw' hSw'
     have hfac := (h hup).2 rfl
-    rw [after_unique hAw.2.2.1 hG hUw' hW (hfac.1 (by norm_num))]; exact hSw'
+    rwx [after_unique hAw.2.2.1 hG hUw' hW (hfac.1 (by norm_num))]
   · obtain ⟨-, -, -, h⟩ := fe (Or.inl rfl) hUe' hSe'
     have hfac := (h hup).2 rfl
-    rw [before_unique hAe.2.1 hG hUe' hW (hfac.2 (by norm_num))]; exact hSe'
+    rwx [before_unique hAe.2.1 hG hUe' hW (hfac.2 (by norm_num))]
 
 /-! ## Transparent blocks (the stack rule) -/
 
@@ -330,7 +332,7 @@ theorem F₂plus_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChord
   · right; right
     obtain ⟨h1, h2⟩ := hvert (J.m₁ + J.right.topIdx) σ
     have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
-      rw [Merge.Junction.whole_vertex_add]; rfl
+      rwr [Merge.Junction.whole_vertex_add]
     rw [hv] at h1 h2
     exact ⟨h1, h2⟩
 

@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.DownPhaseArcT
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-M (X, part 2): piecewise linear key maps
@@ -79,7 +84,7 @@ theorem seg_spec (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (
   have hkN : k ≤ N - 1 := by
     have : S ⊆ Finset.Ico 1 N := Finset.filter_subset _ _
     have := Finset.card_le_card this
-    simp at this; omega
+    sio at this
   have hmem : ∀ j, j ∈ S ↔ 1 ≤ j ∧ j ≤ k := by
     intro j
     constructor
@@ -94,14 +99,14 @@ theorem seg_spec (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (
         by_contra hij
         exact hn (hdown i hi j h1 (by omega))
       have := Finset.card_le_card this
-      simp at this; omega
+      sio at this
   show k < N ∧ β k ≤ x ∧ x < β (k + 1)
   refine ⟨by omega, ?_, ?_⟩
   · rcases Nat.eq_zero_or_pos k with h0 | h0
-    · rw [h0]; exact hx0
+    · rwx [h0]
     · exact (Finset.mem_filter.1 ((hmem k).2 ⟨h0, le_rfl⟩)).2
   · by_cases hk1 : k + 1 = N
-    · rw [hk1]; exact hxN
+    · rwx [hk1]
     · by_contra hlt
       push Not at hlt
       have : k + 1 ∈ S := by
@@ -115,7 +120,7 @@ theorem seg_top (h : BrkInc β N) (_hN : 1 ≤ N) : seg β N (β N) = N - 1 := b
     apply Finset.filter_true_of_mem
     intro j hj
     exact h.le (Finset.mem_Ico.1 hj).2.le le_rfl
-  rw [this]; simp
+  rws [this]
 
 variable {c : ℝ}
 
@@ -130,17 +135,17 @@ theorem brk_piece (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) 
       div_nonneg (by linarith) hpos.le
     linarith
   · have : (x - β (seg β N x)) / (β (seg β N x + 1) - β (seg β N x)) < 1 := by
-      rw [div_lt_one hpos]; linarith
+      rwli [div_lt_one hpos]
     linarith
 
 theorem brk_top (h : BrkInc β N) (hN : 1 ≤ N) : brk β N c (β N) = c + N := by
   unfold brk
   rw [seg_top h hN, Nat.sub_add_cancel hN]
   have hpos : 0 < β N - β (N - 1) := by
-    have := h (N - 1) (by omega); rw [Nat.sub_add_cancel hN] at this; linarith
+    have := h (N - 1) (by omega); rwli [Nat.sub_add_cancel hN] at this
   rw [div_self hpos.ne']
-  have : ((N - 1 : ℕ) : ℝ) = N - 1 := by rw [Nat.cast_sub hN]; simp
-  rw [this]; ring
+  have : ((N - 1 : ℕ) : ℝ) = N - 1 := by rws [Nat.cast_sub hN]
+  rwring [this]
 
 theorem brk_bot (h : BrkInc β N) (_hN : 1 ≤ N) : brk β N c (β 0) = c := by
   have hs : seg β N (β 0) = 0 := by
@@ -148,7 +153,7 @@ theorem brk_bot (h : BrkInc β N) (_hN : 1 ≤ N) : brk β N c (β 0) = c := by
     rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
     intro j hj
     exact not_le.2 (h.lt (Finset.mem_Ico.1 hj).1 (Finset.mem_Ico.1 hj).2.le)
-  unfold brk; rw [hs]; simp
+  urs brk [hs]
 
 /-- **The key map is strictly increasing.** -/
 theorem brk_strictMonoOn (h : BrkInc β N) (hN : 1 ≤ N) :
@@ -187,7 +192,7 @@ theorem brk_onto (h : BrkInc β N) (hN : 1 ≤ N) {y : ℝ} (hy0 : c ≤ y) (hyN
   · exact ⟨β N, ⟨h.le (Nat.zero_le _) le_rfl, le_rfl⟩, by rw [brk_top h hN, hyN]⟩
   set j := ⌊y - c⌋₊ with hj
   have hjN : j < N := by
-    rw [hj, Nat.floor_lt (by linarith)]; linarith
+    rwli [hj, Nat.floor_lt (by linarith)]
   have hj1 : (j : ℝ) ≤ y - c := Nat.floor_le (by linarith)
   have hj2 : y - c < j + 1 := Nat.lt_floor_add_one _
   have hpos : 0 < β (j + 1) - β j := by linarith [h j hjN]
@@ -210,8 +215,8 @@ theorem brk_onto (h : BrkInc β N) (hN : 1 ≤ N) {y : ℝ} (hy0 : c ≤ y) (hyN
   unfold brk
   rw [hseg]
   have : (x - β j) / (β (j + 1) - β j) = y - c - j := by
-    field_simp; ring
-  rw [this]; ring
+    fsr
+  rwring [this]
 
 /-- **Breakpoints go to integer keys, and only they.** -/
 theorem brk_int_iff (h : BrkInc β N) (hN : 1 ≤ N) {c₀ : ℕ} {x : ℝ} (hx0 : β 0 ≤ x)
@@ -226,7 +231,7 @@ theorem brk_int_iff (h : BrkInc β N) (hN : 1 ≤ N) {c₀ : ℕ} {x : ℝ} (hx0
       have a1 : c₀ + seg β N x ≤ k := by exact_mod_cast p.1
       have a2 : k < c₀ + seg β N x + 1 := by exact_mod_cast p.2
       have : k = c₀ + seg β N x := by omega
-      rw [this]; push_cast; ring
+      rw [this]; pcr
     rw [e] at hk'
     unfold brk at hk'
     have hpos : 0 < β (seg β N x + 1) - β (seg β N x) := by linarith
@@ -242,7 +247,7 @@ theorem brk_int_iff (h : BrkInc β N) (hN : 1 ≤ N) {c₀ : ℕ} {x : ℝ} (hx0
       · exact hs
       · have := h.lt (show j < seg β N (β j) by omega) hk.le; linarith
     refine ⟨c₀ + j, ?_⟩
-    unfold brk; rw [hseg]; simp
+    urs brk [hseg]
 
 end
 

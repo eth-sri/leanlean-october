@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepMachine5
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), part 22: the abstract machine, candidate chords and their shot origins
@@ -41,7 +44,7 @@ theorem chord_eq_shoot_of_end (C : Chain) {h : Set Point} (hh : h ∈ Merge.augC
       · exact absurd (by rw [hw']; exact hH.open_mem _ h1 h2) hwD
       · exact Or.inr h2
     · exact Or.inl h1.symm
-  have hwy' : w.2 ≤ C.top.2 := by rw [hwy]; exact hy
+  have hwy' : w.2 ≤ C.top.2 := by rwx [hwy]
   rcases hend with hl | hr
   · -- from the left end, to the right
     have hfree : FreeAt C w 1 := by
@@ -60,7 +63,7 @@ theorem chord_eq_shoot_of_end (C : Chain) {h : Set Point} (hh : h ∈ Merge.augC
       · exfalso
         have := hTdom (r - l) (by linarith) h
         rw [show rayPt w 1 (r - l) = ((r, y) : Point) from
-          point_ext (by simp [rayPt]; linarith) (by simp [rayPt, hwy])] at this
+          point_ext (by sil [rayPt]) (by simp [rayPt, hwy])] at this
         exact hH.right_not this
     refine ⟨1, Or.inl rfl, hfree, ?_⟩
     unfold Merge.shoot
@@ -82,20 +85,20 @@ theorem chord_eq_shoot_of_end (C : Chain) {h : Set Point} (hh : h ∈ Merge.augC
     have hfree : FreeAt C w (-1) := by
       filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < r - l by linarith)] with s hs
       rw [show rayPt w (-1) s = ((w.1 - s, y) : Point) from
-        point_ext (by simp [rayPt]; ring) (by simp [rayPt, hwy])]
+        point_ext (by sir [rayPt]) (by simp [rayPt, hwy])]
       exact hH.open_mem _ (by linarith [hs.2]) (by linarith [hs.1])
     obtain ⟨hT, hTD, hTdom⟩ := Merge.hit_of_freeAt C hwy' (Or.inr rfl) hfree
     have hTeq : C.hitParam w (-1) = r - l := by
       rcases lt_trichotomy (C.hitParam w (-1)) (r - l) with h | h | h
       · exfalso; apply hTD
         rw [show rayPt w (-1) (C.hitParam w (-1)) = ((w.1 - C.hitParam w (-1), y) : Point) from
-          point_ext (by simp [rayPt]; ring) (by simp [rayPt, hwy])]
+          point_ext (by sir [rayPt]) (by simp [rayPt, hwy])]
         exact hH.open_mem _ (by linarith) (by linarith)
       · exact h
       · exfalso
         have := hTdom (r - l) (by linarith) h
         rw [show rayPt w (-1) (r - l) = ((l, y) : Point) from
-          point_ext (by simp [rayPt]; linarith) (by simp [rayPt, hwy])] at this
+          point_ext (by sil [rayPt]) (by simp [rayPt, hwy])] at this
         exact hH.left_not this
     refine ⟨-1, Or.inr rfl, hfree, ?_⟩
     unfold Merge.shoot
@@ -130,7 +133,7 @@ theorem cand_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.
     (∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ FreeAt J.whole J.right.top σ ∧
       h = Merge.shoot J.whole J.right.top σ) := by
   obtain ⟨hF, hc⟩ := hh
-  have hA : h ∈ Merge.augChords J.whole := F₂plus_subset J hS₂ hF
+  have hA  := F₂plus_subset J hS₂ hF
   have hvD : J.shared ∉ J.whole.dom := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
   have htD : J.right.top ∉ J.whole.dom := fun hd =>
@@ -157,10 +160,10 @@ theorem cand_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.
       exact Or.inr (Or.inl ⟨σ, hσ, (Merge.freeAt_vertex _ _ _).2 hfree, rfl⟩)
     · obtain ⟨σ, hσ, hfree, rfl⟩ := htop
       have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
-        rw [Merge.Junction.whole_vertex_add]; rfl
+        rwr [Merge.Junction.whole_vertex_add]
       refine Or.inr (Or.inr ⟨σ, hσ, ?_, ?_⟩)
       · rw [← hv]; exact (Merge.freeAt_vertex _ _ _).2 hfree
-      · rw [← hv]; rfl
+      · rwr [← hv]
   · obtain ⟨σ, hσ, hfree, heq⟩ := chord_eq_shoot_of_end J.whole hA hv hvD
     exact Or.inr (Or.inl ⟨σ, hσ, hfree, heq⟩)
   · obtain ⟨σ, hσ, hfree, heq⟩ := chord_eq_shoot_of_end J.whole hA ht htD

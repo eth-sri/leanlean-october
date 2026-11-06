@@ -5,6 +5,9 @@ public import Chazelle.Core.SweepMachine10
 public import Chazelle.Core.RestoreTArcs
 public import Chazelle.Core.RestoreTNorm
 public import Chazelle.Core.Facts2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), stages 2–3: the region faced at a walk vertex (task D1, mathematics)
@@ -85,7 +88,7 @@ theorem beforeFaces_of_inArc {F : Set (Set Point)} {U : Set Point} {a b : ℝ}
     rw [e]
     refine harc.2.2.2.2.2.2 (M.W.n - 1) (1 - s) (by omega) (by linarith) (by linarith) ?_
     have e2 : ((M.W.n - 1 : ℕ) : ℝ) + (1 - s) = (M.W.n : ℝ) - s := by
-      rw [Nat.cast_sub (by omega)]; push_cast; ring
+      rw [Nat.cast_sub (by omega)]; pcr
     rw [e2]
     unfold sideInArc
     rw [ite_eq_right hb]
@@ -96,7 +99,7 @@ theorem beforeFaces_of_inArc {F : Set (Set Point)} {U : Set Point} {a b : ℝ}
     rw [prev_mod hp hp1]
     refine harc.2.2.2.2.2.2 (p - 1) (1 - s) (by omega) (by linarith) (by linarith) ?_
     have e2 : ((p - 1 : ℕ) : ℝ) + (1 - s) = (p : ℝ) - s := by
-      rw [Nat.cast_sub hp1]; push_cast; ring
+      rw [Nat.cast_sub hp1]; pcr
     rw [e2]
     exact (h s hs0 (by linarith)).1
 
@@ -139,7 +142,7 @@ theorem key_eq_nat_iff {Q : Polygon} {n : ℕ} {x : WPos} (hx : ProperPos M Q n 
     have e2 : fe < x.edge + 1 := by exact_mod_cast h2
     have he : x.edge = fe := by omega
     refine ⟨he, ?_⟩
-    have hpar : M.param Q x = 0 := by rw [he] at hk; linarith
+    have hpar : M.param Q x = 0 := by rwli [he] at hk
     unfold Restore.normOf; rw [ite_eq_left hpar]
   · rintro ⟨he, hh⟩
     have hpar : M.param Q x = 0 := by
@@ -181,7 +184,7 @@ theorem one_le_of_arc_end (hP : C.P.Simple) (hN : IsNF (chainModel C) (Qof P) N)
     obtain ⟨he', hh⟩ := (key_eq_nat_iff hx fe).1 hk
     have hpar : (chainModel C).param (Qof P) x = 0 := by
       have hk' : (chainModel C).key (Qof P) x = x.edge + (chainModel C).param (Qof P) x := rfl
-      rw [hk, he'] at hk'; linarith
+      rwli [hk, he'] at hk'
     have := key_pos_of_band C hb hpar
     omega
   rcases h with h | h
@@ -237,7 +240,7 @@ theorem face_after_ne (_hP : C.P.Simple) (hN : IsNF (chainModel C) (Qof P) N)
   obtain ⟨-, harc⟩ := arc_regOf hN hj
   by_cases hF : N.F (chainModel C) (Qof P) = ∅
   · exact afterFaces_of_empty harc hF hfe
-  have hne : (N.F (chainModel C) (Qof P)).Nonempty := Set.nonempty_iff_ne_empty.2 hF
+  have hne  := Set.nonempty_iff_ne_empty.2 hF
   by_cases hc : (chainModel C).IsCut (N.F (chainModel C) (Qof P)) fe
   · rcases hl2 hc with hs | he
     · obtain ⟨-, -, hne', -⟩ := OracleQ.arc_facts hN hne hj
@@ -277,7 +280,7 @@ theorem face_before_eq (hS : sk (chainModel C) (Qof P) N j = fe) :
   obtain ⟨-, harc⟩ := arc_regOf hN hq
   obtain ⟨-, -, hne', -⟩ := OracleQ.arc_facts hN hne hq
   rw [heq] at harc hne'
-  refine beforeFaces_of_arc_end hfe h1 (by rw [add_zero]; exact harc) (by rw [add_zero]; exact hne')
+  refine beforeFaces_of_arc_end hfe h1 (by rwx [add_zero]) (by rwx [add_zero])
 
 include hl1 hl2 in
 /-- **Just before, the arc at `j` does not start at the vertex**: the region of the arc at `j`. -/
@@ -286,15 +289,15 @@ theorem face_before_ne (hS : sk (chainModel C) (Qof P) N j ≠ fe) :
   obtain ⟨-, harc⟩ := arc_regOf hN hj
   by_cases hF : N.F (chainModel C) (Qof P) = ∅
   · exact beforeFaces_of_empty harc hF hfe
-  have hne : (N.F (chainModel C) (Qof P)).Nonempty := Set.nonempty_iff_ne_empty.2 hF
+  have hne  := Set.nonempty_iff_ne_empty.2 hF
   by_cases hc : (chainModel C).IsCut (N.F (chainModel C) (Qof P)) fe
   · rcases hl2 hc with hs | he
     · exact absurd hs hS
     · have h1 := one_le_of_arc_end hP hN hne hj (Or.inr he)
       obtain ⟨-, -, hne', -⟩ := OracleQ.arc_facts hN hne hj
       rw [he] at harc hne'
-      exact beforeFaces_of_arc_end hfe h1 (by rw [add_zero]; exact harc)
-        (by rw [add_zero]; exact hne')
+      exact beforeFaces_of_arc_end hfe h1 (by rwx [add_zero])
+        (by rwx [add_zero])
   · rcases hl1 hc with h | h
     · exact absurd h hF
     · exact beforeFaces_of_inArc harc hfe h

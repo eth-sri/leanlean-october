@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OracleDeg
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 21: the ray up to the stopping point
@@ -51,16 +54,15 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
     ((x, ((Qof P).vtx V.hz).2) : Point) ∉ ⋃₀ N.F (chainModel C) (Qof P) := by
   rintro ⟨c, ⟨r, hr, rfl⟩, hmem⟩
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
-  have hiK : i < V.K := by rw [h.K]; exact hi
+  have hiK : i < V.K := by rwx [h.K]
   have hrec : N.chords[i] = N.chord i := by unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
   rw [hrec] at hmem
   obtain ⟨q, hq, rfl⟩ := h.surj hiK
   obtain ⟨hhn, -, hC, hS, EL, ER⟩ := h.facts (h.lt q hq)
   rw [hS] at hmem
   obtain ⟨hy, hxa, hxb⟩ := hmem
-  simp only at hy hxa hxb
-  have hhz : chH m V (chAt m V q) = V.hz :=
-    ((heights_ne h.hT hhn hs.hv.hz_lt).1 hy.symm)
+  simp at hy hxa hxb
+  have hhz  := ((heights_ne h.hT hhn hs.hv.hz_lt).1 hy.symm)
   rw [hhz] at hxa hxb EL ER hC
   obtain ⟨ht, hpre, hpost⟩ := hpart
   by_cases hσ : V.σb = 1
@@ -86,8 +88,8 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
           exact hnot ⟨h.lt t htK, Or.inl (by omega)⟩
         · rw [hh, hhz]
       have hf : FoundC V m t := by
-        refine ⟨by rw [ite_eq_left hσ]; exact htK, ?_⟩
-        unfold jCOf; rw [ite_eq_left hσ]; exact hHt
+        refine ⟨by rwx [ite_eq_left hσ], ?_⟩
+        unfold jCOf; rwx [ite_eq_left hσ]
       have hnear := h2 hf
       unfold nearC jCOf at hnear; rw [ite_eq_left hσ, ite_eq_left hσ] at hnear
       obtain ⟨-, -, -, -, ELt, -⟩ := h.facts (h.lt t htK)
@@ -116,8 +118,8 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         · rcases hpt.2 with h' | ⟨h', -⟩ <;> omega
         · rw [← hh, hhz]
       have hf : FoundC V m t := by
-        refine ⟨by rw [ite_eq_right hσ]; omega, ?_⟩
-        unfold jCOf; rw [ite_eq_right hσ]; exact hHt
+        refine ⟨by rwo [ite_eq_right hσ], ?_⟩
+        unfold jCOf; rwx [ite_eq_right hσ]
       have hnear := h2 hf
       unfold nearC jCOf at hnear; rw [ite_eq_right hσ, ite_eq_right hσ] at hnear
       obtain ⟨-, -, hCt, -, ELt, ERt⟩ := h.facts (h.lt (t - 1) (by omega))
@@ -129,7 +131,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         by_cases hq' : chAt m V q = chAt m V (t - 1)
         · rw [hq']
         · have := chord_disjoint h (h.lt q hq) (h.lt (t - 1) (by omega)) hq' (by rw [hhz, hHt])
-            (by rw [hhz, hHt]; exact hx)
+            (by rwx [hhz, hHt])
           rw [hhz, hHt] at this
           linarith [hCt.lt]
       linarith
@@ -186,7 +188,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
   have hR := C.radius_pos
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hn2 : 2 ≤ P.n := by
-    have := C.add_one_le; have := C.one_le; rw [hv.CQ, hQn] at *; omega
+    have := C.add_one_le; have := C.one_le; rwo [hv.CQ, hQn] at *
   -- the hit on `D*`
   have hDf : ∀ cD, bD = some cD → Spans (Qof P) (eIdx P.n V.s cD) V.hz ∧
       0 < sgnOf V.σb * (xe (Qof P) (eIdx P.n V.s cD) V.hz - z.1) ∧
@@ -248,7 +250,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
     · exact Or.inl ⟨c, hc, hmem⟩
     · exact (abs_fst_lt_radius_of_mem ⟨c, hc, hmem⟩).le
     · intro hnp
-      rw [hX]; simp only
+      rws [hX]
       by_cases hσ : V.σb = 1
       · rw [ite_eq_left hσ, not_not] at hnd'
         rw [sgnOf_one hσ, one_mul]
@@ -267,7 +269,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
           else EndGtD P C V (eIdx P.n V.s cD) (nearC V m t) V.hz := hcb
       clear hcb
       have hcb := hcb'
-      rw [hX]; simp only
+      rws [hX]
       by_cases hσ : V.σb = 1
       · rw [ite_eq_left hσ] at hcb
         rw [sgnOf_one hσ, one_mul, one_mul]
@@ -287,7 +289,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
       ⟨?_, rfl, Or.inl ⟨cD, (by rw [← hv.m]; exact hbD cD rfl), hmem⟩, hxD.le, ?_, ?_, ?_⟩⟩
     · unfold mainPos; rw [hsel]; exact stop_chain hT hP (by rw [← hv.m]; exact hbD cD rfl) hmem rfl
     · intro hnp
-      simp only
+      simp
       have hx := abs_lt.1 hxD
       unfold ζOf
       by_cases hσ : V.σb = 1
@@ -299,7 +301,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
         linarith
     · intro cD' hcD'; cases hcD'; exact le_rfl
     · intro hf
-      simp only
+      simp
       have hcb : ¬ CBof P C V (some cD) (nearC V m t) := fun hc => hA ⟨hf, Or.inr hc⟩
       obtain ⟨hK, hH⟩ := hf
       have hj : jCOf V t < V.K := by
@@ -329,7 +331,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
     have hnf : ¬ FoundC V m t := fun hf => hA ⟨hf, Or.inl rfl⟩
     have hsel : selOf C V none (FoundC V m t) (nearC V m t) (CBof P C V none (nearC V m t)) =
         (1, if V.σb = 1 then 3 else 1) := by
-      unfold selOf; rw [ite_eq_right hA]; rfl
+      urr selOf [ite_eq_right hA]
     have hw : (if V.σb = 1 then 3 else 1) = 1 ∨ (if V.σb = 1 then 3 else 1) = 3 := by
       split_ifs <;> simp
     refine ⟨((if (if V.σb = 1 then 3 else 1) = 3 then C.radius else -C.radius),
@@ -341,10 +343,10 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
     · intro hnp
       unfold ζOf
       by_cases hσ : V.σb = 1
-      · simp only [ite_eq_left hσ, ite_true]; rw [sgnOf_one hσ, one_mul]
+      · simp [ite_eq_left hσ, ite_true]; rw [sgnOf_one hσ, one_mul]
         have := max_lt (hnp.1 hσ) (show -C.radius < C.radius by linarith)
         linarith
-      · simp only [ite_eq_right hσ, show ¬ (1 : ℕ) = 3 by omega, ite_false]; rw [sgnOf_ne hσ]
+      · simp [ite_eq_right hσ, show ¬ (1 : ℕ) = 3 by omega, ite_false]; rw [sgnOf_ne hσ]
         have := lt_min (hnp.2 hσ) (show -C.radius < C.radius by linarith)
         linarith
 

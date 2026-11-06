@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OracleCand
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 9: correctness of the query from the quantities it computes
@@ -57,7 +60,7 @@ theorem mem_nodeScan (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
     rw [hpj, hjb]
   refine ⟨hv, p, hp, ?_, ?_⟩
   · show (N.arc (N.seq.getD p 0)).reg = rgi N v
-    rw [hpj, hjr]; rfl
+    rwr [hpj, hjr]
   · -- the ends of the arc record are proper positions on walk edges
     obtain ⟨-, -, -, reg', -, -, -, -, -, -, hprop⟩ := id hN
     obtain ⟨hs, he⟩ := hprop _ (NFLoc.seq_lt hN hp)
@@ -77,12 +80,12 @@ theorem mem_nodeScan (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
       rw [e, hek]; exact harc.2.2.2.1
     have hsn := hkey _ hs hsk'
     have hen := hkey _ he hek'
-    exact mem_scan C Q N hs he hsn hen hxC (by rw [hsk, hek]; exact hmem)
+    exact mem_scan C Q N hs he hsn hen hxC (by rwx [hsk, hek])
 
 /-- A ray point in the open box at height at most the top that lies on an arc is on the chain. -/
 theorem mem_set_of_arcSet {x : Point} (hbox : x ∈ Chain.box C.radius) (hy : x.2 ≤ C.top.2)
     {a b : ℝ} (hx : x ∈ (chainModel C).arcSet a b) (hP : C.P.Simple) : x ∈ C.set := by
-  have hnd : x ∉ C.dom := Sweep.arcSet_subset_compl_dom C hP a b hx
+  have hnd  := Sweep.arcSet_subset_compl_dom C hP a b hx
   rcases (Merge.not_mem_dom_iff C hy).1 hnd with h | h
   · exact absurd hbox h
   · exact h
@@ -93,14 +96,14 @@ theorem eventually_not_mem_of_finite {X : Set ℝ} (hX : X.Finite) : ∀ᶠ t in
   have ho : (X \ {0})ᶜ ∈ 𝓝 (0 : ℝ) := hc.isOpen_compl.mem_nhds (by simp)
   filter_upwards [nhdsWithin_le_nhds ho, self_mem_nhdsWithin] with t h1 h2
   intro ht
-  exact h1 ⟨ht, by simp only [Set.mem_singleton_iff]; exact ne_of_gt h2⟩
+  exact h1 ⟨ht, by simp [Set.mem_singleton_iff]; exact ne_of_gt h2⟩
 
 /-- No point lies on an arc of the empty set (arcs face their region at their inner keys). -/
 theorem not_arcHit_empty {F : Set (Set Point)} {x : Point} : ¬ ArcHit C F ∅ x := by
   rintro ⟨a, b, harc, -⟩
   obtain ⟨ha0, han, -, -, hends, -, hfac⟩ := harc
   -- a non-vertex key inside the arc
-  have hn : 0 < (chainModel C).W.n := by rw [walk_n]; omega
+  have hn : 0 < (chainModel C).W.n := by rwo [walk_n]
   obtain ⟨p, t, hp, ht0, ht1, hin⟩ : ∃ p : ℕ, ∃ t : ℝ, p < (chainModel C).W.n ∧ 0 < t ∧ t < 1 ∧
       sideInArc a b (p + t) := by
     rcases hends with ⟨-, -, hab⟩ | ⟨-, rfl, rfl⟩
@@ -127,7 +130,7 @@ theorem not_arcHit_empty {F : Set (Set Point)} {x : Point} : ¬ ArcHit C F ∅ x
         constructor <;> linarith
       · left; linarith
     · refine ⟨0, 1 / 2, hn, by norm_num, by norm_num, ?_⟩
-      unfold sideInArc; norm_num
+      ufn sideInArc
   have := hfac p t hp ht0 ht1 hin
   obtain ⟨δ, hδ, -⟩ := this.exists
 
@@ -164,7 +167,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
     {best : Option ℝ} (hbest : Sweep.FirstHitOpt S z σ best) :
     (∀ t, best = some t → FirstHit C.set z σ t) ∧ (best = none → NoHit C.set z σ) := by
   set F := N.F (chainModel C) Q with hFdef
-  have hFam : (chainModel C).ChordFamily Q F := hN.1
+  have hFam  := hN.1
   have hfin := finite_crossings C (fun k _ => vertex_snd_ne C hD) z hσ
   -- the initial part of the ray is free
   have hini : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt z σ t ∈ freeIn C.dom F := by
@@ -186,7 +189,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
     obtain ⟨r, hr, rfl⟩ := hR.2.2 R hRr
     obtain ⟨j, hj, hjr, hja, hjb⟩ := hA.2.2.1 r hr a b harc
     obtain ⟨p, hp, hpj⟩ := NFLoc.seq_surj hN hj
-    have hpN : p < B.N := lt_of_lt_of_le hp hB.arcs_le
+    have hpN  := lt_of_lt_of_le hp hB.arcs_le
     have hrp : rgi N p = r := by
       show (N.arc (N.seq.getD p 0)).reg = r
       rw [hpj, hjr]
@@ -203,7 +206,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
         show (chainModel C).key Q (N.arc (N.seq.getD p 0)).e = b
         rw [hpj, hjb]
       show rayPt z σ T ∈ (chainModel C).arcSet (sk (chainModel C) Q N p) (ek (chainModel C) Q N p)
-      rw [hsk, hek]; exact hmem
+      rwx [hsk, hek]
     -- no node of `D*` is hit before `T`
     have hDh : ∀ i, Dm i → ∀ s, 0 < s → s < T →
         ¬ ArcHit C F (rgNode reg N B i) (rayPt z σ s) := by
@@ -223,7 +226,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
         exact not_arcHit_empty hh
     obtain ⟨iU, hiU, hsel⟩ := cluster_query_nodes C hP hFam (rgNode reg N B) (bookGraph B)
       (conn_of_graphOK hN hR hA hB) (cross_of_graphOK hP hN hR hA hB) Dm ℓ hlab hz hσ hT hbox
-      hfin hnoF hDh hU hUi (iR := iR) (by rw [hrgR]; exact hR.1 r hr) (by rw [hrgR]; exact hRi)
+      hfin hnoF hDh hU hUi (iR := iR) (by rw [hrgR]; exact hR.1 r hr) (by rwx [hrgR])
     have hSN : SN iU := hSN iU (by
       rcases hsel with h | ⟨-, h⟩
       · exact Or.inl h
@@ -244,10 +247,10 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
       rw [BookData.ite_t hiUA]
     have hinS : rayPt z σ t₀ ∈ S :=
       hS1 iU hSN (mem_nodeScan hN hR hA hiUA hon (by rw [hiU']; exact ⟨a₁, b₁, harc₁, hmem₁⟩))
-    have hSfirst : FirstHit S z σ t₀ := Sweep.firstHit_of_subset hSC hfirst hinS
+    have hSfirst  := Sweep.firstHit_of_subset hSC hfirst hinS
     refine ⟨fun t ht => ?_, fun hn => ?_⟩
     · subst ht
-      rw [Sweep.firstHit_unique hbest hSfirst]; exact hfirst
+      rwx [Sweep.firstHit_unique hbest hSfirst]
     · subst hn
       exact absurd hinS (hbest t₀ hT0)
   · -- the true hit is the side of the box: no hit at all

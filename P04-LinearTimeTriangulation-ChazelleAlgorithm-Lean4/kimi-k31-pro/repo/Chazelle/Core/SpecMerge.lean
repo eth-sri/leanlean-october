@@ -89,27 +89,27 @@ theorem sideInArc_split {a b g x : ℝ} (hx : sideInArc a b x) (hg : sideInArc a
     sideInArc a g x ∨ x = g ∨ sideInArc g b x := by
   unfold sideInArc at *
   by_cases hab : a < b
-  · simp only [hab, ↓reduceIte] at hx hg
+  · simp [hab, ↓reduceIte] at hx hg
     rcases lt_trichotomy x g with h | h | h
-    · left; simp only [hg.1, ↓reduceIte]; exact ⟨hx.1, h⟩
+    · left; simp [hg.1, ↓reduceIte]; exact ⟨hx.1, h⟩
     · exact Or.inr (Or.inl h)
-    · right; right; simp only [hg.2, ↓reduceIte]; exact ⟨h, hx.2⟩
-  · simp only [hab, ↓reduceIte] at hx hg
+    · right; right; simp [hg.2, ↓reduceIte]; exact ⟨h, hx.2⟩
+  · simp [hab, ↓reduceIte] at hx hg
     by_cases hag : a < g
     · have hgb : ¬ g < b := fun h => hab (lt_trans hag h)
       rcases hx with hx | hx
       · rcases lt_trichotomy x g with h | h | h
-        · left; simp only [hag, ↓reduceIte]; exact ⟨hx, h⟩
+        · left; simp [hag, ↓reduceIte]; exact ⟨hx, h⟩
         · exact Or.inr (Or.inl h)
-        · right; right; simp only [hgb, ↓reduceIte]; exact Or.inl h
-      · right; right; simp only [hgb, ↓reduceIte]; exact Or.inr hx
+        · right; right; simp [hgb, ↓reduceIte]; exact Or.inl h
+      · right; right; simp [hgb, ↓reduceIte]; exact Or.inr hx
     · have hgb : g < b := hg.resolve_left hag
       rcases hx with hx | hx
-      · left; simp only [hag, ↓reduceIte]; exact Or.inl hx
+      · left; simp [hag, ↓reduceIte]; exact Or.inl hx
       · rcases lt_trichotomy x g with h | h | h
-        · left; simp only [hag, ↓reduceIte]; exact Or.inr h
+        · left; simp [hag, ↓reduceIte]; exact Or.inr h
         · exact Or.inr (Or.inl h)
-        · right; right; simp only [hgb, ↓reduceIte]; exact ⟨h, hx⟩
+        · right; right; simp [hgb, ↓reduceIte]; exact ⟨h, hx⟩
 
 namespace Model
 
@@ -121,7 +121,7 @@ def keyEdges (g : ℝ) : Set ℕ := {p : ℕ | ∃ t : ℝ, 0 < t ∧ t < 1 ∧ 
 /-- A natural key is the open part of no walk edge. -/
 theorem keyEdges_natCast (k : ℕ) : keyEdges (k : ℝ) = ∅ := by
   ext p
-  simp only [keyEdges, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_and]
+  simp [keyEdges, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_and]
   intro t ht0 ht1 hp
   have h1 : (p : ℝ) < k := by linarith
   have h2 : (k : ℝ) < p + 1 := by linarith
@@ -226,13 +226,13 @@ theorem capChords_subsingleton : (capChords J).Subsingleton := by
 theorem topChords_subset_chords : topChords J ⊆ J.whole.chords := by
   rintro d ⟨k, hk, σ, hσ, hf, rfl⟩
   refine ⟨k, σ, ?_, hσ, hf, rfl⟩
-  simp only [topIdxs, Finset.mem_insert, Finset.mem_singleton] at hk
+  simp [topIdxs, Finset.mem_insert, Finset.mem_singleton] at hk
   rcases hk with rfl | rfl
   · have := J.left.topIdx_le
-    simp only [Merge.Junction.whole_m, Merge.Junction.left_m] at this ⊢
+    simp [Merge.Junction.whole_m, Merge.Junction.left_m] at this ⊢
     omega
   · have := J.right.topIdx_le
-    simp only [Merge.Junction.whole_m, Merge.Junction.right_m] at this ⊢
+    simp [Merge.Junction.whole_m, Merge.Junction.right_m] at this ⊢
     omega
 
 theorem topChords_finite : (topChords J).Finite :=

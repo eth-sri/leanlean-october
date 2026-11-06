@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.RestoreTIntLeft
 public import Chazelle.Core.RestoreTChainLeft
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, the candidate test on the RAM, part 20: the sector test of both models
@@ -44,12 +47,12 @@ theorem iLeft_ok_edge (hE : TGood P W M N c₀) (hI : TInv W c₀ c) (hv : c₀.
     have f₂ : FrameB (fun q => q == 50210) c₁ { c₁ with nreg := upd c₁.nreg 50210 0 } :=
       exec_frameB (Exec.ifLtN_true (e := .skip) h2 e₂) wr_fixBit
     refine ⟨_, _, ex, by omega, ⟨by simp [upd], ?_⟩, s₁.trans (hI₁.stepB e₂.wb_right f₂
-      (fun r hr => Restore.primReg (by simp only [beq_iff_eq] at hr; omega)) _)⟩
-    simp only [upd_eq, zero_ne_one, false_iff]
+      (fun r hr => Restore.primReg (by sio only [beq_iff_eq] at hr)) _)⟩
+    simp [upd_eq, zero_ne_one, false_iff]
     rw [hleft]; intro h; have := t₁.2 h; omega
   · have ex := Exec.seq e₁ (Exec.ifLtN_false (t := .instr (.constN 50210 0)) h2 (.skip hw₁))
     refine ⟨_, _, ex, by omega, ⟨by omega, ?_⟩, s₁.mono (by omega)⟩
-    rw [hleft]; exact t₁
+    rwx [hleft]
 
 /-- **The sector test of both models.** -/
 def gLeft : Stmt := .ifLtN 83021 83023 tLeft iLeft
@@ -60,15 +63,15 @@ theorem gLeft_ok : LeftOK gLeft 20000 := by
   have h23 := hI.h23
   rcases hE.kind with ⟨h0, C, hM⟩ | ⟨h1, hMi, hbit⟩
   · obtain ⟨c', k, ex, hk, b, s⟩ := tLeft_exec hE hI hM (by omega)
-    exact ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, by omega, b,
+    exact ⟨c', k + 1, .ifLtN_true (by rwo [h21, h23, h0]) ex, by omega, b,
       s.mono (by omega)⟩
   · have i6 := hI.hin 83006 (by norm_num) (by norm_num)
     by_cases hv : c.nreg 83006 < c.nreg 83023
     · obtain ⟨c', k, ex, hk, b, s⟩ := iLeft_ok_vertex hE hI hMi hbit (by omega) (by omega)
-      exact ⟨c', k + 1 + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) (.ifLtN_true hv ex),
+      exact ⟨c', k + 1 + 2, .ifLtN_false (by rwo [h21, h23, h1]) (.ifLtN_true hv ex),
         by omega, b, s.mono (by omega)⟩
     · obtain ⟨c', k, ex, hk, b, s⟩ := iLeft_ok_edge hE hI (by omega) (by omega)
-      exact ⟨c', k + 2 + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) (.ifLtN_false hv ex),
+      exact ⟨c', k + 2 + 2, .ifLtN_false (by rwo [h21, h23, h1]) (.ifLtN_false hv ex),
         by omega, b, s.mono (by omega)⟩
 
 end

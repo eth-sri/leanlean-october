@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.RestoreNodeArr
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the search: the position of a node chord end in the host walk
@@ -67,7 +68,7 @@ theorem inE_iff (hS : Stretch M Cα g g' L) {p : ℕ} (hp : p < (chainModel Cα)
     · rintro ⟨-, h2⟩
       exfalso
       have : (L : ℝ) ≤ ((p + (chainModel Cα).W.n - g' : ℕ) : ℝ) := by
-        exact_mod_cast (show L ≤ p + (chainModel Cα).W.n - g' by rw [hnα]; omega)
+        exact_mod_cast (show L ≤ p + (chainModel Cα).W.n - g' by rwo [hnα])
       linarith
 
 /-- The parameter of a vertex position is `0`. -/

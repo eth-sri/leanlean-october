@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ClusterSFacts
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-I, part 61: the registers of the split driver
@@ -74,7 +78,6 @@ theorem copies_exec {c : Config} (hw : WordsBounded W c) (l : List (ℕ × ℕ))
       simp only [c1]
       rw [Machine.upd_other _ _ _ (fun h => hr' p List.mem_cons_self h.symm)]
 
-set_option maxHeartbeats 4000000 in
 /-- **The driver registers.** -/
 theorem regsS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (hW : g.END ≤ W) :
@@ -89,15 +92,15 @@ theorem regsS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (b := 130300) (by decide) (by decide)
   have g1 : ∀ r, r < 130300 → c1.nreg r = c.nreg r := fun r hr =>
     h2 r (fun p hp h => by have := ((show ∀ p ∈ regCopies, 130300 ≤ p.1 by decide) p hp); omega)
-  have hG1 : GR g c1 := hG.frame (fun r hr => g1 r (by unfold GRReg at hr; omega))
+  have hG1 : GR g c1 := hG.frame (fun r hr => g1 r (by ufo GRReg at hr))
   have cp : ∀ d s, (d, s) ∈ regCopies → c1.nreg d = c.nreg s := fun d s h => h1 _ h
-  have e2 := Exec.addN (P := P) hw1 130681 130014 130014 (by rw [hG1.rN]; omega)
+  have e2 := Exec.addN (P := P) hw1 130681 130014 130014 (by rwo [hG1.rN])
   set c2 := { c1 with nreg := upd c1.nreg 130681 (c1.nreg 130014 + c1.nreg 130014) } with hc2
   have k12 : ∀ r, r ≠ 130681 → c2.nreg r = c1.nreg r := fun r h => by
     simp only [c2]; rw [Machine.upd_other _ _ _ h]
-  have hG2 : GR g c2 := hG1.frame (fun r hr => k12 r (by unfold GRReg at hr; omega))
+  have hG2 : GR g c2 := hG1.frame (fun r hr => k12 r (by ufo GRReg at hr))
   have h681 : c2.nreg 130681 = 2 * g.N := by
-    simp only [c2, Machine.upd_same]; rw [hG1.rN]; ring
+    simp only [c2, Machine.upd_same]; rwring [hG1.rN]
   obtain ⟨c3, k3, e3, hk3, ⟨hw3, h880, hL3, h327, h620, hk23, hm3, hr3, hrm3, ho3⟩⟩ := forN (P := P) (W := W)
     (ri := 130880) (rn := 130017) (body := mulBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130880 = j ∧ c'.nreg 130017 = g.L ∧
@@ -115,19 +118,19 @@ theorem regsS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       rw [Nat.succ_mul] at hjN hjμ
       unfold mulBody
       exec_block
-      · rw [h4a, hN4]; omega
-      · config_simp; rw [h4b, hμ4]; omega
-      · config_simp; rw [h4i, h14]; omega
+      · rwo [h4a, hN4]
+      · config_simp; rwo [h4b, hμ4]
+      · config_simp; rwo [h4i, h14]
       · refine ⟨le_refl _, ‹_›, by config_simp; rw [h4i, h14], by config_simp; exact h4n,
-          by config_simp; rw [h4a, hN4, Nat.succ_mul]; ring,
-          by config_simp; rw [h4b, hμ4, Nat.succ_mul]; ring, fun r a1 a2 a3 => ?_, h4m, h4rr,
+          by config_simp; rwring [h4a, hN4, Nat.succ_mul],
+          by config_simp; rwring [h4b, hμ4, Nat.succ_mul], fun r a1 a2 a3 => ?_, h4m, h4rr,
           h4rm, h4o⟩
         simp only
         rw [Machine.upd_other _ _ _ a3, Machine.upd_other _ _ _ a2, Machine.upd_other _ _ _ a1]
         exact h4r r a1 a2 a3)
     (j₀ := 0) ⟨e2.wb_right, by rw [k12 _ (by omega), cp 130880 130009 (by decide)]; exact hG.zero,
-      hG2.rL, by rw [k12 _ (by omega), cp 130327 130085 (by decide), hG.rUP]; ring,
-      by rw [k12 _ (by omega), cp 130620 130084 (by decide), hG.rbase 54 (by omega), g.base_eq]; ring,
+      hG2.rL, by rwring [k12 _ (by omega), cp 130327 130085 (by decide), hG.rUP],
+      by rwring [k12 _ (by omega), cp 130620 130084 (by decide), hG.rbase 54 (by omega), g.base_eq],
       fun r _ _ _ => rfl, rfl, rfl, rfl, rfl⟩ (Nat.zero_le _)
   have kk3 : ∀ r, r ≠ 130327 → r ≠ 130620 → r ≠ 130880 → r ≠ 130681 → c3.nreg r = c1.nreg r :=
     fun r a1 a2 a3 a4 => by rw [hk23 r a1 a2 a3, k12 r a4]
@@ -136,54 +139,54 @@ theorem regsS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have hlen : regCopies.length = 43 := rfl
   refine ⟨c3, regCopies.length + (1 + k3), .seq e1 (.seq e2 e3), by omega, hw3, ?_,
     by rw [R 130704 130009 (by decide) (by omega) (by omega) (by omega) (by omega)]; exact hG.zero,
-    fun r hr => ?_, by rw [hm3]; exact hm1, by rw [hr3]; exact hr1, by rw [hrm3]; exact hrm1,
-    by rw [ho3]; exact ho1⟩
+    fun r hr => ?_, by rwx [hm3], by rwx [hr3], by rwx [hrm3],
+    by rwx [ho3]⟩
   · refine ⟨by rw [kk3 _ (by omega) (by omega) (by omega) (by omega), g1 _ (by omega)]; exact hG.one,
       by rw [kk3 _ (by omega) (by omega) (by omega) (by omega), g1 _ (by omega)]; exact hG.zero,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-    · rw [R 130320 130073 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 43 (by omega)]; rfl
-    · rw [R 130321 130030 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 0 (by omega)]; rfl
-    · rw [R 130322 130059 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 29 (by omega)]; rfl
-    · rw [R 130323 130070 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 40 (by omega)]; rfl
-    · rw [R 130324 130017 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rL]; rfl
-    · rw [R 130325 130058 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 28 (by omega)]; rfl
-    · rw [R 130326 130085 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rUP]; rfl
-    · rw [h327]; rfl
-    · rw [R 130328 130014 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rN]; rfl
-    · rw [R 130345 130017 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rL]; rfl
-    · rw [R 130601 130033 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 3 (by omega)]; rfl
-    · rw [R 130602 130084 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 54 (by omega)]; rfl
-    · rw [R 130603 130070 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 40 (by omega)]; rfl
-    · rw [R 130604 130017 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rL]; rfl
-    · rw [R 130605 130036 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 6 (by omega)]; rfl
-    · rw [R 130606 130074 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 44 (by omega)]; rfl
-    · rw [R 130607 130078 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 48 (by omega)]; rfl
-    · rw [R 130608 130011 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rμ]; rfl
-    · rw [h620]; rfl
-    · rw [R 130632 130041 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 11 (by omega)]; rfl
-    · rw [R 130633 130047 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 17 (by omega)]; rfl
-    · rw [R 130634 130056 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 26 (by omega)]; rfl
-    · rw [R 130635 130059 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 29 (by omega)]; rfl
-    · rw [R 130636 130058 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 28 (by omega)]; rfl
-    · rw [R 130650 130075 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 45 (by omega)]; rfl
-    · rw [R 130651 130073 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 43 (by omega)]; rfl
-    · rw [R 130652 130074 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 44 (by omega)]; rfl
-    · rw [R 130653 130078 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 48 (by omega)]; rfl
-    · rw [R 130654 130030 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 0 (by omega)]; rfl
-    · rw [R 130655 130059 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 29 (by omega)]; rfl
-    · rw [R 130674 130016 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rs]; rfl
-    · rw [R 130675 130011 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rμ]; rfl
-    · rw [R 130680 130037 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 7 (by omega)]; rfl
-    · rw [hk23 _ (by omega) (by omega) (by omega), h681]; rfl
-    · rw [R 130682 130014 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rN]; rfl
-    · rw [R 130692 130069 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 39 (by omega)]; rfl
-    · rw [R 130694 130067 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 37 (by omega)]; rfl
-    · rw [R 130695 130068 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 38 (by omega)]; rfl
-    · rw [R 130696 130023 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rV]; rfl
-    · rw [R 130697 130021 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rO]; rfl
-    · rw [R 130698 130039 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 9 (by omega)]; rfl
-    · rw [R 130700 130076 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 46 (by omega)]; rfl
+    · rwr [R 130320 130073 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 43 (by omega)]
+    · rwr [R 130321 130030 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 0 (by omega)]
+    · rwr [R 130322 130059 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 29 (by omega)]
+    · rwr [R 130323 130070 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 40 (by omega)]
+    · rwr [R 130324 130017 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rL]
+    · rwr [R 130325 130058 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 28 (by omega)]
+    · rwr [R 130326 130085 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rUP]
+    · rwr [h327]
+    · rwr [R 130328 130014 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rN]
+    · rwr [R 130345 130017 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rL]
+    · rwr [R 130601 130033 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 3 (by omega)]
+    · rwr [R 130602 130084 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 54 (by omega)]
+    · rwr [R 130603 130070 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 40 (by omega)]
+    · rwr [R 130604 130017 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rL]
+    · rwr [R 130605 130036 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 6 (by omega)]
+    · rwr [R 130606 130074 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 44 (by omega)]
+    · rwr [R 130607 130078 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 48 (by omega)]
+    · rwr [R 130608 130011 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rμ]
+    · rwr [h620]
+    · rwr [R 130632 130041 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 11 (by omega)]
+    · rwr [R 130633 130047 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 17 (by omega)]
+    · rwr [R 130634 130056 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 26 (by omega)]
+    · rwr [R 130635 130059 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 29 (by omega)]
+    · rwr [R 130636 130058 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 28 (by omega)]
+    · rwr [R 130650 130075 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 45 (by omega)]
+    · rwr [R 130651 130073 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 43 (by omega)]
+    · rwr [R 130652 130074 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 44 (by omega)]
+    · rwr [R 130653 130078 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 48 (by omega)]
+    · rwr [R 130654 130030 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 0 (by omega)]
+    · rwr [R 130655 130059 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 29 (by omega)]
+    · rwr [R 130674 130016 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rs]
+    · rwr [R 130675 130011 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rμ]
+    · rwr [R 130680 130037 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 7 (by omega)]
+    · rwr [hk23 _ (by omega) (by omega) (by omega), h681]
+    · rwr [R 130682 130014 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rN]
+    · rwr [R 130692 130069 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 39 (by omega)]
+    · rwr [R 130694 130067 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 37 (by omega)]
+    · rwr [R 130695 130068 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 38 (by omega)]
+    · rwr [R 130696 130023 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rV]
+    · rwr [R 130697 130021 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rO]
+    · rwr [R 130698 130039 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 9 (by omega)]
+    · rwr [R 130700 130076 (by decide) (by omega) (by omega) (by omega) (by omega), hG.rbase 46 (by omega)]
   · unfold RegRG at hr
     rw [kk3 _ (by omega) (by omega) (by omega) (by omega)]
     exact h2 r (fun p hp h => by

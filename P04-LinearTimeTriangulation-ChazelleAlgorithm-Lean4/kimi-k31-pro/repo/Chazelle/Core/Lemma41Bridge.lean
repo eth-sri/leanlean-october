@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.Lemma41Main
 public import Chazelle.Core.Lemma41Cover2
 public import Chazelle.Core.Lemma41Levels
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-J, part 28: the cost of Lemma 4.1
@@ -62,10 +66,10 @@ theorem two_pow_le_E {n lam k : ℕ} {b : ℝ} (h : (n : ℝ) ≤ (k : ℝ) * la
 
 theorem ceilBeta_le_real (g : ℕ) : (ceilBeta g : ℝ) ≤ (g : ℝ) / 5 + 1 := by
   have := Nat.ceil_lt_add_one (show (0 : ℝ) ≤ beta * g by rw [beta_eq]; positivity)
-  unfold ceilBeta; rw [beta_eq] at this ⊢; linarith
+  unfold ceilBeta; rwli [beta_eq] at this ⊢
 
 theorem le_ceilBeta_real (g : ℕ) : (g : ℝ) / 5 ≤ (ceilBeta g : ℝ) := by
-  have := beta_mul_le_ceilBeta g; rw [beta_eq] at this; linarith
+  have := beta_mul_le_ceilBeta g; rwli [beta_eq] at this
 
 section bounds
 
@@ -75,7 +79,7 @@ variable {lam : ℕ}
 theorem two_pow_ceilBeta_le (lam : ℕ) :
     (2 : ℝ) ^ ceilBeta lam ≤ 2 * ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 15 := by
   have := two_pow_le_E (n := ceilBeta lam) (lam := lam) (k := 15) (b := 1)
-    (by have := ceilBeta_le_real lam; push_cast; linarith)
+    (by have := ceilBeta_le_real lam; pcl)
   simpa using this
 
 /-- `γ'_λ ≤ 2402 E^15`. -/
@@ -106,7 +110,7 @@ theorem cutGran_le_E (lam : ℕ) :
     have : (CL : ℝ) ≤ (ceilBeta lam : ℝ) + 11 := by exact_mod_cast (le_trans a2 a1)
     linarith
   have h2 : (2 : ℝ) ^ ceilBeta CL ≤ (2 : ℝ) ^ (4 : ℝ) * ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 3 :=
-    two_pow_le_E (by have := ceilBeta_le_real CL; push_cast; linarith)
+    two_pow_le_E (by have := ceilBeta_le_real CL; pcl)
   have h16 : (2 : ℝ) ^ (4 : ℝ) = 16 := by norm_num
   rw [h16] at h2
   nlinarith
@@ -124,7 +128,7 @@ theorem rpowCeil_le_E (lam : ℕ) :
     (rpowCeil (cutGran (gradeGran lam) * (gradeGran lam + 1) ^ 2) ((1 : ℝ) / 3) : ℝ) ≤
       4901 * ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 11 := by
   set E := (2 : ℝ) ^ ((lam : ℝ) / 75) with hE
-  have hE1 : 1 ≤ E := one_le_E lam
+  have hE1  := one_le_E lam
   have hH := cutGran_le_E lam
   have hG := gradeGran_le_E lam
   rw [← hE] at hH hG
@@ -146,7 +150,7 @@ theorem rpowCeil_le_E (lam : ℕ) :
     calc (X : ℝ) ^ ((1 : ℝ) / 3) ≤ ((4900 * E ^ 11) ^ 3) ^ ((1 : ℝ) / 3) :=
           Real.rpow_le_rpow (Nat.cast_nonneg _) hXR (by norm_num)
       _ = 4900 * E ^ 11 := by
-          rw [← Real.rpow_natCast, ← Real.rpow_mul h0]; norm_num
+          rwn [← Real.rpow_natCast, ← Real.rpow_mul h0]
   unfold rpowCeil
   have hc := Nat.ceil_lt_add_one (Real.rpow_nonneg (Nat.cast_nonneg X) ((1 : ℝ) / 3))
   have : (1 : ℝ) ≤ E ^ 11 := one_le_pow₀ hE1
@@ -217,7 +221,7 @@ theorem leafW_le (g : ℕ) : leafW g ≤ 540 * 2 ^ (g - ceilBeta g) := by
   have hcb := ceilBeta_le g
   have h1 : 60 * (2 * 2 ^ g + 7) ≤ 540 * 2 ^ g := by
     have := Nat.one_le_two_pow (n := g); omega
-  have h2 : 2 ^ ceilBeta g ≤ gradeGran g := two_pow_ceilBeta_le_gradeGran g
+  have h2  := two_pow_ceilBeta_le_gradeGran g
   have h3 : 2 ^ g = 2 ^ ceilBeta g * 2 ^ (g - ceilBeta g) := by
     rw [← pow_add]; congr 1; omega
   calc 60 * (2 * 2 ^ g + 7) / gradeGran g ≤ 540 * 2 ^ g / 2 ^ ceilBeta g :=
@@ -233,7 +237,7 @@ theorem leafKb_le {a L : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) :
   have hsub : leafKb lam a L ≤ ((leafShp lam (a + L) a).map kb).sum :=
     sublist_sum_le ((List.filter_sublist).map kb)
   have hmap : (leafShp lam (a + L) a).map kb = (cover lam (a + L) a).map fun q => leafW q.1 := by
-    unfold leafShp; rw [List.map_map]; rfl
+    urr leafShp [List.map_map]
   have hw := cover_weight_le (b := a + L) (x := a) leafW h1 (by omega)
   rw [← hmap] at hw
   have hsum : ∑ g ∈ range lam, leafW g ≤ ∑ g ∈ range lam, 540 * 2 ^ (g - ceilBeta g) :=
@@ -244,7 +248,7 @@ theorem leafKb_le {a L : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) :
     rw [← Finset.mul_sum]
     have := resetCost_le lam
     have e : (2 : ℝ) ^ ((1 - beta) * lam) = ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 60 := by
-      rw [E_pow, beta_eq]; congr 1; push_cast; ring
+      rw [E_pow, beta_eq]; congr 1; pcr
     rw [e] at this
     linarith
   have : (leafKb lam a L : ℝ) ≤ 2 * ((∑ g ∈ range lam, 540 * 2 ^ (g - ceilBeta g) : ℕ) : ℝ) := by
@@ -256,8 +260,8 @@ theorem mergedKb_le {L J : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) (hJ : J �
     (((120 * L + 420 * J) / (gradeGran (lam - 1) + 1) : ℕ) : ℝ) ≤
       252240 * ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 60 := by
   set E := (2 : ℝ) ^ ((lam : ℝ) / 75) with hE
-  have hE1 : 1 ≤ E := one_le_E lam
-  have hl : (lam : ℝ) ≤ 150 * E := lam_le_E lam
+  have hE1  := one_le_E lam
+  have hl  := lam_le_E lam
   refine le_trans (Nat.cast_div_le) ?_
   have hG0 : E ^ 15 ≤ 2 * ((gradeGran (lam - 1) : ℝ) + 1) := by
     have a1 : ((2 ^ ceilBeta (lam - 1) : ℕ) : ℝ) ≤ gradeGran (lam - 1) := by
@@ -266,8 +270,8 @@ theorem mergedKb_le {L J : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) (hJ : J �
       rw [hE, E_pow, two_rpow_mul_two_rpow]
       apply two_rpow_le_two_rpow
       have := le_ceilBeta_real (lam - 1)
-      have e : ((lam - 1 : ℕ) : ℝ) = (lam : ℝ) - 1 := by rw [Nat.cast_sub h1]; simp
-      rw [e] at this; push_cast; linarith
+      have e : ((lam - 1 : ℕ) : ℝ) = (lam : ℝ) - 1 := by rws [Nat.cast_sub h1]
+      rw [e] at this; pcl
     rw [Real.rpow_natCast, Real.rpow_one] at a2
     push_cast at a1
     linarith
@@ -277,7 +281,7 @@ theorem mergedKb_le {L J : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) (hJ : J �
   have hLR : (L : ℝ) ≤ E ^ 75 := by
     have : ((L : ℕ) : ℝ) ≤ ((2 ^ lam : ℕ) : ℝ) := by exact_mod_cast hL
     rw [hE, E_pow]; push_cast at this ⊢
-    rw [show (75 : ℝ) * lam / 75 = (lam : ℝ) by ring, Real.rpow_natCast]; exact this
+    rwx [show (75 : ℝ) * lam / 75 = (lam : ℝ) by ring, Real.rpow_natCast]
   have hJR : (J : ℝ) ≤ 300 * E := by
     have : (J : ℝ) ≤ 2 * lam := by exact_mod_cast hJ
     linarith
@@ -352,7 +356,7 @@ theorem l41Big_le (κM κ : ℕ) {a L : ℕ} (h7 : 7 ≤ lam) (_hL1 : 2 ^ (lam -
   have hN : V ≤ lemma41Nat lam := by
     unfold lemma41Nat
     have e : E ^ 74 = (2 : ℝ) ^ ((74 : ℝ) / 75 * lam) := by
-      rw [hE, E_pow]; congr 1; push_cast; ring
+      rw [hE, E_pow]; congr 1; pcr
     rw [hV, e]; exact Nat.le_ceil _
   have hl1 : (1 : ℝ) ≤ lam := by exact_mod_cast (show 1 ≤ lam by omega)
   have hE74 : 1 ≤ E ^ 74 := one_le_pow₀ hE1
@@ -363,13 +367,13 @@ theorem l41Big_le (κM κ : ℕ) {a L : ℕ} (h7 : 7 ≤ lam) (_hL1 : 2 ^ (lam -
     calc (lam : ℝ) ^ 2 = (lam : ℝ) ^ 2 * 1 := by ring
       _ ≤ (lam : ℝ) ^ 2 * (((Nat.clog 2 lam : ℝ) + 1) * E ^ 74) :=
           mul_le_mul_of_nonneg_left h1 (sq_nonneg _)
-      _ = V := by rw [hV]; ring
+      _ = V := by rwring [hV]
   have hV2 : ((Nat.clog 2 lam : ℝ) + 1) ≤ V := by
     have h1 : (1 : ℝ) ≤ (lam : ℝ) ^ 2 * E ^ 74 := by nlinarith
     calc ((Nat.clog 2 lam : ℝ) + 1) = ((Nat.clog 2 lam : ℝ) + 1) * 1 := by ring
       _ ≤ ((Nat.clog 2 lam : ℝ) + 1) * ((lam : ℝ) ^ 2 * E ^ 74) :=
           mul_le_mul_of_nonneg_left h1 (by positivity)
-      _ = V := by rw [hV]; ring
+      _ = V := by rwring [hV]
   have hcjR : (Nat.clog 2 j : ℝ) ≤ (Nat.clog 2 lam : ℝ) + 1 := by exact_mod_cast hcj
   have hjR : (j : ℝ) ≤ 2 * lam := by exact_mod_cast hj2
   have hlvR : (lvBound (fun _ => κM) (scF κ) (scG κ) cutGran (gradeGran lam) (gradeGran (lam - 1))
@@ -384,7 +388,7 @@ theorem l41Big_le (κM κ : ℕ) {a L : ℕ} (h7 : 7 ≤ lam) (_hL1 : 2 ^ (lam -
           (gradeGran lam) (gradeGran (lam - 1)) j L (leafKb lam a L) : ℝ) + 2)
         ≤ ((Nat.clog 2 lam : ℝ) + 1) * ((K2 : ℝ) * (lam : ℝ) ^ 2 * E ^ 74 + 2) :=
           mul_le_mul hcjR hlvR h0 (by positivity)
-      _ = (K2 : ℝ) * V + 2 * ((Nat.clog 2 lam : ℝ) + 1) := by rw [hV]; ring
+      _ = (K2 : ℝ) * V + 2 * ((Nat.clog 2 lam : ℝ) + 1) := by rwring [hV]
       _ ≤ (K2 : ℝ) * V + 2 * V := by linarith
   have hbig : (l41Big (fun _ => κM) (scF κ) (scG κ) cutGran lam a L : ℝ) ≤
       ((K2 + 400 : ℕ) : ℝ) * V := by

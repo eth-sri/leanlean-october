@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SpecAssembly
 public import Chazelle.Core.SpecMerge
+public import Chazelle.RewriteTactics
 
 /-!
 # Core specification, part 6: the phases (WP-G, H, J, K, L, M, N) and their composition
@@ -275,7 +276,7 @@ def BruteSpec : Prop :=
 theorem ceilBeta_mono {g g' : ℕ} (h : g ≤ g') : Cost.ceilBeta g ≤ Cost.ceilBeta g' := by
   unfold Cost.ceilBeta
   apply Nat.ceil_mono
-  have hb : (0 : ℝ) ≤ Cost.beta := by rw [Cost.beta_eq]; norm_num
+  have hb : (0 : ℝ) ≤ Cost.beta := by rwn [Cost.beta_eq]
   exact mul_le_mul_of_nonneg_left (by exact_mod_cast h) hb
 
 theorem ceilBeta_succ_le (g : ℕ) : Cost.ceilBeta (g + 1) ≤ Cost.ceilBeta g + 1 := by
@@ -299,7 +300,7 @@ theorem gradeGran_step (g : ℕ) :
   unfold gradeGran fuseLoss
   have h1 : 2 ^ Cost.ceilBeta g ≤ 2 ^ Cost.ceilBeta (g + 1) :=
     Nat.pow_le_pow_right (by norm_num) (ceilBeta_mono (Nat.le_succ g))
-  have h2 : Nat.clog 2 g ≤ Nat.clog 2 (g + 1) := Nat.clog_mono_right 2 (Nat.le_succ g)
+  have h2  := Nat.clog_mono_right 2 (Nat.le_succ g)
   have h3 : g * (Nat.clog 2 g + 2) + (Nat.clog 2 (g + 1) + 1) ≤
       (g + 1) * (Nat.clog 2 (g + 1) + 2) := by
     have := Nat.mul_le_mul_left g h2
@@ -323,7 +324,7 @@ theorem gradeGran_succ_le_two_mul {g : ℕ} (hg : 2 ≤ g) :
   have h1 : 2 ^ Cost.ceilBeta (g + 1) ≤ 2 * 2 ^ Cost.ceilBeta g := by
     calc 2 ^ Cost.ceilBeta (g + 1) ≤ 2 ^ (Cost.ceilBeta g + 1) :=
           Nat.pow_le_pow_right (by norm_num) (ceilBeta_succ_le g)
-      _ = 2 * 2 ^ Cost.ceilBeta g := by rw [pow_succ]; ring
+      _ = 2 * 2 ^ Cost.ceilBeta g := by rwring [pow_succ]
   have h2 := clog_succ_le (g := g) (by omega)
   have hc : 1 ≤ Nat.clog 2 g := Nat.clog_pos (by norm_num) (by omega)
   have h3 : (g + 1) * (Nat.clog 2 (g + 1) + 2) ≤ 2 * (g * (Nat.clog 2 g + 2)) := by
@@ -360,7 +361,7 @@ most polynomial in `γ`, so they change by constant factors only. -/
 theorem gradeGran_le_real (g : ℕ) :
     (gradeGran g : ℝ) ≤ 1201 * (2 : ℝ) ^ Cost.ceilBeta g := by
   unfold gradeGran fuseLoss
-  have hc : Nat.clog 2 g ≤ g := Cost.clog_two_le_self g
+  have hc  := Cost.clog_two_le_self g
   have hpoly : g * (Nat.clog 2 g + 2) ≤ 3 * g ^ 2 := by
     rcases Nat.eq_zero_or_pos g with h0 | hpos
     · subst h0; simp

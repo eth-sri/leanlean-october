@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.ShootCutShK1M
 public import Chazelle.Core.ShootCutOrig
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 50: the origin of a Lemma 3.6 query
@@ -37,7 +39,7 @@ theorem conv_gt {lo a b t : ℝ} (ha : lo < a) (hb : lo < b) (h0 : 0 ≤ t) (h1 
     lo < (1 - t) * a + t * b := by
   rcases h0.lt_or_eq with h | h
   · nlinarith [mul_pos h (sub_pos.2 hb), mul_nonneg (sub_nonneg.2 h1) (sub_pos.2 ha).le]
-  · subst h; simp; linarith
+  · subst h; sil
 
 theorem conv_lt {hi a b t : ℝ} (ha : a < hi) (hb : b < hi) (h0 : 0 ≤ t) (h1 : t ≤ 1) :
     (1 - t) * a + t * b < hi := by
@@ -64,7 +66,7 @@ theorem inC_seg {C : Chain} {a b x : Point} (ha : a ∈ C.set) (hb : b ∈ C.set
 /-- **The points of a block of tour edges** are points of `C`. -/
 theorem block_inC {C : Chain} {p₀ w : ℕ} (hw : 1 ≤ w) (hp6 : 6 ≤ p₀) (hp : p₀ + w ≤ 2 * C.m + 6)
     {x : Point} (hx : x ∈ (chainModel C).arcSet (p₀ : ℝ) ((p₀ + w : ℕ) : ℝ)) : InC C x := by
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hnW  := chainModel_n C
   obtain ⟨d, hd, hxd⟩ := (arcSet_nat (M := chainModel C) (p₀ := p₀) hw (by omega) x).1 hx
   have hv : ∀ q, 6 ≤ q → q ≤ 2 * C.m + 6 → (chainModel C).W.vtx q ∈ C.set := fun q h1 h2 => by
     obtain ⟨i, rfl⟩ : ∃ i, q = i + 6 := ⟨q - 6, by omega⟩
@@ -130,7 +132,7 @@ theorem query_transfer {P : Polygon} (hσ : σ = 1 ∨ σ = -1) {Cα : Chain} {o
     simp only [QOrigin.eval, hrel]
     refine ⟨fun t' ht' => ?_, id⟩
     have : σ * ((rayPt z σ t').1 - z.1) = t' := by
-      rw [rayPt_fst]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
+      rw [rayPt_fst]; ring_nf; rwring [show σ ^ 2 = σ * σ by ring, hσ2]
     rw [this]; exact ⟨ht', rfl⟩
   | box h =>
     simp only [QRel] at hrel
@@ -142,7 +144,7 @@ theorem query_transfer {P : Polygon} (hσ : σ = 1 ∨ σ = -1) {Cα : Chain} {o
     have hf := hsh.1 t' ht'
     have e : σ * ((rayPt (-σ * Cα.radius, ((Qof P).vtx h).2) σ t').1 - z.1) =
         t' + σ * ((-σ * Cα.radius, ((Qof P).vtx h).2).1 - z.1) := by
-      rw [rayPt_fst]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
+      rw [rayPt_fst]; ring_nf; rwring [show σ ^ 2 = σ * σ by ring, hσ2]
     rw [e]
     refine ⟨hf, ?_⟩
     ext

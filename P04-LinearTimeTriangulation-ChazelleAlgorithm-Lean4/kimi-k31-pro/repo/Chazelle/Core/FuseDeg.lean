@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.FuseDegCover
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The degree bound of the revised fusion (`FusionDegSpec`, WP-D math)
@@ -185,7 +187,7 @@ theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMode
         Set.ncard_le_ncard hsub (hfin.subset (by
           intro f hf; simp only [Set.mem_iUnion] at hf; obtain ⟨p, -, hf, -⟩ := hf; exact hf.1))
     _ ≤ 6 * (P0 : Set ℕ).ncard := ncard_biUnion_le_mul P0.finite_toSet _ fun p _ => hXp p
-    _ ≤ 42 := by rw [Set.ncard_coe_finset]; omega
+    _ ≤ 42 := by rwo [Set.ncard_coe_finset]
 
 /-- **Glue and shared chords pass through the shared vertex or a top, or are the cap chord.** -/
 theorem glue_thr {f : Set Point}
@@ -244,12 +246,12 @@ theorem four_pieces (hP : J.P.Simple) :
   obtain ⟨gA, gA', LA, gB, gB', LB, hA, hB, hsA, hsB, hcovL⟩ :=
     side_two_pieces J hP (C' := J.left) rfl (J₀ := J.m₁ + 2 * J.m₂) (J₀' := J.m₁)
       (ℓ := 2 * J.m₁) (fun e he => tourV_left J he)
-      (by rw [tourV_left J (by omega), tourV_left_zero]; rfl) (by simp) (by rw [hwm]; omega)
+      (by rwr [tourV_left J (by omega), tourV_left_zero]) (by simp) (by rwo [hwm])
       (left_box_eq J)
   obtain ⟨gC, gC', LC, gD, gD', LD, hC, hD, hsC, hsD, hcovR⟩ :=
     side_two_pieces J hP (C' := J.right) rfl (J₀ := J.m₁) (J₀' := 0)
       (ℓ := 2 * J.m₂) (fun e he => tourV_right J he)
-      (by rw [tourV_right J (by omega), tourV_right_zero]; rfl) (by simp) (by rw [hwm]; omega)
+      (by rwr [tourV_right J (by omega), tourV_right_zero]) (by simp) (by rwo [hwm])
       (right_box_eq J)
   refine ⟨gA, gA', LA, gB, gB', LB, gC, gC', LC, gD, gD', LD, hA, hB, hC, hD, hsA, hsB, hsC, hsD,
     fun p hp hc => ?_⟩
@@ -260,10 +262,10 @@ theorem four_pieces (hP : J.P.Simple) :
   have hrel := tpos_rel J
   rw [hwm] at hrel
   rcases cover_arith h1 h2 hτlt hrel (show i < 2 * (J.m₁ + J.m₂) by omega) with hin | hin
-  · rcases hcovL _ hp (by rw [hn, hwm]; exact hin) with h | h
+  · rcases hcovL _ hp (by rwx [hn, hwm]) with h | h
     · exact Or.inl h
     · exact Or.inr (Or.inl h)
-  · rcases hcovR _ hp (by rw [hn, hwm]; exact hin) with h | h
+  · rcases hcovR _ hp (by rwx [hn, hwm]) with h | h
     · exact Or.inr (Or.inr (Or.inl h))
     · exact Or.inr (Or.inr (Or.inr h))
 
@@ -282,8 +284,7 @@ theorem in_piece (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     (hA : SideAttach (chainModel J.whole).W f p t) (hadj : Adj (chainModel J.whole) S' R p t)
     (hdp : dOf (chainModel J.whole).W.n g p < L) :
     f ∈ TypeI J C' Si S' R g g' L ∨ f ∈ CrossX (chainModel J.whole) S' R g L := by
-  have hpd : (g + dOf (chainModel J.whole).W.n g p) % (chainModel J.whole).W.n = p :=
-    add_dOf hpc.1 hA.1
+  have hpd  := add_dOf hpc.1 hA.1
   rw [← hpd] at hA hadj
   by_cases h0 : 0 < (dOf (chainModel J.whole).W.n g p : ℝ) + t
   · exact classify J hP hS hpc hjend hjnd hf hpar hcnt hsh hdp hA.2.1 hA.2.2.1 h0 hA hadj

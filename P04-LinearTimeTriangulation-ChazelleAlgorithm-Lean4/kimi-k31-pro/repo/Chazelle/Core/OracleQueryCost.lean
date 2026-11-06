@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.OracleCostB
 public import Chazelle.Core.OracleCost
 public import Chazelle.Cost.Oracle
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 27: the query fits its budget
@@ -56,7 +59,7 @@ theorem QAt.chords_le (h : QAt P m O E V H C N B k) :
   rw [chords_ncard hC.1, walk_n] at this
   have hVm : V.m = C.m := by
     obtain ⟨-, -, -, hd2, -⟩ := h.desc; rw [← h.dm, hd2]
-  rw [h.hK, hVm]; linarith
+  rwli [h.hK, hVm]
 
 /-- The cost constant of the query. -/
 def κq : ℕ := 2 * 10 ^ 12
@@ -78,9 +81,9 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
   have hA5 : V.A ≤ 5 * (V.K + 1) := by
     have := arcs_le_regions hP hC
     rw [regions_eq hP hC.1] at this
-    rw [h.hA, h.hK]; exact this
+    rwx [h.hA, h.hK]
   have hμ := h.μ_A
-  have hL : V.L ≤ Nat.clog 2 (V.A + V.K) + 1 := h.L_le
+  have hL  := h.L_le
   have hds : dstarCost m V ≤ 7 * k ^ 2 * (NCof w + 6) + 4 := h.dstarCost_le hP
   have hk1 := h.k_pos
   -- the scans
@@ -97,7 +100,7 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
     have : (1 : ℝ) ≤ (γ : ℝ) ^ ((1 : ℝ) / 3) :=
       Real.one_le_rpow (by exact_mod_cast hγ1) (by norm_num)
     have h0 : (0 : ℝ) ≤ ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) := by positivity
-    rw [hG]; nlinarith
+    rwnl [hG]
   have hG0 : (0 : ℝ) ≤ G := by positivity
   -- the binary searches
   have hAK : V.A + V.K ≤ 2525 * (V.m + 1) := by omega
@@ -121,7 +124,7 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
   have hscan' : ((w : ℝ) + 1) * (X : ℝ) ≤ 134688 * G := by
     rw [hX]; push_cast; norm_num at hscan ⊢; linarith
   -- the cost in naturals
-  have hNC : NCof w = 5660 * w + 62500 := by unfold NCof; ring
+  have hNC : NCof w = 5660 * w + 62500 := by ufring NCof
   have hcost : 100 + (715 * V.L + 700 + dstarCost m V + 4 * candCost V (NCof w) (8 * X) + 500) ≤
       23424 + 22715 * V.L + 7947142 * ((w + 1) * X) := by
     unfold candCost
@@ -136,7 +139,7 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
   have hcR : ((100 + (715 * V.L + 700 + dstarCost m V + 4 * candCost V (NCof w) (8 * X) + 500) :
       ℕ) : ℝ) ≤ 23424 + 22715 * (V.L : ℝ) + 7947142 * (((w : ℝ) + 1) * (X : ℝ)) := by
     exact_mod_cast hcost
-  have hκ : (κq : ℝ) = 2 * 10 ^ 12 := by unfold κq; norm_num
+  have hκ : (κq : ℝ) = 2 * 10 ^ 12 := by ufn κq
   rw [hκ]
   have hwX : (0 : ℝ) ≤ ((w : ℝ) + 1) * (X : ℝ) := by positivity
   linarith

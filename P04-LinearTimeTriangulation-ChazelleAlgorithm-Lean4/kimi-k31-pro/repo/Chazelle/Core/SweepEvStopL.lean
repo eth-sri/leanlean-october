@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvStopM2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
 
 /-!
 # The sweep (WP-D), stage 2: the stop list from the raw records (mathematics)
@@ -37,8 +40,8 @@ theorem KLe.trans {a b c : ℝ × ℕ} (h1 : KLe a b) (h2 : KLe b c) : KLe a c :
   unfold KLe at *
   rcases h1 with h1 | ⟨h1, h1'⟩ <;> rcases h2 with h2 | ⟨h2, h2'⟩
   · exact Or.inl (h1.trans h2)
-  · exact Or.inl (by rw [← h2]; exact h1)
-  · exact Or.inl (by rw [h1]; exact h2)
+  · exact Or.inl (by rwx [← h2])
+  · exact Or.inl (by rwx [h1])
   · exact Or.inr ⟨h1.trans h2, h1'.trans h2'⟩
 
 theorem KLe.total (a b : ℝ × ℕ) : KLe a b ∨ KLe b a := by
@@ -97,7 +100,7 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
       ((0 < i ∧ ∀ x', L[i - 1]? = some x' → key x' = key x) → DInv key L (i + 1) O) := by
   have hi : i < L.length := by
     by_contra h'; push Not at h'; rw [List.getElem?_eq_none h'] at hx; cases hx
-  have hxL : x ∈ L := List.mem_of_getElem? hx
+  have hxL  := List.mem_of_getElem? hx
   constructor
   · intro hcase
     -- the last kept key is below the key of `x`
@@ -117,9 +120,9 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
           have := List.pairwise_iff_getElem.1 hs (i - 1) i (by omega) hi (by omega)
           rw [List.getElem?_eq_getElem (by omega)] at hx'
           rw [List.getElem?_eq_getElem hi] at hx
-          simp only [Option.some.injEq] at hx hx'
+          simp [Option.some.injEq] at hx hx'
           rwa [hx, hx'] at this
-        have hlt : KLt (key x') (key x) := KLt.of_le_ne hle hne
+        have hlt  := KLt.of_le_ne hle hne
         -- every kept key is at most the last one
         rcases List.getLast?_eq_some_iff.1 hyl with ⟨O', rfl⟩
         rcases List.mem_append.1 hy with hy | hy
@@ -128,14 +131,14 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
           rw [hkl] at h2
           rcases h2 with h2 | ⟨h2, h2'⟩ <;> rcases hlt with h3 | ⟨h3, h3'⟩
           · exact Or.inl (h2.trans h3)
-          · exact Or.inl (by rw [← h3]; exact h2)
-          · exact Or.inl (by rw [h2]; exact h3)
+          · exact Or.inl (by rwx [← h3])
+          · exact Or.inl (by rwx [h2])
           · exact Or.inr ⟨h2.trans h3, h2'.trans h3'⟩
-        · simp at hy; rw [hy, hkl]; exact hlt
+        · simp at hy; rwx [hy, hkl]
     refine ⟨fun y hy => ?_, ?_, fun j hj x'' hx'' => ?_, fun x'' _ hx'' => ?_, fun h' => by omega⟩
     · rcases List.mem_append.1 hy with hy | hy
       · exact h.sub y hy
-      · simp at hy; rw [hy]; exact hxL
+      · simp at hy; rwx [hy]
     · rw [List.pairwise_append]
       exact ⟨h.inc, List.pairwise_singleton _ _, fun a ha b hb => by
         simp at hb; rw [hb]; exact hlast a ha⟩
@@ -144,7 +147,7 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
         exact ⟨y, List.mem_append_left _ hy, hk⟩
       · rw [hx] at hx''; cases hx''
         exact ⟨x, by simp, rfl⟩
-    · simp only [Nat.add_sub_cancel] at hx''
+    · simp [Nat.add_sub_cancel] at hx''
       rw [hx] at hx''; cases hx''
       exact ⟨x, by simp, rfl⟩
   · rintro ⟨hpos, heq⟩
@@ -156,7 +159,7 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
       · rw [hx] at hx''; cases hx''
         obtain ⟨y, hy, hk⟩ := h.cov (j - 1) (by omega) x' hx'
         exact ⟨y, hy, by rw [hk, heq x' hx']⟩
-    · simp only [Nat.add_sub_cancel] at hx''
+    · simp [Nat.add_sub_cancel] at hx''
       rw [hx] at hx''; cases hx''
       obtain ⟨y, hy, hk⟩ := h.last x' hpos hx'
       exact ⟨y, hy, by rw [hk, heq x' hx']⟩
@@ -205,15 +208,15 @@ theorem raw_eq_of_key (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   obtain ⟨hok', hf', hA', -, hd', hend'⟩ := h'
   unfold rKey at hk
   obtain ⟨h1, h2⟩ := Prod.ext_iff.1 hk
-  simp only at h1 h2
+  simp at h1 h2
   rw [offK_eq, offK_eq] at h1
   obtain ⟨he, ht⟩ := pos_eq_of_oW hP hS₂.2.1 hS₂.1 hA.1 hA'.1 hA.2.1 hA.2.2.1 hA'.2.1
     hA'.2.2.1 h1
   refine ⟨he, ht, ?_⟩
   have hm := (stop_mem hP hN hok hf).1
   have hm' := (stop_mem hP hN hok' hf').1
-  have ha : rSet P J N r ∈ Merge.augChords J.whole := F₂plus_subset J hS₂.2.1 hm
-  have ha' : rSet P J N r' ∈ Merge.augChords J.whole := F₂plus_subset J hS₂.2.1 hm'
+  have ha  := F₂plus_subset J hS₂.2.1 hm
+  have ha'  := F₂plus_subset J hS₂.2.1 hm'
   have hpt : sidePt (chainModel J.whole).W r.1 (rPar P J r) =
       sidePt (chainModel J.whole).W r'.1 (rPar P J r') := by rw [he, ht]
   rw [hend, hend', h2] at hpt
@@ -262,7 +265,7 @@ theorem stopsOK_of' {α : Type*} (hP : J.P.Simple) (hN : IsNF (chainModel J.righ
   have hO : ∀ y ∈ O, RawOK P J N (rec y) (dc y) := fun y hy => hok y (hsub y hy)
   have hst : stopsOf J (Qof P) N (O.map rec) =
       O.map (fun y => ((rec y).1, rPar P J (rec y), rSet P J N (rec y))) := by
-    unfold stopsOf; rw [List.map_map]; rfl
+    urr stopsOf [List.map_map]
   rw [hst]
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro s hs
@@ -279,7 +282,7 @@ theorem stopsOK_of' {α : Type*} (hP : J.P.Simple) (hN : IsNF (chainModel J.righ
   · rw [List.pairwise_map]
     exact hinc.imp fun {a b} h => by
       have := KLt.fst_le h
-      simp only [rKey, offK_eq] at this
+      simp [rKey, offK_eq] at this
       exact this
   · rw [List.Nodup, List.pairwise_map]
     refine List.Pairwise.imp_of_mem (fun {a b} ha hb h heq => ?_) hinc

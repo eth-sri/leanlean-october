@@ -2,6 +2,12 @@ module
 
 public import Chazelle.Core.DownPhaseDrvGEnv
 public import Chazelle.Core.GranSize
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase driver, region procedure (D5), part 6: one piece
@@ -35,7 +41,7 @@ theorem pts_length_le_runs (n C : ℕ) : ∀ H : Host, (∀ a ℓ, HostItem.run 
   | .pt x :: H, h => by
     rw [DownMath.pts_cons, List.length_append, List.length_cons, Nat.succ_mul]
     have := pts_length_le_runs n C H fun a ℓ hm => h a ℓ (List.mem_cons_of_mem _ hm)
-    simp only [HostItem.pts, List.length_singleton]; omega
+    sio only [HostItem.pts, List.length_singleton]
   | .run a ℓ :: H, h => by
     rw [DownMath.pts_cons, List.length_append, List.length_cons, Nat.succ_mul,
       DownMath.run_pts_length]
@@ -59,7 +65,6 @@ section exec
 
 variable {O : OracleIface} {P : Polygon} {W : ℕ} {R : RData}
 
-set_option maxHeartbeats 4000000 in
 /-- **One piece**: computed, then merged into the accumulated chain (or becoming it). -/
 theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
     (hsp : PcMeets O sp κP)
@@ -84,19 +89,19 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         d'.nreg q = d.nreg q) ∧
       Frame drvBands d d' k := by
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hn3 : 3 ≤ P.n := hF.hG.1.1
+  have hn3  := hF.hG.1.1
   have hNPn : (R.H.poly (Qof P)).n = R.NP := by rw [DownMath.host_poly_n, hF.hNP]
-  have hW1 : 1579 ≤ W := by unfold pcB at hroom; omega
+  have hW1 : 1579 ≤ W := by ufo pcB at hroom
   -- the piece
   obtain ⟨d₁, k₁, e₁, hk₁, q1, q2, q3, q4, q5, fr₁⟩ := pcCall_exec (P := P) hsp hF.hG hF.hWn d hw
     (H := R.H) hE.r200 h40 h41 h42 h43 hE.r202 hE.r204 hE.r205 (hE.holds hF) (hE.hostAt hF)
     (by have := hF.hHB; have := hE.alloc; omega) (by have := hF.hHl; omega) hF.hwf hF.hreg
-    hF.hsimp (by rw [← hF.hNP]; exact hsm) hm1 hk
+    hF.hsimp (by rwx [← hF.hNP]) hm1 hk
     (fun h1 => by
       obtain ⟨b1, b2, b3⟩ := hleaf h1
       exact ⟨b1, by rw [hE.grades hF]; exact hF.hμg, b2, hF.hg0, b3⟩)
     (fun h0 => ⟨hcon h0, by have := hcon h0; have := hF.h128; omega⟩)
-    (by unfold pcB at hroom; omega)
+    (by ufo pcB at hroom)
   obtain ⟨d₀, k₀, k₀', e₀, e₀', hk₀⟩ := exec_seq_inv e₁
   have keep1 : ∀ q ∈ envRegs, d₁.nreg q = d.nreg q := by
     intro q hq
@@ -126,22 +131,22 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         · exact E₁.r204
       exact ⟨d₂, k₂, e₂, hk₂, v10, v11, v12, v13, v22, m₂, exec_frameM e₂ (by decide)⟩
     have fr₂ : Frame drvBands d₁ d₂ k₂ := frame_band (fun q hq => by
-      simp only [Bool.or_eq_true, decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega)
+      simp [Bool.or_eq_true, decide_eq_true_eq] at hq; sio only [bandOf, bDownDrv])
       g₂ m₂ k₂
     have hA₂ : d₂.nreg ALLOC = d₁.nreg ALLOC := fr₂.2.2.2.2.2.1.antisymm' (by
       have := fr₂.2.2.2.2.2.2; have := g₂.1 ALLOC (by decide); omega)
     refine ⟨d₂, k₀ + (k₀' + (k₂ + 1)), .seq e₀ (.seq e₀' (.ifLtN_true (by
-      rw [r22, f0, E₁.r230]; omega) e₂)), by unfold pcB; omega, E₁.keep (fun q hq => g₂.1 q (by
+      rwo [r22, f0, E₁.r230]) e₂)), by ufo pcB, E₁.keep (fun q hq => g₂.1 q (by
       obtain ⟨-, -, b3, b4⟩ := envRegs_band q hq
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
+      sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not]))
       (fun a ha => by rw [m₂]) (by omega), ?_, fun q hq hq' => ?_, ?_⟩
-    · simp only [↓reduceIte, Nat.zero_add]
+    · simp [↓reduceIte, Nat.zero_add]
       refine ⟨v22, v12, v13, by rw [v10, hA₂]; exact q4.1, by rw [v10]; have := hE.alloc; omega,
         by rw [v11]; have := hE.alloc; omega, fun C hP hs hm => ?_⟩
       obtain ⟨r1, N, r2, r3⟩ := q5 C hP hs hm
       rw [v10, v11, hA₂, m₂]
       exact ⟨Robust.imp r1 fun _ h => ⟨h.1, h.2.2, h.2.1⟩, N, r2, r3⟩
-    · rw [g₂.1 q (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)]
+    · rw [g₂.1 q (by sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not])]
       exact q1 q hq (by omega)
     · have := fr₁.trans fr₂
       rw [Finset.union_self] at this
@@ -162,31 +167,31 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         exact r41
       exact ⟨d₂, k₂, e₂, hk₂, v14, v15, v16, m₂, exec_frameM e₂ (by decide)⟩
     have fr₂ : Frame drvBands d₁ d₂ k₂ := frame_band (fun q hq => by
-      simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) g₂ m₂ k₂
+      simp [decide_eq_true_eq] at hq; sio only [bandOf, bDownDrv]) g₂ m₂ k₂
     have hA₂ : d₂.nreg ALLOC = d₁.nreg ALLOC := g₂.1 ALLOC (by decide)
     have E₂ : REnv R d₂ := E₁.keep (fun q hq => g₂.1 q (by
       obtain ⟨-, -, b3, -⟩ := envRegs_band q hq
-      simp only [decide_eq_false_iff_not]; omega)) (fun a ha => by rw [m₂]) (by omega)
+      sio only [decide_eq_false_iff_not])) (fun a ha => by rw [m₂]) (by omega)
     have A₂ : AccOK P R d₂ s γ := (A.keep fr₁ fun q hq => q1 q (by
       rcases hq with h | h | h | h | h <;> subst h <;> simp [bandOf, bDownDrv])
       (by omega)).keep fr₂ fun q hq => g₂.1 q (by
-        simp only [decide_eq_false_iff_not]; omega)
+        sio only [decide_eq_false_iff_not])
     -- the two chains
-    let C1 : Chain := ⟨R.H.poly (Qof P), 0, s, hs, by rw [hNPn]; omega⟩
-    let C2 : Chain := ⟨R.H.poly (Qof P), s, m, hm1, by rw [hNPn]; omega⟩
+    let C1 : Chain := ⟨R.H.poly (Qof P), 0, s, hs, by rwo [hNPn]⟩
+    let C2 : Chain := ⟨R.H.poly (Qof P), s, m, hm1, by rwo [hNPn]⟩
     have hlen : C1.m + C2.m + 1 ≤ C1.P.n := by
-      show s + m + 1 ≤ (R.H.poly (Qof P)).n; rw [hNPn]; exact hsm
+      show s + m + 1 ≤ (R.H.poly (Qof P)).n; rwx [hNPn]
     obtain ⟨hd1R, N1, hN1, hc1⟩ := A₂.desc C1 rfl rfl rfl
     obtain ⟨hd2R, N2, hN2, hc2⟩ := q5 C2 rfl rfl rfl
     -- the junction and the degree
     have hDH : DistinctHeights (Qof P) := (goodShear_epsOf hF.hG.2).2.1
     have hgen : SharedGeneric (L41.jOf C1 C2 hlen) := by
       obtain ⟨H₁, a', ℓ, H₂, k, eH, hk1, hkl, hsk⟩ := hjun hs
-      refine DownMath.sharedGeneric_run (by rw [hQn]; omega) hDH (H₁ := H₁) (H₂ := H₂) (a := a')
+      refine DownMath.sharedGeneric_run (by rwo [hQn]) hDH (H₁ := H₁) (H₂ := H₂) (a := a')
         (ℓ := ℓ) (k := k) ?_ hk1 hkl ?_
       · show R.H.poly (Qof P) = _; rw [eH]
       · show (0 + s) % (R.H.poly (Qof P)).n = _
-        rw [hNPn, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]; omega
+        rwo [hNPn, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
     have hfd : (chainModel (L41.jOf C1 C2 hlen).whole).FullDegLe (Qof P) 130 := by
       have h1 := fullDegLe_host (C := (L41.jOf C1 C2 hlen).whole) (t := R.H.length) hF.hsimp
         (fun y => host_ncard_le (Qof P) hDH R.H y) (Qof P)
@@ -224,14 +229,14 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         (Robust.imp hd1R fun _ h => ⟨h.2.1, h.2.2⟩)
         (by rw [v14, hA₂, m₂]; exact Robust.imp hd2R fun _ h => ⟨h.2.2, h.2.1⟩)
         A₂.dA (by rw [v14, hA₂]; exact q4.1) rfl rfl rfl rfl hlen hN1
-        (by rw [v15, hA₂, m₂]; exact hN2) hc1 hc2 (le_refl _) hγ hgen hfd (by norm_num)
-        (E₂.holds hF) (by rw [E₂.cap hF]; have := hF.hcap; unfold fuseLoss; omega)
+        (by rwx [v15, hA₂, m₂]) hc1 hc2 (le_refl _) hγ hgen hfd (by norm_num)
+        (E₂.holds hF) (by rw [E₂.cap hF]; have := hF.hcap; ufo fuseLoss)
         (by have := hF.hγW; omega)
         (by
           have := fr₁.2.2.2.2.2.2
-          rw [hA₂]; unfold pcB at hroom; omega)
+          ruo [hA₂] pcB at hroom)
     refine ⟨d₃, k₀ + (k₀' + ((k₂ + k₃) + 2)), .seq e₀ (.seq e₀' (.ifLtN_false (by
-      rw [r22', E₁.r230]; omega) (.seq e₂ e₃))), by have := hF.hHl; unfold pcB; omega,
+      rwo [r22', E₁.r230]) (.seq e₂ e₃))), by have := hF.hHl; ufo pcB,
       E₂.keep (fun q hq => wq q (envRegs_band q hq).1 (by
         obtain ⟨-, -, b3, -⟩ := envRegs_band q hq; omega)) (fun a ha => fr₃.2.2.1 a (by
           have := E₂.alloc; omega)) fr₃.2.2.2.2.2.1, ?_, fun q hq hq' => ?_, ?_⟩
@@ -243,7 +248,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
       subst hC
       rw [w10]
       exact ⟨wR, N, wN, wc⟩
-    · rw [wq q hq (by omega), g₂.1 q (by simp only [decide_eq_false_iff_not]; omega)]
+    · rw [wq q hq (by omega), g₂.1 q (by sio only [decide_eq_false_iff_not])]
       exact q1 q hq (by omega)
     · have := (fr₁.trans fr₂).trans (fr₃.mono mgBands_subset (le_refl _))
       rw [Finset.union_self, Finset.union_self] at this

@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.SortList
 public import Chazelle.Core.SpecKernels
 public import Chazelle.Programs.Tactics
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # Sorting on the RAM, part 2: a verified bottom-up merge sort (WP-C)
@@ -333,7 +336,7 @@ theorem drop_of_seg {m : ℕ → ℕ} {p n : ℕ} {l : List ℕ} (h : seg m p n 
 /-- A nonempty segment starts with its first word. -/
 theorem seg_pos {m : ℕ → ℕ} {p n : ℕ} (h : 0 < n) : seg m p n = m p :: seg m (p + 1) (n - 1) := by
   obtain ⟨n', rfl⟩ : ∃ n', n = n' + 1 := ⟨n - 1, by omega⟩
-  rw [seg_succ]; rfl
+  rwr [seg_succ]
 
 /-- A segment of length `0` is empty. -/
 theorem seg_eq_nil {m : ℕ → ℕ} {p n : ℕ} (h : n = 0) : seg m p n = [] := by
@@ -441,14 +444,14 @@ theorem stepL (hJs : JStable J A₀) {c : Config}
   have hli := h.lo_i
   have him := h.i_mid
   obtain ⟨c₃, k₃, e₃, rfl, hm₃, hi₃, hr₃, hrr₃, hrm₃, ho₃⟩ := takeL_exec (P := P) c h.wb
-    (by rw [h.rsrc]; omega) (by rw [h.rdst]; omega) (by rw [h.one]; omega)
+    (by rwo [h.rsrc]) (by rwo [h.rdst]) (by rwo [h.one])
   have w₃ := e₃.wb_right
   have k₃ : c₃.nreg 30015 = c.nreg 30015 := hr₃ _ (by omega) (by omega) (by omega)
   have o₃ : c₃.nreg 30006 = 1 := (hr₃ _ (by omega) (by omega) (by omega)).trans h.one
   obtain ⟨c₄, e₄, n₄, m₄, rr₄, rm₄, o₄⟩ := addN_char (P := P) w₃ 30015 30015 30006
-    (by rw [k₃, o₃]; omega)
+    (by rwo [k₃, o₃])
   refine ⟨c₃, c₄, e₃, e₄, ?_, by rw [n₄, Machine.upd_same, k₃, o₃]⟩
-  have w₄ : WordsBounded W c₄ := e₄.wb_right
+  have w₄  := e₄.wb_right
   -- the new memory
   have hm₄ : c₄.nmem = upd c.nmem (dst + c.nreg 30015) (c.nmem (src + c.nreg 30013)) := by
     rw [m₄, hm₃, h.rsrc, h.rdst]
@@ -470,7 +473,7 @@ theorem stepL (hJs : JStable J A₀) {c : Config}
     · have := bandOf_sort hb
       exact r₄ r (by omega) (by omega) (by omega) (by omega)
     · rw [hm₄, Machine.upd_other _ _ _ (by have := h.dA; omega)]
-  have hJ₄ : J c₄ := hJs c c₄ h.hJ hsl.1 hsl.2.1 hsl.2.2.1 hsl.2.2.2.1 hsl.2.2.2.2
+  have hJ₄  := hJs c c₄ h.hJ hsl.1 hsl.2.1 hsl.2.2.1 hsl.2.2.2.1 hsl.2.2.2.2
   -- the list step
   have hA : a.drop (c.nreg 30013 - lo) =
       c.nmem (src + c.nreg 30013) :: a.drop (c.nreg 30013 + 1 - lo) := by
@@ -498,8 +501,8 @@ theorem stepL (hJs : JStable J A₀) {c : Config}
     rhi := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.rhi,
     keep := fun r _ _ _ _ h13 _ h15 h16 h18 =>
       (r₄ r h13 h15 h16 h18).trans (h.keep r ‹_› ‹_› ‹_› ‹_› h13 ‹_› h15 h16 h18),
-    lo_i := by rw [i₄]; omega, i_mid := by rw [i₄]; omega, mid_j := by rw [j₄]; exact h.mid_j,
-    j_hi := by rw [j₄]; exact h.j_hi, rk := by rw [i₄, j₄, kk₄]; omega, bsrc := h.bsrc,
+    lo_i := by rwo [i₄], i_mid := by rwo [i₄], mid_j := by rw [j₄]; exact h.mid_j,
+    j_hi := by rw [j₄]; exact h.j_hi, rk := by rwo [i₄, j₄, kk₄], bsrc := h.bsrc,
     bdst := h.bdst, disj := h.disj, dA := h.dA, ma := by rw [hm₄]; exact sa,
     mb := by rw [hm₄]; exact sb,
     out := by
@@ -526,14 +529,14 @@ theorem stepR (hJs : JStable J A₀) {c : Config}
   have hli := h.lo_i
   have him := h.i_mid
   obtain ⟨c₃, k₃, e₃, rfl, hm₃, hi₃, hr₃, hrr₃, hrm₃, ho₃⟩ := takeR_exec (P := P) c h.wb
-    (by rw [h.rsrc]; omega) (by rw [h.rdst]; omega) (by rw [h.one]; omega)
+    (by rwo [h.rsrc]) (by rwo [h.rdst]) (by rwo [h.one])
   have w₃ := e₃.wb_right
   have k₃ : c₃.nreg 30015 = c.nreg 30015 := hr₃ _ (by omega) (by omega) (by omega)
   have o₃ : c₃.nreg 30006 = 1 := (hr₃ _ (by omega) (by omega) (by omega)).trans h.one
   obtain ⟨c₄, e₄, n₄, m₄, rr₄, rm₄, o₄⟩ := addN_char (P := P) w₃ 30015 30015 30006
-    (by rw [k₃, o₃]; omega)
+    (by rwo [k₃, o₃])
   refine ⟨c₃, c₄, e₃, e₄, ?_, by rw [n₄, Machine.upd_same, k₃, o₃]⟩
-  have w₄ : WordsBounded W c₄ := e₄.wb_right
+  have w₄  := e₄.wb_right
   -- the new memory
   have hm₄ : c₄.nmem = upd c.nmem (dst + c.nreg 30015) (c.nmem (src + c.nreg 30014)) := by
     rw [m₄, hm₃, h.rsrc, h.rdst]
@@ -555,7 +558,7 @@ theorem stepR (hJs : JStable J A₀) {c : Config}
     · have := bandOf_sort hb
       exact r₄ r (by omega) (by omega) (by omega) (by omega)
     · rw [hm₄, Machine.upd_other _ _ _ (by have := h.dA; omega)]
-  have hJ₄ : J c₄ := hJs c c₄ h.hJ hsl.1 hsl.2.1 hsl.2.2.1 hsl.2.2.2.1 hsl.2.2.2.2
+  have hJ₄  := hJs c c₄ h.hJ hsl.1 hsl.2.1 hsl.2.2.1 hsl.2.2.2.1 hsl.2.2.2.2
   -- the list step
   have hB : b.drop (c.nreg 30014 - mid) =
       c.nmem (src + c.nreg 30014) :: b.drop (c.nreg 30014 + 1 - mid) := by
@@ -585,7 +588,7 @@ theorem stepR (hJs : JStable J A₀) {c : Config}
     keep := fun r _ _ _ _ _ h14 h15 h16 h18 =>
       (r₄ r h14 h15 h16 h18).trans (h.keep r ‹_› ‹_› ‹_› ‹_› ‹_› h14 h15 h16 h18),
     lo_i := by rw [i₄]; exact h.lo_i, i_mid := by rw [i₄]; exact h.i_mid,
-    mid_j := by rw [j₄]; omega, j_hi := by rw [j₄]; omega, rk := by rw [i₄, j₄, kk₄]; omega, bsrc := h.bsrc,
+    mid_j := by rwo [j₄], j_hi := by rwo [j₄], rk := by rwo [i₄, j₄, kk₄], bsrc := h.bsrc,
     bdst := h.bdst, disj := h.disj, dA := h.dA, ma := by rw [hm₄]; exact sa,
     mb := by rw [hm₄]; exact sb,
     out := by
@@ -623,12 +626,12 @@ theorem mergeBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
   rw [h.rhi] at hk
   unfold mergeBody mergeStep
   by_cases hi1 : c.nreg 30013 < mid
-  · have t1 : c.nreg 30013 < c.nreg 30011 := by rw [h.rmid]; exact hi1
+  · have t1 : c.nreg 30013 < c.nreg 30011 := by rwx [h.rmid]
     by_cases hj1 : c.nreg 30014 < hi
-    · have t2 : c.nreg 30014 < c.nreg 30012 := by rw [h.rhi]; exact hj1
+    · have t2 : c.nreg 30014 < c.nreg 30012 := by rwx [h.rhi]
       -- load and compare
       obtain ⟨c₁, k₁, e₁, rfl, x₁, y₁, r₁, m₁, rr₁, rm₁, o₁⟩ := cmpLoad_exec (P := P) c h.wb
-        (by rw [h.rsrc]; omega) (by rw [h.rsrc]; omega)
+        (by rwo [h.rsrc]) (by rwo [h.rsrc])
       have sl₁ : SL A₀ c c₁ := ⟨fun r hb _ => by
           have := bandOf_sort hb; exact r₁ r (by omega) (by omega) (by omega), rr₁,
         fun x _ => by rw [m₁], rm₁, o₁⟩
@@ -639,7 +642,7 @@ theorem mergeBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
         (fun r hr h0 h1' h2' _ _ => r₂ r h0 h1' h2' (by
           rcases hr with hr | hr
           · left; intro hm; apply hB
-            have : bandOf r = bSort := by unfold bandOf bSort; omega
+            have : bandOf r = bSort := by ufo bandOf bSort
             rwa [this] at hm
           · exact Or.inr hr))
       have i₂ : c₂.nreg 30013 = c.nreg 30013 := by
@@ -654,25 +657,25 @@ theorem mergeBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
         rw [r₂ _ (by omega) (by omega) (by omega) (Or.inl (by
           intro hm; apply hB; rwa [show bandOf 30015 = bSort by decide] at hm)),
           r₁ _ (by omega) (by omega) (by omega)]
-      have mm₂ : c₂.nmem = c.nmem := m₂.trans m₁
+      have mm₂  := m₂.trans m₁
       rw [x₁, y₁, h.rsrc] at bit₂
       by_cases hle : le (c.nmem (src + c.nreg 30013)) (c.nmem (src + c.nreg 30014)) = true
       · rw [ite_eq_left hle] at bit₂
-        obtain ⟨c₃, c₄, e₃, e₄, I₄, k₄⟩ := stepL (P := P) hJs I₂ (by rw [i₂]; exact hi1)
-          (fun _ => by rw [mm₂, i₂, j₂]; exact hle)
+        obtain ⟨c₃, c₄, e₃, e₄, I₄, k₄⟩ := stepL (P := P) hJs I₂ (by rwx [i₂])
+          (fun _ => by rwx [mm₂, i₂, j₂])
         refine ⟨c₄, _, .seq (.ifLtN_true t1 (.ifLtN_true t2 (.seq e₁ (.seq e₂
-          (.ifLtN_false (by rw [bit₂, I₂.one]; decide) e₃))))) e₄, I₄, by omega,
+          (.ifLtN_false (by rwd [bit₂, I₂.one]) e₃))))) e₄, I₄, by omega,
           by rw [k₄, k₂e]⟩
       · rw [ite_eq_right hle] at bit₂
-        obtain ⟨c₃, c₄, e₃, e₄, I₄, k₄⟩ := stepR (P := P) hJs I₂ (by rw [j₂]; exact hj1)
+        obtain ⟨c₃, c₄, e₃, e₄, I₄, k₄⟩ := stepR (P := P) hJs I₂ (by rwx [j₂])
           (fun _ => by rw [mm₂, i₂, j₂]; simpa using hle)
         refine ⟨c₄, _, .seq (.ifLtN_true t1 (.ifLtN_true t2 (.seq e₁ (.seq e₂
-          (.ifLtN_true (by rw [bit₂, I₂.one]; decide) e₃))))) e₄, I₄, by omega,
+          (.ifLtN_true (by rwd [bit₂, I₂.one]) e₃))))) e₄, I₄, by omega,
           by rw [k₄, k₂e]⟩
-    · have t2 : ¬ c.nreg 30014 < c.nreg 30012 := by rw [h.rhi]; exact hj1
+    · have t2 : ¬ c.nreg 30014 < c.nreg 30012 := by rwx [h.rhi]
       obtain ⟨c₃, c₄, e₃, e₄, I₄, k₄⟩ := stepL (P := P) hJs h hi1 (fun h' => absurd h' hj1)
       exact ⟨c₄, _, .seq (.ifLtN_true t1 (.ifLtN_false t2 e₃)) e₄, I₄, by omega, k₄⟩
-  · have t1 : ¬ c.nreg 30013 < c.nreg 30011 := by rw [h.rmid]; exact hi1
+  · have t1 : ¬ c.nreg 30013 < c.nreg 30011 := by rwx [h.rmid]
     obtain ⟨c₃, c₄, e₃, e₄, I₄, k₄⟩ := stepR (P := P) hJs h (by omega) (fun h' => absurd h' hi1)
     exact ⟨c₄, _, .seq (.ifLtN_false t1 e₃) e₄, I₄, by omega, k₄⟩
 
@@ -690,7 +693,7 @@ theorem mergeLoop_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
     (fun _ h => h.wb) (fun d hd ht => by
       obtain ⟨d', k, e, I, hk, hk'⟩ := mergeBody_inv (P := P) hcmp hJs hB hd ht
       have := hd.rhi
-      exact ⟨d', k, e, I, hk, by rw [hk']; omega⟩) h
+      exact ⟨d', k, e, I, hk, by rwo [hk']⟩) h
   refine ⟨c', k, e, I', hk, ?_⟩
   have := I'.out
   have hi' := I'.rhi
@@ -700,8 +703,8 @@ theorem mergeLoop_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
   have h4 := I'.lo_i
   have h5 := I'.mid_j
   rw [hi'] at hex
-  rw [List.drop_of_length_le (by rw [← I'.ma]; simp; omega),
-    List.drop_of_length_le (by rw [← I'.mb]; simp; omega), List.nil_merge, List.append_nil,
+  rw [List.drop_of_length_le (by rws [← I'.ma]; omega),
+    List.drop_of_length_le (by rws [← I'.mb]; omega), List.nil_merge, List.append_nil,
     show c'.nreg 30015 - lo = hi - lo by omega] at this
   exact this
 
@@ -748,7 +751,7 @@ theorem mpass_take_step (hw : 0 < w) {lo mid hi t : ℕ} (hlo : lo = t * (2 * w)
   have e1 : l.take hi = l.take lo ++ (l.drop lo).take (hi - lo) := by
     rw [← List.take_add]; congr 1; omega
   have hlen : (l.take lo).length = t * (2 * w) := by
-    rw [List.length_take, ← hlo]; omega
+    rwo [List.length_take, ← hlo]
   have hb : hi - lo ≤ 2 * w := by omega
   have hlen2 : ((l.drop lo).take (hi - lo)).length ≤ 2 * w := by
     rw [List.length_take]; exact (Nat.min_le_left _ _).trans hb
@@ -778,10 +781,10 @@ theorem pairBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
   set hi := min (mid + w) K with hhi
   -- mid, hi
   obtain ⟨c₁, k₁, e₁, hk₁, n₁, m₁, rr₁, rm₁, o₁⟩ := clamp_exec (P := P) h.wb 30011 30010
-    (by omega) (by rw [h.rw]; omega)
+    (by omega) (by rwo [h.rw])
   have n₁' : c₁.nreg = upd c.nreg 30011 mid := by rw [n₁, h.rw, hK]
   have b₁ : c₁.nreg 30011 + c₁.nreg 30009 ≤ W := by
-    rw [n₁', Machine.upd_same, Machine.upd_other _ _ _ (by omega), h.rw]; omega
+    rwo [n₁', Machine.upd_same, Machine.upd_other _ _ _ (by omega), h.rw]
   obtain ⟨c₂, k₂, e₂, hk₂, n₂, m₂, rr₂, rm₂, o₂⟩ := clamp_exec (P := P) e₁.wb_right 30012 30011
     (by omega) b₁
   have n₂' : c₂.nreg = upd (upd c.nreg 30011 mid) 30012 hi := by
@@ -807,7 +810,7 @@ theorem pairBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
   have sl₃ : SL A₀ c c₃ := ⟨fun r hb _ => by
       have := bandOf_sort hb; exact R₃ r (by omega) (by omega) (by omega) (by omega) (by omega),
     by rw [rr₃, rr₂, rr₁], fun x _ => by rw [mm₃], by rw [rm₃, rm₂, rm₁], by rw [o₃, o₂, o₁]⟩
-  have hJ₃ : J c₃ := hJs c c₃ h.hJ sl₃.1 sl₃.2.1 sl₃.2.2.1 sl₃.2.2.2.1 sl₃.2.2.2.2
+  have hJ₃  := hJs c c₃ h.hJ sl₃.1 sl₃.2.1 sl₃.2.2.1 sl₃.2.2.2.1 sl₃.2.2.2.2
   -- the merge invariant at entry
   have I₃ : MergeInv W J le Bc A₀ c₀ c₃ src dst lo mid hi (seg c₃.nmem (src + lo) (mid - lo))
       (seg c₃.nmem (src + mid) (hi - mid)) c₃ :=
@@ -816,8 +819,8 @@ theorem pairBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
       rsrc := (R₃ _ (by omega) (by omega) (by omega) (by omega) (by omega)).trans h.rsrc,
       rdst := (R₃ _ (by omega) (by omega) (by omega) (by omega) (by omega)).trans h.rdst,
       rmid := mid₃, rhi := hi₃, keep := fun _ _ _ _ _ _ _ _ _ _ => rfl,
-      lo_i := by rw [i₃], i_mid := by rw [i₃]; omega, mid_j := by rw [j₃],
-      j_hi := by rw [j₃]; omega, rk := by omega,
+      lo_i := by rw [i₃], i_mid := by rwo [i₃], mid_j := by rw [j₃],
+      j_hi := by rwo [j₃], rk := by omega,
       bsrc := by omega, bdst := by omega, disj := by omega, dA := by omega, ma := rfl, mb := rfl,
       out := by rw [kk₃, i₃, j₃, Nat.sub_self, Nat.sub_self, seg_zero, List.drop_zero,
         List.drop_zero, List.nil_append],
@@ -856,13 +859,13 @@ theorem pairBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
         (by omega)).trans h.rw,
       keep := fun r hr h0 h1 h2 h3 h4 => (K₅ r hr h0 h1 h2 h3 h4).trans
         (h.keep r hr h0 h1 h2 h3 h4),
-      wpos := hwp, wK := hwK, lo_K := by rw [lo₅]; omega,
+      wpos := hwp, wK := hwK, lo_K := by rwo [lo₅],
       lo_t := by
         rw [lo₅]
         rcases h.lo_t with h' | ⟨t, ht⟩
         · omega
         · by_cases hc : lo + 2 * w ≤ K
-          · right; exact ⟨t + 1, by rw [Nat.succ_mul]; omega⟩
+          · right; exact ⟨t + 1, by rwo [Nat.succ_mul]⟩
           · left; omega,
       arr := harr, bW := hbW,
       ml := by
@@ -893,8 +896,8 @@ theorem pairBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
     have e1 : K - lo = (K - hi) + (hi - lo) := by omega
     rw [e1, Nat.mul_add]
     have : 1 ≤ hi - lo := by omega
-    have hk₁' : k₁ ≤ 3 := hk₁
-    have hk₂' : k₂ ≤ 3 := hk₂
+    have hk₁'  := hk₁
+    have hk₂'  := hk₂
     nlinarith
 
 /-- **The pair loop**: one whole pass, `dst[0, K) = mpass w l`, cost `≤ (κ + 30) K + 2`. -/
@@ -965,15 +968,15 @@ theorem passBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
       loc := h.loc.sl sl₁, rK := (R₁ _ (by omega)).trans hK, one := (R₁ _ (by omega)).trans h.one,
       rsrc := R₁ _ (by omega), rdst := R₁ _ (by omega), rw := (R₁ _ (by omega)).trans hw,
       keep := fun _ _ _ _ _ _ _ => rfl, wpos := hpos, wK := hlt,
-      lo_K := by rw [n₁, Machine.upd_same]; omega,
-      lo_t := Or.inr ⟨0, by rw [n₁, Machine.upd_same]; simp⟩, arr := h.arr, bW := hbW,
-      ml := by rw [m₁]; exact hl,
+      lo_K := by rwo [n₁, Machine.upd_same],
+      lo_t := Or.inr ⟨0, by rws [n₁, Machine.upd_same]⟩, arr := h.arr, bW := hbW,
+      ml := by rwx [m₁],
       out := by rw [n₁, Machine.upd_same, seg_zero, List.take_zero, mpass_nil],
       mem := fun _ _ => rfl }
   obtain ⟨c₂, k₂, e₂, I₂, hk₂, hlo₂, hseg₂⟩ := pairLoop_inv (P := P) hcmp hJs hB I₁
   have hw₂ := I₂.rw
   obtain ⟨c₃, k₃, e₃, rfl, s₃, d₃, w₃, r₃, m₃, rr₃, rm₃, o₃⟩ := swap_exec (P := P) I₂.wb
-    (by rw [hw₂]; omega)
+    (by rwo [hw₂])
   have sl₃ : SL A₀ c₂ c₃ := ⟨fun r hb _ => by
       have := bandOf_sort hb; exact r₃ r (by omega) (by omega) (by omega) (by omega), rr₃,
     fun x _ => by rw [m₃], rm₃, o₃⟩
@@ -983,7 +986,7 @@ theorem passBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
     rw [r₃ r (by omega) (by omega) (by omega) h4, I₂.keep r hr h0 h1 h2 (by omega) h4,
       R₁ r (by omega)]
   have lo₁ : c₁.nreg 30010 = 0 := by rw [n₁, Machine.upd_same]
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ?_, by rw [lo₁, Nat.sub_zero] at hk₂; omega⟩
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ?_, by rwo [lo₁, Nat.sub_zero] at hk₂⟩
   have harr := h.arr
   have hs₂ := I₂.rsrc
   have hd₂ := I₂.rdst
@@ -993,11 +996,11 @@ theorem passBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
     rK := (K₃ _ (Or.inl (by omega)) (by omega) (by omega) (by omega) (by omega) (by omega)).trans hK,
     one := (K₃ _ (Or.inl (by omega)) (by omega) (by omega) (by omega) (by omega)
       (by omega)).trans h.one,
-    rw := by rw [w₃, hw₂, pow_succ]; omega,
+    rw := by rwo [w₃, hw₂, pow_succ],
     keep := fun r hr h0 h1 h2 h3 h4 => (K₃ r hr h0 h1 h2 h3 h4).trans (h.keep r hr h0 h1 h2 h3 h4),
-    arr := by rw [s₃, d₃, hs₂, hd₂]; omega,
+    arr := by rwo [s₃, d₃, hs₂, hd₂],
     bW := hbW,
-    lst := ⟨mpass le (2 ^ p) l, by rw [m₃, s₃, hd₂]; exact hseg₂, (mpass_perm _ _).trans hperm,
+    lst := ⟨mpass le (2 ^ p) l, by rwx [m₃, s₃, hd₂], (mpass_perm _ _).trans hperm,
       by rw [pow_succ']; exact chunkSorted_mpass trans total hpos hsorted⟩ }
 
 /-- **The passes**: from `w = 2 ^ p` until `w ≥ K`; at the end the source array is sorted.
@@ -1028,7 +1031,7 @@ theorem passLoop_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
   have hK := I'.rK
   rw [hw, hK] at hex
   refine ⟨l, hl, hperm, pairwise_of_chunkSorted hs ?_⟩
-  rw [← hl, seg_length]; omega
+  rwo [← hl, seg_length]
 
 end passes
 
@@ -1108,16 +1111,16 @@ theorem copyLoop_inv (hJs : JStable J A₀) {c : Config} (h : CopyInv W J Bc A�
       have hK := hd.rK
       rw [hK] at ht
       obtain ⟨d', k, e, rfl, m', i', a', r', rr', rm', o'⟩ := copyBody_exec (P := P) hd.wb
-        (by rw [hd.rS]; omega) (by rw [hd.rsrc]; omega) (by rw [hd.one]; omega)
-        (by rw [show (9999 : ℕ) = ALLOC from rfl, hd.alloc, hd.two]; omega)
+        (by rwo [hd.rS]) (by rwo [hd.rsrc]) (by rwo [hd.one])
+        (by rwo [show (9999 : ℕ) = ALLOC from rfl, hd.alloc, hd.two])
       have sl : SL A₀ d d' := ⟨fun r hb ha => by
           have := bandOf_sort hb
           exact r' r (by omega) (by omega) (by omega) ha, rr',
-        fun x hx => by rw [m', Machine.upd_other _ _ _ (by rw [hd.rsrc]; omega)], rm', o'⟩
+        fun x hx => by rw [m', Machine.upd_other _ _ _ (by rwo [hd.rsrc])], rm', o'⟩
       have hi' : d'.nreg 30013 = d.nreg 30013 + 1 := by rw [i', hd.one]
-      refine ⟨d', 6, e, ?_, by rw [hi']; omega, by
+      refine ⟨d', 6, e, ?_, by rwo [hi'], by
         show d'.nreg 9999 ≤ d.nreg 9999 + 6
-        rw [a', hd.two]; omega⟩
+        rwo [a', hd.two]⟩
       exact
       { wb := e.wb_right, hJ := hJs d d' hd.hJ sl.1 sl.2.1 sl.2.2.1 sl.2.2.2.1 sl.2.2.2.2,
         loc := hd.loc.sl sl,
@@ -1127,10 +1130,10 @@ theorem copyLoop_inv (hJs : JStable J A₀) {c : Config} (h : CopyInv W J Bc A�
         two := (r' _ (by omega) (by omega) (by omega) (by omega)).trans hd.two,
         rsrc := (r' _ (by omega) (by omega) (by omega) (by omega)).trans hd.rsrc,
         rdst := (r' _ (by omega) (by omega) (by omega) (by omega)).trans hd.rdst,
-        iK := by rw [hi']; omega,
+        iK := by rwo [hi'],
         alloc := by
           show d'.nreg 9999 = _
-          rw [a', hi', hd.two, show (9999 : ℕ) = ALLOC from rfl, hd.alloc]; omega,
+          rwo [a', hi', hd.two, show (9999 : ℕ) = ALLOC from rfl, hd.alloc],
         bS := hd.bS, bW := hd.bW,
         cp := by
           rw [hi', m', hd.rsrc, hd.rS,
@@ -1188,7 +1191,7 @@ theorem sortStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {J 
   have hA : c.nreg 9999 = A₀ := rfl
   -- initialisation
   obtain ⟨c₁, k₁, e₁, rfl, o₁, t₁, s₁, d₁, i₁, r₁, m₁, rr₁, rm₁, out₁⟩ := sortInit_exec (P := P) hw
-    (by omega) (by rw [hA, hK]; omega)
+    (by omega) (by rwo [hA, hK])
   have sl₁ : SL A₀ c c₁ := ⟨fun r hb _ => by
       have := bandOf_sort hb; exact r₁ r (by omega) (by omega) (by omega) (by omega) (by omega),
     rr₁, fun x _ => by rw [m₁], rm₁, out₁⟩
@@ -1198,10 +1201,10 @@ theorem sortStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {J 
       rS := r₁ _ (by omega) (by omega) (by omega) (by omega) (by omega),
       rK := (r₁ _ (by omega) (by omega) (by omega) (by omega) (by omega)).trans hK,
       one := o₁, two := t₁, rsrc := s₁, rdst := by rw [d₁, hK, hA],
-      iK := by rw [i₁]; omega,
+      iK := by rwo [i₁],
       alloc := by rw [i₁, show ALLOC = 9999 from rfl, r₁ _ (by omega) (by omega) (by omega)
         (by omega) (by omega)]; rfl,
-      bS := hS, bW := by omega, cp := by rw [i₁]; rfl }
+      bS := hS, bW := by omega, cp := by rwr [i₁] }
   -- the copy
   obtain ⟨c₂, k₂, e₂, C₂, hi₂, hk₂, ha₂⟩ := copyLoop_inv (P := P) hJs C₁
   have hal₂ := C₂.alloc
@@ -1217,7 +1220,7 @@ theorem sortStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {J 
   have P₃ : PassInv W J le Bc A₀ c c₃ K L 0 c₃ :=
     { wb := e₃.wb_right, hJ := hJs c₂ c₃ C₂.hJ sl₃.1 sl₃.2.1 sl₃.2.2.1 sl₃.2.2.2.1 sl₃.2.2.2.2,
       loc := C₂.loc.sl sl₃, rK := (R₃ _ (by omega)).trans C₂.rK,
-      one := (R₃ _ (by omega)).trans C₂.one, rw := by rw [n₃, Machine.upd_same]; rfl,
+      one := (R₃ _ (by omega)).trans C₂.one, rw := by rwr [n₃, Machine.upd_same],
       keep := fun _ _ _ _ _ _ _ => rfl,
       arr := Or.inl ⟨(R₃ _ (by omega)).trans C₂.rsrc, (R₃ _ (by omega)).trans C₂.rdst⟩,
       bW := C₂.bW,
@@ -1225,7 +1228,7 @@ theorem sortStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {J 
           rw [R₃ _ (by omega), C₂.rsrc, m₃]
           have := C₂.cp
           rw [hi₂] at this
-          rw [this]; exact hL,
+          rwx [this],
         List.Perm.refl L, by rw [pow_zero]; exact chunkSorted_one L⟩ }
   -- the passes
   obtain ⟨c₄, k₄, e₄, ⟨p₄, P₄⟩, hk₄, l, hl, hperm, hsorted⟩ :=
@@ -1246,10 +1249,10 @@ theorem sortStmt_exec {P : Polygon} {W : ℕ} {cmp : Stmt} {Bc : Finset ℕ} {J 
   have harr := P₄.arr
   have hk0 := sortCost_ge κ K
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega,
-    hJs c₄ c₅ P₄.hJ sl₅.1 sl₅.2.1 sl₅.2.2.1 sl₅.2.2.2.1 sl₅.2.2.2.2, ?_, by rw [o₅]; omega,
-    by rw [o₅, al₅]; omega, l, by rw [o₅, m₅]; exact hl, hperm, hsorted⟩
-  refine ⟨fun r hr ha => ?_, fun r hr => ?_, fun a ha => loc₅.2.2.1 a ha,
-    fun a _ => by rw [loc₅.2.2.2.1], loc₅.2.2.2.2, by rw [al₅]; omega, ?_⟩
+    hJs c₄ c₅ P₄.hJ sl₅.1 sl₅.2.1 sl₅.2.2.1 sl₅.2.2.2.1 sl₅.2.2.2.2, ?_, by rwo [o₅],
+    by rwo [o₅, al₅], l, by rwx [o₅, m₅], hperm, hsorted⟩
+  refine ⟨fun r hr ha => ?_, fun r hr => ?_, loc₅.2.2.1,
+    fun a _ => by rw [loc₅.2.2.2.1], loc₅.2.2.2.2, by rwo [al₅], ?_⟩
   · rw [Finset.mem_insert, not_or] at hr
     exact loc₅.1 r hr.2 hr.1 ha
   · rw [Finset.mem_insert, not_or] at hr
@@ -1283,12 +1286,12 @@ theorem sort_meets {cmp : Stmt} {Bc : Finset ℕ} (hB : bSort ∉ Bc) (κ : ℕ)
   set L := seg c.nmem (c.nreg 30003) (c.nreg 30004) with hL
   have hlen : L.length = c.nreg 30004 := seg_length
   obtain ⟨c', k, e, hk, hJ', hfr, h1, h2, L', h3, h4, h5⟩ := sortStmt_exec (P := P) hcmp hB htr hto
-    hw hJ hJs L (by rw [hlen]) hlen.symm (by rw [hlen, ← e3, ← e4]; exact hS)
-    (by rw [hlen, ← e4]; exact hroom)
-  refine ⟨c', k, e, by rw [e4, ← hlen]; exact hk, ⟨by rw [e5]; exact h1,
-    by rw [e5, e4, ← hlen]; exact h2, ?_, ?_⟩, hfr⟩
-  · rw [e5, e4, e3, ← hlen, h3, hlen]; exact h4
-  · rw [e5, e4, ← hlen, h3]; exact h5
+    hw hJ hJs L (by rw [hlen]) hlen.symm (by rwx [hlen, ← e3, ← e4])
+    (by rwx [hlen, ← e4])
+  refine ⟨c', k, e, by rwx [e4, ← hlen], ⟨by rwx [e5],
+    by rwx [e5, e4, ← hlen], ?_, ?_⟩, hfr⟩
+  · rwx [e5, e4, e3, ← hlen, h3, hlen]
+  · rwx [e5, e4, ← hlen, h3]
 
 end
 

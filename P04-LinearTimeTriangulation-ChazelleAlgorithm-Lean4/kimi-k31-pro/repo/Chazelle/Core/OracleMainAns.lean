@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.OracleFree
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 22: the answer of the main phase
@@ -71,7 +73,7 @@ theorem entry_facts {z : Point} (_hs : SemOK P C V z) (hnp : NotPast C V z) :
       simp only [one_mul] at hsd
       rcases le_total z.1 (-C.radius) with h' | h'
       · rw [max_eq_right h'] at hsd; linarith [this.1]
-      · rw [max_eq_left h'] at hsd; linarith
+      · rwli [max_eq_left h'] at hsd
     · rw [abs_le]; constructor
       · exact le_max_right _ _
       · exact max_le hzR.le (by linarith)
@@ -84,7 +86,7 @@ theorem entry_facts {z : Point} (_hs : SemOK P C V z) (hnp : NotPast C V z) :
       have := (abs_lt.1 hb.1)
       simp only [rayPt_left] at this
       rcases le_total z.1 C.radius with h' | h'
-      · rw [min_eq_left h'] at hsd; linarith
+      · rwli [min_eq_left h'] at hsd
       · rw [min_eq_right h'] at hsd; linarith [this.2]
     · rw [abs_le]; constructor
       · exact le_min hzR.le (by linarith)
@@ -156,7 +158,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
   have hXpt : rayPt z' σ T = Xp := by
     simp only [rayPt, hz'def, hTdef]
     ext
-    · simp only; rw [← mul_assoc, hσ2, one_mul]; ring
+    · simp only; rwring [← mul_assoc, hσ2, one_mul]
     · simp only; rw [hSel.y]
   have hyR := vtx_snd_lt_radius hv.CQ hv.hz_lt
   have hyt : z'.2 ≤ C.top.2 := by
@@ -166,13 +168,13 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
   have hbest' := firstHitOpt_shift hSB hd0 hout hbest
   rw [hz'e] at hD' hbest'
   obtain ⟨reg, hRc, hAc, -⟩ := NFLoc.isNF_arcs hN
-  have hArc : V.A = N.arcs.length := X.mem.A
+  have hArc  := X.mem.A
   -- the query
   have hQ := query_main (Q := Qof P) (B := B) X.hP (by rw [hv.CQ]; exact hs.hD) hN hRc hAc X.gOK
     (fun i => m (V.FL + i) = 1) (fun i => m (V.LAB + i)) (fun u v w hw => X.hlab u v w hw)
     (z := z') hyt hσ hT0
     (fun s hs0 hsT => by
-      refine rayPt_mem_box C (by rw [hz'def]; exact hζ) (by rw [hz'def]; exact hyR) hσ hs0 ?_
+      refine rayPt_mem_box C (by rw [hz'def]; exact hζ) (by rwx [hz'def]) hσ hs0 ?_
       rw [hz'def]; simp only
       have := hSel.le
       have : σ * Xp.1 ≤ C.radius := by
@@ -197,7 +199,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
       obtain ⟨k, hk, hki⟩ := X.dl_all i.1 hiμ hi
       have hin : rayPt z' σ s ∈ dstarPts m V C V.nD := by
         refine ⟨k, hk, ?_⟩
-        rw [hki, nodePts_eq hN X.hP X.mem hv.m]; exact hmem
+        rwx [hki, nodePts_eq hN X.hP X.mem hv.m]
       refine avoid_of_firstHitOpt hD' (T := T) ?_ s hs0 hsT hin
       intro v hv'
       cases bD with
@@ -222,7 +224,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
       exact cand_of_stop hN X.hP hSel.stop (fun k hk => by rw [← hArc]; exact hloc k hk) hv hmem)
     (fun i => m (V.FL + i) = 1 ∨ ∃ c : Fin B.N, (∃ k, k < 4 ∧ (c.1 = pk k ∨
       c.1 = succP V.A (pk k) ∨ c.1 = predP V.A (pk k))) ∧ m (V.LAB + i) = m (V.LAB + c))
-    (fun i h => h)
+    (fun _ => id)
     (S := S)
     (fun i hi => by
       have hiμ : i.1 < V.μ := by rw [← X.μ]; exact i.2
@@ -230,7 +232,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
       intro x hx
       rcases hi with hd | ⟨c, ⟨k, hk, hc⟩, hl⟩
       · obtain ⟨j, hj, hji⟩ := X.dl_all i.1 hiμ hd
-        exact Or.inl (Or.inl (Or.inl (Or.inl ⟨j, hj, by rw [hji]; exact hx⟩)))
+        exact Or.inl (Or.inl (Or.inl (Or.inl ⟨j, hj, by rwx [hji]⟩)))
       · have hcl : x ∈ clusPts m V C (lab m V c) := ⟨i.1, hiμ, hl, hx⟩
         have h3 : x ∈ clusPts3 m V C (pk k) := by
           unfold clusPts3
@@ -248,7 +250,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
   refine ⟨fun ci hci => ?_, fun hbn => ?_⟩
   · subst hci
     have := q1 _ rfl
-    have h' := firstHit_unshift (C.set_subset_box) hd0 hout (by rw [hz'e]; exact this)
+    have h' := firstHit_unshift (C.set_subset_box) hd0 hout (by rwx [hz'e])
     simpa using h'
   · subst hbn
     exact noHit_unshift (C.set_subset_box) hd0 hout (by rw [hz'e]; exact q2 rfl)

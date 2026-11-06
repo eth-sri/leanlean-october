@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.GranOut
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-F, part 17: normal form and decomposition of the result
@@ -121,7 +125,6 @@ theorem copy1_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
 theorem band_not {r b : ℕ} {B : Finset ℕ} (hr : bandOf r = b) (hb : b ∈ B) :
     ¬ bandOf r ∉ B := fun h => h (hr ▸ hb)
 
-set_option maxHeartbeats 1000000 in
 /-- **Normal form and decomposition of the result.** -/
 theorem bd_exec {sB sD : Stmt} {κB κD : ℕ} (hsB : BuildOK sB κB) (hsD : DecompOK sD κD)
     {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (hG : GoodEnv P)
@@ -154,15 +157,15 @@ theorem bd_exec {sB sD : Stmt} {κB κD : ℕ} (hsB : BuildOK sB κB) (hsD : Dec
   have r0 : rd c₁ bBuild 0 = MD := a0.trans h0
   have r1 : rd c₁ bBuild 1 = LB := a1.trans h28
   have r2 : rd c₁ bBuild 2 = L.length := a2.trans h95
-  have hMD₁ : ModelDescAt c₁.nmem MD (Qof P) M := by rw [m₁]; exact hMD
+  have hMD₁ : ModelDescAt c₁.nmem MD (Qof P) M := by rwx [m₁]
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, F₂⟩ := hsB P W c₁ w₁
-    ⟨hG, hWh, by rw [r0, A₁, m₁]; exact hwf, M, L, by rw [r0]; exact hMD₁, hGM, r2,
-      by rw [r1, A₁]; exact hLB, by rw [r1, m₁]; exact hL, hok⟩
-    (by beta_reduce; rw [A₁, r2]; unfold costBD at hroom; omega)
+    ⟨hG, hWh, by rwx [r0, A₁, m₁], M, L, by rwx [r0], hGM, r2,
+      by rwx [r1, A₁], by rwx [r1, m₁], hok⟩
+    (by beta_reduce; ruo [A₁, r2] costBD at hroom)
   beta_reduce at hk₂
   rw [r2] at hk₂
-  obtain ⟨N₁, g₁, hNW₁, hNF₁, hmap₁, -⟩ := post₂ M L (by rw [r0]; exact hMD₁) r2
-    (by rw [r1, m₁]; exact hL)
+  obtain ⟨N₁, g₁, hNW₁, hNF₁, hmap₁, -⟩ := post₂ M L (by rwx [r0]) r2
+    (by rwx [r1, m₁])
   have w₂ := e₂.wb_right
   have hF₁ : N₁.F M (Qof P) = lset M (Qof P) L := F_of_map hmap₁
   have hlen₁ : N₁.chords.length = L.length := by rw [← hmap₁, List.length_map]
@@ -188,12 +191,12 @@ theorem bd_exec {sB sD : Stmt} {κB κD : ℕ} (hsB : BuildOK sB κB) (hsD : Dec
     rw [m₃, F₂.2.2.1 a (by omega), m₁]
   obtain ⟨hMD₃, hwf₃⟩ := desc_agree' hwf hMD hlow
   have hNW₃ : NFWithin c₃.nmem (rd c₃ bDecomp 1) (c₃.nreg ALLOC) N₁ := by
-    rw [s1, m₃, A₃]; exact hNW₁
+    rwx [s1, m₃, A₃]
   have hcnt : c₃.nmem (rd c₃ bDecomp 1) = L.length := by
     rw [← hlen₁]; exact hNW₃.nfAt.1
   obtain ⟨c₄, k₄, e₄, hk₄, post₄, F₄⟩ := hsD P W c₃ w₃
-    ⟨hG, hWh, by rw [s0]; exact hwf₃.mono (by omega), M, N₁, by rw [s0]; exact hMD₃, hGM, hNW₃,
-      hNF₁, by rw [s2, hF₁]; exact hdeg⟩
+    ⟨hG, hWh, by rw [s0]; exact hwf₃.mono (by omega), M, N₁, by rwx [s0], hGM, hNW₃,
+      hNF₁, by rwx [s2, hF₁]⟩
     (by
       beta_reduce
       rw [s2, hcnt, A₃]
@@ -203,7 +206,7 @@ theorem bd_exec {sB sD : Stmt} {κB κD : ℕ} (hsB : BuildOK sB κB) (hsD : Dec
       nlinarith)
   beta_reduce at hk₄
   rw [s2, hcnt] at hk₄
-  obtain ⟨N₂, g₂, hNW₂, hc₂, ha₂, hr₂, hs₂, hdec₂⟩ := post₄ M N₁ (by rw [s0]; exact hMD₃)
+  obtain ⟨N₂, g₂, hNW₂, hc₂, ha₂, hr₂, hs₂, hdec₂⟩ := post₄ M N₁ (by rwx [s0])
     hNW₃.nfAt hNF₁
   have w₄ := e₄.wb_right
   -- the handle
@@ -214,16 +217,16 @@ theorem bd_exec {sB sD : Stmt} {κB κD : ℕ} (hsB : BuildOK sB κB) (hsD : Dec
   have FF := (((F₁.trans F₂).trans F₃).trans F₄).trans F₅
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), ?_, ⟨N₂, ?_, ?_, ?_, ?_, ?_⟩,
     FF.mono (by decide) (by omega)⟩
-  · unfold costBD; nlinarith
+  · ufnl costBD
   · have := F₄.2.2.2.2.2.1
     rw [d0]
     show c.nreg ALLOC ≤ rd c₄ bDecomp 3
     omega
-  · rw [d0, m₅, A₅]; exact hNW₂
+  · rwx [d0, m₅, A₅]
   · exact isNF_congr hNF₁ hc₂ ha₂ hr₂ hs₂
   · rw [F_congr hc₂, hF₁]
   · have : N₂.nChords = N₁.nChords := by unfold NF.nChords; rw [hc₂]
-    rw [this, ← s2]; exact hdec₂
+    rwx [this, ← s2]
 
 end
 

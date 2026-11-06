@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.GranPzRam
 public import Chazelle.Core.NFLocateSpec
 public import Chazelle.Core.ShearInv
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F, init part 3: correctness of `pzStmt`
@@ -57,7 +58,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
     have hT := C.topIdx_le
     have hen : e < 2 * C.m + 7 := by simpa [chainModel, C.sideWalk_n] using he
     have t0 : c₀.nreg 90023 < c₀.nreg 90019 := by
-      rw [r₀ _ (by omega), r₀ _ (by omega), h23, h19, hk0]; omega
+      rwo [r₀ _ (by omega), r₀ _ (by omega), h23, h19, hk0]
     obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W chHead c₀ c₁ k₁ ∧ k₁ = 16 ∧
         (c₁.nreg 50032 = 1 ∧ c₁.nreg 50060 = c.nmem (MD + 1) ∧ c₁.nreg 50052 = C.s ∧
           c₁.nreg 50053 = C.m ∧ c₁.nreg 50054 = C.topIdx ∧ c₁.nreg 50055 = c.nmem (MD + 5) ∧
@@ -66,7 +67,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       unfold chHead
       exec_block
       all_goals try omega
-      all_goals try (config_simp; rw [d₀]; omega)
+      all_goals try (config_simp; rwo [d₀])
       refine ⟨rfl, ?_⟩
       config_simp
       rw [d₀]
@@ -174,9 +175,9 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       rw [this, hQn] at he
       exact he
     have t0 : ¬ c₀.nreg 90023 < c₀.nreg 90019 := by
-      rw [r₀ _ (by omega), r₀ _ (by omega), h23, h19, hk1]; omega
+      rwo [r₀ _ (by omega), r₀ _ (by omega), h23, h19, hk1]
     obtain ⟨c₁, k₁, e₁, hk₁, i41, -⟩ := intIdx_exec (P := P) hW c₀ w₀ (by rw [x₀]; exact hen)
-      (by rw [d₀]; omega)
+      (by rwo [d₀])
     have F₁ := exec_frameB e₁ wr_intIdx
     obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W (block [.constN 90112 0,
         .subN 90115 90111 90019]) c₁ c₂ k₂ ∧ k₂ = 2 ∧ (c₂.nreg 90112 = 0 ∧

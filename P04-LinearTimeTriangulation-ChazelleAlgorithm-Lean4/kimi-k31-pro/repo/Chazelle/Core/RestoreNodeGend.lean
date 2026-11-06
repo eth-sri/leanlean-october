@@ -93,13 +93,13 @@ theorem end_gend (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα)) (h
       ∀ u : ℕ, u < L →
         (sideInArc ((((g + d) % M.W.n : ℕ) : ℝ) + t) (pF + tF) (((g + u) % M.W.n : ℕ) : ℝ) ↔
           sideInArc ((d : ℝ) + t) (off M.W.n g (pF + tF)) (u : ℝ)) := by
-  have haC : sidePt M.W ((g + d) % M.W.n) t ∈ Cα.set := hS.memM hd ht0 ht1
+  have haC  := hS.memM hd ht0 ht1
   obtain ⟨h0, harr⟩ := arrival_off hS hGα hc hO haC hσ hL₀ hceq hoO hkopen hsetD hT hdom hfar hFA
   have hpr := prune_side hM hSA hfin hne hAi hAj hij hea hEA hFA
     (by rw [hfar]; exact ray_ne' hσ hT) hka hex hX hX' hXX' hkx hkx' hgood hbad hxa hxa'
   obtain ⟨hkE0, hkEn⟩ := key_range hEA
   obtain ⟨hkF0, hkFn⟩ := key_range hFA
-  have hoE : off M.W.n g ((((g + d) % M.W.n : ℕ) : ℝ) + t) = d + t := endM_off hS hd ht0 ht1
+  have hoE  := endM_off hS hd ht0 ht1
   refine ⟨h0, harr, ?_, fun u hu => ?_⟩
   · have hr := rot_u hS hkE0 hkEn hkF0 hkFn hx
     rw [hoE] at hr

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.NFBuildRegFill
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-C (BuildNF), RAM part 18: the sequence table and the header
@@ -53,23 +55,23 @@ theorem seqLoop_exec (d : Config) (hw : WordsBounded W d) {A QT : ℕ} (hA : d.n
           .addN 43201 43201 43011]) e e' k ∧ k = 3 ∧ e'.nreg 43201 = j + 1 ∧
           e'.nmem = seqMem d.nmem QT (j + 1) := by
         exec_block
-        · rw [r1, hje]; omega
-        · config_simp; rw [hje, r2]; omega
+        · rwo [r1, hje]
+        · config_simp; rwo [hje, r2]
         · refine ⟨rfl, ?_, ?_⟩ <;> config_simp
           · rw [hje, r2]
           · rw [r1, hje, hme]
             funext a
             simp only [upd_apply, seqMem]
-            split_ifs <;> omega
+            splao
       obtain ⟨e', k, x, hk, hj', hm'⟩ := X
       exact ⟨e', k, x, ⟨x.wb_right, j + 1, hj', by omega, hfe.trans (exec_frameM x (by decide)),
-        hm'⟩, by rw [hj', hje]; omega⟩)
+        hm'⟩, by rwo [hj', hje]⟩)
     ⟨hw, 0, hi, Nat.zero_le _, FrameM.refl _ _, by
       funext a; simp only [seqMem]; rw [ite_eq_right (by omega)]⟩
   have hjA' : j = A := by
-    rw [hj', hf.1 _ (by decide), hA] at htest; omega
+    rwo [hj', hf.1 _ (by decide), hA] at htest
   subst hjA'
-  exact ⟨d', k, e, by rw [hi] at hk; omega, hw', hf, hm'⟩
+  exact ⟨d', k, e, by rwo [hi] at hk, hw', hf, hm'⟩
 
 end exec
 

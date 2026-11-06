@@ -3,6 +3,8 @@ module
 public import Chazelle.Visibility.Ray
 public import Chazelle.Existence.Convex
 public import Mathlib.Data.Set.Card
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Vertex chords of the horizontal visibility map
@@ -159,7 +161,7 @@ theorem chordSet_eq_openChordSet_union {P : Polygon} (hP : P.Simple) {i : ℕ} (
     rcases ht0.lt_or_eq with h0 | h0
     · rcases ht1.lt_or_eq with h1 | h1
       · exact Or.inl ⟨t, ⟨h0, h1⟩, rfl⟩
-      · right; right; rw [h1]; rfl
+      · right; right; rwr [h1]
     · right; left; rw [← h0, rayPt_zero]
   · rintro (⟨t, ht, rfl⟩ | rfl | rfl)
     · exact ⟨t, ⟨ht.1.le, ht.2.le⟩, rfl⟩
@@ -215,7 +217,7 @@ theorem hchord_inter {P : Polygon} {y a b y' a' b' : ℝ} (h : IsHChord P y a b)
       ((p = (a, y) ∨ p = (b, y)) ∧ (p = (a', y') ∨ p = (b', y'))) := by
   obtain ⟨hpy, hpa, hpb⟩ := hp
   obtain ⟨hpy', hpa', hpb'⟩ := hp'
-  have hyy : y = y' := hpy.symm.trans hpy'
+  have hyy  := hpy.symm.trans hpy'
   subst hyy
   -- is `p` an endpoint of the first chord?
   by_cases hend : p.1 = a ∨ p.1 = b
@@ -240,8 +242,8 @@ theorem hchord_inter {P : Polygon} {y a b y' a' b' : ℝ} (h : IsHChord P y a b)
       exact this.2 hpb
   · -- `p` is in the open part of the first chord, hence interior
     push Not at hend
-    have ha : a < p.1 := lt_of_le_of_ne hpa (Ne.symm hend.1)
-    have hb : p.1 < b := lt_of_le_of_ne hpb hend.2
+    have ha  := lt_of_le_of_ne hpa (Ne.symm hend.1)
+    have hb  := lt_of_le_of_ne hpb hend.2
     have hint := h.open_int p.1 ha hb
     rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at hint
     -- so `p` is not an endpoint of the second chord either
@@ -287,13 +289,13 @@ theorem segment_horizontal_eq_hseg {a b : Point} (hab : a.2 = b.2) :
   constructor
   · rintro ⟨t, ht0, ht1, rfl⟩
     simp only
-    refine ⟨by rw [← hab]; ring, ?_, ?_⟩
+    refine ⟨by rwring [← hab], ?_, ?_⟩
     · rcases le_total a.1 b.1 with h | h
-      · rw [min_eq_left h]; nlinarith
-      · rw [min_eq_right h]; nlinarith
+      · rwnl [min_eq_left h]
+      · rwnl [min_eq_right h]
     · rcases le_total a.1 b.1 with h | h
-      · rw [max_eq_right h]; nlinarith
-      · rw [max_eq_left h]; nlinarith
+      · rwnl [max_eq_right h]
+      · rwnl [max_eq_left h]
   · rintro ⟨hy, h1, h2⟩
     by_cases heq : a.1 = b.1
     · refine ⟨0, le_rfl, zero_le_one, ?_⟩
@@ -301,8 +303,8 @@ theorem segment_horizontal_eq_hseg {a b : Point} (hab : a.2 = b.2) :
       have : p.1 = b.1 := le_antisymm h2 h1
       rw [Geometry.point_ext_iff]; simp only
       constructor
-      · rw [this, heq]; ring
-      · rw [hy]; ring
+      · rwring [this, heq]
+      · rwring [hy]
     · refine ⟨(p.1 - a.1) / (b.1 - a.1), ?_, ?_, ?_⟩
       · rcases lt_or_gt_of_ne heq with h | h
         · rw [min_eq_left h.le] at h1
@@ -311,9 +313,9 @@ theorem segment_horizontal_eq_hseg {a b : Point} (hab : a.2 = b.2) :
           exact div_nonneg_of_nonpos (by linarith) (by linarith)
       · rcases lt_or_gt_of_ne heq with h | h
         · rw [max_eq_right h.le] at h2
-          rw [div_le_one (by linarith)]; linarith
+          rwli [div_le_one (by linarith)]
         · rw [min_eq_right h.le] at h1
-          rw [div_le_one_of_neg (by linarith)]; linarith
+          rwli [div_le_one_of_neg (by linarith)]
       · have hne : b.1 - a.1 ≠ 0 := fun h => heq (by linarith)
         rw [Geometry.point_ext_iff]; simp only
         constructor
@@ -337,18 +339,18 @@ theorem isHChord_chord {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {�
   have he : ((chordEnd P i σ).1, (P.vtx i).2) = chordEnd P i σ := rfl
   have hvb : P.vtx i ∈ P.boundary := ⟨i, hi, Geometry.left_mem_segment _ _⟩
   rcases hσ with rfl | rfl
-  · have hlt : (P.vtx i).1 < (chordEnd P i 1).1 := by simp only [chordEnd_fst, one_mul]; linarith
+  · have hlt : (P.vtx i).1 < (chordEnd P i 1).1 := by sil only [chordEnd_fst, one_mul]
     rw [min_eq_left hlt.le, max_eq_right hlt.le]
     refine ⟨hlt, hv ▸ hvb, he ▸ hend, fun x hx1 hx2 => ?_⟩
-    have := hint (x - (P.vtx i).1) (by linarith) (by simp only [chordEnd_fst, one_mul] at hx2; linarith)
+    have := hint (x - (P.vtx i).1) (by linarith) (by sil only [chordEnd_fst, one_mul] at hx2)
     simp only [rayPt, one_mul, add_sub_cancel] at this
     exact this
   · have hlt : (chordEnd P i (-1)).1 < (P.vtx i).1 := by
-      simp only [chordEnd_fst, neg_one_mul]; linarith
+      sil only [chordEnd_fst, neg_one_mul]
     rw [min_eq_right hlt.le, max_eq_left hlt.le]
     refine ⟨hlt, he ▸ hend, hv ▸ hvb, fun x hx1 hx2 => ?_⟩
     have := hint ((P.vtx i).1 - x) (by linarith)
-      (by simp only [chordEnd_fst, neg_one_mul] at hx1; linarith)
+      (by sil only [chordEnd_fst, neg_one_mul] at hx1)
     simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel] at this
     exact this
 

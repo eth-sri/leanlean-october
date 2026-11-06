@@ -5,6 +5,9 @@ public import Chazelle.Core.SweepIoBruteShot
 public import Chazelle.Core.SweepIoS0CandBsSpec
 public import Chazelle.Core.SweepIoS0CandQMath
 public import Chazelle.Core.SweepIoLHit5
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the label candidates of a side-0 query, the mathematics
@@ -83,7 +86,7 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
   · obtain ⟨c, hc, -⟩ := id hcut
     have hne : F.Nonempty := ⟨c, hc⟩
     obtain ⟨hfa, hfb⟩ := faced_arcs hM hF hfin hp (le_refl (0 : ℝ)) zero_lt_one (fun _ => hp1)
-      (by rw [hp']; exact hcut) hV
+      (by rwx [hp']) hV
     obtain ⟨r, hr, rfl⟩ := regOf_surj hN hV
     refine ⟨r, ?_, rfl⟩
     rcases hW with hW | hW
@@ -115,7 +118,7 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
         refine ⟨u, hu, fun s hs0 hsu hs1 => ?_⟩
         refine harc0.2.2.2.2.2.2 p (0 + s) hp (by linarith) hs1 ?_
         have := hsub s hs0 hsu
-        rw [zero_add]; exact this
+        rwx [zero_add]
       exact after_unique zero_lt_one hU₀m hV hA0 hW
     · obtain ⟨u, hu, hsub⟩ := exists_Ioo_of_eventually (sideInArc_eventually_sub hin)
       have hB0 : BeforeFaces M p 0 U₀ := by
@@ -128,7 +131,7 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
         rw [hpm]
         refine harc0.2.2.2.2.2.2 (p - 1) (1 - s) (by omega) (by linarith) (by linarith) ?_
         have e : ((p - 1 : ℕ) : ℝ) + (1 - s) = (p : ℝ) - s := by
-          rw [Nat.cast_sub hp1]; push_cast; ring
+          rw [Nat.cast_sub hp1]; pcr
         rw [e]; exact hsub s hs0 hsu'
       exact before_unique (le_refl _) hU₀m hV hB0 hW
 
@@ -152,7 +155,7 @@ theorem gap_pos (J : Merge.Junction) {S₂ : Set (Set Point)} {V : Set Point}
     split_ifs at hδ ⊢ with h1 h2 <;> first | omega
   obtain ⟨k1, k2⟩ := key
   have e1 : (6 + tpos J.right 0 + rL1 J) % (chainModel J.right).W.n = 2 * J.right.m + 6 := by
-    rw [hn, k1, Nat.mod_eq_of_lt (by omega)]; omega
+    rwo [hn, k1, Nat.mod_eq_of_lt (by omega)]
   have e2 : (6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n = 6 := by
     rw [hn, k1, k2, show 6 + tpos J.right 0 + (2 * J.right.m - tpos J.right 0) + 7 =
       6 + (2 * J.right.m + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]

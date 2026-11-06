@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepIoHoleRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the holes of a chain model (copied from WP-E, renumbered)
@@ -80,7 +84,7 @@ theorem chainPre_exec (hw : WordsBounded W c) {B m top bit : ℕ} (hB : c.nreg 2
       c'.nreg 243090 = 2 * m + 7 ∧ c'.nreg 243096 = 2 ∧ c'.nreg 243103 = 6 ∧
       c'.nreg 243104 = c.nreg 243005 - 6 ∧ Out c c' chainHL := by
   unfold chainPre
-  have hB' : c.nreg 243020 = B := hB
+  have hB'  := hB
   obtain ⟨c', k, ex, hk, q97, q98, q99, q100, q101, q90, q96, q103, q104, hr, rr, mm, rm, oo⟩ :
       ∃ c' k, Exec P W (block [.constN 243096 2, .addN 243095 243020 243096, .loadN 243097 243095,
         .addN 243095 243095 243023, .loadN 243098 243095, .addN 243095 243095 243023,
@@ -91,8 +95,8 @@ theorem chainPre_exec (hw : WordsBounded W c) {B m top bit : ℕ} (hB : c.nreg 2
         c'.nreg 243096 = 2 ∧ c'.nreg 243103 = 6 ∧ c'.nreg 243104 = c.nreg 243005 - 6 ∧
         (∀ r, r ∉ chainHL → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧
         c'.rmem = c.rmem ∧ c'.output = c.output := by
-    have ht' : c.nmem (B + 3) = top := ht
-    have hb' : c.nmem (B + 3 + 1) = bit := by rw [show B + 3 + 1 = B + 4 by omega]; exact hb
+    have ht'  := ht
+    have hb' : c.nmem (B + 3 + 1) = bit := by rwx [show B + 3 + 1 = B + 4 by omega]
     exec_block
     all_goals try (simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, hB', h23]; omega)
@@ -107,7 +111,7 @@ theorem chainPre_exec (hw : WordsBounded W c) {B m top bit : ℕ} (hB : c.nreg 2
     · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
     · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
     · simp (disch := omega) only [Machine.upd_same]
-    · simp only [chainHL, List.mem_cons, List.not_mem_nil, or_false, not_or] at hr
+    · simp [chainHL, List.mem_cons, List.not_mem_nil, or_false, not_or] at hr
       simp (disch := omega) only [Machine.upd_other]
   exact ⟨c', k, by omega, ex, q97, q98, q99, q100, q101, q90, q96, q103, q104,
     ⟨hr, rr, mm, rm, oo⟩⟩
@@ -139,17 +143,17 @@ theorem jS_exec (hw : WordsBounded W c) {m S i : ℕ} (_hm : 0 < m) (h102 : c.nr
   by_cases hlt : c₁.nreg 243104 < c₁.nreg 243105
   · rw [g _ (by omega), h104, u] at hlt
     obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.addN e₁.wb_right 243106 243102 243104
-      (by rw [g _ (by omega), g _ (by omega), h102, h104]; omega))
-    refine ⟨c₂, _, by omega, .seq e₁ (.ifLtN_true (by rw [g _ (by omega), h104, u]; exact hlt) e₂),
+      (by rwo [g _ (by omega), g _ (by omega), h102, h104]))
+    refine ⟨c₂, _, by omega, .seq e₁ (.ifLtN_true (by rwx [g _ (by omega), h104, u]) e₂),
       ?_, (o₁.trans o₂).mono (by simp)⟩
     rw [v₂, g _ (by omega), g _ (by omega), h102, h104, Nat.mod_eq_of_lt (by omega)]
   · rw [g _ (by omega), h104, u] at hlt
     obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.subN e₁.wb_right 243106 243104 243105)
     obtain ⟨c₃, k₃, hk₃, e₃, v₃, o₃⟩ := condSub_exec (P := P) e₂.wb_right 243106 243106 243100
-    refine ⟨c₃, _, by omega, .seq e₁ (.ifLtN_false (by rw [g _ (by omega), h104, u]; exact hlt)
+    refine ⟨c₃, _, by omega, .seq e₁ (.ifLtN_false (by rwx [g _ (by omega), h104, u])
       (.seq e₂ e₃)), ?_, ((o₁.trans o₂).trans o₃).mono (by simp)⟩
     have w6 : c₂.nreg 243106 = S + i - 2 * m := by
-      rw [v₂, g _ (by omega), h104, u]; omega
+      rwo [v₂, g _ (by omega), h104, u]
     have w100 : c₂.nreg 243100 = 2 * m := by rw [o₂.1 _ (by simp), g _ (by omega), h100]
     rw [v₃, w6, w100]
     by_cases h2 : S + i - 2 * m < 2 * m
@@ -183,7 +187,7 @@ theorem edgeH_exec (hw : WordsBounded W c) {m S j e : ℕ} (h100 : c.nreg 243100
       g3 _ (by omega) (by omega), g3 _ (by omega) (by omega), h05, h23]; exact heW))
   have c1 : ∀ r, r ≠ 241309 → r ≠ 241310 → r ≠ 241311 → c₆.nreg r = c₃.nreg r := fun r a b d => by
     rw [o₆.1 r (by simp [d]), o₅.1 r (by simp [b]), o₄.1 r (by simp [a])]
-  have hc : candIdx m S (2 * m - 1 - j) ≤ 2 * m := by unfold candIdx; split_ifs <;> omega
+  have hc : candIdx m S (2 * m - 1 - j) ≤ 2 * m := by unfold candIdx; splao
   have a108 : c₆.nreg 243108 = candIdx m S (2 * m - 1 - j) := by
     rw [c1 _ (by omega) (by omega) (by omega), v₃]
   have a103 : c₆.nreg 243103 = 6 := by rw [c1 _ (by omega) (by omega) (by omega),
@@ -191,11 +195,11 @@ theorem edgeH_exec (hw : WordsBounded W c) {m S j e : ℕ} (h100 : c.nreg 243100
   have a23 : c₆.nreg 243023 = 1 := by rw [c1 _ (by omega) (by omega) (by omega),
     g3 _ (by omega) (by omega), h23]
   obtain ⟨c₇, e₇, v₇, o₇⟩ := out_instr (P := P) (Exec.addN e₆.wb_right 241312 243108 243103
-    (by rw [a108, a103]; omega))
+    (by rwo [a108, a103]))
   have b12 : c₇.nreg 241312 = candIdx m S (2 * m - 1 - j) + 6 := by rw [v₇, a108, a103]
   have b23 : c₇.nreg 243023 = 1 := by rw [o₇.1 _ (by simp), a23]
   obtain ⟨c₈, e₈, v₈, o₈⟩ := out_instr (P := P) (Exec.addN e₇.wb_right 241313 241312 243023
-    (by rw [b12, b23]; omega))
+    (by rwo [b12, b23]))
   have ex : Exec P W edgeH c c₈ _ :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈))))))
   have a05 : c₄.nreg 243005 = e := by rw [o₄.1 _ (by simp), g3 _ (by omega) (by omega), h05]
@@ -209,11 +213,11 @@ theorem edgeH_exec (hw : WordsBounded W c) {m S j e : ℕ} (h100 : c.nreg 243100
   · rw [o₈.1 _ (by simp), b12]
   · rw [v₈, b12, b23]
   · exact (((((((o₁.trans o₂).trans o₃).trans o₄).trans o₅).trans o₆).trans o₇).trans o₈).mono
-      (by intro r hr; simp only [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr
-          simp only [List.mem_cons, List.not_mem_nil, or_false]; omega)
+      (by intro r hr; simp [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr
+          sio only [List.mem_cons, List.not_mem_nil, or_false])
 
 theorem candIdx_le {m S j : ℕ} (hS : S ≤ 2 * m) (hj : j ≤ 2 * m) : candIdx m S j ≤ 2 * m := by
-  unfold candIdx; split_ifs <;> omega
+  unfold candIdx; splao
 
 theorem vtxH_exec (hw : WordsBounded W c) {m top S j : ℕ} (h97 : c.nreg 243097 = m)
     (h98 : c.nreg 243098 = top) (h100 : c.nreg 243100 = 2 * m) (h101 : c.nreg 243101 = 7)
@@ -229,7 +233,7 @@ theorem vtxH_exec (hw : WordsBounded W c) {m top S j : ℕ} (h97 : c.nreg 243097
       (sideE m j = top → c'.nreg 241314 = 2 * m + 5 ∧ c'.nreg 241315 = 0) ∧
       Out c c' chainHL := by
   set k := sideE m j with hkd
-  have hkm : k ≤ m := by rw [hkd]; unfold sideE; split_ifs <;> omega
+  have hkm : k ≤ m := by rw [hkd]; unfold sideE; splao
   -- the chain vertex
   obtain ⟨c₁, k₁, hk₁, e₁, v₁, o₁⟩ : ∃ c₁, ∃ k₁ ≤ 3, Exec P W (.ifLtN 243097 243106
       (.instr (.subN 243109 243100 243106)) (.instr (.copyN 243109 243106))) c c₁ k₁ ∧
@@ -260,11 +264,11 @@ theorem vtxH_exec (hw : WordsBounded W c) {m top S j : ℕ} (h97 : c.nreg 243097
   have c2le := candIdx_le (m := m) (j := 2 * m - k) hS (by omega)
   have a110 : c₄.nreg 243110 = candIdx m S k := by rw [o₄.1 _ (by simp), o₃.1 _ (by simp), v₂]
   obtain ⟨c₅, e₅, v₅, o₅⟩ := out_instr (P := P) (Exec.addN e₄.wb_right 243113 243110 243103
-    (by rw [a110, o14.1 _ (by simp), h103]; omega))
+    (by rwo [a110, o14.1 _ (by simp), h103]))
   have o15 := o14.trans o₅
   have a112 : c₅.nreg 243112 = candIdx m S (2 * m - k) := by rw [o₅.1 _ (by simp), v₄]
   obtain ⟨c₆, e₆, v₆, o₆⟩ := out_instr (P := P) (Exec.addN e₅.wb_right 243114 243112 243103
-    (by rw [a112, o15.1 _ (by simp), h103]; omega))
+    (by rwo [a112, o15.1 _ (by simp), h103]))
   have o16 := o15.trans o₆
   have q113 : c₆.nreg 243113 = candIdx m S k + 6 := by
     rw [o₆.1 _ (by simp), v₅, a110, o14.1 _ (by simp), h103]
@@ -274,7 +278,7 @@ theorem vtxH_exec (hw : WordsBounded W c) {m top S j : ℕ} (h97 : c.nreg 243097
   obtain ⟨c₈, e₈, v₈, o₈⟩ := out_instr (P := P) (Exec.subN e₇.wb_right 241310 243113 243023)
   have o18 := (o16.trans o₇).trans o₈
   obtain ⟨c₉, e₉, v₉, o₉⟩ := out_instr (P := P) (Exec.addN e₈.wb_right 241311 243113 243023
-    (by rw [o₈.1 _ (by simp), o₇.1 _ (by simp), q113, o18.1 _ (by simp), h23]; omega))
+    (by rwo [o₈.1 _ (by simp), o₇.1 _ (by simp), q113, o18.1 _ (by simp), h23]))
   obtain ⟨c₁₀, k₁₀, hk₁₀, e₁₀, v₁₀, o₁₀⟩ := nxtS_exec (P := P) e₉.wb_right 241311 243090
   have o110 := (o18.trans o₉).trans o₁₀
   have g113 : c₉.nreg 243113 = candIdx m S k + 6 := by
@@ -305,7 +309,7 @@ theorem vtxH_exec (hw : WordsBounded W c) {m top S j : ℕ} (h97 : c.nreg 243097
       show candIdx m S k + 7 = candIdx m S k + 6 + 1 by ring]
     exact wrap_succ (by omega)
   have w12 : c₁₃.nreg 241312 = candIdx m S (2 * m - k) + 5 := by
-    rw [o₁₃.1 _ (by simp), o₁₂.1 _ (by simp), v₁₁, g114, g23 o110 (by simp)]; omega
+    rwo [o₁₃.1 _ (by simp), o₁₂.1 _ (by simp), v₁₁, g114, g23 o110 (by simp)]
   have w13 : c₁₃.nreg 241313 = (candIdx m S (2 * m - k) + 7) % (2 * m + 7) := by
     rw [v₁₃, a12_13, a12_90, show candIdx m S (2 * m - k) + 7 = candIdx m S (2 * m - k) + 6 + 1
       by ring]
@@ -329,17 +333,17 @@ theorem vtxH_exec (hw : WordsBounded W c) {m top S j : ℕ} (h97 : c.nreg 243097
     unfold topH
     by_cases g1 : c₁₃.nreg 243109 < c₁₃.nreg 243098
     · refine ⟨c₁₃, _, by omega, .ifLtN_true g1 (.skip hW13), ?_, fun h => ?_, Out.refl _ _⟩
-      · rw [w09, ite_eq_right (by rw [b109, b98] at g1; omega)]
-      · rw [b109, b98] at g1; omega
+      · rw [w09, ite_eq_right (by rwo [b109, b98] at g1)]
+      · rwo [b109, b98] at g1
     by_cases g2 : c₁₃.nreg 243098 < c₁₃.nreg 243109
     · refine ⟨c₁₃, _, by omega, .ifLtN_false g1 (.ifLtN_true g2 (.skip hW13)), ?_,
         fun h => ?_, Out.refl _ _⟩
-      · rw [w09, ite_eq_right (by rw [b109, b98] at g2; omega)]
-      · rw [b109, b98] at g2; omega
-    have hkt : k = top := by rw [b109, b98] at g1 g2; omega
+      · rw [w09, ite_eq_right (by rwo [b109, b98] at g2)]
+      · rwo [b109, b98] at g2
+    have hkt : k = top := by rwo [b109, b98] at g1 g2
     obtain ⟨d₁, f₁, u₁, p₁⟩ := out_instr (P := P) (Exec.constN hW13 241309 3 (by omega))
     obtain ⟨d₂, f₂, u₂, p₂⟩ := out_instr (P := P) (Exec.addN f₁.wb_right 241314 243100 243101
-      (by rw [p₁.1 _ (by simp), p₁.1 _ (by simp), b100, b101]; omega))
+      (by rwo [p₁.1 _ (by simp), p₁.1 _ (by simp), b100, b101]))
     obtain ⟨d₃, f₃, u₃, p₃⟩ := out_instr (P := P) (Exec.subN f₂.wb_right 241314 241314 243096)
     obtain ⟨d₄, f₄, u₄, p₄⟩ := out_instr (P := P) (Exec.constN f₃.wb_right 241315 0 (Nat.zero_le _))
     refine ⟨d₄, _, by omega, .ifLtN_false g1 (.ifLtN_false g2 (.seq f₁ (.seq f₂ (.seq f₃ f₄)))),
@@ -357,8 +361,8 @@ theorem vtxH_exec (hw : WordsBounded W c) {m top S j : ℕ} (h97 : c.nreg 243097
   · rw [oT.1 _ (by simp), w12]
   · rw [oT.1 _ (by simp), w13]
   · intro r hr
-    simp only [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr
-    simp only [chainHL, List.mem_cons, List.not_mem_nil, or_false]; omega
+    simp [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr
+    sio only [chainHL, List.mem_cons, List.not_mem_nil, or_false]
 
 end
 

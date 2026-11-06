@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepEvStopRA
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), stage 2: the first hits of the models of `C₁` and `C₂` (RAM, part 1)
@@ -41,7 +42,7 @@ theorem ResOK.transport {C : Chain} {a : Point} {σ : ℝ} {G : Prop} {F : ℕ} 
     ResOK P C a σ G F c' := by
   obtain ⟨h1, h2, h3⟩ := h
   have e0 : c'.nreg F = c.nreg F := hr 0 (by norm_num)
-  refine ⟨by rw [e0]; exact h1, fun hf => ?_, fun hg => by rw [e0]; exact h3 hg⟩
+  refine ⟨by rwx [e0], fun hf => ?_, fun hg => by rw [e0]; exact h3 hg⟩
   rw [e0] at hf
   obtain ⟨τ, a1, a2, a3, a4, a5, a6, a7⟩ := h2 hf
   rw [hr 1 (by norm_num), hr 2 (by norm_num)]
@@ -85,16 +86,16 @@ theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 2
   rintro c' hc'
   obtain ⟨v0, v1, v2, v3, v4, v5, v6, vo⟩ := save_val c.nmem c.nreg hF
   have e : ∀ q v, regB c.nmem (saveL F) c.nreg q = v → c'.nreg q = v := fun q v h => by
-    rw [hc']; exact h
+    rwx [hc']
   have hm : c'.nmem = c.nmem := by rw [hc']
   refine ⟨?_, fun q hq => e q _ (vo q hq), hm⟩
   obtain ⟨hf1, hf0, hf⟩ := hacc
-  refine ⟨by rw [e _ _ v0]; exact hf1, fun h1 => ?_, fun hg => ?_⟩
+  refine ⟨by rwx [e _ _ v0], fun h1 => ?_, fun hg => ?_⟩
   · rw [e _ _ v0] at h1
     obtain ⟨τ, hτ, hmin, -, hpp, hen, hpos, hrec⟩ := hf h1
     obtain ⟨hτ0, hon⟩ := hL τ hτ
-    refine ⟨τ, hτ0, hon, by rw [e _ _ v1]; exact hen, by rw [e _ _ v1, e _ _ v2]; exact hpp,
-      by rw [e _ _ v1, e _ _ v2]; exact hpos, ?_, fun hg => ?_⟩
+    refine ⟨τ, hτ0, hon, by rwx [e _ _ v1], by rwx [e _ _ v1, e _ _ v2],
+      by rwx [e _ _ v1, e _ _ v2], ?_, fun hg => ?_⟩
     · refine absRec_transport (c := c) hrec (e _ _ v3) ?_ ?_ ?_
       · rw [show F + 3 + 1 = F + 4 by omega]; exact e _ _ v4
       · rw [show F + 3 + 2 = F + 5 by omega]; exact e _ _ v5

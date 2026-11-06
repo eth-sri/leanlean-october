@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseDrvBase
 public import Chazelle.Core.DownPhaseDrvKept
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase driver, B-M2: the base case finds every missing vertex chord region-locally
@@ -52,7 +54,7 @@ theorem hitParam_eq_of_sub {H Q : Polygon} (hH : H.Simple) {p : Point} {σ : ℝ
   rw [mem_Ioi] at hu
   obtain ⟨h1, h2, h3⟩ :=
     Visibility.hit_of_initial hH hσ hu (fun t ht1 ht2 => hsubu ⟨ht1, ht2⟩)
-  have hpos : 0 < hitParam H p σ := lt_of_lt_of_le hu h1
+  have hpos  := lt_of_lt_of_le hu h1
   exact ⟨Visibility.hitParam_eq_of_first Q p σ hpos (hbd _ hpos h2 h3)
     (fun s hs1 hs2 => (hsub (h3 s hs1 hs2)).2), hpos, h3⟩
 
@@ -78,7 +80,7 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   set D := Q.filled \ Q.boundary with hD
   have hRfree := region_sub_free hR
   have hRD : R ⊆ D := fun z hz => (hRfree hz).1
-  have hsub : H.filled \ H.boundary ⊆ D := by rw [hHR]; exact hRD
+  have hsub : H.filled \ H.boundary ⊆ D := by rwx [hHR]
   have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
   set v := Q.vtx i with hvdef
   have hin : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt v σ t ∈ H.filled \ H.boundary := by
@@ -108,9 +110,9 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     obtain ⟨y, a, b, hch, rfl⟩ := hFam.2.1 hc
     obtain ⟨hzy, hza, hzb⟩ := hzc
     have hza' : a < z.1 := lt_of_le_of_ne hza fun e => hch.left_not (by
-      rw [show ((a, y) : Point) = z from Prod.ext e hzy.symm]; exact hzD)
+      rwx [show ((a, y) : Point) = z from Prod.ext e hzy.symm])
     have hzb' : z.1 < b := lt_of_le_of_ne hzb fun e => hch.right_not (by
-      rw [show ((b, y) : Point) = z from Prod.ext e.symm hzy.symm]; exact hzD)
+      rwx [show ((b, y) : Point) = z from Prod.ext e.symm hzy.symm])
     -- a ray point just before `z` lies on the chord
     set δ := min (t / 2) (min (z.1 - a) (b - z.1) / 2) with hδ
     have hδ0 : 0 < δ := lt_min (by linarith) (by
@@ -127,12 +129,12 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     rw [hHR] at hw
     apply (hRfree hw).2
     refine ⟨hseg y a b, hc, ?_, ?_, ?_⟩
-    · show v.2 = y; rw [← hzy]; rfl
+    · show v.2 = y; rwr [← hzy]
     · have e : (rayPt v σ (t - δ)).1 = z.1 - σ * δ := by
-        rw [hz, Visibility.rayPt_fst, Visibility.rayPt_fst]; ring
+        rwring [hz, Visibility.rayPt_fst, Visibility.rayPt_fst]
       rw [e]; rcases hσ with rfl | rfl <;> linarith
     · have e : (rayPt v σ (t - δ)).1 = z.1 - σ * δ := by
-        rw [hz, Visibility.rayPt_fst, Visibility.rayPt_fst]; ring
+        rwring [hz, Visibility.rayPt_fst, Visibility.rayPt_fst]
       rw [e]; rcases hσ with rfl | rfl <;> linarith
   obtain ⟨heq, hpos, hint⟩ := hitParam_eq_of_sub hH hσ0 hin hsub hbd
   have hdirQ : DirInterior Q i σ := hin.mono fun t ht => hsub ht
@@ -196,7 +198,7 @@ theorem exists_walk_vtx {k : ℕ} (hk : k < Q.n) :
   unfold interiorWalk
   split_ifs
   · exact ⟨k, hk, rfl⟩
-  · refine ⟨Q.n - 1 - k, by rw [FactsInterior.rev_n]; omega, ?_⟩
+  · refine ⟨Q.n - 1 - k, by rwo [FactsInterior.rev_n], ?_⟩
     rw [FactsInterior.rev_vtx Q _ (by omega), show Q.n - 1 - (Q.n - 1 - k) = k by omega]
 
 /-- **A vertex of `Q` in the closure of a region is a vertex of its host polygon.** -/
@@ -221,8 +223,8 @@ theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
   suffices hend : Q.vtx k = hostPt M.W (hk M S R i) ∨
       Q.vtx k = hostPt M.W (hk M S R ((i + 1) % nk M S R)) by
     rcases hend with e | e
-    · exact ⟨i, by rw [hHn]; exact hi, by rw [hostPoly_vtx hi, e]⟩
-    · exact ⟨_, by rw [hHn]; exact hsi, by rw [hostPoly_vtx hsi, e]⟩
+    · exact ⟨i, by rwx [hHn], by rw [hostPoly_vtx hi, e]⟩
+    · exact ⟨_, by rwx [hHn], by rw [hostPoly_vtx hsi, e]⟩
   obtain ⟨k', hk', hkv⟩ := exists_walk_vtx (Q := Q) hkn
   rcases gap_cases hM hF hfin hne hR hN2 hi with ⟨a', b', harc, hsub⟩ | ⟨c, hc, p, p', t, t', hA,
       hB, ha, hb, hAB⟩
@@ -323,7 +325,7 @@ theorem chordSet_inj (hQ : Q.Simple) (hdh : DistinctHeights Q) {i i' : ℕ} (hi 
     rw [← h, himg]; exact ⟨0, ⟨le_rfl, hT.le⟩, Visibility.rayPt_zero _ _⟩
   rw [himg'] at hvi
   obtain ⟨s, -, hs⟩ := hvi
-  have hy : (Q.vtx i').2 = (Q.vtx i).2 := by rw [← hs]; rfl
+  have hy : (Q.vtx i').2 = (Q.vtx i).2 := by rwr [← hs]
   have hii : i = i' := by
     by_contra hne
     exact hdh i' i hi' hi (Ne.symm hne) hy
@@ -335,7 +337,7 @@ theorem chordSet_inj (hQ : Q.Simple) (hdh : DistinctHeights Q) {i i' : ℕ} (hi 
   rw [himg'] at hm
   obtain ⟨u, ⟨hu0, -⟩, hu⟩ := hm
   have e := congrArg Prod.fst hu
-  simp only [Visibility.rayPt_fst] at e
+  simp [Visibility.rayPt_fst] at e
   rcases hσ with rfl | rfl <;> rcases hσ' with rfl | rfl
   · rfl
   · exfalso; linarith

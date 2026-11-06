@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.RestoreFCostB
 public import Chazelle.Core.RestoreFComplete3
 public import Chazelle.Core.RestoreDrvPos
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, the search on the RAM: `FindOK`
@@ -60,7 +63,7 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
   set T := t * (f + 1) + 20 with hT
   -- the piece bound
   have hTf : T ≤ 2 * (t + 20) * f := by
-    rw [hT]; nlinarith
+    rwnl [hT]
   have hKp : 10 ^ 9 * (T * S) + 22 ≤ 10 ^ 9 * 2 * (t + 21) * f * S := by
     have : T * S ≤ 2 * (t + 20) * f * S := Nat.mul_le_mul_right _ hTf
     nlinarith
@@ -86,7 +89,7 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
       Nat.mul_le_mul (by have := Nat.mul_le_mul_left Q hk; omega) hk
     have h4 : (Q * (d + 1) + 6) * (d + 1) + 49 ≤ (P + 22300) * g * (d + 2) ^ 2 := by
       have e : (P + 22300) * g * (d + 2) ^ 2 = Q * (d + 2) ^ 2 + 100 * g * (d + 2) ^ 2 := by
-        rw [hQ]; ring
+        rwring [hQ]
       rw [e]
       have : Q * (d + 1) * (d + 1) ≤ Q * (d + 2) ^ 2 := by
         rw [mul_assoc, ← pow_two]; exact Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (by omega) 2)
@@ -99,7 +102,7 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
         nlinarith
       calc (P + 22300) * g * (d + 2) ^ 2 ≤ 10 ^ 10 * (t + 21) * f * S * g * (d + 2) ^ 2 := by
             gcongr
-        _ = _ := by rw [hS]; ring
+        _ = _ := by rwring [hS]
 
 
 /-- **The search meets `FindOK`.** -/
@@ -114,7 +117,7 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
   obtain ⟨c₀, k₀, ex₀, hk₀, nm, rr, rm, ro, fr, f07, hE⟩ := find_start hsh hBs hcu hBc hBo hB8
     hloc hhalf hOkM hw hG hWh hX hcap hwf hreg hsimp hMD hGM hOk hNW hNF hdeg hsg hr
   set E := fEnv P W M N X Ok cu (testS sh) Bc Bo F G H testκ c with hEdef
-  have hA0 : c₀.nreg ALLOC = c.nreg ALLOC := fr _ (by unfold IniW ALLOC; omega)
+  have hA0 : c₀.nreg ALLOC = c.nreg ALLOC := fr _ (by ufo IniW ALLOC)
   -- the oracles cost at least one step
   have hγ1 : 1 ≤ c.nreg 81003 := one_le_gamma hGM hNF.1 hsg
   obtain ⟨hF1, hG1⟩ := oracle_pos hsh hcu hw hG hWh hX hcap hwf hreg hMD hGM hOk hγ1
@@ -138,14 +141,14 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
       (H (c.nreg 81003) + Nat.clog 2 (c.nreg 81003) + 1) ≤ W := hroom
   have hA : ∀ t, t < k → ArcOK E t := fun t ht => by
     have hch : (E.N.region E.r).chords ≠ [] := fun h => by
-      rw [hkdef] at ht; unfold kOf at ht; rw [ite_eq_left h] at ht; omega
+      rw [hkdef] at ht; unfold kOf at ht; rwo [ite_eq_left h] at ht
     have hk' : k = (E.N.region E.r).arcs.length := by rw [hkdef]; unfold kOf; rw [ite_eq_right hch]
-    exact hE.arcOK hch (by rw [← hk']; exact ht)
+    exact hE.arcOK hch (by rwx [← hk'])
   have hPG : ∀ t, t < k → PGood E c₀ Kp t := fun t ht => by
     have hch : (E.N.region E.r).chords ≠ [] := fun h => by
-      rw [hkdef] at ht; unfold kOf at ht; rw [ite_eq_left h] at ht; omega
+      rw [hkdef] at ht; unfold kOf at ht; rwo [ite_eq_left h] at ht
     have hk' : k = (E.N.region E.r).arcs.length := by rw [hkdef]; unfold kOf; rw [ite_eq_right hch]
-    exact pgood_of hE hch (by rw [← hk']; exact ht) k0K_le
+    exact pgood_of hE hch (by rwx [← hk']) k0K_le
       (fun Cα N γ' hQ hcan hγ' hm => k1K_le hE hQ hcan hγ' hm)
   have hrun : FRS B P W c₀ (.seq aCntS (outerLoop cu (testS sh))) c₀
       (17 + ((outerK E Kp k + 2) * k + 2)) (fun c' => FWin E c' ∧
@@ -155,7 +158,7 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
     have hw₁ : FWin E c₁ := hw0.congr' (fun q a b => f₁ q (by omega) (by omega) (by omega)
       (by omega) (by omega) (by omega))
     exact (outerLoop_fs (k := k) hE hB hBT hI₁ hw₁ h32 h30 hA hPG (hnW_of hE)
-      (by show c₁.nreg ALLOC + _ ≤ W; rw [hA0] at hA₁; omega)).mono le_rfl
+      (by show c₁.nreg ALLOC + _ ≤ W; rwo [hA0] at hA₁)).mono le_rfl
       (fun c' h' => ⟨h'.1, h'.2.2.2⟩)
   obtain ⟨c', k₁, ex₁, hk₁, hI', hrf, hw', hpd⟩ := hrun
   refine ⟨c', k₀ + k₁, .seq ex₀ ex₁, ?_, ⟨fun q h8 hq => ?_, hw'.1, ?_⟩, ?_⟩
@@ -164,8 +167,8 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
       (H (c.nreg 81003) + Nat.clog 2 (c.nreg 81003) + 1)
     omega
   · -- the caller's registers
-    have h80 : 80000 ≤ q := by unfold bandOf bRestore at h8; omega
-    rw [hI'.hin q (by unfold FFix; omega), fr q (by unfold IniW; omega)]
+    have h80 : 80000 ≤ q := by ufo bandOf bRestore at h8
+    rw [hI'.hin q (by ufo FFix), fr q (by ufo IniW)]
   · -- soundness and completeness
     intro M' N' reg hMD' hNA' hNF' hregs'
     have hMM : M' = M := NFLoc.modelDesc_unique hMD' hMD
@@ -183,8 +186,8 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
   · -- the frame
     have hf0 : Frame B c c₀ k₀ := ⟨fun r hr _ => fr r (fun h => hr (by
         unfold IniW at h; rw [hBdef]; apply Finset.mem_union_left
-        have : bandOf r = bRestore := by unfold bandOf bRestore; omega
-        rw [this]; decide)), fun r _ => by rw [rr], fun a _ => by rw [nm],
+        have : bandOf r = bRestore := by ufo bandOf bRestore
+        rwd [this])), fun r _ => by rw [rr], fun a _ => by rw [nm],
       fun a _ => by rw [rm], ro, by rw [hA0], by omega⟩
     have hf1 : Frame B c₀ c' k₁ := RF.to_frame hrf
     have := hf0.trans hf1

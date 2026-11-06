@@ -45,7 +45,7 @@ theorem region_arcs_le_of {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hN
     (N.region r).arcs.length ≤ 5 := by
   classical
   obtain ⟨hF, -, -, reg, hR, -, hA, hRs, -⟩ := hN
-  have hU : reg r ∈ M.regions (N.F M Q) := hR.1 r hr
+  have hU  := hR.1 r hr
   have hnd := (hRs r hr).2.2.1
   set L := (N.region r).arcs
   set f : ℕ → ℝ × ℝ := fun j => (M.key Q (N.arc j).s, M.key Q (N.arc j).e)

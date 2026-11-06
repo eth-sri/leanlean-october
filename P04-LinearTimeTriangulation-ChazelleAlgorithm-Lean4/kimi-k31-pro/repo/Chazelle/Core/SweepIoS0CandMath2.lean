@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepIoS0CandMath
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep RAM (WP-D), answers: stop and table candidates of a side-0 query (mathematics, 2)
@@ -61,9 +64,8 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
     rw [hget i hi]; exact List.getElem_mem _
   have hK0 : oW J (K 0) ≤ oW J x := by
     have h := hhead (es.getD 0 (0, 0, ∅)) (by
-      rw [hget 0 hlen, List.head?_eq_getElem?, List.getElem?_eq_getElem hlen]; rfl)
-    show oW J (K 0) ≤ _
-    rw [show K 0 = _ from rfl, h]; exact hst
+      rwr [hget 0 hlen, List.head?_eq_getElem?, List.getElem?_eq_getElem hlen])
+    rwx [show K 0 = _ from rfl, h]
   -- the last key not after `x`
   set i := Nat.findGreatest (fun i => oW J (K i) ≤ oW J x) (es.length - 1) with hi
   have hiP : oW J (K i) ≤ oW J x := Nat.findGreatest_spec (P := fun i => oW J (K i) ≤ oW J x)
@@ -73,11 +75,11 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
     omega
   have hKi := hmem _ (hmemi i hil)
   have hKi0 : 0 ≤ K i := by have := hKi.2.1; have : (0 : ℝ) ≤ (es.getD i (0, 0, ∅)).1 := by positivity
-                            simp only [K]; linarith
+                            sil only [K]
   have hKin : K i < n := by
     have h1 := hKi.1; have h2 := hKi.2.2.1
     have : ((es.getD i (0, 0, ∅)).1 : ℝ) + 1 ≤ n := by exact_mod_cast h1
-    simp only [K]; linarith
+    sil only [K]
   have hgW0 : (0 : ℝ) ≤ gW J := by positivity
   have heq : oW J (K i) = oW J x := by
     rcases hiP.lt_or_eq with hlt | h
@@ -90,7 +92,7 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
       · have hlast' : es.getLast? = some (es.getD i (0, 0, ∅)) := by
           rw [List.getLast?_eq_getElem?, hget i hil]
           rw [show es.length - 1 = i by omega, List.getElem?_eq_getElem hil]
-        have := hlast _ (by rw [hlast']; rfl) x hcut hx0 hxn
+        have := hlast _ (by rwr [hlast']) x hcut hx0 hxn
         exact this ⟨hlt, off_lt hxn hgW0⟩
     · exact h
   have hkx : K i = x := off_inj hgW0 (gW_lt J) hKi0 hKin hx0 hxn heq
@@ -107,7 +109,7 @@ theorem stopRecs_unique {m : ℕ → ℕ} {A : ℕ} {rs rs' : List (ℕ × ℕ �
   obtain ⟨b1, b2, b3, b4, b5⟩ := h' i hi'
   rw [List.getD_eq_getElem _ _ hi] at a1 a2 a3 a4 a5
   rw [List.getD_eq_getElem _ _ hi'] at b1 b2 b3 b4 b5
-  ext <;> simp only [← a1, ← a2, ← a3, ← a4, ← a5, b1, b2, b3, b4, b5]
+  ext <;> simp [← a1, ← a2, ← a3, ← a4, ← a5, b1, b2, b3, b4, b5]
 
 /-- The key of a log record in the event log. -/
 theorem logOf_getD (J : Merge.Junction) (Q : Polygon) (N : NF)
@@ -163,10 +165,10 @@ theorem tab_cand (J : Merge.Junction) {Q : Polygon} {N : NF} {T : ℕ → Option
     have hc := chord_mem_F (M := chainModel J.right) (Q := Q) hk
     unfold endOrigin endDir at hfree ⊢
     by_cases h : j % 2 = 0
-    · simp only [h, ite_true] at hfree ⊢
+    · simp [h, ite_true] at hfree ⊢
       left; left
       exact ⟨_, Or.inr hc, hfree, rfl⟩
-    · simp only [h, ite_false] at hfree ⊢
+    · simp [h, ite_false] at hfree ⊢
       left; right
       exact ⟨_, Or.inr hc, hfree, rfl⟩
 

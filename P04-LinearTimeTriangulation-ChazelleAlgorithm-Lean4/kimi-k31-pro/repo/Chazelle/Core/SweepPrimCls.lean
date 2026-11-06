@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepPrimLeft
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Sweep RAM primitives (WP-D2), part 9: classifying a walk position
@@ -78,7 +81,7 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
     (by rw [hc₁]; simp [i01]) (by omega)
   have w₂ := e₂.wb_right
   have g₂ : ∀ r, 50200 ≤ r → r < 50210 → c₂.nreg r = c₀.nreg r := fun r h1 h2 => by
-    rw [f₂.1 r (by simp only [Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
+    rw [f₂.1 r (by sio only [Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]),
       hc₁]
     simp only
     rw [upd_other _ _ _ (by omega), hinp r h1 h2]
@@ -90,17 +93,17 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
   · -- the box block
     have hpos : 0 < M.param (Qof P) x := box_param_pos C hsm hp0 hy
     obtain ⟨c', k, ex, hk, b⟩ := hbox c₂ hE₂ g₂ d₂ hsm hpos
-    exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [q01, hE₂.r81]; exact hsm) ex)),
+    exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_true (by rwx [q01, hE₂.r81]) ex)),
       by omega, b⟩
-  have t1 : ¬ c₂.nreg 50201 < c₂.nreg 50081 := by rw [q01, hE₂.r81]; exact hsm
+  have t1 : ¬ c₂.nreg 50201 < c₂.nreg 50081 := by rwx [q01, hE₂.r81]
   by_cases hh0 : hc < 1
   · obtain ⟨c', k, ex, hk, b⟩ := hvtx c₂ hE₂ g₂ (by omega)
-      ((param_eq_zero_iff _ _ _).2 (Or.inl (by simp [hx]; omega)))
+      ((param_eq_zero_iff _ _ _).2 (Or.inl (by sio [hx])))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_true
-      (by rw [q02, hE₂.r32]; exact hh0) ex))), by omega, b⟩
-  have t2 : ¬ c₂.nreg 50202 < c₂.nreg 50032 := by rw [q02, hE₂.r32]; exact hh0
+      (by rwx [q02, hE₂.r32]) ex))), by omega, b⟩
+  have t2 : ¬ c₂.nreg 50202 < c₂.nreg 50032 := by rwx [q02, hE₂.r32]
   by_cases hd0 : c₂.nreg 10502 < 1
-  · have hdir : dirCode M e = 0 := by rw [← d₂]; omega
+  · have hdir : dirCode M e = 0 := by rwo [← d₂]
     have hhor : (M.wa x.edge).2 = (M.wb x.edge).2 := by
       unfold dirCode at hdir
       split_ifs at hdir with h1 h2
@@ -108,8 +111,8 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
     obtain ⟨c', k, ex, hk, b⟩ := hvtx c₂ hE₂ g₂ (by omega)
       ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inl hhor)))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_true
-      (by rw [hE₂.r32]; exact hd0) ex)))), by omega, b⟩
-  have t3 : ¬ c₂.nreg 10502 < c₂.nreg 50032 := by rw [hE₂.r32]; exact hd0
+      (by rwx [hE₂.r32]) ex)))), by omega, b⟩
+  have t3 : ¬ c₂.nreg 10502 < c₂.nreg 50032 := by rwx [hE₂.r32]
   -- the start vertex of the edge and the height vertex
   have e₃ := Exec.subN (P := P) w₂ 50120 50201 50081
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50201 - c₂.nreg 50081) }
@@ -183,29 +186,29 @@ theorem classify_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {boxK vtxK 
       obtain ⟨c', k, ex, hk, b⟩ := hvtx c₇ hE₇ g₇' (by omega)
         ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inr heq)))
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
-          (.ifLtN_true (by rw [hE₇.r32]; exact hlt2) ex))))))))))), by omega, b⟩
+        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rwx [hE₇.r32])
+          (.ifLtN_true (by rwx [hE₇.r32]) ex))))))))))), by omega, b⟩
     · have p71 : ((Qof P).vtx (x.hgt - 1)).2 < (M.W.vtx e).2 := b71.2.1 (by
-        have := b71.1; rw [hE₇.r32] at hlt2; omega)
+        have := b71.1; rwo [hE₇.r32] at hlt2)
       have hpos : 0 < M.param (Qof P) x := lt_of_le_of_ne hp0 (fun h => by
         rcases (param_eq_zero_iff _ _ _).1 h.symm with h' | h' | h'
-        · simp [hx] at h'; omega
+        · sio [hx] at h'
         · exact hd0 (by rw [d₂]; unfold dirCode; rw [ite_eq_right (by rw [h']; exact lt_irrefl _),
             ite_eq_right (by rw [h']; exact lt_irrefl _)]; omega)
-        · rw [hwa] at h'; linarith)
+        · rwli [hwa] at h')
       obtain ⟨c', k, ex, hk, b⟩ := hint c₇ hE₇ g₇' (by rw [g₇ _ (Or.inr rfl), d₂]) (by omega)
         hpos
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
+        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rwx [hE₇.r32])
           (.ifLtN_false hlt2 ex))))))))))), by omega, b⟩
   · have p70 : (M.W.vtx e).2 < ((Qof P).vtx (x.hgt - 1)).2 := b70.2.1 (by
-      have := b70.1; rw [hE₇.r32] at hlt; omega)
+      have := b70.1; rwo [hE₇.r32] at hlt)
     have hpos : 0 < M.param (Qof P) x := lt_of_le_of_ne hp0 (fun h => by
       rcases (param_eq_zero_iff _ _ _).1 h.symm with h' | h' | h'
-      · simp [hx] at h'; omega
+      · sio [hx] at h'
       · exact hd0 (by rw [d₂]; unfold dirCode; rw [ite_eq_right (by rw [h']; exact lt_irrefl _),
           ite_eq_right (by rw [h']; exact lt_irrefl _)]; omega)
-      · rw [hwa] at h'; linarith)
+      · rwli [hwa] at h')
     obtain ⟨c', k, ex, hk, b⟩ := hint c₇ hE₇ g₇' (by rw [g₇ _ (Or.inr rfl), d₂]) (by omega) hpos
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
       (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_false hlt ex)))))))))), by omega, b⟩

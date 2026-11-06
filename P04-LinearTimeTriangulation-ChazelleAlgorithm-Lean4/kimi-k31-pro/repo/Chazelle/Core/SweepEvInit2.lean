@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvInit
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stages 2–3: the initialisation, part 2 (the top of `C₁`, the descriptor)
@@ -45,9 +48,9 @@ theorem frame_of_irs {W : ℕ} {c c' : Config} {k : ℕ} (hI : IInv W c c') (hf 
 theorem frame_regs {c c' : Config} (k : ℕ) (hr : ∀ r, bandOf r ∉ ioBands → c'.nreg r = c.nreg r)
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : Frame ioBands c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_not_io
+  have hA  := hr ALLOC alloc_not_io
   exact ⟨fun r h _ => hr r h, fun r _ => by rw [hrr], fun a _ => by rw [hm],
-    fun a _ => by rw [hrm], ho, by rw [hA], by rw [hA]; omega⟩
+    fun a _ => by rw [hrm], ho, by rw [hA], by rwo [hA]⟩
 
 theorem frame_ioB {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : Frame (B ∪ B) c c' k) :
     Frame B c c' k := by
@@ -66,7 +69,6 @@ def symCp : List Instr := [.copyN cT1 iY, .copyN (cT1 + 1) (iY + 1), .copyN (cT1
 def symS : Stmt :=
   .seq (block [.constN iE 6, .constN iH 0]) (.seq (callSym (sw 20) iE iH iY) (block symCp))
 
-set_option maxRecDepth 20000 in
 /-- **The top of `C₁`**: a symbolic point in `cT1`; only the oracle bands, the allocator and
 `sw 645 … 647`, `sw 705 … 709` change. -/
 theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
@@ -97,9 +99,9 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
   obtain ⟨c₂, k₂, e₂, hk₂, hI₂, hf₂, ⟨s, hs, hsl, hse⟩, hk2, -, -⟩ :=
     callSym_irs (P := P) (re := iE) (rh := iH) (o := iY) hI₁ hctx₁
       (by swoInit2) (by swoInit2) (by rw [qE])
-      (by rw [qE]; omega) (by rw [qE, qH]; exact ⟨by rw [hpar], by rw [hpar]; norm_num,
+      (by rwo [qE]) (by rw [qE, qH]; exact ⟨by rw [hpar], by rwn [hpar],
         Nat.zero_le _⟩)
-      (by rw [qE, qH]; exact ⟨fun _ => hpar, fun _ => rfl⟩) (by rw [hA₁]; exact hroom)
+      (by rw [qE, qH]; exact ⟨fun _ => hpar, fun _ => rfl⟩) (by rwx [hA₁])
   rw [qE, qH] at hse
   have hpos : (chainModel J.left).pos (Qof P) ⟨6, 0⟩ = J.left.top := by
     show Chazelle.Chain.sidePt _ _ _ = _
@@ -161,7 +163,7 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
     rw [h6 _ (by swoInit2) (by swoInit2) (by swoInit2)
       (by swoInit2), hS]
   have nk : c₁.nreg k = j := by rw [h6 _ hk1 hk2 hk3 hk4, hk]
-  have e₁ := Exec.addN (P := P) hw iA (sw 20) k (by rw [n20, nk]; omega)
+  have e₁ := Exec.addN (P := P) hw iA (sw 20) k (by rwo [n20, nk])
   have e₂ := Exec.loadN (P := P) e₁.wb_right iV iA
   have e₃ := Exec.addN (P := P) e₂.wb_right iA CD₁ k (by
     simp only
@@ -198,7 +200,6 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
   · rw [upd_other _ _ _ (by omega), h5 a ha]
   · rw [upd_other _ _ _ r3, upd_other _ _ _ r4, upd_other _ _ _ r3, h6 r r1 r2 r3 r4]
 
-set_option maxRecDepth 20000 in
 theorem mdHead_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (k0 : c.nreg K0 = 0) (k1 : c.nreg K1 = 1) (hW : c.nreg ALLOC + 6 ≤ W) :
     ∃ c₁ k, Exec P W (block mdHead) c c₁ k ∧ k = 3 ∧
@@ -206,14 +207,13 @@ theorem mdHead_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   unfold mdHead MdInv
   simp only [MD₁, CD₁, K0, K1, ALLOC, iA, iV, sw, Nat.reduceAdd] at *
   exec_block
-  · config_simp; rw [k1]; omega
+  · config_simp; rwo [k1]
   · refine ⟨rfl, by config_simp, by config_simp; rw [k1], by config_simp; rw [k0],
       fun i hi => absurd hi (Nat.not_lt_zero _), fun a ha => ?_, fun r h1 h2 _ _ => ?_,
       rfl, rfl, rfl⟩
     · config_simp; rw [upd_other _ _ _ (by omega)]
     · config_simp; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
 
-set_option maxRecDepth 20000 in
 /-- **The model descriptor of `C₁`** at the allocator `A`: `0` at `A`, the five words of the
 descriptor at `sw 20` at `A + 1 …`; `MD₁ = A`, `CD₁ = A + 1`, the allocator at `A + 6`. -/
 theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (hK : Consts c)
@@ -228,7 +228,7 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
   set A := c.nreg ALLOC with hA
   set S := c.nreg (sw 20) with hSd
   obtain ⟨c₁, kH, eH, hkH, I₁⟩ := mdHead_exec (P := P) hw k0 k1 hW
-  have hSA : S + 5 ≤ A := hS
+  have hSA  := hS
   have nk : ∀ q, (q = K0 ∨ q = K1 ∨ q = K2 ∨ q = K3 ∨ q = K4) →
       q ≠ MD₁ ∧ q ≠ CD₁ ∧ q ≠ iA ∧ q ≠ iV := by
     rintro q (rfl | rfl | rfl | rfl | rfl) <;> refine ⟨?_, ?_, ?_, ?_⟩ <;> swoInit2
@@ -248,7 +248,7 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
   have g6' : c₆.nreg K6 = 6 := by
     rw [g6 _ (by swoInit2) (by swoInit2) (by swoInit2)
       (by swoInit2), k6]
-  have e₉ := Exec.addN (P := P) e₈.wb_right ALLOC ALLOC K6 (by rw [gA, g6']; omega)
+  have e₉ := Exec.addN (P := P) e₈.wb_right ALLOC ALLOC K6 (by rwo [gA, g6'])
   refine ⟨_, _, .seq eH (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))), by omega, ?_, ?_, ?_,
     g3, g4, g5, fun r h0 h1 h2 h3 h4 => ?_, g7, g8, g9⟩
   · simp only [upd_same]; rw [gA, g6']

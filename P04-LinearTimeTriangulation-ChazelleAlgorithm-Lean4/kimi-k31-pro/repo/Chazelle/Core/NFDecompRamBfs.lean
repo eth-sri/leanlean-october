@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.NFDecompRamInit
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Tree decomposition (WP-C), part 14: the search on the RAM
@@ -117,7 +122,7 @@ theorem bfsRead_exec {A R K CB RB LB : ℕ} {up dn : ℕ → ℕ} {c : Config} (
       Same [60030, 60032, 60033, 60034, 60035] c c' ∧ c'.nreg 60032 = i ∧
       c'.nreg 60034 = up i ∧ c'.nreg 60035 = dn i := by
   have o := hR.one; have tw := hR.two; have hcb := hR.rCB; have hlb := hR.rLB
-  have hi' : c.nmem (LB + (L + t)) = i := by rw [← Nat.add_assoc]; exact hi
+  have hi' : c.nmem (LB + (L + t)) = i := by rwx [← Nat.add_assoc]
   unfold bfsRead
   exec_block
   all_goals first
@@ -204,7 +209,7 @@ theorem bfsSel_exec {c : Config} (hw : WordsBounded W c) {u d r : ℕ} (h34 : c.
     exec_block
     exact ⟨by omega, rfl, hsame _ _, by config_simp; rw [h35, ite_eq_left hu],
       by config_simp; rw [o, ite_eq_left hu]⟩
-  · refine ifEqN_ne (by rw [h34, h29]; exact hu) ?_
+  · refine ifEqN_ne (by rwx [h34, h29]) ?_
     exec_block
     intro k' hk'
     exact ⟨by omega, rfl, hsame _ _, by config_simp; rw [h34, ite_eq_right hu],
@@ -226,7 +231,7 @@ theorem bfsInner_exec {A R K CB RB LB : ℕ} {up dn : ℕ → ℕ} {c : Config} 
       (∀ x, (x = 60025 ∨ x = 60027 ∨ x = 60028 ∨ x = 60029) → c'.nreg x = c.nreg x) := by
   have hA12 : A ≤ W := by omega
   set s := (if up i = r then dn i else up i) with hsdef
-  have hsR : s < R := by rw [hsdef]; split_ifs <;> omega
+  have hsR : s < R := by rw [hsdef]; splao
   have b2 := hR.b 2 (by norm_num)
   simp only [Nat.reduceAdd] at b2
   unfold bfsInner
@@ -240,7 +245,7 @@ theorem bfsInner_exec {A R K CB RB LB : ℕ} {up dn : ℕ → ℕ} {c : Config} 
   have hw2 := e2.wb_right
   rw [← hsdef] at r36
   obtain ⟨c3, k3, e3, rfl, m3, s3, r38⟩ := ldF_rel (P := P) hw2 60038 2 60036
-    (by rw [show fb 2 = 60102 from rfl, hR2.b 2 (by norm_num), r36]; omega)
+    (by rwo [show fb 2 = 60102 from rfl, hR2.b 2 (by norm_num), r36])
   have hw3 := e3.wb_right
   have hR3 : DRegs A R K CB RB LB c3 := hR2.of_same s3 (by simp [Prot])
   rw [show fb 2 = 60102 from rfl, hR2.b 2 (by norm_num), r36, m2, m1] at r38
@@ -255,20 +260,20 @@ theorem bfsInner_exec {A R K CB RB LB : ℕ} {up dn : ℕ → ℕ} {c : Config} 
     rw [hbs]
     refine spec_seq (ifEqN_eq (by rw [hvis, hv, hR3.one]) (spec_skip hw3 ?_))
     refine spec_instr (Exec.addN hw3 _ _ _ (by
-      rw [s13.1 _ (by simp), h21, hR3.one]; omega)) fun hw4 => ?_
+      rwo [s13.1 _ (by simp), h21, hR3.one])) fun hw4 => ?_
     have s4 : Same [60030, 60032, 60033, 60034, 60035, 60036, 60037, 60038, 60021] c
         { c3 with nreg := upd c3.nreg 60021 (c3.nreg 60021 + c3.nreg 60011) } :=
       (s13.mono (by simp)).trans (Same.upd1 (by simp))
     refine ⟨by omega, DFr.of_same s4 (by simp [Prot]) (fun a _ => by config_simp; rw [m13]),
-      by config_simp; rw [m13]; exact hE, fun f _ _ j _ => by config_simp; rw [m13],
+      by config_simp; rwx [m13], fun f _ _ j _ => by config_simp; rw [m13],
       by config_simp; rw [s13.1 _ (by simp), h26], ?_, fun x hx => ?_⟩
     · config_simp; rw [s13.1 _ (by simp), h21, hR3.one]
     · config_simp
       rw [Machine.upd_other _ _ _ (by omega)]
-      exact s13.1 x (by simp; omega)
+      exact s13.1 x (by sio)
   · -- `s` is new
     have htlR := htl hv
-    refine spec_seq (ifEqN_ne (by rw [hvis, hR3.one]; exact hv) ?_)
+    refine spec_seq (ifEqN_ne (by rwx [hvis, hR3.one]) ?_)
     obtain ⟨c4, k4, e4, rfl, hf4, s4, r26, hv4⟩ := bfsNew_exec (P := P) hw3 hR3 hAW (sv := s)
       (tl := st.tl) (r := r) (i := i) (v := if up i = r then 1 else 0)
       (by rw [s3.1 _ (by simp), r36]) (by rw [s13.1 _ (by simp), h26])
@@ -276,9 +281,9 @@ theorem bfsInner_exec {A R K CB RB LB : ℕ} {up dn : ℕ → ℕ} {c : Config} 
       (by rw [s3.1 _ (by simp), r37]) hsR htlR (by omega)
     refine ⟨c4, 13, e4, fun k' hk' => ?_⟩
     have hw4 := e4.wb_right
-    have hR4 : DRegs A R K CB RB LB c4 := hR3.frame hf4
+    have hR4  := hR3.frame hf4
     refine spec_instr (Exec.addN hw4 _ _ _ (by
-      rw [s4.1 _ (by simp), s13.1 _ (by simp), h21, hR4.one]; omega)) fun hw5 => ?_
+      rwo [s4.1 _ (by simp), s13.1 _ (by simp), h21, hR4.one])) fun hw5 => ?_
     unfold bstep
     rw [← hsdef, ite_eq_right hv]
     have s45 : Same [60030, 60026, 60021] c4
@@ -300,8 +305,8 @@ theorem bfsInner_exec {A R K CB RB LB : ℕ} {up dn : ℕ → ℕ} {c : Config} 
     · config_simp; rw [r26]
     · config_simp; rw [s4.1 _ (by simp), s13.1 _ (by simp), h21, hR4.one]
     · config_simp
-      rw [Machine.upd_other _ _ _ (by omega), s4.1 _ (by simp; omega)]
-      exact s13.1 x (by simp; omega)
+      rw [Machine.upd_other _ _ _ (by omega), s4.1 _ (by sio)]
+      exact s13.1 x (by sio)
 
 end inner
 
@@ -335,9 +340,9 @@ theorem bfsInnerLoop_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K
       c'.nreg 60025 = c.nreg 60025 := by
   set r := st.ord h with hrdef
   set l := lst r with hldef
-  have hr : r < R := (hI.ord_lt h hh).1
+  have hr  := (hI.ord_lt h hh).1
   let F : ℕ → BS := fun t => (l.take t).foldl (bstep up dn r) st
-  have hmem : ∀ i ∈ l, i ∈ lst (st.ord h) := fun i hi => hi
+  have hmem : ∀ i ∈ l, i ∈ lst (st.ord h) := fun _ => id
   obtain ⟨c', k, e, ⟨hw', hf', ht', hE', hF', h26', hx'⟩, htest, hk⟩ :=
     Exec.whileLtN_potential (P := P) (W := W) (a := 60021) (b := 60027) (body := bfsInner)
     (fun d => WordsBounded W d ∧ DFr (A + 12) (A + 12 + 19 * R) c d ∧ d.nreg 60021 ≤ l.length ∧
@@ -361,10 +366,10 @@ theorem bfsInnerLoop_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K
       -- the invariant of the partial fold
       have hIt := fold_inv hends hlists hh (l.take t) [] (fun j hj => hmem j (List.mem_of_mem_take hj)) hI
       obtain ⟨-, mo⟩ := fold_mono hends hlists r (l.take t) st
-      have hordt : (F t).ord h = r := mo h hh
-      have hht : h < (F t).tl := lt_of_lt_of_le hh (fold_mono hends hlists r (l.take t) st).1
+      have hordt  := mo h hh
+      have hht  := lt_of_lt_of_le hh (fold_mono hends hlists r (l.take t) st).1
       have hIt' : BInv R K up dn lst h (l.take t).reverse (F t) := by simpa using hIt
-      have hstep := bstep_inv hends hlists hIt' hht (i := i) (by rw [hordt]; exact hil)
+      have hstep := bstep_inv hends hlists hIt' hht (i := i) (by rwx [hordt])
       rw [hordt] at hstep
       have htl : (F t).vis (if up i = r then dn i else up i) ≠ 1 → (F t).tl < R := by
         intro hv
@@ -375,22 +380,22 @@ theorem bfsInnerLoop_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K
       obtain ⟨d', k', e', hk', hf'', hE'', hF'', h26'', h21'', hx''⟩ :=
         bfsInner_exec (P := P) hwd hRd hAW hEd (r := r) (L := c.nmem (RB + 5 * r + 3))
           (t := t) (i := i) (by rw [hxd 60029 (by simp), h29])
-          (by rw [hxd 60028 (by simp), h28]) rfl (by rw [← hRBd]; exact hLt) (by rw [← hRBd]; exact hent)
+          (by rw [hxd 60028 (by simp), h28]) rfl (by rwx [← hRBd]) (by rwx [← hRBd])
           hiK u1 u2 u3 ⟨(hends i hiK).1, (hends i hiK).2.1⟩ h26d htl hKR
       have hFs : F (t + 1) = bstep up dn r (F t) i := take_succ_foldl l _ st htest
-      refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', by rw [h21'']; omega, ?_, ?_, ?_,
-        fun x hx => (hx'' x hx).trans (hxd x hx)⟩, by rw [h21'']; omega⟩
-      · rw [h21'', hFs]; exact hE''
+      refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', by rwo [h21''], ?_, ?_, ?_,
+        fun x hx => (hx'' x hx).trans (hxd x hx)⟩, by rwo [h21'']⟩
+      · rwx [h21'', hFs]
       · intro f hf hnf j hj; rw [hF'' f hf hnf j hj, hFd f hf hnf j hj]
       · rw [h26'', h21'', hFs])
-    ⟨hw, DFr.refl _ _ c, by rw [h21]; omega, by rw [h21]; simpa [F] using hE,
-      fun f _ _ j _ => rfl, by rw [h26, h21]; rfl, fun _ _ => rfl⟩
+    ⟨hw, DFr.refl _ _ c, by rwo [h21], by rw [h21]; simpa [F] using hE,
+      fun f _ _ j _ => rfl, by rwr [h26, h21], fun _ _ => rfl⟩
   rw [hx' 60027 (by simp), h27] at htest
   have htl : c'.nreg 60021 = l.length := by omega
   have hFl : F l.length = bouter up dn lst st h := by
     simp only [F, List.take_length, bouter, ← hrdef, ← hldef]
   rw [htl, hFl] at hE' h26'
-  refine ⟨c', k, e, by rw [h21] at hk; omega, hw', hf', hE', hF', h26', hx' 60025 (by simp)⟩
+  refine ⟨c', k, e, by rwo [h21] at hk, hw', hf', hE', hF', h26', hx' 60025 (by simp)⟩
 
 /-- **Dequeuing** the head region and locating its list. -/
 theorem bfsDeq_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
@@ -469,9 +474,9 @@ theorem bfsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
           hlen hRB
       have hRd1 : DRegs A R K CB RB LB d1 := hRd.of_same s1 (by simp [Prot])
       obtain ⟨d2, k2, e2, hk2, hw2, hf2, hE2, hF2, h262, h252⟩ :=
-        bfsInnerLoop_exec (P := P) e1.wb_right hRd1 hAW (by rw [m1]; exact hEnvd) hends hlists hKR
-          hId htest (by rw [m1]; exact hEd) r29 (by rw [r28, m1]) r27 r21
-          (by rw [s1.1 _ (by simp)]; exact h26d)
+        bfsInnerLoop_exec (P := P) e1.wb_right hRd1 hAW (by rwx [m1]) hends hlists hKR
+          hId htest (by rwx [m1]) r29 (by rw [r28, m1]) r27 r21
+          (by rwx [s1.1 _ (by simp)])
       have hdg := hdeg _ hr
       refine ⟨d2, 12 + k2, .seq e1 e2, ⟨hw2, ?_, bouter up dn lst st h, ?_, hE2, h262, ?_⟩, ?_⟩
       · exact hfd.trans ((DFr.of_same s1 (by simp [Prot]) (fun a _ => by rw [m1])).trans hf2)
@@ -483,7 +488,7 @@ theorem bfsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
           rw [← Nat.mul_succ]; congr 1; omega
         omega)
     ⟨e1.wb_right, hf1, st0, by rw [hc1]; config_simp; exact hI0,
-      by rw [hc1]; exact fun j hj => ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩, by rw [hc1]; config_simp; rfl,
+      by rw [hc1]; exact fun j hj => ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩, by rw [hc1]; csr,
       by rw [hc1]; exact fun _ _ _ _ _ => rfl⟩
   have hl := hI.h_lt
   rw [h26] at htest

@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.NFBuildPassArc
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-C (BuildNF), RAM part 11: the gap test of the main pass
@@ -29,7 +34,7 @@ theorem wr_gapS : wrM Bgap gapS = true := by
   have h1 : wrM Bgap arcS = true := wrM_mono (fun r hr => by simp [Bgap, hr]) wr_arcS
   have h2 : wrM Bgap (halfS 42110 42111 42113 42114 42116 42117) = true :=
     wrM_of_wr (wr_mono (fun r hr => by simp [Bgap, hr]) wr_halfS)
-  simp only [gapS, wrM, block, loadRec, h1, h2, Bool.and_true, Bool.true_and]
+  simp [gapS, wrM, block, loadRec, h1, h2, Bool.and_true, Bool.true_and]
   decide
 
 theorem Bgap_false {r : ℕ} (h : r < 10000 ∨ (10503 ≤ r ∧ r ≤ 40000) ∨ (40103 ≤ r ∧ r < 41110) ∨
@@ -37,23 +42,22 @@ theorem Bgap_false {r : ℕ} (h : r < 10000 ∨ (10503 ≤ r ∧ r ≤ 40000) �
     (43106 < r ∧ r < 43120) ∨ (43128 ≤ r ∧ r < 43140) ∨ (43142 < r ∧ r < 43150) ∨ 43151 < r) :
     Bgap r = false := by
   have ha := Barc_false (r := r) (by omega)
-  simp only [Bgap, ha, BhalfS, Bhalf, Bool.false_or, Bool.or_eq_false_iff,
+  simp [Bgap, ha, BhalfS, Bhalf, Bool.false_or, Bool.or_eq_false_iff,
     decide_eq_false_iff_not]
   omega
 
 theorem bhalf_of_bgap {r : ℕ} (h : Bgap r = false) : BhalfS 42116 42117 r = false := by
-  simp only [Bgap, Bool.or_eq_false_iff] at h; exact h.1.1.1.2
+  simp [Bgap, Bool.or_eq_false_iff] at h; exact h.1.1.1.2
 
 theorem ne_of_bgap {r : ℕ} (h : Bgap r = false) : r ≠ 43106 ∧ r ≠ 43140 ∧ r ≠ 43141 ∧
     r ≠ 43142 ∧ r ≠ 42113 ∧ r ≠ 42114 ∧ r ≠ 42115 ∧ r ≠ 43120 := by
-  simp only [Bgap, Bool.or_eq_false_iff, decide_eq_false_iff_not] at h
+  simp [Bgap, Bool.or_eq_false_iff, decide_eq_false_iff_not] at h
   omega
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 /-- **The gap test and the arc.** -/
 theorem gapS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
     (hw : WordsBounded W d) {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
@@ -89,7 +93,7 @@ theorem gapS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
           M.key (Qof P) (wposOf L (E.getD ((m + 1) % E.length) 0))) →
         d'.nreg 43102 = A ∧ d'.nmem = d.nmem) := by
   have hn : (Qof P).n = P.n := shear_n _ _
-  have hW' : P.n + 3 ≤ W := by unfold hostWords at hWn; omega
+  have hW' : P.n + 3 ≤ W := by ufo hostWords at hWn
   have hHW' := hwf.1
   obtain ⟨hDW, hCW⟩ := locChainWF_of hwf hHW hWn
   set N := E.length with hNdef
@@ -103,7 +107,7 @@ theorem gapS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
   have ee := edge_lt hL hc'K
   obtain ⟨r0, r1, -, -⟩ := hR c' hc'K
   -- the step `m + 1`
-  have x₀ := Exec.addN (P := P) hw 43106 43100 43011 (by rw [h100, h1]; omega)
+  have x₀ := Exec.addN (P := P) hw 43106 43100 43011 (by rwo [h100, h1])
   set d₀ : Config := { d with nreg := upd d.nreg 43106 (d.nreg 43100 + d.nreg 43011) } with hd₀
   have w₀ := x₀.wb_right
   have g₀ : ∀ r, r ≠ 43106 → d₀.nreg r = d.nreg r := fun r hr => by rw [hd₀]; simp [hr]
@@ -136,12 +140,12 @@ theorem gapS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
       fun {e} we me fe e102 e110 e113 e114 e120 e117 e20 e21 => by
     obtain ⟨e', k, x, hk, fr, v, pz, pz1, pziff, mm⟩ := arcS_exec (P := P) hG hWn e we (M := M)
       (D := D) (H := H) (A := A) (AT := AT) (WT := WT)
-      (by rw [fe _ (Bgap_false (by omega)), hD]) (by rw [me]; exact hwf) (by rw [me]; exact hM) hHW
+      (by rw [fe _ (Bgap_false (by omega)), hD]) (by rwx [me]) (by rwx [me]) hHW
       (by rw [fe _ (Bgap_false (by omega)), h23, me]) (by rw [fe _ (Bgap_false (by omega)), h19])
       e102 (by rw [fe _ (Bgap_false (by omega)), hAT])
       (by rw [fe _ (Bgap_false (by omega)), hWT]) (by rw [fe _ (Bgap_false (by omega)), h1])
-      (by rw [e120]; split_ifs <;> omega) (by rw [e113]; exact ee) (by rw [e114]; exact pe.2.2)
-      hATH hWTH hATW hWTW (by rw [e20, e21]; exact hcI)
+      (by rw [e120]; splao) (by rw [e113]; exact ee) (by rw [e114]; exact pe.2.2)
+      hATH hWTH hATW hWTW (by rwx [e20, e21])
     refine ⟨e', k, x, hk, fr, v, pz, pz1, by rw [e113, e114] at pziff; exact pziff, ?_⟩
     rw [mm, me, e117, e110, h110, fe 42111 (Bgap_false (by omega)), h111, e113, e114, e20, e21,
       e120]
@@ -151,15 +155,15 @@ theorem gapS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
   by_cases hlt : m + 1 < N
   · -- no wrap: compare with `E[m + 1]`
     have hm'e : m' = m + 1 := Nat.mod_eq_of_lt hlt
-    refine spec_ifLtN_true (by rw [v₀, g₀ _ (by norm_num), hN]; exact hlt) ?_
+    refine spec_ifLtN_true (by rwx [v₀, g₀ _ (by norm_num), hN]) ?_
     obtain ⟨d₁, X1, g₁, v₁, mm₁⟩ : ∃ d₁, Exec P W (block [.addN 43140 43103 43011,
         .loadN 43141 43140]) d₀ d₁ 2 ∧ (∀ r, r ≠ 43140 → r ≠ 43141 → d₁.nreg r = d₀.nreg r) ∧
         d₁.nreg 43141 = c' ∧ d₁.nmem = d.nmem := by
       have y1 := Exec.addN (P := P) w₀ 43140 43103 43011 (by
-        rw [g₀ _ (by norm_num), g₀ _ (by norm_num), h103, h1]; omega)
+        rwo [g₀ _ (by norm_num), g₀ _ (by norm_num), h103, h1])
       have y2 := Exec.loadN (P := P) y1.wb_right 43141 43140
       refine ⟨_, .seq y1 (.seq y2 (.skip y2.wb_right)), fun r a1 a2 => by simp [a1, a2], ?_, rfl⟩
-      simp only [upd_same]
+      simp [upd_same]
       rw [g₀ _ (by norm_num), g₀ _ (by norm_num), h103, h1, hsame, show SE + m + 1 = SE + (m + 1)
         by omega, hSE _ hlt, hc', hm'e]
     have w₁ := X1.wb_right
@@ -178,8 +182,8 @@ theorem gapS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
     have ec := edge_lt hL hcK
     obtain ⟨d₃, k₃, x₃, hk₃, -, dst₃, f₃⟩ := halfS_exec (P := P) hG hW' d₂ w₂
       (qe := 42110) (qh := 42111) (se := 42113) (sh := 42114) (dd := 42116) (dst := 42117)
-      (by decide) (by decide) (by decide) (by rw [hD₂]; exact hDW) (by rw [hD₂, mm₂']; exact hCW)
-      (M := M) (by rw [hD₂, mm₂']; exact hM)
+      (by decide) (by decide) (by decide) (by rwx [hD₂]) (by rwx [hD₂, mm₂'])
+      (M := M) (by rwx [hD₂, mm₂'])
       (by rw [G₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
         (by norm_num) (by norm_num), h110]; exact ec)
       (by rw [G₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
@@ -225,26 +229,26 @@ theorem gapS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
         (by rw [g₄ _ (by norm_num), G₃ _ (Bgap_false (by omega))])
         (by rw [g₄ _ (by norm_num), G₃ _ (Bgap_false (by omega))])
       have X := X0 (.ifLtN_true (a := 42117) (b := 43011) (e := .skip)
-        (show d₃.nreg 42117 < d₃.nreg 43011 by rw [b0, o₃]; omega) (.seq z1 x₅))
+        (show d₃.nreg 42117 < d₃.nreg 43011 by rwo [b0, o₃]) (.seq z1 x₅))
       refine ⟨d₅, _, X, by omega, exec_frameM (Exec.seq x₀ (Exec.ifLtN_true (a := 43106)
-        (b := 42001) (by rw [v₀, g₀ _ (by norm_num), hN]; exact hlt) X)) wr_gapS,
+        (b := 42001) (by rwx [v₀, g₀ _ (by norm_num), hN]) X)) wr_gapS,
         fun _ => ⟨v₅, pz, pz1, pziff, mm₅⟩, fun h => absurd (Or.inr hg) h⟩
     · -- no gap
       have b1 : d₃.nreg 42117 = 1 := by rw [hbit, ite_eq_left (not_lt.1 hg)]
       have X := X0 (.ifLtN_false (a := 42117) (b := 43011) (t := .seq (.instr (.constN 43120 1)) arcS)
-        (show ¬ d₃.nreg 42117 < d₃.nreg 43011 by rw [b1, o₃]; omega) (.skip w₃))
+        (show ¬ d₃.nreg 42117 < d₃.nreg 43011 by rwo [b1, o₃]) (.skip w₃))
       refine ⟨d₃, _, X, by omega, exec_frameM (Exec.seq x₀ (Exec.ifLtN_true (a := 43106)
-        (b := 42001) (by rw [v₀, g₀ _ (by norm_num), hN]; exact hlt) X)) wr_gapS,
+        (b := 42001) (by rwx [v₀, g₀ _ (by norm_num), hN]) X)) wr_gapS,
         fun h => absurd h (by rintro (h | h); omega; exact hg h), fun _ => ⟨e102₃, mm₃⟩⟩
   · -- the wrap: the end is `E[0]`
     have hmN : m + 1 = N := by omega
     have hm'e : m' = 0 := by rw [hm', hmN, Nat.mod_self]
-    refine spec_ifLtN_false (by rw [v₀, g₀ _ (by norm_num), hN]; exact hlt) ?_
+    refine spec_ifLtN_false (by rwx [v₀, g₀ _ (by norm_num), hN]) ?_
     have y1 := Exec.loadN (P := P) w₀ 43141 43104
     obtain ⟨d₁, X1, g₁, v₁, mm₁⟩ : ∃ d₁, Exec P W (.instr (.loadN 43141 43104)) d₀ d₁ 1 ∧
         (∀ r, r ≠ 43141 → d₁.nreg r = d₀.nreg r) ∧ d₁.nreg 43141 = c' ∧ d₁.nmem = d.nmem := by
       refine ⟨_, y1, fun r a1 => by simp [a1], ?_, rfl⟩
-      simp only [upd_same]
+      simp [upd_same]
       rw [g₀ _ (by norm_num), h104, hsame, ← Nat.add_zero SE, hSE 0 (by omega), hc', hm'e]
     have w₁ := X1.wb_right
     obtain ⟨d₂, k₂, x₂, hk₂, e₂, h₂, g₂, mm₂⟩ := load w₁ mm₁ v₁
@@ -274,7 +278,7 @@ theorem gapS_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (d : Config)
         (.seq (.instr (.constN 43120 0)) arcS))) d₀ d₅ (1 + (k₂ + (1 + k₅))) :=
       .seq X1 (.seq x₂ (.seq z1 x₅))
     refine ⟨d₅, _, X, by omega, exec_frameM (Exec.seq x₀ (Exec.ifLtN_false (a := 43106)
-      (b := 42001) (by rw [v₀, g₀ _ (by norm_num), hN]; exact hlt) X)) wr_gapS,
+      (b := 42001) (by rwx [v₀, g₀ _ (by norm_num), hN]) X)) wr_gapS,
       fun _ => ⟨v₅, pz, pz1, pziff, mm₅⟩, fun h => absurd (Or.inl hmN) h⟩
 
 

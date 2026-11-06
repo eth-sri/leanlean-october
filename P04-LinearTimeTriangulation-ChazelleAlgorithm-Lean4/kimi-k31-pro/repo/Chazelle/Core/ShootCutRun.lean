@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.ShootCutDyDn
 public import Chazelle.Core.ShootCutGrade
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 17: the stretches of the main loop
@@ -49,7 +50,7 @@ theorem uOf_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) {r a 
   have hlen := NFLoc.preLen_mono Q.n H (show r + 1 ≤ H.length by omega)
   rw [NFLoc.preLen_length] at hlen
   rw [hrun] at hsucc
-  simp only [NFLoc.itemCnt] at hsucc
+  simp [NFLoc.itemCnt] at hsucc
   rw [sideE_up C hJ, ← Nat.add_assoc, Nat.add_mod, hu, Nat.mod_eq_of_lt (show d < C.P.n by omega)]
   rw [Nat.mod_eq_of_lt (by omega)]
   omega
@@ -65,14 +66,14 @@ theorem uOf_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
   have hlen := NFLoc.preLen_mono Q.n H (show r + 1 ≤ H.length by omega)
   rw [NFLoc.preLen_length] at hlen
   rw [hrun] at hsucc
-  simp only [NFLoc.itemCnt] at hsucc
+  simp [NFLoc.itemCnt] at hsucc
   have hkd : d ≤ sideE C.m (tJ C i) := by
     have := sideE_down C (d := d) hm hJ
     have hle := Chazelle.Chain.sideE_le (m := C.m) (j := tJ C i) (tJ_lt C i).le
     unfold sideE at *
     split_ifs at * <;> omega
   rw [sideE_down C hm hJ]
-  have hpos : 0 < C.P.n := C.n_pos
+  have hpos  := C.n_pos
   have e := Nat.div_add_mod (C.s + sideE C.m (tJ C i)) C.P.n
   rw [hu] at e
   have e2 : C.s + (sideE C.m (tJ C i) - d) =
@@ -91,10 +92,10 @@ theorem brk_run {n : ℕ} {i r a ℓ t : ℕ} (hr : r < H.length) (hrun : H[r] =
   right; right
   have hsucc := NFLoc.preLen_succ n H hr
   rw [hrun] at hsucc
-  simp only [NFLoc.itemCnt] at hsucc
+  simp [NFLoc.itemCnt] at hsucc
   refine ⟨r, hr, by omega, by omega, ?_⟩
   rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hr, Option.getD_some, hrun]
-  simp only
+  simp
   rw [hu, show NFLoc.preLen n H r + t - NFLoc.preLen n H r = t by omega]
   exact hc
 
@@ -141,7 +142,7 @@ theorem upBlocks_of (hR : Robust A₀ m₀ fun m' => GradeRaw O P m' h A₀) (hA
   · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) (by omega) hcap (by omega)
     exact ⟨h1, by omega⟩
   · refine ⟨blockUp_ok hwalk h6 hcL hqL hLγ hcap hlo hhi fun hg => he (by omega), rfl, rfl,
-      by simp only [upPc]; omega⟩
+      by sio only [upPc]⟩
 
 /-- **The blocks of a descending stretch** are valid pieces for the downward sweep. -/
 theorem dnBlocks_of (hR : Robust A₀ m₀ fun m' => GradeRaw O P m' h A₀) (hAW : A₀ ≤ W)
@@ -156,7 +157,7 @@ theorem dnBlocks_of (hR : Robust A₀ m₀ fun m' => GradeRaw O P m' h A₀) (hA
   · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) (by omega) hcap (by omega)
     exact ⟨h1, by omega⟩
   · refine ⟨blockDn_ok hwalk h6 hcL hq hLq hLγ hcap hlo hhi fun hg => he (by omega), rfl, rfl,
-      by simp only [dnPc]; omega⟩
+      by sio only [dnPc]⟩
 
 end ShootCut
 

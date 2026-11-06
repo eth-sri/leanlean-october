@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ShotListLeaf
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Shooting at a list of arcs with holes, part 6: the shooting context and the leaf
@@ -69,23 +73,23 @@ theorem ShotCtx.frame {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Mod
     ShotCtx P W X Ok R c' H C := by
   obtain ⟨hG, hHW, hX, hcap, hmwf, h0, hC, h34, hreg, hOk, hm, h30, h31, hσ⟩ := h
   obtain ⟨-, -, hmem, -, -, hA, -⟩ := hf
-  have he : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a := hmem
+  have he  := hmem
   have r0 : c'.nreg R = c.nreg R := by simpa using hr 0 (Or.inl (by omega))
   obtain ⟨mw', h0', hC'⟩ := modelDesc_keep hmwf h0 hC he hA
   obtain ⟨-, -, hEb, -⟩ := (hmwf.2 h0).2 H C hC
-  refine ⟨hG, hHW, ?_, ?_, by rw [r0]; exact mw', by rw [r0]; exact h0', by rw [r0]; exact hC',
+  refine ⟨hG, hHW, ?_, ?_, by rw [r0]; exact mw', by rwx [r0], by rwx [r0],
     by rw [hr 34 (Or.inr (by omega)), r0, h34], ?_, hOk, hm, by rw [hr 30 (Or.inr (by omega)), h30],
     by rw [hr 31 (Or.inr (by omega)), h31], ⟨by rw [hr 35 (Or.inr (by omega))]; exact hσ.1,
       by rw [hr 35 (Or.inr (by omega)), hr 6 (Or.inl (by omega))]; exact hσ.2⟩⟩
   · rw [hr 8 (Or.inl (by omega))]
     exact X.mono P _ _ _ _ hA (X.local_ P _ _ _ _ (fun a ha => (he a ha).symm) hX)
-  · rw [hr 8 (Or.inl (by omega)), hr 7 (Or.inl (by omega)), hXl P c.nmem c'.nmem _ _ he hX]; exact hcap
+  · rwx [hr 8 (Or.inl (by omega)), hr 7 (Or.inl (by omega)), hXl P c.nmem c'.nmem _ _ he hX]
   · intro H' hH'
     rw [r0] at hH'
     have hb : c'.nmem (c.nreg R + 1) = c.nmem (c.nreg R + 1) := he _ (by
       have := hmwf.1; omega)
     rw [hb] at hH'
-    have hH : HostAt c'.nmem (c.nmem (c.nreg R + 1)) H := hostAt_agree hC.1 hEb he
+    have hH  := hostAt_agree hC.1 hEb he
     rw [NFLoc.hostAt_unique hH' hH]
     exact hreg H hC.1
 
@@ -98,23 +102,23 @@ theorem rd_shoot (c : Config) (i : ℕ) : rd c bShoot i = c.nreg (140000 + i) :=
 /-- The caller's registers are outside the oracle bands. -/
 theorem band_R {R : ℕ} (hR : RegsOK R) {i : ℕ} (hi : i < 300) : bandOf (R + i) ∉ oracleBands := by
   unfold RegsOK at hR
-  simp only [oracleBands, kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot,
+  simp [oracleBands, kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot,
     bCut, bCluster, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton, bandOf]
   omega
 
 theorem band_prim {r : ℕ} (h : Bprim r = true) : bandOf r ∈ oracleBands := by
   have := (Bprim_band r h).1
-  simp only [primBands, oracleBands, kernelBands, Finset.mem_union, Finset.mem_insert,
+  simp [primBands, oracleBands, kernelBands, Finset.mem_union, Finset.mem_insert,
     Finset.mem_singleton] at this ⊢
   tauto
 
 theorem band_locate {r : ℕ} (h : 50000 ≤ r ∧ r < 60000) : bandOf r ∈ oracleBands := by
-  simp only [oracleBands, kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot,
+  simp [oracleBands, kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot,
     bCut, bCluster, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton, bandOf]
   omega
 
 theorem band_shoot {r : ℕ} (h : 140000 ≤ r ∧ r < 150000) : bandOf r ∈ oracleBands := by
-  simp only [oracleBands, kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot,
+  simp [oracleBands, kernelBands, bSign, bSort, bBuild, bLocate, bDecomp, bOQuery, bShoot,
     bCut, bCluster, Finset.mem_union, Finset.mem_insert, Finset.mem_singleton, bandOf]
   omega
 
@@ -161,52 +165,52 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   set A := M.arcSet (M.key Q (pieceR c (R + 70)).1) (M.key Q (pieceR c (R + 70)).2)
   -- the shooter's inputs
   obtain ⟨c₁, k₁, e₁, hk₁, v₁, f₁⟩ := leafSet_exec (P := P) hR c hw
-  simp only [setList, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
+  simp [setList, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
     forall_eq] at v₁
   obtain ⟨s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s13⟩ := v₁
   have k1 : ∀ r, ¬ (140000 ≤ r ∧ r < 140014) → c₁.nreg r = c.nreg r := fun r hr =>
-    f₁.1 r (by simp [setList]; omega)
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold ALLOC; omega)
+    f₁.1 r (by sio [setList])
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by ufo ALLOC)
   have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
   have hR1 : ∀ i, i < 300 → c₁.nreg (R + i) = c.nreg (R + i) := fun i hi => k1 _ (by omega)
   have hMD := hctx.modelDesc
   obtain ⟨hG, hHW, hX, hcap, hmwf, h0, hC, h34, hreg, hOk, hm, h30, h31, hσb⟩ := hctx
   have hO1 : OriginIn c₁ (bandReg bShoot 5) o := by
-    refine originIn_copy ho ?_ ?_ ?_ <;> simp only [bandReg, bShoot] <;> norm_num
+    refine originIn_copy ho ?_ ?_ ?_ <;> simp [bandReg, bShoot] <;> norm_num
     · exact s5
     · exact s6
     · exact s7
   have hpc : pieceR c₁ 140001 = pieceR c (R + 70) := by
-    simp only [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
+    simp [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
     exact ⟨⟨s1, s2⟩, s3, s4⟩
   -- the shot
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, fr₂⟩ := hsh P W c₁ e₁.wb_right
-    ⟨hG, hHW, by rw [rd_shoot, s13, hM1, hA1]; exact hX,
-      by rw [rd_shoot, rd_shoot, s9, s13, hM1]; exact hcap,
-      by rw [rd_shoot, s0, hM1, hA1]; exact hmwf,
+    ⟨hG, hHW, by rwx [rd_shoot, s13, hM1, hA1],
+      by rwx [rd_shoot, rd_shoot, s9, s13, hM1],
+      by rwx [rd_shoot, s0, hM1, hA1],
       fun _ H' C' hC' => by
         rw [rd_shoot, s0, hM1] at hC'
         rw [show (Qof P).n = P.n from shear_n _ _]; exact hreg H' hC'.1, M,
-      by rw [rd_shoot, s0, hM1]; exact hMD, hOk,
-      by rw [rd_shoot, rd_shoot, s1, s2]; exact hp1, by rw [rd_shoot, rd_shoot, s3, s4]; exact hp2,
-      by rw [rd_shoot, s1]; exact he1, by rw [rd_shoot, s3]; exact he2,
-      by rw [rd_shoot, rd_shoot, s1, s2]; exact hi1, by rw [rd_shoot, rd_shoot, s3, s4]; exact hi2,
-      by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4, s9]; exact hwt,
-      o, hol, hO1, hof, by rw [rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4]; exact hon⟩
-    (by rw [hA1]; show _ + F (rd c₁ bShoot 9) ≤ W; rw [rd_shoot, s9]; omega)
+      by rwx [rd_shoot, s0, hM1], hOk,
+      by rwx [rd_shoot, rd_shoot, s1, s2], by rwx [rd_shoot, rd_shoot, s3, s4],
+      by rwx [rd_shoot, s1], by rwx [rd_shoot, s3],
+      by rwx [rd_shoot, rd_shoot, s1, s2], by rwx [rd_shoot, rd_shoot, s3, s4],
+      by rwx [rd_shoot, rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4, s9],
+      o, hol, hO1, hof, by rwx [rd_shoot, rd_shoot, rd_shoot, rd_shoot, s1, s2, s3, s4]⟩
+    (by rw [hA1]; show _ + F (rd c₁ bShoot 9) ≤ W; rwo [rd_shoot, s9])
   replace hk₂ : k₂ ≤ F (c.nreg (R + 7)) := by
     have h2 : k₂ ≤ F (rd c₁ bShoot 9) := hk₂
     rw [rd_shoot, s9] at h2; exact h2
-  have post := post₂ M o (by rw [rd_shoot, s0, hM1]; exact hMD) hO1
-  simp only [rd_shoot, Nat.reduceAdd, s1, s2, s3, s4, s8] at post
+  have post := post₂ M o (by rwx [rd_shoot, s0, hM1]) hO1
+  simp [rd_shoot, Nat.reduceAdd, s1, s2, s3, s4, s8] at post
   obtain ⟨hhit, hnoh⟩ := post
   -- registers of the caller's block survive the shot
   have hR2 : ∀ i, i < 300 → c₂.nreg (R + i) = c.nreg (R + i) := fun i hi => by
-    rw [fr₂.1 _ (fun hb => band_R hR hi (hBs hb)) (by unfold ALLOC; omega), hR1 i hi]
+    rw [fr₂.1 _ (fun hb => band_R hR hi (hBs hb)) (by ufo ALLOC), hR1 i hi]
   have F01 : FrameR oracleBands (WrLeaf R) c c₁ k₁ := FrameR.of_frameB f₁ (fun r hr => by
     right; simp [setList] at hr; exact band_shoot (by omega)) (by simp [setList, ALLOC]) _
   have F12 : FrameR oracleBands (WrLeaf R) c₁ c₂ k₂ :=
-    (FrameR.of_frame fr₂).mono hBs (fun _ h => h) le_rfl
+    (FrameR.of_frame fr₂).mono hBs (fun _ => id) le_rfl
   have F02 := F01.trans F12
   have ctx₂ : ShotCtx P W X Ok R c₂ H C :=
     ShotCtx.frame hXl ⟨hG, hHW, hX, hcap, hmwf, h0, hC, h34, hreg, hOk, hm, h30, h31, hσb⟩ F02
@@ -217,7 +221,7 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have w₂ := e₂.wb_right
   have c31 : c₂.nreg (R + 31) = 1 := by rw [hR2 31 (by omega), h31]
   have hA2 : c₂.nreg ALLOC ≤ c.nreg ALLOC + F (c.nreg (R + 7)) := by
-    have := F12.2.2.2.2.2.2; rw [hA1] at this; omega
+    have := F12.2.2.2.2.2.2; rwo [hA1] at this
   -- no hit
   have nohit : c₂.nreg 140010 ≠ 1 → BestOK P C R c₂ (S ∪ A) z σ := fun hne => by
     have hNA : NoHit A z σ := hnoh hne
@@ -227,29 +231,29 @@ theorem leaf_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   by_cases g1 : c₂.nreg (R + 31) < c₂.nreg 140010
   · refine ⟨c₂, _, .seq e₁ (.seq e₂ (.ifLtN_true g1 (.skip w₂))), by omega,
       nohit (by omega), ?_⟩
-    exact (F02.mono le_rfl (fun _ h => h) (by omega))
+    exact (F02.mono le_rfl (fun _ => id) (by omega))
   by_cases g2 : c₂.nreg 140010 < c₂.nreg (R + 31)
   · refine ⟨c₂, _, .seq e₁ (.seq e₂ (.ifLtN_false g1 (.ifLtN_true g2 (.skip w₂)))), by omega,
       nohit (by omega), ?_⟩
-    exact (F02.mono le_rfl (fun _ h => h) (by omega))
+    exact (F02.mono le_rfl (fun _ => id) (by omega))
   -- a hit
   have hflag : c₂.nreg 140010 = 1 := by omega
   obtain ⟨t, htA, hpp, hpe, hpos⟩ := hhit hflag
   obtain ⟨-, hHW2, -, -, hmwf2, h02, hC2, h342, hreg2, -, -, h302, h312, hσb2⟩ := ctx₂
   obtain ⟨c₃, k₃, e₃, hk₃, best₃, f₃⟩ := leafHit_exec (P := P) hR c₂ w₂ hG hHW2
-    (H := H) (C := C) (by rw [h342]; exact hmwf2.2 h02) (by rw [h342]; exact hC2)
-    (by rw [h342]; exact hreg2) htA hpe hpp hpos hoy h302 h312 hσb2
+    (H := H) (C := C) (by rw [h342]; exact hmwf2.2 h02) (by rwx [h342])
+    (by rwx [h342]) htA hpe hpp hpos hoy h302 h312 hσb2
     (by rw [hR2 6 (by omega)]) best₂ (by omega)
   refine ⟨c₃, _, .seq e₁ (.seq e₂ (.ifLtN_false g1 (.ifLtN_false g2 e₃))), by omega, best₃, ?_⟩
   have F23 : FrameR oracleBands (WrLeaf R) c₂ c₃ k₃ := FrameR.of_frameB f₃ (fun r hr => by
-    simp only [Bhit, Bool.or_eq_true, decide_eq_true_eq] at hr
+    simp [Bhit, Bool.or_eq_true, decide_eq_true_eq] at hr
     rcases hr with ((h' | h') | h') | h'
     · exact Or.inl (Or.inl h')
     · exact Or.inl (Or.inr h')
     · exact Or.inr (band_prim h')
     · exact Or.inr (band_locate (by omega)))
-    (by unfold ALLOC; simp only [Bhit, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega) _
-  exact (F02.trans F23).mono le_rfl (fun _ h => h) (by omega)
+    (by unfold ALLOC; sio only [Bhit, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not]) _
+  exact (F02.trans F23).mono le_rfl (fun _ => id) (by omega)
 
 end
 

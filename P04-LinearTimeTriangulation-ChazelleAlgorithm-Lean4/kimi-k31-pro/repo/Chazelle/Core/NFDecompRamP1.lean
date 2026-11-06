@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.NFDecompRamBfs
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Tree decomposition (WP-C), part 15: the size pass on the RAM
@@ -24,7 +27,7 @@ variable {A R K CB RB LB : ℕ}
 theorem incr_exec {c : Config} (hw : WordsBounded W c) (o : c.nreg 60011 = 1) (hW : c.nreg 60020 + 1 ≤ W) :
     ∃ c' k, Exec P W (.instr (.addN 60020 60020 60011)) c c' k ∧ k = 1 ∧ c'.nmem = c.nmem ∧
       Same [60020] c c' ∧ c'.nreg 60020 = c.nreg 60020 + 1 := by
-  refine spec_instr (Exec.addN hw _ _ _ (by rw [o]; exact hW)) fun _ => ⟨rfl, rfl, Same.upd1 (by simp), ?_⟩
+  refine spec_instr (Exec.addN hw _ _ _ (by rwx [o])) fun _ => ⟨rfl, rfl, Same.upd1 (by simp), ?_⟩
   config_simp; rw [o]
 
 /-- The addition of the size of `r` into its parent's. -/
@@ -78,7 +81,7 @@ theorem p1Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       c1 = { c with nreg := upd (upd (upd c.nreg 60039 (R - 1 - j)) 60030
         (A + 12 + 1 * R + (R - 1 - j))) 60040 r } := by
     exec_block
-    · config_simp; rw [b1, r1, h20]; omega
+    · config_simp; rwo [b1, r1, h20]
     · refine ⟨rfl, ?_⟩
       rw [b1, r1, h20, hr']
   have s1 : Same [60039, 60030, 60040] c c1 := by
@@ -100,13 +103,13 @@ theorem p1Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
     · have hp1 : p1 R (fv c.nmem A R 1) (fv c.nmem A R 3) (fv c.nmem A R 4) (fv c.nmem A R 11)
           (fv c.nmem A R 7) j = fv c.nmem A R 7 := by
         unfold p1; rw [← hrdef, ite_eq_right (fun hh => hh.1 h0)]
-      refine spec_ifLtN_false (by rw [hR1.zero, r40, h0]; omega) (spec_skip hw1 ?_)
+      refine spec_ifLtN_false (by rwo [hR1.zero, r40, h0]) (spec_skip hw1 ?_)
       refine ⟨by omega, ⟨fun _ _ => rfl, rfl, rfl, rfl⟩, fun a _ => by rw [m1], fun f u _ _ => ?_⟩
       rw [hp1, m1]; split_ifs with hf <;> [rw [hf]; rfl]
-    · refine spec_ifLtN_true (by rw [hR1.zero, r40]; omega) ?_
+    · refine spec_ifLtN_true (by rwo [hR1.zero, r40]) ?_
       have hpr := hpch h0; have hpg := hprg h0
       obtain ⟨c2, k2, e2, rfl, m2, s2, r41⟩ := ldF_rel (P := P) hw1 60041 4 60040
-        (by rw [show fb 4 = 60104 from rfl, hR1.b 4 (by norm_num), r40]; omega)
+        (by rwo [show fb 4 = 60104 from rfl, hR1.b 4 (by norm_num), r40])
       rw [show fb 4 = 60104 from rfl, hR1.b 4 (by norm_num), r40, m1] at r41
       have hR2 : DRegs A R K CB RB LB c2 := hR1.of_same s2 (by simp [Prot])
       obtain ⟨c3, k3, e3, rfl, m3, s3, r42⟩ := ldF_rel (P := P) e2.wb_right 60042 11 60041
@@ -124,14 +127,14 @@ theorem p1Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       · have hp1 : p1 R (fv c.nmem A R 1) (fv c.nmem A R 3) (fv c.nmem A R 4) (fv c.nmem A R 11)
             (fv c.nmem A R 7) j = fv c.nmem A R 7 := by
           unfold p1; rw [← hrdef, ite_eq_right (fun hh => hh.2 hrem)]
-        refine ifEqN_eq (by rw [r42, hR3.one]; exact hrem) (spec_skip e3.wb_right ?_)
+        refine ifEqN_eq (by rwx [r42, hR3.one]) (spec_skip e3.wb_right ?_)
         refine ⟨by omega, s23, fun a _ => by rw [m3, m2, m1], fun f u _ _ => ?_⟩
         rw [hp1, m3, m2, m1]; split_ifs with hf <;> [rw [hf]; rfl]
       · have hp1 : p1 R (fv c.nmem A R 1) (fv c.nmem A R 3) (fv c.nmem A R 4) (fv c.nmem A R 11)
             (fv c.nmem A R 7) j = Function.update (fv c.nmem A R 7) (fv c.nmem A R 3 r)
               (fv c.nmem A R 7 (fv c.nmem A R 3 r) + fv c.nmem A R 7 r) := by
           unfold p1; rw [← hrdef, ite_eq_left ⟨h0, hrem⟩]
-        refine ifEqN_ne (by rw [r42, hR3.one]; exact hrem) ?_
+        refine ifEqN_ne (by rwx [r42, hR3.one]) ?_
         obtain ⟨c4, k4, e4, rfl, m4, s4⟩ := p1Add_exec (P := P) e3.wb_right hR3 hAW (r := r)
           (q := fv c.nmem A R 3 r) (by rw [s23.1 _ (by simp), r40]) hr hpg
           (by rw [m3, m2, m1]) (by rw [m3, m2, m1]; exact hsum h0)
@@ -149,7 +152,7 @@ theorem p1Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   obtain ⟨c2, k2, e2, hk2, s2, hm2, hv2⟩ := hmid
   have hR2 : DRegs A R K CB RB LB c2 := hR1.of_same s2 (by simp [Prot])
   obtain ⟨c3, k3, e3, rfl, m3, s3, r20⟩ := incr_exec (P := P) e2.wb_right hR2.one
-    (by rw [s2.1 _ (by simp), s1.1 _ (by simp), h20]; omega)
+    (by rwo [s2.1 _ (by simp), s1.1 _ (by simp), h20])
   have s13 : Same [60039, 60030, 60040, 60041, 60042, 60043, 60044, 60031, 60045, 60020] c c3 :=
     ((s1.mono (by simp)).trans (s2.mono (by simp))).trans (s3.mono (by simp))
   refine ⟨c3, 3 + (k2 + 1), .seq e1 (.seq e2 e3), by omega, ?_, by
@@ -244,7 +247,7 @@ theorem p1S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
           omega)
       have hr := h.ord_lt _ hp
       refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', by omega, fun f u hf hu => ?_⟩, by
-        rw [h20', hjdef]; omega⟩
+        rwo [h20', hjdef]⟩
       rw [hv'' f u hf hu, h20', hS j]
       split_ifs with h7
       · subst h7
@@ -252,7 +255,7 @@ theorem p1S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
           (fun h0 => h.prg_lt _ hr h0)
         have := h.pch_lt _ hr h0; omega
       · rw [hvd f u hf hu, ite_eq_right h7])
-    ⟨hw1, hf1, by simp only [hc1]; config_simp; omega, fun f u hf hu => by
+    ⟨hw1, hf1, by simp only [hc1]; cso, fun f u hf hu => by
       simp only [hc1]; config_simp
       split_ifs with h7
       · rw [h7]; exact hsize u hu

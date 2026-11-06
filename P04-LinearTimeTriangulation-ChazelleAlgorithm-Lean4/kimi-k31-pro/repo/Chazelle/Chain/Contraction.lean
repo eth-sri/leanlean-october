@@ -37,7 +37,7 @@ theorem regionsIn_eq_of_subset {T : Set (Set Point)} {W W' : Set Point}
 theorem exists_regionsIn_superset {S T : Set (Set Point)} (hT : T ⊆ S)
     {U : Set Point} (hU : U ∈ regionsIn D S) : ∃ W ∈ regionsIn D T, U ⊆ W := by
   obtain ⟨u, hu, rfl⟩ := hU
-  have huT : u ∈ freeIn D T := freeIn_anti D hT hu
+  have huT  := freeIn_anti D hT hu
   exact ⟨_, mem_regionsIn huT, connectedComponentIn_mono u (freeIn_anti D hT)⟩
 
 /-! ### The chain instance -/

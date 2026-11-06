@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXSide
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Down phase, extraction (D6): X-R1, the kept test
@@ -297,14 +300,14 @@ theorem end_ok {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
   have hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = !li := by
     generalize decide (tU C.m C.topIdx C.sideBeta p < C.m) = d at hside ⊢
     cases li <;> cases d <;> simp_all
-  have hGn : (xG).n = xK := Y.gn
+  have hGn  := Y.gn
   rcases ht0.lt_or_eq with ht0' | ht0'
   · have hp' : p < 2 * C.m + 6 := by
       rcases lt_or_eq_of_le hp with h' | h'
       · exact h'
       · exact absurd (hlast h') ht0'.ne'
     obtain ⟨hpt', hsec⟩ := Y.outer_edge h6 hp' ⟨ht0', ht1⟩ hA
-    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rw [hGn]; exact hqG)
+    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rwx [hGn])
       (by rw [hGn]; exact sig_lt li (by omega) _ _) hs0 hs1 (by linarith) (by linarith)
       (hpt.trans hpt')
     subst hq hs
@@ -313,7 +316,7 @@ theorem end_ok {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
     have hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0 := fun h0 => hreg ⟨rfl, Or.inl h0⟩
     have hum : tU C.m C.topIdx C.sideBeta p ≠ C.m := fun h0 => hreg ⟨rfl, Or.inr h0⟩
     obtain ⟨hpt', hsec⟩ := Y.outer_vtx h6 hp hu0 hum hA
-    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rw [hGn]; exact hqG)
+    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rwx [hGn])
       (by rw [hGn]; exact sig_lt li (by omega) _ _) hs0 hs1 le_rfl one_pos (hpt.trans hpt')
     subst hq hs
     exact attach_disj hAB hat hG hpt' hsec
@@ -351,7 +354,7 @@ theorem not_both_irr {h : ℕ} {A B : ℝ} (hAB : A < B)
   -- the two ends are the two ends of the chord gap edge
   have hne : kL ≠ kR := by
     intro e; rw [e, hzR] at hzL
-    have := congrArg Prod.fst hzL; simp at this; linarith
+    have := congrArg Prod.fst hzL; sil at this
   have hends : (C.P.vtx kL = (xG).vtx g ∧ C.P.vtx kR = (xG).vtx ((g + 1) % xK)) ∨
       (C.P.vtx kL = (xG).vtx ((g + 1) % xK) ∧ C.P.vtx kR = (xG).vtx g) := by
     rw [Y.vtx_sig (by omega), Y.vtx_sig (by omega)]
@@ -403,7 +406,7 @@ theorem kept_iff {i : ℕ} (hi : i < NR.nChords) :
       · rcases hk0 with h0 | h0
         · exact Or.inl ((tK_eq_zero_iff _ hm1 p).1 h0)
         · exact Or.inr ((tK_eq_m_iff _ hm1 p).1 h0)
-      · rw [← hside]; simp
+      · rws [← hside]
     by_cases hirrL : (chainModel C).param (Qof P) (NR.chord i).lpos = 0 ∧
         (tU C.m C.topIdx C.sideBeta (NR.chord i).lp = 0 ∨
           tU C.m C.topIdx C.sideBeta (NR.chord i).lp = C.m)

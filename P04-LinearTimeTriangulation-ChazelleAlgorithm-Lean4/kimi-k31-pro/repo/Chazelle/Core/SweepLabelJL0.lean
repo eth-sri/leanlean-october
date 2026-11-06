@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.SweepLabelJL
 public import Chazelle.Core.SweepLabelGap
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D): the left correspondence without `TopStrict` (F2)
@@ -51,8 +53,8 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
   have hM := walkAx_chainModel (C := C) hP
   have hM₁ := walkAx_chainModel (C := C₁) hP
   have hR : C₁.radius = C.radius := FuseMath.radius_of_P J rfl
-  have hg : 6 + τ < W.n := by rw [hn]; omega
-  have hg' : 6 + τ' < W₁.n := by rw [hn₁]; omega
+  have hg : 6 + τ < W.n := by rwo [hn]
+  have hg' : 6 + τ' < W₁.n := by rwo [hn₁]
   have hv0 : W₁.vtx (6 + τ') = J.shared := by
     have := walk_tour C₁ J.m₁ 0 (by omega)
     rw [add_zero, Nat.mod_eq_of_lt hg', tourV_left_zero] at this
@@ -85,8 +87,8 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
     have hss : s = s' := (left_box_eq J hsl).symm
     have hA := agree_Sh hT hR.symm hℓ.le hℓ' hss hsl
     rw [ite_eq_left hsl, ite_eq_left hsl, ite_eq_left hsl]
-    refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rw [hn]; omega,
-      by rw [hn₁]; omega, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
+    refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rwo [hn],
+      by rwo [hn₁], fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
       hnoV _ (fun h0 => absurd h0 (by omega)), htrans, hnest⟩
     intro d hd
     obtain rfl : d = 0 := by omega
@@ -97,9 +99,9 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
     have hA := agree_N hT hsl hsl'
     rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
       ite_eq_right (show ¬ s < ℓ by omega), ite_eq_left hsl', ite_eq_left hsl', ite_eq_left hsl']
-    refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rw [hn]; omega,
-      by rw [hn₁]; omega, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
-      hnoV _ (fun _ => by push_cast; linarith), htrans, hnest⟩
+    refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rwo [hn],
+      by rwo [hn₁], fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
+      hnoV _ (fun _ => by pcl), htrans, hnest⟩
     intro d hd
     obtain rfl : d = 0 := by omega
     simpa using hA ℓ le_rfl
@@ -111,8 +113,8 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
   rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
     ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega),
     ite_eq_right (show ¬ ℓ ≤ s' by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega)]
-  refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rw [hn]; omega,
-    by rw [hn₁]; omega, fun h => absurd h (by norm_num), fun _ => by rw [hn₁]; omega, hA1, ?_,
+  refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rwo [hn],
+    by rwo [hn₁], fun h => absurd h (by norm_num), fun _ => by rwo [hn₁], hA1, ?_,
     hnoV _ (fun h0 => absurd h0 (by omega)), htrans, hnest⟩
   · intro d hd
     have := hA2 d hd

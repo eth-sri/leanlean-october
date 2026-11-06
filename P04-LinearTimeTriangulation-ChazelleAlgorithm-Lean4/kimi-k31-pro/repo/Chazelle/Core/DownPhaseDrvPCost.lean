@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvPMath
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down-phase pieces (D4), part 8: arithmetic of the cost
@@ -66,7 +68,7 @@ theorem kcost_mono {K K' : ℕ} (h : K ≤ K') :
 theorem kcost_le {g K : ℕ} (hg : 1 ≤ g) (hK : K * 2 ^ Cost.ceilBeta g ≤ 2520 * 2 ^ g) :
     K * (Nat.clog 2 K + 1) ≤ 35280 * lemma41Nat g := by
   set cb := Cost.ceilBeta g with hcb
-  have hcbg : cb ≤ g := Cost.ceilBeta_le g
+  have hcbg  := Cost.ceilBeta_le g
   set e := g - cb with he
   have hpow : 2 ^ g = 2 ^ e * 2 ^ cb := by rw [← pow_add]; congr 1; omega
   have hKe : K ≤ 2520 * 2 ^ e := by
@@ -83,7 +85,7 @@ theorem kcost_le {g K : ℕ} (hg : 1 ≤ g) (hK : K * 2 ^ Cost.ceilBeta g ≤ 25
   have hcbr : (g : ℝ) / 5 ≤ (cb : ℝ) := by
     have := Nat.le_ceil (Cost.beta * (g : ℝ))
     rw [Cost.beta_eq] at this
-    rw [hcb]; unfold Cost.ceilBeta; rw [Cost.beta_eq]; linarith
+    rw [hcb]; unfold Cost.ceilBeta; rwli [Cost.beta_eq]
   have her : (e : ℝ) ≤ (74 : ℝ) / 75 * g := by
     rw [he, Nat.cast_sub hcbg]
     have : (0 : ℝ) ≤ g := Nat.cast_nonneg g
@@ -104,7 +106,7 @@ theorem kcost_le {g K : ℕ} (hg : 1 ≤ g) (hK : K * 2 ^ Cost.ceilBeta g ≤ 25
     have hc : (0 : ℝ) ≤ (Nat.clog 2 g : ℕ) := Nat.cast_nonneg _
     have hpos : (0 : ℝ) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := by positivity
     calc (2520 : ℝ) * 2 ^ e * (13 + e)
-        = 2520 * ((2 ^ e : ℕ) : ℝ) * ((13 + e : ℕ) : ℝ) := by push_cast; ring
+        = 2520 * ((2 ^ e : ℕ) : ℝ) * ((13 + e : ℕ) : ℝ) := by pcr
       _ ≤ 2520 * (2 : ℝ) ^ ((74 : ℝ) / 75 * g) *
           (14 * (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1)) := by
         apply mul_le_mul (by linarith) h13 (by positivity) (by positivity)

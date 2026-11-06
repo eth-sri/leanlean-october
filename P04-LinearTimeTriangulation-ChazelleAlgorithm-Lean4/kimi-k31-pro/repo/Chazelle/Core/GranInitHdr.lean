@@ -2,6 +2,12 @@ module
 
 public import Chazelle.Core.GranSize
 public import Chazelle.Core.SortRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-F, init part 6: the header, the layout and the allocation
@@ -88,8 +94,8 @@ theorem hdr_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {M
     unfold hdrBlock
     exec_block
     all_goals try omega
-    all_goals try (config_simp; rw [h1]; omega)
-    all_goals try (config_simp; rw [h0]; omega)
+    all_goals try (config_simp; rwo [h1])
+    all_goals try (config_simp; rwo [h0])
     refine ⟨rfl, ?_⟩
     config_simp
     rw [h0, h1]
@@ -98,13 +104,13 @@ theorem hdr_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {M
     qm⟩ := q
   have w₁ := e₁.wb_right
   by_cases hk : c.nmem MD = 0
-  · have t : c₁.nreg 90023 < c₁.nreg 90019 := by rw [q23, q19, hk]; omega
+  · have t : c₁.nreg 90023 < c₁.nreg 90019 := by rwo [q23, q19, hk]
     have e₂ := Exec.addN (P := P) w₁ 90018 90024 90024 (by rw [q24]; have := hm hk; omega)
     refine ⟨_, _, .seq e₁ (.ifLtN_true t e₂), by omega, ?_⟩
     config_simp
     refine ⟨q10, q11, q12, q13, q15, q16, q17, q22, q23, q24, ?_, q14, q19, q20, q21, q50, q51⟩
-    rw [q24]; unfold szOf; rw [ite_eq_left hk]; ring
-  · have t : ¬ c₁.nreg 90023 < c₁.nreg 90019 := by rw [q23, q19]; omega
+    rw [q24]; urring szOf [ite_eq_left hk]
+  · have t : ¬ c₁.nreg 90023 < c₁.nreg 90019 := by rwo [q23, q19]
     have e₂ := Exec.inputSize (P := P) w₁ 90018 hn
     refine ⟨_, _, .seq e₁ (.ifLtN_false t e₂), by omega, ?_⟩
     config_simp
@@ -147,22 +153,22 @@ theorem mul_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d
     (fun d => c.nreg a - d.nreg cnt) 2 (fun _ h => h.1)
     (fun d ⟨hwd, hle, hdd, hrd⟩ ht => by
       rw [hrd a (Ne.symm h2) (Ne.symm h4)] at ht
-      have hb : d.nreg b = c.nreg b := hrd b (Ne.symm h3) (Ne.symm h5)
+      have hb  := hrd b (Ne.symm h3) (Ne.symm h5)
       have h19' : d.nreg 90019 = 1 := by rw [hrd _ (Ne.symm h6) (Ne.symm h7), h19]
       have hmul : (d.nreg cnt + 1) * c.nreg b ≤ c.nreg a * c.nreg b :=
         Nat.mul_le_mul_right _ (by omega)
       have hsum : d.nreg dst + d.nreg b ≤ W := by
-        rw [hdd, hb]; rw [Nat.add_mul] at hmul; omega
+        rw [hdd, hb]; rwo [Nat.add_mul] at hmul
       refine spec_step (Exec.addN hwd dst dst b hsum) fun hw₁ => ?_
       refine spec_step (Exec.addN hw₁ cnt cnt 90019 (by
-        simp [upd, h1.symm, show (90019 : ℕ) ≠ dst from Ne.symm h6]; rw [h19']; omega))
+        simp [upd, h1.symm, show (90019 : ℕ) ≠ dst from Ne.symm h6]; rwo [h19']))
         fun hw₂ => ?_
       refine spec_nil hw₂ ⟨⟨hw₂, ?_, ?_, fun r a1 a2 => ?_⟩, by omega, ?_⟩
-      · simp [upd, h1.symm, show (90019 : ℕ) ≠ dst from Ne.symm h6, h19']; omega
-      · simp [upd, h1, h1.symm, show (90019 : ℕ) ≠ dst from Ne.symm h6, h19', hdd, hb]; ring
+      · sio [upd, h1.symm, show (90019 : ℕ) ≠ dst from Ne.symm h6, h19']
+      · sir [upd, h1, h1.symm, show (90019 : ℕ) ≠ dst from Ne.symm h6, h19', hdd, hb]
       · simp [upd, a1, a2, hrd r a1 a2]
-      · simp [upd, h1.symm, show (90019 : ℕ) ≠ dst from Ne.symm h6, h19']; omega)
-    ⟨e₁.wb_right, by omega, by rw [q1, q2]; ring, qr⟩
+      · sio [upd, h1.symm, show (90019 : ℕ) ≠ dst from Ne.symm h6, h19'])
+    ⟨e₁.wb_right, by omega, by rwring [q1, q2], qr⟩
   rw [hr' a (Ne.symm h2) (Ne.symm h4)] at hx
   have hfull : c'.nreg cnt = c.nreg a := by omega
   refine ⟨c', _, .seq e₁ e, ?_, by rw [hd', hfull]⟩
@@ -230,11 +236,10 @@ theorem Cst.of_bases {c : Config} {E : Env} {d : Dm} (h : Bases c d) (hγ : c.nr
 
 theorem dmOf_oEnd (K A R D b0 : ℕ) : (dmOf K A R D b0).oEnd =
     9 * K + 3 * R + R * D + 5 * A + D * K + D + 1 := by
-  simp only [dmOf, Dm.oEnd, Dm.oList, Dm.oTmp, Dm.cap, Dm.oStk, Dm.oPz, Dm.oEg, Dm.oPrv, Dm.oNxt,
+  simp [dmOf, Dm.oEnd, Dm.oList, Dm.oTmp, Dm.cap, Dm.oStk, Dm.oPz, Dm.oEg, Dm.oPrv, Dm.oNxt,
     Dm.oCnt, Dm.oEx]
   ring
 
-set_option maxHeartbeats 4000000 in
 /-- The bases. -/
 theorem baseBlock_exec {P : Polygon} {W : ℕ} (c₂ : Config) (w₂ : WordsBounded W c₂)
     {K A R D b0 : ℕ} (g10 : c₂.nreg 90010 = K) (g11 : c₂.nreg 90011 = A)
@@ -267,9 +272,9 @@ theorem baseBlock_exec {P : Polygon} {W : ℕ} (c₂ : Config) (w₂ : WordsBoun
       5 * K + 3 * R + R * D + A + A + A + A + A + (K + D * K) + D + 1 := rfl
   unfold baseBlock
   exec_block
-  all_goals try (config_simp; simp only [gA, g10, g11, g12, g02, g19, g25, d₂]; omega)
+  all_goals try (config_simp; sio only [gA, g10, g11, g12, g02, g19, g25, d₂])
   refine ⟨rfl, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, ?_⟩ <;>
-    config_simp <;> simp only [gA, g10, g11, g12, g02, g19, g25, d₂, o0, o1, o2, o3, o4, o5,
+    config_simp <;> simp [gA, g10, g11, g12, g02, g19, g25, d₂, o0, o1, o2, o3, o4, o5,
       o6, o7, o8, o9, o10, o11, o12, o13, o14, o15, o16, hE] <;> omega
 
 
@@ -294,14 +299,14 @@ theorem base_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
   -- the products
   obtain ⟨c₁, k₁, e₁, hk₁, d₁, r₁, m₁, F₁⟩ := mul_exec (P := P) (dst := 90025) (a := 90012)
     (b := 90002) (cnt := 90061) c hw (by decide) (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) h19 (by rw [h12, h02]; exact hRD) (by rw [h12]; omega)
+    (by decide) (by decide) h19 (by rwx [h12, h02]) (by rwo [h12])
   rw [h12, h02] at d₁
   rw [h12] at hk₁
   obtain ⟨c₂, k₂, e₂, hk₂, d₂, r₂, m₂, F₂⟩ := mul_exec (P := P) (dst := 90026) (a := 90002)
     (b := 90010) (cnt := 90061) c₁ e₁.wb_right (by decide) (by decide) (by decide) (by decide)
     (by decide) (by decide) (by decide) (by rw [r₁ _ (by decide) (by decide), h19])
-    (by rw [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), h02, h10]; exact hDK)
-    (by rw [r₁ _ (by decide) (by decide), h02]; omega)
+    (by rwx [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), h02, h10])
+    (by rwo [r₁ _ (by decide) (by decide), h02])
   rw [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), h02, h10] at d₂
   rw [r₁ _ (by decide) (by decide), h02] at hk₂
   have g : ∀ r, r ≠ 90025 → r ≠ 90026 → r ≠ 90061 → c₂.nreg r = c.nreg r := fun r a1 a2 a3 => by
@@ -313,19 +318,19 @@ theorem base_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
   have g02 : c₂.nreg 90002 = D := by rw [g _ (by decide) (by decide) (by decide), h02]
   have g19 : c₂.nreg 90019 = 1 := by rw [g _ (by decide) (by decide) (by decide), h19]
   have g25 : c₂.nreg 90025 = R * D := by rw [r₂ _ (by decide) (by decide), d₁]
-  have gA : c₂.nreg 9999 = b0 := by rw [g _ (by decide) (by decide) (by decide)]; rfl
+  have gA : c₂.nreg 9999 = b0 := by rwr [g _ (by decide) (by decide) (by decide)]
   -- the bases
   obtain ⟨c₃, k₃, e₃, hk₃, q⟩ := baseBlock_exec (P := P) c₂ w₂ g10 g11 g12 g02 g19 g25 d₂ gA
     hroom
   have F₃ := exec_frameB e₃ (B := fun r => decide (90027 ≤ r ∧ r < 90045))
     (by simp [baseBlock, wr, block, wrOK])
   have r₃ : ∀ r, (r < 90025 ∨ 90045 ≤ r) → c₃.nreg r = c₂.nreg r := fun r hr =>
-    F₃.1 r (by simp; omega)
-  have m₃ : c₃.nmem = c₂.nmem := F₃.2.2.1
+    F₃.1 r (by sio)
+  have m₃  := F₃.2.2.1
   obtain ⟨B₃, q27, q28, q29⟩ := q
   have w₃ := e₃.wb_right
   -- the allocation
-  have t29 : c₃.nreg 90029 = b0 + (dmOf K A R D b0).oEnd := q29
+  have t29  := q29
   rw [hE] at t29
   obtain ⟨c₄, k₄, e₄, ⟨hw₄, hle₄, hr₄, hm₄, hrr₄, hrm₄, ho₄⟩, hx, hk₄, hlb⟩ :=
     SortR.whileLtN_potential_lb (P := P) (W := W) (a := 9999) (b := 90029)
@@ -339,12 +344,12 @@ theorem base_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
         rw [hrd _ (by decide), r₃ 90019 (by left; decide), g19]
       have h29 : d.nreg 90029 = c₃.nreg 90029 := hrd _ (by decide)
       rw [h29] at ht
-      refine spec_instr (Exec.addN hwd _ _ _ (by rw [h1d]; omega)) fun hw2 => ?_
-      refine ⟨⟨hw2, by config_simp; omega, fun r hr => ?_, hmd, hrrd, hrmd, hod⟩, ?_, ?_⟩
+      refine spec_instr (Exec.addN hwd _ _ _ (by rwo [h1d])) fun hw2 => ?_
+      refine ⟨⟨hw2, by cso, fun r hr => ?_, hmd, hrrd, hrmd, hod⟩, ?_, ?_⟩
       · config_simp; rw [Machine.upd_other _ _ _ hr]; exact hrd r hr
-      · config_simp; rw [h1d]; omega
+      · config_simp; rwo [h1d]
       · config_simp; rw [h1d])
-    ⟨w₃, by rw [r₃ 9999 (by left; decide), gA, t29]; omega, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+    ⟨w₃, by rwo [r₃ 9999 (by left; decide), gA, t29], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   have h29 : c₄.nreg 90029 = c₃.nreg 90029 := hr₄ _ (by decide)
   rw [h29] at hx
   refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, B₃.frame fun r a1 a2 => hr₄ r (by omega),

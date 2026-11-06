@@ -3,6 +3,13 @@ module
 public import Chazelle.Core.DownPhaseDrvBRegA
 public import Chazelle.Core.DownPhaseDrvBPieces2
 public import Chazelle.Core.DownPhaseDrvRHostSpec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down-phase base (D9), RAM: the host of a region
@@ -88,11 +95,10 @@ theorem frame21_of_B {B : ℕ → Bool} {c c' : Config} {k : ℕ}
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hf.1 _ (by
     cases h : B ALLOC
     · rfl
-    · have := hB _ h; unfold ALLOC bandOf bDownDrv at this; omega)
+    · have := hB _ h; ufo ALLOC bandOf bDownDrv at this)
   exact frame21 (fun r h => Or.inl (hB r h)) (FrameB.toM hf) (fun a _ => by rw [hf.2.2.1]) hrr
     (by omega) (by omega)
 
-set_option maxHeartbeats 8000000 in
 /-- **The host of the region.** -/
 theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE : BGood E) {r : ℕ}
     (hr : r < E.K + 1) (c : Config) (hw : WordsBounded E.W c) (R : BRegs E c)
@@ -112,18 +118,18 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
     obtain ⟨c', k, e, hk, v22, vA, hH0, v16, v21, hm, FM, F⟩ := host0_exec (P := E.P) c hw R.n
       (by omega) R.c0 R.c1 (by omega)
     have ex : Exec E.P E.W (hostS sH) c c' (k + 2) :=
-      .ifLtN_false (by rw [R.c1, R.K, hK]; omega) e
-    refine ⟨c', k + 2, [HostItem.run 0 (E.P.n - 1)], ex, by omega, by rw [v22]; exact hH0,
-      fun it hit => ?_, by rw [v21]; rfl, ?_, ?_, by rw [v22], by rw [v22, vA]; simp,
+      .ifLtN_false (by rwo [R.c1, R.K, hK]) e
+    refine ⟨c', k + 2, [HostItem.run 0 (E.P.n - 1)], ex, by omega, by rwx [v22],
+      fun it hit => ?_, by rwr [v21], ?_, ?_, by rw [v22], by rws [v22, vA],
       fun q hq1 _ a b d e f => FM.1 q (by
         have h9 : q ≠ 9999 := by intro h; subst h; simp [bandOf, bDownDrv] at hq1
         simp [a, b, d, e, f, h9]),
       F.mono le_rfl (by omega)⟩
-    · simp only [List.mem_singleton] at hit; subst hit; exact ⟨by omega, by omega⟩
-    · rw [v16]; simp [Host.pts, HostItem.pts]; omega
+    · simp [List.mem_singleton] at hit; subst hit; exact ⟨by omega, by omega⟩
+    · rsio [v16] [Host.pts, HostItem.pts]
     · rw [BGood.pts_zero hK, hQn]
   · -- the host RAM
-    have hr' : r < E.N.nRegions := by rw [hE.nRegions]; exact hr
+    have hr' : r < E.N.nRegions := by rwx [hE.nRegions]
     obtain ⟨c₁, k₁, e₁, hk₁, v0, v1, v2, g₁, m₁, rr₁⟩ : ∃ c₁ k₁, Exec E.P E.W
         (block [.copyN 215000 210005, .copyN 215001 212014, .copyN 215002 212011]) c c₁ k₁ ∧
         k₁ = 3 ∧ c₁.nreg 215000 = E.H ∧ c₁.nreg 215001 = r ∧
@@ -143,12 +149,12 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
       exact (hE.hNF.transport (fun a ha => by rw [m₁]; exact hlow a ha)).mono hA
     have hLne : E.L ≠ [] := List.ne_nil_of_length_pos hK
     obtain ⟨c₂, k₂, e₂, hk₂, ⟨pk, pH⟩, F₂⟩ := hH E.P E.W c₁ w₁
-      ⟨hE.hG, hE.hWh, by rw [v2]; split_ifs <;> omega,
+      ⟨hE.hG, hE.hWh, by rw [v2]; splao,
         by rw [v2, ← hE.hli]; cases E.li <;> simp, E.L, E.E, hLne, hE.hok, hE.hperm, hE.hsort,
-        hE.hdeg, by rw [v0]; exact hNW, by rw [v1]; exact hr'⟩
-      (by show c₁.nreg ALLOC + κH ≤ E.W; rw [A₁]; omega)
+        hE.hdeg, by rwx [v0], by rwx [v1]⟩
+      (by show c₁.nreg ALLOC + κH ≤ E.W; rwo [A₁])
     have hp := pH E.L E.E hLne hE.hok hE.hperm hE.hsort (by rw [v0]; exact hNW.nfAt)
-    dsimp only at hp
+    dsimp at hp
     have hdec : decide (c₁.nreg 215002 = 1) = E.li := by rw [v2]; cases E.li <;> simp
     rw [hdec, v1] at hp
     obtain ⟨hb1, hb2, hb3, hb4, hb5⟩ := hp
@@ -163,7 +169,7 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
       refine ⟨rfl, ?_, ?_, ?_, fun q a b d => ?_, rfl, rfl⟩ <;> config_simp
       simp [a, b, d]
     have ex : Exec E.P E.W (hostS sH) c c₃ (k₁ + (k₂ + k₃) + 1) :=
-      .ifLtN_true (by rw [R.c1, R.K]; exact hK) (.seq e₁ (.seq e₂ e₃))
+      .ifLtN_true (by rwx [R.c1, R.K]) (.seq e₁ (.seq e₂ e₃))
     set H := regHost E.li (Qof E.P).n E.N r with hHd
     have hwf : HostWF E.Q.n H := by
       obtain ⟨-, -, -, -, -, -, -, hwf⟩ := DownMath.walk_rep ((hE.ctx hK).rc hr') hE.hli
@@ -172,19 +178,19 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
       · intro it hit; exact hwf it (List.mem_reverse.1 hit)
     have F₁ : Frame {bDownDrv} c c₁ k₁ := frame21_of_B
       (B := fun q => decide (q = 215000 ∨ q = 215001 ∨ q = 215002))
-      (fun q h => by simp only [decide_eq_true_eq] at h; rcases h with h | h | h <;> subst h <;> rfl)
+      (fun q h => by simp [decide_eq_true_eq] at h; rcases h with h | h | h <;> subst h <;> rfl)
       (exec_frameB e₁ (by decide)) rr₁
     have F₃ : Frame {bDownDrv} c₂ c₃ k₃ := frame21_of_B
       (B := fun q => decide (q = 212022 ∨ q = 212021 ∨ q = 212016))
-      (fun q h => by simp only [decide_eq_true_eq] at h; rcases h with h | h | h <;> subst h <;> rfl)
+      (fun q h => by simp [decide_eq_true_eq] at h; rcases h with h | h | h <;> subst h <;> rfl)
       (exec_frameB e₃ (by decide)) rr₃
     have F := (F₁.trans (F₂.trans F₃))
-    simp only [Finset.union_self] at F
+    simp [Finset.union_self] at F
     have A₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := g₃ _ (by decide) (by decide) (by decide)
     have hk₂' : k₂ ≤ κH := hk₂
-    refine ⟨c₃, _, H, ex, by omega, by rw [u22, m₃]; exact hb3, by rw [← hQn]; exact hwf,
-      by rw [u21]; exact hb4, by rw [u16, hb5, hQn], ?_, by rw [u22, ← A₁]; exact hb1,
-      by rw [u22, A₃]; exact hb2, fun q hq1 hq2 a b d _ _ => ?_, F.mono le_rfl (by omega)⟩
+    refine ⟨c₃, _, H, ex, by omega, by rwx [u22, m₃], by rwx [← hQn],
+      by rwx [u21], by rw [u16, hb5, hQn], ?_, by rwx [u22, ← A₁],
+      by rwx [u22, A₃], fun q hq1 hq2 a b d _ _ => ?_, F.mono le_rfl (by omega)⟩
     · rw [BGood.pts_pos hK, hHd]; unfold regPts; rw [hQn]
     · rw [g₃ q d b a, pk q hq1 hq2, g₁ q (by omega) (by omega) (by omega)]
 

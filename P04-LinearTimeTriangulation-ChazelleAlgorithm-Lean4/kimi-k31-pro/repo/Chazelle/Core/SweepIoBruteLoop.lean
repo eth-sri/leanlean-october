@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.SweepIoBruteMath
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep RAM (WP-D), answers: the arcs of the brute-force shot
@@ -140,19 +146,17 @@ def BW (M : Model) (Q : Polygon) (N : NF) (cS c : Config) (i : ℕ) : Prop :=
     (∀ a, a < cS.nreg ALLOC → c.nmem a = cS.nmem a) ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ BSet r → r ≠ ALLOC → c.nreg r = cS.nreg r)
 
-theorem bset_sw20 : ¬ BSet (sw 20) := by unfold BSet sw; omega
+theorem bset_sw20 : ¬ BSet (sw 20) := by ufo BSet sw
 
 theorem nob_sw {j : ℕ} (h : j < 10000) : bandOf (sw j) ∉ oracleBands :=
-  not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)
+  not_oracle_sw (by ufo sw) (by ufo sw)
 
 /-- The chain context survives the loop. -/
 theorem BW.ctx {M : Model} {Q : Polygon} {N : NF} {cS : Config} {i : ℕ} {C : Chain}
     (h : BW M Q N cS c i) (hctx : ChainCtx P W cS (sw 20) C) : ChainCtx P W c (sw 20) C :=
   hctx.transport (h.2.2.2.2.2.2.2.2 _ (nob_sw (by norm_num)) bset_sw20
-    (by unfold ALLOC sw; omega)) h.2.2.2.2.2.2.2.1 (by rw [h.2.2.2.2.2.1]; omega)
+    (by ufo ALLOC sw)) h.2.2.2.2.2.2.2.1 (by rwo [h.2.2.2.2.2.1])
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **One arc of the loop.** -/
 theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
     (hI : IInv W c₀ c) (hK : Consts c₀) (hctx : ChainCtx P W cS (sw 20) C)
@@ -173,9 +177,9 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   obtain ⟨⟨hps, hse, hsy⟩, ⟨hpe, hee, hey⟩⟩ := arc_end_facts hP hNF hi
   have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
   -- the read block
-  have hok : okB W c.nmem bRead c.nreg := bRead_ok _ _ hK₀.2.1 (by rw [vA4, w2]; omega)
+  have hok : okB W c.nmem bRead c.nreg := bRead_ok _ _ hK₀.2.1 (by rwo [vA4, w2])
   refine IRS.mono (K := bRead.length + (11015 + (11015 + (8 + 1)))) (IRS.seq
-    (IRS.block bRead hI hok) ?_) (by simp [bRead, bArcK]) (fun _ h => h)
+    (IRS.block bRead hI hok) ?_) (by simp [bRead, bArcK]) (fun _ => id)
   rintro c₁ hI₁ hA₁ hA₁' rfl
   set c₁ : Config := { c with nreg := regB c.nmem bRead c.nreg } with hc₁
   obtain ⟨r1s, r1s1, r1e, r1e1⟩ := bRead_val c.nmem c.nreg hK₀.2.1
@@ -185,57 +189,57 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   have v1e : c₁.nreg gE = (N.arc i).e.edge := by rw [← harec.2.2.2.1]; exact r1e
   have v1e1 : c₁.nreg gE1 = (N.arc i).e.hgt := by rw [← harec.2.2.2.2]; exact r1e1
   have k1 : ∀ q, ¬ BSet q → c₁.nreg q = c.nreg q := fun q hq => bRead_other _ _ hq
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold BSet ALLOC sw; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by ufo BSet ALLOC sw)
   have hctx₁ : ChainCtx P W c₁ (sw 20) C :=
     hctxc.transport (k1 _ bset_sw20) (fun _ _ => rfl) hA1.ge
   -- normalise the start
   have hy1 : c₁.nreg gS < 6 → c₁.nreg gS ≠ 0 → c₁.nreg gS ≠ 2 → c₁.nreg gS ≠ 4 →
       |((chainModel C).pos (Qof P) ⟨c₁.nreg gS, c₁.nreg gS1⟩).2| < C.radius := by
-    rw [v1s, v1s1]; exact hsy
+    rwx [v1s, v1s1]
   refine IRS.seq (normS_exact (normS_irs (dsc := sw 20) (pe := gS) (ph := gS1) (o := gO) hI₁
-    (hK.fix hI₁) hctx₁ ⟨by unfold sw; norm_num, by unfold sw; norm_num,
-      by unfold gS sw; norm_num, by unfold gS sw; norm_num,
-      by unfold gS1 sw; norm_num, by unfold gS1 sw; norm_num⟩
-    ⟨by unfold gO sw; norm_num, by unfold gO sw; norm_num, by unfold gO gS sw; norm_num,
-      by unfold gO gS1 sw; norm_num, by unfold gO gS sw; norm_num, by unfold gO gS1 sw; norm_num,
-      by unfold gS gS1 sw; norm_num⟩
-    (by rw [v1s]; exact hse) (by rw [v1s, v1s1]; exact hps) hy1
-    (by rw [hA1]; unfold bArcK at hroom; omega)) ⟨by unfold gS1 sw; norm_num,
-      by unfold gO sw; norm_num⟩) ?_
+    (hK.fix hI₁) hctx₁ ⟨by ufn sw, by ufn sw,
+      by ufn gS sw, by ufn gS sw,
+      by ufn gS1 sw, by ufn gS1 sw⟩
+    ⟨by ufn gO sw, by ufn gO sw, by ufn gO gS sw,
+      by ufn gO gS1 sw, by ufn gO gS sw, by ufn gO gS1 sw,
+      by ufn gS gS1 sw⟩
+    (by rwx [v1s]) (by rwx [v1s, v1s1]) hy1
+    (by ruo [hA1] bArcK at hroom)) ⟨by ufn gS1 sw,
+      by ufn gO sw⟩) ?_
   rintro c₂ hI₂ - - ⟨⟨n2s, n2s1, k2, -, -⟩, hA2, hm2⟩
   have nb : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => nob_sw hj
   have hctx₂ : ChainCtx P W c₂ (sw 20) C := hctx₁.transport
-    (k2 (sw 20) (nb 20 (by norm_num)) (by unfold gS1 sw; norm_num) (by unfold gO sw; norm_num)
-      (by unfold gO sw; norm_num) (by unfold ALLOC sw; norm_num))
+    (k2 (sw 20) (nb 20 (by norm_num)) (by ufn gS1 sw) (by ufn gO sw)
+      (by ufn gO sw) (by ufn ALLOC sw))
     (fun a' _ => by rw [hm2]) hA2.ge
   have v2e : c₂.nreg gE = (N.arc i).e.edge := by
-    rw [k2 gE (nb 1018 (by norm_num)) (by unfold gE gS1 sw; norm_num) (by unfold gE gO sw; norm_num)
-      (by unfold gE gO sw; norm_num) (by unfold gE ALLOC sw; norm_num), v1e]
+    rw [k2 gE (nb 1018 (by norm_num)) (by ufn gE gS1 sw) (by ufn gE gO sw)
+      (by ufn gE gO sw) (by ufn gE ALLOC sw), v1e]
   have v2e1 : c₂.nreg gE1 = (N.arc i).e.hgt := by
-    rw [k2 gE1 (nb 1019 (by norm_num)) (by unfold gE1 gS1 sw; norm_num)
-      (by unfold gE1 gO sw; norm_num) (by unfold gE1 gO sw; norm_num)
-      (by unfold gE1 ALLOC sw; norm_num), v1e1]
+    rw [k2 gE1 (nb 1019 (by norm_num)) (by ufn gE1 gS1 sw)
+      (by ufn gE1 gO sw) (by ufn gE1 gO sw)
+      (by ufn gE1 ALLOC sw), v1e1]
   -- normalise the end
   have hy2 : c₂.nreg gE < 6 → c₂.nreg gE ≠ 0 → c₂.nreg gE ≠ 2 → c₂.nreg gE ≠ 4 →
       |((chainModel C).pos (Qof P) ⟨c₂.nreg gE, c₂.nreg gE1⟩).2| < C.radius := by
-    rw [v2e, v2e1]; exact hey
+    rwx [v2e, v2e1]
   refine IRS.seq (normS_exact (normS_irs (dsc := sw 20) (pe := gE) (ph := gE1) (o := gO) hI₂
-    (hK.fix hI₂) hctx₂ ⟨by unfold sw; norm_num, by unfold sw; norm_num,
-      by unfold gE sw; norm_num, by unfold gE sw; norm_num,
-      by unfold gE1 sw; norm_num, by unfold gE1 sw; norm_num⟩
-    ⟨by unfold gO sw; norm_num, by unfold gO sw; norm_num, by unfold gO gE sw; norm_num,
-      by unfold gO gE1 sw; norm_num, by unfold gO gE sw; norm_num, by unfold gO gE1 sw; norm_num,
-      by unfold gE gE1 sw; norm_num⟩
-    (by rw [v2e]; exact hee) (by rw [v2e, v2e1]; exact hpe) hy2
-    (by rw [hA2, hA1]; unfold bArcK at hroom; omega)) ⟨by unfold gE1 sw; norm_num,
-      by unfold gO sw; norm_num⟩) ?_
+    (hK.fix hI₂) hctx₂ ⟨by ufn sw, by ufn sw,
+      by ufn gE sw, by ufn gE sw,
+      by ufn gE1 sw, by ufn gE1 sw⟩
+    ⟨by ufn gO sw, by ufn gO sw, by ufn gO gE sw,
+      by ufn gO gE1 sw, by ufn gO gE sw, by ufn gO gE1 sw,
+      by ufn gE gE1 sw⟩
+    (by rwx [v2e]) (by rwx [v2e, v2e1]) hy2
+    (by ruo [hA2, hA1] bArcK at hroom)) ⟨by ufn gE1 sw,
+      by ufn gO sw⟩) ?_
   rintro c₃ hI₃ - - ⟨⟨n3e, n3e1, k3, -, -⟩, hA3, hm3⟩
   have v3s : c₃.nreg gS = c₂.nreg gS := k3 gS (nb 1016 (by norm_num))
-    (by unfold gS gE1 sw; norm_num) (by unfold gS gO sw; norm_num)
-    (by unfold gS gO sw; norm_num) (by unfold gS ALLOC sw; norm_num)
+    (by ufn gS gE1 sw) (by ufn gS gO sw)
+    (by ufn gS gO sw) (by ufn gS ALLOC sw)
   have v3s1 : c₃.nreg gS1 = c₂.nreg gS1 := k3 gS1 (nb 1017 (by norm_num))
-    (by unfold gS1 gE1 sw; norm_num) (by unfold gS1 gO sw; norm_num)
-    (by unfold gS1 gO sw; norm_num) (by unfold gS1 ALLOC sw; norm_num)
+    (by ufn gS1 gE1 sw) (by ufn gS1 gO sw)
+    (by ufn gS1 gO sw) (by ufn gS1 ALLOC sw)
   have ns : (⟨c₃.nreg gS, c₃.nreg gS1⟩ : WPos) =
       Restore.normOf (chainModel C) (Qof P) (N.arc i).s := by
     rw [v3s, v3s1, n2s1, n2s, v1s, v1s1]
@@ -257,7 +261,7 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   have hA3' : c₃.nreg ALLOC = c.nreg ALLOC := by rw [hA3, hA2, hA1]
   have hm3' : c₃.nmem = c.nmem := by rw [hm3, hm2]
   -- store the record
-  refine IRS.seq (put4_irs hI₃ (hK.fix hI₃) (by rw [hA3']; unfold bArcK at hroom; omega)) ?_
+  refine IRS.seq (put4_irs hI₃ (hK.fix hI₃) (by ruo [hA3'] bArcK at hroom)) ?_
   rintro c₄ hI₄ - - ⟨hA4, k4, hm4, -, -, -⟩
   -- the frame from `c` to `c₄`
   have k14 : ∀ q, bandOf q ∉ oracleBands → q ≠ bX → q ≠ gS → q ≠ gS1 → q ≠ gE → q ≠ gE1 →
@@ -267,17 +271,17 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
     exact bRead_other' _ _ h1 h2 h3 h4 h5
   have hA4' : c₄.nreg ALLOC = c.nreg ALLOC + 4 := by rw [hA4, hA3']
   have k4T : c₄.nreg bT = i := by
-    rw [k14 bT (nb 4005 (by norm_num)) (by unfold bT bX sw; norm_num) (by unfold bT gS sw; norm_num)
-      (by unfold bT gS1 sw; norm_num) (by unfold bT gE sw; norm_num)
-      (by unfold bT gE1 sw; norm_num) (by unfold bT gO sw; norm_num)
-      (by unfold bT gO sw; norm_num) (by unfold bT ALLOC sw; norm_num), w2]
+    rw [k14 bT (nb 4005 (by norm_num)) (by ufn bT bX sw) (by ufn bT gS sw)
+      (by ufn bT gS1 sw) (by ufn bT gE sw)
+      (by ufn bT gE1 sw) (by ufn bT gO sw)
+      (by ufn bT gO sw) (by ufn bT ALLOC sw), w2]
   have hK1₄ : c₄.nreg K1 = 1 := (hK.fix hI₄).2.1
   have hok5 : okB W c₄.nmem [.addN bT bT K1] c₄.nreg := by
     have e1 : c₄.nreg 240611 = 1 := hK1₄
     have e3 : c₄.nreg 244005 = i := k4T
     simp only [okB, okI, bT, K1, sw]
     simp only [Nat.reduceAdd, e1, e3]
-    exact ⟨⟨iscr_sw (by norm_num) (by norm_num), by unfold bArcK at hroom; omega⟩, trivial⟩
+    exact ⟨⟨iscr_sw (by norm_num) (by norm_num), by ufo bArcK at hroom⟩, trivial⟩
   refine (IRS.block _ hI₄ hok5).mono (by simp) ?_
   rintro c₅ rfl
   have r5 : ∀ q, q ≠ bT → regB c₄.nmem [.addN bT bT K1] c₄.nreg q = c₄.nreg q := fun q h1 =>
@@ -297,10 +301,10 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
       regB c₄.nmem [.addN bT bT K1] c₄.nreg q = c.nreg q := by
     intro q hq hb hqa
     have ne : ∀ g, BSet g → q ≠ g := fun g hgs h => hb (h ▸ hgs)
-    exact kk q hq (ne _ (by unfold BSet bT sw; omega)) (ne _ (by unfold BSet bX sw; omega))
-      (ne _ (by unfold BSet gS sw; omega)) (ne _ (by unfold BSet gS1 sw; omega))
-      (ne _ (by unfold BSet gE sw; omega)) (ne _ (by unfold BSet gE1 sw; omega))
-      (ne _ (by unfold BSet gO sw; omega)) (ne _ (by unfold BSet gO sw; omega)) hqa
+    exact kk q hq (ne _ (by ufo BSet bT sw)) (ne _ (by ufo BSet bX sw))
+      (ne _ (by ufo BSet gS sw)) (ne _ (by ufo BSet gS1 sw))
+      (ne _ (by ufo BSet gE sw)) (ne _ (by ufo BSet gE1 sw))
+      (ne _ (by ufo BSet gO sw)) (ne _ (by ufo BSet gO sw)) hqa
   have kreg : ∀ q, (q = bBase ∨ q = bN ∨ q = bA4) →
       regB c₄.nmem [.addN bT bT K1] c₄.nreg q = c.nreg q := by
     intro q hq
@@ -311,14 +315,14 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
         (by simp [gE1, bBase, bN, bA4, sw]) (by simp [gO, bBase, bN, bA4, sw])
         (by simp [gO, bBase, bN, bA4, sw]) (by simp [ALLOC, bBase, bN, bA4, sw])
   have hA5 : regB c₄.nmem [.addN bT bT K1] c₄.nreg ALLOC = c.nreg ALLOC + 4 := by
-    rw [r5 _ (by unfold bT ALLOC sw; norm_num), hA4']
+    rw [r5 _ (by ufn bT ALLOC sw), hA4']
   have hmem5 : c₄.nmem = mem4 c.nmem (cS.nreg ALLOC + 4 * i) (c₃.nreg gS) (c₃.nreg gS1)
       (c₃.nreg gE) (c₃.nreg gE1) := by rw [hm4, hm3', hA3', w6]
   refine ⟨?_, v5T, hi, ?_, ?_, ?_, fun k hk => ?_, fun a' ha' => ?_, fun q hq hb hqa => ?_⟩
   · show regB _ _ _ bBase = _; rw [kreg _ (Or.inl rfl), w1]
   · show regB _ _ _ bN = _; rw [kreg _ (Or.inr (Or.inl rfl)), w4]
   · show regB _ _ _ bA4 = _; rw [kreg _ (Or.inr (Or.inr rfl)), w5]
-  · show regB _ _ _ ALLOC = _; rw [hA5, w6]; ring
+  · show regB _ _ _ ALLOC = _; rwring [hA5, w6]
   · show ShotList.arcAt c₄.nmem _ k = _
     rw [hmem5]
     unfold mem4
@@ -337,8 +341,6 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   · show regB _ _ _ q = _
     rw [kb q hq hb hqa, w9 q hq hb hqa]
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **The loop**: the normalised arcs of `N` at the allocator on entry, base in `bBase`, count
 in `bN`. -/
 theorem bLoop_irs {C : Chain} {N : NF} {B E : ℕ}
@@ -350,11 +352,11 @@ theorem bLoop_irs {C : Chain} {N : NF} {B E : ℕ}
       (fun c' => BW (chainModel C) (Qof P) N c c' N.arcs.length) := by
   have hK₀ := hK.fix hI
   obtain ⟨b1, -⟩ := Restore.nf_bounds hNW
-  have hNA : NFAt c.nmem B N := hNW.holds
+  have hNA  := hNW.holds
   have hok : okB W c.nmem bHead c.nreg := bHead_ok _ _ hK₀.2.1 hK₀.2.2.2.1
     (by rw [hB]; have := hI.hw.1 ALLOC; omega)
   refine (IRS.seq (IRS.block bHead hI hok) ?_).mono (K := bHead.length + ((bArcK + 2) *
-    N.arcs.length + 2)) (by simp [bHead, bLoopK]) (fun _ h => h)
+    N.arcs.length + 2)) (by simp [bHead, bLoopK]) (fun _ => id)
   rintro c₁ hI₁ - - rfl
   obtain ⟨vN, vA4, vB, vT⟩ := bHead_val c.nmem c.nreg hK₀.2.1 hK₀.2.2.2.1
   set A := N.arcs.length with hAd
@@ -362,21 +364,21 @@ theorem bLoop_irs {C : Chain} {N : NF} {B E : ℕ}
     refine ⟨vB, vT, Nat.zero_le _, ?_, vA4, ?_, fun k hk => absurd hk (by omega), fun _ _ => rfl,
       fun q _ hq _ => bHead_other _ _ hq⟩
     · show regB _ _ _ bN = _; rw [vN, hB]; exact hNA.2.1
-    · show regB _ _ _ ALLOC = _; rw [bHead_other _ _ (by unfold BSet ALLOC sw; omega)]; ring
+    · show regB _ _ _ ALLOC = _; rwring [bHead_other _ _ (by ufo BSet ALLOC sw)]
   have hT1 : ({ c with nreg := regB c.nmem bHead c.nreg } : Config).nreg bT = 0 := vT
   have hA1 : ({ c with nreg := regB c.nmem bHead c.nreg } : Config).nreg ALLOC = c.nreg ALLOC :=
-    bHead_other (q := ALLOC) c.nmem c.nreg (by unfold BSet ALLOC sw; omega)
+    bHead_other (q := ALLOC) c.nmem c.nreg (by ufo BSet ALLOC sw)
   refine (IRS.while (fun c' => ∃ i, BW (chainModel C) (Qof P) N c c' i)
     (fun c' => A - c'.nreg bT) bArcK ?_ ?_ hI₁ ⟨0, hBW1⟩ ?_).mono ?_ ?_
   · rintro c' ⟨i, hw⟩ hlt
     rw [hw.2.1, hw.2.2.2.1] at hlt
-    rw [hw.2.1]; omega
+    rwo [hw.2.1]
   · rintro c' hI' ⟨i, hw⟩ hlt hroom'
     have hi : i < A := by rw [hw.2.1, hw.2.2.2.1] at hlt; exact hlt
     refine (bArc_irs hI' hK hctx hP hNF hNW hB hE hw hi hroom').mono le_rfl
       (fun c'' h => ⟨⟨i + 1, h⟩, ?_⟩)
-    rw [h.2.1, hw.2.1]; omega
-  · rw [hA1, hT1, Nat.sub_zero]; unfold bLoopK at hroom; omega
+    rwo [h.2.1, hw.2.1]
+  · ruo [hA1, hT1, Nat.sub_zero] bLoopK at hroom
   · rw [hT1, Nat.sub_zero]
   · rintro c' ⟨⟨i, hw⟩, hn⟩
     rw [hw.2.1, hw.2.2.2.1] at hn

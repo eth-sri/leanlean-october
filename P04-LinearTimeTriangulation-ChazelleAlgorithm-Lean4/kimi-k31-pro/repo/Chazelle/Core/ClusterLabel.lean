@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.ClusterBfs
+public import Chazelle.Rwx
 
 /-!
 # WP-I, part 4: component labelling, the invariants
@@ -31,7 +32,7 @@ variable {G}
 theorem step_symm (hok : G.OK) (hs : G.Sym) {u w : ℕ} (h : G.Step u w) : G.Step w u := by
   obtain ⟨d, hd, hdb, hv, hh, hu, hw⟩ := h
   obtain ⟨h1, h2⟩ := hs d hd
-  refine ⟨G.opp d, hok.opp_lt d hd, by rw [h2]; exact hdb, hh, ?_, hw, hu⟩
+  refine ⟨G.opp d, hok.opp_lt d hd, by rwx [h2], hh, ?_, hw, hu⟩
   unfold head; rw [h1, hv]
 
 /-- Reachability is symmetric. -/
@@ -95,7 +96,7 @@ theorem LInv.fresh (hok : G.OK) (hs : G.Sym) {lab : ℕ → ℕ} {v : ℕ} (hI :
 theorem LInv.bfs (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ → ℕ} {v t : ℕ}
     (hI : G.LInv lab v) (hv : v < G.nv)
     (hB : G.Inv v v lab lab' lev par q t t) : G.LInv lab' (v + 1) := by
-  have hQ : ∀ w, G.Reach v w ↔ ∃ i, i < t ∧ q i = w := hB.reach_iff
+  have hQ  := hB.reach_iff
   have hin : ∀ w, G.Reach v w → lab' w = v := by
     intro w hw
     obtain ⟨i, hi, rfl⟩ := (hQ w).mp hw
@@ -120,9 +121,9 @@ theorem LInv.bfs (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ → ℕ} {v
       exact hI.comp x y hx hne hxy
   · rcases Nat.lt_succ_iff_lt_or_eq.mp hx with hx' | rfl
     · by_cases hr : G.Reach v x
-      · rw [hin x hr]; exact hvn
+      · rwx [hin x hr]
       · rw [hout x hxn hr]; exact hI.cover x hx' hxn hvb
-    · rw [hin x Relation.ReflTransGen.refl]; exact hvn
+    · rwx [hin x Relation.ReflTransGen.refl]
 
 /-- **Accounting of a search step**: the unlabelled vertices after the search are those before
 it minus the queue (of length `t`); hence their number and degree sum drop by `t` and by the
@@ -136,7 +137,7 @@ theorem LInv.unlab_split (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ →
       ∑ i ∈ Finset.range t, G.deg (q i) =
       ∑ x ∈ (Finset.range G.nv).filter (fun x => lab x = G.nv), G.deg x := by
   classical
-  have hQ : ∀ w, G.Reach v w ↔ ∃ i, i < t ∧ q i = w := hB.reach_iff
+  have hQ  := hB.reach_iff
   have hfresh := hI.fresh hok hs hv hlv
   set U := (Finset.range G.nv).filter (fun x => lab x = G.nv)
   set U' := (Finset.range G.nv).filter (fun x => lab' x = G.nv)
@@ -150,21 +151,21 @@ theorem LInv.unlab_split (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ →
     exact Finset.mem_filter.mpr ⟨Finset.mem_range.mpr hqn, hfresh _ hqn (hB.reach i hi).1⟩
   have hU : U = U' ∪ Q := by
     ext x
-    simp only [U, U', Q, Finset.mem_union, Finset.mem_filter, Finset.mem_range,
+    simp [U, U', Q, Finset.mem_union, Finset.mem_filter, Finset.mem_range,
       Finset.mem_image]
     constructor
     · rintro ⟨hx, hl⟩
       by_cases hq : ∃ i, i < t ∧ q i = x
       · exact Or.inr hq
       · push Not at hq
-        exact Or.inl ⟨hx, by rw [hB.lab_out x hx hq]; exact hl⟩
+        exact Or.inl ⟨hx, by rwx [hB.lab_out x hx hq]⟩
     · rintro (⟨hx, hl⟩ | ⟨i, hi, rfl⟩)
       · refine ⟨hx, ?_⟩
         by_cases hq : ∃ i, i < t ∧ q i = x
         · obtain ⟨i, hi, rfl⟩ := hq
           rw [hB.lab_in i hi] at hl; exact absurd hl hvn
         · push Not at hq
-          rw [← hB.lab_out x hx hq]; exact hl
+          rwx [← hB.lab_out x hx hq]
       · exact ⟨hB.qlt i hi, hfresh _ (hB.qlt i hi) (hB.reach i hi).1⟩
   have hdisj : Disjoint U' Q := by
     rw [Finset.disjoint_left]
@@ -176,7 +177,7 @@ theorem LInv.unlab_split (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ →
     exact hvn this
   have hinj : Set.InjOn q (Finset.range t) := by
     intro i hi j hj hij
-    simp only [Finset.coe_range, Set.mem_Iio] at hi hj
+    simp [Finset.coe_range, Set.mem_Iio] at hi hj
     exact hB.qinj i hi j hj hij
   have hQc : Q.card = t := by rw [Finset.card_image_of_injOn hinj, Finset.card_range]
   have hQs : ∑ x ∈ Q, G.deg x = ∑ i ∈ Finset.range t, G.deg (q i) := Finset.sum_image hinj

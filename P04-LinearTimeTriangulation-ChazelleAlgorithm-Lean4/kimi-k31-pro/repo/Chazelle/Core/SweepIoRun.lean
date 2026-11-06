@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepRamStage0
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep RAM (WP-D), answers: run steps
@@ -76,7 +78,7 @@ def IFix (q : ℕ) : Prop := 240000 ≤ q ∧ q < 240700
 def IScr (r : ℕ) : Prop := (240700 ≤ r ∧ r < 250000) ∨ bandOf r ∈ oracleBands
 
 theorem band_sw {r : ℕ} (h1 : 240000 ≤ r) (h2 : r < 250000) : bandOf r = bSweep := by
-  unfold bandOf bSweep; omega
+  ufo bandOf bSweep
 
 theorem bSweep_mem : bSweep ∈ ioBands := by decide
 
@@ -86,14 +88,14 @@ theorem alloc_not_io : bandOf ALLOC ∉ ioBands := by decide
 
 theorem fix_not_scr {q : ℕ} (h : IFix q) : ¬ IScr q := by
   rintro (h' | h')
-  · unfold IFix at h; omega
+  · ufo IFix at h
   · unfold IFix at h
     rw [band_sw (by omega) (by omega)] at h'
     exact absurd h' (by decide)
 
 theorem alloc_not_scr : ¬ IScr ALLOC := by
   rintro (h | h)
-  · unfold ALLOC at h; omega
+  · ufo ALLOC at h
   · exact absurd h (by decide)
 
 theorem scr_band {r : ℕ} (h : IScr r) : bandOf r ∈ ioBands := by
@@ -185,7 +187,7 @@ theorem IInv.regs {c' : Config} {k : ℕ} (hI : IInv W c₀ c) (hw : WordsBounde
     (hr : ∀ r, ¬ IScr r → c'.nreg r = c.nreg r)
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : IInv W c₀ c' ∧ IFr c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_not_scr
+  have hA  := hr ALLOC alloc_not_scr
   refine ⟨⟨hw, fun q hq => (hr q (fix_not_scr hq)).trans (hI.hin q hq), by rw [hA]; exact hI.hA,
     fun a ha => by rw [hm]; exact hI.hm a ha, fun a ha => by rw [hrm]; exact hI.hrm a ha⟩,
     fun r hr' _ => hr r (fun h => hr' (scr_band h)), fun r _ => by rw [hrr], ho, by omega,
@@ -297,7 +299,7 @@ theorem IRS.callO {s : Stmt} {B' : Finset ℕ} {Pre : Polygon → ℕ → Config
   have hkeep : ∀ r, bandOf r ∉ oracleBands → r ≠ ALLOC → c'.nreg r = c.nreg r :=
     fun r hr hra => hfr.1 r (fun h => hr (hB h)) hra
   have hfix : ∀ q, IFix q → c'.nreg q = c.nreg q := fun q hq => hkeep q (by
-    unfold IFix at hq; rw [band_sw (by omega) (by omega)]; decide) (by unfold IFix at hq; unfold ALLOC; omega)
+    unfold IFix at hq; rwd [band_sw (by omega) (by omega)]) (by unfold IFix at hq; ufo ALLOC)
   exact ⟨c', k, ex, hk, ⟨ex.wb_right, fun q hq => (hfix q hq).trans (hI.hin q hq),
     le_trans hI.hA hfr.2.2.2.2.2.1,
     fun a ha => (hfr.2.2.1 a (lt_of_lt_of_le ha hI.hA)).trans (hI.hm a ha),
@@ -313,7 +315,7 @@ theorem IRS.ofExec {s : Stmt} {c' : Config} {k K : ℕ} {Q : Config → Prop} (h
     (ho : c'.output = c.output) (hA1 : c.nreg ALLOC ≤ c'.nreg ALLOC)
     (hA2 : c'.nreg ALLOC ≤ c.nreg ALLOC + k) (hq : Q c') : IRS P W c₀ s c K Q :=
   ⟨c', k, ex, hk, ⟨ex.wb_right, fun q hq' => (hr q (fix_not_scr hq') (by
-      unfold IFix at hq'; unfold ALLOC; omega)).trans (hI.hin q hq'), le_trans hI.hA hA1,
+      unfold IFix at hq'; ufo ALLOC)).trans (hI.hin q hq'), le_trans hI.hA hA1,
       fun a ha => (hm a ha).trans (hI.hm a ha), fun a ha => by rw [hrm]; exact hI.hrm a ha⟩,
     ⟨fun r hr' hra => hr r (fun h => hr' (scr_band h)) hra, fun r _ => by rw [hrr], ho, hA1, hA2⟩,
     hq⟩

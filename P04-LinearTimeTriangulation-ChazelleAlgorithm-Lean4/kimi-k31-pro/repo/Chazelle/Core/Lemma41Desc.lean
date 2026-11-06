@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SpecMerge
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-J, part 4: the descriptor of a merged chain
@@ -24,7 +25,7 @@ variable (J : Junction)
 theorem left_vertex (k : ℕ) : J.left.vertex k = J.whole.vertex k := rfl
 
 theorem right_vertex (k : ℕ) : J.right.vertex k = J.whole.vertex (J.m₁ + k) := by
-  simp only [Chain.vertex, Chain.edgeIdx, Junction.right, Junction.whole,
+  simp [Chain.vertex, Chain.edgeIdx, Junction.right, Junction.whole,
     Nat.add_assoc]
 
 /-- **The top index of the union.** -/
@@ -87,7 +88,7 @@ theorem whole_sideBeta : J.whole.sideBeta =
   have hT := whole_topIdx J
   split_ifs at hT ⊢ with hc
   · unfold Chain.sideBeta Chain.slitTop Chain.top Chain.radius
-    rw [hT]; rfl
+    rwr [hT]
   · push Not at hc
     -- the top of `C₂` is not its first vertex (the shared vertex is a vertex of `C₁`)
     have h0 : 0 < J.right.topIdx := by
@@ -102,7 +103,7 @@ theorem whole_sideBeta : J.whole.sideBeta =
     rw [hT, right_vertex, right_vertex, right_vertex]
     have e1 : J.m₁ + J.right.topIdx + 1 = J.m₁ + (J.right.topIdx + 1) := by omega
     have e2 : J.m₁ + J.right.topIdx - 1 = J.m₁ + (J.right.topIdx - 1) := by omega
-    rw [e1, e2]; rfl
+    rwr [e1, e2]
 
 end
 

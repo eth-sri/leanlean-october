@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvStepL7
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep (WP-D), stage 3: the log at the next key (Task L1)
@@ -38,7 +41,6 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
   (S : SCtx sh Bs F X Ok P W c₀ J N₁ N₂ c cw cs co c' A rs ax)
 include S
 
-set_option maxHeartbeats 4000000 in
 /-- **The log at the next key.** -/
 theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls.length = c'.nreg lC ∧
     LogRecsAt c'.nmem (c'.nreg lB) ls ∧ LogWords P J N₂ ls ∧
@@ -70,23 +72,23 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
   refine ⟨ls ++ [r'], by simp [hlen, hlC'], ?_, ?_, ?_, List.getLast?_concat⟩
   · -- the records
     intro i hi
-    simp only [List.length_append, List.length_singleton] at hi
+    simp [List.length_append, List.length_singleton] at hi
     rw [elB']
     rcases Nat.lt_or_ge i ls.length with h | h
     · rw [List.getD_append _ _ _ _ h]
       obtain ⟨a0, a1, a2, a3, a4, a5, a6⟩ := hrec i h
       have hi' : i < c.nreg lC := hlen ▸ h
       refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-      · rw [hm _ (by omega) (by omega)]; exact a0
-      · rw [hm _ (by omega) (by omega)]; exact a1
-      · rw [hm _ (by omega) (by omega)]; exact a2
-      · rw [hm _ (by omega) (by omega)]; exact a3
-      · rw [hm _ (by omega) (by omega)]; exact a4
-      · rw [hm _ (by omega) (by omega)]; exact a5
-      · rw [hm _ (by omega) (by omega)]; exact a6
+      · rwx [hm _ (by omega) (by omega)]
+      · rwx [hm _ (by omega) (by omega)]
+      · rwx [hm _ (by omega) (by omega)]
+      · rwx [hm _ (by omega) (by omega)]
+      · rwx [hm _ (by omega) (by omega)]
+      · rwx [hm _ (by omega) (by omega)]
+      · rwx [hm _ (by omega) (by omega)]
     · have hil : i = ls.length := by omega
       rw [List.getD_append_right _ _ _ _ h, show i - ls.length = 0 by omega, hil, hlen]
-      simp only [List.getD_cons_zero]
+      simp [List.getD_cons_zero]
       refine ⟨r0, r1, r2, ?_, ?_, ?_, ?_⟩
       · have := r3 0 (by norm_num); simpa using this
       · have := r3 1 (by norm_num)
@@ -132,7 +134,7 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
       obtain ⟨a, es', hae⟩ := List.exists_cons_of_ne_nil hne
       rw [hae] at hhead
       rw [hae] at hx
-      simp only [List.cons_append, List.head?_cons, Option.mem_def, Option.some.injEq] at hx
+      simp [List.cons_append, List.head?_cons, Option.mem_def, Option.some.injEq] at hx
       subst hx
       exact hhead a rfl
     · refine List.pairwise_append.2 ⟨hpwl, List.pairwise_singleton _ _, fun a ha b hb => ?_⟩
@@ -144,12 +146,12 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
       rw [hxcoff] at this
       linarith
     · intro i hi
-      simp only [List.length_append, List.length_singleton] at hi
+      simp [List.length_append, List.length_singleton] at hi
       rcases Nat.lt_or_ge (i + 1) es.length with h | h
       · rw [List.getD_append _ _ _ _ (by omega), List.getD_append _ _ _ _ h]
         exact hcons i h
       · have hi' : i + 1 = es.length := by omega
-        have hlen' : es.length = ys.length + 1 := by rw [hys]; simp
+        have hlen' : es.length = ys.length + 1 := by rws [hys]
         have e1 : (es ++ [x']).getD i (0, 0, ∅) = xc := by
           rw [List.getD_append _ _ _ _ (by omega), hys,
             List.getD_append_right _ _ _ _ (by omega), show i - ys.length = 0 by omega]

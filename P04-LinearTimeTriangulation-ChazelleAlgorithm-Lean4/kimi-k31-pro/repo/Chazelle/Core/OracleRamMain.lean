@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.OracleRamCand
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Lemma 3.6 (WP-H), RAM part 14: the main phase of the query
@@ -114,11 +118,11 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r (by omega)
   have m₁ : c₁.nmem = c.nmem :=
     (exec_frameB e₁ (B := fun r => decide (r = 120050)) (by decide)).2.2.1
-  have hbo₁ : bestOf c₁ = none := by unfold bestOf; rw [v₁]; simp
-  have hb₁ : BestOK P.n V.s V.m c₁ := ⟨by rw [v₁]; omega, fun h => by rw [v₁] at h; omega⟩
+  have hbo₁ : bestOf c₁ = none := by urs bestOf [v₁]
+  have hb₁ : BestOK P.n V.s V.m c₁ := ⟨by rwo [v₁], fun h => by rwo [v₁] at h⟩
   -- 2. the nodes of `D*`
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hit₂⟩ := dstarS_exec (P := P) hG hW hs c₁ e₁.wb_right hq₁ hb₁
-    (by rw [m₁]; exact hm) hDL (S := ∅) (by rw [hbo₁]; intro t _ h; exact h)
+    (by rwx [m₁]) hDL (S := ∅) (by rw [hbo₁]; intro t _ h; exact h)
   rw [m₁, Set.empty_union] at hit₂
   rw [m₁] at hk₂
   have hq₂ : QConst P V c₂ := hq₁.frame f₂ BD_const
@@ -136,12 +140,12 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     rw [f₂.1 _ (by decide), r₁ _ (by decide)]
   -- 3. the stopping point
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, s₃⟩ := tchS_exec (P := P) hG hW hv htv c₂ e₂.wb_right hq₂
-    (by rw [x140]; exact hf) hb₂
+    (by rwx [x140]) hb₂
   rw [selOf_cb hb₂, x140, x141, ← hbD] at s₃
   set sel := selOf C V bD (c.nreg 120140 = 1) (c.nreg 120141) (CBof P C V bD (c.nreg 120141))
     with hsel
   have hq₃ : QConst P V c₃ := hq₂.frame f₃ fun r h1 h2 => by
-    simp only [BT, BX2, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+    sio only [BT, BX2, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]
   have m₃ : c₃.nmem = c.nmem := f₃.2.2.1.trans m₂
   have hsel01 : sel.1 = 0 ∨ sel.1 = 1 := by
     rw [hsel]; unfold selOf
@@ -160,7 +164,7 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   -- 4. the walk positions
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, v₄⟩ := posS_exec (P := P) hW hv c₃ e₃.wb_right hq₃ s₃ hsel01 hselm
   have hq₄ : QConst P V c₄ := hq₃.frame f₄ fun r h1 h2 => by
-    simp only [BPo, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+    sio only [BPo, Bool.or_eq_false_iff, decide_eq_false_iff_not]
   have m₄ : c₄.nmem = c.nmem := f₄.2.2.1.trans m₃
   have hvd := hvalid bD hit₂ hbDm
   rw [← hsel] at hvd
@@ -196,10 +200,10 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     intro k hk d hd hqd hbd hmd hpos S hS
     obtain ⟨hwn, hx⟩ := hvd k hk
     obtain ⟨d', k', p, ex, hk', fr, hb', hp, hl1, hl2, hit⟩ := candS_exec hcov (P := P) hG hW hs d hd
-      hqd hbd (by rw [hmd]; exact hm) (by rw [hmd]; exact hO) (by rw [hmd]; exact hL)
+      hqd hbd (by rwx [hmd]) (by rwx [hmd]) (by rwx [hmd])
       (NC := NC) (CS := CS) (fun u hu => by rw [hmd]; exact hNC u hu)
       (fun u hu => by rw [hmd]; exact hCS u hu) (rP := 120160 + k) (by omega)
-      (by rw [hpos]; exact hwn) (by rw [hpos]; exact hx) hS
+      (by rwx [hpos]) (by rwx [hpos]) hS
     rw [hpos] at hl1 hl2
     rw [hmd] at hit
     exact ⟨d', k', p, ex, hk', fr, hb', hp, ⟨hl1, hl2⟩, hit⟩
@@ -211,7 +215,7 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     simp only [BCa, BL, BC, BN, BA, BW, BE, Bdir, Bloc, Bcmp, Bk, Bool.or_eq_false_iff,
       decide_eq_false_iff_not]; omega
   obtain ⟨c₅, k₅, p₀, e₅, hk₅, f₅, hb₅, hp₀, hl₀, hit₅⟩ := candStep 0 (by norm_num) c₄ e₄.wb_right hq₄
-    hb₄ m₄ (xq 0 (by norm_num)) (dstarPts c.nmem V C V.nD) (by rw [hbo₄]; exact hit₂)
+    hb₄ m₄ (xq 0 (by norm_num)) (dstarPts c.nmem V C V.nD) (by rwx [hbo₄])
   have hq₅ := hq₄.frame f₅ hBCac
   have m₅ : c₅.nmem = c.nmem := f₅.2.2.1.trans m₄
   obtain ⟨c₆, k₆, p₁, e₆, hk₆, f₆, hb₆, hp₁, hl₁, hit₆⟩ := candStep 1 (by norm_num) c₅ e₅.wb_right hq₅

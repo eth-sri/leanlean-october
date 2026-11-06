@@ -24,7 +24,7 @@ theorem card_fin_filter {n : ℕ} (p : ℕ → Prop) [DecidablePred p] :
   rw [← Finset.card_map Fin.valEmbedding]
   congr 1
   ext x
-  simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and, Fin.valEmbedding_apply,
+  simp [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and, Fin.valEmbedding_apply,
     Finset.mem_range]
   constructor
   · rintro ⟨v, hv, rfl⟩; exact ⟨v.2, hv⟩

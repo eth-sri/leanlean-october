@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.NFDecompRamP1
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Tree decomposition (WP-C), part 16: the top pass on the RAM
@@ -122,10 +125,10 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
       (.instr (.copyN 60049 60048))) c1 c2 k2 ∧ k2 ≤ 3 ∧
       c2 = { c1 with nreg := upd c1.nreg 60049 v } := by
     by_cases hlt : a < sT - a
-    · refine spec_ifLtN_true (by rw [r44, r48]; exact hlt)
+    · refine spec_ifLtN_true (by rwx [r44, r48])
         (spec_instr (Exec.copyN hw1 _ _) fun _ => ⟨by omega, ?_⟩)
       rw [r44, hvdef, ← ite_lt_min, ite_eq_left hlt]
-    · refine spec_ifLtN_false (by rw [r44, r48]; exact hlt)
+    · refine spec_ifLtN_false (by rwx [r44, r48])
         (spec_instr (Exec.copyN hw1 _ _) fun _ => ⟨by omega, ?_⟩)
       rw [r48, hvdef, ← ite_lt_min, ite_eq_right hlt]
   subst hc2
@@ -133,7 +136,7 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
   have b10c := hR1.b 10 (by norm_num)
   simp only [Nat.reduceAdd] at b10c
   obtain ⟨c3, k3, e3, rfl, m3, s3, r50⟩ := ldF_rel (P := P) hw2 60050 10 60046
-    (by simp only [show fb 10 = 60110 from rfl]; config_simp; rw [b10c, r46]; omega)
+    (by simp only [show fb 10 = 60110 from rfl]; config_simp; rwo [b10c, r46])
   have hbv : c3.nreg 60050 = bv := by
     rw [r50]; simp only [show fb 10 = 60110 from rfl]; config_simp
     rw [b10c, r46, m1, Machine.upd_other _ _ _ (by omega)]
@@ -144,12 +147,12 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
   have hR3 : DRegs A R K CB RB LB c3 := by
     refine (hR1.of_same (l := [60049]) (Same.upd1 (by simp)) (by simp [Prot])).of_same s3
       (by simp [Prot])
-  have m3' : c3.nmem = upd c.nmem (A + 12 + 8 * R + r) t := by rw [m3]; exact m1
+  have m3' : c3.nmem = upd c.nmem (A + 12 + 8 * R + r) t := by rwx [m3]
   have s13 : Same [60030, 60043, 60046, 60044, 60047, 60048, 60049, 60050] c c3 :=
     ((s1.mono (by simp)).trans ((Same.upd1 (l := [60030, 60043, 60046, 60044, 60047, 60048, 60049,
       60050]) (by simp)))).trans (s3.mono (by simp))
   by_cases hup : bv < v
-  · refine spec_ifLtN_true (by rw [hbv, r49]; exact hup) ?_
+  · refine spec_ifLtN_true (by rwx [hbv, r49]) ?_
     have b9' := hR3.b 9 (by norm_num); have b10' := hR3.b 10 (by norm_num)
     simp only [Nat.reduceAdd] at b9' b10'
     have r46' : c3.nreg 60046 = t := by rw [s3.1 _ (by simp)]; config_simp; exact r46
@@ -177,7 +180,7 @@ theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
         simp [*]
       · simp only [ite_eq_right h8, hup, true_and]
         split_ifs <;> first | rfl | omega
-  · refine spec_ifLtN_false (by rw [hbv, r49]; exact hup) (spec_skip hw3 ?_)
+  · refine spec_ifLtN_false (by rwx [hbv, r49]) (spec_skip hw3 ?_)
     refine ⟨by omega, s13, fun x hx => ?_, fun f u hf hu => ?_⟩
     · rw [m3', fv_store_out (by norm_num) hr hx]
     · rw [m3', fv_store hr hu]
@@ -208,7 +211,7 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       .loadN 60040 60030]) c c1 k1 ∧ k1 = 2 ∧
       c1 = { c with nreg := upd (upd c.nreg 60030 (A + 12 + 1 * R + i)) 60040 r } := by
     exec_block
-    · rw [b1, h20]; omega
+    · rwo [b1, h20]
     · refine ⟨rfl, ?_⟩
       rw [b1, h20, hr']
   have s1 : Same [60030, 60040] c c1 := by rw [hc1]; same_tac
@@ -248,13 +251,13 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       · simp only [hur, and_false, ite_false]
         split_ifs with h8 h9 h10 <;> subst_vars <;> rfl
     by_cases h0 : r = 0
-    · refine spec_ifLtN_false (by rw [hR1.zero, r40, h0]; omega) ?_
+    · refine spec_ifLtN_false (by rwo [hR1.zero, r40, h0]) ?_
       obtain ⟨c2, k2, e2, hk2, s2, hm2, hv2⟩ := htopB c1 hw1 hR1 r40 m1 (Or.inl h0)
       exact ⟨c2, k2, e2, by omega, s2.mono (by simp), hm2, hv2⟩
-    · refine spec_ifLtN_true (by rw [hR1.zero, r40]; omega) ?_
+    · refine spec_ifLtN_true (by rwo [hR1.zero, r40]) ?_
       have hpr := hpch h0; have hpg := hprg h0; have htp := htop h0
       obtain ⟨c2, k2, e2, rfl, m2, s2, r41⟩ := ldF_rel (P := P) hw1 60041 4 60040
-        (by rw [show fb 4 = 60104 from rfl, hR1.b 4 (by norm_num), r40]; omega)
+        (by rwo [show fb 4 = 60104 from rfl, hR1.b 4 (by norm_num), r40])
       rw [show fb 4 = 60104 from rfl, hR1.b 4 (by norm_num), r40, m1] at r41
       have hR2 : DRegs A R K CB RB LB c2 := hR1.of_same s2 (by simp [Prot])
       obtain ⟨c3, k3, e3, rfl, m3, s3, r42⟩ := ldF_rel (P := P) e2.wb_right 60042 11 60041
@@ -270,11 +273,11 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       have r40' : c3.nreg 60040 = r := by rw [s23.1 _ (by simp), r40]
       refine spec_seq ⟨c2, 2, e2, spec_seq ⟨c3, 2, e3, ?_⟩⟩
       by_cases hrem : fv c.nmem A R 11 (fv c.nmem A R 4 r) = 1
-      · refine ifEqN_eq (by rw [r42, hR3.one]; exact hrem) ?_
+      · refine ifEqN_eq (by rwx [r42, hR3.one]) ?_
         obtain ⟨c4, k4, e4, hk4, s4, hm4, hv4⟩ :=
           htopB c3 e3.wb_right hR3 r40' m13 (Or.inr hrem)
         exact ⟨c4, k4, e4, by omega, s23.trans (s4.mono (by simp)) |>.mono (by simp), hm4, hv4⟩
-      · refine ifEqN_ne (by rw [r42, hR3.one]; exact hrem) ?_
+      · refine ifEqN_ne (by rwx [r42, hR3.one]) ?_
         obtain ⟨c4, k4, e4, hk4, s4, hm4, hv4⟩ := ntBr_exec (P := P) e3.wb_right hR3 hAW r40' hr hpg htp
           (by rw [m13]) (by rw [m13])
         refine ⟨c4, k4, e4, fun k' hk' => ⟨by omega, (s23.mono (by simp)).trans (s4.mono (by simp)),
@@ -302,7 +305,7 @@ theorem p2Body_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   obtain ⟨c2, k2, e2, hk2, s2, hm2, hv2⟩ := hmid
   have hR2 : DRegs A R K CB RB LB c2 := hR1.of_same s2 (by simp [Prot])
   obtain ⟨c3, k3, e3, rfl, m3, s3, r20⟩ := incr_exec (P := P) e2.wb_right hR2.one
-    (by rw [s2.1 _ (by simp), s1.1 _ (by simp), h20]; omega)
+    (by rwo [s2.1 _ (by simp), s1.1 _ (by simp), h20])
   have s13 : Same [60030, 60040, 60041, 60042, 60043, 60046, 60044, 60047, 60048, 60049, 60050,
       60020] c c3 := ((s1.mono (by simp)).trans (s2.mono (by simp))).trans (s3.mono (by simp))
   refine ⟨c3, 2 + (k2 + 1), .seq e1 (.seq e2 e3), by omega, ?_, by
@@ -399,7 +402,7 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
         rw [h.pos_ord i htest] at this
         exact (hP2.1 _ hpR this).1
       obtain ⟨d', k', e', hk', hf'', h20', hv''⟩ := p2Body_exec (P := P) hwd hRd hAW hidef htest
-        (by rw [hv1 i htest]; exact hr)
+        (by rwx [hv1 i htest])
         (fun h0 => by rw [hv1 i htest] at h0 ⊢; rw [hv4 _ hr]; have := h.pch_lt _ hr h0; omega)
         (fun h0 => by rw [hv1 i htest] at h0 ⊢; rw [hv3 _ hr]; exact h.prg_lt _ hr h0)
         (fun h0 => by
@@ -410,7 +413,7 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
           rw [this]
           exact htopR h0)
       refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', by omega, ?_, fun f u hf h8 h9 h10 hu => ?_⟩,
-        by rw [h20', hidef]; omega⟩
+        by rwo [h20', hidef]⟩
       · rw [h20', hS i]
         have hc := p2_congr (R := R) (i := i) (st := t3Of d.nmem A R) (st' := S i) hagd
           (hv1 i htest) hr (fun h0 => hv4 _ hr) (fun h0 => hv11 _ (by have := h.pch_lt _ hr h0; omega))
@@ -418,13 +421,13 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
         intro u hu
         obtain ⟨a1, a2, a3⟩ := hc u hu
         refine ⟨?_, ?_, ?_⟩
-        · show fv d'.nmem A R 8 u = _; rw [hv'' 8 u (by norm_num) hu]; exact a1
-        · show fv d'.nmem A R 9 u = _; rw [hv'' 9 u (by norm_num) hu]; exact a2
-        · show fv d'.nmem A R 10 u = _; rw [hv'' 10 u (by norm_num) hu]; exact a3
+        · show fv d'.nmem A R 8 u = _; rwx [hv'' 8 u (by norm_num) hu]
+        · show fv d'.nmem A R 9 u = _; rwx [hv'' 9 u (by norm_num) hu]
+        · show fv d'.nmem A R 10 u = _; rwx [hv'' 10 u (by norm_num) hu]
       · rw [hv'' f u hf hu]
         simp only [h8, h9, h10, ite_false]
         exact hvd f u hf h8 h9 h10 hu)
-    ⟨hw1, hf1, by simp only [hc1]; config_simp; omega, by
+    ⟨hw1, hf1, by simp only [hc1]; cso, by
       simp only [hc1]; config_simp; intro u _; exact ⟨rfl, rfl, rfl⟩, fun _ _ _ _ _ _ _ => rfl⟩
   have hR' := hR.frame hf'
   rw [hR'.rR] at htest

@@ -38,7 +38,7 @@ theorem sortedDarts_of {M : ℕ} {G K s : ℕ → ℕ}
     SortedDarts M G K s := by
   refine ⟨hlt, hs, fun t t' htt ht' => ?_⟩
   have h := hsort t t' htt.le ht'
-  unfold PLe at h; unfold PLt; simp only at h ⊢
+  unfold PLe at h; unfold PLt; simp at h ⊢
   rcases h with h | ⟨h1, h2⟩
   · exact Or.inl h
   · rcases eq_or_lt_of_le h2 with e | e
@@ -86,7 +86,7 @@ theorem memGraph_eq {m : ℕ → ℕ} {Bh : ℕ}
       refine ⟨d, hd, by rw [hvt d hd, h1], ?_⟩
       rw [hopp d hd, hvt _ (oppN_lt hd), view_oppN, View.tail_rev, h2]
   ext u v
-  simp only [memGraph, OracleQ.bookGraph, hdart]
+  simp [memGraph, OracleQ.bookGraph, hdart]
 
 end
 

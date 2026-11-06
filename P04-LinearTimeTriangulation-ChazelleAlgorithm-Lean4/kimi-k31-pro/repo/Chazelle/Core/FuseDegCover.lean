@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.FuseDegChain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The degree of the revised fusion, part 5: the pieces of the walk and the classification
@@ -48,7 +50,7 @@ theorem attach_sup {W : Polygon} {f c : Set Point} {p : ℕ} {t : ℝ} (hA : Sid
     (hcb : c = Chazelle.segment (sidePt W p t) b) (hec : e ∈ c) : SideAttach W c p t := by
   obtain ⟨hp, ht, ht1, -, r, hr, hl⟩ := hA
   set q := sidePt W p t with hq
-  have hd : 0 < dist e q := dist_pos.2 he
+  have hd  := dist_pos.2 he
   refine ⟨hp, ht, ht1, by rw [hcb]; exact Geometry.left_mem_segment _ _, min r (dist e q),
     lt_min hr hd, fun x hx hxq hxd => hl x ?_ hxq (lt_of_lt_of_le hxd (min_le_left _ _))⟩
   have hxd' : dist x q < dist e q := lt_of_lt_of_le hxd (min_le_right _ _)
@@ -68,12 +70,12 @@ theorem attach_sup {W : Polygon} {f c : Set Point} {p : ℕ} {t : ℝ} (hA : Sid
     rcases (dist_nonneg : 0 ≤ dist b q).lt_or_eq with h | h
     · exact h
     · rw [← h, mul_zero] at hd; exact absurd hd (lt_irrefl _)
-  have hsse : s < se := lt_of_mul_lt_mul_right hxd' hbq.le
-  have hse : 0 < se := lt_of_le_of_lt hs0 hsse
+  have hsse  := lt_of_mul_lt_mul_right hxd' hbq.le
+  have hse  := lt_of_le_of_lt hs0 hsse
   rw [hfe, hese]
   refine Geometry.mem_segment_iff_lerp.2 ⟨s / se, div_nonneg hs0 hse.le,
     (div_le_one hse).2 hsse.le, ?_⟩
-  apply Geometry.point_ext <;> simp only [Geometry.lerp_fst, Geometry.lerp_snd] <;>
+  apply Geometry.point_ext <;> simp [Geometry.lerp_fst, Geometry.lerp_snd] <;>
     field_simp <;> ring
 
 /-- An agreement with a side walk, with the lengths in range, is a piece. -/
@@ -87,7 +89,7 @@ theorem pieceAt_of_agree {C' : Chain} (hC'P : C'.P = J.P) {g g' L : ℕ}
   rw [counted_iff_box _ (Nat.mod_lt _ (by omega))]
   rw [mod_succ_mod] at hc ⊢
   rw [hA d hd.le, hA (d + 1) hd] at hc
-  rw [hR]; exact hc
+  rwx [hR]
 
 /-- The offset from a later base of a stretch. -/
 theorem dOf_shift {n g s p : ℕ} (hg : g < n) (hp : p < n) (hs : s ≤ dOf n g p) :
@@ -125,19 +127,19 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   have hτ'lt := tpos_lt C' J₀'
   set g := 6 + τ with hg_def
   set g' := 6 + τ' with hg'_def
-  have hg : g < W.n := by rw [hn]; omega
-  have hg' : g' < W'.n := by rw [hn']; omega
+  have hg : g < W.n := by rwo [hn]
+  have hg' : g' < W'.n := by rwo [hn']
   set s := 2 * C.m - τ with hs_def
   set s' := 2 * C'.m - τ' with hs'_def
   have hstart : W.vtx g = J.shared := by
     have := walk_tour C J₀ 0 (by omega)
     rw [add_zero, Nat.mod_eq_of_lt hg] at this
-    rw [this, hv0]; rfl
+    rwr [this, hv0]
   by_cases hsl : s < ℓ
   · -- case Sh
-    have hss : s = s' := (hbox hsl).symm
+    have hss  := (hbox hsl).symm
     have hA := agree_Sh hT hR.symm hℓ.le hℓ' hss hsl
-    have hpc := pieceAt_of_agree J hC'P hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA
+    have hpc := pieceAt_of_agree J hC'P hg hg' (by rwo [hn]) (by rwo [hn']) hA
     refine ⟨g, g', ℓ + 7, g, g', ℓ + 7, hpc, hpc, Or.inl hstart, Or.inl hstart,
       fun p _ hin => Or.inl ?_⟩
     rw [ite_eq_left hsl] at hin; exact hin
@@ -145,17 +147,17 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   by_cases hsl' : ℓ ≤ s'
   · -- case N
     have hA := agree_N hT hsl hsl'
-    have hpc := pieceAt_of_agree J hC'P hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA
+    have hpc := pieceAt_of_agree J hC'P hg hg' (by rwo [hn]) (by rwo [hn']) hA
     refine ⟨g, g', ℓ, g, g', ℓ, hpc, hpc, Or.inl hstart, Or.inl hstart, fun p _ hin => Or.inl ?_⟩
     rw [ite_eq_right (not_lt.2 hsl)] at hin; exact hin
   -- case G
   push Not at hsl'
   have hA1 := agree_G1 hT hsl hsl'
   have hA2 := agree_G2 hT hℓ' hsl hsl'
-  have hpc1 := pieceAt_of_agree J hC'P hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA1
-  have hpc2 := pieceAt_of_agree J hC'P (Nat.mod_lt _ (by rw [hn]; omega))
-    (Nat.mod_lt _ (by rw [hn']; omega))
-    (by rw [hn]; omega) (by rw [hn']; omega) hA2
+  have hpc1 := pieceAt_of_agree J hC'P hg hg' (by rwo [hn]) (by rwo [hn']) hA1
+  have hpc2 := pieceAt_of_agree J hC'P (Nat.mod_lt _ (by rwo [hn]))
+    (Nat.mod_lt _ (by rwo [hn']))
+    (by rwo [hn]) (by rwo [hn']) hA2
   have hpt : W.vtx ((g + s') % W.n) = C'.top := by
     rw [hA1 s' le_rfl]
     have := walk_box C' J₀' 0 (by omega)
@@ -192,7 +194,7 @@ theorem glue_subset_aug (hgen : SharedGeneric J) : glueChords J ⊆ Merge.augCho
     have hy : (capOrigin J).2 ≤ J.whole.top.2 := by
       have : (capOrigin J).2 = (capNear J).2 := by
         unfold capOrigin
-        simp only [Geometry.lerp_snd]
+        simp [Geometry.lerp_snd]
         exact hnear.symm
       rw [this]
       rcases hnf with ⟨hn, -⟩ | ⟨hn, -⟩
@@ -274,7 +276,7 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     have hdBL : dB < L := by
       have : (dB : ℝ) < L := by rw [hoB] at hX; linarith [hX.2, hB.2.1]
       exact_mod_cast this
-    have hB' : SideAttach M.W f ((g + dB) % M.W.n) tb := by rw [hpb]; exact hB
+    have hB' : SideAttach M.W f ((g + dB) % M.W.n) tb := by rwx [hpb]
     -- the two attachment points of `f` are on `C'`
     have hmemB : sidePt M.W pb tb ∈ C'.set := by
       rw [← hpb, hAg.sidePt_eq hdBL tb]
@@ -299,8 +301,8 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     have hq₀C : q₀ ∈ C'.set := by
       rcases hA0 with h1 | h1 <;> rcases hB0 with h2 | h2 <;> rcases hq0 with h3 | h3
       all_goals first
-        | (rw [h3, ← h1]; exact hmemA)
-        | (rw [h3, ← h2]; exact hmemB)
+        | (rwx [h3, ← h1])
+        | (rwx [h3, ← h2])
         | (exfalso; exact hBne (h2.trans h1.symm))
     exact hsh (hjend c hcj q₀ hq₀ hq₀C ▸ hq₀f)
 

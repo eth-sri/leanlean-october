@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseDrvRLib
 public import Chazelle.Core.SortList
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Down-phase driver (RAM side): copying a memory block
@@ -36,7 +38,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 theorem cpBody_exec (d : Config) (hw : WordsBounded W d) {i S D : ℕ}
     (h60 : d.nreg 210060 = i) (h62 : d.nreg 210062 = S) (h63 : d.nreg 210063 = D)
     (h34 : d.nreg 210034 = 1) (hW1 : S + i ≤ W) (hW2 : D + i ≤ W) (hW3 : i + 1 ≤ W) :
@@ -46,7 +47,7 @@ theorem cpBody_exec (d : Config) (hw : WordsBounded W d) {i S D : ℕ}
       d'.nreg 210060 = i + 1 ∧ d'.nmem = upd d.nmem (D + i) (d.nmem (S + i)) := by
     unfold cpBody
     exec_block
-    all_goals try (config_simp; (try simp only [h60, h62, h63, h34]); omega)
+    all_goals try (config_simp; (try simp [h60, h62, h63, h34]); omega)
     refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h60, h62, h63, h34]
   exact ⟨d', k, ex, hk, h1, h2, exec_frameM ex wrM_cpBody⟩
 
@@ -72,7 +73,7 @@ theorem cpS_exec {d : Config} (hw : WordsBounded W d) {S D len : ℕ}
     (fun i e hi ⟨hw, h1, h2, h3, h4, h5, hf, hm⟩ => by
       obtain ⟨e', k, ex, hk, h1', hm', hf'⟩ := cpBody_exec (P := P) e hw h1 h3 h4 h5
         (by omega) (by omega) (by omega)
-      have g : ∀ r, Bcp r = false → e'.nreg r = e.nreg r := hf'.1
+      have g  := hf'.1
       refine ⟨e', k, ex, ⟨ex.wb_right, h1', (g _ (by decide)).trans h2, (g _ (by decide)).trans h3,
         (g _ (by decide)).trans h4, (g _ (by decide)).trans h5, hf.trans hf', fun a => ?_⟩,
         by omega⟩
@@ -81,7 +82,7 @@ theorem cpS_exec {d : Config} (hw : WordsBounded W d) {S D len : ℕ}
       · rw [ite_eq_left ha, hm (S + i), ite_eq_right (by omega), ite_eq_left (by omega),
           show a - D = i by omega]
       · rw [ite_eq_right ha, hm a]; split_ifs <;> first | rfl | omega)
-    (j := 0) ⟨e₀.wb_right, by rw [hd₀]; simp, by rw [g₀ _ (by decide), h61],
+    (j := 0) ⟨e₀.wb_right, by rws [hd₀], by rw [g₀ _ (by decide), h61],
       by rw [g₀ _ (by decide), h62], by rw [g₀ _ (by decide), h63], by rw [g₀ _ (by decide), h34],
       f₀, fun a => by rw [ite_eq_right (by omega)]⟩ (Nat.zero_le _)
   refine ⟨d', 1 + k, .seq e₀ ex, by omega, w', ?_, fun a ha => ?_, hf'⟩

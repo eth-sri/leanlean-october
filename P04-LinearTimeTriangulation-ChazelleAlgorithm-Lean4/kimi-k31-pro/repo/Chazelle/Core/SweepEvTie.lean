@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepEvKey
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), stage 3: ties on the `C₁` part and the pieces of a chord of `S₂`
@@ -32,13 +33,13 @@ position's point. -/
 theorem attach_snd_eq (hP : J.P.Simple) {f : Set Point} (hf : f ∈ Merge.augChords J.whole)
     {p : ℕ} {t : ℝ} (hA : SideAttach (chainModel J.whole).W f p t) {z : Point} (hz : z ∈ f) :
     z.2 = (sidePt (chainModel J.whole).W p t).2 := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM  := FactsChain.walkAx J.whole hP
   obtain ⟨a, b, -, hfab, hy, -⟩ := hM.ends f hf
   have key : ∀ w ∈ f, w.2 = a.2 := by
     intro w hw
     rw [hfab] at hw
     obtain ⟨s, -, -, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hw
-    simp only [Geometry.lerp_snd, hy, sub_self, mul_zero, add_zero]
+    simp [Geometry.lerp_snd, hy, sub_self, mul_zero, add_zero]
   rw [key z hz, key _ hA.2.2.2.1]
 
 /-- **The point of a tie off the open right stretch** is in the domain of `C₂` or is the shared
@@ -79,8 +80,8 @@ theorem tie_dom (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Mer
       refine ⟨abs_lt.2 ⟨?_, ?_⟩, by rw [← hzE2]; exact h1.2⟩
       · linarith [(abs_lt.1 h2.1).1]
       · linarith [(abs_lt.1 h1.1).2]
-  have hR : J.right.radius = J.whole.radius := FuseMath.radius_of_P J (C' := J.right) rfl
-  have hy : x.2 ≤ J.right.top.2 := F₂plus_snd_le J hS₂ he hA.2.2.2.1
+  have hR  := FuseMath.radius_of_P J (C' := J.right) rfl
+  have hy  := F₂plus_snd_le J hS₂ he hA.2.2.2.1
   by_cases hxd : x ∈ J.right.dom
   · exact Or.inl hxd
   · right
@@ -102,14 +103,14 @@ theorem parent_unique {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords
     intro y a b hu hw
     obtain ⟨-, h1, h2⟩ := hu
     obtain ⟨-, h3, h4⟩ := hw
-    refine ⟨⟨rfl, by simp only; linarith, by simp only; linarith⟩, fun h => ?_, fun h => ?_⟩
+    refine ⟨⟨rfl, by sil only, by sil only⟩, fun h => ?_, fun h => ?_⟩
     · have := congrArg Prod.fst h
-      simp only at this
+      simp at this
       rcases lt_or_gt_of_ne hx with h5 | h5 <;> linarith
     · have := congrArg Prod.fst h
-      simp only at this
+      simp at this
       rcases lt_or_gt_of_ne hx with h5 | h5 <;> linarith
-  have hyy : y = y' := hu.1.symm.trans hu'.1
+  have hyy  := hu.1.symm.trans hu'.1
   subst hyy
   obtain ⟨hm, hma, hmb⟩ := hconv hu hw
   obtain ⟨hm', -, -⟩ := hconv hu' hw'

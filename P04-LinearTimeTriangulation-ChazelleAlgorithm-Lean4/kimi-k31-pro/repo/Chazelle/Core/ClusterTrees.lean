@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.ClusterEnc
 public import Chazelle.Core.ClusterBfs
 public import Chazelle.Core.ClusterSplitMath
+public import Chazelle.Rwx
 
 /-!
 # WP-I, part 23: the trees of the breadth-first searches
@@ -88,7 +89,7 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     obtain ⟨-, -, -, j, -, hvj, hlj⟩ := hpar v (hne v hv)
     rw [hqv] at hvj hlj
     have : ((M.vert (pd v) : Fin μ) : ℕ) = q j := by
-      rw [← hG.vert (pd v), (hpd v (hne v hv)).2]; exact hvj
+      rwx [← hG.vert (pd v), (hpd v (hne v hv)).2]
     rw [this, hlj]
   refine ⟨⟨r, fun v => lev v, fun v => M.opp (pd v), hI.lev0, fun v hv => ?_,
     fun v hv => ?_⟩, rfl, fun v => rfl, fun v hv => ?_, fun d => ?_, fun v => ?_⟩
@@ -100,7 +101,6 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     · show ((M.opp (pd v) : Fin N) : ℕ) = G.opp (par v)
       rw [← (hpd v (hne v hv)).2, hG.opp]
     · rw [SpanTree.parent_of_ne _ hv]
-      show ((M.head (M.opp (pd v)) : Fin μ) : ℕ) = G.vert (par v)
       rw [M.head_opp, ← (hpd v (hne v hv)).2, hG.vert]
   · show lev (M.head d) ≤ lev (M.vert d) + 1
     obtain ⟨i, hi, hqi⟩ := hq (M.vert d)
@@ -219,7 +219,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
     intro g hg
     have := (hpar g hg).1
     rw [hqv, hGN] at this
-    exact hG.eD_surj _ (by rw [hGN]; exact this)
+    exact hG.eD_surj _ (by rwx [hGN])
   let fp : Fin N → Fin N ⊕ Fin N ⊕ Fin N := fun g =>
     if hg : g ≠ r0 then Classical.choose (hdec g hg) else .inl r0
   have hfp : ∀ g : Fin N, g ≠ r0 → enc N (fp g) = par g := by

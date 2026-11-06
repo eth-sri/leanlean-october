@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.MergeAsmDesc
 public import Chazelle.Core.MergeAsmCost
 public import Chazelle.Core.RestoreDrvPos
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-F merge assembly, part 6: Lemma 3.5 — `mergeSpec_of`
@@ -37,7 +41,7 @@ def MB : Finset ℕ := mergeBands ∪ oracleBands
 theorem frame_band {b : ℕ} {c c' : Config} (h : FrameB (inBand b) c c') (hb : b ∈ MB)
     (hb0 : b ≠ 0) (k : ℕ) : Frame MB c c' k :=
   NFLoc.frame_of_frameB h (fun r hr => by
-    simp only [inBand, decide_eq_true_eq] at hr
+    simp [inBand, decide_eq_true_eq] at hr
     refine ⟨hr ▸ hb, fun h => ?_⟩
     rw [h] at hr; exact hb0 (hr.symm.trans bandOf_alloc)) k
 
@@ -53,7 +57,7 @@ theorem holds_frame {X : MemCtx} {P : Polygon} {g : ℕ} {B : Finset ℕ} {c c' 
 theorem cap_frame {X : MemCtx} (hloc : X.CapLocal) {P : Polygon} {g : ℕ} {B : Finset ℕ}
     {c c' : Config} {k : ℕ} (hX : X.holds P c.nmem g (c.nreg ALLOC)) (hf : Frame B c c' k) :
     X.cap P c'.nmem g = X.cap P c.nmem g :=
-  hloc P c.nmem c'.nmem g _ (fun a ha => hf.2.2.1 a ha) hX
+  hloc P c.nmem c'.nmem g _ (hf.2.2.1) hX
 
 /-- The frame of the descriptor copy. -/
 theorem descS_frame {c c' : Config} {A : ℕ} (hA : c.nreg ALLOC = A) (hA' : c'.nreg ALLOC = A + 6)
@@ -66,8 +70,8 @@ theorem descS_frame {c c' : Config} {A : ℕ} (hA : c.nreg ALLOC = A) (hA' : c'.
   by_contra h
   push Not at h
   apply hb
-  have : bandOf r = bMerge := by unfold bandOf bMerge; omega
-  rw [this]; decide
+  have : bandOf r = bMerge := by ufo bandOf bMerge
+  rwd [this]
 
 /-! ## The constant -/
 
@@ -110,18 +114,18 @@ theorem oracle_pos_merge {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → �
   rw [hAd] at hwf hX
   set ĉ := withDesc c bw
   have hA : ĉ.nreg ALLOC = A + 6 := by simp [ĉ, withDesc, hAd]
-  have hAW : A ≤ W := hAd ▸ hw.1 ALLOC
+  have hAW  := hAd ▸ hw.1 ALLOC
   have hmem : ∀ a, ĉ.nmem a = if a = A then 0 else if A < a ∧ a < A + 6 then
-      c.nmem (bw + (a - A - 1)) else c.nmem a := fun a => by simp only [ĉ, withDesc, hAd]
+      c.nmem (bw + (a - A - 1)) else c.nmem a := fun a => by simp [ĉ, withDesc, hAd]
   have he : ∀ a, a < A → ĉ.nmem a = c.nmem a := fun a ha => by
     rw [hmem, ite_eq_right (by omega), ite_eq_right (by omega)]
   have hbA := hwf.1
   have hw' : WordsBounded (W + 6) ĉ := by
     refine ⟨fun r => ?_, fun a => ?_⟩
-    · simp only [ĉ, withDesc]
+    · simp [ĉ, withDesc]
       by_cases hr : r = ALLOC
-      · subst hr; simp only [upd_same]; omega
-      · simp only [upd_other _ _ _ hr]; have := hw.1 r; omega
+      · subst hr; sio only [upd_same]
+      · simp [upd_other _ _ _ hr]; have := hw.1 r; omega
     · rw [hmem]
       split_ifs
       · omega
@@ -136,13 +140,13 @@ theorem oracle_pos_merge {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → �
     exact chainDescAt_copy hC hEb he hc
   have hreg' : ĉ.nmem A = 0 → ∀ H' C', ChainDescAt ĉ.nmem (A + 1) (Qof P) H' C' →
       HostRegular (Qof P).n H' := fun _ H' C' h' => by
-    rw [NFLoc.hostAt_unique h'.1 hCd.1]; exact hreg
+    rwx [NFLoc.hostAt_unique h'.1 hCd.1]
   have hX' : X.holds P ĉ.nmem g (ĉ.nreg ALLOC) := by
     rw [hA]
     exact X.mono _ _ _ _ _ (by omega) (X.local_ _ _ _ _ _ (fun a ha => (he a ha).symm) hX)
   have hcap' : γ ≤ X.cap P ĉ.nmem g := by
-    rw [hloc P c.nmem ĉ.nmem g _ he hX]; exact hcap
-  exact Restore.oracle_pos hsh hcu hw' hG (by omega) hX' hcap' (by rw [hA]; exact hMWF) hreg' hMD
+    rwx [hloc P c.nmem ĉ.nmem g _ he hX]
+  exact Restore.oracle_pos hsh hcu hw' hG (by omega) hX' hcap' (by rwx [hA]) hreg' hMD
     (Or.inl ⟨C, hP, rfl⟩) hOk hγ (by omega) hγW (by omega)
 
 end

@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXRamF
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down phase, extraction (D6), RAM part 7: a kept chord
@@ -24,7 +28,6 @@ section kept
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 open Classical in
 /-- **A kept chord.** -/
 theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : Bool}
@@ -87,7 +90,7 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
     exec_frameB e1 (by decide)
   have hw1 := e1.wb_right
   have q1 : ∀ r, r < 217070 ∨ (217072 < r ∧ r < 217080) ∨ 217082 < r → d1.nreg r = d.nreg r :=
-    fun r hr => f1.1 r (by simp only [decide_eq_false_iff_not]; omega)
+    fun r hr => f1.1 r (by sio only [decide_eq_false_iff_not])
   have enc1 : Enc d1 sL := by rw [enc_iff, a70, a71, a72]; exact encL
   -- step 2: left interior edge
   obtain ⟨d2, k2, e2, hk2, v2, f2⟩ := peS_exec (P := P) d1 hw1 hsL enc1 hnW
@@ -113,8 +116,8 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
   -- globals in `d3`
   have q3 : ∀ r, (r < 217070 ∨ (217072 < r ∧ r < 217080) ∨ (217087 < r ∧ r < 217100)) →
       d3.nreg r = d.nreg r := fun r hr => by
-    rw [f3.1 _ (by simp only [decide_eq_false_iff_not]; omega),
-      f2.1 _ (by simp only [Bpe, decide_eq_false_iff_not]; omega), q1 _ (by omega)]
+    rw [f3.1 _ (by sio only [decide_eq_false_iff_not]),
+      f2.1 _ (by sio only [Bpe, decide_eq_false_iff_not]), q1 _ (by omega)]
   -- step 4: right interior edge
   obtain ⟨d4, k4, e4, hk4, v4, f4⟩ := peS_exec (P := P) d3 hw3 hsR enc3 hnW
     (by rw [q3 _ (by omega), h20]) (by rw [q3 _ (by omega), h26]) (by rw [q3 _ (by omega), h27])
@@ -132,8 +135,8 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
   have hw5 := e5.wb_right
   have q5 : ∀ r, (r < 217070 ∨ (217072 < r ∧ r < 217080) ∨ (217087 < r ∧ r < 217100)) →
       d5.nreg r = d.nreg r := fun r hr => by
-    rw [f5.1 _ (by simp only [decide_eq_false_iff_not]; omega),
-      f4.1 _ (by simp only [Bpe, decide_eq_false_iff_not]; omega), q3 _ hr]
+    rw [f5.1 _ (by sio only [decide_eq_false_iff_not]),
+      f4.1 _ (by sio only [Bpe, decide_eq_false_iff_not]), q3 _ hr]
   have m5 : d5.nmem = d.nmem := by
     rw [f5.2.2.1, f4.2.2.1, f3.2.2.1, f2.2.2.1, f1.2.2.1]
   have eL : d5.nreg 217084 = pEdge li (Qof P).n sL := by
@@ -142,7 +145,7 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
   -- step 6: left bucket
   obtain ⟨d6, k6, e6, hk6, ⟨tL, htL, honL, v6⟩, f6⟩ := bktS_exec (P := P) d5 hw5 hG (li := li)
     (N := N) (x := ⟨pEdge li (Qof P).n sL, h + 1⟩) (AB := AB) (RA := RA) (nRA := nRA) (ras := ras)
-    hxL hgood (by rw [m5]; exact hAm) (by rw [m5]; exact hRm) hAW hRW h2A hnW
+    hxL hgood (by rwx [m5]) (by rwx [m5]) hAW hRW h2A hnW
     (by rw [q5 _ (by omega), h20]) (by rw [q5 _ (by omega), h26]) (by rw [q5 _ (by omega), h27])
     (by rw [q5 _ (by omega), h30]) (by rw [q5 _ (by omega), h31]) (by rw [q5 _ (by omega), h32])
     (by rw [q5 _ (by omega), h33]) (by rw [q5 _ (by omega), h44])
@@ -163,13 +166,13 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
   have hw7 := e7.wb_right
   have q7 : ∀ r, (r < 217070 ∨ (217072 < r ∧ r < 217080) ∨ (217087 < r ∧ r < 217100)) →
       d7.nreg r = d.nreg r := fun r hr => by
-    rw [f7.1 _ (by simp only [decide_eq_false_iff_not]; omega),
-      f6.1 _ (by simp only [Bbkt, decide_eq_false_iff_not]; omega), q5 _ hr]
+    rw [f7.1 _ (by sio only [decide_eq_false_iff_not]),
+      f6.1 _ (by sio only [Bbkt, decide_eq_false_iff_not]), q5 _ hr]
   have m7 : d7.nmem = d.nmem := by rw [f7.2.2.1, f6.2.2.1, m5]
   -- step 8: right bucket
   obtain ⟨d8, k8, e8, hk8, ⟨tR, htR, honR, v8⟩, f8⟩ := bktS_exec (P := P) d7 hw7 hG (li := li)
     (N := N) (x := ⟨pEdge li (Qof P).n sR, h + 1⟩) (AB := AB) (RA := RA) (nRA := nRA) (ras := ras)
-    hxR hgood (by rw [m7]; exact hAm) (by rw [m7]; exact hRm) hAW hRW h2A hnW
+    hxR hgood (by rwx [m7]) (by rwx [m7]) hAW hRW h2A hnW
     (by rw [q7 _ (by omega), h20]) (by rw [q7 _ (by omega), h26]) (by rw [q7 _ (by omega), h27])
     (by rw [q7 _ (by omega), h30]) (by rw [q7 _ (by omega), h31]) (by rw [q7 _ (by omega), h32])
     (by rw [q7 _ (by omega), h33]) (by rw [q7 _ (by omega), h44])
@@ -181,7 +184,7 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
   -- values in `d8`
   have q8 : ∀ r, (r < 217070 ∨ (217072 < r ∧ r < 217080) ∨ (217087 < r ∧ r < 217100)) →
       d8.nreg r = d.nreg r := fun r hr => by
-    rw [f8.1 _ (by simp only [Bbkt, decide_eq_false_iff_not]; omega), q7 _ hr]
+    rw [f8.1 _ (by sio only [Bbkt, decide_eq_false_iff_not]), q7 _ hr]
   have m8 : d8.nmem = d.nmem := by rw [f8.2.2.1, m7]
   have r45 : d8.nreg 217045 = LxB + 3 * cnt := by rw [q8 _ (by omega), h45]
   have r46 : d8.nreg 217046 = BkB + 2 * cnt := by rw [q8 _ (by omega), h46]
@@ -218,7 +221,7 @@ theorem keptS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : B
     · omega
     · omega
   have ex : Exec P W keptS d d9 (k1 + (k2 + (k3 + (k4 + (k5 + (k6 + (k7 + (k8 + k9)))))))) := by
-    simp only [keptS, seqs_cons₂, seqs_one]
+    simp [keptS, seqs_cons₂, seqs_one]
     exact .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 (.seq e6 (.seq e7 (.seq e8 e9)))))))
   have hk : k1 + (k2 + (k3 + (k4 + (k5 + (k6 + (k7 + (k8 + k9))))))) ≤ 604 * nRA + 120 := by
     omega

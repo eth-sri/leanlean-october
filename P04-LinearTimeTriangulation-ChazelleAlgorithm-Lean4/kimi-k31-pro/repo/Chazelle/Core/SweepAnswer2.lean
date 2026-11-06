@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepDetect2
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), part 15: answering queries along chords (gap S4)
@@ -44,7 +45,7 @@ theorem genuine_along_chord {e : Set Point} (he : e ∈ Merge.augChords C) {z : 
   obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec he
   obtain ⟨hzy, hzl, hzr⟩ := hze
   obtain ⟨-, hwl, hwr⟩ := hwe
-  simp only [rayPt_fst] at hwl hwr
+  simp [rayPt_fst] at hwl hwr
   have hend : ∀ x : ℝ, l ≤ x → x ≤ r → ((x, y) : Point) ∉ C.dom → x = l ∨ x = r := by
     intro x h1 h2 hx
     rcases h1.lt_or_eq with h1 | h1
@@ -52,7 +53,7 @@ theorem genuine_along_chord {e : Set Point} (he : e ∈ Merge.augChords C) {z : 
       · exact absurd (hH.open_mem x h1 h2) hx
       · exact Or.inr h2
     · exact Or.inl h1.symm
-  have hz := hend z.1 hzl hzr (by rw [show ((z.1, y) : Point) = z from Prod.ext rfl hzy.symm]; exact hzD)
+  have hz := hend z.1 hzl hzr (by rwx [show ((z.1, y) : Point) = z from Prod.ext rfl hzy.symm])
   have hw := hend (z.1 + σ * τ) hwl hwr (by
     rw [show ((z.1 + σ * τ, y) : Point) = rayPt z σ τ from
       point_ext (by simp [rayPt]) (by simp [rayPt, hzy])]; exact hwD)

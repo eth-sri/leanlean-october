@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseDrvTBuild
 public import Chazelle.Core.DownPhaseDrvRInv
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Down-phase transition (D2), RAM part 7: the whole procedure and its cost
@@ -65,7 +67,7 @@ theorem trans_cost_le {n K K₀ : ℕ} (hn : 3 ≤ n) (hK : K ≤ K₀)
     have : K₀ ≤ K₀ * (gradeGran p + 1) := Nat.le_mul_of_pos_right _ (by omega)
     omega
   have hKpow : K ≤ 2 ^ (p + 12) := by
-    have h2 : 2 ^ (p + 12) = 4096 * 2 ^ p := by rw [pow_add]; norm_num; ring
+    have h2 : 2 ^ (p + 12) = 4096 * 2 ^ p := by rwn [pow_add]; ring
     have h1 : 1 ≤ 2 ^ p := Nat.one_le_two_pow
     omega
   have hclog : Nat.clog 2 K ≤ p + 12 := Nat.clog_le_of_le_pow hKpow
@@ -80,7 +82,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 theorem setB_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W setB c c' k ∧ k = 3 ∧ c'.nreg 40000 = c.nreg 190021 ∧
       c'.nreg 40001 = c.nreg 190022 ∧ c'.nreg 40002 = c.nreg 190036 ∧
@@ -93,7 +94,6 @@ theorem setB_exec (c : Config) (hw : WordsBounded W c) :
     exact ⟨rfl, by config_simp, by config_simp, by config_simp, rfl⟩
   exact ⟨c', k, e, hk, h1, h2, h3, exec_frameM e wrM_setB, hm⟩
 
-set_option maxHeartbeats 1000000 in
 theorem finT_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W finT c c' k ∧ k = 5 ∧ c'.nreg 210001 = c.nreg 190021 ∧
       c'.nreg 210002 = c.nreg 190022 ∧ c'.nreg 210003 = c.nreg 190036 ∧

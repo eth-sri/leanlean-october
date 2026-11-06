@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.OraclePrepQAt
 public import Chazelle.Core.SpecPhases
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 64000000
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 36: the preprocessing meets its specification
@@ -38,7 +42,6 @@ def prepBands : Finset ℕ := {bSign, bSort, bLocate, bDecomp, bOPrep, bOQuery, 
 
 theorem prepBands_sub : prepBands ⊆ oracleBands ∪ {bOPrep} := by decide
 
-set_option maxHeartbeats 64000000 in
 /-- **The preprocessing meets its specification.** -/
 theorem prep_meets : Meets prepMainS prepBands
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ ChainWF P (c.nreg ALLOC) c.nmem (rd c bOPrep 0) ∧
@@ -73,7 +76,7 @@ theorem prep_meets : Meets prepMainS prepBands
   obtain ⟨hDA, hall⟩ := hwf
   obtain ⟨-, -, -, hsl⟩ := hall H C hD
   have hW8 : 8 * P.n + 32 ≤ W := by
-    have := C.m_lt; rw [hCQ, hQn] at this; have := C.one_le; unfold hostWords at hHW; omega
+    have := C.m_lt; rw [hCQ, hQn] at this; have := C.one_le; ufo hostWords at hHW
   -- the parameters
   have hcK : c.nmem NB = N.chords.length := hNF.1
   have hcm : c.nmem (D + 2) = C.m := hD.2.2.2.1
@@ -93,7 +96,7 @@ theorem prep_meets : Meets prepMainS prepBands
   have hKF := K_le_Fb N.chords.length
   have hroomF : A₀ + 50000000000 * F ≤ W := by
     have : κq * X ≤ W - A₀ := by omega
-    unfold κq at this; omega
+    ufo κq at this
   have hLF : Nat.clog 2 (N.arcs.length + N.chords.length + 1) ≤ F := clog_le_Fb (by omega)
   have hALF : N.arcs.length * (Nat.clog 2 (N.arcs.length + N.chords.length + 1) + 1) ≤ 5 * F := mul_clog_le_Fb hA5 (by omega)
   have hs500 : SortR.sortCost 500 N.chords.length ≤ 530 * (64 * F + 1) := sortCost_le (by omega)
@@ -111,8 +114,8 @@ theorem prep_meets : Meets prepMainS prepBands
       pairsB, hC1, hC2, hnd, hmem, hDl⟩ :=
     phB_exec (P := P) (c := cA) eA.wb_right hG hHW hCQ hsl hD ⟨hDA, hall⟩ hNFw hN agA PLA r205 pkA
       m0A mdcA (by omega) tbA (by rw [lA]; exact tabA) (by rw [lA]; exact Alt) rfl
-      (by rw [tbA, lA]; omega)
-      (by rw [regions_eq hsimp hN]; omega)
+      (by rwo [tbA, lA])
+      (by rwo [regions_eq hsimp hN])
   rw [lA] at hkB
   set AB := cB.nreg ALLOC with hAB
   have hAB9 : cB.nreg 9999 = AB := rfl
@@ -122,9 +125,9 @@ theorem prep_meets : Meets prepMainS prepBands
   have hBN : B.N = N.arcs.length + 3 := rfl
   have hBE : B.E = N.arcs.length + 3 + (starList (rgi N) N.arcs.length ++ Dl).length := by
     show N.arcs.length + 3 + (starList (rgi N) N.arcs.length).length + Dl.length = _
-    rw [List.length_append]; ring
+    rwring [List.length_append]
   have hstarA : (starList (rgi N) N.arcs.length).length ≤ N.arcs.length := starList_length _ _
-  have hBE8 : B.E ≤ 4 * N.arcs.length + 8 := by rw [hBE, List.length_append]; omega
+  have hBE8 : B.E ≤ 4 * N.arcs.length + 8 := by rwo [hBE, List.length_append]
   have hs20E : SortR.sortCost 20 (2 * B.E) ≤ 50 * (64 * F + 1) := sortCost_le (by omega)
   have hcl : clCost B.N B.E ≤ Cluster.clusterK * (64 * F + 1) :=
     clCost_le (by show N.arcs.length + 3 + B.E ≤ 64 * (N.chords.length + 1); omega)
@@ -172,7 +175,7 @@ theorem prep_meets : Meets prepMainS prepBands
   have ex : Exec P W prepMainS c cP _ := .seq eA (.seq eB (.seq eK (.seq eO (.seq eH eP))))
   -- register facts of the end configuration
   have kO12 : ∀ r, 120010 ≤ r → r ≤ 120049 → cO.nreg r = cA.nreg r := fun r a b => by
-    rw [FO.1 r (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]; omega) (by rw [hAL]; omega),
+    rw [FO.1 r (by sio [dBands, bSort, bDecomp, bOPrep, bandOf]) (by rwo [hAL]),
       k12K r a b, k12B r a b]
   have hP9 : cP.nreg ALLOC = O + 18 := by rw [hAL, RP _ (by decide) (by decide), h9H]
   have hP3 : cP.nreg 110003 = O := by rw [RP _ (by decide) (by decide), h3H]
@@ -205,10 +208,10 @@ theorem prep_meets : Meets prepMainS prepBands
       rw [hz] at hkB
       unfold κq at *
       omega
-    unfold κq; nlinarith
+    ufnl κq
   · -- the post-condition
-    refine ⟨by show A₀ ≤ cP.nreg 110003; rw [hP3]; omega,
-      (by show cP.nreg 110003 + 3 ≤ _; rw [hP3, hP9]; omega), ?_, ?_, ?_, fun m' hm' => ?_⟩
+    refine ⟨by show A₀ ≤ cP.nreg 110003; rwo [hP3],
+      (by show cP.nreg 110003 + 3 ≤ _; rwo [hP3, hP9]), ?_, ?_, ?_, fun m' hm' => ?_⟩
     · show cP.nmem (cP.nreg 110003) = c.nreg 110000
       rw [hP3, mPH, show O = O + 0 from rfl, hdrH 0 (by norm_num) (by norm_num)]
       show cO.nreg 120013 = _
@@ -231,13 +234,13 @@ theorem prep_meets : Meets prepMainS prepBands
         (POS := cA.nreg 120031) (FL := FL) (LAB := LAB) (DL := cO.nreg 60100)
         (nD := cO.nreg 60102) (ORD := cO.nreg 60007) (RK := cO.nreg 60110) (CH := CH) (MD := MD)
         (TB := cA.nreg 120041) (L := (Nat.clog 2 (N.arcs.length + N.chords.length + 1))) (Vc := qvOf cA) hG hCQ hD ⟨hDA, hall⟩ hNFw hcan mP0
-        ?_ rfl (by omega) ch2 tbA (by rw [posA]) (by rw [posA, tbA]; omega)
+        ?_ rfl (by omega) ch2 tbA (by rw [posA]) (by rwo [posA, tbA])
         (by omega) (by omega) hDLO hORDO hRKO
         (by rw [mPA _ (by omega)]; exact m0A)
         (fun i hi => by rw [mPA _ (by omega)]; exact mdcA i hi)
-        (fun j hj => by rw [mPA _ (by rw [a9A, tbA]; omega)]; exact tabA j hj)
+        (fun j hj => by rw [mPA _ (by rwo [a9A, tbA])]; exact tabA j hj)
         Alt Klt rfl
-        (fun j hj => by rw [mPA _ (by rw [a9A, posA, tbA]; omega)]; exact pfA j hj)
+        (fun j hj => by rw [mPA _ (by rwo [a9A, posA, tbA])]; exact pfA j hj)
         (fun q hq => by rw [mPA _ (by omega)]; exact chltA q hq)
         (fun q q' hq hq' e => by
           rw [mPA _ (by omega), mPA _ (by omega)] at e
@@ -249,18 +252,18 @@ theorem prep_meets : Meets prepMainS prepBands
           rw [mPA _ (by omega), mPA _ (by omega)]
           exact chsA q q' hqq hq')
         hgok rfl (hclF.mono mPK hFLb hLABb)
-        (hordF.mono mPO (by rw [hBN] at hFLb; omega) (by rw [hBN] at hLABb; omega) hDLO hORDO
+        (hordF.mono mPO (by rwo [hBN] at hFLb) (by rwo [hBN] at hLABb) hDLO hORDO
           hRKO)
       -- the header words
       intro i hi
       rw [mPH]
       by_cases h3 : i = 3
-      · subst h3; rw [hdr3]; rfl
+      · subst h3; rwr [hdr3]
       by_cases h17 : i = 17
       · subst h17
         rw [hdrH 17 hi h3]
         simp only [hdrRegs, hdrVals, List.getD_cons_zero, List.getD_cons_succ]
-        rw [KO _ (by unfold bandOf; norm_num) (by unfold OKeep; omega)]; exact v34K
+        rw [KO _ (by ufn bandOf) (by ufo OKeep)]; exact v34K
       · rw [hdrH i hi h3]
         interval_cases i <;> simp only [hdrRegs, hdrVals, List.getD_cons_zero,
           List.getD_cons_succ] <;>
@@ -292,8 +295,8 @@ theorem prep_meets : Meets prepMainS prepBands
     · rw [rmP, rmH, FO.2.2.2.1 a (by omega), GK.2.2.2.1 a (by omega),
         GB.2.2.2.1 a (by omega), FA.2.2.2.1 a ha]
     · rw [oP, oH, FO.2.2.2.2, GK.2.2.2.2, GB.2.2.2.2, FA.2.2.2.2]
-    · rw [hP9]; omega
-    · rw [hP9]; omega
+    · rwo [hP9]
+    · rwo [hP9]
 
 /-- **The oracle of Lemma 3.6.** -/
 noncomputable def lemma36Oracle : OracleIface where

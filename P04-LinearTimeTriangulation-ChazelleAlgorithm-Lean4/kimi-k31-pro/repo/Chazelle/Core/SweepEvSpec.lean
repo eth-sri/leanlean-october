@@ -83,7 +83,7 @@ theorem st0S_of_st0 {P : Polygon} {c₀ c : Config} {H : Host} {J : Merge.Juncti
     (h : St0 P c₀ c H J) (h7 : c₀.nreg (sw 7) = 0) : St0S P c H J := by
   obtain ⟨h90, h91, h92, h93, hlo, -, hJ, hwf, d20, w20, d21, w21, h23, h24, h40, h45, h33, h34,
     h35, d30, w30, d31, w31⟩ := h
-  simp only [h7, sideChain, ↓reduceIte, Nat.sub_zero, one_ne_zero, Nat.add_zero] at *
+  simp [h7, sideChain, ↓reduceIte, Nat.sub_zero, one_ne_zero, Nat.add_zero] at *
   refine ⟨h90, h91, h92, h93, hJ, hwf, d20, w20, d21, w21, ?_, ?_, fun k hk => ?_,
     fun k hk => ?_, h33, h34, h35, d30, w30, d31, w31⟩
   · rw [h23, hlo 3 (by omega)]

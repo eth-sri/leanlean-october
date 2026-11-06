@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ShootCutGeneral
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 33: the set-up and the whole core
@@ -11,10 +15,6 @@ public import Chazelle.Core.ShootCutGeneral
   number `O(log γ)`, in `O((K + 1) log γ)` steps (`K` the cost of `emit`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -36,7 +36,7 @@ theorem cHead1_exec (d : Config) (hw : WordsBounded W d) {MD Hh' cs cm : ℕ}
       d'.nmem = d.nmem := by
   unfold cHead1
   exec_block
-  all_goals first | (config_simp; rw [h00, h91]; omega) | skip
+  all_goals first | (config_simp; rwo [h00, h91]) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, fun x h1 h2 h3 h4 => ?_, rfl⟩
   · config_simp; rw [h00, h91, mA]
   · config_simp; rw [h00, h91, mB]
@@ -54,14 +54,14 @@ theorem cHead2_exec (d : Config) (hw : WordsBounded W d) {a cm T bit : ℕ}
         d'.nreg x = d.nreg x) ∧ d'.nmem = d.nmem := by
   unfold cHead2
   exec_block
-  all_goals first | (config_simp; rw [h75, h91]; omega) | (config_simp; rw [h23]; omega) |
-    (config_simp; rw [h23, h96]; omega) | skip
+  all_goals first | (config_simp; rwo [h75, h91]) | (config_simp; rwo [h23]) |
+    (config_simp; rwo [h23, h96]) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun x h1 h2 h3 h4 h5 h6 => ?_, rfl⟩
   · config_simp; rw [h75, h91, mD]
   · config_simp; rw [h75, h91, mE]
-  · config_simp; rw [h23]; ring
-  · config_simp; rw [h23, h96]; ring
-  · config_simp; rw [h23, h96, h91]; omega
+  · config_simp; rwring [h23]
+  · config_simp; rwring [h23, h96]
+  · config_simp; rwo [h23, h96, h91]
   · simp only [upd]; split_ifs <;> first | rfl | omega
 
 theorem cHead3_exec (d : Config) (hw : WordsBounded W d) {h : ℕ} {m₀ : ℕ → ℕ}
@@ -76,9 +76,9 @@ theorem cHead3_exec (d : Config) (hw : WordsBounded W d) {h : ℕ} {m₀ : ℕ �
         x ≠ 150076 → d'.nreg x = d.nreg x) ∧ d'.nmem = d.nmem := by
   unfold cHead3
   exec_block
-  all_goals first | exact hnW | (config_simp; rw [h13, h91]; omega) |
-    (config_simp; rw [h13, h91, mh1, h92]; omega) | (config_simp; rw [h13, h92]; omega) |
-    (config_simp; rw [h13, h93]; omega) | skip
+  all_goals first | exact hnW | (config_simp; rwo [h13, h91]) |
+    (config_simp; rwo [h13, h91, mh1, h92]) | (config_simp; rwo [h13, h92]) |
+    (config_simp; rwo [h13, h93]) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun x h1 h2 h3 h4 h5 h6 h7 => ?_, rfl⟩
   · config_simp
   · config_simp; rw [h13, mh]
@@ -115,9 +115,9 @@ theorem cPre_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e : 
   have a00 : d₁.nreg 150000 = MD := by rw [g₁ _ (by omega), h00]
   have a13 : d₁.nreg 150013 = h := by rw [g₁ _ (by omega), h13]
   have mA : d₁.nmem (MD + 1) = Hh := by rw [mm _ (by omega), hHh]
-  have mB : d₁.nmem (MD + 1 + 1) = C.s := by rw [mm _ (by omega)]; exact hs'
-  have mC : d₁.nmem (MD + 1 + 1 + 1) = C.m := by rw [mm _ (by omega)]; exact hm'
-  have mD : d₁.nmem (MD + 1 + 1 + 1 + 1) = C.topIdx := by rw [mm _ (by omega)]; exact hT'
+  have mB : d₁.nmem (MD + 1 + 1) = C.s := by rwx [mm _ (by omega)]
+  have mC : d₁.nmem (MD + 1 + 1 + 1) = C.m := by rwx [mm _ (by omega)]
+  have mD : d₁.nmem (MD + 1 + 1 + 1 + 1) = C.topIdx := by rwx [mm _ (by omega)]
   have mh : d₁.nmem h = m₀ h := mm _ (by omega)
   have mh1 : d₁.nmem (h + 1) = m₀ (h + 1) := mm _ (by omega)
   have mh2 : d₁.nmem (h + 2) = m₀ (h + 2) := mm _ (by omega)
@@ -180,10 +180,10 @@ theorem cPre_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e : 
         rw [b25, b91] at hb1
         cases hβ : C.sideBeta
         · rfl
-        · have := hb'.2 hβ; rw [show MD + 1 + 4 = MD + 1 + 4 from rfl] at hb1; omega
+        · have := hb'.2 hβ; rwo [show MD + 1 + 4 = MD + 1 + 4 from rfl] at hb1
       refine spec_ifLtN_true hb1 (spec_instr (Exec.subN w₄ _ _ _) fun _ => ⟨by omega, ?_,
         fun x hx => by simp [hx]⟩)
-      config_simp; rw [b29, b24, hβ]; simp
+      config_simp; rws [b29, b24, hβ]
     · by_cases hb2 : d₄.nreg 150091 < d₄.nreg 150025
       · have hβ : C.sideBeta = false := by
           rw [b25, b91] at hb2
@@ -192,30 +192,29 @@ theorem cPre_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e : 
           · have := hb'.2 hβ; omega
         refine spec_ifLtN_false hb1 (spec_ifLtN_true hb2 (spec_instr (Exec.subN w₄ _ _ _)
           fun _ => ⟨by omega, ?_, fun x hx => by simp [hx]⟩))
-        config_simp; rw [b29, b24, hβ]; simp
+        config_simp; rws [b29, b24, hβ]
       · have hβ : C.sideBeta = true := by
           rw [b25, b91] at hb1 hb2
           exact hb'.1 (by omega)
         refine spec_ifLtN_false hb1 (spec_ifLtN_false hb2 (spec_instr (Exec.copyN w₄ _ _)
           fun _ => ⟨by omega, ?_, fun x hx => by simp [hx]⟩))
-        config_simp; rw [b24, hβ]; simp
+        config_simp; rws [b24, hβ]
   have w₅ := e₅.wb_right
   -- the number of host points
   have e₆ := Exec.copyN (P := P) w₅ 50060 150021
   set d₆ := ({ d₅ with nreg := upd d₅.nreg 50060 (d₅.nreg 150021) } : Config) with hd₆
   have m₆ : d₆.nmem = d.nmem := by
-    show d₅.nmem = d.nmem
     rw [(exec_frameB e₅ (B := Bl [150028]) (by decide)).2.2.1, m₄, m₃, m₂, m₁]
   have hH₆ : HostAt d₆.nmem Hh H := by
     rw [m₆, ← hHh]; exact hostAt_agree' (hHh ▸ S.hH) (by rw [hHh]; exact S.hHA)
-      (fun a ha => hm a ha)
+      (hm)
   obtain ⟨d₇, k₇, e₇, hk₇, fr₇, o63, -⟩ := NFLoc.cnt_exec (P := P) (n := P.n) d₆ e₆.wb_right hH₆
     (by simp [hd₆, upd]; rw [r₅ _ (by omega), b21]) (by have := S.hHA; omega) (by omega)
   have e₈ := Exec.copyN (P := P) e₇.wb_right 150026 50063
   set d₈ := ({ d₇ with nreg := upd d₇.nreg 150026 (d₇.nreg 50063) } : Config) with hd₈
   have g₈ : ∀ x, 150000 ≤ x → x ≠ 150026 → d₈.nreg x = d₅.nreg x := fun x hx h26 => by
     simp only [hd₈, upd]
-    rw [ite_eq_right h26, fr₇.1 _ (by unfold Bhost; simp; omega)]
+    rw [ite_eq_right h26, fr₇.1 _ (by ufs Bhost; omega)]
     simp only [hd₆, upd]; rw [ite_eq_right (by omega)]
   have ex : Exec P W cPre d d₈ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (1 + (k₇ + 1))))))) := by
     unfold cPre cCount
@@ -280,10 +279,10 @@ theorem core_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   obtain ⟨d₂, k₂, e₂, hk₂, fr₂, i48, l48⟩ := decideS_exec S hD hMD hHh d₁ e₁.wb_right hm₁ R₁ hs he
     hs1 hin
   have hBd : ∀ r, 150000 ≤ r → r < 150044 → Bd r = false := fun r h1 h2 => by
-    unfold Bd; simp; omega
+    ufs Bd; omega
   have hBd' : ∀ r, 150090 ≤ r → r < 150100 → Bd r = false := fun r h1 h2 => by
-    unfold Bd; simp; omega
-  have R₂ : CoreRegs P C H Hh MD h γ mode s e m₀ d₂ := R₁.of_frame'
+    ufs Bd; omega
+  have R₂  := R₁.of_frame'
     (fun r h1 h2 _ _ => fr₂.1 r (hBd r h1 h2))
     (by rw [fr₂.1 _ (hBd' _ (by omega) (by omega))]; exact R₁.h90)
     (by rw [fr₂.1 _ (hBd' _ (by omega) (by omega))]; exact R₁.chain.h91)
@@ -292,7 +291,7 @@ theorem core_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     (by rw [fr₂.1 _ (hBd' _ (by omega) (by omega))]; exact R₁.chain.h96)
   have hm₂ : ∀ a, a < A₀ → d₂.nmem a = m₀ a := fun a ha => by rw [fr₂.2.2.1]; exact hm₁ a ha
   have hI₂ := hE.stable _ _ _ hI (fr₁.trans (FrameB.mono' fr₂ fun r hr => by
-    unfold Scr at hr; unfold Bd; simp at hr ⊢; omega))
+    unfold Scr at hr; unfold Bd; sio at hr ⊢))
   have w₂ := e₂.wb_right
   have hpre : ∀ {d' : Config} {k : ℕ}, Exec P W (.ifLtN 150090 150048 (.seq pcSE emit)
       (general emit)) d₂ d' k → Exec P W (core emit) d d' (k₁ + (k₂ + k)) := fun ex => by
@@ -301,23 +300,23 @@ theorem core_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   by_cases hsame : d₂.nreg 150090 < d₂.nreg 150048
   · -- the single piece `[s, e]`
     have hG : s.edge = e.edge ∧ (chainModel C).key (Qof P) s < (chainModel C).key (Qof P) e :=
-      i48.1 (by rw [R₂.h90] at hsame; omega)
+      i48.1 (by rwo [R₂.h90] at hsame)
     have hpv : PcOK P C m₀ h γ (pSE s e) := pSE_ok hs he hs1 he1
       (wt_same _ _ hs he hG.1 hG.2)
     obtain ⟨d₃, k₃, e₃, hk₃, hR₃, fr₃, -⟩ := pcSE_exec (P := P) d₂ w₂ (by omega) R₂.h01 R₂.h02
       R₂.h03 R₂.h04
     obtain ⟨d₄, k₄, e₄, hk₄, hI₄, -, mem₄⟩ := hE.run _ _ d₃ e₃.wb_right (hE.stable _ _ _ hI₂ fr₃) hR₃ hpv
     refine ⟨d₄, _, [pSE s e], hpre (.ifLtN_true hsame (.seq e₃ e₄)), ?_, hI₄,
-      arcOK_single hs he hs1 he1 rfl rfl, by simpa using hpv, by simp; omega,
+      arcOK_single hs he hs1 he1 rfl rfl, by simpa using hpv, by sio,
       fun a ha => by rw [mem₄ a ha, fr₃.2.2.1]; exact hm₂ a ha⟩
-    unfold coreCost genCost; omega
+    ufo coreCost genCost
   · have hns : ¬ (s.edge = e.edge ∧
         (chainModel C).key (Qof P) s < (chainModel C).key (Qof P) e) := fun hG => by
-      have := i48.2 hG; rw [R₂.h90] at hsame; omega
+      have := i48.2 hG; rwo [R₂.h90] at hsame
     obtain ⟨d₃, k₃, ps, e₃, hk₃, hI₃, arc, hok, hl, hm₃⟩ := general_exec S hE hD hMD hHh d₂ w₂
       R₂ hm₂ hI₂ hs he hs1 he1 hns hwt
     refine ⟨d₃, _, ps, hpre (.ifLtN_false hsame e₃), ?_, hI₃, arc, hok, hl, hm₃⟩
-    unfold coreCost; omega
+    ufo coreCost
 
 end
 

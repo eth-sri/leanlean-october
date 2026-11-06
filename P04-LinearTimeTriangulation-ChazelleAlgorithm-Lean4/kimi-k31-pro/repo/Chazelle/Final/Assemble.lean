@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Final.LinkSplit
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # Assembling the triangulations of the walked pieces
@@ -43,7 +45,7 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
   have hpiece : ∀ m' ∈ M', IsPiece P m' := fun m' hm' => hD.isPiece hP (hperm.mem_iff.1 hm')
   set g : List ℕ → List ℕ × List Polygon.Triangle := fun m' => acc.getD (M'.idxOf m') ([], [])
     with hg
-  have hlen : M'.length = acc.length := hrot.length_eq
+  have hlen  := hrot.length_eq
   have hMg : acc = M'.map g := by
     apply List.ext_getElem
     · rw [List.length_map, hlen]
@@ -75,12 +77,12 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
     set r := Classical.choose h
     have hw0 : WeakTriangulates (subPoly P (g m').1) (g m').2 := hT _ (hgmem m' hm')
     have hw : WeakTriangulates ((subPoly P m').rotate r) (g m').2 := by
-      rw [← subPoly_rotate, ← hr]; exact hw0
+      rwx [← subPoly_rotate, ← hr]
     have hw' := weakTriangulates_rotate _ r hw
     rw [n_subPoly] at hw'
     have e : T' m' = (g m').2.map (relabel r m'.length) := by
-      rw [hT']; simp only [dite_eq_left h]; rfl
-    refine ⟨by rw [e]; exact hw', ?_⟩
+      rw [hT']; sirfl only [dite_eq_left h]
+    refine ⟨by rwx [e], ?_⟩
     rw [e, List.map_map]
     apply List.map_congr_left
     intro t ht

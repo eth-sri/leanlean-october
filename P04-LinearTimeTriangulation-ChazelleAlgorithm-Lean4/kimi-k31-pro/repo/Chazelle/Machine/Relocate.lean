@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Machine.Basic
+public import Chazelle.Rwx
 
 /-!
 # Relocation and linking
@@ -107,14 +108,14 @@ theorem SubAt.cons_iff {ins : Instr} {p q : Program} {base : ℕ} :
   · intro h
     refine ⟨by simpa using h 0 ins rfl, fun i ins' hi => ?_⟩
     have := h (i + 1) ins' (by simpa using hi)
-    rw [show base + 1 + i = base + (i + 1) by omega]; exact this
+    rwx [show base + 1 + i = base + (i + 1) by omega]
   · rintro ⟨h0, h⟩ i ins' hi
     cases i with
     | zero => simp at hi; subst hi; simpa using h0
     | succ i =>
-      simp only [List.getElem?_cons_succ] at hi
+      simp [List.getElem?_cons_succ] at hi
       have := h i ins' hi
-      rw [show base + (i + 1) = base + 1 + i by omega]; exact this
+      rwx [show base + (i + 1) = base + 1 + i by omega]
 
 theorem SubAt.head {ins : Instr} {p q : Program} {base : ℕ} (h : SubAt (ins :: p) q base) :
     q[base]? = some ins :=
@@ -133,9 +134,9 @@ theorem SubAt.append_iff {p₁ p₂ q : Program} {base : ℕ} :
   constructor
   · intro h
     refine ⟨fun i ins hi => h i ins ?_, fun i ins hi => ?_⟩
-    · rw [List.getElem?_append_left (List.getElem?_eq_some_iff.mp hi).1]; exact hi
+    · rwx [List.getElem?_append_left (List.getElem?_eq_some_iff.mp hi).1]
     · have := h (p₁.length + i) ins (by
-        rw [List.getElem?_append_right (Nat.le_add_right _ _), Nat.add_sub_cancel_left]; exact hi)
+        rwx [List.getElem?_append_right (Nat.le_add_right _ _), Nat.add_sub_cancel_left])
       rwa [← Nat.add_assoc] at this
   · rintro ⟨h₁, h₂⟩ i ins hi
     by_cases hlt : i < p₁.length
@@ -160,12 +161,12 @@ theorem getElem?_append_length_add (p₁ p₂ : Program) (i : ℕ) :
 /-- The first half of a concatenation sits at address `0`. -/
 theorem SubAt.append_left (p₁ p₂ : Program) : SubAt p₁ (p₁ ++ p₂) 0 := by
   intro i ins hi
-  rw [Nat.zero_add, List.getElem?_append_left (List.getElem?_eq_some_iff.mp hi).1]; exact hi
+  rwx [Nat.zero_add, List.getElem?_append_left (List.getElem?_eq_some_iff.mp hi).1]
 
 /-- The second half of a concatenation sits at address `p₁.length`. -/
 theorem SubAt.append_right (p₁ p₂ : Program) : SubAt p₂ (p₁ ++ p₂) p₁.length := by
   intro i ins hi
-  rw [getElem?_append_length_add]; exact hi
+  rwx [getElem?_append_length_add]
 
 /-! ### Shifting the program counter -/
 

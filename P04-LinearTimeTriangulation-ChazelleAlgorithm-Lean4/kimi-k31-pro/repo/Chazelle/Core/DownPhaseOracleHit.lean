@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.DownPhaseOracleArc
 public import Chazelle.Core.ShootCutOrig
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-M (E7-B, part 4): hit points, origins and inner points
@@ -50,7 +55,7 @@ theorem BSym.lt {s : SymPt} (h : BSym Q s) : s.Lt Q.n := by
   | onEdge e h' => exact ⟨h.1, h.2.1⟩
 
 theorem iv_iv {q : ℕ} (hq : q < Q.n) : iv Q (iv Q q) = q := by
-  unfold iv; split_ifs <;> omega
+  unfold iv; splao
 
 /-- The edge of the interior walk carrying the edge `e` of `Q`. -/
 noncomputable def iEdge (Q : Polygon) (e : ℕ) : ℕ := by
@@ -58,7 +63,7 @@ noncomputable def iEdge (Q : Polygon) (e : ℕ) : ℕ := by
   exact if Mountain.LeftInside Q then e else if e + 1 < Q.n then Q.n - 2 - e else Q.n - 1
 
 theorem iEdge_lt (hn : 2 ≤ Q.n) {e : ℕ} (he : e < Q.n) : iEdge Q e < Q.n := by
-  unfold iEdge; split_ifs <;> omega
+  unfold iEdge; splao
 
 /-- The two ends of the interior walk edge `iEdge e` are the ends of the edge `e` of `Q`. -/
 theorem iEdge_ends (hn : 3 ≤ Q.n) {e : ℕ} (he : e < Q.n) :
@@ -98,11 +103,11 @@ theorem param_between {a b y : ℝ} (h : (a < y ∧ y < b) ∨ (b < y ∧ y < a)
   · have hb : 0 < b - a := by linarith
     constructor
     · exact div_pos (by linarith) hb
-    · rw [div_lt_one hb]; linarith
+    · rwli [div_lt_one hb]
   · have hb : b - a < 0 := by linarith
     constructor
     · exact div_pos_of_neg_of_neg (by linarith) hb
-    · rw [div_lt_one_of_neg hb]; linarith
+    · rwli [div_lt_one_of_neg hb]
 
 /-- **The interior position of a boundary symbolic point** is proper, on the walk, and evaluates
 to the point. -/
@@ -111,7 +116,7 @@ theorem iPos_spec (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {s : SymPt} (hs : BS
       (interiorModel Q).pos Q (iPos Q s) = s.eval Q := by
   cases s with
   | vtx q =>
-    have hq : q < Q.n := hs
+    have hq  := hs
     refine ⟨⟨le_rfl, zero_lt_one, Nat.zero_le _⟩, iv_lt hq, ?_⟩
     show lerp ((interiorModel Q).wa (iv Q q)) ((interiorModel Q).wb (iv Q q)) 0 = Q.vtx q
     rw [lerp_zero, mi_wa (iv_lt hq), iv_iv hq]
@@ -154,9 +159,9 @@ theorem iPos_spec (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {s : SymPt} (hs : BS
       have : e = (e + 2) % Q.n := by
         rw [Nat.mod_add_mod] at hc; exact hc
       rcases (show e + 2 < Q.n ∨ e + 2 = Q.n ∨ e + 2 = Q.n + 1 by omega) with h1 | h1 | h1
-      · rw [Nat.mod_eq_of_lt h1] at this; omega
-      · rw [h1, Nat.mod_self] at this; omega
-      · rw [h1, Nat.add_mod_left, Nat.mod_eq_of_lt (by omega)] at this; omega
+      · rwo [Nat.mod_eq_of_lt h1] at this
+      · rwo [h1, Nat.mod_self] at this
+      · rwo [h1, Nat.add_mod_left, Nat.mod_eq_of_lt (by omega)] at this
 
 /-! ## Hit points of a chain model -/
 
@@ -270,16 +275,16 @@ theorem hitSym_spec (hD : DistinctHeights C.P) {e h : ℕ}
       unfold Model.wa
       rw [he', cm_vtx_tour C (by omega) le_rfl]
       unfold cVtx
-      rw [show 2 * C.m + 6 - 6 = 2 * C.m by omega, C.sideIdx_two_m]; rfl
+      rwr [show 2 * C.m + 6 - 6 = 2 * C.m by omega, C.sideIdx_two_m]
     have hwb : (chainModel C).wb e = C.slitTop := by
-      unfold Model.wb; rw [hn, he', show 2 * C.m + 6 + 1 = 2 * C.m + 7 by ring, Nat.mod_self]; rfl
+      urr Model.wb [hn, he', show 2 * C.m + 6 + 1 = 2 * C.m + 7 by ring, Nat.mod_self]
     have htop := C.snd_le_top_of_mem_set hmem
     unfold Model.pos at htop ⊢
     rw [hwa, hwb] at htop ⊢
     simp only [Chain.slitTop, Chazelle.Geometry.lerp_snd] at htop
     have hTR := C.top_snd_lt_radius
     have ht : (chainModel C).param C.P ⟨e, h⟩ = 0 := by nlinarith
-    rw [ht, lerp_zero]; rfl
+    rwr [ht, lerp_zero]
   simp only [hbox, hslit, or_self, ↓reduceIte]
   -- a walk edge of the double boundary
   have hwa : (chainModel C).wa e = C.P.vtx (cVtx C e) := cm_vtx_tour C (by omega) (by omega)
@@ -294,8 +299,8 @@ theorem hitSym_spec (hD : DistinctHeights C.P) {e h : ℕ}
   have hcons : HostEdgeOK C.P.n (.vtx (cVtx C e)) (.vtx (cVtx C (e + 1))) := by
     simp only [HostEdgeOK, cVtx, e7]
     rcases hstep with h1 | h1
-    · left; rw [h1, ← Nat.add_assoc, Nat.add_mod]; simp
-    · right; rw [← h1, ← Nat.add_assoc, Nat.add_mod (C.s + _)]; simp
+    · left; rws [h1, ← Nat.add_assoc, Nat.add_mod]
+    · right; rws [← h1, ← Nat.add_assoc, Nat.add_mod (C.s + _)]
   have hne : cVtx C e ≠ cVtx C (e + 1) := by
     unfold cVtx
     rw [e7]
@@ -325,7 +330,7 @@ theorem hitSym_spec (hD : DistinctHeights C.P) {e h : ℕ}
     obtain ⟨h0, hne'⟩ := hv
     obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
     simp only [Nat.add_sub_cancel] at hne' ⊢
-    have hh' : h' < C.P.n := by have := hp.2.2; simp only at this; omega
+    have hh' : h' < C.P.n := by have := hp.2.2; sio only at this
     have hpos := ShootCut.pos_eq_onEdge (chainModel C) hD (by omega) (p := e) (h := h')
       (sp₁ := .vtx (cVtx C e)) (sp₂ := .vtx (cVtx C (e + 1))) hwa hwb (cVtx_lt C e)
       (cVtx_lt C (e + 1)) hcons hnh
@@ -373,7 +378,7 @@ theorem hitSym_spec (hD : DistinctHeights C.P) {e h : ℕ}
     simp only [ShootCut.edgeOf]
     split_ifs with hcase
     · refine ⟨cVtx_lt C e, hh', ?_⟩
-      rw [← hcase]; exact hbt
+      rwx [← hcase]
     · refine ⟨cVtx_lt C (e + 1), hh', ?_⟩
       have hc2 : cVtx C e = (cVtx C (e + 1) + 1) % C.P.n := by
         simp only [HostEdgeOK] at hcons
@@ -396,10 +401,10 @@ theorem innerPt_chain (C : Chain) {z : Point} (h1 : |z.1| ≤ Jordan.coordBound 
   have v3 : (chainModel C).W.vtx 3 = (C.radius, -C.radius) := rfl
   rw [abs_le] at h1 h2
   refine ⟨⟨2, 1, by omega, by omega, ?_, ?_⟩, ⟨1, 3, by omega, by omega, ?_, ?_⟩⟩
-  · rw [v2]; simp only; linarith
-  · rw [v1]; simp only; linarith
-  · rw [v1]; simp only; linarith
-  · rw [v3]; simp only; linarith
+  · rw [v2]; sil only
+  · rw [v1]; sil only
+  · rw [v1]; sil only
+  · rw [v3]; sil only
 
 /-- **Inner points of the interior model lie within the coordinate bound of `Q`.** -/
 theorem innerPt_interior_bound {z : Point} (h : (interiorModel Q).InnerPt z) :

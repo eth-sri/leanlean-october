@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.Lemma41Leaf
 public import Chazelle.Core.GradeCtx
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-J, part 25: Lemma 4.1 on the RAM
@@ -70,7 +71,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 theorem baseB_exec {c : Config} (hw : WordsBounded W c) :
     ∃ c' k, Exec P W baseB c c' k ∧ k = 1 ∧ WordsBounded W c' ∧
       c'.nreg 160066 = c.nreg 160015 ∧ (∀ r, r ≠ 160066 → c'.nreg r = c.nreg r) ∧
@@ -81,7 +81,6 @@ theorem baseB_exec {c : Config} (hw : WordsBounded W c) :
   simp only
   repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 4000000 in
 theorem epiB_exec {c : Config} (hw : WordsBounded W c) {B : ℕ} (h66 : c.nreg 160066 = B)
     (h24 : c.nreg 160024 = 1) (hW : B + 1 ≤ W) :
     ∃ c' k, Exec P W epiB c c' k ∧ k = 2 ∧ WordsBounded W c' ∧

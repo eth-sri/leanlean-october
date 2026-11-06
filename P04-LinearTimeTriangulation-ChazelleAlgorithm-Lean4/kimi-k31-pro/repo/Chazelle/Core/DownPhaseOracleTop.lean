@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseOracleTopM
 public import Chazelle.Core.DownPhaseOracleRamC
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # WP-M (E7-B, RAM part 4): the top of a chain by the grade table (O5)
@@ -15,9 +19,6 @@ kept by one sign test per block (`cmpUpd`).  Invariant (`TopI`): every vertex of
 `[hi, y]` is at most as high as the running maximum.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -96,7 +97,7 @@ theorem wr_kbit_top (a b d op dst : ℕ) (h1 : 170046 ≤ dst) (h2 : dst < 17007
     simp only [SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq] at hr
     unfold Btop; rcases hr with hr | hr
     · simp [hr]
-    · subst hr; simp; omega)
+    · subst hr; sio)
 
 theorem wr_cmpUpd : wr Btop cmpUpd = true := by
   simp only [cmpUpd, wr, block, wrOK, wr_kbit_top _ _ _ _ 170066 (by norm_num) (by norm_num),
@@ -125,7 +126,7 @@ theorem parL_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   have hlow := ShootCut.grade_low hS.grade
   have hhalf := (hS.grade.holds).2.2.1 (c.nreg 170050) hq
   have hm : c.nmem (s.m₀ (s.h + 3) + c.nreg 170050) = c.nreg 170050 / 2 := by
-    rw [hS.mem _ (hlow.2.2 _ hq)]; exact hhalf
+    rwx [hS.mem _ (hlow.2.2 _ hq)]
   have hW := hS.hW
   unfold hostWords at hW
   unfold parL
@@ -133,7 +134,7 @@ theorem parL_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   · config_simp; rw [hS.r17]; have := hlow.2.2 _ hq; have := hS.alloc; have := hw.1 ALLOC
     omega
   refine ⟨rfl, ?_, fun r h1 h2 h3 => ?_, rfl⟩
-  · config_simp; rw [hS.r17, hm]; omega
+  · config_simp; rwo [hS.r17, hm]
   · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
 
 /-- **The parity of `q_r`.** -/
@@ -144,13 +145,13 @@ theorem parR_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   have hlow := ShootCut.grade_low hS.grade
   have hhalf := (hS.grade.holds).2.2.1 (c.nreg 170051) hq
   have hm : c.nmem (s.m₀ (s.h + 3) + c.nreg 170051) = c.nreg 170051 / 2 := by
-    rw [hS.mem _ (hlow.2.2 _ hq)]; exact hhalf
+    rwx [hS.mem _ (hlow.2.2 _ hq)]
   unfold parR
   exec_block
   · config_simp; rw [hS.r17]; have := hlow.2.2 _ hq; have := hS.alloc; have := hw.1 ALLOC
     omega
   refine ⟨rfl, ?_, fun r h1 h2 h3 => ?_, rfl⟩
-  · config_simp; rw [hS.r17, hm]; omega
+  · config_simp; rwo [hS.r17, hm]
   · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
 
 /-- The top index read from the descriptor of the block `(g, b)`. -/
@@ -173,14 +174,14 @@ theorem candL_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   unfold candL
   by_cases hg : c.nreg 170052 < c.nreg 170011
   · refine spec_ifLtN_true hg ?_
-    have hg0 : c.nreg 170052 = 0 := by rw [hS.r11] at hg; omega
+    have hg0 : c.nreg 170052 = 0 := by rwo [hS.r11] at hg
     exec_block
-    · config_simp; rw [hS.r11]; rw [hg0] at hlo; simp at hlo; omega
+    · config_simp; rw [hS.r11]; rw [hg0] at hlo; sio at hlo
     refine ⟨by omega, ?_, fun r h1 h2 h3 => ?_, rfl⟩
     · config_simp; rw [ite_eq_left hg0, hS.r11]
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
   · refine spec_ifLtN_false hg ?_
-    have hg1 : 1 ≤ c.nreg 170052 := by rw [hS.r11] at hg; omega
+    have hg1 : 1 ≤ c.nreg 170052 := by rwo [hS.r11] at hg
     obtain ⟨hgΛ, hb⟩ := hblk hg1
     obtain ⟨a2, ar, ae, ad, hTb, -⟩ := block_top hS.grade hgΛ hb
     have m1 : c.nmem (s.m₀ (s.h + 2) + c.nreg 170052) = s.m₀ (s.m₀ (s.h + 2) + c.nreg 170052) :=
@@ -198,11 +199,11 @@ theorem candL_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     have hTb' : blkT s.m₀ s.h (c.nreg 170052) (c.nreg 170050) ≤ 2 ^ c.nreg 170052 := hTb
     exec_block
     all_goals first | omega | skip
-    all_goals first | (config_simp; rw [hS.r16]; omega) | skip
-    all_goals first | (config_simp; rw [hS.r16, m1]; omega) | skip
-    all_goals first | (config_simp; rw [hS.r16, m1]; omega) | skip
-    all_goals first | (config_simp; rw [hS.r16, m1, m2']; omega) | skip
-    all_goals first | (config_simp; rw [hS.r16, m1, m2', m3]; omega) | skip
+    all_goals first | (config_simp; rwo [hS.r16]) | skip
+    all_goals first | (config_simp; rwo [hS.r16, m1]) | skip
+    all_goals first | (config_simp; rwo [hS.r16, m1]) | skip
+    all_goals first | (config_simp; rwo [hS.r16, m1, m2']) | skip
+    all_goals first | (config_simp; rwo [hS.r16, m1, m2', m3]) | skip
     refine ⟨by omega, ?_, fun r h1 h2 h3 => ?_, rfl⟩
     · config_simp; rw [ite_eq_right (by omega), hS.r16, m1, m2', m3]
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
@@ -224,13 +225,13 @@ theorem candR_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   unfold candR
   by_cases hg : c.nreg 170052 < c.nreg 170011
   · refine spec_ifLtN_true hg ?_
-    have hg0 : c.nreg 170052 = 0 := by rw [hS.r11] at hg; omega
+    have hg0 : c.nreg 170052 = 0 := by rwo [hS.r11] at hg
     exec_block
     refine ⟨by omega, ?_, fun r h1 h2 h3 => ?_, rfl⟩
     · config_simp; rw [ite_eq_left hg0]
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
   · refine spec_ifLtN_false hg ?_
-    have hg1 : 1 ≤ c.nreg 170052 := by rw [hS.r11] at hg; omega
+    have hg1 : 1 ≤ c.nreg 170052 := by rwo [hS.r11] at hg
     obtain ⟨hgΛ, hb⟩ := hblk hg1
     obtain ⟨a2, ar, ae, ad, hTb, -⟩ := block_top hS.grade hgΛ hb
     have m1 : c.nmem (s.m₀ (s.h + 2) + c.nreg 170052) = s.m₀ (s.m₀ (s.h + 2) + c.nreg 170052) :=
@@ -248,11 +249,11 @@ theorem candR_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     have hTb' : blkT s.m₀ s.h (c.nreg 170052) (c.nreg 170051) ≤ 2 ^ c.nreg 170052 := hTb
     exec_block
     all_goals first | omega | skip
-    all_goals first | (config_simp; rw [hS.r16]; omega) | skip
-    all_goals first | (config_simp; rw [hS.r16, m1]; omega) | skip
-    all_goals first | (config_simp; rw [hS.r16, m1]; omega) | skip
-    all_goals first | (config_simp; rw [hS.r16, m1, m2']; omega) | skip
-    all_goals first | (config_simp; rw [hS.r16, m1, m2', m3]; omega) | skip
+    all_goals first | (config_simp; rwo [hS.r16]) | skip
+    all_goals first | (config_simp; rwo [hS.r16, m1]) | skip
+    all_goals first | (config_simp; rwo [hS.r16, m1]) | skip
+    all_goals first | (config_simp; rwo [hS.r16, m1, m2']) | skip
+    all_goals first | (config_simp; rwo [hS.r16, m1, m2', m3]) | skip
     refine ⟨by omega, ?_, fun r h1 h2 h3 => ?_, rfl⟩
     · config_simp; rw [ite_eq_right (by omega), hS.r16, m1, m2', m3]
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
@@ -360,7 +361,7 @@ theorem TopI.keep {x y : ℕ} {G : ℕ → Prop} {c c' : Config} (hI : TopI P W 
 
 theorem pow_le_of_cap {g Λ d : ℕ} (hg : 1 ≤ g) (h1 : 2 ^ g ≤ d) (h2 : d ≤ 2 ^ (Λ - 1)) :
     g < Λ := by
-  have h3 : 2 ^ g ≤ 2 ^ (Λ - 1) := h1.trans h2
+  have h3  := h1.trans h2
   have h4 : g ≤ Λ - 1 := (Nat.pow_le_pow_iff_right (by norm_num)).1 h3
   have h5 : 2 ≤ 2 ^ g := by
     calc 2 = 2 ^ 1 := by norm_num
@@ -368,7 +369,7 @@ theorem pow_le_of_cap {g Λ d : ℕ} (hg : 1 ≤ g) (h1 : 2 ^ g ≤ d) (h2 : d �
   have : 1 ≤ Λ - 1 := by
     by_contra h
     have : Λ - 1 = 0 := by omega
-    rw [this] at h3; simp at h3; omega
+    rw [this] at h3; sio at h3
   omega
 
 theorem Y_max_le {P : Polygon} {a b : ℕ} :
@@ -405,17 +406,17 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     rw [hlo, hpw]; exact Nat.le_mul_of_pos_right _ (by positivity)
   have hblk : 1 ≤ c.nreg 170052 → c.nreg 170052 < s.m₀ s.h ∧
       (c.nreg 170050 + 1) * 2 ^ c.nreg 170052 ≤ P.n - 1 := fun hg1 =>
-    ⟨pow_le_of_cap hg1 (d := y - x) (by rw [← hpw]; omega) hI.cap, by omega⟩
+    ⟨pow_le_of_cap hg1 (d := y - x) (by rwo [← hpw]) hI.cap, by omega⟩
   unfold stepL
   by_cases hodd : c.nreg 170012 < c.nreg 170058
   · refine spec_ifLtN_true hodd ?_
-    have h1 : c.nreg 170050 % 2 = 1 := by rw [hS.r12, hpar] at hodd; omega
+    have h1 : c.nreg 170050 % 2 = 1 := by rwo [hS.r12, hpar] at hodd
     -- the candidate
-    obtain ⟨c₁, k₁, e₁, hk₁, v59, r₁, m₁⟩ := candL_exec c hw hS hblk (by rw [← hpw]; omega)
+    obtain ⟨c₁, k₁, e₁, hk₁, v59, r₁, m₁⟩ := candL_exec c hw hS hblk (by rwo [← hpw])
     have hcand : c₁.nreg 170059 < P.n ∧ x ≤ c₁.nreg 170059 ∧ c₁.nreg 170059 ≤ y := by
       rw [v59]
       split_ifs with hg0
-      · have : c.nreg 170053 = 1 := by rw [hpw, hg0]; rfl
+      · have : c.nreg 170053 = 1 := by rwr [hpw, hg0]
         omega
       · obtain ⟨hgΛ, hb⟩ := hblk (by omega)
         have hT := (block_top hS.grade hgΛ hb).2.2.2.2.1
@@ -427,10 +428,10 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
       intro v hv1 hv2
       rw [v59]
       split_ifs with hg0
-      · have : c.nreg 170053 = 1 := by rw [hpw, hg0]; rfl
+      · have : c.nreg 170053 = 1 := by rwr [hpw, hg0]
         rw [show v = c.nreg 170054 + 1 by omega]
       · obtain ⟨hgΛ, hb⟩ := hblk (by omega)
-        have hT := (block_top hS.grade hgΛ hb).2.2.2.2.2 (v - c.nreg 170054) (by rw [← hpw]; omega)
+        have hT := (block_top hS.grade hgΛ hb).2.2.2.2.2 (v - c.nreg 170054) (by rwo [← hpw])
         have e1 : c.nreg 170050 * 2 ^ c.nreg 170052 = c.nreg 170054 := by rw [hlo, hpw]
         rw [e1, show c.nreg 170054 + (v - c.nreg 170054) = v by omega] at hT
         exact hT
@@ -455,7 +456,7 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     have hW := hS.hW
     unfold hostWords at hW
     exec_block
-    · config_simp; rw [k2' _ (by norm_num) (by norm_num), S₂.r11]; omega
+    · config_simp; rwo [k2' _ (by norm_num) (by norm_num), S₂.r11]
     · config_simp; rw [k2' _ (by norm_num) (by norm_num), k2' _ (by norm_num) (by norm_num)]
       omega
     refine ⟨by omega, ⟨S₂.keep (fun r h1 h2 => by
@@ -471,7 +472,7 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     all_goals try rw [k2' 170054 (by norm_num) (by norm_num)]
     all_goals try rw [k2' 170055 (by norm_num) (by norm_num)]
     · exact hpw
-    · rw [hlo]; ring
+    · rwring [hlo]
     · exact hhi
     · omega
     · omega
@@ -492,7 +493,7 @@ theorem stepL_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     · simp only [upd]; rw [ite_eq_right (by omega), ite_eq_right (by omega)]; exact k2 r h1 h2
     · rw [v46] at hmx; exact hmx.1
   · refine spec_ifLtN_false hodd ?_
-    have h0 : c.nreg 170050 % 2 = 0 := by rw [hS.r12, hpar] at hodd; omega
+    have h0 : c.nreg 170050 % 2 = 0 := by rwo [hS.r12, hpar] at hodd
     refine spec_skip hw ⟨by omega, hI, by omega, rfl, rfl, fun r _ _ => rfl, le_rfl, rfl⟩
 
 /-- The configuration after the decrement of `q_r` and `hi`. -/
@@ -520,7 +521,7 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
   unfold stepR
   by_cases hodd : c.nreg 170012 < c.nreg 170058
   · refine spec_ifLtN_true hodd ?_
-    have h1 : c.nreg 170051 % 2 = 1 := by rw [hS.r12, hpar] at hodd; omega
+    have h1 : c.nreg 170051 % 2 = 1 := by rwo [hS.r12, hpar] at hodd
     have hlt' := hlt h1
     have hprod : c.nreg 170051 * c.nreg 170053 = (c.nreg 170051 - 1) * c.nreg 170053 +
         c.nreg 170053 := by
@@ -547,16 +548,16 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
     have hblk : 1 ≤ c₀.nreg 170052 → c₀.nreg 170052 < s.m₀ s.h ∧
         (c₀.nreg 170051 + 1) * 2 ^ c₀.nreg 170052 ≤ P.n - 1 := fun hg1 => by
       rw [k0 _ (by decide) (by decide)] at hg1 ⊢
-      refine ⟨pow_le_of_cap hg1 (d := y - x) (by rw [← hpw]; omega) hI.cap, ?_⟩
-      rw [c51, show c.nreg 170051 - 1 + 1 = c.nreg 170051 by omega, ← hpw, ← hhi]; omega
+      refine ⟨pow_le_of_cap hg1 (d := y - x) (by rwo [← hpw]) hI.cap, ?_⟩
+      rwo [c51, show c.nreg 170051 - 1 + 1 = c.nreg 170051 by omega, ← hpw, ← hhi]
     obtain ⟨c₁, k₁, e₁, hk₁, v59, r₁, m₁⟩ := candR_exec c₀ w₀ S₀ hblk (by
-      rw [c55, k0 _ (by decide) (by decide), ← hpw]; omega)
+      rwo [c55, k0 _ (by decide) (by decide), ← hpw])
     rw [c55, k0 170052 (by decide) (by decide), c51] at v59
     have hcand : c₁.nreg 170059 < P.n ∧ x ≤ c₁.nreg 170059 ∧ c₁.nreg 170059 ≤ y := by
       rw [v59]
       split_ifs with hg0
       · omega
-      · obtain ⟨hgΛ, hb⟩ := hblk (by rw [k0 _ (by decide) (by decide)]; omega)
+      · obtain ⟨hgΛ, hb⟩ := hblk (by rwo [k0 _ (by decide) (by decide)])
         rw [k0 170052 (by decide) (by decide)] at hgΛ hb; rw [c51] at hb
         have hT := (block_top hS.grade hgΛ hb).2.2.2.2.1
         have : blkT s.m₀ s.h (c.nreg 170052) (c.nreg 170051 - 1) ≤ 2 ^ c.nreg 170052 := hT
@@ -566,14 +567,14 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
       intro v hv1 hv2
       rw [v59]
       split_ifs with hg0
-      · have : c.nreg 170053 = 1 := by rw [hpw, hg0]; rfl
+      · have : c.nreg 170053 = 1 := by rwr [hpw, hg0]
         rw [show v = c.nreg 170055 - c.nreg 170053 by omega]
-      · obtain ⟨hgΛ, hb⟩ := hblk (by rw [k0 _ (by decide) (by decide)]; omega)
+      · obtain ⟨hgΛ, hb⟩ := hblk (by rwo [k0 _ (by decide) (by decide)])
         rw [k0 170052 (by decide) (by decide)] at hgΛ hb; rw [c51] at hb
         have hT := (block_top hS.grade hgΛ hb).2.2.2.2.2 (v - (c.nreg 170055 - c.nreg 170053))
-          (by rw [← hpw]; omega)
+          (by rwo [← hpw])
         have e1 : (c.nreg 170051 - 1) * 2 ^ c.nreg 170052 = c.nreg 170055 - c.nreg 170053 := by
-          rw [← hpw, hhi]; omega
+          rwo [← hpw, hhi]
         rw [e1, show c.nreg 170055 - c.nreg 170053 + (v - (c.nreg 170055 - c.nreg 170053)) = v by
           omega] at hT
         exact hT
@@ -627,7 +628,7 @@ theorem stepR_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
         k0 r (by omega) (by omega)]
     · exact hmx.1
   · refine spec_ifLtN_false hodd ?_
-    have h0 : c.nreg 170051 % 2 = 0 := by rw [hS.r12, hpar] at hodd; omega
+    have h0 : c.nreg 170051 % 2 = 0 := by rwo [hS.r12, hpar] at hodd
     refine spec_skip hw ⟨by omega, hI, by omega, rfl, rfl, fun r _ _ => rfl, le_rfl, rfl⟩
 
 /-- **The next grade**: halve `q_l`, `q_r` (both even), double `2^g`. -/
@@ -666,9 +667,9 @@ theorem halve_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
   unfold halve
   exec_block
   all_goals first
-    | (config_simp; rw [hS.r17]; omega)
-    | (config_simp; rw [hS.r17, h50]; omega)
-    | (config_simp; rw [hS.r11]; omega)
+    | (config_simp; rwo [hS.r17])
+    | (config_simp; rwo [hS.r17, h50])
+    | (config_simp; rwo [hS.r11])
     | (config_simp; omega)
     | skip
   refine ⟨rfl, ⟨hS.keep (fun r h1 h2 => by
@@ -680,13 +681,13 @@ theorem halve_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBounde
   all_goals try rw [h50]
   all_goals try rw [h51]
   all_goals try rw [hS.r11]
-  · rw [hpw, pow_succ]; ring
+  · rwring [hpw, pow_succ]
   · rw [hlo]
     obtain ⟨q, hq⟩ : ∃ q, c.nreg 170050 = 2 * q := ⟨c.nreg 170050 / 2, by omega⟩
-    rw [hq, Nat.mul_div_cancel_left _ (by norm_num)]; ring
+    rwring [hq, Nat.mul_div_cancel_left _ (by norm_num)]
   · rw [hhi]
     obtain ⟨q, hq⟩ : ∃ q, c.nreg 170051 = 2 * q := ⟨c.nreg 170051 / 2, by omega⟩
-    rw [hq, Nat.mul_div_cancel_left _ (by norm_num)]; ring
+    rwring [hq, Nat.mul_div_cancel_left _ (by norm_num)]
   · exact hxlo
   · omega
   · exact hhiy
@@ -721,7 +722,7 @@ theorem topBody_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBoun
   have e50 : c₁.nreg 170050 = c.nreg 170050 := r₁ _ (by decide) (by decide) (by decide)
   have e51 : c₁.nreg 170051 = c.nreg 170051 := r₁ _ (by decide) (by decide) (by decide)
   obtain ⟨c₂, k₂, e₂, hk₂, I₂, q50, q51, q52, r₂, y₂, m₂⟩ := stepL_exec c₁ e₁.wb_right I₁
-    (by rw [p₁, e50]) (by rw [e50, e51]; exact hlt)
+    (by rw [p₁, e50]) (by rwx [e50, e51])
   -- `q_r`
   obtain ⟨c₃, k₃, e₃, hk₃, p₃, r₃, m₃⟩ := parR_exec c₂ e₂.wb_right I₂.env
     (by have := I₂.hiy; have := I₂.yn; have := I₂.hi; have := I₂.pw
@@ -735,13 +736,13 @@ theorem topBody_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBoun
   obtain ⟨c₄, k₄, e₄, hk₄, I₄, s51, s50, s52, r₄, y₄, m₄⟩ := stepR_exec c₃ e₃.wb_right I₃
     (by rw [p₃, f51]) (by
       intro h1
-      have hq : c₂.nreg 170050 ≤ c₂.nreg 170051 := I₂.qq
+      have hq  := I₂.qq
       simp only [f50, f51, q50, q51, e50, e51] at hq h1 ⊢
       omega)
   have hpn4 : c₄.nreg 170053 ≤ P.n := by
     have g3 : c₃.nreg 170052 = c.nreg 170052 := by
       rw [r₃ _ (by decide) (by decide) (by decide), q52, r₁ _ (by decide) (by decide) (by decide)]
-    rw [I₄.pw, s52, g3, ← hpw]; exact hpn
+    rwx [I₄.pw, s52, g3, ← hpw]
   obtain ⟨c₅, k₅, e₅, hk₅, I₅, t50, t51, r₅, y₅, m₅⟩ := halve_exec c₄ e₄.wb_right I₄
     (by rw [s50, f50, q50, e50]; exact (fun a : ℕ => by omega : ∀ a : ℕ, (a + a % 2) % 2 = 0) _)
     (by rw [s51, f51, q51, e51]; exact (fun a : ℕ => by omega : ∀ a : ℕ, (a - a % 2) % 2 = 0) _)
@@ -750,7 +751,7 @@ theorem topBody_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBoun
   rw [r₃ _ (by decide) (by decide) (by decide)] at y₄
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega, I₅, ?_, fun r h1 h2 => ?_,
     by rw [y₅]; exact y₂.trans y₄, by rw [m₅, m₄, m₃, m₂, m₁]⟩
-  · rw [t50, t51, s50, s51, f50, f51, q50, q51, e50, e51]; omega
+  · rwo [t50, t51, s50, s51, f50, f51, q50, q51, e50, e51]
   · rw [r₅ r h1, r₄ r h1 h2, r₃ r (by omega) (by omega) (by omega), r₂ r h1 h2,
       r₁ r (by omega) (by omega) (by omega)]
 
@@ -795,8 +796,8 @@ theorem topLoop_exec {x y : ℕ} {G : ℕ → Prop} (c : Config) (hw : WordsBoun
     all_goals try (first | exact hvG | exact hvn | omega | simp; done)
     · intro v hv
       rcases hv with ⟨h1, h2⟩ | ⟨h1, h2⟩
-      · rw [show v = x by omega]; exact hvx
-      · rw [show v = y by omega]; exact hvy
+      · rwx [show v = x by omega]
+      · rwx [show v = y by omega]
     · simp only [upd]; split_ifs <;> first | omega | rfl
   let I : Config → Prop := fun c' => TopI P W O s x y G c' ∧ WordsBounded W c' ∧
     (∀ r, (r < 170046 ∨ 170070 ≤ r) → (r < 10000 ∨ 10500 ≤ r) → c'.nreg r = c.nreg r) ∧

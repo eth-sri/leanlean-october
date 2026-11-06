@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepEvStopLab
+public import Chazelle.Rwx
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), stage 2: the side labels of an anchored stop chord (part 2, ties)
@@ -41,11 +43,11 @@ theorem slb_sub_same_way (_hP : J.P.Simple) {S₂ : Set (Set Point)}
     rw [hwe.1] at this; exact this
   obtain ⟨hwy, hwa, hwb⟩ := hwc
   obtain ⟨hwy₁, hwa₁, hwb₁⟩ := hwe
-  have hyy : y₁ = y := hwy₁.symm.trans hwy
+  have hyy  := hwy₁.symm.trans hwy
   subst hyy
   rcases hdir with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · have ea : a = w.1 := le_antisymm hwa (h2 (a, y₁) ⟨rfl, le_rfl, hH.lt.le⟩)
-    have ea₁ : a₁ = w.1 := le_antisymm hwa₁ (h1 (a₁, y₁) ⟨rfl, le_rfl, hH₁.lt.le⟩)
+    have ea₁  := le_antisymm hwa₁ (h1 (a₁, y₁) ⟨rfl, le_rfl, hH₁.lt.le⟩)
     have hbb : b₁ ≤ b := by
       by_contra hlt
       push Not at hlt
@@ -54,7 +56,7 @@ theorem slb_sub_same_way (_hP : J.P.Simple) {S₂ : Set (Set Point)}
     rintro z ⟨hzy, hza, hzb⟩
     exact ⟨hzy, by linarith, by linarith⟩
   · have eb : b = w.1 := le_antisymm (h2 (b, y₁) ⟨rfl, hH.lt.le, le_rfl⟩) hwb
-    have eb₁ : b₁ = w.1 := le_antisymm (h1 (b₁, y₁) ⟨rfl, hH₁.lt.le, le_rfl⟩) hwb₁
+    have eb₁  := le_antisymm (h1 (b₁, y₁) ⟨rfl, hH₁.lt.le, le_rfl⟩) hwb₁
     have haa : a ≤ a₁ := by
       by_contra hlt
       push Not at hlt
@@ -78,8 +80,8 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hw : sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 =
       sidePt (chainModel J.right).W (cpA J d) 0 := hC.sidePt_eq hd 0
   set w := sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 with hwd
-  have hwe : w ∈ e := hA.2.2.2.1
-  have hwe' : w ∈ e' := hA'.2.2.2.1
+  have hwe  := hA.2.2.2.1
+  have hwe'  := hA'.2.2.2.1
   have hwc' : w ∈ c' := by rw [hw]; exact hcA.2.2.2.1
   have hwc'' : w ∈ c'' := by rw [hw]; exact hA''.2.2.2.1
   have dE := hM.attach_dir (hC.hF he) hA
@@ -107,25 +109,25 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       rcases dC' with h' | h'
       · exact (dir_not_both hM (hC.hF he') hA' (fun z hz => h' z (he'c' hz)) h).elim
       · exact h'
-  have hcA' : SideAttach (chainModel J.right).W c' (cpA J d) 0 := hcA
+  have hcA'  := hcA
   rcases hopp with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · -- `e` east, `e'` and `c'` west
     have hc'w := hc'way.2 h2
     rcases dC'' with h3 | h3
     · exact absurd (slb_sub_same_way hP hS₂.2.1 he hc'' hwe hwc'' (Or.inl ⟨h1, h3⟩))
         (hnf c'' hc'')
-    · exact hM₂.attach_west_unique hS₂.2.1 hc'' hc' hA'' hcA (by rw [← hw]; exact h3)
-        (by rw [← hw]; exact hc'w)
+    · exact hM₂.attach_west_unique hS₂.2.1 hc'' hc' hA'' hcA (by rwx [← hw])
+        (by rwx [← hw])
   · have hc'e := hc'way.1 h2
     rcases dC'' with h3 | h3
-    · exact hM₂.attach_east_unique hS₂.2.1 hc'' hc' hA'' hcA (by rw [← hw]; exact h3)
-        (by rw [← hw]; exact hc'e)
+    · exact hM₂.attach_east_unique hS₂.2.1 hc'' hc' hA'' hcA (by rwx [← hw])
+        (by rwx [← hw])
     · exact absurd (slb_sub_same_way hP hS₂.2.1 he hc'' hwe hwc'' (Or.inr ⟨h1, h3⟩))
         (hnf c'' hc'')
 
 theorem slb_cpB_eq {d : ℕ} (hd0 : d ≠ 0) (hdr : d ≠ rL1 J) : cpB J d = cpA J d := by
   have h : dq (rL1 J) (rδ J) (d - 1) + 1 = dq (rL1 J) (rδ J) d := by
-    unfold dq; split_ifs <;> omega
+    unfold dq; splao
   unfold cpA cpB; rw [h]
 
 /-- **The middle region of a tie with a fused partner** (away from the base and the split

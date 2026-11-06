@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.SweepIoGather
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep RAM (WP-D), answers: the candidate accumulator
@@ -105,9 +111,9 @@ theorem take_irs {A e h t : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z : Point} 
   obtain ⟨v0, v1, v2, v3, v4, v5, v6, v7, vo⟩ := takeL_val c.nmem c.nreg hout.1 hout.2.1 hout.2.2
   unfold AccOK
   simp only
-  refine ⟨⟨by rw [v0], fun h0 => by rw [v0] at h0; omega, fun _ => ⟨τ, Set.mem_insert _ _,
-    fun τ' hτ' => ?_, by rw [v3]; exact htag, by rw [v1, v2, v3]; exact hpp,
-    by rw [v1, v3]; exact he, by rw [v1, v2, v3]; exact hpos, ?_⟩⟩, vo, trivial⟩
+  refine ⟨⟨by rw [v0], fun h0 => by rwo [v0] at h0, fun _ => ⟨τ, Set.mem_insert _ _,
+    fun τ' hτ' => ?_, by rwx [v3], by rwx [v1, v2, v3],
+    by rwx [v1, v3], by rwx [v1, v2, v3], ?_⟩⟩, vo, trivial⟩
   · rcases hτ' with rfl | hτ'
     · exact le_rfl
     · exact hmin τ' hτ'
@@ -130,8 +136,6 @@ theorem absRec_val {r : ℕ} {x x' R : ℝ} (h : AbsRec P c r x R) (h' : AbsRec 
 theorem dirOf_eq_one {d : ℕ} (h : d = 1) : dirOf d = 1 := by simp [dirOf, h]
 theorem dirOf_eq_neg {d : ℕ} (h : d ≠ 1) : dirOf d = -1 := by simp [dirOf, h]
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **An offer**: the accumulator keeps the earliest candidate. -/
 theorem offer_irs {A dsc e h t dR : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z : Point} {L : Set ℝ}
     {τ : ℝ} (hI : IInv W c₀ c) (hK : Consts c₀) (hG : GoodEnv P) (hW3 : P.n + 3 ≤ W)
@@ -159,8 +163,8 @@ theorem offer_irs {A dsc e h t dR : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z :
   -- the record of the candidate
   refine IRS.mono (K := 16707 + (17000 - 16707)) (IRS.seq (callAbs_irs (dsc := dsc) (re := e) (rh := h)
     (o := A + 8) hI hctx ⟨hregs.1, hregs.2.1, hregs.2.2.1, hregs.2.2.2.1, hregs.2.2.2.2.1,
-      hregs.2.2.2.2.2.1⟩ ⟨by omega, by omega⟩ he hpp (by rw [hpos, hR]; exact hy)
-      (by unfold offerK at hroom; omega)) ?_) (by unfold offerK; omega) (fun _ h => h)
+      hregs.2.2.2.2.2.1⟩ ⟨by omega, by omega⟩ he hpp (by rwx [hpos, hR])
+      (by ufo offerK at hroom)) ?_) (by ufo offerK) (fun _ => id)
   rintro c₁ hI₁ hA₁ hA₁' ⟨hrec₁, k1, hal₁, hm₁⟩
   rw [hpos, hR] at hrec₁
   have k1' : ∀ r, bandOf r ∉ oracleBands → (r < A + 8 ∨ A + 11 < r) → r ≠ ALLOC →
@@ -169,7 +173,7 @@ theorem offer_irs {A dsc e h t dR : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z :
     not_oracle_sw h1 h2
   have keep : ∀ r, 240000 ≤ r → r < 250000 → (r < A + 8 ∨ A + 11 < r) →
       c₁.nreg r = c.nreg r := fun r h1 h2 h3 =>
-    k1' r (nob r h1 h2) h3 (by unfold ALLOC; omega)
+    k1' r (nob r h1 h2) h3 (by ufo ALLOC)
   have e1 := keep e hregs.2.2.1 hregs.2.2.2.1 (by omega)
   have h1 := keep h hregs.2.2.2.2.1 hregs.2.2.2.2.2.1 (by omega)
   have t1 := keep t hregs.2.2.2.2.2.2.1 hregs.2.2.2.2.2.2.2.1 (by omega)
@@ -177,8 +181,8 @@ theorem offer_irs {A dsc e h t dR : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z :
   have a1 : ∀ j, j ≤ 7 → c₁.nreg (A + j) = c.nreg (A + j) := fun j hj =>
     keep _ (by omega) (by omega) (by omega)
   have a0 : c₁.nreg A = c.nreg A := by simpa using a1 0 (by norm_num)
-  have k1₁ : c₁.nreg K1 = 1 := (hK.fix hI₁).2.1
-  have k0₁ : c₁.nreg K0 = 0 := (hK.fix hI₁).1
+  have k1₁  := (hK.fix hI₁).2.1
+  have k0₁  := (hK.fix hI₁).1
   -- the final frame of a take
   have fin_take : ∀ c' : Config, (∀ r, (r < A ∨ A + 7 < r) → c'.nreg r = c₁.nreg r) →
       (∀ r, bandOf r ∉ oracleBands → (r < A ∨ A + 12 < r) → r ≠ ALLOC →
@@ -186,14 +190,14 @@ theorem offer_irs {A dsc e h t dR : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z :
     rw [hk r (by omega)]; exact k1' r hr1 (by omega) hr3
   by_cases hf : c₁.nreg A < c₁.nreg K1
   · -- the accumulator is empty: take
-    have hf0 : c.nreg A = 0 := by rw [k1₁, a0] at hf; omega
-    have hL : L = ∅ := hacc.2.1 hf0
+    have hf0 : c.nreg A = 0 := by rwo [k1₁, a0] at hf
+    have hL  := hacc.2.1 hf0
     refine (IRS.ifT hf (take_irs (L := L) (τ := τ) (Mod := Mod) hI₁ hW1 hA ⟨hout.2.1, hout.2.2.1, hout.2.2.2.1⟩
-      (by rw [hL]; simp) (by rw [t1]; exact htag) (by rw [t1, e1]; exact he)
-      (by rw [t1, e1, h1]; exact hpp) (by rw [t1, e1, h1, hpos]) hrec₁)).mono (by omega) ?_
+      (by rws [hL]) (by rwx [t1]) (by rwx [t1, e1])
+      (by rwx [t1, e1, h1]) (by rw [t1, e1, h1, hpos]) hrec₁)).mono (by omega) ?_
     rintro c' ⟨hacc', hk, hm⟩
-    have hAc : c'.nreg ALLOC = c₁.nreg ALLOC := hk _ (by unfold ALLOC; omega)
-    refine ⟨hacc', fin_take c' hk, by rw [hAc]; exact hal₁, fun a ha => by rw [hm]; exact hm₁ a ha⟩
+    have hAc : c'.nreg ALLOC = c₁.nreg ALLOC := hk _ (by ufo ALLOC)
+    refine ⟨hacc', fin_take c' hk, by rwx [hAc], fun a ha => by rw [hm]; exact hm₁ a ha⟩
   · -- compare with the kept candidate
     have hf1 : c.nreg A = 1 := by
       rw [k1₁, a0] at hf; have := hacc.1; omega
@@ -224,20 +228,20 @@ theorem offer_irs {A dsc e h t dR : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z :
         by rcases hab with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> omega,
         by rcases hab with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> omega,
         by rcases hab with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> omega⟩ ⟨by omega, by omega⟩ hxa hxb
-        (by unfold offerK at hroom; omega)) ?_
+        (by ufo offerK at hroom)) ?_
       rintro c₂ hI₂ hA₂ hA₂' ⟨hbit, k2, hal₂, hm₂⟩
       have hb' := (hiff _ _ hxa hxb)
-      have k2' : ∀ r, bandOf r ∉ oracleBands → r ≠ A + 12 → r ≠ ALLOC → c₂.nreg r = c₁.nreg r := k2
+      have k2'  := k2
       have keep2 : ∀ r, 240000 ≤ r → r < 250000 → r ≠ A + 12 → c₂.nreg r = c₁.nreg r :=
-        fun r h1 h2 h3 => k2' r (nob r h1 h2) h3 (by unfold ALLOC; omega)
-      have k0₂ : c₂.nreg K0 = 0 := (hK.fix hI₂).1
+        fun r h1 h2 h3 => k2' r (nob r h1 h2) h3 (by ufo ALLOC)
+      have k0₂  := (hK.fix hI₂).1
       by_cases hc : c₂.nreg K0 < c₂.nreg (A + 12)
       · -- take
         rw [k0₂] at hc
         have hlt : τ < τa := hb'.1 (hbit.2.1 (by have := hbit.1; omega))
-        refine (IRS.ifT (by rw [k0₂]; exact hc) (take_irs (L := L) (τ := τ) (Mod := Mod) hI₂ hW1 hA
+        refine (IRS.ifT (by rwx [k0₂]) (take_irs (L := L) (τ := τ) (Mod := Mod) hI₂ hW1 hA
           ⟨hout.2.1, hout.2.2.1, hout.2.2.2.1⟩ (fun τ' hτ' => (hlt.trans_le (hmin τ' hτ')).le)
-          (by rw [keep2 t (by omega) (by omega) (by omega), t1]; exact htag)
+          (by rwx [keep2 t (by omega) (by omega) (by omega), t1])
           (by rw [keep2 t (by omega) (by omega) (by omega), keep2 e (by omega) (by omega) (by omega),
             t1, e1]; exact he)
           (by rw [keep2 t (by omega) (by omega) (by omega), keep2 e (by omega) (by omega) (by omega),
@@ -252,18 +256,18 @@ theorem offer_irs {A dsc e h t dR : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z :
         rintro c' ⟨hacc', hk, hm⟩
         refine ⟨hacc', fun r hr1 hr2 hr3 => ?_, ?_, fun a ha => ?_⟩
         · rw [hk r (by omega), k2' r hr1 (by omega) hr3]; exact k1' r hr1 (by omega) hr3
-        · rw [hk ALLOC (by unfold ALLOC; omega)]; exact hal₁.trans hal₂
+        · rw [hk ALLOC (by ufo ALLOC)]; exact hal₁.trans hal₂
         · rw [hm, hm₂ a (by omega)]; exact hm₁ a ha
       · -- keep
         rw [k0₂] at hc
         have hge : ¬ τ < τa := fun h' => by
           have := (hbit.2.2 (hb'.2 h')); omega
-        refine (IRS.ifF (by rw [k0₂]; exact hc) (IRS.skip (K := 8) hI₂ ?_)).mono (by omega)
-          (fun _ h => h)
+        refine (IRS.ifF (by rwx [k0₂]) (IRS.skip (K := 8) hI₂ ?_)).mono (by omega)
+          (fun _ => id)
         refine ⟨⟨?_, fun h0 => ?_, fun _ => ⟨τa, Set.mem_insert_of_mem _ hτa, fun τ' hτ' => ?_, ?_⟩⟩,
           fun r hr1 hr2 hr3 => ?_, hal₁.trans hal₂, fun a ha => by rw [hm₂ a (by omega)]; exact hm₁ a ha⟩
         · rw [keep2 A (by omega) (by omega) (by omega), a0]; exact hacc.1
-        · rw [keep2 A (by omega) (by omega) (by omega), a0, hf1] at h0; omega
+        · rwo [keep2 A (by omega) (by omega) (by omega), a0, hf1] at h0
         · rcases hτ' with rfl | hτ'
           · exact not_lt.1 hge
           · exact hmin τ' hτ'
@@ -296,15 +300,15 @@ theorem offer_irs {A dsc e h t dR : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z :
       have e₁ := absRec_val h₁ hrec₁
       have e₂ := absRec_val h₂ hrecA₁
       rw [e₁, e₂, Chazelle.Visibility.rayPt_fst, Chazelle.Visibility.rayPt_fst, hs]; constructor <;> intro h <;> linarith
-    refine (IRS.ifF hf ?_).mono (K := 269 + 10 + 4 + 2) (by omega) (fun _ h => h)
+    refine (IRS.ifF hf ?_).mono (K := 269 + 10 + 4 + 2) (by omega) (fun _ => id)
     by_cases hd0 : c₁.nreg dR < c₁.nreg K1
-    · have hs : σ = -1 := by rw [hσ]; apply dirOf_eq_neg; rw [k1₁, d1] at hd0; omega
-      exact (IRS.ifT hd0 (cmp _ _ (Or.inl ⟨rfl, rfl⟩) (hfneg hs))).mono (by omega) (fun _ h => h)
-    · refine (IRS.ifF hd0 ?_).mono (K := 269 + 10 + 4) (by omega) (fun _ h => h)
+    · have hs : σ = -1 := by rw [hσ]; apply dirOf_eq_neg; rwo [k1₁, d1] at hd0
+      exact (IRS.ifT hd0 (cmp _ _ (Or.inl ⟨rfl, rfl⟩) (hfneg hs))).mono (by omega) (fun _ => id)
+    · refine (IRS.ifF hd0 ?_).mono (K := 269 + 10 + 4) (by omega) (fun _ => id)
       by_cases hd1 : c₁.nreg K1 < c₁.nreg dR
-      · have hs : σ = -1 := by rw [hσ]; apply dirOf_eq_neg; rw [k1₁, d1] at hd1; omega
+      · have hs : σ = -1 := by rw [hσ]; apply dirOf_eq_neg; rwo [k1₁, d1] at hd1
         exact IRS.ifT hd1 (cmp _ _ (Or.inl ⟨rfl, rfl⟩) (hfneg hs))
-      · have hs : σ = 1 := by rw [hσ]; apply dirOf_eq_one; rw [k1₁, d1] at hd0 hd1; omega
+      · have hs : σ = 1 := by rw [hσ]; apply dirOf_eq_one; rwo [k1₁, d1] at hd0 hd1
         exact IRS.ifF hd1 (cmp _ _ (Or.inr ⟨rfl, rfl⟩) (hfpos hs))
 
 /-! ## Filtered offers -/
@@ -369,8 +373,6 @@ theorem slit_above (C : Chain) (Q : Polygon) {n : ℕ} {x : WPos}
     have : 0 < t * (C.radius - C.top.2) := mul_pos ht (by linarith)
     linarith
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **A filtered offer.** -/
 theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z : Point}
     {L : Set ℝ} {τ : ℝ} (hI : IInv W c₀ c) (hK : Consts c₀) (hG : GoodEnv P) (hW3 : P.n + 3 ≤ W)
@@ -408,12 +410,12 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
       hregs.2.2.2.2.2.1⟩
     ⟨hregs.2.2.2.2.2.2.2.2.2.2.2.2.1, hregs.2.2.2.2.2.2.2.2.2.2.2.2.2, hdist.2.1, hdist.2.2.1,
       hdist.2.2.2.1, hdist.2.2.2.2.1, hdist.1⟩ he hpp
-    (fun _ _ _ _ => by rw [hpos, hR]; exact hy) (by unfold offerFK at hroom; omega))
-    ⟨by omega, by omega⟩) ?_ |>.mono (by unfold offerFK; omega) (fun _ h => h)
+    (fun _ _ _ _ => by rwx [hpos, hR]) (by ufo offerFK at hroom))
+    ⟨by omega, by omega⟩) ?_ |>.mono (by ufo offerFK) (fun _ => id)
   rintro c₁ hI₁ hA₁ hA₁' ⟨⟨n1e, n1h, k1, -, -⟩, hal1, hm1⟩
   have keep1 : ∀ r, 240000 ≤ r → r < 250000 → r ≠ h → r ≠ o → r ≠ o + 1 →
       c₁.nreg r = c.nreg r := fun r a1 a2 a3 a4 a5 => k1 r (nob r a1 a2) a3 a4 a5
-        (by unfold ALLOC; omega)
+        (by ufo ALLOC)
   have t1 := keep1 t hregs.2.2.2.2.2.2.1 hregs.2.2.2.2.2.2.2.1 (Ne.symm hdist.2.2.2.2.2.2.2.2.1)
     (Ne.symm hdist.2.2.2.2.2.1) (Ne.symm hdist.2.2.2.2.2.2.2.2.2.2.2.2.2.1)
   have d1 := keep1 dR hregs.2.2.2.2.2.2.2.2.1 hregs.2.2.2.2.2.2.2.2.2.1
@@ -436,15 +438,15 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
     rw [hn'] at hue; simp only at hue ⊢; rw [hue]
   have hpp1 : ProperPos (chainModel C) (Qof P) P.n ⟨c₁.nreg e, c₁.nreg h⟩ := by rw [hu1]; exact hNP.1
   have hpos1 : (chainModel C).pos (Qof P) ⟨c₁.nreg e, c₁.nreg h⟩ = rayPt z σ τ := by
-    rw [hu1, hup]; exact hpos
-  have he1 : c₁.nreg e < (chainModel C).W.n := by rw [n1e]; exact he
+    rwx [hu1, hup]
+  have he1 : c₁.nreg e < (chainModel C).W.n := by rwx [n1e]
   have hcase1 : c₁.nreg h = 0 ∨ 0 < (chainModel C).param (Qof P) ⟨c₁.nreg e, c₁.nreg h⟩ := by
     rw [hu1, n1h]; unfold nhgt; exact hcase
   have hacc1 : AccOK P A Mod R₀ z σ L c₁ := by
     obtain ⟨f1, f2, f3⟩ := hacc
     have a0 : c₁.nreg A = c.nreg A := by simpa using a1 0 (by norm_num)
-    refine ⟨by rw [a0]; exact f1, fun h0 => f2 (by rw [← a0]; exact h0), fun h1 => ?_⟩
-    obtain ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, hrecA⟩ := f3 (by rw [← a0]; exact h1)
+    refine ⟨by rwx [a0], fun h0 => f2 (by rwx [← a0]), fun h1 => ?_⟩
+    obtain ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, hrecA⟩ := f3 (by rwx [← a0])
     rw [a1 1 (by norm_num), a1 2 (by norm_num), a1 3 (by norm_num)]
     exact ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, absRec_transport hrecA (a1 4 (by norm_num))
       (by rw [show A + 4 + 1 = A + 5 by omega]; exact a1 5 (by norm_num))
@@ -470,8 +472,8 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
       obtain ⟨f1, f2, f3⟩ := hacc1
       have a0 : c₂.nreg A = c₁.nreg A := by simpa using a2 0 (by norm_num)
       rw [d2]
-      refine ⟨by rw [a0]; exact f1, fun h0 => f2 (by rw [← a0]; exact h0), fun h1 => ?_⟩
-      obtain ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, hrecA⟩ := f3 (by rw [← a0]; exact h1)
+      refine ⟨by rwx [a0], fun h0 => f2 (by rwx [← a0]), fun h1 => ?_⟩
+      obtain ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, hrecA⟩ := f3 (by rwx [← a0])
       rw [a2 1 (by norm_num), a2 2 (by norm_num), a2 3 (by norm_num)]
       exact ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, absRec_transport hrecA (a2 4 (by norm_num))
         (by rw [show A + 4 + 1 = A + 5 by omega]; exact a2 5 (by norm_num))
@@ -481,9 +483,9 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
       ⟨hregs.1, hregs.2.1, by omega, hregs.2.2.2.1, by omega, hregs.2.2.2.2.2.1,
         hregs.2.2.2.2.2.2.1, hregs.2.2.2.2.2.2.2.1, hregs.2.2.2.2.2.2.2.2.1,
         hregs.2.2.2.2.2.2.2.2.2.1⟩
-      ⟨hout.1, hout.2.1, hout.2.2.1, hout.2.2.2.1, hout.2.2.2.2.1⟩ hacc2 (by rw [t2]; exact htag)
-      (by rw [t2]; exact hctx2) (by rw [t2]; exact hR) (by rw [t2, e2]; exact he1)
-      (by rw [t2, e2, h2]; exact hpp1) (by rw [t2, e2, h2, d2]; exact hpos1) hy hroom2).mono
+      ⟨hout.1, hout.2.1, hout.2.2.1, hout.2.2.2.1, hout.2.2.2.2.1⟩ hacc2 (by rwx [t2])
+      (by rwx [t2]) (by rwx [t2]) (by rwx [t2, e2])
+      (by rwx [t2, e2, h2]) (by rwx [t2, e2, h2, d2]) hy hroom2).mono
       le_rfl ?_
     rintro c' ⟨hacc', hk, hal, hmm⟩
     rw [d2] at hacc'
@@ -509,8 +511,8 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
     refine IRS.skip hI₂ ⟨⟨L, ?_, Or.inl rfl, fun h' => absurd h' (not_le.2 habove)⟩, hk, hal, hmm⟩
     obtain ⟨f1, f2, f3⟩ := hacc1
     have a0 : c₂.nreg A = c₁.nreg A := by simpa using a2 0 (by norm_num)
-    refine ⟨by rw [a0]; exact f1, fun h0 => f2 (by rw [← a0]; exact h0), fun h1 => ?_⟩
-    obtain ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, hrecA⟩ := f3 (by rw [← a0]; exact h1)
+    refine ⟨by rwx [a0], fun h0 => f2 (by rwx [← a0]), fun h1 => ?_⟩
+    obtain ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, hrecA⟩ := f3 (by rwx [← a0])
     rw [a2 1 (by norm_num), a2 2 (by norm_num), a2 3 (by norm_num)]
     exact ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, absRec_transport hrecA (a2 4 (by norm_num))
       (by rw [show A + 4 + 1 = A + 5 by omega]; exact a2 5 (by norm_num))
@@ -535,22 +537,22 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
   by_cases hlt5 : c₁.nreg e < c₁.nreg K5
   · -- a box edge below `5`
     rw [k5] at hlt5
-    refine (IRS.ifT (by rw [k5]; exact hlt5) ((doOffer c₁ hI₁ rfl rfl t1 d1 rfl rfl (fun _ _ => rfl)
-      hctx1 (by rw [hal1]; unfold offerFK at hroom; omega) ?_).mono le_rfl ?_)).mono
-      (by omega) (fun _ h => h)
+    refine (IRS.ifT (by rwx [k5]) ((doOffer c₁ hI₁ rfl rfl t1 d1 rfl rfl (fun _ _ => rfl)
+      hctx1 (by ruo [hal1] offerFK at hroom) ?_).mono le_rfl ?_)).mono
+      (by omega) (fun _ => id)
     · rw [← hpos1]
       exact walk_pos_good C (Qof P) he1 hpp1 (by show c₁.nreg e ≠ 5; omega)
         (fun h' => by change c₁.nreg e = 2 * C.m + 6 at h'; omega)
     · rintro c' ⟨hL', hk', ha', hm'⟩
       exact ⟨hL', fin c₁ c' fr1 hal1.ge hm1' hk' ha' hm'⟩
-  · refine IRS.ifF hlt5 ?_ |>.mono (K := offerK + 18) (by omega) (fun _ h => h)
+  · refine IRS.ifF hlt5 ?_ |>.mono (K := offerK + 18) (by omega) (fun _ => id)
     rw [k5] at hlt5
     by_cases hgt5 : c₁.nreg K5 < c₁.nreg e
     · rw [k5] at hgt5
-      refine IRS.ifT (by rw [k5]; exact hgt5) ?_ |>.mono (K := offerK + 16) (by omega) (fun _ h => h)
-      have hok : c₁.nreg e + c₁.nreg K1 ≤ W := by rw [k1₁]; omega
+      refine IRS.ifT (by rwx [k5]) ?_ |>.mono (K := offerK + 16) (by omega) (fun _ => id)
+      have hok : c₁.nreg e + c₁.nreg K1 ≤ W := by rwo [k1₁]
       refine IRS.seq (IRS.reg hI₁ (iscr_sw hregs.2.2.2.2.2.2.2.2.2.2.2.2.1 (by omega))
-        (Exec.addN hI₁.hw o e K1 hok)) ?_ |>.mono (K := 1 + (offerK + 8)) (by omega) (fun _ h => h)
+        (Exec.addN hI₁.hw o e K1 hok)) ?_ |>.mono (K := 1 + (offerK + 8)) (by omega) (fun _ => id)
       rintro c₂ hI₂ hA₂ hA₂' rfl
       have u : ∀ r, r ≠ o → (upd c₁.nreg o (c₁.nreg e + c₁.nreg K1)) r = c₁.nreg r := fun r hr =>
         upd_other _ _ _ hr
@@ -559,7 +561,7 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
       have t2 := (u t (Ne.symm hdist.2.2.2.2.2.1)).trans t1
       have d2 := (u dR (Ne.symm hdist.2.2.2.2.2.2.1)).trans d1
       have n2 := (u nR (Ne.symm hdist.2.2.2.2.2.2.2.1)).trans nR1
-      have al2 := u ALLOC (by unfold ALLOC; omega)
+      have al2 := u ALLOC (by ufo ALLOC)
       have a2 : ∀ j, j ≤ 12 → (upd c₁.nreg o (c₁.nreg e + c₁.nreg K1)) (A + j) = c₁.nreg (A + j) :=
         fun j hj => u _ (by rcases hout.2.2.2.2.2 with h' | h' <;> omega)
       have hctx2 : ChainCtx P W { c₁ with nreg := upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) } dsc C :=
@@ -571,7 +573,7 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
           { c₁ with nreg := upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) } offerK _ := fun hg =>
         doOffer _ hI₂ e2 h2 t2 d2 rfl al2 a2 hctx2 (by
           show upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) ALLOC + offerK ≤ W
-          rw [al2, hal1]; unfold offerFK at hroom; omega) hg
+          ruo [al2, hal1] offerFK at hroom) hg
       have alg : c.nreg ALLOC ≤ ({ c₁ with nreg := upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) } :
           Config).nreg ALLOC := by
         show c.nreg ALLOC ≤ upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) ALLOC
@@ -587,31 +589,31 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
           alg hm1' h' a' m'
       by_cases hb1 : upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) o < upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) nR
       · rw [upd_same, n2, hn, k1₁] at hb1
-        refine IRS.ifT (by simp only; rw [upd_same, n2, hn, k1₁]; exact hb1)
-          ((off2 ?_).mono le_rfl ?_) |>.mono (by omega) (fun _ h => h)
+        refine IRS.ifT (by simp only; rwx [upd_same, n2, hn, k1₁])
+          ((off2 ?_).mono le_rfl ?_) |>.mono (by omega) (fun _ => id)
         · rw [← hpos1]
           exact walk_pos_good C (Qof P) he1 hpp1 (by show c₁.nreg e ≠ 5; omega)
             (fun h' => by change c₁.nreg e = 2 * C.m + 6 at h'; omega)
         · rintro c' ⟨hL', hk', ha', hm'⟩
           exact ⟨hL', finish c' hk' ha' hm'⟩
       · refine IRS.ifF (by simp only; exact hb1) ?_ |>.mono
-          (K := offerK + 6) (by omega) (fun _ h => h)
+          (K := offerK + 6) (by omega) (fun _ => id)
         rw [upd_same, n2, hn, k1₁] at hb1
         by_cases hb2 : upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) nR < upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) o
         · rw [upd_same, n2, hn, k1₁] at hb2
-          refine IRS.ifT (by simp only; rw [upd_same, n2, hn, k1₁]; exact hb2)
-            ((off2 ?_).mono le_rfl ?_) |>.mono (by omega) (fun _ h => h)
+          refine IRS.ifT (by simp only; rwx [upd_same, n2, hn, k1₁])
+            ((off2 ?_).mono le_rfl ?_) |>.mono (by omega) (fun _ => id)
           · rw [← hpos1]
             exact walk_pos_good C (Qof P) he1 hpp1 (by show c₁.nreg e ≠ 5; omega)
               (fun h' => by change c₁.nreg e = 2 * C.m + 6 at h'; omega)
           · rintro c' ⟨hL', hk', ha', hm'⟩
             exact ⟨hL', finish c' hk' ha' hm'⟩
         · refine IRS.ifF (by simp only; exact hb2) ?_ |>.mono
-            (K := offerK + 4) (by omega) (fun _ h => h)
+            (K := offerK + 4) (by omega) (fun _ => id)
           rw [upd_same, n2, hn, k1₁] at hb2
-          have hlast : c₁.nreg e = 2 * C.m + 6 := by rw [hm]; omega
+          have hlast : c₁.nreg e = 2 * C.m + 6 := by rwo [hm]
           have k0₂ : upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) K0 = 0 := by
-            rw [u K0 (by unfold K0 sw; omega)]; exact (hK.fix hI₁).1
+            rw [u K0 (by ufo K0 sw)]; exact (hK.fix hI₁).1
           by_cases hb3 : upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) K0 < upd c₁.nreg o (c₁.nreg e + c₁.nreg K1) h
           · -- drop: above the top
             rw [k0₂, h2] at hb3
@@ -619,7 +621,7 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
               hcase1.resolve_left (by omega)
             have habove := slit_above C (Qof P) hpp1 (Or.inr ⟨hlast, hpar⟩)
             rw [hpos1, hz2] at habove
-            refine IRS.ifT (by simp only; rw [k0₂, h2]; exact hb3)
+            refine IRS.ifT (by simp only; rwx [k0₂, h2])
               (drop _ hI₂ alg hm1' fr2 a2 habove offerK)
           · refine IRS.ifF (by simp only; exact hb3)
               ((off2 ?_).mono (by omega) ?_)
@@ -627,7 +629,7 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
               rw [← hpos1]
               exact walk_pos_good C (Qof P) he1 hpp1 (by show c₁.nreg e ≠ 5; omega) (fun _ => by
                 show (chainModel C).param (Qof P) ⟨c₁.nreg e, c₁.nreg h⟩ = 0
-                rw [show c₁.nreg h = 0 by omega]; rfl)
+                rwr [show c₁.nreg h = 0 by omega])
             · rintro c' ⟨hL', hk', ha', hm'⟩
               exact ⟨hL', finish c' hk' ha' hm'⟩
     · -- the slit edge `5`: drop
@@ -635,7 +637,7 @@ theorem offerF_irs {A dsc e h t dR nR o : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ
       have h5 : c₁.nreg e = 5 := by omega
       have habove := slit_above C (Qof P) hpp1 (Or.inl h5)
       rw [hpos1, hz2] at habove
-      exact IRS.ifF (by rw [k5]; omega) (drop c₁ hI₁ hal1.ge hm1' fr1 (fun _ _ => rfl) habove _)
+      exact IRS.ifF (by rwo [k5]) (drop c₁ hI₁ hal1.ge hm1' fr1 (fun _ _ => rfl) habove _)
 
 /-! ## Transport -/
 
@@ -645,8 +647,8 @@ theorem AccOK.transport {A : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {z : Point}
     AccOK P A Mod R₀ z σ L c' := by
   obtain ⟨f1, f2, f3⟩ := h
   have a0 : c'.nreg A = c.nreg A := by simpa using hr 0 (by norm_num)
-  refine ⟨by rw [a0]; exact f1, fun h0 => f2 (by rw [← a0]; exact h0), fun h1 => ?_⟩
-  obtain ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, hrecA⟩ := f3 (by rw [← a0]; exact h1)
+  refine ⟨by rwx [a0], fun h0 => f2 (by rwx [← a0]), fun h1 => ?_⟩
+  obtain ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, hrecA⟩ := f3 (by rwx [← a0])
   rw [hr 1 (by norm_num), hr 2 (by norm_num), hr 3 (by norm_num)]
   exact ⟨τa, hτa, hmin, htagA, hppA, heA, hposA, absRec_transport hrecA (hr 4 (by norm_num))
     (by rw [show A + 4 + 1 = A + 5 by omega]; exact hr 5 (by norm_num))

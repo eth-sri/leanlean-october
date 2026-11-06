@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleQPlan
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-M (E7-B, part 13): translating chain-model positions along a stretch
@@ -31,7 +35,7 @@ open Chazelle.Geometry (lerp lerp_zero lerp_one)
 /-- **The walk edges `6 … 2m + 6` of a chain model are not horizontal.** -/
 theorem cm_nh {C : Chain} (hD : DistinctHeights C.P) {e : ℕ} (h6 : 6 ≤ e)
     (he : e ≤ 2 * C.m + 6) : ((chainModel C).wa e).2 ≠ ((chainModel C).wb e).2 := by
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hn  := chainModel_n C
   have hm := C.one_le
   rcases he.lt_or_eq with he | rfl
   · have hwa : (chainModel C).wa e = C.P.vtx (cVtx C e) := cm_vtx_tour C h6 he.le
@@ -55,9 +59,9 @@ theorem cm_nh {C : Chain} (hD : DistinctHeights C.P) {e : ℕ} (h6 : 6 ≤ e)
       unfold Model.wa
       rw [cm_vtx_tour C (by omega) le_rfl]
       unfold cVtx
-      rw [show 2 * C.m + 6 - 6 = 2 * C.m by omega, C.sideIdx_two_m]; rfl
+      rwr [show 2 * C.m + 6 - 6 = 2 * C.m by omega, C.sideIdx_two_m]
     have hwb : (chainModel C).wb (2 * C.m + 6) = C.slitTop := by
-      unfold Model.wb; rw [hn, show 2 * C.m + 6 + 1 = 2 * C.m + 7 by ring, Nat.mod_self]; rfl
+      urr Model.wb [hn, show 2 * C.m + 6 + 1 = 2 * C.m + 7 by ring, Nat.mod_self]
     rw [hwa, hwb]
     have := C.top_snd_lt_radius
     simp only [Chain.slitTop]
@@ -123,7 +127,7 @@ theorem trP_spec {x : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
   set d := x.edge - g₀ with hd
   have hxe : x.edge = g₀ + d := by omega
   have hxe' : x.edge = (g₀ + d) % (chainModel C).W.n := by
-    rw [hcm, Nat.mod_eq_of_lt (by omega)]; omega
+    rwo [hcm, Nat.mod_eq_of_lt (by omega)]
   have htr : trP Q.n u₀ g₀ x = ⟨(u₀ + d) % (interiorModel Q).W.n, x.hgt⟩ := by
     unfold trP; rw [hmi]
   have hedge : (trP Q.n u₀ g₀ x).edge < Q.n := by
@@ -137,7 +141,7 @@ theorem trP_spec {x : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
     · rw [hpz]
       -- the end of the stretch: both parameters vanish
       rcases Nat.eq_zero_or_pos x.hgt with h0 | h0
-      · rw [htr]; show (interiorModel Q).param Q ⟨_, x.hgt⟩ = 0; rw [h0]; rfl
+      · rw [htr]; show (interiorModel Q).param Q ⟨_, x.hgt⟩ = 0; rwr [h0]
       obtain ⟨h', hh⟩ : ∃ h', x.hgt = h' + 1 := ⟨x.hgt - 1, by omega⟩
       have hDC : DistinctHeights C.P := by rw [S.hCP]; exact S.hD
       have hnh := cm_nh hDC (e := x.edge) (by omega) (by omega)
@@ -177,7 +181,7 @@ theorem trP_key {x : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
     (hk0 : (g₀ : ℝ) ≤ (chainModel C).key Q x) (hk1 : (chainModel C).key Q x ≤ g₀ + ℓ) :
     (interiorModel Q).key Q (trP Q.n u₀ g₀ x) =
       (((u₀ + (x.edge - g₀)) % Q.n : ℕ) : ℝ) + (chainModel C).param Q x := by
-  rw [key_eq, (trP_spec S hx hk0 hk1).1]; rfl
+  rwr [key_eq, (trP_spec S hx hk0 hk1).1]
 
 include S in
 /-- **Arcs between translated positions** have the same point set and weight. -/
@@ -222,11 +226,11 @@ theorem trP_arc {x y : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
   set e := dy - dx with he
   have hye' : y.edge = x.edge + e := by omega
   have hxyr : tx < (e : ℝ) + ty := by
-    have : (e : ℝ) = (y.edge : ℝ) - x.edge := by rw [hye']; push_cast; ring
-    rw [this]; linarith
+    have : (e : ℝ) = (y.edge : ℝ) - x.edge := by rw [hye']; pcr
+    rwli [this]
   have hey : (e : ℝ) + ty ≤ ℓ - dx := by
     have h1 : (y.edge : ℝ) + ty ≤ g₀ + ℓ := hy1
-    have : (e : ℝ) = (y.edge : ℝ) - x.edge := by rw [hye']; push_cast; ring
+    have : (e : ℝ) = (y.edge : ℝ) - x.edge := by rw [hye']; pcr
     have : (x.edge : ℝ) = g₀ + dx := by exact_mod_cast hxe
     linarith
   have hdyℓ : dy ≤ ℓ := by omega
@@ -239,14 +243,14 @@ theorem trP_arc {x y : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
     have : (0 : ℝ) ≤ dx := Nat.cast_nonneg _
     linarith
   have hu' : (u₀ + dx) % Q.n < (interiorModel Q).W.n := by rw [hmi]; exact Nat.mod_lt _ (by omega)
-  have hxe2 : x.edge < (chainModel C).W.n := by rw [hcm]; omega
+  have hxe2 : x.edge < (chainModel C).W.n := by rwo [hcm]
   constructor
   · -- the point sets
     have hb0 : (0 : ℝ) ≤ (((u₀ + dy) % Q.n : ℕ) : ℝ) + ty := by positivity
     have hbn : (((u₀ + dy) % Q.n : ℕ) : ℝ) + ty < (interiorModel Q).W.n := by
       have : (u₀ + dy) % Q.n + 1 ≤ Q.n := Nat.mod_lt _ (by omega)
       have : (((u₀ + dy) % Q.n : ℕ) : ℝ) + 1 ≤ Q.n := by exact_mod_cast this
-      rw [hmi]; linarith
+      rwli [hmi]
     rw [arcSet_eq_oset _ hu' tx0 tx1 hb0 hbn, hmi, ← hmod,
       len_key (Nat.mod_lt _ (by omega)) tx1 ty0 hxyr hen]
     have hb0' : (0 : ℝ) ≤ (y.edge : ℝ) + ty := by positivity
@@ -274,14 +278,14 @@ theorem trP_arc {x y : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
     rw [e1, hxe, ← oset_shift _ _ _ tx0, ← oset_shift _ _ _ tx0]
     exact oset_congr S.agree (by
       have : (dx : ℝ) + (tx + (e + ty - tx)) = dy + ty := by
-        rw [he, Nat.cast_sub hdxy]; ring
+        rwring [he, Nat.cast_sub hdxy]
       rw [this]
       have : (y.edge : ℝ) = g₀ + dy := by exact_mod_cast hye
       linarith)
   · -- the weights
     have hci : ∀ p, p < (interiorModel Q).W.n →
         ((interiorModel Q).counted p ↔ 0 ≤ p ∧ p < (interiorModel Q).W.n) := fun p hp => by
-      rw [hmi] at hp ⊢; exact interiorModel_counted_iff Q p (by rw [hmi]; exact hp)
+      rw [hmi] at hp ⊢; exact interiorModel_counted_iff Q p (by rwx [hmi])
     have hkc : keyCeil e ty ≤ e + 1 := keyCeil_le_succ
     have hkc' : keyCeil e ty = e ∨ (keyCeil e ty = e + 1 ∧ 0 < ty) := by
       unfold keyCeil; split_ifs with h
@@ -293,14 +297,14 @@ theorem trP_arc {x y : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
     rw [hmi, hmod] at w1
     have hcc : ∀ p, p < (chainModel C).W.n →
         ((chainModel C).counted p ↔ 6 ≤ p ∧ p < 2 * C.m + 6) := chain_counted C
-    have w2 := arcWt_off (chainModel C) (lo := 6) (hi := 2 * C.m + 6) hcc (by rw [hcm]; omega)
+    have w2 := arcWt_off (chainModel C) (lo := 6) (hi := 2 * C.m + 6) hcc (by rwo [hcm])
       hxe2 (by omega) tx0 tx1 ty0 ty1 hxyr (Or.inr ⟨by
         show x.edge + keyCeil e ty ≤ 2 * C.m + 6
         rcases hkc' with h | ⟨h, hpos⟩
         · omega
         · rcases gy3 with g | g
           · omega
-          · exact absurd g hpos.ne', by rw [hcm]; omega⟩)
+          · exact absurd g hpos.ne', by rwo [hcm]⟩)
     rw [hmodc] at w2
     rw [w1, w2]
 
@@ -341,19 +345,19 @@ theorem str_wt0 {x y : WPos} (hx : x.hgt = 0) (hy : y.hgt = 0) (hxy : x.edge < y
   have h6 := S.h6
   have hcc : ∀ p, p < (chainModel C).W.n →
       ((chainModel C).counted p ↔ 6 ≤ p ∧ p < 2 * C.m + 6) := chain_counted C
-  have hxe2 : x.edge < (chainModel C).W.n := by rw [hcm]; omega
+  have hxe2 : x.edge < (chainModel C).W.n := by rwo [hcm]
   have kx : (chainModel C).key Q x = (x.edge : ℝ) + 0 := by
-    rw [key_eq]; congr 1; show (chainModel C).param Q ⟨x.edge, x.hgt⟩ = 0; rw [hx]; rfl
+    rw [key_eq]; congr 1; show (chainModel C).param Q ⟨x.edge, x.hgt⟩ = 0; rwr [hx]
   have ky : (chainModel C).key Q y = (((x.edge + (y.edge - x.edge)) % (chainModel C).W.n : ℕ) : ℝ) + 0 := by
     rw [key_eq, show x.edge + (y.edge - x.edge) = y.edge by omega,
-      Nat.mod_eq_of_lt (by rw [hcm]; omega)]
-    congr 1; show (chainModel C).param Q ⟨y.edge, y.hgt⟩ = 0; rw [hy]; rfl
+      Nat.mod_eq_of_lt (by rwo [hcm])]
+    congr 1; show (chainModel C).param Q ⟨y.edge, y.hgt⟩ = 0; rwr [hy]
   rw [kx, ky]
   have hk : keyCeil (y.edge - x.edge) (0 : ℝ) = y.edge - x.edge := by unfold keyCeil; rw [ite_eq_left rfl]
-  rw [arcWt_off (chainModel C) (lo := 6) (hi := 2 * C.m + 6) hcc (by rw [hcm]; omega) hxe2
+  rw [arcWt_off (chainModel C) (lo := 6) (hi := 2 * C.m + 6) hcc (by rwo [hcm]) hxe2
     (by omega) le_rfl zero_lt_one le_rfl zero_lt_one
     (by have : (1 : ℝ) ≤ ((y.edge - x.edge : ℕ) : ℝ) := by exact_mod_cast (show 1 ≤ y.edge - x.edge by omega)
-        linarith) (Or.inr ⟨by rw [hk]; omega, by rw [hcm]; omega⟩), hk]
+        linarith) (Or.inr ⟨by rwo [hk], by rwo [hcm]⟩), hk]
 
 include S in
 /-- **`PieceWalk` along the stretch**: a kind-1 piece of the chain cutter inside the stretch is a
@@ -378,10 +382,10 @@ theorem trP_pieceWalk {s e : WPos} {Cα : Chain} (hpw : PieceWalk (chainModel C)
   have hn := S.hn
   have ks : (chainModel C).key Q s = s.edge := by
     rw [key_eq, show (chainModel C).param Q s = 0 by
-      show (chainModel C).param Q ⟨s.edge, s.hgt⟩ = 0; rw [hs]; rfl, add_zero]
+      show (chainModel C).param Q ⟨s.edge, s.hgt⟩ = 0; rwr [hs], add_zero]
   have ke : (chainModel C).key Q e = e.edge := by
     rw [key_eq, show (chainModel C).param Q e = 0 by
-      show (chainModel C).param Q ⟨e.edge, e.hgt⟩ = 0; rw [he]; rfl, add_zero]
+      show (chainModel C).param Q ⟨e.edge, e.hgt⟩ = 0; rwr [he], add_zero]
   rw [ks, ke] at hse
   rw [ks] at hs0
   rw [ke] at he1
@@ -400,11 +404,11 @@ theorem trP_pieceWalk {s e : WPos} {Cα : Chain} (hpw : PieceWalk (chainModel C)
     unfold trP; simp only
     rw [hmi, Nat.mod_add_mod, ← hdiff, show u₀ + (s.edge - g₀) + Cα.m = u₀ + (s.edge + Cα.m - g₀) by
       omega]
-  refine ⟨⟨hs, he, by rw [hmi]; exact hts, hte, g', hg', ?_⟩, ?_⟩
+  refine ⟨⟨hs, he, by rwx [hmi], hte, g', hg', ?_⟩, ?_⟩
   · rcases hw with hw | ⟨L₁, h1, h2, h3, hw1, hw2⟩
-    · exact Or.inl (walkAgree_trans hA (by rw [hsl]; exact hw))
+    · exact Or.inl (walkAgree_trans hA (by rwx [hsl]))
     · refine Or.inr ⟨L₁, h1, h2, h3, walkAgree_trans (L := L₁)
-        (fun d hd => hA d (by omega)) (by rw [hsl]; exact hw1), ?_⟩
+        (fun d hd => hA d (by omega)) (by rwx [hsl]), ?_⟩
       have hB := trP_agree S hs0' (a := L₁) (L' := Cα.m - L₁) (by omega)
       rw [hmi]
       refine walkAgree_trans hB ?_

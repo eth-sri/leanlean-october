@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OraclePrepMem
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 31: the header and the allocator payment
@@ -45,19 +48,19 @@ theorem stores_exec {P : Polygon} {W : ℕ} (L : List ℕ) {c : Config} (hw : Wo
         c₁.nmem = upd c.nmem p (c.nreg r) ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧
         c₁.output = c.output := by
       exec_block
-      · config_simp; rw [hp, h1]; simp at hW; omega
+      · config_simp; rw [hp, h1]; sio at hW
       · refine ⟨rfl, by config_simp; rw [hp, h1], fun r' hr' => ?_, by config_simp; rw [hp],
           rfl, rfl, rfl⟩
         config_simp; rw [upd_other _ _ _ hr']
     obtain ⟨c₂, k₂, e₂, hk₂, v5', R₂, m₂, m₂', rr₂, rm₂, o₂⟩ := ih e₁.wb_right v5
       (by rw [R₁ _ (by decide), h1]) (fun r' hr' => hL r' (by simp [hr']))
-      (by simp at hW; omega)
-    refine ⟨c₂, _, .seq e₁ e₂, by simp; omega, by rw [v5']; simp; omega,
+      (by sio at hW)
+    refine ⟨c₂, _, .seq e₁ e₂, by sio, by rws [v5']; omega,
       fun r' hr' => by rw [R₂ r' hr', R₁ r' hr'], fun i hi => ?_, fun a ha => ?_,
       by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
     · rcases i with _ | j
       · rw [Nat.add_zero, m₂' p (Or.inl (by omega)), m₁]; simp [upd]
-      · simp only [List.length_cons] at hi
+      · simp [List.length_cons] at hi
         have hj : j < L.length := by omega
         have := m₂ j hj
         rw [show p + 1 + j = p + (j + 1) by omega] at this
@@ -94,25 +97,24 @@ theorem hdrS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
       c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     exec_block
     · omega
-    · config_simp; rw [hAl]; omega
+    · config_simp; rwo [hAl]
     · refine ⟨rfl, by config_simp; exact hAl, by config_simp; rw [hAl], by config_simp; exact hAl,
         fun r a b d e => ?_, rfl, rfl, rfl, rfl⟩
-      config_simp; simp only [upd_apply]; rw [ite_eq_right b, ite_eq_right e, ite_eq_right d, ite_eq_right a]
+      config_simp; simp [upd_apply]; rw [ite_eq_right b, ite_eq_right e, ite_eq_right d, ite_eq_right a]
   obtain ⟨c₂, k₂, e₂, hk₂, v5, R₂, mm, mo, rr₂, rm₂, o₂⟩ := stores_exec (P := P) hdrRegs
     e₁.wb_right a5 (by rw [R₁ _ (by decide) (by decide) (by decide) (by decide), h1])
-    (by decide) (by simp [hdrRegs]; omega)
+    (by decide) (by sio [hdrRegs])
   have hl : hdrRegs.length = 18 := rfl
   refine ⟨c₂, _, .seq e₁ e₂, by rw [hk₁, hk₂, hl], by rw [R₂ _ (by decide), a3],
     by rw [R₂ _ (by decide), a9], fun r a b d e => by rw [R₂ r d, R₁ r a b d e],
-    fun i hi h3 => ?_, ?_, fun a ha => by rw [mo a (by rw [hl]; exact ha), m₁],
+    fun i hi h3 => ?_, ?_, fun a ha => by rw [mo a (by rwx [hl]), m₁],
     by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
-  · rw [mm i (by rw [hl]; exact hi)]
+  · rw [mm i (by rwx [hl])]
     have hne : hdrRegs.getD i 0 ≠ 110003 ∧ hdrRegs.getD i 0 ≠ 110004 ∧
         hdrRegs.getD i 0 ≠ 110005 ∧ hdrRegs.getD i 0 ≠ 9999 := by
       interval_cases i <;> simp_all [hdrRegs]
     exact R₁ _ hne.1 hne.2.1 hne.2.2.1 hne.2.2.2
-  · rw [mm 3 (by rw [hl]; omega)]
-    show c₁.nreg 9999 = O + 18
+  · rw [mm 3 (by rwo [hl])]
     exact a9
 
 /-! ## The payment of the allocator -/
@@ -138,7 +140,7 @@ theorem payS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
     (n := E - A₀) (κ := 0) I
     (fun i d h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun i d v h hw' => ⟨hw', by simp [upd, h.2.1], by simp [upd, h.2.2.1],
-      fun r hr => by simp only; rw [upd_other _ _ _ hr]; exact h.2.2.2.1 r hr,
+      fun r hr => by simp; rw [upd_other _ _ _ hr]; exact h.2.2.2.1 r hr,
       h.2.2.2.2.1, h.2.2.2.2.2.1, h.2.2.2.2.2.2.1, h.2.2.2.2.2.2.2⟩)
     (fun i d _ h hri => ⟨d, 0, .skip h.1, le_rfl, hri, h⟩)
     e₁.wb_right (by rw [← v8]; exact e₁.wb_right.1 _)

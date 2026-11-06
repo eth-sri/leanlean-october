@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.RestoreTCall
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, the candidate test on the RAM, part 2: comparing keys
@@ -114,8 +117,8 @@ theorem keyCmp_exec {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he :
       simp only at q1 q2 q3 q4 q5
       obtain ⟨hx1, hx2, hx3⟩ := hx
       obtain ⟨hy1, hy2, hy3⟩ := hy
-      refine ⟨by rw [q1]; exact hx1, by rw [q3]; exact hy1, by rw [q5, h0]; omega,
-        by rw [q1, q2]; exact hx2, by rw [q3, q4]; exact hy2, fun h => ?_, fun h => ?_, hWm⟩
+      refine ⟨by rwx [q1], by rwx [q3], by rwo [q5, h0],
+        by rwx [q1, q2], by rwx [q3, q4], fun h => ?_, fun h => ?_, hWm⟩
       · rw [q1]; rw [q2] at h; exact hx3 h
       · rw [q3]; rw [q4] at h; exact hy3 h) hroom
   have q1 := h1 (50201, a) (by simp [kcL])
@@ -127,7 +130,7 @@ theorem keyCmp_exec {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he :
   obtain ⟨o1, o2⟩ := hout
   rw [q1, q2, q3, q4, q5, h0, Nat.cast_zero, off_zero (key_nonneg hx.2.1),
     off_zero (key_nonneg hy.2.1)] at o1 o2
-  exact ⟨c', k, ex, by simp [kcL] at hk; omega, o1, o2, hf⟩
+  exact ⟨c', k, ex, by sio [kcL] at hk, o1, o2, hf⟩
 
 end
 

@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseOracleTop
 public import Chazelle.Core.BruteCorner
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (E7-B, part 8): the mathematics of one sub-query
@@ -56,10 +60,10 @@ theorem rng_of {n cs L k : ℕ} (hcs : cs < n) (hL : L < n) (hk : k ≤ L) :
       (rX2 n cs L ≤ (cs + k) % n ∧ (cs + k) % n ≤ rY2 n cs L) := by
   unfold rY1 rX2 rY2
   by_cases h : cs + k < n
-  · left; rw [Nat.mod_eq_of_lt h]; split_ifs <;> omega
+  · left; rw [Nat.mod_eq_of_lt h]; splao
   · right
     rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-    split_ifs <;> omega
+    splao
 
 theorem of_rng1 {n cs L v : ℕ} (hcs : cs < n) (h1 : cs ≤ v) (h2 : v ≤ rY1 n cs L) :
     InCh n cs L v := by
@@ -72,28 +76,28 @@ theorem of_rng2 {n cs L v : ℕ} (hcs : cs < n) (hL : L < n) (h1 : rX2 n cs L �
   unfold rX2 rY2 at *
   by_cases h : cs + L < n
   · rw [ite_eq_left h] at h1 h2
-    exact ⟨0, by omega, by rw [Nat.add_zero, Nat.mod_eq_of_lt hcs]; omega⟩
+    exact ⟨0, by omega, by rwo [Nat.add_zero, Nat.mod_eq_of_lt hcs]⟩
   · rw [ite_eq_right h] at h1 h2
     refine ⟨v + n - cs, by omega, ?_⟩
     rw [show cs + (v + n - cs) = v + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
 
 theorem rY1_lt {n cs L : ℕ} (hcs : cs < n) : rY1 n cs L < n := by
-  unfold rY1; split_ifs <;> omega
+  unfold rY1; splao
 
 theorem rY2_lt {n cs L : ℕ} (hcs : cs < n) (hL : L < n) : rY2 n cs L < n := by
-  unfold rY2; split_ifs <;> omega
+  unfold rY2; splao
 
 theorem rX2_le {n cs L : ℕ} (_hcs : cs < n) (_hL : L < n) : rX2 n cs L ≤ rY2 n cs L := by
-  unfold rX2 rY2; split_ifs <;> omega
+  unfold rX2 rY2; splao
 
 theorem cs_le_rY1 {n cs L : ℕ} (hcs : cs < n) : cs ≤ rY1 n cs L := by
-  unfold rY1; split_ifs <;> omega
+  unfold rY1; splao
 
 theorem rY1_sub {n cs L : ℕ} : rY1 n cs L - cs ≤ L := by
-  unfold rY1; split_ifs <;> omega
+  unfold rY1; splao
 
 theorem rY2_sub {n cs L : ℕ} (hcs : cs < n) : rY2 n cs L - rX2 n cs L ≤ L := by
-  unfold rX2 rY2; split_ifs <;> omega
+  unfold rX2 rY2; splao
 
 /-! ## The top of the chain -/
 
@@ -136,8 +140,8 @@ of `Q` taken modulo `n`. -/
 theorem sideBeta_ch {C : Chain} (hC : C.P = Q) (hD : DistinctHeights Q) (hT0 : 0 < C.topIdx)
     {v : ℕ} (hv : v = (C.s + C.topIdx) % Q.n) :
     C.sideBeta = true ↔ BetaF (Q.vtx ((v + Q.n - 1) % Q.n)) (Q.vtx v) (Q.vtx ((v + 1) % Q.n)) := by
-  have hDH : DistinctHeights C.P := by rw [hC]; exact hD
-  have hn : 1 < Q.n := by have := C.add_one_le; have := C.one_le; rw [hC] at *; omega
+  have hDH : DistinctHeights C.P := by rwx [hC]
+  have hn : 1 < Q.n := by have := C.add_one_le; have := C.one_le; rwo [hC] at *
   have eA : C.vertex (C.topIdx - 1) = Q.vtx ((v + Q.n - 1) % Q.n) := by
     show C.P.vtx ((C.s + (C.topIdx - 1)) % C.P.n) = _
     rw [hC, prev_idx hn hT0, hv]
@@ -190,8 +194,8 @@ theorem cVtx_ch {C : Chain} {i : ℕ} (hi : i ≤ 2 * C.m) :
   have hT := C.topIdx_le
   have hm := C.one_le
   have hS : C.sideS C.sideBeta = sSV C.sideBeta C.topIdx C.m := by
-    unfold Chain.sideS sSV; rfl
-  rw [show i + 6 - 6 = i by omega, hS, mod2_eq hm (by unfold sSV; split_ifs <;> omega)]
+    ufr Chain.sideS sSV
+  rw [show i + 6 - 6 = i by omega, hS, mod2_eq hm (by unfold sSV; splao)]
 
 /-- **The boundary symbolic point of a chain-model position**, in closed form (`v` the top vertex
 of `Q`, `S` the tour start). -/

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvBExpB
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Down-phase base (D9), RAM: expansion of a host block, part 3 (items)
@@ -37,7 +39,7 @@ theorem pts_take_length_le (n : ℕ) (H : Host) (q : ℕ) :
     (Host.pts n (H.take q)).length ≤ (H.pts n).length := by
   unfold Host.pts
   conv_rhs => rw [← List.take_append_drop q H]
-  rw [List.flatMap_append, List.length_append]; omega
+  rwo [List.flatMap_append, List.length_append]
 
 theorem pts_getD_mid (n : ℕ) {H : Host} {q j : ℕ} (hq : q < H.length)
     (hj : j < ((H.getD q (.run 0 0)).pts n).length) (d : SymPt) :
@@ -48,7 +50,7 @@ theorem pts_getD_mid (n : ℕ) {H : Host} {q j : ℕ} (hq : q < H.length)
     rw [← pts_take_succ n hq]
     unfold Host.pts
     rw [← List.flatMap_append, List.take_append_drop]
-  rw [e, List.getD_append _ _ _ _ (by rw [List.length_append]; omega),
+  rw [e, List.getD_append _ _ _ _ (by rwo [List.length_append]),
     List.getD_append_right _ _ _ _ (by omega), Nat.add_sub_cancel_left]
 
 theorem run_pts_getD (n a ℓ t : ℕ) (ht : t ≤ ℓ) (d : SymPt) :
@@ -89,7 +91,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 /-- **The dispatch** on the item `q`, after its words are loaded. -/
 theorem dispS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : ℕ}
     (hH : HostAt c₀.nmem HB H) (hWF : HostWF P.n H) (h2 : c₀.nreg 212002 = 2)
@@ -125,8 +126,8 @@ theorem dispS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
     rw [hlr] at hlen ⊢
     obtain ⟨e', k, x, hk, hS', -⟩ := runS_exec (P := P) hS (h27.trans ka) (h28.trans kl) ha hl
       hlen (fun t ht => by
-        rw [hmid t (by rw [hlr]; omega), run_pts_getD _ _ _ _ ht])
-    exact ⟨e', k + 1, .ifLtN_true (by rw [h26, k0, h0]; omega) x, by omega, hS'⟩
+        rw [hmid t (by rwo [hlr]), run_pts_getD _ _ _ _ ht])
+    exact ⟨e', k + 1, .ifLtN_true (by rwo [h26, k0, h0]) x, by omega, hS'⟩
   | pt x =>
     cases x with
     | vtx j =>
@@ -139,24 +140,24 @@ theorem dispS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
           e₁.nreg 212030 = j :=
         ⟨_, Machine.Exec.copyN hw _ _, hS.frame (Machine.Exec.copyN (P := P) hw 212030 212027).wb_right
           ⟨fun r hr => by
-            simp only [Bexp, decide_eq_false_iff_not] at hr
-            dsimp only; rw [Machine.upd_other]; omega,
+            simp [Bexp, decide_eq_false_iff_not] at hr
+            dsimp; rwo [Machine.upd_other],
             fun _ _ => rfl, rfl, rfl⟩ (by simp) rfl, by simp [h27, kj]⟩
       obtain ⟨x₁, hS₁, h30⟩ := x₁
       obtain ⟨e', k, x, hk, hS', -⟩ := wrV_exec (P := P) hS₁ (by omega)
         (by have := hmid 0 (by simp [HostItem.pts]); rw [Nat.add_zero] at this
-            rw [h30, this]; rfl)
-      refine ⟨e', 1 + k + 2 + 1, .ifLtN_false (by rw [h26, k0, h0]; omega)
-        (.ifLtN_true (by rw [h26, k0, r2]; omega) (.seq x₁ x)), by omega, hS'⟩
+            rwr [h30, this])
+      refine ⟨e', 1 + k + 2 + 1, .ifLtN_false (by rwo [h26, k0, h0])
+        (.ifLtN_true (by rwo [h26, k0, r2]) (.seq x₁ x)), by omega, hS'⟩
     | onEdge ee hh' =>
       obtain ⟨k0, ke, kh⟩ := hh
       have hl1 : ((HostItem.pt (.onEdge ee hh')).pts P.n).length = 1 := rfl
       rw [hl1] at hlen ⊢
       obtain ⟨e', k, x, hk, hS', -⟩ := wrE_exec (P := P) hS (by omega)
         (by have := hmid 0 (by simp [HostItem.pts]); rw [Nat.add_zero] at this
-            rw [h27, h28, ke, kh, this]; rfl)
-      refine ⟨e', k + 2 + 2, .ifLtN_false (by rw [h26, k0, h0]; omega)
-        (.ifLtN_false (by rw [h26, k0, r2]; omega) x), by omega, hS'⟩
+            rwr [h27, h28, ke, kh, this])
+      refine ⟨e', k + 2 + 2, .ifLtN_false (by rwo [h26, k0, h0])
+        (.ifLtN_false (by rwo [h26, k0, r2]) x), by omega, hS'⟩
 
 /-- **One host item**: its points are written, the item pointer and counter advance. -/
 theorem itemS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : ℕ}
@@ -177,8 +178,8 @@ theorem itemS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
       e₁.nreg 212024 = q ∧ e₁.nreg 212025 = e.nreg 212025 ∧ e₁.nmem = e.nmem := by
     unfold loadB
     exec_block
-    · config_simp; rw [h23, h0]; omega
-    · config_simp; rw [h23, h0]; omega
+    · config_simp; rwo [h23, h0]
+    · config_simp; rwo [h23, h0]
     · refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp
       · rw [h23]; exact hS.mem _ (Or.inl (by omega))
       · rw [h23, h0, show HB + 1 + 3 * q + 1 = HB + 2 + 3 * q by omega]
@@ -199,12 +200,12 @@ theorem itemS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
       e₃.nreg 212025 = e₂.nreg 212025 ∧ e₃.nmem = e₂.nmem := by
     unfold incB
     exec_block
-    · rw [r23, h0']; omega
-    · config_simp; rw [r23, h0']; omega
-    · config_simp; rw [r23, h0']; omega
-    · config_simp; rw [r24, h0']; omega
+    · rwo [r23, h0']
+    · config_simp; rwo [r23, h0']
+    · config_simp; rwo [r23, h0']
+    · config_simp; rwo [r24, h0']
     · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
-      · rw [r23, h0']; omega
+      · rwo [r23, h0']
       · rw [r24, h0']
   have hS₃ := hS₂.frame x₃.wb_right (exec_frameM x₃ wr_incB) h25'' hm''
   refine ⟨e₃, k₁ + (k₂ + k₃), .seq x₁ (.seq x₂ x₃), ⟨hS₃, h23'', h24''⟩, ?_⟩

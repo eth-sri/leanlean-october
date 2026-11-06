@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseDrvLMMain
 public import Chazelle.Core.DownPhaseDrvRTailSpec
 public import Chazelle.Core.DownPhaseDrvLCMain
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # Down-phase level tail (D12), part 1: the arithmetic
@@ -58,7 +60,7 @@ theorem i3_step {lam K K₁ K' n p γ₀ : ℕ} (h16 : 16 ≤ lam) (hlp : lam �
     rw [hγ]
     have : 2 ^ Cost.ceilBeta (Cost.ceilBeta lam + 11) ≤
         2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 10) :=
-      Nat.pow_le_pow_right (by norm_num) (by unfold DrvR.nextLvl; omega)
+      Nat.pow_le_pow_right (by norm_num) (by ufo DrvR.nextLvl)
     omega
   exact DownMath.cnt_step (A := 2 ^ (DrvR.regCap + 4)) (B := 1120 * (DrvR.regCap + 2))
     (Nat.one_le_two_pow) h16 hlp hK hn hG (DownMath.level_bound h1 h2)
@@ -84,7 +86,7 @@ theorem cost_le {R K K₂ M ν Λ κc κS κr X : ℕ} (hR : R = K + 1) (hK₂ :
   have hg : (8 * K₂ + (35 * M + 32) * R + 26) + (5 * K₂ + 1) + 2 ≤
       61 * (R * Λ) + 48 * (κc * (R * Λ)) := by
     have e : (35 * M + 32) * R = 35 * (M * R) + 32 * R := by ring
-    rw [e]; omega
+    rwo [e]
   -- the splice
   have hc : Nat.clog 2 (4 * M) + 1 ≤ Nat.clog 2 (4 * ν + 4) + 1 :=
     Nat.add_le_add_right (Nat.clog_mono_right 2 (by omega)) 1

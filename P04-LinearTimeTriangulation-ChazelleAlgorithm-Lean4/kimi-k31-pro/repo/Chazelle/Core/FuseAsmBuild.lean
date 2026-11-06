@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.FuseAsmCollStage
+set_option maxHeartbeats 8000000
 
 /-!
 # WP-F fusion assembly, part 25: the normal form of the fused chord list
@@ -89,7 +90,6 @@ def bldOut : Stmt := block [.copyN 70007 40003]
 /-- **The normal form of the fused chord list.** -/
 def bldStage (sB : Stmt) : Stmt := .seq descF (.seq bldSet (.seq sB bldOut))
 
-set_option maxHeartbeats 8000000 in
 theorem bldStage_exec {sB : Stmt} {κB : ℕ}
     (hB : Meets sB {bBuild, bSort, bSign} BPre BPost (BCost κB)) {P : Polygon} {W : ℕ}
     (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hHW : hostWords P.n ≤ W)

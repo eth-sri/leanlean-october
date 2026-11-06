@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ClusterStageD1
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-I, part 54: the placement of the items (combinatorics)
@@ -58,7 +61,7 @@ theorem rk_eq_cB {v : ℕ} : rk μ bo key v = cB μ bo key (key v) (bo v) := rfl
 theorem plPos_ge (v : ℕ) : cntLt bo μ (bo v) ≤ plPos μ bo key v := Nat.le_add_right _ _
 
 theorem plPos_lt {v : ℕ} (hv : v < μ) : plPos μ bo key v < cntLt bo μ (bo v + 1) := by
-  have := rk_lt (bo := bo) (key := key) hv; unfold plPos; rw [cntLt_succ]; omega
+  have := rk_lt (bo := bo) (key := key) hv; uro plPos [cntLt_succ]
 
 /-- **The positions are distinct.** -/
 theorem plPos_inj (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w) {v w : ℕ} (hv : v < μ)
@@ -67,9 +70,9 @@ theorem plPos_inj (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w
   · have h1 := plPos_lt (bo := bo) (key := key) hv; have h2 := plPos_ge (μ := μ) (bo := bo) (key := key) w
     have h3 := cntLt_mono bo μ (show bo v + 1 ≤ bo w by omega); omega
   · rcases lt_trichotomy (key v) (key w) with hk | hk | hk
-    · have := rk_lt_rk (bo := bo) (key := key) hv hb hk; unfold plPos at h; rw [hb] at h; omega
+    · have := rk_lt_rk (bo := bo) (key := key) hv hb hk; unfold plPos at h; rwo [hb] at h
     · exact hinj v w hv hw hk
-    · have := rk_lt_rk (bo := bo) (key := key) hw hb.symm hk; unfold plPos at h; rw [hb] at h; omega
+    · have := rk_lt_rk (bo := bo) (key := key) hw hb.symm hk; unfold plPos at h; rwo [hb] at h
   · have h1 := plPos_lt (bo := bo) (key := key) hw; have h2 := plPos_ge (μ := μ) (bo := bo) (key := key) v
     have h3 := cntLt_mono bo μ (show bo w + 1 ≤ bo v by omega); omega
 
@@ -77,7 +80,7 @@ theorem plPos_inj (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w
 theorem key_le_of_plPos {v w : ℕ} (hw : w < μ) (hb : bo w = bo v)
     (h : plPos μ bo key v ≤ plPos μ bo key w) : key v ≤ key w := by
   by_contra hk
-  have := rk_lt_rk (bo := bo) (key := key) hw hb (by omega); unfold plPos at h; rw [hb] at h; omega
+  have := rk_lt_rk (bo := bo) (key := key) hw hb (by omega); unfold plPos at h; rwo [hb] at h
 
 /-- **The block `b` fills its segment.** -/
 theorem exists_plPos (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w) {b i : ℕ}
@@ -89,13 +92,13 @@ theorem exists_plPos (hinj : ∀ v w, v < μ → w < μ → key v = key w → v 
     obtain ⟨v, hv, rfl⟩ := Finset.mem_image.mp hx
     simp only [hT, Finset.mem_filter, Finset.mem_range] at hv
     have := plPos_lt (bo := bo) (key := key) hv.1; have := plPos_ge (μ := μ) (bo := bo) (key := key) v
-    rw [hv.2] at *; simp only [Finset.mem_Ico]; omega
+    rw [hv.2] at *; sio only [Finset.mem_Ico]
   have hcard : (T.image (plPos μ bo key)).card = cntBelow bo μ b := by
     rw [Finset.card_image_of_injOn (fun v hv w hw h => by
       simp only [hT, Finset.coe_filter, Finset.mem_range, Set.mem_ofPred_eq] at hv hw
       exact plPos_inj hinj hv.1 hw.1 h)]
     rfl
-  have heq := Finset.eq_of_subset_of_card_le hsub (by rw [hcard, Nat.card_Ico, cntLt_succ]; omega)
+  have heq := Finset.eq_of_subset_of_card_le hsub (by rwo [hcard, Nat.card_Ico, cntLt_succ])
   have hi : i ∈ Finset.Ico (cntLt bo μ b) (cntLt bo μ (b + 1)) := by simp [h1, h2]
   rw [← heq] at hi
   obtain ⟨v, hv, rfl⟩ := Finset.mem_image.mp hi
@@ -108,7 +111,7 @@ theorem cB_succ_of (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = 
     cB μ bo key (j + 1) b = cB μ bo key j b + if bo v = b then 1 else 0 := by
   unfold cB
   split_ifs with hb
-  · rw [← Finset.card_insert_of_notMem (s := (Finset.range μ).filter _) (a := v) (by simp; omega)]
+  · rw [← Finset.card_insert_of_notMem (s := (Finset.range μ).filter _) (a := v) (by sio)]
     apply congrArg Finset.card; ext w; simp only [Finset.mem_filter, Finset.mem_insert, Finset.mem_range]
     constructor
     · rintro ⟨h1, h2, h3⟩
@@ -170,7 +173,7 @@ theorem PlInv.step (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = 
   refine ⟨fun b hb' => ?_, fun w hw => ?_, fun w hw hbw hkw => ?_⟩
   · rw [cB_succ_of hinj hv hk]
     by_cases hbb : bo v = b
-    · subst hbb; rw [Machine.upd_same, ite_eq_left rfl, hqe]; omega
+    · subst hbb; rwo [Machine.upd_same, ite_eq_left rfl, hqe]
     · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         Machine.upd_other _ _ _ (by omega), hI.cnt b hb', ite_eq_right hbb, Nat.add_zero]
   · rw [Machine.upd_other _ _ _ (by omega)]

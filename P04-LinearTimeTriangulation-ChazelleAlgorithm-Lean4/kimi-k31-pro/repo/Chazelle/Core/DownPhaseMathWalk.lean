@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseMathRec2
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # Down phase, math (H-R1): the walk-order point list of the driver's host
@@ -66,7 +68,7 @@ theorem repFrom_flatMap {li : Bool} (G : ℕ → List SymPt) (d J : ℕ → ℕ)
     obtain ⟨h1, h2⟩ := ih fun t ht => hG t (by omega)
     obtain ⟨h3, h4⟩ := hG k (by omega)
     rw [List.range_succ, List.flatMap_append, List.flatMap_singleton]
-    refine ⟨repFrom_append h1 (by rw [h2]; exact h3), ?_⟩
+    refine ⟨repFrom_append h1 (by rwx [h2]), ?_⟩
     rw [List.length_append, h2, h4, grpOff_succ]
 
 theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
@@ -76,7 +78,7 @@ theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
   rw [List.length_rotate] at hj
   have hpos : 0 < L.length := by omega
   have hjm := h ((j + m) % L.length) (Nat.mod_lt _ hpos)
-  rw [List.getD_eq_getElem _ _ (by rw [List.length_rotate]; exact hj), List.getElem_rotate,
+  rw [List.getD_eq_getElem _ _ (by rwx [List.length_rotate]), List.getElem_rotate,
     ← List.getD_eq_getElem _ (.vtx 0) (Nat.mod_lt _ hpos)]
   have e : (i + (j + m) % L.length) % nk (interiorModel Q) S R =
       (i + m + j) % nk (interiorModel Q) S R := by
@@ -131,8 +133,8 @@ theorem run_wpts {li : Bool} {n x c : ℕ} (_hn : 0 < n) (hx : x < n) (hc : c < 
   cases li
   · -- clockwise: the run is reversed
     simp only [items, Bool.false_eq_true, ite_false, List.flatMap_singleton, wpts, HostItem.pts]
-    refine ⟨by simp; omega, fun m hm => ?_⟩
-    rw [List.getD_eq_getElem _ _ (by simp; omega), List.getElem_reverse]
+    refine ⟨by sio, fun m hm => ?_⟩
+    rw [List.getD_eq_getElem _ _ (by sio), List.getElem_reverse]
     simp only [List.getElem_map, List.getElem_range, List.length_map, List.length_range]
     congr 1
     unfold ivB
@@ -155,8 +157,8 @@ theorem run_wpts {li : Bool} {n x c : ℕ} (_hn : 0 < n) (hx : x < n) (hc : c < 
         rw [e2, Nat.mod_eq_of_lt (by omega)]
         omega
   · simp only [items, ite_true, List.flatMap_singleton, wpts, HostItem.pts]
-    refine ⟨by simp; omega, fun m hm => ?_⟩
-    rw [List.getD_eq_getElem _ _ (by simp; omega)]
+    refine ⟨by sio, fun m hm => ?_⟩
+    rw [List.getD_eq_getElem _ _ (by sio)]
     simp only [List.getElem_map, List.getElem_range]
     congr 1
     unfold ivB

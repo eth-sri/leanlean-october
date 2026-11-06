@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.ClusterDriver
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-I, part 36: one split step preserves the driver invariant
@@ -28,7 +29,6 @@ def QC (m : ℕ → ℕ) (S : SS) (T : SpanTree M) (a : F → Fin N) (f : Fin N)
     (fun x => m (S.bFPAR + x)) (fun x => m (S.bFPRE + x)) (fun x => m (S.bFSZ + x)) 0
     (enc N (starDarts (M := M) f t)) f (m (S.bFPRE + m (S.bFIRST + v)))
 
-set_option maxHeartbeats 1000000 in
 open Classical in
 /-- **The selections of the passes are the classes.** -/
 theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : List (ℕ × ℕ)}
@@ -92,7 +92,7 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
     have h1 := hcp.so_lt X (by omega)
     have h2 := hcp.sf_lt _ h1
     have h6 := hcp.fp_lt f (by rw [hN]; exact f.2)
-    have hf : (f : ℕ) < N := f.2
+    have hf  := f.2
     have hfU : (f : ℕ) + 1 ≤ U := by omega
     set y := m (S.bSO + X) with hy
     set z := m (S.bSF + y) with hz
@@ -126,7 +126,7 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
     rw [htmp i h1 h2, hm2d (S.bDF + _) (by omega), hmk _ hv,
       hm2 (S.bFIRST + _) (by omega) (by omega)]
     have hfi : m (S.bFIRST + m (S.bACT + i)) < N := by
-      have := hSF.first ⟨_, hv⟩; simp only at this; rw [this]; exact Fin.isLt _
+      have := hSF.first ⟨_, hv⟩; simp at this; rw [this]; exact Fin.isLt _
     rw [hm2 (S.bFPRE + _) (by omega) (by omega), hcls X hX]
     constructor
     · rintro ⟨hne, hc⟩
@@ -138,7 +138,7 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
       exact hnD ((hD.df _ hv).mp h)
   have hfp : m2 (S.bFP + f) = M.fperm f := by
     rw [hm2 _ (by omega) (by omega)]; exact hSF.fp f
-  have hf : (f : ℕ) < N := f.2
+  have hf  := f.2
   refine ⟨fun i h1 h2 => hsel f (by omega) i h1 h2, fun i h1 h2 => ?_,
     fun i h1 h2 => ?_⟩
   · have := (M.fperm f).2

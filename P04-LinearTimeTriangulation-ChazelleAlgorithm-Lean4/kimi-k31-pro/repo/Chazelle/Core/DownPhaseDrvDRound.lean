@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.DownPhaseDrvDReg
 public import Chazelle.Core.DownPhaseDrvRSplG
 public import Chazelle.Core.DownPhaseDrvRRoundSpec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase restoration rounds (D8), part 11: the data of the rounds, straight-line pieces
@@ -114,7 +118,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 /-- The header of the current normal form. -/
 theorem hdS_exec (c : Config) (hw : WordsBounded W c) {H : ℕ} (h05 : c.nreg 210005 = H)
     (h02 : c.nreg 216002 = 1) (h0205 : c.nreg 216005 = 2) (hH : H + 7 ≤ W) :
@@ -166,7 +169,7 @@ theorem resS_exec {c : Config} (hw : WordsBounded W c) {R : ℕ} (h13 : c.nreg 2
     have hf' : FrameB Bres e e' := exec_frameB ex (by decide)
     have hA' : e'.nreg ALLOC = e.nreg ALLOC + 5 := by
       show e'.nreg 9999 = e.nreg 9999 + 5
-      rw [q.2, h4']; ring
+      rwring [q.2, h4']
     have hnot : ∀ r, bandOf r ∉ DrvR.drvBands → r ≠ ALLOC → Bres r = false := fun r hr hra => by
       simp only [Bres, Bool.or_eq_false_iff, decide_eq_false_iff_not]
       refine ⟨fun h => hr (by rw [h]; exact mem_drvBands (by norm_num) (by norm_num)), hra⟩
@@ -183,14 +186,13 @@ theorem resS_exec {c : Config} (hw : WordsBounded W c) {R : ℕ} (h13 : c.nreg 2
       obtain ⟨hw, h1, h2, -⟩ := id hI
       rw [h1, h2] at ht
       obtain ⟨e', k, ex, hI', RF', hk⟩ := key j e ht hI
-      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by omega, by rw [h1, hI'.2.1]; omega⟩) ⟨0, I0⟩
-  have hjR : j = R := by rw [h1, h2] at hx; omega
+      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by omega, by rwo [h1, hI'.2.1]⟩) ⟨0, I0⟩
+  have hjR : j = R := by rwo [h1, h2] at hx
   subst hjR
   refine ⟨c', k, ex, ?_, h4, h1, hf, RFl⟩
   rw [h23] at hk
   simpa using hk
 
-set_option maxHeartbeats 1000000 in
 /-- The bucket base and the region loop set-up. -/
 theorem midS_exec (c : Config) (hw : WordsBounded W c) {R B RB : ℕ} (h13 : c.nreg 216013 = R)
     (h18 : c.nreg 216018 = B) (h15 : c.nreg 216015 = RB) (h05 : c.nreg 216005 = 2)
@@ -208,7 +210,6 @@ theorem midS_exec (c : Config) (hw : WordsBounded W c) {R B RB : ℕ} (h13 : c.n
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [h13, h18, h15, h05]) <;> omega
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
 
-set_option maxHeartbeats 1000000 in
 /-- The arguments of the splice. -/
 theorem splArgs_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W splArgs c c' k ∧ k = 5 ∧ c'.nreg 210020 = c.nreg 216018 ∧
@@ -232,7 +233,7 @@ theorem incr_exec (c : Config) (hw : WordsBounded W c) {t : ℕ} (h10 : c.nreg 2
   obtain ⟨c', k, ex, hk, q⟩ : ∃ c' k, Exec P W (block [.addN 216010 216010 216002]) c c' k ∧
       k = 1 ∧ c'.nreg 216010 = t + 1 := by
     exec_block
-    · rw [h10, h02]; exact ht
+    · rwx [h10, h02]
     · refine ⟨rfl, ?_⟩; config_simp; rw [h10, h02]
   exact ⟨c', k, ex, hk, q, exec_frameB ex (by decide)⟩
 

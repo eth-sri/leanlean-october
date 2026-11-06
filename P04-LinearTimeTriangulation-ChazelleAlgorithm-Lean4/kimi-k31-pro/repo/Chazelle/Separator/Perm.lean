@@ -3,6 +3,7 @@ module
 public import Mathlib.GroupTheory.Perm.Cycle.Basic
 public import Mathlib.SetTheory.Cardinal.NatCard
 public import Mathlib.Logic.Relation
+public import Chazelle.Rwx
 
 /-!
 # Permutation and equivalence-class toolkit (planar separators, part 0)
@@ -39,7 +40,7 @@ theorem sameCycle_follow [Finite X] (π : Perm X) (ψ : Perm Y) (ι : X → Y) (
     {z t : X} (hz : P z) (hzt : π.SameCycle z t)
     (h : ∀ y, P y → y ≠ t → ψ (ι y) = ι (π y) ∧ P (π y)) : ψ.SameCycle (ι z) (ι t) := by
   classical
-  have hex : ∃ k, (π ^ k) z = t := hzt.exists_nat_pow_eq
+  have hex  := hzt.exists_nat_pow_eq
   have hmin : ∀ j < Nat.find hex, (π ^ j) z ≠ t := fun j hj => Nat.find_min hex hj
   have key : ∀ j ≤ Nat.find hex, P ((π ^ j) z) ∧ (ψ ^ j) (ι z) = ι ((π ^ j) z) := by
     intro j
@@ -50,7 +51,7 @@ theorem sameCycle_follow [Finite X] (π : Perm X) (ψ : Perm Y) (ι : X → Y) (
       obtain ⟨hP, hψ⟩ := ih (by omega)
       obtain ⟨h1, h2⟩ := h _ hP (hmin j (by omega))
       refine ⟨?_, ?_⟩
-      · rw [pow_succ', Perm.mul_apply]; exact h2
+      · rwx [pow_succ', Perm.mul_apply]
       · rw [pow_succ', Perm.mul_apply, hψ, h1, pow_succ', Perm.mul_apply]
   refine ⟨(Nat.find hex : ℤ), ?_⟩
   rw [zpow_natCast, (key _ le_rfl).2, Nat.find_spec hex]
@@ -163,7 +164,7 @@ theorem sameCycle_mul_swap_iff (π : Perm X) {a b : X} (hab : ¬ π.SameCycle a 
         | zero => exact ⟨hx, rfl⟩
         | succ k ih =>
           obtain ⟨h1, h2⟩ := hUc _ ih.1
-          refine ⟨by rw [pow_succ', Perm.mul_apply]; exact h1, ?_⟩
+          refine ⟨by rwx [pow_succ', Perm.mul_apply], ?_⟩
           rw [pow_succ', Perm.mul_apply, h2, ih.2, pow_succ', Perm.mul_apply]
       rw [(key k).2]
       exact ⟨k, by simp⟩
@@ -190,7 +191,7 @@ variable {X : Type*} [Finite X] (π : Perm X) (p : X → Prop)
 
 /-- The orbit of a point of `{p}` returns to `{p}`. -/
 theorem exists_return {x : X} (hx : p x) : ∃ m, 0 < m ∧ p ((π ^ m) x) :=
-  ⟨orderOf π, orderOf_pos π, by rw [pow_orderOf_eq_one]; exact hx⟩
+  ⟨orderOf π, orderOf_pos π, by rwx [pow_orderOf_eq_one]⟩
 
 open Classical in
 /-- The first time the `π`-orbit of `x` returns to `{p}`. -/
@@ -227,7 +228,7 @@ noncomputable def returnFun (x : {x // p x}) : {x // p x} :=
 /-- The first-return map is injective. -/
 theorem returnFun_injective : Function.Injective (returnFun π p) := by
   intro x y hxy
-  have h : (π ^ returnTime π p x) x.1 = (π ^ returnTime π p y) y.1 := congrArg Subtype.val hxy
+  have h  := congrArg Subtype.val hxy
   -- the smaller return time forces equality
   have key : ∀ (x y : {x // p x}), returnTime π p x ≤ returnTime π p y →
       (π ^ returnTime π p x) x.1 = (π ^ returnTime π p y) y.1 → x = y := by
@@ -292,7 +293,7 @@ theorem sameCycle_firstReturn_iff (x y : {x // p x}) :
         have hret : (firstReturn π p ⟨(π ^ j) x.1, hj⟩).1 = (π ^ k) x.1 := by
           rw [firstReturn_eq π p _ (m := k - j) (by omega)]
           · rw [← Perm.mul_apply, ← pow_add, Nat.sub_add_cancel hjk.le]
-          · rw [← Perm.mul_apply, ← pow_add, Nat.sub_add_cancel hjk.le]; exact hk
+          · rwx [← Perm.mul_apply, ← pow_add, Nat.sub_add_cancel hjk.le]
           · intro i hi0 hi
             rw [← Perm.mul_apply, ← pow_add]
             exact Nat.findGreatest_is_greatest (P := fun j => p ((π ^ j) x.1)) (n := k - 1)
@@ -301,7 +302,7 @@ theorem sameCycle_firstReturn_iff (x y : {x // p x}) :
         rw [zpow_one]
         exact Subtype.ext hret
     have := key k (hk ▸ y.2)
-    simp only [hk] at this
+    simp [hk] at this
     exact this
 
 end FirstReturn
@@ -397,7 +398,7 @@ theorem card_quot_le_or_pair_add_one [Finite X] (R : X → X → Prop) (u w : X)
     · rw [ha, hb]
     · simp [G, ha, hb] at hqq
     · simp [G, ha, hb] at hqq
-    · simp only [G, ha, hb, ite_false, Option.some.injEq] at hqq
+    · simp [G, ha, hb, ite_false, Option.some.injEq] at hqq
       have h := Quot.eqvGen_exact hqq
       rw [eqvGen_or_pair_iff] at h
       rcases h with h | ⟨_, h2⟩ | ⟨h1, _⟩

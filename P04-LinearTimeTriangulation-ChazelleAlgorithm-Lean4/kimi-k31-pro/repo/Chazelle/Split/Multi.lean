@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Split.All
 public import Chazelle.Mountain.Pieces
+public import Chazelle.Rwx
 
 /-!
 # Splitting a simple polygon along all the inserted diagonals
@@ -51,7 +52,7 @@ theorem IsDiag.swap {l : List ℕ} {d : ℕ × ℕ} (hd : IsDiag P l d) : IsDiag
   · intro p hp hp1 hp2
     rw [pairSeg_swap] at hp
     exact hch p hp hp2 hp1
-  · rw [pairSeg_swap]; exact hf
+  · rwx [pairSeg_swap]
 
 /-- Non-crossing is invariant under swapping the first pair. -/
 theorem NonCross.swap_left {d d' : ℕ × ℕ} (h : NonCross P d d') : NonCross P d.swap d' := by
@@ -101,7 +102,7 @@ theorem eq_or_eq_swap_of_pairSeg_eq (hP : P.Simple) {d d' : ℕ × ℕ}
     d' = d ∨ d' = d.swap := by
   have hD := isDiag_range_of_mem_or_swap hP hd
   have hD' := isDiag_range_of_mem_or_swap hP hd'
-  have hQ : (subPoly P (List.range P.n)).Simple := by rw [subPoly_range]; exact hP
+  have hQ : (subPoly P (List.range P.n)).Simple := by rwx [subPoly_range]
   -- each endpoint of `d'` is an endpoint of `d`
   have key : ∀ x, x ∈ List.range P.n → P.vtx x ∈ pairSeg P d → x = d.1 ∨ x = d.2 := by
     intro x hxl hxs
@@ -117,7 +118,7 @@ theorem eq_or_eq_swap_of_pairSeg_eq (hP : P.Simple) {d d' : ℕ × ℕ}
   have hne' := hD'.2.2.1
   obtain ⟨a, b⟩ := d
   obtain ⟨a', b'⟩ := d'
-  simp only [Prod.swap_prod_mk, Prod.mk.injEq] at e1 e2 hne hne' ⊢
+  simp [Prod.swap_prod_mk, Prod.mk.injEq] at e1 e2 hne hne' ⊢
   omega
 
 /-- **Two inserted diagonals (up to orientation) that are distinct pairs up to orientation do not
@@ -159,7 +160,7 @@ structure EnumDiags (P : Polygon) (D : List (ℕ × ℕ)) : Prop where
 /-- **An enumeration of the inserted diagonals is a diagonal system for the whole polygon.** -/
 theorem EnumDiags.diagSystem (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D) :
     DiagSystem P (List.range P.n) D where
-  simple := by rw [subPoly_range]; exact hP
+  simple := by rwx [subPoly_range]
   diag d hd := isDiag_range_of_mem_or_swap hP (hD.sound d hd)
   noncross := hD.distinct.imp_of_mem fun hd hd' hne =>
     nonCross_of_mem_or_swap hP (hD.sound _ hd) (hD.sound _ hd') hne

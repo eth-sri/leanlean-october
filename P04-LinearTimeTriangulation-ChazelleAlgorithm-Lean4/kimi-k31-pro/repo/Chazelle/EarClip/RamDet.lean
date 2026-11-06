@@ -51,7 +51,6 @@ def detInto (dst t1 t2 a1 a2 v1 v2 b1 b2 : ℕ) : Stmt :=
   block [.subR t1 v1 a1, .subR t2 b2 a2, .mulR t1 t1 t2, .subR t2 b1 a1, .subR dst v2 a2,
     .mulR t2 t2 dst, .subR dst t1 t2]
 
-set_option linter.unusedSimpArgs false in
 /-- **Spec lemma for `detInto`.**  With `dst`, `t1`, `t2` pairwise distinct and distinct from
 the six input registers: cost `≤ 7` (the code is straight-line, so exactly `7`); `rreg dst` receives the determinant; real registers
 other than `dst, t1, t2`, all natural registers, both memories and the output are unchanged. -/

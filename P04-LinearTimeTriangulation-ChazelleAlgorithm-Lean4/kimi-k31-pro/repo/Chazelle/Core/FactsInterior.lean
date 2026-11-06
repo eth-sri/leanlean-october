@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.FactsChain
 public import Chazelle.Mountain.PiecesMain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-B: the interior model satisfies the walk axioms
@@ -112,7 +115,7 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
       have := (hstrip y hy.1).1 hyb
       have h2 := hy.2
       simp only [mem_ofPred_eq] at h2
-      rw [this] at h2; linarith
+      rwli [this] at h2
     obtain ⟨δ, hδ1, hδ2, hδ0⟩ := ((eventually_offset_orient hW hp ht).and
       ((eventually_offset_mem (-1) isOpen_ball (mem_ball_self hr) (u := u) (v := v)
         (t := t)).and self_mem_nhdsWithin)).exists
@@ -123,7 +126,7 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
     have hmem : offset u v t ((-1) * δ) ∈ H := ⟨hδ2, by
       show 0 < (-1) * det u v (offset u v t ((-1) * δ))
       rw [det_offset]; nlinarith [mul_pos hδ hsq]⟩
-    exact subset_exterior hW hHc hHb hmem hδ1.2 ⟨hx, by simp only [mem_ofPred_eq]; linarith⟩
+    exact subset_exterior hW hHc hHb hmem hδ1.2 ⟨hx, by sil only [mem_ofPred_eq]⟩
   · exact (hstrip x hx).2 hdet
 
 /-! ## Near a vertex -/
@@ -134,14 +137,14 @@ theorem corner_meet (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
       Chazelle.segment (W.vtx p) (W.vtx ((p + 1) % W.n)) ⊆ {W.vtx p} := by
   have hn := simple_three_le hW
   set j := prevIdx W p with hj
-  have hjn : j < W.n := prevIdx_lt W hp
-  have hji : j ≠ p := prevIdx_ne W hn hp
-  have hsucc : (j + 1) % W.n = p := prevIdx_succ W hp
-  have hjs : j ≠ (p + 1) % W.n := prevIdx_ne_succIdx W hn hp
-  have hab : W.vtx j ≠ W.vtx ((p + 1) % W.n) := simple_vtx_ne hW hjn (succIdx_lt W hp) hjs
+  have hjn  := prevIdx_lt W hp
+  have hji  := prevIdx_ne W hn hp
+  have hsucc  := prevIdx_succ W hp
+  have hjs  := prevIdx_ne_succIdx W hn hp
+  have hab  := simple_vtx_ne hW hjn (succIdx_lt W hp) hjs
   intro x hx
   have : x ∈ W.edge j ∩ W.edge p := by
-    rw [edge_prevIdx W hp]; exact hx
+    rwx [edge_prevIdx W hp]
   rw [simple_edge_inter hW hjn hp hji] at this
   obtain ⟨h1, h2⟩ := this
   rw [hsucc] at h1
@@ -216,7 +219,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
     · by_cases hkj : k = j
       · subst hkj
         left
-        rw [← edge_prevIdx W hp]; exact hxk
+        rwx [← edge_prevIdx W hp]
       · exfalso
         exact hball x hx k (by simp [Finset.mem_erase, Finset.mem_range, hkp, hkj, hk]) hxk
   -- radius also below the edge lengths (for the coverage)
@@ -271,7 +274,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
       nlinarith
     have e : lerp v w μ - v = μ • (w - v) := by
       apply point_ext <;> simp [lerp]
-    have hdist : ‖lerp v w μ - v‖ < r := by rw [← dist_eq_norm]; exact hx
+    have hdist : ‖lerp v w μ - v‖ < r := by rwx [← dist_eq_norm]
     rw [e, norm_smul, Real.norm_eq_abs, abs_of_nonneg hμ0] at hdist
     have hμ1 : μ ≤ 1 := by
       by_contra h
@@ -368,7 +371,7 @@ theorem walkEnd (hW : W.Simple) (hL : orient W = 1) {e e' : Point} (hee : e ≠ 
   refine ⟨?_, fun p p' t t' hp ht ht1 hp' ht' ht1' hne h1 h2 => ?_⟩
   · obtain ⟨p, hp, t, ht, ht1, hpt⟩ := exists_pos_of_mem_boundary he
     obtain ⟨r, hr, hleft⟩ := interior_left hW hL hp ht ht1
-    have hd : 0 < dist e e' := dist_pos.2 hee
+    have hd  := dist_pos.2 hee
     refine ⟨p, t, ⟨hp, ht, ht1, by rw [hpt]; exact Geometry.left_mem_segment _ _,
       min r (dist e e'), lt_min hr hd, fun x hx hxe hxd => ?_⟩, hpt⟩
     rw [hpt] at hxe hxd
@@ -465,8 +468,8 @@ theorem chord_parity_flip (hW : W.Simple) {e₁ e₂ : Point} (h12 : e₁.1 ≠ 
       rw [hm, e]
       refine ⟨⟨by omega, by omega⟩, ?_⟩
       rw [show i + (j + W.n - i) = j + W.n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hj]
-  have hm0 : 0 < m := hmv.1.1
-  have hjm : (i + m) % W.n = j := hmv.2
+  have hm0  := hmv.1.1
+  have hjm  := hmv.2
   set Γ := chordPoly W i m e₁ e₂ with hΓ
   have hΓn : Γ.n = m + 2 := chordPoly_n W i m e₁ e₂
   -- all edges but `m` are in the boundary of `W`
@@ -491,10 +494,10 @@ theorem chord_parity_flip (hW : W.Simple) {e₁ e₂ : Point} (h12 : e₁.1 ≠ 
       rw [hΓ, chordPoly_edge_m, Geometry.segment_comm] at hxk
       exact hxk
     · exact Or.inl (hedge k hk hkm hxk)
-  · have hmn : m < Γ.n := by rw [hΓn]; omega
+  · have hmn : m < Γ.n := by rwo [hΓn]
     have hsucc : (m + 1) % Γ.n = m + 1 := by rw [hΓn]; exact Nat.mod_eq_of_lt (by omega)
     have hzΓ : z ∈ Γ.edge m := by
-      rw [hΓ, chordPoly_edge_m, Geometry.segment_comm]; exact hz
+      rwx [hΓ, chordPoly_edge_m, Geometry.segment_comm]
     have hne : (Γ.vtx m).1 ≠ (Γ.vtx ((m + 1) % Γ.n)).1 := by
       rw [hsucc, hΓ, chordPoly_vtx_m, chordPoly_vtx_m1]; exact Ne.symm h12
     have hzu : z ≠ Γ.vtx m := by
@@ -610,7 +613,7 @@ theorem reach (hW : W.Simple) (hL : orient W = 1) {z : Point} (hz : z ∈ W.fill
     have := congrArg Prod.snd hqe; simp only [hqdef, lerp_snd] at this; exact this
   rcases lt_trichotomy u.2 v.2 with h | h | h
   · exact h
-  · exfalso; apply hzv p hp; rw [hq2, h]; ring
+  · exfalso; apply hzv p hp; rwring [hq2, h]
   · exfalso
     obtain ⟨r, hr, hloc⟩ := edge_local hW hL hp ht
     set ε := min r s / 2 with hε
@@ -625,8 +628,8 @@ theorem reach (hW : W.Simple) (hL : orient W = 1) {z : Point} (hz : z ∈ W.fill
     have hq0 : det u v q = 0 := by rw [hqe]; exact Geometry.det_lerp_self _ _ _
     have hdet : det u v ((z.1 + (s - ε), z.2) : Point) < 0 := by
       have e : det u v ((z.1 + (s - ε), z.2) : Point) = det u v q + ε * (v.2 - u.2) := by
-        simp only [hqdef, det]; ring
-      rw [e, hq0]; nlinarith
+        sir only [hqdef, det]
+      rwnl [e, hq0]
     exact (hloc _ hx).2.1 hdet (hseg (s - ε) ⟨by linarith, by linarith⟩).1
 
 /-! ## The interior walk -/
@@ -638,7 +641,7 @@ theorem rev_n (Q : Polygon) : (⟨Q.vertices.reverse⟩ : Polygon).n = Q.n := by
 theorem rev_vtx (Q : Polygon) : ∀ k < Q.n, (⟨Q.vertices.reverse⟩ : Polygon).vtx k =
     Q.vtx (Q.n - 1 - k) := by
   intro k hk
-  have hk' : k < Q.vertices.reverse.length := by rw [List.length_reverse]; exact hk
+  have hk' : k < Q.vertices.reverse.length := by rwx [List.length_reverse]
   have hk2 : Q.n - 1 - k < Q.vertices.length := by
     have : Q.n = Q.vertices.length := rfl
     omega
@@ -659,13 +662,13 @@ theorem interiorWalk_spec {Q : Polygon} (hQ : Q.Simple) :
   · set R : Polygon := ⟨Q.vertices.reverse⟩ with hR
     have hn := rev_n Q
     have hv := rev_vtx Q
-    have hRs : R.Simple := Mountain.rev_simple hn hv hQ
-    have hRf : R.filled = Q.filled := Mountain.rev_filled hn hv
+    have hRs  := Mountain.rev_simple hn hv hQ
+    have hRf  := Mountain.rev_filled hn hv
     refine ⟨hRs, Mountain.rev_boundary hn hv, hRf, ?_⟩
     have hn3 := simple_three_le hQ
     have hQo : orient Q = -1 := by unfold orient; simp [h]
     obtain ⟨e1, e2⟩ := Mountain.rev_endpoints hn hv (k := 0) (by omega)
-    apply Mountain.orient_eq_of_eventually hRs (i := 0) (by rw [hn]; omega)
+    apply Mountain.orient_eq_of_eventually hRs (i := 0) (by rwo [hn])
       (t := 1 / 2) ⟨by norm_num, by norm_num⟩ (Or.inl rfl)
     set e := Mountain.revEdge Q.n 0 with he
     have hel : e < Q.n := Mountain.revEdge_lt (by omega)

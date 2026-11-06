@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.SweepEvTasks3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep (WP-D), stage 3: the next key (task K), registers and building blocks
@@ -59,10 +64,10 @@ theorem kqIsOne_irs {r : ℕ} {s : Stmt} {K : ℕ} {Q : Config → Prop} (hI : I
   unfold kqIsOne
   by_cases h1 : c.nreg K0 < c.nreg r
   · by_cases h2 : c.nreg r < c.nreg K2
-    · exact (IRS.ifT h1 (IRS.ifT h2 (hs (by omega)))).mono (by omega) (fun _ h => h)
+    · exact (IRS.ifT h1 (IRS.ifT h2 (hs (by omega)))).mono (by omega) (fun _ => id)
     · exact (IRS.ifT h1 (IRS.ifF h2 (IRS.skip (K := 0) hI (hq (by omega))))).mono (by omega)
-        (fun _ h => h)
-  · exact (IRS.ifF h1 (IRS.skip (K := 0) hI (hq (by omega)))).mono (by omega) (fun _ h => h)
+        (fun _ => id)
+  · exact (IRS.ifF h1 (IRS.skip (K := 0) hI (hq (by omega)))).mono (by omega) (fun _ => id)
 
 /-! ## Offer to the running minimum -/
 
@@ -105,11 +110,10 @@ theorem kqTake_irs (hI : IInv W c₀ c) (hW : 1 ≤ W) :
       simp only [kqTake, regB, regI]
       rw [upd_other _ _ _ (by tauto), upd_other _ _ _ (by tauto), upd_other _ _ _ (by tauto)]
     · simp only [kqTake, regB, regI]
-      rw [upd_other _ _ _ (by unfold ALLOC kqH sw; omega),
-        upd_other _ _ _ (by unfold ALLOC kqE sw; omega),
-        upd_other _ _ _ (by unfold ALLOC kqF sw; omega)]
+      rw [upd_other _ _ _ (by ufo ALLOC kqH sw),
+        upd_other _ _ _ (by ufo ALLOC kqE sw),
+        upd_other _ _ _ (by ufo ALLOC kqF sw)]
 
-set_option maxHeartbeats 4000000 in
 /-- **The offer.** -/
 theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
     (hctx : ChainCtx P W c (sw 2) J.whole) (hgw : c.nreg cGW = gW J)
@@ -124,14 +128,14 @@ theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
   by_cases h1 : c.nreg K0 < c.nreg kqF
   · have hF1 : c.nreg kqF = 1 := by omega
     have htP := ht hF1
-    refine IRS.mono (K := 11015 + 2) (IRS.ifT h1 ?_) (by norm_num) (fun _ h => h)
+    refine IRS.mono (K := 11015 + 2) (IRS.ifT h1 ?_) (by norm_num) (fun _ => id)
     refine IRS.seq (K₁ := 11008) (K₂ := 7) (callOff_irs (dsc := sw 2) (ex := kqSE) (hx := kqSH)
       (ey := kqE) (hy := kqH) (g := cGW) (o := kqO) hI hctx
-      ⟨by norm_num [sw], by norm_num [sw], by unfold kqSE sw; norm_num, by unfold kqSE sw; norm_num,
-        by unfold kqSH sw; norm_num, by unfold kqSH sw; norm_num, by unfold kqE sw; norm_num,
-        by unfold kqE sw; norm_num, by unfold kqH sw; norm_num, by unfold kqH sw; norm_num,
-        by unfold cGW sw; norm_num, by unfold cGW sw; norm_num⟩
-      ⟨by unfold kqO sw; norm_num, by unfold kqO sw; norm_num⟩ hq.1 htP.1 (by rw [hgw]; exact hgn)
+      ⟨by norm_num [sw], by norm_num [sw], by ufn kqSE sw, by ufn kqSE sw,
+        by ufn kqSH sw, by ufn kqSH sw, by ufn kqE sw,
+        by ufn kqE sw, by ufn kqH sw, by ufn kqH sw,
+        by ufn cGW sw, by ufn cGW sw⟩
+      ⟨by ufn kqO sw, by ufn kqO sw⟩ hq.1 htP.1 (by rwx [hgw])
       hq.2.1 htP.2.1 hq.2.2 htP.2.2 hroom) ?_
     rintro c₁ hI₁ hA₁ hA₁' ⟨b1, -, k₁, ha₁, hm₁⟩
     rw [hgw'] at b1
@@ -142,17 +146,17 @@ theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
     have keep : ∀ r, r = kqF ∨ r = kqE ∨ r = kqH ∨ r = kqSE ∨ r = kqSH → c₁.nreg r = c.nreg r := by
       intro r hr
       have hr' : 242480 ≤ r ∧ r ≤ 242484 := by
-        unfold kqF kqE kqH kqSE kqSH sw at hr; omega
-      exact k₁ r (not_oracle_sw (by omega) (by omega)) (by unfold kqO sw; omega)
-        (by unfold kqO sw; omega) (by unfold ALLOC; omega)
+        ufo kqF kqE kqH kqSE kqSH sw at hr
+      exact k₁ r (not_oracle_sw (by omega) (by omega)) (by ufo kqO sw)
+        (by ufo kqO sw) (by ufo ALLOC)
     have k01 : c₁.nreg K0 = 0 := by
-      rw [k₁ K0 (not_oracle_sw (by unfold K0 sw; omega) (by unfold K0 sw; omega))
-        (by unfold K0 kqO sw; omega) (by unfold K0 kqO sw; omega) (by unfold K0 ALLOC sw; omega)]
+      rw [k₁ K0 (not_oracle_sw (by ufo K0 sw) (by ufo K0 sw))
+        (by ufo K0 kqO sw) (by ufo K0 kqO sw) (by ufo K0 ALLOC sw)]
       exact k0
     by_cases h2 : c₁.nreg K0 < c₁.nreg kqO
     · rw [k01] at h2
       have hlt := b1.2.1 (by have := b1.1; omega)
-      refine IRS.mono (K := 3 + 2) (IRS.ifT (by rw [k01]; exact h2) (kqTake_irs hI₁ hW1))
+      refine IRS.mono (K := 3 + 2) (IRS.ifT (by rwx [k01]) (kqTake_irs hI₁ hW1))
         (by norm_num) ?_
       rintro c' ⟨e1, e2, e3, fr2⟩
       rw [keep _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))] at e2
@@ -162,7 +166,7 @@ theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
     · rw [k01] at h2
       have hnlt : ¬ offK P J (c.nreg kqSE) (c.nreg kqSH) < offK P J (c.nreg kqE) (c.nreg kqH) :=
         fun h => by have := b1.2.2 h; omega
-      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact h2) (IRS.skip hI₁ rfl))
+      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwx [k01]) (IRS.skip hI₁ rfl))
         (by norm_num) ?_
       rintro c' rfl
       have eF := keep _ (Or.inl rfl)
@@ -193,20 +197,20 @@ theorem storeL_irs {x : ℕ} (hx : IScr x) (hx1 : x ≠ K1) :
   | [], c, hI, _, _, _, _ => IRS.skip hI ⟨fun i h => absurd h (by simp), fun _ _ => rfl,
       fun _ _ => rfl⟩
   | v :: vs, c, hI, hK1, hv, hA, hW => by
-    have hvx : v ≠ x := hv v List.mem_cons_self
+    have hvx  := hv v List.mem_cons_self
     simp only [List.length_cons] at hW ⊢
     have e : 2 * (vs.length + 1) = 1 + (1 + 2 * vs.length) := by ring
     rw [e]
     refine IRS.seq (IRS.store (v := v) hI hA) ?_
     rintro c₁ hI₁ - - rfl
-    refine IRS.seq (IRS.instr1 (i := .addN x x K1) hI₁ ⟨hx, by simp only [hK1]; omega⟩) ?_
+    refine IRS.seq (IRS.instr1 (i := .addN x x K1) hI₁ ⟨hx, by sio only [hK1]⟩) ?_
     rintro c₂ hI₂ - - rfl
     have hx2 : (upd c.nreg x (c.nreg x + c.nreg K1)) x = c.nreg x + 1 := by
       rw [upd_same, hK1]
-    refine (storeL_irs hx hx1 vs hI₂ (by simp only [regI]; rw [upd_other _ _ _ (Ne.symm hx1)]; exact hK1)
+    refine (storeL_irs hx hx1 vs hI₂ (by simp only [regI]; rwx [upd_other _ _ _ (Ne.symm hx1)])
       (fun w hw => hv w (List.mem_cons_of_mem _ hw))
-      (by simp only [regI]; rw [hx2]; omega)
-      (by simp only [regI]; rw [hx2]; omega)).mono le_rfl ?_
+      (by simp only [regI]; rwo [hx2])
+      (by simp only [regI]; rwo [hx2])).mono le_rfl ?_
     rintro c' ⟨s1, s2, s3⟩
     simp only [regI, hx2] at s1 s2 s3
     refine ⟨fun i hi => ?_, fun y hy => ?_, fun r hr => ?_⟩

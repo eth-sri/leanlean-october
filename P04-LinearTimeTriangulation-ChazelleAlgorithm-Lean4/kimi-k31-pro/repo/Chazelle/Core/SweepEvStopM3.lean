@@ -54,7 +54,7 @@ theorem orig_attach {kind k b : ℕ} (hD : OrgD P J N kind k b) :
         (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)) (dirOf b) p t) := by
   obtain ⟨hok, hf⟩ := hD
   obtain ⟨haD, ha2, -, -, -⟩ := stOrig_facts hP hN hok
-  have ha : (stOrig J (Qof P) N kind k b).2 ≤ J.whole.top.2 := le_trans ha2 J.right_top_le
+  have ha  := le_trans ha2 J.right_top_le
   have hb := hok.2.1
   have hσ := dirOf_cases' b
   rw [stopSet_eq]
@@ -87,10 +87,9 @@ theorem attach_two {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : ℕ}
     {q : ℕ} {s : ℝ} (hA : SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) q s) :
     (q = p₀ ∧ s = t₀) ∨ (q = p₁ ∧ s = t₁) := by
   obtain ⟨i1, i2, i3⟩ := orig_attach hP hN hD
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM  := FactsChain.walkAx J.whole hP
   have hm := (stop_mem hP hN hD.ok hD.free).1
-  have ha : stopSet J (Qof P) N kind k b ∈ (chainModel J.whole).Adm :=
-    F₂plus_subset J hN.1.2.1 hm
+  have ha  := F₂plus_subset J hN.1.2.1 hm
   rcases i3 q s hA with h | h
   · exact Or.inl (hM.attach_unique ha hA (i1 p₀ t₀ h₀).1 (by rw [h.2.2.2.1, h₀.2.2.2.1]))
   · exact Or.inr (hM.attach_unique ha hA (i2 p₁ t₁ h₁).1 (by rw [h.2.2.2.1, h₁.2.2.2.1]))
@@ -128,7 +127,7 @@ theorem orig_far_ne {kind k b : ℕ} (hD : OrgD P J N kind k b) :
       farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b) ∈ stopSet J (Qof P) N kind k b := by
   obtain ⟨hok, hf⟩ := hD
   obtain ⟨-, ha2, -, -, -⟩ := stOrig_facts hP hN hok
-  have ha : (stOrig J (Qof P) N kind k b).2 ≤ J.whole.top.2 := le_trans ha2 J.right_top_le
+  have ha  := le_trans ha2 J.right_top_le
   have hσ := dirOf_cases' b
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt J.whole ha hσ hf
   rw [stopSet_eq]
@@ -173,7 +172,7 @@ theorem parent_vt_iff (_hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ 
     Merge.shoot J.whole a (dirOf b) ⊆ c ↔
       (b = 1 ∧ Merge.lend c = a) ∨ (b = 0 ∧ Merge.rend c = a) := by
   have hσ := dirOf_cases' b
-  have ha : a.2 ≤ J.whole.top.2 := le_trans (J.right.snd_le_top_of_mem_set haR) J.right_top_le
+  have ha  := le_trans (J.right.snd_le_top_of_mem_set haR) J.right_top_le
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt J.whole ha hσ hf
   constructor
   · intro hsub

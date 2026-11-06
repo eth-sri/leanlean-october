@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.SweepEvOrg3
 public import Chazelle.Core.SweepIoLHit2
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), stage 3: the shot of a candidate (RAM)
@@ -88,10 +90,10 @@ theorem evPrepL_val (m f : ℕ → ℕ) :
     regB m evPrepL f eRD = f K1 - f oD ∧
     (∀ q, (q < 241300 ∨ 241309 < q) → q ≠ eRD → regB m evPrepL f q = f q) := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun q hq hq' => regB_other _ _ _ (fun i hi => by
-    simp only [evPrepL, List.mem_cons, List.not_mem_nil, or_false] at hi
+    simp [evPrepL, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [dstI] <;> first | omega)⟩ <;>
-  · simp only [evPrepL, regB, regI, upd, MD₁, wGB, wGK, oSym, oD, eRD, K1, sw]; simp
+      simp [dstI] <;> first | omega)⟩ <;>
+  · sis only [evPrepL, regB, regI, upd, MD₁, wGB, wGK, oSym, oD, eRD, K1, sw]
 
 /-! ## The contract -/
 
@@ -128,9 +130,9 @@ theorem nhgt_facts {M : Model} {Q : Polygon} {n : ℕ} {u : WPos} (hu : ProperPo
     unfold nhgt; rw [← hedge]
   rw [he]
   have hpar : M.param Q (Restore.normOf M Q u) = M.param Q u := by
-    unfold Model.key at hkey; rw [hedge] at hkey; linarith
+    unfold Model.key at hkey; rwli [hedge] at hkey
   refine ⟨hpp, hpar, hpos, ⟨fun h => ?_, fun h => ?_⟩⟩
-  · rw [← he, h]; rfl
+  · rwr [← he, h]
   · rcases hcase with h0 | h0
     · exact h0
     · rw [h] at h0; exact absurd h0 (lt_irrefl 0)

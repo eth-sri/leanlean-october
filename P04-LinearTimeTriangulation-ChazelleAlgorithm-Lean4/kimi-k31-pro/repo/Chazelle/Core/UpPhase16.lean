@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.UpPhase15
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 64000000
 
 /-!
 # WP-J up phase, part 16: the grade record of the next grade
@@ -66,7 +69,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 64000000 in
 theorem recA_exec {c : Config} (hw : WordsBounded W c) {A h g : ℕ}
     (hA : c.nreg ALLOC = A) (h05 : c.nreg 170005 = h) (h07 : c.nreg 170007 = g)
     (h20 : c.nreg 170020 = 1) (h21 : c.nreg 170021 = 2) (h22 : c.nreg 170022 = 3)
@@ -107,7 +109,6 @@ theorem recA_exec {c : Config} (hw : WordsBounded W c) {A h g : ℕ}
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 16000000 in
 theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
     (h50 : c.nreg 170050 = j) (h57 : c.nreg 170057 = T) (h56 : c.nreg 170056 = T')
     (hA : c.nreg ALLOC = Al) (h20 : c.nreg 170020 = 1) (hWT : T + j ≤ W) (hWT' : T' + j ≤ W)
@@ -133,7 +134,6 @@ theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 16000000 in
 /-- **The rows of the old grades**: `T'[j] = T[j]` for `j < g`. -/
 theorem copyL_exec {c : Config} (hw : WordsBounded W c) {g T T' Al : ℕ}
     (h50 : c.nreg 170050 = 0) (h07 : c.nreg 170007 = g) (h57 : c.nreg 170057 = T)
@@ -159,27 +159,27 @@ theorem copyL_exec {c : Config} (hw : WordsBounded W c) {g T T' Al : ℕ}
       (fun c' => 8 * (g - c'.nreg 170050)) (fun c' => c'.nreg ALLOC) (fun c' ⟨_, _, h, _⟩ => h)
       (fun c2 ⟨j, hj, hw2, j50, jA, hcp, hmem, fr, hrr, hrm, ho⟩ htest => by
         have k07 : c2.nreg 170007 = g := by
-          rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h07
+          rw [fr _ (by ufo CopyRG) (by rwo [hAl])]; exact h07
         rw [j50, k07] at htest
         obtain ⟨c3, k3, e3, hk3, hw3, l50, lA, lw, lm, fr3, hrr3, hrm3, ho3⟩ :=
           copyBody_exec (P := P) (T := T) (T' := T') hw2 j50
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h57)
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h56) jA
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h20)
+            (by rw [fr _ (by ufo CopyRG) (by rwo [hAl])]; exact h57)
+            (by rw [fr _ (by ufo CopyRG) (by rwo [hAl])]; exact h56) jA
+            (by rw [fr _ (by ufo CopyRG) (by rwo [hAl])]; exact h20)
             (by omega) (by omega) (by omega) (by omega)
-        refine ⟨c3, k3, e3, ⟨j + 1, by omega, hw3, l50, by rw [lA]; ring, fun j' h' => ?_,
+        refine ⟨c3, k3, e3, ⟨j + 1, by omega, hw3, l50, by rwring [lA], fun j' h' => ?_,
           fun a ha => by rw [lm a (by omega), hmem a (by omega)],
           fun r h1 h2 => by rw [fr3 r h1 h2, fr r h1 h2], by rw [hrr3, hrr], by rw [hrm3, hrm],
-          by rw [ho3, ho]⟩, by rw [l50, j50]; omega, by rw [lA]; omega⟩
+          by rw [ho3, ho]⟩, by rwo [l50, j50], by rwo [lA]⟩
         rcases Nat.lt_or_ge j' j with h1 | h1
         · rw [lm _ (by omega), hcp j' h1]
         · have : j' = j := by omega
           subst this
           rw [lw, hmem _ (Or.inl (by omega))]) hI0
   have hjg : j = g := by
-    rw [j50, fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega), h07] at htest; omega
+    rw [j50, fr _ (by ufo CopyRG) (by rwo [hAl]), h07] at htest; omega
   subst hjg
-  exact ⟨c', k, e, by rw [h50] at hk; omega, hw', jA, by rw [hA] at hψ; exact hψ, hcp, hmem, fr,
+  exact ⟨c', k, e, by rwo [h50] at hk, hw', jA, by rw [hA] at hψ; exact hψ, hcp, hmem, fr,
     hrr, hrm, ho⟩
 
 end proofs

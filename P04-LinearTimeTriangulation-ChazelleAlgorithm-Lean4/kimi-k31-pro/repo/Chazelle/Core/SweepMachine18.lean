@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepMachine17
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), part 34: the abstract machine, events at the left split vertex
@@ -40,10 +43,9 @@ theorem top_corner_sub (C : Chain) (hP : C.P.Simple) (x : Point) :
     (sideLeftOf (C.sideTour C.sideBeta (2 * C.m - 1)) C.top C.slitTop x →
       sideLeftOf (C.sideTour C.sideBeta (2 * C.m - 1)) C.top (C.sideTour C.sideBeta 1) x) := by
   set β := C.sideBeta
-  have hN0 : C.sideTour β 1 - C.top ≠ 0 := sub_ne_zero.2 (C.sideTour_one_ne_top hP β)
-  have hP0 : C.sideTour β (2 * C.m - 1) - C.top ≠ 0 :=
-    sub_ne_zero.2 (C.sideTour_last_ne_top hP β)
-  have hU0 : C.slitTop - C.top ≠ 0 := sub_ne_zero.2 C.sideSlitTop_ne_top
+  have hN0  := sub_ne_zero.2 (C.sideTour_one_ne_top hP β)
+  have hP0  := sub_ne_zero.2 (C.sideTour_last_ne_top hP β)
+  have hU0  := sub_ne_zero.2 C.sideSlitTop_ne_top
   unfold sideLeftOf
   by_cases hT : C.topIdx = 0 ∨ C.topIdx = C.m
   · rw [← C.sideTour_one_eq_last β hT]
@@ -155,9 +157,9 @@ theorem sideLeft_split (hP : J.P.Simple) (hlt : lL1 J < lL1 J + lL2 J)
   rw [hprev, hcur, hnext]
   have e1 : (6 + tpos J.left J.m₁ + (lL1 J - 1)) % (chainModel J.left).W.n =
       (2 * J.left.m - 1) + 6 := by
-    rw [hn₁, Nat.mod_eq_of_lt (by omega)]; omega
+    rwo [hn₁, Nat.mod_eq_of_lt (by omega)]
   have e2 : (6 + tpos J.left J.m₁ + lL1 J) % (chainModel J.left).W.n = 2 * J.left.m + 6 := by
-    rw [hn₁, Nat.mod_eq_of_lt (by omega)]; omega
+    rwo [hn₁, Nat.mod_eq_of_lt (by omega)]
   have e3 : (6 + tpos J.left J.m₁ + lL1 J + lδ J + 1) % (chainModel J.left).W.n = 1 + 6 := by
     rw [hn₁, show 6 + tpos J.left J.m₁ + lL1 J + lδ J + 1 = (1 + 6) + (2 * J.left.m + 7) by omega,
       Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
@@ -170,7 +172,7 @@ theorem attach_of_sector {W W' : Polygon} {c : Set Point} {p p' : ℕ}
     (hA : SideAttach W c p 0) (hp' : p' < W'.n) (hpt : sidePt W' p' 0 = sidePt W p 0)
     (hsec : ∀ x, sideLeft W p 0 x → sideLeft W' p' 0 x) : SideAttach W' c p' 0 := by
   obtain ⟨-, -, -, hw, r, hr, hl⟩ := hA
-  refine ⟨hp', le_rfl, zero_lt_one, by rw [hpt]; exact hw, r, hr, fun x hx hxw hxd => ?_⟩
+  refine ⟨hp', le_rfl, zero_lt_one, by rwx [hpt], r, hr, fun x hx hxw hxd => ?_⟩
   exact hsec x (hl x hx (by rwa [hpt] at hxw) (by rwa [hpt] at hxd))
 
 /-- **An attachment at either copy of the top of `C₁` gives an attachment at the split vertex.** -/
@@ -214,13 +216,13 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
         (2 * J.left.m + 6) 0) ∧
       (σ = -1 → Arrival (chainModel J.left).W (rayPt a σ (J.whole.hitParam a σ)) σ 6 0) := by
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
-  have hM₁ : WalkAx (chainModel J.left) := hC.hM₂
-  have hPl : J.left.P.Simple := hP
+  have hM₁  := hC.hM₂
+  have hPl  := hP
   set T := J.whole.hitParam a σ with hT
-  have hz' : a.2 ≤ J.whole.top.2 := ha₁.trans J.left_top_le
+  have hz'  := ha₁.trans J.left_top_le
   obtain ⟨hT0, -, hdom⟩ := Merge.hit_of_freeAt J.whole hz' hσ hfree
   obtain ⟨h6, h2m⟩ := sidePt_top_copies J.left
-  have hn₁ : (chainModel J.left).W.n = 2 * J.left.m + 7 := cm_n J.left
+  have hn₁  := cm_n J.left
   have hm := J.left.two_m_pos
   have hNb : (J.left.sideTour J.left.sideBeta 1).2 ≤ J.left.top.2 :=
     J.left.vertex_snd_le_top (J.left.sideIdx_le _ _)
@@ -251,13 +253,13 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
     set P := J.left.sideTour J.left.sideBeta (2 * J.left.m - 1) with hPdef
     have hlt : P.1 < J.left.top.1 := lt_of_le_of_ne h2 (fun h => hPne (Prod.ext h h1))
     set d := J.left.top.1 - P.1 with hd
-    have hd0 : 0 < d := by rw [hd]; linarith
+    have hd0 : 0 < d := by rwli [hd]
     set ε := min T d / 2 with hε
     have hε0 : 0 < ε := by rw [hε]; exact half_pos (lt_min hT0 hd0)
     have hεT : ε < T := by rw [hε]; linarith [min_le_left T d]
     have hεd : ε < d := by rw [hε]; linarith [min_le_right T d]
     have hin := hdom (T - ε) (by linarith) (by linarith)
-    have hu0 : 0 ≤ 1 - ε / d := by rw [sub_nonneg, div_le_one hd0]; linarith
+    have hu0 : 0 ≤ 1 - ε / d := by rwli [sub_nonneg, div_le_one hd0]
     have hu1 : 1 - ε / d < 1 := by have := div_pos hε0 hd0; linarith
     have hm := J.left.sideWalk_tour_pt_mem J.left.sideBeta (i := 2 * J.left.m - 1) (by omega)
       (fun h => by omega) hu0 hu1
@@ -266,8 +268,8 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
     have heq : rayPt a 1 (T - ε) = Geometry.lerp P J.left.top (1 - ε / d) := by
       ext
       · simp only [rayPt_fst, Geometry.lerp_fst]
-        rw [sub_mul, one_mul, div_mul_cancel₀ _ hd0.ne']; rw [hd] at *; linarith
-      · simp only [rayPt_snd, Geometry.lerp_snd]; rw [h1, hya]; ring
+        rw [sub_mul, one_mul, div_mul_cancel₀ _ hd0.ne']; rwli [hd] at *
+      · simp only [rayPt_snd, Geometry.lerp_snd]; rwring [h1, hya]
     rw [← heq] at hm
     exact J.whole.not_mem_set_of_mem_dom hin (J.left_set_subset hm)
   have hNe : σ = -1 → ¬ ((J.left.sideTour J.left.sideBeta 1).2 = J.left.top.2 ∧
@@ -276,13 +278,13 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
     set N := J.left.sideTour J.left.sideBeta 1 with hNdef
     have hlt : J.left.top.1 < N.1 := lt_of_le_of_ne h2 (fun h => hNne (Prod.ext h.symm h1))
     set d := N.1 - J.left.top.1 with hd
-    have hd0 : 0 < d := by rw [hd]; linarith
+    have hd0 : 0 < d := by rwli [hd]
     set ε := min T d / 2 with hε
     have hε0 : 0 < ε := by rw [hε]; exact half_pos (lt_min hT0 hd0)
     have hεT : ε < T := by rw [hε]; linarith [min_le_left T d]
     have hεd : ε < d := by rw [hε]; linarith [min_le_right T d]
     have hin := hdom (T - ε) (by linarith) (by linarith)
-    have hu0 : 0 ≤ ε / d := (div_pos hε0 hd0).le
+    have hu0  := (div_pos hε0 hd0).le
     have hu1 : ε / d < 1 := by rw [div_lt_one hd0]; exact hεd
     have hm := J.left.sideWalk_tour_pt_mem J.left.sideBeta (i := 0) (by omega)
       (fun h => by omega) hu0 hu1
@@ -291,8 +293,8 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
     have heq : rayPt a (-1) (T - ε) = Geometry.lerp J.left.top N (ε / d) := by
       ext
       · simp only [rayPt_fst, Geometry.lerp_fst]
-        rw [div_mul_cancel₀ _ hd0.ne']; linarith
-      · simp only [rayPt_snd, Geometry.lerp_snd]; rw [h1, hya]; ring
+        rwli [div_mul_cancel₀ _ hd0.ne']
+      · simp only [rayPt_snd, Geometry.lerp_snd]; rwring [h1, hya]
     rw [← heq] at hm
     exact J.whole.not_mem_set_of_mem_dom hin (J.left_set_subset hm)
   set N := J.left.sideTour J.left.sideBeta 1
@@ -307,22 +309,22 @@ theorem genuine_of_split (hP : J.P.Simple) {a : Point}
   · rw [hend, ← h6]
     exact hM₁.trace 6 (by omega) 0 le_rfl zero_le_one
   · rintro rfl
-    refine ⟨by omega, le_rfl, zero_lt_one, by rw [hend]; exact h2m, ?_⟩
+    refine ⟨by omega, le_rfl, zero_lt_one, by rwx [hend], ?_⟩
     rw [hend, sideLeft_top_last, ← ht]
     unfold sideLeftOf
     rw [hsub]
     refine Chazelle.Chain.sideCcw_west hU1 hU2 rfl (by norm_num)
-      (by simp only [Prod.snd_sub]; linarith) (sub_ne_zero.2 (J.left.sideTour_last_ne_top hPl _))
+      (by sil only [Prod.snd_sub]) (sub_ne_zero.2 (J.left.sideTour_last_ne_top hPl _))
       ?_
     unfold sideCross sideDot; simp only [Prod.fst_sub, Prod.snd_sub]; rintro ⟨h1, h2⟩
     exact hPw rfl ⟨by linarith, by linarith⟩
   · rintro rfl
-    refine ⟨by omega, le_rfl, zero_lt_one, by rw [hend]; exact h6, ?_⟩
+    refine ⟨by omega, le_rfl, zero_lt_one, by rwx [hend], ?_⟩
     rw [hend, sideLeft_top_first, ← ht]
     unfold sideLeftOf
     rw [show -(-1 : ℝ) = 1 by norm_num, hsub]
     refine Chazelle.Chain.sideCcw_east hU1 hU2 rfl one_pos
-      (by simp only [Prod.snd_sub]; linarith) (sub_ne_zero.2 (J.left.sideTour_one_ne_top hPl _)) ?_
+      (by sil only [Prod.snd_sub]) (sub_ne_zero.2 (J.left.sideTour_one_ne_top hPl _)) ?_
     unfold sideCross sideDot; simp only [Prod.fst_sub, Prod.snd_sub]; rintro ⟨h1, h2⟩
     exact hNe rfl ⟨by linarith, by linarith⟩
 

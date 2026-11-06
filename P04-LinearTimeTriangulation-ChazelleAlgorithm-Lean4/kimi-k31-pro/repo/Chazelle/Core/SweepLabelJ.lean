@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.SweepLabelGap
 public import Chazelle.Core.FuseMath
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), part 5: label consistency for a junction
@@ -58,20 +61,20 @@ theorem pos_eq_vertex (hP : C.P.Simple) (β : Bool) {p : ℕ} (hp : p < (C.sideW
   rcases C.sideWalk_pos_cases β hp ht with (hp5 | ⟨rfl, htp⟩) | ⟨i, hi, rfl, hit⟩
   · exfalso
     interval_cases p
-    · rw [h0] at h; have := congrArg Prod.snd h; simp only at this
+    · rw [h0] at h; have := congrArg Prod.snd h; simp at this
       have := (abs_le.1 hb.2).2; linarith
-    · rw [h1] at h; have := congrArg Prod.fst h; simp only at this
+    · rw [h1] at h; have := congrArg Prod.fst h; simp at this
       have := (abs_le.1 hb.1).1; linarith
-    · rw [h2] at h; have := congrArg Prod.snd h; simp only at this
+    · rw [h2] at h; have := congrArg Prod.snd h; simp at this
       have := (abs_le.1 hb.2).1; linarith
-    · rw [h3] at h; have := congrArg Prod.fst h; simp only at this
+    · rw [h3] at h; have := congrArg Prod.fst h; simp at this
       have := (abs_le.1 hb.1).2; linarith
-    · rw [h4] at h; have := congrArg Prod.snd h; simp only at this
+    · rw [h4] at h; have := congrArg Prod.snd h; simp at this
       have := (abs_le.1 hb.2).2; linarith
-    · rw [h5] at h; have := congrArg Prod.snd h; simp only at this
+    · rw [h5] at h; have := congrArg Prod.snd h; simp at this
       nlinarith
   · exfalso
-    rw [h6] at h; have := congrArg Prod.snd h; simp only at this
+    rw [h6] at h; have := congrArg Prod.snd h; simp at this
     nlinarith
   · rcases ht.lt_or_eq with htp | rfl
     · exfalso
@@ -108,7 +111,7 @@ theorem vertex0_arith {m b i : ℕ} (hm : 0 < m) (hb : b ≤ 2 * m) (hi : i ≤ 
   have hτ : (0 + 2 * m - b) % (2 * m) = if b = 0 then 0 else 2 * m - b := by
     split_ifs with hb0
     · subst hb0; simp
-    · rw [Nat.mod_eq_of_lt (show 0 + 2 * m - b < 2 * m by omega)]; omega
+    · rwo [Nat.mod_eq_of_lt (show 0 + 2 * m - b < 2 * m by omega)]
   rw [hτ]
   have key : ∀ x, x < 2 * (2 * m + 7) →
       x % (2 * m + 7) = if x < 2 * m + 7 then x else x - (2 * m + 7) := by
@@ -127,7 +130,7 @@ theorem off_vertex0 (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) {t
   have hn := cm_n C
   have hτ := tpos_lt C 0
   have hm := C.two_m_pos
-  rw [off_key' (by rw [hn]; omega) hp le_rfl zero_lt_one, add_zero]
+  rw [off_key' (by rwo [hn]) hp le_rfl zero_lt_one, add_zero]
   have h0 : (bS C + i) % (2 * C.m) = 0 := by
     rw [Chain.sideIdx_eq] at hidx
     unfold Chain.sideE at hidx
@@ -140,8 +143,8 @@ theorem off_vertex0 (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) {t
   rw [hn]
   unfold tpos
   rcases this with h | ⟨h1, h2⟩
-  · left; rw [h]; simp
-  · right; exact ⟨h1, by rw [h2]; push_cast; ring⟩
+  · left; rws [h]
+  · right; exact ⟨h1, by rw [h2]; pcr⟩
 
 end Vertex
 
@@ -165,7 +168,7 @@ def F₂plus (S₂ : Set (Set Point)) : Set (Set Point) := J.fusion ∅ S₂ ∪
 theorem topChords₂_subset_chords : topChords₂ J ⊆ J.whole.chords := by
   rintro d ⟨σ, hσ, hfree, rfl⟩
   have := J.right.topIdx_le
-  exact ⟨_, σ, by simp only [Merge.Junction.whole_m, Merge.Junction.right_m] at this ⊢; omega,
+  exact ⟨_, σ, by sio only [Merge.Junction.whole_m, Merge.Junction.right_m] at this ⊢,
     hσ, hfree, rfl⟩
 
 theorem F₂plus_subset {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) :
@@ -184,11 +187,11 @@ theorem augChords_nest {C : Chain} {e e' : Set Point} (he : e ∈ Merge.augChord
   obtain ⟨y', a', b', hh', -, rfl⟩ := he'
   have hab := hh.lt
   have hp : (((a + b) / 2, y) : Point) ∈ Visibility.hseg y a b :=
-    ⟨rfl, by simp only; linarith, by simp only; linarith⟩
+    ⟨rfl, by sil only, by sil only⟩
   rcases Chain.hchordIn_inter hh hh' hp (h hp) with ⟨rfl, rfl, rfl⟩ | ⟨h1, -⟩
   · rfl
   · exfalso
-    rcases h1 with h1 | h1 <;> have := congrArg Prod.fst h1 <;> simp only at this <;> linarith
+    rcases h1 with h1 | h1 <;> have := congrArg Prod.fst h1 <;> simp at this <;> linarith
 
 /-- **Endpoints of the chords of `S₂`** other than the shared vertex lie on chords of the fusion
 inside them. -/
@@ -248,7 +251,7 @@ theorem rL1_add_rL2 : rL1 J + rL2 J = rlen J := by
   have := tpos_lt J.right 0
   have hm2 : J.right.m = J.m₂ := rfl
   unfold rL1 rL2 rlen
-  split_ifs <;> omega
+  splao
 
 end CorrRight
 

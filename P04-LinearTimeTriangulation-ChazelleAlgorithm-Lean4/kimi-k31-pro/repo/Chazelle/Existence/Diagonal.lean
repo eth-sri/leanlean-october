@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Existence.Convex
 public import Chazelle.Existence.Arc
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Existence of an interior diagonal
@@ -52,7 +54,7 @@ open Chazelle.Geometry (lerp lerp_fst lerp_snd det_lerp det_cyclic det_cyclic_ri
 /-- Composition of `lerp` along one line. -/
 theorem lerp_lerp (a b : Point) (s₁ s₂ τ : ℝ) :
     lerp (lerp a b s₁) (lerp a b s₂) τ = lerp a b ((1 - τ) * s₁ + τ * s₂) := by
-  apply point_ext <;> simp only [lerp_fst, lerp_snd] <;> ring
+  apply point_ext <;> simp [lerp_fst, lerp_snd] <;> ring
 
 /-- A point of a line lying (in parameter) between two points of the line is in their segment. -/
 theorem lerp_mem_segment_lerp (a b : Point) {s₁ s₂ s : ℝ} (h1 : s₁ ≤ s) (h2 : s ≤ s₂) :
@@ -80,14 +82,14 @@ theorem exists_zero_of_affine_pair {α γ : ℝ → ℝ}
   have hγc : Continuous γ := by
     have : γ = fun t => (1 - t) * γ 0 + t * γ 1 := funext hγ
     rw [this]; fun_prop
-  have hm : Continuous fun t => min (α t) (γ t) := hαc.min hγc
+  have hm  := hαc.min hγc
   have hmem : (0 : ℝ) ∈ Icc (min (α 1) (γ 1)) (min (α 0) (γ 0)) := by
     refine ⟨?_, le_min h0 h0'⟩
     rcases h1 with h1 | h1
     · exact (min_le_left _ _).trans h1.le
     · exact (min_le_right _ _).trans h1.le
   obtain ⟨t, ⟨ht0, ht1⟩, ht⟩ := intermediate_value_Icc' zero_le_one hm.continuousOn hmem
-  simp only at ht
+  simp at ht
   refine ⟨t, ht0, ht1, (le_min_iff.1 ht.ge).1, (le_min_iff.1 ht.ge).2, ?_⟩
   rcases min_eq_iff.1 ht with ⟨h, -⟩ | ⟨h, -⟩
   · exact Or.inl h
@@ -114,8 +116,8 @@ theorem exists_side_point {u v w : Point} (hdet : det u v w ≠ 0) {c : ℝ} (hc
   obtain ⟨hp1, -, hp3⟩ := (mem_triangle_iff_bary hdet).1 hpΔ
   obtain ⟨t, ht0, ht1, hαt, hγt, hzero⟩ := exists_zero_of_affine_pair
     (α := fun t => bary₁ u v w (lerp p b t)) (γ := fun t => bary₃ u v w (lerp p b t))
-    (fun t => by simp only [lerp_zero, lerp_one, bary₁_lerp])
-    (fun t => by simp only [lerp_zero, lerp_one, bary₃_lerp])
+    (fun t => by simp [lerp_zero, lerp_one, bary₁_lerp])
+    (fun t => by simp [lerp_zero, lerp_one, bary₃_lerp])
     (by simpa using hp1) (by simpa using hp3) (by simpa using hbneg)
   refine ⟨lerp p b t, ?_, ?_, ?_, hzero⟩
   · exact segment_subset_of_convex (segment_convex a b) hp (right_mem_segment a b)
@@ -142,8 +144,8 @@ theorem no_transversal {u v w : Point} (hdet : det u v w ≠ 0) {E : Set Point}
     exact hbΔ ((mem_triangle_iff_bary hdet).2 ⟨hcon.1, hb.le, hcon.2⟩)
   obtain ⟨t, ht0, ht1, hαt, hγt, hzero⟩ := exists_zero_of_affine_pair
     (α := fun t => bary₁ u v w (lerp q b t)) (γ := fun t => bary₃ u v w (lerp q b t))
-    (fun t => by simp only [lerp_zero, lerp_one, bary₁_lerp])
-    (fun t => by simp only [lerp_zero, lerp_one, bary₃_lerp])
+    (fun t => by simp [lerp_zero, lerp_one, bary₁_lerp])
+    (fun t => by simp [lerp_zero, lerp_one, bary₃_lerp])
     (by simpa using hq1.le) (by simpa using hq3.le) (by simpa using hbneg)
   have ht0' : 0 < t := by
     rcases ht0.lt_or_eq with h | h
@@ -151,7 +153,7 @@ theorem no_transversal {u v w : Point} (hdet : det u v w ≠ 0) {E : Set Point}
     · subst h
       rw [lerp_zero] at hzero
       rcases hzero with h | h <;> linarith
-  have hy : lerp q b t ∈ E := hqb (lerp_mem_segment q b ht0 ht1)
+  have hy  := hqb (lerp_mem_segment q b ht0 ht1)
   have hyΔ : lerp q b t ∈ convexHull ℝ ({u, v, w} : Set Point) := by
     refine (mem_triangle_iff_bary hdet).2 ⟨hαt, ?_, hγt⟩
     rw [bary₂_lerp, hq2]
@@ -222,8 +224,8 @@ theorem bary₂_le_of_mem_edge {P : Polygon} (hP : P.Simple)
   rw [not_le] at hlt
   have hsucc : (i + 1) % P.n = i + 1 := Nat.mod_eq_of_lt (by omega)
   have haΔ := hvert i hi hi0
-  have hbΔ := hvert ((i + 1) % P.n) (Nat.mod_lt _ (by omega)) (by rw [hsucc]; omega)
-  have hpab : p ∈ Chazelle.segment (P.vtx i) (P.vtx ((i + 1) % P.n)) := hp
+  have hbΔ := hvert ((i + 1) % P.n) (Nat.mod_lt _ (by omega)) (by rwo [hsucc])
+  have hpab  := hp
   have key : ∃ y ∈ Chazelle.segment (P.vtx i) (P.vtx ((i + 1) % P.n)),
       y ∈ convexHull ℝ ({P.vtx (P.n - 1), P.vtx 0, P.vtx 1} : Set Point) ∧
         c < bary₂ (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) y ∧
@@ -240,8 +242,8 @@ theorem bary₂_le_of_mem_edge {P : Polygon} (hP : P.Simple)
         rw [hpt, bary₂_lerp]
         nlinarith [mul_le_mul_of_nonneg_left hab.le ht0]
       obtain ⟨y, hy, hyΔ, hyc, hyz⟩ := exists_side_point hdet hc
-        (by rw [segment_comm]; exact hpab) hpΔ hlt hpa haΔ
-      exact ⟨y, by rw [segment_comm]; exact hy, hyΔ, hyc, hyz⟩
+        (by rwx [segment_comm]) hpΔ hlt hpa haΔ
+      exact ⟨y, by rwx [segment_comm], hyΔ, hyc, hyz⟩
   obtain ⟨y, hy, hyΔ, hyc, hyz⟩ := key
   have hside : y ∈ Chazelle.segment (P.vtx 0) (P.vtx 1) ∨
       y ∈ Chazelle.segment (P.vtx (P.n - 1)) (P.vtx 0) := by
@@ -249,8 +251,8 @@ theorem bary₂_le_of_mem_edge {P : Polygon} (hP : P.Simple)
     · exact Or.inl (mem_segment_of_bary₁_eq_zero hdet hyΔ h)
     · exact Or.inr (mem_segment_of_bary₃_eq_zero hdet hyΔ h)
   rcases eq_of_mem_edge_of_mem_side hP hi hi0 hin hy hside with h | h
-  · rw [h, bary₂_vertex_right] at hyc; linarith
-  · rw [h, bary₂_vertex_left] at hyc; linarith
+  · rwli [h, bary₂_vertex_right] at hyc
+  · rwli [h, bary₂_vertex_left] at hyc
 
 /-- A vertex of `P` in the fan triangle, other than vertices `0` and `1`, is off the edge
 `v w`: its first barycentric coordinate is positive. -/
@@ -396,11 +398,11 @@ theorem chord_base_not_mem_boundary {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.
   have ht0' : 0 < t := lt_of_le_of_ne ht0 fun h => hqw (by rw [← h, lerp_zero])
   have ht1' : t < 1 := lt_of_le_of_ne ht1 fun h => hqu (by rw [h, lerp_one])
   have hq1 : bary₁ u v w (lerp w u t) = t := by
-    rw [bary₁_lerp, bary₁_vertex_right, bary₁_vertex_left hdet]; ring
+    rwring [bary₁_lerp, bary₁_vertex_right, bary₁_vertex_left hdet]
   have hq3 : bary₃ u v w (lerp w u t) = 1 - t := by
-    rw [bary₃_lerp, bary₃_vertex_right hdet, bary₃_vertex_left]; ring
+    rwring [bary₃_lerp, bary₃_vertex_right hdet, bary₃_vertex_left]
   have hq2 : bary₂ u v w (lerp w u t) = 0 := by
-    rw [bary₂_lerp, bary₂_vertex_right, bary₂_vertex_left]; ring
+    rwring [bary₂_lerp, bary₂_vertex_right, bary₂_vertex_left]
   have hqΔ : lerp w u t ∈ Δ :=
     (mem_triangle_iff_bary hdet).2 ⟨by linarith, by linarith, by linarith⟩
   -- `q` is not a vertex
@@ -428,7 +430,7 @@ theorem chord_base_not_mem_boundary {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.
   have hD : ∀ p ∈ P.edge i, p ∈ Δ → bary₂ u v w p ≤ 0 := fun p hp hpΔ =>
     bary₂_le_of_mem_edge hP hdet le_rfl hvert hi hi0 hin hp hpΔ
   have hsucc : (i + 1) % P.n = i + 1 := Nat.mod_eq_of_lt (by omega)
-  have hqab : lerp w u t ∈ Chazelle.segment (P.vtx i) (P.vtx ((i + 1) % P.n)) := hqi
+  have hqab  := hqi
   -- endpoints in the triangle are `u` or `w`
   have haΔ : P.vtx i ∈ Δ → bary₂ u v w (P.vtx i) = 0 := by
     intro h
@@ -447,11 +449,11 @@ theorem chord_base_not_mem_boundary {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.
   · rcases hpos with h | h
     · exact no_transversal hdet hD
         (segment_subset_of_convex (segment_convex _ _) hqab (left_mem_segment _ _))
-        (by rw [hq1]; exact ht0') (by rw [hq3]; linarith) hq2 h
+        (by rwx [hq1]) (by rwli [hq3]) hq2 h
         (fun hΔ => by linarith [haΔ hΔ])
     · exact no_transversal hdet hD
         (segment_subset_of_convex (segment_convex _ _) hqab (right_mem_segment _ _))
-        (by rw [hq1]; exact ht0') (by rw [hq3]; linarith) hq2 h
+        (by rwx [hq1]) (by rwli [hq3]) hq2 h
         (fun hΔ => by linarith [hbΔ hΔ])
   -- collinear case: the edge lies on the line `w u`
   rw [not_or, not_lt, not_lt] at hpos
@@ -462,8 +464,7 @@ theorem chord_base_not_mem_boundary {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.
     by_contra hne
     have h1 : (1 - τ) * bary₂ u v w (P.vtx i) ≤ 0 :=
       mul_nonpos_of_nonneg_of_nonpos (by linarith) hpos.1
-    have h2 : τ * bary₂ u v w (P.vtx ((i + 1) % P.n)) ≤ 0 :=
-      mul_nonpos_of_nonneg_of_nonpos hτ0 hpos.2
+    have h2  := mul_nonpos_of_nonneg_of_nonpos hτ0 hpos.2
     have h3 : (1 - τ) * bary₂ u v w (P.vtx i) = 0 := by linarith
     rcases mul_eq_zero.1 h3 with h | h
     · have hτ : τ = 1 := by linarith
@@ -474,8 +475,7 @@ theorem chord_base_not_mem_boundary {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.
     by_contra hne
     have h1 : (1 - τ) * bary₂ u v w (P.vtx i) ≤ 0 :=
       mul_nonpos_of_nonneg_of_nonpos (by linarith) hpos.1
-    have h2 : τ * bary₂ u v w (P.vtx ((i + 1) % P.n)) ≤ 0 :=
-      mul_nonpos_of_nonneg_of_nonpos hτ0 hpos.2
+    have h2  := mul_nonpos_of_nonneg_of_nonpos hτ0 hpos.2
     have h3 : τ * bary₂ u v w (P.vtx ((i + 1) % P.n)) = 0 := by linarith
     rcases mul_eq_zero.1 h3 with h | h
     · rw [h, lerp_zero] at hqτ
@@ -486,7 +486,7 @@ theorem chord_base_not_mem_boundary {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.
     unfold bary₂ at hx
     rw [div_eq_zero_iff] at hx
     rcases hx with hx | hx
-    · exact exists_lerp_of_det_eq_zero hwu (by rw [det_cyclic_right]; exact hx)
+    · exact exists_lerp_of_det_eq_zero hwu (by rwx [det_cyclic_right])
     · exact absurd hx hdet
   obtain ⟨sa, hsa⟩ := hcol _ hβa
   obtain ⟨sb, hsb⟩ := hcol _ hβb
@@ -582,8 +582,8 @@ theorem segment_subset_filled_of_open {P : Polygon} (hP : P.Simple) {a b : Point
       rw [mem_filled_iff hP hoff',
         parity_eq_of_isPreconnected P hS hSb ⟨t, ⟨ht0, ht1⟩, rfl⟩ ⟨t₀, ht₀, rfl⟩]
       exact (mem_filled_iff hP (hoff t₀ ht₀)).1 hin
-    · rw [lerp_one]; exact hb
-  · rw [lerp_zero]; exact ha
+    · rwx [lerp_one]
+  · rwx [lerp_zero]
 
 /-- Points close to `v` on the open segment from `v` to a point `x` with positive first and
 third barycentric coordinates are interior. -/
@@ -628,16 +628,15 @@ theorem exists_diagonal_of_lexMin {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
       (fun j => bary₂ (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) (P.vtx j)) hne
     rw [hI, Finset.mem_filter, Finset.mem_range] at hkI
     obtain ⟨hk, hk2, hkn, hkΔ⟩ := hkI
-    have hk20 : 0 ≤ bary₂ (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) (P.vtx k) :=
-      ((mem_triangle_iff_bary hdet).1 hkΔ).2.1
+    have hk20  := ((mem_triangle_iff_bary hdet).1 hkΔ).2.1
     have hmax' : ∀ j, j < P.n → j ≠ 0 → P.vtx j ∈ Δ →
         bary₂ (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) (P.vtx j) ≤
           bary₂ (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) (P.vtx k) := by
       intro j hj hj0 hjΔ
       by_cases hj1 : j = 1
-      · rw [hj1, bary₂_vertex_right]; exact hk20
+      · rwx [hj1, bary₂_vertex_right]
       by_cases hjn : j = P.n - 1
-      · rw [hjn, bary₂_vertex_left]; exact hk20
+      · rwx [hjn, bary₂_vertex_left]
       exact hmax j (by rw [hI, Finset.mem_filter, Finset.mem_range]; exact ⟨hj, by omega, by omega, hjΔ⟩)
     have hvz : P.vtx 0 ≠ P.vtx k := simple_vtx_ne hP (by omega) hk (by omega)
     have hchord := chord_apex_not_mem_boundary hP hdet hk hk2 hkn hkΔ hmax'
@@ -665,19 +664,19 @@ theorem exists_diagonal_of_lexMin {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
     have hchord := chord_base_not_mem_boundary hP h4 hdet hnone
     have hwu : P.vtx 1 ≠ P.vtx (P.n - 1) := simple_vtx_ne hP (by omega) (by omega) (by omega)
     have hL : (1 + (P.n - 2)) % P.n = P.n - 1 := by
-      rw [Nat.mod_eq_of_lt (by omega)]; omega
+      rwo [Nat.mod_eq_of_lt (by omega)]
     have h1 : 1 % P.n = 1 := Nat.mod_eq_of_lt (by omega)
     refine ⟨1, P.n - 2, ⟨by omega, by omega, ?_⟩, ?_⟩
-    · rw [h1, hL]; exact hchord
+    · rwx [h1, hL]
     · rw [h1, hL]
       -- the midpoint of the base, joined to the sector at `v` through the open triangle
       set m := lerp (P.vtx 1) (P.vtx (P.n - 1)) (1 / 2) with hm
       have hm1 : bary₁ (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) m = 1 / 2 := by
-        rw [hm, bary₁_lerp, bary₁_vertex_right, bary₁_vertex_left hdet]; ring
+        rwring [hm, bary₁_lerp, bary₁_vertex_right, bary₁_vertex_left hdet]
       have hm3 : bary₃ (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) m = 1 / 2 := by
-        rw [hm, bary₃_lerp, bary₃_vertex_right hdet, bary₃_vertex_left]; ring
+        rwring [hm, bary₃_lerp, bary₃_vertex_right hdet, bary₃_vertex_left]
       have hm2 : bary₂ (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) m = 0 := by
-        rw [hm, bary₂_lerp, bary₂_vertex_right, bary₂_vertex_left]; ring
+        rwring [hm, bary₂_lerp, bary₂_vertex_right, bary₂_vertex_left]
       have hmB : m ∉ P.boundary :=
         hchord m (lerp_mem_segment _ _ (by norm_num) (by norm_num)) (lerp_ne_left hwu (by norm_num))
           (lerp_ne_right hwu (by norm_num))
@@ -686,15 +685,15 @@ theorem exists_diagonal_of_lexMin {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
         rcases hs.2.lt_or_eq with hs1 | rfl
         · apply interior_fan_not_mem_boundary hP hdet hvert
           · rw [bary₁_lerp, bary₁_vertex_mid, hm1]; nlinarith [hs.1]
-          · rw [bary₂_lerp, bary₂_vertex_mid hdet, hm2]; nlinarith
+          · rwnl [bary₂_lerp, bary₂_vertex_mid hdet, hm2]
           · rw [bary₃_lerp, bary₃_vertex_mid, hm3]; nlinarith [hs.1]
-        · rw [lerp_one]; exact hmB
+        · rwx [lerp_one]
       have hmconn : IsPreconnected (lerp (P.vtx 0) m '' Ioc (0 : ℝ) 1) :=
         isPreconnected_Ioc.image _ (continuous_lerp _ _).continuousOn
       have hmsub : lerp (P.vtx 0) m '' Ioc (0 : ℝ) 1 ⊆ P.boundaryᶜ := by
         rintro _ ⟨s, hs, rfl⟩; exact hmoff s hs
       obtain ⟨s, hs, hsin⟩ := exists_near_apex_mem_interior hP hmin hσ hpos
-        (by rw [hm1]; norm_num) (by rw [hm3]; norm_num)
+        (by rwn [hm1]) (by rwn [hm3])
       have hm_filled : m ∈ P.filled := by
         rw [mem_filled_iff hP hmB]
         have := parity_eq_of_isPreconnected P hmconn hmsub (x := lerp (P.vtx 0) m 1)
@@ -730,8 +729,8 @@ theorem exists_diagonal {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n) :
     ∃ s L, IsDiagonal P s L ∧
       Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled := by
   obtain ⟨m, hm, hmin⟩ := exists_lexMin P (by omega)
-  have hQ : (P.rotate m).Simple := simple_rotate P m hP
-  have hQ4 : 4 ≤ (P.rotate m).n := by rw [n_rotate]; exact h4
+  have hQ  := simple_rotate P m hP
+  have hQ4 : 4 ≤ (P.rotate m).n := by rwx [n_rotate]
   have hQmin : ∀ i, i < (P.rotate m).n → lexLE ((P.rotate m).vtx 0) ((P.rotate m).vtx i) := by
     rw [n_rotate]; exact rotate_lexMin P hm hmin
   obtain ⟨s, L, hd, hsub⟩ := exists_diagonal_of_lexMin hQ hQ4 hQmin

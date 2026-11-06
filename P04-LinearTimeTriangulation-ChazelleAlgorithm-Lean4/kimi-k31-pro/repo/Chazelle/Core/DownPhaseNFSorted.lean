@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.NFBuildMain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down phase, L1: the normal-form build over presorted events (`BuildNFSortedSpec`)
@@ -68,7 +73,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 /-- **The records and the event pointer.** -/
 theorem phaseAS_exec (hWn : hostWords P.n ≤ W) (c : Config)
     (hw : WordsBounded W c) {M : Model} {L : List (ℕ × ℕ × ℕ)} {D B SE : ℕ}
@@ -85,15 +89,15 @@ theorem phaseAS_exec (hWn : hostWords P.n ≤ W) (c : Config)
   set A₀ := c.nreg ALLOC with hA₀
   set K := L.length with hKdef
   have hA : c.nreg 9999 = A₀ := rfl
-  have hWn' : P.n + 3 ≤ W := by unfold hostWords at hWn; omega
+  have hWn' : P.n + 3 ≤ W := by ufo hostWords at hWn
   -- setup
   obtain ⟨c₁, k₁, x₁, hk₁, v₁⟩ := setupA_exec (P := P) c hw hB' hK hA (by omega) (by omega)
   obtain ⟨r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, fr₁, rr₁, m₁, rm₁, out₁⟩ := v₁
   have w₁ := x₁.wb_right
   -- the record loop
   have hI₁ : RecInv c.nmem L B A₀ (A₀ + 8 * K) c₁ c₁ :=
-    { i_le := by rw [r9]; omega, rK := r2, r0 := r3, r1 := r4, a21 := by rw [r10, r9]; omega,
-      a22 := by rw [r11, r9]; omega, a23 := by rw [r12, r9]; omega, a24 := by rw [r13, r9],
+    { i_le := by rwo [r9], rK := r2, r0 := r3, r1 := r4, a21 := by rwo [r10, r9],
+      a22 := by rwo [r11, r9], a23 := by rwo [r12, r9], a24 := by rw [r13, r9],
       fr := fun _ _ => rfl, rr := rfl, rm := rfl, out := rfl,
       mem := fun a => by rw [m₁, r9]; unfold recMem; rw [ite_eq_right (by omega), ite_eq_right (by omega)] }
   have hhW : ∀ x ∈ L, x.1 + 1 ≤ W := fun x hx => by
@@ -142,13 +146,12 @@ theorem phaseAS_exec (hWn : hostWords P.n ≤ W) (c : Config)
   · rw [s₃, hc₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num) (by norm_num), hSE]
 
-set_option maxHeartbeats 4000000 in
 /-- **L1: `BuildNFSortedSpec`.** -/
 theorem buildNFSorted : BuildNFSortedSpec := by
   refine ⟨sortedStmt, κSorted, ?_⟩
   intro P W c hw hpre hcost
   obtain ⟨hG, hWn, hwf, M, L, E, hM, hgood, hlen, hBL, hCL, hok, hSEL, hE, hperm, hsort⟩ := hpre
-  simp only [rd, bandReg, bBuild] at hwf hM hlen hBL hCL hSEL hE ⊢
+  simp [rd, bandReg, bBuild] at hwf hM hlen hBL hCL hSEL hE ⊢
   norm_num at hwf hM hlen hBL hCL hSEL hE ⊢
   set K := L.length with hKdef
   set A₀ := c.nreg ALLOC with hA₀
@@ -157,7 +160,7 @@ theorem buildNFSorted : BuildNFSortedSpec := by
   have hcost' : A₀ + κSorted * (K + 1) ≤ W := by
     have h := hcost
     beta_reduce at h
-    simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd] at h
+    simp [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd] at h
     rw [hlen] at h
     exact h
   unfold κSorted at hcost'
@@ -170,19 +173,19 @@ theorem buildNFSorted : BuildNFSortedSpec := by
   by_cases hK : 0 < K
   · -- records
     have t₀ : c₀.nreg 43250 < c₀.nreg 40002 := by
-      rw [g₀ 40002 (by norm_num), hlen, hc₀]; simp; exact hK
+      rws [g₀ 40002 (by norm_num), hlen, hc₀]; exact hK
     have hc0A : c₀.nreg ALLOC = A₀ := g₀ 9999 (by norm_num)
     obtain ⟨c₁, k₁, x₁, hk₁, w₁, F₁, d1, d2, d3, d4, d5, d6, d7, hrec, hSE₁, hH₁⟩ :=
       phaseAS_exec (P := P) hWn c₀ w₀ (M := M) (L := L) (D := c.nreg 40000)
-        (B := c.nreg 40001) (SE := SE) hok hCL (by rw [hc0A]; exact hBL) (g₀ _ (by norm_num))
+        (B := c.nreg 40001) (SE := SE) hok hCL (by rwx [hc0A]) (g₀ _ (by norm_num))
         (g₀ _ (by norm_num)) (by rw [g₀ _ (by norm_num), hlen]) (g₀ _ (by norm_num))
-        (by rw [hc0A]; omega)
+        (by rwo [hc0A])
     rw [hc0A] at d2 hrec hH₁
     have hm₀ : c₀.nmem = c.nmem := by rw [hc₀]
     set H := c₁.nreg 9999 with hHdef
     have hHv : H = A₀ + 10 * K := hH₁
     have hlow₁ : ∀ a, a < A₀ → c₁.nmem a = c.nmem a := fun a ha => by
-      rw [F₁.2.2.1 a (by rw [hc0A]; exact ha), hm₀]
+      rw [F₁.2.2.1 a (by rwx [hc0A]), hm₀]
     have hk₁' : 10 * K ≤ k₁ := by
       have := F₁.2.2.2.2.2.2; rw [hc0A] at this; change H ≤ A₀ + k₁ at this; omega
     obtain ⟨hM₁, hwf₁⟩ := desc_agree hwf hM hlow₁
@@ -201,43 +204,43 @@ theorem buildNFSorted : BuildNFSortedSpec := by
       (fun j hj => by
         rw [hlow₁ _ (by omega)]
         exact seg_getD hE (by omega))
-      (by omega) (by unfold sizeB; omega)
+      (by omega) (by ufo sizeB)
     have X : Exec P W sortedStmt c c₂ (1 + (k₁ + k₂ + 1)) :=
       .seq x₀ (.ifLtN_true t₀ (.seq x₁ x₂))
     refine ⟨c₂, _, X, ?_, fun M' L' hM' hlen' hL' => ?_, ?_⟩
-    · rw [hlen]; unfold κSorted; omega
+    · ruo [hlen] κSorted
     · obtain rfl := NFLoc.modelDesc_unique hM hM'
       obtain rfl := BuildNF.chordListAt_unique hCL hL' (hlen.symm.trans hlen')
       rw [hE]
-      exact ⟨by rw [h40003]; omega, by rw [h40003]; exact hNFW, hNF⟩
+      exact ⟨by rwo [h40003], by rwx [h40003], hNF⟩
     · refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
       · rw [F₂.1 r (BphaseB_false hr hra), F₁.1 r hr hra, g₀ r (by
           intro h; subst h; simp [bandOf, bSort, bSign] at hr)]
       · rw [exec_frameM2 x₂ wrM2_phaseB r (BRb_false hr), F₁.2.1 r hr]
       · rw [hlow a (by omega), hlow₁ a ha]
-      · rw [F₂.2.2.1, F₁.2.2.2.1 a (by rw [hc0A]; exact ha)]
+      · rw [F₂.2.2.1, F₁.2.2.2.1 a (by rwx [hc0A])]
       · rw [F₂.2.2.2, F₁.2.2.2.2.1]
-      · show A₀ ≤ c₂.nreg 9999; rw [h9999]; omega
-      · show c₂.nreg 9999 ≤ A₀ + _; rw [h9999]; unfold sizeB at hk₂' ⊢; omega
+      · show A₀ ≤ c₂.nreg 9999; rwo [h9999]
+      · show c₂.nreg 9999 ≤ A₀ + _; ruo [h9999] sizeB at hk₂' ⊢
   · -- `K = 0`
     have hK0 : K = 0 := by omega
     have t₀ : ¬ c₀.nreg 43250 < c₀.nreg 40002 := by
-      rw [g₀ 40002 (by norm_num), hlen, hc₀]; simp; omega
+      rws [g₀ 40002 (by norm_num), hlen, hc₀]; omega
     obtain ⟨c', k, x, hk, hk', w', F', h40003, h9999, hlow, hNFW⟩ := zeroCase_exec (P := P) hWn
       c₀ w₀ (M := M) (L := L) (E := E) (D := c.nreg 40000) (H := A₀) hK0
-      (g₀ _ (by norm_num)) (by rw [g₀ 9999 (by norm_num)]; rfl) hwf hM (by omega)
+      (g₀ _ (by norm_num)) (by rwr [g₀ 9999 (by norm_num)]) hwf hM (by omega)
     have X : Exec P W sortedStmt c c' (1 + (k + 2)) := .seq x₀ (.ifLtN_false t₀ x)
-    refine ⟨c', _, X, by rw [hlen, hK0]; unfold κSorted; omega, fun M' L' hM' hlen' hL' => ?_, ?_⟩
+    refine ⟨c', _, X, by ruo [hlen, hK0] κSorted, fun M' L' hM' hlen' hL' => ?_, ?_⟩
     · obtain rfl := NFLoc.modelDesc_unique hM hM'
       obtain rfl := BuildNF.chordListAt_unique hCL hL' (hlen.symm.trans hlen')
       rw [hE]
-      exact ⟨by rw [h40003], by rw [h40003]; exact hNFW, hNF⟩
+      exact ⟨by rw [h40003], by rwx [h40003], hNF⟩
     · have F₀ : FrameM BphaseB c c₀ := exec_frameM x₀ (by decide)
       have R' : ∀ r, BRb r = false → c'.rreg r = c.rreg r := fun r hr =>
         (exec_frameM2 x wrM2_zeroCase r hr).trans (by rw [hc₀])
       refine frame_of_frameM (F₀.trans F') R' (fun a ha => by rw [hlow a ha]) ?_ ?_
-      · show A₀ ≤ c'.nreg 9999; rw [h9999]; omega
-      · show c'.nreg 9999 ≤ A₀ + _; rw [h9999]; omega
+      · show A₀ ≤ c'.nreg 9999; rwo [h9999]
+      · show c'.nreg 9999 ≤ A₀ + _; rwo [h9999]
 
 end exec
 

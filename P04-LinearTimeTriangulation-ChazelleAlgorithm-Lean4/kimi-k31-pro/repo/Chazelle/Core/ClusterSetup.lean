@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.ClusterDriverRam
 public import Chazelle.Core.ClusterPrimal
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-I, part 42: the global registers and the setup
@@ -190,8 +191,8 @@ theorem GR.frame {g : GV} {c c' : Config} (h : GR g c)
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun j hj => ?_, ?_,
     ?_⟩
   all_goals first
-    | (rw [hr _ (by unfold GRReg; omega)]; assumption)
-    | (rw [hr _ (by unfold GRReg; omega)]; exact h18 j hj)
+    | (rw [hr _ (by ufo GRReg)]; assumption)
+    | (rw [hr _ (by ufo GRReg)]; exact h18 j hj)
 
 end
 

@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.RestoreFLt
 public import Chazelle.Core.RestoreFVert
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 9: the ends of a node chord
@@ -66,11 +68,11 @@ theorem endMap_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
   unfold SReg at hs hs9
   set n := E.M.W.n with hn
   have fx : ∀ c', FInv E.W c₀ c' → c'.nreg 81017 = n ∧ c'.nreg 81011 = 0 :=
-    fun c' hI' => ⟨by rw [hI'.hin _ (by unfold FFix; omega), hE.wn],
-      by rw [hI'.hin _ (by unfold FFix; omega), hE.k0]⟩
+    fun c' hI' => ⟨by rw [hI'.hin _ (by ufo FFix), hE.wn],
+      by rw [hI'.hin _ (by ufo FFix), hE.k0]⟩
   obtain ⟨n17, k0⟩ := fx c hI
-  have h17 : s + 1 ≠ 81017 := (hsF 81017 (by unfold FFix; omega)).1.symm
-  have h17' : s + 9 ≠ 81017 := (hsF 81017 (by unfold FFix; omega)).2.2.symm
+  have h17 : s + 1 ≠ 81017 := (hsF 81017 (by ufo FFix)).1.symm
+  have h17' : s + 9 ≠ 81017 := (hsF 81017 (by ufo FFix)).2.2.symm
   have ok : okB E.W c.nmem [.subN (s + 1) p 81131, .subN (s + 9) 81017 81130] c.nreg := by
     simp only [okB, okI]
     exact ⟨Or.inl (Or.inl ⟨by omega, by omega⟩), Or.inl (Or.inl ⟨by omega, by omega⟩), trivial⟩
@@ -101,7 +103,7 @@ theorem endMap_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
         fun q => by rw [h']
       refine ⟨?_, fun q hq => by rw [e']; simp [regB, regI, upd, hq]⟩
       rw [e']; simp only [regB, regI, upd, ite_true]
-      rw [v1, w30, Nat.mod_eq_of_lt (by rw [v1, v9] at hc; omega)]; omega
+      rw [v1, w30, Nat.mod_eq_of_lt (by rwo [v1, v9] at hc)]; omega
     · have okc : okB E.W c₁.nmem [.subN (s + 1) (s + 1) (s + 9)] c₁.nreg := by
         simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by omega, by omega⟩), trivial⟩
       refine (FRS.ifF hc ((FRS.block hB _ hI₁ okc))).mono (by simp) (fun c' h' => ?_)
@@ -118,7 +120,7 @@ theorem endMap_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (fun c₃ hI₃ _ ⟨u2, g₃⟩ => ?_)
   have g7 : c₃.nreg (s + 7) = c.nreg (s + 7) := by
     rw [g₃ _ h7, g₂ _ h71, f₁ _ h71 h79]
-  have g11 : c₃.nreg 81011 = 0 := (fx c₃ hI₃).2
+  have g11  := (fx c₃ hI₃).2
   have fin : ∀ c' : Config, (∀ q, q ≠ s + 2 → c'.nreg q = c₃.nreg q) →
       ∀ q, q ≠ s + 1 → q ≠ s + 2 → q ≠ s + 9 → c'.nreg q = c.nreg q :=
     fun c' h q h1 h2 h3 => by rw [h q h2, g₃ q h2, g₂ q h1, f₁ q h1 h3]
@@ -131,12 +133,12 @@ theorem endMap_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     have f' : ∀ q, q ≠ s + 2 → c'.nreg q = c₃.nreg q := fun q hq => by
       rw [e']; simp [regB, regI, upd, hq]
     refine ⟨by rw [f' _ (by omega), g₃ _ (by omega), u1], fun _ => ?_, fun h0 => by
-      rw [g11, g7, h0] at hc; omega, fin c' f'⟩
+      rwo [g11, g7, h0] at hc, fin c' f'⟩
     rw [e']; simp only [regB, regI, upd, ite_true]
     rw [g₃ _ h55.2.1, g₂ _ h55.1, f₁ _ h55.1 h55.2.2]
   · exact (FRS.ifF hc (FRS.skip (K := 0) hI₃ ⟨by rw [g₃ _ (by omega), u1],
-      fun h1 => by rw [g11, g7, h1] at hc; omega, fun _ => u2, fin c₃ (fun _ _ => rfl)⟩)).mono
-      (by omega) (fun _ h => h)
+      fun h1 => by rwo [g11, g7, h1] at hc, fun _ => u2, fin c₃ (fun _ _ => rfl)⟩)).mono
+      (by omega) (fun _ => id)
 
 end
 

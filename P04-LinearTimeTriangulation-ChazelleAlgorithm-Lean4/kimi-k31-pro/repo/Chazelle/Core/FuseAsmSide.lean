@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.FuseAsmCtx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-F fusion assembly, part 21: the query lists of the two sides
@@ -34,7 +37,6 @@ def endPart (S G : ℕ) : Stmt := .seq (sqInit S G) (.seq qlLoop sqMid)
 def Bend (S r : ℕ) : Bool := decide (70100 ≤ r ∧ r ≤ 70108) || r == 70128 || r == 70131 ||
   r == 70132 || r == S || r == ALLOC
 
-set_option maxHeartbeats 16000000 in
 theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {S G : ℕ}
     (hS : S = 70150 ∨ S = 70151) (hGr : G = 70003 ∨ G = 70004) {A : ℕ} {N : NF}
     {M : Model} (hN : NFWithin c.nmem (c.nreg G) A N) (hA : A ≤ c.nreg ALLOC)
@@ -51,14 +53,14 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       (∀ r, Bend S r = false → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧
       c'.output = c.output := by
   obtain ⟨A₀, hA₀⟩ : ∃ x, c.nreg ALLOC = x := ⟨_, rfl⟩
-  have hA' : c.nreg 9999 = A₀ := hA₀
+  have hA'  := hA₀
   obtain ⟨Hd, hHd⟩ : ∃ x, c.nreg G = x := ⟨_, rfl⟩
   rw [hHd] at hN
   have hat := hN.nfAt
   obtain ⟨hK, -, -, -, -, hch, -⟩ := hat
   obtain ⟨hB7, hch', -⟩ := Gran.nf_areas hN
   set K := N.nChords with hKdef
-  have hKc : c.nmem Hd = K := hK
+  have hKc  := hK
   obtain ⟨CB, hCB⟩ : ∃ x, c.nmem (Hd + 3) = x := ⟨_, rfl⟩
   rw [hCB] at hch hch'
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (sqInit S G) c c₁ k₁ ∧ k₁ = 9 ∧
@@ -83,13 +85,13 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   have hIs' := hIs
   obtain ⟨-, -, -, -, -, -, -, -, -, hhQ, -⟩ := hIs'
   have hn : (Qof P).n = P.n := shear_n _ _
-  have I0 : QLI W K CB A₀ c₁ c₁ := ⟨w₁, by omega, by rw [q01, q02]; ring, by rw [qA, q02]; ring,
+  have I0 : QLI W K CB A₀ c₁ c₁ := ⟨w₁, by omega, by rwring [q01, q02], by rwring [qA, q02],
     fun _ _ _ _ _ _ _ => rfl, fun _ _ => rfl, fun i hi => by omega, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', I₂, h₂⟩ := qlLoop_exec (P := P) q05 q06 q08 q00
     (fun i hi => by have := hch' i hi; omega)
     (fun i hi => by
       rw [qm, (hch i hi).1]
-      have := hhQ i hi; rw [hn] at this; omega)
+      have := hhQ i hi; rwo [hn] at this)
     (by omega) (by omega) K c₁ I0 (by omega)
   have w₂ := I₂.wb
   have g₂ : ∀ r, r ≠ 70101 → r ≠ 70102 → r ≠ 70103 → r ≠ 70104 → r ≠ 70107 → r ≠ ALLOC →
@@ -101,7 +103,7 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       c₃.nmem = c₂.nmem ∧ c₃.rreg = c₂.rreg ∧ c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
     unfold sqMid
     exec_block
-    all_goals try (simp only [r00]; omega)
+    all_goals try (sio only [r00])
     refine ⟨rfl, ?_, fun r h => ?_, rfl, rfl, rfl, rfl⟩
     all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
       r00]
@@ -115,7 +117,7 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       (by rcases hS with rfl | rfl <;> decide) (by rcases hS with rfl | rfl <;> decide)
       (by rcases hS with rfl | rfl <;> decide) (by rcases hS with rfl | rfl <;> decide) hS', qS,
       hA₀]
-  · rw [tr _ (by decide), I₂.alloc, h₂, hlen, hA₀]; ring
+  · rwring [tr _ (by decide), I₂.alloc, h₂, hlen, hA₀]
   · rw [tr _ (by decide), g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide)
       (by decide), q05]
   · rw [tr _ (by decide), g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide)
@@ -123,13 +125,13 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   · rw [tm, hA₀]
     have hdone := I₂.done
     rw [h₂] at hdone
-    refine chordList_endQL (m₀ := c₁.nmem) (CB := CB) (fun i hi => ?_) (fun i hi => hdone i hi)
+    refine chordList_endQL (m₀ := c₁.nmem) (CB := CB) (fun i hi => ?_) (hdone)
     rw [qm]
     obtain ⟨d0, d1, d2, -, -⟩ := hch i hi
     exact ⟨d0, d1, d2⟩
   · rw [tm, I₂.low a (by omega), qm]
   · have hr' := hr
-    simp only [Bend, Bool.or_eq_false_iff, decide_eq_false_iff_not,
+    simp [Bend, Bool.or_eq_false_iff, decide_eq_false_iff_not,
       beq_eq_false_iff_ne] at hr'
     rw [tr r (by omega), g₂ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
       qr r (by omega) (by omega) (by omega) (by omega)]

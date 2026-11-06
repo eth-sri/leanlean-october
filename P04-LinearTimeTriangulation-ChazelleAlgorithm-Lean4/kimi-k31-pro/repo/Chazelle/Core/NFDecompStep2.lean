@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.NFDecompStep
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Tree decomposition (WP-C), part 6: preservation of the round invariant
@@ -16,7 +19,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
 
 /-- The ghost components after a round. -/
 noncomputable def gcNext (R K : ℕ) (prg pch chOf top best : ℕ → ℕ) (σ : RS) (gc : ℕ → Finset ℕ)
@@ -41,14 +43,14 @@ theorem split_bound {D a b : ℕ} (hD : 1 ≤ D) (ha : 1 ≤ a) (hb : 1 ≤ b)
   · rw [min_eq_left (by omega)] at hm
     constructor
     · rcases Nat.eq_zero_or_pos d with rfl | hd
-      · simp at hm; omega
+      · sio at hm
       · nlinarith
     · nlinarith
   · rw [min_eq_right (by omega)] at hm
     constructor
     · nlinarith
     · rcases Nat.eq_zero_or_pos d with rfl | hd
-      · simp at hm; omega
+      · sio at hm
       · nlinarith
 
 section step2
@@ -129,7 +131,7 @@ theorem new_top_facts {e : ℕ} (he : e < K) (hc : Chosen σ top best chOf e) :
       (σ').side (chOf e) = (if isdn (chOf e) = 1 then 0 else 1) := by
   obtain ⟨-, -, -, -, -, hnt, -, c1, -, c3, -⟩ := chosen_facts h hch hT hB hI he hc
   have hnt' : top (chOf e) ≠ chOf e := fun e' => hnt ((top_iff h hch hT hB hI c1).1 e')
-  have hp : nPend K chOf top best σ e = 1 := (pend_next h hch hT hB hI he).2 hc
+  have hp  := (pend_next h hch hT hB hI he).2 hc
   refine ⟨?_, ?_, ?_⟩ <;> simp only [next, ite_eq_left c1, ite_eq_right hnt', c3, ite_eq_left hp]
 
 /-- An old top that is not active stays as it is. -/
@@ -145,7 +147,7 @@ theorem valid_next {x : ℕ} (hx : ValidC R K pch σ x) :
       · rw [ite_eq_right hp]
   · have hx2 : x % 2 ≠ 0 := by omega
     refine ⟨Or.inr ⟨h1, h2, (istop_next h hch hT hB hI h2).2 (Or.inl h3), ?_⟩, ?_, ?_⟩
-    · rw [act_top h hch hT hB hI h2 h3, ite_eq_right h4]; exact h4
+    · rwx [act_top h hch hT hB hI h2 h3, ite_eq_right h4]
     · simp only [compOf, ite_eq_right hx2]
     · simp only [pcode, ite_eq_right hx2]
       rw [lpar_top h hch hT hB hI h2 h3, ite_eq_right h4]
@@ -169,13 +171,13 @@ theorem code_next {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
         · exact b2 v hv htv
         · exact absurd hbt b3
       · rintro rfl; exact ⟨ht, ReflTransGen.refl⟩
-    have v1 : (2 * t + 1) / 2 < R := by rw [hd]; exact ht
+    have v1 : (2 * t + 1) / 2 < R := by rwx [hd]
     have v2 : IsTop pch (σ').rem ((2 * t + 1) / 2) := by
       rw [hd]; exact (istop_next h hch hT hB hI ht).2 (Or.inl htop)
     have v3 : (σ').act ((2 * t + 1) / 2) ≠ 1 := by
-      rw [hd, act_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_left hbt]; norm_num
+      rwn [hd, act_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_left hbt]
     refine ⟨Or.inr ⟨hm, v1, v2, v3⟩, ?_, ?_⟩
-    · simp only [compOf, hm, hd, hsing]; rfl
+    · sirfl only [compOf, hm, hd, hsing]
     · simp only [pcode, hm, hd, lpar_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_left hbt]
       norm_num
   · obtain ⟨b1, b2, b3, b4, b5, b6, b7, b8⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
@@ -183,11 +185,11 @@ theorem code_next {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
     rw [hcode]
     have hm : (2 * pch (best t)) % 2 = 0 := by omega
     have hd : (2 * pch (best t)) / 2 = pch (best t) := by omega
-    have v1 : (2 * pch (best t)) / 2 < K := by rw [hd]; exact b4
+    have v1 : (2 * pch (best t)) / 2 < K := by rwx [hd]
     have v2 : (σ').rem ((2 * pch (best t)) / 2) = 1 := by
       rw [hd]; exact (rem_next h hch hT hB hI b4).2 (Or.inr b7)
     refine ⟨Or.inl ⟨hm, v1, v2⟩, ?_, ?_⟩
-    · simp only [compOf, hm, hd, gc_new h hch hT hB hI b4 b7, b5, b6]; rfl
+    · sirfl only [compOf, hm, hd, gc_new h hch hT hB hI b4 b7, b5, b6]
     · have hp : σ.pend (pch (best t)) ≠ 1 := fun hp => b8 (hI.i0 _ b4 hp)
       simp only [pcode, hm, hd, next, ite_eq_left b4, ite_eq_right hp, ite_eq_left b7, b5, b6]
       rfl
@@ -200,7 +202,7 @@ theorem pend_child {e s t : ℕ} (he : e < K) (hp : σ.pend e = 1) (_ht : t < R)
   have hr := hI.i0 e he hp
   obtain ⟨-, hcm, hpm, -⟩ := hI.i1 e he hr
   obtain ⟨c1, c2, c3⟩ := hch e he
-  have hctop : IsTop pch σ.rem (chOf e) := Or.inr (by rw [c3]; exact hr)
+  have hctop : IsTop pch σ.rem (chOf e) := Or.inr (by rwx [c3])
   have hpR : prg (chOf e) < R := h.prg_lt _ c1 c2
   by_cases hcond : (isdn (chOf e) = 1 ↔ s = 0)
   · rw [ite_eq_left hcond]
@@ -238,7 +240,7 @@ theorem sub_new_sides {e s : ℕ} (he : e < K) (hc : Chosen σ top best chOf e) 
     (¬ (isdn (chOf e) = 1 ↔ s = 0) →
       sub R prg pch (σ').rem (top (chOf e)) = gc' e ∩ sideSet R prg pch isdn chOf s e) := by
   obtain ⟨t1, t2, t3, t4, t5, -, t7, c1, -, -, -⟩ := chosen_facts h hch hT hB hI he hc
-  have hbt : best (top (chOf e)) ≠ top (chOf e) := by rw [t4]; exact t5
+  have hbt : best (top (chOf e)) ≠ top (chOf e) := by rwx [t4]
   rw [gc_new h hch hT hB hI he hc]
   constructor
   · intro hcond

@@ -4,6 +4,11 @@ public import Chazelle.Core.SweepEvStopFin6
 public import Chazelle.Core.SweepEvStopFin7B
 public import Chazelle.Core.SweepEvStopFinS2
 public import Chazelle.Core.SweepEvStopPar
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 32000000
 
 /-!
 # The sweep (WP-D), stage 2, the finish of a stop origin: the composition (`FinTask`)
@@ -35,14 +40,14 @@ def SlfSafe (r : ℕ) : Prop := sw 4000 ≤ r ∧ r ≤ sw 4053
 
 theorem slf_keep {R : ℕ → Prop} {c c' : Config} (h : SlfFr R c c')
     (hR : ∀ r, R r → ¬ SlfSafe r) {r : ℕ} (hr : SlfSafe r) : c'.nreg r = c.nreg r :=
-  h.1 r (band_sw_not ⟨by unfold SlfSafe sw at hr; omega, by unfold SlfSafe sw at hr; omega⟩)
-    (fun h' => hR r h' hr) (by unfold SlfSafe sw at hr; unfold ALLOC; omega)
+  h.1 r (band_sw_not ⟨by ufo SlfSafe sw at hr, by ufo SlfSafe sw at hr⟩)
+    (fun h' => hR r h' hr) (by unfold SlfSafe sw at hr; ufo ALLOC)
 
 theorem slfOffR_safe : ∀ r, slfOffR r → ¬ SlfSafe r := by
-  intro r h h'; unfold slfOffR SlfSafe sw at *; omega
+  intro r h h'; ufo slfOffR SlfSafe sw at *
 
 theorem parR_safe : ∀ r, ParR r → ¬ SlfSafe r := by
-  intro r h h'; unfold ParR oPar SlfSafe sw at *; omega
+  intro r h h'; ufo ParR oPar SlfSafe sw at *
 
 /-- The registers of the finish before the emission. -/
 def SlfFinR (r : ℕ) : Prop := slfOffR r ∨ ParR r ∨ slfLabR r
@@ -76,9 +81,8 @@ theorem slf_cost {A B T Kp Ks Pc : ℕ} (hA : 1 ≤ A) (hB : T + 1 ≤ B) (hP : 
   have h4 : 44200 ≤ 44200 * A * B := by
     rw [mul_assoc]; exact Nat.le_mul_of_pos_right _ (by omega)
   have e : (44200 + Kp + Ks) * A * B = 44200 * A * B + Kp * A * B + Ks * A * B := by ring
-  rw [e]; omega
+  rwo [e]
 
-set_option maxHeartbeats 32000000 in
 /-- **Task Fin** from the stretch labels and the emission. -/
 theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   obtain ⟨ps, κp, hps⟩ := parTask
@@ -95,19 +99,19 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   obtain ⟨i1, i2, -⟩ := orig_attach hP hN hD
   have hat₀ : SlfAtt P J (stopSet J (Qof P) N₂ kind k b) c (oF0 + 1) (oF0 + 2) := by
     have hpos : |((chainModel J.whole).pos (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩).2| <
-        J.whole.radius := by rw [pos_eq_sidePt', hA0.2.2.2.1]; exact hy
+        J.whole.radius := by rwx [pos_eq_sidePt', hA0.2.2.2.1]
     exact ⟨⟨he0, hpp0, fun h0 => h6_of_abs J.whole (Qof P) hpos h0⟩, hpos, (i1 _ _ hA0).1⟩
   have hat₁ : SlfAtt P J (stopSet J (Qof P) N₂ kind k b) c (a1F + 1) (a1F + 2) := by
     have hpos : |((chainModel J.whole).pos (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩).2| <
         J.whole.radius := by
-      rw [pos_eq_sidePt', hA1.2.2.2.1]; unfold farPt; rw [rayPt_snd]; exact hy
+      rw [pos_eq_sidePt', hA1.2.2.2.1]; unfold farPt; rwx [rayPt_snd]
     exact ⟨⟨he1, hpp1, fun h0 => h6_of_abs J.whole (Qof P) hpos h0⟩, hpos, (i2 _ _ hA1).1⟩
   obtain ⟨hbrk, hpk⟩ := anc_pocket_iff hP hN hD hA0 hA1
   -- the cost
   have hcost := slf_cost (A := if kind = 1 then 1 else N₁.nChords + N₂.nChords + 1)
     (B := F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) (T := c₀.nreg TLR) (Kp := κp)
     (Ks := κs (c₀.nreg (sw 6)))
-    (Pc := if kind = 1 then 5 else κp * (N₂.nChords + 1) + 4) (by split_ifs <;> omega)
+    (Pc := if kind = 1 then 5 else κp * (N₂.nChords + 1) + 4) (by splao)
     (by omega) (by
       split_ifs with h
       · omega
@@ -115,7 +119,7 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
         omega)
   refine (?_ : IRS P W c₀ (slfFin ps sl) c (44037 + ((if kind = 1 then 5 else
     κp * (N₂.nChords + 1) + 4) + ((κs (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 40) + 100))) _).mono
-    (by beta_reduce; exact hcost) (fun _ h => h)
+    (by beta_reduce; exact hcost) (fun _ => id)
   beta_reduce at hroom
   have hroom' : c.nreg ALLOC + (44037 + ((if kind = 1 then 5 else κp * (N₂.nChords + 1) + 4) +
       ((κs (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 40) + 100))) ≤ W := by
@@ -125,80 +129,80 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   refine IRS.seq (K₁ := 44037) (slfOffs_irs E hI hat₀.1 hat₁.1 (by omega)) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨b0, b3, b4, b7, ha1, ha, fr1⟩
   have s1 : ∀ r, SlfSafe r → c₁.nreg r = c.nreg r := fun r hr => slf_keep fr1 slfOffR_safe hr
-  have e1kd : c₁.nreg oKd = kind := by rw [s1 _ (by unfold SlfSafe oKd sw; omega), hkd]
-  have e1kk : c₁.nreg oKk = k := by rw [s1 _ (by unfold SlfSafe oKk sw; omega), hkk]
-  have e1kb : c₁.nreg oB = b := by rw [s1 _ (by unfold SlfSafe oB sw; omega), hkb]
-  have e1pe : c₁.nreg pE2 = c.nreg pE2 := s1 _ (by unfold SlfSafe pE2 sw; omega)
-  have e1ph : c₁.nreg pH2 = c.nreg pH2 := s1 _ (by unfold SlfSafe pH2 sw; omega)
+  have e1kd : c₁.nreg oKd = kind := by rw [s1 _ (by ufo SlfSafe oKd sw), hkd]
+  have e1kk : c₁.nreg oKk = k := by rw [s1 _ (by ufo SlfSafe oKk sw), hkk]
+  have e1kb : c₁.nreg oB = b := by rw [s1 _ (by ufo SlfSafe oB sw), hkb]
+  have e1pe : c₁.nreg pE2 = c.nreg pE2 := s1 _ (by ufo SlfSafe pE2 sw)
+  have e1ph : c₁.nreg pH2 = c.nreg pH2 := s1 _ (by ufo SlfSafe pH2 sw)
   -- 2. the parent
   refine IRS.seq (K₁ := if kind = 1 then 5 else κp * (N₂.nChords + 1) + 4)
     ((slfPar_irs E hI₁ (fun c' hI' => hps sh Bs F X Ok P W c₀ c' J N₁ N₂ E hI')
-      (by rw [e1kd, e1kk, e1kb]; exact hD)
-      (by rw [e1kd, e1kk, e1kb, e1pe, e1ph]; exact hpre2)
-      (fun _ => by split_ifs at hroom' <;> omega)).mono (by rw [e1kd]) (fun _ h => h)) ?_
+      (by rwx [e1kd, e1kk, e1kb])
+      (by rwx [e1kd, e1kk, e1kb, e1pe, e1ph])
+      (fun _ => by split_ifs at hroom' <;> omega)).mono (by rw [e1kd]) (fun _ => id)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hpar, fr2⟩
   rw [e1kd, e1kk, e1kb] at hpar
   have s2 : ∀ r, SlfSafe r → c₂.nreg r = c₁.nreg r := fun r hr => slf_keep fr2 parR_safe hr
   have fr12 : SlfFr SlfFinR c c₂ :=
     (fr1.mono fun r h => Or.inl h).trans (fr2.mono fun r h => Or.inr (Or.inl h))
   have g2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ SlfFinR r → c₂.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => fr12.1 r (band_sw_not ⟨h1, h2⟩) h3 (by unfold ALLOC; omega)
-  have r01 := g2 (oF0 + 1) (by unfold oF0 sw; omega) (by unfold oF0 sw; omega)
-    (by unfold SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar oF0 sw; omega)
-  have r02 := g2 (oF0 + 2) (by unfold oF0 sw; omega) (by unfold oF0 sw; omega)
-    (by unfold SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar oF0 sw; omega)
-  have r11 := g2 (a1F + 1) (by unfold a1F sw; omega) (by unfold a1F sw; omega)
-    (by unfold SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar a1F sw; omega)
-  have r12 := g2 (a1F + 2) (by unfold a1F sw; omega) (by unfold a1F sw; omega)
-    (by unfold SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar a1F sw; omega)
+    fun r h1 h2 h3 => fr12.1 r (band_sw_not ⟨h1, h2⟩) h3 (by ufo ALLOC)
+  have r01 := g2 (oF0 + 1) (by ufo oF0 sw) (by ufo oF0 sw)
+    (by ufo SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar oF0 sw)
+  have r02 := g2 (oF0 + 2) (by ufo oF0 sw) (by ufo oF0 sw)
+    (by ufo SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar oF0 sw)
+  have r11 := g2 (a1F + 1) (by ufo a1F sw) (by ufo a1F sw)
+    (by ufo SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar a1F sw)
+  have r12 := g2 (a1F + 2) (by ufo a1F sw) (by ufo a1F sw)
+    (by ufo SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar a1F sw)
   have o0 := slfOff_congr (P := P) (J := J) r01 r02
   have o1 := slfOff_congr (P := P) (J := J) r11 r12
   have k21 : ∀ r, 240000 ≤ r → r < 250000 → ¬ ParR r → c₂.nreg r = c₁.nreg r :=
-    fun r h1 h2 h3 => fr2.1 r (band_sw_not ⟨h1, h2⟩) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => fr2.1 r (band_sw_not ⟨h1, h2⟩) h3 (by ufo ALLOC)
   have eO : ∀ i, i ≤ 8 → c₂.nreg (slfO + i) = c₁.nreg (slfO + i) := fun i hi =>
-    k21 _ (by unfold slfO sw; omega) (by unfold slfO sw; omega) (by unfold ParR oPar slfO sw; omega)
+    k21 _ (by ufo slfO sw) (by ufo slfO sw) (by ufo ParR oPar slfO sw)
   have eA2 : c₂.nreg slfA = c₁.nreg slfA :=
-    k21 _ (by unfold slfA sw; omega) (by unfold slfA sw; omega) (by unfold ParR oPar slfA sw; omega)
+    k21 _ (by ufo slfA sw) (by ufo slfA sw) (by ufo ParR oPar slfA sw)
   -- 3. the labels
   refine IRS.seq (K₁ := κs (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 40)
     (slfLab_irs E hI₂ hsl hD (hat₀.congr r01 r02) (hat₁.congr r11 r12)
       (by rw [o0]; exact b0.of_eq (eO 0 (by norm_num)))
       (by rw [o0]; exact b3.of_eq (eO 3 (by norm_num)))
       (by rw [o1]; exact b7.of_eq (eO 7 (by norm_num)))
-      (by rw [eA2]; exact ha1) (by rw [o0, o1, eA2]; exact ha)
+      (by rwx [eA2]) (by rwx [o0, o1, eA2])
       (fun h => by rw [o0, o1]; exact hpk.1 h) hpar (by omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨hlab, fr3⟩
   have fr13 : SlfFr SlfFinR c c₃ := fr12.trans (fr3.mono fun r h => Or.inr (Or.inr h))
   have g3 : ∀ r, 240000 ≤ r → r < 250000 → ¬ SlfFinR r → c₃.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => fr13.1 r (band_sw_not ⟨h1, h2⟩) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => fr13.1 r (band_sw_not ⟨h1, h2⟩) h3 (by ufo ALLOC)
   have k32 : ∀ r, 240000 ≤ r → r < 250000 → ¬ slfLabR r → c₃.nreg r = c₂.nreg r :=
-    fun r h1 h2 h3 => fr3.1 r (band_sw_not ⟨h1, h2⟩) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => fr3.1 r (band_sw_not ⟨h1, h2⟩) h3 (by ufo ALLOC)
   have safe : ∀ r, SlfSafe r → ¬ SlfFinR r := fun r hr h => by
     unfold SlfSafe SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar
       sw at *
     omega
   have g3s : ∀ r, SlfSafe r → c₃.nreg r = c.nreg r := fun r hr =>
-    g3 r (by unfold SlfSafe sw at hr; omega) (by unfold SlfSafe sw at hr; omega) (safe r hr)
-  have e3kd : c₃.nreg oKd = kind := by rw [g3s _ (by unfold SlfSafe oKd sw; omega), hkd]
-  have e3kk : c₃.nreg oKk = k := by rw [g3s _ (by unfold SlfSafe oKk sw; omega), hkk]
-  have e3kb : c₃.nreg oB = b := by rw [g3s _ (by unfold SlfSafe oB sw; omega), hkb]
-  have e3a : c₃.nreg (oF0 + 1) = c.nreg (oF0 + 1) := g3s _ (by unfold SlfSafe oF0 sw; omega)
-  have e3b : c₃.nreg (oF0 + 2) = c.nreg (oF0 + 2) := g3s _ (by unfold SlfSafe oF0 sw; omega)
-  have e3c : c₃.nreg (a1F + 1) = c.nreg (a1F + 1) := g3s _ (by unfold SlfSafe a1F sw; omega)
-  have e3d : c₃.nreg (a1F + 2) = c.nreg (a1F + 2) := g3s _ (by unfold SlfSafe a1F sw; omega)
-  have e3RB : c₃.nreg gRB = c.nreg gRB := g3s _ (by unfold SlfSafe gRB sw; omega)
-  have e3RC : c₃.nreg gRC = c.nreg gRC := g3s _ (by unfold SlfSafe gRC sw; omega)
+    g3 r (by ufo SlfSafe sw at hr) (by ufo SlfSafe sw at hr) (safe r hr)
+  have e3kd : c₃.nreg oKd = kind := by rw [g3s _ (by ufo SlfSafe oKd sw), hkd]
+  have e3kk : c₃.nreg oKk = k := by rw [g3s _ (by ufo SlfSafe oKk sw), hkk]
+  have e3kb : c₃.nreg oB = b := by rw [g3s _ (by ufo SlfSafe oB sw), hkb]
+  have e3a : c₃.nreg (oF0 + 1) = c.nreg (oF0 + 1) := g3s _ (by ufo SlfSafe oF0 sw)
+  have e3b : c₃.nreg (oF0 + 2) = c.nreg (oF0 + 2) := g3s _ (by ufo SlfSafe oF0 sw)
+  have e3c : c₃.nreg (a1F + 1) = c.nreg (a1F + 1) := g3s _ (by ufo SlfSafe a1F sw)
+  have e3d : c₃.nreg (a1F + 2) = c.nreg (a1F + 2) := g3s _ (by ufo SlfSafe a1F sw)
+  have e3RB : c₃.nreg gRB = c.nreg gRB := g3s _ (by ufo SlfSafe gRB sw)
+  have e3RC : c₃.nreg gRC = c.nreg gRC := g3s _ (by ufo SlfSafe gRC sw)
   have q0 := slfOff_congr (P := P) (J := J) e3a e3b
   have q1 := slfOff_congr (P := P) (J := J) e3c e3d
   have eO3 : ∀ i, i ≤ 8 → c₃.nreg (slfO + i) = c₁.nreg (slfO + i) := fun i hi => by
-    rw [k32 _ (by unfold slfO sw; omega) (by unfold slfO sw; omega)
-      (by unfold slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY slfO sw; omega), eO i hi]
+    rw [k32 _ (by ufo slfO sw) (by ufo slfO sw)
+      (by ufo slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY slfO sw), eO i hi]
   have eA3 : c₃.nreg slfA = c₂.nreg slfA :=
-    k32 _ (by unfold slfA sw; omega) (by unfold slfA sw; omega)
-      (by unfold slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY slfA sw; omega)
+    k32 _ (by ufo slfA sw) (by ufo slfA sw)
+      (by ufo slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY slfA sw)
   have eP3 : c₃.nreg oPar = c₂.nreg oPar :=
-    k32 _ (by unfold oPar sw; omega) (by unfold oPar sw; omega)
-      (by unfold slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar sw; omega)
+    k32 _ (by ufo oPar sw) (by ufo oPar sw)
+      (by ufo slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar sw)
   -- 4. the emission
   have haux : (∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W
       (stopSet J (Qof P) N₂ kind k b) q s ∧ (Lst J : ℝ) ≤ oW J (q + s)) →
@@ -209,15 +213,15 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
     obtain ⟨p1, p2, p3⟩ := hpar
     rw [eA3, eA2]
     rw [eP3]
-    refine ⟨ha1, ?_, n1, n2, n3, fun h hnp => n4 (by rw [eA2]; exact h) hnp hC1, p1, p2, p3⟩
-    rw [ha, hbrk]; rfl
-  refine (hEm sh Bs F X Ok P W c₀ c₃ J N₁ N₂ E hI₃ (by rw [e3kd, e3kk, e3kb]; exact hD)
-    (by rw [e3kd, e3kk, e3kb, e3a, e3b]; exact hA0) (by rw [e3a, e3b]; exact hat₀.1)
-    (by rw [e3kd, e3kk, e3kb, e3c, e3d]; exact hA1) (by rw [e3c, e3d]; exact hat₁.1)
+    refine ⟨ha1, ?_, n1, n2, n3, fun h hnp => n4 (by rwx [eA2]) hnp hC1, p1, p2, p3⟩
+    rwr [ha, hbrk]
+  refine (hEm sh Bs F X Ok P W c₀ c₃ J N₁ N₂ E hI₃ (by rwx [e3kd, e3kk, e3kb])
+    (by rwx [e3kd, e3kk, e3kb, e3a, e3b]) (by rw [e3a, e3b]; exact hat₀.1)
+    (by rwx [e3kd, e3kk, e3kb, e3c, e3d]) (by rw [e3c, e3d]; exact hat₁.1)
     (by rw [q0]; exact b0.of_eq (eO3 0 (by norm_num)))
     (by rw [q1]; exact b4.of_eq (eO3 4 (by norm_num)))
-    (by rw [e3kd, e3kk, e3kb]; exact haux) (by rw [e3RB]; exact hgA)
-    (by rw [e3RB, e3RC]; omega) (by omega)).mono le_rfl ?_
+    (by rwx [e3kd, e3kk, e3kb]) (by rwx [e3RB])
+    (by rwo [e3RB, e3RC]) (by omega)).mono le_rfl ?_
   intro c' h
   rw [e3kd, e3kk, e3kb] at h
   exact orgOut_transfer slfFinR_sorg fr13 e3RB e3RC h

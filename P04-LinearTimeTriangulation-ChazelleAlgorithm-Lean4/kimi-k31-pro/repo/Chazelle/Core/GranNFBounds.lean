@@ -28,7 +28,7 @@ theorem robust_addr3 {E : ℕ} {m : ℕ → ℕ} {b₁ p₂ t v : ℕ} (hp₂ : 
     set Z := E + b₁ + m p₂ + t + 1 with hZ
     have := h (Function.update (Function.update m b₁ Z) (Z + m p₂ + t) (v + 1))
       (fun a ha => by rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
-    simp only at this
+    simp at this
     rw [Function.update_of_ne (show b₁ ≠ Z + m p₂ + t by omega), Function.update_self,
       Function.update_of_ne (show p₂ ≠ Z + m p₂ + t by omega),
       Function.update_of_ne (show p₂ ≠ b₁ by omega), Function.update_self] at this
@@ -36,7 +36,7 @@ theorem robust_addr3 {E : ℕ} {m : ℕ → ℕ} {b₁ p₂ t v : ℕ} (hp₂ : 
   by_contra hge
   have := h (Function.update m (m b₁ + m p₂ + t) (v + 1)) (fun a ha => by
     rw [Function.update_of_ne (by omega)])
-  simp only at this
+  simp at this
   rw [Function.update_of_ne (show b₁ ≠ m b₁ + m p₂ + t by omega),
     Function.update_of_ne (show p₂ ≠ m b₁ + m p₂ + t by omega), Function.update_self] at this
   omega

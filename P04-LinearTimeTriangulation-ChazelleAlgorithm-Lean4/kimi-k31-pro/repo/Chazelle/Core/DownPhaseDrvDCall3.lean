@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseDrvDCall2
 public import Chazelle.Core.RestoreTestMath
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # Down-phase restoration rounds (D8), part 9: one call of the splitting step, the proof
@@ -29,7 +33,7 @@ theorem inDrv_app : InDrv Bapp := by
   rcases hr with (h | h) | h
   · exact inDrv_appT r h
   · exact inDrv_scan r h
-  · exact inDrv_eq (q := 216022) (by norm_num) (by norm_num) (by unfold ALLOC; norm_num) r h
+  · exact inDrv_eq (q := 216022) (by norm_num) (by norm_num) (by ufn ALLOC) r h
 
 theorem bapp_of_appT (r : ℕ) (h : BappT r = true) : Bapp r = true := by
   simp [Bapp, h]
@@ -52,7 +56,6 @@ theorem degOf_le {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : L
   rw [region_buildNF hr]
   exact (List.length_filter_le _ _).trans (by simp)
 
-set_option maxHeartbeats 16000000 in
 /-- **One call of the splitting step.** -/
 theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     {newL : List (ℕ × (ℕ × ℕ × ℕ))} {c : Config} (hI : RegI E c₀ newL c)
@@ -73,9 +76,9 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
   have hGM := E.hGM hE.hG
   have hNF := hE.hNF
   have hQn : (Qof E.P).n = E.P.n := shear_n _ _
-  have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
+  have hW3 : E.P.n + 3 ≤ E.W := by have := hE.hWh; ufo hostWords at this
   have hRN : E.N.nRegions = E.R := E.nRegions_N
-  have hrN : r < E.N.nRegions := by rw [hRN]; exact hr
+  have hrN : r < E.N.nRegions := by rwx [hRN]
   -- the registers of `c`
   have RR : ∀ q, FixR q → c.nreg q = c₀.nreg q := hI.regs
   have c001 : c.nreg 210001 = E.MD := (RR _ (Or.inl ⟨by norm_num, by norm_num⟩)).trans hE.r001
@@ -98,7 +101,7 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     rw [hid, this]; exact Restore.highList_length_le _ _ _
   have hKpos : 0 < E.L.length := by
     have h' : Restore.degOf E.N r ≤ E.L.length :=
-      degOf_le (M := E.M) (Q := E.Q) (E := E.E) (r := r) (by have := hr; unfold REnv.R at this; omega)
+      degOf_le (M := E.M) (Q := E.Q) (E := E.E) (r := r) (by have := hr; ufo REnv.R at this)
     omega
   have hBK : E.BK = E.B₀ + 3 * E.R := rfl
   have hA0B : E.A₀ ≤ E.B₀ := hE.hA₀
@@ -111,7 +114,7 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     have : E.Bf + 2 ≤ (E.Bf + 2) * (E.R - c.nreg 216030) := Nat.le_mul_of_pos_right _ (by omega)
     omega
   have hBKi : E.BK + 2 * i + 2 ≤ c.nreg ALLOC := by omega
-  have hB3i : E.B₀ + 3 * i + 3 ≤ E.BK := by rw [hBK]; omega
+  have hB3i : E.B₀ + 3 * i + 3 ≤ E.BK := by rwo [hBK]
   -- the memory
   have hNW₀ := hE.hNW
   have hareas := Gran.nf_areas hNW₀
@@ -124,7 +127,7 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
   have g₁ : ∀ q, ¬ (81000 ≤ q ∧ q ≤ 81006) → c₁.nreg q = c.nreg q := fun q hq =>
     f₁.1 q (by simpa using hq)
   have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
-  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by unfold ALLOC; omega)
+  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by ufo ALLOC)
   have agree₁ : ∀ a, a < E.A₀ → c₁.nmem a = E.m₀ a := by rw [m₁]; exact agree
   obtain ⟨hMD₁, hwf₁⟩ := Gran.desc_agree' hE.hwf hE.hMD agree₁
   have hNW₁ : NFWithin c₁.nmem E.H (c₁.nreg ALLOC) E.N := by
@@ -140,29 +143,29 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
   have hroomF : c₁.nreg ALLOC + E.κf (c₁.nreg 81005) * E.F (c₁.nreg 81003) *
       E.G (c₁.nreg 81003) * (E.Hc (c₁.nreg 81003) + Nat.clog 2 (c₁.nreg 81003) + 1) ≤ E.W := by
     rw [hd', hγ', A₁]
-    have : Restore.costF E.κf E.F E.G E.Hc E.d0 E.γ ≤ E.Bf := by unfold REnv.Bf; omega
+    have : Restore.costF E.κf E.F E.G E.Hc E.d0 E.γ ≤ E.Bf := by ufo REnv.Bf
     unfold Restore.costF at this
     omega
   have hXh : E.X.holds E.P c₁.nmem E.ctx (c₁.nreg ALLOC) :=
-    E.X.mono _ _ _ _ _ (by rw [A₁]; omega)
+    E.X.mono _ _ _ _ _ (by rwo [A₁])
       (E.X.local_ _ _ _ _ _ (fun a ha => (agree₁ a ha).symm) hE.hX)
   obtain ⟨c₂, k₂, e₂, hk₂, ⟨-, -, Ppost⟩, F₂⟩ := hE.hF E.P E.W c₁ w₁
-    ⟨hE.hG, hE.hWh, by rw [hctx]; exact hXh, by rw [hγ', hctx]; exact hE.hcap _ agree₁,
-      by rw [hMD']; exact hwf₁.mono (by rw [A₁]; omega),
+    ⟨hE.hG, hE.hWh, by rwx [hctx], by rw [hγ', hctx]; exact hE.hcap _ agree₁,
+      by rw [hMD']; exact hwf₁.mono (by rwo [A₁]),
       fun h0 => by rw [hMD', hone] at h0; exact absurd h0 (by norm_num),
       fun h0 => by rw [hMD', hone] at h0; exact absurd h0 (by norm_num),
-      E.M, E.N, by rw [hMD']; exact hMD₁, hGM, rfl, by rw [hH']; exact hNW₁, hNF,
-      by rw [hd']; exact hE.hdeg, by rw [hγ']; exact hE.hsg, by rw [a2]; exact hrN⟩ hroomF
+      E.M, E.N, by rwx [hMD'], hGM, rfl, by rwx [hH'], hNF,
+      by rw [hd']; exact hE.hdeg, by rw [hγ']; exact hE.hsg, by rwx [a2]⟩ hroomF
   beta_reduce at hk₂
   rw [hd', hγ'] at hk₂
   have w₂ := e₂.wb_right
-  obtain ⟨hsnd, hcpl⟩ := Ppost E.M E.N E.reg (by rw [hMD']; exact hMD₁)
+  obtain ⟨hsnd, hcpl⟩ := Ppost E.M E.N E.reg (by rwx [hMD'])
     (by rw [hH']; exact hNW₁.nfAt) hNF hE.hregs
   have hDH : DistinctHeights (Qof E.P) := (goodShear_epsOf hE.hG.2).2.1
   have hdegr : E.M.deg (E.N.F E.M E.Q) (E.reg r) = Restore.degOf E.N r :=
     Gran.deg_region hNF hE.hregs.1 hE.hregs.2.2.2 hrN
   have hflag : c₂.nreg 81007 = 1 := hcpl (by rw [h4']; exact fullDegLe_interior (E.hQ hE.hG) hDH)
-    (by rw [h4', a2, hdegr]; exact hhigh)
+    (by rwx [h4', a2, hdegr])
   obtain ⟨s1, s2, s3, s4⟩ := hsnd hflag
   rw [a2] at s4
   set t : ℕ × ℕ × ℕ := (c₂.nreg 81008, c₂.nreg 81009, c₂.nreg 81010) with htd
@@ -171,10 +174,10 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     (find_keeps F₂ (Or.inl ⟨h1, h2⟩)).trans (g₁ q (by omega))
   have K2c : c₂.nreg 230001 = c.nreg 230001 := (find_keeps F₂ (Or.inr rfl)).trans (g₁ _ (by omega))
   have mem₂ : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [F₂.2.2.1 a (by rw [A₁]; exact ha), m₁]
+    rw [F₂.2.2.1 a (by rwx [A₁]), m₁]
   -- 3. the test
   have htest : c₂.nreg 216003 < c₂.nreg 81007 := by
-    rw [K2 _ (by norm_num) (by norm_num), c03, hflag]; norm_num
+    rwn [K2 _ (by norm_num) (by norm_num), c03, hflag]
   -- 4. appending the triple
   set RB := c₀.nmem (E.H + 5) with hRB
   have hp : c₂.nreg 216031 = RB + 2 + 5 * r := by rw [K2 _ (by norm_num) (by norm_num), hI.ptr]
@@ -197,8 +200,8 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     (by rw [K2 _ (by norm_num) (by norm_num), hI.dst])
     (by rw [K2 _ (by norm_num) (by norm_num), hI.cnt])
     (by rw [K2 _ (by norm_num) (by norm_num), c02]) (by rw [K2 _ (by norm_num) (by norm_num), c05])
-    hp (by rw [K2 _ (by norm_num) (by norm_num), c16]) (by unfold REnv.BK at hc0A; omega)
-    (by unfold REnv.BK at hc0A; omega) (by omega) (by rw [hm2]; omega)
+    hp (by rw [K2 _ (by norm_num) (by norm_num), c16]) (by ufo REnv.BK at hc0A)
+    (by ufo REnv.BK at hc0A) (by omega) (by rwo [hm2])
     (by have := hE.hG; have h' : c₂.nreg 81008 < (Qof E.P).n := s2; omega) (by omega)
   have w₃ := e₃.wb_right
   rw [show RB + 2 + 5 * r - 2 = RB + 5 * r by omega, mem₂ _ (by omega), hI.low _ (by omega)] at d42
@@ -220,7 +223,7 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     have hmA : ∀ a, a < E.A₀ → m a = E.m₀ a := fun a ha => (hm a (by omega)).trans (hE.hlow a ha)
     obtain ⟨hMDm, hwfm⟩ := Gran.desc_agree' hE.hwf hE.hMD hmA
     exact scanGood_of hGM hE.hG hE.hWh hE.hok hE.hperm hE.hsort hKpos hE.hregs
-      (hNW₀.transport hm) hBW (hwfm.mono (by omega)) hMDm (by unfold REnv.R at hr; omega) xe x1 xp
+      (hNW₀.transport hm) hBW (hwfm.mono (by omega)) hMDm (by ufo REnv.R at hr) xe x1 xp
   have hex : ∀ s, s < 2 → ∃ j ∈ (E.N.region r).arcs, matchB E.N.arcs.length j
       (tA E.M (Qof E.P) E.N (endPos t s) j) (tB E.M (Qof E.P) E.N (endPos t s) j) = true :=
     fun s hs => hex_of hGM hE.hok hE.hperm hE.hsort hKpos hE.hregs hrN hfound hs
@@ -231,14 +234,14 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
   have hH7 : E.H + 7 < E.B₀ := hareas.1
   rw [agree₃ (E.H + 4) (by omega), agree₃ (E.H + 7) (by omega), agree₃ (E.H + 5) (by omega),
     ← hRB, agree₃ (RB + 5 * r + 1) (by omega)] at S1
-  have e40 : c₃.nreg 216040 = (endPos t 0).edge := by rw [d40]; rfl
-  have e41 : c₃.nreg 216041 = (endPos t 0).hgt := by rw [d41]; rfl
+  have e40 : c₃.nreg 216040 = (endPos t 0).edge := by rwr [d40]
+  have e41 : c₃.nreg 216041 = (endPos t 0).hgt := by rwr [d41]
   have r3 : ∀ q, BappT q = false → 210000 ≤ q → q < 220000 → c₃.nreg q = c.nreg q :=
     fun q hq h1 h2 => (g₃ q hq).trans (K2 q h1 h2)
   obtain ⟨c₄, k₄, e₄, hk₄, fd₀, f₄⟩ := scanS_exec S1 c₃ w₃ rfl e40 e41
     (by rw [d42, hNA]) (by rw [d43])
     (by rw [r3 _ (by decide) (by norm_num) (by norm_num), c14, ← agree₃ _ (by omega)])
-    (by rw [r3 _ (by decide) (by norm_num) (by norm_num), c17]; rfl)
+    (by rwr [r3 _ (by decide) (by norm_num) (by norm_num), c17])
     (by rw [r3 _ (by decide) (by norm_num) (by norm_num), c02])
     (by rw [r3 _ (by decide) (by norm_num) (by norm_num), c03])
     (by rw [d400]) (hex 0 (by norm_num))
@@ -261,8 +264,7 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
   have g5 : ∀ q, q ≠ 216022 → c₅.nreg q = c₄.nreg q := fun q hq => f₅.1 q (by simpa using hq)
   -- 8. the second scan
   have agree₆ : ∀ a, a < E.B₀ → c₆.nmem a = c₀.nmem a := fun a ha => by
-    show c₅.nmem a = _
-    rw [m₅, Machine.upd_other _ _ _ (by unfold REnv.BK at *; omega), f₄.2.2.1, agree₃ a ha]
+    rw [m₅, Machine.upd_other _ _ _ (by ufo REnv.BK at *), f₄.2.2.1, agree₃ a ha]
   have S2 := hscan c₆.nmem agree₆ w₆.2 1 (by norm_num)
   rw [agree₆ (E.H + 4) (by omega), agree₆ (E.H + 7) (by omega), agree₆ (E.H + 5) (by omega),
     ← hRB, agree₆ (RB + 5 * r + 1) (by omega)] at S2
@@ -308,7 +310,6 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
   have m78 : c₈.nmem = upd (upd c₃.nmem (E.BK + 2 * i) (c₄.nreg 216053)) (E.BK + 2 * i + 1)
       (c₇.nreg 216053) := by
     rw [m₈, f₇.2.2.1]
-    show upd c₅.nmem _ _ = _
     rw [m₅, f₄.2.2.1]
   have mlow : ∀ a, a < E.B₀ → c₈.nmem a = c.nmem a := fun a ha => by
     rw [m78, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega), low₃ a ha,
@@ -320,7 +321,7 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
         (((FrameB.toM f₇).mono bapp_of_scan).trans (f₈.mono bapp_of_22)))))
   have RF₁ : Restore.RF DrvR.drvBands E.B₀ c c₁ k₁ := rf_of_frameB inDrv_arg f₁
   have RF₂ : Restore.RF DrvR.drvBands E.B₀ c₁ c₂ k₂ :=
-    (Restore.RF.of_frame F₂ (by rw [A₁]; omega)).mono find_bands le_rfl
+    (Restore.RF.of_frame F₂ (by rwo [A₁])).mono find_bands le_rfl
   have RF₃ : Restore.RF DrvR.drvBands E.B₀ c₂ c₈ (k₃ + (k₄ + (k₅ + (1 + (k₇ + k₈)))) + 1) :=
     rf_of_frameM inDrv_app Fapp (fun a ha => by
       rw [mlow a ha, mem₂ a (by omega)])
@@ -355,8 +356,8 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
       rw [m78, Machine.upd_same]
       exact fd₁
   · rw [G3 _ (by decide) (by norm_num) (by norm_num), d20]
-  · rw [G3 _ (by decide) (by norm_num) (by norm_num), d21]; ring
-  · rw [d22'']; ring
+  · rwring [G3 _ (by decide) (by norm_num) (by norm_num), d21]
+  · rwring [d22'']
   · -- the list
     rw [List.map_append]
     have hlen : (newL.map Prod.snd).length = i := by rw [List.length_map]
@@ -371,7 +372,7 @@ theorem call_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
         Machine.upd_other _ _ _ (by omega), Machine.upd_same]
     · rw [hlen, hm8 _ (by omega), m₃, Machine.upd_other _ _ _ (by omega), Machine.upd_same]
     · rw [hlen, hm8 _ (by omega), m₃, Machine.upd_same]
-  · rw [G q (fixq q hq), K2 q (by unfold FixR at hq; omega) (by unfold FixR at hq; omega)]
+  · rw [G q (fixq q hq), K2 q (by ufo FixR at hq) (by ufo FixR at hq)]
   · rw [G _ (by decide), K2 _ (by norm_num) (by norm_num)]
   · rw [G _ (by decide), K2 _ (by norm_num) (by norm_num)]
   · rw [G _ (by decide), K2c]

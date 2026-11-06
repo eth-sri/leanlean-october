@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Merge.Augmented
+public import Chazelle.RewriteTactics
 
 /-!
 # The fusion of two submaps (Chazelle §3.1, Lemma 3.1), Euclidean part
@@ -157,7 +158,7 @@ def fusion (S₁ S₂ : Set (Set Point)) : Set (Set Point) :=
 /-- The shared-vertex chords are vertex chords of `C`. -/
 theorem sharedChords_subset_chords : J.sharedChords ⊆ J.whole.chords := by
   rintro d ⟨σ, hσ, h, rfl⟩
-  exact ⟨J.m₁, σ, by rw [whole_m]; omega, hσ, h, rfl⟩
+  exact ⟨J.m₁, σ, by rwo [whole_m], hσ, h, rfl⟩
 
 /-- The shared-vertex chords belong to the fusion. -/
 theorem sharedChords_subset_fusion (S₁ S₂ : Set (Set Point)) :

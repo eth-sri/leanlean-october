@@ -6,6 +6,7 @@ public import Chazelle.Core.SweepEvStopLabFinal
 public import Chazelle.Core.SweepEvStepL0
 public import Chazelle.Core.SweepEvLabM
 public import Chazelle.Core.SweepMachine9
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), stage 2, the finish of a stop origin: the side labels (mathematics)
@@ -71,7 +72,7 @@ theorem slf_lab_par (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : �
   obtain ⟨d, hd, htd, hpd⟩ := slf_stretch hP hN hA.1 hA.2.1 hA.2.2.1 h0 hL
   obtain ⟨hm, hst⟩ := stop_mem hP hN hD.ok hD.free
   have hL1 := (labTask J (Qof P) _ _ hP hN.1 (F₂plus_chordFamily E) hm hst hnp hC1 d t hd
-    hA.2.1 hA.2.2.1 htd (by rw [← hpd]; exact hA)).1
+    hA.2.1 hA.2.2.1 htd (by rwx [← hpd])).1
   obtain ⟨hreg, -⟩ := regOf_spec hN
   obtain ⟨hu, hdn, -⟩ := (regOf_spec hN).2.1 i hi
   obtain ⟨s1, s2⟩ := sideOf_rec hN hi
@@ -100,7 +101,7 @@ theorem slf_lab_str (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : �
   have hN := E.hNF₂
   obtain ⟨hm, hst⟩ := stop_mem hP hN hD.ok hD.free
   have hL2 := (labTask J (Qof P) _ _ hP hN.1 (F₂plus_chordFamily E) hm hst hnp hC1 d t hd
-    hA.2.1 hA.2.2.1 htd (by rw [← hpd]; exact hA)).2
+    hA.2.1 hA.2.2.1 htd (by rwx [← hpd])).2
   obtain ⟨hreg, -⟩ := regOf_spec hN
   rw [slf_labSet2]
   exact hL2 hnopar _ (hreg.1 _ hla) _ (hreg.1 _ hlb) hAf hB1 hB0

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SpecFacts
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # WP-B, part 1: the cut structure of a disk model from walk axioms
@@ -182,7 +184,7 @@ theorem hsep (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {a b : Point}
   rw [hfree] at hsep
   have hd : b.1 - a.1 ≠ 0 := by
     intro h; apply hab; exact point_ext (by linarith) hy
-  have hdpos : 0 < |b.1 - a.1| := abs_pos.2 hd
+  have hdpos  := abs_pos.2 hd
   filter_upwards [Ioo_mem_nhdsGT (div_pos hε₀ hdpos)] with δ hδ
   have hε : 0 < δ * |b.1 - a.1| := mul_pos hδ.1 hdpos
   have hε' : δ * |b.1 - a.1| < ε₀ := by
@@ -349,7 +351,7 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
     {U : Set Point} (hU : U ∈ M.regions F) :
     ∃ (p : ℕ) (t : ℝ), p < M.W.n ∧ 0 < t ∧ t < 1 ∧ M.Faces p t U := by
   have hsys := hM.sys F hF hfin
-  have hUo : IsOpen U := hsys.regionsIn_open subset_rfl hU
+  have hUo  := hsys.regionsIn_open subset_rfl hU
   obtain ⟨z₀, hz₀⟩ := Chazelle.Chain.regionsIn_nonempty hU
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hUo z₀ hz₀
   -- a point of `U` at a generic height
@@ -368,8 +370,8 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
     simp only [hz, sub_self, abs_zero]
     rw [max_lt_iff, abs_of_pos (by linarith [hyI.1])]
     exact ⟨hr, by linarith [hyI.2]⟩
-  have hUfree : U ⊆ freeIn M.D F := Chazelle.Chain.regionsIn_subset hU
-  have hzD : z ∈ M.D := (hUfree hzU).1
+  have hUfree  := Chazelle.Chain.regionsIn_subset hU
+  have hzD  := (hUfree hzU).1
   have hzv : ∀ i < M.W.n, z.2 ≠ (M.W.vtx i).2 := fun i hi h => hyB (Or.inl ⟨i, hi, h.symm⟩)
   have hzc : ∀ x : Point, x.2 = y → x ∉ ⋃₀ F := by
     rintro x hx ⟨c, hc, hxc⟩
@@ -388,7 +390,7 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
     rw [Chazelle.Chain.regionsIn_eq_component hU hzU]
     exact hLc.subset_connectedComponentIn hzL hLF
   -- a half-disk on the left of the edge at `q` is free
-  have hqF : q ∉ ⋃₀ F := hzc q rfl
+  have hqF  := hzc q rfl
   obtain ⟨r₁, hr₁, hb₁⟩ := Metric.isOpen_iff.1 (hsys.isClosed_sUnion subset_rfl).isOpen_compl q hqF
   obtain ⟨r₂, hr₂, hcl⟩ := hM.clean p hp t ht.1.le ht.2
   have hne := hM.nd p hp
@@ -403,7 +405,7 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
     by_contra hxD
     refine hcl x ?_ hxD ?_
     · rw [hq]; exact ball_subset_ball (min_le_right _ _) hx1
-    · rw [sideLeft_edge hne ht]; exact hx2
+    · rwx [sideLeft_edge hne ht]
   -- a point of the segment lies in the half-disk
   have hq0 : det u v q = 0 := by
     rw [← hq]; exact Geometry.det_lerp_self _ _ _
@@ -419,7 +421,7 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
       exact ⟨hεr, lt_of_le_of_lt le_rfl (lt_min (lt_min hr₁ hr₂) hr₂ |>.trans_le (min_le_left _ _))⟩
     · simp only [mem_ofPred_eq, one_mul]
       have e : det u v ((z.1 + (s - ε), z.2) : Point) = det u v q + ε * (v.2 - u.2) := by
-        simp only [hqdef, det]; ring
+        sir only [hqdef, det]
       rw [e, hq0]
       have : 0 < v.2 - u.2 := by linarith
       nlinarith
@@ -481,8 +483,8 @@ theorem sameComp_of_forall {D : Set Point} {F : Set (Set Point)} (hF : ChordSyst
       have hR₂R : R₂ ⊆ R \ c := fun x hx => hunion ▸ Or.inr hx
       have hVR : V ⊆ R \ c := by
         rcases hVR₁₂ with h1 | h1
-        · rw [h1]; exact hR₁R
-        · rw [mem_singleton_iff] at h1; rw [h1]; exact hR₂R
+        · rwx [h1]
+        · rw [mem_singleton_iff] at h1; rwx [h1]
       have hRu : R = connectedComponentIn A u := Chazelle.Chain.regionsIn_eq_component hR (hVR huV).1
       have hu'R : u' ∈ R := by rw [hRu, hIH]; exact mem_connectedComponentIn hu'A
       have hu'c : u' ∉ c := (hA'eq ▸ hu').2
@@ -537,7 +539,7 @@ theorem sameComp_of_forall {D : Set Point} {F : Set (Set Point)} (hF : ChordSyst
         have := isPreconnected_connectedComponentIn.subset_connectedComponentIn hx hsub
         exact connectedComponentIn_eq (this (mem_connectedComponentIn hw0))
       by_contra hfalse
-      have hVne : V ≠ connectedComponentIn A' u' := hfalse
+      have hVne  := hfalse
       rcases hin12 wp ⟨hwpR, hwpc⟩ with hp | hp <;> rcases hin12 wm ⟨hwmR, hwmc⟩ with hm | hm <;>
         rcases hin12 u ⟨(hVR huV).1, (hVR huV).2⟩ with hU | hU <;>
         rcases hin12 u' ⟨hu'R, hu'c⟩ with hU' | hU'
@@ -643,7 +645,7 @@ theorem eq_iff_not_separates (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
         (Chazelle.Chain.regionsIn_subset hU hu) (Chazelle.Chain.regionsIn_subset hU' hu') hall)
     obtain ⟨c, hc, hcne⟩ := hex
     obtain ⟨a, b, hab, -, -, -, ⟨⟨pa, ta, hA, hAa⟩, -⟩, ⟨⟨pb, tb, hB, hBb⟩, -⟩⟩ := hM.ends c (hF hc)
-    have hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb := by rw [hAa, hBb]; exact hab
+    have hAB : sidePt M.W pa ta ≠ sidePt M.W pb tb := by rwx [hAa, hBb]
     obtain ⟨k₁, k₂, -, h1, h2, h1', h2'⟩ := harcs c hc hA hB hAB
     apply hno c hc
     refine ⟨pa, pb, ta, tb, hA, hB, hAB, ?_⟩

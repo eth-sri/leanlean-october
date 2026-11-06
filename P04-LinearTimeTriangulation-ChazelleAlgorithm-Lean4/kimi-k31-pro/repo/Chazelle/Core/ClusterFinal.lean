@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.ClusterFlagH
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-I, part 64: the final state — clusters and the size of `D*`
@@ -35,7 +37,7 @@ theorem reach_items {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
     obtain ⟨hadj, h1, h2, h3, h4⟩ := hstep _ _ hst
     obtain ⟨q, hq, hbq, hcq⟩ := hI.edge _ _ hadj h1 h2 h3 h4
     by_cases hqp : q = p
-    · rw [← hqp]; exact hcq
+    · rwx [← hqp]
     · exact absurd (Finset.disjoint_left.mp (hI.disj q p hq (Or.inr hp) hqp) hbq) (not_not.mpr ih)
 
 /-- **A label class has at most `s` vertices.** -/
@@ -46,17 +48,17 @@ theorem class_card {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
     (X.filter (fun v => lab v = l)).card ≤ s := by
   by_cases hne : (X.filter (fun v => lab v = l)).Nonempty
   · obtain ⟨x0, hx0⟩ := hne
-    simp only [Finset.mem_filter] at hx0
+    simp [Finset.mem_filter] at hx0
     obtain ⟨hμ0, hH0, hD0⟩ := hX x0 hx0.1
     obtain ⟨p, hp, hxp⟩ := hI.cover x0 hμ0 hH0 hD0
     have hpf : p ∈ fin := hp.resolve_left (by simp)
     have hsub : X.filter (fun v => lab v = l) ⊆ items act p := fun v hv => by
-      simp only [Finset.mem_filter] at hv
+      simp [Finset.mem_filter] at hv
       exact reach_items hI hstep hpf hxp (hlab x0 hx0.1 v hv.1 (hx0.2.trans hv.2.symm))
     calc _ ≤ (items act p).card := Finset.card_le_card hsub
       _ = len p := items_card (hI.inj p hp)
       _ ≤ s := hI.small p hpf
-  · rw [Finset.not_nonempty_iff_eq_empty.mp hne]; simp
+  · rws [Finset.not_nonempty_iff_eq_empty.mp hne]
 
 end reach
 
@@ -67,15 +69,15 @@ theorem mod_light {l k ρ : ℕ} (hk : 0 < k) (hρ : ρ < k) :
   have h := Nat.mod_lt l hk
   generalize l % k = r at h ⊢
   by_cases hr : r + (k - 1 - ρ) < k
-  · rw [Nat.mod_eq_of_lt hr]; omega
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+  · rwo [Nat.mod_eq_of_lt hr]
+  · rwo [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
 
 /-- **The least frequent residue class is small.** -/
 theorem minres_card {μ k ρ : ℕ} {f : ℕ → ℕ} (_hk : 0 < k) (hf : ∀ v, v < μ → f v < k)
     (hmin : ∀ r, r < k → cntBelow f μ ρ ≤ cntBelow f μ r) : k * cntBelow f μ ρ ≤ μ := by
   have hsum : ∑ r ∈ Finset.range k, cntBelow f μ r = μ := by
     rw [sum_cntBelow]; unfold cntLt
-    rw [Finset.filter_true_of_mem (fun v hv => hf v (Finset.mem_range.mp hv))]; simp
+    rws [Finset.filter_true_of_mem (fun v hv => hf v (Finset.mem_range.mp hv))]
   calc k * cntBelow f μ ρ = ∑ _r ∈ Finset.range k, cntBelow f μ ρ := by simp
     _ ≤ ∑ r ∈ Finset.range k, cntBelow f μ r :=
         Finset.sum_le_sum (fun r hr => hmin r (Finset.mem_range.mp hr))
@@ -129,7 +131,7 @@ theorem s_le_sq {μ k k' s : ℕ} (hk' : k' = min k μ) (hs : s = min (k' * k') 
   have h1 : k' ≤ k := by rw [hk']; exact min_le_left _ _
   have h2 : s ≤ k' * k' := by rw [hs]; exact min_le_left _ _
   have : k' * k' ≤ k * k := Nat.mul_le_mul h1 h1
-  rw [sq]; omega
+  rwo [sq]
 
 end
 

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.GranRamRm2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-F, RAM part 8: the removal on the RAM
@@ -75,7 +78,7 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
     omega
   have hcap : st.top - 1 + (st.newEx cc).length ≤ d.cap := by
     have := hI'.topLe
-    simp only [St.remove] at this
+    simp [St.remove] at this
     have e : d.cap = E.K + E.D * E.K := by unfold Dm.cap; rw [hD.K, hD.D]
     omega
   -- gather
@@ -83,7 +86,7 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
     hX hY clX.2.2.2.2 clY.2.2.2.2 hroom h62 h64 h65 h66 h67
   have g₁ : ∀ r, Brm r = false → c₁.nreg r = c.nreg r := gF.1
   have hw₁ := e₁.wb_right
-  have hC₁ : Cst c₁ E d := hC.frame fun r hr h' => g₁ r (by simp [Brm]; omega)
+  have hC₁ : Cst c₁ E d := hC.frame fun r hr h' => g₁ r (by sio [Brm])
   have henc₁ : Enc c₁.nmem d st := henc.mem_congr fun a _ ha => gmem a (Or.inl ha)
   -- relabel
   obtain ⟨c₂, k₂, e₂, hk₂, E₂, r₂, m₂, F₂⟩ := relStmt_exec (P := P) hw₁ hC₁ henc₁ hD hY
@@ -96,18 +99,18 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
   -- write back
   obtain ⟨c₃, k₃, e₃, hk₃, E₃, w108, r₃, m₃, F₃⟩ := wbStmt_exec (P := P) (top := st.top)
     (L := st.newEx cc) hw₂ hC₂ E₂ hD hX hlen hcap
-    (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide), g100]; rfl)
+    (by rwr [r₂ _ (by decide) (by decide) (by decide) (by decide), g100])
     (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide), g103])
     (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide), g₁ _ (by decide), hM.top])
     (fun i hi => by
       rw [m₂ _ (by right; omega)]
-      exact gtmp i (by rw [g100]; exact hi))
+      exact gtmp i (by rwx [g100]))
   have hw₃ := e₃.wb_right
   have hC₃ : Cst c₃ E d := hC₂.frame fun r hr h' => r₃ r (by omega) (by omega) (by omega)
     (by omega)
   have R₃ : ∀ r, r < 90100 → c₃.nreg r = c.nreg r := fun r hr => by
     rw [r₃ r (by omega) (by omega) (by omega) (by omega),
-      r₂ r (by omega) (by omega) (by omega) (by omega), g₁ r (by simp [Brm]; omega)]
+      r₂ r (by omega) (by omega) (by omega) (by omega), g₁ r (by sio [Brm])]
   -- tail
   obtain ⟨c₄, k₄, e₄, hk₄, E₄, t50, t51, r₄, m₄⟩ := tailStmt_exec (P := P) (len := (st.newEx cc).length)
     (μ := μ) hw₃ hC₃ E₃ hD hX hc.1 hcap (by rw [R₃ _ (by decide), h62])
@@ -131,23 +134,23 @@ theorem rm_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : 
   obtain ⟨c₅, k₅, e₅, hk₅, E₅, r₅, m₅⟩ := ringStmt_exec (P := P) (n1 := st.nd0 cc)
     (n2 := st.nd1 cc) hw₄ hC₄ E₄ hD (by rw [R₄ _ (by decide) (by decide) (by decide), h68])
     (by rw [R₄ _ (by decide) (by decide) (by decide), h69])
-    (by rw [R₄ _ (by decide) (by decide) (by decide), h72]; rfl)
-    (by rw [R₄ _ (by decide) (by decide) (by decide), h73]; rfl) hn0 hn1 (hI.nd_ne hE hc)
+    (by rwr [R₄ _ (by decide) (by decide) (by decide), h72])
+    (by rwr [R₄ _ (by decide) (by decide) (by decide), h73]) hn0 hn1 (hI.nd_ne hE hc)
     ⟨a0, b0'⟩ ⟨a1, b1'⟩
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), ?_, fun hw₅ F => ?_⟩
-  · rw [← hD.D] at hlen ⊢; rw [← hD.D] at hk₁ hk₂ hk₃; omega
+  · rw [← hD.D] at hlen ⊢; rwo [← hD.D] at hk₁ hk₂ hk₃
   refine ⟨hw₅, hC₄.frame fun r hr _ => r₅ r (by omega) (by omega) (by omega), ?_, ?_, ?_, ?_⟩
   · -- the encoding of the removed state
     refine E₅.st_congr (fun i _ => ?_) (fun i _ => ?_) (fun i _ => ?_) (fun i _ => ?_)
       (fun i _ => ?_) (fun x _ => ?_) (fun x _ => ?_) (fun x t _ _ => ?_) (fun j _ => ?_)
       (fun j _ => ?_) (fun j _ => ?_) (fun j _ => ?_) (fun j _ => ?_) (fun t _ => ?_) <;>
-      simp only [St.remove, St.rg, St.tl, St.wb, St.rel, optUnl_eq, St.newEx, St.ring2]
+      simp [St.remove, St.rg, St.tl, St.wb, St.rel, optUnl_eq, St.newEx, St.ring2]
     · by_cases h1 : st.cnt (st.nd0 cc) = 1 <;> by_cases h2 : st.cnt (st.nd1 cc) = 1 <;>
         simp [h1, h2]
     · by_cases h1 : st.cnt (st.nd0 cc) = 1 <;> by_cases h2 : st.cnt (st.nd1 cc) = 1 <;>
         simp [h1, h2]
-  · rw [r₅ _ (by decide) (by decide) (by decide), t50]; rfl
-  · rw [r₅ _ (by decide) (by decide) (by decide), t51, R₃ _ (by decide), hM.nlive]; rfl
+  · rwr [r₅ _ (by decide) (by decide) (by decide), t50]
+  · rwr [r₅ _ (by decide) (by decide) (by decide), t51, R₃ _ (by decide), hM.nlive]
   · intro a ha
     have hab : a < d.b0 := by omega
     rw [m₅ a (by omega), m₄ a (by omega), m₃ a (by omega), m₂ a (by omega),

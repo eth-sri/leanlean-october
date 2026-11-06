@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvBTopMath
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 64000000
 
 /-!
 # Down-phase base (D9), top level, part 3: `DrvR.BaseSpec`
@@ -30,7 +34,6 @@ open BTop
 
 @[expose] public section
 
-set_option maxHeartbeats 64000000 in
 /-- **The top level of the base case meets `DrvR.BaseSpec`.** -/
 theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoopSpec)
     (hDA : DropAugSpec) (hBS : BuildNFSortedSpec) : DrvR.BaseSpec X cnt n₀ := by
@@ -65,7 +68,7 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
     have h2 : cnt lam ≤ Cc := by rw [hCc]; exact cnt_le_sum cnt hlΛ
     have h3 : 2 ^ topGrade P.n ≤ 2 * P.n := Setup.pow_topGrade_le (by omega)
     exact h1.trans (Nat.mul_le_mul h2 (by omega))
-  have hκTge : 20 * Γ + 73 ≤ κT := by rw [hκT]; exact topK_ge (by unfold DrvR.κSpl; omega)
+  have hκTge : 20 * Γ + 73 ≤ κT := by rw [hκT]; exact topK_ge (by ufo DrvR.κSpl)
   have hκTn : κT ≤ κT * (P.n + 1) := Nat.le_mul_of_pos_right _ (by omega)
   -- the facts of the level
   have hMD0 := hDa.holds
@@ -88,7 +91,7 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
     (κB := κB) hKc (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
   rw [← hκT] at T₁
   obtain ⟨c₂, k₂, e₂, hk₂, A₂, f₂, RF₂⟩ := tRes_exec (P := P) e₁.wb_right a03 a02 a01
-    (by rw [A₁]; omega) (c.nreg ALLOC)
+    (by rwo [A₁]) (c.nreg ALLOC)
   rw [A₁] at A₂
   have g₂ : ∀ r, BTop.Bres r = false → c₂.nreg r = c₁.nreg r := f₂.1
   have m₂ : c₂.nmem = c.nmem := by rw [f₂.2.2.1, m₁]
@@ -98,18 +101,18 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
     rw [g₂ _ (bres_false (by norm_num) (by norm_num)), a19]
   -- 3. the region loop
   have hMD₂ : ModelDescAt c₂.nmem (c₂.nreg 210001) (Qof P) (interiorModel (Qof P)) := by
-    rw [m₂, K2 210001 (by norm_num) (by norm_num)]; exact hMD0
+    rwx [m₂, K2 210001 (by norm_num) (by norm_num)]
   have hli₂ : liBit c₂.nmem (c₂.nreg 210001) = liBit c.nmem (c.nreg 210001) := by
     rw [m₂, K2 210001 (by norm_num) (by norm_num)]
   have hpre₂ : RegPre P W c₂ L E (5 * γ + 8) (γ + 2) := by
-    refine ⟨hG, hWh, by rw [K2 210003 (by norm_num) (by norm_num)]; exact hK, hok, hperm, hsort, hdeg,
+    refine ⟨hG, hWh, by rwx [K2 210003 (by norm_num) (by norm_num)], hok, hperm, hsort, hdeg,
       ?_, hMD₂, ?_, ?_, ?_, hC0, hCm⟩
-    · rw [m₂, K2 210005 (by norm_num) (by norm_num), B19]; exact hNW
-    · rw [K2 210001 (by norm_num) (by norm_num), B19]; exact hD6
-    · rw [B19, A₂]; omega
+    · rwx [m₂, K2 210005 (by norm_num) (by norm_num), B19]
+    · rwx [K2 210001 (by norm_num) (by norm_num), B19]
+    · rwo [B19, A₂]
     · intro r hr; rw [hli₂]; exact hS r hr
   obtain ⟨c₃, k₃, e₃, hk₃, post₃, RF₃⟩ := hsR P W c₂ L E (5 * γ + 8) (γ + 2) e₂.wb_right hpre₂
-    (by rw [A₂]; omega)
+    (by rwo [A₂])
   obtain ⟨pk, pkB, pcnt, plen, plist, pbkle, pmono, pbcnt, pmx⟩ := post₃
   rw [hli₂] at pcnt plen plist pbkle pmono pbcnt
   rw [B19] at plist pbkle pmono pbcnt RF₃
@@ -158,23 +161,23 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
       rw [K4 210001 (by norm_num) (by norm_num)]; exact descWF_int hMD₄ (by omega),
       interiorModel (Qof P), L, L₂, E, by
       show ModelDescAt c₄.nmem (c₄.nreg 210001) (Qof P) (interiorModel (Qof P))
-      rw [K4 210001 (by norm_num) (by norm_num)]; exact hMD₄, hGM, by
-      show c₄.nreg 210003 = _; rw [K4 210003 (by norm_num) (by norm_num)]; exact hK, by
+      rwx [K4 210001 (by norm_num) (by norm_num)], hGM, by
+      show c₄.nreg 210003 = _; rwx [K4 210003 (by norm_num) (by norm_num)], by
       show c₄.nreg 210002 + 3 * L.length ≤ c₄.nreg ALLOC
-      rw [K4 210002 (by norm_num) (by norm_num)]; omega, by
+      rwo [K4 210002 (by norm_num) (by norm_num)], by
       show ChordListAt c₄.nmem (c₄.nreg 210002) L
       rw [K4 210002 (by norm_num) (by norm_num)]; exact hLa c₄.nmem hlow4, by
       show c₄.nreg 210021 = _; exact s21, by
       show c₄.nreg 210020 + 3 * L₂.length ≤ c₄.nreg ALLOC
-      rw [s20]; omega, by
+      rwo [s20], by
       show ChordListAt c₄.nmem (c₄.nreg 210020) L₂
       rw [s20, m₄]; exact plist, hok', by
       show c₄.nreg 210004 + 2 * L.length ≤ c₄.nreg ALLOC
-      rw [K4 210004 (by norm_num) (by norm_num)]; omega, by
+      rwo [K4 210004 (by norm_num) (by norm_num)], by
       show seg c₄.nmem (c₄.nreg 210004) (2 * L.length) = E
       rw [K4 210004 (by norm_num) (by norm_num)]; exact hEa c₄.nmem hlow4, hperm, hsort, by
       show c₄.nreg 210022 + 2 * L₂.length ≤ c₄.nreg ALLOC
-      rw [s22]; omega, fun q hq => by
+      rwo [s22], fun q hq => by
       show c₄.nmem (c₄.nreg 210022 + q) ≤ c₄.nreg 210023
       rw [s22, s23', m₄]; exact pbkle q hq, fun q q' hq hq' hb => by
       refine pmono q q' hq hq' ?_
@@ -188,11 +191,11 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
       have e : DrvR.bkOf c₄ = fun q => c₃.nmem (c.nreg ALLOC + 6 * P.n + q) := by
         funext q; show c₄.nmem (c₄.nreg 210022 + q) = _; rw [s22, m₄]
       rw [e]; exact pbcnt b⟩
-    (by show c₄.nreg ALLOC + DrvR.splCost κB c₄ ≤ W; rw [hspl, A₄]; omega)
+    (by show c₄.nreg ALLOC + DrvR.splCost κB c₄ ≤ W; rwo [hspl, A₄])
   obtain ⟨p3, p2l, p2b, p2, p4l, p4b, pperm, psort, p5l, pNW⟩ := postS (interiorModel (Qof P)) L L₂
     (by show ModelDescAt c₄.nmem (c₄.nreg 210001) (Qof P) (interiorModel (Qof P))
-        rw [K4 210001 (by norm_num) (by norm_num)]; exact hMD₄)
-    (by show c₄.nreg 210003 = _; rw [K4 210003 (by norm_num) (by norm_num)]; exact hK)
+        rwx [K4 210001 (by norm_num) (by norm_num)])
+    (by show c₄.nreg 210003 = _; rwx [K4 210003 (by norm_num) (by norm_num)])
     (by show ChordListAt c₄.nmem (c₄.nreg 210002) L
         rw [K4 210002 (by norm_num) (by norm_num)]; exact hLa c₄.nmem hlow4)
     (by show c₄.nreg 210021 = _; exact s21)
@@ -201,7 +204,7 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at pperm psort p5l pNW
   have hk₅' : k₅ ≤ DrvR.κSpl κB * (L.length + L₂.length +
       (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length + 1) *
-      (Nat.clog 2 (4 * c₃.nreg 212018) + 1) := by rw [← hspl]; exact hk₅
+      (Nat.clog 2 (4 * c₃.nreg 212018) + 1) := by rwx [← hspl]
   have A₅ : c₄.nreg ALLOC ≤ c₅.nreg ALLOC := F₅.2.2.2.2.2.1
   have A₅' : c₅.nreg ALLOC ≤ c₄.nreg ALLOC + k₅ := F₅.2.2.2.2.2.2
   have hlow5 : ∀ a, a < c.nreg ALLOC → c₅.nmem a = c.nmem a := fun a ha => by
@@ -218,7 +221,7 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
   obtain ⟨c₇, k₇, e₇, hk₇, postD, F₇⟩ := hsD P W c₆ e₆.wb_right
     ⟨hG, hWh, by
       show c₆.nreg 200000 + 2 ≤ c₆.nreg ALLOC
-      rw [d00, r51, A₆]; omega, by
+      rwo [d00, r51, A₆], by
       show c₆.nmem (c₆.nreg 200000 + 1) = 1 ↔ Mountain.LeftInside (Qof P)
       rw [d00, r51, m₆, hlow5 (c.nreg 210001 + 1) (by omega)]; exact (desc_int hMD0).2,
       L ++ L₂, by
@@ -226,7 +229,7 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
       show c₆.nreg 200001 + 3 * (L ++ L₂).length ≤ c₆.nreg ALLOC
       rw [d01, A₆, hLL]; exact p2b, by
       show ChordListAt c₆.nmem (c₆.nreg 200001) (L ++ L₂)
-      rw [d01, m₆]; exact p2, hok', by
+      rwx [d01, m₆], hok', by
       show c₆.nreg 200003 + 2 * (L ++ L₂).length ≤ c₆.nreg ALLOC
       rw [d03, A₆, hLL]; exact p4b, by
       show (seg c₆.nmem (c₆.nreg 200003) (2 * (L ++ L₂).length)).Perm
@@ -236,10 +239,10 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
         (codeLe (interiorModel (Qof P)) (Qof P) (L ++ L₂))
       rw [d03, m₆, hLL]; exact psort⟩
     (by show c₆.nreg ALLOC + κD * (c₆.nreg 200002 + 1) ≤ W
-        rw [d02, p3, A₆]; omega)
+        rwo [d02, p3, A₆])
   obtain ⟨d4l, d4b, dCL, d5, d6l, d6b, dseg, dfam, dok, dperm, dsort⟩ := postD (L ++ L₂)
     (by show c₆.nreg 200002 = _; rw [d02, p3, hLL])
-    (by show ChordListAt c₆.nmem (c₆.nreg 200001) (L ++ L₂); rw [d01, m₆]; exact p2)
+    (by show ChordListAt c₆.nmem (c₆.nreg 200001) (L ++ L₂); rwx [d01, m₆])
   simp only [rd, bandReg, bDown, Nat.reduceMul, Nat.reduceAdd] at d4l d4b dCL d5 d6l d6b dseg
   simp only [rd, bandReg, bDown, Nat.reduceMul, Nat.reduceAdd] at dfam dok dperm dsort
   have hKLlen : (DownBase.keepL (liBit c₆.nmem (c₆.nreg 200000)) (Qof P).n (L ++ L₂)).length ≤
@@ -259,7 +262,7 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
   have hlow7 : ∀ a, a < c.nreg ALLOC → c₇.nmem a = c.nmem a := fun a ha => by
     rw [F₇.2.2.1 a (by omega), m₆, hlow5 a ha]
   have r71 : c₇.nreg 210001 = c.nreg 210001 := by
-    rw [F₇.1 _ (by decide) (by unfold ALLOC; norm_num), g₆ _ (by decide), r51]
+    rw [F₇.1 _ (by decide) (by ufn ALLOC), g₆ _ (by decide), r51]
   -- 8. the arguments of `buildNFSorted`
   obtain ⟨c₈, k₈, e₈, hk₈, b00, b01, b02, b04, f₈⟩ := tBld_exec (P := P) c₇ e₇.wb_right
   have g₈ : ∀ r, decide (40000 ≤ r ∧ r ≤ 40004) = false → c₈.nreg r = c₇.nreg r := f₈.1
@@ -282,7 +285,7 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
       rw [b00, r71]; exact descWF_int hMD₈ (by omega),
       interiorModel (Qof P), KL, DE, by
       show ModelDescAt c₈.nmem (c₈.nreg 40000) (Qof P) (interiorModel (Qof P))
-      rw [b00, r71]; exact hMD₈, hGM, by
+      rwx [b00, r71], hGM, by
       show c₈.nreg 40002 = _; rw [b02, d5], by
       show c₈.nreg 40001 + 3 * KL.length ≤ c₈.nreg ALLOC
       rw [b01, A₈]; exact d4b, by
@@ -293,10 +296,10 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
       show seg c₈.nmem (c₈.nreg 40004) (2 * KL.length) = DE
       rw [b04, m₈]; exact dseg, dperm, dsort⟩
     (by show c₈.nreg ALLOC + κB * (c₈.nreg 40002 + 1) ≤ W
-        rw [b02, d5, A₈]; omega)
+        rwo [b02, d5, A₈])
   obtain ⟨b3l, bNW, bNF, -, -⟩ := postB (interiorModel (Qof P)) KL
     (by show ModelDescAt c₈.nmem (c₈.nreg 40000) (Qof P) (interiorModel (Qof P))
-        rw [b00, r71]; exact hMD₈)
+        rwx [b00, r71])
     (by show c₈.nreg 40002 = _; rw [b02, d5])
     (by show ChordListAt c₈.nmem (c₈.nreg 40001) KL; rw [b01, m₈]; exact dCL)
   have hk₉' : k₉ ≤ κB * (KL.length + 1) := by
@@ -320,7 +323,7 @@ theorem baseSpec_of {X : MemCtx} {cnt : ℕ → ℕ} {n₀ : ℕ} (hRL : RegLoop
     (Restore.RF.of_frame F₉ (by omega)).mono (by decide) le_rfl
   have RF₁₀ : Restore.RF DrvR.drvBands (c.nreg ALLOC) c₉ c₁₀ k₁₀ :=
     DrvD.rf_of_frameB (DrvD.inDrv_eq (q := 210006) (by norm_num) (by norm_num)
-      (by unfold ALLOC; norm_num)) f₁₀
+      (by ufn ALLOC)) f₁₀
   have RFall := RF₁.trans (RF₂.trans (RF₃.trans (RF₄.trans (RF₅.trans (RF₆.trans (RF₇.trans
     (RF₈.trans (RF₉.trans RF₁₀))))))))
   refine ⟨c₁₀, k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + (k₈ + (k₉ + k₁₀)))))))),

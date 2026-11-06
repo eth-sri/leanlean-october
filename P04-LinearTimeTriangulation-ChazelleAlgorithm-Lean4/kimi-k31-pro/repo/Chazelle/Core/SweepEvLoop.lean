@@ -49,7 +49,7 @@ theorem regArcs_length_le {N : NF} {rs : List ℕ} {B : ℕ}
   | cons r rs ih =>
     have h1 := h r List.mem_cons_self
     have h2 := ih fun r' hr' => h r' (List.mem_cons_of_mem _ hr')
-    simp only [regArcs, List.flatMap_cons, List.length_append, List.length_cons] at h2 ⊢
+    simp [regArcs, List.flatMap_cons, List.length_append, List.length_cons] at h2 ⊢
     rw [Nat.succ_mul]
     omega
 

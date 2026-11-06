@@ -2,6 +2,13 @@ module
 
 public import Chazelle.Core.DownPhaseDrvPGTop
 public import Chazelle.Core.SweepPrimKer
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase pieces (D4), part 3: the host count and the top of a short piece by a scan
@@ -17,9 +24,6 @@ Registers: `218012 … 218046` of band `21`, `NFLoc`'s `50046 … 50076` (band `
 kernel (band `1`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -39,7 +43,7 @@ noncomputable def Yh (P : Polygon) (H : Host) (i : ℕ) : ℝ := ((pt H P.n i).e
 
 theorem pt_of_some {H : Host} {n i : ℕ} {sp : SymPt} (h : (H.pts n)[i]? = some sp) :
     pt H n i = sp := by
-  unfold pt; rw [List.getD_eq_getElem?_getD, h]; rfl
+  urr pt [List.getD_eq_getElem?_getD, h]
 
 theorem pt_lt {H : Host} {n i : ℕ} (hwf : HostWF n H) (hn : 0 < n) (hi : i < (H.pts n).length) :
     (pt H n i).Lt n := by
@@ -81,36 +85,36 @@ def Bscan (r : ℕ) : Bool :=
 
 theorem wr_cntS : wr Bsc cntS = true := by
   have h : wr Bsc cntStmt = true := SweepPrim.wr_mono wr_cntStmt (fun r hr => by
-    simp only [Bhost, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [Bsc, Bool.or_eq_true, decide_eq_true_eq]; omega)
-  simp only [cntS, wr, block, wrOK, h, Bool.and_true, Bool.true_and]
+    simp [Bhost, Bool.or_eq_true, decide_eq_true_eq] at hr
+    sio only [Bsc, Bool.or_eq_true, decide_eq_true_eq])
+  simp [cntS, wr, block, wrOK, h, Bool.and_true, Bool.true_and]
   decide
 
 theorem wr_scBody : wr Bsc scBody = true := by
   have h : wr Bsc lookStmt = true := SweepPrim.wr_mono wr_lookStmt (fun r hr => by
-    simp only [Bhost, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [Bsc, Bool.or_eq_true, decide_eq_true_eq]; omega)
+    simp [Bhost, Bool.or_eq_true, decide_eq_true_eq] at hr
+    sio only [Bsc, Bool.or_eq_true, decide_eq_true_eq])
   have hk : wr Bsc (SweepPrim.kbit 218040 218043 218040 1 218046) = true :=
     SweepPrim.wr_mono (SweepPrim.wr_kbit _ _ _ _ _) (fun r hr => by
-      simp only [SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq] at hr
-      simp only [Bsc, Bool.or_eq_true, decide_eq_true_eq]
+      simp [SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq] at hr
+      simp [Bsc, Bool.or_eq_true, decide_eq_true_eq]
       rcases hr with hr | hr
       · exact Or.inl (Or.inr hr)
       · subst hr; right; omega)
-  simp only [scBody, scTake, wr, block, wrOK, h, hk, Bool.and_true, Bool.true_and]
+  simp [scBody, scTake, wr, block, wrOK, h, hk, Bool.and_true, Bool.true_and]
   decide
 
 theorem wr_scanS' : wr Bscan scanS = true := by
   have hk : wr Bscan (SweepPrim.kbit 218040 218043 218040 1 218046) = true :=
     SweepPrim.wr_mono (SweepPrim.wr_kbit _ _ _ _ _) (fun r hr => by
-      simp only [SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq] at hr
-      simp only [Bscan, Bool.or_eq_true, decide_eq_true_eq]
+      simp [SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq] at hr
+      simp [Bscan, Bool.or_eq_true, decide_eq_true_eq]
       rcases hr with hr | hr
       · exact Or.inl (Or.inl (Or.inr hr))
       · subst hr; right; omega)
   have h : wr Bscan lookStmt = true := SweepPrim.wr_mono wr_lookStmt (fun r hr => by
-    simp only [Bscan, Bool.or_eq_true, decide_eq_true_eq]; exact Or.inl (Or.inl (Or.inl hr)))
-  simp only [scanS, scInit, scBody, scTake, wr, block, wrOK, h, hk, Bool.and_true,
+    simp [Bscan, Bool.or_eq_true, decide_eq_true_eq]; exact Or.inl (Or.inl (Or.inl hr)))
+  simp [scanS, scInit, scBody, scTake, wr, block, wrOK, h, hk, Bool.and_true,
     Bool.true_and]
   decide
 
@@ -132,7 +136,7 @@ theorem cntS_exec (c : Config) (hw : WordsBounded W c) {H : Host}
     exec_block
     exact ⟨rfl, by config_simp, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, n₂, E₂⟩ := cnt_exec (P := P) (n := P.n) c₁ e₁.wb_right
-    (by rw [m₁]; exact hH) h60 haW hN
+    (by rwx [m₁]) h60 haW hN
   have w₂ := e₂.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, v12, v20, v21, v22, E₃⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 218012 50063, .constN 218020 0, .constN 218021 1, .constN 218022 65])
@@ -176,7 +180,7 @@ structure ScE (P : Polygon) (W : ℕ) (H : Host) (m₀ : ℕ → ℕ) (HB : ℕ)
   haW : HB + 3 * H.length + 4 ≤ W
 
 theorem ScE.nW {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (h : ScE P W H m₀ HB) : P.n + 3 ≤ W := by
-  have := h.hW; unfold hostWords at this; omega
+  have := h.hW; ufo hostWords at this
 
 theorem ScE.npos {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (h : ScE P W H m₀ HB) : 0 < P.n := by
   have := Chazelle.Jordan.simple_three_le h.good.1; omega
@@ -199,13 +203,12 @@ theorem look_pt {H : Host} {m₀ : ℕ → ℕ} {HB p : ℕ} (E : ScE P W H m₀
   exact ⟨c', k, e, by have := E.hl; omega, F, E', hin⟩
 
 theorem bhost_218 {r : ℕ} (h : 218000 ≤ r) : Bhost r = false := by
-  simp only [Bhost, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+  sio only [Bhost, Bool.or_eq_false_iff, decide_eq_false_iff_not]
 
 theorem bkb_218 {r d : ℕ} (h : 218000 ≤ r) (hd : r ≠ d) : SweepPrim.Bkb d r = false := by
-  simp only [SweepPrim.Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
+  simp [SweepPrim.Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
     beq_eq_false_iff_ne]; exact ⟨by omega, hd⟩
 
-set_option maxHeartbeats 2000000 in
 /-- **One point of the scan.** -/
 theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W H m₀ HB)
     (hsm : s + m + 1 ≤ (H.pts P.n).length) (c : Config) (hI : ScI P W H m₀ HB s m c)
@@ -225,7 +228,7 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
     exec_block
     · config_simp; rw [hI.r01, hkdef]; have := E.hN; omega
     refine ⟨rfl, by config_simp; rw [hI.r01, hkdef], fun r hr => ?_, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right hr]
+    simp [Config.nreg_mk, upd, ite_eq_right hr]
   have E₁ : HostEnv W HB H.length m₀ c₁ := ⟨e₁.wb_right, by rw [r₁ _ (by decide)]; exact hI.env.h60,
     by rw [r₁ _ (by decide)]; exact hI.env.h61, by rw [r₁ _ (by decide)]; exact hI.env.h67,
     by rw [r₁ _ (by decide)]; exact hI.env.h68, by rw [r₁ _ (by decide)]; exact hI.env.h69,
@@ -243,7 +246,7 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
     exec_block
     refine ⟨rfl, symPtIn_copy s₂ (by config_simp) (by config_simp) (by config_simp),
       fun r h1 h2 h3 => ?_, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2, ite_eq_right h3]
+    simp [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2, ite_eq_right h3]
   have w₃ := e₃.wb_right
   have k₃' : ∀ r, 218000 ≤ r → r ≠ 218043 → r ≠ 218044 → r ≠ 218045 → c₃.nreg r = c.nreg r :=
     fun r h0 h1 h2 h3 => by rw [r₃ r h1 h2 h3, k₂' r h0]
@@ -259,14 +262,14 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
   obtain ⟨c₄, k₄, e₄, hk₄, F₄, b₄, t₄⟩ := SweepPrim.kbit_exec (P := P) E.good E.nW c₃ w₃
     (a := 218040) (b := 218043) (d := 218040) (op := 1) (dst := 218046) (by norm_num)
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) hlb hlk hlb sb₃ s₃ sb₃
-  simp only [SignTest] at t₄
+  simp [SignTest] at t₄
   have w₄ := e₄.wb_right
   have k₄' : ∀ r, 218000 ≤ r → r ≠ 218046 → c₄.nreg r = c₃.nreg r := fun r h0 h1 =>
     F₄.1 r (bkb_218 h0 h1)
   have m₄ : c₄.nmem = m₀ := by rw [F₄.2.2.1, m₃]; exact E₂.mem
   have E₄ : HostEnv W HB H.length m₀ c₄ := by
     have g : ∀ r, 50060 ≤ r → r < 50070 → c₄.nreg r = c₂.nreg r := fun r h1 h2 => by
-      rw [F₄.1 r (by simp only [SweepPrim.Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
+      rw [F₄.1 r (by simp [SweepPrim.Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
         beq_eq_false_iff_ne]; omega), r₃ r (by omega) (by omega) (by omega)]
     exact ⟨w₄, by rw [g _ (by norm_num) (by norm_num)]; exact E₂.h60,
       by rw [g _ (by norm_num) (by norm_num)]; exact E₂.h61,
@@ -306,7 +309,7 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
       exec_block
       refine ⟨by omega, by config_simp; exact c431, symPtIn_copy sk₄ (by config_simp)
         (by config_simp) (by config_simp), fun r h1 h2 h3 h4 => ?_, rfl⟩
-      simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2, ite_eq_right h3, ite_eq_right h4]
+      simp [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2, ite_eq_right h3, ite_eq_right h4]
     · have hy : ¬ Yh P H (s + b) < Yh P H (s + k) := fun h => hc (by
         rw [c420]; have := t₄.2 h; omega)
       rw [ite_eq_right hy]
@@ -334,10 +337,10 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
   have k₆' : ∀ r, 218000 ≤ r → r ≠ 218030 → r ≠ 218031 → r ≠ 218040 → r ≠ 218041 →
       r ≠ 218042 → r ≠ 218043 → r ≠ 218044 → r ≠ 218045 → r ≠ 218046 → c₆.nreg r = c.nreg r :=
     fun r h0 h1 h1' h2 h3 h4 h5 h6 h7 h8 => by
-      rw [r₆]; simp only [upd, ite_eq_right h1']; exact k₅' r h0 h1 h2 h3 h4 h5 h6 h7 h8
+      rw [r₆]; simp [upd, ite_eq_right h1']; exact k₅' r h0 h1 h2 h3 h4 h5 h6 h7 h8
   have E₆ : HostEnv W HB H.length m₀ c₆ := by
     have g : ∀ r, 50060 ≤ r → r < 50070 → c₆.nreg r = c₄.nreg r := fun r h1 h2 => by
-      rw [r₆]; simp only [upd, ite_eq_right (show r ≠ 218031 by omega)]
+      rw [r₆]; simp [upd, ite_eq_right (show r ≠ 218031 by omega)]
       exact r₅ r (by omega) (by omega) (by omega) (by omega)
     exact ⟨w₆, by rw [g _ (by norm_num) (by norm_num)]; exact E₄.h60,
       by rw [g _ (by norm_num) (by norm_num)]; exact E₄.h61,
@@ -345,7 +348,7 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
       by rw [g _ (by norm_num) (by norm_num)]; exact E₄.h68,
       by rw [g _ (by norm_num) (by norm_num)]; exact E₄.h69, by rw [r₆]; exact m₅.trans E₄.mem⟩
   have v30 : c₆.nreg 218030 = (if Yh P H (s + b) < Yh P H (s + k) then k else b) := by
-    rw [r₆]; simp only [upd]; exact b₅
+    rw [r₆]; simp [upd]; exact b₅
   have hbk := hI.bk
   rw [hkdef, hbdef] at hbk
   have hle := hI.le
@@ -364,7 +367,7 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
         (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)]; exact hI.r32
     · omega
     · omega
-    · rw [v30, v31]; split_ifs <;> omega
+    · rw [v30, v31]; splao
     · rw [v30]
       exact symPtIn_copy s₅ (by rw [r₆]; simp [upd]) (by rw [r₆]; simp [upd])
         (by rw [r₆]; simp [upd])
@@ -384,7 +387,7 @@ theorem scBody_exec {H : Host} {m₀ : ℕ → ℕ} {HB s m : ℕ} (E : ScE P W 
         · exact (hlt' j h).trans hy
         · exact lt_of_le_of_lt (hle j hj) hy
       · exact hlt' j hj
-  refine ⟨c₆, _, ex, I₆, by omega, by rw [v31, hkdef]; omega, exec_frameB ex wr_scBody⟩
+  refine ⟨c₆, _, ex, I₆, by omega, by rwo [v31, hkdef], exec_frameB ex wr_scBody⟩
 
 /-- **The scan**: `218013 := T ≤ m`, the least offset of a highest point among the host points
 `s, …, s + m`. -/
@@ -408,7 +411,7 @@ theorem scanS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
       c₁.nmem = c.nmem := by
     exec_block
     refine ⟨rfl, by config_simp; exact hs, fun r hr => ?_, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right hr]
+    simp [Config.nreg_mk, upd, ite_eq_right hr]
   have E₁ : HostEnv W HB H.length m₀ c₁ := ⟨e₁.wb_right, by rw [r₁ _ (by decide)]; exact hE.h60,
     by rw [r₁ _ (by decide)]; exact hE.h61, by rw [r₁ _ (by decide)]; exact hE.h67,
     by rw [r₁ _ (by decide)]; exact hE.h68, by rw [r₁ _ (by decide)]; exact hE.h69,
@@ -448,7 +451,7 @@ theorem scanS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
     have : (1990 + 2) * (m + 1 - c₃.nreg 218031) ≤ 1992 * m := Nat.mul_le_mul_left _ (by omega)
     omega
   have w₄ := e₄.wb_right
-  have hx : c₄.nreg 218031 = m + 1 := by have := I₄.km; rw [I₄.r32] at hx₄; omega
+  have hx : c₄.nreg 218031 = m + 1 := by have := I₄.km; rwo [I₄.r32] at hx₄
   obtain ⟨c₅, k₅, e₅, hk₅, v13, r₅⟩ : ∃ c₅ k₅, Exec P W (block [.copyN 218013 218030]) c₄ c₅ k₅ ∧
       k₅ = 1 ∧ c₅.nreg 218013 = c₄.nreg 218030 ∧
       c₅ = { c₄ with nreg := upd c₄.nreg 218013 (c₄.nreg 218030) } := by
@@ -457,14 +460,14 @@ theorem scanS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
   have ex : Exec P W scanS c c₅ (k₁ + (k₂ + k₃) + (k₄ + k₅)) := .seq (.seq e₁ (.seq e₂ e₃)) (.seq e₄ e₅)
   have hbk := I₄.bk
   rw [hx] at hbk
-  refine ⟨c₅, _, ex, by omega, exec_frameB ex wr_scanS', ?_, by rw [v13]; omega, fun j hj => ?_,
+  refine ⟨c₅, _, ex, by omega, exec_frameB ex wr_scanS', ?_, by rwo [v13], fun j hj => ?_,
     fun j hj => ?_⟩
   · have E₄ := I₄.env
     have w₅ := e₅.wb_right
     rw [r₅] at w₅ ⊢
-    exact ⟨w₅, by simp only [upd]; exact E₄.h60, by simp only [upd]; exact E₄.h61,
-      by simp only [upd]; exact E₄.h67, by simp only [upd]; exact E₄.h68,
-      by simp only [upd]; exact E₄.h69, E₄.mem⟩
+    exact ⟨w₅, by simp [upd]; exact E₄.h60, by simp [upd]; exact E₄.h61,
+      by simp [upd]; exact E₄.h67, by simp [upd]; exact E₄.h68,
+      by simp [upd]; exact E₄.h69, E₄.mem⟩
   · rw [v13]; exact I₄.le j (by omega)
   · rw [v13] at hj ⊢; exact I₄.lt j hj
 

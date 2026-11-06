@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleCuR4
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxRecDepth 20000
 
 /-!
 # WP-M (E7-B, RAM part 19): the assembly of the answer, executed
@@ -11,9 +16,6 @@ first (`ps = (slotsOf c 4).flatMap (slotPcs m n)`), sets the answer register `15
 the allocator past the list, within `42 |ps| + 60` steps, in the frame of the interior oracles.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -27,13 +29,12 @@ open Machine Machine.Stmt Programs SignK WalkKey SweepPrim
 def Basm' (r : ℕ) : Bool := Basm r || decide (r = 170221)
 
 theorem basm_io {r : ℕ} (h : Basm' r = true) : bandOf r ∈ ioBands ∧ r ≠ ALLOC :=
-  io_of_band' (Or.inl (by simp only [Basm', Basm, Bool.or_eq_true, decide_eq_true_eq] at h; omega))
+  io_of_band' (Or.inl (by sio only [Basm', Basm, Bool.or_eq_true, decide_eq_true_eq] at h))
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxRecDepth 20000 in
 theorem asm_cost {k₂ k₃ k₄ k₅ L1 L2 L3 L4 : ℕ} (h2 : k₂ + 42 * 0 ≤ 42 * L1 + 12)
     (h3 : k₃ + 42 * L1 ≤ 42 * L2 + 12) (h4 : k₄ + 42 * L2 ≤ 42 * L3 + 12)
     (h5 : k₅ + 42 * L3 ≤ 42 * L4 + 12) : 3 + (k₂ + (k₃ + (k₄ + (k₅ + 3)))) ≤ 42 * L4 + 60 := by
@@ -71,7 +72,7 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
       c₁.nmem = c.nmem := by
     unfold asmInit
     exec_block
-    · config_simp; rw [h11, hA9]; omega
+    · config_simp; rwo [h11, hA9]
     · omega
     refine ⟨rfl, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, rfl⟩
     · config_simp; exact hA9
@@ -91,15 +92,15 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
     have hsl : ∀ r, 170200 ≤ r → r < 170220 → d.nreg r = c.nreg r := by
       intro r r1 r2
       apply hF.1 r
-      simp only [Basm', Basm, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+      simp [Basm', Basm, Bool.or_eq_false_iff, decide_eq_false_iff_not]
       omega
     obtain ⟨d', k', e', h1, h2, hA', F'⟩ := asmK_exec (P := P) k hk d wd (c₀ := c) (Hγ := Hγ)
       (e₁ := e₁) hA hsl
       ((hF.1 _ (by decide)).trans h10) ((hF.1 _ (by decide)).trans h11) (hbit k hk)
       (fun hf => SlotsOK.mem hok _ (mem_slotsOf_of hf (by omega))) hn hnW
-      (by have := hLle (k + 1) (by omega); simp only [hLf] at this; omega)
+      (by have := hLle (k + 1) (by omega); sio only [hLf] at this)
     exact ⟨d', k', e', h1, h2, hA', hF.trans (frameM_mono F' (fun r hr => by
-      simp only [Basm', hr, Bool.true_or]))⟩
+      simp [Basm', hr, Bool.true_or]))⟩
   obtain ⟨c₂, k₂, e₂, p2, q2, A₂, F₂⟩ := step 0 (by norm_num) c₁ x₁.wb_right A₁ F₁
   obtain ⟨c₃, k₃, e₃, p3, q3, A₃, F₃⟩ := step 1 (by norm_num) c₂ e₂.wb_right A₂ F₂
   obtain ⟨c₄, k₄, e₄, p4, q4, A₄, F₄⟩ := step 2 (by norm_num) c₃ e₃.wb_right A₃ F₃
@@ -125,17 +126,17 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
     .seq x₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
   have hk := asm_cost p2 p3 p4 p5
   have hl := asm_low q2 q3 q4 q5
-  simp only [Nat.reduceAdd] at hl hk
-  refine ⟨c₆, _, ex, by rw [hk₁, hk₆]; exact hk, b10, by rw [bm, upd_same], fun j hj f hf => ?_,
+  simp [Nat.reduceAdd] at hl hk
+  refine ⟨c₆, _, ex, by rwx [hk₁, hk₆], b10, by rw [bm, upd_same], fun j hj f hf => ?_,
     bA, ⟨fun r hr ha => ?_, fun r hr => ?_, fun a ha => ?_, fun a _ => ?_, by rw [bo, F₅.2.2.2],
-      by rw [bA]; omega, by rw [bA, hk₁, hk₆]; omega⟩⟩
+      by rwo [bA], by rwo [bA, hk₁, hk₆]⟩⟩
   · rw [bm, upd_other _ _ _ (by omega)]
     exact A₅.out j hj f hf
   · have hb : Basm' r = false := by
       cases hB : Basm' r
       · rfl
       · exact absurd (basm_io hB).1 hr
-    rw [br r (fun h => hr (by rw [h]; unfold bandOf ioBands oracleBands; decide)) ha]
+    rw [br r (fun h => hr (by rw [h]; ufd bandOf ioBands oracleBands)) ha]
     exact F₅.1 r hb
   · have hb : Basm' r = false := by
       cases hB : Basm' r

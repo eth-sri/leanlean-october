@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.GranRing
+public import Chazelle.MiscTactics
 
 /-!
 # WP-F, part 6: the abstract state of the granularity procedure and its invariant
@@ -340,7 +341,7 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
         exact (hpz.2 ⟨hc, hz⟩).symm
     · by_contra h'
       exact hc (hpz.1 (by omega)).1
-  have hb01 : bump (E.par b) ≤ 1 := by unfold bump; split_ifs <;> omega
+  have hb01 : bump (E.par b) ≤ 1 := by unfold bump; splao
   have hnE : E.n = E.M.W.n := rfl
   unfold gwt Env.sz
   rw [h.eg a ha, h.eg b hb]
@@ -368,11 +369,11 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
       · have := hcnt.1 hc
         have := hbx.1 hc
         simp only [min_def, max_def]
-        split_ifs <;> omega
+        splao
       · have h1 := mt hcnt.2 hc
         have := hbx.2 hc
         simp only [min_def, max_def]
-        split_ifs <;> omega
+        splao
   · have hlt' : b < a := by omega
     have hkl := key_strict hE hlt' ha
     have hle := edge_mono hE hb ha hkl
@@ -393,11 +394,11 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
       · have := hcnt.1 hc
         have := hbx.1 hc
         simp only [min_def, max_def]
-        split_ifs <;> omega
+        splao
       · have h1 := mt hcnt.2 hc
         have := hbx.2 hc
         simp only [min_def, max_def]
-        split_ifs <;> omega
+        splao
 
 /-- `size` by integer arithmetic. -/
 theorem size_eq (hE : E.Good) : E.M.size = cntIn E.ch E.m 0 E.n := by

@@ -141,9 +141,9 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
       2 ≤ (sideExits M S R (pb + tb) (pa + ta)).ncard := by
   obtain ⟨heS, heR, hP⟩ := hsw
   set F := insert e S with hFdef
-  have hF : ChordSystem M.D F := hM.sys F (insert_subset he hS) (hfin.insert e)
-  have hSF : S ⊆ F := subset_insert e S
-  have heF : e ∈ F := mem_insert e S
+  have hF  := hM.sys F (insert_subset he hS) (hfin.insert e)
+  have hSF  := subset_insert e S
+  have heF  := mem_insert e S
   obtain ⟨R₁, R₂, hs⟩ := Merge.exists_split hF hSF heF heS hR heR
   obtain ⟨K₁, K₂, hK, ⟨c₁, hK₁⟩, ⟨c₂, hK₂⟩, hsec₁, hsec₂⟩ := hM.split he hA hB hAB
   have hdisj : Disjoint K₁ K₂ := by
@@ -215,7 +215,7 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
     have hzD : z ∈ M.D := heopen _ ⟨by norm_num, by norm_num⟩
     have hze : z ∈ e := by
       rw [heq]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
-    have hRo : IsOpen R := hF.regionsIn_open hSF hR
+    have hRo  := hF.regionsIn_open hSF hR
     obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hRo z (heR ⟨hze, hzD⟩)
     have hsys : ({e} : Set (Set Point)) ⊆ F := singleton_subset_iff.2 heF
     obtain ⟨ε₀, hε₀, hsep⟩ := hF.chord_separates_in hsys (mem_singleton e) hze hzD

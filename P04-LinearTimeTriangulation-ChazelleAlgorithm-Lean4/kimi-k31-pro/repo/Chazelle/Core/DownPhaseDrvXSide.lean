@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseDrvXCtx
 public import Chazelle.Core.DownPhaseDrvXWalk
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down phase, extraction (D6): chain walk positions and the host polygon
@@ -74,7 +78,7 @@ set_option quotPrecheck false in
 local notation "xG" => hostPoly (Qof P) xS (reg r)
 
 theorem det_neg_of {a b x : Point} (h1 : 0 < det a b x) (h2 : 0 < det b a x) : False := by
-  rw [Chazelle.Geometry.det_swap12] at h2; linarith
+  rwli [Chazelle.Geometry.det_swap12] at h2
 
 namespace XCtx
 
@@ -107,7 +111,7 @@ theorem kn_le (_Y : XCtx P li L E reg r C NR i0 g) {p : ℕ} :
   · rw [decide_eq_true h, tK_eq_of_lt h]; simp only [ite_true]
     exact ⟨by omega, fun h' => absurd h' (by decide)⟩
   · rw [decide_eq_false h, tK_eq_of_ge (not_lt.1 h)]
-    simp only [Bool.false_eq_true, ite_false]; omega
+    sio only [Bool.false_eq_true, ite_false]
 
 /-- **Inner position inside a tour edge**: a position of `G` with the same left half-plane. -/
 theorem inner_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
@@ -152,8 +156,8 @@ theorem inner_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
     walk_sector_vtx Y.cpSimple Y.X.hCs Y.X.hCm h6 hp hu0 hum hx
   generalize tK C.m C.topIdx C.sideBeta p = kc at hkc_le hk0 hkm hv0 hsv ⊢
   rw [hA] at hsv
-  have hnx : kNext li kc ≤ C.m := by unfold kNext; split_ifs <;> omega
-  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; split_ifs <;> omega
+  have hnx : kNext li kc ≤ C.m := by unfold kNext; splao
+  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; splao
   have hsn := sig_next (i0 := i0) (show kc < xK by omega) (show kNext li kc < xK by omega)
     (fun _ => by omega)
   have hsp := sig_prev (i0 := i0) (show kc < xK by omega) (show kPrev li kc < xK by omega)
@@ -187,14 +191,14 @@ theorem outer_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht
   have hback : kNext li (kNext (!li) kc) = kc := by
     unfold kNext
     cases li
-    · simp only [Bool.not_false, ite_true, Bool.false_eq_true, ite_false]; omega
+    · sio only [Bool.not_false, ite_true, Bool.false_eq_true, ite_false]
     · simp only [Bool.not_true, Bool.false_eq_true, ite_false, ite_true]
       have := hk1 rfl; omega
   have hkn' : kNext (!li) kc < xK := by omega
   have hsn : sig li xK i0 kc = (sig li xK i0 (kNext (!li) kc) + 1) % xK := by
     conv_lhs => rw [← hback]
-    refine sig_next hkn' (by rw [hback]; omega) (fun hl => ?_)
-    subst hl; unfold kNext; simp only [Bool.not_false, ite_true]; omega
+    refine sig_next hkn' (by rwo [hback]) (fun hl => ?_)
+    subst hl; unfold kNext; sio only [Bool.not_false, ite_true]
   rw [Y.vtx_sig (by omega)] at hv0
   rw [Y.vtx_sig hkn'] at hv1
   have hne : (xG).vtx (sig li xK i0 (kNext (!li) kc)) ≠
@@ -227,8 +231,8 @@ theorem outer_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
   rw [hA] at hsv
   have e1 : kPrev (!li) kc = kNext li kc := by unfold kPrev kNext; cases li <;> simp
   have e2 : kNext (!li) kc = kPrev li kc := by unfold kPrev kNext; cases li <;> simp
-  have hnx : kNext li kc ≤ C.m := by unfold kNext; split_ifs <;> omega
-  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; split_ifs <;> omega
+  have hnx : kNext li kc ≤ C.m := by unfold kNext; splao
+  have hpv : kPrev li kc ≤ C.m := by unfold kPrev; splao
   have hsn := sig_next (i0 := i0) (show kc < xK by omega) (show kNext li kc < xK by omega)
     (fun _ => by omega)
   have hsp := sig_prev (i0 := i0) (show kc < xK by omega) (show kPrev li kc < xK by omega)
@@ -255,7 +259,7 @@ theorem g_bound {q : ℕ} (hq : q < xK) {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 1
   have h3 := Y.three
   have hmem : sidePt xG q s ∈ C.P.boundary := by
     rw [Y.hbd]
-    exact ⟨q, by rw [Y.gn]; exact hq, Chazelle.Geometry.lerp_mem_segment _ _ hs0 hs1⟩
+    exact ⟨q, by rwx [Y.gn], Chazelle.Geometry.lerp_mem_segment _ _ hs0 hs1⟩
   obtain ⟨h1, h2⟩ := Chazelle.Jordan.abs_le_coordBound_of_mem_boundary C.P hmem
   refine ⟨h1, h2, ?_⟩
   obtain ⟨i, hi, hz⟩ := hmem
@@ -291,7 +295,7 @@ theorem meet_of_attach (Y : XCtx P li L E reg r C NR i0 g) {c : Set Point}
     DownDrv.interiorWalk_hostPoly Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   have hReq := DownDrv.region_eq_intHost Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   obtain ⟨hq, hs0, hs1, hmem, rA, hrA, hsec⟩ := hA
-  obtain ⟨r', hr', hcl⟩ := hMH.clean q (by rw [hW]; exact hq) s hs0 hs1
+  obtain ⟨r', hr', hcl⟩ := hMH.clean q (by rwx [hW]) s hs0 hs1
   rw [hW] at hcl
   obtain ⟨y₀, a, b, hab, rfl⟩ := hc
   obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hab hmem (lt_min hrA hr')
@@ -300,7 +304,7 @@ theorem meet_of_attach (Y : XCtx P li L E reg r C NR i0 g) {c : Set Point}
     by_contra hxD
     exact hcl x (show dist x _ < r' from lt_of_lt_of_le hxd (min_le_right _ _)) hxD hxl
   refine ⟨x, hxc, ?_⟩
-  rw [hReq]; exact hxD
+  rwx [hReq]
 
 end
 

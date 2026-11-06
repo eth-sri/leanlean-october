@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.DownPhaseDrvDCall
 public import Chazelle.Core.ShearInv
 public import Chazelle.Core.FactsFullDegInt
+public import Chazelle.UnfoldTactics
 
 /-!
 # Down-phase restoration rounds (D8), part 8: one call of the splitting step
@@ -27,7 +28,7 @@ open Machine Machine.Stmt Programs SignK BuildRam
 def InDrv (B : ℕ → Bool) : Prop := ∀ r, B r = true → bandOf r ∈ DrvR.drvBands ∧ r ≠ ALLOC
 
 theorem mem_drvBands {r : ℕ} (h1 : 10000 ≤ r) (h2 : r < 230000) : bandOf r ∈ DrvR.drvBands := by
-  simp only [DrvR.drvBands, phaseBands, bCore, Finset.mem_erase, Finset.mem_Icc, bandOf]
+  simp [DrvR.drvBands, phaseBands, bCore, Finset.mem_erase, Finset.mem_Icc, bandOf]
   omega
 
 theorem rf_of_frameM {B : ℕ → Bool} (hB : InDrv B) {A₀ : ℕ} {c c' : Config} {k : ℕ}
@@ -50,33 +51,33 @@ theorem rf_of_frameB {B : ℕ → Bool} (hB : InDrv B) {A₀ : ℕ} {c c' : Conf
 
 theorem inDrv_scan : InDrv Bscan := by
   intro r hr
-  simp only [Bscan, BuildRam.Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  simp [Bscan, BuildRam.Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
+  exact ⟨mem_drvBands (by omega) (by omega), by ufo ALLOC⟩
 
 theorem inDrv_appT : InDrv BappT := by
   intro r hr
-  simp only [BappT, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  simp [BappT, Bool.or_eq_true, decide_eq_true_eq] at hr
+  exact ⟨mem_drvBands (by omega) (by omega), by ufo ALLOC⟩
 
 theorem inDrv_eq {q : ℕ} (h1 : 10000 ≤ q) (h2 : q < 230000) (hq : q ≠ ALLOC) :
     InDrv (fun r => decide (r = q)) := by
   intro r hr
-  simp only [decide_eq_true_eq] at hr
+  simp [decide_eq_true_eq] at hr
   subst hr
   exact ⟨mem_drvBands h1 h2, hq⟩
 
 theorem inDrv_arg : InDrv (fun r => decide (81000 ≤ r ∧ r ≤ 81006)) := by
   intro r hr
-  simp only [decide_eq_true_eq] at hr
-  exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  simp [decide_eq_true_eq] at hr
+  exact ⟨mem_drvBands (by omega) (by omega), by ufo ALLOC⟩
 
 theorem find_bands : restoreBands ∪ DrvR.ioBandsD ⊆ DrvR.drvBands := by decide
 
 /-- The splitting step keeps the registers of `bDownDrv` and `coreReg 1`. -/
 theorem find_keeps {c c' : Config} {k : ℕ} (h : Frame (restoreBands ∪ DrvR.ioBandsD) c c' k)
     {q : ℕ} (hq : (210000 ≤ q ∧ q < 220000) ∨ q = 230001) : c'.nreg q = c.nreg q := by
-  refine h.1 q ?_ (by unfold ALLOC; omega)
-  have : bandOf q = 21 ∨ bandOf q = 23 := by unfold bandOf; omega
+  refine h.1 q ?_ (by ufo ALLOC)
+  have : bandOf q = 21 ∨ bandOf q = 23 := by ufo bandOf
   rcases this with h' | h' <;> rw [h'] <;> decide
 
 /-! ## The facts of the environment -/

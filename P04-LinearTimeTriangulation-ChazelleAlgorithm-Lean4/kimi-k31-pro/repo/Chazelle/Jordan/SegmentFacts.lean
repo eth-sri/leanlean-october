@@ -3,6 +3,7 @@ module
 public import Chazelle.Spec
 public import Mathlib.Topology.Compactness.Compact
 public import Mathlib.Topology.Instances.Real.Lemmas
+public import Chazelle.SimpTactics
 
 /-!
 # Elementary facts about `Chazelle.segment`
@@ -56,23 +57,23 @@ theorem mem_segment_iff_of_lt {u v p : Point} (huv : u.1 < v.1) :
       u.1 ≤ p.1 ∧ p.1 ≤ v.1 ∧ (p.2 - u.2) * (v.1 - u.1) = (v.2 - u.2) * (p.1 - u.1) := by
   constructor
   · rintro ⟨t, ht0, ht1, rfl⟩
-    have hd : 0 < v.1 - u.1 := sub_pos.2 huv
+    have hd  := sub_pos.2 huv
     refine ⟨?_, ?_, ?_⟩
-    · simp only
+    · simp
       nlinarith
-    · simp only
+    · simp
       nlinarith
-    · simp only
+    · simp
       ring
   · rintro ⟨h0, h1, hl⟩
-    have hd : 0 < v.1 - u.1 := sub_pos.2 huv
+    have hd  := sub_pos.2 huv
     refine ⟨(p.1 - u.1) / (v.1 - u.1), div_nonneg (by linarith) hd.le,
       (div_le_one hd).2 (by linarith), ?_⟩
     ext
-    · simp only
+    · simp
       field_simp
       ring
-    · simp only
+    · simp
       field_simp
       linarith
 
@@ -83,13 +84,13 @@ theorem mem_segment_of_vertical {u v p : Point} (huv : u.1 = v.1) (hp : p.1 = u.
   · refine ⟨0, le_rfl, zero_le_one, ?_⟩
     ext
     · simp [hp]
-    · simp; linarith
+    · sil
   · have hd' : 0 < v.2 - u.2 := sub_pos.2 (lt_of_le_of_ne (h0.trans h1) hd)
     refine ⟨(p.2 - u.2) / (v.2 - u.2), div_nonneg (by linarith) hd'.le,
       (div_le_one hd').2 (by linarith), ?_⟩
     ext
     · simp [hp, huv]
-    · simp only
+    · simp
       field_simp
       ring
 
@@ -104,7 +105,7 @@ theorem isCompact_segment (u v : Point) : IsCompact (segment u v) := by
   have : segment u v =
       (fun t : ℝ => ((u.1 + t * (v.1 - u.1), u.2 + t * (v.2 - u.2)) : Point)) '' Icc 0 1 := by
     ext p
-    simp only [mem_segment_iff, mem_image, mem_Icc]
+    simp [mem_segment_iff, mem_image, mem_Icc]
     constructor
     · rintro ⟨t, h0, h1, rfl⟩; exact ⟨t, ⟨h0, h1⟩, rfl⟩
     · rintro ⟨t, ⟨h0, h1⟩, rfl⟩; exact ⟨t, h0, h1, rfl⟩

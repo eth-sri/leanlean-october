@@ -4,6 +4,8 @@ public import Chazelle.Core.DownPhaseDrvTPiece
 public import Chazelle.Core.NFBuildValid
 public import Chazelle.Core.DownPhaseMathLevel
 public import Chazelle.Core.DownPhaseMathCount
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # Down-phase transition (D2), part 4: the filtered chord list
@@ -72,8 +74,8 @@ theorem chord_eq_of_sub {D : Set Point} {y₁ a₁ b₁ y₂ a₂ b₂ y a b : �
   · rw [e1, e2, e3]
   · exfalso
     rcases hp with hp | hp
-    · have := congrArg Prod.fst hp; simp only at this; linarith
-    · have := congrArg Prod.fst hp; simp only at this; linarith
+    · have := congrArg Prod.fst hp; sil only at this
+    · have := congrArg Prod.fst hp; sil only at this
 
 variable {P : Polygon} {C : Chain} {N : NF}
 
@@ -116,7 +118,7 @@ theorem nodup_triples_toSet {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
     unfold NF.chord
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
   have := hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-    (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij)
+    (by unfold NF.nChords; simpa using j.2) (by rwx [e1, e2])
   exact Fin.ext this
 
 /-- **The number of chords** of a valid normal form is its number of records. -/
@@ -141,7 +143,7 @@ theorem ncard_F {M : Model} {Q : Polygon} {N : NF}
       unfold NF.chord
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
     exact Fin.ext (hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-      (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij))
+      (by unfold NF.nChords; simpa using j.2) (by rwx [e1, e2]))
   rw [hF, show {c | c ∈ N.chords.map fun r => r.toSet M Q} =
       ((N.chords.map fun r => r.toSet M Q).toFinset : Set (Set Point)) by
     ext c; simp, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
@@ -193,7 +195,7 @@ theorem chordTriplesOK_transL (hN : IsNF (chainModel C) Q N)
   refine ⟨?_, ?_, ?_, ?_⟩
   · have := famOf_transL hQ T hD hli hN
     unfold famOf at this
-    rw [this]; exact hFam
+    rwx [this]
   · unfold transL
     rw [List.map_map]
     refine List.Nodup.map_on (fun x hx x' hx' hxx => ?_)
@@ -251,14 +253,14 @@ theorem trans_math (hG : GoodEnv P) (hC : TopChain P C)
   have hn : (Qof P).n = P.n := shear_n _ _
   have T : Trans.Top (Qof P) C := ⟨hC.1, hC.2.1, by rw [hn]; exact hC.2.2⟩
   have hD : Trans.DistinctH (Qof P) := (goodShear_epsOf hG.2).2.1
-  have hP : C.P.Simple := by rw [hC.1]; exact hQ
+  have hP : C.P.Simple := by rwx [hC.1]
   obtain ⟨hNF, hdeg, hgran, hdec⟩ := hN
   have hFam0 : (chainModel C).ChordFamily C.P (N.F (chainModel C) (Qof P)) := by
     rw [hC.1]; exact hNF.1
   obtain ⟨hFam, hdegP, hwtP, -⟩ := Trans.transition hQ T hD hFam0 hgran.1 hdeg
   have hfam := famOf_transL hQ T hD hli hNF
   rw [← hn]
-  refine ⟨chordTriplesOK_transL hQ T hD hli hNF hFam, by rw [hfam]; exact hdegP, ?_, ?_, ?_⟩
+  refine ⟨chordTriplesOK_transL hQ T hD hli hNF hFam, by rwx [hfam], ?_, ?_, ?_⟩
   · rw [hfam]
     intro U hU
     refine (hwtP U hU).trans ?_

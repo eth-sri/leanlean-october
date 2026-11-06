@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.NFLocate
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Double identification: the direction of the query edge, interior model (WP-C, target 2)
@@ -101,7 +106,7 @@ theorem dirTail_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
   have w₃ := e₃.wb_right
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50037 (c₂.nreg 10010) }
   have k2 : ∀ r, (r < 10000 ∨ 10500 ≤ r) → c₂.nreg r = c₁.nreg r := fun r hr =>
-    f₂.1 r (by unfold Bk; simp only [decide_eq_false_iff_not]; omega)
+    f₂.1 r (by unfold Bk; sio only [decide_eq_false_iff_not])
   have sa₃ : SymPtIn c₃ 50040 sa := symPtIn_copy hsa
     (by simp only [c₃, upd]; rw [ite_eq_right (by omega), k2 _ (by omega), r1 _ (by omega)])
     (by simp only [c₃, upd]; rw [ite_eq_right (by omega), k2 _ (by omega), r1 _ (by omega)])
@@ -134,18 +139,18 @@ theorem dirTail_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
     unfold dirOf
     by_cases hab : ya < yb
     · have : c₂.nreg 10010 = 1 := sig₂.2 hab
-      refine spec_ifLtN_false (by rw [h6a, h6c, this]; omega)
+      refine spec_ifLtN_false (by rwo [h6a, h6c, this])
         (spec_instr (Exec.constN w₆ _ _ (by omega)) fun _ => ⟨by omega, ?_⟩)
       simp [hab]
     · have h0 : c₂.nreg 10010 = 0 := by have := mt sig₂.1 hab; omega
-      refine spec_ifLtN_true (by rw [h6a, h6c, h0]; omega) ?_
+      refine spec_ifLtN_true (by rwo [h6a, h6c, h0]) ?_
       by_cases hba : yb < ya
       · have : c₅.nreg 10010 = 1 := sig₅.2 hba
-        refine spec_ifLtN_false (by rw [h6b, h6c, this]; omega)
+        refine spec_ifLtN_false (by rwo [h6b, h6c, this])
           (spec_instr (Exec.constN w₆ _ _ (by omega)) fun _ => ⟨by omega, ?_⟩)
         simp [hab, hba]
       · have h0' : c₅.nreg 10010 = 0 := by have := mt sig₅.1 hba; omega
-        refine spec_ifLtN_true (by rw [h6b, h6c, h0']; omega)
+        refine spec_ifLtN_true (by rwo [h6b, h6c, h0'])
           (spec_instr (Exec.constN w₆ _ _ (by omega)) fun _ => ⟨by omega, ?_⟩)
         simp [hab, hba]
   have ex : Exec P W dirTail c c₇ (k₁ + (k₂ + (1 + (k₄ + (k₅ + (1 + k₇)))))) :=
@@ -205,8 +210,8 @@ theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (h
     exec_block
     · omega
     · omega
-    · config_simp; omega
-    · config_simp; omega
+    · cso
+    · cso
     · exact ⟨rfl, by config_simp⟩
   obtain ⟨q30, q32, q31, q33, q02⟩ := q
   have w₁ := e₁.wb_right
@@ -215,10 +220,10 @@ theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (h
       c₂.nreg 50031 = (c.nreg 50002 + 1) % P.n ∧ c₂.nreg 50030 = P.n ∧ c₂.nreg 50032 = 1 ∧
       c₂.nreg 50033 = c.nmem (c.nreg 50000 + 1) ∧ c₂.nreg 50002 = c.nreg 50002 := by
     by_cases h : c.nreg 50002 + 1 < P.n
-    · refine spec_ifLtN_true (by rw [q31, q30]; exact h) (spec_skip w₁ ⟨by omega, ?_⟩)
+    · refine spec_ifLtN_true (by rwx [q31, q30]) (spec_skip w₁ ⟨by omega, ?_⟩)
       rw [q31, Nat.mod_eq_of_lt h]
       exact ⟨rfl, q30, q32, q33, q02⟩
-    · refine spec_ifLtN_false (by rw [q31, q30]; exact h)
+    · refine spec_ifLtN_false (by rwx [q31, q30])
         (spec_instr (Exec.constN w₁ _ _ (by omega)) fun _ => ⟨by omega, ?_⟩)
       have : c.nreg 50002 + 1 = P.n := by omega
       config_simp
@@ -245,18 +250,18 @@ theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (h
       c₃.nreg 50044 = (if b = 1 then e1 else P.n - 1 - e1) := by
     by_cases h0 : b < 1
     · obtain ⟨c', k, ex, hk, a, a'⟩ := hrev c₂ w₂ s30 s32 s02 s31
-      refine ⟨c', k + 1, .ifLtN_true (by rw [s33, s32]; exact h0) ex, by omega, ?_, ?_⟩
+      refine ⟨c', k + 1, .ifLtN_true (by rwx [s33, s32]) ex, by omega, ?_, ?_⟩
       · rw [a, ite_eq_right (by omega)]
       · rw [a', ite_eq_right (by omega)]
     · by_cases h2 : 1 < b
       · obtain ⟨c', k, ex, hk, a, a'⟩ := hrev c₂ w₂ s30 s32 s02 s31
-        refine ⟨c', k + 1 + 2, .ifLtN_false (by rw [s33, s32]; exact h0)
-          (.ifLtN_true (by rw [s33, s32]; exact h2) ex), by omega, ?_, ?_⟩
+        refine ⟨c', k + 1 + 2, .ifLtN_false (by rwx [s33, s32])
+          (.ifLtN_true (by rwx [s33, s32]) ex), by omega, ?_, ?_⟩
         · rw [a, ite_eq_right (by omega)]
         · rw [a', ite_eq_right (by omega)]
       · have hb1 : b = 1 := by omega
-        refine spec_ifLtN_false (by rw [s33, s32]; exact h0)
-          (spec_ifLtN_false (by rw [s33, s32]; exact h2) ?_)
+        refine spec_ifLtN_false (by rwx [s33, s32])
+          (spec_ifLtN_false (by rwx [s33, s32]) ?_)
         exec_block
         refine ⟨by omega, ?_, ?_⟩ <;> config_simp <;> rw [ite_eq_left hb1]
         · exact s02
@@ -283,17 +288,17 @@ theorem intDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
   set e := c.nreg 50002
   set ia := (if c.nmem (c.nreg 50000 + 1) = 1 then e else P.n - 1 - e)
   set ib := (if c.nmem (c.nreg 50000 + 1) = 1 then (e + 1) % P.n else P.n - 1 - (e + 1) % P.n)
-  have hia : ia < P.n := by simp only [ia]; split_ifs <;> omega
+  have hia : ia < P.n := by simp only [ia]; splao
   have hib : ib < P.n := by
     have := Nat.mod_lt (e + 1) hn0
-    simp only [ib]; split_ifs <;> omega
+    simp only [ib]; splao
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, d₃⟩ := dirTail_exec (P := P) hG hW c₂ e₂.wb_right
     (sa := .vtx ia) (sb := .vtx ib) hia hib ⟨a, by rw [x41, r41]⟩ ⟨b, by rw [x44, r44]⟩
   have ex : Exec P W intDir c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   refine ⟨c₃, _, ex, by omega, exec_frameB ex wr_intDir, ?_⟩
   rw [d₃, dirCode_eq]
   simp only [SymPt.eval, Model.wa, Model.wb, interiorModel]
-  rw [interiorWalk_n, hn, interiorWalk_vtx _ (by rw [hn]; exact he),
+  rw [interiorWalk_n, hn, interiorWalk_vtx _ (by rwx [hn]),
     interiorWalk_vtx _ (by rw [hn]; exact Nat.mod_lt _ hn0), hn]
   simp only [ia, ib]
   by_cases hL : Mountain.LeftInside (Qof P)

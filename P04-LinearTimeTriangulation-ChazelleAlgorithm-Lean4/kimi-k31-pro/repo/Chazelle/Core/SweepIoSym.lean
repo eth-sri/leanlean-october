@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepIoClass
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the symbolic point of a tour position
@@ -68,8 +70,8 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
         c₁.nreg 50143 = 2 * C.m ∧ ∀ r, r ≠ 50120 → r ≠ 50143 → c₁.nreg r = c.nreg r) := by
     have hw := hE.wb
     exec_block
-    · config_simp; rw [hE.r53]; omega
-    · refine ⟨rfl, by config_simp; rw [h01, hE.r81], by config_simp; rw [hE.r53]; ring,
+    · config_simp; rwo [hE.r53]
+    · refine ⟨rfl, by config_simp; rw [h01, hE.r81], by config_simp; rwring [hE.r53],
         fun r h1 h2 => by simp [h1, h2]⟩
   obtain ⟨q20, q43, r₁⟩ := q
   have hE₁ : CEnv P W H C c₁ := hE.keep e₁.wb_right
@@ -81,7 +83,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     hlt.le (dst := 50130) (by norm_num)
   have w₂ := e₂.wb_right
   have e₃ := Exec.addN (P := P) w₂ 50120 50120 50032
-    (by rw [f₂.1 _ (by decide), q20, hE₂.r32]; omega)
+    (by rwo [f₂.1 _ (by decide), q20, hE₂.r32])
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50120 + c₂.nreg 50032) }
     with hc₃
   have hE₃ : CEnv P W H C c₃ := hE₂.step e₃ (by decide)
@@ -100,7 +102,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have q32 : c₅.nreg 50032 = 1 := by
     rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
   obtain ⟨hEi, hx⟩ := tour_abs hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂
-    (hc := hc) (by rw [show i + 6 = e by omega]; exact ht)
+    (hc := hc) (by rwx [show i + 6 = e by omega])
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
     · exact absurd (show (chainModel C).param (Qof P) ⟨e, 0⟩ = 0 from rfl) (ne_of_gt ht)
@@ -115,7 +117,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     config_simp; rw [q02, q32]
   obtain ⟨q10, q11⟩ := q
   have ex : Exec P W absInt c c₆ (k₁ + (k₂ + (1 + (k₄ + (k₅ + k₆))) + 1)) :=
-    .seq e₁ (.ifLtN_true (by rw [q20, q43]; exact hlt) (.seq e₂ (.seq e₃ (.seq e₄
+    .seq e₁ (.ifLtN_true (by rwx [q20, q43]) (.seq e₂ (.seq e₃ (.seq e₄
       (.seq e₅ e₆)))))
   refine ⟨c₆, _, ex, by have := hE.hlen; omega, q10, _, q11, ⟨hEi, by omega⟩, ?_⟩
   have hne := ne_of_param_pos ht
@@ -125,12 +127,12 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     rfl
   apply Prod.ext
   · rw [show e = i + 6 by omega, hx]
-  · rw [hy]; rfl
+  · rwr [hy]
 
 /-- **Contract of `absKey` for tour and top positions: the symbolic point of the position.** -/
 theorem symKey_meets : Meets absKey primBands (PrimPre SymIn) (PrimPost SymOut)
     (fun _ _ => 16700) := by
-  refine prim_meets (K := 15900) (fun r h => h) wr_absKey ?_
+  refine prim_meets (K := 15900) (fun _ => id) wr_absKey ?_
   intro P W H C c₀ c hC hE ⟨⟨⟨hen, ⟨hp0, hp1, hhn⟩, hy⟩, hreg⟩, hcls⟩ hinp
   have hregH := hreg H hC.1
   have hn : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _

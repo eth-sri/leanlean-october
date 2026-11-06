@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.FuseDegPiece
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The degree of the revised fusion, part 4: chains of wedges seen from a side chain
@@ -43,7 +46,7 @@ theorem halfIn_side (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     (hSifin : Si.Finite) {τ x h : ℝ} (hgood : HalfIn J.whole.dom τ ((x, h) : Point))
     (hcol : h < C'.top.2 ∨ (τ = -1 ∧ h ≤ C'.top.2) ∨ x ≠ C'.top.1) :
     HalfIn (freeIn C'.dom Si) τ ((x, h) : Point) := by
-  have hP' : C'.P.Simple := hC'P ▸ hP
+  have hP'  := hC'P ▸ hP
   obtain ⟨r, hr, hsub⟩ := hgood
   obtain ⟨r₂, hr₂, hch⟩ := chords_off_line (walkAx_chainModel hP') hSiA hSifin ((x, h) : Point)
   obtain ⟨r₃, hr₃, hsl⟩ : ∃ r₃ > 0, ∀ y ∈ ball ((x, h) : Point) r₃,
@@ -53,7 +56,7 @@ theorem halfIn_side (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       have h1 := (C'.mem_slit_iff.1 hys).2.1
       rw [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq, Real.dist_eq] at hy
       have := (abs_lt.1 hy.2).2
-      simp only at this
+      simp at this
       linarith
     · refine ⟨1, one_pos, fun y _ hy hys => ?_⟩
       have h1 := (C'.mem_slit_iff.1 hys).2.1
@@ -63,7 +66,7 @@ theorem halfIn_side (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       have h1 := (C'.mem_slit_iff.1 hys).1
       rw [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq, Real.dist_eq] at hy
       have h2 := hy.1
-      simp only at h2
+      simp at h2
       rw [h1, abs_sub_comm] at h2
       exact lt_irrefl _ h2
   refine ⟨min r (min r₂ r₃), lt_min hr (lt_min hr₂ hr₃), fun y hy hpos => ?_⟩
@@ -73,7 +76,7 @@ theorem halfIn_side (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   have hyD := hsub y hy1 hpos
   refine ⟨mem_side_dom J hC'P hset hyD (hsl y hy3 hpos), fun hyS => hch y hy2 ?_ hyS⟩
   intro heq
-  simp only at heq hpos
+  simp at heq hpos
   rw [heq, sub_self, mul_zero] at hpos
   exact lt_irrefl _ hpos
 
@@ -86,12 +89,12 @@ theorem between_open {M : Model} (hM : WalkAx M) {f : Set Point} (hf : f ∈ M.A
   have hwD : w ∉ M.D := by
     obtain ⟨⟨p, t, hA, rfl⟩, -⟩ := hwe
     exact hM.trace p hA.1 t hA.2.1 hA.2.2.1.le
-  simp only [one_mul] at hqw
+  simp [one_mul] at hqw
   have hstrict : ∀ {y : Point}, y ∈ f → y ∈ M.D → y.2 = w.2 ∧ q.1 < y.1 ∧ y.1 < w.1 := by
     intro y hy hyD
     rw [hce] at hy
     obtain ⟨h1, h2, h3⟩ := mem_seg_sigma hqy (Or.inl rfl) (by simpa using hqw) hy
-    simp only [one_mul] at h2 h3
+    simp [one_mul] at h2 h3
     refine ⟨h1, lt_of_le_of_ne h2 fun h => ?_, lt_of_le_of_ne h3 fun h => ?_⟩
     · have : y = q := Geometry.point_ext h.symm (h1.trans hqy.symm)
       exact hqD (this ▸ hyD)
@@ -101,14 +104,14 @@ theorem between_open {M : Model} (hM : WalkAx M) {f : Set Point} (hf : f ∈ M.A
   obtain ⟨-, hz'q, hz'w⟩ := hstrict hz' hz'D
   rw [hz2]
   refine (open_pt hqy (Or.inl rfl) hop ?_ ?_).2
-  · simp only [one_mul]
+  · simp [one_mul]
     rcases le_total z.1 z'.1 with h | h
-    · rw [min_eq_left h] at hx1; linarith
-    · rw [min_eq_right h] at hx1; linarith
-  · simp only [one_mul]
+    · rwli [min_eq_left h] at hx1
+    · rwli [min_eq_right h] at hx1
+  · simp [one_mul]
     rcases le_total z.1 z'.1 with h | h
-    · rw [max_eq_right h] at hx2; linarith
-    · rw [max_eq_left h] at hx2; linarith
+    · rwli [max_eq_right h] at hx2
+    · rwli [max_eq_left h] at hx2
 
 /-! ## The region of `Sᵢ` on the side of `R` of a chord -/
 
@@ -274,7 +277,7 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       rcases htop with ht | ht
       · refine ⟨1, Or.inl rfl, fun z hz hzD x hx => Or.inr (Or.inr ?_)⟩
         have := (hopen z hz hzD).2.1
-        intro h; simp only [one_mul] at hx; linarith
+        intro h; sil only [one_mul] at hx
       · refine ⟨-1, Or.inr rfl, fun z hz hzD x hx => Or.inr (Or.inr ?_)⟩
         have := (hopen z hz hzD).2.2
         intro h; linarith
@@ -292,16 +295,16 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       (∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₀.1, z₀.2 + τ * δ) : Point) ∈ V) ∧
       (∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₁.1, z₀.2 + τ * δ) : Point) ∈ V) := by
     rcases hσ with rfl | rfl
-    · simp only [one_mul] at hσ01 hgood'
+    · simp [one_mul] at hσ01 hgood'
       obtain ⟨w, hw, h1, h2⟩ := strip_const hτ hσ01 fun x hx => hgood' x hx.1 hx.2
       exact ⟨_, ⟨w, hw, rfl⟩, h1, h2⟩
-    · simp only [neg_mul, one_mul, neg_le_neg_iff] at hσ01 hgood'
+    · simp [neg_mul, one_mul, neg_le_neg_iff] at hσ01 hgood'
       obtain ⟨w, hw, h1, h2⟩ := strip_const hτ hσ01 fun x hx => hgood' x hx.2 hx.1
       exact ⟨_, ⟨w, hw, rfl⟩, h2, h1⟩
   have hPhi : Phi M M' Si R f = V := by
     refine phi_eq J hP hC'P hset hSi.2.1 hSi.1 hF hfin hR hf hτ hsidef hz₁f hz₁D
-      (by rw [hz₁y, hz₀y]; exact hy) hV ?_
-    rw [hz₁y]; exact hV₁
+      (by rwx [hz₁y, hz₀y]) hV ?_
+    rwx [hz₁y]
   refine ⟨f, hf, hRf, hadjf, hc, z₀, ⟨hec hz₀e, ?_⟩, ?_⟩
   · show z₀ ∈ C'.dom
     have : z₀ = ((z₀.1, y) : Point) := Prod.ext rfl hz₀y
@@ -338,11 +341,11 @@ theorem parents_ncard_le (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     rintro c ⟨hc, e, ⟨he, hRe⟩, hec⟩
     obtain ⟨f, hf, hRf, hadj, hcf⟩ :=
       parent_touch J hP hC'P hset hSi hF hfin hends hR he hRe hc hec
-    simp only [Set.mem_iUnion]
+    simp [Set.mem_iUnion]
     exact ⟨f, ⟨⟨hf, hRf⟩, hadj⟩, hcf⟩
   refine (Set.ncard_le_ncard hsub (hSi.1.subset ?_)).trans ?_
   · intro c hc
-    simp only [Set.mem_iUnion] at hc
+    simp [Set.mem_iUnion] at hc
     obtain ⟨f, -, hc, -⟩ := hc
     exact hc
   · refine ncard_biUnion_le_mul (hfin.subset fun f hf => hf.1.1) _ fun f _ => ?_
@@ -351,11 +354,11 @@ theorem parents_ncard_le (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     · have : exits M' Si (Phi M M' Si R f) = ∅ := by
         rw [h]
         ext c
-        simp only [exits, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
+        simp [exits, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
         rintro - ⟨z, -, hz⟩
         rw [closure_empty] at hz
         exact hz
-      rw [this, Set.ncard_empty]; omega
+      rwo [this, Set.ncard_empty]
 
 end FuseDeg
 

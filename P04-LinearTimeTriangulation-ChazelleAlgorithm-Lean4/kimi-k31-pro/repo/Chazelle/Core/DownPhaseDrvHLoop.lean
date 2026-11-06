@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvHArc
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Down-phase driver, host RAM (D3a), part 7: the loops
@@ -75,7 +79,6 @@ theorem take_add_one_getD {l : List HostItem} {i : ℕ} (h : i < l.length) (x : 
   rw [List.take_add_one, List.getElem?_eq_getElem h, Option.toList_some,
     List.getD_eq_getElem _ _ h]
 
-set_option maxHeartbeats 1000000 in
 /-- **The copy of the items** to the host layout (reversed when `li = false`). -/
 theorem cpyLoop_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ}
     {xs : List HostItem} (hK : Kst n li d) (hI : ItemsAt d.nmem T xs)
@@ -107,19 +110,19 @@ theorem cpyLoop_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ
     (fun i e ⟨hw, h1, h2, _⟩ => ⟨hw, h1, h2⟩)
     (fun i e hi ⟨hwe, e80, e11, e82, e81, e83, e84, Ke, me, Ie, fe⟩ => by
       set si := if li then i else K - 1 - i with hsi
-      have hsiK : si < K := by rw [hsi]; split_ifs <;> omega
+      have hsiK : si < K := by rw [hsi]; splao
       obtain ⟨e', k, ex, hk, v80, v81, v82, vm, fe'⟩ := cpyBody_exec (P := P) e hwe Ke
         (e81 hi) e82 e83 e84 e80 (by omega) (by omega) (by split_ifs at e83 ⊢ <;> omega)
         (by omega)
-      refine ⟨e', k, ex, ⟨ex.wb_right, v80, by rw [fe'.1 _ (by decide), e11], by rw [v82]; ring,
+      refine ⟨e', k, ex, ⟨ex.wb_right, v80, by rw [fe'.1 _ (by decide), e11], by rwring [v82],
         fun hi' => ?_, by rw [fe'.1 _ (by decide), e83], by rw [fe'.1 _ (by decide), e84],
         Ke.frame fe' (by decide), fun a ha => ?_, ?_, fe.trans (fe'.mono fun q hq => by
-          simp only [Bcp, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢; omega)⟩, by omega⟩
+          sio only [Bcp, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢)⟩, by omega⟩
       · rw [v81]
         cases li <;> simp only [Bool.false_eq_true, ↓reduceIte] at hsi ⊢ <;> omega
       · rw [vm, wr3_lt (by omega), me a ha]
       · rw [take_add_one_getD (by omega) (.run 0 0), vm]
-        have hlen : (H.take i).length = i := by rw [List.length_take, hHl]; omega
+        have hlen : (H.take i).length = i := by rwo [List.length_take, hHl]
         obtain ⟨a1, a2, a3⟩ := hI si hsiK
         have s0 : e.nmem (T + 3 * si) = encK (H.getD i (.run 0 0)) := by
           rw [me _ (by omega), a1, hHget i hi]
@@ -130,10 +133,10 @@ theorem cpyLoop_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ
         have := Ie.snoc (H.getD i (.run 0 0))
         rw [hlen, ← s0, ← s1, ← s2] at this
         exact this)
-    (j := 0) ⟨hw, h80, h11, by omega, fun h0 => by rw [h81]; split_ifs <;> omega,
+    (j := 0) ⟨hw, h80, h11, by omega, fun h0 => by rw [h81]; splao,
       h83, h84, hK, fun _ _ => rfl, by simp only [List.take_zero]; exact ItemsAt.nil _ _,
       FrameM.refl _ _⟩ (Nat.zero_le _)
-  refine ⟨d', k, ex, by omega, ?_, by rw [v82]; ring, m', f'⟩
+  refine ⟨d', k, ex, by omega, ?_, by rwring [v82], m', f'⟩
   have htk : H.take K = H := by rw [← hHl, List.take_length]
   rw [htk] at I'
   exact I'
@@ -159,13 +162,13 @@ theorem finS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T K : ℕ}
     all_goals try (config_simp; (try simp only [h40, hK.one]); omega)
     cases li with
     | true =>
-      refine spec_ifLtN_true (by config_simp; rw [hK.zero, hK.li]; decide) ?_
+      refine spec_ifLtN_true (by config_simp; rwd [hK.zero, hK.li]) ?_
       exec_block
       · omega
       refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
         simp only [h40, h11, h32, hK.one, hK.three, ↓reduceIte]
     | false =>
-      refine spec_ifLtN_false (by config_simp; rw [hK.zero, hK.li]; decide) ?_
+      refine spec_ifLtN_false (by config_simp; rwd [hK.zero, hK.li]) ?_
       exec_block
       · omega
       refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
@@ -188,8 +191,8 @@ theorem padLoopH_exec : ∀ (m : ℕ) (c : Config), WordsBounded W c → c.nreg 
       upd_other _ _ _ (by decide)
     have h3 : (upd c.nreg 9999 (c.nreg 9999 + c.nreg 215020)) 9999 = c.nreg 9999 + 1 := by
       rw [upd_same, h20]
-    have e' := padLoopH_exec m _ e.wb_right h1 (by dsimp only; rw [h2, h3]; omega)
-      (by dsimp only; rw [h2, h3]; omega)
+    have e' := padLoopH_exec m _ e.wb_right h1 (by dsimp only; rwo [h2, h3])
+      (by dsimp only; rwo [h2, h3])
     refine ((Exec.whileLtN_true (by omega) (Exec.seq e (.skip e.wb_right)) e').cast
       (by ring)).cast_end ?_
     simp only [h2, upd_upd_same]

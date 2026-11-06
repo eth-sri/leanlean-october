@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.UpPhaseCost
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-J up phase: the cost of all grades is linear
@@ -21,7 +24,7 @@ section proofs
 theorem sum_pow_two (m : ℕ) : ∑ g ∈ Finset.range m, 2 ^ g + 1 = 2 ^ m := by
   induction m with
   | zero => simp
-  | succ k ih => rw [Finset.sum_range_succ, pow_succ]; omega
+  | succ k ih => rwo [Finset.sum_range_succ, pow_succ]
 
 theorem K1_nonneg (κB κL : ℕ) (κG : ℕ → ℕ) (κO : ℕ) : 0 ≤ K1 κB κL κG κO := by
   unfold K1; positivity
@@ -35,9 +38,9 @@ theorem gT_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO n g : ℕ) :
   set cnt := gradeCount n g with hcnt
   have h1 : gT κB κL κG κO n g ≤ (cnt + 1) * (S + 19) + 17 * g + 100 := by
     have e : (cnt + 1) * (S + 19) = cnt * (S + 19) + S + 19 := by ring
-    have e2 : stepB κB κL κG κO g = S := hS.symm
-    have e3 : gradeCount n g = cnt := hcnt.symm
-    unfold gT gradeC; rw [e2, e3]; omega
+    have e2  := hS.symm
+    have e3  := hcnt.symm
+    uro gT gradeC [e2, e3]
   have h1' : (gT κB κL κG κO n g : ℝ) ≤ ((cnt : ℝ) + 1) * ((S : ℝ) + 19) + 17 * g + 100 := by
     exact_mod_cast h1
   have hSt := stepB_le κB κL κG κO g
@@ -63,7 +66,7 @@ theorem gT_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO n g : ℕ) :
     mul_le_mul hc hSt hS0 (by positivity)
   have i2 : ((n : ℝ) / (2 : ℝ) ^ g + 2) * (K1 κB κL κG κO * Yg g) =
       K1 κB κL κG κO * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * Yg g) := by
-    rw [← e]; ring
+    rwring [← e]
   have i3 : K1 κB κL κG κO * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * Yg g) ≤
       K1 κB κL κG κO * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * (2 : ℝ) ^ g) :=
     mul_le_mul_of_nonneg_left (by linarith) hK
@@ -98,11 +101,11 @@ theorem upT_le_real (κB κL : ℕ) (κG : ℕ → ℕ) (κO n : ℕ) (hn : 2 �
     have h1 := sum_pow_two (p + 1)
     have h2 := two_pow_le_of_le_top hn (le_refl (topGrade n))
     rw [← hp] at h2
-    have h3 : ∑ g ∈ Finset.range (p + 1), 2 ^ g ≤ 4 * n := by rw [pow_succ] at h1; omega
+    have h3 : ∑ g ∈ Finset.range (p + 1), 2 ^ g ≤ 4 * n := by rwo [pow_succ] at h1
     exact_mod_cast h3
   have hC : ∑ g ∈ Finset.range (p + 1), (17 * (g : ℝ) + 100) ≤ 3200 * n := by
     have h1 : ∀ g ∈ Finset.range (p + 1), (17 * (g : ℝ) + 100) ≤ 17 * p + 100 := fun g hg => by
-      have : g ≤ p := by simp at hg; omega
+      have : g ≤ p := by sio at hg
       have : (g : ℝ) ≤ p := by exact_mod_cast this
       linarith
     have h2 := Finset.sum_le_sum h1

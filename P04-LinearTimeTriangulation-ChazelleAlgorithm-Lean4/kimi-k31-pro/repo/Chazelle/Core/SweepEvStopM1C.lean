@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.SweepEvStopTasks3
 public import Chazelle.Core.SweepEvStopBrute2
 public import Chazelle.Core.SweepIoCand1G
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), stage 2: the candidate of `C₁` of a stop origin, mathematics
@@ -43,11 +46,11 @@ theorem m1c_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k
   obtain ⟨hk, hlt⟩ := hw rfl
   obtain ⟨he, hpp, hcl, hz, -, hend⟩ := hpos
   have hx : (⟨e, h⟩ : WPos) = endPos N k (1 - b) := hend rfl
-  have he6 : e < 6 := by have := congrArg WPos.edge hx; simp only at this; rw [this]; exact hlt
+  have he6 : e < 6 := by have := congrArg WPos.edge hx; simp only at this; rwx [this]
   have hbox : e = 1 ∨ e = 3 := by
     rcases hcl with h' | h' | h'
     · exact h'
-    · simp only at h'; omega
+    · sio only at h'
     · simp only at h'; have := J.right.one_le; omega
   obtain ⟨-, -, hy, -, hx1⟩ := stOrig_facts hP hN hok'
   obtain ⟨ha, hbw, hpar, hposT⟩ :=
@@ -65,11 +68,11 @@ theorem m1c_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k
     intro s hs0 hs1
     rw [hpt, hx, hset]
     rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-    · have e1 : endPos N k (1 - 0) = (N.chord k).rpos := by unfold endPos; simp
+    · have e1 : endPos N k (1 - 0) = (N.chord k).rpos := by ufs endPos
       rw [e1, hr, dirOf_zero]
       simp only [Visibility.hseg, rayPt, mem_ofPred_eq]
       refine ⟨trivial, by linarith, by linarith⟩
-    · have e1 : endPos N k (1 - 1) = (N.chord k).lpos := by unfold endPos; simp
+    · have e1 : endPos N k (1 - 1) = (N.chord k).lpos := by ufs endPos
       rw [e1, hl, dirOf_one]
       simp only [Visibility.hseg, rayPt, mem_ofPred_eq]
       refine ⟨trivial, by linarith, by linarith⟩
@@ -89,7 +92,7 @@ theorem m1c_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k
     · rw [J.right.sideWalk_vtx_one] at hy; simp [show J.right.radius = J.whole.radius from rfl, abs_of_pos hR] at hy
     · rw [J.right.sideWalk_vtx_three] at hy; simp [show J.right.radius = J.whole.radius from rfl, abs_of_pos hR] at hy
   refine ⟨hbox, by rw [cm_n]; rcases hbox with h' | h' <;> omega,
-    by unfold ProperPos; rw [← hpar]; exact hpp, by rw [← hposT, hz], hy, hx1 rfl, ?_⟩
+    by unfold ProperPos; rwx [← hpar], by rw [← hposT, hz], hy, hx1 rfl, ?_⟩
   rw [← hpar]
   exact (Cand1.sideLeft_congr ht ha hbw _).1 hsl₂
 

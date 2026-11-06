@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OracleRamMain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), RAM part 15: the top test, the degenerate start, and the phases after loading
@@ -60,10 +63,10 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
       (c'.nreg 120053 = 1 → c'.nreg 120005 = 0) := by
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, s₁⟩ := sgnS_exec (P := P) hG (by omega) 1 (by norm_num)
     (.vtx 120022) (.vtx 120023) (.vtx 120022) c hw (by decide) (by decide) (by decide) rfl rfl rfl
-    (show c.nreg 120022 < P.n by rw [hq.tv]; exact htv)
+    (show c.nreg 120022 < P.n by rwx [hq.tv])
     (show c.nreg 120023 < P.n by rw [hq.hz]; exact hv.hz_lt)
-    (show c.nreg 120022 < P.n by rw [hq.tv]; exact htv)
-  simp only [SignTest, SymPt.eval, hq.tv, hq.hz] at s₁
+    (show c.nreg 120022 < P.n by rwx [hq.tv])
+  simp [SignTest, SymPt.eval, hq.tv, hq.hz] at s₁
   have hz₁ : c₁.nreg 120012 = 0 := (f₁.1 _ (by decide)).trans hq.zero
   have w₁ := e₁.wb_right
   suffices H : ∃ c' k, Exec P W (.ifLtN 120012 10010 (block [.constN 120005 0, .constN 120053 1])
@@ -73,8 +76,8 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
     obtain ⟨c', k, ex, hk, f, h1, h2, h3⟩ := H
     refine ⟨c', _, .seq e₁ ex, by omega, (FrameB.mono f₁ fun r hr => by simp [hr]).trans
       (FrameB.mono f fun r hr => by
-        simp only [Bool.or_eq_true, decide_eq_true_eq] at hr
-        rcases hr with hr | hr <;> simp [hr]), h1, by rw [h2]; exact s₁, h3⟩
+        simp [Bool.or_eq_true, decide_eq_true_eq] at hr
+        rcases hr with hr | hr <;> simp [hr]), h1, by rwx [h2], h3⟩
   by_cases hb : c₁.nreg 10010 = 1
   · obtain ⟨c₂, k₂, e₂, hk₂, v₂⟩ : ∃ c₂ k₂, Exec P W (block [.constN 120005 0, .constN 120053 1])
         c₁ c₂ k₂ ∧ k₂ = 2 ∧ c₂.nreg 120005 = 0 ∧ c₂.nreg 120053 = 1 := by
@@ -82,11 +85,11 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 �
       · omega
       · omega
       · exact ⟨rfl, by config_simp, by config_simp⟩
-    refine ⟨c₂, _, .ifLtN_true (by rw [hz₁, hb]; omega) e₂, by omega,
+    refine ⟨c₂, _, .ifLtN_true (by rwo [hz₁, hb]) e₂, by omega,
       exec_frameB e₂ (by decide), by omega, by rw [v₂.2]; simp [hb], fun _ => v₂.1⟩
   · have hb0 : c₁.nreg 10010 = 0 := by omega
     obtain ⟨c₂, e₂, v₂, -⟩ := const_exec (P := P) w₁ 120053 0 (by omega)
-    refine ⟨c₂, _, .ifLtN_false (by rw [hz₁, hb0]; omega) e₂, by omega,
+    refine ⟨c₂, _, .ifLtN_false (by rwo [hz₁, hb0]) e₂, by omega,
       exec_frameB e₂ (by decide), by omega, by rw [v₂]; simp [hb], fun h => by omega⟩
 
 theorem symIdx_of_in {c : Config} {p : SymPt} (h : SymPtIn c 120123 p) :
@@ -124,16 +127,16 @@ theorem degS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
   by_cases hf : found
   swap
   · have : c.nreg 120140 = 0 := by have := mt h140'.1 hf; omega
-    exact ⟨c, _, .ifLtN_false (by rw [hq.zero, this]; omega) (.skip hw), by omega,
+    exact ⟨c, _, .ifLtN_false (by rwo [hq.zero, this]) (.skip hw), by omega,
       fun _ _ => rfl, fun h => absurd h.1 hf⟩
-  have hf1 : c.nreg 120140 = 1 := h140'.2 hf
+  have hf1  := h140'.2 hf
   by_cases hd : deg
   swap
   · have : c.nreg 120143 = 0 := by have := h143 hf; have := mt (h143' hf).1 hd; omega
-    exact ⟨c, _, .ifLtN_true (by rw [hq.zero, hf1]; omega)
-      (.ifLtN_false (by rw [hq.zero, this]; omega) (.skip hw)), by omega,
+    exact ⟨c, _, .ifLtN_true (by rwo [hq.zero, hf1])
+      (.ifLtN_false (by rwo [hq.zero, this]) (.skip hw)), by omega,
       fun _ _ => rfl, fun h => absurd h.2 hd⟩
-  have hd1 : c.nreg 120143 = 1 := (h143' hf).2 hd
+  have hd1  := (h143' hf).2 hd
   obtain ⟨c₁, k₁, e₁, hk₁, v₁⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 120120 120142, .copyN 120121 120023])
       c c₁ k₁ ∧ k₁ = 2 ∧ (c₁.nreg 120120 = far ∧ c₁.nreg 120121 = V.hz ∧
         ∀ r, r ≠ 120120 → r ≠ 120121 → c₁.nreg r = c.nreg r) := by
@@ -146,7 +149,7 @@ theorem degS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
   rw [x120] at v₂
   rw [x120, x121] at s₂
   have hq₂ : QConst P V c₂ := hq₁.frame f₂ fun r h1 h2 => by
-    simp only [BX, decide_eq_false_iff_not, not_and, not_le]; omega
+    sio only [BX, decide_eq_false_iff_not, not_and, not_le]
   have w₂ := e₂.wb_right
   have hcl := xpClass_le far
   -- the answer
@@ -157,7 +160,7 @@ theorem degS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
       (xpClass far ≠ 1 → c₃.nreg 120005 = 0) := by
     by_cases h0 : xpClass far = 0
     · obtain ⟨c₃, e₃, v₃, -⟩ := const_exec (P := P) w₂ 120005 0 (by omega)
-      exact ⟨c₃, _, .ifLtN_true (by rw [v₂, hq₂.one, h0]; omega) e₃, by omega,
+      exact ⟨c₃, _, .ifLtN_true (by rwo [v₂, hq₂.one, h0]) e₃, by omega,
         fun h => absurd h (by omega), fun _ => v₃⟩
     by_cases h1 : xpClass far = 1
     · obtain ⟨c₃, k₃, e₃, hk₃, v₃⟩ : ∃ c₃ k₃, Exec P W (block [.constN 120005 1,
@@ -166,15 +169,15 @@ theorem degS_exec {P : Polygon} {W : ℕ} (hW : 8 * P.n + 32 ≤ W) {C : Chain} 
         exec_block
         · omega
         · exact ⟨rfl, by config_simp, by config_simp⟩
-      exact ⟨c₃, _, .ifLtN_false (by rw [v₂, hq₂.one, h1]; omega)
-        (.ifLtN_true (by rw [v₂, hq₂.two, h1]; omega) e₃), by omega,
+      exact ⟨c₃, _, .ifLtN_false (by rwo [v₂, hq₂.one, h1])
+        (.ifLtN_true (by rwo [v₂, hq₂.two, h1]) e₃), by omega,
         fun _ => ⟨v₃.1, by rw [v₃.2]; exact symIdx_of_in (s₂ h1)⟩, fun h => absurd h1 h⟩
     · obtain ⟨c₃, e₃, v₃, -⟩ := const_exec (P := P) w₂ 120005 0 (by omega)
-      exact ⟨c₃, _, .ifLtN_false (by rw [v₂, hq₂.one]; omega)
-        (.ifLtN_false (by rw [v₂, hq₂.two]; omega) e₃), by omega,
+      exact ⟨c₃, _, .ifLtN_false (by rwo [v₂, hq₂.one])
+        (.ifLtN_false (by rwo [v₂, hq₂.two]) e₃), by omega,
         fun h => absurd h h1, fun _ => v₃⟩
   obtain ⟨c₄, e₄, v₄, r₄⟩ := const_exec (P := P) e₃.wb_right 120053 1 (by omega)
-  refine ⟨c₄, _, .ifLtN_true (by rw [hq.zero, hf1]; omega) (.ifLtN_true (by rw [hq.zero, hd1]; omega)
+  refine ⟨c₄, _, .ifLtN_true (by rwo [hq.zero, hf1]) (.ifLtN_true (by rwo [hq.zero, hd1])
     (.seq e₁ (.seq e₂ (.seq e₃ e₄)))), by omega, fun h => absurd ⟨hf, hd⟩ h, fun _ => ⟨v₄, ?_, ?_⟩⟩
   · intro h; rw [r₄ _ (by decide), r₄ _ (by decide)]; exact a₃ h
   · intro h; rw [r₄ _ (by decide)]; exact b₃ h

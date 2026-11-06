@@ -73,7 +73,7 @@ theorem FGood.arc_abs (hE : FGood E c₀) (hne : (E.N.F E.M (Qof E.P)).Nonempty)
 /-- **The arcs of a region with an exit chord.** -/
 theorem FGood.arcOK (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : ℕ}
     (ht : t < (E.N.region E.r).arcs.length) : ArcOK E t := by
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr  := hE.hr
   obtain ⟨-, -, -, reg, hRC, -, hArcs, hRg, -, -, hpp⟩ := hE.hNF
   have hQn : (Qof E.P).n = E.P.n := shear_n _ _
   -- the family is nonempty

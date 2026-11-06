@@ -4,6 +4,10 @@ public import Chazelle.Core.DownPhaseDrvPBuild
 public import Chazelle.Core.DownPhaseDrvRPieceSpec
 public import Chazelle.Core.BruteMain
 public import Chazelle.Core.Granularize
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # Down-phase pieces (D4): `DrvR.PieceSpec`
@@ -14,9 +18,6 @@ public import Chazelle.Core.Granularize
 meets the contract `DrvR.PieceSpec O` of one piece of a region chain, with cost constant `κP`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -64,7 +65,7 @@ theorem desc_robust {Q : Polygon} {H : Host} {C : Chain} {m₀ m : ℕ → ℕ} 
   · rw [show A + 1 + 1 = A + 2 by ring, e 2 (by norm_num) (by norm_num), d2]
   · rw [show A + 1 + 2 = A + 3 by ring, e 3 (by norm_num) (by norm_num), d3]
   · rw [show A + 1 + 3 = A + 4 by ring, e 4 (by norm_num) (by norm_num), d4]
-  · rw [show A + 1 + 4 = A + 5 by ring, e 5 (by norm_num) (by norm_num)]; exact d5
+  · rwx [show A + 1 + 4 = A + 5 by ring, e 5 (by norm_num) (by norm_num)]
 
 /-- The model descriptor of a piece is well formed. -/
 theorem desc_wf {P : Polygon} {H : Host} {C : Chain} {m : ℕ → ℕ} {A E HB : ℕ}
@@ -73,11 +74,11 @@ theorem desc_wf {P : Polygon} {H : Host} {C : Chain} {m : ℕ → ℕ} {A E HB :
     (hwf : HostWF P.n H) (hs : C.s < C.P.n) : ModelDescWF P E m A := by
   obtain ⟨h0, hd, h1⟩ := hdesc
   refine ⟨hAE, fun _ => ⟨by omega, fun H' C' hd' => ?_⟩⟩
-  have hH' : H' = H := hostAt_unique hd'.1 hd.1
+  have hH'  := hostAt_unique hd'.1 hd.1
   subst hH'
   have hP : C'.P = C.P := by rw [hd'.2.1, hd.2.1]
   have hs' : C'.s = C.s := by rw [← hd'.2.2.1, hd.2.2.1]
-  refine ⟨hl, hwf, by rw [h1]; exact hHB, by rw [hs', hP]; exact hs⟩
+  refine ⟨hl, hwf, by rwx [h1], by rwx [hs', hP]⟩
 
 theorem modelDescAt_of {Q : Polygon} {H : Host} {C : Chain} {m : ℕ → ℕ} {A HB : ℕ}
     (hdesc : m A = 0 ∧ ChainDescAt m (A + 1) Q H C ∧ m (A + 1) = HB) :
@@ -89,7 +90,6 @@ theorem gradeCtx_frame {O : OracleIface} {P : Polygon} {m m' : ℕ → ℕ} {g A
     (gradeCtx O).holds P m' g A' :=
   (gradeCtx O).mono P m' g A A' hA ((gradeCtx O).local_ P m m' g A (fun a ha => (hm a ha).symm) h)
 
-set_option maxHeartbeats 16000000 in
 /-- **The pieces of a region chain (D4)**, from Lemma 4.1. -/
 theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O := by
   classical
@@ -104,10 +104,10 @@ theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O :
   obtain ⟨μ, hμ⟩ : ∃ μ, c.nreg 218005 = μ := ⟨_, rfl⟩
   have hμX : μ + 1 ≤ lemma41Nat μ + 1 := by have := le_lemma41Nat μ; omega
   replace hroom : A + κP κL κB κBd κG * (lemma41Nat μ + 1) ≤ W := by
-    rw [← hA, ← hμ]; exact hroom
+    rwx [← hA, ← hμ]
   have hn : (Qof P).n = P.n := qof_n P
   have hNpts : (H.poly (Qof P)).n = (H.pts (Qof P).n).length := DownMath.host_poly_n _ _
-  let CH : Chain := ⟨H.poly (Qof P), c.nreg 218001, c.nreg 218002, hm1, by rw [hNpts]; omega⟩
+  let CH : Chain := ⟨H.poly (Qof P), c.nreg 218001, c.nreg 218002, hm1, by rwo [hNpts]⟩
   have hCHP : CH.P = H.poly (Qof P) := rfl
   have hCHs : CH.s = c.nreg 218001 := rfl
   have hCHm : CH.m = c.nreg 218002 := rfl
@@ -142,11 +142,11 @@ theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O :
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, gin₂, L, hCL, hK, hB, hok, hdeg, hwt, hKc⟩ :=
     listS_exec hLm hBm c₁ w₁ hG hW
       (by rw [i₁ _ (by norm_num) (by norm_num), d99]
-          exact gradeCtx_frame (by rw [← hA]; exact hgr) (fun a ha => ml₁ a ha) (by omega))
-      v21 v22 (by rw [i₁ _ (by norm_num) (by norm_num)]; exact hm1)
-      (by rw [i₁ _ (by norm_num) (by norm_num)]; exact hkind)
+          exact gradeCtx_frame (by rwx [← hA]) (ml₁) (by omega))
+      v21 v22 (by rwx [i₁ _ (by norm_num) (by norm_num)])
+      (by rwx [i₁ _ (by norm_num) (by norm_num)])
       (fun hk => by
-        simp only [i₁ _ (by norm_num : 218000 ≤ 218003) (by norm_num : 218003 < 218010),
+        simp [i₁ _ (by norm_num : 218000 ≤ 218003) (by norm_num : 218003 < 218010),
           i₁ _ (by norm_num : 218000 ≤ 218002) (by norm_num : 218002 < 218010),
           i₁ _ (by norm_num : 218000 ≤ 218004) (by norm_num : 218004 < 218010),
           i₁ _ (by norm_num : 218000 ≤ 218005) (by norm_num : 218005 < 218010),
@@ -163,8 +163,8 @@ theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O :
         rw [i₁ _ (by norm_num) (by norm_num)] at hk hs hm
         obtain ⟨-, -, a3, -, a5⟩ := hleaf hk
         rw [hn] at a3
-        refine twin_leaf hQ hs (by rw [hm, hCHm]) hCHP (by rw [hCHs, hCHm, ← hn]; omega)
-          (by rw [hCHm]; omega) (fun k hk' => ?_)
+        refine twin_leaf hQ hs (by rw [hm, hCHm]) hCHP (by rwo [hCHs, hCHm, ← hn])
+          (by rwo [hCHm]) (fun k hk' => ?_)
         rw [hCHs]; unfold pt; rw [← hn]; exact a5 k (by rw [hCHm] at hk'; exact hk'))
       (by rw [d99, i₁ _ (by norm_num) (by norm_num), hμ]
           generalize κLst κL κB * (lemma41Nat μ + 1) = d at hcost0 ⊢
@@ -174,12 +174,12 @@ theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O :
   rw [i₁ _ (by norm_num) (by norm_num)] at hwt
   have w₂ := e₂.wb_right
   -- the descriptor, robustly
-  have hwf' : HostWF P.n H := by rw [← hn]; exact hwf
+  have hwf' : HostWF P.n H := by rwx [← hn]
   have hR₁ : Robust (c₁.nreg ALLOC) c₁.nmem (fun m => m A = 0 ∧
       ChainDescAt m (A + 1) (Qof P) H CH ∧ m (A + 1) = c.nreg 218000) := by
     rw [d99]
-    exact desc_robust (by rw [← hA]; exact hH) (fun a ha => ml₁ a ha) le_rfl hCHP d0 d1 d2 d3 d4 d5
-  have hs_lt : CH.s < CH.P.n := by rw [hCHs, hCHP, hNpts]; omega
+    exact desc_robust (by rwx [← hA]) (ml₁) le_rfl hCHP d0 d1 d2 d3 d4 d5
+  have hs_lt : CH.s < CH.P.n := by rwo [hCHs, hCHP, hNpts]
   have hA₂ : A + 6 ≤ c₂.nreg ALLOC := by rw [← d99]; exact F₂.2.2.2.2.2.1
   have hR₂ := hR₁.frame F₂
   have r10₂ : c₂.nreg 218010 = A := by
@@ -211,7 +211,7 @@ theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O :
   obtain ⟨c₄, k₄, e₄, hk₄, F₄, gin₄, N₂, hM1, hM2, hcan⟩ := granS_exec hGm c₃ w₃ hG hW
     (by rw [r10₃]; exact desc_wf hR₃.holds hA₃ (by omega) hl hwf' hs_lt)
     (by rw [r10₃]; exact modelDescAt_of hR₃.holds) (Or.inl ⟨CH, hsimp, rfl⟩) hN2 hN3
-    (by rw [hFN]; exact hdeg) (by rw [hFN, r07₃]; exact hwt)
+    (by rwx [hFN]) (by rwx [hFN, r07₃])
     (by rw [hlenN]
         generalize κLst κL κB * (lemma41Nat μ + 1) = d at hcost hk₂
         generalize κP κL κB κBd κG * (lemma41Nat μ + 1) = e at hcost hroom
@@ -240,7 +240,7 @@ theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O :
     have hq21 : bandOf q = 21 := hq
     unfold bandOf at hq21
     rw [gin₄ q hq21 (by omega), gin₃ q hq21 (by omega), gin₂ q hq21 (by omega) (by omega),
-      gout₁ q hq' (by omega) (by omega) (by omega) (by unfold ALLOC; omega)]
+      gout₁ q hq' (by omega) (by omega) (by omega) (by ufo ALLOC)]
   · rw [r10₄, ← hA]
   · rw [hA]; exact le_trans (by omega) (le_trans hA₃ hM1)
   · rw [r10₄]; exact desc_wf hR₄.holds hA₄ (by omega) hl hwf' hs_lt
@@ -249,7 +249,7 @@ theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O :
     subst hHH
     have hCC : C' = CH := chain_eq (by rw [hP', hCHP]) (by rw [hs', hCHs]) (by rw [hm', hCHm])
     subst hCC
-    refine ⟨by rw [r10₄]; exact hR₄, N₂, hM2, canonical_cap hcan hD4⟩
+    refine ⟨by rwx [r10₄], N₂, hM2, canonical_cap hcan hD4⟩
 
 
 end

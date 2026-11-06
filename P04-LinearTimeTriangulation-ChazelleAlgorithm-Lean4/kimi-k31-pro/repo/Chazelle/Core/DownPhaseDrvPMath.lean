@@ -27,7 +27,7 @@ open BuildRegions (famOf)
 
 theorem chain_eq {C C' : Chain} (hP : C.P = C'.P) (hs : C.s = C'.s) (hm : C.m = C'.m) :
     C = C' := by
-  cases C; cases C'; simp only at hP hs hm; subst hP hs hm; rfl
+  cases C; cases C'; simp at hP hs hm; subst hP hs hm; rfl
 
 /-- **A leaf is a box twin** of the chain of `Q` over the same vertices. -/
 theorem twin_leaf {P : Polygon} {H : Host} {CQ CH : Chain} {a : ℕ} (hQ : CQ.P = Qof P)

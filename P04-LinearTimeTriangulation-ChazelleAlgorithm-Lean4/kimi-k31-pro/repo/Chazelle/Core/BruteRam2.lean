@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.BruteRam1
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-K on the RAM, part 2: the orientation bit and the descriptor
@@ -12,9 +16,6 @@ public import Chazelle.Core.BruteRam1
 * `descS`: the host `Host.whole n` at `A₀` and the model descriptor at `A₀ + 4`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -35,13 +36,13 @@ theorem poly_whole (Q : Polygon) (hQ : 1 ≤ Q.n) : (Host.whole Q.n).poly Q = Q 
     have hQ' : 1 ≤ l.length := hQ
     rw [hn]
     apply List.ext_getElem
-    · simp; omega
+    · sio
     · intro i h1 h2
       simp only [List.getElem_map, List.getElem_range, Function.comp]
       simp only [List.length_map, List.length_range] at h1
       rw [Nat.mod_eq_of_lt (by omega)]
       simp only [SymPt.eval, Polygon.vtx]
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h2]; rfl
+      rwr [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h2]
 
 /-! ## The boolean combination of the orientation bit -/
 
@@ -103,22 +104,22 @@ theorem logicB_exec {P : Polygon} {W : ℕ} (hW : 8 ≤ W) (c : Config) (hw : Wo
   have o1 : c1.nreg 180011 = 1 := by rw [fr1 F1 (by decide), h11]
   have a66 : c1.nreg 180066 = c.nreg 180066 := fr1 F1 (by decide)
   obtain ⟨c2, k2, e2, hk2, v2, F2⟩ := andS_exec (P := P) W2 c1 e1.wb_right (d := 180069)
-    (x := 180069) (y := 180066) (by decide) o1 B1.1 (by rw [a66]; exact b66)
-  have B2 := and_bit B1.1 (show c1.nreg 180066 ≤ 1 by rw [a66]; exact b66)
+    (x := 180069) (y := 180066) (by decide) o1 B1.1 (by rwx [a66])
+  have B2 := and_bit B1.1 (show c1.nreg 180066 ≤ 1 by rwx [a66])
   rw [← v2, a66, B1.2] at B2
   have o2 : c2.nreg 180011 = 1 := by rw [fr1 F2 (by decide), o1]
   have r63 : c2.nreg 180063 = c.nreg 180063 := by rw [fr1 F2 (by decide), fr1 F1 (by decide)]
   -- B = ¬d₊ ∧ ¬d₀ ∧ (bx ∨ ax)
   obtain ⟨c3, k3, e3, hk3, v3, F3⟩ := notS_exec (P := P) c2 e2.wb_right (d := 180070)
     (x := 180063) (by decide) o2
-  have B3 := not_bit (show c2.nreg 180063 ≤ 1 by rw [r63]; exact b63)
+  have B3 := not_bit (show c2.nreg 180063 ≤ 1 by rwx [r63])
   rw [← v3, r63] at B3
   have o3 : c3.nreg 180011 = 1 := by rw [fr1 F3 (by decide), o2]
   have r64 : c3.nreg 180064 = c.nreg 180064 := by
     rw [fr1 F3 (by decide), fr1 F2 (by decide), fr1 F1 (by decide)]
   obtain ⟨c4, k4, e4, hk4, v4, F4⟩ := notS_exec (P := P) c3 e3.wb_right (d := 180071)
     (x := 180064) (by decide) o3
-  have B4 := not_bit (show c3.nreg 180064 ≤ 1 by rw [r64]; exact b64)
+  have B4 := not_bit (show c3.nreg 180064 ≤ 1 by rwx [r64])
   rw [← v4, r64] at B4
   have o4 : c4.nreg 180011 = 1 := by rw [fr1 F4 (by decide), o3]
   have r70 : c4.nreg 180070 = c3.nreg 180070 := fr1 F4 (by decide)
@@ -134,9 +135,9 @@ theorem logicB_exec {P : Polygon} {W : ℕ} (hW : 8 ≤ W) (c : Config) (hw : Wo
     rw [fr1 F5 (by decide), fr1 F4 (by decide), fr1 F3 (by decide), fr1 F2 (by decide), a66]
   obtain ⟨c6, k6, e6, hk6, v6, F6⟩ := orS_exec (P := P) W2 c5 e5.wb_right (d := 180071)
     (x := 180065) (y := 180066) (t := 180072) (by decide) (by decide) (by decide) o5
-    (by rw [r65]; exact b65) (by rw [r66]; exact b66)
-  have B6 := or_bit (show c5.nreg 180065 ≤ 1 by rw [r65]; exact b65)
-    (show c5.nreg 180066 ≤ 1 by rw [r66]; exact b66)
+    (by rwx [r65]) (by rwx [r66])
+  have B6 := or_bit (show c5.nreg 180065 ≤ 1 by rwx [r65])
+    (show c5.nreg 180066 ≤ 1 by rwx [r66])
   rw [← v6, r65, r66] at B6
   have o6 : c6.nreg 180011 = 1 := by rw [fr2 F6 (by decide) (by decide), o5]
   have r70' : c6.nreg 180070 = c5.nreg 180070 := fr2 F6 (by decide) (by decide)
@@ -153,16 +154,16 @@ theorem logicB_exec {P : Polygon} {W : ℕ} (hW : 8 ≤ W) (c : Config) (hw : Wo
     rw [fr1 F7 (by decide), fr2 F6 (by decide) (by decide), fr1 F5 (by decide),
       fr1 F4 (by decide), fr1 F3 (by decide), fr1 F2 (by decide), fr1 F1 (by decide)]
   obtain ⟨c8, k8, e8, hk8, v8, F8⟩ := andS_exec (P := P) W2 c7 e7.wb_right (d := 180071)
-    (x := 180064) (y := 180067) (by decide) o7 (by rw [s64]; exact b64) (by rw [s67]; exact b67)
-  have B8 := and_bit (show c7.nreg 180064 ≤ 1 by rw [s64]; exact b64)
-    (show c7.nreg 180067 ≤ 1 by rw [s67]; exact b67)
+    (x := 180064) (y := 180067) (by decide) o7 (by rwx [s64]) (by rwx [s67])
+  have B8 := and_bit (show c7.nreg 180064 ≤ 1 by rwx [s64])
+    (show c7.nreg 180067 ≤ 1 by rwx [s67])
   rw [← v8, s64, s67] at B8
   have o8 : c8.nreg 180011 = 1 := by rw [fr1 F8 (by decide), o7]
   have s65 : c8.nreg 180065 = c.nreg 180065 := by
     rw [fr1 F8 (by decide), fr1 F7 (by decide), fr2 F6 (by decide) (by decide), r65]
   obtain ⟨c9, k9, e9, hk9, v9, F9⟩ := andS_exec (P := P) W2 c8 e8.wb_right (d := 180071)
-    (x := 180071) (y := 180065) (by decide) o8 B8.1 (by rw [s65]; exact b65)
-  have B9 := and_bit B8.1 (show c8.nreg 180065 ≤ 1 by rw [s65]; exact b65)
+    (x := 180071) (y := 180065) (by decide) o8 B8.1 (by rwx [s65])
+  have B9 := and_bit B8.1 (show c8.nreg 180065 ≤ 1 by rwx [s65])
   rw [← v9, s65, B8.2] at B9
   have o9 : c9.nreg 180011 = 1 := by rw [fr1 F9 (by decide), o8]
   -- D = d₀ ∧ by'
@@ -173,9 +174,9 @@ theorem logicB_exec {P : Polygon} {W : ℕ} (hW : 8 ≤ W) (c : Config) (hw : Wo
       fr2 F6 (by decide) (by decide), fr1 F5 (by decide), fr1 F4 (by decide), fr1 F3 (by decide),
       fr1 F2 (by decide), fr1 F1 (by decide)]
   obtain ⟨c10, k10, e10, hk10, v10, F10⟩ := andS_exec (P := P) W2 c9 e9.wb_right (d := 180072)
-    (x := 180064) (y := 180068) (by decide) o9 (by rw [t64]; exact b64) (by rw [t68]; exact b68)
-  have B10 := and_bit (show c9.nreg 180064 ≤ 1 by rw [t64]; exact b64)
-    (show c9.nreg 180068 ≤ 1 by rw [t68]; exact b68)
+    (x := 180064) (y := 180068) (by decide) o9 (by rwx [t64]) (by rwx [t68])
+  have B10 := and_bit (show c9.nreg 180064 ≤ 1 by rwx [t64])
+    (show c9.nreg 180068 ≤ 1 by rwx [t68])
   rw [← v10, t64, t68] at B10
   have o10 : c10.nreg 180011 = 1 := by rw [fr1 F10 (by decide), o9]
   -- the disjunction
@@ -264,8 +265,8 @@ theorem testV_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
       FrameB (Bt d) c c' ∧ c'.nreg d ≤ 1 ∧
       (c'.nreg d = 1 ↔ SignTest op ((Qof P).vtx x₁) ((Qof P).vtx x₂) ((Qof P).vtx x₃)) := by
   obtain ⟨c', k, e, hk, F, b, hb⟩ := testS_exec (P := P) hG hW hop (x := .v r₁) (y := .v r₂)
-    (z := .v r₃) (d := d) h₁ h₂ h₃ c hw (by simp only [Src.pt, SymPt.Lt]; omega)
-    (by simp only [Src.pt, SymPt.Lt]; omega) (by simp only [Src.pt, SymPt.Lt]; omega)
+    (z := .v r₃) (d := d) h₁ h₂ h₃ c hw (by sio only [Src.pt, SymPt.Lt])
+    (by sio only [Src.pt, SymPt.Lt]) (by sio only [Src.pt, SymPt.Lt])
   simp only [Src.pt, SymPt.eval, e₁, e₂, e₃] at hb
   exact ⟨c', k, e, hk, F, b, hb⟩
 
@@ -306,11 +307,11 @@ theorem sideBeta_tests {P : Polygon} (hG : GoodEnv P) {C : Chain} (hC : C.P = Qo
   have hn : C.P.n = P.n := by rw [hC]; exact shear_n _ _
   have hT := C.topIdx_le
   have eA : C.vertex (C.topIdx - 1) = (Qof P).vtx (C.s + C.topIdx - 1) := by
-    have h1 : C.s + (C.topIdx - 1) < C.P.n := by rw [hn]; omega
+    have h1 : C.s + (C.topIdx - 1) < C.P.n := by rwo [hn]
     have h2 : C.s + (C.topIdx - 1) = C.s + C.topIdx - 1 := by omega
     rw [vertex_eq h1, h2, hC]
   have eT : C.top = (Qof P).vtx (C.s + C.topIdx) := by
-    have h1 : C.s + C.topIdx < C.P.n := by rw [hn]; omega
+    have h1 : C.s + C.topIdx < C.P.n := by rwo [hn]
     show C.vertex C.topIdx = _
     rw [vertex_eq h1, hC]
   have eB : C.vertex (C.topIdx + 1) = (Qof P).vtx ((C.s + C.topIdx + 1) % P.n) := by
@@ -329,7 +330,6 @@ theorem sideBeta_tests {P : Polygon} (hG : GoodEnv P) {C : Chain} (hC : C.P = Qo
     · exact Or.inr (Or.inr (Or.inl h))
     · exact Or.inr (Or.inr (Or.inr h))
 
-set_option maxHeartbeats 1000000 in
 /-- **The orientation bit** for a top vertex other than the first. -/
 theorem bitGen_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW8 : 8 ≤ W)
     {C : Chain}
@@ -349,8 +349,8 @@ theorem bitGen_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
       c₁.nreg 180060 = a + T ∧ c₁.nreg 180061 = a + T - 1 ∧ c₁.nreg 180062 = a + T + 1 ∧
       FrameB (fun r => decide (180060 ≤ r ∧ r < 180063)) c c₁ := by
     exec_block
-    · config_simp; rw [h0, h13]; omega
-    · config_simp; rw [h0, h13, h11]; omega
+    · config_simp; rwo [h0, h13]
+    · config_simp; rwo [h0, h13, h11]
     · refine ⟨rfl, ?_, ?_, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
       · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
         rw [h0, h13]
@@ -370,11 +370,11 @@ theorem bitGen_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
       (.ifLtN 180062 180010 .skip (.instr (.constN 180062 0))) c₁ c₂ k₂ ∧ k₂ ≤ 3 ∧
       c₂.nreg 180062 = qb ∧ FrameB (fun r => decide (r = 180062)) c₁ c₂ := by
     by_cases hlt : a + T + 1 < P.n
-    · refine ⟨_, _, .ifLtN_true (by rw [q62, k10]; exact hlt) (.skip w₁), by omega, ?_,
+    · refine ⟨_, _, .ifLtN_true (by rwx [q62, k10]) (.skip w₁), by omega, ?_,
         FrameB.refl _ _⟩
       rw [q62, hqb, Nat.mod_eq_of_lt hlt]
     · have hq : a + T + 1 = P.n := by omega
-      refine ⟨_, _, .ifLtN_false (by rw [q62, k10]; exact hlt)
+      refine ⟨_, _, .ifLtN_false (by rwx [q62, k10])
         (Exec.constN w₁ 180062 0 (by omega)), le_refl _, ?_, ⟨fun r hr => ?_, fun r _ => rfl,
         rfl, rfl, rfl⟩⟩
       · simp [hqb, hq]
@@ -439,19 +439,19 @@ theorem bitGen_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
       bt_keep F₄ (Or.inr (by omega)) (by omega), bt_keep F₃ (Or.inr (by omega)) (by omega),
       R₂.1 _ (by decide), k11]
   obtain ⟨c₉, k₉, e₉, hk₉, F₉, b14, t14⟩ := logicB_exec (P := P) hW8 c₈ e₈.wb_right K11
-    (by rw [B63]; exact b63) (by rw [B64]; exact b64) (by rw [B65]; exact b65)
-    (by rw [B66]; exact b66) (by rw [B67]; exact b67) b68
+    (by rwx [B63]) (by rwx [B64]) (by rwx [B65])
+    (by rwx [B66]) (by rwx [B67]) b68
   rw [B63, B64, B65, B66, B67] at t14
   have ex : Exec P W bitGen c c₉ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + (k₈ + k₉)))))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉)))))))
   refine ⟨c₉, _, ex, by omega, ?_, b14, ?_⟩
   · have G1 : FrameB Bbit c c₁ := frameB_mono R₁ fun r hr => by
-      unfold Bbit at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega
+      unfold Bbit at hr; sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢
     have G2 : FrameB Bbit c₁ c₂ := frameB_mono R₂ fun r hr => by
-      unfold Bbit at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega
+      unfold Bbit at hr; sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢
     have G9 : FrameB Bbit c₈ c₉ := frameB_mono F₉ fun r hr => by
       unfold Bbit at hr; unfold Blog
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega
+      sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢
     exact (((((((G1.trans G2).trans (frameB_mono F₃ (frame_test_bit (by omega)))).trans
       (frameB_mono F₄ (frame_test_bit (by omega)))).trans
       (frameB_mono F₅ (frame_test_bit (by omega)))).trans

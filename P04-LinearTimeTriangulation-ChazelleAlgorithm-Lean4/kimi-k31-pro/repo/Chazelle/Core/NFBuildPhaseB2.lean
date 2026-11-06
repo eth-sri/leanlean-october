@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.NFBuildPhaseB1
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-C (BuildNF), RAM part 23: the region phase
@@ -33,37 +37,36 @@ def BregPhase (r : ℕ) : Bool :=
 
 theorem wr_regPhase : wrM BregPhase regPhase = true := by
   have h1 := wrM_mono (B' := BregPhase) (fun r hr => by
-    simp only [decide_eq_true_eq] at hr; simp only [BregPhase, Bool.or_eq_true,
+    simp [decide_eq_true_eq] at hr; simp [BregPhase, Bool.or_eq_true,
       decide_eq_true_eq]; omega) wr_zeroLoop
   have h2 := wrM_mono (B' := BregPhase) (fun r hr => by
-    simp only [decide_eq_true_eq] at hr; simp only [BregPhase, Bool.or_eq_true,
+    simp [decide_eq_true_eq] at hr; simp [BregPhase, Bool.or_eq_true,
       decide_eq_true_eq]; omega) wr_arcCntLoop
   have h3 := wrM_mono (B' := BregPhase) (fun r hr => by
-    simp only [decide_eq_true_eq] at hr; simp only [BregPhase, Bool.or_eq_true,
+    simp [decide_eq_true_eq] at hr; simp [BregPhase, Bool.or_eq_true,
       decide_eq_true_eq]; omega) wr_chCntLoop
   have h4 := wrM_mono (B' := BregPhase) (fun r hr => by
-    simp only [BregRec, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq]; omega) wr_regRecLoop
+    simp [BregRec, Bool.or_eq_true, decide_eq_true_eq] at hr
+    sio only [BregPhase, Bool.or_eq_true, decide_eq_true_eq]) wr_regRecLoop
   have h5 := wrM_mono (B' := BregPhase) (fun r hr => by
-    simp only [decide_eq_true_eq] at hr; simp only [BregPhase, Bool.or_eq_true,
+    simp [decide_eq_true_eq] at hr; simp [BregPhase, Bool.or_eq_true,
       decide_eq_true_eq]; omega) wr_arcFillLoop
   have h6 := wrM_mono (B' := BregPhase) (fun r hr => by
-    simp only [decide_eq_true_eq] at hr; simp only [BregPhase, Bool.or_eq_true,
+    simp [decide_eq_true_eq] at hr; simp [BregPhase, Bool.or_eq_true,
       decide_eq_true_eq]; omega) wr_chFillLoop
   have h7 := wrM_mono (B' := BregPhase) (fun r hr => by
-    simp only [decide_eq_true_eq] at hr; simp only [BregPhase, Bool.or_eq_true,
+    simp [decide_eq_true_eq] at hr; simp [BregPhase, Bool.or_eq_true,
       decide_eq_true_eq]; omega) wr_seqLoop
   have h8 := wrM_mono (B' := BregPhase) (fun r hr => by
-    simp only [decide_eq_true_eq] at hr; simp only [BregPhase, Bool.or_eq_true,
+    simp [decide_eq_true_eq] at hr; simp [BregPhase, Bool.or_eq_true,
       decide_eq_true_eq]; omega) wr_hdrB
-  simp only [regPhase, wrM, block, h1, h2, h3, h4, h5, h6, h7, h8, Bool.and_true, Bool.true_and]
+  simp [regPhase, wrM, block, h1, h2, h3, h4, h5, h6, h7, h8, Bool.and_true, Bool.true_and]
   decide
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The region phase.** -/
 theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A : ℕ}
     (C : BConst D T K B H lo hd kd d) (hA : d.nreg 43102 = A) (hAle : A ≤ 2 * K)
@@ -109,7 +112,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
     (CA := H + 17 + 30 * K) (R := K + 1) (fA := fun r => m₃ (H + 17 + 30 * K + r))
     (fC := fun r => m₃ (H + 17 + 30 * K + (K + 1) + r))
     (fW := fun r => m₃ (H + 17 + 30 * K + 2 * (K + 1) + r)) C₀.rCA C₀.rR C₀.r0 C₀.r1
-    (by rw [he₀]; simp) (by omega) (by rw [he₀]; exact (regMem_self _ _ _).symm)
+    (by rws [he₀]) (by omega) (by rw [he₀]; exact (regMem_self _ _ _).symm)
   have C₁ := C₀.frame f₁ (by decide)
   -- 2. arc counts
   have z2 := Exec.constN (P := P) w₁ 43201 0 (Nat.zero_le _)
@@ -121,8 +124,8 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
     rw [upd_other _ _ _ (by norm_num), f₁.1 43102 (by decide), he₀]; simp [hA]
   obtain ⟨e₃, k₃, x₃, hk₃, w₃, f₃, m₃'⟩ := arcCntLoop_exec (P := P) e₂ z2.wb_right (m₀ := m₃)
     (CA := H + 17 + 30 * K) (R := K + 1) (A := A) (AT := H + 12 + 5 * K)
-    (WT := H + 17 + 28 * K) (fC := fun _ => 0) C₂.rCA C₂.rR C₂.r1 (by rw [he₂]; simp) hA₂
-    C₂.rAT C₂.rWT (by omega) (by omega) (by omega) hkR' (by rw [he₂]; exact m₁)
+    (WT := H + 17 + 28 * K) (fC := fun _ => 0) C₂.rCA C₂.rR C₂.r1 (by rws [he₂]) hA₂
+    C₂.rAT C₂.rWT (by omega) (by omega) (by omega) hkR' (by rwx [he₂])
   have C₃ := C₂.frame f₃ (by decide)
   -- 3. chord counts
   have z4 := Exec.constN (P := P) w₃ 43201 0 (Nat.zero_le _)
@@ -133,9 +136,9 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
     (CA := H + 17 + 30 * K) (R := K + 1) (K := K) (CT := H + 12)
     (fA := cntF (fun j => m₃ (H + 12 + 5 * K + 5 * j)) A)
     (fW := wmaxF (fun j => m₃ (H + 12 + 5 * K + 5 * j)) (fun j => m₃ (H + 17 + 28 * K + j)) A)
-    C₄.rCA C₄.rR C₄.r1 C₄.r3 (by rw [he₄]; simp) C₄.rK C₄.rCT (by omega) (by omega)
+    C₄.rCA C₄.rR C₄.r1 C₄.r3 (by rws [he₄]) C₄.rK C₄.rCT (by omega) (by omega)
     (fun i hi => by rw [hu i hi]; exact huR i hi) (fun i hi => by rw [hv i hi]; exact hvR i hi)
-    (by rw [he₄]; exact m₃')
+    (by rwx [he₄])
   have C₅ := C₄.frame f₅ (by decide)
   have hA₅ : e₅.nreg 43102 = A := by
     rw [f₅.1 43102 (by decide)]
@@ -163,8 +166,8 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
   obtain ⟨e₇, k₇, x₇, hk₇, hk₇', w₇, f₇, m₇⟩ := regRecLoop_exec (P := P) e₆ X6.wb_right
     (m₀ := m₃) (CA := H + 17 + 30 * K) (R := K + 1) (RT := H + 12 + 15 * K)
     (FA := H + 20 + 33 * K) (cA := cA) (cC := cC) (wR := wR) C₆.rCA C₆.rR C₆.r1
-    (by rw [he₆]; simp) (by rw [he₆]; simp) C₆.rRT C₆.rFA (by omega) (by omega) (by omega)
-    ⟨by omega, by omega⟩ (by omega) (by omega) (by rw [he₆]; exact m₅)
+    (by rws [he₆]) (by rws [he₆]) C₆.rRT C₆.rFA (by omega) (by omega) (by omega)
+    ⟨by omega, by omega⟩ (by omega) (by omega) (by rwx [he₆])
   have C₇ := C₆.frame f₇ (by decide)
   have hA₇ : e₇.nreg 43102 = A := by
     rw [f₇.1 43102 (by decide), he₆]
@@ -200,13 +203,13 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
     show upd e₇.nreg 43201 0 43102 = A
     rw [upd_other _ _ _ (by norm_num), hA₇]
   have hoffR' : H + 17 + 22 * K + offF (cntF (fun j => m₃ (H + 12 + 5 * K + 5 * j)) A) cC (K + 1)
-      ≤ H + 17 + 26 * K := by rw [← hcA]; omega
+      ≤ H + 17 + 26 * K := by rwo [← hcA]
   obtain ⟨e₉, k₉, x₉, hk₉, w₉, f₉, a1, a2, a3⟩ := arcFillLoop_exec (P := P) e₈ z8.wb_right
     (m₂ := mem₇) (A := A) (R := K + 1) (AT := H + 12 + 5 * K) (FA := H + 20 + 33 * K)
     (LT := H + 17 + 22 * K) (key := fun j => m₃ (H + 12 + 5 * K + 5 * j)) (cC := cC)
-    hA₈ C₈.rR C₈.r1 (by rw [he₈]; simp) C₈.rAT C₈.rFA C₈.rLT
+    hA₈ C₈.rR C₈.r1 (by rws [he₈]) C₈.rAT C₈.rFA C₈.rLT
     (fun j hj => r₇ _ (by omega)) hkR' (fun r hr => by rw [rFA₇ r hr, hcA]) (by omega) (by omega)
-    (by omega) (by omega) (by omega) (by omega) (by rw [he₈]; exact m₇)
+    (by omega) (by omega) (by omega) (by omega) (by rwx [he₈])
   rw [← hcA] at a1 a2 a3
   have C₉ := C₈.frame f₉ (by decide)
   have hA₉ : e₉.nreg 43102 = A := by rw [f₉.1 43102 (by decide), hA₈]
@@ -238,7 +241,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
   obtain ⟨e₁₁, k₁₁, x₁₁, hk₁₁, w₁₁, f₁₁, FI⟩ := chFillLoop_exec (P := P) e₁₀ z10.wb_right
     (m₃ := e₉.nmem) (K := K) (R := K + 1) (CT := H + 12) (FC := H + 21 + 34 * K)
     (LT := H + 17 + 22 * K) (b := fun r => offF cA cC r + cA r) C₁₀.rK C₁₀.r1 C₁₀.r3
-    (by rw [he₁₀]; simp) C₁₀.rCT C₁₀.rFC C₁₀.rLT
+    (by rws [he₁₀]) C₁₀.rCT C₁₀.rFC C₁₀.rLT
     (fun i hi => by rw [hu₉ i hi]; exact huR i hi) (fun i hi => by rw [hv₉ i hi]; exact hvR i hi)
     (fun r hr => by
       rw [r₉ _ (by omega) (by omega), show H + 21 + 34 * K + r = H + 20 + 33 * K + (K + 1) + r by
@@ -265,7 +268,7 @@ theorem regPhase_exec (d : Config) (hw : WordsBounded W d) {D T B H lo hd kd K A
   obtain ⟨e₁₃, k₁₃, x₁₃, hk₁₃, w₁₃, f₁₃, m₁₃⟩ := seqLoop_exec (P := P) e₁₂ z12.wb_right
     (A := A) (QT := H + 17 + 20 * K)
     (by show upd e₁₁.nreg 43201 0 43102 = A; rw [upd_other _ _ _ (by norm_num), hA₁₁])
-    C₁₂.rQT C₁₂.r1 (by rw [he₁₂]; simp) (by omega)
+    C₁₂.rQT C₁₂.r1 (by rws [he₁₂]) (by omega)
   have C₁₃ := C₁₂.frame f₁₃ (by decide)
   have hA₁₃ : e₁₃.nreg 43102 = A := by
     rw [f₁₃.1 43102 (by decide)]

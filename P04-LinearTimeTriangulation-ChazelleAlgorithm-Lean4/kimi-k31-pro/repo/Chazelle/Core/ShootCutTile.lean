@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.ShootCutPiece
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 4: tiling a subarc by pieces
@@ -56,10 +57,10 @@ theorem wset_shift (A B : ℝ) (i : ℤ) :
   constructor
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
     refine ⟨p, t, hp, h0, h1, ⟨X - i * M.W.n, by linarith, by linarith, j + i, ?_⟩, rfl⟩
-    push_cast; linarith
+    pcl
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
     refine ⟨p, t, hp, h0, h1, ⟨X + i * M.W.n, by linarith, by linarith, j - i, ?_⟩, rfl⟩
-    push_cast; linarith
+    pcl
 
 /-- The last walk edge ends where the first begins. -/
 theorem wb_last (hn : 0 < M.W.n) : M.wb (M.W.n - 1) = M.wa 0 := by
@@ -109,7 +110,7 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
       rcases hy with hy | hy
       · exact ⟨p + t, hy, by linarith, 0, by simp⟩
       · exact ⟨p + t + M.W.n, by linarith [(Nat.cast_nonneg p : (0 : ℝ) ≤ p)], by linarith, -1,
-          by push_cast; ring⟩
+          by pcr⟩
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
     have hpn : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
     have hy0 : 0 ≤ (p : ℝ) + t := by positivity
@@ -123,7 +124,7 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
         linarith
       have hp1 : p = M.W.n - 1 := by
         have : (p : ℝ) = M.W.n - 1 := by linarith
-        have : ((p + 1 : ℕ) : ℝ) = M.W.n := by push_cast; linarith
+        have : ((p + 1 : ℕ) : ℝ) = M.W.n := by pcl
         have := (Nat.cast_inj (R := ℝ)).1 this
         omega
       rw [ht1, hp1, wb_last M hn']
@@ -142,7 +143,7 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
         · left; unfold sideInArc; rw [ite_eq_right hab]; exact Or.inr h
         · right; right; exact h
     · -- `j = 0`: `y = X`
-      simp only [Int.cast_zero, zero_mul, add_zero] at hj
+      simp [Int.cast_zero, zero_mul, add_zero] at hj
       refine ⟨p, t, hp, h0, h1, ?_, rfl⟩
       split_ifs at hX2 with hab
       · rcases lt_or_eq_of_le (show a ≤ (p : ℝ) + t by linarith) with h | h

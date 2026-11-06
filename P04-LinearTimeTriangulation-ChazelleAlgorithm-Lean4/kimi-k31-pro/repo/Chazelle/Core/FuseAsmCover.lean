@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.FuseAsmPtQ
 public import Chazelle.Core.FuseAsmFin
 public import Chazelle.Core.FuseAsmList
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F fusion assembly, part 15: the query lists of the two sweeps
@@ -58,7 +60,7 @@ theorem geo_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)
   refine ⟨?_, fun hf => ?_⟩
   · rintro x ⟨q, hq, rfl⟩
     obtain ⟨-, -, hp, hd⟩ := h.1 q hq
-    rw [hp, hd]; rfl
+    rwr [hp, hd]
   · cases l with
     | nil => exact absurd hf (h.2 rfl)
     | cons q l =>
@@ -192,7 +194,7 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
   have zk : capQ J ⊆ Z := fun x h => Or.inr h
   have sing : ∀ {i : ℕ} {l : List (ℕ × ℕ × ℕ)} {y : Point × ℝ}, geoQ J Q i l ⊆ {y} → y ∈ Z →
       geoQ J Q i l ⊆ Z := fun h hy x hx => by
-    have := h hx; rw [Set.mem_singleton_iff] at this; rw [this]; exact hy
+    have := h hx; rw [Set.mem_singleton_iff] at this; rwx [this]
   have mono : ∀ {i : ℕ} {A B : List (ℕ × ℕ × ℕ)}, (∀ q ∈ A, q ∈ B) →
       geoQ J Q i A ⊆ geoQ J Q i B := fun h x ⟨q, hq, hx⟩ => ⟨q, h q hq, hx⟩
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩

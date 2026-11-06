@@ -37,7 +37,7 @@ theorem dedup_key {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : So
     False := by
   unfold dedupF at h1 h2
   split_ifs at h1 h2 with c1 c2
-  have e : pr (s a) = pr (s a') := (Option.some.inj h1).trans (Option.some.inj h2).symm
+  have e  := (Option.some.inj h1).trans (Option.some.inj h2).symm
   obtain ⟨ha', c2⟩ := c2
   rcases c2 with c2 | c2
   · omega

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepEvLoopStartG
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep (WP-D), stage 3: the start of the event loop (task L0, the program)
@@ -30,7 +32,7 @@ def startK (T : ℕ) : ℕ :=
   6 + (stStepK + (stStepK + ((fposK 3 T + 4) + ((fposK 1 T + fposK 2 T + 5) + 16))))
 
 theorem startK_le (T : ℕ) : startK T ≤ 200000 * (T + 1) := by
-  unfold startK stStepK fposK; omega
+  ufo startK stStepK fposK
 
 /-! ## The pointer after two steps -/
 
@@ -94,7 +96,7 @@ theorem stopData_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' 
     (hlay : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC ∧ c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) : StopData P J N₂ c' rs ax := by
   obtain ⟨hl, hlax, hSR, hAR, h5, h6, h7, h8⟩ := h
-  refine ⟨by rw [hsC]; exact hl, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
+  refine ⟨by rwx [hsC], hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
   · rw [hsB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]
     exact hSR i hi
   · rw [haB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]
@@ -104,17 +106,17 @@ theorem stopData_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' 
 
 theorem fpr_stR {r : ℕ} (h : FPR r) : StR r := by
   unfold FPR FR at h; unfold StR
-  simp only [zT, fE, fA, fR, kE, kH, kN, kL, gN, gR, sP, dF, lC, sw] at h ⊢
+  simp [zT, fE, fA, fR, kE, kH, kN, kL, gN, gR, sP, dF, lC, sw] at h ⊢
   omega
 
 theorem lblR_stR {r : ℕ} (h : LblR kN kL r) : StR r := by
   unfold LblR at h; unfold StR
-  simp only [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw] at h ⊢
+  simp [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw] at h ⊢
   omega
 
 theorem gapR_stR {r : ℕ} (h : GapR r) : StR r := by
   unfold GapR at h; unfold StR
-  simp only [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw] at h ⊢
+  simp [kE, kH, kN, kL, gN, gR, sP, dF, lC, sw] at h ⊢
   omega
 
 /-- The raw post of the start. -/

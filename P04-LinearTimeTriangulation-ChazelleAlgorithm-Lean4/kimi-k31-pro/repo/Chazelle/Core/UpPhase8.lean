@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.UpPhase7
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-J up phase, part 8: the normal form of a chain
@@ -42,7 +45,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
 /-- **Grades below `7`: brute force.** -/
 theorem nfU_brute {sB sL sG : Stmt} {κB : ℕ}
     (hB : Meets sB bruteBands
@@ -70,11 +72,10 @@ theorem nfU_brute {sB sL sG : Stmt} {κB : ℕ}
       (∀ r, bandOf r ∉ pkgBands → c'.rreg r = c.rreg r) := by
   obtain ⟨c', k, e, hk, hw', a1, a2, hpost, m1, m2, o, fr, frr⟩ :=
     bruteCall_exec hB hG hWh hw h16 h17 h11 hl hsl hγ hlγ hbud
-  exact ⟨c', k + 1, .ifLtN_true (by rw [h07, h37]; exact hg) e, by omega, hw', a1, by omega,
+  exact ⟨c', k + 1, .ifLtN_true (by rwx [h07, h37]) e, by omega, hw', a1, by omega,
     hpost, m1, m2, o, fun r h1 _ h3 _ h5 => fr r (not_brute_of h1) h3 h5,
     fun r h1 => frr r (not_brute_of h1)⟩
 
-set_option maxHeartbeats 16000000 in
 /-- **Full chains of grade `≥ 7`: Lemma 4.1.** -/
 theorem nfU_l41 {O : OracleIface} {sB sL sG : Stmt} {κL : ℕ}
     (hL : Meets sL l41Bands
@@ -106,12 +107,11 @@ theorem nfU_l41 {O : OracleIface} {sB sL sG : Stmt} {κL : ℕ}
       (∀ r, bandOf r ∉ pkgBands → c'.rreg r = c.rreg r) := by
   obtain ⟨c', k, e, hk, hw', a1, a2, hpost, m1, m2, o, fr, frr⟩ :=
     l41Call_exec hL hG hWh hw h05 h16 h17 h07 hX hgΛ h7 hsl hl1 hl2 hbud
-  exact ⟨c', k + 1 + 2, .ifLtN_false (by rw [h07, h37]; omega)
-      (.ifLtN_true (by rw [h19, h17]; exact hl1) e), by omega, hw', a1, by omega,
+  exact ⟨c', k + 1 + 2, .ifLtN_false (by rwo [h07, h37])
+      (.ifLtN_true (by rwx [h19, h17]) e), by omega, hw', a1, by omega,
     hpost, m1, m2, o, fun r h1 _ h3 _ h5 => fr r (not_l41_of h1) h3 h5,
     fun r h1 => frr r (not_l41_of h1)⟩
 
-set_option maxHeartbeats 16000000 in
 /-- **Short chains of grade `≥ 7`: coarsen the child's normal form.** The child's NF pointer is
 the word `R + q + 1` of the row of grade `g - 1` (`R` in `170014`, `q = 6i` in `170035`). -/
 theorem nfU_gran {sB sL sG : Stmt} {κG : ℕ → ℕ}
@@ -160,26 +160,26 @@ theorem nfU_gran {sB sL sG : Stmt} {κG : ℕ → ℕ}
       c1.nreg 170031 = F ∧ (∀ r, r ≠ 170034 → r ≠ 170031 → c1.nreg r = c.nreg r) ∧
       c1.nmem = c.nmem ∧ c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output := by
     exec_block
-    all_goals try (config_simp; (try simp only [h14, h35, h20]); omega)
-    refine ⟨rfl, ‹_›, by config_simp; simp only [h14, h35, h20],
-      by config_simp; simp only [h14, h35, h20, hF], fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
+    all_goals try (config_simp; (try simp [h14, h35, h20]); omega)
+    refine ⟨rfl, ‹_›, by config_simp; simp [h14, h35, h20],
+      by config_simp; simp [h14, h35, h20, hF], fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
+    simp
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
   have g1 : ∀ r, r ≠ 170034 → r ≠ 170031 → c1.nreg r = c.nreg r := fr1
   obtain ⟨c', k, e, hk, hw', a1, a2, hpost, m1, m2, o, fr, frr⟩ :=
     granCall_exec (P := P) (C := C) (N := N) (γ0 := γ0) (hp := hp) hGr hG hWh hw1
-      (by rw [g1 _ (by rw [hAl]; decide) (by rw [hAl]; decide)]; exact hA)
-      (by rw [g1 _ (by decide) (by decide)]; exact h30) l31
-      (by rw [g1 _ (by decide) (by decide)]; exact h11)
-      (by rw [g1 _ (by decide) (by decide)]; exact h20)
-      (by rw [g1 _ (by decide) (by decide)]; exact h25)
-      (by rw [g1 _ (by decide) (by decide)]; exact h26)
-      (by rw [g1 _ (by decide) (by decide)]; exact h29)
-      (by rw [hm1]; exact hd) (by rw [hm1]; exact hBh) hB5 hhp hCP hCn
-      (by rw [hm1]; exact hNW) hc hγ (by rw [hm1]; exact hbud)
+      (by rw [g1 _ (by rwd [hAl]) (by rwd [hAl])]; exact hA)
+      (by rwx [g1 _ (by decide) (by decide)]) l31
+      (by rwx [g1 _ (by decide) (by decide)])
+      (by rwx [g1 _ (by decide) (by decide)])
+      (by rwx [g1 _ (by decide) (by decide)])
+      (by rwx [g1 _ (by decide) (by decide)])
+      (by rwx [g1 _ (by decide) (by decide)])
+      (by rwx [hm1]) (by rwx [hm1]) hB5 hhp hCP hCn
+      (by rwx [hm1]) hc hγ (by rwx [hm1])
   rw [hm1] at hk
-  refine ⟨c', (k1 + k) + 2 + 2, .ifLtN_false (by rw [h07, h37]; omega)
-      (.ifLtN_false (by rw [h19, h17]; omega) (.seq e1 e)), by omega, hw', a1, by omega,
+  refine ⟨c', (k1 + k) + 2 + 2, .ifLtN_false (by rwo [h07, h37])
+      (.ifLtN_false (by rwo [h19, h17]) (.seq e1 e)), by omega, hw', a1, by omega,
     hpost, fun a ha => by rw [m1 a ha, hm1], fun a ha => by rw [m2 a ha, hrm1], by rw [o, ho1],
     fun r h1 h2 h3 h4 h5 => ?_, fun r h1 => by rw [frr r (not_gran_of h1), hrr1]⟩
   rw [fr r (not_gran_of h1) h2 h3 h5, g1 r h4 h3]

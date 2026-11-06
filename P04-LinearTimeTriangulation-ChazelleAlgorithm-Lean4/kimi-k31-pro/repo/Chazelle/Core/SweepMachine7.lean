@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepMachine6
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), part 23: the abstract machine, the points of `C₂` lie on the right stretch
@@ -77,11 +79,11 @@ theorem left_pos_cases {d : ℕ} (hd : d < lL1 J + lL2 J) :
       have hτ0 : tpos J.left J.m₁ = 0 := by omega
       refine ⟨d, by omega, ?_⟩
       rw [hτ0]
-      split_ifs <;> (rw [Nat.mod_eq_of_lt (by omega)]; ring)
+      split_ifs <;> (rwring [Nat.mod_eq_of_lt (by omega)])
     · simp only [ite_eq_right hN] at hd ⊢
       rw [hm1] at hN hd ⊢
       split_ifs with hdl
-      · exact ⟨tpos J.left J.m₁ + d, by omega, by rw [Nat.mod_eq_of_lt (by omega)]; ring⟩
+      · exact ⟨tpos J.left J.m₁ + d, by omega, by rwring [Nat.mod_eq_of_lt (by omega)]⟩
       · refine ⟨tpos J.left J.m₁ + d - 2 * J.m₁, by omega, ?_⟩
         rw [show 6 + tpos J.left J.m₁ + (d + 7) = (tpos J.left J.m₁ + d - 2 * J.m₁ + 6) +
           (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
@@ -108,8 +110,8 @@ theorem left_stretch_pt (hP : J.P.Simple)
     rw [hqi] at hx ⊢
     exact hleft _ (J.left.sideWalk_tour_pt_mem J.left.sideBeta hi hit ht0 ht1) hx
   rcases left_pos_cases J hd with ⟨i, hi, hqi⟩ | hA
-  · exact htour i (by rw [show J.left.m = J.m₁ from rfl]; omega) (fun h => by
-      rw [show J.left.m = J.m₁ from rfl] at h; omega) hqi
+  · exact htour i (by rwo [show J.left.m = J.m₁ from rfl]) (fun h => by
+      rwo [show J.left.m = J.m₁ from rfl] at h) hqi
   · -- the box of `C` in the left stretch: points of the box block of `C₁` are not on `C₂`
     have htop := top_left_of_box J hA
     rw [cm_W] at hx hqn
@@ -132,7 +134,7 @@ theorem left_stretch_pt (hP : J.P.Simple)
       · -- down the slit of `C₁`: the point is the top of `C₁`
         rw [h5] at hx hx2 hb
         simp only at hx2 hb
-        have ht1' : t ≤ 1 := ht1.le
+        have ht1'  := ht1.le
         have hy : J.left.top.2 + (1 - t) * (J.left.radius - J.left.top.2) ≤ J.right.top.2 := by
           nlinarith
         have : 0 < (1 - t) * (J.left.radius - J.left.top.2) := mul_pos (by linarith) (by linarith)
@@ -184,14 +186,14 @@ theorem off_right_pt_of_vnt (hP : J.P.Simple)
     refine ⟨?_, ?_⟩
     · rcases Nat.eq_zero_or_pos (d - llen J) with h0 | h0
       · rcases ht0.lt_or_eq with htp | htp
-        · rw [h0]; push_cast; linarith
+        · rw [h0]; pcl
         · exfalso
           apply hxv
           rw [e, h0, ← htp, add_zero]
           have := sidePt_off_zero J hP hS₂ hS₂f (p := g % n) (Nat.mod_lt _ (by omega)) le_rfl
             one_pos (by
               rw [show ((g % n : ℕ) : ℝ) + 0 = ((((g + 0) % n : ℕ)) : ℝ) + 0 by simp]
-              rw [off_key hCr.hg (by omega) le_rfl one_pos]; simp)
+              rws [off_key hCr.hg (by omega) le_rfl one_pos])
           rwa [show g % n = (g + 0) % n by simp]
       · have : (1 : ℝ) ≤ ((d - llen J : ℕ) : ℝ) := by exact_mod_cast h0
         linarith
@@ -259,7 +261,7 @@ theorem off_right_pt (hP : J.P.Simple)
     refine ⟨?_, by linarith⟩
     rcases Nat.eq_zero_or_pos d with rfl | hdp
     · rcases ht0.lt_or_eq with htp | htp
-      · push_cast; linarith
+      · pcl
       · exfalso; apply hxv
         rw [hpd, ← htp, Chazelle.Chain.sidePt_zero, add_zero, Nat.mod_eq_of_lt hg]
         exact hv0
@@ -280,9 +282,9 @@ theorem off_right_pt (hP : J.P.Simple)
       apply hxv
       rw [hpe, ht, Chazelle.Chain.sidePt_zero, ← htop6, ← hv0, hA]
     · by_cases hi : p - 6 < 2 * J.m₂
-      · exact hright (p - 6) hi (by rw [hA, Nat.mod_eq_of_lt (by omega)]; omega)
+      · exact hright (p - 6) hi (by rwo [hA, Nat.mod_eq_of_lt (by omega)])
       · exact (hleft (p - 6 - 2 * J.m₂) (by omega)
-          (by rw [hL, Nat.mod_eq_of_lt (by omega)]; omega)).elim
+          (by rwo [hL, Nat.mod_eq_of_lt (by omega)])).elim
   · -- the left stretch starts at the walk vertex `6`, the box block follows the right stretch
     have hL : tpos J.whole (J.m₁ + 2 * J.m₂) = 0 := by
       rw [tpos_second J, hB, Nat.mod_self]
@@ -301,8 +303,8 @@ theorem off_right_pt (hP : J.P.Simple)
       congr 1; omega
     · by_cases hi : tpos J.whole J.m₁ ≤ p - 6
       · exact hright (p - 6 - tpos J.whole J.m₁) (by omega)
-          (by rw [Nat.mod_eq_of_lt (by omega)]; omega)
-      · exact (hleft (p - 6) (by omega) (by rw [hL, Nat.mod_eq_of_lt (by omega)]; omega)).elim
+          (by rwo [Nat.mod_eq_of_lt (by omega)])
+      · exact (hleft (p - 6) (by omega) (by rwo [hL, Nat.mod_eq_of_lt (by omega)])).elim
 
 end Machine
 

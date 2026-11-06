@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Geometry.Det
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Triangles
@@ -53,7 +56,7 @@ theorem mem_convexHull_triple {a b c x : Point} :
           y = w₁ • a + w₂ • b + w₃ • c} from hS hx
     refine convexHull_min ?_ ?_
     · intro y hy
-      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hy
+      simp [Set.mem_insert_iff, Set.mem_singleton_iff] at hy
       rcases hy with rfl | rfl | rfl
       · exact ⟨1, 0, 0, zero_le_one, le_rfl, le_rfl, by norm_num, by simp⟩
       · exact ⟨0, 1, 0, le_rfl, zero_le_one, le_rfl, by norm_num, by simp⟩
@@ -62,7 +65,7 @@ theorem mem_convexHull_triple {a b c x : Point} :
         s t hs ht hst
       refine ⟨s * u₁ + t * v₁, s * u₂ + t * v₂, s * u₃ + t * v₃, by positivity, by positivity,
         by positivity, by linear_combination s * hu + t * hv + hst, ?_⟩
-      ext <;> simp only [add_fst, add_snd, smul_fst, smul_snd] <;> ring
+      ext <;> simp [add_fst, add_snd, smul_fst, smul_snd] <;> ring
   · rintro ⟨w₁, w₂, w₃, hw₁, hw₂, hw₃, hw, rfl⟩
     have h := (convex_convexHull ℝ ({a, b, c} : Set Point)).sum_mem (t := Finset.univ)
       (w := ![w₁, w₂, w₃]) (z := ![a, b, c]) ?_ ?_ ?_
@@ -96,7 +99,7 @@ theorem bary_reconstruct {a b c : Point} (h : det a b c ≠ 0) (x : Point) :
     x = bary₁ a b c x • a + bary₂ a b c x • b + bary₃ a b c x • c := by
   have hid := det_smul_eq_bary_combination a b c x
   rw [point_ext_iff] at hid ⊢
-  simp only [add_fst, add_snd, smul_fst, smul_snd] at hid ⊢
+  simp [add_fst, add_snd, smul_fst, smul_snd] at hid ⊢
   unfold bary₁ bary₂ bary₃
   constructor
   · field_simp; linear_combination hid.1
@@ -108,7 +111,7 @@ theorem bary₃_combination {a b c : Point} (h : det a b c ≠ 0) {w₁ w₂ w�
     (hw : w₁ + w₂ + w₃ = 1) : bary₃ a b c (w₁ • a + w₂ • b + w₃ • c) = w₃ := by
   unfold bary₃
   rw [det_smul_add_smul_add_smul a b a b c w₁ w₂ w₃ hw]
-  simp only [det_self_outer, det_self_right, mul_zero, zero_add]
+  simp [det_self_outer, det_self_right, mul_zero, zero_add]
   exact mul_div_cancel_right₀ _ h
 
 /-- The first barycentric coordinate of `w₁ • a + w₂ • b + w₃ • c` is `w₁`. -/
@@ -116,7 +119,7 @@ theorem bary₁_combination {a b c : Point} (h : det a b c ≠ 0) {w₁ w₂ w�
     (hw : w₁ + w₂ + w₃ = 1) : bary₁ a b c (w₁ • a + w₂ • b + w₃ • c) = w₁ := by
   unfold bary₁
   rw [← det_cyclic, det_smul_add_smul_add_smul b c a b c w₁ w₂ w₃ hw]
-  simp only [det_self_outer, det_self_right, mul_zero, add_zero, det_cyclic]
+  simp [det_self_outer, det_self_right, mul_zero, add_zero, det_cyclic]
   exact mul_div_cancel_right₀ _ h
 
 /-- The second barycentric coordinate of `w₁ • a + w₂ • b + w₃ • c` is `w₂`. -/
@@ -124,25 +127,25 @@ theorem bary₂_combination {a b c : Point} (h : det a b c ≠ 0) {w₁ w₂ w�
     (hw : w₁ + w₂ + w₃ = 1) : bary₂ a b c (w₁ • a + w₂ • b + w₃ • c) = w₂ := by
   unfold bary₂
   rw [← det_cyclic_right, det_smul_add_smul_add_smul c a a b c w₁ w₂ w₃ hw]
-  simp only [det_self_right, det_self_outer, mul_zero, zero_add, add_zero, det_cyclic_right]
+  simp [det_self_right, det_self_outer, mul_zero, zero_add, add_zero, det_cyclic_right]
   exact mul_div_cancel_right₀ _ h
 
 @[simp] theorem bary₁_vertex_left {a b c : Point} (h : det a b c ≠ 0) : bary₁ a b c a = 1 := by
   unfold bary₁; exact div_self h
 @[simp] theorem bary₂_vertex_left (a b c : Point) : bary₂ a b c a = 0 := by
-  unfold bary₂; simp
+  ufs bary₂
 @[simp] theorem bary₃_vertex_left (a b c : Point) : bary₃ a b c a = 0 := by
-  unfold bary₃; simp
+  ufs bary₃
 @[simp] theorem bary₁_vertex_mid (a b c : Point) : bary₁ a b c b = 0 := by
-  unfold bary₁; simp
+  ufs bary₁
 @[simp] theorem bary₂_vertex_mid {a b c : Point} (h : det a b c ≠ 0) : bary₂ a b c b = 1 := by
   unfold bary₂; exact div_self h
 @[simp] theorem bary₃_vertex_mid (a b c : Point) : bary₃ a b c b = 0 := by
-  unfold bary₃; simp
+  ufs bary₃
 @[simp] theorem bary₁_vertex_right (a b c : Point) : bary₁ a b c c = 0 := by
-  unfold bary₁; simp
+  ufs bary₁
 @[simp] theorem bary₂_vertex_right (a b c : Point) : bary₂ a b c c = 0 := by
-  unfold bary₂; simp
+  ufs bary₂
 @[simp] theorem bary₃_vertex_right {a b c : Point} (h : det a b c ≠ 0) : bary₃ a b c c = 1 := by
   unfold bary₃; exact div_self h
 
@@ -161,17 +164,17 @@ theorem continuous_bary₃ (a b c : Point) : Continuous (bary₃ a b c) :=
 /-- `bary₁` is affine along segments. -/
 theorem bary₁_lerp (a b c p q : Point) (t : ℝ) :
     bary₁ a b c (lerp p q t) = (1 - t) * bary₁ a b c p + t * bary₁ a b c q := by
-  unfold bary₁; rw [det_lerp_left]; ring
+  urring bary₁ [det_lerp_left]
 
 /-- `bary₂` is affine along segments. -/
 theorem bary₂_lerp (a b c p q : Point) (t : ℝ) :
     bary₂ a b c (lerp p q t) = (1 - t) * bary₂ a b c p + t * bary₂ a b c q := by
-  unfold bary₂; rw [det_lerp_mid]; ring
+  urring bary₂ [det_lerp_mid]
 
 /-- `bary₃` is affine along segments. -/
 theorem bary₃_lerp (a b c p q : Point) (t : ℝ) :
     bary₃ a b c (lerp p q t) = (1 - t) * bary₃ a b c p + t * bary₃ a b c q := by
-  unfold bary₃; rw [det_lerp]; ring
+  urring bary₃ [det_lerp]
 
 /-- Membership in a nondegenerate triangle: all barycentric coordinates are nonnegative. -/
 theorem mem_triangle_iff_bary {a b c : Point} (h : det a b c ≠ 0) {x : Point} :
@@ -228,7 +231,7 @@ theorem not_mem_interior_of_affine_zero {T : Set Point} {v x : Point} {f : Point
   obtain ⟨s, hs, hs1⟩ := (h1.and self_mem_nhdsWithin).exists
   have := hT _ hs
   rw [hf, hv, hx] at this
-  have hs1' : (1 : ℝ) < s := hs1
+  have hs1'  := hs1
   linarith
 
 /-- The interior of a nondegenerate triangle: all barycentric coordinates positive. -/
@@ -261,7 +264,7 @@ theorem interior_triangle {a b c : Point} (h : det a b c ≠ 0) :
 theorem mem_interior_triangle_iff {a b c : Point} (h : det a b c ≠ 0) {x : Point} :
     x ∈ interior (convexHull ℝ ({a, b, c} : Set Point)) ↔
       0 < bary₁ a b c x ∧ 0 < bary₂ a b c x ∧ 0 < bary₃ a b c x := by
-  rw [interior_triangle h]; rfl
+  rwr [interior_triangle h]
 
 /-- The centroid of a triangle. -/
 noncomputable def centroid (a b c : Point) : Point :=

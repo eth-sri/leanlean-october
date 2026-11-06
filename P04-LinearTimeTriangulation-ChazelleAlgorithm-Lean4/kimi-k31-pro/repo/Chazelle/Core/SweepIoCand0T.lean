@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepIoCand0S
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep RAM (WP-D), answers: the candidate step of side `0`, the shared vertex and the main
@@ -111,14 +114,14 @@ theorem pipe8 {c c' : Config} (h : CandFr c c') :
     c'.nreg qE = c.nreg qE ∧ c'.nreg qH = c.nreg qH ∧ c'.nreg qD = c.nreg qD ∧
     c'.nreg zE = c.nreg zE ∧ c'.nreg zP = c.nreg zP ∧ c'.nreg zPh = c.nreg zPh ∧
     c'.nreg bL = c.nreg bL ∧ c'.nreg bR = c.nreg bR :=
-  ⟨h.pipe (by unfold qE sw; omega) (by unfold qE sw; omega),
-    h.pipe (by unfold qH sw; omega) (by unfold qH sw; omega),
-    h.pipe (by unfold qD sw; omega) (by unfold qD sw; omega),
-    h.pipe (by unfold zE sw; omega) (by unfold zE sw; omega),
-    h.pipe (by unfold zP sw; omega) (by unfold zP sw; omega),
-    h.pipe (by unfold zPh sw; omega) (by unfold zPh sw; omega),
-    h.pipe (by unfold bL sw; omega) (by unfold bL sw; omega),
-    h.pipe (by unfold bR sw; omega) (by unfold bR sw; omega)⟩
+  ⟨h.pipe (by ufo qE sw) (by ufo qE sw),
+    h.pipe (by ufo qH sw) (by ufo qH sw),
+    h.pipe (by ufo qD sw) (by ufo qD sw),
+    h.pipe (by ufo zE sw) (by ufo zE sw),
+    h.pipe (by ufo zP sw) (by ufo zP sw),
+    h.pipe (by ufo zPh sw) (by ufo zPh sw),
+    h.pipe (by ufo bL sw) (by ufo bL sw),
+    h.pipe (by ufo bR sw) (by ufo bR sw)⟩
 
 /-! ## The shared vertex -/
 
@@ -135,7 +138,6 @@ section Steps
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {J : Merge.Junction} {H : Host} {N₁ N₂ : NF} {E : ℕ} {z : Point}
 
-set_option maxHeartbeats 4000000 in
 /-- **The shared vertex** completes the candidates. -/
 theorem shared_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl : X.CapLocal)
     (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {c' : Config} (hI : IInv W c₀ c') (hQ : QState P J 0 z c)
@@ -152,9 +154,9 @@ theorem shared_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hX
   have hbR : c.nreg bR = 1 := (hQ.hbR.2).2 hz2
   have hS := sideD₂ hA
   have hctx : ChainCtx P W c' (sw 21) J.right :=
-    hS.hctx.transport (hI.hin _ (by unfold IFix sw; omega)) (fun a ha => hI.hm a ha) hI.hA
+    hS.hctx.transport (hI.hin _ (by ufo IFix sw)) (hI.hm) hI.hA
   have e41 : c'.nreg (sw 41) = cstR J 1 := by
-    rw [hI.hin _ (by unfold IFix sw; omega)]
+    rw [hI.hin _ (by ufo IFix sw)]
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, -⟩ := hA.hst
     exact h40 1 (by norm_num)
   obtain ⟨hlt, hpar0, hpos0⟩ := shared_pos₂ (h := c.nreg qH - 1) hP (Qof P)
@@ -165,17 +167,17 @@ theorem shared_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hX
   unfold sharedS
   refine IRS.seq (K₁ := 35007) (K₂ := Klh c₀ F + 2)
     (callArr_irs (dsc := sw 21) (re := sw 41) (rh := qH) (rd := qD) (o := aO) hI hctx
-      (by unfold qH qD sw; omega) (by unfold aO sw; omega) (by rw [e41]; exact hlt)
+      (by ufo qH qD sw) (by ufo aO sw) (by rwx [e41])
       (by rw [e41, eH]; exact ⟨by rw [hpar0], by rw [hpar0]; exact one_pos, q.hhn⟩)
-      (by rw [e41, eH, hpos0]; exact hyS) (by omega)) ?_
+      (by rwx [e41, eH, hpos0]) (by omega)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨harr, fr2, hA2, hm2⟩
   rw [e41, eH, eD] at harr
   unfold ArrAt at harr
   rw [hpos0] at harr
   have k2 : ∀ r, sw 3200 ≤ r → r < sw 3230 → c₂.nreg r = c'.nreg r := fun r h1 h2 =>
-    fr2 r (not_oracle_sw (by unfold sw at *; omega) (by unfold sw at *; omega))
-      (by unfold aO sw at *; omega) (by unfold aO sw at *; omega) (by unfold aO sw at *; omega)
-      (by unfold ALLOC sw at *; omega)
+    fr2 r (not_oracle_sw (by ufo sw at *) (by ufo sw at *))
+      (by ufo aO sw at *) (by ufo aO sw at *) (by ufo aO sw at *)
+      (by ufo ALLOC sw at *)
   have hfr₂ : CandFr c c₂ := hfr.trans (candFr_of_set (S := fun r => r = aO ∨ r = aO + 1 ∨
       r = aO + 2) (fun r hr => Or.inr (by rcases hr with rfl | rfl | rfl <;> unfold aO sw <;> omega))
     (fun r h1 h2 h3 => fr2 r h1 (fun h => h2 (Or.inl h)) (fun h => h2 (Or.inr (Or.inl h)))
@@ -196,13 +198,13 @@ theorem shared_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hX
     have hf1 : c₂.nreg aO = 1 := by have := harr.1; omega
     obtain ⟨hp, hpp, hA'⟩ := harr.2.1 hf1
     rw [← hzs] at hA'
-    have hzh' : ((Qof P).vtx (c.nreg qH - 1)).2 = z.2 := q.hzh
+    have hzh'  := q.hzh
     obtain ⟨hgeo, hposA, hparA⟩ := lhGeo_arr hA' (h := c.nreg qH - 1) (by have := q.hhn; have := q.hh1; omega)
       hzh' hz2 (d := c.nreg qD) rfl
     rw [hqh] at hgeo hposA hparA
     have hcls := posClass_of (C := J.right) (Q := Qof P) (x := ⟨c₂.nreg (aO + 1), c.nreg qH⟩) hp
       (by rw [hparA]; exact hpp.1) (by rw [hparA]; exact hpp.2.1) (by rw [hposA]; exact q.hy)
-      (Or.inl (by rw [hposA]; exact hz2))
+      (Or.inl (by rwx [hposA]))
     have hloc : (c₂.nreg (aO + 1) = 1 ∨ c₂.nreg (aO + 1) = 3) ∨
         (6 ≤ c₂.nreg (aO + 1) ∧ z ∈ J.right.set) := by
       have hzr : z ∈ J.right.set := hzs ▸ J.shared_mem_right
@@ -215,14 +217,14 @@ theorem shared_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hX
         (dirOf (c₂.nreg qD)) L c₂ := by
       rw [eD2]
       exact hst.1.transport (fun j hj => by
-        rw [fr2 _ (not_oracle_sw (by unfold accA sw; omega) (by unfold accA sw; omega))
-          (by unfold accA aO sw; omega) (by unfold accA aO sw; omega)
-          (by unfold accA aO sw; omega) (by unfold accA ALLOC sw; omega)])
-    refine (lhs_irs hsh hBs hXl hA hS ⟨by unfold IFix sw; omega, by unfold IFix sw; omega,
-      by unfold IFix sw; omega⟩ (by unfold OutL aO sw; omega) hI₂ (L := L)
+        rw [fr2 _ (not_oracle_sw (by ufo accA sw) (by ufo accA sw))
+          (by ufo accA aO sw) (by ufo accA aO sw)
+          (by ufo accA aO sw) (by ufo accA ALLOC sw)])
+    refine (lhs_irs hsh hBs hXl hA hS ⟨by ufo IFix sw, by ufo IFix sw,
+      by ufo IFix sw⟩ (by ufo OutL aO sw) hI₂ (L := L)
       (Mod := ModB J (c.nreg bL) (c.nreg bR)) (R₀ := J.whole.radius) (t := 1) (z := z)
       hp (by rw [eH2]; exact ⟨by rw [hparA]; exact hpp.1, by rw [hparA]; exact hpp.2.1, q.hhn⟩)
-      (by rw [eH2]; exact hposA) q.hy hloc hacc₂ (by norm_num)
+      (by rwx [eH2]) q.hy hloc hacc₂ (by norm_num)
       (by rw [q.hbL, hbR]; exact modB_right J) rfl
       (by show c₂.nreg ALLOC + Klh c₀ F ≤ W; omega)).mono le_rfl ?_
     rintro c'' ⟨⟨L', a', s', g', geo'⟩, fr, hA', hm'⟩

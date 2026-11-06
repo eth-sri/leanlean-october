@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SweepEvCand4
 public import Chazelle.Core.SweepEvSpec
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep (WP-D), stage 3: the environment of the event loop
@@ -83,33 +84,33 @@ include E hI
 theorem md : ModelDescAt c.nmem (c.nreg MD₁) (Qof P) (chainModel J.left) ∧
     ModelDescWF P (c.nreg ALLOC) c.nmem (c.nreg MD₁) ∧ c.nmem (c.nreg MD₁) = 0 ∧
     c.nreg CD₁ = c.nreg MD₁ + 1 := by
-  have eMD : c.nreg MD₁ = c₀.nreg MD₁ := hI.hin _ (by unfold IFix MD₁ sw; omega)
-  have eCD : c.nreg CD₁ = c₀.nreg CD₁ := hI.hin _ (by unfold IFix CD₁ sw; omega)
+  have eMD : c.nreg MD₁ = c₀.nreg MD₁ := hI.hin _ (by ufo IFix MD₁ sw)
+  have eCD : c.nreg CD₁ = c₀.nreg CD₁ := hI.hin _ (by ufo IFix CD₁ sw)
   rcases E.hmd with ⟨-, H, C', hC', hMC⟩ | ⟨h1, -⟩
   swap
   · have := E.hm0; omega
-  obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep E.hmwf E.hm0 hC' (fun a ha => hI.hm a ha) hI.hA
+  obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep E.hmwf E.hm0 hC' (hI.hm) hI.hA
   rw [eMD, eCD]
   exact ⟨Or.inl ⟨w2, H, C', w3, hMC⟩, w1, w2, E.hcd⟩
 
 theorem ctx1' : ChainCtx P W c CD₁ J.left :=
-  E.ctx1.transport (hI.hin _ (by unfold IFix CD₁ sw; omega)) (fun a ha => hI.hm a ha) hI.hA
+  E.ctx1.transport (hI.hin _ (by ufo IFix CD₁ sw)) (hI.hm) hI.hA
 
 theorem ctx2' : ChainCtx P W c (sw 21) J.right :=
-  E.ctx2.transport (hI.hin _ (by unfold IFix sw; omega)) (fun a ha => hI.hm a ha) hI.hA
+  E.ctx2.transport (hI.hin _ (by ufo IFix sw)) (hI.hm) hI.hA
 
 theorem ctxW' : ChainCtx P W c (sw 2) J.whole :=
-  E.ctxW.transport (hI.hin _ (by unfold IFix sw; omega)) (fun a ha => hI.hm a ha) hI.hA
+  E.ctxW.transport (hI.hin _ (by ufo IFix sw)) (hI.hm) hI.hA
 
-theorem gw' : c.nreg cGW = gW J := (hI.hin _ (by unfold IFix cGW sw; omega)).trans E.hgw
+theorem gw' : c.nreg cGW = gW J := (hI.hin _ (by ufo IFix cGW sw)).trans E.hgw
 
 omit E hI in
 theorem tb' (_E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂)
-    (hI : IInv W c₀ c) : c.nreg cTB = c₀.nreg cTB := hI.hin _ (by unfold IFix cTB sw; omega)
+    (hI : IInv W c₀ c) : c.nreg cTB = c₀.nreg cTB := hI.hin _ (by ufo IFix cTB sw)
 
 theorem nw₂' : NFWithin c.nmem (c.nreg (sw 4)) (c.nreg ALLOC) N₂ := by
-  rw [hI.hin _ (by unfold IFix sw; omega)]
-  exact (E.hNW₂.transport (fun a ha => hI.hm a ha)).mono hI.hA
+  rw [hI.hin _ (by ufo IFix sw)]
+  exact (E.hNW₂.transport (hI.hm)).mono hI.hA
 
 end EvEnv
 

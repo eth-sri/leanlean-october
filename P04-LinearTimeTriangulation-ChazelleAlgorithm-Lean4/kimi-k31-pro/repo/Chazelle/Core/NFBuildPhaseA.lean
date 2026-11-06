@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.NFBuildInit
 public import Chazelle.Core.SortRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-C (BuildNF), RAM part 5: records and the sort of the event codes
@@ -55,7 +60,7 @@ variable {P : Polygon} {W : ℕ}
 theorem band_out {r : ℕ} (hr : bandOf r ∉ ({bBuild, bSort, bSign} : Finset ℕ)) :
     bandOf r ∉ insert bSort ({bSign, bBuild} : Finset ℕ) ∧
       (r < 10000 ∨ (20000 ≤ r ∧ r < 30000) ∨ 50000 ≤ r) := by
-  simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign] at hr ⊢
+  simp [Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign] at hr ⊢
   omega
 
 /-- The setup of phase A. -/
@@ -77,10 +82,9 @@ theorem setupA_exec (c : Config) (hw : WordsBounded W c) {B K A₀ : ℕ} (hB' :
     | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r h1 h2 h3 h4 h5 h6 h7 h8 h9
     h10 h11 h12 h13 h14 => ?_, rfl, rfl, rfl, rfl⟩
-  all_goals (config_simp <;> (try simp only [hK, hA, hB']) <;>
+  all_goals (config_simp <;> (try simp [hK, hA, hB']) <;>
     (try simp (disch := omega) only [upd_other]) <;> omega)
 
-set_option maxHeartbeats 1000000 in
 /-- **Phase A.** -/
 theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     (hw : WordsBounded W c) {M : Model} {L : List (ℕ × ℕ × ℕ)} {D B : ℕ}
@@ -100,18 +104,18 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   set A₀ := c.nreg ALLOC with hA₀
   set K := L.length with hKdef
   have hA : c.nreg 9999 = A₀ := rfl
-  have hWn' : P.n + 3 ≤ W := by unfold hostWords at hWn; omega
+  have hWn' : P.n + 3 ≤ W := by ufo hostWords at hWn
   have hsc := SortR.sortCost_room 11010 (2 * K)
   have hroom' : A₀ + 32 * K + 22 + SortR.sortCost 11010 (2 * K) ≤ W := by
-    unfold costA at hroom; omega
+    ufo costA at hroom
   -- setup
   obtain ⟨c₁, k₁, x₁, hk₁, v₁⟩ := setupA_exec (P := P) c hw hB' hK hA (by omega) (by omega)
   obtain ⟨r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, fr₁, rr₁, m₁, rm₁, out₁⟩ := v₁
   have w₁ := x₁.wb_right
   -- the record loop
   have hI₁ : RecInv c.nmem L B A₀ (A₀ + 8 * K) c₁ c₁ :=
-    { i_le := by rw [r9]; omega, rK := r2, r0 := r3, r1 := r4, a21 := by rw [r10, r9]; omega,
-      a22 := by rw [r11, r9]; omega, a23 := by rw [r12, r9]; omega, a24 := by rw [r13, r9],
+    { i_le := by rwo [r9], rK := r2, r0 := r3, r1 := r4, a21 := by rwo [r10, r9],
+      a22 := by rwo [r11, r9], a23 := by rwo [r12, r9], a24 := by rw [r13, r9],
       fr := fun _ _ => rfl, rr := rfl, rm := rfl, out := rfl,
       mem := fun a => by rw [m₁, r9]; unfold recMem; rw [ite_eq_right (by omega), ite_eq_right (by omega)] }
   have hhW : ∀ x ∈ L, x.1 + 1 ≤ W := fun x hx => by
@@ -145,8 +149,8 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have hrecs : RecsAt c₃.nmem A₀ L := recsAt_of fun q hq => by
     rw [mem₃]; unfold recMem; rw [ite_eq_left (by omega), show A₀ + q - A₀ = q by omega]
   have hlist : seg c₃.nmem (A₀ + 8 * K) (2 * K) = List.range (2 * K) := seg_range fun i hi => by
-    rw [mem₃]; unfold recMem; rw [ite_eq_right (by omega), ite_eq_left (by omega)]; omega
-  obtain ⟨hM₃, hwf₃⟩ := desc_agree hwf hM (m' := c₃.nmem) fun a ha => hbelow a ha
+    rw [mem₃]; uro recMem [ite_eq_right (by omega), ite_eq_left (by omega)]
+  obtain ⟨hM₃, hwf₃⟩ := desc_agree hwf hM (m' := c₃.nmem) hbelow
   have hwf₃' : ModelDescWF P (A₀ + 10 * K) c₃.nmem D := modelDescWF_mono hwf₃ (by omega)
   have hD₃ : c₃.nreg 40000 = D := by
     rw [g₃ _ (by norm_num) (by norm_num), I₂.fr _ (Or.inl (by norm_num)),
@@ -167,9 +171,9 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     SortR.sortStmt_exec (P := P) (W := W) hcmp (by decide)
       (fun a b d h1 h2 => evLeB_trans M (Qof P) L _ a b d h1 h2)
       (fun a b => evLeB_total M (Qof P) L _ a b) w₃ hJ₃ hJs (List.range (2 * K))
-      (by rw [List.length_range, v30003]; exact hlist) (by rw [List.length_range, v30004])
-      (by rw [List.length_range, show ALLOC = 9999 from rfl, hA₃, v30003]; omega)
-      (by rw [List.length_range, show ALLOC = 9999 from rfl, hA₃]; omega)
+      (by rwx [List.length_range, v30003]) (by rw [List.length_range, v30004])
+      (by rwo [List.length_range, show ALLOC = 9999 from rfl, hA₃, v30003])
+      (by rwo [List.length_range, show ALLOC = 9999 from rfl, hA₃])
   rw [List.length_range] at hk₄ e₄' hE
   obtain ⟨j1, j2, j3, j4, j5⟩ := J₄
   have X : Exec P W phaseA c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq x₁ (.seq x₂ (.seq x₃ x₄))
@@ -179,7 +183,7 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have hA₄' : c₄.nreg 9999 ≤ A₀ + 10 * K + k₄ := by
     rw [show ALLOC = 9999 from rfl, hA₃] at F7; exact F7
   rw [show ALLOC = 9999 from rfl, hA₃] at F3 F4
-  refine ⟨c₄, _, X, by unfold costA; omega, x₄.wb_right, ⟨fun r hr hra => ?_, fun r hr => ?_,
+  refine ⟨c₄, _, X, by ufo costA, x₄.wb_right, ⟨fun r hr hra => ?_, fun r hr => ?_,
     fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩, j1, j2, j3, ?_, ?_, ?_, ?_,
     fun c hc => ?_, ?_, e₄', E, hE, hperm, ?_⟩
   · -- registers outside the bands
@@ -204,7 +208,7 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   · rw [j5 _ (by norm_num) (by norm_num), g₃ _ (by norm_num) (by norm_num), I₂.r1]
   · obtain ⟨a1, a2, a3, a4⟩ := hrecs c hc
     refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [j4 _ (by omega)] <;> assumption
-  · rw [show ALLOC = 9999 from rfl, hA₃] at e₄; omega
+  · rwo [show ALLOC = 9999 from rfl, hA₃] at e₄
   · have hnd : E.Nodup := hperm.nodup_iff.2 List.nodup_range
     refine (hsort.and hnd).imp_of_mem fun {a b} ha hb hab => ?_
     have ha' := List.mem_range.1 (hperm.mem_iff.1 ha)

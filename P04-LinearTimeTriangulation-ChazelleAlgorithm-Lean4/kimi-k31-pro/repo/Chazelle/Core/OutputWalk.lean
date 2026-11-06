@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.OutputGeom
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-N, part 2: the interior walk and the side edges of a trapezoid
@@ -51,23 +55,23 @@ theorem nxt_eq {n p : ℕ} (hp : p < n) : nxt n p = (p + 1) % n := by
   · rw [show p + 1 = n by omega, Nat.mod_self]
 
 /-- `nxt` stays below `n`. -/
-theorem nxt_lt {n p : ℕ} (hp : p < n) : nxt n p < n := by unfold nxt; split_ifs <;> omega
+theorem nxt_lt {n p : ℕ} (hp : p < n) : nxt n p < n := by unfold nxt; splao
 
 /-- `inp` stays below `n`. -/
 theorem inp_lt {b : Bool} {n p : ℕ} (hp : p < n) : inp b n p < n := by
-  unfold inp; split_ifs <;> omega
+  unfold inp; splao
 
 /-- `wv` stays below `n`. -/
 theorem wv_lt {b : Bool} {n k : ℕ} (hk : k < n) : wv b n k < n := by
-  unfold wv; split_ifs <;> omega
+  unfold wv; splao
 
 /-- `inp` is an involution below `n`. -/
 theorem inp_inp {b : Bool} {n p : ℕ} (hp : p < n) : inp b n (inp b n p) = p := by
-  unfold inp; split_ifs <;> omega
+  unfold inp; splao
 
 /-- `wv` is an involution below `n`. -/
 theorem wv_wv {b : Bool} {n k : ℕ} (hk : k < n) : wv b n (wv b n k) = k := by
-  unfold wv; split_ifs <;> omega
+  unfold wv; splao
 
 /-- The ends of a walk edge in terms of the carried edge. -/
 theorem wv_inp {b : Bool} {n p : ℕ} (hp : p < n) :
@@ -100,7 +104,7 @@ theorem walk_vtx (Q : Polygon) {k : ℕ} (hk : k < Q.n) :
   by_cases h : LeftInside Q
   · have e1 : interiorWalk Q = Q := by unfold interiorWalk; simp [h]
     have e2 : revOf Q = false := by unfold revOf; simp [h]
-    rw [e1, e2]; rfl
+    rwr [e1, e2]
   · have e1 : interiorWalk Q = ⟨Q.vertices.reverse⟩ := by unfold interiorWalk; simp [h]
     have e2 : revOf Q = true := by unfold revOf; simp [h]
     rw [e1, e2]
@@ -135,9 +139,9 @@ theorem walk_down {W : Polygon} (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (h
   set a := W.vtx p with ha
   set b := W.vtx ((p + 1) % W.n) with hb
   have hdet : det a b x = -δ * (b.2 - a.2) := by
-    simp only [det, hx, sidePt, lerp_fst, lerp_snd, ← ha, ← hb]; ring
+    sir only [det, hx, sidePt, lerp_fst, lerp_snd, ← ha, ← hb]
   rcases lt_trichotomy 0 (det a b x) with h | h | h
-  · rw [hdet] at h; nlinarith
+  · rwnl [hdet] at h
   · exact absurd ((hloc x hxb).2.2 h.symm) hxi.2
   · exact absurd hxi.1 ((hloc x hxb).2.1 h)
 
@@ -163,9 +167,9 @@ theorem walk_up {W : Polygon} (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp 
   set a := W.vtx p with ha
   set b := W.vtx ((p + 1) % W.n) with hb
   have hdet : det a b x = δ * (b.2 - a.2) := by
-    simp only [det, hx, sidePt, lerp_fst, lerp_snd, ← ha, ← hb]; ring
+    sir only [det, hx, sidePt, lerp_fst, lerp_snd, ← ha, ← hb]
   rcases lt_trichotomy 0 (det a b x) with h | h | h
-  · rw [hdet] at h; nlinarith
+  · rwnl [hdet] at h
   · exact absurd ((hloc x hxb).2.2 h.symm) hxi.2
   · exact absurd hxi.1 ((hloc x hxb).2.1 h)
 
@@ -177,8 +181,8 @@ theorem left_mid (hQ : Q.Simple) (D : TrapData Q) :
       ((edgeX Q D.i ((D.y₁ + D.y₂) / 2), (D.y₁ + D.y₂) / 2) : Point) := by
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   set ym := (D.y₁ + D.y₂) / 2 with hym
-  have hy1 : D.y₁ < ym := by rw [hym]; linarith
-  have hy2 : ym < D.y₂ := by rw [hym]; linarith
+  have hy1 : D.y₁ < ym := by rwli [hym]
+  have hy2 : ym < D.y₂ := by rwli [hym]
   have hmem : ((edgeX Q D.i ym, ym) : Point) ∈ Q.edge D.i :=
     D.isTrap.mem_edgeL hy1.le hy2.le rfl
   obtain ⟨t, ht0, ht1, hzt⟩ := hmem
@@ -187,7 +191,7 @@ theorem left_mid (hQ : Q.Simple) (D : TrapData Q) :
     intro k hk hkz
     have e1 : (Q.vtx k).1 = edgeX Q D.i ym := by rw [hkz]
     have e2 : (Q.vtx k).2 = ym := by rw [hkz]
-    exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
+    exact D.isTrap.no_vertex k hk (by rwx [e2]) (by rwx [e2])
       (by rw [e1, e2]) (by rw [e1, e2]; exact hlt.le)
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
@@ -205,8 +209,8 @@ theorem right_mid (hQ : Q.Simple) (D : TrapData Q) :
       ((edgeX Q D.j ((D.y₁ + D.y₂) / 2), (D.y₁ + D.y₂) / 2) : Point) := by
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   set ym := (D.y₁ + D.y₂) / 2 with hym
-  have hy1 : D.y₁ < ym := by rw [hym]; linarith
-  have hy2 : ym < D.y₂ := by rw [hym]; linarith
+  have hy1 : D.y₁ < ym := by rwli [hym]
+  have hy2 : ym < D.y₂ := by rwli [hym]
   have hmem : ((edgeX Q D.j ym, ym) : Point) ∈ Q.edge D.j :=
     D.isTrap.mem_edgeR hy1.le hy2.le rfl
   obtain ⟨t, ht0, ht1, hzt⟩ := hmem
@@ -215,7 +219,7 @@ theorem right_mid (hQ : Q.Simple) (D : TrapData Q) :
     intro k hk hkz
     have e1 : (Q.vtx k).1 = edgeX Q D.j ym := by rw [hkz]
     have e2 : (Q.vtx k).2 = ym := by rw [hkz]
-    exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
+    exact D.isTrap.no_vertex k hk (by rwx [e2]) (by rwx [e2])
       (by rw [e1, e2]; exact hlt.le) (by rw [e1, e2])
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
@@ -250,14 +254,14 @@ theorem walk_left (hQ : Q.Simple) (D : TrapData Q) :
   have hp := inp_lt (b := revOf Q) hi
   obtain ⟨t, ht, hzt⟩ := left_mid hQ D
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hi ht
-  have hpW : inp (revOf Q) Q.n D.i < (interiorWalk Q).n := by rw [walk_n]; exact hp
+  have hpW : inp (revOf Q) Q.n D.i < (interiorWalk Q).n := by rwx [walk_n]
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
   have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have := walk_down hWs hWo hpW ht' (sub_pos.2 hlt) (fun δ hδ hδ' => by
     rw [hWf, hWb, hz', hzt]
-    exact D.region_subset_interior hQ ⟨hy1, hy2, by simp only; linarith, by simp only; linarith⟩)
+    exact D.region_subset_interior hQ ⟨hy1, hy2, by sil only, by sil only⟩)
   rwa [walk_succ Q hp, walk_vtx Q hp] at this
 
 /-- **The walk runs up the right side edge**: walk edge `inp j` ends at the upper end of the
@@ -270,14 +274,14 @@ theorem walk_right (hQ : Q.Simple) (D : TrapData Q) :
   have hp := inp_lt (b := revOf Q) hj
   obtain ⟨t, ht, hzt⟩ := right_mid hQ D
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hj ht
-  have hpW : inp (revOf Q) Q.n D.j < (interiorWalk Q).n := by rw [walk_n]; exact hp
+  have hpW : inp (revOf Q) Q.n D.j < (interiorWalk Q).n := by rwx [walk_n]
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
   have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have := walk_up hWs hWo hpW ht' (sub_pos.2 hlt) (fun δ hδ hδ' => by
     rw [hWf, hWb, hz', hzt]
-    exact D.region_subset_interior hQ ⟨hy1, hy2, by simp only; linarith, by simp only; linarith⟩)
+    exact D.region_subset_interior hQ ⟨hy1, hy2, by sil only, by sil only⟩)
   rwa [walk_succ Q hp, walk_vtx Q hp] at this
 
 /-- The two walk ends of the walk edge carrying edge `e`. -/

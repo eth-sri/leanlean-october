@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseDrvDArc
 public import Chazelle.Core.RestoreDrvMath
 public import Chazelle.Core.DownPhaseDrvRBktM
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase restoration rounds (D8), part 2: locating the ends of a new chord
@@ -45,7 +47,7 @@ def arcOfB (A b : ℕ) : ℕ := if b = 0 ∨ A ≤ b then A - 1 else b - 1
 theorem arcOfB_bktB {A j : ℕ} (hj : j < A) (t₂ : Bool) : arcOfB A (bktB A j t₂) = j := by
   unfold arcOfB bktB
   by_cases h : j + 1 < A
-  · rw [ite_eq_left h, ite_eq_right (by omega)]; omega
+  · rwo [ite_eq_left h, ite_eq_right (by omega)]
   · rw [ite_eq_right h]
     cases t₂ <;> simp <;> omega
 
@@ -57,7 +59,7 @@ theorem bkt_of_match (N : NF) {x : ℝ} {j : ℕ} (hj : j < N.arcs.length) {t₁
   unfold bktB
   by_cases h : j + 1 < N.arcs.length
   · rw [ite_eq_left h] at hm ⊢
-    simp only [Bool.and_eq_true] at hm
+    simp [Bool.and_eq_true] at hm
     right; left
     exact ⟨by omega, h, by rw [Nat.add_sub_cancel]; exact h₁.1 hm.1,
       by rw [Nat.add_sub_cancel]; exact h₂.1 hm.2⟩
@@ -69,7 +71,7 @@ theorem bkt_of_match (N : NF) {x : ℝ} {j : ℕ} (hj : j < N.arcs.length) {t₁
       exact ⟨rfl, by rw [← hjA]; exact h₂.1 ht⟩
     · rw [ite_eq_right ht]
       have ht1 : t₁ = true := by
-        simp only [Bool.or_eq_true] at hm
+        simp [Bool.or_eq_true] at hm
         rcases hm with h' | h'
         · exact absurd h' ht
         · exact h'
@@ -89,7 +91,7 @@ theorem exists_closedArc (hM : WalkAx M) {N : NF} {reg : ℕ → Set Point} (hNF
     he hw.1 hw.2.1 hA
   obtain ⟨j, hj, hjr, hs, he'⟩ := hregs.2.2.1.2.2.1 r hr a b harc
   refine ⟨j, (hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩, hj, ?_⟩
-  rw [hs, he']; exact hcl
+  rwx [hs, he']
 
 variable {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 
@@ -104,8 +106,8 @@ theorem match_of_closedArc (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
   unfold matchB
   by_cases h : j + 1 < (buildNF M Q L E).arcs.length
   · rw [ite_eq_left h]
-    have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rw [← arcs_length hK]; exact h)
-    simp only [Bool.and_eq_true]
+    have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rwx [← arcs_length hK])
+    simp [Bool.and_eq_true]
     rcases hc with hc | hc | hc
     · unfold sideInArc at hc
       rw [ite_eq_left hlt] at hc
@@ -113,7 +115,7 @@ theorem match_of_closedArc (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
     · exact ⟨h₁.2 hc.ge, h₂.2 (hc ▸ hlt.le)⟩
     · exact ⟨h₁.2 (hc ▸ hlt.le), h₂.2 hc.le⟩
   · rw [ite_eq_right h]
-    simp only [Bool.or_eq_true]
+    simp [Bool.or_eq_true]
     rcases hc with hc | hc | hc
     · unfold sideInArc at hc
       split_ifs at hc

@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SweepEvStepL3
 public import Chazelle.Core.SweepEvLoopStartM
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), stage 3: label lists (Task L1)
@@ -43,7 +44,7 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
   induction vs using List.reverseRecOn with
   | nil =>
     intro l hnd hl hU _
-    exact ⟨hnd, hl, hU, fun x hx => hx, fun x hx => absurd hx (List.not_mem_nil)⟩
+    exact ⟨hnd, hl, hU, fun _ => id, fun x hx => absurd hx (List.not_mem_nil)⟩
   | append_singleton vs v ih =>
     intro l hnd hl hU hV
     obtain ⟨h1, h2, h3, h4, h5⟩ := ih l hnd hl hU (fun x hx => hV x (List.mem_append_left _ hx))
@@ -56,7 +57,7 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
       fun x hx => ?_⟩
     · rcases mem_addL hx with h | h
       · exact h3 x h
-      · rw [h]; exact hvU
+      · rwx [h]
     · rcases List.mem_append.1 hx with h | h
       · exact mem_addL_of_mem (h5 x h)
       · rw [List.mem_singleton] at h
@@ -75,7 +76,7 @@ theorem stp_curLab_eq {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config
   unfold curLab labSet
   congr 1
   ext l
-  simp only [mem_ofPred_eq, lblOf, List.mem_map, List.mem_range]
+  simp [mem_ofPred_eq, lblOf, List.mem_map, List.mem_range]
   constructor
   · rintro (⟨h, rfl⟩ | ⟨h, rfl⟩ | ⟨h, rfl⟩ | ⟨h, rfl⟩)
     · exact ⟨0, by omega, by rw [add_zero]⟩

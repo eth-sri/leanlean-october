@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseHostData
 public import Chazelle.Core.DownPhaseArcT
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (X, part 6): the host keys of an arc
@@ -246,7 +248,7 @@ theorem unwrapK_wrapK {n l y : ℝ} (_hl : 0 ≤ l) (_hn : 0 < n) (hy1 : l ≤ y
   · rw [ite_eq_left h1]; unfold unwrapK; rw [ite_eq_left hy1]
   · rw [ite_eq_right h1]; unfold unwrapK
     have : ¬ l ≤ y - n := by push Not; linarith
-    rw [ite_eq_right this]; ring
+    rwring [ite_eq_right this]
 
 /-- **The walk point of an unwrapped key** in the closed key interval of walk edge `p` (taken
 modulo `n`). -/
@@ -266,7 +268,7 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
         have : (p : ℝ) < n := lt_of_le_of_lt hy1 h
         exact_mod_cast this
       rw [show y = (p : ℝ) + (y - p) by ring, hostPt_eq W ht0 ht1, Nat.mod_eq_of_lt hpn]
-      simp only [add_sub_cancel_left]
+      simp [add_sub_cancel_left]
       rfl
     · push Not at h
       have hpn : n ≤ p := by
@@ -286,7 +288,7 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
     · have hpn : p + 1 < n := by
         have : ((p + 1 : ℕ) : ℝ) < n := by push_cast; exact h
         exact_mod_cast this
-      rw [show (p : ℝ) + 1 = ((p + 1 : ℕ) : ℝ) + 0 by push_cast; ring,
+      rw [show (p : ℝ) + 1 = ((p + 1 : ℕ) : ℝ) + 0 by pcr,
         hostPt_eq W le_rfl one_pos, Chazelle.Chain.sidePt_zero,
         Nat.mod_eq_of_lt (show p < n by omega), Nat.mod_eq_of_lt hpn]
     · push Not at h
@@ -301,7 +303,7 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
         hostPt_eq W le_rfl one_pos, Chazelle.Chain.sidePt_zero]
       congr 1
       rcases Nat.lt_or_ge p n with h' | h'
-      · rw [Nat.mod_eq_of_lt h', show p + 1 = n by omega, Nat.mod_self]; omega
+      · rwo [Nat.mod_eq_of_lt h', show p + 1 = n by omega, Nat.mod_self]
       · have e : p % n = p - n := by
           rw [Nat.mod_eq_sub_mod h', Nat.mod_eq_of_lt (show p - n < n by omega)]
         rw [e, Nat.mod_eq_of_lt (show p - n + 1 < n by omega)]
@@ -322,8 +324,8 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
   have hdN := hA.hdN
   have hb : ∀ i, i < N → 0 ≤ hk M F U i ∧ hk M F U i < n := fun i hi =>
     hostKeys_bounds (hk_mem hM hF hfin hi)
-  have hlb : 0 ≤ l ∧ l < n := hA.hl ▸ hb i_l hil
-  have hn : 0 < n := lt_of_le_of_lt hlb.1 hlb.2
+  have hlb  := hA.hl ▸ hb i_l hil
+  have hn  := lt_of_le_of_lt hlb.1 hlb.2
   have hnN : 0 < M.W.n := by
     have : (0 : ℝ) < (M.W.n : ℝ) := hn
     exact_mod_cast this
@@ -340,22 +342,22 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
     · exact (ukey_mono hM hF hfin hil h hdN).le
     · rw [h]
   have hrb : 0 ≤ r ∧ r < n := hA.hr ▸ hb _ (Nat.mod_lt _ (by omega))
-  have hur : unwrapK n l r < l + n := (unwrapK_bounds hlb hrb).2
-  have ha0 : 0 ≤ ukey M F U i_l j := le_trans hlb.1 hla
+  have hur  := (unwrapK_bounds hlb hrb).2
+  have ha0  := le_trans hlb.1 hla
   set p := ⌊ukey M F U i_l j⌋₊ with hp
-  have hpa : (p : ℝ) ≤ ukey M F U i_l j := Nat.floor_le ha0
+  have hpa  := Nat.floor_le ha0
   have hap : ukey M F U i_l j < p + 1 := Nat.lt_floor_add_one _
   -- no vertex key inside the piece
   have hbp : ukey M F U i_l (j + 1) ≤ p + 1 := by
     by_contra hbp
     push Not at hbp
     set k : ℝ := (p : ℝ) + 1
-    have hk1 : l < k := lt_of_le_of_lt hla hap
-    have hk2 : k < unwrapK n l r := lt_of_lt_of_le hbp hbr
-    have hk3 : k < l + n := lt_trans hk2 hur
+    have hk1  := lt_of_le_of_lt hla hap
+    have hk2  := lt_of_lt_of_le hbp hbr
+    have hk3  := lt_trans hk2 hur
     have hwk := ArcT.wrapK_nonneg (n := n) (le_trans hlb.1 hk1.le) (by linarith [hlb.2])
     have hwl := ArcT.wrapK_lt hn (le_trans hlb.1 hk1.le) (by linarith [hlb.2])
-    have huw : unwrapK n l (wrapK n k) = k := unwrapK_wrapK hlb.1 hn hk1.le hk3
+    have huw  := unwrapK_wrapK hlb.1 hn hk1.le hk3
     have hlr' : unwrapK n l l < unwrapK n l r := by rw [unwrapK_self]; exact lt_trans hk1 hk2
     have hin : sideInArc l r (wrapK n k) := by
       rw [cyc_unwrap hlb hlb hrb ⟨hwk, hwl⟩ hlr', unwrapK_self, huw]
@@ -363,7 +365,7 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
     have hint : ∃ k' : ℕ, wrapK n k = k' := by
       unfold wrapK
       split_ifs with h
-      · exact ⟨p + 1, by push_cast; ring⟩
+      · exact ⟨p + 1, by pcr⟩
       · refine ⟨p + 1 - M.W.n, ?_⟩
         have : M.W.n ≤ p + 1 := by
           have : (M.W.n : ℝ) ≤ ((p + 1 : ℕ) : ℝ) := by push_cast; push Not at h; exact h
@@ -376,20 +378,20 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
       by_contra h; push Not at h
       rcases h.lt_or_eq with h | h
       · have := ukey_mono hM hF hfin hil h (by omega); linarith
-      · rw [h] at hu'; linarith
+      · rwli [h] at hu'
     have h2 : j' < j + 1 := by
       by_contra h; push Not at h
       rcases h.lt_or_eq with h | h
       · have := ukey_mono hM hF hfin hil h (by omega); linarith
-      · rw [← h] at hu'; linarith
+      · rwli [← h] at hu'
     omega
   refine ⟨p, hpa, hbp, ?_, fun y hy1 hy2 => ?_⟩
-  · have : ((p : ℕ) : ℝ) < ((2 * M.W.n : ℕ) : ℝ) := by push_cast; linarith
+  · have : ((p : ℕ) : ℝ) < ((2 * M.W.n : ℕ) : ℝ) := by pcl
     exact_mod_cast this
   · have hy3 : y < 2 * (M.W.n : ℝ) := by
       have := lt_of_le_of_lt (le_trans hy2 hbr) hur; linarith [hlb.2]
     have hp2 : p < 2 * M.W.n := by
-      have : ((p : ℕ) : ℝ) < ((2 * M.W.n : ℕ) : ℝ) := by push_cast; linarith
+      have : ((p : ℕ) : ℝ) < ((2 * M.W.n : ℕ) : ℝ) := by pcl
       exact_mod_cast this
     exact hostPt_wrap_lerp M.W hnN hp2 (le_trans hpa hy1) (le_trans hy2 hbp) hy3
 

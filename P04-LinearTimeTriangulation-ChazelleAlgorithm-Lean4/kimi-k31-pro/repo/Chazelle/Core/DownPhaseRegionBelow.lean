@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.DownPhaseHostChain
 public import Chazelle.Core.DownPhaseLocal
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (X, part 8): a region lies below its highest host point
@@ -56,7 +59,7 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     intro y hy e
     apply hηV
     rw [Finset.coe_image]
-    exact ⟨y, hy, by simp only; linarith⟩
+    exact ⟨y, hy, by sil only⟩
   set z' : Point := (z.1, z.2 + η)
   have hz'R : z' ∈ R := hball (by
     rw [Metric.mem_ball, Prod.dist_eq]
@@ -95,9 +98,9 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     have h1 := (Loc.tendsto_mul_const_nhdsGT (show 0 < 1 - t by linarith [ht.2])).eventually
       (cyc_open hin)
     filter_upwards [h1, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with s h1 hs1
-    have hs0 : 0 < s := hs1.1
+    have hs0  := hs1.1
     refine harc.2.2.2.2.2.2 p _ hp (by nlinarith [ht.1, ht.2]) (by nlinarith [ht.1, ht.2, hs1.2]) ?_
-    rw [← add_assoc]; exact h1
+    rwx [← add_assoc]
   obtain ⟨r0, hr0, hnear⟩ := Loc.near_sub_region hQ hF hfin hp ht.1.le ht.2 hncut hX hfX
   have hXR : X = R := by
     set s' := s - min s r0 / 2 with hs'd
@@ -108,13 +111,13 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       rw [hpt, Metric.mem_ball, Prod.dist_eq]
       simp only [Real.dist_eq, sub_self, abs_zero]
       rw [max_eq_left (abs_nonneg _)]
-      rw [show z'.1 + s' - (z'.1 + s) = -(min s r0 / 2) by rw [hs'd]; ring, abs_neg,
+      rw [show z'.1 + s' - (z'.1 + s) = -(min s r0 / 2) by rwring [hs'd], abs_neg,
         abs_of_pos (by have := lt_min hs hr0; linarith)]
       have := min_le_right s r0; have := lt_min hs hr0; linarith
     have hX' := hnear _ hdist (Chazelle.Chain.regionsIn_subset hR hmem).1
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
     · exact h
-    · exact absurd (h.le_bot ⟨hX', hmem⟩) (fun h => h)
+    · exact absurd (h.le_bot ⟨hX', hmem⟩) (id)
   subst hXR
   -- the walk point lies on a piece of the arc
   obtain ⟨i_l, d, hA⟩ := arc_keys hM hF hfin hne hX harc
@@ -142,14 +145,14 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hd0 := hA.hd0
   -- the piece containing `xx`
   have hex : ∃ j, xx < ukey M S X i_l (j + 1) := ⟨d - 1, by
-    rw [Nat.sub_add_cancel hA.hd0]; exact hxd⟩
+    rwx [Nat.sub_add_cancel hA.hd0]⟩
   classical
   set j := Nat.find hex
   have hj1 : xx < ukey M S X i_l (j + 1) := Nat.find_spec hex
   have hjd : j < d := by
     by_contra h; push Not at h
     have := Nat.find_min' hex (show xx < ukey M S X i_l (d - 1 + 1) by
-      rw [Nat.sub_add_cancel hA.hd0]; exact hxd)
+      rwx [Nat.sub_add_cancel hA.hd0])
     omega
   have hj0 : ukey M S X i_l j ≤ xx := by
     rcases Nat.eq_zero_or_pos j with h0 | h0

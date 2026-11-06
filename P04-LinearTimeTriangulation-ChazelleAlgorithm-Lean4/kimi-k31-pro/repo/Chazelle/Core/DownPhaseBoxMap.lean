@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SpecNF
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (B3′, part 1): the box stretch
@@ -52,11 +54,11 @@ theorem continuous_stretch (B k : ℝ) : Continuous (stretch B k) := by
 
 theorem stretch_neg (hB : 0 ≤ B) (x : ℝ) : stretch B k (-x) = -stretch B k x := by
   rcases le_total x (-B) with h | h
-  · rw [stretch_of_le hB h, stretch_of_ge hB (by linarith)]; ring
+  · rwring [stretch_of_le hB h, stretch_of_ge hB (by linarith)]
   · rcases le_total x B with h' | h'
     · rw [stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩),
         stretch_of_abs_le hB (abs_le.2 ⟨by linarith, by linarith⟩)]
-    · rw [stretch_of_ge hB h', stretch_of_le hB (by linarith)]; ring
+    · rwring [stretch_of_ge hB h', stretch_of_le hB (by linarith)]
 
 /-- The stretch is strictly increasing. -/
 theorem stretch_strictMono (hB : 0 ≤ B) (hk : 0 < k) : StrictMono (stretch B k) := by
@@ -77,13 +79,13 @@ theorem stretch_strictMono (hB : 0 ≤ B) (hk : 0 < k) : StrictMono (stretch B k
 theorem stretch_inv (hB : 0 ≤ B) (hk : 0 < k) (x : ℝ) : stretch B k⁻¹ (stretch B k x) = x := by
   rcases le_total x (-B) with h | h
   · have h1 : stretch B k x ≤ -B := by
-      rw [stretch_of_le hB h]; nlinarith
-    rw [stretch_of_le hB h1, stretch_of_le hB h]; field_simp; ring
+      rwnl [stretch_of_le hB h]
+    rw [stretch_of_le hB h1, stretch_of_le hB h]; fsr
   · rcases le_total x B with h' | h'
     · rw [stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩), stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩)]
     · have h1 : B ≤ stretch B k x := by
-        rw [stretch_of_ge hB h']; nlinarith
-      rw [stretch_of_ge hB h1, stretch_of_ge hB h']; field_simp; ring
+        rwnl [stretch_of_ge hB h']
+      rw [stretch_of_ge hB h1, stretch_of_ge hB h']; fsr
 
 /-- The stretch as a homeomorphism of the line. -/
 noncomputable def stretchHomeoLine (hB : 0 ≤ B) (hk : 0 < k) : ℝ ≃ₜ ℝ where
@@ -116,7 +118,7 @@ theorem slope_pos {R R' : ℝ} (hR : B < R) (hR' : B < R') : 0 < slope B R R' :=
 theorem stretch_radius (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) :
     stretch B (slope B R R') R = R' := by
   have h : R - B ≠ 0 := by linarith
-  rw [stretch_of_ge hB hR.le]; unfold slope; field_simp; ring
+  rw [stretch_of_ge hB hR.le]; unfold slope; fsr
 
 /-- The stretch maps the open interval `(-R, R)` onto `(-R', R')`. -/
 theorem abs_stretch_lt_iff (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) (hR' : B < R') (x : ℝ) :
@@ -134,7 +136,7 @@ theorem abs_stretch_lt_iff (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) (hR' : B < R
 /-- **The box image.** -/
 theorem stretchPt_mem_box_iff (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) (hR' : B < R') (p : Point) :
     stretchPt B (slope B R R') p ∈ Chazelle.Chain.box R' ↔ p ∈ Chazelle.Chain.box R := by
-  simp only [Chazelle.Chain.mem_box_iff, stretchPt, abs_stretch_lt_iff hB hR hR']
+  simp [Chazelle.Chain.mem_box_iff, stretchPt, abs_stretch_lt_iff hB hR hR']
 
 end
 

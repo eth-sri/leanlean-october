@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutShQO
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-G, part 51: the walk position of the hit of a query (`k1OutR`) and the environment across
@@ -11,10 +14,6 @@ a query
 * `k1OutR`: `k1Out` on the RAM, into `140225`, `140226`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -34,11 +33,10 @@ theorem ShEnv.of_agree {c c' : Config} (E : ShEnv P W H C z σ c)
     (hr : ∀ r, envR r → r ≠ ALLOC → c'.nreg r = c.nreg r)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     ShEnv P W H C z σ c' := by
-  have e403 : c'.nreg 140403 = c.nreg 140403 := hr _ (Or.inl rfl) (by unfold ALLOC; omega)
+  have e403 : c'.nreg 140403 = c.nreg 140403 := hr _ (Or.inl rfl) (by ufo ALLOC)
   obtain ⟨hB5, hwf⟩ := E.hwf
   obtain ⟨hlen, hHwf, hHA, hs⟩ := hwf H C E.hD
-  have hD' : ChainDescAt c'.nmem (c.nreg 140403) (Qof P) H C :=
-    chainDesc_agree' E.hD hB5 hHA hm
+  have hD'  := chainDesc_agree' E.hD hB5 hHA hm
   have hB' : c'.nmem (c.nreg 140403) = c.nmem (c.nreg 140403) := hm _ (by omega)
   -- a host read in the new memory is the host
   have hback : ∀ H' C', ChainDescAt c'.nmem (c.nreg 140403) (Qof P) H' C' →
@@ -48,25 +46,25 @@ theorem ShEnv.of_agree {c c' : Config} (E : ShEnv P W H C z σ c)
       have a2 := E.hD.1.1
       rw [hB'] at a1
       rw [← a1, hm _ (by omega), a2]
-    exact chainDesc_agree' h' hB5 (by rw [hB', hlen']; exact hHA) (fun a ha => (hm a ha).symm)
-  refine ⟨E.hG, E.hW, by rw [e403]; exact hD', ⟨by rw [e403]; omega, fun H' C' h' => ?_⟩,
-    fun H' h' => ?_, by rw [hr K1 (by unfold envR; simp) (by decide)]; exact E.k1, ?_, ?_, ?_,
+    exact chainDesc_agree' h' hB5 (by rwx [hB', hlen']) (fun a ha => (hm a ha).symm)
+  refine ⟨E.hG, E.hW, by rwx [e403], ⟨by rwo [e403], fun H' C' h' => ?_⟩,
+    fun H' h' => ?_, by rw [hr K1 (by ufs envR) (by decide)]; exact E.k1, ?_, ?_, ?_,
     E.hσ⟩
   · rw [e403] at h'
     obtain ⟨a, b, c₀, d⟩ := hwf H' C' (hback H' C' h')
-    exact ⟨a, b, by rw [e403, hB']; omega, d⟩
+    exact ⟨a, b, by rwo [e403, hB'], d⟩
   · rw [e403, hB'] at h'
     have hlen' : H'.length = H.length := by
       have a1 := h'.1
       have a2 := E.hD.1.1
       rw [← a1, hm _ (by omega), a2]
-    exact E.hreg H' (hostAt_agree' h' (by rw [hlen']; exact hHA) (fun a ha => (hm a ha).symm))
-  · exact E.ox.copy (hr _ (by unfold envR; simp) (by decide)) (hr _ (by unfold envR; simp)
-      (by decide)) (hr _ (by unfold envR; simp) (by decide)) (hr _ (by unfold envR; simp)
+    exact E.hreg H' (hostAt_agree' h' (by rwx [hlen']) (fun a ha => (hm a ha).symm))
+  · exact E.ox.copy (hr _ (by ufs envR) (by decide)) (hr _ (by ufs envR)
+      (by decide)) (hr _ (by ufs envR) (by decide)) (hr _ (by ufs envR)
       (by decide))
-  · exact E.oy.copy (hr _ (by unfold envR; simp) (by decide)) (hr _ (by unfold envR; simp)
-      (by decide)) (hr _ (by unfold envR; simp) (by decide))
-  · rw [hr 140241 (by unfold envR; simp) (by decide)]; exact E.sig
+  · exact E.oy.copy (hr _ (by ufs envR) (by decide)) (hr _ (by ufs envR)
+      (by decide)) (hr _ (by ufs envR) (by decide))
+  · rw [hr 140241 (by ufs envR) (by decide)]; exact E.sig
 
 /-! ## The walk position of the hit on the RAM -/
 
@@ -137,7 +135,7 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
       c'.nreg 140226 = (k1Out p₀ x0 w dir e' h).hgt by
     obtain ⟨c', k, ex, hk, a, b⟩ := key
     exact ⟨c', k, ex, hk, a, b, exec_frameB ex wr_k1OutR⟩
-  have e₀ := Exec.addN (P := P) hw 140351 140256 140258 (by rw [h56, h58]; omega)
+  have e₀ := Exec.addN (P := P) hw 140351 140256 140258 (by rwo [h56, h58])
   set c₁ : Config := { c with nreg := upd c.nreg 140351 (c.nreg 140256 + c.nreg 140258) } with hc₁
   have w₁ := e₀.wb_right
   have g₁ : ∀ r, r ≠ 140351 → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁]; simp [hr]
@@ -159,7 +157,7 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
   have vW : ∀ c₂ : Config, WordsBounded W c₂ → c₂.nreg 140250 = p₀ → c₂.nreg 140258 = w →
       ∃ c' k, Exec P W (wpos (.addN 140225 140250 140258) (.constN 140226 0)) c₂ c' k ∧ k ≤ 2 ∧
         c'.nreg 140225 = p₀ + w ∧ c'.nreg 140226 = 0 := fun c₂ hw₂ g50 g58 => by
-    have ea := Exec.addN (P := P) hw₂ 140225 140250 140258 (by rw [g50, g58]; omega)
+    have ea := Exec.addN (P := P) hw₂ 140225 140250 140258 (by rwo [g50, g58])
     have eb := Exec.constN (P := P) ea.wb_right 140226 0 (Nat.zero_le _)
     exact ⟨_, _, wpos_exec ea eb, le_rfl, by simp [g50, g58], by simp⟩
   -- the outside cases
@@ -187,7 +185,7 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
           rw [q36, q56] at he
           obtain ⟨c', k, ex, hk, a, b⟩ := vW c₁ w₁ q50 q58
           exact ⟨c', k, ex, hk, by rw [ite_eq_right he, a], by rw [ite_eq_right he, b]⟩)
-      exact ⟨c', _, .ifLtN_false (by rw [q57, qK]; omega) ex, by omega, v1, v2⟩
+      exact ⟨c', _, .ifLtN_false (by rwo [q57, qK]) ex, by omega, v1, v2⟩
     · rw [ite_eq_right (by norm_num : ¬ (0 = 1))]
       obtain ⟨c', k, ex, hk, v1, v2⟩ := ifEq_exec (P := P) (W := W) (a := 140236) (b := 140256)
         (T := wpos (.addN 140225 140250 140258) (.constN 140226 0))
@@ -202,17 +200,17 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
           rw [q36, q56] at he
           obtain ⟨c', k, ex, hk, a, b⟩ := vP c₁ w₁ q50
           exact ⟨c', k, ex, hk, by rw [ite_eq_right he, a], by rw [ite_eq_right he, b]⟩)
-      exact ⟨c', _, .ifLtN_true (by rw [q57, qK]; omega) ex, by omega, v1, v2⟩
+      exact ⟨c', _, .ifLtN_true (by rwo [q57, qK]) ex, by omega, v1, v2⟩
   unfold k1OutR
   by_cases t1 : c₁.nreg 120006 < c₁.nreg 140256
-  · obtain ⟨c', k, ex, hk, v1, v2⟩ := outside (by rw [q06, q56] at t1; omega)
+  · obtain ⟨c', k, ex, hk, v1, v2⟩ := outside (by rwo [q06, q56] at t1)
     exact ⟨c', _, .seq e₀ (.ifLtN_true t1 ex), by omega, v1, v2⟩
   by_cases t2 : c₁.nreg 120006 < c₁.nreg 140351
   swap
-  · obtain ⟨c', k, ex, hk, v1, v2⟩ := outside (by rw [q06, q51] at t2; omega)
+  · obtain ⟨c', k, ex, hk, v1, v2⟩ := outside (by rwo [q06, q51] at t2)
     exact ⟨c', _, .seq e₀ (.ifLtN_false t1 (.ifLtN_false t2 ex)), by omega, v1, v2⟩
   -- inside the block
-  have hin : x0 ≤ e' ∧ e' < x0 + w := by rw [q06, q56] at t1; rw [q06, q51] at t2; omega
+  have hin : x0 ≤ e' ∧ e' < x0 + w := by rw [q06, q56] at t1; rwo [q06, q51] at t2
   have e₁ := Exec.subN (P := P) w₁ 140352 120006 140256
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg 140352 (c₁.nreg 120006 - c₁.nreg 140256) }
     with hc₂
@@ -233,9 +231,9 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
     obtain ⟨c₃, k₃, e₃, hk₃, s53, s54, g₃⟩ : ∃ c₃ k₃, Exec P W (block [.addN 140353 140250 140352,
         .addN 140354 120006 K1]) c₂ c₃ k₃ ∧ k₃ = 2 ∧ c₃.nreg 140353 = p₀ + (e' - x0) ∧
         c₃.nreg 140354 = e' + 1 ∧ ∀ r, r ≠ 140353 → r ≠ 140354 → c₃.nreg r = c₂.nreg r := by
-      have ea := Exec.addN (P := P) w₂ 140353 140250 140352 (by rw [r50, q52]; omega)
+      have ea := Exec.addN (P := P) w₂ 140353 140250 140352 (by rwo [r50, q52])
       have eb := Exec.addN (P := P) ea.wb_right 140354 120006 K1 (by
-        simp [K1]; rw [← K1, r06, rK]; omega)
+        simp [K1]; rwo [← K1, r06, rK])
       refine ⟨_, _, Exec.block_cons ea (Exec.block_cons eb (Exec.block_nil eb.wb_right)), rfl,
         by simp [K1]; rw [r50, q52], by simp [K1]; rw [← K1, r06, rK], fun r h1 h2 => by
           simp [h1, h2]⟩
@@ -251,19 +249,19 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
           else ⟨p₀ + (e' - x0), h + 1⟩).hgt)
       (fun he => by
         rw [s36, s54] at he
-        have ea' := Exec.addN (P := P) w₃ 140225 140353 K1 (by rw [s53, sK]; omega)
+        have ea' := Exec.addN (P := P) w₃ 140225 140353 K1 (by rwo [s53, sK])
         have eb' := Exec.constN (P := P) ea'.wb_right 140226 0 (Nat.zero_le _)
         exact ⟨_, _, wpos_exec ea' eb', le_rfl, by rw [ite_eq_left he]; simp [s53, K1]; exact sK,
-          by rw [ite_eq_left he]; simp⟩)
+          by rws [ite_eq_left he]⟩)
       (fun he => by
         rw [s36, s54] at he
         have ea' := Exec.copyN (P := P) w₃ 140225 140353
         have eb' := Exec.addN (P := P) ea'.wb_right 140226 140236 K1
-          (by simp [K1]; rw [← K1, s36, sK]; omega)
+          (by simp [K1]; rwo [← K1, s36, sK])
         exact ⟨_, _, wpos_exec ea' eb', le_rfl, by rw [ite_eq_right he]; simp [s53],
           by rw [ite_eq_right he]; simp [K1]; rw [← K1, s36, sK]⟩)
     exact ⟨c', _, .seq e₀ (.ifLtN_false t1 (.ifLtN_true t2 (.seq e₁ (.ifLtN_false
-      (by rw [r57, rK]; omega) (.seq e₃ ex))))), by omega, v1, v2⟩
+      (by rwo [r57, rK]) (.seq e₃ ex))))), by omega, v1, v2⟩
   · -- downward
     rw [ite_eq_right (by norm_num : ¬ (0 = 1))]
     obtain ⟨c₃, k₃, e₃, hk₃, s53, g₃⟩ : ∃ c₃ k₃, Exec P W (block [.subN 140353 140258 K1,
@@ -273,7 +271,7 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
       have ea := Exec.subN (P := P) w₂ 140353 140258 K1
       have eb := Exec.subN (P := P) ea.wb_right 140353 140353 140352
       have ec := Exec.addN (P := P) eb.wb_right 140353 140250 140353 (by
-        simp [K1]; rw [← K1, r50, r58, rK, q52]; omega)
+        simp [K1]; rwo [← K1, r50, r58, rK, q52])
       refine ⟨_, _, Exec.block_cons ea (Exec.block_cons eb (Exec.block_cons ec
         (Exec.block_nil ec.wb_right))), rfl, ?_, fun r hr => by simp [hr]⟩
       simp [K1]; rw [← K1, r50, r58, rK, q52]
@@ -290,19 +288,19 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
           else ⟨p₀ + (w - 1 - (e' - x0)), h + 1⟩).hgt)
       (fun he => by
         rw [s36, s06] at he
-        have ea' := Exec.addN (P := P) w₃ 140225 140353 K1 (by rw [s53, sK]; omega)
+        have ea' := Exec.addN (P := P) w₃ 140225 140353 K1 (by rwo [s53, sK])
         have eb' := Exec.constN (P := P) ea'.wb_right 140226 0 (Nat.zero_le _)
         exact ⟨_, _, wpos_exec ea' eb', le_rfl, by rw [ite_eq_left he]; simp [s53, K1]; exact sK,
-          by rw [ite_eq_left he]; simp⟩)
+          by rws [ite_eq_left he]⟩)
       (fun he => by
         rw [s36, s06] at he
         have ea' := Exec.copyN (P := P) w₃ 140225 140353
         have eb' := Exec.addN (P := P) ea'.wb_right 140226 140236 K1
-          (by simp [K1]; rw [← K1, s36, sK]; omega)
+          (by simp [K1]; rwo [← K1, s36, sK])
         exact ⟨_, _, wpos_exec ea' eb', le_rfl, by rw [ite_eq_right he]; simp [s53],
           by rw [ite_eq_right he]; simp [K1]; rw [← K1, s36, sK]⟩)
     exact ⟨c', _, .seq e₀ (.ifLtN_false t1 (.ifLtN_true t2 (.seq e₁ (.ifLtN_true
-      (by rw [r57, rK]; omega) (.seq e₃ ex))))), by omega, v1, v2⟩
+      (by rwo [r57, rK]) (.seq e₃ ex))))), by omega, v1, v2⟩
 
 end
 

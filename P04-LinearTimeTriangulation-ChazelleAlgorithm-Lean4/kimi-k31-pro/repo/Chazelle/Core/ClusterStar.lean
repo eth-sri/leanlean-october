@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Separator.Clusters
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-I, part 6: the star map (a uniform triangulation)
@@ -124,7 +125,7 @@ def star : CombMap (V ⊕ F) D (D ⊕ D ⊕ D) where
     have hctr : ∀ d e : D, M.face d = M.face e →
         (starRot M).SameCycle (.inr (.inl d)) (.inr (.inl e)) := by
       intro d e hde
-      have h1 : M.fperm⁻¹.SameCycle d e := (M.sameCycle_of_face d e hde).inv
+      have h1  := (M.sameCycle_of_face d e hde).inv
       exact sameCycle_of_step M.fperm⁻¹ (starRot M) (fun z => Sum.inr (Sum.inl z))
         (fun z => ⟨1, by simp⟩) h1
     rcases x with d | d | d <;> rcases y with e | e | e <;>
@@ -138,11 +139,11 @@ def star : CombMap (V ⊕ F) D (D ⊕ D ⊕ D) where
   face_fperm x := by
     rcases x with d | d | d
     · show starFace M ((starRot M * starOpp M) (.inl d)) = _
-      rw [starFperm_inl]; simp
+      rws [starFperm_inl]
     · show starFace M ((starRot M * starOpp M) (.inr (.inl d))) = _
-      rw [starFperm_inl_inr]; simp
+      rws [starFperm_inl_inr]
     · show starFace M ((starRot M * starOpp M) (.inr (.inr d))) = _
-      rw [starFperm_inr_inr]; simp
+      rws [starFperm_inr_inr]
   sameCycle_of_face x y hxy := by
     -- every dart is in the face cycle of its old dart
     have key : ∀ z : D ⊕ D ⊕ D, (starRot M * starOpp M).SameCycle (.inl (starFace M z)) z := by
@@ -153,10 +154,10 @@ def star : CombMap (V ⊕ F) D (D ⊕ D ⊕ D) where
         simp only [starFace_inl_inr, zpow_ofNat, pow_two, Perm.mul_apply]
         rw [show (starOpp M) (Sum.inl d) = Sum.inl (M.opp d) from rfl]
         simp only [starRot_inl, starOpp_inr_inr, starRot_inl_inr, Sum.inr.injEq, Sum.inl.injEq]
-        rw [← M.fperm_apply]; simp
+        rws [← M.fperm_apply]
       · refine ⟨1, ?_⟩
         simp only [starFace_inr_inr, zpow_one]
-        rw [starFperm_inl]; simp
+        rws [starFperm_inl]
     have h1 := key x
     have h2 := key y
     rw [show starFace M x = starFace M y from hxy] at h1

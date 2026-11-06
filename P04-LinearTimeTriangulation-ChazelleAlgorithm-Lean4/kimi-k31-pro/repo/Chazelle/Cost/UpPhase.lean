@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Cost.Analytic
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The up-phase arithmetic (Chazelle §4.1, Lemma 4.1 and p. 518)
@@ -57,11 +59,11 @@ chain is `γ = 2^⌈βg⌉`. -/
 
 /-- Lemma 4.1's exponent: `1 - β/3 + 4β²/3 = 74/75`. -/
 theorem lemma41_exponent : 1 - beta / 3 + 4 * beta ^ 2 / 3 = 74 / 75 := by
-  rw [beta_eq]; norm_num
+  rwn [beta_eq]
 
 /-- Down-phase exponent (p. 520): `β²(4β/3 - 1/3) = -1/375`. -/
 theorem downPhase_exponent : beta ^ 2 * (4 * beta / 3 - 1 / 3) = -1 / 375 := by
-  rw [beta_eq]; norm_num
+  rwn [beta_eq]
 
 /-- `βg ≤ ⌈βg⌉`. -/
 theorem beta_mul_le_ceilBeta (g : ℕ) : beta * g ≤ ceilBeta g := Nat.le_ceil _
@@ -121,7 +123,7 @@ theorem slack76_linear (g : ℕ) :
   calc (g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5)
       ≤ (2 * ((6 : ℕ) : ℝ) * (2 : ℝ) ^ ((g : ℝ) / ((6 : ℕ) : ℝ))) * (2 : ℝ) ^ (-(g : ℝ) / 5) :=
         mul_le_mul_of_nonneg_right h hpos
-    _ = 12 * ((2 : ℝ) ^ ((g : ℝ) / 6) * (2 : ℝ) ^ (-(g : ℝ) / 5)) := by push_cast; ring
+    _ = 12 * ((2 : ℝ) ^ ((g : ℝ) / 6) * (2 : ℝ) ^ (-(g : ℝ) / 5)) := by pcr
     _ = 12 * (2 : ℝ) ^ (-(g : ℝ) / 30) := by
         rw [two_rpow_mul_two_rpow]
         congr 2

@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepIoCand1G
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep RAM (WP-D), answers: the candidate step of side `1`, local hits
@@ -41,7 +45,7 @@ theorem setL_val (m f : ℕ → ℕ) {md nf nr e t : ℕ} (hmd : OutL md) (hnf :
     regB m (setL md nf nr e t) f lN = f nr ∧ regB m (setL md nf nr e t) f lT = t ∧
     (∀ q, OutL q → regB m (setL md nf nr e t) f q = f q) := by
   have ne : ∀ r, OutL r → r ≠ 241100 ∧ r ≠ 241101 ∧ r ≠ 241102 ∧ r ≠ 241103 ∧ r ≠ 241104 ∧
-      r ≠ 241105 ∧ r ≠ 241106 ∧ r ≠ 241107 := fun r h => by unfold OutL sw at h; omega
+      r ≠ 241105 ∧ r ≠ 241106 ∧ r ≠ 241107 := fun r h => by ufo OutL sw at h
   obtain ⟨a0, a1, a2, a3, a4, a5, a6, a7⟩ := ne _ hmd
   obtain ⟨b0, b1, b2, b3, b4, b5, b6, b7⟩ := ne _ hnf
   obtain ⟨c0, c1, c2, c3, c4, c5, c6, c7⟩ := ne _ hnr
@@ -52,7 +56,7 @@ theorem setL_val (m f : ℕ → ℕ) {md nf nr e t : ℕ} (hmd : OutL md) (hnf :
 theorem setL_ok (m f : ℕ → ℕ) {md nf nr e t : ℕ} (_hmd : OutL md) (hW : f md + 1 ≤ W)
     (hk : f K1 = 1) (ht : t ≤ W) : okB W m (setL md nf nr e t) f := by
   have s : ∀ j, 1100 ≤ j → j ≤ 1107 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw (by ufo sw) (by ufo sw)
   unfold OutL at _hmd
   simp only [setL, okB, okI, regI]
   refine ⟨s 1100 le_rfl (by norm_num), ⟨s 1101 (by norm_num) (by norm_num), ?_⟩,
@@ -60,8 +64,8 @@ theorem setL_ok (m f : ℕ → ℕ) {md nf nr e t : ℕ} (_hmd : OutL md) (hW : 
     s 1104 (by norm_num) (by norm_num), s 1105 (by norm_num) (by norm_num),
     s 1106 (by norm_num) (by norm_num), ⟨s 1107 (by norm_num) le_rfl, ht⟩, trivial⟩
   have e1 : upd f lMD (f md) lMD = f md := upd_same _ _ _
-  have e2 : upd f lMD (f md) K1 = f K1 := upd_other _ _ _ (by unfold K1 lMD sw; omega)
-  rw [e1, e2, hk]; exact hW
+  have e2 : upd f lMD (f md) K1 = f K1 := upd_other _ _ _ (by ufo K1 lMD sw)
+  rwx [e1, e2, hk]
 
 /-- **A local hit with its inputs.** -/
 def lhs (md nf nr e t : ℕ) (sh : Stmt) : Stmt := .seq (block (setL md nf nr e t)) (localHit sh)
@@ -83,7 +87,6 @@ section Run
 variable {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junction} {H : Host}
   {N₁ N₂ : NF} {E : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The local hit with its inputs** (generic: the local-hit context from the inputs). -/
 theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK sh Bs F X Ok)
     (hBs : Bs ⊆ oracleBands) (hXl : X.CapLocal) (hA : AEnv P W X Ok J H N₁ N₂ E c₀)
@@ -110,8 +113,8 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
       (LhPost P C Mod R₀ z L e c) := by
   obtain ⟨hfm, hfn, hfr⟩ := hfix
   have hK := hA.hK.fix hI
-  have om : ∀ r, IFix r → OutL r := fun r h => by unfold IFix at h; unfold OutL sw; omega
-  have h8 : 8 ≤ lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) := by unfold lhsK; omega
+  have om : ∀ r, IFix r → OutL r := fun r h => by unfold IFix at h; ufo OutL sw
+  have h8 : 8 ≤ lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) := by ufo lhsK
   have hmdW : c.nreg md + 1 ≤ W := by
     rw [hI.hin _ hfm]
     have := hI.hA; have := hI.hw.1 ALLOC; omega
@@ -121,45 +124,45 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   refine IRS.seq (K₁ := 8) (K₂ := localK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6) + 1)
       (c₀.nreg (sw 6)))
     ((IRS.block (setL md nf nr e t) hI (setL_ok c.nmem c.nreg (om _ hfm) hmdW hK.2.1
-      (by have := hI.hw.1 ALLOC; omega))).mono (by simp [setL]) (fun _ h => h)) ?_
+      (by have := hI.hw.1 ALLOC; omega))).mono (by simp [setL]) (fun _ => id)) ?_
   rintro c₁ hI₁ hA₁ hA₁' hc₁
   subst hc₁
   simp only at *
   set c₁ : Config := { c with nreg := regB c.nmem (setL md nf nr e t) c.nreg } with hc₁d
-  have r1 : ∀ r, OutL r → c₁.nreg r = c.nreg r := fun r hr => vo r hr
+  have r1 : ∀ r, OutL r → c₁.nreg r = c.nreg r := vo
   have hL : LCtx P W C N E c₁ := hctx c₁ hI₁
     (by show regB _ _ _ lMD = _; rw [v1, hI.hin _ hfm])
     (by show regB _ _ _ lCD = _; rw [v2, hI.hin _ hfm, hK.2.1])
     (by show regB _ _ _ lNF = _; rw [v3, hI.hin _ hfn])
   obtain ⟨hAr, hCh⟩ := SweepEv.region_bounds hL.hP hL.hNF hdeg
-  have eTL : c₁.nreg TLR = c₀.nreg TLR := hI₁.hin _ (by unfold IFix TLR sw; omega)
+  have eTL : c₁.nreg TLR = c₀.nreg TLR := hI₁.hin _ (by ufo IFix TLR sw)
   have a1 : c₁.nreg lE = c.nreg e := v4
   have a2 : c₁.nreg lH = c.nreg qH := v5
   have a3 : c₁.nreg lD = c.nreg qD := v6
   have hacc₁ : AccOK P accA Mod R₀ ((chainModel C).pos (Qof P) ⟨c₁.nreg lE, c₁.nreg lH⟩)
       (dirOf (c₁.nreg lD)) L c₁ := by
     rw [a1, a2, a3, hz]
-    exact hacc.transport (fun j hj => r1 _ (by unfold OutL accA sw; omega))
+    exact hacc.transport (fun j hj => r1 _ (by ufo OutL accA sw))
   have h := localHit_irs (x := ⟨c₁.nreg lE, c₁.nreg lH⟩) (d := c₁.nreg lD)
     (Da := c₀.nreg (sw 6) + 1) (Dc := c₀.nreg (sw 6)) hsh hBs hXl hI₁ hA.hK hL hA.hX hA.hcap
     hOk hsg hAr hCh rfl rfl rfl
-    (by show c₁.nreg lE < _; rw [a1]; exact he)
-    (by show ProperPos _ _ _ ⟨c₁.nreg lE, c₁.nreg lH⟩; rw [a1, a2]; exact hpp)
-    (by rw [a1, a2, hz]; exact hy)
-    (by rw [a1, a2, hz]; exact hloc)
-    hacc₁ (by rw [show c₁.nreg lT = t from v8]; exact ht)
-    (by rw [show c₁.nreg lT = t from v8]; exact hMod) hR
-    (by rw [show c₁.nreg lN = c.nreg nr from v7, hI.hin _ hfr]; exact hnr)
+    (by show c₁.nreg lE < _; rwx [a1])
+    (by show ProperPos _ _ _ ⟨c₁.nreg lE, c₁.nreg lH⟩; rwx [a1, a2])
+    (by rwx [a1, a2, hz])
+    (by rwx [a1, a2, hz])
+    hacc₁ (by rwx [show c₁.nreg lT = t from v8])
+    (by rwx [show c₁.nreg lT = t from v8]) hR
+    (by rwx [show c₁.nreg lN = c.nreg nr from v7, hI.hin _ hfr])
     (by
-      have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := r1 _ (by unfold OutL ALLOC sw; omega)
-      rw [eTL, hA1]; unfold lhsK at hroom; omega)
+      have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := r1 _ (by ufo OutL ALLOC sw)
+      ruo [eTL, hA1] lhsK at hroom)
   rw [eTL] at h
   refine h.mono le_rfl ?_
   rintro c' ⟨⟨L', a', s', g', geo'⟩, fr, hA', hm'⟩
   rw [a1, a2, a3, hz] at a' g' geo'
   refine ⟨⟨L', a', s', g', fun hg => (geo' hg).2⟩, fun r h1 h2 h3 => ?_, hA', fun a ha => ?_⟩
   · rw [fr r h1 h2 h3]
-    exact r1 r (by unfold LHW sw at h2; unfold OutL sw; omega)
+    exact r1 r (by unfold LHW sw at h2; ufo OutL sw)
   · exact hm' a ha
 
 /-- **The local hit in the model of `C₂`** (model descriptor `sw 31`, normal form `sw 4`). -/
@@ -180,7 +183,7 @@ theorem lhsR_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterO
       (LhPost P J.right Mod R₀ z L e c) := by
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, h34, -, -, -, -, w31⟩ := hA.hst
   exact lhs_irs hsh hBs hXl hA
-    ⟨by unfold IFix sw; omega, by unfold IFix sw; omega, by unfold IFix sw; omega⟩ heo hI
+    ⟨by ufo IFix sw, by ufo IFix sw, by ufo IFix sw⟩ heo hI
     (fun c₁ hI₁ a b d => AEnv.lctxR hA hI₁ a b d) (by have := w31.1; omega) hA.hOk₂ hA.hsg₂
     hA.hdeg₂ h34 he hpp hz hy hloc hacc ht hMod hR hroom
 
@@ -202,7 +205,7 @@ theorem lhsL_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterO
       (LhPost P J.left Mod R₀ z L e c) := by
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, h33, -, -, -, w30, -, -⟩ := hA.hst
   exact lhs_irs hsh hBs hXl hA
-    ⟨by unfold IFix sw; omega, by unfold IFix sw; omega, by unfold IFix sw; omega⟩ heo hI
+    ⟨by ufo IFix sw, by ufo IFix sw, by ufo IFix sw⟩ heo hI
     (fun c₁ hI₁ a b d => AEnv.lctxL hA hI₁ a b d) (by have := w30.1; omega) hA.hOk₁ hA.hsg₁
     hA.hdeg₁ h33 he hpp hz hy hloc hacc ht hMod hR hroom
 

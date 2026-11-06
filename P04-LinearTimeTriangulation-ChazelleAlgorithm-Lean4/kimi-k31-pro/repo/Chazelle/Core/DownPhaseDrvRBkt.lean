@@ -3,6 +3,12 @@ module
 public import Chazelle.Core.DownPhaseDrvRLib
 public import Chazelle.Core.DownPhaseDrvRBktM
 public import Chazelle.Core.NFBuildMain
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase driver (RAM side): the bucket distribution (a counting sort)
@@ -94,12 +100,12 @@ structure BkR (c₀ : Config) (BB n A base A₀ : ℕ) (d : Config) : Prop where
   out : d.output = c₀.output
 
 theorem Bbody_imp {r : ℕ} (h : Bbody r = true) : Bbkt r = true := by
-  simp only [Bbody, Bbkt, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  sio only [Bbody, Bbkt, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
 /-- The register facts survive a body (its writes are in `Bbody`). -/
 theorem BkR.body {c₀ d d' : Config} {BB n A base A₀ : ℕ} (h : BkR c₀ BB n A base A₀ d)
     (hf : FrameM Bbody d d') : BkR c₀ BB n A base A₀ d' := by
-  have e : ∀ r, Bbody r = false → d'.nreg r = d.nreg r := hf.1
+  have e  := hf.1
   refine ⟨(e _ (by decide)).trans h.r22, (e _ (by decide)).trans h.r31,
     (e _ (by decide)).trans h.r32, (e _ (by decide)).trans h.r33, (e _ (by decide)).trans h.r34,
     (e _ (by decide)).trans h.r35, (e _ (by decide)).trans h.r36, (e _ (by decide)).trans h.r37,
@@ -142,7 +148,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 theorem body1_exec (d : Config) (hw : WordsBounded W d) {j Cb : ℕ} (h36 : d.nreg 210036 = Cb)
     (h38 : d.nreg 210038 = j) (h34 : d.nreg 210034 = 1) (h35 : d.nreg 210035 = 0)
     (hW : Cb + j + 1 ≤ W) :
@@ -154,11 +159,10 @@ theorem body1_exec (d : Config) (hw : WordsBounded W d) {j Cb : ℕ} (h36 : d.nr
       d'.nreg 210038 = j + 1 ∧ d'.nmem = upd d.nmem (Cb + j) 0 := by
     exec_block
     · omega
-    · config_simp; omega
+    · cso
     · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h34, h35, h36, h38]
   exact ⟨d', k, ex, hk, h1, h2, exec_frameM ex wrM_L1⟩
 
-set_option maxHeartbeats 1000000 in
 theorem body2_exec (d : Config) (hw : WordsBounded W d) {j Cb BB x v : ℕ}
     (h36 : d.nreg 210036 = Cb) (h22 : d.nreg 210022 = BB) (h38 : d.nreg 210038 = j)
     (h34 : d.nreg 210034 = 1) (hx : d.nmem (BB + j) = x) (hv : d.nmem (Cb + x) = v)
@@ -172,11 +176,10 @@ theorem body2_exec (d : Config) (hw : WordsBounded W d) {j Cb BB x v : ℕ}
       .addN 210043 210043 210034, .storeN 210042 210043, .addN 210038 210038 210034]) d d' k ∧
       k = 7 ∧ d'.nreg 210038 = j + 1 ∧ d'.nmem = upd d.nmem (Cb + x) (v + 1) := by
     exec_block
-    all_goals try (config_simp; simp only [h22, h38, h36, h34, hx, hv]; omega)
+    all_goals try (config_simp; sio only [h22, h38, h36, h34, hx, hv])
     refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h22, h38, h36, h34, hx, hv]
   exact ⟨d', k, ex, hk, h1, h2, exec_frameM ex wrM_L2⟩
 
-set_option maxHeartbeats 1000000 in
 theorem body3_exec (d : Config) (hw : WordsBounded W d) {j Cb Sb sv t : ℕ}
     (h36 : d.nreg 210036 = Cb) (h37 : d.nreg 210037 = Sb) (h38 : d.nreg 210038 = j)
     (h34 : d.nreg 210034 = 1) (h44 : d.nreg 210044 = sv) (ht : d.nmem (Cb + j) = t)
@@ -193,11 +196,10 @@ theorem body3_exec (d : Config) (hw : WordsBounded W d) {j Cb Sb sv t : ℕ}
       k = 7 ∧ d'.nreg 210038 = j + 1 ∧ d'.nreg 210044 = sv + t ∧
       d'.nmem = upd (upd d.nmem (Cb + j) sv) (Sb + j) sv := by
     exec_block
-    all_goals try (config_simp; simp only [h36, h37, h38, h34, h44, ht]; omega)
+    all_goals try (config_simp; sio only [h36, h37, h38, h34, h44, ht])
     refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp [h36, h37, h38, h34, h44, ht]
   exact ⟨d', k, ex, hk, h1, h2, h3, exec_frameM ex wrM_L3⟩
 
-set_option maxHeartbeats 1000000 in
 theorem body4_exec (d : Config) (hw : WordsBounded W d) {j Cb BB Rb base x v : ℕ}
     (h36 : d.nreg 210036 = Cb) (h22 : d.nreg 210022 = BB) (h38 : d.nreg 210038 = j)
     (h48 : d.nreg 210048 = Rb) (h33 : d.nreg 210033 = base)
@@ -218,7 +220,7 @@ theorem body4_exec (d : Config) (hw : WordsBounded W d) {j Cb BB Rb base x v : �
       k = 10 ∧ d'.nreg 210038 = j + 1 ∧
       d'.nmem = upd (upd d.nmem (Rb + v) (base + j)) (Cb + x) (v + 1) := by
     exec_block
-    all_goals try (config_simp; simp only [h22, h38, h36, h34, h48, h33, hx, hv]; omega)
+    all_goals try (config_simp; sio only [h22, h38, h36, h34, h48, h33, hx, hv])
     refine ⟨rfl, ?_⟩
     config_simp
     simp only [h22, h38, h36, h34, h48, h33, hx, hv, true_and]
@@ -276,7 +278,7 @@ theorem loop1_exec {c₀ d : Config} {BB n A base A₀ : ℕ} {m₀ : ℕ → �
       unfold mem1
       by_cases ha : a = A₀ + j
       · rw [ite_eq_left ha, ite_eq_left (by omega)]
-      · rw [ite_eq_right ha]; split_ifs <;> omega) h (Nat.zero_le _)
+      · rw [ite_eq_right ha]; splao) h (Nat.zero_le _)
   exact ⟨d', k, ex, hI, by omega⟩
 
 /-- The loop invariant of the second loop. -/
@@ -379,7 +381,7 @@ theorem loop4_exec {c₀ d : Config} {BB n A base A₀ : ℕ} {m₀ bk : ℕ →
         · rw [ite_eq_left hb]
           unfold memCS
           rw [ite_eq_left (by omega), show a - A₀ = bk j by omega, bcnt_succ, ite_eq_left rfl]
-          unfold slot; omega
+          ufo slot
         · rw [ite_eq_right hb, ite_eq_right (by omega), hm _ ha]
           unfold memCS
           split_ifs with h1
@@ -401,7 +403,6 @@ theorem wrM_reset1 : wrM Bbody (.instr (.constN 210038 0)) = true := by decide
 
 theorem wrM_reset2 : wrM Bbody (block [.constN 210038 0, .constN 210044 0]) = true := by decide
 
-set_option maxHeartbeats 2000000 in
 /-- **The bucket distribution.** -/
 theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk : ℕ → ℕ}
     (h22 : c.nreg 210022 = BB) (h31 : c.nreg 210031 = n) (h32 : c.nreg 210032 = A)
@@ -450,7 +451,6 @@ theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk :
   obtain ⟨c₄, k₄, e₄, ⟨w₄, hR₄, h38₄, hm₄⟩, hk₄⟩ := loop2_exec (P := P) (m₀ := c.nmem)
     (bk := bk) (by omega) hbkd hbk (by omega)
     ⟨e₃.wb_right, hR₃, by simp, fun a => by
-      show c₂.nmem a = _
       rw [hm₂]; unfold mem1 mem2; split_ifs <;> first | rfl⟩
   -- reset
   obtain ⟨c₅, k₅, e₅, hk₅, v38₅, v44₅, hm₅⟩ : ∃ c₅ k₅,
@@ -465,7 +465,7 @@ theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk :
   -- the third loop
   obtain ⟨c₆, k₆, e₆, ⟨w₆, hR₆, h38₆, h44₆, hm₆⟩, hk₆⟩ := loop3_exec (P := P) (m₀ := c.nmem)
     (bk := bk) hbk (by omega)
-    ⟨e₅.wb_right, hR₅, v38₅, by rw [v44₅]; rfl, fun a => by
+    ⟨e₅.wb_right, hR₅, v38₅, by rwr [v44₅], fun a => by
       rw [hm₅, hm₄]; unfold mem2 mem3; split_ifs <;> first | rfl | omega⟩
   -- reset
   have e₇ := Exec.constN (P := P) w₆ 210038 0 (Nat.zero_le _)
@@ -475,7 +475,6 @@ theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk :
   obtain ⟨c₈, k₈, e₈, ⟨w₈, hR₈, h38₈, hm₈, hq₈⟩, hk₈⟩ := loop4_exec (P := P) (m₀ := c.nmem)
     (bk := bk) (by omega) hbkd hbk (by omega) hbase
     ⟨e₇.wb_right, hR₇, by simp, fun a ha => by
-      show c₆.nmem a = _
       rw [hm₆]; unfold mem3 memCS
       split_ifs <;> first | rfl | omega, fun q hq => absurd hq (by omega)⟩
   refine ⟨c₈, k₁ + (k₂ + (1 + (k₄ + (k₅ + (k₆ + (1 + k₈)))))),
@@ -483,7 +482,7 @@ theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk :
     hR₈.r36, hR₈.r37, hR₈.r48, hR₈.alloc, hR₈.r34, hR₈.r39, ?_, fun b hb => ?_, fun b hb => ?_,
     fun a ha => ?_,
     hR₈.fr, ?_, hR₈.rm, hR₈.out⟩
-  · exact seg_eq_bktList hbk fun q hq => hq₈ q hq
+  · exact seg_eq_bktList hbk hq₈
   · rw [hm₈ _ (by omega)]; unfold memCS
     rw [ite_eq_right (by omega), ite_eq_left (by omega)]; congr 1; omega
   · rw [hm₈ _ (by omega)]; unfold memCS

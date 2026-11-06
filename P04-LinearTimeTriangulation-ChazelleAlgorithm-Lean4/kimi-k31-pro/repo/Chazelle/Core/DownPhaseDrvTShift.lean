@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseTransMain
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down-phase transition (D2), part 1: the inner-side shift, explicitly
@@ -49,7 +53,7 @@ theorem iw_vtx_idx {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {j : 
   · rw [ite_eq_right h]; exact Trans.iw_vtx_right (fun h' => h (hli.2 h')) hj
 
 theorem idxI_lt {li : Bool} {n j : ℕ} (hj : j < n) : idxI li n j < n := by
-  unfold idxI; split_ifs <;> omega
+  unfold idxI; splao
 
 /-- The tour start residue at `i0`. -/
 theorem mod_i0 (li : Bool) :
@@ -108,8 +112,8 @@ theorem i0_le : i0 C li ≤ C.m := by
   by_cases h : li = true
   · rw [ite_eq_left h]
     rcases hL1 (hli.1 h) with h0 | h0
-    · rw [h0, Nat.sub_zero, Nat.mod_self]; omega
-    · rw [Nat.mod_eq_of_lt (by omega)]; omega
+    · rwo [h0, Nat.sub_zero, Nat.mod_self]
+    · rwo [Nat.mod_eq_of_lt (by omega)]
   · rw [ite_eq_right h]
     have h1 := hL2 (fun h' => h (hli.2 h'))
     rw [show 3 * C.m - sA C C.sideBeta = (C.m - sA C C.sideBeta) + 2 * C.m by omega,
@@ -140,9 +144,9 @@ theorem vtx_c0 {j : ℕ} (hj : j ≤ C.m) :
     rcases hj.lt_or_eq with hj' | rfl
     · rw [Nat.mod_eq_of_lt (by omega)]
       unfold sideE
-      rw [hv _ (by split_ifs <;> omega)]
+      rw [hv _ (by splao)]
       congr 1
-      split_ifs <;> omega
+      splao
     · rw [show C.m + C.m = 2 * C.m by ring,
         Nat.mod_self, Chazelle.Chain.sideE_zero, hv 0 (by omega)]
       congr 1; omega
@@ -150,7 +154,7 @@ theorem vtx_c0 {j : ℕ} (hj : j ≤ C.m) :
 /-- **The explicit shift.** -/
 theorem shift_c0 : Trans.Shift Q C (c0 C li) := by
   have hle := i0_le hQ T hD hli
-  exact ⟨by unfold c0; omega, by unfold c0; omega, fun j hj => vtx_c0 hQ T hD hli hj⟩
+  exact ⟨by ufo c0, by ufo c0, fun j hj => vtx_c0 hQ T hD hli hj⟩
 
 /-- **The turn at interior walk vertex `0`**: unless it is the top vertex, the chain walk comes
 back from interior walk vertex `1` and goes on to it. -/
@@ -176,7 +180,7 @@ theorem uturn_zero (hne : (interiorWalk Q).vtx 0 ≠ C.top) :
     · rw [ite_eq_left h] at hi0 ⊢
       have : sA C C.sideBeta = 0 := by
         by_contra hne0
-        rw [Nat.mod_eq_of_lt (by omega)] at hi0; omega
+        rwo [Nat.mod_eq_of_lt (by omega)] at hi0
       rw [sA_zero_iff.1 this]
     · rw [ite_eq_right h] at hi0 ⊢
       have h2 := hL2 (fun h' => h (hli.2 h'))
@@ -202,17 +206,17 @@ theorem uturn_zero (hne : (interiorWalk Q).vtx 0 ≠ C.top) :
   · rw [ite_eq_left h] at hsucc ⊢
     have hq' : q = 2 * C.m - 1 := by
       rcases (show q + 1 < 2 * C.m ∨ q + 1 = 2 * C.m by omega) with h2 | h2
-      · rw [Nat.mod_eq_of_lt h2] at hsucc; omega
+      · rwo [Nat.mod_eq_of_lt h2] at hsucc
       · omega
-    rw [hq', hv _ (by unfold sideE; split_ifs <;> omega)]
-    congr 1; unfold sideE; split_ifs <;> omega
+    rw [hq', hv _ (by unfold sideE; splao)]
+    congr 1; unfold sideE; splao
   · rw [ite_eq_right h] at hsucc ⊢
     have hq' : q = C.m - 1 := by
       rcases (show q + 1 < 2 * C.m ∨ q + 1 = 2 * C.m by omega) with h2 | h2
-      · rw [Nat.mod_eq_of_lt h2] at hsucc; omega
-      · rw [h2, Nat.mod_self] at hsucc; omega
-    rw [hq', hv _ (by unfold sideE; split_ifs <;> omega)]
-    congr 1; unfold sideE; split_ifs <;> omega
+      · rwo [Nat.mod_eq_of_lt h2] at hsucc
+      · rwo [h2, Nat.mod_self] at hsucc
+    rw [hq', hv _ (by unfold sideE; splao)]
+    congr 1; unfold sideE; splao
 
 /-- **The turn at interior walk vertex `m`**: unless it is the top vertex, the chain walk goes
 back to interior walk vertex `m - 1`. -/
@@ -239,8 +243,8 @@ theorem uturn_last (hne : (interiorWalk Q).vtx C.m ≠ C.top) :
     · rw [ite_eq_left h] at hi0 ⊢
       have : sA C C.sideBeta = C.m := by
         by_cases h00 : sA C C.sideBeta = 0
-        · rw [h00, Nat.sub_zero, Nat.mod_self] at hi0; omega
-        · rw [Nat.mod_eq_of_lt (by omega)] at hi0; omega
+        · rwo [h00, Nat.sub_zero, Nat.mod_self] at hi0
+        · rwo [Nat.mod_eq_of_lt (by omega)] at hi0
       rw [sA_m_iff.1 this]
     · rw [ite_eq_right h] at hi0 ⊢
       have h2 := hL2 (fun h' => h (hli.2 h'))
@@ -259,8 +263,8 @@ theorem uturn_last (hne : (interiorWalk Q).vtx C.m ≠ C.top) :
   by_cases h : li = true
   · simp only [h, ite_true, zero_add, Nat.mod_mod]
     rcases (show C.m + 1 < 2 * C.m ∨ C.m + 1 = 2 * C.m by omega) with h2 | h2
-    · rw [Nat.mod_eq_of_lt h2, hv _ (by unfold sideE; split_ifs <;> omega)]
-      congr 1; unfold sideE; split_ifs <;> omega
+    · rw [Nat.mod_eq_of_lt h2, hv _ (by unfold sideE; splao)]
+      congr 1; unfold sideE; splao
     · rw [h2, Nat.mod_self, Chazelle.Chain.sideE_zero, hv 0 (by omega)]
       congr 1; omega
   · simp only [h, Bool.false_eq_true, ite_false]
@@ -269,8 +273,8 @@ theorem uturn_last (hne : (interiorWalk Q).vtx C.m ≠ C.top) :
         Nat.mod_eq_of_lt (by omega), hv _ (by unfold sideE; split_ifs; omega)]
       congr 1; unfold sideE; split_ifs; omega
     · rw [h2, Nat.mod_self, add_zero, Nat.mod_eq_of_lt (by omega),
-        hv _ (by unfold sideE; split_ifs <;> omega)]
-      congr 1; unfold sideE; split_ifs <;> omega
+        hv _ (by unfold sideE; splao)]
+      congr 1; unfold sideE; splao
 
 omit hQ T hD hli in
 /-- **At a turn every horizontal direction is in the left sector.** -/
@@ -282,7 +286,7 @@ theorem sideLeft_uturn {W : Polygon} {p : ℕ} {a : Point}
   unfold sideLeftOf sideCcw
   right; right; right
   have hB : a - W.vtx p ≠ 0 := by
-    intro h; apply ha; have := congrArg Prod.snd h; simp at this; linarith
+    intro h; apply ha; have := congrArg Prod.snd h; sil at this
   refine ⟨Chazelle.Chain.sideCross_self _, Chazelle.Chain.sideDot_self_pos hB, Or.inl ?_⟩
   have hx1 : x.1 ≠ (W.vtx p).1 := fun h => hxv (Prod.ext h hx)
   unfold sideCross

@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.SweepIoCand0
 public import Chazelle.Core.SweepIoS0MathMain
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep RAM (WP-D), answers: `Cand0Spec`
@@ -71,10 +72,10 @@ theorem cand0Spec (hM : Side0MathSpec) (hS : S0CandSpec) (hL : Lab0Spec) : Cand0
   obtain ⟨initC, candC, Aux, κS, hInit, hRob, hSC⟩ := s0CandSpec_iff.1 hS
   obtain ⟨lab0, κL, hLab⟩ := lab0Spec_iff.1 hL
   refine ⟨initC, cand0 lab0 candC, Aux, κ0 κL κS,
-    initSpec_mono hInit (fun D => by unfold κ0; omega), hRob, ?_⟩
+    initSpec_mono hInit (fun D => by ufo κ0), hRob, ?_⟩
   intro sh Bs F X Ok hsh hBs hXl P W c₀ c J H N₁ N₂ E z hA hAux hI hQ h0 hroom
   have hk := kc0_le κL κS c₀ F
-  exact (cand0_irs hM hLab hSC hsh hBs hXl hA hAux hI hQ h0 (by omega)).mono hk (fun _ h => h)
+  exact (cand0_irs hM hLab hSC hsh hBs hXl hA hAux hI hQ h0 (by omega)).mono hk (fun _ => id)
 
 /-- **The candidate step of side `0`**, with the mathematics of side `0` (`side0Math`). -/
 theorem cand0Spec_of (hS : S0CandSpec) (hL : Lab0Spec) : Cand0Spec :=

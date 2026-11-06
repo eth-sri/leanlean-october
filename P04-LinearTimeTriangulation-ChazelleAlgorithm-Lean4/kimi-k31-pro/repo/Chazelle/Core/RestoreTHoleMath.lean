@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.RestoreTArcs
 public import Chazelle.Core.SweepPrimArr
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the candidate test on the RAM: the positions of the origin (the holes)
@@ -115,7 +116,7 @@ theorem chain_open_positions (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {t :
         (2 * C.m - 1 - (C.sideS C.sideBeta + i) % (2 * C.m)) := rfl
     rw [← htw] at h1 h2
     have : (C.sideS C.sideBeta + i') % (2 * C.m) = (C.sideS C.sideBeta + tourTwin C i) %
-        (2 * C.m) := by rw [h1]; omega
+        (2 * C.m) := by rwo [h1]
     rw [tour_inj hS hi'2 h2 this]
 
 /-- **The positions of a chain vertex** are the candidates of its index (and the last tour vertex

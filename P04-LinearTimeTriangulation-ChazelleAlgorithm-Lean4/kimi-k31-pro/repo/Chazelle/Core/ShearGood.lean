@@ -144,7 +144,7 @@ theorem IsRatFn.add {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
     exact mul_ne_zero h1 h2
   · filter_upwards [hq1, hq2, hf1, hg2] with ε h1 h2 h3 h4
     rw [h3, h4, div_add_div _ _ h1 h2]
-    simp only [eval_add, eval_mul]
+    simp [eval_add, eval_mul]
 
 /-- Differences of rational functions are rational functions. -/
 theorem IsRatFn.sub {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
@@ -157,7 +157,7 @@ theorem IsRatFn.sub {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
     exact mul_ne_zero h1 h2
   · filter_upwards [hq1, hq2, hf1, hg2] with ε h1 h2 h3 h4
     rw [h3, h4, div_sub_div _ _ h1 h2]
-    simp only [eval_sub, eval_mul]
+    simp [eval_sub, eval_mul]
 
 /-- Products of rational functions are rational functions. -/
 theorem IsRatFn.mul {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
@@ -170,7 +170,7 @@ theorem IsRatFn.mul {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
     exact mul_ne_zero h1 h2
   · filter_upwards [hf1, hg2] with ε h3 h4
     rw [h3, h4, div_mul_div_comm]
-    simp only [eval_mul]
+    simp [eval_mul]
 
 /-- Quotients of rational functions are rational functions (with Lean's `x / 0 = 0`). -/
 theorem IsRatFn.div {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
@@ -188,7 +188,7 @@ theorem IsRatFn.div {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
       exact mul_ne_zero h1 h2
     · filter_upwards [hf1, hg2] with ε h1 h2
       rw [h1, h2, div_div_div_eq]
-      simp only [eval_mul]
+      simp [eval_mul]
 
 /-- The abscissa of a sheared point is a rational function of the parameter. -/
 theorem isRatFn_shear_fst (a : Point) : IsRatFn (fun ε => (shearPt ε a).1) :=
@@ -204,7 +204,7 @@ theorem isRatFn_eval_fst (P : Polygon) (s : SymPt) :
     IsRatFn (fun ε => (s.eval (shear ε P)).1) := by
   cases s with
   | vtx i =>
-    exact (isRatFn_shear_fst (P.vtx i)).congr (fun ε => by simp only [SymPt.eval, shear_vtx])
+    exact (isRatFn_shear_fst (P.vtx i)).congr (fun ε => by simp [SymPt.eval, shear_vtx])
   | onEdge e h =>
     refine ((isRatFn_shear_fst (P.vtx e)).add
       (((isRatFn_shear_snd (P.vtx h)).sub (isRatFn_shear_snd (P.vtx e))).mul
@@ -212,7 +212,7 @@ theorem isRatFn_eval_fst (P : Polygon) (s : SymPt) :
           ((isRatFn_shear_snd (P.vtx ((e + 1) % P.n))).sub
             (isRatFn_shear_snd (P.vtx e)))))).congr ?_
     intro ε
-    simp only [SymPt.eval, edgeXAt, Visibility.edgeX, Visibility.xAt, shear_vtx, shear_n]
+    simp [SymPt.eval, edgeXAt, Visibility.edgeX, Visibility.xAt, shear_vtx, shear_n]
 
 /-- The ordinate of a symbolic point of the sheared polygon is a rational function of the
 parameter. -/
@@ -220,9 +220,9 @@ theorem isRatFn_eval_snd (P : Polygon) (s : SymPt) :
     IsRatFn (fun ε => (s.eval (shear ε P)).2) := by
   cases s with
   | vtx i =>
-    exact (isRatFn_shear_snd (P.vtx i)).congr (fun ε => by simp only [SymPt.eval, shear_vtx])
+    exact (isRatFn_shear_snd (P.vtx i)).congr (fun ε => by simp [SymPt.eval, shear_vtx])
   | onEdge e h =>
-    exact (isRatFn_shear_snd (P.vtx h)).congr (fun ε => by simp only [SymPt.eval, shear_vtx])
+    exact (isRatFn_shear_snd (P.vtx h)).congr (fun ε => by simp [SymPt.eval, shear_vtx])
 
 /-- The orientation determinant of three symbolic points of the sheared polygon is a rational
 function of the parameter. -/
@@ -232,7 +232,7 @@ theorem isRatFn_det_eval (P : Polygon) (s₁ s₂ s₃ : SymPt) :
     ((isRatFn_eval_snd P s₃).sub (isRatFn_eval_snd P s₁))).sub
     (((isRatFn_eval_fst P s₃).sub (isRatFn_eval_fst P s₁)).mul
       ((isRatFn_eval_snd P s₂).sub (isRatFn_eval_snd P s₁)))).congr (fun ε => by
-        simp only [det])
+        simp [det])
 
 /-! ## Eventually constant truth values -/
 
@@ -278,8 +278,7 @@ theorem evConst_signFacts (P : Polygon) (s₁ s₂ s₃ : SymPt) :
 /-- Two distinct points get distinct sheared heights for all small `ε > 0`. -/
 theorem shear_heights_ne_eventually {a b : Point} (hab : a ≠ b) :
     ∀ᶠ ε in 𝓝[>] (0 : ℝ), (shearPt ε a).2 ≠ (shearPt ε b).2 := by
-  have hr : IsRatFn (fun ε => (shearPt ε a).2 - (shearPt ε b).2) :=
-    (isRatFn_shear_snd a).sub (isRatFn_shear_snd b)
+  have hr  := (isRatFn_shear_snd a).sub (isRatFn_shear_snd b)
   rcases hr.evSign with h | h | h
   · exact h.mono fun ε hε => (sub_pos.1 hε).ne'
   · exfalso
@@ -289,7 +288,7 @@ theorem shear_heights_ne_eventually {a b : Point} (hab : a ≠ b) :
       hsub (show δ / 2 ∈ Ioo 0 δ from ⟨by linarith, by linarith⟩)
     have e2 : (shearPt (δ / 4) a).2 - (shearPt (δ / 4) b).2 = 0 :=
       hsub (show δ / 4 ∈ Ioo 0 δ from ⟨by linarith, by linarith⟩)
-    simp only [shearPt] at e1 e2
+    simp [shearPt] at e1 e2
     have h3 : (δ / 4) * (a.1 - b.1) = 0 := by linarith
     rcases mul_eq_zero.1 h3 with h4 | h4
     · linarith
@@ -317,7 +316,7 @@ theorem ylex_shear_eventually (a b : Point) :
   · filter_upwards [self_mem_nhdsWithin] with ε hε
     have hε' : 0 < ε := hε
     unfold Mountain.ylexLT
-    dsimp only [shearPt]
+    dsimp [shearPt]
     constructor
     · rintro (h1 | ⟨-, h1⟩)
       · linarith

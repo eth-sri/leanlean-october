@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.OraclePrepGraph
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 18: the rotation from the sorted darts
@@ -58,7 +60,7 @@ theorem pos_lt_of (h : SortedDarts M G K s) {t t' : ℕ} (ht : t < M) (_ht' : t'
   rcases eq_or_lt_of_le (not_lt.1 hc) with e | e
   · subst e; unfold PLt at hp; simp at hp
   · have := h.sorted t' t e ht
-    unfold PLt at hp this; simp only at hp this; omega
+    unfold PLt at hp this; sio only at hp this
 
 /-- **The rotation is the cyclic successor in key order.** -/
 theorem rotN_spec (h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
@@ -72,13 +74,13 @@ theorem rotN_spec (h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
   · obtain ⟨h1, h2⟩ := hn
     refine ⟨h.lt _ h1, h2, Or.inl ⟨?_, fun f hf hg hk => ?_⟩⟩
     · have := h.sorted t (t + 1) (by omega) h1
-      unfold PLt at this; simp only at this; omega
+      unfold PLt at this; sio only at this
     · obtain ⟨t', ht', rfl⟩ := h.surj f hf
-      have hlt : t < t' := pos_lt_of h ht ht' (Or.inr ⟨hg.symm, hk⟩)
+      have hlt  := pos_lt_of h ht ht' (Or.inr ⟨hg.symm, hk⟩)
       rcases eq_or_lt_of_le (show t + 1 ≤ t' by omega) with e | e
       · subst e; exact le_rfl
       · have := h.sorted (t + 1) t' e ht'
-        unfold PLt at this; simp only at this; omega
+        unfold PLt at this; sio only at this
   · obtain ⟨f1, f2, f3⟩ := fpN_spec h ht
     refine ⟨h.lt _ f1, f2, Or.inr ⟨fun f hf hg => ?_, fun f hf hg => ?_⟩⟩
     · obtain ⟨t', ht', rfl⟩ := h.surj f hf
@@ -90,13 +92,13 @@ theorem rotN_spec (h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
       rcases eq_or_lt_of_le (show t + 1 ≤ t' by omega) with e | e
       · subst e; exact hg
       · have b := h.sorted (t + 1) t' e ht'
-        unfold PLt at a b; simp only at a b; omega
+        unfold PLt at a b; sio only at a b
     · obtain ⟨t', ht', rfl⟩ := h.surj f hf
       have hle := f3 t' ht' hg
       rcases eq_or_lt_of_le hle with e | e
       · rw [e]
       · have := h.sorted _ t' e ht'
-        unfold PLt at this; simp only at this; rw [f2] at this; omega
+        unfold PLt at this; simp at this; rwo [f2] at this
 
 end
 

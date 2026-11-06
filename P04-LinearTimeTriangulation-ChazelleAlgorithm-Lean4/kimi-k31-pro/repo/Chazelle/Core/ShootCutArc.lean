@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ShootCutFirst2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 31: the pieces tile the subarc
@@ -35,15 +39,15 @@ theorem Chained.get {x y : WPos} {ps : List Pc} (h : Chained x ps y) :
       cases ps with
       | nil => simp at hi
       | cons q qs =>
-        simp only [List.getElem_cons_zero, List.getElem_cons_succ]
+        simp [List.getElem_cons_zero, List.getElem_cons_succ]
         exact h2.1.symm
     | succ i =>
-      simp only [List.getElem_cons_succ]
-      exact ih h2 i (by simp at hi ⊢; omega)
+      simp [List.getElem_cons_succ]
+      exact ih h2 i (by sio at hi ⊢)
 
 theorem Chained.append' : ∀ {x y z : WPos} {ps qs : List Pc}, Chained x ps y → Chained y qs z →
     Chained x (ps ++ qs) z
-  | _, _, _, [], _, h, hq => by simp only [Chained] at h; subst h; exact hq
+  | _, _, _, [], _, h, hq => by simp [Chained] at h; subst h; exact hq
   | _, _, _, _ :: _, _, ⟨h1, h2⟩, hq => ⟨h1, Chained.append' h2 hq⟩
 
 theorem Chained.last : ∀ {x y : WPos} {ps : List Pc}, Chained x ps y → (hne : ps ≠ []) →
@@ -56,7 +60,7 @@ theorem Chained.last : ∀ {x y : WPos} {ps : List Pc}, Chained x ps y → (hne 
 
 theorem upath_chained {n : ℕ} : ∀ {u : ℕ} {ps : List Pc} {u' : ℕ}, UPath n u ps u' →
     Chained ⟨u % n, 0⟩ ps ⟨u' % n, 0⟩
-  | _, [], _, h => by simp only [UPath] at h; subst h; rfl
+  | _, [], _, h => by simp [UPath] at h; subst h; rfl
   | _, _ :: _, _, ⟨h1, _, _, h3, h4⟩ => ⟨h1, by rw [h3]; exact upath_chained h4⟩
 
 variable (C : Chain) (Q : Polygon)
@@ -89,7 +93,7 @@ theorem T_unw (k k' : ℝ) (n : ℝ) : ∃ j : ℤ, k + len n k k' = k' + j * n 
   unfold len
   split_ifs
   · exact ⟨0, by ring⟩
-  · exact ⟨1, by push_cast; ring⟩
+  · exact ⟨1, by pcr⟩
 
 /-- **A single piece** `[s, e]`. -/
 theorem arcOK_single {N : ℕ} {s e : WPos} (hs : ProperPos (chainModel C) Q N s)
@@ -156,14 +160,14 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
     rw [key_hgt0, Int.cast_natCast]
     have := Nat.mod_add_div u n
     have e : ((u % n : ℕ) : ℝ) + ((u / n : ℕ) : ℝ) * (n : ℝ) = (u : ℝ) := by
-      exact_mod_cast (show u % n + u / n * n = u by rw [Nat.mul_comm]; omega)
+      exact_mod_cast (show u % n + u / n * n = u by rwo [Nat.mul_comm])
     linarith
   have hfinP : KPath M Q (n : ℝ) (F : ℝ) fin T := by
     rcases hfin with ⟨rfl, hlt⟩ | ⟨rfl, heq⟩
     · exact ⟨hkU F, T, hlt, hTu, rfl⟩
     · exact heq
   have hkp : KPath M Q (n : ℝ) ks (p₁ :: (loop ++ fin)) T :=
-    ⟨⟨0, by rw [hp₁s]; ring⟩, U₀, hks, by rw [hp₁e]; exact hkU U₀,
+    ⟨⟨0, by rwring [hp₁s]⟩, U₀, hks, by rw [hp₁e]; exact hkU U₀,
       (kpath_of_upath hloop).append fin hfinP⟩
   have hne : p₁ :: (loop ++ fin) ≠ [] := List.cons_ne_nil _ _
   -- the last key is the key of `e`
@@ -178,9 +182,9 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
       have hl := upath_chained hloop
       rcases hfin with ⟨rfl, _⟩ | ⟨rfl, _⟩
       · exact ⟨e, hp₁s, by rw [hp₁e]; exact Chained.append' hl ⟨rfl, rfl⟩⟩
-      · exact ⟨_, hp₁s, by rw [hp₁e, List.append_nil]; exact hl⟩
+      · exact ⟨_, hp₁s, by rwx [hp₁e, List.append_nil]⟩
     obtain ⟨y, hy⟩ := hc
-    rw [Chained.last hy hne]; exact hy
+    rwx [Chained.last hy hne]
   refine ⟨hne, hp₁s, hlast, fun i hi => Chained.get hch i hi, fun i hi => ?_, hkp, ?_⟩
   swap
   · intro pc hpc

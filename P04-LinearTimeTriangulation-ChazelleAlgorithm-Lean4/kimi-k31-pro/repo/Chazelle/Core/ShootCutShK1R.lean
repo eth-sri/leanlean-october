@@ -11,10 +11,6 @@ structure (the third word of its grade-table entry `140255`), then the candidate
 (`140237 = 0`), the piece has no hit and nothing is done.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 

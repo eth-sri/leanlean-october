@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.DownPhaseDrvBPLoop
 public import Chazelle.Core.DownPhaseDrvBPieces
 public import Chazelle.Core.DownPhaseDrvGLeaf
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase base (D9), RAM: the straight-line pieces of a region
@@ -61,14 +65,13 @@ theorem host_len_le (n : ℕ) (H : Host) : H.length ≤ (H.pts n).length := by
       cases it with
       | run a l => simp [HostItem.pts]
       | pt x => simp [HostItem.pts]
-    simp only [Host.pts, List.flatMap_cons, List.length_append, List.length_cons] at ih ⊢
+    simp [Host.pts, List.flatMap_cons, List.length_append, List.length_cons] at ih ⊢
     omega
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 /-- **The region record.** -/
 theorem rdS_exec (c : Config) (hw : WordsBounded W c) {p LB K : ℕ}
     (h31 : c.nreg 216031 = p) (h16 : c.nreg 216016 = LB) (hK : c.nreg 212012 = K) (hp : 2 ≤ p)
@@ -85,18 +88,18 @@ theorem rdS_exec (c : Config) (hw : WordsBounded W c) {p LB K : ℕ}
     have hp1 : p - 2 + 1 = p - 1 := by omega
     have hpW := hw.1 216031
     exec_block
-    all_goals try (config_simp; simp only [h31, c2, c0, h16, hp1]; omega)
-    refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h31, c2, c0, h16, c1, hK, hp1]
+    all_goals try (config_simp; sio only [h31, c2, c0, h16, hp1])
+    refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp [h31, c2, c0, h16, c1, hK, hp1]
     · ring
   have w₁ := e₁.wb_right
   by_cases h0 : K = 0
   · have e₂ := Exec.constN (P := P) w₁ 212034 1 (by have := hw.1 212000; omega)
     have ex : Exec P W rdS c _ (k₁ + (1 + 2)) := .seq e₁ (.ifLtN_false (by show ¬ c₁.nreg 212001 < c₁.nreg 212012; have := g.1; have := g.2; omega) e₂)
     refine ⟨_, _, ex, by omega, by simp [h0], ?_, exec_frameB ex (by decide)⟩
-    simp only [Machine.upd_other _ _ _ (show (212033 : ℕ) ≠ 212034 by norm_num)]; exact v33
+    simp [Machine.upd_other _ _ _ (show (212033 : ℕ) ≠ 212034 by norm_num)]; exact v33
   · have ex : Exec P W rdS c c₁ (k₁ + (0 + 1)) :=
       .seq e₁ (.ifLtN_true (by show c₁.nreg 212001 < c₁.nreg 212012; have := g.1; have := g.2; omega) (.skip w₁))
-    exact ⟨c₁, _, ex, by omega, by rw [ite_eq_right h0]; exact v34, v33, exec_frameB ex (by decide)⟩
+    exact ⟨c₁, _, ex, by omega, by rwx [ite_eq_right h0], v33, exec_frameB ex (by decide)⟩
 
 
 /-- A frame of band `bDownDrv` from a register frame within the band and the allocator. -/
@@ -113,7 +116,6 @@ theorem frame21 {B : ℕ → Bool} {c c' : Config} {k : ℕ}
     · exact absurd (by rw [h']; exact Finset.mem_singleton_self _) hr
     · exact absurd h' hra
 
-set_option maxHeartbeats 4000000 in
 /-- **The host of the whole walk** (`K = 0`). -/
 theorem host0_exec (c : Config) (hw : WordsBounded W c) {n : ℕ} (hn : c.nreg 212010 = n)
     (_hn1 : 1 ≤ n) (c0 : c.nreg 212000 = 1) (c1 : c.nreg 212001 = 0)
@@ -134,20 +136,20 @@ theorem host0_exec (c : Config) (hw : WordsBounded W c) {n : ℕ} (hn : c.nreg 2
       (∀ a, (a < A ∨ A + 4 ≤ a) → c'.nmem a = c.nmem a) ∧ c'.rreg = c.rreg := by
     unfold host0
     exec_block
-    all_goals try (config_simp; simp only [hA', c0, c1, hn]; omega)
+    all_goals try (config_simp; sio only [hA', c0, c1, hn])
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a ha => ?_, rfl⟩
     all_goals simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, hA', c0, c1, hn]
   have FM : FrameM (fun r => decide (r = 212016 ∨ r = 212021 ∨ r = 212022 ∨ r = 212032 ∨
       r = 212035 ∨ r = 9999)) c c' := BuildRam.exec_frameM ex (by decide)
-  refine ⟨c', k, ex, hk, v22, vA, ⟨by rw [m0]; rfl, fun i hi => ?_⟩, v16, v21, hm, FM,
+  refine ⟨c', k, ex, hk, v22, vA, ⟨by rwr [m0], fun i hi => ?_⟩, v16, v21, hm, FM,
     frame21 (fun r h => ?_) FM (fun a ha => hm a (Or.inl ha)) hrr (by show A ≤ c'.nreg 9999; omega)
       (by show c'.nreg 9999 ≤ A + k; omega)⟩
-  · simp only [List.length_singleton] at hi
+  · simp [List.length_singleton] at hi
     have : i = 0 := by omega
     subst this
     exact ⟨m1, m2, m3⟩
-  · simp only [decide_eq_true_eq] at h
+  · simp [decide_eq_true_eq] at h
     rcases h with h | h | h | h | h | h <;> subst h
     · left; decide
     · left; decide
@@ -165,11 +167,10 @@ theorem mxS_exec (c : Config) (hw : WordsBounded W c) :
   · have e := Exec.copyN (P := P) hw 212018 212016
     have ex : Exec P W mxS c _ _ := .ifLtN_true h e
     refine ⟨_, _, ex, le_refl _, ?_, exec_frameB ex (by decide)⟩
-    simp only [Machine.upd_same]; omega
+    sio only [Machine.upd_same]
   · have ex : Exec P W mxS c c _ := .ifLtN_false h (.skip hw)
     exact ⟨c, _, ex, le_refl _, by omega, FrameB.refl _ _⟩
 
-set_option maxHeartbeats 4000000 in
 /-- **The reservation of the point array.** -/
 theorem resPS_exec (c : Config) (hw : WordsBounded W c) {NP : ℕ} (h16 : c.nreg 212016 = NP)
     (c0 : c.nreg 212000 = 1) (hA : c.nreg ALLOC + 3 * NP ≤ W) :
@@ -190,13 +191,13 @@ theorem resPS_exec (c : Config) (hw : WordsBounded W c) {NP : ℕ} (h16 : c.nreg
   have B₁ : FrameB (fun r => decide (r = 212015 ∨ r = 212035 ∨ r = 9999)) c c₁ :=
     exec_frameB e₁ (by decide)
   have F₁ : Frame {bDownDrv} c c₁ k₁ := frame21 (fun r h => by
-      simp only [decide_eq_true_eq] at h
+      simp [decide_eq_true_eq] at h
       rcases h with h | h | h <;> subst h
       · left; decide
       · left; decide
       · right; rfl) (FrameB.toM B₁) (fun a _ => by rw [B₁.2.2.1])
     (funext fun r => WalkKey.exec_rframe e₁ (B := fun _ => false) (by decide) r rfl)
-    (by rw [g₁ _ (by decide) (by decide)]) (by rw [g₁ _ (by decide) (by decide)]; omega)
+    (by rw [g₁ _ (by decide) (by decide)]) (by rwo [g₁ _ (by decide) (by decide)])
   let Inv : ℕ → Config → Prop := fun j e => WordsBounded W e ∧ e.nreg 212035 = j ∧
     e.nreg 212016 = NP ∧ e.nreg 9999 = A + 3 * j ∧
     FrameB (fun r => decide (r = 212015 ∨ r = 212035 ∨ r = 9999)) c e ∧ e.nreg 212015 = A
@@ -211,24 +212,24 @@ theorem resPS_exec (c : Config) (hw : WordsBounded W c) {NP : ℕ} (h16 : c.nreg
           e'.nreg 212035 = j + 1 ∧ e'.nreg 9999 = A + 3 * (j + 1) := by
         unfold resPB
         exec_block
-        all_goals try (config_simp; simp only [h1, h3, c0e]; omega)
-        refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h1, h3, c0e]; ring
+        all_goals try (config_simp; sio only [h1, h3, c0e])
+        refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h1, h3, c0e]; ring
       have fb : FrameB (fun r => decide (r = 212035 ∨ r = 9999)) e e' := exec_frameB ex (by decide)
       refine ⟨e', k', ex, ⟨ex.wb_right, v35, by rw [fb.1 _ (by decide), h2], vA,
-        fr.trans (fbMono fb fun r h => by simp only [decide_eq_true_eq] at h ⊢; omega),
+        fr.trans (fbMono fb fun r h => by sio only [decide_eq_true_eq] at h ⊢),
         by rw [fb.1 _ (by decide), h15]⟩,
         by omega, frame21 (fun r h => ?_) (FrameB.toM fb) (fun a _ => by rw [fb.2.2.1])
           (funext fun r => WalkKey.exec_rframe ex (B := fun _ => false) (by decide) r rfl)
           (by show e.nreg 9999 ≤ e'.nreg 9999; omega)
           (by show e'.nreg 9999 ≤ e.nreg 9999 + k'; omega)⟩
-      simp only [decide_eq_true_eq] at h
+      simp [decide_eq_true_eq] at h
       rcases h with h | h <;> subst h
       · left; decide
       · right; rfl)
     I0 (Nat.zero_le _)
   have F' := F₁.trans F
   rw [Finset.union_self] at F'
-  refine ⟨c', _, .seq e₁ ex, by rw [Nat.sub_zero] at hk; omega, j15, jA, fr, F'⟩
+  refine ⟨c', _, .seq e₁ ex, by rwo [Nat.sub_zero] at hk, j15, jA, fr, F'⟩
 
 /-- **The next region.** -/
 theorem incS_exec (c : Config) (hw : WordsBounded W c) {r p : ℕ} (h14 : c.nreg 212014 = r)
@@ -240,8 +241,8 @@ theorem incS_exec (c : Config) (hw : WordsBounded W c) {r p : ℕ} (h14 : c.nreg
       c'.nreg 212014 = r + 1 ∧ c'.nreg 216031 = p + 5 := by
     unfold incS
     exec_block
-    all_goals try (config_simp; simp only [h14, h31, c0, c6]; omega)
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h14, h31, c0, c6]
+    all_goals try (config_simp; sio only [h14, h31, c0, c6])
+    refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h14, h31, c0, c6]
   exact ⟨c', k, ex, hk, v1, v2, exec_frameB ex (by decide)⟩
 
 end exec

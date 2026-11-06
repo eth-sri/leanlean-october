@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.UpPhase20
 public import Chazelle.Cost.UpPhase
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-J up phase: the cost of one chain
@@ -81,7 +84,7 @@ theorem lemma41Nat_le (g : ℕ) : (lemma41Nat g : ℝ) ≤ (2 * 34200 ^ 3 + 1) *
     unfold Yg
     calc x ≤ 2 * (g : ℝ) ^ 3 * (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := by
           rw [hx]; exact mul_le_mul_of_nonneg_right hsq hp.le
-      _ = 2 * (2 : ℝ) ^ g * ((g : ℝ) ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 75)) := by rw [hsplit]; ring
+      _ = 2 * (2 : ℝ) ^ g * ((g : ℝ) ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 75)) := by rwring [hsplit]
       _ ≤ 2 * (2 : ℝ) ^ g * (34200 ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 76)) :=
           mul_le_mul_of_nonneg_left hc (by positivity)
       _ = 2 * 34200 ^ 3 * ((2 : ℝ) ^ g * (2 : ℝ) ^ (-(g : ℝ) / 76)) := by ring
@@ -93,7 +96,7 @@ theorem lemma41Nat_le (g : ℕ) : (lemma41Nat g : ℝ) ≤ (2 * 34200 ^ 3 + 1) *
 theorem inv_gradeGran_le (g : ℕ) : 1 / ((gradeGran g : ℝ) + 1) ≤ (2 : ℝ) ^ (-(g : ℝ) / 5) := by
   refine le_trans ?_ (inv_two_pow_ceilBeta_le g)
   have h1 : (2 : ℝ) ^ ceilBeta g ≤ (gradeGran g : ℝ) + 1 := by
-    have : 2 ^ ceilBeta g ≤ gradeGran g := by unfold gradeGran; omega
+    have : 2 ^ ceilBeta g ≤ gradeGran g := by ufo gradeGran
     have : ((2 ^ ceilBeta g : ℕ) : ℝ) ≤ gradeGran g := by exact_mod_cast this
     push_cast at this; linarith
   exact one_div_le_one_div_of_le (by positivity) h1
@@ -246,7 +249,7 @@ theorem stepB_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO g : ℕ) :
   have i5 : (1993 : ℝ) ≤ 2000 * Yg g := by linarith
   have hK : K1 κB κL κG κO * Yg g = κB * 129 ^ 3 * Yg g + κL * (2 * Cc + 2) * Yg g +
       κG 4 * (18 * l23c 4 * (Nat.clog 2 (l23c 4) + 17) + 1) * Yg g +
-      κO * (130 * l23c 4 + 1) * Yg g + 2000 * Yg g := by unfold K1; rw [hCc]; ring
+      κO * (130 * l23c 4 + 1) * Yg g + 2000 * Yg g := by urring K1 [hCc]
   rw [hK]
   push_cast at h' i3 i4 ⊢
   linarith

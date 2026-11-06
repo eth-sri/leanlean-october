@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.OracleRamSig
 public import Chazelle.Core.OracleScan
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), RAM part 2: testing one edge of the chain
@@ -234,7 +237,7 @@ theorem spansS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hD : DistinctHeights 
     refine ⟨c₁, k', ex', by omega, by rw [v₁], ?_⟩
     rw [v₁, hsp]; simp [h2]
   -- two height tests
-  have hl : ∀ i, i < P.n → (SymPt.vtx i).Lt P.n := fun i hi => hi
+  have hl : ∀ i, i < P.n → (SymPt.vtx i).Lt P.n := fun _ => id
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, s₁⟩ := sgnS_exec (P := P) hG hW 1 (by norm_num)
     (.vtx 120061) (.vtx 120023) (.vtx 120061) c hw (by decide) (by decide) (by decide)
     rfl rfl rfl (hl _ he) (hl _ hhz) (hl _ he)
@@ -253,7 +256,7 @@ theorem spansS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hD : DistinctHeights 
   simp only [SignTest, SymPt.eval] at s₁ s₃
   have t1 : c₄.nreg 120064 = c₁.nreg 10010 := by
     rw [r₄ _ (by decide), f₃.1 _ (by decide), v₂]
-  have t2 : c₄.nreg 120065 = c₃.nreg 10010 := v₄
+  have t2  := v₄
   have ne1 := hD hz e (by omega) (by omega) h1
   have ne2 := hD hz e1 (by omega) (by omega) h2
   -- the final comparison of the two bits
@@ -266,7 +269,7 @@ theorem spansS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hD : DistinctHeights 
       rw [v₅, ← t1, ← t2]; simp [hq]
     · obtain ⟨c₅, e₅, v₅, -⟩ := const_exec (P := P) e₄.wb_right 120063 0 (by omega)
       obtain ⟨k', ex', hk'⟩ := ifEq_ne_exec (S := .instr (.constN 120063 1)) hq e₅
-      refine ⟨c₅, k', ex', by omega, by rw [v₅]; omega, ?_⟩
+      refine ⟨c₅, k', ex', by omega, by rwo [v₅], ?_⟩
       rw [v₅, ← t1, ← t2]; simp [hq]
   have ex : Exec P W (.seq (sgnS 1 (.vtx 120061) (.vtx 120023) (.vtx 120061))
       (.seq (.instr (.copyN 120064 10010))
@@ -312,7 +315,7 @@ theorem aheadS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {σb : ℕ} {zo : Opti
   · obtain ⟨c₁, e₁, v₁, -⟩ := const_exec (P := P) hw 120066 1 (by omega)
     exact ⟨c₁, _, .ifLtN_false (by omega) e₁, by omega, by rw [v₁], by rw [v₁]; simp [Ahead]⟩
   · have hle : (SymPt.onEdge (c.nreg 120061) (c.nreg 120023)).Lt P.n := ⟨he, hhz⟩
-    have hlv : (SymPt.vtx (c.nreg 120061)).Lt P.n := he
+    have hlv  := he
     by_cases hs : σb < 1
     · have hσv : sgnOf σb = -1 := by unfold sgnOf; rw [ite_eq_right (by omega)]
       obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, s₁⟩ := sgnS_exec (P := P) hG hW 0 (by norm_num)
@@ -320,7 +323,7 @@ theorem aheadS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {σb : ℕ} {zo : Opti
         (by decide) rfl hpin rfl hle hp hlv
       obtain ⟨c₂, e₂, v₂, -⟩ := copy_exec (P := P) e₁.wb_right 120066 10010
       refine ⟨c₂, _, .ifLtN_true (by omega) (.ifLtN_true (by omega) (.seq e₁ e₂)), by omega,
-        by rw [v₂]; exact b₁, ?_⟩
+        by rwx [v₂], ?_⟩
       rw [v₂, s₁, hσv]
       simp only [SignTest, SymPt.eval, Ahead, xe]
       constructor
@@ -334,7 +337,7 @@ theorem aheadS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {σb : ℕ} {zo : Opti
         (by decide) hpin rfl rfl hp hle hlv
       obtain ⟨c₂, e₂, v₂, -⟩ := copy_exec (P := P) e₁.wb_right 120066 10010
       refine ⟨c₂, _, .ifLtN_true (by omega) (.ifLtN_false (by omega) (.seq e₁ e₂)), by omega,
-        by rw [v₂]; exact b₁, ?_⟩
+        by rwx [v₂], ?_⟩
       rw [v₂, s₁, hσv]
       simp only [SignTest, SymPt.eval, Ahead, xe]
       constructor
@@ -376,7 +379,7 @@ theorem betterS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {s hz σb : ℕ} (c :
       ∃ d' k, Exec P W takeS d d' k ∧ k ≤ 3 ∧ BestOK P.n s mb d' ∧ bestOf d' = some ci := by
     intro d hd h60 h61
     obtain ⟨d', k, ex, hk, v50, v51, v52⟩ := takeS_exec (P := P) d hd (by omega)
-    refine ⟨d', k, ex, hk, ⟨by omega, fun _ => ⟨by rw [v51, v52, h61, h60], by rw [v52, h60]; exact hcim⟩⟩, ?_⟩
+    refine ⟨d', k, ex, hk, ⟨by omega, fun _ => ⟨by rw [v51, v52, h61, h60], by rwx [v52, h60]⟩⟩, ?_⟩
     unfold bestOf; rw [ite_eq_left v50, v52, h60]
   by_cases hf : c.nreg 120050 < 1
   · have hnone : bestOf c = none := by unfold bestOf; rw [ite_eq_right (by omega)]
@@ -389,7 +392,7 @@ theorem betterS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {s hz σb : ℕ} (c :
     have hebn : c.nreg 120051 < P.n := by rw [heb]; exact Nat.mod_lt _ hn
     have hl1 : (SymPt.onEdge (c.nreg 120051) (c.nreg 120023)).Lt P.n := ⟨hebn, by omega⟩
     have hl2 : (SymPt.onEdge (c.nreg 120061) (c.nreg 120023)).Lt P.n := ⟨hen, by omega⟩
-    have hlv : (SymPt.vtx (c.nreg 120061)).Lt P.n := hen
+    have hlv  := hen
     -- the comparison bit
     obtain ⟨c₂, k₂, e₂, hk₂, g₂, u₂, v₂⟩ : ∃ c₂ k₂, Exec P W (.ifLtN 120024 120011
         (.seq (sgnS 0 (.edge 120051 120023) (.edge 120061 120023) (.vtx 120061))
@@ -406,7 +409,7 @@ theorem betterS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {s hz σb : ℕ} (c :
           (by decide) rfl rfl rfl hl1 hl2 hlv
         obtain ⟨c₂, e₂, v₂, r₂⟩ := copy_exec (P := P) e₁.wb_right 120067 10010
         refine ⟨c₂, _, .ifLtN_true (by omega) (.seq e₁ e₂), by omega,
-          fun r hr hr' => (r₂ r hr').trans (f₁.1 r hr), by rw [v₂]; exact b₁, ?_⟩
+          fun r hr hr' => (r₂ r hr').trans (f₁.1 r hr), by rwx [v₂], ?_⟩
         rw [v₂, s₁, hσv]
         simp only [SignTest, SymPt.eval, BetterC, xe, ee, ← he, ← heb, hhz]
         constructor
@@ -420,7 +423,7 @@ theorem betterS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {s hz σb : ℕ} (c :
           (by decide) rfl rfl rfl hl2 hl1 hlv
         obtain ⟨c₂, e₂, v₂, r₂⟩ := copy_exec (P := P) e₁.wb_right 120067 10010
         refine ⟨c₂, _, .ifLtN_false (by omega) (.seq e₁ e₂), by omega,
-          fun r hr hr' => (r₂ r hr').trans (f₁.1 r hr), by rw [v₂]; exact b₁, ?_⟩
+          fun r hr hr' => (r₂ r hr').trans (f₁.1 r hr), by rwx [v₂], ?_⟩
         rw [v₂, s₁, hσv]
         simp only [SignTest, SymPt.eval, BetterC, xe, ee, ← he, ← heb, hhz]
         constructor
@@ -446,11 +449,11 @@ theorem betterS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {s hz σb : ℕ} (c :
       · intro h; exact h _ rfl
       · intro h cb hcb; cases hcb; exact h
     by_cases hbt : c₂.nreg 120067 < 1
-    · refine ⟨c₂, _, .ifLtN_false (by omega) (.seq e₂ (.ifLtN_true (by rw [c11]; exact hbt)
+    · refine ⟨c₂, _, .ifLtN_false (by omega) (.seq e₂ (.ifLtN_true (by rwx [c11])
         (.skip e₂.wb_right))), by omega, hb₂, ?_⟩
       rw [hbo₂, ite_eq_right (fun h => by have := v₂.2 (hall.1 h); omega)]
     · obtain ⟨c₃, k₃, e₃, hk₃, hb₃, hv₃⟩ := take c₂ e₂.wb_right c60 c61
-      refine ⟨c₃, _, .ifLtN_false (by omega) (.seq e₂ (.ifLtN_false (by rw [c11]; exact hbt)
+      refine ⟨c₃, _, .ifLtN_false (by omega) (.seq e₂ (.ifLtN_false (by rwx [c11])
         e₃)), by omega, hb₃, ?_⟩
       rw [hv₃, ite_eq_left (hall.2 (v₂.1 (by omega)))]
 
@@ -465,12 +468,12 @@ theorem originOK_congr {c c' : Config} {zo : Option Point}
     (h : ∀ r, 120025 ≤ r → r ≤ 120027 → c'.nreg r = c.nreg r) (ho : OriginOK P c zo) :
     OriginOK P c' zo := by
   rcases ho with ⟨h1, h2⟩ | ⟨h1, p, hp, hin, h2⟩
-  · exact Or.inl ⟨by rw [h _ le_rfl (by norm_num)]; exact h1, h2⟩
-  · refine Or.inr ⟨by rw [h _ le_rfl (by norm_num)]; exact h1, p, hp, ?_, h2⟩
+  · exact Or.inl ⟨by rwx [h _ le_rfl (by norm_num)], h2⟩
+  · refine Or.inr ⟨by rwx [h _ le_rfl (by norm_num)], p, hp, ?_, h2⟩
     cases p with
     | vtx i =>
       simp only [SymPtIn] at hin ⊢
-      rw [h _ le_rfl (by norm_num), h 120026 (by norm_num) (by norm_num)]; exact hin
+      rwx [h _ le_rfl (by norm_num), h 120026 (by norm_num) (by norm_num)]
     | onEdge e h' =>
       simp only [SymPtIn] at hin ⊢
       rw [h _ le_rfl (by norm_num), h 120026 (by norm_num) (by norm_num),
@@ -492,10 +495,10 @@ theorem edgeT_exec (hG : GoodEnv P) (hW : 2 * P.n + 3 ≤ W) (hD : DistinctHeigh
     exact ⟨c', k, ex, hk, exec_frameB ex wr_edgeT, hb', hv⟩
   -- e := (s + ci) mod n
   obtain ⟨c₁, e₁, v₁, r₁, -⟩ := add_exec (P := P) hw 120061 120015 120060
-    (by rw [hc.rs]; omega)
+    (by rwo [hc.rs])
   rw [hc.rs] at v₁
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, r₂, -⟩ := modSub_exec (P := P) (r := 120061) (nr := 120010)
-    (by decide) c₁ e₁.wb_right (by rw [v₁, r₁ _ (by decide), hc.n]; omega)
+    (by decide) c₁ e₁.wb_right (by rwo [v₁, r₁ _ (by decide), hc.n])
   rw [v₁, r₁ _ (by decide), hc.n] at v₂
   obtain ⟨c₃, e₃, v₃, r₃, -⟩ := add_exec (P := P) e₂.wb_right 120062 120061 120011 (by
     rw [v₂, r₂ _ (by decide), r₁ _ (by decide), hc.one]
@@ -509,8 +512,8 @@ theorem edgeT_exec (hG : GoodEnv P) (hW : 2 * P.n + 3 ≤ W) (hD : DistinctHeigh
   set ci := c.nreg 120060 with hci_def
   have R₄ : ∀ r, r ≠ 120061 → r ≠ 120062 → c₄.nreg r = c.nreg r := fun r h1 h2 => by
     rw [r₄ r h2, r₃ r h2, r₂ r h1, r₁ r h1]
-  have x61 : c₄.nreg 120061 = eIdx P.n s ci := by rw [r₄ _ (by decide), r₃ _ (by decide)]; exact v₂
-  have x62 : c₄.nreg 120062 = (c₄.nreg 120061 + 1) % P.n := by rw [v₄, x61]; rfl
+  have x61 : c₄.nreg 120061 = eIdx P.n s ci := by rwx [r₄ _ (by decide), r₃ _ (by decide)]
+  have x62 : c₄.nreg 120062 = (c₄.nreg 120061 + 1) % P.n := by rwr [v₄, x61]
   have hen : eIdx P.n s ci < P.n := Nat.mod_lt _ hn
   have x23 : c₄.nreg 120023 = hz := (R₄ _ (by decide) (by decide)).trans hc.rhz
   have e0 : Exec P W (.seq (.instr (.addN 120061 120015 120060)) (.seq (modSub 120061 120010)
@@ -518,10 +521,10 @@ theorem edgeT_exec (hG : GoodEnv P) (hW : 2 * P.n + 3 ≤ W) (hD : DistinctHeigh
       (1 + (k₂ + (1 + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   -- the height range
   obtain ⟨c₅, k₅, e₅, hk₅, -, u₅, v₅⟩ := spansS_exec (P := P) hG (by omega) hD c₄ e₄.wb_right
-    (by rw [x61]; exact hen) x62 (by rw [x23]; exact hc.hz_lt)
+    (by rwx [x61]) x62 (by rw [x23]; exact hc.hz_lt)
   have f₅ := exec_frameB e₅ (B := fun r => Bk r || decide (120063 ≤ r ∧ r ≤ 120065)) (by decide)
   have R₅ : ∀ r, Bk r = false → (r < 120063 ∨ 120065 < r) → c₅.nreg r = c₄.nreg r :=
-    fun r h1 h2 => f₅.1 r (by simp only [h1, Bool.false_or, decide_eq_false_iff_not]; omega)
+    fun r h1 h2 => f₅.1 r (by sio only [h1, Bool.false_or, decide_eq_false_iff_not])
   rw [x61, x23] at v₅
   have hQe : eIdx (Qof P).n s ci = eIdx P.n s ci := by rw [hQn]
   have hbo₅ : bestOf c₅ = bestOf c := by
@@ -541,7 +544,7 @@ theorem edgeT_exec (hG : GoodEnv P) (hW : 2 * P.n + 3 ≤ W) (hD : DistinctHeigh
   · -- not in range: nothing changes
     have hnsp : ¬ Spans (Qof P) (eIdx P.n s ci) hz := fun h => by have := v₅.2 h; omega
     refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.ifLtN_true
-      (by rw [c11]; exact hsp) (.skip e₅.wb_right)))))), by omega, hb₅, ?_⟩
+      (by rwx [c11]) (.skip e₅.wb_right)))))), by omega, hb₅, ?_⟩
     unfold upd1 HitC
     rw [hQe, ite_eq_right (fun h => hnsp h.1.1), hbo₅]
   have hsp1 : Spans (Qof P) (eIdx P.n s ci) hz := v₅.1 (by omega)
@@ -549,10 +552,10 @@ theorem edgeT_exec (hG : GoodEnv P) (hW : 2 * P.n + 3 ≤ W) (hD : DistinctHeigh
   have x61' : c₅.nreg 120061 = eIdx P.n s ci := (R₅ _ (by decide) (by omega)).trans x61
   have x23' : c₅.nreg 120023 = hz := (R₅ _ (by decide) (by omega)).trans x23
   obtain ⟨c₆, k₆, e₆, hk₆, -, u₆, v₆⟩ := aheadS_exec (P := P) hG (by omega) (σb := σb) (zo := zo)
-    c₅ e₅.wb_right (by rw [x61']; exact hen) (by rw [x23']; exact hc.hz_lt) c11
+    c₅ e₅.wb_right (by rwx [x61']) (by rw [x23']; exact hc.hz_lt) c11
     ((G₅ _ (by decide) (by omega)).trans hc.two) ((G₅ _ (by decide) (by omega)).trans hc.rσ)
     hc.σle (originOK_congr (fun r h1 h2 => G₅ r (by
-      simp only [Bk, decide_eq_false_iff_not, not_and, not_lt]; omega) (by omega)) hc.org)
+      sio only [Bk, decide_eq_false_iff_not, not_and, not_lt]) (by omega)) hc.org)
   rw [x61', x23'] at v₆
   have f₆ := exec_frameB e₆ (B := fun r => Bk r || decide (r = 120066)) (by decide)
   have R₆ : ∀ r, Bk r = false → r ≠ 120066 → c₆.nreg r = c₅.nreg r :=
@@ -562,7 +565,7 @@ theorem edgeT_exec (hG : GoodEnv P) (hW : 2 * P.n + 3 ≤ W) (hD : DistinctHeigh
   · have hna : ¬ Ahead (sgnOf σb) zo (xe (Qof P) (eIdx P.n s ci) hz) := fun h => by
       have := v₆.2 h; omega
     refine ⟨c₆, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.ifLtN_false
-      (by rw [c11]; exact hsp) (.seq e₆ (.ifLtN_true (by rw [c11']; exact hah)
+      (by rwx [c11]) (.seq e₆ (.ifLtN_true (by rwx [c11'])
         (.skip e₆.wb_right)))))))),
       by omega, ?_, ?_⟩
     · unfold BestOK
@@ -583,7 +586,7 @@ theorem edgeT_exec (hG : GoodEnv P) (hW : 2 * P.n + 3 ≤ W) (hD : DistinctHeigh
       rw [R₆ _ (by decide) (by decide), x61', G₆ _ (by decide) (by omega)]) hn
     ((R₆ _ (by decide) (by decide)).trans x23') hc.hz_lt c11'
     ((G₆ _ (by decide) (by omega)).trans hc.rσ) hc.σle (mb := mb)
-      (by rw [G₆ _ (by decide) (by omega)]; exact hcim) (by
+      (by rwx [G₆ _ (by decide) (by omega)]) (by
       unfold BestOK
       rw [R₆ 120050 (by decide) (by decide), R₆ 120052 (by decide) (by decide),
         R₆ 120051 (by decide) (by decide)]
@@ -595,7 +598,7 @@ theorem edgeT_exec (hG : GoodEnv P) (hW : 2 * P.n + 3 ≤ W) (hD : DistinctHeigh
     exact hbo₅
   rw [c60, hbo₆] at v₇
   refine ⟨c₇, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.ifLtN_false
-    (by rw [c11]; exact hsp) (.seq e₆ (.ifLtN_false (by rw [c11']; exact hah) e₇))))))),
+    (by rwx [c11]) (.seq e₆ (.ifLtN_false (by rwx [c11']) e₇))))))),
     by omega, hb₇, ?_⟩
   rw [v₇]
   unfold upd1 HitC

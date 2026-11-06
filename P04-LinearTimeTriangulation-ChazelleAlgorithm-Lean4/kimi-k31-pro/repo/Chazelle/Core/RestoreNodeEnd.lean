@@ -54,7 +54,7 @@ theorem side_after {a b : ℝ} (hab : a ≠ b) (k : ℝ) :
       · exact ⟨le_rfl, h⟩
       · exact ⟨h3.le, h4⟩
   · rw [h1, h2]
-    have hba : b < a := lt_of_le_of_ne (not_lt.1 h) (Ne.symm hab)
+    have hba  := lt_of_le_of_ne (not_lt.1 h) (Ne.symm hab)
     constructor
     · rintro (h3 | h3)
       · rcases h3.lt_or_eq with h3 | h3

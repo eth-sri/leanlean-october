@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseDrvBFar2
 public import Chazelle.Core.DownPhaseDrvDCall3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down-phase base (D9), RAM: appending an emitted chord
@@ -68,7 +72,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 /-- **The record.** -/
 theorem recS_exec (c : Config) (hw : WordsBounded W c) {li : Bool} {n i d w : ℕ}
     (hn : c.nreg 212010 = n) (hi : c.nreg 212070 = i) (_hin : i < n) (hd : c.nreg 212086 = d)
@@ -87,9 +90,9 @@ theorem recS_exec (c : Config) (hw : WordsBounded W c) {li : Bool} {n i d w : �
     cases li with
     | true =>
       have a := Exec.copyN (P := P) w₁ 212046 212070
-      refine ⟨_, _, .ifLtN_true (by rw [g₁ _ (by norm_num), g₁ _ (by norm_num), c1, hli]; simp) a,
+      refine ⟨_, _, .ifLtN_true (by rws [g₁ _ (by norm_num), g₁ _ (by norm_num), c1, hli]) a,
         by omega, ?_, fun r h => by simp [h]⟩
-      simp only [Machine.upd_same]; rw [g₁ _ (by norm_num), hi]; rfl
+      simp [Machine.upd_same]; rwr [g₁ _ (by norm_num), hi]
     | false =>
       obtain ⟨c₂, k₂, e₂, hk₂, v⟩ : ∃ c₂ k₂, Exec P W (block [.subN 212046 212010 212000,
           .subN 212046 212046 212070]) c₁ c₂ k₂ ∧ k₂ = 2 ∧ (c₂.nreg 212046 = n - 1 - i ∧
@@ -98,35 +101,34 @@ theorem recS_exec (c : Config) (hw : WordsBounded W c) {li : Bool} {n i d w : �
         refine ⟨rfl, ?_, fun r h => ?_⟩
         · config_simp; rw [g₁ _ (by norm_num), g₁ _ (by norm_num), g₁ _ (by norm_num), hn, c0, hi]
         · config_simp; simp [h]
-      exact ⟨c₂, _, .ifLtN_false (by rw [g₁ _ (by norm_num), g₁ _ (by norm_num), c1, hli]; simp)
-        e₂, by omega, by rw [v.1]; rfl, v.2⟩
+      exact ⟨c₂, _, .ifLtN_false (by rws [g₁ _ (by norm_num), g₁ _ (by norm_num), c1, hli])
+        e₂, by omega, by rwr [v.1], v.2⟩
   have w₂ := e₂.wb_right
   -- the ends
   have hd' : c₂.nreg 212086 = d := by rw [g₂ _ (by norm_num), g₁ _ (by norm_num), hd]
   have c1' : c₂.nreg 212001 = 0 := by rw [g₂ _ (by norm_num), g₁ _ (by norm_num), c1]
   have hw' : c₂.nreg 212097 = w := by rw [g₂ _ (by norm_num), g₁ _ (by norm_num), hw97]
   have h81 : c₂.nreg 81008 = i := by
-    rw [g₂ _ (by norm_num), hc₁]; simp only [Machine.upd_same]; exact hi
+    rw [g₂ _ (by norm_num), hc₁]; simp [Machine.upd_same]; exact hi
   rcases (by omega : d = 0 ∨ d = 1) with rfl | rfl
   · obtain ⟨c₃, k₃, e₃, hk₃, v⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 81009 212046,
         .copyN 81010 212097]) c₂ c₃ k₃ ∧ k₃ = 2 ∧ (c₃.nreg 81009 = ivB li n i ∧
         c₃.nreg 81010 = w ∧ c₃.nreg 81008 = i) := by
       exec_block
-      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [v46, hw', h81]
-    have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_false (by rw [c1', hd']; omega) e₃))
+      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp [v46, hw', h81]
+    have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_false (by rwo [c1', hd']) e₃))
     exact ⟨c₃, _, ex, by omega, v.2.2, v.1, v.2.1, exec_frameB ex wr_recS⟩
   · obtain ⟨c₃, k₃, e₃, hk₃, v⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 81009 212097,
         .copyN 81010 212046]) c₂ c₃ k₃ ∧ k₃ = 2 ∧ (c₃.nreg 81009 = w ∧
         c₃.nreg 81010 = ivB li n i ∧ c₃.nreg 81008 = i) := by
       exec_block
-      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [v46, hw', h81]
-    have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_true (by rw [c1', hd']; omega) e₃))
+      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp [v46, hw', h81]
+    have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_true (by rwo [c1', hd']) e₃))
     exact ⟨c₃, _, ex, by omega, v.2.2, v.1, v.2.1, exec_frameB ex wr_recS⟩
 
 theorem vtrip_fst (li : Bool) (n i d w : ℕ) : (vtrip li n i d w).1 = i := by
   unfold vtrip; split_ifs <;> rfl
 
-set_option maxHeartbeats 8000000 in
 /-- **Appending an emitted chord**: the record `x = vtrip li n i d w` is appended at
 `B₂ + 3 |T|`, the buckets of its ends at `BK + 2 |T|`, `BK + 2 |T| + 1` (`BK = B₂ + 3 Kmax`). -/
 theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
@@ -169,7 +171,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
   set t := T.length with ht
   set BK := B₂ + 3 * Kmax with hBK
   set p := m₀ (H + 5) + 2 + 5 * r with hpd
-  have hW3 : P.n + 3 ≤ W := by have := hWh; unfold hostWords at this; omega
+  have hW3 : P.n + 3 ≤ W := by have := hWh; ufo hostWords at this
   -- 1. the record
   obtain ⟨c₁, k₁, e₁, hk₁, r1, r2, r3, f₁⟩ := recS_exec (P := P) c hw hn hi hin hd hd1 hw97 hli c0 c1
   have w₁ := e₁.wb_right
@@ -182,7 +184,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
     (by rw [g₁ _ (by decide), d31]) (by rw [g₁ _ (by decide), d16]) (by omega) (by omega)
     (by omega) (by rw [f₁.2.2.1, show p - 1 = m₀ (H + 5) + 5 * r + 1 by omega,
       hlow _ (by omega)]; exact hLB)
-    (by rw [r1, vtrip_fst]; omega) (by omega)
+    (by rwo [r1, vtrip_fst]) (by omega)
   have w₂ := e₂.wb_right
   rw [f₁.2.2.1, show p - 2 = m₀ (H + 5) + 5 * r by omega, hlow _ (by omega), ← hnA] at d42
   rw [f₁.2.2.1, show p - 1 = m₀ (H + 5) + 5 * r + 1 by omega, hlow _ (by omega)] at d43
@@ -225,16 +227,16 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
     obtain ⟨c₅, k₅, e₅, hk₅, m₅, d22₅, f₅⟩ := DrvD.stB_exec (P := P) c₄ e₄.wb_right
       (d := BK + 2 * t + 1) d22₄ (by rw [f₄.1 _ (by decide), g₃ _ (by norm_num), d02₂])
       (by omega)
-    have v53 : c₄.nreg 216053 = 0 := by rw [f₄.1 _ (by decide), hc₃]; simp
+    have v53 : c₄.nreg 216053 = 0 := by rws [f₄.1 _ (by decide), hc₃]
     have ex : Exec P W emitS c c₅ (k₁ + (k₂ + (1 + (k₄ + k₅) + 2))) :=
-      .seq e₁ (.seq e₂ (.ifLtN_false (by rw [c1₂, hK₂, hK0]; omega) (.seq e₃ (.seq e₄ e₅))))
+      .seq e₁ (.seq e₂ (.ifLtN_false (by rwo [c1₂, hK₂, hK0]) (.seq e₃ (.seq e₄ e₅))))
     have m₅' : c₅.nmem = upd (upd c₂.nmem (BK + 2 * t) 0) (BK + 2 * t + 1) 0 := by
-      rw [m₅, m₄, v53]; rfl
+      rwr [m₅, m₄, v53]
     have FM₃ : FrameM Bemit c₂ c₅ := (((FrameB.toM (exec_frameB e₃ (by decide :
       wr (fun q => decide (q = 216053)) (.instr (.constN 216053 0)) = true))).mono fun q h => by
-        simp only [decide_eq_true_eq] at h; subst h; decide).trans
-      ((f₄.mono fun q h => by simp only [decide_eq_true_eq] at h; subst h; decide).trans
-        (f₅.mono fun q h => by simp only [decide_eq_true_eq] at h; subst h; decide)))
+        simp [decide_eq_true_eq] at h; subst h; decide).trans
+      ((f₄.mono fun q h => by simp [decide_eq_true_eq] at h; subst h; decide).trans
+        (f₅.mono fun q h => by simp [decide_eq_true_eq] at h; subst h; decide)))
     have G5 : ∀ q, q ≠ 216053 → q ≠ 216022 → c₅.nreg q = c₂.nreg q := fun q h1 h2 => by
       rw [f₅.1 q (by simpa using h2), f₄.1 q (by simpa using h2), g₃ q h1]
     refine ⟨c₅, _, ex, ?_, FM₁.trans (FM₂.trans FM₃), e₅.wb_right, fun a ha => ?_, ?_, ?_, ?_,
@@ -244,8 +246,8 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
     · rw [m₅', Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         m₂' a (by omega)]
     · rw [G5 _ (by norm_num) (by norm_num), d20']
-    · rw [G5 _ (by norm_num) (by norm_num), d21']; ring
-    · rw [d22₅]; ring
+    · rwring [G5 _ (by norm_num) (by norm_num), d21']
+    · rwring [d22₅]
     · refine Gran.ChordListAt.congr hL₂ fun a h1 h2 => ?_
       rw [hlen₂] at h2
       rw [m₅', Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
@@ -260,7 +262,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
   · -- `K > 0`: the arc scans
     have S1 := hscan hKp c₂.nmem hlow₂ w₂.2 0 (by norm_num)
     obtain ⟨c₃, k₃, e₃, hk₃, fd₀, f₃⟩ := DrvD.scanS_exec S1 c₂ w₂ rfl
-      (by rw [d40]; rfl) (by rw [d41]; simp [DrvD.endPos, vtrip_fst, hx]) (by rw [d42])
+      (by rwr [d40]) (by rw [d41]; simp [DrvD.endPos, vtrip_fst, hx]) (by rw [d42])
       (by rw [d43]) (by rw [K2 _ (by decide) (by decide), d14])
       (by rw [K2 _ (by decide) (by decide), d17]) d02₂
       (by rw [K2 _ (by decide) (by decide), d03]) (by rw [d400]) (hex hKp 0 (by norm_num))
@@ -278,14 +280,13 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
     -- the memory before the second scan
     have m₄' : c₄.nmem = upd c₂.nmem (BK + 2 * t) (c₃.nreg 216053) := by rw [m₄, f₃.2.2.1]
     have hlow₅ : ∀ a, a < A₀ → c₅.nmem a = m₀ a := fun a ha => by
-      show c₄.nmem a = _
       rw [m₄', Machine.upd_other _ _ _ (by omega), hlow₂ a ha]
     have S2 := hscan hKp c₅.nmem hlow₅ w₅.2 1 (by norm_num)
     have K3 : ∀ q, DrvD.Bscan q = false → q ≠ 216022 → q ≠ 216040 → c₅.nreg q = c₂.nreg q :=
       fun q h1 h2 h3 => by rw [g₅ q h3, g₄ q h2, g₃ q h1]
     obtain ⟨c₆, k₆, e₆, hk₆, fd₁, f₆⟩ := DrvD.scanS_exec S2 c₅ w₅ rfl
-      (by rw [hc₅]; simp only [Machine.upd_same]
-          rw [g₄ _ (by norm_num), g₃ _ (by decide), g₂ _ (by decide), r3]; rfl)
+      (by rw [hc₅]; simp [Machine.upd_same]
+          rwr [g₄ _ (by norm_num), g₃ _ (by decide), g₂ _ (by decide), r3])
       (by rw [K3 _ (by decide) (by norm_num) (by norm_num), d41]
           simp [DrvD.endPos, vtrip_fst, hx])
       (by rw [K3 _ (by decide) (by norm_num) (by norm_num), d42])
@@ -301,7 +302,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
       (by rw [f₆.1 _ (by decide), K3 _ (by decide) (by norm_num) (by norm_num), d02₂])
       (by omega)
     have ex : Exec P W emitS c c₇ (k₁ + (k₂ + ((k₃ + (k₄ + (1 + (k₆ + k₇)))) + 1))) :=
-      .seq e₁ (.seq e₂ (.ifLtN_true (by rw [c1₂, hK₂]; exact hKp)
+      .seq e₁ (.seq e₂ (.ifLtN_true (by rwx [c1₂, hK₂])
         (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))))
     have m₇' : c₇.nmem = upd (upd c₂.nmem (BK + 2 * t) (c₃.nreg 216053)) (BK + 2 * t + 1)
         (c₆.nreg 216053) := by
@@ -326,8 +327,8 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
     · rw [m₇', Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         m₂' a (by omega)]
     · rw [G7 _ (by decide) (by norm_num) (by norm_num), d20']
-    · rw [G7 _ (by decide) (by norm_num) (by norm_num), d21']; ring
-    · rw [d22₇]; ring
+    · rwring [G7 _ (by decide) (by norm_num) (by norm_num), d21']
+    · rwring [d22₇]
     · refine Gran.ChordListAt.congr hL₂ fun a h1 h2 => ?_
       rw [hlen₂] at h2
       rw [m₇', Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]

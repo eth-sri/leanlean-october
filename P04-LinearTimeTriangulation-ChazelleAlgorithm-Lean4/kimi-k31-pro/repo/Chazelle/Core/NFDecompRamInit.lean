@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.NFDecompProg
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Tree decomposition (WP-C), part 13: setup and initialisation on the RAM
@@ -16,7 +20,6 @@ open Machine Machine.Stmt Programs
 
 @[expose] public section
 
-set_option maxHeartbeats 1000000
 
 section setup
 
@@ -53,14 +56,14 @@ theorem setupS_exec {c : Config} (hw : WordsBounded W c) {B K R CB RB LB : ℕ}
   · config_simp; rw [hB, e3, hCB]
   · config_simp; rw [hB, e5, hRB]
   · config_simp; rw [hB, e7, hLB]
-  · config_simp; rfl
+  · csr
   · config_simp; rw [hB, hR]
   · intro f hf
     simp only [fb]
     interval_cases f <;> config_simp <;>
       simp (config := { failIfUnchanged := false }) only [hB, hR, hA] <;> omega
   · unfold ALLOC; config_simp
-  · config_simp; rw [hB, hR, hK, hA]; omega
+  · config_simp; rwo [hB, hR, hK, hA]
   · intro r hr hra
     unfold ALLOC at hra
     config_simp
@@ -153,7 +156,7 @@ theorem initLoop_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c
     ⟨hw, DFr.refl _ _ c, by omega, fun j hj => by omega⟩
   have hR' := hR.frame hf'
   rw [hR'.rR] at htest
-  refine ⟨c', k, e, by rw [h0] at hk; omega, hw', hf', fun j hj => hv j (by omega)⟩
+  refine ⟨c', k, e, by rwo [h0] at hk, hw', hf', fun j hj => hv j (by omega)⟩
 
 /-- **The initialisation.** -/
 theorem initS_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
@@ -198,7 +201,7 @@ theorem initS_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
     simp only [b1, b2, b13, b15, z, o, t]
     unfold fv
     simp only [Machine.upd_apply]
-    split_ifs <;> omega
+    splao
 
 end init
 

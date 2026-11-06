@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.DownPhaseDrvBTopProg
 public import Chazelle.Core.DownPhaseDrvBSize
 public import Chazelle.Core.Setup
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Down-phase base (D9), top level, part 2: the math
@@ -47,7 +51,7 @@ theorem descWF_int {P : Polygon} {A : ℕ} {m : ℕ → ℕ} {D : ℕ}
 /-! ## Sizes of the regions -/
 
 theorem host_run_length {n : ℕ} (hn : 1 ≤ n) : (Host.pts n [HostItem.run 0 (n - 1)]).length = n := by
-  simp [Host.pts, HostItem.pts]; omega
+  sio [Host.pts, HostItem.pts]
 
 theorem topGrade_le' (n : ℕ) : topGrade n ≤ n := by
   unfold topGrade
@@ -57,7 +61,6 @@ section sizes
 
 variable {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {li : Bool} {γ : ℕ}
 
-set_option maxHeartbeats 1000000 in
 /-- **The bounds of the region loop.** -/
 theorem reg_sizes (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P)) (Qof P) L)
     (hperm : E.Perm (List.range (2 * L.length)))
@@ -120,11 +123,11 @@ theorem newLB_facts (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P
     (hli : li = true ↔ Mountain.LeftInside (Qof P)) :
     ChordTriplesOK (interiorModel (Qof P)) (Qof P) (L ++ newLB li (Qof P) L E) ∧
       chords (Qof P) ⊆ famL (interiorModel (Qof P)) (Qof P) (L ++ newLB li (Qof P) L E) := by
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hDH : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
+  have hQ  := (shearInvariance (epsOf P) P).1 hG.1
+  have hDH  := (goodShear_epsOf hG.2).2.1
   by_cases hK : L.length = 0
   · rw [newLB_zero li (Qof P) E hK]
-    have hL : L = [] := List.length_eq_zero_iff.1 hK
+    have hL  := List.length_eq_zero_iff.1 hK
     subst hL
     rw [List.nil_append]
     exact ⟨newL0_ok hQ hDH hli, newL0_full hQ hDH hli⟩
@@ -144,7 +147,7 @@ theorem count_le {K c p b : ℕ} (h : K * 2 ^ b ≤ c * (2 ^ p + 2 ^ b)) : K ≤
   have h2 : c * (2 ^ p + 2 ^ b) ≤ c * (2 ^ p + 1) * 2 ^ b := by
     have : 2 ^ p + 2 ^ b ≤ (2 ^ p + 1) * 2 ^ b := by
       have : 2 ^ p ≤ 2 ^ p * 2 ^ b := Nat.le_mul_of_pos_right _ (by omega)
-      rw [Nat.add_mul, Nat.one_mul]; omega
+      rwo [Nat.add_mul, Nat.one_mul]
     calc c * (2 ^ p + 2 ^ b) ≤ c * ((2 ^ p + 1) * 2 ^ b) := Nat.mul_le_mul_left _ this
       _ = c * (2 ^ p + 1) * 2 ^ b := by ring
   exact Nat.le_of_mul_le_mul_right (h.trans h2) (by omega)
@@ -179,7 +182,7 @@ theorem top_cost {n K K₂ A K' S₀ Cm Mb Cc Γ κR κS κD κB : ℕ} (hK : K 
       κR * ((3 * Cc + 1) * (n + 1)) * (5 * Γ + 9) * (Γ + 3) +
         κS * ((9 * Cc + 2) * (n + 1)) * (20 * Γ + 33) + κD * ((3 * Cc + 2) * (n + 1)) +
         κB * ((3 * Cc + 2) * (n + 1)) + 40 * (n + 1) := by
-    unfold topK; ring
+    ufring topK
   have hX1 : K + 1 ≤ (3 * Cc + 1) * (n + 1) := by
     have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := by nlinarith
     nlinarith

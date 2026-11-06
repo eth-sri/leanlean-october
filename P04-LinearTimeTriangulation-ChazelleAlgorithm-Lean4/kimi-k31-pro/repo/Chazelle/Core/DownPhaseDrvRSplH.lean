@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.DownPhaseDrvRSplF
 public import Chazelle.Core.DownPhaseDrvRPad
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase driver (RAM side): the splice, tail
@@ -39,7 +44,7 @@ theorem wrM2_spl8 :
 /-- Registers of `bDownDrv` are outside the bands of the sorted build. -/
 theorem band21_notin {r : ℕ} (h1 : 210000 ≤ r) (h2 : r < 220000) :
     bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) := by
-  simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bSign, bBuild]; omega
+  sio only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bSign, bBuild]
 
 /-- The cost of the tail (`A₀` the start of `L'`, `A` the allocation pointer on entry). -/
 def splTCost (κB K K₂ A₀ A : ℕ) : ℕ :=
@@ -49,7 +54,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The tail of the splice.** -/
 theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEnv P)
     (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounded W c)
@@ -109,19 +113,19 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, m71, mA, mseg, mlow, mfr, mrr, mrm, mout⟩ :=
     splC_exec (P := P) (W := W) hG hWn c hw (D := D) (T := T) (SE := SE) (Rb := Rb) (K := K)
       (K₂ := K₂) (M := M) (L' := L ++ L₂) (E := E) (E₂ := E₂) h27 h28 h29 h04 h48 h34 h40 h42
-      (by rw [h42', hlen]) hlen hwf hM hok hrec (by rw [hlen]; exact hT) hE hSE hE₂ hRb hcodes
+      (by rw [h42', hlen]) hlen hwf hM hok hrec (by rwx [hlen]) hE hSE hE₂ hRb hcodes
       (by omega)
   rw [← hA₃] at m71 mA mlow
   have hmseg : seg c₄.nmem (c₄.nreg 210071) (2 * (K + K₂)) = E' := mseg
   have k4 : ∀ r, 210000 ≤ r → r < 220000 → Bs56 r = false → Bcp r = false →
       c₄.nreg r = c.nreg r := fun r h1 h2 h3 h4 =>
-    mfr r (band21_notin h1 h2) h3 h4 (by unfold ALLOC; omega)
+    mfr r (band21_notin h1 h2) h3 h4 (by ufo ALLOC)
   have b26 : c₄.nreg 210026 = A₀ := by rw [k4 _ (by norm_num) (by norm_num) (by decide) (by decide), h26]
   -- the padding
   obtain ⟨c₅, e₅, pfr, prr, pnm, prm, pout, w₅⟩ :=
-    padS_exec (P := P) (src := 210026) w₄ (by rw [b26]; have := mA; unfold ALLOC at this; omega)
-      (by unfold hostWords at hWn; omega)
-  have hp9 : c₄.nreg 9999 = A₃ + 4 * (K + K₂) := by have := mA; unfold ALLOC at this; omega
+    padS_exec (P := P) (src := 210026) w₄ (by rw [b26]; have := mA; ufo ALLOC at this)
+      (by ufo hostWords at hWn)
+  have hp9 : c₄.nreg 9999 = A₃ + 4 * (K + K₂) := by have := mA; ufo ALLOC at this
   have q01 : c₅.nreg 210001 = D := by
     rw [pfr _ (by decide) (by decide), k4 _ (by norm_num) (by norm_num) (by decide) (by decide), h01]
   have q25 : c₅.nreg 210025 = K + K₂ := by
@@ -139,39 +143,39 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
   have f₆ := exec_frameM e₆ wrM_spl7
   have w₆ := e₆.wb_right
   have a6 : c₆.nreg ALLOC = A₃ + 4 * (K + K₂) := by
-    rw [f₆.1 _ (by decide)]; exact q9
+    rwx [f₆.1 _ (by decide)]
   have hm6 : ∀ a, a < A₃ → c₆.nmem a = c.nmem a := fun a ha => by rw [hm₆, pnm, mlow a ha]
   obtain ⟨hM₆, hwf₆⟩ := desc_agree hwf hM (m' := c₆.nmem) hm6
-  have hwf₆' : ModelDescWF P (c₆.nreg ALLOC) c₆.nmem D := hwf₆.mono (by rw [a6]; omega)
+  have hwf₆' : ModelDescWF P (c₆.nreg ALLOC) c₆.nmem D := hwf₆.mono (by rwo [a6])
   have hCL₆ : ChordListAt c₆.nmem A₀ (L ++ L₂) := fun i hi => by
     obtain ⟨x1, x2, x3⟩ := hCL i hi
     rw [hlen] at hi
-    exact ⟨by rw [hm6 _ (by omega)]; exact x1, by rw [hm6 _ (by omega)]; exact x2,
-      by rw [hm6 _ (by omega)]; exact x3⟩
+    exact ⟨by rwx [hm6 _ (by omega)], by rwx [hm6 _ (by omega)],
+      by rwx [hm6 _ (by omega)]⟩
   have hseg₆ : seg c₆.nmem (A₃ + 2 * (K + K₂)) (2 * (K + K₂)) = E' := by
-    rw [hm₆, pnm, ← m71]; exact hmseg
+    rwx [hm₆, pnm, ← m71]
   -- the sorted build
   have H7 := hB P W c₆ w₆
     (by
       simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd]
-      refine ⟨hG, hWn, by rw [v0]; exact hwf₆', M, L ++ L₂, E', by rw [v0]; exact hM₆, hgood,
-        by rw [v2, hlen], by rw [v1, a6, hlen]; omega, by rw [v1]; exact hCL₆, hok,
-        by rw [v4, a6, hlen]; omega, by rw [v4, hlen]; exact hseg₆, hP, hS⟩)
+      refine ⟨hG, hWn, by rwx [v0], M, L ++ L₂, E', by rwx [v0], hgood,
+        by rw [v2, hlen], by rwo [v1, a6, hlen], by rwx [v1], hok,
+        by rwo [v4, a6, hlen], by rwx [v4, hlen], hP, hS⟩)
     (by
       simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd]
-      rw [a6, v2]; omega)
+      rwo [a6, v2])
   obtain ⟨c₇, k₇, e₇, hk₇, post₇, fr₇⟩ := H7
   simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd] at hk₇ post₇
   rw [v2] at hk₇
-  obtain ⟨o1, o2, -, -, -⟩ := post₇ M (L ++ L₂) (by rw [v0]; exact hM₆) (by rw [v2, hlen])
-    (by rw [v1]; exact hCL₆)
+  obtain ⟨o1, o2, -, -, -⟩ := post₇ M (L ++ L₂) (by rwx [v0]) (by rw [v2, hlen])
+    (by rwx [v1])
   rw [v4, hlen, hseg₆] at o2
   rw [a6] at o1
   obtain ⟨fr7, rr7, nm7, rm7, out7, al7, au7⟩ := fr₇
   rw [a6] at al7 au7 nm7 rm7
   have k7 : ∀ r, 210000 ≤ r → r < 220000 → c₇.nreg r = c₆.nreg r := fun r h1 h2 =>
-    fr7 r (by simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bSign, bBuild]; omega)
-      (by unfold ALLOC; omega)
+    fr7 r (by sio only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bSign, bBuild])
+      (by ufo ALLOC)
   have r26 : c₇.nreg 210026 = A₀ := by
     rw [k7 _ (by norm_num) (by norm_num), f₆.1 _ (by decide), q26]
   have r25 : c₇.nreg 210025 = K + K₂ := by
@@ -196,20 +200,20 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
   · unfold splTCost
     rw [hp9, b26, hk₆, hk₈]
     omega
-  · rw [a8]; omega
-  · rw [a8, hp9, b26]; omega
-  · rw [u4]; omega
-  · rw [u4, a8]; omega
+  · rwo [a8]
+  · rwo [a8, hp9, b26]
+  · rwo [u4]
+  · rwo [u4, a8]
   · rw [u4, seg_congr (m' := c₆.nmem) fun i hi => hm8 _ (by omega), hseg₆]
-  · rw [u5]; omega
-  · rw [u5, hm₈, a8]; exact o2
+  · rwo [u5]
+  · rwx [u5, hm₈, a8]
   · rw [hm8 a (by omega), hm6 a ha]
-  · rw [f₈.1 r (by simp only [decide_eq_false_iff_not]; omega)]
+  · rw [f₈.1 r (by sio only [decide_eq_false_iff_not])]
     rw [fr7 r (by
       simp only [Finset.mem_insert, Finset.mem_singleton] at hr ⊢; tauto) hra]
     rw [f₆.1 r (by
       simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bSign, bBuild] at hr
-      simp only [decide_eq_false_iff_not]; omega)]
+      sio only [decide_eq_false_iff_not])]
     rw [pfr r h68 h69, mfr r hr h56 hcp hra]
   · rw [exec_frameM2 e₈ wrM2_spl8 r rfl, rr7 r (by
       simp only [Finset.mem_insert, Finset.mem_singleton] at hr ⊢; tauto),

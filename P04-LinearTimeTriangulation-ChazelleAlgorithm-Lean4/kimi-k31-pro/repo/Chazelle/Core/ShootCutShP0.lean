@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ShootCutShMerge
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 47: the segments of a kind-0 piece
@@ -53,7 +57,7 @@ theorem pc0_pts {x y : WPos} (hxn : x.edge < 2 * C.m + 7) (hyn : y.edge < 2 * C.
         lerp ((chainModel C).wa (pcEdge (2 * C.m + 7) x.edge d))
           ((chainModel C).wb (pcEdge (2 * C.m + 7) x.edge d))
           (pcB (pcD (2 * C.m + 7) x.edge y.edge) ((chainModel C).param Q y) d) := by
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hnW  := chainModel_n C
   set n := 2 * C.m + 7
   set D := pcD n x.edge y.edge
   constructor
@@ -63,12 +67,12 @@ theorem pc0_pts {x y : WPos} (hxn : x.edge < 2 * C.m + 7) (hyn : y.edge < 2 * C.
       simp only [↓reduceIte]
       rw [show pcEdge n x.edge 0 = x.edge by unfold pcEdge; rw [Nat.add_zero, Nat.mod_eq_of_lt hxn]]
       rfl
-    · simp only [h0, ↓reduceIte]; rfl
+    · sirfl only [h0, ↓reduceIte]
   · unfold pcV pcB
     by_cases hD : d = D
     · subst hD
       simp only [↓reduceIte]
-      rw [pcEdge_D hxn hyn]; rfl
+      rwr [pcEdge_D hxn hyn]
     · simp only [hD, ↓reduceIte]
       rw [lerp_one']
       show lerp ((chainModel C).wa _) ((chainModel C).wb _) 0 = _
@@ -108,7 +112,7 @@ def segSet (C : Chain) (Q : Polygon) (x y : WPos) (d' : ℕ) : Set Point :=
     ((chainModel C).pos Q (pcV (2 * C.m + 7) x y (pcD (2 * C.m + 7) x.edge y.edge) d))
 
 theorem segSet_zero (x y : WPos) : segSet C Q x y 0 = ∅ := by
-  unfold segSet; simp
+  ufs segSet
 
 theorem segSet_succ (x y : WPos) (d : ℕ) : segSet C Q x y (d + 1) = segSet C Q x y d ∪
     seg ((chainModel C).pos Q (pcU (2 * C.m + 7) x d))
@@ -126,7 +130,7 @@ theorem segSet_full {N : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q N x)
       (chainModel C).arcSet ((chainModel C).key Q x) ((chainModel C).key Q y) := by
   rw [piece0_union hx hy hxn hyn hwt]
   unfold segSet pcSet
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hnW  := chainModel_n C
   ext p
   simp only [mem_iUnion, List.mem_range, exists_prop]
   constructor
@@ -134,7 +138,7 @@ theorem segSet_full {N : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q N x)
     refine ⟨d, hd, ?_⟩
     obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)
     obtain ⟨a0, ab, b1⟩ := pc0_ab hx hy hxn hyn hwt d
-    rw [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV]; exact hp
+    rwx [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV]
   · rintro ⟨d, hd, hp⟩
     refine ⟨d, hd, ?_⟩
     obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)

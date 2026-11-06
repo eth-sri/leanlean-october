@@ -1,6 +1,13 @@
 module
 
 public import Chazelle.Core.BruteRam4
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-K on the RAM, part 5: the far edge and the emission of a chord
@@ -10,9 +17,6 @@ public import Chazelle.Core.BruteRam4
 (`180019`); `emitS d = scanS d ; farS d ; writeS d` (`emitS_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -41,9 +45,9 @@ theorem modS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
       rfl, rfl⟩
   rw [mod_small hM hx]
   by_cases h : c.nreg 180083 < M
-  · exact ⟨_, _, .ifLtN_true (by rw [h12]; exact h) (Exec.copyN hw 180082 180083), by omega,
+  · exact ⟨_, _, .ifLtN_true (by rwx [h12]) (Exec.copyN hw 180082 180083), by omega,
       by simp [h], fr _⟩
-  · exact ⟨_, _, .ifLtN_false (by rw [h12]; exact h) (Exec.subN hw 180082 180083 180012),
+  · exact ⟨_, _, .ifLtN_false (by rwx [h12]) (Exec.subN hw 180082 180083 180012),
       by omega, by simp [h, h12], fr _⟩
 
 /-- The forward tour position of the chain edge `best`. -/
@@ -78,15 +82,15 @@ theorem fwdS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBo
       (block [.addN 180083 180052 180012, .subN 180083 180083 180015]) c c₁ k₁ ∧ k₁ = 2 ∧
       c₁.nreg 180083 = b + 2 * C.m - tS C ∧ FrameB (fun r => decide (r = 180083)) c c₁ := by
     exec_block
-    · config_simp; rw [hb, h12]; omega
+    · config_simp; rwo [hb, h12]
     · refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
       · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
         rw [hb, h12, h15]
       · simp only [decide_eq_false_iff_not] at hr
         simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
   obtain ⟨c₂, k₂, e₂, hk₂, q82, R₂⟩ := modS_exec (P := P) c₁ e₁.wb_right (M := 2 * C.m)
-    (by omega) (by rw [fr1 R₁ (by decide), h12]) (by rw [q83]; unfold tS; omega)
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, by rw [q82, q83]; rfl,
+    (by omega) (by rw [fr1 R₁ (by decide), h12]) (by ruo [q83] tS)
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, by rwr [q82, q83],
     (sc_of_one (by omega) R₁).trans (sc_of_one (by omega) R₂)⟩
 
 theorem bwdS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBounded W c)
@@ -103,15 +107,15 @@ theorem bwdS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBo
       c₁.nreg 180083 = 2 * C.m - 1 - b + 2 * C.m - tS C ∧
       FrameB (fun r => decide (r = 180083)) c c₁ := by
     exec_block
-    · config_simp; rw [hb, h12, h11]; omega
+    · config_simp; rwo [hb, h12, h11]
     · refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
       · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
         rw [hb, h12, h15, h11]
       · simp only [decide_eq_false_iff_not] at hr
         simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
   obtain ⟨c₂, k₂, e₂, hk₂, q82, R₂⟩ := modS_exec (P := P) c₁ e₁.wb_right (M := 2 * C.m)
-    (by omega) (by rw [fr1 R₁ (by decide), h12]) (by rw [q83]; unfold tS; omega)
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, by rw [q82, q83]; rfl,
+    (by omega) (by rw [fr1 R₁ (by decide), h12]) (by ruo [q83] tS)
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, by rwr [q82, q83],
     (sc_of_one (by omega) R₁).trans (sc_of_one (by omega) R₂)⟩
 
 theorem farEdge_none {C : Chain} {k : ℕ} {σ : ℝ} (h : scan C k σ C.m = none) :
@@ -123,7 +127,6 @@ theorem farEdge_some {C : Chain} {k : ℕ} {σ : ℝ} {b : ℕ} (h : scan C k σ
       fwdIdx C.m (tS C) b else bwdIdx C.m (tS C) b) + 6 := by
   unfold farEdge; simp only [h]
 
-set_option maxHeartbeats 1000000 in
 theorem farS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) (hW4 : 4 * P.n ≤ W)
     {C : Chain} (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n) {d k : ℕ} (hd : d ≤ 1)
     (hk : k ≤ C.m) (c : Config) (hw : WordsBounded W c) (hS : SI C (C.s + k) c) (hF : FI C c)
@@ -134,16 +137,16 @@ theorem farS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) 
   rcases hsc : scan C k (sig d) C.m with _ | b
   · rw [hsc] at hE
     simp only [Enc] at hE
-    have e := Exec.constN (P := P) hw 180082 (if d = 0 then 3 else 1) (by split_ifs <;> omega)
-    refine ⟨_, _, .ifLtN_true (by rw [hE, h11]; omega) e, by omega,
+    have e := Exec.constN (P := P) hw 180082 (if d = 0 then 3 else 1) (by splao)
+    refine ⟨_, _, .ifLtN_true (by rwo [hE, h11]) e, by omega,
       ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩, ?_⟩
     · have : r ≠ 180082 := by
-        unfold Bsc at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega
+        unfold Bsc at hr; sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
       simp [this]
     · rw [farEdge_none hsc]
       simp only [Config.nreg_mk, Machine.upd_same]
       by_cases h0 : d = 0
-      · subst h0; rw [sig_zero]; simp
+      · subst h0; rws [sig_zero]
       · rw [ite_eq_right h0, sig_one h0, ite_eq_right (by norm_num)]
   · rw [hsc] at hE
     simp only [Enc] at hE
@@ -154,8 +157,8 @@ theorem farS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) 
         c₁.nreg 180055 = C.s + b ∧ c₁.nreg 180080 = C.s + b + 1 ∧
         FrameB (fun r => decide (r = 180055 ∨ r = 180080)) c c₁ := by
       exec_block
-      · config_simp; rw [h0, hb]; omega
-      · config_simp; rw [h0, hb, h11]; omega
+      · config_simp; rwo [h0, hb]
+      · config_simp; rwo [h0, hb, h11]
       · refine ⟨rfl, ?_, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
         · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
           rw [h0, hb]
@@ -182,22 +185,22 @@ theorem farS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) 
           fwdIdx C.m (tS C) b else bwdIdx C.m (tS C) b) ∧ FrameB Bsc c₂ c₃ := by
       by_cases hdt : 0 < det (C.vertex b) (C.vertex (b + 1)) (C.vertex k)
       · obtain ⟨c', k', e', hk', q', G'⟩ := fwdS_exec (P := P) c₂ w₂ F₂' k52 hbm hWm
-        exact ⟨c', _, .ifLtN_false (by rw [t81.2 hdt, k11]; omega) e', by omega,
+        exact ⟨c', _, .ifLtN_false (by rwo [t81.2 hdt, k11]) e', by omega,
           by rw [q', ite_eq_left hdt], G'⟩
       · have h0' : c₂.nreg 180081 = 0 := by have := mt t81.1 hdt; omega
         obtain ⟨c', k', e', hk', q', G'⟩ := bwdS_exec (P := P) c₂ w₂ F₂' k11 k52 hbm hWm
-        exact ⟨c', _, .ifLtN_true (by rw [h0', k11]; omega) e', by omega,
+        exact ⟨c', _, .ifLtN_true (by rwo [h0', k11]) e', by omega,
           by rw [q', ite_eq_right hdt], G'⟩
     have F₃' := F₂'.keep G₃
     have e₄ := Exec.addN (P := P) e₃.wb_right 180082 180082 180027 (by
       rw [q82, F₃'.2.2]
       have h1 := (fwdIdx_spec (C := C) hbm).1
       have h2 := (bwdIdx_spec (C := C) hbm).1
-      split_ifs <;> omega)
-    refine ⟨_, _, .ifLtN_false (by rw [hf, h11]; omega) (.seq e₁ (.seq e₂ (.seq e₃ e₄))),
+      splao)
+    refine ⟨_, _, .ifLtN_false (by rwo [hf, h11]) (.seq e₁ (.seq e₂ (.seq e₃ e₄))),
       by omega, (G₂.trans G₃).trans ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩, ?_⟩
     · have : r ≠ 180082 := by
-        unfold Bsc at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega
+        unfold Bsc at hr; sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
       simp [this]
     · rw [farEdge_some hsc]
       simp only [Config.nreg_mk, Machine.upd_same]
@@ -229,10 +232,10 @@ theorem writeS_exec {P : Polygon} {W : ℕ} {d : ℕ} (c : Config) (hw : WordsBo
     (v := 180035) (by decide) h11 (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, p₂, m₂, R₂, rr₂, rm₂, o₂⟩ := putS_exec (P := P) c₁ e₁.wb_right
     (p := 180024) (v := if d = 0 then 180044 else 180082) (by decide)
-    (by rw [R₁ _ (by decide), h11]) (by rw [p₁, h24]; omega)
+    (by rw [R₁ _ (by decide), h11]) (by rwo [p₁, h24])
   obtain ⟨c₃, k₃, e₃, hk₃, p₃, m₃, R₃, rr₃, rm₃, o₃⟩ := putS_exec (P := P) c₂ e₂.wb_right
     (p := 180024) (v := if d = 0 then 180082 else 180044) (by decide)
-    (by rw [R₂ _ (by decide), R₁ _ (by decide), h11]) (by rw [p₂, p₁, h24]; omega)
+    (by rw [R₂ _ (by decide), R₁ _ (by decide), h11]) (by rwo [p₂, p₁, h24])
   have e₄ := Exec.addN (P := P) e₃.wb_right 180019 180019 180011 (by
     rw [R₃ _ (by decide), R₂ _ (by decide), R₁ _ (by decide), R₃ _ (by decide), R₂ _ (by decide),
       R₁ _ (by decide), h19, h11]; exact hl)
@@ -251,7 +254,6 @@ theorem writeS_exec {P : Polygon} {W : ℕ} {d : ℕ} (c : Config) (hw : WordsBo
 /-- **Emit the chord of `v_k` in direction `d`.** -/
 def emitS (d : ℕ) : Stmt := .seq (scanS d) (.seq (farS d) (writeS d))
 
-set_option maxHeartbeats 1000000 in
 theorem emitS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) (hW4 : 4 * P.n ≤ W)
     {C : Chain} (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n) {d k : ℕ} (hd : d ≤ 1)
     (hk : k ≤ C.m) (c : Config) (hw : WordsBounded W c) (hS : SI C (C.s + k) c) (hF : FI C c)

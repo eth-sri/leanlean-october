@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.RestoreShoot
 public import Chazelle.Core.RestoreSearch
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, Lemma 3.2 part 3: when does a candidate ray start in the region?
@@ -103,14 +105,14 @@ theorem touches_of_along_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆
   set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
   set b' := M.W.vtx ((p + 1) % M.W.n) with hb
   have hbv : b' ≠ v := fun h => hne h.symm
-  have hB0 : b' - v ≠ 0 := sub_ne_zero.2 hbv
+  have hB0  := sub_ne_zero.2 hbv
   have hκ0 : 0 < -((b' - v).2 * τ) := by
-    have := hcross; rw [sideCross_pair] at this; linarith
+    have := hcross; rwli [sideCross_pair] at this
   set A : Point := ((τ, 0) : Point) with hAdef
   have hvA : v + A ≠ v := by
     intro h
     have := congrArg Prod.fst h
-    simp only [Prod.fst_add, hAdef, add_eq_left] at this
+    simp [Prod.fst_add, hAdef, add_eq_left] at this
     rcases hτ with rfl | rfl <;> norm_num at this
   have hsecv : ∀ x, sideLeft M.W p 0 x ↔ sideCcw (b' - v) (x - v) (a - v) :=
     fun x => sideLeft_zero _ _ _
@@ -126,13 +128,13 @@ theorem touches_of_along_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆
   have hWfree : ∀ x ∈ ball v r, x ∈ (freeIn M.D F)ᶜ → ¬ sideLeftOf (v + A) v b' x := by
     intro x hx hxS hxW
     have hxW' : x ∈ Wg := ⟨hx, hxW⟩
-    obtain ⟨hxD, hxc⟩ := hsf x (by rw [hwv]; exact hx) (hWleft x hxW')
+    obtain ⟨hxD, hxc⟩ := hsf x (by rwx [hwv]) (hWleft x hxW')
     apply hxS
     refine ⟨hxD, ?_⟩
     rintro ⟨c', hc', hxc'⟩
     have hA' := hxc c' hc' hxc'
     have hvc' : v ∈ c' := by have := hA'.2.2.2.1; rwa [hwv] at this
-    have hy : x.2 = v.2 := hsys.snd_eq hc' hxc' hvc'
+    have hy  := hsys.snd_eq hc' hxc' hvc'
     rcases hWsec x hxW' with ⟨-, -, h⟩ | ⟨h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩
     · rw [hAdef, sideCross_pair, Prod.snd_sub, hy, sub_self] at h; simp at h
     · linarith
@@ -149,11 +151,11 @@ theorem touches_of_along_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆
     subset_region hU hHc (fun x hx => by simpa using hS1 hx) hδ.2 (by rw [one_mul]; exact hδU)
   -- a point of the chord on the ray, close to the vertex
   obtain ⟨s₀, hs₀c, hs₀⟩ := (hfr.and_eventually (Ioo_mem_nhdsGT (half_pos hr))).exists
-  have hs₀0 : 0 < s₀ := hs₀.1
-  have hs₀r : s₀ < r / 2 := hs₀.2
+  have hs₀0  := hs₀.1
+  have hs₀r  := hs₀.2
   refine ⟨rayPt (sidePt M.W p 0) τ s₀, ⟨hs₀c, ?_⟩, ?_⟩
   · refine (hsf _ ?_ ((sideLeft_rayPt_iff _ p 0 τ one_pos hs₀0).1 hsec)).1
-    rw [mem_ball, dist_rayPt _ hτ hs₀0.le]; linarith
+    rwli [mem_ball, dist_rayPt _ hτ hs₀0.le]
   · rw [hwv]
     set κ := -((b' - v).2 * τ) with hκ
     set K := |(b' - v).1| + 1 with hK
@@ -179,11 +181,11 @@ theorem touches_of_along_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆
     · rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq, max_lt_iff]
       rcases hτ with rfl | rfl
       · constructor
-        · rw [show v.1 + 1 * s₀ - v.1 = s₀ by ring, abs_of_pos hs₀0]; linarith
-        · rw [show v.2 - 1 * ε - v.2 = -ε by ring, abs_neg, abs_of_pos hε0]; linarith
+        · rwli [show v.1 + 1 * s₀ - v.1 = s₀ by ring, abs_of_pos hs₀0]
+        · rwli [show v.2 - 1 * ε - v.2 = -ε by ring, abs_neg, abs_of_pos hε0]
       · constructor
-        · rw [show v.1 + -1 * s₀ - v.1 = -s₀ by ring, abs_neg, abs_of_pos hs₀0]; linarith
-        · rw [show v.2 - -1 * ε - v.2 = ε by ring, abs_of_pos hε0]; linarith
+        · rwli [show v.1 + -1 * s₀ - v.1 = -s₀ by ring, abs_neg, abs_of_pos hs₀0]
+        · rwli [show v.2 - -1 * ε - v.2 = ε by ring, abs_of_pos hε0]
     · show sideLeftOf (v + A) v b' _
       rw [sideLeftOf_iff, add_sub_cancel_left]
       have hX : ((v.1 + τ * s₀, v.2 - τ * ε) : Point) - v = ((τ * s₀, -(τ * ε)) : Point) := by
@@ -196,7 +198,7 @@ theorem touches_of_along_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆
       have q2 := mul_le_mul_of_nonneg_left hab' hε0.le
       refine ⟨hcross, ?_, ?_⟩
       · rw [sideCross_pair]
-        have hKe : ε * K = ε * |(b' - v).1| + ε := by rw [hK]; ring
+        have hKe : ε * K = ε * |(b' - v).1| + ε := by rwring [hK]
         rcases hτ with rfl | rfl
         · have : -((b' - v).2 * 1) = κ := rfl
           nlinarith
@@ -226,15 +228,15 @@ theorem touches_of_along_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
   have hav : a ≠ v := by
     have := hM.nd _ (Nat.mod_lt (p + M.W.n - 1) hn0)
     rwa [prev_succ_mod hp] at this
-  have hB0 : b' - v ≠ 0 := sub_ne_zero.2 hbv
-  have hA0 : a - v ≠ 0 := sub_ne_zero.2 hav
+  have hB0  := sub_ne_zero.2 hbv
+  have hA0  := sub_ne_zero.2 hav
   have hκ0 : 0 < τ * (a - v).2 := by
-    have := hcross; rw [sideCross_pair_left] at this; linarith
+    have := hcross; rwli [sideCross_pair_left] at this
   set A : Point := ((τ, 0) : Point) with hAdef
   have hAne : A ≠ 0 := by
     intro h
     have := congrArg Prod.fst h
-    simp only [hAdef, Prod.fst_zero] at this
+    simp [hAdef, Prod.fst_zero] at this
     rcases hτ with rfl | rfl <;> norm_num at this
   have hvA : v + A ≠ v := by
     intro h; apply hAne; simpa using h
@@ -252,13 +254,13 @@ theorem touches_of_along_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
   have hWfree : ∀ x ∈ ball v r, x ∈ (freeIn M.D F)ᶜ → ¬ sideLeftOf a v (v + A) x := by
     intro x hx hxS hxW
     have hxW' : x ∈ Wg := ⟨hx, hxW⟩
-    obtain ⟨hxD, hxc⟩ := hsf x (by rw [hwv]; exact hx) (hWleft x hxW')
+    obtain ⟨hxD, hxc⟩ := hsf x (by rwx [hwv]) (hWleft x hxW')
     apply hxS
     refine ⟨hxD, ?_⟩
     rintro ⟨c', hc', hxc'⟩
     have hA' := hxc c' hc' hxc'
     have hvc' : v ∈ c' := by have := hA'.2.2.2.1; rwa [hwv] at this
-    have hy : x.2 = v.2 := hsys.snd_eq hc' hxc' hvc'
+    have hy  := hsys.snd_eq hc' hxc' hvc'
     rcases hWsec x hxW' with ⟨-, h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩
     · rw [hAdef, sideCross_pair_left, Prod.snd_sub, hy, sub_self] at h; simp at h
     · linarith
@@ -280,11 +282,11 @@ theorem touches_of_along_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
   have hWU : Wg ⊆ U :=
     subset_region hU hHc (fun x hx => by simpa using hS1 hx) hδ.1 hδU'
   obtain ⟨s₀, hs₀c, hs₀⟩ := (hfr.and_eventually (Ioo_mem_nhdsGT (half_pos hr))).exists
-  have hs₀0 : 0 < s₀ := hs₀.1
-  have hs₀r : s₀ < r / 2 := hs₀.2
+  have hs₀0  := hs₀.1
+  have hs₀r  := hs₀.2
   refine ⟨rayPt (sidePt M.W p 0) τ s₀, ⟨hs₀c, ?_⟩, ?_⟩
   · refine (hsf _ ?_ ((sideLeft_rayPt_iff _ p 0 τ one_pos hs₀0).1 hsec)).1
-    rw [mem_ball, dist_rayPt _ hτ hs₀0.le]; linarith
+    rwli [mem_ball, dist_rayPt _ hτ hs₀0.le]
   · rw [hwv]
     set κ := τ * (a - v).2 with hκ
     set K := |(a - v).1| + 1 with hK
@@ -310,11 +312,11 @@ theorem touches_of_along_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
     · rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq, max_lt_iff]
       rcases hτ with rfl | rfl
       · constructor
-        · rw [show v.1 + 1 * s₀ - v.1 = s₀ by ring, abs_of_pos hs₀0]; linarith
-        · rw [show v.2 + 1 * ε - v.2 = ε by ring, abs_of_pos hε0]; linarith
+        · rwli [show v.1 + 1 * s₀ - v.1 = s₀ by ring, abs_of_pos hs₀0]
+        · rwli [show v.2 + 1 * ε - v.2 = ε by ring, abs_of_pos hε0]
       · constructor
-        · rw [show v.1 + -1 * s₀ - v.1 = -s₀ by ring, abs_neg, abs_of_pos hs₀0]; linarith
-        · rw [show v.2 + -1 * ε - v.2 = -ε by ring, abs_neg, abs_of_pos hε0]; linarith
+        · rwli [show v.1 + -1 * s₀ - v.1 = -s₀ by ring, abs_neg, abs_of_pos hs₀0]
+        · rwli [show v.2 + -1 * ε - v.2 = -ε by ring, abs_neg, abs_of_pos hε0]
     · show sideLeftOf a v (v + A) _
       rw [sideLeftOf_iff, add_sub_cancel_left]
       have hX : ((v.1 + τ * s₀, v.2 + τ * ε) : Point) - v = ((τ * s₀, τ * ε) : Point) := by
@@ -329,7 +331,7 @@ theorem touches_of_along_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
       · rw [hAdef, sideCross_pair_left]
         rcases hτ with rfl | rfl <;> simp <;> linarith
       · rw [sideCross_pair_left]
-        have hKe : ε * K = ε * |(a - v).1| + ε := by rw [hK]; ring
+        have hKe : ε * K = ε * |(a - v).1| + ε := by rwring [hK]
         rcases hτ with rfl | rfl
         · have : 1 * (a - v).2 = κ := rfl
           nlinarith
@@ -373,7 +375,7 @@ theorem valid_after (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
     intro c' hc' _
     by_contra hfr
     rw [Filter.not_eventually] at hfr
-    simp only [not_not] at hfr
+    simp [not_not] at hfr
     have ht := touches_of_along_after hM hFam.2.1 hFam.1 hU hp harc hτ hsec hcross hc' hfr
     obtain ⟨s, h1, h2⟩ := (hfr.and_eventually (hex c' hc' ht)).exists
     exact h2 h1
@@ -405,7 +407,7 @@ theorem valid_before (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
     intro c' hc' _
     by_contra hfr
     rw [Filter.not_eventually] at hfr
-    simp only [not_not] at hfr
+    simp [not_not] at hfr
     have ht := touches_of_along_before hM hFam.2.1 hFam.1 hU hp harc hτ hsec hcross hc' hfr
     obtain ⟨s, h1, h2⟩ := (hfr.and_eventually (hex c' hc' ht)).exists
     exact h2 h1
@@ -434,7 +436,7 @@ theorem exit_avoid (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
   obtain ⟨r, hr, hsf⟩ := sector_free hM hF hFam.1 hp le_rfl one_pos
   by_contra hfr
   rw [Filter.not_eventually] at hfr
-  simp only [not_not] at hfr
+  simp [not_not] at hfr
   obtain ⟨s, hsc, hs⟩ := (hfr.and_eventually (Ioo_mem_nhdsGT hr)).exists
   have hs0 : 0 < s := hs.1
   have hsl : sideLeft M.W p 0 (rayPt (sidePt M.W p 0) τ s) :=
@@ -476,15 +478,15 @@ theorem exit_avoid (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
       have := hmemA; rw [hts] at this; exact this.2.1
     have h2 := hxy _ hlmem
     rw [epl] at h2 ⊢
-    exact point_ext (by simp only; linarith [h2.2.1]) h2.1
+    exact point_ext (by simp; linarith [h2.2.1]) h2.1
   have hrB : sidePt M.W cr.rp (M.param Q cr.rpos) = ((xb, y) : Point) := by
     have h1 : xb ≤ (M.pos Q cr.rpos).1 := by
       have := hmemB; rw [hts] at this; exact this.2.2
     have h2 := hxy _ hrmem
     rw [epr] at h2 ⊢
-    exact point_ext (by simp only; linarith [h2.2.2]) h2.1
+    exact point_ext (by simp; linarith [h2.2.2]) h2.1
   have hsx := (hxy _ hsc).2
-  simp only [rayPt_fst] at hsx
+  simp [rayPt_fst] at hsx
   rcases hτ with rfl | rfl
   · have hvA : v = ((xa, y) : Point) := by
       rcases hend v hvc hvD with h | h

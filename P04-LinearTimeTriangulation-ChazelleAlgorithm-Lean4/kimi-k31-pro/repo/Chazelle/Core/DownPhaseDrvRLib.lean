@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.NFBuildPassRam
 public import Chazelle.Core.SortRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase driver (RAM side): small loop library
@@ -36,13 +38,13 @@ theorem forLoop {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb 
     have hjN : j = N := by omega
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by rwo [h1, h2]) hw, hc, by omega⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwx [h1, h2]) e₁ e₂, hI', ?_⟩
     rw [Nat.mul_succ]
     omega
 
@@ -59,13 +61,13 @@ theorem forLoopSum {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (
     have hjN : j = N := by omega
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by simp⟩
+    exact ⟨c, 2, .whileLtN_false (by rwo [h1, h2]) hw, hc, by simp⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwx [h1, h2]) e₁ e₂, hI', ?_⟩
     rw [Finset.sum_eq_sum_Ico_succ_bot hlt]
     omega
 

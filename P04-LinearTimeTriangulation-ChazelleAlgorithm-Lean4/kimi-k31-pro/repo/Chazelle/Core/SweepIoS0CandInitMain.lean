@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepIoS0CandInitTab
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # The sweep RAM (WP-D), answers: the slot table of the side-0 candidates (the contract)
@@ -67,7 +71,6 @@ variable {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop} 
   {H : Host} {N₁ N₂ : NF} {Eb : ℕ} {c : Config} {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
   {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)}
 
-set_option maxHeartbeats 8000000 in
 /-- **The run part of the initialisation** (all but the final write of `sw 620`). -/
 theorem body_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     (e : IE P W X Ok J H N₁ N₂ Eb c rs ls) (hw : WordsBounded W c)
@@ -89,16 +92,16 @@ theorem body_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     rw [f2, f3]; exact J.right.topIdx_le
   have hWm := e.hA.hWm
   have hmm : J.right.m ≤ J.whole.m := sideChain_m_le J 1
-  have h2m : 2 * c.nmem (c.nreg (sw 21) + 2) + 6 ≤ W := by rw [f2]; omega
+  have h2m : 2 * c.nmem (c.nreg (sw 21) + 2) + 6 ≤ W := by rwo [f2]
   have hst := e.st0
   unfold kRun at hroom ⊢
   refine (IRS.seq (K₁ := 27) (K₂ := (4 * (6 * c.nreg (sw 301)) + 2) + (((kSt κL (c.nreg TLR) + 2) * c.nreg (sw 201) + 2) + ((2 * (kTb κL (c.nreg TLR) + 9) + 3) * N₂.nChords + 2)))
-    (hdr_irs hI0 hK hd (by omega) hTm h2m) ?_).mono (by omega) (fun _ h => h)
+    (hdr_irs hI0 hK hd (by omega) hTm h2m) ?_).mono (by omega) (fun _ => id)
   rintro c₁ hI₁ hA₁ hA₁' ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9⟩
-  have c1A : c₁.nreg ALLOC = c.nreg ALLOC := a8 _ (Or.inl (by unfold ALLOC sw; omega))
+  have c1A : c₁.nreg ALLOC = c.nreg ALLOC := a8 _ (Or.inl (by ufo ALLOC sw))
   have hK₁ : Consts c₁ := hK.fix hI₁
   refine IRS.seq (K₁ := 4 * (6 * c.nreg (sw 301)) + 2) (K₂ := ((kSt κL (c.nreg TLR) + 2) * c.nreg (sw 201) + 2) + ((2 * (kTb κL (c.nreg TLR) + 9) + 3) * N₂.nChords + 2)) ((zeroLoop_irs hI₁ hK₁ a2 (by omega)
-    (by omega)).mono (by omega) (fun _ h => h)) ?_
+    (by omega)).mono (by omega) (fun _ => id)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨z1, z2, z3, z4⟩
   rw [c1A] at z3
   have nA : ∀ r, r = ipB ∨ r = ipX ∨ r = ipJ ∨ r = ipKc ∨ r = ipM5 ∨ r = ipM6 → r ≠ ALLOC := by
@@ -117,15 +120,14 @@ theorem body_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     exact z2 r (by rcases hr with rfl | rfl | rfl | rfl | rfl <;>
       simp [ipB, ipJ, ipKc, ipM5, ipM6, ALLOC, sw])
   refine (tbLoop_irs hls e hI₃ ((pr _ (Or.inl rfl)).trans a1) (by omega)
-    ((pr _ (Or.inr (Or.inr (Or.inl rfl)))).trans (by rw [a6, hst.2.2]; omega))
-    ((pr _ (Or.inr (Or.inl rfl))).trans (by rw [a7, midT_desc d21]; omega))
+    ((pr _ (Or.inr (Or.inr (Or.inl rfl)))).trans (by rwo [a6, hst.2.2]))
+    ((pr _ (Or.inr (Or.inl rfl))).trans (by rwo [a7, midT_desc d21]))
     ((pr _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))).trans a4)
     ((pr _ (Or.inr (Or.inr (Or.inr (Or.inr rfl))))).trans (a5.trans e.hA.hK₂)) p3
     (by omega)).mono le_rfl ?_
   rintro c' ⟨t1, t2, t3⟩
   exact ⟨t2.trans ((pr _ (Or.inl rfl)).trans a1), by omega, t3⟩
 
-set_option maxHeartbeats 4000000 in
 /-- **The initialisation of the side-0 stop and table candidates.** -/
 theorem initPart (hL : LSearchSpec) : InitPartSpec := by
   obtain ⟨lsS, κL, hls⟩ := hL
@@ -138,30 +140,30 @@ theorem initPart (hL : LSearchSpec) : InitPartSpec := by
     (by omega)
   simp only [Nat.add_sub_cancel] at hcost
   obtain ⟨c₁, k₁, ex₁, hk₁, hI₁, hfr₁, q1, q2, q3⟩ :=
-    body_irs hls e hw (by unfold kRun; omega)
+    body_irs hls e hw (by ufo kRun)
   unfold kRun at hk₁
   have ex := Exec.seq ex₁ (Exec.copyN (P := P) hI₁.hw sB ipB)
   obtain ⟨r₁, rr₁, o₁, a₁, b₁⟩ := hfr₁
   have nS : ∀ r, bandOf r ∉ sweepBands ∪ oracleBands → r ≠ sB := by
     rintro r hr rfl
-    exact hr (by rw [band_sw (by unfold sB sw; omega) (by unfold sB sw; omega)]; exact bSweep_mem)
-  have hsA : ALLOC ≠ sB := by unfold ALLOC sB sw; omega
+    exact hr (by rw [band_sw (by ufo sB sw) (by ufo sB sw)]; exact bSweep_mem)
+  have hsA : ALLOC ≠ sB := by ufo ALLOC sB sw
   refine ⟨_, k₁ + 1, ex, by omega, ?_, fun j hj hj' => ?_, ?_⟩
-  · refine ⟨fun r hr hra => ?_, fun r hr => rr₁ r hr, fun a ha => hI₁.hm a ha,
-      fun a ha => hI₁.hrm a ha, o₁, ?_, ?_⟩
+  · refine ⟨fun r hr hra => ?_, rr₁, hI₁.hm,
+      hI₁.hrm, o₁, ?_, ?_⟩
     · simp only
       rw [upd_other _ _ _ (nS r hr)]
       exact r₁ r hr hra
-    · simp only; rw [upd_other _ _ _ hsA]; exact a₁
-    · simp only; rw [upd_other _ _ _ hsA]; omega
+    · simp only; rwx [upd_other _ _ _ hsA]
+    · simp only; rwo [upd_other _ _ _ hsA]
   · simp only
-    rw [upd_other _ _ _ (by unfold sB sw; omega)]
-    exact hI₁.hin _ (by unfold IFix sw; omega)
+    rw [upd_other _ _ _ (by ufo sB sw)]
+    exact hI₁.hin _ (by ufo IFix sw)
   · apply aux_of_core
     have fx : ∀ k, k < 700 → k ≠ 620 →
         (upd c₁.nreg sB (c₁.nreg ipB)) (sw k) = c.nreg (sw k) := fun k hk h620 => by
-      rw [upd_other _ _ _ (by unfold sB sw; omega)]
-      exact hI₁.hin _ (by unfold IFix sw; omega)
+      rw [upd_other _ _ _ (by ufo sB sw)]
+      exact hI₁.hin _ (by ufo IFix sw)
     have hB : (upd c₁.nreg sB (c₁.nreg ipB)) sB = c.nreg ALLOC := by rw [upd_same, q1]
     have hAl : (upd c₁.nreg sB (c₁.nreg ipB)) ALLOC = c₁.nreg ALLOC := upd_other _ _ _ hsA
     have hlog := hA.hlog
@@ -170,13 +172,13 @@ theorem initPart (hL : LSearchSpec) : InitPartSpec := by
     simp only [rd_sw] at hlog hst htw
     refine auxCore_of_sinv ?_ ?_ ?_ ?_ ?_
     · simp only
-      rw [hB, hAl, fx 301 (by norm_num) (by norm_num)]; exact q2
+      rwx [hB, hAl, fx 301 (by norm_num) (by norm_num)]
     · simp only
-      rw [hAl, fx 300 (by norm_num) (by norm_num), fx 301 (by norm_num) (by norm_num)]; omega
+      rwo [hAl, fx 300 (by norm_num) (by norm_num), fx 301 (by norm_num) (by norm_num)]
     · simp only
-      rw [hAl, fx 200 (by norm_num) (by norm_num), fx 201 (by norm_num) (by norm_num)]; omega
+      rwo [hAl, fx 200 (by norm_num) (by norm_num), fx 201 (by norm_num) (by norm_num)]
     · simp only
-      rw [hAl, fx 302 (by norm_num) (by norm_num)]; omega
+      rwo [hAl, fx 302 (by norm_num) (by norm_num)]
     · simp only
       rw [hB, fx 200 (by norm_num) (by norm_num), fx 201 (by norm_num) (by norm_num),
         fx 300 (by norm_num) (by norm_num), fx 301 (by norm_num) (by norm_num),

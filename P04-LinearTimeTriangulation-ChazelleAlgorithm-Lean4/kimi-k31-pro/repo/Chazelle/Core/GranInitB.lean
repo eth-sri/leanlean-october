@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.GranInitA
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-F, init part 14: the second half of the initialisation
@@ -96,7 +101,6 @@ structure InitEnd (P : Polygon) (W MD NFH D γ : ℕ) (M : Model) (N : NF) (c₀
     pk M (Qof P) N (c.nmem (c₀.nreg ALLOC + 4 * N.nChords + u)) = M.key (Qof P) (N.chord u).rpos
   mem : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a
 
-set_option maxHeartbeats 4000000 in
 theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ} {M : Model} {N : NF}
     (hI : InitMid P W MD NFH D γ N c c₅) (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     (hwf : ModelDescWF P (c.nreg ALLOC) c.nmem MD) (hMD : ModelDescAt c.nmem MD (Qof P) M)
@@ -125,7 +129,7 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
   have hmem5 : ∀ a, a < b0 → c₅.nmem a = c.nmem a := fun a ha => hI.mem a (Or.inl ha)
   have al5 : c₅.nreg ALLOC = b0 + d.oEnd := hI.alloc
   have hbW : d.b0 + d.oEnd ≤ W := by omega
-  have hW6 : 6 ≤ W := by unfold hostWords at hWh; omega
+  have hW6 : 6 ≤ W := by ufo hostWords at hWh
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨hdesc₅, hwf₅⟩ := desc_agree' hwf hMD hmem5
   -- 1. the positions
@@ -141,9 +145,9 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
         have e1 : c₅.nmem (c.nmem (NFH + 6) + u) = N.seq.getD u 0 := by
           rw [hmem5 _ (by omega)]; exact hN.2.2.2.2.2.2.2.2.1 u (by omega)
         obtain ⟨-, s1, s2, -⟩ := hN.2.2.2.2.2.2.1 _ ha
-        refine ⟨by omega, by rw [e1]; omega, ?_, ?_⟩
-        · rw [e1, hmem5 _ (by omega)]; exact s1
-        · rw [e1, hmem5 _ (by omega)]; exact s2
+        refine ⟨by omega, by rwo [e1], ?_, ?_⟩
+        · rwx [e1, hmem5 _ (by omega)]
+        · rwx [e1, hmem5 _ (by omega)]
       edge_lt := fun u hu => edge_lt' hNF hne hu
       hgt_le := fun u hu => by
         obtain ⟨-, -, -, -, -, -, -, -, -, -, hpp⟩ := id hNF
@@ -165,7 +169,7 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
   have hNE : NdEnv P W MD NFH (c.nmem (NFH + 3)) d M N c₆ :=
     { hG := hG, hWh := hWh, hGM := hGM, hNF := hNF, hne := hne, hK := rfl, hA := rfl,
       bases := hI.bases.frame fun r a1 a2 => g₆ r (by
-        simp only [Bpos, Binit, Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+        simp [Bpos, Binit, Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]
         omega),
       r00 := by rw [g₆ _ (by decide), hI.r00], r01 := by rw [g₆ _ (by decide), hI.r01],
       r10 := by rw [g₆ _ (by decide), hI.r10], r13 := by rw [g₆ _ (by decide), hI.r13],
@@ -175,17 +179,17 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
       chords := fun i hi => by
         obtain ⟨a0, a1, a2, -, -⟩ := hN.2.2.2.2.2.1 i hi
         have := aCh i hi
-        exact ⟨by rw [hmem6 _ (by omega)]; exact a0, by rw [hmem6 _ (by omega)]; exact a1,
-          by rw [hmem6 _ (by omega)]; exact a2⟩,
+        exact ⟨by rwx [hmem6 _ (by omega)], by rwx [hmem6 _ (by omega)],
+          by rwx [hmem6 _ (by omega)]⟩,
       cbB := hcb,
-      room := by rw [al6, ← al5]; exact hroom,
+      room := by rwx [al6, ← al5],
       cnt0 := fun j hj => (R₆ j hj).1 }
   have hW5 : 5 ≤ W := by omega
   obtain ⟨c₇, k₇, e₇, hk₇, I₇, i₇, a₇⟩ := ndLoop_exec (P := P) w₆ hNE hW5
   have w₇ := I₇.wb
   have g₇ : ∀ r, 90000 ≤ r → r < 100000 → Binit r = false → c₇.nreg r = c₆.nreg r := I₇.r9
   have t7 : ∀ r, 90000 ≤ r → r < 90070 → Bpos r = false → c₇.nreg r = c₅.nreg r :=
-    fun r a1 a2 a3 => by rw [g₇ r a1 (by omega) (by simp [Binit]; omega), g₆ r a3]
+    fun r a1 a2 a3 => by rw [g₇ r a1 (by omega) (by sio [Binit]), g₆ r a3]
   -- 3. the end
   obtain ⟨c₈, k₈, e₈, hk₈, f50, f51, f52, fr, fm⟩ : ∃ c₈ k₈, Exec P W finStmt c₇ c₈ k₈ ∧ k₈ = 3 ∧
       c₈.nreg 90050 = K ∧ c₈.nreg 90051 = K ∧ c₈.nreg 90052 = 0 ∧
@@ -205,25 +209,25 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
   have hA6 := al6
   have hBp : ∀ r, bandOf r ∉ granBands → Bpos r = false := by
     intro r hr
-    simp only [Bpos, Binit, Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+    simp [Bpos, Binit, Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]
     have h1 : ¬ (10000 ≤ r ∧ r < 20000) := fun h => hr (by
-      simp only [bandOf, granBands, kernelBands, bSign, Finset.mem_union, Finset.mem_insert,
+      simp [bandOf, granBands, kernelBands, bSign, Finset.mem_union, Finset.mem_insert,
         Finset.mem_singleton]; omega)
     have h5 : ¬ (50000 ≤ r ∧ r < 60000) := fun h => hr (by
-      simp only [bandOf, granBands, kernelBands, bLocate, Finset.mem_union, Finset.mem_insert,
+      simp [bandOf, granBands, kernelBands, bLocate, Finset.mem_union, Finset.mem_insert,
         Finset.mem_singleton]; omega)
     have h9 : ¬ (90000 ≤ r ∧ r < 100000) := fun h => hr (by
-      simp only [bandOf, granBands, kernelBands, bGran, Finset.mem_union, Finset.mem_insert,
+      simp [bandOf, granBands, kernelBands, bGran, Finset.mem_union, Finset.mem_insert,
         Finset.mem_singleton]; omega)
     omega
   have hGF6 : GF b0 c₅ c₆ k₆ := ⟨fun r hr _ => g₆ r (hBp r hr), fun r hr => F₆.2.1 r (hBp r hr),
     fun a ha => M₆ a (by left; omega), fun a _ => by rw [F₆.2.2.1], F₆.2.2.2,
-    by rw [g₆ _ (by decide)], by rw [g₆ _ (by decide)]; omega⟩
+    by rw [g₆ _ (by decide)], by rwo [g₆ _ (by decide)]⟩
   have hGF7 : GF b0 c₆ c₇ k₇ := ⟨fun r hr ha => I₇.fr r (fun h => hr (by
-      simp only [granBands, kernelBands, Finset.mem_union, Finset.mem_insert,
+      simp [granBands, kernelBands, Finset.mem_union, Finset.mem_insert,
         Finset.mem_singleton] at h ⊢; tauto)) ha,
     fun r hr => I₇.frr r (fun h => hr (by
-      simp only [granBands, kernelBands, Finset.mem_union, Finset.mem_insert,
+      simp [granBands, kernelBands, Finset.mem_union, Finset.mem_insert,
         Finset.mem_singleton] at h ⊢; tauto)),
     fun a ha => I₇.mem a (by omega) (by left; omega) (by left; omega),
     fun a ha => I₇.frm a (by omega), I₇.fro, I₇.al1, a₇⟩
@@ -236,7 +240,7 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
   refine ⟨c₈, _, .seq e₆ (.seq e₇ e₈), ?_, ⟨by exact e₈.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, ?_, f50, f51, f52, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
     (hGF6.trans (hGF7.trans hGF8)).mono le_rfl⟩
-  · simp only [hKd, hAd] at hk₆ hk₇ ⊢; omega
+  · sio only [hKd, hAd] at hk₆ hk₇ ⊢
   · rw [u8 _ (by norm_num) (by norm_num) (by decide), hI.r00]
   · rw [u8 _ (by norm_num) (by norm_num) (by decide), hI.r01]
   · rw [u8 _ (by norm_num) (by norm_num) (by decide), hI.r02]
@@ -250,10 +254,10 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
   · rw [u8 _ (by norm_num) (by norm_num) (by decide), hI.r21]
   · rw [u8 _ (by norm_num) (by norm_num) (by decide), hI.r28]
   · exact hI.bases.frame fun r a1 a2 => u8 r (by omega) (by omega) (by
-      simp only [Bpos, Binit, Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+      simp [Bpos, Binit, Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]
       omega)
   · change b0 + d.oEnd ≤ _
-    rw [fr _ (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)]
+    rw [fr _ (by ufo ALLOC) (by ufo ALLOC) (by ufo ALLOC)]
     have := I₇.al1; omega
   · intro u hu
     change u < K at hu
@@ -263,9 +267,9 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
     change c₅.nmem (b0 + 2 * K + u) = _ at l3
     change c₈.nmem (b0 + u) = 1 ∧ c₈.nmem (b0 + K + u) = _ ∧ c₈.nmem (b0 + 2 * K + u) = _
     refine ⟨?_, ?_, ?_⟩
-    · rw [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]; exact l1
-    · rw [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]; exact l2
-    · rw [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]; exact l3
+    · rwx [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]
+    · rwx [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]
+    · rwx [m8 _ (by omega) (by left; omega) (by left; omega), M₆ _ (by left; omega)]
   · intro u hu
     change u < d.cap at hu
     change c₈.nmem (b0 + d.oStk + u) = u
@@ -285,9 +289,9 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
       c₈.nmem (b0 + d.oExb + x) = b0 + d.oEx + D * x ∧
       ∀ t, t < D → c₈.nmem (b0 + d.oEx + D * x + t) = _
     refine ⟨?_, ?_, ?_, fun t ht => ?_⟩
-    · rw [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]; exact l1
-    · rw [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]; exact l2
-    · rw [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]; exact l3
+    · rwx [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]
+    · rwx [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]
+    · rwx [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]
     · have hs' := slot_lt (R := R) (D := D) (x := x) hx ht
       rw [m8 _ (by omega) (by right; omega) (by left; omega), M₆ _ (by left; omega)]
       exact l4 t ht
@@ -307,14 +311,14 @@ theorem initB_exec {P : Polygon} {W : ℕ} {c c₅ : Config} {MD NFH D γ : ℕ}
     rw [i₇] at this
     change c₈.nmem (b0 + d.oCnt + j) = cntInit K (rdArr c₈.nmem (b0 + d.oNd0))
       (rdArr c₈.nmem (b0 + d.oNd1)) j
-    rw [fm]; exact this
+    rwx [fm]
   · intro u hu
-    have := I₇.nd0 u (by rw [i₇]; exact hu)
+    have := I₇.nd0 u (by rwx [i₇])
     rw [fm]
     change c₇.nmem (d.b0 + 3 * d.K + u) < A ∧ _ at this
     exact this
   · intro u hu
-    have := I₇.nd1 u (by rw [i₇]; exact hu)
+    have := I₇.nd1 u (by rwx [i₇])
     rw [fm]
     change c₇.nmem (d.b0 + 4 * d.K + u) < A ∧ _ at this
     exact this

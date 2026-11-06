@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.SweepPrimJun
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Sweep RAM primitives (WP-D2), part 13: `offCmp`
@@ -48,14 +53,14 @@ theorem off_lt_iff (M : Model) (Q : Polygon) {g : ℕ} (hg : g < M.W.n) {x y : W
     rcases lt_trichotomy (dOf M.W.n g x.edge) (dOf M.W.n g y.edge) with h' | h' | h'
     · exact Or.inl h'
     · refine Or.inr ⟨dOf_inj hg hx hy h', ?_⟩
-      rw [h'] at h; linarith
+      rwli [h'] at h
     · exfalso
       have : (dOf M.W.n g y.edge : ℝ) + 1 ≤ dOf M.W.n g x.edge := by exact_mod_cast h'
       linarith
   · rintro (h | ⟨h, h'⟩)
     · have : (dOf M.W.n g x.edge : ℝ) + 1 ≤ dOf M.W.n g y.edge := by exact_mod_cast h
       linarith
-    · rw [h]; linarith
+    · rwli [h]
 
 /-- The parameters of two positions on one edge compare like their keys. -/
 theorem param_lt_iff_same_edge (M : Model) (Q : Polygon) {x y : WPos} (he : x.edge = y.edge) :
@@ -65,8 +70,8 @@ theorem param_lt_iff_same_edge (M : Model) (Q : Polygon) {x y : WPos} (he : x.ed
   by_cases hh : (M.wa x.edge).2 = (M.wb x.edge).2
   · have hy : (M.wa y.edge).2 = (M.wb y.edge).2 := he ▸ hh
     rw [Model.param_horizontal hh, Model.param_horizontal hy]
-    have : dirCode M x.edge = 0 := by unfold dirCode; rw [hh]; simp
-    rw [this]; simp
+    have : dirCode M x.edge = 0 := by urs dirCode [hh]
+    rws [this]
   · have hk := Model.key_lt_key_iff_of_same_edge (M := M) (Q := Q) he hh
     unfold Model.key at hk
     rw [he, add_lt_add_iff_left] at hk
@@ -84,7 +89,7 @@ theorem param_lt_iff_same_edge (M : Model) (Q : Polygon) {x y : WPos} (he : x.ed
         rw [ite_eq_right hc] at h1
         split_ifs at h1; omega
       · right
-        have hn : ¬ (M.wa x.edge).2 < (M.wb x.edge).2 := fun h => by rw [ite_eq_left h] at h1; omega
+        have hn : ¬ (M.wa x.edge).2 < (M.wb x.edge).2 := fun h => by rwo [ite_eq_left h] at h1
         rw [ite_eq_right hn] at h1
         refine ⟨?_, h2⟩
         by_contra hc
@@ -117,23 +122,23 @@ theorem yLoadX_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
       (by simp [he, hE.r81]) (by omega) (dst := 50130) (by norm_num)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hh, hE.r32]; exact hc) (e₁.seq e₂), by omega, hE₂,
+    refine ⟨c₂, _, .ifLtN_true (by rwx [hh, hE.r32]) (e₁.seq e₂), by omega, hE₂,
       fun r hr => ?_, fun r h1 h2 h3 => ?_, sp, isp, lsp, ?_⟩
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
-    · rw [vsp, h00, show e - 6 + 6 = e by omega]; rfl
-  · refine spec_ifLtN_false (by rw [hh, hE.r32]; exact hc) ?_
+    · rw [f₂.1 r (by first | (sio [Btv, Btvi, Bhost]))]
+      simp; rw [upd_other _ _ _ (by omega)]
+    · rw [f₂.1 r (by first | (sio [Btv, Btvi, Bhost]))]
+      simp; rw [upd_other _ _ _ (by omega)]
+    · rwr [vsp, h00, show e - 6 + 6 = e by omega]
+  · refine spec_ifLtN_false (by rwx [hh, hE.r32]) ?_
     exec_block
     all_goals try omega
     refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 h2 h3 => ?_, .vtx (h - 1), ⟨by config_simp,
       ?_⟩, by show h - 1 < P.n; omega, ?_⟩
     · exact hE.keep ‹_› rfl (fun r hr => by
-        simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
-        simp only [upd]; split_ifs <;> first | rfl | omega)
-    · simp only [upd]; split_ifs <;> first | rfl | omega
-    · simp only [upd]; split_ifs <;> first | rfl | omega
+        simp [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
+        simp [upd]; split_ifs <;> first | rfl | omega)
+    · simp [upd]; split_ifs <;> first | rfl | omega
+    · simp [upd]; split_ifs <;> first | rfl | omega
     · config_simp; rw [hh, hE.r32]
     · obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
       rfl
@@ -161,23 +166,23 @@ theorem yLoadY_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
       (by simp [he, hE.r81]) (by omega) (dst := 50136) (by norm_num)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hh, hE.r32]; exact hc) (e₁.seq e₂), by omega, hE₂,
+    refine ⟨c₂, _, .ifLtN_true (by rwx [hh, hE.r32]) (e₁.seq e₂), by omega, hE₂,
       fun r hr => ?_, fun r h1 h2 h3 => ?_, sp, isp, lsp, ?_⟩
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
-    · rw [vsp, h00, show e - 6 + 6 = e by omega]; rfl
-  · refine spec_ifLtN_false (by rw [hh, hE.r32]; exact hc) ?_
+    · rw [f₂.1 r (by first | (sio [Btv, Btvi, Bhost]))]
+      simp; rw [upd_other _ _ _ (by omega)]
+    · rw [f₂.1 r (by first | (sio [Btv, Btvi, Bhost]))]
+      simp; rw [upd_other _ _ _ (by omega)]
+    · rwr [vsp, h00, show e - 6 + 6 = e by omega]
+  · refine spec_ifLtN_false (by rwx [hh, hE.r32]) ?_
     exec_block
     all_goals try omega
     refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 h2 h3 => ?_, .vtx (h - 1), ⟨by config_simp,
       ?_⟩, by show h - 1 < P.n; omega, ?_⟩
     · exact hE.keep ‹_› rfl (fun r hr => by
-        simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
-        simp only [upd]; split_ifs <;> first | rfl | omega)
-    · simp only [upd]; split_ifs <;> first | rfl | omega
-    · simp only [upd]; split_ifs <;> first | rfl | omega
+        simp [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
+        simp [upd]; split_ifs <;> first | rfl | omega)
+    · simp [upd]; split_ifs <;> first | rfl | omega
+    · simp [upd]; split_ifs <;> first | rfl | omega
     · config_simp; rw [hh, hE.r32]
     · obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
       rfl
@@ -218,7 +223,7 @@ theorem dOf_eq {n g p : ℕ} (hg : g < n) (hp : p < n) :
     (if p < g then p + (n - g) else p - g) = dOf n g p := by
   unfold dOf
   split_ifs with h
-  · rw [Nat.mod_eq_of_lt (by omega)]; omega
+  · rwo [Nat.mod_eq_of_lt (by omega)]
   · rw [show p + n - g = (p - g) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
 
 /-- The input condition of `offCmp`: two proper positions of the walk and a walk vertex; a
@@ -245,16 +250,16 @@ theorem offOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   unfold offOut
   exec_block
   all_goals try omega
-  exact ⟨rfl, ⟨by config_simp; omega, by config_simp; exact hp⟩,
-    ⟨by config_simp; omega, by config_simp; exact hq⟩⟩
+  exact ⟨rfl, ⟨by cso, by config_simp; exact hp⟩,
+    ⟨by cso, by config_simp; exact hq⟩⟩
 
 /-- **Contract of `offCmp`** (at most `11000` steps). -/
 theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     (fun _ _ => 11000) := by
-  refine prim_meets (K := 10200) (fun r h => h) wr_offCmp ?_
+  refine prim_meets (K := 10200) (fun _ => id) wr_offCmp ?_
   intro P W H C c₀ c _hC hE ⟨hx, hy, hg, ⟨hx0, hx1, hxn⟩, ⟨hy0, hy1, hyn⟩, hx6, hy6, hWm⟩ hinp
   unfold OffOut
-  dsimp only
+  dsimp
   have i01 := hinp 50201 (by norm_num) (by norm_num)
   have i02 := hinp 50202 (by norm_num) (by norm_num)
   have i03 := hinp 50203 (by norm_num) (by norm_num)
@@ -282,11 +287,11 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
         ∀ r, r ≠ 50140 → r ≠ 50143 → c₁.nreg r = c.nreg r) := by
     have hw := hE.wb
     exec_block
-    all_goals try (config_simp; rw [hE.r53]; omega)
-    all_goals try (config_simp; rw [hE.r53, hE.r81]; omega)
-    all_goals try (config_simp; rw [hE.r53, hE.r81, hE.r32]; omega)
+    all_goals try (config_simp; rwo [hE.r53])
+    all_goals try (config_simp; rwo [hE.r53, hE.r81])
+    all_goals try (config_simp; rwo [hE.r53, hE.r81, hE.r32])
     refine ⟨rfl, ?_, ?_, fun r h1 h2 => by simp [h1, h2]⟩
-    · config_simp; rw [hE.r53, hE.r81, hE.r32, hn]; ring
+    · config_simp; rwring [hE.r53, hE.r81, hE.r32, hn]
     · config_simp; rw [hE.r53, hE.r81, hE.r32, hn, i05]; ring_nf
   obtain ⟨q40, q43, r₁⟩ := q
   have hE₁ : CEnv P W H C c₁ := hE.keep e₁.wb_right
@@ -325,10 +330,10 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
         · intro h; omega
         · rintro (h | ⟨h, -⟩)
           · omega
-          · rw [h] at hd1; omega)
-    exact ⟨c₄, _, .seq eH (.ifLtN_true (by rw [d42, d44]; exact hd1) e₄),
+          · rwo [h] at hd1)
+    exact ⟨c₄, _, .seq eH (.ifLtN_true (by rwx [d42, d44]) e₄),
       by omega, b0, b1⟩
-  have t1 : ¬ c₃.nreg 50142 < c₃.nreg 50144 := hd1
+  have t1  := hd1
   rw [d42, d44] at hd1
   by_cases hd2 : c₃.nreg 50144 < c₃.nreg 50142
   · rw [d42, d44] at hd2
@@ -340,11 +345,11 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
         · intro h; omega
         · rintro (h | ⟨h, -⟩)
           · omega
-          · rw [h] at hd2; omega)
+          · rwo [h] at hd2)
       (by rw [hgt]; simp [hd2])
     exact ⟨c₄, _, .seq eH (.ifLtN_false t1
-      (.ifLtN_true (by rw [d42, d44]; exact hd2) e₄)), by omega, b0, b1⟩
-  have t2 : ¬ c₃.nreg 50144 < c₃.nreg 50142 := hd2
+      (.ifLtN_true (by rwx [d42, d44]) e₄)), by omega, b0, b1⟩
+  have t2  := hd2
   rw [d42, d44] at hd2
   -- the same walk edge
   have hpq : px = py := dOf_inj hg hx hy (by omega)
@@ -366,7 +371,7 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
   have hpy := param_lt_iff_same_edge M (Qof P) (x := y) (y := x) hpq.symm
   rw [hlt', hpx]
   rw [hgt', hpy]
-  simp only [x, y] at hpq ⊢
+  simp [x, y] at hpq ⊢
   rw [← hpq]
   -- the direction of the edge
   have e₄ := Exec.copyN (P := P) e₃.wb_right 50002 50201
@@ -378,8 +383,8 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
         rw [upd_same]; exact g3 50201 (by norm_num) (by norm_num)) (by omega)
   rw [← hM] at d₅
   have g5 : ∀ r, 50200 ≤ r → r < 50210 → c₅.nreg r = c₀.nreg r := fun r h1 h2 => by
-    rw [f₅.1 r (by simp only [Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega), hc₄]
-    simp only
+    rw [f₅.1 r (by sio only [Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]), hc₄]
+    simp
     rw [upd_other _ _ _ (by omega), g3 r h1 h2]
   have hdl := dirCode_le_two M px
   by_cases hd0 : c₅.nreg 10502 < c₅.nreg 50032
@@ -391,10 +396,10 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
         (dirCode M px = 2 ∧ M.hgtY (Qof P) ⟨px, qy⟩ < M.hgtY (Qof P) ⟨px, qx⟩))
       (q := (dirCode M px = 1 ∧ M.hgtY (Qof P) ⟨px, qy⟩ < M.hgtY (Qof P) ⟨px, qx⟩) ∨
         (dirCode M px = 2 ∧ M.hgtY (Qof P) ⟨px, qx⟩ < M.hgtY (Qof P) ⟨px, qy⟩))
-      (by rw [h0]; simp) (by rw [h0]; simp)
+      (by rws [h0]) (by rws [h0])
     exact ⟨c₆, _, .seq eH (.ifLtN_false t1 (.ifLtN_false t2
-      (.seq e₄ (.seq e₅ (.ifLtN_true (by rw [hE₅.r32, d₅]; omega) e₆))))), by omega, b0, b1⟩
-  have t3 : ¬ c₅.nreg 10502 < c₅.nreg 50032 := hd0
+      (.seq e₄ (.seq e₅ (.ifLtN_true (by rwo [hE₅.r32, d₅]) e₆))))), by omega, b0, b1⟩
+  have t3  := hd0
   rw [hE₅.r32, d₅] at hd0
   -- the heights
   obtain ⟨c₆, k₆, e₆, hk₆, hE₆, f6a, f6b, sx, ix, lx, vx⟩ := yLoadX_exec c₅ hE₅
@@ -421,11 +426,11 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     e₉.wb_right (by decide)).r32
   have B50 : BitIs c₉ 50150 (M.hgtY (Qof P) ⟨px, qx⟩ < M.hgtY (Qof P) ⟨px, qy⟩) := by
     have := BitIs.keep ⟨b₈, t₈⟩ f₉ (by decide)
-    simp only [SignTest] at this
+    simp [SignTest] at this
     rw [vx, vy] at this; exact this
   have B51 : BitIs c₉ 50151 (M.hgtY (Qof P) ⟨px, qy⟩ < M.hgtY (Qof P) ⟨px, qx⟩) := by
     have : BitIs c₉ 50151 _ := ⟨b₉, t₉⟩
-    simp only [SignTest] at this
+    simp [SignTest] at this
     rw [vx, vy] at this; exact this
   have w₉ := e₉.wb_right
   by_cases hd2' : c₉.nreg 50032 < c₉.nreg 10502
@@ -437,12 +442,12 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
       exec_block; exact ⟨rfl, by config_simp, by config_simp⟩
     obtain ⟨q10, q11⟩ := q
     have eF : Exec P W (.ifLtN 50032 10502 (block [.copyN 50210 50151, .copyN 50211 50150])
-        (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_true (show c₉.nreg 50032 < c₉.nreg 10502 by rw [p32, p10502]; omega) e₁₀
+        (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_true (show c₉.nreg 50032 < c₉.nreg 10502 by rwo [p32, p10502]) e₁₀
     have eAll : Exec P W offCore c c₁₀ _ := .seq eH (.ifLtN_false t1 (.ifLtN_false t2
       (.seq e₄ (.seq e₅ (.ifLtN_false t3 (e₆.seq (e₇.seq (e₈.seq (e₉.seq eF)))))))))
     refine ⟨c₁₀, _, eAll, by omega, ?_, ?_⟩
-    · refine (B51.of_eq q10).congr ?_; rw [h2]; simp
-    · refine (B50.of_eq q11).congr ?_; rw [h2]; simp
+    · refine (B51.of_eq q10).congr ?_; rws [h2]
+    · refine (B50.of_eq q11).congr ?_; rws [h2]
   · rw [p32, p10502] at hd2'
     have h1 : dirCode M px = 1 := by omega
     obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, q⟩ : ∃ c₁₀ k₁₀, Exec P W (block [.copyN 50210 50150,
@@ -451,12 +456,12 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
       exec_block; exact ⟨rfl, by config_simp, by config_simp⟩
     obtain ⟨q10, q11⟩ := q
     have eF : Exec P W (.ifLtN 50032 10502 (block [.copyN 50210 50151, .copyN 50211 50150])
-        (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_false (show ¬ c₉.nreg 50032 < c₉.nreg 10502 by rw [p32, p10502]; omega) e₁₀
+        (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_false (show ¬ c₉.nreg 50032 < c₉.nreg 10502 by rwo [p32, p10502]) e₁₀
     have eAll : Exec P W offCore c c₁₀ _ := .seq eH (.ifLtN_false t1 (.ifLtN_false t2
       (.seq e₄ (.seq e₅ (.ifLtN_false t3 (e₆.seq (e₇.seq (e₈.seq (e₉.seq eF)))))))))
     refine ⟨c₁₀, _, eAll, by omega, ?_, ?_⟩
-    · refine (B50.of_eq q10).congr ?_; rw [h1]; simp
-    · refine (B51.of_eq q11).congr ?_; rw [h1]; simp
+    · refine (B50.of_eq q10).congr ?_; rws [h1]
+    · refine (B51.of_eq q11).congr ?_; rws [h1]
 
 end
 

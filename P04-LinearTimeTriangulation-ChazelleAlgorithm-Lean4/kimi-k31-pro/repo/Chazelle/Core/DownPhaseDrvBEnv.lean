@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseDrvBApp
 public import Chazelle.Core.DownPhaseDrvBSpec
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
 
 /-!
 # Down-phase base (D9): the data of the region loop and the facts of a region
@@ -126,12 +128,12 @@ variable {E : BEnv}
 
 theorem pts_pos {r : ℕ} (hK : 0 < E.K) : E.pts r = regPts E.li E.Q.n E.N r := by
   have : E.L.length ≠ 0 := Nat.pos_iff_ne_zero.1 hK
-  simp only [BEnv.pts, ptsB, this, ↓reduceIte]
+  simp [BEnv.pts, ptsB, this, ↓reduceIte]
 
 theorem pts_zero {r : ℕ} (hK : E.K = 0) :
     E.pts r = wlist E.li (Host.pts E.Q.n [HostItem.run 0 (E.Q.n - 1)]) := by
   have : E.L.length = 0 := hK
-  simp only [BEnv.pts, ptsB, this, ↓reduceIte]
+  simp [BEnv.pts, ptsB, this, ↓reduceIte]
 
 variable (hE : BGood E)
 include hE
@@ -151,7 +153,7 @@ theorem hli : E.li = true ↔ Mountain.LeftInside E.Q := by
   · exfalso
     have := DrvD.desc_one hE.hMD
     omega
-  · simp only [decide_eq_true_eq]; exact h1
+  · simp [decide_eq_true_eq]; exact h1
 
 omit hE in
 theorem nRegions (_hE : BGood E) : E.N.nRegions = E.K + 1 := by
@@ -167,7 +169,7 @@ theorem pts_lt {r : ℕ} (hr : r < E.K + 1) : ∀ s ∈ E.pts r, s.Lt E.Q.n := b
   rcases Nat.eq_zero_or_pos E.K with hK | hK
   · rw [pts_zero hK]; exact run_pts_lt hE.hQ
   · rw [pts_pos hK]
-    exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).2
+    exact (region_facts ((hE.ctx hK).rc (by rwx [hE.nRegions])) hE.hli).2
 
 /-- **The shooting polygon of a region.** -/
 theorem regOK {r : ℕ} (hr : r < E.K + 1) :
@@ -179,7 +181,7 @@ theorem regOK {r : ℕ} (hr : r < E.K + 1) :
     rw [pts_zero hK]; exact regOK0 hE.hQ hE.hli
   · refine ⟨_, E.reg r, (hE.ctx hK).fam, ?_⟩
     rw [pts_pos hK]
-    exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).1
+    exact (region_facts ((hE.ctx hK).rc (by rwx [hE.nRegions])) hE.hli).1
 
 end BGood
 
@@ -210,7 +212,7 @@ theorem BRegs.congr {E : BEnv} {c c' : Config} (h : BRegs E c)
     (hc : ∀ q, FixB q → c'.nreg q = c.nreg q) : BRegs E c' := by
   obtain ⟨a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hc _ (by unfold FixB; omega)]; assumption)
+    (rw [hc _ (by ufo FixB)]; assumption)
 
 /-- **The output so far**: the records of `T` at `B₂`, their buckets at `BK`, the memory below
 `B₂` the initial one. -/

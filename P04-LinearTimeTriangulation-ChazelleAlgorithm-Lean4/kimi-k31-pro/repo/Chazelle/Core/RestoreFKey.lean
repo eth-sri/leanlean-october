@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.RestoreFTest
 public import Chazelle.Core.RestoreTDisp
 public import Chazelle.Core.RestoreTSetup
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 4: comparing keys of the host walk
@@ -62,24 +65,24 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have hA := hI.allocA hE
   obtain ⟨hMD, hwf⟩ := Gran.desc_agree' hE.hwf hE.hMD hag
   have hwfc := hwf.mono hA
-  have i0 : c.nreg 81000 = E.MD := by rw [hI.hin _ (by unfold FFix; omega), hE.i0]
-  have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by unfold FFix; omega), hE.k1]
+  have i0 : c.nreg 81000 = E.MD := by rw [hI.hin _ (by ufo FFix), hE.i0]
+  have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by ufo FFix), hE.k1]
   have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
   have hMD6 : E.MD + 6 ≤ c.nreg ALLOC := le_trans hwf.1 hA
   have ok : okB E.W c.nmem fKeySetL c.nreg := by
     simp only [fKeySetL, okB, okI, FScr, FOut]
-    refine ⟨⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by rw [i0, k1]; omega⟩,
+    refine ⟨⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by rwo [i0, k1]⟩,
       Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩),
         by omega⟩, ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩,
       Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), trivial⟩
   refine (FRS.seq (K₂ := 11010) (FRS.block hB fKeySetL hI ok) (fun c₁ hI₁ _ h₁ => ?_)).mono
-    (by simp [fKeySetL]) (fun _ h => h)
+    (by simp [fKeySetL]) (fun _ => id)
   obtain ⟨s20, s21, s22, s23, s00, sfr⟩ := fKeySet_eff c.nmem c.nreg
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem fKeySetL c.nreg q := fun q => by rw [h₁]
   have m₁ : c₁.nmem = c.nmem := by rw [h₁]
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := by
-    rw [e₁, sfr _ (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-      (by unfold ALLOC; omega) (by unfold ALLOC; omega)]
+    rw [e₁, sfr _ (by ufo ALLOC) (by ufo ALLOC) (by ufo ALLOC)
+      (by ufo ALLOC) (by ufo ALLOC)]
   have f₁ : ∀ q, ¬ KeyW q → c₁.nreg q = c.nreg q := fun q hq => by
     unfold KeyW at hq
     rw [e₁, sfr q (by omega) (by omega) (by omega) (by omega) (by omega)]
@@ -88,8 +91,8 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have r22 : c₁.nreg 83022 = 0 := by rw [e₁, s22]
   have r23 : c₁.nreg 83023 = 1 := by rw [e₁, s23]
   have r00 : c₁.nreg 83000 = E.MD := by rw [e₁, s00, i0]
-  have hx₁ : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg a, c₁.nreg b⟩ := by rw [f₁ a hka, f₁ b hkb]; exact hx
-  have hy₁ : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by rw [f₁ d hkd, f₁ e hke]; exact hy
+  have hx₁ : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg a, c₁.nreg b⟩ := by rwx [f₁ a hka, f₁ b hkb]
+  have hy₁ : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by rwx [f₁ d hkd, f₁ e hke]
   rw [← f₁ a hka, ← f₁ b hkb, ← f₁ d hkd, ← f₁ e hke]
   have hfin : ∀ c' : Config, (∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c₁.nreg q) →
       ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → c'.nreg q = c.nreg q := fun c' h q h1 h2 hq =>
@@ -100,23 +103,23 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       rw [hM] at hx₁; exact ⟨hx₁.1, hx₁.2.1, hx₁.2.2 C rfl⟩
     have hy' : PosOK C (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by
       rw [hM] at hy₁; exact ⟨hy₁.1, hy₁.2.1, hy₁.2.2 C rfl⟩
-    have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 83020) (Qof E.P) H C := by rw [m₁, r20]; exact hC
+    have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 83020) (Qof E.P) H C := by rwx [m₁, r20]
     have hwf₁ : ChainWF E.P (c₁.nreg ALLOC) c₁.nmem (c₁.nreg 83020) := by
       rw [m₁, r20, hA₁]; exact hwfc.2 h0
     obtain ⟨c', k, ex, hk, b1, b2, hf⟩ := keyCmp_exec ha hb hd he hI₁.hw hE.hG hE.hWh hwf₁ hC₁
-      r22 hx' hy' (walk_le_W hE.hMD hE.hwf hE.hWh hM) (by rw [hA₁]; omega)
+      r22 hx' hy' (walk_le_W hE.hMD hE.hwf hE.hWh hM) (by rwo [hA₁])
     have h8 : ∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c₁.nreg q := fun q h1 h2 =>
       hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])
-        (by unfold ALLOC; omega)
-    refine FRS.prim hB hI₁ (.ifLtN_true (by rw [r21, r23, h0]; omega) ex) hf (by omega) (by omega)
-      ⟨by rw [hM]; exact b1, by rw [hM]; exact b2, hfin c' h8⟩
+        (by ufo ALLOC)
+    refine FRS.prim hB hI₁ (.ifLtN_true (by rwo [r21, r23, h0]) ex) hf (by omega) (by omega)
+      ⟨by rwx [hM], by rwx [hM], hfin c' h8⟩
   · -- the interior model
     have hn := interior_n (P := E.P)
-    have hD : c₁.nreg 83000 + 1 ≤ E.W := by rw [r00]; omega
+    have hD : c₁.nreg 83000 + 1 ≤ E.W := by rwo [r00]
     have hmd : c₁.nmem (c₁.nreg 83000 + 1) = c.nmem (E.MD + 1) := by rw [m₁, r00]
     rw [hM] at hx₁ hy₁
     obtain ⟨c', k, ex, hk, b1, b2⟩ := iKey_exec (P := E.P) (a := a) (b := b) (d := d) (e := e)
-      hE.hG (by have := hE.hWh; unfold hostWords at this; omega) hI₁.hw hbit hmd hD
+      hE.hG (by have := hE.hWh; ufo hostWords at this) hI₁.hw hbit hmd hD
       (by intro r hr; simp only [List.mem_cons, List.not_mem_nil, or_false] at hr
           unfold InR at ha hb hd he
           rcases hr with rfl | rfl | rfl | rfl <;> omega)
@@ -125,9 +128,9 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
     have hf := frame_of_frameB hfr Bik_band k
     have h8 : ∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c₁.nreg q := fun q h1 h2 =>
       hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])
-        (by unfold ALLOC; omega)
-    refine FRS.prim hB hI₁ (.ifLtN_false (by rw [r21, r23, h1]; omega) ex) hf (by omega)
-      (by omega) ⟨by rw [hM]; exact b1, by rw [hM]; exact b2, hfin c' h8⟩
+        (by ufo ALLOC)
+    refine FRS.prim hB hI₁ (.ifLtN_false (by rwo [r21, r23, h1]) ex) hf (by omega)
+      (by omega) ⟨by rwx [hM], by rwx [hM], hfin c' h8⟩
 
 end
 

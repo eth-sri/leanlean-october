@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Chain.Separation
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Submaps of a domain cut by horizontal chords: exact splitting and region count
@@ -73,9 +76,9 @@ theorem hseg_inter_eq_openHSeg {D : Set Point} {y a b : ℝ} (h : IsHChordIn D y
   · rintro ⟨⟨h1, h2, h3⟩, hpD⟩
     refine ⟨h1, lt_of_le_of_ne h2 fun e => ?_, lt_of_le_of_ne h3 fun e => ?_⟩
     · apply h.left_not
-      rw [show ((a, y) : Point) = p from Prod.ext e h1.symm]; exact hpD
+      rwx [show ((a, y) : Point) = p from Prod.ext e h1.symm]
     · apply h.right_not
-      rw [show ((b, y) : Point) = p from Prod.ext e.symm h1.symm]; exact hpD
+      rwx [show ((b, y) : Point) = p from Prod.ext e.symm h1.symm]
   · rintro ⟨h1, h2, h3⟩
     refine ⟨⟨h1, h2.le, h3.le⟩, ?_⟩
     have := h.open_mem p.1 h2 h3
@@ -237,7 +240,7 @@ theorem ChordSystem.chord_separates_in (hF : ChordSystem D F) {S : Set (Set Poin
   have hdn : Tendsto (fun ε : ℝ => ((z.1, z.2 - ε) : Point)) (𝓝[>] 0) (𝓝 z) :=
     ((by fun_prop : Continuous fun ε : ℝ => ((z.1, z.2 - ε) : Point)).tendsto' 0 z
       (by simp)).mono_left nhdsWithin_le_nhds
-  have hint : D ∈ 𝓝 z := hF.isOpen.mem_nhds hzD
+  have hint  := hF.isOpen.mem_nhds hzD
   have hK : IsClosed (⋃₀ (S \ {c})) := hF.isClosed_sUnion (fun _ hd => hS hd.1)
   have hzK : z ∉ ⋃₀ (S \ {c}) := by
     rintro ⟨d, ⟨hdS, hdc⟩, hzd'⟩
@@ -259,8 +262,8 @@ theorem ChordSystem.chord_separates_in (hF : ChordSystem D F) {S : Set (Set Poin
     filter_upwards [hup.eventually hint, hdn.eventually hint, hup.eventually hKn,
       hdn.eventually hKn, self_mem_nhdsWithin, Ioo_mem_nhdsGT hε₁] with ε h1 h2 h3 h4 h5 h6
     have hε : 0 < ε := h5
-    have hp : (z.1, z.2 + ε) ∈ freeIn D S := hfree _ (by simp; linarith) h1 h3
-    have hq : (z.1, z.2 - ε) ∈ freeIn D S := hfree _ (by simp; linarith) h2 h4
+    have hp : (z.1, z.2 + ε) ∈ freeIn D S := hfree _ (by sil) h1 h3
+    have hq : (z.1, z.2 - ε) ∈ freeIn D S := hfree _ (by sil) h2 h4
     refine ⟨hp, hq, fun heq => ?_⟩
     obtain ⟨-, -, hpar⟩ := hflip ε hε h6.2
     apply hpar
@@ -312,9 +315,9 @@ theorem vert_mem_halfDisk {w : Point} {r τ s : ℝ} (hτ : τ = 1 ∨ τ = -1) 
   simp only [sub_self, abs_zero, add_sub_cancel_left]
   rcases hτ with rfl | rfl
   · simp only [one_mul]
-    exact ⟨⟨by linarith, by rw [abs_of_pos hs0]; exact hsr⟩, hs0⟩
+    exact ⟨⟨by linarith, by rwx [abs_of_pos hs0]⟩, hs0⟩
   · simp only [neg_one_mul, abs_neg, mul_neg, neg_neg]
-    exact ⟨⟨by linarith, by rw [abs_of_pos hs0]; exact hsr⟩, hs0⟩
+    exact ⟨⟨by linarith, by rwx [abs_of_pos hs0]⟩, hs0⟩
 
 theorem halfDisk_mono {w w' : Point} {r r' τ : ℝ} (hh : w'.2 = w.2) (hb : ball w' r' ⊆ ball w r) :
     halfDisk w' r' τ ⊆ halfDisk w r τ := by
@@ -339,7 +342,7 @@ theorem halfDisk_inter_nonempty {w w' : Point} {r r' τ : ℝ} (hτ : τ = 1 ∨
       rcases hτ with rfl | rfl <;> simp [hsr]
     refine ⟨⟨hx, habs⟩, ?_⟩
     have : τ * (τ * s) = s := by rcases hτ with rfl | rfl <;> ring
-    rw [this]; exact hs0
+    rwx [this]
   · rw [← hh]
     exact vert_mem_halfDisk hτ hs0 hsr'
 
@@ -395,7 +398,7 @@ theorem ChordSystem.halfDisk_all (hF : ChordSystem D F) {S : Set (Set Point)} {c
     subset_regionsIn_of_inter hU (isPreconnected_halfDisk w r τ)
       (hF.halfDisk_subset_freeIn_insert hc hw (hb.trans hRS)) hne
   obtain ⟨y, a, b, h, rfl⟩ := hF.hchord c hc
-  have hopen : hseg y a b ∩ D = openHSeg y a b := hseg_inter_eq_openHSeg h
+  have hopen  := hseg_inter_eq_openHSeg h
   rw [hopen] at hcR hex ⊢
   set T : Set ℝ := {x | ∃ r > (0 : ℝ), ball ((x, y) : Point) r ⊆ R ∧ halfDisk (x, y) r τ ⊆ U}
     with hT
@@ -420,7 +423,7 @@ theorem ChordSystem.halfDisk_all (hF : ChordSystem D F) {S : Set (Set Point)} {c
   have hTclosed : closure T ∩ Ioo a b ⊆ T := by
     rintro x ⟨hxc, hx⟩
     set w : Point := (x, y) with hw
-    have hwR : w ∈ R := hcR ⟨x, hx, rfl⟩
+    have hwR  := hcR ⟨x, hx, rfl⟩
     obtain ⟨r, hr, hb⟩ := Metric.isOpen_iff.1 hR w hwR
     obtain ⟨x', hx'T, hxx'⟩ := Metric.mem_closure_iff.1 hxc (r / 2) (half_pos hr)
     obtain ⟨r', hr', -, hU'⟩ := hx'T
@@ -429,15 +432,14 @@ theorem ChordSystem.halfDisk_all (hF : ChordSystem D F) {S : Set (Set Point)} {c
     refine ⟨r, hr, hb, key w hwc r hb ?_⟩
     have hxd : |((x', y) : Point).1 - w.1| < r := by
       simp only [hw]
-      rw [abs_sub_comm]; linarith
+      rwli [abs_sub_comm]
     obtain ⟨p, hp1, hp2⟩ := halfDisk_inter_nonempty hτ (by simp [hw]) hxd hr'
     exact ⟨p, hp1, hU' hp2⟩
   -- `T` meets the parameter interval
   have hTne : (Ioo a b ∩ T).Nonempty := by
     obtain ⟨w, ⟨x, hx, rfl⟩, r, hr, hb, hU'⟩ := hex
     exact ⟨x, hx, r, hr, hb, hU'⟩
-  have hall : Ioo a b ⊆ T :=
-    isPreconnected_Ioo.subset_of_closure_inter_subset hTopen hTne hTclosed
+  have hall  := isPreconnected_Ioo.subset_of_closure_inter_subset hTopen hTne hTclosed
   -- conclusion
   rintro w ⟨x, hx, rfl⟩ r hr hb
   obtain ⟨r₁, hr₁, -, hU'⟩ := hall hx
@@ -492,7 +494,7 @@ theorem ChordSystem.exists_halfDisk_subset (hF : ChordSystem D F) {S : Set (Set 
   obtain ⟨w, hw, hwc⟩ := hex
   obtain ⟨r, hr, hb, hline⟩ := hF.exists_ball_chord hc hRopen hcR hw
   obtain ⟨q, hqU, hdq⟩ := Metric.mem_closure_iff.1 hwc r hr
-  have hqb : q ∈ ball w r := by rw [mem_ball, dist_comm]; exact hdq
+  have hqb : q ∈ ball w r := by rwx [mem_ball, dist_comm]
   have hqc : q ∉ c := by
     intro hqc
     have := hUA' hqU
@@ -505,8 +507,8 @@ theorem ChordSystem.exists_halfDisk_subset (hF : ChordSystem D F) {S : Set (Set 
       (hF.halfDisk_subset_freeIn_insert hc hw.1 (hb.trans hRA)) ⟨q, ⟨hqb, ?_⟩, hqU⟩
     simp only [mem_ofPred_eq]
     rcases lt_or_gt_of_ne hq2 with hlt | hlt
-    · rw [ite_eq_right (not_lt.2 hlt.le)]; linarith
-    · rw [ite_eq_left hlt]; linarith
+    · rwli [ite_eq_right (not_lt.2 hlt.le)]
+    · rwli [ite_eq_left hlt]
 
 /-- **Exact splitting.**  Adding a chord `c ∉ S` to a submap `S ⊆ F` replaces the region `R` of
 `S` containing the interior of `c` by exactly two regions `R₁ ≠ R₂` with `R₁ ∪ R₂ = R \ c`, and
@@ -667,14 +669,14 @@ theorem ChordSystem.ncard_regionsIn_insert (hF : ChordSystem D F) {S : Set (Set 
 theorem ChordSystem.regionsIn_finite_ncard (hF : ChordSystem D F) (hD : IsPreconnected D)
     (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) :
     (regionsIn D S).Finite ∧ (regionsIn D S).ncard = S.ncard + 1 := by
-  have hfin : S.Finite := hF.finite.subset hS
+  have hfin  := hF.finite.subset hS
   induction S, hfin using Set.Finite.induction_on with
   | empty =>
     rw [regionsIn_empty hD hne]
     simp
   | @insert c S hcS hSfin ih =>
-    have hS' : S ⊆ F := (subset_insert c S).trans hS
-    have hc : c ∈ F := hS (mem_insert c S)
+    have hS'  := (subset_insert c S).trans hS
+    have hc  := hS (mem_insert c S)
     obtain ⟨hfin', hcard⟩ := ih hS'
     obtain ⟨hfin'', hcard''⟩ := hF.ncard_regionsIn_insert hS' hc hcS hfin'
     refine ⟨hfin'', ?_⟩

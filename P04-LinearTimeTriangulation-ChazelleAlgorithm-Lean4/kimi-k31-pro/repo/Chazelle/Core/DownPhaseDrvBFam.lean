@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvBEmit
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase base (D9): the new chord list of the base case
@@ -140,7 +141,6 @@ theorem BaseCtx.fam (B : BaseCtx Q L E reg li) :
     (interiorModel Q).ChordFamily Q ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) :=
   (DownMath.isNF_build B.hQ B.hL B.hperm B.hsort).1
 
-set_option maxHeartbeats 2000000 in
 /-- The facts of a new chord. -/
 theorem newL_mem (B : BaseCtx Q L E reg li) {x : ℕ × ℕ × ℕ}
     (hx : x ∈ newL li Q (buildNF (interiorModel Q) Q L E)) :

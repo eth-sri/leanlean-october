@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseBaseLoop1
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down phase, A1 (RAM, part 3): the event pass
@@ -29,7 +31,7 @@ theorem dropE_take_succ {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E 
   rw [List.take_add_one, List.getElem?_eq_getElem ht, Option.toList_some, List.filter_append,
     List.map_append, he]
   congr 1
-  simp only [List.filter_cons, List.filter_nil]
+  simp [List.filter_cons, List.filter_nil]
   split_ifs <;> simp
 
 theorem dropE_take_length_le {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} (t : ℕ) :
@@ -92,7 +94,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **One event.** -/
 theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     {SE X SE' : ℕ} (hE : ∀ t, t < E.length → m₁ (SE + t) = E.getD t 0)
@@ -149,18 +150,18 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     have hsucc := dropE_take_succ (li := li) (n := n) (L := L) ht
     rw [← hc, ← hl] at hsucc
     cases hk : keptC li n L c
-    · have hv : d₁.nreg 200133 = 0 := by rw [v33, tbl, hk]; rfl
-      have hn : ¬ d₁.nreg 200101 < d₁.nreg 200133 := by rw [h101, hv]; omega
+    · have hv : d₁.nreg 200133 = 0 := by rwr [v33, tbl, hk]
+      have hn : ¬ d₁.nreg 200101 < d₁.nreg 200133 := by rwo [h101, hv]
       rw [hk] at hsucc
-      simp only [Bool.false_eq_true, ite_false, List.append_nil] at hsucc
+      simp [Bool.false_eq_true, ite_false, List.append_nil] at hsucc
       refine ⟨d₁, _, .ifLtN_false hn (.skip e₁.wb_right), le_rfl, by omega, fun _ _ _ => rfl,
         by rw [hsucc, h134], fun a => ?_, rfl, rfl, rfl⟩
       rw [m₁']
       exact mem2_skip hI.mem ht hk a
-    · have hv : d₁.nreg 200133 = newCode li n L c + 1 := by rw [v33, tbl, hk]; rfl
-      have hp : d₁.nreg 200101 < d₁.nreg 200133 := by rw [h101, hv]; omega
+    · have hv : d₁.nreg 200133 = newCode li n L c + 1 := by rwr [v33, tbl, hk]
+      have hp : d₁.nreg 200101 < d₁.nreg 200133 := by rwo [h101, hv]
       rw [hk] at hsucc
-      simp only [ite_true] at hsucc
+      simp [ite_true] at hsucc
       obtain ⟨d₂, k₂, e₂, hk₂, w134, r₂, mm₂, rr₂, rm₂, o₂⟩ : ∃ d₂ k₂, Exec P W
           (block [.subN 200133 200133 200100, .storeN 200134 200133,
             .addN 200134 200134 200100]) d₁ d₂ k₂ ∧ k₂ = 3 ∧
@@ -177,7 +178,7 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
           Machine.upd_other, h134, h100, hv, Machine.upd_apply]
         simp
       refine ⟨d₂, _, .ifLtN_true hp e₂, by omega, by omega, r₂,
-        by rw [w134, hsucc, List.length_append, List.length_singleton]; ring, fun a => ?_,
+        by rwring [w134, hsucc, List.length_append, List.length_singleton], fun a => ?_,
         rr₂, rm₂, o₂⟩
       rw [mm₂, m₁']
       exact mem2_keep hI.mem ht hk a
@@ -185,7 +186,7 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have h130 : d₂.nreg 200130 = t := by rw [g2 _ (by omega) (by omega), g1 _ (by omega)]
   have h100 : d₂.nreg 200100 = 1 := by
     rw [g2 _ (by omega) (by omega), g1 _ (by omega), hI.r100]
-  have e₃ := Exec.addN (P := P) e₂.wb_right 200130 200130 200100 (by rw [h130, h100]; omega)
+  have e₃ := Exec.addN (P := P) e₂.wb_right 200130 200130 200100 (by rwo [h130, h100])
   set d₃ : Config := { d₂ with nreg := upd d₂.nreg 200130 (d₂.nreg 200130 + d₂.nreg 200100) }
     with hd₃
   have g3 : ∀ r, r ≠ 200130 → d₃.nreg r = d₂.nreg r := fun r hr => by rw [hd₃]; simp [hr]
@@ -193,11 +194,11 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have g : ∀ r, (r < 200130 ∨ 200135 < r) → d₃.nreg r = d.nreg r := fun r hr => by
     rw [g3 r (by omega), g2 r (by omega) (by omega), g1 r (by omega)]
   refine ⟨d₃, _, .seq e₁ (.seq e₂ e₃), e₃.wb_right, ?_, v3, by omega, by omega⟩
-  refine ⟨by rw [v3]; omega, by rw [g _ (by norm_num), hI.r136], ?_, ?_,
+  refine ⟨by rwo [v3], by rw [g _ (by norm_num), hI.r136], ?_, ?_,
     by rw [g _ (by norm_num), hI.r121], by rw [g _ (by norm_num), hI.r100],
     by rw [g _ (by norm_num), hI.r101], fun r hr => by rw [g r hr, hI.fr r hr], ?_, ?_, ?_,
     fun a => ?_⟩
-  · rw [v3, g3 _ (by norm_num), g2 _ (by norm_num) (by norm_num), v31]; ring
+  · rwring [v3, g3 _ (by norm_num), g2 _ (by norm_num) (by norm_num), v31]
   · rw [v3, g3 _ (by norm_num), n134]
   · show d₂.rreg = c₁.rreg; rw [rr₂, rr₁, hI.rr]
   · show d₂.rmem = c₁.rmem; rw [rm₂, rm₁, hI.rm]
@@ -223,15 +224,15 @@ theorem dLoop2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
         dBody2_exec hE hSE hX hXS hEl hperm hW hwd hId ht
       have := hId.r136
       refine ⟨d', k, e, ⟨hw', hI'⟩, ?_, ?_⟩
-      · rw [hi']; rw [this] at ht; omega
-      · rw [hi']; omega)
+      · rw [hi']; rwo [this] at ht
+      · rwo [hi'])
     ⟨hw, hI⟩
   have hi := hI'.t_le
   rw [hI'.r136] at htest
   have hend : d'.nreg 200130 = E.length := by omega
   refine ⟨d', k, e, hw', hI', hend, ?_, ?_⟩
-  · rw [h0, hend] at hψ; omega
-  · rw [h0] at hk; omega
+  · rwo [h0, hend] at hψ
+  · rwo [h0] at hk
 
 end exec
 

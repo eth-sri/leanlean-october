@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutBox
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 27: the decision `SAME`
@@ -9,10 +12,6 @@ public import Chazelle.Core.ShootCutBox
 on one walk edge and the start comes first); then the core hands the single piece `[s, e]`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -45,32 +44,32 @@ theorem decBox_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
       d'.nmem = d.nmem := by
   unfold decBox
   interval_cases p
-  · refine spec_ifLtN_true (by rw [h01, h91]; omega) (spec_skip hw ⟨by omega, ?_, by omega,
+  · refine spec_ifLtN_true (by rwo [h01, h91]) (spec_skip hw ⟨by omega, ?_, by omega,
       fun _ _ _ => rfl, rfl⟩)
-    rw [h48]; simp
-  · refine spec_ifLtN_false (by rw [h01, h91]; omega) (spec_ifLtN_true (by rw [h01, h92]; omega)
+    rws [h48]
+  · refine spec_ifLtN_false (by rwo [h01, h91]) (spec_ifLtN_true (by rwo [h01, h92])
       (spec_instr (Exec.constN hw _ _ hW) fun _ => ⟨by omega, by simp, by simp,
         fun x h1 _ => by simp [h1], rfl⟩))
-  · refine spec_ifLtN_false (by rw [h01, h91]; omega) (spec_ifLtN_false (by rw [h01, h92]; omega)
-      (spec_ifLtN_true (by rw [h01, h93]; omega) (spec_skip hw ⟨by omega, ?_, by omega,
+  · refine spec_ifLtN_false (by rwo [h01, h91]) (spec_ifLtN_false (by rwo [h01, h92])
+      (spec_ifLtN_true (by rwo [h01, h93]) (spec_skip hw ⟨by omega, ?_, by omega,
         fun _ _ _ => rfl, rfl⟩)))
-    rw [h48]; simp
-  · refine spec_ifLtN_false (by rw [h01, h91]; omega) (spec_ifLtN_false (by rw [h01, h92]; omega)
-      (spec_ifLtN_false (by rw [h01, h93]; omega) (spec_seq (spec_instr (Exec.subN hw _ _ _)
-        fun w₁ => spec_ifLtN_true (by config_simp; rw [h01, h93, h91]; omega) (spec_instr
+    rws [h48]
+  · refine spec_ifLtN_false (by rwo [h01, h91]) (spec_ifLtN_false (by rwo [h01, h92])
+      (spec_ifLtN_false (by rwo [h01, h93]) (spec_seq (spec_instr (Exec.subN hw _ _ _)
+        fun w₁ => spec_ifLtN_true (by config_simp; rwo [h01, h93, h91]) (spec_instr
           (Exec.constN w₁ _ _ hW) fun _ => ⟨by omega, by simp, by simp,
             fun x h1 h2 => by simp [h1, h2], rfl⟩)))))
-  · refine spec_ifLtN_false (by rw [h01, h91]; omega) (spec_ifLtN_false (by rw [h01, h92]; omega)
-      (spec_ifLtN_false (by rw [h01, h93]; omega) (spec_seq (spec_instr (Exec.subN hw _ _ _)
-        fun w₁ => spec_ifLtN_false (by config_simp; rw [h01, h93, h91]; omega)
-          (spec_ifLtN_true (by config_simp; rw [h01, h93, h92]; omega) (spec_skip w₁
+  · refine spec_ifLtN_false (by rwo [h01, h91]) (spec_ifLtN_false (by rwo [h01, h92])
+      (spec_ifLtN_false (by rwo [h01, h93]) (spec_seq (spec_instr (Exec.subN hw _ _ _)
+        fun w₁ => spec_ifLtN_false (by config_simp; rwo [h01, h93, h91])
+          (spec_ifLtN_true (by config_simp; rwo [h01, h93, h92]) (spec_skip w₁
             ⟨by omega, ?_, ?_, fun x h1 h2 => by simp [h2], rfl⟩))))))
-    · config_simp; rw [h48]; simp
-    · config_simp; rw [h48]; omega
-  · refine spec_ifLtN_false (by rw [h01, h91]; omega) (spec_ifLtN_false (by rw [h01, h92]; omega)
-      (spec_ifLtN_false (by rw [h01, h93]; omega) (spec_seq (spec_instr (Exec.subN hw _ _ _)
-        fun w₁ => spec_ifLtN_false (by config_simp; rw [h01, h93, h91]; omega)
-          (spec_ifLtN_false (by config_simp; rw [h01, h93, h92]; omega) (spec_instr
+    · config_simp; rws [h48]
+    · config_simp; rwo [h48]
+  · refine spec_ifLtN_false (by rwo [h01, h91]) (spec_ifLtN_false (by rwo [h01, h92])
+      (spec_ifLtN_false (by rwo [h01, h93]) (spec_seq (spec_instr (Exec.subN hw _ _ _)
+        fun w₁ => spec_ifLtN_false (by config_simp; rwo [h01, h93, h91])
+          (spec_ifLtN_false (by config_simp; rwo [h01, h93, h92]) (spec_instr
             (Exec.constN w₁ _ _ hW) fun _ => ⟨by omega, by simp, by simp,
               fun x h1 h2 => by simp [h1, h2], rfl⟩))))))
 
@@ -93,7 +92,7 @@ theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
   by_cases hp6 : p < 6
   · obtain ⟨d', k, ex, hk, h1, h2, -, -⟩ := decBox_exec (P := P) d hw h01 hp6 h48 R.h91 h92 R.h93
       (by omega)
-    refine ⟨d', _, .ifLtN_true (by rw [h01, R.h96]; exact hp6) ex, by omega, ?_, h2⟩
+    refine ⟨d', _, .ifLtN_true (by rwx [h01, R.h96]) ex, by omega, ?_, h2⟩
     rw [h1]
     constructor
     · intro hb; exact box_param_pos C (Qof P) hb hx hin
@@ -107,19 +106,19 @@ theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
         d₁.nreg 150049 = p ∧ d₁.nreg 150076 = j ∧
         (∀ x, x ≠ 150049 → x ≠ 150076 → d₁.nreg x = d.nreg x) ∧ d₁.nmem = d.nmem := by
       exec_block
-      refine ⟨rfl, by config_simp; exact h01, by config_simp; rw [h04, R.h91]; omega,
+      refine ⟨rfl, by config_simp; exact h01, by config_simp; rwo [h04, R.h91],
         fun x h1 h2 => ?_, rfl⟩
       simp only [upd]; split_ifs <;> first | rfl | omega
     have R₁ : ChainRegs C (H.pts P.n).length Hh d₁ := R.of_frame fun r hr => r₁ r (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega) (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
+      sio only [List.mem_cons, List.not_mem_nil, or_false] at hr) (by
+      sio only [List.mem_cons, List.not_mem_nil, or_false] at hr)
     obtain ⟨d₂, k₂, e₂, hk₂, fr₂, i₂, l₂⟩ := posP_exec S hD hMD hHh d₁ e₁.wb_right
       (fun a ha => by rw [m₁]; exact hm a ha) R₁ (by rw [r₁ _ (by omega) (by omega), h00])
       (by rw [r₁ _ (by omega) (by omega), h27]) (by rw [r₁ _ (by omega) (by omega), h90])
       (by rw [r₁ _ (by omega) (by omega), h92]) o49 o76 (by omega) (by omega) (by omega)
     have e₃ := Exec.copyN (P := P) e₂.wb_right 150048 150089
     refine ⟨_, _, .ifLtN_false
-      (show ¬ d.nreg 150001 < d.nreg 150096 by rw [h01, R.h96]; exact hp6)
+      (show ¬ d.nreg 150001 < d.nreg 150096 by rwx [h01, R.h96])
       (.seq e₁ (.seq e₂ e₃)), by omega, ?_, ?_⟩
     · config_simp
       exact i₂.trans (param_pos_iff _ _ hx).symm
@@ -144,7 +143,7 @@ theorem decSame_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
   unfold hostWords at hWn
   unfold decSame
   by_cases h0 : d.nreg 150002 < d.nreg 150091
-  · have hz : h₁ = 0 := by rw [h02, R.h91] at h0; omega
+  · have hz : h₁ = 0 := by rwo [h02, R.h91] at h0
     subst hz
     obtain ⟨d', k, ex, hk, h1, h2⟩ := decVtx_exec S hD hMD hHh d hw hm R h00 h27 h48 h90 h92
       h01 h04 hp hh₂ hh₂n he hin
@@ -152,12 +151,12 @@ theorem decSame_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     rw [h1, key_hgt0]
     unfold Model.key
     constructor <;> intro h <;> linarith
-  · have hh₁ : 1 ≤ h₁ := by rw [h02, R.h91] at h0; omega
+  · have hh₁ : 1 ≤ h₁ := by rwo [h02, R.h91] at h0
     have e₁ := Exec.copyN (P := P) hw 150049 150001
     set d₁ := ({ d with nreg := upd d.nreg 150049 (d.nreg 150001) } : Config) with hd₁
     have g₁ : ∀ x, x ≠ 150049 → d₁.nreg x = d.nreg x := fun x hx => by simp [hd₁, upd, hx]
     obtain ⟨d₂, k₂, e₂, hk₂, fr₂, i₂, l₂⟩ := keyLess_exec S hD hMD hHh d₁ e₁.wb_right
-      (fun a ha => hm a ha) (by rw [g₁ _ (by omega), h00]) (by rw [g₁ _ (by omega), R.h91])
+      (hm) (by rw [g₁ _ (by omega), h00]) (by rw [g₁ _ (by omega), R.h91])
       (by simp [hd₁, upd, h01]) (by rw [g₁ _ (by omega), h02]) (by rw [g₁ _ (by omega), h04])
       hp hh₁ hh₁n hh₂ hh₂n
     have e₃ := Exec.copyN (P := P) e₂.wb_right 150048 150089
@@ -215,21 +214,21 @@ theorem decideS_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e
   · refine zero d₀ _ (by unfold decideS; exact .seq e₀ (.ifLtN_false hlt (.ifLtN_true hgt
       (.skip w₀)))) (by omega) z₀ ?_
     rw [r01, r03] at hgt; rintro ⟨h1, -⟩; omega
-  have heq : s.edge = e.edge := by rw [r01, r03] at hlt hgt; omega
+  have heq : s.edge = e.edge := by rwo [r01, r03] at hlt hgt
   by_cases h4 : d₀.nreg 150090 < d₀.nreg 150004
-  · have hh₂ : 1 ≤ e.hgt := by rw [r90, r04] at h4; omega
+  · have hh₂ : 1 ≤ e.hgt := by rwo [r90, r04] at h4
     have hin' : (chainModel C).InnerPt ((chainModel C).pos (Qof P) e) := by
       rcases hin with h | h
       · omega
       · exact h
     have hs' : s = ⟨s.edge, s.hgt⟩ := rfl
     have he' : e = ⟨s.edge, e.hgt⟩ := by rw [heq]
-    obtain ⟨d', k, ex, hk, h1, h2⟩ := decSame_exec S hD hMD hHh d₀ w₀ (fun a ha => hm a ha)
+    obtain ⟨d', k, ex, hk, h1, h2⟩ := decSame_exec S hD hMD hHh d₀ w₀ (hm)
       (R.chain.of_frame fun r hr => g₀ r (by
-        simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega))
+        sio only [List.mem_cons, List.not_mem_nil, or_false] at hr))
       (by rw [g₀ _ (by omega), R.h00]) (by rw [g₀ _ (by omega), R.h27]) z₀ r90
       (by rw [g₀ _ (by omega), R.h92]) r01 r02 r04 hs1 hh₂ hs.2.2 he.2.2
-      (by rw [← he']; exact he) (by rw [← he']; exact hin')
+      (by rwx [← he']) (by rwx [← he'])
     refine ⟨d', _, by unfold decideS; exact .seq e₀ (.ifLtN_false hlt (.ifLtN_false hgt
       (.ifLtN_true h4 ex))), by omega, ?_, h2⟩
     rw [h1, ← hs', ← he']

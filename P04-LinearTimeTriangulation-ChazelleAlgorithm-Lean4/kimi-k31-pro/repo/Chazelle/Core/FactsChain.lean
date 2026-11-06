@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.FactsWalk
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-B: the chain model satisfies the walk axioms
@@ -45,13 +49,13 @@ theorem exists_first_exit {D : Set Point} (hD : IsOpen D) {z : Point} (hz : z �
     (isClosed_le continuous_const continuous_id).inter (hD.isClosed_compl.preimage hcont)
   have hz1 := hR z hz
   have hTne : T.Nonempty := ⟨R - z.1 + 1, by linarith, fun h => by
-    have := hR _ h; simp only at this; linarith⟩
+    have := hR _ h; sil only at this⟩
   have hbdd : BddBelow T := ⟨0, fun s hs => hs.1⟩
   have hmem := hTc.csInf_mem hTne hbdd
   refine ⟨sInf T, ?_, fun s' hs' => ?_, hmem.2⟩
   · rcases hmem.1.lt_or_eq with h | h
     · exact h
-    · exfalso; apply hmem.2; rw [← h, add_zero]; exact hz
+    · exfalso; apply hmem.2; rwx [← h, add_zero]
   · by_contra hs
     exact absurd (csInf_le hbdd ⟨hs'.1, hs⟩) (not_le.2 hs'.2)
 
@@ -63,7 +67,7 @@ variable (C : Chain)
 theorem hseg_eq_segment {y a b : ℝ} (hab : a ≤ b) :
     hseg y a b = Chazelle.segment ((a, y) : Point) (b, y) := by
   rw [segment_horizontal_eq_hseg (a := ((a, y) : Point)) (b := ((b, y) : Point)) rfl]
-  dsimp only
+  dsimp
   rw [min_eq_left hab, max_eq_right hab]
 
 /-- An endpoint of an augmented chord is on the chain or on an open vertical side of the box. -/
@@ -71,7 +75,7 @@ theorem end_cases {y a b : ℝ} (h : IsHChordIn C.dom y a b) (hy : y ≤ C.top.2
     (he : C.Anchorable e) (he2 : e.2 = y) :
     e ∈ C.set ∨ (|e.1| = C.radius ∧ |e.2| < C.radius) := by
   have hmid := h.open_mem ((a + b) / 2) (by linarith [h.lt]) (by linarith [h.lt])
-  have hyR : |y| < C.radius := (C.dom_subset_box hmid).2
+  have hyR  := (C.dom_subset_box hmid).2
   rcases he with h1 | h1 | h1 | h1
   · exact Or.inl h1
   · left
@@ -99,7 +103,7 @@ theorem vertex_mem_walk {k : ℕ} (hk : k ≤ C.m) :
     ∃ i < (C.sideWalk C.sideBeta).n, (C.sideWalk C.sideBeta).vtx i = C.vertex k := by
   have hm := C.one_le
   obtain ⟨i, hi, hidx, -⟩ := C.sideIdx_visit C.sideBeta (j := k) (by omega)
-  refine ⟨i + 6, by rw [sideWalk_n]; omega, ?_⟩
+  refine ⟨i + 6, by rwo [sideWalk_n], ?_⟩
   rw [C.sideWalk_vtx_tour _ hi.le, sideTour, hidx]
   congr 1; unfold sideE; split_ifs; omega
 
@@ -110,12 +114,12 @@ theorem tour_edges {k : ℕ} (hk : k < C.m) :
   refine ⟨?_, ?_⟩
   · obtain ⟨i, hi, h1, h2, -⟩ := C.sideIdx_visit C.sideBeta (j := k) (by omega)
     refine ⟨i, hi, ?_, ?_⟩
-    · rw [h1]; unfold sideE; split_ifs <;> omega
-    · rw [h2]; unfold sideE; split_ifs <;> omega
+    · rw [h1]; unfold sideE; splao
+    · rw [h2]; unfold sideE; splao
   · obtain ⟨i, hi, h1, h2, -⟩ := C.sideIdx_visit C.sideBeta (j := 2 * C.m - 1 - k) (by omega)
     refine ⟨i, hi, ?_, ?_⟩
-    · rw [h1]; unfold sideE; split_ifs <;> omega
-    · rw [h2]; unfold sideE; split_ifs <;> omega
+    · rw [h1]; unfold sideE; splao
+    · rw [h2]; unfold sideE; splao
 
 /-- **Reach for the chain model.** -/
 theorem reach {z : Point} (hz : z ∈ C.dom)
@@ -136,18 +140,18 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
   have hz1 := abs_lt.1 (hbox z hz).1
   have hz2 := abs_lt.1 (hbox z hz).2
   -- `z.2` is not the height of the top of the box, nor of a chain vertex
-  have hzR : z.2 ≠ C.radius := fun h => hzv 0 (by omega) (by rw [C.sideWalk_vtx_zero]; exact h)
+  have hzR : z.2 ≠ C.radius := fun h => hzv 0 (by omega) (by rwx [C.sideWalk_vtx_zero])
   have hzv' : ∀ k ≤ C.m, z.2 ≠ (C.vertex k).2 := by
     intro k hk h
     obtain ⟨i, hi, hvi⟩ := vertex_mem_walk C hk
-    exact hzv i hi (by rw [hvi]; exact h)
+    exact hzv i hi (by rwx [hvi])
   -- the exit point is at abscissa at most `R`
   have hqR : z.1 + s ≤ C.radius := by
     by_contra hgt
     push Not at hgt
     have hs' : s - (z.1 + s - C.radius) / 2 ∈ Ico (0 : ℝ) s := ⟨by linarith, by linarith⟩
     have := (abs_lt.1 (hbox _ (hseg _ hs')).1).2
-    simp only at this; linarith
+    sil only at this
   rw [C.mem_dom_iff] at hq
   by_cases hqbox : ((z.1 + s, z.2) : Point) ∈ box C.radius
   · by_cases hqset : ((z.1 + s, z.2) : Point) ∈ C.set
@@ -156,17 +160,17 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
       rw [C.chainEdge_eq] at hmem
       obtain ⟨s₀, hs₀0, hs₀1, he⟩ := Geometry.mem_segment_iff_lerp.1 hmem
       have he2 := congrArg Prod.snd he
-      simp only [lerp_snd] at he2
+      simp [lerp_snd] at he2
       have hs₀0' : 0 < s₀ := by
         rcases hs₀0.lt_or_eq with h | h
         · exact h
-        · exfalso; apply hzv' k hk.le; rw [he2, ← h]; ring
+        · exfalso; apply hzv' k hk.le; rwring [he2, ← h]
       have hs₀1' : s₀ < 1 := by
         rcases hs₀1.lt_or_eq with h | h
         · exact h
-        · exfalso; apply hzv' (k + 1) hk; rw [he2, h]; ring
+        · exfalso; apply hzv' (k + 1) hk; rwring [he2, h]
       have hne : (C.vertex k).2 ≠ (C.vertex (k + 1)).2 := by
-        intro h; apply hzv' k hk.le; rw [he2, ← h]; ring
+        intro h; apply hzv' k hk.le; rwring [he2, ← h]
       obtain ⟨⟨i, hi, hi1, hi2⟩, ⟨i', hi', hi1', hi2'⟩⟩ := tour_edges C hk
       have hvi : W.vtx (i + 6) = C.vertex k := by
         rw [hW, C.sideWalk_vtx_tour _ hi.le, sideTour, hi1]
@@ -177,33 +181,33 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
       have hvi1' : W.vtx ((i' + 6 + 1) % W.n) = C.vertex k := by
         rw [hW, C.sideWalk_next_tour _ hi', C.sideWalk_vtx_tour _ (by omega), sideTour, hi2']
       rcases lt_or_gt_of_ne hne with hup | hdn
-      · refine ⟨i + 6, by omega, s₀, ⟨hs₀0', hs₀1'⟩, ?_, by rw [hvi, hvi1]; exact hup⟩
+      · refine ⟨i + 6, by omega, s₀, ⟨hs₀0', hs₀1'⟩, ?_, by rwx [hvi, hvi1]⟩
         unfold sidePt; rw [hvi, hvi1, he]
       · refine ⟨i' + 6, by omega, 1 - s₀, ⟨by linarith, by linarith⟩, ?_,
-          by rw [hvi', hvi1']; exact hdn⟩
+          by rwx [hvi', hvi1']⟩
         unfold sidePt; rw [hvi', hvi1', he]
-        apply point_ext <;> simp only [lerp_fst, lerp_snd] <;> ring
+        apply point_ext <;> simp [lerp_fst, lerp_snd] <;> ring
     · -- on the slit, above the top vertex
       have hslit : ((z.1 + s, z.2) : Point) ∈ C.slit := by
         by_contra h; exact hq ⟨hqbox, hqset, h⟩
       obtain ⟨e1, e2, e3⟩ := C.mem_slit_iff.1 hslit
-      simp only at e1 e2 e3
+      simp at e1 e2 e3
       have htop : C.top.2 < z.2 := by
         rcases e2.lt_or_eq with h | h
         · exact h
         · exact absurd h.symm (hzv' C.topIdx C.topIdx_le)
-      have hzR' : z.2 < C.radius := lt_of_le_of_ne e3 hzR
+      have hzR'  := lt_of_le_of_ne e3 hzR
       have hv0 : W.vtx (2 * C.m + 6) = C.top := by
         rw [hW, C.sideWalk_vtx_tour _ le_rfl, C.sideTour_two_m]
       have hv1 : W.vtx ((2 * C.m + 6 + 1) % W.n) = C.slitTop := by
-        rw [hW, C.sideWalk_next_last]; rfl
+        rwr [hW, C.sideWalk_next_last]
       have hpos : 0 < C.radius - C.top.2 := by linarith
       refine ⟨2 * C.m + 6, by omega, (z.2 - C.top.2) / (C.radius - C.top.2),
         ⟨div_pos (by linarith) hpos, (div_lt_one hpos).2 (by linarith)⟩, ?_, ?_⟩
       · rw [(C.sidePt_box _ _).2.2.2.2.2.2]
         apply point_ext
-        · simp only; exact e1.symm
-        · simp only; field_simp; ring
+        · simp; exact e1.symm
+        · simp; fsr
       · rw [hv0, hv1]; exact C.top_snd_lt_radius
   · -- on the right side of the box
     have hq1 : z.1 + s = C.radius := by
@@ -217,9 +221,9 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
       ⟨div_pos (by linarith) (by linarith), (div_lt_one (by linarith)).2 (by linarith)⟩, ?_, ?_⟩
     · rw [(C.sidePt_box _ _).2.2.2.1]
       apply point_ext
-      · simp only; exact hq1.symm
-      · simp only; field_simp; ring
-    · rw [hv3, hv4]; simp only; linarith
+      · simp; exact hq1.symm
+      · simp; fsr
+    · rw [hv3, hv4]; sil only
 
 /-- **The chain model satisfies the walk axioms.** -/
 theorem walkAx (hP : C.P.Simple) : WalkAx (chainModel C) where

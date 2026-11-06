@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepMachine9
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), part 26: the abstract machine, the region of a query ray
@@ -36,7 +39,7 @@ theorem afterFaces_of_arc {F : Set (Set Point)} {U : Set Point} {l r : ℝ}
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hin
   refine ⟨δ, hδ, fun s hs0 hs1 hs2 => ?_⟩
   have := hsub ⟨hs0, hs1⟩
-  exact harc.2.2.2.2.2.2 p (t + s) hp (by linarith) hs2 (by rw [← add_assoc]; exact this)
+  exact harc.2.2.2.2.2.2 p (t + s) hp (by linarith) hs2 (by rwx [← add_assoc])
 
 /-- **An arc faces its region just before its end at a walk vertex.** -/
 theorem beforeFaces_of_arc_end {F : Set (Set Point)} {U : Set Point} {l : ℝ} {p : ℕ}
@@ -51,8 +54,8 @@ theorem beforeFaces_of_arc_end {F : Set (Set Point)} {U : Set Point} {l : ℝ} {
   rw [prev_mod hp hp1]
   refine harc.2.2.2.2.2.2 (p - 1) (1 - s) (by omega) (by linarith) (by linarith) ?_
   have hc : ((p - 1 : ℕ) : ℝ) + (1 - s) = (p : ℝ) + 0 - s := by
-    rw [Nat.cast_sub hp1]; push_cast; ring
-  rw [hc]; exact this
+    rw [Nat.cast_sub hp1]; pcr
+  rwx [hc]
 
 section ChainModel
 
@@ -77,10 +80,10 @@ theorem leave_region (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
           BeforeFaces (chainModel C) p t U)) := by
   have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
-  have hF : F ⊆ (chainModel C).Adm := hFam.2.1
-  have hfin : F.Finite := hFam.1
+  have hF  := hFam.2.1
+  have hfin  := hFam.1
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-    rw [hpt]; exact hsec
+    rwx [hpt]
   by_cases hcut : (chainModel C).IsCut F (p + t)
   · rcases leave_cases C hP hFam hσ hp ht ht1 hpt hsec hzR with ⟨e, he, -, hev⟩ | hnc |
         ⟨rfl, hp1, hnot, hcr⟩
@@ -116,9 +119,9 @@ theorem leave_region (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
         linarith
       subst hp0 ht0
       have h0 : sidePt (chainModel C).W 0 0 = C.slitTop := by
-        rw [Chazelle.Chain.sidePt_zero]; rfl
+        rwr [Chazelle.Chain.sidePt_zero]
       have := congrArg Prod.snd (hpt.symm.trans h0)
-      simp only [Chain.slitTop] at this
+      simp [Chain.slitTop] at this
       rw [this] at hzR
       have hR := C.radius_pos
       rw [abs_of_pos hR] at hzR

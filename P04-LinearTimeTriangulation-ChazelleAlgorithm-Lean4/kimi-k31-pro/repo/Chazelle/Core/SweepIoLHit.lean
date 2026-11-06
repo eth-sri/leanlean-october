@@ -4,6 +4,13 @@ public import Chazelle.Core.SweepIoMin
 public import Chazelle.Core.SweepIoLocal
 public import Chazelle.Core.SweepIoShot
 public import Chazelle.Core.SweepIoHoles
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 4000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep RAM (WP-D), answers: the local hit, part 1 (locate and the three regions)
@@ -179,7 +186,7 @@ theorem put3_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 3 
     exec_block
     all_goals try (config_simp; omega)
     refine ⟨rfl, ?_, ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl⟩
-    · config_simp; omega
+    · cso
     · config_simp
     · config_simp
       simp only [upd, ite_eq_right h1, ite_eq_right h2]
@@ -189,7 +196,7 @@ theorem put3_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 3 
   refine IRS.ofExec hI ex (by omega) (fun r hr hra => h3 r hra (fun h => hr (by
     subst h; exact iscr_sw (by norm_num) (by norm_num)))) h5 (fun a ha => ?_) h6 h7
     (by show c.nreg 9999 ≤ c'.nreg 9999; omega) (by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega)
-    ⟨h1, h2, fun r a b => h3 r a b, h4⟩
+    ⟨h1, h2, h3, h4⟩
   rw [h4]
   have h0 : c₀.nreg 9999 ≤ c.nreg 9999 := hI.hA
   have ha' : a < c₀.nreg 9999 := ha
@@ -202,40 +209,40 @@ theorem nbrJ_irs (hI : IInv W c₀ c) (hK : Consts c) {A j : ℕ} (hA : c.nreg l
     (hj : c.nreg lJ = j) (hjA : j < A) :
     IRS P W c₀ nbrJ c 7 (fun c' => c'.nreg lJP = predP A j ∧ c'.nreg lJN = succP A j ∧
       (∀ r, r ≠ lJP → r ≠ lJN → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
-  have k1 : c.nreg K1 = 1 := hK.2.1
+  have k1  := hK.2.1
   have hAW : A ≤ W := by rw [← hA]; exact hI.hw.1 _
   unfold nbrJ
   -- the previous position
   have step1 : IRS P W c₀ (.ifLtN lJ K1 (.instr (.subN lJP lA K1)) (.instr (.subN lJP lJ K1))) c 3
       (fun c' => c' = { c with nreg := upd c.nreg lJP (predP A j) }) := by
     by_cases h0 : c.nreg lJ < c.nreg K1
-    · refine (IRS.ifT h0 (IRS.reg hI (iscr_sw (by unfold lJP sw; norm_num) (by unfold lJP sw; norm_num))
+    · refine (IRS.ifT h0 (IRS.reg hI (iscr_sw (by ufn lJP sw) (by ufn lJP sw))
         (Exec.subN hI.hw lJP lA K1))).mono (by omega) ?_
       rintro c' rfl
       rw [hA, k1, show predP A j = A - 1 by unfold predP; rw [ite_eq_left (by omega)]]
-    · refine (IRS.ifF h0 (IRS.reg hI (iscr_sw (by unfold lJP sw; norm_num) (by unfold lJP sw; norm_num))
+    · refine (IRS.ifF h0 (IRS.reg hI (iscr_sw (by ufn lJP sw) (by ufn lJP sw))
         (Exec.subN hI.hw lJP lJ K1))).mono le_rfl ?_
       rintro c' rfl
       rw [hj, k1, show predP A j = j - 1 by unfold predP; rw [ite_eq_right (by omega)]]
-  refine IRS.seq step1 ?_ |>.mono (K := 3 + (1 + 3)) (by omega) (fun _ h => h)
+  refine IRS.seq step1 ?_ |>.mono (K := 3 + (1 + 3)) (by omega) (fun _ => id)
   rintro c₁ hI₁ - - hc1
   have c1J : c₁.nreg lJ = j := by
     rw [hc1]; show upd c.nreg lJP (predP A j) lJ = j
-    rw [upd_other _ _ _ (by unfold lJ lJP sw; norm_num), hj]
+    rw [upd_other _ _ _ (by ufn lJ lJP sw), hj]
   have c1K : c₁.nreg K1 = 1 := by
     rw [hc1]; show upd c.nreg lJP (predP A j) K1 = 1
-    rw [upd_other _ _ _ (by unfold K1 lJP sw; norm_num), k1]
+    rw [upd_other _ _ _ (by ufn K1 lJP sw), k1]
   have c1A : c₁.nreg lA = A := by
     rw [hc1]; show upd c.nreg lJP (predP A j) lA = A
-    rw [upd_other _ _ _ (by unfold lA lJP sw; norm_num), hA]
+    rw [upd_other _ _ _ (by ufn lA lJP sw), hA]
   have c1P : c₁.nreg lJP = predP A j := by
     rw [hc1]; show upd c.nreg lJP (predP A j) lJP = _
     rw [upd_same]
   have c1r : ∀ r, r ≠ lJP → c₁.nreg r = c.nreg r := by
     intro r hr; rw [hc1]; show upd c.nreg lJP (predP A j) r = _
     rw [upd_other _ _ _ hr]
-  have hjW : c₁.nreg lJ + c₁.nreg K1 ≤ W := by rw [c1J, c1K]; omega
-  refine IRS.seq (IRS.reg hI₁ (iscr_sw (by unfold lJN sw; norm_num) (by unfold lJN sw; norm_num))
+  have hjW : c₁.nreg lJ + c₁.nreg K1 ≤ W := by rwo [c1J, c1K]
+  refine IRS.seq (IRS.reg hI₁ (iscr_sw (by ufn lJN sw) (by ufn lJN sw))
     (Exec.addN hI₁.hw lJN lJ K1 hjW)) ?_
   rintro c₂ hI₂ - - hc2
   have v2N : c₂.nreg lJN = j + 1 := by
@@ -243,24 +250,24 @@ theorem nbrJ_irs (hI : IInv W c₀ c) (hK : Consts c) {A j : ℕ} (hA : c.nreg l
     rw [upd_same, c1J, c1K]
   have v2A : c₂.nreg lA = A := by
     rw [hc2]; show upd c₁.nreg lJN (c₁.nreg lJ + c₁.nreg K1) lA = _
-    rw [upd_other _ _ _ (by unfold lA lJN sw; norm_num), c1A]
+    rw [upd_other _ _ _ (by ufn lA lJN sw), c1A]
   have v2P : c₂.nreg lJP = predP A j := by
     rw [hc2]; show upd c₁.nreg lJN (c₁.nreg lJ + c₁.nreg K1) lJP = _
-    rw [upd_other _ _ _ (by unfold lJP lJN sw; norm_num), c1P]
+    rw [upd_other _ _ _ (by ufn lJP lJN sw), c1P]
   have v2r : ∀ r, r ≠ lJP → r ≠ lJN → c₂.nreg r = c.nreg r := by
     intro r h1 h2
     rw [hc2]; show upd c₁.nreg lJN (c₁.nreg lJ + c₁.nreg K1) r = _
     rw [upd_other _ _ _ h2, c1r r h1]
   by_cases hn : j + 1 < A
-  · have hc : c₂.nreg lJN < c₂.nreg lA := by rw [v2N, v2A]; exact hn
-    refine (IRS.ifT hc (IRS.skip (K := 1) hI₂ ?_)).mono (by omega) (fun _ h => h)
+  · have hc : c₂.nreg lJN < c₂.nreg lA := by rwx [v2N, v2A]
+    refine (IRS.ifT hc (IRS.skip (K := 1) hI₂ ?_)).mono (by omega) (fun _ => id)
     refine ⟨v2P, by rw [v2N]; unfold succP; rw [ite_eq_left hn], v2r, by rw [hc2, hc1]⟩
-  · have hc : ¬ c₂.nreg lJN < c₂.nreg lA := by rw [v2N, v2A]; exact hn
-    refine (IRS.ifF hc (IRS.reg hI₂ (iscr_sw (by unfold lJN sw; norm_num) (by unfold lJN sw; norm_num))
+  · have hc : ¬ c₂.nreg lJN < c₂.nreg lA := by rwx [v2N, v2A]
+    refine (IRS.ifF hc (IRS.reg hI₂ (iscr_sw (by ufn lJN sw) (by ufn lJN sw))
         (Exec.constN hI₂.hw lJN 0 (Nat.zero_le _)))).mono le_rfl ?_
     rintro c' rfl
     have w1 : upd c₂.nreg lJN 0 lJP = predP A j := by
-      rw [upd_other _ _ _ (by unfold lJP lJN sw; norm_num)]; exact v2P
+      rw [upd_other _ _ _ (by ufn lJP lJN sw)]; exact v2P
     have w2 : upd c₂.nreg lJN 0 lJN = succP A j := by
       rw [upd_same]; unfold succP; rw [ite_eq_right hn]
     have w3 : ∀ r, r ≠ lJP → r ≠ lJN → upd c₂.nreg lJN 0 r = c.nreg r := by
@@ -308,8 +315,6 @@ def lh1 : Stmt :=
 /-- The cost of part 1. -/
 def lh1K (L : ℕ) : ℕ := 5500 * (L + 1) + 9 + 60
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **Part 1 of the local hit**: the spine position of `x` and the list of its three regions. -/
 theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts c₀)
     (hL : LCtx P W C N E c) (he : c.nreg lE < (chainModel C).W.n)
@@ -337,7 +342,7 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
       c'.nreg lR1 = (N.arc (sj N (c'.nreg lJ))).reg ∧
       c'.nreg lR2 = (N.arc (sj N (succP N.arcs.length (c'.nreg lJ)))).reg) := by
   have hK₀ := hK.fix hI
-  have hNA : NFAt c.nmem (c.nreg lNF) N := hL.hNW.holds
+  have hNA  := hL.hNW.holds
   have hA0 := arcs_pos hL.hP hL.hNF
   obtain ⟨b7, b4A, b6A⟩ := NFLoc.nfWithin_bounds hL.hNW hL.hNF hA0
   obtain ⟨-, -, b3, -, -, -⟩ := Restore.nf_bounds hL.hNW
@@ -348,26 +353,26 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
   -- 1. locate
   refine IRS.mono (K := (5500 * (c.nreg TLR + 1) + 9) + (6 + (7 + (21 + 7))))
     (IRS.seq (locJ_irs (md := lMD) (nf := lNF) (pe := lE) (ph := lH) (o := lJ) hI hL.hG hL.hWh
-      ⟨by unfold lMD sw; norm_num, by unfold lMD sw; norm_num, by unfold lNF sw; norm_num,
-        by unfold lNF sw; norm_num, by unfold lE sw; norm_num, by unfold lE sw; norm_num,
-        by unfold lH sw; norm_num, by unfold lH sw; norm_num⟩
-      ⟨by unfold lJ sw; norm_num, by unfold lJ sw; norm_num⟩ hL.hmd hL.hmwf hL.hP hNA hL.hNF
+      ⟨by ufn lMD sw, by ufn lMD sw, by ufn lNF sw,
+        by ufn lNF sw, by ufn lE sw, by ufn lE sw,
+        by ufn lH sw, by ufn lH sw⟩
+      ⟨by ufn lJ sw, by ufn lJ sw⟩ hL.hmd hL.hmwf hL.hP hNA hL.hNF
       he hpp hL.htab hL.hbig (by omega) (by omega) (by omega) (by omega)
-      (by unfold lh1K at hroom; omega)) ?_) (by unfold lh1K; omega) (fun _ h => h)
+      (by ufo lh1K at hroom)) ?_) (by ufo lh1K) (fun _ => id)
   rintro c₁ hI₁ - - ⟨hj1, hl1, hl2, k1, hA1, hm1⟩
   set j := c₁.nreg lJ with hjd
   have keep1 : ∀ r, 240000 ≤ r → r < 250000 → r ≠ lJ → c₁.nreg r = c.nreg r := fun r h1 h2 h3 =>
-    k1 r (not_oracle_sw h1 h2) h3 (by unfold ALLOC; omega)
-  have hNF1 : c₁.nreg lNF = c.nreg lNF := keep1 _ (by unfold lNF sw; norm_num) (by unfold lNF sw; norm_num)
-    (by unfold lNF lJ sw; norm_num)
+    k1 r (not_oracle_sw h1 h2) h3 (by ufo ALLOC)
+  have hNF1 : c₁.nreg lNF = c.nreg lNF := keep1 _ (by ufn lNF sw) (by ufn lNF sw)
+    (by ufn lNF lJ sw)
   -- 2. the header
   have hK₁ := hK.fix hI₁
   have hok2 : okB W c₁.nmem nbrHead c₁.nreg := nbrHead_ok _ _ hK₁.2.1 hK₁.2.2.2.1 hK₁.2.2.1
-    (by rw [hNF1]; omega)
+    (by rwo [hNF1])
   refine IRS.seq (IRS.block nbrHead hI₁ hok2) ?_
   rintro c₂ hI₂ - - hc2
   obtain ⟨v2A, v2SB, v2AB⟩ := nbrHead_val c₁.nmem c₁.nreg hK₁.2.1 hK₁.2.2.2.1 hK₁.2.2.1
-  have hm2 : c₂.nmem = c.nmem := by rw [hc2]; exact hm1
+  have hm2 : c₂.nmem = c.nmem := by rwx [hc2]
   have c2A : c₂.nreg lA = N.arcs.length := by
     rw [hc2]; show regB c₁.nmem nbrHead c₁.nreg lA = _
     rw [v2A, hNF1, hm1]; exact hNA.2.1
@@ -377,23 +382,23 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
     rw [hc2]; show regB c₁.nmem nbrHead c₁.nreg lAB = _; rw [v2AB, hNF1, hm1]
   have c2r : ∀ r, r ≠ lX → r ≠ lA → r ≠ lSB → r ≠ lAB → c₂.nreg r = c₁.nreg r := by
     intro r h1 h2 h3 h4; rw [hc2]; exact nbrHead_other _ _ h1 h2 h3 h4
-  have c2J : c₂.nreg lJ = j := c2r _ (by unfold lJ lX sw; norm_num) (by unfold lJ lA sw; norm_num)
-    (by unfold lJ lSB sw; norm_num) (by unfold lJ lAB sw; norm_num)
+  have c2J : c₂.nreg lJ = j := c2r _ (by ufn lJ lX sw) (by ufn lJ lA sw)
+    (by ufn lJ lSB sw) (by ufn lJ lAB sw)
   -- 3. the neighbouring positions
   refine IRS.seq (nbrJ_irs hI₂ (hK.fix hI₂) c2A c2J hj1) ?_
   rintro c₃ hI₃ - - ⟨v3P, v3N, k3, hm3'⟩
   have hjP := OracleQ.predP_lt hj1
   have hjN := OracleQ.succP_lt hj1
   have c3SB : c₃.nreg lSB = c.nmem (c.nreg lNF + 6) := by
-    rw [k3 _ (by unfold lSB lJP sw; norm_num) (by unfold lSB lJN sw; norm_num), c2SB]
+    rw [k3 _ (by ufn lSB lJP sw) (by ufn lSB lJN sw), c2SB]
   have c3AB : c₃.nreg lAB = c.nmem (c.nreg lNF + 4) := by
-    rw [k3 _ (by unfold lAB lJP sw; norm_num) (by unfold lAB lJN sw; norm_num), c2AB]
+    rw [k3 _ (by ufn lAB lJP sw) (by ufn lAB lJN sw), c2AB]
   have c3J : c₃.nreg lJ = j := by
-    rw [k3 _ (by unfold lJ lJP sw; norm_num) (by unfold lJ lJN sw; norm_num), c2J]
+    rw [k3 _ (by ufn lJ lJP sw) (by ufn lJ lJN sw), c2J]
   have hm3 : c₃.nmem = c.nmem := by rw [hm3', hm2]
   -- the regions
   have hseqv : ∀ p, p < N.arcs.length → c.nmem (c.nmem (c.nreg lNF + 6) + p) = sj N p := fun p hp =>
-    hNA.2.2.2.2.2.2.2.2.1 p (by rw [NFLoc.seq_length hL.hNF]; exact hp)
+    hNA.2.2.2.2.2.2.2.2.1 p (by rwx [NFLoc.seq_length hL.hNF])
   have hsjl : ∀ p, p < N.arcs.length → sj N p < N.arcs.length := fun p hp => NFLoc.seq_lt hL.hNF hp
   have hregv : ∀ p, p < N.arcs.length →
       c.nmem (c.nmem (c.nreg lNF + 4) + 5 * c.nmem (c.nmem (c.nreg lNF + 6) + p)) = (N.arc (sj N p)).reg := by
@@ -427,32 +432,32 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
     rw [v42, c3SB, c3AB, v3N, hm3, hregv _ hjN]
   have c4r : ∀ r, r ≠ lX → r ≠ lY → r ≠ lR0 → r ≠ lR1 → r ≠ lR2 → c₄.nreg r = c₃.nreg r := by
     intro r h1 h2 h3 h4 h5; rw [hc4]; exact nbrRegsL_other _ _ h1 h2 h3 h4 h5
-  have hm4 : c₄.nmem = c.nmem := by rw [hc4]; exact hm3
+  have hm4 : c₄.nmem = c.nmem := by rwx [hc4]
   have hA4 : c₄.nreg ALLOC = c.nreg ALLOC := by
-    rw [c4r _ (by unfold ALLOC lX sw; omega) (by unfold ALLOC lY sw; omega)
-      (by unfold ALLOC lR0 sw; omega) (by unfold ALLOC lR1 sw; omega) (by unfold ALLOC lR2 sw; omega),
-      k3 _ (by unfold ALLOC lJP sw; omega) (by unfold ALLOC lJN sw; omega),
-      c2r _ (by unfold ALLOC lX sw; omega) (by unfold ALLOC lA sw; omega)
-        (by unfold ALLOC lSB sw; omega) (by unfold ALLOC lAB sw; omega), hA1]
+    rw [c4r _ (by ufo ALLOC lX sw) (by ufo ALLOC lY sw)
+      (by ufo ALLOC lR0 sw) (by ufo ALLOC lR1 sw) (by ufo ALLOC lR2 sw),
+      k3 _ (by ufo ALLOC lJP sw) (by ufo ALLOC lJN sw),
+      c2r _ (by ufo ALLOC lX sw) (by ufo ALLOC lA sw)
+        (by ufo ALLOC lSB sw) (by ufo ALLOC lAB sw), hA1]
   have c4J : c₄.nreg lJ = j := by
-    rw [c4r _ (by unfold lJ lX sw; norm_num) (by unfold lJ lY sw; norm_num)
-      (by unfold lJ lR0 sw; norm_num) (by unfold lJ lR1 sw; norm_num) (by unfold lJ lR2 sw; norm_num),
+    rw [c4r _ (by ufn lJ lX sw) (by ufn lJ lY sw)
+      (by ufn lJ lR0 sw) (by ufn lJ lR1 sw) (by ufn lJ lR2 sw),
       c3J]
   -- 4. store the list
-  refine (put3_irs hI₄ (hK.fix hI₄) (by rw [hA4]; unfold lh1K at hroom; omega)).mono le_rfl ?_
+  refine (put3_irs hI₄ (hK.fix hI₄) (by ruo [hA4] lh1K at hroom)).mono le_rfl ?_
   rintro c₅ ⟨hA5, hL5, k5, hm5⟩
-  have ls : ∀ q, LSet q → q ≠ ALLOC := fun q hq => by unfold LSet sw at hq; unfold ALLOC; omega
+  have ls : ∀ q, LSet q → q ≠ ALLOC := fun q hq => by unfold LSet sw at hq; ufo ALLOC
   have nl : ∀ q g, LSet g → ¬ LSet q → q ≠ g := fun q g hg hq h => hq (h ▸ hg)
   have c5J : c₅.nreg lJ = j := by
-    rw [k5 _ (by unfold lJ ALLOC sw; omega) (by unfold lJ lL sw; norm_num), c4J]
+    rw [k5 _ (by ufo lJ ALLOC sw) (by ufn lJ lL sw), c4J]
   have hlist : c₅.nmem = mem3 c.nmem (c.nreg ALLOC) (N.arc (sj N (predP N.arcs.length j))).reg
       (N.arc (sj N j)).reg (N.arc (sj N (succP N.arcs.length j))).reg := by
     rw [hm5, hm4, hA4, c4R0, c4R1, c4R2]
-  refine ⟨by rw [c5J]; exact hj1, fun h => by rw [c5J]; exact hl1 h, fun h => by rw [c5J]; exact hl2 h,
+  refine ⟨by rwx [c5J], fun h => by rw [c5J]; exact hl1 h, fun h => by rw [c5J]; exact hl2 h,
     by rw [hL5, hA4], by rw [hA5, hA4], fun i hi => ?_, fun a ha => ?_, fun r hr hrl hra => ?_,
-    by rw [c5J, k5 _ (by unfold lR0 ALLOC sw; omega) (by unfold lR0 lL sw; omega), c4R0],
-    by rw [c5J, k5 _ (by unfold lR1 ALLOC sw; omega) (by unfold lR1 lL sw; omega), c4R1],
-    by rw [c5J, k5 _ (by unfold lR2 ALLOC sw; omega) (by unfold lR2 lL sw; omega), c4R2]⟩
+    by rw [c5J, k5 _ (by ufo lR0 ALLOC sw) (by ufo lR0 lL sw), c4R0],
+    by rw [c5J, k5 _ (by ufo lR1 ALLOC sw) (by ufo lR1 lL sw), c4R1],
+    by rw [c5J, k5 _ (by ufo lR2 ALLOC sw) (by ufo lR2 lL sw), c4R2]⟩
   · rw [hlist, c5J]
     unfold mem3 Sweep.nbrRegs
     rcases (by omega : i = 0 ∨ i = 1 ∨ i = 2) with rfl | rfl | rfl
@@ -461,16 +466,16 @@ theorem lh1_irs {C : Chain} {N : NF} {E : ℕ} (hI : IInv W c₀ c) (hK : Consts
     · simp (disch := omega) only [upd, ite_eq_right, ite_true]; rfl
   · rw [hlist]; unfold mem3; simp only [upd]
     rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
-  · have h1 : r ≠ lL := nl r lL (by unfold LSet lL sw; omega) hrl
+  · have h1 : r ≠ lL := nl r lL (by ufo LSet lL sw) hrl
     rw [k5 r hra h1,
-      c4r r (nl r lX (by unfold LSet lX sw; omega) hrl) (nl r lY (by unfold LSet lY sw; omega) hrl)
-        (nl r lR0 (by unfold LSet lR0 sw; omega) hrl) (nl r lR1 (by unfold LSet lR1 sw; omega) hrl)
-        (nl r lR2 (by unfold LSet lR2 sw; omega) hrl),
-      k3 r (nl r lJP (by unfold LSet lJP sw; omega) hrl) (nl r lJN (by unfold LSet lJN sw; omega) hrl),
-      c2r r (nl r lX (by unfold LSet lX sw; omega) hrl) (fun h => by subst h; unfold lA LSet sw at hrl; omega)
-        (fun h => by subst h; unfold lSB LSet sw at hrl; omega)
-        (fun h => by subst h; unfold lAB LSet sw at hrl; omega)]
-    exact k1 r hr (nl r lJ (by unfold LSet lJ sw; omega) hrl) hra
+      c4r r (nl r lX (by ufo LSet lX sw) hrl) (nl r lY (by ufo LSet lY sw) hrl)
+        (nl r lR0 (by ufo LSet lR0 sw) hrl) (nl r lR1 (by ufo LSet lR1 sw) hrl)
+        (nl r lR2 (by ufo LSet lR2 sw) hrl),
+      k3 r (nl r lJP (by ufo LSet lJP sw) hrl) (nl r lJN (by ufo LSet lJN sw) hrl),
+      c2r r (nl r lX (by ufo LSet lX sw) hrl) (fun h => by subst h; ufo lA LSet sw at hrl)
+        (fun h => by subst h; ufo lSB LSet sw at hrl)
+        (fun h => by subst h; ufo lAB LSet sw at hrl)]
+    exact k1 r hr (nl r lJ (by ufo LSet lJ sw) hrl) hra
 
 end
 

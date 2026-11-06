@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.ClusterTrees
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-I, part 24: the star map in arrays
@@ -35,34 +37,34 @@ theorem star_dual_enc {opp fp fpi : ℕ → ℕ} (hopp : ∀ d : Fin N, opp d = 
     EnvEnc G (star M).dual (fun g => (g : ℕ)) (enc N) := by
   refine ⟨fun v => by rw [hGnv]; exact v.2, fun v w h => Fin.ext h, fun u hu => ⟨⟨u, by omega⟩, rfl⟩,
     fun x => by rw [hGN]; exact enc_lt x, fun x y h => enc_inj h, fun e he => ?_,
-    fun x => ?_, fun x => ?_, fun x => ?_, fun v => ⟨.inl v, by rw [hSFi v v.2]; rfl, rfl⟩⟩
+    fun x => ?_, fun x => ?_, fun x => ?_, fun v => ⟨.inl v, by rwr [hSFi v v.2], rfl⟩⟩
   · rw [hGN] at he
     by_cases h1 : e < N
     · exact ⟨.inl ⟨e, h1⟩, rfl⟩
     · by_cases h2 : e < 2 * N
-      · exact ⟨.inr (.inl ⟨e - N, by omega⟩), by simp only [enc]; omega⟩
-      · exact ⟨.inr (.inr ⟨e - 2 * N, by omega⟩), by simp only [enc]; omega⟩
+      · exact ⟨.inr (.inl ⟨e - N, by omega⟩), by sio only [enc]⟩
+      · exact ⟨.inr (.inr ⟨e - 2 * N, by omega⟩), by sio only [enc]⟩
   · rcases x with d | d | d
     · show G.opp d = enc N (starOpp M (.inl d))
-      rw [(hSO d d.2).1, hopp]; rfl
+      rwr [(hSO d d.2).1, hopp]
     · show G.opp (N + d) = enc N (starOpp M (.inr (.inl d)))
-      rw [(hSO d d.2).2.1]; rfl
+      rwr [(hSO d d.2).2.1]
     · show G.opp (2 * N + d) = enc N (starOpp M (.inr (.inr d)))
-      rw [(hSO d d.2).2.2]; rfl
+      rwr [(hSO d d.2).2.2]
   · rcases x with d | d | d
     · show G.rot d = enc N ((star M).fperm (.inl d))
-      rw [(hSR d d.2).1, star_fperm_inl, hfp]; rfl
+      rwr [(hSR d d.2).1, star_fperm_inl, hfp]
     · show G.rot (N + d) = enc N ((star M).fperm (.inr (.inl d)))
-      rw [(hSR d d.2).2.1, star_fperm_inl_inr]; rfl
+      rwr [(hSR d d.2).2.1, star_fperm_inl_inr]
     · show G.rot (2 * N + d) = enc N ((star M).fperm (.inr (.inr d)))
-      rw [(hSR d d.2).2.2, star_fperm_inr_inr, hfpi]; rfl
+      rwr [(hSR d d.2).2.2, star_fperm_inr_inr, hfpi]
   · rcases x with d | d | d
     · show G.vert d = ((starFace M (.inl d) : Fin N) : ℕ)
-      rw [(hSF d d.2).1]; rfl
+      rwr [(hSF d d.2).1]
     · show G.vert (N + d) = ((starFace M (.inr (.inl d)) : Fin N) : ℕ)
-      rw [(hSF d d.2).2.1]; rfl
+      rwr [(hSF d d.2).2.1]
     · show G.vert (2 * N + d) = ((starFace M (.inr (.inr d)) : Fin N) : ℕ)
-      rw [(hSF d d.2).2.2, hfpi]; rfl
+      rwr [(hSF d d.2).2.2, hfpi]
 
 variable {T : SpanTree M} {a : F → Fin N} {ha : ∀ g, M.face (a g) = g}
 
@@ -72,7 +74,7 @@ theorem starTree_isTreeDart_inl (d : Fin N) :
   constructor
   · rintro ⟨y, hy, h⟩
     rcases y with v | g
-    · have hv : v ≠ T.root := fun h' => hy (by rw [h']; rfl)
+    · have hv : v ≠ T.root := fun h' => hy (by rwr [h'])
       refine ⟨v, hv, ?_⟩
       rcases h with h | h
       · left; exact Sum.inl_injective h
@@ -120,7 +122,7 @@ theorem starTree_isTreeDart_inr_inr (d : Fin N) :
   · intro h
     refine ⟨.inr (M.face d), by simp [starTree], Or.inr ?_⟩
     show Sum.inr (Sum.inr d) = starOpp M (Sum.inr (Sum.inl (a (M.face d))))
-    rw [← h]; rfl
+    rwr [← h]
 
 omit [Fintype F] [DecidableEq F] in
 /-- **The attachment from a representative array.** -/

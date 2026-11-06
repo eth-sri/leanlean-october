@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.Lemma41Cost1
 public import Chazelle.Core.SpecPhases
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-J, part 22: where the grade table lives
@@ -107,7 +110,7 @@ theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
     have := hm'.2.2.1 2 hn; simpa using this
   have h2 : h + 2 < A := bound3_lt hR (p := h + 2) (u := 0) (w := 3 * 0) fun m' he hm' => by
     obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 0 0 (by rw [he h h0]; exact hΛ)
-      (by unfold gradeCount; omega)
+      (by ufo gradeCount)
     have := hwf.1; omega
   refine ⟨h0, h1, h2, h3, hG.2.1.1, hG.2.1.2.1, ?_, fun i hi => ?_, fun y hy => ?_,
     fun g i hg hi => ?_⟩
@@ -127,12 +130,12 @@ theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
       exact this
   · refine ⟨hG.2.2.1 y hy, addr_lt hR (v := y / 2) fun m' he hm' => ?_⟩
     have := hm'.2.2.1 y hy; rwa [he _ h3] at this
-  · have hgi : ∀ m' : ℕ → ℕ, (∀ a, a < A → m' a = m a) → g < m' h := fun m' he => by rw [he h h0]; exact hg
-    have hT : m (h + 2) + g < A := bound2_lt hR (p := m (h + 2) + g) (u := 3 * i)
+  · have hgi : ∀ m' : ℕ → ℕ, (∀ a, a < A → m' a = m a) → g < m' h := fun m' he => by rwx [he h h0]
+    have hT  := bound2_lt hR (p := m (h + 2) + g) (u := 3 * i)
       fun m' he hm' => by
         obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 g i (hgi m' he) hi
-        have := hwf.1; rw [he _ h2] at this; omega
-    have hO : m (m (h + 2) + g) + 3 * i + 2 < A := ptr_lt hR (y := 2) (v := gradeGran g)
+        have := hwf.1; rwo [he _ h2] at this
+    have hO  := ptr_lt hR (y := 2) (v := gradeGran g)
       fun m' he hm' => by
         obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e3⟩ := hm'.2.2.2 g i (hgi m' he) hi
         rw [he _ h2, he _ hT] at e3; exact e3

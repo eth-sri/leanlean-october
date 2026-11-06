@@ -151,7 +151,7 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
         _ ≤ γ + γ := Nat.add_le_add (key X₁ hX₁ _ _ harc₁) (key X₂ hX₂ _ _ harc₂)
         _ = 2 * γ := by ring
     · push Not at hw
-      obtain ⟨X, hX, harcX⟩ := hM.arc_of_gap hF hfin hcaF hcbF hab (fun k hk hc => hw k hk hc)
+      obtain ⟨X, hX, harcX⟩ := hM.arc_of_gap hF hfin hcaF hcbF hab (hw)
       have := key X hX a b harcX
       omega
   · by_cases hFe : F = ∅

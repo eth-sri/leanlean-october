@@ -4,6 +4,9 @@ public import Chazelle.Core.DownPhaseExitEdge
 public import Chazelle.Core.DownPhaseDrvCount
 public import Chazelle.Core.DownPhaseHostChain
 public import Chazelle.Core.DownPhaseDrvRObl
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down phase, math (H-R1, H-R2): host descriptions of a region
@@ -70,10 +73,10 @@ theorem succ_prevIdx {N i : ℕ} (hi : i < N) : (prevIdx N i + 1) % N = i := by
 open DrvR (ivB qE)
 
 theorem ivB_lt (li : Bool) {n p : ℕ} (hp : p < n) : ivB li n p < n := by
-  unfold ivB; split_ifs <;> omega
+  unfold ivB; splao
 
 theorem qE_lt (li : Bool) {n p : ℕ} (hp : p < n) : qE li n p < n := by
-  unfold qE; split_ifs <;> omega
+  unfold qE; splao
 
 /-- **The ends of a walk edge**: walk edge `p` joins the vertices `ivB p`, `ivB (p + 1)` of `Q`,
 which are the ends of the edge `qE p` of `Q` (in one order or the other). -/
@@ -84,7 +87,7 @@ theorem edge_ends (li : Bool) {n p : ℕ} (hn : 2 ≤ n) (hp : p < n) :
   cases li with
   | false =>
     right
-    simp only [Bool.false_eq_true, ite_false]
+    simp [Bool.false_eq_true, ite_false]
     by_cases h : p + 1 < n
     · rw [ite_eq_left h, Nat.mod_eq_of_lt h, Nat.mod_eq_of_lt (show n - 2 - p + 1 < n by omega)]
       omega
@@ -122,9 +125,9 @@ theorem walk_n (Q : Polygon) : (interiorWalk Q).n = Q.n := Mir.interiorWalk_n Q
 
 theorem xAt_comm' {u w : Point} (h : u.2 ≠ w.2) (y : ℝ) :
     Visibility.xAt w u y = Visibility.xAt u w y := by
-  have h1 : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
-  have h2 : u.2 - w.2 ≠ 0 := sub_ne_zero.2 h
-  unfold Visibility.xAt; field_simp; ring
+  have h1  := sub_ne_zero.2 h.symm
+  have h2  := sub_ne_zero.2 h
+  unfold Visibility.xAt; fsr
 
 /-- **The symbolic point of a position on a walk edge**: `.onEdge (qE p) h` evaluates to the
 point of walk edge `p` at the height of `h`. -/
@@ -139,8 +142,8 @@ theorem eval_onEdge {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (hn 
     intro h'
     have := ivB_inj li hp hp1 h'
     by_cases h1 : p + 1 < Q.n
-    · rw [Nat.mod_eq_of_lt h1] at this; omega
-    · rw [show p + 1 = Q.n by omega, Nat.mod_self] at this; omega
+    · rwo [Nat.mod_eq_of_lt h1] at this
+    · rwo [show p + 1 = Q.n by omega, Nat.mod_self] at this
   have hd : (Q.vtx (ivB li Q.n p)).2 ≠ (Q.vtx (ivB li Q.n ((p + 1) % Q.n))).2 :=
     hdh _ _ (ivB_lt li hp) (ivB_lt li hp1) hne
   have hxat : Visibility.edgeX Q (qE li Q.n p) (Q.vtx h).2 =
@@ -204,8 +207,8 @@ theorem noInt_cases {n : ℕ} {x y : ℝ} (hx0 : 0 ≤ x) (hxn : x < n) (hy0 : 0
     (hxy : x ≠ y) (h : ∀ k : ℕ, k < n → ¬ sideInArc x y k) :
     (x < y ∧ ⌊y⌋₊ = ⌊x⌋₊) ∨ y = (((⌊x⌋₊ + 1) % n : ℕ) : ℝ) := by
   set p := ⌊x⌋₊ with hp
-  have hpx : (p : ℝ) ≤ x := Nat.floor_le hx0
-  have hxp : x < p + 1 := Nat.lt_floor_add_one x
+  have hpx  := Nat.floor_le hx0
+  have hxp  := Nat.lt_floor_add_one x
   have hpn : p < n := by
     have : (p : ℝ) < n := lt_of_le_of_lt hpx hxn
     exact_mod_cast this
@@ -278,7 +281,7 @@ theorem not_arcGap_both {i : ℕ} (hi : i < nk (interiorModel Q) S R)
     have m0 := hsub hxa
     have m1 := hsub h1
     have m2 := hsub h2
-    simp only [mem_insert_iff, mem_singleton_iff] at m0 m1 m2
+    simp [mem_insert_iff, mem_singleton_iff] at m0 m1 m2
     rcases m0 with e0 | e0 <;> rcases m1 with e1 | e1 <;> rcases m2 with e2 | e2
     all_goals first
       | exact Or.inl (e0.trans e1.symm)
@@ -297,7 +300,7 @@ theorem arcGap_noInt {i : ℕ} (hi : i < nk (interiorModel Q) S R)
     (hA : ArcGap (interiorModel Q) S R i) (k : ℕ) (hkn : k < (interiorModel Q).W.n) :
     ¬ sideInArc (hk (interiorModel Q) S R i)
       (hk (interiorModel Q) S R ((i + 1) % nk (interiorModel Q) S R)) k := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM  := walkAx_interiorModel hQ
   have h3 := three_le_nk hQ hFam hne hR
   intro hin
   obtain ⟨a, b, harc, hsub⟩ := hA
@@ -362,7 +365,7 @@ theorem rep_edgeOK {li : Bool} (hdh : DistinctHeights Q) {i : ℕ}
   rcases gap_cases hM hF hfin hne hR (by omega) hi with hA | hC
   · -- an arc gap: the two keys are on one walk edge, or the second is the next walk vertex
     have hnoint : ∀ k : ℕ, k < Q.n → ¬ sideInArc x y k := fun k hk =>
-      arcGap_noInt hQ hFam hne hR hi hA k (by rw [hWn]; exact hk)
+      arcGap_noInt hQ hFam hne hR hi hA k (by rwx [hWn])
     have hxy : x ≠ y := hk_succ_ne hM hF hfin (by omega) hi
     set p := ⌊x⌋₊ with hpdef
     have hp : p < Q.n := by
@@ -394,7 +397,7 @@ theorem rep_edgeOK {li : Bool} (hdh : DistinctHeights Q) {i : ℕ}
       · exact Or.inr rfl
     · -- `y` is the next walk vertex
       have hyfl : ⌊y⌋₊ = (p + 1) % Q.n := by rw [hyv, Nat.floor_natCast]
-      have hyint : y = ⌊y⌋₊ := by rw [hyfl]; exact hyv
+      have hyint : y = ⌊y⌋₊ := by rwx [hyfl]
       have hpm : ((p + 1) % Q.n + Q.n - 1) % Q.n = p := by
         have := prevIdx_succ (N := Q.n) hp
         unfold prevIdx at this; exact this
@@ -402,7 +405,7 @@ theorem rep_edgeOK {li : Bool} (hdh : DistinctHeights Q) {i : ℕ}
         rcases hs' with ⟨-, rfl⟩ | ⟨-, h', -, -, (⟨-, -, rfl⟩ | ⟨hn', -⟩)⟩
         · left; rw [hyfl]
         · right; exact ⟨h', by rw [hyfl, hpm]⟩
-        · exact absurd ⟨hyint, by rw [hprev]; exact hA⟩ hn'
+        · exact absurd ⟨hyint, by rwx [hprev]⟩ hn'
       rcases hs1 with rfl | ⟨h, rfl⟩ <;> rcases hs2 with rfl | ⟨h', rfl⟩
       · show ivB li Q.n ((p + 1) % Q.n) = (ivB li Q.n p + 1) % Q.n ∨
           ivB li Q.n p = (ivB li Q.n ((p + 1) % Q.n) + 1) % Q.n
@@ -442,7 +445,7 @@ theorem rep_edgeOK {li : Bool} (hdh : DistinctHeights Q) {i : ℕ}
     obtain ⟨e', h', rfl, hh', hyh'⟩ := key _ s' hs' hcuty
     left
     by_contra hne'
-    exact hdh h h' hh hh' hne' (by rw [hyh, hyh']; exact hY)
+    exact hdh h h' hh hh' hne' (by rwx [hyh, hyh'])
 
 end
 

@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ShootCutShEdgeH
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 46: keeping the nearest candidate
@@ -11,10 +15,6 @@ the candidate replaces the best one if the best one is empty or the candidate is
 direction of the ray (one `xLess`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -66,11 +66,11 @@ theorem copyC_exec (c : Config) (hw : WordsBounded W c) :
   obtain ⟨c', e, v, k, rr, m, rm, o⟩ := copies_exec (P := P) [(140210, 140220), (140211, 140221),
     (140212, 140222), (140213, 140223), (140214, 140224), (140215, 140225), (140216, 140226)] c hw
     (by decide) (by decide)
-  simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at v
-  refine ⟨c', e, fun j hj => ?_, fun r hr => k r (by simp [Bmrg] at hr ⊢; omega),
+  simp [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at v
+  refine ⟨c', e, fun j hj => ?_, fun r hr => k r (by sio [Bmrg] at hr ⊢),
     fun r _ => by rw [rr], m, rm, o⟩
   obtain ⟨v0, v1, v2, v3, v4, v5, v6⟩ := v
-  interval_cases j <;> simp only [Nat.reduceAdd] <;> assumption
+  interval_cases j <;> simp [Nat.reduceAdd] <;> assumption
 
 /-- The register facts of a candidate copied over the best answer. -/
 theorem recs_copied {c c' : Config} {x : ℝ}
@@ -84,9 +84,9 @@ theorem recs_copied {c c' : Config} {x : ℝ}
       c'.nreg (140210 + 5) < (chainModel C).W.n ∧
       (chainModel C).pos (Qof P) ⟨c'.nreg (140210 + 5), c'.nreg (140210 + 6)⟩ = (x, z.2) := by
   have h0 := hk 0 (by norm_num)
-  simp only [Nat.add_zero] at h0
+  simp [Nat.add_zero] at h0
   intro h1
-  obtain ⟨a, p, n, q⟩ := r (by rw [← h0]; exact h1)
+  obtain ⟨a, p, n, q⟩ := r (by rwx [← h0])
   rw [hk 5 (by norm_num), hk 6 (by norm_num)]
   exact ⟨absRec_copy' a (hk 1 (by norm_num)) (hk 2 (by norm_num)) (hk 3 (by norm_num))
     (hk 4 (by norm_num)), p, n, q⟩
@@ -95,7 +95,7 @@ theorem mrg_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
     {S₁ S₂ : Set Point} (hB : CandAt P C c 140210 S₁ z σ) (hC : CandAt P C c 140220 S₂ z σ) :
     ∃ c' k, Exec P W mrg c c' k ∧ k ≤ 270 ∧ CandAt P C c' 140210 (S₁ ∪ S₂) z σ ∧
       FrameB Bmrg c c' := by
-  have hW : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
+  have hW : P.n + 3 ≤ W := by have := E.hW; ufo hostWords at this
   have k1 := E.k1
   obtain ⟨x₁, c₁', r₁⟩ := hB.cand
   obtain ⟨x₂, c₂', r₂⟩ := hC.cand
@@ -103,19 +103,19 @@ theorem mrg_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
   unfold mrg
   by_cases t0 : c.nreg 140220 < c.nreg K1
   · -- no candidate: keep
-    have hf₂ : ¬ c.nreg 140220 = 1 := by rw [k1] at t0; omega
-    simp only [hf₂, false_and, ↓reduceIte] at hu
+    have hf₂ : ¬ c.nreg 140220 = 1 := by rwo [k1] at t0
+    simp [hf₂, false_and, ↓reduceIte] at hu
     exact ⟨c, _, .ifLtN_true t0 (.skip hw), by norm_num, CandAt.of_cand hB.1 hu r₁,
       FrameB.refl _ _⟩
-  have hf₂ : c.nreg 140220 = 1 := by have := hC.1; rw [k1] at t0; omega
+  have hf₂ : c.nreg 140220 = 1 := by have := hC.1; rwo [k1] at t0
   by_cases t1 : c.nreg 140210 < c.nreg K1
-  · have hf₁ : ¬ c.nreg 140210 = 1 := by rw [k1] at t1; omega
-    simp only [hf₂, hf₁, ne_eq, not_false_eq_true, true_or, and_self, ↓reduceIte] at hu
+  · have hf₁ : ¬ c.nreg 140210 = 1 := by rwo [k1] at t1
+    simp [hf₂, hf₁, ne_eq, not_false_eq_true, true_or, and_self, ↓reduceIte] at hu
     obtain ⟨c', e, hk, f⟩ := copyC_exec (P := P) c hw
     have h0 : c'.nreg 140210 = c.nreg 140220 := hk 0 (by norm_num)
     refine ⟨c', _, .ifLtN_false t0 (.ifLtN_true t1 e), by norm_num,
-      CandAt.of_cand (by rw [h0, hf₂]) (by rw [h0, hf₂]; exact hu) (recs_copied hk r₂), f⟩
-  have hf₁ : c.nreg 140210 = 1 := by have := hB.1; rw [k1] at t1; omega
+      CandAt.of_cand (by rw [h0, hf₂]) (by rwx [h0, hf₂]) (recs_copied hk r₂), f⟩
+  have hf₁ : c.nreg 140210 = 1 := by have := hB.1; rwo [k1] at t1
   obtain ⟨xr₁, -⟩ := r₁ hf₁
   obtain ⟨xr₂, -⟩ := r₂ hf₂
   -- the comparison bit
@@ -128,7 +128,7 @@ theorem mrg_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
     by_cases hs : c.nreg 140241 < c.nreg K1
     · have hσ : σ = -1 := by
         rcases E.hσ with h | h
-        · have := E.sig.2.2 h; rw [k1] at hs; omega
+        · have := E.sig.2.2 h; rwo [k1] at hs
         · exact h
       obtain ⟨c₁, k, ex, hk, b, f⟩ := xLess_exec E.hG hW c hw (dst := 140310) (by norm_num) (by norm_num)
         (by norm_num) k1 (AbsRec.weak xr₁) (AbsRec.weak xr₂) (Or.inr ⟨st xr₁, st xr₂⟩)
@@ -140,35 +140,35 @@ theorem mrg_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
       refine ⟨c₁, _, .ifLtN_false hs ex, by omega, b.congr ?_, f⟩
       rw [hσ]; constructor <;> intro h <;> linarith
   have kp : ∀ r, 140210 ≤ r → r < 140227 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
-    f₁.1 r (by simp [Bkb, Bk]; omega)
+    f₁.1 r (by sio [Bkb, Bk])
   have fm₁ : FrameB Bmrg c c₁ := FrameB.wk f₁ (fun r h => by
-    simp only [Bkb, Bool.or_eq_true, beq_iff_eq] at h
-    simp only [Bmrg, Bool.or_eq_true, beq_iff_eq]
+    simp [Bkb, Bool.or_eq_true, beq_iff_eq] at h
+    simp [Bmrg, Bool.or_eq_true, beq_iff_eq]
     rcases h with h | h
     · exact Or.inl (Or.inl h)
     · exact Or.inr h)
   have w₁ := e₁.wb_right
   have k1' : c₁.nreg K1 = 1 := by rw [f₁.1 K1 (by decide), k1]
-  have t0' : ¬ c.nreg 140220 < c.nreg K1 := t0
-  have t1' : ¬ c.nreg 140210 < c.nreg K1 := t1
+  have t0'  := t0
+  have t1'  := t1
   by_cases t2 : c₁.nreg 140310 < c₁.nreg K1
-  · have hn : ¬ σ * x₂ < σ * x₁ := fun h => by have := bt.2.2 h; rw [k1'] at t2; omega
-    simp only [hf₂, hf₁, ne_eq, not_true_eq_false, false_or, hn, and_false, ↓reduceIte] at hu
+  · have hn : ¬ σ * x₂ < σ * x₁ := fun h => by have := bt.2.2 h; rwo [k1'] at t2
+    simp [hf₂, hf₁, ne_eq, not_true_eq_false, false_or, hn, and_false, ↓reduceIte] at hu
     refine ⟨c₁, _, .ifLtN_false t0' (.ifLtN_false t1' (.seq e₁ (.ifLtN_true t2 (.skip w₁)))),
       by omega, CandAt.of_cand (by rw [kp _ (by norm_num) (by norm_num), hf₁])
-        (by rw [kp _ (by norm_num) (by norm_num), hf₁]; exact hu) (fun h => ?_), fm₁⟩
-    obtain ⟨a, p, n, q⟩ := r₁ (by rw [← kp _ (by norm_num) (by norm_num)]; exact h)
+        (by rwx [kp _ (by norm_num) (by norm_num), hf₁]) (fun h => ?_), fm₁⟩
+    obtain ⟨a, p, n, q⟩ := r₁ (by rwx [← kp _ (by norm_num) (by norm_num)])
     rw [kp _ (by norm_num) (by norm_num), kp _ (by norm_num) (by norm_num)]
     exact ⟨absRec_copy' a (kp _ (by norm_num) (by norm_num)) (kp _ (by norm_num) (by norm_num))
       (kp _ (by norm_num) (by norm_num)) (kp _ (by norm_num) (by norm_num)), p, n, q⟩
-  · have hn : σ * x₂ < σ * x₁ := bt.2.1 (by have := bt.1; rw [k1'] at t2; omega)
-    simp only [hf₂, hf₁, ne_eq, not_true_eq_false, false_or, hn, and_self, ↓reduceIte] at hu
+  · have hn : σ * x₂ < σ * x₁ := bt.2.1 (by have := bt.1; rwo [k1'] at t2)
+    simp [hf₂, hf₁, ne_eq, not_true_eq_false, false_or, hn, and_self, ↓reduceIte] at hu
     obtain ⟨c', e, hk, f⟩ := copyC_exec (P := P) c₁ w₁
     have hk' : ∀ j, j < 7 → c'.nreg (140210 + j) = c.nreg (140220 + j) := fun j hj => by
       rw [hk j hj, kp _ (by omega) (by omega)]
     have h0 : c'.nreg 140210 = c.nreg 140220 := hk' 0 (by norm_num)
     refine ⟨c', _, .ifLtN_false t0' (.ifLtN_false t1' (.seq e₁ (.ifLtN_false t2 e))), by omega,
-      CandAt.of_cand (by rw [h0, hf₂]) (by rw [h0, hf₂]; exact hu) (recs_copied hk' r₂),
+      CandAt.of_cand (by rw [h0, hf₂]) (by rwx [h0, hf₂]) (recs_copied hk' r₂),
       fm₁.trans f⟩
 
 end

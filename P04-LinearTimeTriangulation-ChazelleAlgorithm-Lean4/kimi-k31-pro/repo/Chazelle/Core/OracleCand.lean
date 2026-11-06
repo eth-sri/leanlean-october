@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.OracleGraph
 public import Chazelle.Core.Facts2
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 8: candidate arcs, scanned edges, the empty family
@@ -44,12 +46,12 @@ def predP (A p : ℕ) : ℕ := if p = 0 then A - 1 else p - 1
 theorem predP_succP {A p : ℕ} (hp : p < A) : predP A (succP A p) = p := by
   unfold succP predP
   by_cases h : p + 1 < A
-  · rw [ite_eq_left h, ite_eq_right (by omega)]; omega
-  · rw [ite_eq_right h, ite_eq_left rfl]; omega
+  · rwo [ite_eq_left h, ite_eq_right (by omega)]
+  · rwo [ite_eq_right h, ite_eq_left rfl]
 
-theorem succP_lt {A p : ℕ} (hp : p < A) : succP A p < A := by unfold succP; split_ifs <;> omega
+theorem succP_lt {A p : ℕ} (hp : p < A) : succP A p < A := by unfold succP; splao
 
-theorem predP_lt {A p : ℕ} (hp : p < A) : predP A p < A := by unfold predP; split_ifs <;> omega
+theorem predP_lt {A p : ℕ} (hp : p < A) : predP A p < A := by unfold predP; splao
 
 theorem succP_inj {A p q : ℕ} (hp : p < A) (hq : q < A) (h : succP A p = succP A q) : p = q := by
   have := congrArg (predP A) h
@@ -126,7 +128,7 @@ theorem end_start_adj {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.leng
       have h0p := starts_lt hN hGM hne hp0 hp
       have hqp := sk_mono hN (show q ≤ p by omega) hp
       have hwr : ¬ sk M Q N p < ek M Q N p := by intro hc; linarith
-      have hlt : ek M Q N p < sk M Q N p := lt_of_le_of_ne (not_lt.1 hwr) (Ne.symm hne')
+      have hlt  := lt_of_le_of_ne (not_lt.1 hwr) (Ne.symm hne')
       have hle : ek M Q N p ≤ sk M Q N 0 := by
         by_contra hc
         push Not at hc
@@ -240,7 +242,7 @@ theorem mem_scan {p : ℕ}
     rcases eq_or_lt_of_le ht1 with h1 | h1
     · subst h1
       by_cases hlast : q + 1 < n
-      · refine ⟨q + 1, 0, hlast, le_rfl, one_pos, ?_, by push_cast; ring⟩
+      · refine ⟨q + 1, 0, hlast, le_rfl, one_pos, ?_, by pcr⟩
         rw [Chazelle.Chain.sidePt_zero, Geometry.lerp_one]
         show (chainModel C).W.vtx (q + 1) = (chainModel C).W.vtx ((q + 1) % n)
         rw [Nat.mod_eq_of_lt hlast]
@@ -255,7 +257,7 @@ theorem mem_scan {p : ℕ}
           rw [this, C.sideWalk_vtx_zero]
         rw [hv] at hxC
         have := C.snd_le_top_of_mem_set hxC
-        simp only [Chain.slitTop] at this
+        simp [Chain.slitTop] at this
         linarith [C.top_snd_lt_radius]
     · exact ⟨q, t, hq, ht0, h1, rfl, rfl⟩
   rw [← hkey'] at hkey
@@ -308,7 +310,7 @@ theorem mem_scan {p : ℕ}
   -- the edge is a tour edge (or the closing vertex, the top)
   rw [hn7] at hq'
   rcases pos_on_chain C hq' ht0' ht1' hxC with ⟨h1, h2⟩ | ⟨h1, h2⟩
-  · refine ⟨k, by omega, q' - 6, by omega, by rw [hidx]; omega, ?_⟩
+  · refine ⟨k, by omega, q' - 6, by omega, by rwo [hidx], ?_⟩
     have := C.sidePt_tour C.sideBeta (i := q' - 6) (by omega) t'
     rw [show q' - 6 + 6 = q' by omega] at this
     show sidePt (C.sideWalk C.sideBeta) q' t' ∈ _

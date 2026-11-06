@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepIoPipe
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep RAM (WP-D), answers: register steps of the per-query pipeline
@@ -38,8 +42,8 @@ theorem loadQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hW : c.nreg pA + 2 �
       (∀ r, r ≠ qJ → r ≠ qE → r ≠ qH → r ≠ qD → r ≠ tAq → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
-  have k2 : c.nreg K2 = 2 := hKc.2.2.2.2.2.1
+  have k1  := hKc.2.1
+  have k2  := hKc.2.2.2.2.2.1
   have s : ∀ r, 240700 ≤ r → r < 250000 → IScr r := fun r h1 h2 => iscr_sw h1 h2
   have ok : okB W c.nmem [.copyN qJ pJ, .loadN qE pA, .addN tAq pA K1, .loadN qH tAq,
       .addN tAq pA K2, .loadN qD tAq] c.nreg := by
@@ -75,7 +79,6 @@ def bitT (dsc bt : ℕ) : Stmt :=
   .seq (block [.copyN sZ K0, .subN (sZ + 1) qH K1])
     (.seq (callSym dsc K6 K0 sTq) (.seq (callKb (sTq + 1) sZ 1 kO) (block [.subN bt K1 kO])))
 
-set_option maxHeartbeats 4000000 in
 theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c₀)
     (hctx : ChainCtx P W c dsc C) (hdsc : IFix dsc) (hbt : bt = bL ∨ bt = bR)
     (hqH : 1 ≤ c.nreg qH ∧ c.nreg qH ≤ P.n) (hroom : c.nreg ALLOC + 16962 ≤ W) :
@@ -89,15 +92,15 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
   have k1 : c.nreg K1 = 1 := hKc.2.1
   have hG := hctx.1
   have hWh := hctx.2.1
-  have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
+  have hWn : P.n + 3 ≤ W := by ufo hostWords at hWh
   have s : ∀ r, 240700 ≤ r → r < 250000 → IScr r := fun r h1 h2 => iscr_sw h1 h2
   have hbt' : 243225 ≤ bt ∧ bt ≤ 243226 := by rcases hbt with rfl | rfl <;> simp [bL, bR, sw]
   have hdl : 240000 ≤ dsc ∧ dsc < 240700 := hdsc
   -- 1. the vertex point of the height code
   have ok1 : okB W c.nmem [.copyN sZ K0, .subN (sZ + 1) qH K1] c.nreg :=
-    ⟨s _ (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num),
-      s _ (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num), trivial⟩
-  refine (IRS.seq (K₂ := 16960) (IRS.block _ hI ok1) ?_).mono (by simp) (fun _ h => h)
+    ⟨s _ (by ufn sZ sw) (by ufn sZ sw),
+      s _ (by ufn sZ sw) (by ufn sZ sw), trivial⟩
+  refine (IRS.seq (K₂ := 16960) (IRS.block _ hI ok1) ?_).mono (by simp) (fun _ => id)
   rintro c₁ hI₁ - - hc1
   have v1 : c₁.nreg sZ = 0 ∧ c₁.nreg (sZ + 1) = c.nreg qH - 1 ∧
       (∀ r, r ≠ sZ → r ≠ sZ + 1 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem := by
@@ -108,37 +111,37 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
     simp only [h1, h2, ite_false]
   obtain ⟨z1, z2, r1, m1⟩ := v1
   have hsz : SymPtIn c₁ sZ (.vtx (c.nreg qH - 1)) := ⟨z1, z2⟩
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := r1 _ (by unfold sZ ALLOC sw; omega)
-    (by unfold sZ ALLOC sw; omega)
-  have hctx₁ : ChainCtx P W c₁ dsc C := hctx.transport (r1 _ (by unfold sZ sw; omega)
-    (by unfold sZ sw; omega)) (fun a _ => by rw [m1]) (by rw [hA1])
-  have rK6 : c₁.nreg K6 = 6 := by rw [r1 _ (by unfold sZ K6 sw; omega) (by unfold sZ K6 sw; omega)]; exact hKc.2.2.1
-  have rK0 : c₁.nreg K0 = 0 := by rw [r1 _ (by unfold sZ K0 sw; omega) (by unfold sZ K0 sw; omega)]; exact k0
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := r1 _ (by ufo sZ ALLOC sw)
+    (by ufo sZ ALLOC sw)
+  have hctx₁ : ChainCtx P W c₁ dsc C := hctx.transport (r1 _ (by ufo sZ sw)
+    (by ufo sZ sw)) (fun a _ => by rw [m1]) (by rw [hA1])
+  have rK6 : c₁.nreg K6 = 6 := by rw [r1 _ (by ufo sZ K6 sw) (by ufo sZ K6 sw)]; exact hKc.2.2.1
+  have rK0 : c₁.nreg K0 = 0 := by rwx [r1 _ (by ufo sZ K0 sw) (by ufo sZ K0 sw)]
   have hm1 := C.one_le
   have hn := cm_n C
   -- 2. the top
   have hpp : ProperPos (chainModel C) (Qof P) P.n ⟨c₁.nreg K6, c₁.nreg K0⟩ := by
     rw [rK6, rK0]; exact ⟨le_refl _, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩
   refine IRS.seq (K₂ := 251 + 2) (callSym_irs hI₁ hctx₁ ⟨by omega, by omega,
-      by unfold K6 sw; norm_num, by unfold K6 sw; norm_num, by unfold K0 sw; norm_num,
-      by unfold K0 sw; norm_num⟩ ⟨by unfold sTq sw; norm_num, by unfold sTq sw; norm_num⟩
-      (by rw [rK6]; omega) hpp
+      by ufn K6 sw, by ufn K6 sw, by ufn K0 sw,
+      by ufn K0 sw⟩ ⟨by ufn sTq sw, by ufn sTq sw⟩
+      (by rwo [rK6]) hpp
       (by rw [rK6, rK0, top_pos]; exact absy_lt C C.top_mem_set)
-      (Or.inl ⟨by rw [rK6], by rw [rK6]; omega⟩) (by omega)) ?_
+      (Or.inl ⟨by rw [rK6], by rwo [rK6]⟩) (by omega)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨sp, hsp, hlt, hev, f2, hA2, m2⟩
   rw [rK6, rK0, top_pos] at hev
   have hsz₂ : SymPtIn c₂ sZ (.vtx (c.nreg qH - 1)) := symPtIn_copy hsz
-    (f2 _ (not_oracle_sw (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num))
-      (Or.inl (by unfold sZ sTq sw; norm_num)) (by unfold sZ ALLOC sw; omega))
-    (f2 _ (not_oracle_sw (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num))
-      (Or.inl (by unfold sZ sTq sw; norm_num)) (by unfold sZ ALLOC sw; omega))
-    (f2 _ (not_oracle_sw (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num))
-      (Or.inl (by unfold sZ sTq sw; norm_num)) (by unfold sZ ALLOC sw; omega))
+    (f2 _ (not_oracle_sw (by ufn sZ sw) (by ufn sZ sw))
+      (Or.inl (by ufn sZ sTq sw)) (by ufo sZ ALLOC sw))
+    (f2 _ (not_oracle_sw (by ufn sZ sw) (by ufn sZ sw))
+      (Or.inl (by ufn sZ sTq sw)) (by ufo sZ ALLOC sw))
+    (f2 _ (not_oracle_sw (by ufn sZ sw) (by ufn sZ sw))
+      (Or.inl (by ufn sZ sTq sw)) (by ufo sZ ALLOC sw))
   -- 3. the sign test
   refine IRS.seq (K₂ := 2) (callKb_irs (by norm_num) hI₂ hG hWn
-      ⟨by unfold sTq sw; norm_num, by unfold sTq sw; norm_num⟩
-      ⟨by unfold sZ sw; norm_num, by unfold sZ sw; norm_num⟩
-      ⟨by unfold kO sw; norm_num, by unfold kO sw; norm_num⟩ hsp hsz₂ hlt
+      ⟨by ufn sTq sw, by ufn sTq sw⟩
+      ⟨by ufn sZ sw, by ufn sZ sw⟩
+      ⟨by ufn kO sw, by ufn kO sw⟩ hsp hsz₂ hlt
       (show c.nreg qH - 1 < P.n by omega) (by omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨o1, o2, f3, hA3, m3⟩
   have k1₃ : c₃.nreg K1 = 1 := (hK.fix hI₃).2.1
@@ -148,7 +151,7 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
     simp only [regB, regI, upd_same, k1₃]
   have kb : ∀ r, r ≠ bt → regB c₃.nmem [.subN bt K1 kO] c₃.nreg r = c₃.nreg r := by
     intro r hr; simp only [regB, regI]; exact upd_other _ _ _ hr
-  refine ⟨by simp only; rw [vb]; omega, ?_, fun r h1 h2 h3 h4 => ?_, ?_, ?_⟩
+  refine ⟨by simp only; rwo [vb], ?_, fun r h1 h2 h3 h4 => ?_, ?_, ?_⟩
   · simp only; rw [vb]
     have : SignTest 1 (sp.eval (Qof P)) ((SymPt.vtx (c.nreg qH - 1)).eval (Qof P))
         (sp.eval (Qof P)) ↔ C.top.2 < ((Qof P).vtx (c.nreg qH - 1)).2 := by
@@ -159,12 +162,12 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
     · intro h; have : c₃.nreg kO ≠ 1 := fun h' => absurd (o2.1 h') (not_lt.2 h); omega
   · simp only; rw [kb r h2]
     have hsw : ∀ x, sw 3230 ≤ x → x < sw 3300 → True := fun _ _ _ => trivial
-    rw [f3 r h1 (fun h => h3 (by rw [h]; unfold kO sw; norm_num)) h4,
+    rw [f3 r h1 (fun h => h3 (by rw [h]; ufn kO sw)) h4,
       f2 r h1 (by
         by_contra hh; push Not at hh
         simp only [sTq, sw] at hh
-        exact h3 ⟨by unfold sw; omega, by unfold sw; omega⟩) h4,
-      r1 r (fun h => h3 (by rw [h]; unfold sZ sw; norm_num)) (fun h => h3 (by rw [h]; unfold sZ sw; norm_num))]
+        exact h3 ⟨by ufo sw, by ufo sw⟩) h4,
+      r1 r (fun h => h3 (by rw [h]; ufn sZ sw)) (fun h => h3 (by rw [h]; ufn sZ sw))]
   · simp only
     rw [kb ALLOC (by rcases hbt with rfl | rfl <;> simp [bL, bR, ALLOC, sw])]; omega
   · intro a ha; simp only
@@ -175,7 +178,6 @@ def bitsQ : Stmt :=
   .ifLtN sSide K1 (.seq (block [.copyN bL K1]) (bitT (sw 21) bR))
     (.seq (block [.copyN bR K1]) (bitT (sw 20) bL))
 
-set_option maxHeartbeats 4000000 in
 theorem bitsQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) {i : ℕ}
     (hi : i ≤ 1) (hs : c.nreg sSide = i)
     (hL : ChainCtx P W c (sw 20) J.left) (hR : ChainCtx P W c (sw 21) J.right)
@@ -190,7 +192,7 @@ theorem bitsQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) {
         r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
+  have k1  := hKc.2.1
   have s : ∀ r, 240700 ≤ r → r < 250000 → IScr r := fun r h1 h2 => iscr_sw h1 h2
   -- one branch: set `b₁ := 1`, test `b₂`
   have br : ∀ (b₁ b₂ d : ℕ) (C₁ C₂ : Chain), (b₁ = bL ∧ b₂ = bR ∨ b₁ = bR ∧ b₂ = bL) →
@@ -211,29 +213,29 @@ theorem bitsQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) {
     have e1 : regB c.nmem [.copyN b₁ K1] c.nreg b₁ = 1 := by
       simp only [regB, regI, upd_same, k1]
     have hctx₁ : ChainCtx P W { c with nreg := regB c.nmem [.copyN b₁ K1] c.nreg } d C₂ :=
-      hctx.transport (v1 d (by unfold IFix at hd; omega)) (fun _ _ => rfl)
-        (by simp only; rw [v1 ALLOC (by unfold ALLOC; omega)])
-    have hA1 : regB c.nmem [.copyN b₁ K1] c.nreg ALLOC = c.nreg ALLOC := v1 _ (by unfold ALLOC; omega)
-    have hq1 : regB c.nmem [.copyN b₁ K1] c.nreg qH = c.nreg qH := v1 _ (by unfold qH sw; omega)
+      hctx.transport (v1 d (by ufo IFix at hd)) (fun _ _ => rfl)
+        (by simp only; rw [v1 ALLOC (by ufo ALLOC)])
+    have hA1 : regB c.nmem [.copyN b₁ K1] c.nreg ALLOC = c.nreg ALLOC := v1 _ (by ufo ALLOC)
+    have hq1 : regB c.nmem [.copyN b₁ K1] c.nreg qH = c.nreg qH := v1 _ (by ufo qH sw)
     refine (bitT_irs hI₁ hK hctx₁ hd (by rcases hb with ⟨-, rfl⟩ | ⟨-, rfl⟩ <;> simp)
-      (by simp only; rw [hq1]; exact hqH)
-      (by simp only; rw [hA1]; omega)).mono le_rfl ?_
+      (by simp only; rwx [hq1])
+      (by simp only; rwo [hA1])).mono le_rfl ?_
     rintro c' ⟨q1, q2, q3, q4, q5⟩
     simp only [hq1, hA1] at q1 q2 q3 q4 q5
     refine ⟨?_, q1, q2, fun r r0 r1 r2 r3 r4 => ?_, q4, q5⟩
     · rw [q3 b₁ (not_oracle_sw (by omega) (by omega)) hb1.2.2.2.2
-        (fun h => by unfold sw at h; omega) (by unfold ALLOC; omega), e1]
+        (fun h => by ufo sw at h) (by ufo ALLOC), e1]
     · rw [q3 r r0 r2 r3 r4, v1 r r1]
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hi with rfl | rfl
-  · have ht : c.nreg sSide < c.nreg K1 := by rw [hs, k1]; norm_num
+  · have ht : c.nreg sSide < c.nreg K1 := by rwn [hs, k1]
     refine (IRS.ifT ht (br bL bR (sw 21) J.left J.right (Or.inl ⟨rfl, rfl⟩)
-      (by unfold IFix sw; omega) hR)).mono (by norm_num) ?_
+      (by ufo IFix sw) hR)).mono (by norm_num) ?_
     rintro c' ⟨q1, q2, q3, q4, q5⟩
     exact ⟨⟨by omega, ⟨fun _ => h0 rfl, fun _ => q1⟩⟩, ⟨q2, q3⟩,
       fun r r0 r1 r2 r3 r4 => q4 r r0 r1 r2 r3 r4, q5⟩
-  · have ht : ¬ c.nreg sSide < c.nreg K1 := by rw [hs, k1]; norm_num
+  · have ht : ¬ c.nreg sSide < c.nreg K1 := by rwn [hs, k1]
     refine (IRS.ifF ht (br bR bL (sw 20) J.right J.left (Or.inr ⟨rfl, rfl⟩)
-      (by unfold IFix sw; omega) hL)).mono (by norm_num) ?_
+      (by ufo IFix sw) hL)).mono (by norm_num) ?_
     rintro c' ⟨q1, q2, q3, q4, q5⟩
     exact ⟨⟨q2, q3⟩, ⟨by omega, ⟨fun _ => h1 rfl, fun _ => q1⟩⟩,
       fun r r0 r1 r2 r3 r4 => q4 r r0 r2 r1 r3 r4, q5⟩
@@ -250,7 +252,6 @@ def store4 (v0 v1 v2 v3 : ℕ) : Stmt :=
 def mem4' (m : ℕ → ℕ) (A v0 v1 v2 v3 : ℕ) : ℕ → ℕ :=
   upd (upd (upd (upd m A v0) (A + 1) v1) (A + 2) v2) (A + 3) v3
 
-set_option maxHeartbeats 4000000 in
 theorem store4_irs {v0 v1 v2 v3 : ℕ} (hI : IInv W c₀ c) (hK : Consts c₀)
     (h1 : v1 ≠ tAq) (h2 : v2 ≠ tAq) (h3 : v3 ≠ tAq)
     (hA : c₀.nreg ALLOC ≤ c.nreg pR) (hW : c.nreg pR + 3 ≤ W) :
@@ -258,29 +259,29 @@ theorem store4_irs {v0 v1 v2 v3 : ℕ} (hI : IInv W c₀ c) (hK : Consts c₀)
       c'.nmem = mem4' c.nmem (c.nreg pR) (c.nreg v0) (c.nreg v1) (c.nreg v2) (c.nreg v3) ∧
       (∀ r, r ≠ tAq → c'.nreg r = c.nreg r)) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
-  have k2 : c.nreg K2 = 2 := hKc.2.2.2.2.2.1
-  have k3 : c.nreg K3 = 3 := hKc.2.2.2.2.2.2
-  have stA : IScr tAq := iscr_sw (by unfold tAq sw; norm_num) (by unfold tAq sw; norm_num)
-  have pRA : pR ≠ tAq := by unfold pR tAq sw; norm_num
-  have K1A : K1 ≠ tAq := by unfold K1 tAq sw; norm_num
-  have K2A : K2 ≠ tAq := by unfold K2 tAq sw; norm_num
-  have K3A : K3 ≠ tAq := by unfold K3 tAq sw; norm_num
+  have k1  := hKc.2.1
+  have k2  := hKc.2.2.2.2.2.1
+  have k3  := hKc.2.2.2.2.2.2
+  have stA : IScr tAq := iscr_sw (by ufn tAq sw) (by ufn tAq sw)
+  have pRA : pR ≠ tAq := by ufn pR tAq sw
+  have K1A : K1 ≠ tAq := by ufn K1 tAq sw
+  have K2A : K2 ≠ tAq := by ufn K2 tAq sw
+  have K3A : K3 ≠ tAq := by ufn K3 tAq sw
   unfold store4
-  refine (IRS.seq (K₂ := 6) (IRS.store (v := v0) hI hA) ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.seq (K₂ := 6) (IRS.store (v := v0) hI hA) ?_).mono (by norm_num) (fun _ => id)
   rintro c₁ hI₁ - - rfl
   refine IRS.seq (K₂ := 5) (IRS.instr1 (i := .addN tAq pR K1) hI₁ ⟨stA, by
-    simp only; rw [k1]; omega⟩) ?_
+    simp only; rwo [k1]⟩) ?_
   rintro c₂ hI₂ - - rfl
   simp only [regI] at hI₂ ⊢
-  refine IRS.seq (K₂ := 4) (IRS.store (v := v1) hI₂ (by dsimp only; rw [upd_same, k1]; omega)) ?_
+  refine IRS.seq (K₂ := 4) (IRS.store (v := v1) hI₂ (by dsimp only; rwo [upd_same, k1])) ?_
   rintro c₃ hI₃ - - rfl
   refine IRS.seq (K₂ := 3) (IRS.instr1 (i := .addN tAq pR K2) hI₃ ⟨stA, by
-    dsimp only; rw [upd_other _ _ _ pRA, upd_other _ _ _ K2A, k2]; omega⟩) ?_
+    dsimp only; rwo [upd_other _ _ _ pRA, upd_other _ _ _ K2A, k2]⟩) ?_
   rintro c₄ hI₄ - - rfl
   simp only [regI] at hI₄ ⊢
   refine IRS.seq (K₂ := 2) (IRS.store (v := v2) hI₄ (by
-    dsimp only; rw [upd_same, upd_other _ _ _ pRA, upd_other _ _ _ K2A, k2]; omega)) ?_
+    dsimp only; rwo [upd_same, upd_other _ _ _ pRA, upd_other _ _ _ K2A, k2])) ?_
   rintro c₅ hI₅ - - rfl
   refine IRS.seq (K₂ := 1) (IRS.instr1 (i := .addN tAq pR K3) hI₅ ⟨stA, by
     dsimp only

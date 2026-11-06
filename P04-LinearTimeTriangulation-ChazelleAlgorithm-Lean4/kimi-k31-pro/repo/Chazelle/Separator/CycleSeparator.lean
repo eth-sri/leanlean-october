@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Separator.Cotree
+public import Chazelle.Rwx
 
 /-!
 # The fundamental-cycle separator (planar separators, part 3c)
@@ -80,7 +81,7 @@ omit [Fintype D] [DecidableEq D] [Fintype F] [DecidableEq F] in
 theorem not_isAnc_head_of_notMem_sepSet {f : F} {v : V} (hv : v ∉ T.sepSet f) {e : D}
     (he : M.face e = f) : ¬ T.IsAnc v (M.head e) := by
   rw [← M.vert_fperm]
-  exact T.not_isAnc_of_notMem_sepSet hv (by rw [M.face_fperm_apply]; exact he)
+  exact T.not_isAnc_of_notMem_sepSet hv (by rwx [M.face_fperm_apply])
 
 omit [DecidableEq F] in
 /-- The far sides of distinct non-tree darts of one face are disjoint. -/
@@ -88,7 +89,7 @@ theorem label_unique (hM : M.Planar) {d d' : D} (hd : d ∈ T.coDarts) (hd' : d'
     (hf : M.face d' = M.face d) {g : F} (hg : g ∈ T.cross d) (hg' : g ∈ T.cross d') :
     d = d' := by
   by_contra hne
-  have hsub := T.cross_subset hM (T.opp_mem_coDarts hd) hd' (by rw [M.opp_opp]; exact hf)
+  have hsub := T.cross_subset hM (T.opp_mem_coDarts hd) hd' (by rwx [M.opp_opp])
     (by rw [M.opp_opp]; exact Ne.symm hne)
   exact T.notMem_cross_opp hM hd hg (hsub hg')
 
@@ -103,19 +104,19 @@ theorem card_sepSet_filter_shift_le (f : F) (c : ℕ) (I : Finset ℕ) :
       E.biUnion (fun e => Finset.univ.filter
         (fun v => T.IsAnc v (M.vert e) ∧ T.level v + c ∈ I)) := by
     intro v hv
-    simp only [Finset.mem_filter, mem_sepSet] at hv
+    simp [Finset.mem_filter, mem_sepSet] at hv
     obtain ⟨⟨e, he, hanc⟩, hl⟩ := hv
-    simp only [Finset.mem_biUnion, Finset.mem_filter, Finset.mem_univ, true_and, E]
+    simp [Finset.mem_biUnion, Finset.mem_filter, Finset.mem_univ, true_and, E]
     exact ⟨e, he, hanc, hl⟩
   refine (Finset.card_le_card hsub).trans (Finset.card_biUnion_le.trans ?_)
   rw [faceDeg, ← smul_eq_mul, ← Finset.sum_const]
   refine Finset.sum_le_sum (fun e _ => ?_)
   refine Finset.card_le_card_of_injOn (fun v => T.level v + c) ?_ ?_
   · intro v hv
-    simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv
+    simp [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv
     exact hv.2
   · intro v hv v' hv' hl
-    simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv hv'
+    simp [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv hv'
     exact T.eq_of_isAnc_of_level_eq hv.1 hv'.1 (by simpa using hl)
 
 end SpanTree

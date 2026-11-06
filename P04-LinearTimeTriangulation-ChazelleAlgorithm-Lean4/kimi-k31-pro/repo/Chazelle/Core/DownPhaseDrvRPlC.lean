@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvRPlB
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase driver (RAM side): the leaf planner, part 3 (the item loop)
@@ -75,7 +78,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **One host item.** -/
 theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw : WordsBounded W d)
     (hK : PlConst n C d) {it : HostItem} {i p k ptr addr : ℕ} (h05 : d.nreg 219005 = i)
@@ -107,7 +109,7 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
     decide (r = 219021)) (block [.loadN 219009 219008, .addN 219021 219008 219018,
       .loadN 219010 219021, .addN 219021 219021 219018, .loadN 219011 219021]) = true)
   have g₁ : ∀ r, ¬ (219009 ≤ r ∧ r ≤ 219011) → r ≠ 219021 → d₁.nreg r = d.nreg r :=
-    fun r h1 h2 => fr₁.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    fun r h1 h2 => fr₁.1 r (by sio only [Bool.or_eq_false_iff, decide_eq_false_iff_not])
   have w₁ := e₁.wb_right
   have kK : PlConst n C d₁ := hK.keep fun r hr => g₁ r (by omega) (by omega)
   have k07 : d₁.nreg 219007 = p := by rw [g₁ _ (by omega) (by omega), h07]
@@ -148,7 +150,7 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
     have kK11 : d₁.nreg 219011 = ℓ := by rw [v11, hl]
     obtain ⟨d₂, j₂, e₂, hj₂, c16, c04, cL, cm, cf⟩ := plRun_exec (P := P) hC hn d₁ w₁ kK kK10
       kK11 k07 k16 k04 han hln (by omega) hWt hWk
-    have g₂ : ∀ r, Brun r = false → d₂.nreg r = d₁.nreg r := cf.1
+    have g₂  := cf.1
     have kK₂ : PlConst n C d₂ := kK.keep fun r hr => g₂ r (brun_const hr)
     have t07 : d₂.nreg 219007 = p := by rw [g₂ _ (by decide), k07]
     have t11 : d₂.nreg 219011 = ℓ := by rw [g₂ _ (by decide), kK11]
@@ -167,7 +169,7 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
     have ex₂ : Exec P W (.ifLtN 219009 219018
         (.seq plRun (block [.addN 219007 219007 219011, .addN 219007 219007 219018]))
         (block [.addN 219007 219007 219018])) d₁ d₃ (j₂ + j₃ + 1) :=
-      .ifLtN_true (by rw [v09, hk0, kK.r18]; omega) (.seq e₂ e₃)
+      .ifLtN_true (by rwo [v09, hk0, kK.r18]) (.seq e₂ e₃)
     obtain ⟨d₄, e₄, b05, b08, gb, mb, fb⟩ := tail d₃ _ ex₂
       (by rw [gs _ (by decide), g₂ _ (by decide), k05])
       (by rw [gs _ (by decide), g₂ _ (by decide), k08])
@@ -209,7 +211,7 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
       (by rw [gs _ (by decide), kK.r18]) (by rw [gs _ (by decide), kK.r20])
     refine ⟨d₄, j₁ + ((j₂ + 2) + 2), .seq e₁ (.seq ex₂ e₄), by omega, b05, b08, ?_, ?_, ?_,
       fun i hi => by simp at hi, fun y _ => by rw [mb, ms, m₁], ?_⟩
-    · rw [gb _ (by decide) (by decide), s07]; rfl
+    · rwr [gb _ (by decide) (by decide), s07]
     · rw [gb _ (by decide) (by decide), gs _ (by decide), k16]
     · rw [gb _ (by decide) (by decide), gs _ (by decide), k04]
     · exact hf₁.trans ((exec_frameM e₂ (by decide)).trans fb)

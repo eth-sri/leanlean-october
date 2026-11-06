@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.DownPhaseRegionBelow
 public import Chazelle.Core.FactsChain
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (X, part 9): a region lies in the box of its host points
@@ -33,22 +36,22 @@ theorem exists_first_exit_dir {D : Set Point} (hD : IsOpen D) {z : Point} (hz : 
       ((z.1 + σ * s, z.2) : Point) ∉ D := by
   rcases hσ with rfl | rfl
   · obtain ⟨s, hs, h1, h2⟩ := exists_first_exit hD hz (R := B) (fun x hx => (abs_lt.1 (hB x hx)).2)
-    exact ⟨s, hs, fun s' hs' => by rw [one_mul]; exact h1 s' hs', by rw [one_mul]; exact h2⟩
+    exact ⟨s, hs, fun s' hs' => by rw [one_mul]; exact h1 s' hs', by rwx [one_mul]⟩
   · set f : Point → Point := fun p => (-p.1, p.2)
     have hf : Continuous f := by fun_prop
     set D' := f ⁻¹' D
-    have hD' : IsOpen D' := hD.preimage hf
+    have hD'  := hD.preimage hf
     have hz' : ((-z.1, z.2) : Point) ∈ D' := by show f (-z.1, z.2) ∈ D; simpa [f] using hz
     obtain ⟨s, hs, h1, h2⟩ := exists_first_exit hD' hz' (R := B) (fun x hx => by
       have := hB _ hx; simp only [f] at this; rw [abs_neg] at this; exact (abs_lt.1 this).2)
     refine ⟨s, hs, fun s' hs' => ?_, ?_⟩
     · have := h1 s' hs'
       simp only [D', f, mem_preimage] at this
-      rw [show z.1 + -1 * s' = -(-z.1 + s') by ring]; exact this
+      rwx [show z.1 + -1 * s' = -(-z.1 + s') by ring]
     · intro h
       apply h2
       simp only [D', f, mem_preimage]
-      rw [show -(-z.1 + s) = z.1 + -1 * s by ring]; exact h
+      rwx [show -(-z.1 + s) = z.1 + -1 * s by ring]
 
 variable {Q : Polygon} {S : Set (Set Point)} {R : Set Point}
 
@@ -138,7 +141,7 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     filter_upwards [h1, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with s h1 hs1
     have hs0 : 0 < s := hs1.1
     refine harc.2.2.2.2.2.2 p _ hp (by nlinarith [ht.1, ht.2]) (by nlinarith [ht.1, ht.2, hs1.2]) ?_
-    rw [← add_assoc]; exact h1
+    rwx [← add_assoc]
   obtain ⟨r0, hr0, hnear0⟩ := Loc.near_sub_region hQ hF hfin hp ht.1.le ht.2 hncut hX hfX
   have hXR : X = R := by
     set ε := min s r0 / 2 with hε
@@ -156,7 +159,7 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     have hX' := hnear0 _ hdist (Chazelle.Chain.regionsIn_subset hR hmem).1
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
     · exact h
-    · exact absurd (h.le_bot ⟨hX', hmem⟩) (fun h => h)
+    · exact absurd (h.le_bot ⟨hX', hmem⟩) (id)
   subst hXR
   -- the arc piece
   obtain ⟨i_l, d, hA⟩ := arc_keys hM hF hfin hne hX harc
@@ -183,14 +186,14 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hd0 := hA.hd0
   have hdN := hA.hdN
   have hex : ∃ j, xx < ukey M S X i_l (j + 1) := ⟨d - 1, by
-    rw [Nat.sub_add_cancel hd0]; exact hxd⟩
+    rwx [Nat.sub_add_cancel hd0]⟩
   classical
   set j := Nat.find hex
   have hj1 : xx < ukey M S X i_l (j + 1) := Nat.find_spec hex
   have hjd : j < d := by
     by_contra h; push Not at h
     have := Nat.find_min' hex (show xx < ukey M S X i_l (d - 1 + 1) by
-      rw [Nat.sub_add_cancel hd0]; exact hxd)
+      rwx [Nat.sub_add_cancel hd0])
     omega
   have hj0 : ukey M S X i_l j ≤ xx := by
     rcases Nat.eq_zero_or_pos j with h0 | h0
@@ -211,13 +214,13 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     Nat.mod_lt _ (by omega), by rw [Nat.mod_add_mod, add_assoc],
     (xx - ukey M S X i_l j) / (ukey M S X i_l (j + 1) - ukey M S X i_l j),
     ⟨div_nonneg (by linarith) (by linarith), (div_le_one (by linarith)).2 (by linarith)⟩, ?_,
-    r0, hr0, fun x hx hxD => hnear0 x (by rw [hpt]; exact hx) hxD⟩
+    r0, hr0, fun x hx hxD => hnear0 x (by rwx [hpt]) hxD⟩
   rw [e2, e3, lerp_lerp]
   calc q = hostPt M.W (wrapK n xx) := hw.symm
     _ = _ := e1
     _ = _ := by
       have hne : ukey M S X i_l (j + 1) - ukey M S X i_l j ≠ 0 := sub_ne_zero.2 hjj.ne'
-      congr 1; field_simp; ring
+      congr 1; fsr
 
 /-- **A region lies within the coordinate bound of its host points.** -/
 theorem region_abs_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
@@ -227,10 +230,10 @@ theorem region_abs_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       |(hostPt (interiorModel Q).W (hk (interiorModel Q) S R i)).2| ≤ B) :
     ∀ z ∈ R, |z.1| < B + 1 ∧ |z.2| < B + 1 := by
   set M := interiorModel Q
-  have hM : WalkAx M := walkAx_interiorModel hQ
+  have hM  := walkAx_interiorModel hQ
   have hsys := hM.sys S hFam.2.1 hFam.1
   intro z hzR
-  have hRo : IsOpen R := hsys.regionsIn_open subset_rfl hR
+  have hRo  := hsys.regionsIn_open subset_rfl hR
   obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hRo z hzR
   set V : Finset ℝ := (Finset.range Q.n).image (fun i => (Q.vtx i).2)
   obtain ⟨η, ⟨hη0, hηρ⟩, hηV⟩ : ∃ η ∈ Ioo (0 : ℝ) (min ρ 1),
@@ -248,7 +251,7 @@ theorem region_abs_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     apply hηV
     rw [Finset.coe_image]
     exact ⟨(Q.vtx i).2, Finset.mem_image.2 ⟨i, Finset.mem_range.2 hi, rfl⟩, by
-      simp only [z'] at e; simp only; linarith⟩
+      simp only [z'] at e; sil only⟩
   -- the coordinates of a convex combination of host points
   have hcomb : ∀ i i', i < nk M S R → i' < nk M S R → ∀ lam ∈ Icc (0 : ℝ) 1,
       |(lerp (hostPt M.W (hk M S R i)) (hostPt M.W (hk M S R i')) lam).1| ≤ B ∧

@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.DownPhaseBoxChain
 public import Chazelle.Core.NFBuildWt
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (B3′, part 3): walk positions of twin chains
@@ -111,14 +112,14 @@ theorem key_lt_iff_lex (M : Model) (Q : Polygon) {x x' : WPos}
   · intro hlt
     rcases lt_trichotomy x.edge x'.edge with h1 | h1 | h1
     · exact Or.inl h1
-    · right; refine ⟨h1, ?_⟩; rw [h1] at hlt; linarith
+    · right; refine ⟨h1, ?_⟩; rwli [h1] at hlt
     · exfalso
       have : (x'.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast h1
       linarith [hm'.2, hm.1]
   · rintro (h1 | ⟨h1, h2⟩)
     · have : (x.edge : ℝ) + 1 ≤ x'.edge := by exact_mod_cast h1
       linarith [hm.2, hm'.1]
-    · rw [h1]; linarith
+    · rwli [h1]
 
 namespace Twin
 

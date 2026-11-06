@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.FuseAsmDedup
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # WP-F fusion assembly, part 7: the deduplicating scan
@@ -86,7 +89,6 @@ theorem neqS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
     · simp [h2, show c.nreg a ≠ c.nreg b by omega]
     · simp [show c.nreg a = c.nreg b by omega]
 
-set_option maxHeartbeats 4000000 in
 theorem dsLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {T x : ℕ}
     (hT : c.nreg 70216 = T) (h05 : c.nreg 70105 = 1) (hx : c.nmem (c.nreg 70221) = x)
     (hxW : T + 3 * x + 2 ≤ W) :
@@ -106,7 +108,6 @@ theorem dsLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     Machine.upd_other, hT, hx, h05]
   all_goals first | rfl | (congr 1; ring)
 
-set_option maxHeartbeats 4000000 in
 theorem dsPrev_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
     {T p : ℕ} (hT : c.nreg 70216 = T) (h05 : c.nreg 70105 = 1) (hp : c.nreg 70223 = p)
     (hpW : T + 3 * p + 2 ≤ W) (h28 : c.nreg 70228 = 0) :
@@ -180,7 +181,6 @@ theorem dsPrev_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   · rw [rm₆, rm₅, rm₄, rm₃, rm₂, rm₁]
   · rw [o₆, o₅, o₄, o₃, o₂, o₁]
 
-set_option maxHeartbeats 4000000 in
 theorem dsCopy_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {a : ℕ}
     (hA : c.nreg ALLOC = a) (h05 : c.nreg 70105 = 1) (ha : a + 3 ≤ W) {n : ℕ}
     (h19 : c.nreg 70219 = n) (hn : n + 1 ≤ W) :
@@ -229,7 +229,6 @@ theorem ddp_length_le {α : Type*} [DecidableEq α] (l : List α) (d : α) (n : 
   unfold ddp; rw [List.length_map]
   exact (List.length_filter_le _ _).trans (by simp)
 
-set_option maxHeartbeats 8000000 in
 theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ c : Config}
     (hI : DSI W K T B LB m₀ c₀ c) (ht : c.nreg 70220 < K) (h05 : c₀.nreg 70105 = 1)
     (h08 : c₀.nreg 70108 = 0) (h16 : c₀.nreg 70216 = T)
@@ -272,7 +271,7 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
     unfold dsFlag
     by_cases h0 : j = 0
     · have e := Exec.constN (P := P) e₁.wb_right 70228 1 hW1
-      refine ⟨_, _, .ifLtN_true (by rw [q20, q05]; omega) e, by omega, ?_, fun r _ hr _ => by
+      refine ⟨_, _, .ifLtN_true (by rwo [q20, q05]) e, by omega, ?_, fun r _ hr _ => by
         simp [hr], rfl, rfl, rfl, rfl⟩
       simp only [upd_same]
       rw [ite_eq_left ((hkeep).2 (Or.inl h0))]
@@ -284,7 +283,7 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
         (p := m₀ (B + (j - 1))) c₁ e₁.wb_right hW1
         ((r₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)).trans r16)
         q05 hp (by omega) v28
-      refine ⟨c₂, _, .ifLtN_false (by rw [q20, q05]; omega) e₂, by omega, ?_,
+      refine ⟨c₂, _, .ifLtN_false (by rwo [q20, q05]) e₂, by omega, ?_,
         fun r a b d => r₂ r a b d, m₂, rr₂, rm₂, o₂⟩
       rw [f₂, v24, v25, v26, m₁, mT0, mT 1 (by omega), mT 2 (by omega),
         hI.low _ (by omega), hI.low _ (by omega), hI.low _ (by omega)]
@@ -319,31 +318,31 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
     · rw [ite_eq_left hk] at v2 ⊢
       obtain ⟨c₃, k₃, e₃, hk₃, a₃, mo, n0, n1, n2, n19, R₃, rr₃, rm₃, o₃⟩ := dsCopy_exec (P := P)
         c₂ e₂.wb_right hAc (by rw [g2 _ (by norm_num), r05]) (by omega) h19 (by omega)
-      refine ⟨c₃, _, .ifLtN_true (by rw [q28, v2]; omega) e₃, by omega, ?_, fun a ha => ?_, ?_,
-        by rw [n19, List.length_append]; simp, R₃, rr₃, rm₃, o₃⟩
-      · rw [a₃, List.length_append]; simp; ring
+      refine ⟨c₃, _, .ifLtN_true (by rwo [q28, v2]) e₃, by omega, ?_, fun a ha => ?_, ?_,
+        by rws [n19, List.length_append], R₃, rr₃, rm₃, o₃⟩
+      · rws [a₃, List.length_append]; ring
       · rw [mo a (Or.inl ha), m₂, m₁]
       · refine chordListAt_append (fun i hi => ?_) ?_ ?_ ?_
         · obtain ⟨b0, b1, b2⟩ := hlist i hi
           refine ⟨?_, ?_, ?_⟩
-          · rw [mo _ (Or.inl (by omega)), m₂, m₁]; exact b0
-          · rw [mo _ (Or.inl (by omega)), m₂, m₁]; exact b1
-          · rw [mo _ (Or.inl (by omega)), m₂, m₁]; exact b2
-        · rw [n0, r₂ _ (by decide) (by decide) (by decide), v24, stl_getD ht, mT0, hx]; rfl
+          · rwx [mo _ (Or.inl (by omega)), m₂, m₁]
+          · rwx [mo _ (Or.inl (by omega)), m₂, m₁]
+          · rwx [mo _ (Or.inl (by omega)), m₂, m₁]
+        · rwr [n0, r₂ _ (by decide) (by decide) (by decide), v24, stl_getD ht, mT0, hx]
         · rw [n1, r₂ _ (by decide) (by decide) (by decide), v25, stl_getD ht, mT 1 (by omega),
             hx]; rfl
         · rw [n2, r₂ _ (by decide) (by decide) (by decide), v26, stl_getD ht, mT 2 (by omega),
             hx]; rfl
     · rw [ite_eq_right hk] at v2 ⊢
       rw [List.append_nil]
-      refine ⟨c₂, _, .ifLtN_false (by rw [q28, v2]; omega) (.skip e₂.wb_right), by omega, hAc,
+      refine ⟨c₂, _, .ifLtN_false (by rwo [q28, v2]) (.skip e₂.wb_right), by omega, hAc,
         fun a _ => by rw [m₂, m₁], ?_, h19, fun _ _ _ => rfl, rfl, rfl, rfl⟩
-      rw [m₂, m₁]; exact hlist
+      rwx [m₂, m₁]
   -- advance
   have g3 : ∀ r, (r < 70219 ∨ 70229 < r) → r ≠ ALLOC → c₃.nreg r = c.nreg r := fun r hr ha => by
     rw [q₃ r ha (by omega), g2 r (by omega)]
   have q22 : c₃.nreg 70222 = x := by
-    rw [q₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide)]; exact v22
+    rwx [q₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide)]
   have q21 : c₃.nreg 70221 = B + j := by
     rw [q₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide),
       r₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), hI.cur, hj]
@@ -366,14 +365,13 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
     all_goals ring
   have ex : Exec P W dsBody c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   refine ⟨c₄, _, ex, ⟨e₄.wb_right, by omega, by rw [u21, u20], fun _ => by rw [u23, u20, Nat.add_sub_cancel, hx],
-    by rw [u20, ← a₃, r₄ _ (by decide) (by decide) (by decide)], by rw [u20, m₄]; exact l₃,
+    by rw [u20, ← a₃, r₄ _ (by decide) (by decide) (by decide)], by rwx [u20, m₄],
     by rw [u20, ← n₃, r₄ _ (by decide) (by decide) (by decide)],
     fun a ha => by rw [m₄, m₃ a (by omega), hI.low a ha],
     fun r hr ha => by rw [r₄ r (by omega) (by omega) (by omega), g3 r hr ha, hreg r hr ha],
     by rw [rr₄, rr₃, rr₂, rr₁, hI.rr], by rw [rm₄, rm₃, rm₂, rm₁, hI.rm],
     by rw [o₄, o₃, o₂, o₁, hI.out]⟩, by omega, by omega, by rw [u20, hj]⟩
 
-set_option maxHeartbeats 2000000 in
 /-- **The scan.** -/
 theorem dsLoop_exec {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ : Config}
     (h05 : c₀.nreg 70105 = 1) (h08 : c₀.nreg 70108 = 0) (h16 : c₀.nreg 70216 = T)
@@ -385,14 +383,14 @@ theorem dsLoop_exec {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
         c'.nreg 70220 = K
   | 0, c, hI, hn => by
     have h30' : c.nreg 70230 = K := by rw [hI.regs 70230 (by norm_num) (by decide), h30]
-    exact ⟨c, 2, .whileLtN_false (by rw [h30']; omega) hI.wb, by omega, by omega, hI, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by rwo [h30']) hI.wb, by omega, by omega, hI, by omega⟩
   | n + 1, c, hI, hn => by
     have h30' : c.nreg 70230 = K := by rw [hI.regs 70230 (by norm_num) (by decide), h30]
     have ht : c.nreg 70220 < K := by omega
     obtain ⟨c', k, e, hI', hk, hk3, hc'⟩ := dsBody_step (P := P) hI ht h05 h08 h16 hitems hTB hBL hW
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := dsLoop_exec h05 h08 h16 h30 hitems hTB hBL hW n c' hI'
       (by omega)
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h30']; exact ht) e e₂, by omega, by omega, hI'', hK⟩
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rwx [h30']) e e₂, by omega, by omega, hI'', hK⟩
 
 end
 

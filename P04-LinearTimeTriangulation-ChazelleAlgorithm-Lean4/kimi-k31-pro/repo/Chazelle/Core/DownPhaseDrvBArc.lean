@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseDrvBFam
 public import Chazelle.Core.DownPhaseDrvDScan
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase base (D9): the ends of a new chord on the arcs of its region
@@ -49,8 +51,8 @@ theorem ends_on_arcs (B : BaseCtx Q L E reg li) {r : ℕ}
   obtain ⟨hcQ, hcS, hcR, hatt, -⟩ := regList_sound B.hQ B.hdh B.hli B.fam hR hl hx
   have hFam := B.fam
   have hM := walkAx_interiorModel B.hQ
-  have hnc : N.nChords = L.length := DownMath.nChords_build B.hQ B.hL B.hperm B.hsort
-  have hNF : IsNF (interiorModel Q) Q N := DownMath.isNF_build B.hQ B.hL B.hperm B.hsort
+  have hnc  := DownMath.nChords_build B.hQ B.hL B.hperm B.hsort
+  have hNF  := DownMath.isNF_build B.hQ B.hL B.hperm B.hsort
   have hne : (N.F (interiorModel Q) Q).Nonempty :=
     ⟨_, (DownMath.chordPos_attach hNF (show 0 < N.nChords by rw [hnc]; exact B.hK)
       (Or.inl rfl)).1⟩
@@ -63,7 +65,7 @@ theorem ends_on_arcs (B : BaseCtx Q L E reg li) {r : ℕ}
     (B.hregs.1.1 r hr) (chords_family B.hQ hcQ) hcS hcR hA
   obtain ⟨j, hj, hjr, hs, he⟩ := B.hregs.2.2.1.2.2.1 r hr a b harc
   refine ⟨j, (B.hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩, hj, ?_⟩
-  rw [hs, he]; exact hcl
+  rwx [hs, he]
 
 /-- **The arc scan of an end of an emitted record finds a match.** -/
 theorem scan_hex (B : BaseCtx Q L E reg li) {r : ℕ}
@@ -137,10 +139,10 @@ theorem last_arc_edges (B : BaseCtx Q L E reg li) :
     unfold DrvD.kE at k1 k2
     refine edge_of_key q0 q1 ?_ ?_
     · have : (w : ℝ) ≤ I.key Q (wposOf L (E.getD 0 0)) := by
-        unfold Model.key; rw [← hedge]; linarith
+        unfold Model.key; rwli [← hedge]
       linarith
     · have : I.key Q (wposOf L (E.getD (E.length - 1) 0)) < w + 1 := by
-        unfold Model.key; rw [← hw]; linarith
+        unfold Model.key; rwli [← hw]
       linarith
   -- the two ends of chord `0`
   have h0 : (0 : ℕ) ∈ E := B.hperm.mem_iff.2 (List.mem_range.2 (by have := B.hK; omega))
@@ -162,9 +164,9 @@ theorem last_arc_edges (B : BaseCtx Q L E reg li) :
     show I.pos Q ⟨_, _⟩ = I.pos Q ⟨_, _⟩
     unfold CRec.lpos at w0
     unfold CRec.rpos at w1
-    simp only [show (1 : ℕ) / 2 = 0 from rfl] at w0 w1 ⊢
+    simp [show (1 : ℕ) / 2 = 0 from rfl] at w0 w1 ⊢
     rw [w0, w1]
-  simp only [show (1 : ℕ) / 2 = 0 from rfl] at hpos
+  simp [show (1 : ℕ) / 2 = 0 from rfl] at hpos
   rw [hpos] at hlt
   exact lt_irrefl _ hlt
 

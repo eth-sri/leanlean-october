@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvRBSort
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase driver (RAM side): sorting every bucket
@@ -39,7 +45,7 @@ theorem seg_flat (bk m : ℕ → ℕ) (n R : ℕ) :
   intro b
   induction b with
   | zero => rfl
-  | succ b ih => rw [bstart_succ, seg_add, ih, List.range_succ, List.flatMap_append]; simp
+  | succ b ih => rws [bstart_succ, seg_add, ih, List.range_succ, List.flatMap_append]
 
 /-- The bucket segments of `bktList`. -/
 theorem seg_bkt {m : ℕ → ℕ} {bk : ℕ → ℕ} {n A base R : ℕ} (hA : ∀ q, q < n → bk q ≤ A)
@@ -64,7 +70,7 @@ theorem seg_bkt {m : ℕ → ℕ} {bk : ℕ → ℕ} {n A base R : ℕ} (hA : �
     have := bktPre_length (bk := bk) n b base
     unfold bktPre at this; rw [this]
   have hlen2 : (seg m (R + bstart bk n b) (bcnt bk n b)).length =
-      ((bfilt bk n b).map (base + ·)).length := by rw [seg_length, List.length_map]; rfl
+      ((bfilt bk n b).map (base + ·)).length := by rwr [seg_length, List.length_map]
   rw [List.append_assoc, List.append_assoc] at hl
   have h1 := List.append_inj hl hlen
   exact (List.append_inj h1.2 hlen2.symm).1.symm
@@ -131,7 +137,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T : ℕ} {M : Model}
     {L : List (ℕ × ℕ × ℕ)} (E : BsEnv P W m₁ bk n A base Cb Sb Rb D T M L) {j : ℕ} (hj : j < A + 1)
     {d : Config} (I : BsI P W c₀ m₁ bk n A base Cb Sb Rb D T M L j d)
@@ -140,8 +145,8 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
       k ≤ bsCost bk n j ∧ d'.nreg ALLOC ≤ d.nreg ALLOC + bsCost bk n j := by
   have hst := E.st j (by omega)
   have hcn := E.cnt j (by omega)
-  have hSb : Sb + j < Rb := by rw [E.hR]; omega
-  have hCb : Cb + j < Rb := by rw [E.hR, E.hS]; omega
+  have hSb : Sb + j < Rb := by rwo [E.hR]
+  have hCb : Cb + j < Rb := by rwo [E.hR, E.hS]
   have hl1 := I.low _ hSb
   have hl2 := I.low _ hCb
   have hbn := bstart_le (bk := bk) E.bkA (show j + 1 ≤ A + 1 by omega)
@@ -166,15 +171,15 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
       refine ⟨rfl, ?_, ?_, ?_, rfl⟩ <;> config_simp <;>
         simp only [I.r37, I.r50, I.r36, I.r48, hl1, hl2, hst, hcn]; omega
     exact ⟨d₁, k₁, e₁, hk₁, v55, v54, v50, hm₁, exec_frameM e₁ wrM_bs1⟩
-  have g₁ : ∀ r, Bbl r = false → d₁.nreg r = d.nreg r := hf₁.1
+  have g₁  := hf₁.1
   have w₁ := e₁.wb_right
   have hlow₁ : ∀ a, a < Rb → d₁.nmem a = m₁ a := fun a ha => by rw [hm₁]; exact I.low a ha
   obtain ⟨hM₁, hwf₁⟩ := desc_agree E.wf E.desc (m' := d₁.nmem) fun a ha => hlow₁ a (by
-    rw [E.hR, E.hS]; omega)
+    rwo [E.hR, E.hS])
   have hrec₁ : RecsAt d₁.nmem T L := fun c hc => by
     obtain ⟨a1, a2, a3, a4⟩ := E.recs c hc
     have hT := E.hT
-    refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [hlow₁ _ (by rw [E.hR, E.hS]; omega)] <;> assumption
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [hlow₁ _ (by rwo [E.hR, E.hS])] <;> assumption
   have hA₁ : d₁.nreg ALLOC = d.nreg ALLOC := g₁ _ (by decide)
   have hseg₁ : seg d₁.nmem (Rb + bstart bk n j) (bcnt bk n j) = (bfilt bk n j).map (base + ·) := by
     rw [hm₁]; exact I.todo j le_rfl (by omega)
@@ -184,41 +189,41 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
       (len := bcnt bk n j) (D := D) (T := T) (M := M) (L := L) v55 v54
       (by rw [g₁ _ (by decide)]; exact I.r34) (by rw [g₁ _ (by decide)]; exact I.r40)
       (by rw [g₁ _ (by decide)]; exact I.r42) (by rw [g₁ _ (by decide)]; exact I.r42')
-      (hwf₁.mono (by have := I.alloc; rw [hA₁, E.hR, E.hS] at *; omega)) hM₁ E.ok hrec₁
+      (hwf₁.mono (by have := I.alloc; rwo [hA₁, E.hR, E.hS] at *)) hM₁ E.ok hrec₁
       (by have := I.alloc; rw [hA₁]; rw [E.hR, E.hS] at this; have := E.hT; omega)
       (by rw [hA₁]; have := I.alloc; omega)
       (by rw [hseg₁]; intro x hx; rw [List.mem_map] at hx
           obtain ⟨q, hq, rfl⟩ := hx; rw [mem_bfilt] at hq; have := E.codes; omega)
-      (by rw [hA₁]; unfold bsCost at hroom; omega)
+      (by ruo [hA₁] bsCost at hroom)
   -- the next bucket
   have b21 : ∀ r, 210000 ≤ r → r < 220000 → bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) :=
-    fun r h1 h2 => by simp [bandOf, bSort, bSign, bBuild]; omega
+    fun r h1 h2 => by sio [bandOf, bSort, bSign, bBuild]
   have v50₂ : d₂.nreg 210050 = j := by
     rw [g₂ _ (b21 _ (by norm_num) (by norm_num)) (by decide) (by decide), v50]
   have v34₂ : d₂.nreg 210034 = 1 := by
     rw [g₂ _ (b21 _ (by norm_num) (by norm_num)) (by decide) (by decide), g₁ _ (by decide), I.r34]
-  have e₃ := Exec.addN (P := P) w₂ 210050 210050 210034 (by rw [v50₂, v34₂]; omega)
+  have e₃ := Exec.addN (P := P) w₂ 210050 210050 210034 (by rwo [v50₂, v34₂])
   set d₃ : Config := { d₂ with nreg := upd d₂.nreg 210050 (d₂.nreg 210050 + d₂.nreg 210034) }
     with hd₃
   have g₃ : ∀ r, r ≠ 210050 → d₃.nreg r = d₂.nreg r := fun r hr => by rw [hd₃]; simp [hr]
   have bcb : ∀ r, Bbl r = false → Bcb r = false := fun r hb => by
     simp only [Bbl, decide_eq_false_iff_not] at hb
-    simp only [Bcb, decide_eq_false_iff_not]; omega
+    sio only [Bcb, decide_eq_false_iff_not]
   -- registers of band `bDownDrv` other than the loop's
   have k21 : ∀ r, 210000 ≤ r → r < 220000 → Bbl r = false → d₃.nreg r = d.nreg r := by
     intro r h1 h2 hb
     rw [g₃ r (by intro h; subst h; simp [Bbl] at hb), g₂ r (b21 r h1 h2) (bcb r hb)
-      (by unfold ALLOC; omega), g₁ r hb]
-  have hst' : bstart bk n j + bcnt bk n j = bstart bk n (j + 1) := hsucc.symm
-  refine ⟨d₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), ?_, by unfold bsCost; omega,
-    by rw [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ (by decide)]; unfold bsCost; omega⟩
+      (by ufo ALLOC), g₁ r hb]
+  have hst'  := hsucc.symm
+  refine ⟨d₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), ?_, by ufo bsCost,
+    by ruo [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ (by decide)] bsCost⟩
   refine ⟨e₃.wb_right, by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r34,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r36,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r37,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r39,
     by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r48, ?_,
-    by rw [g₃ _ (by decide)]; exact v40, by rw [g₃ _ (by decide)]; exact v42,
-    by rw [g₃ _ (by decide)]; exact v42',
+    by rwx [g₃ _ (by decide)], by rwx [g₃ _ (by decide)],
+    by rwx [g₃ _ (by decide)],
     by rw [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ (by decide)]; have := I.alloc; omega,
     fun a ha => ?_, fun b hb => ?_, fun b hb1 hb2 => ?_, fun r hr hb hra => ?_,
     fun r h1 h2 => ?_, fun r hr hb => ?_, fun a ha => ?_, ?_⟩
@@ -235,7 +240,7 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
         rw [bstart_succ] at h1
         have h2 := bstart_le (bk := bk) E.bkA (show j ≤ A + 1 by omega)
         have h3 := I.alloc
-        have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by rw [hA₁]; omega
+        have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by rwo [hA₁]
         rw [hm₂ _ h4 (Or.inl (by omega)), hm₁]
       rw [hcong]; exact I.done b hbj
     · have hbj' : b = j := by omega
@@ -249,13 +254,13 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
       have h2 := bstart_le (bk := bk) E.bkA (show b + 1 ≤ A + 1 by omega)
       rw [bstart_succ] at h2
       have h3 := I.alloc
-      have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by rw [hA₁]; omega
+      have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by rwo [hA₁]
       rw [hm₂ _ h4 (Or.inr (by omega)), hm₁]
     rw [hcong]; exact I.todo b (by omega) hb2
   · have hr50 : r ≠ 210050 := fun h => by subst h; simp [Bbl] at hb
     rw [g₃ r hr50, g₂ r hr (bcb r hb) hra, g₁ r hb]
     exact I.fr r hr hb hra
-  · rw [g₃ r (by omega), v43 r h1 h2, g₁ r (by simp [Bbl]; omega)]; exact I.r43 r h1 h2
+  · rw [g₃ r (by omega), v43 r h1 h2, g₁ r (by sio [Bbl])]; exact I.r43 r h1 h2
   · show d₂.rreg r = _
     rw [rr₂ r hr (bcb r hb), hf₁.2.1 r hb]
     exact I.rr r hr hb
@@ -283,9 +288,9 @@ theorem bsLoop_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
         Finset.sum_le_sum_of_subset (Finset.range_subset_range.2 (by omega))
       rw [Finset.sum_range_succ] at hsum
       obtain ⟨e', k, ex, h', hk, hA'⟩ := bsBody_exec E (by omega) h (by omega)
-      exact ⟨e', k, ex, ⟨h', by rw [Finset.sum_range_succ]; omega⟩, hk⟩)
+      exact ⟨e', k, ex, ⟨h', by rwo [Finset.sum_range_succ]⟩, hk⟩)
     (j := 0) ⟨I, by simp⟩ (Nat.zero_le _)
-  refine ⟨d', k, ex, hI, by rw [Finset.range_eq_Ico]; exact hk, hA⟩
+  refine ⟨d', k, ex, hI, by rwx [Finset.range_eq_Ico], hA⟩
 
 /-- **The sorted new codes**: with the buckets ordered by the comparator, the array is a sorted
 permutation of the new codes. -/
@@ -341,7 +346,7 @@ theorem bs_result {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T
     obtain ⟨q, hq, rfl⟩ := hx'
     obtain ⟨q', hq', rfl⟩ := hy'
     rw [mem_bfilt] at hq hq'
-    exact hmono q q' hq.1 hq'.1 (by rw [hq.2, hq'.2]; exact hbb)
+    exact hmono q q' hq.1 hq'.1 (by rwx [hq.2, hq'.2])
 
 end exec
 

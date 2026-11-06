@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepAnswer
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), part 4: label consistency (lemma (K))
@@ -176,13 +177,13 @@ theorem psi_dq {L1 δ d : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     · rw [ite_eq_left h1]
       have hδ : (0 : ℝ) ≤ δ := Nat.cast_nonneg _
       have : (d : ℝ) = L1 := by linarith
-      rw [this]; linarith
+      rwli [this]
     · rw [ite_eq_right h1]
       by_cases h2 : (d : ℝ) + δ + t ≤ L1 + δ
       · rw [ite_eq_left h2]
         have : (d : ℝ) = L1 ∧ t = 0 := ⟨by linarith, by linarith⟩
-        rw [this.1, this.2]; ring
-      · rw [ite_eq_right h2]; ring
+        rwring [this.1, this.2]
+      · rwring [ite_eq_right h2]
 
 theorem psi_mono {L1 δ : ℕ} {o o' : ℝ} (h : o ≤ o') : psi L1 δ o ≤ psi L1 δ o' := by
   have hδ : (0 : ℝ) ≤ δ := Nat.cast_nonneg _

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ClusterPhase
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-I, part 13: a dart at every vertex
@@ -51,19 +54,19 @@ theorem firstStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 13000
         c'.nmem (bF + u) < j ∧ c.nmem (bV + c'.nmem (bF + u)) = u)
     N 5 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c2 hj ⟨hw2, hi2, hn2, hf2, hI2⟩ => by
-      have r1 : c2.nreg 130221 = bV := (hf2.1 _ (by unfold FirstRG; omega)).trans hbV
-      have r2 : c2.nreg 130222 = bF := (hf2.1 _ (by unfold FirstRG; omega)).trans hbF
-      have r3 : c2.nreg 130001 = 1 := (hf2.1 _ (by unfold FirstRG; omega)).trans hone
+      have r1 : c2.nreg 130221 = bV := (hf2.1 _ (by ufo FirstRG)).trans hbV
+      have r2 : c2.nreg 130222 = bF := (hf2.1 _ (by ufo FirstRG)).trans hbF
+      have r3 : c2.nreg 130001 = 1 := (hf2.1 _ (by ufo FirstRG)).trans hone
       have rv : c2.nmem (bV + j) = c.nmem (bV + j) := hf2.2.2.2.2 _ (by omega)
       have hvj := hvlt j hj
       unfold firstBody
       exec_block
-      · rw [r1, hi2]; omega
-      · config_simp; rw [r2, r1, hi2, rv]; omega
-      · config_simp; rw [hi2, r3]; omega
+      · rwo [r1, hi2]
+      · config_simp; rwo [r2, r1, hi2, rv]
+      · config_simp; rwo [hi2, r3]
       · refine ⟨le_refl _, ‹_›, by config_simp; rw [hi2, r3], by config_simp; exact hn2, ?_, ?_⟩
         · refine PFr.of_eq hf2 (fun r hr => ?_) (fun a ha => ?_)
-          · simp only [Machine.upd_apply]; unfold FirstRG at hr; split_ifs <;> omega
+          · simp only [Machine.upd_apply]; unfold FirstRG at hr; splao
           · rw [r2, r1, hi2, rv, Machine.upd_other _ _ _ (by omega)]
         · intro u hu hex
           config_simp
@@ -79,7 +82,7 @@ theorem firstStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 13000
             have := hI2 u hu ⟨d, hdj, hdu⟩
             exact ⟨by omega, this.2⟩)
     (j₀ := 0) ⟨e0.wb_right, by simp, by simp [hN], PFr.nreg (PFr.refl c) (fun r hr => by
-      simp only [Machine.upd_apply]; unfold FirstRG at hr; split_ifs <;> omega),
+      simp only [Machine.upd_apply]; unfold FirstRG at hr; splao),
       fun u hu ⟨d, hd, _⟩ => absurd hd (Nat.not_lt_zero d)⟩ (Nat.zero_le _)
   refine ⟨c', 1 + k, .seq e0 e, by omega, hf', fun u hu => hI u hu (hsurj u hu)⟩
 

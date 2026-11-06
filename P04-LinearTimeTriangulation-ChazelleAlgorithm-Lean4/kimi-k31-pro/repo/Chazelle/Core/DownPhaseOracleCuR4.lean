@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleCuR3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (E7-B, RAM part 18): the assembly of the answer of the interior cutter
@@ -14,9 +17,6 @@ the answer register `150010 := O`, and the allocator past the list (`finC`).
   the memory below `O` is unchanged, and the frame is that of the interior oracles.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -82,14 +82,14 @@ theorem AsmSt.step {m₀ : ℕ → ℕ} {n O : ℕ} {sls : List Slot} {sl : Slot
       (sls.flatMap (slotPcs m₀ n)).length + sl.q := by
     rw [e, List.length_append, slotPcs_length]
   have h22 := h.r22
-  refine ⟨r21, by rw [hl, r22, h.r22]; ring, by rw [hl, r23, h.r23], fun a ha => ?_,
+  refine ⟨r21, by rwring [hl, r22, h.r22], by rw [hl, r23, h.r23], fun a ha => ?_,
     fun j hj f hf => ?_⟩
   · rw [hlo a (by omega)]; exact h.lo a ha
   · have hj' := hj
     rw [hl] at hj'
     have hget : ((sls ++ [sl]).flatMap (slotPcs m₀ n))[j]'hj =
-        (sls.flatMap (slotPcs m₀ n) ++ slotPcs m₀ n sl)[j]'(by rw [← e]; exact hj) := by
-      simp only [e]
+        (sls.flatMap (slotPcs m₀ n) ++ slotPcs m₀ n sl)[j]'(by rwx [← e]) := by
+      simp [e]
     rw [hget]
     by_cases hjl : j < (sls.flatMap (slotPcs m₀ n)).length
     · rw [List.getElem_append_left hjl, hlo _ (by omega)]
@@ -99,20 +99,20 @@ theorem AsmSt.step {m₀ : ℕ → ℕ} {n O : ℕ} {sls : List Slot} {sl : Slot
       have hi : j - (sls.flatMap (slotPcs m₀ n)).length < sl.q := by omega
       have := hout _ hi f hf
       rw [show c.nreg 170222 + 7 * (j - (sls.flatMap (slotPcs m₀ n)).length) + f =
-        O + 1 + 7 * j + f by rw [h22]; omega] at this
+        O + 1 + 7 * j + f by rwo [h22]] at this
       rw [this]
       simp [slotPcs]
 
 /-- The slots recorded among the first `k` are among the first `K ≥ k`. -/
 theorem slotsOf_prefix {c : Config} {k : ℕ} : ∀ {K : ℕ}, k ≤ K →
     ∃ l, slotsOf c K = slotsOf c k ++ l
-  | 0, hk => ⟨[], by rw [show k = 0 by omega]; simp⟩
+  | 0, hk => ⟨[], by rws [show k = 0 by omega]⟩
   | K + 1, hk => by
     rcases hk.lt_or_eq with hk | hk
     · obtain ⟨l, hl⟩ := slotsOf_prefix (c := c) (k := k) (K := K) (by omega)
       exact ⟨l ++ (if c.nreg (170200 + 5 * K) = 1 then [slotAt c K] else []),
-        by simp only [slotsOf, hl, List.append_assoc]⟩
-    · exact ⟨[], by rw [hk]; simp⟩
+        by simp [slotsOf, hl, List.append_assoc]⟩
+    · exact ⟨[], by rws [hk]⟩
 
 theorem flat_le {c : Config} {m : ℕ → ℕ} {n k K : ℕ} (hk : k ≤ K) :
     ((slotsOf c k).flatMap (slotPcs m n)).length ≤ ((slotsOf c K).flatMap (slotPcs m n)).length := by
@@ -124,7 +124,7 @@ theorem mem_slotsOf_of {c : Config} {k : ℕ} (hf : c.nreg (170200 + 5 * k) = 1)
     ∀ {K : ℕ}, k < K → slotAt c k ∈ slotsOf c K
   | 0, hk => absurd hk (by omega)
   | K + 1, hk => by
-    simp only [slotsOf, List.mem_append]
+    simp [slotsOf, List.mem_append]
     rcases (show k < K ∨ k = K by omega) with h | rfl
     · exact Or.inl (mem_slotsOf_of hf h)
     · right; simp [hf]
@@ -164,7 +164,7 @@ theorem asmK_exec (k : ℕ) (hk : k < 4) (c : Config) (hw : WordsBounded W c) {c
   have h0 : c.nreg (170200 + 5 * k) = c₀.nreg (170200 + 5 * k) := hsl _ (by omega) (by omega)
   by_cases hf : c₀.nreg (170200 + 5 * k) = 1
   · -- the slot is recorded: copy it
-    have hlt : ¬ c.nreg (170200 + 5 * k) < c.nreg 170011 := by rw [h0, hf, h11]; omega
+    have hlt : ¬ c.nreg (170200 + 5 * k) < c.nreg 170011 := by rwo [h0, hf, h11]
     obtain ⟨Va, Vb, hs⟩ := hok hf
     obtain ⟨hu, hLE, hq, hq1, hed⟩ := slotOK_edges hs
     set sl := slotAt c₀ k with hsld
@@ -186,47 +186,47 @@ theorem asmK_exec (k : ℕ) (hk : k < 4) (c : Config) (hw : WordsBounded W c) {c
         c₁.nmem = c.nmem := by
       unfold asmSet
       exec_block
-      · config_simp; rw [f1, h11]; omega
+      · config_simp; rwo [f1, h11]
       · omega
       refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl⟩
       · config_simp; exact f1
-      · config_simp; simp only [upd]; split_ifs <;> first | omega | exact f2
-      · config_simp; simp only [upd]; split_ifs <;> first | omega | exact f3
-      · config_simp; simp only [upd]; split_ifs <;> first | omega | exact f4
+      · config_simp; simp [upd]; split_ifs <;> first | omega | exact f2
+      · config_simp; simp [upd]; split_ifs <;> first | omega | exact f3
+      · config_simp; simp [upd]; split_ifs <;> first | omega | exact f4
       · config_simp; rw [f1, h11]
       · config_simp
-      · config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
+      · config_simp; simp [upd]; split_ifs <;> first | rfl | omega
     have F₁ := BuildRam.exec_frameM e₁ (wrM_asmSet k)
     have w₁ := e₁.wb_right
     -- the copy
     obtain ⟨c₂, k₂, e₂, hk₂, hk₂', d22, d23, dlo, dout, F₂⟩ := cpLoop_exec (P := P) c₁ w₁
       (n := n) (L := sl.L) (q := sl.q) (g₀ := sl.g₀) (u₀ := sl.u₀) (O := O)
       ((ar _ (by omega)).trans h10) ((ar _ (by omega)).trans h11) a31 a32 a33 a34 a35 hLE
-      (by rw [ar _ (by omega), h22]; omega) (by rw [ar _ (by omega), h22]; omega)
-      (by rw [ar _ (by omega), h23]; omega) (by rw [hn]; exact hu) hnW
+      (by rwo [ar _ (by omega), h22]) (by rwo [ar _ (by omega), h22])
+      (by rwo [ar _ (by omega), h23]) (by rwx [hn]) hnW
       (fun i hi => by
         obtain ⟨b1, b2⟩ := hed i hi
         rw [am, hA.lo _ (by omega), hA.lo _ (by omega), hn]
         exact ⟨b1, b2⟩)
     have F₂' : BuildRam.FrameM Basm c₁ c₂ := frameM_mono F₂ (fun r hr => by
-      simp only [Bcp, Basm, decide_eq_true_eq] at hr ⊢; omega)
+      sio only [Bcp, Basm, decide_eq_true_eq] at hr ⊢)
     have q21 : c₂.nreg 170221 = O := by rw [F₂.1 _ (by decide), ar _ (by omega)]; exact hA.r21
     have q22 : c₁.nreg 170222 = c.nreg 170222 := ar _ (by omega)
     have q23 : c₁.nreg 170223 = c.nreg 170223 := ar _ (by omega)
-    have hA' : AsmSt c₀.nmem n O (slotsOf c₀ k ++ [sl]) c₂ := hA.step q21
+    have hA'  := hA.step q21
       (by rw [d22, q22]) (by rw [d23, q23])
-      (fun a ha => by rw [dlo a (by rw [q22]; exact ha), am])
+      (fun a ha => by rw [dlo a (by rwx [q22]), am])
       (fun j hj f hf => by
         rw [← q22, dout j hj f hf, rdPc_congr (m := c₀.nmem) (m' := c₁.nmem) (E := O + 1)
           (fun a ha => by rw [am]; exact hA.lo a ha) (by omega)])
-    refine ⟨c₂, _, .ifLtN_false hlt (.seq e₁ e₂), by rw [hlen]; omega, by rw [hlen]; omega,
-      by rw [e]; exact hA', (frameM_mono F₁ (fun r hr => hr)).trans F₂'⟩
+    refine ⟨c₂, _, .ifLtN_false hlt (.seq e₁ e₂), by rwo [hlen], by rwo [hlen],
+      by rwx [e], (frameM_mono F₁ (fun _ => id)).trans F₂'⟩
   · -- the slot is free
     have hf0 : c₀.nreg (170200 + 5 * k) = 0 := by omega
-    have hlt : c.nreg (170200 + 5 * k) < c.nreg 170011 := by rw [h0, hf0, h11]; omega
+    have hlt : c.nreg (170200 + 5 * k) < c.nreg 170011 := by rwo [h0, hf0, h11]
     have e : slotsOf c₀ (k + 1) = slotsOf c₀ k := by rw [hsucc, ite_eq_right hf, List.append_nil]
-    refine ⟨c, _, .ifLtN_true hlt (.skip hw), by rw [e]; omega, by rw [e]; omega,
-      by rw [e]; exact hA, BuildRam.FrameM.refl _ _⟩
+    refine ⟨c, _, .ifLtN_true hlt (.skip hw), by rwo [e], by rwo [e],
+      by rwx [e], BuildRam.FrameM.refl _ _⟩
 
 end exec
 

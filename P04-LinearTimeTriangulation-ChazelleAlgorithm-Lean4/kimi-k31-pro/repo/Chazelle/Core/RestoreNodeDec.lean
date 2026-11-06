@@ -6,6 +6,10 @@ public import Chazelle.Core.RestoreNodeArr
 public import Chazelle.Core.RestoreNodeChild
 public import Chazelle.Core.RestoreDescGeo
 public import Chazelle.Core.GranNF
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, the search: the decision at a node of the descent
@@ -42,17 +46,17 @@ theorem walk_vtx_box (C : Chain) (β : Bool) {e : ℕ} (he : e < (C.sideWalk β)
     replace hb : True ∧ |((C.sideWalk β).vtx e).2| < C.radius := ⟨trivial, hb⟩
     interval_cases e
     · rw [C.sideWalk_vtx_zero] at hb
-      have := hb.2; simp only [Chain.slitTop] at this; rw [abs_of_pos hr] at this; linarith
+      have := hb.2; simp only [Chain.slitTop] at this; rwli [abs_of_pos hr] at this
     · rw [C.sideWalk_vtx_one] at hb
-      have := hb.2; rw [abs_of_pos hr] at this; linarith
+      have := hb.2; rwli [abs_of_pos hr] at this
     · rw [C.sideWalk_vtx_two] at hb
-      have := hb.2; rw [abs_neg, abs_of_pos hr] at this; linarith
+      have := hb.2; rwli [abs_neg, abs_of_pos hr] at this
     · rw [C.sideWalk_vtx_three] at hb
-      have := hb.2; rw [abs_neg, abs_of_pos hr] at this; linarith
+      have := hb.2; rwli [abs_neg, abs_of_pos hr] at this
     · rw [C.sideWalk_vtx_four] at hb
-      have := hb.2; rw [abs_of_pos hr] at this; linarith
+      have := hb.2; rwli [abs_of_pos hr] at this
     · rw [C.sideWalk_vtx_five] at hb
-      have := hb.2; simp only [Chain.slitTop] at this; rw [abs_of_pos hr] at this; linarith
+      have := hb.2; simp only [Chain.slitTop] at this; rwli [abs_of_pos hr] at this
 
 variable {E : FEnv} {c₀ : Config} {Cα : Chain} {g g' L : ℕ}
 
@@ -93,7 +97,7 @@ theorem end_param (hS : Stretch E.M Cα g g' L) {d h : ℕ} (hd : d < L)
       rw [key_pz] at hk; push Not at hk; exact le_antisymm hk ht0
     have e : (chainModel Cα).param (Qof E.P) ⟨g' + d, 0⟩ =
         (chainModel Cα).param (Qof E.P) ⟨g' + d, h + 1⟩ := by
-      rw [← ht, h0]; rfl
+      rwr [← ht, h0]
     exact ⟨by rw [e], pos_of_param e⟩
 
 /-- The code of an end is `0` iff its parameter is `0`. -/
@@ -197,7 +201,7 @@ theorem end_info (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) (hGα : GoodM
         c'.nreg s = 1 ∧ eMof E cs p = (g + d) % E.M.W.n := by
     intro a b
     obtain ⟨i1, i2, i3⟩ := (inE_iff hS hpn ht0 ht1).2 ⟨a, b⟩
-    refine ⟨pE - g', by omega, by omega, fun h0 => by rw [h0] at i3; simp at i3; omega, ?_,
+    refine ⟨pE - g', by omega, by omega, fun h0 => by rw [h0] at i3; sio at i3, ?_,
       hin.2 ⟨a, b⟩, by unfold eMof; rw [h30, h31, hp]⟩
     have e := endα_off hS (d := pE - g') (by omega) ht0 ht1
     rw [show g' + (pE - g') = pE by omega] at e
@@ -210,12 +214,12 @@ theorem end_info (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) (hGα : GoodM
     intro hx
     have hX0 : (0 : ℝ) < dX := by exact_mod_cast hD.hX0
     have hXL : (dX : ℝ) < L := by exact_mod_cast hD.hXL
-    obtain ⟨d, rfl, hd, -, ho, hs1, heM⟩ := hst (by rw [hx]; exact hX0) (by rw [hx]; exact hXL)
+    obtain ⟨d, rfl, hd, -, ho, hs1, heM⟩ := hst (by rwx [hx]) (by rwx [hx])
     rw [ho] at hx
     obtain ⟨rfl, h0⟩ := nat_add_frac (a := d) (b := dX) ht0 ht1 le_rfl one_pos (by rw [hx, add_zero])
     obtain ⟨σb, hσb, hg⟩ := hD.hgX
     exact hf1 (R3 hs1 (by rw [heM]; exact hD.hcnt d hd) reg hD.hregs hD.hch (hcode d rfl h0) σb hσb
-      (by rw [heM]; exact hg))
+      (by rwx [heM]))
   refine ⟨hin, hne, fun a b => ?_⟩
   obtain ⟨d, rfl, hd, htd, ho, hs1, heM⟩ := hst a b
   have hdn : d < E.M.W.n := by have := hS.hLn; omega
@@ -249,8 +253,8 @@ theorem end_info (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) (hGα : GoodM
   rw [← hza] at hceq hoO hkopen
   have haC : sidePt E.M.W ((g + d) % E.M.W.n) tE ∈ Cα.set := hS.memM hd ht0 ht1
   have hAM : SideAttach E.M.W c ((g + d) % E.M.W.n) tE :=
-    (hS.hA.sideAttach_iff hn (by rw [Stretch.nα]; omega) hd htd c).2
-      (by rw [hS.mod' hd.le]; exact hAE)
+    (hS.hA.sideAttach_iff hn (by rwo [Stretch.nα]) hd htd c).2
+      (by rwx [hS.mod' hd.le])
   have hsec := attach_ray_left hAM hσ' hL₀ hceq
   obtain ⟨T', hT', hdom', hout', hadm', hnS', hsub'⟩ := inner_exit hE.hGM hE.hNF.1
     (hD.hregs.1.1 _ hE.hr) hD.hAi (Nat.mod_lt _ hn) ht0 ht1 (hD.hAin d hd tE ht0 ht1 hdt) hσ' hsec
@@ -267,7 +271,7 @@ theorem end_info (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) (hGα : GoodM
   have hbad : ¬ CountOK E.M (E.N.F E.M (Qof E.P)) (reg E.r)
       ((((g + d) % E.M.W.n : ℕ) : ℝ) + tE)
       ((ct'.nreg 83012 : ℝ) + E.M.param (Qof E.P) ⟨ct'.nreg 83012, ct'.nreg 83013⟩) :=
-    fun hc => hf1 (efl (hiff.2 (by rw [hkx]; exact hc)))
+    fun hc => hf1 (efl (hiff.2 (by rwx [hkx])))
   obtain ⟨α0, αarr⟩ := arrival_off hS (walkAx_of_goodModel hGα) hcA hAO haC hσ' hL₀ hceq hoO hkopen
     hD.hsetD hT'' hdomM hposf hA2
   obtain ⟨Rp1, Rp2, Rp7⟩ := Rp hs1
@@ -294,7 +298,7 @@ theorem end_info (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) (hGα : GoodM
       rw [← he, off_key hS.hg hXn le_rfl one_pos, add_zero]
     have hX0 : (0 : ℝ) < dX := by exact_mod_cast hD.hX0
     have hXL : (dX : ℝ) < L := by exact_mod_cast hD.hXL
-    exact hOX ((αarr (by rw [hα]; exact hX0) (by rw [hα]; exact hXL)).symm.trans hα)
+    exact hOX ((αarr (by rwx [hα]) (by rwx [hα])).symm.trans hα)
   obtain ⟨-, -, hside, hrot⟩ := end_gend hS (walkAx_of_goodModel hGα) hM hE.hNF.1.2.1 hE.hNF.1.1
     (family_ne hE.hNF hE.hr hD.hch) hD.hAi hD.hAj hD.hij hcA hAO hd ht0 ht1 hdt hσ' hL₀ hceq hoO
     hkopen hD.hsetD hT'' hdomM hposf hadm'' hA1 hA2 (hD.hAin d hd tE ht0 ht1 hdt) hbad hex'
@@ -331,8 +335,8 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
   obtain ⟨hpA, hpB⟩ := chord_posOK hsimp hP.hNα hk
   have hat := hP.hNα.2.2.1 k hk
   -- flags
-  have f4 : c₄.nreg 81007 = 0 := by rw [← fl']; exact hf
-  have f3 : c₃.nreg 81007 = 0 := by rw [← fl₄]; exact f4
+  have f4 : c₄.nreg 81007 = 0 := by rwx [← fl']
+  have f3 : c₃.nreg 81007 = 0 := by rwx [← fl₄]
   have f2 : c₂.nreg 81007 = 0 := by
     have := hw₂.1
     by_contra h
@@ -340,12 +344,12 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
   have f1 : c₁.nreg 81007 = 0 := by
     have := hw.1
     by_contra h
-    have := m₂ (by rw [fl₁] at h ⊢; omega); omega
+    have := m₂ (by rwo [fl₁] at h ⊢); omega
   -- registers
   have g2 : ∀ q, 81100 ≤ q → q ≤ 81159 → c₂.nreg q = c₁.nreg q :=
-    fun q a b => f₂ q (by omega) (by omega) (by unfold EndW KeyW VertW; omega)
+    fun q a b => f₂ q (by omega) (by omega) (by ufo EndW KeyW VertW)
   have g3 : ∀ q, 81100 ≤ q → q ≤ 81169 → c₃.nreg q = c₂.nreg q :=
-    fun q a b => f₃ q (by omega) (by omega) (by unfold EndW KeyW VertW; omega)
+    fun q a b => f₃ q (by omega) (by omega) (by ufo EndW KeyW VertW)
   have a30 : c₁.nreg 81130 = g := by rw [F1 _ (by norm_num) (by norm_num), r30]
   have a31 : c₁.nreg 81131 = g' := by rw [F1 _ (by norm_num) (by norm_num), r31]
   have a32 : c₁.nreg 81132 = L := by rw [F1 _ (by norm_num) (by norm_num), r32]
@@ -389,21 +393,21 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
   have hrB : rayPt B (dirOf 0) (B.1 - A.1) = A := by
     have := eq_rayPt (w := B) (x := A) (σ := -1) (Or.inr rfl) hy
     rw [show -1 * (A.1 - B.1) = B.1 - A.1 by ring] at this; rw [dirOf0]; exact this.symm
-  have hJ1 : aj = E.M.key (Qof E.P) ⟨c₁.nreg 81140, c₁.nreg 81141⟩ := by rw [a40, a41]; exact hJ
-  have hJ2 : aj = E.M.key (Qof E.P) ⟨c₂.nreg 81140, c₂.nreg 81141⟩ := by rw [b40, b41]; exact hJ
+  have hJ1 : aj = E.M.key (Qof E.P) ⟨c₁.nreg 81140, c₁.nreg 81141⟩ := by rwx [a40, a41]
+  have hJ2 : aj = E.M.key (Qof E.P) ⟨c₂.nreg 81140, c₂.nreg 81141⟩ := by rwx [b40, b41]
   have EA := end_info hE hS hGα hD (s := 81160) (p := 81153) (σ := 1) R₂ a30 a31 a35 u53 u55 hpA
     rfl hcA hat.1 hat.2 hL₀
-    (by show _ = Chazelle.segment A (rayPt A (dirOf 1) (B.1 - A.1)); rw [hrA]; exact hseg) hrA
+    (by show _ = Chazelle.segment A (rayPt A (dirOf 1) (B.1 - A.1)); rwx [hrA]) hrA
     (by show ∀ s ∈ Ioo (0 : ℝ) 1, lerp A (rayPt A (dirOf 1) (B.1 - A.1)) s ∈ Cα.dom
-        rw [hrA]; exact hopen) hJ1
-    (by rw [a40, a41]; exact hJr) f1 (by rw [f2]; norm_num)
+        rwx [hrA]) hJ1
+    (by rwx [a40, a41]) f1 (by rwn [f2])
   have EB := end_info hE hS hGα hD (s := 81170) (p := 81154) (σ := 0) R₃ b30 b31 b35 b54 b55 hpB
     rfl hcA hat.2 hat.1 hL₀
     (by show _ = Chazelle.segment B (rayPt B (dirOf 0) (B.1 - A.1))
-        rw [hrB, Chazelle.Geometry.segment_comm]; exact hseg) hrB
+        rwx [hrB, Chazelle.Geometry.segment_comm]) hrB
     (by show ∀ s ∈ Ioo (0 : ℝ) 1, lerp B (rayPt B (dirOf 0) (B.1 - A.1)) s ∈ Cα.dom
-        rw [hrB]; exact WalkAx.open_rev hopen) hJ2 (by rw [b40, b41]; exact hJr) f2
-    (by rw [f3]; norm_num)
+        rw [hrB]; exact WalkAx.open_rev hopen) hJ2 (by rwx [b40, b41]) f2
+    (by rwn [f3])
   simp only [Nat.reduceAdd] at EA EB
   have tA0 : 0 ≤ (chainModel Cα).param (Qof E.P) (Nα.chord k).lpos := hpA.2.1.1
   have tA1 : (chainModel Cα).param (Qof E.P) (Nα.chord k).lpos < 1 := hpA.2.1.2.1
@@ -504,7 +508,7 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
       obtain ⟨a, b⟩ := inA.1 h1
       obtain ⟨-, -, -, bit7, -⟩ := stA a b
       have t0 : tA = 0 := by
-        have := bit7.2; rw [h3] at this; simp at this; linarith
+        have := bit7.2; rw [h3] at this; sil at this
       apply wa
       have e : off (chainModel Cα).W.n g' (((Nα.chord k).lp : ℝ) + tA) = u := by
         rw [← h2, t0, add_zero, offU u hu]
@@ -513,7 +517,7 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
       obtain ⟨a, b⟩ := inB.1 h1
       obtain ⟨-, -, -, bit7, -⟩ := stB a b
       have t0 : tB = 0 := by
-        have := bit7.2; rw [h3] at this; simp at this; linarith
+        have := bit7.2; rw [h3] at this; sil at this
       apply wb
       have e : off (chainModel Cα).W.n g' (((Nα.chord k).rp : ℝ) + tB) = u := by
         rw [← h2, t0, add_zero, offU u hu]
@@ -536,18 +540,18 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
       have b : da < L := h ▸ huL
       obtain ⟨i1, -, i3⟩ := offE _ _ hpAn tA0 tA1 a b
       have h' := h.trans i3
-      obtain ⟨e1, e2⟩ := nat_add_frac le_rfl one_pos tA0 tA1 (by rw [add_zero]; exact h')
+      obtain ⟨e1, e2⟩ := nat_add_frac le_rfl one_pos tA0 tA1 (by rwx [add_zero])
       obtain ⟨-, -, -, bit7, -⟩ := stA a b
       exact nA ⟨inA.2 ⟨a, b⟩, by omega, by
-        have := bit7.1; have h7 := bit7.2; rw [← e2] at h7; simp at h7; omega⟩
+        have := bit7.1; have h7 := bit7.2; rw [← e2] at h7; sio at h7⟩
     · have a : 0 < db := h ▸ hu0
       have b : db < L := h ▸ huL
       obtain ⟨i1, -, i3⟩ := offE _ _ hpBn tB0 tB1 a b
       have h' := h.trans i3
-      obtain ⟨e1, e2⟩ := nat_add_frac le_rfl one_pos tB0 tB1 (by rw [add_zero]; exact h')
+      obtain ⟨e1, e2⟩ := nat_add_frac le_rfl one_pos tB0 tB1 (by rwx [add_zero])
       obtain ⟨-, -, -, bit7, -⟩ := stB a b
       exact nB ⟨inB.2 ⟨a, b⟩, by omega, by
-        have := bit7.1; have h7 := bit7.2; rw [← e2] at h7; simp at h7; omega⟩
+        have := bit7.1; have h7 := bit7.2; rw [← e2] at h7; sio at h7⟩
     · obtain ⟨-, v5, -⟩ := stA a b
       have := gA (inA.2 ⟨a, b⟩) v5
       rw [rotA a b u hu] at this; exact this
@@ -579,7 +583,7 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
     have hkU : (chainModel Cα).key (Qof E.P) ⟨c₄.nreg 81183, 0⟩ =
         (((g' + c₄.nreg 81180 : ℕ)) : ℝ) := by rw [key_vtx, xe, d31]
     have hUn : (((g' + c₄.nreg 81180 : ℕ)) : ℝ) < (chainModel Cα).W.n := by
-      have : g' + c₄.nreg 81180 < (chainModel Cα).W.n := by rw [hnα]; omega
+      have : g' + c₄.nreg 81180 < (chainModel Cα).W.n := by rwo [hnα]
       exact_mod_cast this
     have hiff : sideInArc ((chainModel Cα).key (Qof E.P) (Nα.chord k).lpos)
         ((chainModel Cα).key (Qof E.P) (Nα.chord k).rpos)
@@ -605,7 +609,7 @@ theorem node_dec (hE : FGood E c₀) {Hα : Host} {Nα : NF} {Dα Bα : ℕ}
     · rw [hhi (fun h => hc (hiff.symm.trans h))]; exact below_hi hDec hk hb (CS.2 hc)
   · exfalso
     rcases witness_exists ha0 haa hb0 hbb hda0 hdb0 hWX with h | ⟨a, b, h⟩ | ⟨a, b, h⟩
-    · exact hw1 (xAll (Or.inl (toW 1 (by rw [Nat.cast_one]; exact h))))
+    · exact hw1 (xAll (Or.inl (toW 1 (by rwx [Nat.cast_one]))))
     · obtain ⟨-, -, i3⟩ := offE _ _ hpAn tA0 tA1 a b
       have fl : ⌊da⌋₊ = (Nα.chord k).lp - g' := by
         show ⌊off (chainModel Cα).W.n g' (((Nα.chord k).lp : ℝ) + tA)⌋₊ = _

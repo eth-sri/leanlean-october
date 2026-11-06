@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.FuseAsmHt
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F fusion assembly, part 14: the answer to a point query
@@ -66,7 +67,7 @@ theorem ptAns_some (i : ℕ) {e' h' ρ hv : ℕ} {z : Point}
   simp only [List.mem_singleton] at hq'
   subst hq'
   refine ⟨hq, ?_, hp, rfl⟩
-  unfold HeightOK; simp only; rw [hp, ← hhv]; rfl
+  unfold HeightOK; simp only; rwr [hp, ← hhv]
 
 /-- **No arrival position: the direction is not free.** -/
 theorem ptAns_none (hP : J.P.Simple) (i : ℕ) {ρ : ℕ} {z : Point}

@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.SpecRam
 public import Chazelle.Core.SignKernelRam
 public import Chazelle.Core.NFLocateHost
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Shooting at a list of arcs with holes, part 3: frames with named registers
@@ -72,7 +74,7 @@ theorem FrameR.of_frameB {B : Finset ℕ} {Wr : ℕ → Prop} {Bw : ℕ → Bool
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁⟩ := h
   have hal := r₁ ALLOC hA
   refine ⟨fun r hr _ hw => r₁ r ?_, fun r hr hw => rr₁ r ?_, fun a _ => by rw [m₁],
-    fun a _ => by rw [rm₁], o₁, by rw [hal], by rw [hal]; omega⟩
+    fun a _ => by rw [rm₁], o₁, by rw [hal], by rwo [hal]⟩
   · cases hb : Bw r
     · rfl
     · rcases hB r hb with h | h
@@ -96,19 +98,19 @@ theorem FrameR.of_frame {B : Finset ℕ} {Wr : ℕ → Prop} {c c' : Config} {k 
 theorem hostAt_agree {m m' : ℕ → ℕ} {h E : ℕ} {H : Host} (hH : HostAt m h H)
     (hE : h + 3 * H.length + 4 ≤ E) (he : ∀ a, a < E → m' a = m a) : HostAt m' h H := by
   obtain ⟨h0, h1⟩ := hH
-  refine ⟨by rw [he _ (by omega)]; exact h0, fun i hi => ?_⟩
+  refine ⟨by rwx [he _ (by omega)], fun i hi => ?_⟩
   have := h1 i hi
   revert this
   cases H.getD i (.run 0 0) with
   | run a l =>
-    intro h; simp only at h ⊢
-    rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+    intro h; simp at h ⊢
+    rwx [he _ (by omega), he _ (by omega), he _ (by omega)]
   | pt x =>
     cases x with
-    | vtx j => intro h; simp only at h ⊢; rw [he _ (by omega), he _ (by omega)]; exact h
+    | vtx j => intro h; simp at h ⊢; rwx [he _ (by omega), he _ (by omega)]
     | onEdge e j =>
-      intro h; simp only at h ⊢
-      rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+      intro h; simp at h ⊢
+      rwx [he _ (by omega), he _ (by omega), he _ (by omega)]
 
 /-- **A copied chain descriptor** (host layout below `E`, the five words copied to `d`). -/
 theorem chainDescAt_copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : Host} {C : Chain}
@@ -121,9 +123,9 @@ theorem chainDescAt_copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : 
   have c2 := hc 2 (by omega)
   have c3 := hc 3 (by omega)
   have c4 := hc 4 (by omega)
-  simp only [add_zero] at c0
-  refine ⟨?_, h1, by rw [c1]; exact h2, by rw [c2]; exact h3, by rw [c3]; exact h4,
-    by rw [c4]; exact h5⟩
+  simp [add_zero] at c0
+  refine ⟨?_, h1, by rwx [c1], by rwx [c2], by rwx [c3],
+    by rwx [c4]⟩
   rw [c0]
   exact hostAt_agree h0 hE he
 
@@ -135,13 +137,13 @@ theorem chainWF_copy {P : Polygon} {m m' : ℕ → ℕ} {bw d E E' : ℕ} {H : H
   obtain ⟨hl, hHW, hEb, hs⟩ := hwf.2 H C hC
   refine ⟨hd, fun H' C' hC' => ?_⟩
   have c0 : m' d = m bw := by simpa using hc 0 (by omega)
-  have hH' : HostAt m' (m bw) H := hostAt_agree hC.1 hEb he
+  have hH'  := hostAt_agree hC.1 hEb he
   have hHH : H' = H := NFLoc.hostAt_unique (by rw [← c0]; exact hC'.1) hH'
   subst hHH
-  refine ⟨hl, hHW, by rw [c0]; omega, ?_⟩
+  refine ⟨hl, hHW, by rwo [c0], ?_⟩
   have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, hc 1 (by omega)]
   have e2 : C'.P = C.P := by rw [hC'.2.1, hC.2.1]
-  rw [e1, e2]; exact hs
+  rwx [e1, e2]
 
 
 end

@@ -140,7 +140,7 @@ theorem partner_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨c', hc', hec', he'c'⟩ := tie_parent J hP hS₂ he he' (Ne.symm hne) hA hA' hD
   -- two distinct points of `e`
   obtain ⟨pb, tb, hB, hBne⟩ := hC.hM.other_attach (hC.hF he) hA
-  have hcc : c' = c := parent_unique hS₂ hc' hc hBne (hec' hB.2.2.2.1) (hec' hA.2.2.2.1)
+  have hcc  := parent_unique hS₂ hc' hc hBne (hec' hB.2.2.2.1) (hec' hA.2.2.2.1)
     (hec hB.2.2.2.1) (hec hA.2.2.2.1)
   subst hcc
   exact piece_of_parent J hP hS₂ he' hc' he'c' hA' hD

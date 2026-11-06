@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepIoLab0A
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the label candidates of a side-0 query, the labels in memory
@@ -79,10 +80,10 @@ theorem label_mem {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)} {m
   obtain ⟨n2, hlab⟩ := logRec_labels hls hi
   obtain ⟨l, hl, rfl⟩ := hV
   rcases hl with ⟨h0, rfl⟩ | ⟨h1, rfl⟩ | ⟨h2, rfl⟩ | ⟨h3, rfl⟩
-  · exact ⟨0, by norm_num, by omega, by rw [hlab 0 (by norm_num)]; rfl⟩
-  · exact ⟨1, by norm_num, by omega, by rw [hlab 1 (by norm_num)]; rfl⟩
-  · exact ⟨2, by norm_num, by omega, by rw [hlab 2 (by norm_num)]; rfl⟩
-  · exact ⟨3, le_rfl, by omega, by rw [hlab 3 le_rfl]; rfl⟩
+  · exact ⟨0, by norm_num, by omega, by rwr [hlab 0 (by norm_num)]⟩
+  · exact ⟨1, by norm_num, by omega, by rwr [hlab 1 (by norm_num)]⟩
+  · exact ⟨2, by norm_num, by omega, by rwr [hlab 2 (by norm_num)]⟩
+  · exact ⟨3, le_rfl, by omega, by rwr [hlab 3 le_rfl]⟩
 
 /-- **Every entry register and label place has a slot.** -/
 theorem slotPairs_cover {e k : ℕ} (he : e = eR0 ∨ e = eR1 ∨ e = eR2) (hk : k ≤ 3) :
@@ -107,7 +108,7 @@ theorem slotPairs_facts : ∀ p ∈ slotPairs,
     (p.1 = eR0 ∨ p.1 = eR1 ∨ p.1 = eR2) ∧
       (p.2 = K0 ∨ p.2 = K1 ∨ p.2 = K2 ∨ p.2 = K3) := by
   intro p hp
-  simp only [slotPairs, List.mem_cons, List.not_mem_nil, or_false] at hp
+  simp [slotPairs, List.mem_cons, List.not_mem_nil, or_false] at hp
   rcases hp with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp
 
 end

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.WalkEmbed
+public import Chazelle.SimpTactics
+set_option synthInstance.maxHeartbeats 1000000
+set_option synthInstance.maxSize 100000
 
 /-!
 # Shooting at a list of arcs with holes, part 1: cutting cyclic intervals
@@ -110,7 +113,7 @@ theorem rank_lt_of_lt {L : List ℝ} {v w : ℝ} (hv : v ∈ L) (h : v < w) : ra
     · have := ih hv'
       by_cases h1 : z < v
       · have h2 : z < w := h1.trans h
-        simp only [h1, h2, decide_true, ↓reduceIte, List.length_cons]; omega
+        sio only [h1, h2, decide_true, ↓reduceIte, List.length_cons]
       · by_cases h2 : z < w
         · simp only [h1, h2, decide_true, decide_false, Bool.false_eq_true, ↓reduceIte,
             List.length_cons]; omega
@@ -201,8 +204,6 @@ theorem p2N_all : ∀ A, A < 6 → ∀ B, B < 6 → ∀ X, X < 6 → ∀ Y, Y < 
 
 /-! ## The order facts on reals -/
 
-set_option synthInstance.maxSize 100000 in
-set_option synthInstance.maxHeartbeats 1000000 in
 /-- P1 on reals. -/
 theorem p1R (a b x y k : ℝ) (hxy : x ≠ y) :
     (sideInArc x y a → sideInArc a b y → sideInArc y b x → CIn y x k →
@@ -264,8 +265,6 @@ theorem ranks5 (a b x y k : ℝ) : ∃ L : List ℝ, a ∈ L ∧ b ∈ L ∧ x �
   · have := rank_lt_length [a, b, x, y, k]; simp only [List.length_cons, List.length_nil] at this
     exact Nat.lt_of_le_of_lt (this _) (by norm_num)
 
-set_option synthInstance.maxSize 100000 in
-set_option synthInstance.maxHeartbeats 1000000 in
 /-- P0 on reals. -/
 theorem p0R (a b x y k : ℝ) (hxy : x ≠ y) :
     (sideInArc x y a → sideInArc a b y → sideInArc y b x → sideInArc y x k → sideInArc a b k) ∧
@@ -305,8 +304,6 @@ theorem p0R (a b x y k : ℝ) (hxy : x ≠ y) :
   revert s1 s2 s3 s4 s5 s6 s7 s8 s9
   decide
 
-set_option synthInstance.maxSize 100000 in
-set_option synthInstance.maxHeartbeats 1000000 in
 /-- P2 on reals. -/
 theorem p2R (a b x y k : ℝ) (hxy : x ≠ y) (hk : CIn a b k) (hk' : ¬ CIn x y k) :
     (sideInArc x y a → sideInArc a b y ∧ (sideInArc y b x → CIn y x k) ∧

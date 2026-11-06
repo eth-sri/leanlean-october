@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseOracleChain
 public import Chazelle.Core.ShootCutTile
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (E7-B, part 2): point sets and weights along agreeing stretches (O3)
@@ -83,7 +85,7 @@ theorem oset_shift (W : Polygon) (g k : ℕ) {x y : ℝ} (hx : 0 ≤ x) :
   · rintro ⟨d, t, h0, h1, h2, h3, rfl⟩
     by_cases hdk : k ≤ d
     · have e : ((d - k : ℕ) : ℝ) = d - k := Nat.cast_sub hdk
-      refine ⟨d - k, t, h0, h1, by rw [e]; linarith, by rw [e]; linarith, ?_⟩
+      refine ⟨d - k, t, h0, h1, by rwli [e], by rwli [e], ?_⟩
       rw [show g + k + (d - k) = g + d by omega]
     · have hdk' : (d : ℝ) + 1 ≤ k := by exact_mod_cast (by omega : d + 1 ≤ k)
       have ht : t = 1 := by linarith
@@ -93,10 +95,10 @@ theorem oset_shift (W : Polygon) (g k : ℕ) {x y : ℝ} (hx : 0 ≤ x) :
         have : k ≤ d + 1 := by exact_mod_cast this
         omega
       have hk' : (k : ℝ) = d + 1 := by exact_mod_cast hdk1.symm
-      refine ⟨0, 0, le_rfl, zero_le_one, by simp [hx0], by push_cast; linarith, ?_⟩
+      refine ⟨0, 0, le_rfl, zero_le_one, by simp [hx0], by pcl, ?_⟩
       rw [ht, lerp_one, lerp_zero, Nat.add_assoc, hdk1, Nat.add_zero]
   · rintro ⟨d, t, h0, h1, h2, h3, rfl⟩
-    refine ⟨k + d, t, h0, h1, by push_cast; linarith, by push_cast; linarith, ?_⟩
+    refine ⟨k + d, t, h0, h1, by pcl, by pcl, ?_⟩
     rw [show g + (k + d) = g + k + d by ring]
 
 /-! ## Point sets of key intervals -/
@@ -108,16 +110,16 @@ theorem wset_eq_oset (M : Model) {g : ℕ} (hg : g < M.W.n) {x y : ℝ} (hx : 0 
   ext z; constructor
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
     set K : ℤ := (p : ℤ) - j * M.W.n - g with hK
-    have hKr : (K : ℝ) = X - g - t := by rw [hK]; push_cast; linarith
-    have hK1 : (-1 : ℝ) ≤ K := by rw [hKr]; linarith
+    have hKr : (K : ℝ) = X - g - t := by rw [hK]; pcl
+    have hK1 : (-1 : ℝ) ≤ K := by rwli [hKr]
     have hK1' : -1 ≤ K := by exact_mod_cast hK1
     rcases (show K = -1 ∨ 0 ≤ K by omega) with hKe | hKe
     · have hr : (K : ℝ) = -1 := by exact_mod_cast hKe
       have ht : t = 1 := by linarith
       have hx0 : x = 0 := by linarith
-      refine ⟨0, 0, le_rfl, zero_le_one, by simp [hx0], by push_cast; linarith, ?_⟩
+      refine ⟨0, 0, le_rfl, zero_le_one, by simp [hx0], by pcl, ?_⟩
       have hgz : (g : ℤ) = ((p + 1 : ℕ) : ℤ) + (-j) * M.W.n := by
-        rw [hK] at hKe; push_cast; linarith
+        rw [hK] at hKe; pcl
       have hgp : g = (p + 1) % M.W.n := by
         have h1 : ((g % M.W.n : ℕ) : ℤ) = (((p + 1) % M.W.n : ℕ) : ℤ) := by
           rw [Int.natCast_mod, Int.natCast_mod, hgz, Int.add_mul_emod_self_right]
@@ -126,14 +128,14 @@ theorem wset_eq_oset (M : Model) {g : ℕ} (hg : g < M.W.n) {x y : ℝ} (hx : 0 
       rw [ht, lerp_one, lerp_zero, Nat.add_zero, Nat.mod_eq_of_lt hg, hgp]
       rfl
     · lift K to ℕ using hKe with d hd
-      have hdz : ((g + d : ℕ) : ℤ) = (p : ℤ) + (-j) * M.W.n := by push_cast; linarith
+      have hdz : ((g + d : ℕ) : ℤ) = (p : ℤ) + (-j) * M.W.n := by pcl
       have hKr' : (d : ℝ) = X - g - t := by exact_mod_cast hKr
       have hgd : (g + d) % M.W.n = p := by
         have h1 : (((g + d) % M.W.n : ℕ) : ℤ) = ((p % M.W.n : ℕ) : ℤ) := by
           rw [Int.natCast_mod, Int.natCast_mod, hdz, Int.add_mul_emod_self_right]
         rw [← Nat.mod_eq_of_lt hp]
         exact_mod_cast h1
-      refine ⟨d, t, h0, h1, by rw [hKr']; linarith, by rw [hKr']; linarith, ?_⟩
+      refine ⟨d, t, h0, h1, by rwli [hKr'], by rwli [hKr'], ?_⟩
       rw [hgd, show g + d + 1 = (g + d) + 1 by ring, ← Nat.mod_add_mod, hgd]
       rfl
   · rintro ⟨d, t, h0, h1, h2, h3, rfl⟩
@@ -177,7 +179,7 @@ theorem len_key {n u e : ℕ} (hu : u < n) {t₁ t₂ : ℝ} (ht1 : t₁ < 1) (h
       rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
     rw [hm]
     have e1 : ((u + e - n : ℕ) : ℝ) = u + e - n := by
-      rw [Nat.cast_sub (by omega)]; push_cast; ring
+      rw [Nat.cast_sub (by omega)]; pcr
     rw [e1, ite_eq_right (by linarith)]
     ring
 
@@ -212,7 +214,7 @@ theorem param_zero (M : Model) (Q : Polygon) (e : ℕ) : M.param Q ⟨e, 0⟩ = 
 /-! ## Weights by offsets -/
 
 theorem keyCeil_le {e : ℕ} {f : ℝ} : e ≤ keyCeil e f := by
-  unfold keyCeil; split_ifs <;> omega
+  unfold keyCeil; splao
 
 /-- **The weight of a key interval by offsets.**  If the counted walk edges are `[lo, hi)`,
 `hi ≤ n`, the key interval from `u + t₁` (`lo ≤ u`) to `(u + e) mod n + t₂` (within one lap, and
@@ -226,8 +228,8 @@ theorem arcWt_off (M : Model) {lo hi : ℕ}
   have hn : 0 < M.W.n := by omega
   rw [M.arcWt_closed hc hhi ⟨ht0, ht1⟩ ⟨ht2, ht21⟩]
   have hke : keyCeil ((u + e) % M.W.n) t₂ = (u + e) % M.W.n + (keyCeil e t₂ - e) := by
-    unfold keyCeil; split_ifs <;> omega
-  have hk1 : keyCeil e t₂ ≤ e + 1 := by unfold keyCeil; split_ifs <;> omega
+    unfold keyCeil; splao
+  have hk1 : keyCeil e t₂ ≤ e + 1 := by unfold keyCeil; splao
   have hk0 : e ≤ keyCeil e t₂ := keyCeil_le
   have hkp : keyCeil e t₂ = e → t₂ = 0 := by
     unfold keyCeil; split_ifs with h
@@ -237,13 +239,13 @@ theorem arcWt_off (M : Model) {lo hi : ℕ}
   rcases hwrap with ⟨rfl, rfl, hkn⟩ | hwrap
   · by_cases h : u + e < M.W.n
     · rw [Nat.mod_eq_of_lt h] at hke ⊢
-      rw [ite_eq_left (by push_cast; linarith), hke]
+      rw [ite_eq_left (by pcl), hke]
       omega
     · have hm : (u + e) % M.W.n = u + e - M.W.n := by
         rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
       rw [hm] at hke ⊢
       have e1 : ((u + e - M.W.n : ℕ) : ℝ) = u + e - M.W.n := by
-        rw [Nat.cast_sub (by omega)]; push_cast; ring
+        rw [Nat.cast_sub (by omega)]; pcr
       have hnot : ¬ ((u : ℝ) + t₁ < ((u + e - M.W.n : ℕ) : ℝ) + t₂) := by
         rw [e1]
         intro hlt'
@@ -266,7 +268,7 @@ theorem arcWt_off (M : Model) {lo hi : ℕ}
   · obtain ⟨hwrap, hhn⟩ := hwrap
     have hue : u + e < M.W.n := by omega
     rw [Nat.mod_eq_of_lt hue] at hke ⊢
-    rw [ite_eq_left (by push_cast; linarith), hke]
+    rw [ite_eq_left (by pcl), hke]
     omega
 
 end

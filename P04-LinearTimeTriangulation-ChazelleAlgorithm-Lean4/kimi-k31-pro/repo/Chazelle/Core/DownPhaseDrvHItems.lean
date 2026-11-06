@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvHFacts
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase driver, host RAM (D3a), part 2: host items in memory
@@ -186,9 +187,9 @@ theorem ptsLen_runItems (li : Bool) {n : ℕ} (_hn : 0 < n) (s e : WPos) :
     ptsLen n (runItems li n s e) = runCnt li n s e := by
   unfold runItems
   split_ifs with h0 h1
-  · rw [h0]; rfl
-  · rw [ptsLen_run]; omega
-  · rw [ptsLen_run]; omega
+  · rwr [h0]
+  · rwo [ptsLen_run]
+  · rwo [ptsLen_run]
 
 theorem ptsLen_arcItems_le (li : Bool) {n : ℕ} (hn : 0 < n) (N : NF) (r jp j : ℕ) :
     ptsLen n (arcItems li n N r jp j) ≤ n + 3 := by

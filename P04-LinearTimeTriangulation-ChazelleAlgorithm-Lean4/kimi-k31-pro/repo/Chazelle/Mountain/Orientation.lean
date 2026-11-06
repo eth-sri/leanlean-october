@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Ears.Test
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The orientation of a simple polygon and the convexity test for ears
@@ -189,7 +191,7 @@ theorem interior_triangle_mem_filled_iff {P : Polygon} (hP : P.Simple) {i : ℕ}
   have hsq := sqLen_pos hav
   set D := interior (convexHull ℝ ({a, v, b} : Set Point)) with hD
   have hconn : IsPreconnected D := (convex_triangle a v b).interior.isPreconnected
-  have hsub : D ⊆ P.boundaryᶜ := fun y hy => hoff y hy
+  have hsub : D ⊆ P.boundaryᶜ := hoff
   obtain ⟨σ, hσ, hpos⟩ : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ 0 < σ * det a v b := by
     rcases lt_or_gt_of_ne hdet with h | h
     · exact ⟨-1, Or.inr rfl, by linarith⟩
@@ -202,9 +204,9 @@ theorem interior_triangle_mem_filled_iff {P : Polygon} (hP : P.Simple) {i : ℕ}
   have hmW : lerp a v (1 / 2) ∈ W := by
     refine ⟨?_, ?_⟩
     · show 0 < bary₁ a v b (lerp a v (1 / 2))
-      rw [bary₁_lerp, bary₁_vertex_left hdet, bary₁_vertex_mid]; norm_num
+      rwn [bary₁_lerp, bary₁_vertex_left hdet, bary₁_vertex_mid]
     · show 0 < bary₂ a v b (lerp a v (1 / 2))
-      rw [bary₂_lerp, bary₂_vertex_left, bary₂_vertex_mid hdet]; norm_num
+      rwn [bary₂_lerp, bary₂_vertex_left, bary₂_vertex_mid hdet]
   have hev1 := eventually_offset_mem σ hWo hmW
   have hev2 := eventually_offset_orient hP hi (t := 1 / 2) ⟨by norm_num, by norm_num⟩
   obtain ⟨δ, hδW, hδor, hδ0⟩ := (hev1.and (hev2.and self_mem_nhdsWithin)).exists
@@ -244,7 +246,7 @@ theorem orient_det_pos_of_three {P : Polygon} (hP : P.Simple) (h3 : P.n = 3) :
   have hdet := det_ne_zero_of_simple_three P hP h3
   have h1 : (0 + 1) % P.n = 1 := by rw [h3]
   have key := interior_triangle_mem_filled_iff hP (i := 0) (by omega) (b := P.vtx 2)
-    (by rw [h1]; exact hdet)
+    (by rwx [h1])
     (by rw [h1]; intro x hx; exact not_mem_boundary_of_mem_interior_triangle P h3 hdet hx)
     (x := Geometry.centroid (P.vtx 0) (P.vtx 1) (P.vtx 2))
     (by rw [h1]; exact centroid_mem_interior hdet)
@@ -267,18 +269,18 @@ theorem interior_earHull_not_mem_boundary {P : Polygon} (hP : P.Simple) {i : ℕ
   have h3 := simple_three_le hP
   have hn : 0 < P.n := by omega
   set Q := P.rotate i with hQdef
-  have hQ : Q.Simple := simple_rotate P i hP
-  have hQn : Q.n = P.n := n_rotate P i
+  have hQ  := simple_rotate P i hP
+  have hQn  := n_rotate P i
   obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i (by omega) hi
   have hdetQ : det (Q.vtx (Q.n - 1)) (Q.vtx 0) (Q.vtx 1) ≠ 0 := by
-    rw [ea, ev, eb]; exact hdet
+    rwx [ea, ev, eb]
   have hnoneQ : ∀ j, j < Q.n →
       Q.vtx j ∈ convexHull ℝ ({Q.vtx (Q.n - 1), Q.vtx 0, Q.vtx 1} : Set Point) →
         j = 0 ∨ j = 1 ∨ j = Q.n - 1 := by
     intro j hj hmem
     rw [ea, ev, eb] at hmem
     rw [hQn] at hj ⊢
-    have hQj : Q.vtx j = P.vtx ((i + j) % P.n) := vtx_rotate P i hj
+    have hQj  := vtx_rotate P i hj
     rw [hQj] at hmem
     by_contra hcon
     simp only [not_or] at hcon
@@ -322,11 +324,11 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
       (lerp_ne_right hab (by norm_num))
   -- barycentric coordinates of the midpoint of the chord
   have hm1 : bary₁ a v b m = 1 / 2 := by
-    rw [hm, bary₁_lerp, bary₁_vertex_left hdet, bary₁_vertex_right]; ring
+    rwring [hm, bary₁_lerp, bary₁_vertex_left hdet, bary₁_vertex_right]
   have hm2 : bary₂ a v b m = 0 := by
-    rw [hm, bary₂_lerp, bary₂_vertex_left, bary₂_vertex_right]; ring
+    rwring [hm, bary₂_lerp, bary₂_vertex_left, bary₂_vertex_right]
   have hm3 : bary₃ a v b m = 1 / 2 := by
-    rw [hm, bary₃_lerp, bary₃_vertex_left, bary₃_vertex_right hdet]; ring
+    rwring [hm, bary₃_lerp, bary₃_vertex_left, bary₃_vertex_right hdet]
   -- the segment from the midpoint towards the apex
   have hint : ∀ s ∈ Ioo (0 : ℝ) 1, lerp m v s ∈ interior (convexHull ℝ ({a, v, b} : Set Point)) := by
     intro s hs
@@ -343,7 +345,7 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
     rintro _ ⟨s, hs, rfl⟩
     rcases hs.1.lt_or_eq with h0 | h0
     · exact hoff _ (hint s ⟨h0, by linarith [hs.2]⟩)
-    · rw [← h0, lerp_zero]; exact hmB
+    · rwx [← h0, lerp_zero]
   have hx1 : lerp m v (1 / 2) ∈ interior (convexHull ℝ ({a, v, b} : Set Point)) :=
     hint (1 / 2) ⟨by norm_num, by norm_num⟩
   have hpar := parity_eq_of_isPreconnected P hS hSb (x := lerp m v 0) (y := lerp m v (1 / 2))
@@ -352,8 +354,8 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
   -- the edge `prev i` is the directed segment `a v`
   have hprev : prevIdx P i < P.n := prevIdx_lt P hi
   have hsucc : P.vtx ((prevIdx P i + 1) % P.n) = v := by rw [prevIdx_add_one_mod P hi]
-  have key := interior_triangle_mem_filled_iff hP hprev (b := b) (by rw [hsucc]; exact hdet)
-    (by rw [hsucc]; exact hoff) (x := lerp m v (1 / 2)) (by rw [hsucc]; exact hx1)
+  have key := interior_triangle_mem_filled_iff hP hprev (b := b) (by rwx [hsucc])
+    (by rwx [hsucc]) (x := lerp m v (1 / 2)) (by rwx [hsucc])
   rw [hsucc] at key
   rw [← key, hpar, ← mem_filled_iff hP (hoff _ hx1)]
 

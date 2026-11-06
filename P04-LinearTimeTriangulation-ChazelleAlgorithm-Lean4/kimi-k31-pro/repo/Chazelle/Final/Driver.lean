@@ -4,6 +4,9 @@ public import Chazelle.Core.SpecAssembly
 public import Chazelle.Final.RamDiag
 public import Chazelle.Final.RamOrient
 public import Chazelle.Final.RamOutput
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The final stage: from the visibility tables to the triangulation
@@ -64,7 +67,6 @@ theorem diagList_length_le_tables (Q : Polygon) (T : TrapTable) (C : List ChordR
   rw [List.length_map, List.length_append] at h1
   omega
 
-set_option maxHeartbeats 4000000 in
 /-- **The final stage** (`Chazelle.Core.FinalStageSpec`): from any configuration holding valid
 tables of a simple polygon `Q` related to the input `P` by a shear, `finalStmt` emits a
 triangulation of `Q` in at most `10000 (n + 1)` steps, using the memory `[A, A + 100 (n + 1))`
@@ -96,20 +98,20 @@ theorem finalStage : Core.FinalStageSpec := by
   refine spec_seq ?_
   exec_block
   · omega
-  · config_simp; rw [h9991, h9993]; omega
-  · config_simp; rw [hA', h9991, h9993]; omega
-  · config_simp; rw [hA', h9991, h9993]; omega
-  · config_simp; rw [hA', h9991, h9993]; omega
+  · config_simp; rwo [h9991, h9993]
+  · config_simp; rwo [hA', h9991, h9993]
+  · config_simp; rwo [hA', h9991, h9993]
+  · config_simp; rwo [hA', h9991, h9993]
   refine spec_name fun c₁ hc₁ => ?_
   have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
   have r1 : ∀ r, r ≠ 200 → r ≠ 201 → r ≠ 202 → r ≠ 252 → r ≠ 253 → c₁.nreg r = c.nreg r := by
     intro r a b d e f; rw [hc₁]; config_simp
-    simp only [Machine.upd_apply, a, b, d, e, f, ite_false]
+    simp [Machine.upd_apply, a, b, d, e, f, ite_false]
   have c200 : c₁.nreg 200 = A := by rw [hc₁]; config_simp; exact hA'
   have c201 : c₁.nreg 201 = A + 2 * M := by
-    rw [hc₁]; config_simp; rw [hA', h9991, h9993]; ring
+    rw [hc₁]; config_simp; rwring [hA', h9991, h9993]
   have c202 : c₁.nreg 202 = A + 2 * M + P.n := by
-    rw [hc₁]; config_simp; rw [hA', h9991, h9993]; ring
+    rw [hc₁]; config_simp; rwring [hA', h9991, h9993]
   have c252 : c₁.nreg 252 = P.n := by rw [hc₁]; config_simp
   have c253 : c₁.nreg 253 = M := by rw [hc₁]; config_simp; rw [h9991, h9993]
   have m1 : c₁.nmem = c.nmem := by rw [hc₁]
@@ -118,10 +120,10 @@ theorem finalStage : Core.FinalStageSpec := by
     (DB := A) (HB := A + 2 * M) (SB := A + 2 * M + P.n) (M := M) c₁ hw₁ c200 c201 c202
     (by rw [r1 9991 (by decide) (by decide) (by decide) (by decide) (by decide), h9991])
     (by rw [r1 9993 (by decide) (by decide) (by decide) (by decide) (by decide), h9993])
-    (by rw [m1, r1 9990 (by decide) (by decide) (by decide) (by decide) (by decide)]; exact hTab)
-    (by rw [m1, r1 9992 (by decide) (by decide) (by decide) (by decide) (by decide)]; exact hCab)
-    (by rw [r1 9990 (by decide) (by decide) (by decide) (by decide) (by decide)]; omega)
-    (by rw [r1 9992 (by decide) (by decide) (by decide) (by decide) (by decide)]; omega)
+    (by rwx [m1, r1 9990 (by decide) (by decide) (by decide) (by decide) (by decide)])
+    (by rwx [m1, r1 9992 (by decide) (by decide) (by decide) (by decide) (by decide)])
+    (by rwo [r1 9990 (by decide) (by decide) (by decide) (by decide) (by decide)])
+    (by rwo [r1 9992 (by decide) (by decide) (by decide) (by decide) (by decide)])
     le_rfl le_rfl (by omega) le_rfl (by omega)) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨E, hE, h206, hband, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
   have hED : EnumDiags Q E := EnumDiags.perm (enumDiags_diagList hQ hT hC) hE.symm
@@ -143,7 +145,7 @@ theorem finalStage : Core.FinalStageSpec := by
   -- 4. the splitting registers
   refine spec_seq ?_
   exec_block
-  · rw [R3 202 (by omega) (by omega), R3 253 (by omega) (by omega), c202, c253]; omega
+  · rwo [R3 202 (by omega) (by omega), R3 253 (by omega) (by omega), c202, c253]
   refine spec_name fun c₄ hc₄ => ?_
   have hw₄ : WordsBounded W c₄ := by rw [hc₄]; assumption
   have c4_100 : c₄.nreg 100 = B := by
@@ -169,8 +171,8 @@ theorem finalStage : Core.FinalStageSpec := by
     rw [R3 252 (by omega) (by omega), c252]
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [hS₅.r109, e252]; omega
-  · config_simp; rw [hS₅.r109, e252, h115]; omega
+  · config_simp; rwo [hS₅.r109, e252]
+  · config_simp; rwo [hS₅.r109, e252, h115]
   refine spec_name fun c₆ hc₆ => ?_
   have hw₆ : WordsBounded W c₆ := by rw [hc₆]; assumption
   -- the structure and its cycles (for `Q`)
@@ -180,7 +182,7 @@ theorem finalStage : Core.FinalStageSpec := by
     rw [hSdef, hQn, hQe, runState_shear]
   rw [hSQ] at hR hp
   have hcnt : S.cnt = NN := by
-    rw [hSdef, cnt_runState]; rfl
+    rwr [hSdef, cnt_runState]
   have hX : OutCtx P Q W S cs NN (B + 4 * NN + P.n) (B + NN) B (B + 4 * NN + P.n + NN) :=
     { simple := hQ
       shear := ⟨ε, hQe, hag⟩

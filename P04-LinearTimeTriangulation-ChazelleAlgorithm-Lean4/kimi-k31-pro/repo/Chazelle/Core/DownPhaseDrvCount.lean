@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseHostSimple
 public import Chazelle.Core.DownPhaseHostData
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down-phase driver, D10 (part 1): the total number of host keys
@@ -94,7 +96,7 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
   obtain ⟨pb, tb, hAb, hPb⟩ := hEb.1
   refine ⟨pa + ta, pb + tb, ?_⟩
   rintro x ⟨p, t, hA, rfl⟩
-  have hPc : sidePt M.W p t ∈ c := hA.2.2.2.1
+  have hPc  := hA.2.2.2.1
   have hend : sidePt M.W p t = a ∨ sidePt M.W p t = b := by
     rw [hcab] at hPc
     obtain ⟨s, hs0, hs1, hs⟩ := hPc
@@ -103,8 +105,8 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
       · exfalso
         apply hM.trace p hA.1 t hA.2.1 hA.2.2.1.le
         rw [hs]; exact hopen s ⟨h0, h1⟩
-      · right; rw [hs, h1]; simp
-    · left; rw [hs, ← h0]; simp
+      · right; rws [hs, h1]
+    · left; rws [hs, ← h0]
   have key : ∀ (e : Point) (pe : ℕ) (te : ℝ), (e = a ∨ e = b) → WalkEnd M.W c e →
       SideAttach M.W c pe te → sidePt M.W pe te = e → sidePt M.W p t = e → p = pe ∧ t = te := by
     intro e pe te hee hE hAe hPe hP
@@ -114,10 +116,10 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
     obtain ⟨r1, hr1, hs1⟩ := hA.2.2.2.2
     obtain ⟨r2, hr2, hs2⟩ := hAe.2.2.2.2
     obtain ⟨x, hx, hxe, hxd⟩ := near_end hab (lt_min hr (lt_min hr1 hr2)) e hee
-    have hxc : x ∈ c := by rw [hcab]; exact hx
-    have h1 := hs1 x hxc (by rw [hP]; exact hxe)
+    have hxc : x ∈ c := by rwx [hcab]
+    have h1 := hs1 x hxc (by rwx [hP])
       (by rw [hP]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_left _ _)))
-    have h2 := hs2 x hxc (by rw [hPe]; exact hxe)
+    have h2 := hs2 x hxc (by rwx [hPe])
       (by rw [hPe]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_right _ _)))
     exact hdisj x (lt_of_lt_of_le hxd (min_le_left _ _)) h1 h2
   rcases hend with h | h

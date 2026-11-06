@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutLoop2
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 24: keys along the path of the core
@@ -45,12 +48,12 @@ theorem sideInArc_unw {n a b x A B X : ℝ} (hn : 0 < n) (ha0 : 0 ≤ a) (han : 
   obtain ⟨i, rfl⟩ := hA
   obtain ⟨j, rfl⟩ := hX
   obtain ⟨k, rfl⟩ := hB
-  have hj : j - i = 0 ∨ j - i = 1 := int01 hn hx0 hxn (by push_cast; nlinarith)
-    (by push_cast; nlinarith)
-  have hk : k - i = 0 ∨ k - i = 1 := int01 hn hb0 hbn (by push_cast; nlinarith)
-    (by push_cast; nlinarith)
-  have ej : (j : ℝ) = i + (j - i : ℤ) := by push_cast; ring
-  have ek : (k : ℝ) = i + (k - i : ℤ) := by push_cast; ring
+  have hj : j - i = 0 ∨ j - i = 1 := int01 hn hx0 hxn (by pcnl)
+    (by pcnl)
+  have hk : k - i = 0 ∨ k - i = 1 := int01 hn hb0 hbn (by pcnl)
+    (by pcnl)
+  have ej : (j : ℝ) = i + (j - i : ℤ) := by pcr
+  have ek : (k : ℝ) = i + (k - i : ℤ) := by pcr
   unfold sideInArc
   rcases hj with hj | hj <;> rcases hk with hk | hk <;> rw [hj] at ej <;> rw [hk] at ek <;>
     push_cast at ej ek <;> rw [ej] at h1 h2 <;> rw [ek] at h2 h3
@@ -84,13 +87,13 @@ theorem KPath.lt {n : ℝ} {V V' : ℝ} {ps : List Pc} (h : KPath M Q n V ps V')
 
 theorem KPath.append {n : ℝ} : ∀ {V : ℝ} {ps : List Pc} {V' : ℝ}, KPath M Q n V ps V' →
     ∀ (qs : List Pc) {V'' : ℝ}, KPath M Q n V' qs V'' → KPath M Q n V (ps ++ qs) V''
-  | _, [], _, h, _, _, hq => by simp only [KPath] at h; subst h; exact hq
+  | _, [], _, h, _, _, hq => by simp [KPath] at h; subst h; exact hq
   | _, _ :: _, _, ⟨h1, V₁, h2, h3, h4⟩, qs, _, hq => ⟨h1, V₁, h2, h3, KPath.append h4 qs hq⟩
 
 /-- The last end of a path is congruent to its end value. -/
 theorem KPath.last {n : ℝ} : ∀ {V : ℝ} {ps : List Pc} {V' : ℝ} (_ : KPath M Q n V ps V')
     (hne : ps ≠ []), ∃ j : ℤ, V' = M.key Q (ps.getLast hne).e + j * n
-  | _, [pc], _, ⟨_, V₁, _, h3, h4⟩, _ => by simp only [KPath] at h4; subst h4; exact h3
+  | _, [pc], _, ⟨_, V₁, _, h3, h4⟩, _ => by simp [KPath] at h4; subst h4; exact h3
   | _, _ :: q :: qs, _, ⟨_, _, _, _, h4⟩, _ => by
     rw [List.getLast_cons (List.cons_ne_nil q qs)]
     exact KPath.last h4 (List.cons_ne_nil q qs)
@@ -109,25 +112,25 @@ theorem e6_of_kpath {n : ℝ} (hn : 0 < n) :
     have hne' : ps ≠ [] := by rintro rfl; simp at hi
     have hlast : (pc :: ps).getLast hne = ps.getLast hne' := List.getLast_cons hne'
     rcases i with _ | i
-    · simp only [List.getElem_cons_zero]
+    · simp [List.getElem_cons_zero]
       rw [hlast]
       have hbp := hb pc (by simp)
       have hbl := hb (ps.getLast hne') (by simp [List.getLast_mem])
       exact sideInArc_unw hn hbp.1.1 hbp.1.2 hbl.2.1 hbl.2.2 hbp.2.1 hbp.2.2 hs he
         (KPath.last hp hne') hV (hp.lt hne') hT
-    · simp only [List.getElem_cons_succ]
+    · simp [List.getElem_cons_succ]
       rw [hlast]
       exact e6_of_kpath hn hp (by linarith) (fun q hq => hb q (by simp [hq])) hne' i
-        (by simp at hi; omega)
+        (by sio at hi)
 
 /-- **A path of walk vertices** is a path of unwrapped keys. -/
 theorem kpath_of_upath {n : ℕ} : ∀ {u : ℕ} {ps : List Pc} {u' : ℕ}, UPath n u ps u' →
     KPath M Q n (u : ℝ) ps (u' : ℝ)
-  | _, [], _, h => by simp only [UPath] at h; subst h; rfl
+  | _, [], _, h => by simp [UPath] at h; subst h; rfl
   | u, pc :: ps, u', ⟨h1, u₁, h2, h3, h4⟩ => by
     have ek : ∀ v : ℕ, ((v % n : ℕ) : ℝ) + ((v / n : ℕ) : ℝ) * (n : ℝ) = (v : ℝ) := fun v => by
       have := Nat.mod_add_div v n
-      exact_mod_cast (show v % n + v / n * n = v by rw [Nat.mul_comm]; exact this)
+      exact_mod_cast (show v % n + v / n * n = v by rwx [Nat.mul_comm])
     refine ⟨⟨((u / n : ℕ) : ℤ), ?_⟩, u₁, by exact_mod_cast h2, ⟨((u₁ / n : ℕ) : ℤ), ?_⟩,
       kpath_of_upath h4⟩
     · rw [h1, key_hgt0, Int.cast_natCast]; linarith [ek u]

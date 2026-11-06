@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Ears.Basic
 public import Chazelle.Existence.Diagonal
+public import Chazelle.Rwx
 
 /-!
 # Existence of ears
@@ -35,8 +36,8 @@ theorem isEar_of_diagonal_two {s : ℕ} (hd : IsDiagonal P s 2)
     IsEar P ((s + 1) % P.n) := by
   have hn : 0 < P.n := by have := hd.2.1; omega
   refine ⟨?_, ?_⟩
-  · rw [prevIdx_succ_mod P hn, isDiagonal_mod_iff]; exact hd
-  · rw [prevIdx_succ_mod P hn, mod_add_one_mod]; exact hin
+  · rwx [prevIdx_succ_mod P hn, isDiagonal_mod_iff]
+  · rwx [prevIdx_succ_mod P hn, mod_add_one_mod]
 
 /-- The filled region of an arc of an interior diagonal lies in the filled region of `P`. -/
 theorem filled_arc_subset {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
@@ -50,11 +51,11 @@ theorem isEar_of_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
     (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled)
     {k : ℕ} (hk0 : 0 < k) (hkL : k < L) (he : IsEar (P.arc s L) k) :
     IsEar P ((s + k) % P.n) := by
-  have hLn : L + 2 ≤ P.n := hd.2.1
+  have hLn  := hd.2.1
   have hn : 0 < P.n := by omega
   have hL : L ≤ P.n := by omega
-  have hAn : (P.arc s L).n = L + 1 := n_arc P s L
-  have h4 : 4 ≤ (P.arc s L).n := he.1.2.1
+  have hAn  := n_arc P s L
+  have h4  := he.1.2.1
   have hprev : prevIdx (P.arc s L) k = k - 1 := by
     rw [prevIdx_eq _ (by omega)]; simp [Nat.pos_iff_ne_zero.1 hk0]
   have e1 : (P.arc s L).vtx (prevIdx (P.arc s L) k) = P.vtx ((s + (k - 1)) % P.n) := by
@@ -73,7 +74,7 @@ theorem isEar_of_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
     apply isEar_of_diagonal_two
     · refine ⟨le_rfl, by omega, ?_⟩
       intro p hp hp1 hp2 hpB
-      have hpA : p ∉ (P.arc s L).boundary := hch p hp hp1 hp2
+      have hpA  := hch p hp hp1 hp2
       rcases boundary_subset_arcs P s L hL hn hpB with h | h
       · exact hpA h
       · have hpf : p ∈ Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) :=
@@ -151,7 +152,7 @@ theorem exists_ear_in_arc_aux (m : ℕ) : ∀ Q : Polygon, Q.n = m → Q.Simple 
     have hL'n : L' ≤ A.n := by have := hd'.2.1; omega
     have hin'' : Chazelle.segment (A.vtx ((s' + L') % A.n % A.n))
         (A.vtx (((s' + L') % A.n + (A.n - L')) % A.n)) ⊆ A.filled := by
-      rw [Nat.mod_mod, compl_arc_last_index A s' L' hL'n, segment_comm]; exact hin'
+      rwx [Nat.mod_mod, compl_arc_last_index A s' L' hL'n, segment_comm]
     obtain ⟨k₂, hk₂0, hk₂, he₂⟩ := ih A.n hAm A rfl hA _ _ hd'' hin''
     rw [compl_arc_index, Nat.add_assoc] at he₂
     rcases apex_not_both_endpoints hAn hk₁0 hk₁ hk₂0 hk₂ hd'.2.1 with ⟨h0, hL⟩ | ⟨h0, hL⟩

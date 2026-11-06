@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.OraclePrepPhA
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 29: phase B (the chords of the book)
@@ -44,8 +48,8 @@ theorem starStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W
       PairsAt c'.nmem (A₁ + R) (A₁ + R + chCap A) (starList (fun q => rg (σ q)) A) := by
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, a9, a60, afr⟩ := frS_exec (P := P) hw hM hNB h2 hR hAB hSB hA h1 hAl
     hNBA hSA hABA hρR (by omega)
-  have hM₁ : RgMem c₁.nmem AB SB A σ rg := hM.congr (X := A₁) F₁.2.2.1 hSA hABA
-  have K : ∀ r, BFR r = false → c₁.nreg r = c.nreg r := F₁.1
+  have hM₁  := hM.congr (X := A₁) F₁.2.2.1 hSA hABA
+  have K  := F₁.1
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, b9, b72, b73, -, b74, pairs⟩ := iS_exec (P := P) e₁.wb_right hM₁
     (by rw [K _ (by decide), hAB]) (by rw [K _ (by decide), hSB]) (by rw [K _ (by decide), hA])
     (by rw [K _ (by decide), h1]) a60 a9 (by omega) (by omega) (by omega) hρR afr (by omega)
@@ -85,7 +89,7 @@ theorem zipStage_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {
     exact (List.length_filterMap_le _ _).trans (by simp)
   have hraw : OracleQ.zipRaw C (Qof P) N = (emitted (OracleQ.zipSk C (Qof P) N) V.A ++
       emitted (OracleQ.zipEk C (Qof P) N) V.A) ++ OracleQ.zipSp C (Qof P) N := by
-    rw [hA]; rfl
+    rwr [hA]
   refine ⟨c₂, _, .seq e₁ e₂, by omega, (F₁.mono (fun r hr => by simp [hr]) le_rfl).trans ?_, by rw [r₂ _ (by decide), a9],
     by rw [r₂ _ (by decide), a93], by rw [r₂ _ (by decide), a94], ?_, ?_, Z₂⟩
   · refine ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => mem₂ a (Or.inl (by omega)),
@@ -135,7 +139,6 @@ theorem PF.gf {B : ℕ → Bool} {S : Finset ℕ} {lo lo' : ℕ} {c c' : Config}
 /-- **The sorted, deduplicated zipper pairs after the star chords.** -/
 def dedupStage : Stmt := .seq dSort (.seq (.instr (.copyN 60008 60003)) dEmit)
 
-set_option maxHeartbeats 2000000 in
 theorem dedupStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     {CH1 CH2 nI Z1 Z2 n A₄ : ℕ} (h72 : c.nreg 110072 = CH1) (h73 : c.nreg 110073 = CH2)
     (h74 : c.nreg 110074 = nI) (h93 : c.nreg 110293 = Z1) (h94 : c.nreg 110294 = Z2)
@@ -171,8 +174,8 @@ theorem dedupStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded 
       (fun i => c.nmem (Z1 + i)) (fun i => c.nmem (Z2 + i)) c₂ :=
     ⟨by rw [R₂ _ (by decide), v4], by rw [R₂ _ (by decide), v5], R₂ _ (by decide),
       by rw [R₂ _ (by decide), g11], by rw [R₂ _ (by decide), g12],
-      ⟨fun t _ => rfl, hlt, fun i hi => F₁.2.2.1 _ (by rw [hA₄]; omega),
-        fun i hi => F₁.2.2.1 _ (by rw [hA₄]; omega)⟩⟩
+      ⟨fun t _ => rfl, hlt, fun i hi => F₁.2.2.1 _ (by rwo [hA₄]),
+        fun i hi => F₁.2.2.1 _ (by rwo [hA₄])⟩⟩
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, cnt₃, pairs₃, mem₃, rm₃, o₃⟩ := dEmit_exec (P := P) e₂.wb_right
     hDE (by rw [R₂ _ (by decide), v1]) (by rw [R₂ _ (by decide), v2])
     (by rw [R₂ _ (by decide), v3]) (by rw [R₂ _ (by decide), v6]) hC hZ hZ12 (by omega)
@@ -183,19 +186,19 @@ theorem dedupStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded 
   have K3 : ∀ r, BDB r = false → r ≠ 60010 → r ≠ 60003 → r ≠ 60014 → r ≠ 60008 →
       c₃.nreg r = c₁.nreg r := fun r a b d e f => by rw [r₃ r a b d e, R₂ r f]
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, fun r hr hra => ?_, fun r hr => ?_,
-    fun a ha => ?_, fun a ha => by rw [rm₃, F₁.2.2.2.1 a (by rw [hA₄]; exact ha)],
+    fun a ha => ?_, fun a ha => by rw [rm₃, F₁.2.2.2.1 a (by rwx [hA₄])],
     by rw [o₃, F₁.2.2.2.2], ?_, ?_, ?_, ?_, ?_, D, ?_, hDl, pairs₃, dedup_nodup hsort,
     fun x => mem_dedup hsurj hlt⟩
   · have h6 : ¬ bandOf r = 6 := fun h => hr (by simp [dBands, bDecomp, h])
     unfold bandOf at h6
-    rw [K3 r (by simp only [BDB, decide_eq_false_iff_not]; omega) (by omega) (by omega)
+    rw [K3 r (by sio only [BDB, decide_eq_false_iff_not]) (by omega) (by omega)
       (by omega) (by omega), F₁.1 r hr hra]
   · have h6 : ¬ bandOf r = 6 := fun h => hr (by simp [dBands, bDecomp, h])
     unfold bandOf at h6
-    rw [rr₃ r (by simp only [BDB, decide_eq_false_iff_not]; omega)]
+    rw [rr₃ r (by sio only [BDB, decide_eq_false_iff_not])]
     exact F₁.2.1 r hr
   · rw [mem₃ a (by omega)]
-    exact F₁.2.2.1 a (by rw [hA₄]; omega)
+    exact F₁.2.2.1 a (by rwo [hA₄])
   · rw [hAL, K3 _ (by decide) (by decide) (by decide) (by decide) (by decide)]; exact al1a
   · rw [hAL, K3 _ (by decide) (by decide) (by decide) (by decide) (by decide)]; exact al1b
   · rw [K3 _ (by decide) (by decide) (by decide) (by decide) (by decide), v1]

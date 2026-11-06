@@ -7,6 +7,7 @@ public import Mathlib.Analysis.Convex.PathConnected
 public import Mathlib.Analysis.Normed.Module.Convex
 public import Mathlib.Topology.Order.IntermediateValue
 public import Mathlib.Topology.MetricSpace.Bounded
+public import Chazelle.RewriteTactics
 
 /-!
 # The filled region: the easy direction and basic topology
@@ -42,16 +43,16 @@ theorem straddleInd_eq (z u v : Point) : straddleInd z u v = leInd z u + leInd z
   by_cases hu : u.1 ≤ z.1 <;> by_cases hv : v.1 ≤ z.1
   · have hs : ¬ straddles z u v := by
       rintro (⟨-, h⟩ | ⟨-, h⟩) <;> linarith
-    rw [ite_eq_right hs, ite_eq_left hu, ite_eq_left hv]; decide
+    rwd [ite_eq_right hs, ite_eq_left hu, ite_eq_left hv]
   · have hs : straddles z u v := Or.inl ⟨hu, not_le.1 hv⟩
-    rw [ite_eq_left hs, ite_eq_left hu, ite_eq_right hv]; decide
+    rwd [ite_eq_left hs, ite_eq_left hu, ite_eq_right hv]
   · have hs : straddles z u v := Or.inr ⟨hv, not_le.1 hu⟩
-    rw [ite_eq_left hs, ite_eq_right hu, ite_eq_left hv]; decide
+    rwd [ite_eq_left hs, ite_eq_right hu, ite_eq_left hv]
   · have hs : ¬ straddles z u v := by
       rintro (⟨h, -⟩ | ⟨h, -⟩)
       · exact hu h
       · exact hv h
-    rw [ite_eq_right hs, ite_eq_right hu, ite_eq_right hv]; decide
+    rwd [ite_eq_right hs, ite_eq_right hu, ite_eq_right hv]
 
 /-- The number of edges straddling the abscissa of `z` is even. -/
 theorem sum_straddleInd (P : Polygon) (z : Point) :
@@ -80,11 +81,10 @@ theorem crossSum_eq_zero_of_far_below (P : Polygon) {z : Point} (hz : z.2 < -coo
   rw [← sum_straddleInd P z]
   apply Finset.sum_congr rfl
   intro i hi
-  have hi' : i < P.n := Finset.mem_range.1 hi
+  have hi'  := Finset.mem_range.1 hi
   have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (by omega)
-  have hu : z.2 < (P.vtx i).2 := hz.trans_le (abs_le.1 (abs_snd_vtx_le_coordBound P hi')).1
-  have hv : z.2 < (P.vtx ((i + 1) % P.n)).2 :=
-    hz.trans_le (abs_le.1 (abs_snd_vtx_le_coordBound P hi2)).1
+  have hu  := hz.trans_le (abs_le.1 (abs_snd_vtx_le_coordBound P hi')).1
+  have hv  := hz.trans_le (abs_le.1 (abs_snd_vtx_le_coordBound P hi2)).1
   unfold crossInd straddleInd
   exact if_congr (crosses_iff_straddles_of_below hu hv) rfl rfl
 
@@ -137,7 +137,7 @@ theorem abs_le_coordBound_of_mem_boundary (P : Polygon) {p : Point} (hp : p ∈ 
 
 /-- The plane is locally connected (balls are convex). -/
 instance instLocallyConnectedSpacePoint : LocallyConnectedSpace Point :=
-  locallyConnectedSpace_of_connected_bases (fun x r => Metric.ball x r) (fun _ r => 0 < r)
+  locallyConnectedSpace_of_connected_bases (Metric.ball) (fun _ r => 0 < r)
     (fun _ => Metric.nhds_basis_ball) (fun x r _ => (convex_ball x r).isPreconnected)
 
 /-- Components of the complement of the boundary are open. -/
@@ -148,7 +148,7 @@ theorem isOpen_connectedComponentIn_boundary_compl (P : Polygon) (z : Point) :
 /-- The parity is constant on the component of a point off the boundary. -/
 theorem parity_eq_of_mem_connectedComponentIn (P : Polygon) {z w : Point}
     (hw : w ∈ connectedComponentIn P.boundaryᶜ z) : parity P w = parity P z := by
-  have hz : z ∈ P.boundaryᶜ := connectedComponentIn_nonempty_iff.1 ⟨w, hw⟩
+  have hz  := connectedComponentIn_nonempty_iff.1 ⟨w, hw⟩
   exact parity_eq_of_isPreconnected P isPreconnected_connectedComponentIn
     (connectedComponentIn_subset _ _) hw (mem_connectedComponentIn hz)
 
@@ -182,7 +182,7 @@ theorem mem_filled_iff_bounded (P : Polygon) {z : Point} (hz : z ∉ P.boundary)
 
 /-- A real number can be pushed beyond any bound along a nonzero direction. -/
 theorem exists_abs_add_mul_gt {c : ℝ} (hc : c ≠ 0) (w R : ℝ) : ∃ s : ℝ, 0 ≤ s ∧ R < |w + s * c| := by
-  have hc' : 0 < |c| := abs_pos.2 hc
+  have hc'  := abs_pos.2 hc
   refine ⟨(|R| + |w| + 1) / |c|, by positivity, ?_⟩
   have h1 : |(|R| + |w| + 1) / |c| * c| = |R| + |w| + 1 := by
     rw [abs_mul, abs_div, abs_abs, div_mul_cancel₀ _ hc'.ne']

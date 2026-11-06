@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Visibility.Map
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The free horizontal segment through a free point
@@ -43,14 +46,14 @@ noncomputable def xAt (u w : Point) (y : ℝ) : ℝ := u.1 + (y - u.2) * ((w.1 -
 theorem xAt_left (u w : Point) : xAt u w u.2 = u.1 := by simp [xAt]
 
 theorem xAt_right {u w : Point} (h : u.2 ≠ w.2) : xAt u w w.2 = w.1 := by
-  have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
+  have hne  := sub_ne_zero.2 h.symm
   unfold xAt
   field_simp
   ring
 
 theorem xAt_lerp {u w : Point} (h : u.2 ≠ w.2) (t : ℝ) :
     xAt u w (lerp u w t).2 = (lerp u w t).1 := by
-  have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
+  have hne  := sub_ne_zero.2 h.symm
   unfold xAt
   simp only [lerp_fst, lerp_snd]
   field_simp
@@ -72,18 +75,18 @@ abscissa is the one of the line. -/
 theorem mem_segment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
     p ∈ Chazelle.segment u w ↔
       (min u.2 w.2 ≤ p.2 ∧ p.2 ≤ max u.2 w.2) ∧ p.1 = xAt u w p.2 := by
-  have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
+  have hne  := sub_ne_zero.2 h.symm
   constructor
   · rintro ⟨t, ht0, ht1, rfl⟩
     refine ⟨⟨?_, ?_⟩, ?_⟩
     · dsimp only
       rcases lt_or_gt_of_ne h with hlt | hgt
-      · rw [min_eq_left hlt.le]; nlinarith
-      · rw [min_eq_right hgt.le]; nlinarith
+      · rwnl [min_eq_left hlt.le]
+      · rwnl [min_eq_right hgt.le]
     · dsimp only
       rcases lt_or_gt_of_ne h with hlt | hgt
-      · rw [max_eq_right hlt.le]; nlinarith
-      · rw [max_eq_left hgt.le]; nlinarith
+      · rwnl [max_eq_right hlt.le]
+      · rwnl [max_eq_left hgt.le]
     · exact (xAt_lerp h t).symm
   · rintro ⟨⟨h1, h2⟩, hx⟩
     refine ⟨(p.2 - u.2) / (w.2 - u.2), ?_, ?_, ?_⟩
@@ -94,31 +97,31 @@ theorem mem_segment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
         exact div_nonneg_of_nonpos (by linarith) (by linarith)
     · rcases lt_or_gt_of_ne h with hlt | hgt
       · rw [max_eq_right hlt.le] at h2
-        rw [div_le_one (by linarith)]; linarith
+        rwli [div_le_one (by linarith)]
       · rw [min_eq_right hgt.le] at h1
-        rw [div_le_one_of_neg (by linarith)]; linarith
+        rwli [div_le_one_of_neg (by linarith)]
     · rw [point_ext_iff]
       dsimp only
       constructor
-      · rw [hx]; unfold xAt; ring
-      · rw [div_mul_cancel₀ _ hne]; ring
+      · rw [hx]; ufring xAt
+      · rwring [div_mul_cancel₀ _ hne]
 
 /-- Membership in the open part of a non-horizontal segment. -/
 theorem openSegment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
     (∃ t ∈ Ioo (0 : ℝ) 1, p = lerp u w t) ↔
       (min u.2 w.2 < p.2 ∧ p.2 < max u.2 w.2) ∧ p.1 = xAt u w p.2 := by
-  have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
+  have hne  := sub_ne_zero.2 h.symm
   constructor
   · rintro ⟨t, ⟨ht0, ht1⟩, rfl⟩
     refine ⟨⟨?_, ?_⟩, (xAt_lerp h t).symm⟩
     · simp only [lerp_snd]
       rcases lt_or_gt_of_ne h with hlt | hgt
-      · rw [min_eq_left hlt.le]; nlinarith
-      · rw [min_eq_right hgt.le]; nlinarith
+      · rwnl [min_eq_left hlt.le]
+      · rwnl [min_eq_right hgt.le]
     · simp only [lerp_snd]
       rcases lt_or_gt_of_ne h with hlt | hgt
-      · rw [max_eq_right hlt.le]; nlinarith
-      · rw [max_eq_left hgt.le]; nlinarith
+      · rwnl [max_eq_right hlt.le]
+      · rwnl [max_eq_left hgt.le]
   · rintro ⟨⟨h1, h2⟩, hx⟩
     refine ⟨(p.2 - u.2) / (w.2 - u.2), ⟨?_, ?_⟩, ?_⟩
     · rcases lt_or_gt_of_ne h with hlt | hgt
@@ -128,14 +131,14 @@ theorem openSegment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
         exact div_pos_of_neg_of_neg (by linarith) (by linarith)
     · rcases lt_or_gt_of_ne h with hlt | hgt
       · rw [max_eq_right hlt.le] at h2
-        rw [div_lt_one (by linarith)]; linarith
+        rwli [div_lt_one (by linarith)]
       · rw [min_eq_right hgt.le] at h1
-        rw [div_lt_one_of_neg (by linarith)]; linarith
+        rwli [div_lt_one_of_neg (by linarith)]
     · rw [point_ext_iff]
       simp only [lerp_fst, lerp_snd]
       constructor
-      · rw [hx]; unfold xAt; ring
-      · rw [div_mul_cancel₀ _ hne]; ring
+      · rw [hx]; ufring xAt
+      · rwring [div_mul_cancel₀ _ hne]
 
 /-! ### Edges of a polygon as graphs -/
 
@@ -282,7 +285,7 @@ theorem rayPt_mem_chordUnion {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P
     filter_upwards [Ioo_mem_nhdsGT hs] with t ht
     exact hint t ht.1 ht.2
   have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
-  have hle : s ≤ chordParam P i σ := (hit_of_initial hP hσ0 hs hint).1
+  have hle  := (hit_of_initial hP hσ0 hs hint).1
   refine ⟨chordSet P i σ, ⟨i, σ, hi, hσ, hdir, rfl⟩, ?_⟩
   rw [chordSet_eq_image hP hi hdir]
   exact ⟨s, ⟨hs.le, hle⟩, rfl⟩
@@ -291,13 +294,13 @@ theorem rayPt_mem_chordUnion {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P
 theorem rightEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P) {k : ℕ}
     (hk : k < P.n) : rightEnd P q ≠ P.vtx k := by
   intro heq
-  have hq' : q ∈ P.filled \ P.boundary := hq.1
+  have hq'  := hq.1
   have hR := rightHitParam_pos hP hq'
   apply hq.2
   have e : ∀ t, rayPt (P.vtx k) (-1) t = (q.1 + (rightHitParam P q - t), q.2) := by
     intro t
     rw [← heq]
-    exact point_ext (by simp [rayPt]; ring) (by simp [rayPt])
+    exact point_ext (by sir [rayPt]) (by simp [rayPt])
   have hmem := rayPt_mem_chordUnion hP hk (Or.inr rfl) hR (fun t ht1 ht2 => by
     rw [e]
     exact open_ray_subset_interior hP hq' _ (by linarith) (by linarith))
@@ -308,13 +311,13 @@ theorem rightEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ fr
 theorem leftEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P) {k : ℕ}
     (hk : k < P.n) : leftEnd P q ≠ P.vtx k := by
   intro heq
-  have hq' : q ∈ P.filled \ P.boundary := hq.1
+  have hq'  := hq.1
   have hL := leftHitParam_pos hP hq'
   apply hq.2
   have e : ∀ t, rayPt (P.vtx k) 1 t = (q.1 - (leftHitParam P q - t), q.2) := by
     intro t
     rw [← heq]
-    exact point_ext (by simp [rayPt]; ring) (by simp [rayPt])
+    exact point_ext (by sir [rayPt]) (by simp [rayPt])
   have hmem := rayPt_mem_chordUnion hP hk (Or.inl rfl) hL (fun t ht1 ht2 => by
     rw [e]
     exact open_left_ray_subset_interior hP hq' _ (by linarith) (by linarith))
@@ -345,7 +348,7 @@ theorem nonHoriz_of_openEdgePt_end {P : Polygon} (hP : P.Simple) {q : Point}
   have huw : u ≠ w := simple_vtx_succ_ne hP hj
   have huw1 : u.1 ≠ w.1 := fun h => huw (point_ext h hh)
   have hedge : P.edge j = hseg u.2 (min u.1 w.1) (max u.1 w.1) := segment_horizontal_eq_hseg hh
-  have hpu : p.2 = u.2 := by rw [hpt, lerp_snd, ← hh]; ring
+  have hpu : p.2 = u.2 := by rwring [hpt, lerp_snd, ← hh]
   have hqu : q.2 = u.2 := hpy.symm.trans hpu
   -- the abscissa of `p` is strictly between the endpoint abscissae
   have hp1 : p.1 = u.1 + t * (w.1 - u.1) := by rw [hpt, lerp_fst]

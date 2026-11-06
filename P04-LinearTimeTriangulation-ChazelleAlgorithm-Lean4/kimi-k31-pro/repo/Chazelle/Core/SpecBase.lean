@@ -86,7 +86,7 @@ theorem shear_vtx (ε : ℝ) (P : Polygon) (i : ℕ) : (shear ε P).vtx i = shea
 /-- **Orientation tests are exact under the shear**: the shear has determinant `1`. -/
 theorem det_shearPt (ε : ℝ) (a b c : Point) :
     det (shearPt ε a) (shearPt ε b) (shearPt ε c) = det a b c := by
-  simp only [det, shearPt]
+  simp [det, shearPt]
   ring
 
 /-- The `x`-coordinate of the point of edge `e` of `Q` at the height of vertex `h` of `Q`

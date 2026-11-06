@@ -113,8 +113,8 @@ theorem labTask_of (hSG : SplitGapTask) : LabTask := by
   by_cases hsp : t = 0 ∧ d = rL1 J
   · -- the split vertex
     obtain ⟨rfl, rfl⟩ := hsp
-    have hd0' : rL1 J ≠ 0 := hd0 rfl
-    have hlt : rL1 J < Lst J := hd
+    have hd0'  := hd0 rfl
+    have hlt  := hd
     have hδ := slb_rδ_pos hlt
     refine ⟨fun c hc hec Vu hVu Vd hVd hsu hsd => ?_, fun hnf Va hVa Vb hVb ha hb0 hb1 => ?_⟩
     · intro G hG ρ hρ hS

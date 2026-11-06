@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.SweepEvWinR2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 8000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 3: the window of the event loop (RAM, part 3)
@@ -24,13 +30,13 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
   {P : Polygon} {W : ℕ} {c₀ c : Config} {J : Merge.Junction} {N₁ N₂ : NF}
 
 theorem wr_sw {i : ℕ} (h1 : 3000 ≤ i) (h2 : i < 6000) : WR (sw i) :=
-  Or.inr (Or.inr ⟨by unfold sw; omega, by unfold sw; omega⟩)
+  Or.inr (Or.inr ⟨by ufo sw, by ufo sw⟩)
 
 theorem ne_of_wr {r q : ℕ} (hr : ¬ WR r) (hq : WR q) : r ≠ q := by rintro rfl; exact hr hq
 
-theorem wr_wX : WR wX := Or.inr (Or.inl ⟨by unfold wX sw; omega, by unfold wX sw; omega⟩)
-theorem wr_wE : WR wE := Or.inr (Or.inl ⟨by unfold wE sw; omega, by unfold wE sw; omega⟩)
-theorem wr_wH : WR wH := Or.inr (Or.inl ⟨by unfold wH sw; omega, by unfold wH sw; omega⟩)
+theorem wr_wX : WR wX := Or.inr (Or.inl ⟨by ufo wX sw, by ufo wX sw⟩)
+theorem wr_wE : WR wE := Or.inr (Or.inl ⟨by ufo wE sw, by ufo wE sw⟩)
+theorem wr_wH : WR wH := Or.inr (Or.inl ⟨by ufo wH sw, by ufo wH sw⟩)
 
 theorem win_off_inj {n g x y : ℝ} (hx0 : 0 ≤ x) (hxn : x < n) (hy0 : 0 ≤ y) (hyn : y < n)
     (h : off n g x = off n g y) : x = y := by
@@ -67,10 +73,8 @@ theorem win_F_nonempty_iff {M : Model} {Q : Polygon} {N : NF} :
 
 theorem win_F_empty_iff {M : Model} {Q : Polygon} {N : NF} :
     N.F M Q = ∅ ↔ N.chords.length = 0 := by
-  rw [← Set.not_nonempty_iff_eq_empty, win_F_nonempty_iff]; omega
+  rwo [← Set.not_nonempty_iff_eq_empty, win_F_nonempty_iff]
 
-set_option maxHeartbeats 8000000 in
-set_option maxRecDepth 20000 in
 /-- **The body.** -/
 theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
     (he1 : c.nreg wE1 < (chainModel J.left).W.n)
@@ -96,15 +100,15 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   set M := chainModel J.left with hMd
   set x₀ := M.key (Qof P) ⟨c.nreg wE1, c.nreg kH⟩ with hx₀
   have hK := E.hK.fix hI
-  have k0 : c.nreg K0 = 0 := hK.1
-  have hP₁ : J.left.P.Simple := E.hP
+  have k0  := hK.1
+  have hP₁  := E.hP
   have hNF := E.hNF₁
   have hQn : (Qof P).n = P.n := shear_n _ _
   unfold bodyS
   by_cases hne : c.nreg K0 < c.nreg wCh
   swap
   · -- the empty family
-    have hemp : N₁.F M (Qof P) = ∅ := by rw [win_F_empty_iff]; rw [k0, hch] at hne; omega
+    have hemp : N₁.F M (Qof P) = ∅ := by rw [win_F_empty_iff]; rwo [k0, hch] at hne
     refine (IRS.ifF hne (win_irs_const' hI wsX (by omega))).mono (by norm_num) ?_
     rintro c' ⟨v, o, m⟩
     refine ⟨c.nreg wO, ho, ?_, fun h => absurd hemp h.ne_empty, fun _ => v,
@@ -112,8 +116,8 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     obtain ⟨a1, a2, a3, a4⟩ := har
     exact ⟨by rw [o _ (by rne), a1], by rw [o _ (by rne), a2], by rw [o _ (by rne), a3],
       by rw [o _ (by rne), a4]⟩
-  have hFne : (N₁.F M (Qof P)).Nonempty := by rw [win_F_nonempty_iff]; rw [k0, hch] at hne; omega
-  refine IRS.mono (K := 22098 + 2) (IRS.ifT hne ?_) le_rfl (fun _ h => h)
+  have hFne : (N₁.F M (Qof P)).Nonempty := by rw [win_F_nonempty_iff]; rwo [k0, hch] at hne
+  refine IRS.mono (K := 22098 + 2) (IRS.ifT hne ?_) le_rfl (fun _ => id)
   -- facts on arcs
   have hpp : ∀ j, j < N₁.arcs.length → ProperPos M (Qof P) P.n (N₁.arc j).e ∧
       (N₁.arc j).e.edge < M.W.n ∧ ((N₁.arc j).e.hgt = 0 → 6 ≤ (N₁.arc j).e.edge) := by
@@ -121,7 +125,7 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     obtain ⟨-, ⟨hpe, hee, -⟩⟩ := arc_end_facts hP₁ hNF hj
     exact ⟨hpe, hee, end6 hP₁ hNF hFne hj⟩
   have hNT := win_nt E hI
-  have hNA : NFAt c.nmem (c.nreg (sw 3)) N₁ := hNT.nfAt
+  have hNA  := hNT.nfAt
   have hA0 := arcs_pos hP₁ hNF
   obtain ⟨b7, b4A, b6A⟩ := NFLoc.nfWithin_bounds hNT hNF hA0
   obtain ⟨-, -, hTB, -⟩ := win_tab E hI
@@ -134,9 +138,9 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   obtain ⟨hpe, hee, he6⟩ := hpp _ hsj
   have hxr := key₁_range (Q := Qof P) he1 hpx
   -- 1. compare with the end of the located arc
-  refine IRS.seq (K₂ := 11082) (cmpS_irs E hI he1 (by rw [hr3]; exact hee) hpx
-    (by rw [hr3, hr4]; exact hpe) h6x (by rw [hr3, hr4]; exact he6) (by omega)) ?_ |>.mono
-    (by norm_num) (fun _ h => h)
+  refine IRS.seq (K₂ := 11082) (cmpS_irs E hI he1 (by rwx [hr3]) hpx
+    (by rwx [hr3, hr4]) h6x (by rwx [hr3, hr4]) (by omega)) ?_ |>.mono
+    (by norm_num) (fun _ => id)
   rintro c₁ hI₁ - - ⟨b1, b2, k1, m1, a1⟩
   have k1' : ∀ r, ¬ WR r → bandOf r ∉ oracleBands → c₁.nreg r = c.nreg r := fun r hr hb =>
     k1 r hb (ne_of_wr hr (wr_sw (i := 3010) (by norm_num) (by norm_num)))
@@ -146,24 +150,24 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     intro q hq
     have hq' : 240000 ≤ q ∧ q < 250000 ∧ q ≠ wC ∧ q ≠ sw 3011 := by
       rcases hq with h | h | h | h | h | h | h | h | h <;> subst h <;>
-        simp only [sw, wO, wA, wR, wEE, wEH, wE1, kH, wD, wC] <;> omega
+        simp [sw, wO, wA, wR, wEE, wEH, wE1, kH, wD, wC] <;> omega
     exact k1 q (not_oracle_sw hq'.1 hq'.2.1) hq'.2.2.1 hq'.2.2.2
   have hEo : (⟨c.nreg wEE, c.nreg wEH⟩ : WPos) = (N₁.arc (OracleQ.sj N₁ o)).e := by
     rw [hr3, hr4]
   rw [hEo] at b1 b2
   -- 2. the successor if the key is the end
   have hK₁ := E.hK.fix hI₁
-  refine IRS.seq (K₂ := 11050) (eqS_irs hI₁ E.hK hNF (by rw [m1, e1 _ (by simp)]; exact hNA)
-    (by rw [e1 _ (by simp)]; omega) (by rw [m1, e1 _ (by simp)]; omega)
-    (by rw [m1, e1 _ (by simp)]; omega) (by rw [e1 _ (by simp)]; exact ho) b1 b2
-    (by rw [e1 _ (by simp)]; exact ⟨by rw [e1 _ (by simp)]; exact hr1,
-      by rw [e1 _ (by simp)]; exact hr2, by rw [e1 _ (by simp)]; exact hr3,
-      by rw [e1 _ (by simp)]; exact hr4⟩)) ?_ |>.mono (by norm_num) (fun _ h => h)
+  refine IRS.seq (K₂ := 11050) (eqS_irs hI₁ E.hK hNF (by rwx [m1, e1 _ (by simp)])
+    (by rwo [e1 _ (by simp)]) (by rwo [m1, e1 _ (by simp)])
+    (by rwo [m1, e1 _ (by simp)]) (by rwx [e1 _ (by simp)]) b1 b2
+    (by rw [e1 _ (by simp)]; exact ⟨by rwx [e1 _ (by simp)],
+      by rwx [e1 _ (by simp)], by rwx [e1 _ (by simp)],
+      by rwx [e1 _ (by simp)]⟩)) ?_ |>.mono (by norm_num) (fun _ => id)
   rintro c₂ hI₂ - - ⟨q1, q2, har2, k2, m2⟩
   set o' := c₂.nreg wO with ho'd
   have nA : ∀ q, (q = wE1 ∨ q = kH ∨ q = wD ∨ q = sw 3) → ¬ ArcW q := by
     intro q hq; rcases hq with h | h | h | h <;> subst h <;>
-      simp only [ArcW, wT, wA, wR, wEE, wEH, wL, wO, wE1, kH, wD, sw] <;> omega
+      simp [ArcW, wT, wA, wR, wEE, wEH, wL, wO, wE1, kH, wD, sw] <;> omega
   have e2 : ∀ q, (q = wE1 ∨ q = kH ∨ q = wD ∨ q = sw 3) → c₂.nreg q = c.nreg q := fun q hq => by
     rw [k2 q (nA q hq), e1 q (by rcases hq with h | h | h | h <;> simp [h])]
   have eo1 : c₁.nreg wO = o := e1 _ (by simp)
@@ -192,13 +196,13 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hsj' : OracleQ.sj N₁ o' < N₁.arcs.length := NFLoc.seq_lt hNF ho'
   obtain ⟨hpe', hee', he6'⟩ := hpp _ hsj'
   have a2 : c₂.nreg ALLOC = c.nreg ALLOC := by
-    rw [k2 _ (by simp only [ArcW, wT, wA, wR, wEE, wEH, wL, wO, ALLOC, sw]; omega), a1]
+    rw [k2 _ (by sio only [ArcW, wT, wA, wR, wEE, wEH, wL, wO, ALLOC, sw]), a1]
   have eE1 := e2 wE1 (by simp)
   have ekH := e2 kH (by simp)
   -- 3. compare with the end of the arc after the key
-  refine IRS.seq (K₂ := 32) (cmpS_irs E hI₂ (by rw [eE1]; exact he1) (by rw [hr3']; exact hee')
-    (by rw [eE1, ekH]; exact hpx) (by rw [hr3', hr4']; exact hpe') (by rw [eE1, ekH]; exact h6x)
-    (by rw [hr3', hr4']; exact he6') (by omega)) ?_ |>.mono (by norm_num) (fun _ h => h)
+  refine IRS.seq (K₂ := 32) (cmpS_irs E hI₂ (by rwx [eE1]) (by rwx [hr3'])
+    (by rwx [eE1, ekH]) (by rwx [hr3', hr4']) (by rwx [eE1, ekH])
+    (by rwx [hr3', hr4']) (by omega)) ?_ |>.mono (by norm_num) (fun _ => id)
   rintro c₃ hI₃ - - ⟨b1', b2', k3, m3, a3⟩
   have hEo' : (⟨c₂.nreg wEE, c₂.nreg wEH⟩ : WPos) = (N₁.arc (OracleQ.sj N₁ o')).e := by
     rw [hr3', hr4']
@@ -207,16 +211,16 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     intro q hq
     have hq' : 240000 ≤ q ∧ q < 250000 ∧ q ≠ wC ∧ q ≠ sw 3011 := by
       rcases hq with h | h | h | h | h <;> subst h <;>
-        simp only [sw, wEE, wEH, wD, wC, wA, wR] <;> omega
+        simp [sw, wEE, wEH, wD, wC, wA, wR] <;> omega
     exact k3 q (not_oracle_sw hq'.1 hq'.2.1) hq'.2.2.1 hq'.2.2.2
   -- 4. the decision
-  refine (decS_irs hI₃ E.hK E.hM b2' (by rw [e3 wEE (by simp), hr3']; exact hee') E.hWn).mono
+  refine (decS_irs hI₃ E.hK E.hM b2' (by rwx [e3 wEE (by simp), hr3']) E.hWn).mono
     (by norm_num) ?_
   rintro c₄ ⟨hdec, k4, m4⟩
   rw [e3 wD (by simp), e2 wD (by simp), e3 wEE (by simp), hr3', e3 wEH (by simp), hr4'] at hdec
   have nD : ∀ q, (q = wA ∨ q = wR ∨ q = wEE ∨ q = wEH) → ¬ DecW q := by
     intro q hq; rcases hq with h | h | h | h <;> subst h <;>
-      simp only [DecW, wX, wE, wH, wDE, wPs, wA, wR, wEE, wEH, sw] <;> omega
+      simp [DecW, wX, wE, wH, wDE, wPs, wA, wR, wEE, wEH, sw] <;> omega
   refine ⟨o', ho', ⟨?_, ?_, ?_, ?_⟩, fun _ => ⟨hin, hdec⟩, fun h => absurd h hFne.ne_empty,
     fun r hr hw => ?_, by rw [m4, m3, m2, m1]⟩
   · rw [k4 _ (nD _ (by simp)), e3 _ (by simp), hr1']

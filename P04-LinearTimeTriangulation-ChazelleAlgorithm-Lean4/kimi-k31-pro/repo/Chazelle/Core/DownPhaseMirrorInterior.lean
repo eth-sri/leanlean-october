@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.DownPhaseMirrorModel
 public import Chazelle.Core.FactsInterior
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Mirror symmetry (F-D7), part 5: the interior model of the mirrored polygon
@@ -53,10 +55,10 @@ theorem chords_mir (Q : Polygon) : Visibility.chords Q.mir = mirF (Visibility.ch
   · rintro ⟨i, σ, hi, hσ, hD, rfl⟩
     rw [mir_n] at hi
     refine ⟨i, -σ, hi, by rcases hσ with rfl | rfl <;> norm_num, ?_, ?_⟩
-    · rw [← dirInterior_mir, neg_neg]; exact hD
+    · rwx [← dirInterior_mir, neg_neg]
     · rw [← neg_neg σ, chordSet_mir, image_mir_image_mir, neg_neg]
   · rintro ⟨i, σ, hi, hσ, hD, hc⟩
-    refine ⟨i, -σ, by rw [mir_n]; exact hi, by rcases hσ with rfl | rfl <;> norm_num,
+    refine ⟨i, -σ, by rwx [mir_n], by rcases hσ with rfl | rfl <;> norm_num,
       (dirInterior_mir Q i σ).2 hD, ?_⟩
     rw [chordSet_mir, ← hc, image_mir_image_mir]
 
@@ -69,7 +71,7 @@ theorem adm_mir (D : Set Point) :
   constructor
   · rintro ⟨y, a, b, hch, rfl⟩
     refine ⟨y, -b, -a, ?_, hseg_mir y a b⟩
-    rw [← isHChordIn_mir, neg_neg, neg_neg]; exact hch
+    rwx [← isHChordIn_mir, neg_neg, neg_neg]
   · rintro ⟨y, a, b, hch, hc⟩
     refine ⟨y, -b, -a, isHChordIn_mir.2 hch, ?_⟩
     rw [← hseg_mir, ← hc, image_mir_image_mir]
@@ -85,7 +87,7 @@ theorem walkMir_interior (hQ : Q.Simple) :
   have h3 := Chazelle.Jordan.simple_three_le hQ
   have hL := leftInside_mir Q hQ
   have hWn := interiorWalk_n Q
-  refine ⟨by rw [interiorWalk_n, interiorWalk_n, mir_n], by rw [hWn]; omega, fun j hj => ?_⟩
+  refine ⟨by rw [interiorWalk_n, interiorWalk_n, mir_n], by rwo [hWn], fun j hj => ?_⟩
   rw [hWn] at hj ⊢
   have hidx : (Q.n - 1 + Q.n - j) % Q.n = Q.n - 1 - j := by
     rw [show Q.n - 1 + Q.n - j = (Q.n - 1 - j) + Q.n * 1 by omega, Nat.add_mul_mod_self_left,
@@ -94,7 +96,7 @@ theorem walkMir_interior (hQ : Q.Simple) :
   unfold interiorWalk
   by_cases hQL : Mountain.LeftInside Q
   · have hM : ¬ Mountain.LeftInside Q.mir := fun h => hL.1 h hQL
-    rw [ite_eq_right hM, ite_eq_left hQL, FactsInterior.rev_vtx _ j (by rw [mir_n]; exact hj), mir_n,
+    rw [ite_eq_right hM, ite_eq_left hQL, FactsInterior.rev_vtx _ j (by rwx [mir_n]), mir_n,
       mir_vtx]
   · have hM : Mountain.LeftInside Q.mir := hL.2 hQL
     rw [ite_eq_left hM, ite_eq_right hQL, FactsInterior.rev_vtx _ _ (by omega), mir_vtx,

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.GranStep4
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-F, part 11: the abstract worklist algorithm
@@ -66,7 +69,7 @@ theorem Inv.step (hE : E.Good) (h : Inv E st) (htop : 0 < st.top) : Inv E (st.st
       by_cases h3 : 3 ≤ st.deg (st.s0 st.cur)
       · exact Or.inr (hdeg h3)
       · exact Or.inl (by omega)
-    · rw [← h.mu_eq hE hc hs]; omega
+    · rwo [← h.mu_eq hE hc hs]
   · exact h.pop_dead htop hl
 
 /-- **The measure drops by at least one per iteration.** -/
@@ -74,8 +77,8 @@ theorem measure_step (hE : E.Good) (h : Inv E st) (htop : 0 < st.top) :
     (st.step E).meas E < st.meas E := by
   unfold St.step St.meas
   split_ifs with hl hdeg hmu
-  · unfold St.pop; simp only; omega
-  · unfold St.pop; simp only; omega
+  · unfold St.pop; sio only
+  · unfold St.pop; sio only
   · have hc : st.cur ∈ st.L E := ⟨h.stk _ (by omega), hl⟩
     obtain ⟨P, hs⟩ := h.split hE hc
     have hlow : st.deg (st.s0 st.cur) < 3 ∨ st.deg (st.s1 st.cur) < 3 := by
@@ -92,7 +95,7 @@ theorem measure_step (hE : E.Good) (h : Inv E st) (htop : 0 < st.top) :
     have e : (E.D + 1) * st.nlive = (E.D + 1) * (st.nlive - 1) + (E.D + 1) := by
       rw [← Nat.mul_succ]; congr 1; omega
     omega
-  · unfold St.pop; simp only; omega
+  · unfold St.pop; sio only
 
 /-! ## The initial state -/
 
@@ -116,7 +119,7 @@ def initSt (E : Env) (nd0 nd1 eg pz : ℕ → ℕ) : St where
   prv := fun j => if 0 < j then j - 1 else E.A - 1
   eg := eg
   pz := pz
-  stk := fun t => t
+  stk := id
   top := E.K
   nlive := E.K
 
@@ -150,9 +153,9 @@ theorem Inv.init (hE : E.Good) {nd0 nd1 eg pz : ℕ → ℕ}
     obtain ⟨i, hi, -⟩ := mem_F_iff.1 hd
     show 1 ≤ E.N.nChords
     omega
-  refine ⟨hstat, fun _ _ => le_rfl, ?_, by rw [hF]; exact hdeg, by rw [hF]; exact hsemi,
+  refine ⟨hstat, fun _ _ => le_rfl, ?_, by rwx [hF], by rwx [hF],
     fun i hi => ?_, fun x hx => ?_, fun x y hx hy he => ?_, fun j hj => rfl, ?_,
-    fun t ht => ht, by simp [st, initSt], fun i hi hno => absurd rfl (hno i hi.1)⟩
+    fun _ => id, by simp [st, initSt], fun i hi hno => absurd rfl (hno i hi.1)⟩
   · show E.K = _
     rw [hL, show {i | i < E.K} = ((Finset.range E.K : Finset ℕ) : Set ℕ) by ext; simp,
       Set.ncard_coe_finset, Finset.card_range]
@@ -183,7 +186,7 @@ theorem Inv.init (hE : E.Good) {nd0 nd1 eg pz : ℕ → ℕ}
       exl_of_list st x rfl fun t _ => rfl
     rw [hcl x hx', hF, hexl]
     refine ⟨(deg_region hE.hNF hE.hRC hE.hRO hx').symm, hwt, hnd, fun i => ?_, ?_⟩
-    · rw [hmem i, hL]; rfl
+    · rwr [hmem i, hL]
     · show (E.N.region x).chords.length ≤ E.D
       rw [← deg_region hE.hNF hE.hRC hE.hRO hx']
       exact hdeg _ (hE.hRC.1 x hx')

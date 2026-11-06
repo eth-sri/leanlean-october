@@ -3,6 +3,11 @@ module
 public import Chazelle.Core.ClusterMarkRam
 public import Chazelle.Core.ClusterSepRam
 public import Chazelle.Core.ClusterArr
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-I, part 32: the split step on the RAM
@@ -129,7 +134,7 @@ theorem SS.Regs.of_frame {S : SS} {c c' : Config} (h : S.Regs c)
     h39, h40, h41, h42, h43, h44⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold SplitRG; omega)]; assumption)
+    (rw [hr _ (by ufo SplitRG)]; assumption)
 
 /-- The median face and the level window. -/
 def medB : Stmt := block [.subN 130302 130301 130300, .addN 130690 130692 130302,
@@ -204,12 +209,12 @@ theorem medB_exec {S : SS} {c : Config} (hw : WordsBounded W c) (hR : S.Regs c) 
       c'.output = c.output := by
   unfold medB
   exec_block
-  all_goals try (config_simp; simp only [hlo, hhi, hR.rHALF, hR.cACT, hR.cFIRST, hR.mLEV,
+  all_goals try (config_simp; simp [hlo, hhi, hR.rHALF, hR.cACT, hR.cFIRST, hR.mLEV,
     hR.rLBOT, hR.rLTOP]; omega)
   refine ⟨rfl, ‹_›, rfl, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl⟩
-  all_goals try (config_simp; simp only [hlo, hhi, hR.rHALF, hR.cACT, hR.cFIRST, hR.mLEV,
+  all_goals try (config_simp; simp [hlo, hhi, hR.rHALF, hR.cACT, hR.cFIRST, hR.mLEV,
     hR.rLBOT, hR.rLTOP]; done)
-  simp only [Machine.upd_apply]; unfold SplitRG at hr; split_ifs <;> omega
+  simp [Machine.upd_apply]; unfold SplitRG at hr; splao
 
 end proofs
 
@@ -316,18 +321,18 @@ theorem marksS_exec {S : SS} {c : Config} (hw : WordsBounded W c) (hR : S.Regs c
     intro cb c1 u hw1 hr1 h1 h2 h3 h4 h5 hu hm1 ⟨c2, k2, e2, hk2, hw2, h2u, h2r, hrr2, hrm2, ho2,
       hm2⟩
     have hr2 : ∀ r, ¬ SplitRG r → c2.nreg r = c.nreg r := fun r hr =>
-      (h2r r (by unfold SplitRG at hr; omega) (by unfold SplitRG at hr; omega)).trans (hr1 r hr)
-    have hC2 := ctx c2 hr2 (by rw [h2r _ (by omega) (by omega)]; exact h1)
-      (by rw [h2r _ (by omega) (by omega)]; exact h2) (by rw [h2r _ (by omega) (by omega)]; exact h3)
-      (by rw [h2r _ (by omega) (by omega)]; exact h4)
+      (h2r r (by ufo SplitRG at hr) (by ufo SplitRG at hr)).trans (hr1 r hr)
+    have hC2 := ctx c2 hr2 (by rwx [h2r _ (by omega) (by omega)])
+      (by rwx [h2r _ (by omega) (by omega)]) (by rwx [h2r _ (by omega) (by omega)])
+      (by rwx [h2r _ (by omega) (by omega)])
     have hM2 : MarkMem c2.nmem W S.bLEV S.bUPT S.bPOW S.L S.bPV S.bPOS S.bDF S.μ up :=
       hM.congr (fun a ha => by rw [hm2]; exact hm1 a ha)
     obtain ⟨c3, k3, e3, hk3, hw3, hm3, h3r, hrr3, hrm3, ho3⟩ := markStmt_exec (P := P) hw2 hC2 hM2
       h2u hu
-    refine ⟨c3, k2 + k3, .seq e2 e3, by omega, hw3, by rw [hm3, hm2]; rfl, fun r hr => ?_, ?_, ?_,
+    refine ⟨c3, k2 + k3, .seq e2 e3, by omega, hw3, by rwr [hm3, hm2], fun r hr => ?_, ?_, ?_,
       ?_, ?_, ?_, hrr3.trans hrr2, hrm3.trans hrm2, ho3.trans ho2⟩
-    · rw [h3r r (by unfold MarkRG; unfold SplitRG at hr; omega)]; exact hr2 r hr
-    all_goals rw [h3r _ (by unfold MarkRG; omega), h2r _ (by omega) (by omega)]; assumption
+    · rw [h3r r (by unfold MarkRG; ufo SplitRG at hr)]; exact hr2 r hr
+    all_goals rw [h3r _ (by ufo MarkRG), h2r _ (by omega) (by omega)]; assumption
   have hmr : ∀ (m : ℕ → ℕ), (∀ a, ¬ (S.bDF ≤ a ∧ a < S.bDF + S.μ) → m a = c.nmem a) →
       ∀ u, u < S.μ → ∀ a, ¬ (S.bDF ≤ a ∧ a < S.bDF + S.μ) →
         markStep m S lo hi lbot ltop up u a = c.nmem a := fun m hm u hu a ha => by
@@ -337,10 +342,10 @@ theorem marksS_exec {S : SS} {c : Config} (hw : WordsBounded W c) (hR : S.Regs c
     step c0B c u0 hw (fun _ _ => rfl) hlo hhi hbot htop hf h0 (fun _ _ => rfl) (by
       unfold c0B
       exec_block
-      · rw [hR.rVERT, hf]; exact hw0
+      · rwx [hR.rVERT, hf]
       · refine ⟨by omega, ‹_›, by config_simp; rw [hR.rVERT, hf, hu0], fun r h1 h2 => ?_, rfl, rfl,
           rfl, rfl⟩
-        simp only [Machine.upd_apply, h1, h2, ite_false])
+        simp [Machine.upd_apply, h1, h2, ite_false])
   -- corner 1
   have hm3' : ∀ a, ¬ (S.bDF ≤ a ∧ a < S.bDF + S.μ) → c3.nmem a = c.nmem a := by
     rw [hm3]; exact hmr c.nmem (fun _ _ => rfl) u0 h0
@@ -351,10 +356,10 @@ theorem marksS_exec {S : SS} {c : Config} (hw : WordsBounded W c) (hR : S.Regs c
       have r2 := hm3' (S.bVERT + c.nmem (S.bOPP + f)) (hd _ (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
       unfold c1B
       exec_block
-      all_goals try (config_simp; simp only [hR3.rOPP, hR3.rVERT, h3f, r1]; omega)
-      refine ⟨by omega, ‹_›, by config_simp; simp only [hR3.rOPP, hR3.rVERT, h3f, r1, r2, hu1],
+      all_goals try (config_simp; sio only [hR3.rOPP, hR3.rVERT, h3f, r1])
+      refine ⟨by omega, ‹_›, by config_simp; simp [hR3.rOPP, hR3.rVERT, h3f, r1, r2, hu1],
         fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-      simp only [Machine.upd_apply, h1, h2, ite_false])
+      simp [Machine.upd_apply, h1, h2, ite_false])
   -- corner 2
   have hm4' : ∀ a, ¬ (S.bDF ≤ a ∧ a < S.bDF + S.μ) → c4.nmem a = c.nmem a := by
     rw [hm4]; exact hmr c3.nmem hm3' u1 h1
@@ -365,10 +370,10 @@ theorem marksS_exec {S : SS} {c : Config} (hw : WordsBounded W c) (hR : S.Regs c
       have r2 := hm4' (S.bVERT + c.nmem (S.bATT + f)) (hd _ (Or.inr (Or.inr (Or.inr (Or.inr rfl)))))
       unfold c2B
       exec_block
-      all_goals try (config_simp; simp only [hR4.rATT, hR4.rVERT, h4f, r1]; omega)
-      refine ⟨by omega, ‹_›, by config_simp; simp only [hR4.rATT, hR4.rVERT, h4f, r1, r2, hu2],
+      all_goals try (config_simp; sio only [hR4.rATT, hR4.rVERT, h4f, r1])
+      refine ⟨by omega, ‹_›, by config_simp; simp [hR4.rATT, hR4.rVERT, h4f, r1, r2, hu2],
         fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-      simp only [Machine.upd_apply, h1, h2, ite_false])
+      simp [Machine.upd_apply, h1, h2, ite_false])
   refine ⟨c5, k3 + (k4 + k5), .seq e3 (.seq e4 e5), by omega, hw5, by rw [hm5, hm4, hm3], hr5,
     h5f, h5lo, h5hi, by rw [hrr5, hrr4, hrr3], by rw [hrm5, hrm4, hrm3], by rw [ho5, ho4, ho3]⟩
 
@@ -409,17 +414,17 @@ theorem classPass_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c
     funext i
     unfold SelP SelI
     rw [htest]
-  have r1 : ∀ r, ¬ CpRG r → c1.nreg r = c.nreg r := hr1
+  have r1  := hr1
   have hC : PassCtx c1 lo hi (c1.nreg 130637) (c1.nreg 130638) (c1.nreg 130639) S.bTMP S.bACT
       S.bPOS S.bDF S.bFIRST S.bFPRE := by
     refine ⟨?_, ?_, ?_, ?_, rfl, rfl, rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-      rw [r1 _ (by unfold CpRG; omega)]
+      rw [r1 _ (by ufo CpRG)]
     exacts [hR.one, hR.zero, hlo, hhi, hR.aTMP, hR.aACT, hR.aPOS, hR.aDF, hR.aFIRST, hR.aFPRE]
-  have hPM := hL.passMem (m := c1.nmem) hlh hhiμ (by rw [hm1]; exact hit)
-    (by rw [hm1]; exact hfirst)
+  have hPM := hL.passMem (m := c1.nmem) hlh hhiμ (by rwx [hm1])
+    (by rwx [hm1])
   rw [← hm1] at hsel
   obtain ⟨c2, k2, e2, hk2, hw2, hm2, hp2, hr2, hrr2, hrm2, ho2⟩ := passStmt_exec (P := P) hw1 hC hPM
-    hloe (by rw [r1 _ (by unfold CpRG; omega)]; exact he) (by rw [hsel, hm1]; exact hfin)
+    hloe (by rwx [r1 _ (by ufo CpRG)]) (by rwx [hsel, hm1])
   refine ⟨c2, k1 + k2, .seq e1 e2, by omega, hw2, by rw [hm2, hsel, hm1], by rw [hp2, hsel, hm1],
     fun r hr => ?_, hrr2.trans hrr1, hrm2.trans hrm1, ho2.trans ho1⟩
   rw [hr2 r (fun h => hr (Or.inr h)), r1 r (fun h => hr (Or.inl h))]
@@ -457,7 +462,7 @@ theorem SelI_congr {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m' : ℕ → ℕ
   have e8 : m' (S.bSO + m (S.bFPAR + f)) = m (S.bSO + m (S.bFPAR + f)) :=
     hm _ (by omega) (by omega)
   unfold SelI inClass
-  simp only [e1, e2, e3, e4, e5, e6, g1, g2, g3, f1, f2, f3, e8]
+  simp [e1, e2, e3, e4, e5, e6, g1, g2, g3, f1, f2, f3, e8]
 
 theorem CpMem.congr_lay {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m' : ℕ → ℕ}
     (hCp : CpMem m W S.bSO S.bSF S.bFPAR S.bFPRE S.bFSZ S.N)
@@ -538,7 +543,7 @@ theorem passesS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) 
   have := hL.hTMP; have := hL.hFIRST; have := hL.hW
   have hfr : ∀ (c1 c2 : Config), (∀ r, ¬ (CpRG r ∨ PassRG r) → c2.nreg r = c1.nreg r) →
       ∀ r, ¬ SplitRG r → c2.nreg r = c1.nreg r := fun c1 c2 h r hr =>
-    h r (by unfold CpRG PassRG; unfold SplitRG at hr; omega)
+    h r (by unfold CpRG PassRG; ufo SplitRG at hr)
   -- the congruences for memories changed only in `ACT` and `POS`
   have transfer : ∀ m' : ℕ → ℕ, (∀ a, ¬ (S.bACT ≤ a ∧ a < S.bACT + S.μ) →
       ¬ (S.bPOS ≤ a ∧ a < S.bPOS + S.μ) → m' a = m a) →
@@ -551,7 +556,7 @@ theorem passesS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) 
       (by omega), fun X hX => SelI_congr hL hCp hhiμ hit hfirst hX hfN hm'⟩
     · rw [hm' _ (by omega) (by omega)]; exact hit i h1 h2
     · rw [hm' _ (by omega) (by omega)]; exact hfirst v hv
-  have hX1 : X1 < 3 * S.N := by simp only [X1]; omega
+  have hX1 : X1 < 3 * S.N := by sio only [X1]
   have hs0 : lo + cntS sl0 lo hi ≤ hi := by omega
   have hs1 : lo + cntS sl0 lo hi + cntS sl1 lo hi ≤ hi := by omega
   have hs2 : lo + cntS sl0 lo hi + cntS sl1 lo hi + cntS sl2 lo hi ≤ hi := by omega
@@ -570,44 +575,44 @@ theorem passesS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) 
     exec_block
     refine ⟨rfl, ‹_›, by config_simp; exact hlo, by config_simp; exact hlo, by config_simp; exact hf,
       by config_simp; exact hf, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only [Machine.upd_apply, h1, h2, h3, h4, ite_false]
-  have hR1 := hR.of_frame (fun r hr => h1r r (by unfold SplitRG at hr; omega)
-    (by unfold SplitRG at hr; omega) (by unfold SplitRG at hr; omega)
-    (by unfold SplitRG at hr; omega))
+    simp [Machine.upd_apply, h1, h2, h3, h4, ite_false]
+  have hR1 := hR.of_frame (fun r hr => h1r r (by ufo SplitRG at hr)
+    (by ufo SplitRG at hr) (by ufo SplitRG at hr)
+    (by ufo SplitRG at hr))
   have g1 : ∀ r, r = 130300 ∨ r = 130301 ∨ r = 130344 → c1.nreg r = c.nreg r := fun r hr =>
     h1r r (by omega) (by omega) (by omega) (by omega)
   -- pass 0
   obtain ⟨c2, k2, e2, hk2, hw2, hm2, hp2, hr2, hrr2, hrm2, ho2⟩ := classPass_exec (P := P) hw1 hR1
-    hL (by rw [g1 _ (by omega)]; exact hlo) (by rw [g1 _ (by omega)]; exact hhi) h1c h1d h1a
-    (by omega) hfN (by rw [hm1]; exact hCp) hlh hhiμ (by rw [hm1]; exact hit)
-    (by rw [hm1]; exact hfirst) le_rfl (by rw [hm1, hsp]; exact hs0)
+    hL (by rwx [g1 _ (by omega)]) (by rwx [g1 _ (by omega)]) h1c h1d h1a
+    (by omega) hfN (by rwx [hm1]) hlh hhiμ (by rwx [hm1])
+    (by rwx [hm1]) le_rfl (by rwx [hm1, hsp])
   rw [hm1] at hm2 hp2
   rw [hsp] at hp2
   have hA : (passA m S lo hi f).2 = lo + cntS sl0 lo hi := by unfold passA; rw [hsp]
-  have hm2' : c2.nmem = (passA m S lo hi f).1 := hm2
+  have hm2'  := hm2
   have hout1 : ∀ a, ¬ (S.bACT ≤ a ∧ a < S.bACT + S.μ) → ¬ (S.bPOS ≤ a ∧ a < S.bPOS + S.μ) →
       c2.nmem a = m a := by
     rw [hm2]; exact passMem_out hL hhiμ hit hs0 hlh
   obtain ⟨cp1, it1, fi1, fp1, se1⟩ := transfer _ hout1
   have hR2 := hR1.of_frame (hfr c1 c2 hr2)
   have g2 : ∀ r, r = 130300 ∨ r = 130301 ∨ r = 130344 ∨ r = 130670 → c2.nreg r = c1.nreg r :=
-    fun r hr => hr2 r (by unfold CpRG PassRG; omega)
+    fun r hr => hr2 r (by ufo CpRG PassRG)
   -- block 1
   obtain ⟨c3, k3, e3, hk3, hw3, h3a, h3b, h3r, hrr3, hrm3, ho3, hm3⟩ : ∃ c3 k3, Exec P W
       pB1 c2 c3 k3 ∧ k3 = 4 ∧ WordsBounded W c3 ∧ c3.nreg 130671 = lo + cntS sl0 lo hi ∧
       c3.nreg 130630 = X1 ∧
       (∀ r, r ≠ 130671 → r ≠ 130693 → r ≠ 130630 → c3.nreg r = c2.nreg r) ∧
       c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output ∧ c3.nmem = c2.nmem := by
-    have hf2 : c2.nreg 130344 = f := by rw [g2 _ (by omega), g1 _ (by omega)]; exact hf
+    have hf2 : c2.nreg 130344 = f := by rwx [g2 _ (by omega), g1 _ (by omega)]
     unfold pB1
     exec_block
-    all_goals try (config_simp; simp only [hR2.rFP, hR2.r2N, hf2, fp1]; omega)
+    all_goals try (config_simp; sio only [hR2.rFP, hR2.r2N, hf2, fp1])
     refine ⟨rfl, ‹_›, by config_simp; exact hp2, by
-      config_simp; simp only [hR2.rFP, hR2.r2N, hf2, fp1]; rfl, fun r h1 h2 h3 => ?_, rfl, rfl,
+      config_simp; sirfl only [hR2.rFP, hR2.r2N, hf2, fp1], fun r h1 h2 h3 => ?_, rfl, rfl,
       rfl, rfl⟩
-    simp only [Machine.upd_apply, h1, h2, h3, ite_false]
-  have hR3 := hR2.of_frame (fun r hr => h3r r (by unfold SplitRG at hr; omega)
-    (by unfold SplitRG at hr; omega) (by unfold SplitRG at hr; omega))
+    simp [Machine.upd_apply, h1, h2, h3, ite_false]
+  have hR3 := hR2.of_frame (fun r hr => h3r r (by ufo SplitRG at hr)
+    (by ufo SplitRG at hr) (by ufo SplitRG at hr))
   have g3 : ∀ r, r = 130300 ∨ r = 130301 ∨ r = 130344 ∨ r = 130670 ∨ r = 130656 →
       c3.nreg r = c2.nreg r := fun r hr => h3r r (by omega) (by omega) (by omega)
   -- pass 1
@@ -618,15 +623,15 @@ theorem passesS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) 
   have hcnt1 : cntS (SelI c2.nmem S X1 f) lo hi = cntS sl1 lo hi :=
     cntS_congr (fun i h1 h2 => hsel1 i h1 (by omega))
   obtain ⟨c4, k4, e4, hk4, hw4, hm4, hp4, hr4, hrr4, hrm4, ho4⟩ := classPass_exec (P := P)
-    (lo := lo) (hi := hi) (X := X1) (f := f) (e := lo + cntS sl0 lo hi) hw3 hR3 hL (by rw [g3 _ (by omega), g2 _ (by omega), g1 _ (by omega)]; exact hlo)
-    (by rw [g3 _ (by omega), g2 _ (by omega), g1 _ (by omega)]; exact hhi) h3b
-    (by rw [h3r _ (by omega) (by omega) (by omega), hr2 _ (by unfold CpRG PassRG; omega)]; exact h1d)
-    (by rw [g3 _ (by omega)]; exact hp2) hX1 hfN (by rw [hm3]; exact cp1) hlh hhiμ
+    (lo := lo) (hi := hi) (X := X1) (f := f) (e := lo + cntS sl0 lo hi) hw3 hR3 hL (by rwx [g3 _ (by omega), g2 _ (by omega), g1 _ (by omega)])
+    (by rwx [g3 _ (by omega), g2 _ (by omega), g1 _ (by omega)]) h3b
+    (by rwx [h3r _ (by omega) (by omega) (by omega), hr2 _ (by ufo CpRG PassRG)])
+    (by rwx [g3 _ (by omega)]) hX1 hfN (by rw [hm3]; exact cp1) hlh hhiμ
     (by rw [hm3]; exact it1) (by rw [hm3]; exact fi1) (by omega)
-    (by rw [hm3, hsp, hcnt1]; exact hs1)
+    (by rwx [hm3, hsp, hcnt1])
   rw [hm3, hpc1] at hm4 hp4
   rw [hsp] at hp4
-  have hm4' : c4.nmem = (passB m S lo hi f).1 := by rw [hm4, hm2', ← hA]; rfl
+  have hm4' : c4.nmem = (passB m S lo hi f).1 := by rwr [hm4, hm2', ← hA]
   have hout2 : ∀ a, ¬ (S.bACT ≤ a ∧ a < S.bACT + S.μ) → ¬ (S.bPOS ≤ a ∧ a < S.bPOS + S.μ) →
       c4.nmem a = m a := by
     intro a h1 h2
@@ -635,7 +640,7 @@ theorem passesS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) 
   obtain ⟨cp2, it2, fi2, fp2, se2⟩ := transfer _ hout2
   have hR4 := hR3.of_frame (hfr c3 c4 hr4)
   have g4 : ∀ r, r = 130300 ∨ r = 130301 ∨ r = 130344 ∨ r = 130670 ∨ r = 130671 →
-      c4.nreg r = c3.nreg r := fun r hr => hr4 r (by unfold CpRG PassRG; omega)
+      c4.nreg r = c3.nreg r := fun r hr => hr4 r (by ufo CpRG PassRG)
   -- block 2
   obtain ⟨c5, k5, e5, hk5, hw5, h5a, h5b, h5r, hrr5, hrm5, ho5, hm5⟩ : ∃ c5 k5, Exec P W
       pB2 c4 c5 k5 ∧ k5 = 2 ∧ WordsBounded W c5 ∧
@@ -643,15 +648,15 @@ theorem passesS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) 
       (∀ r, r ≠ 130672 → r ≠ 130630 → c5.nreg r = c4.nreg r) ∧
       c5.rreg = c4.rreg ∧ c5.rmem = c4.rmem ∧ c5.output = c4.output ∧ c5.nmem = c4.nmem := by
     have hf4 : c4.nreg 130344 = f := by
-      rw [g4 _ (by omega), g3 _ (by omega), g2 _ (by omega), g1 _ (by omega)]; exact hf
+      rwx [g4 _ (by omega), g3 _ (by omega), g2 _ (by omega), g1 _ (by omega)]
     unfold pB2
     exec_block
-    · config_simp; rw [hR4.rN, hf4]; omega
+    · config_simp; rwo [hR4.rN, hf4]
     · refine ⟨rfl, ‹_›, by config_simp; exact hp4, by config_simp; rw [hR4.rN, hf4],
         fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-      simp only [Machine.upd_apply, h1, h2, ite_false]
-  have hR5 := hR4.of_frame (fun r hr => h5r r (by unfold SplitRG at hr; omega)
-    (by unfold SplitRG at hr; omega))
+      simp [Machine.upd_apply, h1, h2, ite_false]
+  have hR5 := hR4.of_frame (fun r hr => h5r r (by ufo SplitRG at hr)
+    (by ufo SplitRG at hr))
   have g5 : ∀ r, r = 130300 ∨ r = 130301 ∨ r = 130344 ∨ r = 130670 ∨ r = 130671 ∨ r = 130656 →
       c5.nreg r = c4.nreg r := fun r hr => h5r r (by omega) (by omega)
   -- pass 2
@@ -665,21 +670,21 @@ theorem passesS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) 
     (lo := lo) (hi := hi) (X := S.N + f) (f := f) (e := lo + cntS sl0 lo hi + cntS sl1 lo hi)
     hw5 hR5 hL (by rw [g5 _ (by omega), g4 _ (by omega), g3 _ (by omega), g2 _ (by omega),
       g1 _ (by omega)]; exact hlo)
-    (by rw [g5 _ (by omega), g4 _ (by omega), g3 _ (by omega), g2 _ (by omega), g1 _ (by omega)]; exact hhi)
+    (by rwx [g5 _ (by omega), g4 _ (by omega), g3 _ (by omega), g2 _ (by omega), g1 _ (by omega)])
     h5b
-    (by rw [h5r _ (by omega) (by omega), hr4 _ (by unfold CpRG PassRG; omega),
-      h3r _ (by omega) (by omega) (by omega), hr2 _ (by unfold CpRG PassRG; omega)]; exact h1d)
-    (by rw [g5 _ (by omega)]; exact hp4) hX2 hfN (by rw [hm5]; exact cp2) hlh hhiμ
+    (by rw [h5r _ (by omega) (by omega), hr4 _ (by ufo CpRG PassRG),
+      h3r _ (by omega) (by omega) (by omega), hr2 _ (by ufo CpRG PassRG)]; exact h1d)
+    (by rwx [g5 _ (by omega)]) hX2 hfN (by rw [hm5]; exact cp2) hlh hhiμ
     (by rw [hm5]; exact it2) (by rw [hm5]; exact fi2) (by omega)
-    (by rw [hm5, hsp, hcnt2]; exact hs2)
+    (by rwx [hm5, hsp, hcnt2])
   rw [hm5, hpc2] at hm6 hp6
   rw [hsp] at hp6
   have hB : (passB m S lo hi f).2 = lo + cntS sl0 lo hi + cntS sl1 lo hi := by
     unfold passB; rw [hsp, hA]
-  have hm6' : c6.nmem = (passC m S lo hi f).1 := by rw [hm6, hm4', ← hB]; rfl
+  have hm6' : c6.nmem = (passC m S lo hi f).1 := by rwr [hm6, hm4', ← hB]
   have hR6 := hR5.of_frame (hfr c5 c6 hr6)
   have g6 : ∀ r, r = 130300 ∨ r = 130301 ∨ r = 130344 ∨ r = 130670 ∨ r = 130671 ∨ r = 130672 →
-      c6.nreg r = c5.nreg r := fun r hr => hr6 r (by unfold CpRG PassRG; omega)
+      c6.nreg r = c5.nreg r := fun r hr => hr6 r (by ufo CpRG PassRG)
   -- block 3
   have e7 := Exec.copyN (P := P) hw6 130673 130656
   have kk6 : ∀ r, r ≠ 130673 → upd c6.nreg 130673 (c6.nreg 130656) r = c6.nreg r :=
@@ -697,24 +702,24 @@ theorem passesS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) 
     rw [g6 _ (by omega), g5 _ (by omega), g4 _ (by omega), g3 _ (by omega), g2 _ (by omega)]
     exact h1b
   have r671 : c6.nreg 130671 = lo + cntS sl0 lo hi := by
-    rw [g6 _ (by omega), g5 _ (by omega), g4 _ (by omega)]; exact h3a
+    rwx [g6 _ (by omega), g5 _ (by omega), g4 _ (by omega)]
   have r672 : c6.nreg 130672 = lo + cntS sl0 lo hi + cntS sl1 lo hi := by
-    rw [g6 _ (by omega)]; exact h5a
+    rwx [g6 _ (by omega)]
   have hframe : ∀ r, ¬ SplitRG r → c6.nreg r = c.nreg r := fun r hr => by
-    rw [hfr c5 c6 hr6 r hr, h5r r (by unfold SplitRG at hr; omega) (by unfold SplitRG at hr; omega),
-      hfr c3 c4 hr4 r hr, h3r r (by unfold SplitRG at hr; omega) (by unfold SplitRG at hr; omega)
-      (by unfold SplitRG at hr; omega), hfr c1 c2 hr2 r hr, h1r r (by unfold SplitRG at hr; omega)
-      (by unfold SplitRG at hr; omega) (by unfold SplitRG at hr; omega)
-      (by unfold SplitRG at hr; omega)]
+    rw [hfr c5 c6 hr6 r hr, h5r r (by ufo SplitRG at hr) (by ufo SplitRG at hr),
+      hfr c3 c4 hr4 r hr, h3r r (by ufo SplitRG at hr) (by ufo SplitRG at hr)
+      (by ufo SplitRG at hr), hfr c1 c2 hr2 r hr, h1r r (by ufo SplitRG at hr)
+      (by ufo SplitRG at hr) (by ufo SplitRG at hr)
+      (by ufo SplitRG at hr)]
   subst hk1 hk3 hk5
   refine ⟨_, 4 + (k2 + (4 + (k4 + (2 + (k6 + 1))))), .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5
-    (.seq e6 e7))))), by omega, e7.wb_right, hm6', by dsimp only; rw [kk6 _ (by omega)]; exact r670,
-    by dsimp only; rw [kk6 _ (by omega)]; exact r671,
-    by dsimp only; rw [kk6 _ (by omega)]; exact r672,
-    by dsimp only; simp only [Machine.upd_same]; rw [hp6], fun r hr => by
-      dsimp only; rw [kk6 r (by unfold SplitRG at hr; omega)]; exact hframe r hr,
-    by dsimp only; rw [kk6 _ (by omega)]; exact r344, by dsimp only; rw [kk6 _ (by omega)]; exact r300,
-    by dsimp only; rw [kk6 _ (by omega)]; exact r301, ?_, ?_, ?_⟩
+    (.seq e6 e7))))), by omega, e7.wb_right, hm6', by dsimp; rwx [kk6 _ (by omega)],
+    by dsimp; rwx [kk6 _ (by omega)],
+    by dsimp; rwx [kk6 _ (by omega)],
+    by dsimp; simp [Machine.upd_same]; rw [hp6], fun r hr => by
+      dsimp; rw [kk6 r (by ufo SplitRG at hr)]; exact hframe r hr,
+    by dsimp; rwx [kk6 _ (by omega)], by dsimp; rwx [kk6 _ (by omega)],
+    by dsimp; rwx [kk6 _ (by omega)], ?_, ?_, ?_⟩
   · show c6.rreg = c.rreg; rw [hrr6, hrr5, hrr4, hrr3, hrr2, hrr1]
   · show c6.rmem = c.rmem; rw [hrm6, hrm5, hrm4, hrm3, hrm2, hrm1]
   · show c6.output = c.output; rw [ho6, ho5, ho4, ho3, ho2, ho1]
@@ -744,11 +749,11 @@ theorem copyS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) (h
         c1.nreg r = c.nreg r) ∧ c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output ∧
       c1.nmem = c.nmem := by
     exec_block
-    all_goals try (config_simp; simp only [hR.aTMP, hR.cACT, hlo]; omega)
-    refine ⟨rfl, ‹_›, by config_simp; simp only [hR.aTMP, hlo], by
-      config_simp; simp only [hR.cACT, hlo], by config_simp; rw [hhi, hlo], by
+    all_goals try (config_simp; sio only [hR.aTMP, hR.cACT, hlo])
+    refine ⟨rfl, ‹_›, by config_simp; simp [hR.aTMP, hlo], by
+      config_simp; simp [hR.cACT, hlo], by config_simp; rw [hhi, hlo], by
       config_simp; exact hR.zero, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only [Machine.upd_apply, h1, h2, h3, h4, ite_false]
+    simp [Machine.upd_apply, h1, h2, h3, h4, ite_false]
   have h11 : c1.nreg 130001 = 1 := (h1r _ (by omega) (by omega) (by omega) (by omega)).trans hR.one
   obtain ⟨c2, k2, e2, hk2, hw2, hf2, hm2⟩ := shStmt_exec (P := P) hw1 h11 h1o h1i h1n h1a
     (by omega) (by omega) (by omega) (fun i hi => by have := hw1.2 (S.bACT + lo + i); omega)
@@ -760,10 +765,10 @@ theorem copyS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) (h
         show S.bACT + lo + (a - (S.bTMP + lo)) = S.bACT + (a - S.bTMP) by omega] at this
       omega
     · rw [hf2.2.2.2.2 a (by omega), hm1]
-  · rw [hf2.1 r (by unfold ArrRG; unfold SplitRG at hr; omega)]
-    exact h1r r (by unfold SplitRG at hr; omega) (by unfold SplitRG at hr; omega)
-      (by unfold SplitRG at hr; omega) (by unfold SplitRG at hr; omega)
-  · rw [hf2.1 r (by unfold ArrRG; omega)]
+  · rw [hf2.1 r (by unfold ArrRG; ufo SplitRG at hr)]
+    exact h1r r (by ufo SplitRG at hr) (by ufo SplitRG at hr)
+      (by ufo SplitRG at hr) (by ufo SplitRG at hr)
+  · rw [hf2.1 r (by ufo ArrRG)]
     exact h1r r (by omega) (by omega) (by omega) (by omega)
 
 /-- Push the large classes. -/
@@ -802,22 +807,22 @@ theorem pushS_exec {S : SS} {c : Config} (hw : WordsBounded W c) (hR : S.Regs c)
       hrr2, hrm2, ho2⟩
     unfold pushF
     split_ifs with h
-    · rw [ite_eq_left h] at hm2 htp2; simp only [hm2, htp2]
-    · rw [ite_eq_right h] at hm2 htp2; simp only [hm2, htp2]
+    · rw [ite_eq_left h] at hm2 htp2; simp [hm2, htp2]
+    · rw [ite_eq_right h] at hm2 htp2; simp [hm2, htp2]
   obtain ⟨c1, k1, x1, hk1, hw1, hq1, hr1, hrr1, hrm1, ho1⟩ := step 0 c e0 e1 (by omega) hw
     (fun _ _ _ _ => rfl) h0 h1 (by omega)
   have hq1' := pushF_snd_le S.bSTK S.s e0 e1 (c.nmem, c.nreg 130701)
   rw [← hq1] at hq1'
-  simp only at hq1'
+  simp at hq1'
   obtain ⟨c2, k2, x2, hk2, hw2, hq2, hr2, hrr2, hrm2, ho2⟩ := step 1 c1 e1 e2 (by omega) hw1 hr1
-    (by rw [hr1 _ (by omega) (by omega) (by omega)]; exact h1)
-    (by rw [hr1 _ (by omega) (by omega) (by omega)]; exact h2) (by omega)
+    (by rwx [hr1 _ (by omega) (by omega) (by omega)])
+    (by rwx [hr1 _ (by omega) (by omega) (by omega)]) (by omega)
   have hq2' := pushF_snd_le S.bSTK S.s e1 e2 (c1.nmem, c1.nreg 130701)
   rw [← hq2] at hq2'
-  simp only at hq2'
+  simp at hq2'
   obtain ⟨c3, k3, x3, hk3, hw3, hq3, hr3, hrr3, hrm3, ho3⟩ := step 2 c2 e2 e3 (by omega) hw2 hr2
-    (by rw [hr2 _ (by omega) (by omega) (by omega)]; exact h2)
-    (by rw [hr2 _ (by omega) (by omega) (by omega)]; exact h3) (by omega)
+    (by rwx [hr2 _ (by omega) (by omega) (by omega)])
+    (by rwx [hr2 _ (by omega) (by omega) (by omega)]) (by omega)
   refine ⟨c3, k1 + (k2 + k3), .seq x1 (.seq x2 x3), by omega, hw3, ?_, hr3, by rw [hrr3, hrr2, hrr1],
     by rw [hrm3, hrm2, hrm1], by rw [ho3, ho2, ho1]⟩
   rw [hq3, hq2, hq1, htp]

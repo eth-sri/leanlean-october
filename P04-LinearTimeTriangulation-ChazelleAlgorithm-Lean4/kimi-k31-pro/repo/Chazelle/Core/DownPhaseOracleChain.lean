@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.ShootCutPiece
 public import Chazelle.Core.Lemma41Host
 public import Chazelle.Core.DownPhaseTransSide
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (E7-B, part 1): the chain of an interior subarc
@@ -76,7 +77,7 @@ theorem sub_idx {n a m d : ℕ} (hn : 0 < n) (hd : d ≤ m) (hdn : d < n) :
   rcases Nat.lt_or_ge r d with h | h
   · obtain ⟨q', rfl⟩ : ∃ q', q = q' + 1 := by
       rcases Nat.eq_zero_or_pos q with h0 | h0
-      · subst h0; rw [mul_zero, zero_add] at h1; omega
+      · subst h0; rwo [mul_zero, zero_add] at h1
       · exact ⟨q - 1, by omega⟩
     have e2 : n * (q' + 1) = n * q' + n := by rw [mul_add, mul_one]
     have e : a + (m - d) = (r + n - d) + n * q' := by omega

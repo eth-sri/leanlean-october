@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.WalkEmbed
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Walk embeddings, part 2: the walk of a chain model read from a tour position (gap O1)
@@ -282,12 +285,12 @@ theorem tourV_left {e : ℕ} (he : e ≤ 2 * J.m₁) :
   rcases Nat.lt_or_ge e J.m₁ with h | h
   · rw [Nat.mod_eq_of_lt (show J.m₁ + 2 * J.m₂ + e < 2 * (J.m₁ + J.m₂) by omega),
       Nat.mod_eq_of_lt (show J.m₁ + e < 2 * J.m₁ by omega)]
-    unfold sideE; split_ifs <;> omega
+    unfold sideE; splao
   · rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤ J.m₁ + 2 * J.m₂ + e by omega),
       Nat.mod_eq_of_lt (show J.m₁ + 2 * J.m₂ + e - 2 * (J.m₁ + J.m₂) < 2 * (J.m₁ + J.m₂) by omega),
       Nat.mod_eq_sub_mod (show 2 * J.m₁ ≤ J.m₁ + e by omega),
       Nat.mod_eq_of_lt (show J.m₁ + e - 2 * J.m₁ < 2 * J.m₁ by omega)]
-    unfold sideE; split_ifs <;> omega
+    unfold sideE; splao
 
 /-- **The right half of the tour**: the tour of `C₂` read from the shared vertex (tour position
 `0`) is the tour of `C` read from the copy of the shared vertex left towards `C₂` (tour position
@@ -302,18 +305,18 @@ theorem tourV_right {e : ℕ} (he : e ≤ 2 * J.m₂) :
   rcases Nat.lt_or_ge e (2 * J.m₂) with h | h
   · rw [Nat.mod_eq_of_lt h]
     rcases le_or_gt e J.m₂ with h' | h'
-    · have e1 : sideE (J.m₁ + J.m₂) (J.m₁ + e) = J.m₁ + e := by unfold sideE; split_ifs <;> omega
-      have e2 : sideE J.m₂ e = e := by unfold sideE; split_ifs <;> omega
+    · have e1 : sideE (J.m₁ + J.m₂) (J.m₁ + e) = J.m₁ + e := by unfold sideE; splao
+      have e2 : sideE J.m₂ e = e := by unfold sideE; splao
       rw [e1, e2, Merge.Junction.whole_vertex_add]
     · have e1 : sideE (J.m₁ + J.m₂) (J.m₁ + e) = J.m₁ + (2 * J.m₂ - e) := by
-        unfold sideE; split_ifs <;> omega
-      have e2 : sideE J.m₂ e = 2 * J.m₂ - e := by unfold sideE; split_ifs <;> omega
+        unfold sideE; splao
+      have e2 : sideE J.m₂ e = 2 * J.m₂ - e := by unfold sideE; splao
       rw [e1, e2, Merge.Junction.whole_vertex_add]
   · have he' : e = 2 * J.m₂ := by omega
     subst he'
     rw [Nat.mod_self]
     have e1 : sideE (J.m₁ + J.m₂) (J.m₁ + 2 * J.m₂) = J.m₁ + 0 := by
-      unfold sideE; split_ifs <;> omega
+      unfold sideE; splao
     rw [e1, Chain.sideE_zero, Merge.Junction.whole_vertex_add]
 
 /-- The shared vertex starts the left tour. -/
@@ -321,7 +324,7 @@ theorem tourV_left_zero : tourV J.left J.m₁ 0 = J.shared := by
   unfold tourV
   simp only [Merge.Junction.left_m, add_zero]
   rw [Nat.mod_eq_of_lt (by have := J.one_le_m₁; omega)]
-  unfold sideE; rw [ite_eq_left le_rfl]; rfl
+  urr sideE [ite_eq_left le_rfl]
 
 /-- The shared vertex ends the left tour. -/
 theorem tourV_left_end : tourV J.left J.m₁ (2 * J.m₁) = J.shared := by
@@ -350,17 +353,17 @@ theorem tourV_right_end : tourV J.right 0 (2 * J.m₂) = J.shared := by
 theorem left_topIdx_eq (h : J.whole.topIdx < J.m₁) : J.left.topIdx = J.whole.topIdx := by
   have hT := J.whole.topIdx_le
   apply le_antisymm
-  · refine J.left.topIdx_min (by rw [Merge.Junction.left_m]; omega) fun i hi => ?_
+  · refine J.left.topIdx_min (by rwo [Merge.Junction.left_m]) fun i hi => ?_
     rw [Merge.Junction.left_m] at hi
     rw [← Merge.Junction.whole_vertex, ← Merge.Junction.whole_vertex]
-    exact J.whole.vertex_snd_le_top (by rw [Merge.Junction.whole_m]; omega)
+    exact J.whole.vertex_snd_le_top (by rwo [Merge.Junction.whole_m])
   · have hL := J.left.topIdx_le
     rw [Merge.Junction.left_m] at hL
-    refine J.whole.topIdx_min (by rw [Merge.Junction.whole_m]; omega) fun i hi => ?_
+    refine J.whole.topIdx_min (by rwo [Merge.Junction.whole_m]) fun i hi => ?_
     calc (J.whole.vertex i).2 ≤ J.whole.top.2 := J.whole.vertex_snd_le_top hi
       _ = (J.left.vertex J.whole.topIdx).2 := rfl
       _ ≤ (J.left.vertex J.left.topIdx).2 :=
-          J.left.vertex_snd_le_top (by rw [Merge.Junction.left_m]; omega)
+          J.left.vertex_snd_le_top (by rwo [Merge.Junction.left_m])
       _ = (J.whole.vertex J.left.topIdx).2 := rfl
 
 /-- If the top of `C` lies strictly inside `C₂`, it is the top of `C₂`. -/
@@ -371,24 +374,24 @@ theorem right_topIdx_eq (h : J.m₁ < J.whole.topIdx) :
   have hv : ∀ j, J.right.vertex j = J.whole.vertex (J.m₁ + j) := fun j =>
     (Merge.Junction.whole_vertex_add J j).symm
   apply le_antisymm
-  · refine J.right.topIdx_min (by rw [Merge.Junction.right_m]; omega) fun i hi => ?_
+  · refine J.right.topIdx_min (by rwo [Merge.Junction.right_m]) fun i hi => ?_
     rw [Merge.Junction.right_m] at hi
     rw [hv, hv, show J.m₁ + (J.whole.topIdx - J.m₁) = J.whole.topIdx by omega]
-    exact J.whole.vertex_snd_le_top (by rw [Merge.Junction.whole_m]; omega)
+    exact J.whole.vertex_snd_le_top (by rwo [Merge.Junction.whole_m])
   · have hR := J.right.topIdx_le
     rw [Merge.Junction.right_m] at hR
     suffices J.whole.topIdx ≤ J.m₁ + J.right.topIdx by omega
-    refine J.whole.topIdx_min (by rw [Merge.Junction.whole_m]; omega) fun i hi => ?_
+    refine J.whole.topIdx_min (by rwo [Merge.Junction.whole_m]) fun i hi => ?_
     calc (J.whole.vertex i).2 ≤ J.whole.top.2 := J.whole.vertex_snd_le_top hi
       _ = (J.right.vertex (J.whole.topIdx - J.m₁)).2 := by
-          rw [hv, show J.m₁ + (J.whole.topIdx - J.m₁) = J.whole.topIdx by omega]; rfl
+          rwr [hv, show J.m₁ + (J.whole.topIdx - J.m₁) = J.whole.topIdx by omega]
       _ ≤ (J.right.vertex J.right.topIdx).2 :=
-          J.right.vertex_snd_le_top (by rw [Merge.Junction.right_m]; omega)
+          J.right.vertex_snd_le_top (by rwo [Merge.Junction.right_m])
       _ = (J.whole.vertex (J.m₁ + J.right.topIdx)).2 := by rw [hv]
 
 theorem left_sideBeta_eq (h : J.whole.topIdx < J.m₁) : J.left.sideBeta = J.whole.sideBeta := by
   have e := left_topIdx_eq J h
-  have htop : J.left.top = J.whole.top := by unfold Chain.top; rw [e]; rfl
+  have htop : J.left.top = J.whole.top := by urr Chain.top [e]
   unfold Chain.sideBeta Chain.slitTop
   rw [htop, e]
   rfl

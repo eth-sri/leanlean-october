@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.GranInitHdr
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # WP-F, init part 7: the chord arrays and the worklist
@@ -45,7 +49,6 @@ structure ChI (W K CB : ℕ) (d : Dm) (chords : ℕ → CRec) (c₀ c : Config) 
   s1 : ∀ u, u < c.nreg 90070 → c.nmem (d.b0 + d.oS1 + u) = (chords u).dn
   mem : ∀ a, (a < d.b0 ∨ d.b0 + d.oNd0 ≤ a) → c.nmem a = c₀.nmem a
 
-set_option maxHeartbeats 1000000 in
 theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec} {c₀ c : Config}
     (hI : ChI W K CB d chords c₀ c) (hB : Bases c₀ d) (hK : d.K = K)
     (h10 : c₀.nreg 90010 = K) (h19 : c₀.nreg 90019 = 1) (h20 : c₀.nreg 90020 = 3)
@@ -78,18 +81,18 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
   unfold chBody
   exec_block
   all_goals try (have : d.oNd0 ≤ d.oEnd := hEnd; omega)
-  all_goals try (config_simp; simp only [b30, b31, b32, c19, c20, hp, h76]; omega)
+  all_goals try (config_simp; sio only [b30, b31, b32, c19, c20, hp, h76])
   refine ⟨⟨by assumption, ?_, ?_, ?_, fun r hr' => ?_, fun u hu => ?_, fun u hu => ?_,
     fun u hu => ?_, fun a ha => ?_⟩, by omega, ?_⟩ <;>
-    config_simp <;> simp only [b30, b31, b32, c19, c20, hp, h76, v1] <;>
-    (try simp only [v2])
+    config_simp <;> simp [b30, b31, b32, c19, c20, hp, h76, v1] <;>
+    (try simp [v2])
   · omega
   · omega
   · have := hr r hr'
-    simp only [Binit, decide_eq_false_iff_not] at hr'
-    simp only [upd]
+    simp [Binit, decide_eq_false_iff_not] at hr'
+    simp [upd]
     split_ifs <;> first | omega
-  · config_simp at hu; simp only [c19] at hu
+  · config_simp at hu; simp [c19] at hu
     by_cases hui : u = c.nreg 90070
     · subst hui
       rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
@@ -97,7 +100,7 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
     · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         Machine.upd_other _ _ _ (by omega)]
       exact hl u (by omega)
-  · config_simp at hu; simp only [c19] at hu
+  · config_simp at hu; simp [c19] at hu
     by_cases hui : u = c.nreg 90070
     · subst hui
       rw [Machine.upd_other _ _ _ (by omega)]
@@ -105,7 +108,7 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
     · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
         Machine.upd_other _ _ _ (by omega)]
       exact hs0 u (by omega)
-  · config_simp at hu; simp only [c19] at hu
+  · config_simp at hu; simp [c19] at hu
     by_cases hui : u = c.nreg 90070
     · subst hui
       simp [upd]
@@ -141,11 +144,11 @@ theorem chLoop_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
     · omega
     · refine ⟨rfl, ⟨by assumption, ?_, ?_, ?_, fun r hr => ?_, fun u hu => ?_, fun u hu => ?_,
         fun u hu => ?_, fun a _ => rfl⟩, ?_⟩
-      · config_simp; omega
-      · config_simp; rw [h13]; omega
+      · cso
+      · config_simp; rwo [h13]
       · config_simp
-      · simp only [Binit, decide_eq_false_iff_not] at hr
-        config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
+      · simp [Binit, decide_eq_false_iff_not] at hr
+        config_simp; simp [upd]; split_ifs <;> first | rfl | omega
       · simp [upd] at hu
       · simp [upd] at hu
       · simp [upd] at hu
@@ -202,12 +205,12 @@ theorem stkLoop_exec {P : Polygon} {W : ℕ} {d : Dm} {c₀ : Config}
       .addN 90077 90010 90026]) c₀ c₁ k₁ ∧ k₁ = 2 ∧ StkI W d c₀ c₁ ∧ c₁.nreg 90070 = 0 := by
     exec_block
     · omega
-    · config_simp; rw [h10, h26]; omega
+    · config_simp; rwo [h10, h26]
     · refine ⟨rfl, ⟨by assumption, ?_, ?_, fun r hr => ?_, fun u hu => ?_, fun a _ => rfl⟩, ?_⟩
-      · config_simp; omega
+      · cso
       · config_simp; rw [h10, h26, hcap]
-      · simp only [Binit, decide_eq_false_iff_not] at hr
-        config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
+      · simp [Binit, decide_eq_false_iff_not] at hr
+        config_simp; simp [upd]; split_ifs <;> first | rfl | omega
       · simp [upd] at hu
       · config_simp
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90070) (b := 90077)
@@ -219,21 +222,21 @@ theorem stkLoop_exec {P : Polygon} {W : ℕ} {d : Dm} {c₀ : Config}
       have c19 : c.nreg 90019 = 1 := by rw [hr _ (by decide), h19]
       unfold stkBody
       exec_block
-      · rw [b43]; omega
-      · config_simp; rw [c19]; omega
+      · rwo [b43]
+      · config_simp; rwo [c19]
       · refine ⟨⟨by assumption, ?_, ?_, fun r hr' => ?_, fun u hu => ?_, fun a ha => ?_⟩, by omega,
           ?_⟩
-        · config_simp; rw [c19]; omega
+        · config_simp; rwo [c19]
         · config_simp; exact hc77
-        · simp only [Binit, decide_eq_false_iff_not] at hr'
-          config_simp; simp only [upd]; split_ifs <;> first | omega | exact hr r (by simp [Binit]; omega)
+        · simp [Binit, decide_eq_false_iff_not] at hr'
+          config_simp; simp [upd]; split_ifs <;> first | omega | exact hr r (by sio [Binit])
         · config_simp at hu; rw [c19] at hu
           config_simp; rw [b43]
           by_cases hut : u = c.nreg 90070
-          · rw [hut]; simp
+          · rws [hut]
           · rw [Machine.upd_other _ _ _ (by omega)]; exact hs u (by omega)
         · config_simp; rw [b43, Machine.upd_other _ _ _ (by omega)]; exact hm a ha
-        · config_simp; rw [c19]; omega) q
+        · config_simp; rwo [c19]) q
   have hfull : c'.nreg 90070 = d.cap := by rw [I'.cap] at hx; have := I'.t_le; omega
   refine ⟨c', _, .seq e₁ e, ?_, fun u hu => I'.stk u (by omega), I'.mem⟩
   rw [q0] at hk

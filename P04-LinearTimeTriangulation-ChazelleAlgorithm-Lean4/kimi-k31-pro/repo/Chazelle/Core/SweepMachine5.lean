@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepMachine4
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep (WP-D), part 21: the abstract machine, the acceptance test of a detection shot
@@ -50,7 +51,7 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
   obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec he
   have hlr := hH.lt
   obtain ⟨s₁, hs₁, hs₁0⟩ := (hev.and self_mem_nhdsWithin).exists
-  have hs₁0' : (0 : ℝ) < s₁ := hs₁0
+  have hs₁0'  := hs₁0
   have hzy : z.2 = y := by simpa [rayPt] using hs₁.1
   have hzpt : ((z.1, y) : Point) = z := Prod.ext rfl hzy.symm
   refine ⟨hp, ht, ht1, ?_, 1, one_pos, fun x hx hxz _ => ?_⟩
@@ -62,7 +63,7 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
           (hev.and (Ioo_mem_nhdsGT (show (0 : ℝ) < l - z.1 by linarith))).exists
         have := hs.2.1; simp [rayPt] at this; linarith [hs'.2]
       have hzr : z.1 ≤ r := by
-        have := hs₁.2.2; simp [rayPt] at this; linarith
+        have := hs₁.2.2; sil [rayPt] at this
       exact ⟨hzy, hzl, hzr⟩
     · have hzr : z.1 ≤ r := by
         by_contra h
@@ -71,7 +72,7 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
           (hev.and (Ioo_mem_nhdsGT (show (0 : ℝ) < z.1 - r by linarith))).exists
         have := hs.2.2; simp [rayPt] at this; linarith [hs'.2]
       have hzl : l ≤ z.1 := by
-        have := hs₁.2.1; simp [rayPt] at this; linarith
+        have := hs₁.2.1; sil [rayPt] at this
       exact ⟨hzy, hzl, hzr⟩
   · obtain ⟨hxy, hxl, hxr⟩ := hx
     rcases hτ' with rfl | rfl
@@ -83,7 +84,7 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
             (hev.and (Ioo_mem_nhdsGT (show (0 : ℝ) < l - z.1 by linarith))).exists
           have := hs.2.1; simp [rayPt] at this; linarith [hs'.2]
         have h2 : z.1 < r := by
-          have := hs₁.2.2; simp [rayPt] at this; linarith
+          have := hs₁.2.2; sil [rayPt] at this
         rcases h1.lt_or_eq with h | h
         · exact absurd (by rw [← hzpt]; exact hH.open_mem _ h h2) hzD
         · exact h.symm
@@ -102,7 +103,7 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
             (hev.and (Ioo_mem_nhdsGT (show (0 : ℝ) < z.1 - r by linarith))).exists
           have := hs.2.2; simp [rayPt] at this; linarith [hs'.2]
         have h2 : l < z.1 := by
-          have := hs₁.2.1; simp [rayPt] at this; linarith
+          have := hs₁.2.1; sil [rayPt] at this
         rcases h1.lt_or_eq with h | h
         · exact absurd (by rw [← hzpt]; exact hH.open_mem _ h2 h) hzD
         · exact h

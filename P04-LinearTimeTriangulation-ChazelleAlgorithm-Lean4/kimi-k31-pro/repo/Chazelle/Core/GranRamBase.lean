@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.GranAlgo
 public import Chazelle.Programs.Tactics
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F, RAM part 1: the memory layout of the worklist state
@@ -95,9 +96,9 @@ variable {m : ℕ → ℕ} {d : Dm} {st : St}
 /-! ## The slot arithmetic -/
 
 theorem slot_lt {D x t R : ℕ} (hx : x < R) (ht : t < D) : D * x + t < R * D := by
-  have : D * x + t < D * (x + 1) := by rw [Nat.mul_succ]; omega
+  have : D * x + t < D * (x + 1) := by rwo [Nat.mul_succ]
   have : D * (x + 1) ≤ D * R := Nat.mul_le_mul_left _ (by omega)
-  rw [Nat.mul_comm R D]; omega
+  rwo [Nat.mul_comm R D]
 
 theorem slot_div {D x t : ℕ} (ht : t < D) : (D * x + t) / D = x := by
   have hD : 0 < D := by omega
@@ -116,7 +117,7 @@ theorem Enc.set_live (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
     by_cases hq : i = k
     · subst hq; simp
     · rw [Machine.upd_other _ _ _ (by omega)]
-      dsimp only
+      dsimp
       rw [Function.update_of_ne hq]
       exact h.live i hi
   · intro i hi
@@ -174,7 +175,7 @@ theorem Enc.set_s0 (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
     by_cases hq : i = k
     · subst hq; simp
     · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
+      dsimp
       rw [Function.update_of_ne hq]
       exact h.s0 i hi
   · intro i hi
@@ -232,7 +233,7 @@ theorem Enc.set_s1 (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
     by_cases hq : i = k
     · subst hq; simp
     · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
+      dsimp
       rw [Function.update_of_ne hq]
       exact h.s1 i hi
   · intro i hi
@@ -296,7 +297,7 @@ theorem Enc.set_deg (h : Enc m d st) {k : ℕ} (hk : k < d.R) (v : ℕ) :
     by_cases hq : x = k
     · subst hq; simp
     · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
+      dsimp
       rw [Function.update_of_ne hq]
       exact h.deg x hx
   · intro x hx
@@ -354,7 +355,7 @@ theorem Enc.set_wt (h : Enc m d st) {k : ℕ} (hk : k < d.R) (v : ℕ) :
     by_cases hq : x = k
     · subst hq; simp
     · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
+      dsimp
       rw [Function.update_of_ne hq]
       exact h.wt x hx
   · intro x hx
@@ -419,7 +420,7 @@ theorem Enc.set_cnt (h : Enc m d st) {k : ℕ} (hk : k < d.A) (v : ℕ) :
     by_cases hq : j = k
     · subst hq; simp
     · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
+      dsimp
       rw [Function.update_of_ne hq]
       exact h.cnt j hj
   · intro j hj
@@ -477,7 +478,7 @@ theorem Enc.set_nxt (h : Enc m d st) {k : ℕ} (hk : k < d.A) (v : ℕ) :
     by_cases hq : j = k
     · subst hq; simp
     · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
+      dsimp
       rw [Function.update_of_ne hq]
       exact h.nxt j hj
   · intro j hj
@@ -535,7 +536,7 @@ theorem Enc.set_prv (h : Enc m d st) {k : ℕ} (hk : k < d.A) (v : ℕ) :
     by_cases hq : j = k
     · subst hq; simp
     · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
+      dsimp
       rw [Function.update_of_ne hq]
       exact h.prv j hj
   · intro j hj
@@ -599,7 +600,7 @@ theorem Enc.set_stk (h : Enc m d st) {k : ℕ} (hk : k < d.cap) (v : ℕ) :
     by_cases hq : t = k
     · subst hq; simp
     · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
+      dsimp
       rw [Function.update_of_ne hq]
       exact h.stk t ht
 
@@ -637,7 +638,7 @@ theorem Enc.set_ex (h : Enc m d st) {x₀ t₀ : ℕ} (hx₀ : x₀ < d.R) (ht�
     by_cases hq : x = x₀ ∧ t = t₀
     · obtain ⟨rfl, rfl⟩ := hq; simp
     · rw [Machine.upd_other _ _ _ ?_]
-      · dsimp only; rw [ite_eq_right hq]; exact h.ex x t hx ht
+      · dsimp; rw [ite_eq_right hq]; exact h.ex x t hx ht
       · intro he
         apply hq
         have e1 : d.D * x + t = d.D * x₀ + t₀ := by omega

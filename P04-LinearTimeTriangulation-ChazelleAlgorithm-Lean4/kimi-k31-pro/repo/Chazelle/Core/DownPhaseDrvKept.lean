@@ -38,14 +38,14 @@ variable {Q : Polygon} {S : Set (Set Point)} {R : Set Point} {g : ℕ}
 theorem region_eq_intHost (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) :
     R = (hostPoly Q S R).filled \ (hostPoly Q S R).boundary := by
-  have hH : (hostPoly Q S R).Simple := hostPts_simple hQ hFam hne hR
-  have hMH : WalkAx (interiorModel (hostPoly Q S R)) := walkAx_interiorModel hH
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
-  have hRo : IsOpen R := (hM.sys S hFam.2.1 hFam.1).regionsIn_open subset_rfl hR
+  have hH  := hostPts_simple hQ hFam hne hR
+  have hMH  := walkAx_interiorModel hH
+  have hM  := walkAx_interiorModel hQ
+  have hRo  := (hM.sys S hFam.2.1 hFam.1).regionsIn_open subset_rfl hR
   obtain ⟨z, hz⟩ := Chazelle.Chain.regionsIn_nonempty hR
   have hsub := region_sub_intHost hQ hFam hne hR
   refine Subset.antisymm hsub ?_
-  have hpre : IsPreconnected ((hostPoly Q S R).filled \ (hostPoly Q S R).boundary) := hMH.preconn
+  have hpre  := hMH.preconn
   refine hpre.subset_of_closure_inter_subset hRo ⟨z, hsub hz, hz⟩ ?_
   rintro w ⟨hwc, hwH⟩
   by_contra hwR

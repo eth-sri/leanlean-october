@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseTransClip
+public import Chazelle.Rwx
 
 /-!
 # WP-M (T, part 4): regions and degrees after the transition
@@ -33,7 +34,7 @@ theorem mem_piece (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
   obtain ⟨hzy, hza, hzb⟩ := hzc
   have hdom := T.interior_sub_dom hQ
   have hz : ((z.1, y) : Point) ∈ Q.filled \ Q.boundary := by
-    rw [← hzy]; exact hzD
+    rwx [← hzy]
   obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨hza, hzb⟩
     (fun h => hch.left_not (hdom h)) (fun h => hch.right_not (hdom h)) hz hQ
   refine ⟨hseg y a' b', ⟨⟨y, a', b', hch', rfl⟩, hseg y a b, hc, fun p hp =>

@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.SweepEvOrgDo
 public import Chazelle.Core.SweepEvTasks3
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep (WP-D), stage 3: a batch of origins (the invariant)
@@ -104,7 +108,7 @@ theorem mem_addL_of_mem {l : List ℕ} {v x : ℕ} (h : x ∈ l) : x ∈ addL l 
   · exact List.mem_append_left _ h
 
 theorem addL_len4 {l : List ℕ} (h : l.length = 4) (v : ℕ) : (addL l v).length = 4 := by
-  unfold addL; rw [ite_eq_left (Or.inr h.ge)]; exact h
+  unfold addL; rwx [ite_eq_left (Or.inr h.ge)]
 
 theorem addL_self {l : List ℕ} (h : l.length ≤ 4) (v : ℕ) :
     v ∈ addL l v ∨ (addL l v).length = 4 := by
@@ -115,7 +119,7 @@ theorem addL_self {l : List ℕ} (h : l.length ≤ 4) (v : ℕ) :
   · exact Or.inl (by simp)
 
 theorem lblOf_len (c : Config) : (lblOf c bN bL).length ≤ 4 := by
-  rw [lblOf_length]; omega
+  rwo [lblOf_length]
 
 /-- Membership or fullness survives `addL`. -/
 theorem memOrFull_addL {l : List ℕ} {x : ℕ} (h : x ∈ l ∨ l.length = 4) (v : ℕ) :
@@ -160,14 +164,14 @@ theorem batch_stable {cs c c' : Config} {lo : Set Point} {O : Set ℕ}
     (hm : c'.nmem = c.nmem) : BatchInv P J N₂ cs lo O c' := by
   obtain ⟨hreg, hA, A, hB⟩ := h
   have nLR : ∀ q, LblR bN bL q ∨ q = bF ∨ q = bE ∨ q = bH → ¬ LR q := fun q hq => by
-    unfold LR LblR oK oS bN bL bF bE bH sw at *; omega
+    ufo LR LblR oK oS bN bL bF bE bH sw at *
   have eF := hr bF (nLR _ (Or.inr (Or.inl rfl)))
   have eE := hr bE (nLR _ (Or.inr (Or.inr (Or.inl rfl))))
   have eH := hr bH (nLR _ (Or.inr (Or.inr (Or.inr rfl))))
   have eN := hr bN (nLR _ (Or.inl (Or.inl rfl)))
   have eL : lblOf c' bN bL = lblOf c bN bL := lblOf_congr fun q hq => hr q (nLR q (Or.inl hq))
-  have eA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold LR ALLOC oK oS sw; omega)
-  refine ⟨fun r h1 h2 h3 h4 => (hr r h3).trans (hreg r h1 h2 h3 h4), by rw [eA]; exact hA, A,
+  have eA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by ufo LR ALLOC oK oS sw)
+  refine ⟨fun r h1 h2 h3 h4 => (hr r h3).trans (hreg r h1 h2 h3 h4), by rwx [eA], A,
     ⟨hB.acc, fun x h1 h2 => by rw [hm]; exact hB.memT x h1 h2,
     fun j hj => by rw [hm]; exact hB.slot j hj, fun t ht => by rw [hm]; exact hB.flag t ht, hB.comp, by rw [eF]; exact hB.fF,
     by rw [eN]; exact hB.fN, ?_, ?_, ?_, ?_, ?_, hB.val⟩⟩
@@ -177,7 +181,6 @@ theorem batch_stable {cs c c' : Config} {lo : Set Point} {O : Set ℕ}
   · intro h; rw [eL, eE, eH]; rw [eF] at h; exact hB.lSrc h
   · intro h; rw [eL, eE, eH]; rw [eF] at h; exact hB.lCov h
 
-set_option maxHeartbeats 4000000 in
 /-- **One origin keeps the invariant of the batch.** -/
 theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
     (hInv : BatchInv P J N₂ cs lo O c) (hj : 2 * k + s < 2 * N₂.nChords) (hs : s ≤ 1)
@@ -199,19 +202,19 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
   have hup : upOf N₂ (2 * k + s) = (N₂.chord k).up := by unfold upOf; rw [hk2]
   have hdn : dnOf N₂ (2 * k + s) = (N₂.chord k).dn := by unfold dnOf; rw [hk2]
   have keepS : ∀ r, 240000 ≤ r → r < 250000 → ¬ OrgR r → ¬ LR r → c.nreg r = cs.nreg r :=
-    fun r h1 h2 h3 h4 => hreg r (band_sw_not ⟨h1, h2⟩) h3 h4 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 h4 => hreg r (band_sw_not ⟨h1, h2⟩) h3 h4 (by ufo ALLOC)
   have hTc : c.nreg cTB = cs.nreg cTB :=
-    keepS _ (by unfold cTB sw; omega) (by unfold cTB sw; omega)
-      (by unfold OrgR CandR BestR LblR cTB bF bE bH bN bL sw; omega)
-      (by unfold LR cTB oK oS sw; omega)
+    keepS _ (by ufo cTB sw) (by ufo cTB sw)
+      (by ufo OrgR CandR BestR LblR cTB bF bE bH bN bL sw)
+      (by ufo LR cTB oK oS sw)
   have hkE : c.nreg kE = cs.nreg kE :=
-    keepS _ (by unfold kE sw; omega) (by unfold kE sw; omega)
-      (by unfold OrgR CandR BestR LblR kE bF bE bH bN bL sw; omega)
-      (by unfold LR kE oK oS sw; omega)
+    keepS _ (by ufo kE sw) (by ufo kE sw)
+      (by ufo OrgR CandR BestR LblR kE bF bE bH bN bL sw)
+      (by ufo LR kE oK oS sw)
   have hkH : c.nreg kH = cs.nreg kH :=
-    keepS _ (by unfold kH sw; omega) (by unfold kH sw; omega)
-      (by unfold OrgR CandR BestR LblR kH bF bE bH bN bL sw; omega)
-      (by unfold LR kH oK oS sw; omega)
+    keepS _ (by ufo kH sw) (by ufo kH sw)
+      (by ufo OrgR CandR BestR LblR kH bF bE bH bN bL sw)
+      (by ufo LR kH oK oS sw)
   rw [hTc] at hres hcomp
   set j := 2 * k + s with hjd
   set a := endOrigin J (Qof P) N₂ j
@@ -254,7 +257,7 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
   have val' : ∀ t ∈ A', ValidJ J (Qof P) N₂ t.1 := by
     rintro t (ht | ⟨ht1, hv, -⟩)
     · exact hB.val t ht
-    · rw [ht1]; exact hv
+    · rwx [ht1]
   by_cases hacc : ∃ e h, ValidJ J (Qof P) N₂ j ∧
     AccAt P J S₂ (cs.nreg cTB) j (N₂.chord k).up (N₂.chord k).dn a σ c c' e h
   · obtain ⟨e, h, hvj, hAcc⟩ := hacc
@@ -263,7 +266,7 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
     have huq : ∀ t ∈ A', t ∉ A → t = (j, e, h) := by
       rintro ⟨j₁, e₁, h₁⟩ (ht | ⟨ht1, -, -, hmem₁, -⟩) hn
       · exact absurd ht hn
-      · simp only at ht1 hmem₁
+      · simp at ht1 hmem₁
         subst ht1
         have w1 := hmem₁ ((cs.nreg cTB) + 3 * j + 1) (by omega)
         have w2 := hmem₁ ((cs.nreg cTB) + 3 * j + 2) (by omega)
@@ -387,8 +390,8 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
             · rcases mem_addL hx with hx | hx
               · obtain ⟨t, ht, h1, h2⟩ := hB.lSrc hnb.1 x hx
                 exact ⟨t, hsub ht, h1, h2⟩
-              · exact ⟨(j, e, h), hnew, heq.symm, Or.inl (by rw [hup]; exact hx)⟩
-            · exact ⟨(j, e, h), hnew, heq.symm, Or.inr (by rw [hdn]; exact hx)⟩
+              · exact ⟨(j, e, h), hnew, heq.symm, Or.inl (by rwx [hup])⟩
+            · exact ⟨(j, e, h), hnew, heq.symm, Or.inr (by rwx [hdn])⟩
       · have hs' := o3 hlt
         rw [hs'.2.2.2.1] at hx; rw [hs'.2.1, hs'.2.2.1]; rw [hs'.1] at hF'
         obtain ⟨t, ht, h1, h2⟩ := hB.lSrc hF' x hx
@@ -400,18 +403,18 @@ theorem batch_step {cs c c' : Config} {lo : Set Point} {O : Set ℕ} {k s : ℕ}
         · obtain ⟨-, w2, w3, w4, -⟩ := o4 hlt hnb
           rw [w4]; rw [w2, w3] at hto
           rcases hmA t ht with ht | rfl
-          · obtain ⟨hF, hle⟩ := hB.bMin t ht (by rw [hto]; exact hlt)
+          · obtain ⟨hF, hle⟩ := hB.bMin t ht (by rwx [hto])
             rcases hnb with hnb | hnb
             · exact absurd hF hnb
             · linarith
-          · rw [hup, hdn]; simp
+          · rws [hup, hdn]
         · push Not at hnb
           rcases hnb.2.lt_or_eq with hlt2 | heq
           · have hs' := o6 hlt hnb.1 hlt2
             rw [hs'.2.2.2.1]; rw [hs'.2.1, hs'.2.2.1] at hto
             rcases hmA t ht with ht | rfl
             · exact hB.lCov hnb.1 t ht hto
-            · rw [hoffN] at hto; linarith
+            · rwli [hoffN] at hto
           · obtain ⟨-, w2, w3, w4⟩ := o5 hlt hnb.1 heq.symm
             rw [w4]; rw [w2, w3] at hto
             have hl := lblOf_len c

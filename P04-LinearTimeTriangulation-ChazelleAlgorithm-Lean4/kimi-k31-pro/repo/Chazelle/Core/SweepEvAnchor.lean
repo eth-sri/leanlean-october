@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.SweepEvTie
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), stage 3: the invariant after a key with an anchored chord
@@ -78,7 +80,7 @@ theorem after_pos_eps (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · push Not at hsε
     have hC := corr_right0 J hP hS₂ hS₂f
     set s' := min (min δ ε) s / 2 with hs'
-    have hm : 0 < min (min δ ε) s := lt_min (lt_min hδ hε) hs0
+    have hm  := lt_min (lt_min hδ hε) hs0
     have h1 := min_le_left (min δ ε) s
     have h2 := min_le_right (min δ ε) s
     have h3 := min_le_left δ ε
@@ -91,17 +93,17 @@ theorem after_pos_eps (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · intro hcut
       obtain ⟨k0, k1⟩ := Corr.key_mem hp (show 0 ≤ t + s' by linarith) (show t + s' < 1 by linarith)
       exact hgap _ hcut (by have := k0; linarith)
-        (by have := k1; linarith) ⟨by rw [hoff']; linarith,
-          by rw [hoff', hoff]; linarith⟩
+        (by have := k1; linarith) ⟨by rwli [hoff'],
+          by rwli [hoff', hoff]⟩
     · rintro x hx hx0 hxn ⟨h5, h6⟩
-      exact hgap x hx hx0 hxn ⟨h5, by rw [hoff]; rw [hoff'] at h6; linarith⟩
+      exact hgap x hx hx0 hxn ⟨h5, by rw [hoff]; rwli [hoff'] at h6⟩
 
 /-- **The direction of a chord at a position is unique.** -/
 theorem dirAt_unique (hP : J.P.Simple) {e : Set Point} (he : e ∈ Merge.augChords J.whole)
     {p : ℕ} {t d d' : ℝ} (_hA : SideAttach (chainModel J.whole).W e p t)
     (h : DirAt (chainModel J.whole).W e p t d) (h' : DirAt (chainModel J.whole).W e p t d') :
     d = d' := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM  := FactsChain.walkAx J.whole hP
   obtain ⟨a, b, hab, heab, hy, -⟩ := hM.ends e he
   have ha : a ∈ e := by rw [heab]; exact Geometry.left_mem_segment _ _
   have hb : b ∈ e := by rw [heab]; exact Geometry.right_mem_segment _ _
@@ -118,9 +120,8 @@ theorem dirAt_other (hP : J.P.Simple) {e : Set Point} (he : e ∈ Merge.augChord
     (hB : SideAttach (chainModel J.whole).W e pb tb)
     (hAB : sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb)
     (h : DirAt (chainModel J.whole).W e pa ta d) : DirAt (chainModel J.whole).W e pb tb (-d) := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have hy : (sidePt (chainModel J.whole).W pa ta).2 = (sidePt (chainModel J.whole).W pb tb).2 :=
-    (attach_snd_eq hP he hB hA.2.2.2.1)
+  have hM  := FactsChain.walkAx J.whole hP
+  have hy  := (attach_snd_eq hP he hB hA.2.2.2.1)
   rcases h with ⟨rfl, h⟩ | ⟨rfl, h⟩
   · exact Or.inr ⟨by norm_num, dir_opposite hM he hA hB hAB h⟩
   · rcases hM.attach_dir he hB with h' | h'
@@ -146,8 +147,8 @@ theorem anchor_not_inside (hP : J.P.Simple) {S₂ : Set (Set Point)}
     exact_mod_cast hC.hg
   have hAB := pt_ne_of_off_ne hP hS₂ hS₂f he hA hB (by linarith : oW J (pa + ta) ≠ oW J (pb + tb))
   have := no_cross_off hC.hM hC.hF hC.hfin he hZ (Ne.symm hZe) hA hB hAB hZK hZz hg0 hgn
-    (by rw [← oW_eq, ← oW_eq]; linarith) (by rw [← oW_eq, ← oW_eq]; exact h1)
-    (by rw [← oW_eq, ← oW_eq]; exact h2)
+    (by rwli [← oW_eq, ← oW_eq]) (by rwx [← oW_eq, ← oW_eq])
+    (by rwx [← oW_eq, ← oW_eq])
   rw [← oW_eq, ← oW_eq, ← oW_eq] at this
   linarith [this.1]
 
@@ -211,8 +212,8 @@ theorem closed_nested (hP : J.P.Simple) {S₂ : Set (Set Point)}
     exact_mod_cast hC.hg
   have hAB := pt_ne_of_off_ne hP hS₂ hS₂f hc hA hB hab.ne
   have := no_cross_off hC.hM hC.hF hC.hfin hc he hce hA hB hAB hQ hQ' hg0 hgn
-    (by rw [← oW_eq, ← oW_eq]; exact hab) (by rw [← oW_eq, ← oW_eq]; exact h1)
-    (by rw [← oW_eq, ← oW_eq]; exact h2)
+    (by rwx [← oW_eq, ← oW_eq]) (by rwx [← oW_eq, ← oW_eq])
+    (by rwx [← oW_eq, ← oW_eq])
   rw [← oW_eq, ← oW_eq, ← oW_eq] at this
   exact this
 

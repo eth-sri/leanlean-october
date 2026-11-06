@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.OracleQuery
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 10: hits on single edges, and the scanned edges as edges of `Q`
@@ -72,7 +76,7 @@ theorem rayPt_mem_edge_iff {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % 
   · rintro ⟨hsp, rfl⟩
     refine ⟨hsp, ?_⟩
     have e2 : z.1 + σ * (σ * (xe Q e h - z.1)) = z.1 + (σ * σ) * (xe Q e h - z.1) := by ring
-    rw [e2, hs]; ring
+    rwring [e2, hs]
 
 /-- **The answer for one edge.** -/
 theorem edgeHit_spec {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2)
@@ -161,7 +165,7 @@ noncomputable def tci (i : ℕ) : ℕ := if tj C i < C.m then tj C i else 2 * C.
 theorem tci_lt (i : ℕ) : tci C i < C.m := by
   have := tj_lt C i
   have := C.one_le
-  unfold tci; split_ifs <;> omega
+  unfold tci; splao
 
 /-- **The segment of tour position `i` is the chain edge `tci i`.** -/
 theorem tour_seg (i : ℕ) :
@@ -179,7 +183,7 @@ theorem tour_seg (i : ℕ) :
   have sE3 : ∀ x, C.m ≤ x → sideE C.m x = 2 * C.m - x := fun x hx => by
     unfold sideE
     rcases eq_or_lt_of_le hx with e | e
-    · subst e; simp only [le_refl, ↓reduceIte]; omega
+    · subst e; sio only [le_refl, ↓reduceIte]
     · simp [show ¬ x ≤ C.m by omega]
   split_ifs with h1
   · rw [sE1 j h1.le, sE1 (j + 1) (by omega)]
@@ -206,7 +210,7 @@ theorem mem_scanSet_iff (Q : Polygon) (N : NF) (p : ℕ) (x : Point) :
     unfold wseg at hx
     split_ifs at hx with hw
     · refine ⟨k, hk, scanIdx (chainModel C).W.n N p k - 6, by omega, by omega, ?_⟩
-      rw [tour_seg]; exact hx
+      rwx [tour_seg]
     · exact absurd hx (Set.notMem_empty x)
 
 end Tour

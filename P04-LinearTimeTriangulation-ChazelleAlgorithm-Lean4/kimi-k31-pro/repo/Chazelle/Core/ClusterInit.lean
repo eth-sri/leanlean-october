@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ClusterStageD4
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-I, part 57: the initial invariant of the work stack
@@ -26,7 +30,7 @@ noncomputable def finL (s μ : ℕ) (bo : ℕ → ℕ) : Finset (ℕ × ℕ) :=
 variable {s μ : ℕ} {bo : ℕ → ℕ}
 
 theorem len_seg (b : ℕ) : len (seg μ bo b) = cntBelow bo μ b := by
-  unfold len seg; rw [cntLt_succ]; omega
+  uro len seg [cntLt_succ]
 
 theorem mem_segL {j : ℕ} {p : ℕ × ℕ} :
     p ∈ segL s μ bo j ↔ ∃ b, b < j ∧ s < cntBelow bo μ b ∧ p = seg μ bo b := by
@@ -38,7 +42,7 @@ theorem mem_segL {j : ℕ} {p : ℕ × ℕ} :
     · rintro (h | ⟨b, h1, h2, h3⟩)
       · split_ifs at h with hs
         · simp only [List.mem_singleton] at h
-          exact ⟨j, by omega, by rw [cntLt_succ] at hs; omega, h⟩
+          exact ⟨j, by omega, by rwo [cntLt_succ] at hs, h⟩
         · simp at h
       · exact ⟨b, by omega, h2, h3⟩
     · rintro ⟨b, h1, h2, h3⟩
@@ -46,7 +50,7 @@ theorem mem_segL {j : ℕ} {p : ℕ × ℕ} :
       · exact Or.inr ⟨b, h, h2, h3⟩
       · have hb : b = j := by omega
         subst hb
-        left; rw [ite_eq_left (by rw [cntLt_succ]; omega)]; simp [h3, seg]
+        left; rw [ite_eq_left (by rwo [cntLt_succ])]; simp [h3, seg]
 
 theorem mem_finL {p : ℕ × ℕ} :
     p ∈ finL s μ bo ↔ ∃ b, b < μ ∧ cntBelow bo μ b ≤ s ∧ p = seg μ bo b := by
@@ -78,7 +82,7 @@ theorem segL_nodup (j : ℕ) : (segL s μ bo j).Nodup := by
     · refine List.nodup_cons.mpr ⟨fun hm => ?_, ih⟩
       obtain ⟨b, h1, h2, h3⟩ := mem_segL.mp hm
       have := seg_disj (μ := μ) (bo := bo) h1
-      rw [← h3] at this; simp only [seg] at this; omega
+      rw [← h3] at this; sio only [seg] at this
     · simpa using ih
 
 /-- The potential of the initial stack. -/
@@ -95,8 +99,8 @@ theorem sum_segL (j : ℕ) :
       rw [List.singleton_append, List.toFinset_cons, Finset.sum_insert (by
         rw [List.mem_toFinset]; exact (List.nodup_cons.mp hn).1)]
       have : len (cntLt bo μ j, cntLt bo μ (j + 1)) = cntBelow bo μ j := len_seg j
-      rw [this]; omega
-    · simp only [List.nil_append]; omega
+      rwo [this]
+    · sio only [List.nil_append]
 
 /-- The items of a block segment. -/
 theorem items_seg {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w)
@@ -144,7 +148,7 @@ theorem SInv.init {k : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ →
   · obtain ⟨b, hb, rfl, hi⟩ := hit p hp; rw [hi] at hv; simp at hv; exact hv.1
   · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp
     obtain ⟨b', -, h2', h3'⟩ := mem_finL.mp hf
-    have := congrArg len h3'; rw [len_seg, len_seg] at this; omega
+    have := congrArg len h3'; rwo [len_seg, len_seg] at this
   · obtain ⟨b, hb, rfl⟩ := lv_iff.mp hp; obtain ⟨b', hb', rfl⟩ := lv_iff.mp hq
     unfold RDisj
     rcases lt_trichotomy b b' with h | h | h
@@ -155,8 +159,8 @@ theorem SInv.init {k : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ →
     rw [hi, hi', Finset.disjoint_left]
     intro v h1 h2; simp only [Finset.mem_filter] at h1 h2
     exact hpq (by rw [← h1.2, ← h2.2])
-  · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp; rw [len_seg]; exact h2
-  · obtain ⟨b, -, h2, rfl⟩ := mem_finL.mp hp; rw [len_seg]; exact h2
+  · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp; rwx [len_seg]
+  · obtain ⟨b, -, h2, rfl⟩ := mem_finL.mp hp; rwx [len_seg]
   · have hb : bo v < μ := by by_contra h; exact hvH ((hH v hv).mpr h)
     refine ⟨seg μ bo (bo v), lv_iff.mpr ⟨bo v, hb, rfl⟩, ?_⟩
     rw [items_seg hinj hact hb]; simp [hv]
@@ -179,7 +183,7 @@ theorem SInv.init {k : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ →
       _ = 6 * k * μ := by ring
   · have h1 := sum_segL (s := s) (μ := μ) (bo := bo) μ
     have h2 := cntLt_le bo μ μ
-    rw [Nat.zero_mul, Nat.zero_add]; omega
+    rwo [Nat.zero_mul, Nat.zero_add]
 
 end
 

@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.ClusterSplitExec
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-I, part 41: the split driver on the RAM
@@ -74,7 +75,7 @@ theorem driver_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W cf)
       c'.nreg 130701 = 2 * stk'.length → c'.nreg 130704 = nsp' →
       Φ c' = 120 * segPot stk' + splitC S.L k * (2 * μ / S.s - nsp') := by
     intro c' stk' fin' D' nsp' h1 h2 h3
-    simp only [Φ]
+    simp [Φ]
     rw [h2, h3, h1.stk_eq]
   obtain ⟨cf', K, e, ⟨hw', hR', hst', hfr', hrr', hrm', ho', stk', fin', D', nsp', hD', htp',
       hnsp'⟩, htest, hK⟩ := Exec.whileLtN_potential (P := P) (W := W) (a := 130009) (b := 130701)
@@ -88,16 +89,16 @@ theorem driver_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W cf)
         | cons p rest => exact ⟨p, rest, rfl⟩
       obtain ⟨c2, K2, e2, hK2, hw2, hR2, ⟨news, fin2, D2, hD2, htp2, hpot2⟩, hnsp2, hst2, hfr2,
           hrr2, hrm2, ho2⟩ := splitBody_exec (P := P) hw1 hR1 hSF1 hD1
-        (by rw [htp1]; simp; ring) hnsp1 hk hs
+        (by rws [htp1]; ring) hnsp1 hk hs
       refine ⟨c2, K2, e2, ⟨hw2, hR2, hst1.trans hst2, fun r a b d => (hfr2 r a b d).trans
         (hfr1 r a b d), hrr2.trans hrr1, hrm2.trans hrm1, ho2.trans ho1, news ++ rest, fin2, D2,
         nsp1 + 1, hD2, htp2, hnsp2⟩, ?_⟩
       rw [hΦ c2 _ _ _ _ hD2 htp2 hnsp2, hΦ c1 _ _ _ _ hD1 htp1 hnsp1]
       have hle := hD2.nsp_le hs
       unfold segPot
-      simp only [List.map_append, List.sum_append, List.map_cons, List.sum_cons]
+      simp [List.map_append, List.sum_append, List.map_cons, List.sum_cons]
       unfold len at hpot2 ⊢
-      simp only at hpot2 ⊢
+      simp at hpot2 ⊢
       have hmul : splitC S.L k * (2 * μ / S.s - nsp1) =
           splitC S.L k * (2 * μ / S.s - (nsp1 + 1)) + splitC S.L k := by
         rw [show 2 * μ / S.s - nsp1 = (2 * μ / S.s - (nsp1 + 1)) + 1 by omega, Nat.mul_add,
@@ -112,7 +113,7 @@ theorem driver_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W cf)
     | nil => rfl
     | cons p rest => simp at htest
   subst hnil
-  refine ⟨cf', K, e, ?_, hw', hR', ⟨fin', D', nsp', hD'⟩, by rw [htp']; rfl, hst', hfr', hrr',
+  refine ⟨cf', K, e, ?_, hw', hR', ⟨fin', D', nsp', hD'⟩, by rwr [htp'], hst', hfr', hrr',
     hrm', ho'⟩
   rw [hΦ cf _ _ _ _ hD htp hnsp] at hK
   exact hK

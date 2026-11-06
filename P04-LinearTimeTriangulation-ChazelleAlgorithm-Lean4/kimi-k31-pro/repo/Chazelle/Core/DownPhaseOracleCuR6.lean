@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseOracleCuR5
 public import Chazelle.Core.DownPhaseOracleShH
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (E7-B, RAM part 20): the set-up and the query of the interior cutter
@@ -15,9 +19,6 @@ public import Chazelle.Core.DownPhaseOracleShH
   unwrapped keys from the start of the query to its end).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -75,7 +76,7 @@ theorem rdPc_of_words {m : ℕ → ℕ} {A j : ℕ} {pc : Pc}
     (h : ∀ f, f < 7 → m (A + 1 + 7 * j + f) = pcW pc f) (hd : pc.dir = 0) (hp : pc.pw = 0) :
     rdPc m A j = pc := by
   obtain ⟨⟨a, b⟩, ⟨d, e⟩, k, en, x, dir, pw⟩ := pc
-  simp only at hd hp
+  simp at hd hp
   subst hd hp
   have h0 := h 0 (by norm_num)
   have h1 := h 1 (by norm_num)
@@ -84,13 +85,13 @@ theorem rdPc_of_words {m : ℕ → ℕ} {A j : ℕ} {pc : Pc}
   have h4 := h 4 (by norm_num)
   have h5 := h 5 (by norm_num)
   have h6 := h 6 (by norm_num)
-  simp only [Nat.add_zero, pcW] at h0 h1 h2 h3 h4 h5 h6
+  simp [Nat.add_zero, pcW] at h0 h1 h2 h3 h4 h5 h6
   unfold rdPc
   rw [h0, h1, h2, h3, h4, h5, h6]
 
 theorem slotsOf_nil {c : Config} (h : ∀ j, j < 4 → c.nreg (170200 + 5 * j) = 0) :
     slotsOf c 4 = [] := by
-  rw [slotsOf_free (k := 0) (by norm_num) (fun j _ hj => h j hj)]; rfl
+  rwr [slotsOf_free (k := 0) (by norm_num) (fun j _ hj => h j hj)]
 
 /-! ## Execution -/
 
@@ -114,10 +115,10 @@ theorem frontC_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
   -- save
   obtain ⟨c₁, e₁, a10, a13, ar, arr, am, arm, ao⟩ := saveS_exec (P := P) 150000 (by norm_num) c hw
   have w₁ := e₁.wb_right
-  have aA : c₁.nreg ALLOC = c.nreg ALLOC := ar _ (by unfold ALLOC; omega)
+  have aA : c₁.nreg ALLOC = c.nreg ALLOC := ar _ (by ufo ALLOC)
   have F₁ : Frame ioBands c c₁ 11 := frameIO_of_frameB
     (B := fun r => decide (170000 ≤ r ∧ r < 170014))
-    (fun r hr => io_of_band (Or.inl (by simp at hr; omega)))
+    (fun r hr => io_of_band (Or.inl (by sio at hr)))
     ⟨fun r hr => ar r (by simpa using hr), fun r _ => by rw [arr], am, arm, ao⟩ 11
   have hlow := ShootCut.grade_low hX
   have a0 : c₁.nreg 170000 = c.nreg 150000 := a10 0 (by norm_num)
@@ -126,11 +127,11 @@ theorem frontC_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', b10, b11, b12, b18, b19, b16, b17, b14, b14', b15, bA, b70, bm0,
       bm1, bm2, bm3, bmlo, br, brr, brm, bo⟩ := initI_exec (P := P) c₁ w₁
     (by rw [a0]; have := hw.1 ALLOC; omega) (by rw [a13']; have := hlow.1; have := hw.1 ALLOC; omega)
-    (by rw [aA]; exact hroom) (by omega) (by omega)
+    (by rwx [aA]) (by omega) (by omega)
   have w₂ := e₂.wb_right
   have F₂ : Frame ioBands c₁ c₂ k₂ := by
-    refine ⟨fun r hr ha => br r ?_, fun r _ => by rw [brr], fun a ha => bmlo a ha,
-      fun a _ => by rw [brm], bo, by rw [bA]; omega, by rw [bA]; omega⟩
+    refine ⟨fun r hr ha => br r ?_, fun r _ => by rw [brr], bmlo,
+      fun a _ => by rw [brm], bo, by rwo [bA], by rwo [bA]⟩
     intro hb
     unfold BinitR at hb
     apply hr
@@ -153,31 +154,31 @@ theorem frontC_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
   have F₃ : Frame ioBands c₂ c₃ k₃ := frameIO_of_frameB
     (B := fun r => decide (r = 170020 ∨ r = 170021 ∨ r = 170200 ∨ r = 170205 ∨ r = 170210 ∨
       r = 170215))
-    (fun r hr => io_of_band (Or.inl (by simp at hr; omega)))
-    ⟨fun r hr => dr r (by simp at hr; omega) (by simp at hr; omega) (by simp at hr; omega)
-      (by simp at hr; omega) (by simp at hr; omega) (by simp at hr; omega),
+    (fun r hr => io_of_band (Or.inl (by sio at hr)))
+    ⟨fun r hr => dr r (by sio at hr) (by sio at hr) (by sio at hr)
+      (by sio at hr) (by sio at hr) (by sio at hr),
       fun r _ => by rw [drr], dm, drm, dout⟩ k₃
   have q : ∀ r, r < 170020 ∨ (170021 < r ∧ r < 170200) → c₃.nreg r = c₂.nreg r := fun r hr =>
     dr r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
   have g : ∀ r, r < 170020 ∨ (170021 < r ∧ r < 170200) → ¬ BinitR r → c₃.nreg r = c₁.nreg r :=
     fun r h1 h2 => by rw [q r h1, br r h2]
   have gs : ∀ i, i < 10 → c₃.nreg (170000 + i) = c.nreg (150000 + i) := fun i hi => by
-    rw [g _ (by omega) (by unfold BinitR; omega)]; exact a10 i hi
+    rw [g _ (by omega) (by ufo BinitR)]; exact a10 i hi
   have ex : Exec P W frontC c c₃ (11 + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   have cA : c₃.nreg ALLOC = c.nreg ALLOC + 8 := by
-    rw [q _ (by unfold ALLOC; omega), bA, aA]
+    rw [q _ (by ufo ALLOC), bA, aA]
   refine ⟨c₃, _, ex, by omega, ⟨hG, hHW, gs 1 (by norm_num), gs 2 (by norm_num),
     gs 3 (by norm_num), gs 4 (by norm_num), gs 8 (by norm_num), gs 9 (by norm_num),
-    by rw [g _ (by omega) (by unfold BinitR; omega)]; exact a13',
-    by rw [q _ (by omega)]; exact b10, by rw [q _ (by omega)]; exact b11,
-    by rw [q _ (by omega)]; exact b12, by rw [q _ (by omega)]; exact b18,
-    by rw [q _ (by omega)]; exact b19,
-    by rw [q _ (by omega), b14, a0, am]; exact hbit,
-    by rw [q _ (by omega)]; exact b14',
-    by rw [q _ (by omega), b15, aA]; rfl,
-    by rw [q _ (by omega), b16, a13', am]; rfl,
-    by rw [q _ (by omega), b17, a13', am]; rfl, ⟨d20, d21⟩,
-    fun a ha => by rw [dm, bmlo a (by rw [aA]; exact ha), am]; rfl,
+    by rwx [g _ (by omega) (by ufo BinitR)],
+    by rwx [q _ (by omega)], by rwx [q _ (by omega)],
+    by rwx [q _ (by omega)], by rwx [q _ (by omega)],
+    by rwx [q _ (by omega)],
+    by rwx [q _ (by omega), b14, a0, am],
+    by rwx [q _ (by omega)],
+    by rwr [q _ (by omega), b15, aA],
+    by rwr [q _ (by omega), b16, a13', am],
+    by rwr [q _ (by omega), b17, a13', am], ⟨d20, d21⟩,
+    fun a ha => by rw [dm, bmlo a (by rwx [aA]), am]; rfl,
     by rw [dm]; show c₂.nmem (c.nreg ALLOC) = 1; rw [← aA]; exact bm0,
     by rw [dm]; show c₂.nmem (c.nreg ALLOC + 1) = 0; rw [← aA]; exact bm1,
     by rw [dm]; show c₂.nmem (c.nreg ALLOC + 2) = 0; rw [← aA]; exact bm2,

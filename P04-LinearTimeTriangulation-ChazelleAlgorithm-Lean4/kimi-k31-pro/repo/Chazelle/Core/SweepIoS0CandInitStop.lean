@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.SweepIoS0CandInitEnv
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # The sweep RAM (WP-D), answers: the slot table of the side-0 candidates (the stop loop)
@@ -22,7 +27,7 @@ open Machine Machine.Stmt Programs SweepRam SweepPrim WalkEmbed Sweep SweepEv
 /-- The cost of one stop record. -/
 def kSt (κL TL : ℕ) : ℕ := 11137 + κL * (TL + 1)
 
-theorem sOf_eq {b : ℕ} (hb : b ≤ 1) : 1 - b = sOf b := by unfold sOf; split_ifs <;> omega
+theorem sOf_eq {b : ℕ} (hb : b ≤ 1) : 1 - b = sOf b := by unfold sOf; splao
 
 /-- A run step also gives the invariant at its end. -/
 theorem IRS.withInv {P : Polygon} {W : ℕ} {c₀ c : Config} {s : Stmt} {K : ℕ}
@@ -40,7 +45,6 @@ variable {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop} 
   {H : Host} {N₁ N₂ : NF} {Eb : ℕ} {c₀ c : Config} {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
   {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)}
 
-set_option maxHeartbeats 8000000 in
 /-- **One stop record.** -/
 theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) (hI : IInv W c₀ c)
@@ -66,11 +70,11 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have hst := e.hA.hstops
   have hlog := e.hA.hlog
   have htw := e.hA.htabw
-  simp only [rd_sw] at hst hlog htw
+  simp [rd_sw] at hst hlog htw
   have hAc := hI.hA
   have hWc := hI.hw.1 ALLOC
   have od := e.odc (m := c.nmem) hI.hm
-  simp only [rd_sw] at od
+  simp [rd_sw] at od
   obtain ⟨pw, hkind, hb1, hkk⟩ := od.stopR hx
   have mc : ∀ (d : Config), IInv W c₀ d → ∀ a, a < B → d.nmem a = c.nmem a :=
     fun d hd a ha => (hd.hm a ha).trans (hI.hm a ha).symm
@@ -78,34 +82,34 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   -- read the record
   refine IRS.seq (K₁ := 14) (K₂ := kSt κL (c₀.nreg TLR) - 14)
     (stLd_irs hI hK (e.fix hI (k := 200) (by norm_num)) rfl (by omega)) ?_ |>.mono
-    (by unfold kSt; omega) (fun _ h => h)
+    (by ufo kSt) (fun _ => id)
   rintro c₁ hI₁ hA₁ hA₁' ⟨l1, l2, l3, l4, l5, lfr, lm⟩
   -- the origin
   refine IRS.seq (K₁ := 11110) (K₂ := kSt κL (c₀.nreg TLR) - 14 - 11110)
     (stOrg_irs e hI₁ l3 l4 (by rw [l5]; exact sOf_eq hb1) hkind hkk
-      (by unfold kSt at hroom; omega)) ?_ |>.mono (by unfold kSt; omega) (fun _ h => h)
+      (by ufo kSt at hroom)) ?_ |>.mono (by ufo kSt) (fun _ => id)
   rintro c₂ hI₂ hA₂ hA₂' ⟨o1, o2, ofr, oA, om⟩
   have k21 : ∀ r, bandOf r ∉ oracleBands → sw 2217 < r → r ≠ ipE → r ≠ ipH → r ≠ ALLOC →
       c₂.nreg r = c₁.nreg r := fun r h1 h2 h3 h4 h5 => ofr r h1 (Or.inr h2) h3 h4 h5
   have q1 : c₂.nreg lsxE = c.nmem (AS + 5 * x) :=
-    (k21 _ (not_oracle_sw (by unfold lsxE sw; omega) (by unfold lsxE sw; omega))
-      (by unfold lsxE sw; omega) (by unfold lsxE ipE sw; omega) (by unfold lsxE ipH sw; omega)
-      (by unfold lsxE ALLOC sw; omega)).trans l1
+    (k21 _ (not_oracle_sw (by ufo lsxE sw) (by ufo lsxE sw))
+      (by ufo lsxE sw) (by ufo lsxE ipE sw) (by ufo lsxE ipH sw)
+      (by ufo lsxE ALLOC sw)).trans l1
   have q2 : c₂.nreg lsxH = c.nmem (AS + 5 * x + 1) :=
-    (k21 _ (not_oracle_sw (by unfold lsxH sw; omega) (by unfold lsxH sw; omega))
-      (by unfold lsxH sw; omega) (by unfold lsxH ipE sw; omega) (by unfold lsxH ipH sw; omega)
-      (by unfold lsxH ALLOC sw; omega)).trans l2
+    (k21 _ (not_oracle_sw (by ufo lsxH sw) (by ufo lsxH sw))
+      (by ufo lsxH sw) (by ufo lsxH ipE sw) (by ufo lsxH ipH sw)
+      (by ufo lsxH ALLOC sw)).trans l2
   -- the search
   refine IRS.seq (K₁ := κL * (c₀.nreg TLR + 1)) (K₂ := 13)
-    (e.search hls hI₂ (by rw [q1, q2]; exact pw) (by unfold kSt at hroom; omega)) ?_ |>.mono
-    (by unfold kSt; omega) (fun _ h => h)
+    (e.search hls hI₂ (by rw [q1, q2]; exact pw) (by ufo kSt at hroom)) ?_ |>.mono
+    (by ufo kSt) (fun _ => id)
   rintro c₃ hI₃ hA₃ hA₃' ⟨s1, s2, sfr, sA, sm⟩
   have hq : (⟨c₂.nreg lsxE, c₂.nreg lsxH⟩ : WPos) =
       ⟨c₂.nmem (AS + 5 * x), c₂.nmem (AS + 5 * x + 1)⟩ := by
     rw [q1, q2, mc c₂ hI₂ _ (by omega), mc c₂ hI₂ (AS + 5 * x + 1) (by omega)]
   rw [hq] at s1 s2
   have od₂ := e.odc (m := c₂.nmem) hI₂.hm
-  simp only [rd_sw] at od₂
+  simp [rd_sw] at od₂
   obtain ⟨ht, e1, e2, hv⟩ := stop_step od₂ e.hA.hP e.hA.hNF₂ rfl hx s1 s2
   rw [mc c₂ hI₂ (AS + 5 * x + 2) (by omega), mc c₂ hI₂ (AS + 5 * x + 3) (by omega),
     mc c₂ hI₂ (AS + 5 * x + 4) (by omega)] at hv
@@ -113,24 +117,24 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have keep : ∀ r, 244100 ≤ r → r ≤ 244129 → r ≠ ipA → r ≠ ipK → r ≠ ipKk → r ≠ ipBb →
       r ≠ ipS → r ≠ ipE → r ≠ ipH → c₃.nreg r = c.nreg r := by
     intro r h1 h2 n1 n2 n3 n4 n5 n6 n7
-    rw [sfr r (not_oracle_sw (by omega) (by omega)) (by unfold LSet sw; omega)
-      (by unfold ALLOC; omega), k21 r (not_oracle_sw (by omega) (by omega)) (by unfold sw; omega)
-      n6 n7 (by unfold ALLOC; omega)]
-    exact lfr r (by unfold lsxE; unfold sw; omega) (by unfold lsxH; unfold sw; omega) n1 n2 n3 n4 n5
+    rw [sfr r (not_oracle_sw (by omega) (by omega)) (by ufo LSet sw)
+      (by ufo ALLOC), k21 r (not_oracle_sw (by omega) (by omega)) (by ufo sw)
+      n6 n7 (by ufo ALLOC)]
+    exact lfr r (by unfold lsxE; ufo sw) (by unfold lsxH; ufo sw) n1 n2 n3 n4 n5
   have k3S : c₃.nreg ipS = sOf (c.nmem (AS + 5 * x + 4)) := by
-    rw [sfr _ (not_oracle_sw (by unfold ipS sw; omega) (by unfold ipS sw; omega))
-      (by unfold LSet ipS sw; omega) (by unfold ALLOC ipS sw; omega),
-      k21 _ (not_oracle_sw (by unfold ipS sw; omega) (by unfold ipS sw; omega))
-      (by unfold ipS sw; omega) (by unfold ipS ipE sw; omega) (by unfold ipS ipH sw; omega)
-      (by unfold ALLOC ipS sw; omega), l5, sOf_eq hb1]
-  have k3E : c₃.nreg ipE = c₂.nreg ipE := sfr _ (not_oracle_sw (by unfold ipE sw; omega)
-    (by unfold ipE sw; omega)) (by unfold LSet ipE sw; omega) (by unfold ALLOC ipE sw; omega)
-  have k3H : c₃.nreg ipH = c₂.nreg ipH := sfr _ (not_oracle_sw (by unfold ipH sw; omega)
-    (by unfold ipH sw; omega)) (by unfold LSet ipH sw; omega) (by unfold ALLOC ipH sw; omega)
-  have k3B : c₃.nreg ipB = B := (keep ipB (by unfold ipB sw; omega) (by unfold ipB sw; omega)
-    (by unfold ipB ipA sw; omega) (by unfold ipB ipK sw; omega) (by unfold ipB ipKk sw; omega)
-    (by unfold ipB ipBb sw; omega) (by unfold ipB ipS sw; omega) (by unfold ipB ipE sw; omega)
-    (by unfold ipB ipH sw; omega)).trans hB
+    rw [sfr _ (not_oracle_sw (by ufo ipS sw) (by ufo ipS sw))
+      (by ufo LSet ipS sw) (by ufo ALLOC ipS sw),
+      k21 _ (not_oracle_sw (by ufo ipS sw) (by ufo ipS sw))
+      (by ufo ipS sw) (by ufo ipS ipE sw) (by ufo ipS ipH sw)
+      (by ufo ALLOC ipS sw), l5, sOf_eq hb1]
+  have k3E : c₃.nreg ipE = c₂.nreg ipE := sfr _ (not_oracle_sw (by ufo ipE sw)
+    (by ufo ipE sw)) (by ufo LSet ipE sw) (by ufo ALLOC ipE sw)
+  have k3H : c₃.nreg ipH = c₂.nreg ipH := sfr _ (not_oracle_sw (by ufo ipH sw)
+    (by ufo ipH sw)) (by ufo LSet ipH sw) (by ufo ALLOC ipH sw)
+  have k3B : c₃.nreg ipB = B := (keep ipB (by ufo ipB sw) (by ufo ipB sw)
+    (by ufo ipB ipA sw) (by ufo ipB ipK sw) (by ufo ipB ipKk sw)
+    (by ufo ipB ipBb sw) (by ufo ipB ipS sw) (by ufo ipB ipE sw)
+    (by ufo ipB ipH sw)).trans hB
   have hK₃ : Consts c₃ := e.hA.hK.fix hI₃
   -- the slot
   refine IRS.seq (K₁ := 12) (K₂ := 1) (slotSt_irs hI₃ hK₃ k3B rfl k3S le_rfl (by
@@ -141,21 +145,21 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   rintro c₄ hI₄ hA₄ hA₄' ⟨w1, w2⟩
   have k1 : c₄.nreg K1 = 1 := (e.hA.hK.fix hI₄).2.1
   have k4X : c₄.nreg ipX = x := by
-    rw [w2 _ (by unfold ipX ipT sw; omega)]
-    exact keep ipX (by unfold ipX sw; omega) (by unfold ipX sw; omega)
-      (by unfold ipX ipA sw; omega) (by unfold ipX ipK sw; omega) (by unfold ipX ipKk sw; omega)
-      (by unfold ipX ipBb sw; omega) (by unfold ipX ipS sw; omega) (by unfold ipX ipE sw; omega)
-      (by unfold ipX ipH sw; omega)
-  refine (IRS.instr1 (i := .addN ipX ipX K1) hI₄ ⟨iscr_sw (by unfold ipX sw; omega)
-    (by unfold ipX sw; omega), by rw [k4X, k1]; have := hI₄.hw.1 ALLOC; omega⟩).mono le_rfl ?_
+    rw [w2 _ (by ufo ipX ipT sw)]
+    exact keep ipX (by ufo ipX sw) (by ufo ipX sw)
+      (by ufo ipX ipA sw) (by ufo ipX ipK sw) (by ufo ipX ipKk sw)
+      (by ufo ipX ipBb sw) (by ufo ipX ipS sw) (by ufo ipX ipE sw)
+      (by ufo ipX ipH sw)
+  refine (IRS.instr1 (i := .addN ipX ipX K1) hI₄ ⟨iscr_sw (by ufo ipX sw)
+    (by ufo ipX sw), by rw [k4X, k1]; have := hI₄.hw.1 ALLOC; omega⟩).mono le_rfl ?_
   rintro c' rfl
   refine ⟨?_, fun r hr => ?_, ?_, ?_⟩
-  · simp only [regI, upd_same]; rw [k4X, k1]
+  · simp [regI, upd_same]; rw [k4X, k1]
   · have hx' : r ≠ ipX := by
       rcases hr with rfl | rfl | rfl | rfl | rfl <;> simp [ipX, ipB, ipM6, ipM5, ipJ, ipKc, sw]
     have hT : r ≠ ipT := by
       rcases hr with rfl | rfl | rfl | rfl | rfl <;> simp [ipT, ipB, ipM6, ipM5, ipJ, ipKc, sw]
-    simp only [regI]
+    simp [regI]
     rw [upd_other _ _ _ hx', w2 r hT]
     rcases hr with rfl | rfl | rfl | rfl | rfl <;>
       exact keep _ (by simp [ipB, ipM6, ipM5, ipJ, ipKc, sw])
@@ -167,10 +171,10 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
         (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipS, sw])
         (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipE, sw])
         (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipH, sw])
-  · simp only [regI]
-    rw [upd_other _ _ _ (by unfold ALLOC ipX sw; omega)]
+  · simp [regI]
+    rw [upd_other _ _ _ (by ufo ALLOC ipX sw)]
     omega
-  · simp only
+  · simp
     rw [w1]
     -- the invariant at the memory before the write
     have m3 : ∀ a, a < B + 6 * E → c₃.nmem a = c.nmem a := fun a ha => by
@@ -207,17 +211,17 @@ theorem stLoop_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have hpB : PReg ipB := Or.inl rfl
   have h := IRS.while (P := P) (c₀ := c₀) (a := ipX) (b := sw 201) (body := stB lsS) I
     (fun d => c₀.nreg (sw 201) - d.nreg ipX) (kSt κL (c₀.nreg TLR))
-    (fun d hd hlt => by rw [hd.2.2.2.2] at hlt; omega)
+    (fun d hd hlt => by rwo [hd.2.2.2.2] at hlt)
     (fun d hId hd hlt hr => by
       obtain ⟨d1, d2, d3, d4, -⟩ := hd
       rw [f201 d hId] at hlt
       refine (IRS.withInv (stB_irs hls e hId ((d1 ipB hpB).trans hB) (by omega) hlt d4 hr)).mono le_rfl ?_
       rintro d' ⟨⟨g1, g2, g3, g4⟩, hId'⟩
-      refine ⟨⟨fun r hr => (g2 r hr).trans (d1 r hr), by omega, by omega, by rw [g1]; exact g4,
+      refine ⟨⟨fun r hr => (g2 r hr).trans (d1 r hr), by omega, by omega, by rwx [g1],
         f201 d' hId'⟩, by omega⟩)
-    hI ⟨fun _ _ => rfl, le_rfl, by omega, by rw [hx]; exact hS, f201 c hI⟩ (by rw [hx]; simpa using hroom)
+    hI ⟨fun _ _ => rfl, le_rfl, by omega, by rwx [hx], f201 c hI⟩ (by rw [hx]; simpa using hroom)
   rw [hx] at h
-  simp only [Nat.sub_zero] at h
+  simp [Nat.sub_zero] at h
   refine h.mono le_rfl ?_
   rintro d ⟨⟨d1, d2, d3, d4, d6⟩, d5⟩
   rw [d6] at d5

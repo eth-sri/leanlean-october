@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.OracleRamClus
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Lemma 3.6 (WP-H), RAM part 8: the abscissa of a chord endpoint
@@ -90,12 +95,12 @@ theorem xpEdge_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain}
       (block [.subN 120127 120120 120028, .addN 120127 120127 120021]) c c₁ k₁ ∧ k₁ = 2 ∧
       c₁.nreg 120127 = w - 6 + V.sS ∧ (∀ r, r ≠ 120127 → c₁.nreg r = c.nreg r) := by
     exec_block
-    · config_simp; rw [hq.six, hq.sS, hwdef]; rw [hv.m] at hE; omega
+    · config_simp; rw [hq.six, hq.sS, hwdef]; rwo [hv.m] at hE
     · refine ⟨rfl, ?_, fun r hr => ?_⟩
       · config_simp; rw [hq.six, hq.sS, hwdef]
       · config_simp; upd_solve
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, r₂, -⟩ := modSub_exec (P := P) (r := 120127) (nr := 120019)
-    (by decide) c₁ e₁.wb_right (by rw [v₁, r₁ _ (by decide), hq.twoM, hv.m]; rw [hv.m] at hE; omega)
+    (by decide) c₁ e₁.wb_right (by rw [v₁, r₁ _ (by decide), hq.twoM, hv.m]; rwo [hv.m] at hE)
   rw [v₁, r₁ _ (by decide), hq.twoM, hv.m] at v₂
   have htj : c₂.nreg 120127 = tj C (w - 6) := by
     rw [v₂]; unfold tj; rw [← hv.sS, Nat.add_comm]
@@ -107,7 +112,7 @@ theorem xpEdge_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain}
       c₃.nreg 120126 = tci C (w - 6) ∧ (∀ r, r ≠ 120126 → c₃.nreg r = c₂.nreg r) := by
     have hm2 : c₂.nreg 120016 = C.m := by rw [R₂ _ (by decide), hq.m, hv.m]
     by_cases hlt : tj C (w - 6) < C.m
-    · refine ⟨_, _, .ifLtN_true (by rw [htj, hm2]; exact hlt) (Exec.copyN e₂.wb_right _ _),
+    · refine ⟨_, _, .ifLtN_true (by rwx [htj, hm2]) (Exec.copyN e₂.wb_right _ _),
         by omega, ?_, fun r hr => ?_⟩
       · config_simp; rw [htj]; unfold tci; rw [ite_eq_left hlt]
       · config_simp; upd_solve
@@ -121,7 +126,7 @@ theorem xpEdge_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain}
         · config_simp
           rw [R₂ _ (by decide), R₂ _ (by decide), hq.twoM, hq.one, htj, hv.m]
         · config_simp; upd_solve
-      refine ⟨c₃, _, .ifLtN_false (by rw [htj, hm2]; exact hlt) e₃, by omega, ?_, r₃⟩
+      refine ⟨c₃, _, .ifLtN_false (by rwx [htj, hm2]) e₃, by omega, ?_, r₃⟩
       rw [v₃]; unfold tci; rw [ite_eq_right hlt]
   have hci := tci_lt C (w - 6)
   obtain ⟨c₄, e₄, v₄, r₄, -⟩ := add_exec (P := P) e₃.wb_right 120126 120126 120015 (by
@@ -170,19 +175,19 @@ theorem xpS_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {V
   · obtain ⟨c₁, e₁, v₁, -⟩ := const_exec (P := P) hw 120122 0 (by omega)
     refine ⟨c₁, _, ifEq_eq_exec (by rw [hwdef, hq.one, h1]) e₁, by omega, ?_, ?_⟩
     · rw [v₁]; unfold xpClass; rw [ite_eq_left h1]
-    · intro h; unfold xpClass at h; rw [ite_eq_left h1] at h; omega
+    · intro h; unfold xpClass at h; rwo [ite_eq_left h1] at h
   obtain ⟨c₁, e₁, v₁, r₁⟩ := const_exec (P := P) hw 120126 3 (by omega)
   by_cases h3 : w = 3
   · obtain ⟨c₂, e₂, v₂, -⟩ := const_exec (P := P) e₁.wb_right 120122 2 (by omega)
     obtain ⟨k', ex', hk'⟩ := ifEq_ne_exec (a := 120120) (b := 120011)
       (S := .instr (.constN 120122 0))
-      (by rw [hwdef, hq.one]; exact h1)
+      (by rwx [hwdef, hq.one])
       (.seq e₁ (ifEq_eq_exec (a := 120120) (b := 120126)
         (T := .seq (.instr (.constN 120122 1)) _)
         (by rw [r₁ _ (by decide), hwdef, v₁, h3]) e₂))
     refine ⟨c₂, k', ex', by omega, ?_, ?_⟩
     · rw [v₂]; unfold xpClass; rw [ite_eq_right h1, ite_eq_left h3]
-    · intro h; unfold xpClass at h; rw [ite_eq_right h1, ite_eq_left h3] at h; omega
+    · intro h; unfold xpClass at h; rwo [ite_eq_right h1, ite_eq_left h3] at h
   have hcl : xpClass w = 1 := by unfold xpClass; rw [ite_eq_right h1, ite_eq_right h3]
   rw [hcl]
   obtain ⟨c₂, e₂, v₂, r₂⟩ := const_exec (P := P) e₁.wb_right 120122 1 (by omega)
@@ -199,30 +204,30 @@ theorem xpS_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {V
           d'.nreg 120122 = 1 ∧ SymPtIn d' 120123 (xpSym C V P.n w (c.nreg 120121)) := by
       intro hn d hd h22 htv
       obtain ⟨d', k, ex, hk, a1, a2, a3⟩ := xpVtx_exec (P := P) d hd (by omega)
-      refine ⟨d', k, ex, hk, by rw [a3 _ (by decide) (by decide)]; exact h22, ?_⟩
+      refine ⟨d', k, ex, hk, by rwx [a3 _ (by decide) (by decide)], ?_⟩
       unfold xpSym; rw [ite_eq_right hn]
       exact ⟨a1, by rw [a2, htv]⟩
     by_cases h6 : w < 6
     · obtain ⟨d', k, ex, hk, a, b⟩ := vtxcase (by omega) c₂ e₂.wb_right v₂ hq₂.tv
-      exact ⟨d', _, .ifLtN_true (by rw [x120, hq₂.six]; exact h6) ex, by omega, a, b⟩
+      exact ⟨d', _, .ifLtN_true (by rwx [x120, hq₂.six]) ex, by omega, a, b⟩
     by_cases hE : w < 2 * V.m + 6
     · obtain ⟨d', k, ex, hk, a1, a2, a3, a4⟩ := xpEdge_exec (P := P) hW hv c₂ e₂.wb_right hq₂
-        (by rw [x120]; omega) (by rw [x120]; exact hE)
-      refine ⟨d', _, .ifLtN_false (by rw [x120, hq₂.six]; exact h6)
-        (.ifLtN_true (by rw [x120, hq₂.tEnd]; exact hE) ex), by omega,
+        (by rwo [x120]) (by rwx [x120])
+      refine ⟨d', _, .ifLtN_false (by rwx [x120, hq₂.six])
+        (.ifLtN_true (by rwx [x120, hq₂.tEnd]) ex), by omega,
         by rw [a4 _ (by omega), v₂], ?_⟩
       unfold xpSym; rw [ite_eq_left ⟨by omega, hE⟩]
       rw [x120] at a2
       exact ⟨a1, a2, by rw [a3, x121]⟩
     · obtain ⟨d', k, ex, hk, a, b⟩ := vtxcase (by omega) c₂ e₂.wb_right v₂ hq₂.tv
-      exact ⟨d', _, .ifLtN_false (by rw [x120, hq₂.six]; exact h6)
-        (.ifLtN_false (by rw [x120, hq₂.tEnd]; exact hE) ex), by omega, a, b⟩
+      exact ⟨d', _, .ifLtN_false (by rwx [x120, hq₂.six])
+        (.ifLtN_false (by rwx [x120, hq₂.tEnd]) ex), by omega, a, b⟩
   obtain ⟨k₄, ex₄, hk₄⟩ := ifEq_ne_exec (a := 120120) (b := 120126)
     (S := .instr (.constN 120122 2))
-    (show c₁.nreg 120120 ≠ c₁.nreg 120126 by rw [r₁ _ (by decide), hwdef, v₁]; exact h3)
+    (show c₁.nreg 120120 ≠ c₁.nreg 120126 by rwx [r₁ _ (by decide), hwdef, v₁])
     (.seq e₂ e₃)
   obtain ⟨k', ex', hk'⟩ := ifEq_ne_exec (a := 120120) (b := 120011)
-    (S := .instr (.constN 120122 0)) (by rw [hwdef, hq.one]; exact h1) (.seq e₁ ex₄)
+    (S := .instr (.constN 120122 0)) (by rwx [hwdef, hq.one]) (.seq e₁ ex₄)
   exact ⟨c₃, k', ex', by omega, v₃, fun _ => s₃⟩
 
 /-! ## Comparisons of an endpoint -/
@@ -303,7 +308,7 @@ end Sem
 
 /-! ### Execution of the comparisons -/
 
-theorem xpClass_le (w : ℕ) : xpClass w ≤ 2 := by unfold xpClass; split_ifs <;> omega
+theorem xpClass_le (w : ℕ) : xpClass w ≤ 2 := by unfold xpClass; splao
 
 /-- **Deciding by the class.** -/
 theorem clsDec_exec {P : Polygon} {W : ℕ} (hW : 3 ≤ W) {v0 v2 : ℕ} (hv0 : v0 ≤ 1) (hv2 : v2 ≤ 1)
@@ -317,7 +322,7 @@ theorem clsDec_exec {P : Polygon} {W : ℕ} (hW : 3 ≤ W) {v0 v2 : ℕ} (hv0 : 
   unfold clsDec
   by_cases h0 : c.nreg 120122 < 1
   · obtain ⟨c₁, e₁, v₁, -⟩ := const_exec (P := P) hw 120128 v0 (by omega)
-    refine ⟨c₁, _, .ifLtN_true (by rw [hone]; exact h0) e₁, by omega, by rw [v₁]; exact hv0, ?_⟩
+    refine ⟨c₁, _, .ifLtN_true (by rwx [hone]) e₁, by omega, by rwx [v₁], ?_⟩
     rw [v₁]; constructor
     · intro h; exact Or.inl ⟨by omega, h⟩
     · rintro (⟨-, h⟩ | ⟨h, -⟩ | ⟨h, -⟩)
@@ -326,7 +331,7 @@ theorem clsDec_exec {P : Polygon} {W : ℕ} (hW : 3 ≤ W) {v0 v2 : ℕ} (hv0 : 
       · omega
   by_cases h1 : c.nreg 120122 < 2
   · obtain ⟨c₁, k₁, e₁, hk₁, b₁, v₁⟩ := hS1 (by omega)
-    refine ⟨c₁, _, .ifLtN_false (by rw [hone]; exact h0) (.ifLtN_true (by rw [htwo]; exact h1) e₁),
+    refine ⟨c₁, _, .ifLtN_false (by rwx [hone]) (.ifLtN_true (by rwx [htwo]) e₁),
       by omega, b₁, ?_⟩
     rw [v₁]; constructor
     · intro h; exact Or.inr (Or.inl ⟨by omega, h⟩)
@@ -335,8 +340,8 @@ theorem clsDec_exec {P : Polygon} {W : ℕ} (hW : 3 ≤ W) {v0 v2 : ℕ} (hv0 : 
       · exact h
       · omega
   · obtain ⟨c₁, e₁, v₁, -⟩ := const_exec (P := P) hw 120128 v2 (by omega)
-    refine ⟨c₁, _, .ifLtN_false (by rw [hone]; exact h0) (.ifLtN_false (by rw [htwo]; exact h1) e₁),
-      by omega, by rw [v₁]; exact hv2, ?_⟩
+    refine ⟨c₁, _, .ifLtN_false (by rwx [hone]) (.ifLtN_false (by rwx [htwo]) e₁),
+      by omega, by rwx [v₁], ?_⟩
     rw [v₁]; constructor
     · intro h; exact Or.inr (Or.inr ⟨by omega, h⟩)
     · rintro (⟨h, -⟩ | ⟨h, -⟩ | ⟨-, h⟩)
@@ -353,7 +358,7 @@ theorem after_xp {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {V
         SymPtIn c₁ 120123 (xpSym C V P.n (c.nreg 120120) (c.nreg 120121))) := by
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, v₁, s₁⟩ := xpS_exec (P := P) hW hv c hw hq
   exact ⟨c₁, k₁, e₁, hk₁, f₁, hq.frame f₁ fun r h1 h2 => by
-    simp only [BX, decide_eq_false_iff_not, not_and, not_le]; omega, v₁, s₁⟩
+    sio only [BX, decide_eq_false_iff_not, not_and, not_le], v₁, s₁⟩
 
 /-- **`z.1 < x`.** -/
 theorem gtZS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 ≤ W) {C : Chain}
@@ -374,17 +379,17 @@ theorem gtZS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 ≤
       have hl := xpSym_lt (C := C) (V := V) (w := c.nreg 120120) hn htv hh
       rcases hq₁.org with ⟨hk2, hzo⟩ | ⟨hk2, p, hp, hpin, hzo⟩
       · obtain ⟨c₂, e₂, v₂, -⟩ := copy_exec (P := P) e₁.wb_right 120128 120024
-        refine ⟨c₂, _, .ifLtN_false (by rw [hk2, hq₁.two]; omega) e₂, by omega, ?_, ?_⟩
+        refine ⟨c₂, _, .ifLtN_false (by rwo [hk2, hq₁.two]) e₂, by omega, ?_, ?_⟩
         · rw [v₂, hq₁.σb]; exact hv.σb_le
         · rw [v₂, hq₁.σb, hzo]
       · obtain ⟨c₂, k₂, e₂, hk₂, -, b₂, g₂⟩ := sgnS_exec (P := P) hG (by omega) 0 (by norm_num)
           (.regs 120025) (.regs 120123) (.vtx 120022) c₁ e₁.wb_right (by decide) (by decide)
-          (by decide) hpin hpt rfl hp hl (by rw [hq₁.tv]; exact htv)
+          (by decide) hpin hpt rfl hp hl (by rwx [hq₁.tv])
         obtain ⟨c₃, e₃, v₃, -⟩ := copy_exec (P := P) e₂.wb_right 120128 10010
-        refine ⟨c₃, _, .ifLtN_true (by rw [hq₁.two]; exact hk2) (.seq e₂ e₃), by omega,
-          by rw [v₃]; exact b₂, ?_⟩
+        refine ⟨c₃, _, .ifLtN_true (by rwx [hq₁.two]) (.seq e₂ e₃), by omega,
+          by rwx [v₃], ?_⟩
         rw [v₃, g₂, hzo]
-        simp only [SignTest]
+        simp [SignTest]
         rfl)
   refine ⟨c₂, _, .seq e₁ e₂, by omega, exec_frameB (.seq e₁ e₂) wr_gtZS, b₂, ?_⟩
   rw [v₂, v₁]
@@ -422,17 +427,17 @@ theorem ltZS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 ≤
             c₂.nreg 120128 = c₁.nreg 120011 - c₁.nreg 120024 ∧ True :=
           ⟨_, Exec.subN w₁ _ _ _, by config_simp, trivial⟩
         have hσ := hv.σb_le
-        refine ⟨c₂, _, .ifLtN_false (by rw [hk2, hq₁.two]; omega) e₂, by omega, ?_, ?_⟩
-        · rw [v₂, hq₁.one]; omega
-        · rw [v₂, hq₁.one, hq₁.σb, hzo]; simp only; omega
+        refine ⟨c₂, _, .ifLtN_false (by rwo [hk2, hq₁.two]) e₂, by omega, ?_, ?_⟩
+        · rwo [v₂, hq₁.one]
+        · rsio [v₂, hq₁.one, hq₁.σb, hzo] only
       · obtain ⟨c₂, k₂, e₂, hk₂, -, b₂, g₂⟩ := sgnS_exec (P := P) hG (by omega) 0 (by norm_num)
           (.regs 120123) (.regs 120025) (.vtx 120022) c₁ e₁.wb_right (by decide) (by decide)
-          (by decide) hpt hpin rfl hl hp (by rw [hq₁.tv]; exact htv)
+          (by decide) hpt hpin rfl hl hp (by rwx [hq₁.tv])
         obtain ⟨c₃, e₃, v₃, -⟩ := copy_exec (P := P) e₂.wb_right 120128 10010
-        refine ⟨c₃, _, .ifLtN_true (by rw [hq₁.two]; exact hk2) (.seq e₂ e₃), by omega,
-          by rw [v₃]; exact b₂, ?_⟩
+        refine ⟨c₃, _, .ifLtN_true (by rwx [hq₁.two]) (.seq e₂ e₃), by omega,
+          by rwx [v₃], ?_⟩
         rw [v₃, g₂, hzo]
-        simp only [SignTest]
+        simp [SignTest]
         rfl)
   refine ⟨c₂, _, .seq e₁ e₂, by omega, exec_frameB (.seq e₁ e₂) wr_ltZS, b₂, ?_⟩
   rw [v₂, v₁]
@@ -467,11 +472,11 @@ theorem ltDS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 ≤
       obtain ⟨c₂, k₂, e₂, hk₂, -, b₂, g₂⟩ := sgnS_exec (P := P) hG (by omega) 0 (by norm_num)
         (.regs 120123) (.edge 120051 120023) (.vtx 120022) c₁ e₁.wb_right (by decide) (by decide)
         (by decide) hpt rfl rfl hl (show (SymPt.onEdge _ _).Lt P.n from
-          ⟨by rw [x51]; exact heD, by rw [hq₁.hz]; exact hv.hz_lt⟩) (by rw [hq₁.tv]; exact htv)
+          ⟨by rwx [x51], by rw [hq₁.hz]; exact hv.hz_lt⟩) (by rwx [hq₁.tv])
       obtain ⟨c₃, e₃, v₃, -⟩ := copy_exec (P := P) e₂.wb_right 120128 10010
-      refine ⟨c₃, _, .seq e₂ e₃, by omega, by rw [v₃]; exact b₂, ?_⟩
+      refine ⟨c₃, _, .seq e₂ e₃, by omega, by rwx [v₃], ?_⟩
       rw [v₃, g₂]
-      simp only [SignTest, SymPt.eval, xpX, xe, x51, hq₁.hz])
+      simp [SignTest, SymPt.eval, xpX, xe, x51, hq₁.hz])
   refine ⟨c₂, _, .seq e₁ e₂, by omega, exec_frameB (.seq e₁ e₂) wr_ltDS, b₂, ?_⟩
   rw [v₂, v₁]
   unfold EndLtD
@@ -505,11 +510,11 @@ theorem gtDS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 ≤
       obtain ⟨c₂, k₂, e₂, hk₂, -, b₂, g₂⟩ := sgnS_exec (P := P) hG (by omega) 0 (by norm_num)
         (.edge 120051 120023) (.regs 120123) (.vtx 120022) c₁ e₁.wb_right (by decide) (by decide)
         (by decide) rfl hpt rfl (show (SymPt.onEdge _ _).Lt P.n from
-          ⟨by rw [x51]; exact heD, by rw [hq₁.hz]; exact hv.hz_lt⟩) hl (by rw [hq₁.tv]; exact htv)
+          ⟨by rwx [x51], by rw [hq₁.hz]; exact hv.hz_lt⟩) hl (by rwx [hq₁.tv])
       obtain ⟨c₃, e₃, v₃, -⟩ := copy_exec (P := P) e₂.wb_right 120128 10010
-      refine ⟨c₃, _, .seq e₂ e₃, by omega, by rw [v₃]; exact b₂, ?_⟩
+      refine ⟨c₃, _, .seq e₂ e₃, by omega, by rwx [v₃], ?_⟩
       rw [v₃, g₂]
-      simp only [SignTest, SymPt.eval, xpX, xe, x51, hq₁.hz])
+      simp [SignTest, SymPt.eval, xpX, xe, x51, hq₁.hz])
   refine ⟨c₂, _, .seq e₁ e₂, by omega, exec_frameB (.seq e₁ e₂) wr_gtDS, b₂, ?_⟩
   rw [v₂, v₁]
   unfold EndGtD

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.RestoreDrvProg
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-E, part 7: the restoration driver — copying the chord list and reserving room
@@ -31,7 +33,6 @@ structure CopyI (W K CB LB : ℕ) (c₀ c : Config) : Prop where
   rm : c.rmem = c₀.rmem
   out : c.output = c₀.output
 
-set_option maxHeartbeats 4000000 in
 theorem copyBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {s a : ℕ}
     (h31 : c.nreg 80031 = s) (hA : c.nreg ALLOC = a) (h20 : c.nreg 80020 = 1)
     (h22 : c.nreg 80022 = 3) (hs : s + 5 ≤ W) (ha : a + 3 ≤ W) (hi : c.nreg 80030 + 1 ≤ W)
@@ -59,7 +60,6 @@ theorem copyBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   · have a4' : r ≠ 9999 := a4
     simp (disch := omega) only [Machine.upd_other]
 
-set_option maxHeartbeats 2000000 in
 theorem copyBody_step {P : Polygon} {W K CB LB : ℕ} {c₀ c : Config}
     (hI : CopyI W K CB LB c₀ c) (ht : c.nreg 80030 < K) (h20 : c₀.nreg 80020 = 1)
     (h22 : c₀.nreg 80022 = 3) (hCB : ∀ i, i < K → CB + 5 * i + 4 < LB)
@@ -76,7 +76,7 @@ theorem copyBody_step {P : Polygon} {W K CB LB : ℕ} {c₀ c : Config}
     (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide), h22])
     (by omega) (by omega) (by omega) (by omega)
   rw [hi] at r30
-  refine ⟨c', k, e, ⟨e.wb_right, by omega, by rw [r31, r30]; ring, by rw [rA, r30]; ring,
+  refine ⟨c', k, e, ⟨e.wb_right, by omega, by rwring [r31, r30], by rwring [rA, r30],
     fun r a1 a2 a3 a4 => ?_, fun a ha => ?_, fun i' hi' j hj => ?_, by rw [rr, hI.rr],
     by rw [rm, hI.rm], by rw [ro, hI.out]⟩, hk, by rw [r30, hi]⟩
   · rw [R r a1 a2 a3 a4, hI.regs r a1 a2 a3 a4]
@@ -115,9 +115,9 @@ theorem copy_exec {P : Polygon} {W K CB LB A₀ : ℕ} {c₀ : Config} (hw : Wor
       (∀ a, a < LB → c'.nmem a = c₀.nmem a) ∧
       (∀ i, i < K → ∀ j, j < 3 → c'.nmem (LB + 3 * i + j) = c₀.nmem (CB + 5 * i + j)) ∧
       RF dBands A₀ c₀ c' k := by
-  have I0 : CopyI W K CB LB c₀ c₀ := ⟨hw, by omega, by rw [h31, h30]; ring,
-    by rw [hA, h30]; ring, fun _ _ _ _ _ => rfl, fun _ _ => rfl,
-    fun i hi => by rw [h30] at hi; omega, rfl, rfl, rfl⟩
+  have I0 : CopyI W K CB LB c₀ c₀ := ⟨hw, by omega, by rwring [h31, h30],
+    by rwring [hA, h30], fun _ _ _ _ _ => rfl, fun _ _ => rfl,
+    fun i hi => by rwo [h30] at hi, rfl, rfl, rfl⟩
   obtain ⟨c', k, e, I', hx, RFl, hk⟩ := whileLtN_frame (P := P) (W := W) (a := 80030)
     (b := 80013) (body := copyBody) (B := dBands) (A₀ := A₀)
     (CopyI W K CB LB c₀) (fun c => K - c.nreg 80030) 13
@@ -137,8 +137,8 @@ theorem copy_exec {P : Polygon} {W K CB LB A₀ : ℕ} {c₀ : Config} (hw : Wor
       · obtain ⟨h1, h2, h3⟩ := hb r hr
         rw [I'.regs r h1 h2 h3 hra, I.regs r h1 h2 h3 hra]
       · rw [I'.low a (by omega), I.low a (by omega)]
-      · rw [I'.alloc, I.alloc]; omega
-      · rw [I'.alloc, I.alloc, hi, hk]; omega) I0
+      · rwo [I'.alloc, I.alloc]
+      · rwo [I'.alloc, I.alloc, hi, hk]) I0
   have hK' : c'.nreg 80030 = K := by
     rw [I'.regs 80013 (by decide) (by decide) (by decide) (by decide), h13] at hx
     have := I'.i_le; omega
@@ -158,7 +158,6 @@ structure ResI (W R A : ℕ) (c₀ c : Config) : Prop where
   rm : c.rmem = c₀.rmem
   out : c.output = c₀.output
 
-set_option maxHeartbeats 2000000 in
 theorem resBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {a : ℕ}
     (hA : c.nreg ALLOC = a) (h20 : c.nreg 80020 = 1) (ha : a + 3 ≤ W)
     (hj : c.nreg 80034 + 1 ≤ W) :
@@ -185,7 +184,7 @@ theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBou
     ∃ c' k, Exec P W resS c₀ c' k ∧ k ≤ 6 * R + 2 ∧ c'.nreg ALLOC = A + 3 * R ∧
       (∀ r, r ≠ 80034 → r ≠ ALLOC → c'.nreg r = c₀.nreg r) ∧ c'.nmem = c₀.nmem ∧
       RF dBands A₀ c₀ c' k := by
-  have I0 : ResI W R A c₀ c₀ := ⟨hw, by omega, by rw [hA, h34]; ring, fun _ _ _ => rfl, rfl,
+  have I0 : ResI W R A c₀ c₀ := ⟨hw, by omega, by rwring [hA, h34], fun _ _ _ => rfl, rfl,
     rfl, rfl, rfl⟩
   obtain ⟨c', k, e, I', hx, RFl, hk⟩ := whileLtN_frame (P := P) (W := W) (a := 80034)
     (b := 80014) (body := resBody) (B := dBands) (A₀ := A₀)
@@ -199,12 +198,12 @@ theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBou
         I.alloc c20 (by omega) (by omega)
       have b34 : bandOf 80034 ∈ dBands := by
         rw [band8 (by norm_num) (by norm_num)]; exact mem_dBands_8
-      refine ⟨c', k, e, ⟨e.wb_right, by omega, by rw [qa, qj]; ring,
+      refine ⟨c', k, e, ⟨e.wb_right, by omega, by rwring [qa, qj],
         fun r a1 a2 => by rw [qr r a1 a2, I.regs r a1 a2], by rw [qm, I.mem],
         by rw [qrr, I.rr], by rw [qrm, I.rm], by rw [qo, I.out]⟩,
         ⟨fun r hr hra => qr r (fun h => hr (h ▸ b34)) hra, fun r _ => by rw [qrr],
-          fun a _ => by rw [qm], fun a _ => by rw [qrm], qo, by rw [qa, I.alloc]; omega,
-          by rw [qa, I.alloc, hk]; omega⟩,
+          fun a _ => by rw [qm], fun a _ => by rw [qrm], qo, by rwo [qa, I.alloc],
+          by rwo [qa, I.alloc, hk]⟩,
         by omega, by omega⟩) I0
   have hR' : c'.nreg 80034 = R := by
     rw [I'.regs 80014 (by decide) (by decide), h14] at hx

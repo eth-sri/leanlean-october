@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseMathHostMir
 public import Chazelle.Core.DownPhaseMathRot
 public import Chazelle.Core.DownPhaseMathHostList
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Down phase, math (H-R1): the extraction facts for rotated and reversed host polygons
@@ -33,7 +35,7 @@ theorem mod3_cases {x K : ℕ} (hK : 0 < K) (hx : x < 3 * K) :
   · exact Or.inl (Nat.mod_eq_of_lt h1)
   · by_cases h2 : x < 2 * K
     · right; left
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+      rwo [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
     · right; right
       rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_sub_mod (by omega),
         Nat.mod_eq_of_lt (by omega)]; omega
@@ -83,10 +85,10 @@ theorem extractOK_of_model {C C' : Chain} (h : chainModel C = chainModel C')
     (hE : DownDrv.ExtractOK Q S R C') : DownDrv.ExtractOK Q S R C := by
   obtain ⟨h1, h2, h3, h4⟩ := hE
   refine ⟨?_, ?_, ?_, ?_⟩
-  · rw [h]; exact h1
-  · rw [h]; exact h2
-  · rw [h]; exact h3
-  · rw [h]; exact h4
+  · rwx [h]
+  · rwx [h]
+  · rwx [h]
+  · rwx [h]
 
 /-- **Counterclockwise extraction** for a chain from index `0` of the host polygon rotated by `i0`,
 the host key before `i0` being a chord gap. -/
@@ -100,7 +102,7 @@ theorem extractOK_rot (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
   have hPn : C.P.n = K := by rw [hP, Existence.n_rotate, hostPoly_n]
   refine extractOK_of_model (C' := hostChain Q S R g h3) ?_ (DownDrv.extractOK_host X hg hgc)
   refine chainModel_congr ?_ (fun k => ?_) ?_
-  · rw [hostChain_m]; omega
+  · rwo [hostChain_m]
   · show C.P.vtx ((C.s + k) % C.P.n) = (hostPoly Q S R).vtx (((g + 1) % K + k) % (hostPoly Q S R).n)
     rw [hs, zero_add, hPn, hostPoly_n, hP, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; exact Nat.mod_lt _ (by omega)),
       hostPoly_n, hgi, Nat.add_mod_mod, Nat.mod_add_mod]
@@ -143,7 +145,7 @@ theorem extractOK_rev (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
     have hσ : (a + K - 1 - j) % K < K := Nat.mod_lt _ hK0
     have hb := hostKeys_bounds (hk_mem (walkAx_interiorModel X.hQ) X.hFam.2.1 X.hFam.1 hσ)
     obtain ⟨r0, rn⟩ := rk_bounds hc hb.1 hb.2
-    rw [hostPoly_vtx (by rw [← hK', hnk']; exact hj), hk' j hj, hostPt_mir X.hQ r0 rn,
+    rw [hostPoly_vtx (by rwx [← hK', hnk']), hk' j hj, hostPt_mir X.hQ r0 rn,
       rk_rk hc hb.1 hb.2, hostPoly_vtx hσ]
   -- the mirrored chain is a rotation of the mirrored host polygon
   have hPm : C.mir.P = (hostPoly Q.mir (mirF S) (mir '' R)).rotate s' := by
@@ -155,7 +157,7 @@ theorem extractOK_rev (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
       have e2 : (a + K - 1 - (s' + k) % K) % K = (i₀ + (K - 1 - k)) % K := by
         rw [hs']; exact idx_I1 hK0 haK hi₀K hk
       rw [chainMir_P, mir_vtx, hPv k hk,
-        Existence.vtx_rotate _ _ (by rw [hostPoly_n, ← hK', hnk']; exact hk),
+        Existence.vtx_rotate _ _ (by rwx [hostPoly_n, ← hK', hnk']),
         hostPoly_n, ← hK', hnk', hvtx' _ (Nat.mod_lt _ hK0), e2, e1]
   -- the chord gap of the mirrored region
   have hgc' : ChordGap (interiorModel Q.mir) (mirF S) (mir '' R) g' := by
@@ -169,12 +171,12 @@ theorem extractOK_rev (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
       show hk (interiorModel Q.mir) (mirF S) (mir '' R) ((g' + 1) % K') = _
       rw [hnk', hk' _ (Nat.mod_lt _ hK0), e]
   have hg'K' : g' < nk (interiorModel Q.mir) (mirF S) (mir '' R) := by
-    rw [← hK', hnk']; exact hg'K
+    rwx [← hK', hnk']
   -- extraction for the mirrored chain
   have hE' := DownDrv.extractOK_host X' hg'K' hgc'
   refine DownDrv.extractOK_of_mir X.hQ hPs (extractOK_of_model ?_ hE')
   refine chainModel_congr ?_ (fun k => ?_) ?_
-  · rw [chainMir_m, hostChain_m, ← hK', hnk']; rw [hPn] at hm; omega
+  · rw [chainMir_m, hostChain_m, ← hK', hnk']; rwo [hPn] at hm
   · show C.mir.P.vtx ((C.mir.s + k) % C.mir.P.n) =
       (hostPoly Q.mir (mirF S) (mir '' R)).vtx
         (((g' + 1) % K' + k) % (hostPoly Q.mir (mirF S) (mir '' R)).n)

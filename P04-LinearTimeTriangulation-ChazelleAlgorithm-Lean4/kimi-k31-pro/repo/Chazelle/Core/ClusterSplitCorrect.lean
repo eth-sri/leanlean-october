@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.ClusterSplitRam
 public import Chazelle.Core.ClusterSplitMath
 public import Chazelle.Core.ClusterTrees
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-I, part 33: the split step is correct
@@ -49,11 +51,11 @@ theorem anc_window {upN : ℕ → ℕ} (hup : ∀ v : Fin μ, upN v = T.parent v
       · rw [show T.level u - T.level x = n by omega, hn]
       · have h1 : T.parent^[n] u = T.root := T.iterate_parent_eq_root (by omega)
         have h2 : T.parent^[T.level u - T.level x] u = T.root :=
-          T.iterate_parent_eq_root (by rw [hn] at h1; subst h1; rw [T.level_root]; omega)
+          T.iterate_parent_eq_root (by rw [hn] at h1; subst h1; rwo [T.level_root])
         rw [h2, ← h1, hn]
     have hxu : T.level x ≤ T.level u := by
       have := T.level_iterate_parent (T.level u - T.level x) u
-      rw [hx'] at this; omega
+      rwo [hx'] at this
     refine ⟨by omega, min (T.level u) ltop - T.level x, by omega, ?_⟩
     rw [iterate_parentN T hup, show T.level u - min (T.level u) ltop +
       (min (T.level u) ltop - T.level x) = T.level u - T.level x by omega, hx']
@@ -94,7 +96,7 @@ theorem pass_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} {s
   refine ⟨fun i h1 h2 hs => passMem_act (hi - lo) hdAP i h1 (by omega) hs,
     fun i h1 h2 hs => passMem_pos (hi - lo) hdAP
       (fun a b c d e' f => hinj a b c (by omega) e' (by omega)) i h1 (by omega) hs,
-    fun a h1 h2 => passMem_keep (hi - lo) (by rw [hj]; exact h1)
+    fun a h1 h2 => passMem_keep (hi - lo) (by rwx [hj])
       (fun i a' b c => h2 i a' (by omega) c), by rw [passMem_ptr_eq, hj]⟩
 
 /-- **The three passes**: each class lands in its range of `ACT`, the positions of its items are
@@ -150,7 +152,7 @@ theorem passes_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} 
     have := hit i' b c; omega
   obtain ⟨b1, b2, b3, b4⟩ := pass_spec (sel := s1) (e := e1) hL (m := (passA m S lo hi f).1) hlh hhi
     (by omega) (fun i h1 h2 => by rw [tA i h1 h2]; exact hit i h1 h2)
-    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rw [← tA i h1 h2, ← tA i' h3 h4]; exact h))
+    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rwx [← tA i h1 h2, ← tA i' h3 h4]))
     (by omega)
   have hB1 : (passB m S lo hi f).1 =
       (passMem (passA m S lo hi f).1 s1 S.bACT S.bPOS S.bTMP lo e1 (hi - lo)).1 := by
@@ -162,7 +164,7 @@ theorem passes_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} 
     rw [tA i' b c]; have := hit i' b c; omega
   obtain ⟨c1, c2, c3, c4⟩ := pass_spec (sel := s2) (e := e2) hL (m := (passB m S lo hi f).1) hlh hhi
     (by omega) (fun i h1 h2 => by rw [tB i h1 h2]; exact hit i h1 h2)
-    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rw [← tB i h1 h2, ← tB i' h3 h4]; exact h))
+    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rwx [← tB i h1 h2, ← tB i' h3 h4]))
     (by omega)
   have hC1 : (passC m S lo hi f).1 =
       (passMem (passB m S lo hi f).1 s2 S.bACT S.bPOS S.bTMP lo e2 (hi - lo)).1 := by

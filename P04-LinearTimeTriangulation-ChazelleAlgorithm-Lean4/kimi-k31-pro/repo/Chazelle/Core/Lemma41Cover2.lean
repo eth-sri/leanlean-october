@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.Lemma41Cover
 public import Mathlib.Algebra.BigOperators.Intervals
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-J, part 27: at most two pieces per grade
@@ -38,19 +40,19 @@ theorem cover_weight_desc {lam b : ℕ} (f : ℕ → ℕ) (h : ℕ) : ∀ x, h �
         have hgh1 : g + 1 < h := by
           by_contra hc2
           have := Nat.pow_le_pow_right (show 0 < 2 by norm_num) (not_lt.mp hc2)
-          rw [pow_succ] at this; omega
+          rwo [pow_succ] at this
         have hok : GradeOK b x (g + 1) := by
           refine ⟨(Nat.pow_dvd_pow 2 (by omega)).trans hd, ?_⟩
-          rw [pow_succ]; omega
+          rwo [pow_succ]
         have := le_nextG (lam := lam) (by omega) hok
         omega
       have := ih g hgh (x + 2 ^ g) (by omega) (Nat.dvd_add hs.1 dvd_rfl) hrest
       have hsub : ∑ k ∈ range (g + 1), f k ≤ ∑ k ∈ range h, f k :=
         Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr (by omega))
       rw [Finset.sum_range_succ] at hsub
-      dsimp only
+      dsimp
       omega
-    · rw [cover_of_ge (by omega)]; simp
+    · rws [cover_of_ge (by omega)]
 
 /-- The ascending phase. -/
 theorem cover_weight_asc {lam b : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < lam →
@@ -69,9 +71,9 @@ theorem cover_weight_asc {lam b : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (x : �
       have hle : ∑ k ∈ range (g + 1), f k ≤ ∑ k ∈ range lam, f k :=
         Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr (by omega))
       rw [Finset.sum_range_succ] at hle
-      dsimp only
+      dsimp
       by_cases hA : b < x + 2 ^ (g + 1)
-      · have hr : b - (x + 2 ^ g) < 2 ^ g := by rw [pow_succ] at hA; omega
+      · have hr : b - (x + 2 ^ g) < 2 ^ g := by rwo [pow_succ] at hA
         have := cover_weight_desc (lam := lam) (b := b) f g (x + 2 ^ g) (by omega) hd' hr
         omega
       · push Not at hA
@@ -121,13 +123,13 @@ theorem cover_weight_asc {lam b : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (x : �
               have h2 := nextG_le lam b (x + 2 ^ g)
               omega
             rw [hng, cover_of_ge (by omega)]
-            simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, add_zero]
+            simp [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, add_zero]
             have hI : f g ≤ ∑ k ∈ Ico h lam, f k := by
               have := Finset.single_le_sum (f := f) (fun _ _ => Nat.zero_le _)
-                (show g ∈ Ico h lam by simp only [Finset.mem_Ico]; omega)
+                (show g ∈ Ico h lam by sio only [Finset.mem_Ico])
               exact this
             omega
-    · rw [cover_of_ge (by omega)]; simp
+    · rws [cover_of_ge (by omega)]
 
 /-- **At most two pieces per grade.** -/
 theorem cover_weight_le {lam b x : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (hb : b - x ≤ 2 ^ lam) :

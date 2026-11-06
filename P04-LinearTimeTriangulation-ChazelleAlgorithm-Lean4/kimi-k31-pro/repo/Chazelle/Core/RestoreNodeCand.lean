@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.RestoreNodeEndMath
 public import Chazelle.Core.RestoreFEndP
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-E, the search: the candidate at a node chord end
@@ -48,7 +52,7 @@ theorem end_cand (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) {c : Set Poin
         rw [key_pz] at hk; push Not at hk; exact le_antisymm hk ht0
       have e : (chainModel Cα).param (Qof E.P) ⟨g' + d, 0⟩ =
           (chainModel Cα).param (Qof E.P) ⟨g' + d, h + 1⟩ := by
-        rw [← ht, h0]; rfl
+        rwr [← ht, h0]
       exact ⟨by rw [e], pos_of_param e⟩
   obtain ⟨hp, hpos⟩ := hpar
   have hy : ((Qof E.P).vtx h).2 = (E.M.pos (Qof E.P)
@@ -56,11 +60,11 @@ theorem end_cand (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) {c : Set Poin
     rw [hpos, pos_eq_sidePt]
     exact (hc _ hA.2.2.2.1).symm
   have hcode : endCode Cα (Qof E.P) (g' + d) (h + 1) ≤ E.P.n := by
-    unfold endCode; split_ifs <;> omega
+    unfold endCode; splao
   have hpp : ProperPos E.M (Qof E.P) E.P.n
       ⟨(g + d) % E.M.W.n, endCode Cα (Qof E.P) (g' + d) (h + 1)⟩ :=
-    ⟨by rw [hp]; exact ht0, by rw [hp]; exact ht1, hcode⟩
-  refine ⟨Nat.mod_lt _ hn, hpp, ?_, fun C hM => ?_, by simp only at hhn; omega, hy, hσb⟩
+    ⟨by rwx [hp], by rwx [hp], hcode⟩
+  refine ⟨Nat.mod_lt _ hn, hpp, ?_, fun C hM => ?_, by sio only at hhn, hy, hσb⟩
   · have hp' := hp
     unfold endCode at hp' ⊢
     split_ifs at hp' ⊢ with hk

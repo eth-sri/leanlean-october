@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.SpecMerge
 public import Mathlib.Data.List.GetD
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Down phase, math (M-M1): junctions at padded vertices are generic
@@ -52,14 +55,14 @@ theorem run_pts_length (n a ℓ : ℕ) : ((HostItem.run a ℓ).pts n).length = �
 theorem run_pts_getD (n a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
     ((HostItem.run a ℓ).pts n).getD k (.vtx 0) = .vtx ((a + k) % n) := by
   simp only [HostItem.pts]
-  rw [List.getD_eq_getElem _ _ (by simp; omega), List.getElem_map, List.getElem_range]
+  rw [List.getD_eq_getElem _ _ (by sio), List.getElem_map, List.getElem_range]
 
 /-- **The points of a run item inside a host.** -/
 theorem pts_append_run (n : ℕ) (H₁ H₂ : Host) (a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
     ((H₁ ++ HostItem.run a ℓ :: H₂).pts n).getD ((H₁.pts n).length + k) (.vtx 0) =
       .vtx ((a + k) % n) := by
   rw [pts_append, pts_cons, List.getD_eq_getElem?_getD, List.getElem?_append_right (by omega),
-    Nat.add_sub_cancel_left, List.getElem?_append_left (by rw [run_pts_length]; omega),
+    Nat.add_sub_cancel_left, List.getElem?_append_left (by rwo [run_pts_length]),
     ← List.getD_eq_getElem?_getD, run_pts_getD n a ℓ hk]
 
 theorem pts_append_run_length (n : ℕ) (H₁ H₂ : Host) (a ℓ : ℕ) :
@@ -88,13 +91,13 @@ theorem sharedGeneric_of_vtx {Q : Polygon} (hdh : DistinctHeights Q) {H : Host} 
     (hv : (H.pts Q.n).getD ((J.s + J.m₁) % (H.pts Q.n).length) (.vtx 0) = .vtx b)
     (hw : (H.pts Q.n).getD ((J.s + (J.m₁ + 1)) % (H.pts Q.n).length) (.vtx 0) = .vtx c) :
     SharedGeneric J := by
-  have hP' : J.whole.P = H.poly Q := hP
+  have hP'  := hP
   have eU : sharedU J = Q.vtx a := by
-    unfold sharedU; rw [chain_vertex_host hP', show J.whole.s = J.s from rfl, hu]; rfl
+    urr sharedU [chain_vertex_host hP', show J.whole.s = J.s from rfl, hu]
   have eV : sharedV J = Q.vtx b := by
-    unfold sharedV; rw [chain_vertex_host hP', show J.whole.s = J.s from rfl, hv]; rfl
+    urr sharedV [chain_vertex_host hP', show J.whole.s = J.s from rfl, hv]
   have eW : sharedW J = Q.vtx c := by
-    unfold sharedW; rw [chain_vertex_host hP', show J.whole.s = J.s from rfl, hw]; rfl
+    urr sharedW [chain_vertex_host hP', show J.whole.s = J.s from rfl, hw]
   refine ⟨?_, ?_, ?_⟩
   · rw [eU, eV]; exact hdh a b ha hb hab
   · rw [eW, eV]; exact hdh c b hc hb hcb
@@ -116,11 +119,11 @@ theorem mod_pred {x N j : ℕ} (hN : 0 < N) (h : (x + 1) % N = j) (hj : 1 ≤ j)
   rcases Nat.lt_or_ge 1 N with h1 | h1
   · rw [Nat.mod_eq_of_lt h1] at h
     rcases Nat.lt_or_ge (x % N + 1) N with h2 | h2
-    · rw [Nat.mod_eq_of_lt h2] at h; omega
-    · rw [show x % N + 1 = N by omega, Nat.mod_self] at h; omega
+    · rwo [Nat.mod_eq_of_lt h2] at h
+    · rwo [show x % N + 1 = N by omega, Nat.mod_self] at h
   · have : N = 1 := by omega
     subst this
-    simp at h; omega
+    sio at h
 
 /-- `x mod N = j` with `j + 1 < N` gives `(x + 1) mod N = j + 1`. -/
 theorem mod_succ {x N j : ℕ} (h : x % N = j) (hj : j + 1 < N) : (x + 1) % N = j + 1 := by
@@ -142,10 +145,10 @@ theorem sharedGeneric_run {Q : Polygon} (hn : 3 ≤ Q.n) (hdh : DistinctHeights 
   have hu : (J.s + (J.m₁ - 1)) % N = (H₁.pts Q.n).length + (k - 1) := by
     have e : J.s + J.m₁ = (J.s + (J.m₁ - 1)) + 1 := by omega
     rw [e] at hj
-    rw [mod_pred (by omega) hj (by omega)]; omega
+    rwo [mod_pred (by omega) hj (by omega)]
   have hw : (J.s + (J.m₁ + 1)) % N = (H₁.pts Q.n).length + (k + 1) := by
-    rw [← add_assoc, mod_succ hj (by omega)]; omega
-  have hv : (J.s + J.m₁) % N = (H₁.pts Q.n).length + k := hj
+    rwo [← add_assoc, mod_succ hj (by omega)]
+  have hv  := hj
   have hn0 : 0 < Q.n := by omega
   have e1 : a + (k - 1) + 1 = a + k := by omega
   have e2 : a + (k - 1) + 2 = a + (k + 1) := by omega

@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Mountain.Stack
 public import Chazelle.Visibility.Ray
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The orientation of a mountain from its lowest corner
@@ -36,12 +39,12 @@ open Chazelle.Geometry (lerp det_cyclic point_ext)
 
 /-- Swapping the coordinates negates the determinant. -/
 theorem det_swap_swap_swap (a b c : Point) : det a.swap b.swap c.swap = -det a b c := by
-  unfold det; simp only [Prod.fst_swap, Prod.snd_swap]; ring
+  unfold det; sir only [Prod.fst_swap, Prod.snd_swap]
 
 /-- Balls of the sup metric are symmetric under swapping the coordinates. -/
 theorem swap_mem_ball_swap_iff {y v : Point} {r : ℝ} : y.swap ∈ ball v.swap r ↔ y ∈ ball v r := by
   rw [mem_ball_iff_abs, mem_ball_iff_abs]
-  simp only [Prod.fst_swap, Prod.snd_swap]
+  simp [Prod.fst_swap, Prod.snd_swap]
   exact and_comm
 
 variable (P : Polygon)
@@ -78,9 +81,9 @@ theorem sector_lowest_subset_interior (hM : IsMountain P) {σ : ℝ} (hσ : σ =
     linarith
   obtain ⟨r, hr, hsec⟩ := sector_subset_interior hT hmin hσ' hposT
   refine ⟨r, hr, fun y hy h1 h2 => ?_⟩
-  have := hsec y.swap (by rw [hTdef, transpose_vtx, swap_mem_ball_swap_iff]; exact hy)
-    (by rw [hTn, hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
-    (by rw [hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
+  have := hsec y.swap (by rwx [hTdef, transpose_vtx, swap_mem_ball_swap_iff])
+    (by rwli [hTn, hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap])
+    (by rwli [hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap])
   rw [Set.mem_sdiff, mem_transpose_filled_iff, Chazelle.Visibility.mem_transpose_boundary_iff,
     Prod.swap_swap] at this
   exact this
@@ -148,7 +151,7 @@ theorem mountain_triangulates_of_sign (hM : IsMountain P) {σ : ℝ} (hσ : σ =
     have h := mountain_orient_det P hM
     rcases sign_eq_or_eq_neg hσ (orient_eq P) with h' | h'
     · exact h'
-    · rw [h', neg_mul] at hpos; linarith
+    · rwli [h', neg_mul] at hpos
   exact ⟨mountain_triangulates P hM hor, mountainTests_le P hM hor⟩
 
 end

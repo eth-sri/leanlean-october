@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.SweepEvTasks2
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stages 2–3: the initialisation, part 1 (the register constants)
@@ -81,18 +86,16 @@ def regA : List Instr :=
     .addN iT (sw 21) K2, .loadN cm iT, .addN iT (sw 21) K3, .loadN cTop iT,
     .addN iT (sw 21) K4, .loadN iB iT]
 
-set_option maxRecDepth 20000 in
 theorem regA_ok {W : ℕ} (m f : ℕ → ℕ) (hW : 6 ≤ W) (h1 : f (sw 47) + f (sw 49) ≤ W)
     (h2 : f (sw 42) + f (sw 43) ≤ W) (h3 : f (sw 35) - (f (sw 42) + f (sw 43)) + f (sw 49) ≤ W)
     (h4 : f (sw 40) + (f (sw 42) + f (sw 43)) ≤ W) (h5 : f (sw 45) + f (sw 35) ≤ W)
     (h6 : f (sw 21) + 4 ≤ W) : okW W m regA f := by
-  simp only [sw, Nat.reduceAdd] at *
-  simp only [regA, okW, okWI, regI, K0, K1, K2, K3, K4, K5, K6, cGW, cN1, cNW, cLL, cLD, cLE, c2m,
+  simp [sw, Nat.reduceAdd] at *
+  simp [regA, okW, okWI, regI, K0, K1, K2, K3, K4, K5, K6, cGW, cN1, cNW, cLL, cLD, cLE, c2m,
     c2m6, iL, iT, cE1, iG, iO, cm, cTop, iB, sw, Machine.upd_same, ne_eq, Machine.upd_other,
     Nat.reduceAdd, Nat.reduceEqDiff, not_false_eq_true, and_true, true_and]
   omega
 
-set_option maxRecDepth 20000 in
 theorem regA_val (m f : ℕ → ℕ) :
     regB m regA f K0 = 0 ∧ regB m regA f K1 = 1 ∧ regB m regA f K6 = 6 ∧
     regB m regA f K4 = 4 ∧ regB m regA f K5 = 5 ∧ regB m regA f K2 = 2 ∧
@@ -106,7 +109,7 @@ theorem regA_val (m f : ℕ → ℕ) :
     regB m regA f iO = f (sw 45) + f (sw 35) - f (sw 40) ∧
     regB m regA f cm = m (f (sw 21) + 2) ∧ regB m regA f cTop = m (f (sw 21) + 3) ∧
     regB m regA f iB = m (f (sw 21) + 4) := by
-  simp only [regA, regB, regI, K0, K1, K2, K3, K4, K5, K6, cGW, cN1, cNW, cLL, cLD, cLE, c2m,
+  simp [regA, regB, regI, K0, K1, K2, K3, K4, K5, K6, cGW, cN1, cNW, cLL, cLD, cLE, c2m,
     c2m6, iL, iT, cE1, iG, iO, cm, cTop, iB, sw, Machine.upd_same, ne_eq, Machine.upd_other,
     Nat.reduceAdd, Nat.reduceEqDiff, not_false_eq_true, and_true]
 
@@ -114,11 +117,11 @@ theorem regA_other (m f : ℕ → ℕ) {r : ℕ} (hr : r < sw 610 ∨ sw 705 ≤
     regB m regA f r = f r := by
   apply regB_other
   intro i hi
-  simp only [regA, List.mem_cons, List.not_mem_nil, or_false] at hi
-  simp only [sw] at hr
+  simp [regA, List.mem_cons, List.not_mem_nil, or_false] at hi
+  simp [sw] at hr
   rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-  simp only [dstI, K0, K1, K2, K3, K4, K5, K6, cGW, cN1, cNW, cLL, cLD, cLE, c2m, c2m6, iL, iT,
+  simp [dstI, K0, K1, K2, K3, K4, K5, K6, cGW, cN1, cNW, cLL, cLD, cLE, c2m, c2m6, iL, iT,
     cE1, iG, iO, cm, cTop, iB, sw] <;> omega
 
 /-! ## The tests -/
@@ -152,13 +155,13 @@ theorem exec_ite_upd {P : Polygon} {W : ℕ} {c : Config} {a b r : ℕ}
       { c with nreg := upd c.nreg r (if c.nreg a < c.nreg b then u else v) }
       (if c.nreg a < c.nreg b then 2 else 3) := by
   by_cases h : c.nreg a < c.nreg b
-  · simp only [h, ↓reduceIte]; exact .ifLtN_true h hi
-  · simp only [h, ↓reduceIte]; exact .ifLtN_false h hj
+  · simp [h, ↓reduceIte]; exact .ifLtN_true h hi
+  · simp [h, ↓reduceIte]; exact .ifLtN_false h hj
 
 theorem glS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) :
     ∃ k, Exec P W glS c { c with nreg := upd c.nreg cGL (if c.nreg iG < c.nreg (sw 35) then c.nreg iG else c.nreg iG - c.nreg (sw 35)) } k ∧
       k ≤ 3 := by
-  refine ⟨_, exec_ite_upd (Exec.copyN hw _ _) (Exec.subN hw _ _ _), by split_ifs <;> omega⟩
+  refine ⟨_, exec_ite_upd (Exec.copyN hw _ _) (Exec.subN hw _ _ _), by splao⟩
 
 theorem offS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) :
     ∃ k, Exec P W offS c { c with nreg := upd c.nreg iO (if c.nreg iO < c.nreg (sw 35) then c.nreg iO else c.nreg iO - c.nreg (sw 35)) } k ∧
@@ -174,7 +177,7 @@ theorem offS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) :
 theorem b1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) :
     ∃ k, Exec P W b1S c { c with nreg := upd c.nreg cB1 (if c.nreg iL < c.nreg iO then c.nreg (sw 33) - c.nreg (sw 91) else c.nreg (sw 46)) } k ∧
       k ≤ 3 :=
-  ⟨_, exec_ite_upd (Exec.subN hw _ _ _) (Exec.copyN hw _ _), by split_ifs <;> omega⟩
+  ⟨_, exec_ite_upd (Exec.subN hw _ _ _) (Exec.copyN hw _ _), by splao⟩
 
 theorem sideSS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) :
     ∃ k, Exec P W sideSS c { c with nreg := upd c.nreg cS (if c.nreg iB = c.nreg K1 then c.nreg cTop else c.nreg c2m - c.nreg cTop) } k ∧ k ≤ 5 := by
@@ -210,9 +213,8 @@ theorem initRA_exec_regs {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded
   obtain ⟨k₂, e₂, hk₂⟩ := offS_exec (P := P) e₁.wb_right
   obtain ⟨k₃, e₃, hk₃⟩ := b1S_exec (P := P) e₂.wb_right
   obtain ⟨k₄, e₄, hk₄⟩ := sideSS_exec (P := P) e₃.wb_right
-  exact ⟨_, .seq e₀ (.seq e₁ (.seq e₂ (.seq e₃ e₄))), by simp only [regA] at *; simp; omega⟩
+  exact ⟨_, .seq e₀ (.seq e₁ (.seq e₂ (.seq e₃ e₄))), by sis only [regA] at *; omega⟩
 
-set_option maxRecDepth 20000 in
 /-- The values of `fIA`. -/
 theorem fIA_val (m f : ℕ → ℕ) :
     fIA m f K0 = 0 ∧ fIA m f K1 = 1 ∧ fIA m f K6 = 6 ∧ fIA m f K4 = 4 ∧ fIA m f K5 = 5 ∧
@@ -233,16 +235,16 @@ theorem fIA_val (m f : ℕ → ℕ) :
       else (f (sw 34) - f (sw 92)) - m (f (sw 21) + 3)) := by
   have hv := regA_val m f
   have o : ∀ q, q < sw 610 ∨ sw 705 ≤ q → regB m regA f q = f q := fun q hq => regA_other m f hq
-  have o35 := o (sw 35) (by unfold sw; omega)
-  have o33 := o (sw 33) (by unfold sw; omega)
-  have o91 := o (sw 91) (by unfold sw; omega)
-  have o46 := o (sw 46) (by unfold sw; omega)
+  have o35 := o (sw 35) (by ufo sw)
+  have o33 := o (sw 33) (by ufo sw)
+  have o91 := o (sw 91) (by ufo sw)
+  have o46 := o (sw 46) (by ufo sw)
   obtain ⟨v0, v1, v6, v4, v5, v2, v3, vgw, vn1, vnw, vll, vld, vle, v2m, v2m6, vL, vE, vG, vO', vm,
     vt, vB⟩ := hv
-  simp only [fIA]
-  simp only [K0, K1, K2, K3, K4, K5, K6, cGW, cN1, cNW, cLL, cLD, cLE, c2m, c2m6, iL, cE1, iG,
+  simp [fIA]
+  simp [K0, K1, K2, K3, K4, K5, K6, cGW, cN1, cNW, cLL, cLD, cLE, c2m, c2m6, iL, cE1, iG,
     iO, cm, cTop, iB, cGL, cB1, cS, sw, Nat.reduceAdd] at *
-  simp only [Machine.upd_same, ne_eq, Machine.upd_other, Nat.reduceEqDiff, not_false_eq_true,
+  simp [Machine.upd_same, ne_eq, Machine.upd_other, Nat.reduceEqDiff, not_false_eq_true,
     o35, o33, o91, o46, v0, v1, v6, v4, v5, v2, v3, vgw, vn1, vnw, vll, vld, vle, v2m, v2m6, vL, vE,
     vG, vO', vm, vt, vB, true_and]
   and_intros <;> rfl
@@ -256,7 +258,7 @@ theorem ite_sub_mod {x n : ℕ} (h : x < 2 * n) : (if x < n then x else x - n) =
   · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
 
 theorem rlen_le (J : Merge.Junction) : Lst J ≤ 2 * J.m₂ + 7 := by
-  rw [Lst_rlen]; unfold rlen; split_ifs <;> omega
+  rw [Lst_rlen]; unfold rlen; splao
 
 theorem lL1_le (J : Merge.Junction) : lL1 J ≤ 2 * J.m₁ + 7 := by
   have := tpos_lt J.left J.m₁
@@ -270,7 +272,6 @@ theorem lδ_le (J : Merge.Junction) : lδ J ≤ 7 := by
   · omega
   · split <;> omega
 
-set_option maxRecDepth 20000 in
 /-- **The first part of the initialisation**: the constants, `MapK`, `cGW` and the constants of
 the classification except the top of `C₁`, from the stage-0 state.  Only `sw 610 … 704` change. -/
 theorem initRA_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Junction}
@@ -305,8 +306,8 @@ theorem initRA_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.J
   have hd21 : c.nreg (sw 21) + 5 ≤ c.nreg ALLOC := w21.1
   have hAW := hw.1 ALLOC
   have hok : okW W c.nmem regA c.nreg := regA_ok _ _ (by omega)
-    (by rw [l2, l4]; omega) (by rw [r2, r3]; omega) (by rw [h35, r2, r3, l4]; omega)
-    (by rw [r0, r2, r3]; omega) (by rw [l0, h35]; omega) (by omega)
+    (by rwo [l2, l4]) (by rwo [r2, r3]) (by rwo [h35, r2, r3, l4])
+    (by rwo [r0, r2, r3]) (by rwo [l0, h35]) (by omega)
   obtain ⟨k, ex, hk⟩ := initRA_exec_regs (P := P) hw hok
   obtain ⟨v0, v1, v6, v4, v5, v2, v3, vgw, vn1, vnw, vll, vld, vle, v2m, v2m6, vE, vG, vB1, vm,
     vt, vS⟩ := fIA_val c.nmem c.nreg
@@ -315,11 +316,11 @@ theorem initRA_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.J
   have hHb : c.nmem (c.nreg (sw 21) + 4) = 1 ↔ J.right.sideBeta = true := d21.2.2.2.2.2
   refine ⟨_, k, ex, hk, rfl, rfl, rfl, rfl, fun r hr => ?_, ⟨v0, v1, v6, v4, v5, v2, v3⟩,
     ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · simp only [fIA]
-    simp only [cGL, iO, cB1, cS, sw] at hr ⊢
+  · simp [fIA]
+    simp [cGL, iO, cB1, cS, sw] at hr ⊢
     rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
       upd_other _ _ _ (by omega)]
-    exact regA_other _ _ (by simp only [sw]; omega)
+    exact regA_other _ _ (by sio only [sw])
   · -- b₁
     show fIA c.nmem c.nreg cB1 = b₁ J
     rw [vB1, r2, r3, l0, h35, r0, h33, h91, l1, ← hLst]
@@ -333,7 +334,7 @@ theorem initRA_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.J
       unfold lOff dOf
       rw [hn]
     rw [hO]
-    split_ifs <;> omega
+    splao
   · show fIA c.nmem c.nreg cN1 = _
     rw [vn1, h33, hn₁]
   · show fIA c.nmem c.nreg cE1 = E₁ J
@@ -352,9 +353,9 @@ theorem initRA_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.J
   · show fIA c.nmem c.nreg cLE = _
     rw [vle, l2, l4]
   · show fIA c.nmem c.nreg cGW = _
-    rw [vgw, r0]; rfl
+    rwr [vgw, r0]
   · show fIA c.nmem c.nreg c2m = _
-    rw [v2m, h34, h92]; omega
+    rwo [v2m, h34, h92]
   · show fIA c.nmem c.nreg cm = _
     rw [vm, hHm]
   · show fIA c.nmem c.nreg cTop = _
@@ -364,9 +365,9 @@ theorem initRA_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.J
     unfold Chain.sideS
     by_cases hb : J.right.sideBeta = true
     · rw [ite_eq_left (hHb.2 hb), ite_eq_left hb]
-    · rw [ite_eq_right (fun h => hb (hHb.1 h)), ite_eq_right hb]; omega
+    · rwo [ite_eq_right (fun h => hb (hHb.1 h)), ite_eq_right hb]
   · show fIA c.nmem c.nreg c2m6 = _
-    rw [v2m6, h34, h91]; omega
+    rwo [v2m6, h34, h91]
 
 end
 

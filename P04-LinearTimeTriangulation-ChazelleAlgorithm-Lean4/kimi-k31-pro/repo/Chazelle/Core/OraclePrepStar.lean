@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.OraclePrepArr
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 7: the inner (star) chords
@@ -111,11 +115,11 @@ theorem rgS_exec {P : Polygon} {W : ℕ} {d : Config} (hwd : WordsBounded W d) {
   obtain ⟨d', k, e, hk, v⟩ : ∃ d' k, Exec P W rgS d d' k ∧ k = 7 ∧ d'.nreg 110065 = rg (σ p) := by
     unfold rgS
     exec_block
-    · rw [hSB, hp]; omega
-    · config_simp; rw [hSB, hp, hs]; omega
-    · config_simp; rw [hSB, hp, hs]; omega
-    · config_simp; rw [hSB, hp, hs]; omega
-    · config_simp; rw [hSB, hp, hs, hAB]; omega
+    · rwo [hSB, hp]
+    · config_simp; rwo [hSB, hp, hs]
+    · config_simp; rwo [hSB, hp, hs]
+    · config_simp; rwo [hSB, hp, hs]
+    · config_simp; rwo [hSB, hp, hs, hAB]
     · refine ⟨rfl, ?_⟩
       config_simp; rw [hSB, hp, hs, hAB, ← hr]; congr 1; ring
   exact ⟨d', k, e, hk, exec_frameB e (by decide), v⟩
@@ -151,13 +155,13 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
       c₁.nreg = upd (upd (upd (upd c.nreg 110062 (NB + 2)) 110061 R) 110060 A₀) 9999 (A₀ + R) ∧
       c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     exec_block
-    · rw [hNB, h2]; omega
-    · config_simp; rw [hNB, h2, hR, hAl]; omega
+    · rwo [hNB, h2]
+    · config_simp; rwo [hNB, h2, hR, hAl]
     · refine ⟨rfl, ?_, rfl, rfl, rfl, rfl⟩
       config_simp; rw [hNB, h2, hR, hAl]
   have hr₁ : ∀ r, BFR r = false → c₁.nreg r = c.nreg r := fun r hr => by
-    simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [n₁]; simp only [upd]; split_ifs <;> first | omega
+    simp [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+    rw [n₁]; simp [upd]; split_ifs <;> first | omega
   have v60 : c₁.nreg 110060 = A₀ := by rw [n₁]; config_simp
   have v44 : c₁.nreg 120044 = AB := by rw [hr₁ _ (by decide), hAB]
   have v46 : c₁.nreg 120046 = SB := by rw [hr₁ _ (by decide), hSB]
@@ -171,7 +175,7 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
     (B := fun r => decide (110063 ≤ r ∧ r ≤ 110067)) (by decide) (by decide) (by decide)
     (by decide) (by decide) J A₀
     (fun d d' hJ hr hm => JK.stable (rs := [110069]) (fun r hr' => by
-      simp only [K, Bool.or_eq_true, decide_eq_true_eq] at hr'
+      simp [K, Bool.or_eq_true, decide_eq_true_eq] at hr'
       rcases hr' with (((rfl | rfl) | rfl) | rfl) | rfl <;> decide) hJ
       (fun r a b => hr r a (by simpa using b)) hm)
     (n := A) (κ := 12) (fun i => A₀ + ρ (A - 1 - i)) (fun i => A - 1 - i) (fun i _ => by omega)
@@ -195,7 +199,7 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
       have hm₁' : d₁.nmem = d.nmem :=
         (exec_frameB e₁' (B := fun r => decide (r = 110063)) (by decide)).2.2.1
       obtain ⟨d₂, k₂', e₂', hk₂', f₂', v₂'⟩ := rgS_exec (P := P) e₁'.wb_right (p := A - 1 - i)
-        (by rw [hm₁']; exact hMd) (by rw [f₁' _ (by decide), g44])
+        (by rwx [hm₁']) (by rw [f₁' _ (by decide), g44])
         (by rw [f₁' _ (by decide), g46]) (by rw [n₁']; config_simp) (by omega) (by omega)
         (by omega)
       have hρl := hρR (A - 1 - i) (by omega)
@@ -206,7 +210,7 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
         have a63 : d₂.nreg 110063 = A - 1 - i := by rw [f₂'.1 _ (by decide), n₁']; config_simp
         have w₂ := e₂'.wb_right
         exec_block
-        · rw [a60, v₂']; omega
+        · rwo [a60, v₂']
         · refine ⟨rfl, ?_, ?_⟩
           · config_simp; rw [a60, v₂']
           · config_simp; rw [a63]
@@ -215,9 +219,9 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
     e₁.wb_right (JK.refl _ _ _) v30 v11 (by omega)
   refine ⟨c₂, _, .seq e₁ e₂, by nlinarith, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
     fun a ha => by rw [rm₂, rm₁], by rw [o₂, o₁]⟩, ?_, ?_, fun p hp => ?_⟩
-  · simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [r₂ r (by simp; omega) (by omega)]; exact hr₁ r (by simp [BFR]; omega)
-  · rw [rr₂ r (by simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
+  · simp [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+    rw [r₂ r (by sio) (by omega)]; exact hr₁ r (by sio [BFR])
+  · rw [rr₂ r (by sio only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢),
       rr₁]
   · rw [mm₂, scat_below (fun i _ => by omega) ha, m₁]
   · rw [r₂ _ (by decide) (by decide), n₁]; config_simp
@@ -281,19 +285,19 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
       c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     unfold chCap at hW ⊢
     exec_block
-    · config_simp; rw [hA]; omega
-    · config_simp; rw [hA]; omega
+    · config_simp; rwo [hA]
+    · config_simp; rwo [hA]
     · omega
-    · config_simp; rw [hA]; omega
-    · config_simp; rw [hA, hAl]; omega
-    · config_simp; rw [hA, hAl]; omega
+    · config_simp; rwo [hA]
+    · config_simp; rwo [hA, hAl]
+    · config_simp; rwo [hA, hAl]
     · omega
     · refine ⟨rfl, ?_, rfl, rfl, rfl, rfl⟩
       config_simp; rw [hA, hAl]
-      funext r; simp only [upd]; split_ifs <;> first | omega
+      funext r; simp [upd]; split_ifs <;> first | omega
   have hr₁ : ∀ r, BIS r = false → c₁.nreg r = c.nreg r := fun r hr => by
-    simp only [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [n₁]; simp only [upd]; split_ifs <;> first | omega
+    simp [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+    rw [n₁]; simp [upd]; split_ifs <;> first | omega
   have v72 : c₁.nreg 110072 = A₀ := by rw [n₁]; config_simp
   have v73 : c₁.nreg 110073 = A₀ + chCap A := by rw [n₁]; config_simp
   have v74 : c₁.nreg 110074 = 0 := by rw [n₁]; config_simp
@@ -314,9 +318,9 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
     (R1 := A₀) (c₀ := 0) J
     (fun d d' hJ hr hm => JK.stable (rs := [110079, 110074, 110075]) (fun r hr' => by
-      simp only [K, Bool.or_eq_true, decide_eq_true_eq] at hr'
+      simp [K, Bool.or_eq_true, decide_eq_true_eq] at hr'
       rcases hr' with ((rfl | rfl) | rfl) | rfl <;> decide) hJ
-      (fun r a b => hr r a (by simp at b; omega) (by simp at b; omega) (by simp at b; omega))
+      (fun r a b => hr r a (by sio at b) (by sio at b) (by sio at b))
       (fun a ha => hm a (Or.inl (by omega))))
     (n := A) (κ := 20) (starOf ρ)
     (fun i d hi hJ hwd hri => by
@@ -349,8 +353,8 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
           d₃.nreg 110076 = fpos ρ i ∧ d₃.nreg 110077 = i ∧ d₃.nreg 110071 = fpos ρ i + 1 ∧
           d₃.nreg 110063 = i := by
         exec_block
-        · rw [a60, v₂']; omega
-        · config_simp; rw [a60, v₂', hfp, a11]; omega
+        · rwo [a60, v₂']
+        · config_simp; rwo [a60, v₂', hfp, a11]
         · refine ⟨rfl, ?_, ?_, ?_, ?_⟩
           · config_simp; rw [a60, v₂', hfp]
           · config_simp; rw [a63]
@@ -362,10 +366,10 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
           d₄.nreg 110078 = (if fpos ρ i + 2 ≤ i then 1 else 0) ∧
           (∀ r, r ≠ 110078 → d₄.nreg r = d₃.nreg r) := by
         by_cases h : fpos ρ i + 2 ≤ i
-        · have ht : d₃.nreg 110071 < d₃.nreg 110063 := by rw [v71, v63]; omega
+        · have ht : d₃.nreg 110071 < d₃.nreg 110063 := by rwo [v71, v63]
           exact ⟨_, _, .ifLtN_true ht (Exec.constN w₃ 110078 1 (by omega)), by omega,
             by rw [ite_eq_left h]; config_simp, fun r hr => by config_simp; rw [upd_other _ _ _ hr]⟩
-        · have ht : ¬ d₃.nreg 110071 < d₃.nreg 110063 := by rw [v71, v63]; omega
+        · have ht : ¬ d₃.nreg 110071 < d₃.nreg 110063 := by rwo [v71, v63]
           exact ⟨_, _, .ifLtN_false ht (Exec.constN w₃ 110078 0 (Nat.zero_le _)), by omega,
             by rw [ite_eq_right h]; config_simp, fun r hr => by config_simp; rw [upd_other _ _ _ hr]⟩
       obtain ⟨d₄, k₄', e₄', hk₄', v78, r₄⟩ := hcase
@@ -380,14 +384,14 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
         exact ⟨by rw [v78, ite_eq_left h], by rw [r₄ _ (by decide), v76],
           by rw [r₄ _ (by decide), v77]⟩)
     e₁.wb_right (JK.refl _ _ _) v30 v11 v72 v73 v74
-    (by unfold chCap; omega) (by unfold chCap at hW ⊢; omega)
+    (by ufo chCap) (by ufo chCap at hW ⊢)
   rw [Nat.zero_add] at cnt₂
-  simp only [Nat.add_zero] at pr₂
+  simp [Nat.add_zero] at pr₂
   refine ⟨c₂, _, .seq e₁ e₂, by nlinarith, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
     fun a ha => by rw [rm₂, rm₁], by rw [o₂, o₁]⟩, ?_, ?_, ?_, ?_, cnt₂, pr₂⟩
-  · simp only [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [r₂ r (by simp; omega) (by omega) (by omega) (by omega)]; exact hr₁ r (by simp [BIS]; omega)
-  · rw [rr₂ r (by simp only [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
+  · simp [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+    rw [r₂ r (by sio) (by omega) (by omega) (by omega)]; exact hr₁ r (by sio [BIS])
+  · rw [rr₂ r (by sio only [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢),
       rr₁]
   · rw [mm₂ a (Or.inl (by omega)), m₁]
   · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v9]

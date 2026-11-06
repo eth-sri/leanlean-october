@@ -25,11 +25,11 @@ theorem lemma41_of (O : OracleIface) (hM : MergeSpec) (hSC : ShootCutSpec O) :
   obtain ⟨mk, κM, hmk⟩ := mergeMeets_of hM
   have hMM : MergeMeets (mk sh cu) κM (scF κs) (scG κs) cutGran (gradeCtx O) OkModel :=
     hmk sh cu oracleBands oracleBands (scF κs) (scG κs) cutGran (gradeCtx O) OkModel
-      (gradeCtx_capLocal O) (ShootCut.gradeCtx_halves O) (fun _ _ h => h) (scF_mono κs) (scG_mono κs) cutGran_mono
+      (gradeCtx_capLocal O) (ShootCut.gradeCtx_halves O) (fun _ _ => id) (scF_mono κs) (scG_mono κs) cutGran_mono
       subset_rfl subset_rfl hsh hcu
   refine ⟨l41S (mk sh cu), lvK (κM 4) κs + 400, ?_⟩
   intro P W c hw ⟨hG, hWh, hX, hΛ, h7, han, hL1, hL2⟩ hbud
-  have h7' : 7 ≤ rd c bL41 3 := h7
+  have h7'  := h7
   have e : l41Big κM (scF κs) (scG κs) cutGran (rd c bL41 3) (rd c bL41 1) (rd c bL41 2) =
       l41Big (fun _ => κM 4) (scF κs) (scG κs) cutGran (rd c bL41 3) (rd c bL41 1)
         (rd c bL41 2) := rfl

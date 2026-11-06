@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.DownPhaseBaseList
 public import Chazelle.Core.SortRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down phase, A1 (RAM, part 1): the program and the pieces of the chord pass
@@ -129,9 +133,9 @@ theorem mem1_keep {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have hg := getD_keepL (li := li) (n := n) hi hk
   rw [← hj] at hg
   have hkc : ∀ s, s < 2 → keptC li n L (2 * i + s) = true := fun s hs => by
-    unfold keptC; rw [show (2 * i + s) / 2 = i by omega]; exact hk
+    unfold keptC; rwx [show (2 * i + s) / 2 = i by omega]
   have hnc : ∀ s, s < 2 → newCode li n L (2 * i + s) = 2 * j + s := fun s hs => by
-    unfold newCode; rw [show (2 * i + s) / 2 = i by omega, ← hj]; omega
+    uro newCode [show (2 * i + s) / 2 = i by omega, ← hj]
   rw [hm a]
   unfold mem1
   rw [hr]
@@ -176,10 +180,10 @@ theorem mem1_drop {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       mem1 m₀ li n L B' X (i + 1) a := by
   have hr := rankF_succ (keepX li n) (0, 0, 0) hi
   rw [hk] at hr
-  simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
+  simp [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
   have hle := rankF_le (keepX li n) L i
   have hkc : ∀ s, s < 2 → keptC li n L (2 * i + s) = false := fun s hs => by
-    unfold keptC; rw [show (2 * i + s) / 2 = i by omega]; exact hk
+    unfold keptC; rwx [show (2 * i + s) / 2 = i by omega]
   rw [hm a]
   unfold mem1
   rw [hr]
@@ -207,7 +211,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 theorem dLoad_exec (c : Config) (hw : WordsBounded W c) {a : ℕ} (h111 : c.nreg 200111 = a)
     (h100 : c.nreg 200100 = 1) (haW : a + 3 ≤ W) :
     ∃ c' k, Exec P W dLoad c c' k ∧ k = 7 ∧ c'.nreg 200112 = c.nmem a ∧
@@ -256,10 +259,10 @@ theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Boo
       (∀ r, r ≠ 200116 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧
       c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     cases li
-    · have h : ¬ c.nreg 200101 < c.nreg 200103 := by rw [h101, hbit]; simp
+    · have h : ¬ c.nreg 200101 < c.nreg 200103 := by rws [h101, hbit]
       exact ⟨_, _, .ifLtN_false h (Exec.subN hw 200116 200104 p), by omega,
         by simp [wStart, h104], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
-    · have h : c.nreg 200101 < c.nreg 200103 := by rw [h101, hbit]; simp
+    · have h : c.nreg 200101 < c.nreg 200103 := by rws [h101, hbit]
       exact ⟨_, _, .ifLtN_true h (Exec.copyN hw 200116 p), by omega,
         by simp [wStart], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, r₂, m₂, rr₂, rm₂, o₂⟩ := dEq_exec (P := P) c₁ e₁.wb_right hW
@@ -267,7 +270,6 @@ theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Boo
     by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
   rw [v₂, v₁, r₁ _ (by norm_num), r₁ _ (by norm_num)]
 
-set_option maxHeartbeats 4000000 in
 /-- **A kept chord.** -/
 theorem dKeep_exec (c : Config) (hw : WordsBounded W c) {w x j : ℕ} (h119 : c.nreg 200119 = w)
     (h117 : c.nreg 200117 = x) (h118 : c.nreg 200118 = j) (h100 : c.nreg 200100 = 1)
@@ -286,10 +288,9 @@ theorem dKeep_exec (c : Config) (hw : WordsBounded W c) {w x j : ℕ} (h119 : c.
   refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 a4 => ?_, fun a => ?_, rfl, rfl, rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h119, h117, h118, h100]
-  simp only [Machine.upd_apply]
+  simp [Machine.upd_apply]
   congr 1 <;> (try ring_nf)
 
-set_option maxHeartbeats 4000000 in
 /-- **A dropped chord.** -/
 theorem dDrop_exec (c : Config) (hw : WordsBounded W c) {x : ℕ} (h117 : c.nreg 200117 = x)
     (h100 : c.nreg 200100 = 1) (h101 : c.nreg 200101 = 0) (hxW : x + 2 ≤ W) :
@@ -304,7 +305,7 @@ theorem dDrop_exec (c : Config) (hw : WordsBounded W c) {x : ℕ} (h117 : c.nreg
   refine ⟨rfl, ?_, fun r a1 => ?_, fun a => ?_, rfl, rfl, rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h117, h100, h101]
-  simp only [Machine.upd_apply]
+  simp [Machine.upd_apply]
 
 end exec
 

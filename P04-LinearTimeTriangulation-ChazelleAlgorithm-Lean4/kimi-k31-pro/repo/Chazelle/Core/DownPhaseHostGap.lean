@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseHostRegion
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (H1, part 3): consecutive host keys
@@ -89,19 +91,19 @@ theorem touch_sep (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c : Set 
   have hzD : z ∈ M.D := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
   set d := b.1 - a.1 with hd
   have hd0 : d ≠ 0 := by
-    intro h; apply hab; exact point_ext (by rw [hd] at h; linarith) hy
-  have hdpos : 0 < |d| := abs_pos.2 hd0
+    intro h; apply hab; exact point_ext (by rwli [hd] at h) hy
+  have hdpos  := abs_pos.2 hd0
   obtain ⟨ε₀, hε₀, hs'⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hs
   obtain ⟨ε₁, hε₁, hside'⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 (hside z hzc hzD)
   rw [mem_Ioi] at hε₀ hε₁
   set δ := min ε₀ (ε₁ / |d|) / 2 with hδ
-  have hδ0 : 0 < δ := by have := lt_min hε₀ (div_pos hε₁ hdpos); rw [hδ]; linarith
-  have hδ1 : δ < ε₀ := by have := min_le_left ε₀ (ε₁ / |d|); rw [hδ]; linarith
+  have hδ0 : 0 < δ := by have := lt_min hε₀ (div_pos hε₁ hdpos); rwli [hδ]
+  have hδ1 : δ < ε₀ := by have := min_le_left ε₀ (ε₁ / |d|); rwli [hδ]
   have hδ2 : δ * |d| < ε₁ := by
     have h1 : δ < ε₁ / |d| := by
       have := min_le_right ε₀ (ε₁ / |d|)
-      have h2 : 0 < ε₁ / |d| := div_pos hε₁ hdpos
-      rw [hδ]; linarith
+      have h2  := div_pos hε₁ hdpos
+      rwli [hδ]
     rwa [lt_div_iff₀ hdpos] at h1
   have hneq := hs' ⟨hδ0, hδ1⟩
   have e1 : offset a b (1 / 2) δ = (z.1, z.2 + δ * d) := by
@@ -114,7 +116,7 @@ theorem touch_sep (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c : Set 
     · exact (connectedComponentIn_eq (hUDk.1 hw)).symm
     · exact (connectedComponentIn_eq (hUDk.2 hw)).symm
   have hpt := hside' ⟨mul_pos hδ0 hdpos, hδ2⟩
-  simp only [mem_ofPred_eq] at hpt
+  simp [mem_ofPred_eq] at hpt
   apply hneq
   rw [e1, e2]
   rcases lt_or_gt_of_ne hd0 with hneg | hpos
@@ -138,7 +140,7 @@ theorem eq_up_of_above (hM : WalkAx M) (hF : F ⊆ M.Adm) (_hfin : F.Finite)
   obtain ⟨δ, h1, h2⟩ := ((hA _ hzc hzD).and (hside _ hzc hzD)).exists
   rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hUp with h | h
   · exact h
-  · exact absurd (h.le_bot ⟨h1, h2.1⟩) (fun h => h)
+  · exact absurd (h.le_bot ⟨h1, h2.1⟩) (id)
 
 /-- The region below a chord (`BelowOf`) is the lower side region. -/
 theorem eq_dn_of_below (hM : WalkAx M) (hF : F ⊆ M.Adm) (_hfin : F.Finite)
@@ -153,7 +155,7 @@ theorem eq_dn_of_below (hM : WalkAx M) (hF : F ⊆ M.Adm) (_hfin : F.Finite)
   obtain ⟨δ, h1, h2⟩ := ((hB _ hzc hzD).and (hside _ hzc hzD)).exists
   rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hDn with h | h
   · exact h
-  · exact absurd (h.le_bot ⟨h1, h2.2⟩) (fun h => h)
+  · exact absurd (h.le_bot ⟨h1, h2.2⟩) (id)
 
 /-- Keys just before a walk vertex `p`: the position `((p + n - 1) mod n, t')` for `t'` close to
 `1` lies in every open interval `(l, p)`. -/
@@ -163,17 +165,17 @@ theorem eventually_before_vertex {n p : ℕ} (hp : p < n) {l : ℝ} (hl0 : 0 ≤
   rcases Nat.eq_zero_or_pos p with rfl | hp0
   · have e : (0 + n - 1) % n = n - 1 := by rw [zero_add, Nat.mod_eq_of_lt (by omega)]
     rw [e]
-    have hn1 : ((n - 1 : ℕ) : ℝ) = n - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hn1 : ((n - 1 : ℕ) : ℝ) = n - 1 := by rws [Nat.cast_sub (by omega)]
     filter_upwards [Ioo_mem_nhdsLT (show l - (n - 1) < (1 : ℝ) by linarith)] with t ht
     unfold sideInArc
     rw [hn1]
     split_ifs with h
-    · simp at h; linarith
+    · sil at h
     · left; linarith [ht.1]
   · have e : (p + n - 1) % n = p - 1 := by
       rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
     rw [e]
-    have hp1 : ((p - 1 : ℕ) : ℝ) = p - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hp1 : ((p - 1 : ℕ) : ℝ) = p - 1 := by rws [Nat.cast_sub (by omega)]
     rw [hp1]
     unfold sideInArc
     split_ifs with h
@@ -277,9 +279,9 @@ theorem gap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonemp
     intro ce cw hce hcw hAe hAw hE hW hc0
     obtain ⟨ht0, hhor, -⟩ := hM.tie_shape hF hce hcw hAe hAw hE hW
     subst ht0
-    have hp₀ : p₀ < M.W.n := hAe.1
-    have hl0 : 0 ≤ l := harcY.1
-    have hln : l < M.W.n := harcY.2.1
+    have hp₀  := hAe.1
+    have hl0  := harcY.1
+    have hln  := harcY.2.1
     have hlp : l ≠ (p₀ : ℝ) + 0 := (WalkAx.arc_cuts hne harcY).2.2
     -- the region faced just after `a` is `X`, just before is `Y`
     have hafter : ∀ Z ∈ M.regions F, (∃ δ > (0 : ℝ), ∀ t', 0 < t' → t' < δ → M.Faces p₀ t' Z) →

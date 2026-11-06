@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseHostArc
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (X, part 7): the host chain of a region
@@ -56,7 +57,7 @@ noncomputable def hostChain (Q : Polygon) (S : Set (Set Point)) (R : Set Point) 
   s := (g + 1) % nk (interiorModel Q) S R
   m := nk (interiorModel Q) S R - 1
   one_le := by omega
-  add_one_le := by rw [hostPoly_n]; omega
+  add_one_le := by rwo [hostPoly_n]
 
 variable {g : ℕ} {h3 : 3 ≤ nk (interiorModel Q) S R}
 
@@ -123,14 +124,14 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
         · have := e1.trans e2.symm
           rcases Nat.lt_or_ge ((i_l + (j - 1)) % N + 1) N with h1 | h1 <;>
             rcases Nat.lt_or_ge (g + 1) N with h2 | h2
-          · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at this; omega
-          · rw [Nat.mod_eq_of_lt h1, show g + 1 = N by omega, Nat.mod_self] at this; omega
+          · rwo [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at this
+          · rwo [Nat.mod_eq_of_lt h1, show g + 1 = N by omega, Nat.mod_self] at this
           · omega
           · omega
         · have := e1.trans e2.symm
           rcases Nat.lt_or_ge ((i_l + (j - 1)) % N + 1) N with h1 | h1 <;>
             rcases Nat.lt_or_ge (g + 1) N with h2 | h2
-          · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at this; omega
+          · rwo [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at this
           · omega
           · rw [show (i_l + (j - 1)) % N + 1 = N by omega, Nat.mod_self,
               Nat.mod_eq_of_lt h2] at this; omega

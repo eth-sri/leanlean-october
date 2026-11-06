@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.FuseAsmScan
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # WP-F fusion assembly, part 10: the deduplication procedure
@@ -79,7 +84,6 @@ theorem frameFS_of_regs {c c' : Config} {k : ℕ}
   simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bFuse, bSort]
   omega
 
-set_option maxHeartbeats 8000000 in
 /-- **The deduplication procedure.** -/
 theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {T K : ℕ}
     (h40 : c.nreg 70240 = T) (h41 : c.nreg 70241 = K) (hT : T + 3 * K ≤ c.nreg ALLOC)
@@ -111,7 +115,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       (intro r hr ha; simp (disch := omega) only [Machine.upd_other])
   obtain ⟨q05, q08, q16, q17, q01, q30, q00, q02, qA, qr, qm, qrr, qrm, qo⟩ := q
   -- the indices
-  have I0 : IXI W K A₀ c₁ c₁ := ⟨e₁.wb_right, by omega, by rw [qA, q00]; rfl, fun _ _ _ => rfl,
+  have I0 : IXI W K A₀ c₁ c₁ := ⟨e₁.wb_right, by omega, by rwr [qA, q00], fun _ _ _ => rfl,
     fun _ _ => rfl, fun j hj => by omega, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', I₂, h₂⟩ := ixLoop_exec (P := P) q05 q01 (by omega) K c₁ I0
     (by omega)
@@ -145,9 +149,9 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   obtain ⟨c₄, k₄, e₄, hk₄, hJ₄, fr₄, b₄, b₄', L', hL', hperm, hsorted⟩ :=
     SortR.sortStmt_exec (P := P) cmp (by decide) (le3_trans c₃.nmem T K)
       (le3_total c₃.nmem T K) e₃.wb_right hJ (by rw [a₃]; exact cmp3J_stable _ _ _ _ _)
-      (List.range K) (by rw [List.length_range, s03, sm₃]; exact hseg)
+      (List.range K) (by rwx [List.length_range, s03, sm₃])
       (by rw [List.length_range, s04]) (by rw [List.length_range, s03, a₃])
-      (by rw [List.length_range, a₃]; omega)
+      (by rwo [List.length_range, a₃])
   rw [List.length_range] at hk₄ b₄' hL'
   -- the scan
   obtain ⟨B', hB'⟩ : ∃ x, c₄.nreg 30005 = x := ⟨_, rfl⟩
@@ -178,13 +182,13 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have a₅ : c₅.nreg ALLOC = LB := by rw [tr₅ _ (by decide), hLB]
   have hK4 : k₄ ≤ SortR.sortCost 40 K := hk₄
   have hLBb : LB ≤ A₀ + K + k₄ := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.2
-  have hBL : B' + K ≤ LB := by rw [← hB', ← hLB]; exact b₄'
+  have hBL : B' + K ≤ LB := by rwx [← hB', ← hLB]
   have D0 : DSI W K T B' LB c₅.nmem c₅ c₅ := by
-    refine ⟨e₅.wb_right, by rw [t20]; omega, by rw [t21, t20]; simp, fun h => by rw [t20] at h; omega,
+    refine ⟨e₅.wb_right, by rwo [t20], by rws [t21, t20], fun h => by rwo [t20] at h,
       by rw [a₅, t20]; simp [ddp], by rw [t20]; intro i hi; simp [ddp] at hi,
       by rw [t19, t20]; simp [ddp], fun _ _ => rfl, fun _ _ _ => rfl, rfl, rfl, rfl⟩
   obtain ⟨c₆, k₆, e₆, hk₆, hk₆', D₆, h₆⟩ := dsLoop_exec (P := P) (m₀ := c₅.nmem) t05 t08 t16 t30
-    hitems (by omega) hBL (by omega) K c₅ D0 (by rw [t20]; simp)
+    hitems (by omega) hBL (by omega) K c₅ D0 (by rws [t20])
   -- assembling
   have ex : Exec P W ddRun c c₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
@@ -198,7 +202,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       have haK : a < K := List.mem_range.1 (hperm.subset ha)
       unfold trip
       have hm : ∀ x, x < A₀ → c₄.nmem x = c.nmem x := fun x hx => by
-        rw [fr₄.2.2.1 x (by rw [a₃]; omega), sm₃, I₂.low x hx, qm]
+        rw [fr₄.2.2.1 x (by rwo [a₃]), sm₃, I₂.low x hx, qm]
       rw [hm _ (by omega), hm _ (by omega), hm _ (by omega)]
     rw [hD, e1]; unfold dd; rw [List.length_map, hperm.length_eq, List.length_range]
   have hsorted' : L'.Pairwise fun a b => le3 c.nmem T K a b = true := by
@@ -210,7 +214,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       unfold trip; rw [hm _ (by omega), hm _ (by omega), hm _ (by omega)]
     unfold le3 at h ⊢
     simp only [haK, hbK, ite_true] at h ⊢
-    rw [← ht a haK, ← ht b hbK]; exact h
+    rwx [← ht a haK, ← ht b hbK]
   obtain ⟨hmemD, hnodD, hlenD⟩ := dd_spec (m := c.nmem) (T := T) hperm hsorted'
   rw [← hDdd] at hmemD hnodD hlenD
   have hc6 := D₆.cnt
@@ -220,23 +224,23 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have ha6 := D₆.alloc
   rw [h₆] at ha6
   have r42 : c₆.nreg 70242 = LB := by rw [D₆.regs _ (by norm_num) (by decide), t42]
-  refine ⟨c₆, _, ex, ?_, ?_, fun r h1 h2 => ?_, ?_, ?_, D, by rw [r42]; exact hl6, hc6, hlenD,
+  refine ⟨c₆, _, ex, ?_, ?_, fun r h1 h2 => ?_, ?_, ?_, D, by rwx [r42], hc6, hlenD,
     hmemD, hnodD⟩
-  · have := hlenD; unfold ddCost; omega
+  · have := hlenD; ufo ddCost
   · have a4 : A₀ + K ≤ LB := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.1
     have hA6 : c₆.nreg ALLOC = LB + 3 * D.length := ha6
     refine frameFS_of_regs (fun r hr ha => ?_) (fun r hr => ?_) (fun a ha => ?_) (fun a ha => ?_)
       ?_ (by omega) (by rw [hA6, hA₀]; have := hlenD; omega)
     · rw [D₆.regs r (by omega) ha, tr₅ r (by omega),
-        fr₄.1 r (by simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bFuse]; omega)
+        fr₄.1 r (by sio only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bFuse])
           ha, sr₃ r (by omega) (by omega), g₂ r (by omega) ha, qr r (by omega) ha]
     · rw [D₆.rr, trr₅, fr₄.2.1 r (by simp only [Finset.mem_insert, Finset.mem_singleton] at hr ⊢; tauto), srr₃, I₂.rr, qrr]
     · rw [hA₀] at ha
-      rw [D₆.low a (by omega), tm₅, fr₄.2.2.1 a (by rw [a₃]; omega), sm₃, I₂.low a ha, qm]
+      rw [D₆.low a (by omega), tm₅, fr₄.2.2.1 a (by rwo [a₃]), sm₃, I₂.low a ha, qm]
     · rw [hA₀] at ha
-      rw [D₆.rm, trm₅, fr₄.2.2.2.1 a (by rw [a₃]; omega), srm₃, I₂.rm, qrm]
+      rw [D₆.rm, trm₅, fr₄.2.2.2.1 a (by rwo [a₃]), srm₃, I₂.rm, qrm]
     · rw [D₆.out, to₅, fr₄.2.2.2.2.1, so₃, I₂.out, qo]
-  · have hA : r ≠ ALLOC := by unfold ALLOC; omega
+  · have hA : r ≠ ALLOC := by ufo ALLOC
     rw [D₆.regs r (by omega) hA, tr₅ r (by omega), j5 r h1 h2, sr₃ r (by omega) (by omega),
       g₂ r (by omega) hA, qr r (by omega) hA]
   · rw [r42, hA₀]; have : A₀ + K ≤ LB := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.1

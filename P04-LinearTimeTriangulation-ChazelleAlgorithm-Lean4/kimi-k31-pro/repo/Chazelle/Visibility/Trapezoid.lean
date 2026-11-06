@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Visibility.HSeg
+public import Chazelle.Rwx
 
 /-!
 # Every region of the horizontal visibility map is an open trapezoid
@@ -120,7 +121,7 @@ theorem subset_interior_of_isPreconnected {P : Polygon} (hP : P.Simple) {S : Set
     (hzi : z ∈ P.filled \ P.boundary) : S ⊆ P.filled \ P.boundary := by
   intro p hp
   refine ⟨?_, hSb p hp⟩
-  rw [mem_filled_iff hP (hSb p hp), parity_eq_of_isPreconnected P hS (fun x hx => hSb x hx) hp hz,
+  rw [mem_filled_iff hP (hSb p hp), parity_eq_of_isPreconnected P hS (hSb) hp hz,
     ← mem_filled_iff hP hzi.2]
   exact hzi.1
 
@@ -224,9 +225,9 @@ theorem exists_top_height {P : Polygon} {q : Point} {i j : ℕ} (hi : i < P.n) (
     · simp only [mem_insert_iff, mem_singleton_iff] at h
       rcases h with rfl | rfl
       · obtain ⟨k, hk, hky, hkx⟩ := exists_vtx_edgeTop hi nhL
-        exact ⟨k, hk, hky, fun hle => ⟨hkx.ge, by rw [hkx]; exact hle⟩⟩
+        exact ⟨k, hk, hky, fun hle => ⟨hkx.ge, by rwx [hkx]⟩⟩
       · obtain ⟨k, hk, hky, hkx⟩ := exists_vtx_edgeTop hj nhR
-        exact ⟨k, hk, hky, fun hle => ⟨by rw [hkx]; exact hle, hkx.le⟩⟩
+        exact ⟨k, hk, hky, fun hle => ⟨by rwx [hkx], hkx.le⟩⟩
 
 /-- The bottom height: the first obstruction of the corridor below `q`. -/
 theorem exists_bot_height {P : Polygon} {q : Point} {i j : ℕ} (hi : i < P.n) (hj : j < P.n)
@@ -269,9 +270,9 @@ theorem exists_bot_height {P : Polygon} {q : Point} {i j : ℕ} (hi : i < P.n) (
     · simp only [mem_insert_iff, mem_singleton_iff] at h
       rcases h with rfl | rfl
       · obtain ⟨k, hk, hky, hkx⟩ := exists_vtx_edgeBot hi nhL
-        exact ⟨k, hk, hky, fun hle => ⟨hkx.ge, by rw [hkx]; exact hle⟩⟩
+        exact ⟨k, hk, hky, fun hle => ⟨hkx.ge, by rwx [hkx]⟩⟩
       · obtain ⟨k, hk, hky, hkx⟩ := exists_vtx_edgeBot hj nhR
-        exact ⟨k, hk, hky, fun hle => ⟨by rw [hkx]; exact hle, hkx.le⟩⟩
+        exact ⟨k, hk, hky, fun hle => ⟨by rwx [hkx], hkx.le⟩⟩
 
 /-- **Every free point has trapezoid data.** -/
 theorem exists_isTrap {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P) :
@@ -480,8 +481,8 @@ theorem not_mem_boundary (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap P
       rcases hsa.lt_or_eq with hlt | heq
       · rcases hsb.lt_or_eq with hlt2 | heq2
         · exact trapSet_subset_closedTrap _ _ _ _ _ (hT s hlt hlt2)
-        · rw [heq2]; exact hx₂c
-      · rw [← heq]; exact hx₁c
+        · rwx [heq2]
+      · rwx [← heq]
     exact h.no_edge_at_base hP hq hk hki hkj hze hzc hsy
   by_cases hA : ((lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₁).2 ≤ q.2 ∧
       q.2 ≤ (lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₂).2) ∨
@@ -542,7 +543,7 @@ theorem trapSet_subset_freeRegion (hP : P.Simple) (hq : q ∈ freeRegion P)
       · exfalso
         rw [max_eq_left hle] at hb
         linarith
-    have hint := hch.open_int (edgeX P i p.2) (by rw [hmin]; exact hlt) (by linarith)
+    have hint := hch.open_int (edgeX P i p.2) (by rwx [hmin]) (by linarith)
     rw [← hy] at hint
     exact hint.2 hbL
   · have hmax : max (P.vtx m).1 (chordEnd P m σ).1 = (P.vtx m).1 := by
@@ -551,7 +552,7 @@ theorem trapSet_subset_freeRegion (hP : P.Simple) (hq : q ∈ freeRegion P)
         rw [min_eq_left hle] at ha
         linarith
       · exact max_eq_left hle
-    have hint := hch.open_int (edgeX P j p.2) (by linarith) (by rw [hmax]; exact hlt)
+    have hint := hch.open_int (edgeX P j p.2) (by linarith) (by rwx [hmax])
     rw [← hy] at hint
     exact hint.2 hbR
 
@@ -569,7 +570,7 @@ theorem side_edge_false {P : Polygon} {y₀ ε : ℝ} (hε : ε = 1 ∨ ε = -1)
   obtain ⟨t, ht, rfl⟩ := he
   set u := P.vtx j with hu
   set w := P.vtx ((j + 1) % P.n) with hw
-  have hd0 : w.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hnh)
+  have hd0  := sub_ne_zero.2 (Ne.symm hnh)
   have hε2 : ε * ε = 1 := by rcases hε with rfl | rfl <;> norm_num
   have hcont : Continuous fun η : ℝ => lerp u w (t + ε * (w.2 - u.2) * η) :=
     (continuous_lerp u w).comp (by fun_prop)
@@ -617,13 +618,13 @@ theorem not_free_of_side {P : Polygon} (hP : P.Simple) {y₀ a b ε : ℝ} (hε 
     have he : (((leftEnd P p).1, y₀) : Point) = leftEnd P p := point_ext rfl hpy.symm
     have := hnear (leftEnd P p).1 (by linarith) (by linarith)
     rw [he] at this
-    exact side_edge_false hε hU (by rw [leftEnd_snd]; exact hpy) this hi hnh hL
+    exact side_edge_false hε hU (by rwx [leftEnd_snd]) this hi hnh hL
   · obtain ⟨j, hj, hR, hnh⟩ := exists_rightEdge hP hp
     have hle : p.1 < (rightEnd P p).1 := lt_rightEnd_fst hP hp.1
     have he : (((rightEnd P p).1, y₀) : Point) = rightEnd P p := point_ext rfl hpy.symm
     have := hnear (rightEnd P p).1 (by linarith) (by linarith)
     rw [he] at this
-    exact side_edge_false hε hU (by rw [rightEnd_snd]; exact hpy) this hj hnh hR
+    exact side_edge_false hε hU (by rwx [rightEnd_snd]) this hj hnh hR
 
 namespace IsTrap
 
@@ -671,8 +672,8 @@ theorem closure_inter_free (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap
   obtain ⟨h1, h2, h3, h4⟩ := closure_trapSet_subset P i j y₁ y₂ hpc
   have hnotL : p.1 ≠ edgeX P i p.2 := fun e => hpf.1.2 ⟨i, h.hi, h.mem_edgeL h1 h2 e⟩
   have hnotR : p.1 ≠ edgeX P j p.2 := fun e => hpf.1.2 ⟨j, h.hj, h.mem_edgeR h1 h2 e⟩
-  have h3' : edgeX P i p.2 < p.1 := lt_of_le_of_ne h3 (Ne.symm hnotL)
-  have h4' : p.1 < edgeX P j p.2 := lt_of_le_of_ne h4 hnotR
+  have h3'  := lt_of_le_of_ne h3 (Ne.symm hnotL)
+  have h4'  := lt_of_le_of_ne h4 hnotR
   refine ⟨?_, ?_, h3', h4'⟩
   · rcases h1.lt_or_eq with hlt | heq
     · exact hlt

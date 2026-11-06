@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.WalkEmbedChain
 public import Chazelle.Core.NFBuildWt
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-G, part 1: the kind-1 pieces of the arc-cutter
@@ -91,7 +95,7 @@ theorem arcSet_nat {M : Model} {p₀ w : ℕ} (hw : 1 ≤ w) (hn : p₀ + w < M.
     · have hk0 : (p₀ : ℝ) ≤ ((p₀ + d : ℕ) : ℝ) + t := by push_cast; linarith [(Nat.cast_nonneg d : (0 : ℝ) ≤ d)]
       have hk1 : ((p₀ + d : ℕ) : ℝ) + t ≤ ((p₀ + w : ℕ) : ℝ) := by
         have : ((d : ℕ) : ℝ) + 1 ≤ w := by exact_mod_cast hd
-        push_cast; linarith
+        pcl
       rcases hk0.lt_or_eq with hk0 | hk0
       · rcases hk1.lt_or_eq with hk1 | hk1
         · left; unfold sideInArc; rw [ite_eq_left hab]; exact ⟨hk0, hk1⟩
@@ -121,11 +125,11 @@ theorem tourV_down (Cα : Chain) {d : ℕ} (hd : d ≤ Cα.m) :
       subst this; simp
     · rw [ite_eq_right h]; congr 1; omega
   · rw [show Cα.m + Cα.m = 2 * Cα.m by ring, Nat.mod_self]
-    unfold sideE; simp
+    ufs sideE
 
 theorem segment_mem_set (Cα : Chain) {k : ℕ} (hk : k < Cα.m) {x : Point}
     (hx : x ∈ Chazelle.segment (Cα.vertex k) (Cα.vertex (k + 1))) : x ∈ Cα.set :=
-  ⟨k, hk, by rw [Cα.chainEdge_eq]; exact hx⟩
+  ⟨k, hk, by rwx [Cα.chainEdge_eq]⟩
 
 /-- **The point set of a kind-1 piece**: a stretch of `Cα.m` walk edges whose vertices are those
 of the tour of `Cα` read upward (`J = 0`) or downward (`J = Cα.m`) has the point set `Cα.set`. -/
@@ -198,7 +202,7 @@ theorem arcWt_chain_nat (C : Chain) {p₀ w : ℕ} (hw : 1 ≤ w) (h6 : 6 ≤ p�
     (hn : p₀ + w ≤ 2 * C.m + 6) :
     (chainModel C).arcWt (p₀ : ℝ) ((p₀ + w : ℕ) : ℝ) = w := by
   have h := (chainModel C).arcWt_closed (lo := 6) (hi := 2 * C.m + 6)
-    (fun p hp => chainModel_counted_iff C p hp) (by rw [chainModel_n]; omega)
+    (fun p hp => chainModel_counted_iff C p hp) (by rwo [chainModel_n])
     (ea := p₀) (eb := p₀ + w) (fa := 0) (fb := 0) ⟨le_rfl, zero_lt_one⟩ ⟨le_rfl, zero_lt_one⟩
   simp only [add_zero] at h
   rw [h]

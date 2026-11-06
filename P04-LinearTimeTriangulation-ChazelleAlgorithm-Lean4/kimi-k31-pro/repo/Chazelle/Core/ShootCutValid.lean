@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.ShootCutWalk
 public import Chazelle.Core.ShootCutGrade
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-G, part 12: valid pieces
@@ -61,7 +64,7 @@ def PcOK (P : Polygon) (C : Chain) (m : ℕ → ℕ) (h γ : ℕ) (pc : Pc) : Pr
       BlockWalk (chainModel C).W (Qof P) pc.s.edge (b * 2 ^ g) (2 ^ g) pc.dir)
 
 theorem gradeLen_full {n g b : ℕ} (h : b * 2 ^ g + 2 ^ g < n) : gradeLen n g b = 2 ^ g := by
-  unfold gradeLen; omega
+  ufo gradeLen
 
 /-- **The facts of a kind-1 piece** (`CutterOK`), read from the grade table in any memory `m'`
 where it holds. -/
@@ -84,22 +87,22 @@ theorem kind1_facts {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
             Cα.vertex (Cα.m - d))) := by
   obtain ⟨hs, he, hsn, hen, -, -, h1⟩ := hok
   obtain ⟨g, b, hg1, hgΛ, hb, hE, hpw, hx0, hbn, hgran, hs0, he0, h6, hee, hem, hdir, hW⟩ := h1 hk
-  have hR' : Robust A m' fun m'' => GradeRaw O P m'' h A := hR.transport hm'
+  have hR'  := hR.transport hm'
   have hΛ : g < m' h := by
     have := (grade_low hR).1
     rw [hm' h (by omega)]; exact hgΛ
   obtain ⟨Hs, Cα, N, hC, hwf, hP, -, -, hsC, hmC, hN, hcan, -⟩ := hR'.holds.2.2.2 g b hΛ hb
-  have hPQ : Cα.P = Qof P := hP
+  have hPQ  := hP
   have hent : m' (m' (h + 2) + g) + 3 * b = pc.entry := by
     obtain ⟨h2, hr, -⟩ := grade_entry hR hgΛ hb
     have e1 : m' (h + 2) = m (h + 2) := hm' _ h2
     have e2 : m' (m (h + 2) + g) = m (m (h + 2) + g) := hm' _ hr
-    rw [e1, e2, hE]; rfl
+    rwr [e1, e2, hE]
   rw [hent] at hC hwf hN
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hlen : Cα.m = 2 ^ g := by rw [hmC]; exact gradeLen_full hbn
-  have hsα : Cα.s = b * 2 ^ g := by rw [hsC]; rfl
-  have hx : Cα.s + Cα.m < (Qof P).n := by rw [hlen, hsα, hQn]; exact hbn
+  have hsα : Cα.s = b * 2 ^ g := by rwr [hsC]
+  have hx : Cα.s + Cα.m < (Qof P).n := by rwx [hlen, hsα, hQn]
   -- the walk agrees with the tour of `Cα`
   have hV : ∀ d, d ≤ Cα.m → (chainModel C).W.vtx (pc.s.edge + d) =
       WalkEmbed.tourV Cα (if pc.dir = 1 then 0 else Cα.m) d := by
@@ -109,7 +112,7 @@ theorem kind1_facts {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
     · rw [tourV_up Cα hd, grade_vertex hP hx hd, hsα]
     · rw [tourV_down Cα hd, grade_vertex hP hx (by omega), hsα, hlen]
       congr 1; omega
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hn  := chainModel_n C
   have hsP : pc.s = ⟨pc.s.edge, 0⟩ := by rw [← hs0]
   have heP : pc.e = ⟨pc.s.edge + Cα.m, 0⟩ := by rw [hlen, ← hee, ← he0]
   refine ⟨hwf.mono hA', Hs, Cα, N, hC, hN.mono hA', ⟨gradeGran g, hgran, hcan⟩, ?_, ?_, ?_⟩
@@ -126,7 +129,7 @@ theorem kind1_facts {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
         rw [Nat.mod_eq_of_lt (by omega)]; exact hV d hd)
     rw [hmod] at this
     refine ⟨this, hPQ, ?_⟩
-    dsimp only
+    dsimp
     rcases hdir with hd1 | hd0
     · left
       intro d hd

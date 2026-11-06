@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.NFBuildPhaseBSetup
+public import Chazelle.MiscTactics
 
 /-!
 # WP-C (BuildNF), RAM part 21: auxiliary facts for phase B
@@ -24,8 +25,8 @@ theorem sum_ind (k R : ℕ) :
   | zero => simp
   | succ R ih =>
     rw [List.range_succ, List.map_append, List.sum_append, ih]
-    simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
-    split_ifs <;> omega
+    simp [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    splao
 
 theorem sum_cntF (key : ℕ → ℕ) {n R : ℕ} (h : ∀ j, j < n → key j < R) :
     ((List.range R).map (cntF key n)).sum = n := by
@@ -46,12 +47,12 @@ theorem sum_cnt2F_le (u v : ℕ → ℕ) (n R : ℕ) : ((List.range R).map (cnt2
       apply List.map_congr_left; intro r _; exact cnt2F_succ u v n r
     have hle : ((List.range R).map fun r => if u n = r ∨ v n = r then 1 else 0).sum ≤ 2 := by
       have : ∀ r, (if u n = r ∨ v n = r then 1 else 0) ≤
-          (if u n = r then 1 else 0) + (if v n = r then 1 else 0) := fun r => by split_ifs <;> omega
+          (if u n = r then 1 else 0) + (if v n = r then 1 else 0) := fun r => by splao
       calc _ ≤ ((List.range R).map fun r =>
               (if u n = r then 1 else 0) + (if v n = r then 1 else 0)).sum :=
             List.sum_le_sum (fun r _ => this r)
         _ = _ := by rw [List.sum_map_add]
-        _ ≤ 2 := by rw [sum_ind, sum_ind]; split_ifs <;> omega
+        _ ≤ 2 := by rw [sum_ind, sum_ind]; splao
     rw [e, List.sum_map_add]
     omega
 
@@ -105,7 +106,7 @@ theorem twice_m_le {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {D : ℕ} {M : Mode
     2 * m (D + 3) ≤ W := by
   rcases hM with ⟨-, H, C, hC, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, -, -, h2⟩ := hCW h0 H C hC
-    have hm : m (D + 1 + 2) = C.m := hC.2.2.2.1
+    have hm  := hC.2.2.2.1
     rw [show D + 3 = D + 1 + 2 by omega, hm]
     have := C.m_lt
     omega

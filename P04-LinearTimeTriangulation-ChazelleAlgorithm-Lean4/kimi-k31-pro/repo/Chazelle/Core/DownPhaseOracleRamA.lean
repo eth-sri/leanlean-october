@@ -5,6 +5,10 @@ public import Chazelle.Core.BruteRam2
 public import Chazelle.Core.ShotListLeaf
 public import Chazelle.Core.SweepPrimKer
 public import Chazelle.Core.NFBuildPassRam
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # WP-M (E7-B, RAM part 1): the adapter's registers and its set-up
@@ -25,9 +29,6 @@ oracle bands, so that it survives the calls to the chain oracles (finding E7-B1)
   raised by `8`), and the running minimum flag `170070 := 0`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -168,33 +169,33 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
     unfold bitI
     by_cases h1 : c₁.nreg 170093 < c₁.nreg 170011
     · refine ⟨_, _, .ifLtN_true h1 (Exec.constN w₁ 170014 0 (by omega)), by omega, ?_, ?_, ?_⟩
-      · simp only [upd_same]; omega
-      · simp only [upd_same]; omega
+      · sio only [upd_same]
+      · sio only [upd_same]
       · simp only [upd_same]
     by_cases h2 : c₁.nreg 170011 < c₁.nreg 170093
     · refine ⟨_, _, .ifLtN_false h1 (.ifLtN_true h2 (Exec.constN w₁ 170014 0 (by omega))),
         by omega, ?_, ?_, ?_⟩
-      · simp only [upd_same]; omega
-      · simp only [upd_same]; omega
+      · sio only [upd_same]
+      · sio only [upd_same]
       · simp only [upd_same]
     · refine ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 (Exec.constN w₁ 170014 1 (by omega))),
         by omega, ?_, ?_, ?_⟩
       · simp only [upd_same]; exact ⟨fun _ => by omega, fun _ => trivial⟩
-      · simp only [upd_same]; omega
+      · sio only [upd_same]
       · simp only [upd_same]
   have k : ∀ r, r ≠ 170014 → c₂.nreg r = c₁.nreg r := fun r hr => by
     rw [r₂]; simp [upd, hr]
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, by rw [k _ (by omega)]; exact q10,
-    by rw [k _ (by omega)]; exact q11, by rw [k _ (by omega)]; exact q12,
-    by rw [k _ (by omega)]; exact q18, by rw [k _ (by omega)]; exact q19,
-    by rw [k _ (by omega)]; exact q16, by rw [k _ (by omega)]; exact q17,
-    by rw [b14, q93], bl, by rw [k _ (by omega)]; exact q15, by rw [k _ (by omega)]; exact qA,
-    by rw [k _ (by omega)]; exact q70, ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, by rwx [k _ (by omega)],
+    by rwx [k _ (by omega)], by rwx [k _ (by omega)],
+    by rwx [k _ (by omega)], by rwx [k _ (by omega)],
+    by rwx [k _ (by omega)], by rwx [k _ (by omega)],
+    by rw [b14, q93], bl, by rwx [k _ (by omega)], by rw [k _ (by omega)]; exact qA,
+    by rwx [k _ (by omega)], ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
   all_goals first
     | (rw [r₂]; simp only [Config.nmem_mk]; first | exact m0 | exact m1 | exact m2 | exact m3)
     | skip
   · rw [r₂]; exact mlo a ha
-  · rw [k r (by unfold BinitR at hr; omega)]; exact rest r hr
+  · rw [k r (by ufo BinitR at hr)]; exact rest r hr
   · rw [r₂]; exact rr
   · rw [r₂]; exact rm
   · rw [r₂]; exact ro

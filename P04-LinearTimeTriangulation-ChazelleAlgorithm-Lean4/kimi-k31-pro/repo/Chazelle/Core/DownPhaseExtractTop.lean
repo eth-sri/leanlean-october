@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseExtractPiece
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (X, part 13): side `A` along an arc is contiguous
@@ -86,7 +89,7 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   set W := (interiorModel Q).W with hW
   have hv : v = W.vtx (p % W.n) := by
     rw [hv0, hK, hpK, sub_self, Chazelle.Geometry.lerp_zero]
-  have hτ₁ : 0 < ukey (interiorModel Q) S R i_l (j + 1) - p := by rw [hpK, ← hK]; linarith
+  have hτ₁ : 0 < ukey (interiorModel Q) S R i_l (j + 1) - p := by rwli [hpK, ← hK]
   have hnext : (hostChain Q S R g h3).vertex (k + 1) - v =
       (ukey (interiorModel Q) S R i_l (j + 1) - p) • (W.vtx ((p % W.n + 1) % W.n) - v) := by
     rw [hv1, hv0, hK, hpK, sub_self, ExtG.lerp_sub_lerp, sub_zero,
@@ -96,12 +99,12 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
     push_cast
     rw [show (p' : ℝ) + 1 - p' = 1 by ring, Chazelle.Geometry.lerp_one]
   have hτ₀ : 0 < 1 - (ukey (interiorModel Q) S R i_l (j - 1) - p') := by
-    have : ukey (interiorModel Q) S R i_l j = (p' : ℝ) + 1 := by rw [hK, ← hp'K]; push_cast; ring
+    have : ukey (interiorModel Q) S R i_l j = (p' : ℝ) + 1 := by rw [hK, ← hp'K]; pcr
     linarith
   have hprev : (hostChain Q S R g h3).vertex (kIdx (nk (interiorModel Q) S R) g i_l + (j - 1)) - v =
       (1 - (ukey (interiorModel Q) S R i_l (j - 1) - p')) • (W.vtx (p' % W.n) - v) := by
     have hB : v = lerp (W.vtx (p' % W.n)) (W.vtx ((p' % W.n + 1) % W.n)) 1 := by
-      rw [Chazelle.Geometry.lerp_one]; exact hvB
+      rwx [Chazelle.Geometry.lerp_one]
     rw [hv0', hB, ExtG.lerp_sub_lerp, Chazelle.Geometry.lerp_one]
     apply Prod.ext <;> simp <;> ring
   have hPn : p % W.n < W.n := Nat.mod_lt _ hn
@@ -109,7 +112,7 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
     have hpp : p = p' + 1 := by rw [hpK, hp'K]
     rw [hpp, prev_mod hn]
   refine ⟨p % W.n, hPn, ?_, hv, fun y => ?_⟩
-  · have hK2 : K < 2 * W.n := by rw [← hpK]; exact hpn
+  · have hK2 : K < 2 * W.n := by rwx [← hpK]
     rw [hK, wrapK_nat hn hK2, hpK]
   · rw [Chazelle.Chain.sideLeft_zero, hPprev, ← hv]
     exact ExtG.sideLeftOf_scale hτ₀ hτ₁ hprev hnext
@@ -123,7 +126,7 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hM := X.walkAx
   have hF := X.hFam.2.1
   have hfin := X.hFam.1
-  have hdN : d < nk (interiorModel Q) S R := hA.hdN
+  have hdN  := hA.hdN
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec X.hQ
   obtain ⟨P, hPn, hPkey, hvP, hsec⟩ := corner_inner (g := g) (h3 := h3) X hA hj0 hjd
   set C := hostChain Q S R g h3 with hC
@@ -133,11 +136,11 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   -- the slit direction is in the left sector
   have hbeta := (C.sideBeta_eq_true_iff).1 hb
   have htop : C.top = v := by
-    rw [hvdef, hT]; rfl
+    rwr [hvdef, hT]
   have hslit : sideLeftOf (C.vertex (kIdx (nk (interiorModel Q) S R) g i_l + (j - 1))) v (C.vertex (k + 1)) C.slitTop := by
     have e1 : C.topIdx + 1 = k + 1 := by rw [← hT]
     have e2 : C.topIdx - 1 = kIdx (nk (interiorModel Q) S R) g i_l + (j - 1) := by
-      rw [← hT, hkdef]; omega
+      rwo [← hT, hkdef]
     unfold sideLeftOf
     rw [← e1, ← e2, ← htop]
     exact hbeta
@@ -192,7 +195,7 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
     rw [hvP', mem_ball, hdist]; have := min_le_right r₀ rC; linarith
   have hyD : y ∈ (interiorModel Q).D := by
     by_contra hyD
-    exact hclean y hybC (by rw [hWb, hWf]; exact hyD) (hup ε hε0)
+    exact hclean y hybC (by rwx [hWb, hWf]) (hup ε hε0)
   have hyR := hnear y hyb₀ hyD
   have := region_below_top (g := g) (h3 := h3) X.hQ X.hFam X.hne X.hR y hyR
   rw [htop, hy2] at this
@@ -219,7 +222,7 @@ theorem no_split (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     · exact fun hT => top_not_inner X harc hA hj0 hjd hT hb
     · omega
     · omega
-  · rw [hs]; omega
+  · rwo [hs]
 
 /-- **Side `A` along an arc is contiguous.** -/
 theorem tourA_arc (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)

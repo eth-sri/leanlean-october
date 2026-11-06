@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.FuseDegPos
 public import Chazelle.Core.FuseMath
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The degree of the revised fusion, part 3: pieces and the one-region-per-piece argument
@@ -55,8 +58,8 @@ theorem chord_transfer (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
       f ⊆ c := by
   set W := (chainModel J.whole).W with hW
   set W' := (chainModel C').W with hW'
-  have hn : 0 < W.n := by rw [hW, WalkEmbed.cm_n]; omega
-  have hn' : 0 < W'.n := by rw [hW', WalkEmbed.cm_n]; omega
+  have hn : 0 < W.n := by rwo [hW, WalkEmbed.cm_n]
+  have hn' : 0 < W'.n := by rwo [hW', WalkEmbed.cm_n]
   have hdt' : t = 0 → 1 ≤ d := fun h => by
     rw [h, add_zero] at hdt; exact_mod_cast hdt
   set p' := (g' + d) % W'.n
@@ -89,20 +92,20 @@ theorem chord_transfer (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
       · refine ⟨1, Or.inl rfl, (sideLeft_rayPt hε0).1 (hsec _ ?_ ?_ ?_), ?_⟩
         · show rayPt q 1 ε ∈ c
           rw [hceq, hqa]; refine ⟨rfl, ?_, ?_⟩ <;> simp only [rayPt] <;> linarith
-        · intro e; have := congrArg Prod.fst e; simp only [rayPt] at this; linarith
+        · intro e; have := congrArg Prod.fst e; sil only [rayPt] at this
         · rw [dist_rayPt _ (Or.inl rfl) hε0.le]; exact hεr
         · rw [hqa, hceq]
           exact Merge.shoot_subset_pos J.whole hab (by rw [← hr]; exact (hends c hcS).2)
       · refine ⟨-1, Or.inr rfl, (sideLeft_rayPt hε0).1 (hsec _ ?_ ?_ ?_), ?_⟩
         · show rayPt q (-1) ε ∈ c
           rw [hceq, hqb]; refine ⟨rfl, ?_, ?_⟩ <;> simp only [rayPt] <;> linarith
-        · intro e; have := congrArg Prod.fst e; simp only [rayPt] at this; linarith
+        · intro e; have := congrArg Prod.fst e; sil only [rayPt] at this
         · rw [dist_rayPt _ (Or.inr rfl) hε0.le]; exact hεr
         · rw [hqb, hceq]
           exact Merge.shoot_subset_neg J.whole hab (by rw [← hl]; exact (hends c hcS).1)
     have hl2 : sideLeft W ((g + d) % W.n) t (rayPt (sidePt W ((g + d) % W.n) t) σ 1) := by
-      rw [hleft, hpt]; exact hdir
-    have hm₁ : J.m₁ ≤ J.whole.m := by rw [Merge.Junction.whole_m]; omega
+      rwx [hleft, hpt]
+    have hm₁ : J.m₁ ≤ J.whole.m := by rwo [Merge.Junction.whole_m]
     have hvq : sidePt W ((g + d) % W.n) t = J.whole.vertex J.m₁ := hpt.trans hv
     obtain ⟨hfree, hAt⟩ := sideAttach_shoot hP (Nat.mod_lt _ hn) ht ht1 hσ
       (by rw [hvq]; exact J.whole.vertex_snd_le_top hm₁) hl2
@@ -110,13 +113,13 @@ theorem chord_transfer (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple)
     refine ⟨_, hshared ⟨σ, hσ, hfree, rfl⟩, hAt, ?_⟩
     have e : J.whole.vertex J.m₁ = q := hv.symm
     show Merge.shoot J.whole (J.whole.vertex J.m₁) σ ⊆ c
-    rw [e]; exact hsubc
+    rwx [e]
   · obtain ⟨hL, hR⟩ := hend _ hcS
     rcases hqe with hqa | hqb
-    · obtain ⟨e, he, hqe, hec⟩ := hL (by rw [hl, ← hqa]; exact hv)
+    · obtain ⟨e, he, hqe, hec⟩ := hL (by rwx [hl, ← hqa])
       rw [hl, ← hqa] at hqe
       exact ⟨e, he, hA.sideAttach_subset hn hn' hd hdt' hc hec hqe, hec⟩
-    · obtain ⟨e, he, hqe, hec⟩ := hR (by rw [hr, ← hqb]; exact hv)
+    · obtain ⟨e, he, hqe, hec⟩ := hR (by rwx [hr, ← hqb])
       rw [hr, ← hqb] at hqe
       exact ⟨e, he, hA.sideAttach_subset hn hn' hd hdt' hc hec hqe, hec⟩
 
@@ -221,7 +224,7 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
     have hoA : off n' g' (pa + ta) = dA + ta := off_key' hg' hA'.1 hA'.2.1 hA'.2.2.1
     rw [hoA] at h1 h2
     have hdAL : dA < L := hdL hA'.2.1 h2
-    have hA'' : SideAttach M'.W c ((g' + dA) % n') ta := by rw [hpa]; exact hA'
+    have hA'' : SideAttach M'.W c ((g' + dA) % n') ta := by rwx [hpa]
     have hdA0 : (0 : ℝ) < dA + ta := by linarith [ht₁.1, (Nat.cast_nonneg d₁ : (0 : ℝ) ≤ d₁)]
     obtain ⟨f, hf, hAf, hfc⟩ := chord_transfer J hP hP' hSi.2.1 hend hends hshared hA hdAL
       hA'.2.1 hA'.2.2.1 hdA0 hc hA''
@@ -241,12 +244,12 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       have hlo' : d₁ + t₁ < off n g (pf + tf) := lt_of_le_of_ne hlo fun h =>
         hf1 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₁.1 hK₁.2 (by rw [ho₁]; exact h.symm))
       have hhi' : off n g (pf + tf) < d₂ + t₂ := lt_of_le_of_ne hhi fun h =>
-        hf2 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₂.1 hK₂.2 (by rw [ho₂]; exact h))
+        hf2 (off_inj (Nat.cast_nonneg g) hgR hKF.1 hKF.2 hK₂.1 hK₂.2 (by rwx [ho₂]))
       set dF := dOf n g pf with hdF
       have hpf : (g + dF) % n = pf := add_dOf hg hBf.1
       rw [hofk] at hlo' hhi'
       have hdFL : dF < L := hdL hBf.2.1 hhi'
-      have hBf' : SideAttach M.W f ((g + dF) % n) tf := by rw [hpf]; exact hBf
+      have hBf' : SideAttach M.W f ((g + dF) % n) tf := by rwx [hpf]
       have hdF1 : tf = 0 → 1 ≤ dF := by
         intro h0
         rw [h0, add_zero] at hlo'
@@ -287,15 +290,15 @@ theorem one_piece_core (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : P
       have hKB' := hkey hB'.1 hB'.2.1 hB'.2.2.1
       have hsame := off_same_side_in (Nat.cast_nonneg g') hg'R hKA'.1 hKA'.2 hKB'.1 hKB'.2
         hK₁'.1 hK₁'.2 hK₂'.1 hK₂'.2 (Chazelle.Core.WalkAx.key_ne_of_pt_ne hA' hB' hne)
-        ⟨by rw [ho₁', hoA]; exact h1, by rw [ho₂', hoA]; exact h2⟩
-        ⟨by rw [ho₁', hoB]; exact hlo', by rw [ho₂', hoB]; exact hhi'⟩
+        ⟨by rwx [ho₁', hoA], by rwx [ho₂', hoA]⟩
+        ⟨by rwx [ho₁', hoB], by rwx [ho₂', hoB]⟩
       exact iff_not_self (hsame.symm.trans hiff)
     -- so `f` separates the two positions in the walk of `C`
     have hsepf : M.Separates f k₁ k₂ := by
       refine ⟨(g + dA) % n, pf, ta, tf, hAf, hBf, Ne.symm hBfne, ?_⟩
       exact off_sep (Nat.cast_nonneg g) hgR hKA.1 hKA.2 hKF.1 hKF.2 hK₁.1 hK₁.2 hK₂.1 hK₂.2
-        ⟨by rw [ho₁, hoA_W]; exact h1, by rw [ho₂, hoA_W]; exact h2⟩
-        (by rw [ho₁, ho₂]; exact hof)
+        ⟨by rwx [ho₁, hoA_W], by rwx [ho₂, hoA_W]⟩
+        (by rwx [ho₁, ho₂])
     exact ((hM.eq_iff_not_separates hS'A hS' hR hR (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) ht₁ ht₂
       hc₁ hc₂ hf₁ hf₂).1 rfl) f hf hsepf
   obtain ⟨pa, pb, ta, tb, hA', hB', hne, hiff⟩ := hsep
@@ -383,7 +386,7 @@ theorem one_piece (hP : J.P.Simple) {C' : Chain} (hP' : C'.P.Simple) {Q : Polygo
     (hg₁ : (chainModel C').Faces ((g' + d₁) % (chainModel C').W.n) t₁ U₁)
     (hg₂ : (chainModel C').Faces ((g' + d₂) % (chainModel C').W.n) t₂ U₂) : U₁ = U₂ := by
   have hA := hpc.2.2.2.2.1
-  have hn' : 0 < (chainModel C').W.n := by rw [WalkEmbed.cm_n]; omega
+  have hn' : 0 < (chainModel C').W.n := by rwo [WalkEmbed.cm_n]
   have hnc₁ := side_not_cut J hP hP' hSi.2.1 hend hends hshared hA hd₁ ht₁ hc₁
   have hnc₂ := side_not_cut J hP hP' hSi.2.1 hend hends hshared hA hd₂ ht₂ hc₂
   refine ((walkAx_chainModel hP').eq_iff_not_separates hSi.2.1 hSi.1 hU₁ hU₂ (Nat.mod_lt _ hn')
@@ -423,7 +426,7 @@ theorem faces_ref (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set
     (hnc : ¬ (chainModel J.whole).IsCut S' (((g + d) % (chainModel J.whole).W.n : ℕ) + t))
     (hf : (chainModel J.whole).Faces ((g + d) % (chainModel J.whole).W.n) t R) :
     (chainModel C').Faces ((g' + d) % (chainModel C').W.n) t U := by
-  have hn' : 0 < (chainModel C').W.n := by rw [WalkEmbed.cm_n]; omega
+  have hn' : 0 < (chainModel C').W.n := by rwo [WalkEmbed.cm_n]
   have hnc' := side_not_cut J hP hS.simple hS.fam.2.1 hS.endm hS.ends hS.shared hpc.2.2.2.2.1 hd ht
     hnc
   obtain ⟨U₁, hU₁, hg₁⟩ := (walkAx_chainModel hS.simple).exists_faces_of_not_cut hS.fam.2.1
@@ -454,8 +457,8 @@ theorem piece_I (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set P
   set M' := chainModel C' with hM'def
   have hM : WalkAx M := walkAx_chainModel hP
   have hM' : WalkAx M' := walkAx_chainModel hS.simple
-  have hn : 0 < M.W.n := by rw [hMdef, WalkEmbed.cm_n]; omega
-  have hn' : 0 < M'.W.n := by rw [hM'def, WalkEmbed.cm_n]; omega
+  have hn : 0 < M.W.n := by rwo [hMdef, WalkEmbed.cm_n]
+  have hn' : 0 < M'.W.n := by rwo [hM'def, WalkEmbed.cm_n]
   set p := (g + d) % M.W.n with hp
   set p' := (g' + d) % M'.W.n with hp'
   have hfaced : ∀ {d₁ : ℕ} {t₁ : ℝ}, d₁ < L → t₁ ∈ Ioo (0 : ℝ) 1 →
@@ -470,7 +473,7 @@ theorem piece_I (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set P
         with s hs1 hs2 hs3 hs4
       have hs0 : (0 : ℝ) < s := hs3
       refine hfaced hd ⟨by linarith, by linarith [hs4.2]⟩ ?_ hs1
-      rw [← add_assoc]; exact hs2
+      rwx [← add_assoc]
     obtain ⟨r', harc'⟩ := arc_start_of_faced hM' hS.fam.2.1 hS.fam.1 hc hcA hU h2
     obtain ⟨c', hc', p₁, t₁, hA₁, hk⟩ :=
       hM'.exists_exit_at_start hS.fam.2.1 hS.fam.1 ⟨c, hc⟩ hU harc'
@@ -484,7 +487,7 @@ theorem piece_I (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set (Set P
           self_mem_nhdsWithin, Ioo_mem_nhdsGT ht0'] with s hs1 hs2 hs3 hs4
         have hs0 : (0 : ℝ) < s := hs3
         refine hfaced hd ⟨by linarith [hs4.2], by linarith⟩ ?_ hs1
-        rw [show (p : ℝ) + (t - s) = p + t - s by ring]; exact hs2
+        rwx [show (p : ℝ) + (t - s) = p + t - s by ring]
       obtain ⟨l', harc'⟩ := arc_end_of_faced hM' hS.fam.2.1 hS.fam.1 hc hcA ht0' hU h2
       obtain ⟨c', hc', p₁, t₁, hA₁, hk⟩ :=
         hM'.exists_exit_at_end hS.fam.2.1 hS.fam.1 ⟨c, hc⟩ hU harc'
@@ -544,7 +547,7 @@ theorem typeI_ncard_le (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set
   have hn' : 0 < M'.W.n := by omega
   rcases (TypeI J C' Si S' R g g' L).eq_empty_or_nonempty with h0 | ⟨f₀, hf₀, d₀', t₀', hd₀',
     ht₀', ht₀'1, hdt₀', -, hadj₀, -⟩
-  · rw [h0, Set.ncard_empty]; omega
+  · rwo [h0, Set.ncard_empty]
   have hne : S'.Nonempty := ⟨f₀, hf₀⟩
   -- a reference position and the region of `Sᵢ` it faces
   obtain ⟨d₀, t₀, hd₀, ht₀, hc₀, hf₀'⟩ : ∃ (d₀ : ℕ) (t₀ : ℝ), d₀ < L ∧ t₀ ∈ Ioo (0 : ℝ) 1 ∧
@@ -600,7 +603,7 @@ theorem typeI_ncard_le (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si S' : Set
         simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and, not_exists]
         intro _ d t hd ht ht1 hk _
         exact h ⟨d, t, hd, ht, ht1, hk⟩
-      rw [this, Set.ncard_empty]; omega
+      rwo [this, Set.ncard_empty]
   have hsub : TypeI J C' Si S' R g g' L ⊆ ⋃ k ∈ K', {f | f ∈ S' ∧ ∃ (d : ℕ) (t : ℝ), d < L ∧
       0 ≤ t ∧ t < 1 ∧ k = ((g' + d) % M'.W.n : ℕ) + t ∧
       SideAttach M.W f ((g + d) % M.W.n) t} := by

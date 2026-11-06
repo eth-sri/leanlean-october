@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.SweepIoS0CandAux
 public import Chazelle.Core.SweepIoCand1G
 public import Chazelle.Core.SweepEvShot
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the slot table of the side-0 candidates (mathematics)
@@ -54,7 +57,7 @@ theorem search_exact {P : Polygon} {J : Merge.Junction} {N : NF} {S₂ : Set (Se
         (∀ j, t ≤ j → j < ls.length → ¬ lsPr P J m AL G x j) → t = i := by
   obtain ⟨-, -, -, hsort, -⟩ := hLog
   set es := logOf J (Qof P) N ls with hes
-  have hlen : es.length = ls.length := by rw [hes]; unfold logOf; simp
+  have hlen : es.length = ls.length := by rw [hes]; ufs logOf
   have hpr : ∀ j, j < ls.length → (lsPr P J m AL G x j ↔
       oW J ((es.getD j (0, 0, ∅)).1 + (es.getD j (0, 0, ∅)).2.1) <
         oW J ((chainModel J.whole).key (Qof P) x)) := by
@@ -88,7 +91,7 @@ theorem search_exact {P : Polygon} {J : Merge.Junction} {N : NF} {S₂ : Set (Se
       rw [hki]; exact lt_irrefl _
     have hKi : oW J ((es.getD i (0, 0, ∅)).1 + (es.getD i (0, 0, ∅)).2.1) =
         oW J ((chainModel J.whole).key (Qof P) x) := by
-      rw [← iniLogKey P J N hrec hi, ← hki]; rfl
+      rwr [← iniLogKey P J N hrec hi, ← hki]
     rcases lt_trichotomy t i with h | h | h
     · exfalso
       apply h2 t le_rfl (by omega)
@@ -108,7 +111,7 @@ theorem attach_idx {P : Polygon} {J : Merge.Junction} {N : NF} {S₂ : Set (Set 
       (chainModel J.whole).param (Qof P) (logPos m AL i) =
         (chainModel J.whole).param (Qof P) x := by
   obtain ⟨i, hi, h1, h2⟩ := cut_key J hLog he hA hst
-  have hlen : (logOf J (Qof P) N ls).length = ls.length := by unfold logOf; simp
+  have hlen : (logOf J (Qof P) N ls).length = ls.length := by ufs logOf
   rw [hlen] at hi
   obtain ⟨l1, l2⟩ := logOf_getD J (Qof P) N hi
   obtain ⟨a1, a2, -⟩ := hrec i hi
@@ -154,9 +157,9 @@ theorem slotOK_store {P : Polygon} {J : Merge.Junction} {m : ℕ → ℕ} {B AL 
   have hL : ∀ j, j < E → logPt P J (slotW m B t s e h) AL j = logPt P J m AL j := by
     intro j hj
     have h0 : slotW m B t s e h (AL + 7 * j) = m (AL + 7 * j) :=
-      slotW_other (Or.inl (by unfold slotA; omega))
+      slotW_other (Or.inl (by ufo slotA))
     have h1 : slotW m B t s e h (AL + 7 * j + 1) = m (AL + 7 * j + 1) :=
-      slotW_other (Or.inl (by unfold slotA; omega))
+      slotW_other (Or.inl (by ufo slotA))
     unfold logPt logPos
     rw [h0, h1]
   by_cases hit : i = t ∧ s' = s
@@ -196,9 +199,9 @@ theorem endPos_facts {P : Polygon} {J : Merge.Junction} {N : NF}
   have hhn := (regOf_spec hN).2.2.2.2.2.1 k hk
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hpl : ProperPos (chainModel J.right) (Qof P) P.n (N.chord k).lpos :=
-    ⟨hA.1.2.1, hA.1.2.2.1, by show (N.chord k).h + 1 ≤ P.n; rw [← hQn]; omega⟩
+    ⟨hA.1.2.1, hA.1.2.2.1, by show (N.chord k).h + 1 ≤ P.n; rwo [← hQn]⟩
   have hpr : ProperPos (chainModel J.right) (Qof P) P.n (N.chord k).rpos :=
-    ⟨hA.2.2.1, hA.2.2.2.1, by show (N.chord k).h + 1 ≤ P.n; rw [← hQn]; omega⟩
+    ⟨hA.2.2.1, hA.2.2.2.1, by show (N.chord k).h + 1 ≤ P.n; rwo [← hQn]⟩
   have hp : ProperPos (chainModel J.right) (Qof P) P.n (endPos N k s) := by
     unfold endPos; split_ifs
     · exact hpl
@@ -226,7 +229,7 @@ theorem ini_dS_sOf (b : ℕ) : dS (sOf b) = dirOf b := by
   unfold dS sOf dirOf
   by_cases h : b = 1 <;> simp [h]
 
-theorem ini_sOf_le (b : ℕ) : sOf b ≤ 1 := by unfold sOf; split_ifs <;> omega
+theorem ini_sOf_le (b : ℕ) : sOf b ≤ 1 := by unfold sOf; splao
 
 /-- **The origin position of a stop record.** -/
 theorem stopPos_facts {P : Polygon} {J : Merge.Junction} {N : NF} (hP : J.P.Simple)
@@ -239,26 +242,26 @@ theorem stopPos_facts {P : Polygon} {J : Merge.Junction} {N : NF} (hP : J.P.Simp
   have ht := tpos_lt J.right 0
   unfold stopPos stopOrig
   by_cases h0 : kind = 0
-  · simp only [ite_eq_left h0]
+  · simp [ite_eq_left h0]
     have hlt : cstR J 1 < (chainModel J.right).W.n := by
       rw [hn]; show 6 + tpos J.right 0 < _; omega
     have hp0 := Cand1.param_hgt0 (chainModel J.right) (Qof P) (cstR J 1)
-    refine ⟨hlt, ⟨by rw [hp0], by rw [hp0]; norm_num, Nat.zero_le _⟩, ?_⟩
-    exact (Cand1.shared_iffR hP (Qof P) hlt (by rw [hp0]) (by rw [hp0]; norm_num)).2
+    refine ⟨hlt, ⟨by rw [hp0], by rwn [hp0], Nat.zero_le _⟩, ?_⟩
+    exact (Cand1.shared_iffR hP (Qof P) hlt (by rw [hp0]) (by rwn [hp0])).2
       ⟨hp0, Or.inl rfl⟩
-  · simp only [ite_eq_right h0]
+  · simp [ite_eq_right h0]
     by_cases h1 : kind = 1
-    · simp only [ite_eq_left h1]
+    · simp [ite_eq_left h1]
       obtain ⟨a1, a2, a3, -⟩ := endPos_facts hN (hk h1) (ini_sOf_le b)
       refine ⟨a1, a2, ?_⟩
       rw [a3]
       congr 1
       unfold sOf; by_cases hb : b = 1 <;> norm_num [hb, dirOf]
-    · simp only [ite_eq_right h1]
-      have hlt : (6 : ℕ) < (chainModel J.right).W.n := by rw [hn]; omega
+    · simp [ite_eq_right h1]
+      have hlt : (6 : ℕ) < (chainModel J.right).W.n := by rwo [hn]
       have hp0 := Cand1.param_hgt0 (chainModel J.right) (Qof P) 6
-      refine ⟨hlt, ⟨by rw [hp0], by rw [hp0]; norm_num, Nat.zero_le _⟩, ?_⟩
-      exact (Cand1.top_iffR hP (Qof P) hlt (by rw [hp0]) (by rw [hp0]; norm_num)).2
+      refine ⟨hlt, ⟨by rw [hp0], by rwn [hp0], Nat.zero_le _⟩, ?_⟩
+      exact (Cand1.top_iffR hP (Qof P) hlt (by rw [hp0]) (by rwn [hp0])).2
         ⟨hp0, Or.inl rfl⟩
 
 end

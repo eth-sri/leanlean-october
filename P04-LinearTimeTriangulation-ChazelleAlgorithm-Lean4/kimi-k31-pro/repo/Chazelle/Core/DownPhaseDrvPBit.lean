@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.DownPhaseDrvPScan
 public import Chazelle.Core.DownPhaseOracleChR2
 public import Chazelle.Core.DownPhaseMathJunc
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase pieces (D4), part 4: the top and the orientation bit of a host chain
@@ -23,9 +27,6 @@ before, at and after the top, the last one modulo `N`), the six sign tests of `I
 into `170082 … 170088` and the decision tree `IOrc.logI`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -47,17 +48,17 @@ theorem sideCcw_up' {a v b : Point} {h : ℝ} (hh : 0 < h) (ha : a.2 < v.2) :
   by_cases hb : b.2 = v.2
   swap
   · exact Brute.sideCcw_up hh ha hb
-  have e1 : sideCross (b - v) (a - v) = det a v b := Chain.sideCross_corner a v b
+  have e1  := Chain.sideCross_corner a v b
   have hdet : det a v b = (b.1 - v.1) * (a.2 - v.2) := by
-    rw [← e1]; unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]; rw [hb]; ring
+    rw [← e1]; unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]; rwring [hb]
   have e2 : sideCross (b - v) ((0 : ℝ), h) = h * (b.1 - v.1) := by
-    unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]; ring
+    unfold sideCross; sir only [Prod.fst_sub, Prod.snd_sub]
   have e3 : sideCross ((0 : ℝ), h) (a - v) = h * (v.1 - a.1) := by
-    unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]; ring
+    unfold sideCross; sir only [Prod.fst_sub, Prod.snd_sub]
   have e4 : sideDot (b - v) ((0 : ℝ), h) = 0 := by
-    unfold sideDot; simp only [Prod.fst_sub, Prod.snd_sub]; rw [hb]; ring
+    unfold sideDot; simp only [Prod.fst_sub, Prod.snd_sub]; rwring [hb]
   have e5 : sideDot (b - v) (a - v) = (b.1 - v.1) * (a.1 - v.1) := by
-    unfold sideDot; simp only [Prod.fst_sub, Prod.snd_sub]; rw [hb]; ring
+    unfold sideDot; simp only [Prod.fst_sub, Prod.snd_sub]; rwring [hb]
   unfold sideCcw
   rw [e1, e2, e3, e4, e5, hdet, hb]
   rcases lt_trichotomy b.1 v.1 with h1 | h1 | h1
@@ -66,7 +67,7 @@ theorem sideCcw_up' {a v b : Point} {h : ℝ} (hh : 0 < h) (ha : a.2 < v.2) :
     constructor
     · rintro (⟨-, h2, -⟩ | ⟨h2, -⟩ | ⟨h2, -⟩ | ⟨h2, -⟩) <;> linarith
     · rintro (⟨-, h2, -⟩ | ⟨h2, -⟩ | ⟨h2, -⟩ | ⟨h2, -⟩) <;> linarith
-  · rw [h1]; simp
+  · rws [h1]
   · have p1 : (b.1 - v.1) * (a.2 - v.2) < 0 := mul_neg_of_pos_of_neg (by linarith) (by linarith)
     have p2 : 0 < h * (b.1 - v.1) := mul_pos hh (by linarith)
     exact iff_of_true (Or.inr (Or.inl ⟨p1, Or.inl p2⟩)) (Or.inr (Or.inl ⟨p1, Or.inl h1⟩))
@@ -130,7 +131,7 @@ theorem hchain_topIdx (hC : C.P = H.poly (Qof P)) (hsm : C.s + C.m < (H.pts P.n)
     {T : ℕ} (hT : T ≤ C.m) (hle : ∀ j, j ≤ C.m → Yh P H (C.s + j) ≤ Yh P H (C.s + T))
     (hlt : ∀ j, j < T → Yh P H (C.s + j) < Yh P H (C.s + T)) : C.topIdx = T := by
   have ev : ∀ j, j ≤ C.m → (C.vertex j).2 = Yh P H (C.s + j) := fun j hj => by
-    rw [hchain_vertex_lt hC (by omega)]; rfl
+    rwr [hchain_vertex_lt hC (by omega)]
   have h1 : C.topIdx ≤ T := C.topIdx_min hT (fun i hi => by rw [ev i hi, ev T hT]; exact hle i hi)
   by_contra hne
   have h2 := C.vertex_snd_le_top hT
@@ -146,7 +147,7 @@ theorem hchain_topIdx_leaf (hC : C.P = H.poly (Qof P)) (hsm : C.s + C.m < (H.pts
     (hpt : ∀ k, k ≤ C.m → pt H P.n (C.s + k) = .vtx (a + k)) {T : ℕ} (hT : T ≤ C.m)
     (hle : ∀ j, j ≤ C.m → IOrc.Y P (a + j) ≤ IOrc.Y P (a + T)) : C.topIdx = T := by
   have ev : ∀ j, j ≤ C.m → (C.vertex j).2 = IOrc.Y P (a + j) := fun j hj => by
-    rw [hchain_vertex_lt hC (by omega), hpt j hj]; rfl
+    rwr [hchain_vertex_lt hC (by omega), hpt j hj]
   have h1 : C.topIdx ≤ T := C.topIdx_min hT (fun i hi => by rw [ev i hi, ev T hT]; exact hle i hi)
   by_contra hne
   have h2 := C.vertex_snd_le_top hT
@@ -154,7 +155,7 @@ theorem hchain_topIdx_leaf (hC : C.P = H.poly (Qof P)) (hsm : C.s + C.m < (H.pts
   rw [ev T hT, ev _ C.topIdx_le] at h2
   have h3 := hle _ C.topIdx_le
   have hn : (Qof P).n = P.n := shear_n _ _
-  exact hD (a + C.topIdx) (a + T) (by rw [hn]; have := C.topIdx_le; omega) (by rw [hn]; omega)
+  exact hD (a + C.topIdx) (a + T) (by rw [hn]; have := C.topIdx_le; omega) (by rwo [hn])
     (by omega) (le_antisymm h3 h2)
 
 /-- **The orientation bit of a host chain** from the host points before, at and after the top. -/
@@ -205,7 +206,7 @@ def Bbit (r : ℕ) : Bool :=
 theorem wr_betaS : wr Bbit betaS = true := by
   have h : wr Bbit lookStmt = true := SweepPrim.wr_mono wr_lookStmt (fun r hr => by
     simp only [Bhost, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [Bbit, Bool.or_eq_true, decide_eq_true_eq]; omega)
+    sio only [Bbit, Bool.or_eq_true, decide_eq_true_eq])
   have hk : ∀ a b d op dst, 170000 ≤ dst → dst < 170100 → wr Bbit (kbit a b d op dst) = true :=
     fun a b d op dst h1 h2 => SweepPrim.wr_mono (SweepPrim.wr_kbit _ _ _ _ _) (fun r hr => by
       simp only [SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq] at hr
@@ -214,7 +215,7 @@ theorem wr_betaS : wr Bbit betaS = true := by
       · exact Or.inl (Or.inl (Or.inl (Or.inr hr)))
       · subst hr; left; left; right; omega)
   have hl : wr Bbit IOrc.logI = true := by
-    simp only [IOrc.logI, IOrc.setB, wr, block, wrOK]; decide
+    sid only [IOrc.logI, IOrc.setB, wr, block, wrOK]
   simp only [betaS, bitI, nbrS, lkTo, testsS, wr, block, wrOK, h, hl,
     hk _ _ _ _ 170082 (by norm_num) (by norm_num), hk _ _ _ _ 170083 (by norm_num) (by norm_num),
     hk _ _ _ _ 170085 (by norm_num) (by norm_num), hk _ _ _ _ 170086 (by norm_num) (by norm_num),
@@ -284,8 +285,8 @@ theorem nbrS_exec (c : Config) (hw : WordsBounded W c) {s T N : ℕ} (h01 : c.nr
       c₁.nreg 218052 = s + T + 1 ∧
       (∀ r, r ≠ 218050 → r ≠ 218051 → r ≠ 218052 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem := by
     exec_block
-    · config_simp; rw [h01, h13]; omega
-    · config_simp; rw [h01, h13, h21]; omega
+    · config_simp; rwo [h01, h13]
+    · config_simp; rwo [h01, h13, h21]
     refine ⟨rfl, by config_simp; rw [h01, h13], by config_simp; rw [h01, h13, h21],
       by config_simp; rw [h01, h13, h21], fun r a b d => ?_, rfl⟩
     simp only [Config.nreg_mk, upd, ite_eq_right a, ite_eq_right b, ite_eq_right d]
@@ -386,7 +387,6 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
   · refine b₅.of_eq ?_
     rw [r₆ _ (by norm_num) (by norm_num)]
 
-set_option maxHeartbeats 2000000 in
 /-- **The orientation bit**: `218014 := 1` iff the top offset `T` (`218013`) is positive and the
 six sign tests at the host points `s + T - 1`, `s + T`, `(s + T + 1) mod N` give `BetaF`. -/
 theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m₀ HB) (c : Config)
@@ -410,7 +410,7 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
   unfold betaS
   by_cases hc : c.nreg 218020 < c.nreg 218013
   swap
-  · have hT0 : T = 0 := by rw [h20, hT] at hc; omega
+  · have hT0 : T = 0 := by rwo [h20, hT] at hc
     refine spec_ifLtN_false hc ?_
     obtain ⟨c', k, e, hk, v⟩ : ∃ c' k, Exec P W (block [.constN 218014 0]) c c' k ∧ k = 1 ∧
         c'.nreg 218014 = 0 := by
@@ -419,7 +419,7 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
       exact ⟨rfl, by config_simp⟩
     exact ⟨c', k, e, by omega, exec_frameB (Exec.ifLtN_false hc e) wr_betaS, by omega,
       by rw [v]; simp [hT0]⟩
-  have hT1 : 1 ≤ T := by rw [h20, hT] at hc; omega
+  have hT1 : 1 ≤ T := by rwo [h20, hT] at hc
   refine spec_ifLtN_true hc ?_
   -- the indices
   obtain ⟨c₁, k₁, e₁, hk₁, v50, v51, v52, r₁, m₁⟩ := nbrS_exec (P := P) c hw hs hT h21 h12 hT1
@@ -435,7 +435,7 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
   obtain ⟨c₂, k₂, e₂, hk₂, E₂, sA₂, r₂, m₂⟩ := lkTo_exec E c₁ E₁ v51 (by omega)
     (d := 218053) (by norm_num)
   obtain ⟨c₃, k₃, e₃, hk₃, E₃, sV₃, r₃, m₃⟩ := lkTo_exec E c₂ E₂ (src := 218050) (p := s + T)
-    (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide)]; exact v50)
+    (by rwx [r₂ _ (by decide) (by decide) (by decide) (by decide)])
     (by omega) (d := 218056) (by norm_num)
   obtain ⟨c₄, k₄, e₄, hk₄, E₄, sB₄, r₄, m₄⟩ := lkTo_exec E c₃ E₃ (src := 218052)
     (p := (s + T + 1) % N)
@@ -451,8 +451,8 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
   have sV₄ : SymPtIn c₄ 218056 (pt H P.n (s + T)) := by
     refine symPtIn_copy sV₃ ?_ ?_ ?_
     all_goals exact r₄ _ (by decide) (by decide) (by decide) (by decide)
-  have hA := pt_lt (n := P.n) (i := s + T - 1) E.hwf E.npos (by rw [hN]; omega)
-  have hV := pt_lt (n := P.n) (i := s + T) E.hwf E.npos (by rw [hN]; omega)
+  have hA := pt_lt (n := P.n) (i := s + T - 1) E.hwf E.npos (by rwo [hN])
+  have hV := pt_lt (n := P.n) (i := s + T) E.hwf E.npos (by rwo [hN])
   have hB := pt_lt (n := P.n) (i := (s + T + 1) % N) E.hwf E.npos
     (by rw [hN]; exact Nat.mod_lt _ hNpos)
   -- the tests

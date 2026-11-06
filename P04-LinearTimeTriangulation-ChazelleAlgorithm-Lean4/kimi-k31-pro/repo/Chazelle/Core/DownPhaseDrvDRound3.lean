@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvDRound2
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 32000000
 
 /-!
 # Down-phase restoration rounds (D8), part 13: one round
@@ -24,7 +28,6 @@ theorem clog_two_two : Nat.clog 2 2 = 1 := by
 
 theorem splBands_sub : ({bDownDrv, bBuild, bSort, bSign} : Finset ℕ) ⊆ DrvR.drvBands := by decide
 
-set_option maxHeartbeats 32000000 in
 /-- **One round.** -/
 theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E t c)
     (ht : t < E.d0) :
@@ -72,7 +75,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
   rw [List.length_map] at hbkA hmono hbcnt
   have w₄ := I₄.wb
   have F4 : ∀ q, (210000 ≤ q ∧ q < 216012) ∨ (216060 ≤ q ∧ q < 220000) → c₄.nreg q = c.nreg q :=
-    fun q hq => (I₄.regs q (by unfold FixR; omega)).trans (K3 q (by omega))
+    fun q hq => (I₄.regs q (by ufo FixR)).trans (K3 q (by omega))
   -- 3. the arguments of the splice
   obtain ⟨c₅, k₅, e₅, hk₅, s20, s21, s22, s23, s24, f₅⟩ := splArgs_exec (P := E.P) c₄ w₄
   have w₅ := e₅.wb_right
@@ -80,7 +83,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
     f₅.1 q (by simpa using hq)
   have m₅ : c₅.nmem = c₄.nmem := f₅.2.2.1
   have A₄ : B₀ + 5 * R ≤ c₄.nreg ALLOC := by rw [← A₃]; exact RF₄.2.2.2.2.2.1
-  have A₅ : c₅.nreg ALLOC = c₄.nreg ALLOC := g₅ _ (by unfold ALLOC; omega)
+  have A₅ : c₅.nreg ALLOC = c₄.nreg ALLOC := g₅ _ (by ufo ALLOC)
   have F5 : ∀ q, (210000 ≤ q ∧ q < 216012) ∨ (216060 ≤ q ∧ q < 220000) →
       ¬ (210020 ≤ q ∧ q ≤ 210024) → c₅.nreg q = c.nreg q := fun q hq hq' =>
     (g₅ q hq').trans (F4 q hq)
@@ -135,22 +138,22 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
       rw [r1]; exact hwf₅.mono (by omega),
       E.M, L, newL.map Prod.snd, Ev, by
       show ModelDescAt c₅.nmem (c₅.nreg 210001) E.Q E.M
-      rw [r1]; exact hMD₅, hGM, by show c₅.nreg 210003 = _; exact r3, by
+      rwx [r1], hGM, by show c₅.nreg 210003 = _; exact r3, by
       show c₅.nreg 210002 + 3 * L.length ≤ c₅.nreg ALLOC
-      rw [r2]; omega, by
+      rwo [r2], by
       show ChordListAt c₅.nmem (c₅.nreg 210002) L
       rw [r2]; exact hLa c₅.nmem low5, by
       show c₅.nreg 210021 = _; rw [r21, List.length_map], by
       show c₅.nreg 210020 + 3 * (newL.map Prod.snd).length ≤ c₅.nreg ALLOC
-      rw [r20, List.length_map]; omega, by
+      rwo [r20, List.length_map], by
       show ChordListAt c₅.nmem (c₅.nreg 210020) (newL.map Prod.snd)
       rw [r20, m₅]; exact I₄.list, hok', by
       show c₅.nreg 210004 + 2 * L.length ≤ c₅.nreg ALLOC
-      rw [r4]; omega, by
+      rwo [r4], by
       show seg c₅.nmem (c₅.nreg 210004) (2 * L.length) = Ev
       rw [r4]; exact hEa c₅.nmem low5, hperm, hsort, by
       show c₅.nreg 210022 + 2 * (newL.map Prod.snd).length ≤ c₅.nreg ALLOC
-      rw [r22, List.length_map]; omega, fun q hq => by
+      rwo [r22, List.length_map], fun q hq => by
       show c₅.nmem (c₅.nreg 210022 + q) ≤ c₅.nreg 210023
       rw [r22, r23, m₅, ← hBK]; rw [List.length_map] at hq; exact hbkA q hq, fun q q' hq hq' hb => by
       rw [List.length_map] at hq hq'
@@ -167,7 +170,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
       rw [e]; exact hbcnt b⟩ hroomS
   have w₆ := e₆.wb_right
   obtain ⟨p3, p2l, p2b, p2, p4l, p4b, pperm, psort, p5l, pNW⟩ := postS E.M L (newL.map Prod.snd)
-    (by show ModelDescAt c₅.nmem (c₅.nreg 210001) E.Q E.M; rw [r1]; exact hMD₅)
+    (by show ModelDescAt c₅.nmem (c₅.nreg 210001) E.Q E.M; rwx [r1])
     (by show c₅.nreg 210003 = _; exact r3)
     (by show ChordListAt c₅.nmem (c₅.nreg 210002) L; rw [r2]; exact hLa c₅.nmem low5)
     (by show c₅.nreg 210021 = _; rw [r21, List.length_map])
@@ -188,20 +191,20 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
   have hk5 : k₅ = 5 := hk₅
   have hA3 : c₃.nreg ALLOC = B₀ + 5 * R := A₃
   obtain ⟨c₇, k₇, e₇, hk₇, v10, f₇⟩ := incr_exec (P := E.P) c₆ w₆ t10 t02
-    (by have h1 := w₆.1 216000; rw [K6 _ (by norm_num) (by norm_num), hI.r00] at h1; omega)
+    (by have h1 := w₆.1 216000; rwo [K6 _ (by norm_num) (by norm_num), hI.r00] at h1)
   have g₇ : ∀ q, q ≠ 216010 → c₇.nreg q = c₆.nreg q := fun q hq => f₇.1 q (by simpa using hq)
   have m₇ : c₇.nmem = c₆.nmem := f₇.2.2.1
-  have A₇ : c₇.nreg ALLOC = c₆.nreg ALLOC := g₇ _ (by unfold ALLOC; omega)
+  have A₇ : c₇.nreg ALLOC = c₆.nreg ALLOC := g₇ _ (by ufo ALLOC)
   -- frames
   have RF₄' : Restore.RF DrvR.drvBands E.A₀ c₃ c₄ k₄ := RF.base RF₄ hA0B
   have RF₅ : Restore.RF DrvR.drvBands E.A₀ c₄ c₅ k₅ :=
     rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₅
+      exact ⟨mem_drvBands (by omega) (by omega), by ufo ALLOC⟩) f₅
   have RF₆ : Restore.RF DrvR.drvBands E.A₀ c₅ c₆ k₆ :=
-    (Restore.RF.of_frame F₆ (by rw [A₅]; omega)).mono splBands_sub le_rfl
+    (Restore.RF.of_frame F₆ (by rwo [A₅])).mono splBands_sub le_rfl
   have RF₇ : Restore.RF DrvR.drvBands E.A₀ c₆ c₇ k₇ :=
-    rf_of_frameB (inDrv_eq (q := 216010) (by norm_num) (by norm_num) (by unfold ALLOC; norm_num)) f₇
+    rf_of_frameB (inDrv_eq (q := 216010) (by norm_num) (by norm_num) (by ufn ALLOC)) f₇
   have RFall := RF₃.trans (RF₄'.trans (RF₅.trans (RF₆.trans RF₇)))
   have hktot : k₃ + (k₄ + (k₅ + (k₆ + k₇))) ≤ E.Br := by omega
   -- the memory below `A₀`
@@ -227,8 +230,8 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
   · rw [g₇ _ (by norm_num), K6 _ (by norm_num) (by norm_num), hI.r05]
   · rw [g₇ _ (by norm_num), K6 _ (by norm_num) (by norm_num), hI.r06]
   · -- the context register
-    rw [g₇ _ (by norm_num), F₆.1 _ (by decide) (by unfold ALLOC; norm_num), g₅ _ (by norm_num),
-      RF₄.1 _ (by decide) (by unfold ALLOC; norm_num), K3 _ (Or.inr (Or.inr rfl)), hI.rctx]
+    rw [g₇ _ (by norm_num), F₆.1 _ (by decide) (by ufn ALLOC), g₅ _ (by norm_num),
+      RF₄.1 _ (by decide) (by ufn ALLOC), K3 _ (Or.inr (Or.inr rfl)), hI.rctx]
   · -- the kept registers
     unfold KeepR at hq
     rw [g₇ q (by omega), keepS q (by omega), g₅ q (by omega), F4 q (by omega), hI.keep q hq]

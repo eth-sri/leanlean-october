@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.FactsTree
 public import Chazelle.Core.SpecRam
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Tree decomposition (WP-C), part 0: the record tree of a normal form
@@ -44,7 +46,7 @@ structure RecTree (N : NF) (D : ℕ) : Prop where
 
 theorem getD_of_lt {α : Type*} {l : List α} {i : ℕ} (h : i < l.length) (d : α) :
     l.getD i d = l[i] := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h]; rfl
+  rwr [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h]
 
 theorem chord_mem {N : NF} {i : ℕ} (hi : i < N.nChords) : N.chord i ∈ N.chords := by
   unfold NF.chord
@@ -101,7 +103,7 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
     RecTree N D := by
   obtain ⟨hfam, hinj, -, reg, hcorr, hsides, -, hregs, -, -, -⟩ := id hN
   have hcr := fun i (hi : i < N.nChords) => chord_regions hM hN hcorr hsides hi
-  have hregInj : ∀ a b, a < N.nRegions → b < N.nRegions → reg a = reg b → a = b := hcorr.2.1
+  have hregInj  := hcorr.2.1
   -- the touching regions of a chord, as indices
   have htouchIdx : ∀ i, i < N.nChords → ∀ r, r < N.nRegions →
       (TouchesIn M.D ((N.chord i).toSet M Q) (reg r) ↔ (N.chord i).up = r ∨ (N.chord i).dn = r) := by
@@ -150,7 +152,7 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
   obtain ⟨-, hcount, -⟩ := regionTree M Q (N.F M Q) hM hfam
   refine ⟨fun i hi => ⟨(hsides i hi).1, (hsides i hi).2.1⟩,
     fun i hi e => (hcr i hi).1 (by rw [e]), hlists, fun r hr => (hregs r hr).2.1,
-    by rw [← hRcard, ← hFcard]; exact hcount, ?_, ?_⟩
+    by rwx [← hRcard, ← hFcard], ?_, ?_⟩
   · -- connectivity
     intro r s hr hs
     have hpath := regions_reach hM hfam (hcorr.1 r hr) (hcorr.1 s hs)

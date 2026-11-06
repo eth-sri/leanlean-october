@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.NFDecompBfs
 public import Chazelle.Core.SortRam
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # Tree decomposition (WP-C), part 11: the RAM program
@@ -85,7 +87,7 @@ theorem ldF_exec {c : Config} (hw : WordsBounded W c) (d f x : ℕ)
   refine spec_step (Exec.addN hw _ _ _ hb) fun hw1 => ?_
   refine spec_step (Exec.loadN hw1 _ _) fun _ => ?_
   refine spec_nil ‹_› ⟨rfl, ?_⟩
-  simp only [Machine.upd_same]
+  simp [Machine.upd_same]
 
 /-- Spec of `stF`. -/
 theorem stF_exec {c : Config} (hw : WordsBounded W c) (f x v : ℕ) (hv : v ≠ 60030)
@@ -98,7 +100,7 @@ theorem stF_exec {c : Config} (hw : WordsBounded W c) (f x v : ℕ) (hv : v ≠ 
   refine spec_step (Exec.addN hw _ _ _ hb) fun hw1 => ?_
   refine spec_step (Exec.storeN hw1 _ _) fun _ => ?_
   refine spec_nil ‹_› ⟨rfl, ?_⟩
-  simp only [Machine.upd_same, Machine.upd_other _ _ _ hv]
+  simp [Machine.upd_same, Machine.upd_other _ _ _ hv]
 
 end spec
 
@@ -139,17 +141,17 @@ theorem DFr.trans {lo hi : ℕ} {c₁ c₂ c₃ : Config} (h₁ : DFr lo hi c₁
 theorem DRegs.of_regs {A R K CB RB LB : ℕ} {c c' : Config} (h : DRegs A R K CB RB LB c)
     (k : ∀ r, Prot r → r ≠ ALLOC → c'.nreg r = c.nreg r) : DRegs A R K CB RB LB c' := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun f hf' => ?_⟩
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.zero
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.one
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.two
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rR
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rK
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rCB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rRB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rLB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rA
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rR1
-  · rw [k _ (by unfold Prot fb; omega) (by unfold fb ALLOC; omega)]; exact h.base f hf'
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.zero
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.one
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.two
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.rR
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.rK
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.rCB
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.rRB
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.rLB
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.rA
+  · rw [k _ (by ufo Prot) (by decide)]; exact h.rR1
+  · rw [k _ (by ufo Prot fb) (by ufo fb ALLOC)]; exact h.base f hf'
 
 theorem DRegs.frame {A R K CB RB LB lo hi : ℕ} {c c' : Config} (h : DRegs A R K CB RB LB c)
     (hf : DFr lo hi c c') : DRegs A R K CB RB LB c' := h.of_regs hf.1
@@ -166,10 +168,10 @@ theorem addr_inj {A R f g i j : ℕ} (hi : i < R) (hj : j < R)
     (h : A + 12 + f * R + i = A + 12 + g * R + j) : f = g ∧ i = j := by
   rcases lt_trichotomy f g with hfg | rfl | hfg
   · have : (f + 1) * R ≤ g * R := Nat.mul_le_mul_right _ hfg
-    rw [Nat.succ_mul] at this; omega
+    rwo [Nat.succ_mul] at this
   · exact ⟨rfl, by omega⟩
   · have : (g + 1) * R ≤ f * R := Nat.mul_le_mul_right _ hfg
-    rw [Nat.succ_mul] at this; omega
+    rwo [Nat.succ_mul] at this
 
 /-- A store into field `f` at `i` changes exactly that entry of the view. -/
 theorem fv_store {m : ℕ → ℕ} {A R f i v g j : ℕ} (hi : i < R) (hj : j < R) :
@@ -189,7 +191,7 @@ theorem fv_store_out {m : ℕ → ℕ} {A R f i v a : ℕ} (hf : f < 19) (hi : i
   rcases ha with ha | ha
   · omega
   · have : (f + 1) * R ≤ 19 * R := Nat.mul_le_mul_right _ (by omega)
-    rw [Nat.succ_mul] at this; omega
+    rwo [Nat.succ_mul] at this
 
 end
 

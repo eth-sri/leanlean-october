@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.ClusterAlloc
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-I, part 67: the first phase (setup and stages A–D)
@@ -64,7 +65,7 @@ theorem B2F.congr {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have b30 := g.base_eq 30
   have hLN : ∀ j, j < g.L → ∀ x, x < g.N → j * g.N + x < g.L * g.U := fun j hj x hx => by
     have : (j + 1) * g.N ≤ g.L * g.U := Nat.mul_le_mul (by omega) (by omega)
-    rw [Nat.succ_mul] at this; omega
+    rwo [Nat.succ_mul] at this
   refine ⟨fun x hx => ?_, fun x hx => ?_, h.r0, fun x hx => ?_, fun x hx => ?_, h.R_ok, h.R_n,
     h.R_up, h.R_root, h.R_pre, fun j hj x hx => ?_⟩
   · have := x.2; rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.fpar x hx
@@ -100,7 +101,7 @@ theorem plPos_congr {μ : ℕ} {bo bo' key key' : ℕ → ℕ} (hb : ∀ w, w < 
   rw [cntLt_congr hb, hb v hv]
   congr 2
   exact Finset.filter_congr (fun w hw => by
-    simp only [hb w (Finset.mem_range.mp hw), hk w (Finset.mem_range.mp hw), hk v hv])
+    simp [hb w (Finset.mem_range.mp hw), hk w (Finset.mem_range.mp hw), hk v hv])
 
 end
 

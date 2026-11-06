@@ -4,6 +4,9 @@ public import Chazelle.Jordan.Jordan
 public import Chazelle.Programs.RayScanSpec
 public import Mathlib.Topology.Homeomorph.Lemmas
 public import Mathlib.Topology.Order.LeftRightNhds
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # First hits of horizontal rays
@@ -158,11 +161,11 @@ theorem transpose_filled (P : Polygon) : (transpose P).filled = Prod.swap ⁻¹'
 
 theorem mem_transpose_filled_iff (P : Polygon) (p : Point) :
     p ∈ (transpose P).filled ↔ p.swap ∈ P.filled := by
-  rw [transpose_filled]; rfl
+  rwr [transpose_filled]
 
 theorem mem_transpose_boundary_iff (P : Polygon) (p : Point) :
     p ∈ (transpose P).boundary ↔ p.swap ∈ P.boundary := by
-  rw [transpose_boundary]; rfl
+  rwr [transpose_boundary]
 
 /-! ### Horizontal parity -/
 
@@ -227,7 +230,7 @@ theorem hitSet_nonempty {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (h�
   obtain ⟨R, hR⟩ := filled_bounded P
   -- a far point of the ray, beyond `t₀`, leaves the square of radius `R`
   obtain ⟨s, hs0, hRs⟩ := exists_abs_add_mul_gt hσ (p.1 + σ * t₀) R
-  have hs : t₀ + s ∈ Ioi (0 : ℝ) := by simp only [mem_Ioi]; linarith
+  have hs : t₀ + s ∈ Ioi (0 : ℝ) := by sil only [mem_Ioi]
   have h3 := (hR _ (hall _ hs).1).1
   simp only [rayPt_fst] at h3
   have : p.1 + σ * (t₀ + s) = p.1 + σ * t₀ + s * σ := by ring
@@ -323,7 +326,7 @@ theorem rightHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.fi
   rcases ht0.lt_or_eq with h | h
   · have := h3 t h ht1
     rwa [rayPt_one] at this
-  · rw [← h, add_zero]; exact hq
+  · rwx [← h, add_zero]
 
 /-- The right ray from an interior point meets the boundary at a positive parameter. -/
 theorem rightHitParam_pos {P : Polygon} (hP : P.Simple) {q : Point}
@@ -352,7 +355,7 @@ theorem leftHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.fil
   rcases ht0.lt_or_eq with h | h
   · have := h3 t h ht1
     rwa [rayPt_neg_one] at this
-  · rw [← h, sub_zero]; exact hq
+  · rwx [← h, sub_zero]
 
 theorem leftHitParam_pos {P : Polygon} (hP : P.Simple) {q : Point}
     (hq : q ∈ P.filled \ P.boundary) : 0 < leftHitParam P q :=

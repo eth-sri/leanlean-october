@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.OraclePrepZipBody
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 11: the zipper loops
@@ -42,8 +46,8 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
         c'.nreg 110290 = 1 ∧ c'.nreg 110291 = z.1 ∧ c'.nreg 110292 = z.2 := by
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, o₁, -, fl₁, mir₁⟩ := prepS_exec hw h hx hxA d
   have h₁ : ZEnv P W lo C N V c₁ := h.stable (fun r hr => f₁.1 r (by
-    simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr
-    simp only [BPR, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
+    simp [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr
+    sio only [BPR, Bool.or_eq_false_iff, decide_eq_false_iff_not]))
     (fun a _ => by rw [f₁.2.2.1])
   have x₁ : c₁.nreg 110299 = x := by rw [f₁.1 _ (by decide), hx]
   have hA := h.mem.1.A
@@ -66,20 +70,20 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
     suffices H : zipF C (Qof P) N d x = normP x q by
       rw [H]; exact ⟨_, _, ex, by omega, fr, n₂, s₂⟩
     rw [hkx] at hI
-    have hqN : q < N.arcs.length := by rw [← hA]; exact hqA
-    have hxN : x < N.arcs.length := by rw [← hA]; exact hxA
+    have hqN : q < N.arcs.length := by rwx [← hA]
+    have hxN : x < N.arcs.length := by rwx [← hA]
     by_cases hne : (N.F (chainModel C) (Qof P)).Nonempty
     · have hq' := hq hne
       rw [hkx'] at hq'
       unfold zipF
       cases d
-      · simp only [Bool.false_eq_true, ite_false] at hI hq' ⊢
+      · simp [Bool.false_eq_true, ite_false] at hI hq' ⊢
         have hex : ∃ p, p < N.arcs.length ∧
             After C (Qof P) N p (mk C (ek (chainModel C) (Qof P) N x)) := ⟨q, hqN, hq'⟩
         obtain ⟨ha, hA'⟩ := aftArc_spec C (Qof P) N hex
         unfold zipEk
         rw [ite_eq_left ⟨hI, hex⟩, after_unique h.isNF h.simple hne ha hqN hA' hq', normP_comm]
-      · simp only [ite_true] at hI hq' ⊢
+      · simp [ite_true] at hI hq' ⊢
         have hex : ∃ p, p < N.arcs.length ∧
             Before C (Qof P) N p (mk C (sk (chainModel C) (Qof P) N x)) := ⟨q, hqN, hq'⟩
         obtain ⟨hb, hB'⟩ := befArc_spec C (Qof P) N hex
@@ -89,11 +93,11 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
       rw [normP_none_of_le_one hA1 (by omega) (by omega)]
       unfold zipF
       cases d
-      · simp only [Bool.false_eq_true, ite_false]
+      · simp [Bool.false_eq_true, ite_false]
         unfold zipEk; split_ifs
         · exact normP_none_of_le_one hA1 (aftArc_lt C (Qof P) N _) (by omega)
         · rfl
-      · simp only [ite_true]
+      · simp [ite_true]
         unfold zipSk; split_ifs
         · exact normP_none_of_le_one hA1 (by omega) (befArc_lt C (Qof P) N _)
         · rfl
@@ -108,15 +112,15 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
       rw [hkx] at hI
       unfold zipF
       cases d
-      · simp only [Bool.false_eq_true, ite_false] at hI ⊢
+      · simp [Bool.false_eq_true, ite_false] at hI ⊢
         unfold zipEk; rw [ite_eq_right (fun h' => hI h'.1)]
-      · simp only [ite_true] at hI ⊢
+      · simp [ite_true] at hI ⊢
         unfold zipSk; rw [ite_eq_right (fun h' => hI h'.1)]
     refine ⟨_, _, ex, by omega, fr, fun _ => by config_simp, fun z hz => ?_⟩
     rw [hnone] at hz; cases hz
 
 theorem BZB_keep {r : ℕ} (h : ZKeep r = true ∨ (110293 ≤ r ∧ r ≤ 110299)) : BZB r = false := by
-  simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at h
+  simp [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at h
   simp [BZB, BPR, BLS, BL, Bdir, Bloc, Bcmp, Bk]
   omega
 
@@ -153,22 +157,22 @@ theorem zS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : Co
     unfold zCap at hW ⊢
     have hA := h.rA
     exec_block
-    · config_simp; rw [hA]; omega
+    · config_simp; rwo [hA]
     · omega
-    · config_simp; rw [hA]; omega
-    · config_simp; rw [hA, hAl]; omega
-    · config_simp; rw [hA, hAl]; omega
+    · config_simp; rwo [hA]
+    · config_simp; rwo [hA, hAl]
+    · config_simp; rwo [hA, hAl]
     · omega
     · refine ⟨rfl, ?_, rfl, rfl, rfl, rfl⟩
       config_simp; rw [hA, hAl]
-      funext r; simp only [upd]; split_ifs <;> first | omega
+      funext r; simp [upd]; split_ifs <;> first | omega
   have R₁ : ∀ r, BZS r = false → c₁.nreg r = c.nreg r := fun r hr => by
-    simp only [BZS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [n₁]; simp only [upd]; split_ifs <;> first | omega
+    simp [BZS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+    rw [n₁]; simp [upd]; split_ifs <;> first | omega
   have h₁ : ZEnv P W lo C N V c₁ := h.stable (fun r hr => R₁ r (by
-      simp only [BZS, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+      simp [BZS, Bool.or_eq_false_iff, decide_eq_false_iff_not]
       refine ⟨⟨?_, BZB_keep (Or.inl hr)⟩, ?_⟩ <;>
-      simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr <;> omega))
+      simp [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr <;> omega))
     (fun a _ => by rw [m₁])
   have v93 : c₁.nreg 110293 = A₀ := by rw [n₁]; config_simp
   have v94 : c₁.nreg 110294 = A₀ + zCap V.A := by rw [n₁]; config_simp
@@ -179,9 +183,9 @@ theorem zS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : Co
       (∀ r, BZB r = false → r ≠ 110299 → r ≠ 110295 → r ≠ 110296 → d'.nreg r = d.nreg r) →
       (∀ a, a < A₀ → d'.nmem a = d.nmem a) → ZEnv P W lo C N V d' := fun d d' hJ hr hm =>
     hJ.stable (fun r hr' => hr r (BZB_keep (Or.inl hr')) (by
-        simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr'; omega) (by
-        simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr'; omega) (by
-        simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr'; omega))
+        sio only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr') (by
+        sio only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr') (by
+        sio only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr'))
       (fun a ha => hm a (by omega))
   -- the starts
   obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, cnt₂, pr₂, mm₂, rm₂, o₂, J₂⟩ := emitS_exec (P := P) (W := W)
@@ -195,10 +199,10 @@ theorem zS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : Co
     (fun i d hi hJ hwd hri => by
       obtain ⟨d', k, e, hk, f, a, b⟩ := zipBody_exec hwd hJ hri hi true
       exact ⟨d', k, e, hk, f, a, b⟩)
-    e₁.wb_right h₁ h₁.rA h₁.pk.one v93 v94 v95 (by unfold zCap; omega)
-    (by unfold zCap at hW ⊢; omega)
+    e₁.wb_right h₁ h₁.rA h₁.pk.one v93 v94 v95 (by ufo zCap)
+    (by ufo zCap at hW ⊢)
   rw [Nat.zero_add] at cnt₂
-  simp only [Nat.add_zero] at pr₂
+  simp [Nat.add_zero] at pr₂
   set L1 := emitted (zipSk C (Qof P) N) V.A
   have hL1 : L1.length ≤ V.A := emitted_length_le _ _
   -- the ends
@@ -217,13 +221,13 @@ theorem zS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : Co
     (fun i d hi hJ hwd hri => by
       obtain ⟨d', k, e, hk, f, a, b⟩ := zipBody_exec hwd hJ hri hi false
       exact ⟨d', k, e, hk, f, a, b⟩)
-    e₂.wb_right J₂ J₂.rA J₂.pk.one g93 g94 cnt₂ (by unfold zCap; omega)
-    (by unfold zCap at hW ⊢; omega)
+    e₂.wb_right J₂ J₂.rA J₂.pk.one g93 g94 cnt₂ (by ufo zCap)
+    (by ufo zCap at hW ⊢)
   set L2 := emitted (zipEk C (Qof P) N) V.A
   have hL2 : L2.length ≤ V.A := emitted_length_le _ _
   have hB : ∀ r, BZS r = false → BZB r = false ∧ r ≠ 110299 ∧ r ≠ 110295 ∧ r ≠ 110296 := by
     intro r hr
-    simp only [BZS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+    simp [BZS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
     exact ⟨hr.1.2, by omega, by omega, by omega⟩
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ?_, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
     fun a _ => by rw [rm₃, rm₂, rm₁], by rw [o₃, o₂, o₁]⟩, ?_, ?_, ?_, ?_, ?_, ?_, J₃⟩
@@ -244,7 +248,7 @@ theorem zS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : Co
       r₂ _ (BZB_keep (Or.inr (by norm_num))) (by decide) (by decide) (by decide), v97]
   · rw [cnt₃, List.length_append]
   · refine PairsAt.append (PairsAt.congr pr₂ fun t ht => ⟨mm₃ _ (Or.inl (by omega)),
-      mm₃ _ (Or.inr (Or.inl ⟨by unfold zCap at *; omega, by omega⟩))⟩) pr₃
+      mm₃ _ (Or.inr (Or.inl ⟨by ufo zCap at *, by omega⟩))⟩) pr₃
 
 end
 

@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvRPlC
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase driver (RAM side): the leaf planner, part 4 (`plS_exec`)
@@ -26,12 +30,12 @@ theorem hostLeaves_take_drop (n C : ℕ) (H : Host) (i : ℕ) :
 
 theorem hostLeaves_take_le (n C : ℕ) (H : Host) (i : ℕ) :
     (hostLeaves n C 0 (H.take i)).length ≤ (hostLeaves n C 0 H).length := by
-  rw [hostLeaves_take_drop n C H i, List.length_append]; omega
+  rwo [hostLeaves_take_drop n C H i, List.length_append]
 
 theorem pts_take_le (n : ℕ) (H : Host) (i : ℕ) :
     (Host.pts n (H.take i)).length ≤ (Host.pts n H).length := by
   conv_rhs => rw [← List.take_append_drop i H]
-  rw [DownMath.pts_append, List.length_append]; omega
+  rwo [DownMath.pts_append, List.length_append]
 
 /-- The loop invariant of the planner after `i` items. -/
 structure PlI (W n C HB T len K : ℕ) (H : Host) (c₀ : Config) (i : ℕ) (c : Config) : Prop where
@@ -54,7 +58,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The leaf planner.** -/
 theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : WordsBounded W c)
     {H : Host} {HB : ℕ} (h00 : c.nreg 219000 = HB) (h02 : c.nreg 219002 = C)
@@ -95,8 +98,8 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
   have h0p : (Host.pts P.n (H.take 0)).length = 0 := by simp [Host.pts]
   have I₁ : PlI W P.n C HB T len K H c 0 c₁ :=
     { wb := w₁, kc := ⟨x01, x02, x17, x18, x19, x20, x26⟩, r05 := x05, r06 := x06,
-      r08 := by rw [x08], r07 := by rw [x07, h0p], r16 := by rw [x16, h0]; simp,
-      r04 := by rw [x04, h0]; simp, r03 := x03, rA := xA, il := Nat.zero_le _,
+      r08 := by rw [x08], r07 := by rw [x07, h0p], r16 := by rws [x16, h0],
+      r04 := by rws [x04, h0], r03 := x03, rA := xA, il := Nat.zero_le _,
       tab := fun i hi => by rw [h0] at hi; simp at hi, low := fun a _ => by rw [xm],
       fr := fr₁ }
   -- the item loop
@@ -121,9 +124,9 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
       cases it with
       | run a ℓ =>
         obtain ⟨x1, x2, x3⟩ := hHi
-        exact ⟨by rw [l0]; exact x1,
-          by rw [l1, show HB + 1 + 3 * i + 1 = HB + 2 + 3 * i by omega]; exact x2,
-          by rw [l2, show HB + 1 + 3 * i + 2 = HB + 3 + 3 * i by omega]; exact x3⟩
+        exact ⟨by rwx [l0],
+          by rwx [l1, show HB + 1 + 3 * i + 1 = HB + 2 + 3 * i by omega],
+          by rwx [l2, show HB + 1 + 3 * i + 2 = HB + 3 + 3 * i by omega]⟩
       | pt x =>
         cases x with
         | vtx j => show c₂.nmem _ = 1; rw [l0]; exact hHi.1
@@ -145,11 +148,11 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     have gI : ∀ r, Bitem r = false → c₃.nreg r = c₂.nreg r := bf.1
     refine ⟨c₃, k₃, e₃, ⟨i + 1, ?_⟩, ?_⟩
     · refine ⟨e₃.wb_right, I.kc.keep fun r hr => gI r (by
-          simp only [Bitem, Brun, Bch, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
-        b05, by rw [gI _ (by decide), I.r06], by rw [b08]; ring, ?_, ?_, ?_,
+          sio only [Bitem, Brun, Bch, Bool.or_eq_false_iff, decide_eq_false_iff_not]),
+        b05, by rw [gI _ (by decide), I.r06], by rwring [b08], ?_, ?_, ?_,
         by rw [gI _ (by decide), I.r03], by rw [gI _ (by decide), I.rA], by omega, ?_, ?_, ?_⟩
       · rw [b07, hpsucc]
-      · rw [b16, hsucc, List.length_append]; ring
+      · rwring [b16, hsucc, List.length_append]
       · rw [b04, hsucc, List.length_append]
       · rw [hsucc]
         exact clAt_append (clAt_congr I.tab fun x _ hx => bm x (Or.inl hx)) bL
@@ -181,7 +184,7 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
   · rw [I₁.r05, I₁.r04, h0] at hk₂
     omega
   · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact I₂.r03
-  · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact r04₂
+  · simp only; rwx [Machine.upd_other _ _ _ (by decide)]
   · show upd c₂.nreg 9999 (c₂.nreg 219016) 9999 = T + 3 * K
     rw [Machine.upd_same, r16₂]
   · exact tab₂

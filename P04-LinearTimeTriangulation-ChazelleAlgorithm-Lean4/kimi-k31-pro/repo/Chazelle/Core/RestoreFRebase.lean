@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.RestoreFTest
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 24: rebasing
@@ -26,11 +28,11 @@ variable {E : FEnv} {c₀ c₀' : Config}
 
 /-- **Rebasing the run facts.** -/
 theorem FGood.rebase (hE : FGood E c₀) (hI : FInv E.W c₀ c₀') : FGood (E.re c₀') c₀' := by
-  have hag : ∀ a, a < E.A₀ → c₀'.nmem a = E.m₀ a := hI.agree hE
-  have hA : E.A₀ ≤ c₀'.nreg ALLOC := hI.allocA hE
+  have hag  := hI.agree hE
+  have hA  := hI.allocA hE
   have hag' : ∀ a, a < E.A₀ → E.m₀ a = c₀'.nmem a := fun a ha => (hag a ha).symm
   obtain ⟨hMD', hwf'⟩ := Gran.desc_agree' hE.hwf hE.hMD hag
-  have hfx : ∀ q, FFix q → c₀'.nreg q = c₀.nreg q := hI.hin
+  have hfx  := hI.hin
   have hMD0 : c₀'.nmem E.MD = E.m₀ E.MD := hag _ (by have := hE.hwf.1; omega)
   have hback : c₀'.nmem E.MD = 0 → ∀ H C, ChainDescAt c₀'.nmem (E.MD + 1) (Qof E.P) H C →
       ChainDescAt E.m₀ (E.MD + 1) (Qof E.P) H C := fun h0 H C hC => by
@@ -44,38 +46,38 @@ theorem FGood.rebase (hE : FGood E c₀) (hI : FInv E.W c₀ c₀') : FGood (E.r
       show E.γ ≤ E.X.cap E.P c₀'.nmem E.g
       rw [hE.hloc _ _ _ _ _ hag hE.hX]; exact hE.hcap
     hwf := hwf'.mono hA
-    hreg := fun h0 H C hC => hE.hreg (by rw [← hMD0]; exact h0) H C (hback h0 H C hC)
-    hsimp := fun h0 H C hC => hE.hsimp (by rw [← hMD0]; exact h0) H C (hback h0 H C hC)
+    hreg := fun h0 H C hC => hE.hreg (by rwx [← hMD0]) H C (hback h0 H C hC)
+    hsimp := fun h0 H C hC => hE.hsimp (by rwx [← hMD0]) H C (hback h0 H C hC)
     hMD := hMD', hGM := hE.hGM, hOk := hE.hOk,
     hNW := (Robust.transport hE.hNW hag).mono hA
     hNF := hE.hNF, hdeg := hE.hdeg, hsg := hE.hsg, hr := hE.hr, a0 := rfl, m0 := rfl,
-    i0 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i0
-    i1 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i1
-    i2 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i2
-    i3 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i3
-    i4 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i4
-    i5 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i5
-    i6 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.i6
-    k0 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k0
-    k1 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k1
-    k2 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k2
-    k3 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k3
-    k5 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k5
-    k7 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k7
-    pn := by rw [hfx _ (by unfold FFix; omega)]; exact hE.pn
-    nE := by rw [hfx _ (by unfold FFix; omega)]; exact hE.nE
-    hE2 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.hE2
-    wn := by rw [hfx _ (by unfold FFix; omega)]; exact hE.wn
-    k10 := by rw [hfx _ (by unfold FFix; omega)]; exact hE.k10
+    i0 := by rw [hfx _ (by ufo FFix)]; exact hE.i0
+    i1 := by rw [hfx _ (by ufo FFix)]; exact hE.i1
+    i2 := by rw [hfx _ (by ufo FFix)]; exact hE.i2
+    i3 := by rw [hfx _ (by ufo FFix)]; exact hE.i3
+    i4 := by rw [hfx _ (by ufo FFix)]; exact hE.i4
+    i5 := by rw [hfx _ (by ufo FFix)]; exact hE.i5
+    i6 := by rw [hfx _ (by ufo FFix)]; exact hE.i6
+    k0 := by rw [hfx _ (by ufo FFix)]; exact hE.k0
+    k1 := by rw [hfx _ (by ufo FFix)]; exact hE.k1
+    k2 := by rw [hfx _ (by ufo FFix)]; exact hE.k2
+    k3 := by rw [hfx _ (by ufo FFix)]; exact hE.k3
+    k5 := by rw [hfx _ (by ufo FFix)]; exact hE.k5
+    k7 := by rw [hfx _ (by ufo FFix)]; exact hE.k7
+    pn := by rw [hfx _ (by ufo FFix)]; exact hE.pn
+    nE := by rw [hfx _ (by ufo FFix)]; exact hE.nE
+    hE2 := by rw [hfx _ (by ufo FFix)]; exact hE.hE2
+    wn := by rw [hfx _ (by ufo FFix)]; exact hE.wn
+    k10 := by rw [hfx _ (by ufo FFix)]; exact hE.k10
     hvr := by
-      rw [hfx 81021 (by unfold FFix; omega), hfx 81019 (by unfold FFix; omega)]; exact hE.hvr
+      rw [hfx 81021 (by ufo FFix), hfx 81019 (by ufo FFix)]; exact hE.hvr
     hvc := by
-      rw [hfx 81021 (by unfold FFix; omega), hfx 81019 (by unfold FFix; omega)]; exact hE.hvc
-    vlo6 := by rw [hfx 81021 (by unfold FFix; omega)]; exact hE.vlo6
+      rw [hfx 81021 (by ufo FFix), hfx 81019 (by ufo FFix)]; exact hE.hvc
+    vlo6 := by rw [hfx 81021 (by ufo FFix)]; exact hE.vlo6
     ehr := by
-      rw [hfx 81021 (by unfold FFix; omega), hfx 81025 (by unfold FFix; omega)]; exact hE.ehr
+      rw [hfx 81021 (by ufo FFix), hfx 81025 (by ufo FFix)]; exact hE.ehr
     ehc := by
-      rw [hfx 81021 (by unfold FFix; omega), hfx 81025 (by unfold FFix; omega)]; exact hE.ehc }
+      rw [hfx 81021 (by ufo FFix), hfx 81025 (by ufo FFix)]; exact hE.ehc }
 
 /-- **A run step from a later base** is a run step from the earlier one. -/
 theorem FRS.restrict {B : Finset ℕ} {P : Polygon} {W : ℕ} {s : Stmt} {c : Config} {K : ℕ}

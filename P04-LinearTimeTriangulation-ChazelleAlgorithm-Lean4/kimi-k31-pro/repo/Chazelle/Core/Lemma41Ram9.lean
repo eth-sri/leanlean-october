@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.Lemma41Ram8
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-J, part 17: the shapes of the next level, and the carry
@@ -27,7 +33,7 @@ theorem pairUp_length : ∀ (l : List Shp) (t : ℕ), (pairUp l t).length = (l.l
   | [], _ => by simp [pairUp]
   | [_], _ => by simp [pairUp]
   | a :: b :: rest, t => by
-    simp only [pairUp, List.length_cons, pairUp_length rest t]; omega
+    sio only [pairUp, List.length_cons, pairUp_length rest t]
 
 theorem nd_cons_succ (a : Shp) (l : List Shp) (k : ℕ) : nd (a :: l) (k + 1) = nd l k := by
   simp [nd]
@@ -41,7 +47,7 @@ theorem nd_pairUp_merge : ∀ (l : List Shp) (t q : ℕ), q < l.length / 2 →
   | a :: b :: rest, t, 0, _ => by
     simp only [pairUp, Nat.mul_zero, Nat.zero_add, nd_cons_zero, nd_cons_succ]
   | a :: b :: rest, t, q + 1, h => by
-    have ih := nd_pairUp_merge rest t q (by simp only [List.length_cons] at h; omega)
+    have ih := nd_pairUp_merge rest t q (by sio only [List.length_cons] at h)
     have e1 : nd (a :: b :: rest) (2 * (q + 1)) = nd rest (2 * q) := by
       rw [show 2 * (q + 1) = 2 * q + 1 + 1 by ring, nd_cons_succ, nd_cons_succ]
     have e2 : nd (a :: b :: rest) (2 * (q + 1) + 1) = nd rest (2 * q + 1) := by
@@ -82,20 +88,20 @@ theorem consec_pairUp {l : List Shp} (t : ℕ) (h : Consec l) : Consec (pairUp l
   rw [nd_pairUp_merge l t q hq0]
   have e1 : (nd (pairUp l t) (q + 1)).1 = (nd l (2 * q + 2)).1 := by
     rcases Nat.lt_or_ge (q + 1) (l.length / 2) with h1 | h1
-    · rw [nd_pairUp_merge l t (q + 1) h1]; rfl
+    · rwr [nd_pairUp_merge l t (q + 1) h1]
     · have hodd : l.length % 2 = 1 := by omega
       have := nd_pairUp_carry l t hodd
       rw [show l.length / 2 = q + 1 by omega, show l.length - 1 = 2 * q + 2 by omega] at this
       rw [this]
   rw [e1, h (2 * q + 1) (by omega), h (2 * q) (by omega)]
-  simp only; ring
+  sir only
 
 theorem pairUp_sum : ∀ (l : List Shp) (t : ℕ),
     ((pairUp l t).map fun x => x.2.1).sum = (l.map fun x => x.2.1).sum
   | [], _ => rfl
   | [_], _ => rfl
   | a :: b :: rest, t => by
-    simp only [pairUp, List.map_cons, List.sum_cons, pairUp_sum rest t]; ring
+    sir only [pairUp, List.map_cons, List.sum_cons, pairUp_sum rest t]
 
 /-- The granularities of the next level are at most the target. -/
 theorem pairUp_gran {l : List Shp} {t γ₀ : ℕ} (hγ : ∀ k, k < l.length → (nd l k).2.2 ≤ γ₀)
@@ -114,7 +120,7 @@ theorem pairUp_gran_pos {l : List Shp} {t : ℕ} (hγ : ∀ k, k < l.length → 
   intro k hk
   rw [pairUp_length] at hk
   rcases Nat.lt_or_ge k (l.length / 2) with h1 | h1
-  · rw [nd_pairUp_merge l t k h1]; exact ht
+  · rwx [nd_pairUp_merge l t k h1]
   · have hodd : l.length % 2 = 1 := by omega
     have := nd_pairUp_carry l t hodd
     rw [show k = l.length / 2 by omega, this]
@@ -139,7 +145,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 theorem carryB_exec {c : Config} (hw : WordsBounded W c) {E ptr prev j : ℕ}
     (hA : c.nreg ALLOC = E) (h65 : c.nreg 160065 = ptr) (h63 : c.nreg 160063 = prev)
     (h64 : c.nreg 160064 = j) (h24 : c.nreg 160024 = 1) (h83 : c.nreg 160083 = 3)
@@ -158,9 +163,9 @@ theorem carryB_exec {c : Config} (hw : WordsBounded W c) {E ptr prev j : ℕ}
   all_goals try (config_simp; (try simp only [hA, h65, h64, h24, h83]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun a ha => ?_, ?_, ?_, ?_,
     fun r a1 a2 a3 a4 a5 a6 a7 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h65, h24, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h65, h24, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h63, h24, Machine.upd_apply]; split_ifs <;> omega
+  · config_simp; simp only [hA, h65, h24, Machine.upd_apply]; splao
+  · config_simp; simp only [hA, h65, h24, Machine.upd_apply]; splao
+  · config_simp; simp only [hA, h63, h24, Machine.upd_apply]; splao
   · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega
   · config_simp; simp only [hA, h83]
   · config_simp; simp only [hA]
@@ -168,7 +173,6 @@ theorem carryB_exec {c : Config} (hw : WordsBounded W c) {E ptr prev j : ℕ}
   · simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 16000000 in
 /-- **The carry.** -/
 theorem carryS_exec {X : MemCtx} {c0 c : Config} {A0 B hp hX tgt : ℕ} {ns : List Shp}
     {pcs : ℕ → ℕ} (hj : 1 ≤ ns.length)
@@ -192,13 +196,13 @@ theorem carryS_exec {X : MemCtx} {c0 c : Config} {A0 B hp hX tgt : ℕ} {ns : Li
   set np := j / 2 with hnp
   have hlen' : (pairUp ns tgt).length = (j + 1) / 2 := pairUp_length ns tgt
   have c14 : c.nreg 160014 = j := by
-    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)]
+    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rwo [hAl])]
     exact h14
   have c24 : c.nreg 160024 = 1 := by
-    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)]
+    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rwo [hAl])]
     exact h24
   have c83 : c.nreg 160083 = 3 := by
-    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)]
+    rw [cr _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rwo [hAl])]
     exact h83
   -- the merged nodes as cells
   have merged : ∀ (m : ℕ → ℕ) (A : ℕ), c.nreg ALLOC ≤ A →
@@ -219,12 +223,12 @@ theorem carryS_exec {X : MemCtx} {c0 c : Config} {A0 B hp hX tgt : ℕ} {ns : Li
     obtain ⟨c', k, e, hk, hw', w0, w1, w2, hm', hA', q63, q64, fr', hrr', hrm', ho'⟩ :=
       carryB_exec (P := P) hwc rfl c65 rfl c64 c24 c83 hW (by omega) (by omega)
     have hptr : B + 4 * np = B + 2 * (j - 1) := by omega
-    refine ⟨c', k + 1, .ifLtN_true (by rw [c62, c14]; exact hodd) e, by omega, hw',
+    refine ⟨c', k + 1, .ifLtN_true (by rwx [c62, c14]) e, by omega, hw',
       by omega, by omega, by omega, fun a ha => hm' a (Or.inl ha), hrm', ho', hrr',
-      fun r h1 h2 => fr' r (by unfold PairRG at h1; omega) (by unfold PairRG at h1; omega)
-        (by unfold PairRG at h1; omega) (by unfold PairRG at h1; omega)
-        (by unfold PairRG at h1; omega) (by unfold PairRG at h1; omega) h2,
-      by rw [q64, hlen']; omega, fun q => if q = np then c.nreg ALLOC else ee q,
+      fun r h1 h2 => fr' r (by ufo PairRG at h1) (by ufo PairRG at h1)
+        (by ufo PairRG at h1) (by ufo PairRG at h1)
+        (by ufo PairRG at h1) (by ufo PairRG at h1) h2,
+      by rwo [q64, hlen'], fun q => if q = np then c.nreg ALLOC else ee q,
       fun q hq => ?_, ?_, fun q hq => ?_⟩
     · rw [hlen'] at hq
       rcases Nat.lt_or_ge q np with hq1 | hq1
@@ -252,9 +256,9 @@ theorem carryS_exec {X : MemCtx} {c0 c : Config} {A0 B hp hX tgt : ℕ} {ns : Li
       · simp only [show q = np by omega, ite_true]; exact cA0
   · -- nothing to carry
     have heven : 2 * np = j := by omega
-    refine ⟨c, 2, .ifLtN_false (by rw [c62, c14]; exact hodd) (.skip hwc), by omega, hwc,
+    refine ⟨c, 2, .ifLtN_false (by rwx [c62, c14]) (.skip hwc), by omega, hwc,
       le_rfl, by omega, by omega, fun _ _ => rfl, rfl, rfl, rfl, fun _ _ _ => rfl,
-      by rw [c64, hlen']; omega, ee, fun q hq => ?_, ?_, fun q hq => ?_⟩
+      by rwo [c64, hlen'], ee, fun q hq => ?_, ?_, fun q hq => ?_⟩
     · rw [hlen'] at hq
       exact merged c.nmem (c.nreg ALLOC) le_rfl (fun _ _ => rfl) q (by omega)
     · rw [hprev (by omega), hlen']; congr 1; omega

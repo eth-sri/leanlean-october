@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvTFiltL
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Down-phase transition (D2), RAM part 5: the filter procedure
@@ -61,7 +65,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
 theorem fSetup_exec (c : Config) (hw : WordsBounded W c) {A Bn K₀ CB b : ℕ}
     (hA : c.nreg 9999 = A) (hBn : c.nreg 230002 = Bn) (hBnA : Bn + 11 < A)
     (hK : c.nmem Bn = K₀) (hCB : c.nmem (Bn + 3) = CB) (hb : c.nreg 190001 = b)
@@ -84,7 +87,7 @@ theorem fSetup_exec (c : Config) (hw : WordsBounded W c) {A Bn K₀ CB b : ℕ}
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hA, hBn, hK, hCB, hb]
   all_goals try omega
-  all_goals (try simp only [Machine.upd_apply])
+  all_goals (try simp [Machine.upd_apply])
 
 /-- The records of a robust normal form, as triples. -/
 theorem recsT_of_nfAt {A : ℕ} {m m' : ℕ → ℕ} {B : ℕ} {N : NF}
@@ -103,9 +106,9 @@ theorem recsT_of_nfAt {A : ℕ} {m m' : ℕ → ℕ} {B : ℕ} {N : NF}
       List.getElem?_eq_getElem hi', Option.getD_some]
   rw [hg]
   refine ⟨?_, ?_, ?_⟩
-  · rw [hm _ (by omega)]; exact e1
-  · rw [hm _ (by omega)]; exact e2
-  · rw [hm _ (by omega)]; exact e3
+  · rwx [hm _ (by omega)]
+  · rwx [hm _ (by omega)]
+  · rwx [hm _ (by omega)]
 
 /-- The list of a full pass, in memory. -/
 theorem chordListAt_memT {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' : ℕ}
@@ -120,13 +123,12 @@ theorem chordListAt_memT {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀
       omega]
   refine ⟨?_, ?_, ?_⟩
   · have := hq 0 (by norm_num); rw [Nat.add_zero, Nat.add_zero] at this; rw [this]
-    unfold tw; rw [show 3 * j % 3 = 0 by omega, show 3 * j / 3 = j by omega]; simp
+    urs tw [show 3 * j % 3 = 0 by omega, show 3 * j / 3 = j by omega]
   · rw [hq 1 (by norm_num)]
-    unfold tw; rw [show (3 * j + 1) % 3 = 1 by omega, show (3 * j + 1) / 3 = j by omega]; simp
+    urs tw [show (3 * j + 1) % 3 = 1 by omega, show (3 * j + 1) / 3 = j by omega]
   · rw [hq 2 (by norm_num)]
-    unfold tw; rw [show (3 * j + 2) % 3 = 2 by omega, show (3 * j + 2) / 3 = j by omega]; simp
+    urs tw [show (3 * j + 2) % 3 = 2 by omega, show (3 * j + 2) / 3 = j by omega]
 
-set_option maxHeartbeats 4000000 in
 /-- **The filter procedure.** -/
 theorem filtS_exec (c : Config) (hw : WordsBounded W c) {N : NF} {li : Bool} {n c₀ : ℕ}
     (hN : Robust (c.nreg ALLOC) c.nmem (fun m => NFAt m (c.nreg 230002) N))
@@ -157,9 +159,9 @@ theorem filtS_exec (c : Config) (hw : WordsBounded W c) {N : NF} {li : Bool} {n 
     rw [mm₁, ite_eq_right (by omega), ite_eq_right (by omega)]
   have hR := recsT_of_nfAt hN hlow₁
   have hI₁ : FInv c₁.nmem li n c₀ (triplesOf N) (c.nmem (Bn + 3)) (A + 6) c₁ c₁ :=
-    { i_le := by rw [v30]; omega
+    { i_le := by rwo [v30]
       rK := by rw [v23, hlen₀]
-      r31 := by rw [v31, v30]; ring
+      r31 := by rwring [v31, v30]
       r35 := by rw [v35, v30]; simp [rankF]
       r36 := by rw [v36, v30]; simp [rankF]
       r10 := by rw [g₁ _ (by norm_num) (by norm_num), h10]
@@ -183,9 +185,9 @@ theorem filtS_exec (c : Config) (hw : WordsBounded W c) {N : NF} {li : Bool} {n 
       have : c.nmem (Bn + 3) + 5 * (K₀ - 1) + 4 < A := this
       omega
   obtain ⟨c₂, k₂, e₂, hw₂, hI₂, h30, hk₂, hk₂'⟩ := fLoop_exec (P := P) hR hCB
-    (by rw [hlen₀]; omega) e₁.wb_right hI₁ v30
+    (by rwo [hlen₀]) e₁.wb_right hI₁ v30
   rw [hlen₀] at hk₂ hk₂' h30
-  have g₂ : ∀ r, (r < 190030 ∨ 190039 < r) → c₂.nreg r = c₁.nreg r := hI₂.fr
+  have g₂  := hI₂.fr
   refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     hI₂.rr.trans rr₁, hI₂.rm.trans rm₁, hI₂.out.trans o₁⟩
   · rw [g₂ _ (by norm_num), v21]

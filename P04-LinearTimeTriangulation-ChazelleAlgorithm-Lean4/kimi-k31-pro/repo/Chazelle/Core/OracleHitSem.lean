@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.OracleRamEdge
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 12: the meaning of the scan steps
@@ -69,8 +71,8 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
     refine hD _ _ hen (Nat.mod_lt _ (by omega)) ?_
     intro h
     rcases Nat.lt_or_ge (e + 1) Q.n with h' | h'
-    · rw [Nat.mod_eq_of_lt h'] at h; omega
-    · rw [show e + 1 = Q.n by omega, Nat.mod_self] at h; omega
+    · rwo [Nat.mod_eq_of_lt h'] at h
+    · rwo [show e + 1 = Q.n by omega, Nat.mod_self] at h
   have hspec := edgeHit_spec Q hne hzy hσ
   rw [he]
   suffices hiff : (Spans Q e hz ∧ 0 < σ * (xe Q e hz - z.1)) ↔ HitC Q s hz σ zo ci by
@@ -123,7 +125,7 @@ theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeigh
       · have hb := hall cb rfl
         have hcb := spans_of_vOf_pos (show FirstHit S z σ (vOf Q s hz σ z cb) from hS).1
         have hlt : vOf Q s hz σ z ci < vOf Q s hz σ z cb := by
-          rw [vOf_of_spans hh.1, vOf_of_spans hcb, better_iff hσ]; exact hb
+          rwx [vOf_of_spans hh.1, vOf_of_spans hcb, better_iff hσ]
         show some (vOf Q s hz σ z ci) = some (min (vOf Q s hz σ z cb) (vOf Q s hz σ z ci))
         rw [min_eq_right hlt.le]
     · rw [ite_eq_right (fun h => hall h.2)]

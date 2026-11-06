@@ -174,7 +174,7 @@ theorem Robust.mono {A A' : ℕ} {m : ℕ → ℕ} {Φ : (ℕ → ℕ) → Prop}
 theorem Robust.frame {B : Finset ℕ} {c c' : Config} {k : ℕ} {Φ : (ℕ → ℕ) → Prop}
     (h : Robust (c.nreg ALLOC) c.nmem Φ) (hf : Frame B c c' k) :
     Robust (c'.nreg ALLOC) c'.nmem Φ :=
-  (h.transport fun a ha => hf.2.2.1 a ha).mono hf.2.2.2.2.2.1
+  (h.transport hf.2.2.1).mono hf.2.2.2.2.2.1
 
 /-- A normal form protected below `E` can be read. -/
 theorem NFWithin.nfAt {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) : NFAt m B N :=

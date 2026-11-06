@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseDropWt
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (B3′, part 10): degrees after dropping a bottom block of chords
@@ -48,8 +50,8 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
     · linarith [hF' c hc' z hzc, hz.2.2]
     · linarith [hW c hc hc' z hzc, hz.2.1]
   set p0 : Point := (0, (ys + yp) / 2)
-  have hp0 : p0 ∈ Up := ⟨⟨by simp [p0]; linarith, by simp [p0]; linarith⟩,
-    ⟨by simp [p0]; linarith, by simp [p0]; linarith⟩⟩
+  have hp0 : p0 ∈ Up := ⟨⟨by sil [p0], by sil [p0]⟩,
+    ⟨by sil [p0], by sil [p0]⟩⟩
   set X := connectedComponentIn (freeIn D F) p0 with hXdef
   have hXr : X ∈ regionsIn D F := ⟨p0, hUpF hp0, rfl⟩
   have hXo : IsOpen X := hsys.regionsIn_open subset_rfl hXr
@@ -73,8 +75,8 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
     have hwY : w ∈ Y := mem_connectedComponentIn hw
     obtain ⟨v, hvY, hvX⟩ := mem_closure_iff.1 hwc Y hYo hwY
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hYr hXr with h | h
-    · rw [← h]; exact hwY
-    · exact absurd (h.le_bot ⟨hvY, hvX⟩) (fun h => h)
+    · rwx [← h]
+    · exact absurd (h.le_bot ⟨hvY, hvX⟩) (id)
   intro W hWr
   have hWF' : W ⊆ freeIn D F' := Chazelle.Chain.regionsIn_subset hWr
   have hfin' : {c | c ∈ F ∧ TouchesIn D c X}.Finite := hfin.subset fun c hc => hc.1
@@ -98,7 +100,7 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
         · by_cases hwy : w.2 < yp
           · exact Or.inl ⟨⟨hb1.1, hb1.2⟩, ⟨hb2.1, hwy⟩⟩
           · have := hclU' hwc
-            simp only [mem_ofPred_eq] at this
+            simp [mem_ofPred_eq] at this
             exact Or.inr (hfreeX w hwfree (hclU w hwc (by linarith)))
         · exact Or.inr (hfreeX w hwfree hwc)
     refine le_trans (Set.ncard_le_ncard ?_ hfin') (hd X hXr)

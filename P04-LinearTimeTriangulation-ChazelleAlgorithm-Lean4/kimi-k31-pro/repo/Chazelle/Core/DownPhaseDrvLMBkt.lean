@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvLMHost
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Down-phase level math (D7), part 2: the buckets of the extracted chord ends
@@ -33,7 +38,7 @@ theorem keyBkt_le (Q : Polygon) (N : NF) (x : WPos) : keyBkt Q N x ≤ 2 * N.arc
   have := List.length_filter_le (fun j => decide ((interiorModel Q).key Q (N.arc j).s <
     (interiorModel Q).key Q x)) (List.range N.arcs.length)
   rw [List.length_range] at this
-  split_ifs <;> omega
+  splao
 
 /-- Filtering a range by a stronger predicate, with a witness, is shorter. -/
 theorem filter_range_lt {p p' : ℕ → Bool} (hpp : ∀ i, p i = true → p' i = true) {A j : ℕ}
@@ -68,19 +73,19 @@ theorem keyBkt_mono (Q : Polygon) (N : NF) {x y : WPos}
         ((List.range N.arcs.length).filter fun j =>
           decide ((interiorModel Q).key Q (N.arc j).s < (interiorModel Q).key Q x)).length :=
       (List.monotone_filter_right _ (fun {i} hi => by
-        simp only [decide_eq_true_eq] at hi ⊢; linarith)).length_le
+        sil only [decide_eq_true_eq] at hi ⊢)).length_le
     by_cases hex : ∃ j, j < N.arcs.length ∧
         (interiorModel Q).key Q (N.arc j).s = (interiorModel Q).key Q y
     · obtain ⟨j, hj, hjy⟩ := hex
       have hlt := filter_range_lt (A := N.arcs.length) (j := j)
         (p := fun j => decide ((interiorModel Q).key Q (N.arc j).s < (interiorModel Q).key Q y))
         (p' := fun j => decide ((interiorModel Q).key Q (N.arc j).s < (interiorModel Q).key Q x))
-        (fun i hi => by simp only [decide_eq_true_eq] at hi ⊢; linarith) hj
-        (by simp only [decide_eq_true_eq]; linarith) (by simp [hjy])
+        (fun i hi => by sil only [decide_eq_true_eq] at hi ⊢) hj
+        (by sil only [decide_eq_true_eq]) (by simp [hjy])
       rw [ite_eq_left ⟨j, hj, hjy⟩]
-      split_ifs <;> omega
+      splao
     · rw [ite_eq_right hex]
-      split_ifs <;> omega
+      splao
   · unfold keyBkt; rw [h]
 
 /-- **A smaller bucket means a smaller key.** -/
@@ -117,7 +122,7 @@ theorem bcnt_add (bk : ℕ → ℕ) (a c b : ℕ) :
   | zero => simp [bcnt, bfilt]
   | succ c ih =>
     rw [← Nat.add_assoc, DrvR.bcnt_succ, ih, DrvR.bcnt_succ (bk := fun q => bk (a + q))]
-    split_ifs <;> omega
+    splao
 
 /-- The number of ends of `l` in bucket `b`. -/
 noncomputable def cntB (Q : Polygon) (N : NF) (l : List (ℕ × ℕ × ℕ)) (b : ℕ) : ℕ :=
@@ -187,7 +192,7 @@ theorem cntB_flat_le {Lx : ℕ → List (ℕ × ℕ × ℕ)} {R M b : ℕ} (rA r
       rw [h0]; exact Nat.zero_le _
   refine (Finset.sum_le_sum hper).trans ?_
   rw [Finset.sum_add_distrib, Finset.sum_ite_eq', Finset.sum_ite_eq']
-  split_ifs <;> omega
+  splao
 
 end count
 
@@ -244,7 +249,7 @@ theorem kE_const (hsort : E.Pairwise (codeLe (interiorModel Q) Q L)) {a b : ℕ}
 theorem gs_of_mem {m : ℕ} (hm : m ∈ gapStarts (interiorModel Q) Q L E) :
     ∃ k, k < (gapStarts (interiorModel Q) Q L E).length ∧ DrvD.gs (interiorModel Q) Q L E k = m := by
   obtain ⟨k, hk, hkm⟩ := List.mem_iff_getElem.1 hm
-  exact ⟨k, hk, by rw [DrvD.gs_eq hk]; exact hkm⟩
+  exact ⟨k, hk, by rwx [DrvD.gs_eq hk]⟩
 
 theorem gs_strict {k k' : ℕ} (hk : k < (gapStarts (interiorModel Q) Q L E).length)
     (_hk' : k' < (gapStarts (interiorModel Q) Q L E).length)
@@ -266,8 +271,8 @@ theorem len_filter_lt (c A : ℕ) :
   | succ A ih =>
     rw [List.range_succ, List.filter_append, List.length_append, ih]
     by_cases h : A < c
-    · simp [h]; omega
-    · simp [h]; omega
+    · sio [h]
+    · sio [h]
 
 /-- The bucket of a key, from the number `c` of arc starts below it. -/
 theorem keyBkt_eq {x : WPos} {A c : ℕ}
@@ -287,7 +292,7 @@ theorem keyBkt_eq {x : WPos} {A c : ℕ}
     refine List.filter_congr fun i hi => ?_
     rw [List.mem_range] at hi
     exact decide_eq_decide.2 (h i hi)
-  have hm : min (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length c = c := Nat.min_eq_right hc
+  have hm  := Nat.min_eq_right hc
   constructor
   · intro hex
     unfold st at hex
@@ -310,7 +315,7 @@ include hK hperm hsort
 
 omit hK hperm hsort in
 theorem hElen (hK : 0 < L.length) (hperm : E.Perm (List.range (2 * L.length)))
-    (_hsort : E.Pairwise (codeLe (interiorModel Q) Q L)) : 0 < E.length := by rw [hperm.length_eq, List.length_range]; omega
+    (_hsort : E.Pairwise (codeLe (interiorModel Q) Q L)) : 0 < E.length := by rwo [hperm.length_eq, List.length_range]
 
 /-- **The arc starts increase strictly.** -/
 theorem st_lt {i i' : ℕ} (hii : i < i') (hi' : i' < (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length) :
@@ -399,17 +404,17 @@ theorem arc_of_bkt {j : ℕ} {x : WPos}
     have := (hkb j hj.le (fun i hi => ⟨fun h => by
         by_contra h'; have := hle j i (by omega) hi; linarith,
       fun h => by rw [hx]; exact hlt i j h hj⟩)).1 ⟨j, hj, hx.symm⟩
-    left; rw [this]; unfold arcA; rw [ite_eq_right (by omega)]; omega
+    left; rw [this]; uro arcA [ite_eq_right (by omega)]
   · rcases Nat.lt_or_ge (j + 1) A with hj1 | hj1
     · rw [hke.1 hj1] at hx
       have := (hkb (j + 1) hj1.le (fun i hi => ⟨fun h => by
           by_contra h'; have := hle (j + 1) i (by omega) hi; linarith,
         fun h => by rw [hx]; exact hlt i (j + 1) h hj1⟩)).1 ⟨j + 1, hj1, hx.symm⟩
-      right; rw [this]; unfold arcB; rw [ite_eq_right (by omega)]; omega
+      right; rw [this]; uro arcB [ite_eq_right (by omega)]
     · rw [hke.2 (by omega)] at hx
       have := (hkb 0 (Nat.zero_le _) (fun i hi => ⟨fun h => by
           have := hle 0 i (by omega) hi; linarith, fun h => by omega⟩)).1 ⟨0, by omega, hx.symm⟩
-      right; rw [this]; unfold arcB; rw [ite_eq_left (by omega)]; omega
+      right; rw [this]; uro arcB [ite_eq_left (by omega)]
   · rcases Nat.lt_or_ge (j + 1) A with hj1 | hj1
     · rw [hke.1 hj1] at hx
       unfold sideInArc at hx
@@ -421,7 +426,7 @@ theorem arc_of_bkt {j : ℕ} {x : WPos}
           rcases Nat.lt_or_ge j i with hji | hji
           · have := hle (j + 1) i (by omega) hi; linarith
           · have := hle i j hji hj; linarith)
-      left; rw [this]; unfold arcA; rw [ite_eq_right (by omega)]; omega
+      left; rw [this]; uro arcA [ite_eq_right (by omega)]
     · rw [hke.2 (by omega)] at hx
       unfold sideInArc at hx
       rw [ite_eq_right (by have := hle 0 j (by omega) hj; linarith)] at hx
@@ -430,12 +435,12 @@ theorem arc_of_bkt {j : ℕ} {x : WPos}
           fun _ => by have := hle i j (by omega) hj; linarith⟩)).2 (by
             rintro ⟨i, hi, hie⟩
             have := hle i j (by omega) hj; linarith)
-        left; rw [this]; unfold arcA; rw [ite_eq_right (by omega)]; omega
+        left; rw [this]; uro arcA [ite_eq_right (by omega)]
       · have := (hkb 0 (Nat.zero_le _) (fun i hi => ⟨fun h => by
             have := hle 0 i (by omega) hi; linarith, fun h => by omega⟩)).2 (by
             rintro ⟨i, hi, hie⟩
             have := hle 0 i (by omega) hi; linarith)
-        left; rw [this]; unfold arcA; rw [ite_eq_left rfl]; omega
+        left; rw [this]; uro arcA [ite_eq_left rfl]
 
 /-- **At most `4 M` ends per bucket.** -/
 theorem bcnt_le_four {reg : ℕ → Set Point}

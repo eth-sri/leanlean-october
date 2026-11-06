@@ -3,6 +3,11 @@ module
 public import Chazelle.Core.DownPhaseDrvBSpec
 public import Chazelle.Core.DownPhaseDrvDRound3
 public import Chazelle.Core.DownPhaseBaseMain
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase base (D9), top level, part 1: the program and its straight-line pieces
@@ -84,37 +89,36 @@ theorem bres_false {r : ℕ} (h1 : r ≠ 219302) (h2 : r ≠ 9999) : Bres r = fa
   simp only [Bres, Bool.or_eq_false_iff, decide_eq_false_iff_not]; exact ⟨h1, h2⟩
 
 theorem bpre_false {r : ℕ} (h1 : r ≠ 212019) (h2 : r < 219300 ∨ 219303 < r) : Bpre r = false := by
-  simp only [Bpre, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+  sio only [Bpre, Bool.or_eq_false_iff, decide_eq_false_iff_not]
 
 theorem bargs_false {r : ℕ} (h1 : r < 210020 ∨ 210024 < r) (h2 : r < 219300 ∨ 219307 < r) :
     Bargs r = false := by
-  simp only [Bargs, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+  sio only [Bargs, Bool.or_eq_false_iff, decide_eq_false_iff_not]
 
 theorem inDrv_pre : DrvD.InDrv Bpre := by
   intro r hr
   simp only [Bpre, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by ufo ALLOC⟩
 
 theorem inDrv_args : DrvD.InDrv Bargs := by
   intro r hr
   simp only [Bargs, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by ufo ALLOC⟩
 
 theorem inDrv_drop : DrvD.InDrv (fun r => decide (200000 ≤ r ∧ r ≤ 200003)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by ufo ALLOC⟩
 
 theorem inDrv_bld : DrvD.InDrv (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by ufo ALLOC⟩
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 /-- `tPre`. -/
 theorem tPre_exec (c : Config) (hw : WordsBounded W c) (hW : 2 * P.n + 1 ≤ W) :
     ∃ c' k, Exec P W tPre c c' k ∧ k = 5 ∧ c'.nreg 212019 = c.nreg ALLOC ∧
@@ -169,14 +173,13 @@ theorem tRes_exec {c : Config} (hw : WordsBounded W c) {R : ℕ} (h03 : c.nreg 2
       obtain ⟨hw, h1, h2, -⟩ := id hI
       rw [h1, h2] at ht
       obtain ⟨e', k, ex, hI', RF', hk⟩ := key j e ht hI
-      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by omega, by rw [h1, hI'.2.1]; omega⟩) ⟨0, I0⟩
-  have hjR : j = R := by rw [h1, h2] at hx; omega
+      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by omega, by rwo [h1, hI'.2.1]⟩) ⟨0, I0⟩
+  have hjR : j = R := by rwo [h1, h2] at hx
   subst hjR
   refine ⟨c', k, ex, ?_, h4, hf, RFl⟩
   rw [h02] at hk
   simpa using hk
 
-set_option maxHeartbeats 2000000 in
 /-- `tArgs`. -/
 theorem tArgs_exec (c : Config) (hw : WordsBounded W c) {B₂ H MX K₂ : ℕ}
     (h19 : c.nreg 212019 = B₂) (h05 : c.nreg 210005 = H) (h18 : c.nreg 212018 = MX)
@@ -194,7 +197,6 @@ theorem tArgs_exec (c : Config) (hw : WordsBounded W c) {B₂ H MX K₂ : ℕ}
       (try omega)
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
 
-set_option maxHeartbeats 1000000 in
 /-- `tDrop`. -/
 theorem tDrop_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W tDrop c c' k ∧ k = 4 ∧ c'.nreg 200000 = c.nreg 210001 ∧
@@ -209,7 +211,6 @@ theorem tDrop_exec (c : Config) (hw : WordsBounded W c) :
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
 
-set_option maxHeartbeats 1000000 in
 /-- `tBld`. -/
 theorem tBld_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W tBld c c' k ∧ k = 4 ∧ c'.nreg 40000 = c.nreg 210001 ∧

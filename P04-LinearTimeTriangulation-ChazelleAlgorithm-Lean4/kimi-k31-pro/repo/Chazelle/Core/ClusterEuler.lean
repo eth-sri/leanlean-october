@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ClusterMap
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-I, part 8: preorder intervals of a tree in breadth-first order
@@ -103,7 +106,7 @@ theorem OK.par_spec (hR : R.OK) {h : ℕ} (hh : h < R.n) (hr : h ≠ R.root) :
   obtain ⟨hp, hq⟩ := hR.pos_spec hh
   have h0 : 0 < R.pos h := by
     rcases Nat.eq_zero_or_pos (R.pos h) with h0 | h0
-    · exact absurd (by rw [← hq, h0]; rfl) hr
+    · exact absurd (by rwr [← hq, h0]) hr
     · exact h0
   obtain ⟨j, hj, hqj⟩ := hR.par_lt (R.pos h) h0 hp
   rw [hq] at hqj
@@ -173,14 +176,14 @@ theorem anc_iff_up {g h : ℕ} (hgh : g ≠ h) : R.Anc g h ↔ R.Anc g (R.up h) 
     · exact absurd hm.symm hgh
     · exact ⟨m, by rw [Function.iterate_succ_apply] at hm; exact hm⟩
   · rintro ⟨m, hm⟩
-    exact ⟨m + 1, by rw [Function.iterate_succ_apply]; exact hm⟩
+    exact ⟨m + 1, by rwx [Function.iterate_succ_apply]⟩
 
 /-- **The descendants of `g`**: `g` and the descendants of its children, disjointly. -/
 theorem OK.sub_eq (hR : R.OK) {g : ℕ} (hg : g < R.n) :
     R.sub g = insert g ((R.ch g).biUnion R.sub) := by
   classical
   ext h
-  simp only [sub, ch, Finset.mem_insert, Finset.mem_biUnion, Finset.mem_filter, Finset.mem_range]
+  simp [sub, ch, Finset.mem_insert, Finset.mem_biUnion, Finset.mem_filter, Finset.mem_range]
   constructor
   · rintro ⟨hh, hgh⟩
     by_cases heq : h = g
@@ -206,7 +209,7 @@ theorem OK.sub_eq (hR : R.OK) {g : ℕ} (hg : g < R.n) :
           have hup : R.up h = R.par h := by simp [up, hr]
           by_cases hpg : R.par h = g
           · exact ⟨h, ⟨hh, hr, hpg⟩, hh, anc_refl h⟩
-          · obtain ⟨c, hc, -, hch⟩ := ih (R.up h) (hR.up_lt hh) hm (by rw [hup]; exact hpg)
+          · obtain ⟨c, hc, -, hch⟩ := ih (R.up h) (hR.up_lt hh) hm (by rwx [hup])
             exact ⟨c, hc, hh, hch.trans (anc_up h)⟩
       exact key m h hh hm heq
   · rintro (rfl | ⟨c, ⟨hc, hcr, hpc⟩, hh, hch⟩)
@@ -221,7 +224,7 @@ theorem OK.sub_disjoint (hR : R.OK) {g c c' : ℕ} (hc : c ∈ R.ch g) (hc' : c'
   classical
   rw [Finset.disjoint_left]
   intro h h1 h2
-  simp only [sub, ch, Finset.mem_filter, Finset.mem_range] at h1 h2 hc hc'
+  simp [sub, ch, Finset.mem_filter, Finset.mem_range] at h1 h2 hc hc'
   -- both `c` and `c'` are ancestors of `h`, so one is an ancestor of the other
   have key : ∀ m m' h, R.up^[m] h = c → R.up^[m'] h = c' → R.Anc c c' ∨ R.Anc c' c := by
     intro m m' h hm hm'
@@ -243,7 +246,7 @@ theorem OK.sub_disjoint (hR : R.OK) {g c c' : ℕ} (hc : c ∈ R.ch g) (hc' : c'
     rw [hup y hy hyr hpy] at h1
     have h2 : R.Anc g x := by rw [← hup x hx hxr hpx]; exact anc_up x
     have hgn : g < R.n := by rw [← hpx]; exact (hR.par_spec hx hxr).1
-    have hxg : x = g := hR.anc_antisymm hgn hx h1 h2
+    have hxg  := hR.anc_antisymm hgn hx h1 h2
     have hl := hR.par_spec hx hxr
     rw [hpx, ← hxg] at hl
     omega
@@ -253,7 +256,7 @@ theorem OK.sub_disjoint (hR : R.OK) {g c c' : ℕ} (hc : c ∈ R.ch g) (hc' : c'
 
 /-- A child comes after its parent in the queue. -/
 theorem OK.pos_ch (hR : R.OK) {g c : ℕ} (hc : c ∈ R.ch g) : R.pos g < R.pos c := by
-  simp only [ch, Finset.mem_filter, Finset.mem_range] at hc
+  simp [ch, Finset.mem_filter, Finset.mem_range] at hc
   have := hR.par_spec hc.1 hc.2.1
   rw [hc.2.2] at this
   exact this.2
@@ -261,7 +264,7 @@ theorem OK.pos_ch (hR : R.OK) {g c : ℕ} (hc : c ∈ R.ch g) : R.pos g < R.pos 
 /-- A node is not a descendant of its own children. -/
 theorem OK.notMem_sub_ch (hR : R.OK) {g c : ℕ} (hc : c ∈ R.ch g) : g ∉ R.sub c := by
   intro hg
-  simp only [sub, Finset.mem_filter, Finset.mem_range] at hg
+  simp [sub, Finset.mem_filter, Finset.mem_range] at hg
   have := hR.pos_le_of_anc hg.1 hg.2
   have := hR.pos_ch hc
   omega
@@ -274,7 +277,7 @@ theorem OK.card_sub (hR : R.OK) {g : ℕ} (hg : g < R.n) :
   · omega
   · intro c hc c' hc' hne
     exact hR.sub_disjoint hc hc' hne
-  · simp only [Finset.mem_biUnion, not_exists, not_and]
+  · simp [Finset.mem_biUnion, not_exists, not_and]
     intro c hc
     exact hR.notMem_sub_ch hc
 
@@ -283,8 +286,8 @@ theorem OK.card_sub_root (hR : R.OK) : (R.sub R.root).card = R.n := by
   classical
   have : R.sub R.root = Finset.range R.n := by
     ext h
-    simp only [sub, Finset.mem_filter, Finset.mem_range, and_iff_left_iff_imp]
-    exact fun hh => hR.anc_root hh
+    simp [sub, Finset.mem_filter, Finset.mem_range, and_iff_left_iff_imp]
+    exact hR.anc_root
   rw [this, Finset.card_range]
 
 /-! ## Sizes -/
@@ -300,10 +303,10 @@ theorem SizeInv.init {sz : ℕ → ℕ} (h : ∀ g, g < R.n → sz g = 1) (hR : 
   intro g hg
   have hempty : (R.ch g).filter (fun c => R.n ≤ R.pos c) = ∅ := by
     refine Finset.filter_false_of_mem (fun c hc => ?_)
-    simp only [ch, Finset.mem_filter, Finset.mem_range] at hc
+    simp [ch, Finset.mem_filter, Finset.mem_range] at hc
     have := (hR.pos_spec hc.1).1
     omega
-  rw [h g hg, hempty, Finset.sum_empty]; rfl
+  rwr [h g hg, hempty, Finset.sum_empty]
 
 /-- At an entry, the size array holds the true size. -/
 theorem SizeInv.eq_card (hR : R.OK) {sz : ℕ → ℕ} {i : ℕ} (hS : R.SizeInv sz (i + 1))
@@ -323,19 +326,19 @@ theorem SizeInv.step (hR : R.OK) {sz : ℕ → ℕ} {i : ℕ} (hS : R.SizeInv sz
   have hq := hR.q_lt i hi
   have hr : R.q i ≠ R.root := by
     intro h; have := hR.q_inj i hi 0 hR.n_pos h; omega
-  have hpos : R.pos (R.q i) = i := hR.pos_q hi
+  have hpos  := hR.pos_q hi
   intro g hg
   have hch : ∀ c, c ∈ (R.ch g).filter (fun c => i ≤ R.pos c) ↔
       c ∈ (R.ch g).filter (fun c => i + 1 ≤ R.pos c) ∨ (c = R.q i ∧ R.par (R.q i) = g) := by
     intro c
-    simp only [Finset.mem_filter, ch, Finset.mem_range]
+    simp [Finset.mem_filter, ch, Finset.mem_range]
     constructor
     · rintro ⟨⟨hc, hcr, hpc⟩, hic⟩
       by_cases hci : R.pos c = i
       · right
         have := (hR.pos_spec hc).2
         rw [hci] at this
-        exact ⟨this.symm, by rw [this]; exact hpc⟩
+        exact ⟨this.symm, by rwx [this]⟩
       · exact Or.inl ⟨⟨hc, hcr, hpc⟩, by omega⟩
     · rintro (⟨⟨hc, hcr, hpc⟩, hic⟩ | ⟨rfl, hpg⟩)
       · exact ⟨⟨hc, hcr, hpc⟩, by omega⟩
@@ -348,7 +351,7 @@ theorem SizeInv.step (hR : R.OK) {sz : ℕ → ℕ} {i : ℕ} (hS : R.SizeInv sz
       ext c; rw [hch c, Finset.mem_insert]; tauto
     rw [hset, Finset.sum_insert]
     · ring
-    · simp only [Finset.mem_filter]; omega
+    · sio only [Finset.mem_filter]
   · rw [Function.update_of_ne (Ne.symm hpg), hS _ hg]
     congr 1
     refine Finset.sum_congr ?_ (fun _ _ => rfl)
@@ -418,7 +421,7 @@ theorem PreInv.init (hR : R.OK) {pre slot : ℕ → ℕ} (hp : pre R.root = 0) (
   · have hj0 : j = 0 := by omega
     subst hj0
     show pre R.root + (R.sub R.root).card ≤ R.n
-    rw [hp, hR.card_sub_root]; omega
+    rwo [hp, hR.card_sub_root]
   have hj0 : j = 0 := by omega
   subst hj0
   have hempty : (R.ch (R.q 0)).filter (fun c => R.pos c < 1) = ∅ := by
@@ -449,7 +452,7 @@ theorem PreInv.step (hR : R.OK) {pre slot : ℕ → ℕ} {i : ℕ} (hP : R.PreIn
   rw [hposc, ← hp_def] at hpp
   rw [← hp_def] at hpn
   have hpq : R.q (R.pos p) = p := (hR.pos_spec hpn).2
-  have hpc : p ≠ c := fun h => by rw [h] at hpp; omega
+  have hpc : p ≠ c := fun h => by rwo [h] at hpp
   -- facts about processed entries
   have hne : ∀ j, j < i → R.q j ≠ c := by
     intro j hj h; have := hR.q_inj j (by omega) i hi h; omega
@@ -525,7 +528,7 @@ theorem PreInv.step (hR : R.OK) {pre slot : ℕ → ℕ} {i : ℕ} (hP : R.PreIn
       rw [hji, Function.update_self, Function.update_self]
       have hempty : (R.ch c).filter (fun x => R.pos x < i + 1) = ∅ :=
         Finset.filter_false_of_mem (fun x hx => by have := hchild_pos x hx; omega)
-      rw [hempty, Finset.sum_empty]; rfl
+      rwr [hempty, Finset.sum_empty]
   · -- nesting
     rcases Nat.lt_succ_iff_lt_or_eq.mp hj with hj | hji
     · obtain ⟨n1, n2⟩ := hP.nest j hj0 hj
@@ -539,12 +542,12 @@ theorem PreInv.step (hR : R.OK) {pre slot : ℕ → ℕ} {i : ℕ} (hP : R.PreIn
       refine ⟨n1, ?_⟩
       rw [Function.update_of_ne hqp]
       by_cases hjp : R.par (R.q j) = p
-      · rw [hjp, Function.update_self]; rw [hjp] at n2; omega
-      · rw [Function.update_of_ne hjp]; exact n2
+      · rw [hjp, Function.update_self]; rwo [hjp] at n2
+      · rwx [Function.update_of_ne hjp]
     · rw [hji, Function.update_self, Function.update_of_ne hpc, Function.update_of_ne hpc,
         Function.update_self]
       constructor
-      · rw [hslot_p]; omega
+      · rwo [hslot_p]
       · exact le_refl _
   · -- disjointness
     have hcase : ∀ j j', 0 < j → j < i → j' = i → R.par (R.q j) = R.par (R.q j') →
@@ -571,7 +574,7 @@ variable {pre slot : ℕ → ℕ}
 theorem one_le_card_sub {g : ℕ} (hg : g < R.n) : 1 ≤ (R.sub g).card := by
   classical
   refine Finset.card_pos.mpr ⟨g, ?_⟩
-  simp only [sub, Finset.mem_filter, Finset.mem_range]
+  simp [sub, Finset.mem_filter, Finset.mem_range]
   exact ⟨hg, anc_refl g⟩
 
 /-- At the end, every next free slot is at the end of the interval. -/
@@ -583,7 +586,7 @@ theorem PreInv.slot_final (hR : R.OK) (hP : R.PreInv pre slot R.n) {g : ℕ} (hg
   rw [this, hR.card_sub hg]
   have : (R.ch g).filter (fun c => R.pos c < R.n) = R.ch g :=
     Finset.filter_true_of_mem (fun c hc => (hR.pos_spec (mem_ch.mp hc).1).1)
-  rw [this]; ring
+  rwring [this]
 
 /-- At the end, the interval of a non-root node is inside its parent's, after the parent. -/
 theorem PreInv.nest_final (hR : R.OK) (hP : R.PreInv pre slot R.n) {c : ℕ} (hc : c < R.n)
@@ -592,7 +595,7 @@ theorem PreInv.nest_final (hR : R.OK) (hP : R.PreInv pre slot R.n) {c : ℕ} (hc
   obtain ⟨hpn, hpq⟩ := hR.pos_spec hc
   have h0 : 0 < R.pos c := by
     rcases Nat.eq_zero_or_pos (R.pos c) with h | h
-    · exact absurd (by rw [← hpq, h]; rfl) hcr
+    · exact absurd (by rwr [← hpq, h]) hcr
     · exact h
   have := hP.nest (R.pos c) h0 hpn
   rw [hpq, hP.slot_final hR (hR.par_spec hc hcr).1] at this
@@ -635,11 +638,11 @@ theorem OK.exists_ch_anc (hR : R.OK) {p g : ℕ} (hg : g < R.n) (hpg : R.Anc p g
   classical
   have hpn : p < R.n := by obtain ⟨m, rfl⟩ := hpg; exact hR.iterate_up_lt m hg
   have hmem : g ∈ R.sub p := by
-    simp only [sub, Finset.mem_filter, Finset.mem_range]; exact ⟨hg, hpg⟩
+    simp [sub, Finset.mem_filter, Finset.mem_range]; exact ⟨hg, hpg⟩
   rw [hR.sub_eq hpn, Finset.mem_insert, Finset.mem_biUnion] at hmem
   rcases hmem with h | ⟨c, hc, hgc⟩
   · exact absurd h.symm hne
-  · simp only [sub, Finset.mem_filter, Finset.mem_range] at hgc
+  · simp [sub, Finset.mem_filter, Finset.mem_range] at hgc
     exact ⟨c, hc, hgc.2⟩
 
 /-- The key step of the disjointness of unrelated nodes (the later one's parent). -/
@@ -652,7 +655,7 @@ theorem PreInv.disj_step (hR : R.OK) (hP : R.PreInv pre slot R.n) {g h : ℕ} (h
   have hr : h ≠ R.root := fun hr => hhg (hr ▸ hR.anc_root hg)
   obtain ⟨hpn, hpp⟩ := hR.par_spec hh hr
   have hup : R.up h = R.par h := by simp [up, hr]
-  have hph : R.Anc (R.par h) h := hup ▸ anc_up h
+  have hph  := hup ▸ anc_up h
   obtain ⟨nh1, nh2⟩ := hP.nest_final hR hh hr
   have hσh := one_le_card_sub (R := R) hh
   have hσg := one_le_card_sub (R := R) hg
@@ -668,7 +671,7 @@ theorem PreInv.disj_step (hR : R.OK) (hP : R.PreInv pre slot R.n) {g h : ℕ} (h
     obtain ⟨phn, phq⟩ := hR.pos_spec hh
     have hc0 : 0 < R.pos c := by
       rcases Nat.eq_zero_or_pos (R.pos c) with h0 | h0
-      · exact absurd (by rw [← pcq, h0]; rfl) hcr
+      · exact absurd (by rwr [← pcq, h0]) hcr
       · exact h0
     have hh0 : 0 < R.pos h := by omega
     have hd := hP.disj (R.pos c) (R.pos h) hc0 pcn hh0 phn

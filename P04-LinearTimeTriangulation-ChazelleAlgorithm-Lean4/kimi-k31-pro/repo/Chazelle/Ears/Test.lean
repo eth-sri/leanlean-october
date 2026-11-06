@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Ears.Basic
 public import Chazelle.Existence.Diagonal
+public import Chazelle.Rwx
 
 /-!
 # The arithmetic ear test
@@ -118,22 +119,22 @@ theorem open_chord_not_mem_boundary_of_test (hP : P.Simple) (h4 : 4 ≤ P.n) (hi
       p ≠ P.vtx (prevIdx P i) → p ≠ P.vtx ((i + 1) % P.n) → p ∉ P.boundary := by
   have hn : 0 < P.n := by omega
   set Q := P.rotate i with hQdef
-  have hQ : Q.Simple := simple_rotate P i hP
-  have hQn : Q.n = P.n := n_rotate P i
+  have hQ  := simple_rotate P i hP
+  have hQn  := n_rotate P i
   obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i (by omega) hi
-  have hQ4 : 4 ≤ Q.n := by rw [hQn]; exact h4
+  have hQ4 : 4 ≤ Q.n := by rwx [hQn]
   have hdetQ : det (Q.vtx (Q.n - 1)) (Q.vtx 0) (Q.vtx 1) ≠ 0 := by
-    rw [ea, ev, eb]; exact hdet
+    rwx [ea, ev, eb]
   have hnoneQ : ∀ j, j < Q.n →
       Q.vtx j ∈ convexHull ℝ ({Q.vtx (Q.n - 1), Q.vtx 0, Q.vtx 1} : Set Point) →
         j = 0 ∨ j = 1 ∨ j = Q.n - 1 := by
     intro j hj hmem
     rw [ea, ev, eb] at hmem
     rw [hQn] at hj ⊢
-    have hQj : Q.vtx j = P.vtx ((i + j) % P.n) := vtx_rotate P i hj
+    have hQj  := vtx_rotate P i hj
     rw [hQj] at hmem
     by_contra hcon
-    simp only [not_or] at hcon
+    simp [not_or] at hcon
     obtain ⟨hj0, hj1, hjn⟩ := hcon
     refine hnone ((i + j) % P.n) (Nat.mod_lt _ hn) ?_ ?_ ?_ hmem
     · intro h

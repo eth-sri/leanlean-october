@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.FuseAsmSweep
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-F fusion assembly, part 24: collecting the answers of both sweeps
@@ -23,15 +29,15 @@ theorem chordList_agree {m m' : ℕ → ℕ} {B E : ℕ} {L : List (ℕ × ℕ �
     (h : ChordListAt m B L) (hE : B + 3 * L.length ≤ E) (he : ∀ a, a < E → m' a = m a) :
     ChordListAt m' B L := fun i hi => by
   obtain ⟨h0, h1, h2⟩ := h i hi
-  exact ⟨by rw [he _ (by omega)]; exact h0, by rw [he _ (by omega)]; exact h1,
-    by rw [he _ (by omega)]; exact h2⟩
+  exact ⟨by rwx [he _ (by omega)], by rwx [he _ (by omega)],
+    by rwx [he _ (by omega)]⟩
 
 theorem resultList_agree {m m' : ℕ → ℕ} {B E : ℕ} {R : List (ℕ × ℕ × ℕ × ℕ)}
     (h : ResultListAt m B R) (hE : B + 4 * R.length ≤ E) (he : ∀ a, a < E → m' a = m a) :
     ResultListAt m' B R := fun i hi => by
   obtain ⟨h0, h1, h2, h3⟩ := h i hi
-  exact ⟨by rw [he _ (by omega)]; exact h0, by rw [he _ (by omega)]; exact h1,
-    by rw [he _ (by omega)]; exact h2, by rw [he _ (by omega)]; exact h3⟩
+  exact ⟨by rwx [he _ (by omega)], by rwx [he _ (by omega)],
+    by rwx [he _ (by omega)], by rwx [he _ (by omega)]⟩
 
 /-- The arguments of the first collection loop. -/
 def clSet : Stmt := block [.constN 70110 0, .constN 70116 3, .constN 70117 4, .constN 70118 2,
@@ -45,7 +51,6 @@ def clSet2 : Stmt := block [.copyN 70111 70154, .constN 70112 0, .copyN 70113 70
 /-- **The collection.** -/
 def collectS : Stmt := .seq clSet (.seq clqLoop (.seq clSet2 clqLoop))
 
-set_option maxHeartbeats 16000000 in
 theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     {L₀ L₁ : List (ℕ × ℕ × ℕ)} {R₀ R₁ : List (ℕ × ℕ × ℕ × ℕ)}
     (h05 : c.nreg 70105 = 1) (h08 : c.nreg 70108 = 0)
@@ -66,7 +71,7 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       Frame FB c c' k ∧
       (∀ r, (r < 70110 ∨ 70119 < r) → r ≠ 70156 → r ≠ ALLOC → c'.nreg r = c.nreg r) := by
   obtain ⟨A, hA⟩ : ∃ x, c.nreg ALLOC = x := ⟨_, rfl⟩
-  have hA' : c.nreg 9999 = A := hA
+  have hA'  := hA
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W clSet c c₁ k₁ ∧ k₁ = 9 ∧
       (c₁.nreg 70110 = 0 ∧ c₁.nreg 70116 = 3 ∧ c₁.nreg 70117 = 4 ∧ c₁.nreg 70118 = 2 ∧
         c₁.nreg 70156 = A ∧ c₁.nreg 70111 = L₀.length ∧ c₁.nreg 70112 = 0 ∧
@@ -88,15 +93,15 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   have c08 : c₁.nreg 70108 = 0 := by rw [tr _ (by decide) (by decide), h08]
   -- the first loop
   have I0 : CLQI W L₀ R₀ (c.nreg 70150) (c.nreg 70153) A [] c₁ c₁ :=
-    ⟨w₁, by omega, by rw [t13, t12]; ring, by rw [t15, t12]; ring,
+    ⟨w₁, by omega, by rwring [t13, t12], by rwring [t15, t12],
       by rw [a₁, t12]; simp [collectQ], by rw [t10, t12]; simp [collectQ],
       fun _ _ _ _ _ _ _ _ => rfl, fun _ _ => rfl, by rw [t12]; simp [collectQ]; intro i hi; simp at hi,
       rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', I₂, h₂⟩ := clqLoop_exec (P := P) (L := L₀) (R := R₀)
     (pre := []) c05 c08 t16 t17 t18 (by rw [t11, hl₀]) hl₀.symm
-    (by rw [tm]; exact hR₀) (by rw [tm]; exact hL₀) (by omega) (by omega)
-    (by simp only [List.length_nil]; omega) (by simp only [List.length_nil]; omega)
-    R₀.length c₁ I0 (by rw [t12]; simp)
+    (by rwx [tm]) (by rwx [tm]) (by omega) (by omega)
+    (by sio only [List.length_nil]) (by sio only [List.length_nil])
+    R₀.length c₁ I0 (by rws [t12])
   have tk0 : L₀.take (c₂.nreg 70112) = L₀ := by rw [h₂]; exact List.take_of_length_le (by omega)
   have tk0' : R₀.take (c₂.nreg 70112) = R₀ := by rw [h₂]; exact List.take_of_length_le le_rfl
   have i2a := I₂.alloc
@@ -144,23 +149,23 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
     rw [ur _ (by decide) (by decide) (by decide) (by decide), g₂ _ (by decide) (by decide)
       (by decide) (by decide) (by decide) (by decide) (by decide)]
   have mA : ∀ a, a < A → c₃.nmem a = c.nmem a := fun a ha => by
-    rw [um, I₂.low a (by simp only [List.length_nil]; omega), tm]
-  have a₂ : c₂.nreg ALLOC = A + 3 * C₀.length := by rw [i2a]; simp
+    rw [um, I₂.low a (by sio only [List.length_nil]), tm]
+  have a₂ : c₂.nreg ALLOC = A + 3 * C₀.length := by rws [i2a]
   have a₃ : c₃.nreg ALLOC = A + 3 * C₀.length := by
     rw [ur _ (by decide) (by decide) (by decide) (by decide), a₂]
   have n₃ : c₃.nreg 70110 = C₀.length := by
-    rw [ur _ (by decide) (by decide) (by decide) (by decide), i2c]; simp
+    rws [ur _ (by decide) (by decide) (by decide) (by decide), i2c]
   have J0 : CLQI W L₁ R₁ (c.nreg 70151) (c.nreg 70155) A C₀ c₃ c₃ :=
-    ⟨w₃, by omega, by rw [u13, u12]; ring, by rw [u15, u12]; ring,
+    ⟨w₃, by omega, by rwring [u13, u12], by rwring [u15, u12],
       by rw [a₃, u12]; simp [collectQ], by rw [n₃, u12]; simp [collectQ],
       fun _ _ _ _ _ _ _ _ => rfl, fun _ _ => rfl,
-      by rw [u12, um]; simp only [List.take_zero, collectQ, List.zip_nil_left, List.filter_nil,
+      by rw [u12, um]; simp [List.take_zero, collectQ, List.zip_nil_left, List.filter_nil,
         List.map_nil, List.append_nil]; simpa using i2l, rfl, rfl, rfl⟩
   obtain ⟨c₄, k₄, e₄, hk₄, hk₄', I₄, h₄⟩ := clqLoop_exec (P := P) (L := L₁) (R := R₁)
     (pre := C₀) c305 c308 (by rw [c3k _ (by simp), t16]) (by rw [c3k _ (by simp), t17])
     (by rw [c3k _ (by simp), t18]) (by rw [u11, hl₁]) hl₁.symm
     (resultList_agree hR₁ (by omega) mA) (chordList_agree hL₁ (by omega) mA) (by omega)
-    (by omega) (by omega) (by omega) R₁.length c₃ J0 (by rw [u12]; simp)
+    (by omega) (by omega) (by omega) R₁.length c₃ J0 (by rws [u12])
   have tk1 : L₁.take (c₄.nreg 70112) = L₁ := by rw [h₄]; exact List.take_of_length_le (by omega)
   have tk1' : R₁.take (c₄.nreg 70112) = R₁ := by rw [h₄]; exact List.take_of_length_le le_rfl
   have i4a := I₄.alloc
@@ -177,21 +182,21 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       rw [g₄ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) h3,
         ur r (by omega) (by omega) (by omega) (by omega),
         g₂ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) h3, tr r h1 h2]
-  have a₄ : c₄.nreg ALLOC = A + 3 * (C₀ ++ C₁).length := i4a
+  have a₄  := i4a
   have hlen : (C₀ ++ C₁).length ≤ L₀.length + L₁.length := by
-    rw [List.length_append]; omega
+    rwo [List.length_append]
   refine ⟨c₄, _, ex, by omega, ?_, i4c, by rw [a₄, hA], by rw [hA]; exact i4l,
     ⟨fun r hr ha => ?_, fun r _ => by rw [I₄.rr, urr, I₂.rr, trr], fun a ha => ?_,
       fun a _ => by rw [I₄.rm, urm, I₂.rm, trm], by rw [I₄.out, uou, I₂.out, tou],
-      by rw [a₄, hA]; omega, by rw [a₄, hA]; omega⟩, regs⟩
+      by rwo [a₄, hA], by rwo [a₄, hA]⟩, regs⟩
   · rw [g₄ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
       (by decide), ur _ (by decide) (by decide) (by decide) (by decide),
       g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide),
       t56, hA]
   · have h7 : bandOf r ≠ bFuse := fun h => hr (h ▸ band7)
-    have : r < 70000 ∨ 80000 ≤ r := by unfold bandOf bFuse at h7; omega
+    have : r < 70000 ∨ 80000 ≤ r := by ufo bandOf bFuse at h7
     exact regs r (by omega) (by omega) ha
-  · rw [I₄.low a (by rw [hA] at ha; omega), um, I₂.low a (by simp only [List.length_nil]; omega),
+  · rw [I₄.low a (by rwo [hA] at ha), um, I₂.low a (by sio only [List.length_nil]),
       tm]
 
 end

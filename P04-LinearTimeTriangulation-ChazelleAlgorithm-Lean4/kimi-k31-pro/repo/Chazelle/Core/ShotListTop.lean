@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.ShotListLev
+public import Chazelle.RewriteTactics
 
 /-!
 # Shooting at a list of arcs with holes, part 8: holes, pieces and the loop rule
@@ -88,7 +89,7 @@ theorem levLeaves_eq (M : Model) (Q : Polygon) (c : Config) (R : ℕ)
           have h1 := hk ℓ (by omega)
           have h2 := hk (ℓ + 1) (by omega)
           rw [show R + 30 + (ℓ + 1) = R + 30 + ℓ + 1 by omega] at h2 ⊢
-          rw [ite_no]; omega
+          rwo [ite_no]
       rw [this]
 
 /-- The holes of the contract: the first `min H 3` pairs. -/
@@ -105,7 +106,7 @@ theorem holesFrom_eq (c : Config) (R : ℕ) (hk : ∀ ℓ, ℓ ≤ 3 → c.nreg 
   rw [show R + 30 + (0 + 1) = R + 30 + 1 by omega, show R + 30 + (0 + 1 + 1) = R + 30 + 2 by omega]
   rw [h0, h1, h2]
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 1 with hH | hH
-  · rw [ite_no _ _ (by omega), show min (c.nreg (R + 9)) 3 = 0 by omega]; rfl
+  · rwr [ite_no _ _ (by omega), show min (c.nreg (R + 9)) 3 = 0 by omega]
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 2 with hH2 | hH2
   · rw [ite_yes _ _ (by omega), ite_no _ _ (by omega), show min (c.nreg (R + 9)) 3 = 1 by omega]
     rfl

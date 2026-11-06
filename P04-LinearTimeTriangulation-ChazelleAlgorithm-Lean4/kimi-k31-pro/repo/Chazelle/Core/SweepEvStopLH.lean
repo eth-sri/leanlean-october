@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvStopH
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep (WP-D), stage 2: a local hit in a chain model (RAM)
@@ -111,48 +114,48 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have hDR : ∀ r, DR r → bandOf r ∉ oracleBands ∧ r ≠ ALLOC ∧ ¬ LHR r ∧ 240000 ≤ r ∧ r < 250000 :=
     fun r h => by
       unfold DR at h
-      refine ⟨not_oracle_sw (by omega) (by omega), by unfold ALLOC; omega, ?_, by omega, by omega⟩
-      unfold LHR sw; omega
+      refine ⟨not_oracle_sw (by omega) (by omega), by ufo ALLOC, ?_, by omega, by omega⟩
+      ufo LHR sw
   -- 1. the setup
   have hok : okB W c.nmem (lhSetL md cd nf nr) c.nreg := by
     simp only [lhSetL, okB, okI]
-    exact ⟨iscr_sw (by unfold lMD sw; omega) (by unfold lMD sw; omega),
-      iscr_sw (by unfold lCD sw; omega) (by unfold lCD sw; omega),
-      iscr_sw (by unfold lNF sw; omega) (by unfold lNF sw; omega),
-      iscr_sw (by unfold lN sw; omega) (by unfold lN sw; omega),
-      ⟨iscr_sw (by unfold lT sw; omega) (by unfold lT sw; omega), Nat.zero_le _⟩,
-      ⟨iscr_sw (by unfold accA sw; omega) (by unfold accA sw; omega), Nat.zero_le _⟩, trivial⟩
+    exact ⟨iscr_sw (by ufo lMD sw) (by ufo lMD sw),
+      iscr_sw (by ufo lCD sw) (by ufo lCD sw),
+      iscr_sw (by ufo lNF sw) (by ufo lNF sw),
+      iscr_sw (by ufo lN sw) (by ufo lN sw),
+      ⟨iscr_sw (by ufo lT sw) (by ufo lT sw), Nat.zero_le _⟩,
+      ⟨iscr_sw (by ufo accA sw) (by ufo accA sw), Nat.zero_le _⟩, trivial⟩
   refine IRS.seq (K₁ := 6) (K₂ := 42030 + localK T Fg (D + 1) D)
-    ((IRS.block _ hI hok).mono (by simp [lhSetL]) (fun _ h => h)) ?_
+    ((IRS.block _ hI hok).mono (by simp [lhSetL]) (fun _ => id)) ?_
   rintro c₁ hI₁ hA₁ hA₁' hc₁
   obtain ⟨v1, v2, v3, v4, v5, v6, vo⟩ := lhSet_val c.nmem c.nreg hd hc hn hr
   have r1 : ∀ r v, regB c.nmem (lhSetL md cd nf nr) c.nreg r = v → c₁.nreg r = v :=
-    fun r v h => by rw [hc₁]; exact h
+    fun r v h => by rwx [hc₁]
   have m1 : c₁.nmem = c.nmem := by rw [hc₁]
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := r1 _ _ (vo _ (by unfold lMD ALLOC sw; omega)
-    (by unfold lCD ALLOC sw; omega) (by unfold lNF ALLOC sw; omega) (by unfold lN ALLOC sw; omega)
-    (by unfold lT ALLOC sw; omega) (by unfold accA ALLOC sw; omega))
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := r1 _ _ (vo _ (by ufo lMD ALLOC sw)
+    (by ufo lCD ALLOC sw) (by ufo lNF ALLOC sw) (by ufo lN ALLOC sw)
+    (by ufo lT ALLOC sw) (by ufo accA ALLOC sw))
   have keep1 : ∀ q, q ≠ lMD → q ≠ lCD → q ≠ lNF → q ≠ lN → q ≠ lT → q ≠ accA →
       c₁.nreg q = c.nreg q := fun q a b d e f g => r1 _ _ (vo q a b d e f g)
   have kD : ∀ r, DR r → c₁.nreg r = c.nreg r := fun r h => by
     unfold DR at h
-    exact keep1 r (by unfold lMD sw; omega) (by unfold lCD sw; omega) (by unfold lNF sw; omega)
-      (by unfold lN sw; omega) (by unfold lT sw; omega) (by unfold accA sw; omega)
+    exact keep1 r (by ufo lMD sw) (by ufo lCD sw) (by ufo lNF sw)
+      (by ufo lN sw) (by ufo lT sw) (by ufo accA sw)
   have s1E : c₁.nreg lE = x.edge := by
-    rw [keep1 lE (by unfold lE lMD sw; omega) (by unfold lE lCD sw; omega)
-      (by unfold lE lNF sw; omega) (by unfold lE lN sw; omega) (by unfold lE lT sw; omega)
-      (by unfold lE accA sw; omega)]; exact hxE
+    rw [keep1 lE (by ufo lE lMD sw) (by ufo lE lCD sw)
+      (by ufo lE lNF sw) (by ufo lE lN sw) (by ufo lE lT sw)
+      (by ufo lE accA sw)]; exact hxE
   have s1H : c₁.nreg lH = x.hgt := by
-    rw [keep1 lH (by unfold lH lMD sw; omega) (by unfold lH lCD sw; omega)
-      (by unfold lH lNF sw; omega) (by unfold lH lN sw; omega) (by unfold lH lT sw; omega)
-      (by unfold lH accA sw; omega)]; exact hxH
-  have s1D : c₁.nreg lD = c.nreg lD := keep1 lD (by unfold lD lMD sw; omega)
-    (by unfold lD lCD sw; omega) (by unfold lD lNF sw; omega) (by unfold lD lN sw; omega)
-    (by unfold lD lT sw; omega) (by unfold lD accA sw; omega)
+    rw [keep1 lH (by ufo lH lMD sw) (by ufo lH lCD sw)
+      (by ufo lH lNF sw) (by ufo lH lN sw) (by ufo lH lT sw)
+      (by ufo lH accA sw)]; exact hxH
+  have s1D : c₁.nreg lD = c.nreg lD := keep1 lD (by ufo lD lMD sw)
+    (by ufo lD lCD sw) (by ufo lD lNF sw) (by ufo lD lN sw)
+    (by ufo lD lT sw) (by ufo lD accA sw)
   have hctx₁ : ChainCtx P W c₁ cd C := hM.hctx.transport (kD cd hc) (fun a _ => by rw [m1])
     (by rw [hA1])
-  have hnr₁ : c₁.nreg nr = 2 * C.m + 7 := by rw [kD nr hr]; exact hnr
-  have hPW : P.n + 1 ≤ W := by unfold hostWords at hWh; omega
+  have hnr₁ : c₁.nreg nr = 2 * C.m + 7 := by rwx [kD nr hr]
+  have hPW : P.n + 1 ≤ W := by ufo hostWords at hWh
   -- 2. the height code
   refine IRS.seq (K₁ := 42030) (K₂ := localK T Fg (D + 1) D)
     (hHgt_irs hc hr hI₁ hK hctx₁ hnr₁ s1E s1H he hpp hcl hy (by omega) hPW) ?_
@@ -162,36 +165,36 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       c₂.nreg r = c₁.nreg r := k2
   have k2s : ∀ r, 240000 ≤ r → r < 250000 → r ≠ lH → (r < sw 720 ∨ sw 726 < r) →
       c₂.nreg r = c₁.nreg r := fun r h1 h2 h3 h4 =>
-    keep2 r (not_oracle_sw h1 h2) h3 h4 (by unfold ALLOC; omega)
+    keep2 r (not_oracle_sw h1 h2) h3 h4 (by ufo ALLOC)
   have s2D : c₂.nreg lD = c.nreg lD := by
-    rw [k2s lD (by unfold lD sw; omega) (by unfold lD sw; omega) (by unfold lD lH sw; omega)
-      (Or.inr (by unfold lD sw; omega)), s1D]
+    rw [k2s lD (by ufo lD sw) (by ufo lD sw) (by ufo lD lH sw)
+      (Or.inr (by ufo lD sw)), s1D]
   have s2N : c₂.nreg lN = 2 * C.m + 7 := by
-    rw [k2s lN (by unfold lN sw; omega) (by unfold lN sw; omega) (by unfold lN lH sw; omega)
-      (Or.inr (by unfold lN sw; omega)), r1 _ _ v4, hnr]
+    rw [k2s lN (by ufo lN sw) (by ufo lN sw) (by ufo lN lH sw)
+      (Or.inr (by ufo lN sw)), r1 _ _ v4, hnr]
   have s2T : c₂.nreg lT = 0 := by
-    rw [k2s lT (by unfold lT sw; omega) (by unfold lT sw; omega) (by unfold lT lH sw; omega)
-      (Or.inr (by unfold lT sw; omega)), r1 _ _ v5]
+    rw [k2s lT (by ufo lT sw) (by ufo lT sw) (by ufo lT lH sw)
+      (Or.inr (by ufo lT sw)), r1 _ _ v5]
   have s2A : c₂.nreg accA = 0 := by
-    rw [k2s accA (by unfold accA sw; omega) (by unfold accA sw; omega)
-      (by unfold accA lH sw; omega) (Or.inr (by unfold accA sw; omega)), r1 _ _ v6]
+    rw [k2s accA (by ufo accA sw) (by ufo accA sw)
+      (by ufo accA lH sw) (Or.inr (by ufo accA sw)), r1 _ _ v6]
   have s2MD : c₂.nreg lMD = c.nreg md := by
-    rw [k2s lMD (by unfold lMD sw; omega) (by unfold lMD sw; omega) (by unfold lMD lH sw; omega)
-      (Or.inr (by unfold lMD sw; omega)), r1 _ _ v1]
+    rw [k2s lMD (by ufo lMD sw) (by ufo lMD sw) (by ufo lMD lH sw)
+      (Or.inr (by ufo lMD sw)), r1 _ _ v1]
   have s2CD : c₂.nreg lCD = c.nreg cd := by
-    rw [k2s lCD (by unfold lCD sw; omega) (by unfold lCD sw; omega) (by unfold lCD lH sw; omega)
-      (Or.inr (by unfold lCD sw; omega)), r1 _ _ v2]
+    rw [k2s lCD (by ufo lCD sw) (by ufo lCD sw) (by ufo lCD lH sw)
+      (Or.inr (by ufo lCD sw)), r1 _ _ v2]
   have s2NF : c₂.nreg lNF = c.nreg nf := by
-    rw [k2s lNF (by unfold lNF sw; omega) (by unfold lNF sw; omega) (by unfold lNF lH sw; omega)
-      (Or.inr (by unfold lNF sw; omega)), r1 _ _ v3]
+    rw [k2s lNF (by ufo lNF sw) (by ufo lNF sw) (by ufo lNF lH sw)
+      (Or.inr (by ufo lNF sw)), r1 _ _ v3]
   have hTBR₂ : c₂.nreg TBR = c.nreg TBR := by
-    rw [hI₂.hin _ (by unfold IFix TBR sw; omega), hI.hin _ (by unfold IFix TBR sw; omega)]
+    rw [hI₂.hin _ (by ufo IFix TBR sw), hI.hin _ (by ufo IFix TBR sw)]
   have hTLR₂ : c₂.nreg TLR = c.nreg TLR := by
-    rw [hI₂.hin _ (by unfold IFix TLR sw; omega), hI.hin _ (by unfold IFix TLR sw; omega)]
-  have hTLRc : c.nreg TLR = T := hI.hin _ (by unfold IFix TLR sw; omega)
+    rw [hI₂.hin _ (by ufo IFix TLR sw), hI.hin _ (by ufo IFix TLR sw)]
+  have hTLRc : c.nreg TLR = T := hI.hin _ (by ufo IFix TLR sw)
   have mem2 : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [m2 a (by rw [hA1]; exact ha), m1]
-  have hA2 : c.nreg ALLOC ≤ c₂.nreg ALLOC := by rw [← hA1]; exact hA₂''
+    rw [m2 a (by rwx [hA1]), m1]
+  have hA2 : c.nreg ALLOC ≤ c₂.nreg ALLOC := by rwx [← hA1]
   have hL₂ : LCtx P W C N E c₂ :=
     { hG := hG
       hWh := hWh
@@ -252,7 +255,7 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   refine (localHit_irs (C := C) (N := N) (Mod := fun _ => C) (R₀ := C.radius)
       (L := ∅) (Da := c₀.nreg (sw 6) + 1) (Dc := c₀.nreg (sw 6)) (x := xs) (d := c₂.nreg lD)
       hsh hBs hXl hI₂ hK hL₂ hX hcap hOk hsg hAr hCh s2E s2H rfl he hkpp
-      (by rw [hposxs]; exact hy) hlocs hacc (by rw [s2T]; omega) rfl rfl s2N
+      (by rwx [hposxs]) hlocs hacc (by rwo [s2T]) rfl rfl s2N
       (by rw [hTLR₂, hTLRc]; show c₂.nreg ALLOC + localK T Fg (D + 1) D ≤ W; omega)).mono
         (by rw [hTLR₂, hTLRc]) ?_
   rintro c' ⟨⟨L', hacc', -, hL', hgeo⟩, k3, hA₃, m3⟩
@@ -261,20 +264,20 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   · rcases hL' τ hτ with h | h
     · exact absurd h (Set.notMem_empty τ)
     · exact h
-  · refine ⟨k, rfl, hkl, by rw [hkpos]; exact hkh, ?_, by rw [hposxs]; exact htop⟩
+  · refine ⟨k, rfl, hkl, by rwx [hkpos], ?_, by rwx [hposxs]⟩
     rw [hposxs]
     show sideLeft (chainModel C).W x.edge ((chainModel C).param (Qof P) xs) _
-    rw [hkpar]; exact hsl
+    rwx [hkpar]
   · refine ⟨fun r h1 h2 h3 => ?_, le_trans hA2 hA₃, fun a ha => ?_⟩
     · have hr2 : ¬ ((sw 700 ≤ r ∧ r < sw 2200) ∨ (sw 3000 ≤ r ∧ r < sw 3200)) := h2
-      rw [k3 r h1 (fun h => hr2 (by unfold LHW sw at h; unfold sw; omega)) h3,
-        keep2 r h1 (fun h => hr2 (by subst h; unfold lH sw; omega)) (by unfold sw at hr2 ⊢; omega)
-          h3, keep1 r (fun h => hr2 (by subst h; unfold lMD sw; omega))
-          (fun h => hr2 (by subst h; unfold lCD sw; omega))
-          (fun h => hr2 (by subst h; unfold lNF sw; omega))
-          (fun h => hr2 (by subst h; unfold lN sw; omega))
-          (fun h => hr2 (by subst h; unfold lT sw; omega))
-          (fun h => hr2 (by subst h; unfold accA sw; omega))]
+      rw [k3 r h1 (fun h => hr2 (by unfold LHW sw at h; ufo sw)) h3,
+        keep2 r h1 (fun h => hr2 (by subst h; ufo lH sw)) (by ufo sw at hr2 ⊢)
+          h3, keep1 r (fun h => hr2 (by subst h; ufo lMD sw))
+          (fun h => hr2 (by subst h; ufo lCD sw))
+          (fun h => hr2 (by subst h; ufo lNF sw))
+          (fun h => hr2 (by subst h; ufo lN sw))
+          (fun h => hr2 (by subst h; ufo lT sw))
+          (fun h => hr2 (by subst h; ufo accA sw))]
     · rw [m3 a (by omega), mem2 a ha]
 
 end

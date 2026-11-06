@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.DownPhaseMirrorModel
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Mirror symmetry (F-D7), part 6: mirrored chains and their chain models
@@ -45,7 +50,7 @@ theorem edgeIdx_mir (k : ℕ) : C.mir.edgeIdx k = C.edgeIdx k := by
 
 theorem vertex_mir (k : ℕ) : C.mir.vertex k = mir (C.vertex k) := by
   show C.P.mir.vtx (C.mir.edgeIdx k) = _
-  rw [edgeIdx_mir, mir_vtx]; rfl
+  rwr [edgeIdx_mir, mir_vtx]
 
 theorem set_mir : C.mir.set = mir '' C.set := by
   ext x
@@ -64,7 +69,7 @@ theorem topIdx_mir : C.mir.topIdx = C.topIdx := by
 
 theorem top_mir : C.mir.top = mir C.top := by
   show C.mir.vertex C.mir.topIdx = _
-  rw [topIdx_mir, vertex_mir]; rfl
+  rwr [topIdx_mir, vertex_mir]
 
 theorem coordBound_mir (P : Polygon) : Chazelle.Jordan.coordBound P.mir =
     Chazelle.Jordan.coordBound P := by
@@ -77,7 +82,7 @@ theorem radius_mir : C.mir.radius = C.radius := by
   unfold Chazelle.Chain.radius; rw [chainMir_P, coordBound_mir]
 
 theorem slitTop_mir : C.mir.slitTop = mir C.slitTop := by
-  unfold Chazelle.Chain.slitTop; rw [top_mir, radius_mir]; rfl
+  urr Chazelle.Chain.slitTop [top_mir, radius_mir]
 
 theorem slit_mir : C.mir.slit = mir '' C.slit := by
   unfold Chazelle.Chain.slit; rw [top_mir, slitTop_mir, mir_segment]
@@ -94,21 +99,21 @@ theorem dom_mir : C.mir.dom = mir '' C.dom := by
 
 theorem sideTour_mir (β : Bool) (i : ℕ) : C.mir.sideTour β i = mir (C.sideTour β i) := by
   unfold Chazelle.Chain.sideTour Chazelle.Chain.sideIdx Chazelle.Chain.sideS
-  rw [topIdx_mir, vertex_mir]; rfl
+  rwr [topIdx_mir, vertex_mir]
 
 /-- The Euler tour index is symmetric. -/
 theorem sideE_sym {m : ℕ} (hm : 0 < m) {x y : ℕ} (h : (x + y) % (2 * m) = 0) :
     sideE m (x % (2 * m)) = sideE m (y % (2 * m)) := by
   have hX := Nat.mod_lt x (show 0 < 2 * m by omega)
   have hY := Nat.mod_lt y (show 0 < 2 * m by omega)
-  have h' : (x % (2 * m) + y % (2 * m)) % (2 * m) = 0 := by rw [← Nat.add_mod]; exact h
+  have h' : (x % (2 * m) + y % (2 * m)) % (2 * m) = 0 := by rwx [← Nat.add_mod]
   have hs : x % (2 * m) + y % (2 * m) = 0 ∨ x % (2 * m) + y % (2 * m) = 2 * m := by
     by_cases hlt : x % (2 * m) + y % (2 * m) < 2 * m
     · rw [Nat.mod_eq_of_lt hlt] at h'; exact Or.inl h'
     · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h'
       right; omega
   unfold sideE
-  split_ifs <;> omega
+  splao
 
 /-- **Reversing the tour flips the turn.** -/
 theorem sideTour_not (β : Bool) {i : ℕ} (hi : i ≤ 2 * C.m) :
@@ -142,7 +147,7 @@ theorem walkMir_sideWalk_not (β : Bool) :
     WalkMir (C.sideWalk β) (C.mir.sideWalk (!β)) 5 := by
   have hn := C.sideWalk_n β
   have hn' := C.mir.sideWalk_n (!β)
-  refine ⟨by rw [hn, hn']; rfl, by rw [hn]; omega, fun j hj => ?_⟩
+  refine ⟨by rwr [hn, hn'], by rwo [hn], fun j hj => ?_⟩
   rw [hn] at hj ⊢
   rcases Nat.lt_or_ge j 6 with hj6 | hj6
   · rw [show 5 + (2 * C.m + 7) - j = (5 - j) + (2 * C.m + 7) * 1 by omega,
@@ -150,9 +155,9 @@ theorem walkMir_sideWalk_not (β : Bool) :
     interval_cases j
     · show C.mir.slitTop = mir C.slitTop; exact slitTop_mir C
     · show ((-C.mir.radius, C.mir.radius) : Point) = mir (C.radius, C.radius)
-      rw [radius_mir]; rfl
+      rwr [radius_mir]
     · show ((-C.mir.radius, -C.mir.radius) : Point) = mir (C.radius, -C.radius)
-      rw [radius_mir]; rfl
+      rwr [radius_mir]
     · show ((C.mir.radius, -C.mir.radius) : Point) = mir (-C.radius, -C.radius)
       rw [radius_mir, mir_pt, neg_neg]
     · show ((C.mir.radius, C.mir.radius) : Point) = mir (-C.radius, C.radius)
@@ -160,8 +165,8 @@ theorem walkMir_sideWalk_not (β : Bool) :
     · show C.mir.slitTop = mir C.slitTop; exact slitTop_mir C
   · obtain ⟨i, rfl⟩ : ∃ i, j = i + 6 := ⟨j - 6, by omega⟩
     rw [show (5 + (2 * C.m + 7) - (i + 6)) % (2 * C.m + 7) = (2 * C.m - i) + 6 by
-      rw [Nat.mod_eq_of_lt (by omega)]; omega]
-    rw [C.mir.sideWalk_vtx_tour _ (show i ≤ 2 * C.mir.m by simp; omega),
+      rwo [Nat.mod_eq_of_lt (by omega)]]
+    rw [C.mir.sideWalk_vtx_tour _ (show i ≤ 2 * C.mir.m by sio),
       C.sideWalk_vtx_tour _ (by omega), sideTour_mir, sideTour_not _ _ (by omega)]
 
 /-- **The turn of the mirrored chain is flipped** (inner top vertex). -/
@@ -174,7 +179,7 @@ theorem sideBeta_mir (hP : C.P.Simple) (h0 : 0 < C.topIdx) (hm : C.topIdx < C.m)
   have hA : A ≠ 0 := C.sideVertex_sub_top_ne hP (k := T + 1) (by omega) (by omega)
   have hB : B ≠ 0 := C.sideVertex_sub_top_ne hP (k := T - 1) (by omega) (by omega)
   have hns := C.sideChain_nonSpike hP h0 hm
-  have hor : sideCcw A X B ∨ sideCcw B X A := Chazelle.Chain.sideCcw_or hA hB hns.1
+  have hor  := Chazelle.Chain.sideCcw_or hA hB hns.1
     (C.sideUp_not_ray _ (by omega) hA) (C.sideUp_not_ray _ (by omega) hB)
   have hβ : C.sideBeta = true ↔ sideCcw A X B := C.sideBeta_eq_true_iff
   have e : C.mir.sideBeta = true ↔ sideCcw B X A := by
@@ -195,7 +200,7 @@ theorem sideBeta_mir (hP : C.P.Simple) (h0 : 0 < C.topIdx) (hm : C.topIdx < C.m)
 theorem walkMir_sideWalk (hP : C.P.Simple) :
     WalkMir (C.sideWalk C.sideBeta) (C.mir.sideWalk C.mir.sideBeta) 5 := by
   by_cases hT : C.topIdx = 0 ∨ C.topIdx = C.m
-  · have hT' : C.mir.topIdx = 0 ∨ C.mir.topIdx = C.mir.m := by rw [topIdx_mir]; exact hT
+  · have hT' : C.mir.topIdx = 0 ∨ C.mir.topIdx = C.mir.m := by rwx [topIdx_mir]
     rw [sideWalk_indep C.mir hT' C.mir.sideBeta (!C.sideBeta)]
     exact walkMir_sideWalk_not C _
   · push Not at hT
@@ -226,7 +231,7 @@ theorem chords_chain_mir : C.mir.chords = mirF C.chords := by
   constructor
   · rintro ⟨k, σ, hk, hσ, hD, rfl⟩
     refine ⟨k, -σ, hk, by rcases hσ with rfl | rfl <;> norm_num, ?_, ?_⟩
-    · rw [← dirFree_mir, neg_neg]; exact hD
+    · rwx [← dirFree_mir, neg_neg]
     · rw [← neg_neg σ, chordSet_chain_mir, image_mir_image_mir, neg_neg]
   · rintro ⟨k, σ, hk, hσ, hD, hc⟩
     refine ⟨k, -σ, hk, by rcases hσ with rfl | rfl <;> norm_num, (dirFree_mir C k σ).2 hD, ?_⟩
@@ -243,7 +248,7 @@ theorem augChords_mir : Merge.augChords C.mir = mirF (Merge.augChords C) := by
   constructor
   · rintro ⟨y, a, b, hch, hy, rfl⟩
     refine ⟨y, -b, -a, ?_, hy, hseg_mir y a b⟩
-    rw [← isHChordIn_mir, neg_neg, neg_neg]; exact hch
+    rwx [← isHChordIn_mir, neg_neg, neg_neg]
   · rintro ⟨y, a, b, hch, hy, hc⟩
     refine ⟨y, -b, -a, isHChordIn_mir.2 hch, hy, ?_⟩
     rw [← hseg_mir, ← hc, image_mir_image_mir]
@@ -258,7 +263,7 @@ theorem modelMir_chain (hP : C.P.Simple) : ModelMir (chainModel C) (chainModel C
     rw [hn] at hp ⊢
     rw [idx_q (by omega) hp]
     show (6 ≤ p ∧ p < 2 * C.m + 6) ↔ (6 ≤ _ ∧ _ < 2 * C.m + 6)
-    split_ifs <;> omega
+    splao
   Adm := augChords_mir C
   Full := chords_chain_mir C
 

@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepIoRec
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep RAM (WP-D), answers: walk positions of the shared vertex and of the top
@@ -70,12 +71,12 @@ theorem topIdx_iff (C : Chain) {i : ℕ} (hi : i ≤ 2 * C.m) :
   rw [Chain.sideIdx_eq]
   unfold midT sideE Chain.sideS
   cases hβ : C.sideBeta
-  · simp only [Bool.false_eq_true, ite_false]
+  · simp [Bool.false_eq_true, ite_false]
     rw [mod_three h2m (show 2 * C.m - C.topIdx + i < 3 * (2 * C.m) by omega)]
-    split_ifs <;> omega
-  · simp only [ite_true]
+    splao
+  · simp [ite_true]
     rw [mod_three h2m (show C.topIdx + i < 3 * (2 * C.m) by omega)]
-    split_ifs <;> omega
+    splao
 
 /-! ## Positions -/
 
@@ -85,11 +86,11 @@ theorem nhgt_eq_zero_iff (M : Model) (Q : Polygon) (u : WPos) :
   unfold nhgt Restore.normOf
   split_ifs with h
   · simp [h]
-  · simp only [h, iff_false]
+  · simp [h, iff_false]
     intro h0
     apply h
     obtain ⟨e, hh⟩ := u
-    simp only at h0
+    simp at h0
     subst h0
     rfl
 
@@ -123,7 +124,7 @@ theorem atTop_iff (C : Chain) (hP : C.P.Simple) (Q : Polygon) {x : WPos}
       (x.edge = 6 ∨ x.edge = 2 * C.m + 6 ∨ x.edge = 6 + midT C) := by
   have hn := cm_n C
   have hmid : midT C ≤ 2 * C.m := by
-    unfold midT; have := C.topIdx_le; split_ifs <;> omega
+    unfold midT; have := C.topIdx_le; splao
   show _ = C.vertex C.topIdx ↔ _
   rw [pos_eq_sidePt' C Q x, vtx_pos_iff C hP C.topIdx_le hx h0 h1]
   constructor

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleSet
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (E7-B, part 3): an interior subarc as one or two chain arcs (O3)
@@ -41,7 +43,7 @@ noncomputable def iv (Q : Polygon) (p : ℕ) : ℕ := by
   exact if Mountain.LeftInside Q then p else Q.n - 1 - p
 
 theorem iv_lt {p : ℕ} (hp : p < Q.n) : iv Q p < Q.n := by
-  unfold iv; split_ifs <;> omega
+  unfold iv; splao
 
 theorem iw_vtx {p : ℕ} (hp : p < Q.n) : (interiorWalk Q).vtx p = Q.vtx (iv Q p) := by
   unfold iv
@@ -72,7 +74,7 @@ theorem uStart_cStart {u L : ℕ} (hu : u < Q.n) (hL : L < Q.n) : uStart Q (cSta
     have e : ((Q.n - 1 - u + (Q.n - L)) % Q.n + L) % Q.n = Q.n - 1 - u := by
       rw [Nat.mod_add_mod, show Q.n - 1 - u + (Q.n - L) + L = (Q.n - 1 - u) + Q.n by omega,
         Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    rw [e]; omega
+    rwo [e]
 
 /-- **The chain of the stretch** of `L` edges of the interior walk from `u`. -/
 noncomputable def ch (Q : Polygon) (u L : ℕ) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n) : Chain :=
@@ -210,15 +212,14 @@ theorem chain_arcSet_one {e h₁ h₂ : ℕ} (hs : tau Q u L h1 h2 ≤ L)
   have hn : (MC Q u L h1 h2).W.n = 2 * L + 7 := cm_n'
   have hge : e ≤ L := by omega
   rw [key_eq, key_eq, param_start hu h1 h2, param_end_one hu h1 h2 hs he]
-  have hg' : g < (MC Q u L h1 h2).W.n := by rw [hn]; omega
+  have hg' : g < (MC Q u L h1 h2).W.n := by rwo [hn]
   have hb0 : (0 : ℝ) ≤ ((g + e : ℕ) : ℝ) + t₂ := by have := hy.1; positivity
   have hbn : ((g + e : ℕ) : ℝ) + t₂ < (MC Q u L h1 h2).W.n := by
     have : ((g + e : ℕ) : ℝ) + 1 ≤ (MC Q u L h1 h2).W.n := by
       rw [hn]; exact_mod_cast (show g + e + 1 ≤ 2 * L + 7 by omega)
     linarith [hy.2]
-  show (MC Q u L h1 h2).arcSet ((g : ℝ) + x) (((g + e : ℕ) : ℝ) + t₂) = _
   rw [arcSet_eq_oset _ hg' hx.1 hx.2 hb0 hbn]
-  have hmod : (g + e) % (MC Q u L h1 h2).W.n = g + e := Nat.mod_eq_of_lt (by rw [hn]; omega)
+  have hmod : (g + e) % (MC Q u L h1 h2).W.n = g + e := Nat.mod_eq_of_lt (by rwo [hn])
   have hlap : (e : ℝ) + t₂ ≤ x + (MC Q u L h1 h2).W.n := by
     rw [hn]
     have : (e : ℝ) + 1 ≤ ((2 * L + 7 : ℕ) : ℝ) := by exact_mod_cast (show e + 1 ≤ 2 * L + 7 by omega)
@@ -231,7 +232,7 @@ theorem chain_arcSet_one {e h₁ h₂ : ℕ} (hs : tau Q u L h1 h2 ≤ L)
     rcases he with he | ⟨he, h0⟩
     · have : (e : ℝ) + 1 ≤ L := by exact_mod_cast he
       linarith [hy.2]
-    · have : t₂ = 0 := by rw [ht₂, h0]; rfl
+    · have : t₂ = 0 := by rwr [ht₂, h0]
       rw [this, add_zero, he]
   exact (oset_congr (agree_pre hu h1 h2) hyL).symm
 
@@ -264,14 +265,13 @@ theorem chain_arcSet_two {e h₁ h₂ : ℕ} (hs : L < tau Q u L h1 h2)
   have hL₁L : L₁ < L := by omega
   constructor
   · rw [key_eq, key_eq, param_start hu h1 h2, param_zero, add_zero]
-    have hg' : g < (MC Q u L h1 h2).W.n := by rw [hn]; omega
+    have hg' : g < (MC Q u L h1 h2).W.n := by rwo [hn]
     have hb0 : (0 : ℝ) ≤ ((2 * L + 6 : ℕ) : ℝ) := by positivity
     have hbn : ((2 * L + 6 : ℕ) : ℝ) < (MC Q u L h1 h2).W.n := by
       rw [hn]; exact_mod_cast (show 2 * L + 6 < 2 * L + 7 by omega)
     have hb' : ((2 * L + 6 : ℕ) : ℝ) = (((g + L₁) % (MC Q u L h1 h2).W.n : ℕ) : ℝ) + 0 := by
-      rw [add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)]
+      rw [add_zero, Nat.mod_eq_of_lt (by rwo [hn])]
       congr 1; omega
-    show (MC Q u L h1 h2).arcSet ((g : ℝ) + x) ((2 * L + 6 : ℕ) : ℝ) = _
     rw [arcSet_eq_oset _ hg' hx.1 hx.2 hb0 hbn, hb']
     have hL₁r : (1 : ℝ) ≤ L₁ := by exact_mod_cast hL₁0
     have hlap : (L₁ : ℝ) + 0 ≤ x + (MC Q u L h1 h2).W.n := by
@@ -283,20 +283,19 @@ theorem chain_arcSet_two {e h₁ h₂ : ℕ} (hs : L < tau Q u L h1 h2)
     exact (oset_congr (agree_pre hu h1 h2) (by rw [min_eq_right (by omega)])).symm
   · have hA := agree_post hu h1 h2 hs
     rw [key_eq, key_eq, param_zero, param_end_two hu h1 h2 hs hle he, add_zero]
-    have h6 : (6 : ℕ) < (MC Q u L h1 h2).W.n := by rw [hn]; omega
+    have h6 : (6 : ℕ) < (MC Q u L h1 h2).W.n := by rwo [hn]
     have hb0 : (0 : ℝ) ≤ ((6 + (e - L₁) : ℕ) : ℝ) + t₂ := by have := hy.1; positivity
     have hbn : ((6 + (e - L₁) : ℕ) : ℝ) + t₂ < (MC Q u L h1 h2).W.n := by
       have : ((6 + (e - L₁) : ℕ) : ℝ) + 1 ≤ (MC Q u L h1 h2).W.n := by
         rw [hn]; exact_mod_cast (show 6 + (e - L₁) + 1 ≤ 2 * L + 7 by omega)
       linarith [hy.2]
     have ha : (((6 : ℕ) : ℝ)) = ((6 : ℕ) : ℝ) + 0 := by ring
-    show (MC Q u L h1 h2).arcSet ((6 : ℕ) : ℝ) (((6 + (e - L₁) : ℕ) : ℝ) + t₂) = _
     rw [ha, arcSet_eq_oset _ h6 le_rfl zero_lt_one hb0 hbn]
     have hmod : (6 + (e - L₁)) % (MC Q u L h1 h2).W.n = 6 + (e - L₁) :=
-      Nat.mod_eq_of_lt (by rw [hn]; omega)
+      Nat.mod_eq_of_lt (by rwo [hn])
     have hpos : (0 : ℝ) < (e - L₁ : ℕ) + t₂ := by
       have e1 : ((e - L₁ : ℕ) : ℝ) = e - L₁ := Nat.cast_sub hle
-      rw [e1]; linarith
+      rwli [e1]
     have hlap : ((e - L₁ : ℕ) : ℝ) + t₂ ≤ 0 + (MC Q u L h1 h2).W.n := by
       rw [hn]
       have : ((e - L₁ : ℕ) : ℝ) + 1 ≤ ((2 * L + 7 : ℕ) : ℝ) := by
@@ -311,13 +310,13 @@ theorem chain_arcSet_two {e h₁ h₂ : ℕ} (hs : L < tau Q u L h1 h2)
       · have : ((e - L₁ : ℕ) : ℝ) + 1 ≤ ((L - L₁ : ℕ) : ℝ) := by
           exact_mod_cast (show e - L₁ + 1 ≤ L - L₁ by omega)
         linarith [hy.2]
-      · have : t₂ = 0 := by rw [ht₂, h0]; rfl
+      · have : t₂ = 0 := by rwr [ht₂, h0]
         rw [this, add_zero, he]
     rw [← oset_congr hA hy', ← oset_shift _ _ L₁ le_rfl]
     congr 1
     · ring
     · have e1 : ((e - L₁ : ℕ) : ℝ) = e - L₁ := Nat.cast_sub hle
-      rw [e1]; ring
+      rwring [e1]
 
 end chainArc
 

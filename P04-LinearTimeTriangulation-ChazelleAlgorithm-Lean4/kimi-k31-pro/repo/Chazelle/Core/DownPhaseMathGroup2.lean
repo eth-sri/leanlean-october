@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseMathGroup
+public import Chazelle.Rwx
 
 /-!
 # Down phase, math (H-R1): the exit chord after an arc end, and `DrvR.partner`
@@ -35,7 +36,7 @@ theorem attach_third {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.A
   have m0 := hsub hx
   have m1 := hsub hy
   have m2 := hsub hz
-  simp only [mem_insert_iff, mem_singleton_iff] at m0 m1 m2
+  simp [mem_insert_iff, mem_singleton_iff] at m0 m1 m2
   rcases m0 with e0 | e0 <;> rcases m1 with e1 | e1 <;> rcases m2 with e2 | e2
   all_goals first
     | exact (hxy (e0.trans e1.symm)).elim
@@ -60,7 +61,7 @@ include hQ hdh hN hne hR hRC in
 theorem exit_record {x : WPos} (hx : ChordPos N x) {a : ℝ}
     (harc : (interiorModel Q).IsArc (N.F (interiorModel Q) Q) R a ((interiorModel Q).key Q x)) :
     ∃ i ∈ (N.region r).chords, x = (N.chord i).lpos ∨ x = (N.chord i).rpos := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM  := walkAx_interiorModel hQ
   obtain ⟨c, ⟨hc, ht⟩, p, t, hA, he⟩ := hM.exists_exit_at_end hN.1.2.1 hN.1.1 hne hR harc
   obtain ⟨i, hi, rfl⟩ := chord_of_mem hc
   refine ⟨i, (hRC i).2 ⟨hi, ht⟩, ?_⟩
@@ -93,7 +94,7 @@ theorem partner_key {x : WPos} (hx : ChordPos N x) {m : ℕ}
       hk (interiorModel Q) (N.F (interiorModel Q) Q) R
           ((m + 1) % nk (interiorModel Q) (N.F (interiorModel Q) Q) R) ∈
         exitKeys (interiorModel Q) (N.F (interiorModel Q) Q) R := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM  := walkAx_interiorModel hQ
   have h3 := three_le_nk hQ hN.1 hne hR
   obtain ⟨i₀, hi₀, hcases⟩ := partner_spec (exit_record hQ hdh hN hne hR hRC hx harc)
   obtain ⟨hi₀n, ht₀⟩ := (hRC i₀).1 hi₀
@@ -120,7 +121,7 @@ theorem partner_key {x : WPos} (hx : ChordPos N x) {m : ℕ}
   have hex : hk (interiorModel Q) (N.F (interiorModel Q) Q) R m ∈
       exitKeys (interiorModel Q) (N.F (interiorModel Q) Q) R :=
     ⟨c₀, hc₀S, ht₀, _, _, hAx, by rw [hkm]; exact ekx⟩
-  have hAp' := DownMath.arcGap_prev_of_end hQ hN.1 hne hR hm (by rw [hkm]; exact harc)
+  have hAp' := DownMath.arcGap_prev_of_end hQ hN.1 hne hR hm (by rwx [hkm])
   obtain ⟨-, hnext⟩ := end_chord hQ hN.1 hne hR hm hex hAp'
   obtain ⟨p', t', hA', he'⟩ := hnext c₀ hc₀S ht₀ _ _ hAx (by rw [hkm]; exact ekx)
   have hz : hk (interiorModel Q) (N.F (interiorModel Q) Q) R

@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleCuM2
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (E7-B, part 15): the slots of the interior cutter
@@ -103,8 +105,8 @@ theorem SlotOK.keep {P : Polygon} {m m' : ℕ → ℕ} {E E' Hγ e₁ : ℕ} {Va
   have hr : ∀ i, i < sl.q → rdPc m' sl.L i = rdPc m sl.L i := fun i hi =>
     rdPc_congr he (by have : 7 * i + 7 ≤ 7 * sl.q := by omega
                       omega)
-  refine ⟨C, ℓ, off, sa, ea, S, hu, by rw [he _ (by omega)]; exact hq, hq1, by omega,
-    by rw [hr 0 (by omega)]; exact h0, by rw [hr _ (by omega)]; exact hl,
+  refine ⟨C, ℓ, off, sa, ea, S, hu, by rwx [he _ (by omega)], hq1, by omega,
+    by rwx [hr 0 (by omega)], by rwx [hr _ (by omega)],
     fun i hi => by rw [hr i (by omega), hr (i + 1) hi]; exact hc i hi,
     fun i hi => by rw [hr i (by omega)]; exact ht i hi,
     fun i hi => by rw [hr i hi]; exact (hv i hi).keep he hE, r1, r2, r3, r4, r5⟩
@@ -121,15 +123,15 @@ theorem slotOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb : �
   set ps := (List.range sl.q).map (rdPc m sl.L) with hps
   have hlen : ps.length = sl.q := by simp [hps]
   have hne : ps ≠ [] := by
-    intro h; have := congrArg List.length h; rw [hlen] at this; simp at this; omega
+    intro h; have := congrArg List.length h; rw [hlen] at this; sio at this
   have hget : ∀ i (hi : i < ps.length), ps[i]'hi = rdPc m sl.L i := fun i hi => by
     simp [hps]
   -- the order facts in list form
   have h0' : (chainModel C).key (Qof P) (ps[0]'(List.length_pos_iff.2 hne)).s =
-      (chainModel C).key (Qof P) sa := by rw [hget]; exact h0
+      (chainModel C).key (Qof P) sa := by rwx [hget]
   have hl' : (chainModel C).key (Qof P) (ps[ps.length - 1]'(by
       have := List.length_pos_iff.2 hne; omega)).e = (chainModel C).key (Qof P) ea := by
-    rw [hget, hlen]; exact hl
+    rwx [hget, hlen]
   have hc' : ∀ i (hi : i + 1 < ps.length), (chainModel C).key (Qof P) (ps[i]'(by omega)).e =
       (chainModel C).key (Qof P) (ps[i + 1]'hi).s := fun i hi => by
     rw [hget, hget]; exact hc i (by omega)
@@ -186,7 +188,7 @@ theorem SlotsOK.keep {P : Polygon} {m m' : ℕ → ℕ} {E E' Hγ e₁ : ℕ} (h
 theorem SlotsOK.snoc {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} :
     ∀ {V : ℝ} {sls : List Slot} {V₁ : ℝ}, SlotsOK P m E Hγ e₁ V sls V₁ →
       ∀ {sl : Slot} {V₂ : ℝ}, SlotOK P m E Hγ e₁ V₁ V₂ sl → SlotsOK P m E Hγ e₁ V (sls ++ [sl]) V₂
-  | _, [], _, h, _, _, hs => by simp only [SlotsOK] at h; subst h; exact ⟨_, hs, rfl⟩
+  | _, [], _, h, _, _, hs => by simp [SlotsOK] at h; subst h; exact ⟨_, hs, rfl⟩
   | _, _ :: _, _, ⟨W₁, h1, h2⟩, _, _, hs => ⟨W₁, h1, SlotsOK.snoc h2 hs⟩
 
 /-- **The translated pieces of a chain of valid slots.** -/
@@ -195,7 +197,7 @@ theorem slotsOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} :
       KPath (interiorModel (Qof P)) (Qof P) (Qof P).n V (sls.flatMap (slotPcs m (Qof P).n)) V' ∧
         (∀ pc ∈ sls.flatMap (slotPcs m (Qof P).n), PcV P (interiorModel (Qof P)) m E Hγ pc) ∧
         (sls ≠ [] → sls.flatMap (slotPcs m (Qof P).n) ≠ [])
-  | _, [], _, h => by simp only [SlotsOK] at h; subst h; exact ⟨rfl, by simp, fun h => absurd rfl h⟩
+  | _, [], _, h => by simp [SlotsOK] at h; subst h; exact ⟨rfl, by simp, fun h => absurd rfl h⟩
   | _, sl :: sls, _, ⟨V₁, h1, h2⟩ => by
     obtain ⟨k1, v1, n1⟩ := slotOK_out h1
     obtain ⟨k2, v2, -⟩ := slotsOK_out h2

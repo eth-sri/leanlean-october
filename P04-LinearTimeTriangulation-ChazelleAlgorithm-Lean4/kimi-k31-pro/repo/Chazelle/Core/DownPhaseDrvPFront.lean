@@ -2,6 +2,12 @@ module
 
 public import Chazelle.Core.DownPhaseDrvPCalls
 public import Chazelle.Core.DownPhaseDrvTMain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase pieces (D4), part 10: the descriptor part of a piece
@@ -12,9 +18,6 @@ grade table for a longer leaf), the orientation bit, and the model descriptor at
 index and bit), within `1204 μ + 140000` steps.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -33,10 +36,10 @@ def Btp (r : ℕ) : Bool :=
 def Ball (r : ℕ) : Bool := Bsc r || Btp r || Bbit r
 
 theorem bscan_btp {r : ℕ} (h : Bscan r = true) : Btp r = true := by
-  simp only [Bscan, Btp, Bhost, Bk, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  sio only [Bscan, Btp, Bhost, Bk, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
 theorem bg_btp {r : ℕ} (h : Bg r = true) : Btp r = true := by
-  simp only [Bg, Btp, Bk, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at h ⊢; omega
+  sio only [Bg, Btp, Bk, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at h ⊢
 
 theorem frameB_mono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' := by
@@ -49,18 +52,17 @@ theorem frameB_mono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     · rw [hB r hb] at hr; exact absurd hr (by decide)
 
 theorem ball_band {r : ℕ} (h : Ball r = true) : bandOf r ∈ DrvR.drvBands := by
-  simp only [Ball, Bsc, Btp, Bbit, Bk, Bool.or_eq_true, decide_eq_true_eq] at h
-  rw [DrvT.mem_drvBands]; unfold bandOf; omega
+  simp [Ball, Bsc, Btp, Bbit, Bk, Bool.or_eq_true, decide_eq_true_eq] at h
+  ruo [DrvT.mem_drvBands] bandOf
 
 theorem ball_false {r : ℕ} (h1 : r < 10000 ∨ 10500 ≤ r) (h2 : r < 50046 ∨ 50080 ≤ r)
     (h3 : r < 170000 ∨ 170100 ≤ r) (h4 : r < 218012 ∨ 218100 ≤ r) : Ball r = false := by
-  simp only [Ball, Bsc, Btp, Bbit, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+  sio only [Ball, Bsc, Btp, Bbit, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The descriptor part of a piece.** -/
 theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
     (hG : GoodEnv P) (hW : hostWords P.n ≤ W)
@@ -105,11 +107,11 @@ theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
   have E : ScE P W H c.nmem HB := ⟨hG, hW, hH.holds, hwf, hl, by omega⟩
   -- 1. the count
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, v12, v20, v21, v22, E₁⟩ := cntS_exec (P := P) c hw (H := H)
-    (by rw [hHB]; exact hH.holds) (by rw [hHB]; omega) E.hN (by omega)
+    (by rw [hHB]; exact hH.holds) (by rwo [hHB]) E.hN (by omega)
   rw [hHB] at E₁
-  have k₁' : ∀ r, Bsc r = false → c₁.nreg r = c.nreg r := F₁.1
+  have k₁'  := F₁.1
   have g₁ : ∀ r, 218000 ≤ r → r < 218012 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
-    k₁' r (by simp only [Bsc, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    k₁' r (by sio only [Bsc, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   have w₁ := e₁.wb_right
   -- 2. the top
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, E₂, hT, hTm⟩ : ∃ c₂ k₂, Exec P W topS c₁ c₂ k₂ ∧
@@ -123,13 +125,13 @@ theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
       have a01 : c₁.nreg 218001 = s := by rw [g₁ 218001 (by norm_num) (by norm_num), hs]
       have a02 : c₁.nreg 218002 = m := by rw [g₁ 218002 (by norm_num) (by norm_num), hm]
       obtain ⟨c₂, k₂, e₂, hk₂, F₂, E₂, hT, hle, hlt⟩ := scanS_exec E c₁ E₁ v20 v21
-        (by rw [a01, a02]; exact hsm)
+        (by rwx [a01, a02])
       rw [a01, a02] at hle
       rw [a01] at hlt
       rw [a02] at hk₂ hT
       refine ⟨c₂, k₂, e₂, by omega, frameB_mono F₂ (fun r hr => bscan_btp hr), E₂, ?_, hT⟩
-      exact (hchain_topIdx hCH (by rw [hCs, hCm]; omega) (by rw [hCm]; exact hT)
-        (by rw [hCs, hCm]; exact hle) (by rw [hCs]; exact hlt)).symm
+      exact (hchain_topIdx hCH (by rwo [hCs, hCm]) (by rwx [hCm])
+        (by rwx [hCs, hCm]) (by rwx [hCs])).symm
     · have hm64 : ¬ m < 65 := by
         rw [g₁ 218002 (by norm_num) (by norm_num), hm, v22] at h64; exact h64
       refine spec_ifLtN_false h64 ?_
@@ -137,7 +139,7 @@ theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
       have hμ1 : 1 ≤ μ := by
         by_contra h0
         have : μ = 0 := by omega
-        rw [this] at hμm; simp at hμm; omega
+        rw [this] at hμm; sio at hμm
       obtain ⟨c₂, k₂, e₂, hk₂, F₂, hT, hle⟩ := gTop_exec (P := P) (W := W) (O := O)
         (s := ⟨c.nreg ALLOC, c.nmem, c.nreg 218008⟩) c₁ w₁ hG hW
         (fun a _ => by rw [F₁.2.2.1]) (by rw [F₁.1 _ (by decide)]) hgr
@@ -147,10 +149,10 @@ theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
             exact ham)
       rw [g₁ 218002 (by norm_num) (by norm_num), hm] at hT hle
       rw [g₁ 218004 (by norm_num) (by norm_num)] at hle
-      have hg : ∀ r, Bg r = false → c₂.nreg r = c₁.nreg r := F₂.1
+      have hg  := F₂.1
       have E₂ : HostEnv W HB H.length c.nmem c₂ := by
         have g : ∀ r, 50060 ≤ r → r < 50070 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-          hg r (by simp only [Bg, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
+          hg r (by simp [Bg, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
             beq_eq_false_iff_ne]; omega)
         exact ⟨e₂.wb_right, by rw [g _ (by norm_num) (by norm_num)]; exact E₁.h60,
           by rw [g _ (by norm_num) (by norm_num)]; exact E₁.h61,
@@ -159,32 +161,32 @@ theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
           by rw [g _ (by norm_num) (by norm_num)]; exact E₁.h69, by rw [F₂.2.2.1]; exact E₁.mem⟩
       refine ⟨c₂, k₂, e₂, by omega, frameB_mono F₂ (fun r hr => bg_btp hr), E₂, ?_, hT⟩
       have hD : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
-      refine (hchain_topIdx_leaf hCH (by rw [hCs, hCm]; omega) hD (a := c.nreg 218004)
-        (by rw [hCm]; omega) (fun k hk => ?_) (by rw [hCm]; exact hT) (by rw [hCm]; exact hle)).symm
+      refine (hchain_topIdx_leaf hCH (by rwo [hCs, hCm]) hD (a := c.nreg 218004)
+        (by rwo [hCm]) (fun k hk => ?_) (by rwx [hCm]) (by rwx [hCm])).symm
       rw [hCs]; unfold pt; exact hpts k (by rw [hCm] at hk; exact hk)
   have w₂ := e₂.wb_right
   have g₂ : ∀ r, 218000 ≤ r → r < 218013 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-    F₂.1 r (by simp only [Btp, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    F₂.1 r (by sio only [Btp, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   have g₂' : ∀ r, 218020 ≤ r → r < 218023 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-    F₂.1 r (by simp only [Btp, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    F₂.1 r (by sio only [Btp, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   -- 3. the bit
   obtain ⟨c₃, k₃, e₃, hk₃, F₃, b₃, hb₃⟩ := betaS_exec E c₂ E₂
     (by rw [g₂ 218012 (by norm_num) (by norm_num), v12])
     (by rw [g₂' _ (by norm_num) (by norm_num), v20])
     (by rw [g₂' _ (by norm_num) (by norm_num), v21])
     (by rw [g₂ 218001 (by norm_num) (by norm_num), g₁ 218001 (by norm_num) (by norm_num), hs, hT]
-        have := CH.topIdx_le; rw [hCm] at this; omega)
+        have := CH.topIdx_le; rwo [hCm] at this)
   rw [g₂ 218001 (by norm_num) (by norm_num), g₁ 218001 (by norm_num) (by norm_num), hs, hT] at hb₃
   have w₃ := e₃.wb_right
   have g₃ : ∀ r, 218000 ≤ r → r < 218014 → c₃.nreg r = c₂.nreg r := fun r h1 h2 =>
-    F₃.1 r (by simp only [Bbit, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    F₃.1 r (by sio only [Bbit, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   have g₃' : ∀ r, 218020 ≤ r → r < 218023 → c₃.nreg r = c₂.nreg r := fun r h1 h2 =>
-    F₃.1 r (by simp only [Bbit, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    F₃.1 r (by sio only [Bbit, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   have hβ : (c₃.nreg 218014 = 1 ↔ CH.sideBeta = true) := by
     rw [hb₃]
     rcases Nat.eq_zero_or_pos CH.topIdx with h0 | h0
-    · rw [Brute.sideBeta_of_top_zero h0, h0]; simp
-    · rw [hchain_beta hCH h0 (by rw [hCs]; have := CH.topIdx_le; rw [hCm] at this; omega),
+    · rws [Brute.sideBeta_of_top_zero h0, h0]
+    · rw [hchain_beta hCH h0 (by rw [hCs]; have := CH.topIdx_le; rwo [hCm] at this),
         hCs]
       exact ⟨fun h => h.2, fun h => ⟨h0, h⟩⟩
   -- 4. the descriptor
@@ -200,7 +202,7 @@ theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
         (frameB_mono F₃ (fun r hr => by simp [Ball, hr])))
   have hA₃ : c₃.nreg ALLOC = c.nreg ALLOC := F₁₃.1 _ (by decide)
   obtain ⟨c₄, k₄, e₄, hk₄, v10, v99, r₄, rr₄, rm₄, o₄, ml₄, d0, d1, d2, d3, d4, d5⟩ :=
-    descS_exec (P := P) c₃ w₃ c₃20 c₃21 (by rw [hA₃]; omega)
+    descS_exec (P := P) c₃ w₃ c₃20 c₃21 (by rwo [hA₃])
   rw [hA₃] at v10 v99 ml₄ d0 d1 d2 d3 d4 d5
   have ex : Exec P W frontS c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have gin : ∀ r, 218000 ≤ r → r < 218010 → c₃.nreg r = c.nreg r := fun r h1 h2 => by
@@ -215,16 +217,16 @@ theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
       have ml₄' : ∀ a, a < c₃.nreg ALLOC → c₄.nmem a = c₃.nmem a := fun a ha =>
         ml₄ a (by rw [hA₃] at ha; exact ha)
       refine ⟨fun r hr hra => ?_, fun r _ => by rw [rr₄], ml₄', fun a _ => by rw [rm₄], o₄,
-        by rw [v99, hA₃]; omega, by rw [v99, hA₃]; omega⟩
+        by rwo [v99, hA₃], by rwo [v99, hA₃]⟩
       refine r₄ r ?_ ?_ hra
-      · rintro rfl; exact hr (by rw [DrvT.mem_drvBands]; unfold bandOf; omega)
-      · rintro rfl; exact hr (by rw [DrvT.mem_drvBands]; unfold bandOf; omega)
+      · rintro rfl; exact hr (by ruo [DrvT.mem_drvBands] bandOf)
+      · rintro rfl; exact hr (by ruo [DrvT.mem_drvBands] bandOf)
     exact G₁.trans G₂ |>.mono (by simp) (by omega)
-  · rw [r₄ r (by omega) (by omega) (by unfold ALLOC; omega), gin r h1 h2]
+  · rw [r₄ r (by omega) (by omega) (by ufo ALLOC), gin r h1 h2]
   · rw [r₄ r (by omega) (by omega) h5, F₁₃.1 r (ball_false h2 h3 h4 (by omega))]
-  · rw [r₄ _ (by norm_num) (by norm_num) (by decide)]; exact c₃20
-  · rw [r₄ _ (by norm_num) (by norm_num) (by decide)]; exact c₃21
-  · rw [r₄ _ (by norm_num) (by norm_num) (by decide)]; exact c₃22
+  · rwx [r₄ _ (by norm_num) (by norm_num) (by decide)]
+  · rwx [r₄ _ (by norm_num) (by norm_num) (by decide)]
+  · rwx [r₄ _ (by norm_num) (by norm_num) (by decide)]
   · rw [ml₄ a ha, F₁₃.2.2.1]
   · rw [d1, gin _ (by norm_num) (by norm_num), hHB]
   · rw [d2, gin _ (by norm_num) (by norm_num), hs, hCs]

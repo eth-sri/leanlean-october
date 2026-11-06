@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.UpPhase9
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # WP-J up phase, part 10: the registers of a grade and the cell of a chain
@@ -74,29 +77,29 @@ theorem Kept.ne_alloc {r : ℕ} (h : Kept r) : r ≠ ALLOC := by
 theorem Kept.not_mem {r : ℕ} {B : Finset ℕ} (h : Kept r) (hsub : ∀ b ∈ B, 1 ≤ b ∧ b ≤ 24)
     (h23 : bCore ∉ B) (h17 : bUp ∉ B) : bandOf r ∉ B := by
   rcases h with ⟨h1 | h1, -⟩ | ⟨h, -⟩
-  · intro hm; have := hsub _ hm; unfold OutB at h1; omega
-  · rw [h1]; exact h23
-  · rw [h]; exact h17
+  · intro hm; have := hsub _ hm; ufo OutB at h1
+  · rwx [h1]
+  · rwx [h]
 
 /-- A register of an outside band is outside a set of phase bands. -/
 theorem OutB.not_mem {r : ℕ} {B : Finset ℕ} (h : OutB (bandOf r))
     (hsub : ∀ b ∈ B, 1 ≤ b ∧ b ≤ 24) : bandOf r ∉ B := by
-  intro hm; have := hsub _ hm; unfold OutB at h; omega
+  intro hm; have := hsub _ hm; ufo OutB at h
 
 /-- A kept register is in one of the listed ranges. -/
 theorem Kept.range {r : ℕ} (h : Kept r) :
     r < 10000 ∨ r = 230000 ∨ 250000 ≤ r ∨ (170000 ≤ r ∧ r < 170030) ∨
       (170035 ≤ r ∧ r ≤ 170037) ∨ (170080 ≤ r ∧ r < 180000) := by
   rcases h with ⟨h1 | h1, -⟩ | ⟨h, h'⟩
-  · unfold OutB bandOf at h1; omega
+  · ufo OutB bandOf at h1
   · omega
-  · unfold bandOf bUp at h; omega
+  · ufo bandOf bUp at h
 
 /-- The registers of `URegs`. -/
 def URegR (r : ℕ) : Prop := (170000 ≤ r ∧ r < 170015) ∨ (170019 ≤ r ∧ r < 170030) ∨ r = 170037
 
 theorem URegR.kept {r : ℕ} (h : URegR r) : Kept r :=
-  kept_of (by unfold URegR at h; unfold bandOf bUp; omega) (by unfold URegR at h; omega)
+  kept_of (by unfold URegR at h; ufo bandOf bUp) (by ufo URegR at h)
 
 theorem URegs.of_frame {c c' : Config} {n hp h g cnt γ cntP R : ℕ}
     (hu : URegs c n hp h g cnt γ cntP R) (hk : ∀ r, URegR r → c'.nreg r = c.nreg r) :
@@ -126,7 +129,6 @@ theorem chain_eq {C C' : Chain} (h1 : C.P = C'.P) (h2 : C.s = C'.s) (h3 : C.m = 
     C = C' := by
   cases C; cases C'; simp only at h1 h2 h3; subst h1 h2 h3; rfl
 
-set_option maxHeartbeats 16000000 in
 /-- **The cell of a chain.** -/
 theorem cellB_exec {c : Config} (hw : WordsBounded W c) {A d f o x i s pg q t : ℕ}
     (hA : c.nreg ALLOC = A) (h30 : c.nreg 170030 = d) (h31 : c.nreg 170031 = f)

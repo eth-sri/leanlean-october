@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseOracleShD
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (E7-B, part 12): the sub-queries of an interior query
@@ -92,8 +95,8 @@ theorem plan_one (hL : spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (nh Q e₂
   have hpe : ProperPos (interiorModel Q) Q Q.n ⟨e₂, nh Q e₂ h₂⟩ :=
     ⟨by rw [param_nh q.he₂]; exact q.he.1, by rw [param_nh q.he₂]; exact q.he.2.1,
       le_trans nh_le q.he.2.2⟩
-  refine ⟨⟨q.he₁, h1, hL, q.hs, by rw [hmod]; exact hpe, by rw [hmod]; exact hee,
-    by rw [hmod]; exact hxy⟩, hS, hwt (by omega)⟩
+  refine ⟨⟨q.he₁, h1, hL, q.hs, by rwx [hmod], by rwx [hmod],
+    by rwx [hmod]⟩, hS, hwt (by omega)⟩
 
 include q in
 /-- **Two sub-queries** (`L ≥ n`): two edges to the vertex `(e₁ + 2) mod n`, then the rest. -/
@@ -128,15 +131,15 @@ theorem plan_two (hL : Q.n ≤ spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (n
   have hx1 := q.hs.2.1
   have hx0 := q.hs.1
   refine ⟨⟨q.he₁, by norm_num, by omega, q.hs, hv0 _, Or.inl ⟨rfl, rfl⟩, by
-      rw [hp0]; push_cast; linarith⟩,
-    ⟨Nat.mod_lt _ hn0, by omega, by omega, hv0 _, by rw [hmod2]; exact hpe, ?_, ?_⟩, ?_, ?_⟩
+      rw [hp0]; pcl⟩,
+    ⟨Nat.mod_lt _ hn0, by omega, by omega, hv0 _, by rwx [hmod2], ?_, ?_⟩, ?_, ?_⟩
   · rw [hmod2]
     rcases hee with ⟨h0, h'⟩ | ⟨h0, h', hp⟩
     · exact Or.inl ⟨h0, by omega⟩
     · exact Or.inr ⟨h0, by omega, hp⟩
   · rw [hp0, hmod2]
     rcases hee with ⟨h0, h'⟩ | ⟨h0, h', hp⟩
-    · have : (interiorModel Q).param Q ⟨e₂, nh Q e₂ h₂⟩ = 0 := by rw [h0]; rfl
+    · have : (interiorModel Q).param Q ⟨e₂, nh Q e₂ h₂⟩ = 0 := by rwr [h0]
       rw [this, add_zero]
       exact_mod_cast (show 0 < ee - 2 by omega)
     · have : (0 : ℝ) ≤ ((ee - 2 : ℕ) : ℝ) := Nat.cast_nonneg _
@@ -151,8 +154,8 @@ theorem plan_two (hL : Q.n ≤ spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (n
     rw [e1, add_zero]
     have hc : ((2 : ℕ) : ℝ) + (((ee - 2 : ℕ) : ℝ) + (interiorModel Q).param Q ⟨e₂, nh Q e₂ h₂⟩) =
         ee + (interiorModel Q).param Q ⟨e₂, nh Q e₂ h₂⟩ := by
-      rw [Nat.cast_sub hee2]; push_cast; ring
-    rw [hc, oset_union _ _ (by push_cast; linarith) (by
+      rw [Nat.cast_sub hee2]; pcr
+    rw [hc, oset_union _ _ (by pcl) (by
       have := q.he.1
       rw [← param_nh q.he₂] at this
       have : ((2 : ℕ) : ℝ) ≤ ee := by exact_mod_cast hee2

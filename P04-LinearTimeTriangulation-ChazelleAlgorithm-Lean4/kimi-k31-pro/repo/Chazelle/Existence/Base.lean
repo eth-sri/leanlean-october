@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Existence.Combine
 public import Chazelle.Jordan.Jordan
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The base case: a simple polygon with three vertices is a triangle
@@ -48,13 +50,13 @@ theorem mem_boundary_three (h3 : P.n = 3) {p : Point} :
   · rintro ⟨i, hi, hp⟩
     rw [h3] at hi
     interval_cases i
-    · exact Or.inl (by rw [← edge_zero_three P h3]; exact hp)
-    · exact Or.inr (Or.inl (by rw [← edge_one_three P h3]; exact hp))
-    · exact Or.inr (Or.inr (by rw [← edge_two_three P h3]; exact hp))
+    · exact Or.inl (by rwx [← edge_zero_three P h3])
+    · exact Or.inr (Or.inl (by rwx [← edge_one_three P h3]))
+    · exact Or.inr (Or.inr (by rwx [← edge_two_three P h3]))
   · rintro (hp | hp | hp)
-    · exact ⟨0, by omega, by rw [edge_zero_three P h3]; exact hp⟩
-    · exact ⟨1, by omega, by rw [edge_one_three P h3]; exact hp⟩
-    · exact ⟨2, by omega, by rw [edge_two_three P h3]; exact hp⟩
+    · exact ⟨0, by omega, by rwx [edge_zero_three P h3]⟩
+    · exact ⟨1, by omega, by rwx [edge_one_three P h3]⟩
+    · exact ⟨2, by omega, by rwx [edge_two_three P h3]⟩
 
 /-- The boundary of a polygon with three vertices lies in the triangle of its vertices. -/
 theorem boundary_subset_triangle (h3 : P.n = 3) :
@@ -80,12 +82,12 @@ theorem det_ne_zero_of_simple_three (hP : P.Simple) (h3 : P.n = 3) :
     have h1t : (1 : ℝ) - t ≠ 0 := by linarith
     have hv0 : P.vtx 0 = Geometry.lerp (P.vtx 1) (P.vtx 2) (1 / (1 - t)) := by
       rw [ht]
-      apply Geometry.point_ext <;> simp only [Geometry.lerp_fst, Geometry.lerp_snd] <;>
+      apply Geometry.point_ext <;> simp [Geometry.lerp_fst, Geometry.lerp_snd] <;>
         field_simp <;> ring
     have hmem : P.vtx 0 ∈ P.edge 1 := by
       rw [edge_one_three P h3, hv0]
       refine Geometry.lerp_mem_segment _ _ (div_nonneg zero_le_one (by linarith)) ?_
-      rw [div_le_one (by linarith)]; linarith
+      rwli [div_le_one (by linarith)]
     have := eq_endpoint_of_vtx_mem_edge hP (k := 0) (i := 1) (by omega) (by omega) hmem
     rw [h3] at this
     norm_num at this
@@ -107,12 +109,12 @@ theorem det_ne_zero_of_simple_three (hP : P.Simple) (h3 : P.n = 3) :
     have ht0' : t ≠ 0 := by linarith
     have hv1 : P.vtx 1 = Geometry.lerp (P.vtx 0) (P.vtx 2) (1 / t) := by
       rw [ht]
-      apply Geometry.point_ext <;> simp only [Geometry.lerp_fst, Geometry.lerp_snd] <;>
+      apply Geometry.point_ext <;> simp [Geometry.lerp_fst, Geometry.lerp_snd] <;>
         field_simp <;> ring
     have hmem : P.vtx 1 ∈ P.edge 2 := by
       rw [edge_two_three P h3, segment_comm, hv1]
       refine Geometry.lerp_mem_segment _ _ (by positivity) ?_
-      rw [div_le_one (by linarith)]; linarith
+      rwli [div_le_one (by linarith)]
     have := eq_endpoint_of_vtx_mem_edge hP (k := 1) (i := 2) (by omega) (by omega) hmem
     rw [h3] at this
     norm_num at this
@@ -148,7 +150,7 @@ theorem mem_boundary_of_not_mem_interior_triangle (h3 : P.n = 3)
   rcases Geometry.mem_edge_of_not_mem_interior hdet hz hint with h | h | h
   · exact Or.inl h
   · exact Or.inr (Or.inl h)
-  · exact Or.inr (Or.inr (by rw [segment_comm]; exact h))
+  · exact Or.inr (Or.inr (by rwx [segment_comm]))
 
 /-! ### Escaping along a ray -/
 
@@ -175,7 +177,7 @@ theorem not_mem_filled_of_neg_affine {P : Polygon} {T : Set Point} (hT : P.bound
     apply Geometry.point_ext <;> simp <;> ring
   intro hb
   have hy := hTf _ (hT hb)
-  simp only at hy
+  simp at hy
   rw [heq, hf, hv] at hy
   have : (1 + s) * f z < 0 := mul_neg_of_pos_of_neg (by linarith) hz
   linarith
@@ -188,7 +190,7 @@ theorem filled_eq_triangle (hP : P.Simple) (h3 : P.n = 3) :
     P.filled = convexHull ℝ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point) := by
   have hdet := det_ne_zero_of_simple_three P hP h3
   set T := convexHull ℝ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point) with hTdef
-  have hbT : P.boundary ⊆ T := boundary_subset_triangle P h3
+  have hbT  := boundary_subset_triangle P h3
   have hTf : ∀ y ∈ T, 0 ≤ Geometry.bary₁ (P.vtx 0) (P.vtx 1) (P.vtx 2) y ∧
       0 ≤ Geometry.bary₂ (P.vtx 0) (P.vtx 1) (P.vtx 2) y ∧
       0 ≤ Geometry.bary₃ (P.vtx 0) (P.vtx 1) (P.vtx 2) y :=
@@ -225,8 +227,7 @@ theorem filled_eq_triangle (hP : P.Simple) (h3 : P.n = 3) :
       · exact Or.inr hxT
     have hdisj : Disjoint (interior T) Tᶜ :=
       Set.disjoint_left.2 fun x hx hx' => hx' (interior_subset hx)
-    have hsub : connectedComponentIn P.boundaryᶜ z ⊆ interior T :=
-      IsPreconnected.subset_left_of_subset_union isOpen_interior
+    have hsub  := IsPreconnected.subset_left_of_subset_union isOpen_interior
         (Geometry.isClosed_triangle _ _ _).isOpen_compl hdisj
         ((connectedComponentIn_subset _ _).trans hcov)
         ⟨z, mem_connectedComponentIn hzb, hzint⟩ isPreconnected_connectedComponentIn
@@ -243,11 +244,11 @@ theorem weakTriangulates_triangle (hP : P.Simple) (h3 : P.n = 3) :
   · intro t ht
     rw [List.mem_singleton] at ht
     subst ht
-    exact ⟨by rw [h3]; norm_num, by rw [h3]; norm_num, by rw [h3]; norm_num, hdet⟩
-  · rw [h3]; rfl
+    exact ⟨by rwn [h3], by rwn [h3], by rwn [h3], hdet⟩
+  · rwr [h3]
   · rw [filled_eq_triangle P hP h3]
     ext p
-    simp only [Set.mem_ofPred_eq, List.mem_singleton, exists_eq_left]
+    simp [Set.mem_ofPred_eq, List.mem_singleton, exists_eq_left]
     rfl
   · exact List.pairwise_singleton _ _
   · intro t ht i hi _

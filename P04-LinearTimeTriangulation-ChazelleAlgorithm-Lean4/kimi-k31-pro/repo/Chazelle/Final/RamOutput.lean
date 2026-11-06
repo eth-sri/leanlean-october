@@ -4,6 +4,10 @@ public import Chazelle.Final.Assemble
 public import Chazelle.Final.Transfer
 public import Chazelle.Final.RamPieceTri
 public import Chazelle.Final.RamSplit
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # The output pass on the RAM
@@ -104,7 +108,7 @@ theorem nodeSeq_eq_iterate {mem : ℕ → ℕ} {NB : ℕ} {S : LState} {c : List
 theorem walk_map_getD {S : LState} {c : List ℕ} (hc : IsCyc S c) {i : ℕ} (hi : i < c.length)
     {s : ℕ} (hs : s < c.length) :
     ((walk S (c.getD i 0) c.length).map S.vtx).getD s 0 = S.vtx (c.getD ((i + s) % c.length) 0) := by
-  rw [walk_eq_rotate hc hi, List.map_rotate, getD_rotate_of_lt i (by rw [List.length_map]; exact hs),
+  rw [walk_eq_rotate hc hi, List.map_rotate, getD_rotate_of_lt i (by rwx [List.length_map]),
     List.length_map, getD_map_of_lt S.vtx (Nat.mod_lt _ (by omega)), Nat.add_comm s i]
 
 /-! ### Counting marks -/
@@ -211,11 +215,11 @@ theorem clearBody_inv {MB NN : ℕ} {c₀ : Config} (h240 : c₀.nreg 240 = NN)
   rw [e240] at ht
   unfold clearBody
   exec_block
-  · rw [e241]; omega
-  · config_simp; rw [e244]; omega
+  · rwo [e241]
+  · config_simp; rwo [e244]
   refine ⟨⟨‹_›, ?_, fun v hv => ?_, fun r h1 h2 => ?_, hfr, fun t ht' => ?_, hrm, hout⟩,
     by omega, ?_⟩
-  · config_simp; rw [e244]; omega
+  · config_simp; rwo [e244]
   · config_simp
     config_simp at hv
     rw [e244] at hv
@@ -228,7 +232,7 @@ theorem clearBody_inv {MB NN : ℕ} {c₀ : Config} (h240 : c₀.nreg 240 = NN)
   · config_simp
     rw [e241, Machine.upd_other _ _ _ (by omega)]
     exact hnm t ht'
-  · config_simp; rw [e244]; omega
+  · config_simp; rwo [e244]
 
 /-- The invariant of the walk around the cycle `d` from position `i` (`z = d[i]`), relative to
 the configuration `c₀` before the cycle is marked. -/
@@ -247,7 +251,7 @@ theorem getD_cyc_inj {d : List ℕ} (hd : d.Nodup) {i s s' : ℕ} (hs : s < d.le
     s = s' := by
   have hl : 0 < d.length := by omega
   have e := getD_inj_of_nodup hd (Nat.mod_lt _ hl) (Nat.mod_lt _ hl) h
-  have hm : i + s ≡ i + s' [MOD d.length] := e
+  have hm  := e
   exact Nat.ModEq.eq_of_lt_of_lt (Nat.ModEq.add_left_cancel' i hm) hs hs'
 
 /-- One step of the walk around a cycle preserves `RingInv`. -/
@@ -270,7 +274,7 @@ theorem ringBody_inv {MB NN NB : ℕ} {S : LState} {d : List ℕ} {i : ℕ} {c�
   set m := c.nreg 247 with hmdef
   set x := d.getD ((i + m) % d.length) 0 with hx
   have hxd : x ∈ d := getD_mem_of_lt (Nat.mod_lt _ hl)
-  have hxN : x < NN := hdlt x hxd
+  have hxN  := hdlt x hxd
   -- the test: `x` is unmarked, so `m < len`
   have hmlt : m < d.length := by
     by_contra hge
@@ -284,17 +288,17 @@ theorem ringBody_inv {MB NN NB : ℕ} {S : LState} {d : List ℕ} {i : ℕ} {c�
     rw [hx, (hcyc.2 _ (Nat.mod_lt _ hl)).1, Nat.mod_add_mod, Nat.add_assoc]
   unfold ringBody
   exec_block
-  · rw [e241, h246]; omega
-  · config_simp; rw [e244]; omega
-  · config_simp; rw [e249, h246]; omega
+  · rwo [e241, h246]
+  · config_simp; rwo [e244]
+  · config_simp; rwo [e249, h246]
   · config_simp
     rw [e249, e241, h246, Machine.upd_other _ _ _ (by omega), hnx, hx']
     have := hdlt _ (getD_mem_of_lt (Nat.mod_lt (i + (m + 1)) hl))
     omega
   refine ⟨⟨‹_›, ?_, ?_, ?_, ?_, fun y hy => ?_, fun r h1 h2 h3 h4 => ?_, hfr, fun t ht' => ?_,
     hrm, hout⟩, by omega, ?_⟩
-  · config_simp; rw [e244]; omega
-  · config_simp; rw [e244]; omega
+  · config_simp; rwo [e244]
+  · config_simp; rwo [e244]
   · config_simp
     rw [e249, e241, h246, e244, Machine.upd_other _ _ _ (by omega), hnx, hx']
   · config_simp; rw [e241]
@@ -316,7 +320,7 @@ theorem ringBody_inv {MB NN NB : ℕ} {S : LState} {d : List ℕ} {i : ℕ} {c�
   · config_simp
     rw [e241, h246, Machine.upd_other _ _ _ (by have := hdlt x hxd; omega)]
     exact hnm t ht'
-  · config_simp; rw [e244]; omega
+  · config_simp; rwo [e244]
 
 /-- The positions `(i + s) % len`, `s < len`, enumerate the cycle. -/
 theorem exists_pos_iff {d : List ℕ} {i : ℕ} (hi : i < d.length) (y : ℕ) :
@@ -348,7 +352,6 @@ structure OutCtx (P Q : Polygon) (W : ℕ) (S : LState) (cs : List (List ℕ))
 def Bands (mem : ℕ → ℕ) (S : LState) (NN NB VB : ℕ) : Prop :=
   ∀ y < NN, mem (VB + y) = S.vtx y ∧ mem (NB + y) = S.nxt y
 
-set_option maxHeartbeats 1000000 in
 /-- **Spec of one piece**: mark the cycle `d` of `z = d[i]` (unmarked), and triangulate it. -/
 theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB VB WB : ℕ}
     (hX : OutCtx P Q W S cs NN MB NB VB WB) {d : List ℕ} (hd : d ∈ cs) {i : ℕ}
@@ -372,16 +375,16 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
     have := (List.subperm_of_subset hnd (fun y hy => List.mem_range.2 (hdlt y hy))).length_le
     rwa [List.length_range] at this
   set z := d.getD i 0 with hz
-  have hzd : z ∈ d := getD_mem_of_lt hi
-  have hzN : z < NN := hdlt z hzd
+  have hzd  := getD_mem_of_lt hi
+  have hzN  := hdlt z hzd
   have hx1 : S.nxt z = d.getD ((i + 1) % d.length) 0 := by
     rw [hz, (hcyc.2 i hi).1]
   unfold pieceOut
   refine spec_seq ?_
   exec_block
-  · rw [h241, h242]; omega
+  · rwo [h241, h242]
   · omega
-  · config_simp; rw [h249, h242]; omega
+  · config_simp; rwo [h249, h242]
   · config_simp
     rw [h249, h242, h241, Machine.upd_other _ _ _ (by omega), (hB z hzN).2, hx1]
     have := hdlt _ (getD_mem_of_lt (Nat.mod_lt (i + 1) hl))
@@ -391,8 +394,8 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
   have hI₁ : RingInv W MB NN d i c c₁ := by
     refine ⟨hw₁, ?_, ?_, ?_, ?_, fun y hy => ?_, fun r h1 h2 h3 h4 => ?_, ?_, fun t ht => ?_, ?_,
       ?_⟩
-    · rw [hc₁]; simp
-    · rw [hc₁]; config_simp; omega
+    · rws [hc₁]
+    · rw [hc₁]; cso
     · rw [hc₁]; config_simp
       rw [h249, h242, h241, Machine.upd_other _ _ _ (by omega), (hB z hzN).2, hx1]
     · rw [hc₁]; config_simp; rw [h241]
@@ -474,11 +477,11 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
     · have := hseqN s; omega
     · have := hseqN s; left; omega
     · have := hseqN s; left; omega
-    · rw [hll]; omega
+    · rwo [hll]
   -- the piece: a mountain in `Q`, hence (transfer) in `P`
-  have hpiece : IsPiece Q l := isPiece_walk hQ hD hR hp hd hi
+  have hpiece  := isPiece_walk hQ hD hR hp hd hi
   have hQn : Q.n = P.n := by rw [hQe]; exact Core.shear_n ε P
-  have hmount := mountain_transfer (P := P) (ε := ε) (by rw [← hQe]; exact hag)
+  have hmount := mountain_transfer (P := P) (ε := ε) (by rwx [← hQe])
     (fun x hx => hQn ▸ hpiece.lt x hx) (by rw [← hQe]; exact Chazelle.Mountain.piece_isMountain hQ hpiece)
   obtain ⟨c₄, k₄, ex₄, hk₄, ⟨T, hT, hout₄⟩, hfn₄, -, hnm₄, -⟩ :=
     pieceTri_exec (P := P) (W := W) hmount c₃ hw₃ hin
@@ -488,14 +491,14 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
     rw [hll] at hk₄
     have : 9 * (d.length - 1) + 2 ≤ 9 * d.length := by omega
     omega
-  · rw [hnm₄ _ (by rw [e84, hll]; omega), hmem₃, hmark₂ y hy]
+  · rw [hnm₄ _ (by rwo [e84, hll]), hmem₃, hmark₂ y hy]
   · rw [hQe, subPoly_shear]; exact weakTriangulates_shear ε hT
   · rw [hout₄, hc₃]; config_simp; rw [hout₂]
   · rw [hfn₄ r (by omega), hc₃]; config_simp
     simp only [Machine.upd_apply, show r ≠ 80 by omega, show r ≠ 81 by omega,
       show r ≠ 82 by omega, show r ≠ 83 by omega, show r ≠ 84 by omega, ite_false]
     rw [hfn₂ r (by omega) (by omega) (by omega) (by omega)]
-  · rw [hnm₄ _ (by rw [e84, hll]; omega), hmem₃, hnm₂ t ht1]
+  · rw [hnm₄ _ (by rwo [e84, hll]), hmem₃, hnm₂ t ht1]
 
 open Classical in
 /-- The invariant of the output loop, relative to its entry configuration `c₀`: the cycles
@@ -517,7 +520,6 @@ def OutInv (Q : Polygon) (W : ℕ) (S : LState) (cs : List (List ℕ)) (NN MB NB
 def outPot (NN MB : ℕ) (c : Config) : ℕ :=
   70 * (NN - c.nreg 242) + 130 * (List.range NN).countP (fun y => decide (c.nmem (MB + y) = 0))
 
-set_option maxHeartbeats 1000000 in
 theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB VB WB : ℕ}
     (hX : OutCtx P Q W S cs NN MB NB VB WB) {c₀ : Config} (c : Config)
     (hI : OutInv Q W S cs NN MB NB VB WB c₀ c) (ht : c.nreg 242 < c.nreg 240) :
@@ -535,7 +537,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
   unfold outBody
   refine spec_seq ?_
   exec_block
-  · rw [h241]; omega
+  · rwo [h241]
   refine spec_name fun c₁ hc₁ => ?_
   have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
   have r1 : ∀ r, r ≠ 245 → r ≠ 248 → c₁.nreg r = c.nreg r := by
@@ -546,9 +548,9 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
   · -- already marked: skip
     have hm1 : c.nmem (MB + z) = 1 := by rw [hmark z ht, ite_eq_left hmz]
     have e244 := r1 244 (by decide) (by decide)
-    refine spec_seq (spec_ifLtN_false (by rw [e245, hm1]; omega) (spec_skip hw₁ ?_))
+    refine spec_seq (spec_ifLtN_false (by rwo [e245, hm1]) (spec_skip hw₁ ?_))
     exec_block
-    · rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244]; omega
+    · rwo [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244]
     refine ⟨⟨‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, done, hdn, hdcs, fun d hd => ?_,
       fun y hy => ?_, acc, hF, hT, ?_⟩, ?_⟩
     all_goals first
@@ -556,7 +558,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
       | skip
     · config_simp; rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244]
       omega
-    · config_simp; rw [hmem₁]; exact hB
+    · config_simp; rwx [hmem₁]
     · config_simp
       rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244, hdiff d hd]
       constructor
@@ -572,7 +574,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
             exact (hdiff d hd).1 hd'
           · exact absurd hy (hR.disj (hdcs d' hd') hd (Ne.symm hdd) hzd')
     · config_simp; rw [hmem₁]; exact hmark y hy
-    · config_simp; rw [hc₁]; exact hout
+    · config_simp; rwx [hc₁]
     · unfold outPot
       config_simp
       rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244, hmem₁]
@@ -590,8 +592,8 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
       · subst hdd; exact hdnd hd'
       · exact hR.disj hd (hdcs d' hd') hdd hy hyd'
     have e244 := r1 244 (by decide) (by decide)
-    refine spec_seq (spec_ifLtN_true (by rw [e245, hm0]; omega) ?_)
-    refine spec_use (pieceOut_exec hX hd hi c₁ hw₁ (by rw [hmem₁]; exact hB)
+    refine spec_seq (spec_ifLtN_true (by rwo [e245, hm0]) ?_)
+    refine spec_use (pieceOut_exec hX hd hi c₁ hw₁ (by rwx [hmem₁])
       (by rw [r1 240 (by decide) (by decide), h240])
       (by rw [r1 241 (by decide) (by decide), h241])
       (by rw [r1 242 (by decide) (by decide), hdi])
@@ -605,7 +607,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
     have R2 : ∀ r, (r < 60 ∨ (94 < r ∧ r < 245) ∨ 248 < r) → c₂.nreg r = c.nreg r := by
       intro r hr; rw [hfn₂ r hr, r1 r (by omega) (by omega)]
     exec_block
-    · rw [R2 242 (by omega), R2 244 (by omega), h244]; omega
+    · rwo [R2 242 (by omega), R2 244 (by omega), h244]
     have hlenN : d.length ≤ NN := by
       have := (List.subperm_of_subset (hR.nodup_cyc hd)
         (fun y hy => List.mem_range.2 (hcnt ▸ hR.lt_cnt hd hy))).length_le
@@ -617,7 +619,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
       (fun y hy hyd => by rw [hmark₂ y hy, ite_eq_right hyd, hmem₁])
     refine ⟨⟨‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, done ++ [d], ?_, ?_, fun d' hd' => ?_,
       fun y hy => ?_, acc ++ [((walk S (d.getD i 0) d.length).map S.vtx, T)], ?_, ?_, ?_⟩, ?_⟩
-    · config_simp; rw [R2 242 (by omega), R2 244 (by omega), h244]; omega
+    · config_simp; rwo [R2 242 (by omega), R2 244 (by omega), h244]
     · config_simp; rw [R2 240 (by omega), h240]
     · config_simp; rw [R2 241 (by omega), h241]
     · config_simp; rw [R2 243 (by omega), h243]
@@ -676,7 +678,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
     · unfold outPot
       config_simp
       rw [R2 242 (by omega), R2 244 (by omega), h244]
-      have hk : k₂ ≤ 121 * d.length + 44 := hk₂
+      have hk  := hk₂
       have h3 : 3 ≤ d.length := by
         have := hi; have := (hR.cyc d hd).1
         by_contra h3
@@ -687,7 +689,6 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
         omega
       omega
 
-set_option maxHeartbeats 1000000 in
 /-- **Spec of the output pass**: from a configuration holding the final structure (`Bands`) with
 the output-pass registers set, `outStmt` appends a triangulation `X` of `Q` to the output, at cost
 `≤ 205 NN + 10`. -/
@@ -716,8 +717,8 @@ theorem outStmt_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB
     intro r a b d; rw [hc₁]; config_simp; simp only [Machine.upd_apply, a, b, d, ite_false]
   have c243 : c₁.nreg 243 = 0 := by rw [hc₁]; config_simp
   have c244 : c₁.nreg 244 = 1 := by rw [hc₁]; config_simp
-  have hCI : ClearInv W MB NN c₁ c₁ := ⟨hw₁, by rw [hc₁]; config_simp; omega,
-    fun y hy => by rw [hc₁] at hy; config_simp at hy; omega, fun _ _ _ => rfl, rfl,
+  have hCI : ClearInv W MB NN c₁ c₁ := ⟨hw₁, by rw [hc₁]; cso,
+    fun y hy => by rw [hc₁] at hy; cso at hy, fun _ _ _ => rfl, rfl,
     fun _ _ => rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, ex₂, ⟨hw₂, hz₂, hzero, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩, hexit₂, hk₂⟩ :=
     Exec.whileLtN_bounded (P := P) (ClearInv W MB NN c₁) (fun d => NN - d.nreg 242) 3
@@ -738,7 +739,7 @@ theorem outStmt_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB
   have r3 : ∀ r, r ≠ 242 → r ≠ 248 → c₃.nreg r = c₁.nreg r := by
     intro r a b; rw [hc₃]; config_simp; rw [Machine.upd_other _ _ _ a, hfn₂ r a b]
   have hI₀ : OutInv Q W S cs NN MB NB VB WB c₃ c₃ := by
-    refine ⟨hw₃, by rw [hc₃]; config_simp; omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, [],
+    refine ⟨hw₃, by rw [hc₃]; cso, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, [],
       List.nodup_nil, fun d hd => absurd hd List.not_mem_nil, fun d hd => ?_, fun y hy => ?_, [],
       List.Forall₂.nil, fun p hp => absurd hp List.not_mem_nil, by simp⟩
     · rw [r3 240 (by decide) (by decide), r1 240 (by decide) (by decide) (by decide), h240]
@@ -758,7 +759,7 @@ theorem outStmt_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB
       simp only [List.not_mem_nil, false_iff, not_exists, not_and]
       intro y _ h; omega
     · have e : c₃.nmem = c₂.nmem := by rw [hc₃]
-      rw [e, hzero y (by rw [e242₂]; exact hy)]
+      rw [e, hzero y (by rwx [e242₂])]
       simp
   obtain ⟨c₄, k₄, ex₄, ⟨hw₄, hz₄, h240₄, -, -, -, -, -, -, -, done, hdn, hdcs, hdiff, -, acc, hF,
     hT, hout₄⟩, hexit₄, hk₄⟩ := Exec.whileLtN_potential (P := P)
@@ -776,7 +777,7 @@ theorem outStmt_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB
     rw [e] at hk₂
     omega
   · -- all cycles are done
-    have e242₄ : c₄.nreg 242 = NN := by rw [h240₄] at hexit₄; omega
+    have e242₄ : c₄.nreg 242 = NN := by rwo [h240₄] at hexit₄
     have hall : ∀ d ∈ cs, d ∈ done := by
       intro d hd
       rw [hdiff d hd, e242₄]

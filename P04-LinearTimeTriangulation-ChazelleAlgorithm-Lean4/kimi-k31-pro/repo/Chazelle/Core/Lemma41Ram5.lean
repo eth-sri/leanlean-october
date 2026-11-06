@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.Lemma41Merge
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # WP-J, part 12: the level array of the leaves
@@ -55,7 +60,6 @@ theorem whileLtN_potential_lb' {a b : ℕ} {body : Stmt}
       exact ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', by omega, by omega⟩
     · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by omega, by omega⟩
 
-set_option maxHeartbeats 8000000 in
 theorem l0Body_exec {c : Config} (hw : WordsBounded W c) {i p q Al : ℕ}
     (h70 : c.nreg 160070 = i) (h71 : c.nreg 160071 = p) (h72 : c.nreg 160072 = q)
     (hA : c.nreg ALLOC = Al) (h24 : c.nreg 160024 = 1) (h81 : c.nreg 160081 = 5)
@@ -77,7 +81,7 @@ theorem l0Body_exec {c : Config} (hw : WordsBounded W c) {i p q Al : ℕ}
   · config_simp; simp only [h71, h82]
   · config_simp; simp only [h72, h24]
   · config_simp; simp only [hA, h87]
-  · config_simp; simp only [h71, h72, h24, h81, Machine.upd_apply]; split_ifs <;> omega
+  · config_simp; simp only [h71, h72, h24, h81, Machine.upd_apply]; splao
   · config_simp; simp only [h71, h72, h24, h81, Machine.upd_apply]
     split_ifs <;> first | omega
   · config_simp; simp only [h72, h24, Machine.upd_apply]; split_ifs <;> first | omega
@@ -85,7 +89,6 @@ theorem l0Body_exec {c : Config} (hw : WordsBounded W c) {i p q Al : ℕ}
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
 
-set_option maxHeartbeats 8000000 in
 /-- **The level array of the leaves.** -/
 theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
     (hA : c.nreg ALLOC = R0) (h15 : c.nreg 160015 = R0 + 6 * j) (h14 : c.nreg 160014 = j)
@@ -128,19 +131,19 @@ theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
       (fun c2 ⟨i, ⟨hw2, h70, hA2, h71, h72, hent, hout, fr2, hrr2, hrm2, ho2⟩, hij⟩ htest => by
         have g : ∀ r, ¬ L0RG r → r ≠ ALLOC → c2.nreg r = c.nreg r := fr2
         have c14 : c2.nreg 160014 = j := by
-          rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h14
+          rw [g _ (by ufo L0RG) (by rwo [hAl])]; exact h14
         rw [h70, c14] at htest
         obtain ⟨c3, k3, e3, hk3, hw3, q70, q71, q72, qA, qm0, qm1, qm, fr3, hrr3, hrm3, ho3⟩ :=
           l0Body_exec (P := P) hw2 h70 h71 h72 hA2
-            (by rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h24)
-            (by rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h81)
-            (by rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h82)
-            (by rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h87)
+            (by rw [g _ (by ufo L0RG) (by rwo [hAl])]; exact h24)
+            (by rw [g _ (by ufo L0RG) (by rwo [hAl])]; exact h81)
+            (by rw [g _ (by ufo L0RG) (by rwo [hAl])]; exact h82)
+            (by rw [g _ (by ufo L0RG) (by rwo [hAl])]; exact h87)
             (by omega) (by omega) (by omega) (by omega) (by omega)
         have hrec : c2.nmem (R0 + 6 * i + 5) = c.nmem (R0 + 6 * i + 5) :=
           hout _ (Or.inl (by omega))
-        refine ⟨c3, k3, e3, ⟨i + 1, ⟨hw3, q70, by rw [qA]; ring, by rw [q71]; ring,
-          by rw [q72]; ring, fun k hk => ?_, fun a ha => ?_, fun r h1 h2 => ?_,
+        refine ⟨c3, k3, e3, ⟨i + 1, ⟨hw3, q70, by rwring [qA], by rwring [q71],
+          by rwring [q72], fun k hk => ?_, fun a ha => ?_, fun r h1 h2 => ?_,
           by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩, by omega⟩, ?_, ?_⟩
         · rcases Nat.lt_or_ge k i with hki | hki
           · rw [qm _ (by omega) (by omega), qm _ (by omega) (by omega)]; exact hent k hki
@@ -150,20 +153,20 @@ theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
         · rw [qm _ (by omega) (by omega)]; exact hout a (by omega)
         · rw [fr3 r h1 h2]; exact fr2 r h1 h2
         · show 11 * (j - c3.nreg 160070) + k3 + 2 ≤ 11 * (j - c2.nreg 160070)
-          rw [q70, h70]; omega
+          rwo [q70, h70]
         · show c3.nreg ALLOC ≤ c2.nreg ALLOC + k3
-          rw [qA]; omega)
-      ⟨0, ⟨hw1, h70, by rw [r1 _ (by unfold L0RG; rw [hAl]; omega), hA]; ring,
-        by rw [h71]; ring, by rw [h72]; ring, fun k hk => by omega, fun a _ => by rw [hm1],
+          rwo [qA])
+      ⟨0, ⟨hw1, h70, by rw [r1 _ (by uro L0RG [hAl]), hA]; ring,
+        by rwring [h71], by rwring [h72], fun k hk => by omega, fun a _ => by rw [hm1],
         fun r h1 _ => r1 r h1, hrr1, hrm1, ho1⟩, Nat.zero_le _⟩
   have c14 : c'.nreg 160014 = j := by
-    rw [fr' _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h14
-  have hij' : i = j := by rw [h70', c14] at htest; omega
+    rw [fr' _ (by ufo L0RG) (by rwo [hAl])]; exact h14
+  have hij' : i = j := by rwo [h70', c14] at htest
   subst hij'
   have hk' : k ≤ 11 * i + 2 := by
     have := hk; simp only [h70, Nat.sub_zero] at this; exact this
   have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
-  have hA1 : c1.nreg ALLOC = R0 := by rw [r1 _ (by unfold L0RG; rw [hAl]; omega)]; exact hA
+  have hA1 : c1.nreg ALLOC = R0 := by rw [r1 _ (by uro L0RG [hAl])]; exact hA
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hA', by omega, hent,
     fun a ha => hout a (by omega), fr', hrr', hrm', ho'⟩
 

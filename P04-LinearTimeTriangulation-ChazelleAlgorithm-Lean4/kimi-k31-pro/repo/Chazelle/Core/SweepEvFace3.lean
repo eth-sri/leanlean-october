@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvFace2
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stages 2–3: the region faced at a walk vertex of `C₂` (task D1, RAM part 2)
@@ -41,7 +44,7 @@ def face : Stmt :=
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-theorem iscr_fR : IScr fR := iscr_sw (by unfold fR sw; norm_num) (by unfold fR sw; norm_num)
+theorem iscr_fR : IScr fR := iscr_sw (by ufn fR sw) (by ufn fR sw)
 
 theorem faceChk_irs {xe xh src : ℕ} (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
     IRS P W c₀ (faceChk xe xh src) c 7 (fun c' =>
@@ -50,15 +53,15 @@ theorem faceChk_irs {xe xh src : ℕ} (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0)
   unfold faceChk
   by_cases h1 : c.nreg xe < c.nreg fE
   · refine (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by omega)
-      (fun _ h => h)
+      (fun _ => id)
     rw [ite_eq_right (by omega)]
   by_cases h2 : c.nreg fE < c.nreg xe
   · refine (IRS.ifF h1 (IRS.ifT h2 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))).mono
-      (by omega) (fun _ h => h)
+      (by omega) (fun _ => id)
     rw [ite_eq_right (by omega)]
   by_cases h3 : c.nreg K0 < c.nreg xh
   · refine (IRS.ifF h1 (IRS.ifF h2 (IRS.ifT h3 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))))
-      |>.mono (by omega) (fun _ h => h)
+      |>.mono (by omega) (fun _ => id)
     rw [ite_eq_right (by omega)]
   · refine (IRS.ifF h1 (IRS.ifF h2 (IRS.ifF h3 (IRS.block [.copyN fR src] hI
       ⟨iscr_fR, trivial⟩)))).mono (by simp) ?_
@@ -76,7 +79,7 @@ theorem faceSel_irs (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
       (∀ r, r ≠ fR → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   unfold faceSel
   refine (IRS.seq (IRS.block [.copyN fR lR1] hI ⟨iscr_fR, trivial⟩) ?_).mono (K := 1 + (7 + 2))
-    (by norm_num) (fun _ h => h)
+    (by norm_num) (fun _ => id)
   rintro c₁ hI₁ - - hc1
   have v1 : c₁.nreg fR = c.nreg lR1 := by
     rw [hc1]; simp only [regB, regI, upd, ite_true]
@@ -89,7 +92,7 @@ theorem faceSel_irs (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
     apply o1
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
       simp [fR, fA, K1, K0, fSE, fSH, fEE, fEH, fE, lR0, lR1, lR2, sw]
-  have hk0' : c₁.nreg K0 = 0 := by rw [n K0 (by simp)]; exact hk0
+  have hk0' : c₁.nreg K0 = 0 := by rwx [n K0 (by simp)]
   by_cases hA : c₁.nreg fA < c₁.nreg K1
   · refine (IRS.ifT hA (faceChk_irs hI₁ hk0')).mono le_rfl ?_
     rintro c' ⟨h1, h2, h3⟩
@@ -104,21 +107,17 @@ theorem faceSel_irs (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
 
 /-! ## The task -/
 
-set_option maxRecDepth 20000 in
 theorem face_cost (L : ℕ) : faceLocK L + (11015 + (11015 + 10)) ≤ 30000 * (L + 1) := by
-  unfold faceLocK; omega
+  ufo faceLocK
 
-set_option maxRecDepth 20000 in
 theorem face_room1 {a L W : ℕ} (h : a + 30000 * (L + 1) ≤ W) : a + faceLocK L ≤ W := by
-  unfold faceLocK; omega
+  ufo faceLocK
 
-set_option maxRecDepth 20000 in
 theorem face_room2 {a L W : ℕ} (h : a + 30000 * (L + 1) ≤ W) : a + 11015 ≤ W := by
   have h1 : 30000 ≤ 30000 * (L + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos L)
   generalize 30000 * (L + 1) = X at h h1
   omega
 
-set_option maxRecDepth 20000 in
 theorem face_room3 {a b L W : ℕ} (h : a + 30000 * (L + 1) ≤ W) (hb : b ≤ a + 11015) :
     b + 11015 ≤ W := by
   have h1 : 30000 ≤ 30000 * (L + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos L)

@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.OraclePrepCh
 public import Chazelle.Core.ShearInv
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 28: phase A (constants, descriptor, tables)
@@ -78,18 +83,18 @@ theorem PLoaded.congr {P : Polygon} {D NB s mm ti bb A K CB AB RB SB LB : ℕ} {
     (h : PLoaded P D NB s mm ti bb A K CB AB RB SB LB c)
     (hr : ∀ r, PLReg r → c'.nreg r = c.nreg r) : PLoaded P D NB s mm ti bb A K CB AB RB SB LB c' := by
   have g : ∀ r, PLReg r → ∀ v, c.nreg r = v → c'.nreg r = v := fun r h v hv => (hr r h).trans hv
-  exact ⟨g _ (by unfold PLReg; omega) _ h.n, g _ (by unfold PLReg; omega) _ h.one,
-    g _ (by unfold PLReg; omega) _ h.zero, g _ (by unfold PLReg; omega) _ h.two,
-    g _ (by unfold PLReg; omega) _ h.six, g _ (by unfold PLReg; omega) _ h.rD,
-    g _ (by unfold PLReg; omega) _ h.rNB, g _ (by unfold PLReg; omega) _ h.rs,
-    g _ (by unfold PLReg; omega) _ h.rm, g _ (by unfold PLReg; omega) _ h.rti,
-    g _ (by unfold PLReg; omega) _ h.rbb, g _ (by unfold PLReg; omega) _ h.twoM,
-    g _ (by unfold PLReg; omega) _ h.nW, g _ (by unfold PLReg; omega) _ h.tEnd,
-    g _ (by unfold PLReg; omega) _ h.sS, g _ (by unfold PLReg; omega) _ h.tv,
-    g _ (by unfold PLReg; omega) _ h.rA, g _ (by unfold PLReg; omega) _ h.rK,
-    g _ (by unfold PLReg; omega) _ h.rCB, g _ (by unfold PLReg; omega) _ h.rAB,
-    g _ (by unfold PLReg; omega) _ h.rRB, g _ (by unfold PLReg; omega) _ h.rSB,
-    g _ (by unfold PLReg; omega) _ h.rLB⟩
+  exact ⟨g _ (by ufo PLReg) _ h.n, g _ (by ufo PLReg) _ h.one,
+    g _ (by ufo PLReg) _ h.zero, g _ (by ufo PLReg) _ h.two,
+    g _ (by ufo PLReg) _ h.six, g _ (by ufo PLReg) _ h.rD,
+    g _ (by ufo PLReg) _ h.rNB, g _ (by ufo PLReg) _ h.rs,
+    g _ (by ufo PLReg) _ h.rm, g _ (by ufo PLReg) _ h.rti,
+    g _ (by ufo PLReg) _ h.rbb, g _ (by ufo PLReg) _ h.twoM,
+    g _ (by ufo PLReg) _ h.nW, g _ (by ufo PLReg) _ h.tEnd,
+    g _ (by ufo PLReg) _ h.sS, g _ (by ufo PLReg) _ h.tv,
+    g _ (by ufo PLReg) _ h.rA, g _ (by ufo PLReg) _ h.rK,
+    g _ (by ufo PLReg) _ h.rCB, g _ (by ufo PLReg) _ h.rAB,
+    g _ (by ufo PLReg) _ h.rRB, g _ (by ufo PLReg) _ h.rSB,
+    g _ (by ufo PLReg) _ h.rLB⟩
 
 /-- A neutral origin and direction, and the granularity saved in `120049`. -/
 def setA : Stmt :=
@@ -130,7 +135,6 @@ theorem arcs_pos {C : Chain} {Q : Polygon} {N : NF} (hs : C.P.Simple)
 /-- The bands of phase A. -/
 def aBands : Finset ℕ := {bSort, bSign, bDecomp, bOPrep, bOQuery}
 
-set_option maxHeartbeats 8000000 in
 theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (hG : GoodEnv P)
     (hW : 8 * P.n + 32 ≤ W) {H : Host} {C : Chain} {N : NF} {A₀ : ℕ}
     (hD : ChainDescAt c.nmem (c.nreg 110000) (Qof P) H C) (hCQ : C.P = Qof P)
@@ -206,7 +210,7 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       by config_simp; exact F₁.1 _ (by decide),
       by config_simp; rw [F₁.1 _ (by decide), hAl]⟩
   have PL₂ := PL₁.congr fun r hr => F₂.1 r (by
-    unfold PLReg at hr; simp only [decide_eq_false_iff_not]; omega)
+    unfold PLReg at hr; sio only [decide_eq_false_iff_not])
   have a9₂ : c₂.nreg 9999 = A₀ := by rw [F₂.1 _ (by decide), F₁.1 _ (by decide), hAl]
   have hm₂ : c₂.nmem = c.nmem := F₂.2.2.1.trans F₁.2.2.1
   -- 3. the chord table
@@ -214,7 +218,7 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     (by rw [PL₂.twoM, PL₂.rm]) (by rw [PL₂.nW, PL₂.rm]) (by rw [PL₂.tEnd, PL₂.rm]) s25
   have hv₂ : QVOK P C (qvOf c₂) :=
     ⟨hCQ, PL₂.rs, PL₂.rm, by show c₂.nreg 120021 = _; rw [PL₂.sS]; exact sS_of_desc hD,
-      by show c₂.nreg 120023 < P.n; rw [s23]; omega, by show c₂.nreg 120024 ≤ 1; rw [s24]; omega,
+      by show c₂.nreg 120023 < P.n; rwo [s23], by show c₂.nreg 120024 ≤ 1; rwo [s24],
       by show c₂.nreg 120015 < P.n; rw [PL₂.rs]; rw [hCQ, hQn] at hsl; exact hsl⟩
   have hK₂ : (qvOf c₂).K = N.chords.length := PL₂.rK
   have hCB₂ : (qvOf c₂).CB = c.nmem (c.nreg 110001 + 3) := PL₂.rCB
@@ -225,7 +229,7 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       have := ((hNFw m' hm').2.2.2.2.2.1 i hi).2.2.2.2
       simpa only [Nat.add_assoc] using this
     have := (NFLoc.robust_addr2 h1).2
-    rw [hCB₂]; omega
+    rwo [hCB₂]
   have hh : ∀ i, i < (qvOf c₂).K → c₂.nmem ((qvOf c₂).CB + 5 * i) < P.n := fun i hi => by
     rw [hK₂] at hi
     rw [hm₂, hCB₂, (hNF.2.2.2.2.2.1 i hi).1]
@@ -235,12 +239,12 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     show c₂.nreg 120022 < P.n; rw [PL₂.tv]; exact Nat.mod_lt _ (by omega)
   obtain ⟨c₃, k₃, e₃, hk₃, F₃, al3a, al3b, R6₃, R12₃, ch1, ch2, chlt, chinj, chsort⟩ :=
     chSort_exec (P := P) hG hW e₂.wb_right hv₂ hq₂ a9₂ hrec hh htv (by omega)
-      (by rw [hK₂]; omega)
+      (by rwo [hK₂])
   rw [hK₂] at hk₃ al3a al3b ch1 ch2 chlt chinj chsort
   rw [hAL] at al3a al3b ch2
   set A₁ := c₃.nreg 9999 with hA₁
-  have PL₃ := PL₂.congr fun r hr => R12₃ r (by unfold PLReg at hr; omega)
-    (by unfold PLReg at hr; omega)
+  have PL₃ := PL₂.congr fun r hr => R12₃ r (by ufo PLReg at hr)
+    (by ufo PLReg at hr)
   -- 4. the zipper constant and the chord table
   obtain ⟨c₄, k₄, e₄, hk₄, F₄, z205, z38⟩ : ∃ c₄ k₄, Exec P W setZ c₃ c₄ k₄ ∧ k₄ = 2 ∧
       FrameB (fun r => decide (r = 110205 ∨ r = 120038)) c₃ c₄ ∧ c₄.nreg 110205 = 3 ∧
@@ -256,26 +260,26 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     · omega
     · exact ⟨rfl, by config_simp, by config_simp⟩
   have PL₄ := PL₃.congr fun r hr => F₄.1 r (by
-    unfold PLReg at hr; simp only [decide_eq_false_iff_not]; omega)
+    unfold PLReg at hr; sio only [decide_eq_false_iff_not])
   have a9₄ : c₄.nreg 9999 = A₁ := by rw [F₄.1 _ (by decide)]
   -- 5. the model descriptor
   obtain ⟨c₅, k₅, e₅, hk₅, F₅, a9₅, md₅, m0₅, mi₅⟩ := mdS_exec (P := P) e₄.wb_right PL₄.rD
     PL₄.one a9₄ (by omega) (by omega)
   have PL₅ := PL₄.congr fun r hr => F₅.1 r (by
-    unfold PLReg at hr; simp only [BMD, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    unfold PLReg at hr; sio only [BMD, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   -- 6. the table of powers
   obtain ⟨c₆, k₆, e₆, hk₆, F₆, a9₆, tb₆, l₆, tab₆, Alt, Klt⟩ := tbS_exec (P := P) e₅.wb_right
     PL₅.rA PL₅.rK PL₅.one a9₅ (by omega)
   have PL₆ := PL₅.congr fun r hr => F₆.1 r (by
-    unfold PLReg at hr; simp only [BTB, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    unfold PLReg at hr; sio only [BTB, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   -- 7. the inverse table
   have mem₆ : ∀ a, a < A₀ → c₆.nmem a = c.nmem a := fun a ha => by
     rw [F₆.2.2.1 _ (by omega), F₅.2.2.1 _ (by omega), F₄.2.2.1,
-      F₃.2.2.1 a (by rw [hAL, a9₂]; exact ha), hm₂]
+      F₃.2.2.1 a (by rwx [hAL, a9₂]), hm₂]
   have hseq : ∀ p, p < N.arcs.length →
       c₆.nmem (c.nmem (c.nreg 110001 + 6) + p) = N.seq.getD p 0 := fun p hp => by
     rw [mem₆ _ (by omega)]
-    exact hNF.2.2.2.2.2.2.2.2.1 p (by rw [NFLoc.seq_length hN]; exact hp)
+    exact hNF.2.2.2.2.2.2.2.2.1 p (by rwx [NFLoc.seq_length hN])
   obtain ⟨c₇, k₇, e₇, hk₇, F₇, a9₇, pos₇, pf₇⟩ := posTS_exec (P := P) e₆.wb_right PL₆.rSB PL₆.rA
     PL₆.one a9₆ hseq (by omega) (by omega) (fun p hp => NFLoc.seq_lt hN hp)
     (fun p q hp hq e => by
@@ -285,13 +289,13 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       exact (List.Nodup.getElem_inj_iff hnd).1 e)
     (fun j hj => NFLoc.seq_surj hN hj)
   have PL₇ := PL₆.congr fun r hr => F₇.1 r (by
-    unfold PLReg at hr; simp only [BPT, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+    unfold PLReg at hr; sio only [BPT, Bool.or_eq_false_iff, decide_eq_false_iff_not])
   -- 8. the position constants
   have hSs : c₇.nreg 120021 = C.sideS C.sideBeta := by rw [PL₇.sS]; exact sS_of_desc hD
   obtain ⟨c₈, k₈, e₈, hk₈, F₈, q0, q1, q2, q3, q4⟩ := posInit_exec (P := P) e₇.wb_right PL₇.rm
     PL₇.twoM hSs (C.sideS_lt _) hm1 (by omega)
   have PL₈ := PL₇.congr fun r hr => F₈.1 r (by
-    unfold PLReg at hr; simp only [BPI, decide_eq_false_iff_not]; omega)
+    unfold PLReg at hr; sio only [BPI, decide_eq_false_iff_not])
   have ex : Exec P W phA c c₈ _ :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈))))))
   -- the later stages keep the registers outside their sets and the memory below `A₁`
@@ -359,13 +363,13 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       R12₃ _ (by omega) (by omega), s24]
   · rw [K58 _ (by decide) (by decide) (by decide) (by decide), F₄.1 _ (by decide),
       R12₃ _ (by omega) (by omega), s49]
-  · rw [K58 _ (by decide) (by decide) (by decide) (by decide)]; exact z205
+  · rwx [K58 _ (by decide) (by decide) (by decide) (by decide)]
   · rw [K58 _ (by decide) (by decide) (by decide) (by decide), F₄.1 _ (by decide),
       R12₃ _ (by omega) (by omega), s26]
   · rw [hMD, F₈.2.2.1, F₇.2.2.1 _ (by omega), F₆.2.2.1 _ (by omega), m0₅]
   · intro i hi
     rw [hMD, F₈.2.2.1, F₇.2.2.1 _ (by omega), F₆.2.2.1 _ (by omega), mi₅ i hi, F₄.2.2.1,
-      F₃.2.2.1 _ (by rw [hAL, a9₂]; omega), hm₂]
+      F₃.2.2.1 _ (by rwo [hAL, a9₂]), hm₂]
   · rw [F₈.1 _ (by decide), F₇.1 _ (by decide), tb₆, hMD]
   · rw [F₈.1 _ (by decide), F₇.1 _ (by decide), l₆]
   · intro j hj

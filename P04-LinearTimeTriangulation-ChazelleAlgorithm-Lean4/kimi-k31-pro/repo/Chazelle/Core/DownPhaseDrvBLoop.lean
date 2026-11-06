@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseDrvBPieces2
 public import Chazelle.Core.DownPhaseDrvBBkt
 public import Chazelle.Core.RestoreTRead
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase base (D9): the region loop
@@ -58,7 +60,6 @@ section init
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The initialisation.** -/
 theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
     (h01 : c.nreg 210001 = MD) (h03 : c.nreg 210003 = K) (h05 : c.nreg 210005 = H)
@@ -115,7 +116,7 @@ theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
             rw [ite_eq_left (by omega)]
     exact ⟨d2, k2, e2, hk2, v, exec_frameB e2 (by decide)⟩
   have g : ∀ r, r ≠ 212011 → d2.nreg r = d1.nreg r := fun r hr =>
-    f2.1 r (by simp only [decide_eq_false_iff_not]; exact hr)
+    f2.1 r (by simp [decide_eq_false_iff_not]; exact hr)
   refine ⟨d2, k1 + k2, .seq e1 e2, by omega, by rw [g _ (by decide), a00],
     by rw [g _ (by decide), a01], by rw [g _ (by decide), a02], by rw [g _ (by decide), a10], v11,
     by rw [g _ (by decide), a12], by rw [g _ (by decide), b02], by rw [g _ (by decide), b03],
@@ -123,8 +124,8 @@ theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
     by rw [g _ (by decide), b16], by rw [g _ (by decide), b17], by rw [g _ (by decide), b31],
     by rw [g _ (by decide), a13], by rw [g _ (by decide), a14], by rw [g _ (by decide), a18],
     by rw [g _ (by decide), b20], by rw [g _ (by decide), b21], by rw [g _ (by decide), b22],
-    f1.trans ⟨fun r hr => f2.1 r (by simp only [Binit, decide_eq_false_iff_not] at hr ⊢; omega),
-      fun r hr => f2.2.1 r (by simp only [Binit, decide_eq_false_iff_not] at hr ⊢; omega),
+    f1.trans ⟨fun r hr => f2.1 r (by sio only [Binit, decide_eq_false_iff_not] at hr ⊢),
+      fun r hr => f2.2.1 r (by sio only [Binit, decide_eq_false_iff_not] at hr ⊢),
       f2.2.2⟩⟩
 
 end init

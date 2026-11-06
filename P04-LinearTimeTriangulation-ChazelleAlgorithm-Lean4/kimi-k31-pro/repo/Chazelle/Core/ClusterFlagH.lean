@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.ClusterDInit
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-I, part 63: flagging the light levels
@@ -31,7 +36,6 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (hlt : ∀ v, v < g.μ → c.nmem (g.base 3 + v) < g.μ) (hW : g.END ≤ W) :
     ∃ c' k, Exec P W flagS c c' k ∧ k ≤ 14 * g.μ + 3 ∧ WordsBounded W c' ∧
@@ -46,8 +50,8 @@ theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   set c1 := { c with nreg := upd c.nreg 130890 0 } with hc1
   have f1 : PFr FlRG Am c c1 :=
     ⟨fun r hr => by simp only [c1, Machine.upd_other _ _ _ (show r ≠ 130890 by
-        unfold FlRG at hr; omega)], rfl, rfl, rfl, fun a _ => rfl⟩
-  have hG1 : GR g c1 := hG.frame (fun r hr => f1.1 r (by unfold GRReg at hr; unfold FlRG; omega))
+        ufo FlRG at hr)], rfl, rfl, rfl, fun a _ => rfl⟩
+  have hG1 : GR g c1 := hG.frame (fun r hr => f1.1 r (by unfold GRReg at hr; ufo FlRG))
   obtain ⟨c', k, e, hk', hw', hi', hn', hf', hm'⟩ := forN (P := P) (W := W)
     (ri := 130890) (rn := 130011) (body := flagBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130890 = j ∧ c'.nreg 130011 = g.μ ∧
@@ -57,7 +61,7 @@ theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     g.μ 12 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c3 hj ⟨hw3, hi3, hn3, hf3, hm3⟩ => by
       have hG3 : GR g c3 := hG.frame (fun r hr => hf3.1 r (by
-        unfold GRReg at hr; unfold FlRG; omega))
+        unfold GRReg at hr; ufo FlRG))
       have r33 := hG3.rbase 3 (by omega); have r66 := hG3.rbase 36 (by omega)
       have r78 := hG3.rbase 48 (by omega); have r1 := hG3.one
       have hlj := hlt j hj
@@ -71,14 +75,14 @@ theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
           c4.nreg 130890 = j ∧ (∀ r, ¬ FlRG r → c4.nreg r = c3.nreg r) ∧ c4.nmem = c3.nmem ∧
           c4.rreg = c3.rreg ∧ c4.rmem = c3.rmem ∧ c4.output = c3.output := by
         exec_block
-        · rw [r33, hi3]; omega
-        · config_simp; rw [r66, r33, hi3, ml]; omega
+        · rwo [r33, hi3]
+        · config_simp; rwo [r66, r33, hi3, ml]
         · refine ⟨rfl, ‹_›, by config_simp; rw [r66, r33, hi3, ml, mh], by config_simp; exact hi3,
             fun r hr => ?_, rfl, rfl, rfl, rfl⟩
           simp only; unfold FlRG at hr
           repeat (rw [Machine.upd_other _ _ _ (by omega)])
-      have r1' : c4.nreg 130001 = 1 := by rw [h4r _ (by unfold FlRG; omega)]; exact r1
-      have r78' : c4.nreg 130078 = g.base 48 := by rw [h4r _ (by unfold FlRG; omega)]; exact r78
+      have r1' : c4.nreg 130001 = 1 := by rwx [h4r _ (by ufo FlRG)]
+      have r78' : c4.nreg 130078 = g.base 48 := by rwx [h4r _ (by ufo FlRG)]
       obtain ⟨c5, k5, e5, hk5, hw5, h5r, h590, hm5, hrr5, hrm5, ho5⟩ : ∃ c5 k5, Exec P W
           (.ifLtN 130893 130001 .skip (block [.addN 130891 130078 130890, .storeN 130891 130001]))
           c4 c5 k5 ∧ k5 ≤ 4 ∧ WordsBounded W c5 ∧ (∀ r, ¬ FlRG r → c5.nreg r = c4.nreg r) ∧
@@ -96,7 +100,7 @@ theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
               c6.nreg 130890 = j ∧ c6.nmem = upd c4.nmem (g.base 48 + j) 1 ∧
               c6.rreg = c4.rreg ∧ c6.rmem = c4.rmem ∧ c6.output = c4.output := by
             exec_block
-            · rw [r78', h90]; omega
+            · rwo [r78', h90]
             · refine ⟨rfl, ‹_›, fun r hr => ?_, by config_simp; exact h90,
                 by config_simp; rw [r78', h90, r1'], rfl, rfl, rfl⟩
               simp only; unfold FlRG at hr
@@ -104,20 +108,20 @@ theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
           refine ⟨c6, k6 + 2, .ifLtN_false hp e6, by omega, hw6, h6r, h690, ?_, hrr6, hrm6, ho6⟩
           rw [h93, r1'] at hp; rw [ite_eq_right hp, hm6]
       have e7 := Exec.addN (P := P) hw5 130890 130890 130001 (by
-        rw [h590, h5r _ (by unfold FlRG; omega), r1']; omega)
+        rwo [h590, h5r _ (by ufo FlRG), r1'])
       refine ⟨_, k4 + (k5 + 1), .seq e4 (.seq e5 e7), by omega, e7.wb_right, ?_, ?_, ?_, ?_⟩
       · simp only [Machine.upd_same]
-        rw [h590, h5r _ (by unfold FlRG; omega), r1']
+        rw [h590, h5r _ (by ufo FlRG), r1']
       · simp only [Machine.upd_other _ _ _ (show (130011 : ℕ) ≠ 130890 by omega)]
-        rw [h5r _ (by unfold FlRG; omega), h4r _ (by unfold FlRG; omega)]; exact hn3
+        rwx [h5r _ (by ufo FlRG), h4r _ (by ufo FlRG)]
       · refine hf3.trans ⟨fun r hr => ?_, by simp only; rw [hrr5, hrr4],
           by simp only; rw [hrm5, hrm4], by simp only; rw [ho5, ho4], fun a ha => ?_⟩
         · simp only
-          rw [Machine.upd_other _ _ _ (by unfold FlRG at hr; omega), h5r r hr, h4r r hr]
+          rw [Machine.upd_other _ _ _ (by ufo FlRG at hr), h5r r hr, h4r r hr]
         · simp only; rw [hm5, hm4]
           split_ifs
           · rfl
-          · rw [Machine.upd_other _ _ _ (by simp only [hAm] at ha; omega)]
+          · rw [Machine.upd_other _ _ _ (by sio only [hAm] at ha)]
       · intro v hv
         simp only; rw [hm5, hm4]
         by_cases hvj : v = j

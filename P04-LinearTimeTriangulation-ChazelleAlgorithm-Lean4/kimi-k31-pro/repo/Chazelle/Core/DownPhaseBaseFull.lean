@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.FactsFullDegInt
 public import Chazelle.Core.SpecKernels
 public import Chazelle.Merge.Augmented
+public import Chazelle.MiscTactics
 
 /-!
 # Down phase, A1 (math, part 1): which interior chord records are vertex chords
@@ -84,7 +85,7 @@ theorem walk_vtx_succ (hli : li = true ↔ Mountain.LeftInside Q) {p : ℕ} (hp 
   exact walk_vtx hli (mod_lt' hp)
 
 theorem wStart_lt {n p : ℕ} (hp : p < n) : wStart li n p < n := by
-  unfold wStart; split_ifs <;> omega
+  unfold wStart; splao
 
 theorem wEnd_lt {n p : ℕ} (hp : p < n) : wEnd li n p < n := wStart_lt (mod_lt' hp)
 
@@ -95,7 +96,7 @@ theorem wStart_ne_wEnd {n p : ℕ} (hn : 2 ≤ n) (hp : p < n) : wStart li n p �
     · exact Nat.mod_eq_of_lt h
     · rw [show p + 1 = n by omega, Nat.mod_self]
   rw [this]
-  split_ifs <;> omega
+  splao
 
 /-! ## Positions on the interior walk -/
 
@@ -128,7 +129,7 @@ theorem param_eq {p h : ℕ} (hp : p < Q.n) :
 theorem pos_snd {p h : ℕ} (hp : p < Q.n) :
     ((interiorModel Q).pos Q ⟨p, h + 1⟩).2 = (Q.vtx h).2 := by
   have hne := wa_wb_snd_ne hQ hDH hli hp
-  have hd : ((interiorModel Q).wb p).2 - ((interiorModel Q).wa p).2 ≠ 0 := sub_ne_zero.2 hne.symm
+  have hd  := sub_ne_zero.2 hne.symm
   simp only [Model.pos, Geometry.lerp_snd]
   rw [param_eq hQ hDH hli hp]
   field_simp
@@ -185,11 +186,11 @@ theorem start_of_pos {p h : ℕ} (hp : p < Q.n) (hh : h < Q.n)
       have hj1 : j = Q.n - 1 - p := by rw [hj]; simp [wStart, hb]
       have hj'1 : j' = Q.n - 1 - (p + 1) % Q.n := by rw [hj']; simp [wEnd, wStart, hb]
       refine ⟨j', hj'n, Or.inr ⟨rfl, ?_⟩, ?_⟩
-      · rw [hj1, hj'1, hmod p hp, hmod _ (by split_ifs <;> omega)]
-        split_ifs <;> omega
+      · rw [hj1, hj'1, hmod p hp, hmod _ (by splao)]
+        splao
       · have hjs : (j' + 1) % Q.n = j := by
-          rw [hj1, hj'1, hmod p hp, hmod _ (by split_ifs <;> omega)]
-          split_ifs <;> omega
+          rw [hj1, hj'1, hmod p hp, hmod _ (by splao)]
+          splao
         refine ⟨1 - t, by linarith, by linarith, ?_⟩
         rw [hjs, ← hpos']
         simp only [lerp]

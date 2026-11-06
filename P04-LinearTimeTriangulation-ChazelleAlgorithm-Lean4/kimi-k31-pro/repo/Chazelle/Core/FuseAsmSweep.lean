@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.FuseAsmSideQ
 public import Chazelle.Core.SweepSpecH
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # WP-F fusion assembly, part 23: the two sweeps
@@ -77,7 +81,7 @@ theorem holds_frameF {X : MemCtx} {P : Polygon} {g : ℕ} {B : Finset ℕ} {c c'
 theorem cap_frameF {X : MemCtx} (hloc : X.CapLocal) {P : Polygon} {g : ℕ} {B : Finset ℕ}
     {c c' : Config} {k : ℕ} (hX : X.holds P c.nmem g (c.nreg ALLOC)) (hf : Frame B c c' k) :
     X.cap P c'.nmem g = X.cap P c.nmem g :=
-  hloc P c.nmem c'.nmem g _ (fun a ha => hf.2.2.1 a ha) hX
+  hloc P c.nmem c'.nmem g _ (hf.2.2.1) hX
 
 /-- The facts of the fusion's precondition beyond `FCtx`. -/
 structure FPre (P : Polygon) (X : MemCtx) (Ok : Polygon → Model → Prop) (J : Merge.Junction)
@@ -100,9 +104,9 @@ theorem FPre.keep {P : Polygon} {X : MemCtx} {Ok : Polygon → Model → Prop} {
   have e5 := hr 70005 (by norm_num) (by norm_num)
   have e6 := hr 70006 (by norm_num) (by norm_num)
   have e8 := hr 70008 (by norm_num) (by norm_num)
-  refine ⟨o1, o2, o3, by rw [e6]; exact d1, by rw [e6]; exact d2, by rw [e5]; exact s1,
-    by rw [e5]; exact s2, by rw [e8]; exact holds_frameF hh hf, ?_⟩
-  rw [e5, e8, cap_frameF hloc hh hf]; exact hc
+  refine ⟨o1, o2, o3, by rwx [e6], by rwx [e6], by rwx [e5],
+    by rwx [e5], by rw [e8]; exact holds_frameF hh hf, ?_⟩
+  rwx [e5, e8, cap_frameF hloc hh hf]
 
 theorem junctionWF_mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {bl br bw : ℕ}
     (h : JunctionWF P E m bl br bw) (hE : E ≤ E') : JunctionWF P E' m bl br bw :=
@@ -135,7 +139,7 @@ theorem swSet_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other])
   · have : r < 240000 ∨ 250000 ≤ r := by
-      unfold bandOf bSweep at h1; omega
+      ufo bandOf bSweep at h1
     simp (disch := omega) only [Machine.upd_other]
 
 /-- The bands of the fusion. -/
@@ -151,7 +155,6 @@ theorem band7 : bFuse ∈ FB := by decide
 
 theorem band24 : bSweep ∈ FB := by decide
 
-set_option maxHeartbeats 8000000 in
 /-- **One sweep stage.** -/
 theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
     (hM : Meets mk (sweepBands ∪ oracleBands) (SwPre X Ok) SwPost (SwCost κs F))
@@ -176,15 +179,15 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
       Frame FB c c' k ∧
       (∀ r, bandOf r = bFuse → r ≠ RB → r ≠ Lr + 24 + 2 * i → c'.nreg r = c.nreg r) ∧
       c'.nreg (Lr + 24 + 2 * i) = L.length := by
-  have hW1 : 1 ≤ W := by have := hF.hw; unfold hostWords at this; omega
+  have hW1 : 1 ≤ W := by have := hF.hw; ufo hostWords at this
   obtain ⟨c₁, k₁, e₁, hk₁, q0, q7, q8, q9, q10, q24, qr, qm, qrr, qrm, qo⟩ :=
     swSet_exec (P := P) c hw hi hW1 hS hLr
   have w₁ := e₁.wb_right
-  have a₁ : c₁.nreg ALLOC = c.nreg ALLOC := qr _ (by decide) (by unfold ALLOC; omega)
+  have a₁ : c₁.nreg ALLOC = c.nreg ALLOC := qr _ (by decide) (by ufo ALLOC)
   have F₁ : Frame FB c c₁ k₁ := ⟨fun r hr ha => qr r (fun h => hr (h ▸ band24)) (fun h => hr (by
       rw [h]; unfold bandOf; rw [show (Lr + 24 + 2 * i) / 10000 = 7 by omega]; exact band7)),
     fun r _ => by rw [qrr], fun a _ => by rw [qm], fun a _ => by rw [qrm], qo, by rw [a₁],
-    by rw [a₁]; omega⟩
+    by rwo [a₁]⟩
   have r0 : rd c₁ bSweep 0 = c.nreg 70000 := q0 0 (by norm_num)
   have r1 : rd c₁ bSweep 1 = c.nreg 70001 := q0 1 (by norm_num)
   have r2 : rd c₁ bSweep 2 = c.nreg 70002 := q0 2 (by norm_num)
@@ -194,7 +197,7 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
   have r6 : rd c₁ bSweep 6 = c.nreg 70006 := q0 6 (by norm_num)
   have r7 : rd c₁ bSweep 7 = i := q7
   have r8 : rd c₁ bSweep 8 = c.nreg S := q8
-  have r9 : rd c₁ bSweep 9 = L.length := by rw [← hLl]; exact q9
+  have r9 : rd c₁ bSweep 9 = L.length := by rwx [← hLl]
   have r10 : rd c₁ bSweep 10 = c.nreg 70008 := q10
   have hK1 : c.nmem (c.nreg 70003) = N₁.nChords := (Robust.holds hF.nf₁).1
   have hK2 : c.nmem (c.nreg 70004) = N₂.nChords := (Robust.holds hF.nf₂).1
@@ -207,10 +210,10 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
   have hcost : SwCost κs F P c₁ = κs (c.nreg 70006) * (N₁.nChords + N₂.nChords + L.length + 1) *
       (F (c.nreg 70005) + Nat.clog 2 (N₁.nChords + N₂.nChords + L.length + 1) + 1) := by
     unfold SwCost; rw [qm, r3, r4, r5, r6, r9, hK1, hK2]
-  obtain ⟨c₂, k₂, e₂, hk₂, post, F₂⟩ := hM P W c₁ w₁ hpre (by rw [hcost, a₁]; omega)
+  obtain ⟨c₂, k₂, e₂, hk₂, post, F₂⟩ := hM P W c₁ w₁ hpre (by rwo [hcost, a₁])
   rw [hcost] at hk₂
   obtain ⟨R, hR1, hR2, hRl, hRL, hsees⟩ := post H J L (by rw [qm, r0, r1, r2]; exact hF.jat)
-    r9 (by rw [qm, r8]; exact hL)
+    r9 (by rwx [qm, r8])
   rw [r7] at hsees
   have w₂ := e₂.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, t0, tr, tm, trr, trm, tou⟩ : ∃ c₃ k₃, Exec P W
@@ -220,24 +223,24 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
     exec_block
     refine ⟨rfl, ?_, fun r h => ?_, rfl, rfl, rfl, rfl⟩
     all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
-  have hRBA : RB ≠ ALLOC := by unfold ALLOC; omega
+  have hRBA : RB ≠ ALLOC := by ufo ALLOC
   have F₃ : Frame FB c₂ c₃ k₃ := ⟨fun r hr ha => tr r (fun h => hr (by
       rw [h]; unfold bandOf; rw [show RB / 10000 = 7 by omega]; exact band7)),
     fun r _ => by rw [trr], fun a _ => by rw [tm], fun a _ => by rw [trm], tou,
-    by rw [tr _ hRBA.symm], by rw [tr _ hRBA.symm]; omega⟩
+    by rw [tr _ hRBA.symm], by rwo [tr _ hRBA.symm]⟩
   have ex : Exec P W (swStage mk i S Lr RB) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   have Ft : Frame FB c c₃ (k₁ + (k₂ + k₃)) :=
     ftrF F₁ (ftrF (F₂.mono sweep_sub le_rfl) F₃)
   have hband : ∀ r, bandOf r = bFuse → bandOf r ∉ sweepBands ∪ oracleBands := fun r h => by
-    rw [h]; decide
+    rwd [h]
   refine ⟨c₃, _, R, ex, by omega, hRl, ?_, ?_, ?_, ?_, Ft, fun r h1 h2 h3 => ?_, ?_⟩
   · rw [t0]; rw [a₁] at hR1; exact hR1
-  · rw [t0, tr _ hRBA.symm]; exact hR2
-  · rw [tm, t0]; exact hRL
+  · rwx [t0, tr _ hRBA.symm]
+  · rwx [tm, t0]
   · exact hsees
   · have hA : r ≠ ALLOC := by intro h; rw [h] at h1; exact absurd h1 (by decide)
-    rw [tr r h2, F₂.1 r (hband r h1) hA, qr r (by rw [h1]; decide) h3]
-  · rw [tr _ (Ne.symm hRB'), F₂.1 _ (hband _ (by unfold bandOf bFuse; omega)) (by unfold ALLOC; omega),
+    rw [tr r h2, F₂.1 r (hband r h1) hA, qr r (by rwd [h1]) h3]
+  · rw [tr _ (Ne.symm hRB'), F₂.1 _ (hband _ (by ufo bandOf bFuse)) (by ufo ALLOC),
       q24, hLl]
 
 end

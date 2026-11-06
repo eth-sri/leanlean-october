@@ -24,17 +24,17 @@ theorem region_arc {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point}
     (hne : (N.F M Q).Nonempty) {r : ℕ} (hr : r < N.nRegions) :
     0 < (N.region r).arcs.length ∧ (N.region r).arcs.getD 0 0 < N.arcs.length ∧
       (N.arc ((N.region r).arcs.getD 0 0)).reg = r := by
-  have hF : N.F M Q ⊆ M.Adm := hN.1.2.1
-  have hfin : (N.F M Q).Finite := hN.1.1
+  have hF  := hN.1.2.1
+  have hfin  := hN.1.1
   have hR := hregs.1.1 r hr
   obtain ⟨p, t, hp, ht0, ht1, hnc, hf⟩ := DownHost.exists_faces_nc hM hF hfin hR
   obtain ⟨X, hX, l, r', harc, hin⟩ := hM.arc_around hF hfin hne hnc
-  have hfX : M.Faces p t X := harc.2.2.2.2.2.2 p t hp ht0 ht1 hin
-  have hXR : X = reg r := WalkAx.faces_unique hX hR hfX hf
+  have hfX  := harc.2.2.2.2.2.2 p t hp ht0 ht1 hin
+  have hXR  := WalkAx.faces_unique hX hR hfX hf
   rw [hXR] at harc
   obtain ⟨j, hj, hjr, -, -⟩ := hregs.2.2.1.2.2.1 r hr l r' harc
-  have hmem : j ∈ (N.region r).arcs := ((hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩)
-  have hlen : 0 < (N.region r).arcs.length := List.length_pos_of_mem hmem
+  have hmem  := ((hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩)
+  have hlen  := List.length_pos_of_mem hmem
   have h0 : (N.region r).arcs.getD 0 0 ∈ (N.region r).arcs := by
     rw [List.getD_eq_getElem _ _ hlen]; exact List.getElem_mem hlen
   obtain ⟨a, b⟩ := (hregs.2.2.1.2.2.2 r hr _).1 h0

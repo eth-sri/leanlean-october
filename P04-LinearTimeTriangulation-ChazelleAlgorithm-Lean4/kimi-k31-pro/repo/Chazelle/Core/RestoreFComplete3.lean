@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.RestoreFComplete2
 public import Chazelle.Core.ShootCutCutterOK
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the search: completeness (part 3)
@@ -43,7 +45,7 @@ theorem uncounted_le (hE : FGood E c₀) : {p | p < E.M.W.n ∧ ¬ E.M.counted p
   · have : {p | p < E.M.W.n ∧ ¬ E.M.counted p} = ∅ := by
       ext p; simp only [mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
       intro _ h; apply h; rw [hM]; trivial
-    rw [this, Set.ncard_empty]; omega
+    rwo [this, Set.ncard_empty]
 
 /-- **A closed piece from unwrapped bounds.** -/
 theorem closed_of_unwrap {n a x y z : ℝ} (ha : 0 ≤ a ∧ a < n) (hx : 0 ≤ x ∧ x < n)
@@ -107,7 +109,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
       show VSet E ((c₃.nmem (prOf L i') + t) % E.M.W.n)
       rw [e]; exact hG.hVX) σb hσb (by
       show GoodAt (E.re c₃) reg ((c₃.nmem (prOf L i') + t) % E.M.W.n) σb
-      rw [e]; exact hGA)
+      rwx [e])
   · -- a kind-1 piece
     obtain ⟨Hs, Cα, N, γ', hK, J, hV, htest, hst1, hst2⟩ := hPD.2 hk1
     obtain ⟨-, Hs', Cα', N', hCD', -, -, hset', hwt', hPW', -, -⟩ := hk1w i' hi' hk1
@@ -124,7 +126,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
     have kE : peK E c₃.nmem L i' = (((s + Cα'.m) % n : ℕ) : ℝ) := by
       unfold peK; simp only at hpw3 hpwe; rw [hpw3, hpwe]; exact key_vtx' _ _ _
     have hwt'' : E.M.arcWt (s : ℝ) (((s + Cα'.m) % n : ℕ) : ℝ) = Cα'.m := by
-      rw [← kS, ← kE]; exact hwt'
+      rwx [← kS, ← kE]
     have hcnt := counted_of_wt (M := E.M) hs (by omega) hmn hwt''
     rw [kS, kE] at hcl
     obtain ⟨d, hd, hdx⟩ := closed_offset hs hmn (by omega) hXe hcl

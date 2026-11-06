@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.NFLocateMath
+public import Chazelle.RewriteTactics
 
 /-!
 # Double identification on the RAM (WP-C, target 2)
@@ -44,7 +45,7 @@ theorem frame_of_frameB {B : ℕ → Bool} {S : Finset ℕ} {c c' : Config} (h :
     exact (hB ALLOC (by simpa using h')).2 rfl
   have hal := h.1 ALLOC hA
   refine ⟨fun r hr _ => h.1 r ?_, fun r hr => h.2.1 r ?_, fun a _ => by rw [h.2.2.1],
-    fun a _ => by rw [h.2.2.2.1], h.2.2.2.2, by rw [hal], by rw [hal]; omega⟩
+    fun a _ => by rw [h.2.2.2.1], h.2.2.2.2, by rw [hal], by rwo [hal]⟩
   · by_contra h'
     exact hr (hB r (by simpa using h')).1
   · by_contra h'
@@ -86,17 +87,17 @@ theorem wr_locSetup : wr Bloc locSetup = true := by decide
 theorem Bloc_band (r : ℕ) (h : Bloc r = true) : bandOf r ∈ ({bLocate, bSign} : Finset ℕ) ∧
     r ≠ ALLOC := by
   unfold Bloc at h
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+  simp [Bool.or_eq_true, decide_eq_true_eq] at h
   unfold bandOf bLocate bSign ALLOC
-  simp only [Finset.mem_insert, Finset.mem_singleton]
+  simp [Finset.mem_insert, Finset.mem_singleton]
   omega
 
 theorem Bdir_band (r : ℕ) (h : Bdir r = true) : bandOf r ∈ ({bLocate, bSign} : Finset ℕ) ∧
     r ≠ ALLOC := by
   unfold Bdir at h
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+  simp [Bool.or_eq_true, decide_eq_true_eq] at h
   unfold bandOf bLocate bSign ALLOC
-  simp only [Finset.mem_insert, Finset.mem_singleton]
+  simp [Finset.mem_insert, Finset.mem_singleton]
   omega
 
 /-! ## Uniqueness of what the layout determines -/
@@ -116,7 +117,7 @@ theorem cRec_ext {a b : CRec} (h1 : a.h = b.h) (h2 : a.lp = b.lp) (h3 : a.rp = b
 /-- The layout determines the arc records. -/
 theorem nfAt_arcs_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
     N'.arcs = N.arcs := by
-  have hl : N'.arcs.length = N.arcs.length := h'.2.1.symm.trans h.2.1
+  have hl  := h'.2.1.symm.trans h.2.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.2.1 j hj'
@@ -130,7 +131,7 @@ theorem nfAt_arcs_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h
 /-- The layout determines the chord records. -/
 theorem nfAt_chords_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
     N'.chords = N.chords := by
-  have hl : N'.chords.length = N.chords.length := h'.1.symm.trans h.1
+  have hl  := h'.1.symm.trans h.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.1 j hj'

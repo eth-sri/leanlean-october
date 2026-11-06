@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SpecRam
+public import Chazelle.RewriteTactics
 
 /-!
 # Core specification, part 5: the two stages and the final assembly
@@ -61,9 +62,9 @@ theorem linear_of_core (hcore : CoreStageSpec) (hfin : FinalStageSpec)
   have hW : (K₁ + C₁ + K₂ + 1) * (P.n + 1) =
       K₁ * (P.n + 1) + C₁ * (P.n + 1) + K₂ * (P.n + 1) + (P.n + 1) := by ring
   obtain ⟨c₁, k₁, e₁, hk₁, halloc, Q, hPQ, hQ, hready⟩ :=
-    h₁ P hP ((K₁ + C₁ + K₂ + 1) * (P.n + 1)) (by rw [hW]; omega)
+    h₁ P hP ((K₁ + C₁ + K₂ + 1) * (P.n + 1)) (by rwo [hW])
   obtain ⟨c₂, k₂, e₂, hk₂, htri⟩ := h₂ P Q hP hQ hPQ ((K₁ + C₁ + K₂ + 1) * (P.n + 1)) c₁
-    e₁.wb_right hready (by rw [hW]; omega)
+    e₁.wb_right hready (by rwo [hW])
   refine ⟨c₂.output, ?_, ?_⟩
   · have hr := Machine.runsWithin_of_exec (Exec.seq e₁ e₂)
     refine runsWithin_mono hr ?_

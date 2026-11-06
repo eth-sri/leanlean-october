@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.DownPhaseBoxPos
 public import Chazelle.Merge.Augmented
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (B3′, part 4): chords of twin chains
@@ -52,12 +55,12 @@ theorem edge_kind (C : Chain) {p : ℕ} (hp : p < (C.sideWalk C.sideBeta).n) :
       rw [hn]; exact Nat.mod_eq_of_lt (by omega)
     rw [hmod]
     interval_cases p
-    · left; rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one]; rfl
+    · left; rwr [C.sideWalk_vtx_zero, C.sideWalk_vtx_one]
     · right; left; rw [C.sideWalk_vtx_one, C.sideWalk_vtx_two]
     · left; rw [C.sideWalk_vtx_two, C.sideWalk_vtx_three]
     · right; left; rw [C.sideWalk_vtx_three, C.sideWalk_vtx_four]
-    · left; rw [C.sideWalk_vtx_four, C.sideWalk_vtx_five]; rfl
-    · right; left; rw [C.sideWalk_vtx_five, C.sideWalk_vtx_six]; rfl
+    · left; rwr [C.sideWalk_vtx_four, C.sideWalk_vtx_five]
+    · right; left; rwr [C.sideWalk_vtx_five, C.sideWalk_vtx_six]
   · rcases Nat.lt_or_ge p (2 * C.m + 6) with h' | h'
     · right; right
       have hmod : (p + 1) % (C.sideWalk C.sideBeta).n = p + 1 := by
@@ -67,7 +70,7 @@ theorem edge_kind (C : Chain) {p : ℕ} (hp : p < (C.sideWalk C.sideBeta).n) :
     · right; left
       have hp' : p = 2 * C.m + 6 := by omega
       subst hp'
-      rw [C.sideWalk_vtx_wrap, walk_last]; rfl
+      rwr [C.sideWalk_vtx_wrap, walk_last]
 
 /-! ## Points of band positions -/
 
@@ -75,7 +78,7 @@ theorem edge_kind (C : Chain) {p : ℕ} (hp : p < (C.sideWalk C.sideBeta).n) :
 theorem abs_lerp_le {u v : Point} {c : ℝ} (hu : |u.1| ≤ c ∧ |u.2| ≤ c) (hv : |v.1| ≤ c ∧ |v.2| ≤ c)
     {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
     |(Geometry.lerp u v t).1| ≤ c ∧ |(Geometry.lerp u v t).2| ≤ c := by
-  simp only [Geometry.lerp]
+  simp [Geometry.lerp]
   have key : ∀ a b : ℝ, |a| ≤ c → |b| ≤ c → |a + t * (b - a)| ≤ c := by
     intro a b ha hb
     rw [abs_le] at *
@@ -100,8 +103,8 @@ theorem pos_eq {Q : Polygon} {x : WPos} (hxn : x.edge < (chainModel C).W.n)
   rw [h.param'_eq hk hy, param_eq _ Q x k hk]
   rw [param_eq _ Q x k hk] at hm
   by_cases hh : u.2 = v.2
-  · simp only [← hu, ← hv, hh, ↓reduceIte, Geometry.lerp_zero]
-  simp only [← hu, ← hv, hh, ↓reduceIte] at hm ⊢
+  · simp [← hu, ← hv, hh, ↓reduceIte, Geometry.lerp_zero]
+  simp [← hu, ← hv, hh, ↓reduceIte] at hm ⊢
   have hy' := sig_band hy (C := C) (C' := C')
   rcases edge_kind C hxn with hk2 | hk1 | ⟨hua, hvb⟩
   · exact absurd hk2 hh
@@ -109,19 +112,19 @@ theorem pos_eq {Q : Polygon} {x : WPos} (hxn : x.edge < (chainModel C).W.n)
     have hk1' : u.1 = v.1 := hk1
     have hne : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
     have hne' : (phi C C' v).2 - (phi C C' u).2 ≠ 0 := by
-      simp only [phi, stretchPt]; exact sub_ne_zero.2 (fun e => hh (sig_inj.1 e).symm)
+      simp [phi, stretchPt]; exact sub_ne_zero.2 (fun e => hh (sig_inj.1 e).symm)
     apply Prod.ext
-    · simp only [Geometry.lerp, phi, stretchPt, ← hk1', sub_self, mul_zero, add_zero]
+    · simp [Geometry.lerp, phi, stretchPt, ← hk1', sub_self, mul_zero, add_zero]
     · have hne2 : stretch (bnd C C') (kk C C') v.2 - stretch (bnd C C') (kk C C') u.2 ≠ 0 :=
         hne'
       have e1 : u.2 + ratio u.2 v.2 (Q.vtx k).2 * (v.2 - u.2) = (Q.vtx k).2 := by
-        unfold ratio; field_simp; ring
+        unfold ratio; fsr
       have e2 : stretch (bnd C C') (kk C C') u.2 + ratio (stretch (bnd C C') (kk C C') u.2)
           (stretch (bnd C C') (kk C C') v.2) (stretch (bnd C C') (kk C C') (Q.vtx k).2) *
           (stretch (bnd C C') (kk C C') v.2 - stretch (bnd C C') (kk C C') u.2) =
           stretch (bnd C C') (kk C C') (Q.vtx k).2 := by
-        unfold ratio; field_simp; ring
-      simp only [Geometry.lerp, phi, stretchPt]
+        unfold ratio; fsr
+      simp [Geometry.lerp, phi, stretchPt]
       rw [e1, e2]
   · -- an edge between two chain vertices: nothing moves
     have hu' : phi C C' u = u := h.phi_fix hua
@@ -148,7 +151,7 @@ theorem image_hseg {y a b : ℝ} (hy : |y| < bnd C C') :
   constructor
   · rintro ⟨w, ⟨hw1, hw2, hw3⟩, rfl⟩
     refine ⟨?_, sig_le_iff.2 hw2, sig_le_iff.2 hw3⟩
-    simp only [phi, stretchPt]; rw [hw1, hy']
+    simp [phi, stretchPt]; rw [hw1, hy']
   · rintro ⟨hz1, hz2, hz3⟩
     set w : Point := (stretch (bnd C C') (kk C C')⁻¹ z.1, y)
     have hinv : stretch (bnd C C') (kk C C') (stretch (bnd C C') (kk C C')⁻¹ z.1) = z.1 := by
@@ -156,11 +159,11 @@ theorem image_hseg {y a b : ℝ} (hy : |y| < bnd C C') :
         (inv_pos.2 kk_pos) z.1
       rwa [inv_inv] at this
     refine ⟨w, ⟨rfl, ?_, ?_⟩, ?_⟩
-    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rw [hinv]; exact hz2
-    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rw [hinv]; exact hz3
+    · rw [← sig_le_iff (C := C) (C' := C')]; simp [w]; rwx [hinv]
+    · rw [← sig_le_iff (C := C) (C' := C')]; simp [w]; rwx [hinv]
     · apply Prod.ext
-      · simp only [phi, stretchPt, w]; exact hinv
-      · simp only [phi, stretchPt, w]; rw [hy', hz1]
+      · simp [phi, stretchPt, w]; exact hinv
+      · simp [phi, stretchPt, w]; rw [hy', hz1]
 
 /-- **The chord of a band record in the model of `C'` is the stretched chord.** -/
 theorem toSet_eq {Q : Polygon} {r : CRec} (hy : |(Q.vtx r.h).2| < bnd C C')
@@ -200,21 +203,21 @@ theorem augChords_transfer {y a b : ℝ} (hy : |y| < bnd C C')
   have hy' := sig_band hy (C := C) (C' := C')
   refine ⟨y, _, _, ⟨sig_lt_iff.2 hh.lt, ?_, ?_, ?_⟩, ?_, rfl⟩
   · intro hm
-    have : phi C C' (a, y) ∈ C'.dom := by simp only [phi, stretchPt, hy']; exact hm
+    have : phi C C' (a, y) ∈ C'.dom := by simp [phi, stretchPt, hy']; exact hm
     exact hh.left_not ((h.phi_mem_dom_iff _).1 this)
   · intro hm
-    have : phi C C' (b, y) ∈ C'.dom := by simp only [phi, stretchPt, hy']; exact hm
+    have : phi C C' (b, y) ∈ C'.dom := by simp [phi, stretchPt, hy']; exact hm
     exact hh.right_not ((h.phi_mem_dom_iff _).1 this)
   · intro x hx1 hx2
     set w := stretch (bnd C C') (kk C C')⁻¹ x
     have hinv : stretch (bnd C C') (kk C C') w = x := by
       have := stretch_inv (B := bnd C C') (k := (kk C C')⁻¹) bnd_nonneg (inv_pos.2 kk_pos) x
       rwa [inv_inv] at this
-    have hw := hh.open_mem w (by rw [← sig_lt_iff (C := C) (C' := C'), hinv]; exact hx1)
-      (by rw [← sig_lt_iff (C := C) (C' := C'), hinv]; exact hx2)
+    have hw := hh.open_mem w (by rwx [← sig_lt_iff (C := C) (C' := C'), hinv])
+      (by rwx [← sig_lt_iff (C := C) (C' := C'), hinv])
     have := (h.phi_mem_dom_iff (w, y)).2 hw
     simpa only [phi, stretchPt, hinv, hy'] using this
-  · rw [← h.top_eq]; exact hy''
+  · rwx [← h.top_eq]
 
 end Twin
 

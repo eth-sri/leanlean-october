@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.SpecMerge
 public import Chazelle.Core.Facts2
 public import Chazelle.Core.FactsL23
+public import Chazelle.Rwx
 
 /-!
 # Walk embeddings, part 1: stretches of two walks that agree (gap O1, generic part)
@@ -142,7 +143,7 @@ theorem sideInArc_right {l r z x : ℝ} (hlr : l ≠ r) (hz : sideInArc l r z) (
   · unfold sideInArc at *
     rw [ite_eq_right (by linarith)] at hz hx
     push Not at hx
-    have hx' : r < x := lt_of_le_of_ne hx.2 (Ne.symm hxr)
+    have hx'  := lt_of_le_of_ne hx.2 (Ne.symm hxr)
     rcases hz with hz | hz
     · rw [ite_eq_right (by linarith)]; right; exact hx'
     · rw [ite_eq_left (by linarith)]; exact ⟨hz, hx'⟩
@@ -162,7 +163,7 @@ theorem sideInArc_left {l r z x : ℝ} (hlr : l ≠ r) (hz : sideInArc l r z) (h
   · unfold sideInArc at *
     rw [ite_eq_right (by linarith)] at hz hx
     push Not at hx
-    have hx' : x < l := lt_of_le_of_ne hx.1 hxl
+    have hx'  := lt_of_le_of_ne hx.1 hxl
     rcases hz with hz | hz
     · rw [ite_eq_left (by linarith)]; exact ⟨hx', hz⟩
     · rw [ite_eq_right (by linarith)]; left; exact hx'
@@ -342,7 +343,7 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
     have hqb := hkey q hq u hu.le hu1
     refine hfree _ ?_ hcut'
     exact sideInArc_convex (Nat.cast_nonneg g) hgR hpb.1 hpb.2 hqb.1 hqb.2 hyb.1 hyb.2 hga
-      hpin hqin (by rw [hoffp, hoffy]; exact h1) (by rw [hoffq, hoffy]; exact h2)
+      hpin hqin (by rwx [hoffp, hoffy]) (by rwx [hoffq, hoffy])
   rw [Model.arcWt_eq]
   rcases (M.arcEdges a b).eq_empty_or_nonempty with hE | ⟨p₀, hp₀n, -, t₀, ht₀, ht₀1, hx₀⟩
   · rw [hE, Set.ncard_empty]; exact Nat.zero_le _
@@ -389,19 +390,19 @@ theorem arcWt_le_of_stretch {M M' : Model} (hM' : GoodModel M') {Q : Polygon}
         have hrb := hkey' pr hA.1 tr hA.2.1 hA.2.2.1
         rw [← hr'eq] at hrb
         rw [sideInArc_iff_off hg'0 hg'R hz'b.1 hz'b.2 hx'b.1 hx'b.2 hrb.1 hrb.2
-          (by rw [hoffz, hoffx]; exact hlt), hoffz, hoffx] at hr
+          (by rwx [hoffz, hoffx]), hoffz, hoffx] at hr
         exact htransfer p₀ p t₀ t hp₀n hpn ht₀ ht₀1 ht ht1 hx₀ hx r' ⟨c, hc, pr, tr, hA, hr'eq⟩
           hr.1 hr.2
       · obtain ⟨e1, e2⟩ := sideKey_inj ht₀.le ht₀1 ht.le ht1 heq
         apply hnot
-        rw [hx', show f p = (g' + d₀) % n' by simp only [f, d, e1]] at *
-        rw [← e2]; exact hz'in
+        rw [hx', show f p = (g' + d₀) % n' by simp [f, d, e1]] at *
+        rwx [← e2]
       · have hl := sideInArc_left hl'r' hz'in hnot hx'l
         obtain ⟨c, hc, pl, tl, hA, hl'eq⟩ := hl'c
         have hlb := hkey' pl hA.1 tl hA.2.1 hA.2.2.1
         rw [← hl'eq] at hlb
         rw [sideInArc_iff_off hg'0 hg'R hx'b.1 hx'b.2 hz'b.1 hz'b.2 hlb.1 hlb.2
-          (by rw [hoffz, hoffx]; exact hgt), hoffz, hoffx] at hl
+          (by rwx [hoffz, hoffx]), hoffz, hoffx] at hl
         exact htransfer p p₀ t t₀ hpn hp₀n ht ht1 ht₀ ht₀1 hx hx₀ l' ⟨c, hc, pl, tl, hA, hl'eq⟩
           hl.1 hl.2
     · apply hnot
@@ -470,7 +471,7 @@ theorem arcWt_le_of_pieces {M : Model} {F : Set (Set Point)} {K : Set ℝ} {γ :
   have hea : ¬ sideInArc a b e := hK _ heK
   rcases hge.lt_or_eq with hlt | heq
   · exact hea (sideInArc_convex (Nat.cast_nonneg g) hgR hz.1 hz.2 hx0 hxn (Nat.cast_nonneg e) heR
-      hga hx₀ hx (by rw [hoffe]; exact hzL) (by rw [hoffe]; exact hlt))
+      hga hx₀ hx (by rwx [hoffe]) (by rwx [hoffe]))
   · have := off_inj (Nat.cast_nonneg g) hgR hx0 hxn (Nat.cast_nonneg e) heR (by rw [hoffe]; exact heq.symm)
     exact hea (this ▸ hx)
 

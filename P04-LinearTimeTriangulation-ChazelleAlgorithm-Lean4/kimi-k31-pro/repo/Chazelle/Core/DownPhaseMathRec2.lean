@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseMathRec
+public import Chazelle.Rwx
 
 /-!
 # Down phase, math (H-R1): region records of `buildNF`, continued
@@ -182,7 +183,7 @@ theorem regArcs_facts (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L
         (interiorModel Q).key Q (N.arc (as.getD t' 0)).s := by
       have := List.pairwise_iff_getElem.1 hseq (as.getD t 0) (as.getD t' 0)
         (by rw [DownDrv.buildNF_seq, List.length_range]; exact lt_trans hlt hj')
-        (by rw [DownDrv.buildNF_seq, List.length_range]; exact hj') hlt
+        (by rwx [DownDrv.buildNF_seq, List.length_range]) hlt
       simpa [DownDrv.buildNF_seq] using this
     refine lt_of_le_of_ne hle fun he => ?_
     have := hA2 _ _ hj hj' (hreg.trans hreg'.symm) he

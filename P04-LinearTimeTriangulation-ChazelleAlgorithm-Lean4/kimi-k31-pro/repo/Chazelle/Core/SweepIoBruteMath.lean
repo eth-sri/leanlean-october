@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.MergeAsmDesc
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # The sweep RAM (WP-D), answers: shots from a symbolic point, the mathematics
@@ -64,7 +68,7 @@ theorem key_in_arc (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     rw [hs, hk]
   · obtain ⟨U, hU, l, r, harc, hin⟩ := exists_arc_around hGM hFam hkey hcut
     obtain ⟨j, hj, hs, he⟩ := ofArc U hU _ _ harc
-    exact ⟨j, hj, Or.inl (by rw [hs, he]; exact hin)⟩
+    exact ⟨j, hj, Or.inl (by rwx [hs, he])⟩
 
 /-- **The exit point of a free ray** (at a height not above the top) is a walk point whose key
 lies in the closed arc of an arc record. -/
@@ -93,9 +97,9 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
         have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
         have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
         have hbox := C.dom_subset_box (hdom (T - ε) (by linarith) (by linarith))
-        have h1 : |(rayPt z σ (T - ε)).1| < C.radius := hbox.1
+        have h1  := hbox.1
         have h2 : |w.1| ≤ |(rayPt z σ (T - ε)).1| + ε := by
-          have e : w.1 = (rayPt z σ (T - ε)).1 + σ * ε := by simp [hw, rayPt]; ring
+          have e : w.1 = (rayPt z σ (T - ε)).1 + σ * ε := by sir [hw, rayPt]
           rw [e]
           refine (abs_add_le _ _).trans ?_
           rcases hσ with rfl | rfl <;> simp [abs_of_pos hε0]
@@ -120,7 +124,7 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     exact hdom _ (by nlinarith [hs.2]) (by nlinarith [hs.1])
   obtain ⟨p, t, hp, ht, ht1, hpt, -⟩ :=
     C.sideSees_chordEnd hP C.sideBeta hee (by simp [rayPt]) hopen he
-  have hpt' : sidePt (chainModel C).W p t = w := hpt
+  have hpt'  := hpt
   have hkey : 0 < (p : ℝ) + t := by
     by_contra hle
     push Not at hle
@@ -132,7 +136,7 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
       linarith
     subst hp0 ht0
     have h0 : sidePt (chainModel C).W 0 0 = C.slitTop := by
-      rw [Chazelle.Chain.sidePt_zero]; rfl
+      rwr [Chazelle.Chain.sidePt_zero]
     have := congrArg Prod.snd (hpt'.symm.trans h0)
     simp only [hw, rayPt_snd, Chain.slitTop] at this
     rw [this] at hzR
@@ -157,7 +161,7 @@ theorem walk_ne_of_dom (C : Chain) (hP : C.P.Simple) {z : Point} (hz : z ∈ C.d
     (hp : p < (chainModel C).W.n) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
     lerp ((chainModel C).wa p) ((chainModel C).wb p) t ≠ z := fun h =>
   (FactsChain.walkAx C hP).trace p hp t ht0 ht1
-    (by rw [show sidePt (chainModel C).W p t = z from h]; exact hz)
+    (by rwx [show sidePt (chainModel C).W p t = z from h])
 
 /-- **A point strictly inside the box is an inner point** of the chain model. -/
 theorem innerPt_box (C : Chain) {z : Point} (h1 : |z.1| < C.radius) (h2 : |z.2| < C.radius) :
@@ -169,10 +173,10 @@ theorem innerPt_box (C : Chain) {z : Point} (h1 : |z.1| < C.radius) (h2 : |z.2| 
   have v2 : (chainModel C).W.vtx 2 = (-C.radius, -C.radius) := rfl
   have v3 : (chainModel C).W.vtx 3 = (C.radius, -C.radius) := rfl
   refine ⟨⟨2, 1, by omega, by omega, ?_, ?_⟩, ⟨1, 3, by omega, by omega, ?_, ?_⟩⟩
-  · rw [v2]; simp only; linarith
-  · rw [v1]; simp only; linarith
-  · rw [v1]; simp only; linarith
-  · rw [v3]; simp only; linarith
+  · rw [v2]; sil only
+  · rw [v1]; sil only
+  · rw [v1]; sil only
+  · rw [v3]; sil only
 
 /-- **A walk position not above the top** is a point of the chain or of the box. -/
 theorem walk_hit_onCB (C : Chain) (Q : Polygon) {n : ℕ} {x : WPos}
@@ -203,7 +207,7 @@ theorem AEnv.ctxL (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hI : IInv W c₀ c)
   change 2 * (J.m₁ + J.m₂) + 7 ≤ W at hWm
   have h0 : ChainCtx P W c₀ (sw 20) J.left :=
     ⟨hA.hG, hA.hWh, w20, ⟨H, d20, hA.hostReg⟩, hA.hP, by change 2 * J.m₁ + 7 ≤ W; omega⟩
-  exact h0.transport (hI.hin _ (by unfold IFix sw; omega)) hI.hm hI.hA
+  exact h0.transport (hI.hin _ (by ufo IFix sw)) hI.hm hI.hA
 
 /-- **The chain descriptor of `C₂`** at `sw 21`. -/
 theorem AEnv.ctxR (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hI : IInv W c₀ c) :
@@ -213,7 +217,7 @@ theorem AEnv.ctxR (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hI : IInv W c₀ c)
   change 2 * (J.m₁ + J.m₂) + 7 ≤ W at hWm
   have h0 : ChainCtx P W c₀ (sw 21) J.right :=
     ⟨hA.hG, hA.hWh, w21, ⟨H, d21, hA.hostReg⟩, hA.hP, by change 2 * J.m₂ + 7 ≤ W; omega⟩
-  exact h0.transport (hI.hin _ (by unfold IFix sw; omega)) hI.hm hI.hA
+  exact h0.transport (hI.hin _ (by ufo IFix sw)) hI.hm hI.hA
 
 /-- The facts about a copied model descriptor at a run configuration. -/
 def MdFacts (P : Polygon) (c : Config) (B : ℕ) (H : Host) (C : Chain) : Prop :=
@@ -237,14 +241,14 @@ theorem mdFacts_of {B d : ℕ} {C : Chain} (hI : IInv W c₀ c)
 theorem AEnv.mdL (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hI : IInv W c₀ c) :
     MdFacts P c (c.nreg (sw 30)) H J.left := by
   obtain ⟨-, -, -, -, -, -, d20, w20, -, -, -, -, -, -, -, -, -, d30, w30, -, -⟩ := hA.hst
-  rw [hI.hin _ (by unfold IFix sw; omega)]
+  rw [hI.hin _ (by ufo IFix sw)]
   exact mdFacts_of hI d20 w20 d30 w30 hA.hmd₁
 
 /-- **The model descriptor of `C₂`** at `sw 31`. -/
 theorem AEnv.mdR (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hI : IInv W c₀ c) :
     MdFacts P c (c.nreg (sw 31)) H J.right := by
   obtain ⟨-, -, -, -, -, -, -, -, d21, w21, -, -, -, -, -, -, -, -, -, d31, w31⟩ := hA.hst
-  rw [hI.hin _ (by unfold IFix sw; omega)]
+  rw [hI.hin _ (by ufo IFix sw)]
   exact mdFacts_of hI d21 w21 d31 w31 hA.hmd₂
 
 end Env

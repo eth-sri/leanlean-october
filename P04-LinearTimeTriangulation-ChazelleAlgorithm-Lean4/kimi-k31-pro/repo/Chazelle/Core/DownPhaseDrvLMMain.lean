@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvLMFam
+public import Chazelle.Rwx
 
 /-!
 # Down-phase level math (D7): `levelMathSpec`
@@ -32,8 +33,8 @@ theorem pow_lvl (lam : ℕ) : 2 ^ (Cost.ceilBeta lam + 12) = 2 * 2 ^ DrvR.nextLv
 theorem levelMathSpec : DrvR.LevelMathSpec := by
   classical
   intro P L E reg lam hG hLne hL hperm hsort hdeg hwt hregs
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hdh : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
+  have hQ  := (shearInvariance (epsOf P) P).1 hG.1
+  have hdh  := (goodShear_epsOf hG.2).2.1
   have hK : 0 < L.length := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
   have B : DrvB.BaseCtx (Qof P) L E reg (decide (Mountain.LeftInside (Qof P))) :=
     ⟨hQ, hdh, hL, hperm, hsort, hK, hregs, decide_eq_true_iff⟩
@@ -54,7 +55,7 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
     obtain ⟨hP, hs, hm, -⟩ := hreg r hr
     have h := DownMath.hostR1Spec P L E reg r hG hLne hL hperm hsort hdeg hregs hr
     obtain ⟨-, -, hsimp, -, -, -, hex⟩ := h
-    refine ⟨by rw [hP]; exact hsimp, ?_⟩
+    refine ⟨by rwx [hP], ?_⟩
     have := hex (C r) hP hs hm
     rw [hS] at this
     exact this
@@ -62,8 +63,8 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
   have X : LvlCtx (Qof P) L (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions reg C
       (fun r => (NR r).F (chainModel (C r)) (Qof P)) Lx DrvR.regCap
       (2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 12)) := by
-    refine ⟨hQ, hL, by rw [← hS]; exact hdeg, fun r hr => by rw [← hS]; exact hregs.1.1 r hr,
-      hregs.1.2.1, fun U hU => hregs.1.2.2 U (by rw [hS]; exact hU), fun r hr => (hH r hr).2,
+    refine ⟨hQ, hL, by rwx [← hS], fun r hr => by rw [← hS]; exact hregs.1.1 r hr,
+      hregs.1.2.1, fun U hU => hregs.1.2.2 U (by rwx [hS]), fun r hr => (hH r hr).2,
       fun r hr => ?_, fun r hr => ?_, fun r hr => ?_, fun r hr => ?_⟩
     · obtain ⟨-, -, -, hcan, -, hhi, -⟩ := hreg r hr
       exact ⟨hcan.1.1, hcan.2.1, fun U hU => (hcan.2.2.1.1 U hU).trans (by omega)⟩

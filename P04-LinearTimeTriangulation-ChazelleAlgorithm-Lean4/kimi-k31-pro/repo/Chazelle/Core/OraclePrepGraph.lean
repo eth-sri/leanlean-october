@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.OraclePrepDedup
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 17: the book data of the preprocessing
@@ -28,12 +29,12 @@ theorem graphOK_of {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) 
   O_nodup := hD
   I_ok := fun c hc => by
     obtain ⟨h1, h2, h3⟩ := mem_starList.1 hc
-    refine ⟨by omega, by simp; omega, fun h => ?_⟩
-    simp at h; omega
+    refine ⟨by omega, by sio, fun h => ?_⟩
+    sio at h
   O_ok := fun c hc => by
     obtain ⟨h1, h2, -⟩ := zipRaw_sound hN hP ((hDm c).1 hc)
-    refine ⟨h1, by simp; omega, fun h => ?_⟩
-    simp at h; omega
+    refine ⟨h1, by sio, fun h => ?_⟩
+    sio at h
   I_star := fun c hc => by
     obtain ⟨h1, h2, h3⟩ := mem_starList.1 hc
     obtain ⟨f1, f2, f3⟩ := fpos_spec (rgi N) c.2

@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.SweepAnswer3
 public import Chazelle.Core.SweepWalk
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), part 17: the abstract machine, generic walk facts
@@ -39,8 +41,8 @@ theorem off_add_small {n g : ℕ} (_hg : g < n) {p : ℕ} (_hp : p < n) {t s : �
     · left; exact_mod_cast h
     · right; exact_mod_cast h
   rcases hgp with h | h
-  · rw [ite_eq_left (by linarith), ite_eq_left (by linarith)]; ring
-  · rw [ite_eq_right (by linarith), ite_eq_right (by linarith)]; ring
+  · rwring [ite_eq_left (by linarith), ite_eq_left (by linarith)]
+  · rwring [ite_eq_right (by linarith), ite_eq_right (by linarith)]
 
 /-- A key whose offset is slightly above that of `(p, t)` (on the same edge) is the key
 `p + t + u`. -/
@@ -80,10 +82,10 @@ theorem after_region_exists (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.
   obtain ⟨U, hU, hfU⟩ := hM.exists_faces_of_not_cut hF hfin hp
     (t := t + δ / 2) ⟨by linarith, by linarith⟩ (hnc (δ / 2) ⟨by linarith, by linarith⟩)
   refine ⟨U, hU, δ, hδ0, fun s hs0 hs1 hs2 => ?_⟩
-  have hcs : ¬ M.IsCut F ((p : ℝ) + (t + s)) := hnc s ⟨hs0, hs1⟩
+  have hcs  := hnc s ⟨hs0, hs1⟩
   obtain ⟨U', hU', hfU'⟩ := hM.exists_faces_of_not_cut hF hfin hp (t := t + s)
     ⟨by linarith, hs2⟩ hcs
-  suffices U' = U by rw [← this]; exact hfU'
+  suffices U' = U by rwx [← this]
   have hg0 : (0 : ℝ) ≤ (g : ℝ) := Nat.cast_nonneg _
   have hgn : (g : ℝ) < M.W.n := by exact_mod_cast hg
   -- positions of the cut-free stretch face one region
@@ -101,7 +103,7 @@ theorem after_region_exists (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.
       rw [off_add_small hg hp ht0 (by linarith) (by linarith)] at h2
       set u := off M.W.n g x - off M.W.n g ((p : ℝ) + t) with hu
       have hxe := eq_of_off_small hg hp ht0 (u := u) (by linarith) (by linarith) hx0 hxn
-        (by rw [hu]; ring)
+        (by rwring [hu])
       exact hnc u ⟨by linarith, by linarith⟩ (by rw [hxe, add_assoc] at hx; exact hx)
   rcases lt_trichotomy s (δ / 2) with h | h | h
   · exact key s (δ / 2) hs0 h (by linarith) U' U hU' hU hfU' hfU

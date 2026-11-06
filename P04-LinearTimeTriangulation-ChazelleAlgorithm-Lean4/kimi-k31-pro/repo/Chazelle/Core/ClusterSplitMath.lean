@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.ClusterStarSep
 public import Chazelle.Core.ClusterMedian
 public import Chazelle.Core.ClusterStack
+public import Chazelle.Rwx
 
 /-!
 # WP-I, part 20: the split of a piece, in the terms of the RAM
@@ -83,7 +84,7 @@ theorem inClass_iff (hM : M.Planar) {sopp sface fparN pre sz : ℕ → ℕ} {r0 
     {f : Fin N} {x : Fin N ⊕ Fin N ⊕ Fin N} (hx : (star M).face x = f) (h : Fin N) :
     inClass sopp sface fparN pre sz r0 (enc N x) f (pre h) ↔
       x ∈ (starTree T a ha).coDarts ∧ h ∈ (starTree T a ha).cross x := by
-  have hSM : (star M).Planar := star_planar M hM
+  have hSM  := star_planar M hM
   set gF : Fin N := (star M).face ((star M).opp x) with hgF
   have hg : sface (sopp (enc N x)) = (gF : ℕ) := by rw [hsopp, hsface]
   have hne : ∀ g : Fin N, (g : ℕ) ≠ r0 ↔ g ≠ C.r0 := by
@@ -92,14 +93,14 @@ theorem inClass_iff (hM : M.Planar) {sopp sface fparN pre sz : ℕ → ℕ} {r0 
   rw [hg]
   by_cases hd : (gF : ℕ) ≠ r0 ∧ fparN gF = enc N x
   · rw [ite_eq_left hd]
-    have hg0 : gF ≠ C.r0 := (hne gF).mp hd.1
+    have hg0  := (hne gF).mp hd.1
     have hfx : C.fpar gF = x := enc_inj (by rw [← hfpar gF hg0]; exact hd.2)
     rw [← hfx, C.cross_fpar hSM hg0, hint]
     exact ⟨fun h => ⟨C.mem gF hg0, h⟩, fun h => h.2⟩
   · rw [ite_eq_right hd]
     by_cases hu : (f : ℕ) ≠ r0 ∧ sopp (fparN f) = enc N x
     · rw [ite_eq_left hu]
-      have hf0 : f ≠ C.r0 := (hne f).mp hu.1
+      have hf0  := (hne f).mp hu.1
       have hfx : (star M).opp (C.fpar f) = x := by
         apply enc_inj
         rw [← hsopp, ← hfpar f hf0]; exact hu.2
@@ -305,9 +306,9 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
   refine ⟨fun v hv hm => ?_, fun v hv hm t t' ht ht' h1 h2 => ?_, fun t ht => ?_,
     fun d t t' ht ht' ⟨a1, a2, a3⟩ ⟨b1, b2, b3⟩ => ?_⟩
   · have hvμ := hlt v hv
-    have hm' : ¬ markN T a f (⟨v, hvμ⟩ : Fin μ) := hm
+    have hm'  := hm
     obtain ⟨t, ht, hvt⟩ := hcov (.inl ⟨v, hvμ⟩) (mem_liftP.mpr ⟨_, rfl, hv⟩)
-      (by rw [← markN_iff (ha := ha)]; exact hm')
+      (by rwx [← markN_iff (ha := ha)])
     exact ⟨t, ht, ((hmemcls ⟨v, hvμ⟩ t ht).mp hvt).2.2⟩
   · have hvμ := hlt v hv
     exact huniq t t' ht ht' (.inl ⟨v, hvμ⟩) ((hmemcls ⟨v, hvμ⟩ t ht).mpr ⟨hv, hm, h1⟩)
@@ -348,7 +349,7 @@ theorem card_mark_le (f : Fin N) (S : Finset ℕ) (hSμ : ∀ v ∈ S, v < μ) (
   classical
   set S' : Finset (Fin μ) := Finset.univ.filter (fun v : Fin μ => (v : ℕ) ∈ S)
   have h := star_sep_card T a ha f c j k S' (fun v hv => by
-    have hv' : (v : ℕ) ∈ S := (Finset.mem_filter.mp hv).2
+    have hv'  := (Finset.mem_filter.mp hv).2
     exact hS v hv')
   refine le_trans (le_of_eq ?_) h
   rw [← Finset.card_map Fin.valEmbedding]
@@ -359,7 +360,7 @@ theorem card_mark_le (f : Fin N) (S : Finset ℕ) (hSμ : ∀ v ∈ S, v < μ) (
   constructor
   · rintro ⟨hv, hm⟩
     refine ⟨⟨v, hSμ v hv⟩, ⟨hv, ?_⟩, rfl⟩
-    rw [← markN_iff (ha := ha)]; exact hm
+    rwx [← markN_iff (ha := ha)]
   · rintro ⟨w, ⟨hw, hm⟩, rfl⟩
     exact ⟨hw, (markN_iff (ha := ha) f w).mpr hm⟩
 

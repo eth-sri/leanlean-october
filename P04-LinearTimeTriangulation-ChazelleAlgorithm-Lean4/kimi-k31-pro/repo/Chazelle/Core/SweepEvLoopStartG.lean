@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.SweepEvLoopStartL
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 4000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep (WP-D), stage 3: the start of the event loop (task L0, RAM part 5: the log record)
@@ -25,7 +31,6 @@ def stores (a : ℕ) : List ℕ → Stmt
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-set_option maxHeartbeats 4000000 in
 /-- **Consecutive stores.** -/
 theorem stores_irs (hK : Consts c₀) {a : ℕ} (ha : IScr a) :
     ∀ (rs : List ℕ) (c : Config), IInv W c₀ c → c₀.nreg ALLOC ≤ c.nreg a → (∀ r ∈ rs, r ≠ a) →
@@ -39,7 +44,7 @@ theorem stores_irs (hK : Consts c₀) {a : ℕ} (ha : IScr a) :
   | r :: rs, c, hI, hA, hr, hW => by
     have hra : r ≠ a := hr r List.mem_cons_self
     refine IRS.seq (K₁ := 1) (K₂ := 1 + 2 * rs.length) (IRS.store (v := r) hI hA) ?_ |>.mono
-      (by simp; omega) (fun _ h => h)
+      (by sio) (fun _ => id)
     rintro c₁ hI₁ - - rfl
     set c₁ : Config := { c with nmem := upd c.nmem (c.nreg a) (c.nreg r) } with hc₁
     have hk1 : c₁.nreg K1 = 1 := (hK.fix hI₁).2.1
@@ -54,12 +59,12 @@ theorem stores_irs (hK : Consts c₀) {a : ℕ} (ha : IScr a) :
     have o2 : ∀ q, q ≠ a →
         ({ c₁ with nreg := regI c₁.nmem (.addN a a K1) c₁.nreg } : Config).nreg q = c.nreg q :=
       fun q hq => by simp [regI, upd_other _ _ _ hq, hc₁]
-    refine (stores_irs hK ha rs _ hI₂ (by rw [v2]; omega)
-      (fun r' hr' => hr r' (List.mem_cons_of_mem _ hr')) (by rw [v2]; simp at hW; omega)).mono
+    refine (stores_irs hK ha rs _ hI₂ (by rwo [v2])
+      (fun r' hr' => hr r' (List.mem_cons_of_mem _ hr')) (by rw [v2]; sio at hW)).mono
       le_rfl ?_
     rintro c' ⟨e1, e2, e3⟩
     rw [v2] at e1 e3
-    refine ⟨by rw [e1]; simp; omega, fun q hq => by rw [e2 q hq, o2 q hq], fun x => ?_⟩
+    refine ⟨by rws [e1]; omega, fun q hq => by rw [e2 q hq, o2 q hq], fun x => ?_⟩
     rw [e3 x]
     simp only [List.length_cons]
     by_cases hx : c.nreg a + 1 ≤ x ∧ x < c.nreg a + 1 + rs.length
@@ -82,8 +87,6 @@ def lsLogRegs : List ℕ := [kE, kH, kN, kL, kL + 1, kL + 2, kL + 3]
 /-- **The first log record.** -/
 def stLog : Stmt := .seq (.instr (.copyN zX lB)) (.seq (stores zX lsLogRegs) (.instr (.constN lC 1)))
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 theorem stLog_irs (hK : Consts c₀) (hI : IInv W c₀ c) (hlB : c₀.nreg ALLOC ≤ c.nreg lB)
     (hroom : c.nreg lB + 7 ≤ W) :
     IRS P W c₀ stLog c 16 (fun c' => c'.nreg lC = 1 ∧
@@ -94,7 +97,7 @@ theorem stLog_irs (hK : Consts c₀) (hI : IInv W c₀ c) (hlB : c₀.nreg ALLOC
       ∀ i, i < 4 → c'.nmem (c.nreg lB + 3 + i) = c.nreg (kL + i)) := by
   have hzX : IScr zX := iscr_sw (by simp [zX, sw]) (by simp [zX, sw])
   refine IRS.seq (K₁ := 1) (K₂ := 14 + 1) (IRS.instr1 (i := .copyN zX lB) hI hzX) ?_ |>.mono
-    (by norm_num) (fun _ h => h)
+    (by norm_num) (fun _ => id)
   rintro c₁ hI₁ - - rfl
   have v1 : ({ c with nreg := regI c.nmem (.copyN zX lB) c.nreg } : Config).nreg zX = c.nreg lB := by
     simp [regI]
@@ -103,8 +106,8 @@ theorem stLog_irs (hK : Consts c₀) (hI : IInv W c₀ c) (hlB : c₀.nreg ALLOC
   have hne : ∀ r ∈ lsLogRegs, r ≠ zX := by
     intro r hr; simp only [lsLogRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
     rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp [kE, kH, kN, kL, zX, sw]
-  refine IRS.seq (K₁ := 14) (K₂ := 1) (stores_irs hK hzX lsLogRegs _ hI₁ (by rw [v1]; exact hlB) hne
-    (by rw [v1]; simp [lsLogRegs]; omega)) ?_
+  refine IRS.seq (K₁ := 14) (K₂ := 1) (stores_irs hK hzX lsLogRegs _ hI₁ (by rwx [v1]) hne
+    (by rsio [v1] [lsLogRegs])) ?_
   rintro c₂ hI₂ - - ⟨e1, e2, e3⟩
   rw [v1] at e3
   refine (IRS.instr1 (i := .constN lC 1) hI₂ ⟨iscr_sw (by simp [lC, sw]) (by simp [lC, sw]),
@@ -113,14 +116,14 @@ theorem stLog_irs (hK : Consts c₀) (hI : IInv W c₀ c) (hlB : c₀.nreg ALLOC
   have hlen : lsLogRegs.length = 7 := rfl
   have val : ∀ k, k < 7 → c₂.nmem (c.nreg lB + k) = c.nreg (lsLogRegs.getD k 0) := by
     intro k hk
-    rw [e3, ite_eq_left (by rw [hlen]; omega), Nat.add_sub_cancel_left, o1 _ ?_]
-    rw [List.getD_eq_getElem _ _ (by rw [hlen]; exact hk)]
+    rw [e3, ite_eq_left (by rwo [hlen]), Nat.add_sub_cancel_left, o1 _ ?_]
+    rw [List.getD_eq_getElem _ _ (by rwx [hlen])]
     exact hne _ (List.getElem_mem _)
   refine ⟨by simp [regI], fun q h1 h2 => ?_, fun x hx => ?_, ?_, ?_, ?_, fun i hi => ?_⟩
   · simp only [regI]
     rw [upd_other _ _ _ h2, e2 q h1, o1 q h1]
   · show c₂.nmem x = _
-    rw [e3, ite_eq_right (by rw [hlen]; omega)]
+    rw [e3, ite_eq_right (by rwo [hlen])]
   · show c₂.nmem _ = _; have := val 0 (by norm_num); simpa [lsLogRegs] using this
   · show c₂.nmem _ = _; have := val 1 (by norm_num); simpa [lsLogRegs] using this
   · show c₂.nmem _ = _; have := val 2 (by norm_num); simpa [lsLogRegs] using this

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvLoop2
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
 
 /-!
 # The sweep (WP-D), stage 3: the event loop (RAM)
@@ -26,10 +29,10 @@ theorem iter_keep {c cw cs co c' : Config} (h : IterRel P J N₁ N₂ c cw cs co
   obtain ⟨hWO, hAw, ⟨-, -, -, hsO⟩, ⟨hregO, hAO, -⟩, ⟨hfrK, hAK, -⟩⟩ := h
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, hfrW⟩ := hWO
   have hsA : cs.nreg ALLOC = cw.nreg ALLOC :=
-    hsO _ (by unfold ALLOC bF sw; omega) (by unfold ALLOC bN sw; omega)
+    hsO _ (by ufo ALLOC bF sw) (by ufo ALLOC bN sw)
   refine ⟨fun r hr hk => ?_, by omega⟩
   have hb := band_sw_not ⟨hr.1, hr.2.1⟩
-  have hra : r ≠ ALLOC := by have := hr.1; unfold ALLOC; omega
+  have hra : r ≠ ALLOC := by have := hr.1; ufo ALLOC
   rw [hfrK r hb hk hra, hregO r hb hr.2.2.2.2.2.1 hr.2.2.2.2.2.2 hra,
     hsO r hr.2.2.2.1 hr.2.2.2.2.1, hfrW r hb hr.2.2.1 hra]
 
@@ -47,13 +50,13 @@ theorem done_runOut {c₀ c cw cs co c' : Config} (hL : LoopInv P J N₁ N₂ c�
     (hlC : c'.nreg lC ≤ logCap N₁ N₂) : RunOut P J N₁ N₂ c₀ c' := by
   obtain ⟨hk, hA⟩ := iter_keep hIR
   have esB : c'.nreg sB = c.nreg sB :=
-    hk _ (keepR_of (by unfold sB sw; omega)) (by unfold KR kE kH kN kL sP dF lC sB sw; omega)
+    hk _ (keepR_of (by ufo sB sw)) (by ufo KR kE kH kN kL sP dF lC sB sw)
   have esC : c'.nreg sC = c.nreg sC :=
-    hk _ (keepR_of (by unfold sC sw; omega)) (by unfold KR kE kH kN kL sP dF lC sC sw; omega)
+    hk _ (keepR_of (by ufo sC sw)) (by ufo KR kE kH kN kL sP dF lC sC sw)
   have elB : c'.nreg lB = c.nreg lB :=
-    hk _ (keepR_of (by unfold lB sw; omega)) (by unfold KR kE kH kN kL sP dF lC lB sw; omega)
+    hk _ (keepR_of (by ufo lB sw)) (by ufo KR kE kH kN kL sP dF lC lB sw)
   have eTB : c'.nreg cTB = c.nreg cTB :=
-    hk _ (keepR_of (by unfold cTB sw; omega)) (by unfold KR kE kH kN kL sP dF lC cTB sw; omega)
+    hk _ (keepR_of (by ufo cTB sw)) (by ufo KR kE kH kN kL sP dF lC cTB sw)
   obtain ⟨rs, ax, hlen, -, -, -, -, -, -, hsize⟩ := hL.stops
   have h0 := hL.tab0; have h1 := hL.lay1; have h2 := hL.lay2; have h4 := hL.lay4
   unfold logCap at h2 hlC
@@ -86,22 +89,22 @@ theorem loop_irs {W : ℕ} {c₀ : Config} {body : Stmt} {Kb : ℕ}
     (fun c => c.nreg K1 = 1 ∧ (LoopInv P J N₁ N₂ c₀ c ∨ FinS P J N₁ N₂ c₀ c)) (μL P J N₁ N₂) Kb
     (fun c ⟨hk, h⟩ ht => by
       rcases h with h | h
-      · rw [hμ c h]; omega
-      · rw [hk, h.1] at ht; omega)
+      · rwo [hμ c h]
+      · rwo [hk, h.1] at ht)
     (fun c hIc ⟨hk, h⟩ ht hr => by
       have hLc : LoopInv P J N₁ N₂ c₀ c := by
         rcases h with h | h
         · exact h
-        · rw [hk, h.1] at ht; omega
+        · rwo [hk, h.1] at ht
       refine (hiter c hIc hLc hr).mono le_rfl ?_
       rintro c' ⟨cw, cs, co, hIR⟩
       have hkeep := (iter_keep hIR).1
       have hk' : c'.nreg K1 = 1 := by
-        rw [hkeep _ (keepR_of (by unfold K1 sw; omega)) (by unfold KR kE kH kN kL sP dF lC K1 sw; omega)]
+        rw [hkeep _ (keepR_of (by ufo K1 sw)) (by ufo KR kE kH kN kL sP dF lC K1 sw)]
         exact hk
       by_cases hd : c'.nreg dF = 0
       · obtain ⟨hL', hlt⟩ := hstep c cw cs co c' hLc hIR hd
-        exact ⟨⟨hk', Or.inl hL'⟩, by rw [hμ c' hL', hμ c hLc]; omega⟩
+        exact ⟨⟨hk', Or.inl hL'⟩, by rwo [hμ c' hL', hμ c hLc]⟩
       · have hd1 : c'.nreg dF = 1 := by
           obtain ⟨-, -, -, -, hK⟩ := hIR
           obtain ⟨-, -, hnone, hsome⟩ := hK
@@ -112,12 +115,12 @@ theorem loop_irs {W : ℕ} {c₀ : Config} {body : Stmt} {Kb : ℕ}
         obtain ⟨hOut, hlC⟩ := hdone c cw cs co c' hLc hIR hd1
         refine ⟨⟨hk', Or.inr ⟨hd1, done_runOut hLc hIR hOut hlC⟩⟩, ?_⟩
         rw [hμ c hLc]
-        unfold μL; rw [ite_eq_right hd]; omega)
+        uro μL [ite_eq_right hd])
     hI ⟨hK1, Or.inl hL⟩ (by have := Nat.mul_le_mul_left (Kb + 2) (hle c); omega)
   refine hw.mono (by have := Nat.mul_le_mul_left (Kb + 2) (hle c); omega) ?_
   rintro c' ⟨⟨hk, h⟩, ht⟩
   rcases h with h | h
-  · rw [hk, h.done0] at ht; omega
+  · rwo [hk, h.done0] at ht
   · exact h
 
 end

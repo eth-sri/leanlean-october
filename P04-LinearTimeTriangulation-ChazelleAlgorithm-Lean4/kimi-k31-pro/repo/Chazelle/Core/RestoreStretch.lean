@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.RestoreNodeMath
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the search: a stretch of a kind-1 piece
@@ -85,12 +86,12 @@ theorem arrive (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα)) {c :
     rw [ho, rayPt_fst]; rcases hσ with rfl | rfl <;> linarith
   have hfarC : rayPt a σ T ∈ Cα.set := by rw [← hfar]; exact hS.memM hd ht0 ht1
   have harr := arrive_other hsetD hoy haC hkopen hoD hσ hdir hT hdom hfarC
-  have hTL : T = L₀ := rayPt_inj hσ harr
+  have hTL  := rayPt_inj hσ harr
   subst hTL
   have hch : chordOf a σ T = c := by rw [chordOf_eq_segment hσ hT, hceq]
   rw [hch] at hFA
   have hn : 0 < M.W.n := by have := hS.hg; omega
-  have hnα : 0 < (chainModel Cα).W.n := by rw [nα]; omega
+  have hnα : 0 < (chainModel Cα).W.n := by rwo [nα]
   have hAα := (hS.hA.sideAttach_iff hn hnα hd hdt c).1 hFA
   rw [hS.mod' hd.le] at hAα
   have heq : sidePt (chainModel Cα).W (g' + d) t = sidePt (chainModel Cα).W pB tB := by

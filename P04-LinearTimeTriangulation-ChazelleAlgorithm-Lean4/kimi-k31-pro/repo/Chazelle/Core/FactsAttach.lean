@@ -83,7 +83,7 @@ theorem cyc_before_delta {l k x n δ : ℝ} (hlk : l ≠ k) (_hx0 : 0 ≤ x) (hx
 theorem exists_succ_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K) (hk' : k' ∈ K)
     (hne : k ≠ k') : ∃ r ∈ K, r ≠ k ∧ ∀ m ∈ K, ¬ sideInArc k r m := by
   obtain ⟨m₀, hm₀, hmin⟩ := Set.exists_min_image K id hK ⟨k, hk⟩
-  simp only [id] at hmin
+  simp [id] at hmin
   by_cases hA : ∃ m ∈ K, k < m
   · obtain ⟨r, ⟨hr, hkr⟩, hrm⟩ := Set.exists_min_image {m | m ∈ K ∧ k < m} id
       (hK.subset fun m hm => hm.1) (by obtain ⟨m, hm, hkm⟩ := hA; exact ⟨m, hm, hkm⟩)
@@ -91,7 +91,7 @@ theorem exists_succ_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K
     unfold sideInArc at hin
     rw [ite_eq_left_of_eq_true _ _ (eq_true hkr)] at hin
     have := hrm m ⟨hm, hin.1⟩
-    simp only [id] at this
+    simp [id] at this
     linarith [hin.2]
   · push Not at hA
     have hm₀k : m₀ ≠ k := by
@@ -102,7 +102,7 @@ theorem exists_succ_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K
       exact hne (le_antisymm h2 h1)
     refine ⟨m₀, hm₀, hm₀k, fun m hm hin => ?_⟩
     unfold sideInArc at hin
-    have hlt : m₀ < k := lt_of_le_of_ne (hmin k hk) hm₀k
+    have hlt  := lt_of_le_of_ne (hmin k hk) hm₀k
     rw [ite_eq_right_of_eq_false _ _ (eq_false (not_lt.2 hlt.le))] at hin
     rcases hin with h | h
     · linarith [hA m hm]
@@ -112,7 +112,7 @@ theorem exists_succ_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K
 theorem exists_pred_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K) (hk' : k' ∈ K)
     (hne : k ≠ k') : ∃ l ∈ K, l ≠ k ∧ ∀ m ∈ K, ¬ sideInArc l k m := by
   obtain ⟨M₀, hM₀, hmax⟩ := Set.exists_max_image K id hK ⟨k, hk⟩
-  simp only [id] at hmax
+  simp [id] at hmax
   by_cases hB : ∃ m ∈ K, m < k
   · obtain ⟨l, ⟨hl, hlk⟩, hlm⟩ := Set.exists_max_image {m | m ∈ K ∧ m < k} id
       (hK.subset fun m hm => hm.1) (by obtain ⟨m, hm, hmk⟩ := hB; exact ⟨m, hm, hmk⟩)
@@ -120,7 +120,7 @@ theorem exists_pred_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K
     unfold sideInArc at hin
     rw [ite_eq_left_of_eq_true _ _ (eq_true hlk)] at hin
     have := hlm m ⟨hm, hin.2⟩
-    simp only [id] at this
+    simp [id] at this
     linarith [hin.1]
   · push Not at hB
     have hM₀k : M₀ ≠ k := by
@@ -131,7 +131,7 @@ theorem exists_pred_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K
       exact hne (le_antisymm h1 h2)
     refine ⟨M₀, hM₀, hM₀k, fun m hm hin => ?_⟩
     unfold sideInArc at hin
-    have hlt : k < M₀ := lt_of_le_of_ne (hmax k hk) (Ne.symm hM₀k)
+    have hlt  := lt_of_le_of_ne (hmax k hk) (Ne.symm hM₀k)
     rw [ite_eq_right_of_eq_false _ _ (eq_false (not_lt.2 hlt.le))] at hin
     rcases hin with h | h
     · linarith [hmax m hm]
@@ -198,7 +198,7 @@ theorem exists_exit_at_start (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   have hVeq : V = U := by
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hV hU with h | h
     · exact h
-    · exact absurd (h.le_bot ⟨hv, hVU hv⟩) (fun h => h)
+    · exact absurd (h.le_bot ⟨hv, hVU hv⟩) (id)
   rw [hVeq] at hxV
   -- the chord attached at `a` separates `x` from `y`
   obtain ⟨c₀, hc₀, pa, ta, hA₀, ha⟩ := hcuta
@@ -231,7 +231,7 @@ theorem attach_face (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hf
   have hk : M.IsCut F (p + t) := ⟨c, hc, p, t, hA, rfl⟩
   obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach (hF hc) hA
   have hkB : M.IsCut F (pb + tb) := ⟨c, hc, pb, tb, hB, rfl⟩
-  have hkne : (p : ℝ) + t ≠ pb + tb := key_ne_of_pt_ne hA hB (Ne.symm hBne)
+  have hkne  := key_ne_of_pt_ne hA hB (Ne.symm hBne)
   obtain ⟨r, hr, hrk, hrgap⟩ := exists_succ_gap hK hk hkB hkne
   obtain ⟨l, hl, hlk, hlgap⟩ := exists_pred_gap hK hk hkB hkne
   obtain ⟨U, hU, harcU⟩ := hM.arc_of_gap hF hfin hk hr (Ne.symm hrk)

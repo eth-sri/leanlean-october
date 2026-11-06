@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseBoxMap
 public import Chazelle.Chain.Sides
 public import Mathlib.Data.List.GetD
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-M (B3′, part 2): twin chains
@@ -152,7 +154,7 @@ theorem phi_mem_set_iff (p : Point) : phi C C' p ∈ C'.set ↔ p ∈ C.set := b
   · intro hp
     rw [← h.set_eq] at hp
     rwa [h.eq_of_phi_mem hp] at hp
-  · intro hp; rw [h.phi_fix hp, ← h.set_eq]; exact hp
+  · intro hp; rwx [h.phi_fix hp, ← h.set_eq]
 
 theorem phi_mem_slit_iff (p : Point) : phi C C' p ∈ C'.slit ↔ p ∈ C.slit := by
   rw [Chain.mem_slit_iff, Chain.mem_slit_iff, ← h.top_eq]
@@ -215,7 +217,7 @@ theorem sideIdx_eq (i : ℕ) : C.sideIdx C.sideBeta i = C'.sideIdx C'.sideBeta i
         ext <;> simp
       rw [e1, e2]
       have hc1 : 0 < C.radius - C.top.2 := by linarith [C.top_snd_lt_radius]
-      have hc2 : 0 < C'.radius - C.top.2 := by rw [h.top_eq]; linarith
+      have hc2 : 0 < C'.radius - C.top.2 := by rwli [h.top_eq]
       unfold sideCcw sideCross sideDot
       simp only
       constructor <;> intro hh <;>
@@ -264,8 +266,8 @@ theorem phi_walk_vtx (i : ℕ) :
       rw [← h.sideIdx_eq, ← h.vtx_eq _ (h.sideIdx_le _),
         h.phi_fix (C.vertex_mem_set (h.sideIdx_le _))]
     · -- beyond the walk: the default vertex `(0, 0)`, fixed by the stretch
-      have hn : (C.sideWalk C.sideBeta).n ≤ i := by rw [Chain.sideWalk_n]; omega
-      have hn' : (C'.sideWalk C'.sideBeta).n ≤ i := by rw [Chain.sideWalk_n]; omega
+      have hn : (C.sideWalk C.sideBeta).n ≤ i := by rwo [Chain.sideWalk_n]
+      have hn' : (C'.sideWalk C'.sideBeta).n ≤ i := by rwo [Chain.sideWalk_n]
       unfold Polygon.vtx
       rw [List.getD_eq_default _ _ hn, List.getD_eq_default _ _ hn']
       exact (stretchPt_of_le bnd_nonneg (by simp [bnd_nonneg]) (by simp [bnd_nonneg])).symm

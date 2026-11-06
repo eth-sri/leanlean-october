@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.RestoreTestMath
 public import Chazelle.Core.NFDecompGlue
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, Lemma 3.2 part 13: the candidate test meets its contract
@@ -86,15 +89,15 @@ theorem record_ok {Q : Polygon} {x f : WPos} {h σb lp rp : ℕ} {T : ℝ} (_hσ
   have hfx : (M.pos Q f).1 = (M.pos Q x).1 + dirOf σb * T := by rw [hf, rayPt_fst]
   by_cases h1 : σb = 1
   · obtain ⟨rfl, rfl⟩ := hlr.1 h1
-    have hd : dirOf σb = 1 := by rw [h1]; rfl
+    have hd : dirOf σb = 1 := by rwr [h1]
     have e : (recOf (h, x.edge, f.edge)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T := by
       show Visibility.hseg (Q.vtx h).2 (M.pos Q ⟨x.edge, h + 1⟩).1 (M.pos Q ⟨f.edge, h + 1⟩).1 = _
       rw [px, pf, chordOf, hfx, hd, hy, min_eq_left (by linarith), max_eq_right (by linarith)]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ x.edge (M.param Q ⟨x.edge, h + 1⟩)
-      rw [qx, e]; exact hA
+      rwx [qx, e]
     · show SideAttach M.W _ f.edge (M.param Q ⟨f.edge, h + 1⟩)
-      rw [qf, e]; exact hB
+      rwx [qf, e]
   · obtain ⟨rfl, rfl⟩ := hlr.2 h1
     have hd : dirOf σb = -1 := by unfold dirOf; rw [ite_eq_right h1]
     have e : (recOf (h, f.edge, x.edge)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T := by
@@ -102,9 +105,9 @@ theorem record_ok {Q : Polygon} {x f : WPos} {h σb lp rp : ℕ} {T : ℝ} (_hσ
       rw [px, pf, chordOf, hfx, hd, hy, min_eq_right (by linarith), max_eq_left (by linarith)]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ f.edge (M.param Q ⟨f.edge, h + 1⟩)
-      rw [qf, e]; exact hB
+      rwx [qf, e]
     · show SideAttach M.W _ x.edge (M.param Q ⟨x.edge, h + 1⟩)
-      rw [qx, e]; exact hA
+      rwx [qx, e]
 
 
 /-- The candidate and a point of its ray at a positive parameter differ. -/
@@ -171,12 +174,12 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
     obtain ⟨m, B, hs', A, -, -, -, -, hyes, -⟩ := h5 h10
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, htri⟩ := hyes h11
     obtain ⟨t15, t1, t2⟩ := htri hs
-    have hy : (M.pos (Qof P) (xOf c₀)).2 = ((Qof P).vtx (c₀.nreg 83007)).2 := hE.hy.symm
+    have hy  := hE.hy.symm
     obtain ⟨he, hat⟩ := record_ok (lp := c'.nreg 83016) (rp := c'.nreg 83017) hE.hσ hT hy hposf
       hA hB ⟨t1, t2⟩
     rw [t15]
     have hQn : (Qof P).n = P.n := shear_n _ _
-    refine ⟨hat, by rw [hQn]; exact hE.hh, by rw [he]; exact hadm, ?_⟩
+    refine ⟨hat, by rw [hQn]; exact hE.hh, by rwx [he], ?_⟩
     rw [he]
     have hAB : sidePt M.W (xOf c₀).edge (M.param (Qof P) (xOf c₀)) ≠
         sidePt M.W (c'.nreg 83012) (M.param (Qof P) ⟨c'.nreg 83012, c'.nreg 83013⟩) := by
@@ -189,9 +192,8 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
       hit_exact hE ⟨b10, hiv, b11, b14, i11, i14, h5⟩ hregs h10 h11
     exact ⟨T, hT, hstr, hposf, hpe, hpp, hadm, hA, hB, hcnt.trans (hcount _)⟩
   · -- completeness
-    have hV : ValidB M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008) :=
-      valid_compl hGM hNF hregs hr hE.hxp hE.hxe hch hL hT hdom hadm hnF hsub
-    have h10 : c'.nreg 83010 = 1 := hiv.2 hV
+    have hV  := valid_compl hGM hNF hregs hr hE.hxp hE.hxe hch hL hT hdom hadm hnF hsub
+    have h10  := hiv.2 hV
     refine ⟨h10, ?_⟩
     by_contra h11
     obtain ⟨m, B, hs', A, harr, hnear, hlo, -, -, hno⟩ := h5 h10
@@ -266,7 +268,7 @@ theorem testOK {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs Bo
     · exact Or.inr h
   refine ⟨c', k, ex, le_trans hk hK, ?_, (RF.to_frame hrf).mono hsub le_rfl⟩
   obtain ⟨b10, hiv, b11, b14, i11, i14, h5⟩ := hTF
-  refine ⟨fun q hq hq' => hI.hin q (by unfold bandOf bRestore at hq; omega) (by omega), b10, b11,
+  refine ⟨fun q hq hq' => hI.hin q (by ufo bandOf bRestore at hq) (by omega), b10, b11,
     b14, fun M' N' reg hMD' hNA' hNF' hregs' => ?_⟩
   have eM : M = M' := (NFLoc.modelDesc_unique hMD' hMD).symm
   subst eM

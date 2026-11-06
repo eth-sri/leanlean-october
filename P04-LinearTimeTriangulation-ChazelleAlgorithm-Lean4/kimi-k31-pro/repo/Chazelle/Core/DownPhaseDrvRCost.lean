@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvRInv
+public import Chazelle.UnfoldTactics
 
 /-!
 # Down-phase driver (RAM side), D1 part 2: the cost of the level loop
@@ -131,7 +132,7 @@ theorem lvlBudget_le {cnt : ℕ → ℕ} {C K₁ p lam : ℕ} (hc : cnt lam ≤ 
     (hp : lam ≤ p) :
     (lvlBudget K₁ cnt p lam : ℝ) ≤ (lvlConst C K₁ : ℝ) * ((2 : ℝ) ^ p * Cost.downOverhead lam) := by
   have hR := kBound_add_one_le (p := p) hc
-  have hl := lemma41Nat_add_one_le (g := nextLvl lam) (by unfold nextLvl; omega)
+  have hl := lemma41Nat_add_one_le (g := nextLvl lam) (by ufo nextLvl)
   have hK0 : (0 : ℝ) ≤ (C : ℝ) + 1 := by positivity
   have hk0 : (0 : ℝ) ≤ 4 * (K₁ : ℝ) := by positivity
   have hstep := Cost.downStep_cost_le hK0 hk0 (by omega : 14 ≤ lam) hp hR

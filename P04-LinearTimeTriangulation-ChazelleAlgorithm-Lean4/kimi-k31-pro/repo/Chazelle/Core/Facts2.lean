@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.FactsAttach
 public import Chazelle.Core.NFLocateMath
+public import Chazelle.Rwx
 
 /-!
 # WP-B, part 2: arc cover (C9) and the side faced after an attachment (C10)
@@ -62,7 +63,7 @@ theorem arcCover : NFLoc.ArcCoverSpec := by
       rw [hfree] at hz' ⊢
       exact hW.preconn.connectedComponentIn hz'
     have hU : connectedComponentIn M.D z ∈ M.regions (∅ : Set (Set Point)) :=
-      ⟨z, by rw [hfree]; exact hz, by rw [hfree]⟩
+      ⟨z, by rwx [hfree], by rw [hfree]⟩
     have hnocut : ∀ x, ¬ M.IsCut ∅ x := fun x ⟨c, hc, _⟩ => hc
     obtain ⟨p₀, t₀, hp₀, -, -, -⟩ := hW.exists_faces (empty_subset _) finite_empty hU
     have hn : (0 : ℝ) < M.W.n := by exact_mod_cast (Nat.zero_lt_of_lt hp₀)
@@ -128,8 +129,7 @@ theorem not_left_of_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
     hsep
   rw [← hcab] at hK₁
   subst hK₁
-  have hsub : U ⊆ connectedComponentIn (M.D \ c) c₁ :=
-    hM.region_subset_of_sector hc hU hp ht hf (hsec₁ p hp t ht.1.le ht.2 hin)
+  have hsub  := hM.region_subset_of_sector hc hU hp ht hf (hsec₁ p hp t ht.1.le ht.2 hin)
   obtain ⟨δ, h1, h2, h3⟩ := (hleft.and (hF₁.and hsep)).exists
   rw [← hcab] at h3
   apply h3

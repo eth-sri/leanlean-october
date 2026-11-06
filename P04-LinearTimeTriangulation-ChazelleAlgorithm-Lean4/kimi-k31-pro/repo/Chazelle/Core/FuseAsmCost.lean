@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.MergeAsmCost
 public import Chazelle.Core.SortRam
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-F fusion assembly, part 26: cost arithmetic of the fusion
@@ -20,7 +22,7 @@ open MergeAsm
 
 theorem piece_le (κ T S Fg : ℕ) (hT : T ≤ 8 * S) :
     κ * T * (Fg + Nat.clog 2 T + 1) ≤ 32 * κ * (S * (Fg + Nat.clog 2 S + 1)) := by
-  have hc : Nat.clog 2 T ≤ 3 + Nat.clog 2 S := (clog_mono hT).trans (clog_8 S)
+  have hc  := (clog_mono hT).trans (clog_8 S)
   have h4 : Fg + Nat.clog 2 T + 1 ≤ 4 * (Fg + Nat.clog 2 S + 1) := by omega
   calc κ * T * (Fg + Nat.clog 2 T + 1) ≤ κ * (8 * S) * (4 * (Fg + Nat.clog 2 S + 1)) :=
         Nat.mul_le_mul (Nat.mul_le_mul le_rfl hT) h4
@@ -68,11 +70,11 @@ theorem fuse_total {κs : ℕ → ℕ} {κB D K₁ K₂ L₀ L₁ Kc Kd Fg k₁ 
     Nat.mul_le_mul le_rfl (by omega)
   obtain ⟨A, hA⟩ : ∃ x, x = κs D * SY := ⟨_, rfl⟩
   obtain ⟨B, hB⟩ : ∃ x, x = κB * SY := ⟨_, rfl⟩
-  have eA : 32 * κs D * SY = 32 * A := by rw [hA]; ring
+  have eA : 32 * κs D * SY = 32 * A := by rwring [hA]
   rw [eA] at p₂ p₄
   rw [← hB] at e7'
   have goal : fuseκ κs κB D * S * Y = 400000 * A + 400000 * B + 400000 * SY := by
-    unfold fuseκ; rw [hA, hB, hSY]; ring
+    urring fuseκ [hA, hB, hSY]
   rw [goal]
   omega
 

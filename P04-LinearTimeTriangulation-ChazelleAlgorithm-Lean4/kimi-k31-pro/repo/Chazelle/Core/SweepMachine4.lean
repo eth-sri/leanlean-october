@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.SweepMachine3
 public import Chazelle.Core.SweepWalkL
 public import Chazelle.Core.SweepLabelJL0
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # The sweep (WP-D), part 20: the abstract machine, detection shots in the model of `C`
@@ -67,10 +71,10 @@ theorem rlen_add_llen (hv : VNotTop J) : rlen J + llen J = (chainModel J.whole).
   rw [hm] at h1 hv2 ⊢
   by_cases hc : tpos J.whole J.m₁ + 2 * J.m₂ < 2 * (J.m₁ + J.m₂)
   · rw [Nat.mod_eq_of_lt hc]
-    split_ifs <;> omega
+    splao
   · rw [show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ - 2 * (J.m₁ + J.m₂)) +
       2 * (J.m₁ + J.m₂) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    split_ifs <;> omega
+    splao
 
 /-- The left stretch starts where the right stretch ends (the shared vertex is not the top of
 `C`). -/
@@ -85,7 +89,7 @@ theorem base_left (hv : VNotTop J) :
   unfold rlen
   rw [hm] at h1 hv2 ⊢
   by_cases hc : tpos J.whole J.m₁ + 2 * J.m₂ < 2 * (J.m₁ + J.m₂)
-  · rw [Nat.mod_eq_of_lt hc, ite_eq_right (by omega), Nat.mod_eq_of_lt (by omega)]; ring
+  · rwring [Nat.mod_eq_of_lt hc, ite_eq_right (by omega), Nat.mod_eq_of_lt (by omega)]
   · have hc' : 2 * (J.m₁ + J.m₂) < tpos J.whole J.m₁ + 2 * J.m₂ := by omega
     rw [ite_eq_left (by omega)]
     rw [show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ -
@@ -116,7 +120,7 @@ theorem attach_left_of_arrival {C : Chain} {a : Point} {σ : ℝ} (hσ : σ = 1 
     apply point_ext <;> simp [rayPt, lerp]; ring
   rw [e]
   have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) (-σ) 1) := by
-    rw [hpt]; exact hsec
+    rwx [hpt]
   have := (sideLeft_rayPt_iff _ p t (-σ) one_pos (show 0 < τ * (1 - u) by nlinarith)).1 h1
   rwa [hpt] at this
 
@@ -159,7 +163,7 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
   have hpt : sidePt (chainModel J.left).W
       ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t =
         rayPt a σ T := by
-    rw [← hC.sidePt_eq hd t]; exact hend
+    rwx [← hC.sidePt_eq hd t]
   refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simpa [rayPt] using ha₁), ?_⟩, ?_⟩
   · rw [← hpt]
     exact hM₁.trace _ hA₁.1 t hA₁.2.1 hA₁.2.2.1.le
@@ -177,7 +181,7 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
         apply point_ext <;> simp [rayPt, lerp]; field_simp
       rw [e]
       exact Geometry.lerp_mem_segment _ _ (by apply div_nonneg <;> linarith)
-        (by rw [div_le_one hT0]; linarith)
+        (by rwli [div_le_one hT0])
     have hne : rayPt (rayPt a σ T) (-σ) s ≠ rayPt a σ T := by
       intro h
       have := congrArg Prod.fst h
@@ -185,13 +189,13 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
       rcases hσ with rfl | rfl <;> linarith
     have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
     have hdist : dist (rayPt (rayPt a σ T) (-σ) s) (rayPt a σ T) < r := by
-      rw [dist_rayPt _ hnσ hs0.le]; exact hsr
-    have hl := hnear _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
+      rwx [dist_rayPt _ hnσ hs0.le]
+    have hl := hnear _ hmem (by rwx [hpt]) (by rwx [hpt])
     have h1 : sideLeft (chainModel J.left).W
         ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t
         (rayPt (sidePt (chainModel J.left).W
           ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t) (-σ) s) := by
-      rw [hpt]; exact hl
+      rwx [hpt]
     have := (sideLeft_rayPt_iff _ _ t (-σ) hs0 one_pos).1 h1
     rwa [hpt] at this
 

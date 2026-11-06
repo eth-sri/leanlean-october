@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.RestoreTKey
 public import Chazelle.Core.RestoreDrvProg
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, the candidate test on the RAM, part 3: the run invariant
@@ -51,8 +54,8 @@ theorem chainDesc_agree {m m' : ℕ → ℕ} {bw E : ℕ} {Q : Polygon} {H : Hos
     (hC : ChainDescAt m bw Q H C) (hb : bw + 5 ≤ E) (hE : m bw + 3 * H.length + 4 ≤ E)
     (he : ∀ a, a < E → m' a = m a) : ChainDescAt m' bw Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := hC
-  refine ⟨?_, h1, by rw [he _ (by omega)]; exact h2, by rw [he _ (by omega)]; exact h3,
-    by rw [he _ (by omega)]; exact h4, by rw [he _ (by omega)]; exact h5⟩
+  refine ⟨?_, h1, by rwx [he _ (by omega)], by rwx [he _ (by omega)],
+    by rwx [he _ (by omega)], by rwx [he _ (by omega)]⟩
   rw [he _ (by omega)]
   exact hostAt_agree_r h0 hE he
 
@@ -63,13 +66,13 @@ theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {bw E E' : ℕ} {H : Ho
   have hb := hwf.1
   refine ⟨by omega, fun H' C' hC' => ?_⟩
   have c0 : m' bw = m bw := he _ (by omega)
-  have hH' : HostAt m' (m bw) H := hostAt_agree_r hC.1 hEb he
+  have hH'  := hostAt_agree_r hC.1 hEb he
   have hHH : H' = H := NFLoc.hostAt_unique (by rw [← c0]; exact hC'.1) hH'
   subst hHH
-  refine ⟨hl, hHW, by rw [c0]; omega, ?_⟩
+  refine ⟨hl, hHW, by rwo [c0], ?_⟩
   have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, he _ (by omega)]
   have e2 : C'.P = C.P := by rw [hC'.2.1, hC.2.1]
-  rw [e1, e2]; exact hs
+  rwx [e1, e2]
 
 /-! ## The fixed data of a run -/
 
@@ -126,14 +129,14 @@ theorem TInv.modelDesc (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
   · have hcw : ChainWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg 83000 + 1) := hE.hwfMD.2 hz
     obtain ⟨-, -, hEb, -⟩ := hcw.2 H C hC
     have hC' := chainDesc_agree hC hcw.1 hEb hI.hm
-    have hz' : c.nmem (c₀.nreg 83000) = 0 := by rw [hI.hm _ (by omega)]; exact hz
+    have hz' : c.nmem (c₀.nreg 83000) = 0 := by rwx [hI.hm _ (by omega)]
     rw [h0]
     exact ⟨Or.inl ⟨hz', H, C, hC', hM⟩, by have := hI.hA; omega,
       fun _ => chainWF_agree hcw hC hI.hm hI.hA⟩
-  · have h1' : c.nmem (c₀.nreg 83000) = 1 := by rw [hI.hm _ (by omega)]; exact h1
+  · have h1' : c.nmem (c₀.nreg 83000) = 1 := by rwx [hI.hm _ (by omega)]
     have hb' : c.nmem (c₀.nreg 83000 + 1) = c₀.nmem (c₀.nreg 83000 + 1) := hI.hm _ (by omega)
     rw [h0]
-    exact ⟨Or.inr ⟨h1', by rw [hb']; exact hbit, hM⟩, by have := hI.hA; omega,
+    exact ⟨Or.inr ⟨h1', by rwx [hb'], hM⟩, by have := hI.hA; omega,
       fun h => by omega⟩
 
 /-- **The chain descriptor of a chain model**, at any configuration of the run. -/
@@ -160,7 +163,7 @@ theorem TInv.prim {c' : Config} {k : ℕ} (hI : TInv W c₀ c) (hw : WordsBounde
   have h8 : ∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
     hf.1 q (by
       rw [band8 h1 h2]
-      simp [primBands, bRestore, bSign, bLocate]) (by unfold ALLOC; omega)
+      simp [primBands, bRestore, bSign, bLocate]) (by ufo ALLOC)
   refine ⟨⟨hw, fun q h1 h2 => (h8 q h1 (by omega)).trans (hI.hin q h1 h2),
     hI.hA.trans hf.2.2.2.2.2.1, fun a ha => (hf.2.2.1 a (by have := hI.hA; omega)).trans
       (hI.hm a ha), by rw [h8 _ (by norm_num) (by norm_num)]; exact hI.h20,
@@ -188,7 +191,7 @@ theorem TInv.regs {c' : Config} {k : ℕ} (hI : TInv W c₀ c) (hw : WordsBounde
     (hr : ∀ r, (r < 83010 ∨ 90000 ≤ r ∨ (83020 ≤ r ∧ r < 83024)) → c'.nreg r = c.nreg r)
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : TInv W c₀ c' ∧ RF dBands (c₀.nreg ALLOC) c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
+  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by ufo ALLOC)
   refine ⟨⟨hw, fun q h1 h2 => (hr q (by omega)).trans (hI.hin q h1 h2), by rw [hA]; exact hI.hA,
     fun a ha => by rw [hm]; exact hI.hm a ha, by rw [hr _ (by omega)]; exact hI.h20,
     by rw [hr _ (by omega)]; exact hI.h21, by rw [hr _ (by omega)]; exact hI.h22,

@@ -150,7 +150,7 @@ variable {prog : Program} {P : Polygon} {W : ℕ}
 theorem BoundedRun.wb_start {k : ℕ} {c : Config} (h : BoundedRun prog P W k c) :
     WordsBounded W c := by
   obtain ⟨c', hc, hw⟩ := h 0 (Nat.zero_le _)
-  simp only [run_zero, Option.some.injEq] at hc
+  simp [run_zero, Option.some.injEq] at hc
   exact hc ▸ hw
 
 theorem BoundedRun.zero {c : Config} (h : WordsBounded W c) : BoundedRun prog P W 0 c := by

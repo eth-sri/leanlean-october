@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.SweepEvTasks4
 public import Chazelle.Core.SweepEvStartM
 public import Chazelle.Core.SweepEvCount
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep (WP-D), stage 3: the start of the event loop (task L0, mathematics)
@@ -52,7 +53,7 @@ theorem chordFamily_pair (J : Merge.Junction) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) :
     ∃ Q : Polygon, (chainModel J.right).ChordFamily Q S₂ ∧
       (chainModel J.whole).ChordFamily Q (F₂plus J S₂) := by
-  have hfin : (S₂ ∪ F₂plus J S₂).Finite := hS₂f.union (F₂plus_finite J hS₂f)
+  have hfin  := hS₂f.union (F₂plus_finite J hS₂f)
   refine ⟨hPolyS _ hfin, ⟨hS₂f, hS₂, fun c hc => hPolyS_vtx hfin (Or.inl hc) (hS₂ hc)⟩,
     ⟨F₂plus_finite J hS₂f, F₂plus_subset J hS₂, fun c hc =>
       hPolyS_vtx hfin (Or.inr hc) (F₂plus_subset J hS₂ hc)⟩⟩
@@ -109,8 +110,8 @@ theorem stops_two (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂
     (hi : i + 2 < rs.length) :
     soff P J (rs[i]'(by omega)) < soff P J rs[i + 2] := by
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hS₂ : S₂ ⊆ Merge.augChords J.right := hN.1.2.1
-  have hS₂f : S₂.Finite := hN.1.1
+  have hS₂  := hN.1.2.1
+  have hS₂f  := hN.1.1
   have hC := corr_right0 J hP hS₂ hS₂f
   have h01 := stops_sorted hst (i := i) (i' := i + 1) (by omega) (by omega)
   have h12 := stops_sorted hst (i := i + 1) (i' := i + 2) (by omega) (by omega)
@@ -167,7 +168,6 @@ noncomputable def pK0 (J : Merge.Junction) : ℕ := (gW J + Lst J) % (chainModel
 
 /-! ## The invariant at the start -/
 
-set_option maxHeartbeats 4000000 in
 /-- **The invariant at the start key.**  The label set contains the labels of every anchored stop
 at the start key; if there is none, it is `{V}` for the region `V` faced before the end of the
 right stretch. -/
@@ -186,8 +186,8 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
         BeforeFaces (chainModel J.right) (vEnd J) 0 V ∧ Λ = {V}) :
     EvInv J (N₂.F (chainModel J.right) (Qof P)) (Lst J) Λ := by
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hS₂ : S₂ ⊆ Merge.augChords J.right := hN.1.2.1
-  have hS₂f : S₂.Finite := hN.1.1
+  have hS₂  := hN.1.2.1
+  have hS₂f  := hN.1.1
   have hC := corr_right0 J hP hS₂ hS₂f
   obtain ⟨Q', hQ₂, hQF⟩ := chordFamily_pair J hS₂ hS₂f
   obtain ⟨⟨hpKn, -, -⟩, hoK, hstop⟩ := startMathTask P J N₂ hP hN
@@ -242,7 +242,7 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
     exact evInv_anchor hP hQ₂ hQF (noTieV hP hS₂) hpKn le_rfl one_pos (by rw [hoK']) hZ hZK hZz
       hzL (fun e he heK q s hQ => hpock e he heK q s hQ) (fun e he heK hnb _ => by
         obtain ⟨j, hj, hoj, rfl⟩ := atKey e he heK
-        have haj : (ax[j]'(by omega)).1 = 1 := ((haux j hj).2.1).2 hnb
+        have haj  := ((haux j hj).2.1).2 hnb
         exact evSideLab_mono (hΛ j hj hoj haj)
           ((haux j hj).2.2.2.2.2.1 haj (fun q s hQ => hpock _ he heK q s hQ)))
   · push Not at hanc

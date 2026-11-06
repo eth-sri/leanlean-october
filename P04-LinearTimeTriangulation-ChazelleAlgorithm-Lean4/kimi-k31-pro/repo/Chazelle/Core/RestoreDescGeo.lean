@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.RestoreDescent
 public import Chazelle.Core.RestoreComplete
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-E, Lemma 3.2 part 17: rays from inside an arc
@@ -65,10 +68,10 @@ theorem sector_sub_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Ad
     · exact mul_pos hx (by linarith)
   have hfR : ∀ᶠ s in 𝓝[>] (0 : ℝ), s < 1 ∧ M.Faces p (t + s * (1 - t)) R := by
     filter_upwards [Ioo_mem_nhdsGT one_pos, hscale.eventually (cyc_open hin)] with s hs hk
-    have hs0 : (0 : ℝ) < s := hs.1
+    have hs0  := hs.1
     refine ⟨hs.2, harc.2.2.2.2.2.2 p _ hp (by nlinarith)
       (by nlinarith [mul_pos (sub_pos.2 hs.2) (sub_pos.2 ht1)]) ?_⟩
-    rw [← add_assoc]; exact hk
+    rwx [← add_assoc]
   obtain ⟨s, hs1, hs2⟩ := (hoff.and hfR).exists
   have h2 : ∀ᶠ δ in 𝓝[>] (0 : ℝ),
       offset (M.wa p) (M.wb p) (t + s * (1 - t)) (δ * (1 - t)) ∈ R :=
@@ -93,7 +96,7 @@ theorem eq_rayPt {w x : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hx : x.2 =
 /-- The signed offset is affine along a level segment. -/
 theorem off_lerp (w u v : Point) (σ μ : ℝ) :
     σ * ((lerp u v μ).1 - w.1) = (1 - μ) * (σ * (u.1 - w.1)) + μ * (σ * (v.1 - w.1)) := by
-  rw [lerp_fst]; ring
+  rwring [lerp_fst]
 
 /-- **A ray into the left sector of a non-cut position meets no chord of `S`** before it leaves
 the domain. -/
@@ -149,8 +152,8 @@ theorem ray_avoids (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) {p :
           show σ * ((lerp a b μ).1 - w.1) = 0
           rw [off_lerp]
           show (1 - μ) * f a + μ * f b = 0
-          rw [hμ]; field_simp; ring
-        have h2 : (lerp a b μ).2 = w.2 := by rw [lerp_snd, ha2, hb2]; ring
+          rw [hμ]; fsr
+        have h2 : (lerp a b μ).2 = w.2 := by rwring [lerp_snd, ha2, hb2]
         rw [eq_rayPt hσ h2]
         show rayPt w σ (f (lerp a b μ)) = w
         rw [hf0]; exact rayPt_zero' w σ
@@ -170,12 +173,12 @@ theorem ray_avoids (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) {p :
         rcases hl0.lt_or_eq with h | h
         · exact h
         · exfalso; apply hxw; rw [← h, Geometry.lerp_zero, haw]
-      have h2 : (lerp a b l₁).2 = w.2 := by rw [lerp_snd, ha2, hb2]; ring
+      have h2 : (lerp a b l₁).2 = w.2 := by rwring [lerp_snd, ha2, hb2]
       have hfx : 0 < f (lerp a b l₁) := by
         show 0 < σ * ((lerp a b l₁).1 - w.1)
         rw [off_lerp]
         show 0 < (1 - l₁) * f a + l₁ * f b
-        rw [hfa0]; nlinarith
+        rwnl [hfa0]
       rw [eq_rayPt hσ h2]
       exact (Sweep.sideLeft_rayPt_iff M.W p t σ hfx one_pos).2 hsec
   rcases hnot u hu2 huD with hfu | hfu
@@ -226,8 +229,8 @@ theorem ray_in_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) (
       · rw [mem_ball, Prod.dist_eq, rayPt_fst, rayPt_snd, dist_self, Real.dist_eq,
           add_sub_cancel_left]
         rcases hσ with rfl | rfl
-        · rw [one_mul, abs_of_pos hs₁0, max_eq_left hs₁0.le]; exact hs₁r
-        · rw [neg_one_mul, abs_neg, abs_of_pos hs₁0, max_eq_left hs₁0.le]; exact hs₁r
+        · rwx [one_mul, abs_of_pos hs₁0, max_eq_left hs₁0.le]
+        · rwx [neg_one_mul, abs_neg, abs_of_pos hs₁0, max_eq_left hs₁0.le]
       · exact (Sweep.sideLeft_rayPt_iff M.W p t σ hs₁0 one_pos).2 hsec
     have hIR := Chazelle.Chain.subset_regionsIn_of_inter hR hIc hIf hmeet
     rintro x ⟨hx, hxD⟩
@@ -248,8 +251,8 @@ theorem ray_in_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) (
 /-- The point of a level segment is the ray point at the proportional offset. -/
 theorem lerp_rayPt (a : Point) (σ L μ : ℝ) : lerp a (rayPt a σ L) μ = rayPt a σ (μ * L) := by
   apply point_ext
-  · rw [lerp_fst, rayPt_fst, rayPt_fst]; ring
-  · rw [lerp_snd, rayPt_snd, rayPt_snd]; ring
+  · rwring [lerp_fst, rayPt_fst, rayPt_fst]
+  · rwring [lerp_snd, rayPt_snd, rayPt_snd]
 
 /-- The chord of a ray up to `T` is the segment to the ray point at `T`. -/
 theorem chordOf_eq_segment {z : Point} {σ T : ℝ} (hσ : σ = 1 ∨ σ = -1) (hT : 0 < T) :
@@ -279,7 +282,7 @@ theorem arrive_other {D : Set Point} {Cα : Chain} (hsetD : ∀ x ∈ Cα.set, x
     (hdom : ∀ s, 0 < s → s < T → rayPt a σ s ∈ D) (hfar : rayPt a σ T ∈ Cα.set) :
     rayPt a σ T = o := by
   set L₀ := σ * (o.1 - a.1) with hL₀
-  have ho : o = rayPt a σ L₀ := eq_rayPt hσ hoy
+  have ho  := eq_rayPt hσ hoy
   rcases lt_trichotomy T L₀ with h | h | h
   · exfalso
     have hin := hkopen (T / L₀) ⟨div_pos hT hdir, (div_lt_one hdir).2 h⟩
@@ -294,7 +297,7 @@ theorem arrive_other {D : Set Point} {Cα : Chain} (hsetD : ∀ x ∈ Cα.set, x
     have hoS : o ∉ Cα.slit := by
       intro hs
       obtain ⟨h1, h2, -⟩ := Cα.mem_slit_iff.1 hs
-      have h3 : o.2 ≤ Cα.top.2 := hoy ▸ Cα.snd_le_top_of_mem_set haC
+      have h3  := hoy ▸ Cα.snd_le_top_of_mem_set haC
       exact hoC (by
         have : o = Cα.top := point_ext h1 (le_antisymm h3 h2)
         rw [this]; exact Cα.top_mem_set)
@@ -366,10 +369,8 @@ theorem witness_side {L da βb α' : ℝ} (hda0 : 0 < da) (hdaL : da < L) (hβ0 
     · by_cases hb' : 0 < β' ∧ β' < L
       · have e := hβ' hb'.1 hb'.2
         rw [hGBeq, e] at hBu hBx
-        have cu : sideInArc βb da u ↔ ¬ sideInArc da βb u :=
-          Chazelle.Chain.sideInArc_swap (Ne.symm hne) hub hua
-        have cx : sideInArc βb da x ↔ ¬ sideInArc da βb x :=
-          Chazelle.Chain.sideInArc_swap (Ne.symm hne) hxb hxa
+        have cu  := Chazelle.Chain.sideInArc_swap (Ne.symm hne) hub hua
+        have cx  := Chazelle.Chain.sideInArc_swap (Ne.symm hne) hxb hxa
         rw [cu] at hBu
         rw [cx] at hBx
         exact not_iff_not.1 (hBu.trans hBx.symm)
@@ -381,8 +382,8 @@ theorem witness_side {L da βb α' : ℝ} (hda0 : 0 < da) (hdaL : da < L) (hβ0 
           fun h => lt_of_le_of_ne (not_lt.1 h) hub⟩
         have nx : x < βb ↔ ¬ βb < x := ⟨fun h h' => lt_asymm h h',
           fun h => lt_of_le_of_ne (not_lt.1 h) hxb⟩
-        have e1 : da < u ↔ da < x := hGu.trans hGx.symm
-        have e2 : βb < u ↔ βb < x := hBu.trans hBx.symm
+        have e1  := hGu.trans hGx.symm
+        have e2  := hBu.trans hBx.symm
         unfold sideInArc
         rw [nu, nx]
         split_ifs <;> rw [e1, e2]
@@ -485,7 +486,7 @@ theorem inner_exit (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)}
   obtain ⟨r₁, hr₁, hsub⟩ := sector_sub_region hM hFam.2.1 hFam.1 hR harc hp ht0 ht1 hin
   have hini : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hr₁] with s hs hs'
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0  := hs
     refine hsub _ ?_ ((Sweep.sideLeft_rayPt_iff M.W p t σ hs0 one_pos).2 hsec)
     rw [mem_ball, Prod.dist_eq, rayPt_fst, rayPt_snd, dist_self, Real.dist_eq,
       add_sub_cancel_left]
@@ -549,8 +550,8 @@ theorem attach_ray_left {W : Polygon} {c : Set Point} {p : ℕ} {t : ℝ} (hA : 
     refine ⟨s / L₀, by positivity, (div_le_one hL₀).2 hsL.le, ?_⟩
     rw [lerp_rayPt, div_mul_cancel₀ _ hL₀.ne']
   have hd := dist_rayPt w hσ hs0.le
-  have hne : rayPt w σ s ≠ w := fun h => by rw [h, dist_self] at hd; linarith
-  exact (Sweep.sideLeft_rayPt_iff W p t σ hs0 one_pos).1 (hleft _ hmem hne (by rw [hd]; exact hsr))
+  have hne : rayPt w σ s ≠ w := fun h => by rwli [h, dist_self] at hd
+  exact (Sweep.sideLeft_rayPt_iff W p t σ hs0 one_pos).1 (hleft _ hmem hne (by rwx [hd]))
 
 end
 

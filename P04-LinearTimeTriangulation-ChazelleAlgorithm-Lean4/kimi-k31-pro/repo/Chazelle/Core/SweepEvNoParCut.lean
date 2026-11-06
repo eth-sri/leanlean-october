@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepEvStopTasks3
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), stage 2: the counterpart of a stretch attachment without a parent (Task N)
@@ -36,11 +37,11 @@ theorem npc_inner_unique {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF :
 theorem noParCut : NoParCut := by
   intro J Q S₂ e hP hS₂ he hno d t hd ht0 ht1 heA ⟨c, hc, p, t', hA, hkey⟩
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
-  have hd' : d < rL1 J + rL2 J := hd
+  have hd'  := hd
   obtain ⟨hp, htt⟩ := Chazelle.Chain.sideKey_inj ht0.le ht1 hA.2.1 hA.2.2.1 hkey
   have hA2 : SideAttach (chainModel J.right).W c
       ((6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n) t := by
-    have h : SideAttach (chainModel J.right).W c (cpA J d) t := by rw [hp, htt]; exact hA
+    have h : SideAttach (chainModel J.right).W c (cpA J d) t := by rwx [hp, htt]
     exact h
   obtain ⟨e', he', he'c, -, he'A⟩ := hC.transfer hd' ht0.le ht1 (fun h => absurd h ht0.ne') hc hA2
   have heA' : SideAttach (chainModel J.whole).W e

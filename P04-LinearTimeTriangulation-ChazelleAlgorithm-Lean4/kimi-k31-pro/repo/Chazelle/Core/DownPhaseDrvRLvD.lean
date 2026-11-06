@@ -4,6 +4,9 @@ public import Chazelle.Core.DownPhaseDrvRLvC
 public import Chazelle.Core.DownPhaseDrvRCostSpec
 public import Chazelle.Core.DownPhaseMathLevel
 public import Chazelle.Core.GranSize
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down-phase driver (RAM side): one level, the straight-line pieces of the region loop
@@ -69,7 +72,7 @@ theorem lvRegE_exec (c : Config) (hw : WordsBounded W c) :
   by_cases h : c.nreg 211013 < c.nreg 217011
   · have e := Exec.copyN (P := P) hw 211013 217011
     refine ⟨_, _, .ifLtN_true h e, by omega, ?_⟩
-    simp only [Machine.upd_same]; omega
+    sio only [Machine.upd_same]
   · exact ⟨_, _, .ifLtN_false h (.skip hw), by omega, by omega⟩
 
 theorem lvRegD_exec (c : Config) (hw : WordsBounded W c) {T j p ℓ b tot : ℕ}
@@ -86,14 +89,14 @@ theorem lvRegD_exec (c : Config) (hw : WordsBounded W c) {T j p ℓ b tot : ℕ}
   have wb := hw.1 217012
   unfold lvRegD
   exec_block
-  all_goals try (config_simp; (try simp only [h09, h10, h14, h17, h11, h12, ht]); omega)
+  all_goals try (config_simp; (try simp [h09, h10, h14, h17, h11, h12, ht]); omega)
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · config_simp; simp only [ht, h11]
-  · config_simp; simp only [h10, h14]
-  · config_simp; simp only [h09, h10, h14, h17, h11, h12, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [h09, h10, h14, h17, h11, h12, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [h09, h10, h14, h17, h11, h12, Machine.upd_apply]; split_ifs <;> omega
-  · intro a ha; config_simp; simp only [h09, h10, h14, Machine.upd_apply]
+  · config_simp; simp [ht, h11]
+  · config_simp; simp [h10, h14]
+  · config_simp; simp [h09, h10, h14, h17, h11, h12, Machine.upd_apply]; splao
+  · config_simp; simp [h09, h10, h14, h17, h11, h12, Machine.upd_apply]; splao
+  · config_simp; simp [h09, h10, h14, h17, h11, h12, Machine.upd_apply]; splao
+  · intro a ha; config_simp; simp [h09, h10, h14, Machine.upd_apply]
     split_ifs <;> first | rfl | omega
   · config_simp
   · config_simp
@@ -112,9 +115,9 @@ theorem g0_facts (μ : ℕ) :
     2 * gradeGran μ ≤ 3 * 2 ^ (Cost.ceilBeta μ + 10) ∧ 128 ≤ 3 * 2 ^ (Cost.ceilBeta μ + 10) ∧
       3 * 2 ^ (Cost.ceilBeta μ + 10) ≤ 4096 * 2 ^ Cost.ceilBeta μ := by
   have h := gradeGran_le_nat μ
-  have e : 2 ^ (Cost.ceilBeta μ + 10) = 1024 * 2 ^ Cost.ceilBeta μ := by rw [pow_add]; ring
+  have e : 2 ^ (Cost.ceilBeta μ + 10) = 1024 * 2 ^ Cost.ceilBeta μ := by rwring [pow_add]
   have h1 : 1 ≤ 2 ^ Cost.ceilBeta μ := Nat.one_le_two_pow
-  rw [e]; omega
+  rwo [e]
 
 /-- The merge grade is served by the up-phase data. -/
 theorem mu_le_grades {n x lam : ℕ} (hcap : n - 1 ≤ 2 ^ (x - 1)) (h16 : 16 ≤ lam)
@@ -126,7 +129,7 @@ theorem mu_le_grades {n x lam : ℕ} (hcap : n - 1 ≤ 2 ^ (x - 1)) (h16 : 16 �
 /-- The chain of a host with at least three points. -/
 noncomputable def hostChainOf (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) : Chain :=
   ⟨H.poly Q, 0, (H.pts Q.n).length - 1, by omega,
-    by rw [DownMath.host_poly_n]; omega⟩
+    by rwo [DownMath.host_poly_n]⟩
 
 theorem hostChainOf_P (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) :
     (hostChainOf Q H h).P = H.poly Q := rfl
@@ -137,7 +140,7 @@ theorem hostChainOf_s (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) :
 theorem hostChainOf_m (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) :
     (hostChainOf Q H h).m + 1 = (hostChainOf Q H h).P.n := by
   show (H.pts Q.n).length - 1 + 1 = (H.poly Q).n
-  rw [DownMath.host_poly_n]; omega
+  rwo [DownMath.host_poly_n]
 
 /-- **The chords of a region map** (Lemma 2.3). -/
 theorem nch_le {Q : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF} {γ γ₀ μ : ℕ}

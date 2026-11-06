@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.FuseAsmPt
 public import Chazelle.Core.SweepMachine8
 public import Chazelle.Core.FuseAsmSet
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-F fusion assembly, part 11: records with the height index of their query
@@ -67,7 +69,7 @@ theorem collectQ_append {L : List (ℕ × ℕ × ℕ)} {R : List (ℕ × ℕ × 
 theorem collectQ_length_le (L : List (ℕ × ℕ × ℕ)) (R : List (ℕ × ℕ × ℕ × ℕ)) :
     (collectQ L R).length ≤ L.length := by
   unfold collectQ; rw [List.length_map]
-  exact (List.length_filter_le _ _).trans (by rw [List.length_zip]; omega)
+  exact (List.length_filter_le _ _).trans (by rwo [List.length_zip])
 
 /-- The chord seen from a query of a reported answer is at the height of the query. -/
 theorem qtrip_eq (J : Merge.Junction) (Q : Polygon) (i : ℕ) {q : ℕ × ℕ × ℕ}
@@ -79,9 +81,9 @@ theorem qtrip_eq (J : Merge.Junction) (Q : Polygon) (i : ℕ) {q : ℕ × ℕ ×
   have hz := Sweep.origin_mem J (a := (chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩)
     (σ := dirOf q.2.2)
   rw [← hset] at hz
-  have hy : ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).2 = (Q.vtx (recOf r.2).h).2 := hz.1
+  have hy  := hz.1
   have hh : (Q.vtx (recOf r.2).h).2 = (Q.vtx (recOf (qtrip (q, r))).h).2 := by
-    rw [← hy]; exact hH
+    rwx [← hy]
   exact ⟨(toSet_congr _ Q hh rfl rfl).symm, attached_congr _ Q hh rfl rfl hatt⟩
 
 /-- **The chords reported by the sweep**, with the height indices of the queries. -/
@@ -98,18 +100,18 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
     simp only [collectQ, List.mem_map, List.mem_filter, beq_iff_eq] at ht
     obtain ⟨p, ⟨hp, h1⟩, rfl⟩ := ht
     obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hp
-    have hjL : j < L.length := by rw [List.length_zip] at hj; omega
+    have hjL : j < L.length := by rwo [List.length_zip] at hj
     have hjR : j < R.length := by omega
     refine ⟨j, hjL, ?_, ?_⟩
     · rw [getD_lt hjR]; simpa using h1
-    · rw [getD_lt hjL, getD_lt hjR]; simp
+    · rws [getD_lt hjL, getD_lt hjR]
   have memk : ∀ j, j < L.length → (R.getD j (0, 0, 0, 0)).1 = 1 →
       qtrip (L.getD j (0, 0, 0), R.getD j (0, 0, 0, 0)) ∈ collectQ L R := by
     intro j hj h1
     have hjR : j < R.length := by omega
     simp only [collectQ, List.mem_map, List.mem_filter, beq_iff_eq]
     refine ⟨(L[j], R[j]), ⟨?_, ?_⟩, ?_⟩
-    · have : (L.zip R)[j]'(by rw [List.length_zip]; omega) = (L[j], R[j]) := by simp
+    · have : (L.zip R)[j]'(by rwo [List.length_zip]) = (L[j], R[j]) := by simp
       rw [← this]; exact List.getElem_mem _
     · rw [getD_lt hjR] at h1; exact h1
     · rw [getD_lt hj, getD_lt hjR]

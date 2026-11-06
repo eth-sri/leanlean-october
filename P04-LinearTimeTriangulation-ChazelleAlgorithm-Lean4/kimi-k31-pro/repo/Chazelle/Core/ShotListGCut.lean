@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ShotListG
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # The model-generic shot list, part 2: the cutting block
@@ -67,9 +71,9 @@ theorem KCtx.of_frameB {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsO
     hf.1 _ (hB.keep hR hi)
   have r0 : c'.nreg R = c.nreg R := by simpa using k 0 (by omega)
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hf.1 _ (hB.alloc hR)
-  have hm : c'.nmem = c.nmem := hf.2.2.1
-  exact ⟨hS c c' 0 hE hw' (hB.frameR hR hBo hf 0), hG, hHW, by rw [hm, r0]; exact hMD,
-    by rw [hm, r0, hA]; exact hmwf, by rw [k 30 (by omega), h30], by rw [k 31 (by omega), h31],
+  have hm  := hf.2.2.1
+  exact ⟨hS c c' 0 hE hw' (hB.frameR hR hBo hf 0), hG, hHW, by rwx [hm, r0],
+    by rwx [hm, r0, hA], by rw [k 30 (by omega), h30], by rw [k 31 (by omega), h31],
     by rw [k 34 (by omega), r0, h34]⟩
 
 /-! ## The correction of `a < b` -/
@@ -122,7 +126,7 @@ theorem offBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} {E : Config
   · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 (.ifLtN_false h4 (.skip hw)))),
       by omega, hne_of (by omega), fr0⟩
   -- two interior positions of one edge: the key comparison
-  have iL : ∀ i, i < 4 → InB R (L + i) := fun i hi => by rw [hL]; unfold InB rL; omega
+  have iL : ∀ i, i < 4 → InB R (L + i) := fun i hi => by ruo [hL] InB rL
   obtain ⟨c₁, k₁, e₁, hk₁, b₁, f₁⟩ := hk L (L + 1) (L + 2) (L + 3) (iL 0 (by omega))
     (iL 1 (by omega)) (iL 2 (by omega)) (iL 3 (by omega)) c hw hctx ha.1 hae
     (by omega) hb.1 hbe (by omega) hroom
@@ -231,7 +235,7 @@ theorem cutBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} (hR : RegsO
   have gL1 : c₁.nreg (L + 1) = c.nreg (L + 1) := in₁ _ (by omega)
   have gL2 : c₁.nreg (L + 2) = c.nreg (L + 2) := in₁ _ (by omega)
   have gL3 : c₁.nreg (L + 3) = c.nreg (L + 3) := in₁ _ (by omega)
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := in₁ _ (by unfold ALLOC; unfold RegsOK at hR; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := in₁ _ (by unfold ALLOC; ufo RegsOK at hR)
   have pa : posR c₁ (L, L + 1) = a := by
     simp only [posR, ha_def, WPos.mk.injEq]; exact ⟨gL0, gL1⟩
   have pb : posR c₁ (L + 2, L + 3) = b := by
@@ -239,8 +243,8 @@ theorem cutBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} (hR : RegsO
   have ctx₁ : KCtx P W M R E c₁ := KCtx.of_frameB hR hBo hS hctx e₁.wb_right f₁ (fun r hr => by
     have := bouts_range hr; exact Or.inr (Or.inl ⟨by omega, by omega⟩))
   obtain ⟨c₂, k₂, e₂, hk₂, kab, f₂⟩ := offBG_exec (P := P) hk hℓ c₁ e₁.wb_right ctx₁
-    (by rw [hA1]; exact hroom) (by rw [pa]; exact ha) (by rw [pb]; exact hb)
-    (by rw [gL0]; exact hae) (by rw [gL2]; exact hbe)
+    (by rwx [hA1]) (by rwx [pa]) (by rwx [pb])
+    (by rwx [gL0]) (by rwx [gL2])
     (by rw [gL0, gL1, gL2, gL3]; exact bab)
   rw [pa, pb] at kab
   have o₂ : ∀ r, (R + 100 < r ∧ r < R + 300) → BoffG R Bk r = false := fun r hr => by
@@ -254,7 +258,7 @@ theorem cutBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} (hR : RegsO
     (ks kxb (by omega)) (ks kxy (by omega)) (ks kyx (by omega))
   -- registers of `c` read by the selection
   have gR : ∀ i, i < 100 → c₃.nreg (R + i) = c.nreg (R + i) := fun i hi => by
-    rw [f₃.1 (R + i) (by simp only [Bform, decide_eq_false_iff_not]; omega),
+    rw [f₃.1 (R + i) (by sio only [Bform, decide_eq_false_iff_not]),
       f₂.1 (R + i) (by
         simp only [BoffG, opW_R hBk hR (r := R + i) (by omega) (by omega), Bool.or_false,
           beq_eq_false_iff_ne]; omega), in₁ (R + i) (Or.inl (by omega))]
@@ -269,7 +273,7 @@ theorem cutBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} (hR : RegsO
     (by intro e o ho; cases e <;> simp only [End.regs] <;> omega) (by omega) (by omega)
     (by omega) z3 t1.1 t2.1 t3.1 t4.1 t5.1 t6.1
   have ex : Exec P W (cutBG kc R ℓ) c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  refine ⟨c₄, _, ex, by simp only [cmpList, List.length_cons, List.length_nil] at hk₁; omega,
+  refine ⟨c₄, _, ex, by sio only [cmpList, List.length_cons, List.length_nil] at hk₁,
     ?_, ?_⟩
   · -- the pieces
     have hsel : selPos c₃ L (R + 10 + 2 * ℓ) (R + 11 + 2 * ℓ) (R + 30) =
@@ -313,9 +317,9 @@ theorem cutBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} (hR : RegsO
       exact pc₄
   · -- the frame
     have f₄ : FrameB (fun r => decide (L + 4 ≤ r ∧ r < L + 14)) c₃ c₄ :=
-      ⟨fun r hr => r₄ r (by simp only [decide_eq_false_iff_not] at hr; omega)
-        (by simp only [decide_eq_false_iff_not] at hr; omega)
-        (by simp only [decide_eq_false_iff_not] at hr; omega),
+      ⟨fun r hr => r₄ r (by sio only [decide_eq_false_iff_not] at hr)
+        (by sio only [decide_eq_false_iff_not] at hr)
+        (by sio only [decide_eq_false_iff_not] at hr),
        fun r _ => by rw [rr₄], m₄, rm₄, o₄⟩
     have c1 : FrameB (BcutG R ℓ Bk) c c₁ := frameB_mono f₁ (fun r hr => by simp [BcutG, hr])
     have c2 : FrameB (BcutG R ℓ Bk) c₁ c₂ := frameB_mono f₂ (fun r hr => by simp [BcutG, hr])

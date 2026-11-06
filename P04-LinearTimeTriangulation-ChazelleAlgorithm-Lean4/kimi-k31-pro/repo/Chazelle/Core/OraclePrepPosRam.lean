@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.OraclePrepMirror
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ConfigTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 5: the analysis of a walk position on the RAM
@@ -54,8 +59,8 @@ theorem mirN_eq (C : Chain) (w hc : ℕ) :
 theorem not_inT {R m z w : ℕ} (hR : R < 2 * m) (h : w < 6 ∨ 2 * m + 6 ≤ w) : ¬ inT R m z w := by
   unfold inT
   by_cases hz : z = 0
-  · rw [ite_eq_left hz]; omega
-  · rw [ite_eq_right hz]; omega
+  · rwo [ite_eq_left hz]
+  · rwo [ite_eq_right hz]
 
 /-! ## The constants -/
 
@@ -127,9 +132,9 @@ theorem posInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
       .subN 110059 110059 120021, .subN 110059 110059 120021]) c c₁ k₁ ∧ k₁ = 3 ∧
       c₁.nreg 110059 = 4 * m - 2 * S ∧ (∀ r, r ≠ 110059 → c₁.nreg r = c.nreg r) := by
     exec_block
-    · rw [h2m]; omega
+    · rwo [h2m]
     · refine ⟨rfl, ?_, fun r hr => ?_⟩
-      · config_simp; rw [h2m, hS]; omega
+      · config_simp; rwo [h2m, hS]
       · config_simp; upd_solve
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := redS_exec (P := P) (r := 110059) (nr := 120019) (by decide) c₁
     e₁.wb_right
@@ -154,11 +159,11 @@ theorem posInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
     · omega
     · omega
     · omega
-    · config_simp; omega
-    · config_simp; omega
-    · config_simp; omega
-    · config_simp; rw [g3]; omega
-    · config_simp; rw [g3]; omega
+    · cso
+    · cso
+    · cso
+    · config_simp; rwo [g3]
+    · config_simp; rwo [g3]
     · refine ⟨rfl, ?_⟩
       config_simp
       rw [g3]
@@ -167,7 +172,7 @@ theorem posInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
     have f₁ := exec_frameB e₁ (B := BPI) (by decide)
     exact f₁.trans ((FrameB.mono f₂ fun r h => by simp at h; subst h; decide).trans
       ((FrameB.mono f₃ fun r h => by simp at h; subst h; decide).trans f₄))
-  all_goals rw [v₄]; config_simp; rw [hR]; omega
+  all_goals rw [v₄]; config_simp; rwo [hR]
 
 /-! ## The analysis -/
 
@@ -218,7 +223,7 @@ def BPA (r : ℕ) : Bool := decide (110102 ≤ r ∧ r ≤ 110108)
 theorem wr_posA : wr BPA posA = true := by decide
 
 theorem sideE_eq_ite (m j : ℕ) : sideE m j = if m < j then 2 * m - j else j := by
-  unfold sideE; split_ifs <;> omega
+  unfold sideE; splao
 
 theorem vaS_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : WordsBounded W c)
     (hk : PosK n s m S R c) (h1 : 1 ≤ m) (hmn : m < n) (hsn : s < n) (hS : S ≤ 2 * m)
@@ -232,17 +237,17 @@ theorem vaS_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : Wo
       (block [.subN 110107 110100 120028, .addN 110107 110107 120021]) c c₁ k₁ ∧ k₁ = 2 ∧
       c₁.nreg 110107 = S + (w - 6) ∧ (∀ r, r ≠ 110107 → c₁.nreg r = c.nreg r) := by
     exec_block
-    · config_simp; rw [hwd, hk.six, hk.rS]; omega
+    · config_simp; rwo [hwd, hk.six, hk.rS]
     · refine ⟨rfl, ?_, fun r hr => ?_⟩
-      · config_simp; rw [hwd, hk.six, hk.rS]; omega
+      · config_simp; rwo [hwd, hk.six, hk.rS]
       · config_simp; upd_solve
   have hk₁ : PosK n s m S R c₁ := hk.congr fun r hr => r₁ r (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := redS_exec (P := P) (r := 110107) (nr := 120019) (by decide)
     c₁ e₁.wb_right
-  have hk₂' : PosK n s m S R c₂ := hk₁.congr fun r hr => f₂.1 r (by simp; omega)
+  have hk₂' : PosK n s m S R c₂ := hk₁.congr fun r hr => f₂.1 r (by sio)
   obtain ⟨c₃, k₃, e₃, hk₃, v₃, f₃⟩ := redS_exec (P := P) (r := 110107) (nr := 120019) (by decide)
     c₂ e₂.wb_right
-  have hk₃' : PosK n s m S R c₃ := hk₂'.congr fun r hr => f₃.1 r (by simp; omega)
+  have hk₃' : PosK n s m S R c₃ := hk₂'.congr fun r hr => f₃.1 r (by sio)
   have hx : c₃.nreg 110107 = (S + (w - 6)) % (2 * m) := by
     rw [v₃, v₂, v₁, hk₂'.twoM, hk₁.twoM]
     have := mod_le_two (x := S + (w - 6)) (M := 2 * m) (by omega) (by omega)
@@ -257,19 +262,19 @@ theorem vaS_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : Wo
       c₄.nreg 110107 = sideE m x ∧ FrameB (fun r => decide (r = 110107)) c₃ c₄ := by
     rw [sideE_eq_ite]
     by_cases h : m < x
-    · have ht : c₃.nreg 120016 < c₃.nreg 110107 := by rw [hk₃'.rm, hx]; exact h
+    · have ht : c₃.nreg 120016 < c₃.nreg 110107 := by rwx [hk₃'.rm, hx]
       have e := Exec.ifLtN_true (P := P) (W := W) (e := .skip)
         (t := .instr (.subN 110107 120019 110107)) ht (Exec.subN w₃ 110107 120019 110107)
       refine ⟨_, _, e, by omega, ?_, exec_frameB e (by decide)⟩
       rw [ite_eq_left h]; config_simp; rw [hk₃'.twoM, hx]
-    · have ht : ¬ c₃.nreg 120016 < c₃.nreg 110107 := by rw [hk₃'.rm, hx]; exact h
+    · have ht : ¬ c₃.nreg 120016 < c₃.nreg 110107 := by rwx [hk₃'.rm, hx]
       have e := Exec.ifLtN_false (P := P) (W := W) (t := .instr (.subN 110107 120019 110107))
         (e := .skip) ht (.skip w₃)
       exact ⟨_, _, e, by omega, by rw [ite_eq_right h, hx], FrameB.refl _ _⟩
-  have hk₄' : PosK n s m S R c₄ := hk₃'.congr fun r hr => f₄.1 r (by simp; omega)
+  have hk₄' : PosK n s m S R c₄ := hk₃'.congr fun r hr => f₄.1 r (by sio)
   have hy : sideE m x ≤ m := Chazelle.Chain.sideE_le hxl.le
   obtain ⟨c₅, e₅, v₅, r₅, -⟩ := add_exec (P := P) e₄.wb_right 110102 120015 110107
-    (by rw [hk₄'.rs, v₄]; omega)
+    (by rwo [hk₄'.rs, v₄])
   rw [hk₄'.rs, v₄] at v₅
   have hk₅ : PosK n s m S R c₅ := hk₄'.congr fun r hr => r₅ r (by omega)
   obtain ⟨c₆, k₆, e₆, hk₆, v₆, f₆⟩ := redS_exec (P := P) (r := 110102) (nr := 120010) (by decide)
@@ -289,7 +294,7 @@ theorem nzS_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : Wo
       FrameB (fun r => decide (r = 110103 ∨ r = 110108)) c c' ∧
       c'.nreg 110103 = nzN va (c.nreg 110101) := by
   obtain ⟨c₁, e₁, v₁, r₁, -⟩ := add_exec (P := P) hw 110108 110102 120011
-    (by rw [hva, hk.one]; omega)
+    (by rwo [hva, hk.one])
   rw [hva, hk.one] at v₁
   have w₁ := e₁.wb_right
   have hk₁ : PosK n s m S R c₁ := hk.congr fun r hr => r₁ r (by omega)
@@ -307,7 +312,7 @@ theorem nzS_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : Wo
     have ex := Exec.seq e₁ e
     refine ⟨_, _, ex, by omega, exec_frameB ex (by decide), ?_⟩
     rw [ite_eq_left (Or.inl h0)]; config_simp
-  · have hpos : c₁.nreg 120012 < c₁.nreg 110101 := by rw [hk₁.zero, hh]; omega
+  · have hpos : c₁.nreg 120012 < c₁.nreg 110101 := by rwo [hk₁.zero, hh]
     by_cases hv : hc = va + 1
     · have hq : c₁.nreg 110101 = c₁.nreg 110108 := by rw [hh, v₁, hv]
       have e := Exec.ifLtN_true (P := P) (W := W) (t := ifEq 110101 110108 (.instr (.constN 110103 0))
@@ -316,7 +321,7 @@ theorem nzS_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : Wo
       have ex := Exec.seq e₁ e
       refine ⟨_, _, ex, by omega, exec_frameB ex (by decide), ?_⟩
       rw [ite_eq_left (Or.inr hv)]; config_simp
-    · have hq : c₁.nreg 110101 ≠ c₁.nreg 110108 := by rw [hh, v₁]; exact hv
+    · have hq : c₁.nreg 110101 ≠ c₁.nreg 110108 := by rwx [hh, v₁]
       obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (P := P) (W := W) (S := .instr (.constN 110103 0))
         hq (Exec.copyN w₁ 110103 110101)
       have ex := Exec.seq e₁ (Exec.ifLtN_true (e := .instr (.constN 110103 0)) hpos e')
@@ -339,35 +344,35 @@ theorem flagS_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : 
   have c1 := Exec.constN (P := P) hw 110104 1 hW
   unfold flagS inT
   by_cases h0 : z = 0
-  · simp only [h0, ite_true]
+  · simp [h0, ite_true]
     refine spec_ifLtN_false (by rw [hk.zero, hz, h0]; exact Nat.lt_irrefl 0) ?_
     by_cases a1 : 6 < w
-    · refine spec_ifLtN_true (by rw [hk.six, hwd]; exact a1) ?_
+    · refine spec_ifLtN_true (by rwx [hk.six, hwd]) ?_
       by_cases a2 : w < 6 + R
-      · refine spec_ifLtN_true (by rw [hk.k0, hwd]; exact a2) ⟨_, _, c1, ?_⟩
+      · refine spec_ifLtN_true (by rwx [hk.k0, hwd]) ⟨_, _, c1, ?_⟩
         refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left (Or.inl ⟨a1, a2⟩)]
-      · refine spec_ifLtN_false (by rw [hk.k0, hwd]; exact a2) ?_
+      · refine spec_ifLtN_false (by rwx [hk.k0, hwd]) ?_
         by_cases a3 : 6 + R < w
-        · refine spec_ifLtN_true (by rw [hk.k0, hwd]; exact a3) ?_
+        · refine spec_ifLtN_true (by rwx [hk.k0, hwd]) ?_
           by_cases a4 : w < 2 * m + 6
-          · refine spec_ifLtN_true (by rw [hk.tEnd, hwd]; exact a4) ⟨_, _, c1, ?_⟩
+          · refine spec_ifLtN_true (by rwx [hk.tEnd, hwd]) ⟨_, _, c1, ?_⟩
             refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left (Or.inr ⟨a3, a4⟩)]
-          · refine spec_ifLtN_false (by rw [hk.tEnd, hwd]; exact a4) ⟨_, _, c0, ?_⟩
+          · refine spec_ifLtN_false (by rwx [hk.tEnd, hwd]) ⟨_, _, c0, ?_⟩
             refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right (by omega)]
-        · refine spec_ifLtN_false (by rw [hk.k0, hwd]; exact a3) ⟨_, _, c0, ?_⟩
+        · refine spec_ifLtN_false (by rwx [hk.k0, hwd]) ⟨_, _, c0, ?_⟩
           refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right (by omega)]
-    · refine spec_ifLtN_false (by rw [hk.six, hwd]; exact a1) ⟨_, _, c0, ?_⟩
+    · refine spec_ifLtN_false (by rwx [hk.six, hwd]) ⟨_, _, c0, ?_⟩
       refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right (by omega)]
-  · simp only [h0, ite_false]
-    refine spec_ifLtN_true (by rw [hk.zero, hz]; omega) ?_
+  · simp [h0, ite_false]
+    refine spec_ifLtN_true (by rwo [hk.zero, hz]) ?_
     by_cases a1 : w < 6
-    · refine spec_ifLtN_true (by rw [hk.six, hwd]; exact a1) ⟨_, _, c0, ?_⟩
+    · refine spec_ifLtN_true (by rwx [hk.six, hwd]) ⟨_, _, c0, ?_⟩
       refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right (by omega)]
-    · refine spec_ifLtN_false (by rw [hk.six, hwd]; exact a1) ?_
+    · refine spec_ifLtN_false (by rwx [hk.six, hwd]) ?_
       by_cases a2 : w < 2 * m + 6
-      · refine spec_ifLtN_true (by rw [hk.tEnd, hwd]; exact a2) ⟨_, _, c1, ?_⟩
+      · refine spec_ifLtN_true (by rwx [hk.tEnd, hwd]) ⟨_, _, c1, ?_⟩
         refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left ⟨by omega, a2⟩]
-      · refine spec_ifLtN_false (by rw [hk.tEnd, hwd]; exact a2) ⟨_, _, c0, ?_⟩
+      · refine spec_ifLtN_false (by rwx [hk.tEnd, hwd]) ⟨_, _, c0, ?_⟩
         refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right (by omega)]
 
 theorem mirS_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : WordsBounded W c)
@@ -399,7 +404,7 @@ theorem mirS_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : W
       refine ⟨_, _, .seq (.ifLtN_false (by rw [hk.k0, hwd]; exact a) e1) e2, by omega, ?_⟩
       rw [ite_eq_left (by omega)]; config_simp; rw [hk.k2, hwd]
   · rw [ite_eq_right h0]
-    refine spec_ifLtN_true (by rw [hk.zero, hz]; omega) ?_
+    refine spec_ifLtN_true (by rwo [hk.zero, hz]) ?_
     by_cases a : w < 6 + R
     · have e1 := Exec.subN (P := P) hw 110105 110051 110100
       have e2 := Exec.copyN (P := P) e1.wb_right 110106 110101
@@ -425,7 +430,7 @@ theorem posA_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : W
   rw [hwd]
   unfold posA
   by_cases hout : 2 * m + 6 < w
-  · have ht : c.nreg 120029 < c.nreg 110100 := by rw [hk.tEnd, hwd]; exact hout
+  · have ht : c.nreg 120029 < c.nreg 110100 := by rwx [hk.tEnd, hwd]
     obtain ⟨c', k, ex, hk', v⟩ : ∃ c' k, Exec P W (block [.constN 110103 0, .constN 110104 0]) c c' k ∧
         k = 2 ∧ c'.nreg 110103 = 0 ∧ c'.nreg 110104 = 0 := by
       exec_block
@@ -436,19 +441,19 @@ theorem posA_exec {P : Polygon} {W : ℕ} {n s m S R : ℕ} {c : Config} (hw : W
     refine ⟨c', _, ex', by omega, exec_frameB ex' wr_posA, ?_, fun h => absurd h (by omega)⟩
     rw [v.2, v.1, ite_eq_right (not_inT hR (Or.inr (by omega)))]
   · push Not at hout
-    have hw7 : c.nreg 110100 ≤ 2 * m + 6 := by rw [hwd]; exact hout
+    have hw7 : c.nreg 110100 ≤ 2 * m + 6 := by rwx [hwd]
     obtain ⟨c₁, k₁, e₁, hk₁, f₁, v₁⟩ := vaS_exec (P := P) hw hk h1 hmn hsn hS hw7 (by omega)
-    have K₁ : PosK n s m S R c₁ := hk.congr fun r hr => f₁.1 r (by simp; omega)
+    have K₁ : PosK n s m S R c₁ := hk.congr fun r hr => f₁.1 r (by sio)
     have hva : vaN s m S n w < n := Nat.mod_lt _ (by omega)
     rw [hwd] at v₁
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, v₂⟩ := nzS_exec (P := P) e₁.wb_right K₁ v₁ hva (by omega)
-    have K₂ : PosK n s m S R c₂ := K₁.congr fun r hr => f₂.1 r (by simp; omega)
+    have K₂ : PosK n s m S R c₂ := K₁.congr fun r hr => f₂.1 r (by sio)
     obtain ⟨c₃, k₃, e₃, hk₃, f₃, v₃⟩ := flagS_exec (P := P) e₂.wb_right K₂ (by omega)
-    have K₃ : PosK n s m S R c₃ := K₂.congr fun r hr => f₃.1 r (by simp; omega)
+    have K₃ : PosK n s m S R c₃ := K₂.congr fun r hr => f₃.1 r (by sio)
     obtain ⟨c₄, k₄, e₄, hk₄, f₄, v₄⟩ := mirS_exec (P := P) e₃.wb_right K₃
     have ex : Exec P W (.seq vaS (.seq nzS (.seq flagS mirS))) c c₄ _ :=
       .seq e₁ (.seq e₂ (.seq e₃ e₄))
-    have ht : ¬ c.nreg 120029 < c.nreg 110100 := by rw [hk.tEnd, hwd]; omega
+    have ht : ¬ c.nreg 120029 < c.nreg 110100 := by rwo [hk.tEnd, hwd]
     have ex' := Exec.ifLtN_false (P := P) (W := W) (t := block [.constN 110103 0, .constN 110104 0])
       ht ex
     -- register bookkeeping

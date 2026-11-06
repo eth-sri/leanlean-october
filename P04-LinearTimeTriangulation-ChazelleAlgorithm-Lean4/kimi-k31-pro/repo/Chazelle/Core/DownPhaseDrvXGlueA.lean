@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.DownPhaseDrvXContracts
 public import Chazelle.Core.DownPhaseDrvXPos2
 public import Chazelle.Core.DownPhaseDrvXKept
+public import Chazelle.Rwx
+set_option maxHeartbeats 16000000
 
 /-!
 # Down phase, extraction (D6): glue A
@@ -52,7 +54,6 @@ theorem ga_onArc {P : Polygon} {li : Bool} {N : NF} {r : ℕ}
   rw [e]
   exact (onArc_iff hli hdh hn hx (hgood _ hjA).1 (hgood _ hjA).2).1 ho
 
-set_option maxHeartbeats 16000000 in
 /-- **Glue A.** -/
 theorem xeGlue : XEGlue := by
   intro P W c L E C NR hG hWh hb1 hbit hLne hok hperm hsort hdeg hNW hr hHost hHB hCP hCs hCm
@@ -63,7 +64,7 @@ theorem xeGlue : XEGlue := by
   have hn3 : 3 ≤ (Qof P).n := by have := hQ.1; omega
   have hWn : 256 * P.n + 16 ≤ W := hWh
   have hli : decide (c.nreg 217002 = 1) = true ↔ Mountain.LeftInside (Qof P) := by
-    rw [decide_eq_true_iff]; exact hbit
+    rwx [decide_eq_true_iff]
   obtain ⟨-, -, -, reg, hRC, hCS, hAO, hRO, -⟩ := DownMath.isNF_build hQ hok hperm hsort
   have X : XHyp P (decide (c.nreg 217002 = 1)) L E reg (c.nreg 217001) C NR :=
     ⟨hG, hli, hLne, hok, hperm, hsort, ⟨hRC, hCS, hAO, hRO⟩, hr, hCP, hCs, hCm, hNR⟩
@@ -115,9 +116,9 @@ theorem xeGlue : XEGlue := by
   have hA1 : 1 ≤ (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length := by
     have := hras 0 (by omega); omega
   have hAB := b3 _ (show (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length - 1 < _ by omega)
-  refine ⟨⟨hG, hli, hdh, by omega, by rw [hn]; exact hWn, rfl, by show _ + 5 * NR.chords.length ≤ W; omega,
-    fun mm hmm => hHost mm hmm, hwf, hlen64, hHB, hm1, hmp, C.topIdx_le, ?_, ?_, ?_, rfl,
-    fun j hj => hgood j hj, hinc, hnext, hfree, ?_, ?_, fun t ht => hras t ht, ?_, ?_, ?_, ?_, ?_,
+  refine ⟨⟨hG, hli, hdh, by omega, by rwx [hn], rfl, by show _ + 5 * NR.chords.length ≤ W; omega,
+    hHost, hwf, hlen64, hHB, hm1, hmp, C.topIdx_le, ?_, ?_, ?_, rfl,
+    hgood, hinc, hnext, hfree, ?_, ?_, hras, ?_, ?_, ?_, ?_, ?_,
     rfl, rfl⟩, ?_⟩
   · -- the chord records of `N_R`
     intro mm hmm i hi
@@ -158,7 +159,6 @@ theorem xeGlue : XEGlue := by
           (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)) (decide (c.nreg 217002 = 1))
           C.m C.topIdx C.sideBeta (NR.chord i).h p) := fun p hp => by
       refine ⟨hp, by simp [xPos], ?_⟩
-      show pEdge _ _ _ < _
       refine pEdge_lt _ (hpt_lt hwf (by omega) ?_)
       have := tK_le C.sideBeta hm1 (T := C.topIdx) p
       omega

@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.SweepIoLab0R
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
+set_option maxRecDepth 20000
 
 /-!
 # The sweep RAM (WP-D), answers: the label candidates of a side-0 query, the gap regions
@@ -79,7 +84,7 @@ theorem gS0_val (m f : ℕ → ℕ) :
 theorem gS0_ok (m f : ℕ → ℕ) (hb : f (sw 31) + f K1 ≤ W) : okB W m gS0 f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
-  have hb' : f 240031 + f 240611 ≤ W := hb
+  have hb'  := hb
   simp only [gS0, okB, okI, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
   exact ⟨s 1001 (by norm_num) (by norm_num), s 1100 (by norm_num) (by norm_num),
@@ -87,8 +92,6 @@ theorem gS0_ok (m f : ℕ → ℕ) (hb : f (sw 31) + f K1 ≤ W) : okB W m gS0 f
     s 1103 (by norm_num) (by norm_num), ⟨s 1104 (by norm_num) (by norm_num), Nat.zero_le _⟩,
     trivial⟩
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
 /-- **The gap regions**: the three regions at each of the walk vertices `2 m₂ + 6` and `6` of
 `C₂`, as six words at the list address `gL`. -/
 theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junction} {H : Host}
@@ -105,39 +108,39 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
           c'.nmem (c.nreg ALLOC + 3 + i) = (Sweep.nbrRegs N₂ j₂).getD i 0) := by
   have hS := sideD₂ hA
   have hK := hA.hK
-  have hfix : ∀ q, IFix q → c.nreg q = c₀.nreg q := fun q hq => hI.hin q hq
-  have e31 : c.nreg (sw 31) = c₀.nreg (sw 31) := hfix _ (by unfold IFix sw; omega)
-  have e4 : c.nreg (sw 4) = c₀.nreg (sw 4) := hfix _ (by unfold IFix sw; omega)
-  have e34 : c.nreg (sw 34) = 2 * J.right.m + 7 := (hfix _ (by unfold IFix sw; omega)).trans hS.hnr
+  have hfix : ∀ q, IFix q → c.nreg q = c₀.nreg q := hI.hin
+  have e31 : c.nreg (sw 31) = c₀.nreg (sw 31) := hfix _ (by ufo IFix sw)
+  have e4 : c.nreg (sw 4) = c₀.nreg (sw 4) := hfix _ (by ufo IFix sw)
+  have e34 : c.nreg (sw 34) = 2 * J.right.m + 7 := (hfix _ (by ufo IFix sw)).trans hS.hnr
   have k1 : c.nreg K1 = 1 := (hK.fix hI).2.1
   have hmdW : c.nreg (sw 31) + c.nreg K1 ≤ W := by
     rw [e31, k1]; have := hS.hmwf.1; have := hI.hA; have := hI.hw.1 ALLOC; omega
   unfold gapS gapK
   unfold gapK at hroom
   refine IRS.seq (K₁ := 6) (K₂ := lh1K (c₀.nreg TLR) + (1 + lh1K (c₀.nreg TLR)))
-    ((IRS.block gS0 hI (gS0_ok _ _ hmdW)).mono (by simp [gS0]) (fun _ h => h)) ?_
+    ((IRS.block gS0 hI (gS0_ok _ _ hmdW)).mono (by simp [gS0]) (fun _ => id)) ?_
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1, v2, v3, v4, v5, v6, vo⟩ := gS0_val c.nmem c.nreg
   set c₁ : Config := { c with nreg := regB c.nmem gS0 c.nreg } with hc₁
   have eA1 : c₁.nreg ALLOC = c.nreg ALLOC :=
-    vo ALLOC (by unfold ALLOC gL sw; omega) (by unfold ALLOC sw; omega)
-  have eT1 : c₁.nreg TLR = c₀.nreg TLR := hI₁.hin _ (by unfold IFix TLR sw; omega)
+    vo ALLOC (by ufo ALLOC gL sw) (by ufo ALLOC sw)
+  have eT1 : c₁.nreg TLR = c₀.nreg TLR := hI₁.hin _ (by ufo IFix TLR sw)
   have hL₁ : LCtx P W J.right N₂ E c₁ := lctx_of hS hI₁ hA.htab hA.hTB hA.hTW
     (by show regB _ _ _ _ = _; rw [v2, e31])
     (by show regB _ _ _ _ = _; rw [v3, e31, k1])
     (by show regB _ _ _ _ = _; rw [v4, e4])
   have hE1 : c₁.nreg lE = 2 * J.right.m + 6 := by
-    show regB _ _ _ _ = _; rw [v5, e34, k1]; omega
+    show regB _ _ _ _ = _; rwo [v5, e34, k1]
   have hH1 : c₁.nreg lH = 0 := v6
   have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
   refine IRS.seq (K₁ := lh1K (c₀.nreg TLR)) (K₂ := 1 + lh1K (c₀.nreg TLR))
-    ((lh1_irs hI₁ hK hL₁ (by rw [hE1, hn₂]; omega) (by rw [hH1]; exact pp_zero _ _ _ _)
-      (by rw [eT1, eA1]; omega)).mono (by rw [eT1]) (fun _ h => h)) ?_
+    ((lh1_irs hI₁ hK hL₁ (by rwo [hE1, hn₂]) (by rw [hH1]; exact pp_zero _ _ _ _)
+      (by rwo [eT1, eA1])).mono (by rw [eT1]) (fun _ => id)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hj1, hl1, hl2, hLL2, hAl2, hlist2, hm2, fr2, -, -, -⟩
   have fr2' : ∀ q, bandOf q ∉ oracleBands → ¬ (sw 1108 ≤ q ∧ q ≤ sw 1119) → q ≠ ALLOC →
       c₂.nreg q = c₁.nreg q := fun q h1 h2 h3 => fr2 q h1 h2 h3
   refine IRS.seq (K₁ := 1) (K₂ := lh1K (c₀.nreg TLR))
-    (IRS.block [.constN lE 6] hI₂ ⟨⟨iscr_sw (by unfold lE sw; omega) (by unfold lE sw; omega),
+    (IRS.block [.constN lE 6] hI₂ ⟨⟨iscr_sw (by ufo lE sw) (by ufo lE sw),
       by have := hA.hWm; omega⟩, trivial⟩) ?_
   rintro c₃ hI₃ hA₃ hA₃' rfl
   set c₃ : Config := { c₂ with nreg := regB c₂.nmem [.constN lE 6] c₂.nreg } with hc₃
@@ -156,11 +159,11 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
     (by rw [k32 _ (Or.inr (Or.inl rfl))]; show regB _ _ _ _ = _; rw [v3, e31, k1])
     (by rw [k32 _ (Or.inr (Or.inr (Or.inl rfl)))]; show regB _ _ _ _ = _; rw [v4, e4])
   have hH3 : c₃.nreg lH = 0 := by rw [k32 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl)))), hH1]
-  have eT3 : c₃.nreg TLR = c₀.nreg TLR := hI₃.hin _ (by unfold IFix TLR sw; omega)
+  have eT3 : c₃.nreg TLR = c₀.nreg TLR := hI₃.hin _ (by ufo IFix TLR sw)
   have eA3 : c₃.nreg ALLOC = c.nreg ALLOC + 3 := by
-    rw [o3 _ (by unfold lE ALLOC sw; omega), hAl2, eA1]
-  refine ((lh1_irs hI₃ hK hL₃ (by rw [hE3, hn₂]; omega) (by rw [hH3]; exact pp_zero _ _ _ _)
-      (by rw [eT3, eA3]; omega)).mono (by rw [eT3]) ?_)
+    rw [o3 _ (by ufo lE ALLOC sw), hAl2, eA1]
+  refine ((lh1_irs hI₃ hK hL₃ (by rwo [hE3, hn₂]) (by rw [hH3]; exact pp_zero _ _ _ _)
+      (by rwo [eT3, eA3])).mono (by rw [eT3]) ?_)
   rintro c₄ ⟨hj4, hl4, hl4', hLL4, hAl4, hlist4, hm4, fr4, -, -, -⟩
   have fr4' : ∀ q, bandOf q ∉ oracleBands → ¬ (sw 1108 ≤ q ∧ q ≤ sw 1119) → q ≠ ALLOC →
       c₄.nreg q = c₃.nreg q := fun q h1 h2 h3 => fr4 q h1 h2 h3
@@ -170,7 +173,7 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
   · rw [fr4' gL (nO _ (by decide) (by decide)) (by decide) (by decide),
       k32 _ (Or.inr (Or.inr (Or.inr (Or.inr rfl))))]
     show regB _ _ _ _ = _; rw [v1]
-  · rw [hm4 a (by rw [eA3]; omega), hm3, hm2 a (by rw [eA1]; exact ha)]
+  · rw [hm4 a (by rwo [eA3]), hm3, hm2 a (by rwx [eA1])]
   · have h3' : ¬ (sw 1108 ≤ r ∧ r ≤ sw 1119) :=
       fun h => h3 ⟨le_trans (show sw 1100 ≤ sw 1108 by decide) h.1, h.2⟩
     have h3e : r ≠ lE := by rintro rfl; exact h3 (by decide)
@@ -181,7 +184,7 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
   · intro hc; rw [hE1, hH1, key_zero] at hl2; exact hl2 hc
   · intro hc; rw [hE3, hH3, key_zero] at hl4; exact hl4 hc
   · intro hc; rw [hE3, hH3, key_zero] at hl4'; exact hl4' hc
-  · rw [hm4 _ (by rw [eA3]; omega), hm3, ← eA1, hlist2 i hi]
+  · rw [hm4 _ (by rwo [eA3]), hm3, ← eA1, hlist2 i hi]
   · rw [show c.nreg ALLOC + 3 + i = c₃.nreg ALLOC + i by rw [eA3], hlist4 i hi]
 
 end

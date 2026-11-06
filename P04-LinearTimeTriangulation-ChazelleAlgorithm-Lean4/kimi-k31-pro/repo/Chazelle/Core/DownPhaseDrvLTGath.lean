@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvLTLoop
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase level tail (D12), part 5: the gather
@@ -23,7 +26,6 @@ theorem nRegions_build (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) 
     (BuildNF.buildNF M Q L E).nRegions = L.length + 1 := by
   simp [NF.nRegions, BuildNF.buildNF]
 
-set_option maxHeartbeats 4000000 in
 /-- **The gather.** -/
 theorem gather_exec {G : GEnv} (hG : GGood G) {c : Config} (hw : WordsBounded G.W c)
     (hA : c.nreg ALLOC = G.A₀) (hm : c.nmem = G.m₀) (hr : c.nreg = G.r₀)
@@ -48,10 +50,10 @@ theorem gather_exec {G : GEnv} (hG : GGood G) {c : Config} (hw : WordsBounded G.
   have g₁ : ∀ r, ¬ (r = 211100 ∨ r = 211101 ∨ r = 210034 ∨ r = 211110 ∨ r = 211111) →
       c₁.nreg r = c.nreg r := fun r h => f₁.1 r (by simpa using h)
   have w₁ := x₁.wb_right
-  have A₁ : c₁.nreg ALLOC = G.A₀ := by rw [g₁ _ (by unfold ALLOC; omega), hA]
+  have A₁ : c₁.nreg ALLOC = G.A₀ := by rw [g₁ _ (by ufo ALLOC), hA]
   -- 2. the reservation
   obtain ⟨c₂, k₂, x₂, hk₂, A₂, j11, f₂, RF₂⟩ := ltRes_exec (P := G.P) w₁ (K₂ := G.K₂)
-    (by rw [g₁ _ (by omega), h12]) i11 i00 (by rw [A₁]; omega) G.A₀
+    (by rw [g₁ _ (by omega), h12]) i11 i00 (by rwo [A₁]) G.A₀
   rw [A₁] at A₂
   have g₂ : ∀ r, r ≠ 211111 → r ≠ 9999 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
     f₂.1 r (by simp [Bres, h1, h2])
@@ -67,11 +69,11 @@ theorem gather_exec {G : GEnv} (hG : GGood G) {c : Config} (hw : WordsBounded G.
   have w₃ := x₃.wb_right
   have back : ∀ r, BL r = false → r ≠ ALLOC → c₃.nreg r = c.nreg r := by
     intro r hr hra
-    simp only [BL, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+    simp [BL, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
     unfold ALLOC at hra
     rw [g₃ r (by omega), g₂ r (by omega) hra, g₁ r (by omega)]
   have I0 : LInv G 0 c₃ := by
-    refine ⟨w₃, s30, ?_, by rw [s31]; omega, ?_, ?_, ?_, ?_, s12, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+    refine ⟨w₃, s30, ?_, by rwo [s31], ?_, ?_, ?_, ?_, s12, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
       Nat.zero_le _⟩
     · rw [g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), g₁ _ (by omega), h11]
     · rw [g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), i00]
@@ -80,7 +82,7 @@ theorem gather_exec {G : GEnv} (hG : GGood G) {c : Config} (hw : WordsBounded G.
     · rw [g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), i10, hA]
     · rw [s13]; simp [GEnv.flat]
     · rw [s14]; simp [GEnv.flat]
-    · rw [g₃ _ (by unfold ALLOC; omega), A₂]
+    · rw [g₃ _ (by ufo ALLOC), A₂]
     · intro r hb hra; rw [back r hb hra, hr]
     · intro a _
       rw [f₃.2.2.1, f₂.2.2.1, f₁.2.2.1, hm]
@@ -99,27 +101,27 @@ theorem gather_exec {G : GEnv} (hG : GGood G) {c : Config} (hw : WordsBounded G.
   -- frames
   have RF₁ : Restore.RF DrvR.drvBands G.A₀ c c₁ k₁ :=
     DrvD.rf_of_frameB (fun r hr => by
-      simp only [decide_eq_true_eq] at hr
-      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₁
+      simp [decide_eq_true_eq] at hr
+      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by ufo ALLOC⟩) f₁
   have RF₃ : Restore.RF DrvR.drvBands G.A₀ c₂ c₃ k₃ :=
     DrvD.rf_of_frameB (fun r hr => by
-      simp only [decide_eq_true_eq] at hr
-      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₃
+      simp [decide_eq_true_eq] at hr
+      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by ufo ALLOC⟩) f₃
   have RF₅ : Restore.RF DrvR.drvBands G.A₀ c₄ c₅ k₅ :=
     DrvD.rf_of_frameB (fun r hr => by
-      simp only [decide_eq_true_eq] at hr
-      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₅
+      simp [decide_eq_true_eq] at hr
+      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by ufo ALLOC⟩) f₅
   refine ⟨c₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), Exec.seq x₁ (Exec.seq x₂ (Exec.seq x₃
     (Exec.seq x₄ x₅))), by omega, x₅.wb_right, v20, v21, v22, v23, v24, ?_, ?_, ?_, ?_, ?_,
     RF₁.trans (RF₂.trans (RF₃.trans (RF₄.trans RF₅)))⟩
-  · rw [g₅ _ (by unfold ALLOC; omega), I₄.alloc]
+  · rw [g₅ _ (by ufo ALLOC), I₄.alloc]
   · intro r hb hra
     have hb' := hb
-    simp only [BL, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hb'
+    simp [BL, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hb'
     rw [g₅ r (by omega), I₄.keep r hb hra, ← hr]
   · intro a ha; rw [m₅, I₄.low a ha]
   · rw [m₅]; exact I₄.list
-  · intro q hq; rw [m₅]; exact I₄.bkt q (by unfold GEnv.K₂ at hq; omega)
+  · intro q hq; rw [m₅]; exact I₄.bkt q (by ufo GEnv.K₂ at hq)
 
 end
 

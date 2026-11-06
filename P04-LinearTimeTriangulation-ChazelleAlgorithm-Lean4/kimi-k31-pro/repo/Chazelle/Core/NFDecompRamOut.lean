@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.NFDecompGlue
+public import Chazelle.ConfigTactics
 
 /-!
 # Tree decomposition (WP-C), part 22: writing the output on the RAM
@@ -137,7 +138,7 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
             show (a - (A + 12 + 19 * R)) / 3 = j by omega, Nat.reduceAdd])
         | (· simp only [show (a - (A + 12 + 19 * R)) % 3 = 2 by omega,
             show (a - (A + 12 + 19 * R)) / 3 = j by omega, Nat.reduceAdd]))
-    ⟨hw1, hf1, by simp only [hc1]; config_simp; omega, fun a => by
+    ⟨hw1, hf1, by simp only [hc1]; cso, fun a => by
       simp only [hc1]; config_simp; rw [ite_eq_right (by omega)]⟩
   have hR' := hR.frame hf'
   rw [hR'.rK] at htest

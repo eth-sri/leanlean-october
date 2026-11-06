@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.FuseMathCut
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # The weight bound of the revised fusion (`FusionWeightSpec`, WP-D math)
@@ -43,7 +47,7 @@ def bdryK (S' : Set (Set Point)) : Set ℝ :=
     ((chainModel J.whole).W.vtx k = sharedV J ∨ (chainModel J.whole).IsCut S' k)}
 
 theorem radius_of_P {C' : Chain} (h : C'.P = J.P) : C'.radius = J.whole.radius := by
-  unfold Chain.radius; rw [h]; rfl
+  urr Chain.radius [h]
 
 /-- **The stretch bound along an agreement with a side walk.** -/
 theorem agree_bound (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) {Q : Polygon}
@@ -59,7 +63,7 @@ theorem agree_bound (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) {Q : Poly
       0 < off (chainModel J.whole).W.n g₀ x ∧ off (chainModel J.whole).W.n g₀ x < L₀)
     (hfree : ∀ x, sideInArc a b x → ¬ (chainModel J.whole).IsCut S' x) :
     (chainModel J.whole).arcWt a b ≤ γ := by
-  have hP' : C'.P.Simple := hC'P ▸ hP
+  have hP'  := hC'P ▸ hP
   have hR := radius_of_P J hC'P
   refine arcWt_le_of_stretch (Or.inl ⟨C', hP', rfl⟩) hSi hsg hg₀ hg₀' hLn hLn' ?_ ?_ hstr hfree
   · intro d hd hc
@@ -108,7 +112,7 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
   set W := (chainModel C).W with hW
   set W' := (chainModel C').W with hW'
   set S' := J.fusion S₁ S₂ ∪ glueChords J with hS'
-  have hP' : C'.P.Simple := hC'P ▸ hP
+  have hP'  := hC'P ▸ hP
   have hR := radius_of_P J hC'P
   have hn := cm_n C
   have hn' := cm_n C'
@@ -119,8 +123,8 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
   have hτ'lt := tpos_lt C' J₀'
   set g := 6 + τ with hg_def
   set g' := 6 + τ' with hg'_def
-  have hg : g < W.n := by rw [hn]; omega
-  have hg' : g' < W'.n := by rw [hn']; omega
+  have hg : g < W.n := by rwo [hn]
+  have hg' : g' < W'.n := by rwo [hn']
   set s := 2 * C.m - τ with hs_def
   set s' := 2 * C'.m - τ' with hs'_def
   -- keys at the shared vertex are end keys
@@ -133,23 +137,23 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
     have := walk_tour C J₀ 0 (by omega)
     rw [add_zero, Nat.mod_eq_of_lt hg] at this
     rw [this, hv0]
-  have hoffp : off W.n g (p + t) = dOf W.n g p + t := off_key' hg hp ht.le ht1
+  have hoffp  := off_key' hg hp ht.le ht1
   by_cases hsl : s < ℓ
   · -- case Sh: the boxes at the same offset
     rw [ite_eq_left hsl] at hin
-    have hss : s = s' := (hbox hsl).symm
+    have hss  := (hbox hsl).symm
     have hA := agree_Sh hT hR.symm hℓ.le hℓ' hss hsl
-    refine ⟨g, ℓ + 7, ⟨hg, by rw [hn]; omega, hstart, ?_, ?_⟩, ?_, ?_⟩
+    refine ⟨g, ℓ + 7, ⟨hg, by rwo [hn], hstart, ?_, ?_⟩, ?_, ?_⟩
     · refine hK_v _ (Nat.mod_lt _ (by omega)) ?_
       have := walk_after C J₀ (ℓ - s) (by omega)
       rw [show 6 + τ + (2 * C.m - τ) + 7 + (ℓ - s) = g + (ℓ + 7) by omega,
         show 2 * C.m - τ + (ℓ - s) = ℓ by omega] at this
       rw [this, hvℓ]
-    · exact agree_bound J hP hC'P hSi hsg hend hshared hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA
+    · exact agree_bound J hP hC'P hSi hsg hend hshared hg hg' (by rwo [hn]) (by rwo [hn']) hA
     · rw [hoffp]; positivity
     · rw [hoffp]
       have : (dOf W.n g p : ℝ) + 1 ≤ ℓ + 7 := by exact_mod_cast hin
-      push_cast; linarith
+      pcl
   rw [ite_eq_right hsl] at hin
   push Not at hsl
   -- the end key of the stretch
@@ -160,8 +164,8 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
   by_cases hsl' : ℓ ≤ s'
   · -- case N: no box inside the stretch
     have hA := agree_N hT hsl hsl'
-    refine ⟨g, ℓ, ⟨hg, by rw [hn]; omega, hstart, hend_key, ?_⟩, ?_, ?_⟩
-    · exact agree_bound J hP hC'P hSi hsg hend hshared hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA
+    refine ⟨g, ℓ, ⟨hg, by rwo [hn], hstart, hend_key, ?_⟩, ?_, ?_⟩
+    · exact agree_bound J hP hC'P hSi hsg hend hshared hg hg' (by rwo [hn]) (by rwo [hn']) hA
     · rw [hoffp]; positivity
     · rw [hoffp]
       have : (dOf W.n g p : ℝ) + 1 ≤ ℓ := by exact_mod_cast hin
@@ -182,7 +186,7 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
   have hprev : sidePrev W k₀ 0 = C'.sideTour C'.sideBeta (2 * C'.m - 1) := by
     unfold sidePrev
     rw [ite_eq_left rfl, hk₀, mod_pred_mod (by omega) g hs'1, hA1 (s' - 1) (by omega),
-      show g' + (s' - 1) = (2 * C'.m - 1) + 6 by omega, Nat.mod_eq_of_lt (by rw [hn']; omega)]
+      show g' + (s' - 1) = (2 * C'.m - 1) + 6 by omega, Nat.mod_eq_of_lt (by rwo [hn'])]
     exact C'.sideWalk_vtx_tour _ (by omega)
   have hnext : sideNext W k₀ = C'.sideTour C'.sideBeta 1 := by
     unfold sideNext
@@ -190,22 +194,21 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
     rw [show (g' + s' + 7) % W'.n = 6 by
         rw [hn', show g' + s' + 7 = 6 + (2 * C'.m + 7) by omega, Nat.add_mod_right,
           Nat.mod_eq_of_lt (by omega)],
-      Nat.mod_eq_of_lt (show 6 + 1 < W'.n by rw [hn']; omega)]
+      Nat.mod_eq_of_lt (show 6 + 1 < W'.n by rwo [hn'])]
     exact C'.sideWalk_vtx_tour _ (by omega)
-  have hcut : (chainModel C).IsCut S' k₀ :=
-    topglue_cut J hP S₁ S₂ hP' hkt hktm hvert hk₀n hprev hpt hnext
+  have hcut  := topglue_cut J hP S₁ S₂ hP' hkt hktm hvert hk₀n hprev hpt hnext
   have hk₀K : (k₀ : ℝ) ∈ bdryK J S' := hK_c _ hk₀n hcut
   by_cases hD : dOf W.n g p < s'
-  · refine ⟨g, s', ⟨hg, by rw [hn]; omega, hstart, hk₀K, ?_⟩, ?_, ?_⟩
-    · exact agree_bound J hP hC'P hSi hsg hend hshared hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA1
+  · refine ⟨g, s', ⟨hg, by rwo [hn], hstart, hk₀K, ?_⟩, ?_, ?_⟩
+    · exact agree_bound J hP hC'P hSi hsg hend hshared hg hg' (by rwo [hn]) (by rwo [hn']) hA1
     · rw [hoffp]; positivity
     · rw [hoffp]
       have : (dOf W.n g p : ℝ) + 1 ≤ s' := by exact_mod_cast hD
       linarith
   · push Not at hD
-    refine ⟨k₀, ℓ - s', ⟨hk₀n, by rw [hn]; omega, hk₀K, ?_, ?_⟩, ?_, ?_⟩
-    · rw [hk₀, Nat.mod_add_mod, show g + s' + (ℓ - s') = g + ℓ by omega]; exact hend_key
-    · exact agree_bound J hP hC'P hSi hsg hend hshared hk₀n (Nat.mod_lt _ (by omega)) (by rw [hn]; omega) (by rw [hn']; omega) hA2
+    refine ⟨k₀, ℓ - s', ⟨hk₀n, by rwo [hn], hk₀K, ?_, ?_⟩, ?_, ?_⟩
+    · rwx [hk₀, Nat.mod_add_mod, show g + s' + (ℓ - s') = g + ℓ by omega]
+    · exact agree_bound J hP hC'P hSi hsg hend hshared hk₀n (Nat.mod_lt _ (by omega)) (by rwo [hn]) (by rwo [hn']) hA2
     · rw [hk₀, off_shift hg hp hD ht.le ht1]; positivity
     · rw [hk₀, off_shift hg hp hD ht.le ht1]
       have h1 : dOf W.n g p - s' + 1 ≤ ℓ - s' := by omega
@@ -280,21 +283,21 @@ theorem cover (hP : J.P.Simple) {Q : Polygon} {S₁ S₂ : Set (Set Point)}
   rw [hwm] at hrel
   rcases cover_arith h1 h2 hτlt hrel (show i < 2 * (J.m₁ + J.m₂) by omega) with hin | hin
   · refine side_pieces J hP S₁ S₂ (C' := J.left) rfl (J₀ := J.m₁ + 2 * J.m₂) (J₀' := J.m₁)
-      (ℓ := 2 * J.m₁) (fun e he => tourV_left J he) ?_ ?_ (by simp) (by rw [hwm]; omega)
+      (ℓ := 2 * J.m₁) (fun e he => tourV_left J he) ?_ ?_ (by simp) (by rwo [hwm])
       (left_box_eq J) (kt := J.left.topIdx) (by simp [topIdxs])
-      (by have := J.left.topIdx_le; simp only [Merge.Junction.left_m] at this; rw [hwm]; omega)
+      (by have := J.left.topIdx_le; simp only [Merge.Junction.left_m] at this; rwo [hwm])
       rfl hS₁ hsg₁ (fun c hc => hend c (Or.inl hc)) hp ht ht1 ?_
-    · rw [tourV_left J (by omega), tourV_left_zero]; rfl
-    · rw [tourV_left J le_rfl, tourV_left_end]; rfl
-    · rw [hn, hwm]; exact hin
+    · rwr [tourV_left J (by omega), tourV_left_zero]
+    · rwr [tourV_left J le_rfl, tourV_left_end]
+    · rwx [hn, hwm]
   · refine side_pieces J hP S₁ S₂ (C' := J.right) rfl (J₀ := J.m₁) (J₀' := 0)
-      (ℓ := 2 * J.m₂) (fun e he => tourV_right J he) ?_ ?_ (by simp) (by rw [hwm]; omega)
+      (ℓ := 2 * J.m₂) (fun e he => tourV_right J he) ?_ ?_ (by simp) (by rwo [hwm])
       (right_box_eq J) (kt := J.m₁ + J.right.topIdx) (by simp [topIdxs])
-      (by have := J.right.topIdx_le; simp only [Merge.Junction.right_m] at this; rw [hwm]; omega)
+      (by have := J.right.topIdx_le; simp only [Merge.Junction.right_m] at this; rwo [hwm])
       (Merge.Junction.whole_vertex_add J _) hS₂ hsg₂ (fun c hc => hend c (Or.inr hc)) hp ht ht1 ?_
-    · rw [tourV_right J (by omega), tourV_right_zero]; rfl
-    · rw [tourV_right J le_rfl, tourV_right_end]; rfl
-    · rw [hn, hwm]; exact hin
+    · rwr [tourV_right J (by omega), tourV_right_zero]
+    · rwr [tourV_right J le_rfl, tourV_right_end]
+    · rwx [hn, hwm]
 
 /-! ## The weight bound -/
 
@@ -354,9 +357,9 @@ theorem arc_bound (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
     · have hA : M.arcWt a k ≤ 1 := (M.arcWt_mono fun x hx =>
           sideInArc_after_cut hkab hqab hq2 hx).trans
         (arcWt_le_one_of_within M (k := k - 1) hq2
-          (by rw [Nat.cast_sub (by omega)]; push_cast; linarith)
-          (by rw [Nat.cast_sub (by omega)]; push_cast; linarith))
-      have hB : M.arcWt k b ≤ γ := hsub k b
+          (by rw [Nat.cast_sub (by omega)]; pcl)
+          (by rw [Nat.cast_sub (by omega)]; pcl))
+      have hB  := hsub k b
         (fun x hx => hfree x (sideInArc_sub_right hkab hx))
         (fun k' hk' hv' hx hi' => by
           rw [honly k' hk' hv' hi'] at hx; exact not_sideInArc_start _ _ hx)

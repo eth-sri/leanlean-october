@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.SweepIoSpec2
 public import Chazelle.Core.SweepEvOrgM
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep RAM (WP-D), answers: the cost of the query loop
@@ -30,7 +32,7 @@ theorem qPt_end {J : Merge.Junction} {P : Polygon} {N₂ : NF} (hN : IsNF (chain
   have hget : (sweepEndQ N₂.chords ++ L₁).getD j (0, 0, 0) =
       (let r := N₂.chords.getD (j / 2) ⟨0, 0, 0, 0, 0⟩
        if j % 2 = 0 then (r.lp, r.h + 1, 1) else (r.rp, r.h + 1, 0)) := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_append_left (by rw [hlen]; exact hj)]
+    rw [List.getD_eq_getElem?_getD, List.getElem?_append_left (by rwx [hlen])]
     simp only [sweepEndQ, List.getElem?_map, List.getElem?_range (show j < 2 * N₂.chords.length
       from hj), Option.map_some, Option.getD_some]
   unfold qPt
@@ -50,7 +52,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
       (fun j => i = 1 ∧ BruteQ J N₂ j (qPt J P i L j))).card ≤ 5 := by
   by_cases hi : i = 1
   swap
-  · rw [Finset.filter_false_of_mem (fun j _ h => hi h.1)]; simp
+  · rws [Finset.filter_false_of_mem (fun j _ h => hi h.1)]
   obtain ⟨L₁, rfl, hL₁⟩ := hend hi
   subst hi
   have hlen : (sweepEndQ N₂.chords ++ L₁).length = 2 * N₂.nChords + L₁.length := by
@@ -70,7 +72,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
       · exact Or.inl ⟨hjK, hjL⟩
       · push Not at hjK
         refine Or.inr ⟨hjK, ?_⟩
-        rw [← qPt_end hN L₁ hjK]; exact hb
+        rwx [← qPt_end hN L₁ hjK]
   have h2 : ((Finset.range K).filter (fun j => endOrigin J (Qof P) N₂ j = J.right.top)).card ≤ 2 := by
     have := hT P J N₂ hG hP hN
     refine le_trans (le_of_eq ?_) this
@@ -82,7 +84,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
     _ ≤ (Finset.Ico K (K + L₁.length)).card +
         ((Finset.range K).filter (fun j => endOrigin J (Qof P) N₂ j = J.right.top)).card :=
       Finset.card_union_le _ _
-    _ ≤ 5 := by rw [Nat.card_Ico]; omega
+    _ ≤ 5 := by rwo [Nat.card_Ico]
 
 open Classical in
 /-- **The sum of the query costs.** -/

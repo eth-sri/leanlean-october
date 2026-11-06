@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Chain.Chord
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The union of two adjacent subchains (the setting of Chazelle §3)
@@ -185,7 +187,7 @@ theorem hitSet_eq_rayHitSet (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ :
     C.hitSet v σ = rayHitSet C.radius C.set v σ := by
   ext t
   simp only [Chain.hitSet, rayHitSet, mem_ofPred_eq, mem_compl_iff]
-  rw [not_mem_dom_iff C (by rw [rayPt_snd]; exact hv)]
+  rw [not_mem_dom_iff C (by rwx [rayPt_snd])]
 
 /-- The first-hit parameter of a chain ignores the slit below the top. -/
 theorem hitParam_eq_rayHit (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ : ℝ) :
@@ -202,14 +204,14 @@ theorem vertex_inj (C : Chain) (hP : C.P.Simple) {a b : ℕ} (ha : a ≤ C.m) (h
     (h : C.vertex a = C.vertex b) : a = b := by
   have hm := C.m_lt
   have h1 := simple_vtx_inj hP (C.edgeIdx_lt a) (C.edgeIdx_lt b) h
-  have h2 : a ≡ b [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h1
+  have h2  := Nat.ModEq.add_left_cancel' C.s h1
   unfold Nat.ModEq at h2
   rwa [Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)] at h2
 
 /-- Distinct chain edges have distinct indices in the polygon. -/
 theorem edgeIdx_inj (C : Chain) {a b : ℕ} (ha : a < C.P.n) (hb : b < C.P.n)
     (h : C.edgeIdx a = C.edgeIdx b) : a = b := by
-  have h2 : a ≡ b [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h
+  have h2  := Nat.ModEq.add_left_cancel' C.s h
   unfold Nat.ModEq at h2
   rwa [Nat.mod_eq_of_lt ha, Nat.mod_eq_of_lt hb] at h2
 
@@ -326,13 +328,13 @@ theorem whole_set : J.whole.set = J.left.set ∪ J.right.set := by
     by_cases hk1 : k < J.m₁
     · exact Or.inl ⟨k, hk1, hp⟩
     · right
-      refine ⟨k - J.m₁, by rw [right_m]; omega, ?_⟩
+      refine ⟨k - J.m₁, by rwo [right_m], ?_⟩
       have hk' : k = J.m₁ + (k - J.m₁) := by omega
       rw [hk', whole_chainEdge_add] at hp
       exact hp
   · rintro (⟨k, hk, hp⟩ | ⟨j, hj, hp⟩)
-    · exact ⟨k, by rw [whole_m]; rw [left_m] at hk; omega, hp⟩
-    · refine ⟨J.m₁ + j, by rw [whole_m]; rw [right_m] at hj; omega, ?_⟩
+    · exact ⟨k, by rw [whole_m]; rwo [left_m] at hk, hp⟩
+    · refine ⟨J.m₁ + j, by rw [whole_m]; rwo [right_m] at hj, ?_⟩
       rw [whole_chainEdge_add]
       exact hp
 
@@ -353,12 +355,12 @@ theorem shared_mem_right : J.shared ∈ J.right.set := by
 
 /-- The top of `C₁` is not above the top of `C`. -/
 theorem left_top_le : J.left.top.2 ≤ J.whole.top.2 :=
-  J.whole.vertex_snd_le_top (j := J.left.topIdx) (by rw [whole_m]; have := J.left.topIdx_le; rw [left_m] at this; omega)
+  J.whole.vertex_snd_le_top (j := J.left.topIdx) (by rw [whole_m]; have := J.left.topIdx_le; rwo [left_m] at this)
 
 /-- The top of `C₂` is not above the top of `C`. -/
 theorem right_top_le : J.right.top.2 ≤ J.whole.top.2 := by
   have h := J.whole.vertex_snd_le_top (j := J.m₁ + J.right.topIdx)
-    (by rw [whole_m]; have := J.right.topIdx_le; rw [right_m] at this; omega)
+    (by rw [whole_m]; have := J.right.topIdx_le; rwo [right_m] at this)
   rw [whole_vertex_add] at h
   exact h
 
@@ -369,9 +371,9 @@ theorem left_inter_right (hP : J.P.Simple) : J.left.set ∩ J.right.set = {J.sha
     rw [left_m] at hk
     rw [right_m] at hj
     have hn := J.add_le
-    have hpk' : p ∈ J.whole.chainEdge k := hpk
-    have hpj' : p ∈ J.whole.chainEdge (J.m₁ + j) := by rw [whole_chainEdge_add]; exact hpj
-    have hwP : J.whole.P.Simple := hP
+    have hpk'  := hpk
+    have hpj' : p ∈ J.whole.chainEdge (J.m₁ + j) := by rwx [whole_chainEdge_add]
+    have hwP  := hP
     obtain ⟨h1, h2⟩ := mem_chainEdge_inter J.whole hwP (a := k) (b := J.m₁ + j)
       (by show k < J.P.n; omega) (by show J.m₁ + j < J.P.n; omega) (by omega) hpk' hpj'
     have hinj : ∀ a b, a ≤ J.m₁ + J.m₂ → b ≤ J.m₁ + J.m₂ → J.whole.vertex a = J.whole.vertex b →
@@ -392,9 +394,9 @@ theorem right_vertex_not_mem_left (hP : J.P.Simple) {j : ℕ} (hj0 : 0 < j) (hj 
     J.right.vertex j ∉ J.left.set := by
   intro h
   have hmem : J.right.vertex j ∈ J.left.set ∩ J.right.set :=
-    ⟨h, J.right.vertex_mem_set (by rw [right_m]; omega)⟩
+    ⟨h, J.right.vertex_mem_set (by rwo [right_m])⟩
   rw [J.left_inter_right hP, mem_singleton_iff, ← right_vertex_zero] at hmem
-  have := vertex_inj J.right hP (a := j) (b := 0) (by rw [right_m]; omega)
+  have := vertex_inj J.right hP (a := j) (b := 0) (by rwo [right_m])
     (Nat.zero_le _) hmem
   omega
 

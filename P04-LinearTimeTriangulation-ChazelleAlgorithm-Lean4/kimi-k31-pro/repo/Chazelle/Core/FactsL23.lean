@@ -4,6 +4,9 @@ public import Chazelle.Core.FactsArcs
 public import Chazelle.Chain.Granular
 public import Chazelle.Merge.Conformal
 public import Mathlib.Data.Set.Finite.Lemmas
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-B: Lemma 2.3 (region count) for the good models
@@ -214,7 +217,7 @@ theorem two_cuts (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hne :
   obtain ⟨c, hc⟩ := hne
   obtain ⟨a, b, hab, -, -, -, ⟨⟨pa, ta, hA, hAa⟩, -⟩, ⟨⟨pb, tb, hB, hBb⟩, -⟩⟩ := hM.ends c (hF hc)
   exact ⟨pa + ta, pb + tb, ⟨c, hc, pa, ta, hA, rfl⟩, ⟨c, hc, pb, tb, hB, rfl⟩,
-    key_ne_of_pt_ne hA hB (by rw [hAa, hBb]; exact hab)⟩
+    key_ne_of_pt_ne hA hB (by rwx [hAa, hBb])⟩
 
 /-- Positions just after a key `p + t` of `[0, n)` are inside the walk edge `p`. -/
 theorem exists_pos_after {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
@@ -261,7 +264,7 @@ theorem arc_of_gap (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
     have hsame := cyc_same hy hin (hfree _ · ⟨c, hc, pa, ta, hA, rfl⟩)
       (hfree _ · ⟨c, hc, pb, tb, hB, rfl⟩) (key_ne_of_pt_ne hA hB hAB)
     exact (iff_not_self (hiff.trans (not_congr hsame.symm))).elim
-  rw [heq]; exact hfU
+  rwx [heq]
 
 /-- **The arc around a non-cut key**: a non-cut key of `[0, n)` of a nonempty family lies inside
 an arc of some region. -/
@@ -343,7 +346,7 @@ theorem merged_regions {F : Set (Set Point)} (hsys : ChordSystem M.D F) {c : Set
     have hXeqW : X = W := by
       rcases Chazelle.Chain.regionsIn_eq_or_disjoint hXS hW with h | h
       · exact h
-      · exact absurd (h.le_bot ⟨hx, hXW hx⟩) (fun h => h)
+      · exact absurd (h.le_bot ⟨hx, hXW hx⟩) (id)
     obtain ⟨u, hu⟩ := Chazelle.Chain.regionsIn_nonempty hU
     have huX : u ∈ X := hXeqW ▸ hUW hu
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hXS hR with h | h
@@ -434,8 +437,8 @@ theorem chord_from (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ} 
       (∀ s ∈ Ioo (0 : ℝ) 1, lerp (sidePt M.W p t) e' s ∈ M.D) ∧ e' ∉ M.D := by
   obtain ⟨a, b, hab, hcab, hy, hopen, ⟨⟨pa, ta, hAa, hAa'⟩, -⟩, ⟨⟨pb, tb, hBb, hBb'⟩, -⟩⟩ :=
     hM.ends c hc
-  have haD : a ∉ M.D := hAa' ▸ hM.trace pa hAa.1 ta hAa.2.1 hAa.2.2.1.le
-  have hbD : b ∉ M.D := hBb' ▸ hM.trace pb hBb.1 tb hBb.2.1 hBb.2.2.1.le
+  have haD  := hAa' ▸ hM.trace pa hAa.1 ta hAa.2.1 hAa.2.2.1.le
+  have hbD  := hBb' ▸ hM.trace pb hBb.1 tb hBb.2.1 hBb.2.2.1.le
   have hA' := hA
   rw [hcab] at hA'
   rcases hM.attach_endpoint hopen hA' with h | h
@@ -474,8 +477,8 @@ theorem ncard_chords_at_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
     have e1 : f' = lerp (sidePt M.W p 0) f ((f'.1 - (sidePt M.W p 0).1) /
         (f.1 - (sidePt M.W p 0).1)) := by
       apply point_ext
-      · simp only [lerp_fst]; field_simp; ring
-      · simp only [lerp_snd]; rw [hf, hf']; ring
+      · simp only [lerp_fst]; fsr
+      · simp only [lerp_snd]; rwring [hf, hf']
     rw [e1]
     apply hop
     rcases hbtw with ⟨h1, h2⟩ | ⟨h1, h2⟩
@@ -509,7 +512,7 @@ theorem ncard_chords_at_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
     rw [hce₁, hce₂, heq]
   calc {c | c ∈ F ∧ SideAttach M.W c p 0}.ncard ≤ (Set.univ : Set Bool).ncard :=
         ncard_le_ncard_of_injOn dir (fun _ _ => mem_univ _) hinj
-    _ = 2 := by rw [ncard_univ, Nat.card_eq_fintype_card]; rfl
+    _ = 2 := by rwr [ncard_univ, Nat.card_eq_fintype_card]
 
 /-! ## The node weights and their sums -/
 
@@ -564,7 +567,7 @@ theorem sum_exitVerts_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
   have hp4 : ∀ p, (R.filter fun U => p ∈ exitVerts M F U).card ≤ 4 := by
     intro p
     set Cp := {c | c ∈ F ∧ SideAttach M.W c p 0} with hCp
-    have hCp2 : Cp.ncard ≤ 2 := hM.ncard_chords_at_le hF hfin p
+    have hCp2  := hM.ncard_chords_at_le hF hfin p
     have hCpf : Cp.Finite := hfin.subset fun c hc => hc.1
     -- the two regions touched by each chord
     have htwo : ∀ c ∈ F, ∃ R₁ R₂ : Set Point,
@@ -589,7 +592,7 @@ theorem sum_exitVerts_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
           ncard_le_ncard hsub ((hCpf.prod Set.finite_univ).image _)
       _ ≤ (Cp ×ˢ (Set.univ : Set Bool)).ncard := ncard_image_le (hCpf.prod Set.finite_univ)
       _ = Cp.ncard * (Set.univ : Set Bool).ncard := ncard_prod
-      _ ≤ 2 * 2 := Nat.mul_le_mul hCp2 (by rw [ncard_univ, Nat.card_eq_fintype_card]; rfl)
+      _ ≤ 2 * 2 := Nat.mul_le_mul hCp2 (by rwr [ncard_univ, Nat.card_eq_fintype_card])
       _ = 4 := rfl
   calc ∑ U ∈ R, (exitVerts M F U).ncard
       = ∑ U ∈ R, ∑ p ∈ Finset.range M.W.n, if p ∈ exitVerts M F U then 1 else 0 := by
@@ -662,7 +665,7 @@ theorem lemma23_walk (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
     have hW'r : W' ∈ M.regions (F \ {c}) := ⟨x₀, hufree hx₀, rfl⟩
     have huW : (u : Set Point) ⊆ W' :=
       (Chazelle.Chain.regionsIn_isPreconnected hu).subset_connectedComponentIn hx₀ hufree
-    have hlow' : M.deg F u < 3 ∨ M.deg F v < 3 := by rw [← hdegG, ← hdegG]; exact hlow
+    have hlow' : M.deg F u < 3 ∨ M.deg F v < 3 := by rwx [← hdegG, ← hdegG]
     have hγ := hgran.2 c hc u hu v hv hne' hcu hcv hlow' W' hW'r huW
     have hwt := hM.weight_merged_le hF hfin hc hu hv hne' hcu hcv hW'r huW
     have hE : (chordVerts M c).ncard ≤ (exitVerts M F u).ncard :=
@@ -708,7 +711,7 @@ theorem goodModel_walk (M : Model) (h : GoodModel M) :
         omega
       rw [this, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
       omega
-    refine ⟨by rw [hn, hsize]; omega, 6, by rw [hn]; omega, ?_⟩
+    refine ⟨by rwo [hn, hsize], 6, by rwo [hn], ?_⟩
     change 6 ≤ 6 ∧ 6 < 2 * C.m + 6
     omega
   · have hs := (FactsInterior.interiorWalk_spec hQ).1
@@ -719,7 +722,7 @@ theorem goodModel_walk (M : Model) (h : GoodModel M) :
           Set.Iio (interiorModel Q).W.n := by
         ext p; simp only [Set.mem_ofPred_eq, Set.mem_Iio]; exact ⟨fun h => h.1, fun h => ⟨h, trivial⟩⟩
       rw [this, Set.ncard_eq_toFinset_card', Set.toFinset_Iio, Nat.card_Iio]
-    refine ⟨by rw [hsize]; omega, 0, by change 0 < (interiorWalk Q).n; omega, trivial⟩
+    refine ⟨by rwo [hsize], 0, by change 0 < (interiorWalk Q).n; omega, trivial⟩
 
 /-- **WP-B: Lemma 2.3** (region count) for every good model, admissible family, degree cap `D`:
 `|F| (γ + 1) ≤ 140 (D + 2) (size + 1)`. -/

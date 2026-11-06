@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Jordan.Parity
 public import Mathlib.Data.Nat.ModEq
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Rotating the vertex list of a polygon
@@ -34,10 +36,10 @@ theorem exists_rot_index {n : ℕ} (hn : 0 < n) (s j : ℕ) (hj : j < n) :
     ∃ i, i < n ∧ (s + i) % n = j := by
   refine ⟨(j + n - s % n) % n, Nat.mod_lt _ hn, ?_⟩
   rw [Nat.add_mod_mod]
-  have h1 : s % n < n := Nat.mod_lt s hn
-  have h2 : n * (s / n) + s % n = s := Nat.div_add_mod s n
+  have h1  := Nat.mod_lt s hn
+  have h2  := Nat.div_add_mod s n
   have h3 : s + (j + n - s % n) = n * (s / n + 1) + j := by
-    rw [Nat.mul_succ]; omega
+    rwo [Nat.mul_succ]
   rw [h3, Nat.mul_add_mod, Nat.mod_eq_of_lt hj]
 
 /-- Injectivity of `i ↦ (s + i) % n` on `range n`. -/
@@ -58,7 +60,6 @@ theorem sum_range_rot {M : Type} [AddCommMonoid M] (f : ℕ → M) (s n : ℕ) :
     rw [← ih, ← sum_range_succ_mod (fun i => f ((s + i) % n)) n]
     apply Finset.sum_congr rfl
     intro i _
-    show f ((s + 1 + i) % n) = f ((s + (i + 1) % n) % n)
     rw [Nat.add_mod_mod, Nat.add_assoc, Nat.add_comm 1 i]
 
 /-! ### The rotated polygon -/
@@ -115,13 +116,13 @@ theorem commonEndpoints_rotate {i j : ℕ} (hi : i < P.n) (hj : j < P.n) :
 /-- The boundary of the rotated polygon is the boundary of `P`. -/
 theorem boundary_rotate : (P.rotate s).boundary = P.boundary := by
   ext p
-  simp only [Polygon.boundary, Set.mem_ofPred_eq, n_rotate]
+  simp [Polygon.boundary, Set.mem_ofPred_eq, n_rotate]
   constructor
   · rintro ⟨i, hi, hp⟩
     exact ⟨(s + i) % P.n, Nat.mod_lt _ (by omega), (edge_rotate P s hi) ▸ hp⟩
   · rintro ⟨j, hj, hp⟩
     obtain ⟨i, hi, hij⟩ := exists_rot_index (by omega) s j hj
-    exact ⟨i, hi, by rw [edge_rotate P s hi, hij]; exact hp⟩
+    exact ⟨i, hi, by rwx [edge_rotate P s hi, hij]⟩
 
 /-- The filled region of the rotated polygon is the filled region of `P`. -/
 theorem filled_rotate : (P.rotate s).filled = P.filled := by
@@ -158,7 +159,7 @@ theorem validTriangle_rotate {t : Polygon.Triangle}
 /-- Rotation preserves simplicity. -/
 theorem simple_rotate (hP : P.Simple) : (P.rotate s).Simple := by
   obtain ⟨h3, hinj, hedge⟩ := hP
-  refine ⟨by rw [n_rotate]; exact h3, ?_, ?_⟩
+  refine ⟨by rwx [n_rotate], ?_, ?_⟩
   · intro i j hi hj hij
     rw [n_rotate] at hi hj
     rw [vtx_rotate P s hi, vtx_rotate P s hj] at hij

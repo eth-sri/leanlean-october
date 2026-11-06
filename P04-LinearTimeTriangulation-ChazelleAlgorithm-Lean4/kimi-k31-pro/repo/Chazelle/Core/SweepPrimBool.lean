@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SignKernel
+public import Chazelle.SimpTactics
 
 /-!
 # Sweep RAM primitives (WP-D2), part 1: Boolean formulas over bit registers
@@ -188,7 +189,7 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
         simp [upd]
     obtain ⟨c₂, k₂, e₂, hk₂, v₂⟩ := e₂
     have ex : Exec P W ((not f).compile d) c c₂ (k₁ + k₂) := .seq e₁ e₂
-    refine ⟨c₂, _, ex, by simp only [size]; omega, ?_, exec_frameB ex (wr_compile (not f) d)⟩
+    refine ⟨c₂, _, ex, by sio only [size], ?_, exec_frameB ex (wr_compile (not f) d)⟩
     rw [v₂, v₁]
     simp only [eval]
     cases f.eval _ <;> rfl
@@ -197,7 +198,7 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
       intro r h; exact h) hv.1)
     have hw₁ := e₁.wb_right
     have keep : ∀ r, r < d → c₁.nreg r = c.nreg r := fun r hr =>
-      f₁.1 r (by simp only [wset, decide_eq_false_iff_not]; omega)
+      f₁.1 r (by sio only [wset, decide_eq_false_iff_not])
     obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := compile_exec (P := P) hW g (d + 1) c₁ hw₁ (VarsOK.mono (by
       intro r h; exact ⟨by omega, by rw [keep r h.1]; exact h.2⟩) hv.2)
     have hw₂ := e₂.wb_right
@@ -214,7 +215,7 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
         simp [upd]
     obtain ⟨c₃, k₃, e₃, hk₃, v₃⟩ := e₃
     have ex : Exec P W ((and f g).compile d) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-    refine ⟨c₃, _, ex, by simp only [size]; omega, ?_, exec_frameB ex (wr_compile (and f g) d)⟩
+    refine ⟨c₃, _, ex, by sio only [size], ?_, exec_frameB ex (wr_compile (and f g) d)⟩
     rw [v₃, d₂, v₁, v₂]
     have hg : (g.eval fun r => decide (c₁.nreg r = 1)) = g.eval fun r => decide (c.nreg r = 1) :=
       eval_congr (p := fun r => r < d ∧ c.nreg r ≤ 1) (fun r hr => by rw [keep r hr.1]) hv.2
@@ -226,7 +227,7 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
       intro r h; exact h) hv.1)
     have hw₁ := e₁.wb_right
     have keep : ∀ r, r < d → c₁.nreg r = c.nreg r := fun r hr =>
-      f₁.1 r (by simp only [wset, decide_eq_false_iff_not]; omega)
+      f₁.1 r (by sio only [wset, decide_eq_false_iff_not])
     obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := compile_exec (P := P) hW g (d + 1) c₁ hw₁ (VarsOK.mono (by
       intro r h; exact ⟨by omega, by rw [keep r h.1]; exact h.2⟩) hv.2)
     have hw₂ := e₂.wb_right
@@ -243,7 +244,7 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
         simp [upd]
     obtain ⟨c₃, k₃, e₃, hk₃, v₃⟩ := e₃
     have ex : Exec P W ((or f g).compile d) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-    refine ⟨c₃, _, ex, by simp only [size]; omega, ?_, exec_frameB ex (wr_compile (or f g) d)⟩
+    refine ⟨c₃, _, ex, by sio only [size], ?_, exec_frameB ex (wr_compile (or f g) d)⟩
     rw [v₃, d₂, v₁, v₂]
     have hg : (g.eval fun r => decide (c₁.nreg r = 1)) = g.eval fun r => decide (c.nreg r = 1) :=
       eval_congr (p := fun r => r < d ∧ c.nreg r ≤ 1) (fun r hr => by rw [keep r hr.1]) hv.2

@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.NFBuildArcW
+public import Chazelle.Rwx
 
 /-!
 # WP-C (BuildNF), RAM part 12: the state of the main pass, mathematically
@@ -147,7 +148,7 @@ theorem Input.chordRec_new {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × �
         up := if E.getD m 0 % 2 < 1 then topR E m else E.getD m 0 / 2 + 1,
         dn := if E.getD m 0 % 2 < 1 then E.getD m 0 / 2 + 1 else topR E m } := by
   have hidx : (E.map (· / 2)).idxOf (E.getD m 0 / 2) = m := by
-    have := idxOf_new (w := cw E) (m := m) (by simp [cw, hm]) (by rw [cw_getElem hm]; exact hn)
+    have := idxOf_new (w := cw E) (m := m) (by simp [cw, hm]) (by rwx [cw_getElem hm])
     rw [cw_getElem hm] at this
     exact this
   rw [h.chordRec_eq hx, hidx]

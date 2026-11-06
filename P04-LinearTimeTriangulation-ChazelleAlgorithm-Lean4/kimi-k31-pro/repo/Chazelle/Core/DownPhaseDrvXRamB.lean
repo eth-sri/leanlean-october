@@ -1,6 +1,12 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXRamA
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
+public import Chazelle.ConfigTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down phase, extraction (D6), RAM part 2: register-step helpers, host points
@@ -63,9 +69,9 @@ theorem x_if {a b : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {f g : ℕ → ℕ}
       NRegs d d' (if d.nreg a < d.nreg b then f else g) := by
   by_cases h : d.nreg a < d.nreg b
   · obtain ⟨d', k, ex, hk, hn⟩ := ht h
-    exact ⟨d', k + 1, .ifLtN_true h ex, by omega, by rw [ite_eq_left h]; exact hn⟩
+    exact ⟨d', k + 1, .ifLtN_true h ex, by omega, by rwx [ite_eq_left h]⟩
   · obtain ⟨d', k, ex, hk, hn⟩ := he h
-    exact ⟨d', k + 2, .ifLtN_false h ex, by omega, by rw [ite_eq_right h]; exact hn⟩
+    exact ⟨d', k + 2, .ifLtN_false h ex, by omega, by rwx [ite_eq_right h]⟩
 
 theorem x_ifR {a b r : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {v₁ v₂ : ℕ}
     (ht : d.nreg a < d.nreg b → ∃ d' k, Exec P W t d d' k ∧ k ≤ K ∧ NRegs d d' (upd d.nreg r v₁))
@@ -147,7 +153,7 @@ theorem run_pts_length (n a ℓ : ℕ) : ((HostItem.run a ℓ).pts n).length = �
 theorem run_pts_getD (n a ℓ : ℕ) {t : ℕ} (ht : t ≤ ℓ) :
     ((HostItem.run a ℓ).pts n).getD t (.vtx 0) = .vtx ((a + t) % n) := by
   simp only [HostItem.pts]
-  rw [List.getD_eq_getElem _ _ (by simp; omega)]
+  rw [List.getD_eq_getElem _ _ (by sio)]
   simp
 
 /-! ## `lookS` -/
@@ -198,7 +204,6 @@ section look
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 theorem lookRun_exec (d : Config) (hw : WordsBounded W d) {n a ℓ cum : ℕ}
     (h20 : d.nreg 217020 = n) (h27 : d.nreg 217027 = 1) (h93 : d.nreg 217093 = cum)
     (h95 : d.nreg 217095 = a) (h96 : d.nreg 217096 = ℓ) (ha : a < n) (hℓ : ℓ < n)
@@ -221,41 +226,41 @@ theorem lookRun_exec (d : Config) (hw : WordsBounded W d) {n a ℓ cum : ℕ}
       refine spec_skip hw ?_
       exec_block
       · omega
-      · config_simp; omega
-      · refine ⟨by omega, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
+      · cso
+      · refine ⟨by omega, by cso, fun _ => ⟨by config_simp, by config_simp,
           by config_simp⟩, fun h _ => absurd c1 (by omega)⟩
     · refine spec_ifLtN_false c1 ?_
       refine spec_seq ?_
       exec_block
       by_cases c2 : ℓ < d.nreg 217090 - cum
-      · refine spec_ifLtN_true (by config_simp; omega) ?_
+      · refine spec_ifLtN_true (by cso) ?_
         refine spec_skip ‹_› ?_
         exec_block
-        · config_simp; omega
-        · config_simp; omega
-        · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
+        · cso
+        · cso
+        · refine ⟨by omega, by cso, fun h => absurd h (by omega),
             fun _ h => absurd c2 (by omega)⟩
-      · refine spec_ifLtN_false (by config_simp; omega) ?_
+      · refine spec_ifLtN_false (by cso) ?_
         refine spec_seq ?_
         exec_block
         · omega
-        · config_simp; omega
+        · cso
         by_cases c3 : a + (d.nreg 217090 - cum) < n
-        · refine spec_ifLtN_true (by config_simp; omega) ?_
+        · refine spec_ifLtN_true (by cso) ?_
           refine spec_skip ‹_› ?_
           exec_block
-          · config_simp; omega
-          · config_simp; omega
-          · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
+          · cso
+          · cso
+          · refine ⟨by omega, by cso, fun h => absurd h (by omega),
               fun _ _ => ?_⟩
             simp only [Enc]
             config_simp
-            rw [Nat.mod_eq_of_lt c3]; omega
-        · refine spec_ifLtN_false (by config_simp; omega) ?_
+            rwo [Nat.mod_eq_of_lt c3]
+        · refine spec_ifLtN_false (by cso) ?_
           exec_block
-          · config_simp; omega
-          · config_simp; omega
-          · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
+          · cso
+          · cso
+          · refine ⟨by omega, by cso, fun h => absurd h (by omega),
               fun _ _ => ?_⟩
             simp only [Enc]
             config_simp
@@ -263,7 +268,6 @@ theorem lookRun_exec (d : Config) (hw : WordsBounded W d) {n a ℓ cum : ℕ}
             omega
   exact ⟨d', k, ex, hk, h1, h2, h3, exec_frameB ex wr_lookRun⟩
 
-set_option maxHeartbeats 1000000 in
 theorem lookPt_exec (d : Config) (hw : WordsBounded W d) {cum : ℕ}
     (h27 : d.nreg 217027 = 1) (h93 : d.nreg 217093 = cum) (hcW : cum + 1 ≤ W) :
     ∃ d' k, Exec P W lookPt d d' k ∧ k ≤ 8 ∧ d'.nreg 217093 = cum + 1 ∧
@@ -284,7 +288,7 @@ theorem lookPt_exec (d : Config) (hw : WordsBounded W d) {cum : ℕ}
       refine spec_skip hw ?_
       exec_block
       · omega
-      · refine ⟨by omega, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
+      · refine ⟨by omega, by cso, fun _ => ⟨by config_simp, by config_simp,
           by config_simp⟩, fun h => absurd c1 (by omega)⟩
     · refine spec_ifLtN_false c1 ?_
       by_cases c2 : d.nreg 217093 < d.nreg 217090
@@ -292,16 +296,15 @@ theorem lookPt_exec (d : Config) (hw : WordsBounded W d) {cum : ℕ}
         refine spec_skip hw ?_
         exec_block
         · omega
-        · refine ⟨by omega, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
+        · refine ⟨by omega, by cso, fun _ => ⟨by config_simp, by config_simp,
             by config_simp⟩, fun h => absurd c2 (by omega)⟩
       · refine spec_ifLtN_false c2 ?_
         exec_block
-        · config_simp; omega
-        · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
+        · cso
+        · refine ⟨by omega, by cso, fun h => absurd h (by omega),
             fun _ => ⟨by config_simp, by config_simp, by config_simp⟩⟩
   exact ⟨d', k, ex, hk, h1, h2, h3, exec_frameB ex wr_lookPt⟩
 
-set_option maxHeartbeats 2000000 in
 /-- **One host item of `lookS`.** -/
 theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it : HostItem}
     (h20 : d.nreg 217020 = n) (h27 : d.nreg 217027 = 1) (h92 : d.nreg 217092 = p)
@@ -325,8 +328,8 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
       d1.nmem = d.nmem ∧ d1.rreg = d.rreg ∧ d1.rmem = d.rmem ∧ d1.output = d.output := by
     unfold lookRd
     exec_block
-    · config_simp; omega
-    · config_simp; omega
+    · cso
+    · cso
     · refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, rfl⟩ <;> config_simp
       · rw [h92]
       · rw [h92, h27]
@@ -357,36 +360,36 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
       rw [run_pts_length] at hcW ⊢
       obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := lookRun_exec (P := P) d1 hw1 b20 b27 b93
         (by rw [a95, i1]) (by rw [a96, i2]) ha hℓ hnW (by omega)
-      refine ⟨d2, k2 + 1, .ifLtN_true (by rw [a94, i0, b27]; omega) e2, by omega, r93,
+      refine ⟨d2, k2 + 1, .ifLtN_true (by rwo [a94, i0, b27]) e2, by omega, r93,
         fun h => ?_, fun h h' => ?_, rf⟩
-      · obtain ⟨x, y, z⟩ := r1 (by rw [b90]; exact h)
+      · obtain ⟨x, y, z⟩ := r1 (by rwx [b90])
         exact ⟨x.trans b70, y.trans b71, z.trans b72⟩
       · rw [run_pts_getD n a ℓ (by omega)]
-        have := r2 (by rw [b90]; exact h) (by rw [b90]; omega)
+        have := r2 (by rwx [b90]) (by rwo [b90])
         rwa [b90] at this
     · obtain ⟨i0, i1⟩ := hit
       obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := lookPt_exec (P := P) d1 hw1 b27 b93
-        (by simp [HostItem.pts] at hcW; omega)
-      refine ⟨d2, k2 + 2, .ifLtN_false (by rw [a94, i0, b27]; omega) e2, by omega,
+        (by sio [HostItem.pts] at hcW)
+      refine ⟨d2, k2 + 2, .ifLtN_false (by rwo [a94, i0, b27]) e2, by omega,
         by rw [r93]; simp [HostItem.pts], fun h => ?_, fun h h' => ?_, rf⟩
-      · obtain ⟨x, y, z⟩ := r1 (by rw [b90]; omega)
+      · obtain ⟨x, y, z⟩ := r1 (by rwo [b90])
         exact ⟨x.trans b70, y.trans b71, z.trans b72⟩
       · simp only [HostItem.pts, List.length_singleton] at h'
         have hk : d.nreg 217090 = cum := by omega
-        obtain ⟨x, y, -⟩ := r2 (by rw [b90]; exact hk)
+        obtain ⟨x, y, -⟩ := r2 (by rwx [b90])
         rw [hk, Nat.sub_self]
         simp only [HostItem.pts, List.getD_cons_zero, Enc]
         exact ⟨by rw [x, a94, i0], by rw [y, a95, i1]⟩
     · obtain ⟨i0, i1, i2⟩ := hit
       obtain ⟨d2, k2, e2, hk2, r93, r1, r2, rf⟩ := lookPt_exec (P := P) d1 hw1 b27 b93
-        (by simp [HostItem.pts] at hcW; omega)
-      refine ⟨d2, k2 + 2, .ifLtN_false (by rw [a94, i0, b27]; omega) e2, by omega,
+        (by sio [HostItem.pts] at hcW)
+      refine ⟨d2, k2 + 2, .ifLtN_false (by rwo [a94, i0, b27]) e2, by omega,
         by rw [r93]; simp [HostItem.pts], fun h => ?_, fun h h' => ?_, rf⟩
-      · obtain ⟨x, y, z⟩ := r1 (by rw [b90]; omega)
+      · obtain ⟨x, y, z⟩ := r1 (by rwo [b90])
         exact ⟨x.trans b70, y.trans b71, z.trans b72⟩
       · simp only [HostItem.pts, List.length_singleton] at h'
         have hk : d.nreg 217090 = cum := by omega
-        obtain ⟨x, y, z⟩ := r2 (by rw [b90]; exact hk)
+        obtain ⟨x, y, z⟩ := r2 (by rwx [b90])
         rw [hk, Nat.sub_self]
         simp only [HostItem.pts, List.getD_cons_zero, Enc]
         exact ⟨by rw [x, a94, i0], by rw [y, a95, i1], by rw [z, a96, i2]⟩
@@ -404,9 +407,9 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
     unfold lookNx
     exec_block
     · omega
-    · config_simp; omega
-    · config_simp; omega
-    · config_simp; omega
+    · cso
+    · cso
+    · cso
     · refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩ <;> config_simp
       · omega
       · omega
@@ -423,7 +426,6 @@ theorem lookBody_exec (d : Config) (hw : WordsBounded W d) {n p cum : ℕ} {it :
   · exact (henc h h').congr (f3 _ (by decide) (by decide)) (f3 _ (by decide) (by decide))
       (f3 _ (by decide) (by decide))
 
-set_option maxHeartbeats 2000000 in
 /-- **`lookS`: host point `k = 217090`** of a well-formed host of at most `64` items. -/
 theorem lookS_exec (d : Config) (hw : WordsBounded W d) {n HB : ℕ} {H : Host}
     (hH : HostAt d.nmem HB H) (hwf : HostWF n H) (hlen : H.length ≤ 64)
@@ -464,17 +466,17 @@ theorem lookS_exec (d : Config) (hw : WordsBounded W d) {n HB : ℕ} {H : Host}
       have hlen' : (Host.pts n (H.take (j + 1))).length ≤ (H.pts n).length := by
         have := List.take_append_drop (j + 1) H
         conv_rhs => rw [← this]
-        unfold Host.pts; rw [List.flatMap_append, List.length_append]; omega
+        uro Host.pts [List.flatMap_append, List.length_append]
       rw [pts_take_succ hj, List.length_append] at hlen'
       obtain ⟨c', kb, eb, hkb, b91, b92, b93, bkeep, benc, bf⟩ := lookBody_exec (P := P) c hwc
         (n := n) (p := HB + 1 + 3 * j) (cum := (Host.pts n (H.take j)).length)
         (it := H.getD j (.run 0 0)) (by rw [cf.1 _ (by decide), h20])
         (by rw [cf.1 _ (by decide), h27]) c92 c93
         (by rw [cf.2.2.1]; exact itemAt_of_hostAt hH hj) (itemWF_of_hostWF hwf hj)
-        (by omega) (by omega) (by rw [c91]; omega) hnW
+        (by omega) (by omega) (by rwo [c91]) hnW
       have c90 : c.nreg 217090 = k := cf.1 _ (by decide)
       refine ⟨c', kb, eb, ⟨eb.wb_right, by rw [b91, c91], by rw [bf.1 _ (by decide), c34],
-        by rw [b92]; ring, by rw [b93, pts_take_succ hj, List.length_append], fun hk => ?_,
+        by rwring [b92], by rw [b93, pts_take_succ hj, List.length_append], fun hk => ?_,
         cf.trans bf⟩, hkb⟩
       rw [c90] at bkeep benc
       by_cases hk0 : k < (Host.pts n (H.take j)).length
@@ -483,7 +485,7 @@ theorem lookS_exec (d : Config) (hw : WordsBounded W d) {n HB : ℕ} {H : Host}
       · rw [pts_take_succ hj, List.length_append] at hk
         have := benc (by omega) (by omega)
         rw [hpt_take (n := n) (H := H) (j := j + 1) (k := k)
-            (by rw [pts_take_succ hj, List.length_append]; omega),
+            (by rwo [pts_take_succ hj, List.length_append]),
           pts_take_succ hj, List.getD_append_right _ _ _ _ (by omega)]
         exact this)
     hI0 (Nat.zero_le _)

@@ -37,7 +37,7 @@ theorem splB2Cost_le {bk : ℕ → ℕ} {n A Mb : ℕ} (hA : ∀ q, q < n → bk
     Finset.sum_le_sum fun b _ => bsCost_le (hM b)
   have e : ∑ b ∈ Finset.range (A + 1), (11047 * bcnt bk n b * (Nat.clog 2 Mb + 1) + 11054) =
       11047 * (∑ b ∈ Finset.range (A + 1), bcnt bk n b) * (Nat.clog 2 Mb + 1) + 11054 * (A + 1) := by
-    simp only [Finset.sum_add_distrib, Finset.sum_const, Finset.card_range, smul_eq_mul,
+    simp [Finset.sum_add_distrib, Finset.sum_const, Finset.card_range, smul_eq_mul,
       ← Finset.sum_mul, ← Finset.mul_sum]
     ring
   have hb : ∑ b ∈ Finset.range (A + 1), bcnt bk n b = n := bstart_all hA

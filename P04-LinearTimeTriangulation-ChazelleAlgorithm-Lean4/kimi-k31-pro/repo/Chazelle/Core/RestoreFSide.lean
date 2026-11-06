@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.RestoreFBits
 public import Chazelle.Core.RestoreFRef
 public import Chazelle.Core.ShotListFrame
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 18: the side of the witness and the child
@@ -48,7 +51,7 @@ theorem cmpA_fs₀ (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
       BitIs c' (r + 1) ((chainModel Cα).key (Qof E.P) ⟨c.nreg d, c.nreg e⟩ <
         (chainModel Cα).key (Qof E.P) ⟨c.nreg a, c.nreg b⟩) ∧
       ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → q ≠ r → q ≠ r + 1 → c'.nreg q = c.nreg q) := by
-  obtain ⟨hC', hwf'⟩ := chain_keep hwf hC (fun a ha => hI.hm a ha) hI.hA
+  obtain ⟨hC', hwf'⟩ := chain_keep hwf hC (hI.hm) hI.hA
   exact cmpA_fs hE hB hI hr ha hb hd he hka hkb hkd hke hwf' hC' hWm hx hy hroom
 
 /-- The side computations and the choice. -/
@@ -86,7 +89,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
       (¬ (sideInArc kA kB kU ↔ (kS = kA ∨ sideInArc kA kB kS)) →
         c'.nreg 81150 = c.nreg 81119) ∧
       ∀ q, 80000 ≤ q → q < 90000 → ¬ ScW q → c'.nreg q = c.nreg q) := by
-  have nk : ∀ q, 81000 ≤ q → q < 82000 → ¬ KeyW q := fun q h1 h2 h => by unfold KeyW at h; omega
+  have nk : ∀ q, 81000 ≤ q → q < 82000 → ¬ KeyW q := fun q h1 h2 h => by ufo KeyW at h
   have ir : ∀ q, 81000 ≤ q → q < 82000 → InR q := fun q h1 h2 => ⟨by omega, by omega⟩
   -- the registers read
   let Rd : ℕ → Prop := fun q => q = 81108 ∨ q = 81109 ∨ q = 81118 ∨ q = 81119 ∨ q = 81133 ∨
@@ -116,7 +119,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
       rw [h 81108 (by simp [Rd]), h 81109 (by simp [Rd])]; exact hpS
   have mD := fun (c' : Config) (h : ∀ q, Rd q → c'.nreg q = c.nreg q) =>
     show c'.nreg 81133 = c.nreg 81133 from h 81133 (by simp [Rd])
-  have hAW : c.nreg ALLOC + scK ≤ E.W := hroom
+  have hAW  := hroom
   unfold scK at hAW
   -- the comparisons
   have r0 : ∀ q, Rd q → c.nreg q = c.nreg q := fun _ _ => rfl
@@ -126,16 +129,16 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num)) hwf hC hWm
     (mA c r0) (mB c r0) (by omega)) (fun c₁ hI₁ hA₁ ⟨b0, _, f₁⟩ => ?_)).mono
-    (by unfold scK; omega) (fun _ h => h)
+    (by ufo scK) (fun _ => id)
   have p1 := keep c c₁ 81100 f₁ (by norm_num) (by norm_num)
   refine (FRS.seq (K₂ := 3 * 11010 + 40) (cmpA_fs₀ hE hB hI₁ (r := 81102) ⟨by norm_num, by norm_num⟩
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
-    (by rw [mD c₁ p1]; exact hwf) (by rw [mD c₁ p1]; exact hC) hWm
+    (by rwx [mD c₁ p1]) (by rwx [mD c₁ p1]) hWm
     (mA c₁ p1) (mU c₁ p1 hI₁) (by omega)) (fun c₂ hI₂ hA₂ ⟨b2, _, f₂⟩ => ?_)).mono
-    (by omega) (fun _ h => h)
+    (by omega) (fun _ => id)
   have p2 : ∀ q, Rd q → c₂.nreg q = c.nreg q := fun q hq => by
     rw [keep c₁ c₂ 81102 f₂ (by norm_num) (by norm_num) q hq,
       p1 q hq]
@@ -144,9 +147,9 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
-    (by rw [mD c₂ p2]; exact hwf) (by rw [mD c₂ p2]; exact hC) hWm
+    (by rwx [mD c₂ p2]) (by rwx [mD c₂ p2]) hWm
     (mU c₂ p2 hI₂) (mB c₂ p2) (by omega)) (fun c₃ hI₃ hA₃ ⟨b4, _, f₃⟩ => ?_)).mono
-    (by omega) (fun _ h => h)
+    (by omega) (fun _ => id)
   have p3 : ∀ q, Rd q → c₃.nreg q = c.nreg q := fun q hq => by
     rw [keep c₂ c₃ 81104 f₃ (by norm_num) (by norm_num) q hq,
       p2 q hq]
@@ -159,7 +162,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (nk _ (by norm_num) (by norm_num)) (by norm_num) (by norm_num))
   refine (FRS.seq (K₂ := 2 * 11010 + 32) (side3_fs hE hB hI₃ (r := 81106) ⟨by norm_num, by norm_num⟩
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) b0₃ b2₃ b4)
-    (fun c₄ hI₄ hA₄ ⟨b6, f₄⟩ => ?_)).mono (by omega) (fun _ h => h)
+    (fun c₄ hI₄ hA₄ ⟨b6, f₄⟩ => ?_)).mono (by omega) (fun _ => id)
   have p4 : ∀ q, Rd q → c₄.nreg q = c.nreg q := fun q hq => by
     rw [keepb c₃ c₄ 81106 f₄ (by norm_num) (by norm_num) (by norm_num) (by norm_num) q hq, p3 q hq]
   refine (FRS.seq (K₂ := 11010 + 32) (cmpA_fs₀ hE hB hI₄ (r := 81110) ⟨by norm_num, by norm_num⟩
@@ -167,9 +170,9 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
-    (by rw [mD c₄ p4]; exact hwf) (by rw [mD c₄ p4]; exact hC) hWm
+    (by rwx [mD c₄ p4]) (by rwx [mD c₄ p4]) hWm
     (mA c₄ p4) (mS c₄ p4) (by omega)) (fun c₅ hI₅ hA₅ ⟨b10, b11, f₅⟩ => ?_)).mono
-    (by omega) (fun _ h => h)
+    (by omega) (fun _ => id)
   have p5 : ∀ q, Rd q → c₅.nreg q = c.nreg q := fun q hq => by
     rw [keep c₄ c₅ 81110 f₅ (by norm_num) (by norm_num) q hq,
       p4 q hq]
@@ -178,9 +181,9 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     (ir _ (by norm_num) (by norm_num)) (ir _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
     (nk _ (by norm_num) (by norm_num)) (nk _ (by norm_num) (by norm_num))
-    (by rw [mD c₅ p5]; exact hwf) (by rw [mD c₅ p5]; exact hC) hWm
+    (by rwx [mD c₅ p5]) (by rwx [mD c₅ p5]) hWm
     (mS c₅ p5) (mB c₅ p5) (by omega)) (fun c₆ hI₆ hA₆ ⟨b12, _, f₆⟩ => ?_)).mono
-    (by omega) (fun _ h => h)
+    (by omega) (fun _ => id)
   have p6 : ∀ q, Rd q → c₆.nreg q = c.nreg q := fun q hq => by
     rw [keep c₅ c₆ 81112 f₆ (by norm_num) (by norm_num) q hq,
       p5 q hq]
@@ -194,16 +197,16 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
   have b11₆ : BitIs c₆ 81111 _ := b11.of_eq (g6 _ (by norm_num) (by norm_num))
   refine (FRS.seq (K₂ := 19) (side3_fs hE hB hI₆ (r := 81107) ⟨by norm_num, by norm_num⟩
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) b0₆ b10₆ b12)
-    (fun c₇ hI₇ hA₇ ⟨b7, f₇⟩ => ?_)).mono (by omega) (fun _ h => h)
+    (fun c₇ hI₇ hA₇ ⟨b7, f₇⟩ => ?_)).mono (by omega) (fun _ => id)
   refine (FRS.seq (K₂ := 14) (eqor_fs hE hB hI₇ (r := 81107) ⟨by norm_num, by norm_num⟩ b7
     (b10₆.of_eq (f₇ _ (by norm_num))) (b11₆.of_eq (f₇ _ (by norm_num))))
-    (fun c₈ hI₈ hA₈ ⟨b7', f₈⟩ => ?_)).mono (by omega) (fun _ h => h)
+    (fun c₈ hI₈ hA₈ ⟨b7', f₈⟩ => ?_)).mono (by omega) (fun _ => id)
   have b6₈ : BitIs c₈ 81106 _ := b6.of_eq (by
     rw [f₈ _ (by norm_num), f₇ _ (by norm_num), g6 _ (by norm_num) (by norm_num),
       g5 _ (by norm_num) (by norm_num)])
   refine (FRS.seq (K₂ := 3) (xnorR_fs hE hB hI₈ (r := 81114) ⟨by norm_num, by norm_num⟩
     (by norm_num) (by norm_num) b6₈ b7') (fun c₉ hI₉ hA₉ ⟨b14, f₉⟩ => ?_)).mono (by omega)
-    (fun _ h => h)
+    (fun _ => id)
   have p9 : ∀ q, Rd q → c₉.nreg q = c.nreg q := fun q hq => by
     rw [keepb c₈ c₉ 81114 f₉ (by norm_num) (by norm_num) (by norm_num) (by norm_num) q hq,
       keepb c₇ c₈ 81107 f₈ (by norm_num) (by norm_num) (by norm_num) (by norm_num) q hq,
@@ -263,7 +266,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     rw [h q (fun e => hq (Or.inr (Or.inr e))), F9 q a b (fun e => hq (Or.inl e))
       (fun e => hq (Or.inr (Or.inl e)))]
   by_cases a1 : c₉.nreg 81011 < c₉.nreg 81114
-  · have hb : c₉.nreg 81114 = 1 := by have := b14.1; rw [k0₉] at a1; omega
+  · have hb : c₉.nreg 81114 = 1 := by have := b14.1; rwo [k0₉] at a1
     have ok : okB E.W c₉.nmem [.copyN 81150 81118] c₉.nreg := by
       simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), trivial⟩
     refine (FRS.ifT a1 (FRS.block hB _ hI₉ ok)).mono (by simp) (fun c' h' => ?_)
@@ -272,7 +275,7 @@ theorem sideCh_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
       rw [e']; simp [regB, regI, upd]; exact p9 81118 (by simp [Rd])
     exact ⟨fun _ => v, fun h => absurd (hiff.1 hb) h,
       fin c' (fun q hq => by rw [e']; simp [regB, regI, upd, hq])⟩
-  · have hb : c₉.nreg 81114 = 0 := by rw [k0₉] at a1; omega
+  · have hb : c₉.nreg 81114 = 0 := by rwo [k0₉] at a1
     have ok : okB E.W c₉.nmem [.copyN 81150 81119] c₉.nreg := by
       simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), trivial⟩
     refine (FRS.ifF a1 (FRS.block hB _ hI₉ ok)).mono (by simp) (fun c' h' => ?_)

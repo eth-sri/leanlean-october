@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.RestoreFHalf
 public import Chazelle.Core.RestoreTRead
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 14: loading the chord of a node
@@ -63,29 +67,29 @@ theorem chordLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (h
   have ok0 : okB E.W c.nmem [.copyN 81120 81150] c.nreg := by
     simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), trivial⟩
   refine (FRS.seq (K₂ := halfK E.P.n x + 15) (FRS.block hB _ hI ok0)
-    (fun c₁ hI₁ hA₁ h₁ => ?_)).mono (by simp [clK]; omega) (fun _ h => h)
+    (fun c₁ hI₁ hA₁ h₁ => ?_)).mono (by sio [clK]) (fun _ => id)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.copyN 81120 81150] c.nreg q := fun q => by rw [h₁]
   have v20 : c₁.nreg 81120 = x := by rw [e₁]; simp [regB, regI, upd, hx]
   have f₁ : ∀ q, q ≠ 81120 → c₁.nreg q = c.nreg q := fun q hq => by
     rw [e₁]; simp [regB, regI, upd, hq]
   have m₁ : c₁.nmem = c.nmem := by rw [h₁]
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
-  refine (FRS.seq (K₂ := 15) (halfS_fs hE hB hI₁ v20 (by rw [hA₁']; unfold clK at hroom; omega))
-    (fun c₂ hI₂ hA₂ ⟨k2, _, f₂⟩ => ?_)).mono (by omega) (fun _ h => h)
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by ufo ALLOC)
+  refine (FRS.seq (K₂ := 15) (halfS_fs hE hB hI₁ v20 (by ruo [hA₁'] clK at hroom))
+    (fun c₂ hI₂ hA₂ ⟨k2, _, f₂⟩ => ?_)).mono (by omega) (fun _ => id)
   have hN₂ : NFWithin c₂.nmem (c₂.nreg 81134) (c₀.nreg ALLOC) N := by
     rw [f₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
       f₁ _ (by norm_num)]
-    exact Robust.transport hN (fun a ha => hI₂.hm a ha)
+    exact Robust.transport hN (hI₂.hm)
   have hNA := hN₂.nfAt
   obtain ⟨-, hch, -⟩ := nf_bounds hN₂
-  have hk' : x / 2 < N.chords.length := hk
+  have hk'  := hk
   obtain ⟨hB7, -⟩ := nf_bounds hN₂
   have hcb := hch _ hk
-  have hA0 : c₀.nreg ALLOC ≤ c₂.nreg ALLOC := hI₂.hA
-  have hAW : c₂.nreg ALLOC ≤ E.W := hI₂.hw.1 ALLOC
+  have hA0  := hI₂.hA
+  have hAW  := hI₂.hw.1 ALLOC
   obtain ⟨r1, r2, r3, r4, r5⟩ := hNA.2.2.2.2.2.1 _ hk'
-  have k3 : c₂.nreg 81014 = 3 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k3]
-  have k1 : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k1]
+  have k3 : c₂.nreg 81014 = 3 := by rw [hI₂.hin _ (by ufo FFix), hE.k3]
+  have k1 : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by ufo FFix), hE.k1]
   set k := x / 2
   have hm5 : k + k + (k + k) + k + c₂.nmem (c₂.nreg 81134 + 3) + 4 < E.W := by omega
   have hh' : c₂.nmem (k + k + (k + k) + k + c₂.nmem (c₂.nreg 81134 + 3)) + 1 ≤ E.W := by
@@ -103,7 +107,7 @@ theorem chordLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (h
   have e₃ : ∀ q, c₃.nreg q = regB c₂.nmem chordL c₂.nreg q := fun q => by rw [h₃]
   obtain ⟨u52, u53, u54, u56, u55, uf⟩ := chordL_eff c₂.nmem c₂.nreg k3 k1
   have ea : c₂.nreg 81121 + c₂.nreg 81121 + (c₂.nreg 81121 + c₂.nreg 81121) + c₂.nreg 81121 +
-      c₂.nmem (c₂.nreg 81134 + 3) = c₂.nmem (c₂.nreg 81134 + 3) + 5 * k := by rw [k2]; ring
+      c₂.nmem (c₂.nreg 81134 + 3) = c₂.nmem (c₂.nreg 81134 + 3) + 5 * k := by rwring [k2]
   rw [ea] at u52 u53 u54 u56 u55
   refine ⟨by rw [e₃, uf _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num), k2], by rw [e₃, u52, r1], by rw [e₃, u53, r2],

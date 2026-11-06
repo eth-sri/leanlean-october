@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.SweepEvStepL5
+public import Chazelle.Rwx
 
 /-!
 # The sweep (WP-D), stage 3: at most four labels at a key (Task L1)
@@ -48,7 +49,7 @@ theorem stp_mem_stopLabs {m : ℕ → ℕ} {A : ℕ} {ax : List (ℕ × ℕ × �
   unfold stopLabs
   rw [a0, a1]
   split_ifs with h
-  · simp only [List.mem_map, List.mem_range]
+  · simp [List.mem_map, List.mem_range]
     constructor
     · rintro ⟨t, ht, rfl⟩
       refine ⟨h, ?_⟩
@@ -59,7 +60,7 @@ theorem stp_mem_stopLabs {m : ℕ → ℕ} {A : ℕ} {ax : List (ℕ × ℕ × �
     · rintro ⟨-, ⟨h1, rfl⟩ | ⟨h1, rfl⟩⟩
       · exact ⟨0, by omega, by rw [add_zero, a2]⟩
       · exact ⟨1, by omega, by rw [show A + 5 * i + 2 + 1 = A + 5 * i + 3 by ring, a3]⟩
-  · simp only [List.not_mem_nil, false_iff, not_and]
+  · simp [List.not_mem_nil, false_iff, not_and]
     intro h'; exact absurd h' h
 
 theorem stp_stopLabs_len (m : ℕ → ℕ) (A i : ℕ) : (stopLabs m A i).length ≤ 2 := by
@@ -109,8 +110,8 @@ theorem stop_unique {i i' : ℕ} (hi : i < rs.length) (hi' : i' < rs.length)
   obtain ⟨hi₀', -, -, -, e1', e2'⟩ := S.skip_at h1' h2'
   have hnd := S.hD.2.2.2.2.1.2.2.2
   have hl : (stopsOf J (Qof P) N₂ rs).length = rs.length := by simp [stopsOf]
-  exact (List.Nodup.getElem_inj_iff hnd (hi := by rw [hl]; exact hi)
-    (hj := by rw [hl]; exact hi')).1 (by
+  exact (List.Nodup.getElem_inj_iff hnd (hi := by rwx [hl])
+    (hj := by rwx [hl])).1 (by
       rw [stopsOf_getElem hi, stopsOf_getElem hi', e2, e2', e1, e1', heq])
 
 /-- **A chord determines the query of its accepted triples.** -/
@@ -148,7 +149,7 @@ theorem labsOf_card (e : Set Point) :
         _ ≤ 2 := stp_stopLabs_len _ _ _
     · have hemp : labsOf P J N₂ c co c' A rs e = ∅ := by
         ext x
-        simp only [mem_empty_iff_false, iff_false]
+        simp [mem_empty_iff_false, iff_false]
         rintro (⟨t, ht, hto, hte, -⟩ | ⟨i, hi, f1, f2, f3, -⟩)
         · exact (S.triple_at ht hto).2.2.1 (hte ▸ hst)
         · exact hex ⟨i, hi, f1, f2, f3⟩
@@ -169,7 +170,7 @@ theorem labsOf_card (e : Set Point) :
       exact (ncard_insert_le _ _).trans (by rw [ncard_singleton])
     · have hemp : labsOf P J N₂ c co c' A rs e = ∅ := by
         ext x
-        simp only [mem_empty_iff_false, iff_false]
+        simp [mem_empty_iff_false, iff_false]
         rintro (⟨t, ht, hto, hte, -⟩ | ⟨i, hi, f1, f2, f3, -⟩)
         · exact hex ⟨t, ht, hto, hte⟩
         · obtain ⟨hi₁, -, hs, -⟩ := S.skip_at f1 f2

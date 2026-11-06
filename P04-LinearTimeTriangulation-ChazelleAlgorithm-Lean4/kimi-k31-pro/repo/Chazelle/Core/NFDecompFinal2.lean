@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.NFDecompFinal
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Tree decomposition (WP-C), part 9: the decomposition is valid
@@ -15,7 +18,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
 
 section final2
 
@@ -82,23 +84,23 @@ theorem below_iff {r x : ℕ} (hr : r < R) (hx : ValidC R K pch σ x) :
             · exact ⟨0, by norm_num, (mem_sideSet' hK hRR h hch hisdn hI hna).2 ⟨hr, hc0⟩⟩
             · refine ⟨1, le_rfl, (mem_sideSet' hK hRR h hch hisdn hI hna).2 ⟨hr, ?_⟩⟩
               unfold OnSide at hc0 ⊢
-              simp only [one_ne_zero, iff_false, iff_true] at hc0 ⊢
+              simp [one_ne_zero, iff_false, iff_true] at hc0 ⊢
               tauto
           obtain ⟨v1, v2, v3⟩ := slot_facts hK hRR h hch hisdn hI hna b hs
           obtain ⟨w, hw1, hw2⟩ := other_side hK hRR h hch hisdn hI hna (s := s) b
           have hlt : (compOf gc (if s = 0 then σ.dlo k else σ.dhi k)).card < (compOf gc x).card := by
             rw [v2]
-            have hck : compOf gc x = gc k := by simp only [compOf, ite_eq_left a]; rfl
+            have hck : compOf gc x = gc k := by sirfl only [compOf, ite_eq_left a]
             rw [hck]
             apply Finset.card_lt_card
             refine Finset.ssubset_iff_subset_ne.2 ⟨Finset.inter_subset_left, fun e => ?_⟩
-            have : w ∈ gc k ∩ sideSet R prg pch isdn chOf s k := by rw [e]; exact hw1
+            have : w ∈ gc k ∩ sideSet R prg pch isdn chOf s k := by rwx [e]
             exact hw2 (Finset.mem_inter.1 this).2
           obtain ⟨i, hi⟩ := ih _ (by omega) v1 (by rw [v2]; exact Finset.mem_inter.2 ⟨hmk, hrs⟩)
           refine ⟨i + 1, ?_⟩
           rw [Function.iterate_succ_apply', hi, parentCode_eq hK hRR h hch hisdn hI hna v1, v3, hxk]
         · have hmx : r = x / 2 := by simpa [compOf, show x % 2 ≠ 0 by omega] using hm
-          exact ⟨0, by simp only [Function.iterate_zero, id]; omega⟩
+          exact ⟨0, by sio only [Function.iterate_zero, id]⟩
     exact key _ _ le_rfl hx hrx
 
 /-- Out of range leaves go straight to the root. -/
@@ -113,7 +115,7 @@ theorem chain_out {r : ℕ} (hr : R ≤ r) (i : ℕ) (hi : 1 ≤ i) :
   | succ i ih =>
     rw [Function.iterate_succ_apply']
     rcases Nat.eq_zero_or_pos i with rfl | hi'
-    · simp only [Function.iterate_zero, id]
+    · simp [Function.iterate_zero, id]
       unfold NF.parentCode
       rw [ite_eq_right (by omega), show (2 * r + 1) / 2 = r by omega,
         withDec_lpar_out hK hRR h hch hisdn hI hna hr]
@@ -126,7 +128,7 @@ theorem side_iff {k r : ℕ} (hk : k < K) (s : ℕ) (_hs : s ≤ 1) :
   obtain ⟨c1, c2, c3⟩ := hch k hk
   have hadj : (N').AdjAvoid k = AdjAv K (fun i => (N.chord i).up) (fun i => (N.chord i).dn) k := by
     funext a b
-    simp only [NF.AdjAvoid, AdjAv, withDec, NF.nChords, NF.chord] at hK ⊢
+    simp [NF.AdjAvoid, AdjAv, withDec, NF.nChords, NF.chord] at hK ⊢
     rw [hK]
   have hchord : (N').chord k = N.chord k := rfl
   rw [hadj, hchord, mem_sideSet' hK hRR h hch hisdn hI hna]
@@ -170,10 +172,10 @@ theorem chord_reach {e : ℕ} (he : e < K) :
     obtain ⟨hr, -⟩ := final_cut hK hRR h hch hisdn hI hna he
     obtain ⟨-, -, -, -, -, h6⟩ := hI.i1 e he hr
     have hv : ValidC R K pch σ (2 * e) :=
-      Or.inl ⟨by omega, by rw [show 2 * e / 2 = e by omega]; exact he, by
-        rw [show 2 * e / 2 = e by omega]; exact hr⟩
+      Or.inl ⟨by omega, by rwx [show 2 * e / 2 = e by omega], by
+        rwx [show 2 * e / 2 = e by omega]⟩
     rcases h6 with ⟨-, a2, a3, -⟩ | ⟨p, hp, -, a1, a2, -⟩
-    · rw [← hn, a2, a3]; rfl
+    · rwr [← hn, a2, a3]
     · rw [← hn, ← a2, Function.iterate_succ_apply, parentCode_eq hK hRR h hch hisdn hI hna hv]
       have : pcode σ (2 * e) = 2 * p := by
         unfold pcode; rw [ite_eq_left (by omega), show 2 * e / 2 = e by omega, a1]
@@ -184,8 +186,8 @@ theorem chord_reach {e : ℕ} (he : e < K) :
 theorem isDecomp_final (hD : K = 0 ∨ 1 ≤ D) : IsDecomp (N') (decDepth D K) := by
   have hj := final_j hK hRR h hch hisdn hI hna
   obtain ⟨o1, o2, o3⟩ := hI.i8 hj
-  have hnc : (N').nChords = K := by simp only [NF.nChords, withDec] at hK ⊢; exact hK
-  have hnr : (N').nRegions = R := by simp only [NF.nRegions, withDec] at hRR ⊢; exact hRR
+  have hnc : (N').nChords = K := by simp [NF.nChords, withDec] at hK ⊢; exact hK
+  have hnr : (N').nRegions = R := by simp [NF.nRegions, withDec] at hRR ⊢; exact hRR
   have hrounds : rounds D K ≤ D * Nat.clog 2 (K + 1) := by
     rcases hD with h0 | h1
     · rw [h0, rounds_zero]; exact Nat.zero_le _
@@ -204,7 +206,7 @@ theorem isDecomp_final (hD : K = 0 ∨ 1 ≤ D) : IsDecomp (N') (decDepth D K) :
       refine ⟨fun ⟨i, hi⟩ => ?_, fun hh => absurd hh.1 (by omega)⟩
       exfalso
       rcases Nat.eq_zero_or_pos i with rfl | hi'
-      · simp only [Function.iterate_zero, id] at hi
+      · simp [Function.iterate_zero, id] at hi
         rcases valid_range hK hRR h hch hisdn hI hna hx with ⟨a, _⟩ | ⟨_, b⟩
         · omega
         · omega
@@ -240,29 +242,29 @@ theorem isDecomp_final (hD : K = 0 ∨ 1 ≤ D) : IsDecomp (N') (decDepth D K) :
       rw [mem_sideSet' hK hRR h hch hisdn hI hna] at hh
       exact absurd hh.1 hr
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · simp only [withDec, NF.nChords, List.length_map, List.length_range] at hK ⊢
+  · simp [withDec, NF.nChords, List.length_map, List.length_range] at hK ⊢
     exact hK.symm
-  · simp only [withDec, NF.nRegions, List.length_map, List.length_range] at hRR ⊢
+  · simp [withDec, NF.nRegions, List.length_map, List.length_range] at hRR ⊢
     exact hRR.symm
   · intro k hk
     rw [hnc] at hk
     rw [hlohi k hk]
     obtain ⟨v1, -, v3⟩ := slot_facts hK hRR h hch hisdn hI hna hk (s := 0) (by norm_num)
     obtain ⟨w1, -, w3⟩ := slot_facts hK hRR h hch hisdn hI hna hk (s := 1) (by norm_num)
-    simp only [ite_true, one_ne_zero, ite_false] at v1 v3 w1 w3
+    simp [ite_true, one_ne_zero, ite_false] at v1 v3 w1 w3
     exact ⟨by rw [parentCode_eq hK hRR h hch hisdn hI hna v1, v3],
       by rw [parentCode_eq hK hRR h hch hisdn hI hna w1, w3]⟩
   · intro k hk r hkr
     rw [hnc] at hk
     rw [hlohi k hk]
     have := hslot k hk 0 (by norm_num) r hkr
-    simp only [ite_true] at this
+    simp [ite_true] at this
     exact this
   · intro k hk r hkr
     rw [hnc] at hk
     rw [hlohi k hk]
     have := hslot k hk 1 le_rfl r hkr
-    simp only [one_ne_zero, ite_false] at this
+    simp [one_ne_zero, ite_false] at this
     exact this
   · intro r hr
     rw [hnr] at hr
@@ -292,7 +294,7 @@ theorem isDecomp_final (hD : K = 0 ∨ 1 ≤ D) : IsDecomp (N') (decDepth D K) :
           · rwa [show x / 2 = m by omega] at c
         obtain ⟨-, l2⟩ := hI.i5 m hmR htop (hna m hmR htop)
         rcases l2 with ⟨a1, a2, -⟩ | ⟨p, hp, hrp, a1, a2, -⟩
-        · exact ⟨0, by omega, by rw [hm, a2]; rfl⟩
+        · exact ⟨0, by omega, by rwr [hm, a2]⟩
         · refine ⟨cr p + 1, by omega, ?_⟩
           rw [Function.iterate_succ_apply, parentCode_eq hK hRR h hch hisdn hI hna hv]
           have : pcode σ x = 2 * p := by

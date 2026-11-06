@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.DownPhaseDrvRSplH
 public import Chazelle.Core.NFBuildCmpRam
+public import Chazelle.SimpTactics
 
 /-!
 # Down-phase restoration rounds (D8), part 4: the program
@@ -162,15 +163,15 @@ theorem wr_ldArc : wr BldArc ldArc = true := by decide
 theorem wr_decS : wr (fun r => decide (r = 216053)) decS = true := by decide
 
 theorem bldArc_scan (r : ℕ) (h : BldArc r = true) : Bscan r = true := by
-  simp only [BldArc, Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  sio only [BldArc, Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
 theorem b53_scan (r : ℕ) (h : decide (r = 216053) = true) : Bscan r = true := by
-  simp only [Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  sio only [Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢
 
 theorem bhalf_scan {dd dst : ℕ} (hdd : 42100 ≤ dd ∧ dd < 42110) (hdst : 42100 ≤ dst ∧ dst < 42110)
     (r : ℕ) (h : BuildRam.BhalfS dd dst r = true) : Bscan r = true := by
-  simp only [BuildRam.BhalfS, Bool.or_eq_true, decide_eq_true_eq] at h
-  simp only [Bscan, Bool.or_eq_true, decide_eq_true_eq]
+  simp [BuildRam.BhalfS, Bool.or_eq_true, decide_eq_true_eq] at h
+  simp [Bscan, Bool.or_eq_true, decide_eq_true_eq]
   rcases h with (h | h) | h
   · exact Or.inr h
   · subst h; exact Or.inl (Or.inr hdd)

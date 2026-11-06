@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.OraclePrepZipSp
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 13: the emission of the special pairs
@@ -44,7 +46,7 @@ theorem emit1_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     have hf := hn ho
     have ht : c.nreg 110290 < c.nreg 120011 := by rw [hf, h1]; exact Nat.zero_lt_one
     exact ⟨c, 1, .ifLtN_true ht (.skip hw), by omega, fun _ _ _ => rfl, rfl, rfl, rfl,
-      by rw [hc]; rfl, fun t ht => by simp at ht, fun _ _ => rfl⟩
+      by rwr [hc], fun t ht => by simp at ht, fun _ _ => rfl⟩
   | some z =>
     obtain ⟨hf, hv1, hv2⟩ := hs z ho
     have ht : ¬ c.nreg 110290 < c.nreg 120011 := by rw [hf, h1]; exact Nat.lt_irrefl 1
@@ -55,9 +57,9 @@ theorem emit1_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         c'.nmem = upd (upd c.nmem (R1 + c₀) z.1) (R2 + c₀) z.2 ∧ c'.rreg = c.rreg ∧
         c'.rmem = c.rmem ∧ c'.output = c.output := by
       exec_block
-      · rw [hR1, hc]; omega
-      · config_simp; rw [hR2, hc]; omega
-      · config_simp; rw [hc, h1]; omega
+      · rwo [hR1, hc]
+      · config_simp; rwo [hR2, hc]
+      · config_simp; rwo [hc, h1]
       · refine ⟨rfl, ?_, ?_, rfl, rfl, rfl⟩
         · config_simp; rw [hR2, hc, h1]
         · config_simp; rw [hR1, hc, hv1, hR2, hv2]
@@ -95,7 +97,7 @@ theorem emitG_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         (c.nreg 110299) (c.nreg 110214)).toList.length ≤ a) → c'.nmem a = c.nmem a) := by
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, n₁, s₁⟩ := normS_exec (P := P) hw h1 ha hb
   have R₁ : ∀ r, (r < 110290 ∨ 110292 < r) → r ≠ 110215 → c₁.nreg r = c.nreg r := fun r a b =>
-    f₁.1 r (by simp; omega)
+    f₁.1 r (by sio)
   -- the guard
   obtain ⟨g, hg⟩ : ∃ g, c.nreg 110245 = g := ⟨_, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, n₂, s₂, R₂⟩ : ∃ c₂ k₂, Exec P W (.ifLtN 120012 110245 .skip
@@ -115,7 +117,7 @@ theorem emitG_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         (fun _ => by config_simp), (fun z hz => by rw [ite_eq_left hg0] at hz; cases hz),
         (fun r hr => by config_simp; rw [upd_other _ _ _ hr]), rfl, rfl, rfl, rfl⟩
     · have ht : c₁.nreg 120012 < c₁.nreg 110245 := by
-        rw [R₁ _ (by omega) (by omega), R₁ _ (by omega) (by omega), h0, hg]; omega
+        rwo [R₁ _ (by omega) (by omega), R₁ _ (by omega) (by omega), h0, hg]
       refine ⟨_, _, .ifLtN_true ht (.skip w₁), by omega, fun hn => ?_, fun z hz => ?_,
         fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
       · rw [ite_eq_right hg0] at hn; exact n₁ hn
@@ -127,7 +129,7 @@ theorem emitG_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have g95 : c₂.nreg 110295 = c₀ := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hc]
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, rm₃, o₃, cnt₃, pr₃, mm₃⟩ := emit1_exec (P := P) e₂.wb_right g1 g93
     g94 g95 _ n₂ s₂ hR12 hRW
-  have hm₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have hm₁  := f₁.2.2.1
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, fun r a b c' d => ?_, ?_, ?_, ?_, cnt₃, pr₃,
     fun x hx => ?_⟩
   · rw [r₃ r a b, R₂.1 r (by omega), R₁ r d c']

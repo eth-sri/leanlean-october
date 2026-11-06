@@ -58,7 +58,7 @@ theorem PlanarMapAt.exists_arrays {m : ℕ → ℕ} {B μ E : ℕ} (h : PlanarMa
     ∃ (F : Type) (_ : Fintype F) (_ : DecidableEq F) (M : CombMap (Fin μ) F (Fin (2 * E))),
       M.Planar ∧ MapArrays m (m B) (m (B + 1)) (m (B + 2)) μ (2 * E) M := by
   obtain ⟨F, i1, i2, M, hM, hA⟩ := h
-  exact ⟨F, i1, i2, M, hM, fun d => hA d⟩
+  exact ⟨F, i1, i2, M, hM, hA⟩
 
 /-- **The rotation system of the input map** with a `first` array and flag arrays. -/
 def primalEnv (m : ℕ → ℕ) (bO bR bV bF bDB bVB μ N : ℕ) : Env :=
@@ -75,7 +75,7 @@ theorem primalEnv_ok [Fintype F] (h : MapArrays m bO bR bV μ N M)
     (primalEnv m bO bR bV bF bDB bVB μ N).OK := by
   refine ⟨fun d hd => ?_, fun d hd => ?_, fun d hd => ?_, fun d hd e he hde => ?_,
     fun d hd => ?_, fun d hd e he hde => ?_, fun u hu => ?_, fun u hu => ?_⟩
-  all_goals simp only [primalEnv] at *
+  all_goals simp [primalEnv] at *
   · rw [view_lt hd, h.opp hd]; exact (M.opp ⟨d, hd⟩).2
   · rw [view_lt hd, h.rot hd]; exact (M.rot ⟨d, hd⟩).2
   · rw [view_lt hd, h.vert hd]; exact (M.vert ⟨d, hd⟩).2
@@ -127,26 +127,26 @@ theorem reach_of_walk (h : MapArrays m bO bR bV μ N M) (hdb : ∀ d, d < N → 
         rw [hB] at h2
         have ho : m (bO + d) < N := by rw [h.opp hd]; exact (M.opp ⟨d, hd⟩).2
         refine ⟨d, hd, ?_, ?_, ?_, ?_, ?_⟩
-        · simp only [primalEnv, view_lt hd]; exact hdb d hd
-        · simp only [primalEnv, view_lt hd]; exact h1
-        · simp only [Env.head, primalEnv, view_lt hd, view_lt ho]; exact h2
-        · simp only [primalEnv, view_lt a.2]; exact ha
-        · simp only [primalEnv, view_lt b.2]; exact hb
+        · simp [primalEnv, view_lt hd]; exact hdb d hd
+        · simp [primalEnv, view_lt hd]; exact h1
+        · simp [Env.head, primalEnv, view_lt hd, view_lt ho]; exact h2
+        · simp [primalEnv, view_lt a.2]; exact ha
+        · simp [primalEnv, view_lt b.2]; exact hb
       · -- the opposite dart goes from `a` to `b`
         rw [← hN] at hd
         rw [hB2] at h1 h2
         rw [hB] at h2
         have ho : m (bO + d) < N := by rw [h.opp hd]; exact (M.opp ⟨d, hd⟩).2
         have hoo : m (bO + m (bO + d)) = d := by
-          rw [h.opp ho]; simp only [h.opp hd, Fin.eta, M.opp_opp]
+          rw [h.opp ho]; simp [h.opp hd, Fin.eta, M.opp_opp]
         refine ⟨m (bO + d), ho, ?_, ?_, ?_, ?_, ?_⟩
-        · simp only [primalEnv, view_lt ho]; exact hdb _ ho
-        · simp only [primalEnv, view_lt ho]; exact h2
+        · simp [primalEnv, view_lt ho]; exact hdb _ ho
+        · simp [primalEnv, view_lt ho]; exact h2
         · show view m bV N (view m bO N (m (bO + d))) = _
           rw [view_lt ho, hoo, view_lt hd]
           exact h1
-        · simp only [primalEnv, view_lt a.2]; exact ha
-        · simp only [primalEnv, view_lt b.2]; exact hb
+        · simp [primalEnv, view_lt a.2]; exact ha
+        · simp [primalEnv, view_lt b.2]; exact hb
     exact Relation.ReflTransGen.head hstep hrest
 
 end env

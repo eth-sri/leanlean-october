@@ -4,6 +4,7 @@ public import Chazelle.Core.SweepEvStopTasks
 public import Chazelle.Core.SweepIoBrute
 public import Chazelle.Core.SweepEvWinArcs
 public import Chazelle.Core.SweepEvInit4
+public import Chazelle.UnfoldTactics
 
 /-!
 # The sweep (WP-D), stage 2: the brute-force shot at `N₁` (`BruteTask`)
@@ -81,7 +82,7 @@ theorem stbPre_val (m f : ℕ → ℕ) :
 
 theorem stbPre_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m stbPre f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw (by ufo sw) (by ufo sw)
   simp only [stbPre, okB, okI]
   refine ⟨s 3990 (by norm_num) (by norm_num), s 3991 (by norm_num) (by norm_num),
     s 3992 (by norm_num) (by norm_num), s 3993 (by norm_num) (by norm_num),
@@ -114,7 +115,7 @@ theorem stbPost_val (m f : ℕ → ℕ) :
 
 theorem stbPost_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m stbPost f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw (by ufo sw) (by ufo sw)
   simp only [stbPost, okB, okI]
   refine ⟨s 4001 (by norm_num) (by norm_num), s 4002 (by norm_num) (by norm_num),
     s 4003 (by norm_num) (by norm_num), s 4004 (by norm_num) (by norm_num),
@@ -131,7 +132,7 @@ theorem stb_cost (A K Fg : ℕ) (hA : A ≤ 3 * K + 1) :
     Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) le_rfl
   have e : stbK * (K + 1) * (Fg + 1) =
       bruteK * (3 * (K + 1)) * (Fg + 1) + 100 * ((K + 1) * (Fg + 1)) := by
-    unfold stbK; ring
+    ufring stbK
   have h3 : 1 ≤ (K + 1) * (Fg + 1) := Nat.one_le_iff_ne_zero.2 (by positivity)
   omega
 

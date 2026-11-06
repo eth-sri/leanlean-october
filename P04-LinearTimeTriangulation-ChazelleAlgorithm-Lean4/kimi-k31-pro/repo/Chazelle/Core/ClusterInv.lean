@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ClusterStageA
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-I, part 45: inverting a permutation of `[0, n)`
@@ -44,7 +47,7 @@ theorem invStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
   set c1 := { c with nreg := upd c.nreg 130803 0 }
   have hf1 : PFr InvRG (fun a => bO ≤ a ∧ a < bO + n) c c1 :=
     PFr.nreg (PFr.refl c) (fun r hr => by
-      simp only [Machine.upd_apply]; unfold InvRG at hr; split_ifs <;> omega)
+      simp only [Machine.upd_apply]; unfold InvRG at hr; splao)
   obtain ⟨c', k, e, hk, hw', hi', hn', hf', hI'⟩ := forN (P := P) (W := W) (ri := 130803)
     (rn := 130802) (body := invBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130803 = j ∧ c'.nreg 130802 = n ∧
@@ -52,19 +55,19 @@ theorem invStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       ∀ i, i < j → c'.nmem (bO + c.nmem (bI + i)) = i)
     n 5 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c2 hj ⟨hw2, hi2, hn2, hf2, hm2⟩ => by
-      have r0 : ∀ r, ¬ InvRG r → c2.nreg r = c.nreg r := hf2.1
-      have rI := (r0 130800 (by unfold InvRG; omega)).trans hI
-      have rO := (r0 130801 (by unfold InvRG; omega)).trans hO
-      have r1 := (r0 130001 (by unfold InvRG; omega)).trans hone
+      have r0  := hf2.1
+      have rI := (r0 130800 (by ufo InvRG)).trans hI
+      have rO := (r0 130801 (by ufo InvRG)).trans hO
+      have r1 := (r0 130001 (by ufo InvRG)).trans hone
       have mI : c2.nmem (bI + j) = c.nmem (bI + j) := hf2.2.2.2.2 _ (by omega)
       have hv := hlt j hj
       unfold invBody
       exec_block
-      all_goals try (config_simp; simp only [rI, rO, r1, hi2, mI]; omega)
+      all_goals try (config_simp; sio only [rI, rO, r1, hi2, mI])
       refine ⟨le_refl _, ‹_›, by config_simp; rw [hi2, r1], by config_simp; exact hn2, ?_,
         fun i hi => ?_⟩
       · refine PFr.of_eq hf2 (fun r hr => ?_) (fun a ha => ?_)
-        · simp only [Machine.upd_apply]; unfold InvRG at hr; split_ifs <;> omega
+        · simp only [Machine.upd_apply]; unfold InvRG at hr; splao
         · simp only [rI, rO, hi2, mI]
           rw [Machine.upd_other _ _ _ (by omega)]
       · config_simp

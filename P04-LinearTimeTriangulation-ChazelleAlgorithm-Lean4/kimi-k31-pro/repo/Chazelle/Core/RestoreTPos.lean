@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.RestoreTKey
 public import Chazelle.Core.RestoreCompleteInt
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, the candidate test on the RAM, part 5: the positions the test compares
@@ -40,7 +42,7 @@ theorem chord_height_lt {C : Chain} (hP : C.P.Simple) {c : Set Point}
   have hm : (((a + b) / 2, y) : Point) ∈ (chainModel C).D :=
     hH.open_mem _ (by linarith [hH.lt]) (by linarith [hH.lt])
   have := (C.dom_subset_box hm).2
-  rw [hy]; exact this
+  rwx [hy]
 
 /-- **A position at which an admissible chord is attached** is a valid input of `offCmp`. -/
 theorem posOK_of_attach {C : Chain} (hP : C.P.Simple) {Q : Polygon} {n : ℕ} {x : WPos}
@@ -124,7 +126,7 @@ theorem exit_block {M : Model} (hM : WalkAx M) {Q : Polygon} {cr : CRec}
     obtain ⟨s, hs0, -, hx⟩ := hall _ hat.2.2.2.2.1
     rw [epr] at hx
     have e1 : (M.pos Q cr.rpos).1 = (sidePt M.W p 0).1 - s := by
-      rw [hx]; simp only [Visibility.rayPt]; ring
+      rw [hx]; sir only [Visibility.rayPt]
     have e2 : sidePt M.W p 0 = M.pos Q cr.lpos := by rw [← epl, hl, h0]
     rw [e2] at e1
     linarith
@@ -134,7 +136,7 @@ theorem exit_block {M : Model} (hM : WalkAx M) {Q : Polygon} {cr : CRec}
     obtain ⟨s, hs0, -, hx⟩ := hall _ hat.1.2.2.2.1
     rw [epl] at hx
     have e1 : (M.pos Q cr.lpos).1 = (sidePt M.W p 0).1 + s := by
-      rw [hx]; simp only [Visibility.rayPt]; ring
+      rw [hx]; sir only [Visibility.rayPt]
     have e2 : sidePt M.W p 0 = M.pos Q cr.rpos := by rw [← epr, hl, h0]
     rw [e2] at e1
     linarith

@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.UpPhase11
 public import Chazelle.Core.MergeAsmMath
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 32000000
 
 /-!
 # WP-J up phase, part 12: the normal form of a chain from the grade record
@@ -45,7 +50,7 @@ theorem l23c_spec (M : Model) (Q : Polygon) (F : Set (Set Point)) (γ D : ℕ) (
     calc F.ncard * (γ + 1) ≤ 2 * (F.ncard * γ) := by nlinarith
       _ ≤ 2 * (2 * (D + 2) * (5 * M.W.n)) := Nat.mul_le_mul_left _ h
       _ ≤ 2 * (2 * (D + 2) * (5 * (7 * (M.size + 1)))) := by gcongr
-      _ = l23c D * (M.size + 1) := by unfold l23c; ring
+      _ = l23c D * (M.size + 1) := by ufring l23c
 
 variable {O : OracleIface} {P : Polygon} {W : ℕ}
 
@@ -88,10 +93,9 @@ theorem single_child {n g i : ℕ} (hn : 2 ≤ n) (hg : 1 ≤ g) (hi : i < grade
     have := gradeLen_pos (g := g - 1) (i := 2 * i + 1) hn h
     omega
   · refine ⟨by omega, ?_⟩
-    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rw [hgg]; exact hi) (by omega)
+    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rwx [hgg]) (by omega)
     rw [hgg] at this; exact this.symm
 
-set_option maxHeartbeats 32000000 in
 /-- **The normal form of chain `(g, i)`**, all three cases. -/
 theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     (hB : Meets sB bruteBands
@@ -158,8 +162,8 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     · decide
   have hkm : ∀ r, Kept r ∨ r = 170030 → ¬ MdRG r := fun r hr => by
     rcases hr with hr | rfl
-    · have := hr.range; unfold MdRG; omega
-    · unfold MdRG; omega
+    · have := hr.range; ufo MdRG
+    · ufo MdRG
   have hk31 : ∀ r, Kept r ∨ r = 170030 → r ≠ 170031 := fun r hr => by
     rcases hr with hr | rfl
     · have := hr.range; omega
@@ -183,12 +187,12 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (by omega) 3)
     obtain ⟨c', k, e, hk, hw', a1, a2, ⟨C, N, hCP, hCs, hCm, hNW, hc⟩, m1, m2, o, fr, frr⟩ :=
       nfU_brute (P := P) (sL := sL) (sG := sG) hB hG hWh hw hu.r07 hu.r37 hg7 h16 h17 hu.r11
-        hl1 (by unfold gradeStart at hfit ⊢; omega) (one_le_gradeGran g)
+        hl1 (by ufo gradeStart at hfit ⊢) (one_le_gradeGran g)
         (by
           rcases Nat.eq_zero_or_pos g with h0 | h0
-          · left; subst h0; have := gradeLen_le P.n 0 i; simp at this; omega
+          · left; subst h0; have := gradeLen_le P.n 0 i; sio at this
           · exact Or.inr (two_le_gradeGran h0))
-        (by rw [hA]; omega)
+        (by rwo [hA])
     refine ⟨c', k, e, by omega, hw', by omega, by omega, fun C' a b f => ?_,
       fun a ha => m1 a (by omega), fun a ha => m2 a (by omega), o,
       fun r hr => fr r (hk0 r hr) (hkm r hr) (hk31 r hr) (hk34 r hr) (hkA r hr),
@@ -207,8 +211,8 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
         holds_of_upTab hn (robust_of hT le_rfl fun m' h' => h'.1)
       obtain ⟨c', k, e, hk, hw', a1, a2, ⟨C, N, hCP, hCs, hCm, hNW, hc⟩, m1, m2, o, fr, frr⟩ :=
         nfU_l41 (P := P) (sB := sB) (sG := sG) hL hG hWh hw hu.r07 hu.r37 hg7 hu.r19 hu.r05 h16
-          h17 (by rw [hA]; exact hX) (by omega) (by unfold gradeStart at hfit ⊢; omega) hlen hl2
-          (by rw [hA]; omega)
+          h17 (by rwx [hA]) (by omega) (by ufo gradeStart at hfit ⊢) hlen hl2
+          (by rwo [hA])
       refine ⟨c', k, e, by omega, hw', by omega, by omega, fun C' a b f => ?_,
       fun a ha => m1 a (by omega), fun a ha => m2 a (by omega), o,
         fun r hr => fr r (hk0 r hr) (hkm r hr) (hk31 r hr) (hk34 r hr) (hkA r hr),
@@ -226,7 +230,7 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       rw [hR'] at hrw
       obtain ⟨hNL, -⟩ := hE (g - 1) (2 * i) hgm h2i
       have e6 : ∀ x, x + 3 * (2 * i) = x + 6 * i := fun x => by ring
-      simp only [rowE, hR', e6] at hNL
+      simp [rowE, hR', e6] at hNL
       have hsc' : gradeStart (g - 1) (2 * i) = gradeStart g i := by
         rw [← gradeStart_succ, show g - 1 + 1 = g by omega]
       obtain ⟨-, -, -, -, -, -, N, hNW, hc⟩ := hNL C0 rfl hsc'.symm hlc.symm

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.Facts2Chain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
 
 /-!
 # WP-K: the weights of the full visibility map of a chain model
@@ -48,7 +51,7 @@ open SegObs
 /-- The abscissa of the line of a segment changes linearly with the height. -/
 theorem xAt_sub (s : Point × Point) (y y' : ℝ) :
     xAt s y - xAt s y' = (y - y') * ((s.2.1 - s.1.1) / (s.2.2 - s.1.2)) := by
-  unfold xAt; ring
+  ufring xAt
 
 /-- Two points of an obstacle segment: the slope relation. -/
 theorem slope_of_mem {s : Point × Point} (hs : s.1.2 < s.2.2) {u v : Point} (hu : u ∈ seg s)
@@ -128,7 +131,7 @@ theorem wall_of_faces (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {s : Poin
       set k := (s.2.1 - s.1.1) / (s.2.2 - s.1.2)
       have hd : 0 < u.2 - v.2 := by linarith
       have e : xAt s (u.2 + t * (v.2 - u.2) + δ * (v.1 - u.1)) - z.1 =
-          δ * (v.2 - u.2) * k ^ 2 := by rw [hx, hk]; ring
+          δ * (v.2 - u.2) * k ^ 2 := by rwring [hx, hk]
       have h1 : δ * (v.2 - u.2) * k ^ 2 ≤ 0 :=
         mul_nonpos_of_nonpos_of_nonneg (by nlinarith) (sq_nonneg k)
       have h2 : δ * (v.2 - u.2) < 0 := by nlinarith
@@ -150,7 +153,7 @@ theorem wall_of_faces (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {s : Poin
     set k := (s.2.1 - s.1.1) / (s.2.2 - s.1.2)
     have hd : 0 < v.2 - u.2 := by linarith
     have e : xAt s (u.2 + t * (v.2 - u.2) + δ * (v.1 - u.1)) - z.1 =
-        δ * (v.2 - u.2) * k ^ 2 := by rw [hx, hk]; ring
+        δ * (v.2 - u.2) * k ^ 2 := by rwring [hx, hk]
     have h1 : 0 ≤ δ * (v.2 - u.2) * k ^ 2 := mul_nonneg (mul_pos hδ0 hd).le (sq_nonneg k)
     have h2 : 0 < δ * (v.2 - u.2) := mul_pos hδ0 hd
     rw [← hz1] at hoL
@@ -188,7 +191,7 @@ theorem tour_inj (β : Bool) {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m
   rw [Chain.sideIdx_eq, Chain.sideIdx_eq] at h1
   rw [Chain.sideIdx_succ, Chain.sideIdx_succ] at h2
   have hj := sideE_pair_inj (Nat.mod_lt _ hm) (Nat.mod_lt _ hm) h1 h2
-  have h3 : C.sideS β + i ≡ C.sideS β + i' [MOD 2 * C.m] := hj
+  have h3  := hj
   exact Nat.ModEq.eq_of_lt_of_lt (Nat.ModEq.add_left_cancel' _ h3) hi hi'
 
 /-- The walk edge `i + 6` of the chain model starts at the tour vertex `i`. -/
@@ -223,9 +226,9 @@ theorem tour_edge (hDH : DistinctHeights C.P) (β : Bool) (i : ℕ) :
 /-- The set of keys inside an arc is open. -/
 theorem isOpen_sideInArc (a b : ℝ) : IsOpen {x : ℝ | sideInArc a b x} := by
   by_cases hab : a < b
-  · simp only [sideInArc, hab, ite_true]
+  · simp [sideInArc, hab, ite_true]
     exact (isOpen_lt continuous_const continuous_id).inter (isOpen_lt continuous_id continuous_const)
-  · simp only [sideInArc, hab, ite_false]
+  · simp [sideInArc, hab, ite_false]
     exact (isOpen_lt continuous_const continuous_id).union (isOpen_lt continuous_id continuous_const)
 
 /-- A point of an open set of reals can be moved off a finite set. -/
@@ -272,13 +275,13 @@ theorem arc_edge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
     intro w hw e
     apply ht'B
     refine ⟨w, hw, ?_⟩
-    simp only [Geometry.lerp_snd] at e
+    simp [Geometry.lerp_snd] at e
     have hd : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huv)
     field_simp
     linarith
   -- the edge faces the region
   have hF := hab.2.2.2.2.2.2 (i + 6) t' (by
-    show i + 6 < (C.sideWalk C.sideBeta).n; rw [C.sideWalk_n]; omega) ht'0 ht'1 ht'in
+    show i + 6 < (C.sideWalk C.sideBeta).n; rwo [C.sideWalk_n]) ht'0 ht'1 ht'in
   have hF' : ∀ᶠ δ in 𝓝[>] (0 : ℝ), Jordan.offset u v t' δ ∈ tr sL sR y₁ y₂ := by
     have e1 : (chainModel C).wa (i + 6) = u := wa_tour C.sideBeta hi
     have e2 : (chainModel C).wb (i + 6) = v := wb_tour C.sideBeta hi
@@ -326,7 +329,7 @@ theorem arcEdge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
   obtain ⟨-, ⟨hc1, hc2⟩, t, ht0, ht1, hin⟩ := hp
   refine ⟨p - 6, by omega, by omega, ?_⟩
   have e : ((p - 6 + 6 : ℕ) : ℝ) = (p : ℝ) := by rw [Nat.sub_add_cancel hc1]
-  exact arc_edge_class hP hDH hT hU hab (by omega) ht0 ht1 (by rw [e]; exact hin)
+  exact arc_edge_class hP hDH hT hU hab (by omega) ht0 ht1 (by rwx [e])
 
 /-- Two walk edges of the same class are equal. -/
 theorem class_inj (hP : C.P.Simple) {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m)
@@ -370,8 +373,8 @@ theorem fullMap_arcWt_le_two (hP : C.P.Simple) (hDH : DistinctHeights C.P) {U : 
     intro p hp
     obtain ⟨i, -, rfl, hcl⟩ := arcEdge_class hP hDH hT hsub hab hp
     rcases hcl with ⟨h1, -⟩ | ⟨h1, -⟩
-    · exact Or.inl ⟨hp, fun i' e => by rw [show i' = i by omega]; exact h1⟩
-    · exact Or.inr ⟨hp, fun i' e => by rw [show i' = i by omega]; exact h1⟩
+    · exact Or.inl ⟨hp, fun i' e => by rwx [show i' = i by omega]⟩
+    · exact Or.inr ⟨hp, fun i' e => by rwx [show i' = i by omega]⟩
   have hDn : Dn.ncard ≤ 1 := by
     rw [Set.ncard_le_one_iff (hfinA.subset fun p hp => hp.1)]
     intro p p' hp hp'

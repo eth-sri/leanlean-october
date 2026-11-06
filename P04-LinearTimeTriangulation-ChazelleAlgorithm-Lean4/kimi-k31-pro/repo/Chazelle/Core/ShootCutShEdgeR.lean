@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.ShootCutShLoad
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 44: the ray-shooter on one segment of a walk edge (`edgeH`)
@@ -13,10 +17,6 @@ height of the origin is strictly between those of `U` and `V`.  The answer is a 
 (`CandAt`) in `140220 … 140226`: flag, abscissa record, walk position.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -56,7 +56,7 @@ def Bedge (r : ℕ) : Bool :=
 
 theorem Bedge_env (r : ℕ) (h : envR r) : Bedge r = false := by
   unfold envR at h
-  simp only [Bedge, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, K1, ALLOC] at h ⊢
+  simp [Bedge, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, K1, ALLOC] at h ⊢
   omega
 
 variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
@@ -88,8 +88,8 @@ theorem candFrom_exec (c : Config) (hw : WordsBounded W c) (hW1 : 1 ≤ W) {A e 
       FrameB Bedge c c' := by
   obtain ⟨c₁, e₁, v₁, k₁, rr₁, m₁, rm₁, o₁⟩ := copies_exec (P := P) [(140221, A),
     (140222, A + 1), (140223, A + 2), (140224, A + 3), (140225, e), (140226, h)] c hw
-    (by simp; omega) (by simp)
-  simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at v₁
+    (by sio) (by simp)
+  simp [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at v₁
   obtain ⟨w1, w2, w3, w4, w5, w6⟩ := v₁
   have e₂ := Exec.constN (P := P) e₁.wb_right 140220 1 hW1
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg 140220 1 } with hc₂
@@ -97,14 +97,14 @@ theorem candFrom_exec (c : Config) (hw : WordsBounded W c) (hW1 : 1 ≤ W) {A e 
   refine ⟨c₂, _, .seq e₁ e₂, rfl, ⟨by simp [hc₂], fun h' => by simp [hc₂] at h', fun _ =>
     ⟨x, absRec_copy' hx (by rw [g _ (by norm_num), w1]) (by rw [g _ (by norm_num), w2])
       (by rw [g _ (by norm_num), w3]) (by rw [g _ (by norm_num), w4]), hF,
-      by rw [g _ (by norm_num), g _ (by norm_num), w5, w6]; exact hp,
-      by rw [g _ (by norm_num), w5]; exact hen,
-      by rw [g _ (by norm_num), g _ (by norm_num), w5, w6]; exact hpos⟩⟩, ?_⟩
+      by rwx [g _ (by norm_num), g _ (by norm_num), w5, w6],
+      by rwx [g _ (by norm_num), w5],
+      by rwx [g _ (by norm_num), g _ (by norm_num), w5, w6]⟩⟩, ?_⟩
   refine ⟨fun r hr => ?_, fun r _ => by rw [show c₂.rreg = c₁.rreg from rfl, rr₁], by
     show c₁.nmem = c.nmem; exact m₁, by show c₁.rmem = c.rmem; exact rm₁,
     by show c₁.output = c.output; exact o₁⟩
-  simp only [Bedge, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-  rw [g r (by omega), k₁ r (by simp; omega)]
+  simp [Bedge, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+  rw [g r (by omega), k₁ r (by sio)]
 
 /-! ## Ahead of the origin -/
 
@@ -116,12 +116,12 @@ theorem aheadT_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ
     (hne : x ≠ z.1) :
     ∃ c' k, Exec P W (aheadT A dst) c c' k ∧ k ≤ 252 ∧ BitIs c' dst (0 < σ * (x - z.1)) ∧
       FrameB (Bkb dst) c c' := by
-  have hW : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
+  have hW : P.n + 3 ≤ W := by have := E.hW; ufo hostWords at this
   unfold aheadT
   by_cases hs : c.nreg 140241 < c.nreg K1
   · have hσ : σ = -1 := by
       rcases E.hσ with h | h
-      · have := E.sig.2.2 h; rw [E.k1] at hs; omega
+      · have := E.sig.2.2 h; rwo [E.k1] at hs
       · exact h
     obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw hA (by norm_num) hdst E.k1 (AbsRec.weak hx)
       E.ox (Or.inl hne)
@@ -141,7 +141,7 @@ theorem nearT_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
     (hV : AbsRec P c 140281 xV C.radius) :
     ∃ c' k, Exec P W (nearT dst) c c' k ∧ k ≤ 252 ∧ BitIs c' dst (¬ σ * xU ≤ σ * xV) ∧
       FrameB (Bkb dst) c c' := by
-  have hW : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
+  have hW : P.n + 3 ≤ W := by have := E.hW; ufo hostWords at this
   have st : ∀ {r : ℕ} {x : ℝ}, AbsRec P c r x C.radius → c.nreg r = 1 → |x| < C.radius :=
     fun {r} {x} h hk => by
       rcases h.2 with ⟨h1, -⟩ | ⟨h1, -⟩ | ⟨-, hx, -⟩ <;> [omega; omega; exact hx]
@@ -149,7 +149,7 @@ theorem nearT_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
   by_cases hs : c.nreg 140241 < c.nreg K1
   · have hσ : σ = -1 := by
       rcases E.hσ with h | h
-      · have := E.sig.2.2 h; rw [E.k1] at hs; omega
+      · have := E.sig.2.2 h; rwo [E.k1] at hs
       · exact h
     obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (by norm_num) (by norm_num) hdst E.k1
       (AbsRec.weak hU) (AbsRec.weak hV) (Or.inr ⟨st hU, st hV⟩)

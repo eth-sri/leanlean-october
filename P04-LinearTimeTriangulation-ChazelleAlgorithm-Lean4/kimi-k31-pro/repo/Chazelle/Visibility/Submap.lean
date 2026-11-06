@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Visibility.Map
 public import Chazelle.Existence.Arc
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Submaps of the horizontal visibility map: chord separation and exact splitting
@@ -284,7 +287,7 @@ theorem exists_walk_parity_flip {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i 
     refine Subset.trans ?_ (Existence.edge_subset_boundary P hj)
     exact Geometry.segment_subset_of_convex (Geometry.segment_convex _ _)
       (Geometry.left_mem_segment _ _) hej
-  have hii : i % P.n = i := Nat.mod_eq_of_lt hi
+  have hii  := Nat.mod_eq_of_lt hi
   refine ⟨arcPoly P i m e, ?_, ?_⟩
   · refine (arcPoly_boundary_subset P hn i e hm0 hpen).trans ?_
     rw [hii, Geometry.segment_comm]
@@ -292,7 +295,7 @@ theorem exists_walk_parity_flip {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i 
   · have hzΓ : z ∈ (arcPoly P i m e).edge m := by
       rw [arcPoly_edge_last P i e hm0, hii, Geometry.segment_comm]
       exact hz
-    have hmn : m < (arcPoly P i m e).n := by rw [arcPoly_n]; omega
+    have hmn : m < (arcPoly P i m e).n := by rwo [arcPoly_n]
     have hsucc : (m + 1) % (arcPoly P i m e).n = 0 := by rw [arcPoly_n, Nat.mod_self]
     have hv0 : (arcPoly P i m e).vtx 0 = P.vtx i := by
       rw [arcPoly_vtx_of_lt P i e hm0, Nat.add_zero, hii]
@@ -338,7 +341,7 @@ theorem chord_separates {P : Polygon} (hP : P.Simple) {S : Set (Set Point)} (hS 
     ((by fun_prop : Continuous fun ε : ℝ => ((z.1, z.2 - ε) : Point)).tendsto' 0 z
       (by simp)).mono_left nhdsWithin_le_nhds
   have hzint : z ∈ P.filled \ P.boundary := ⟨chordSet_subset_filled hP hi h hz, hzb⟩
-  have hint : (P.filled \ P.boundary) ∈ 𝓝 z := (isOpen_filled_sdiff_boundary hP).mem_nhds hzint
+  have hint  := (isOpen_filled_sdiff_boundary hP).mem_nhds hzint
   -- the other chords: a closed set not containing `z`
   have hK : IsClosed (⋃₀ (S \ {chordSet P i σ})) :=
     isClosed_sUnion_of_subset_chords (fun _ hd => hS hd.1)
@@ -364,9 +367,9 @@ theorem chord_separates {P : Polygon} (hP : P.Simple) {S : Set (Set Point)} (hS 
       hdn.eventually hKn, self_mem_nhdsWithin, Ioo_mem_nhdsGT hε₁] with ε h1 h2 h3 h4 h5 h6
     have hε : 0 < ε := h5
     have hp : (z.1, z.2 + ε) ∈ freeOf P S :=
-      hfree ε hε _ rfl (by simp; linarith) h1 h3
+      hfree ε hε _ rfl (by sil) h1 h3
     have hq : (z.1, z.2 - ε) ∈ freeOf P S :=
-      hfree ε hε _ rfl (by simp; linarith) h2 h4
+      hfree ε hε _ rfl (by sil) h2 h4
     refine ⟨hp, hq, fun heq => ?_⟩
     obtain ⟨-, -, hpar⟩ := hflip ε hε h6.2
     apply hpar
@@ -419,9 +422,9 @@ theorem vert_mem_halfDisk {w : Point} {r τ s : ℝ} (hτ : τ = 1 ∨ τ = -1) 
   simp only [sub_self, abs_zero, add_sub_cancel_left]
   rcases hτ with rfl | rfl
   · simp only [one_mul]
-    exact ⟨⟨by linarith, by rw [abs_of_pos hs0]; exact hsr⟩, hs0⟩
+    exact ⟨⟨by linarith, by rwx [abs_of_pos hs0]⟩, hs0⟩
   · simp only [neg_one_mul, abs_neg, mul_neg, neg_neg]
-    exact ⟨⟨by linarith, by rw [abs_of_pos hs0]; exact hsr⟩, hs0⟩
+    exact ⟨⟨by linarith, by rwx [abs_of_pos hs0]⟩, hs0⟩
 
 /-- A half-disk around a point at the same height, inside the ball, is inside the half-disk. -/
 theorem halfDisk_mono {w w' : Point} {r r' τ : ℝ} (hh : w'.2 = w.2) (hb : ball w' r' ⊆ ball w r) :
@@ -449,7 +452,7 @@ theorem halfDisk_inter_nonempty {w w' : Point} {r r' τ : ℝ} (hτ : τ = 1 ∨
       rcases hτ with rfl | rfl <;> simp [hsr]
     refine ⟨⟨hx, habs⟩, ?_⟩
     have : τ * (τ * s) = s := by rcases hτ with rfl | rfl <;> ring
-    rw [this]; exact hs0
+    rwx [this]
   · rw [← hh]
     exact vert_mem_halfDisk hτ hs0 hsr'
 
@@ -524,7 +527,7 @@ theorem halfDisk_all {P : Polygon} (hP : P.Simple) {S : Set (Set Point)} {c : Se
       (halfDisk_subset_freeOf_insert hc hw (hb.trans hRS)) hne
   obtain ⟨i, σ, hi, hσ, h, rfl⟩ := hc
   have hσ1 : |σ| = 1 := by rcases hσ with rfl | rfl <;> simp
-  have hopen : chordSet P i σ \ P.boundary = openChordSet P i σ := chordSet_sdiff_boundary hP hi h
+  have hopen  := chordSet_sdiff_boundary hP hi h
   rw [hopen] at hcR hex ⊢
   set v := P.vtx i
   set L := chordParam P i σ
@@ -555,7 +558,7 @@ theorem halfDisk_all {P : Polygon} (hP : P.Simple) {S : Set (Set Point)} {c : Se
   have hTclosed : closure T ∩ Ioo 0 L ⊆ T := by
     rintro t ⟨htc, ht⟩
     set w := rayPt v σ t with hw
-    have hwR : w ∈ R := hcR ⟨t, ht, rfl⟩
+    have hwR  := hcR ⟨t, ht, rfl⟩
     obtain ⟨r, hr, hb⟩ := Metric.isOpen_iff.1 hR w hwR
     obtain ⟨t', ht'T, htt'⟩ := Metric.mem_closure_iff.1 htc (r / 2) (half_pos hr)
     obtain ⟨r', hr', -, hU'⟩ := ht'T
@@ -576,8 +579,7 @@ theorem halfDisk_all {P : Polygon} (hP : P.Simple) {S : Set (Set Point)} {c : Se
   have hTne : (Ioo 0 L ∩ T).Nonempty := by
     obtain ⟨w, ⟨t, ht, rfl⟩, r, hr, hb, hU'⟩ := hex
     exact ⟨t, ht, r, hr, hb, hU'⟩
-  have hall : Ioo 0 L ⊆ T :=
-    isPreconnected_Ioo.subset_of_closure_inter_subset hTopen hTne hTclosed
+  have hall  := isPreconnected_Ioo.subset_of_closure_inter_subset hTopen hTne hTclosed
   -- conclusion
   rintro w ⟨t, ht, rfl⟩ r hr hb
   obtain ⟨r₁, hr₁, -, hU'⟩ := hall ht
@@ -636,7 +638,7 @@ theorem exists_halfDisk_subset {P : Polygon} (hP : P.Simple) {S : Set (Set Point
   obtain ⟨w, hw, hwc⟩ := hex
   obtain ⟨r, hr, hb, hline⟩ := exists_ball_chord hP hc hRopen hcR hw
   obtain ⟨q, hqU, hdq⟩ := Metric.mem_closure_iff.1 hwc r hr
-  have hqb : q ∈ ball w r := by rw [mem_ball, dist_comm]; exact hdq
+  have hqb : q ∈ ball w r := by rwx [mem_ball, dist_comm]
   have hqc : q ∉ c := by
     intro hqc
     have := hUA' hqU
@@ -651,8 +653,8 @@ theorem exists_halfDisk_subset {P : Polygon} (hP : P.Simple) {S : Set (Set Point
       (halfDisk_subset_freeOf_insert hc hw.1 (hb.trans hRA)) ⟨q, ⟨hqb, ?_⟩, hqU⟩
     simp only [mem_ofPred_eq]
     rcases lt_or_gt_of_ne hq2 with hlt | hlt
-    · rw [ite_eq_right (not_lt.2 hlt.le)]; linarith
-    · rw [ite_eq_left hlt]; linarith
+    · rwli [ite_eq_right (not_lt.2 hlt.le)]
+    · rwli [ite_eq_left hlt]
 
 /-- **Exact splitting.**  Adding a chord `c ∉ S` to a submap `S ⊆ chords P` replaces the region
 `R` of `S` containing the interior of `c` by exactly two regions `R₁ ≠ R₂` with
@@ -822,14 +824,14 @@ many). -/
 theorem regionsOf_finite_ncard {P : Polygon} (hP : P.Simple) {S : Set (Set Point)}
     (hS : S ⊆ chords P) :
     (regionsOf P S).Finite ∧ (regionsOf P S).ncard = S.ncard + 1 := by
-  have hfin : S.Finite := (chords_finite P).subset hS
+  have hfin  := (chords_finite P).subset hS
   induction S, hfin using Set.Finite.induction_on with
   | empty =>
     rw [regionsOf_empty hP]
     simp
   | @insert c S hcS hSfin ih =>
-    have hS' : S ⊆ chords P := (subset_insert c S).trans hS
-    have hc : c ∈ chords P := hS (mem_insert c S)
+    have hS'  := (subset_insert c S).trans hS
+    have hc  := hS (mem_insert c S)
     obtain ⟨hfin', hcard⟩ := ih hS'
     obtain ⟨hfin'', hcard''⟩ := ncard_regionsOf_insert hP hS' hc hcS hfin'
     refine ⟨hfin'', ?_⟩

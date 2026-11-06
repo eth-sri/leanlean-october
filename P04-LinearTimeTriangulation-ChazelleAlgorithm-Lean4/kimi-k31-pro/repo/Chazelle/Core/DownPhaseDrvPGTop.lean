@@ -1,6 +1,11 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvPTop
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Down-phase pieces (D4), part 2: the top of a long leaf from the grade table
@@ -13,9 +18,6 @@ two `cmpUpd`) and runs the grade-table cover `IOrc.topLoop` on `[a, mid]` and on
 `[mid, a + m]` (each of length `≤ 2^(μ-1)`, within the cap of the table).  `gTop_exec`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
 
 namespace Chazelle.Core
 
@@ -90,7 +92,6 @@ theorem half_le {m μ : ℕ} (hμ : 1 ≤ μ) (hm : m ≤ 2 ^ μ) : m / 2 ≤ 2 
     rw [← pow_succ']; congr 1; omega
   omega
 
-set_option maxHeartbeats 1000000 in
 /-- **The top of a long leaf** `v_a … v_{a+m}` (`1 ≤ μ`, `m ≤ 2^μ`, at least `μ` grades in the
 table): `218013 := T ≤ m` with `v_{a+T}` at least as high as every vertex of the leaf. -/
 theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
@@ -119,8 +120,8 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
     unfold gSetup
     exec_block
     all_goals first | omega | skip
-    · config_simp; rw [hh]; omega
-    · config_simp; rw [hh]; omega
+    · config_simp; rwo [hh]
+    · config_simp; rwo [hh]
     refine ⟨rfl, ⟨hG, hW, by config_simp, by config_simp, ?_, ?_, fun a ha => ?_, ?_, hgr⟩,
       fun r hr => ?_, rfl⟩
     · config_simp; rw [hh, e2]
@@ -132,7 +133,7 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have a₁ : c₁.nreg 218004 = a := r₁ _ (by norm_num)
   have m₁' : c₁.nreg 218002 = m := r₁ _ (by norm_num)
   have hm2 : c₁.nmem (s.m₀ (s.h + 3) + m) = m / 2 := by
-    rw [m₁, hmem _ (hlow.2.2 _ hmn)]; exact hhalf
+    rwx [m₁, hmem _ (hlow.2.2 _ hmn)]
   -- 2. the ends and the middle
   obtain ⟨c₂, k₂, e₂, hk₂, S₂, v46, v70, v72, r₂, m₂⟩ : ∃ c₂ k₂, Exec P W gEnds c₁ c₂ k₂ ∧
       k₂ = 5 ∧ TEnv P W O s c₂ ∧ c₂.nreg 170046 = a ∧ c₂.nreg 170070 = a + m ∧
@@ -141,9 +142,9 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
     unfold gEnds
     exec_block
     all_goals first | omega | skip
-    · config_simp; rw [a₁, m₁']; omega
+    · config_simp; rwo [a₁, m₁']
     · config_simp; rw [S₁.r17, m₁']; have := hlow.2.2 _ hmn; omega
-    · config_simp; rw [S₁.r17, a₁, m₁', hm2]; omega
+    · config_simp; rwo [S₁.r17, a₁, m₁', hm2]
     refine ⟨rfl, S₁.keep (fun r h1 h2 => ?_) (fun _ _ => rfl) (by simp [upd, ALLOC]), ?_, ?_, ?_,
       fun r hr => ?_, m₁⟩
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
@@ -161,8 +162,8 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have w₃ := e₃.wb_right
   have S₃ : TEnv P W O s c₃ := by rw [r₃]; exact tenv_upd S₂ _ (by norm_num) (by decide)
   have c346 : c₃.nreg 170046 = a := by rw [r₃]; config_simp; exact v46
-  obtain ⟨c₄, k₄, e₄, hk₄, u46, f₄, m₄⟩ := cmpUpd_exec c₃ w₃ S₃ (by rw [c346]; omega)
-    (by rw [h59]; omega)
+  obtain ⟨c₄, k₄, e₄, hk₄, u46, f₄, m₄⟩ := cmpUpd_exec c₃ w₃ S₃ (by rwo [c346])
+    (by rwo [h59])
   rw [c346, h59] at u46
   have w₄ := e₄.wb_right
   have S₄ : TEnv P W O s c₄ := S₃.keep (fun r h1 h2 => f₄ r (by omega) (by omega) (by omega))
@@ -176,18 +177,18 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have c472 : c₄.nreg 170072 = a + m / 2 := by
     rw [f₄ _ (by decide) (by decide) (by decide), r₃]; simp only [upd]; exact v72
   set v₄ := c₄.nreg 170046 with hv₄
-  have hv₄G : a ≤ v₄ ∧ v₄ ≤ a + m := by rw [u46]; split_ifs <;> omega
+  have hv₄G : a ≤ v₄ ∧ v₄ ≤ a + m := by rw [u46]; splao
   have hv₄Y := IOrc.Y_max_le (P := P) (a := a) (b := a + m / 2)
   rw [← u46] at hv₄Y
   -- 4. the second comparison (the end)
   have e₅ := IOrc.exec_copyN_upd (P := P) w₄ 170059 170070
   set c₅ : Config := { c₄ with nreg := upd c₄.nreg 170059 (c₄.nreg 170070) } with hc₅
-  have w₅ : WordsBounded W c₅ := e₅.wb_right
+  have w₅  := e₅.wb_right
   have S₅ : TEnv P W O s c₅ := tenv_upd S₄ _ (by norm_num) (by decide)
-  have c546 : c₅.nreg 170046 = v₄ := by rw [hc₅]; simp [upd]; rfl
+  have c546 : c₅.nreg 170046 = v₄ := by rw [hc₅]; sirfl [upd]
   have c559 : c₅.nreg 170059 = a + m := by rw [hc₅]; simp only [upd_same]; exact c470
-  obtain ⟨c₆, k₆, e₆, hk₆, u46', f₆, m₆⟩ := cmpUpd_exec c₅ w₅ S₅ (by rw [c546]; omega)
-    (by rw [c559]; omega)
+  obtain ⟨c₆, k₆, e₆, hk₆, u46', f₆, m₆⟩ := cmpUpd_exec c₅ w₅ S₅ (by rwo [c546])
+    (by rwo [c559])
   rw [c546, c559] at u46'
   have w₆ := e₆.wb_right
   have S₆ : TEnv P W O s c₆ := S₅.keep (fun r h1 h2 => f₆ r (by omega) (by omega) (by omega))
@@ -201,7 +202,7 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have c672 : c₆.nreg 170072 = a + m / 2 := by
     rw [f₆ _ (by decide) (by decide) (by decide), hc₅]; simp only [upd]; exact c472
   set v₆ := c₆.nreg 170046 with hv₆
-  have hv₆G : a ≤ v₆ ∧ v₆ ≤ a + m := by rw [u46']; split_ifs <;> omega
+  have hv₆G : a ≤ v₆ ∧ v₆ ≤ a + m := by rw [u46']; splao
   have hv₆Y := IOrc.Y_max_le (P := P) (a := v₄) (b := a + m)
   rw [← u46'] at hv₆Y
   have hm₆ : c₆.nmem = c.nmem := by rw [m₆, hc₅, m₄, r₃, m₂]
@@ -217,13 +218,13 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have w₇ := e₇.wb_right
   have S₇ : TEnv P W O s c₇ := by
     rw [r₇]; exact tenv_upd (tenv_upd S₆ _ (by norm_num) (by decide)) _ (by norm_num) (by decide)
-  have c746 : c₇.nreg 170046 = v₆ := by rw [r₇]; simp [upd]; rfl
+  have c746 : c₇.nreg 170046 = v₆ := by rw [r₇]; sirfl [upd]
   have hcap : ∀ d, d ≤ 2 ^ (μ - 1) → d ≤ 2 ^ (s.m₀ s.h - 1) := fun d hd =>
     hd.trans (Nat.pow_le_pow_right (by norm_num) (by omega))
   have hhl := half_le hμ1 hμ
   obtain ⟨c₈, k₈, e₈, hk₈, S₈, g₈, n₈, cov₈, f₈, y₈, m₈⟩ := topLoop_exec
     (G := fun v => a ≤ v ∧ v ≤ a + m) c₇ w₇ S₇ x₇ y₇ (by omega) (by omega)
-    (hcap _ (by omega)) (by rw [c746]; exact hv₆G) (by rw [c746]; omega)
+    (hcap _ (by omega)) (by rwx [c746]) (by rwo [c746])
     (by rw [c746]; exact hv₄Y.1.trans hv₆Y.1) (by rw [c746]; exact hv₄Y.2.trans hv₆Y.1)
     (fun v h1 h2 => ⟨h1, by omega⟩)
   have w₈ := e₈.wb_right
@@ -251,11 +252,11 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have w₉ := e₉.wb_right
   have S₉ : TEnv P W O s c₉ := by
     rw [r₉]; exact tenv_upd (tenv_upd S₈ _ (by norm_num) (by decide)) _ (by norm_num) (by decide)
-  have c946 : c₉.nreg 170046 = v₈ := by rw [r₉]; simp [upd]; rfl
-  have yv₆ : IOrc.Y P v₆ ≤ IOrc.Y P v₈ := by rw [← c746]; exact y₈
+  have c946 : c₉.nreg 170046 = v₈ := by rw [r₉]; sirfl [upd]
+  have yv₆ : IOrc.Y P v₆ ≤ IOrc.Y P v₈ := by rwx [← c746]
   obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, S₁₀, g₁₀, n₁₀, cov₁₀, f₁₀, y₁₀, m₁₀⟩ := topLoop_exec
     (G := fun v => a ≤ v ∧ v ≤ a + m) c₉ w₉ S₉ x₉ y₉ (by omega) (by omega)
-    (hcap _ (by omega)) (by rw [c946]; exact g₈) (by rw [c946]; exact n₈)
+    (hcap _ (by omega)) (by rwx [c946]) (by rwx [c946])
     (by rw [c946]; exact cov₈ _ (by omega) le_rfl)
     (by rw [c946]; exact hv₆Y.2.trans yv₆)
     (fun v h1 h2 => ⟨by omega, h2⟩)
@@ -269,7 +270,7 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
     simp only [upd, ite_eq_right (show r ≠ 170051 by omega), ite_eq_right (show r ≠ 170050 by omega)]
     exact k₈' r h1 h2
   set v₁₀ := c₁₀.nreg 170046 with hv₁₀
-  have yv₈ : IOrc.Y P v₈ ≤ IOrc.Y P v₁₀ := by rw [← c946]; exact y₁₀
+  have yv₈ : IOrc.Y P v₈ ≤ IOrc.Y P v₁₀ := by rwx [← c946]
   -- 7. the offset
   obtain ⟨c₁₁, k₁₁, e₁₁, hk₁₁, v13⟩ : ∃ c₁₁ k₁₁, Exec P W (block [.subN 218013 170046 218004])
       c₁₀ c₁₁ k₁₁ ∧ k₁₁ = 1 ∧ c₁₁.nreg 218013 = c₁₀.nreg 170046 - c₁₀.nreg 218004 := by
@@ -282,7 +283,7 @@ theorem gTop_exec {s : TSt} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P
   have a₁₀ : c₁₀.nreg 218004 = a := k₁₀' _ (by norm_num) (by norm_num)
   rw [a₁₀] at v13
   refine ⟨_, _, ex, by omega, exec_frameB ex wr_gTop, ?_, fun j hj => ?_⟩
-  · rw [v13]; omega
+  · rwo [v13]
   · rw [v13, show a + (v₁₀ - a) = v₁₀ by omega]
     by_cases hj2 : a + j ≤ a + m / 2
     · exact (cov₈ _ (by omega) hj2).trans yv₈

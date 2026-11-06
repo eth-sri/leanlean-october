@@ -5,6 +5,7 @@ public import Chazelle.Core.SweepEvEnv
 public import Chazelle.Core.DownPhaseMathJunc
 public import Chazelle.Core.NFLocateHost
 public import Chazelle.Core.GranPz
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), stage 3: `F₂⁺` is a chord family of `Q`
@@ -35,7 +36,7 @@ theorem F₂plus_chordFamily' {J : Merge.Junction} {Q : Polygon} {S₂ : Set (Se
     (hS₂ : (chainModel J.right).ChordFamily Q S₂)
     (hvtx : ∀ k, ∃ h, h < Q.n ∧ (J.whole.vertex k).2 = (Q.vtx h).2) :
     (chainModel J.whole).ChordFamily Q (F₂plus J S₂) := by
-  have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
+  have hS₂a  := hS₂.2.1
   refine ⟨F₂plus_finite J hS₂.1, F₂plus_subset J hS₂a, fun e he => ?_⟩
   -- a point of `e` at a vertex height of `Q`
   obtain ⟨z, hz, h, hh, hzh⟩ : ∃ z ∈ e, ∃ h, h < Q.n ∧ z.2 = (Q.vtx h).2 := by
@@ -54,7 +55,7 @@ theorem F₂plus_chordFamily' {J : Merge.Junction} {Q : Polygon} {S₂ : Set (Se
       exact ⟨J.shared, origin_mem J, h, hh, e⟩
     · obtain ⟨h, hh, e⟩ := hvtx (J.m₁ + J.right.topIdx)
       refine ⟨J.right.top, origin_mem J, h, hh, ?_⟩
-      rw [← e, Merge.Junction.whole_vertex_add]; rfl
+      rwr [← e, Merge.Junction.whole_vertex_add]
   obtain ⟨y, l, r, -, -, rfl, -, -⟩ := Merge.augChords_spec (F₂plus_subset J hS₂a he)
   refine ⟨h, hh, l, r, ?_⟩
   rw [show y = (Q.vtx h).2 from hz.1.symm.trans hzh]

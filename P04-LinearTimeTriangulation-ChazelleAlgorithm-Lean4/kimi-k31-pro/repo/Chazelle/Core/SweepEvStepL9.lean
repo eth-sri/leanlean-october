@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.SweepEvStepL8
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # The sweep (WP-D), stage 3: the endpoint table at the next key (Task L1)
@@ -38,7 +41,7 @@ theorem comp_new {j : ℕ} (hj : j < 2 * N₂.nChords) (hv : ValidJ J (Qof P) N�
     (h1 : keyOff P J c < oW J (p + t)) (h2 : oW J (p + t) ≤ keyOff P J c') :
     ∃ t' ∈ A, t'.1 = j := by
   have hP := S.E.hP
-  have hS₂a : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := S.E.hNF₂.1.2.1
+  have hS₂a  := S.E.hNF₂.1.2.1
   obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Qof P) hj
   obtain ⟨haR, hav, hat⟩ := hv
   obtain ⟨-, hfree, -⟩ := origin_hit hP (hS₂a hc) ha haR hav hlt'
@@ -57,7 +60,6 @@ theorem comp_new {j : ℕ} (hj : j < 2 * N₂.nChords) (hv : ValidJ J (Qof P) N�
   exact (originTask J (Qof P) N₂ hP S.E.hNF₂ (F₂plus_chordFamily S.E)).2 t'.1 j hj' hj
     haR' hav' hat' hl' haR hav hat hlt' hte
 
-set_option maxHeartbeats 2000000 in
 /-- **The table up to the next key.** -/
 theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
   have hsome := stp_key_some S.hI S.hd
@@ -74,7 +76,7 @@ theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
   have l2 := S.L.lay2
   have l4 := S.L.lay4
   have hTc : ∀ x, x < c.nreg cTB + 6 * N₂.nChords → c'.nmem x = co.nmem x := fun x hx =>
-    hmK x (by omega) (Or.inl (by rw [elB, elC]; omega))
+    hmK x (by omega) (Or.inl (by rwo [elB, elC]))
   have hTs : ∀ x, x < c.nreg cTB + 6 * N₂.nChords → cs.nmem x = c.nmem x := fun x hx =>
     hmemS x (by omega)
   have hlt := (stp_next_key S.E S.L S.hI S.hd).1
@@ -97,7 +99,7 @@ theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
     · exact f0
   refine ⟨?_, ?_, fun hv hlt' p t hA hpt hL hle => ?_⟩
   · rcases hslot with ⟨s0, -, -⟩ | ⟨e, h', -, f0, -⟩
-    · rw [s0, hTs _ (by omega)]; exact o0
+    · rwx [s0, hTs _ (by omega)]
     · rw [f0]
   · intro hf
     rcases hslot with ⟨s0, s1, s2⟩ | ⟨e, h', hmA, f0, f1, f2⟩

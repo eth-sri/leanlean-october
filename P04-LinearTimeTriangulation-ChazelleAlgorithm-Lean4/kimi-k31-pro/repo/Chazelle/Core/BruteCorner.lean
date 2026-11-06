@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.BruteWeight
 public import Chazelle.Core.FuseMathCut
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-K: the corners of the walk of a chain model and the orientation bit
@@ -40,8 +44,8 @@ theorem sideDot_key {A B : Point} (h : sideCross B A = 0) :
 
 theorem sideCcw_horiz_same {A B : Point} (hAB : 0 < A.2 * B.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     sideCcw B ((σ, 0) : Point) A ↔ sideCross B A ≤ 0 := by
-  have eBX : sideCross B ((σ, 0) : Point) = -σ * B.2 := by unfold sideCross; ring
-  have eXA : sideCross ((σ, 0) : Point) A = σ * A.2 := by unfold sideCross; ring
+  have eBX : sideCross B ((σ, 0) : Point) = -σ * B.2 := by ufring sideCross
+  have eXA : sideCross ((σ, 0) : Point) A = σ * A.2 := by ufring sideCross
   have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
   have hA0 : A.2 ≠ 0 := by rintro h; rw [h, zero_mul] at hAB; exact lt_irrefl _ hAB
   have hB0 : B.2 ≠ 0 := by rintro h; rw [h, mul_zero] at hAB; exact lt_irrefl _ hAB
@@ -63,10 +67,10 @@ theorem sideCcw_horiz_same {A B : Point} (hAB : 0 < A.2 * B.2) {σ : ℝ} (hσ :
       by_contra hc
       push Not at hc
       have h1 : -σ * B.2 * (σ * A.2) = -(A.2 * B.2) := by nlinarith
-      have h2 : -σ * B.2 ≠ 0 := mul_ne_zero (neg_ne_zero.2 hσ0) hB0
-      have h3 : σ * A.2 ≠ 0 := mul_ne_zero hσ0 hA0
-      have h4 : -σ * B.2 < 0 := lt_of_le_of_ne hc.1 h2
-      have h5 : σ * A.2 < 0 := lt_of_le_of_ne hc.2 h3
+      have h2  := mul_ne_zero (neg_ne_zero.2 hσ0) hB0
+      have h3  := mul_ne_zero hσ0 hA0
+      have h4  := lt_of_le_of_ne hc.1 h2
+      have h5  := lt_of_le_of_ne hc.2 h3
       nlinarith [mul_pos_of_neg_of_neg h4 h5]
     · right; right; right
       have hk := sideDot_key h
@@ -91,8 +95,8 @@ theorem sideCcw_horiz_same {A B : Point} (hAB : 0 < A.2 * B.2) {σ : ℝ} (hσ :
 
 theorem sideCcw_horiz_opp {A B : Point} (hAB : A.2 * B.2 < 0) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     sideCcw B ((σ, 0) : Point) A ↔ 0 < -σ * B.2 := by
-  have eBX : sideCross B ((σ, 0) : Point) = -σ * B.2 := by unfold sideCross; ring
-  have eXA : sideCross ((σ, 0) : Point) A = σ * A.2 := by unfold sideCross; ring
+  have eBX : sideCross B ((σ, 0) : Point) = -σ * B.2 := by ufring sideCross
+  have eXA : sideCross ((σ, 0) : Point) A = σ * A.2 := by ufring sideCross
   have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
   have hA0 : A.2 ≠ 0 := by rintro h; rw [h, zero_mul] at hAB; exact lt_irrefl _ hAB
   have hpos : 0 < A.1 ^ 2 + A.2 ^ 2 := by positivity
@@ -191,9 +195,9 @@ theorem sideLeftOf_horiz {a v b : Point} (ha : a.2 ≠ v.2) (hb : b.2 ≠ v.2) {
     · have hne : ((-1 : ℝ) = 1) ↔ False := by norm_num
       rw [hne]
       constructor
-      · intro h; simp only [false_iff, not_lt]; linarith
+      · intro h; sil only [false_iff, not_lt]
       · intro h
-        simp only [false_iff, not_lt] at h
+        simp [false_iff, not_lt] at h
         rcases h.lt_or_eq with h' | h'
         · linarith
         · exact absurd h'.symm hb
@@ -323,7 +327,7 @@ theorem pos_of_vertex (hP : C.P.Simple) {p : ℕ} {t : ℝ}
   rw [hn] at h
   have hx := congrArg Prod.fst h
   have hy := congrArg Prod.snd h
-  simp only [Geometry.lerp_fst, Geometry.lerp_snd] at hx hy
+  simp [Geometry.lerp_fst, Geometry.lerp_snd] at hx hy
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
   rw [hW] at hx hy h
   have hwrap := C.sideWalk_vtx_wrap C.sideBeta
@@ -334,22 +338,22 @@ theorem pos_of_vertex (hP : C.P.Simple) {p : ℕ} {t : ℝ}
   · exfalso
     interval_cases p
     · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_zero, C.sideWalk_vtx_one] at hy
-      simp only [Chain.slitTop] at hy; linarith
+      sil only [Chain.slitTop] at hy
     · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_one, C.sideWalk_vtx_two] at hx
-      simp only at hx; linarith
+      sil only at hx
     · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hy
-      simp only at hy; linarith
+      sil only at hy
     · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_three, C.sideWalk_vtx_four] at hx
-      simp only at hx; linarith
+      sil only at hx
     · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_four, C.sideWalk_vtx_five] at hy
-      simp only [Chain.slitTop] at hy; linarith
+      sil only [Chain.slitTop] at hy
     · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_five, show (5 + 1 : ℕ) = 6 from rfl, h6] at hy
-      simp only [Chain.slitTop] at hy
+      simp [Chain.slitTop] at hy
       nlinarith
   by_cases hpl : p = 2 * C.m + 6
   · subst hpl
     rw [hwrap, C.sideWalk_vtx_tour _ le_rfl, C.sideTour_two_m] at hy
-    simp only [Chain.slitTop] at hy
+    simp [Chain.slitTop] at hy
     have ht : t = 0 := by
       by_contra hne
       have : 0 < t := lt_of_le_of_ne ht0 (Ne.symm hne)
@@ -414,11 +418,11 @@ theorem sideCcw_up {a v b : Point} {h : ℝ} (hh : 0 < h) (ha : a.2 < v.2) (hb :
       (det a v b = 0 ∧ v.2 < b.2 ∧ v.1 < b.1) ∨ (det a v b = 0 ∧ b.2 < v.2) := by
   have e1 : sideCross (b - v) (a - v) = det a v b := Chain.sideCross_corner a v b
   have e2 : sideCross (b - v) ((0 : ℝ), h) = h * (b.1 - v.1) := by
-    unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]; ring
+    unfold sideCross; sir only [Prod.fst_sub, Prod.snd_sub]
   have e3 : sideCross ((0 : ℝ), h) (a - v) = h * (v.1 - a.1) := by
-    unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]; ring
+    unfold sideCross; sir only [Prod.fst_sub, Prod.snd_sub]
   have e4 : sideDot (b - v) ((0 : ℝ), h) = h * (b.2 - v.2) := by
-    unfold sideDot; simp only [Prod.fst_sub, Prod.snd_sub]; ring
+    unfold sideDot; sir only [Prod.fst_sub, Prod.snd_sub]
   have p2 : 0 < h * (b.1 - v.1) ↔ v.1 < b.1 := by
     constructor
     · intro hc; by_contra hc'; push Not at hc'; nlinarith
@@ -427,12 +431,12 @@ theorem sideCcw_up {a v b : Point} {h : ℝ} (hh : 0 < h) (ha : a.2 < v.2) (hb :
     constructor
     · intro hc; by_contra hc'; push Not at hc'; nlinarith
     · intro hc; exact mul_pos hh (by linarith)
-  have hA : (a - v).2 < 0 := by simp only [Prod.snd_sub]; linarith
+  have hA : (a - v).2 < 0 := by sil only [Prod.snd_sub]
   -- the dot product at a straight corner
   have hdot : det a v b = 0 → (sideDot (b - v) (a - v) < 0 ↔ v.2 < b.2) ∧
       (0 < sideDot (b - v) (a - v) ↔ b.2 < v.2) := by
     intro hd
-    have hk := sideDot_key (A := a - v) (B := b - v) (by rw [e1]; exact hd)
+    have hk := sideDot_key (A := a - v) (B := b - v) (by rwx [e1])
     have hpos : 0 < (a - v).1 ^ 2 + (a - v).2 ^ 2 := by nlinarith
     have hB : (b - v).2 = b.2 - v.2 := rfl
     rw [hB] at hk
@@ -506,8 +510,8 @@ theorem sideBeta_iff (hDH : DistinctHeights C.P) (h0 : 0 < C.topIdx) :
     have hn : 2 ≤ C.P.n := by have := C.add_one_le; have := C.one_le; omega
     generalize C.edgeIdx C.topIdx = x at hs hx
     rcases Nat.lt_or_ge (x + 1) C.P.n with h1 | h1
-    · rw [Nat.mod_eq_of_lt h1] at hs; omega
-    · rw [show x + 1 = C.P.n by omega, Nat.mod_self] at hs; omega
+    · rwo [Nat.mod_eq_of_lt h1] at hs
+    · rwo [show x + 1 = C.P.n by omega, Nat.mod_self] at hs
   exact sideCcw_up (by linarith [C.top_snd_lt_radius]) ha hb
 
 end Brute

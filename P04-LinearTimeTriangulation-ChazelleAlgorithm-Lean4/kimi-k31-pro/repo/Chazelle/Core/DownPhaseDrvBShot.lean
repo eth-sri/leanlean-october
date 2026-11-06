@@ -3,6 +3,9 @@ module
 public import Chazelle.Core.DownPhaseDrvBGeo
 public import Chazelle.Core.DownPhaseBaseFull
 public import Chazelle.Core.DownPhaseMathHost
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down-phase base (D9), geometry part 2: the far end of a vertex chord, and its record
@@ -87,8 +90,8 @@ theorem rayPt_cross {v : Point} {σ x : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     rayPt v σ (σ * (x - v.1)) = ((x, v.2) : Point) := by
   have hσσ : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
   ext
-  · simp only [Visibility.rayPt_fst]; rw [← mul_assoc, hσσ]; ring
-  · simp only [Visibility.rayPt_snd]
+  · simp [Visibility.rayPt_fst]; rwring [← mul_assoc, hσσ]
+  · simp [Visibility.rayPt_snd]
 
 /-- **No candidate crossing is strictly before the far end.** -/
 theorem cand_le (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
@@ -96,8 +99,7 @@ theorem cand_le (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ = 
     σ * (chordEnd Q i σ).1 ≤ σ * edgeXAt Q q i := by
   obtain ⟨hq, hs, hside⟩ := hc
   have hσσ : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
-  have hX : ((edgeXAt Q q i, (Q.vtx i).2) : Point) ∈ Q.boundary :=
-    (strad_open hs).mem_boundary hq
+  have hX  := (strad_open hs).mem_boundary hq
   have hle : chordParam Q i σ ≤ σ * (edgeXAt Q q i - (Q.vtx i).1) := by
     by_contra hlt
     push Not at hlt
@@ -118,7 +120,7 @@ theorem far_cand (hQ : Q.Simple) (hDH : DistinctHeights Q) {i : ℕ} (hi : i < Q
   have hzb : z ∈ Q.boundary := Visibility.chordEnd_mem_boundary hQ hi hdir
   have hnv : ∀ j, j < Q.n → z ≠ Q.vtx j := by
     intro j hj e
-    have hy : (Q.vtx j).2 = (Q.vtx i).2 := by rw [← e]; rfl
+    have hy : (Q.vtx j).2 = (Q.vtx i).2 := by rwr [← e]
     have hji : j = i := by
       by_contra hne; exact hDH _ _ hj hi hne hy
     subst hji
@@ -131,8 +133,8 @@ theorem far_cand (hQ : Q.Simple) (hDH : DistinctHeights Q) {i : ℕ} (hi : i < Q
     refine hDH _ _ hq (Nat.mod_lt _ (by omega)) ?_
     intro e
     by_cases h : q + 1 < Q.n
-    · rw [Nat.mod_eq_of_lt h] at e; omega
-    · rw [show q + 1 = Q.n by omega, Nat.mod_self] at e; omega
+    · rwo [Nat.mod_eq_of_lt h] at e
+    · rwo [show q + 1 = Q.n by omega, Nat.mod_self] at e
   obtain ⟨⟨hb, ht'⟩, hx⟩ := (Visibility.openEdgePt_iff_edgeX hNH).1 hop
   have hz2 : z.2 = (Q.vtx i).2 := rfl
   rw [hz2] at hb ht' hx
@@ -155,8 +157,7 @@ theorem cand_min (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ =
     OpenEdgePt Q q (chordEnd Q i σ) := by
   have h1 := cand_le hQ hi hσ hdir hc
   have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
-  have hx : edgeXAt Q q i = (chordEnd Q i σ).1 :=
-    mul_left_cancel₀ hσ0 (le_antisymm hmin h1)
+  have hx  := mul_left_cancel₀ hσ0 (le_antisymm hmin h1)
   have := strad_open hc.2.1
   rw [hx] at this
   exact this
@@ -172,10 +173,10 @@ theorem qE_inj {li : Bool} {n w w' : ℕ} (hw : w < n) (hw' : w' < n) (h : qE li
 def qEi (li : Bool) (n q : ℕ) : ℕ := if li then q else if q + 1 < n then n - 2 - q else n - 1
 
 theorem qEi_lt (li : Bool) {n q : ℕ} (hq : q < n) : qEi li n q < n := by
-  unfold qEi; split_ifs <;> omega
+  unfold qEi; splao
 
 theorem qE_qEi (li : Bool) {n q : ℕ} (hn : 2 ≤ n) (hq : q < n) : qE li n (qEi li n q) = q := by
-  unfold qE qEi; cases li <;> simp; split_ifs <;> omega
+  unfold qE qEi; cases li <;> simp; splao
 
 /-- **A σ-nearest candidate among walk edges** (a set `ES` containing a walk edge whose edge of
 `Q` carries the far end) carries the far end. -/
@@ -187,8 +188,7 @@ theorem scan_min (hQ : Q.Simple) (hDH : DistinctHeights Q) {i : ℕ} (hi : i < Q
       σ * edgeXAt Q (qE li Q.n w) i ≤ σ * edgeXAt Q (qE li Q.n w') i) :
     OpenEdgePt Q (qE li Q.n w) (chordEnd Q i σ) := by
   obtain ⟨q, hcq, hxq, hoq⟩ := far_cand hQ hDH hi hσ hdir
-  have hq₀ : q = qE li Q.n w₀ :=
-    openEdge_unique hQ hcq.1 (DownMath.qE_lt li hw₀) hoq hz₀
+  have hq₀  := openEdge_unique hQ hcq.1 (DownMath.qE_lt li hw₀) hoq hz₀
   subst hq₀
   have := hmin w₀ hw₀E hw₀ hcq
   rw [hxq] at this
@@ -215,7 +215,7 @@ theorem openEdge_walk {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (h
   have hw1 : (w + 1) % Q.n < Q.n := Nat.mod_lt _ (by omega)
   have hv0 := DownMath.walk_vtx hli hw
   have hv1 := DownMath.walk_vtx hli hw1
-  have hWn : (interiorWalk Q).n = Q.n := DownMath.walk_n Q
+  have hWn  := DownMath.walk_n Q
   rcases DownMath.edge_ends li (by omega) hw with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · refine ⟨s, hs, ?_⟩
     unfold sidePt; rw [hWn, hv0, hv1, h1, h2]
@@ -260,14 +260,14 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
   have hpart : I.param Q ⟨w, i + 1⟩ = t := by
     rw [DownBase.param_eq hQ hDH hli hw]
     have hy := congrArg Prod.snd hzt'
-    simp only [Geometry.lerp_snd] at hy
+    simp [Geometry.lerp_snd] at hy
     have hz2 : z.2 = (Q.vtx i).2 := rfl
     rw [hz2] at hy
     rw [← hy]
     field_simp
     ring
   have hposz : I.pos Q ⟨w, i + 1⟩ = z := by
-    simp only [Model.pos]; rw [hpart]; exact hzt'
+    simp [Model.pos]; rw [hpart]; exact hzt'
   -- the chord as a segment between its two ends
   have hc : chordSet Q i σ ∈ chords Q := ⟨i, σ, hi, hσ, hdir, rfl⟩
   have hHC := FullDegInt.hc_full hQ hc
@@ -321,7 +321,7 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
   unfold vtrip
   by_cases hd0 : d = 0
   · rw [ite_eq_left hd0]
-    have hσ1 : σ = 1 := by rw [hσdef, hd0]; rfl
+    have hσ1 : σ = 1 := by rwr [hσdef, hd0]
     have hlt : (Q.vtx i).1 < z.1 := by
       rw [hzdef, Visibility.chordEnd_fst,
         show σ * chordParam Q i σ = chordParam Q i σ by rw [hσ1, one_mul]]

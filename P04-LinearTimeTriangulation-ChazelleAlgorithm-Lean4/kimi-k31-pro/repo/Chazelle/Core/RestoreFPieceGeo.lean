@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.RestoreFArcs
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-E, the search: the geometry of a kind-1 piece
@@ -31,7 +33,7 @@ theorem piece_edges {s m n : ℕ} (hs : s < n) (hm : 0 < m) (hmn : m < n) {p : �
     · rintro ⟨a, b⟩
       have a' : p < s + m := by exact_mod_cast a
       have b' : s < p + 1 := by exact_mod_cast b
-      exact ⟨p - s, by omega, by rw [Nat.mod_eq_of_lt (by omega)]; omega⟩
+      exact ⟨p - s, by omega, by rwo [Nat.mod_eq_of_lt (by omega)]⟩
     · rintro ⟨d, hd, e⟩
       rw [Nat.mod_eq_of_lt (by omega)] at e
       exact ⟨by exact_mod_cast (by omega : p < s + m), by exact_mod_cast (by omega : s < p + 1)⟩
@@ -48,7 +50,7 @@ theorem piece_edges {s m n : ℕ} (hs : s < n) (hm : 0 < m) (hmn : m < n) {p : �
         exact ⟨p + n - s, by omega, by
           rw [show s + (p + n - s) = p + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hp]⟩
       · have b' : s < p + 1 := by exact_mod_cast b
-        exact ⟨p - s, by omega, by rw [Nat.mod_eq_of_lt (by omega)]; omega⟩
+        exact ⟨p - s, by omega, by rwo [Nat.mod_eq_of_lt (by omega)]⟩
     · rintro ⟨d, hd, e⟩
       by_cases h : s + d < n
       · rw [Nat.mod_eq_of_lt h] at e
@@ -68,7 +70,7 @@ theorem counted_of_wt {M : Model} {s m : ℕ} (hs : s < M.W.n) (hm : 0 < m) (hmn
     sideInArc (s : ℝ) (((s + m) % n : ℕ) : ℝ) (p + t)} with hT
   have hSe : S = (fun d => (s + d) % n) '' Set.Iio m := by
     ext p
-    simp only [hS, Set.mem_ofPred_eq, Set.mem_image, Set.mem_Iio]
+    simp [hS, Set.mem_ofPred_eq, Set.mem_image, Set.mem_Iio]
     constructor
     · rintro ⟨hp, h⟩
       obtain ⟨d, hd, e⟩ := (piece_edges hs hm hmn hp).1 h
@@ -77,8 +79,8 @@ theorem counted_of_wt {M : Model} {s m : ℕ} (hs : s < M.W.n) (hm : 0 < m) (hmn
       exact ⟨Nat.mod_lt _ (by omega), (piece_edges hs hm hmn (Nat.mod_lt _ (by omega))).2 ⟨d, hd, rfl⟩⟩
   have hinj : Set.InjOn (fun d => (s + d) % n) (Set.Iio m) := by
     intro x hx y hy hxy
-    simp only [Set.mem_Iio] at hx hy
-    simp only at hxy
+    simp [Set.mem_Iio] at hx hy
+    simp at hxy
     by_contra hne
     rcases Nat.lt_or_gt_of_ne hne with h | h
     · have := Nat.ModEq.add_left_cancel' s hxy
@@ -113,7 +115,7 @@ theorem counted_pt_mem (C : Chain) {p : ℕ} (hp : (chainModel C).counted p) {t 
     Geometry.lerp ((chainModel C).W.vtx p)
       ((chainModel C).W.vtx ((p + 1) % (chainModel C).W.n)) t ∈ C.set := by
   obtain ⟨h6, hp'⟩ := hp
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hn  := chainModel_n C
   rw [hn, Nat.mod_eq_of_lt (by omega)]
   rcases h1.lt_or_eq with h1 | rfl
   · have := C.sideWalk_tour_pt_mem C.sideBeta (i := p - 6) (t := t) (by omega)
@@ -126,8 +128,8 @@ theorem counted_pt_mem (C : Chain) {p : ℕ} (hp : (chainModel C).counted p) {t 
     rw [show p + 1 - 6 + 6 = p + 1 by omega, Chazelle.Chain.sidePt_zero] at this
     have e : Geometry.lerp ((chainModel C).W.vtx p) ((chainModel C).W.vtx (p + 1)) 1 =
         (chainModel C).W.vtx (p + 1) := by
-      simp only [Geometry.lerp, one_mul, add_sub_cancel]
-    rw [e]; exact this
+      simp [Geometry.lerp, one_mul, add_sub_cancel]
+    rwx [e]
 
 /-- **The chain of a piece over counted edges of a chain model lies on the model's chain.** -/
 theorem piece_set_sub {C Cα : Chain} {s : ℕ}
@@ -152,7 +154,7 @@ theorem piece_set_sub {C Cα : Chain} {s : ℕ}
       show Cα.m - (Cα.m - k - 1 + 1) = k by omega] at this
     have e : Geometry.lerp (Cα.vertex (k + 1)) (Cα.vertex k) (1 - t) =
         Geometry.lerp (Cα.vertex k) (Cα.vertex (k + 1)) t := by
-      simp only [Geometry.lerp, Prod.mk.injEq]; constructor <;> ring
+      simp [Geometry.lerp, Prod.mk.injEq]; constructor <;> ring
     rwa [e] at this
 
 end

@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.FuseAsmQuery
 public import Chazelle.Core.MergeAsmProg
 public import Chazelle.Core.FuseAsmSet
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # WP-F fusion assembly, part 3: writing the chord-end queries
@@ -60,7 +62,6 @@ def qlBody : Stmt := block [.loadN 70103 70101, .addN 70104 70103 70105,
 /-- The query loop. -/
 def qlLoop : Stmt := .whileLtN 70102 70100 qlBody
 
-set_option maxHeartbeats 4000000 in
 theorem qlBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {s a : ℕ}
     (h01 : c.nreg 70101 = s) (hA : c.nreg ALLOC = a) (h05 : c.nreg 70105 = 1)
     (h06 : c.nreg 70106 = 5) (h08 : c.nreg 70108 = 0) (hs : s + 5 ≤ W) (ha : a + 6 ≤ W)
@@ -103,7 +104,6 @@ structure QLI (W K CB LB : ℕ) (c₀ c : Config) : Prop where
   rm : c.rmem = c₀.rmem
   out : c.output = c₀.output
 
-set_option maxHeartbeats 4000000 in
 /-- **The query loop.** -/
 theorem qlLoop_exec {P : Polygon} {W K CB LB : ℕ} {c₀ : Config}
     (h05 : c₀.nreg 70105 = 1) (h06 : c₀.nreg 70106 = 5) (h08 : c₀.nreg 70108 = 0)
@@ -131,7 +131,7 @@ theorem qlLoop_exec {P : Polygon} {W K CB LB : ℕ} {c₀ : Config}
         (by omega) (by omega) (by omega) (by rw [hmem]; exact hh i hiK) (by omega)
     rw [hi] at v02
     have hI' : QLI W K CB LB c₀ c' := by
-      refine ⟨e.wb_right, by omega, by rw [v01, v02]; ring, by rw [vA, v02]; ring,
+      refine ⟨e.wb_right, by omega, by rwring [v01, v02], by rwring [vA, v02],
         fun r a1 a2 a3 a4 a5 a6 => by rw [R r a1 a2 a3 a4 a5 a6, hI.regs r a1 a2 a3 a4 a5 a6],
         fun a ha => by rw [mo a (Or.inl (by omega)), hI.low a ha], fun i' hi' => ?_,
         by rw [rr, hI.rr], by rw [rm, hI.rm], by rw [ro, hI.out]⟩

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.GranNFBounds
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.ChainTactics
 
 /-!
 # WP-F, init part 12: the environment of a run
@@ -32,9 +35,9 @@ theorem desc_count {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model}
     have hn : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n C.sideBeta
     rw [hm, h0]
     simp only [decide_true]
-    refine ⟨⟨fun _ => by rw [hn]; omega, fun p hp => ?_⟩, fun _ => hn, ?_⟩
+    refine ⟨⟨fun _ => by rwo [hn], fun p hp => ?_⟩, fun _ => hn, ?_⟩
     · simp [chainModel]
-    · unfold szOf cntIn; rw [hn]; simp only [ite_true]; omega
+    · unfold szOf cntIn; rsio [hn] only [ite_true]
   · rw [h1]
     simp only [show (1 : ℕ) ≠ 0 by decide, decide_false]
     refine ⟨⟨fun h => absurd h (by decide), fun p hp => ?_⟩, fun h => absurd h (by decide), ?_⟩

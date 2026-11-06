@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.OracleArcs
 public import Chazelle.Core.FactsTree
+public import Chazelle.Rwx
+public import Chazelle.MiscTactics
 
 /-!
 # Lemma 3.6 (WP-H), part 6: from crossings of the chain to zipper edges
@@ -54,8 +56,8 @@ theorem not_mem_chord_of_crossAdj (C : Chain) {F : Set (Set Point)}
   intro c hc hxc
   obtain ⟨y, a, b, h, -, rfl, -, -⟩ := Merge.augChords_spec (hF hc)
   obtain ⟨hy, ha, hb⟩ := hxc
-  have hA' : A ∈ regionsIn C.dom F := hA
-  have hB' : B ∈ regionsIn C.dom F := hB
+  have hA'  := hA
+  have hB'  := hB
   -- points of the chord in either direction are free, which is impossible
   have hfreeA : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt x (-σ) t ∉ ⋃₀ F :=
     hAe.mono fun t ht => (Chazelle.Chain.regionsIn_subset hA' ht).2
@@ -106,9 +108,9 @@ theorem arcHit_of_crossAdj (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set 
   obtain ⟨εA, hεA, hsubA⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hAe
   obtain ⟨εB, hεB, hsubB⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hBe
   have h1 := arcHit_right C hP hFam hA hz hnσ (s := 0) (b := εA) hεA
-    (fun t h0 h1 => hsubA ⟨h0, h1⟩) (by rw [e0]; exact hxd)
+    (fun t h0 h1 => hsubA ⟨h0, h1⟩) (by rwx [e0])
   have h2 := arcHit_right C hP hFam hB hz hσ (s := 0) (b := εB) hεB
-    (fun t h0 h1 => hsubB ⟨h0, h1⟩) (by rw [e0]; exact hxd)
+    (fun t h0 h1 => hsubB ⟨h0, h1⟩) (by rwx [e0])
   rw [e0] at h1 h2
   exact ⟨h1, h2⟩
 
@@ -140,7 +142,7 @@ theorem interior_of_arcHit (C : Chain) {F : Set (Set Point)} (hne : F.Nonempty) 
         rw [Nat.mod_eq_of_lt hlast]
       have hnc := hnocut (p + 1) 0 le_rfl one_pos hpt
       refine ⟨p + 1, 0, hlast, le_rfl, one_pos, hpt, ?_⟩
-      have e : (((p + 1 : ℕ) : ℝ) + 0) = (p : ℝ) + 1 := by push_cast; ring
+      have e : (((p + 1 : ℕ) : ℝ) + 0) = (p : ℝ) + 1 := by pcr
       rw [e]
       rw [e] at hnc
       rcases hkey with h | h | h
@@ -158,7 +160,7 @@ theorem interior_of_arcHit (C : Chain) {F : Set (Set Point)} (hne : F.Nonempty) 
         rw [this, C.sideWalk_vtx_zero]
       rw [hv] at hx
       have := C.snd_le_top_of_mem_set hx
-      simp only [Chain.slitTop] at this
+      simp [Chain.slitTop] at this
       linarith [C.top_snd_lt_radius]
   · have hnc := hnocut p t ht0 h1 rfl
     refine ⟨p, t, hp, ht0, h1, rfl, ?_⟩
@@ -179,7 +181,7 @@ theorem cross_zip (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     ∃ p q, p < N.arcs.length ∧ q < N.arcs.length ∧ reg (rgi N p) = A ∧ reg (rgi N q) = B ∧
       ZipRel C Q N p q := by
   set F := N.F (chainModel C) Q
-  have hFam : (chainModel C).ChordFamily Q F := hN.1
+  have hFam  := hN.1
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   obtain ⟨x, hx, σ, hσ, hAe, hBe⟩ := hcr
   -- the family is nonempty: otherwise there is a single region
@@ -209,7 +211,7 @@ theorem cross_zip (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
       rw [hpj, hjr]
     · show sideInArc ((chainModel C).key Q (N.arc (N.seq.getD p 0)).s)
         ((chainModel C).key Q (N.arc (N.seq.getD p 0)).e) (p₁ + t₁)
-      rw [hpj, hja, hjb]; exact hin
+      rwx [hpj, hja, hjb]
   obtain ⟨p, hp, hpA, p₁, t₁, hp₁, h10, h11, hpt₁, hin₁⟩ := locate A hAr hitA
   obtain ⟨q, hq, hqB, p₂, t₂, hp₂, h20, h21, hpt₂, hin₂⟩ := locate B hBr hitB
   exact ⟨p, q, hp, hq, hpA, hqB, p₁, p₂, t₁, t₂, hp₁, hp₂, h10, h11, h20, h21,

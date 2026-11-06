@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Chain.Sides
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Mirror symmetry (F-D7), part 2: the reflection of walk keys
@@ -23,7 +25,7 @@ open Chazelle.Chain (sideInArc)
 noncomputable def rk (n c : ℕ) (x : ℝ) : ℝ := if x ≤ c then c - x else c - x + n
 
 macro "mcyc" : tactic => `(tactic| (
-  (try simp only [not_and_or, not_or, not_lt, not_le] at *) <;>
+  (try simp [not_and_or, not_or, not_lt, not_le] at *) <;>
   (casesm* _ ∧ _, _ ∨ _) <;>
   first
   | linarith
@@ -68,8 +70,8 @@ theorem rk_edge (hc : c < n) {p : ℕ} (hp : p < n) {t : ℝ} (ht0 : 0 < t) (ht1
       rw [show c + 2 * n - 1 - p = (c - 1 - p) + n * 2 by omega, Nat.add_mul_mod_self_left,
         Nat.mod_eq_of_lt (by omega)]]
     have e : ((c - 1 - p : ℕ) : ℝ) = (c : ℝ) - 1 - p := by
-      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; push_cast; ring
-    rw [e]; ring
+      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; pcr
+    rwring [e]
   · have h' : c ≤ p := by
       by_contra hh; push Not at hh
       have : (p : ℝ) + 1 ≤ c := by exact_mod_cast hh
@@ -78,8 +80,8 @@ theorem rk_edge (hc : c < n) {p : ℕ} (hp : p < n) {t : ℝ} (ht0 : 0 < t) (ht1
       rw [show c + 2 * n - 1 - p = (c + n - 1 - p) + n * 1 by omega, Nat.add_mul_mod_self_left,
         Nat.mod_eq_of_lt (by omega)]]
     have e : ((c + n - 1 - p : ℕ) : ℝ) = (c : ℝ) + n - 1 - p := by
-      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; push_cast; ring
-    rw [e]; ring
+      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; pcr
+    rwring [e]
 
 /-- **The reflection reverses the cyclic order.** -/
 theorem sideInArc_rk (hc : c < n) {a b x : ℝ} (ha0 : 0 ≤ a) (han : a < n) (hb0 : 0 ≤ b)

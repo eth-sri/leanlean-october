@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvGLoop
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Down-phase driver, region procedure (D5), part 9: the setup
@@ -52,8 +55,8 @@ theorem rgPadLoop_exec : ∀ (m : ℕ) (c : Config), WordsBounded W c → c.nreg
       upd_other _ _ _ (by decide)
     have h3 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 219250 = c.nreg 219250 + 1 := by
       rw [upd_same, h51]
-    have e' := rgPadLoop_exec m _ e.wb_right h1 (by dsimp only; rw [h2, h3]; omega)
-      (by dsimp only; rw [h2, h3]; omega)
+    have e' := rgPadLoop_exec m _ e.wb_right h1 (by dsimp only; rwo [h2, h3])
+      (by dsimp only; rwo [h2, h3])
     refine ((Exec.whileLtN_true (by omega) (Exec.seq e (.skip e.wb_right)) e').cast
       (by ring)).cast_end ?_
     simp only [h2, upd_upd_same]
@@ -71,10 +74,10 @@ theorem rgPad_exec (c : Config) (hw : WordsBounded W c) (hs : c.nreg 219003 ≤ 
   have a51 : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 219251 = 1 := upd_same _ _ _
   have aA : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 9999 = c.nreg 9999 := by
     rw [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide)]
-  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by dsimp only; rw [a50, aA]; exact hs)
+  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by dsimp only; rwx [a50, aA])
     rfl
   refine ⟨_, (Exec.seq (Exec.seq e₁ (Exec.seq e₂ (.skip e₂.wb_right))) e₃).cast
-    (by dsimp only; rw [a50, aA]; ring), fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
+    (by dsimp only; rwring [a50, aA]), fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
   simp only [upd_other _ _ _ h1, upd_other _ _ _ h2]
 
 /-- The registers `rgInit1` writes. -/
@@ -82,7 +85,6 @@ def Bi1 (q : ℕ) : Bool :=
   decide (219140 ≤ q ∧ q ≤ 219146) || decide (219100 ≤ q ∧ q ≤ 219107) ||
     decide (219220 ≤ q ∧ q ≤ 219231) || decide (q = 9999)
 
-set_option maxHeartbeats 1000000 in
 theorem rgInit1_exec (c : Config) (hw : WordsBounded W c) {HB NP T Hl : ℕ}
     (h00 : c.nreg 219200 = HB) (h01 : c.nreg 219201 = NP) (h03 : c.nreg 219003 = T)
     (hHl : c.nmem HB = Hl) (hW : c.nreg 9999 + 130 ≤ W) :

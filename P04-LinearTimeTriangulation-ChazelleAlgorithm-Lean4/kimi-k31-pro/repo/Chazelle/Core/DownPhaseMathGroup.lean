@@ -50,7 +50,7 @@ theorem arcGap_prev_of_end {S : Set (Set Point)} {R : Set Point} (hQ : Q.Simple)
     (hR : R ∈ (interiorModel Q).regions S) {i : ℕ} (hi : i < nk (interiorModel Q) S R) {a : ℝ}
     (harc : (interiorModel Q).IsArc S R a (hk (interiorModel Q) S R i)) :
     ArcGap (interiorModel Q) S R (prevIdx (nk (interiorModel Q) S R) i) := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM  := walkAx_interiorModel hQ
   have h3 := three_le_nk hQ hFam hne hR
   obtain ⟨i_l, d, hD⟩ := arc_keys hM hFam.2.1 hFam.1 hne hR harc
   have hidx := hk_inj hM hFam.2.1 hFam.1 (Nat.mod_lt _ (by omega)) hi hD.hr
@@ -84,14 +84,14 @@ theorem ptSym_rep {N : NF} {R : Set Point} (hN : IsNF (interiorModel Q) Q N)
   · rw [hki]
     by_cases hb : (isEnd && atVtx li Q.n x) = true
     · have hb' := hb
-      simp only [Bool.and_eq_true] at hb'
+      simp [Bool.and_eq_true] at hb'
       have hint := (atVtx_iff hN hdh hli ⟨c, hc, hxc⟩).1 hb'.2
       left
       refine ⟨hint, (hend hint).1 hb'.1, ?_⟩
       unfold ptSym; rw [ite_eq_left hb, hfl]
     · right
       refine ⟨fun ⟨hint, hAp⟩ => hb ?_, ?_⟩
-      · simp only [Bool.and_eq_true]
+      · simp [Bool.and_eq_true]
         exact ⟨(hend hint).2 hAp, (atVtx_iff hN hdh hli ⟨c, hc, hxc⟩).2 hint⟩
       · unfold ptSym; rw [ite_eq_right hb, hfl]
 

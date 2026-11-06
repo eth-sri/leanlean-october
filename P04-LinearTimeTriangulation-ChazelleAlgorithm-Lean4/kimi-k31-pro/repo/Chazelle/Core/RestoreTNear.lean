@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.RestoreTHoleMath
 public import Chazelle.Core.ShotListMath
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-E, the candidate test: the holes are near the candidate
@@ -51,7 +53,7 @@ theorem key_eq_nat {p e : ℕ} {τ : ℝ} (h0 : 0 ≤ τ) (h1 : τ ≤ 1) (h : (
     exact ⟨rfl, by linarith⟩
   · right
     subst h1
-    have : ((p + 1 : ℕ) : ℝ) = e := by push_cast; linarith
+    have : ((p + 1 : ℕ) : ℝ) = e := by pcl
     exact ⟨by exact_mod_cast this, rfl⟩
 
 /-- A key strictly between `e` and `e + 1` at a position `(p, τ)`: the position is on edge `e`. -/
@@ -132,7 +134,7 @@ theorem vtx_keys_split {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) {k : ℝ} (hk0 : 
   · -- q = 0: the interval [n - 1, 1] wraps
     rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt (by omega),
       Nat.mod_eq_of_lt (by omega : 0 + 1 < n)] at h ⊢
-    have e1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have e1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by rws [Nat.cast_sub (by omega)]
     rw [e1] at h ⊢
     push_cast at h ⊢
     have hn' : (3 : ℝ) ≤ n := by exact_mod_cast hn
@@ -149,7 +151,7 @@ theorem vtx_keys_split {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) {k : ℝ} (hk0 : 
     · right; right; right; exact h
   · rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt (by omega : q - 1 < n)] at h ⊢
-    have e1 : ((q - 1 : ℕ) : ℝ) = (q : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have e1 : ((q - 1 : ℕ) : ℝ) = (q : ℝ) - 1 := by rws [Nat.cast_sub (by omega)]
     rw [e1] at h ⊢
     rcases Nat.lt_or_ge (q + 1) n with hlt | hge
     · -- no wrap
@@ -187,7 +189,7 @@ theorem near_eHole (M : Model) (Q : Polygon) {e : ℕ} (he : e < M.W.n) {z : Poi
     (hk : CIn (M.key Q (eHole M.W.n e).1) (M.key Q (eHole M.W.n e).2) ((p : ℝ) + τ)) :
     ∃ p', p' < M.W.n ∧ (∃ t₁ : ℝ, 0 ≤ t₁ ∧ t₁ ≤ 1 ∧ sidePt M.W p' t₁ = z) ∧
       ∃ t₂ : ℝ, 0 ≤ t₂ ∧ t₂ ≤ 1 ∧ sidePt M.W p' t₂ = sidePt M.W p τ := by
-  simp only [eHole, key_hole] at hk
+  simp [eHole, key_hole] at hk
   exact ⟨e, he, hz, edge_keys M.W he hp h0 h1 hk⟩
 
 /-- **A vertex hole is near its vertex.** -/
@@ -196,7 +198,7 @@ theorem near_vHole (M : Model) (Q : Polygon) (hn : 3 ≤ M.W.n) {q : ℕ} (hq : 
     (hk : CIn (M.key Q (vHole M.W.n q).1) (M.key Q (vHole M.W.n q).2) ((p : ℝ) + τ)) :
     ∃ p', p' < M.W.n ∧ (∃ t₁ : ℝ, 0 ≤ t₁ ∧ t₁ ≤ 1 ∧ sidePt M.W p' t₁ = z) ∧
       ∃ t₂ : ℝ, 0 ≤ t₂ ∧ t₂ ≤ 1 ∧ sidePt M.W p' t₂ = sidePt M.W p τ := by
-  simp only [vHole, key_hole] at hk
+  simp [vHole, key_hole] at hk
   have hk0 : (0 : ℝ) ≤ p + τ := by have : (0 : ℝ) ≤ p := Nat.cast_nonneg _; linarith
   have hkn : (p : ℝ) + τ ≤ M.W.n := by
     have : ((p + 1 : ℕ) : ℝ) ≤ M.W.n := by exact_mod_cast hp

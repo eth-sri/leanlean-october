@@ -2,6 +2,8 @@ module
 
 public import Chazelle.Core.ShootCutCutter2
 public import Chazelle.Core.NFBuildMain
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # WP-G, part 36: the arc-cutter meets `CutterOK`
@@ -11,10 +13,6 @@ public import Chazelle.Core.NFBuildMain
 granularity `cutGran γ`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -70,14 +68,14 @@ theorem chainDesc_unique {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H H' : Host}
     (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H' C') : C = C' := by
   obtain ⟨h1, h2, h3, h4, -⟩ := h
   obtain ⟨h1', h2', h3', h4', -⟩ := h'
-  have hH : H = H' := NFLoc.hostAt_unique h1 h1'
+  have hH  := NFLoc.hostAt_unique h1 h1'
   subst hH
   obtain ⟨P, s, m, a, b⟩ := C
   obtain ⟨P', s', m', a', b'⟩ := C'
   simp only at h2 h2' h3 h3' h4 h4'
   subst h2 h2'
-  have e1 : s = s' := h3.symm.trans h3'
-  have e2 : m = m' := h4.symm.trans h4'
+  have e1  := h3.symm.trans h3'
+  have e2  := h4.symm.trans h4'
   subst e1 e2
   rfl
 
@@ -150,7 +148,7 @@ theorem cutter_ok (O : OracleIface) :
   have hκ : κc = 2500000 := rfl
   -- the set-up
   obtain ⟨c₁, k₁, Nmax, e₁, hk₁, hI₁, hlt, fr₁, m₁⟩ := cutInit_exec (P := P) c hw (m₀ := m₀)
-    (fun a _ => rfl) rfl rfl hγW (by rw [hκ] at hcost; linarith)
+    (fun a _ => rfl) rfl rfl hγW (by rwli [hκ] at hcost)
   have g₁ : ∀ x, 150000 ≤ x → x < 150100 → c₁.nreg x = c.nreg x := fun x h1 h2 =>
     fr₁ x (by omega)
   -- the core
@@ -222,24 +220,24 @@ theorem cutter_ok (O : OracleIface) :
     refine ⟨le_rfl, by rw [oA], ?_, hpos, ?_, ?_, fun i hi => ?_, fun i hi => ?_,
       fun i hi hk => ?_, fun i hi hk => ?_, fun i hi => ?_, fun i hi => ?_⟩
     · show ps.length ≤ κc * (Nat.clog 2 γ + 1)
-      rw [hκ]; linarith
+      rwli [hκ]
     · rw [kS 0 hpos]
       have : (ps[0]'hpos) = ps.head hne := (List.head_eq_getElem hne).symm
-      rw [this, arc.hs]; rfl
+      rwr [this, arc.hs]
     · rw [kE _ (by omega)]
       have : (ps[ps.length - 1]'(by omega)) = ps.getLast hne := (List.getLast_eq_getElem hne).symm
-      rw [this, arc.he]; rfl
+      rwr [this, arc.he]
     · rw [kE i (by omega), kS (i + 1) hi, arc.ch i hi]
     · rw [kS i (by omega), kE i (by omega)]
       exact arc.e6 i hi
     · rw [kS i hi, kE i hi]
-      have hk' : (ps[i]'hi).kind = 0 := by rw [← w4 i hi]; exact hk
+      have hk' : (ps[i]'hi).kind = 0 := by rwx [← w4 i hi]
       exact (hok _ (List.getElem_mem hi)).2.2.2.2.2.1 hk'
-    · have hk' : (ps[i]'hi).kind = 1 := by rw [← w4 i hi]; exact hk
+    · have hk' : (ps[i]'hi).kind = 1 := by rwx [← w4 i hi]
       obtain ⟨b5, b6⟩ := w56 i hi hk'
       rw [kS i hi, kE i hi, b5, b6, w0 i hi, w1 i hi, w2 i hi, w3 i hi]
       have := kind1_facts (hok _ (List.getElem_mem hi)) hk' hX hm₃ (A' := c₃.nreg ALLOC)
-        (by rw [oA]; omega)
+        (by rwo [oA])
       exact this
     · have hp := hok _ (List.getElem_mem hi)
       rw [w0 i hi, w1 i hi, w2 i hi, w3 i hi, hnW]
@@ -248,10 +246,10 @@ theorem cutter_ok (O : OracleIface) :
       rcases (hok _ (List.getElem_mem hi)).2.2.2.2.1 with h | h <;> omega
   · -- the frame
     refine ⟨fun r hr ha => fM.1 r (Bcut_false hr ha), fun r hr => fR r (BcutR_false hr),
-      fun a ha => ?_, fun a _ => by rw [fM.2.2.1], fM.2.2.2, by rw [oA]; omega, ?_⟩
+      fun a ha => ?_, fun a _ => by rw [fM.2.2.1], fM.2.2.2, by rwo [oA], ?_⟩
     · show c₃.nmem a = c.nmem a
       rw [omo a (by omega), hm₂ a ha]
-    · rw [← hA₀]; omega
+    · rwo [← hA₀]
 
 end
 

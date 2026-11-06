@@ -2,6 +2,9 @@ module
 
 public import Chazelle.Core.SweepIoSpec2
 public import Chazelle.Core.SweepIoCand1E
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep RAM (WP-D), answers: pieces of the per-query pipeline
@@ -91,13 +94,13 @@ theorem convL_val {P : Polygon} {c : Config} {H : Host} {J : Merge.Junction}
         (chainModel J.left).pos Q ⟨e, h⟩ := by
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, h45, h33, -, h35, -⟩ := hst
   have e0 : c.nreg (sw 45) = 6 + tpos J.whole (J.m₁ + 2 * J.m₂) := by
-    rw [show sw 45 = sw (45 + 0) from rfl, h45 0 (by norm_num)]; rfl
+    rwr [show sw 45 = sw (45 + 0) from rfl, h45 0 (by norm_num)]
   have e1 : c.nreg (sw 45 + 1) = 6 + tpos J.left J.m₁ := by
-    rw [show sw 45 + 1 = sw (45 + 1) from rfl, h45 1 (by norm_num)]; rfl
+    rwr [show sw 45 + 1 = sw (45 + 1) from rfl, h45 1 (by norm_num)]
   have e2 : c.nreg (sw 45 + 2) = Sweep.lL1 J := by
-    rw [show sw 45 + 2 = sw (45 + 2) from rfl, h45 2 (by norm_num)]; rfl
+    rwr [show sw 45 + 2 = sw (45 + 2) from rfl, h45 2 (by norm_num)]
   have e4 : c.nreg (sw 45 + 4) = Sweep.lδ J := by
-    rw [show sw 45 + 4 = sw (45 + 4) from rfl, h45 4 (by norm_num)]; rfl
+    rwr [show sw 45 + 4 = sw (45 + 4) from rfl, h45 4 (by norm_num)]
   have en : c.nreg (sw 33) = (chainModel J.left).W.n := by rw [h33, cm_n]
   have en' : c.nreg (sw 35) = (chainModel J.whole).W.n := by rw [h35, cm_n]
   rw [e0, e1, e2, e4, en, en']
@@ -117,13 +120,13 @@ theorem convR_val {P : Polygon} {c : Config} {H : Host} {J : Merge.Junction}
         (chainModel J.right).pos Q ⟨e, h⟩ := by
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, -, -, h34, h35, -⟩ := hst
   have e0 : c.nreg (sw 40) = 6 + tpos J.whole J.m₁ := by
-    rw [show sw 40 = sw (40 + 0) from rfl, h40 0 (by norm_num)]; rfl
+    rwr [show sw 40 = sw (40 + 0) from rfl, h40 0 (by norm_num)]
   have e1 : c.nreg (sw 40 + 1) = 6 + tpos J.right 0 := by
-    rw [show sw 40 + 1 = sw (40 + 1) from rfl, h40 1 (by norm_num)]; rfl
+    rwr [show sw 40 + 1 = sw (40 + 1) from rfl, h40 1 (by norm_num)]
   have e2 : c.nreg (sw 40 + 2) = Sweep.rL1 J := by
-    rw [show sw 40 + 2 = sw (40 + 2) from rfl, h40 2 (by norm_num)]; rfl
+    rwr [show sw 40 + 2 = sw (40 + 2) from rfl, h40 2 (by norm_num)]
   have e4 : c.nreg (sw 40 + 4) = Sweep.rδ J := by
-    rw [show sw 40 + 4 = sw (40 + 4) from rfl, h40 4 (by norm_num)]; rfl
+    rwr [show sw 40 + 4 = sw (40 + 4) from rfl, h40 4 (by norm_num)]
   have en : c.nreg (sw 34) = (chainModel J.right).W.n := by rw [h34, cm_n]
   have en' : c.nreg (sw 35) = (chainModel J.whole).W.n := by rw [h35, cm_n]
   rw [e0, e1, e2, e4, en, en']
@@ -183,7 +186,6 @@ def winVal (c : Config) : ℕ :=
       (c.nreg (sw 34)) (c.nreg (sw 35)) (c.nreg (accA + 1))
   else c.nreg (accA + 1)
 
-set_option maxHeartbeats 4000000 in
 theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 ∧ c.nreg bR ≤ 1)
     (hl : c.nreg (accA + 3) = 0 → c.nreg bL = 1 → c.nreg (accA + 1) < c.nreg (sw 33) ∧
       c.nreg (sw 45 + 1) < c.nreg (sw 33) ∧ c.nreg (sw 33) ≤ W ∧
@@ -195,12 +197,12 @@ theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 �
       (∀ r, r ≠ yE → r ≠ yH → r ≠ cX → r ≠ cT → r ≠ cDd → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
-  have k2 : c.nreg K2 = 2 := hKc.2.2.2.2.2.1
-  have syE : IScr yE := iscr_sw (by unfold yE sw; norm_num) (by unfold yE sw; norm_num)
-  have syH : IScr yH := iscr_sw (by unfold yH sw; norm_num) (by unfold yH sw; norm_num)
-  have hyX : yE ≠ cX ∧ yE ≠ cT ∧ yE ≠ cDd := by unfold yE cX cT cDd sw; omega
-  have hpe : accA + 1 ≠ cX ∧ accA + 1 ≠ cT ∧ accA + 1 ≠ cDd := by unfold accA cX cT cDd sw; omega
+  have k1  := hKc.2.1
+  have k2  := hKc.2.2.2.2.2.1
+  have syE : IScr yE := iscr_sw (by ufn yE sw) (by ufn yE sw)
+  have syH : IScr yH := iscr_sw (by ufn yH sw) (by ufn yH sw)
+  have hyX : yE ≠ cX ∧ yE ≠ cT ∧ yE ≠ cDd := by ufo yE cX cT cDd sw
+  have hpe : accA + 1 ≠ cX ∧ accA + 1 ≠ cT ∧ accA + 1 ≠ cDd := by ufo accA cX cT cDd sw
   -- the copy branch
   have cp : IRS P W c₀ cpW c 1 (fun c₁ => c₁.nreg yE = c.nreg (accA + 1) ∧
       (∀ r, r ≠ yE → r ≠ cX → r ≠ cT → r ≠ cDd → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem) := by
@@ -217,7 +219,7 @@ theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 �
       (∀ r, r ≠ yE → r ≠ cX → r ≠ cT → r ≠ cDd → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem) := by
     by_cases t0 : c.nreg (accA + 3) < c.nreg K1
     · have t0' : c.nreg (accA + 3) = 0 := by omega
-      refine IRS.mono (K := 28) (IRS.ifT t0 ?_) le_rfl (fun _ h => h)
+      refine IRS.mono (K := 28) (IRS.ifT t0 ?_) le_rfl (fun _ => id)
       by_cases b0 : c.nreg bL < c.nreg K1
       · refine (IRS.ifT b0 cp).mono (by norm_num) ?_
         rintro c₁ ⟨h1, h2, h3⟩
@@ -231,10 +233,10 @@ theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 �
         refine ⟨?_, fun r r1 r2 r3 r4 => h2 r (by
           unfold CvSet; rintro (h | h | h | h) <;> simp_all), h3⟩
         rw [h1]; unfold winVal; rw [ite_eq_left ⟨t0', b1⟩]
-    · refine IRS.mono (K := 28) (IRS.ifF t0 ?_) le_rfl (fun _ h => h)
+    · refine IRS.mono (K := 28) (IRS.ifF t0 ?_) le_rfl (fun _ => id)
       by_cases t1 : c.nreg (accA + 3) < c.nreg K2
       · have t1' : c.nreg (accA + 3) = 1 := by omega
-        refine IRS.mono (K := 26) (IRS.ifT t1 ?_) le_rfl (fun _ h => h)
+        refine IRS.mono (K := 26) (IRS.ifT t1 ?_) le_rfl (fun _ => id)
         by_cases b0 : c.nreg bR < c.nreg K1
         · refine (IRS.ifT b0 cp).mono (by norm_num) ?_
           rintro c₁ ⟨h1, h2, h3⟩
@@ -252,16 +254,16 @@ theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 �
         rintro c₁ ⟨h1, h2, h3⟩
         refine ⟨?_, h2, h3⟩
         rw [h1]; unfold winVal; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
-  refine (IRS.seq (K₂ := 1) st1 ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.seq (K₂ := 1) st1 ?_).mono (by norm_num) (fun _ => id)
   rintro c₁ hI₁ - - ⟨h1, h2, h3⟩
   refine (IRS.instr1 (i := .copyN yH (accA + 2)) hI₁ syH).mono le_rfl ?_
   rintro c' rfl
   refine ⟨?_, ?_, fun r r1 r2 r3 r4 r5 => ?_, h3⟩
   · show upd c₁.nreg yH (c₁.nreg (accA + 2)) yE = _
-    rw [upd_other _ _ _ (by unfold yE yH sw; norm_num), h1]
+    rw [upd_other _ _ _ (by ufn yE yH sw), h1]
   · show upd c₁.nreg yH (c₁.nreg (accA + 2)) yH = _
-    rw [upd_same, h2 _ (by unfold yE accA sw; norm_num) (by unfold cX accA sw; norm_num)
-      (by unfold cT accA sw; norm_num) (by unfold cDd accA sw; norm_num)]
+    rw [upd_same, h2 _ (by ufn yE accA sw) (by ufn cX accA sw)
+      (by ufn cT accA sw) (by ufn cDd accA sw)]
   · show upd c₁.nreg yH (c₁.nreg (accA + 2)) r = _
     rw [upd_other _ _ _ r2, h2 r r1 r3 r4 r5]
 

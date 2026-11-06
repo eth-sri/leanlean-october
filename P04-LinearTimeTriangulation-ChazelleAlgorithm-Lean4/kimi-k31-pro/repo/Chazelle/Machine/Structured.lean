@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Machine.Relocate
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # A structured language and a cost-exact compiler
@@ -133,14 +135,14 @@ theorem effect_divR (r a b : ℕ) (hb : c.rreg b ≠ 0) :
 /-- The effect is insensitive to the program counter. -/
 theorem effect_setPc (ins : Instr) (p : ℕ) :
     ins.effect P { c with pc := p } = (ins.effect P c).map (fun c' => { c' with pc := p }) := by
-  cases ins <;> simp only [effect, Option.map_some, Option.map_none]
+  cases ins <;> simp [effect, Option.map_some, Option.map_none]
   split <;> simp_all
 
 /-- `step` on a straight-line instruction is `effect` followed by `pc + 1`. -/
 theorem step_eq_effect {prog : Program} {ins : Instr} (h : prog[c.pc]? = some ins)
     (hs : ins.IsStraight) :
     step prog P c = (ins.effect P c).map (fun c' => { c' with pc := c.pc + 1 }) := by
-  cases ins <;> simp only [step, effect, h, Option.map_some, Option.map_none] <;>
+  cases ins <;> simp [step, effect, h, Option.map_some, Option.map_none] <;>
     first
     | rfl
     | (split <;> rfl)
@@ -150,7 +152,7 @@ theorem step_eq_effect {prog : Program} {ins : Instr} (h : prog[c.pc]? = some in
 theorem step_of_effect {prog : Program} {ins : Instr} {c' : Config} (h : prog[c.pc]? = some ins)
     (hs : ins.IsStraight) (he : ins.effect P c = some c') :
     step prog P c = some { c' with pc := c.pc + 1 } := by
-  rw [step_eq_effect h hs, he]; rfl
+  rwr [step_eq_effect h hs, he]
 
 end
 
@@ -227,8 +229,8 @@ def compile : Stmt → ℕ → Program
   | skip => rfl
   | instr i => rfl
   | seq s t ihs iht => simp [compile, ihs, iht]
-  | ifLtN a b t e iht ihe => simp [compile, iht, ihe]; omega
-  | ifLtR a b t e iht ihe => simp [compile, iht, ihe]; omega
+  | ifLtN a b t e iht ihe => sio [compile, iht, ihe]
+  | ifLtR a b t e iht ihe => sio [compile, iht, ihe]
   | whileLtN a b body ih => simp [compile, ih]
   | whileLtR a b body ih => simp [compile, ih]
 
@@ -503,32 +505,32 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
   | @skip c hw =>
     exact (RunsTo.zero (wordsBounded_setPc.mpr hw)).cast_end (setPc_congr (by simp))
   | @instr ins c c' hs he hw hw' =>
-    have hq0 : q[base]? = some ins := SubAt.singleton_iff.mp hq
+    have hq0  := SubAt.singleton_iff.mp hq
     have hst : step q P { c with pc := base } = some { c' with pc := base + 1 } := by
       have := Instr.step_of_effect (P := P) (c := { c with pc := base }) hq0 hs
-        (by rw [Instr.effect_setPc, he]; rfl)
+        (by rwr [Instr.effect_setPc, he])
       exact this
     exact RunsTo.single hw hw' hst
   | @seq s t c c₁ c₂ k₁ k₂ _ _ ih₁ ih₂ =>
-    simp only [compile] at hq
+    simp [compile] at hq
     have h₁ := ih₁ hq.of_append_left
     have h₂ := ih₂ (hq.of_append_right.cast (by rw [length_compile]))
-    exact (h₁.trans h₂).cast_end (setPc_congr (by rw [codeSize_seq]; omega))
+    exact (h₁.trans h₂).cast_end (setPc_congr (by rwo [codeSize_seq]))
   | @ifLtN_true a b t e c c' k ht _ ih =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtN a b (base + 2 + codeSize e)) := hq.head
+    simp [compile] at hq
+    have h0  := hq.head
     have hqt : SubAt (compile t (base + 2 + codeSize e)) q (base + 2 + codeSize e) :=
-      hq.tail.of_append_right.tail.cast (by rw [length_compile]; omega)
+      hq.tail.of_append_right.tail.cast (by rwo [length_compile])
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 + codeSize e } :=
       step_brLtN_true h0 ht
     have hrun := ih hqt
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
     exact (RunsTo.cons hw hst hrun).cast_end
-      (setPc_congr (by rw [codeSize_ifLtN]; omega))
+      (setPc_congr (by rwo [codeSize_ifLtN]))
   | @ifLtN_false a b t e c c' k ht _ ih =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtN a b (base + 2 + codeSize e)) := hq.head
-    have hqe : SubAt (compile e (base + 1)) q (base + 1) := hq.tail.of_append_left
+    simp [compile] at hq
+    have h0  := hq.head
+    have hqe  := hq.tail.of_append_left
     have hj : q[base + 1 + codeSize e]? = some (.jump (base + 2 + codeSize e + codeSize t)) :=
       hq.tail.of_append_right.cast (by rw [length_compile]) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
@@ -539,22 +541,22 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
       step_jump hj
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
     exact ((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).cast_end
-      (setPc_congr (by rw [codeSize_ifLtN]; omega))
+      (setPc_congr (by rwo [codeSize_ifLtN]))
   | @ifLtR_true a b t e c c' k ht _ ih =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtR a b (base + 2 + codeSize e)) := hq.head
+    simp [compile] at hq
+    have h0  := hq.head
     have hqt : SubAt (compile t (base + 2 + codeSize e)) q (base + 2 + codeSize e) :=
-      hq.tail.of_append_right.tail.cast (by rw [length_compile]; omega)
+      hq.tail.of_append_right.tail.cast (by rwo [length_compile])
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 + codeSize e } :=
       step_brLtR_true h0 ht
     have hrun := ih hqt
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
     exact (RunsTo.cons hw hst hrun).cast_end
-      (setPc_congr (by rw [codeSize_ifLtR]; omega))
+      (setPc_congr (by rwo [codeSize_ifLtR]))
   | @ifLtR_false a b t e c c' k ht _ ih =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtR a b (base + 2 + codeSize e)) := hq.head
-    have hqe : SubAt (compile e (base + 1)) q (base + 1) := hq.tail.of_append_left
+    simp [compile] at hq
+    have h0  := hq.head
+    have hqe  := hq.tail.of_append_left
     have hj : q[base + 1 + codeSize e]? = some (.jump (base + 2 + codeSize e + codeSize t)) :=
       hq.tail.of_append_right.cast (by rw [length_compile]) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
@@ -565,11 +567,11 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
       step_jump hj
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
     exact ((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).cast_end
-      (setPc_congr (by rw [codeSize_ifLtR]; omega))
+      (setPc_congr (by rwo [codeSize_ifLtR]))
   | @whileLtN_false a b body c ht hw =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtN a b (base + 2)) := hq.head
-    have h1 : q[base + 1]? = some (.jump (base + 3 + codeSize body)) := hq.tail.head
+    simp [compile] at hq
+    have h0  := hq.head
+    have h1  := hq.tail.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
       step_brLtN_false h0 ht
     have hstj : step q P { c with pc := base + 1 } =
@@ -578,11 +580,11 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     have hw1 : WordsBounded W { c with pc := base + 1 } := hw
     have hw3 : WordsBounded W { c with pc := base + 3 + codeSize body } := hw
     exact (RunsTo.cons hw' hst (RunsTo.single hw1 hw3 hstj)).cast_end
-      (setPc_congr (by rw [codeSize_whileLtN]; omega))
+      (setPc_congr (by rwo [codeSize_whileLtN]))
   | @whileLtN_true a b body c c₁ c' k₁ k₂ ht _ _ ih₁ ih₂ =>
     have hq' := hq
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtN a b (base + 2)) := hq.head
+    simp [compile] at hq
+    have h0  := hq.head
     have hqb : SubAt (compile body (base + 2)) q (base + 2) :=
       hq.tail.tail.of_append_left.cast (by omega)
     have hj : q[base + 2 + codeSize body]? = some (.jump base) :=
@@ -596,9 +598,9 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
     exact (((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).trans hrest).cast (by omega)
   | @whileLtR_false a b body c ht hw =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtR a b (base + 2)) := hq.head
-    have h1 : q[base + 1]? = some (.jump (base + 3 + codeSize body)) := hq.tail.head
+    simp [compile] at hq
+    have h0  := hq.head
+    have h1  := hq.tail.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
       step_brLtR_false h0 ht
     have hstj : step q P { c with pc := base + 1 } =
@@ -607,11 +609,11 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     have hw1 : WordsBounded W { c with pc := base + 1 } := hw
     have hw3 : WordsBounded W { c with pc := base + 3 + codeSize body } := hw
     exact (RunsTo.cons hw' hst (RunsTo.single hw1 hw3 hstj)).cast_end
-      (setPc_congr (by rw [codeSize_whileLtR]; omega))
+      (setPc_congr (by rwo [codeSize_whileLtR]))
   | @whileLtR_true a b body c c₁ c' k₁ k₂ ht _ _ ih₁ ih₂ =>
     have hq' := hq
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtR a b (base + 2)) := hq.head
+    simp [compile] at hq
+    have h0  := hq.head
     have hqb : SubAt (compile body (base + 2)) q (base + 2) :=
       hq.tail.tail.of_append_left.cast (by omega)
     have hj : q[base + 2 + codeSize body]? = some (.jump base) :=
@@ -638,7 +640,6 @@ theorem runsWithin_of_exec {P : Polygon} {W : ℕ} {s : Stmt} {c' : Config} {k :
   have hh : AtHalt (compile s 0 ++ [Instr.halt]) { c' with pc := codeSize s } := by
     unfold AtHalt
     have : codeSize s = (compile s 0).length := (length_compile s 0).symm
-    show (compile s 0 ++ [Instr.halt])[codeSize s]? = some Instr.halt
     rw [this]
     exact List.getElem?_concat_length
   have := runsWithin_of_runsTo hrun hh

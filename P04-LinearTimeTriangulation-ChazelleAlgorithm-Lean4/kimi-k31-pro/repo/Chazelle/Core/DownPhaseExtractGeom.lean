@@ -2,6 +2,7 @@ module
 
 public import Chazelle.Core.DownPhaseHostDom
 public import Chazelle.Core.DownPhaseTourA
+public import Chazelle.SimpTactics
 
 /-!
 # WP-M (X, part 11): local geometry shared by two walks
@@ -38,7 +39,7 @@ theorem sideLeftOf_scale {a a' v b b' x : Point} {l m : ℝ} (hl : 0 < l) (hm : 
 /-- The left half-plane of a sub-segment is that of the segment. -/
 theorem det_lerp_pair (A B y : Point) (τ₀ τ₁ : ℝ) :
     Chazelle.det (lerp A B τ₀) (lerp A B τ₁) y = (τ₁ - τ₀) * Chazelle.det A B y := by
-  unfold Chazelle.det lerp; simp only; ring
+  unfold Chazelle.det lerp; sir only
 
 /-- The arms of a sub-segment are positive multiples of the arms of the segment. -/
 theorem lerp_sub_lerp (A B : Point) (τ₀ τ₁ : ℝ) :
@@ -58,7 +59,7 @@ theorem attach_of_sector {W W' : Polygon} {c : Set Point} {p p' : ℕ} {t t' : �
 /-- The offsets of a sub-segment. -/
 theorem offset_lerp_pair (A B : Point) (τ₀ τ₁ s δ : ℝ) :
     offset (lerp A B τ₀) (lerp A B τ₁) s δ = offset A B (τ₀ + s * (τ₁ - τ₀)) (δ * (τ₁ - τ₀)) := by
-  apply Prod.ext <;> simp only [offset_fst, offset_snd, Chazelle.Geometry.lerp_fst,
+  apply Prod.ext <;> simp [offset_fst, offset_snd, Chazelle.Geometry.lerp_fst,
     Chazelle.Geometry.lerp_snd] <;> ring
 
 /-- **Facing transfers** when the offsets agree up to a positive scaling. -/

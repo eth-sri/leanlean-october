@@ -3,6 +3,8 @@ module
 public import Chazelle.Final.LinkSplit
 public import Chazelle.Core.ShearInv
 public import Chazelle.Mountain.BaseSign
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # Transfer between the input polygon and the sheared geometry polygon
@@ -72,7 +74,7 @@ theorem subPoly_shear (ε : ℝ) (P : Polygon) (l : List ℕ) :
 /-- Rotation commutes with the shear. -/
 theorem rotate_shear (ε : ℝ) (R : Polygon) (s : ℕ) :
     (shear ε R).rotate s = shear ε (R.rotate s) := by
-  have hn : (shear ε R).n = R.n := shear_n ε R
+  have hn  := shear_n ε R
   unfold Polygon.rotate
   rw [hn]
   simp only [shear_vtx]
@@ -103,7 +105,7 @@ theorem vtx_rotate_subPoly {P : Polygon} {l : List ℕ} (hl : ∀ x ∈ l, x < P
     ∀ i < ((subPoly P l).rotate s).n, ∃ j < P.n, ((subPoly P l).rotate s).vtx i = P.vtx j := by
   intro i hi
   rw [Chazelle.Existence.n_rotate, n_subPoly] at hi
-  rw [Chazelle.Existence.vtx_rotate _ _ (by rw [n_subPoly]; exact hi), n_subPoly,
+  rw [Chazelle.Existence.vtx_rotate _ _ (by rwx [n_subPoly]), n_subPoly,
     Chazelle.EarClip.vtx_subPoly_getD P l (Nat.mod_lt _ (by omega))]
   exact ⟨_, hl _ (getD_mem_of_lt (Nat.mod_lt _ (by omega))), rfl⟩
 
@@ -127,7 +129,7 @@ theorem weakTriangulates_shear (ε : ℝ) {R : Polygon} {T : List Polygon.Triang
     (h : WeakTriangulates R T) : WeakTriangulates (shear ε R) T := by
   obtain ⟨h1, h2, h3, h4, h5⟩ := h
   refine ⟨fun t ht => (Chazelle.Core.shear_validTriangle_iff ε R t).2 (h1 t ht),
-    by rw [shear_n]; exact h2, ?_, ?_, ?_⟩
+    by rwx [shear_n], ?_, ?_, ?_⟩
   · rw [Chazelle.Core.shear_union_triSet, Chazelle.Core.shear_filled, h3]
   · refine h4.imp fun {s t} hd => ?_
     rw [Chazelle.Core.shear_triSet, Chazelle.Core.shear_triSet,
@@ -179,9 +181,9 @@ theorem sector_ylexMin_subset_interior {P : Polygon} (hP : P.Simple)
     linarith
   obtain ⟨r, hr, hsec⟩ := sector_subset_interior hT (lexMin_transpose hmin) hσ' hposT
   refine ⟨r, hr, fun y hy h1 h2 => ?_⟩
-  have := hsec y.swap (by rw [hTdef, transpose_vtx, swap_mem_ball_swap_iff]; exact hy)
-    (by rw [hTn, hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
-    (by rw [hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
+  have := hsec y.swap (by rwx [hTdef, transpose_vtx, swap_mem_ball_swap_iff])
+    (by rwli [hTn, hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap])
+    (by rwli [hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap])
   rw [Set.mem_sdiff, mem_transpose_filled_iff, Chazelle.Visibility.mem_transpose_boundary_iff,
     Prod.swap_swap] at this
   exact this
@@ -272,7 +274,7 @@ theorem orient_eq_of_ylexMin {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k < P
   split_ifs at hσ with hd
   · rcases orient_eq P with ho | ho
     · rw [ho, hσ]
-    · rw [ho] at h; nlinarith
+    · rwnl [ho] at h
   · rcases orient_eq P with ho | ho
     · rw [ho] at h; exact absurd (by linarith) hd
     · rw [ho, hσ]

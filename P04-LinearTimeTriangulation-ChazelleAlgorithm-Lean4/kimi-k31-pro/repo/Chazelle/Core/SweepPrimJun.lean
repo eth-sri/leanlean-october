@@ -3,6 +3,11 @@ module
 public import Chazelle.Core.SweepPrimArrMath
 public import Chazelle.Core.SweepLabelJ
 public import Chazelle.Core.SweepLabelJL
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Sweep RAM primitives (WP-D2), part 11: the index arithmetic of a junction
@@ -37,7 +42,7 @@ theorem tpos_eq_cand (C : Chain) {J : ℕ} (hJ : J < 2 * C.m) :
   have hS := C.sideS_lt C.sideBeta
   unfold WalkEmbed.tpos WalkEmbed.bS candIdx
   split_ifs with h
-  · rw [Nat.mod_eq_of_lt (by omega)]; omega
+  · rwo [Nat.mod_eq_of_lt (by omega)]
   · rw [show J + 2 * C.m - C.sideS C.sideBeta = (J - C.sideS C.sideBeta) + 2 * C.m by omega,
       Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
 
@@ -69,14 +74,14 @@ theorem readS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
         (∀ r, (r < 50101 ∨ 50109 < r) → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem) := by
     exec_block
     all_goals try omega
-    all_goals try (config_simp; rw [hX]; omega)
+    all_goals try (config_simp; rwo [hX])
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩
-    · config_simp; rw [hX]; exact hm
-    · config_simp; rw [hX]; exact hT
+    · config_simp; rwx [hX]
+    · config_simp; rwx [hX]
     · config_simp; rw [hX]
-    · config_simp; rw [hX, hm]; ring
+    · config_simp; rwring [hX, hm]
     · config_simp
-    · intro r hr; simp only [upd]; split_ifs <;> first | rfl | omega
+    · intro r hr; simp [upd]; split_ifs <;> first | rfl | omega
   obtain ⟨q01, q06, q07, q08, q09, r₁, m₁⟩ := q
   have w₁ := e₁.wb_right
   have hsS : C.sideS C.sideBeta = if C.sideBeta = true then C.topIdx else 2 * C.m - C.topIdx := by
@@ -91,22 +96,22 @@ theorem readS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
         cases hβ : C.sideBeta
         · rfl
         · exact absurd (hb.2 hβ) (by omega)
-      refine spec_ifLtN_true (by rw [q07, q09]; exact h0) (spec_instr (Exec.subN w₁ _ _ _)
+      refine spec_ifLtN_true (by rwx [q07, q09]) (spec_instr (Exec.subN w₁ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-      simp only [upd_same]; rw [q08, q06, hsS, hβ]; rfl
-    · refine spec_ifLtN_false (by rw [q07, q09]; exact h0) ?_
+      simp [upd_same]; rwr [q08, q06, hsS, hβ]
+    · refine spec_ifLtN_false (by rwx [q07, q09]) ?_
       by_cases h2 : 1 < c.nmem (X + 4)
       · have hβ : C.sideBeta = false := by
           cases hβ : C.sideBeta
           · rfl
           · exact absurd (hb.2 hβ) (by omega)
-        refine spec_ifLtN_true (by rw [q07, q09]; exact h2) (spec_instr (Exec.subN w₁ _ _ _)
+        refine spec_ifLtN_true (by rwx [q07, q09]) (spec_instr (Exec.subN w₁ _ _ _)
           fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-        simp only [upd_same]; rw [q08, q06, hsS, hβ]; rfl
+        simp [upd_same]; rwr [q08, q06, hsS, hβ]
       · have hβ : C.sideBeta = true := hb.1 (by omega)
-        refine spec_ifLtN_false (by rw [q07, q09]; exact h2) (spec_instr (Exec.copyN w₁ _ _)
+        refine spec_ifLtN_false (by rwx [q07, q09]) (spec_instr (Exec.copyN w₁ _ _)
           fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-        simp only [upd_same]; rw [q06, hsS, hβ]; rfl
+        simp [upd_same]; rwr [q06, hsS, hβ]
   refine ⟨c₂, _, .seq e₁ e₂, by omega, by rw [r₂ _ (by decide), q01], q02,
     by rw [r₂ _ (by decide), q08], fun r hr => by rw [r₂ r (by omega), r₁ r hr],
     by rw [(exec_frameB e₂ (B := fun r => r == 50102) (by decide)).2.2.1, m₁]⟩
@@ -276,7 +281,7 @@ theorem junHead_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       fun r h1 h2 h3 => by simp [h1, h2, h3], rfl⟩
   obtain ⟨p19, p60, p00, r₁, m₁⟩ := q
   obtain ⟨c₂, k₂, e₂, hk₂, a01, a02, a08, r₂, m₂⟩ := readS_exec (P := P) c₁ e₁.wb_right p00
-    (by rw [m₁]; exact hCw) hXw (by omega)
+    (by rwx [m₁]) hXw (by omega)
   obtain ⟨c₃, k₃, e₃, hk₃, q⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 50110 50101,
       .copyN 50111 50102, .copyN 50112 50108, .copyN 50100 50201]) c₂ c₃ k₃ ∧ k₃ = 4 ∧
       (c₃.nreg 50110 = J.whole.m ∧ c₃.nreg 50111 = J.whole.sideS J.whole.sideBeta ∧
@@ -292,7 +297,7 @@ theorem junHead_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   have m₃ : c₃.nmem = c.nmem := by
     rw [(exec_frameB e₃ (B := fun r => decide (50100 ≤ r ∧ r < 50113)) (by decide)).2.2.1, m₂, m₁]
   obtain ⟨c₄, k₄, e₄, hk₄, b01, b02, b08, r₄, m₄⟩ := readS_exec (P := P) c₃ e₃.wb_right p00'
-    (by rw [m₃]; exact hCr) hXr (by rw [hrm]; omega)
+    (by rwx [m₃]) hXr (by rwo [hrm])
   obtain ⟨c₅, k₅, e₅, hk₅, q⟩ : ∃ c₅ k₅, Exec P W (block [.copyN 50113 50101,
       .copyN 50114 50102, .copyN 50115 50108, .copyN 50100 50200]) c₄ c₅ k₅ ∧ k₅ = 4 ∧
       (c₅.nreg 50113 = J.right.m ∧ c₅.nreg 50114 = J.right.sideS J.right.sideBeta ∧
@@ -309,7 +314,7 @@ theorem junHead_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   have m₅ : c₅.nmem = c.nmem := by
     rw [(exec_frameB e₅ (B := fun r => decide (50100 ≤ r ∧ r < 50116)) (by decide)).2.2.1, m₄, m₃]
   obtain ⟨c₆, k₆, e₆, hk₆, d01, d02, d08, r₆, m₆⟩ := readS_exec (P := P) c₅ e₅.wb_right p00''
-    (by rw [m₅]; exact hCl) hXl (by rw [hlm]; omega)
+    (by rwx [m₅]) hXl (by rwo [hlm])
   have ex : Exec P W junHead c c₆ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
   have k₅₆ : ∀ r, (r < 50101 ∨ 50109 < r) → r ≠ 50113 → r ≠ 50114 → r ≠ 50115 → r ≠ 50100 →
       c₆.nreg r = c₄.nreg r := fun r h0 h1 h2 h3 h4 => by rw [r₆ r h0, r₅ r h1 h2 h3 h4]
@@ -366,7 +371,7 @@ theorem junMid_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
           r ≠ 50126 → r ≠ 50128 → c₁.nreg r = c.nreg r) := by
     exec_block
     all_goals try omega
-    all_goals try (config_simp; rw [hv.v01, hv.v15, hlm, hrm]; omega)
+    all_goals try (config_simp; rwo [hv.v01, hv.v15, hlm, hrm])
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · config_simp; exact hv.v01
     · config_simp; exact hv.v02
@@ -377,7 +382,7 @@ theorem junMid_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     · config_simp; rw [hv.v01, hv.v15, hlm, hrm]
     · config_simp; rw [hv.v08, hv.v02, hlm]
     · intro r h1 h2 h3 h4 h5 h6 h7 h8
-      simp only [upd]; split_ifs <;> first | rfl | omega
+      simp [upd]; split_ifs <;> first | rfl | omega
   obtain ⟨u16, u17, u18, u21, u23, u24, u26, u28, r₁⟩ := q
   have k1 : ∀ r, r = 50110 ∨ r = 50111 ∨ r = 50112 ∨ r = 50113 ∨ r = 50114 ∨ r = 50115 ∨
       r = 50119 ∨ r = 50160 → c₁.nreg r = c.nreg r := fun r hr => by
@@ -447,10 +452,10 @@ theorem junOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   have hrm : J.right.m = J.m₂ := rfl
   unfold junOut
   exec_block
-  all_goals try (config_simp; rw [hv.v19, hv.t20]; omega)
-  all_goals try (config_simp; rw [hv.v19, hv.t22]; omega)
-  all_goals try (config_simp; rw [hv.v19, hv.t25]; omega)
-  all_goals try (config_simp; rw [hv.v19, hv.t27]; omega)
+  all_goals try (config_simp; rwo [hv.v19, hv.t20])
+  all_goals try (config_simp; rwo [hv.v19, hv.t22])
+  all_goals try (config_simp; rwo [hv.v19, hv.t25])
+  all_goals try (config_simp; rwo [hv.v19, hv.t27])
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · config_simp; rw [hv.v19, hv.t20]
   · config_simp; rw [hv.v19, hv.t22]
@@ -463,7 +468,7 @@ theorem junOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   · config_simp; exact hv.v15
   · config_simp; exact hv.v18
   · config_simp; exact hv.v60
-  · intro r hr; simp only [upd]; split_ifs <;> first | rfl | omega
+  · intro r hr; simp [upd]; split_ifs <;> first | rfl | omega
 
 /-- **Contract of `junConst`** (at most `120` steps). -/
 theorem junConst_meets : Meets junConst {bLocate}
@@ -488,11 +493,11 @@ theorem junConst_meets : Meets junConst {bLocate}
   obtain ⟨c₃, k₃, e₃, hk₃, o10, o11, a30, a31, o15, o16, a32, a33, a15, a18, a60, -⟩ :=
     junOut_exec c₂ e₂.wb_right hv₂ hWm
   obtain ⟨c₄, k₄, e₄, hk₄, s12, s13, s14, r₄⟩ := selR_exec (P := P) c₃ e₃.wb_right a60
-    (by rw [a15, hrm]; omega)
+    (by rwo [a15, hrm])
   have k4 : ∀ r, r ≠ 50212 → r ≠ 50213 → r ≠ 50214 → c₄.nreg r = c₃.nreg r := r₄
   obtain ⟨c₅, k₅, e₅, hk₅, s17, s18, s19, r₅⟩ := selL_exec (P := P) c₄ e₄.wb_right
     (by rw [k4 _ (by decide) (by decide) (by decide), a60])
-    (by rw [k4 _ (by decide) (by decide) (by decide), a18, hlm]; omega)
+    (by rwo [k4 _ (by decide) (by decide) (by decide), a18, hlm])
   have k5 : ∀ r, r ≠ 50217 → r ≠ 50218 → r ≠ 50219 → c₅.nreg r = c₄.nreg r := r₅
   have ex : Exec P W junConst c c₅ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   refine ⟨c₅, _, ex, by show _ ≤ 120; omega, ?_, ?_⟩
@@ -519,23 +524,23 @@ theorem junConst_meets : Meets junConst {bLocate}
     · rw [eW, e1, k45 _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide),
         o10]
     · rw [eR, k45 _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), o11]
-    · unfold Sweep.rL1; rw [eW, eR, e1, e2, w12, s12, a30, a31, a15, hrm]; split_ifs <;> omega
-    · unfold Sweep.rL2; rw [eW, eR, e1, e2, w13, s13, a30, a31, a15, hrm]; split_ifs <;> omega
-    · unfold Sweep.rδ; rw [eW, eR, e1, e2, w14, s14, a30, a31, a15, hrm]; split_ifs <;> omega
+    · unfold Sweep.rL1; rw [eW, eR, e1, e2, w12, s12, a30, a31, a15, hrm]; splao
+    · unfold Sweep.rL2; rw [eW, eR, e1, e2, w13, s13, a30, a31, a15, hrm]; splao
+    · unfold Sweep.rδ; rw [eW, eR, e1, e2, w14, s14, a30, a31, a15, hrm]; splao
     · rw [eW, e1, e2, k45 _ (by decide) (by decide) (by decide) (by decide) (by decide)
         (by decide), o15]
     · rw [eL, e1, k45 _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide),
         o16]
     · unfold Sweep.lL1; rw [eW, eL, e1, e2, s17, x32, x33, x18, a32, a33, a18, hlm]
-      split_ifs <;> omega
+      splao
     · unfold Sweep.lL2; rw [eW, eL, e1, e2, s18, x32, x33, x18, a32, a33, a18, hlm]
-      split_ifs <;> omega
+      splao
     · unfold Sweep.lδ; rw [eW, eL, e1, e2, s19, x32, x33, x18, a32, a33, a18, hlm]
-      split_ifs <;> omega
+      splao
   · exact NFLoc.frame_of_frameB (exec_frameB ex wr_junConst) (fun r hr => by
-      simp only [Bjun, Bool.or_eq_true, decide_eq_true_eq] at hr
-      refine ⟨?_, by unfold ALLOC; omega⟩
-      simp only [bandOf, bLocate, Finset.mem_singleton]; omega) _
+      simp [Bjun, Bool.or_eq_true, decide_eq_true_eq] at hr
+      refine ⟨?_, by ufo ALLOC⟩
+      sio only [bandOf, bLocate, Finset.mem_singleton]) _
 
 end
 

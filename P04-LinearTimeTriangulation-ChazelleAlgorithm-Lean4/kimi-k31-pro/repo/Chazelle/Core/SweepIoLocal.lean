@@ -5,6 +5,8 @@ public import Chazelle.Core.OracleCand
 public import Chazelle.Core.RestoreTNear
 public import Chazelle.Core.RestoreHoles
 public import Chazelle.Core.ShotListTop
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
 
 /-!
 # The sweep (WP-D), answers: the local hit in one chain model
@@ -184,7 +186,7 @@ theorem beforeFaces_of_arc_end' {F : Set (Set Point)} {U : Set Point} {l : ℝ} 
   have := hsub ⟨hs0, hs1⟩
   refine harc.2.2.2.2.2.2 p (t - s) hp (by linarith) (by linarith) ?_
   have e : (p : ℝ) + (t - s) = (p : ℝ) + t - s := by ring
-  rw [e]; exact this
+  rwx [e]
 
 /-- **The regions faced just after and just before a cut** have arcs starting and ending at the
 cut. -/
@@ -235,7 +237,7 @@ theorem key_pos_of_band {Q : Polygon} {x : WPos}
   have hp0 : x.edge = 0 := by omega
   have e : (chainModel C).pos Q x = C.slitTop := by
     show sidePt (chainModel C).W x.edge ((chainModel C).param Q x) = C.slitTop
-    rw [hp0, h0, Chazelle.Chain.sidePt_zero]; rfl
+    rwr [hp0, h0, Chazelle.Chain.sidePt_zero]
   rw [e] at hzR
   simp only [Chain.slitTop] at hzR
   rw [abs_of_pos C.radius_pos] at hzR
@@ -316,7 +318,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
     obtain ⟨p', t', hp', ht0', ht1', hk', hpt'⟩ := (ShotList.arcSet_iff M _ _ _).1 hwab
     refine ⟨p', t', hp', ht0', ht1', ⟨i, List.mem_range.1 hi, hk'⟩, fun g hg hin => ?_, hpt'⟩
     obtain ⟨p'', hp'', ⟨t₁, h₁0, h₁1, h₁⟩, t₂, h₂0, h₂1, h₂⟩ := hnear g hg p' t' hp' ht0' ht1' hin
-    exact Restore.no_common_edge hM hσ hT (fun s h0 h1 => hdom s h0 h1) hp'' h₁0 h₁1 h₂0 h₂1 h₁
+    exact Restore.no_common_edge hM hσ hT (hdom) hp'' h₁0 h₁1 h₂0 h₂1 h₁
       (h₂.trans hpt'.symm)
   -- the region of the arc at spine `j` when the key is not a cut
   have noncut : ¬ M.IsCut F ((p : ℝ) + t) → rayPt z σ T ∈ ShotList.loSet M Q m AB K hs := by
@@ -356,7 +358,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
     have hze : z ∈ hseg y a b := by rw [← hey, ← hpt]; exact hAe.2.2.2.1
     have hzD : z ∉ C.dom := by rw [← hpt]; exact hM.trace p hx t hx0 hx1.le
     obtain ⟨hzy, hza, hzb⟩ := hze
-    have hopen : ∀ u : ℝ, a < u → u < b → ((u, y) : Point) ∈ C.dom := fun u h1 h2 => hH.open_mem u h1 h2
+    have hopen : ∀ u : ℝ, a < u → u < b → ((u, y) : Point) ∈ C.dom := hH.open_mem
     have hzpt : ((z.1, y) : Point) = z := Prod.ext rfl hzy.symm
     -- the side of `z` on the chord, and the first hit
     obtain ⟨hzend, hfar, hdir, hτ⟩ : (σ = 1 ∧ z.1 = a ∨ σ = -1 ∧ z.1 = b) ∧
@@ -381,7 +383,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
     have hd1 : σ = 1 ↔ d = 1 := by
       constructor
       · intro h1; by_contra hd; rw [hσdef] at h1; unfold dirOf at h1; rw [ite_eq_right hd] at h1; norm_num at h1
-      · intro h1; rw [hσdef, h1]; rfl
+      · intro h1; rwr [hσdef, h1]
     -- the genuine hit at the far end
     have hT' : T = b - a := by
       rcases hzend with ⟨hσ1, hz1⟩ | ⟨hσ1, hz1⟩
@@ -391,7 +393,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
           (by
             have : rayPt z σ (b - a) = ((b, y) : Point) := by
               apply point_ext <;> simp [rayPt, hσ1, hz1, hzy]
-            rw [this]; exact hfar)
+            rwx [this])
         exact ((genuine_iff C hzt hσ).1 hg).2
       · have hg : Genuine C z σ (b - a) := genuine_along_chord C he' (by rw [hey]; exact ⟨hzy, hza, hzb⟩)
           hzD hσ (by linarith) (by
@@ -399,7 +401,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
           (by
             have : rayPt z σ (b - a) = ((a, y) : Point) := by
               apply point_ext <;> simp [rayPt, hσ1, hz1, hzy]
-            rw [this]; exact hdir)
+            rwx [this])
         exact ((genuine_iff C hzt hσ).1 hg).2
     -- the region on a faced side
     obtain ⟨ρ, U, hρ, hU, hS, hfac⟩ : ∃ ρ U, (ρ = 1 ∨ ρ = -1) ∧ U ∈ M.regions F ∧ SideOf M ρ e U ∧
@@ -441,7 +443,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
     have htouch : TouchesIn M.D e U := touchesIn_of_sideOf hM (hF he) hAe hS
     have hkr : k ∈ (N.region rU).chords := by
       refine ((hRegs rU hrU).1 k).2 ⟨hk, ?_⟩
-      rw [hke, hrUe]; exact htouch
+      rwx [hke, hrUe]
     -- the height index and the attachment edge
     have hkh : (N.chord k).h = h := by
       by_contra hne'
@@ -479,8 +481,8 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
       obtain ⟨U, V, l, r, hU, hV, -, harcU, harcV, -⟩ := hM.attach_face hF hfin hc hAc
       have hp1' : 1 ≤ p := hp1 ht0
       rw [ht0] at hAc harcU harcV
-      have hpt0 : sidePt M.W p 0 = z := by rw [← ht0]; exact hpt
-      have hsec0 : sideLeft M.W p 0 (rayPt (sidePt M.W p 0) σ 1) := by rw [← ht0]; exact hsec'
+      have hpt0 : sidePt M.W p 0 = z := by rwx [← ht0]
+      have hsec0 : sideLeft M.W p 0 (rayPt (sidePt M.W p 0) σ 1) := by rwx [← ht0]
       have hnot' : ∀ c ∈ F, SideAttach M.W c p 0 →
           ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∉ c := by
         intro c hc hA; rw [hpt0]; exact hnot c hc hA

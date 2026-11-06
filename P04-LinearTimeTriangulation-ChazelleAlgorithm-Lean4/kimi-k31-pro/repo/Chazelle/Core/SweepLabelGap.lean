@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.SweepLabel
 public import Chazelle.Core.FactsTie
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.MiscTactics
+public import Chazelle.ChainTactics
 
 /-!
 # The sweep (WP-D), part 4b: lemma (K) up to the gap (ties at the top, F2)
@@ -163,7 +167,7 @@ theorem n₂_pos (hC : Corr0 M M₂ F S g g' L1 L2 δ) : 0 < M₂.W.n := by have
 
 theorem dq_lt (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) :
     dq L1 δ d < M₂.W.n := by
-  have := hC.hL₂; unfold dq; split_ifs <;> omega
+  have := hC.hL₂; unfold dq; splao
 
 /-- Agreeing points. -/
 theorem sidePt_eq (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + L2) (t : ℝ) :
@@ -211,11 +215,11 @@ theorem transfer (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + 
     · have : (0 : ℝ) ≤ dq L1 δ d := Nat.cast_nonneg _
       linarith
     · have hd0 := (hsec h.symm).1
-      have : 1 ≤ dq L1 δ d := by unfold dq; split_ifs <;> omega
+      have : 1 ≤ dq L1 δ d := by unfold dq; splao
       have : (1 : ℝ) ≤ dq L1 δ d := by exact_mod_cast this
       linarith
   have hlt : (dq L1 δ d : ℝ) + t < L1 + δ + L2 := by
-    have : dq L1 δ d + 1 ≤ L1 + δ + L2 := by unfold dq; split_ifs <;> omega
+    have : dq L1 δ d + 1 ≤ L1 + δ + L2 := by unfold dq; splao
     have : (dq L1 δ d : ℝ) + 1 ≤ L1 + δ + L2 := by exact_mod_cast this
     linarith
   have hq : sidePt M₂.W ((g' + dq L1 δ d) % M₂.W.n) t ≠ M₂.W.vtx g' := by
@@ -226,7 +230,7 @@ theorem transfer (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d : ℕ} (hd : d < L1 + 
     hC.hM₂.trace _ (Nat.mod_lt _ hC.n₂_pos) t ht ht1.le
   obtain ⟨e, he, hqe, hec⟩ := hC.trans c hc _ hA.2.2.2.1 hqD hq
   have hpt := hC.sidePt_eq hd t
-  refine ⟨e, he, hec, by rw [hpt]; exact hqe, ?_⟩
+  refine ⟨e, he, hec, by rwx [hpt], ?_⟩
   rw [hC.attach_iff hd hsec]
   obtain ⟨hp, ht0, ht1', -, r, hr, hl⟩ := hA
   exact ⟨hp, ht0, ht1', hqe, r, hr, fun x hx => hl x (hec hx)⟩
@@ -262,8 +266,8 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
   intro hb3
   have hn := hC.n_pos
   have hn₂ := hC.n₂_pos
-  have hcS : c ∈ M₂.Adm := hC.hS hc
-  have heF : e ∈ M.Adm := hC.hF he
+  have hcS  := hC.hS hc
+  have heF  := hC.hF he
   -- the offsets of the positions
   have hox0 : (0 : ℝ) < d + t := by have := ht.1; positivity
   have hox0' : (0 : ℝ) < d' + t' := by have := ht'.1; positivity
@@ -283,7 +287,7 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
     exact_mod_cast this
   -- the ends of `c`
   obtain ⟨a₀, b₀, hab₀, -, hend⟩ := end_of_not_mem hC.hM₂ hcS
-  have hyb : sidePt M₂.W pb tb ∈ c := hB.2.2.2.1
+  have hyb  := hB.2.2.2.1
   have hybD : sidePt M₂.W pb tb ∉ M₂.D := hC.hM₂.trace _ hB.1 _ hB.2.1 hB.2.2.1.le
   -- the other end of `c` is the point of the attachment `(pb, tb)`
   have hother : ∀ y ∈ c, y ∉ M₂.D → y ≠ q → y = sidePt M₂.W pb tb := by
@@ -310,7 +314,7 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
     have hy₃D : sidePt M.W p₃ t₃ ∉ M₂.D := by
       rw [hpt₃, ← Chazelle.Chain.sidePt_zero]
       exact hC.hM₂.trace _ (Nat.mod_lt _ hn₂) 0 le_rfl zero_le_one
-    have hec' : e = c := eq_of_ends hC.hM hC.hM₂ heF hcS hec (Ne.symm hne) hqe hA₃.2.2.2.1 hqD hy₃D
+    have hec'  := eq_of_ends hC.hM hC.hM₂ heF hcS hec (Ne.symm hne) hqe hA₃.2.2.2.1 hqD hy₃D
     have hyb₃ : sidePt M₂.W pb tb = sidePt M.W p₃ t₃ :=
       (hother _ (hec hA₃.2.2.2.1) hy₃D hne).symm
     -- the positions lie on both sides of the gap
@@ -321,7 +325,7 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
       have hk : k < L1 := by
         have : (k : ℝ) < L1 := by linarith [hs.1]
         exact_mod_cast this
-      unfold dq; rw [ite_eq_left hk]; exact h
+      unfold dq; rwx [ite_eq_left hk]
     have hx_side' : ∀ {k : ℕ} {s : ℝ}, s ∈ Ioo (0 : ℝ) 1 → (L1 : ℝ) < k + s →
         (L1 : ℝ) + δ < ((dq L1 δ k : ℕ) : ℝ) + s := by
       intro k s hs h
@@ -351,9 +355,9 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
     have key : ∀ d₀ : ℕ, d₀ < L1 + L2 → (tb = 0 → d₀ ≠ 0 ∧ d₀ ≠ L1) →
         (g' + dq L1 δ d₀) % M₂.W.n = pb → d₀ = L1 ∧ tb = 0 := by
       intro d₀ hd₀ hsec hpb
-      have hB' : SideAttach M₂.W c ((g' + dq L1 δ d₀) % M₂.W.n) tb := by rw [hpb]; exact hB
+      have hB' : SideAttach M₂.W c ((g' + dq L1 δ d₀) % M₂.W.n) tb := by rwx [hpb]
       obtain ⟨e'', he'', he''c, hpt'', hA''⟩ := hC.transfer hd₀ hB.2.1 hB.2.2.1 hsec hc hB'
-      have he''e : e'' = e := hC.nest e'' he'' e he (by rw [hec']; exact he''c)
+      have he''e : e'' = e := hC.nest e'' he'' e he (by rwx [hec'])
       rw [he''e] at hA''
       have hpteq : sidePt M.W ((g + d₀) % M.W.n) tb = sidePt M.W p₃ t₃ := by
         rw [hC.sidePt_eq hd₀, hpb, hyb₃]
@@ -381,7 +385,7 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
       · have hsec : tb = 0 → db ≠ 0 ∧ db ≠ L1 := fun htb =>
           ⟨fun hdb0 => h0 ⟨hdb0, htb⟩, by omega⟩
         have hdq : dq L1 δ db = db := by unfold dq; rw [ite_eq_left hdb]
-        obtain ⟨h1, -⟩ := key db (by omega) hsec (by rw [hdq]; exact hpbe)
+        obtain ⟨h1, -⟩ := key db (by omega) hsec (by rwx [hdq])
         omega
     · have hdb : L1 + δ ≤ db := by
         by_contra hlt; push Not at hlt
@@ -398,8 +402,8 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
         rw [htb, add_zero] at hhigh
         have : L1 + δ < db := by exact_mod_cast hhigh
         constructor <;> omega
-      have hdq : dq L1 δ (db - δ) = db := by unfold dq; rw [ite_eq_right (by omega)]; omega
-      obtain ⟨h1, h2⟩ := key (db - δ) (by omega) hsec (by rw [hdq]; exact hpbe)
+      have hdq : dq L1 δ (db - δ) = db := by uro dq [ite_eq_right (by omega)]
+      obtain ⟨h1, h2⟩ := key (db - δ) (by omega) hsec (by rwx [hdq])
       rw [h2, add_zero] at hhigh
       have : (db : ℝ) = L1 + δ := by
         have : db = L1 + δ := by omega
@@ -410,12 +414,12 @@ theorem other_not_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d
       intro h0
       refine ⟨fun hz => ?_, fun hL => hsplit ⟨h0, hL⟩⟩
       have := ho₃b.1; rw [hz, h0] at this; simp at this
-    have hA₃' : SideAttach M.W e ((g + d₃) % M.W.n) t₃ := by rw [hp₃e]; exact hA₃
+    have hA₃' : SideAttach M.W e ((g + d₃) % M.W.n) t₃ := by rwx [hp₃e]
     have hpt₃ : sidePt M.W p₃ t₃ = sidePt M₂.W ((g' + dq L1 δ d₃) % M₂.W.n) t₃ := by
       rw [← hp₃e]; exact hC.sidePt_eq hd₃ t₃
     have hy₃D : sidePt M.W p₃ t₃ ∉ M₂.D := by
       rw [hpt₃]; exact hC.hM₂.trace _ (Nat.mod_lt _ hn₂) _ hA₃.2.1 hA₃.2.2.1.le
-    have hec' : e = c := eq_of_ends hC.hM hC.hM₂ heF hcS hec (Ne.symm hne) hqe hA₃.2.2.2.1 hqD hy₃D
+    have hec'  := eq_of_ends hC.hM hC.hM₂ heF hcS hec (Ne.symm hne) hqe hA₃.2.2.2.1 hqD hy₃D
     have hAc : SideAttach M₂.W c ((g' + dq L1 δ d₃) % M₂.W.n) t₃ := by
       rw [← hec']; exact (hC.attach_iff hd₃ hsec₃ e).1 hA₃'
     have hyb₃ : sidePt M₂.W pb tb = sidePt M₂.W ((g' + dq L1 δ d₃) % M₂.W.n) t₃ := by
@@ -455,7 +459,7 @@ theorem mirror (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 +
       0 < ((dq L1 δ k : ℕ) : ℝ) + s ∧ ((dq L1 δ k : ℕ) : ℝ) + s < L1 + δ + L2 := by
     intro k s hk hs
     refine ⟨by have := hs.1; positivity, ?_⟩
-    have : dq L1 δ k + 1 ≤ L1 + δ + L2 := by unfold dq; split_ifs <;> omega
+    have : dq L1 δ k + 1 ≤ L1 + δ + L2 := by unfold dq; splao
     have : ((dq L1 δ k : ℕ) : ℝ) + 1 ≤ L1 + δ + L2 := by exact_mod_cast this
     linarith [hs.2]
   obtain ⟨hx1, hx2⟩ := hbx hd ht
@@ -474,18 +478,18 @@ theorem mirror (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 +
         sidePt M.W p₁ t₁ ≠ sidePt M.W p₃ t₃ ∧ Btw (d + t) (d' + t') (off M.W.n g (p₁ + t₁)) ∧
         ¬ Btw (d + t) (d' + t') (off M.W.n g (p₃ + t₃)) := by
     intro d₀ hd₀ hsec hpa hpsi
-    have hA' : SideAttach M₂.W c ((g' + dq L1 δ d₀) % M₂.W.n) ta := by rw [hpa]; exact hA
+    have hA' : SideAttach M₂.W c ((g' + dq L1 δ d₀) % M₂.W.n) ta := by rwx [hpa]
     obtain ⟨e, he, hec, hpte, hAe⟩ := hC.transfer hd₀ hA.2.1 hA.2.2.1 hsec hc hA'
     have hptq : sidePt M.W ((g + d₀) % M.W.n) ta = q := by rw [hC.sidePt_eq hd₀, hpa]
     obtain ⟨p₃, t₃, hA₃, hne₃⟩ := WalkAx.other_attach hC.hM (hC.hF he) hAe
     refine ⟨e, he, _, p₃, ta, t₃, hAe, hA₃, hne₃.symm, ?_, ?_⟩
-    · rw [hC.off_M hd₀ hA.2.1 hA.2.2.1, hpsi]; exact hbtw
-    · exact hC.other_not_btw hd hd' ht ht' hc hB hout he hec (by rw [← hptq]; exact hpte) hqD
-        (Ne.symm hAB) hA₃ (by rw [← hptq]; exact hne₃)
+    · rwx [hC.off_M hd₀ hA.2.1 hA.2.2.1, hpsi]
+    · exact hC.other_not_btw hd hd' ht ht' hc hB hout he hec (by rwx [← hptq]) hqD
+        (Ne.symm hAB) hA₃ (by rwx [← hptq])
   by_cases hA1 : da < L1
   · have hdq : dq L1 δ da = da := by unfold dq; rw [ite_eq_left hA1]
     refine Or.inl (trans_case da (by omega) (fun h0 => ⟨fun hz => ?_, by omega⟩)
-      (by rw [hdq]; exact hpae) ?_)
+      (by rwx [hdq]) ?_)
     · have := hoab.1; rw [h0, hz] at this; simp at this
     · have := psi_dq (L1 := L1) (δ := δ) (d := da) hA.2.1 hA.2.2.1
       rw [hdq] at this; exact this.symm
@@ -494,11 +498,11 @@ theorem mirror (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 +
       by_contra hlt; push Not at hlt
       have : (da : ℝ) + 1 ≤ L1 + δ := by exact_mod_cast hlt
       linarith [hA.2.2.1]
-    have hdq : dq L1 δ (da - δ) = da := by unfold dq; rw [ite_eq_right (by omega)]; omega
+    have hdq : dq L1 δ (da - δ) = da := by uro dq [ite_eq_right (by omega)]
     have hdan : da < L1 + δ + L2 := by
       have : (da : ℝ) < L1 + δ + L2 := by linarith [hA.2.1, hoab.2]
       exact_mod_cast this
-    refine Or.inl (trans_case (da - δ) (by omega) (fun h0 => ?_) (by rw [hdq]; exact hpae) ?_)
+    refine Or.inl (trans_case (da - δ) (by omega) (fun h0 => ?_) (by rwx [hdq]) ?_)
     · rw [h0, add_zero] at hA3
       have : L1 + δ < da := by exact_mod_cast hA3
       constructor <;> omega
@@ -628,7 +632,7 @@ theorem far_btw (hC : Corr0 M M₂ F S g g' L1 L2 δ) {d d' : ℕ} (hd : d < L1 
       ∃ y ∈ c, StrPt M g (L1 + L2) y ∧ y ≠ q := by
   obtain ⟨p₃, t₃, hA₃, hne₃⟩ := WalkAx.other_attach hC.hM (hC.hF he) hAe
   have hb3 := hC.btw_other hd hd' ht ht' hcut hcut' hU hf hf' hne he hAe hA₃ (Ne.symm hne₃) hbe
-  have hne₃' : sidePt M.W p₃ t₃ ≠ q := by rw [← hpe]; exact hne₃
+  have hne₃' : sidePt M.W p₃ t₃ ≠ q := by rwx [← hpe]
   refine ⟨by_contra fun hout => hC.other_not_btw hd hd' ht ht' hc hB hout he hec hqe hqD hqB
     hA₃ hne₃' hb3, ?_⟩
   have hlo : (0 : ℝ) < d + t := by have := ht.1; positivity
@@ -740,10 +744,10 @@ theorem gapS_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
   refine ⟨min ε₀ 1, lt_min hε₀ one_pos, fun s hs0 hsε hs1 => ?_⟩
   rw [zero_add] at hs1 ⊢
   have hsε₀ : s < ε₀ := lt_of_lt_of_le hsε (min_le_left _ _)
-  have hnc : ¬ M₂.IsCut S (((g' + L1) % M₂.W.n : ℕ) + s) := hsub ⟨hs0, hsε₀⟩
+  have hnc  := hsub ⟨hs0, hsε₀⟩
   obtain ⟨V'', hV'', hfV''⟩ := hC.hM₂.exists_faces_of_not_cut hC.hS hC.hSfin
     (Nat.mod_lt _ hn₂) ⟨hs0, hs1⟩ hnc
-  suffices hVV : V = V'' by rw [hVV]; exact hfV''
+  suffices hVV : V = V'' by rwx [hVV]
   have hc₂ := hC.not_cut₂ hd ht hcut
   refine (hC.hM₂.eq_iff_not_separates hC.hS hC.hSfin hV hV'' (Nat.mod_lt _ hn₂)
     (Nat.mod_lt _ hn₂) ht ⟨hs0, hs1⟩ hc₂ hnc hfV hfV'').2 ?_
@@ -793,7 +797,7 @@ theorem gapS_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
           push_cast at h1
           linarith [ht.1, (Nat.cast_nonneg d : (0 : ℝ) ≤ d)]
         have hA₁' : SideAttach M₂.W c' ((g' + dq L1 δ (dOf M₂.W.n g' pa₁)) % M₂.W.n) ta₁ := by
-          rw [hdqa, hpae]; exact hA₁
+          rwx [hdqa, hpae]
         obtain ⟨e', he', hec', hqe', hAe'⟩ :=
           hC.transfer (d := dOf M₂.W.n g' pa₁) (by omega) hA₁.2.1 hA₁.2.2.1 hsec hc' hA₁'
         have hpt : sidePt M.W ((g + dOf M₂.W.n g' pa₁) % M.W.n) ta₁ = sidePt M₂.W pa₁ ta₁ := by
@@ -805,9 +809,8 @@ theorem gapS_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
         left; constructor <;> linarith [hin₁'.1, ht'.1]
       · -- at the split vertex
         obtain ⟨hp1, ht1⟩ := hC.key_of_off₂ hL1n hA₁.1 hA₁.2.1 hA₁.2.2.1 (u := 0) le_rfl one_pos
-          (by rw [heq]; ring)
-        have hvtx : M.W.vtx ((g + L1) % M.W.n) = M₂.W.vtx ((g' + L1) % M₂.W.n) :=
-          hC.A1 L1 le_rfl
+          (by rwring [heq])
+        have hvtx  := hC.A1 L1 le_rfl
         have hu : sidePt M.W ((g + L1) % M.W.n) 0 = sidePt M₂.W pa₁ ta₁ := by
           rw [hp1, ht1, Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, hvtx]
         have hnoV : sidePt M₂.W pa₁ ta₁ ≠ M₂.W.vtx g' := by
@@ -821,7 +824,7 @@ theorem gapS_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
         have hA₁P : SideAttach M₂.W c' ((g' + L1) % M₂.W.n) 0 := by
           have := hA₁; rw [hp1, ht1] at this; exact this
         have hAe' := hG.splitAttach L1 (Or.inl rfl) c' hc' hA₁P e' he' hec'
-          (by rw [hu]; exact hqe')
+          (by rwx [hu])
         refine ⟨e', he', hec', hqe', _, _, hAe', hu, ?_,
           ⟨L1, by omega, 0, le_rfl, one_pos, by linarith, hu⟩⟩
         rw [hC.off_M (by omega : L1 < L1 + L2) le_rfl one_pos]
@@ -861,22 +864,22 @@ theorem gapS_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
         exact hyq (hG.gapOut c' hc' pb₁ tb₁ hB₁ (by linarith [hob.1]) hlt y hyc _
           (hec' hqe') hyS hqS)
       · -- both at the copy of the split vertex after the gap
-        have hA' : off M₂.W.n g' (pa + ta) = L1 + δ := le_antisymm hA2 (heq' ▸ hge)
+        have hA'  := le_antisymm hA2 (heq' ▸ hge)
         obtain ⟨hp1, ht1⟩ := hC.key_of_off₂ (L := L1 + δ) (by omega) hB₁.1 hB₁.2.1 hB₁.2.2.1
-          (u := 0) le_rfl one_pos (by rw [heq']; push_cast; ring)
+          (u := 0) le_rfl one_pos (by rw [heq']; pcr)
         obtain ⟨hp2, ht2⟩ := hC.key_of_off₂ (L := L1 + δ) (by omega) hA.1 hA.2.1 hA.2.2.1
-          (u := 0) le_rfl one_pos (by rw [hA']; push_cast; ring)
+          (u := 0) le_rfl one_pos (by rw [hA']; pcr)
         have hB₁' := hB₁
         have hA'' := hA
         rw [hp1, ht1] at hB₁'
         rw [hp2, ht2] at hA''
         exact hcc (hG.oneAt (L1 + δ) (Or.inr rfl) c hc c' hc' hA'' hB₁')
     · -- both at the copy of the split vertex before the gap
-      have hoaL1 : off M₂.W.n g' (pa₁ + ta₁) = L1 := le_antisymm hoaL (heq ▸ hA1)
+      have hoaL1  := le_antisymm hoaL (heq ▸ hA1)
       obtain ⟨hp1, ht1⟩ := hC.key_of_off₂ hL1n hA₁.1 hA₁.2.1 hA₁.2.2.1 (u := 0) le_rfl one_pos
-        (by rw [hoaL1]; ring)
+        (by rwring [hoaL1])
       obtain ⟨hp2, ht2⟩ := hC.key_of_off₂ hL1n hA.1 hA.2.1 hA.2.2.1 (u := 0) le_rfl one_pos
-        (by rw [heq, hoaL1]; ring)
+        (by rwring [heq, hoaL1])
       have hA₁' := hA₁
       have hA'' := hA
       rw [hp1, ht1] at hA₁'
@@ -946,12 +949,12 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
   have hsε₀ : s < ε₀ := lt_of_lt_of_le hsε (min_le_left _ _)
   have hnc : ¬ M₂.IsCut S ((Q₀ : ℝ) + (1 - s)) := by
     have := hsub ⟨hs0, hsε₀⟩
-    simp only [mem_ofPred_eq] at this
+    simp [mem_ofPred_eq] at this
     rwa [show (Q₀ : ℝ) + 1 - s = Q₀ + (1 - s) by ring] at this
   have hs' : 1 - s ∈ Ioo (0 : ℝ) 1 := ⟨by linarith, by linarith⟩
   obtain ⟨V'', hV'', hfV''⟩ := hC.hM₂.exists_faces_of_not_cut hC.hS hC.hSfin
     (Nat.mod_lt _ hn₂) hs' hnc
-  suffices hVV : V = V'' by rw [hVV]; exact hfV''
+  suffices hVV : V = V'' by rwx [hVV]
   have hc₂ := hC.not_cut₂ hd' ht' hcut'
   refine (hC.hM₂.eq_iff_not_separates hC.hS hC.hSfin hV hV'' (Nat.mod_lt _ hn₂)
     (Nat.mod_lt _ hn₂) ht' hs' hc₂ hnc hfV hfV'').2 ?_
@@ -1001,7 +1004,7 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
         have hdbn : db < L1 + δ + L2 := by
           have : (db : ℝ) < L1 + δ + L2 := by linarith [hA₁.2.1]
           exact_mod_cast this
-        have hdqa : dq L1 δ (db - δ) = db := by unfold dq; rw [ite_eq_right (by omega)]; omega
+        have hdqa : dq L1 δ (db - δ) = db := by uro dq [ite_eq_right (by omega)]
         have hsec : ta₁ = 0 → db - δ ≠ 0 ∧ db - δ ≠ L1 := by
           intro h0
           refine ⟨by omega, fun hz => ?_⟩
@@ -1011,19 +1014,19 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
           push_cast at h1
           linarith
         have hA₁' : SideAttach M₂.W c' ((g' + dq L1 δ (db - δ)) % M₂.W.n) ta₁ := by
-          rw [hdqa, hpae]; exact hA₁
+          rwx [hdqa, hpae]
         obtain ⟨e', he', hec', hqe', hAe'⟩ :=
           hC.transfer (d := db - δ) (by omega) hA₁.2.1 hA₁.2.2.1 hsec hc' hA₁'
         have hpt : sidePt M.W ((g + (db - δ)) % M.W.n) ta₁ = sidePt M₂.W pa₁ ta₁ := by
           rw [hC.sidePt_eq (by omega : db - δ < L1 + L2) ta₁, hdqa, hpae]
         have hcast : ((db - δ : ℕ) : ℝ) = db - δ := by push_cast [show δ ≤ db by omega]; ring
         refine ⟨e', he', hec', hpt ▸ hqe', _, _, hAe', hpt, ?_,
-          ⟨db - δ, by omega, ta₁, hA₁.2.1, hA₁.2.2.1, by rw [hcast]; linarith, hpt⟩⟩
+          ⟨db - δ, by omega, ta₁, hA₁.2.1, hA₁.2.2.1, by rwli [hcast], hpt⟩⟩
         rw [hC.off_M (by omega : db - δ < L1 + L2) hA₁.2.1 hA₁.2.2.1, hcast]
         left; constructor <;> linarith [hin₁'.2]
       · -- at the second copy of the split vertex
         obtain ⟨hp1, ht1⟩ := hC.key_of_off₂ (L := L1 + δ) (by omega) hA₁.1 hA₁.2.1 hA₁.2.2.1
-          (u := 0) le_rfl one_pos (by rw [← heq]; push_cast; ring)
+          (u := 0) le_rfl one_pos (by rw [← heq]; pcr)
         have hvtx : M.W.vtx ((g + L1) % M.W.n) = M₂.W.vtx ((g' + (L1 + δ)) % M₂.W.n) := by
           have := hC.A2 0 (Nat.zero_le _)
           rwa [add_zero, add_zero, show g' + L1 + δ = g' + (L1 + δ) by ring] at this
@@ -1038,7 +1041,7 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
         have hA₁P : SideAttach M₂.W c' ((g' + (L1 + δ)) % M₂.W.n) 0 := by
           have := hA₁; rw [hp1, ht1] at this; exact this
         have hAe' := hG.splitAttach (L1 + δ) (Or.inr rfl) c' hc' hA₁P e' he' hec'
-          (by rw [hu]; exact hqe')
+          (by rwx [hu])
         refine ⟨e', he', hec', hqe', _, _, hAe', hu, ?_,
           ⟨L1, by omega, 0, le_rfl, one_pos, by linarith, hu⟩⟩
         rw [hC.off_M (by omega : L1 < L1 + L2) le_rfl one_pos]
@@ -1078,22 +1081,22 @@ theorem gapE_of (hC : Corr0 M M₂ F S g g' L1 L2 δ) (hG : CorrGap M M₂ F S g
         exact hyq (hG.gapOut c' hc' pb₁ tb₁ hB₁ hlt (by linarith [hob.2]) y hyc _
           (hec' hqe') hyS hqS)
       · -- both at the split vertex before the gap
-        have hA' : off M₂.W.n g' (pa + ta) = L1 := le_antisymm (heq' ▸ hge) hA1
+        have hA'  := le_antisymm (heq' ▸ hge) hA1
         obtain ⟨hp1, ht1⟩ := hC.key_of_off₂ hL1n hB₁.1 hB₁.2.1 hB₁.2.2.1
-          (u := 0) le_rfl one_pos (by rw [← heq']; ring)
+          (u := 0) le_rfl one_pos (by rwring [← heq'])
         obtain ⟨hp2, ht2⟩ := hC.key_of_off₂ hL1n hA.1 hA.2.1 hA.2.2.1
-          (u := 0) le_rfl one_pos (by rw [hA']; ring)
+          (u := 0) le_rfl one_pos (by rwring [hA'])
         have hB₁' := hB₁
         have hA'' := hA
         rw [hp1, ht1] at hB₁'
         rw [hp2, ht2] at hA''
         exact hcc (hG.oneAt L1 (Or.inl rfl) c hc c' hc' hA'' hB₁')
     · -- both at the second copy of the split vertex
-      have hoaL1 : off M₂.W.n g' (pa₁ + ta₁) = L1 + δ := le_antisymm (heq ▸ hA2) hoaL
+      have hoaL1  := le_antisymm (heq ▸ hA2) hoaL
       obtain ⟨hp1, ht1⟩ := hC.key_of_off₂ (L := L1 + δ) (by omega) hA₁.1 hA₁.2.1 hA₁.2.2.1
-        (u := 0) le_rfl one_pos (by rw [hoaL1]; push_cast; ring)
+        (u := 0) le_rfl one_pos (by rw [hoaL1]; pcr)
       obtain ⟨hp2, ht2⟩ := hC.key_of_off₂ (L := L1 + δ) (by omega) hA.1 hA.2.1 hA.2.2.1
-        (u := 0) le_rfl one_pos (by rw [heq, hoaL1]; push_cast; ring)
+        (u := 0) le_rfl one_pos (by rw [heq, hoaL1]; pcr)
       have hA₁' := hA₁
       have hA'' := hA
       rw [hp1, ht1] at hA₁'

@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.DownPhaseDrvLTProg
 public import Chazelle.Core.DownPhaseDrvLTMath
 public import Chazelle.Core.DownPhaseDrvDMain
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase level tail (D12), part 3: the straight-line pieces and the reservation
@@ -23,7 +27,7 @@ open SortL (seg)
 theorem inDrv_BL : DrvD.InDrv BL := by
   intro r hr
   simp only [BL, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by ufo ALLOC⟩
 
 theorem BL_mono {B : ℕ → Bool} (h : ∀ r, B r = true → BL r = true) {c c' : Config}
     (hf : FrameM B c c') : FrameM BL c c' := hf.mono h
@@ -32,7 +36,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
 theorem ltInit_exec (c : Config) (hw : WordsBounded W c) (hW : 3 ≤ W) :
     ∃ c' k, Exec P W ltInit c c' k ∧ k = 5 ∧ c'.nreg 211100 = 1 ∧ c'.nreg 211101 = 3 ∧
       c'.nreg 210034 = 1 ∧ c'.nreg 211110 = c.nreg ALLOC ∧ c'.nreg 211111 = 0 ∧
@@ -79,9 +82,9 @@ theorem ltRes_exec {c : Config} (hw : WordsBounded W c) {K₂ : ℕ} (h12 : c.nr
         WalkKey.exec_rframe ex (B := fun _ => false) (by decide) r rfl, fun a _ => by rw [hf'.2.2.1],
         fun a _ => by rw [hf'.2.2.2.1], hf'.2.2.2.2, ?_, ?_⟩, hk⟩
     · show e.nreg 9999 ≤ e'.nreg 9999
-      rw [q.2, h4']; omega
+      rwo [q.2, h4']
     · show e'.nreg 9999 ≤ e.nreg 9999 + k
-      rw [q.2, h4', hk]; omega
+      rwo [q.2, h4', hk]
   have I0 : Inv 0 c := ⟨hw, h11, h12, h00, by simp, FrameB.refl _ _, Nat.zero_le _⟩
   obtain ⟨c', k, ex, ⟨j, w', h1, h2, -, h4, hf, hjle⟩, hx, RFl, hk⟩ := Restore.whileLtN_frame
     (P := P) (W := W) (a := 211111) (b := 211012) (body := ltResBody) (B := DrvR.drvBands)
@@ -90,14 +93,13 @@ theorem ltRes_exec {c : Config} (hw : WordsBounded W c) {K₂ : ℕ} (h12 : c.nr
       obtain ⟨hw, h1, h2, -⟩ := id hI
       rw [h1, h2] at ht
       obtain ⟨e', k, ex, hI', RF', hk⟩ := key j e ht hI
-      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by omega, by rw [h1, hI'.2.1]; omega⟩) ⟨0, I0⟩
-  have hjR : j = K₂ := by rw [h1, h2] at hx; omega
+      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by omega, by rwo [h1, hI'.2.1]⟩) ⟨0, I0⟩
+  have hjR : j = K₂ := by rwo [h1, h2] at hx
   subst hjR
   refine ⟨c', k, ex, ?_, h4, h1, hf, RFl⟩
   rw [h11] at hk
   simpa using hk
 
-set_option maxHeartbeats 1000000 in
 theorem ltMid_exec (c : Config) (hw : WordsBounded W c) {K₂ A T : ℕ}
     (h12 : c.nreg 211012 = K₂) (h10 : c.nreg 211110 = A) (h09 : c.nreg 211009 = T)
     (hW : A + 3 * K₂ ≤ W) :
@@ -119,7 +121,6 @@ theorem ltMid_exec (c : Config) (hw : WordsBounded W c) {K₂ A T : ℕ}
 /-- The registers `ltB1` writes. -/
 def B1 (r : ℕ) : Bool := decide (211140 ≤ r ∧ r ≤ 211145) || decide (210061 ≤ r ∧ r ≤ 210063)
 
-set_option maxHeartbeats 2000000 in
 theorem ltB1_exec (e : Config) (hw : WordsBounded W e) {p D : ℕ} (h31 : e.nreg 211131 = p)
     (h00 : e.nreg 211100 = 1) (h13 : e.nreg 211113 = D) (hW : p + 2 ≤ W)
     (hW3 : 3 * e.nmem (p + 1) ≤ W) :
@@ -144,7 +145,6 @@ theorem ltB1_exec (e : Config) (hw : WordsBounded W e) {p D : ℕ} (h31 : e.nreg
 /-- The registers `ltB2` writes. -/
 def B2 (r : ℕ) : Bool := decide (r = 211113) || decide (210061 ≤ r ∧ r ≤ 210063)
 
-set_option maxHeartbeats 1000000 in
 theorem ltB2_exec (e : Config) (hw : WordsBounded W e) {a ℓ b D₂ : ℕ}
     (h13 : e.nreg 211113 = a) (h44 : e.nreg 211144 = 3 * ℓ) (h45 : e.nreg 211145 = 2 * ℓ)
     (h43 : e.nreg 211143 = b) (h14 : e.nreg 211114 = D₂) (hW : a + 3 * ℓ ≤ W) :
@@ -165,7 +165,6 @@ theorem ltB2_exec (e : Config) (hw : WordsBounded W e) {a ℓ b D₂ : ℕ}
 /-- The registers `ltB3` writes. -/
 def B3 (r : ℕ) : Bool := decide (r = 211114) || decide (r = 211131) || decide (r = 211130)
 
-set_option maxHeartbeats 1000000 in
 theorem ltB3_exec (e : Config) (hw : WordsBounded W e) {D₂ ℓ p j : ℕ}
     (h14 : e.nreg 211114 = D₂) (h45 : e.nreg 211145 = 2 * ℓ) (h31 : e.nreg 211131 = p)
     (h01 : e.nreg 211101 = 3) (h30 : e.nreg 211130 = j) (h00 : e.nreg 211100 = 1)
@@ -183,7 +182,6 @@ theorem ltB3_exec (e : Config) (hw : WordsBounded W e) {D₂ ℓ p j : ℕ}
   have hf := exec_frameB ex (B := B3) (by decide)
   exact ⟨e', k, ex, hk, q.1, q.2.1, q.2.2, hf.2.2.1, hf⟩
 
-set_option maxHeartbeats 2000000 in
 theorem ltArgs_exec (c : Config) (hw : WordsBounded W c) {A K₂ BB K M : ℕ}
     (h10 : c.nreg 211110 = A) (h12 : c.nreg 211012 = K₂) (h112 : c.nreg 211112 = BB)
     (h03 : c.nreg 210003 = K) (h13 : c.nreg 211013 = M) (h01 : c.nreg 211101 = 3)
@@ -204,7 +202,6 @@ theorem ltArgs_exec (c : Config) (hw : WordsBounded W c) {A K₂ BB K M : ℕ}
     (B := fun r => decide ((210020 ≤ r ∧ r ≤ 210024) ∨ r = 211150 ∨ r = 211151)) (by decide)
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, hf.2.2.1, hf⟩
 
-set_option maxHeartbeats 1000000 in
 theorem ltRd_exec (c : Config) (hw : WordsBounded W c) (hW : 134 ≤ W) :
     ∃ c' k, Exec P W ltRd c c' k ∧ k = 2 ∧ c'.nreg 216000 = 134 ∧
       c'.nreg 216001 = c.nreg 211007 ∧ c'.nmem = c.nmem ∧

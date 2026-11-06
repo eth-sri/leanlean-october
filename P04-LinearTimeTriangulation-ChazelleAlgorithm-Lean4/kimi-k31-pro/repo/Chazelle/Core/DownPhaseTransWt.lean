@@ -3,6 +3,10 @@ module
 public import Chazelle.Core.DownPhaseTransSide
 public import Chazelle.Core.DownPhaseArcT
 public import Chazelle.Core.DownPhaseExtractGeom
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
+public import Chazelle.MiscTactics
 
 /-!
 # WP-M (T, part 6): the transition weight `2γ + 1`
@@ -44,7 +48,7 @@ theorem chain_n : (chainModel C).W.n = 2 * C.m + 7 := Chain.sideWalk_n _ _
 
 theorem Shift.next_chain (_H : Shift Q C c₀) {j : ℕ} (hj : j < C.m) (h6 : c₀ + C.m ≤ 2 * C.m + 6) :
     (j + c₀ + 1) % (C.sideWalk C.sideBeta).n = (j + 1) + c₀ := by
-  rw [Chain.sideWalk_n, Nat.mod_eq_of_lt (by omega)]; ring
+  rwring [Chain.sideWalk_n, Nat.mod_eq_of_lt (by omega)]
 
 theorem Shift.prev_chain (_H : Shift Q C c₀) {j : ℕ} (hj0 : 1 ≤ j) (hj : j ≤ C.m) :
     (j + c₀ + (C.sideWalk C.sideBeta).n - 1) % (C.sideWalk C.sideBeta).n = (j - 1) + c₀ := by
@@ -79,7 +83,7 @@ theorem Shift.sec_eq (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) {j : ℕ
       hM.nd j hjn
     have hne1 : (C.sideWalk C.sideBeta).vtx (j + c₀) ≠
         (C.sideWalk C.sideBeta).vtx ((j + c₀ + 1) % (C.sideWalk C.sideBeta).n) := by
-      rw [H.next_chain hj H.le, H.vtx j hj.le, H.vtx (j + 1) hj, ← next_W T hj]; exact hne2
+      rwx [H.next_chain hj H.le, H.vtx j hj.le, H.vtx (j + 1) hj, ← next_W T hj]
     rw [Chazelle.Chain.sideLeft_edge hne1 ⟨hs, hs1⟩, Chazelle.Chain.sideLeft_edge hne2 ⟨hs, hs1⟩,
       H.next_chain hj H.le, H.vtx j hj.le, H.vtx (j + 1) hj, next_W T hj]
   · subst hs
@@ -105,7 +109,7 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
     intro x hx hne hd
     by_contra hxD
     have hl := hnear x hx hne (lt_of_lt_of_le hd (min_le_left _ _))
-    exact hclean x (lt_of_lt_of_le hd (min_le_right _ _)) (by rw [hWb, hWf]; exact hxD) hl
+    exact hclean x (lt_of_lt_of_le hd (min_le_right _ _)) (by rwx [hWb, hWf]) hl
   have hrr : 0 < min r r' := lt_min hr hr'
   obtain ⟨hPy, hPa, hPb⟩ := hmem
   have hPab : P.1 = a ∨ P.1 = b := by
@@ -119,9 +123,9 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
     rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, hPy, sub_self, abs_zero]
     exact max_eq_left (abs_nonneg _)
   set δ := min (min r r') (b - a) / 2 with hδ
-  have hδ0 : 0 < δ := by have := lt_min hrr (sub_pos.2 hab); rw [hδ]; linarith
-  have hδ1 : δ < min r r' := by have := min_le_left (min r r') (b - a); rw [hδ]; linarith
-  have hδ2 : δ < b - a := by have := min_le_right (min r r') (b - a); rw [hδ]; linarith
+  have hδ0 : 0 < δ := by have := lt_min hrr (sub_pos.2 hab); rwli [hδ]
+  have hδ1 : δ < min r r' := by have := min_le_left (min r r') (b - a); rwli [hδ]
+  have hδ2 : δ < b - a := by have := min_le_right (min r r') (b - a); rwli [hδ]
   have hPne : ∀ t : ℝ, t ≠ P.1 → ((t, y) : Point) ≠ P := fun t ht e => ht (by rw [← e])
   rcases hPab with hPa' | hPb'
   · -- `P` is the left end
@@ -133,7 +137,7 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
       by_contra hne
       have hlt : a < a' := lt_of_le_of_ne ha' (Ne.symm hne)
       exact hch'.left_not (hin (a', y) ⟨rfl, ha', by linarith⟩ (hPne _ (by linarith))
-        (by rw [hdist, hPa', abs_of_pos (by linarith)]; linarith))
+        (by rwli [hdist, hPa', abs_of_pos (by linarith)]))
     subst ha'a
     refine ⟨hseg y a' b', ⟨⟨y, a', b', hch', rfl⟩, hseg y a' b, hc, fun q hq =>
       ⟨hq.1, hq.2.1, by linarith [hq.2.2]⟩⟩,
@@ -148,7 +152,7 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
       by_contra hne
       have hlt : b' < b := lt_of_le_of_ne hb' hne
       exact hch'.right_not (hin (b', y) ⟨rfl, by linarith, hb'⟩ (hPne _ (by linarith))
-        (by rw [hdist, hPb', abs_of_neg (by linarith)]; linarith))
+        (by rwli [hdist, hPb', abs_of_neg (by linarith)]))
     subst hb'b
     refine ⟨hseg y a' b', ⟨⟨y, a', b', hch', rfl⟩, hseg y a b', hc, fun q hq =>
       ⟨hq.1, by linarith [hq.2.1], hq.2.2⟩⟩,
@@ -176,11 +180,11 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     refine ⟨?_, sub_nonneg.2 (Nat.floor_le hx.1.le), by linarith [Nat.lt_floor_add_one x], hfl, ?_⟩
     · have : (⌊x⌋₊ : ℝ) < C.m := lt_of_le_of_lt (Nat.floor_le hx.1.le) hx.2
       exact_mod_cast this
-    · rw [hfl]; push_cast; ring
+    · rw [hfl]; pcr
   refine ⟨le_rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [hWn]; exact_mod_cast T.n_pos
   · rw [hWn, zero_add]; exact_mod_cast (show C.m ≤ Q.n by omega)
-  · intro x _ y _ hxy; simp only; linarith
+  · intro x _ y _ hxy; sil only
   · intro x hx
     refine ⟨add_nonneg hx.1 (Nat.cast_nonneg _), ?_⟩
     rw [chain_n]
@@ -188,23 +192,23 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     have h2 : ((C.m + c₀ : ℕ) : ℝ) < ((2 * C.m + 7 : ℕ) : ℝ) := by exact_mod_cast (by omega)
     push_cast at h2 ⊢; linarith
   · intro y h1 h2
-    refine ⟨y - c₀, ⟨by simp only [zero_add] at h1; linarith, by linarith⟩, by ring⟩
+    refine ⟨y - c₀, ⟨by sil only [zero_add] at h1, by linarith⟩, by ring⟩
   · intro x hx hv k hk
     have hkc : c₀ ≤ k := by
       have : (c₀ : ℝ) < k := by rw [← hk]; linarith [hx.1]
       exact_mod_cast this.le
     exact hv (k - c₀) (by push_cast [hkc]; linarith)
   · intro x hx hnv hnv'
-    simp only [NonVtx, not_forall, not_not] at hnv
+    simp [NonVtx, not_forall, not_not] at hnv
     obtain ⟨k, hk⟩ := hnv
-    exact hnv' (k + c₀) (by rw [hk]; push_cast; ring)
+    exact hnv' (k + c₀) (by rw [hk]; pcr)
   · -- cuts
     rintro x hx ⟨c, hc, p₁, t₁, hA₁, he⟩
     obtain ⟨hjm, ht0, ht1, hfl, hfr⟩ := hpos x hx
     set j := ⌊x⌋₊ with hj
     set s := x - j with hs
     have hkey : ((p₁ : ℕ) : ℝ) + t₁ = ((j + c₀ : ℕ) : ℝ) + s := by
-      rw [← he, hs]; push_cast; ring
+      rw [← he, hs]; pcr
     obtain ⟨rfl, rfl⟩ := Chazelle.Chain.sideKey_inj hA₁.2.1 hA₁.2.2.1 ht0 ht1 hkey
     have hsj : s = 0 → 1 ≤ j := by
       intro h0
@@ -215,17 +219,17 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     have hA₂ : SideAttach (interiorWalk Q) c j s :=
       ExtG.attach_of_sector (H.pt_eq T hjm s).symm
         (fun y hy => (H.sec_eq T hQ hjm ht0 ht1 hsj y).1 hy)
-        (by rw [iw_n]; omega) ht0 ht1 hA₁
+        (by rwo [iw_n]) ht0 ht1 hA₁
     have hPd : sidePt (interiorWalk Q) j s ∉ C.dom := by
       rw [← H.pt_eq T hjm s]
-      exact hM₁.trace (j + c₀) (by rw [chain_n]; omega) s ht0 ht1.le
+      exact hM₁.trace (j + c₀) (by rwo [chain_n]) s ht0 ht1.le
     obtain ⟨d, hd, hAd⟩ := piece_of_attach hQ T hF₀ hc hA₂ hPd
     have hxn : x < ((interiorModel Q).W.n : ℝ) := by
       rw [hWn]
       have : ((C.m : ℕ) : ℝ) < ((Q.n : ℕ) : ℝ) := by exact_mod_cast (by omega)
       linarith [hx.2]
     refine ⟨d, hd, j, s, hAd, ?_⟩
-    rw [wrapK_self hxn, hs]; ring
+    rwring [wrapK_self hxn, hs]
   · -- faces
     intro x hx _ hfa
     obtain ⟨hjm, ht0, ht1, hfl, hfr⟩ := hpos x hx

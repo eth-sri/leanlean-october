@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.RestoreTEnv
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-E, the candidate test on the RAM, part 4: reading the normal form
@@ -109,10 +113,10 @@ theorem callB {p : Stmt} {K : ℕ} {Pre : Polygon → ℕ → Config → Prop}
     intro h
     obtain ⟨q, hq, hq'⟩ := List.mem_map.1 h
     have := hl q hq
-    unfold ALLOC at hq'; omega)
+    ufo ALLOC at hq')
   obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right (hPre c₁ h1 h2 h4)
-    (by rw [hA₁]; exact hroom)
-  refine ⟨c₁, c', l.length + k, h1, h2, h4, .seq e₁ e, by simp only at hk; omega, hpost, ?_⟩
+    (by rwx [hA₁])
+  refine ⟨c₁, c', l.length + k, h1, h2, h4, .seq e₁ e, by sio only at hk, hpost, ?_⟩
   exact (hf₁.trans hf).mono (by simp [primBands]) le_rfl
 
 variable {P : Polygon} {W : ℕ} {M : Model} {N : NF} {c₀ c : Config}
@@ -134,7 +138,7 @@ theorem tRegLen_exec {f : ℕ} (hf : f = 0 ∨ f = 2) (hE : TGood P W M N c₀)
   have hr := hE.hr
   have r02 := hI.hin 83002 (by norm_num) (by norm_num)
   have hb := nf_bounds hN
-  have hAW : c₀.nreg ALLOC ≤ W := (hI.hA.trans (hI.hw.1 ALLOC))
+  have hAW  := (hI.hA.trans (hI.hw.1 ALLOC))
   obtain ⟨c₁, c', k, h1, -, hm1, ex, hk, hpost, hf⟩ := callB (regRd_meets (f := f)
     (by rcases hf with rfl | rfl <;> simp)) [(50200, 83001), (50201, 83002)]
     (by simp) (by simp) (hl_loc (by simp)) hI.hw (fun c₁ h1 _ hm => by
@@ -148,8 +152,8 @@ theorem tRegLen_exec {f : ℕ} (hf : f = 0 ∨ f = 2) (hE : TGood P W M N c₀)
   have q0 := h1 (50200, 83001) (by simp)
   have q1 := h1 (50201, 83002) (by simp)
   simp only at q0 q1
-  refine ⟨c', k, ex, by simp at hk; omega, ?_, hI.prim ex.wb_right hf⟩
-  rw [hpost N (by rw [hm1, q0]; exact hNA) (by rw [q1, r02]; exact hr), q1, r02]
+  refine ⟨c', k, ex, by sio at hk, ?_, hI.prim ex.wb_right hf⟩
+  rw [hpost N (by rwx [hm1, q0]) (by rwx [q1, r02]), q1, r02]
 
 /-- **Item `t` (register `tr`) of a list of region `83002`**: `f = 1` its arcs, `f = 3` its exit
 chords. -/
@@ -188,7 +192,7 @@ theorem tRegItem_exec {f tr : ℕ} (hf : f = 1 ∨ f = 3) (htr : InR tr) (hE : T
     (by simp only [List.mem_cons, List.not_mem_nil, or_false]
         rintro q (rfl | rfl | rfl) s (rfl | rfl | rfl) <;>
         simp only <;> omega)
-    (by rw [hl]; decide) (hl_loc (by simp)) hI.hw (fun c₁ h1 _ hm => by
+    (by rwd [hl]) (hl_loc (by simp)) hI.hw (fun c₁ h1 _ hm => by
       have q0 := h1 (50200, 83001) (by simp)
       have q1 := h1 (50201, 83002) (by simp)
       have q2 := h1 (50202, tr) (by simp)
@@ -207,7 +211,7 @@ theorem tRegItem_exec {f tr : ℕ} (hf : f = 1 ∨ f = 3) (htr : InR tr) (hE : T
   have q1 := h1 (50201, 83002) (by simp)
   have q2 := h1 (50202, tr) (by simp)
   simp only at q0 q1 q2
-  refine ⟨c', k, ex, by simp at hk; omega, ?_, hI.prim ex.wb_right hf'⟩
+  refine ⟨c', k, ex, by sio at hk, ?_, hI.prim ex.wb_right hf'⟩
   rw [hpost]
   unfold nfVal
   rw [hm1, q0, q1, q2, r02]
@@ -230,7 +234,7 @@ theorem tChordF_exec {f ir : ℕ} (hf : f < 5) (hir : InR ir) (hE : TGood P W M 
   have hN := hI.nfWithin hE
   have hNA := hN.holds
   have hb := nf_bounds hN
-  have hAW : c₀.nreg ALLOC ≤ W := (hI.hA.trans (hI.hw.1 ALLOC))
+  have hAW  := (hI.hA.trans (hI.hw.1 ALLOC))
   obtain ⟨c₁, c', k, h1, -, hm1, ex, hk, hpost, hf'⟩ := callB (chordRd_meets hf)
     [(50200, 83001), (50201, ir)]
     (by simp only [List.mem_cons, List.not_mem_nil, or_false]
@@ -247,8 +251,8 @@ theorem tChordF_exec {f ir : ℕ} (hf : f < 5) (hir : InR ir) (hE : TGood P W M 
   have q0 := h1 (50200, 83001) (by simp)
   have q1 := h1 (50201, ir) (by simp)
   simp only at q0 q1
-  refine ⟨c', k, ex, by simp at hk; omega, ?_, hI.prim ex.wb_right hf'⟩
-  rw [hpost N (by rw [hm1, q0]; exact hNA) (by rw [q1]; exact hi), q1]
+  refine ⟨c', k, ex, by sio at hk, ?_, hI.prim ex.wb_right hf'⟩
+  rw [hpost N (by rwx [hm1, q0]) (by rwx [q1]), q1]
 
 /-- **Field `f` of arc `j` (register `jr`).** -/
 def tArcF (f jr : ℕ) : Stmt := .seq (block (copies [(50200, 83001), (50201, jr)])) (arcRd f)
@@ -262,7 +266,7 @@ theorem tArcF_exec {f jr : ℕ} (hf : f < 5) (hjr : InR jr) (hE : TGood P W M N 
   have hN := hI.nfWithin hE
   have hNA := hN.holds
   have hb := nf_bounds hN
-  have hAW : c₀.nreg ALLOC ≤ W := (hI.hA.trans (hI.hw.1 ALLOC))
+  have hAW  := (hI.hA.trans (hI.hw.1 ALLOC))
   obtain ⟨c₁, c', k, h1, -, hm1, ex, hk, hpost, hf'⟩ := callB (arcRd_meets hf)
     [(50200, 83001), (50201, jr)]
     (by simp only [List.mem_cons, List.not_mem_nil, or_false]
@@ -279,8 +283,8 @@ theorem tArcF_exec {f jr : ℕ} (hf : f < 5) (hjr : InR jr) (hE : TGood P W M N 
   have q0 := h1 (50200, 83001) (by simp)
   have q1 := h1 (50201, jr) (by simp)
   simp only at q0 q1
-  refine ⟨c', k, ex, by simp at hk; omega, ?_, hI.prim ex.wb_right hf'⟩
-  rw [hpost N (by rw [hm1, q0]; exact hNA) (by rw [q1]; exact hj), q1]
+  refine ⟨c', k, ex, by sio at hk, ?_, hI.prim ex.wb_right hf'⟩
+  rw [hpost N (by rwx [hm1, q0]) (by rwx [q1]), q1]
 
 end
 

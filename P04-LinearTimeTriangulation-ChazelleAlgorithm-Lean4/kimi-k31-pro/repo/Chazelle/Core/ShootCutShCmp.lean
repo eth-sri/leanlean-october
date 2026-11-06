@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ShootCutShPt
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-G, part 41: comparing abscissae and ordinates of point records
@@ -16,10 +19,6 @@ Bits computed from point records (`AbsRec`, `HRec`) with at most one sign-kernel
 The constant register `K1 = 140401` holds `1`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
 
 namespace Chazelle.Core
 
@@ -73,7 +72,7 @@ theorem AbsRecW.copy {P : Polygon} {c c' : Config} {r r' : ℕ} {x R : ℝ} (h :
     have e2 : r + 1 + 1 = r + 2 := by omega
     have e3 : r' + 1 + 2 = r' + 3 := by omega
     have e4 : r + 1 + 2 = r + 3 := by omega
-    exact NFLoc.symPtIn_copy hs h1 (by rw [e1, e2]; exact h2) (by rw [e3, e4]; exact h3)
+    exact NFLoc.symPtIn_copy hs h1 (by rwx [e1, e2]) (by rwx [e3, e4])
 
 /-! ## Abscissae -/
 
@@ -90,7 +89,7 @@ theorem bit_const (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) (dst v : �
     {p : Prop} (hp : v = 1 ↔ p) :
     BitIs ({ c with nreg := upd c.nreg dst v } : Config) dst p ∧
       Exec P W (.instr (.constN dst v)) c { c with nreg := upd c.nreg dst v } 1 :=
-  ⟨⟨by simp; omega, by simp; exact hp⟩, Exec.constN hw dst v (by omega)⟩
+  ⟨⟨by sio, by simp; exact hp⟩, Exec.constN hw dst v (by omega)⟩
 
 theorem xLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c)
     {a b dst : ℕ} (ha : 10500 ≤ a) (hb : 10500 ≤ b) (hdst : 10500 ≤ dst) (h1 : c.nreg K1 = 1)
@@ -105,7 +104,7 @@ theorem xLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
   have bB := hB.bounds
   have fr : ∀ v, FrameB (Bkb dst) c ({ c with nreg := upd c.nreg dst v } : Config) := fun v =>
     ⟨fun r hr => by
-      simp only [Bkb, Bool.or_eq_false_iff, beq_eq_false_iff_ne] at hr
+      simp [Bkb, Bool.or_eq_false_iff, beq_eq_false_iff_ne] at hr
       simp [hr.2], fun _ _ => rfl, rfl, rfl, rfl⟩
   unfold xLess
   by_cases a0 : c.nreg a < c.nreg K1
@@ -116,12 +115,12 @@ theorem xLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
     · have hxb : xb = -R := by
         rcases hB.2 with ⟨_, h⟩ | ⟨h', _⟩ | ⟨h', _⟩ <;> [exact h; omega; omega]
       obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num)
-        (p := xa < xb) (by rw [hxa, hxb]; simp)
+        (p := xa < xb) (by rws [hxa, hxb])
       exact ⟨_, _, .ifLtN_true a0 (.ifLtN_true b0 ex), by norm_num, bt, fr 0⟩
     · have hlt : xa < xb := by
         rcases hB.2 with ⟨h', _⟩ | ⟨_, h⟩ | ⟨_, hx, s, -, -, -⟩
         · omega
-        · rw [hxa, h]; linarith
+        · rwli [hxa, h]
         · rcases hok with hne | ⟨-, hs⟩
           · rw [hxa] at hne ⊢; exact lt_of_le_of_ne bB.1 hne
           · rw [hxa]; exact (abs_lt.1 (hs (by omega))).1
@@ -132,7 +131,7 @@ theorem xLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
   · have hxa : xa = R := by
       rcases hA.2 with ⟨h', _⟩ | ⟨_, h⟩ | ⟨h', _⟩ <;> [omega; exact h; omega]
     obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num) (p := xa < xb)
-      ⟨fun h => absurd h (by norm_num), fun h => by rw [hxa] at h; linarith⟩
+      ⟨fun h => absurd h (by norm_num), fun h => by rwli [hxa] at h⟩
     exact ⟨_, _, .ifLtN_false a0 (.ifLtN_true a2 ex), by norm_num, bt, fr 0⟩
   have ka : c.nreg a = 1 := by omega
   obtain ⟨-, hxa, sa, isa, lsa, vsa⟩ : c.nreg a = 1 ∧ |xa| ≤ R ∧ ∃ s : SymPt, SymPtIn c (a + 1) s ∧
@@ -190,8 +189,8 @@ theorem HRecS.copy {c c' : Config} {r r' : ℕ} {y R : ℝ} (h : HRecS P c r y R
   rcases h with ⟨k, hy⟩ | ⟨k, hy⟩ | ⟨k, hy, hz, hl, he⟩
   · exact Or.inl ⟨h0.trans k, hy⟩
   · exact Or.inr (Or.inl ⟨h0.trans k, hy⟩)
-  · exact Or.inr (Or.inr ⟨h0.trans k, hy, by rw [h1]; exact hz, by rw [h2]; exact hl,
-      by rw [h2]; exact he⟩)
+  · exact Or.inr (Or.inr ⟨h0.trans k, hy, by rwx [h1], by rwx [h2],
+      by rwx [h2]⟩)
 
 /-- **The bit `y_a < y_b`.** -/
 def hLess (a b dst : ℕ) : Stmt :=
@@ -211,7 +210,7 @@ theorem hLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
   have bB := hB.bounds hR
   have fr : ∀ v, FrameB (Bkb dst) c ({ c with nreg := upd c.nreg dst v } : Config) := fun v =>
     ⟨fun r hr => by
-      simp only [Bkb, Bool.or_eq_false_iff, beq_eq_false_iff_ne] at hr
+      simp [Bkb, Bool.or_eq_false_iff, beq_eq_false_iff_ne] at hr
       simp [hr.2], fun _ _ => rfl, rfl, rfl, rfl⟩
   unfold hLess
   by_cases a0 : c.nreg a < c.nreg K1
@@ -221,12 +220,12 @@ theorem hLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
     · have hyb : yb = -R := by
         rcases hB with ⟨_, h⟩ | ⟨h', _⟩ | ⟨h', _⟩ <;> [exact h; omega; omega]
       obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num)
-        (p := ya < yb) (by rw [hya, hyb]; simp)
+        (p := ya < yb) (by rws [hya, hyb])
       exact ⟨_, _, .ifLtN_true a0 (.ifLtN_true b0 ex), by norm_num, bt, fr 0⟩
     · have hlt : ya < yb := by
         rcases hB with ⟨h', _⟩ | ⟨_, h⟩ | ⟨_, hy, -⟩
         · omega
-        · rw [hya, h]; linarith
+        · rwli [hya, h]
         · rw [hya]; exact (abs_lt.1 hy).1
       obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 1 le_rfl (p := ya < yb)
         ⟨fun _ => hlt, fun _ => rfl⟩
@@ -235,7 +234,7 @@ theorem hLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
   · have hya : ya = R := by
       rcases hA with ⟨h', _⟩ | ⟨_, h⟩ | ⟨h', _⟩ <;> [omega; exact h; omega]
     obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num) (p := ya < yb)
-      ⟨fun h => absurd h (by norm_num), fun h => by rw [hya] at h; linarith⟩
+      ⟨fun h => absurd h (by norm_num), fun h => by rwli [hya] at h⟩
     exact ⟨_, _, .ifLtN_false a0 (.ifLtN_true a2 ex), by norm_num, bt, fr 0⟩
   obtain ⟨-, hya, za, la, vya⟩ : c.nreg a = 1 ∧ |ya| < R ∧ c.nreg (a + 1) = 0 ∧
       c.nreg (a + 2) < P.n ∧ ya = ((Qof P).vtx (c.nreg (a + 2))).2 := by
@@ -263,7 +262,7 @@ theorem hLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
     (show (SymPt.vtx _).Lt P.n from lb) (show (SymPt.vtx _).Lt P.n from la) isa isb isa
   refine ⟨c', _, .ifLtN_false a0 (.ifLtN_false a2 (.ifLtN_false b0 (.ifLtN_false b2 ex))),
     by omega, ⟨b₁, ?_⟩, f⟩
-  rw [t, vya, vyb]; rfl
+  rwr [t, vya, vyb]
 
 /-- **The bit `y_a = y_b`.** -/
 def hEq (a b dst : ℕ) : Stmt :=
@@ -293,7 +292,7 @@ theorem hEq_exec (hG : GoodEnv P) (hW : 1 ≤ W) (c : Config) (hw : WordsBounded
       rcases hB with ⟨kb, hyb⟩ | ⟨kb, hyb⟩ | ⟨kb, hyb, -⟩ <;>
       first | omega | skip
     all_goals first
-      | (rw [hya, hyb] at he; linarith)
+      | (rwli [hya, hyb] at he)
       | (rw [hya] at he; rw [← he] at hyb; rw [abs_lt] at hyb; linarith [hyb.1, hyb.2])
       | (rw [hyb] at he; rw [he] at hya; rw [abs_lt] at hya; linarith [hya.1, hya.2])
   by_cases t1 : c.nreg a < c.nreg b

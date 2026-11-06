@@ -1,6 +1,7 @@
 module
 
 public import Chazelle.Core.Lemma41Node
+public import Chazelle.Rwx
 
 /-!
 # Down-phase driver (RAM side): merges on a region host, the precondition
@@ -23,7 +24,7 @@ open Machine Chazelle Chazelle.Merge L41
 theorem okModel_host {P : Polygon} {H : Host} {C : Chain} (hHok : H.length ≤ 64)
     (hreg : HostRegular (Qof P).n H) (hP : C.P = H.poly (Qof P)) (hsimp : (H.poly (Qof P)).Simple) :
     OkModel P (chainModel C) :=
-  ⟨H, C, hHok, hreg, hP, by rw [hP]; exact hsimp, rfl⟩
+  ⟨H, C, hHok, hreg, hP, by rwx [hP], rfl⟩
 
 /-- A chain descriptor on a well-formed host is well formed. -/
 theorem chainWF_host {P : Polygon} {E : ℕ} {m : ℕ → ℕ} {d HB : ℕ} {H : Host} {C : Chain}
@@ -31,12 +32,12 @@ theorem chainWF_host {P : Polygon} {E : ℕ} {m : ℕ → ℕ} {d HB : ℕ} {H :
     (hHB : HB + 3 * H.length + 4 ≤ E) (hd : ChainDescAt m d (Qof P) H C) (hdh : m d = HB)
     (hdA : d + 5 ≤ E) (hs : C.s < C.P.n) : ChainWF P E m d := by
   refine ⟨hdA, fun H' C' hC' => ?_⟩
-  have hH : H' = H := NFLoc.hostAt_unique hC'.1 (by rw [hdh]; exact hHA)
+  have hH : H' = H := NFLoc.hostAt_unique hC'.1 (by rwx [hdh])
   subst hH
-  have hC : C' = C := L41.chain_eq (hC'.2.1.trans hd.2.1.symm)
+  have hC  := L41.chain_eq (hC'.2.1.trans hd.2.1.symm)
     (hC'.2.2.1.symm.trans hd.2.2.1) (hC'.2.2.2.1.symm.trans hd.2.2.2.1)
   subst hC
-  exact ⟨hHok, hwf, by rw [hdh]; exact hHB, hs⟩
+  exact ⟨hHok, hwf, by rwx [hdh], hs⟩
 
 /-- **The precondition of a merge on a region host** (`L41.mergePre_of` for an arbitrary host). -/
 theorem mergePreR {P : Polygon} {W : ℕ} {c : Config} {X : MemCtx} (hG : GoodEnv P)
@@ -63,28 +64,28 @@ theorem mergePreR {P : Polygon} {W : ℕ} {c : Config} {X : MemCtx} (hG : GoodEn
     (hfd : (chainModel (jOf C1 C2 hlen).whole).FullDegLe (Qof P) (rd c bMerge 7)) :
     MergePre X OkModel P W c := by
   set J := jOf C1 C2 hlen with hJ
-  have hP1 : C1.P = H.poly (Qof P) := hd1.2.1
-  have hP2 : C2.P = H.poly (Qof P) := hd2.2.1
-  have hl : J.left = C1 := jOf_left C1 C2 hlen
+  have hP1  := hd1.2.1
+  have hP2  := hd2.2.1
+  have hl  := jOf_left C1 C2 hlen
   have hr : J.right = C2 := jOf_right hlen (by rw [hP2, hP1]) hcons
-  have hwP : J.whole.P = H.poly (Qof P) := by rw [jOf_whole_P]; exact hP1
+  have hwP : J.whole.P = H.poly (Qof P) := by rwx [jOf_whole_P]
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hsT : J.whole.s < J.whole.P.n := by rw [jOf_whole_s, jOf_whole_P]; exact hs1
+  have hsT : J.whole.s < J.whole.P.n := by rwx [jOf_whole_s, jOf_whole_P]
   refine ⟨hG, hWh, hX, hcap, h7, h56,
     ⟨?_, ?_, ?_, fun H' hH' => ?_⟩, H, J, N1, N2, ⟨?_, ?_, ?_⟩,
-    by show J.P.Simple; rw [show J.P = H.poly (Qof P) from hwP]; exact hsimp, hgen,
+    by show J.P.Simple; rwx [show J.P = H.poly (Qof P) from hwP], hgen,
     by rw [hl]; exact okModel_host hHok hreg hP1 hsimp,
     by rw [hr]; exact okModel_host hHok hreg hP2 hsimp, okModel_host hHok hreg hwP hsimp,
-    hfd, by rw [r3]; exact hN1, by rw [r4]; exact hN2, ⟨γ1, hγ1, by rw [hl]; exact hc1⟩,
-    ⟨γ2, hγ2, by rw [hr]; exact hc2⟩⟩
+    hfd, by rwx [r3], by rwx [r4], ⟨γ1, hγ1, by rwx [hl]⟩,
+    ⟨γ2, hγ2, by rwx [hr]⟩⟩
   · rw [r0]; exact chainWF_host hHA hHok hwf hHB hd1 hd1h hd1A hs1
   · rw [r1]; exact chainWF_host hHA hHok hwf hHB hd2 hd2h hd2A hs2
   · rw [r2]; exact chainWF_host hHA hHok hwf hHB hTD hTDh hTDA hsT
   · rw [r2, hTDh] at hH'
-    rw [NFLoc.hostAt_unique hH' hHA, ← hQn]; exact hreg
-  · rw [r0, hl]; exact hd1
-  · rw [r1, hr]; exact hd2
-  · rw [r2]; exact hTD
+    rwx [NFLoc.hostAt_unique hH' hHA, ← hQn]
+  · rwx [r0, hl]
+  · rwx [r1, hr]
+  · rwx [r2]
 
 end
 

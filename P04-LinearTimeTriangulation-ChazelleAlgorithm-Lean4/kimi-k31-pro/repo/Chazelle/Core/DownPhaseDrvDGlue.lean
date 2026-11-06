@@ -5,6 +5,9 @@ public import Chazelle.Core.DownPhaseDrvDRMath
 public import Chazelle.Core.RestoreRegArc
 public import Chazelle.Core.GranNFBounds
 public import Chazelle.Core.NFLocateSpec
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Down-phase restoration rounds (D8), part 6: the scan of a new chord end is well posed
@@ -35,7 +38,7 @@ theorem arcList_lt {m : ℕ → ℕ} {B E' : ℕ} {N : NF} (h : NFWithin m B E' 
     m (B + 7) + m (m (B + 5) + 5 * r + 1) + t < E' := by
   have hp : m (B + 5) + 5 * r + 1 < E' := by
     have := (Gran.nf_areas h).2.2.1 r hr; omega
-  have hB : B + 7 < E' := (Gran.nf_areas h).1
+  have hB  := (Gran.nf_areas h).1
   exact Gran.robust_addr3 (b₁ := B + 7) (p₂ := m (B + 5) + 5 * r + 1) (t := t)
     (v := (N.region r).arcs.getD t 0) hp (fun m' hm' => by
       have e5 : m' (B + 5) = m (B + 5) := hm' _ (by omega)
@@ -77,7 +80,7 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
   obtain ⟨hNF, -, -⟩ := BuildNF.isNF_goodModel hGM hok hperm hsort
   set N := BuildNF.buildNF M (Qof P) L E with hN
   have hR : N.nRegions = L.length + 1 := by simp [hN, NF.nRegions, BuildNF.buildNF]
-  have hr' : r < N.nRegions := by rw [hR]; exact hr
+  have hr' : r < N.nRegions := by rwx [hR]
   have hNAt := hNW.nfAt
   have hne : (N.F M (Qof P)).Nonempty := by
     refine ⟨(N.chord 0).toSet M (Qof P), N.chord 0, ?_, rfl⟩
@@ -108,7 +111,7 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
     rw [hQn] at hps hpe
     have hA' := arcs_length (M := M) (Q := Qof P) (E := E) hK
     have hElen : E.length = 2 * L.length := by rw [hperm.length_eq, List.length_range]
-    have hjg : j < (BuildNF.gapStarts M (Qof P) L E).length := by rw [← hA']; exact hjA
+    have hjg : j < (BuildNF.gapStarts M (Qof P) L E).length := by rwx [← hA']
     -- the end of arc `j` is an event position
     have hev : (E.getD ((gs M (Qof P) L E j + 1) % E.length) 0) < 2 * L.length := by
       have hi : (gs M (Qof P) L E j + 1) % E.length < E.length := Nat.mod_lt _ (by omega)
@@ -122,7 +125,7 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
     · rw [← a2]
     · rw [← a3]
     · rw [← a4]
-    · rw [he, BuildRam.wposOf_hgt]; omega
+    · rwo [he, BuildRam.wposOf_hgt]
     · rw [he]; exact BuildRam.edge_lt hok hev
 
 /-- **Some arc of region `r` matches each end of a chord found for `r`.** -/
@@ -148,8 +151,8 @@ theorem hex_of (hGM : GoodModel M) (hok : ChordTriplesOK M (Qof P) L)
   have hElen : E.length = 2 * L.length := by rw [hperm.length_eq, List.length_range]
   obtain ⟨-, -, -, hA⟩ := endPos_props (P := P) hGM hf hs
   obtain ⟨j, hj, hjA, hcl⟩ := exists_closedArc hM hNF hregs hne hr hf.2.2.1 hf.2.2.2 hA
-  refine ⟨j, hj, match_of_closedArc hK (by omega) hjA hcl (by simp [tA]; rfl)
-    (by simp [tB]; rfl)⟩
+  refine ⟨j, hj, match_of_closedArc hK (by omega) hjA hcl (by sirfl [tA])
+    (by sirfl [tB])⟩
 
 end
 

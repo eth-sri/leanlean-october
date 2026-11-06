@@ -2,6 +2,11 @@ module
 
 public import Chazelle.Core.DownPhaseDrvRBSort
 public import Chazelle.Core.DownPhaseDrvSplice
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 2000000
 
 /-!
 # Down-phase driver (RAM side): merging two sorted lists of event codes
@@ -49,7 +54,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
 /-- **Merging two sorted lists of event codes.** -/
 theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     (hw : WordsBounded W c) {S Dst mid hi D T : ℕ} {M : Model} {L : List (ℕ × ℕ × ℕ)}
@@ -71,7 +75,7 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       c'.rmem = c.rmem ∧ c'.output = c.output ∧
       c'.nreg 40000 = D ∧ c'.nreg 42000 = T ∧ c'.nreg 42001 = 2 * L.length ∧
       (∀ r, 43000 ≤ r → r < 44000 → c'.nreg r = c.nreg r) := by
-  have hW1 : 1 ≤ W := by unfold hostWords at hWn; omega
+  have hW1 : 1 ≤ W := by ufo hostWords at hWn
   -- the registers
   obtain ⟨c₁, k₁, e₁, hk₁, v6, v7, v8, v11, v12, v13, v14, v15, g₁, m₁, rr₁, rm₁, o₁⟩ :
       ∃ c₁ k₁, Exec P W mgSetup c c₁ k₁ ∧ k₁ = 8 ∧ c₁.nreg 30006 = 1 ∧ c₁.nreg 30007 = S ∧
@@ -83,13 +87,13 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     exec_block
     all_goals try omega
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      config_simp <;> (try simp only [h70, h71, h72, h73])
+      config_simp <;> (try simp [h70, h71, h72, h73])
     simp (disch := omega) only [Machine.upd_other]
   have w₁ := e₁.wb_right
   -- the comparator
   have hcmp := evCmp_ok (P := P) (W := W) hG hWn (m₀ := c₁.nmem) (A₀ := Dst) (D := D) (T := T)
-    (M := M) (L := L) (by omega) (by rw [m₁]; exact hwf) (by rw [m₁]; exact hM) hL
-    (by rw [m₁]; exact hR) hTA c₁.nreg
+    (M := M) (L := L) (by omega) (by rwx [m₁]) (by rwx [m₁]) hL
+    (by rwx [m₁]) hTA c₁.nreg
   have hJ₁ : EvJ c₁.nmem Dst D T (2 * L.length) c₁.nreg c₁ :=
     ⟨by rw [g₁ _ (by omega), h40], by rw [g₁ _ (by omega), h42], by rw [g₁ _ (by omega), h42'],
       fun _ _ => rfl, fun _ _ _ => rfl⟩
@@ -97,12 +101,12 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (evLeB M (Qof P) L (2 * L.length)) {bSign, bBuild} Dst c₁ c₁ S Dst 0 mid hi E E₂ c₁ :=
     { wb := w₁, hJ := hJ₁, loc := SortR.Loc.refl _ _ _, one := v6, rsrc := v7, rdst := v8,
       rmid := v11, rhi := v12, keep := fun _ _ _ _ _ _ _ _ _ _ => rfl,
-      lo_i := by rw [v13], i_mid := by rw [v13]; omega, mid_j := by rw [v14],
-      j_hi := by rw [v14]; exact hmh, rk := by rw [v15, v13, v14],
+      lo_i := by rw [v13], i_mid := by rwo [v13], mid_j := by rw [v14],
+      j_hi := by rwx [v14], rk := by rw [v15, v13, v14],
       bsrc := by omega, bdst := by omega, disj := Or.inl (by omega), dA := le_rfl,
-      ma := by rw [m₁, Nat.add_zero, Nat.sub_zero]; exact hE,
-      mb := by rw [m₁]; exact hE₂,
-      out := by rw [v15, v13, v14]; simp,
+      ma := by rwx [m₁, Nat.add_zero, Nat.sub_zero],
+      mb := by rwx [m₁],
+      out := by rws [v15, v13, v14],
       mem := fun _ _ => rfl }
   obtain ⟨c₂, k₂, e₂, I₂, hk₂, hseg⟩ := SortR.mergeLoop_inv (P := P) hcmp
     (evJ_stable _ _ _ _ _ _) (by decide) hI
@@ -121,10 +125,10 @@ theorem mergeE_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     · rw [l3 a ha, m₁]
     · rw [I₂.mem a (Or.inr (by omega)), m₁]
   · have h1 : bandOf r ∉ ({bSign, bBuild} : Finset ℕ) := fun h => hr (by
-      simp only [Finset.mem_insert, Finset.mem_singleton] at h ⊢; tauto)
+      simp [Finset.mem_insert, Finset.mem_singleton] at h ⊢; tauto)
     have h2 : bandOf r ≠ bSort := fun h => hr (by simp [h])
     rw [l1 r h1 h2 hra]
-    exact g₁ r (by simp only [bandOf, bSort] at h2; omega)
+    exact g₁ r (by sio only [bandOf, bSort] at h2)
   · rw [I₂.keep ALLOC (Or.inr rfl) (by decide) (by decide) (by decide) (by decide) (by decide)
       (by decide) (by decide) (by decide), g₁ _ (by decide)]
   · rw [l2 r (by simpa [Finset.mem_insert, Finset.mem_singleton] using hr), rr₁]

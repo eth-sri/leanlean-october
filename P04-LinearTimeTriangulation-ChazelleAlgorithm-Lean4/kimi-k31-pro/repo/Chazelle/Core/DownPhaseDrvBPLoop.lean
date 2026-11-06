@@ -1,6 +1,8 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvBPt
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # Down-phase base (D9), RAM: the points of a region
@@ -37,7 +39,6 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
 /-- **The points of a region**: its records are appended. -/
 theorem ptLoop_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : Config)
     {T : List (ℕ × (ℕ × ℕ × ℕ))} (hS : PtSt E r PA c T)
@@ -54,10 +55,10 @@ theorem ptLoop_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c
   have f₀ : FrameB (fun q => decide (q = 212017)) c c₀ := exec_frameB e₀ (by decide)
   have S₀ : PtSt E r PA c₀ T := hS.regStep e₀.wb_right (fun q hq => f₀.1 q (by
     rcases hq with hq | hq
-    · unfold FixP FixB at hq; simp only [decide_eq_false_iff_not]; omega
-    · simp only [decide_eq_false_iff_not]; omega)) f₀.2.2.1
+    · unfold FixP FixB at hq; sio only [decide_eq_false_iff_not]
+    · sio only [decide_eq_false_iff_not])) f₀.2.2.1
   have FM₀ : FrameM Bpt c c₀ := (FrameB.toM f₀).mono fun q hq => by
-    simp only [decide_eq_true_eq] at hq; subst hq; decide
+    simp [decide_eq_true_eq] at hq; subst hq; decide
   let Inv : ℕ → Config → Prop := fun j e => WordsBounded E.W e ∧ e.nreg 212017 = j ∧
     e.nreg 212016 = l.length ∧ PtSt E r PA e (T ++ ((List.range j).flatMap f).map fun x => (r, x)) ∧
     FrameM Bpt c e ∧ (∀ a, (a < E.B₂ ∨ E.B₂ + 10 * E.P.n ≤ a) → e.nmem a = c.nmem a)

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvHEmit
+public import Chazelle.Rwx
+public import Chazelle.SimpTactics
+set_option maxHeartbeats 1000000
 
 /-!
 # Down-phase driver, host RAM (D3a), part 5: the partner search
@@ -66,7 +69,7 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
     all_goals try (config_simp; (try simp only [h55, hi, hK.one, e5, hh, hlp, hrp, h46, h47]); omega)
     by_cases hL : (N.chord i).lpos = x
     · have hL' := lpos_eq_iff.1 hL
-      refine spec_ifLtN_true (by config_simp; simp only [h55, hi, hK.one, e5, hh, hlp, h46, h47]; omega) ?_
+      refine spec_ifLtN_true (by config_simp; sio only [h55, hi, hK.one, e5, hh, hlp, h46, h47]) ?_
       exec_block
       · omega
       refine ⟨by omega, ?_, rfl⟩
@@ -74,10 +77,10 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
       refine ⟨?_, ?_, ?_⟩ <;> config_simp <;>
         (try simp only [h55, hi, hK.one, e5, hh, hrp]) <;> rfl
     · have hL' : ¬ ((N.chord i).lp = x.edge ∧ (N.chord i).h + 1 = x.hgt) := fun h => hL (lpos_eq_iff.2 h)
-      refine spec_ifLtN_false (by config_simp; simp only [h55, hi, hK.one, e5, hh, hlp, h46, h47]; omega) ?_
+      refine spec_ifLtN_false (by config_simp; sio only [h55, hi, hK.one, e5, hh, hlp, h46, h47]) ?_
       by_cases hR : (N.chord i).rpos = x
       · have hR' := rpos_eq_iff.1 hR
-        refine spec_ifLtN_true (by config_simp; simp only [h55, hi, hK.one, e5, hh, hrp, h46, h47]; omega) ?_
+        refine spec_ifLtN_true (by config_simp; sio only [h55, hi, hK.one, e5, hh, hrp, h46, h47]) ?_
         exec_block
         · omega
         refine ⟨by omega, ?_, rfl⟩
@@ -85,7 +88,7 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
         refine ⟨?_, ?_, ?_⟩ <;> config_simp <;>
           (try simp only [h55, hi, hK.one, e5, hh, hlp]) <;> rfl
       · have hR' : ¬ ((N.chord i).rp = x.edge ∧ (N.chord i).h + 1 = x.hgt) := fun h => hR (rpos_eq_iff.2 h)
-        refine spec_ifLtN_false (by config_simp; simp only [h55, hi, hK.one, e5, hh, hrp, h46, h47]; omega) ?_
+        refine spec_ifLtN_false (by config_simp; sio only [h55, hi, hK.one, e5, hh, hrp, h46, h47]) ?_
         refine spec_skip ‹_› ⟨by omega, ?_, rfl⟩
         simp only [hL, hR, ↓reduceIte]
         refine ⟨?_, ?_, ?_⟩ <;> config_simp
@@ -110,7 +113,6 @@ theorem find_take_succ {l : List ℕ} {p : ℕ → Bool} {v : ℕ} (hv : v < l.l
   rw [List.take_add_one, List.find?_append, List.getElem?_eq_getElem hv, Option.toList_some,
     List.find?_singleton, List.getD_eq_getElem _ _ hv]
 
-set_option maxHeartbeats 1000000 in
 /-- **The partner search.** -/
 theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N : NF} {r : ℕ}
     {x : WPos} (hK : Kst n li d) (hF : HFacts n N r)
@@ -194,11 +196,11 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
           have t29 : e.nreg 215029 = d.nreg 215029 := g _ (by decide)
           have t25 : e.nreg 215025 = d.nreg 215025 := g _ (by decide)
           have ti : e.nmem (e.nreg 215027 + (e.nreg 215029 + v)) = i := by rw [me, t27, t29, c1]
-          have tiW : e.nreg 215027 + (e.nreg 215029 + v) ≤ W := by rw [t27, t29]; exact c2
+          have tiW : e.nreg 215027 + (e.nreg 215029 + v) ≤ W := by rwx [t27, t29]
           have th : e.nmem (e.nreg 215025 + 5 * i) = (N.chord i).h := by rw [me, t25, r1]
           have tl : e.nmem (e.nreg 215025 + 5 * i + 1) = (N.chord i).lp := by rw [me, t25, r2]
           have tr : e.nmem (e.nreg 215025 + 5 * i + 2) = (N.chord i).rp := by rw [me, t25, r3]
-          have tW : e.nreg 215025 + 5 * i + 2 ≤ W := by rw [t25]; exact r4
+          have tW : e.nreg 215025 + 5 * i + 2 ≤ W := by rwx [t25]
           refine spec_use (chTest_exec (P := P) e hwe Ke t46 t47 e55 ti tiW th tl tr tW hxe hxh
             hil hir hih hW) ?_
           intro c₁ k₁ hk₁ hw₁ ⟨hpost, hm₁, hf₁⟩

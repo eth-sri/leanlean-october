@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OraclePrepCost
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+set_option maxHeartbeats 16000000
 
 /-!
 # Lemma 3.6 (WP-H), preprocessing part 35: the structure from the memory facts
@@ -56,7 +59,6 @@ def qvFin (P : Polygon) (m₀ : ℕ → ℕ) (D NB A K POS FL LAB DL nD ORD RK C
 def hdrVals (D NB γ E A POS FL LAB DL nD ORD RK CH K MD TB L μ : ℕ) : List ℕ :=
   [D, NB, γ, E, A, POS, FL, LAB, DL, nD, ORD, RK, CH, K, MD, TB, L, μ]
 
-set_option maxHeartbeats 16000000 in
 /-- **The structure from the memory facts.** -/
 theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H : Host} {C : Chain}
     {N : NF} {B : BookData} {k POS FL LAB DL nD ORD RK CH MD TB L : ℕ} {Vc : QV}
@@ -150,7 +152,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       hostLen := hHl
       hostWF := hHwf
       D_le := by show D + 5 ≤ E; omega
-      host_le := by show m'' D + 3 * H.length + 4 ≤ E; rw [ag0 _ (by omega)]; omega
+      host_le := by show m'' D + 3 * H.length + 4 ≤ E; rwo [ag0 _ (by omega)]
       s_lt := hCs
       nCB := by show m'' (NB + 3) = m₀ (NB + 3); exact ag0 _ (by omega)
       nAB := by show m'' (NB + 4) = m₀ (NB + 4); exact ag0 _ (by omega)
@@ -158,7 +160,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       nSB := by show m'' (NB + 6) = m₀ (NB + 6); exact ag0 _ (by omega)
       nLB := by show m'' (NB + 7) = m₀ (NB + 7); exact ag0 _ (by omega)
       nf := by show NFAt m'' NB N; exact hNF''
-      canon := by rw [hh 2 (by norm_num)]; exact hcan
+      canon := by rwx [hh 2 (by norm_num)]
       hA := rfl
       hK := rfl
       regs := fun r hr => by
@@ -190,7 +192,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       FL_le := by show FL + (A + 3) ≤ E; omega
       LAB_le := by show LAB + (A + 3) ≤ E; omega
       hlab := by
-        have := (hcl.mono (m' := m'') (X := O) agE (by rw [hBN]; omega) (by rw [hBN]; omega)).hlab
+        have := (hcl.mono (m' := m'') (X := O) agE (by rwo [hBN]) (by rwo [hBN])).hlab
         exact this
       dl := (hord.mono (m' := m'') (X := O) agE hFL hLAB hDL hORD hRK).dl
       dl_all := (hord.mono (m' := m'') (X := O) agE hFL hLAB hDL hORD hRK).dl_all
@@ -200,8 +202,8 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
         rw [hord.nD_eq]
         have := hcl.card; rw [hBN] at this; exact this
       clus := fun l => by
-        have := (hcl.mono (m' := m'') (X := O) agE (by rw [hBN]; omega)
-          (by rw [hBN]; omega)).clus l
+        have := (hcl.mono (m' := m'') (X := O) agE (by rwo [hBN])
+          (by rwo [hBN])).clus l
         rw [hBN] at this; exact this
       k_pos := hcl.k_pos
       μ_le := by have := hcl.μ_le; rw [hBN] at this; exact this
@@ -247,7 +249,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       AB_TB := by show m₀ (NB + 4) + 5 * A ≤ TB; omega
       SB_TB := by show m₀ (NB + 6) + A ≤ TB; omega
       CB_TB := fun i hi => by have := hcb i hi; show m₀ (NB + 3) + 5 * i + 5 ≤ TB; omega
-      md0 := by show m'' MD = 0; rw [agE _ (by omega)]; exact hmd0
+      md0 := by show m'' MD = 0; rwx [agE _ (by omega)]
       md := fun i hi => by
         show m'' (MD + 1 + i) = m'' (D + i)
         rw [agE _ (by omega), hmdc i hi, ag0 _ (by omega)]

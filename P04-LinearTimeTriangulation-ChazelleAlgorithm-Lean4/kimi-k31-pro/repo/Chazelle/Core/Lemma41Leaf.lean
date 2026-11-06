@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.Lemma41Pro
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
+set_option maxHeartbeats 8000000
 
 /-!
 # WP-J, part 24: the leaves of the merge tree
@@ -29,7 +33,7 @@ theorem nd_map_of_lt {l : List (ℕ × ℕ)} {f : ℕ × ℕ → Shp} {k : ℕ} 
     List.getElem_map]
 
 theorem cover_getD_zero {lam b x : ℕ} (h : x < b) : ((cover lam b x).getD 0 (0, 0)).2 = x := by
-  rw [cover_of_lt h]; rfl
+  rwr [cover_of_lt h]
 
 theorem cover_getD_succ {lam b : ℕ} (x : ℕ) : ∀ k, k + 1 < (cover lam b x).length →
     ((cover lam b x).getD (k + 1) (0, 0)).2 =
@@ -61,14 +65,14 @@ theorem leafShp_consec (lam b a : ℕ) : Consec (leafShp lam b a) := by
   exact cover_getD_succ a k hk
 
 theorem leafShp_first {lam b a : ℕ} (h : a < b) : (nd (leafShp lam b a) 0).1 = a := by
-  have hl : 0 < (cover lam b a).length := by rw [cover_of_lt h]; simp
+  have hl : 0 < (cover lam b a).length := by rws [cover_of_lt h]
   unfold leafShp
   rw [nd_map_of_lt hl]
   exact cover_getD_zero h
 
 theorem leafShp_sum (lam b a : ℕ) :
     ((leafShp lam b a).map fun x => x.2.1).sum = b - a := by
-  rw [← cover_sum (lam := lam) (b := b) a, leafShp, List.map_map]; rfl
+  rwr [← cover_sum (lam := lam) (b := b) a, leafShp, List.map_map]
 
 /-- **At least two leaves.** -/
 theorem two_le_cover {lam b a : ℕ} (_hl : 1 ≤ lam) (h : 2 ^ (lam - 1) < b - a) :
@@ -96,7 +100,6 @@ theorem leafShp_gran {lam b a : ℕ} : ∀ k, k < (leafShp lam b a).length →
   refine ⟨gradeGran_mono hq.1, ?_⟩
   exact le_trans (Nat.one_le_two_pow) (two_pow_ceilBeta_le_gradeGran _)
 
-set_option maxHeartbeats 8000000 in
 /-- **The leaves form a level.** -/
 theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → ℕ}
     {A h lam a b : ℕ} (hR : Robust A m0 fun m' => GradeRaw O P m' h A) (hn : 2 ≤ P.n)
@@ -134,20 +137,20 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
   have hic : i < gradeCount P.n g := by
     unfold gradeCount
     have : i * 2 ^ g ≤ P.n - 2 := by
-      have := Nat.one_le_two_pow (n := g); rw [hi] at hxb; rw [mul_comm]; omega
+      have := Nat.one_le_two_pow (n := g); rw [hi] at hxb; rwo [mul_comm]
     have := (Nat.le_div_iff_mul_le hpos).mpr this
     omega
   obtain ⟨H, C, N, hd, hwf, hCP, -, -, hCs, hCm, hN, hc, -⟩ := hG.2.2.2 g i hgΛ hic
   obtain ⟨hT, hO, -, -⟩ := hent g i hgΛ hic
-  have hCs' : C.s = x := by rw [hCs]; unfold gradeStart; rw [hi]; ring
+  have hCs' : C.s = x := by rw [hCs]; urring gradeStart [hi]
   have hCm' : C.m = 2 ^ g := by
     rw [hCm]; unfold gradeLen
     have : x + 2 ^ g ≤ P.n - 1 := by omega
     rw [hi] at this
-    apply min_eq_left; rw [mul_comm]; omega
+    apply min_eq_left; rwo [mul_comm]
   set R := m0 (m0 (h + 2) + g) with hRdef
   set B := m0 (R + 3 * i) with hBdef
-  have hB5 : B + 5 ≤ A := hwf.1
+  have hB5  := hwf.1
   have hR3 : R + 3 * i + 1 < A := by omega
   -- the record, read in `m0`
   obtain ⟨r0, rj, r5⟩ := h6rec k hk
@@ -171,10 +174,10 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
     exact hostAt_agree (A := A + 7) hhost rfl (by omega) fun y hy => by
       rw [h86 _ (by omega), h65 _ (by omega)]
   · rw [hCP]; have := poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
-  · rw [hwords 1 le_rfl (by norm_num)]; exact d1
-  · rw [hwords 2 (by norm_num) (by norm_num)]; exact d2
-  · rw [hwords 3 (by norm_num) (by norm_num)]; exact d3
-  · rw [hwords 4 (by norm_num) le_rfl]; exact d4
+  · rwx [hwords 1 le_rfl (by norm_num)]
+  · rwx [hwords 2 (by norm_num) (by norm_num)]
+  · rwx [hwords 3 (by norm_num) (by norm_num)]
+  · rwx [hwords 4 (by norm_num) le_rfl]
 
 end
 

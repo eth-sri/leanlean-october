@@ -1,6 +1,10 @@
 module
 
 public import Chazelle.Core.SweepIoLab0G
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+set_option maxHeartbeats 4000000
 
 /-!
 # The sweep RAM (WP-D), answers: the label candidates of a side-0 query, the binary search
@@ -63,7 +67,7 @@ theorem ctxW (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hI : IInv W c₀ c) :
   obtain ⟨-, -, -, -, hJ, hJWF, -⟩ := hA.hst
   have h0 : ChainCtx P W c₀ (sw 2) J.whole :=
     ⟨hA.hG, hA.hWh, hJWF.2.2.1, ⟨H, hJ.2.2, hA.hostReg⟩, hA.hP, hA.hWm⟩
-  exact h0.transport (hI.hin _ (by unfold IFix sw; omega)) hI.hm hI.hA
+  exact h0.transport (hI.hin _ (by ufo IFix sw)) hI.hm hI.hA
 
 /-- The predicate of the search reads only the two words of the record. -/
 theorem lsPr_congr {m m' : ℕ → ℕ} {AL G : ℕ} {x : WPos} {j : ℕ}
@@ -74,7 +78,6 @@ theorem lsPr_congr {m m' : ℕ → ℕ} {AL G : ℕ} {x : WPos} {j : ℕ}
 /-- The block setting the target of the search. -/
 def lsIn : List Instr := [.copyN S0C.lsxE zP, .copyN S0C.lsxH zPh]
 
-set_option maxHeartbeats 4000000 in
 /-- **The binary search at the arrival position of the query point.** -/
 theorem search_irs {ls : Stmt} {κL : ℕ} (hls : LSBody ls κL)
     (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hI : IInv W c₀ c) {z : Point} (hz : z ∈ J.left.set)
@@ -109,14 +112,14 @@ theorem search_irs {ls : Stmt} {κL : ℕ} (hls : LSBody ls κL)
     regB_other _ _ _ (fun i hi => by
       simp only [lsIn, List.mem_cons, List.not_mem_nil, or_false] at hi
       rcases hi with rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp at h1 h2)
-  have hfix : ∀ q, IFix q → c₁.nreg q = c₀.nreg q := fun q hq => hI₁.hin q hq
-  have eTB : c₁.nreg TBR = c₀.nreg TBR := hfix _ (by unfold IFix TBR sw; omega)
-  have eTL : c₁.nreg TLR = c₀.nreg TLR := hfix _ (by unfold IFix TLR sw; omega)
-  have e300 : c₁.nreg (sw 300) = rd c₀ bSweep 300 := hfix _ (by unfold IFix sw; omega)
-  have e301 : c₁.nreg (sw 301) = rd c₀ bSweep 301 := hfix _ (by unfold IFix sw; omega)
-  have e40 : c₁.nreg (sw 40) = c₀.nreg (sw 40) := hfix _ (by unfold IFix sw; omega)
+  have hfix : ∀ q, IFix q → c₁.nreg q = c₀.nreg q := hI₁.hin
+  have eTB : c₁.nreg TBR = c₀.nreg TBR := hfix _ (by ufo IFix TBR sw)
+  have eTL : c₁.nreg TLR = c₀.nreg TLR := hfix _ (by ufo IFix TLR sw)
+  have e300 : c₁.nreg (sw 300) = rd c₀ bSweep 300 := hfix _ (by ufo IFix sw)
+  have e301 : c₁.nreg (sw 301) = rd c₀ bSweep 301 := hfix _ (by ufo IFix sw)
+  have e40 : c₁.nreg (sw 40) = c₀.nreg (sw 40) := hfix _ (by ufo IFix sw)
   have hlog := hA.hlog
-  have hm : ∀ a, a < c₀.nreg ALLOC → c₁.nmem a = c₀.nmem a := fun a ha => hI₁.hm a ha
+  have hm : ∀ a, a < c₀.nreg ALLOC → c₁.nmem a = c₀.nmem a := hI₁.hm
   have hlsP : ∀ j, j < rd c₀ bSweep 301 →
       (S0C.lsPr P J c₁.nmem (c₁.nreg (sw 300)) (c₁.nreg (sw 40))
         ⟨c₁.nreg S0C.lsxE, c₁.nreg S0C.lsxH⟩ j ↔
@@ -154,15 +157,15 @@ theorem search_irs {ls : Stmt} {κL : ℕ} (hls : LSBody ls κL)
     (by rw [eTB, eTL]; have := hA.hTW; have := hI₁.hA; omega)
     (by rw [e301, eTL]; have := hA.hbigE; omega)
     (by rw [e300, e301]; have := hI₁.hA; omega) hG hrec hx hdc
-    (by rw [eTL, hA1]; omega)
+    (by rwo [eTL, hA1])
   rw [eTL] at h
   refine h.mono le_rfl ?_
   rintro c' ⟨r1, r2, r3, r4, r5, r6⟩
   rw [e301] at r1
   refine ⟨r1, fun j hj => (hlsP j (by omega)).1 (r2 j hj),
-    fun j hj hjE => fun h' => r3 j hj (by rw [e301]; exact hjE) ((hlsP j hjE).2 h'),
+    fun j hj hjE => fun h' => r3 j hj (by rwx [e301]) ((hlsP j hjE).2 h'),
     fun r h1 h2 h3 => ?_, fun a ha => by rw [r6 a (by omega)]⟩
-  rw [r4 r h1 (fun h => h2 (by unfold S0C.LSet at h; unfold sw at *; omega)) h3]
+  rw [r4 r h1 (fun h => h2 (by unfold S0C.LSet at h; ufo sw at *)) h3]
   exact vo r (by rintro rfl; exact h2 (by decide)) (by rintro rfl; exact h2 (by decide))
 
 end Env

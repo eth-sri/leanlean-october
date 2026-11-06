@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.ClusterPhase1Exec
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # WP-I, part 69: the second phase — definitions and helper facts
@@ -25,7 +28,7 @@ theorem SS.Regs.of_frameR {S : SS} {c c' : Config} (h : S.Regs c)
     h39, h40, h41, h42, h43, h44⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold RegsR; omega)]; assumption)
+    (rw [hr _ (by ufo RegsR)]; assumption)
 
 /-- **The potential of the initial stack.** -/
 theorem segPot_segL {s μ L : ℕ} {bo : ℕ → ℕ} (hL : ∀ b, cntBelow bo μ b < 2 ^ L) (j : ℕ) :
@@ -34,14 +37,14 @@ theorem segPot_segL {s μ L : ℕ} {bo : ℕ → ℕ} (hL : ∀ b, cntBelow bo �
   | zero => simp [segL, segPot]
   | succ j ih =>
     rw [cntLt_succ]
-    simp only [segL, segPot, List.map_append, List.sum_append] at ih ⊢
+    simp [segL, segPot, List.map_append, List.sum_append] at ih ⊢
     have hlen : len (cntLt bo μ j, cntLt bo μ (j + 1)) = cntBelow bo μ j := len_seg j
     have hsz : Nat.size (cntBelow bo μ j) ≤ L := Nat.size_le.mpr (hL j)
     have : cntBelow bo μ j * Nat.size (cntBelow bo μ j) ≤ L * cntBelow bo μ j := by
       rw [Nat.mul_comm L]; exact Nat.mul_le_mul_left _ hsz
     unfold optSeg; split_ifs
-    · simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, hlen]; nlinarith
-    · simp only [List.map_nil, List.sum_nil]; nlinarith
+    · sinl only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, hlen]
+    · sinl only [List.map_nil, List.sum_nil]
 
 /-- The stored graph only reads the map. -/
 theorem memGraph_congr {m m' : ℕ → ℕ} {B μ E A : ℕ} (hA : ∀ a, a < A → m' a = m a)
@@ -61,16 +64,16 @@ theorem memGraph_congr {m m' : ℕ → ℕ} {B μ E A : ℕ} (hA : ∀ a, a < A 
       exact ⟨d, hd, h1, h2⟩
     · rintro ⟨d, hd, h1, h2⟩
       have ho := hopp d hd
-      refine ⟨d, hd, by rw [hA (m (B + 2) + d) (by omega)]; exact h1, ?_⟩
-      rw [hA (m B + d) (by omega), hA (m (B + 2) + m (m B + d)) (by omega)]; exact h2
+      refine ⟨d, hd, by rwx [hA (m (B + 2) + d) (by omega)], ?_⟩
+      rwx [hA (m B + d) (by omega), hA (m (B + 2) + m (m B + d)) (by omega)]
   ext u v
-  simp only [memGraph, hmd]
+  simp [memGraph, hmd]
 
 theorem segL_congr {s μ : ℕ} {bo bo' : ℕ → ℕ} (h : ∀ w, w < μ → bo w = bo' w) (j : ℕ) :
     segL s μ bo j = segL s μ bo' j := by
   induction j with
   | zero => rfl
-  | succ j ih => simp only [segL, ih, cntLt_congr h]
+  | succ j ih => simp [segL, ih, cntLt_congr h]
 
 end
 

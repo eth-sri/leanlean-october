@@ -3,6 +3,8 @@ module
 public import Chazelle.Core.SweepPrimJun
 public import Chazelle.Core.SweepLabelJG
 public import Chazelle.Core.SweepLabelJL0
+public import Chazelle.UnfoldTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Sweep RAM primitives (WP-D2), part 12: index conversions along a junction
@@ -38,9 +40,9 @@ def Bidx (r : ℕ) : Bool := decide (50100 ≤ r ∧ r < 50110) || decide (50210
 
 theorem Bidx_frame {c c' : Config} (h : FrameB Bidx c c') (k : ℕ) : Frame {bLocate} c c' k :=
   NFLoc.frame_of_frameB h (fun r hr => by
-    simp only [Bidx, Bool.or_eq_true, decide_eq_true_eq] at hr
-    refine ⟨?_, by unfold ALLOC; omega⟩
-    simp only [bandOf, bLocate, Finset.mem_singleton]; omega) k
+    simp [Bidx, Bool.or_eq_true, decide_eq_true_eq] at hr
+    refine ⟨?_, by ufo ALLOC⟩
+    sio only [bandOf, bLocate, Finset.mem_singleton]) k
 
 /-! ## `(a + b) mod n` -/
 
@@ -78,7 +80,7 @@ theorem boxTwin_pos {C₁ C₂ : Chain} (hR : C₁.radius = C₂.radius) {e : �
       (chainModel C₁).param Q ⟨e, h⟩ = (chainModel C₂).param Q ⟨e, h⟩ ∧
       (chainModel C₁).pos Q ⟨e, h⟩ = (chainModel C₂).pos Q ⟨e, h⟩ := by
   have ha : (chainModel C₁).wa e = (chainModel C₂).wa e := by
-    simp only [Model.wa]
+    simp [Model.wa]
     rcases he with rfl | rfl
     · rw [show (chainModel C₁).W = C₁.sideWalk C₁.sideBeta from rfl,
         show (chainModel C₂).W = C₂.sideWalk C₂.sideBeta from rfl, C₁.sideWalk_vtx_one,
@@ -87,7 +89,7 @@ theorem boxTwin_pos {C₁ C₂ : Chain} (hR : C₁.radius = C₂.radius) {e : �
         show (chainModel C₂).W = C₂.sideWalk C₂.sideBeta from rfl, C₁.sideWalk_vtx_three,
         C₂.sideWalk_vtx_three, hR]
   have hb : (chainModel C₁).wb e = (chainModel C₂).wb e := by
-    simp only [Model.wb]
+    simp [Model.wb]
     rw [show (chainModel C₁).W = C₁.sideWalk C₁.sideBeta from rfl,
       show (chainModel C₂).W = C₂.sideWalk C₂.sideBeta from rfl,
       C₁.sideWalk_mod_small _ (by rcases he with rfl | rfl <;> norm_num),
@@ -96,7 +98,7 @@ theorem boxTwin_pos {C₁ C₂ : Chain} (hR : C₁.radius = C₂.radius) {e : �
     · rw [C₁.sideWalk_vtx_two, C₂.sideWalk_vtx_two, hR]
     · rw [C₁.sideWalk_vtx_four, C₂.sideWalk_vtx_four, hR]
   have hp : (chainModel C₁).param Q ⟨e, h⟩ = (chainModel C₂).param Q ⟨e, h⟩ := by
-    unfold Model.param; simp only; rw [ha, hb]
+    ufs Model.param; rw [ha, hb]
   refine ⟨ha, hb, hp, ?_⟩
   unfold Model.pos; rw [ha, hb, hp]
 

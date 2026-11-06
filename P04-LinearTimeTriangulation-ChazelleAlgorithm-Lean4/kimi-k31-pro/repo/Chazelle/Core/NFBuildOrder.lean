@@ -3,6 +3,7 @@ module
 public import Chazelle.Core.FactsTie
 public import Chazelle.Core.NFBuildSort
 public import Chazelle.Core.SpecKernels
+public import Chazelle.Rwx
 
 /-!
 # WP-C (BuildNF): the attachment events of a chord list
@@ -61,12 +62,12 @@ theorem count_doubles (n i : ℕ) :
   | zero => simp
   | succ n ih =>
     rw [List.range_succ, List.flatMap_append, List.count_append, ih]
-    simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.count_cons,
+    simp [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.count_cons,
       List.count_nil, beq_iff_eq]
     by_cases h : i = n
     · subst h; simp
     · have h' : ¬ n = i := Ne.symm h
-      simp only [h', ite_false, add_zero]
+      simp [h', ite_false, add_zero]
       by_cases h2 : i < n
       · rw [ite_eq_left h2, ite_eq_left (by omega)]
       · rw [ite_eq_right h2, ite_eq_right (by omega)]
@@ -110,8 +111,8 @@ theorem chordSet_inj {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} (h
     {i j : ℕ} (hi : i < L.length) (hj : j < L.length) (h : chordSet M Q L i = chordSet M Q L j) :
     i = j := by
   have hnd := hL.2.1
-  have hi' : i < (L.map fun x => (recOf x).toSet M Q).length := by rw [List.length_map]; exact hi
-  have hj' : j < (L.map fun x => (recOf x).toSet M Q).length := by rw [List.length_map]; exact hj
+  have hi' : i < (L.map fun x => (recOf x).toSet M Q).length := by rwx [List.length_map]
+  have hj' : j < (L.map fun x => (recOf x).toSet M Q).length := by rwx [List.length_map]
   refine (hnd.getElem_inj_iff (hi := hi') (hj := hj')).1 ?_
   rw [List.getElem_map, List.getElem_map]
   unfold chordSet at h
@@ -134,7 +135,7 @@ theorem event_data {M : Model} (hM : WalkAx M) {Q : Polygon} {L : List (ℕ × �
   obtain ⟨i, hi, he⟩ := mem_events.1 he
   set r := recOf (L.getD i (0, 0, 0)) with hr
   have hatt : r.Attached M Q := hL.2.2.1 _ (getD_mem hi)
-  have hadm : r.toSet M Q ∈ M.Adm := hL.1.2.1 (chordSet_mem hi)
+  have hadm  := hL.1.2.1 (chordSet_mem hi)
   have hlt := endpoints hM hadm hatt
   have hne : sidePt M.W r.lp (M.param Q r.lpos) ≠ sidePt M.W r.rp (M.param Q r.rpos) := by
     intro h
@@ -216,7 +217,7 @@ theorem tie_rule_down {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F 
     t = 0 ∧ cycDist M.W.n p (pe + te) < cycDist M.W.n p (pw + tw) := by
   obtain ⟨rfl, U, V, R, -, -, -, -, -, -, -, -, -, hord⟩ :=
     hM.tie_down hF hfin hce hcw hAe hAw hE hW hdown
-  have hv0 : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero M.W p
+  have hv0  := Chazelle.Chain.sidePt_zero M.W p
   rw [hv0] at hBe' hBw'
   have hin := hord pe pw te tw hBe hBe' hBw hBw'
   have keyb : ∀ {pa : ℕ} {ta : ℝ} {c : Set Point}, SideAttach M.W c pa ta →
@@ -244,7 +245,7 @@ theorem tie_rule_up {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
     t = 0 ∧ cycDist M.W.n p (pw + tw) < cycDist M.W.n p (pe + te) := by
   obtain ⟨rfl, U, V, R, -, -, -, -, -, -, -, -, -, hord⟩ :=
     hM.tie_up hF hfin hce hcw hAe hAw hE hW hup
-  have hv0 : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero M.W p
+  have hv0  := Chazelle.Chain.sidePt_zero M.W p
   rw [hv0] at hBe' hBw'
   have hin := hord pe pw te tw hBe hBe' hBw hBw'
   have keyb : ∀ {pa : ℕ} {ta : ℝ} {c : Set Point}, SideAttach M.W c pa ta →

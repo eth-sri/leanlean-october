@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseMathCyc
+public import Chazelle.Rwx
+public import Chazelle.UnfoldTactics
+public import Chazelle.MiscTactics
 
 /-!
 # Down phase, math (H-R1): the arcs of a region in cyclic order
@@ -73,7 +76,7 @@ theorem cyc_start {n : ℝ} {a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn
   · simp only [ite_eq_right hab] at hnot hpt
     push Not at hnot
     by_contra hne
-    have hxa : x < a := lt_of_le_of_ne hnot.1 hne
+    have hxa  := lt_of_le_of_ne hnot.1 hne
     obtain ⟨z, h1, h2, -, -, h3⟩ := hpt a hxa
     rcases h3 with h3 | h3
     · linarith
@@ -102,8 +105,8 @@ theorem start_of_arcGap {j : ℕ} (hj : j < nk (interiorModel Q) S R)
     ∃ b, (interiorModel Q).IsArc S R (hk (interiorModel Q) S R j) b := by
   set I := interiorModel Q
   set N := nk I S R
-  have hM : WalkAx I := walkAx_interiorModel hQ
-  have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
+  have hM  := walkAx_interiorModel hQ
+  have h3  := three_le_nk hQ hFam hne hR
   obtain ⟨a', b', harc, hsub⟩ := hA
   have hsj : (j + 1) % N < N := Nat.mod_lt _ (by omega)
   have hbx := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hj)
@@ -116,7 +119,7 @@ theorem start_of_arcGap {j : ℕ} (hj : j < nk (interiorModel Q) S R)
 theorem arcGap_of_start {j : ℕ} (hj : j < nk (interiorModel Q) S R) {b : ℝ}
     (harc : (interiorModel Q).IsArc S R (hk (interiorModel Q) S R j) b) :
     ArcGap (interiorModel Q) S R j := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM  := walkAx_interiorModel hQ
   obtain ⟨i_l, d, hD⟩ := arc_keys hM hFam.2.1 hFam.1 hne hR harc
   have := hk_inj hM hFam.2.1 hFam.1 hD.hil hj hD.hl
   subst this
@@ -148,7 +151,7 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
   set J : ℕ → ℕ := fun t => if ArcGap I S R ((i t + d t + 1) % N) then 0 else 1 with hJ
   have hJ0 : ∀ t, (J t = 0 ↔ ArcGap I S R ((i t + d t + 1) % N)) := by
     intro t; simp only [hJ]; split_ifs with h <;> simp [h]
-  have hJ1 : ∀ t, J t ≤ 1 := by intro t; simp only [hJ]; split_ifs <;> omega
+  have hJ1 : ∀ t, J t ≤ 1 := by intro t; simp only [hJ]; splao
   -- the start indices increase
   have hil : ∀ t, t < k → i t < N := fun t ht => (hD t ht).hil
   have hmono : ∀ t t', t < t' → t' < k → i t < i t' := by
@@ -179,9 +182,9 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
     have hDt := hD t ht
     set m := (i t + d t) % N with hm
     have hmN : m < N := Nat.mod_lt _ (by omega)
-    have hbm : hk I S R m = b t := hDt.hr
+    have hbm  := hDt.hr
     obtain ⟨c, ⟨hc, htc⟩, pc, tc, hAc, hec⟩ := hM.exists_exit_at_end hF hfin hne hR (harc t ht)
-    have hx : hk I S R m ∈ exitKeys I S R := ⟨c, hc, htc, pc, tc, hAc, by rw [hbm]; exact hec⟩
+    have hx : hk I S R m ∈ exitKeys I S R := ⟨c, hc, htc, pc, tc, hAc, by rwx [hbm]⟩
     have hprev : prevIdx N m = (i t + (d t - 1)) % N := by
       have e : m = ((i t + (d t - 1)) % N + 1) % N := by
         rw [hm, Nat.mod_add_mod, show i t + (d t - 1) + 1 = i t + d t by have := hDt.hd0; omega]
@@ -192,7 +195,7 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
     set q₁ := (m + 1) % N with hq₁
     have hq₁N : q₁ < N := Nat.mod_lt _ (by omega)
     have hq₁e : q₁ = (i t + d t + 1) % N := by rw [hq₁, hm, Nat.mod_add_mod]
-    obtain ⟨pz, tz, hAz, hez⟩ := hnext c hc htc pc tc hAc (by rw [hbm]; exact hec)
+    obtain ⟨pz, tz, hAz, hez⟩ := hnext c hc htc pc tc hAc (by rwx [hbm])
     have hcut₁ : I.IsCut S (hk I S R q₁) := ⟨c, hc, pz, tz, hAz, hez⟩
     -- no arc start at the end
     have hnot_m : ∀ s, s < k → i s ≠ m := by
@@ -222,7 +225,7 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
         have := hJ1 t
         by_contra h
         exact hA₁ (hq₁e ▸ (hJ0 t).1 (by omega))
-      have hCp : ChordGap I S R (prevIdx N q₁) := by rw [hq₁, prevIdx_succ hmN]; exact hCm
+      have hCp : ChordGap I S R (prevIdx N q₁) := by rwx [hq₁, prevIdx_succ hmN]
       obtain ⟨-, hA₂⟩ := junction hQ hFam hne hR hdh hq₁N hCp hA₁
       have hC₁ : ChordGap I S R q₁ :=
         (gap_cases hM hF hfin hne hR (by omega) hq₁N).resolve_left hA₁
@@ -275,8 +278,8 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
         have hst : t < s := by
           by_contra h; push Not at h
           rcases h.lt_or_eq with h | h
-          · have := hmono s t h ht; unfold grpLen at his; omega
-          · subst h; unfold grpLen at his; omega
+          · have := hmono s t h ht; ufo grpLen at his
+          · subst h; ufo grpLen at his
         rcases (show s = t + 1 ∨ t + 1 < s by omega) with rfl | hs1
         · exact his.symm
         · exfalso
@@ -300,8 +303,8 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
           have hst : t < s := by
             by_contra h'; push Not at h'
             rcases h'.lt_or_eq with h' | h'
-            · have := hmono s t h' ht; unfold grpLen at his; omega
-            · subst h'; unfold grpLen at his; omega
+            · have := hmono s t h' ht; ufo grpLen at his
+            · subst h'; ufo grpLen at his
           omega
         · have h0N := hil 0 hk1
           rw [show i t + grpLen d J t = (i t + grpLen d J t - N) + N by omega, Nat.add_mod_right,

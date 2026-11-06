@@ -2,6 +2,10 @@ module
 
 public import Chazelle.Core.Setup
 public import Chazelle.Cost.DownPhase
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.UnfoldTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Down phase, math (D10 rest, arithmetic): the chord-count bound (I3) across the levels
@@ -55,7 +59,7 @@ theorem le_cntG {A : ℕ} (hA : 1 ≤ A) (B x : ℕ) : x ≤ cntG A B x := by
   have : x ≤ 2 * A * x := by
     calc x = 1 * x := (one_mul x).symm
       _ ≤ 2 * A * x := Nat.mul_le_mul_right _ (by omega)
-  unfold cntG; omega
+  ufo cntG
 
 theorem iterate_le_iterate {A : ℕ} (hA : 1 ≤ A) (B x : ℕ) {k k' : ℕ} (h : k ≤ k') :
     (cntG A B)^[k] x ≤ (cntG A B)^[k'] x := by
@@ -105,7 +109,7 @@ theorem big_of_ge {A B lam : ℕ} (h : cntLam A B ≤ lam) :
   constructor
   · calc 8 * A * 2 ^ ((b + 11 + 4) / 5) ≤ 2 ^ L * 2 ^ ((b + 11 + 4) / 5) :=
           Nat.mul_le_mul_right _ (by omega)
-      _ ≤ 2 ^ b := by rw [mul_comm]; exact hpow
+      _ ≤ 2 ^ b := by rwx [mul_comm]
   · omega
 
 /-! ## One level -/
@@ -165,7 +169,7 @@ theorem step_arith {p b b' K K' n c c' A B G : ℕ}
       _ ≤ c' * P + c' * Y :=
           Nat.add_le_add (Nat.mul_le_mul_right _ hc) (Nat.mul_le_mul_right _ hc)
       _ = c' * (P + Y) := by ring
-  · have hK2' : K * X ≤ 2 * (c' * P) := by rw [← mul_assoc]; exact hK2
+  · have hK2' : K * X ≤ 2 * (c' * P) := by rwx [← mul_assoc]
     have eKY : 4 * (A * (K * Y)) ≤ c' * P := by
       have : 8 * (A * (K * Y)) ≤ 2 * (c' * P) := by
         calc 8 * (A * (K * Y)) = K * (8 * A * Y) := by ring
@@ -198,10 +202,10 @@ theorem cnt_step {A B : ℕ} (hA : 1 ≤ A) {lam p K K' n G : ℕ} (h16 : 16 ≤
     (hK' : K' * G ≤ A * ((K + 1) * G + B * (n + 4 * K))) :
     K' * 2 ^ Cost.ceilBeta (Cost.ceilBeta lam + 11) ≤
       cnt A B (Cost.ceilBeta lam + 11) * (2 ^ p + 2 ^ Cost.ceilBeta (Cost.ceilBeta lam + 11)) := by
-  have hbl : Cost.ceilBeta lam ≤ lam := Cost.ceilBeta_le lam
+  have hbl  := Cost.ceilBeta_le lam
   have hμ : Cost.ceilBeta lam + 11 < lam := Cost.ceilBeta_add_eleven_lt h16
   have hb' : Cost.ceilBeta (Cost.ceilBeta lam + 11) ≤ Cost.ceilBeta lam := by
-    rw [Setup.ceilBeta_eq, Setup.ceilBeta_eq lam]; omega
+    rwo [Setup.ceilBeta_eq, Setup.ceilBeta_eq lam]
   refine step_arith hK (hbl.trans hlp) hb' hn hG hK' ?_
   by_cases hbig : cntLam A B ≤ Cost.ceilBeta lam + 11
   · -- both levels above the threshold
@@ -211,7 +215,7 @@ theorem cnt_step {A B : ℕ} (hA : 1 ≤ A) {lam p K K' n G : ℕ} (h16 : 16 ≤
     have e2 : cnt A B (Cost.ceilBeta lam + 11) = cntBase A B := by unfold cnt; rw [ite_eq_left hbig]
     obtain ⟨h8, h32⟩ := big_of_ge hlam
     rw [e1, e2]
-    refine ⟨rfl, by unfold cntBase; omega, by unfold cntBase; omega, h8, h32⟩
+    refine ⟨rfl, by ufo cntBase, by ufo cntBase, h8, h32⟩
   · -- the next level is below the threshold
     left
     have e2 : cnt A B (Cost.ceilBeta lam + 11) =
@@ -220,7 +224,7 @@ theorem cnt_step {A B : ℕ} (hA : 1 ≤ A) {lam p K K' n G : ℕ} (h16 : 16 ≤
     obtain ⟨k, hk, ek⟩ : ∃ k, k + 1 ≤ cntLam A B - (Cost.ceilBeta lam + 11) ∧
         cnt A B lam = (cntG A B)^[k] (cntBase A B) := by
       by_cases hl : cntLam A B ≤ lam
-      · exact ⟨0, by omega, by unfold cnt; rw [ite_eq_left hl]; rfl⟩
+      · exact ⟨0, by omega, by urr cnt [ite_eq_left hl]⟩
       · exact ⟨cntLam A B - lam, by omega, by unfold cnt; rw [ite_eq_right hl]⟩
     rw [e2, ek, ← Function.iterate_succ_apply' (cntG A B)]
     exact iterate_le_iterate hA B _ hk
@@ -233,13 +237,13 @@ keeps at most `K₀` chords (T4).  Then (I3) holds at `λ = p`. -/
 theorem cnt_trans {A : ℕ} (hA : 1 ≤ A) (B : ℕ) {K K₀ n p : ℕ} (hn : n - 1 ≤ 2 ^ p)
     (hK₀ : K₀ * (gradeGran p + 1) ≤ 840 * (2 * (n - 1) + 1)) (hK : K ≤ K₀) :
     K * 2 ^ Cost.ceilBeta p ≤ cnt A B p * (2 ^ p + 2 ^ Cost.ceilBeta p) := by
-  have hg : 2 ^ Cost.ceilBeta p ≤ gradeGran p + 1 := by unfold gradeGran; omega
+  have hg : 2 ^ Cost.ceilBeta p ≤ gradeGran p + 1 := by ufo gradeGran
   have hc := cntBase_le_cnt hA B p
   have hP1 : 1 ≤ 2 ^ p := Nat.one_le_two_pow
   calc K * 2 ^ Cost.ceilBeta p ≤ K₀ * (gradeGran p + 1) := Nat.mul_le_mul hK hg
     _ ≤ 840 * (2 * (n - 1) + 1) := hK₀
     _ ≤ 2520 * 2 ^ p := by omega
-    _ ≤ cntBase A B * 2 ^ p := Nat.mul_le_mul_right _ (by unfold cntBase; omega)
+    _ ≤ cntBase A B * 2 ^ p := Nat.mul_le_mul_right _ (by ufo cntBase)
     _ ≤ cnt A B p * (2 ^ p + 2 ^ Cost.ceilBeta p) := Nat.mul_le_mul hc (Nat.le_add_right _ _)
 
 end

@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.OracleHitSem
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.SimpTactics
 
 /-!
 # Lemma 3.6 (WP-H), RAM part 3: the constants of the query, and the scan of one walk edge
@@ -194,7 +197,7 @@ def BW (r : ℕ) : Bool := BE r || decide (r = 120071) || decide (r = 120060)
 theorem wr_wstep : wr BW wstep = true := by decide
 
 theorem BW_const (r : ℕ) (h1 : 120010 ≤ r) (h2 : r ≤ 120049) : BW r = false := by
-  simp only [BW, BE, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
+  sio only [BW, BE, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]
 
 open Classical in
 /-- **The new best after walk edge `w`.** -/
@@ -216,12 +219,12 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
     exact ⟨c', k, ex, hk, exec_frameB ex wr_wstep, hb', hv'⟩
   set w := c.nreg 120070 with hw_def
   by_cases h6 : w < 6
-  · refine ⟨c, _, .ifLtN_true (by rw [hq.six]; exact h6) (.skip hw), by omega, hb, ?_⟩
+  · refine ⟨c, _, .ifLtN_true (by rwx [hq.six]) (.skip hw), by omega, hb, ?_⟩
     unfold wupd; rw [ite_eq_right (by omega)]
   by_cases hE : w < 2 * C.m + 6
   swap
-  · refine ⟨c, _, .ifLtN_false (by rw [hq.six]; exact h6)
-      (.ifLtN_false (by rw [hq.tEnd, hv.m]; exact hE) (.skip hw)), by omega, hb, ?_⟩
+  · refine ⟨c, _, .ifLtN_false (by rwx [hq.six])
+      (.ifLtN_false (by rwx [hq.tEnd, hv.m]) (.skip hw)), by omega, hb, ?_⟩
     unfold wupd; rw [ite_eq_right (by omega)]
   -- the tour edge `i = w - 6`
   obtain ⟨c₁, k₁, e₁, hk₁, v₁, r₁⟩ : ∃ c₁ k₁, Exec P W
@@ -235,7 +238,7 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
       · config_simp; upd_solve
   have hsS : V.sS ≤ 2 * C.m := by rw [hv.sS]; exact C.sideS_lt C.sideBeta
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, r₂, -⟩ := modSub_exec (P := P) (r := 120071) (nr := 120019)
-    (by decide) c₁ e₁.wb_right (by rw [v₁, r₁ _ (by decide), hq.twoM, hv.m]; omega)
+    (by decide) c₁ e₁.wb_right (by rwo [v₁, r₁ _ (by decide), hq.twoM, hv.m])
   rw [v₁, r₁ _ (by decide), hq.twoM, hv.m] at v₂
   have htj : c₂.nreg 120071 = tj C (w - 6) := by
     rw [v₂]; unfold tj; rw [← hv.sS, Nat.add_comm]
@@ -248,7 +251,7 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
       c₃.nreg 120060 = tci C (w - 6) ∧ (∀ r, r ≠ 120060 → c₃.nreg r = c₂.nreg r) := by
     have hm2 : c₂.nreg 120016 = C.m := by rw [R₂ _ (by decide), hq.m, hv.m]
     by_cases hlt : tj C (w - 6) < C.m
-    · refine ⟨_, _, .ifLtN_true (by rw [htj, hm2]; exact hlt) (Exec.copyN e₂.wb_right _ _),
+    · refine ⟨_, _, .ifLtN_true (by rwx [htj, hm2]) (Exec.copyN e₂.wb_right _ _),
         by omega, ?_, fun r hr => ?_⟩
       · config_simp; rw [htj]; unfold tci; rw [ite_eq_left hlt]
       · config_simp; upd_solve
@@ -262,7 +265,7 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
         · config_simp
           rw [R₂ _ (by decide), R₂ _ (by decide), hq.twoM, hq.one, htj, hv.m]
         · config_simp; upd_solve
-      refine ⟨c₃, _, .ifLtN_false (by rw [htj, hm2]; exact hlt) e₃, by omega, ?_, r₃⟩
+      refine ⟨c₃, _, .ifLtN_false (by rwx [htj, hm2]) e₃, by omega, ?_, r₃⟩
       rw [v₃]; unfold tci; rw [ite_eq_right hlt]
   have R₃ : ∀ r, r ≠ 120071 → r ≠ 120060 → c₃.nreg r = c.nreg r := fun r h1 h2 =>
     (r₃ r h2).trans (R₂ r h1)
@@ -279,8 +282,8 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
     unfold bestOf
     rw [R₃ 120050 (by decide) (by decide), R₃ 120052 (by decide) (by decide)]
   rw [v₃, hbo₃] at v₄
-  refine ⟨c₄, _, .ifLtN_false (by rw [hq.six]; exact h6)
-    (.ifLtN_true (by rw [hq.tEnd, hv.m]; exact hE) (.seq e₁ (.seq e₂ (.seq e₃ e₄)))),
+  refine ⟨c₄, _, .ifLtN_false (by rwx [hq.six])
+    (.ifLtN_true (by rwx [hq.tEnd, hv.m]) (.seq e₁ (.seq e₂ (.seq e₃ e₄)))),
     by omega, hb₄, ?_⟩
   rw [v₄]; unfold wupd; rw [ite_eq_left ⟨by omega, hE⟩]
 
@@ -310,7 +313,7 @@ theorem wupd_step {P : Polygon} {C : Chain} {V : QV} {z : Point} (hs : SemOK P C
   by_cases h : 6 ≤ w ∧ w < 2 * C.m + 6
   · rw [ite_eq_left h, ite_eq_left h]
     exact fold_step hs.hv.CQ hs.hv.s.symm hs.hD (tci_lt C _) hs.zy hs.σ hs.zo hS
-  · rw [ite_eq_right h, ite_eq_right h, Set.union_empty]; exact hS
+  · rwx [ite_eq_right h, ite_eq_right h, Set.union_empty]
 
 end
 

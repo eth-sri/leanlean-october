@@ -1,6 +1,9 @@
 module
 
 public import Chazelle.Core.DownPhaseDrvXKept
+public import Chazelle.Rwx
+public import Chazelle.RewriteTactics
+public import Chazelle.ChainTactics
 
 /-!
 # Down phase, extraction (D6): X-R2, the interior positions of the kept ends
@@ -62,7 +65,7 @@ theorem cyc_end {n a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn : x < n) 
     by_cases hab : a < b
     · simp only [ite_eq_left hab] at hnot hpt
       obtain ⟨z, -, hz2, hz3, -⟩ := hpt (y - 1) (by linarith)
-      have hay : a < y := lt_trans hz3 hz2
+      have hay  := lt_trans hz3 hz2
       have hby : b < y := by
         rcases lt_or_ge b y with h | h
         · exact h
@@ -75,7 +78,7 @@ theorem cyc_end {n a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn : x < n) 
       obtain ⟨z, hz1, hz2, hz3⟩ := hpt b hby
       rcases hz3 with h | h <;> linarith [hnot.1]
   · subst hy
-    have hx : 0 < x := lt_of_le_of_ne hx0 (Ne.symm hxy)
+    have hx  := lt_of_le_of_ne hx0 (Ne.symm hxy)
     unfold sideInArc at hnot
     by_cases hab : a < b
     · have hz := hsub ((max x b + n) / 2) (by have := le_max_left x b; linarith)
@@ -94,9 +97,9 @@ spike. -/
 theorem not_sideCcw_flat {B X A : Point} (hB : B.2 = 0) (hX : X.2 = 0) (hA : A.2 = 0)
     (hns : Chazelle.Chain.sideNonSpike B A) : ¬ sideCcw B X A := by
   have e1 : Chazelle.Chain.sideCross B A = 0 := by
-    unfold Chazelle.Chain.sideCross; rw [hB, hA]; ring
+    urring Chazelle.Chain.sideCross [hB, hA]
   have e2 : Chazelle.Chain.sideCross B X = 0 := by
-    unfold Chazelle.Chain.sideCross; rw [hB, hX]; ring
+    urring Chazelle.Chain.sideCross [hB, hX]
   rintro (⟨h1, -⟩ | ⟨h1, -⟩ | ⟨-, -, h3⟩ | ⟨-, h4, -⟩)
   · rw [e1] at h1; exact lt_irrefl _ h1
   · rw [e1] at h1; exact lt_irrefl _ h1
@@ -128,8 +131,8 @@ theorem pEdge_rep (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) {li
     refine hdh _ _ (ivB_lt li hp) (ivB_lt li hp1) fun h' => ?_
     have := ivB_inj li hp hp1 h'
     by_cases h1 : ⌊κ⌋₊ + 1 < Q.n
-    · rw [Nat.mod_eq_of_lt h1] at this; omega
-    · rw [show ⌊κ⌋₊ + 1 = Q.n by omega, Nat.mod_self] at this; omega
+    · rwo [Nat.mod_eq_of_lt h1] at this
+    · rwo [show ⌊κ⌋₊ + 1 = Q.n by omega, Nat.mod_self] at this
   rcases hs with ⟨-, rfl⟩ | ⟨-, h, hhn, hy, (⟨hint, -, rfl⟩ | ⟨hnot, rfl⟩)⟩
   · exact ivB_ivB li hp
   · -- an arc end at a vertex, written with the previous edge
@@ -169,8 +172,8 @@ theorem iparam {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (hdh : Di
     refine hdh _ _ (ivB_lt li hq) (ivB_lt li hq1) fun h' => ?_
     have := ivB_inj li hq hq1 h'
     by_cases h1 : q + 1 < Q.n
-    · rw [Nat.mod_eq_of_lt h1] at this; omega
-    · rw [show q + 1 = Q.n by omega, Nat.mod_self] at this; omega
+    · rwo [Nat.mod_eq_of_lt h1] at this
+    · rwo [show q + 1 = Q.n by omega, Nat.mod_self] at this
   have hW : (interiorModel Q).W = interiorWalk Q := rfl
   have ha : (interiorModel Q).wa q = Q.vtx (ivB li Q.n q) := by
     unfold Model.wa; rw [hW, DownMath.walk_vtx hli hq]
@@ -215,13 +218,13 @@ theorem not_attach_flat {y a b : ℝ} (hab : a < b) {q : ℕ} (hq : q < xK) {t :
     (hflat : ((xG).vtx q).2 = ((xG).vtx ((q + 1) % xK)).2)
     (hA : SideAttach xG (hseg y a b) q t) : False := by
   have hne : (xG).vtx q ≠ (xG).vtx ((q + 1) % (xG).n) :=
-    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rw [Y.gn]; exact hq)
+    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rwx [Y.gn])
   obtain ⟨-, -, -, hmem, rA, hrA, hsec⟩ := hA
   obtain ⟨x, hxc, hxne, hxd⟩ := Extract.exists_near_mem hab hmem hrA
   have hx := (Chazelle.Chain.sideLeft_edge hne ht x).1 (hsec x hxc hxne hxd)
   rw [Y.gn] at hx
-  have hzy : (sidePt xG q t).2 = y := hmem.1
-  have hxy : x.2 = y := hxc.1
+  have hzy  := hmem.1
+  have hxy  := hxc.1
   unfold sidePt at hzy
   rw [Y.gn, Chazelle.Geometry.lerp_snd, ← hflat] at hzy
   have hy : ((xG).vtx q).2 = y := by linarith
@@ -253,15 +256,15 @@ theorem not_attach_junction {y a b : ℝ} (hab : a < b) {ι : ℕ} (hι : ι < x
   have hns := FactsInterior.corner_nonSpike Y.gSimple hσ
   unfold Chazelle.Jordan.prevIdx at hns
   rw [Chazelle.Chain.sidePt_zero] at hmem
-  have hzy : ((xG).vtx ι).2 = y := hmem.1
-  have hxy : x.2 = y := hxc.1
+  have hzy  := hmem.1
+  have hxy  := hxc.1
   unfold prevIdx at h2
   rw [Y.gn] at hns hx
   unfold sideLeftOf at hx
   refine not_sideCcw_flat ?_ ?_ ?_ hns hx
-  · simp only [Prod.snd_sub]; rw [← h1]; ring
-  · simp only [Prod.snd_sub]; rw [hxy, hzy]; ring
-  · simp only [Prod.snd_sub]; rw [h2]; ring
+  · simp only [Prod.snd_sub]; rwring [← h1]
+  · simp only [Prod.snd_sub]; rwring [hxy, hzy]
+  · simp only [Prod.snd_sub]; rwring [h2]
 
 end XCtx
 
