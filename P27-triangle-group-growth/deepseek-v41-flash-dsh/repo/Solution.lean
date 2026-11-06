@@ -6,7 +6,7 @@ public import CoxeterGrowth.Family
 /-
 Solution: proofs of the challenge statements, transferred from the CoxeterGrowth development
 (`CoxeterGrowth.Triangle` for the general identity, `CoxeterGrowth.Instances` for the instances,
-`CoxeterGrowth.Plastic` for the plastic number, `CoxeterGrowth.Family` for the family statements
+`CoxeterGrowth.Analysis` for the plastic number, `CoxeterGrowth.Family` for the family statements
 (12)–(20)).
 -/
 
@@ -70,15 +70,12 @@ theorem sphere23_padovan {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
     (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
     (pad : ℕ → ℕ) (hp0 : pad 0 = 1) (hp1 : pad 1 = 1) (hp2 : pad 2 = 1)
     (hpr : ∀ n, pad (n + 3) = pad (n + 1) + pad n) (n : ℕ) (hn : 2 ≤ n) :
-    Nat.card {w : W // cs.length w = n} = pad (n + 5) := by
-  rw [CoxeterGrowth.Triangle.eq_padovan pad hp0 hp1 hp2 hpr]
-  exact CoxeterGrowth.Triangle.sphere23_padovan cs h01 h02 h12 n hn
+    Nat.card {w : W // cs.length w = n} = pad (n + 5) :=
+  CoxeterGrowth.Triangle.sphere23_padovan cs h01 h02 h12 pad hp0 hp1 hp2 hpr n hn
 
 /-- **(9)** The plastic number exists and is unique. -/
 theorem plastic_exists_unique : ∃! ρ : ℝ, 1 < ρ ∧ ρ ^ 3 = ρ + 1 :=
-  ⟨CoxeterGrowth.plasticNumber,
-    ⟨CoxeterGrowth.one_lt_plasticNumber, CoxeterGrowth.plasticNumber_cubic⟩,
-    fun _ hy => CoxeterGrowth.plasticNumber_unique hy.1 hy.2⟩
+  CoxeterGrowth.plastic_exists_unique
 
 /-- **(10) Two-sided growth bound** for `(2,3,∞)`: `2ρⁿ ≤ a(n) ≤ 4ρⁿ`, `n ≥ 2`. -/
 theorem sphere23_growth_bounds {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}

@@ -2,22 +2,6 @@ module
 public import CoxeterGrowth.TriangleNF
 
 @[expose] public section
-/-!
-# Growth series of the triangle Coxeter groups `(p, q, ∞)`
-
-Let `cs : CoxeterSystem M W` with `M : CoxeterMatrix (Fin 3)`, `M 0 1 = 0` (`∞`), `M 0 2 = p`,
-`M 1 2 = q`, `2 ≤ p, q`.  We prove, as an identity in `ℤ⟦X⟧`,
-
-  `(Σ_n a(n) Xⁿ) · (1 − (X + ⋯ + X^{p−1})(X + ⋯ + X^{q−1})) = (1 + X)(1 + ⋯ + X^{p−1})(1 + ⋯ + X^{q−1})`
-
-where `a(n) = #{w ∈ W : ℓ(w) = n}`.
-
-Method.  The raw normal forms of `TriangleNF` carry the left action `act` of the generators,
-which satisfies the Coxeter relations; by the universal property it lifts to `W →* End(NF)`, and
-the orbit map `ev : W → NF` is inverse to the evaluation `piA : NF → W`.  Since each generator
-changes the normal-form length by exactly one, `ℓ(w) = len (ev w)`: spheres in `W` are in bijection
-with normal forms of the given length, which are counted in `TriangleNF`.
--/
 
 namespace CoxeterGrowth.Triangle
 
@@ -32,30 +16,24 @@ theorem wrap {G : Type*} [Group G] {s c : G} (hs : s * s = 1) (hc : c * c = 1) {
     s * (c * ((s * c) ^ a * s ^ e)) = c * ((s * c) ^ b * s ^ e') := by
   have hs' : s⁻¹ = s := inv_eq_of_mul_eq_one_right hs
   have hc' : c⁻¹ = c := inv_eq_of_mul_eq_one_right hc
-  have hcr : SemiconjBy c (s * c) (s * c)⁻¹ := by
-    show c * (s * c) = (s * c)⁻¹ * c
-    rw [mul_inv_rev, hs', hc', mul_assoc]
-  have hcrb : c * (s * c) ^ b = (s * c) ^ (a + 2) * c := by
-    have h1 : c * (s * c) ^ b = ((s * c)⁻¹) ^ b * c := hcr.pow_right b
-    have h2 : ((s * c)⁻¹) ^ b = (s * c) ^ (a + 2) := by
-      rw [inv_pow]
-      apply inv_eq_of_mul_eq_one_left
-      rw [← pow_add, show a + 2 + b = m by omega, hm]
-    rw [h1, h2]
+  have hconj : c * (s * c) = (s * c)⁻¹ * c := by rw [mul_inv_rev, hs', hc', mul_assoc]
+  have h1 : c * (s * c) ^ b = ((s * c)⁻¹) ^ b * c := SemiconjBy.pow_right hconj b
+  have h2 : ((s * c)⁻¹) ^ b = (s * c) ^ (a + 2) := by
+    rw [inv_pow]
+    exact inv_eq_of_mul_eq_one_left (by rw [← pow_add, show a + 2 + b = m by omega, hm])
+  have key : s ^ e = s * s ^ e' := by
+    rcases e' with _ | _ | e'
+    · obtain rfl : e = 1 := by omega
+      simp
+    · obtain rfl : e = 0 := by omega
+      simp [hs]
+    · omega
   have hL : s * (c * ((s * c) ^ a * s ^ e)) = (s * c) ^ (a + 1) * s ^ e := by
-    rw [pow_succ']; simp only [mul_assoc]
-  have hR : c * ((s * c) ^ b * s ^ e') = (s * c) ^ (a + 1) * (s * s ^ e') := by
-    rw [← mul_assoc, hcrb, pow_succ]
-    simp only [mul_assoc]
-    rw [← mul_assoc c c, hc, one_mul]
-  rw [hL, hR]
-  congr 1
-  rcases e' with _ | _ | e'
-  · obtain rfl : e = 1 := by omega
-    simp
-  · obtain rfl : e = 0 := by omega
-    simp [hs]
-  · omega
+    rw [← mul_assoc, ← mul_assoc, ← pow_succ']
+  rw [hL, key]
+  conv_rhs => rw [← mul_assoc, h1, h2, pow_succ]
+  simp only [mul_assoc]
+  rw [← mul_assoc c c, hc, one_mul]
 
 /-! ## Evaluating normal forms in a group -/
 
@@ -77,35 +55,29 @@ def tailP : Fin 3 → Fin 3 → List ℕ → G
 /-- A normal form with an `s_i`-head, followed by blocks starting with `s_{i'}`. -/
 def piH (i i' : Fin 3) (v : Raw) : G := headP s i v.1 * tailP s i' i v.2
 
-theorem blockP_zero (i : Fin 3) : blockP s i 0 = 1 := by simp [blockP]
-
-theorem blockP_add_two (i : Fin 3) (j : ℕ) : blockP s i (j + 2) = s i * s 2 * blockP s i j := by
-  unfold blockP
-  rw [show (j + 2) / 2 = j / 2 + 1 by omega, show (j + 2) % 2 = j % 2 by omega, pow_succ']
-  simp only [mul_assoc]
+theorem blockP_succ (i : Fin 3) (j : ℕ) : blockP s i (j + 2) = s i * s 2 * blockP s i j := by
+  simp only [blockP, show (j + 2) / 2 = j / 2 + 1 by omega,
+    show (j + 2) % 2 = j % 2 by omega, pow_succ', mul_assoc]
 
 theorem piH_swap (i i' : Fin 3) : ∀ v : Raw, piH s i' i (swap v) = piH s i i' v
-  | ((e, 0), []) => by simp [swap, piH, headP, tailP, blockP_zero]
-  | ((e, 0), k :: r) => by simp [swap, piH, headP, tailP, blockP_zero, mul_assoc]
-  | ((e, j + 1), r) => by simp [swap, piH, headP, tailP, blockP_zero, mul_assoc]
+  | ((e, 0), []) => by simp [swap, piH, headP, blockP, tailP]
+  | ((e, 0), k :: r) => by simp [swap, piH, headP, blockP, tailP, mul_assoc]
+  | ((e, j + 1), r) => by simp [swap, piH, headP, blockP, tailP, mul_assoc]
 
 /-- **Head identity**: the head action `da` is left multiplication by `s_i`. -/
 theorem headP_da (hs : ∀ k, s k * s k = 1) (i : Fin 3) {m : ℕ} (hm : 2 ≤ m)
     (hrel : (s i * s 2) ^ m = 1) : ∀ x : ℕ × ℕ, HV m x → headP s i (da m x) = s i * headP s i x
-  | (0, 0), _ => by rw [da_00]; simp [headP, blockP]
-  | (0, 1), _ => by rw [da_01]; simp [headP, blockP, hs]
+  | (0, 0), _ => by simp [da, headP, blockP]
+  | (0, 1), _ => by simp [da, headP, blockP, hs]
   | (0, j + 2), _ => by
-    rw [da_0]
-    simp only [headP, blockP_add_two, pow_one, pow_zero, one_mul, ← mul_assoc, hs]
+    simp only [da, if_true, if_neg (by omega : j + 2 ≠ 0), if_neg (by omega : j + 2 ≠ 1),
+      headP, blockP_succ, pow_one, pow_zero, one_mul, ← mul_assoc, hs i, Nat.add_sub_cancel]
   | (e + 1, j), hx => by
-    rw [HV_mk] at hx
-    obtain rfl : e = 0 := by omega
+    obtain rfl : e = 0 := by simpa using hx.1
     by_cases h : j + 2 < m
-    · rw [da_1_lt h]
-      simp only [headP, blockP_add_two, pow_zero, zero_add, pow_one, one_mul, mul_assoc]
-    · rw [da_1_ge h]
-      simp only [headP, zero_add, pow_one]
-      unfold blockP
+    · simp only [da, if_neg (by omega : ¬ (0 + 1 = 0)), if_pos h, headP, blockP_succ, pow_one,
+        pow_zero, one_mul, Nat.zero_add, ← mul_assoc]
+    · simp only [da, if_neg (by omega : ¬ (0 + 1 = 0)), if_neg h, headP, zero_add, pow_one, blockP]
       exact (wrap (hs i) (hs 2) hrel (by omega) (by omega)).symm
 
 end Eval
@@ -133,25 +105,21 @@ theorem piA_act (hT : IsTri M p q) (i : Fin 3) (v : Raw) (hv : V p q v) :
   match i with
   | 0 =>
     have hrel : (cs.simple 0 * cs.simple 2) ^ p = 1 := hT.h02 ▸ cs.simple_mul_simple_pow 0 2
-    show headP cs.simple 0 (da p v.1) * tailP cs.simple 1 0 v.2 =
-      cs.simple 0 * (headP cs.simple 0 v.1 * tailP cs.simple 1 0 v.2)
+    simp only [piA, piH, act, actH]
     rw [headP_da cs.simple hs 0 hT.hp hrel v.1 hv.1, mul_assoc]
   | 1 =>
     have hrel : (cs.simple 1 * cs.simple 2) ^ q = 1 := hT.h12 ▸ cs.simple_mul_simple_pow 1 2
-    have hsv : V q p (swap v) := swap_V (m₁ := p) (m₂ := q) (by have := hT.hq; omega) v hv
-    show piH cs.simple 0 1 (swap (actH q (swap v))) = cs.simple 1 * piH cs.simple 0 1 v
+    have hsv : V q p (swap v) := swap_V (by have := hT.hq; omega) v hv
+    simp only [piA, act, actB]
     rw [piH_swap cs.simple 1 0, ← piH_swap cs.simple 0 1 v]
-    show headP cs.simple 1 (da q (swap v).1) * tailP cs.simple 0 1 (swap v).2 =
-      cs.simple 1 * (headP cs.simple 1 (swap v).1 * tailP cs.simple 0 1 (swap v).2)
+    simp only [piH, actH]
     rw [headP_da cs.simple hs 1 hT.hq hrel (swap v).1 hsv.1, mul_assoc]
   | 2 =>
     obtain ⟨⟨e, j⟩, r⟩ := v
     rw [V_mk] at hv
-    show cs.simple 2 ^ (1 - e) * blockP cs.simple 0 j * tailP cs.simple 1 0 r =
-      cs.simple 2 * (cs.simple 2 ^ e * blockP cs.simple 0 j * tailP cs.simple 1 0 r)
     rcases e with _ | _ | e
-    · simp [mul_assoc]
-    · simp [← mul_assoc, hs]
+    · simp [piA, piH, act, actC, dc, headP, blockP, mul_assoc]
+    · simp [piA, piH, act, actC, dc, headP, blockP, mul_assoc]
     · omega
 
 /-- The space of normal forms. -/
@@ -161,8 +129,8 @@ abbrev NF (p q : ℕ) := {v : Raw // V p q v}
 def gen (hT : IsTri M p q) (i : Fin 3) : Function.End (NF p q) :=
   fun v => ⟨act p q i v.1, act_V hT.hp hT.hq i v.1 v.2⟩
 
-theorem end_pow_val (f : Function.End (NF p q)) (g : Raw → Raw) (hfg : ∀ v, (f v).1 = g v.1) :
-    ∀ (n : ℕ) (v : NF p q), ((f ^ n) v).1 = g^[n] v.1
+theorem end_pow_val (f : Function.End (NF p q)) (g : Raw → Raw)
+    (hfg : ∀ v, (f v).1 = g v.1) : ∀ (n : ℕ) (v : NF p q), ((f ^ n) v).1 = g^[n] v.1
   | 0, _ => rfl
   | n + 1, v => by
     rw [pow_succ]
@@ -216,7 +184,8 @@ theorem φ_simple (hT : IsTri M p q) (i : Fin 3) : φ cs hT (cs.simple i) = gen 
 
 /-- The empty normal form. -/
 def nf0 (hT : IsTri M p q) : NF p q := ⟨((0, 0), []), by
-  rw [V_mk]; exact ⟨⟨by omega, by have := hT.hp; omega⟩, trivial⟩⟩
+  rw [V_mk]
+  exact ⟨⟨by omega, by have := hT.hp; omega⟩, trivial⟩⟩
 
 /-- The normal form of `w`. -/
 noncomputable def ev (hT : IsTri M p q) (w : W) : Raw := (φ cs hT w (nf0 hT)).1
@@ -228,7 +197,8 @@ theorem ev_one (hT : IsTri M p q) : ev cs hT 1 = ((0, 0), []) := by
 
 theorem ev_simple_mul (hT : IsTri M p q) (i : Fin 3) (w : W) :
     ev cs hT (cs.simple i * w) = act p q i (ev cs hT w) := by
-  unfold ev; rw [map_mul, φ_simple]; rfl
+  simp only [ev, map_mul, φ_simple]
+  rfl
 
 theorem piA_nil : piA cs ((0, 0), []) = 1 := by
   simp [piA, piH, headP, tailP, blockP]
@@ -240,34 +210,25 @@ theorem piA_ev (hT : IsTri M p q) (w : W) : piA cs (ev cs hT w) = w := by
   | mul_simple_left w i ih =>
     rw [ev_simple_mul, piA_act cs hT i _ (ev_valid cs hT w), ih]
 
-theorem length_piA_le (hT : IsTri M p q) : ∀ (n : ℕ) (v : Raw), V p q v → len v = n →
-    cs.length (piA cs v) ≤ n
+/-- The length bound and injectivity of `piA` on normal forms, simultaneously. -/
+theorem len_ev_piH (hT : IsTri M p q) : ∀ (n : ℕ) (v : Raw), V p q v → len v = n →
+    cs.length (piA cs v) ≤ n ∧ ev cs hT (piA cs v) = v
   | 0, v, hv, hl0 => by
-    rw [eq_nil_of_len v hv hl0, piA_nil, cs.length_one]
+    rw [eq_nil_of_len v hv hl0, piA_nil, ev_one, cs.length_one]
+    exact ⟨le_refl 0, rfl⟩
   | n + 1, v, hv, hl0 => by
     obtain ⟨i, hi⟩ := descent v hv (by omega)
     have hv' := act_V hT.hp hT.hq i v hv
     have hvv : act p q i (act p q i v) = v := act_act hT.hp hT.hq i v hv
-    have ih := length_piA_le hT n (act p q i v) hv' (by omega)
-    calc cs.length (piA cs v) = cs.length (cs.simple i * piA cs (act p q i v)) := by
-          rw [← piA_act cs hT i _ hv', hvv]
-      _ ≤ cs.length (cs.simple i) + cs.length (piA cs (act p q i v)) := cs.length_mul_le _ _
-      _ ≤ n + 1 := by rw [cs.length_simple]; omega
-
-/-- Distinct normal forms are distinct elements. -/
-theorem ev_piA (hT : IsTri M p q) : ∀ (n : ℕ) (v : Raw), V p q v → len v = n →
-    ev cs hT (piA cs v) = v
-  | 0, v, hv, hl0 => by
-    rw [eq_nil_of_len v hv hl0, piA_nil, ev_one]
-  | n + 1, v, hv, hl0 => by
-    obtain ⟨i, hi⟩ := descent v hv (by omega)
-    have hv' := act_V hT.hp hT.hq i v hv
-    have hvv : act p q i (act p q i v) = v := act_act hT.hp hT.hq i v hv
-    have ih := ev_piA hT n (act p q i v) hv' (by omega)
-    calc ev cs hT (piA cs v) = ev cs hT (cs.simple i * piA cs (act p q i v)) := by
-          rw [← piA_act cs hT i _ hv', hvv]
-      _ = act p q i (act p q i v) := by rw [ev_simple_mul, ih]
-      _ = v := hvv
+    obtain ⟨ih1, ih2⟩ := len_ev_piH hT n (act p q i v) hv' (by omega)
+    have hpi : piA cs v = cs.simple i * piA cs (act p q i v) := by
+      rw [← piA_act cs hT i _ hv', hvv]
+    refine ⟨?_, ?_⟩
+    · rw [hpi]
+      calc cs.length (cs.simple i * piA cs (act p q i v))
+          ≤ cs.length (cs.simple i) + cs.length (piA cs (act p q i v)) := cs.length_mul_le _ _
+        _ ≤ n + 1 := by rw [cs.length_simple]; omega
+    · rw [hpi, ev_simple_mul, ih2, hvv]
 
 theorem len_ev_wordProd_le (hT : IsTri M p q) : ∀ ω : List (Fin 3),
     len (ev cs hT (cs.wordProd ω)) ≤ ω.length
@@ -279,11 +240,11 @@ theorem len_ev_wordProd_le (hT : IsTri M p q) : ∀ ω : List (Fin 3),
     simp only [List.length_cons]
     omega
 
-/-- **Length additivity**: the Coxeter length is the length of the normal form. -/
+/-- **Length identity**: the Coxeter length is the length of the normal form. -/
 theorem length_eq_len_ev (hT : IsTri M p q) (w : W) : cs.length w = len (ev cs hT w) := by
-  apply le_antisymm
+  refine le_antisymm ?_ ?_
   · calc cs.length w = cs.length (piA cs (ev cs hT w)) := by rw [piA_ev]
-      _ ≤ len (ev cs hT w) := length_piA_le cs hT _ _ (ev_valid cs hT w) rfl
+      _ ≤ len (ev cs hT w) := (len_ev_piH cs hT _ _ (ev_valid cs hT w) rfl).1
   · obtain ⟨ω, hω, rfl⟩ := cs.exists_isReduced w
     rw [hω.eq]
     exact len_ev_wordProd_le cs hT ω
@@ -292,16 +253,18 @@ theorem length_eq_len_ev (hT : IsTri M p q) (w : W) : cs.length w = len (ev cs h
 noncomputable def sphereEquiv (hT : IsTri M p q) (n : ℕ) :
     {w : W // cs.length w = n} ≃ {v : Raw // V p q v ∧ len v = n} where
   toFun w := ⟨ev cs hT w.1, ev_valid cs hT w.1, by rw [← length_eq_len_ev]; exact w.2⟩
-  invFun v := ⟨piA cs v.1, by rw [length_eq_len_ev cs hT, ev_piA cs hT _ v.1 v.2.1 rfl]; exact v.2.2⟩
+  invFun v := ⟨piA cs v.1, by
+    rw [length_eq_len_ev cs hT, (len_ev_piH cs hT _ v.1 v.2.1 rfl).2]
+    exact v.2.2⟩
   left_inv w := Subtype.ext (piA_ev cs hT w.1)
-  right_inv v := Subtype.ext (ev_piA cs hT _ v.1 v.2.1 rfl)
+  right_inv v := Subtype.ext (len_ev_piH cs hT _ v.1 v.2.1 rfl).2
 
 theorem sphere_eq_card (hT : IsTri M p q) (n : ℕ) :
     Nat.card {w : W // cs.length w = n} = (NFs p q n).card := by
   rw [Nat.card_congr (sphereEquiv cs hT n), ← Nat.card_eq_finsetCard]
   exact Nat.card_congr (Equiv.subtypeEquivRight (fun v => (mem_NFs p q n v).symm))
 
-/-- **Growth series of the triangle Coxeter group `(p, q, ∞)`** (coefficient form in `ℤ⟦X⟧`). -/
+/-- **Growth series of the triangle Coxeter group `(p, q, ∞)`**. -/
 theorem growth_series (hT : IsTri M p q) :
     (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) *
         (1 - (∑ i ∈ Ico 1 p, (X : ℤ⟦X⟧) ^ i) * (∑ i ∈ Ico 1 q, (X : ℤ⟦X⟧) ^ i)) =
