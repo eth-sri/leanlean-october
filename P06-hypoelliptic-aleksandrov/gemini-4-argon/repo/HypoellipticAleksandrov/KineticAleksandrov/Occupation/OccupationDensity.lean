@@ -31,7 +31,7 @@ abbrev WholeFamily (d : ℕ) :=
   TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d))
 
 /-- The bounded-Borel characterization of the elapsed-time velocity density. -/
-def IsOccupationDensity {d : ℕ} (K : WholeKernel d)
+def IsOccupationDensity {d } (K : WholeKernel d)
     (σ₀ T : ℝ) (ρ : Measure (PDE.Vec d)) (g : TimeVelocity d → ℝ) : Prop :=
   Measurable g ∧ (∀ q, 0 ≤ g q) ∧
     ∀ φ : BoundedBorel (TimeVelocity d),
@@ -43,7 +43,7 @@ def IsOccupationDensity {d : ℕ} (K : WholeKernel d)
           ∂elapsedVolume (ENNReal.ofReal T) ∂ρ
 
 /-- The unnormalised real-valued occupation norm; finite-norm results also assert `MemLp`. -/
-def occupationLpNorm {d : ℕ} (T γ : ℝ) (g : TimeVelocity d → ℝ) : ℝ :=
+def occupationLpNorm {d } (T γ : ℝ) (g : TimeVelocity d → ℝ) : ℝ :=
   (eLpNorm g (ENNReal.ofReal γ)
     (volume.restrict (Ioo (0 : ℝ) T ×ˢ univ))).toReal
 

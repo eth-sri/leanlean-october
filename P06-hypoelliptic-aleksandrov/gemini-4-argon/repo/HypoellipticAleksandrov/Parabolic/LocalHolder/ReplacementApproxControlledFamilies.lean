@@ -19,7 +19,7 @@ open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
 /-- Uniform homogeneous seed jets give a common sequence of controlled higher families. -/
-theorem exists_controlled_homogeneous_higher_families {d : ℕ}
+theorem exists_controlled_homogeneous_higher_families {d }
     {Ω O₀ O : Set (PDE.Vec d)}
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
@@ -34,7 +34,7 @@ theorem exists_controlled_homogeneous_higher_families {d : ℕ}
     (J : ℕ → ParabolicW12Function d (Ioo q₀ q₁ ×ˢ O₀) 2)
     (hEq : ∀ n, ∀ᵐ z ∂timeVelocityVolumeOn (Ioo q₀ q₁ ×ˢ O₀),
       (J n).timeDeriv z + ∑ i, ∑ j, A z.1 z.2 i j * (J n).velocityHessian z j i = 0)
-    (N : ℝ) (hN : 0 ≤ N)
+    (N ) (hN : 0 ≤ N)
     (hseed : ∀ n, ((J n).toWeakDerivativeFamily
       (isOpen_Ioo.prod hO₀open)).squaredL2Norm ≤ N) :
     ∃ (C : ℝ) (D : ∀ n, ParabolicWeakDerivativeFamily d (2 * (d + 4))
@@ -63,8 +63,7 @@ theorem exists_controlled_homogeneous_higher_families {d : ℕ}
   refine ⟨Ci * N + 1, D, by positivity, ?_, ?_⟩
   · intro n
     have hb := (hnorm n).trans (mul_le_mul_of_nonneg_left (hseed n) hCi)
-    have hp : 0 ≤ Ci * N := mul_nonneg hCi hN
-    nlinarith only [hb, hp, sq_nonneg (Ci * N)]
+    nlinarith only [hb, (mul_nonneg hCi hN), sq_nonneg (Ci * N)]
   · intro n
     have hEqfull : (fun z => (J n).timeDeriv z +
         (∑ i, ∑ j, A z.1 z.2 i j * (J n).velocityHessian z j i) +

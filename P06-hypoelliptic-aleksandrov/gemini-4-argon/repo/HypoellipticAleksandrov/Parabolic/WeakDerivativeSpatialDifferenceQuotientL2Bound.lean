@@ -5,6 +5,9 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicMemLpSpatialDifferenceQ
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityOpenSmoothTestL2Density
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativeSpatialDifferenceQuotientPairing
 public import Mathlib.MeasureTheory.Function.L2Space
+import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotient
+import Mathlib.Analysis.Convex.Segment
+import Mathlib.Topology.Compactness.Compact
 
 /-!
 # Weak derivatives control signed spatial difference quotients
@@ -23,11 +26,11 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped Convex ENNReal RealInnerProductSpace Topology
 
-/-- A selected weak velocity derivative controls every signed nonzero
+/- A selected weak velocity derivative controls every signed nonzero
 spatial difference quotient on an arbitrary inner carrier whose full directed
 segments remain in the open outer carrier. -/
 theorem HasWeakVelocityPartialDerivOn.exists_spatialDifferenceQuotient_memLp_norm_le
-    {d : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    {d } (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (V : Set (TimeVelocity d)) (k : Fin d) (h : ℝ) (hh : h ≠ 0)
     (f g : TimeVelocity d → ℝ)
     (hf : ParabolicMemLpOn U (2 : ℝ≥0∞) f)
@@ -38,7 +41,40 @@ theorem HasWeakVelocityPartialDerivOn.exists_spatialDifferenceQuotient_memLp_nor
         (spatialDifferenceQuotient k h f),
       ‖hq.toLp (spatialDifferenceQuotient k h f)‖ ≤ ‖hg.toLp g‖ := by
   let W : Set (TimeVelocity d) := spatialSegmentSafeSet U k h
-  have hW : IsOpen W := isOpen_spatialSegmentSafeSet U hU k h
+  have hW : IsOpen W := by
+    let F : TimeVelocity d × ℝ → TimeVelocity d := fun p =>
+      p.1 + p.2 • (spatialShift k h p.1 - p.1)
+    have hshift : Continuous (spatialShift k h) := by
+      change Continuous (fun z : TimeVelocity d =>
+        z + (0, h • PDE.basisVec k))
+      exact continuous_id.add continuous_const
+    have hF : Continuous F := by
+      exact continuous_fst.add
+        (continuous_snd.smul ((hshift.comp continuous_fst).sub continuous_fst))
+    rw [isOpen_iff_mem_nhds]
+    intro z hz
+    have hzseg : [z -[ℝ] spatialShift k h z] ⊆ U := hz
+    have hopen : IsOpen (F ⁻¹' U) := hU.preimage hF
+    have hprod : ({z} : Set (TimeVelocity d)) ×ˢ Icc (0 : ℝ) 1 ⊆ F ⁻¹' U := by
+      rintro ⟨z', s⟩ ⟨hz', hs⟩
+      simp only [mem_singleton_iff] at hz'
+      subst z'
+      rw [segment_eq_image' ℝ z (spatialShift k h z)] at hzseg
+      exact hzseg (mem_image_of_mem _ hs)
+    obtain ⟨(u : Set (TimeVelocity d)), (v : Set ℝ), hu, hv, hzu, hIv, huv⟩ :=
+      generalized_tube_lemma (X := TimeVelocity d) (Y := ℝ)
+        (s := ({z} : Set (TimeVelocity d))) (t := Icc (0 : ℝ) 1)
+        (n := F ⁻¹' U) (isCompact_singleton (x := z)) isCompact_Icc hopen hprod
+    refine Filter.mem_of_superset (hu.mem_nhds (hzu (mem_singleton z))) ?_
+    intro z' hz'
+    have hIv' := hIv
+    change [z' -[ℝ] spatialShift k h z'] ⊆ U
+    rw [segment_eq_image' ℝ z' (spatialShift k h z')]
+    intro w hwmem
+    rcases hwmem with ⟨(s : ℝ), hs, hw⟩
+    rw [← hw]
+    have hzs : (z', s) ∈ u ×ˢ v := ⟨hz', @hIv' s hs⟩
+    exact huv hzs
   have hVW : V ⊆ W := by
     intro z hz
     exact hseg z hz
@@ -84,8 +120,7 @@ theorem HasWeakVelocityPartialDerivOn.exists_spatialDifferenceQuotient_memLp_nor
     simpa only [hnorm] using
       hweak.abs_setIntegral_spatialDifferenceQuotient_mul_le
         U k h f g φ hh hf hg hφsmooth hφcompact hφsupport
-  let hqV : ParabolicMemLpOn V (2 : ℝ≥0∞)
-      (spatialDifferenceQuotient k h f) :=
+  let hqV :=
     hqW.mono_measure (Measure.restrict_mono_set volume hVW)
   refine ⟨hqV, ?_⟩
   calc

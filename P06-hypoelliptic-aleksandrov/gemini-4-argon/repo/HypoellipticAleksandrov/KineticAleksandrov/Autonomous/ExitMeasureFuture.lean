@@ -15,7 +15,7 @@ open SectionTwo TheoremA Evolution
 /-- Every derivative term in the packed operator vanishes outside the test's support. -/
 theorem reconstruction_operator_zero_off_tsupport
     (B : FullKineticCoefficient 1) (b : PDE.Vec 1 → PDE.Vec 1)
-    (f : EvolutionVec 1 → ℝ) (x : EvolutionVec 1) (hx : x ∉ tsupport f) :
+    (f : EvolutionVec 1 → ℝ) (x ) (hx : x ∉ tsupport f) :
     transportedOperator B b f x = 0 := by
   have hd := fderiv_of_notMem_tsupport (𝕜 := ℝ) hx
   have hh (j : Fin 1) :
@@ -28,13 +28,13 @@ theorem reconstruction_operator_zero_off_tsupport
 /-- The actual unique exit measure charges no point strictly before its pole. -/
 theorem stripExitOfRealization_before_pole
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripExitOfRealization hH hlam hLam A H E hE T e {p | p.time < e.1.time} = 0 := by
   let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
   let ν : Measure (EvolutionVec 1) := Ω.map reconstructionPhysicalHomeomorph.symm
-  let U : Set (EvolutionVec 1) := {x | timeCoord 1 x < e.1.time}
+  let U := {x | timeCoord 1 x < e.1.time}
   have hU : IsOpen U := isOpen_lt (timeCoord 1).continuous continuous_const
   have hle : ν.restrict U ≤ 0 := by
     apply measure_le_of_smooth_integral_le hU (by rw [Measure.restrict_restrict
@@ -72,8 +72,7 @@ theorem stripExitOfRealization_before_pole
       setIntegral_eq_integral_of_forall_compl_eq_zero
         (fun x hx => image_eq_zero_of_notMem_tsupport (fun ht => hx (hs ht))), hm]
   have hz : ν U = 0 := by
-    have hh := Measure.le_iff.mp hle univ MeasurableSet.univ
-    simpa using hh
+    simpa using (Measure.le_iff.mp hle univ MeasurableSet.univ)
   have hm : ν U = Ω {p | p.time < e.1.time} := by
     dsimp only [ν]
     rw [Measure.map_apply reconstructionPhysicalHomeomorph.symm.continuous.measurable
@@ -84,7 +83,7 @@ theorem stripExitOfRealization_before_pole
 /-- Almost every actual exit point has future time and velocity in the closed interval. -/
 theorem stripExitOfRealization_ae_closed_future
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,

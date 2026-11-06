@@ -20,14 +20,14 @@ open scoped Topology MatrixOrder
 /-- The continuous zero extension has the original uniform bound and terminal
 values, and vanishes on the actual moving lateral boundary. -/
 theorem innerBallDirichletLimit_bound_terminal_lateral
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n lam Lam Lb B b}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
-    {a α τ r0 d L C ε : ℝ} (haα : a < α) (hατ : α < τ)
+    {a α τ r0 d L C ε } (haα : a < α) (hατ : α < τ)
     (hd : 0 < d) (hdr : d < r0 / 4)
     (hL : 0 ≤ L) (hε : 0 ≤ ε) (hε1 : ε ≤ 1) (hC : 0 ≤ C)
-    {Γ : ℝ → PDE.Vec n} (hΓ : Continuous Γ)
+    {Γ } (hΓ : Continuous Γ)
     (F : BoundedBorel (EvolutionAmbientState n)) (hFC : ∀ q, |F q| ≤ C)
     (hsupp : ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
       4 * d ≤ r0 - PDE.vecEuclideanNorm (q.1 - Γ τ))

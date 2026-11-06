@@ -19,7 +19,7 @@ open scoped ENNReal
 
 /-- The spatial `H¹₀` Hilbert realization is separable on every open domain. -/
 noncomputable def h10HilbertGraphSeparableSpace
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
     TopologicalSpace.SeparableSpace (H10HilbertGraph hΩ) := by
   letI : MeasureTheory.SFinite (PDE.volumeOn Ω) := by infer_instance
   letI : MeasurableSpace.CountablyGenerated (PDE.Vec d) := by infer_instance

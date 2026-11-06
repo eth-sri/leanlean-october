@@ -17,8 +17,7 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
 /-- Time reflection reverses the scalar time derivative for the anisotropic carrier. -/
-theorem scalarTimeDerivative_timeReflectedScalar_C12 {d : ℕ}
-    {u : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)} (hu : IsScalarC12On u D)
+theorem scalarTimeDerivative_timeReflectedScalar_C12 {d u D} (hu : IsScalarC12On u D)
     {z : TimeVelocity d} (hz : timeReflection z ∈ D) :
     scalarTimeDerivative (timeReflectedScalar u) z =
       -scalarTimeDerivative u (timeReflection z) := by
@@ -29,22 +28,20 @@ theorem scalarTimeDerivative_timeReflectedScalar_C12 {d : ℕ}
     mul_neg, mul_one] using h.deriv
 
 /-- Spatial Hessians are unaffected by reflecting only time. -/
-theorem scalarSpatialHessian_timeReflectedScalar_C12 {d : ℕ}
+theorem scalarSpatialHessian_timeReflectedScalar_C12 {d }
     (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     scalarSpatialHessian (timeReflectedScalar u) z =
       scalarSpatialHessian u (timeReflection z) := rfl
 
 /-- The anisotropic classical carrier transports through the existing time reflection. -/
-theorem isScalarC12On_timeReflectedScalar {d : ℕ} {u : TimeVelocity d → ℝ}
+theorem isScalarC12On_timeReflectedScalar {d u}
     {D : Set (TimeVelocity d)} (hu : IsScalarC12On u D) :
     IsScalarC12On (timeReflectedScalar u) (timeReflection ⁻¹' D) := by
   have hmaps : MapsTo timeReflection (timeReflection ⁻¹' D) D := fun _ hz => hz
   refine ⟨hu.continuousOn.comp continuous_timeReflection.continuousOn hmaps, ?_, ?_,
     ?_, ?_, ?_⟩
   · intro z hz
-    have h := (hu.timeSlice_hasDerivAt hz).comp z.1
-      ((hasDerivAt_const z.1 (1 : ℝ)).sub (hasDerivAt_id z.1))
-    exact h.differentiableAt
+    exact ((hu.timeSlice_hasDerivAt hz).comp z.1 ((hasDerivAt_const z.1 (1 : ℝ)).sub (hasDerivAt_id z.1))).differentiableAt
   · intro z hz
     exact hu.spatialSlice_contDiffAt hz
   · apply (hu.continuousOn_scalarTimeDerivative.comp

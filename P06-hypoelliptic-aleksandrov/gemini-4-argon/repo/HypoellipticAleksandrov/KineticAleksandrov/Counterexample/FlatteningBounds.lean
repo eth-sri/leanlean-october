@@ -79,7 +79,7 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
             |profileVelocityJet h q i| * |profileVelocityJet h q k| ≤ D * M ^ 2 := by
           dsimp [D]
           rw [pow_two]
-          have hpow : 0 ≤ r ^ (-alpha) := (Real.rpow_pos_of_pos hr (-alpha)).le
+          have hpow := (Real.rpow_pos_of_pos hr (-alpha)).le
           calc
             _ ≤ r ^ (-alpha) * P * M * M := by gcongr
             _ = _ := by ring
@@ -122,7 +122,7 @@ theorem locallyIntegrable_of_compact_bound {d : ℕ} (f : XV d → ℝ) (hf : Me
   simpa only [Real.norm_eq_abs, abs_of_nonneg hM] using hbM q hq
 
 /-- All selected flattened derivative components are locally integrable. -/
-theorem flatProfile_jets_locallyIntegrable_of_profile {d : ℕ} {alpha : ℝ}
+theorem flatProfile_jets_locallyIntegrable_of_profile {d alpha}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
     (∀ i, LocallyIntegrable (fun q => flatProfilePositionJet h r q i) volume) ∧
     (∀ i, LocallyIntegrable (fun q => flatProfileVelocityJet h r q i) volume) ∧

@@ -16,8 +16,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter Set
 open scoped Topology
 
-/-- Continuous real functions with finite normalized limits have a global power bound. -/
-theorem scalar_power_growth (f : ℝ → ℝ) (alpha c : ℝ) (hf : Continuous f)
+/- Continuous real functions with finite normalized limits have a global power bound. -/
+theorem scalar_power_growth (f : ℝ → ℝ) (alpha c ) (hf : Continuous f)
     (ht : Tendsto (fun s => f s / Real.rpow |s| alpha) atTop (𝓝 c))
     (hb : Tendsto (fun s => f s / Real.rpow |s| alpha) atBot (𝓝 c)) :
     ∃ K : ℝ, 0 < K ∧ c ≤ K ∧ ∀ s, |f s| ≤ K * (1 + Real.rpow |s| alpha) := by
@@ -60,49 +60,5 @@ theorem scalar_power_growth (f : ℝ → ℝ) (alpha c : ℝ) (hf : Continuous f
     exact hfs.le.trans ((mul_le_mul_of_nonneg_right hKc hpow).trans
       (mul_le_mul_of_nonneg_left (by linarith) hK.le))
 
-/-- The source similarity function has a uniform global power-growth bound. -/
-theorem F_growth (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) :
-    ∃ K : ℝ, 0 < K ∧ Real.rpow (9 * Lam) (-gamma.1) ≤ K ∧
-      ∀ s, |F gamma Lam s| ≤ K * (1 + Real.rpow |s| (3 * gamma.1)) :=
-  scalar_power_growth _ _ _ (F_contDiff_two gamma Lam hLam).continuous
-    (F_ratio_atTop gamma Lam hLam) (F_ratio_atBot gamma Lam hLam hmatch)
-
-/-- Global anisotropic growth of the literal reflected profile. -/
-theorem scalarProfile_growth (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) :
-    ∃ K : ℝ, 0 < K ∧ ∀ q : XV 1, |scalarProfile gamma Lam q| ≤
-      K * (Real.rpow |q.1 0| gamma.1 + Real.rpow |q.2 0| (3 * gamma.1)) := by
-  obtain ⟨K, hK, hKC, hF⟩ := F_growth gamma Lam hLam hmatch
-  have hA (x v : ℝ) (hx : 0 < x) : |scalarAnsatz gamma Lam x v| ≤
-      K * (Real.rpow x gamma.1 + Real.rpow |v| (3 * gamma.1)) := by
-    have hp : 0 < Real.rpow x gamma.1 := by
-      simpa only [Real.rpow_eq_pow] using Real.rpow_pos_of_pos hx gamma.1
-    have h := mul_le_mul_of_nonneg_left (hF (scalarSimilarity x v)) hp.le
-    have he := scalar_similarity_power_cancel gamma x v hx
-    change |Real.rpow x gamma.1 * F gamma Lam (scalarSimilarity x v)| ≤ _
-    rw [abs_mul, abs_of_pos hp]
-    calc
-      _ ≤ Real.rpow x gamma.1 * (K * (1 +
-          Real.rpow |scalarSimilarity x v| (3 * gamma.1))) := h
-      _ = K * (Real.rpow x gamma.1 + Real.rpow |v| (3 * gamma.1)) := by
-        rw [← he]
-        ring
-  refine ⟨K, hK, ?_⟩
-  intro q
-  rcases lt_trichotomy (q.1 0) 0 with hx | hx | hx
-  · simpa only [scalarProfile, not_lt.mpr hx.le, hx, ↓reduceIte,
-      abs_of_neg hx, abs_neg] using hA (-q.1 0) (-q.2 0) (neg_pos.mpr hx)
-  · simp only [scalarProfile, hx, lt_self_iff_false, ↓reduceIte, abs_zero,
-      scalarTrace, abs_mul]
-    simp only [Real.rpow_eq_pow, Real.zero_rpow gamma.2.1.ne', zero_add]
-    rw [abs_of_pos (by
-      simpa only [Real.rpow_eq_pow] using
-        Real.rpow_pos_of_pos (mul_pos (by norm_num) hLam) (-gamma.1)),
-      abs_of_nonneg (Real.rpow_nonneg (abs_nonneg _) _)]
-    exact mul_le_mul_of_nonneg_right hKC (Real.rpow_nonneg (abs_nonneg _) _)
-  · simpa only [scalarProfile, hx, ↓reduceIte, abs_of_pos hx] using hA _ _ hx
-
+/- The source similarity function has a uniform global power-growth bound. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -13,7 +13,7 @@ Unlike `kineticBoundary`, this includes the entire relative-position sphere.
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Initial face and full lateral boundary of an open backward kinetic cylinder. -/
-def initialFullLateralBoundary {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
+def initialFullLateralBoundary {d } (P₀ : KineticPoint d) (R : ℝ) :
     Set (KineticPoint d) :=
   closure (backwardCylinder P₀ R) ∩
     ({P | P.time = P₀.time - R ^ 2} ∪

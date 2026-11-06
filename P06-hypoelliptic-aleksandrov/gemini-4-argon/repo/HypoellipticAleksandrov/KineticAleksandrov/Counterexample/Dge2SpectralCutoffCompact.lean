@@ -14,7 +14,7 @@ open scoped MatrixOrder Matrix.Norms.L2Operator
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 /-- Joint finite bounds for the canonical spectral weights imply matrix bounds. -/
-theorem spectralTraceMatrix_uniform_bounds {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermitian)
+theorem spectralTraceMatrix_uniform_bounds {d } (M : PDE.Mat d) (hM : M.IsHermitian)
     (b cminus lower upper : ℝ)
     (hlo : lower ≤ (b + cminus * negativeSpectralMass M) / positiveSpectralMass M)
     (hhi : (b + cminus * negativeSpectralMass M) / positiveSpectralMass M ≤ upper) :

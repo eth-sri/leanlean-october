@@ -30,7 +30,7 @@ theorem enlarged_terminal_family_measurable
 /-- Kernel packaging of the already defined actual terminal family. -/
 def enlargedTerminalFamilyKernel
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) : Kernel Point Point :=
   ⟨enlargedActiveTerminalFamily hH hLE hlam hLam A c J b,
     enlarged_terminal_family_measurable hH hLE hlam hLam A c J b⟩

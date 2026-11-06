@@ -22,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 private theorem weakGradientGraph_snd_eq_of_fst_eq
-    {p : ℝ≥0∞} [Fact (1 ≤ p)]
+    {p } [Fact (1 ≤ p)]
     (hΩ : IsOpen Ω) {q r : PDE.WeakGradientLpPair Ω p}
     (hq : q ∈ (PDE.weakGradientGraph Ω p).toSubmodule)
     (hr : r ∈ (PDE.weakGradientGraph Ω p).toSubmodule)
@@ -76,7 +76,7 @@ private theorem h1HilbertGraph_valueCLM_injective
 
 /-- Equality of scalar `L²` values determines a spatial `H¹₀` graph point. -/
 theorem valueCLM_injective
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
     Function.Injective (valueCLM hΩ) := by
   intro u v huv
   apply Subtype.ext

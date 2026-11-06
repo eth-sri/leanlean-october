@@ -84,7 +84,7 @@ local notation "ℓ_spec" => terminalFunctional_spec n hn lam Lam m L_b hlam hla
 
 /-- The Riesz measure on the open terminal fiber of the terminal functional of the source
 state `p` (the terminal functional and `RealRMK.rieszMeasure`). -/
-def terminalFiberRieszMeasure (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalFiberRieszMeasure (σ τ ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
     Measure (EvolutionState Ω γ τ) :=
   have := locallyCompactSpace_evolutionState (γ := γ) (τ := τ)
     (isOpen_of_isAdmissibleEvolutionDomain hΩ)
@@ -140,11 +140,7 @@ theorem map_terminalFiberRieszMeasure_spec (q : EvolutionQuery Ω γ) :
       (isOpen_of_isAdmissibleEvolutionDomain hΩ)) ν
   · intro F hF
     rw [integral_map measurable_subtype_coe.aemeasurable F.measurable.aestronglyMeasurable]
-    have h1 := integral_terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb
-      Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-      q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩
-      (terminalProbeCc (terminalProbeOfDatum F hF))
-    refine h1.trans ((ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2 F hF _
+    refine (integral_terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩ (terminalProbeCc (terminalProbeOfDatum F hF))).trans ((ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2 F hF _
       fun x => rfl)
 
 /-- Uniqueness half of Every subprobability measure supported on the open fiber with the
@@ -191,7 +187,7 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
     have h1 : Λ (terminalProbeCcLinear F) = ∫ x, (terminalProbeDatum F) x ∂μ' := by
       rw [← hmap, integral_map measurable_subtype_coe.aemeasurable
         (terminalProbeDatum F).measurable.aestronglyMeasurable]
-      simp [Λ]
+      simp [Λ, terminalProbeDatum]
     have h2 := (ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2
       (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F)
       (terminalProbeCcLinear F) fun x => rfl
@@ -291,7 +287,7 @@ theorem terminalMeasure_eq_dirac (σ : ℝ) (p : EvolutionState Ω γ σ) :
     show (Measure.dirac p.1).restrict (evolutionStateSet Ω γ σ) A = Measure.dirac p.1 A
     rw [Measure.restrict_apply hA, Measure.dirac_apply' _ (hA.inter hU),
       Measure.dirac_apply' _ hA]
-    have hp : p.1 ∈ evolutionStateSet Ω γ σ := p.2
+    have hp := p.2
     by_cases h : p.1 ∈ A
     · simp [Set.indicator, h, hp]
     · simp [Set.indicator, h]

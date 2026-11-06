@@ -191,13 +191,13 @@ def evolutionAmbientStateShift {n : ℕ} (h : PDE.Vec n)
 
 /-- Shift the transported coordinate in a moving fiber state. -/
 def evolutionStateShift {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (σ : ℝ) (h : PDE.Vec n)
+    (γ : ℝ → PDE.Vec n) (σ ) (h : PDE.Vec n)
     (p : EvolutionState Ω γ σ) : EvolutionState Ω γ σ :=
   ⟨evolutionAmbientStateShift h p.1, ⟨p.2.1, mem_univ _⟩⟩
 
 /-- Insert a position and transported coordinate into a moving state fiber. -/
 def evolutionStateOfPosition {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (σ : ℝ)
+    (γ : ℝ → PDE.Vec n) (σ )
     (y : EvolutionPosition Ω γ σ) (z : PDE.Vec n) : EvolutionState Ω γ σ :=
   ⟨(y.1, z), ⟨y.2, mem_univ _⟩⟩
 
@@ -218,7 +218,7 @@ theorem measurable_positionStateZero {n : ℕ} (Ω : Set (PDE.Vec n))
 noncomputable def parabolicMarginalKernel {n : ℕ}
     {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (σ τ : ℝ) (hστ : σ ≤ τ) :
+    (σ τ ) (hστ : σ ≤ τ) :
     ProbabilityTheory.Kernel
       (EvolutionPosition Ω γ σ) (EvolutionPosition Ω γ τ) :=
   ProbabilityTheory.Kernel.comap

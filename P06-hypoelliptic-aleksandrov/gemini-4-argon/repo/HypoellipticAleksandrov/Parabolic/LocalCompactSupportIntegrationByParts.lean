@@ -19,61 +19,6 @@ open Function MeasureTheory Set Topology
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem contDiff_mul_of_right_compactSupport
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
-    (f g : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
-    (hgsupport : tsupport g ⊆ O) :
-    ContDiff ℝ 1 (fun y => f y * g y) := by
-  rw [contDiff_iff_contDiffAt]
-  intro y
-  by_cases hy : y ∈ O
-  · exact (hf.contDiffAt (hO.mem_nhds hy)).mul (hg.contDiffAt (hO.mem_nhds hy))
-  · have hyg : y ∉ tsupport g := fun h => hy (hgsupport h)
-    have heq : (fun z => f z * g z) =ᶠ[𝓝 y] fun _ => 0 := by
-      filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hyg] with z hz
-      simp [hz]
-    exact (contDiffAt_const (x := y) (n := 1) (c := (0 : ℝ))).congr_of_eventuallyEq heq
-
-private theorem continuous_mul_spatialPartial_of_right_compactSupport
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O) (i : Fin d)
-    (f g : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
-    (hgsupport : tsupport g ⊆ O) :
-    Continuous (fun y => f y * spatialPartial i g y) := by
-  rw [continuous_iff_continuousAt]
-  intro y
-  by_cases hy : y ∈ O
-  · exact (hf.contDiffAt (hO.mem_nhds hy)).continuousAt.mul
-      (((hg.contDiffAt (hO.mem_nhds hy)).continuousAt_fderiv (by norm_num)).clm_apply
-        continuousAt_const)
-  · have hyg : y ∉ tsupport g := fun h => hy (hgsupport h)
-    have hzero : (fun z => spatialPartial i g z) =ᶠ[𝓝 y] fun _ => 0 := by
-      have hd := (notMem_tsupport_iff_eventuallyEq.mp hyg).fderiv (𝕜 := ℝ)
-      filter_upwards [hd] with z hz
-      simp [spatialPartial, hz]
-    have heq : (fun z => f z * spatialPartial i g z) =ᶠ[𝓝 y] fun _ => 0 := by
-      filter_upwards [hzero] with z hz
-      simp [hz]
-    exact continuousAt_const.congr_of_eventuallyEq heq
-
-private theorem continuous_spatialPartial_mul_of_right_compactSupport
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O) (i : Fin d)
-    (f g : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
-    (hgsupport : tsupport g ⊆ O) :
-    Continuous (fun y => spatialPartial i f y * g y) := by
-  rw [continuous_iff_continuousAt]
-  intro y
-  by_cases hy : y ∈ O
-  · exact (((hf.contDiffAt (hO.mem_nhds hy)).continuousAt_fderiv (by norm_num)).clm_apply
-      continuousAt_const).mul
-      (hg.contDiffAt (hO.mem_nhds hy)).continuousAt
-  · have hyg : y ∉ tsupport g := fun h => hy (hgsupport h)
-    have heq : (fun z => spatialPartial i f z * g z) =ᶠ[𝓝 y] fun _ => 0 := by
-      filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hyg] with z hz
-      simp [hz]
-    exact continuousAt_const.congr_of_eventuallyEq heq
-
-/-- Integration by parts on an open set when the differentiated right factor
-is compactly supported in that set. -/
 theorem setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_right
     {d : ℕ} (O : Set (PDE.Vec d)) (hO : IsOpen O)
     (i : Fin d) (f g : PDE.Vec d → ℝ)
@@ -82,13 +27,48 @@ theorem setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_right
     (∫ y in O, f y * spatialPartial i g y ∂volume) =
       -∫ y in O, spatialPartial i f y * g y ∂volume := by
   let p : PDE.Vec d → ℝ := fun y => f y * g y
-  have hp : ContDiff ℝ 1 p :=
-    contDiff_mul_of_right_compactSupport hO f g hf hg hgsupport
+  have hp : ContDiff ℝ 1 p := by
+    rw [contDiff_iff_contDiffAt]
+    intro y
+    by_cases hy : y ∈ O
+    · exact (hf.contDiffAt (hO.mem_nhds hy)).mul (hg.contDiffAt (hO.mem_nhds hy))
+    · have hyg : y ∉ tsupport g := fun h => hy (hgsupport h)
+      have heq : (fun z => f z * g z) =ᶠ[𝓝 y] fun _ => 0 := by
+        filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hyg] with z hz
+        simp [hz]
+      exact (contDiffAt_const (x := y) (n := 1) (c := (0 : ℝ))).congr_of_eventuallyEq heq
   have hpcompact : HasCompactSupport p := hgcompact.mul_left
-  have hAcont : Continuous (fun y => f y * spatialPartial i g y) :=
-    continuous_mul_spatialPartial_of_right_compactSupport hO i f g hf hg hgsupport
-  have hBcont : Continuous (fun y => spatialPartial i f y * g y) :=
-    continuous_spatialPartial_mul_of_right_compactSupport hO i f g hf hg hgsupport
+  have hAcont : Continuous (fun y => f y * spatialPartial i g y) := by
+    rw [continuous_iff_continuousAt]
+    intro y
+    by_cases hy : y ∈ O
+    · exact (hf.contDiffAt (hO.mem_nhds hy)).continuousAt.mul
+        (((hg.contDiffAt (hO.mem_nhds hy)).continuousAt_fderiv (by norm_num)).clm_apply
+          continuousAt_const)
+    · have hyg : y ∉ tsupport g := fun h => hy (hgsupport h)
+      have hzero : (fun z => spatialPartial i g z) =ᶠ[𝓝 y] fun _ => 0 := by
+        have hd := (notMem_tsupport_iff_eventuallyEq.mp hyg).fderiv (𝕜 := ℝ)
+        filter_upwards [hd] with z hz
+        simp [spatialPartial, hz]
+      have heq : (fun z => f z * spatialPartial i g z) =ᶠ[𝓝 y] fun _ => 0 := by
+        filter_upwards [hzero] with z hz
+        simp [hz]
+      exact continuousAt_const.congr_of_eventuallyEq heq
+  have hBcont : Continuous (fun y => spatialPartial i f y * g y) := by
+      rw [continuous_iff_continuousAt]
+      intro y
+      by_cases hy : y ∈ O
+      · exact (((hf.contDiffAt (hO.mem_nhds hy)).continuousAt_fderiv (by norm_num)).clm_apply
+          continuousAt_const).mul
+          (hg.contDiffAt (hO.mem_nhds hy)).continuousAt
+      · have hyg : y ∉ tsupport g := fun h => hy (hgsupport h)
+        have heq : (fun z => spatialPartial i f z * g z) =ᶠ[𝓝 y] fun _ => 0 := by
+          filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hyg] with z hz
+          simp [hz]
+        exact continuousAt_const.congr_of_eventuallyEq heq
+
+    /- Integration by parts on an open set when the differentiated right factor
+    is compactly supported in that set. -/
   have hAcompact : HasCompactSupport (fun y => f y * spatialPartial i g y) :=
     (hgcompact.fderiv_apply ℝ (PDE.basisVec i)).mul_left
   have hBcompact : HasCompactSupport (fun y => spatialPartial i f y * g y) :=
@@ -132,20 +112,6 @@ theorem setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_right
   rw [integral_add hB.integrableOn hA.integrableOn] at hzero
   linarith
 
-/-- Integration by parts on an open set when the differentiated left factor
+/- Integration by parts on an open set when the differentiated left factor
 is compactly supported in that set. -/
-theorem setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_left
-    {d : ℕ} (O : Set (PDE.Vec d)) (hO : IsOpen O)
-    (i : Fin d) (f g : PDE.Vec d → ℝ)
-    (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
-    (hfcompact : HasCompactSupport f) (hfsupport : tsupport f ⊆ O) :
-    (∫ y in O, f y * spatialPartial i g y ∂volume) =
-      -∫ y in O, spatialPartial i f y * g y ∂volume := by
-  have h := setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_right
-    O hO i g f hg hf hfcompact hfsupport
-  have h' : (∫ y in O, spatialPartial i f y * g y ∂volume) =
-      -(∫ y in O, f y * spatialPartial i g y ∂volume) := by
-    simpa [mul_comm] using h
-  linarith
-
 end HypoellipticAleksandrov.Parabolic

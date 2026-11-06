@@ -57,9 +57,7 @@ theorem ballExitRestart_fourier_apply
   apply Filter.Eventually.of_forall
   intro w
   let W := (ballStateStart H.1 w).1
-  have heq : (fun Q => exitFourierTest P.1 v₀ ξ E Q) =
-      fun Q => exitFourierStepPhase P.1 H.1 v₀ ξ *
-        fourierPhase ξ P.1.position w.1 * exitFourierTest W v₀ ξ E Q :=
+  have heq :=
     funext (fun Q => exitFourierTest_factor P.1 W Q v₀ ξ E)
   rw [heq]
   dsimp only

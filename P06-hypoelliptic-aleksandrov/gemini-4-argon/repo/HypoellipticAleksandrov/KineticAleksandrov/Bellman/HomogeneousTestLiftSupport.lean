@@ -32,7 +32,7 @@ theorem bellman_compact_test_local_radius_window (zeta : (ℝ × ℝ) → ℝ)
         ∀ x ∈ U, ∀ r : BellmanPositiveTime,
           bellmanPlaneDilation r.val x ∈ tsupport zeta → r.val ∈ Icc a b := by
   obtain ⟨a0, b0, ha0, hab0, hbounds⟩ := bellman_compact_test_gauge_bounds zeta hc hs
-  have hg : 0 < bellmanGauge q := bellmanGauge_pos q hq
+  have hg := bellmanGauge_pos q hq
   let U := {x : ℝ × ℝ | bellmanGauge q / 2 < bellmanGauge x ∧
     bellmanGauge x < 2 * bellmanGauge q}
   have hU : IsOpen U :=

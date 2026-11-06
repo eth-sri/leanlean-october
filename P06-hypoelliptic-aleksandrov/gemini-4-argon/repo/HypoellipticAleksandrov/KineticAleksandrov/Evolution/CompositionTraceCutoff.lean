@@ -22,10 +22,10 @@ open Set Function
 arbitrarily small error relative to any continuous positive proper weight. -/
 theorem exists_smooth_cutoff_weighted_error
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-    {U : Set E} (hU : IsOpen U) (g W : E → ℝ) (hg : Continuous g)
+    {U } (hU : IsOpen U) (g W : E → ℝ) (hg : Continuous g)
     (hW : Continuous W) (hW1 : ∀ x, 1 ≤ W x)
     (hproper : ∀ R : ℝ, IsCompact {x | W x ≤ R})
-    (hzero : ∀ x ∉ U, g x = 0) {C ε : ℝ} (hC : ∀ x, |g x| ≤ C) (hε : 0 < ε) :
+    (hzero : ∀ x ∉ U, g x = 0) {C ε } (hC : ∀ x, |g x| ≤ C) (hε : 0 < ε) :
     ∃ χ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ HasCompactSupport χ ∧
       tsupport χ ⊆ U ∧ (∀ x, 0 ≤ χ x ∧ χ x ≤ 1) ∧
       (∀ x, |g x - χ x * g x| ≤ ε * W x) := by

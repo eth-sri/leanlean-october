@@ -30,7 +30,7 @@ def capacityCylinderPole (Z0 P : Point) (R : ℝ) (hR : 0 < R)
 /-- Exact velocity slices have zero mass in the forward-cylinder velocity strip. -/
 theorem cylinder_strip_velocity_slice_zero
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (Z0 P : Point) (R : ℝ) (hR : 0 < R)
     (hP : P ∈ forwardCylinder Z0 R hR) (v : ℝ) :
     stripGreen hH hLE hlam hLam A (capacityCylinderInterval Z0 R hR)

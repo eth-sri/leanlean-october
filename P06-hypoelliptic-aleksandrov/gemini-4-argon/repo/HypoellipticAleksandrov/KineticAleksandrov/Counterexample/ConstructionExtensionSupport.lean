@@ -12,8 +12,8 @@ open MeasureTheory Set
 
 /-- The selected first and second weak representatives vanish almost everywhere outside
 `H < 1`, including the profile boundary. An open zero collar avoids any level-set premise. -/
-theorem construction_extended_jets_zero_outside_profile {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+theorem construction_extended_jets_zero_outside_profile {d } (hd : 1 ≤ d)
+    {alpha } (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)
@@ -23,7 +23,7 @@ theorem construction_extended_jets_zero_outside_profile {d : ℕ} (hd : 1 ≤ d)
       (∀ i k, constructionExtendedPackedHessian h r mu R m t x i k = 0) := by
   let s := fun x => selectedFlatProfile h r (spatialCoordinateCLE d x) -
     spatialPackedBarrier d mu R t x
-  let D : Set (PDE.Vec (d + d)) := {x | s x < 0} ∪
+  let D := {x | s x < 0} ∪
     {x | R ^ 2 < PDE.vecNormSq (spatialCoordinateCLE d x).2}
   let u := fun x => zeroExtendedProfile (profileFunction h) alpha r mu R
     ⟨t, (spatialCoordinateCLE d x).1, (spatialCoordinateCLE d x).2⟩
@@ -76,8 +76,7 @@ theorem construction_extended_jets_zero_outside_profile {d : ℕ} (hd : 1 ≤ d)
   have hga := ae_all_iff.mpr hg
   have hha := ae_all_iff.mpr (fun i => ae_all_iff.mpr (hh i))
   have hga' := (ae_restrict_iff' hD.measurableSet).mp hga
-  have hha' := (ae_restrict_iff' hD.measurableSet).mp hha
-  filter_upwards [hga', hha'] with x hx hy
+  filter_upwards [hga', ((ae_restrict_iff' hD.measurableSet).mp hha)] with x hx hy
   intro hprof
   exact ⟨hx (hsub x hprof), hy (hsub x hprof)⟩
 

@@ -12,7 +12,7 @@ open Set Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The first directional derivative respects addition on the punctured carrier. -/
-theorem bellman_directional_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
+theorem bellman_directional_add {alpha phi psi}
     (hf : IsBellmanHomogeneous alpha phi) (hg : IsBellmanHomogeneous alpha psi)
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) (e : ℝ × ℝ) :
     fderiv ℝ (phi + psi) q e = fderiv ℝ phi q e + fderiv ℝ psi q e := by
@@ -23,9 +23,9 @@ theorem bellman_directional_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
   rw [fderiv_add hfq hgq, add_apply]
 
 /-- The second velocity derivative respects addition on the punctured carrier. -/
-theorem bellmanDvv_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
+theorem bellmanDvv_add {alpha phi psi}
     (hf : IsBellmanHomogeneous alpha phi) (hg : IsBellmanHomogeneous alpha psi)
-    (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
+    (q ) (hq : q ∈ bellmanPuncturedSet) :
     bellmanDvv (phi + psi) q = bellmanDvv phi q + bellmanDvv psi q := by
   have he : bellmanDv (phi + psi) =ᶠ[𝓝 q] bellmanDv phi + bellmanDv psi := by
     filter_upwards [bellmanPuncturedSet_isOpen.mem_nhds hq] with z hz

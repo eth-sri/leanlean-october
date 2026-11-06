@@ -48,7 +48,7 @@ def stripExitMeasureOnBoundary
 /-- Full characterization of the unique exit measure on its closed boundary carrier. -/
 theorem stripExitMeasureOnBoundary_spec
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripExitMeasureOnBoundary hH hlam hLam A H E hE T e univ ≤ 1 ∧
@@ -87,7 +87,7 @@ instance stripExitOfRealization_isFiniteMeasure
 /-- The physical exit measure has mass at most one. -/
 theorem stripExitOfRealization_mass_le_one
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripExitOfRealization hH hlam hLam A H E hE T e univ ≤ 1 := by
@@ -99,7 +99,7 @@ theorem stripExitOfRealization_mass_le_one
 /-- The physical measure is supported on the full closed terminal/lateral exit carrier. -/
 theorem stripExitOfRealization_compl_closedExit
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripExitOfRealization hH hlam hLam A H E hE T e (stripClosedExit H T)ᶜ = 0 := by
@@ -115,7 +115,7 @@ theorem stripExitOfRealization_compl_closedExit
 /-- Actual homogeneous probe values are exactly the physical exit integrals. -/
 theorem stripExitOfRealization_probe_integral
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (f : exitProbeSubmodule) :

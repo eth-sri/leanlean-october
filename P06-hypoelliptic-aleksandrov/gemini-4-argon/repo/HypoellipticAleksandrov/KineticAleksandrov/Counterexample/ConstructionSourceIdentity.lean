@@ -12,35 +12,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set HypoellipticAleksandrov.Parabolic
 
-/-- On the profile domain the extended source is exactly the raw cutoff source, with no
+/- On the profile domain the extended source is exactly the raw cutoff source, with no
 extra multiplier terms. The same jointly selected flattened jets occur on both sides. -/
-theorem construction_extendedSource_eq_raw_on_profile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R m t : ℝ) (hm : m < R ^ 2)
-    (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < m)
-    (q : XV d) (hq : profileFunction h q < 1) :
-    constructionExtendedSource h r mu R m (profileMatrix h) ⟨t, q.1, q.2⟩ =
-      timeCutoffSourceRepresentative h r mu R ⟨t, q.1, q.2⟩ := by
-  have hj := construction_extended_jets_eq_raw_on_profile h r mu R m t hm hmargin
-    ((spatialCoordinateCLE d).symm q) (by
-      simpa only [ContinuousLinearEquiv.apply_symm_apply] using hq)
-  simp only [constructionExtendedSource, constructionExtendedNativeGradient,
-    constructionExtendedNativeHessian, hj.1, hj.2]
-  have hq' : (q.1, q.2) ∈ {y | profileFunction h y < 1} := hq
-  simp only [constructionExtendedTimeJet, indicator_of_mem hq',
-    timeCutoffProfile_timeDerivative, timeCutoffSourceRepresentative,
-    spatialPackedCutoffGradient, spatialPackedCutoffVelocityHessian,
-    spatialPackedGradient, Fin.addCases_left,
-    spatialPackedBarrier_positionGradient, spatialPackedBarrier_velocityHessian,
-    spatialPackedBarrier,
-    ContinuousLinearEquiv.apply_symm_apply, sub_zero, barrier_velocityGradient,
-    barrier_velocityHessian, Pi.sub_apply, Matrix.smul_apply, smul_eq_mul]
-  simp only [spatialPackedBarrier_velocityGradient,
-    ContinuousLinearEquiv.apply_symm_apply, Prod.mk.eta]
-
-/-- The full extended source is the raw source inside the profile domain and zero outside,
-almost everywhere at every fixed time. -/
 theorem construction_extendedSource_eq_indicator_ae {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+    {alpha } (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)
@@ -59,7 +34,22 @@ theorem construction_extendedSource_eq_indicator_ae {d : ℕ} (hd : 1 ≤ d)
   by_cases hprof : profileFunction h q < 1
   · have hmem : q ∈ {y | profileFunction h y < 1} := hprof
     rw [indicator_of_mem hmem]
-    exact construction_extendedSource_eq_raw_on_profile h r mu R m t hm hmargin q hprof
+    have hj := construction_extended_jets_eq_raw_on_profile h r mu R m t hm hmargin
+      ((spatialCoordinateCLE d).symm q) (by
+        simpa only [ContinuousLinearEquiv.apply_symm_apply] using hprof)
+    simp only [constructionExtendedSource, constructionExtendedNativeGradient,
+      constructionExtendedNativeHessian, hj.1, hj.2]
+    have hq' : (q.1, q.2) ∈ {y | profileFunction h y < 1} := hprof
+    simp only [constructionExtendedTimeJet, indicator_of_mem hq',
+      timeCutoffProfile_timeDerivative, timeCutoffSourceRepresentative,
+      spatialPackedCutoffGradient, spatialPackedCutoffVelocityHessian,
+      spatialPackedGradient, Fin.addCases_left,
+      spatialPackedBarrier_positionGradient, spatialPackedBarrier_velocityHessian,
+      spatialPackedBarrier,
+      ContinuousLinearEquiv.apply_symm_apply, sub_zero, barrier_velocityGradient,
+      barrier_velocityHessian, Pi.sub_apply, Matrix.smul_apply, smul_eq_mul]
+    simp only [spatialPackedBarrier_velocityGradient,
+      ContinuousLinearEquiv.apply_symm_apply, Prod.mk.eta]
   · have hn : 1 ≤ profileFunction h
         (spatialCoordinateCLE d ((spatialCoordinateCLE d).symm q)) := by
       simpa only [ContinuousLinearEquiv.apply_symm_apply] using (not_lt.mp hprof)

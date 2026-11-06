@@ -135,7 +135,7 @@ theorem exists_unique_terminalFunctional
 
 /-- The unique positive terminal functional at the source state `p`, chosen from the
 `∃!` statement `exists_unique_terminalFunctional`. -/
-def terminalFunctional (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalFunctional (σ τ ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
     C_c(EvolutionState Ω γ τ, ℝ) →ₚ[ℝ] ℝ :=
   (exists_unique_terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p).choose

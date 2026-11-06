@@ -19,13 +19,12 @@ namespace PDE
 namespace HasWeakPartialDerivOn
 
 /-- Translate a weak partial derivative from `U` to `z + U`. -/
-theorem translate {d : ℕ} {U : Set (Vec d)} {i : Fin d}
-    {u gi : Vec d → ℝ} (h : HasWeakPartialDerivOn U i u gi)
+theorem translate {d U i u gi} (h : HasWeakPartialDerivOn U i u gi)
     (z : Vec d) :
     HasWeakPartialDerivOn (translateSet z U) i
       (fun x => u (x - z)) (fun x => gi (x - z)) := by
   intro φ hφSmooth hφCompact hφSubset
-  let V : Set (Vec d) := translateSet z U
+  let V := translateSet z U
   let ψ : Vec d → ℝ := fun x => φ (x + z)
   have hψSmooth : ContDiff ℝ (⊤ : ℕ∞) ψ := by
     simpa [ψ] using!
@@ -40,7 +39,7 @@ theorem translate {d : ℕ} {U : Set (Vec d)} {i : Fin d}
       rw [show ψ = φ ∘ Homeomorph.addRight z by rfl,
         tsupport_comp_eq_preimage φ (Homeomorph.addRight z)] at hx
       exact hx
-    have hxV : x + z ∈ V := hφSubset hx'
+    have hxV := hφSubset hx'
     simpa [V, mem_translateSet_iff_sub_mem, sub_eq_add_neg,
       add_assoc] using hxV
   have hWeak := h ψ hψSmooth hψCompact hψSubset
@@ -99,16 +98,16 @@ dilation
 
 The positivity hypothesis fixes the geometric orientation and every
 change-of-variables factor. -/
-theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
+theorem dilate_of_pos {d U i}
     {u gi : Vec d → ℝ} (h : HasWeakPartialDerivOn U i u gi)
-    {a : ℝ} (ha : 0 < a) :
+    {a } (ha : 0 < a) :
     HasWeakPartialDerivOn (a • U) i
       (fun x => a * u (a⁻¹ • x))
       (fun x => gi (a⁻¹ • x)) := by
   intro φ hφSmooth hφCompact hφSubset
-  let V : Set (Vec d) := a • U
+  let V := a • U
   let T : Vec d → Vec d := fun x => a⁻¹ • x
-  have haNe : a ≠ 0 := ha.ne'
+  have haNe := ha.ne'
   let ψ : Vec d → ℝ := fun y => φ (a • y)
   have hψSmooth : ContDiff ℝ (⊤ : ℕ∞) ψ := by
     simpa [ψ] using! hφSmooth.comp (contDiff_const_smul a)
@@ -123,8 +122,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
         tsupport_comp_eq_preimage φ
           (Homeomorph.smulOfNeZero a haNe)] at hy
       exact hy
-    have hyV : a • y ∈ V := hφSubset hy'
-    simpa [V, Set.mem_smul_set_iff_inv_smul_mem, haNe] using hyV
+    simpa [V, Set.mem_smul_set_iff_inv_smul_mem, haNe] using (hφSubset hy')
   have hWeak := h ψ hψSmooth hψCompact hψSubset
   have hDerivψ :
       ∀ y : Vec d,
@@ -190,7 +188,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
         (a ^ d) * ∫ y in U,
           a * (u y * (fderiv ℝ φ (a • y)) (basisVec i))
             ∂MeasureTheory.volume := by
-          have hpow : a ^ d ≠ 0 := (pow_pos ha d).ne'
+          have hpow := (pow_pos ha d).ne'
           rw [hChangeLeft]
           field_simp [hpow]
     _ = (a ^ d) *
@@ -207,7 +205,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
           ring
     _ = -∫ x in V, gi (T x) * φ x
         ∂MeasureTheory.volume := by
-          have hpow : a ^ d ≠ 0 := (pow_pos ha d).ne'
+          have hpow := (pow_pos ha d).ne'
           rw [hChangeRight]
           field_simp [hpow]
 

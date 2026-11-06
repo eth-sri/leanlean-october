@@ -24,7 +24,7 @@ open Set
 /-- A nonnegative continuous scalar function dominated by a multiple of its
 past integral vanishes on the closed time interval. -/
 theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
-    {T K : ℝ} (hT : 0 < T) (hK : 0 ≤ K)
+    {T K } (hT : 0 < T) (hK : 0 ≤ K)
     (E : ℝ → ℝ)
     (hEcont : ContinuousOn E (Set.Icc 0 T))
     (hEnonneg : ∀ t ∈ Set.Icc 0 T, 0 ≤ E t)
@@ -32,7 +32,7 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
     (hEle : ∀ t ∈ Set.Icc 0 T,
       E t ≤ K * (∫ r in Set.Ioc 0 t, E r)) :
     ∀ t ∈ Set.Icc 0 T, E t = 0 := by
-  let F : ℝ → ℝ := Set.IccExtend hT.le ((Set.Icc 0 T).restrict E)
+  let F := Set.IccExtend hT.le ((Set.Icc 0 T).restrict E)
   have hFcont : Continuous F := by
     exact hEcont.restrict.Icc_extend'
   have hF_eq_E {t : ℝ} (ht : t ∈ Set.Icc 0 T) : F t = E t := by
@@ -75,7 +75,7 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
       _ ≤ K * (∫ r in Set.Ioc 0 t, E r) := hEle t htcc
       _ = K * P t := by rw [← hP_eq htcc]
       _ = K * ‖P t‖ := by rw [Real.norm_of_nonneg (hPnonneg htcc)]
-  have hPvanish : ∀ t ∈ Set.Icc 0 T, P t = 0 :=
+  have hPvanish :=
     eq_zero_of_abs_deriv_le_mul_abs_self_of_eq_zero_right hPcont.continuousOn
       (fun t ht => (hPderiv t).hasDerivWithinAt) hPzero hPbound
   intro t ht

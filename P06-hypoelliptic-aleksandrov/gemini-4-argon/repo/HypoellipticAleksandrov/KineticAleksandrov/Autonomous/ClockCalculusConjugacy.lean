@@ -2,6 +2,10 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockCalculusLines
 import Mathlib.Tactic.FieldSimp
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockCalculus
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockCalculusDirectional
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ScalarAdaptersCalculus
+import Mathlib.Analysis.Calculus.Deriv.Prod
 
 /-! # Exact operator conjugacy for the position clock -/
 
@@ -9,6 +13,7 @@ import Mathlib.Tactic.FieldSimp
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov.Parabolic
+open scoped Topology
 
 private theorem directional_smul (f : (Fin 3 → ℝ) → ℝ) (d q : Fin 3 → ℝ)
     (k : ℝ) : directional f (k • d) q = k * directional f d q := by
@@ -29,14 +34,14 @@ private theorem second_directional_smul (f : (Fin 3 → ℝ) → ℝ) (d q : Fin
   simp only [smul_apply, smul_eq_mul, directional]
   ring
 
-/-- The normalized forward operator in clock field order `(sigma,z,y)`. -/
+/- The normalized forward operator in clock field order `(sigma,z,y)`. -/
 def Clock.normalizedOperator (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point)
     (h : Point → ℝ) (q : Point) : ℝ :=
   kineticTimeDerivative h q +
     c.diffusion a e q.time (q.velocity 0) * kineticVelocityHessian h q 0 0 +
       c.drift (q.velocity 0) * kineticPositionGradient h q 0
 
-/-- Exact pointwise conjugacy; C-two at the image suffices for this internal chain-rule lemma. -/
+/- Exact pointwise conjugacy; C-two at the image suffices for this internal chain-rule lemma. -/
 theorem Clock.conjugacy_at (c : Clock) (a : ℝ → ℝ → ℝ) (e p : Point)
     (h : Point → ℝ) (hp : p.velocity 0 ∈ c.active)
     (hh : ContDiffAt ℝ 2 (h ∘ scalarPoint) (scalarCoordinates (c.map e p))) :
@@ -44,7 +49,29 @@ theorem Clock.conjugacy_at (c : Clock) (a : ℝ → ℝ → ℝ) (e p : Point)
       |p.velocity 0| / (|c.vbar| * c.r ^ 2) *
         c.normalizedOperator a e h (c.map e p) := by
   have ht := c.pullback_derivatives e p h hh
-  have hn := kinetic_derivatives_directional h (c.map e p) hh
+  have hn : kineticTimeDerivative h (c.map e p) = directional (h ∘ scalarPoint) (coordinateDirection 0) (scalarCoordinates (c.map e p)) ∧ kineticPositionGradient h (c.map e p) 0 = directional (h ∘ scalarPoint) (coordinateDirection 1) (scalarCoordinates (c.map e p)) ∧ kineticVelocityHessian h (c.map e p) 0 0 = directional (directional (h ∘ scalarPoint) (coordinateDirection 2)) (coordinateDirection 2) (scalarCoordinates (c.map e p)) := by
+    let p := (c.map e p)
+    have hf := hh.differentiableAt (by norm_num)
+    have h0 := deriv_coordinate_slice (h ∘ scalarPoint) (scalarCoordinates p) 0 hf
+    have h1 := deriv_coordinate_slice (h ∘ scalarPoint) (scalarCoordinates p) 1 hf
+    have h2 : deriv (deriv (fun t => (h ∘ scalarPoint) (Function.update (scalarCoordinates p) 2 t))) ((scalarCoordinates p) 2) =
+        directional (directional (h ∘ scalarPoint) (coordinateDirection 2)) (coordinateDirection 2) (scalarCoordinates p) := by
+      let f := (h ∘ scalarPoint)
+      let q := (scalarCoordinates p)
+      have he : (fun t => f (Function.update q 2 t)) =
+          fun t => f (q + (t-q 2) • coordinateDirection 2) := by
+        funext t
+        congr 1
+        ext j
+        by_cases hij : j = 2
+        · subst j
+          simp [coordinateDirection]
+        · simp [coordinateDirection, hij]
+      rw [he]
+      exact deriv_deriv_coordinateLine f q (coordinateDirection 2) (q 2) hh
+    simp only [Function.comp_apply, scalarPoint_update] at h0 h1 h2
+    exact ⟨h0, (kineticPositionGradient_scalar h p).trans h1,
+      (kineticVelocityHessian_scalar h p).trans h2⟩
   rw [forwardScalarOperator, Clock.normalizedOperator, ht.1, ht.2.1, ht.2.2,
     hn.1, hn.2.1, hn.2.2]
   have hx : directional (h ∘ scalarPoint) c.positionDirection

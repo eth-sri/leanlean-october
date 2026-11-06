@@ -73,7 +73,7 @@ theorem terminalFiberKernel_comp
       _ ≤ 1 := terminalFiberKernel_univ_le_one n hn lam Lam m L_b
         hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
         hb_smooth hb_lipschitz hb_coercive hEx σ r hσr p
-  have hsupp : νa.restrict (evolutionStateSet Ω γ τ) = νa :=
+  have hsupp :=
     map_subtype_val_restrict (measurableSet_evolutionStateSet_of_isOpen
       (isOpen_of_isAdmissibleEvolutionDomain hΩ)) ν
   have hint (F : BoundedBorel (EvolutionAmbientState n))
@@ -95,10 +95,7 @@ theorem terminalFiberKernel_comp
     exact terminalOperators_apply_smooth n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
       σ τ (hσr.trans hrτ) p F hF
-  have heq := terminalMeasure_eq_of_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-    q νa hmass hsupp hint
-  have hm := congrArg (Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)) heq
+  have hm := congrArg (Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)) (terminalMeasure_eq_of_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q νa hmass hsupp hint)
   rw [(MeasurableEmbedding.subtype_coe
     (measurableSet_evolutionStateSet_of_isOpen
       (isOpen_of_isAdmissibleEvolutionDomain hΩ))).comap_map] at hm

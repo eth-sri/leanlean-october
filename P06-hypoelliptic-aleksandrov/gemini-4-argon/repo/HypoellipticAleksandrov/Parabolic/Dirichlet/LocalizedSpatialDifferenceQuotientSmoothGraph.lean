@@ -25,7 +25,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The smooth localized quotient has the expected coordinatewise `L²`
 product-rule representative in the spatial Sobolev jet. -/
 theorem localizedSpatialDifferenceQuotientWeakTest_gradientCoord_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
@@ -56,12 +56,7 @@ theorem localizedSpatialDifferenceQuotientWeakTest_gradientCoord_eq
   have hgradientCoord := PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
     (gradientCLM hΩ
       (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ))
-  have hgradientJet := ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ φ j
-  have hgradientRep : ⇑(PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
-      (gradientCLM hΩ
-        (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ)))
-      =ᵐ[PDE.volumeOn Ω] fun y => φ.partialDeriv j y := by
-    exact hgradientCoord.trans hgradientJet
+  have hgradientRep := hgradientCoord.trans (ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ φ j)
   have hfirst := cutoffGradientSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
     hΩ.measurableSet η j k h
     (valueCLM hΩ

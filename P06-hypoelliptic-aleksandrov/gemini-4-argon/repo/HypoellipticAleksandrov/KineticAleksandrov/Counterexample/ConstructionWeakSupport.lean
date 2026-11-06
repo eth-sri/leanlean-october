@@ -12,7 +12,7 @@ open MeasureTheory Set
 
 /-- A locally integrable weak derivative vanishes on every open region where the value
 vanishes almost everywhere. The derivative representative is preserved by uniqueness. -/
-theorem construction_weak_derivative_zero_on_open {n : ℕ} (D : Set (PDE.Vec n))
+theorem construction_weak_derivative_zero_on_open {n } (D : Set (PDE.Vec n))
     (hD : IsOpen D) (i : Fin n) (u g : PDE.Vec n → ℝ)
     (hg : LocallyIntegrable g volume)
     (hu : u =ᵐ[volume.restrict D] 0)

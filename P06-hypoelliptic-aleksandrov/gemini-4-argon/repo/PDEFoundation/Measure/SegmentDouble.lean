@@ -20,17 +20,6 @@ namespace PDE
 
 open MeasureTheory
 
-private theorem segmentBlend_swap {d : ℕ}
-    (x y : Vec d) (t : ℝ) :
-    segmentBlend x t y = segmentBlend y (1 - t) x := by
-  simpa only [segmentBlend] using
-    (AffineMap.lineMap_apply_one_sub x y t).symm
-
-/-- Double integration along convex segments costs at most `2 ^ d` times the
-volume of the domain.
-
-All integrability hypotheses are consequences of continuity and boundedness:
-the proof first integrates on the compact closure of `U`. -/
 theorem setIntegral_setIntegral_comp_segmentBlend_le_two_pow_mul
     {d : ℕ} {U : Set (Vec d)} {φ : Vec d → ℝ}
     (hU : IsOpenBoundedConvexDomain U)
@@ -132,7 +121,10 @@ theorem setIntegral_setIntegral_comp_segmentBlend_le_two_pow_mul
         intro y _hy
         change φ (segmentBlend x t y) =
           φ (segmentBlend y (1 - t) x)
-        rw [segmentBlend_swap]
+        have _h_inl_7 (x : Vec d) (y : Vec d) (t : ℝ) : segmentBlend x t y = segmentBlend y (1 - t) x := by
+          simpa only [segmentBlend] using
+            (AffineMap.lineMap_apply_one_sub x y t).symm
+        rw [_h_inl_7]
       _ = ∫ x in U, ∫ y in U,
           φ (segmentBlend x (1 - t) y)
             ∂volume ∂volume := by

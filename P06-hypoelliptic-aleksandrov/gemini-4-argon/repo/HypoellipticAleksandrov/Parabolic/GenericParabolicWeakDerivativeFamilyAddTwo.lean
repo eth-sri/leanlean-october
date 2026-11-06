@@ -28,19 +28,19 @@ open scoped BigOperators ENNReal
 
 namespace ParabolicDerivativeIndex
 
-/-- An index outside the inherited layer of an add-two construction has exact
+/- An index outside the inherited layer of an add-two construction has exact
 top weight. -/
 private theorem weight_eq_add_two_of_not_le_add_one
-    {d M : ℕ} (alpha : ParabolicDerivativeIndex d (M + 2))
+    {d M } (alpha : ParabolicDerivativeIndex d (M + 2))
     (h : ¬ alpha.1.parabolicWeight ≤ M + 1) :
     alpha.1.parabolicWeight = M + 2 := by
   omega
 
-/-- Remove one time derivative from an index known to have positive time
+/- Remove one time derivative from an index known to have positive time
 order.  Its ambient bound is stated separately because the add-two assembly
 uses it at the source bound `M`. -/
 private def timePredecessor
-    {d M : ℕ} (alpha : ParabolicDerivativeIndex d (M + 2))
+    {d M } (alpha : ParabolicDerivativeIndex d (M + 2))
     (ht : 0 < alpha.1.timeOrder)
     (hweight : alpha.1.parabolicWeight = M + 2) :
     ParabolicDerivativeIndex d M :=
@@ -50,25 +50,8 @@ private def timePredecessor
     change 2 * alpha.1.timeOrder + alpha.1.velocity.order = M + 2 at hweight
     omega⟩
 
-@[simp] private theorem timePredecessor_timeOrder
-    {d M : ℕ} (alpha : ParabolicDerivativeIndex d (M + 2))
-    (ht : 0 < alpha.1.timeOrder)
-    (hweight : alpha.1.parabolicWeight = M + 2) :
-    (timePredecessor alpha ht hweight).1.timeOrder =
-      alpha.1.timeOrder - 1 :=
-  rfl
-
-@[simp] private theorem timePredecessor_velocity
-    {d M : ℕ} (alpha : ParabolicDerivativeIndex d (M + 2))
-    (ht : 0 < alpha.1.timeOrder)
-    (hweight : alpha.1.parabolicWeight = M + 2) :
-    (timePredecessor alpha ht hweight).1.velocity = alpha.1.velocity :=
-  rfl
-
-/-- A top-layer index with no time derivative is purely spatial, and its
-velocity order is the full parabolic weight. -/
 private theorem velocity_order_eq_of_timeOrder_eq_zero
-    {d M : ℕ} (alpha : ParabolicDerivativeIndex d (M + 2))
+    {d M } (alpha : ParabolicDerivativeIndex d (M + 2))
     (ht : alpha.1.timeOrder = 0)
     (hweight : alpha.1.parabolicWeight = M + 2) :
     alpha.1.velocity.order = M + 2 := by
@@ -76,10 +59,10 @@ private theorem velocity_order_eq_of_timeOrder_eq_zero
     VelocityMultiIndex.parabolicWeight at hweight
   omega
 
-/-- Under the induction hypothesis `1 ≤ M`, a pure-spatial top-layer index
+/- Under the induction hypothesis `1 ≤ M`, a pure-spatial top-layer index
 has at least two supported velocity units. -/
 private theorem two_le_velocity_order_of_top
-    {d M : ℕ} (hM : 1 ≤ M)
+    {d M } (hM : 1 ≤ M)
     (alpha : ParabolicDerivativeIndex d (M + 2))
     (ht : alpha.1.timeOrder = 0)
     (hweight : alpha.1.parabolicWeight = M + 2) :
@@ -87,11 +70,11 @@ private theorem two_le_velocity_order_of_top
   rw [velocity_order_eq_of_timeOrder_eq_zero alpha ht hweight]
   omega
 
-/-- Select a coordinate carrying positive velocity order.  The positive-order
+/- Select a coordinate carrying positive velocity order.  The positive-order
 certificate is consumed before any inhabitant of `Fin d` is requested, so the
 zero-dimensional case is discharged as a contradiction. -/
 private noncomputable def supportedCoordinate
-    {d : ℕ} (alpha : VelocityMultiIndex d) (horder : 0 < alpha.order) : Fin d := by
+    {d } (alpha : VelocityMultiIndex d) (horder : 0 < alpha.order) : Fin d := by
   classical
   have hexists : ∃ i : Fin d, 0 < alpha i := by
     rw [VelocityMultiIndex.order, Finset.sum_pos_iff_of_nonneg] at horder
@@ -101,7 +84,7 @@ private noncomputable def supportedCoordinate
   exact Classical.choose hexists
 
 private theorem supportedCoordinate_pos
-    {d : ℕ} (alpha : VelocityMultiIndex d) (horder : 0 < alpha.order) :
+    {d } (alpha : VelocityMultiIndex d) (horder : 0 < alpha.order) :
     0 < alpha (supportedCoordinate alpha horder) := by
   classical
   exact Classical.choose_spec (show ∃ i : Fin d, 0 < alpha i from by
@@ -110,13 +93,13 @@ private theorem supportedCoordinate_pos
       exact ⟨i, hi⟩
     · exact fun _ _ => Nat.zero_le _)
 
-/-- Decrement one certified supported velocity coordinate. -/
-private def decrementVelocity {d : ℕ} (alpha : VelocityMultiIndex d) (i : Fin d) :
+/- Decrement one certified supported velocity coordinate. -/
+private def decrementVelocity {d } (alpha : VelocityMultiIndex d) (i : Fin d) :
     VelocityMultiIndex d :=
   Function.update alpha i (alpha i - 1)
 
 private theorem decrementVelocity_order_add_one
-    {d : ℕ} (alpha : VelocityMultiIndex d) (i : Fin d) (hi : 0 < alpha i) :
+    {d } (alpha : VelocityMultiIndex d) (i : Fin d) (hi : 0 < alpha i) :
     (decrementVelocity alpha i).order + 1 = alpha.order := by
   have hsum :
       (∑ j, Function.update alpha i (alpha i - 1) j) + alpha i =
@@ -130,7 +113,7 @@ private theorem decrementVelocity_order_add_one
   omega
 
 private theorem decrementVelocity_add_single
-    {d : ℕ} (alpha : VelocityMultiIndex d) (i : Fin d) (hi : 0 < alpha i) :
+    {d } (alpha : VelocityMultiIndex d) (i : Fin d) (hi : 0 < alpha i) :
     decrementVelocity alpha i + Pi.single i 1 = alpha := by
   classical
   funext k
@@ -140,17 +123,17 @@ private theorem decrementVelocity_add_single
     omega
   · simp [decrementVelocity, hki]
 
-/-- The first deterministic decrement of a pure-spatial top index. -/
+/- The first deterministic decrement of a pure-spatial top index. -/
 private noncomputable def firstSpatialCoordinate
-    {d M : ℕ} (hM : 1 ≤ M) (alpha : ParabolicDerivativeIndex d (M + 2))
+    {d M } (hM : 1 ≤ M) (alpha : ParabolicDerivativeIndex d (M + 2))
     (ht : alpha.1.timeOrder = 0)
     (hweight : alpha.1.parabolicWeight = M + 2) : Fin d :=
   supportedCoordinate alpha.1.velocity
     (lt_of_lt_of_le (by omega) (two_le_velocity_order_of_top hM alpha ht hweight))
 
-/-- The second deterministic decrement is selected after the first one. -/
+/- The second deterministic decrement is selected after the first one. -/
 private noncomputable def secondSpatialCoordinate
-    {d M : ℕ} (hM : 1 ≤ M) (alpha : ParabolicDerivativeIndex d (M + 2))
+    {d M } (hM : 1 ≤ M) (alpha : ParabolicDerivativeIndex d (M + 2))
     (ht : alpha.1.timeOrder = 0)
     (hweight : alpha.1.parabolicWeight = M + 2) : Fin d := by
   let i := firstSpatialCoordinate hM alpha ht hweight
@@ -163,10 +146,10 @@ private noncomputable def secondSpatialCoordinate
     omega
   exact supportedCoordinate (decrementVelocity alpha.1.velocity i) hremaining
 
-/-- Remove the two deterministically selected velocity derivatives from a
+/- Remove the two deterministically selected velocity derivatives from a
 pure-spatial exact-top index. -/
 private noncomputable def pureVelocityPredecessor
-    {d M : ℕ} (hM : 1 ≤ M) (alpha : ParabolicDerivativeIndex d (M + 2))
+    {d M } (hM : 1 ≤ M) (alpha : ParabolicDerivativeIndex d (M + 2))
     (ht : alpha.1.timeOrder = 0)
     (hweight : alpha.1.parabolicWeight = M + 2) :
     ParabolicDerivativeIndex d M := by
@@ -188,35 +171,8 @@ private noncomputable def pureVelocityPredecessor
   have htop := velocity_order_eq_of_timeOrder_eq_zero alpha ht hweight
   omega
 
-private theorem pureVelocityPredecessor_weight
-    {d M : ℕ} (hM : 1 ≤ M) (alpha : ParabolicDerivativeIndex d (M + 2))
-    (ht : alpha.1.timeOrder = 0)
-    (hweight : alpha.1.parabolicWeight = M + 2) :
-    (pureVelocityPredecessor hM alpha ht hweight).1.parabolicWeight = M := by
-  let i := firstSpatialCoordinate hM alpha ht hweight
-  let afterI := decrementVelocity alpha.1.velocity i
-  let j := secondSpatialCoordinate hM alpha ht hweight
-  let afterJ := decrementVelocity afterI j
-  have hi : 0 < alpha.1.velocity i := supportedCoordinate_pos _ _
-  have hI : afterI.order + 1 = alpha.1.velocity.order :=
-    decrementVelocity_order_add_one _ _ hi
-  have hremaining : 0 < afterI.order := by
-    have htwo := two_le_velocity_order_of_top hM alpha ht hweight
-    omega
-  have hj : 0 < afterI j := supportedCoordinate_pos _ hremaining
-  have hJ : afterJ.order + 1 = afterI.order :=
-    decrementVelocity_order_add_one _ _ hj
-  simp only [pureVelocityPredecessor, TimeVelocityMultiIndex.parabolicWeight_ofTimeVelocity,
-    VelocityMultiIndex.parabolicWeight]
-  norm_num
-  change afterJ.order = M
-  have htop := velocity_order_eq_of_timeOrder_eq_zero alpha ht hweight
-  omega
-
-/-- Adding back the second-selected and then first-selected velocity units
-recovers the original pure-spatial top index, with the public `j`, `i` order. -/
 private theorem sourceVelocityTwo_pureVelocityPredecessor
-    {d M : ℕ} (hM : 1 ≤ M) (alpha : ParabolicDerivativeIndex d (M + 2))
+    {d M } (hM : 1 ≤ M) (alpha : ParabolicDerivativeIndex d (M + 2))
     (ht : alpha.1.timeOrder = 0)
     (hweight : alpha.1.parabolicWeight = M + 2) :
     sourceVelocityTwo (L := M + 2) (by omega)
@@ -250,11 +206,11 @@ private theorem sourceVelocityTwo_pureVelocityPredecessor
     dsimp only [i, j, afterI] at hJ hI ⊢
     omega
 
-/-- The selected representative for the add-two family: inherited entries are
+/- The selected representative for the add-two family: inherited entries are
 literal, while exact-top entries use the selected time or pure-spatial
 predecessor. -/
 private noncomputable def canonicalRepresentative
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M } (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -265,7 +221,7 @@ private noncomputable def canonicalRepresentative
   else if ht : 0 < alpha.1.timeOrder then
     W (timePredecessor alpha ht (weight_eq_add_two_of_not_le_add_one alpha hle))
   else
-    let hzero : alpha.1.timeOrder = 0 := Nat.eq_zero_of_not_pos ht
+    let hzero := Nat.eq_zero_of_not_pos ht
     fun z => H z
       (pureVelocityPredecessor hM alpha hzero
         (weight_eq_add_two_of_not_le_add_one alpha hle))
@@ -275,7 +231,7 @@ private noncomputable def canonicalRepresentative
         (weight_eq_add_two_of_not_le_add_one alpha hle))
 
 private theorem canonicalRepresentative_inherited
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M } (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -290,7 +246,7 @@ private theorem canonicalRepresentative_inherited
   rfl
 
 private theorem canonicalRepresentative_time_top
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M } (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -305,7 +261,7 @@ private theorem canonicalRepresentative_time_top
   rw [dif_neg hnot, dif_pos ht]
 
 private theorem canonicalRepresentative_pure_spatial_top
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M } (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -325,7 +281,7 @@ private theorem canonicalRepresentative_pure_spatial_top
   rw [dif_neg hnot, dif_neg (not_lt.mpr (Nat.le_of_eq ht))]
 
 private theorem canonicalRepresentative_memLp
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M } (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -344,7 +300,7 @@ private theorem canonicalRepresentative_memLp
       exact hHmem _ _ _
 
 private theorem canonicalRepresentative_zero_ae
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M } (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -356,7 +312,7 @@ private theorem canonicalRepresentative_zero_ae
   exact D.zero_ae
 
 private theorem canonicalRepresentative_hasWeakTimeSucc
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M } (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -401,40 +357,10 @@ private theorem canonicalRepresentative_hasWeakTimeSucc
     rw [hpred]
     exact hWweak beta
 
-/-- Coherence of a velocity edge whose target remains in the inherited
+/- Coherence of a velocity edge whose target remains in the inherited
 layer.  The exact-top collision branches are handled separately. -/
-private theorem canonicalRepresentative_hasWeakVelocitySucc_inherited
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
-    (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
-    (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
-    (W : ParabolicDerivativeIndex d M → TimeVelocity d → ℝ)
-    (alpha : ParabolicDerivativeIndex d (M + 2)) (i : Fin d)
-    (hsucc : alpha.1.parabolicWeight + 1 ≤ M + 2)
-    (htarget : (velocitySucc alpha i hsucc).1.parabolicWeight ≤ M + 1) :
-    HasWeakVelocityPartialDerivOn V i
-      (canonicalRepresentative hM D H W alpha)
-      (canonicalRepresentative hM D H W (velocitySucc alpha i hsucc)) := by
-  rw [parabolicWeight_velocitySucc] at htarget
-  have halpha : alpha.1.parabolicWeight ≤ M + 1 := by omega
-  rw [canonicalRepresentative, dif_pos halpha,
-    canonicalRepresentative, dif_pos (by
-      rw [parabolicWeight_velocitySucc]
-      exact htarget)]
-  have hold : (restrictLE alpha halpha).1.parabolicWeight + 1 ≤ M + 1 := by
-    rw [coe_restrictLE]
-    exact htarget
-  have heq : restrictLE (velocitySucc alpha i hsucc) (by
-        rw [parabolicWeight_velocitySucc]
-        exact htarget) =
-      velocitySucc (restrictLE alpha halpha) i hold := by
-    apply Subtype.ext
-    rfl
-  rw [heq]
-  exact D.hasWeakVelocitySucc _ i hold
-
 private theorem coe_velocitySucc_eq_add_single
-    {d L : ℕ} (alpha : ParabolicDerivativeIndex d L) (i : Fin d)
+    {d L } (alpha : ParabolicDerivativeIndex d L) (i : Fin d)
     (h : alpha.1.parabolicWeight + 1 ≤ L) :
     (velocitySucc alpha i h).1 = alpha.1 + Pi.single (velocityCoord i) 1 := by
   classical
@@ -449,180 +375,11 @@ private theorem coe_velocitySucc_eq_add_single
     · simp [velocitySucc, TimeVelocityMultiIndex.ofTimeVelocity,
         TimeVelocityMultiIndex.velocity, velocityCoord, hell]
 
-/-- When two distinct last velocity directions present the same pure-spatial
+/- When two distinct last velocity directions present the same pure-spatial
 top index, removing the canonical final direction gives a common predecessor
 for the crossed-derivative argument. -/
-private theorem exists_pureSpatial_velocityCommonRoot
-    {d M : ℕ} (alpha : ParabolicDerivativeIndex d (M + 2))
-    (beta : ParabolicDerivativeIndex d M) (j i k : Fin d)
-    (hbetaWeight : beta.1.parabolicWeight = M)
-    (hsucc : alpha.1.parabolicWeight + 1 ≤ M + 2)
-    (hreconstruct : velocitySucc alpha k hsucc =
-      sourceVelocityTwo (L := M + 2) (by omega) beta j i)
-    (hki : k ≠ i) :
-    ∃ rho : ParabolicDerivativeIndex d M,
-      rho.1 + Pi.single (velocityCoord i) 1 = alpha.1 ∧
-        rho.1 + Pi.single (velocityCoord k) 1 =
-          beta.1 + Pi.single (velocityCoord j) 1 := by
-  classical
-  have hsuccRaw := coe_velocitySucc_eq_add_single alpha k hsucc
-  have hraw : alpha.1 + Pi.single (velocityCoord k) 1 =
-      beta.1 + Pi.single (velocityCoord j) 1 +
-        Pi.single (velocityCoord i) 1 := by
-    have := congrArg Subtype.val hreconstruct
-    rw [hsuccRaw] at this
-    simpa only [coe_sourceVelocityTwo] using this
-  have hpos : 0 < alpha.1.velocity i := by
-    have hi := congrFun hraw (velocityCoord i)
-    have hsingleK :
-        (Pi.single (velocityCoord k) 1 : TimeVelocityCoord d → ℕ) (velocityCoord i) = 0 := by
-      rw [Pi.single_eq_of_ne]
-      exact fun hik => hki (Sum.inr.inj hik.symm)
-    have hsingleI :
-        (Pi.single (velocityCoord i) 1 : TimeVelocityCoord d → ℕ) (velocityCoord i) = 1 := by
-      exact Pi.single_eq_same _ _
-    simp only [Pi.add_apply] at hi
-    rw [hsingleK, hsingleI] at hi
-    simp only [add_zero] at hi
-    change alpha.1.velocity i =
-      beta.1.velocity i +
-        (Pi.single (velocityCoord j) 1 : TimeVelocityCoord d → ℕ) (velocityCoord i) + 1 at hi
-    omega
-  let rhoRaw : TimeVelocityMultiIndex d :=
-    TimeVelocityMultiIndex.ofTimeVelocity alpha.1.timeOrder
-      (decrementVelocity alpha.1.velocity i)
-  have hrhoWeight : rhoRaw.parabolicWeight ≤ M := by
-    have hdec := decrementVelocity_order_add_one alpha.1.velocity i hpos
-    have halphaWeight : alpha.1.parabolicWeight = M + 1 := by
-      have hw := congrArg TimeVelocityMultiIndex.parabolicWeight hraw
-      simp only [TimeVelocityMultiIndex.parabolicWeight_add,
-        TimeVelocityMultiIndex.parabolicWeight_single_velocity] at hw
-      rw [hbetaWeight] at hw
-      omega
-    dsimp only [rhoRaw]
-    simp only [TimeVelocityMultiIndex.parabolicWeight_ofTimeVelocity,
-      VelocityMultiIndex.parabolicWeight]
-    unfold TimeVelocityMultiIndex.parabolicWeight
-      VelocityMultiIndex.parabolicWeight at halphaWeight
-    omega
-  let rho : ParabolicDerivativeIndex d M := ⟨rhoRaw, hrhoWeight⟩
-  have hrhoAddI : rho.1 + Pi.single (velocityCoord i) 1 = alpha.1 := by
-    funext c
-    rcases c with ⟨⟩ | ell
-    · change alpha.1.timeOrder + 0 = alpha.1.timeOrder
-      omega
-    · have h := congrFun (decrementVelocity_add_single alpha.1.velocity i hpos) ell
-      simpa [rho, rhoRaw, TimeVelocityMultiIndex.ofTimeVelocity,
-        velocityCoord, Pi.single_apply, TimeVelocityMultiIndex.velocity] using h
-  have hrhoAddK : rho.1 + Pi.single (velocityCoord k) 1 =
-      beta.1 + Pi.single (velocityCoord j) 1 := by
-    apply add_right_cancel (b := Pi.single (velocityCoord i) 1)
-    calc
-      (rho.1 + Pi.single (velocityCoord k) 1) +
-          Pi.single (velocityCoord i) 1 =
-          (rho.1 + Pi.single (velocityCoord i) 1) +
-            Pi.single (velocityCoord k) 1 := by
-              simp only [add_assoc]
-              rw [add_comm (Pi.single (velocityCoord k) 1)
-                (Pi.single (velocityCoord i) 1)]
-      _ = alpha.1 + Pi.single (velocityCoord k) 1 := by rw [hrhoAddI]
-      _ = (beta.1 + Pi.single (velocityCoord j) 1) +
-          Pi.single (velocityCoord i) 1 := hraw
-  exact ⟨rho, hrhoAddI, hrhoAddK⟩
-
-/-- Coherence of a velocity edge into an exact top index carrying a time
-derivative.  Both presentations descend from the index obtained by removing
-that time derivative before adjoining the displayed velocity coordinate. -/
-private theorem canonicalRepresentative_hasWeakVelocitySucc_time_top
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
-    (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
-    (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
-    (W : ParabolicDerivativeIndex d M → TimeVelocity d → ℝ)
-    (hWweak : ∀ beta, HasWeakTimeDerivOn V
-      (fun z => D.representative (castLE (Nat.le_succ M) beta) z) (W beta))
-    (alpha : ParabolicDerivativeIndex d (M + 2)) (i : Fin d)
-    (hsucc : alpha.1.parabolicWeight + 1 ≤ M + 2)
-    (htarget : ¬ (velocitySucc alpha i hsucc).1.parabolicWeight ≤ M + 1)
-    (htime : 0 < (velocitySucc alpha i hsucc).1.timeOrder) :
-    HasWeakVelocityPartialDerivOn V i
-      (canonicalRepresentative hM D H W alpha)
-      (canonicalRepresentative hM D H W (velocitySucc alpha i hsucc)) := by
-  have halphaWeight : alpha.1.parabolicWeight = M + 1 := by
-    rw [parabolicWeight_velocitySucc] at htarget
-    omega
-  have halphaLe : alpha.1.parabolicWeight ≤ M + 1 := by omega
-  have halphaTime : 0 < alpha.1.timeOrder := by
-    rw [timeOrder_velocitySucc] at htime
-    exact htime
-  let gamma : ParabolicDerivativeIndex d (M + 1) :=
-    ⟨TimeVelocityMultiIndex.ofTimeVelocity
-      (alpha.1.timeOrder - 1) alpha.1.velocity, by
-      change 2 * (alpha.1.timeOrder - 1) + alpha.1.velocity.order ≤ M + 1
-      change 2 * alpha.1.timeOrder + alpha.1.velocity.order = M + 1 at halphaWeight
-      omega⟩
-  have hgammaTime : gamma.1.parabolicWeight + 2 ≤ M + 1 := by
-    dsimp only [gamma]
-    simp only [TimeVelocityMultiIndex.parabolicWeight_ofTimeVelocity,
-      VelocityMultiIndex.parabolicWeight]
-    change 2 * alpha.1.timeOrder + alpha.1.velocity.order = M + 1 at halphaWeight
-    omega
-  have hgammaVelocity : gamma.1.parabolicWeight + 1 ≤ M + 1 := by omega
-  let beta : ParabolicDerivativeIndex d M :=
-    restrictLE (velocitySucc gamma i hgammaVelocity) (by
-      rw [parabolicWeight_velocitySucc]
-      omega)
-  have htimeLeg : HasWeakTimeDerivOn V (D.representative gamma)
-      (D.representative (restrictLE alpha halphaLe)) := by
-    have h := D.hasWeakTimeSucc gamma hgammaTime
-    have heq : timeSucc gamma hgammaTime = restrictLE alpha halphaLe := by
-      apply Subtype.ext
-      conv_rhs => rw [coe_restrictLE,
-        ← TimeVelocityMultiIndex.ofTimeVelocity_timeOrder_velocity alpha.1]
-      funext c
-      rcases c with ⟨⟩ | k
-      · simp [gamma, timeSucc, TimeVelocityMultiIndex.ofTimeVelocity,
-          TimeVelocityMultiIndex.timeOrder, timeCoord]
-        exact Nat.sub_add_cancel halphaTime
-      · simp [gamma, timeSucc, TimeVelocityMultiIndex.ofTimeVelocity,
-          TimeVelocityMultiIndex.velocity, velocityCoord]
-    rwa [heq] at h
-  have hvelocityLeg : HasWeakVelocityPartialDerivOn V i
-      (D.representative gamma)
-      (D.representative (castLE (Nat.le_succ M) beta)) := by
-    have h := D.hasWeakVelocitySucc gamma i hgammaVelocity
-    have heq : velocitySucc gamma i hgammaVelocity =
-        castLE (Nat.le_succ M) beta := by
-      apply Subtype.ext
-      rfl
-    rwa [heq] at h
-  have hmixed : HasWeakVelocityPartialDerivOn V i
-      (D.representative (restrictLE alpha halphaLe)) (W beta) :=
-    hasWeakVelocityPartialDerivOn_of_hasWeakTimeDerivOn_velocityDeriv i
-      htimeLeg hvelocityLeg (hWweak beta)
-  rw [canonicalRepresentative, dif_pos halphaLe,
-    canonicalRepresentative_time_top hM D H W _ htarget htime]
-  have hpred : timePredecessor (velocitySucc alpha i hsucc) htime
-        (weight_eq_add_two_of_not_le_add_one _ htarget) = beta := by
-    apply Subtype.ext
-    dsimp only [beta, gamma]
-    rw [coe_restrictLE]
-    funext c
-    rcases c with ⟨⟩ | k
-    · simp [timePredecessor, velocitySucc,
-        TimeVelocityMultiIndex.ofTimeVelocity,
-        TimeVelocityMultiIndex.timeOrder, timeCoord]
-    · simp [timePredecessor, velocitySucc,
-        TimeVelocityMultiIndex.ofTimeVelocity,
-        TimeVelocityMultiIndex.velocity, velocityCoord]
-  rwa [hpred]
-
-/-- Coherence of a velocity edge into a pure-spatial exact-top index.  A
-noncanonical final direction is reconciled with the canonical Hessian entry by
-commuting the two weak velocity derivatives from their common predecessor. -/
 private theorem canonicalRepresentative_hasWeakVelocitySucc_pure_spatial_top
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d M } (hM : 1 ≤ M) {V u}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -642,19 +399,40 @@ private theorem canonicalRepresentative_hasWeakVelocitySucc_pure_spatial_top
       (canonicalRepresentative hM D H W alpha)
       (canonicalRepresentative hM D H W (velocitySucc alpha k hsucc)) := by
   let tau := velocitySucc alpha k hsucc
-  have htauWeight : tau.1.parabolicWeight = M + 2 :=
+  have htauWeight :=
     weight_eq_add_two_of_not_le_add_one tau htarget
   have halphaWeight : alpha.1.parabolicWeight = M + 1 := by
     dsimp only [tau] at htauWeight
     rw [parabolicWeight_velocitySucc] at htauWeight
     omega
   have halphaLe : alpha.1.parabolicWeight ≤ M + 1 := by omega
-  have htauZero : tau.1.timeOrder = 0 := htime
+  have htauZero := htime
   let beta := pureVelocityPredecessor hM tau htauZero htauWeight
   let j := secondSpatialCoordinate hM tau htauZero htauWeight
   let i := firstSpatialCoordinate hM tau htauZero htauWeight
-  have hbetaWeight : beta.1.parabolicWeight = M :=
-    pureVelocityPredecessor_weight hM tau htauZero htauWeight
+  have hbetaWeight : (pureVelocityPredecessor hM tau htauZero htauWeight).1.parabolicWeight = M := by
+      let i := firstSpatialCoordinate hM tau htauZero htauWeight
+      let afterI := decrementVelocity tau.1.velocity i
+      let j := secondSpatialCoordinate hM tau htauZero htauWeight
+      let afterJ := decrementVelocity afterI j
+      have hi : 0 < tau.1.velocity i := supportedCoordinate_pos _ _
+      have hI : afterI.order + 1 = tau.1.velocity.order :=
+        decrementVelocity_order_add_one _ _ hi
+      have hremaining : 0 < afterI.order := by
+        have htwo := two_le_velocity_order_of_top hM tau htauZero htauWeight
+        omega
+      have hj : 0 < afterI j := supportedCoordinate_pos _ hremaining
+      have hJ : afterJ.order + 1 = afterI.order :=
+        decrementVelocity_order_add_one _ _ hj
+      simp only [pureVelocityPredecessor, TimeVelocityMultiIndex.parabolicWeight_ofTimeVelocity,
+        VelocityMultiIndex.parabolicWeight]
+      norm_num
+      change afterJ.order = M
+      have htop := velocity_order_eq_of_timeOrder_eq_zero tau htauZero htauWeight
+      omega
+
+    /- Adding back the second-selected and then first-selected velocity units
+    recovers the original pure-spatial top index, with the public `j`, `i` order. -/
   have hreconstruct : tau =
       sourceVelocityTwo (L := M + 2) (by omega) beta j i :=
     (sourceVelocityTwo_pureVelocityPredecessor hM tau htauZero htauWeight).symm
@@ -673,9 +451,79 @@ private theorem canonicalRepresentative_hasWeakVelocitySucc_pure_spatial_top
       exact add_right_cancel hraw
     rw [hsource]
     simpa only [hki] using hHweak beta j i
-  · obtain ⟨rho, hrhoI, hrhoK⟩ :=
-      exists_pureSpatial_velocityCommonRoot alpha beta j i k hbetaWeight
-        hsucc hreconstruct hki
+  · obtain ⟨rho, hrhoI, hrhoK⟩ : ∃ rho : ParabolicDerivativeIndex d M,
+      rho.1 + Pi.single (velocityCoord i) 1 = alpha.1 ∧
+        rho.1 + Pi.single (velocityCoord k) 1 =
+          beta.1 + Pi.single (velocityCoord j) 1 := by
+          classical
+          have hsuccRaw := coe_velocitySucc_eq_add_single alpha k hsucc
+          have hraw : alpha.1 + Pi.single (velocityCoord k) 1 =
+              beta.1 + Pi.single (velocityCoord j) 1 +
+                Pi.single (velocityCoord i) 1 := by
+            have := congrArg Subtype.val hreconstruct
+            rw [hsuccRaw] at this
+            simpa only [coe_sourceVelocityTwo] using this
+          have hpos : 0 < alpha.1.velocity i := by
+            have hi := congrFun hraw (velocityCoord i)
+            have hsingleK :
+                (Pi.single (velocityCoord k) 1 : TimeVelocityCoord d → ℕ) (velocityCoord i) = 0 := by
+              rw [Pi.single_eq_of_ne]
+              exact fun hik => hki (Sum.inr.inj hik.symm)
+            have hsingleI :
+                (Pi.single (velocityCoord i) 1 : TimeVelocityCoord d → ℕ) (velocityCoord i) = 1 := by
+              exact Pi.single_eq_same _ _
+            simp only [Pi.add_apply] at hi
+            rw [hsingleK, hsingleI] at hi
+            simp only [add_zero] at hi
+            change alpha.1.velocity i =
+              beta.1.velocity i +
+                (Pi.single (velocityCoord j) 1 : TimeVelocityCoord d → ℕ) (velocityCoord i) + 1 at hi
+            omega
+          let rhoRaw : TimeVelocityMultiIndex d :=
+            TimeVelocityMultiIndex.ofTimeVelocity alpha.1.timeOrder
+              (decrementVelocity alpha.1.velocity i)
+          have hrhoWeight : rhoRaw.parabolicWeight ≤ M := by
+            have hdec := decrementVelocity_order_add_one alpha.1.velocity i hpos
+            have halphaWeight : alpha.1.parabolicWeight = M + 1 := by
+              have hw := congrArg TimeVelocityMultiIndex.parabolicWeight hraw
+              simp only [TimeVelocityMultiIndex.parabolicWeight_add,
+                TimeVelocityMultiIndex.parabolicWeight_single_velocity] at hw
+              rw [hbetaWeight] at hw
+              omega
+            dsimp only [rhoRaw]
+            simp only [TimeVelocityMultiIndex.parabolicWeight_ofTimeVelocity,
+              VelocityMultiIndex.parabolicWeight]
+            unfold TimeVelocityMultiIndex.parabolicWeight
+              VelocityMultiIndex.parabolicWeight at halphaWeight
+            omega
+          let rho : ParabolicDerivativeIndex d M := ⟨rhoRaw, hrhoWeight⟩
+          have hrhoAddI : rho.1 + Pi.single (velocityCoord i) 1 = alpha.1 := by
+            funext c
+            rcases c with ⟨⟩ | ell
+            · change alpha.1.timeOrder + 0 = alpha.1.timeOrder
+              omega
+            · have h := congrFun (decrementVelocity_add_single alpha.1.velocity i hpos) ell
+              simpa [rho, rhoRaw, TimeVelocityMultiIndex.ofTimeVelocity,
+                velocityCoord, Pi.single_apply, TimeVelocityMultiIndex.velocity] using h
+          have hrhoAddK : rho.1 + Pi.single (velocityCoord k) 1 =
+              beta.1 + Pi.single (velocityCoord j) 1 := by
+            apply add_right_cancel (b := Pi.single (velocityCoord i) 1)
+            calc
+              (rho.1 + Pi.single (velocityCoord k) 1) +
+                  Pi.single (velocityCoord i) 1 =
+                  (rho.1 + Pi.single (velocityCoord i) 1) +
+                    Pi.single (velocityCoord k) 1 := by
+                      simp only [add_assoc]
+                      rw [add_comm (Pi.single (velocityCoord k) 1)
+                        (Pi.single (velocityCoord i) 1)]
+              _ = alpha.1 + Pi.single (velocityCoord k) 1 := by rw [hrhoAddI]
+              _ = (beta.1 + Pi.single (velocityCoord j) 1) +
+                  Pi.single (velocityCoord i) 1 := hraw
+          exact ⟨rho, hrhoAddI, hrhoAddK⟩
+
+        /- Coherence of a velocity edge into an exact top index carrying a time
+        derivative.  Both presentations descend from the index obtained by removing
+        that time derivative before adjoining the displayed velocity coordinate. -/
     have hrhoIIndex :
         velocitySucc (castLE (Nat.le_succ M) rho) i (by
           change rho.1.parabolicWeight + 1 ≤ M + 1
@@ -701,8 +549,7 @@ private theorem canonicalRepresentative_hasWeakVelocitySucc_pure_spatial_top
     have huk := D.hasWeakVelocitySucc (castLE (Nat.le_succ M) rho) k (by
       change rho.1.parabolicWeight + 1 ≤ M + 1
       omega)
-    have hcross : (fun z => H z rho i k) =ᵐ[timeVelocityVolumeOn V]
-        (fun z => H z beta j i) :=
+    have hcross :=
       HasWeakVelocityPartialDerivOn.cross_ae_eq_of_memLp hVopen i k
         (D.representative (castLE (Nat.le_succ M) rho))
         (D.representative (velocitySucc (castLE (Nat.le_succ M) rho) i (by
@@ -719,8 +566,7 @@ private theorem canonicalRepresentative_hasWeakVelocitySucc_pure_spatial_top
     exact halt.congr_ae (Filter.EventuallyEq.rfl) hcross
 
 private theorem canonicalRepresentative_hasWeakVelocitySucc
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d M } (hM : 1 ≤ M) {V u}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -741,20 +587,106 @@ private theorem canonicalRepresentative_hasWeakVelocitySucc
       (canonicalRepresentative hM D H W (velocitySucc alpha i hsucc)) := by
   by_cases htarget :
       (velocitySucc alpha i hsucc).1.parabolicWeight ≤ M + 1
-  · exact canonicalRepresentative_hasWeakVelocitySucc_inherited
-      hM D H W alpha i hsucc htarget
+  ·
+    rw [parabolicWeight_velocitySucc] at htarget
+    have halpha : alpha.1.parabolicWeight ≤ M + 1 := by omega
+    rw [canonicalRepresentative, dif_pos halpha,
+      canonicalRepresentative, dif_pos (by
+        rw [parabolicWeight_velocitySucc]
+        exact htarget)]
+    have hold : (restrictLE alpha halpha).1.parabolicWeight + 1 ≤ M + 1 := by
+      rw [coe_restrictLE]
+      exact htarget
+    have heq : restrictLE (velocitySucc alpha i hsucc) (by
+          rw [parabolicWeight_velocitySucc]
+          exact htarget) =
+        velocitySucc (restrictLE alpha halpha) i hold := by
+      apply Subtype.ext
+      rfl
+    rw [heq]
+    exact D.hasWeakVelocitySucc _ i hold
   · by_cases htime : 0 < (velocitySucc alpha i hsucc).1.timeOrder
-    · exact canonicalRepresentative_hasWeakVelocitySucc_time_top
-        hM D H W hWweak alpha i hsucc htarget htime
+    ·
+        have halphaWeight : alpha.1.parabolicWeight = M + 1 := by
+          rw [parabolicWeight_velocitySucc] at htarget
+          omega
+        have halphaLe : alpha.1.parabolicWeight ≤ M + 1 := by omega
+        have halphaTime : 0 < alpha.1.timeOrder := by
+          rw [timeOrder_velocitySucc] at htime
+          exact htime
+        let gamma : ParabolicDerivativeIndex d (M + 1) :=
+          ⟨TimeVelocityMultiIndex.ofTimeVelocity
+            (alpha.1.timeOrder - 1) alpha.1.velocity, by
+            change 2 * (alpha.1.timeOrder - 1) + alpha.1.velocity.order ≤ M + 1
+            change 2 * alpha.1.timeOrder + alpha.1.velocity.order = M + 1 at halphaWeight
+            omega⟩
+        have hgammaTime : gamma.1.parabolicWeight + 2 ≤ M + 1 := by
+          dsimp only [gamma]
+          simp only [TimeVelocityMultiIndex.parabolicWeight_ofTimeVelocity,
+            VelocityMultiIndex.parabolicWeight]
+          change 2 * alpha.1.timeOrder + alpha.1.velocity.order = M + 1 at halphaWeight
+          omega
+        have hgammaVelocity : gamma.1.parabolicWeight + 1 ≤ M + 1 := by omega
+        let beta : ParabolicDerivativeIndex d M :=
+          restrictLE (velocitySucc gamma i hgammaVelocity) (by
+            rw [parabolicWeight_velocitySucc]
+            omega)
+        have htimeLeg : HasWeakTimeDerivOn V (D.representative gamma)
+            (D.representative (restrictLE alpha halphaLe)) := by
+          have h := D.hasWeakTimeSucc gamma hgammaTime
+          have heq : timeSucc gamma hgammaTime = restrictLE alpha halphaLe := by
+            apply Subtype.ext
+            conv_rhs => rw [coe_restrictLE,
+              ← TimeVelocityMultiIndex.ofTimeVelocity_timeOrder_velocity alpha.1]
+            funext c
+            rcases c with ⟨⟩ | k
+            · simp [gamma, timeSucc, TimeVelocityMultiIndex.ofTimeVelocity,
+                TimeVelocityMultiIndex.timeOrder, timeCoord]
+              exact Nat.sub_add_cancel halphaTime
+            · simp [gamma, timeSucc, TimeVelocityMultiIndex.ofTimeVelocity,
+                TimeVelocityMultiIndex.velocity, velocityCoord]
+          rwa [heq] at h
+        have hvelocityLeg : HasWeakVelocityPartialDerivOn V i
+            (D.representative gamma)
+            (D.representative (castLE (Nat.le_succ M) beta)) := by
+          have h := D.hasWeakVelocitySucc gamma i hgammaVelocity
+          have heq : velocitySucc gamma i hgammaVelocity =
+              castLE (Nat.le_succ M) beta := by
+            apply Subtype.ext
+            rfl
+          rwa [heq] at h
+        have hmixed : HasWeakVelocityPartialDerivOn V i
+            (D.representative (restrictLE alpha halphaLe)) (W beta) :=
+          hasWeakVelocityPartialDerivOn_of_hasWeakTimeDerivOn_velocityDeriv i
+            htimeLeg hvelocityLeg (hWweak beta)
+        rw [canonicalRepresentative, dif_pos halphaLe,
+          canonicalRepresentative_time_top hM D H W _ htarget htime]
+        have hpred : timePredecessor (velocitySucc alpha i hsucc) htime
+              (weight_eq_add_two_of_not_le_add_one _ htarget) = beta := by
+          apply Subtype.ext
+          dsimp only [beta, gamma]
+          rw [coe_restrictLE]
+          funext c
+          rcases c with ⟨⟩ | k
+          · simp [timePredecessor, velocitySucc,
+              TimeVelocityMultiIndex.ofTimeVelocity,
+              TimeVelocityMultiIndex.timeOrder, timeCoord]
+          · simp [timePredecessor, velocitySucc,
+              TimeVelocityMultiIndex.ofTimeVelocity,
+              TimeVelocityMultiIndex.velocity, velocityCoord]
+        rwa [hpred]
+
+      /- Coherence of a velocity edge into a pure-spatial exact-top index.  A
+      noncanonical final direction is reconciled with the canonical Hessian entry by
+      commuting the two weak velocity derivatives from their common predecessor. -/
     · exact canonicalRepresentative_hasWeakVelocitySucc_pure_spatial_top
         hM hVopen D H W hHmem hHweak alpha i hsucc htarget
           (Nat.eq_zero_of_not_pos htime)
 
-/-- The coherent add-two family assembled from the inherited family, supplied
+/- The coherent add-two family assembled from the inherited family, supplied
 Hessian representatives, and supplied time-successor representatives. -/
 private noncomputable def canonicalFamily
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d M } (hM : 1 ≤ M) {V u}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -778,8 +710,7 @@ private noncomputable def canonicalFamily
     hM hVopen D H W hHmem hHweak hWweak
 
 @[simp] private theorem canonicalFamily_representative
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d M } (hM : 1 ≤ M) {V u}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -799,8 +730,7 @@ private noncomputable def canonicalFamily
       canonicalRepresentative hM D H W alpha := rfl
 
 private theorem canonicalFamily_representative_inherited
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d M } (hM : 1 ≤ M) {V u}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -817,12 +747,10 @@ private theorem canonicalFamily_representative_inherited
       (fun z => D.representative (castLE (Nat.le_succ M) beta) z) (W beta))
     (alpha : ParabolicDerivativeIndex d (M + 1)) :
     (canonicalFamily hM hVopen D H W hHmem hHweak hWmem hWweak).representative
-        (castLE (by omega) alpha) = D.representative alpha := by
-  exact canonicalRepresentative_inherited hM D H W alpha
+        (castLE (by omega) alpha) = D.representative alpha :=  canonicalRepresentative_inherited hM D H W alpha
 
 private theorem canonicalFamily_representative_sourceTime_ae
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hV : IsOpen V)
+    {d M } (hM : 1 ≤ M) {V u} (hV : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
     (W : ParabolicDerivativeIndex d M → TimeVelocity d → ℝ)
@@ -861,8 +789,7 @@ private theorem canonicalFamily_representative_sourceTime_ae
     (F.memLp _) (hWmem beta) hfirst (hWweak beta)
 
 private theorem canonicalFamily_representative_sourceVelocityTwo_ae
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hV : IsOpen V)
+    {d M } (hM : 1 ≤ M) {V u} (hV : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
     (W : ParabolicDerivativeIndex d M → TimeVelocity d → ℝ)
@@ -905,8 +832,7 @@ private theorem canonicalFamily_representative_sourceVelocityTwo_ae
     (F.memLp _) (hHmem beta j i) hfirst (hHweak beta j i)
 
 private theorem canonicalFamily_component_sq_le_total
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hV : IsOpen V)
+    {d M } (hM : 1 ≤ M) {V u} (hV : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
     (W : ParabolicDerivativeIndex d M → TimeVelocity d → ℝ)
@@ -974,53 +900,10 @@ private theorem canonicalFamily_component_sq_le_total
           (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D)).trans
         (le_add_of_nonneg_right (Finset.sum_nonneg fun _ _ => sq_nonneg _)))
 
-private theorem canonicalFamily_squaredL2Norm_le
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hV : IsOpen V)
-    (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
-    (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
-    (W : ParabolicDerivativeIndex d M → TimeVelocity d → ℝ)
-    (hHmem : ∀ beta j i, ParabolicMemLpOn V 2 (fun z => H z beta j i))
-    (hHweak : ∀ beta j i, HasWeakVelocityPartialDerivOn V i
-      (fun z => D.representative
-        (velocitySucc (castLE (Nat.le_succ M) beta) j (by
-          rw [coe_castLE]
-          omega)) z)
-      (fun z => H z beta j i))
-    (hWmem : ∀ beta, ParabolicMemLpOn V 2 (W beta))
-    (hWweak : ∀ beta, HasWeakTimeDerivOn V
-      (fun z => D.representative (castLE (Nat.le_succ M) beta) z) (W beta)) :
-    ParabolicWeakDerivativeFamily.squaredL2Norm
-      (canonicalFamily hM hV D H W hHmem hHweak hWmem hWweak) ≤
-      (Fintype.card (ParabolicDerivativeIndex d (M + 2)) : ℝ) *
-        (ParabolicWeakDerivativeFamily.squaredL2Norm D +
-          (∑ beta : ParabolicDerivativeIndex d M, ∑ j : Fin d, ∑ i : Fin d,
-            (ENNReal.toReal (eLpNorm (fun z => H z beta j i) 2
-              (timeVelocityVolumeOn V))) ^ 2) +
-          ∑ beta : ParabolicDerivativeIndex d M,
-            (ENNReal.toReal (eLpNorm (W beta) 2 (timeVelocityVolumeOn V))) ^ 2) := by
-  change (∑ alpha : ParabolicDerivativeIndex d (M + 2),
-    (ENNReal.toReal (eLpNorm
-      ((canonicalFamily hM hV D H W hHmem hHweak hWmem hWweak).representative alpha)
-      2 (timeVelocityVolumeOn V))) ^ 2) ≤ _
-  calc
-    _ ≤ ∑ _alpha : ParabolicDerivativeIndex d (M + 2),
-        (ParabolicWeakDerivativeFamily.squaredL2Norm D +
-          (∑ beta : ParabolicDerivativeIndex d M, ∑ j : Fin d, ∑ i : Fin d,
-            (ENNReal.toReal (eLpNorm (fun z => H z beta j i) 2
-              (timeVelocityVolumeOn V))) ^ 2) +
-          ∑ beta : ParabolicDerivativeIndex d M,
-            (ENNReal.toReal (eLpNorm (W beta) 2 (timeVelocityVolumeOn V))) ^ 2) :=
-      Finset.sum_le_sum fun alpha _ => canonicalFamily_component_sq_le_total
-        hM hV D H W hHmem hHweak hWmem hWweak alpha
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-
-/-- A coherent weak family extends its ambient parabolic bound from `M + 1`
-to `M + 2` using supplied representatives two weights above each `beta`. -/
 theorem exists_parabolicWeakDerivativeFamily_add_two_of_hessian_timeSuccessors
     (d M : ℕ) (hM : 1 ≤ M)
-    {V : Set (TimeVelocity d)} (hV : IsOpen V)
-    {u : TimeVelocity d → ℝ}
+    {V } (hV : IsOpen V)
+    {u }
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M →
       Fin d → Fin d → ℝ)
@@ -1074,8 +957,21 @@ theorem exists_parabolicWeakDerivativeFamily_add_two_of_hessian_timeSuccessors
       hM hV D H W hHmem hHweak hWmem hWweak
   · exact canonicalFamily_representative_sourceVelocityTwo_ae
       hM hV D H W hHmem hHweak hWmem hWweak
-  · exact canonicalFamily_squaredL2Norm_le
-      hM hV D H W hHmem hHweak hWmem hWweak
+  ·
+      calc
+        _ ≤ ∑ _alpha : ParabolicDerivativeIndex d (M + 2),
+            (ParabolicWeakDerivativeFamily.squaredL2Norm D +
+              (∑ beta : ParabolicDerivativeIndex d M, ∑ j : Fin d, ∑ i : Fin d,
+                (ENNReal.toReal (eLpNorm (fun z => H z beta j i) 2
+                  (timeVelocityVolumeOn V))) ^ 2) +
+              ∑ beta : ParabolicDerivativeIndex d M,
+                (ENNReal.toReal (eLpNorm (W beta) 2 (timeVelocityVolumeOn V))) ^ 2) :=
+          Finset.sum_le_sum fun alpha _ => canonicalFamily_component_sq_le_total
+            hM hV D H W hHmem hHweak hWmem hWweak alpha
+        _ = _ := by simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+
+    /- A coherent weak family extends its ambient parabolic bound from `M + 1`
+    to `M + 2` using supplied representatives two weights above each `beta`. -/
 
 end ParabolicDerivativeIndex
 

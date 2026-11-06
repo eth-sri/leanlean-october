@@ -42,8 +42,8 @@ theorem bellman_exists_test_primitive (φ : ℝ → ℝ)
       · exact hm
       · intro x hx
         have hs := subset_tsupport φ hx
-        have hl : a₀ ≤ x := hmin hs
-        have hr : x ≤ b₀ := hmax hs
+        have hl := hmin hs
+        have hr := hmax hs
         dsimp [a, b] at *
         constructor <;> linarith
     have hsupp : Function.support ψ ⊆ Icc a b := by
@@ -54,7 +54,7 @@ theorem bellman_exists_test_primitive (φ : ℝ → ℝ)
           by_contra hn
           exact ht (hright t (lt_of_not_ge hn))
         exact ⟨hta, htb⟩
-    have hts : tsupport ψ ⊆ Icc a b := closure_minimal hsupp isClosed_Icc
+    have hts := closure_minimal hsupp isClosed_Icc
     have hderiv : deriv ψ = φ := by
       funext t
       exact hφ.continuous.deriv_integral _ a t

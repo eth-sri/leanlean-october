@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSlice
+import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelDefs
 
 /-!
 # Continuity of the parabolic Duhamel potential and its traces
@@ -25,7 +26,7 @@ open scoped ENNReal ProbabilityTheory Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 variable (K : MovingFiberKernel Ω γ)
 
-/-- On the closed cylinder the integrand is the classical slice solution. -/
+/- On the closed cylinder the integrand is the classical slice solution. -/
 theorem integrand_eq_slice_solution (hΩa : IsAdmissibleEvolutionDomain Ω)
     (hΩ : MeasurableSet Ω) (g : TimeVelocity d → ℝ) (r : ℝ) (V : TimeVelocity d → ℝ)
     (hlat : ∀ p ∈ ParabolicProbe.scalarLateralFrontier Ω γ r, V p = 0)
@@ -42,9 +43,9 @@ theorem integrand_eq_slice_solution (hΩa : IsAdmissibleEvolutionDomain Ω)
       exact ⟨hp.2, hmem⟩
     exact (hlat p ⟨hp.1, hfr⟩).symm
 
-/-- The slice integrand is continuous on the closed cylinder, and equals the classical
+/- The slice integrand is continuous on the closed cylinder, and equals the classical
 solution there, which is smooth in the open cylinder and has the stated trace data. -/
-theorem slice_regularity {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
+theorem slice_regularity {B } (hΩa : IsAdmissibleEvolutionDomain Ω)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
     (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
@@ -59,17 +60,39 @@ theorem slice_regularity {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionD
       ∀ p ∈ sliceClosedCylinder Ω γ r,
         parabolicDuhamelIntegrand K (measurableSet_of_isAdmissibleEvolutionDomain hΩa) g p r
           = V p := by
-  obtain ⟨V, ⟨hbd, hcont, hsm, heq, hterm, hlat⟩, hVs⟩ :=
-    exists_slice_solution K (measurableSet_of_isAdmissibleEvolutionDomain hΩa) hP g hgs hgc T
-      hgU r
+  obtain ⟨V, ⟨hbd, hcont, hsm, heq, hterm, hlat⟩, hVs⟩ : ∃ V : TimeVelocity d → ℝ, ParabolicProbe.IsClassicalScalarTerminalSolution Ω γ (zIndependentCoefficient B) r (sliceBorel g hgs.continuous hgc r) V ∧ ∀ (s : ℝ) (hsr : s ≤ r) (y : EvolutionPosition Ω γ s), V (s, y.1) = parabolicSourceIntegral K (measurableSet_of_isAdmissibleEvolutionDomain hΩa) g s r hsr y := by
+    let hΩ := (measurableSet_of_isAdmissibleEvolutionDomain hΩa)
+    obtain ⟨Q, -, -, -, -, -, h6, -, -, -, h10⟩ := hP (fun σ y z z' => rfl)
+    have _h_inl_17 : ParabolicProbe.IsSmoothCompactScalarTerminalDatum Ω γ r (sliceBorel g hgs.continuous hgc r) := by
+      have hsub : tsupport (fun v : PDE.Vec d => g (r, v)) ⊆
+          Prod.snd '' (tsupport g ∩ Prod.fst ⁻¹' {r}) := by
+        apply closure_minimal
+        · intro v hv
+          exact ⟨(r, v), ⟨subset_closure hv, rfl⟩, rfl⟩
+        · exact ((hgc.inter_right (isClosed_eq continuous_fst continuous_const)).image
+            continuous_snd).isClosed
+      refine ⟨hgs.comp (contDiff_const.prodMk contDiff_id), ?_, ?_⟩
+      · exact ((hgc.inter_right (isClosed_eq continuous_fst continuous_const)).image
+          continuous_snd).of_isClosed_subset (isClosed_tsupport _) hsub
+      · intro v hv
+        obtain ⟨p, ⟨hp1, hp2⟩, rfl⟩ := hsub hv
+        have : p = (r, p.2) := Prod.ext hp2 rfl
+        have h := (hgU hp1).2
+        rw [hp2] at h
+        exact h
+    obtain ⟨V, hV, hVQ, -⟩ := h10 r (sliceBorel g hgs.continuous hgc r)
+      _h_inl_17
+    refine ⟨V, hV, fun s hsr y => ?_⟩
+    rw [hVQ s hsr y, h6 s r hsr y (terminalPositionDatum (sliceBorel g hgs.continuous hgc r))]
+    rfl
   refine ⟨V, hbd, hcont, hsm, heq, fun v hv => ?_,
     integrand_eq_slice_solution K hΩa _ g r V hlat hVs⟩
   exact hterm (r, v) ⟨rfl, hv⟩
 
-/-- A compactly supported source vanishes at all times outside a bounded interval. -/
+/- A compactly supported source vanishes at all times outside a bounded interval. -/
 theorem exists_time_range (g : TimeVelocity d → ℝ) (hgc : HasCompactSupport g) :
     ∃ a b : ℝ, ∀ r, r ∉ Icc a b → ∀ v, g (r, v) = 0 := by
-  have hK : IsCompact (Prod.fst '' tsupport g) := hgc.image continuous_fst
+  have hK := hgc.image continuous_fst
   obtain ⟨b, hb⟩ := hK.bddAbove
   obtain ⟨a, ha⟩ := hK.bddBelow
   refine ⟨a, b, fun r hr v => ?_⟩
@@ -77,7 +100,7 @@ theorem exists_time_range (g : TimeVelocity d → ℝ) (hgc : HasCompactSupport 
   intro hmem
   exact hr ⟨ha ⟨_, hmem, rfl⟩, hb ⟨_, hmem, rfl⟩⟩
 
-/-- **Continuity of the Duhamel potential** on the closed region
+/- **Continuity of the Duhamel potential** on the closed region
 `{s ≤ T, v ∈ closure Ω_s}`, by dominated convergence in the source time. -/
 theorem continuousWithinAt_duhamelPotential {B : CoefficientField d}
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hγ : Continuous γ)
@@ -164,7 +187,7 @@ theorem continuousWithinAt_duhamelPotential {B : CoefficientField d}
     (Eventually.of_forall fun p => (hFm p).aestronglyMeasurable)
     (Eventually.of_forall fun p => Eventually.of_forall fun r => hbd p r) hint hcont
 
-/-- Continuity of the Duhamel potential on the closed region. -/
+/- Continuity of the Duhamel potential on the closed region. -/
 theorem continuousOn_duhamelPotential {B : CoefficientField d}
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hγ : Continuous γ)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ

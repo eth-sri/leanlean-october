@@ -47,7 +47,7 @@ private theorem abs_spatialDifferenceQuotient_le_of_fderiv_bound
     exact hCnonneg
   · have hsegment : [z -[ℝ] spatialShift k h z] ⊆ Metric.cthickening δ S :=
       segment_subset_cthickening_of_spatialShift hz hh
-    have hsegmentU : [z -[ℝ] spatialShift k h z] ⊆ U := hsegment.trans hδU
+    have hsegmentU := hsegment.trans hδU
     have hdifferentiable : ∀ w ∈ [z -[ℝ] spatialShift k h z],
         DifferentiableAt ℝ f w := by
       intro w hw
@@ -55,8 +55,7 @@ private theorem abs_spatialDifferenceQuotient_le_of_fderiv_bound
     have hbound : ∀ w ∈ [z -[ℝ] spatialShift k h z], ‖fderiv ℝ f w‖ ≤ C := by
       intro w hw
       exact hC w (hsegment hw)
-    have hdiff : ‖f (spatialShift k h z) - f z‖ ≤
-        C * ‖spatialShift k h z - z‖ :=
+    have hdiff :=
       (convex_segment z (spatialShift k h z)).norm_image_sub_le_of_norm_fderiv_le
         hdifferentiable hbound (left_mem_segment ℝ z (spatialShift k h z))
         (right_mem_segment ℝ z (spatialShift k h z))

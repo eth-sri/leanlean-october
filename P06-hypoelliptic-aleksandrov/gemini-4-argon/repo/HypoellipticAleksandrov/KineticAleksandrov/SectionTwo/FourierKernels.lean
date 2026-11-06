@@ -21,8 +21,7 @@ theorem measurable_fourierProjection_apply {d : ℕ} {Ω : Set (PDE.Vec d)}
       fourierPhase ξ p.1.1.2.2.2 p.2) := by
     unfold fourierPhase PDE.vecDot
     fun_prop
-  have hi := (hm.indicator (measurable_snd (hE.prod MeasurableSet.univ))).stronglyMeasurable
-  have h := hi.integral_kernel_prod_right' (κ := K.master)
+  have h := ((hm.indicator (measurable_snd (hE.prod MeasurableSet.univ))).stronglyMeasurable).integral_kernel_prod_right' (κ := K.master)
   convert h.measurable using 1
   funext q
   rw [fourierProjection_spec K q ξ E hE, ← integral_indicator (hE.prod MeasurableSet.univ)]

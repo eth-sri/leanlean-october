@@ -28,7 +28,7 @@ theorem reverseTimeVolume_isFiniteMeasure (T : ℝ) :
 
 /-- The reverse-time `L²(V)` class represented by `τ ↦ eta τ • v`. -/
 noncomputable def reverseTimeSeparatedVTest
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+    {d } {Ω : Set (PDE.Vec d)} {T : ℝ}
     (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T) (v : H10HilbertGraph hΩ) :
     ReverseTimeL2V hΩ T := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := reverseTimeVolume_isFiniteMeasure T
@@ -41,7 +41,7 @@ noncomputable def reverseTimeSeparatedVTest
 
 /-- The separated reverse-time test has the literal scalar-multiple representative. -/
 theorem ae_reverseTimeSeparatedVTest
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+    {d } {Ω : Set (PDE.Vec d)} {T : ℝ}
     (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T) (v : H10HilbertGraph hΩ) :
     reverseTimeSeparatedVTest hΩ eta v =ᵐ[reverseTimeVolume T]
       fun tau => eta tau • v := by
@@ -73,7 +73,7 @@ theorem tendsto_reverseTimeSeparatedVTest
     Tendsto (fun n => reverseTimeSeparatedVTest hΩ eta (vN n)) atTop
       (𝓝 (reverseTimeSeparatedVTest hΩ eta v)) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := reverseTimeVolume_isFiniteMeasure T
-  let L : H10HilbertGraph hΩ →L[ℝ] ReverseTimeL2V hΩ T :=
+  let L :=
     ((((ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
       H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)).holderL
       (reverseTimeVolume T) (∞ : ℝ≥0∞) (2 : ℝ≥0∞) (2 : ℝ≥0∞)
@@ -84,17 +84,16 @@ theorem tendsto_reverseTimeSeparatedVTest
 
 /-- The continuous `L²(V*)`--`L²(V)` pairing over the reverse-time volume. -/
 noncomputable def reverseTimeDualPairingCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) :
     ReverseTimeL2VStar hΩ T →L[ℝ] ReverseTimeL2V hΩ T →L[ℝ] ℝ :=
-  let pairing : H10HilbertGraphDual hΩ →L[ℝ]
-      H10HilbertGraph hΩ →L[ℝ] ℝ :=
+  let pairing :=
     ContinuousLinearMap.flip (ContinuousLinearMap.apply ℝ ℝ)
   pairing.lpPairing (reverseTimeVolume T) (2 : ℝ≥0∞) (2 : ℝ≥0∞)
 
 /-- The reverse-time dual pairing is the integral of the literal pointwise pairing. -/
 theorem reverseTimeDualPairingCLM_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ)
     (g : ReverseTimeL2VStar hΩ T) (z : ReverseTimeL2V hΩ T) :
     reverseTimeDualPairingCLM hΩ T g z =

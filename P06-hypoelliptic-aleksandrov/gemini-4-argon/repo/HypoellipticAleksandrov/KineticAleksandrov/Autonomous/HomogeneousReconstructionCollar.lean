@@ -29,7 +29,7 @@ theorem reconstructionCollarWeight_nonneg (H : Interval) (δ v : ℝ) :
   add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le
 
 /-- Inside the closed interval each exponential weight is at most one. -/
-theorem reconstructionCollarWeight_le_two (H : Interval) {δ v : ℝ}
+theorem reconstructionCollarWeight_le_two (H : Interval) {δ v }
     (hδ : 0 < δ) (hv : H.lo ≤ v ∧ v ≤ H.hi) :
     reconstructionCollarWeight H δ v ≤ 2 := by
   have hl : Real.exp ((H.lo - v) / δ) ≤ 1 := Real.exp_le_one_iff.mpr
@@ -39,15 +39,13 @@ theorem reconstructionCollarWeight_le_two (H : Interval) {δ v : ℝ}
   exact (add_le_add hl hh).trans_eq (by norm_num)
 
 /-- The collar profile is nonnegative and uniformly small on the closed interval. -/
-theorem reconstructionCollarProfile_bounds (H : Interval) {lam δ v : ℝ}
+theorem reconstructionCollarProfile_bounds (H : Interval) {lam δ v }
     (hlam : 0 < lam) (hδ : 0 < δ) (hv : H.lo ≤ v ∧ v ≤ H.hi) :
     0 ≤ reconstructionCollarProfile H lam δ v ∧
       reconstructionCollarProfile H lam δ v ≤ 2 * δ ^ 2 / lam := by
-  have hc : 0 ≤ δ ^ 2 / lam := div_nonneg (sq_nonneg δ) hlam.le
+  have hc := div_nonneg (sq_nonneg δ) hlam.le
   refine ⟨mul_nonneg hc (sub_nonneg.mpr (reconstructionCollarWeight_le_two H hδ hv)), ?_⟩
-  have h := mul_le_mul_of_nonneg_left
-    (sub_le_self (2 : ℝ) (reconstructionCollarWeight_nonneg H δ v)) hc
-  exact h.trans_eq (by ring)
+  exact (mul_le_mul_of_nonneg_left (sub_le_self (2 : ℝ) (reconstructionCollarWeight_nonneg H δ v)) hc).trans_eq (by ring)
 
 /-- The two exponential collar weights are globally smooth. -/
 theorem reconstructionCollarWeight_smooth (H : Interval) (δ : ℝ) :
@@ -84,13 +82,11 @@ private theorem collar_profile_deriv (H : Interval) (lam δ v : ℝ) :
   ring
 
 /-- The second derivative exactly absorbs the collar weights. -/
-theorem reconstructionCollarProfile_secondDeriv (H : Interval) (lam : ℝ) {δ : ℝ}
+theorem reconstructionCollarProfile_secondDeriv (H : Interval) (lam : ℝ) {δ }
     (hδ : 0 < δ) (v : ℝ) :
     deriv (deriv (reconstructionCollarProfile H lam δ)) v =
       -reconstructionCollarWeight H δ v / lam := by
-  have heq : deriv (reconstructionCollarProfile H lam δ) =
-      fun w => δ ^ 2 / lam *
-        (Real.exp ((H.lo - w) / δ) - Real.exp ((w - H.hi) / δ)) / δ :=
+  have heq :=
     funext (collar_profile_deriv H lam δ)
   rw [heq]
   have h := (((collar_left_deriv H δ v).sub (collar_right_deriv H δ v)).const_mul
@@ -104,9 +100,9 @@ theorem reconstructionCollarProfile_secondDeriv (H : Interval) (lam : ℝ) {δ :
     ring
 
 /-- The actual native collar barrier dominates its positive forcing weight. -/
-theorem reconstructionCollarProfile_operator_le {lam Lam : ℝ}
+theorem reconstructionCollarProfile_operator_le {lam Lam }
     (hlam : 0 < lam) (A : SmoothAutonomous lam Lam) (H : Interval)
-    {δ : ℝ} (hδ : 0 < δ) (p : Point) :
+    {δ } (hδ : 0 < δ) (p : Point) :
     transportedForwardOperator (evolutionCoefficient A.a) (SectionTwo.identityDrift 1)
       (reconstructionProfile (reconstructionCollarProfile H lam δ)) p ≤
         -reconstructionCollarWeight H δ (p.position 0) := by

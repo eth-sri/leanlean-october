@@ -72,21 +72,20 @@ def KineticPoint.homeomorphProd (d : ℕ) :
   (KineticPoint.isometryEquivProd d).toHomeomorph
 
 /-- The time projection is continuous for the standard product topology. -/
-theorem continuous_time {d : ℕ} : Continuous (@KineticPoint.time d) :=
+theorem continuous_time {d } : Continuous (@KineticPoint.time d) :=
   continuous_fst.comp (KineticPoint.homeomorphProd d).continuous
 
 /-- The position projection is continuous for the standard product topology. -/
-theorem continuous_position {d : ℕ} : Continuous (@KineticPoint.position d) :=
+theorem continuous_position {d } : Continuous (@KineticPoint.position d) :=
   continuous_snd.fst.comp (KineticPoint.homeomorphProd d).continuous
 
 /-- The velocity projection is continuous for the standard product topology. -/
-theorem continuous_velocity {d : ℕ} : Continuous (@KineticPoint.velocity d) :=
+theorem continuous_velocity {d } : Continuous (@KineticPoint.velocity d) :=
   continuous_snd.snd.comp (KineticPoint.homeomorphProd d).continuous
 
 /-- Assemble a continuous kinetic point from continuous coordinate functions. -/
 theorem KineticPoint.continuous_mk
-    {α : Type*} [TopologicalSpace α] {d : ℕ}
-    {t : α → ℝ} {x v : α → PDE.Vec d}
+    {α : Type*} [TopologicalSpace α] {d t} {x v : α → PDE.Vec d}
     (ht : Continuous t) (hx : Continuous x) (hv : Continuous v) :
     Continuous (fun a => KineticPoint.mk (t a) (x a) (v a)) :=
   (KineticPoint.homeomorphProd d).symm.continuous.comp (ht.prodMk (hx.prodMk hv))

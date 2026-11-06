@@ -17,7 +17,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open MeasureTheory Set
 
 /-- The density characterization is exactly the slab consumer's predicate. -/
-theorem isOccupationDensity_iff_slabOccupationDensity {d : ℕ} (K : WholeKernel d)
+theorem isOccupationDensity_iff_slabOccupationDensity {d } (K : WholeKernel d)
     (σ₀ T : ℝ) (ρ : Measure (PDE.Vec d)) (g : ℝ × PDE.Vec d → ℝ) :
     IsOccupationDensity K σ₀ T ρ g ↔ Green.SlabOccupationDensity K σ₀ T ρ g := by
   rfl

@@ -21,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
-/-- The shifted positive-part function has Lipschitz constant one. -/
+/- The shifted positive-part function has Lipschitz constant one. -/
 theorem lipschitzWith_max_sub_zero (k : ℝ≥0) :
     LipschitzWith 1 (fun s : ℝ => max (s - (k : ℝ)) 0) := by
   apply LipschitzWith.of_dist_le_mul
@@ -30,32 +30,25 @@ theorem lipschitzWith_max_sub_zero (k : ℝ≥0) :
   simpa only [Real.dist_eq, NNReal.coe_one, one_mul, sub_sub_sub_cancel_right] using
     abs_max_sub_max_le_abs (a - (k : ℝ)) (b - (k : ℝ)) 0
 
-/-- A nonnegative shift sends zero to zero. -/
+/- A nonnegative shift sends zero to zero. -/
 theorem max_sub_zero_at_zero (k : ℝ≥0) :
     max ((0 : ℝ) - (k : ℝ)) 0 = 0 := by
   rw [max_eq_right]
   exact sub_nonpos.mpr k.2
 
-/-- The literal `L²` composition representing the shifted positive part. -/
+/- The literal `L²` composition representing the shifted positive part. -/
 def shiftedPositivePartValue
     (k : ℝ≥0) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
   (lipschitzWith_max_sub_zero k).compLp (max_sub_zero_at_zero k) f
 
-/-- Evaluation of the shifted positive-part `L²` composition. -/
+/- Evaluation of the shifted positive-part `L²` composition. -/
 theorem coeFn_shiftedPositivePartValue
     (k : ℝ≥0) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     shiftedPositivePartValue k f =ᵐ[PDE.volumeOn Ω]
       fun x => max (f x - (k : ℝ)) 0 := by
   simpa only [shiftedPositivePartValue, Function.comp_def] using
     (lipschitzWith_max_sub_zero k).coeFn_compLp (max_sub_zero_at_zero k) f
-
-private theorem norm_shiftedPositivePartValue_le
-    (k : ℝ≥0) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    ‖shiftedPositivePartValue k f‖ ≤ ‖f‖ := by
-  simpa only [shiftedPositivePartValue, NNReal.coe_one, one_mul] using
-    (lipschitzWith_max_sub_zero k).norm_compLp_le
-      (max_sub_zero_at_zero k) f
 
 private def h1FunctionOfH10
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) : PDE.H1Function Ω where
@@ -75,92 +68,6 @@ private def h1FunctionOfH10
       PDE.W1pGraph.constraint_eq_zero
         (PDE.H1HilbertGraph.toH1Graph
           (u : PDE.H1HilbertGraph Ω)) i φ
-
-private theorem h1FunctionOfH10_hasSupportedSmoothApproximation
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
-    Nonempty (h1FunctionOfH10 hΩ u).SupportedSmoothApproximation := by
-  let ug := h10HilbertGraphContinuousLinearEquiv hΩ u
-  rcases PDE.H10Graph.exists_tendsto_smooth hΩ ug with ⟨φ, hφ⟩
-  let w := h1FunctionOfH10 hΩ u
-  have hvalue : Tendsto
-      (fun n => (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.1)
-      atTop (𝓝 (valueCLM hΩ u)) := by
-    simpa only [ug, h10HilbertGraphContinuousLinearEquiv, valueCLM_apply,
-      h1HilbertGraphContinuousLinearEquiv_apply, Function.comp_def,
-      ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans, ContinuousLinearEquiv.ofEq,
-      ContinuousLinearEquiv.ofSubmodule'_apply, PDE.H1HilbertGraph.value,
-      PDE.H1HilbertGraph.gradient, PDE.H1HilbertGraph.toH1Graph] using!
-      ((continuous_fst.comp continuous_subtype_val).tendsto _ |>.comp hφ)
-  have hgradient : Tendsto
-      (fun n => (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2)
-      atTop (𝓝 (gradientCLM hΩ u)) := by
-    simpa only [ug, h10HilbertGraphContinuousLinearEquiv, gradientCLM_apply,
-      h1HilbertGraphContinuousLinearEquiv_apply, Function.comp_def,
-      ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans, ContinuousLinearEquiv.ofEq,
-      ContinuousLinearEquiv.ofSubmodule'_apply, PDE.H1HilbertGraph.value,
-      PDE.H1HilbertGraph.gradient, PDE.H1HilbertGraph.toH1Graph] using!
-      ((continuous_snd.comp continuous_subtype_val).tendsto _ |>.comp hφ)
-  refine ⟨{
-    approx := fun n => (φ n).toFun
-    approx_smooth := fun n => (φ n).contDiff
-    approx_hasCompactSupport := fun n => (φ n).hasCompactSupport
-    approx_tsupport_subset := fun n => (φ n).tsupport_subset
-    tendsto_value := ?_
-    tendsto_grad := ?_ }⟩
-  · exact (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
-      (fun n => (φ n).toFun) (fun n => (φ n).memLp_toFun (2 : ℝ≥0∞))
-      w.toFun w.memL2).mp (by
-        simpa only [w, h1FunctionOfH10,
-          PDE.smoothCompactlySupportedH1Graph,
-          PDE.smoothCompactlySupportedW1pGraph,
-          PDE.W1pFunction.toW1pGraph, PDE.W1pFunction.ofContDiff,
-          Lp.toLp_coeFn, PDE.w1pGraphOfRepresentatives,
-          PDE.weakGradientLpPairOfRepresentatives] using! hvalue)
-  · intro i
-    apply (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
-      (fun n x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i))
-      (fun n => (φ n).memLp_partialDeriv i (2 : ℝ≥0∞))
-      (fun x => w.grad x i) (w.gradMemL2 i)).mp
-    have heval := (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i).continuous.tendsto _ |>.comp hgradient
-    have hseq : ∀ n,
-        PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-            (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2 =
-          ((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
-            (fun x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i)) := by
-      intro n
-      apply Lp.ext
-      filter_upwards [PDE.coeFn_hilbertVectorLpCoord Ω 2 i
-          (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2,
-        PDE.W1pFunction.coeFn_toW1pGraph_snd
-          (PDE.W1pFunction.ofContDiff hΩ
-            ((φ n).contDiff.of_le (by simp)) (φ n).hasCompactSupport 2),
-        ((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).coeFn_toLp] with x hc hg ht
-      have hg' :
-          ⇑(PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2 x =
-            PDE.toHilbertVecField
-              (PDE.W1pFunction.ofContDiff hΩ
-                ((φ n).contDiff.of_le (by simp)) (φ n).hasCompactSupport 2).grad x := by
-        simpa only [PDE.smoothCompactlySupportedH1Graph,
-          PDE.smoothCompactlySupportedW1pGraph] using hg
-      have ht' :
-          ⇑(((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
-            (fun x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i))) x =
-            (fderiv ℝ (φ n).toFun x) (PDE.basisVec i) := by
-        change ⇑(((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
-          ((φ n).partialDeriv i)) x = _
-        exact ht
-      rw [hc, hg', ht']
-      rfl
-    have hlim : PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-          (gradientCLM hΩ u) =
-        (w.gradMemL2 i).toLp (fun x => w.grad x i) := by
-      apply Lp.ext
-      filter_upwards [PDE.coeFn_hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ u),
-        (w.gradMemL2 i).coeFn_toLp] with x hc ht
-      rw [hc, ht]
-      rfl
-    rw [← hlim]
-    simpa only [Function.comp_def, hseq] using heval
 
 private theorem hasWeakGradientOn_of_smooth_approximation
     {f : PDE.Vec d → ℝ} {Du : PDE.Vec d → PDE.Vec d}
@@ -190,85 +97,6 @@ private theorem hasWeakGradientOn_of_smooth_approximation
   · exact hvalue
   · exact hgrad
 
-private theorem exists_shifted_regularization_scale
-    (φ : PDE.Vec d → ℝ) (hφCompact : HasCompactSupport φ)
-    (hφMeas : AEStronglyMeasurable φ (PDE.volumeOn Ω))
-    (k : ℝ≥0) (ε : ℝ) (hε : 0 < ε) :
-    ∃ δ : ℝ, 0 < δ ∧ δ ≤ ε ∧
-      eLpNorm
-          (fun x => PDE.smoothPositivePartApprox (k : ℝ) δ (φ x) -
-            max (φ x - (k : ℝ)) 0)
-          (2 : ℝ≥0∞) (PDE.volumeOn Ω) ≤ ENNReal.ofReal ε := by
-  let δSeq : ℕ → ℝ := fun n => 1 / (n + 1)
-  let err : ℕ → PDE.Vec d → ℝ := fun n x =>
-    PDE.smoothPositivePartApprox (k : ℝ) (δSeq n) (φ x) -
-      max (φ x - (k : ℝ)) 0
-  have hδPos : ∀ n, 0 < δSeq n := by
-    intro n
-    dsimp only [δSeq]
-    positivity
-  have hδTendsto : Tendsto δSeq atTop (𝓝 0) :=
-    tendsto_one_div_add_atTop_nhds_zero_nat
-  have herrBound : ∀ n,
-      eLpNorm (err n) (2 : ℝ≥0∞) (PDE.volumeOn Ω) ≤
-        ENNReal.ofReal (2 * δSeq n) *
-          (PDE.volumeOn Ω) (tsupport φ) ^ (1 / (2 : ℝ)) := by
-    intro n
-    apply eLpNorm_sub_le_of_dist_bdd (μ := PDE.volumeOn Ω)
-      (p := (2 : ℝ≥0∞)) (by norm_num)
-      isClosed_closure.measurableSet.nullMeasurableSet (mul_nonneg (by norm_num) (hδPos n).le)
-    · exact ((PDE.smoothPositivePartApprox_contDiff (k : ℝ) (δSeq n)).continuous
-        |>.comp_aestronglyMeasurable hφMeas).sub
-        (((continuous_id.sub continuous_const).max continuous_const)
-          |>.comp_aestronglyMeasurable hφMeas)
-    · intro x
-      rw [Real.dist_eq]
-      simpa only [sub_zero] using
-        PDE.abs_smoothPositivePartApprox_sub_le (c := (k : ℝ)) (hδPos n) (φ x)
-    · exact (Function.support_comp_subset
-        (PDE.smoothPositivePartApprox_eq_zero_of_le (hδPos n) k.2) φ).trans
-        subset_closure
-    · intro x hx
-      by_contra hxt
-      have hzero : φ x = 0 := image_eq_zero_of_notMem_tsupport hxt
-      have hmax : max ((0 : ℝ) - (k : ℝ)) 0 = 0 := max_sub_zero_at_zero k
-      simp only [Function.mem_support, hzero] at hx
-      exact hx hmax
-  have hconv : Tendsto
-      (fun n => eLpNorm (err n) (2 : ℝ≥0∞) (PDE.volumeOn Ω))
-      atTop (𝓝 0) := by
-    refine tendsto_of_tendsto_of_tendsto_of_le_of_le
-      tendsto_const_nhds ?_ (fun n => zero_le') herrBound
-    have hfinite : (PDE.volumeOn Ω) (tsupport φ) ^ (1 / (2 : ℝ)) ≠ ∞ := by
-      exact ENNReal.rpow_ne_top_of_nonneg (by positivity) (hφCompact.measure_lt_top.ne)
-    have hofReal : Tendsto (fun n => ENNReal.ofReal (2 * δSeq n)) atTop (𝓝 0) := by
-      simpa only [ENNReal.ofReal_zero, mul_zero] using
-        ENNReal.tendsto_ofReal (hδTendsto.const_mul (2 : ℝ))
-    simpa only [zero_mul] using ENNReal.Tendsto.mul_const hofReal (Or.inr hfinite)
-  have heventNorm : ∀ᶠ n in atTop,
-      eLpNorm (err n) (2 : ℝ≥0∞) (PDE.volumeOn Ω) ≤ ENNReal.ofReal ε :=
-    ((tendsto_order.1 hconv).2 _ (ENNReal.ofReal_pos.2 hε)).mono fun _ => le_of_lt
-  have heventScale : ∀ᶠ n in atTop, δSeq n ≤ ε :=
-    ((tendsto_order.1 hδTendsto).2 _ hε).mono fun _ => le_of_lt
-  obtain ⟨n, hnNorm, hnScale⟩ := (heventNorm.and heventScale).exists
-  exact ⟨δSeq n, hδPos n, hnScale, hnNorm⟩
-
-private theorem memLp_max_sub_nonneg
-    {w : PDE.Vec d → ℝ} (hw : MemLp w (2 : ℝ≥0∞) (PDE.volumeOn Ω))
-    (k : ℝ≥0) :
-    MemLp (fun x => max (w x - (k : ℝ)) 0) (2 : ℝ≥0∞) (PDE.volumeOn Ω) := by
-  refine MemLp.of_le hw ?_ ?_
-  · exact ((continuous_id.sub continuous_const).max continuous_const)
-      |>.comp_aestronglyMeasurable hw.aestronglyMeasurable
-  · filter_upwards with x
-    rw [Real.norm_eq_abs, Real.norm_eq_abs]
-    rcases le_total (w x) (k : ℝ) with hx | hx
-    · rw [max_eq_right (sub_nonpos.mpr hx), abs_zero]
-      exact abs_nonneg _
-    · rw [max_eq_left (sub_nonneg.mpr hx)]
-      rw [abs_of_nonneg (sub_nonneg.mpr hx), abs_of_nonneg (k.2.trans hx)]
-      exact sub_le_self _ k.2
-
 private theorem fderiv_shifted_smooth_comp_basisVec
     {φ : PDE.Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (k : ℝ≥0) {δ : ℝ} (x : PDE.Vec d) (i : Fin d) :
@@ -281,11 +109,6 @@ private theorem fderiv_shifted_smooth_comp_basisVec
       ((PDE.smoothPositivePartApprox_contDiff (k : ℝ) δ).differentiable
         (by simp)).differentiableAt
       (hφ.differentiable (by simp)).differentiableAt
-
-private theorem shifted_gradient_error_decomposition
-    (s a g D : ℝ) :
-    s * a - D = s * (a - g) + (s * g - D) := by
-  ring
 
 private theorem tendsto_shifted_smooth_value
     {u : PDE.H1Function Ω} {φ : ℕ → PDE.Vec d → ℝ}
@@ -396,49 +219,9 @@ private theorem tendsto_shifted_smooth_gradient
     funext x
     rw [fderiv_shifted_smooth_comp_basisVec (hφSmooth n) k x i]
     simp only [first, second, Pi.add_apply]
-    exact shifted_gradient_error_decomposition _ _ _ _
+    ring
   rw [hdecomp]
   exact eLpNorm_add_le (by norm_num)
-
-private theorem tendsto_shifted_step_mul_sub_indicator
-    {f : ℕ → PDE.Vec d → ℝ} {f₀ : PDE.Vec d → ℝ}
-    {g : PDE.Vec d → ℝ} {x : PDE.Vec d} (k : ℝ≥0)
-    {δ : ℕ → ℝ} (hδPos : ∀ n, 0 < δ n)
-    (hδ : Tendsto δ atTop (𝓝 0))
-    (hf : Tendsto (fun n => f n x) atTop (𝓝 (f₀ x)))
-    (hzero : f₀ x = (k : ℝ) → g x = 0) :
-    Tendsto (fun n =>
-      PDE.smoothPositivePartStep (k : ℝ) (δ n) (f n x) * g x -
-        (if (k : ℝ) < f₀ x then g x else 0)) atTop (𝓝 0) := by
-  rcases lt_trichotomy (f₀ x) (k : ℝ) with hlt | heq | hgt
-  · have hevent : ∀ᶠ n in atTop, f n x < (f₀ x + (k : ℝ)) / 2 :=
-      (tendsto_order.1 hf).2 _ (by linarith)
-    have hstep : ∀ᶠ n in atTop,
-        PDE.smoothPositivePartStep (k : ℝ) (δ n) (f n x) = 0 := by
-      filter_upwards [hevent] with n hn
-      exact PDE.smoothPositivePartStep_eq_zero (hδPos n) (by
-        linarith [(hδPos n).le])
-    apply (tendsto_congr' (hstep.mono fun n hn => ?_)).2 tendsto_const_nhds
-    simp only [if_neg hlt.not_gt, hn, zero_mul, sub_zero]
-  · have hg : g x = 0 := hzero heq
-    have hfun : (fun n =>
-        PDE.smoothPositivePartStep (k : ℝ) (δ n) (f n x) * g x -
-          (if (k : ℝ) < f₀ x then g x else 0)) = fun _ : ℕ => (0 : ℝ) := by
-      funext n
-      rw [hg]
-      split <;> simp
-    rw [hfun]
-    exact tendsto_const_nhds
-  · have hfLarge : ∀ᶠ n in atTop, (f₀ x + (k : ℝ)) / 2 < f n x :=
-      (tendsto_order.1 hf).1 _ (by linarith)
-    have hδSmall : ∀ᶠ n in atTop, δ n < (f₀ x - (k : ℝ)) / 4 :=
-      (tendsto_order.1 hδ).2 _ (by linarith)
-    have hone : ∀ᶠ n in atTop,
-        PDE.smoothPositivePartStep (k : ℝ) (δ n) (f n x) = 1 := by
-      filter_upwards [hfLarge, hδSmall] with n hn hdn
-      exact PDE.smoothPositivePartStep_eq_one (hδPos n) (by linarith)
-    apply (tendsto_congr' (hone.mono fun n hn => ?_)).2 tendsto_const_nhds
-    simp only [if_pos hgt, hn, one_mul, sub_self]
 
 private theorem tendsto_eLpNorm_two_zero_of_ae_dominated
     {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]
@@ -459,7 +242,7 @@ private theorem tendsto_eLpNorm_two_zero_of_ae_dominated
     have henorm : ‖F n x‖ₑ ≤ ‖bound x‖ₑ := by
       simpa only [ofReal_norm_eq_enorm] using ENNReal.ofReal_le_ofReal hx
     exact ENNReal.rpow_le_rpow henorm (by norm_num)
-  have hBFinite : ∫⁻ x, B x ∂μ ≠ ∞ :=
+  have hBFinite :=
     (lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top
       (p := (2 : ℝ≥0∞)) (by norm_num) (by norm_num) hboundMem).ne
   have hGZero : ∀ᵐ x ∂μ, Tendsto (fun n => G n x) atTop (𝓝 0) := by
@@ -526,8 +309,39 @@ private theorem tendsto_shifted_step_indicator_eLpNorm
           mul_le_of_le_one_left (abs_nonneg _) (PDE.abs_smoothPositivePartStep_le_one _ _ _)
         _ ≤ 2 * |g x| := by nlinarith [abs_nonneg (g x)]
   · filter_upwards [hf, hlevel] with x hfx hlx
-    simpa only [indicator_apply, Set.mem_setOf_eq] using
-      tendsto_shifted_step_mul_sub_indicator k hδPos hδ hfx hlx
+    have _h_inl_23 : Tendsto (fun n =>
+      PDE.smoothPositivePartStep (k : ℝ) (δ n) (f n x) * g x -
+        (if (k : ℝ) < f₀ x then g x else 0)) atTop (𝓝 0) := by
+      rcases lt_trichotomy (f₀ x) (k : ℝ) with hlt | heq | hgt
+      · have hevent : ∀ᶠ n in atTop, f n x < (f₀ x + (k : ℝ)) / 2 :=
+          (tendsto_order.1 hfx).2 _ (by linarith)
+        have hstep : ∀ᶠ n in atTop,
+            PDE.smoothPositivePartStep (k : ℝ) (δ n) (f n x) = 0 := by
+          filter_upwards [hevent] with n hn
+          exact PDE.smoothPositivePartStep_eq_zero (hδPos n) (by
+            linarith [(hδPos n).le])
+        apply (tendsto_congr' (hstep.mono fun n hn => ?_)).2 tendsto_const_nhds
+        simp only [if_neg hlt.not_gt, hn, zero_mul, sub_zero]
+      · have hg : g x = 0 := hlx heq
+        have hfun : (fun n =>
+            PDE.smoothPositivePartStep (k : ℝ) (δ n) (f n x) * g x -
+              (if (k : ℝ) < f₀ x then g x else 0)) = fun _ : ℕ => (0 : ℝ) := by
+          funext n
+          rw [hg]
+          split <;> simp
+        rw [hfun]
+        exact tendsto_const_nhds
+      · have hfLarge : ∀ᶠ n in atTop, (f₀ x + (k : ℝ)) / 2 < f n x :=
+          (tendsto_order.1 hfx).1 _ (by linarith)
+        have hδSmall : ∀ᶠ n in atTop, δ n < (f₀ x - (k : ℝ)) / 4 :=
+          (tendsto_order.1 hδ).2 _ (by linarith)
+        have hone : ∀ᶠ n in atTop,
+            PDE.smoothPositivePartStep (k : ℝ) (δ n) (f n x) = 1 := by
+          filter_upwards [hfLarge, hδSmall] with n hn hdn
+          exact PDE.smoothPositivePartStep_eq_one (hδPos n) (by linarith)
+        apply (tendsto_congr' (hone.mono fun n hn => ?_)).2 tendsto_const_nhds
+        simp only [if_pos hgt, hn, one_mul, sub_self]
+    simpa only [indicator_apply, Set.mem_setOf_eq] using _h_inl_23
 
 private theorem exists_shiftedPositivePart_data
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
@@ -537,7 +351,88 @@ private theorem exists_shiftedPositivePart_data
         gradientCLM hΩ v x =
           {y | (k : ℝ) < valueCLM hΩ u y}.indicator (gradientCLM hΩ u) x := by
   let w := h1FunctionOfH10 hΩ u
-  let happrox := Classical.choice (h1FunctionOfH10_hasSupportedSmoothApproximation hΩ u)
+  have _h_inl_14 : Nonempty (h1FunctionOfH10 hΩ u).SupportedSmoothApproximation := by
+    let ug := h10HilbertGraphContinuousLinearEquiv hΩ u
+    rcases PDE.H10Graph.exists_tendsto_smooth hΩ ug with ⟨φ, hφ⟩
+    let w := h1FunctionOfH10 hΩ u
+    have hvalue : Tendsto
+        (fun n => (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.1)
+        atTop (𝓝 (valueCLM hΩ u)) := by
+      simpa only [ug, h10HilbertGraphContinuousLinearEquiv, valueCLM_apply,
+        h1HilbertGraphContinuousLinearEquiv_apply, Function.comp_def,
+        ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans, ContinuousLinearEquiv.ofEq,
+        ContinuousLinearEquiv.ofSubmodule'_apply, PDE.H1HilbertGraph.value,
+        PDE.H1HilbertGraph.gradient, PDE.H1HilbertGraph.toH1Graph] using!
+        ((continuous_fst.comp continuous_subtype_val).tendsto _ |>.comp hφ)
+    have hgradient : Tendsto
+        (fun n => (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2)
+        atTop (𝓝 (gradientCLM hΩ u)) := by
+      simpa only [ug, h10HilbertGraphContinuousLinearEquiv, gradientCLM_apply,
+        h1HilbertGraphContinuousLinearEquiv_apply, Function.comp_def,
+        ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans, ContinuousLinearEquiv.ofEq,
+        ContinuousLinearEquiv.ofSubmodule'_apply, PDE.H1HilbertGraph.value,
+        PDE.H1HilbertGraph.gradient, PDE.H1HilbertGraph.toH1Graph] using!
+        ((continuous_snd.comp continuous_subtype_val).tendsto _ |>.comp hφ)
+    refine ⟨{
+      approx := fun n => (φ n).toFun
+      approx_smooth := fun n => (φ n).contDiff
+      approx_hasCompactSupport := fun n => (φ n).hasCompactSupport
+      approx_tsupport_subset := fun n => (φ n).tsupport_subset
+      tendsto_value := ?_
+      tendsto_grad := ?_ }⟩
+    · exact (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
+        (fun n => (φ n).toFun) (fun n => (φ n).memLp_toFun (2 : ℝ≥0∞))
+        w.toFun w.memL2).mp (by
+          simpa only [w, h1FunctionOfH10,
+            PDE.smoothCompactlySupportedH1Graph,
+            PDE.smoothCompactlySupportedW1pGraph,
+            PDE.W1pFunction.toW1pGraph, PDE.W1pFunction.ofContDiff,
+            Lp.toLp_coeFn, PDE.w1pGraphOfRepresentatives,
+            PDE.weakGradientLpPairOfRepresentatives] using! hvalue)
+    · intro i
+      apply (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
+        (fun n x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i))
+        (fun n => (φ n).memLp_partialDeriv i (2 : ℝ≥0∞))
+        (fun x => w.grad x i) (w.gradMemL2 i)).mp
+      have heval := (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i).continuous.tendsto _ |>.comp hgradient
+      have hseq : ∀ n,
+          PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+              (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2 =
+            ((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
+              (fun x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i)) := by
+        intro n
+        apply Lp.ext
+        filter_upwards [PDE.coeFn_hilbertVectorLpCoord Ω 2 i
+            (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2,
+          PDE.W1pFunction.coeFn_toW1pGraph_snd
+            (PDE.W1pFunction.ofContDiff hΩ
+              ((φ n).contDiff.of_le (by simp)) (φ n).hasCompactSupport 2),
+          ((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).coeFn_toLp] with x hc hg ht
+        have hg' :
+            ⇑(PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2 x =
+              PDE.toHilbertVecField
+                (PDE.W1pFunction.ofContDiff hΩ
+                  ((φ n).contDiff.of_le (by simp)) (φ n).hasCompactSupport 2).grad x := by
+          simpa only [PDE.smoothCompactlySupportedH1Graph,
+            PDE.smoothCompactlySupportedW1pGraph] using hg
+        have ht' :
+            ⇑(((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
+              (fun x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i))) x =
+              (fderiv ℝ (φ n).toFun x) (PDE.basisVec i) := by
+          exact ht
+        rw [hc, hg', ht']
+        rfl
+      have hlim : PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+            (gradientCLM hΩ u) =
+          (w.gradMemL2 i).toLp (fun x => w.grad x i) := by
+        apply Lp.ext
+        filter_upwards [PDE.coeFn_hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ u),
+          (w.gradMemL2 i).coeFn_toLp] with x hc ht
+        rw [hc, ht]
+        rfl
+      rw [← hlim]
+      simpa only [Function.comp_def, hseq] using heval
+  let happrox := Classical.choice _h_inl_14
   have happroxMeas : ∀ n,
       AEStronglyMeasurable (happrox.approx n) (PDE.volumeOn Ω) := by
     intro n
@@ -564,9 +459,64 @@ private theorem exists_shiftedPositivePart_data
           max (happrox.approx (σ n) x - (k : ℝ)) 0)
         (2 : ℝ≥0∞) (PDE.volumeOn Ω) ≤ ENNReal.ofReal (ε n) := by
     intro n
-    exact exists_shifted_regularization_scale
-      (happrox.approx (σ n))
-      (happrox.approx_hasCompactSupport (σ n)) (happroxMeas (σ n)) k (ε n) (hεPos n)
+    let φ := (happrox.approx (σ n))
+    have hφCompact := (happrox.approx_hasCompactSupport (σ n))
+    have hφMeas := (happroxMeas (σ n))
+    let ε := (ε n)
+    have hε := (hεPos n)
+    let δSeq : ℕ → ℝ := fun n => 1 / (n + 1)
+    let err : ℕ → PDE.Vec d → ℝ := fun n x =>
+      PDE.smoothPositivePartApprox (k : ℝ) (δSeq n) (φ x) -
+        max (φ x - (k : ℝ)) 0
+    have hδPos : ∀ n, 0 < δSeq n := by
+      intro n
+      dsimp only [δSeq]
+      positivity
+    have hδTendsto : Tendsto δSeq atTop (𝓝 0) :=
+      tendsto_one_div_add_atTop_nhds_zero_nat
+    have herrBound : ∀ n,
+        eLpNorm (err n) (2 : ℝ≥0∞) (PDE.volumeOn Ω) ≤
+          ENNReal.ofReal (2 * δSeq n) *
+            (PDE.volumeOn Ω) (tsupport φ) ^ (1 / (2 : ℝ)) := by
+      intro n
+      apply eLpNorm_sub_le_of_dist_bdd (μ := PDE.volumeOn Ω)
+        (p := (2 : ℝ≥0∞)) (by norm_num)
+        isClosed_closure.measurableSet.nullMeasurableSet (mul_nonneg (by norm_num) (hδPos n).le)
+      · exact ((PDE.smoothPositivePartApprox_contDiff (k : ℝ) (δSeq n)).continuous
+          |>.comp_aestronglyMeasurable hφMeas).sub
+          (((continuous_id.sub continuous_const).max continuous_const)
+            |>.comp_aestronglyMeasurable hφMeas)
+      · intro x
+        rw [Real.dist_eq]
+        simpa only [sub_zero] using
+          PDE.abs_smoothPositivePartApprox_sub_le (c := (k : ℝ)) (hδPos n) (φ x)
+      · exact (Function.support_comp_subset
+          (PDE.smoothPositivePartApprox_eq_zero_of_le (hδPos n) k.2) φ).trans
+          subset_closure
+      · intro x hx
+        by_contra hxt
+        have hzero : φ x = 0 := image_eq_zero_of_notMem_tsupport hxt
+        have hmax := max_sub_zero_at_zero k
+        simp only [Function.mem_support, hzero] at hx
+        exact hx hmax
+    have hconv : Tendsto
+        (fun n => eLpNorm (err n) (2 : ℝ≥0∞) (PDE.volumeOn Ω))
+        atTop (𝓝 0) := by
+      refine tendsto_of_tendsto_of_tendsto_of_le_of_le
+        tendsto_const_nhds ?_ (fun n => zero_le') herrBound
+      have hfinite : (PDE.volumeOn Ω) (tsupport φ) ^ (1 / (2 : ℝ)) ≠ ∞ := by
+        exact ENNReal.rpow_ne_top_of_nonneg (by positivity) (hφCompact.measure_lt_top.ne)
+      have hofReal : Tendsto (fun n => ENNReal.ofReal (2 * δSeq n)) atTop (𝓝 0) := by
+        simpa only [ENNReal.ofReal_zero, mul_zero] using
+          ENNReal.tendsto_ofReal (hδTendsto.const_mul (2 : ℝ))
+      simpa only [zero_mul] using ENNReal.Tendsto.mul_const hofReal (Or.inr hfinite)
+    have heventNorm : ∀ᶠ n in atTop,
+        eLpNorm (err n) (2 : ℝ≥0∞) (PDE.volumeOn Ω) ≤ ENNReal.ofReal ε :=
+      ((tendsto_order.1 hconv).2 _ (ENNReal.ofReal_pos.2 hε)).mono fun _ => le_of_lt
+    have heventScale : ∀ᶠ n in atTop, δSeq n ≤ ε :=
+      ((tendsto_order.1 hδTendsto).2 _ hε).mono fun _ => le_of_lt
+    obtain ⟨n, hnNorm, hnScale⟩ := (heventNorm.and heventScale).exists
+    exact ⟨δSeq n, hδPos n, hnScale, hnNorm⟩
   let δ : ℕ → ℝ := fun n => Classical.choose (hscale n)
   have hδPos : ∀ n, 0 < δ n := fun n => (Classical.choose_spec (hscale n)).1
   have hδLe : ∀ n, δ n ≤ ε n := fun n => (Classical.choose_spec (hscale n)).2.1
@@ -686,8 +636,19 @@ private theorem exists_shiftedPositivePart_data
       (2 : ℝ≥0∞) (PDE.volumeOn Ω)) atTop (nhds 0) := by
     simpa only [shiftedApprox] using tendsto_shifted_smooth_gradient
       (fun n => happrox.approx_smooth (σ n)) k hfirstMeas hsecondMeas hfirst hsecond
-  have hfMem : PDE.MemL2On Ω (fun x => max (w.toFun x - (k : ℝ)) 0) :=
-    memLp_max_sub_nonneg w.memL2 k
+  have hfMem : PDE.MemL2On Ω (fun x => max (w.toFun x - (k : ℝ)) 0) := by
+    have hw := w.memL2
+    refine MemLp.of_le hw ?_ ?_
+    · exact ((continuous_id.sub continuous_const).max continuous_const)
+        |>.comp_aestronglyMeasurable hw.aestronglyMeasurable
+    · filter_upwards with x
+      rw [Real.norm_eq_abs, Real.norm_eq_abs]
+      rcases le_total (w x) (k : ℝ) with hx | hx
+      · rw [max_eq_right (sub_nonpos.mpr hx), abs_zero]
+        exact abs_nonneg _
+      · rw [max_eq_left (sub_nonneg.mpr hx)]
+        rw [abs_of_nonneg (sub_nonneg.mpr hx), abs_of_nonneg (k.2.trans hx)]
+        exact sub_le_self _ k.2
   have hweak : PDE.HasWeakGradientOn Ω
       (fun x => max (w.toFun x - (k : ℝ)) 0) D :=
     hasWeakGradientOn_of_smooth_approximation hfMem hDMem hsmooth hcompact hsupport
@@ -726,7 +687,7 @@ private theorem exists_shiftedPositivePart_data
     simp only [indicator_apply, w, h1FunctionOfH10, g]
     split <;> rfl
 
-/-- The shifted positive part has a unique spatial `H¹₀` graph representative. -/
+/- The shifted positive part has a unique spatial `H¹₀` graph representative. -/
 theorem exists_unique_h10ShiftedPositivePart
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
     ∃! v : H10HilbertGraph hΩ,
@@ -734,12 +695,12 @@ theorem exists_unique_h10ShiftedPositivePart
   obtain ⟨v, hv, _⟩ := exists_shiftedPositivePart_data hΩ u k
   exact ⟨v, hv, fun z hz => valueCLM_injective hΩ (hz.trans hv.symm)⟩
 
-/-- The canonical shifted positive part `(u - k)₊` in spatial `H¹₀`. -/
+/- The canonical shifted positive part `(u - k)₊` in spatial `H¹₀`. -/
 noncomputable def h10ShiftedPositivePart
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) : H10HilbertGraph hΩ :=
   Classical.choose (exists_unique_h10ShiftedPositivePart hΩ u k)
 
-/-- The value component of the canonical shifted positive part. -/
+/- The value component of the canonical shifted positive part. -/
 @[simp]
 theorem valueCLM_h10ShiftedPositivePart
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
@@ -747,7 +708,7 @@ theorem valueCLM_h10ShiftedPositivePart
       shiftedPositivePartValue k (valueCLM hΩ u) :=
   (Classical.choose_spec (exists_unique_h10ShiftedPositivePart hΩ u k)).1
 
-/-- Evaluation of the value representative of the shifted positive part. -/
+/- Evaluation of the value representative of the shifted positive part. -/
 theorem coeFn_valueCLM_h10ShiftedPositivePart
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
     valueCLM hΩ (h10ShiftedPositivePart hΩ u k) =ᵐ[PDE.volumeOn Ω]
@@ -755,7 +716,7 @@ theorem coeFn_valueCLM_h10ShiftedPositivePart
   rw [valueCLM_h10ShiftedPositivePart]
   exact coeFn_shiftedPositivePartValue k (valueCLM hΩ u)
 
-/-- The weak gradient of `(u - k)₊` is the original gradient precisely on
+/- The weak gradient of `(u - k)₊` is the original gradient precisely on
 the strict superlevel set `{k < u}` and is zero elsewhere. -/
 theorem gradientCLM_h10ShiftedPositivePart
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
@@ -767,44 +728,38 @@ theorem gradientCLM_h10ShiftedPositivePart
     valueCLM_injective hΩ (valueCLM_h10ShiftedPositivePart hΩ u k |>.trans hv.symm)
   simpa only [heq] using hvGrad
 
-/-- Shifted positive-part truncation contracts the value `L²` norm. -/
-theorem norm_valueCLM_h10ShiftedPositivePart_le
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
-    ‖valueCLM hΩ (h10ShiftedPositivePart hΩ u k)‖ ≤ ‖valueCLM hΩ u‖ := by
-  rw [valueCLM_h10ShiftedPositivePart]
-  exact norm_shiftedPositivePartValue_le k (valueCLM hΩ u)
-
-/-- Shifted positive-part truncation contracts the weak-gradient `L²` norm. -/
-theorem norm_gradientCLM_h10ShiftedPositivePart_le
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
-    ‖gradientCLM hΩ (h10ShiftedPositivePart hΩ u k)‖ ≤ ‖gradientCLM hΩ u‖ := by
-  rw [Lp.norm_def, Lp.norm_def]
-  apply ENNReal.toReal_mono (Lp.eLpNorm_ne_top _)
-  calc
-    eLpNorm (gradientCLM hΩ (h10ShiftedPositivePart hΩ u k)) 2
-        (PDE.volumeOn Ω) =
-      eLpNorm ({y | (k : ℝ) < valueCLM hΩ u y}.indicator
-        (gradientCLM hΩ u)) 2 (PDE.volumeOn Ω) :=
-      eLpNorm_congr_ae (gradientCLM_h10ShiftedPositivePart hΩ u k)
-    _ ≤ eLpNorm (gradientCLM hΩ u) 2 (PDE.volumeOn Ω) :=
-      eLpNorm_mono_ae
-        ((Lp.memLp (gradientCLM hΩ u)).aestronglyMeasurable.indicator₀
-          (nullMeasurableSet_lt aemeasurable_const
-            (Lp.memLp (valueCLM hΩ u)).aestronglyMeasurable.aemeasurable))
-        (Filter.Eventually.of_forall (fun x => norm_indicator_le_norm_self _ x))
-
-/-- Shifted positive-part truncation contracts the full spatial `H¹₀`
-graph norm, with sharp constant one. -/
+/- Shifted positive-part truncation contracts the value `L²` norm. -/
 theorem norm_h10ShiftedPositivePart_le
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
     ‖h10ShiftedPositivePart hΩ u k‖ ≤ ‖u‖ := by
   rw [← sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)]
   rw [norm_sq_h10HilbertGraph hΩ, norm_sq_h10HilbertGraph hΩ]
+  have _h_inl_27 : ‖valueCLM hΩ (h10ShiftedPositivePart hΩ u k)‖ ≤ ‖valueCLM hΩ u‖ := by
+    rw [valueCLM_h10ShiftedPositivePart]
+    let f := (valueCLM hΩ u)
+    simpa only [shiftedPositivePartValue, NNReal.coe_one, one_mul] using
+      (lipschitzWith_max_sub_zero k).norm_compLp_le
+        (max_sub_zero_at_zero k) f
+  have _h_inl_26 : ‖gradientCLM hΩ (h10ShiftedPositivePart hΩ u k)‖ ≤ ‖gradientCLM hΩ u‖ := by
+    rw [Lp.norm_def, Lp.norm_def]
+    apply ENNReal.toReal_mono (Lp.eLpNorm_ne_top _)
+    calc
+      eLpNorm (gradientCLM hΩ (h10ShiftedPositivePart hΩ u k)) 2
+          (PDE.volumeOn Ω) =
+        eLpNorm ({y | (k : ℝ) < valueCLM hΩ u y}.indicator
+          (gradientCLM hΩ u)) 2 (PDE.volumeOn Ω) :=
+        eLpNorm_congr_ae (gradientCLM_h10ShiftedPositivePart hΩ u k)
+      _ ≤ eLpNorm (gradientCLM hΩ u) 2 (PDE.volumeOn Ω) :=
+        eLpNorm_mono_ae
+          ((Lp.memLp (gradientCLM hΩ u)).aestronglyMeasurable.indicator₀
+            (nullMeasurableSet_lt aemeasurable_const
+              (Lp.memLp (valueCLM hΩ u)).aestronglyMeasurable.aemeasurable))
+          (Filter.Eventually.of_forall (fun x => norm_indicator_le_norm_self _ x))
   exact add_le_add
     (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _) |>.2
-      (norm_valueCLM_h10ShiftedPositivePart_le hΩ u k))
+      _h_inl_27)
     (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _) |>.2
-      (norm_gradientCLM_h10ShiftedPositivePart_le hΩ u k))
+      _h_inl_26)
 
 private theorem tendsto_shifted_value_threshold_eLpNorm
     {f : PDE.Vec d → ℝ} (hf : MemLp f (2 : ℝ≥0∞) (PDE.volumeOn Ω))
@@ -903,7 +858,6 @@ private theorem tendsto_h10_of_value_gradient
   have hvn := hNv n (le_trans (le_max_left _ _) hn)
   have hgn := hNg n (le_trans (le_max_right _ _) hn)
   rw [dist_eq_norm]
-  change ‖un n - u‖ < ε
   apply (sq_lt_sq₀ (norm_nonneg _) hε.le).1
   rw [norm_sq_h10HilbertGraph hΩ]
   simp only [map_sub]
@@ -915,14 +869,14 @@ private theorem tendsto_h10_of_value_gradient
   rw [div_pow, Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)] at hv2 hg2
   linarith
 
-/-- The shifted positive part is jointly strongly continuous in the spatial
+/- The shifted positive part is jointly strongly continuous in the spatial
 `H¹₀` function and the nonnegative threshold. -/
 theorem continuous_h10ShiftedPositivePart (hΩ : IsOpen Ω) :
     Continuous (fun p : H10HilbertGraph hΩ × ℝ≥0 =>
       h10ShiftedPositivePart hΩ p.1 p.2) := by
   rw [continuous_iff_seqContinuous]
   rintro pn ⟨u, k⟩ hpn
-  have hu : Tendsto (fun n => (pn n).1) atTop (nhds u) :=
+  have hu :=
     (continuous_fst.tendsto (u, k)).comp hpn
   have hk : Tendsto (fun n => (pn n).2) atTop (nhds k) :=
     (continuous_snd.tendsto (u, k)).comp hpn

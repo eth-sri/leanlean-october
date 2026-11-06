@@ -15,7 +15,7 @@ open scoped ENNReal
 on which it is at least one. The identity used here is proved for the actual measures. -/
 theorem stripExitOfRealization_le_supersolution
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (phi : Point → ℝ)
@@ -26,7 +26,7 @@ theorem stripExitOfRealization_le_supersolution
       forwardScalarOperator A.a phi p ≤ 0)
     (hn : ∀ p, e.1.time ≤ p.time → p.time ≤ T →
       p.velocity 0 ∈ Icc H.lo H.hi → 0 ≤ phi p)
-    (B : Set Point) (hB : MeasurableSet B)
+    (B ) (hB : MeasurableSet B)
     (hbd : ∀ p ∈ B, e.1.time ≤ p.time → p.time ≤ T →
       p.velocity 0 ∈ Icc H.lo H.hi → 1 ≤ phi p) :
     stripExitOfRealization hH hlam hLam A H E hE T e B ≤ ENNReal.ofReal (phi e.1) := by

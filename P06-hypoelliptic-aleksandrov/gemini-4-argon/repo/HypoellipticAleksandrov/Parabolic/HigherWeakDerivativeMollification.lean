@@ -23,7 +23,7 @@ open scoped ENNReal Topology
 namespace ParabolicWeakDerivativeFamily
 
 private theorem ordinaryRepresentative_memLp_volume
-    {d m : ℕ} {root : TimeVelocity d → ℝ}
+    {d m root}
     (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
     (beta : TimeVelocityDerivativeIndex d m) :
     MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
@@ -34,7 +34,7 @@ private theorem ordinaryRepresentative_memLp_volume
   simpa only [Measure.restrict_univ] using h
 
 private theorem ordinary_timeSucc_eq_add_single
-    {d m : ℕ} (gamma : TimeVelocityDerivativeIndex d m)
+    {d m } (gamma : TimeVelocityDerivativeIndex d m)
     (h : gamma.1.order + 1 ≤ m) :
     (TimeVelocityDerivativeIndex.timeSucc gamma h).1 =
       gamma.1 + Pi.single (timeCoord d) 1 := by
@@ -48,7 +48,7 @@ private theorem ordinary_timeSucc_eq_add_single
       rfl
 
 private theorem ordinary_velocitySucc_eq_add_single
-    {d m : ℕ} (gamma : TimeVelocityDerivativeIndex d m) (i : Fin d)
+    {d m } (gamma : TimeVelocityDerivativeIndex d m) (i : Fin d)
     (h : gamma.1.order + 1 ≤ m) :
     (TimeVelocityDerivativeIndex.velocitySucc gamma i h).1 =
       gamma.1 + Pi.single (velocityCoord i) 1 := by
@@ -70,7 +70,7 @@ private theorem ordinary_velocitySucc_eq_add_single
 /-- Every selected ordinary derivative of the one mollified zero
 representative is the mollification of the corresponding selected entry. -/
 theorem coordinateIteratedFDeriv_spacetimeMollification_ordinaryRepresentative
-    {d m : ℕ} {root : TimeVelocity d → ℝ}
+    {d m root}
     (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
     (ε : ℝ) (hε : 0 < ε)
     (beta : TimeVelocityDerivativeIndex d m) :
@@ -173,7 +173,7 @@ theorem coordinateIteratedFDeriv_spacetimeMollification_ordinaryRepresentative
 
 /-- The common mollified zero representative is globally smooth. -/
 theorem contDiff_spacetimeMollification_ordinaryRepresentative_zero
-    {d m : ℕ} {root : TimeVelocity d → ℝ}
+    {d m root}
     (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
     (ε : ℝ) (hε : 0 < ε) :
     ContDiff ℝ (⊤ : ℕ∞)
@@ -187,7 +187,7 @@ theorem contDiff_spacetimeMollification_ordinaryRepresentative_zero
 
 /-- Each mollified selected ordinary entry converges strongly in ambient `L²`. -/
 theorem tendsto_eLpNorm_spacetimeMollification_ordinaryRepresentative_sub
-    {d m : ℕ} {root : TimeVelocity d → ℝ}
+    {d m root}
     (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
     (beta : TimeVelocityDerivativeIndex d m) :
     Filter.Tendsto

@@ -10,13 +10,13 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- Time decomposition of the Gaussian bound, for a squared-distance lower bound a. -/
+/- Time decomposition of the Gaussian bound, for a squared-distance lower bound a. -/
 def bellmanTimeMajorant (a : ℝ) (t : ℝ) : ℝ :=
   (Ioc (0 : ℝ) 1).indicator
     (fun _ => 64 * Real.sqrt 3 / (Real.pi * a ^ 2)) t +
   (Ioi (1 : ℝ)).indicator (fun s => Real.sqrt 3 / (2 * Real.pi) * s ^ (-2 : ℝ)) t
 
-/-- The time majorant is integrable on the positive half-line. -/
+/- The time majorant is integrable on the positive half-line. -/
 theorem integrable_bellmanTimeMajorant (a : ℝ) :
     Integrable (fun t : BellmanPositiveTime => bellmanTimeMajorant a t.val)
       bellmanPositiveTimeVolume := by
@@ -42,7 +42,7 @@ theorem integrable_bellmanTimeMajorant (a : ℝ) :
   exact (MeasurableEmbedding.subtype_coe (s := Ioi (0 : ℝ))
     measurableSet_Ioi).integrable_map_iff.mp h
 
-/-- The majorant is nonnegative at positive time. -/
+/- The majorant is nonnegative at positive time. -/
 theorem bellmanTimeMajorant_nonneg (a : ℝ) (t : BellmanPositiveTime) :
     0 ≤ bellmanTimeMajorant a t.val := by
   unfold bellmanTimeMajorant
@@ -53,7 +53,7 @@ theorem bellmanTimeMajorant_nonneg (a : ℝ) (t : BellmanPositiveTime) :
     have hspos : 0 < s := lt_trans (by norm_num) hs
     positivity
 
-/-- The same time majorant bounds every point with squared distance at least a. -/
+/- The same time majorant bounds every point with squared distance at least a. -/
 theorem bellmanGaussianKernel_le_timeMajorant (a : ℝ) (ha : 0 < a)
     (q : ℝ × ℝ) (hq : a ≤ q.1 ^ 2 + q.2 ^ 2) (t : BellmanPositiveTime) :
     bellmanGaussianKernel t q ≤ bellmanTimeMajorant a t.val := by
@@ -70,21 +70,5 @@ theorem bellmanGaussianKernel_le_timeMajorant (a : ℝ) (ha : 0 < a)
     rw [Real.rpow_neg t.property.le, Real.rpow_two]
     ring
 
-/-- Uniform bound on the actual time-integrated density away from the origin. -/
-theorem bellmanFundamentalDensity_le_majorant (a : ℝ) (ha : 0 < a)
-    (q : BellmanPuncturedPlane) (hq : a ≤ q.val.1 ^ 2 + q.val.2 ^ 2) :
-    bellmanFundamentalDensity q ≤
-      ∫⁻ t : BellmanPositiveTime, ENNReal.ofReal (bellmanTimeMajorant a t.val)
-        ∂bellmanPositiveTimeVolume := by
-  exact lintegral_mono fun t => ENNReal.ofReal_le_ofReal
-    (bellmanGaussianKernel_le_timeMajorant a ha q.val hq t)
-
-/-- The integrated majorant is a finite uniform bound. -/
-theorem bellmanTimeMajorant_lintegral_ne_top (a : ℝ) :
-    (∫⁻ t : BellmanPositiveTime, ENNReal.ofReal (bellmanTimeMajorant a t.val)
-      ∂bellmanPositiveTimeVolume) ≠ ⊤ := by
-  have h := integrable_bellmanTimeMajorant a
-  exact (lintegral_ofReal_ne_top_iff_integrable h.aestronglyMeasurable
-    (ae_of_all _ (bellmanTimeMajorant_nonneg a))).mpr h
-
+/- Uniform bound on the actual time-integrated density away from the origin. -/
 end HypoellipticAleksandrov.KineticAleksandrov

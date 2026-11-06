@@ -26,8 +26,8 @@ variable (K : MovingFiberKernel Ω γ)
 
 /-- The source slice integrand vanishes after the terminal time. -/
 theorem integrand_eq_zero_of_ge {hΩ : MeasurableSet Ω} (g : TimeVelocity d → ℝ)
-    (hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v))) (T : ℝ)
-    (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (p : TimeVelocity d) {r : ℝ} (hr : T ≤ r) :
+    (hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v))) (T )
+    (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (p : TimeVelocity d) {r } (hr : T ≤ r) :
     parabolicDuhamelIntegrand K hΩ g p r = 0 := by
   refine parabolicDuhamelIntegrand_eq_zero_of_slice K hΩ g hg p r (fun v => ?_)
   apply image_eq_zero_of_notMem_tsupport
@@ -44,7 +44,7 @@ theorem potential_eq_integral_Ioi {hΩ : MeasurableSet Ω} (g : TimeVelocity d �
   symm
   refine setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi
     Ioc_subset_Ioi_self (fun r hr => ?_)
-  have hrT : T ≤ r := not_lt.1 fun h => hr.2 ⟨hr.1, h.le⟩
+  have hrT := not_lt.1 fun h => hr.2 ⟨hr.1, h.le⟩
   exact integrand_eq_zero_of_ge K g hg T hgU p hrT
 
 /-- **The weak equation of the Duhamel potential.**  For every smooth compactly supported test

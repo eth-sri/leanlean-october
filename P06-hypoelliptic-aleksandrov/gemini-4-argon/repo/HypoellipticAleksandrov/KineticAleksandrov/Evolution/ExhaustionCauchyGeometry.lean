@@ -21,11 +21,9 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 open scoped Topology
 
 /-- The actual straightened ellipsoid is open. -/
-theorem isOpen_straightenedEllipsoid (n : ℕ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) :
+theorem isOpen_straightenedEllipsoid (n : ℕ) {r R } (hr : 0 < r) (hR : 0 < R) :
     IsOpen (openEllipsoid (straightenedEllipsoidMatrix n r R)) := by
-  have he : openEllipsoid (straightenedEllipsoidMatrix n r R) =
-      {x | PDE.vecNormSq (spatialY x) / r ^ 2 +
-        PDE.vecNormSq (spatialZ x) / R ^ 2 < 1} :=
+  have he :=
     Set.ext fun x => (straightenedEllipsoid_characterization n r R hr hR).2 x
   rw [he]
   exact isOpen_lt
@@ -35,7 +33,7 @@ theorem isOpen_straightenedEllipsoid (n : ℕ) {r R : ℝ} (hr : 0 < r) (hR : 0 
 
 /-- The actual straightened ellipsoid is bounded in the inherited topology; its geometric
 characterization still uses the Euclidean block norms. -/
-theorem isBounded_straightenedEllipsoid (n : ℕ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) :
+theorem isBounded_straightenedEllipsoid (n : ℕ) {r R } (hr : 0 < r) (hR : 0 < R) :
     Bornology.IsBounded (openEllipsoid (straightenedEllipsoidMatrix n r R)) := by
   let H := terminalCoordinateHomeomorph (0 : PDE.Vec n)
   have hc : IsCompact (H ⁻¹'

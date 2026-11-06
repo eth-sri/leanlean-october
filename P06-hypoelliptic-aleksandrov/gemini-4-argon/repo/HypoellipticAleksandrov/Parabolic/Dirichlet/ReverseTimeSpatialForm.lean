@@ -27,7 +27,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The literal spatial scalar in the reversed divergence-form equation. -/
 noncomputable def reverseTimeSpatialForm
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (u v : H10HilbertGraph hΩ) : ℝ :=
@@ -50,7 +50,7 @@ noncomputable def reverseTimeSpatialForm
 
 /-- Definitional expansion of the literal reversed spatial scalar. -/
 theorem reverseTimeSpatialForm_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (u v : H10HilbertGraph hΩ) :
@@ -75,14 +75,14 @@ theorem reverseTimeSpatialForm_apply
 
 /-- The negative reverse-time source functional induced by bundled spatial `L²` data. -/
 noncomputable def reverseTimeSourceFunctional
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     H10HilbertGraph hΩ →L[ℝ] ℝ :=
   -(scalarLpToH10HilbertGraphDual hΩ f)
 
 /-- Evaluation of the negative reverse-time source functional. -/
 theorem reverseTimeSourceFunctional_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞))
     (v : H10HilbertGraph hΩ) :
     reverseTimeSourceFunctional hΩ f v =
@@ -92,7 +92,7 @@ theorem reverseTimeSourceFunctional_apply
 
 /-- The reverse-time source functional is bounded by the spatial pivot norm. -/
 theorem norm_reverseTimeSourceFunctional_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ‖reverseTimeSourceFunctional hΩ f‖ ≤ ‖valueCLM hΩ‖ * ‖f‖ := by
   rw [reverseTimeSourceFunctional, norm_neg]
@@ -100,8 +100,8 @@ theorem norm_reverseTimeSourceFunctional_le
 
 /-- The bundled spatial `L²` source slice obtained from explicit `MemLp` evidence. -/
 noncomputable def reverseTimeSourceSlice
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₁ τ : ℝ) (F : ℝ → PDE.Vec d → ℝ)
+    {d Ω}
+    (r₁ τ ) (F : ℝ → PDE.Vec d → ℝ)
     (hF : MeasureTheory.MemLp
       (fun y : PDE.Vec d => F (r₁ - τ) y)
       (2 : ℝ≥0∞) (PDE.volumeOn Ω)) :
@@ -110,17 +110,16 @@ noncomputable def reverseTimeSourceSlice
 
 /-- The source slice is represented almost everywhere by its reverse-time pullback. -/
 theorem coeFn_reverseTimeSourceSlice
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₁ τ : ℝ) (F : ℝ → PDE.Vec d → ℝ)
     (hF : MeasureTheory.MemLp
       (fun y : PDE.Vec d => F (r₁ - τ) y)
       (2 : ℝ≥0∞) (PDE.volumeOn Ω)) :
     ⇑(reverseTimeSourceSlice r₁ τ F hF) =ᵐ[PDE.volumeOn Ω]
-      fun y : PDE.Vec d => F (r₁ - τ) y := by
-  exact hF.coeFn_toLp
+      fun y : PDE.Vec d => F (r₁ - τ) y :=  hF.coeFn_toLp
 
 private theorem principal_integral_eq_multiplierInner
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
@@ -136,30 +135,28 @@ private theorem principal_integral_eq_multiplierInner
   ring
 
 private theorem drift_integral_eq_multiplierInner
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
     (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     (∫ y in Ω, q y * f y * g y) =
-      inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g := by
-  exact principal_integral_eq_multiplierInner q hq C hC hqBound f g
+      inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g :=  principal_integral_eq_multiplierInner q hq C hC hqBound f g
 
 private theorem scalar_integral_eq_multiplierInner
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
     (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     (∫ y in Ω, q y * f y * g y) =
-      inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g := by
-  exact principal_integral_eq_multiplierInner q hq C hC hqBound f g
+      inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g :=  principal_integral_eq_multiplierInner q hq C hC hqBound f g
 
 /-- With explicit slice multiplier evidence, the raw scalar has an `L²` representation. -/
 theorem reverseTimeSpatialForm_eq_multiplierInner_of_sliceEvidence
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (u v : H10HilbertGraph hΩ)

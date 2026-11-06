@@ -26,13 +26,11 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
 /-- Lateral barrier for a viscous classical solution, in the collar, on a finite slab. -/
-theorem classical_le_collarSupersolution_of_lipschitzOn {n : ℕ} {c : PDE.Vec n}
-    {r₀ dstar : ℝ} (hd : 0 < dstar) (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n}
+theorem classical_le_collarSupersolution_of_lipschitzOn {n c r₀ dstar} (hd : 0 < dstar) (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n}
     (hγpw : IsContinuousPiecewiseC1 γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ) {a τ : ℝ} (haτ : a < τ)
     (hγL : CurveLipschitzOn γ Lγ (Icc a τ)) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ}
-    {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b) {ε : ℝ} (hε0 : 0 ≤ ε)
-    (hε1 : ε ≤ 1) {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
+    {B } (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb b} (hb : HasEuclideanLipschitzDrift Lb b) {ε } (hε0 : 0 ≤ ε)
+    (hε1 : ε ≤ 1) {F } {u : KineticPoint n → ℝ}
     (hu : IsClassicalViscousTerminalSolution (PDE.euclideanBall c r₀) γ B b ε τ F u)
     {FB : ℝ} (hFB : 0 ≤ FB)
     (hle : ∀ p ∈ movingClosedSlab (PDE.euclideanBall c r₀) γ a τ, u p ≤ FB)
@@ -77,26 +75,26 @@ theorem classical_le_collarSupersolution_of_lipschitzOn {n : ℕ} {c : PDE.Vec n
 terminal solution on the moving ball, with the Lipschitz bound of `γ` and the operator bound `M`
 required only on the finite slab `[a, τ]`. -/
 theorem two_barriers_on_finite_slab
-    {n : ℕ} {c : PDE.Vec n} {r : ℝ} (hr : 0 < r)
+    {n c r} (hr : 0 < r)
     {γ : ℝ → PDE.Vec n} (hγ : IsContinuousPiecewiseC1 γ)
     (a τ : ℝ) (haτ : a < τ) (L : ℝ) (hL : 0 ≤ L)
     (hγL : ∀ s ∈ Icc a τ, ∀ t ∈ Icc a τ,
       PDE.vecEuclideanNorm (γ s - γ t) ≤ L * |s - t|)
     {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {L_b : ℝ} {b : PDE.Vec n → PDE.Vec n}
+    {B } (hB : HasEverywhereLoewnerBounds lam Lam B)
+    {L_b b}
     (hb : HasEuclideanLipschitzDrift L_b b)
-    {ε : ℝ} (hε : 0 ≤ ε) (hε1 : ε ≤ 1)
-    {F : BoundedBorel (EvolutionAmbientState n)}
+    {ε } (hε : 0 ≤ ε) (hε1 : ε ≤ 1)
+    {F }
     (hF : IsSmoothCompactTerminalDatum (PDE.euclideanBall c r) γ τ F)
     (d : ℝ) (hd : 0 < d) (hdr : d < r / 4)
     (hsupp : ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
       2 * d ≤ r - PDE.vecEuclideanNorm (q.1 - (γ τ + c)))
-    (C M : ℝ) (hC : ∀ q, |F q| ≤ C)
+    (C M ) (hC : ∀ q, |F q| ≤ C)
     (hM : ∀ p ∈ movingClosedSlab (PDE.euclideanBall c r) γ a τ,
       |viscousTransportedOperator B b ε
         (fun q => F (q.position, q.velocity)) p| ≤ M)
-    {u : KineticPoint n → ℝ}
+    {u }
     (hu : IsClassicalViscousTerminalSolution (PDE.euclideanBall c r) γ B b ε τ F u) :
     (∀ p ∈ movingClosedSlab (PDE.euclideanBall c r) γ a τ,
       |u p| ≤ C * min 1
@@ -106,12 +104,12 @@ theorem two_barriers_on_finite_slab
     (∀ p ∈ movingClosedSlab (PDE.euclideanBall c r) γ a τ,
       τ - d / (1 + L) ≤ p.time →
         |u p - F (p.position, p.velocity)| ≤ (τ - p.time) * M) := by
-  have hΩo : IsOpen (PDE.euclideanBall c r) := PDE.isOpen_euclideanBall c r
+  have hΩo := PDE.isOpen_euclideanBall c r
   have hdr' : d < r := by linarith
   have hκ : 0 < collarKappa L lam := div_pos (by linarith) hlam
   have hC0 : 0 ≤ C := le_trans (abs_nonneg _) (hC 0)
   have hWpos : 0 < barrierW (collarKappa L lam) d := barrierW_pos hκ hd
-  have hγL' : CurveLipschitzOn γ L (Icc a τ) := hγL
+  have hγL' := hγL
   have hslab : movingClosedSlab (PDE.euclideanBall c r) γ a τ ⊆
       evolutionPastClosedCylinder (PDE.euclideanBall c r) γ τ :=
     fun p hp => ⟨hp.2.1, hp.2.2⟩
@@ -134,7 +132,7 @@ theorem two_barriers_on_finite_slab
       have hnorm : r - d ≤ PDE.vecEuclideanNorm (p.position - (γ p.time + c)) := by
         linarith
       have hS : (r - d) ^ 2 ≤ centreSq c γ p := by
-        have h2 : (r - d) ^ 2 ≤ PDE.vecEuclideanNorm (p.position - (γ p.time + c)) ^ 2 :=
+        have h2 :=
           pow_le_pow_left₀ (by linarith) hnorm 2
         rw [PDE.vecEuclideanNorm_sq] at h2
         exact h2
@@ -164,7 +162,7 @@ theorem two_barriers_on_finite_slab
         rw [this]
         ring
       rw [← hG]
-      have hdown' : -u p ≤ collarSupersolution c r d L lam C γ p := hdown
+      have hdown' := hdown
       exact abs_le.mpr ⟨by linarith, hup⟩
   · intro p₀ hp₀ hδ
     have hL1 : 0 < 1 + L := by linarith

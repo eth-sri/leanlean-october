@@ -24,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- A supplied reverse-time variational energy solution and explicit global product
 representatives satisfy every local separated product distribution identity. -/
 theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEnergy
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+    {d Ω O}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hO : IsOpen O) (hOΩ : O ⊆ Ω)
@@ -104,8 +104,8 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
     simpa only [raw, etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_apply,
       reverseTimeScalarTestOfLocal_deriv, PDE.WeakTestFunction.mono_apply,
       PDE.WeakTestFunction.mono_partialDeriv] using hglobal
-  let localSet : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
-  let globalSet : Set (TimeVelocity d) := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
+  let localSet := Set.Ioo τ₁ τ₂ ×ˢ O
+  let globalSet := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
   have hlocalGlobal : localSet ⊆ globalSet := by
     rintro ⟨τ, y⟩ ⟨hτ, hy⟩
     exact ⟨htime hτ, hOΩ hy⟩
@@ -123,7 +123,7 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
         intro hy
         exact hnotLocal ⟨hτ, hy⟩
       have hpsiT : y ∉ tsupport (psi : PDE.Vec d → ℝ) := fun h => hy (psi.tsupport_subset h)
-      have hpsi : psi y = 0 := image_eq_zero_of_notMem_tsupport hpsiT
+      have hpsi := image_eq_zero_of_notMem_tsupport hpsiT
       have hdpsi (i : Fin d) : psi.partialDeriv i y = 0 := by
         unfold PDE.WeakTestFunction.partialDeriv
         rw [fderiv_of_notMem_tsupport ℝ hpsiT]
@@ -131,14 +131,13 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
       simp only [raw, hpsi, hdpsi, mul_zero, zero_mul, Finset.sum_const_zero,
         sub_zero, add_zero]
     · have hetaT : τ ∉ tsupport (eta : ℝ → ℝ) := fun h => hτ (eta.tsupport_subset h)
-      have heta : eta τ = 0 := image_eq_zero_of_notMem_tsupport hetaT
+      have heta := image_eq_zero_of_notMem_tsupport hetaT
       have hdetaT : τ ∉ tsupport eta.deriv := fun h => hetaT (hetaDerivSupport h)
-      have hdeta : eta.deriv τ = 0 := image_eq_zero_of_notMem_tsupport hdetaT
-      simp only [raw, heta, hdeta, mul_zero, zero_mul, sub_zero, add_zero]
+      simp only [raw, heta, (image_eq_zero_of_notMem_tsupport hdetaT), mul_zero, zero_mul, sub_zero, add_zero]
   have hmeasure : timeVelocityVolumeOn localSet ≤ timeVelocityVolumeOn globalSet := by
     dsimp only [timeVelocityVolumeOn]
     exact Measure.restrict_mono hlocalGlobal le_rfl
-  have hlocalInt : Integrable raw (timeVelocityVolumeOn localSet) :=
+  have hlocalInt :=
     hglobal'.1.mono_measure hmeasure
   refine ⟨?_, ?_⟩
   · simpa only [raw, localSet] using hlocalInt

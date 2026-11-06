@@ -20,35 +20,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open scoped BigOperators
 
-private theorem parabolicDyadicTruncate_le_succ_eq_truncate_parent
-    {d m n : Nat} (hmn : m <= n) (index : ParabolicDyadicIndex d (n + 1)) :
-    parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index =
-      parabolicDyadicTruncate hmn (parabolicDyadicParent index) := by
-  funext j
-  simp only [parabolicDyadicTruncate, parabolicDyadicParent]
-  apply congrArg index
-  exact Fin.ext (by rfl)
-
-private theorem parabolicDyadicSourceBox_radius_rpow_truncate_mul
-    {d m n : Nat} (hmn : m <= n) (index : ParabolicDyadicIndex d n)
-    (alpha : Real) :
-    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).radius ^ alpha *
-        ((2 : Real) ^ (-alpha)) ^ (n - m) =
-      (parabolicDyadicSourceBox index).radius ^ alpha := by
-  change ((2 : Real) ^ m)⁻¹ ^ alpha * ((2 : Real) ^ (-alpha)) ^ (n - m) =
-    ((2 : Real) ^ n)⁻¹ ^ alpha
-  have hbase (k : Nat) : ((2 : Real) ^ k)⁻¹ ^ alpha =
-      (2 : Real) ^ (-(k : Real) * alpha) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_neg (by norm_num : (0 : Real) <= 2),
-      ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
-  have hfactor : ((2 : Real) ^ (-alpha)) ^ (n - m) =
-      (2 : Real) ^ (-alpha * ((n - m : Nat) : Real)) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
-  rw [hbase m, hbase n, hfactor, ← Real.rpow_add (by norm_num : (0 : Real) < 2)]
-  congr 1
-  rw [Nat.cast_sub hmn]
-  ring
-
 private theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
     (u : TimeVelocity d -> Real) : 0 <= parabolicMorreyDerivativeLpNorm d u := by
   unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm parabolicELpNorm
@@ -57,158 +28,6 @@ private theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
   refine Finset.sum_nonneg fun j _ => ?_
   exact ENNReal.toReal_nonneg
 
-private theorem parabolicMorreyDyadicTruncateProjectionClosedFiniteTail
-    (d : Nat) (hd : 1 <= d) :
-    ∃ C : Real, 0 < C ∧
-      ∀ (m n : Nat) (hmn : m <= n) (index : ParabolicDyadicIndex d n)
-        (u : TimeVelocity d -> Real),
-        ContDiff Real 2 u ->
-        HasCompactSupport u ->
-        ∀ z : TimeVelocity d,
-          z ∈ parabolicClosedBox 1
-              (parabolicDyadicSourceBox index).radius
-              (parabolicDyadicSourceBox index).baseTime
-              (parabolicDyadicSourceBox index).center ->
-          |parabolicMorreyBoxAffineProjection
-              (parabolicDyadicSourceBox index).baseTime
-              (parabolicDyadicSourceBox index).center
-              (parabolicDyadicSourceBox index).radius u z -
-            parabolicMorreyBoxAffineProjection
-              (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).baseTime
-              (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).center
-              (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).radius u z| <=
-            C * (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).radius ^
-                  parabolicMorreyExponent d *
-              (∑ k ∈ Finset.range (n - m),
-                ((2 : Real) ^ (-parabolicMorreyExponent d)) ^ k) *
-              parabolicMorreyDerivativeLpNorm d u := by
-  obtain ⟨C, hCpos, hstep⟩ :=
-    exists_parabolicMorreyDyadicChildProjectionClosedConst d hd
-  refine ⟨C, hCpos, ?_⟩
-  intro m n hmn index u hu huc z hz
-  have huJet : ParabolicSmoothJetMemLp d u :=
-    parabolicSmoothJetMemLp_of_contDiff_hasCompactSupport hu huc
-  induction n, hmn using Nat.le_induction with
-  | base =>
-      simp [parabolicDyadicTruncate_self]
-  | succ n hmn ih =>
-      let parent := parabolicDyadicParent index
-      let child : ParabolicDyadicChild d := index (Fin.last n)
-      have hindex : index = parabolicDyadicChildIndex parent child := by
-        simpa only [parent, child] using
-          (parabolicDyadicChildIndex_parent_last index).symm
-      have hzParent : z ∈ parabolicClosedBox 1
-          (parabolicDyadicSourceBox parent).radius
-          (parabolicDyadicSourceBox parent).baseTime
-          (parabolicDyadicSourceBox parent).center := by
-        have hzChild : z ∈ parabolicClosedBox 1
-            (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius
-            (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
-            (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center := by
-          simpa only [hindex] using hz
-        exact parabolicDyadicClosedForwardBox_child_subset parent child hzChild
-      have hih := ih parent hzParent
-      have htrunc : parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index =
-          parabolicDyadicTruncate hmn parent := by
-        simpa only [parent] using
-          parabolicDyadicTruncate_le_succ_eq_truncate_parent hmn index
-      have hstep' := hstep n parent child u hu z (by simpa only [hindex] using hz)
-      have hnorm : parabolicMorreyDerivativeLpNormOn d u
-          (parabolicBox 1 (parabolicDyadicSourceBox parent).radius
-            (parabolicDyadicSourceBox parent).baseTime
-            (parabolicDyadicSourceBox parent).center) <=
-          parabolicMorreyDerivativeLpNorm d u :=
-        parabolicMorreyDerivativeLpNormOn_le u _ huJet
-      have hstepNorm : |parabolicMorreyBoxAffineProjection
-          (parabolicDyadicSourceBox index).baseTime
-          (parabolicDyadicSourceBox index).center
-          (parabolicDyadicSourceBox index).radius u z -
-          parabolicMorreyBoxAffineProjection
-          (parabolicDyadicSourceBox parent).baseTime
-          (parabolicDyadicSourceBox parent).center
-          (parabolicDyadicSourceBox parent).radius u z| <=
-          C * (parabolicDyadicSourceBox parent).radius ^ parabolicMorreyExponent d *
-            parabolicMorreyDerivativeLpNorm d u := by
-        simpa only [hindex, parabolicMorreyDerivativeLpNormOn] using
-          (hstep'.trans (mul_le_mul_of_nonneg_left hnorm
-            (mul_nonneg hCpos.le (Real.rpow_nonneg
-              (parabolicDyadicSourceBox_radius_pos parent).le _))))
-      have hparentRadius := parabolicDyadicSourceBox_radius_rpow_truncate_mul
-        hmn parent (parabolicMorreyExponent d)
-      have hraw : 0 <= parabolicMorreyDerivativeLpNorm d u :=
-        parabolicMorreyDerivativeLpNorm_nonneg d u
-      rw [htrunc]
-      rw [hindex]
-      rw [Nat.succ_sub hmn, Finset.sum_range_succ]
-      calc
-        |parabolicMorreyBoxAffineProjection
-            (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
-            (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center
-            (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius u z -
-          parabolicMorreyBoxAffineProjection
-            (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).baseTime
-            (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).center
-            (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius u z| <=
-            |parabolicMorreyBoxAffineProjection
-                (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
-                (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center
-                (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius u z -
-              parabolicMorreyBoxAffineProjection
-                (parabolicDyadicSourceBox parent).baseTime
-                (parabolicDyadicSourceBox parent).center
-                (parabolicDyadicSourceBox parent).radius u z| +
-              |parabolicMorreyBoxAffineProjection
-                (parabolicDyadicSourceBox parent).baseTime
-                (parabolicDyadicSourceBox parent).center
-                (parabolicDyadicSourceBox parent).radius u z -
-              parabolicMorreyBoxAffineProjection
-                (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).baseTime
-                (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).center
-                (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius u z| := by
-              rw [show parabolicMorreyBoxAffineProjection
-                    (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
-                    (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center
-                    (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius u z -
-                  parabolicMorreyBoxAffineProjection
-                    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).baseTime
-                    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).center
-                    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius u z =
-                  (parabolicMorreyBoxAffineProjection
-                    (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
-                    (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center
-                    (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius u z -
-                    parabolicMorreyBoxAffineProjection
-                      (parabolicDyadicSourceBox parent).baseTime
-                      (parabolicDyadicSourceBox parent).center
-                      (parabolicDyadicSourceBox parent).radius u z) +
-                    (parabolicMorreyBoxAffineProjection
-                      (parabolicDyadicSourceBox parent).baseTime
-                      (parabolicDyadicSourceBox parent).center
-                      (parabolicDyadicSourceBox parent).radius u z -
-                      parabolicMorreyBoxAffineProjection
-                        (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).baseTime
-                        (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).center
-                        (parabolicDyadicSourceBox
-                          (parabolicDyadicTruncate hmn parent)).radius u z) by ring]
-              exact abs_add_le _ _
-        _ <= C * (parabolicDyadicSourceBox parent).radius ^ parabolicMorreyExponent d *
-              parabolicMorreyDerivativeLpNorm d u +
-            C * (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius ^
-              parabolicMorreyExponent d *
-              (∑ k ∈ Finset.range (n - m),
-                ((2 : Real) ^ (-parabolicMorreyExponent d)) ^ k) *
-              parabolicMorreyDerivativeLpNorm d u := by
-              exact add_le_add (by simpa only [hindex] using hstepNorm) hih
-        _ = C * (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius ^
-              parabolicMorreyExponent d *
-              ((∑ k ∈ Finset.range (n - m),
-                ((2 : Real) ^ (-parabolicMorreyExponent d)) ^ k) +
-                ((2 : Real) ^ (-parabolicMorreyExponent d)) ^ (n - m)) *
-              parabolicMorreyDerivativeLpNorm d u := by
-              rw [← hparentRadius]
-              ring
-
-/-- A finite closed dyadic address tail is bounded by the geometric Morrey tail. -/
 theorem exists_parabolicMorreyDyadicAddressPrefixProjectionClosedTailConst
     (d : Nat) (hd : 1 <= d) :
     ∃ C : Real, 0 < C ∧
@@ -232,8 +51,176 @@ theorem exists_parabolicMorreyDyadicAddressPrefixProjectionClosedTailConst
             C * (parabolicDyadicSourceBox a.2).radius ^ parabolicMorreyExponent d *
               (1 - (2 : Real) ^ (-parabolicMorreyExponent d))⁻¹ *
               parabolicMorreyDerivativeLpNorm d u := by
-  obtain ⟨C, hCpos, hfinite⟩ :=
-    parabolicMorreyDyadicTruncateProjectionClosedFiniteTail d hd
+  obtain ⟨C, hCpos, hfinite⟩ : ∃ C : Real, 0 < C ∧
+      ∀ (m n : Nat) (hmn : m <= n) (index : ParabolicDyadicIndex d n)
+        (u : TimeVelocity d -> Real),
+        ContDiff Real 2 u ->
+        HasCompactSupport u ->
+        ∀ z : TimeVelocity d,
+          z ∈ parabolicClosedBox 1
+              (parabolicDyadicSourceBox index).radius
+              (parabolicDyadicSourceBox index).baseTime
+              (parabolicDyadicSourceBox index).center ->
+          |parabolicMorreyBoxAffineProjection
+              (parabolicDyadicSourceBox index).baseTime
+              (parabolicDyadicSourceBox index).center
+              (parabolicDyadicSourceBox index).radius u z -
+            parabolicMorreyBoxAffineProjection
+              (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).baseTime
+              (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).center
+              (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).radius u z| <=
+            C * (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).radius ^
+                  parabolicMorreyExponent d *
+              (∑ k ∈ Finset.range (n - m),
+                ((2 : Real) ^ (-parabolicMorreyExponent d)) ^ k) *
+              parabolicMorreyDerivativeLpNorm d u := by
+      obtain ⟨C, hCpos, hstep⟩ :=
+        exists_parabolicMorreyDyadicChildProjectionClosedConst d hd
+      refine ⟨C, hCpos, ?_⟩
+      intro m n hmn index u hu huc z hz
+      have huJet :=
+        parabolicSmoothJetMemLp_of_contDiff_hasCompactSupport hu huc
+      induction n, hmn using Nat.le_induction with
+      | base =>
+          simp [parabolicDyadicTruncate_self]
+      | succ n hmn ih =>
+          let parent := parabolicDyadicParent index
+          let child : ParabolicDyadicChild d := index (Fin.last n)
+          have hindex : index = parabolicDyadicChildIndex parent child := by
+            simpa only [parent, child] using
+              (parabolicDyadicChildIndex_parent_last index).symm
+          have hzParent : z ∈ parabolicClosedBox 1
+              (parabolicDyadicSourceBox parent).radius
+              (parabolicDyadicSourceBox parent).baseTime
+              (parabolicDyadicSourceBox parent).center := by
+            have hzChild : z ∈ parabolicClosedBox 1
+                (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius
+                (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
+                (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center := by
+              simpa only [hindex] using hz
+            exact parabolicDyadicClosedForwardBox_child_subset parent child hzChild
+          have hih := ih parent hzParent
+          have htrunc : parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index =
+              parabolicDyadicTruncate hmn parent := by
+            have _h_inl_9 : parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index =
+          parabolicDyadicTruncate hmn (parabolicDyadicParent index) := by
+              funext j
+              simp only [parabolicDyadicTruncate, parabolicDyadicParent]
+              apply congrArg index
+              exact Fin.ext (by rfl)
+            simpa only [parent] using _h_inl_9
+          have hstep' := hstep n parent child u hu z (by simpa only [hindex] using hz)
+          have hnorm : parabolicMorreyDerivativeLpNormOn d u
+              (parabolicBox 1 (parabolicDyadicSourceBox parent).radius
+                (parabolicDyadicSourceBox parent).baseTime
+                (parabolicDyadicSourceBox parent).center) <=
+              parabolicMorreyDerivativeLpNorm d u :=
+            parabolicMorreyDerivativeLpNormOn_le u _ huJet
+          have hstepNorm : |parabolicMorreyBoxAffineProjection
+              (parabolicDyadicSourceBox index).baseTime
+              (parabolicDyadicSourceBox index).center
+              (parabolicDyadicSourceBox index).radius u z -
+              parabolicMorreyBoxAffineProjection
+              (parabolicDyadicSourceBox parent).baseTime
+              (parabolicDyadicSourceBox parent).center
+              (parabolicDyadicSourceBox parent).radius u z| <=
+              C * (parabolicDyadicSourceBox parent).radius ^ parabolicMorreyExponent d *
+                parabolicMorreyDerivativeLpNorm d u := by
+            simpa only [hindex, parabolicMorreyDerivativeLpNormOn] using
+              (hstep'.trans (mul_le_mul_of_nonneg_left hnorm
+                (mul_nonneg hCpos.le (Real.rpow_nonneg
+                  (parabolicDyadicSourceBox_radius_pos parent).le _))))
+          have hparentRadius : (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius ^ (parabolicMorreyExponent d) *
+        ((2 : Real) ^ (-(parabolicMorreyExponent d))) ^ (n - m) =
+      (parabolicDyadicSourceBox parent).radius ^ (parabolicMorreyExponent d) := by
+            let alpha := (parabolicMorreyExponent d)
+            change ((2 : Real) ^ m)⁻¹ ^ alpha * ((2 : Real) ^ (-alpha)) ^ (n - m) =
+              ((2 : Real) ^ n)⁻¹ ^ alpha
+            have hbase (k : Nat) : ((2 : Real) ^ k)⁻¹ ^ alpha =
+                (2 : Real) ^ (-(k : Real) * alpha) := by
+              rw [← Real.rpow_natCast, ← Real.rpow_neg (by norm_num : (0 : Real) <= 2),
+                ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
+            have hfactor : ((2 : Real) ^ (-alpha)) ^ (n - m) =
+                (2 : Real) ^ (-alpha * ((n - m : Nat) : Real)) := by
+              rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
+            rw [hbase m, hbase n, hfactor, ← Real.rpow_add (by norm_num : (0 : Real) < 2)]
+            congr 1
+            rw [Nat.cast_sub hmn]
+            ring
+          have hraw :=
+            parabolicMorreyDerivativeLpNorm_nonneg d u
+          rw [htrunc]
+          rw [hindex]
+          rw [Nat.succ_sub hmn, Finset.sum_range_succ]
+          calc
+            |parabolicMorreyBoxAffineProjection
+                (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
+                (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center
+                (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius u z -
+              parabolicMorreyBoxAffineProjection
+                (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).baseTime
+                (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).center
+                (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius u z| <=
+                |parabolicMorreyBoxAffineProjection
+                    (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
+                    (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center
+                    (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius u z -
+                  parabolicMorreyBoxAffineProjection
+                    (parabolicDyadicSourceBox parent).baseTime
+                    (parabolicDyadicSourceBox parent).center
+                    (parabolicDyadicSourceBox parent).radius u z| +
+                  |parabolicMorreyBoxAffineProjection
+                    (parabolicDyadicSourceBox parent).baseTime
+                    (parabolicDyadicSourceBox parent).center
+                    (parabolicDyadicSourceBox parent).radius u z -
+                  parabolicMorreyBoxAffineProjection
+                    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).baseTime
+                    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).center
+                    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius u z| := by
+                  rw [show parabolicMorreyBoxAffineProjection
+                        (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
+                        (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center
+                        (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius u z -
+                      parabolicMorreyBoxAffineProjection
+                        (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).baseTime
+                        (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).center
+                        (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius u z =
+                      (parabolicMorreyBoxAffineProjection
+                        (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).baseTime
+                        (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).center
+                        (parabolicDyadicSourceBox (parabolicDyadicChildIndex parent child)).radius u z -
+                        parabolicMorreyBoxAffineProjection
+                          (parabolicDyadicSourceBox parent).baseTime
+                          (parabolicDyadicSourceBox parent).center
+                          (parabolicDyadicSourceBox parent).radius u z) +
+                        (parabolicMorreyBoxAffineProjection
+                          (parabolicDyadicSourceBox parent).baseTime
+                          (parabolicDyadicSourceBox parent).center
+                          (parabolicDyadicSourceBox parent).radius u z -
+                          parabolicMorreyBoxAffineProjection
+                            (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).baseTime
+                            (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).center
+                            (parabolicDyadicSourceBox
+                              (parabolicDyadicTruncate hmn parent)).radius u z) by ring]
+                  exact abs_add_le _ _
+            _ <= C * (parabolicDyadicSourceBox parent).radius ^ parabolicMorreyExponent d *
+                  parabolicMorreyDerivativeLpNorm d u +
+                C * (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius ^
+                  parabolicMorreyExponent d *
+                  (∑ k ∈ Finset.range (n - m),
+                    ((2 : Real) ^ (-parabolicMorreyExponent d)) ^ k) *
+                  parabolicMorreyDerivativeLpNorm d u := by
+                  exact add_le_add (by simpa only [hindex] using hstepNorm) hih
+            _ = C * (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn parent)).radius ^
+                  parabolicMorreyExponent d *
+                  ((∑ k ∈ Finset.range (n - m),
+                    ((2 : Real) ^ (-parabolicMorreyExponent d)) ^ k) +
+                    ((2 : Real) ^ (-parabolicMorreyExponent d)) ^ (n - m)) *
+                  parabolicMorreyDerivativeLpNorm d u := by
+                  rw [← hparentRadius]
+                  ring
+
+    /- A finite closed dyadic address tail is bounded by the geometric Morrey tail. -/
   refine ⟨C, hCpos, ?_⟩
   intro a b u hab hu huc z hz
   rcases hab with ⟨hmn, htruncate⟩
@@ -247,7 +234,7 @@ theorem exists_parabolicMorreyDyadicAddressPrefixProjectionClosedTailConst
     Real.rpow_pos_of_pos (by norm_num) _
   have hqlt : (2 : Real) ^ (-parabolicMorreyExponent d) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (neg_lt_zero.mpr halpha)
-  have hqnonneg : 0 <= (2 : Real) ^ (-parabolicMorreyExponent d) := hqpos.le
+  have hqnonneg := hqpos.le
   have hqsub : 0 < 1 - (2 : Real) ^ (-parabolicMorreyExponent d) :=
     sub_pos.mpr hqlt
   have hclear (N : Nat) :

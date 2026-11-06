@@ -13,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Set MeasureTheory SectionTwo Evolution TheoremA
 
 /-- Reflection preserves the smooth autonomous coefficient class. -/
-def returnReflectedCoefficient {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
+def returnReflectedCoefficient {lam Lam } (A : SmoothAutonomous lam Lam) :
     SmoothAutonomous lam Lam :=
   ⟨reflectedAutonomous A.a, reflectedAutonomous_smooth A, reflectedAutonomous_bounds A⟩
 

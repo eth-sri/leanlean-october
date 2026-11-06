@@ -47,7 +47,7 @@ theorem rieszMeasure_univ_le_one (ℓ : C_c(U, ℝ) →ₚ[ℝ] ℝ)
 
 /-- A subprobability measure with the integrals of the Riesz functional is the Riesz measure. -/
 theorem eq_rieszMeasure_of_integral_eq (ℓ : C_c(U, ℝ) →ₚ[ℝ] ℝ)
-    (μ' : Measure U) [IsFiniteMeasure μ'] (hint : ∀ f : C_c(U, ℝ), ∫ x, f x ∂μ' = ℓ f) :
+    (μ' ) [IsFiniteMeasure μ'] (hint : ∀ f : C_c(U, ℝ), ∫ x, f x ∂μ' = ℓ f) :
     μ' = RealRMK.rieszMeasure ℓ :=
   Measure.ext_of_integral_eq_on_compactlySupported fun f => by
     rw [hint f, RealRMK.integral_rieszMeasure]

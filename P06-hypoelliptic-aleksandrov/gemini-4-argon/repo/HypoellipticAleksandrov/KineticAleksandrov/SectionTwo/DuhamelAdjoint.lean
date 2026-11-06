@@ -23,9 +23,9 @@ theorem contDiffOn_duhamel_direction {U : Set (EvolutionVec d)} (hU : IsOpen U)
 
 /-- Full kinetic integration by parts, with all jets discharged by interior smoothness. -/
 theorem integral_transportedAdjoint_contDiffOn {U : Set (EvolutionVec d)} (hU : IsOpen U)
-    {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
+    {B } (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B)
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
+    {b } (hb : IsSmoothDrift b)
     {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
     (ψ : EvolutionVec d → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
     (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :

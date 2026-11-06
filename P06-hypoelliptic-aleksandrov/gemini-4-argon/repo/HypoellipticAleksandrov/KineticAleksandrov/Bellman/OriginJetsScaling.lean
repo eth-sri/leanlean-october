@@ -12,17 +12,17 @@ open Set Filter
 open scoped Topology
 
 /-- Homogeneity is an equality on a neighborhood of every punctured point. -/
-theorem IsBellmanHomogeneous.eventually_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) {r : ℝ} (hr : 0 < r)
-    {q : ℝ × ℝ} (hq : q ∈ bellmanPuncturedSet) :
+theorem IsBellmanHomogeneous.eventually_scaling {alpha phi}
+    (h : IsBellmanHomogeneous alpha phi) {r } (hr : 0 < r)
+    {q } (hq : q ∈ bellmanPuncturedSet) :
     (fun z => phi (bellmanPlaneDilation r z)) =ᶠ[𝓝 q] fun z => r ^ alpha * phi z := by
   filter_upwards [bellmanPuncturedSet_isOpen.mem_nhds hq] with z hz
   exact h.2 r hr z hz
 
 /-- The first position jet has homogeneous degree alpha minus three. -/
-theorem IsBellmanHomogeneous.dx_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) {r : ℝ} (hr : 0 < r)
-    {q : ℝ × ℝ} (hq : q ∈ bellmanPuncturedSet) :
+theorem IsBellmanHomogeneous.dx_scaling {alpha phi}
+    (h : IsBellmanHomogeneous alpha phi) {r } (hr : 0 < r)
+    {q } (hq : q ∈ bellmanPuncturedSet) :
     bellmanDx phi (bellmanPlaneDilation r q) = r ^ (alpha - 3) * bellmanDx phi q := by
   have hd := (h.1.contDiffAt (bellmanPuncturedSet_isOpen.mem_nhds
     (bellmanPlaneDilation_ne_zero r hr q hq))).differentiableAt (by norm_num)
@@ -42,9 +42,9 @@ theorem IsBellmanHomogeneous.dx_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → �
       ring
 
 /-- The first velocity jet has homogeneous degree alpha minus one. -/
-theorem IsBellmanHomogeneous.dv_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) {r : ℝ} (hr : 0 < r)
-    {q : ℝ × ℝ} (hq : q ∈ bellmanPuncturedSet) :
+theorem IsBellmanHomogeneous.dv_scaling {alpha phi}
+    (h : IsBellmanHomogeneous alpha phi) {r } (hr : 0 < r)
+    {q } (hq : q ∈ bellmanPuncturedSet) :
     bellmanDv phi (bellmanPlaneDilation r q) = r ^ (alpha - 1) * bellmanDv phi q := by
   have hd := (h.1.contDiffAt (bellmanPuncturedSet_isOpen.mem_nhds
     (bellmanPlaneDilation_ne_zero r hr q hq))).differentiableAt (by norm_num)
@@ -67,9 +67,9 @@ theorem IsBellmanHomogeneous.dv_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → �
       rw [← mul_assoc, he]
 
 /-- The second velocity jet has homogeneous degree alpha minus two. -/
-theorem IsBellmanHomogeneous.dvv_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) {r : ℝ} (hr : 0 < r)
-    {q : ℝ × ℝ} (hq : q ∈ bellmanPuncturedSet) :
+theorem IsBellmanHomogeneous.dvv_scaling {alpha phi}
+    (h : IsBellmanHomogeneous alpha phi) {r } (hr : 0 < r)
+    {q } (hq : q ∈ bellmanPuncturedSet) :
     bellmanDvv phi (bellmanPlaneDilation r q) = r ^ (alpha - 2) * bellmanDvv phi q := by
   have he : bellmanDv (fun z => phi (bellmanPlaneDilation r z)) =ᶠ[𝓝 q]
       (r ^ alpha) • bellmanDv phi := by

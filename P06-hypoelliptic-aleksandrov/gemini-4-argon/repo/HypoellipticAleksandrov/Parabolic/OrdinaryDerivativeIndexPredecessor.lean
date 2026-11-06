@@ -20,7 +20,7 @@ namespace TimeVelocityDerivativeIndex
 
 /-- Every bounded ordinary index is zero or a bounded time/velocity successor. -/
 theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
-    {d m : ℕ} (beta : TimeVelocityDerivativeIndex d m) :
+    {d m } (beta : TimeVelocityDerivativeIndex d m) :
     beta = zero d m ∨
       (∃ (gamma : TimeVelocityDerivativeIndex d m)
         (h : gamma.1.order + 1 ≤ m),
@@ -47,7 +47,7 @@ theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
       let gammaIndex := TimeVelocityMultiIndex.ofTimeVelocity beta.1.timeOrder
         (Function.update beta.1.velocity i (beta.1.velocity i - 1))
       have horder : gammaIndex.order + 1 ≤ m := by
-        have hpos : 0 < beta.1.velocity i := Nat.pos_of_ne_zero hi
+        have hpos := Nat.pos_of_ne_zero hi
         have hsum :
             (∑ j, Function.update beta.1.velocity i
               (beta.1.velocity i - 1) j) + 1 =
@@ -84,7 +84,7 @@ theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
     let gammaIndex := TimeVelocityMultiIndex.ofTimeVelocity
       (beta.1.timeOrder - 1) beta.1.velocity
     have horder : gammaIndex.order + 1 ≤ m := by
-      have hpos : 0 < beta.1.timeOrder := Nat.pos_of_ne_zero ht
+      have hpos := Nat.pos_of_ne_zero ht
       change (beta.1.timeOrder - 1) + beta.1.velocity.order + 1 ≤ m
       have hbeta := beta.2
       change beta.1.timeOrder + beta.1.velocity.order ≤ m at hbeta

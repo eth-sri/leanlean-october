@@ -14,14 +14,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
 open Set
 
-/-- The reference bound strictly exceeds one. -/
+/- The reference bound strictly exceeds one. -/
 theorem referenceBound_large (m : ℕ) : 1 < referenceBound m := by
   have hb : 0 ≤ stackPathBound m := by unfold stackPathBound; positivity
   have hm : 0 ≤ (m : ℝ) := Nat.cast_nonneg m
   unfold referenceBound
   linarith only [hb, hm]
 
-/-- The target unit cylinder lies in the same reference region as the sampling closure. -/
+/- The target unit cylinder lies in the same reference region as the sampling closure. -/
 theorem unitCylinder_subset_reference (d m : ℕ) :
     backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 ⊆
       referenceRegion d m (referenceBound m) := by
@@ -36,29 +36,5 @@ theorem unitCylinder_subset_reference (d m : ℕ) :
   have htlo : -1 < P.time := by simpa only [one_pow, zero_sub] using hP.1
   exact ⟨by linarith only [htlo, hm], hP.2.1, hpx.trans hL, hpv.trans hL⟩
 
-/-- One smaller reference scale preserves all positivity and admissibility data. -/
-theorem exists_reference_geometry (d m : ℕ) :
-    ∃ eps : ℝ, 0 < eps ∧ eps < 1 ∧
-      IsOpen (referenceRegion d m (referenceBound m)) ∧
-      Bornology.IsBounded (referenceRegion d m (referenceBound m)) ∧
-      closure (samplingCylinder d m) ⊆ referenceRegion d m (referenceBound m) ∧
-      backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 ⊆
-        referenceRegion d m (referenceBound m) ∧
-      kineticAffine (⟨0, 0, 0⟩ : KineticPoint d) eps ''
-        referenceRegion d m (referenceBound m) ⊆
-        backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 ∧
-      closure (kineticAffine (⟨0, 0, 0⟩ : KineticPoint d) eps '' samplingCylinder d m) ⊆
-        backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
-  have hL := referenceBound_large m
-  obtain ⟨eps, heps, heps1, himage⟩ := exists_buffered_reference_scale d m
-    (lt_trans (by norm_num) hL)
-  have hsigma := sampling_closure_subset_reference d m hL
-  refine ⟨eps, heps, heps1, isOpen_referenceRegion d m _,
-    isBounded_referenceRegion d m (le_of_lt (lt_trans (by norm_num) hL)), hsigma,
-    unitCylinder_subset_reference d m, himage, ?_⟩
-  let e := kineticAffineHomeomorph (⟨0, 0, 0⟩ : KineticPoint d) eps heps.ne'
-  change closure (e '' samplingCylinder d m) ⊆ _
-  rw [← e.image_closure]
-  exact (image_mono hsigma).trans himage
-
+/- One smaller reference scale preserves all positivity and admissibility data. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

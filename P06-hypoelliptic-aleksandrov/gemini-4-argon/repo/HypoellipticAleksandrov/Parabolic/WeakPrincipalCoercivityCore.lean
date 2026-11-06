@@ -26,16 +26,16 @@ open scoped ENNReal BigOperators MatrixOrder
 
 namespace HypoellipticAleksandrov.Parabolic
 
-/-- The scalar localized by multiplication with the cutoff. -/
+/- The scalar localized by multiplication with the cutoff. -/
 def localizedScalar {d : ℕ} (b q : TimeVelocity d → ℝ) :
     TimeVelocity d → ℝ := fun z => b z * q z
 
-/-- The gradient coordinate of the localized scalar. -/
+/- The gradient coordinate of the localized scalar. -/
 def localizedGradient {d : ℕ} (b q : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d) (j : Fin d) : TimeVelocity d → ℝ :=
   fun z => b z * QG z j + q z * velocityGradient b z j
 
-/-- The ordered Hessian coordinate of the localized scalar. -/
+/- The ordered Hessian coordinate of the localized scalar. -/
 def localizedHessian {d : ℕ} (b q : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d) (QH : TimeVelocity d → PDE.Mat d)
     (j i : Fin d) : TimeVelocity d → ℝ := fun z =>
@@ -53,7 +53,7 @@ private theorem memLp_top_of_ae_abs_le
   rw [MemLp, eLpNorm_exponent_top hf]
   exact (eLpNormEssSup_le_of_ae_bound hC).trans_lt ENNReal.ofReal_lt_top
 
-/-- Every coefficient entry is jointly measurable and essentially bounded by
+/- Every coefficient entry is jointly measurable and essentially bounded by
 the literal upper ellipticity constant on the product carrier. -/
 private theorem coefficient_entry_memLp_top
     {d : ℕ} {lam Lam : ℝ} {S : Set (TimeVelocity d)}
@@ -81,7 +81,7 @@ private theorem separated_multiplier_memLp_top_restrict
     (c : PDE.Vec d → ℝ) (hc : Continuous c) (hcCompact : HasCompactSupport c) :
     MemLp (fun z : TimeVelocity d => a z.1 * c z.2) ∞
       ((volume : Measure (TimeVelocity d)).restrict S) := by
-  have hcont : Continuous (fun z : TimeVelocity d => a z.1 * c z.2) :=
+  have hcont :=
     (ha.comp continuous_fst).mul (hc.comp continuous_snd)
   have hcompact : HasCompactSupport (fun z : TimeVelocity d => a z.1 * c z.2) := by
     apply HasCompactSupport.of_support_subset_isCompact
@@ -97,7 +97,7 @@ private theorem separated_multiplier_memLp_top_restrict
       subset_tsupport c (Function.mem_support.mpr hc0)⟩
   exact (hcont.memLp_of_hasCompactSupport hcompact).restrict S
 
-/-- The three literal rough principal-coercivity integrands are integrable on
+/- The three literal rough principal-coercivity integrands are integrable on
 the product cylinder under exactly the selected `L²` and cutoff hypotheses. -/
 theorem WeakPrincipalCoercivityCore.targets_integrableOn
     {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
@@ -188,7 +188,7 @@ theorem WeakPrincipalCoercivityCore.targets_integrableOn
     exact Filter.Eventually.of_forall fun z => by ring
   constructor
   · let c : TimeVelocity d → ℝ := fun z => ζ z.1 * η z.2 ^ 2
-    have hc : MemLp c ∞ μ :=
+    have hc :=
       separated_multiplier_memLp_top_restrict S ζ hζ.continuous hζCompact
         (fun y => η y ^ 2) (hη.continuous.pow 2) hηsqCompact
     have hi (k i : Fin d) : Integrable (fun z => c z * QH z k i * QH z k i) μ := by
@@ -257,7 +257,6 @@ private theorem velocityGradient_gradient {d : ℕ}
     simp
   have hsymm := velocityHessian_isSymm
     (hb.of_le (by
-      change ((2 : ℕ∞) : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞)
       exact WithTop.coe_le_coe.mpr le_top)) z
   exact hraw.trans (hsymm.apply j i)
 
@@ -280,57 +279,12 @@ private theorem velocityHessian_compact {d : ℕ}
     (b : TimeVelocity d → ℝ) (hb : HasCompactSupport b) (j i : Fin d) :
     HasCompactSupport (fun z => velocityHessian b z j i) := by
   unfold velocityHessian
-  have hfirst : HasCompactSupport (fderiv ℝ b) := hb.fderiv ℝ
-  have hsecond : HasCompactSupport (fderiv ℝ (fderiv ℝ b)) := hfirst.fderiv ℝ
+  have hsecond := (hb.fderiv ℝ).fderiv ℝ
   simpa only [Function.comp_def] using hsecond.comp_left
     (g := fun H : TimeVelocity d →L[ℝ] TimeVelocity d →L[ℝ] ℝ =>
       H ((0, Pi.single j 1) : TimeVelocity d)
         ((0, Pi.single i 1) : TimeVelocity d)) rfl
 
-private theorem localized_spatial_jet_tsupport_subset {d : ℕ}
-    (b q : TimeVelocity d → ℝ) (QG : TimeVelocity d → PDE.Vec d)
-    (QH : TimeVelocity d → PDE.Mat d) :
-    tsupport (localizedScalar b q) ⊆ tsupport b ∧
-      (∀ j : Fin d, tsupport (localizedGradient b q QG j) ⊆ tsupport b) ∧
-      ∀ j i : Fin d, tsupport (localizedHessian b q QG QH j i) ⊆ tsupport b := by
-  have close_support_subset (f : TimeVelocity d → ℝ)
-      (hf : Function.support f ⊆ tsupport b) : tsupport f ⊆ tsupport b := by
-    simpa only [tsupport, closure_closure] using closure_mono hf
-  constructor
-  · exact close_support_subset _ fun z hz =>
-      tsupport_mul_subset_left (subset_closure hz)
-  constructor
-  · intro j
-    apply close_support_subset
-    intro z hz
-    by_contra hzb
-    have hb0 : b z = 0 := image_eq_zero_of_notMem_tsupport hzb
-    have hdb0 : velocityGradient b z j = 0 := by
-      unfold velocityGradient
-      rw [fderiv_of_notMem_tsupport ℝ hzb]
-      rfl
-    exact hz (by simp [localizedGradient, hb0, hdb0])
-  · intro j i
-    apply close_support_subset
-    intro z hz
-    by_contra hzb
-    have hb0 : b z = 0 := image_eq_zero_of_notMem_tsupport hzb
-    have hdb0 (k : Fin d) : velocityGradient b z k = 0 := by
-      unfold velocityGradient
-      rw [fderiv_of_notMem_tsupport ℝ hzb]
-      rfl
-    have hddb0 : velocityHessian b z j i = 0 := by
-      unfold velocityHessian
-      have hsecond : fderiv ℝ (fderiv ℝ b) z = 0 := by
-        rw [fderiv_of_notMem_tsupport ℝ]
-        exact fun hmem => hzb (tsupport_fderiv_subset ℝ hmem)
-      rw [hsecond]
-      rfl
-    exact hz (by simp [localizedHessian, hb0, hdb0, hddb0])
-
-/-- A plateau on a positive thickening is locally constant at every point of
-the underlying compact carrier, so all selected first and mixed second
-velocity derivatives vanish there. -/
 private theorem plateau_spatial_value_derivatives
     {d : ℕ} {K : Set (TimeVelocity d)} {δ : ℝ}
     (b : TimeVelocity d → ℝ)
@@ -365,7 +319,7 @@ private theorem plateau_spatial_value_derivatives
     rw [hddb]
     rfl
 
-/-- The complete localized ordered spatial jet agrees literally with the
+/- The complete localized ordered spatial jet agrees literally with the
 selected representatives on the compact plateau carrier. -/
 private theorem localized_spatial_jet_eqOn_plateau
     {d : ℕ} {K : Set (TimeVelocity d)} {δ : ℝ}
@@ -389,7 +343,7 @@ private theorem localized_spatial_jet_eqOn_plateau
     obtain ⟨hbz, hbi, hbji⟩ := plateau_spatial_value_derivatives b hbOne hz
     simp [localizedHessian, hbz, hbi, hbji j i]
 
-/-- The temporal and spatial cutoff supports have one common smooth compact
+/- The temporal and spatial cutoff supports have one common smooth compact
 plateau, on which the complete localized spatial jet recovers the selected
 representatives exactly. -/
 theorem WeakPrincipalCoercivityCore.exists_localized_spatial_jet_plateau
@@ -414,17 +368,17 @@ theorem WeakPrincipalCoercivityCore.exists_localized_spatial_jet_plateau
         (fun z => QH z j i)
           (Metric.thickening δ (tsupport ζ ×ˢ tsupport η)) := by
   let S : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
-  let K₀ : Set (TimeVelocity d) := tsupport ζ ×ˢ tsupport η
+  let K₀ := tsupport ζ ×ˢ tsupport η
   have hS : IsOpen S := isOpen_Ioo.prod hO
   have hK₀ : IsCompact K₀ := hζCompact.isCompact.prod hηCompact.isCompact
-  have hK₀S : K₀ ⊆ S := Set.prod_mono hζSupport hηSupport
+  have hK₀S := Set.prod_mono hζSupport hηSupport
   obtain ⟨δ, hδ, b, hb, hbCompact, hbSub, hbOne⟩ :=
     exists_contDiff_one_on_cthickening_tsupport_subset hS hK₀ hK₀S
   rcases localized_spatial_jet_eqOn_plateau q QG QH b hbOne with
     ⟨hrEq, hriEq, hriiEq⟩
   exact ⟨δ, hδ, b, hb, hbCompact, hbSub, hbOne, hrEq, hriEq, hriiEq⟩
 
-/-- A single smooth compact cutoff localizes a complete ordered spatial weak
+/- A single smooth compact cutoff localizes a complete ordered spatial weak
 jet, globalizing every selected relation and every `L²` representative. -/
 private theorem localized_ordered_spatial_jet_univ
     {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
@@ -530,8 +484,47 @@ private theorem localized_ordered_spatial_jet_univ
     · rw [velocityGradient_gradient b hb j i z]
       simp only [localizedHessian]
       ring
-  rcases localized_spatial_jet_tsupport_subset b q QG QH with
-    ⟨hrSupp, hriSupp, hriiSupp⟩
+  obtain ⟨hrSupp, hriSupp, hriiSupp⟩ : tsupport (localizedScalar b q) ⊆ tsupport b ∧
+      (∀ j : Fin d, tsupport (localizedGradient b q QG j) ⊆ tsupport b) ∧
+      ∀ j i : Fin d, tsupport (localizedHessian b q QG QH j i) ⊆ tsupport b := by
+      have close_support_subset (f : TimeVelocity d → ℝ)
+          (hf : Function.support f ⊆ tsupport b) : tsupport f ⊆ tsupport b := by
+        simpa only [tsupport, closure_closure] using closure_mono hf
+      constructor
+      · exact close_support_subset _ fun z hz =>
+          tsupport_mul_subset_left (subset_closure hz)
+      constructor
+      · intro j
+        apply close_support_subset
+        intro z hz
+        by_contra hzb
+        have hb0 := image_eq_zero_of_notMem_tsupport hzb
+        have hdb0 : velocityGradient b z j = 0 := by
+          unfold velocityGradient
+          rw [fderiv_of_notMem_tsupport ℝ hzb]
+          rfl
+        exact hz (by simp [localizedGradient, hb0, hdb0])
+      · intro j i
+        apply close_support_subset
+        intro z hz
+        by_contra hzb
+        have hb0 := image_eq_zero_of_notMem_tsupport hzb
+        have hdb0 (k : Fin d) : velocityGradient b z k = 0 := by
+          unfold velocityGradient
+          rw [fderiv_of_notMem_tsupport ℝ hzb]
+          rfl
+        have hddb0 : velocityHessian b z j i = 0 := by
+          unfold velocityHessian
+          have hsecond : fderiv ℝ (fderiv ℝ b) z = 0 := by
+            rw [fderiv_of_notMem_tsupport ℝ]
+            exact fun hmem => hzb (tsupport_fderiv_subset ℝ hmem)
+          rw [hsecond]
+          rfl
+        exact hz (by simp [localizedHessian, hb0, hdb0, hddb0])
+
+    /- A plateau on a positive thickening is locally constant at every point of
+    the underlying compact carrier, so all selected first and mixed second
+    velocity derivatives vanish there. -/
   have hrUniv (j : Fin d) := (hrVelocity j).univ_of_tsupport_subset hU
     (hrSupp.trans hbSub) ((hriSupp j).trans hbSub)
   have hriUniv (j i : Fin d) := (hriVelocity j i).univ_of_tsupport_subset hU
@@ -543,7 +536,7 @@ private theorem localized_ordered_spatial_jet_univ
     fun j => globalize (hri j) ((hriSupp j).trans hbSub),
     fun j i => globalize (hrii j i) ((hriiSupp j i).trans hbSub)⟩
 
-/-- One spacetime mollification of the localized scalar realizes every
+/- One spacetime mollification of the localized scalar realizes every
 selected first and ordered second velocity derivative, and all members of the
 common family converge strongly in global `L²`. -/
 private theorem common_mollifier_of_localized_ordered_spatial_jet
@@ -658,56 +651,9 @@ private theorem spatialSecond_timeSlice
     (velocityGradient_contDiff_infty q hq j)]
   exact velocityGradient_gradient q hq j i (r, y)
 
-/-- The smooth spatial coercivity theorem applies to every time
+/- The smooth spatial coercivity theorem applies to every time
 slice of one common smooth spacetime scalar, with the supplied selected
 derivative representatives substituted literally. -/
-private theorem smooth_principal_coercivity_timeSlice
-    {d : ℕ} (lam Lam M K : ℝ) (s₀ s₁ r : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
-    (A : TimeVelocity d → PDE.Mat d) (q : TimeVelocity d → ℝ)
-    (QG : TimeVelocity d → PDE.Vec d) (QH : TimeVelocity d → PDE.Mat d)
-    (hr : r ∈ Set.Ioo s₀ s₁)
-    (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-    (hA : ∀ r ∈ Set.Ioo s₀ s₁, ∀ i j : Fin d,
-      ContDiffOn ℝ 1 (fun y => A (r, y) i j) O)
-    (hAlower : ∀ z ∈ Set.Ioo s₀ s₁ ×ˢ O,
-      lam • (1 : PDE.Mat d) ≤ A z)
-    (hAupper : ∀ z ∈ Set.Ioo s₀ s₁ ×ˢ O,
-      A z ≤ Lam • (1 : PDE.Mat d))
-    (hAderiv : ∀ z ∈ Set.Ioo s₀ s₁ ×ˢ O,
-      ∀ i j k : Fin d,
-      |spatialPartial k (fun y => A (z.1, y) i j) z.2| ≤ M)
-    (hq : ContDiff ℝ (⊤ : ℕ∞) q)
-    (hQG : ∀ z j, velocityGradient q z j = QG z j)
-    (hQH : ∀ z j i, velocityHessian q z j i = QH z j i)
-    (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
-    (hηcompact : HasCompactSupport η) (hηsupport : tsupport η ⊆ O)
-    (hηnonneg : ∀ y, 0 ≤ η y) (hηle : ∀ y, η y ≤ 1)
-    (hηderiv : ∀ y ∈ O, ∀ i : Fin d, |spatialPartial i η y| ≤ K) :
-    -( ∫ y in O, (∑ i : Fin d, ∑ j : Fin d,
-        A (r, y) i j * QH (r, y) j i) *
-      WeakGradientTimeEnergy.localizedGradientDivergence η QG QH (r, y) ∂volume) ≥
-      lam / 2 * (∫ y in O, η y ^ 2 *
-        ∑ k : Fin d, ∑ i : Fin d, QH (r, y) k i ^ 2 ∂volume) -
-      principalCoercivityConstant d lam Lam M K *
-        (∫ y in tsupport η, ∑ k : Fin d, QG (r, y) k ^ 2 ∂volume) := by
-  have hsliceSmooth : ContDiff ℝ (⊤ : ℕ∞) (fun y => q (r, y)) :=
-    hq.comp (contDiff_const.prodMk contDiff_id)
-  have hsmooth : ContDiffOn ℝ 3 (fun y => q (r, y)) O :=
-    hsliceSmooth.contDiffOn.of_le (by
-      change ((3 : ℕ∞) : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞)
-      exact WithTop.coe_le_coe.mpr le_top)
-  have hbase := smoothPrincipalIntegrationByParts_coercive lam Lam M K O hO
-    (fun y => A (r, y)) (fun y => q (r, y)) η hlam hlamLam (hA r hr)
-    (fun y hy => hAlower (r, y) ⟨hr, hy⟩)
-    (fun y hy => hAupper (r, y) ⟨hr, hy⟩)
-    (fun y hy => hAderiv (r, y) ⟨hr, hy⟩) hsmooth hη hηcompact hηsupport
-    hηnonneg hηle hηderiv
-  simpa only [spatialPartial_timeSlice q hq, spatialSecond_timeSlice q hq,
-    hQG, hQH, WeakGradientTimeEnergy.localizedGradientDivergence] using hbase
-
-/-- An integrable function on the literal product cylinder has the expected
-iterated time--velocity integral. -/
 private theorem integralOn_timeVelocity_prod
     {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d))
     (f : TimeVelocity d → ℝ)
@@ -729,18 +675,6 @@ private theorem integrableOn_integral_timeVelocity_right
   rw [volume_timeVelocity_eq_prod d, ← Measure.prod_restrict] at hf
   exact hf.integral_prod_left
 
-private theorem indicator_gradient_slice
-    {d : ℕ} (O : Set (PDE.Vec d)) (η : PDE.Vec d → ℝ)
-    (hηsupport : tsupport η ⊆ O) (r : ℝ)
-    (QG : TimeVelocity d → PDE.Vec d) :
-    (∫ y in O, (tsupport η).indicator
-      (fun x => ∑ k : Fin d, QG (r, x) k ^ 2) y ∂volume) =
-      ∫ y in tsupport η, ∑ k : Fin d, QG (r, y) k ^ 2 ∂volume := by
-  rw [MeasureTheory.setIntegral_indicator (isClosed_tsupport η).measurableSet]
-  rw [inter_eq_right.mpr hηsupport]
-
-/-- Smooth spacetime principal coercivity obtained by weighting the exact
-fixed-time theorem and integrating its slices over the literal cylinder. -/
 private theorem smooth_principal_coercivity_spacetime
     {d : ℕ} (lam Lam M K : ℝ) (s₀ s₁ : ℝ)
     (O : Set (PDE.Vec d)) (hO : IsOpen O)
@@ -813,9 +747,29 @@ private theorem smooth_principal_coercivity_spacetime
       -(∫ y in O, L (r, y) ∂volume) := by
     filter_upwards [ae_restrict_mem measurableSet_Ioo, hEsections, hGsections]
       with r hr hEr hGr
-    have hs := smooth_principal_coercivity_timeSlice lam Lam M K s₀ s₁ r O hO
-      A q QG QH hr hlam hlamLam hA hAlower hAupper hAderiv hq hQGid hQHid
-      η hη hηcompact hηsupport hηnonneg hηle hηderiv
+    have hs : -( ∫ y in O, (∑ i : Fin d, ∑ j : Fin d,
+        A (r, y) i j * QH (r, y) j i) *
+      WeakGradientTimeEnergy.localizedGradientDivergence η QG QH (r, y) ∂volume) ≥
+      lam / 2 * (∫ y in O, η y ^ 2 *
+        ∑ k : Fin d, ∑ i : Fin d, QH (r, y) k i ^ 2 ∂volume) -
+      principalCoercivityConstant d lam Lam M K *
+        (∫ y in tsupport η, ∑ k : Fin d, QG (r, y) k ^ 2 ∂volume) := by
+        have hsliceSmooth : ContDiff ℝ (⊤ : ℕ∞) (fun y => q (r, y)) :=
+          hq.comp (contDiff_const.prodMk contDiff_id)
+        have hsmooth : ContDiffOn ℝ 3 (fun y => q (r, y)) O :=
+          hsliceSmooth.contDiffOn.of_le (by
+            exact WithTop.coe_le_coe.mpr le_top)
+        have hbase := smoothPrincipalIntegrationByParts_coercive lam Lam M K O hO
+          (fun y => A (r, y)) (fun y => q (r, y)) η hlam hlamLam (hA r hr)
+          (fun y hy => hAlower (r, y) ⟨hr, hy⟩)
+          (fun y hy => hAupper (r, y) ⟨hr, hy⟩)
+          (fun y hy => hAderiv (r, y) ⟨hr, hy⟩) hsmooth hη hηcompact hηsupport
+          hηnonneg hηle hηderiv
+        simpa only [spatialPartial_timeSlice q hq, spatialSecond_timeSlice q hq,
+          hQGid, hQHid, WeakGradientTimeEnergy.localizedGradientDivergence] using hbase
+
+      /- An integrable function on the literal product cylinder has the expected
+      iterated time--velocity integral. -/
     have hw := mul_le_mul_of_nonneg_left hs (hζnonneg r)
     dsimp only [L, E, G]
     rw [integral_sub (hEr.const_mul _) (hGr.const_mul _),
@@ -832,7 +786,12 @@ private theorem smooth_principal_coercivity_spacetime
         ζ r * (∫ y in tsupport η, ∑ k : Fin d, QG (r, y) k ^ 2
           ∂volume) := by
       rw [integral_const_mul]
-      exact congrArg (ζ r * ·) (indicator_gradient_slice O η hηsupport r QG)
+      have _h_inl_37 : (∫ y in O, (tsupport η).indicator
+      (fun x => ∑ k : Fin d, QG (r, x) k ^ 2) y ∂volume) =
+      ∫ y in tsupport η, ∑ k : Fin d, QG (r, y) k ^ 2 ∂volume := by
+        rw [MeasureTheory.setIntegral_indicator (isClosed_tsupport η).measurableSet]
+        rw [inter_eq_right.mpr hηsupport]
+      exact congrArg (ζ r * ·) _h_inl_37
     have hLs : (∫ y in O, (ζ r *
         ∑ i : Fin d, ∑ j : Fin d, A (r, y) i j * QH (r, y) j i) *
         WeakGradientTimeEnergy.localizedGradientDivergence η QG QH (r, y)
@@ -886,22 +845,6 @@ private theorem tendsto_eLpNorm_two_fixed_mul
   exact HypoellipticAleksandrov.Analysis.tendsto_eLpNorm_mul_sub_mul_of_tendsto_eLpNorm_two
     c f f₀ hc h
 
-private theorem tendsto_integral_pairing_restrict
-    {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
-    (f g : ℝ → TimeVelocity d → ℝ) (f₀ g₀ : TimeVelocity d → ℝ)
-    (hf : ∀ᶠ a in l, MemLp (f a) 2 ((volume : Measure (TimeVelocity d)).restrict S))
-    (hg : ∀ᶠ a in l, MemLp (g a) 2 ((volume : Measure (TimeVelocity d)).restrict S))
-    (hf₀ : MemLp f₀ 2 ((volume : Measure (TimeVelocity d)).restrict S))
-    (hg₀ : MemLp g₀ 2 ((volume : Measure (TimeVelocity d)).restrict S))
-    (hft : Filter.Tendsto (fun a => eLpNorm (f a - f₀) 2
-      ((volume : Measure (TimeVelocity d)).restrict S)) l (nhds 0))
-    (hgt : Filter.Tendsto (fun a => eLpNorm (g a - g₀) 2
-      ((volume : Measure (TimeVelocity d)).restrict S)) l (nhds 0)) :
-    Filter.Tendsto (fun a => ∫ z in S, f a z * g a z ∂volume) l
-      (nhds (∫ z in S, f₀ z * g₀ z ∂volume)) := by
-  exact HypoellipticAleksandrov.Analysis.tendsto_integral_mul_of_tendsto_eLpNorm_two
-    f g f₀ g₀ hf hg hf₀ hg₀ hft hgt
-
 private theorem tendsto_integral_fixed_multipliers_pairing
     {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
     (c e : TimeVelocity d → ℝ)
@@ -932,12 +875,10 @@ private theorem tendsto_integral_fixed_multipliers_pairing
   have heg₀ : MemLp (fun z => e z * g₀ z) 2
       ((volume : Measure (TimeVelocity d)).restrict S) := by
     simpa only [mul_comm] using hg₀.mul' he
-  exact tendsto_integral_pairing_restrict S
-    (fun a z => c z * f a z) (fun a z => e z * g a z)
-    (fun z => c z * f₀ z) (fun z => e z * g₀ z)
-    hcf heg hcf₀ heg₀
-    (tendsto_eLpNorm_two_fixed_mul S c f f₀ hc hft)
-    (tendsto_eLpNorm_two_fixed_mul S e g g₀ he hgt)
+  have hft := (tendsto_eLpNorm_two_fixed_mul S c f f₀ hc hft)
+  have hgt := (tendsto_eLpNorm_two_fixed_mul S e g g₀ he hgt)
+  exact HypoellipticAleksandrov.Analysis.tendsto_integral_mul_of_tendsto_eLpNorm_two
+    (fun a z => c z * f a z) (fun a z => e z * g a z) (fun z => c z * f₀ z) (fun z => e z * g₀ z) hcf heg hcf₀ heg₀ hft hgt
 
 private theorem principal_limit_multipliers_memLp_top
     {d : ℕ} (S : Set (TimeVelocity d))
@@ -993,117 +934,8 @@ private theorem principal_limit_multipliers_memLp_top
     simp only [Pi.smul_apply, smul_eq_mul]
     ring
 
-/-- The three finite-coordinate integral expressions converge for the one
+/- The three finite-coordinate integral expressions converge for the one
 common mollification of the complete localized ordered spatial jet. -/
-private theorem localized_principal_coordinate_integral_limits
-    {d : ℕ} (S : Set (TimeVelocity d))
-    (lam Lam : ℝ) (A : TimeVelocity d → PDE.Mat d)
-    (hAmeas : AEStronglyMeasurable A (timeVelocityVolumeOn S))
-    (hlam : 0 < lam)
-    (hAlower : ∀ z ∈ S, lam • (1 : PDE.Mat d) ≤ A z)
-    (hAupper : ∀ z ∈ S, A z ≤ Lam • (1 : PDE.Mat d))
-    (hS : MeasurableSet S)
-    (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
-    (hηCompact : HasCompactSupport η)
-    (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
-    (hζCompact : HasCompactSupport ζ)
-    (rG : Fin d → TimeVelocity d → ℝ)
-    (rH : Fin d → Fin d → TimeVelocity d → ℝ)
-    (hG : ∀ k, MemLp (rG k) 2 volume)
-    (hH : ∀ j i, MemLp (rH j i) 2 volume) :
-    Filter.Tendsto (fun ε : ℝ => ∑ i : Fin d, ∑ j : Fin d, ∑ k : Fin d,
-      ((∫ z in S, (A z i j *
-          SpacetimeMollifier.spacetimeMollification ε (rH j i) z) *
-        (((-2 : ℝ) * ζ z.1 * (η z.2 * spatialPartial k η z.2)) *
-          SpacetimeMollifier.spacetimeMollification ε (rG k) z) ∂volume) +
-       ∫ z in S, (A z i j *
-          SpacetimeMollifier.spacetimeMollification ε (rH j i) z) *
-        (((-1 : ℝ) * ζ z.1 * η z.2 ^ 2) *
-          SpacetimeMollifier.spacetimeMollification ε (rH k k) z) ∂volume))
-      (𝓝[>] 0) (𝓝 (∑ i : Fin d, ∑ j : Fin d, ∑ k : Fin d,
-      ((∫ z in S, (A z i j * rH j i z) *
-        (((-2 : ℝ) * ζ z.1 * (η z.2 * spatialPartial k η z.2)) * rG k z)
-          ∂volume) +
-       ∫ z in S, (A z i j * rH j i z) *
-        (((-1 : ℝ) * ζ z.1 * η z.2 ^ 2) * rH k k z) ∂volume))) ∧
-    Filter.Tendsto (fun ε : ℝ => ∑ k : Fin d, ∑ i : Fin d,
-      ∫ z in S, (ζ z.1 * η z.2 ^ 2 *
-          SpacetimeMollifier.spacetimeMollification ε (rH k i) z) *
-        SpacetimeMollifier.spacetimeMollification ε (rH k i) z ∂volume)
-      (𝓝[>] 0) (𝓝 (∑ k : Fin d, ∑ i : Fin d,
-      ∫ z in S, (ζ z.1 * η z.2 ^ 2 * rH k i z) * rH k i z ∂volume)) ∧
-    Filter.Tendsto (fun ε : ℝ => ∑ k : Fin d,
-      ∫ z in S, (ζ z.1 * (tsupport η).indicator (fun _ => (1 : ℝ)) z.2 *
-          SpacetimeMollifier.spacetimeMollification ε (rG k) z) *
-        SpacetimeMollifier.spacetimeMollification ε (rG k) z ∂volume)
-      (𝓝[>] 0) (𝓝 (∑ k : Fin d,
-      ∫ z in S, (ζ z.1 * (tsupport η).indicator (fun _ => (1 : ℝ)) z.2 *
-        rG k z) * rG k z ∂volume)) := by
-  let l : Filter ℝ := 𝓝[>] 0
-  have hpos : ∀ᶠ ε : ℝ in l, 0 < ε := by
-    exact self_mem_nhdsWithin
-  have hmoll (f : TimeVelocity d → ℝ) (hf : MemLp f 2 volume) :
-      ∀ᶠ ε : ℝ in l, MemLp (SpacetimeMollifier.spacetimeMollification ε f) 2
-        ((volume : Measure (TimeVelocity d)).restrict S) := by
-    filter_upwards [hpos] with ε hε
-    exact (SpacetimeMollifierL2.spacetimeMollification_memLp hε f hf).restrict S
-  have hconv (f : TimeVelocity d → ℝ) (hf : MemLp f 2 volume) :=
-    tendsto_eLpNorm_two_restrict_of_global S
-      (fun ε => SpacetimeMollifier.spacetimeMollification ε f) f
-      (SpacetimeMollifierL2.tendsto_eLpNorm_spacetimeMollification_sub f hf)
-  rcases principal_limit_multipliers_memLp_top S η hη hηCompact ζ hζ hζCompact with
-    ⟨hc₁, hc₂, hcE, hcG⟩
-  have hAij (i j : Fin d) : MemLp (fun z => A z i j) ∞
-      ((volume : Measure (TimeVelocity d)).restrict S) :=
-    (coefficient_entry_memLp_top A hAmeas hlam hAlower hAupper hS i j).2.2
-  have hone : MemLp (fun _ : TimeVelocity d => (1 : ℝ)) ∞
-      ((volume : Measure (TimeVelocity d)).restrict S) :=
-    memLp_top_of_ae_abs_le _ 1 measurable_const.aestronglyMeasurable
-      (Filter.Eventually.of_forall fun _ => by simp)
-  constructor
-  · apply tendsto_finset_sum Finset.univ
-    intro i hi
-    apply tendsto_finset_sum Finset.univ
-    intro j hj
-    apply tendsto_finset_sum Finset.univ
-    intro k hk
-    exact (tendsto_integral_fixed_multipliers_pairing S (fun z => A z i j)
-      (fun z => (-2 : ℝ) * ζ z.1 * (η z.2 * spatialPartial k η z.2))
-      (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH j i))
-      (fun ε => SpacetimeMollifier.spacetimeMollification ε (rG k))
-      (rH j i) (rG k) (hAij i j) (hc₁ k) (hmoll _ (hH j i))
-      (hmoll _ (hG k)) ((hH j i).restrict S) ((hG k).restrict S)
-      (hconv _ (hH j i)) (hconv _ (hG k))).add
-      (tendsto_integral_fixed_multipliers_pairing S (fun z => A z i j)
-        (fun z => (-1 : ℝ) * ζ z.1 * η z.2 ^ 2)
-        (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH j i))
-        (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH k k))
-        (rH j i) (rH k k) (hAij i j) hc₂ (hmoll _ (hH j i))
-        (hmoll _ (hH k k)) ((hH j i).restrict S) ((hH k k).restrict S)
-        (hconv _ (hH j i)) (hconv _ (hH k k)))
-  constructor
-  · apply tendsto_finset_sum Finset.univ
-    intro k hk
-    apply tendsto_finset_sum Finset.univ
-    intro i hi
-    simpa only [one_mul] using tendsto_integral_fixed_multipliers_pairing S
-      (fun z => ζ z.1 * η z.2 ^ 2) (fun _ => (1 : ℝ))
-      (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH k i))
-      (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH k i))
-      (rH k i) (rH k i) hcE hone (hmoll _ (hH k i)) (hmoll _ (hH k i))
-      ((hH k i).restrict S) ((hH k i).restrict S)
-      (hconv _ (hH k i)) (hconv _ (hH k i))
-  · apply tendsto_finset_sum Finset.univ
-    intro k hk
-    simpa only [one_mul] using tendsto_integral_fixed_multipliers_pairing S
-      (fun z => ζ z.1 * (tsupport η).indicator (fun _ => (1 : ℝ)) z.2)
-      (fun _ => (1 : ℝ))
-      (fun ε => SpacetimeMollifier.spacetimeMollification ε (rG k))
-      (fun ε => SpacetimeMollifier.spacetimeMollification ε (rG k))
-      (rG k) (rG k) hcG hone (hmoll _ (hG k)) (hmoll _ (hG k))
-      ((hG k).restrict S) ((hG k).restrict S)
-      (hconv _ (hG k)) (hconv _ (hG k))
-
 private theorem sum_sum_sum_rotate {d : ℕ} (f : Fin d → Fin d → Fin d → ℝ) :
     (∑ i : Fin d, ∑ j : Fin d, ∑ k : Fin d, f i j k) =
       ∑ k : Fin d, ∑ i : Fin d, ∑ j : Fin d, f i j k := by
@@ -1253,11 +1085,11 @@ private theorem principal_coordinate_integral_algebra
         ring
       · simp [hz]
 
-/-- The raw localized weak jet satisfies the principal coercivity inequality,
+/- The raw localized weak jet satisfies the principal coercivity inequality,
 before any plateau identities are used to recover the original representatives. -/
 theorem WeakPrincipalCoercivityCore.localized_limit
     {d : ℕ} (lam Lam M K : ℝ) (s₀ s₁ : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (O ) (hO : IsOpen O)
     (A : TimeVelocity d → PDE.Mat d) (q : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d) (QH : TimeVelocity d → PDE.Mat d)
     (hAmeas : AEStronglyMeasurable A
@@ -1316,8 +1148,98 @@ theorem WeakPrincipalCoercivityCore.localized_limit
   have halg := principal_coordinate_integral_algebra S A η hη hηcompact ζ hζ
     hζcompact rG rH hAij (fun k => (hrG k).restrict S)
       (fun j i => (hrH j i).restrict S)
-  have hlimits := localized_principal_coordinate_integral_limits S lam Lam A
-    hAmeas hlam hAlower hAupper hS η hη hηcompact ζ hζ hζcompact rG rH hrG hrH
+  have hlimits : Filter.Tendsto (fun ε : ℝ => ∑ i : Fin d, ∑ j : Fin d, ∑ k : Fin d,
+      ((∫ z in S, (A z i j *
+          SpacetimeMollifier.spacetimeMollification ε (rH j i) z) *
+        (((-2 : ℝ) * ζ z.1 * (η z.2 * spatialPartial k η z.2)) *
+          SpacetimeMollifier.spacetimeMollification ε (rG k) z) ∂volume) +
+       ∫ z in S, (A z i j *
+          SpacetimeMollifier.spacetimeMollification ε (rH j i) z) *
+        (((-1 : ℝ) * ζ z.1 * η z.2 ^ 2) *
+          SpacetimeMollifier.spacetimeMollification ε (rH k k) z) ∂volume))
+      (𝓝[>] 0) (𝓝 (∑ i : Fin d, ∑ j : Fin d, ∑ k : Fin d,
+      ((∫ z in S, (A z i j * rH j i z) *
+        (((-2 : ℝ) * ζ z.1 * (η z.2 * spatialPartial k η z.2)) * rG k z)
+          ∂volume) +
+       ∫ z in S, (A z i j * rH j i z) *
+        (((-1 : ℝ) * ζ z.1 * η z.2 ^ 2) * rH k k z) ∂volume))) ∧
+    Filter.Tendsto (fun ε : ℝ => ∑ k : Fin d, ∑ i : Fin d,
+      ∫ z in S, (ζ z.1 * η z.2 ^ 2 *
+          SpacetimeMollifier.spacetimeMollification ε (rH k i) z) *
+        SpacetimeMollifier.spacetimeMollification ε (rH k i) z ∂volume)
+      (𝓝[>] 0) (𝓝 (∑ k : Fin d, ∑ i : Fin d,
+      ∫ z in S, (ζ z.1 * η z.2 ^ 2 * rH k i z) * rH k i z ∂volume)) ∧
+    Filter.Tendsto (fun ε : ℝ => ∑ k : Fin d,
+      ∫ z in S, (ζ z.1 * (tsupport η).indicator (fun _ => (1 : ℝ)) z.2 *
+          SpacetimeMollifier.spacetimeMollification ε (rG k) z) *
+        SpacetimeMollifier.spacetimeMollification ε (rG k) z ∂volume)
+      (𝓝[>] 0) (𝓝 (∑ k : Fin d,
+      ∫ z in S, (ζ z.1 * (tsupport η).indicator (fun _ => (1 : ℝ)) z.2 *
+        rG k z) * rG k z ∂volume)) := by
+    let l : Filter ℝ := 𝓝[>] 0
+    have hpos : ∀ᶠ ε : ℝ in l, 0 < ε := by
+      exact self_mem_nhdsWithin
+    have hmoll (f : TimeVelocity d → ℝ) (hf : MemLp f 2 volume) :
+        ∀ᶠ ε : ℝ in l, MemLp (SpacetimeMollifier.spacetimeMollification ε f) 2
+          ((volume : Measure (TimeVelocity d)).restrict S) := by
+      filter_upwards [hpos] with ε hε
+      exact (SpacetimeMollifierL2.spacetimeMollification_memLp hε f hf).restrict S
+    have hconv (f : TimeVelocity d → ℝ) (hf : MemLp f 2 volume) :=
+      tendsto_eLpNorm_two_restrict_of_global S
+        (fun ε => SpacetimeMollifier.spacetimeMollification ε f) f
+        (SpacetimeMollifierL2.tendsto_eLpNorm_spacetimeMollification_sub f hf)
+    rcases principal_limit_multipliers_memLp_top S η hη hηcompact ζ hζ hζcompact with
+      ⟨hc₁, hc₂, hcE, hcG⟩
+    have hAij (i j : Fin d) : MemLp (fun z => A z i j) ∞
+        ((volume : Measure (TimeVelocity d)).restrict S) :=
+      (coefficient_entry_memLp_top A hAmeas hlam hAlower hAupper hS i j).2.2
+    have hone : MemLp (fun _ : TimeVelocity d => (1 : ℝ)) ∞
+        ((volume : Measure (TimeVelocity d)).restrict S) :=
+      memLp_top_of_ae_abs_le _ 1 measurable_const.aestronglyMeasurable
+        (Filter.Eventually.of_forall fun _ => by simp)
+    constructor
+    · apply tendsto_finset_sum Finset.univ
+      intro i hi
+      apply tendsto_finset_sum Finset.univ
+      intro j hj
+      apply tendsto_finset_sum Finset.univ
+      intro k hk
+      exact (tendsto_integral_fixed_multipliers_pairing S (fun z => A z i j)
+        (fun z => (-2 : ℝ) * ζ z.1 * (η z.2 * spatialPartial k η z.2))
+        (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH j i))
+        (fun ε => SpacetimeMollifier.spacetimeMollification ε (rG k))
+        (rH j i) (rG k) (hAij i j) (hc₁ k) (hmoll _ (hrH j i))
+        (hmoll _ (hrG k)) ((hrH j i).restrict S) ((hrG k).restrict S)
+        (hconv _ (hrH j i)) (hconv _ (hrG k))).add
+        (tendsto_integral_fixed_multipliers_pairing S (fun z => A z i j)
+          (fun z => (-1 : ℝ) * ζ z.1 * η z.2 ^ 2)
+          (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH j i))
+          (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH k k))
+          (rH j i) (rH k k) (hAij i j) hc₂ (hmoll _ (hrH j i))
+          (hmoll _ (hrH k k)) ((hrH j i).restrict S) ((hrH k k).restrict S)
+          (hconv _ (hrH j i)) (hconv _ (hrH k k)))
+    constructor
+    · apply tendsto_finset_sum Finset.univ
+      intro k hk
+      apply tendsto_finset_sum Finset.univ
+      intro i hi
+      simpa only [one_mul] using tendsto_integral_fixed_multipliers_pairing S
+        (fun z => ζ z.1 * η z.2 ^ 2) (fun _ => (1 : ℝ))
+        (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH k i))
+        (fun ε => SpacetimeMollifier.spacetimeMollification ε (rH k i))
+        (rH k i) (rH k i) hcE hone (hmoll _ (hrH k i)) (hmoll _ (hrH k i))
+        ((hrH k i).restrict S) ((hrH k i).restrict S)
+        (hconv _ (hrH k i)) (hconv _ (hrH k i))
+    · apply tendsto_finset_sum Finset.univ
+      intro k hk
+      simpa only [one_mul] using tendsto_integral_fixed_multipliers_pairing S
+        (fun z => ζ z.1 * (tsupport η).indicator (fun _ => (1 : ℝ)) z.2)
+        (fun _ => (1 : ℝ))
+        (fun ε => SpacetimeMollifier.spacetimeMollification ε (rG k))
+        (fun ε => SpacetimeMollifier.spacetimeMollification ε (rG k))
+        (rG k) (rG k) hcG hone (hmoll _ (hrG k)) (hmoll _ (hrG k))
+        ((hrG k).restrict S) ((hrG k).restrict S)
+        (hconv _ (hrG k)) (hconv _ (hrG k))
   let P : ℝ → ℝ := fun ε => ∑ i : Fin d, ∑ j : Fin d, ∑ k : Fin d,
     ((∫ z in S, (A z i j * SpacetimeMollifier.spacetimeMollification ε (rH j i) z) *
       (((-2 : ℝ) * ζ z.1 * (η z.2 * spatialPartial k η z.2)) *

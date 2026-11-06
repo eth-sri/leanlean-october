@@ -48,9 +48,7 @@ theorem stripSurvivingMass_mul_time_le_green {lam Lam : ℝ}
   have htu : e.1.time + tau.1 ≤ T := by dsimp [dt] at htau; linarith
   have hm := stripSurvivingMass_antitone A H E hE e.1.time
     (e.1.time + tau.1) T hst htu z
-  have hmap := E.2.map_fiberKernel_eq_master (intervalDomain_measurable H)
-    e.1.time (e.1.time + tau.1) hst z
-  have hun := congrArg (fun mu => mu univ) hmap
+  have hun := congrArg (fun mu => mu univ) (E.2.map_fiberKernel_eq_master (intervalDomain_measurable H) e.1.time (e.1.time + tau.1) hst z)
   rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ, preimage_univ] at hun
   have hmass := stripSurvivingMass_eq_kernel_mass A H E hE e.1.time
     (e.1.time + tau.1) hst z

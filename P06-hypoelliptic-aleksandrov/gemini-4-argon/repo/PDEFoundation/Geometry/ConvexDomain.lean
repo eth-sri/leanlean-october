@@ -19,7 +19,7 @@ open scoped Pointwise
 
 namespace PDE
 
-theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
+theorem Bornology.IsBounded.isBoundedDomain {d }
     {U : Set (Vec d)} (hU : Bornology.IsBounded U) :
     IsBoundedDomain U := by
   classical
@@ -48,18 +48,14 @@ theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
       let i₀ : Fin d := 0
       have hi₀ : i₀ ∈ (Finset.univ : Finset (Fin d)) := by
         simp
-      have hle : R i₀ ≤ Rmax := by
-        exact Finset.le_sup' (s := Finset.univ) (f := R) hi₀
-      exact lt_of_lt_of_le (hRpos i₀) hle
+      exact lt_of_lt_of_le (hRpos i₀) (Finset.le_sup' (s := Finset.univ) (f := R) hi₀)
     refine ⟨Rmax, hRmaxPos, ?_⟩
     intro x hx i
     have hxi : ‖x i‖ ≤ R i :=
       hR i (x i) ⟨x, hx, rfl⟩
-    have hRi : R i ≤ Rmax := by
-      exact Finset.le_sup' (s := Finset.univ) (f := R) (Finset.mem_univ i)
-    simpa [Real.norm_eq_abs] using! hxi.trans hRi
+    simpa [Real.norm_eq_abs] using! hxi.trans (Finset.le_sup' (s := Finset.univ) (f := R) (Finset.mem_univ i))
 
-theorem IsBoundedDomain.isBounded {d : ℕ}
+theorem IsBoundedDomain.isBounded {d }
     {U : Set (Vec d)} (hU : IsBoundedDomain U) :
     Bornology.IsBounded U := by
   rcases hU with ⟨R, hRpos, hR⟩
@@ -74,38 +70,38 @@ theorem IsBoundedDomain.isBounded {d : ℕ}
 This is definitionally compatible with LIH's existing predicate and therefore
 does not encode nonemptiness. Results involving an integral mean add a
 nonemptiness or positive-volume hypothesis at their theorem boundary. -/
-def IsOpenBoundedConvexDomain {d : ℕ}
+def IsOpenBoundedConvexDomain {d }
     (U : Set (Vec d)) : Prop :=
   IsOpen U ∧ IsBoundedDomain U ∧ Convex ℝ U
 
 namespace IsOpenBoundedConvexDomain
 
-theorem isOpen {d : ℕ} {U : Set (Vec d)}
+theorem isOpen {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     IsOpen U :=
   hU.1
 
-theorem isBoundedDomain {d : ℕ} {U : Set (Vec d)}
+theorem isBoundedDomain {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     IsBoundedDomain U :=
   hU.2.1
 
-theorem convex {d : ℕ} {U : Set (Vec d)}
+theorem convex {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     Convex ℝ U :=
   hU.2.2
 
-theorem measurableSet {d : ℕ} {U : Set (Vec d)}
+theorem measurableSet {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     MeasurableSet U :=
   hU.isOpen.measurableSet
 
-theorem isSobolevRegularDomain {d : ℕ} {U : Set (Vec d)}
+theorem isSobolevRegularDomain {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     IsSobolevRegularDomain U :=
   ⟨hU.measurableSet, hU.isBoundedDomain⟩
 
-theorem translateSet {d : ℕ} {U : Set (Vec d)}
+theorem translateSet {d U}
     (hU : IsOpenBoundedConvexDomain U) (z : Vec d) :
     IsOpenBoundedConvexDomain (PDE.translateSet z U) := by
   refine ⟨?_, ?_, ?_⟩
@@ -117,10 +113,9 @@ theorem translateSet {d : ℕ} {U : Set (Vec d)}
     refine ⟨R + ‖z‖ + 1, ?_, ?_⟩
     · linarith [norm_nonneg z]
     · intro x hx i
-      have hxpre :
-          x - z ∈ U :=
+      have hxpre :=
         (mem_translateSet_iff_sub_mem).1 hx
-      have hcoord : |(x - z) i| ≤ R :=
+      have hcoord :=
         hR (x - z) hxpre i
       have hzcoord : |z i| ≤ ‖z‖ := by
         simpa [Real.norm_eq_abs] using norm_le_pi_norm z i
@@ -152,8 +147,8 @@ theorem smul_of_pos {d : ℕ} {U : Set (Vec d)}
 
 end IsOpenBoundedConvexDomain
 
-theorem isOpenBoundedConvexDomain_euclideanBall {d : ℕ}
-    (x : Vec d) {R : ℝ} (hR : 0 < R) :
+theorem isOpenBoundedConvexDomain_euclideanBall {d }
+    (x : Vec d) {R } (hR : 0 < R) :
     IsOpenBoundedConvexDomain (euclideanBall x R) := by
   refine ⟨isOpen_euclideanBall x R, ?_, convex_euclideanBall x R⟩
   exact Bornology.IsBounded.isBoundedDomain <|

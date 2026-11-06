@@ -19,7 +19,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Set Parabolic
 
 /-- Positive rescaling and constant shifting preserve source-near smoothness. -/
-theorem IsSmoothNear.affine {d : ℕ} {psi : KineticPoint d → ℝ}
+theorem IsSmoothNear.affine {d psi}
     {E : Set (KineticPoint d)} (h : IsSmoothNear psi E) (a b : ℝ) :
     IsSmoothNear (fun P => a * psi P + b) E := by
   obtain ⟨U, hU, hEU, hpsi⟩ := h
@@ -52,7 +52,7 @@ theorem IsSmoothNear.slices {d : ℕ} {psi : KineticPoint d → ℝ}
 
 /-- The source backward operator is affine-linear on every smooth-near test. -/
 theorem backwardOperator_affine {d : ℕ} (A : FullKineticCoefficient d)
-    {psi : KineticPoint d → ℝ} {E : Set (KineticPoint d)}
+    {psi E}
     (hpsi : IsSmoothNear psi E) {P : KineticPoint d} (hP : P ∈ E) (a b : ℝ) :
     backwardOperator A (fun Q => a * psi Q + b) P = a * backwardOperator A psi P := by
   obtain ⟨ht, hx, hv⟩ := hpsi.slices hP

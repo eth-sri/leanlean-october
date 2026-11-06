@@ -23,13 +23,13 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
 /-- The moving domain over the whole space is the whole space. -/
-theorem movingDomain_univ {n : ℕ} (γ : ℝ → PDE.Vec n) (σ : ℝ) :
+theorem movingDomain_univ {n } (γ : ℝ → PDE.Vec n) (σ : ℝ) :
     movingDomain (Set.univ : Set (PDE.Vec n)) γ σ = Set.univ := by
   ext y
   simp [mem_movingDomain_iff]
 
 /-- Over the whole space the viscous classical-solution predicate does not depend on the curve. -/
-theorem isClassicalViscousTerminalSolution_univ_curve_congr {n : ℕ} (γ γ' : ℝ → PDE.Vec n)
+theorem isClassicalViscousTerminalSolution_univ_curve_congr {n } (γ γ' : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) (ε τ : ℝ)
     (F : BoundedBorel (EvolutionAmbientState n)) (u : KineticPoint n → ℝ) :
     IsClassicalViscousTerminalSolution (Set.univ : Set (PDE.Vec n)) γ B b ε τ F u ↔
@@ -39,7 +39,7 @@ theorem isClassicalViscousTerminalSolution_univ_curve_congr {n : ℕ} (γ γ' : 
     evolutionLateralFrontier, movingDomain_univ]
 
 /-- Over the whole space the closed moving slab does not depend on the curve. -/
-theorem movingClosedSlab_univ_curve_congr {n : ℕ} (γ γ' : ℝ → PDE.Vec n) (a τ : ℝ) :
+theorem movingClosedSlab_univ_curve_congr {n } (γ γ' : ℝ → PDE.Vec n) (a τ : ℝ) :
     movingClosedSlab (Set.univ : Set (PDE.Vec n)) γ a τ =
       movingClosedSlab (Set.univ : Set (PDE.Vec n)) γ' a τ := by
   simp only [movingClosedSlab, movingDomain_univ]
@@ -47,15 +47,14 @@ theorem movingClosedSlab_univ_curve_congr {n : ℕ} (γ γ' : ℝ → PDE.Vec n)
 /-- **Two barriers** (companion paper, (A.1), `Ω = ℝⁿ`).  Whole-space terminal comparison on a
 finite slab: `|u_ε - F| ≤ (τ - σ) M` wherever `|L_ε F| ≤ M` on the slab.  There is no lateral
 clause. -/
-theorem wholeSpace_terminalDatum_bound {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
-    (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
+theorem wholeSpace_terminalDatum_bound {n Ω γ lam Lam} (hlam : 0 < lam) {B }
+    (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb b}
     (hb : HasEuclideanLipschitzDrift Lb b)
     (hwhole : Ω = Set.univ) (a τ : ℝ) (haτ : a < τ)
     (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
     (ε : ℝ) (hε : 0 ≤ ε) (hε1 : ε ≤ 1)
-    (M : ℝ) (hM0 : 0 ≤ M)
+    (M ) (hM0 : 0 ≤ M)
     (hM : ∀ p ∈ movingClosedSlab Ω γ a τ,
       |viscousTransportedOperator B b ε
         (fun q => F (q.position, q.velocity)) p| ≤ M)

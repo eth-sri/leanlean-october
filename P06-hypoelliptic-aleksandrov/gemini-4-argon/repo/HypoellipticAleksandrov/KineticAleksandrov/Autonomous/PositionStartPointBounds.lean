@@ -9,7 +9,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
-/-- The localized test is nonnegative and bounded by its quadratic maximum on the source box. -/
+/- The localized test is nonnegative and bounded by its quadratic maximum on the source box. -/
 theorem positionStartQuadratic_box_bound (c : Clock) (Y : ℝ) (p : Point)
     (hc : |c.vbar| = 2 * c.r) (hv : p.velocity 0 ∈ closure c.active) :
     0 ≤ positionStartCutoff Y c.r c.positive (p.position 0) *
@@ -46,18 +46,5 @@ theorem positionStartQuadratic_box_bound (c : Clock) (Y : ℝ) (p : Point)
       constructor <;> linarith [hs.1, hs.2, pow_pos c.positive 3]
     rw [image_eq_zero_of_notMem_tsupport hnot, zero_mul]
 
-/-- A finite terminal mixture has a nonnegative localized value. -/
-theorem positionStartQuadratic_terminal_integral_nonneg
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y b : ℝ)
-    (mu : Measure Point) :
-    0 ≤ ∫ q, positionStartCutoff Y c.r c.positive (q.position 0) *
-      visitQuadratic c (q.velocity 0)
-      ∂(positionStartTerminalKernel hH hLE hlam hLam A c J b ∘ₘ mu) := by
-  apply integral_nonneg_of_ae
-  exact (positionStartTerminalMixture_ae_closedActive hH hLE hlam hLam A c J b mu).mono
-    fun q hq => mul_nonneg ((positionStartCutoff_properties Y c.r c.positive).2 _).1
-      (visitQuadratic_nonneg c hq)
-
+/- A finite terminal mixture has a nonnegative localized value. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

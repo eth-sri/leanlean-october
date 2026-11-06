@@ -21,7 +21,7 @@ open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set Measu
 /-- A C² test with a bounded terminal error obeys the same error bound against
 its actual signed Green potential. No Green identity is taken as a premise. -/
 theorem fullspace_green_terminal_error
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
+    (hH : HormanderHypoellipticityStatement) {lam Lam }
     (hlam : 0 < lam) (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) (T : ℝ)
     (u g : Point → ℝ)
@@ -30,10 +30,10 @@ theorem fullspace_green_terminal_error
         evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T))
     (huc : ContinuousOn u
       (evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) T))
-    (hg : Measurable g) (Cu M : ℝ) (hM : 0 ≤ M)
+    (hg : Measurable g) (Cu M ) (hM : 0 ≤ M)
     (hub : ∀ p, p.time ≤ T → |u p| ≤ Cu) (hgb : ∀ p, |g p| ≤ M)
     (hgz : ∀ p, T ≤ p.time → g p = 0)
-    (δ : ℝ) (hut : ∀ p, p.time = T → |u p| ≤ δ)
+    (δ ) (hut : ∀ p, p.time = T → |u p| ≤ δ)
     (hop : ∀ p, p.time < T →
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) u p = -g p)
     (p₀ : Point) (hp₀ : p₀.time < T) : |duhamelPotential E.2 T g p₀ - u p₀| ≤ δ := by

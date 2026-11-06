@@ -82,7 +82,7 @@ theorem aemeasurable_parabolicMorreyUnitVelocitySlice_eLpNorm
 
 /-- Exact time-outer disintegration of the extended parabolic norm. -/
 theorem parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice
-    {d : Nat} (f : TimeVelocity d -> Real)
+    {d } (f : TimeVelocity d -> Real)
     (hf : AEMeasurable f (volume.restrict (parabolicMorreyUnitBox d))) :
     parabolicELpNormOn d f (parabolicMorreyUnitBox d) =
       MeasureTheory.eLpNorm
@@ -92,9 +92,9 @@ theorem parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice
         (parabolicExponent d)
         (volume.restrict (Set.Ioo (0 : Real) 1)) := by
   let μ : Measure Real := volume.restrict (Set.Ioo (0 : Real) 1)
-  let ν : Measure (PDE.Vec d) :=
+  let ν :=
     volume.restrict (velocityCube (0 : PDE.Vec d) 1)
-  let p : ℝ≥0∞ := parabolicExponent d
+  let p := parabolicExponent d
   have hbox : volume.restrict (parabolicMorreyUnitBox d) = μ.prod ν := by
     simpa only [μ, ν] using parabolicMorreyUnitBox_restrict_volume_eq_prod d
   have hf' : AEMeasurable f (μ.prod ν) := by
@@ -104,7 +104,7 @@ theorem parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice
     simpa only [p] using parabolicExponent_ne_zero d
   have hp_ne_top : p ≠ ∞ := by
     simpa only [p] using parabolicExponent_ne_top d
-  have hp_toReal_pos : 0 < p.toReal :=
+  have hp_toReal_pos :=
     ENNReal.toReal_pos hp_ne_zero hp_ne_top
   have hpow : AEMeasurable
       (Function.uncurry fun t : Real => fun v : PDE.Vec d =>

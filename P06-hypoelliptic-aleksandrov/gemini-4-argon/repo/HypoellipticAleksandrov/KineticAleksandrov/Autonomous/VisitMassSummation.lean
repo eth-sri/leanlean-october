@@ -13,7 +13,7 @@ open scoped ENNReal
 
 /-- A uniform mass bound on finite partial sums bounds the full positive measure sum. -/
 theorem visit_sum_mass_le_of_partial_mass_le {X : Type*} [MeasurableSpace X]
-    (mu : ℕ → Measure X) (C : ℝ≥0∞)
+    (mu : ℕ → Measure X) (C )
     (hC : ∀ N, (∑ n ∈ Finset.range N, mu n) univ ≤ C) :
     Measure.sum mu univ ≤ C := by
   rw [Measure.sum_apply _ MeasurableSet.univ]

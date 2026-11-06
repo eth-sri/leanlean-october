@@ -13,8 +13,8 @@ open scoped Topology ENNReal
 /-- Actual mollification preserves uniform integrability of signed endpoint differences. -/
 theorem barrier_mollifier_endpoint_tendsto
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam alpha : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    {phi : Z → ℝ} (h : IsBellmanHomogeneous alpha phi)
+    {lam Lam alpha } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {phi } (h : IsBellmanHomogeneous alpha phi)
     (ha : 0 < alpha) (ha1 : alpha < 1)
     (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) (Y : ℝ) :
     let E := fullSpaceEvolution hH hLE hlam hLam A
@@ -54,7 +54,7 @@ theorem barrier_mollifier_endpoint_tendsto
       (barrier_position_mollifier_tendsto h ha (z.1 - Y, z.2))
   apply hlim.congr'
   filter_upwards with n
-  have hdiff : Integrable (f n) (kernelXV E T z) :=
+  have hdiff :=
     hgi.mono' (hfm n).aestronglyMeasurable (Eventually.of_forall (hfb n))
   have hi : Integrable (fun q : Z => Phi n (q.1 - Y, q.2)) (kernelXV E T z) := by
     convert hdiff.add (integrable_const (Phi n (z.1 - Y, z.2))) using 1

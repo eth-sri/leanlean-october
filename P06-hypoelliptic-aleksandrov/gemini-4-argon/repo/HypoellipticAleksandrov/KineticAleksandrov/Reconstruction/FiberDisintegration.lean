@@ -117,7 +117,7 @@ lemma measurable_fiberHeight {g : Y → ℝ≥0∞} (hg : Measurable g) (κ : Ke
 representative `k̃^ξ` over `E`. -/
 lemma setIntegral_fiberDensity {m : Measure Y} {g : Y → ℝ≥0∞} (hg : Measurable g)
     (hgtop : ∀ᵐ y ∂m, g y < ∞) (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ]
-    [IsFiniteMeasure ((m.withDensity g) ⊗ₘ κ)] [SFinite m] (ξ : PDE.Vec d) {E : Set Y}
+    [IsFiniteMeasure ((m.withDensity g) ⊗ₘ κ)] [SFinite m] (ξ : PDE.Vec d) {E }
     (hE : MeasurableSet E) :
     ∫ y in E, fiberDensity g κ ξ y ∂m =
       ∫ p in E ×ˢ (univ : Set (PDE.Vec d)), cexp (-((PDE.vecDot ξ p.2 : ℝ) * I))
@@ -164,7 +164,7 @@ lemma integrable_fiberDensity {m : Measure Y} {g : Y → ℝ≥0∞} (hg : Measu
 for each `ξ` equal `k ξ` `m`-almost everywhere, so every `L^p` norm of `k ξ` and the integral of
 the `L^γ` norms are unchanged; the height `H` is measurable. -/
 theorem fiber_disintegration {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y × PDE.Vec d))
-    [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hg : Measurable g) (hΓ : Γ.fst = m.withDensity g)
+    [IsFiniteMeasure Γ] {g } (hg : Measurable g) (hΓ : Γ.fst = m.withDensity g)
     (k : PDE.Vec d → Y → ℂ)
     (hk : ∀ ξ, Integrable (k ξ) m ∧ ∀ E, MeasurableSet E →
       ∫ y in E, k ξ y ∂m = ∫ p in E ×ˢ (univ : Set (PDE.Vec d)),
@@ -181,7 +181,7 @@ theorem fiber_disintegration {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y ×
   have hdis : Γ = (m.withDensity g) ⊗ₘ Γ.condKernel := by
     rw [← hΓ]; exact (Measure.disintegrate Γ Γ.condKernel).symm
   have hg1 := lintegral_ne_top_of_fst_eq Γ hΓ
-  have hgtop : ∀ᵐ y ∂m, g y < ∞ := ae_lt_top hg hg1
+  have hgtop := ae_lt_top hg hg1
   have hae : ∀ ξ, fiberDensity g Γ.condKernel ξ =ᵐ[m] k ξ := by
     intro ξ
     refine ae_eq_of_forall_setIntegral_eq_of_sigmaFinite

@@ -14,26 +14,26 @@ open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
 open scoped CompactlySupported Topology
 
-/-- The physical coordinate homeomorphism associated to the native Euclidean packing. -/
+/- The physical coordinate homeomorphism associated to the native Euclidean packing. -/
 def reconstructionPhysicalHomeomorph : EvolutionVec 1 ≃ₜ Point :=
   (evolutionHomeomorph 1).trans (sectionTwoHomeomorph 1)
 
-/-- The inverse map packs physical velocity before physical position. -/
+/- The inverse map packs physical velocity before physical position. -/
 @[simp] theorem reconstructionPhysicalHomeomorph_symm_apply (p : Point) :
     reconstructionPhysicalHomeomorph.symm p = packPoint p.time p.velocity p.position := rfl
 
-/-- Ambient smooth compact scalar functions form the exit probe vector space. -/
+/- Ambient smooth compact scalar functions form the exit probe vector space. -/
 def exitProbeSubmodule : Submodule ℝ (EvolutionVec 1 → ℝ) where
   carrier := {f | ContDiff ℝ (⊤ : ℕ∞) f ∧ HasCompactSupport f}
   zero_mem' := ⟨contDiff_const, HasCompactSupport.zero⟩
   add_mem' := fun hf hg => ⟨hf.1.add hg.1, hf.2.add hg.2⟩
   smul_mem' := fun _c _f hf => ⟨contDiff_const.smul hf.1, hf.2.smul_left⟩
 
-/-- The physical test supplied by an ambient exit probe. -/
+/- The physical test supplied by an ambient exit probe. -/
 def exitProbePhysical (f : exitProbeSubmodule) : Point → ℝ :=
   f.1 ∘ reconstructionPhysicalHomeomorph.symm
 
-/-- A physical probe is globally continuous and compactly supported. -/
+/- A physical probe is globally continuous and compactly supported. -/
 theorem exitProbePhysical_continuous_compact (f : exitProbeSubmodule) :
     Continuous (exitProbePhysical f) ∧ HasCompactSupport (exitProbePhysical f) :=
   ⟨f.2.1.continuous.comp reconstructionPhysicalHomeomorph.symm.continuous,
@@ -55,7 +55,7 @@ private theorem probe_native_smooth (f : exitProbeSubmodule) :
   rw [heq]
   exact h
 
-/-- Smooth ambient probes supply genuine global physical C112 tests. -/
+/- Smooth ambient probes supply genuine global physical C112 tests. -/
 theorem exitProbePhysical_isKineticC112On (f : exitProbeSubmodule) (D : Set Point)
     (hD : IsOpen D) : IsKineticC112On (exitProbePhysical f) D :=
   isKineticC112On_of_contDiffOn hD (probe_native_smooth f).contDiffOn
@@ -65,17 +65,6 @@ private theorem probe_derivative_smooth {f : EvolutionVec 1 → ℝ}
     ContDiff ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ f x v) :=
   (hf.contDiff_fderiv_apply (by simp)).comp (contDiff_id.prodMk contDiff_const)
 
-private theorem probe_operator_formula {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (f : exitProbeSubmodule) :
-    transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f.1 =
-      fun x => fderiv ℝ f.1 x basisT +
-        A.a (transportedCoord 1 x 0) (diffusedCoord 1 x 0) *
-          fderiv ℝ (fun y => fderiv ℝ f.1 y (basisV (0 : Fin 1))) x (basisV (0 : Fin 1)) +
-        diffusedCoord 1 x 0 * fderiv ℝ f.1 x (basisZ (0 : Fin 1)) := by
-  funext x
-  simp only [transportedOperator, Fin.sum_univ_one, evolutionCoefficient, identityDrift, id_eq]
-
-/-- The actual packed kinetic operator of a smooth compact probe is smooth and compact. -/
 theorem exitProbe_operator_smooth_compact {lam Lam : ℝ}
     (A : SmoothAutonomous lam Lam) (f : exitProbeSubmodule) :
     ContDiff ℝ (⊤ : ℕ∞) (transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f.1) ∧
@@ -87,19 +76,27 @@ theorem exitProbe_operator_smooth_compact {lam Lam : ℝ}
   have hvc : HasCompactSupport (fun x => fderiv ℝ f.1 x (basisV (0 : Fin 1))) :=
     f.2.2.fderiv_apply ℝ _
   have hhc := hvc.fderiv_apply ℝ (basisV (0 : Fin 1))
-  have haa : ContDiff ℝ (⊤ : ℕ∞) (fun x =>
-      A.a (transportedCoord 1 x 0) (diffusedCoord 1 x 0)) :=
+  have haa :=
     A.smooth.comp (((contDiff_apply ℝ ℝ (0 : Fin 1)).comp (transportedCoord 1).contDiff).prodMk
       ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp (diffusedCoord 1).contDiff))
-  rw [probe_operator_formula A f]
+  have _h_inl_19 : transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f.1 =
+      fun x => fderiv ℝ f.1 x basisT +
+        A.a (transportedCoord 1 x 0) (diffusedCoord 1 x 0) *
+          fderiv ℝ (fun y => fderiv ℝ f.1 y (basisV (0 : Fin 1))) x (basisV (0 : Fin 1)) +
+        diffusedCoord 1 x 0 * fderiv ℝ f.1 x (basisZ (0 : Fin 1)) := by
+      funext x
+      simp only [transportedOperator, Fin.sum_univ_one, evolutionCoefficient, identityDrift, id_eq]
+
+    /- The actual packed kinetic operator of a smooth compact probe is smooth and compact. -/
+  rw [_h_inl_19]
   constructor
   · simpa only [Function.comp_def] using! (ht.add (haa.mul hh)).add
       (((contDiff_apply ℝ ℝ (0 : Fin 1)).comp (diffusedCoord 1).contDiff).mul hz)
   · exact ((f.2.2.fderiv_apply ℝ basisT).add hhc.mul_left).add
       (f.2.2.fderiv_apply ℝ (basisZ (0 : Fin 1))).mul_left
 
-/-- The scalar physical operator is exactly the packed probe operator under the fixed map. -/
-theorem exitProbePhysical_operator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+/- The scalar physical operator is exactly the packed probe operator under the fixed map. -/
+theorem exitProbePhysical_operator {lam Lam } (A : SmoothAutonomous lam Lam)
     (f : exitProbeSubmodule) (p : Point) :
     forwardScalarOperator A.a (exitProbePhysical f) p =
       transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f.1
@@ -118,8 +115,8 @@ theorem exitProbePhysical_operator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam
   rw [hx] at hop
   exact hop.symm
 
-/-- A compact probe and its actual kinetic operator satisfy the bounded source hypotheses. -/
-theorem exitProbePhysical_bounded_source {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+/- A compact probe and its actual kinetic operator satisfy the bounded source hypotheses. -/
+theorem exitProbePhysical_bounded_source {lam Lam } (A : SmoothAutonomous lam Lam)
     (f : exitProbeSubmodule) :
     ∃ M : ℝ, ∀ p, |exitProbePhysical f p| ≤ M ∧
       |forwardScalarOperator A.a (exitProbePhysical f) p| ≤ M := by

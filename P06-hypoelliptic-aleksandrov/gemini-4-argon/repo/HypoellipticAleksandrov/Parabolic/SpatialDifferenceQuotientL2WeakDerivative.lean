@@ -30,7 +30,7 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
     {d : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (k : Fin d) (u : TimeVelocity d → ℝ)
     (hu : ParabolicMemLpOn U (2 : ℝ≥0∞) u)
-    (δ C : ℝ) (hδ : 0 < δ)
+    (δ C ) (hδ : 0 < δ)
     (hDQmem : ∀ h : ℝ, 0 < h → h < δ →
       ParabolicMemLpOn U (2 : ℝ≥0∞)
         (spatialDifferenceQuotient k h u))
@@ -41,7 +41,7 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
       ∃ hg : ParabolicMemLpOn U (2 : ℝ≥0∞) g,
         HasWeakVelocityPartialDerivOn U k u g ∧
           ‖hg.toLp g‖ ≤ C := by
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn U
+  let μ := timeVelocityVolumeOn U
   letI : IsLocallyFiniteMeasure μ :=
     Measure.isLocallyFiniteMeasure_of_le Measure.restrict_le_self
   have huLoc : LocallyIntegrableOn u U (volume : Measure (TimeVelocity d)) := by
@@ -78,12 +78,12 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
     simpa only [q] using hDQbound (a n) (ha_pos n) (ha_lt n)
   obtain ⟨v, σ, hσ, hweak⟩ :=
     Dirichlet.exists_strictMono_tendsto_clm_of_norm_le q C hq_bound
-  have hv_norm : ‖v‖ ≤ C :=
+  have hv_norm :=
     HypoellipticAleksandrov.norm_le_of_tendsto_clm_of_norm_le
       (fun n => q (σ n)) v C (fun n => hq_bound (σ n)) hweak
-  have haσ_tendsto : Tendsto (a ∘ σ) atTop (𝓝[≠] 0) :=
+  have haσ_tendsto :=
     ha_tendsto.comp hσ.tendsto_atTop
-  let hg : ParabolicMemLpOn U (2 : ℝ≥0∞) (fun z => v z) := Lp.memLp v
+  let hg := Lp.memLp v
   refine ⟨fun z => v z, hg, ?_, ?_⟩
   intro φ hφ hφcompact hφU
   let φLp : H := (hφ.continuous.memLp_of_hasCompactSupport hφcompact).toLp φ

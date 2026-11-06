@@ -23,14 +23,14 @@ namespace H1Function
 
 variable {d : ℕ} {U : Set (Vec d)}
 
-/-- The `p = 2` weak chain rule, stated directly on the representative-level
+/- The `p = 2` weak chain rule, stated directly on the representative-level
 `H¹` carrier.  This is an exact transport of the generic finite-exponent
 theorem. -/
 theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
     (hU : IsOpenBoundedConvexDomain U)
     (u : H1Function U)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
+    {G } (hG : ContDiff ℝ 1 G)
+    {M } (hM : 0 ≤ M)
     (hderiv : ∀ t, |deriv G t| ≤ M) :
     HasWeakGradientOn U
       (fun x => G (u.toFun x))
@@ -39,44 +39,8 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
     W1pFunction.hasWeakGradient_comp_contDiff_of_deriv_bounded
       hU (by norm_num) (by norm_num) u.toW1pFunction hG hM hderiv
 
-/-- Compose an `H¹` representative with a `C¹` real function whose derivative
+/- Compose an `H¹` representative with a `C¹` real function whose derivative
 is bounded by `M`. -/
-noncomputable def compContDiffOfDerivBounded
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
-    (hderiv : ∀ t, |deriv G t| ≤ M) :
-    H1Function U :=
-  (u.toW1pFunction.compContDiffOfDerivBounded
-    hU (by norm_num) (by norm_num)
-    hG hM hderiv).toH1Function
-
-@[simp]
-theorem compContDiffOfDerivBounded_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
-    (hderiv : ∀ t, |deriv G t| ≤ M) :
-    (u.compContDiffOfDerivBounded
-      hU hG hM hderiv).toFun =
-        fun x => G (u.toFun x) :=
-  rfl
-
-@[simp]
-theorem compContDiffOfDerivBounded_grad
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
-    (hderiv : ∀ t, |deriv G t| ≤ M) :
-    (u.compContDiffOfDerivBounded
-      hU hG hM hderiv).grad =
-        fun x i =>
-          deriv G (u.toFun x) * u.grad x i :=
-  rfl
-
 end H1Function
 
 end PDE

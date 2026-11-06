@@ -14,16 +14,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
-/-- Transport coordinates ordered as velocity, transported position, time. -/
-def transportChart {d : ℕ} (z : PDE.Vec d × (PDE.Vec d × ℝ)) : KineticPoint d :=
+/- Transport coordinates ordered as velocity, transported position, time. -/
+def transportChart {d } (z : PDE.Vec d × (PDE.Vec d × ℝ)) : KineticPoint d :=
   ⟨z.2.2, z.2.1+z.2.2 • z.1, z.1⟩
 
-/-- The transport chart is continuous. -/
-theorem continuous_transportChart (d : ℕ) : Continuous (@transportChart d) := by
-  apply KineticPoint.continuous_mk <;> fun_prop
-
-/-- At fixed velocity, time-dependent position translation preserves product volume. -/
-theorem measurePreserving_transport_fiber {d : ℕ} (v : PDE.Vec d) :
+/- The transport chart is continuous. -/
+theorem measurePreserving_transport_fiber {d } (v : PDE.Vec d) :
     MeasurePreserving (fun z : PDE.Vec d × ℝ => (z.2, z.1+z.2 • v)) volume volume := by
   have h : MeasurePreserving (fun z : ℝ × PDE.Vec d => (z.1, z.2+z.1 • v))
       ((volume : Measure ℝ).prod volume) ((volume : Measure ℝ).prod volume) := by
@@ -37,37 +33,9 @@ theorem measurePreserving_transport_fiber {d : ℕ} (v : PDE.Vec d) :
     h.comp (Measure.measurePreserving_swap (μ := (volume : Measure (PDE.Vec d)))
       (ν := (volume : Measure ℝ)))
 
-/-- The full transport chart preserves kinetic volume, with Jacobian one. -/
-theorem measurePreserving_transportChart (d : ℕ) :
-    MeasurePreserving (@transportChart d) volume volume := by
-  have hshear : MeasurePreserving
-      (fun z : PDE.Vec d × (PDE.Vec d × ℝ) => (z.1, z.2.2, z.2.1+z.2.2 • z.1))
-      ((volume : Measure (PDE.Vec d)).prod volume)
-      ((volume : Measure (PDE.Vec d)).prod volume) := by
-    refine (MeasurePreserving.id (volume : Measure (PDE.Vec d))).skew_product
-      (g := fun (v : PDE.Vec d) (z : PDE.Vec d × ℝ) => (z.2, z.1+z.2 • v)) ?_ ?_
-    · exact (continuous_snd.snd.prodMk
-        (continuous_snd.fst.add (continuous_snd.snd.smul continuous_fst))).measurable
-    · exact Filter.Eventually.of_forall fun v => (measurePreserving_transport_fiber v).map_eq
-  have hperm : MeasurePreserving
-      (fun z : PDE.Vec d × (ℝ × PDE.Vec d) => (z.2.1, z.2.2, z.1)) volume volume := by
-    simpa only [Measure.volume_eq_prod, Function.comp_def, Prod.swap,
-    MeasurableEquiv.prodAssoc, MeasurableEquiv.coe_mk, Equiv.prodAssoc_apply] using
-      (measurePreserving_prodAssoc (volume : Measure ℝ) (volume : Measure (PDE.Vec d))
-        (volume : Measure (PDE.Vec d))).comp
-        (Measure.measurePreserving_swap (μ := (volume : Measure (PDE.Vec d)))
-          (ν := (volume : Measure (ℝ × PDE.Vec d))))
-  have hinv : MeasurePreserving (KineticPoint.equivProd d).symm volume volume :=
-    ⟨KineticPoint.measurable_equivProd_symm d, rfl⟩
-  change MeasurePreserving
-    (fun z : PDE.Vec d × (PDE.Vec d × ℝ) =>
-      KineticPoint.mk z.2.2 (z.2.1+z.2.2 • z.1) z.1) _ _
-  simpa only [Measure.volume_eq_prod, Function.comp_def, transportChart,
-    KineticPoint.equivProd, Equiv.coe_fn_symm_mk] using hinv.comp (hperm.comp hshear)
-
-/-- Backward transport slices fit in a fixed transported position ball of radius 2r³. -/
-theorem cylinder_transport_slice {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r)
-    (v y : PDE.Vec d) (t : ℝ)
+/- The full transport chart preserves kinetic volume, with Jacobian one. -/
+theorem cylinder_transport_slice {d } (P : KineticPoint d) {r : ℝ} (hr : 0 < r)
+    (v y t)
     (h : transportChart (v, y, t) ∈ backwardCylinder P r) :
     t ∈ Ioo (P.time-r^2) P.time ∧ v ∈ PDE.euclideanBall P.velocity r ∧
       y ∈ PDE.euclideanBall (P.position-P.time • v) (2*r^3) := by
@@ -95,7 +63,7 @@ theorem cylinder_transport_slice {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 
   have hm := mul_le_mul ht.le hv.le (PDE.vecEuclideanNorm_nonneg _) (sq_nonneg r)
   nlinarith
 
-/-- The delayed transport product is contained in the forward stack. -/
+/- The delayed transport product is contained in the forward stack. -/
 theorem delayed_transport_slice {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r)
     (m : ℕ) (v y : PDE.Vec d) (t : ℝ)
     (ht : t ∈ Ioo P.time (P.time+(m : ℝ)*r^2))

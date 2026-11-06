@@ -12,12 +12,12 @@ namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set Filter MeasureTheory
 open scoped Topology MatrixOrder Matrix.Norms.Elementwise
 
-private theorem small_tolerance {η c k : ℝ} (hη : 0 < η) (hc : 0 ≤ c) (hk : 0 ≤ k) :
+private theorem small_tolerance {η c k } (hη : 0 < η) (hc : 0 ≤ c) (hk : 0 ≤ k) :
     ∃ δ : ℝ, 0 < δ ∧ δ ≤ η ∧ δ * c * k ≤ η := by
   let δ := η / (c * k + 1)
   have hd : 0 < c * k + 1 := by positivity
-  have he : δ * (c * k + 1) = η := div_mul_cancel₀ η (ne_of_gt hd)
-  have hp : 0 < δ := div_pos hη hd
+  have he := div_mul_cancel₀ η (ne_of_gt hd)
+  have hp := div_pos hη hd
   refine ⟨δ, hp, ?_, ?_⟩ <;> nlinarith [mul_nonneg hc hk]
 
 /-- Interior smoothing controls the residual norm and corrects the boundary. -/

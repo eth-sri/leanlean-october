@@ -16,7 +16,7 @@ open Filter Set MeasureTheory
 open scoped BigOperators
 
 /-- Restricting a supplied classical jet preserves its actual derivative functions. -/
-theorem scalarC12On_mono {d : ℕ} {U V : Set (TimeVelocity d)}
+theorem scalarC12On_mono {d U V}
     {u : TimeVelocity d → ℝ} (hu : IsScalarC12On u U) (hVU : V ⊆ U) :
     IsScalarC12On u V := by
   rcases hu with ⟨hv, ht, hs, hdt, hdg, hdh⟩
@@ -24,7 +24,7 @@ theorem scalarC12On_mono {d : ℕ} {U V : Set (TimeVelocity d)}
     hdt.mono hVU, hdg.mono hVU, hdh.mono hVU⟩
 
 /-- A compact collar carries the literal classical weak `W¹,²₂` jet. -/
-def classicalLocalW12Jet {d : ℕ} {U V : Set (TimeVelocity d)}
+def classicalLocalW12Jet {d U V}
     (u : TimeVelocity d → ℝ) (hu : IsScalarC12On u U)
     (hV : IsOpen V) (hVc : IsCompact (closure V)) (hVU : closure V ⊆ U) :
     ParabolicW12Function d V 2 :=
@@ -50,8 +50,7 @@ def classicalLocalW12Jet {d : ℕ} {U V : Set (TimeVelocity d)}
       (scalarC12On_mono hu (subset_closure.trans hVU)) }
 
 /-- The literal local classical jet retains the homogeneous equation in weak-jet order. -/
-theorem classicalLocalW12Jet_homogeneous_equation {d : ℕ}
-    {U V : Set (TimeVelocity d)} (u : TimeVelocity d → ℝ)
+theorem classicalLocalW12Jet_homogeneous_equation {d U V} (u : TimeVelocity d → ℝ)
     (hu : IsScalarC12On u U) (hV : IsOpen V) (hVc : IsCompact (closure V))
     (hVU : closure V ⊆ U) (A : CoefficientField d)
     (heq : ∀ z ∈ U, scalarTimeDerivative u z +

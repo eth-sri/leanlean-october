@@ -17,9 +17,7 @@ open scoped Topology
 
 /-- A strictly positive operator excludes positive maxima on any inset tube.
 All maximum-attainment and moving-boundary steps are discharged internally. -/
-theorem nonpos_on_inset_maximumClosedTube_of_strict {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a α b : ℝ}
-    {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
+theorem nonpos_on_inset_maximumClosedTube_of_strict {d Ω γ a α b B drift}
     {u : KineticPoint d → ℝ}
     (hΩ : IsOpen Ω) (hcΩ : IsCompact (closure Ω)) (haα : a < α)
     (hγ : ContinuousOn γ (Icc a b))
@@ -54,7 +52,7 @@ theorem nonpos_on_inset_maximumClosedTube_of_strict {d : ℕ}
   obtain ⟨p, hp, hpos, hmax⟩ := exists_positive_isMaxOn_maximumClosedTube hcΩ
     (hγ.mono htSub) (hu.mono hsub) hcontrol' hq (lt_of_not_ge hnot)
   have hpFull := hsub hp
-  have hpt : p.time < b := lt_of_le_of_ne hp.1.2 (by
+  have hpt := lt_of_le_of_ne hp.1.2 (by
     intro heq
     exact (not_le_of_gt hpos) (hterminal p hpFull heq))
   have hpv : p.position ∈ movingDomain Ω γ p.time := by
@@ -66,7 +64,7 @@ theorem nonpos_on_inset_maximumClosedTube_of_strict {d : ℕ}
   have hpOpen : p ∈ maximumOpenTube Ω γ a b :=
     ⟨⟨haα.trans_le hp.1.1, hpt⟩, hpv⟩
   obtain ⟨hut, huv, huz⟩ := hreg p hpOpen
-  have hγp : ContinuousAt γ p.time :=
+  have hγp :=
     (hγ p.time hpFull.1).continuousAt (Icc_mem_nhds hpOpen.1.1 hpOpen.1.2)
   exact (not_le_of_gt (hstrict p hpOpen))
     (transportedForwardOperator_nonpos_at_tube_max hΩ hγp ⟨hp.1.1, hpt⟩ hpv

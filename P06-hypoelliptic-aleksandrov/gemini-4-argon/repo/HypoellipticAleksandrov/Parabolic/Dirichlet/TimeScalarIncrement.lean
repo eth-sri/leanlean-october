@@ -18,46 +18,6 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Filter Function MeasureTheory Set Topology
 open scoped ENNReal
 
-private theorem exists_strict_reverseTimeScalarTest_collar
-    (T : ℝ) (hT : 0 < T) (eta : ReverseTimeScalarTest T) :
-    ∃ a b : ℝ, 0 < a ∧ a < b ∧ b < T ∧
-      tsupport (eta : ℝ → ℝ) ⊆ Ioo a b ∧ tsupport eta.deriv ⊆ Ioo a b := by
-  by_cases hsupport : (tsupport (eta : ℝ → ℝ)).Nonempty
-  · obtain ⟨lo, hlo, hloMin⟩ :=
-      eta.hasCompactSupport.exists_isMinOn hsupport continuousOn_id
-    obtain ⟨hi, hhi, hhiMax⟩ :=
-      eta.hasCompactSupport.exists_isMaxOn hsupport continuousOn_id
-    have hloIoo : lo ∈ Ioo (0 : ℝ) T := eta.tsupport_subset hlo
-    have hhiIoo : hi ∈ Ioo (0 : ℝ) T := eta.tsupport_subset hhi
-    obtain ⟨a, ha0, halo⟩ := exists_between hloIoo.1
-    obtain ⟨b, hhib, hbT⟩ := exists_between hhiIoo.2
-    have hlohi : lo ≤ hi := hloMin hhi
-    refine ⟨a, b, ha0, ?_, hbT, ?_, ?_⟩
-    · exact lt_of_lt_of_le halo (hlohi.trans_lt hhib).le
-    · intro t ht
-      exact ⟨lt_of_lt_of_le halo (hloMin ht),
-        lt_of_le_of_lt (hhiMax ht) hhib⟩
-    · have hderivSupport : tsupport eta.deriv ⊆ tsupport (eta : ℝ → ℝ) := by
-        rw [ReverseTimeScalarTest.deriv, tsupport]
-        exact closure_minimal support_deriv_subset (isClosed_tsupport _)
-      exact hderivSupport.trans (by
-        intro t ht
-        exact ⟨lt_of_lt_of_le halo (hloMin ht),
-          lt_of_le_of_lt (hhiMax ht) hhib⟩)
-  · have heta : (eta : ℝ → ℝ) = 0 := by
-      funext t
-      apply image_eq_zero_of_notMem_tsupport
-      exact fun ht => hsupport ⟨t, ht⟩
-    have hderiv : eta.deriv = 0 := by
-      funext t
-      rw [eta.deriv_apply, heta]
-      simp
-    refine ⟨T / 3, 2 * T / 3, by linarith, by linarith, by linarith, ?_, ?_⟩
-    · rw [heta]
-      simp
-    · rw [hderiv]
-      simp
-
 private theorem integral_reverseTime_eq_integral_Icc_of_tsupport_subset
     {T a b : ℝ} {F phi : ℝ → ℝ}
     (hK : Icc a b ⊆ Ioo (0 : ℝ) T) (hphi : tsupport phi ⊆ Ioo a b) :
@@ -69,18 +29,6 @@ private theorem integral_reverseTime_eq_integral_Icc_of_tsupport_subset
     ⟨le_of_lt (hphi hts).1, le_of_lt (hphi hts).2⟩)]
   ring
 
-private theorem reverseTime_Ioc_integral_eq_volume_Icc_integral
-    {T a b s t : ℝ} {q : ℝ → ℝ}
-    (hK : Icc a b ⊆ Ioo (0 : ℝ) T)
-    (hs : s ∈ Icc a b) (ht : t ∈ Icc a b) :
-    (∫ r in Ioc s t, q r ∂reverseTimeVolume T) = ∫ r in Icc s t, q r := by
-  have hIoc : Ioc s t ⊆ Ioo (0 : ℝ) T := by
-    intro r hr
-    exact ⟨lt_of_lt_of_le (hK hs).1 (mem_Ioc.mp hr).1.le,
-      lt_of_le_of_lt (mem_Ioc.mp hr).2 (hK ht).2⟩
-  change (∫ r, q r ∂(volume.restrict (Ioo (0 : ℝ) T)).restrict (Ioc s t)) = _
-  rw [Measure.restrict_restrict_of_subset hIoc, ← integral_Icc_eq_integral_Ioc]
-
 private def intervalPrimitive (a : ℝ) (q : ℝ → ℝ) (t : ℝ) : ℝ :=
   ∫ r in a..t, q r
 
@@ -89,16 +37,6 @@ private theorem intervalPrimitive_eq_setIntegral_Icc
     intervalPrimitive a q t = ∫ r in Icc a t, q r := by
   rw [intervalPrimitive, intervalIntegral.integral_of_le hat,
     ← integral_Icc_eq_integral_Ioc]
-
-private theorem continuousOn_intervalPrimitive
-    {a b : ℝ} {q : ℝ → ℝ} (hab : a ≤ b)
-    (hq : IntegrableOn q (Icc a b) volume) :
-    ContinuousOn (intervalPrimitive a q) (Icc a b) := by
-  have hq' : IntegrableOn q (uIcc a b) volume := by
-    simpa only [uIcc_of_le hab] using hq
-  change ContinuousOn (fun t => ∫ r in a..t, q r) (Icc a b)
-  rw [← uIcc_of_le hab]
-  exact intervalIntegral.continuousOn_primitive_interval hq'
 
 private theorem setIntegral_setIntegral_Icc_swap
     {a b : ℝ} {q psi : ℝ → ℝ}
@@ -271,7 +209,13 @@ private theorem integral_mul_deriv_eq_neg_integral_of_increment
     _ = (∫ t in Icc a b, intervalPrimitive a q t * deriv eta t) +
         ∫ t in Icc a b, e a * deriv eta t := by
       rw [integral_add]
-      · exact ((continuousOn_intervalPrimitive hab hq).mul
+      · have _h_inl_11 : ContinuousOn (intervalPrimitive a q) (Icc a b) := by
+          have hq' : IntegrableOn q (uIcc a b) volume := by
+            simpa only [uIcc_of_le hab] using hq
+          change ContinuousOn (fun t => ∫ r in a..t, q r) (Icc a b)
+          rw [← uIcc_of_le hab]
+          exact intervalIntegral.continuousOn_primitive_interval hq'
+        exact (_h_inl_11.mul
           (heta.continuous_deriv (by simp)).continuousOn).integrableOn_Icc
       · simpa only [Pi.mul_apply] using hderivIcc.const_mul (e a)
     _ = -(∫ t in Icc a b, q t * eta t) := by
@@ -293,7 +237,7 @@ private theorem integral_mul_deriv_eq_neg_integral_of_increment
       rw [integral_const_mul, htail]
       ring
 
-/-- A reverse-time scalar increment identity yields its compactly supported
+/- A reverse-time scalar increment identity yields its compactly supported
 distributional testing identity on the literal restricted time measure. -/
 theorem integral_mul_reverseTimeScalarTest_deriv_eq_neg_integral_of_increment
     (T : ℝ) (hT : 0 < T)
@@ -305,8 +249,43 @@ theorem integral_mul_reverseTimeScalarTest_deriv_eq_neg_integral_of_increment
     (eta : ReverseTimeScalarTest T) :
     (∫ t, e t * eta.deriv t ∂reverseTimeVolume T) =
       -(∫ t, q t * eta t ∂reverseTimeVolume T) := by
-  obtain ⟨a, b, ha, hab, hb, heta, hetaDeriv⟩ :=
-    exists_strict_reverseTimeScalarTest_collar T hT eta
+  obtain ⟨a, b, ha, hab, hb, heta, hetaDeriv⟩ : ∃ a b : ℝ, 0 < a ∧ a < b ∧ b < T ∧
+      tsupport (eta : ℝ → ℝ) ⊆ Ioo a b ∧ tsupport eta.deriv ⊆ Ioo a b := by
+    by_cases hsupport : (tsupport (eta : ℝ → ℝ)).Nonempty
+    · obtain ⟨lo, hlo, hloMin⟩ :=
+        eta.hasCompactSupport.exists_isMinOn hsupport continuousOn_id
+      obtain ⟨hi, hhi, hhiMax⟩ :=
+        eta.hasCompactSupport.exists_isMaxOn hsupport continuousOn_id
+      have hloIoo := eta.tsupport_subset hlo
+      have hhiIoo := eta.tsupport_subset hhi
+      obtain ⟨a, ha0, halo⟩ := exists_between hloIoo.1
+      obtain ⟨b, hhib, hbT⟩ := exists_between hhiIoo.2
+      have hlohi := hloMin hhi
+      refine ⟨a, b, ha0, ?_, hbT, ?_, ?_⟩
+      · exact lt_of_lt_of_le halo (hlohi.trans_lt hhib).le
+      · intro t ht
+        exact ⟨lt_of_lt_of_le halo (hloMin ht),
+          lt_of_le_of_lt (hhiMax ht) hhib⟩
+      · have hderivSupport : tsupport eta.deriv ⊆ tsupport (eta : ℝ → ℝ) := by
+          rw [ReverseTimeScalarTest.deriv, tsupport]
+          exact closure_minimal support_deriv_subset (isClosed_tsupport _)
+        exact hderivSupport.trans (by
+          intro t ht
+          exact ⟨lt_of_lt_of_le halo (hloMin ht),
+            lt_of_le_of_lt (hhiMax ht) hhib⟩)
+    · have heta : (eta : ℝ → ℝ) = 0 := by
+        funext t
+        apply image_eq_zero_of_notMem_tsupport
+        exact fun ht => hsupport ⟨t, ht⟩
+      have hderiv : eta.deriv = 0 := by
+        funext t
+        rw [eta.deriv_apply, heta]
+        simp
+      refine ⟨T / 3, 2 * T / 3, by linarith, by linarith, by linarith, ?_, ?_⟩
+      · rw [heta]
+        simp
+      · rw [hderiv]
+        simp
   have hK : Icc a b ⊆ Ioo (0 : ℝ) T := by
     intro t ht
     exact ⟨lt_of_lt_of_le ha ht.1, lt_of_le_of_lt ht.2 hb⟩
@@ -323,7 +302,12 @@ theorem integral_mul_reverseTimeScalarTest_deriv_eq_neg_integral_of_increment
     rw [hinc s t
       ⟨(hK hs).1.le, (hK hs).2.le⟩
       ⟨(hK ht).1.le, (hK ht).2.le⟩ hst]
-    exact reverseTime_Ioc_integral_eq_volume_Icc_integral hK hs ht
+    have hIoc : Ioc s t ⊆ Ioo (0 : ℝ) T := by
+      intro r hr
+      exact ⟨lt_of_lt_of_le (hK hs).1 (mem_Ioc.mp hr).1.le,
+        lt_of_le_of_lt (mem_Ioc.mp hr).2 (hK ht).2⟩
+    change (∫ r, q r ∂(volume.restrict (Ioo (0 : ℝ) T)).restrict (Ioc s t)) = _
+    rw [Measure.restrict_restrict_of_subset hIoc, ← integral_Icc_eq_integral_Ioc]
   rw [integral_reverseTime_eq_integral_Icc_of_tsupport_subset hK hetaDeriv,
     integral_reverseTime_eq_integral_Icc_of_tsupport_subset hK heta]
   exact integral_mul_deriv_eq_neg_integral_of_increment hab.le hqIcc heIcc hincIcc

@@ -32,8 +32,6 @@ theorem return_measure_comparison (μ ν : Measure (ℝ × ℝ))
     intro f hs hf _ hfn
     simpa only [integral_smul_measure, c, ENNReal.toReal_ofReal hC, smul_eq_mul] using
       htest f hs hf hfn
-  have hmono := integral_mono_measure horder (Eventually.of_forall hF)
-    (integrable_boundedBorel F (c • ν))
-  simpa only [integral_smul_measure, c, ENNReal.toReal_ofReal hC, smul_eq_mul] using hmono
+  simpa only [integral_smul_measure, c, ENNReal.toReal_ofReal hC, smul_eq_mul] using (integral_mono_measure horder (Eventually.of_forall hF) (integrable_boundedBorel F (c • ν)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

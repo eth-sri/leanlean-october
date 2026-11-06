@@ -39,7 +39,7 @@ theorem tendsto_quadratic_tail (K : ℝ) :
   exact tendsto_const_nhds.div_atTop h
 
 /-- A sequence with the quadratic tail bound `|a M - a N| ≤ K / (N+1)²` (`M ≥ N`) is Cauchy. -/
-theorem cauchySeq_of_quadratic_tail {a : ℕ → ℝ} {K : ℝ}
+theorem cauchySeq_of_quadratic_tail {a K}
     (h : ∀ N M : ℕ, N ≤ M → |a M - a N| ≤ K / ((N : ℝ) + 1) ^ 2) : CauchySeq a := by
   refine cauchySeq_of_le_tendsto_0 (fun N => 2 * (K / ((N : ℝ) + 1) ^ 2)) ?_ ?_
   · intro n m N hn hm
@@ -56,7 +56,7 @@ solutions `u_N` of the cutoff data `F(y) χ_N(z)` exists on the past closed cyli
 classical terminal solution for the `z`-independent datum `F(y)`. -/
 theorem exists_cutoff_limit_classical
     (hH : HormanderHypoellipticityStatement)
-    (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
+    (n ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
     (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
@@ -66,7 +66,7 @@ theorem exists_cutoff_limit_classical
     (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
     (hb_smooth : IsSmoothDrift b) (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
     (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-    (τ : ℝ) (F : BoundedBorel (PDE.Vec n)) (C : ℝ) (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
+    (τ : ℝ) (F : BoundedBorel (PDE.Vec n)) (C ) (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
     (u : ℕ → KineticPoint n → ℝ)
     (hu : ∀ N, IsClassicalTerminalSolution Ω γ B b τ (cutoffDatum F N) (u N))
     (hbd : ∀ N, ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |u N p| ≤ C) :
@@ -180,11 +180,9 @@ theorem exists_cutoff_limit_classical
         exact (hV p (hUS hp)).mul_const _
   obtain ⟨V', hV', hrep⟩ := exists_smooth_kinetic_representative hH hlam hB_smooth hB_ell
     hb_smooth hm hb_coercive U hU V hweak
-  have hcontP : ContinuousOn (V ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U) :=
+  have hcontP :=
     (hcont.mono hUS).comp (evolutionHomeomorph n).continuous.continuousOn (fun x hx => hx)
-  have hEq : EqOn V V' U := eqOn_of_ae_eq_of_continuousOn_kinetic hU hcontP hV'.continuousOn hrep
-  have hVsmooth : ContDiffOn ℝ (⊤ : ℕ∞) (V ∘ evolutionHomeomorph n)
-      (evolutionHomeomorph n ⁻¹' U) := hV'.congr fun x hx => hEq hx
+  have hVsmooth := hV'.congr fun x hx => (eqOn_of_ae_eq_of_continuousOn_kinetic hU hcontP hV'.continuousOn hrep) hx
   refine ⟨V, hV, ⟨C, hC0, fun p hp => hVbd p hp⟩, hcont, ?_, ?_, ?_, ?_⟩
   · rw [evolutionPastInteriorRaw_eq_image]
     exact contDiffOn_comp_evolutionHomeomorph_iff.mp hVsmooth

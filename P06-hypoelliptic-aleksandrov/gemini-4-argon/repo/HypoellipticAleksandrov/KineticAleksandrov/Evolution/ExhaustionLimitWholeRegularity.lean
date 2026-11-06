@@ -52,7 +52,7 @@ theorem classical_wholeSpace_ball_limit (hH : HormanderHypoellipticityStatement)
     hlam hB hb hε hε1 hC F hFC r hrlim v hv hBs hBsym hbs
   obtain ⟨w, hws, hae⟩ := exists_smooth_viscous_kinetic_representative
     hH hlam hBs hB hbs U hU ε hε f hw
-  have hcf : ContinuousOn f U :=
+  have hcf :=
     (tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S0)
       hlam hB hb hε.le hε1 hC F hFC r hrlim v hv).2.1.mono
         (wholeSpaceInnerCylinder_subset_closed α τ S0)

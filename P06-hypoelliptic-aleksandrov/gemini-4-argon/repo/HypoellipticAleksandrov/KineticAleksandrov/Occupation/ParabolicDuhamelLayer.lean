@@ -24,10 +24,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open MeasureTheory Set Filter
 open scoped Topology
 
-/-- A smooth step: `0` on `(-∞, 1]`, `1` on `[2, ∞)`. -/
+/- A smooth step: `0` on `(-∞, 1]`, `1` on `[2, ∞)`. -/
 def layerStep (s : ℝ) : ℝ := Real.smoothTransition (s - 1)
 
-/-- The derivative of the smooth step, supported in `[1,2]` with total mass one. -/
+/- The derivative of the smooth step, supported in `[1,2]` with total mass one. -/
 def layerKernel : ℝ → ℝ := deriv layerStep
 
 theorem contDiff_layerStep : ContDiff ℝ (⊤ : ℕ∞) layerStep :=
@@ -79,7 +79,7 @@ theorem hasCompactSupport_layerKernel : HasCompactSupport layerKernel := by
 theorem integrable_layerKernel : Integrable layerKernel :=
   continuous_layerKernel.integrable_of_hasCompactSupport hasCompactSupport_layerKernel
 
-/-- The smooth step has total derivative mass one. -/
+/- The smooth step has total derivative mass one. -/
 theorem integral_layerKernel : ∫ s, layerKernel s = 1 := by
   have h0 : Tendsto layerStep atBot (𝓝 0) := by
     apply tendsto_const_nhds.congr'
@@ -90,30 +90,12 @@ theorem integral_layerKernel : ∫ s, layerKernel s = 1 := by
   have := integral_of_hasDerivAt_of_tendsto hasDerivAt_layerStep integrable_layerKernel h0 h1
   simpa using this
 
-/-- The kernel is bounded. -/
+/- The kernel is bounded. -/
 theorem exists_bound_layerKernel : ∃ M : ℝ, 0 ≤ M ∧ ∀ s, |layerKernel s| ≤ M := by
   obtain ⟨M, hM⟩ := continuous_layerKernel.bounded_above_of_compact_support
     hasCompactSupport_layerKernel
   exact ⟨max M 0, le_max_right _ _, fun s => by
     simpa only [Real.norm_eq_abs] using (hM s).trans (le_max_left _ _)⟩
 
-/-- The affine substitution `t = r - h s` against the rescaled kernel. -/
-theorem integral_layer_substitution (r h : ℝ) (hh : 0 < h) (F : ℝ → ℝ) :
-    ∫ t, h⁻¹ * layerKernel ((r - t) / h) * F t =
-      ∫ s, layerKernel s * F (r - h * s) := by
-  set g : ℝ → ℝ := fun t => h⁻¹ * layerKernel ((r - t) / h) * F t with hg
-  have h1 : ∫ t, g t = ∫ x, g (r - x) := (integral_sub_left_eq_self g volume r).symm
-  have h2 : ∫ x, g (r - x) = h • ∫ s, g (r - h * s) := by
-    have := Measure.integral_comp_mul_left (fun x => g (r - x)) h
-    simp only [abs_inv, abs_of_pos hh] at this
-    rw [this, smul_smul, mul_inv_cancel₀ hh.ne', one_smul]
-  have h3 : ∀ s, g (r - h * s) = h⁻¹ * (layerKernel s * F (r - h * s)) := by
-    intro s
-    simp only [hg, sub_sub_cancel]
-    rw [mul_div_cancel_left₀ _ hh.ne']
-    ring
-  rw [h1, h2]
-  simp_rw [h3]
-  rw [integral_const_mul, smul_eq_mul, ← mul_assoc, mul_inv_cancel₀ hh.ne', one_mul]
-
+/- The affine substitution `t = r - h s` against the rescaled kernel. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

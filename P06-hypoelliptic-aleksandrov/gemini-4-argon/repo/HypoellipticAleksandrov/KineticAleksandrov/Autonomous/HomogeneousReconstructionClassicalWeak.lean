@@ -16,9 +16,9 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Evolution SectionTwo MeasureTheory Set
 
 /-- A physical C112 test satisfies its actual weak equation in packed coordinates. -/
-theorem reconstruction_test_isWeakTransportedSolution {lam Lam : ℝ}
-    (A : SmoothAutonomous lam Lam) {D : Set Point} (hD : IsOpen D)
-    {phi : Point → ℝ} (hphi : IsKineticC112On phi D) :
+theorem reconstruction_test_isWeakTransportedSolution {lam Lam }
+    (A : SmoothAutonomous lam Lam) {D } (hD : IsOpen D)
+    {phi } (hphi : IsKineticC112On phi D) :
     IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1)
       (reconstructionPhysicalPoint ⁻¹' D) (phi ∘ reconstructionPhysicalPoint)
       (forwardScalarOperator A.a phi ∘ reconstructionPhysicalPoint) := by

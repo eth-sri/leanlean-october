@@ -13,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set MeasureTheory
 open scoped Topology
 
-/-- A continuous compact parameter need not be differentiable: integration of a formula
+/- A continuous compact parameter need not be differentiable: integration of a formula
 smooth in the external variables remains smooth to every specified finite order. -/
 theorem compact_parameter_contDiff_nat {E Y : Type u} {A : Type v}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
@@ -38,7 +38,7 @@ theorem compact_parameter_contDiff_nat {E Y : Type u} {A : Type v}
     let J : ((E × Y) →L[ℝ] F) →L[ℝ] E →L[ℝ] F :=
       (ContinuousLinearMap.compL ℝ E (E × Y) F).flip L
     let g : E × Y → E →L[ℝ] F := fun w => J (fderiv ℝ f w)
-    have hg : ContDiff ℝ n g := J.contDiff.comp
+    have hg := J.contDiff.comp
       (hf.fderiv_right (m := n) (by simp))
     have hd : ∀ q : E, ∀ a : A,
         HasFDerivAt (fun x => f (x, radius a)) (g (q, radius a)) q := by
@@ -56,18 +56,6 @@ theorem compact_parameter_contDiff_nat {E Y : Type u} {A : Type v}
     · intro x _ a
       exact hd x a
 
-/-- A globally smooth formula integrated against a continuous compact parameter is
+/- A globally smooth formula integrated against a continuous compact parameter is
 smooth of all finite orders. -/
-theorem compact_parameter_contDiff {E Y F : Type u} {A : Type v}
-    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
-    [NormedAddCommGroup Y] [NormedSpace ℝ Y]
-    [NormedAddCommGroup F] [NormedSpace ℝ F]
-    [TopologicalSpace A] [CompactSpace A] [MeasurableSpace A] [BorelSpace A]
-    (mu : Measure A) [IsFiniteMeasure mu] (radius : A → Y) (hr : Continuous radius)
-    (f : E × Y → F) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun q => ∫ a, f (q, radius a) ∂mu) := by
-  apply contDiff_infty.mpr
-  intro n
-  exact compact_parameter_contDiff_nat mu radius hr n f (hf.of_le (by simp))
-
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

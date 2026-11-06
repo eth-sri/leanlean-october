@@ -29,10 +29,9 @@ private theorem integrable_mul_of_tsupport_subset
     Integrable (fun tau => f tau * g tau) volume := by
   have hfOn : IntegrableOn f U volume := by
     simpa only [IntegrableOn] using hf
-  have hfSupport : IntegrableOn f (tsupport g) volume :=
+  have hfSupport :=
     hfOn.mono_set hgSupport
-  have hproductSupport :
-      IntegrableOn (fun tau => f tau * g tau) (tsupport g) volume :=
+  have hproductSupport :=
     hfSupport.mul_continuousOn hg.continuousOn hgCompact.isCompact
   have hproductSupportSubset :
       Function.support (fun tau => f tau * g tau) ⊆ tsupport g := by
@@ -44,7 +43,7 @@ private theorem integrable_mul_of_tsupport_subset
 /-- An integrable scalar function on the literal reverse-time interval whose
 pairing with every compact smooth reverse-time test vanishes is zero a.e. -/
 theorem ae_eq_zero_of_integral_reverseTimeScalarTest
-    (T : ℝ) {f : ℝ → ℝ}
+    (T ) {f : ℝ → ℝ}
     (hf : MeasureTheory.Integrable f (reverseTimeVolume T))
     (hzero : ∀ eta : ReverseTimeScalarTest T,
       (∫ tau, f tau * eta tau ∂reverseTimeVolume T) = 0) :
@@ -55,7 +54,7 @@ theorem ae_eq_zero_of_integral_reverseTimeScalarTest
       (isOpen_Ioo : IsOpen (Set.Ioo (0 : ℝ) T))
   have hfRestrict : Integrable f (volume.restrict U) := by
     simpa only [U, reverseTimeVolume] using hf
-  have hfLocal : LocallyIntegrableOn f U volume :=
+  have hfLocal :=
     locallyIntegrableOn_of_locallyIntegrable_restrict hfRestrict.locallyIntegrable
   have hPairing : ∀ (g : ℝ → ℝ), ContDiff ℝ (⊤ : ℕ∞) g →
       HasCompactSupport g → tsupport g ⊆ U →
@@ -99,7 +98,7 @@ theorem ae_eq_zero_of_integral_reverseTimeScalarTest
             rw [setIntegral_eq_integral_of_forall_compl_eq_zero hzeroOut]
           _ = 0 := hsetPairing
     simpa only [smul_eq_mul] using hproductAndPairing.2
-  have hAmbient : ∀ᵐ tau ∂volume, tau ∈ U → f tau = 0 :=
+  have hAmbient :=
     hUOpen.ae_eq_zero_of_integral_contDiff_smul_eq_zero hfLocal hPairing
   rw [Filter.EventuallyEq, reverseTimeVolume,
     ae_restrict_iff' hUOpen.measurableSet]
@@ -107,7 +106,7 @@ theorem ae_eq_zero_of_integral_reverseTimeScalarTest
 
 /-- The `L²` specialization of reverse-time scalar distribution separation. -/
 theorem ae_eq_zero_of_memLp_two_integral_reverseTimeScalarTest
-    (T : ℝ) {f : ℝ → ℝ}
+    (T ) {f }
     (hf : MeasureTheory.MemLp f (2 : ℝ≥0∞) (reverseTimeVolume T))
     (hzero : ∀ eta : ReverseTimeScalarTest T,
       (∫ tau, f tau * eta tau ∂reverseTimeVolume T) = 0) :

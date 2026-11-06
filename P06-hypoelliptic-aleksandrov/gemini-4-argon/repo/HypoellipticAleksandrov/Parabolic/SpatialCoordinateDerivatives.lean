@@ -34,7 +34,7 @@ theorem ContDiffOn.spatialPartial
   exact ContDiffOn.clm_apply hdf contDiffOn_const
 
 /-- Ordered classical second derivative `∂_i(∂_j q)`. -/
-noncomputable def spatialSecond {d : ℕ} (q : PDE.Vec d → ℝ)
+noncomputable def spatialSecond {d } (q : PDE.Vec d → ℝ)
     (j i : Fin d) (y : PDE.Vec d) : ℝ :=
   spatialPartial i (spatialPartial j q) y
 

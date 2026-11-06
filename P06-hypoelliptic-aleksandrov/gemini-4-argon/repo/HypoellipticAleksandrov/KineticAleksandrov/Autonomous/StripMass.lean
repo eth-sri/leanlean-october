@@ -19,15 +19,12 @@ theorem stripGreenOfKernel_finite_time_mass (H : Interval)
   have hR : 0 < T - e.1.time := sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
   rw [stripGreenOfKernel, Measure.map_apply (measurable_elapsedPhysicalPoint _ _)
     MeasurableSet.univ, preimage_univ]
-  have h := greenMeasure_mass_le K e.1.time (T - e.1.time) hR
-    (Measure.dirac (stripPoleState H T e)) _
-    (greenMeasure_spec K e.1.time _ (stripHorizon_pos H T e) _)
-  simpa only [Measure.dirac_apply_of_mem (mem_univ _), one_mul] using! h
+  simpa only [Measure.dirac_apply_of_mem (mem_univ _), one_mul] using! (greenMeasure_mass_le K e.1.time (T - e.1.time) hR (Measure.dirac (stripPoleState H T e)) _ (greenMeasure_spec K e.1.time _ (stripHorizon_pos H T e) _))
 
 /-- The finite-time mass bound for the unique autonomous killed family. -/
 theorem stripGreen_finite_time_mass
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) :
     stripGreen hH hLE hlam hLam A H T e univ ≤ ENNReal.ofReal (T - e.1.time) :=

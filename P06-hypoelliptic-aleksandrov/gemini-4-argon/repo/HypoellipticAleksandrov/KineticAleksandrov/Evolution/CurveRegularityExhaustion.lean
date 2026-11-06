@@ -109,9 +109,8 @@ theorem eventually_mem_movingDomain_approx {n : ℕ} {c : PDE.Vec n} {r₀ : ℝ
   linarith
 
 /-- The approximating moving balls exhaust `Ω_σ`. -/
-theorem iUnion_movingDomain_approx {n : ℕ} {c : PDE.Vec n} {r₀ : ℝ}
-    {α : ℕ → ℝ} (hαpos : ∀ k, 0 < α k) (hαr : ∀ k, α k < r₀)
-    (hαlim : Tendsto α atTop (𝓝 0)) {γ : ℝ → PDE.Vec n} {γs : ℕ → ℝ → PDE.Vec n}
+theorem iUnion_movingDomain_approx {n c r₀ α} (hαpos : ∀ k, 0 < α k) (hαr : ∀ k, α k < r₀)
+    (hαlim : Tendsto α atTop (𝓝 0)) {γ } {γs : ℕ → ℝ → PDE.Vec n}
     (hγ : ∀ k σ, PDE.vecEuclideanNorm (γs k σ - γ σ) ≤ α k / 2) (σ : ℝ) :
     (⋃ k, movingDomain (PDE.euclideanBall c (r₀ - α k)) (γs k) σ) =
       movingDomain (PDE.euclideanBall c r₀) γ σ := by

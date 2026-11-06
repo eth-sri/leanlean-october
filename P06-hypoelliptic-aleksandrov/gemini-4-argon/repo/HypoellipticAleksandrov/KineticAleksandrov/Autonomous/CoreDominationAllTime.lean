@@ -3,6 +3,10 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominationIdentity
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominationAllTimeKernel
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHorizonOrder
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominationGreenRemainder
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominationLimit
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominationWaiting
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassCount
 
 /-! # Genuine core domination by the all-time Green measure of the actual entrance count -/
 
@@ -10,11 +14,13 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHori
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+open Filter
+open scoped Topology
 
-/-- Each actual clipped active Green kernel is bounded by the full all-time active-strip kernel. -/
+/- Each actual clipped active Green kernel is bounded by the full all-time active-strip kernel. -/
 theorem visitActiveGreenKernel_le_allTime
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (p : Point) :
     visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T p ≤
       coreAllTimeGreenKernel hH hLE hlam hLam A c p := by
@@ -42,44 +48,5 @@ theorem visitActiveGreenKernel_le_allTime
     intro B
     exact zero_le
 
-/-- The genuine active Green mixture is bounded by its all-time active-strip extension. -/
-theorem visitActiveGreenMixture_le_allTime
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (mu : Measure Point) :
-    visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu ≤
-      coreAllTimeGreenMeasure hH hLE hlam hLam A c mu := by
-  unfold coreAllTimeGreenMeasure
-  apply Measure.le_iff.mpr
-  intro B hB
-  rw [Measure.bind_apply hB (Kernel.aemeasurable _),
-    Measure.bind_apply hB (Kernel.aemeasurable _)]
-  exact lintegral_mono (fun p => visitActiveGreenKernel_le_allTime hH hLE hlam hLam A c J s T p B)
-
-/-- Core occupation is dominated by the actual all-time Green measure of the full visit count. -/
-theorem visitOuterGreen_core_domination
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
-    (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
-    (visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T P).restrict
-      {q | q.velocity 0 ∈ c.core} ≤
-    (coreAllTimeGreenMeasure hH hLE hlam hLam A c
-      (Measure.sum (visitEntrancePiece hH hLE hlam hLam A c J s T P))).restrict
-        {q | q.velocity 0 ∈ c.core} := by
-  let C : Set Point := {q | q.velocity 0 ∈ c.core}
-  have hC : MeasurableSet C :=
-    isClosed_Icc.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable
-  rw [visitOuterGreen_core_identity hH hLE hlam hLam A c J s T hT P hP]
-  unfold coreAllTimeGreenMeasure
-  rw [Measure.bind_sum _ _ (Kernel.aemeasurable _), Measure.restrict_sum _ hC]
-  apply Measure.le_iff.mpr
-  intro B hB
-  rw [Measure.sum_apply _ hB, Measure.sum_apply _ hB]
-  apply ENNReal.tsum_le_tsum
-  intro n
-  exact Measure.restrict_mono_measure
-    (visitActiveGreenMixture_le_allTime hH hLE hlam hLam A c J s T
-      (visitEntrancePiece hH hLE hlam hLam A c J s T P n)) C B
-
+/- The genuine active Green mixture is bounded by its all-time active-strip extension. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -11,7 +11,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegulariz
 open HypoellipticAleksandrov Set MeasureTheory
 
 /-- Gauge below one implies product norm at most one, using both kinetic weights. -/
-theorem barrier_small_gauge_norm {q : ℝ × ℝ} (hq : bellmanGauge q < 1) : ‖q‖ ≤ 1 := by
+theorem barrier_small_gauge_norm {q } (hq : bellmanGauge q < 1) : ‖q‖ ≤ 1 := by
   obtain ⟨hX, hv⟩ := bellmanGauge_coordinate_bounds q
   rw [Prod.norm_def, max_le_iff, Real.norm_eq_abs, Real.norm_eq_abs]
   have hpow : bellmanGauge q ^ 3 ≤ 1 := by
@@ -22,11 +22,11 @@ theorem barrier_small_gauge_norm {q : ℝ × ℝ} (hq : bellmanGauge q < 1) : �
 theorem barrier_reference_axis_increment (Phi : (ℝ × ℝ) → ℝ)
     (axis : ℝ → ℝ × ℝ)
     (haxisdist : ∀ t u, ‖axis t - axis u‖ ≤ |t - u|)
-    (D B : ℝ) (hD : 0 ≤ D) (hB : 0 ≤ B)
+    (D B ) (hD : 0 ≤ D) (hB : 0 ≤ B)
     (hball : ∀ q, ‖q‖ ≤ 2 → |Phi q| ≤ B)
     (hderiv : ∀ t, 1 ≤ bellmanGauge (axis t) →
       ∃ g : ℝ, HasDerivAt (Phi ∘ axis) g t ∧ |g| ≤ D)
-    (x y : ℝ) (hxy : |y - x| ≤ 1) : |Phi (axis y) - Phi (axis x)| ≤ D + 2 * B := by
+    (x y ) (hxy : |y - x| ≤ 1) : |Phi (axis y) - Phi (axis x)| ≤ D + 2 * B := by
   by_cases hfar : ∀ t ∈ uIcc x y, 1 ≤ bellmanGauge (axis t)
   · have hd (t : ℝ) (ht : t ∈ uIcc x y) := hderiv t (hfar t ht)
     have hh := Convex.norm_image_sub_le_of_norm_deriv_le

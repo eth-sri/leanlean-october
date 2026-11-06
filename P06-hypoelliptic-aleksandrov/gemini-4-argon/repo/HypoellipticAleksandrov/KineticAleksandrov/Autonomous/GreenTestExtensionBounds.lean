@@ -24,7 +24,7 @@ theorem reconstruction_smooth_physical_continuous (phi : Point → ℝ)
 
 /-- The same endpoint bound needs only the physical time and position slice at the point. -/
 theorem reconstruction_closed_velocity_slice_bound
-    (H : Interval) (phi : Point → ℝ) (hc : Continuous phi) (M : ℝ)
+    (H : Interval) (phi : Point → ℝ) (hc : Continuous phi) (M )
     (p : Point) (hp : p.velocity 0 ∈ Icc H.lo H.hi)
     (hb : ∀ v ∈ H.carrier, |phi ⟨p.time, p.position, fun _ => v⟩| ≤ M) :
     |phi p| ≤ M := by

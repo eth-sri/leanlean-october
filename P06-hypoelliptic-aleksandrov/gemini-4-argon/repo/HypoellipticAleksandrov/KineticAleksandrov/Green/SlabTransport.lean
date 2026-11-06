@@ -23,7 +23,7 @@ open scoped ENNReal NNReal
 /-- Density transport along a measure-preserving measurable equivalence. -/
 lemma eq_withDensity_of_map_eq {X Z : Type*} [MeasurableSpace X] [MeasurableSpace Z]
     (e : X ≃ᵐ Z) {ν : Measure X} {ρ : Measure Z} (he : MeasurePreserving e ν ρ)
-    {Γ' : Measure X} {G' : Z → ℝ≥0∞} (hG : Γ'.map e = ρ.withDensity G') :
+    {Γ' : Measure X} {G' } (hG : Γ'.map e = ρ.withDensity G') :
     Γ' = ν.withDensity (fun x => G' (e x)) := by
   ext B hB
   have h1 : Γ' B = (Γ'.map e) (e.symm ⁻¹' B) := by
@@ -56,21 +56,21 @@ lemma measurePreserving_slabRegroup (d : ℕ) (T : ℝ) :
 
 
 /-- The preimage of a base set under the regrouping, intersected with the slab. -/
-lemma regroup_preimage_prod {d : ℕ} (T : ℝ) (E : Set (SlabBase d)) :
+lemma regroup_preimage_prod {d } (T : ℝ) (E : Set (SlabBase d)) :
     (slabRegroup d) ⁻¹' (E ×ˢ (univ : Set (PDE.Vec d))) ∩ slabSet T =
       {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} := by
   ext p
   simp [slabRegroup, slabSet, slabTimeSet, MeasurableEquiv.prodAssoc, and_comm]
 
 /-- Total mass of the regrouped slab measure. -/
-lemma slabMeasure_univ {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d)) :
+lemma slabMeasure_univ {d } (T : ℝ) (Γ : Measure (GreenCarrier d)) :
     slabMeasure d T Γ univ = Γ (slabSet T) := by
   unfold slabMeasure
   rw [MeasurableEquiv.map_apply, preimage_univ, Measure.restrict_apply MeasurableSet.univ,
     univ_inter]
 
 /-- The marginal identity of Lemma 5.1 for the regrouped slab measure. -/
-lemma slabMeasure_fst {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d))
+lemma slabMeasure_fst {d } (T : ℝ) (Γ )
     (g : SlabBase d → ℝ≥0∞)
     (hg : ∀ E : Set (SlabBase d), MeasurableSet E →
       Γ {p | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} =
@@ -87,7 +87,7 @@ lemma slabMeasure_fst {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d))
   simp [slabRegroup, MeasurableEquiv.prodAssoc]
 
 /-- The Fourier-marginal identity of Lemma 5.1 for the regrouped slab measure. -/
-lemma slabMeasure_fourier {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d))
+lemma slabMeasure_fourier {d } (T : ℝ) (Γ )
     (ξ : PDE.Vec d) (k : SlabBase d → ℂ)
     (hk : ∀ E : Set (SlabBase d), MeasurableSet E →
       ∫ y in E, k y ∂slabBase d T =

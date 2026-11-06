@@ -51,7 +51,7 @@ theorem iUnion_entranceTimeBin (r : ℝ) (hr : 0 < r) :
   have hl : (j : ℝ) < a := Int.lt_ceil.mp (by dsimp [j]; omega)
   have hu : a ≤ (j : ℝ) + 1 := by
     simpa only [j, Int.cast_sub, Int.cast_one, sub_add_cancel] using Int.le_ceil a
-  have hr2 : 0 < r ^ 2 := sq_pos_of_pos hr
+  have hr2 := sq_pos_of_pos hr
   exact ⟨(lt_div_iff₀ hr2).mp hl, (div_le_iff₀ hr2).mp hu⟩
 
 /-- Disjoint integer bin masses sum to the original total starting mass. -/

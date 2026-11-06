@@ -4,6 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelRepresenta
 public import Mathlib.Analysis.Calculus.BumpFunction.Convolution
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Convolution
+import HypoellipticAleksandrov.LinearAlgebra.LoewnerEntryBound
+import Mathlib.Analysis.Matrix.MeasurableSpace
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
+import Mathlib.MeasureTheory.Function.LocallyIntegrable
 
 /-! # Smooth time--velocity coefficients with unchanged Loewner bounds -/
 
@@ -18,14 +22,14 @@ attribute [local instance] borelMatrixContinuousENorm
 private instance {d : ℕ} : CompleteSpace (PDE.Mat d) :=
   inferInstanceAs (CompleteSpace (Fin d → Fin d → ℝ))
 
-/-- Normalised convolution acts only in the time and velocity variables. -/
+/- Normalised convolution acts only in the time and velocity variables. -/
 def borelSmoothCoefficient {d : ℕ} (φ : ContDiffBump (0 : ℝ × PDE.Vec d))
     (A : CoefficientField d) : CoefficientField d := fun t v =>
   (φ.normed volume ⋆[lsmul ℝ ℝ,volume] coefficientAt A) (t,v)
 
-/-- Convolution preserves the exact source bounds while making the coefficient smooth. -/
+/- Convolution preserves the exact source bounds while making the coefficient smooth. -/
 theorem borelSmoothCoefficient_spec {d : ℕ} {lam Lam : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : CoefficientField d)
+    (hlam : 0 < lam) (hLam : lam ≤ Lam) (A )
     (hBorel : IsBorelCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A)
     (φ : ContDiffBump (0 : ℝ × PDE.Vec d)) :
@@ -67,12 +71,12 @@ theorem borelSmoothCoefficient_spec {d : ℕ} {lam Lam : ℝ}
     exact Matrix.isHermitian_iff_isSymm.mp
       (HypoellipticAleksandrov.posDef_of_loewner_lower hlam (hbounds (t,v)).1).isHermitian
 
-/-- The shrinking bumps have a fixed ratio of outer and inner radii. -/
+/- The shrinking bumps have a fixed ratio of outer and inner radii. -/
 def borelCoefficientBump (d j : ℕ) : ContDiffBump (0 : ℝ × PDE.Vec d) :=
   ⟨(1 / ((j : ℝ) + 1)) / 2,1 / ((j : ℝ) + 1),by positivity,
     half_lt_self (by positivity)⟩
 
-/-- Smooth, uniformly elliptic approximation exists with a.e. time--velocity convergence. -/
+/- Smooth, uniformly elliptic approximation exists with a.e. time--velocity convergence. -/
 theorem borel_coefficient_approximation {d : ℕ} (lam Lam : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : CoefficientField d)
     (hBorel : IsBorelCoefficient A) (hsymm : IsSymmetricCoefficient A)
@@ -85,8 +89,41 @@ theorem borel_coefficient_approximation {d : ℕ} (lam Lam : ℝ)
   have : (volume : Measure (ℝ × PDE.Vec d)).IsAddHaarMeasure :=
     Measure.prod.instIsAddHaarMeasure volume volume
   let B := borelEllipticRepresentative lam Lam A
-  obtain ⟨hB,_,hBl,hBu,hBA⟩ :=
-    borelEllipticRepresentative_spec lam Lam hlam hLam A hBorel hsymm hlo hhi
+  obtain ⟨hB,_,hBl,hBu,hBA⟩ : IsBorelCoefficient (borelEllipticRepresentative lam Lam A) ∧
+    IsSymmetricCoefficient (borelEllipticRepresentative lam Lam A) ∧
+    HasLowerEllipticity lam (borelEllipticRepresentative lam Lam A) ∧
+    HasUpperEllipticity Lam (borelEllipticRepresentative lam Lam A) ∧
+    coefficientAt (borelEllipticRepresentative lam Lam A) =ᵐ[volume] coefficientAt A := by
+      classical
+      let : SecondCountableTopology (PDE.Mat d) :=
+        inferInstanceAs (SecondCountableTopology (Fin d → Fin d → ℝ))
+      change Measurable (coefficientAt A) at hBorel
+      have hscalar : lam • (1 : PDE.Mat d) ≤ Lam • (1 : PDE.Mat d) := by
+        rw [Matrix.le_iff,← sub_smul]
+        exact Matrix.PosSemidef.one.smul (sub_nonneg.mpr hLam)
+      refine ⟨?_,?_,?_,?_,?_⟩
+      · exact hBorel.ite
+          ((measurableSet_le measurable_const hBorel).inter
+            (measurableSet_le hBorel measurable_const)) measurable_const
+      · intro t v
+        unfold borelEllipticRepresentative
+        split_ifs
+        · exact hsymm t v
+        · exact Matrix.isSymm_one.smul lam
+      · intro t v
+        unfold borelEllipticRepresentative
+        split_ifs with h
+        · exact h.1
+        · exact le_rfl
+      · intro t v
+        unfold borelEllipticRepresentative
+        split_ifs with h
+        · exact h.2
+        · exact hscalar
+      · filter_upwards [hlo,hhi] with z hl hh
+        exact ite_eq_left ⟨hl,hh⟩
+
+    /- The matrix bridge uses precisely the inherited finite-product supremum norm. -/
   let C := fun j => borelSmoothCoefficient (borelCoefficientBump d j) B
   refine ⟨C,fun j => borelSmoothCoefficient_spec hlam hLam B hB hBl hBu _,?_⟩
   have hr : Tendsto (fun j => (borelCoefficientBump d j).rOut) atTop (𝓝 0) :=
@@ -96,9 +133,7 @@ theorem borel_coefficient_approximation {d : ℕ} (lam Lam : ℝ)
     filter_upwards with j
     dsimp only [borelCoefficientBump]
     linarith
-  have hc := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable hr hratio
-    (borel_coefficient_locallyIntegrable hlam hLam B hB hBl hBu)
-  filter_upwards [hc,hBA] with z hz heq
+  filter_upwards [(ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable hr hratio (borel_coefficient_locallyIntegrable hlam hLam B hB hBl hBu)),hBA] with z hz heq
   rw [heq] at hz
   convert! hz using 1
 

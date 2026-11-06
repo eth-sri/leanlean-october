@@ -11,7 +11,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic Evolution SectionTwo TheoremA Occupation
 
 /-- Integration by parts for the classical residual of a smooth coefficient. -/
-theorem localRepresentation_classical_weak {d : ℕ} {lam Lam : ℝ}
+theorem localRepresentation_classical_weak {d lam Lam}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     {D : Set (KineticPoint d)} (hD : IsOpen D)
     (u : KineticPoint d → ℝ) (hu : IsKineticC112On u D)
@@ -66,12 +66,11 @@ theorem localRepresentation_classical_weak {d : ℕ} {lam Lam : ℝ}
   simp only [PDE.vecDot]
   ring
 
-private theorem localRepresentation_integrable_mul_test {d : ℕ} {D : Set (EvolutionVec d)}
+private theorem localRepresentation_integrable_mul_test {d D}
     {u ψ : EvolutionVec d → ℝ} (hu : LocallyIntegrableOn u D volume)
     (hψ : Continuous ψ) (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ D) :
     IntegrableOn (fun x => u x * ψ x) D volume := by
-  have hi := hu.integrableOn_compact_subset hs hc.isCompact
-  have hm := hi.mul_continuousOn hψ.continuousOn hc.isCompact
+  have hm := (hu.integrableOn_compact_subset hs hc.isCompact).mul_continuousOn hψ.continuousOn hc.isCompact
   have hg : Integrable (fun x => u x * ψ x) volume := by
     apply (integrableOn_iff_integrable_of_support_subset ?_).mp hm
     intro x hx

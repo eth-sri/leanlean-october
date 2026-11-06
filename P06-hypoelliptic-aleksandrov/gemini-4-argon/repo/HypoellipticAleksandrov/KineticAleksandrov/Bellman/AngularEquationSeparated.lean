@@ -3,14 +3,18 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularEquationCoordinates
 import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularCoordinates
+import Mathlib.Analysis.Calculus.Deriv.Inv
+import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 
 /-! # The first derivatives of separated angular tests -/
 
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
+open Set
 
-/-- The chain rule for a separated expression in the actual angular coordinates. -/
+/- The chain rule for a separated expression in the actual angular coordinates. -/
 theorem bellmanSeparatedExpression_hasFDerivAt (ζ φ : ℝ → ℝ)
     (w : BellmanPositiveTime × ℝ) (hζ : DifferentiableAt ℝ ζ w.1.val)
     (hφ : DifferentiableAt ℝ φ w.2) :
@@ -29,14 +33,26 @@ theorem bellmanSeparatedExpression_hasFDerivAt (ζ φ : ℝ → ℝ)
       (bellmanTestAngle (bellmanAngularPoint w).val) := by
     rw [bellmanTestAngle_angularPoint]
     exact hφ.hasDerivAt
-  have hd := (hz.comp_hasFDerivAt (bellmanAngularPoint w).val
-    (bellmanTestRadius_hasFDerivAt w)).mul
-    (hp.comp_hasFDerivAt (bellmanAngularPoint w).val (bellmanTestAngle_hasFDerivAt w))
-  convert! hd using 1
+  have _h_xinl_0 : HasFDerivAt bellmanTestAngle (w.1.val⁻¹ • ContinuousLinearMap.snd ℝ ℝ ℝ - (w.2 / (3 * w.1.val ^ 3)) • ContinuousLinearMap.fst ℝ ℝ ℝ) (bellmanAngularPoint w).val := by
+    have hn : bellmanTestRadius (bellmanAngularPoint w).val ≠ 0 := by
+      rw [bellmanTestRadius_angularPoint]
+      exact w.1.property.ne'
+    have hd := (hasFDerivAt_snd (𝕜 := ℝ) (p := (bellmanAngularPoint w).val)).mul ((hasDerivAt_inv hn).comp_hasFDerivAt (bellmanAngularPoint w).val (bellmanTestRadius_hasFDerivAt w))
+    rw [bellmanTestRadius_angularPoint] at hd
+    convert! hd using 1
+    rw [Function.comp_apply, bellmanTestRadius_angularPoint]
+    apply ContinuousLinearMap.ext
+    intro z
+    change w.1.val⁻¹ * z.2 - w.2 / (3 * w.1.val ^ 3) * z.1 =
+      (w.1.val * w.2) * (-(w.1.val ^ 2)⁻¹ *
+        (1 / (3 * w.1.val ^ 2) * z.1)) + w.1.val⁻¹ * z.2
+    field_simp [w.1.property.ne']
+    ring
+  convert! ((hz.comp_hasFDerivAt (bellmanAngularPoint w).val (bellmanTestRadius_hasFDerivAt w)).mul (hp.comp_hasFDerivAt (bellmanAngularPoint w).val _h_xinl_0)) using 1
   simp only [Function.comp_apply, bellmanTestRadius_angularPoint,
     bellmanTestAngle_angularPoint, smul_smul, mul_assoc]
 
-/-- The transport derivative has exactly the source factors y/(3s) and -y²/(3s²). -/
+/- The transport derivative has exactly the source factors y/(3s) and -y²/(3s²). -/
 theorem bellmanSeparatedExpression_transport (ζ φ : ℝ → ℝ)
     (w : BellmanPositiveTime × ℝ) (hζ : DifferentiableAt ℝ ζ w.1.val)
     (hφ : DifferentiableAt ℝ φ w.2) :
@@ -51,7 +67,7 @@ theorem bellmanSeparatedExpression_transport (ζ φ : ℝ → ℝ)
   field_simp [w.1.property.ne']
   ring
 
-/-- The first velocity derivative is ζ(s)φ'(y)/s. -/
+/- The first velocity derivative is ζ(s)φ'(y)/s. -/
 theorem bellmanSeparatedExpression_velocity (ζ φ : ℝ → ℝ)
     (w : BellmanPositiveTime × ℝ) (hζ : DifferentiableAt ℝ ζ w.1.val)
     (hφ : DifferentiableAt ℝ φ w.2) :

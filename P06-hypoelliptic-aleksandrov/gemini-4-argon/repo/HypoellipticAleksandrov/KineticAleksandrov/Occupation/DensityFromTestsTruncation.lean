@@ -120,7 +120,7 @@ theorem eLpNorm_signedTruncatedDualPower
 
 omit [MeasurableSpace α] in
 private theorem signedTruncatedDualPower_mul
-    (g : α → ℝ) {r : ℝ} (hr : 1 < r) (n : ℕ) (x : α) :
+    (g : α → ℝ) {r } (hr : 1 < r) (n : ℕ) (x : α) :
     signedTruncatedDualPower g r n x * g x =
       truncatedAbs g n x ^ r := by
   by_cases hxmem : x ∈ {x | |g x| ≤ n + 1}
@@ -163,8 +163,8 @@ private theorem signedTruncatedDualPower_mul
 /-- Pairing the signed test with `g` gives exactly the `r`th moment, hence the
 `r`th power of the real `Lʳ` norm of the truncation. -/
 theorem integral_signedTruncatedDualPower_mul
-    [IsFiniteMeasure μ] {g : α → ℝ} (hg : Measurable g)
-    {r : ℝ} (hr : 1 < r) (n : ℕ) :
+    [IsFiniteMeasure μ] {g } (hg : Measurable g)
+    {r } (hr : 1 < r) (n : ℕ) :
     ∫ x, signedTruncatedDualPower g r n x * g x ∂μ =
       (eLpNorm (truncatedAbs g n) (ENNReal.ofReal r) μ).toReal ^ r := by
   rw [PDE.toReal_eLpNorm_ofReal_rpow_eq_integral_rpow_norm

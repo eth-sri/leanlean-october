@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PoleDensityFormula
 import Mathlib.MeasureTheory.Function.LpSeminorm.SMul
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PoleDensityNormalized
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PoleDensityTransport
 
 /-! # The physical density norm has the literal kinetic scaling exponent -/
 
@@ -11,27 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped ENNReal NNReal
 
-/-- The clock pullback changes a full physical Lebesgue norm by the exact volume factor. -/
-theorem poleDensity_clock_eLpNorm (c : Clock) (e : Point) (F : Point → ℝ)
-    (hF : Measurable F) (q : ℝ) (hq : 0 < q) :
-    eLpNorm (F ∘ c.map e) (ENNReal.ofReal q) volume =
-      ENNReal.ofReal (c.r ^ (6 / q : ℝ)) * eLpNorm F (ENNReal.ofReal q) volume := by
-  have hm := eLpNorm_map_measure (μ := (volume : Measure Point))
-    (p := ENNReal.ofReal q) hF.aestronglyMeasurable (c.continuous_map e).measurable.aemeasurable
-  have hc := congrArg (fun μ : Measure Point => eLpNorm F (ENNReal.ofReal q) μ) (c.map_volume e)
-  have hs := eLpNorm_smul_measure_of_ne_zero_of_ne_top (μ := (volume : Measure Point))
-    (f := F) (ENNReal.ofReal_pos.mpr hq).ne' ENNReal.ofReal_ne_top (ENNReal.ofReal (c.r ^ 6))
-  refine hm.symm.trans (hc.trans (hs.trans ?_))
-  rw [smul_eq_mul]
-  congr 1
-  rw [one_div, ENNReal.toReal_inv, ENNReal.toReal_ofReal hq.le,
-    ENNReal.ofReal_rpow_of_pos (pow_pos c.positive 6)]
-  apply congrArg ENNReal.ofReal
-  rw [← Real.rpow_natCast c.r 6, ← Real.rpow_mul c.positive.le]
-  simp only [Nat.cast_ofNat, div_eq_mul_inv]
-
-/-- Removing the velocity weight costs at most `2/r⁴` pointwise, independently of the clock
-  centre. -/
+/- The clock pullback changes a full physical Lebesgue norm by the exact volume factor. -/
 theorem polePhysicalDensity_pointwise_bound (c : Clock) (e : Point) (F : Point → ℝ)
     (hFn : ∀ p, 0 ≤ F p) (p : Point) :
     |polePhysicalDensity c e F p| ≤ |(2 / c.r ^ 4) * F (c.map e p)| := by
@@ -40,7 +22,19 @@ theorem polePhysicalDensity_pointwise_bound (c : Clock) (e : Point) (F : Point �
       (inv_nonneg.mpr (pow_nonneg c.positive.le _))
   have hb : ((|c.vbar| * c.r ^ 2) * (c.r ^ 6)⁻¹) * poleInverseVelocity c p ≤
       2 / c.r ^ 4 := by
-    apply (mul_le_mul_of_nonneg_left (poleInverseVelocity_le c p) hK).trans_eq
+    have _h_xinl_0 : poleInverseVelocity c p ≤ 2 / |c.vbar| := by
+        have hc : 0 < |c.vbar| := abs_pos.mpr c.nonzero
+        unfold poleInverseVelocity
+        split
+        next hp =>
+          have hb := (c.active_abs_bounds hp).1
+          have hv : 0 < |p.velocity 0| := lt_of_lt_of_le (by linarith) hb
+          apply (div_le_div_iff₀ hv hc).mpr
+          nlinarith
+        next => exact div_nonneg (by norm_num) hc.le
+
+      /- The literal physical pole density obtained by removing the velocity weight. -/
+    apply (mul_le_mul_of_nonneg_left _h_xinl_0 hK).trans_eq
     field_simp [c.nonzero, ne_of_gt c.positive]
   rw [abs_of_nonneg (polePhysicalDensity_nonneg c e F hFn p),
     abs_of_nonneg (mul_nonneg (div_nonneg (by norm_num) (pow_nonneg c.positive.le _)) (hFn _))]
@@ -49,9 +43,9 @@ theorem polePhysicalDensity_pointwise_bound (c : Clock) (e : Point) (F : Point �
       from by unfold polePhysicalDensity; ring).le.trans
     (mul_le_mul_of_nonneg_right hb (hFn _))
 
-/-- The exact pole density formula has the source norm bound with exponent `6/q - 4`. -/
+/- The exact pole density formula has the source norm bound with exponent `6/q - 4`. -/
 theorem polePhysicalDensity_eLpNorm_bound (c : Clock) (e : Point) (F : Point → ℝ)
-    (hF : Measurable F) (hFn : ∀ p, 0 ≤ F p) (q C : ℝ) (hq : 0 < q) (_hC : 0 ≤ C)
+    (hF : Measurable F) (hFn : ∀ p, 0 ≤ F p) (q C ) (hq : 0 < q) (_hC : 0 ≤ C)
     (hn : eLpNorm F (ENNReal.ofReal q) volume ≤ ENNReal.ofReal C) :
     eLpNorm (polePhysicalDensity c e F) (ENNReal.ofReal q) volume ≤
       ENNReal.ofReal (2 * C * c.r ^ (6 / q - 4 : ℝ)) := by
@@ -65,8 +59,20 @@ theorem polePhysicalDensity_eLpNorm_bound (c : Clock) (e : Point) (F : Point →
         eLpNorm F (ENNReal.ofReal q) volume := by
     have hs := eLpNorm_const_smul (2 / c.r ^ 4) (F ∘ c.map e) (ENNReal.ofReal q)
       (volume : Measure Point)
+    have _h_inl_10 : eLpNorm (F ∘ c.map e) (ENNReal.ofReal q) volume = ENNReal.ofReal (c.r ^ (6 / q : ℝ)) * eLpNorm F (ENNReal.ofReal q) volume := by
+      have hm := eLpNorm_map_measure (μ := (volume : Measure Point))
+        (p := ENNReal.ofReal q) hF.aestronglyMeasurable (c.continuous_map e).measurable.aemeasurable
+      have hc := congrArg (fun μ : Measure Point => eLpNorm F (ENNReal.ofReal q) μ) (c.map_volume e)
+      refine hm.symm.trans (hc.trans ((eLpNorm_smul_measure_of_ne_zero_of_ne_top (μ := (volume : Measure Point)) (f := F) (ENNReal.ofReal_pos.mpr hq).ne' ENNReal.ofReal_ne_top (ENNReal.ofReal (c.r ^ 6))).trans ?_))
+      rw [smul_eq_mul]
+      congr 1
+      rw [one_div, ENNReal.toReal_inv, ENNReal.toReal_ofReal hq.le,
+        ENNReal.ofReal_rpow_of_pos (pow_pos c.positive 6)]
+      apply congrArg ENNReal.ofReal
+      rw [← Real.rpow_natCast c.r 6, ← Real.rpow_mul c.positive.le]
+      simp only [Nat.cast_ofNat, div_eq_mul_inv]
     exact hs.trans (by rw [Real.enorm_of_nonneg (by positivity),
-      poleDensity_clock_eLpNorm c e F hF q hq, mul_assoc])
+      _h_inl_10, mul_assoc])
   apply hb.trans (hnorm.le.trans ((mul_le_mul_of_nonneg_left hn zero_le).trans_eq ?_))
   have hk : 0 ≤ 2 / c.r ^ 4 := div_nonneg (by norm_num) (pow_nonneg c.positive.le _)
   rw [← ENNReal.ofReal_mul hk,

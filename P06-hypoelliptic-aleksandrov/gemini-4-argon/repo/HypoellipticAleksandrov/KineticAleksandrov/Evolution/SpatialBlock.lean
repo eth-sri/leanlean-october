@@ -26,19 +26,19 @@ open scoped MatrixOrder ContDiff Matrix
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-/-- The first (diffused `Y`) block of a vector of `PDE.Vec (n + n)`. -/
+/- The first (diffused `Y`) block of a vector of `PDE.Vec (n + n)`. -/
 def spatialY {n : ℕ} (x : PDE.Vec (n + n)) : PDE.Vec n :=
   fun i => x (Fin.castAdd n i)
 
-/-- The second (transported `z`) block of a vector of `PDE.Vec (n + n)`. -/
+/- The second (transported `z`) block of a vector of `PDE.Vec (n + n)`. -/
 def spatialZ {n : ℕ} (x : PDE.Vec (n + n)) : PDE.Vec n :=
   fun i => x (Fin.natAdd n i)
 
-/-- Pack a diffused block `y` and a transported block `z` into `PDE.Vec (n + n)`. -/
+/- Pack a diffused block `y` and a transported block `z` into `PDE.Vec (n + n)`. -/
 def spatialPack {n : ℕ} (y z : PDE.Vec n) : PDE.Vec (n + n) :=
   Fin.append y z
 
-/-- The block matrix `diag(A, ε I)` on `PDE.Vec (n + n)`. -/
+/- The block matrix `diag(A, ε I)` on `PDE.Vec (n + n)`. -/
 noncomputable def viscousBlockMatrix {n : ℕ} (A : PDE.Mat n) (ε : ℝ) :
     PDE.Mat (n + n) :=
   Matrix.reindex finSumFinEquiv finSumFinEquiv
@@ -134,23 +134,23 @@ theorem spatialPack_smul (c : ℝ) (y z : PDE.Vec n) :
 @[simp] theorem spatialPack_zero : spatialPack (0 : PDE.Vec n) 0 = 0 := by
   simpa using spatialPack_smul 0 (0 : PDE.Vec n) 0
 
-/-- The Euclidean dot product splits along the block decomposition. -/
+/- The Euclidean dot product splits along the block decomposition. -/
 theorem vecDot_eq_spatial (x x' : PDE.Vec (n + n)) :
     PDE.vecDot x x' = PDE.vecDot (spatialY x) (spatialY x') +
       PDE.vecDot (spatialZ x) (spatialZ x') := by
   simp only [PDE.vecDot, Fin.sum_univ_add, spatialY, spatialZ]
 
-/-- The first block projection is smooth. -/
+/- The first block projection is smooth. -/
 theorem contDiff_spatialY {m : WithTop ℕ∞} :
     ContDiff ℝ m (spatialY : PDE.Vec (n + n) → PDE.Vec n) :=
   contDiff_pi.2 fun i => contDiff_apply ℝ ℝ (Fin.castAdd n i)
 
-/-- The second block projection is smooth. -/
+/- The second block projection is smooth. -/
 theorem contDiff_spatialZ {m : WithTop ℕ∞} :
     ContDiff ℝ m (spatialZ : PDE.Vec (n + n) → PDE.Vec n) :=
   contDiff_pi.2 fun i => contDiff_apply ℝ ℝ (Fin.natAdd n i)
 
-/-- Packing two smooth block maps is smooth. -/
+/- Packing two smooth block maps is smooth. -/
 theorem contDiff_spatialPack {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {m : WithTop ℕ∞} {f g : E → PDE.Vec n} (hf : ContDiff ℝ m f) (hg : ContDiff ℝ m g) :
     ContDiff ℝ m (fun x => spatialPack (f x) (g x)) := by
@@ -184,13 +184,6 @@ theorem viscousBlockMatrix_natAdd_castAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin 
     finSumFinEquiv_symm_apply_castAdd, finSumFinEquiv_symm_apply_natAdd,
     Matrix.fromBlocks_apply₂₁, Matrix.zero_apply]
 
-theorem viscousBlockMatrix_natAdd_natAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
-    viscousBlockMatrix A ε (Fin.natAdd n i) (Fin.natAdd n j) =
-      ε * (1 : PDE.Mat n) i j := by
-  simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
-    finSumFinEquiv_symm_apply_natAdd, Matrix.fromBlocks_apply₂₂, Matrix.smul_apply,
-    smul_eq_mul]
-
 @[simp] theorem viscousBlockMatrix_castAdd_addNat (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
     viscousBlockMatrix A ε (Fin.castAdd n i) (j.addNat n) = 0 := by
   rw [← Fin.natAdd_eq_addNat]
@@ -204,9 +197,11 @@ theorem viscousBlockMatrix_natAdd_natAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n
 @[simp] theorem viscousBlockMatrix_addNat_addNat (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
     viscousBlockMatrix A ε (i.addNat n) (j.addNat n) = ε * (1 : PDE.Mat n) i j := by
   rw [← Fin.natAdd_eq_addNat, ← Fin.natAdd_eq_addNat]
-  exact viscousBlockMatrix_natAdd_natAdd A ε i j
+  simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
+    finSumFinEquiv_symm_apply_natAdd, Matrix.fromBlocks_apply₂₂, Matrix.smul_apply,
+    smul_eq_mul]
 
-/-- Entrywise extensionality for matrices on `Fin (n + n)` along the block decomposition. -/
+/- Entrywise extensionality for matrices on `Fin (n + n)` along the block decomposition. -/
 theorem matrix_ext_blocks {M M' : PDE.Mat (n + n)}
     (h₁₁ : ∀ i j, M (Fin.castAdd n i) (Fin.castAdd n j) = M' (Fin.castAdd n i) (Fin.castAdd n j))
     (h₁₂ : ∀ i j, M (Fin.castAdd n i) (Fin.natAdd n j) = M' (Fin.castAdd n i) (Fin.natAdd n j))
@@ -221,21 +216,18 @@ theorem matrix_ext_blocks {M M' : PDE.Mat (n + n)}
   · exact h₂₁ i j
   · exact h₂₂ i j
 
-/-- The block matrix applied to a vector acts blockwise. -/
-theorem viscousBlockMatrix_mulVec (A : PDE.Mat n) (ε : ℝ) (x : PDE.Vec (n + n)) :
-    viscousBlockMatrix A ε *ᵥ x = spatialPack (A *ᵥ spatialY x) (ε • spatialZ x) := by
-  funext k
-  refine Fin.addCases (fun i => ?_) (fun i => ?_) k
-  · rw [spatialPack_castAdd]
-    simp [Matrix.mulVec, dotProduct, Fin.sum_univ_add]
-  · rw [spatialPack_natAdd]
-    simp [Matrix.mulVec, dotProduct, Fin.sum_univ_add, Matrix.one_apply]
-
-/-- The block quadratic form. -/
+/- The block matrix applied to a vector acts blockwise. -/
 theorem vecDot_viscousBlockMatrix_mulVec (A : PDE.Mat n) (ε : ℝ) (x : PDE.Vec (n + n)) :
     PDE.vecDot x (viscousBlockMatrix A ε *ᵥ x) =
       PDE.vecDot (spatialY x) (A *ᵥ spatialY x) + ε * PDE.vecNormSq (spatialZ x) := by
-  rw [viscousBlockMatrix_mulVec, vecDot_eq_spatial]
+  have _h_inl_51 (A : PDE.Mat n) (ε x) : viscousBlockMatrix A ε *ᵥ x = spatialPack (A *ᵥ spatialY x) (ε • spatialZ x) := by
+    funext k
+    refine Fin.addCases (fun i => ?_) (fun i => ?_) k
+    · rw [spatialPack_castAdd]
+      simp [Matrix.mulVec, dotProduct, Fin.sum_univ_add]
+    · rw [spatialPack_natAdd]
+      simp [Matrix.mulVec, dotProduct, Fin.sum_univ_add, Matrix.one_apply]
+  rw [_h_inl_51, vecDot_eq_spatial]
   simp only [spatialY_spatialPack, spatialZ_spatialPack]
   simp [PDE.vecDot, PDE.vecNormSq, Finset.mul_sum, mul_left_comm]
 
@@ -323,13 +315,13 @@ theorem viscousBlockMatrix_posDef {A : PDE.Mat n} (hA : A.PosDef) {ε : ℝ}
       have hz := PDE.vecNormSq_nonneg (spatialZ x)
       exact add_pos_of_pos_of_nonneg hA' (mul_nonneg hε.le hz)
 
-/-- `c • 1 ≤ d • 1` for `c ≤ d`, in the Loewner order. -/
+/- `c • 1 ≤ d • 1` for `c ≤ d`, in the Loewner order. -/
 theorem smul_one_le_smul_one {m : ℕ} {c d : ℝ} (h : c ≤ d) :
     c • (1 : PDE.Mat m) ≤ d • (1 : PDE.Mat m) := by
   rw [Matrix.le_iff, ← sub_smul]
   exact Matrix.PosSemidef.one.smul (sub_nonneg.2 h)
 
-/-- The block matrix is monotone in both blocks for the Loewner order. -/
+/- The block matrix is monotone in both blocks for the Loewner order. -/
 theorem viscousBlockMatrix_mono {A A' : PDE.Mat n} {ε ε' : ℝ} (hA : A ≤ A') (hε : ε ≤ ε') :
     viscousBlockMatrix A ε ≤ viscousBlockMatrix A' ε' := by
   rw [Matrix.le_iff, viscousBlockMatrix_sub]

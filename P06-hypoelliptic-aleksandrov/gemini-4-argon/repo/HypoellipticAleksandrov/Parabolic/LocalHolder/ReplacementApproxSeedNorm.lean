@@ -17,8 +17,8 @@ open MeasureTheory
 open scoped BigOperators
 
 /-- Uniform bounds on the literal selected jet bound its complete weight-two family. -/
-theorem squaredL2Norm_classical_seed_le {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) (J : ParabolicW12Function d U 2) (B : ℝ)
+theorem squaredL2Norm_classical_seed_le {d U}
+    (hU : IsOpen U) (J : ParabolicW12Function d U 2) (B )
     (hq : (eLpNorm J.toFun 2 (timeVelocityVolumeOn U)).toReal ^ 2 ≤ B)
     (ht : (eLpNorm J.timeDeriv 2 (timeVelocityVolumeOn U)).toReal ^ 2 ≤ B)
     (hg : ∀ i, (eLpNorm (fun z => J.velocityGrad z i) 2

@@ -48,7 +48,7 @@ theorem box_concentration_of_return_time
   have hdecay : 0 ≤ (1 + x) ^ (-gamma alpha / 2) := Real.rpow_nonneg hx1.le _
   by_cases hlarge : 9 * r ^ 2 ≤ (t : ℝ)
   · have ht : 0 < (t : ℝ) := lt_of_lt_of_le (by positivity) hlarge
-    have hv : |z.2| ≤ Real.sqrt (t : ℝ) := hz.trans
+    have hv := hz.trans
       (Real.le_sqrt_of_sq_le (by nlinarith))
     have hfcomp (s : ℝ) (hs : s ∈ Ioc (2 * (t : ℝ)) (3 * (t : ℝ))) :
         f t ≤ CR * f s := by

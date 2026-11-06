@@ -18,7 +18,7 @@ open scoped Topology ENNReal
 /-- Finite-horizon quadratic mass follows from actual compact interior sources by exhaustion. -/
 theorem stripGreenOfRealization_quadratic_mass
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripGreenOfKernel H E.2 T e univ ≤
@@ -98,7 +98,7 @@ theorem stripGreenOfRealization_quadratic_mass
 /-- The canonical autonomous measure obeys the exact finite-horizon quadratic bound. -/
 theorem stripGreen_finite_quadratic_mass
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) :
     stripGreen hH hLE hlam hLam A H T e univ ≤

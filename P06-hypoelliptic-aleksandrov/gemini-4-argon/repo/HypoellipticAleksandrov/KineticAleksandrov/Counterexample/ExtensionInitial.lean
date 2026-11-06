@@ -8,11 +8,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Extensio
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 /-- Nonpositive times give zero wherever the barrier velocity radius is respected. -/
-theorem timeCutoffProfile_eq_zero_of_nonpos_time {d : ℕ} (H : XV d → ℝ)
+theorem timeCutoffProfile_eq_zero_of_nonpos_time {d } (H : XV d → ℝ)
     (alpha r mu R : ℝ) (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R)
     (P : KineticPoint d) (ht : P.time ≤ 0) (hv : PDE.vecNormSq P.velocity < R ^ 2) :
     timeCutoffProfile H alpha r mu R P = 0 := by
-  have hs : 0 < R ^ 2 := sq_pos_of_pos hR
+  have hs := sq_pos_of_pos hR
   have hb : 1 < 2 - PDE.vecNormSq P.velocity / R ^ 2 := by
     have he := (div_lt_one hs).mpr hv
     linarith
@@ -26,7 +26,7 @@ theorem timeCutoffProfile_eq_zero_of_nonpos_time {d : ℕ} (H : XV d → ℝ)
   exact sub_nonpos.mpr ((flatProfile_le_one H alpha r hr _).trans hbar)
 
 /-- On the profile domain the negative-time splice equals the raw cutoff at every time. -/
-theorem zeroExtendedProfile_eq_raw_on_profile {d : ℕ} (H : XV d → ℝ)
+theorem zeroExtendedProfile_eq_raw_on_profile {d } (H : XV d → ℝ)
     (alpha r mu R : ℝ) (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R)
     (hvel : ∀ q, H q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2)
     (P : KineticPoint d) (hq : H (P.position, P.velocity) < 1) :

@@ -27,9 +27,9 @@ def horizonInclusion (d : ℕ) (S : ℝ≥0∞) :
     ElapsedTime S × EvolutionAmbientState d → GreenCarrier d :=
   fun q => (elapsedInclusion le_top q.1, q.2)
 
-lemma measurableEmbedding_elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) :
+lemma measurableEmbedding_elapsedInclusion {T S } (hTS : T ≤ S) :
     MeasurableEmbedding (elapsedInclusion hTS) := by
-  have hT : MeasurableEmbedding (Subtype.val : ElapsedTime T → ℝ) :=
+  have hT :=
     MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime T)
   refine ⟨?_, measurable_elapsedInclusion hTS, ?_⟩
   · intro a b hab

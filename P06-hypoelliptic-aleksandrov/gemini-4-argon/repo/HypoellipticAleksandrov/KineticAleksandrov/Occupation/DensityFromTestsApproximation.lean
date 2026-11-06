@@ -45,7 +45,7 @@ theorem exists_continuous_test_approximation (η : Measure E)
     [η.Regular] {p : ℝ≥0∞} (hpt : p ≠ ∞)
     {f : E → ℝ} (hfp : MemLp f p η) {K U : Set E} (hK : IsCompact K)
     (hU : IsOpen U) (hKU : K ⊆ U) (hfK : Function.support f ⊆ K)
-    {ε : ℝ≥0∞} (hε : ε ≠ 0) :
+    {ε } (hε : ε ≠ 0) :
     ∃ g : E → ℝ, Continuous g ∧ HasCompactSupport g ∧ tsupport g ⊆ U ∧
       eLpNorm (g - f) p η ≤ ε := by
   obtain ⟨χ, hs, hc, hχU, h01, h1⟩ := exists_test_cutoff hK hU hKU
@@ -84,8 +84,7 @@ theorem tendsto_eLpNorm_one_of_finite (μ : Measure E) [IsFiniteMeasure μ]
       · simp [hpt]
       · have hpr : 1 ≤ p.toReal := by
           simpa using ENNReal.toReal_mono hpt hp
-        have hi : 1 / p.toReal ≤ 1 := by
-          exact (div_le_one (by linarith)).2 hpr
+        have hi := (div_le_one (by linarith)).2 hpr
         linarith
     · exact measure_ne_top μ univ
   have ht := ENNReal.Tendsto.mul_const h (Or.inr ha)

@@ -2,6 +2,13 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.DeterministicBoxOccupationGreenFatou
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.DeterministicBoxOccupationGeometry
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierModulusEstimates
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.DeterministicBoxOccupationBarrierEndpoint
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.DeterministicBoxOccupationEndpointLimit
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsWeightLimit
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.UniversalBarrier
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierModulus
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.DeterministicBoxOccupationEndpointUniform
 
 /-! # Uniform deterministic box occupation, independent of return-time comparison -/
 
@@ -10,11 +17,13 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set
 open scoped ENNReal
+open Filter BarrierRegularization
+open scoped Topology
 
-/-- The literal source box occupation estimate, with its constant before all dynamic data. -/
+/- The literal source box occupation estimate, with its constant before all dynamic data. -/
 theorem deterministic_box_occupation
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha : ℝ)
+    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha )
     (ha : bellmanAdjointExponent (Lam / lam)
       (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam) - 2 < alpha)
     (ha1 : alpha < 1) (A0 M : ℝ) (hA0 : 0 < A0) :
@@ -26,8 +35,48 @@ theorem deterministic_box_occupation
   obtain ⟨hlo, _, _⟩ := exists_bellman_barrier lam Lam hlam hLam
   have ha0 : 0 < alpha := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
   have hg : 0 < gamma alpha := by dsimp only [gamma]; linarith
-  obtain ⟨c, B, hc, hB, hb⟩ :=
-    deterministic_barrier_occupation_uniform hH hLE lam Lam hlam hLam alpha ha ha1 M
+  obtain ⟨c, B, hc, hB, hb⟩ :
+      ∃ c C : ℝ, 0 < c ∧ 0 < C ∧
+            ∀ (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) (Y : ℝ),
+              0 < (T : ℝ) → |z.2| ≤ M * Real.sqrt (T : ℝ) →
+              let E := fullSpaceEvolution hH hLE hlam hLam A
+              ENNReal.ofReal c *
+                (∫⁻ q, rhoWeight (gamma alpha) (q.1 - Y, q.2)
+                  ∂physicalOccupationMeasure E z T) ≤
+                ENNReal.ofReal (C * (T : ℝ) ^ (alpha / 2)) := by
+    obtain ⟨hlo, _, _⟩ := exists_bellman_barrier lam Lam hlam hLam
+    have ha0 : 0 < alpha := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
+    obtain ⟨phi, c, D, h, hc, _, hbound, _⟩ : ∃ phi : (ℝ × ℝ) → ℝ, ∃ c C : ℝ,
+        IsBellmanHomogeneous alpha phi ∧ 0 < c ∧ 0 ≤ C ∧
+        (∀ q ∈ bellmanPuncturedSet, ∀ b ∈ Icc lam Lam,
+          c * bellmanGauge q ^ (alpha - 2) ≤ bellmanOperator b phi q) ∧
+        ∀ z w : ℝ × ℝ,
+          |bellmanOriginExtension phi z - bellmanOriginExtension phi w| ≤
+            C * (|z.1 - w.1| ^ (alpha / 3) + |z.2 - w.2| ^ alpha) := by
+      obtain ⟨hlo, _, hb⟩ := exists_bellman_barrier lam Lam hlam hLam
+      obtain ⟨phi, c, hhom, hc, hbound⟩ := hb alpha ha ha1
+      have ha0 : 0 < alpha := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
+      obtain ⟨C, hC, hmod⟩ := barrier_coordinate_modulus hhom ha0 ha1
+      exact ⟨phi, c, C, hhom, hc, hC, hbound, hmod⟩
+    obtain ⟨C, hC, hendpoint⟩ :
+        ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) (Y : ℝ),
+              |z.2| ≤ M * Real.sqrt (T : ℝ) →
+              let E := fullSpaceEvolution hH hLE hlam hLam A
+              Integrable (fun w : Z => bellmanOriginExtension phi (w.1 - Y, w.2) -
+                bellmanOriginExtension phi (z.1 - Y, z.2)) (kernelXV E T z) ∧
+              (∫ w, |bellmanOriginExtension phi (w.1 - Y, w.2) -
+                bellmanOriginExtension phi (z.1 - Y, z.2)| ∂kernelXV E T z) ≤
+                C * (T : ℝ) ^ (alpha / 2) := by
+      obtain ⟨B, hB, hb⟩ := BarrierRegularization.barrier_coordinate_modulus h ha0 ha1
+      exact deterministic_barrier_endpoint_uniform_of_modulus hH hLE hlam hLam
+        alpha B M ha0.le ha1.le hB _ (h.origin_extension_continuous ha0) hb
+    refine ⟨c, C, hc, hC, ?_⟩
+    intro A z T Y hT hz
+    have he := hendpoint A z T Y hz
+    apply (deterministic_barrier_green_fatou hH hLE hlam hLam h ha0 ha1 hc hbound
+      A z T hT Y).trans
+    apply ENNReal.ofReal_le_ofReal
+    apply (integral_mono he.1 he.1.abs (fun q => le_abs_self _)).trans he.2
   let D : ℝ := (A0 ^ 2 + A0 ^ 6) ^ (1 / 6 : ℝ)
   have hD : 0 < D := by dsimp only [D]; positivity
   refine ⟨D ^ (gamma alpha) * B / c, by positivity, ?_⟩

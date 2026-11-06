@@ -21,7 +21,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The affine image of the product Bernstein grid in the centered cube. -/
-def centeredPiBernsteinGrid {d n : ℕ} (R : ℝ)
+def centeredPiBernsteinGrid {d n } (R : ℝ)
     (k : Fin d → Fin (n + 1)) : PDE.Vec d :=
   fun i => R * (2 * (piBernsteinGrid k i : ℝ) - 1)
 
@@ -37,7 +37,7 @@ def cutoffPiBernsteinApproximation {d n : ℕ} (R : ℝ)
 /-- The sampled cutoff Bernstein sum and its literal time derivative have a finite separated
 representation whose factors share the prescribed compact product support. -/
 theorem exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein
-    {d n : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+    {d n τ₁ τ₂ O} (hO : IsOpen O)
     (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞))
     (χ : PDE.Vec d → ℝ) (hχ : ContDiff ℝ (⊤ : ℕ∞) χ)
     (hχcompact : IsCompact (tsupport χ)) (hχO : tsupport χ ⊆ O)
@@ -51,7 +51,7 @@ theorem exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein
             tsupport ((q.spatialFactor m : PDE.WeakTestFunction O) : PDE.Vec d → ℝ) ⊆
           (spacetimeTestTimeSupportCompact φ : Set ℝ) ×ˢ tsupport χ := by
   let ι := Fin d → Fin (n + 1)
-  let e : ι ≃ Fin (Fintype.card ι) := Fintype.equivFin ι
+  let e := Fintype.equivFin ι
   let η : ι → OriginalTimeScalarTest τ₁ τ₂ := fun k =>
     (exists_sampledTimeFactor φ (centeredPiBernsteinGrid R k)).choose
   have hη (k : ι) :=

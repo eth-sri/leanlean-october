@@ -54,14 +54,14 @@ variable [MeasurableSpace E] [BorelSpace E]
 nonnegative smooth function vanishing off the `r`-thickening of any set carrying the
 function. -/
 theorem exists_smooth_uniform_approx (μ : Measure E) [μ.IsAddHaarMeasure]
-    {H : E → ℝ} (hH : Continuous H) (hHc : HasCompactSupport H) (hnn : ∀ z, 0 ≤ H z)
-    {S : Set E} (hS : ∀ z, z ∉ S → H z = 0) {r : ℝ} (hr : 0 < r) {η : ℝ} (hη : 0 < η) :
+    {H } (hH : Continuous H) (hHc : HasCompactSupport H) (hnn : ∀ z, 0 ≤ H z)
+    {S } (hS : ∀ z, z ∉ S → H z = 0) {r } (hr : 0 < r) {η } (hη : 0 < η) :
     ∃ ψ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ ∧ (∀ z, 0 ≤ ψ z) ∧ (∀ z, |ψ z - H z| ≤ η) ∧
       ∀ z, z ∉ cthickening r S → ψ z = 0 := by
   obtain ⟨δ', hδ', hu⟩ := Metric.uniformContinuous_iff.1
     (hHc.uniformContinuous_of_continuous hH) η hη
   set rad : ℝ := min r δ' with hrad
-  have hrad_pos : 0 < rad := lt_min hr hδ'
+  have hrad_pos := lt_min hr hδ'
   let φ : ContDiffBump (0 : E) := ⟨rad / 2, rad, half_pos hrad_pos, half_lt_self hrad_pos⟩
   refine ⟨φ.normed μ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] H, ?_, ?_, ?_, ?_⟩
   · exact φ.hasCompactSupport_normed.contDiff_convolution_left _ φ.contDiff_normed
@@ -78,9 +78,7 @@ theorem exists_smooth_uniform_approx (μ : Measure E) [μ.IsAddHaarMeasure]
     simpa only [Real.dist_eq] using this
   · intro z hz
     by_contra hne
-    have hmem := support_convolution_subset (ContinuousLinearMap.lsmul ℝ ℝ) (μ := μ)
-      (f := φ.normed μ) (g := H) hne
-    obtain ⟨a, ha, b, hb, rfl⟩ := Set.mem_add.1 hmem
+    obtain ⟨a, ha, b, hb, rfl⟩ := Set.mem_add.1 (support_convolution_subset (ContinuousLinearMap.lsmul ℝ ℝ) (μ := μ) (f := φ.normed μ) (g := H) hne)
     rw [φ.support_normed_eq] at ha
     have hbS : b ∈ S := by
       by_contra hbS

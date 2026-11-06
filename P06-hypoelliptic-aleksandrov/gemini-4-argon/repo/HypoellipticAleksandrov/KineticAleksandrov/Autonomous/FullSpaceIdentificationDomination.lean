@@ -21,7 +21,7 @@ theorem strip_subset_fullspace (H : Interval) (t : ℝ) :
 /-- Every realizing full-space kernel inherits domain domination from the evolution theorem. -/
 theorem fullspace_domainMonotone
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) :
     IsDomainMonotoneEvolution autonomousWholeDomain (fun _ => 0)
       (evolutionCoefficient A.a) (identityDrift 1) E.2 := by
@@ -32,13 +32,12 @@ theorem fullspace_domainMonotone
       (zeroCurve_piecewiseC1 1) (evolutionCoefficient_smooth A)
       (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
       (identityDrift_smooth 1) (identityDrift_bounds 1).1 (identityDrift_bounds 1).2
-  have hpair : E = (S, K) := fullSpaceEvolution_unique A E (S, K) hE ⟨hc, hi, he, hcomp⟩
-  simpa only [hpair] using hmono
+  simpa only [(fullSpaceEvolution_unique A E (S, K) hE ⟨hc, hi, he, hcomp⟩)] using hmono
 
 /-- Every supplied strip realization is measure dominated by the supplied full-space one. -/
 theorem strip_kernel_le_fullspace
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (H : Interval) (G : StripEvolution H) (hG : IsStripEvolution A H G) :
     MovingFiberKernel.IsZeroExtensionDominatedBy G.2 E.2 (strip_subset_fullspace H) :=

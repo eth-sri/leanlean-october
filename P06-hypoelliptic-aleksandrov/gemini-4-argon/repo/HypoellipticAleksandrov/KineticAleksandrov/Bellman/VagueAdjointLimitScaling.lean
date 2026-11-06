@@ -12,15 +12,14 @@ open MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Multiplying both measures preserves the literal weak equation. -/
-theorem IsBellmanStationaryAdjointPair.smul {mu eta : Measure BellmanPuncturedPlane}
+theorem IsBellmanStationaryAdjointPair.smul {mu eta }
     (h : IsBellmanStationaryAdjointPair mu eta) (c : ENNReal) :
     IsBellmanStationaryAdjointPair (c • mu) (c • eta) := by
   intro phi hphi hc hs
   rw [integral_smul_measure, integral_smul_measure, ← smul_add, h phi hphi hc hs, smul_zero]
 
 /-- Positive finite common scaling preserves every source condition of an admissible pair. -/
-theorem IsBellmanAdjointPair.smul {lam Lam beta : ℝ}
-    {mu eta : Measure BellmanPuncturedPlane} (h : IsBellmanAdjointPair lam Lam beta mu eta)
+theorem IsBellmanAdjointPair.smul {lam Lam beta mu eta} (h : IsBellmanAdjointPair lam Lam beta mu eta)
     (c : ℝ) (hc : 0 < c) :
     IsBellmanAdjointPair lam Lam beta (ENNReal.ofReal c • mu) (ENNReal.ofReal c • eta) := by
   rcases h with ⟨hm, he, hn, hlo, hhi, hstat, hdm, hde⟩

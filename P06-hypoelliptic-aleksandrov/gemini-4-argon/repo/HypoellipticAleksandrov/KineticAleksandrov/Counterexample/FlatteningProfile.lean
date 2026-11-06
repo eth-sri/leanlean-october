@@ -62,8 +62,7 @@ theorem fderiv_flatProfile {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
     simpa only [div_eq_mul_inv, mul_comm] using hH.hasFDerivAt.const_mul a⁻¹
   have hp : DifferentiableAt ℝ flatteningPsi (H q / a) :=
     (contDiff_flatteningPsi.differentiable (by simp)).differentiableAt
-  have hout := hp.hasDerivAt.comp_hasFDerivAt q hin
-  have hu := (hout.const_mul a).const_sub (1 - flatteningOffset * a)
+  have hu := ((hp.hasDerivAt.comp_hasFDerivAt q hin).const_mul a).const_sub (1 - flatteningOffset * a)
   have he := hu.fderiv
   change fderiv ℝ (flatProfile H flatteningPsi flatteningOffset alpha r) q = _ at he
   rw [he]
@@ -97,8 +96,7 @@ theorem flatProfile_representatives_source {d : ℕ} {alpha : ℝ}
         matrixContraction (profileMatrix h q) (flatProfileHessian h r q) =
       flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r q := by
   have hEq := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
-  have hJets := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.1
-  filter_upwards [hEq, hJets] with q hq hj
+  filter_upwards [hEq, ((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.1)] with q hq hj
   unfold flatProfilePositionJet flatProfileHessian
   rw [contraction_flattening_identity]
   unfold flatSource
@@ -146,7 +144,7 @@ theorem measurable_flatProfile_jets {d : ℕ} {alpha : ℝ}
       ((ht.mul ((measurable_pi_apply i).comp hmv)).mul ((measurable_pi_apply k).comp hmv))
 
 /-- The complete weak flattened-profile conclusion required by the mollification lane. -/
-def FlatProfileSourceStatement {d : ℕ} {alpha : ℝ}
+def FlatProfileSourceStatement {d alpha}
     (h : CounterProfileStatement d alpha) (r : ℝ) : Prop :=
   let u := selectedFlatProfile h r
   let gx := flatProfilePositionJet h r

@@ -92,8 +92,7 @@ theorem memLp_and_eLpNorm_le_of_bounded_conjugate_tests
     exact habsLp.eLpNorm_lt_top
   refine ⟨hgLp, ?_⟩
   rw [hnormEq]
-  have hreal := ENNReal.toReal_mono ENNReal.ofReal_ne_top habsNorm
-  simpa [ENNReal.toReal_ofReal hM] using hreal
+  simpa [ENNReal.toReal_ofReal hM] using (ENNReal.toReal_mono ENNReal.ofReal_ne_top habsNorm)
 
 end
 

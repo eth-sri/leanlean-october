@@ -30,8 +30,7 @@ theorem visitTimeQuadratic_operator (c : Clock) (eta : ℝ → ℝ)
   have hsecond : deriv (deriv (fun v => eta p.time * visitQuadratic c v)) (p.velocity 0) =
       eta p.time * (-2) := by
     rw [hfirst]
-    have hh := ((hasDerivAt_id (p.velocity 0)).sub_const c.vbar).const_mul (-2)
-    simpa only [id_eq, mul_one] using (hh.const_mul (eta p.time)).deriv
+    simpa only [id_eq, mul_one] using ((((hasDerivAt_id (p.velocity 0)).sub_const c.vbar).const_mul (-2)).const_mul (eta p.time)).deriv
   rw [forwardScalarOperator, kineticPositionGradient_scalar, kineticVelocityHessian_scalar]
   simp only [kineticTimeDerivative, htime, deriv_const, mul_zero, add_zero, hsecond]
   ring

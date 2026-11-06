@@ -16,7 +16,7 @@ open scoped ENNReal
 classical supersolution. Parameters are internal algebraic data, not analytic inputs. -/
 theorem reconstruction_early_face_exponential_bound
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (sMinus T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (he : sMinus ≤ e.1.time) (theta k beta face d : ℝ) (_hk : 0 ≤ k)
@@ -29,8 +29,8 @@ theorem reconstruction_early_face_exponential_bound
   let c := Lam * k ^ 2
   let b := sMinus + theta
   let phi := reconstructionExponentialPlane (-c) beta (c * b - beta * face)
-  have hLam0 : 0 < Lam := hlam.trans_le hLam
-  have hc : 0 ≤ c := mul_nonneg hLam0.le (sq_nonneg k)
+  have hLam0 := hlam.trans_le hLam
+  have hc := mul_nonneg hLam0.le (sq_nonneg k)
   have hp (p : Point) : phi p = Real.exp (c * (b - p.time) + beta * (p.velocity 0 - face)) := by
     dsimp only [phi, reconstructionExponentialPlane]
     congr 1
@@ -55,7 +55,7 @@ theorem reconstruction_early_face_exponential_bound
     have hv' : p.velocity 0 ∈ Icc H.lo H.hi := ⟨hv.1.le, hv.2.le⟩
     have hpb := hpn p ht hv'
     have ha := A.bounds (p.position 0) (p.velocity 0)
-    have ha0 : 0 ≤ A.a (p.position 0) (p.velocity 0) := hlam.le.trans ha.1
+    have ha0 := hlam.le.trans ha.1
     have hpb0 := (hpos p).le
     constructor
     · rw [abs_of_nonneg hpb0]

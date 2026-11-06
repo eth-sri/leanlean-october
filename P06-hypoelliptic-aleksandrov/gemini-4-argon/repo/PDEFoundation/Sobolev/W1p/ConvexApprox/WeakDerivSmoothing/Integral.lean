@@ -22,23 +22,21 @@ private theorem integrableOn_comp_smul_add_for_weakSmoothing
       (translateSet b (a • K)) MeasureTheory.volume) :
     MeasureTheory.IntegrableOn
       (fun x => u (a • x + b)) K MeasureTheory.volume := by
-  have haNe : a ≠ 0 := ha.ne'
-  let V : Set (Vec d) := translateSet b (a • K)
+  have haNe := ha.ne'
+  let V := translateSet b (a • K)
   have hV : MeasurableSet V := by
     have hpre :
         ⇑(Homeomorph.subRight b) ⁻¹' (a • K) = V := by
       ext x
       simp [V, mem_translateSet_iff_sub_mem]
     rw [← hpre]
-    have haK : MeasurableSet (a • K) :=
+    have haK :=
       ((Homeomorph.smulOfNeZero a haNe).toMeasurableEquiv.measurableSet_image).2
         hK
     exact
       ((Homeomorph.subRight b).toMeasurableEquiv.measurableSet_preimage).2
         haK
-  have hIndicator :
-      MeasureTheory.Integrable
-        (Set.indicator V u) MeasureTheory.volume :=
+  have hIndicator :=
     hu.integrable_indicator hV
   have hTranslated :
       MeasureTheory.Integrable
@@ -53,7 +51,7 @@ private theorem integrableOn_comp_smul_add_for_weakSmoothing
       MeasureTheory.Integrable
         (fun x => Set.indicator V u (a • x + b))
         MeasureTheory.volume := by
-    let g : Vec d → ℝ :=
+    let g :=
       fun x => Set.indicator V u (x + b)
     have hg :
         MeasureTheory.Integrable g MeasureTheory.volume := by
@@ -102,22 +100,20 @@ private theorem
     MeasureTheory.IntegrableOn
       (fun x => u (convexApproxSample x0 z r ε x))
       K MeasureTheory.volume := by
-  let a : ℝ := 1 - ε
-  let b : Vec d := ε • (x0 - r • z)
-  let V : Set (Vec d) := translateSet b (a • K)
+  let a := 1 - ε
+  let b := ε • (x0 - r • z)
+  let V := translateSet b (a • K)
   have ha : 0 < a := by
     dsimp only [a]
     linarith
-  have hmap :
-      Set.MapsTo (convexApproxSample x0 z r ε) U U :=
+  have hmap :=
     convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
       hU hball hr hz hε0 hε1.le
   have hVU : V ⊆ U := by
     intro y hy
     rcases hy with ⟨w, hw, hyw⟩
     rcases Set.mem_smul_set.mp hw with ⟨x, hx, rfl⟩
-    have hyU :
-        convexApproxSample x0 z r ε x ∈ U :=
+    have hyU :=
       hmap (hKU hx)
     rw [hyw]
     simpa only [convexApproxSample, a, b] using hyU
@@ -136,9 +132,7 @@ private theorem
     rw [← hImage]
     exact
       hK.image (by fun_prop)
-  have huV :
-      MeasureTheory.IntegrableOn u V
-        MeasureTheory.volume :=
+  have huV :=
     hu.integrableOn_compact_subset hVU hV
   simpa only [convexApproxSample, a, b, V] using
     (integrableOn_comp_smul_add_for_weakSmoothing
@@ -165,22 +159,13 @@ private theorem
             (convexApproxSample x0 z r ε x) *
           ψ x)
       K MeasureTheory.volume := by
-  have hcomp :
-      MeasureTheory.IntegrableOn
-        (fun x =>
-          u (convexApproxSample x0 z r ε x))
-        K MeasureTheory.volume :=
+  have hcomp :=
     integrableOn_comp_convexApproxSample_of_locallyIntegrableOn_for_weakSmoothing
       hU hu hKU hK hball hr hz hε0 hε1
-  have hmap :
-      Set.MapsTo (convexApproxSample x0 z r ε) U U :=
+  have hmap :=
     convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
       hU hball hr hz hε0 hε1.le
-  have hmul :
-      MeasureTheory.IntegrableOn
-        (fun x =>
-          u (convexApproxSample x0 z r ε x) * ψ x)
-        K MeasureTheory.volume :=
+  have hmul :=
     hcomp.mul_continuousOn hψ.continuousOn hK
   have hIndicator :
       MeasureTheory.IntegrableOn
@@ -216,8 +201,8 @@ private theorem quasiMeasurePreserving_convexApproxSample_prod
     fun_prop
   · refine Filter.Eventually.of_forall ?_
     intro z
-    let a : ℝ := 1 - ε
-    let b : Vec d := ε • (x0 - r • z)
+    let a := 1 - ε
+    let b := ε • (x0 - r • z)
     have haNe : a ≠ 0 := by
       dsimp only [a]
       linarith
@@ -227,95 +212,19 @@ private theorem quasiMeasurePreserving_convexApproxSample_prod
           MeasureTheory.volume MeasureTheory.volume :=
       MeasureTheory.Measure.quasiMeasurePreserving_smul
         (μ := MeasureTheory.volume) haNe
-    have hadd :
-        MeasureTheory.MeasurePreserving
-          (fun x : Vec d => x + b)
-          MeasureTheory.volume MeasureTheory.volume :=
+    have hadd :=
       MeasureTheory.measurePreserving_add_right
         MeasureTheory.volume b
     have hsample :
         MeasureTheory.Measure.QuasiMeasurePreserving
           (convexApproxSample x0 z r ε)
           MeasureTheory.volume MeasureTheory.volume := by
-      have h := hadd.quasiMeasurePreserving.comp hsmul
-      convert h using 1
+      convert (hadd.quasiMeasurePreserving.comp hsmul) using 1
       funext x
       rfl
     exact
       hsample.mono_left
         MeasureTheory.Measure.absolutelyContinuous_restrict
-
-private theorem
-    aestronglyMeasurable_kernel_mul_indicator_comp_convexApproxSample_prod_mul
-    {d : ℕ} {U : Set (Vec d)}
-    (hU : MeasurableSet U)
-    {u ρ ψ : Vec d → ℝ}
-    (hu : MeasureTheory.LocallyIntegrableOn
-      u U MeasureTheory.volume)
-    (hρ : IsConvexApproxKernel ρ)
-    (hψ : Continuous ψ) (hψU : tsupport ψ ⊆ U)
-    {x0 : Vec d} {r ε : ℝ} (hε1 : ε < 1) :
-    MeasureTheory.AEStronglyMeasurable
-      (fun p : Vec d × Vec d =>
-        ρ p.2 *
-          Set.indicator U u
-            (convexApproxSample x0 p.2 r ε p.1) *
-          ψ p.1)
-      ((MeasureTheory.volume.restrict (tsupport ψ)).prod
-        (MeasureTheory.volume.restrict (tsupport ρ))) := by
-  let μψ : MeasureTheory.Measure (Vec d) :=
-    MeasureTheory.volume.restrict (tsupport ψ)
-  let μρ : MeasureTheory.Measure (Vec d) :=
-    MeasureTheory.volume.restrict (tsupport ρ)
-  have huIndicator :
-      MeasureTheory.AEStronglyMeasurable
-        (Set.indicator U u) MeasureTheory.volume := by
-    exact
-      (aestronglyMeasurable_indicator_iff
-        hU).2 hu.aestronglyMeasurable
-  have hbase :
-      MeasureTheory.AEStronglyMeasurable
-        (fun p : Vec d × Vec d =>
-          Set.indicator U u
-            (convexApproxSample x0 p.2 r ε p.1))
-        ((MeasureTheory.volume.restrict U).prod μρ) := by
-    exact
-      huIndicator.comp_quasiMeasurePreserving
-        (quasiMeasurePreserving_convexApproxSample_prod
-          (U := U) (ρ := ρ) x0 r ε hε1)
-  have hμψ :
-      μψ ≤ MeasureTheory.volume.restrict U :=
-    MeasureTheory.Measure.restrict_mono_set
-      MeasureTheory.volume hψU
-  have hprod :
-      μψ.prod μρ ≤
-        (MeasureTheory.volume.restrict U).prod μρ := by
-    refine MeasureTheory.Measure.le_iff.2 ?_
-    intro s hs
-    rw [MeasureTheory.Measure.prod_apply hs,
-      MeasureTheory.Measure.prod_apply hs]
-    exact MeasureTheory.lintegral_mono' hμψ le_rfl
-  have hcomp :
-      MeasureTheory.AEStronglyMeasurable
-        (fun p : Vec d × Vec d =>
-          Set.indicator U u
-            (convexApproxSample x0 p.2 r ε p.1))
-        (μψ.prod μρ) :=
-    hbase.mono_measure hprod
-  have hρMeas :
-      MeasureTheory.AEStronglyMeasurable
-        (fun p : Vec d × Vec d => ρ p.2)
-        (μψ.prod μρ) :=
-    (hρ.continuous.comp continuous_snd).aestronglyMeasurable
-  have hψMeas :
-      MeasureTheory.AEStronglyMeasurable
-        (fun p : Vec d × Vec d => ψ p.1)
-        (μψ.prod μρ) :=
-    (hψ.comp continuous_fst).aestronglyMeasurable
-  have h := hρMeas.mul (hcomp.mul hψMeas)
-  convert h using 1
-  funext p
-  simp only [Pi.mul_apply, mul_assoc]
 
 private theorem integrableOn_comp_convexApproxSample_for_weakSmoothing
     {d : ℕ} {U : Set (Vec d)}
@@ -330,22 +239,19 @@ private theorem integrableOn_comp_convexApproxSample_for_weakSmoothing
     MeasureTheory.IntegrableOn
       (fun x => u (convexApproxSample x0 z r ε x))
       U MeasureTheory.volume := by
-  let a : ℝ := 1 - ε
-  let b : Vec d := ε • (x0 - r • z)
-  let V : Set (Vec d) := translateSet b (a • U)
+  let a := 1 - ε
+  let b := ε • (x0 - r • z)
+  let V := translateSet b (a • U)
   have ha : 0 < a := by
     dsimp only [a]
     linarith
-  have hmap :
-      Set.MapsTo (convexApproxSample x0 z r ε) U U :=
+  have hmap :=
     convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
       hU hball hr hz hε0 hε1.le
-  have hVU : V ⊆ U :=
+  have hVU :=
     translateSet_smul_subset_of_convexApproxSample_mapsTo
       (x0 := x0) (z := z) (r := r) (ε := ε) hmap
-  have huV :
-      MeasureTheory.IntegrableOn u V
-        MeasureTheory.volume :=
+  have huV :=
     hu.mono_set hVU
   simpa only [convexApproxSample, a, b, V] using
     (integrableOn_comp_smul_add_for_weakSmoothing
@@ -354,16 +260,16 @@ private theorem integrableOn_comp_convexApproxSample_for_weakSmoothing
 
 private theorem
     integrable_kernel_mul_indicator_comp_convexApproxSample_prod_mul_of_integrableOn
-    {d : ℕ} {U : Set (Vec d)}
+    {d U}
     (hU : IsOpenBoundedConvexDomain U)
-    {u ρ ψ : Vec d → ℝ}
+    {u ρ ψ }
     (hu : MeasureTheory.IntegrableOn
       u U MeasureTheory.volume)
     (hρ : IsConvexApproxKernel ρ)
     (hψ : Continuous ψ)
     (hψCompact : HasCompactSupport ψ)
     (hψU : tsupport ψ ⊆ U)
-    {x0 : Vec d} {r ε : ℝ}
+    {x0 r ε}
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 ≤ r) (hε0 : 0 ≤ ε)
     (hε1 : ε < 1) :
@@ -377,15 +283,13 @@ private theorem
         (MeasureTheory.volume.restrict (tsupport ρ))) := by
   let μψ : MeasureTheory.Measure (Vec d) :=
     MeasureTheory.volume.restrict (tsupport ψ)
-  let μρ : MeasureTheory.Measure (Vec d) :=
+  let μρ :=
     MeasureTheory.volume.restrict (tsupport ρ)
-  let a : ℝ := 1 - ε
+  let a := 1 - ε
   have ha : 0 < a := by
     dsimp only [a]
     linarith
-  have huLoc :
-      MeasureTheory.LocallyIntegrableOn
-        u U MeasureTheory.volume :=
+  have huLoc :=
     hu.locallyIntegrableOn
   have hmeas :
       MeasureTheory.AEStronglyMeasurable
@@ -395,9 +299,64 @@ private theorem
               (convexApproxSample x0 p.2 r ε p.1) *
             ψ p.1)
         (μψ.prod μρ) := by
-    simpa only [μψ, μρ] using
-      aestronglyMeasurable_kernel_mul_indicator_comp_convexApproxSample_prod_mul
-        hU.measurableSet huLoc hρ hψ hψU hε1
+    have _h_inl_9 : MeasureTheory.AEStronglyMeasurable
+      (fun p : Vec d × Vec d =>
+        ρ p.2 *
+          Set.indicator U u
+            (convexApproxSample x0 p.2 r ε p.1) *
+          ψ p.1)
+      ((MeasureTheory.volume.restrict (tsupport ψ)).prod
+        (MeasureTheory.volume.restrict (tsupport ρ))) := by
+      have hU := hU.measurableSet
+      let μψ : MeasureTheory.Measure (Vec d) :=
+        MeasureTheory.volume.restrict (tsupport ψ)
+      let μρ :=
+        MeasureTheory.volume.restrict (tsupport ρ)
+      have huIndicator :
+          MeasureTheory.AEStronglyMeasurable
+            (Set.indicator U u) MeasureTheory.volume := by
+        exact
+          (aestronglyMeasurable_indicator_iff
+            hU).2 huLoc.aestronglyMeasurable
+      have hbase :
+          MeasureTheory.AEStronglyMeasurable
+            (fun p : Vec d × Vec d =>
+              Set.indicator U u
+                (convexApproxSample x0 p.2 r ε p.1))
+            ((MeasureTheory.volume.restrict U).prod μρ) := by
+        exact
+          huIndicator.comp_quasiMeasurePreserving
+            (quasiMeasurePreserving_convexApproxSample_prod
+              (U := U) (ρ := ρ) x0 r ε hε1)
+      have hμψ :
+          μψ ≤ MeasureTheory.volume.restrict U :=
+        MeasureTheory.Measure.restrict_mono_set
+          MeasureTheory.volume hψU
+      have hprod :
+          μψ.prod μρ ≤
+            (MeasureTheory.volume.restrict U).prod μρ := by
+        refine MeasureTheory.Measure.le_iff.2 ?_
+        intro s hs
+        rw [MeasureTheory.Measure.prod_apply hs,
+          MeasureTheory.Measure.prod_apply hs]
+        exact MeasureTheory.lintegral_mono' hμψ le_rfl
+      have hcomp :=
+        hbase.mono_measure hprod
+      have hρMeas :
+          MeasureTheory.AEStronglyMeasurable
+            (fun p : Vec d × Vec d => ρ p.2)
+            (μψ.prod μρ) :=
+        (hρ.continuous.comp continuous_snd).aestronglyMeasurable
+      have hψMeas :
+          MeasureTheory.AEStronglyMeasurable
+            (fun p : Vec d × Vec d => ψ p.1)
+            (μψ.prod μρ) :=
+        (hψ.comp continuous_fst).aestronglyMeasurable
+      have h := hρMeas.mul (hcomp.mul hψMeas)
+      convert h using 1
+      funext p
+      simp only [Pi.mul_apply, mul_assoc]
+    simpa only [μψ, μρ] using _h_inl_9
   refine (MeasureTheory.integrable_prod_iff' hmeas).2 ?_
   constructor
   · filter_upwards
@@ -421,7 +380,7 @@ private theorem
     have hψBound : ∀ x, ‖ψ x‖ ≤ Cψ := by
       intro x
       exact (hC0 x).trans (le_max_left _ _)
-    let Cu : ℝ :=
+    let Cu :=
       ∫ y in U, |u y| ∂MeasureTheory.volume
     have hCuNonneg : 0 ≤ Cu := by
       dsimp only [Cu]
@@ -444,16 +403,7 @@ private theorem
       simpa only [μρ] using
         (MeasureTheory.Integrable.restrict
           (s := tsupport ρ) hboundVolume)
-    have hinnerMeas :
-        MeasureTheory.AEStronglyMeasurable
-          (fun z =>
-            ∫ x,
-              ‖ρ z *
-                Set.indicator U u
-                  (convexApproxSample x0 z r ε x) *
-                ψ x‖ ∂μψ)
-          μρ := by
-      exact hmeas.norm.prod_swap.integral_prod_right'
+    have hinnerMeas := hmeas.norm.prod_swap.integral_prod_right'
     refine
       MeasureTheory.Integrable.mono
         hbound hinnerMeas ?_
@@ -466,9 +416,7 @@ private theorem
         simpa only [Metric.mem_closedBall,
           dist_zero_right] using
             hρ.support_subset_closedBall hzρ
-      have hmap :
-          Set.MapsTo
-            (convexApproxSample x0 z r ε) U U :=
+      have hmap :=
         convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
           hU hball hr hzNorm hε0 hε1.le
       have hsampleψ :
@@ -491,10 +439,7 @@ private theorem
             (fun x =>
               |u (convexApproxSample x0 z r ε x)|)
             U MeasureTheory.volume := by
-        have huNorm :
-            MeasureTheory.IntegrableOn
-              (fun y => ‖u y‖) U
-              MeasureTheory.volume :=
+        have huNorm :=
           hu.norm
         simpa only [Real.norm_eq_abs] using
           integrableOn_comp_convexApproxSample_for_weakSmoothing
@@ -536,9 +481,8 @@ private theorem
           [MeasureTheory.ae_restrict_mem
             hψCompact.isCompact.measurableSet]
             with x hx
-        have hxU : x ∈ U := hψU hx
-        have hsampleU :
-            convexApproxSample x0 z r ε x ∈ U :=
+        have hxU := hψU hx
+        have hsampleU :=
           hmap hxU
         calc
           ‖ρ z *
@@ -577,7 +521,7 @@ private theorem
               (Filter.Eventually.of_forall
                 fun x => abs_nonneg _)
               (Filter.Eventually.of_forall hψU)
-        have hVU : V ⊆ U :=
+        have hVU :=
           translateSet_smul_subset_of_convexApproxSample_mapsTo
             (x0 := x0) (z := z) (r := r)
             (ε := ε) hmap
@@ -690,16 +634,16 @@ private theorem
 
 private theorem
     integrable_kernel_mul_indicator_comp_convexApproxSample_prod_mul
-    {d : ℕ} {U : Set (Vec d)}
+    {d U}
     (hU : IsOpenBoundedConvexDomain U)
-    {u ρ ψ : Vec d → ℝ}
+    {u ρ ψ }
     (hu : MeasureTheory.LocallyIntegrableOn
       u U MeasureTheory.volume)
     (hρ : IsConvexApproxKernel ρ)
     (hψ : Continuous ψ)
     (hψCompact : HasCompactSupport ψ)
     (hψU : tsupport ψ ⊆ U)
-    {x0 : Vec d} {r ε : ℝ}
+    {x0 r ε}
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 ≤ r) (hε0 : 0 ≤ ε)
     (hε1 : ε < 1) :
@@ -711,15 +655,15 @@ private theorem
           ψ p.1)
       ((MeasureTheory.volume.restrict (tsupport ψ)).prod
         (MeasureTheory.volume.restrict (tsupport ρ))) := by
-  let K : Set (Vec d × Vec d) :=
+  let K :=
     tsupport ψ ×ˢ tsupport ρ
-  let W : Set (Vec d) :=
+  let W :=
     (fun p : Vec d × Vec d =>
       convexApproxSample x0 p.2 r ε p.1) '' K
-  let uW : Vec d → ℝ := Set.indicator W u
-  have hK : IsCompact K :=
+  let uW := Set.indicator W u
+  have hK :=
     hψCompact.isCompact.prod hρ.compactSupport.isCompact
-  have hKMeas : MeasurableSet K :=
+  have hKMeas :=
     hK.measurableSet
   have hsampleContinuous :
       Continuous
@@ -750,16 +694,7 @@ private theorem
       MeasureTheory.IntegrableOn
         uW U MeasureTheory.volume :=
     huW.integrableOn
-  have htrunc :
-      MeasureTheory.Integrable
-        (fun p : Vec d × Vec d =>
-          ρ p.2 *
-            Set.indicator U uW
-              (convexApproxSample x0 p.2 r ε p.1) *
-            ψ p.1)
-        ((MeasureTheory.volume.restrict (tsupport ψ)).prod
-          (MeasureTheory.volume.restrict
-            (tsupport ρ))) :=
+  have htrunc :=
     integrable_kernel_mul_indicator_comp_convexApproxSample_prod_mul_of_integrableOn
       hU huWOnU hρ hψ hψCompact hψU
       hball hr hε0 hε1
@@ -780,21 +715,20 @@ private theorem
     exact
       (MeasureTheory.ae_restrict_iff' hKMeas).2
         (Filter.Eventually.of_forall fun p hp => by
-          let y : Vec d :=
+          let y :=
             convexApproxSample x0 p.2 r ε p.1
-          have hyW : y ∈ W :=
+          have hyW :=
             Set.mem_image_of_mem
               (fun q : Vec d × Vec d =>
                 convexApproxSample x0 q.2 r ε q.1) hp
-          have hyU : y ∈ U := hWU hyW
+          have hyU := hWU hyW
           have hleft :
               Set.indicator U uW y = u y := by
             rw [Set.indicator_of_mem hyU]
             simpa only [uW] using
               Set.indicator_of_mem
                 (s := W) (f := u) hyW
-          have hright :
-              Set.indicator U u y = u y :=
+          have hright :=
             Set.indicator_of_mem
               (s := U) (f := u) hyU
           change
@@ -805,19 +739,19 @@ private theorem
 
 namespace HasWeakPartialDerivOn
 
-/-- Convex-domain smoothing commutes with a weak partial derivative, with the
+/- Convex-domain smoothing commutes with a weak partial derivative, with the
 exact factor `1 - ε` contributed by the affine sampling map. -/
 theorem convexApproxSmoothing
-    {d : ℕ} {U : Set (Vec d)}
+    {d U}
     (hU : IsOpenBoundedConvexDomain U)
-    {i : Fin d} {u gi ρ : Vec d → ℝ}
+    {i u gi ρ}
     (huLoc : MeasureTheory.LocallyIntegrableOn
       u U MeasureTheory.volume)
     (hgiLoc : MeasureTheory.LocallyIntegrableOn
       gi U MeasureTheory.volume)
     (hu : HasWeakPartialDerivOn U i u gi)
     (hρ : IsConvexApproxKernel ρ)
-    {x0 : Vec d} {r ε : ℝ}
+    {x0 : Vec d} {r ε }
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 ≤ r) (hε0 : 0 ≤ ε)
     (hε1 : ε < 1) :
@@ -829,13 +763,13 @@ theorem convexApproxSmoothing
   intro φ hφSmooth hφCompact hφU
   let dφ : Vec d → ℝ :=
     fun x => (fderiv ℝ φ x) (basisVec i)
-  let F : Vec d → Vec d → ℝ :=
+  let F :=
     fun x z =>
       ρ z *
         Set.indicator U u
           (convexApproxSample x0 z r ε x) *
         dφ x
-  let G : Vec d → Vec d → ℝ :=
+  let G :=
     fun x z =>
       ρ z *
         Set.indicator U gi
@@ -853,15 +787,14 @@ theorem convexApproxSmoothing
       Function.support dφ ⊆ tsupport φ := by
     intro x hx
     apply support_fderiv_subset (𝕜 := ℝ)
-    change fderiv ℝ φ x ≠ 0
     intro hzero
     apply hx
     simp only [dφ, hzero,
       zero_apply]
-  have hdφTSupport : tsupport dφ ⊆ tsupport φ :=
+  have hdφTSupport :=
     closure_minimal hdφSupport
       (isClosed_tsupport (f := φ))
-  have hdφU : tsupport dφ ⊆ U :=
+  have hdφU :=
     hdφTSupport.trans hφU
   have hprodLeft :
       MeasureTheory.Integrable
@@ -949,7 +882,7 @@ theorem convexApproxSmoothing
     refine MeasureTheory.setIntegral_congr_fun
       (isClosed_tsupport (f := ψ)).measurableSet ?_
     intro x hx
-    have hxU : x ∈ U := hψU hx
+    have hxU := hψU hx
     have hsample :
         ∀ z ∈ tsupport ρ,
           convexApproxSample x0 z r ε x ∈ U := by
@@ -1010,9 +943,7 @@ theorem convexApproxSmoothing
       simpa only [Metric.mem_closedBall,
         dist_zero_right] using
           hρ.support_subset_closedBall hz
-    have hmap :
-        Set.MapsTo
-          (convexApproxSample x0 z r ε) U U :=
+    have hmap :=
       convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
         hU hball hr hzNorm hε0 hε1.le
     calc
@@ -1245,19 +1176,19 @@ theorem convexApproxSmoothing
       rw [hscale]
       ring
 
-/-- The globally smooth representative has the same weak partial derivative
+/- The globally smooth representative has the same weak partial derivative
 as convex-approximation smoothing on the domain. -/
 theorem convexApproxSmoothRepresentative
-    {d : ℕ} {U : Set (Vec d)}
+    {d U}
     (hU : IsOpenBoundedConvexDomain U)
-    {i : Fin d} {u gi ρ : Vec d → ℝ}
+    {i u gi ρ}
     (huLoc : MeasureTheory.LocallyIntegrableOn
       u U MeasureTheory.volume)
     (hgiLoc : MeasureTheory.LocallyIntegrableOn
       gi U MeasureTheory.volume)
     (hu : HasWeakPartialDerivOn U i u gi)
     (hρ : IsConvexApproxKernel ρ)
-    {x0 : Vec d} {r ε : ℝ}
+    {x0 : Vec d} {r ε }
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 < r) (hε0 : 0 < ε)
     (hε1 : ε < 1) :
@@ -1268,12 +1199,7 @@ theorem convexApproxSmoothRepresentative
           PDE.convexApproxSmoothRepresentative
             U ρ gi x0 r ε x) := by
   intro φ hφSmooth hφCompact hφU
-  have hweak :
-      HasWeakPartialDerivOn U i
-        (PDE.convexApproxSmoothing ρ u x0 r ε)
-        (fun x =>
-          (1 - ε) *
-            PDE.convexApproxSmoothing ρ gi x0 r ε x) :=
+  have hweak :=
     hu.convexApproxSmoothing
       hU huLoc hgiLoc hρ hball hr.le hε0.le hε1
   have hleft :

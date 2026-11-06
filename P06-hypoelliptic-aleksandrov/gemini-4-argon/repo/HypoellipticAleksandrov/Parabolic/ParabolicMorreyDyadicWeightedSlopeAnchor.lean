@@ -64,14 +64,6 @@ private theorem parabolicDyadicSourceBox_radius_rpow_truncate_mul
   rw [Nat.cast_sub hmn]
   ring
 
-private theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
-    (u : TimeVelocity d -> Real) : 0 <= parabolicMorreyDerivativeLpNorm d u := by
-  unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm parabolicELpNorm
-  refine add_nonneg ENNReal.toReal_nonneg ?_
-  refine Finset.sum_nonneg fun i _ => ?_
-  refine Finset.sum_nonneg fun j _ => ?_
-  exact ENNReal.toReal_nonneg
-
 private theorem finite_radius_weighted_slope_tail
     {d : Nat} (C alpha D q : Real) (r : Nat -> Real) (b : Nat -> Fin d -> Real)
     (_hC : 0 < C) (_hD : 0 <= D) (hr : ∀ n, 0 < r n)
@@ -170,36 +162,6 @@ private theorem finite_radius_weighted_slope_tail
         _ = ((2 : Real) ^ alpha * C) * r (n + 1) ^ alpha *
             (∑ k ∈ Finset.range (n + 1), q ^ k) * D := by rw [hCscale]
 
-private theorem parabolicELpNorm_le_parabolicSmoothJetELpNorm
-    (d : Nat) (u : TimeVelocity d -> Real) :
-    parabolicELpNorm d u <= parabolicSmoothJetELpNorm d u := by
-  unfold parabolicSmoothJetELpNorm
-  calc
-    parabolicELpNorm d u <= parabolicELpNorm d u +
-        parabolicELpNorm d (timeDerivative u) := le_add_of_nonneg_right bot_le
-    _ <= parabolicELpNorm d u + parabolicELpNorm d (timeDerivative u) +
-        ∑ i : Fin d, parabolicELpNorm d (fun z => velocityGradient u z i) :=
-      le_add_of_nonneg_right bot_le
-    _ <= parabolicELpNorm d u + parabolicELpNorm d (timeDerivative u) +
-        ∑ i : Fin d, parabolicELpNorm d (fun z => velocityGradient u z i) +
-          ∑ i : Fin d, ∑ j : Fin d,
-            parabolicELpNorm d (fun z => velocityHessian u z i j) :=
-      le_add_of_nonneg_right bot_le
-
-private theorem parabolicLpNorm_le_parabolicSmoothJetLpNorm
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :
-    parabolicLpNorm d u <= parabolicSmoothJetLpNorm d u := by
-  unfold parabolicLpNorm parabolicSmoothJetLpNorm
-  exact ENNReal.toReal_mono (parabolicSmoothJetELpNorm_ne_top hu)
-    (parabolicELpNorm_le_parabolicSmoothJetELpNorm d u)
-
-private theorem parabolicExponent_toReal (d : Nat) :
-    (parabolicExponent d).toReal = (d : Real) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ENNReal) + 1 = ((d + 1 : Nat) : ENNReal) := by norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
-
 private theorem parabolicLpMeanNormOn_root_le_parabolicSmoothJetLpNorm
     {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :
     parabolicLpMeanNormOn d u (parabolicBox 1 1 0 (0 : PDE.Vec d))
@@ -222,9 +184,14 @@ private theorem parabolicLpMeanNormOn_root_le_parabolicSmoothJetLpNorm
     · exact inv_nonneg.mpr (pow_nonneg (by norm_num) _)
     · exact (inv_le_one₀ (pow_pos (by norm_num) _)).mpr
         (one_le_pow₀ (by norm_num))
-    · rw [ENNReal.toReal_div, ENNReal.toReal_one, parabolicExponent_toReal]
+    · have _h_inl_16 (d) : (parabolicExponent d).toReal = (d : Real) + 1 := by
+        unfold parabolicExponent
+        have hcast : (d : ENNReal) + 1 = ((d + 1 : Nat) : ENNReal) := by norm_num
+        rw [hcast, ENNReal.toReal_natCast]
+        norm_num
+      rw [ENNReal.toReal_div, ENNReal.toReal_one, _h_inl_16]
       positivity
-  have hrestriction : parabolicLpNormOn d u Q <= parabolicLpNorm d u :=
+  have hrestriction :=
     parabolicLpNormOn_le_parabolicLpNorm u Q hu.1
   have hlocal : parabolicLpMeanNormOn d u Q hmean <= parabolicLpNorm d u := by
     rw [parabolicLpMeanNormOn_eq_volume_toReal_inv_rpow_mul_parabolicLpNormOn
@@ -237,10 +204,26 @@ private theorem parabolicLpMeanNormOn_root_le_parabolicSmoothJetLpNorm
       _ <= 1 * parabolicLpNorm d u :=
         mul_le_mul_of_nonneg_left hrestriction (by norm_num)
       _ = parabolicLpNorm d u := by ring
-  change parabolicLpMeanNormOn d u Q hmean <= parabolicSmoothJetLpNorm d u
-  exact hlocal.trans (parabolicLpNorm_le_parabolicSmoothJetLpNorm hu)
+  have _h_inl_16 : parabolicLpNorm d u <= parabolicSmoothJetLpNorm d u := by
+    unfold parabolicLpNorm parabolicSmoothJetLpNorm
+    have _h_inl_15 : parabolicELpNorm d u <= parabolicSmoothJetELpNorm d u := by
+      unfold parabolicSmoothJetELpNorm
+      calc
+        parabolicELpNorm d u <= parabolicELpNorm d u +
+            parabolicELpNorm d (timeDerivative u) := le_add_of_nonneg_right bot_le
+        _ <= parabolicELpNorm d u + parabolicELpNorm d (timeDerivative u) +
+            ∑ i : Fin d, parabolicELpNorm d (fun z => velocityGradient u z i) :=
+          le_add_of_nonneg_right bot_le
+        _ <= parabolicELpNorm d u + parabolicELpNorm d (timeDerivative u) +
+            ∑ i : Fin d, parabolicELpNorm d (fun z => velocityGradient u z i) +
+              ∑ i : Fin d, ∑ j : Fin d,
+                parabolicELpNorm d (fun z => velocityHessian u z i j) :=
+          le_add_of_nonneg_right bot_le
+    exact ENNReal.toReal_mono (parabolicSmoothJetELpNorm_ne_top hu)
+      _h_inl_15
+  exact hlocal.trans _h_inl_16
 
-/-- A finite selected dyadic chain has a radius-weighted velocity-slope tail.
+/- A finite selected dyadic chain has a radius-weighted velocity-slope tail.
 This is finite only; it asserts neither convergence nor a limiting slope. -/
 theorem exists_parabolicMorreyDyadicContainingRadiusWeightedSlopeTailConst
     (d : Nat) (hd : 1 <= d) :
@@ -430,12 +413,18 @@ theorem exists_parabolicMorreyDyadicContainingRadiusWeightedSlopeTailConst
         (mul_nonneg hCpos.le (Real.rpow_nonneg
           (parabolicDyadicSourceBox_radius_pos parent).le _)))
     simpa only [r, b, D, parabolicDyadicAddressContaining, hindex, hparent] using hglobal
+  have _h_inl_13 : 0 <= parabolicMorreyDerivativeLpNorm d u := by
+    unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm parabolicELpNorm
+    refine add_nonneg ENNReal.toReal_nonneg ?_
+    refine Finset.sum_nonneg fun i _ => ?_
+    refine Finset.sum_nonneg fun j _ => ?_
+    exact ENNReal.toReal_nonneg
   simpa only [r, b, D] using
     finite_radius_weighted_slope_tail C (parabolicMorreyExponent d) D
       ((2 : Real) ^ (-(1 - parabolicMorreyExponent d))) r b hCpos
-      (parabolicMorreyDerivativeLpNorm_nonneg d u) hr hhalf hscale rfl hstep n
+      _h_inl_13 hr hhalf hscale rfl hstep n
 
-/-- The root moment-projection coefficients are bounded by the full selected
+/- The root moment-projection coefficients are bounded by the full selected
 smooth-jet norm. -/
 theorem parabolicMorreyRootAffineCoefficient_le_parabolicSmoothJetLpNorm
     (d : Nat) (u : TimeVelocity d -> Real)

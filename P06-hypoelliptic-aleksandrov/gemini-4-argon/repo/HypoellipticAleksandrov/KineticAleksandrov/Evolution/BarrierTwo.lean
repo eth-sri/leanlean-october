@@ -31,8 +31,8 @@ open scoped Topology MatrixOrder
 
 /-- In the collar, the terminal datum vanishes (the support of `F` is at distance at least
 `2 d_*` from the terminal boundary). -/
-theorem terminalDatum_eq_zero_of_collar {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar)
-    (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n} {τ : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
+theorem terminalDatum_eq_zero_of_collar {n c r₀ dstar} (hd : 0 < dstar)
+    (hdr : dstar < r₀) {γ τ F}
     (hsupp : ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
       2 * dstar ≤ r₀ - PDE.vecEuclideanNorm (q.1 - (γ τ + c)))
     {p : KineticPoint n} (hpt : p.time = τ) (hS : (r₀ - dstar) ^ 2 ≤ centreSq c γ p) :
@@ -52,20 +52,20 @@ theorem terminalDatum_eq_zero_of_collar {n : ℕ} {c : PDE.Vec n} {r₀ dstar : 
   linarith
 
 /-- The profile `w` is strictly increasing. -/
-theorem barrierW_strictMono {κ : ℝ} (hκ : 0 < κ) {s t : ℝ} (h : s < t) :
+theorem barrierW_strictMono {κ } (hκ : 0 < κ) {s t } (h : s < t) :
     barrierW κ s < barrierW κ t := by
   unfold barrierW
   have : Real.exp (-κ * t) < Real.exp (-κ * s) := Real.exp_lt_exp.mpr (by nlinarith)
   exact div_lt_div_of_pos_right (by linarith) hκ
 
 /-- Order reflection for the profile `w`. -/
-theorem le_of_barrierW_le {κ : ℝ} (hκ : 0 < κ) {s t : ℝ} (h : barrierW κ s ≤ barrierW κ t) :
+theorem le_of_barrierW_le {κ } (hκ : 0 < κ) {s t } (h : barrierW κ s ≤ barrierW κ t) :
     s ≤ t := by
   by_contra hst
   exact absurd (barrierW_strictMono hκ (not_le.mp hst)) (not_lt.mpr h)
 
 /-- The `σ`-independent extension `F(y, z)` of a smooth terminal datum is slice regular. -/
-theorem isSliceRegularAt_terminalDatum {n : ℕ} {F : BoundedBorel (EvolutionAmbientState n)}
+theorem isSliceRegularAt_terminalDatum {n F}
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (p : KineticPoint n) :
     IsSliceRegularAt (fun q : KineticPoint n => F (q.position, q.velocity)) p := by
   have h2 : ContDiff ℝ 2 (F : EvolutionAmbientState n → ℝ) :=

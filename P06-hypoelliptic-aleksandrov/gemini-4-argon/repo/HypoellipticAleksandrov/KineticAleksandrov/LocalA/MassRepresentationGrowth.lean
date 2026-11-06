@@ -45,7 +45,7 @@ theorem massGrowthBarrier_lower {d : ℕ} (Lam T : ℝ) (P : KineticPoint d)
 
 /-- Smooth physical scalar factors commute with the actual operator. -/
 theorem mass_forward_const_mul {d : ℕ} (B : CoefficientField d)
-    {D : Set (KineticPoint d)} (hD : IsOpen D) (u : KineticPoint d → ℝ)
+    {D } (hD : IsOpen D) (u : KineticPoint d → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' D)) (c : ℝ) (P : KineticPoint d) (hP : P ∈ D) :
     forwardKineticOperator (ofTimeVelocityCoefficient B) (fun Q => c * u Q) P =

@@ -10,7 +10,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set
 
-/-- The retraction has exactly the source formula on relative coordinates. -/
+/- The retraction has exactly the source formula on relative coordinates. -/
 theorem innerRetraction_relative {d : ℕ} (Z₀ P : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
     let ρ := innerRatio R hR δ hδ0 hδlt
@@ -26,7 +26,7 @@ theorem innerRetraction_relative {d : ℕ} (Z₀ P : KineticPoint d) (R : ℝ) (
   · ext i
     simp [relativeVelocity, innerRetraction]
 
-/-- The affine inner map as a homeomorphism, with an explicit positive-scaling inverse. -/
+/- The affine inner map as a homeomorphism, with an explicit positive-scaling inverse. -/
 def innerRetractionHomeomorph {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) : KineticPoint d ≃ₜ KineticPoint d :=
   let ρ := innerRatio R hR δ hδ0 hδlt
@@ -71,48 +71,28 @@ private theorem retraction_mem_inner_iff {d : ℕ}
   constructor <;> rintro ⟨h1,h2,hv,hx⟩ <;> refine ⟨?_,?_,hv,hx⟩ <;>
     nlinarith [sq_pos_of_pos hρ]
 
-/-- Retraction maps the original open cylinder onto the explicit inner cylinder. -/
-theorem innerRetraction_image_forwardCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
-    innerRetraction Z₀ R hR δ hδ0 hδlt '' forwardCylinder Z₀ R hR =
-      innerCylinder Z₀ R hR δ hδ0 hδlt := by
-  ext P
-  constructor
-  · rintro ⟨Q,hQ,rfl⟩
-    exact (retraction_mem_inner_iff Z₀ Q R hR δ hδ0 hδlt).2 hQ
-  · intro hP
-    let e := innerRetractionHomeomorph Z₀ R hR δ hδ0 hδlt
-    refine ⟨e.symm P,?_,e.apply_symm_apply P⟩
-    apply (retraction_mem_inner_iff Z₀ (e.symm P) R hR δ hδ0 hδlt).1
-    change e (e.symm P) ∈ innerCylinder Z₀ R hR δ hδ0 hδlt
-    simpa only [e.apply_symm_apply] using hP
-
-/-- Retraction is onto on the closures. -/
+/- Retraction maps the original open cylinder onto the explicit inner cylinder. -/
 theorem innerRetraction_image_closure {d : ℕ}
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
     innerRetraction Z₀ R hR δ hδ0 hδlt '' closure (forwardCylinder Z₀ R hR) =
       closure (innerCylinder Z₀ R hR δ hδ0 hδlt) := by
-  rw [← innerRetraction_image_forwardCylinder Z₀ R hR δ hδ0 hδlt]
-  exact (innerRetractionHomeomorph Z₀ R hR δ hδ0 hδlt).image_closure _
+  have _h_inl_12 : innerRetraction Z₀ R hR δ hδ0 hδlt '' forwardCylinder Z₀ R hR =
+      innerCylinder Z₀ R hR δ hδ0 hδlt := by
+      ext P
+      constructor
+      · rintro ⟨Q,hQ,rfl⟩
+        exact (retraction_mem_inner_iff Z₀ Q R hR δ hδ0 hδlt).2 hQ
+      · intro hP
+        let e := innerRetractionHomeomorph Z₀ R hR δ hδ0 hδlt
+        refine ⟨e.symm P,?_,e.apply_symm_apply P⟩
+        apply (retraction_mem_inner_iff Z₀ (e.symm P) R hR δ hδ0 hδlt).1
+        change e (e.symm P) ∈ innerCylinder Z₀ R hR δ hδ0 hδlt
+        simpa only [e.apply_symm_apply] using hP
 
-private theorem retraction_dot {d : ℕ}
-    (Z₀ P : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
-    PDE.vecDot (relativeVelocity Z₀ (innerRetraction Z₀ R hR δ hδ0 hδlt P))
-        (relativePosition Z₀ (innerRetraction Z₀ R hR δ hδ0 hδlt P)) =
-      (innerRatio R hR δ hδ0 hδlt)^4 *
-        PDE.vecDot (relativeVelocity Z₀ P) (relativePosition Z₀ P) := by
-  have hr := innerRetraction_relative Z₀ P R hR δ hδ0 hδlt
-  dsimp only at hr
-  rw [hr.2.1,hr.2.2]
-  unfold PDE.vecDot
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i _
-  simp only [Pi.smul_apply, smul_eq_mul]
-  ring
+    /- Retraction is onto on the closures. -/
+  rw [← _h_inl_12]
+  exact (innerRetractionHomeomorph Z₀ R hR δ hδ0 hδlt).image_closure _
 
 private theorem retraction_mem_exit_iff {d : ℕ}
     (Z₀ P : KineticPoint d) (R : ℝ) (hR : 0 < R)
@@ -138,12 +118,24 @@ private theorem retraction_mem_exit_iff {d : ℕ}
       P.velocity ∈ PDE.euclideanSphere Z₀.velocity R := by
     simp [relativeVelocity,PDE.euclideanSphere,PDE.euclideanSqDist]
   rw [ht,hv]
-  have hd := retraction_dot Z₀ P R hR δ hδ0 hδlt
+  have hd : PDE.vecDot (relativeVelocity Z₀ (innerRetraction Z₀ R hR δ hδ0 hδlt P))
+        (relativePosition Z₀ (innerRetraction Z₀ R hR δ hδ0 hδlt P)) =
+      (innerRatio R hR δ hδ0 hδlt)^4 *
+        PDE.vecDot (relativeVelocity Z₀ P) (relativePosition Z₀ P) := by
+    have hr := innerRetraction_relative Z₀ P R hR δ hδ0 hδlt
+    dsimp only at hr
+    rw [hr.2.1,hr.2.2]
+    unfold PDE.vecDot
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    simp only [Pi.smul_apply, smul_eq_mul]
+    ring
   rw [hr.2.1,hr.2.2] at hd
   rw [hd, mul_nonneg_iff_of_pos_left (pow_pos hρ 4)]
 
-/-- Retraction is onto on the exit boundaries, including grazing points. -/
-theorem innerRetraction_image_exitBoundary {d : ℕ}
+/- Retraction is onto on the exit boundaries, including grazing points. -/
+theorem innerRetraction_image_exitBoundary {d }
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
     innerRetraction Z₀ R hR δ hδ0 hδlt '' exitBoundary Z₀ R hR =

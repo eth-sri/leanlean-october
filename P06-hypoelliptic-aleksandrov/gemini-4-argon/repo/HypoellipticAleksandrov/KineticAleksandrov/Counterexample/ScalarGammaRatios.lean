@@ -14,7 +14,7 @@ Euler reflection and recurrence identify the two source trigonometric coefficien
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-private theorem positive_gamma_product_ratio (t u : ℝ) (ht : 0 < t) (ht1 : t < 1)
+private theorem positive_gamma_product_ratio (t u ) (ht : 0 < t) (ht1 : t < 1)
     (hu : 0 < u) (hu1 : u < 1) :
     Real.Gamma t * Real.Gamma (1 - t) /
       (Real.Gamma u * Real.Gamma (1 - u)) =

@@ -21,13 +21,12 @@ namespace HypoellipticAleksandrov
 continuous real linear functional. -/
 theorem norm_le_of_tendsto_clm_of_norm_le
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
-    (u : ℕ → H) (v : H) (R : ℝ)
+    (u : ℕ → H) (v R)
     (hu : ∀ n, ‖u n‖ ≤ R)
     (hweak : ∀ ell : H →L[ℝ] ℝ,
       Tendsto (fun n => ell (u n)) atTop (𝓝 (ell v))) :
     ‖v‖ ≤ R := by
-  have hR : 0 ≤ R := (norm_nonneg (u 0)).trans (hu 0)
-  refine NormedSpace.norm_le_dual_bound ℝ v hR ?_
+  refine NormedSpace.norm_le_dual_bound ℝ v ((norm_nonneg (u 0)).trans (hu 0)) ?_
   intro ell
   refine le_of_tendsto' ((hweak ell).norm) ?_
   intro n

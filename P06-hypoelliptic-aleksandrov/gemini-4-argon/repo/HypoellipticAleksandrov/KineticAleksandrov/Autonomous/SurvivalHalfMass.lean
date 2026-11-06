@@ -21,14 +21,14 @@ open scoped ENNReal
 def activeHalfMassTime (lam : ℝ) (c : Clock) : ℝ := 9 * c.r ^ 2 / (16 * lam)
 
 /-- Positive ellipticity and radius give a strictly positive half-mass time. -/
-theorem activeHalfMassTime_pos {lam : ℝ} (hlam : 0 < lam) (c : Clock) :
+theorem activeHalfMassTime_pos {lam } (hlam : 0 < lam) (c : Clock) :
     0 < activeHalfMassTime lam c := by
   unfold activeHalfMassTime
   have hr := c.positive
   positivity
 
 /-- Every active pole has the same uniform upper bound on quadratic occupation. -/
-theorem active_quadratic_occupation_le {lam : ℝ} (hlam : 0 < lam) (c : Clock)
+theorem active_quadratic_occupation_le {lam } (hlam : 0 < lam) (c : Clock)
     (v : ℝ) :
     (v - c.activeInterval.lo) * (c.activeInterval.hi - v) / (2 * lam) ≤
       activeHalfMassTime lam c / 2 := by
@@ -43,14 +43,14 @@ theorem active_quadratic_occupation_le {lam : ℝ} (hlam : 0 < lam) (c : Clock)
 /-- The actual killed kernel has lost at least half its mass at this common elapsed time. -/
 theorem active_survival_half_mass
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (s : ℝ)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (s )
     (z : EvolutionState (intervalDomain c.activeInterval) (fun _ => 0) s) :
     let D := activeHalfMassTime lam c
     stripSurvivingMass c.activeInterval (stripEvolution hH hLE hlam hLam A c.activeInterval)
       s (s + D) (le_add_of_nonneg_right (activeHalfMassTime_pos hlam c).le) z ≤ 1 / 2 := by
   let D := activeHalfMassTime lam c
-  have hD : 0 < D := activeHalfMassTime_pos hlam c
+  have hD := activeHalfMassTime_pos hlam c
   let E := stripEvolution hH hLE hlam hLam A c.activeInterval
   have hE := stripEvolution_spec hH hLE hlam hLam A c.activeInterval
   let p : Point := ⟨s, z.1.2, z.1.1⟩

@@ -23,8 +23,8 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 gradient bounds has a reverse-time Bochner `L²(V)` representative with the
 corresponding constant-one graph-norm energy bound. -/
 theorem exists_reverseTimeL2V_of_continuousOn_energy
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) {T lam B G : ℝ}
+    {d } {Ω : Set (PDE.Vec d)}
+    (hΩ : IsOpen Ω) {T lam B G }
     (hT : 0 < T) (hlam : 0 < lam)
     (w : ℝ → H10HilbertGraph hΩ)
     (hw : ContinuousOn w (Set.Icc 0 T))
@@ -35,7 +35,7 @@ theorem exists_reverseTimeL2V_of_continuousOn_energy
     ∃ W : ReverseTimeL2V hΩ T,
       W =ᵐ[reverseTimeVolume T] w ∧
       ‖W‖ ^ 2 ≤ T * B + G / lam := by
-  let W : ReverseTimeL2V hΩ T := reverseTimeL2OfContinuousOn T w hw
+  let W := reverseTimeL2OfContinuousOn T w hw
   let hwLp := memLp_two_reverseTime_of_continuousOn T w hw
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
     change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
@@ -46,13 +46,10 @@ theorem exists_reverseTimeL2V_of_continuousOn_energy
   have hgradientIntegralNonneg :
       0 ≤ ∫ t in Set.Ioc 0 T, ‖gradientCLM hΩ (w t)‖ ^ 2 := by
     exact integral_nonneg fun _ => sq_nonneg _
-  have hGnonneg : 0 ≤ G := by
-    exact (mul_nonneg (le_of_lt hlam) hgradientIntegralNonneg).trans hgradient
-  have hvalueContinuous :
-      ContinuousOn (fun t => valueCLM hΩ (w t)) (Set.Icc 0 T) :=
+  have hGnonneg := (mul_nonneg (le_of_lt hlam) hgradientIntegralNonneg).trans hgradient
+  have hvalueContinuous :=
     (valueCLM hΩ).continuous.comp_continuousOn hw
-  have hgradientContinuous :
-      ContinuousOn (fun t => gradientCLM hΩ (w t)) (Set.Icc 0 T) :=
+  have hgradientContinuous :=
     (gradientCLM hΩ).continuous.comp_continuousOn hw
   have hvalueLp :
       MemLp (fun t => valueCLM hΩ (w t)) (2 : ℝ≥0∞) (reverseTimeVolume T) :=
@@ -60,12 +57,8 @@ theorem exists_reverseTimeL2V_of_continuousOn_energy
   have hgradientLp :
       MemLp (fun t => gradientCLM hΩ (w t)) (2 : ℝ≥0∞) (reverseTimeVolume T) :=
     memLp_two_reverseTime_of_continuousOn T _ hgradientContinuous
-  have hvalueIntegrable :
-      Integrable (fun t => ‖valueCLM hΩ (w t)‖ ^ 2) (reverseTimeVolume T) := by
-    exact hvalueLp.integrable_norm_pow (by norm_num)
-  have hgradientIntegrable :
-      Integrable (fun t => ‖gradientCLM hΩ (w t)‖ ^ 2) (reverseTimeVolume T) := by
-    exact hgradientLp.integrable_norm_pow (by norm_num)
+  have hvalueIntegrable := hvalueLp.integrable_norm_pow (by norm_num)
+  have hgradientIntegrable := hgradientLp.integrable_norm_pow (by norm_num)
   have hvalueBound :
       (∫ t, ‖valueCLM hΩ (w t)‖ ^ 2 ∂reverseTimeVolume T) ≤ T * B := by
     calc

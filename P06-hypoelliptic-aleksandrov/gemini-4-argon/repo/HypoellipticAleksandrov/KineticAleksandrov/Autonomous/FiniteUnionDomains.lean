@@ -31,7 +31,7 @@ theorem FiniteIntervalUnion.isOpen_carrier (H : FiniteIntervalUnion) : IsOpen H.
 
 /-- A velocity in the union belongs to exactly one component. -/
 theorem FiniteIntervalUnion.existsUnique_component (H : FiniteIntervalUnion)
-    {v : ℝ} (hv : v ∈ H.carrier) : ∃! i, v ∈ (H.component i).carrier := by
+    {v } (hv : v ∈ H.carrier) : ∃! i, v ∈ (H.component i).carrier := by
   obtain ⟨i, hi⟩ := mem_iUnion.mp hv
   refine ⟨i, hi, ?_⟩
   intro j hj
@@ -40,7 +40,7 @@ theorem FiniteIntervalUnion.existsUnique_component (H : FiniteIntervalUnion)
 
 /-- The selected component is chosen from proved unique geometric membership. -/
 def FiniteIntervalUnion.componentIndex (H : FiniteIntervalUnion)
-    (v : ℝ) (hv : v ∈ H.carrier) : Fin H.count :=
+    (v ) (hv : v ∈ H.carrier) : Fin H.count :=
   (H.existsUnique_component hv).exists.choose
 
 /-- The selected component contains the given physical velocity. -/
@@ -50,7 +50,7 @@ theorem FiniteIntervalUnion.mem_componentIndex (H : FiniteIntervalUnion)
 
 /-- Any certified component gives the same selected index; there is no choice dependence. -/
 theorem FiniteIntervalUnion.componentIndex_eq (H : FiniteIntervalUnion)
-    {v : ℝ} (hv : v ∈ H.carrier) (i : Fin H.count) (hi : v ∈ (H.component i).carrier) :
+    {v } (hv : v ∈ H.carrier) (i ) (hi : v ∈ (H.component i).carrier) :
     H.componentIndex v hv = i := by
   obtain ⟨j, hj, hu⟩ := H.existsUnique_component hv
   exact (hu _ (H.mem_componentIndex v hv)).trans (hu i hi).symm
@@ -60,7 +60,7 @@ abbrev FiniteUnionPole (H : FiniteIntervalUnion) (T : WithTop ℝ) :=
   {p : Point // (p.time : WithTop ℝ) < T ∧ p.velocity 0 ∈ H.carrier}
 
 /-- The component selected by a physical union pole. -/
-def finiteUnionPoleIndex (H : FiniteIntervalUnion) (T : WithTop ℝ)
+def finiteUnionPoleIndex (H : FiniteIntervalUnion) (T )
     (e : FiniteUnionPole H T) : Fin H.count := H.componentIndex (e.1.velocity 0) e.2.2
 
 /-- Regard a union pole as a pole in its unique interval component. -/
@@ -69,8 +69,7 @@ def finiteUnionComponentPole (H : FiniteIntervalUnion) (T : WithTop ℝ)
   ⟨e.1, e.2.1, H.mem_componentIndex _ e.2.2⟩
 
 /-- Include a certified component pole into the union without changing physical coordinates. -/
-def componentPoleInclusion (H : FiniteIntervalUnion) (i : Fin H.count)
-    (T : WithTop ℝ) (e : StripPole (H.component i) T) : FiniteUnionPole H T :=
+def componentPoleInclusion (H : FiniteIntervalUnion) (i T) (e : StripPole (H.component i) T) : FiniteUnionPole H T :=
   ⟨e.1, e.2.1, H.component_subset i e.2.2⟩
 
 /-- Component inclusion followed by selection recovers the original component. -/

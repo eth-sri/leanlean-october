@@ -32,7 +32,7 @@ theorem upperEllipticity_of_continuous_ae {d : ℕ} {Lam : ℝ}
   exact hc.closure_subset (hd (t, v))
 
 /-- Smoothness supplies the continuity needed to recover both pointwise bounds. -/
-theorem ellipticity_of_smooth_ae {d : ℕ} {lam Lam : ℝ}
+theorem ellipticity_of_smooth_ae {d lam Lam}
     {A : CoefficientField d} (hA : IsSmoothCoefficient A)
     (hlo : HasLowerEllipticityAE lam A) (hhi : HasUpperEllipticityAE Lam A) :
     HasLowerEllipticity lam A ∧ HasUpperEllipticity Lam A :=

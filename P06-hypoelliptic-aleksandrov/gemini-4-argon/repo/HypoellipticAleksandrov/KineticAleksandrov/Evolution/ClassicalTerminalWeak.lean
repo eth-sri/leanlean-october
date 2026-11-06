@@ -13,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set MeasureTheory Evolution
 
 /-- The exact product-coordinate interior is the image of the kinetic interior. -/
-theorem evolutionPastInteriorRaw_eq_image {n : ℕ} (Ω : Set (PDE.Vec n))
+theorem evolutionPastInteriorRaw_eq_image {n } (Ω : Set (PDE.Vec n))
     (γ : ℝ → PDE.Vec n) (τ : ℝ) :
     evolutionPastInteriorRaw Ω γ τ =
       KineticPoint.equivProd n '' evolutionPastOpenCylinder Ω γ τ := by
@@ -25,18 +25,18 @@ theorem evolutionPastInteriorRaw_eq_image {n : ℕ} (Ω : Set (PDE.Vec n))
     exact hp
 
 /-- The past kinetic interior is open for an open domain and a continuous curve. -/
-theorem isOpen_evolutionPastOpenCylinder {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem isOpen_evolutionPastOpenCylinder {n Ω} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (τ : ℝ) :
     IsOpen (evolutionPastOpenCylinder Ω γ τ) := by
   exact (isOpen_evolutionPastInteriorRaw hΩ hγ τ).preimage
     (KineticPoint.homeomorphProd n).continuous
 
 /-- A classical viscous terminal solution satisfies the literal weak adjoint equation. -/
-theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n)}
-    (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
-    {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
-    (hb : IsSmoothDrift b) {ε τ : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
+theorem classical_viscous_terminalSolution_isWeak {n Ω}
+    (hΩ : IsOpen Ω) {γ } (hγ : Continuous γ)
+    {B } (hB : IsSmoothFullKineticCoefficient B)
+    (hBs : IsSymmetricFullKineticCoefficient B) {b }
+    (hb : IsSmoothDrift b) {ε τ F}
     {u : KineticPoint n → ℝ}
     (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u) :
     IsKineticWeakRegularizedSolution B b ε (evolutionPastOpenCylinder Ω γ τ) u

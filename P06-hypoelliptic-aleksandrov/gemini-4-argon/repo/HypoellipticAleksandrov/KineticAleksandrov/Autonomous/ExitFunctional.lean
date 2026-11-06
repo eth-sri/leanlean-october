@@ -18,7 +18,7 @@ theorem exitProbeValueLinear_bound
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
-    (f : exitProbeSubmodule) (c : ℝ) (_hc : 0 ≤ c)
+    (f : exitProbeSubmodule) (c ) (_hc : 0 ≤ c)
     (hbd : ∀ p, |exitProbeCcLinear H T f p| ≤ c) :
     |exitProbeValueLinear A H E T e f| ≤ c := by
   have hu := exitProbeValue_le_of_boundary hH hlam hLam A H E hE T e f c
@@ -83,7 +83,7 @@ def stripBoundaryFunctional
 /-- Full contraction and smooth-probe characterization of the unique boundary functional. -/
 theorem stripBoundaryFunctional_spec
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     (∀ (f : C_c(stripClosedExit H T, ℝ)) (c : ℝ), 0 ≤ c → (∀ p, |f p| ≤ c) →

@@ -89,9 +89,9 @@ theorem exists_higherOrderNestedProductBoxChain
       have hO₀ne : O₀.Nonempty :=
         hOne.mono ((subset_closure : O ⊆ closure O).trans hOO₀)
       have hVne : V.Nonempty := hOne.mono ((subset_closure : O ⊆ closure O).trans hOV)
-      have hVΩ : closure V ⊆ Ω :=
+      have hVΩ :=
         hVO₀.trans (subset_closure.trans hO₀Ω)
-      have hOΩ : closure O ⊆ Ω := hOO₀.trans (subset_closure.trans hO₀Ω)
+      have hOΩ := hOO₀.trans (subset_closure.trans hO₀Ω)
       refine ⟨rfl, rfl, rfl, rfl, rfl, rfl, ?_, ?_⟩
       · intro k hk
         interval_cases k <;>
@@ -111,7 +111,7 @@ theorem exists_higherOrderNestedProductBoxChain
       obtain ⟨V, hVopen, hOV, hVO₀, hVcompact⟩ :=
         exists_open_between_and_isCompact_closure hOcompact hO₀open hOO₀
       have hVne : V.Nonempty := hOne.mono ((subset_closure : O ⊆ closure O).trans hOV)
-      have hVΩ : closure V ⊆ Ω :=
+      have hVΩ :=
         hVO₀.trans (subset_closure.trans hO₀Ω)
       obtain ⟨left', right', spatial', hchain⟩ := ih
         ((q₀ + s₀) / 2) ((s₁ + q₁) / 2) V
@@ -159,13 +159,10 @@ theorem exists_higherOrderNestedProductBoxChain
 /-- Extract the complete geometric input for one adjacent step of a
 higher-order nested product-box chain. -/
 theorem IsHigherOrderNestedProductBoxChain.step
-    {d N : ℕ} {q₀ s₀ s₁ q₁ : ℝ}
-    {Ω O₀ O : Set (PDE.Vec d)}
-    {left right : ℕ → ℝ}
-    {spatial : ℕ → Set (PDE.Vec d)}
+    {d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial}
     (h : IsHigherOrderNestedProductBoxChain
       d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial)
-    {k : ℕ} (hk : k < N + 2) :
+    {k } (hk : k < N + 2) :
     left k < left (k + 1) ∧
     left (k + 1) < right (k + 1) ∧
     right (k + 1) < right k ∧

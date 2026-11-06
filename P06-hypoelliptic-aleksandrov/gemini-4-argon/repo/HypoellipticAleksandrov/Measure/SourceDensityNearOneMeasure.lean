@@ -7,6 +7,10 @@ public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+import HypoellipticAleksandrov.Parabolic.DensityNearOneGeometry
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+import Mathlib.MeasureTheory.Measure.Real
 
 /-!
 # Source bookkeeping for the near-one density argument
@@ -38,7 +42,7 @@ private theorem memLp_restrict_of_continuousOn_unit_collar
   have hKcompact : IsCompact K :=
     isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
   have hKmeas : MeasurableSet K := hKcompact.measurableSet
-  have hfK : ContinuousOn f K := hf.mono hclosed
+  have hfK := hf.mono hclosed
   letI : IsFiniteMeasure (volume.restrict K) :=
     ⟨by
       rw [Measure.restrict_apply_univ]
@@ -51,7 +55,7 @@ private theorem memLp_restrict_of_continuousOn_unit_collar
     exact hM z hz
   exact hfKmem.mono_measure (Measure.restrict_mono_set volume hs)
 
-/-- The exponentially weighted local norm of the supplied source plus the
+/- The exponentially weighted local norm of the supplied source plus the
 near-one deficit forcing is bounded by the literal unit-box source norm and
 the strict-low-set error. -/
 theorem
@@ -238,9 +242,131 @@ theorem
         mul_le_mul_of_nonneg_left hsourceReal (Real.exp_pos _).le
       _ = parabolicLpNormOn d Fsrc Q := by
         rw [← mul_assoc, hcancel, one_mul]
-  have hdeficit :=
-    exp_neg_quarter_mul_parabolicLpNormOn_localABP_weighted_one_sub_le
-      d rho hrho U u hQU hu hu_nonneg v0 hv0
+  have hdeficit : Real.exp (-rho / 4) * parabolicLpNormOn d (fun z ↦ Real.exp (rho * (z.1 - 3 / 4)) * (rho * max (1 - u z) 0)) (localABPInterior v0) ≤ rho * Real.rpow (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1})).toReal (1 / ((d : Real) + 1)) := by
+    have h : parabolicLpNormOn d
+          (fun z ↦ Real.exp (rho * (z.1 - 3 / 4)) * (rho * max (1 - u z) 0))
+          (localABPInterior v0) ≤
+        rho * Real.exp (rho / 4) *
+          Real.rpow (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1})).toReal
+            (1 / ((d : Real) + 1)) := by
+        let Q : Set (TimeVelocity d) := parabolicBox 1 1 0 0
+        let E : Set (TimeVelocity d) := Q ∩ {z | u z < 1}
+        let f : TimeVelocity d → Real := fun z ↦
+          Real.exp (rho * (z.1 - 3 / 4)) * (rho * max (1 - u z) 0)
+        have hM : 0 ≤ rho * Real.exp (rho / 4) := mul_nonneg hrho (Real.exp_pos _).le
+        have hE : MeasurableSet E := by
+          exact measurableSet_parabolicBox_inter_lt_one_of_contDiffOn d U u hQU hu
+        have hfinite : volume (localABPInterior v0 ∩ E) ≠ ∞ := by
+          apply measure_ne_top_of_subset (show localABPInterior v0 ∩ E ⊆ Q by
+            intro z hz
+            exact hz.2.1)
+          exact volume_parabolicBox_one_ne_top d
+        have hEfinite : volume E ≠ ∞ := by
+          apply measure_ne_top_of_subset (show E ⊆ Q by
+            intro z hz
+            exact hz.1)
+          exact volume_parabolicBox_one_ne_top d
+        have hbound : ∀ z ∈ localABPInterior v0, ‖f z‖ ≤
+            E.indicator (fun _ : TimeVelocity d ↦ rho * Real.exp (rho / 4)) z := by
+          rintro z ⟨w, hw, rfl⟩
+          have hzQ : localABPAffine v0 w ∈ Q :=
+            localABPInterior_subset_parabolicBox_one hv0 ⟨w, hw, rfl⟩
+          by_cases hlow : u (localABPAffine v0 w) < 1
+          · have hzE : localABPAffine v0 w ∈ E := ⟨hzQ, hlow⟩
+            rw [Set.indicator_of_mem hzE]
+            have _h_inl_21 : 0 ≤ Real.exp (rho * ((localABPAffine v0 w).1 - 3 / 4)) * (rho * max (1 - u (localABPAffine v0 w)) 0) := by
+              let z := (localABPAffine v0 w)
+              positivity
+            rw [Real.norm_eq_abs,
+              abs_of_nonneg _h_inl_21]
+            have hmax : max (1 - u (localABPAffine v0 w)) 0 ≤ 1 := by
+              apply max_le
+              · linarith [hu_nonneg (localABPAffine v0 w) hzQ]
+              · norm_num
+            rcases mem_parabolicInterior_iff.mp hw with ⟨hw0, hw1, hwv⟩
+            have htimeMul :=
+              mul_le_mul_of_nonneg_left hw1.le hrho
+            have htime : rho * ((localABPAffine v0 w).1 - 3 / 4) ≤ rho / 4 := by
+              dsimp only [localABPAffine, parabolicAffine]
+              nlinarith [htimeMul]
+            have hexp := Real.exp_le_exp.mpr htime
+            calc
+              Real.exp (rho * ((localABPAffine v0 w).1 - 3 / 4)) *
+                  (rho * max (1 - u (localABPAffine v0 w)) 0) ≤
+                  Real.exp (rho * ((localABPAffine v0 w).1 - 3 / 4)) * (rho * 1) := by
+                gcongr
+              _ ≤ Real.exp (rho / 4) * (rho * 1) := by
+                gcongr
+              _ = rho * Real.exp (rho / 4) := by ring
+          · rw [Set.indicator_of_notMem]
+            · have hfzero : f (localABPAffine v0 w) = 0 := by
+                dsimp only [f]
+                rw [max_eq_right]
+                · ring
+                · exact sub_nonpos.mpr (le_of_not_gt hlow)
+              rw [hfzero, norm_zero]
+            · rintro ⟨_, hzlow⟩
+              exact hlow hzlow
+        have hnorm := parabolicLpNormOn_le_of_norm_le_indicator d f
+          (localABPInterior v0) E (rho * Real.exp (rho / 4))
+          (show AEStronglyMeasurable f (volume.restrict (localABPInterior v0)) from
+            (show ContinuousOn f (localABPInterior v0) from
+              (by fun_prop : Continuous (fun z : TimeVelocity d =>
+                Real.exp (rho * (z.1 - 3 / 4)))).continuousOn.mul
+                (continuousOn_const.mul
+                  ((continuousOn_const.sub (hu.continuousOn.mono
+                    ((localABPInterior_subset_parabolicBox_one hv0).trans hQU))).sup
+                      continuousOn_const))).aestronglyMeasurable
+                        (measurableSet_localABPInterior v0))
+          (measurableSet_localABPInterior v0) hE hM hfinite hbound
+        change parabolicLpNormOn d f (localABPInterior v0) ≤ _
+        calc
+          parabolicLpNormOn d f (localABPInterior v0) ≤
+              rho * Real.exp (rho / 4) *
+                Real.rpow (volume (localABPInterior v0 ∩ E)).toReal
+                  (1 / ((d : Real) + 1)) := hnorm
+          _ ≤ rho * Real.exp (rho / 4) *
+                Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) := by
+            apply mul_le_mul_of_nonneg_left
+            · apply Real.rpow_le_rpow ENNReal.toReal_nonneg
+              · exact ENNReal.toReal_mono hEfinite
+                  (measure_mono (inter_subset_right : localABPInterior v0 ∩ E ⊆ E))
+              · positivity
+            · exact hM
+          _ = _ := rfl
+
+
+
+    have hcancel : Real.exp (-rho / 4) * Real.exp (rho / 4) = 1 := by
+      calc
+        Real.exp (-rho / 4) * Real.exp (rho / 4) =
+            Real.exp ((-rho / 4) + rho / 4) := (Real.exp_add _ _).symm
+        _ = Real.exp 0 := by
+          congr 1
+          ring
+        _ = 1 := Real.exp_zero
+    calc
+      Real.exp (-rho / 4) * parabolicLpNormOn d
+          (fun z ↦ Real.exp (rho * (z.1 - 3 / 4)) * (rho * max (1 - u z) 0))
+          (localABPInterior v0) ≤
+          Real.exp (-rho / 4) *
+            (rho * Real.exp (rho / 4) *
+              Real.rpow (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1})).toReal
+                (1 / ((d : Real) + 1))) :=
+        mul_le_mul_of_nonneg_left h (Real.exp_pos _).le
+      _ = rho * Real.rpow
+          (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1})).toReal
+            (1 / ((d : Real) + 1)) := by
+        have hrearrange : Real.exp (-rho / 4) * (rho * Real.exp (rho / 4) *
+            Real.rpow (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1})).toReal
+              (1 / ((d : Real) + 1))) =
+            rho * (Real.exp (-rho / 4) * Real.exp (rho / 4)) *
+            Real.rpow (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1})).toReal
+              (1 / ((d : Real) + 1)) := by
+          ring
+        rw [hrearrange]
+        rw [hcancel]
+        ring
   have hdeficit' :
       Real.exp (-rho / 4) * parabolicLpNormOn d D L ≤
         rho * Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) := by

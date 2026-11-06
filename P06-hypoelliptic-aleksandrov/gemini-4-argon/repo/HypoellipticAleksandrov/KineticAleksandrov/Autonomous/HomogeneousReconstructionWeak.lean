@@ -21,8 +21,7 @@ private theorem integrableOn_weak_mul_test {U : Set (EvolutionVec 1)}
     {u ψ : EvolutionVec 1 → ℝ} (hu : LocallyIntegrableOn u U volume)
     (hψ : Continuous ψ) (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
     IntegrableOn (fun x => u x * ψ x) U volume := by
-  have hi := hu.integrableOn_compact_subset hs hc.isCompact
-  have hm := hi.mul_continuousOn hψ.continuousOn hc.isCompact
+  have hm := (hu.integrableOn_compact_subset hs hc.isCompact).mul_continuousOn hψ.continuousOn hc.isCompact
   have hglobal : Integrable (fun x => u x * ψ x) volume := by
     apply (integrableOn_iff_integrable_of_support_subset ?_).mp hm
     intro x hx
@@ -30,7 +29,7 @@ private theorem integrableOn_weak_mul_test {U : Set (EvolutionVec 1)}
   exact hglobal.integrableOn
 
 /-- Weak transported equations restrict to any smaller domain. -/
-theorem weak_solution_restrict {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem weak_solution_restrict {lam Lam } (A : SmoothAutonomous lam Lam)
     {U D : Set (EvolutionVec 1)} (hDU : D ⊆ U) {u g : EvolutionVec 1 → ℝ}
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u g) :
     IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) D u g := by
@@ -79,9 +78,9 @@ theorem weak_same_source_sub {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
 
 /-- The homogeneous weak difference has a smooth almost-everywhere representative. -/
 theorem homogeneous_weak_smooth_representative
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) {U : Set (EvolutionVec 1)} (hU : IsOpen U)
-    {u : EvolutionVec 1 → ℝ}
+    (hH : HormanderHypoellipticityStatement) {lam Lam } (hlam : 0 < lam)
+    (A : SmoothAutonomous lam Lam) {U } (hU : IsOpen U)
+    {u }
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U
       u (fun _ => 0)) :
     ∃ f : EvolutionVec 1 → ℝ, ContDiffOn ℝ (⊤ : ℕ∞) f U ∧
@@ -93,21 +92,20 @@ theorem homogeneous_weak_smooth_representative
 
 /-- A continuous homogeneous weak solution is pointwise smooth on its open domain. -/
 theorem homogeneous_weak_contDiffOn
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) {U : Set (EvolutionVec 1)} (hU : IsOpen U)
-    {u : EvolutionVec 1 → ℝ}
+    (hH : HormanderHypoellipticityStatement) {lam Lam } (hlam : 0 < lam)
+    (A : SmoothAutonomous lam Lam) {U } (hU : IsOpen U)
+    {u }
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U
       u (fun _ => 0)) (hc : ContinuousOn u U) :
     ContDiffOn ℝ (⊤ : ℕ∞) u U := by
   obtain ⟨f, hf, hae⟩ := homogeneous_weak_smooth_representative hH hlam A hU hu
-  have heq := Measure.eqOn_open_of_ae_eq hae hU hc hf.continuousOn
-  exact hf.congr (fun x hx => heq hx)
+  exact hf.congr (fun x hx => (Measure.eqOn_open_of_ae_eq hae hU hc hf.continuousOn) hx)
 
 /-- The smooth representative of a homogeneous weak solution solves the equation pointwise. -/
 theorem homogeneous_weak_smooth_solution
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) {U : Set (EvolutionVec 1)} (hU : IsOpen U)
-    {u : EvolutionVec 1 → ℝ}
+    (hH : HormanderHypoellipticityStatement) {lam Lam } (hlam : 0 < lam)
+    (A : SmoothAutonomous lam Lam) {U } (hU : IsOpen U)
+    {u }
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U
       u (fun _ => 0)) :
     ∃ f : EvolutionVec 1 → ℝ, ContDiffOn ℝ (⊤ : ℕ∞) f U ∧

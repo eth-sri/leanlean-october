@@ -17,9 +17,9 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators
 
-/-- Number of splits of `beta` whose coefficient-side multi-index is nonzero. -/
+/- Number of splits of `beta` whose coefficient-side multi-index is nonzero. -/
 noncomputable def properSplitCard
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M) : ℕ :=
+    {d M } (beta : ParabolicDerivativeIndex d M) : ℕ :=
   Fintype.card
     {gamma : TimeVelocityMultiIndex.Split beta.1 // gamma.left ≠ 0}
 
@@ -30,42 +30,8 @@ private abbrev ProperAtom {d M : ℕ} (beta : ParabolicDerivativeIndex d M) :=
   Unit ⊕ ((Fin d × Fin d × ProperSplit beta) ⊕
     ((Fin d × ProperSplit beta) ⊕ ProperSplit beta))
 
-private theorem properAtom_card {d M : ℕ} (beta : ParabolicDerivativeIndex d M) :
-    Fintype.card (ProperAtom beta) =
-      1 + (d ^ 2 + d + 1) * properSplitCard beta := by
-  simp only [ProperAtom, properSplitCard, Fintype.card_sum, Fintype.card_unit,
-    Fintype.card_prod, Fintype.card_fin]
-  ring
-
-private theorem sum_dite_eq_sum_proper
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
-    (f : (gamma : TimeVelocityMultiIndex.Split beta.1) → gamma.left ≠ 0 → ℝ) :
-    (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
-      if hproper : gamma.left ≠ 0 then f gamma hproper else 0) =
-      ∑ gamma : ProperSplit beta, f gamma.1 gamma.2 := by
-  classical
-  calc
-    _ = (∑ gamma : ProperSplit beta,
-          if hproper : gamma.1.left ≠ 0 then f gamma.1 hproper else 0) +
-        ∑ gamma : {gamma : TimeVelocityMultiIndex.Split beta.1 //
-            ¬ gamma.left ≠ 0},
-          if hproper : gamma.1.left ≠ 0 then f gamma.1 hproper else 0 :=
-      (Fintype.sum_subtype_add_sum_subtype
-        (fun gamma : TimeVelocityMultiIndex.Split beta.1 => gamma.left ≠ 0)
-        (fun gamma => if hproper : gamma.left ≠ 0 then f gamma hproper else 0)).symm
-    _ = _ := by
-      have hzero :
-          (∑ gamma : {gamma : TimeVelocityMultiIndex.Split beta.1 //
-              ¬ gamma.left ≠ 0},
-            if hproper : gamma.1.left ≠ 0 then f gamma.1 hproper else 0) = 0 :=
-        Finset.sum_eq_zero fun gamma _ => dif_neg gamma.2
-      rw [hzero, add_zero]
-      refine Finset.sum_congr rfl ?_
-      intro gamma hgamma
-      exact dif_pos gamma.2
-
 private theorem properAtom_nonneg
-    {d M : ℕ} {beta : ParabolicDerivativeIndex d M}
+    {d M } {beta : ParabolicDerivativeIndex d M}
     (E0 : ℝ)
     (A : Fin d → Fin d → ProperSplit beta → ℝ)
     (B : Fin d → ProperSplit beta → ℝ)
@@ -85,14 +51,14 @@ private theorem properAtom_nonneg
       · exact hB p.1 p.2
       · exact hC gamma
 
-/-- Summed squared `L²` control of all proper commutator residuals, retaining
+/- Summed squared `L²` control of all proper commutator residuals, retaining
 the exact number of active atoms at each derivative index. -/
 theorem properDifferentiatedScalarCommutatorResidual_memLp_and_sum_sq_le
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    {d M } (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
-    (u : TimeVelocity d → ℝ)
+    (u )
     (F : ℝ → PDE.Vec d → ℝ)
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
@@ -210,7 +176,7 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_sum_sq_le
     intro gamma
     exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (hBc _))
       ENNReal.toReal_nonneg
-  have hatom_nonneg : ∀ atom, 0 ≤ atomValue atom :=
+  have hatom_nonneg :=
     properAtom_nonneg E0 A B C ENNReal.toReal_nonneg
       hA_nonneg hB_nonneg hC_nonneg
   have hcomponent' :
@@ -222,7 +188,28 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_sum_sq_le
           (∑ i, ∑ j, ∑ gamma : ProperSplit beta, A i j gamma) +
           (∑ j, ∑ gamma : ProperSplit beta, B j gamma) +
           ∑ gamma : ProperSplit beta, C gamma := by
-        simpa only [E0, A, B, C, sum_dite_eq_sum_proper] using (hcomponent beta).2
+        have _h_inl_11 (beta : ParabolicDerivativeIndex d M) (f : (gamma : TimeVelocityMultiIndex.Split beta.1) → gamma.left ≠ 0 → ℝ) : (∑ gamma : TimeVelocityMultiIndex.Split beta.1, if hproper : gamma.left ≠ 0 then f gamma hproper else 0) = ∑ gamma : ProperSplit beta, f gamma.1 gamma.2 := by
+          classical
+          calc
+            _ = (∑ gamma : ProperSplit beta,
+                  if hproper : gamma.1.left ≠ 0 then f gamma.1 hproper else 0) +
+                ∑ gamma : {gamma : TimeVelocityMultiIndex.Split beta.1 //
+                    ¬ gamma.left ≠ 0},
+                  if hproper : gamma.1.left ≠ 0 then f gamma.1 hproper else 0 :=
+              (Fintype.sum_subtype_add_sum_subtype
+                (fun gamma : TimeVelocityMultiIndex.Split beta.1 => gamma.left ≠ 0)
+                (fun gamma => if hproper : gamma.left ≠ 0 then f gamma hproper else 0)).symm
+            _ = _ := by
+              have hzero :
+                  (∑ gamma : {gamma : TimeVelocityMultiIndex.Split beta.1 //
+                      ¬ gamma.left ≠ 0},
+                    if hproper : gamma.1.left ≠ 0 then f gamma.1 hproper else 0) = 0 :=
+                Finset.sum_eq_zero fun gamma _ => dif_neg gamma.2
+              rw [hzero, add_zero]
+              refine Finset.sum_congr rfl ?_
+              intro gamma hgamma
+              exact dif_pos gamma.2
+        simpa only [E0, A, B, C, _h_inl_11] using (hcomponent beta).2
       _ = ∑ atom, atomValue atom := by
         simp [atomValue, ProperAtom, Fintype.sum_prod_type]
         ring
@@ -240,7 +227,11 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_sum_sq_le
       simpa using (sq_sum_le_card_mul_sum_sq
         (s := Finset.univ) (f := atomValue))
     _ = _ := by
-      rw [properAtom_card]
+      have _h_inl_10 (beta : ParabolicDerivativeIndex d M) : Fintype.card (ProperAtom beta) = 1 + (d ^ 2 + d + 1) * properSplitCard beta := by
+        simp only [ProperAtom, properSplitCard, Fintype.card_sum, Fintype.card_unit,
+          Fintype.card_prod, Fintype.card_fin]
+        ring
+      rw [_h_inl_10]
       congr 1
       simp [atomValue, ProperAtom, E0, A, B, C, Fintype.sum_prod_type]
       ring

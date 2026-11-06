@@ -15,18 +15,17 @@ open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
-private theorem le_of_map_subtype_le {d : ℕ} {D : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} {s : ℝ} (hD : MeasurableSet D)
+private theorem le_of_map_subtype_le {d D}
+    {γ : ℝ → PDE.Vec d} {s } (hD : MeasurableSet D)
     (μ ν : Measure (EvolutionState D γ s))
     (h : μ.map Subtype.val ≤ ν.map Subtype.val) : μ ≤ ν := by
   let he := MeasurableEmbedding.subtype_coe
     (measurableSet_evolutionStateSet (γ := γ) hD s)
   apply Measure.le_iff.mpr
   intro A hA
-  have hh := h (Subtype.val '' A)
-  simpa only [he.map_apply, Subtype.coe_injective.preimage_image] using hh
+  simpa only [he.map_apply, Subtype.coe_injective.preimage_image] using (h (Subtype.val '' A))
 
-private theorem continued_full_composition {d : ℕ} {D : Set (PDE.Vec d)}
+private theorem continued_full_composition {d D}
     {γ : ℝ → PDE.Vec d} (hD : MeasurableSet D) (K : MovingFiberKernel D γ)
     (hcomp : K.HasComposition hD) (σ s T : ℝ) (hσs : σ ≤ s) (hsT : s ≤ T)
     (p : EvolutionState D γ σ) :
@@ -44,9 +43,9 @@ private theorem continued_full_composition {d : ℕ} {D : Set (PDE.Vec d)}
     Measure.map_apply measurable_subtype_coe hA]
 
 /-- Continuation in a smaller domain preserves joint domination by the full evolution. -/
-theorem continued_measures_dominated {d : ℕ}
+theorem continued_measures_dominated {d }
     (D D0 : Set (PDE.Vec d)) (hD : MeasurableSet D) (hD0 : MeasurableSet D0)
-    (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
+    (B ) (b : PDE.Vec d → PDE.Vec d)
     (SD : TerminalOperatorFamily D stationary) (KD : MovingFiberKernel D stationary)
     (S0 : TerminalOperatorFamily D0 stationary) (K0 : MovingFiberKernel D0 stationary)
     (hreal : RealizesTerminalEvolution D stationary hD (zIndependentCoefficient B) b SD KD)

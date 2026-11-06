@@ -22,9 +22,9 @@ theorem norm_exitRealPart_le_one : ‖exitRealPart‖ ≤ 1 := by
 theorem ballExitL1Density_derivative_le
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (j : ℕ) (y : PDE.Vec d) :

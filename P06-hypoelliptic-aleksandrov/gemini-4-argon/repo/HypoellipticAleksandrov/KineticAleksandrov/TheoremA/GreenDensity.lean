@@ -32,31 +32,18 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Green
 open scoped ENNReal NNReal
 
-/-- The case-W starting state `(v,z) = (V,X)` of a kinetic point `P = (σ,X,V)`. -/
+/- The case-W starting state `(v,z) = (V,X)` of a kinetic point `P = (σ,X,V)`. -/
 def kineticStartState (d : ℕ) (P : KineticPoint d) :
     EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) P.time :=
   ⟨(P.velocity, P.position), by
     rw [evolutionStateSet, movingDomain_wholeSpace]
     exact ⟨mem_univ _, mem_univ _⟩⟩
 
-/-- The remaining time `S_P = s₀ + R² - s` of a point `P = (s,X,v)` in a forward cylinder
+/- The remaining time `S_P = s₀ + R² - s` of a point `P = (s,X,v)` in a forward cylinder
 with bottom time `s₀ = Z₀.time`. -/
 def remainingTime {d : ℕ} (Z₀ P : KineticPoint d) (R : ℝ) : ℝ := Z₀.time + R ^ 2 - P.time
 
-/-- Forward cylinders are open, hence measurable. -/
-theorem measurableSet_forwardCylinder' {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
-    MeasurableSet (forwardCylinder Z₀ R hR) := by
-  have ht : Continuous (@KineticPoint.time d) := continuous_time
-  have hv : Continuous (@KineticPoint.velocity d) := continuous_velocity
-  have hrel : Continuous (fun P : KineticPoint d => relativePosition Z₀ P) :=
-    ((continuous_position.sub continuous_const).sub
-      ((ht.sub continuous_const).smul continuous_const))
-  exact ((isOpen_lt continuous_const ht).inter ((isOpen_lt ht continuous_const).inter
-    (((PDE.isOpen_euclideanBall Z₀.velocity R).preimage hv).inter
-      ((PDE.isOpen_euclideanBall (0 : PDE.Vec d) (R ^ 3)).preimage hrel)))).measurableSet
-
-/-- Exponent algebra: with `q = p/(p-1)` and `p > 2d+1`, `S^{δ_q/q} ≤ (R²)^{δ_q/q} = R^{2-(4d+2)/p}`
-for `0 ≤ S ≤ R²`. -/
+/- Forward cylinders are open, hence measurable. -/
 theorem greenDelta_rpow_le {d : ℕ} {p S R : ℝ} (hp : 2 * (d : ℝ) + 1 < p) (hS : 0 ≤ S)
     (hSR : S ≤ R ^ 2) (hR : 0 < R) :
     S ^ ((1 - 2 * (d : ℝ) * (p / (p - 1) - 1)) / (p / (p - 1))) ≤
@@ -77,7 +64,7 @@ theorem greenDelta_rpow_le {d : ℕ} {p S R : ℝ} (hp : 2 * (d : ℝ) + 1 < p) 
     _ = (R ^ (2 : ℝ)) ^ ((p - 1 - 2 * (d : ℝ)) / p) := by
         rw [Real.rpow_two]
 
-/-- **Conditional Theorem 1.1.**  See the module docstring.  The premise `hbounds`
+/- **Conditional Theorem 1.1.**  See the module docstring.  The premise `hbounds`
 is the conclusion of Lemma 5.1 for all case-W coefficients and realizing `(S,K)`, with
 structural constants `C_γ, c` fixed first; `C = greenConstant d (p/(p-1)) C_γ` depends only on
 `d, λ, Λ, p`. -/
@@ -142,11 +129,20 @@ theorem green_density_bound_of_slabFourierBounds {d : ℕ} (hd : 1 ≤ d) (lam L
   let μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) P.time) :=
     Measure.dirac (kineticStartState d P)
   have hΓ := greenMeasure_spec K P.time ⊤ (by simp) μ
-  have hbd := hb _ hset S K hreal P.time μ _ hΓ
-  obtain ⟨G₀, hG₀m, hΓP', hnorm⟩ := green_density_of_slab_marginals Cγ c K P.time μ _ hΓ hbd
+  obtain ⟨G₀, hG₀m, hΓP', hnorm⟩ := green_density_of_slab_marginals Cγ c K P.time μ _ hΓ (hb _ hset S K hreal P.time μ _ hΓ)
     hq hqd hSP ΓP hΓP
+  have _h_inl_14 : MeasurableSet (forwardCylinder (kineticReflection P₀) R hR) := by
+    let Z₀ := (kineticReflection P₀)
+    have ht : Continuous (@KineticPoint.time d) := continuous_time
+    have hv : Continuous (@KineticPoint.velocity d) := continuous_velocity
+    have hrel : Continuous (fun P : KineticPoint d => relativePosition Z₀ P) :=
+      ((continuous_position.sub continuous_const).sub
+        ((ht.sub continuous_const).smul continuous_const))
+    exact ((isOpen_lt continuous_const ht).inter ((isOpen_lt ht continuous_const).inter
+      (((PDE.isOpen_euclideanBall Z₀.velocity R).preimage hv).inter
+        ((PDE.isOpen_euclideanBall (0 : PDE.Vec d) (R ^ 3)).preimage hrel)))).measurableSet
   obtain ⟨hGm, hGden, hGnorm⟩ := greenKineticPoint_density P.time _ ΓP G₀ hG₀m hΓP'
-    (measurableSet_forwardCylinder' (kineticReflection P₀) R hR)
+    _h_inl_14
   refine ⟨_, hGm, hGden, ?_, ?_⟩
   · refine (hGnorm _).trans (hnorm.trans (le_of_eq ?_))
     have hμ : μ Set.univ = 1 := measure_univ

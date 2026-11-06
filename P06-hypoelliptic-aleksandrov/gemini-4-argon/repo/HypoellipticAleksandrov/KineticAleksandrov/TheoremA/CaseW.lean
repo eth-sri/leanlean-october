@@ -35,15 +35,15 @@ open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open scoped MatrixOrder ContDiff Matrix.Norms.Elementwise
 
 /-- A kinetic point `(s,X,v)` read as the Section 2 point `(σ,v,z) = (s,v,X)`. -/
-def sectionTwoPoint {d : ℕ} (P : KineticPoint d) : KineticPoint d :=
+def sectionTwoPoint {d } (P : KineticPoint d) : KineticPoint d :=
   ⟨P.time, P.velocity, P.position⟩
 
 /-- The coordinate swap is an involution. -/
-theorem sectionTwoPoint_involutive {d : ℕ} :
+theorem sectionTwoPoint_involutive {d } :
     Function.Involutive (sectionTwoPoint (d := d)) := fun _ => rfl
 
 /-- (6.3) is (2.3) with `z = X`, `b(v) = v` and the same time-velocity coefficient. -/
-theorem forwardKineticOperator_eq_lop_identity {d : ℕ} (B : CoefficientField d)
+theorem forwardKineticOperator_eq_lop_identity {d } (B : CoefficientField d)
     (U : KineticPoint d → ℝ) (P : KineticPoint d) :
     forwardKineticOperator (ofTimeVelocityCoefficient B) U P =
       lop B (identityDrift d) (U ∘ sectionTwoPoint) (sectionTwoPoint P) := by
@@ -71,8 +71,8 @@ theorem isSmoothFullKineticCoefficient_zIndependent {d : ℕ} {B : CoefficientFi
 
 /-- The reflected coefficient and the identity drift satisfy the setting (W) premises,
 with `m = L_b = 1` and `D = ℝ^d`. -/
-theorem caseW_sourceSetting {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    {A : CoefficientField d} (hsm : IsSmoothCoefficient A) (hsymm : IsSymmetricCoefficient A)
+theorem caseW_sourceSetting {d lam Lam} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {A } (hsm : IsSmoothCoefficient A) (hsymm : IsSymmetricCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A) :
     SourceSetting lam Lam 1 1 (wholeSpace d) (kineticReflectedCoefficient A)
       (identityDrift d) := by

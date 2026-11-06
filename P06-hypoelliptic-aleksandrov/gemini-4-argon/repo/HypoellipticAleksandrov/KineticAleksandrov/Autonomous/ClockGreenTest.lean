@@ -11,7 +11,7 @@ open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
 
 /-- Local and extended normalized operators agree on the normalized active strip. -/
-theorem clock_extended_operator_eq {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem clock_extended_operator_eq {lam Lam } (A : SmoothAutonomous lam Lam)
     (c : Clock) (e : Point) (u : Point → ℝ) (p : Point)
     (hp : p.position 0 ∈ normalizedActive) :
     transportedForwardOperator (c.normalizedCoefficient A.a e) c.normalizedDrift u p =
@@ -29,7 +29,7 @@ theorem clock_extended_operator_eq {lam Lam : ℝ} (A : SmoothAutonomous lam Lam
 /-- The actual normalized compact-source test obeys the exact physical weighted source equation. -/
 theorem clockSourcePotential_physical_equation
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
     (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
     (hs : tsupport (exitProbePhysical f) ⊆

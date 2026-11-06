@@ -26,50 +26,12 @@ private theorem segmentBlend_eq_smul_sub_add {d : ℕ}
   simp only [Pi.add_apply, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
   ring
 
-/-- Exact change of variables under segment blending toward a fixed point.
+/- Exact change of variables under segment blending toward a fixed point.
 
 For `t < 1`, the map `y ↦ segmentBlend x t y` has linear part
 `(1 - t) • id`, image
 `translateSet x ((1 - t) • translateSet (-x) U)`, and inverse-Jacobian factor
 `((1 - t) ^ d)⁻¹`. -/
-theorem setIntegral_comp_segmentBlend_of_lt_one
-    {d : ℕ} {E : Type*}
-    [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
-    (x : Vec d) {t : ℝ} (ht : t < 1) (U : Set (Vec d))
-    (φ : Vec d → E) :
-    ∫ y in U, φ (segmentBlend x t y) ∂volume =
-      ((1 - t) ^ d)⁻¹ •
-        ∫ z in translateSet x
-          ((1 - t) • translateSet (-x) U), φ z ∂volume := by
-  have hscale : 0 < 1 - t := sub_pos.mpr ht
-  have hIntegrand :
-      (fun y : Vec d => φ (segmentBlend x t y)) =
-        fun y => φ ((1 - t) • (y + -x) + x) := by
-    funext y
-    rw [segmentBlend_eq_smul_sub_add]
-    simp only [sub_eq_add_neg]
-  rw [hIntegrand]
-  calc
-    (∫ y in U, φ ((1 - t) • (y + -x) + x) ∂volume) =
-        ∫ z in translateSet (-x) U,
-          φ ((1 - t) • z + x) ∂volume :=
-      setIntegral_comp_addRight_translateSet
-        (-x) U (fun z => φ ((1 - t) • z + x))
-    _ = ((1 - t) ^ d)⁻¹ •
-        ∫ w in (1 - t) • translateSet (-x) U,
-          φ (w + x) ∂volume :=
-      setIntegral_comp_smul_of_pos hscale
-        (translateSet (-x) U) (fun w => φ (w + x))
-    _ = ((1 - t) ^ d)⁻¹ •
-        ∫ z in translateSet x
-          ((1 - t) • translateSet (-x) U), φ z ∂volume := by
-      rw [setIntegral_comp_addRight_translateSet]
-
-/-- On the first half of segments toward a point of a convex set, composition
-costs at most the dimensionally sharp Jacobian factor `2 ^ d`.
-
-The integrand is assumed nonnegative everywhere and integrable on `U`; no
-diameter or boundedness hypothesis is involved. -/
 theorem setIntegral_comp_segmentBlend_le_two_pow_mul
     {d : ℕ} {U : Set (Vec d)} {φ : Vec d → ℝ}
     {x : Vec d} {t : ℝ} (hU : Convex ℝ U) (hx : x ∈ U)
@@ -114,7 +76,40 @@ theorem setIntegral_comp_segmentBlend_le_two_pow_mul
         (inv_pow (1 - t) d).symm
       _ ≤ (2 : ℝ) ^ d :=
         pow_le_pow_left₀ (inv_nonneg.mpr hscale.le) hInvScale d
-  rw [setIntegral_comp_segmentBlend_of_lt_one x htOne U φ]
+  have _h_inl_8 : ∫ y in U, φ (segmentBlend x t y) ∂volume =
+      ((1 - t) ^ d)⁻¹ •
+        ∫ z in translateSet x
+          ((1 - t) • translateSet (-x) U), φ z ∂volume := by
+      have hscale : 0 < 1 - t := sub_pos.mpr htOne
+      have hIntegrand :
+          (fun y : Vec d => φ (segmentBlend x t y)) =
+            fun y => φ ((1 - t) • (y + -x) + x) := by
+        funext y
+        rw [segmentBlend_eq_smul_sub_add]
+        simp only [sub_eq_add_neg]
+      rw [hIntegrand]
+      calc
+        (∫ y in U, φ ((1 - t) • (y + -x) + x) ∂volume) =
+            ∫ z in translateSet (-x) U,
+              φ ((1 - t) • z + x) ∂volume :=
+          setIntegral_comp_addRight_translateSet
+            (-x) U (fun z => φ ((1 - t) • z + x))
+        _ = ((1 - t) ^ d)⁻¹ •
+            ∫ w in (1 - t) • translateSet (-x) U,
+              φ (w + x) ∂volume :=
+          setIntegral_comp_smul_of_pos hscale
+            (translateSet (-x) U) (fun w => φ (w + x))
+        _ = ((1 - t) ^ d)⁻¹ •
+            ∫ z in translateSet x
+              ((1 - t) • translateSet (-x) U), φ z ∂volume := by
+          rw [setIntegral_comp_addRight_translateSet]
+
+    /- On the first half of segments toward a point of a convex set, composition
+    costs at most the dimensionally sharp Jacobian factor `2 ^ d`.
+
+    The integrand is assumed nonnegative everywhere and integrable on `U`; no
+    diameter or boundedness hypothesis is involved. -/
+  rw [_h_inl_8]
   change
     ((1 - t) ^ d)⁻¹ * (∫ z in V, φ z ∂volume) ≤
       (2 : ℝ) ^ d * ∫ y in U, φ y ∂volume

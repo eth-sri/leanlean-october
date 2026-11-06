@@ -16,7 +16,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 
 /-- The scalar and higher-dimensional constructions supply the complete shared profile. -/
-theorem counterProfile_holds (d : ℕ) (hd : 1 ≤ d) (alpha : ℝ)
+theorem counterProfile_holds (d : ℕ) (hd : 1 ≤ d) (alpha )
     (ha : 0 < alpha) (ha1 : alpha < 1) : CounterProfileStatement d alpha :=
   counterProfile_of_branches d hd alpha ha ha1
     (fun _ => counterProfileOne_exists alpha ha ha1)

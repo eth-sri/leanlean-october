@@ -13,11 +13,11 @@ open HypoellipticAleksandrov MeasureTheory Set SectionTwo Evolution Occupation
 variable {d : ℕ}
 
 /-- Full kinetic integration by parts, with all jets discharged by interior smoothness. -/
-theorem integral_transportedAdjoint_contDiffOn_two {U : Set (EvolutionVec d)} (hU : IsOpen U)
-    {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
+theorem integral_transportedAdjoint_contDiffOn_two {U } (hU : IsOpen U)
+    {B } (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B)
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
-    {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ 2 u U)
+    {b } (hb : IsSmoothDrift b)
+    {u } (hu : ContDiffOn ℝ 2 u U)
     (ψ : EvolutionVec d → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
     (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
     (∫ x in U, u x * transportedAdjoint B b ψ x) =
@@ -64,8 +64,8 @@ theorem integral_transportedAdjoint_contDiffOn_two {U : Set (EvolutionVec d)} (h
     (transportedCoord d x)) i) j
 
 /-- The literal scalar kinetic operator of a C² function is continuous. -/
-theorem continuous_transportedOperator_c2 {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    {f : EvolutionVec 1 → ℝ} (hf : ContDiff ℝ 2 f) :
+theorem continuous_transportedOperator_c2 {lam Lam } (A : SmoothAutonomous lam Lam)
+    {f } (hf : ContDiff ℝ 2 f) :
     Continuous (transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f) := by
   have hd (v : EvolutionVec 1) : ContDiff ℝ 1 (fun x => fderiv ℝ f x v) :=
     contDiffOn_univ.mp
@@ -89,19 +89,17 @@ theorem continuous_transportedOperator_c2 {lam Lam : ℝ} (A : SmoothAutonomous 
       (diffusedCoord 1).contDiff).continuous.mul (hd (basisZ i)).continuous
 
 /-- Outside a test's closed support all terms of its actual operator vanish. -/
-theorem transportedOperator_eq_zero_of_notMem_tsupport {f : EvolutionVec 1 → ℝ}
-    {x : EvolutionVec 1} (hx : x ∉ tsupport f) (B : FullKineticCoefficient 1)
+theorem transportedOperator_eq_zero_of_notMem_tsupport {f x} (hx : x ∉ tsupport f) (B : FullKineticCoefficient 1)
     (b : PDE.Vec 1 → PDE.Vec 1) : transportedOperator B b f x = 0 := by
   have h0 := fderiv_of_notMem_tsupport ℝ hx
   have hn : x ∉ tsupport (fun y => fderiv ℝ f y (basisV (0 : Fin 1))) :=
     fun h => hx (tsupport_fderiv_apply_subset ℝ (basisV 0) h)
-  have h1 := fderiv_of_notMem_tsupport ℝ hn
-  simp only [transportedOperator, Fin.sum_univ_one, h0, h1,
+  simp only [transportedOperator, Fin.sum_univ_one, h0, (fderiv_of_notMem_tsupport ℝ hn),
     zero_apply, mul_zero, add_zero]
 
 /-- A C² test satisfies the weak equation for its actual kinetic operator. -/
-theorem c2_isWeakTransportedSolution {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    {U : Set (EvolutionVec 1)} (hU : IsOpen U) {u : EvolutionVec 1 → ℝ}
+theorem c2_isWeakTransportedSolution {lam Lam } (A : SmoothAutonomous lam Lam)
+    {U } (hU : IsOpen U) {u }
     (hu : ContDiffOn ℝ 2 u U) :
     IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u
       (transportedOperator (evolutionCoefficient A.a) (identityDrift 1) u) := by

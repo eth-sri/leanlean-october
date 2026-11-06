@@ -3,6 +3,13 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.StationaryEnergyDrift
 import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalComparison
 import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalNegation
+import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormOperatorBase
+import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothH10DenseRange
+import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothNeighborhoodSpatialSlices
+import HypoellipticAleksandrov.Parabolic.Dirichlet.VariationalEnergy
+import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBarrierWeakIdentity
+import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonEnergyConstant
 
 /-! # Two-sided variational bounds by stationary spatial barriers
 
@@ -16,10 +23,10 @@ open HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open HypoellipticAleksandrov.Parabolic.Dirichlet HypoellipticAleksandrov.Parabolic.LocalHolder
 open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
+open scoped RealInnerProductSpace
 
-/-- A stationary source supersolution bounds the absolute value of the energy solution. -/
-theorem variational_abs_le_stationary_withDrift {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+/- A stationary source supersolution bounds the absolute value of the energy solution. -/
+theorem variational_abs_le_stationary_withDrift {d Ω} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (lam : ℝ) (hlam : 0 < lam)
     (A : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -62,8 +69,80 @@ theorem variational_abs_le_stationary_withDrift {d : ℕ}
       ae_restrict_mem hΩ.measurableSet] with y hy hqy hyo
     rw [hy, hqy]
     exact hqn y hyo
-  have hqenergy := stationarySourceCurve_withDrift
-    hΩ hΩb a T haT A b hb hA G hG q hq heq
+  have hqenergy : IsReverseTimeVariationalEnergySolution a T haT hΩ hΩb A
+      b (fun _ _ => 0) (fun t y => G (t, y))
+      ⟨univ, isOpen_univ, subset_univ _, hG.contDiffOn⟩
+      (valueCLM hΩ (h10HilbertGraphOfH10Function hΩ q))
+      (stationarySourceCurve hΩ (T - a) (h10HilbertGraphOfH10Function hΩ q)) 0
+      (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT)
+        (h10HilbertGraphOfH10Function hΩ q)) := by
+    let Q := h10HilbertGraphOfH10Function hΩ q
+    let hAs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => A z.1 z.2)
+        (scalarParabolicClosedCylinder a T Ω) :=
+      ⟨univ, isOpen_univ, subset_univ _, hA.contDiffOn⟩
+    let hbs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
+        (scalarParabolicClosedCylinder a T Ω) :=
+      ⟨univ, isOpen_univ, subset_univ _, hb.contDiffOn⟩
+    let hcs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : ℝ))
+        (scalarParabolicClosedCylinder a T Ω) :=
+      ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
+    let hFs : IsSmoothOnNeighborhood G (scalarParabolicClosedCylinder a T Ω) :=
+      ⟨univ, isOpen_univ, subset_univ _, hG.contDiffOn⟩
+    constructor
+    · change reverseTimeHilbertRepresentative hΩ (T - a) (sub_pos.mpr haT)
+        (stationarySourceCurve hΩ (T - a) Q) 0
+        (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) Q)
+        ⟨0, ⟨le_rfl, (sub_pos.mpr haT).le⟩⟩ = valueCLM hΩ Q
+      rw [stationarySourceCurve_hilbertRepresentative]
+      rfl
+    · filter_upwards [stationarySourceCurve_ae hΩ (T - a) Q,
+        Lp.coeFn_zero (H10HilbertGraphDual hΩ) 2 (reverseTimeVolume (T - a))]
+        with τ hqτ hgτ
+      intro hτ v
+      rw [hqτ, hgτ]
+      change 0 + reverseTimeSpatialForm hΩ T τ A b (fun _ _ => 0) Q v = _
+      rw [zero_add]
+      have hτc : τ ∈ Icc 0 (T - a) := ⟨hτ.1.le, hτ.2.le⟩
+      let fτ := reverseTimeSourceSlice T τ (fun t y => G (t, y))
+        (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood a T hΩ hΩb
+          (fun t y => G (t, y)) hFs τ hτc)
+      let L := reverseTimeSpatialFormOperator a T haT hΩ hΩb A
+        b (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q
+      let R := reverseTimeSourceFunctional hΩ fτ
+      have hLR : L = R := by
+        apply ContinuousLinearMap.coeFn_injective
+        apply Continuous.ext_on
+          (denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ)
+          L.continuous R.continuous
+        rintro _ ⟨ψ, rfl⟩
+        change L (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ) =
+          R (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ)
+        have ha : ∀ i j, ContDiffOn ℝ 1 (fun y => A (T - τ) y i j) Ω := by
+          intro i j
+          exact contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood
+            a T (T - τ) A hAs (by constructor <;> linarith [hτ.1, hτ.2]) i j
+        rw [show L _ = reverseTimeSpatialForm hΩ T τ A b
+          (fun _ _ => 0) Q _ from reverseTimeSpatialFormOperator_apply
+            a T haT hΩ hΩb A b (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q _,
+          reverseTimeSpatialForm_stationary_barrier_weakIdentity hΩ T τ A
+            b (fun _ _ => 0) q hq ha
+            (continuousOn_vectorEntry_spatialSlice_of_smoothOnNeighborhood
+              a T (T - τ) b hbs (by constructor <;> linarith [hτ.1, hτ.2])) continuousOn_const ψ]
+        change _ = reverseTimeSourceFunctional hΩ fτ _
+        rw [reverseTimeSourceFunctional_apply, L2.inner_def, ← integral_neg]
+        apply integral_congr_ae
+        filter_upwards [coeFn_reverseTimeSourceSlice T τ (fun t y => G (t, y))
+          (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood a T hΩ hΩb
+            (fun t y => G (t, y)) hFs τ hτc),
+          ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ,
+          ae_restrict_mem hΩ.measurableSet] with y hFy hψ hy
+        rw [hFy, hψ, heq (T - τ, y)
+          ⟨by constructor <;> linarith [hτ.1, hτ.2], hy⟩]
+        simp only [RCLike.inner_apply, conj_trivial]
+        ring
+      rw [← reverseTimeSpatialFormOperator_apply a T haT hΩ hΩb A
+        b (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q v]
+      exact congrArg (fun D : H10HilbertGraphDual hΩ => D v) hLR
   have hupper := reverseTimeVariationalEnergySolution_le a T lam haT hlam hΩ hΩb
     A b (fun _ _ => 0) (fun t y => F (t, y)) (fun t y => G (t, y))
     hAs hbs hcs hFs hGs (fun z _ => hlo z.1 z.2) (fun _ _ => le_rfl)

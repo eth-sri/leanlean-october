@@ -19,7 +19,7 @@ theorem visitCylinderStart_mem (Z0 : Point) (R : ℝ) (hR : 0 < R) (P : Point)
 /-- The actual cylinder counting measure is finite. -/
 theorem visitStartsQ_isFiniteMeasure
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (Z0 : Point) (R : ℝ) (hR : 0 < R)
     (P : Point) (hP : P ∈ forwardCylinder Z0 R hR) :
     IsFiniteMeasure (visitStartsQ hH hLE hlam hLam A c Z0 R hR P hP) :=
@@ -28,7 +28,7 @@ theorem visitStartsQ_isFiniteMeasure
       (visitCylinderStart_mem Z0 R hR P hP)
 
 /-- One ellipticity constant bounds every actual cylinder count by `C * (1 + R / r)`. -/
-theorem exists_visitStartsQ_mass_constant {lam Lam : ℝ}
+theorem exists_visitStartsQ_mass_constant {lam Lam }
     (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C : ℝ, 0 < C ∧
       ∀ (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)

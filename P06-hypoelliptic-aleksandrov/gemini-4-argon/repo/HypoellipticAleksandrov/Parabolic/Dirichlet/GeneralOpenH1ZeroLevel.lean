@@ -20,7 +20,7 @@ open Filter MeasureTheory Set
 /-- On an arbitrary open set, the selected weak gradient of an `H¹`
 representative vanishes almost everywhere on its zero set. -/
 theorem grad_ae_zero_on_zero_set_of_isOpen
-    {d : ℕ} {U : Set (PDE.Vec d)} (hU : IsOpen U)
+    {d } {U : Set (PDE.Vec d)} (hU : IsOpen U)
     (u : PDE.H1Function U) :
     ∀ᵐ x ∂(PDE.volumeOn U), u.toFun x = 0 → u.grad x = 0 := by
   obtain ⟨v₁, hv₁Fun, hv₁Grad⟩ :=

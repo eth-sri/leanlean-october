@@ -40,7 +40,6 @@ theorem memLp_mul_eLpNorm_toReal_le_of_ae_abs_le
   refine ⟨haf, ?_⟩
   have htop : ENNReal.ofReal M * eLpNorm f p μ ≠ ∞ :=
     ENNReal.mul_ne_top ENNReal.ofReal_ne_top hf.eLpNorm_ne_top
-  have hr := ENNReal.toReal_mono htop hle
-  simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hM] using hr
+  simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hM] using (ENNReal.toReal_mono htop hle)
 
 end HypoellipticAleksandrov.Analysis

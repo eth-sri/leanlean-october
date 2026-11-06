@@ -12,8 +12,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 open scoped CompactlySupported
 
-/-- The physical pole conversion is continuous on the valid starting-state fiber. -/
-theorem continuous_ballStatePoint {d : ℕ} (s : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+/- The physical pole conversion is continuous on the valid starting-state fiber. -/
+theorem continuous_ballStatePoint {d } (s : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
     Continuous (fun w : EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) s =>
       (ballStateStart s w).1) :=
   KineticPoint.continuous_mk continuous_const continuous_subtype_val.snd
@@ -26,7 +26,7 @@ variable (hH : HormanderHypoellipticityStatement)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
-/-- The uniquely characterized exit measure depends measurably on its valid fixed-time pole. -/
+/- The uniquely characterized exit measure depends measurably on its valid fixed-time pole. -/
 theorem measurable_ballExitRaw_fixedTime (s T : ℝ) (hsT : s < T) :
     Measurable (fun w : EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) s =>
       ballExitRaw hH hLE hd hlam hLam B hB v₀ hR (ballStateStart s w) ⟨T, hsT⟩) := by
@@ -53,12 +53,9 @@ theorem measurable_ballExitRaw_fixedTime (s T : ℝ) (hsT : s < T) :
       exact (integral_map H.measurable.aemeasurable hfm).trans
         ((ballExitRaw_spec hH hLE hd hlam hLam B hB v₀ hR _ _).2.2 φ hφ hc)
     rw [heq]
-    have he := (ballBoundarySolution_smooth_traces hH hLE hd hlam hLam B hB v₀ hR
-      s T hsT φ hφ hc).2.2.1
-    exact (he.comp_continuous (continuous_ballStatePoint s v₀ R)
+    exact (((ballBoundarySolution_smooth_traces hH hLE hd hlam hLam B hB v₀ hR s T hsT φ hφ hc).2.2.1).comp_continuous (continuous_ballStatePoint s v₀ R)
       (fun w => ⟨le_rfl, hsT.le, subset_closure (ball_state_velocity_mem s w)⟩)).measurable
-  have hν := measurable_measure_family_of_smooth_tests ν hm ht
-  have hh := (Measure.measurable_map H.symm H.symm.measurable).comp hν
+  have hh := (Measure.measurable_map H.symm H.symm.measurable).comp (measurable_measure_family_of_smooth_tests ν hm ht)
   have heq : (fun w => (ν w).map H.symm) = μ := by
     funext w
     dsimp only [ν]
@@ -69,18 +66,12 @@ theorem measurable_ballExitRaw_fixedTime (s T : ℝ) (hsT : s < T) :
   change Measurable (fun w => (ν w).map H.symm) at hh
   rwa [heq] at hh
 
-/-- The later ambient exit measures form a genuine measurable kernel on valid states. -/
-def ballBoundaryKernel (s T : ℝ) (hsT : s < T) :
+/- The later ambient exit measures form a genuine measurable kernel on valid states. -/
+def ballBoundaryKernel (s T ) (hsT : s < T) :
     ProbabilityTheory.Kernel (EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) s)
       (KineticPoint d) :=
   ⟨fun w => ballExitRaw hH hLE hd hlam hLam B hB v₀ hR (ballStateStart s w) ⟨T, hsT⟩,
     measurable_ballExitRaw_fixedTime hH hLE hd hlam hLam B hB v₀ hR s T hsT⟩
 
-/-- Every actual later exit kernel is Markov, with mass established by representation. -/
-instance ballBoundaryKernel_isMarkov (s T : ℝ) (hsT : s < T) :
-    ProbabilityTheory.IsMarkovKernel
-      (ballBoundaryKernel hH hLE hd hlam hLam B hB v₀ hR s T hsT) where
-  isProbabilityMeasure w :=
-    ⟨ballExitRaw_mass hH hLE hd hlam hLam B hB v₀ hR (ballStateStart s w) ⟨T, hsT⟩⟩
-
+/- Every actual later exit kernel is Markov, with mass established by representation. -/
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

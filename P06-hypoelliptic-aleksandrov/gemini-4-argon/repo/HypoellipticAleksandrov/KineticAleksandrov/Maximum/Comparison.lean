@@ -13,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic Set
 
 /-- The terminal face supplies an exit-boundary point for every positive-radius cylinder. -/
-theorem comparison_exitBoundary_nonempty {d : ℕ}
+theorem comparison_exitBoundary_nonempty {d }
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     (exitBoundary Z₀ R hR).Nonempty := by
   let P : KineticPoint d := ⟨Z₀.time + R ^ 2,Z₀.position + R ^ 2 • Z₀.velocity,Z₀.velocity⟩
@@ -31,9 +31,9 @@ theorem comparison_exitBoundary_nonempty {d : ℕ}
     PDE.vecNormSq,PDE.vecDot,sq_nonneg]
 
 /-- A scalar boundary bound propagates for a strict subsolution on a compact cylinder. -/
-theorem comparison_strict_compact_bound {d : ℕ}
+theorem comparison_strict_compact_bound {d }
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    {D : Set (KineticPoint d)} (hD : IsOpen D)
+    {D } (hD : IsOpen D)
     (hQD : closure (forwardCylinder Z₀ R hR) ⊆ D)
     {u : KineticPoint d → ℝ} (hu : IsKineticC112On u D)
     (A : FullKineticCoefficient d)
@@ -46,12 +46,10 @@ theorem comparison_strict_compact_bound {d : ℕ}
   have hpos := not_le.mp hn
   obtain ⟨p,hp,hmax⟩ := (isCompact_closure_forwardCylinder Z₀ R hR).exists_isMaxOn
     ⟨P,hP⟩ (hu.continuousOn.mono hQD)
-  have hpPos : 0 < u p := lt_of_le_of_lt hM (lt_of_lt_of_le hpos (hmax hP))
-  have hpexit := comparison_inner_maximum_exclusion Z₀ R hR hD hQD hu A hA hstrict hp hmax hpPos
-  exact (not_le.mpr hpos) ((hmax hP).trans (hboundary p hpexit))
+  exact (not_le.mpr hpos) ((hmax hP).trans (hboundary p (comparison_inner_maximum_exclusion Z₀ R hR hD hQD hu A hA hstrict hp hmax (lt_of_le_of_lt hM (lt_of_lt_of_le hpos (hmax hP))))))
 
 /-- Retractions and exhaustion pass a strict comparison bound to the original closure. -/
-theorem comparison_boundary_limit {d : ℕ}
+theorem comparison_boundary_limit {d }
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (A : FullKineticCoefficient d) (u : KineticPoint d → ℝ)
     (hA : ∀ P ∈ forwardCylinder Z₀ R hR, (A P.time P.position P.velocity).PosSemidef)
@@ -105,7 +103,7 @@ theorem comparison_boundary_limit {d : ℕ}
   exact le_on_closure hinterior hcont continuousOn_const
 
 /-- The source kinetic comparison principle with pointwise positive semidefinite coefficients. -/
-theorem kinetic_comparison {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+theorem kinetic_comparison {d } (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (A : FullKineticCoefficient d) (u : KineticPoint d → ℝ)
     (hA : ∀ P ∈ forwardCylinder Z₀ R hR, (A P.time P.position P.velocity).PosSemidef)
     (hcont : ContinuousOn u (closure (forwardCylinder Z₀ R hR)))

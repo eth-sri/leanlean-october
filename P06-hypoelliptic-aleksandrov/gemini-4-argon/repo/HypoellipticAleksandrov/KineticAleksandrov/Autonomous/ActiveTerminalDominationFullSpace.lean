@@ -13,7 +13,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 /-- Time autonomy identifies an absolute native query with the scalar elapsed kernel. -/
 theorem enlargedFullSpace_native_terminal_integral
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (P : Point) (b : ℝ) (hb : P.time ≤ b)
     (F : Point → ℝ) (hF : Measurable F) :
     (∫ w, F ⟨b, w.2, w.1⟩

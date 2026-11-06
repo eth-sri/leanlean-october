@@ -30,9 +30,7 @@ theorem poleDensityPhysical_volumePreserving :
 /-- The established Green elapsed-to-physical map is a measurable embedding at clock time zero. -/
 theorem poleDensityElapsed_measurableEmbedding :
     MeasurableEmbedding (elapsedPhysicalPoint 0 (R := ⊤)) := by
-  have he := (MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime ⊤)).prodMap
-    (MeasurableEmbedding.id : MeasurableEmbedding (id : EvolutionAmbientState 1 → _))
-  have hc := poleDensityPhysicalHomeomorph.measurableEmbedding.comp he
+  have hc := poleDensityPhysicalHomeomorph.measurableEmbedding.comp ((MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime ⊤)).prodMap (MeasurableEmbedding.id : MeasurableEmbedding (id : EvolutionAmbientState 1 → _)))
   have heq : (poleDensityPhysicalHomeomorph ∘
       Prod.map (Subtype.val : ElapsedTime ⊤ → ℝ) id) = elapsedPhysicalPoint 0 := by
     funext q

@@ -25,10 +25,10 @@ namespace ParabolicW12Function
 /-- A supplied pointwise limit of the parabolic mollifications agrees almost
 everywhere on a measurable carrier with the stored value representative. -/
 theorem ae_eq_limit_toFun_on_of_pointwiseLimit
-    {d : Nat} {K : Set (TimeVelocity d)}
+    {d K}
     (hKmeas : MeasurableSet K)
     (g : ParabolicW12Function d Set.univ (parabolicExponent d))
-    {q : TimeVelocity d -> Real}
+    {q }
     (hPointwise : ∀ z ∈ K,
       Tendsto (fun n : Nat =>
         parabolicConvolution g.toFun (parabolicMollifier d n) z)
@@ -48,9 +48,7 @@ theorem ae_eq_limit_toFun_on_of_pointwiseLimit
     change MemLp g.toFun p
       ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
     simpa only [Measure.restrict_univ] using h
-  have hInMeasure : TendstoInMeasure (volume : Measure (TimeVelocity d))
-      (fun n z => parabolicConvolution g.toFun (parabolicMollifier d n) z)
-      atTop g.toFun :=
+  have hInMeasure :=
     tendstoInMeasure_of_tendsto_eLpNorm hpNeZero
       (by
         simpa only [p, Pi.sub_def] using

@@ -11,7 +11,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Proof of the existence and uniqueness of the real least upper bound. -/
-theorem existsUnique_bellmanAdjointExponent_aux (ratio : ℝ) (hRatio : 1 ≤ ratio) :
+theorem existsUnique_bellmanAdjointExponent_aux (ratio ) (hRatio : 1 ≤ ratio) :
     ∃! β : ℝ, IsLUB (bellmanAdmissibleDegrees ratio) β := by
   have hn : (bellmanAdmissibleDegrees ratio).Nonempty :=
     ⟨2, two_mem_bellmanAdmissibleDegrees ratio hRatio⟩

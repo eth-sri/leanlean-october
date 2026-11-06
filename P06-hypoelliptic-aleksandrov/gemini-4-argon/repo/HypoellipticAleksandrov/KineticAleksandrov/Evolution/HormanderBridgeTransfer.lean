@@ -80,9 +80,7 @@ theorem ae_eq_comp_evolutionHomeomorph_iff {f g : KineticPoint n → ℝ}
     {Ω : Set (KineticPoint n)} :
     (f ∘ evolutionHomeomorph n) =ᵐ[volume.restrict (evolutionHomeomorph n ⁻¹' Ω)]
         (g ∘ evolutionHomeomorph n) ↔ f =ᵐ[volume.restrict Ω] g := by
-  have hmp := (measurePreserving_evolutionHomeomorph (n := n)).restrict_preimage_emb
-    measurableEmbedding_evolutionHomeomorph Ω
-  rw [← hmp.map_eq, Filter.EventuallyEq, Filter.EventuallyEq,
+  rw [← ((measurePreserving_evolutionHomeomorph (n := n)).restrict_preimage_emb measurableEmbedding_evolutionHomeomorph Ω).map_eq, Filter.EventuallyEq, Filter.EventuallyEq,
     measurableEmbedding_evolutionHomeomorph.ae_map_iff]
   rfl
 
@@ -172,10 +170,9 @@ theorem isWeakRegularizedSolution_comp_iff (B : FullKineticCoefficient n)
 /-- **Kinetic weak equation ⇒ Hörmander weak equation (`ε = 0`).**  A kinetic distributional
 solution of `Lop u = g` on `Ω ⊆ KineticPoint n`, with `g ∘ e` smooth on `e ⁻¹' Ω`, gives the
 carrier `HasWeakHormanderEquation` for `u ∘ e` on `e ⁻¹' Ω`. -/
-theorem hasWeakHormanderEquation_comp_transportedFields {lam Lam : ℝ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
+theorem hasWeakHormanderEquation_comp_transportedFields {lam Lam B b} (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) {Ω : Set (KineticPoint n)} {u g : KineticPoint n → ℝ}
+    (hb : IsSmoothDrift b) {Ω u g}
     (hu : IsKineticWeakTransportedSolution B b Ω u g)
     (hg : ContDiffOn ℝ (⊤ : ℕ∞) (g ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω)) :
     HasWeakHormanderEquation (evolutionHomeomorph n ⁻¹' Ω) (transportedFields B b)
@@ -185,10 +182,10 @@ theorem hasWeakHormanderEquation_comp_transportedFields {lam Lam : ℝ}
 
 /-- **Kinetic weak equation ⇒ Hörmander weak equation (`ε ≥ 0`).**  As above for
 `L_ε = Lop + ε Δ_z` and `regularizedFields B b ε`. -/
-theorem hasWeakHormanderEquation_comp_regularizedFields {lam Lam ε : ℝ} (hε : 0 ≤ ε)
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
+theorem hasWeakHormanderEquation_comp_regularizedFields {lam Lam ε } (hε : 0 ≤ ε)
+    {B b} (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) {Ω : Set (KineticPoint n)} {u g : KineticPoint n → ℝ}
+    (hb : IsSmoothDrift b) {Ω u g}
     (hu : IsKineticWeakRegularizedSolution B b ε Ω u g)
     (hg : ContDiffOn ℝ (⊤ : ℕ∞) (g ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω)) :
     HasWeakHormanderEquation (evolutionHomeomorph n ⁻¹' Ω) (regularizedFields B b ε)
@@ -199,7 +196,7 @@ theorem hasWeakHormanderEquation_comp_regularizedFields {lam Lam ε : ℝ} (hε 
 /-- **Conclusion transfer.**  A smooth representative of `u ∘ e` on `e ⁻¹' Ω` (the conclusion of
 the Hörmander theorem on the packed space) yields a representative `f ∘ e.symm` of `u` on `Ω`
 that is smooth in packed coordinates and equals `u` almost everywhere on `Ω`. -/
-theorem exists_kinetic_representative {Ω : Set (KineticPoint n)} {u : KineticPoint n → ℝ}
+theorem exists_kinetic_representative {Ω u}
     (h : ∃ f : EvolutionVec n → ℝ, ContDiffOn ℝ (⊤ : ℕ∞) f (evolutionHomeomorph n ⁻¹' Ω) ∧
       (u ∘ evolutionHomeomorph n) =ᵐ[volume.restrict (evolutionHomeomorph n ⁻¹' Ω)] f) :
     ∃ f : KineticPoint n → ℝ,

@@ -16,7 +16,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 
-private theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
+private theorem velocityTwo_comm {d } (i j : Fin d) :
     ParabolicDerivativeIndex.velocityTwo i j =
       ParabolicDerivativeIndex.velocityTwo j i := by
   apply Subtype.ext
@@ -51,7 +51,7 @@ private theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
             TimeVelocityMultiIndex.velocity, velocityCoord, hki, hkj]
 
 private theorem representative_velocityTwo_ae_eq_velocityHessian
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d U}
     (hU : IsOpen U) (J : ParabolicW12Function d U 2) (j i : Fin d) :
     (fun z =>
       (J.toWeakDerivativeFamily hU).representative
@@ -69,7 +69,7 @@ private theorem representative_velocityTwo_ae_eq_velocityHessian
 /-- The literal original-time equation of a selected local `W^{1,2}_2` jet
 is preserved by its canonical weight-two weak-derivative family. -/
 theorem ParabolicW12Function.toWeakDerivativeFamily_originalTimeEquation
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d U}
     (hU : IsOpen U)
     (J : ParabolicW12Function d U 2)
     (a : CoefficientField d)

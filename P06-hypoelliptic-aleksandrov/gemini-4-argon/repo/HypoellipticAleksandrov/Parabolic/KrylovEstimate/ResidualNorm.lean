@@ -35,8 +35,8 @@ theorem positive_residual_memLp_norm_le
 
 /-- Inward parabolic compression does not increase the amplified source norm. -/
 theorem compressed_source_memLp_norm_le
-    {N : ℕ} (hN : 1 ≤ N) (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
-    {ρ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ < 1)
+    {N } (hN : 1 ≤ N) (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
+    {ρ } (hρ : 0 < ρ) (hρ1 : ρ < 1)
     (g : TimeVelocity N → ℝ)
     (hg : MemLp g (parabolicExponent N)
       (volume.restrict (krylovCylinder t₀ h v₀))) :
@@ -52,7 +52,7 @@ theorem compressed_source_memLp_norm_le
     rintro _ ⟨z, hz, rfl⟩
     exact innerMap_mapsTo t₀ h v₀ hh hρ hρ1
       (parabolicInterior_subset_closedParabolicCylinder h 0 hz)
-  have hgJ : MemLp g (parabolicExponent N) (volume.restrict J) :=
+  have hgJ :=
     hg.mono_measure (Measure.restrict_mono hJ le_rfl)
   have hscale := parabolicELpNormOn_pullback_raw
     (t₀ - h + (1 - ρ ^ 2) * h / 2) v₀ hρ g S
@@ -82,9 +82,7 @@ theorem compressed_source_memLp_norm_le
       parabolicELpNormOn N g J := by
     rw [hscale]
     exact (mul_le_mul_left hfac _).trans_eq (one_mul _)
-  have hmem : MemLp (fun z => ρ ^ 2 * g (innerMap t₀ h v₀ ρ z))
-      (parabolicExponent N) (volume.restrict S) := hnorm.trans_lt hgJ
-  refine ⟨hmem, ?_⟩
+  refine ⟨(hnorm.trans_lt hgJ), ?_⟩
   exact ENNReal.toReal_mono hg.eLpNorm_ne_top
     (hnorm.trans (eLpNorm_mono_measure g (Measure.restrict_mono hJ le_rfl)))
 

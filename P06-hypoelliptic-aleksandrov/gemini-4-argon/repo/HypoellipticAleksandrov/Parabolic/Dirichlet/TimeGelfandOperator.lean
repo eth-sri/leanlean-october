@@ -20,50 +20,17 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-/-- Precompose an `H10` dual functional with a bounded spatial operator. -/
+/- Precompose an `H10` dual functional with a bounded spatial operator. -/
 noncomputable def h10HilbertGraphDualPrecompose
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ) :
     H10HilbertGraphDual hΩ →L[ℝ] H10HilbertGraphDual hΩ :=
   (ContinuousLinearMap.compL ℝ (H10HilbertGraph hΩ) (H10HilbertGraph hΩ) ℝ).flip S
 
-/-- Evaluation of dual precomposition. -/
-@[simp] theorem h10HilbertGraphDualPrecompose_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω)
-    (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
-    (ell : H10HilbertGraphDual hΩ) (v : H10HilbertGraph hΩ) :
-    h10HilbertGraphDualPrecompose hΩ S ell v = ell (S v) := by
-  rfl
-
-private theorem ae_reverseTimeValueCLM_compLpL_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
-    (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
-    (u : ReverseTimeL2V hΩ T) :
-    reverseTimeValueCLM hΩ T
-        (S.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u) =ᵐ[reverseTimeVolume T]
-      fun τ => valueCLM hΩ (S (u τ)) := by
-  filter_upwards [
-    coeFn_reverseTimeValueCLM hΩ T
-      (S.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u),
-    ContinuousLinearMap.coeFn_compLpL S u
-  ] with τ hvalue hS
-  rw [hvalue, hS]
-
-private theorem ae_h10HilbertGraphDualPrecompose_compLpL_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
-    (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
-    (g : ReverseTimeL2VStar hΩ T) :
-    (h10HilbertGraphDualPrecompose hΩ S).compLpL
-        (2 : ℝ≥0∞) (reverseTimeVolume T) g =ᵐ[reverseTimeVolume T]
-      fun τ => h10HilbertGraphDualPrecompose hΩ S (g τ) :=
-  ContinuousLinearMap.coeFn_compLpL (h10HilbertGraphDualPrecompose hΩ S) g
-
+/- Evaluation of dual precomposition. -/
 private theorem ae_pivot_symmetric_left_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
@@ -78,15 +45,22 @@ private theorem ae_pivot_symmetric_left_pairing
         reverseTimeVolume T]
       fun τ => inner ℝ (valueCLM hΩ (S v))
         (reverseTimeValueCLM hΩ T u τ) * eta.deriv τ := by
+  have _h_inl_9 : reverseTimeValueCLM hΩ T (S.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u) =ᵐ[reverseTimeVolume T] fun τ => valueCLM hΩ (S (u τ)) := by
+    filter_upwards [
+      coeFn_reverseTimeValueCLM hΩ T
+        (S.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u),
+      ContinuousLinearMap.coeFn_compLpL S u
+    ] with τ hvalue hS
+    rw [hvalue, hS]
   filter_upwards [
-    ae_reverseTimeValueCLM_compLpL_apply hΩ T S u,
+    _h_inl_9,
     coeFn_reverseTimeValueCLM hΩ T u
   ] with τ hSu hu
   rw [hSu, hu, hS]
 
 private theorem ae_pivot_symmetric_right_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
+    {d } {Ω : Set (PDE.Vec d)}
+    (hΩ : IsOpen Ω) (T )
     (g : ReverseTimeL2VStar hΩ T)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) :
@@ -95,16 +69,21 @@ private theorem ae_pivot_symmetric_right_pairing
         (2 : ℝ≥0∞) (reverseTimeVolume T) g τ) v * eta τ) =ᵐ[
         reverseTimeVolume T]
       fun τ => (g τ) (S v) * eta τ := by
-  filter_upwards [ae_h10HilbertGraphDualPrecompose_compLpL_apply hΩ T S g] with τ hg
+  have _h_inl_10 : (h10HilbertGraphDualPrecompose hΩ S).compLpL
+        (2 : ℝ≥0∞) (reverseTimeVolume T) g =ᵐ[reverseTimeVolume T]
+      fun τ => h10HilbertGraphDualPrecompose hΩ S (g τ) := by
+      exact (
+    ContinuousLinearMap.coeFn_compLpL (h10HilbertGraphDualPrecompose hΩ S) g
+    )
+  filter_upwards [_h_inl_10] with τ hg
   rw [hg]
   rfl
 
-/-- A Gelfand weak derivative is preserved by a bounded spatial operator that
+/- A Gelfand weak derivative is preserved by a bounded spatial operator that
 is symmetric for the scalar `L²` pivot. -/
 theorem HasGelfandWeakTimeDerivative.comp_of_pivot_symmetric
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
-    {u : ReverseTimeL2V hΩ T} {g : ReverseTimeL2VStar hΩ T}
+    {d } {Ω : Set (PDE.Vec d)}
+    {hΩ : IsOpen Ω} {T hT u g}
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (hS : ∀ x y : H10HilbertGraph hΩ,

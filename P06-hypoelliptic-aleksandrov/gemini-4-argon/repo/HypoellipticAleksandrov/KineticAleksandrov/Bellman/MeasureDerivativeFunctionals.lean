@@ -35,7 +35,6 @@ def bellmanWeightedTestIntegral (μ : Measure ℝ) (g : ℝ → ℝ) : BellmanRe
 /-- For a locally integrable weight the concrete test pairing is its literal measure integral. -/
 theorem bellmanWeightedTestIntegral_apply (μ : Measure ℝ) (g : ℝ → ℝ)
     (hg : LocallyIntegrable g μ) (φ : BellmanRealTest) :
-    bellmanWeightedTestIntegral μ g φ = ∫ x, φ x * g x ∂μ := by
-  exact TestFunction.integralAgainstBilinCLM_eq_integral (hg.locallyIntegrableOn Set.univ)
+    bellmanWeightedTestIntegral μ g φ = ∫ x, φ x * g x ∂μ :=  TestFunction.integralAgainstBilinCLM_eq_integral (hg.locallyIntegrableOn Set.univ)
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -20,17 +20,17 @@ open MeasureTheory
 open scoped ENNReal Topology
 
 /-- Product Lebesgue volume restricted to a time--velocity set. -/
-noncomputable abbrev timeVelocityVolumeOn {d : Nat} (U : Set (TimeVelocity d)) :
+noncomputable abbrev timeVelocityVolumeOn {d } (U : Set (TimeVelocity d)) :
     Measure (TimeVelocity d) :=
   (volume : Measure (TimeVelocity d)).restrict U
 
 /-- Restricted-product-volume `L^p` membership on time--velocity space. -/
-abbrev ParabolicMemLpOn {d : Nat} (U : Set (TimeVelocity d)) (p : ℝ≥0∞)
+abbrev ParabolicMemLpOn {d } (U : Set (TimeVelocity d)) (p : ℝ≥0∞)
     (f : TimeVelocity d → ℝ) : Prop :=
   MeasureTheory.MemLp f p (timeVelocityVolumeOn U)
 
 /-- The distributional time derivative relation on a raw time--velocity set. -/
-def HasWeakTimeDerivOn {d : Nat} (U : Set (TimeVelocity d))
+def HasWeakTimeDerivOn {d } (U : Set (TimeVelocity d))
     (u du : TimeVelocity d → ℝ) : Prop :=
   ∀ φ : TimeVelocity d → ℝ,
     ContDiff ℝ (⊤ : ℕ∞) φ →
@@ -41,7 +41,7 @@ def HasWeakTimeDerivOn {d : Nat} (U : Set (TimeVelocity d))
 
 /-- The distributional derivative relation in one velocity coordinate on a raw
 time--velocity set. -/
-def HasWeakVelocityPartialDerivOn {d : Nat} (U : Set (TimeVelocity d))
+def HasWeakVelocityPartialDerivOn {d } (U : Set (TimeVelocity d))
     (i : Fin d) (u dui : TimeVelocity d → ℝ) : Prop :=
   ∀ φ : TimeVelocity d → ℝ,
     ContDiff ℝ (⊤ : ℕ∞) φ →

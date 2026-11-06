@@ -4,6 +4,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationEndpo
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationApproximation
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationIterationSteps
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.SkeletonApproximation
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationParametersBounds
+import Mathlib.Algebra.Order.Floor.Ring
 
 /-! # Propagation with the explicit source constant for C-one-one skeletons -/
 
@@ -15,7 +18,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set
 
-/-- The explicit source constant propagates along the original C-one-one skeleton. -/
+/- The explicit source constant propagates along the original C-one-one skeleton. -/
 theorem propagation_explicit (d : ℕ) (hd : 1 ≤ d) (lam Lam H T0 T1 kx kv : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (hH : 0 < H)
     (hkx : 0 < kx) (hkv : 0 < kv) (hT0 : 0 < T0) (hT1 : T0 ≤ T1)
@@ -40,8 +43,31 @@ theorem propagation_explicit (d : ℕ) (hd : 1 ≤ d) (lam Lam H T0 T1 kx kv : �
   have hhsTP : hs ≤ TP := by
     have he := (propagation_step_time hH.le hhs (le_refl hs)).2
     linarith only [he, hTP0, hhs]
-  obtain ⟨hn, hh, hhstar, hhalf, hnstar, hnTP⟩ :=
-    propagation_ceiling_steps hhs hhsTP hTP1
+  obtain ⟨hn, hh, hhstar, hhalf, hnstar, hnTP⟩ : 0 < Nat.ceil (TP / hs) ∧
+      0 < TP / (Nat.ceil (TP / hs) : ℝ) ∧
+      TP / (Nat.ceil (TP / hs) : ℝ) ≤ hs ∧
+      hs / 2 ≤ TP / (Nat.ceil (TP / hs) : ℝ) ∧
+      Nat.ceil (TP / hs) ≤ Nat.ceil (T1 / hs) ∧
+      (Nat.ceil (TP / hs) : ℝ) * (TP / (Nat.ceil (TP / hs) : ℝ)) = TP := by
+    have hTP0 := hhs.trans_le hhsTP
+    have hn : 0 < Nat.ceil (TP / hs) := Nat.ceil_pos.mpr (div_pos hTP0 hhs)
+    have hnr : 0 < (Nat.ceil (TP / hs) : ℝ) := Nat.cast_pos.mpr hn
+    have hratio : 1 ≤ TP / hs := (le_div_iff₀ hhs).mpr (by simpa using hhsTP)
+    have hlo := Nat.le_ceil (TP / hs)
+    have hup := Nat.ceil_lt_add_one (div_pos hTP0 hhs).le
+    have htwice : (Nat.ceil (TP / hs) : ℝ) ≤ 2 * (TP / hs) := by
+      linarith only [hup, hratio]
+    refine ⟨hn, div_pos hTP0 hnr, ?_, ?_, ?_, ?_⟩
+    · apply (div_le_iff₀ hnr).mpr
+      have he := (div_le_iff₀ hhs).mp hlo
+      simpa only [mul_comm] using he
+    · apply (le_div_iff₀ hnr).mpr
+      have he := (le_div_iff₀ hhs).mp (by
+        simpa only [mul_div_assoc] using htwice :
+        (Nat.ceil (TP / hs) : ℝ) ≤ (2 * TP) / hs)
+      nlinarith only [he]
+    · exact Nat.ceil_mono (div_le_div_of_nonneg_right hTP1 hhs.le)
+    · field_simp
   let n := Nat.ceil (TP / hs)
   let h := TP / (n : ℝ)
   have hL : 0 < L := barrierL_pos hd hlam hLam (hT0.le.trans hT1)
@@ -58,8 +84,24 @@ theorem propagation_explicit (d : ℕ) (hd : 1 ≤ d) (lam Lam H T0 T1 kx kv : �
     (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))
   have hepspv : eps ≤ C * Real.sqrt (hs / 2) :=
     (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _))
-  have hcontain := corridor_half_subset_of_approximation tminus (-T0) TP kx kv eps
-    x v y w hepsx hepsv hclose
+  have hcontain : corridor tminus (-T0) TP (kx / 2) (kv / 2) y w ⊆ corridor tminus (-T0) TP kx kv x v := by
+    let a := (-T0)
+    intro P hP
+    obtain ⟨ht, hx, hv⟩ := hP
+    have hc := hclose (P.time - tminus) ht
+    refine ⟨ht, ?_, ?_⟩
+    · have heq : P.position - x (P.time - tminus) =
+          (P.position - y (P.time - tminus)) + (y (P.time - tminus) - x (P.time - tminus)) :=
+        by abel
+      rw [heq]
+      apply (PDE.vecEuclideanNorm_add_le _ _).trans
+      linarith only [hx, hc.1, hepsx]
+    · have heq : P.velocity - v (P.time - tminus) =
+          (P.velocity - w (P.time - tminus)) + (w (P.time - tminus) - v (P.time - tminus)) :=
+        by abel
+      rw [heq]
+      apply (PDE.vecEuclideanNorm_add_le _ _).trans
+      linarith only [hv, hc.2, hepsv]
   have hfinal := hclose TP ⟨by linarith only [hTP0, hT0], le_rfl⟩
   have hposition : PDE.vecEuclideanNorm (P.position - y TP) ≤ C * h ^ (3 / 2 : ℝ) := by
     rw [PDE.vecEuclideanNorm_sub_comm, ← hxP]

@@ -22,10 +22,10 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 /-- Terminal support remains strictly inside the moving ellipsoid throughout a window
 whose length depends on the collar distance and the common curve Lipschitz constant. -/
 theorem mem_straightenedEllipsoid_of_terminal_support_window
-    {n : ℕ} {r R d Z L τ : ℝ} (hr : 0 < r) (hR : 0 < R) (hd : 0 < d)
+    {n r R d Z L τ} (hr : 0 < r) (hR : 0 < R) (hd : 0 < d)
     (hL : 0 ≤ L) {g : ℝ → PDE.Vec n}
     (hgL : ∀ s t, PDE.vecEuclideanNorm (g s - g t) ≤ L * |s - t|)
-    {F : BoundedBorel (EvolutionAmbientState n)}
+    {F }
     (hsupp : ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
       2 * d ≤ r - PDE.vecEuclideanNorm (q.1 - g τ))
     (hsuppZ : ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),

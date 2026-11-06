@@ -23,7 +23,7 @@ def visitActiveInterval (c : Clock) : Interval :=
 /-- Actual entrance measure number `n+1`, with the source's clipped active and waiting domains. -/
 def visitEntrancePiece
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (n : ℕ) : Measure Point :=
   visitGamma P (visitEntranceInterval c)
@@ -35,7 +35,7 @@ def visitEntrancePiece
 /-- Actual outgoing measure after entrance number `n+1`. -/
 def visitOutgoingPiece
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (n : ℕ) : Measure Point :=
   visitBeta P (visitEntranceInterval c)
@@ -67,9 +67,9 @@ instance visitOutgoingPiece_isFiniteMeasure
 /-- The cylinder's actual counting measure includes the possible initial atom once. -/
 def visitStartsQ
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (Z0 : Point) (R : ℝ) (hR : 0 < R)
-    (P : Point) (_hP : P ∈ forwardCylinder Z0 R hR) : Measure Point :=
+    (P ) (_hP : P ∈ forwardCylinder Z0 R hR) : Measure Point :=
   Measure.sum (visitEntrancePiece hH hLE hlam hLam A c
     (capacityCylinderInterval Z0 R hR) Z0.time (Z0.time + R ^ 2) P)
 

@@ -22,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 of the canonical representatives whenever the corresponding weak derivative
 data are available. -/
 theorem reverseTimeHilbertRepresentative_sub_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hdu : HasGelfandWeakTimeDerivative hΩ T hT u g)

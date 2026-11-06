@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKry
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.PotentialWhole
 public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
 public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.SourceCorrection
+import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceQuadratic
+import PDEFoundation.Geometry.EuclideanBall.Topology
 
 /-! # Localization of the whole-space occupation potential -/
 
@@ -14,18 +16,18 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Set
 
-/-- The whole-space potential admits the source quadratic comparison on every ball. -/
-theorem wholeSpace_localization_direct {d : ℕ} (hH : HormanderHypoellipticityStatement)
+/- The whole-space potential admits the source quadratic comparison on every ball. -/
+theorem wholeSpace_localization_direct {d } (hH : HormanderHypoellipticityStatement)
     (hd : 0 < d)
-    {lam Lam : ℝ} {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+    {lam Lam B} (hB : IsSectionTwoCoefficient lam Lam B)
+    (K )
     (hP : HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
       MeasurableSet.univ (zIndependentCoefficient B) K)
     (F : TimeVelocity d → ℝ) (hF0 : ∀ q, 0 ≤ F q)
     (hFs : ContDiff ℝ (⊤ : ℕ∞) F) (hFc : HasCompactSupport F)
     (hFsupp : tsupport F ⊆ Ioo (0 : ℝ) 1 ×ˢ univ)
-    (α : ℝ) (hα0 : 0 ≤ α) (hα1 : α < 1) (vStar : PDE.Vec d)
-    (R : ℝ) (hR : 0 < R) (hRsq : R ^ 2 = max 1 (4 * d * Lam)) :
+    (α ) (hα0 : 0 ≤ α) (hα1 : α < 1) (vStar : PDE.Vec d)
+    (R ) (hR : 0 < R) (hRsq : R ^ 2 = max 1 (4 * d * Lam)) :
     let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
     let H := sSup (W '' (Icc (0 : ℝ) 1 ×ˢ univ))
     ∃ V : TimeVelocity d → ℝ,
@@ -51,8 +53,13 @@ theorem wholeSpace_localization_direct {d : ℕ} (hH : HormanderHypoellipticityS
   obtain ⟨V, hV⟩ := LocalHolder.exists_signed_source_ball_correction hd vStar R hR α 1
     hα1 lam Lam hB.1 hB.2.1 B (sectionTwoCoefficient_smooth hB)
     hB.2.2.2.2.1 hB.2.2.2.2.2 (fun z => -F z) hFs.neg
-  refine ⟨V, hV, ?_, occupationQuadratic_center_half (hB.1.le.trans hB.2.1)
-    hα0 hR hRsq⟩
+  have _h_xinl_0 : (2 * d * Lam * (1 - α)) / R ^ 2 ≤ 1 / 2 := by
+    have hLam := (hB.1.le.trans hB.2.1)
+    apply (div_le_iff₀ (sq_pos_of_pos hR)).mpr
+    have hb : 4 * (d : ℝ) * Lam ≤ R ^ 2 := hRsq ▸ le_max_right _ _
+    have ha : 0 ≤ 2 * (d : ℝ) * Lam := by positivity
+    nlinarith [mul_nonneg ha hα0]
+  refine ⟨V, hV, ?_, _h_xinl_0⟩
   apply wholeSpace_quadratic_comparison hB hα1 vStar (isBounded_euclideanBall vStar hR)
     hH0 W V F
   · exact hWcont.mono fun p hp => ⟨hp.1.2, by simp [movingDomain_wholeSpace]⟩

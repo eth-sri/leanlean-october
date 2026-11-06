@@ -11,7 +11,7 @@ open Set MeasureTheory Filter
 open scoped Topology
 
 /-- Finite positive decompositions become an exact measure sum when remainder mass vanishes. -/
-theorem measure_eq_sum_of_remainder_mass_tendsto_zero (mu : Measure Point)
+theorem measure_eq_sum_of_remainder_mass_tendsto_zero (mu )
     (piece remainder : ℕ → Measure Point)
     (hsplit : ∀ N, mu = ∑ n ∈ Finset.range N, piece n + remainder N)
     (hr : Tendsto (fun N => remainder N univ) atTop (𝓝 0)) :

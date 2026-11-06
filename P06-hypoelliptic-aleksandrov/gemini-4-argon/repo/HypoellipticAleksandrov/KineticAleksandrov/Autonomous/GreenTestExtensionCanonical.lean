@@ -24,7 +24,7 @@ theorem reconstruction_raw_smooth_to_packed (phi : Point → ℝ)
 /-- The source's canonical bounded smooth identity in raw physical coordinates. -/
 theorem strip_identity_bounded_smooth
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (phi : Point → ℝ)
     (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ (KineticPoint.equivProd 1).symm))
@@ -39,7 +39,7 @@ theorem strip_identity_bounded_smooth
 /-- The canonical finite-horizon exit measure has total mass one. -/
 theorem stripExit_mass_one
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) : stripExit hH hLE hlam hLam A H T e univ = 1 :=
   stripExitOfRealization_mass_one hH hlam hLam A H _

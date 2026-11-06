@@ -68,21 +68,18 @@ theorem abs_integral_le_of_smooth_tests_compact (ν μ : Measure E)
       (Eventually.of_forall fun _ => bot_le) ?_
     exact Eventually.of_forall fun n =>
       (eLpNorm_mono_measure _ hνsum).trans (hgn n)
-  have hLpμ : MemLp f p μ := hfp.mono_measure hμsum
+  have hLpμ := hfp.mono_measure hμsum
   have hL1 := tendsto_eLpNorm_one_of_finite μ hp
     (fun n => (hgc n).aestronglyMeasurable.sub hLpμ.aestronglyMeasurable) herrμ
-  have hi : Tendsto (fun n => ∫ x, g n x ∂μ) atTop (𝓝 (∫ x, f x ∂μ)) :=
+  have hi :=
     tendsto_integral_of_L1' f
       (Eventually.of_forall fun n => (hgc n).integrable_of_hasCompactSupport
         (hgcompact n)) hL1
-  have hLpν : MemLp f p (ν.restrict U) := hfp.mono_measure hνsum
+  have hLpν := hfp.mono_measure hνsum
   have hn := PDE.tendsto_eLpNorm_of_tendsto_sub hp
     (fun n => (hgc n).aestronglyMeasurable) hLpν.aestronglyMeasurable
     hLpν.eLpNorm_ne_top herrν
-  have hnr : Tendsto (fun n => (eLpNorm (g n) p (ν.restrict U)).toReal)
-      atTop (𝓝 (eLpNorm f p (ν.restrict U)).toReal) :=
-    (ENNReal.continuousAt_toReal hLpν.eLpNorm_ne_top).tendsto.comp hn
-  exact le_of_tendsto_of_tendsto' hi.abs (tendsto_const_nhds.mul hnr)
+  exact le_of_tendsto_of_tendsto' hi.abs (tendsto_const_nhds.mul ((ENNReal.continuousAt_toReal hLpν.eLpNorm_ne_top).tendsto.comp hn))
     (fun n => abs_integral_le_of_smooth_tests ν μ hU hp hpt hC htest
       (hgc n) (hgcompact n) (hgU n))
 

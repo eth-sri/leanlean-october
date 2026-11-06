@@ -24,7 +24,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Reconstruction
 
 variable {α β : Type*} [MeasurableSpace α] [MeasurableSpace β] {m : Measure α} {ν : Measure β}
 
-/-- Minkowski's inequality when the left-hand side is finite (duality argument). -/
+/- Minkowski's inequality when the left-hand side is finite (duality argument). -/
 lemma minkowski_aux [SFinite m] [SFinite ν] {p : ℝ} (hp : 1 < p) {F : α → β → ℝ≥0∞}
     (hF : Measurable (Function.uncurry F))
     (hA : ∫⁻ y, (∫⁻ ξ, F y ξ ∂ν) ^ p ∂m ≠ ∞) :
@@ -88,7 +88,7 @@ lemma minkowski_aux [SFinite m] [SFinite ν] {p : ℝ} (hp : 1 < p) {F : α → 
       _ ≤ _ := key
 
 
-/-- Truncation of a jointly measurable function to finite-measure boxes and bounded values. -/
+/- Truncation of a jointly measurable function to finite-measure boxes and bounded values. -/
 noncomputable def trunc (m : Measure α) (ν : Measure β) [SigmaFinite m] [SigmaFinite ν]
     (F : α → β → ℝ≥0∞) (n : ℕ) (y : α) (ξ : β) : ℝ≥0∞ :=
   (spanningSets m n ×ˢ spanningSets ν n).indicator (fun q => min (F q.1 q.2) n) (y, ξ)
@@ -97,21 +97,21 @@ section Trunc
 
 variable [SigmaFinite m] [SigmaFinite ν] {F : α → β → ℝ≥0∞}
 
-/-- The truncation is jointly measurable. -/
+/- The truncation is jointly measurable. -/
 lemma measurable_trunc (hF : Measurable (Function.uncurry F)) (n : ℕ) :
     Measurable (Function.uncurry (trunc m ν F n)) := by
   unfold trunc
   exact (hF.min measurable_const).indicator
     ((measurableSet_spanningSets m n).prod (measurableSet_spanningSets ν n))
 
-/-- The truncation is dominated by `F`. -/
+/- The truncation is dominated by `F`. -/
 lemma trunc_le (n : ℕ) (y : α) (ξ : β) : trunc m ν F n y ξ ≤ F y ξ := by
   unfold trunc
   by_cases h : (y, ξ) ∈ spanningSets m n ×ˢ spanningSets ν n
   · rw [Set.indicator_of_mem h]; exact min_le_left _ _
   · rw [Set.indicator_of_notMem h]; exact zero_le
 
-/-- The truncation is monotone in `n`. -/
+/- The truncation is monotone in `n`. -/
 lemma trunc_mono (y : α) (ξ : β) : Monotone fun n => trunc m ν F n y ξ := by
   intro a b hab
   show trunc m ν F a y ξ ≤ trunc m ν F b y ξ
@@ -123,7 +123,7 @@ lemma trunc_mono (y : α) (ξ : β) : Monotone fun n => trunc m ν F n y ξ := b
     exact min_le_min le_rfl (by exact_mod_cast hab)
   · rw [Set.indicator_of_notMem h]; exact zero_le
 
-/-- The truncations increase to `F`. -/
+/- The truncations increase to `F`. -/
 lemma iSup_trunc (y : α) (ξ : β) : ⨆ n, trunc m ν F n y ξ = F y ξ := by
   refine le_antisymm (iSup_le fun n => trunc_le n y ξ) ?_
   refine le_of_forall_lt fun c hc => ?_
@@ -139,7 +139,7 @@ lemma iSup_trunc (y : α) (ξ : β) : ⨆ n, trunc m ν F n y ξ = F y ξ := by
   rw [Set.indicator_of_mem hmem]
   exact lt_min hc (hk.trans_le (by exact_mod_cast le_max_right _ _))
 
-/-- The truncated Minkowski left-hand side is finite. -/
+/- The truncated Minkowski left-hand side is finite. -/
 lemma lintegral_trunc_ne_top {p : ℝ} (hp : 0 < p) (n : ℕ) :
     ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ p ∂m ≠ ∞ := by
   set c : ℝ≥0∞ := n * ν (spanningSets ν n) with hc
@@ -178,46 +178,5 @@ lemma lintegral_trunc_ne_top {p : ℝ} (hp : 0 < p) (n : ℕ) :
 end Trunc
 
 
-/-- Minkowski's integral inequality for nonnegative jointly measurable functions. -/
-theorem minkowski_integral [SigmaFinite m] [SigmaFinite ν] {p : ℝ} (hp : 1 < p)
-    {F : α → β → ℝ≥0∞} (hF : Measurable (Function.uncurry F)) :
-    (∫⁻ y, (∫⁻ ξ, F y ξ ∂ν) ^ p ∂m) ^ (1 / p) ≤
-      ∫⁻ ξ, (∫⁻ y, F y ξ ^ p ∂m) ^ (1 / p) ∂ν := by
-  have hp0 : 0 < p := by linarith
-  set B := ∫⁻ ξ, (∫⁻ y, F y ξ ^ p ∂m) ^ (1 / p) ∂ν with hB
-  have hGm := measurable_trunc (m := m) (ν := ν) hF
-  have hn : ∀ n, ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ p ∂m ≤ B ^ p := by
-    intro n
-    have h1 := minkowski_aux (m := m) (ν := ν) hp (hGm n) (lintegral_trunc_ne_top hp0 n)
-    have h2 : ∫⁻ ξ, (∫⁻ y, trunc m ν F n y ξ ^ p ∂m) ^ (1 / p) ∂ν ≤ B := by
-      refine lintegral_mono fun ξ => ?_
-      refine ENNReal.rpow_le_rpow (lintegral_mono fun y => ?_) (by positivity)
-      exact ENNReal.rpow_le_rpow (trunc_le n y ξ) hp0.le
-    have h3 := ENNReal.rpow_le_rpow (h1.trans h2) hp0.le
-    rwa [← ENNReal.rpow_mul, one_div, inv_mul_cancel₀ hp0.ne', ENNReal.rpow_one] at h3
-  have hI : ∀ y, ⨆ n, ∫⁻ ξ, trunc m ν F n y ξ ∂ν = ∫⁻ ξ, F y ξ ∂ν := by
-    intro y
-    have hmeas : ∀ n, Measurable fun ξ => trunc m ν F n y ξ :=
-      fun n => (hGm n).comp measurable_prodMk_left
-    have := lintegral_iSup (μ := ν) hmeas (fun a b hab ξ => trunc_mono y ξ hab)
-    rw [← this]
-    exact lintegral_congr fun ξ => iSup_trunc y ξ
-  have hA : ∫⁻ y, (∫⁻ ξ, F y ξ ∂ν) ^ p ∂m =
-      ⨆ n, ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ p ∂m := by
-    have hmono : ∀ y, Monotone fun n => ∫⁻ ξ, trunc m ν F n y ξ ∂ν :=
-      fun y a b hab => lintegral_mono fun ξ => trunc_mono y ξ hab
-    rw [← lintegral_iSup]
-    · refine lintegral_congr fun y => ?_
-      rw [← hI y]
-      exact (ENNReal.monotone_rpow_of_nonneg hp0.le).map_iSup_of_continuousAt
-        (ENNReal.continuous_rpow_const.continuousAt) (ENNReal.zero_rpow_of_pos hp0)
-    · intro n
-      exact ((hGm n).lintegral_prod_right').pow_const _
-    · intro a b hab y
-      exact ENNReal.rpow_le_rpow (lintegral_mono fun ξ => trunc_mono y ξ hab) hp0.le
-  have hAB : ∫⁻ y, (∫⁻ ξ, F y ξ ∂ν) ^ p ∂m ≤ B ^ p := by
-    rw [hA]; exact iSup_le hn
-  have := ENNReal.rpow_le_rpow hAB (show 0 ≤ 1 / p by positivity)
-  rwa [← ENNReal.rpow_mul, mul_one_div_cancel hp0.ne', ENNReal.rpow_one] at this
-
+/- Minkowski's integral inequality for nonnegative jointly measurable functions. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Reconstruction

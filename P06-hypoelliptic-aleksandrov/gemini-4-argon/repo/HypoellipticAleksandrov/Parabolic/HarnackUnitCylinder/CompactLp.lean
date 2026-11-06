@@ -15,12 +15,11 @@ open scoped ENNReal
 
 /-- Continuity on a neighborhood of a compact closure gives every restricted Lp bound. -/
 theorem memLp_on_of_continuousOn_compact_closure
-    {d : ℕ} {U V : Set (TimeVelocity d)} {f : TimeVelocity d → ℝ}
+    {d U V} {f : TimeVelocity d → ℝ}
     (hf : ContinuousOn f U) (hV : IsOpen V)
     (hcompact : IsCompact (closure V)) (hVU : closure V ⊆ U)
     (p : ℝ≥0∞) : MemLp f p (timeVelocityVolumeOn V) := by
-  have hcont := hf.mono hVU
-  obtain ⟨C, hC⟩ := hcompact.exists_bound_of_continuousOn hcont
+  obtain ⟨C, hC⟩ := hcompact.exists_bound_of_continuousOn (hf.mono hVU)
   have hfin : volume V < ⊤ :=
     lt_of_le_of_lt (measure_mono subset_closure) hcompact.measure_lt_top
   letI : IsFiniteMeasure (timeVelocityVolumeOn V) := ⟨by

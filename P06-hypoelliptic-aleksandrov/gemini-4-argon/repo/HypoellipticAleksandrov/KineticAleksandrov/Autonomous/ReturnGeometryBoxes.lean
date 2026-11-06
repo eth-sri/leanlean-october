@@ -12,32 +12,24 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Set Holder
 
-/-- Small nested open boxes around `(1,0,v)`, with physical Euclidean coordinate radii. -/
+/- Small nested open boxes around `(1,0,v)`, with physical Euclidean coordinate radii. -/
 def returnBox (v R : ℝ) : Set Point :=
   {p | |p.time - 1| < R / 64 ∧ PDE.vecEuclideanNorm p.position < R / 64 ∧
     PDE.vecEuclideanNorm (p.velocity - fun _ => v) < R / 64}
 
-/-- The reference boxes are open in the kinetic topology. -/
-theorem returnBox_isOpen (v R : ℝ) : IsOpen (returnBox v R) :=
-  (isOpen_lt ((continuous_time.sub continuous_const).abs) continuous_const).inter
-    ((isOpen_lt (PDE.continuous_vecEuclideanNorm.comp continuous_position)
-      continuous_const).inter (isOpen_lt
-        (PDE.continuous_vecEuclideanNorm.comp (continuous_velocity.sub continuous_const))
-        continuous_const))
-
-/-- One-dimensional Euclidean norm is the absolute value of the unique coordinate. -/
+/- The reference boxes are open in the kinetic topology. -/
 theorem return_norm_one (w : PDE.Vec 1) : PDE.vecEuclideanNorm w = |w 0| := by
   simp [PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot,
     ← pow_two, Real.sqrt_sq_eq_abs]
 
-/-- The centre lies in every positive-radius return box. -/
+/- The centre lies in every positive-radius return box. -/
 theorem returnBox_center (v R : ℝ) (hR : 0 < R) : point 1 0 v ∈ returnBox v R := by
   simp only [returnBox, point, mem_ofPred_eq, sub_self, abs_zero, return_norm_one,
     Pi.sub_apply]
   exact ⟨by positivity, by positivity, by positivity⟩
 
-/-- Coordinate bounds for every point in the closure of a source backward cylinder. -/
-theorem returnCylinder_bounds (z p : Point) (r : ℝ) (hr : 0 < r)
+/- Coordinate bounds for every point in the closure of a source backward cylinder. -/
+theorem returnCylinder_bounds (z p : Point) (r ) (hr : 0 < r)
     (hp : p ∈ closure (backwardCylinder z r)) :
     |p.time - z.time| ≤ r ^ 2 ∧
       PDE.vecEuclideanNorm (p.velocity - z.velocity) ≤ r ∧
@@ -61,7 +53,7 @@ theorem returnCylinder_bounds (z p : Point) (r : ℝ) (hr : 0 < r)
   simpa only [sub_zero] using
     ((PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hr 3)).mp hq.2.2.2).le
 
-/-- Every return box used in the iteration lies in the reference region. -/
+/- Every return box used in the iteration lies in the reference region. -/
 theorem returnBox_subset_reference (v R : ℝ) (hv : |v| ≤ 1) (hR : R ≤ 1) :
     returnBox v R ⊆ returnReferenceRegion := by
   intro p hp
@@ -71,7 +63,7 @@ theorem returnBox_subset_reference (v R : ℝ) (hv : |v| ≤ 1) (hR : R ≤ 1) :
   exact ⟨⟨by linarith [ht.1], by linarith [ht.2]⟩,
     by linarith [hp.2.1], by linarith [hp.2.2]⟩
 
-/-- A radius proportional to the box gap leaves room for all surrounding cylinders. -/
+/- A radius proportional to the box gap leaves room for all surrounding cylinders. -/
 theorem returnBox_cylinder_subset (v a b : ℝ) (hv : |v| ≤ 1)
     (ha : 1 / 2 ≤ a) (hab : a < b) (hb : b ≤ 1)
     (z : Point) (hz : z ∈ returnBox v a) :
@@ -83,7 +75,7 @@ theorem returnBox_cylinder_subset (v a b : ℝ) (hv : |v| ≤ 1)
   have hrcube : r ^ 3 ≤ r := by
     have hh := mul_le_mul_of_nonneg_right hrsq hr.le
     nlinarith
-  have hvelz : PDE.vecEuclideanNorm z.velocity ≤ 2 :=
+  have hvelz :=
     ((returnBox_subset_reference v a hv (by linarith)) hz).2.2
   intro p hp
   obtain ⟨ht, hvp, hxp⟩ := returnCylinder_bounds z p r hr hp

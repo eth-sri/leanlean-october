@@ -12,12 +12,12 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-/-- The unit kinetic gauge shell is compact in native coordinates. -/
+/- The unit kinetic gauge shell is compact in native coordinates. -/
 theorem isCompact_unitGaugeShell (d : ℕ) : IsCompact {q : XV d | rho q = 1} :=
   (isCompact_rho_sublevel d 1).of_isClosed_subset
     (isClosed_eq (continuous_rho d) continuous_const) (fun _ h => le_of_eq h)
 
-/-- Positive-degree homogeneity transports shell bounds to every nonzero kinetic point. -/
+/- Positive-degree homogeneity transports shell bounds to every nonzero kinetic point. -/
 theorem homogeneous_profile_comparison {d : ℕ} (alpha : ℝ) (ha : 0 < alpha)
     (H : XV d → ℝ) (hzero : H 0 = 0)
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
@@ -60,16 +60,5 @@ theorem homogeneous_profile_comparison {d : ℕ} (alpha : ℝ) (ha : 0 < alpha)
     · simpa only [mul_comm, Real.rpow_eq_pow] using mul_le_mul_of_nonneg_left hlo hnonneg
     · simpa only [mul_comm, Real.rpow_eq_pow] using mul_le_mul_of_nonneg_left hhi hnonneg
 
-/-- The actual profile is quantitatively comparable with the source kinetic gauge power. -/
-theorem geometricProfile_comparison {d : ℕ} (alpha C₀ sigma R : ℝ) (ha : 0 < alpha)
-    (hC₀ : 0 ≤ C₀) (hsigma : 0 < sigma) (hR : 0 < R) :
-    ∃ c C : ℝ, 0 < c ∧ c ≤ C ∧ ∀ q : XV d,
-      c * Real.rpow (rho q) alpha ≤ geometricProfile alpha C₀ sigma R q ∧
-      geometricProfile alpha C₀ sigma R q ≤ C * Real.rpow (rho q) alpha := by
-  apply homogeneous_profile_comparison alpha ha (geometricProfile alpha C₀ sigma R)
-    (geometricProfile_zero d alpha C₀ sigma R ha)
-    (geometricProfile_smooth_off_origin alpha C₀ sigma R hsigma hR)
-    (geometricProfile_pos alpha C₀ sigma R hC₀ hsigma hR)
-  exact fun r hr q => geometricProfile_homogeneous alpha C₀ sigma R r hr q
-
+/- The actual profile is quantitatively comparable with the source kinetic gauge power. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

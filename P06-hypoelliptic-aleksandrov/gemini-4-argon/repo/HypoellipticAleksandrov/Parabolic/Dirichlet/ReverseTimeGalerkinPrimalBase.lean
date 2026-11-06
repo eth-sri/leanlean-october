@@ -100,10 +100,9 @@ theorem continuousOn_reverseTimeGalerkinPrimalRaw
       N initial
   let curveSpec := selected.choose_spec
   have hspec := curveSpec.choose_spec
-  have hx : ContinuousOn selected.choose (Set.Icc 0 (r₁ - r₀)) :=
+  have hx :=
     hspec.2.2.1
-  let R : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
-      H10HilbertGraph hΩ :=
+  let R :=
     (galerkinSpace hΩ N).subtypeL.comp
       (LinearMap.toContinuousLinearMap (galerkinReconstruct hΩ N))
   have hR : ContinuousOn (fun τ => R (selected.choose τ)) (Set.Icc 0 (r₁ - r₀)) :=
@@ -124,9 +123,7 @@ theorem reverseTimeGalerkinPrimalRaw_zero
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos).choose_spec.2).choose_spec.2
       N initial
   let curveSpec := selected.choose_spec
-  have hspec := curveSpec.choose_spec
-  have hx0 : selected.choose 0 = (galerkinSpaceBasis hΩ N).equivFun
-      (galerkinInitialProjection hΩ N initial) := hspec.1
+  have hx0 := curveSpec.choose_spec.1
   calc
     reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial 0 =
@@ -142,7 +139,7 @@ theorem reverseTimeGalerkinPrimalRaw_zero
 /-- The selected raw curve obeys the sharp pointwise value-energy estimate. -/
 theorem reverseTimeGalerkinPrimal_value_energy
     (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
-    (t : ℝ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
+    (t ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
     ‖valueCLM hΩ
       (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial t)‖ ^ 2 ≤
@@ -165,7 +162,7 @@ theorem reverseTimeGalerkinPrimal_value_energy
 /-- The selected raw curve obeys the sharp integrated gradient-energy estimate. -/
 theorem reverseTimeGalerkinPrimal_gradient_energy
     (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
-    (t : ℝ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
+    (t ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
     lam * ∫ τ in Set.Ioc 0 t,
       ‖gradientCLM hΩ
         (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
@@ -254,7 +251,7 @@ theorem reverseTimeGalerkinPrimal_compactTime
       HasDerivWithinAt x (xdot τ) (Set.Icc 0 T) τ := by
     intro τ hτ
     let τ' : Set.Icc 0 (r₁ - r₀) := ⟨τ, by simpa only [T] using hτ⟩
-    have hproj : Set.projIcc 0 T hT τ = τ' := Set.projIcc_of_mem hT hτ
+    have hproj := Set.projIcc_of_mem hT hτ
     simpa only [x, xdot, A, f, T, hproj,
       reverseTimeGalerkinPrimalCoordinate] using (hspec.2.2.2.2.1 τ').1
   have hrows : ∀ τ : Set.Icc 0 T,
@@ -270,7 +267,7 @@ theorem reverseTimeGalerkinPrimal_compactTime
             ⟨τ.1, by simpa only [T] using τ.2⟩ i := by
     intro τ i
     let τ' : Set.Icc 0 (r₁ - r₀) := ⟨τ.1, by simpa only [T] using τ.2⟩
-    have hproj : Set.projIcc 0 T hT τ.1 = τ' := Set.projIcc_of_mem hT τ.2
+    have hproj := Set.projIcc_of_mem hT τ.2
     have hu := hspec.2.1
     simpa only [x, xdot, A, f, T, hproj,
       reverseTimeGalerkinPrimalCoordinate, hu] using

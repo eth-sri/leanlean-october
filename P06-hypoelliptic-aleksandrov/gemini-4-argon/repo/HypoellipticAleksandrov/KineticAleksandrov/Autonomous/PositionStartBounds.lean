@@ -13,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set
 
 /-- The source localized quadratic has a uniform generator bound on the active interval. -/
-theorem positionStartQuadratic_operator_bound {lam Lam : ℝ}
+theorem positionStartQuadratic_operator_bound {lam Lam }
     (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock) (Y : ℝ) (p : Point),
       |c.vbar| = 2 * c.r → p.velocity 0 ∈ c.active →

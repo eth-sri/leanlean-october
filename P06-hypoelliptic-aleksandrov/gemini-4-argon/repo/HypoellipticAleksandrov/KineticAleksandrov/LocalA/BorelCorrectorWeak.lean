@@ -15,8 +15,8 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic Evolution SectionTwo TheoremA Occupation
 
-/-- Integration by parts for the classical residual of a smooth coefficient. -/
-theorem borelCorrector_classical_weak {d : ℕ} {lam Lam : ℝ}
+/- Integration by parts for the classical residual of a smooth coefficient. -/
+theorem borelCorrector_classical_weak {d lam Lam}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     {D : Set (KineticPoint d)} (hD : IsOpen D)
     (u : KineticPoint d → ℝ) (hu : IsKineticC112On u D)
@@ -71,50 +71,25 @@ theorem borelCorrector_classical_weak {d : ℕ} {lam Lam : ℝ}
   simp only [PDE.vecDot]
   ring
 
-/-- The physical whole-space signed potential, with the required coordinate swap. -/
-def borelCorrectorPotential {d : ℕ}
+/- The physical whole-space signed potential, with the required coordinate swap. -/
+def borelCorrectorPotential {d }
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
     (T : ℝ) (F : KineticPoint d → ℝ) (P : KineticPoint d) : ℝ :=
   duhamelPotential K T (F ∘ sectionTwoPoint) (sectionTwoPoint P)
 
-/-- Bounded whole-space physical sources satisfy the signed weak equation. -/
-theorem borelCorrectorPotential_weak {d : ℕ} {lam Lam : ℝ}
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hreal : RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
-      MeasurableSet.univ (zIndependentCoefficient B) (identityDrift d) S K)
-    (T : ℝ) (F : KineticPoint d → ℝ) (hF : Measurable F)
-    (M : ℝ) (hM : 0 ≤ M) (hFb : ∀ P, |F P| ≤ M) :
-    IsKineticWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
-      (evolutionPastOpenCylinder (wholeSpace d) (fun _ => (0 : PDE.Vec d)) T)
-      (borelCorrectorPotential K T F ∘ sectionTwoPoint)
-      (fun Q => -F (sectionTwoPoint Q)) := by
-  have heq : borelCorrectorPotential K T F ∘ sectionTwoPoint =
-      duhamelPotential K T (F ∘ sectionTwoPoint) := by
-    funext Q
-    simp only [borelCorrectorPotential, Function.comp_apply]
-    rw [sectionTwoPoint_involutive Q]
-  rw [heq]
-  obtain ⟨hsm, hsym, _⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB
-  exact duhamel_bounded_isKineticWeakTransportedSolution (wholeSpace_admissible d)
-    MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
-    S K hreal hsm hsym (identityDrift_smooth d) (F ∘ sectionTwoPoint)
-    (hF.comp (continuous_sectionTwoPoint d).measurable) M hM (fun Q => hFb _) T
-
-private theorem corrector_integrable_mul_test {d : ℕ} {D : Set (EvolutionVec d)}
+/- Bounded whole-space physical sources satisfy the signed weak equation. -/
+private theorem corrector_integrable_mul_test {d D}
     {u ψ : EvolutionVec d → ℝ} (hu : LocallyIntegrableOn u D volume)
     (hψ : Continuous ψ) (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ D) :
     IntegrableOn (fun x => u x * ψ x) D volume := by
-  have hi := hu.integrableOn_compact_subset hs hc.isCompact
-  have hm := hi.mul_continuousOn hψ.continuousOn hc.isCompact
+  have hm := (hu.integrableOn_compact_subset hs hc.isCompact).mul_continuousOn hψ.continuousOn hc.isCompact
   have hg : Integrable (fun x => u x * ψ x) volume := by
     apply (integrableOn_iff_integrable_of_support_subset ?_).mp hm
     intro x hx
     exact tsupport_mul_subset_right (subset_closure hx)
   exact hg.integrableOn
 
-/-- Opposite genuine weak sources cancel; this is internal weak-equation calculus. -/
+/- Opposite genuine weak sources cancel; this is internal weak-equation calculus. -/
 theorem borelCorrector_weak_cancel {d : ℕ}
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (hB : IsSmoothFullKineticCoefficient B) (hb : IsSmoothDrift b)

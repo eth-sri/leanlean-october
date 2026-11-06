@@ -42,9 +42,8 @@ theorem truncationPoint_spatial_line (g : ℝ → PDE.Vec n) (x w : EvolutionVec
   rw [spatialPack_add, spatialPack_smul]
 
 /-- A scalar C1,2 function pulls back with the expected first spatial line derivative. -/
-theorem truncation_hasLineDerivAt_spatial {g : ℝ → PDE.Vec n}
-    {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
-    (hu : IsScalarC12On u U) {x w : EvolutionVec n}
+theorem truncation_hasLineDerivAt_spatial {g u U}
+    (hu : IsScalarC12On u U) {x w }
     (hx : truncationPoint g x ∈ U) (hw : timeCoord n w = 0) :
     HasLineDerivAt ℝ (u ∘ truncationPoint g)
       (PDE.vecDot (scalarSpatialGradient u (truncationPoint g x))
@@ -57,17 +56,15 @@ theorem truncation_hasLineDerivAt_spatial {g : ℝ → PDE.Vec n}
     scalarSpatialGradient] using! h
 
 /-- Spatial line derivatives of gradient entries are scalar Hessian entries. -/
-theorem truncation_gradient_hasLineDerivAt {g : ℝ → PDE.Vec n}
-    {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
-    (hu : IsScalarC12On u U) {x w : EvolutionVec n}
+theorem truncation_gradient_hasLineDerivAt {g u U}
+    (hu : IsScalarC12On u U) {x w }
     (hx : truncationPoint g x ∈ U) (hw : timeCoord n w = 0)
     (i j : Fin (n + n))
     (hdir : spatialPack (diffusedCoord n w) (transportedCoord n w) = PDE.basisVec i) :
     HasLineDerivAt ℝ (fun y => scalarSpatialGradient u (truncationPoint g y) j)
       (scalarSpatialHessian u (truncationPoint g x) i j) x w := by
   have hc2 := hu.spatialSlice_contDiffAt hx
-  have hd : DifferentiableAt ℝ (fderiv ℝ (fun y => u ((truncationPoint g x).1, y)))
-      (truncationPoint g x).2 :=
+  have hd :=
     (hc2.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have h := (hd.clm_apply (differentiableAt_const (PDE.basisVec j))).hasFDerivAt
     |>.hasLineDerivAt (PDE.basisVec i)
@@ -87,16 +84,15 @@ theorem truncation_gradient_hasLineDerivAt {g : ℝ → PDE.Vec n}
     scalarSpatialGradient, PDE.classicalGradient] using! h
 
 /-- The time line derivative includes the exact moving-frame correction. -/
-theorem truncation_hasLineDerivAt_time {g : ℝ → PDE.Vec n}
-    (hg : ContDiff ℝ (⊤ : ℕ∞) g) {u : TimeVelocity (n + n) → ℝ}
-    {U : Set (TimeVelocity (n + n))} (hU : IsOpen U) (hu : IsScalarC12On u U)
-    {x : EvolutionVec n} (hx : truncationPoint g x ∈ U) :
+theorem truncation_hasLineDerivAt_time {g }
+    (hg : ContDiff ℝ (⊤ : ℕ∞) g) {u U} (hU : IsOpen U) (hu : IsScalarC12On u U)
+    {x } (hx : truncationPoint g x ∈ U) :
     HasLineDerivAt ℝ (u ∘ truncationPoint g)
       (scalarTimeDerivative u (truncationPoint g x) +
         PDE.vecDot (-deriv g (timeCoord n x))
           (spatialY (scalarSpatialGradient u (truncationPoint g x)))) x basisT := by
   have hdu := scalarC12_differentiableAt hU hu hx
-  have hd : DifferentiableAt ℝ (u ∘ truncationPoint g) x :=
+  have hd :=
     hdu.comp x ((contDiff_truncationPoint hg).differentiable (by simp) x)
   have he : u ∘ truncationPoint g = straightenedPullback g u ∘ evolutionHomeomorph n := rfl
   have h := hd.hasFDerivAt.hasLineDerivAt basisT

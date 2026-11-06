@@ -24,12 +24,12 @@ theorem barrierCutoff_bounds (theta : ℝ) : 0 ≤ barrierCutoff theta ∧ barri
   ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
 
 /-- The barrier cutoff vanishes throughout the left cutoff region. -/
-theorem barrierCutoff_zero {theta : ℝ} (htheta : theta ≤ -(1 / 128 : ℝ)) :
+theorem barrierCutoff_zero {theta } (htheta : theta ≤ -(1 / 128 : ℝ)) :
     barrierCutoff theta = 0 :=
   Real.smoothTransition.zero_of_nonpos (by linarith only [htheta])
 
 /-- The barrier cutoff is exactly one on all nonnegative times. -/
-theorem barrierCutoff_one {theta : ℝ} (htheta : 0 ≤ theta) : barrierCutoff theta = 1 :=
+theorem barrierCutoff_one {theta } (htheta : 0 ≤ theta) : barrierCutoff theta = 1 :=
   Real.smoothTransition.one_of_one_le (by linarith only [htheta])
 
 /-- The source damping coefficient, fixed before the block and amplitude. -/
@@ -37,7 +37,7 @@ def Xi (d : ℕ) (lam Lam H h : ℝ) : ℝ :=
   2 * Lam * (128 * (d : ℝ) / lam) / h + 2 * H ^ 2 / (3 * lam)
 
 /-- The raw quadratic form is smooth at every point of the positive-definite strip. -/
-theorem contDiffAt_qform_raw {d : ℕ} {lam h s : ℝ}
+theorem contDiffAt_qform_raw {d lam h s}
     (hlam : 0 < lam) (hh : 0 < h) (hs : -(h / 128) ≤ s) (y V : PDE.Vec d) :
     ContDiffAt ℝ (⊤ : ℕ∞)
       (fun Q : ℝ × (PDE.Vec d × PDE.Vec d) => qform lam h Q.1 Q.2.1 Q.2.2)

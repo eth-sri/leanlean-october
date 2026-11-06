@@ -4,6 +4,13 @@ import Mathlib.Topology.Order.Compact
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonLinear
 import Mathlib.Analysis.Calculus.Deriv.Add
+import HypoellipticAleksandrov.KineticAleksandrov.Operator
+import HypoellipticAleksandrov.Parabolic.MinimumPrinciple
+import Mathlib.Analysis.Calculus.DerivativeTest
+import Mathlib.Analysis.Calculus.FDeriv.Symmetric
+import Mathlib.Analysis.Calculus.LocalExtr.Basic
+import Mathlib.Analysis.Matrix.Order
+import Mathlib.LinearAlgebra.Matrix.PosDef
 
 /-!
 # Comparison on compact regions
@@ -30,8 +37,9 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped MatrixOrder Topology
+open Matrix
 
-/-- Maximum principle on a compact region, strict version. -/
+/- Maximum principle on a compact region, strict version. -/
 theorem le_zero_of_strict_viscous_compact {n : ℕ} {B : FullKineticCoefficient n}
     {b : PDE.Vec n → PDE.Vec n} {ε : ℝ} {K D : Set (KineticPoint n)}
     {w : KineticPoint n → ℝ} (hε : 0 ≤ ε) (hKc : IsCompact K)
@@ -52,12 +60,50 @@ theorem le_zero_of_strict_viscous_compact {n : ℕ} {B : FullKineticCoefficient 
     exact absurd (hbdry p hpK h) (not_le.mpr hwp)
   have hmax : ∀ᶠ q in 𝓝 p, p.time ≤ q.time → w q ≤ w p := by
     filter_upwards [hfut p hpD] with q hq hqt using hpmax (hq hqt)
+  have _h_xinl_0 : viscousTransportedOperator B b ε w p ≤ 0 := by
+    have hw := (hreg p hpD)
+    have hB := (hB p hpD)
+    have hymax : IsLocalMax (fun y => w ⟨p.time, y, p.velocity⟩) p.position := by
+      have := eventually_future_curve hmax (a := p.position)
+        (c := fun y => (⟨p.time, y, p.velocity⟩ : KineticPoint n))
+        (KineticPoint.continuous_mk continuous_const continuous_id continuous_const) rfl
+      filter_upwards [this] with y hy
+      exact hy le_rfl
+    have hzmax : IsLocalMax (fun z => w ⟨p.time, p.position, z⟩) p.velocity := by
+      have := eventually_future_curve hmax (a := p.velocity)
+        (c := fun z => (⟨p.time, p.position, z⟩ : KineticPoint n))
+        (KineticPoint.continuous_mk continuous_const continuous_const continuous_id) rfl
+      filter_upwards [this] with z hz
+      exact hz le_rfl
+    have htmax : ∀ᶠ t in 𝓝 p.time, p.time ≤ t → w ⟨t, p.position, p.velocity⟩ ≤ w p :=
+      eventually_future_curve hmax (a := p.time)
+        (c := fun t => (⟨t, p.position, p.velocity⟩ : KineticPoint n))
+        (KineticPoint.continuous_mk continuous_id continuous_const continuous_const) rfl
+    have htime : kineticTimeDerivative w p ≤ 0 :=
+      deriv_nonpos_of_future_localMax (hw.time)
+        htmax
+    have hdiff : matrixContraction (B p.time p.position p.velocity) (diffusedHessian w p) ≤ 0 := by
+      rw [diffusedHessian_eq_sliceHessian]
+      exact matrixContraction_sliceHessian_nonpos_of_localMax
+        hw.position hymax hB
+    have hgrad : kineticVelocityGradient w p = 0 := by
+      have h := classicalGradient_eq_zero_of_localMax
+        (hw.velocity.differentiableAt (by norm_num)) hzmax
+      exact h
+    have hlap : ∑ i, kineticVelocityHessian w p i i ≤ 0 := by
+      rw [kineticVelocityHessian_eq_sliceHessian]
+      exact sum_diag_sliceHessian_nonpos_of_localMax hw.velocity hzmax
+    rw [viscousTransportedOperator_apply, transportedForwardOperator_apply, hgrad]
+    simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero, add_zero,
+      fullKineticCoefficientAt_apply]
+    have := mul_nonneg hε (neg_nonneg.mpr hlap)
+    linarith
   exact absurd
-    (viscousTransportedOperator_nonpos_of_future_localMax hε (hreg p hpD) hmax (hB p hpD))
+    _h_xinl_0
     (not_le.mpr (hpos p hpD))
 
-/-- The time coordinate has `L_ε (σ - T) = 1`. -/
-theorem viscousTransportedOperator_time_sub {n : ℕ} (B : FullKineticCoefficient n)
+/- The time coordinate has `L_ε (σ - T) = 1`. -/
+theorem viscousTransportedOperator_time_sub {n } (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n) (ε T : ℝ) (p : KineticPoint n) :
     viscousTransportedOperator B b ε (fun q => q.time - T) p = 1 := by
   have hh : ∀ x : PDE.Vec n, sliceHessian (fun _ : PDE.Vec n => p.time - T) x = 0 := by
@@ -86,14 +132,14 @@ theorem viscousTransportedOperator_time_sub {n : ℕ} (B : FullKineticCoefficien
   rw [h1, h2, h3, hg]
   simp [PDE.vecDot]
 
-/-- The time coordinate `σ - T` is slice regular everywhere. -/
-theorem isSliceRegularAt_time_sub {n : ℕ} (T : ℝ) (p : KineticPoint n) :
+/- The time coordinate `σ - T` is slice regular everywhere. -/
+theorem isSliceRegularAt_time_sub {n } (T : ℝ) (p : KineticPoint n) :
     IsSliceRegularAt (fun q : KineticPoint n => q.time - T) p :=
   ⟨differentiableAt_id.sub_const T,
     (show ContDiffAt ℝ 2 (fun _ : PDE.Vec n => p.time - T) p.position from contDiffAt_const),
     (show ContDiffAt ℝ 2 (fun _ : PDE.Vec n => p.time - T) p.velocity from contDiffAt_const)⟩
 
-/-- Maximum principle on a compact region for a subsolution `L_ε w ≥ 0`. -/
+/- Maximum principle on a compact region for a subsolution `L_ε w ≥ 0`. -/
 theorem le_zero_of_viscous_nonneg_compact {n : ℕ} {B : FullKineticCoefficient n}
     {b : PDE.Vec n → PDE.Vec n} {ε : ℝ} {K D : Set (KineticPoint n)}
     {w : KineticPoint n → ℝ} {T : ℝ} (hε : 0 ≤ ε) (hKc : IsCompact K)

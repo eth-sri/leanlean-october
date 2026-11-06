@@ -28,7 +28,7 @@ namespace PDE
 
 open Filter MeasureTheory
 
-/-- Convex approximation of continuous input converges in `L^p` on the
+/- Convex approximation of continuous input converges in `L^p` on the
 bounded domain for every finite exponent. -/
 theorem
     tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_continuous
@@ -83,7 +83,7 @@ theorem
         simp only [hηTop, le_top]
   let δ : ℝ :=
     η.toReal / (cμ + 1)
-  have hηReal : 0 < η.toReal :=
+  have hηReal :=
     ENNReal.toReal_pos hη.ne' hηTop
   have hδ : 0 < δ := by
     dsimp only [δ]
@@ -98,7 +98,7 @@ theorem
     by_cases hx : x ∈ U
     · simpa [f, hx, Real.dist_eq] using hn hx
     · simp [hx, δ, hδ.le]
-  let g : Vec d → ℝ :=
+  let g :=
     Set.indicator U (f n)
   have hsupport : Function.support g ⊆ U := by
     simp [g]
@@ -179,7 +179,7 @@ theorem
       rw [← ENNReal.ofReal_toReal hηTop]
       exact ENNReal.ofReal_le_ofReal hδMul
 
-/-- Convex approximation converges in `L^p` for every finite exponent
+/- Convex approximation converges in `L^p` for every finite exponent
 `p ≥ 1` and every `MemLpOn` input. -/
 theorem
     tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_memLpOn
@@ -422,20 +422,19 @@ theorem
     _ ≤ η :=
       hsum.le
 
-/-- The affine derivative weight `1 - ε` does not change the `L^p` limit of
+/- The affine derivative weight `1 - ε` does not change the `L^p` limit of
 convex approximation. -/
 theorem
     tendsto_eLpNorm_sub_zero_one_sub_mul_convexApproxSmoothing_of_memLpOn
-    {d : ℕ} {U : Set (Vec d)}
-    {ρ u : Vec d → ℝ} {p : ENNReal}
+    {d U ρ u p}
     (hU : IsOpenBoundedConvexDomain U)
     (hρ : IsConvexApproxKernel ρ)
     (hpOne : 1 ≤ p) (hpTop : p ≠ ∞)
     (hu : MemLpOn U p u)
-    {x0 : Vec d} {r : ℝ}
+    {x0 : Vec d} {r }
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 < r)
-    {ε : ℕ → ℝ}
+    {ε }
     (hε : Tendsto ε atTop (𝓝 0))
     (hεPos : ∀ᶠ n : ℕ in atTop, 0 < ε n)
     (hεOne : ∀ᶠ n : ℕ in atTop, ε n < 1) :
@@ -448,7 +447,7 @@ theorem
               u x)
           p (volumeOn U))
       atTop (𝓝 0) := by
-  let μ : Measure (Vec d) :=
+  let μ :=
     volumeOn U
   apply ENNReal.tendsto_nhds_zero.2
   intro η hη
@@ -459,24 +458,11 @@ theorem
   obtain ⟨η₁, hη₁Pos, hη₁⟩ :=
     exists_Lp_half
       (μ := μ) (ε := ℝ) (p := p) hη.ne'
-  have hvalueTendsto :
-      Tendsto
-        (fun n : ℕ =>
-          eLpNorm
-            (fun x =>
-              convexApproxSmoothing ρ u x0 r (ε n) x - u x)
-            p μ)
-        atTop (𝓝 0) :=
+  have hvalueTendsto :=
     tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_memLpOn
       hU hρ hpOne hpTop hu hball hr
       hε hεPos hεOne
-  have hvalueEventually :
-      ∀ᶠ n : ℕ in atTop,
-        eLpNorm
-            (fun x =>
-              convexApproxSmoothing ρ u x0 r (ε n) x - u x)
-            p μ ≤
-          η₁ :=
+  have hvalueEventually :=
     ENNReal.tendsto_nhds_zero.1
       hvalueTendsto η₁ hη₁Pos
   have hεHalf :
@@ -517,9 +503,7 @@ theorem
         atTop (𝓝 0) := by
     simpa only [ENNReal.ofReal_zero] using
       ENNReal.tendsto_ofReal hscaledTendsto
-  have hsmallEventually :
-      ∀ᶠ n : ℕ in atTop,
-        ENNReal.ofReal (|ε n| * M) ≤ η₁ :=
+  have hsmallEventually :=
     ENNReal.tendsto_nhds_zero.1
       hsmallTendsto η₁ hη₁Pos
   have hconvBoundEventually :
@@ -537,8 +521,7 @@ theorem
       have hhalf :
           (1 / 2 : ℝ) ≤ 1 - ε n := by
         linarith
-      have hpow :
-          (1 / 2 : ℝ) ^ d ≤ (1 - ε n) ^ d :=
+      have hpow :=
         pow_le_pow_left₀ (by positivity) hhalf d
       have hpowPos : 0 < (1 / 2 : ℝ) ^ d := by
         positivity
@@ -547,9 +530,7 @@ theorem
             ((1 / 2 : ℝ) ^ d)⁻¹ := by
         simpa only [one_div] using
           one_div_le_one_div_of_le hpowPos hpow
-      have hofReal :
-          ENNReal.ofReal (((1 - ε n) ^ d)⁻¹) ≤
-            ENNReal.ofReal (((1 / 2 : ℝ) ^ d)⁻¹) :=
+      have hofReal :=
         ENNReal.ofReal_le_ofReal hinv
       exact
         ENNReal.rpow_le_rpow hofReal (by positivity)
@@ -639,48 +620,15 @@ theorem
     _ ≤ η :=
       hsum.le
 
-/-- The unit convex-approximation sequence converges in `L^p` for arbitrary
+/- The unit convex-approximation sequence converges in `L^p` for arbitrary
 `MemLpOn` input. -/
 theorem
-    tendsto_eLpNorm_sub_zero_unitConvexApproxSequence_of_memLpOn
-    {d : ℕ} {U : Set (Vec d)}
-    {u : Vec d → ℝ} {p : ENNReal}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hpOne : 1 ≤ p) (hpTop : p ≠ ∞)
-    (hu : MemLpOn U p u)
-    {x0 : Vec d} {r : ℝ}
-    (hball : Metric.closedBall x0 r ⊆ U)
-    (hr : 0 < r) :
-    Tendsto
-      (fun n : ℕ =>
-        eLpNorm
-          (fun x =>
-            unitConvexApproxSequence u x0 r n x - u x)
-          p (volumeOn U))
-      atTop (𝓝 0) := by
-  simpa only [unitConvexApproxSequence] using
-    (tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_memLpOn
-      hU
-      (isConvexApproxKernel_unitConvexApproxKernel
-        (d := d))
-      hpOne hpTop hu hball hr
-      tendsto_unitConvexApproxScale_zero
-      (Eventually.of_forall fun n => by
-        exact unitConvexApproxScale_pos n)
-      (((tendsto_order.1
-        tendsto_unitConvexApproxScale_zero).2
-          1 zero_lt_one).mono fun _ hn => hn))
-
-/-- The affine-weighted unit convex-approximation sequence converges in
-`L^p`; this is the form used for smoothed weak gradients. -/
-theorem
     tendsto_eLpNorm_sub_zero_one_sub_mul_unitConvexApproxSequence_of_memLpOn
-    {d : ℕ} {U : Set (Vec d)}
-    {u : Vec d → ℝ} {p : ENNReal}
+    {d U u p}
     (hU : IsOpenBoundedConvexDomain U)
     (hpOne : 1 ≤ p) (hpTop : p ≠ ∞)
     (hu : MemLpOn U p u)
-    {x0 : Vec d} {r : ℝ}
+    {x0 : Vec d} {r }
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 < r) :
     Tendsto

@@ -22,14 +22,14 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The canonical Hilbert-graph point associated to a representative-level
 `H¹₀` function. -/
 noncomputable def h10HilbertGraphOfH10Function
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (u : PDE.H10Function Ω) : H10HilbertGraph hΩ :=
   (h10HilbertGraphContinuousLinearEquiv hΩ).symm (u.toH10Graph hΩ)
 
 /-- The selected value representative of the canonical Hilbert-graph point
 agrees almost everywhere with the original representative. -/
 theorem valueCLM_h10HilbertGraphOfH10Function
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d Ω} (hΩ : IsOpen Ω)
     (u : PDE.H10Function Ω) :
     (valueCLM hΩ (h10HilbertGraphOfH10Function hΩ u) :
       PDE.Vec d → ℝ) =ᵐ[PDE.volumeOn Ω] u.toH1Function.toFun := by
@@ -47,7 +47,7 @@ theorem valueCLM_h10HilbertGraphOfH10Function
 /-- Every selected weak-gradient coordinate of the canonical Hilbert-graph
 point agrees almost everywhere with the corresponding original coordinate. -/
 theorem gradientCoord_h10HilbertGraphOfH10Function
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d Ω} (hΩ : IsOpen Ω)
     (u : PDE.H10Function Ω) (i : Fin d) :
     (fun x => PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
       (gradientCLM hΩ (h10HilbertGraphOfH10Function hΩ u)) x)

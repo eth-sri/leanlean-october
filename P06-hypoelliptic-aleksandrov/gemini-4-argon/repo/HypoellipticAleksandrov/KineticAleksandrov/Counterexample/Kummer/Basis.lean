@@ -43,7 +43,7 @@ theorem deriv_deriv_power_mul (f : ℝ → ℝ) (p z : ℝ) (hz : 0 < z)
   exact h.trans (by ring)
 
 /-- Power transformation of Kummer's equation on the nonsingular domain. -/
-theorem power_mul_kummer_ode (f : ℝ → ℝ) (c p z : ℝ) (hz : 0 < z)
+theorem power_mul_kummer_ode (f : ℝ → ℝ) (c p z ) (hz : 0 < z)
     (hf : ∀ w ∈ Ioi (0 : ℝ), HasDerivAt f (deriv f w) w)
     (hf' : HasDerivAt (deriv f) (deriv (deriv f) z) z)
     (hode : z * deriv (deriv f) z + (p + 1 - z) * deriv f z - c * f z = 0) :

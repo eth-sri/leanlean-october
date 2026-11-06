@@ -14,9 +14,9 @@ open Set MeasureTheory Parabolic SectionTwo
 theorem ballExitRaw_local_outer
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (Z₀ : KineticPoint d) {R : ℝ} (hR : 0 < R)
+    (Z₀ : KineticPoint d) {R } (hR : 0 < R)
     (P : LocalBallStart Z₀.velocity R)
     (hP : P.1 ∈ forwardCylinder Z₀ (3 * R / 4) (by positivity))
     (T : {t : ℝ // P.1.time < t}) (hT : T.1 - P.1.time = R ^ 2 / 8) :

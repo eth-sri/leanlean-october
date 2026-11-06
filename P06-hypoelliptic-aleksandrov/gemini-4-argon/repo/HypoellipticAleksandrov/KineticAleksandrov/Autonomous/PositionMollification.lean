@@ -2,6 +2,10 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionMollificationVelocity
 import Mathlib.Analysis.Calculus.Deriv.Shift
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierModulus
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionMollificationLineWeak
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.Setting
+import Mathlib.Analysis.Calculus.ContDiff.Convolution
 
 /-! # The source position regularization theorem
 
@@ -15,43 +19,15 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory BarrierRegularization
 open scoped Convolution
 
-/-- The position derivative of the convolution equals the convolved actual source jet. -/
-theorem barrier_position_convolution_position_jet {alpha : ℝ} {Phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha Phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta) (X v : ℝ) :
-    HasDerivAt (fun w => positionConvolution eta (bellmanOriginExtension Phi) (w, v))
-      (positionConvolution eta (bellmanDx Phi) (X, v)) X := by
-  have hf : LocallyIntegrable (fun Y => bellmanOriginExtension Phi (Y, v)) volume :=
-    ((h.origin_extension_continuous ha).comp
-      (continuous_id.prodMk continuous_const)).locallyIntegrable
-  have hd := HasCompactSupport.hasDerivAt_convolution_right (ContinuousLinearMap.mul ℝ ℝ)
-    hf heta.2.1 (heta.1.of_le (by norm_cast)) X
-  have hs : HasCompactSupport (fun Y => eta (X - Y)) :=
-    heta.2.1.comp_homeomorph (Homeomorph.subLeft X)
-  have ht : ContDiff ℝ 1 (fun Y => eta (X - Y)) :=
-    (heta.1.of_le (by norm_cast)).comp (contDiff_const.sub contDiff_id)
-  have hw := barrier_position_fiber_weak_dx h ha ha1 v _ ht hs
-  simp only [deriv_comp_const_sub, mul_neg, integral_neg] at hw
-  have he : positionConvolution (deriv eta) (bellmanOriginExtension Phi) (X, v) =
-      positionConvolution eta (bellmanDx Phi) (X, v) := by
-    dsimp only [positionConvolution]
-    simpa only [neg_inj, mul_comm] using hw
-  have hefun : ((fun Y => bellmanOriginExtension Phi (Y, v))
-      ⋆[ContinuousLinearMap.mul ℝ ℝ, volume] eta) =
-      (fun w => positionConvolution eta (bellmanOriginExtension Phi) (w, v)) :=
-    funext fun w => (positionConvolution_eq eta _ (w, v)).symm
-  rw [hefun, ← positionConvolution_eq (deriv eta) _ (X, v), he] at hd
-  exact hd
-
-/-- The precise separate regularity asserted for the position-regularized barrier. -/
+/- The position derivative of the convolution equals the convolved actual source jet. -/
 def IsCInfinityPositionC2Velocity (f : (ℝ × ℝ) → ℝ) : Prop :=
   (∀ v : ℝ, ContDiff ℝ (⊤ : ℕ∞) (fun X => f (X, v))) ∧
     ∀ X : ℝ, ContDiff ℝ 2 (fun v => f (X, v))
 
-/-- Regularity and the scalar forward-operator inequality for any actual source barrier.
+/- Regularity and the scalar forward-operator inequality for any actual source barrier.
 The conclusion displays `v ∂X + a(X,v) ∂vv` without introducing another PDE interface. -/
 theorem barrier_position_regularization_of_positive_degree
-    {lam Lam alpha c : ℝ} {Phi : (ℝ × ℝ) → ℝ}
+    {lam Lam alpha c Phi}
     (ha : 0 < alpha) (ha1 : alpha < 1) (h : IsBellmanHomogeneous alpha Phi)
     (hbound : ∀ q ∈ bellmanPuncturedSet, ∀ b ∈ Icc lam Lam,
       c * bellmanGauge q ^ (alpha - 2) ≤ bellmanOperator b Phi q)
@@ -67,21 +43,55 @@ theorem barrier_position_regularization_of_positive_degree
   refine ⟨⟨barrier_position_convolution_smooth h ha eta heta,
     barrier_position_convolution_velocity_c2 h ha ha1 eta heta⟩, ?_⟩
   intro A Y q
-  have hx := barrier_position_convolution_position_jet h ha ha1 eta heta (q.1 - Y) q.2
+  have hx : HasDerivAt (fun w => positionConvolution eta (bellmanOriginExtension Phi) (w, q.2))
+      (positionConvolution eta (bellmanDx Phi) ((q.1 - Y), q.2)) (q.1 - Y) := by
+    let X := (q.1 - Y)
+    let v := q.2
+    have hf : LocallyIntegrable (fun Y => bellmanOriginExtension Phi (Y, v)) volume :=
+      ((h.origin_extension_continuous ha).comp
+        (continuous_id.prodMk continuous_const)).locallyIntegrable
+    have hd := HasCompactSupport.hasDerivAt_convolution_right (ContinuousLinearMap.mul ℝ ℝ)
+      hf heta.2.1 (heta.1.of_le (by norm_cast)) X
+    have hs :=
+      heta.2.1.comp_homeomorph (Homeomorph.subLeft X)
+    have ht : ContDiff ℝ 1 (fun Y => eta (X - Y)) :=
+      (heta.1.of_le (by norm_cast)).comp (contDiff_const.sub contDiff_id)
+    have hw := barrier_position_fiber_weak_dx h ha ha1 v _ ht hs
+    simp only [deriv_comp_const_sub, mul_neg, integral_neg] at hw
+    have he : positionConvolution (deriv eta) (bellmanOriginExtension Phi) (X, v) =
+        positionConvolution eta (bellmanDx Phi) (X, v) := by
+      dsimp only [positionConvolution]
+      simpa only [neg_inj, mul_comm] using hw
+    have hefun : ((fun Y => bellmanOriginExtension Phi (Y, v))
+        ⋆[ContinuousLinearMap.mul ℝ ℝ, volume] eta) =
+        (fun w => positionConvolution eta (bellmanOriginExtension Phi) (w, v)) :=
+      funext fun w => (positionConvolution_eq eta _ (w, v)).symm
+    rw [hefun, ← positionConvolution_eq (deriv eta) _ (X, v), he] at hd
+    exact hd
   have hxshift := hx.comp q.1 ((hasDerivAt_id q.1).sub_const Y)
   have he : deriv (fun v =>
       positionConvolution eta (bellmanOriginExtension Phi) (q.1 - Y, v)) =
       (fun v => positionConvolution eta (bellmanDv Phi) (q.1 - Y, v)) := by
     funext v
     exact (barrier_position_convolution_velocity_jets h ha ha1 eta heta (q.1 - Y) v).1.deriv
-  have hvv := (barrier_position_convolution_velocity_jets h ha ha1 eta heta
-    (q.1 - Y) q.2).2.deriv
-  rw [he, hvv]
+  rw [he, ((barrier_position_convolution_velocity_jets h ha ha1 eta heta (q.1 - Y) q.2).2.deriv)]
   have hxe : deriv (fun X =>
       positionConvolution eta (bellmanOriginExtension Phi) (X - Y, q.2)) q.1 =
       positionConvolution eta (bellmanDx Phi) (q.1 - Y, q.2) := by
     simpa only [Function.comp_def, id_eq, mul_one] using hxshift.deriv
   rw [hxe]
-  exact barrier_convolved_jet_inequality h ha ha1 hbound eta heta A Y q
+  have hiX := position_kernel_integrable eta _ heta.1.continuous heta.2.1
+    (barrier_dx_fiber_locallyIntegrable h ha ha1 q.2) (q.1 - Y)
+  have hivv := position_kernel_integrable eta _ heta.1.continuous heta.2.1
+    (barrier_velocity_fibers_locallyIntegrable h ha ha1 q.2).2 (q.1 - Y)
+  have hh := integral_mono_ae ((position_kernel_integrable eta _ heta.1.continuous heta.2.1 (barrier_weight_fiber_locallyIntegrable alpha ha ha1 q.2) (q.1 - Y)).const_mul c)
+    ((hiX.const_mul q.2).add (hivv.const_mul (A.a q.1 q.2))) ?_
+  · simpa only [positionConvolution, Pi.add_apply, integral_add (hiX.const_mul q.2)
+      (hivv.const_mul (A.a q.1 q.2)), integral_const_mul] using hh
+  · filter_upwards [volume.ae_ne (0 : ℝ)] with X hX
+    have hq : (X, q.2) ∈ bellmanPuncturedSet := fun he => hX (congrArg Prod.fst he)
+    have hi := mul_le_mul_of_nonneg_left (hbound (X, q.2) hq (A.a q.1 q.2) (A.bounds q.1 q.2)) (heta.2.2.1 (q.1 - Y - X))
+    dsimp only [bellmanOperator] at hi
+    simpa only [Pi.add_apply, mul_add, mul_left_comm, mul_assoc] using hi
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

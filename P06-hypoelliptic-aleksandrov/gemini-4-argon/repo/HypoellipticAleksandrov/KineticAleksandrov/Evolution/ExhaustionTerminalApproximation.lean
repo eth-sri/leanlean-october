@@ -26,7 +26,6 @@ theorem terminal_window_ratio_le_of_radius_le {r r0 d : ℝ} (hr : 0 < r)
   have hf := div_le_div_of_nonneg_left hd hr hrr0
   have hl : 0 ≤ 1 - d / r := sub_nonneg.mpr ((div_le_one hr).mpr hdr.le)
   have hm : 1 - d / r ≤ 1 - d / r0 := by linarith
-  have hs := pow_le_pow_left₀ hl hm 2
-  simpa only [← div_pow, sub_div, div_self hr.ne', div_self hr0.ne'] using hs
+  simpa only [← div_pow, sub_div, div_self hr.ne', div_self hr0.ne'] using (pow_le_pow_left₀ hl hm 2)
 
 end HypoellipticAleksandrov.KineticAleksandrov

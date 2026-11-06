@@ -13,7 +13,7 @@ open Set MeasureTheory HypoellipticAleksandrov.Parabolic
 open scoped Convolution
 
 /-- The time representative is the literal raw time derivative inside the profile domain. -/
-def constructionExtendedTimeJet {d : ℕ} {alpha : ℝ}
+def constructionExtendedTimeJet {d alpha}
     (h : CounterProfileStatement d alpha) (r mu R t : ℝ) (q : XV d) : ℝ :=
   {y | profileFunction h y < 1}.indicator
     (fun y => kineticTimeDerivative (timeCutoffProfile (profileFunction h) alpha r mu R)
@@ -21,7 +21,7 @@ def constructionExtendedTimeJet {d : ℕ} {alpha : ℝ}
 
 /-- The actual time derivative of the mollified value is convolution of its time representative.
 The fixed compact integration carrier includes the initial collar, so this holds at all times. -/
-theorem construction_mollified_time_jet {d : ℕ} {alpha : ℝ}
+theorem construction_mollified_time_jet {d alpha}
     (ha : 0 < alpha) (h : CounterProfileStatement d alpha) (r mu R : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R)
     (hvel : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2)
@@ -29,11 +29,10 @@ theorem construction_mollified_time_jet {d : ℕ} {alpha : ℝ}
     deriv (fun s => spatialMollify phi
       (fun y => zeroExtendedProfile (profileFunction h) alpha r mu R ⟨s, y.1, y.2⟩) q) t =
       spatialMollify phi (constructionExtendedTimeJet h r mu R t) q := by
-  let K : Set (XV d) := {y | profileFunction h y ≤ 1}
-  let Omega : Set (XV d) := {y | profileFunction h y < 1}
+  let K := {y | profileFunction h y ≤ 1}
+  let Omega := {y | profileFunction h y < 1}
   have hK : IsCompact K := isCompact_profile_unit_sublevel ha h
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hOmega : MeasurableSet Omega := (isOpen_lt hH continuous_const).measurableSet
+  have hOmega : MeasurableSet Omega := (isOpen_lt ((selectedProfile_spec h).2.2.2.2.2.2.1) continuous_const).measurableSet
   have hOK : Omega ⊆ K := by
     intro y hy
     change profileFunction h y ≤ 1

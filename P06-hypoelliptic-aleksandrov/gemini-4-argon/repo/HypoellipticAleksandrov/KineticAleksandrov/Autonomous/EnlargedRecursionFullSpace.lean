@@ -14,17 +14,17 @@ open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 open scoped ENNReal
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
-/-- Reinserting physical time is a measurable coordinate map. -/
+/- Reinserting physical time is a measurable coordinate map. -/
 theorem enlargedTerminalPoint_measurable (b : ℝ) : Measurable (enlargedTerminalPoint b) := by
   unfold enlargedTerminalPoint
   exact (KineticPoint.measurable_equivProd_symm 1).comp
     (measurable_const.prodMk ((measurable_pi_iff.mpr (fun _ => measurable_fst)).prodMk
       (measurable_pi_iff.mpr (fun _ => measurable_snd))))
 
-/-- The full-space occupation has the literal iterated physical kernel action. -/
+/- The full-space occupation has the literal iterated physical kernel action. -/
 theorem enlargedFullSpaceOccupation_lintegral
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (P : Point) (T : ℝ)
     (F : Point → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, F p ∂enlargedFullSpaceOccupation hH hLE hlam hLam A P T) =
@@ -41,44 +41,10 @@ theorem enlargedFullSpaceOccupation_lintegral
   rw [lintegral_map hF hm]
   exact Measure.lintegral_compProd (hF.comp hm)
 
-/-- Full-space occupation can equally be integrated over the literal elapsed-time subtype. -/
-theorem enlargedFullSpaceOccupation_elapsed_lintegral
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (P : Point) (T : ℝ) (hT : 0 < T)
-    (F : Point → ℝ≥0∞) (hF : Measurable F) :
-    (∫⁻ p, F p ∂enlargedFullSpaceOccupation hH hLE hlam hLam A P T) =
-      ∫⁻ t : ElapsedTime (ENNReal.ofReal T),
-        ∫⁻ z, F (enlargedTerminalPoint (P.time + t.1) z)
-          ∂kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t.1)
-            (P.position 0, P.velocity 0) ∂elapsedVolume (ENNReal.ofReal T) := by
-  let E := fullSpaceEvolution hH hLE hlam hLam A
-  let f := fun t : ℝ => ∫⁻ z, F (enlargedTerminalPoint (P.time + t) z)
-    ∂kernelXV E (Real.toNNReal t) (P.position 0, P.velocity 0)
-  have hm : Measurable (fun tz : ℝ × Z => F (enlargedTerminalPoint (P.time + tz.1) tz.2)) := by
-    apply hF.comp
-    unfold enlargedTerminalPoint
-    exact (KineticPoint.measurable_equivProd_symm 1).comp
-      ((measurable_const.add measurable_fst).prodMk
-        ((measurable_pi_iff.mpr (fun _ => measurable_fst.comp measurable_snd)).prodMk
-          (measurable_pi_iff.mpr (fun _ => measurable_snd.comp measurable_snd))))
-  have hf : Measurable f := hm.lintegral_kernel_prod_right'
-    (κ := physicalElapsedKernel E (P.position 0, P.velocity 0))
-  have he : {t : ℝ | 0 < t ∧ ENNReal.ofReal t < ENNReal.ofReal T} = Ioo 0 T := by
-    ext t
-    simp only [mem_ofPred_eq, mem_Ioo, ENNReal.ofReal_lt_ofReal_iff hT]
-  have hmap : (elapsedVolume (ENNReal.ofReal T)).map Subtype.val = volume.restrict (Ioo 0 T) := by
-    exact (map_comap_subtype_coe (measurableSet_elapsedTime (ENNReal.ofReal T)) volume).trans
-      (congrArg (fun B => volume.restrict B) he)
-  rw [enlargedFullSpaceOccupation_lintegral hH hLE hlam hLam A P T F hF]
-  change (∫⁻ t in Ioc 0 T, f t) = ∫⁻ t, f t.1 ∂elapsedVolume (ENNReal.ofReal T)
-  rw [← lintegral_map hf measurable_subtype_coe, hmap]
-  rw [Measure.restrict_congr_set (Ioo_ae_eq_Ioc (μ := volume)).symm]
-
-/-- Time autonomy identifies an absolute native query with the scalar elapsed kernel. -/
+/- Full-space occupation can equally be integrated over the literal elapsed-time subtype. -/
 theorem enlargedFullSpace_native_elapsed_lintegral
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (P : Point) (t : ℝ) (ht : 0 ≤ t)
     (F : Point → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ w, F ⟨P.time + t, w.2, w.1⟩

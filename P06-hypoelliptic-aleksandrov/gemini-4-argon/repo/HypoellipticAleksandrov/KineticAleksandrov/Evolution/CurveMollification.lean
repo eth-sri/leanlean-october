@@ -27,7 +27,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set MeasureTheory
 open scoped Convolution
 
-/-- The mollification `∫ ρ(t) γ(s - t) dt` of a curve by a weight `ρ`. -/
+/- The mollification `∫ ρ(t) γ(s - t) dt` of a curve by a weight `ρ`. -/
 noncomputable def curveMollify {n : ℕ} (ρ : ℝ → ℝ) (γ : ℝ → PDE.Vec n) (s : ℝ) : PDE.Vec n :=
   ∫ t, ρ t • γ (s - t)
 
@@ -47,10 +47,10 @@ theorem integrable_weight_mul {g : ℝ → ℝ} (hg : Continuous g) :
   (hρc.mul hg).integrable_of_hasCompactSupport (hρs.mul_right)
 
 include hρ0 hρc hρs hρ1 in
-/-- A weighted average (weight a continuous compactly supported probability density) of a
+/- A weighted average (weight a continuous compactly supported probability density) of a
 continuous curve has Euclidean norm at most the bound `c` of the integrand on the support. -/
 theorem vecEuclideanNorm_weighted_integral_le {n : ℕ} {f : ℝ → PDE.Vec n}
-    (hf : Continuous f) {c : ℝ} (hc : 0 ≤ c)
+    (hf : Continuous f) {c } (hc : 0 ≤ c)
     (hbd : ∀ t, ρ t ≠ 0 → PDE.vecEuclideanNorm (f t) ≤ c) :
     PDE.vecEuclideanNorm (∫ t, ρ t • f t) ≤ c := by
   set v : PDE.Vec n := ∫ t, ρ t • f t with hv
@@ -96,13 +96,13 @@ theorem vecEuclideanNorm_weighted_integral_le {n : ℕ} {f : ℝ → PDE.Vec n}
     linarith
   by_contra hcon
   push Not at hcon
-  have hpos : 0 < PDE.vecEuclideanNorm v := hc.trans_lt hcon
+  have hpos := hc.trans_lt hcon
   have : PDE.vecEuclideanNorm v ^ 2 ≤ PDE.vecEuclideanNorm v * c := by
     rwa [PDE.vecEuclideanNorm_sq]
   nlinarith
 
 include hρc hρs in
-/-- Difference of two mollifications. -/
+/- Difference of two mollifications. -/
 theorem curveMollify_sub {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (s s' : ℝ) :
     curveMollify ρ γ s - curveMollify ρ γ s' = ∫ t, ρ t • (γ (s - t) - γ (s' - t)) := by
   unfold curveMollify
@@ -112,7 +112,7 @@ theorem curveMollify_sub {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ : Continuous γ
   · exact integrable_weight_smul hρc hρs (hγ.comp (continuous_const.sub continuous_id))
 
 include hρc hρs hρ1 in
-/-- Difference between the mollification and the curve itself. -/
+/- Difference between the mollification and the curve itself. -/
 theorem curveMollify_sub_self {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (s : ℝ) :
     curveMollify ρ γ s - γ s = ∫ t, ρ t • (γ (s - t) - γ s) := by
   unfold curveMollify
@@ -123,14 +123,7 @@ theorem curveMollify_sub_self {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ : Continuo
 
 end Weighted
 
-/-- The mollification is the convolution with the weight, for the scalar action. -/
-theorem curveMollify_eq_convolution {n : ℕ} (ρ : ℝ → ℝ) (γ : ℝ → PDE.Vec n) :
-    curveMollify ρ γ = ρ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] γ := by
-  funext s
-  simp [curveMollify, convolution_def]
-
-/-- **Analytic core of the curve approximation.**  A globally `L`-Lipschitz curve is uniformly
-`ε`-approximated by a smooth curve which is globally `L`-Lipschitz for the Euclidean norm. -/
+/- The mollification is the convolution with the weight, for the scalar action. -/
 theorem exists_smooth_lipschitz_approx {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
     {L : ℝ} (hL : 0 ≤ L)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ L * |s - t|) {ε : ℝ} (hε : 0 < ε) :
@@ -150,7 +143,10 @@ theorem exists_smooth_lipschitz_approx {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ :
     rw [φ.support_normed_eq] at this
     simpa [Metric.mem_ball, Real.dist_eq] using this
   refine ⟨curveMollify (φ.normed volume) γ, ?_, ?_, ?_⟩
-  · rw [curveMollify_eq_convolution]
+  · have _h_inl_25 (ρ : ℝ → ℝ) (γ : ℝ → PDE.Vec n) : curveMollify ρ γ = ρ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] γ := by
+      funext s
+      simp [curveMollify, convolution_def]
+    rw [_h_inl_25]
     exact hρs.contDiff_convolution_left _ φ.contDiff_normed (hγ.locallyIntegrable (μ := volume))
   · intro s s'
     rw [curveMollify_sub hρc hρs hγ]

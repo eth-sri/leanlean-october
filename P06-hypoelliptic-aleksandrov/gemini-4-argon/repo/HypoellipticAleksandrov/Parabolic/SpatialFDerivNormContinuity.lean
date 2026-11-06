@@ -14,7 +14,7 @@ open scoped BigOperators Matrix.Norms.Elementwise
 /-- Smoothness on a neighborhood makes the spatial derivative norm of a
 scalar field continuous on the carrier. -/
 theorem IsSmoothOnNeighborhood.continuousOn_spatialScalarFDerivEuclideanNorm
-    {d : ℕ} {K : Set (TimeVelocity d)}
+    {d K}
     {f : TimeVelocity d → ℝ}
     (hf : IsSmoothOnNeighborhood f K) :
     ContinuousOn (spatialScalarFDerivEuclideanNorm f) K := by
@@ -29,7 +29,7 @@ theorem IsSmoothOnNeighborhood.continuousOn_spatialScalarFDerivEuclideanNorm
 /-- Smoothness on a neighborhood makes the spatial derivative Frobenius norm
 of a vector field continuous on the carrier. -/
 theorem IsSmoothOnNeighborhood.continuousOn_spatialVectorFDerivFrobeniusNorm
-    {d : ℕ} {K : Set (TimeVelocity d)}
+    {d K}
     {f : TimeVelocity d → PDE.Vec d}
     (hf : IsSmoothOnNeighborhood f K) :
     ContinuousOn (spatialVectorFDerivFrobeniusNorm f) K := by
@@ -48,7 +48,7 @@ theorem IsSmoothOnNeighborhood.continuousOn_spatialVectorFDerivFrobeniusNorm
 /-- Smoothness on a neighborhood makes the spatial derivative Frobenius norm
 of a matrix field continuous on the carrier. -/
 theorem IsSmoothOnNeighborhood.continuousOn_spatialMatrixFDerivFrobeniusNorm
-    {d : ℕ} {K : Set (TimeVelocity d)}
+    {d K}
     {f : TimeVelocity d → PDE.Mat d}
     (hf : IsSmoothOnNeighborhood f K) :
     ContinuousOn (spatialMatrixFDerivFrobeniusNorm f) K := by

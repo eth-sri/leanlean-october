@@ -3,6 +3,9 @@ module
 public import PDEFoundation.Sobolev.Inequalities.Poincare
 public import PDEFoundation.Sobolev.Inequalities.SmoothPoincareNorm
 public import PDEFoundation.Sobolev.W1p.ConvexApprox.Density
+import PDEFoundation.Measure.AffineVolume
+import PDEFoundation.Measure.Jensen
+import PDEFoundation.Measure.NormalizedLp
 
 /-!
 # Mean-zero Poincaré inequality on bounded convex domains
@@ -36,8 +39,9 @@ open scoped ENNReal Topology
 namespace PDE
 
 open Filter MeasureTheory
+open scoped Pointwise
 
-/-- The constant `2 ^ d` is a mean-zero Poincaré constant on every bounded
+/- The constant `2 ^ d` is a mean-zero Poincaré constant on every bounded
 open convex domain, uniformly for all finite real exponents `p ≥ 1`. -/
 theorem isUniformMeanZeroPoincareConstant_two_pow (d : ℕ) :
     IsUniformMeanZeroPoincareConstant d ((2 : ℝ) ^ d) := by
@@ -119,25 +123,21 @@ theorem isUniformMeanZeroPoincareConstant_two_pow (d : ℕ) :
               (ENNReal.ofReal p) u.grad)) :=
     ENNReal.Tendsto.const_mul hGradient
       (Or.inr ENNReal.ofReal_ne_top)
-  have hCentered :
-      eLpMeanNormOn U (ENNReal.ofReal p)
-          (fun x =>
-            u.toFun x - integralAverage U u.toFun) ≤
-        ENNReal.ofReal ((2 : ℝ) ^ d * D) *
-          euclideanFieldELpMeanNormOn U
-            (ENNReal.ofReal p) u.grad :=
+  have hCentered :=
     le_of_tendsto_of_tendsto'
       hLeft hRight hBound
-  have hAverage :
-      integralAverage U u.toFun = 0 :=
-    integralAverage_eq_zero_of_meanZeroOn huMean
+  have hAverage : integralAverage U u = 0 := by
+      rw [integralAverage, huMean, mul_zero]
+
+    /- Subtracting the arithmetic average produces a zero-mean function on a
+    positive finite-volume set. -/
   simpa only [hAverage, sub_zero] using hCentered
 
-/-- Direct unnormalized mean-zero Poincaré inequality on an axis cube, with
+/- Direct unnormalized mean-zero Poincaré inequality on an axis cube, with
 its exact Euclidean diameter factor `sqrt d * L`. -/
 theorem meanZeroPoincare_on_axisCube_unnormalized
-    {d : ℕ} {p : ℝ} (hp : 1 ≤ p)
-    (z : Vec d) {L : ℝ} (hL : 0 < L)
+    {d p} (hp : 1 ≤ p)
+    (z : Vec d) {L } (hL : 0 < L)
     (u :
       W1pFunction (axisCube z L) (ENNReal.ofReal p))
     (huMean : MeanZeroOn (axisCube z L) u.toFun) :

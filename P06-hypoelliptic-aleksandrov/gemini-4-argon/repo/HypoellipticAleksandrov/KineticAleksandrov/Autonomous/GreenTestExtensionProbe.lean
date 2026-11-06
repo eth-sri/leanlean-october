@@ -1,6 +1,11 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExtensionCalculus
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExtensionCutoffs
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitMeasureFuture
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsScaling
+import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+import Mathlib.Analysis.Calculus.Deriv.Support
 
 /-! # Compact probe realization of a position-cutoff test on the entire future closed slab -/
 
@@ -10,10 +15,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set HypoellipticAleksandrov Filter Metric
 open SectionTwo TheoremA Evolution
 open scoped Topology
+open MeasureTheory
 
-/-- An arbitrary smooth physical test becomes a compact probe, with no cutoff error
+/- An arbitrary smooth physical test becomes a compact probe, with no cutoff error
 in time or velocity on the specified future closed slab. -/
-theorem exists_reconstruction_position_probe {lam Lam : ℝ}
+theorem exists_reconstruction_position_probe {lam Lam }
     (A : SmoothAutonomous lam Lam) (H : Interval) (a T : ℝ)
     (phi : Point → ℝ)
     (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph))
@@ -34,13 +40,43 @@ theorem exists_reconstruction_position_probe {lam Lam : ℝ}
   let f := phi ∘ reconstructionPhysicalHomeomorph
   let g : EvolutionVec 1 → ℝ := fun x =>
     bt (timeCoord 1 x) * bv (diffusedCoord 1 x 0) * bx (transportedCoord 1 x 0) * f x
-  have hg : ContDiff ℝ (⊤ : ℕ∞) g :=
+  have hg :=
     ((bt.contDiff.comp (timeCoord 1).contDiff).mul
       (bv.contDiff.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp
         (diffusedCoord 1).contDiff))).mul
       (bx.contDiff.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp
         (transportedCoord 1).contDiff)) |>.mul hphi
-  let F : exitProbeSubmodule := ⟨g, hg, reconstruction_product_cutoff_compact bt bv bx f⟩
+  have _h_xinl_0 : HasCompactSupport (fun x => bt (timeCoord 1 x) * bv (diffusedCoord 1 x 0) * bx (transportedCoord 1 x 0) * f x) := by
+    let R := max bt.rOut (max bv.rOut bx.rOut)
+    have hR : 0 ≤ R := bt.rOut_pos.le.trans (le_max_left _ _)
+    apply IsCompact.of_isClosed_subset (isCompact_closedBall (0 : EvolutionVec 1) R)
+      (isClosed_tsupport _)
+    apply closure_minimal _ isClosed_closedBall
+    intro x hx
+    have hn : bt (timeCoord 1 x) ≠ 0 ∧ bv (diffusedCoord 1 x 0) ≠ 0 ∧
+        bx (transportedCoord 1 x 0) ≠ 0 := by
+      have hh := mul_ne_zero_iff.mp hx
+      have hh' := mul_ne_zero_iff.mp hh.1
+      exact ⟨(mul_ne_zero_iff.mp hh'.1).1, (mul_ne_zero_iff.mp hh'.1).2, hh'.2⟩
+    have ht : |timeCoord 1 x| < bt.rOut := by
+      have hh : timeCoord 1 x ∈ Function.support bt := hn.1
+      rw [bt.support_eq] at hh
+      simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    have hv : |diffusedCoord 1 x 0| < bv.rOut := by
+      have hh : diffusedCoord 1 x 0 ∈ Function.support bv := hn.2.1
+      rw [bv.support_eq] at hh
+      simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    have hz : |transportedCoord 1 x 0| < bx.rOut := by
+      have hh : transportedCoord 1 x 0 ∈ Function.support bx := hn.2.2
+      rw [bx.support_eq] at hh
+      simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    rw [mem_closedBall_zero_iff, pi_norm_le_iff_of_nonneg hR]
+    intro i
+    fin_cases i
+    · exact ht.le.trans (le_max_left _ _)
+    · exact hv.le.trans ((le_max_left _ _).trans (le_max_right _ _))
+    · exact hz.le.trans ((le_max_right _ _).trans (le_max_right _ _))
+  let F : exitProbeSubmodule := ⟨g, hg, _h_xinl_0⟩
   have hloc (p : Point) (ha : a ≤ p.time) (hT : p.time ≤ T)
       (hv : p.velocity 0 ∈ Icc H.lo H.hi) :
       g =ᶠ[𝓝 (reconstructionPhysicalHomeomorph.symm p)]
@@ -87,7 +123,22 @@ theorem exists_reconstruction_position_probe {lam Lam : ℝ}
     change transportedOperator _ _ g _ = _
     rw [reconstruction_transportedOperator_congr _ _ (hloc p ha hT hv),
       reconstruction_position_cutoff_operator _ _ bx bx.contDiff f hphi]
-    rw [← reconstruction_physical_operator_packed A phi hphi p]
+    have _h_xinl_0 : forwardScalarOperator A.a phi p =
+      transportedOperator (evolutionCoefficient A.a) (identityDrift 1)
+        (phi ∘ reconstructionPhysicalHomeomorph) (reconstructionPhysicalHomeomorph.symm p) := by
+      let x := reconstructionPhysicalHomeomorph.symm p
+      have heq : (phi ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1 =
+          phi ∘ reconstructionPhysicalHomeomorph := rfl
+      have hs : ContDiffAt ℝ 2 ((phi ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1) x := by
+        rw [heq]
+        exact (hphi.of_le (by simp)).contDiffAt
+      have hop := transportedOperator_comp (B := evolutionCoefficient A.a) (b := identityDrift 1) hs
+      rw [heq, reconstruction_scalar_operator_swap] at hop
+      have hx : sectionTwoPoint (evolutionHomeomorph 1 x) = p :=
+        reconstructionPhysicalHomeomorph.apply_symm_apply p
+      rw [hx] at hop
+      exact hop.symm
+    rw [← _h_xinl_0]
     simp only [f, Function.comp_apply, Homeomorph.apply_symm_apply, identityDrift]
     rfl
 

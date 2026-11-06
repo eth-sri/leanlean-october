@@ -26,9 +26,9 @@ theorem capacity_velocity_smooth {Phi : ℝ → ℝ} (hPhi : ContDiff ℝ (⊤ :
   hPhi.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd)
 
 /-- A derivative bound controls differences of the convex test on the closed strip. -/
-theorem capacity_test_difference {Phi : ℝ → ℝ} (hPhi : ContDiff ℝ (⊤ : ℕ∞) Phi)
-    {D : ℝ} (hD : 0 ≤ D) (hd : ∀ v, |deriv Phi v| ≤ D)
-    (H : Interval) {x y : ℝ} (hx : x ∈ Icc H.lo H.hi) (hy : y ∈ Icc H.lo H.hi) :
+theorem capacity_test_difference {Phi } (hPhi : ContDiff ℝ (⊤ : ℕ∞) Phi)
+    {D } (hD : 0 ≤ D) (hd : ∀ v, |deriv Phi v| ≤ D)
+    (H : Interval) {x y } (hx : x ∈ Icc H.lo H.hi) (hy : y ∈ Icc H.lo H.hi) :
     |Phi y - Phi x| ≤ D * (H.hi - H.lo) := by
   have h := Convex.norm_image_sub_le_of_norm_deriv_le
     (fun v (_ : v ∈ (univ : Set ℝ)) => hPhi.differentiable (by norm_num) v)

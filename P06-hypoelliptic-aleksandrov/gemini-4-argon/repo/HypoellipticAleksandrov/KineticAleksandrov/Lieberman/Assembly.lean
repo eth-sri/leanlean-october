@@ -4,6 +4,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.TerminalLift
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.DimensionZero
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.SourceEllipsoidBoundary
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletComparison
+import HypoellipticAleksandrov.KineticAleksandrov.EllipsoidDirichlet
+import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 
 /-! # Ellipsoid Dirichlet solvability assembled from the proved source correction -/
 
@@ -13,10 +16,11 @@ set_option autoImplicit false
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Lieberman Set
 open scoped MatrixOrder Matrix.Norms.Elementwise
+open HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 
-/-- Smooth ellipsoidal terminal Dirichlet existence and closed-cylinder uniqueness. -/
+/- Smooth ellipsoidal terminal Dirichlet existence and closed-cylinder uniqueness. -/
 theorem ellipsoidDirichlet_aux
-    {N : ℕ} {r₀ r₁ : ℝ} {Q : PDE.Mat N}
+    {N r₀ r₁} {Q : PDE.Mat N}
     (hQ : Q.PosDef)
     (hr : r₀ < r₁)
     (lam Lam : ℝ)
@@ -54,7 +58,25 @@ theorem ellipsoidDirichlet_aux
         (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) u := by
     cases N with
     | zero =>
-      exact ⟨(fun z => φ z.2), dimension_zero_solution r₀ r₁ Q a b φ⟩
+      have _h_xinl_0 : IsClassicalBackwardDirichletSolution r₀ r₁ (openEllipsoid Q) a b (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) (fun z => φ z.2) := by
+        have heq : (fun z : TimeVelocity 0 => φ z.2) = fun _ => φ 0 :=
+          funext (fun _ => congrArg φ (Subsingleton.elim _ _))
+        have hΩ : openEllipsoid Q = univ := by
+          ext x
+          simp [openEllipsoid, PDE.vecDot]
+        rw [heq]
+        refine ⟨continuous_const.continuousOn,
+          isScalarC12On_of_contDiff_two contDiff_const _, ?_, ?_, ?_⟩
+        · intro z _
+          simp [scalarParabolicZeroOrderOperator_apply, scalarTimeDerivative,
+            matrixContraction, PDE.vecDot]
+        · intro y _
+          exact congrArg φ (Subsingleton.elim _ _)
+        · intro z hz
+          have hf := hz.2
+          rw [hΩ, frontier_univ] at hf
+          exact hf.elim
+      exact ⟨(fun z => φ z.2), _h_xinl_0⟩
     | succ n =>
       let F : TimeVelocity (n + 1) → ℝ := fun z =>
         -scalarParabolicZeroOrderOperator a b (fun _ _ => 0) (fun p => φ p.2) z

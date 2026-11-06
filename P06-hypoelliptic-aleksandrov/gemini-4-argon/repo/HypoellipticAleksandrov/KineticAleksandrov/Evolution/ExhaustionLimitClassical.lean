@@ -27,8 +27,8 @@ private theorem smooth_direction {n : ℕ} {U : Set (EvolutionVec n)} (hU : IsOp
 
 /-- The regularized kinetic operator of a smooth function is smooth on an open set. -/
 theorem contDiffOn_regularizedOperator {n : ℕ} {U : Set (EvolutionVec n)} (hU : IsOpen U)
-    {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    {b : PDE.Vec n → PDE.Vec n} (hb : IsSmoothDrift b) (ε : ℝ)
+    {B } (hB : IsSmoothFullKineticCoefficient B)
+    {b } (hb : IsSmoothDrift b) (ε : ℝ)
     {u : EvolutionVec n → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) :
     ContDiffOn ℝ (⊤ : ℕ∞) (regularizedOperator B b ε u) U := by
   have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x : EvolutionVec n =>
@@ -47,9 +47,9 @@ theorem contDiffOn_regularizedOperator {n : ℕ} {U : Set (EvolutionVec n)} (hU 
 
 /-- Integration against the regularized adjoint equals integration of the classical
 operator for an actually smooth interior function. -/
-theorem integral_regularizedAdjoint_contDiffOn {n : ℕ} {U : Set (EvolutionVec n)}
-    (hU : IsOpen U) {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
+theorem integral_regularizedAdjoint_contDiffOn {n U}
+    (hU : IsOpen U) {B } (hB : IsSmoothFullKineticCoefficient B)
+    (hBs : IsSymmetricFullKineticCoefficient B) {b }
     (hb : IsSmoothDrift b) (ε : ℝ) {u : EvolutionVec n → ℝ}
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
     (ψ : EvolutionVec n → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
@@ -98,9 +98,9 @@ theorem integral_regularizedAdjoint_contDiffOn {n : ℕ} {U : Set (EvolutionVec 
     (transportedCoord n x)) i) j
 
 /-- A smooth regularized weak solution satisfies its zero-source equation pointwise. -/
-theorem regularizedOperator_eq_zero_of_smooth_weak {n : ℕ} {U : Set (EvolutionVec n)}
-    (hU : IsOpen U) {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
+theorem regularizedOperator_eq_zero_of_smooth_weak {n U}
+    (hU : IsOpen U) {B } (hB : IsSmoothFullKineticCoefficient B)
+    (hBs : IsSymmetricFullKineticCoefficient B) {b }
     (hb : IsSmoothDrift b) (ε : ℝ) {u : EvolutionVec n → ℝ}
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
     (hw : IsWeakRegularizedSolution B b ε U u (fun _ => 0)) :
@@ -116,9 +116,7 @@ theorem regularizedOperator_eq_zero_of_smooth_weak {n : ℕ} {U : Set (Evolution
       rw [setIntegral_eq_integral_of_forall_compl_eq_zero (fun x hx => by
         rw [image_eq_zero_of_notMem_tsupport (fun h => hx (hs h)), mul_zero])] at hEq
       simpa only [smul_eq_mul, mul_comm] using hEq)
-  have hae1 : regularizedOperator B b ε u =ᵐ[volume.restrict U] fun _ => (0 : ℝ) :=
-    (ae_restrict_iff' hU.measurableSet).2 hae0
-  have heq := Measure.eqOn_open_of_ae_eq hae1 hU hop continuousOn_const
+  have heq := Measure.eqOn_open_of_ae_eq ((ae_restrict_iff' hU.measurableSet).2 hae0) hU hop continuousOn_const
   exact fun x hx => heq hx
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

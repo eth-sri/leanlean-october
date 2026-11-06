@@ -10,6 +10,14 @@ import Mathlib.Analysis.Calculus.Deriv.Slope
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Linarith
+import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrinciple
+import HypoellipticAleksandrov.KineticAleksandrov.Decay.SourceNotation
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonCalculus
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonGrowth
+import Mathlib.Analysis.Calculus.Deriv.Mul
+import Mathlib.Analysis.Normed.Group.Bounded
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import Mathlib.Tactic.FunProp
 
 /-!
 # Cutoffs of the strictly forbidden phase
@@ -26,52 +34,20 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped Topology
 
-/-- A compact test supported in a positive phase region has a uniform positive margin. -/
-theorem exists_positive_phase_margin {E : Type*} [TopologicalSpace E]
-    {φ q : E → ℝ} (hφ : HasCompactSupport φ) (hq : Continuous q)
-    (hs : tsupport φ ⊆ {x | 0 < q x}) :
-    ∃ δ : ℝ, 0 < δ ∧ ∀ x ∈ tsupport φ, δ ≤ q x := by
-  by_cases he : (tsupport φ).Nonempty
-  · obtain ⟨x, hx, hmin⟩ := hφ.exists_isMinOn he hq.continuousOn
-    exact ⟨q x, hs hx, fun y hy => hmin hy⟩
-  · exact ⟨1, zero_lt_one, fun x hx => False.elim (he ⟨x, hx⟩)⟩
-
-/-- A smooth monotone phase cutoff dominates every `[0,1]` test in the forbidden set. -/
-theorem exists_phase_cutoff {E : Type*} [TopologicalSpace E]
-    {φ q : E → ℝ} (hφ : HasCompactSupport φ) (hq : Continuous q)
-    (hs : tsupport φ ⊆ {x | 0 < q x}) (hbound : ∀ x, 0 ≤ φ x ∧ φ x ≤ 1) :
-    ∃ χ : ℝ → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ Monotone χ ∧
-      χ 0 = 0 ∧ (∀ r, 0 ≤ χ r ∧ χ r ≤ 1) ∧ (∀ x, φ x ≤ χ (q x)) := by
-  obtain ⟨δ, hδ, hm⟩ := exists_positive_phase_margin hφ hq hs
-  refine ⟨fun r => Real.smoothTransition (r / δ), ?_, ?_, ?_, ?_, ?_⟩
-  · exact Real.smoothTransition.contDiff.comp (contDiff_id.div_const δ)
-  · intro r s hrs
-    exact Real.smoothTransition.monotone (div_le_div_of_nonneg_right hrs hδ.le)
-  · simp only [zero_div, Real.smoothTransition.zero]
-  · intro r
-    exact ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
-  · intro x
-    change φ x ≤ Real.smoothTransition (q x / δ)
-    by_cases hx : x ∈ tsupport φ
-    · rw [Real.smoothTransition.one_of_one_le ((one_le_div hδ).mpr (hm x hx))]
-      exact (hbound x).2
-    · rw [image_eq_zero_of_notMem_tsupport hx]
-      exact Real.smoothTransition.nonneg _
-
-/-- Composing a signed phase with a smooth scalar cutoff preserves slice regularity. -/
+/- A compact test supported in a positive phase region has a uniform positive margin. -/
 theorem phaseCutoff_isSliceRegularAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
     {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
-    {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hγ : ContinuousOn γ (Icc σ τ))
+    {γ σ τ ρ} (hγ : ContinuousOn γ (Icc σ τ))
     {χ : ℝ → ℝ} (hχ : ContDiff ℝ 2 χ) (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ) :
     IsSliceRegularAt (fun q => χ (phaseBarrier sgn ξ z0 b γ σ Lb ρ q)) p := by
   have hr := phaseBarrier_isSliceRegularAt sgn ξ z0 hb (ρ := ρ) hγ p ht
   exact ⟨(hχ.differentiable (by norm_num)).differentiableAt.comp p.time hr.time,
     hχ.contDiffAt.comp p.position hr.position, hχ.contDiffAt.comp p.velocity hr.velocity⟩
 
-/-- The transported operator obeys the scalar chain rule on an affine phase barrier. -/
+/- The transported operator obeys the scalar chain rule on an affine phase barrier. -/
 theorem lop_phaseCutoff {d : ℕ} (B : CoefficientField d) (sgn : ℝ) (ξ z0 : PDE.Vec d)
     {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
-    {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hγ : ContinuousOn γ (Icc σ τ))
+    {γ σ τ ρ} (hγ : ContinuousOn γ (Icc σ τ))
     {χ : ℝ → ℝ} (hχ : ContDiff ℝ 2 χ) (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ) :
     lop B b (fun q => χ (phaseBarrier sgn ξ z0 b γ σ Lb ρ q)) p =
       deriv χ (phaseBarrier sgn ξ z0 b γ σ Lb ρ p) *
@@ -115,7 +91,7 @@ theorem lop_phaseCutoff {d : ℕ} (B : CoefficientField d) (sgn : ℝ) (ξ z0 : 
   dsimp only [κ]
   ring
 
-/-- A classical terminal solution with a forbidden-phase test is nonpositive initially. -/
+/- A classical terminal solution with a forbidden-phase test is nonpositive initially. -/
 theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
     (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d)
     (σ τ Lb ρ : ℝ) (hστ : σ < τ) (hρ : 0 < ρ)
@@ -143,7 +119,30 @@ theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
     unfold PDE.vecDot
     simp only [Pi.sub_apply]
     fun_prop
-  obtain ⟨χ, hχ, hmχ, hχ0, hχbounds, hdom⟩ := exists_phase_cutoff hφ.2.1 hq hs hbound
+  obtain ⟨χ, hχ, hmχ, hχ0, hχbounds, hdom⟩ : ∃ χ : ℝ → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ Monotone χ ∧
+      χ 0 = 0 ∧ (∀ r, 0 ≤ χ r ∧ χ r ≤ 1) ∧ (∀ x, φ x ≤ χ (q x)) := by
+    have hφ := hφ.2.1
+    obtain ⟨δ, hδ, hm⟩ : ∃ δ : ℝ, 0 < δ ∧ ∀ x ∈ tsupport φ, δ ≤ q x := by
+        by_cases he : (tsupport φ).Nonempty
+        · obtain ⟨x, hx, hmin⟩ := hφ.exists_isMinOn he hq.continuousOn
+          exact ⟨q x, hs hx, fun y hy => hmin hy⟩
+        · exact ⟨1, zero_lt_one, fun x hx => False.elim (he ⟨x, hx⟩)⟩
+
+
+    refine ⟨fun r => Real.smoothTransition (r / δ), ?_, ?_, ?_, ?_, ?_⟩
+    · exact Real.smoothTransition.contDiff.comp (contDiff_id.div_const δ)
+    · intro r s hrs
+      exact Real.smoothTransition.monotone (div_le_div_of_nonneg_right hrs hδ.le)
+    · simp only [zero_div, Real.smoothTransition.zero]
+    · intro r
+      exact ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
+    · intro x
+      change φ x ≤ Real.smoothTransition (q x / δ)
+      by_cases hx : x ∈ tsupport φ
+      · rw [Real.smoothTransition.one_of_one_le ((one_le_div hδ).mpr (hm x hx))]
+        exact (hbound x).2
+      · rw [image_eq_zero_of_notMem_tsupport hx]
+        exact Real.smoothTransition.nonneg _
   have hχ2 : ContDiff ℝ 2 χ := hχ.of_le
     (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
   let F : KineticPoint d → ℝ := fun p => χ (κ p)
@@ -179,7 +178,7 @@ theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
     intro η hη
     let H := infinityBarrier η M τ z0
     let w : KineticPoint d → ℝ := fun p => u p - F p - H p
-    have hHr : ∀ p, IsSliceRegularAt H p := infinityBarrier_isSliceRegularAt η M τ z0
+    have hHr := infinityBarrier_isSliceRegularAt η M τ z0
     have hwcontrol : IsUniformlyNegAtInfinityOn w (maximumClosedTube Ω γ σ τ) := by
       intro A
       obtain ⟨R, hR, hh⟩ := infinityBarrier_uniform_growth hη hM z0 (C - A)
@@ -243,10 +242,15 @@ theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
       dsimp [w]
       rw [hul]
       linarith
+    have _h_xinl_0 : Continuous (infinityBarrier η M τ z0) := by
+      have hv : Continuous (fun p : KineticPoint d => p.velocity - z0) :=
+        continuous_velocity.sub continuous_const
+      exact (continuous_const.mul (continuous_const.add (PDE.continuous_vecNormSq.comp hv))).mul
+        (Real.continuous_exp.comp (continuous_const.mul (continuous_const.sub continuous_time)))
     have hw := nonpos_on_maximumClosedTube hστ (PDE.isOpen_euclideanBall 0 ρ)
       (isCompact_closure_of_maximumPrinciple_domain (Or.inl ⟨0, ρ, hρ, rfl⟩))
       hγ.continuousOn
-      (((hu.2.1.mono hclosed).sub hFc).sub (infinityBarrier_continuous η M τ z0).continuousOn)
+      (((hu.2.1.mono hclosed).sub hFc).sub _h_xinl_0.continuousOn)
       (Or.inr hwcontrol)
       (fun p hp => ⟨(hwr p hp).time, (hwr p hp).position,
         (hwr p hp).velocity.differentiableAt (by norm_num)⟩)
@@ -261,7 +265,7 @@ theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
     simpa only [infinityBarrier, sub_self, PDE.vecNormSq, PDE.vecDot, Pi.zero_apply,
       mul_zero, Finset.sum_const_zero, add_zero, mul_one, sub_zero, sub_nonpos] using hw
   by_contra hn
-  have hpos : 0 < u ⟨σ, v, z0⟩ := lt_of_not_ge hn
+  have hpos := lt_of_not_ge hn
   let E := Real.exp ((M + 1) * (τ - σ))
   have he : 0 < E := Real.exp_pos _
   have hh := huinitial (u ⟨σ, v, z0⟩ / (2 * E)) (div_pos hpos (by positivity))

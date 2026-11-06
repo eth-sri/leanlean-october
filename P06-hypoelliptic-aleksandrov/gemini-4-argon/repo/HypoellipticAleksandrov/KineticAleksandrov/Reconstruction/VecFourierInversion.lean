@@ -25,29 +25,29 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Reconstruction
 
 variable {d : ℕ}
 
-/-- The Fourier transform `ξ ↦ ∫ e^{-i ξ·x} dμ(x)` of a measure on `ℝ^d`. -/
+/- The Fourier transform `ξ ↦ ∫ e^{-i ξ·x} dμ(x)` of a measure on `ℝ^d`. -/
 def vecFourier (μ : Measure (PDE.Vec d)) (ξ : PDE.Vec d) : ℂ :=
   ∫ x, cexp (-((PDE.vecDot ξ x : ℝ) * I)) ∂μ
 
-/-- The Fourier-inversion integral `∫ e^{i ξ·z} φ(ξ) dξ` on `ℝ^d`. -/
+/- The Fourier-inversion integral `∫ e^{i ξ·z} φ(ξ) dξ` on `ℝ^d`. -/
 def vecInvIntegral (φ : PDE.Vec d → ℂ) (z : PDE.Vec d) : ℂ :=
   ∫ ξ, cexp (I * ((PDE.vecDot ξ z : ℝ) : ℂ)) * φ ξ
 
-/-- The inversion density `(2π)^{-d} Re ∫ e^{i ξ·z} μ̂(ξ) dξ` of a measure on `ℝ^d`. -/
+/- The inversion density `(2π)^{-d} Re ∫ e^{i ξ·z} μ̂(ξ) dξ` of a measure on `ℝ^d`. -/
 def vecInvDensity (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) : ℝ :=
   ((2 * Real.pi) ^ d)⁻¹ * (vecInvIntegral (vecFourier μ) z).re
 
-/-- The coordinate equivalence `ℝ^d ≃ EuclideanSpace ℝ (Fin d)`. -/
+/- The coordinate equivalence `ℝ^d ≃ EuclideanSpace ℝ (Fin d)`. -/
 abbrev toEuclid (d : ℕ) : PDE.Vec d ≃ᵐ EuclideanSpace ℝ (Fin d) :=
   MeasurableEquiv.toLp 2 (PDE.Vec d)
 
-/-- The Euclidean inner product of coordinate vectors is `PDE.vecDot`. -/
+/- The Euclidean inner product of coordinate vectors is `PDE.vecDot`. -/
 lemma inner_toLp (ξ x : PDE.Vec d) :
     inner ℝ (WithLp.toLp 2 ξ : EuclideanSpace ℝ (Fin d)) (WithLp.toLp 2 x) = PDE.vecDot ξ x := by
   simp only [PiLp.inner_apply, PDE.vecDot, RCLike.inner_apply, conj_trivial]
   exact Finset.sum_congr rfl fun i _ => mul_comm _ _
 
-/-- The Fourier transform on `ℝ^d` agrees with that of the pushforward to Euclidean space. -/
+/- The Fourier transform on `ℝ^d` agrees with that of the pushforward to Euclidean space. -/
 lemma vecFourier_eq (μ : Measure (PDE.Vec d)) (ξ : PDE.Vec d) :
     measureFourier (μ.map (toEuclid d)) (WithLp.toLp 2 ξ) = vecFourier μ ξ := by
   unfold measureFourier vecFourier
@@ -55,23 +55,19 @@ lemma vecFourier_eq (μ : Measure (PDE.Vec d)) (ξ : PDE.Vec d) :
   refine integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
   simp only [toEuclid, MeasurableEquiv.toLp_apply, inner_toLp]
 
-/-- The inversion integral agrees with that of the pushforward to Euclidean space. -/
-lemma invIntegral_eq (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) :
-    invIntegral (measureFourier (μ.map (toEuclid d))) (WithLp.toLp 2 z) =
-      vecInvIntegral (vecFourier μ) z := by
-  unfold invIntegral vecInvIntegral
-  rw [← (PiLp.volume_preserving_toLp (Fin d)).integral_comp
-    (toEuclid d).measurableEmbedding]
-  refine integral_congr_ae (Filter.Eventually.of_forall fun ξ => ?_)
-  simp only [inner_toLp, vecFourier_eq]
-
-/-- The inversion density agrees with that of the pushforward to Euclidean space. -/
+/- The inversion integral agrees with that of the pushforward to Euclidean space. -/
 lemma invDensity_eq (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) :
     invDensity (μ.map (toEuclid d)) (WithLp.toLp 2 z) = vecInvDensity μ z := by
   unfold invDensity vecInvDensity
-  rw [invIntegral_eq, finrank_euclideanSpace_fin]
+  have _h_inl_16 (μ z) : invIntegral (measureFourier (μ.map (toEuclid d))) (WithLp.toLp 2 z) = vecInvIntegral (vecFourier μ) z := by
+    unfold invIntegral vecInvIntegral
+    rw [← (PiLp.volume_preserving_toLp (Fin d)).integral_comp
+      (toEuclid d).measurableEmbedding]
+    refine integral_congr_ae (Filter.Eventually.of_forall fun ξ => ?_)
+    simp only [inner_toLp, vecFourier_eq]
+  rw [_h_inl_16, finrank_euclideanSpace_fin]
 
-/-- Integrability of the Fourier transform is preserved by the coordinate equivalence. -/
+/- Integrability of the Fourier transform is preserved by the coordinate equivalence. -/
 lemma integrable_vecFourier_iff (μ : Measure (PDE.Vec d)) :
     Integrable (measureFourier (μ.map (toEuclid d))) ↔ Integrable (vecFourier μ) := by
   rw [← (PiLp.volume_preserving_toLp (Fin d)).integrable_comp_emb
@@ -79,7 +75,7 @@ lemma integrable_vecFourier_iff (μ : Measure (PDE.Vec d)) :
   refine integrable_congr (Filter.Eventually.of_forall fun ξ => ?_)
   exact vecFourier_eq μ ξ
 
-/-- The `L^1` norm of the Fourier transform is preserved by the coordinate equivalence. -/
+/- The `L^1` norm of the Fourier transform is preserved by the coordinate equivalence. -/
 lemma integral_norm_vecFourier (μ : Measure (PDE.Vec d)) :
     ∫ ξ, ‖measureFourier (μ.map (toEuclid d)) ξ‖ = ∫ ξ, ‖vecFourier μ ξ‖ := by
   rw [← (PiLp.volume_preserving_toLp (Fin d)).integral_comp (toEuclid d).measurableEmbedding]
@@ -91,19 +87,19 @@ section Inversion
 variable (μ : Measure (PDE.Vec d)) [IsFiniteMeasure μ] (hφ : Integrable (vecFourier μ))
 include hφ
 
-/-- The inversion density of a finite measure with integrable Fourier transform is nonnegative. -/
+/- The inversion density of a finite measure with integrable Fourier transform is nonnegative. -/
 theorem vecInvDensity_nonneg (z : PDE.Vec d) : 0 ≤ vecInvDensity μ z := by
   rw [← invDensity_eq]
   exact invDensity_nonneg _ ((integrable_vecFourier_iff μ).2 hφ) _
 
-/-- The inversion density is bounded by `(2π)^{-d} ‖μ̂‖₁`. -/
+/- The inversion density is bounded by `(2π)^{-d} ‖μ̂‖₁`. -/
 theorem vecInvDensity_le (z : PDE.Vec d) :
     vecInvDensity μ z ≤ ((2 * Real.pi) ^ d)⁻¹ * ∫ ξ, ‖vecFourier μ ξ‖ := by
   have h := invDensity_le (μ.map (toEuclid d)) ((integrable_vecFourier_iff μ).2 hφ)
     (WithLp.toLp 2 z)
   rwa [invDensity_eq, integral_norm_vecFourier, finrank_euclideanSpace_fin] at h
 
-/-- Fourier inversion on `ℝ^d`: a finite measure with integrable Fourier transform has the
+/- Fourier inversion on `ℝ^d`: a finite measure with integrable Fourier transform has the
 density `vecInvDensity μ` with respect to Lebesgue measure. -/
 theorem eq_withDensity_vecInvDensity :
     μ = volume.withDensity (fun z => ENNReal.ofReal (vecInvDensity μ z)) := by

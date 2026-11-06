@@ -51,30 +51,28 @@ theorem sliceHessian_comp_embed {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ} (
   have hfd : ∀ x', fderiv ℝ (fun x' => F (ι x')) x' = (fderiv ℝ F (ι x')).comp J := by
     intro x'
     exact ((hFd (ι x')).hasFDerivAt.comp x' (hι x')).fderiv
-  have hgd : DifferentiableAt ℝ (fderiv ℝ (fun x' => F (ι x'))) x :=
+  have hgd :=
     (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
-  have h1 := fderiv_clm_apply_const_eval hgd (PDE.basisVec j) (PDE.basisVec i)
-  rw [← h1]
+  rw [← (fderiv_clm_apply_const_eval hgd (PDE.basisVec j) (PDE.basisVec i))]
   have hfun : (fun y => fderiv ℝ (fun x' => F (ι x')) y (PDE.basisVec j)) =
       fun y => fderiv ℝ F (ι y) (J (PDE.basisVec j)) := by
     funext y
     rw [hfd y]
     rfl
   rw [hfun]
-  have hF1 : DifferentiableAt ℝ (fderiv ℝ F) (ι x) :=
+  have hF1 :=
     ((hF.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num) (ι x))
   have hh : HasFDerivAt (fun w => fderiv ℝ F w (J (PDE.basisVec j)))
       (fderiv ℝ (fun w => fderiv ℝ F w (J (PDE.basisVec j))) (ι x)) (ι x) :=
     (hF1.clm_apply (differentiableAt_const _)).hasFDerivAt
-  have hcomp := hh.comp x (hι x)
-  have := hcomp.fderiv
+  have := (hh.comp x (hι x)).fderiv
   rw [show (fun y => fderiv ℝ F (ι y) (J (PDE.basisVec j))) =
       (fun w => fderiv ℝ F w (J (PDE.basisVec j))) ∘ ι from rfl, this]
   simp only [ContinuousLinearMap.comp_apply]
   rw [fderiv_clm_apply_const_eval hF1]
 
 /-- Entries of a matrix with `0 ≤ A ≤ Λ I` are bounded by `Λ`. -/
-theorem abs_apply_le_of_loewner {n : ℕ} {A : PDE.Mat n} {Lam : ℝ} (h0 : A.PosSemidef)
+theorem abs_apply_le_of_loewner {n : ℕ} {A : PDE.Mat n} {Lam } (h0 : A.PosSemidef)
     (h1 : (Lam • (1 : PDE.Mat n) - A).PosSemidef) (i j : Fin n) : |A i j| ≤ Lam := by
   have hsymm : ∀ k l, A k l = A l k := fun k l => by
     simpa using (h0.isHermitian.apply l k)
@@ -150,7 +148,7 @@ theorem abs_sliceHessian_position_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → �
   have h2 := norm_inl_basisVec_le j
   have h3 := hK2 (y, z)
   have h4 : 0 ≤ ‖fderiv ℝ (fderiv ℝ F) (y, z)‖ := ContinuousLinearMap.opNorm_nonneg _
-  have h5 : 0 ≤ K2 := h4.trans h3
+  have h5 := h4.trans h3
   calc _ ≤ _ := h
     _ ≤ K2 * 1 * 1 := by
       gcongr
@@ -173,7 +171,7 @@ theorem abs_sliceHessian_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → �
   have h2 := norm_inr_basisVec_le j
   have h3 := hK2 (y, z)
   have h4 : 0 ≤ ‖fderiv ℝ (fderiv ℝ F) (y, z)‖ := ContinuousLinearMap.opNorm_nonneg _
-  have h5 : 0 ≤ K2 := h4.trans h3
+  have h5 := h4.trans h3
   calc _ ≤ _ := h
     _ ≤ K2 * 1 * 1 := by
       gcongr
@@ -194,7 +192,7 @@ theorem classicalGradient_velocity_eq {n : ℕ} {F : PDE.Vec n × PDE.Vec n → 
 
 /-- The `z`-gradient is bounded by the first derivative bound. -/
 theorem abs_classicalGradient_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ}
-    (hF : ContDiff ℝ 1 F) {K1 : ℝ} (hK1 : ∀ x, ‖fderiv ℝ F x‖ ≤ K1)
+    (hF : ContDiff ℝ 1 F) {K1 } (hK1 : ∀ x, ‖fderiv ℝ F x‖ ≤ K1)
     (y z : PDE.Vec n) (j : Fin n) :
     |PDE.classicalGradient (fun z' => F (y, z')) z j| ≤ K1 := by
   have hd : DifferentiableAt ℝ F (y, z) := hF.differentiable (by norm_num) _
@@ -210,17 +208,17 @@ theorem abs_classicalGradient_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n 
   have h2 := norm_inr_basisVec_le j
   have h3 := hK1 (y, z)
   have h4 : 0 ≤ ‖fderiv ℝ F (y, z)‖ := ContinuousLinearMap.opNorm_nonneg _
-  have h5 : 0 ≤ K1 := h4.trans h3
+  have h5 := h4.trans h3
   calc _ ≤ _ := h
     _ ≤ K1 * 1 := by gcongr
     _ = K1 := by ring
 
 /-- `M_F = sup_ε ‖L_ε F‖_∞` is finite for a smooth compactly supported `F`, for coefficients
 with Loewner bounds and a Lipschitz drift. -/
-theorem exists_terminalGenerator_bound {n : ℕ} {F : BoundedBorel (EvolutionAmbientState n)}
+theorem exists_terminalGenerator_bound {n F}
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (hcs : HasCompactSupport (F : EvolutionAmbientState n → ℝ))
-    {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
-    (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
+    {lam Lam } (hlam : 0 < lam) {B }
+    (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb b}
     (hb : HasEuclideanLipschitzDrift Lb b) :
     ∃ M : ℝ, ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 → ∀ p : KineticPoint n,
       |viscousTransportedOperator B b ε (fun q => F (q.position, q.velocity)) p| ≤ M := by

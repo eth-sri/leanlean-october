@@ -23,7 +23,7 @@ def Clock.diffusion (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point) (s y : ℝ
 def Clock.drift (c : Clock) (y : ℝ) : ℝ := |c.vbar| * y / |c.vbar + c.r * y|
 
 /-- Uniform denominator bounds in the entire cutoff region. -/
-theorem Clock.normalized_abs_bounds (c : Clock) {y : ℝ} (hy : |y| < 1) :
+theorem Clock.normalized_abs_bounds (c : Clock) {y } (hy : |y| < 1) :
     |c.vbar| / 3 ≤ |c.vbar + c.r * y| ∧
       |c.vbar + c.r * y| ≤ 5 * |c.vbar| / 3 := by
   have hmul : |c.r * y| ≤ c.r := by
@@ -37,7 +37,7 @@ theorem Clock.normalized_abs_bounds (c : Clock) {y : ℝ} (hy : |y| < 1) :
   constructor <;> linarith only [hmul, ht, hl, c.radius]
 
 /-- The denominator cannot vanish on the cutoff region. -/
-theorem Clock.normalized_ne_zero (c : Clock) {y : ℝ} (hy : |y| < 1) :
+theorem Clock.normalized_ne_zero (c : Clock) {y } (hy : |y| < 1) :
     c.vbar + c.r * y ≠ 0 := by
   have hb := (c.normalized_abs_bounds hy).1
   have hp := abs_pos.mpr c.nonzero
@@ -45,7 +45,7 @@ theorem Clock.normalized_ne_zero (c : Clock) {y : ℝ} (hy : |y| < 1) :
   linarith only [hb, hp]
 
 /-- Smoothness of the raw diffusion on the source cutoff region. -/
-theorem Clock.diffusion_contDiffAt {lam Lam : ℝ} (c : Clock)
+theorem Clock.diffusion_contDiffAt {lam Lam } (c : Clock)
     (A : SmoothAutonomous lam Lam) (e : Point) (q : ℝ × ℝ)
     (hq : c.vbar + c.r * q.2 ≠ 0) :
     ContDiffAt ℝ (⊤ : ℕ∞) (Function.uncurry (c.diffusion A.a e)) q := by
@@ -58,7 +58,7 @@ theorem Clock.diffusion_contDiffAt {lam Lam : ℝ} (c : Clock)
     (abs_ne_zero.mpr hq)
 
 /-- The normalized diffusion obeys the source bounds on `|y| < 1`. -/
-theorem Clock.diffusion_bounds {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+theorem Clock.diffusion_bounds {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (c : Clock) (A : SmoothAutonomous lam Lam) (e : Point) (s y : ℝ) (hy : |y| < 1) :
     3 * lam / 5 ≤ c.diffusion A.a e s y ∧ c.diffusion A.a e s y ≤ 3 * Lam := by
   have hv : 0 < |c.vbar| := abs_pos.mpr c.nonzero
@@ -77,7 +77,7 @@ theorem Clock.diffusion_bounds {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ 
     nlinarith only [h1, h2]
 
 /-- The centre and cutoff-region velocity have the same strict sign. -/
-theorem Clock.normalized_sign (c : Clock) {y : ℝ} (hy : |y| < 1) :
+theorem Clock.normalized_sign (c : Clock) {y } (hy : |y| < 1) :
     (0 < c.vbar → 0 < c.vbar + c.r * y) ∧
       (c.vbar < 0 → c.vbar + c.r * y < 0) := by
   have hmul : |c.r * y| ≤ c.r := by
@@ -95,7 +95,7 @@ theorem Clock.normalized_sign (c : Clock) {y : ℝ} (hy : |y| < 1) :
     linarith only [hh.2, hr, hv]
 
 /-- The exact derivative formula of the clock drift on the cutoff region. -/
-theorem Clock.hasDerivAt_drift (c : Clock) {y : ℝ} (hy : |y| < 1) :
+theorem Clock.hasDerivAt_drift (c : Clock) {y } (hy : |y| < 1) :
     HasDerivAt c.drift (c.vbar ^ 2 / (c.vbar + c.r * y) ^ 2) y := by
   have hne := c.normalized_ne_zero hy
   have hs := c.normalized_sign hy
@@ -120,16 +120,16 @@ theorem Clock.hasDerivAt_drift (c : Clock) {y : ℝ} (hy : |y| < 1) :
     ring
 
 /-- The universal derivative bounds used in case (I). -/
-theorem Clock.drift_deriv_bounds (c : Clock) {y : ℝ} (hy : |y| < 1) :
+theorem Clock.drift_deriv_bounds (c : Clock) {y } (hy : |y| < 1) :
     (9 / 25 : ℝ) ≤ deriv c.drift y ∧ deriv c.drift y ≤ 9 := by
   rw [(c.hasDerivAt_drift hy).deriv]
   have hb := c.normalized_abs_bounds hy
   have hv := abs_pos.mpr c.nonzero
   have hd := abs_pos.mpr (c.normalized_ne_zero hy)
-  have hp : 0 < (c.vbar + c.r * y) ^ 2 := sq_pos_of_ne_zero (c.normalized_ne_zero hy)
-  have h1 : |c.vbar + c.r * y| ^ 2 ≤ (5 * |c.vbar| / 3) ^ 2 :=
+  have hp := sq_pos_of_ne_zero (c.normalized_ne_zero hy)
+  have h1 :=
     pow_le_pow_left₀ hd.le hb.2 2
-  have h2 : (|c.vbar| / 3) ^ 2 ≤ |c.vbar + c.r * y| ^ 2 :=
+  have h2 :=
     pow_le_pow_left₀ (by positivity) hb.1 2
   simp only [div_pow, mul_pow, sq_abs] at h1 h2
   constructor

@@ -35,7 +35,7 @@ namespace PDE
 
 open Filter MeasureTheory
 
-/-- A differentiable real function with derivative bounded by `M` is
+/- A differentiable real function with derivative bounded by `M` is
 `M`-Lipschitz. -/
 theorem lipschitzWith_of_abs_deriv_le
     {G : ℝ → ℝ} {M : ℝ} (hM : 0 ≤ M)
@@ -48,7 +48,7 @@ theorem lipschitzWith_of_abs_deriv_le
     Real.coe_toNNReal M hM, Real.norm_eq_abs]
   exact hderiv t
 
-/-- Coordinate form of the classical chain rule. -/
+/- Coordinate form of the classical chain rule. -/
 theorem fderiv_comp_basisVec
     {d : ℕ} {G : ℝ → ℝ} {w : Vec d → ℝ}
     {x : Vec d} {i : Fin d}
@@ -66,7 +66,7 @@ theorem fderiv_comp_basisVec
   simp only [ContinuousLinearMap.comp_apply,
     fderiv_eq_deriv_mul]
 
-/-- Exact `L^p` stability of composition by an `M`-Lipschitz real map. -/
+/- Exact `L^p` stability of composition by an `M`-Lipschitz real map. -/
 theorem eLpNorm_comp_sub_le_of_lipschitz
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
     {p : ℝ≥0∞} {G : ℝ → ℝ} {M : ℝ}
@@ -102,7 +102,7 @@ namespace W1pFunction
 
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
-/-- A bounded-derivative `C¹` composition has the expected weak gradient on a
+/- A bounded-derivative `C¹` composition has the expected weak gradient on a
 bounded open convex domain, for every finite `p ≥ 1`. -/
 theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
     (hU : IsOpenBoundedConvexDomain U)
@@ -450,9 +450,7 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
               (fun _ : ℕ => deriv G (u.toFun x))
               atTop
               (𝓝 (deriv G (u.toFun x))))
-      have hproduct :=
-        hdifference.mul_const (u.grad x i)
-      simpa only [second, sub_self, zero_mul] using hproduct
+      simpa only [second, sub_self, zero_mul] using (hdifference.mul_const (u.grad x i))
     have hsecond :
         Tendsto
           (fun n =>
@@ -506,7 +504,7 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
       (hvalueSeq.comp hσStrictMono.tendsto_atTop)
       hgradSeq
 
-/-- Compose a representative-level Sobolev function with a `C¹` real
+/- Compose a representative-level Sobolev function with a `C¹` real
 function whose derivative is bounded by `M`. -/
 noncomputable def compContDiffOfDerivBounded
     (hU : IsOpenBoundedConvexDomain U)
@@ -562,33 +560,6 @@ noncomputable def compContDiffOfDerivBounded
   hasWeakGradient :=
     hasWeakGradient_comp_contDiff_of_deriv_bounded
       hU hp hpTop u hG hM hderiv
-
-@[simp]
-theorem compContDiffOfDerivBounded_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
-    (hderiv : ∀ t, |deriv G t| ≤ M) :
-    (u.compContDiffOfDerivBounded
-      hU hp hpTop hG hM hderiv).toFun =
-        fun x => G (u.toFun x) :=
-  rfl
-
-@[simp]
-theorem compContDiffOfDerivBounded_grad
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
-    (hderiv : ∀ t, |deriv G t| ≤ M) :
-    (u.compContDiffOfDerivBounded
-      hU hp hpTop hG hM hderiv).grad =
-        fun x i =>
-          deriv G (u.toFun x) * u.grad x i :=
-  rfl
 
 end W1pFunction
 

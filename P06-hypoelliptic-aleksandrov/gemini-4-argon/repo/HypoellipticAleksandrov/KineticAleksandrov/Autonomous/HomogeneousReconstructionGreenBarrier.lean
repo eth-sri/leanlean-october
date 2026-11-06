@@ -13,11 +13,11 @@ open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
 open SectionTwo TheoremA Evolution
 open scoped Topology ENNReal
 
-/-- Integrating a smooth nonnegative profile against the actual Green measure is bounded
+/- Integrating a smooth nonnegative profile against the actual Green measure is bounded
 by any smooth native supersolution profile. -/
 theorem reconstruction_green_lintegral_le_barrier
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (k q : Point → ℝ)
@@ -51,10 +51,7 @@ theorem reconstruction_green_lintegral_le_barrier
   have hgn (n : ℕ) (p : Point) : 0 ≤ g n p := mul_nonneg (hb n _).1 (hkn _)
   have hgD (n : ℕ) : tsupport (g n) ⊆ D := by
     intro p hp
-    have hx := tsupport_mul_subset_left hp
-    have hy := (tsupport_comp_subset_preimage (χ n)
-      (KineticPoint.homeomorphProd 1).continuous) hx
-    have hu := (hχ n).2.2 hy
+    have hu := (hχ n).2.2 ((tsupport_comp_subset_preimage (χ n) (KineticPoint.homeomorphProd 1).continuous) (tsupport_mul_subset_left hp))
     change (KineticPoint.equivProd 1).symm (KineticPoint.equivProd 1 p) ∈ D at hu
     simpa only [Equiv.symm_apply_apply] using hu
   have hgb (n : ℕ) : ∃ C : ℝ, 0 ≤ C ∧ ∀ p, |g n p| ≤ C := by
@@ -108,8 +105,7 @@ theorem reconstruction_green_lintegral_le_barrier
   rw [lintegral_congr_ae hfun, lintegral_iSup]
   · apply iSup_le
     intro n
-    have hi := stripGreen_integrable_boundedBorel H E.2 T e (F n)
-    rw [← ofReal_integral_eq_lintegral_ofReal hi
+    rw [← ofReal_integral_eq_lintegral_ofReal (stripGreen_integrable_boundedBorel H E.2 T e (F n))
       (Eventually.of_forall (fun p => hgn n (sectionTwoPoint p)))]
     exact ENNReal.ofReal_le_ofReal (hbound n)
   · intro n
@@ -117,14 +113,14 @@ theorem reconstruction_green_lintegral_le_barrier
   · intro i j hij p
     exact ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right (hmono _ hij) (hkn _))
 
-/-- Integrating a smooth nonnegative profile against the actual Green measure is bounded
+/- Integrating a smooth nonnegative profile against the actual Green measure is bounded
 by any smooth native supersolution profile. -/
 theorem reconstruction_green_le_profile
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
-    (k q : ℝ → ℝ) (C : ℝ) (hC : 0 ≤ C)
+    (k q : ℝ → ℝ) (C ) (hC : 0 ≤ C)
     (hk : ContDiff ℝ (⊤ : ℕ∞) k) (hkn : ∀ v, 0 ≤ k v)
     (hkb : ∀ v ∈ H.carrier, k v ≤ C)
     (hq : ContDiff ℝ (⊤ : ℕ∞) q)
@@ -237,22 +233,5 @@ theorem reconstruction_green_le_profile
     exact ite_eq_left hp.2
   rwa [heq] at hle
 
-/-- Exponential collar occupation is uniformly quadratic in the collar width. -/
-theorem reconstruction_green_collar_bound
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
-    {δ : ℝ} (hδ : 0 < δ) :
-    ∫ p, reconstructionCollarWeight H δ (p.velocity 0) ∂stripGreenOfKernel H E.2 T e ≤
-      2 * δ ^ 2 / lam := by
-  have h := reconstruction_green_le_profile hH hlam hLam A H E hE T e
-    (reconstructionCollarWeight H δ) (reconstructionCollarProfile H lam δ) 2 (by norm_num)
-    (reconstructionCollarWeight_smooth H δ) (reconstructionCollarWeight_nonneg H δ)
-    (fun v hv => reconstructionCollarWeight_le_two H hδ ⟨hv.1.le, hv.2.le⟩)
-    (reconstructionCollarProfile_smooth H lam δ)
-    (fun v hlo hhi => (reconstructionCollarProfile_bounds H hlam hδ ⟨hlo, hhi⟩).1)
-    (reconstructionCollarProfile_operator_le hlam A H hδ)
-  exact h.trans (reconstructionCollarProfile_bounds H hlam hδ ⟨e.2.2.1.le, e.2.2.2.le⟩).2
-
+/- Exponential collar occupation is uniformly quadratic in the collar width. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

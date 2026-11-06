@@ -19,19 +19,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov.KineticAleksandrov.Green
 open scoped ENNReal
 
-/-- The exponentially killed time profile has exact elapsed integral `1/k`. -/
-theorem lintegral_interval_killing_profile {k : ℝ} (hk : 0 < k) :
-    (∫⁻ t : ElapsedTime ⊤, ENNReal.ofReal (Real.exp (-k * t.1))
-      ∂elapsedVolume ⊤) = ENNReal.ofReal k⁻¹ := by
-  rw [lintegral_elapsed_top (fun t : ℝ => ENNReal.ofReal (Real.exp (-k * t)))]
-  rw [← ofReal_integral_eq_lintegral_ofReal
-    (integrableOn_exp_mul_Ioi (neg_neg_of_pos hk) 0)
-    (Filter.Eventually.of_forall fun t => (Real.exp_pos _).le)]
-  congr 1
-  rw [integral_exp_mul_Ioi (neg_neg_of_pos hk) 0]
-  simp only [mul_zero, Real.exp_zero, neg_div_neg_eq, one_div]
-
-/-- Infinite-horizon interval Green mass is uniformly finite. -/
+/- The exponentially killed time profile has exact elapsed integral `1/k`. -/
 theorem interval_green_finite_mass
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
@@ -79,7 +67,18 @@ theorem interval_green_finite_mass
         lintegral_mono fun p => lintegral_mono fun t => hpoint p t
       _ = _ := by
         simp_rw [ENNReal.ofReal_mul hC.le]
-        rw [lintegral_const_mul _ (by fun_prop), lintegral_interval_killing_profile hk,
+        have _h_inl_12 : (∫⁻ t : ElapsedTime ⊤, ENNReal.ofReal (Real.exp (-k * t.1))
+      ∂elapsedVolume ⊤) = ENNReal.ofReal k⁻¹ := by
+            rw [lintegral_elapsed_top (fun t : ℝ => ENNReal.ofReal (Real.exp (-k * t)))]
+            rw [← ofReal_integral_eq_lintegral_ofReal
+              (integrableOn_exp_mul_Ioi (neg_neg_of_pos hk) 0)
+              (Filter.Eventually.of_forall fun t => (Real.exp_pos _).le)]
+            congr 1
+            rw [integral_exp_mul_Ioi (neg_neg_of_pos hk) 0]
+            simp only [mul_zero, Real.exp_zero, neg_div_neg_eq, one_div]
+
+          /- Infinite-horizon interval Green mass is uniformly finite. -/
+        rw [lintegral_const_mul _ (by fun_prop), _h_inl_12,
           lintegral_const]
   exact ⟨hbound, hbound.trans_lt
     (ENNReal.mul_lt_top ENNReal.ofReal_lt_top (measure_lt_top μ univ))⟩

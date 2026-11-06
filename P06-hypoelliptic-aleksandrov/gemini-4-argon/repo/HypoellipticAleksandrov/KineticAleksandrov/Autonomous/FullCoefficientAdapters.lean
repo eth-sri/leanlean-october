@@ -48,8 +48,8 @@ private theorem scalar_diagonal (a : ℝ) :
 private theorem scalar_smul_identity (a : ℝ) :
     a • (1 : PDE.Mat 1) = fun _ _ => a := by
   ext i j
-  have hi : i = 0 := Fin.eq_zero i
-  have hj : j = 0 := Fin.eq_zero j
+  have hi := Fin.eq_zero i
+  have hj := Fin.eq_zero j
   subst i
   subst j
   simp only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul, mul_one]

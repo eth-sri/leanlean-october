@@ -11,8 +11,8 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set MeasureTheory
 
-/-- A fixed backward kinetic cylinder is contained in an explicit compact set. -/
-theorem backwardCylinder_subset_compact {d : ℕ} (P₀ : KineticPoint d) (R : ℝ)
+/- A fixed backward kinetic cylinder is contained in an explicit compact set. -/
+theorem backwardCylinder_subset_compact {d } (P₀ : KineticPoint d) (R : ℝ)
     (hR : 0 < R) : ∃ K : Set (KineticPoint d), IsCompact K ∧ backwardCylinder P₀ R ⊆ K := by
   let D := Icc (P₀.time - R ^ 2) P₀.time ×ˢ
     (PDE.euclideanClosedBall (0 : PDE.Vec d) (R ^ 3) ×ˢ
@@ -33,20 +33,19 @@ theorem backwardCylinder_subset_compact {d : ℕ} (P₀ : KineticPoint d) (R : �
       PDE.euclideanBall_subset_euclideanClosedBall P₀.velocity R hP.2.2.1⟩
   · apply KineticPoint.ext <;> dsimp only [f, relativePosition]; abel
 
-/-- Compact sets have finite native kinetic volume with exactly the product normalization. -/
-theorem kineticPoint_compact_volume_lt_top {d : ℕ} (K : Set (KineticPoint d))
-    (hK : IsCompact K) : volume K < ⊤ := by
-  change Measure.map (KineticPoint.equivProd d).symm
-    (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d))) K < ⊤
-  rw [Measure.map_apply (KineticPoint.measurable_equivProd_symm d) hK.isClosed.measurableSet]
-  have hc : IsCompact ((KineticPoint.equivProd d).symm ⁻¹' K) :=
-    (KineticPoint.homeomorphProd d).symm.isCompact_preimage.mpr hK
-  exact hc.measure_lt_top
-
-/-- The cylinder restriction is a finite measure; no closure or Euclidean normalization changes. -/
-theorem backwardCylinder_volume_lt_top {d : ℕ} (P₀ : KineticPoint d) (R : ℝ)
+/- Compact sets have finite native kinetic volume with exactly the product normalization. -/
+theorem backwardCylinder_volume_lt_top {d } (P₀ : KineticPoint d) (R : ℝ)
     (hR : 0 < R) : volume (backwardCylinder P₀ R) < ⊤ := by
   obtain ⟨K, hK, hQK⟩ := backwardCylinder_subset_compact P₀ R hR
-  exact lt_of_le_of_lt (measure_mono hQK) (kineticPoint_compact_volume_lt_top K hK)
+  have _h_inl_9 : volume K < ⊤ := by
+      change Measure.map (KineticPoint.equivProd d).symm
+        (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d))) K < ⊤
+      rw [Measure.map_apply (KineticPoint.measurable_equivProd_symm d) hK.isClosed.measurableSet]
+      have hc : IsCompact ((KineticPoint.equivProd d).symm ⁻¹' K) :=
+        (KineticPoint.homeomorphProd d).symm.isCompact_preimage.mpr hK
+      exact hc.measure_lt_top
+
+    /- The cylinder restriction is a finite measure; no closure or Euclidean normalization changes. -/
+  exact lt_of_le_of_lt (measure_mono hQK) _h_inl_9
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

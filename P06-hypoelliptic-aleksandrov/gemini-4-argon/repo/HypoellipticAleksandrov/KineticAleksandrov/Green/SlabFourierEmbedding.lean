@@ -26,7 +26,7 @@ def slabShift (d : ℕ) (s : ℝ) (y : SlabBase d) : ℝ × PDE.Vec d := (y.1.1 
 
 lemma measurableEmbedding_elapsed_sub (s : ℝ) :
     MeasurableEmbedding (fun τ : ElapsedTime ⊤ => τ.1 - s) := by
-  have h1 : MeasurableEmbedding (Subtype.val : ElapsedTime ⊤ → ℝ) :=
+  have h1 :=
     MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime ⊤)
   have h2 : MeasurableEmbedding (fun t : ℝ => t - s) :=
     (Homeomorph.subRight s).measurableEmbedding
@@ -76,7 +76,7 @@ lemma map_slabBase_slabShift (d : ℕ) (T s : ℝ) (hT : 0 ≤ T) :
       volume.restrict (Ioo (T - s) (2 * T - s) ×ˢ (univ : Set (PDE.Vec d))) := by
   have h1 : slabShift d s =
       Prod.map (fun τ : ElapsedTime ⊤ => τ.1 - s) (id : PDE.Vec d → PDE.Vec d) := rfl
-  have hmeas : Measurable (fun τ : ElapsedTime ⊤ => τ.1 - s) :=
+  have hmeas :=
     (measurableEmbedding_elapsed_sub s).measurable
   unfold slabBase
   rw [h1, ← Measure.map_prod_map _ _ hmeas measurable_id, Measure.map_id]

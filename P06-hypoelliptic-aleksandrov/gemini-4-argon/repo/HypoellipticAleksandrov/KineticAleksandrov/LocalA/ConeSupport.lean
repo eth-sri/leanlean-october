@@ -32,8 +32,7 @@ theorem ballExitRaw_cone (P : LocalBallStart v₀ R)
       PDE.vecEuclideanNorm (Q.position - P.1.position - (Q.time - P.1.time) • v₀) ≤
         R * (Q.time - P.1.time) := by
   have htr := ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR P T
-  have ht : ∀ᵐ Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T,
-      P.1.time ≤ Q.time := htr.mono (fun Q hQ => (localTrace_subset_closed T.2.le v₀ R hQ).1)
+  have ht := htr.mono (fun Q hQ => (localTrace_subset_closed T.2.le v₀ R hQ).1)
   have hcone := cone_norm_of_directional_ae
     (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) P.1 v₀ R hR.le ht (fun e => by
       have he := ballExitRaw_directional_cone hH hLE hd hlam hLam B hB v₀ hR P T

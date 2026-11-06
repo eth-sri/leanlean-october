@@ -21,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The reverse-time residual candidate in the Bochner dual carrier. -/
 noncomputable def reverseTimeFormResidual
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -49,7 +49,7 @@ noncomputable def reverseTimeFormResidual
 /-- On one event, the residual plus the literal spatial form is the
 negative reverse-time source functional, simultaneously for all spatial tests. -/
 theorem ae_reverseTimeFormResidual_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)

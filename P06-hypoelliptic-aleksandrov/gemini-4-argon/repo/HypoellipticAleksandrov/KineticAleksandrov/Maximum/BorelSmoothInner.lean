@@ -4,6 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelInnerError
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 import Mathlib.MeasureTheory.Group.Arithmetic
+import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelContract
+import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonConstant
+import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonGeometry
+import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
 
 /-! # Passing the coefficient limit on a fixed compact inner cylinder -/
 
@@ -13,7 +17,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
 open scoped MatrixOrder Matrix.Norms.Elementwise Topology ENNReal
 
-/-- The coefficient limit preserves the complete source estimate on a fixed inner cylinder. -/
+/- The coefficient limit preserves the complete source estimate on a fixed inner cylinder. -/
 theorem borel_smooth_inner_limit {d : ℕ} (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (p : ℝ) (hp : 1 ≤ p) (alpha C₀ : ℝ) (localised : Bool)
     (hsmooth : BorelSmoothEstimate (d := d) lam Lam p alpha C₀ localised)
@@ -109,7 +113,16 @@ theorem borel_smooth_inner_limit {d : ℕ} (lam Lam : ℝ) (hlam : 0 < lam) (hLa
     filter_upwards [hsub,ae_restrict_mem hQ.measurableSet] with P hsubP hP
     have heP : e j P = borelCoefficientError (C j) A H P := by
       simp only [e,borelCoefficientError,Hext,indicator_of_mem (hQK hP)]
-    have hdiff := borel_backwardOperator_sub (C j) A u P
+    have hdiff : backwardOperatorOfTimeVelocityCoefficient (C j) u P -
+      backwardOperatorOfTimeVelocityCoefficient A u P =
+      -matrixContraction ((C j) P.time P.velocity - A P.time P.velocity)
+        (kineticVelocityHessian u P) := by
+      let C := (C j)
+      rw [backwardOperatorOfTimeVelocityCoefficient_apply,
+        backwardOperatorOfTimeVelocityCoefficient_apply]
+      unfold matrixContraction
+      simp only [Matrix.sub_apply,sub_mul,Finset.sum_sub_distrib]
+      ring
     have hab := neg_le_abs (matrixContraction
       (C j P.time P.velocity - A P.time P.velocity) (H P))
     dsimp only [borelCoefficientError,H] at heP

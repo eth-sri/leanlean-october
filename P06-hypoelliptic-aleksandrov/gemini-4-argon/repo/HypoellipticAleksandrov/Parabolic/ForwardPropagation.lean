@@ -30,25 +30,15 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter Set
 open scoped MatrixOrder Topology
 
-/-- The power of the initial relative radius in forward propagation. -/
+/- The power of the initial relative radius in forward propagation. -/
 def forwardPropagationExponent (d : ℕ) (lam Lam kappa : ℝ) : ℕ :=
   2 * movingLensSignExponent d lam Lam kappa
 
-/-- The strict closed-corridor forward-propagation constant. -/
+/- The strict closed-corridor forward-propagation constant. -/
 def forwardPropagationDelta (d : ℕ) (lam Lam kappa : ℝ) : ℝ :=
   (1 / 2 : ℝ) * (1 / 4 : ℝ) ^ movingLensSignExponent d lam Lam kappa
 
-/-- The forward-propagation radius exponent is positive. -/
-theorem forwardPropagationExponent_pos
-    (d : ℕ) (lam Lam kappa : ℝ) :
-    0 < forwardPropagationExponent d lam Lam kappa := by
-  unfold forwardPropagationExponent
-  have hn : 0 < movingLensSignExponent d lam Lam kappa := by
-    unfold movingLensSignExponent
-    omega
-  omega
-
-/-- The strict closed-corridor forward-propagation constant is positive. -/
+/- The forward-propagation radius exponent is positive. -/
 theorem forwardPropagationDelta_pos
     (d : ℕ) (lam Lam kappa : ℝ) :
     0 < forwardPropagationDelta d lam Lam kappa := by

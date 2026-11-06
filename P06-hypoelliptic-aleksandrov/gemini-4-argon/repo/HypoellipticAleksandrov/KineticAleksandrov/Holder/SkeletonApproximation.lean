@@ -94,7 +94,7 @@ theorem extendPosition_isSkeleton {d : ℕ} {x v : ℝ → PDE.Vec d} {H a b : �
     fun s _ t _ => extendVelocity_lipschitz hab hH hx s t⟩
 
 /-- Smooth approximation preserves the acceleration bound and position–velocity compatibility. -/
-theorem smooth_skeleton_approx {d : ℕ} (x v : ℝ → PDE.Vec d)
+theorem smooth_skeleton_approx {d } (x v : ℝ → PDE.Vec d)
     (H a b : ℝ) (hab : a < b) (hH : 0 ≤ H)
     (hx : IsSkeleton x v H a b) (eps : ℝ) (heps : 0 < eps) :
     ∃ y w : ℝ → PDE.Vec d,
@@ -105,7 +105,7 @@ theorem smooth_skeleton_approx {d : ℕ} (x v : ℝ → PDE.Vec d)
         PDE.vecEuclideanNorm (w s - v s) < eps) := by
   let delta := eps / (2 * (b - a + 1))
   have hden : 0 < 2 * (b - a + 1) := by linarith
-  have hd : 0 < delta := div_pos heps hden
+  have hd := div_pos heps hden
   obtain ⟨w, hw, hwLip, hwclose⟩ := exists_smooth_lipschitz_approx
     (continuous_extendVelocity hab.le hx.1) hH
     (extendVelocity_lipschitz hab.le hH hx) hd
@@ -116,7 +116,7 @@ theorem smooth_skeleton_approx {d : ℕ} (x v : ℝ → PDE.Vec d)
       (hw.continuous.intervalIntegrable a s)
       hw.continuous.aestronglyMeasurable.stronglyMeasurableAtFilter
       hw.continuous.continuousAt).const_add (x a)
-  have hyderiv : deriv y = w := funext fun s => (hy s).deriv
+  have hyderiv := funext fun s => (hy s).deriv
   have hysmooth : ContDiff ℝ (⊤ : ℕ∞) y := by
     apply contDiff_infty_iff_deriv.mpr
     exact ⟨fun s => (hy s).differentiableAt, hyderiv.symm ▸ hw⟩

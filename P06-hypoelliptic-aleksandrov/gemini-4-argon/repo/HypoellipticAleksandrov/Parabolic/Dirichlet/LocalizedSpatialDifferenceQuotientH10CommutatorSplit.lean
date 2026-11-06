@@ -42,7 +42,6 @@ private theorem reverseTime_coefficient_smoothOn_closedCylinder
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) (i j : Fin d) :
     IsSmoothOnNeighborhood (fun z : TimeVelocity d => reverseTimeCoefficient r₁ a z.1 z.2 i j)
       (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) := by
-  change IsSmoothOnNeighborhood ((fun z : TimeVelocity d => a z.1 z.2 i j) ∘ reverseTimeMap r₁) _
   exact IsSmoothOnNeighborhood.reverseTime r₁
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁)
     (IsSmoothOnNeighborhood.coefficientEntry a ha i j)
@@ -57,8 +56,6 @@ private theorem reverseTime_drift_smoothOn_closedCylinder
     IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j)
       (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) := by
-  change IsSmoothOnNeighborhood ((fun z : TimeVelocity d =>
-    scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j) ∘ reverseTimeMap r₁) _
   exact IsSmoothOnNeighborhood.reverseTime r₁
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁)
     (IsSmoothOnNeighborhood.divergenceDriftEntry a b ha hb j)
@@ -69,7 +66,6 @@ private theorem reverseTime_scalar_smoothOn_closedCylinder
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
     IsSmoothOnNeighborhood (fun z : TimeVelocity d => reverseTimeScalarCoefficient r₁ c z.1 z.2)
       (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) := by
-  change IsSmoothOnNeighborhood ((fun z : TimeVelocity d => c z.1 z.2) ∘ reverseTimeMap r₁) _
   exact IsSmoothOnNeighborhood.reverseTime r₁
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁) hc
 
@@ -104,8 +100,8 @@ private theorem continuous_cutoff_spatialDifferenceQuotient_slice
   exact continuous_mul_of_tsupport_subset hU β.smooth.continuous.continuousOn hβU hdq
 
 private theorem continuous_cutoff_spatialTranslate_slice
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {K : ℝ}
-    (r₀ r₁ τ : ℝ) (β : PDE.QuantitativeSmoothCutoff inner Ω K) (k : Fin d) (h : ℝ)
+    {d Ω inner K}
+    (r₀ r₁ τ ) (β : PDE.QuantitativeSmoothCutoff inner Ω K) (k : Fin d) (h : ℝ)
     (f : TimeVelocity d → ℝ)
     (hf : IsSmoothOnNeighborhood f (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω))
     (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
@@ -126,31 +122,27 @@ private theorem continuous_cutoff_spatialTranslate_slice
       hV.continuousOn.comp hg.continuousOn (fun y hy => hy)
   exact continuous_mul_of_tsupport_subset hU β.smooth.continuous.continuousOn hβU htranslate
 
-private theorem integrable_weighted_scalarLp_pair
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (q : PDE.Vec d → ℝ) (hq : Continuous q)
-    (hcompact : HasCompactSupport q) (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    Integrable (fun y => q y * f y * g y) (PDE.volumeOn Ω) := by
-  have hqVolume : MemLp q ∞ (volume : Measure (PDE.Vec d)) := hq.memLp_of_hasCompactSupport hcompact
-  have hqTop : MemLp q ∞ (PDE.volumeOn Ω) := by simpa only [PDE.volumeOn] using hqVolume.restrict Ω
-  have hfg := (Lp.memLp f).integrable_mul (Lp.memLp g)
-  have hweighted := hfg.mul_of_top_right hqTop
-  convert hweighted using 1
-  ext y
-  simp only [Pi.mul_apply]
-  ring
-
 private theorem integrable_weighted_scalarLp_pair_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (q : PDE.Vec d → ℝ) (hq : Continuous q)
+    {d Ω} (q : PDE.Vec d → ℝ) (hq : Continuous q)
     (hcompact : HasCompactSupport q) (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞))
     (p r : PDE.Vec d → ℝ) (hf : ⇑f =ᵐ[PDE.volumeOn Ω] p)
     (hg : ⇑g =ᵐ[PDE.volumeOn Ω] r) :
     Integrable (fun y => (q y * p y) * r y) (PDE.volumeOn Ω) := by
-  apply (integrable_weighted_scalarLp_pair q hq hcompact f g).congr
+  have _h_inl_15 : Integrable (fun y => q y * f y * g y) (PDE.volumeOn Ω) := by
+    have hqVolume : MemLp q ∞ (volume : Measure (PDE.Vec d)) := hq.memLp_of_hasCompactSupport hcompact
+    have hqTop : MemLp q ∞ (PDE.volumeOn Ω) := by simpa only [PDE.volumeOn] using hqVolume.restrict Ω
+    have hfg := (Lp.memLp f).integrable_mul (Lp.memLp g)
+    have hweighted := hfg.mul_of_top_right hqTop
+    convert hweighted using 1
+    ext y
+    simp only [Pi.mul_apply]
+    ring
+  apply _h_inl_15.congr
   filter_upwards [hf, hg] with y hyf hyg
   rw [hyf, hyg]
 
 private theorem h10_E_coord_ae
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ} (hΩ : IsOpen Ω)
+    {d Ω inner Kη} (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη) (k : Fin d) (h : ℝ)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
       (tsupport η.toFun) Ω) (u : H10HilbertGraph hΩ) (i : Fin d) :
@@ -174,7 +166,7 @@ private theorem h10_E_coord_ae
   rfl
 
 private theorem h10_H_coord_ae
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ} (hΩ : IsOpen Ω)
+    {d Ω inner Kη} (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη) (k : Fin d) (h : ℝ)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
       (tsupport η.toFun) Ω) (u : H10HilbertGraph hΩ) (i : Fin d) :
@@ -198,7 +190,7 @@ private theorem h10_H_coord_ae
   rfl
 
 private theorem h10_U_coord_ae
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ} (hΩ : IsOpen Ω)
+    {d Ω inner Kη} (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη) (u : H10HilbertGraph hΩ) (j : Fin d) :
     ⇑(scalarL2Multiplier η.toFun (η.smooth.continuous.aestronglyMeasurable)
       1 zero_le_one (Filter.Eventually.of_forall fun y => by
@@ -210,28 +202,6 @@ private theorem h10_U_coord_ae
     1 zero_le_one (Filter.Eventually.of_forall fun y => by
       rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
       exact η.le_one y) _
-
-private theorem h10_U0_ae
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ} (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη) (u : H10HilbertGraph hΩ) :
-    ⇑(scalarL2Multiplier η.toFun (η.smooth.continuous.aestronglyMeasurable)
-      1 zero_le_one (Filter.Eventually.of_forall fun y => by
-        rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
-        exact η.le_one y) (valueCLM hΩ u)) =ᵐ[PDE.volumeOn Ω]
-      fun y => η y * valueCLM hΩ u y := by
-  exact scalarL2Multiplier_apply_ae η.toFun (η.smooth.continuous.aestronglyMeasurable)
-    1 zero_le_one (Filter.Eventually.of_forall fun y => by
-      rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
-      exact η.le_one y) _
-
-private theorem integral_pair_add_const_mul
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (z : ℝ) (f g : PDE.Vec d → ℝ)
-    (hf : Integrable f (PDE.volumeOn Ω)) (hg : Integrable g (PDE.volumeOn Ω)) :
-    (∫ y in Ω, (z * f y) + (z * g y) ∂volume) =
-      z * ((∫ y in Ω, f y ∂volume) + (∫ y in Ω, g y ∂volume)) := by
-  rw [integral_add (hf.const_mul z) (hg.const_mul z), integral_const_mul,
-    integral_const_mul]
-  ring
 
 private theorem finset_sum_const_mul
     {ι : Type*} [Fintype ι] (z : ℝ) (f : ι → ℝ) :
@@ -291,11 +261,11 @@ private theorem integrable_aT_E_H (i j : Fin d) :
       (PDE.volumeOn Ω) := by
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
-  let E : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let E :=
     PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ (A u)) -
       cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η j k h
         (valueCLM hΩ u)
-  let H : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let H :=
     PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) +
       cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
         (valueCLM hΩ u)
@@ -337,7 +307,7 @@ private theorem integrable_aD_U_H (i j : Fin d) :
       (PDE.volumeOn Ω) := by
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
-  let H : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let H :=
     PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) +
       cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
         (valueCLM hΩ u)
@@ -390,7 +360,7 @@ private theorem integrable_driftT_E_V (j : Fin d) :
       (PDE.volumeOn Ω) := by
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
-  let E : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let E :=
     PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ (A u)) -
       cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η j k h
         (valueCLM hΩ u)
@@ -516,7 +486,10 @@ private theorem integrable_gammaD_U0_V :
     exact χ.hasCompactSupport.mul_right
   have hU₀ : ⇑U₀ =ᵐ[PDE.volumeOn Ω] fun y => η y * valueCLM hΩ u y := by
     dsimp only [U₀]
-    exact h10_U0_ae hΩ η u
+    exact scalarL2Multiplier_apply_ae η.toFun (η.smooth.continuous.aestronglyMeasurable)
+      1 zero_le_one (Filter.Eventually.of_forall fun y => by
+        rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
+        exact η.le_one y) _
   have hV : ⇑V =ᵐ[PDE.volumeOn Ω] fun y => V y :=
     Filter.Eventually.of_forall fun _ => rfl
   simpa only [q, A, V] using
@@ -527,7 +500,7 @@ omit r₀ hc hτ hχshift
 end
 
 private theorem integral_pair_mul_const
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (z : ℝ)
+    {d Ω} (z : ℝ)
     (q₁ p₁ q₂ p₂ g : PDE.Vec d → ℝ)
     (h₁ : Integrable (fun y => (q₁ y * p₁ y) * g y) (PDE.volumeOn Ω))
     (h₂ : Integrable (fun y => (q₂ y * p₂ y) * g y) (PDE.volumeOn Ω)) :
@@ -538,10 +511,12 @@ private theorem integral_pair_mul_const
       fun y => z * ((q₁ y * p₁ y) * g y) + z * ((q₂ y * p₂ y) * g y) by
         funext y
         ring]
-  exact integral_pair_add_const_mul z _ _ h₁ h₂
+  rw [integral_add (h₁.const_mul z) (h₂.const_mul z), integral_const_mul,
+    integral_const_mul]
+  ring
 
 private theorem raw_six_term_split
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (z : ℝ)
+    {d Ω} (z : ℝ)
     (source V U₀ : PDE.Vec d → ℝ)
     (aT aD : Fin d → Fin d → PDE.Vec d → ℝ)
     (E H U driftT driftD : Fin d → PDE.Vec d → ℝ)
@@ -574,17 +549,17 @@ private theorem raw_six_term_split
                 (driftD j y * U j y) * V y ∂volume) +
               (∫ y in Ω, (gammaT y * V y) * V y ∂volume) +
               ∫ y in Ω, (gammaD y * U₀ y) * V y ∂volume) := by
-  let S : ℝ := ∫ y in Ω, source y * V y ∂volume
-  let P : ℝ := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
+  let S := ∫ y in Ω, source y * V y ∂volume
+  let P := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
     (aT i j y * E j y) * H i y ∂volume
-  let AD : ℝ := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
+  let AD := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
     (aD i j y * U j y) * H i y ∂volume
-  let DT : ℝ := ∑ j : Fin d, ∫ y in Ω,
+  let DT := ∑ j : Fin d, ∫ y in Ω,
     (driftT j y * E j y) * V y ∂volume
-  let DD : ℝ := ∑ j : Fin d, ∫ y in Ω,
+  let DD := ∑ j : Fin d, ∫ y in Ω,
     (driftD j y * U j y) * V y ∂volume
-  let GT : ℝ := ∫ y in Ω, (gammaT y * V y) * V y ∂volume
-  let GD : ℝ := ∫ y in Ω, (gammaD y * U₀ y) * V y ∂volume
+  let GT := ∫ y in Ω, (gammaT y * V y) * V y ∂volume
+  let GD := ∫ y in Ω, (gammaD y * U₀ y) * V y ∂volume
   have hsource : (∫ y in Ω, (z * source y) * V y ∂volume) = z * S := by
     dsimp only [S]
     rw [show (fun y => (z * source y) * V y) =
@@ -657,24 +632,24 @@ private theorem raw_six_term_split
   convert raw_split_eight_real_ring z S P AD DT DD GT GD using 1; ring
 
 private def commutatorRaw
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
+    {d Ω inner Kη Kχ}
+    (r₀ r₁ ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
     (ζ : ReverseTimeScalarTest (r₁ - r₀))
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
-    (k : Fin d) (h τ : ℝ)
+    (k ) (h τ : ℝ)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
       (tsupport η.toFun) Ω) (u : H10HilbertGraph hΩ) : ℝ :=
   let A := localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
   let V : PDE.Vec d → ℝ := fun y => valueCLM hΩ (A u) y
-  let G : Fin d → PDE.Vec d → ℝ := fun i y =>
+  let G := fun i y =>
     PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) y
-  let W : Fin d → PDE.Vec d → ℝ := fun i y =>
+  let W := fun i y =>
     cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h (valueCLM hΩ u) y
-  let E : Fin d → PDE.Vec d → ℝ := fun i y => G i y - W i y
-  let H : Fin d → PDE.Vec d → ℝ := fun i y => G i y + W i y
-  let U : Fin d → PDE.Vec d → ℝ := fun j y =>
+  let E := fun i y => G i y - W i y
+  let H := fun i y => G i y + W i y
+  let U := fun j y =>
     η y * PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u) y
   let U₀ : PDE.Vec d → ℝ := fun y => η y * valueCLM hΩ u y
   let source : TimeVelocity d → ℝ := fun z => F (r₁ - z.1) z.2
@@ -687,11 +662,11 @@ private def commutatorRaw
     ζ τ * η y * spatialDifferenceQuotient k h source (τ, y)
   let aT : Fin d → Fin d → PDE.Vec d → ℝ := fun i j y =>
     ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)
-  let aD : Fin d → Fin d → PDE.Vec d → ℝ := fun i j y =>
+  let aD := fun i j y =>
     ζ τ * χ y * spatialDifferenceQuotient k h (α i j) (τ, y)
-  let driftT : Fin d → PDE.Vec d → ℝ := fun j y =>
+  let driftT := fun j y =>
     ζ τ * χ y * spatialTranslate k h (drift j) (τ, y)
-  let driftD : Fin d → PDE.Vec d → ℝ := fun j y =>
+  let driftD := fun j y =>
     ζ τ * χ y * spatialDifferenceQuotient k h (drift j) (τ, y)
   let γT : PDE.Vec d → ℝ := fun y => ζ τ * χ y * spatialTranslate k h γ (τ, y)
   let γD : PDE.Vec d → ℝ := fun y =>
@@ -704,27 +679,27 @@ private def commutatorRaw
     (∫ y in Ω, (γT y * V y + γD y * U₀ y) * V y ∂volume))
 
 private def translatedPrincipal
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
+    {d Ω inner Kη Kχ}
+    (r₀ r₁ ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (ζ : ReverseTimeScalarTest (r₁ - r₀))
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) (k : Fin d) (h τ : ℝ)
+    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) (k ) (h τ : ℝ)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
       (tsupport η.toFun) Ω) (u : H10HilbertGraph hΩ) : ℝ :=
   let A := localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
-  let G : Fin d → PDE.Vec d → ℝ := fun i y =>
+  let G := fun i y =>
     PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) y
-  let W : Fin d → PDE.Vec d → ℝ := fun i y =>
+  let W := fun i y =>
     cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h (valueCLM hΩ u) y
-  let E : Fin d → PDE.Vec d → ℝ := fun i y => G i y - W i y
-  let H : Fin d → PDE.Vec d → ℝ := fun i y => G i y + W i y
+  let E := fun i y => G i y - W i y
+  let H := fun i y => G i y + W i y
   let α : Fin d → Fin d → TimeVelocity d → ℝ :=
     fun i j z => reverseTimeCoefficient r₁ a z.1 z.2 i j
   ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
     (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) * E j y * H i y ∂volume
 
 private theorem commutatorRaw_eq_split
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d Ω inner Kη Kχ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -747,31 +722,31 @@ private theorem commutatorRaw_eq_split
         localizedSpatialDifferenceQuotientH10NonprincipalRemainder
           r₁ hΩ a b c F η χ k h τ hηshift u := by
   let A := localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
-  let V : PDE.Vec d → ℝ := fun y => valueCLM hΩ (A u) y
-  let G : Fin d → PDE.Vec d → ℝ := fun i y =>
+  let V := fun y => valueCLM hΩ (A u) y
+  let G := fun i y =>
     PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) y
-  let W : Fin d → PDE.Vec d → ℝ := fun i y =>
+  let W := fun i y =>
     cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h (valueCLM hΩ u) y
-  let E : Fin d → PDE.Vec d → ℝ := fun i y => G i y - W i y
-  let H : Fin d → PDE.Vec d → ℝ := fun i y => G i y + W i y
+  let E := fun i y => G i y - W i y
+  let H := fun i y => G i y + W i y
   let U : Fin d → PDE.Vec d → ℝ := fun j y =>
     η y * PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u) y
   let U₀ : PDE.Vec d → ℝ := fun y => η y * valueCLM hΩ u y
   let source : TimeVelocity d → ℝ := fun z => F (r₁ - z.1) z.2
-  let sourceD : PDE.Vec d → ℝ := fun y =>
+  let sourceD := fun y =>
     η y * spatialDifferenceQuotient k h source (τ, y)
   let α : Fin d → Fin d → TimeVelocity d → ℝ :=
     fun i j z => reverseTimeCoefficient r₁ a z.1 z.2 i j
   let drift : Fin d → TimeVelocity d → ℝ :=
     fun j z => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j
   let γ : TimeVelocity d → ℝ := fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2
-  let aT : Fin d → Fin d → PDE.Vec d → ℝ := fun i j y =>
+  let aT := fun i j y =>
     χ y * spatialTranslate k h (α i j) (τ, y)
-  let aD : Fin d → Fin d → PDE.Vec d → ℝ := fun i j y =>
+  let aD := fun i j y =>
     χ y * spatialDifferenceQuotient k h (α i j) (τ, y)
-  let driftT : Fin d → PDE.Vec d → ℝ := fun j y =>
+  let driftT := fun j y =>
     χ y * spatialTranslate k h (drift j) (τ, y)
-  let driftD : Fin d → PDE.Vec d → ℝ := fun j y =>
+  let driftD := fun j y =>
     χ y * spatialDifferenceQuotient k h (drift j) (τ, y)
   let γT : PDE.Vec d → ℝ := fun y => χ y * spatialTranslate k h γ (τ, y)
   let γD : PDE.Vec d → ℝ := fun y =>
@@ -812,225 +787,16 @@ private theorem commutatorRaw_eq_split
     localizedSpatialDifferenceQuotientH10NonprincipalRemainder, A, V, G, W, E, H, U, U₀,
     source, sourceD, α, drift, γ, aT, aD, driftT, driftD, γT, γD, mul_assoc] using hsplit
 
-private def commutatorLhs
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (ζ : ReverseTimeScalarTest (r₁ - r₀))
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη) (k : Fin d) (h τ : ℝ)
-    (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω) (u : H10HilbertGraph hΩ) : ℝ :=
-  let B := localizedSpatialDifferenceQuotientEnergyTestH10CLM
-    hΩ η k h η.tsupport_subset hηshift
-  ζ τ * (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (B u) -
-    reverseTimeSpatialForm hΩ r₁ τ a b c u (B u))
-
-private def compactCommutatorOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (ζ : ReverseTimeScalarTest (r₁ - r₀)) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) : Prop :=
-  ∃ δ : ℝ, 0 < δ ∧ ∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
-    ∃ hχshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport χ.toFun) Ω, ∀ (τ : ℝ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
-      (u : H10HilbertGraph hΩ),
-      let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-        intro y hy; apply subset_tsupport; change χ y ≠ 0
-        rw [χ.eq_one_on_inner y hy]; exact one_ne_zero
-      let hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (tsupport η.toFun) Ω := hχshift.mono_left hηχ
-      commutatorLhs r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η k h τ hηshift u =
-        commutatorRaw r₀ r₁ hΩ a b c F ζ η χ k h τ hηshift u
-
-private theorem compactCommutatorOutput_of_accepted
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (ζ : ReverseTimeScalarTest (r₁ - r₀)) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) :
-    compactCommutatorOutput r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
-      F hFSmooth ζ hζunit η χ := by
-  obtain ⟨δ, hδ, hrest⟩ :=
-    exists_smallStep_reverseTimeSource_sub_reverseTimeSpatialForm_energyTest_eq_commutator
-      r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth ζ hζunit η χ
-  refine ⟨δ, hδ, ?_⟩
-  intro k h hh
-  obtain ⟨hχshift, hfixed⟩ := hrest k h hh
-  refine ⟨hχshift, ?_⟩
-  intro τ hτ u
-  change commutatorLhs r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η k h τ _ u =
-    commutatorRaw r₀ r₁ hΩ a b c F ζ η χ k h τ _ u
-  simpa only [commutatorLhs, commutatorRaw] using hfixed τ hτ u
-
-private def compactSplitOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (ζ : ReverseTimeScalarTest (r₁ - r₀)) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) : Prop :=
-  ∃ δ : ℝ, 0 < δ ∧ ∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
-    ∃ hχshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport χ.toFun) Ω, ∀ (τ : ℝ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
-      (u : H10HilbertGraph hΩ),
-      let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-        intro y hy; apply subset_tsupport; change χ y ≠ 0
-        rw [χ.eq_one_on_inner y hy]; exact one_ne_zero
-      let hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (tsupport η.toFun) Ω := hχshift.mono_left hηχ
-      commutatorLhs r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η k h τ hηshift u =
-        -translatedPrincipal r₀ r₁ hΩ a ζ η χ k h τ hηshift u + ζ τ *
-          localizedSpatialDifferenceQuotientH10NonprincipalRemainder
-            r₁ hΩ a b c F η χ k h τ hηshift u
-
-private theorem compactSplitOutput_of_compact
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (ζ : ReverseTimeScalarTest (r₁ - r₀)) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) :
-    compactSplitOutput r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
-      F hFSmooth ζ hζunit η χ := by
-  obtain ⟨δ, hδ, hrest⟩ := compactCommutatorOutput_of_accepted
-    r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth ζ hζunit η χ
-  refine ⟨δ, hδ, ?_⟩
-  intro k h hh
-  obtain ⟨hχshift, hfixed⟩ := hrest k h hh
-  refine ⟨hχshift, ?_⟩
-  intro τ hτ u
-  exact (hfixed τ hτ u).trans
-    (commutatorRaw_eq_split r₀ r₁ hΩ a b c F haSmooth hbSmooth hcSmooth ζ η χ k h τ
-      hχshift _ hτ u)
-
-/-- For all sufficiently small signed spatial steps, the exact arbitrary-`H¹₀`
-fixed-slice commutator is minus its translated-principal term plus the scalar
-time weight times the raw six-term nonprincipal remainder. -/
-theorem
-    exists_smallStep_h10Commutator_eq_neg_translatedPrincipal_add_nonprincipalRemainder
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (ζ : ReverseTimeScalarTest (r₁ - r₀)) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) :
-    ∃ δ : ℝ, 0 < δ ∧
-      ∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
-        ∃ hχshift : Set.MapsTo
-          (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (tsupport χ.toFun) Ω,
-        ∀ (τ : ℝ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
-          (u : H10HilbertGraph hΩ),
-        let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-          intro y hy
-          apply subset_tsupport
-          change χ y ≠ 0
-          rw [χ.eq_one_on_inner y hy]
-          exact one_ne_zero
-        let hηshift : Set.MapsTo
-            (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-            (tsupport η.toFun) Ω :=
-          hχshift.mono_left hηχ
-        let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
-          localizedSpatialDifferenceQuotientH10CLM
-            hΩ η k h η.tsupport_subset hηshift
-        let B : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
-          localizedSpatialDifferenceQuotientEnergyTestH10CLM
-            hΩ η k h η.tsupport_subset hηshift
-        let G : Fin d → PDE.Vec d → ℝ := fun i y =>
-          PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-            (gradientCLM hΩ (A u)) y
-        let W : Fin d → PDE.Vec d → ℝ := fun i y =>
-          cutoffGradientSpatialDifferenceQuotientL2
-            hΩ.measurableSet η i k h (valueCLM hΩ u) y
-        let E : Fin d → PDE.Vec d → ℝ := fun i y => G i y - W i y
-        let H : Fin d → PDE.Vec d → ℝ := fun i y => G i y + W i y
-        let α : Fin d → Fin d → TimeVelocity d → ℝ :=
-          fun i j z => reverseTimeCoefficient r₁ a z.1 z.2 i j
-        let Q : ℝ := ζ τ *
-            (reverseTimeNegativeSourceRaw
-                r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (B u) -
-              reverseTimeSpatialForm hΩ r₁ τ a b c u (B u))
-        let P : ℝ := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
-            (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) *
-              E j y * H i y ∂volume
-        let R : ℝ :=
-          localizedSpatialDifferenceQuotientH10NonprincipalRemainder
-            r₁ hΩ a b c F η χ k h τ hηshift u
-        Q = -P + ζ τ * R := by
-  change compactSplitOutput r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
-    F hFSmooth ζ hζunit η χ
-  exact compactSplitOutput_of_compact
-    r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth ζ hζunit η χ
-
-/-- The fixed supplied-collar commutator is minus its translated-principal part
-plus the nonprincipal remainder under the uniform majorants. -/
 theorem h10Commutator_eq_neg_translatedPrincipal_add_nonprincipalRemainder_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d Ω inner Kη Kχ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
     (ζ : ReverseTimeScalarTest (r₁ - r₀)) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    (δ : ℝ)
+    (δ )
     (hcarrier : spatialCoordinateShiftCarrier (tsupport χ.toFun) δ ⊆ Ω)
-    (M : ℝ) (hM : 0 ≤ M)
+    (M ) (hM : 0 ≤ M)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -1063,7 +829,7 @@ theorem h10Commutator_eq_neg_translatedPrincipal_add_nonprincipalRemainder_of_ma
       spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
       spatialScalarFDerivEuclideanNorm
         (fun w : TimeVelocity d => -(reverseTimeScalarCoefficient r₁ F w.1 w.2)) z ≤ M)
-    (k : Fin d) (h : ℝ) (hh : |h| ≤ δ) (τ : ℝ)
+    (k : Fin d) (h : ℝ) (hh : |h| ≤ δ) (τ )
     (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) (u : H10HilbertGraph hΩ) :
     let hχshift : Set.MapsTo
         (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport χ.toFun) Ω :=
@@ -1074,32 +840,30 @@ theorem h10Commutator_eq_neg_translatedPrincipal_add_nonprincipalRemainder_of_ma
       change χ y ≠ 0
       rw [χ.eq_one_on_inner y hy]
       exact one_ne_zero
-    let hηshift : Set.MapsTo
-        (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω :=
+    let hηshift :=
       hχshift.mono_left hηχ
-    let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
+    let A :=
       localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
-    let B : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
+    let B :=
       localizedSpatialDifferenceQuotientEnergyTestH10CLM
         hΩ η k h η.tsupport_subset hηshift
-    let G : Fin d → PDE.Vec d → ℝ := fun i y =>
+    let G := fun i y =>
       PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) y
-    let W : Fin d → PDE.Vec d → ℝ := fun i y =>
+    let W := fun i y =>
       cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h (valueCLM hΩ u) y
-    let E : Fin d → PDE.Vec d → ℝ := fun i y => G i y - W i y
-    let H : Fin d → PDE.Vec d → ℝ := fun i y => G i y + W i y
+    let E := fun i y => G i y - W i y
+    let H := fun i y => G i y + W i y
     let α : Fin d → Fin d → TimeVelocity d → ℝ :=
       fun i j z => reverseTimeCoefficient r₁ a z.1 z.2 i j
-    let Q : ℝ := ζ τ *
+    let Q := ζ τ *
       (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (B u) -
         reverseTimeSpatialForm hΩ r₁ τ a b c u (B u))
-    let P : ℝ := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
+    let P := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
       (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) * E j y * H i y ∂volume
-    let R : ℝ := localizedSpatialDifferenceQuotientH10NonprincipalRemainder
+    let R := localizedSpatialDifferenceQuotientH10NonprincipalRemainder
       r₁ hΩ a b c F η χ k h τ hηshift u
     Q = -P + ζ τ * R := by
-  let hχshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport χ.toFun) Ω :=
+  let hχshift :=
     mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset hcarrier k hh
   let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
     intro y hy
@@ -1107,8 +871,7 @@ theorem h10Commutator_eq_neg_translatedPrincipal_add_nonprincipalRemainder_of_ma
     change χ y ≠ 0
     rw [χ.eq_one_on_inner y hy]
     exact one_ne_zero
-  let hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω :=
+  let hηshift :=
     hχshift.mono_left hηχ
   have hcomm :=
     reverseTimeSource_sub_reverseTimeSpatialForm_energyTest_eq_commutator_of_majorants

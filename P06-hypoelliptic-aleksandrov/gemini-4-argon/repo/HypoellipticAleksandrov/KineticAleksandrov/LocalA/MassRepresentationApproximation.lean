@@ -15,9 +15,9 @@ open Set MeasureTheory Parabolic Topology
 open scoped CompactlySupported
 
 /-- Bounded continuous closed-strip data have smooth compact trace approximations. -/
-theorem exists_mass_trace_probe {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+theorem exists_mass_trace_probe {d } (a T : ℝ) (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (u : KineticPoint d → ℝ) (hc : ContinuousOn u (localClosedStrip a T v₀ R))
-    (M : ℝ) (hM : 0 ≤ M) (hb : ∀ P ∈ localClosedStrip a T v₀ R, |u P| ≤ M)
+    (M ) (hM : 0 ≤ M) (hb : ∀ P ∈ localClosedStrip a T v₀ R, |u P| ≤ M)
     (L ε : ℝ) (hε : 0 < ε) :
     ∃ F : boundaryProbeSubmodule d,
       (∀ P, |boundaryProbePhysical F P| ≤ M + ε) ∧
@@ -54,7 +54,7 @@ theorem exists_mass_trace_probe {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) {R : �
     rw [sub_add_cancel] at hh
     exact hh.trans_eq (add_comm ε M)
   · intro P hP hL
-    have hv : P.velocity ∈ PDE.euclideanClosedBall v₀ R :=
+    have hv :=
       (closure_minimal (PDE.euclideanBall_subset_euclideanClosedBall v₀ R)
         (PDE.isClosed_euclideanClosedBall v₀ R)) hP.2.2
     have hpK : H P ∈ K := ⟨⟨hP.1, hP.2.1⟩,

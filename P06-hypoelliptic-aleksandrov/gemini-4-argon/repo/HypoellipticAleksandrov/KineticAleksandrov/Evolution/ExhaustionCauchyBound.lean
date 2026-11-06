@@ -22,7 +22,7 @@ open scoped MatrixOrder
 /-- Zero-source, zero-lateral classical Dirichlet solutions inherit the terminal absolute
 bound on their entire closed finite cylinder, independently of the cylinder size. -/
 theorem abs_le_of_classicalBackwardDirichlet_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {a τ : ℝ}
+    {d Ω a τ}
     (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haτ : a < τ)
     (A : CoefficientField d) (β : ℝ → PDE.Vec d → PDE.Vec d)
     (hA : IsContinuousCoefficient A)
@@ -31,7 +31,7 @@ theorem abs_le_of_classicalBackwardDirichlet_zero
     (φ : PDE.Vec d → ℝ) (u : TimeVelocity d → ℝ)
     (hu : IsClassicalBackwardDirichletSolution a τ Ω A β
       (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) u)
-    {C : ℝ} (hC : 0 ≤ C) (hφ : ∀ x ∈ closure Ω, |φ x| ≤ C) :
+    {C } (hC : 0 ≤ C) (hφ : ∀ x ∈ closure Ω, |φ x| ≤ C) :
     ∀ q ∈ scalarParabolicClosedCylinder a τ Ω, |u q| ≤ C := by
   have side (s : ℝ) (hs : s = 1 ∨ s = -1) :
       ∀ q ∈ scalarParabolicClosedCylinder a τ Ω, s * u q + 0 ≤ C := by

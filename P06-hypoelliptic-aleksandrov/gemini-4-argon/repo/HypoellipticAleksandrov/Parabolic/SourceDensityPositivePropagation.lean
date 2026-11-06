@@ -21,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 
-/-- A genuine source box contained in the unit box has radius at most one. -/
+/- A genuine source box contained in the unit box has radius at most one. -/
 private theorem inkSpots_radius_le_one {d : ℕ} {q : InkSpotsBox d}
     (hR : 0 < q.radius)
     (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d) :
@@ -48,7 +48,7 @@ private theorem inkSpots_radius_le_one {d : ℕ} {q : InkSpotsBox d}
     linarith [hbottomUnit.1, htopUnit.2.1]
   nlinarith [sq_nonneg (q.radius - 1)]
 
-/-- A closed translated propagation rectangle inside the closed unit box has
+/- A closed translated propagation rectangle inside the closed unit box has
 its open rectangle inside the open unit box. -/
 private theorem mapsTo_openRectangle_of_closedRectangle
     {d : ℕ} {tau t0 : ℝ} {v0 lower upper : PDE.Vec d}
@@ -101,33 +101,7 @@ private theorem mapsTo_openRectangle_of_closedRectangle
     rw [abs_lt]
     constructor <;> linarith
 
-/-- Strict density gives the squared density required by the source seed. -/
-private theorem inkSpots_squared_density {d : ℕ} {a : ℝ}
-    {u : TimeVelocity d → ℝ} {q : InkSpotsBox d}
-    (ha0 : 0 < a) (ha1 : a < 1)
-    (hq : inkSpotsStrictDense (inkSpotsUnitBox d ∩ {z | 1 ≤ u z}) a q) :
-    a ^ 2 * (volume (parabolicBox 1 q.radius q.baseTime q.center)).toReal ≤
-      (volume (parabolicBox 1 q.radius q.baseTime q.center ∩
-        {z | 1 ≤ u z})).toReal := by
-  have hrewrite : inkSpotsSourceBox q ∩
-      (inkSpotsUnitBox d ∩ {z | 1 ≤ u z}) =
-      inkSpotsSourceBox q ∩ {z | 1 ≤ u z} := by
-    ext z
-    simp only [mem_inter_iff]
-    constructor
-    · rintro ⟨hz, -, hlevel⟩
-      exact ⟨hz, hlevel⟩
-    · rintro ⟨hz, hlevel⟩
-      exact ⟨hz, hq.2.1 hz, hlevel⟩
-  have hstrict := hq.2.2
-  rw [hrewrite] at hstrict
-  have hsq : a ^ 2 ≤ a := by
-    nlinarith [mul_nonneg ha0.le (sub_nonneg.mpr ha1.le)]
-  have hvol : 0 ≤ (volume (inkSpotsSourceBox q)).toReal := ENNReal.toReal_nonneg
-  simpa only [inkSpotsSourceBox] using
-    (le_of_lt (lt_of_le_of_lt (mul_le_mul_of_nonneg_right hsq hvol) hstrict))
-
-/-- An open parabolic box is contained in its closed counterpart. -/
+/- Strict density gives the squared density required by the source seed. -/
 private theorem parabolicBox_subset_closedBox {d : ℕ}
     {vartheta r t0 : ℝ} {v0 : PDE.Vec d} :
     parabolicBox vartheta r t0 v0 ⊆ parabolicClosedBox vartheta r t0 v0 := by
@@ -135,14 +109,14 @@ private theorem parabolicBox_subset_closedBox {d : ℕ}
   rcases hz with ⟨⟨hzleft, hzright⟩, hzv⟩
   exact ⟨⟨hzleft.le, hzright.le⟩, fun i => (hzv i).le⟩
 
-/-- Continuous data on a compact collar makes restricted real `Lᵖ` norms
+/- Continuous data on a compact collar makes restricted real `Lᵖ` norms
 monotone for nested carriers. -/
 private theorem parabolicLpNormOn_mono_of_continuousOn
     {d : ℕ} {F : TimeVelocity d → ℝ} {U S T K : Set (TimeVelocity d)}
     (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
     (hTK : T ⊆ K) (hST : S ⊆ T) :
     parabolicLpNormOn d F S ≤ parabolicLpNormOn d F T := by
-  have hFK : ContinuousOn F K := hF.mono hKU
+  have hFK := hF.mono hKU
   have hKmeas : MeasurableSet K := hKcompact.measurableSet
   letI : IsFiniteMeasure (volume.restrict K) :=
     ⟨by
@@ -153,9 +127,9 @@ private theorem parabolicLpNormOn_mono_of_continuousOn
     refine MemLp.of_bound (hFK.aestronglyMeasurable hKmeas) M ?_
     filter_upwards [ae_restrict_mem hKmeas] with z hz
     exact hM z hz
-  have hTmem : MemLp F (parabolicExponent d) (volume.restrict T) :=
+  have hTmem :=
     hKmem.mono_measure (Measure.restrict_mono_set volume hTK)
-  have hSmem : MemLp F (parabolicExponent d) (volume.restrict S) :=
+  have hSmem :=
     hTmem.mono_measure (Measure.restrict_mono_set volume hST)
   have hTtop : parabolicELpNormOn d F T ≠ ⊤ := by
     simpa only [parabolicELpNormOn] using hTmem.eLpNorm_ne_top
@@ -165,7 +139,7 @@ private theorem parabolicLpNormOn_mono_of_continuousOn
   exact (ENNReal.toReal_le_toReal hStop hTtop).mpr
     (eLpNorm_mono_measure F (Measure.restrict_mono_set volume hST))
 
-/-- A source-aware near-one density seed gives a uniform cap on every clipped
+/- A source-aware near-one density seed gives a uniform cap on every clipped
 terminal Q3 point, with the source error measured on the unit box. -/
 theorem exists_inkSpotsQ3_source_density_cap
     (d : Nat) (hd : 0 < d) (lam : Real) (hlam : 0 < lam) (Lam : Real)
@@ -246,6 +220,24 @@ theorem exists_inkSpotsQ3_source_density_cap
           hsourceNormNonneg
       _ ≤ max C₀ Cfp * parabolicLpNormOn d F
           (parabolicBox 1 1 0 0) := by gcongr
+  have _h_inl_11 : a ^ 2 * (volume (parabolicBox 1 q.radius q.baseTime q.center)).toReal ≤ (volume (parabolicBox 1 q.radius q.baseTime q.center ∩ {z | 1 ≤ u z})).toReal := by
+    have hrewrite : inkSpotsSourceBox q ∩
+        (inkSpotsUnitBox d ∩ {z | 1 ≤ u z}) =
+        inkSpotsSourceBox q ∩ {z | 1 ≤ u z} := by
+      ext z
+      simp only [mem_inter_iff]
+      constructor
+      · rintro ⟨hz, -, hlevel⟩
+        exact ⟨hz, hlevel⟩
+      · rintro ⟨hz, hlevel⟩
+        exact ⟨hz, hq.2.1 hz, hlevel⟩
+    have hstrict := hq.2.2
+    rw [hrewrite] at hstrict
+    have hsq : a ^ 2 ≤ a := by
+      nlinarith [mul_nonneg ha0.le (sub_nonneg.mpr ha1.le)]
+    have hvol : 0 ≤ (volume (inkSpotsSourceBox q)).toReal := ENNReal.toReal_nonneg
+    simpa only [inkSpotsSourceBox] using
+      (le_of_lt (lt_of_le_of_lt (mul_le_mul_of_nonneg_right hsq hvol) hstrict))
   have hcap := hseed.scaled hR (by norm_num : (0 : ℝ) < 1) U B F u hU
     hsourceClosed hB hu hF
     (by simpa only [inkSpotsSourceBox] using hnonneg.mono hq.2.1)
@@ -253,7 +245,7 @@ theorem exists_inkSpotsQ3_source_density_cap
     (by simpa only [inkSpotsSourceBox] using hlower.mono hq.2.1)
     (by simpa only [inkSpotsSourceBox] using hupper.mono hq.2.1)
     (by simpa only [inkSpotsSourceBox] using hsuper.mono hq.2.1)
-    (inkSpots_squared_density ha0 ha1 hq)
+    _h_inl_11
   by_cases hlarge : (1 / 4 : ℝ) ≤ C₀ * q.radius ^ p *
       parabolicLpNormOn d F (parabolicBox 1 q.radius q.baseTime q.center)
   · have hunitError : (1 / 4 : ℝ) ≤ max C₀ Cfp *
@@ -368,7 +360,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 
-/-- The terminal time of a genuine source box in the unit box is at most one. -/
+/- The terminal time of a genuine source box in the unit box is at most one. -/
 private theorem inkSpots_terminal_le_one {d : ℕ} {q : InkSpotsBox d}
     (hR : 0 < q.radius)
     (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d) :
@@ -385,7 +377,7 @@ private theorem inkSpots_terminal_le_one {d : ℕ} {q : InkSpotsBox d}
   norm_num at htopUnit
   exact htopUnit.2.1
 
-/-- Strict density on a source box supplies the corresponding non-strict
+/- Strict density on a source box supplies the corresponding non-strict
 density statement at the same level. -/
 private theorem inkSpots_strict_density_nonneg {d : ℕ} {xi : ℝ}
     {u : TimeVelocity d → ℝ} {q : InkSpotsBox d}
@@ -407,7 +399,7 @@ private theorem inkSpots_strict_density_nonneg {d : ℕ} {xi : ℝ}
   rw [hrewrite] at hstrict
   simpa only [inkSpotsSourceBox] using hstrict.le
 
-/-- A selected forward crossing propagates a source-aware near-one density cap
+/- A selected forward crossing propagates a source-aware near-one density cap
 to the terminal half-cube, with its sole source error measured on the unit
 box. -/
 theorem exists_selected_inkSpots_source_density_cap

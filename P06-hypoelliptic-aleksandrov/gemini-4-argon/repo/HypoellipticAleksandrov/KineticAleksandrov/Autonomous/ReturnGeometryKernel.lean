@@ -30,7 +30,7 @@ instance instIsFiniteMeasureKphysical
 /-- The action is exactly the integral against the physical terminal measure. -/
 theorem S_eq_integral
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (t : ℝ) (ht : 0 ≤ t)
     (F : BoundedBorel Z) (z : Z) :
     S hH hLE hlam hLam A t F z = ∫ w, F w ∂Kphysical hH hLE hlam hLam A t z := by
@@ -44,7 +44,7 @@ theorem S_eq_integral
 /-- The physical terminal kernel has total mass one at nonnegative elapsed times. -/
 theorem Kphysical_mass_one
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (t : ℝ) (ht : 0 ≤ t) (z : Z) :
     Kphysical hH hLE hlam hLam A t z univ = 1 := by
   unfold Kphysical
@@ -55,9 +55,9 @@ theorem Kphysical_mass_one
 /-- A smooth-test comparison for the actual semigroup extends to bounded Borel data. -/
 theorem return_time_borel_of_smooth_tests
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (C : ℝ) (hC : 0 ≤ C) (A : SmoothAutonomous lam Lam)
-    (t s : ℝ) (ht : 0 ≤ t) (hs : 0 ≤ s) (z : Z)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (C ) (hC : 0 ≤ C) (A : SmoothAutonomous lam Lam)
+    (t s : ℝ) (ht : 0 ≤ t) (hs : 0 ≤ s) (z )
     (htest : ∀ F : BoundedBorel Z, (∀ w, 0 ≤ F w) →
       ContDiff ℝ (⊤ : ℕ∞) F →
       S hH hLE hlam hLam A t F z ≤ C * S hH hLE hlam hLam A s F z)

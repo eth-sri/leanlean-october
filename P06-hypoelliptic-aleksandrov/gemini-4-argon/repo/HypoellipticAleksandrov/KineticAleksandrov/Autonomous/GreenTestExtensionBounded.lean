@@ -15,7 +15,7 @@ open scoped Topology
 operator, on the open velocity strip. No derivative of the coefficient enters the bound. -/
 theorem strip_identity_bounded_smooth_future_of_realization
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (phi : Point → ℝ)
@@ -128,7 +128,7 @@ theorem strip_identity_bounded_smooth_future_of_realization
 /-- The bounded smooth identity under the source's time-uniform open-velocity bounds. -/
 theorem strip_identity_bounded_smooth_of_realization
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (phi : Point → ℝ)

@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalCompactSupportIntegrationByParts
 public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
+import HypoellipticAleksandrov.Parabolic.SpatialCoordinateDerivatives
+import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
 
 /-!
 # Smooth principal integration by parts
@@ -18,14 +20,13 @@ open Function MeasureTheory Set Topology
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem contDiffOn_spatialPartial {d n : ℕ} {O : Set (PDE.Vec d)}
-    (hO : IsOpen O) (i : Fin d) {f : PDE.Vec d → ℝ}
+private theorem contDiffOn_spatialPartial {d n O}
+    (hO : IsOpen O) (i : Fin d) {f }
     (hf : ContDiffOn ℝ (n + 1) f O) :
-    ContDiffOn ℝ n (spatialPartial i f) O := by
-  exact (hf.fderiv_of_isOpen hO (by simp)).clm_apply contDiffOn_const
+    ContDiffOn ℝ n (spatialPartial i f) O :=  (hf.fderiv_of_isOpen hO (by simp)).clm_apply contDiffOn_const
 
 private theorem spatialPartial_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
-    (i : Fin d) {f g : PDE.Vec d → ℝ}
+    (i : Fin d) {f g }
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     {y : PDE.Vec d} (hy : y ∈ O) :
     spatialPartial i (fun x => f x * g x) y =
@@ -37,7 +38,7 @@ private theorem spatialPartial_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen 
   ring
 
 private theorem spatialPartial_sq_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
-    (i : Fin d) {f g : PDE.Vec d → ℝ}
+    (i : Fin d) {f g }
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     {y : PDE.Vec d} (hy : y ∈ O) :
     spatialPartial i (fun x => f x ^ 2 * g x) y =
@@ -46,66 +47,6 @@ private theorem spatialPartial_sq_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOp
   rw [spatialPartial_mul hO i (hf.mul hf) hg hy,
     spatialPartial_mul hO i hf hf hy]
   ring
-
-private theorem spatialThird_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
-    (q : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 3 q O)
-    (i j k : Fin d) {y : PDE.Vec d} (hy : y ∈ O) :
-    spatialPartial k (spatialSecond q j i) y =
-      spatialPartial i (spatialSecond q j k) y := by
-  have hj : ContDiffOn ℝ 2 (spatialPartial j q) O :=
-    contDiffOn_spatialPartial hO j hq
-  have hjy := hj.contDiffAt (hO.mem_nhds hy)
-  have hs := hjy.isSymmSndFDerivAt (by norm_num)
-  have heval (a b : Fin d) :
-      spatialPartial b (spatialPartial a (spatialPartial j q)) y =
-        ((fderiv ℝ (fderiv ℝ (spatialPartial j q)) y) (PDE.basisVec b))
-          (PDE.basisVec a) := by
-    let r := spatialPartial j q
-    change spatialPartial b (spatialPartial a r) y =
-      ((fderiv ℝ (fderiv ℝ r) y) (PDE.basisVec b)) (PDE.basisVec a)
-    unfold spatialPartial
-    have hc : ContDiffAt ℝ 1 (fderiv ℝ (spatialPartial j q)) y :=
-      (hj.fderiv_of_isOpen hO (by norm_num)).contDiffAt (hO.mem_nhds hy)
-    change (fderiv ℝ (fun y => (fderiv ℝ (spatialPartial j q) y)
-      (PDE.basisVec a)) y) (PDE.basisVec b) = _
-    rw [fderiv_clm_apply
-      (hc.differentiableAt (by norm_num))
-      (differentiableAt_const (c := PDE.basisVec a))]
-    have hb : fderiv ℝ (fun _ : PDE.Vec d => PDE.basisVec a) y = 0 := by
-      exact fderiv_const_apply (𝕜 := ℝ) (c := PDE.basisVec a)
-    rw [hb]
-    change _ = ((fderiv ℝ (fderiv ℝ (spatialPartial j q)) y)
-      (PDE.basisVec b)) (PDE.basisVec a)
-    simp
-  rw [show spatialPartial k (spatialSecond q j i) y =
-      spatialPartial k (spatialPartial i (spatialPartial j q)) y by rfl,
-    show spatialPartial i (spatialSecond q j k) y =
-      spatialPartial i (spatialPartial k (spatialPartial j q)) y by rfl,
-    heval i k, heval k i]
-  exact hs.eq (PDE.basisVec k) (PDE.basisVec i)
-
-private theorem spatialSecond_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
-    (q : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 2 q O)
-    (j k : Fin d) {y : PDE.Vec d} (hy : y ∈ O) :
-    spatialSecond q j k y = spatialSecond q k j y := by
-  have hqy := hq.contDiffAt (hO.mem_nhds hy)
-  have hs := hqy.isSymmSndFDerivAt (by norm_num)
-  have heval (a b : Fin d) :
-      spatialPartial b (spatialPartial a q) y =
-        ((fderiv ℝ (fderiv ℝ q) y) (PDE.basisVec b)) (PDE.basisVec a) := by
-    unfold spatialPartial
-    have hc : ContDiffAt ℝ 1 (fderiv ℝ q) y :=
-      (hq.fderiv_of_isOpen hO (by norm_num)).contDiffAt (hO.mem_nhds hy)
-    rw [fderiv_clm_apply (hc.differentiableAt (by norm_num))
-      (differentiableAt_const (c := PDE.basisVec a))]
-    have hb : fderiv ℝ (fun _ : PDE.Vec d => PDE.basisVec a) y = 0 := by
-      exact fderiv_const_apply (𝕜 := ℝ) (c := PDE.basisVec a)
-    rw [hb]
-    simp
-  rw [show spatialSecond q j k y = spatialPartial k (spatialPartial j q) y by rfl,
-    show spatialSecond q k j y = spatialPartial j (spatialPartial k q) y by rfl,
-    heval j k, heval k j]
-  exact hs.eq (PDE.basisVec k) (PDE.basisVec j)
 
 private theorem contDiff_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
     (hO : IsOpen O) (f : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 0 f O)
@@ -125,7 +66,7 @@ private theorem integrableOn_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec
   (contDiff_of_local_compactSupport hO f hf hfsupport).integrable_of_hasCompactSupport
     hfcompact |>.integrableOn
 
-/-- Exact fixed-time principal integration-by-parts identity with the
+/- Exact fixed-time principal integration-by-parts identity with the
 negative localized gradient divergence. -/
 theorem smoothPrincipalIntegrationByParts
     {d : ℕ} (O : Set (PDE.Vec d)) (hO : IsOpen O)
@@ -196,8 +137,40 @@ theorem smoothPrincipalIntegrationByParts
         spatialPartial k F y =
           spatialPartial k (fun x => A x i j) y * spatialSecond q j i y +
             A y i j * spatialPartial i (spatialSecond q j k) y := by
+      have _h_inl_12 : spatialPartial k (spatialSecond q j i) y = spatialPartial i (spatialSecond q j k) y := by
+        have hj : ContDiffOn ℝ 2 (spatialPartial j q) O :=
+          contDiffOn_spatialPartial hO j hq
+        have hjy := hj.contDiffAt (hO.mem_nhds hy)
+        have hs := hjy.isSymmSndFDerivAt (by norm_num)
+        have heval (a b : Fin d) :
+            spatialPartial b (spatialPartial a (spatialPartial j q)) y =
+              ((fderiv ℝ (fderiv ℝ (spatialPartial j q)) y) (PDE.basisVec b))
+                (PDE.basisVec a) := by
+          let r := spatialPartial j q
+          change spatialPartial b (spatialPartial a r) y =
+            ((fderiv ℝ (fderiv ℝ r) y) (PDE.basisVec b)) (PDE.basisVec a)
+          unfold spatialPartial
+          have hc : ContDiffAt ℝ 1 (fderiv ℝ (spatialPartial j q)) y :=
+            (hj.fderiv_of_isOpen hO (by norm_num)).contDiffAt (hO.mem_nhds hy)
+          change (fderiv ℝ (fun y => (fderiv ℝ (spatialPartial j q) y)
+            (PDE.basisVec a)) y) (PDE.basisVec b) = _
+          rw [fderiv_clm_apply
+            (hc.differentiableAt (by norm_num))
+            (differentiableAt_const (c := PDE.basisVec a))]
+          have hb : fderiv ℝ (fun _ : PDE.Vec d => PDE.basisVec a) y = 0 := by
+            exact fderiv_const_apply (𝕜 := ℝ) (c := PDE.basisVec a)
+          rw [hb]
+          change _ = ((fderiv ℝ (fderiv ℝ (spatialPartial j q)) y)
+            (PDE.basisVec b)) (PDE.basisVec a)
+          simp
+        rw [show spatialPartial k (spatialSecond q j i) y =
+            spatialPartial k (spatialPartial i (spatialPartial j q)) y by rfl,
+          show spatialPartial i (spatialSecond q j k) y =
+            spatialPartial i (spatialPartial k (spatialPartial j q)) y by rfl,
+          heval i k, heval k i]
+        exact hs.eq (PDE.basisVec k) (PDE.basisVec i)
       rw [spatialPartial_mul hO k (hA i j) (hqsecond j i) hy,
-        spatialThird_comm hO q hq i j k hy]
+        _h_inl_12]
     have hfirst' :
         (∫ y in O, F y * (-(spatialPartial k G y)) ∂volume) =
           ∫ y in O, spatialPartial k F y * G y ∂volume := by
@@ -217,8 +190,14 @@ theorem smoothPrincipalIntegrationByParts
     have hLcompact : HasCompactSupport L := hcompact2.mul_right.mul_right
     have hLsupport : tsupport L ⊆ O :=
       tsupport_mul_subset_left.trans (tsupport_mul_subset_left.trans hsupport2)
-    have hsecond := setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_left
-      O hO i L R hL hR hLcompact hLsupport
+    have hsecond : (∫ y in O, L y * spatialPartial i R y ∂volume) =
+      -∫ y in O, spatialPartial i L y * R y ∂volume := by
+      have h := setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_right
+        O hO i R L hR hL hLcompact hLsupport
+      have h' : (∫ y in O, spatialPartial i L y * R y ∂volume) =
+          -(∫ y in O, L y * spatialPartial i R y ∂volume) := by
+        simpa [mul_comm] using h
+      linarith
     have hLderiv (y : PDE.Vec d) (hy : y ∈ O) :
         spatialPartial i L y =
           2 * η y * spatialPartial i η y * A y i j * spatialPartial k q y +
@@ -361,7 +340,27 @@ theorem smoothPrincipalIntegrationByParts
       apply setIntegral_congr_fun hO.measurableSet
       intro y hy
       dsimp
-      rw [spatialSecond_comm hO q (hq.of_le (by norm_num)) j k hy]
+      have _h_inl_13 : spatialSecond q j k y = spatialSecond q k j y := by
+        have hq : ContDiffOn ℝ 2 q O := (hq.of_le (by norm_num))
+        have hqy := hq.contDiffAt (hO.mem_nhds hy)
+        have hs := hqy.isSymmSndFDerivAt (by norm_num)
+        have heval (a b : Fin d) :
+            spatialPartial b (spatialPartial a q) y =
+              ((fderiv ℝ (fderiv ℝ q) y) (PDE.basisVec b)) (PDE.basisVec a) := by
+          unfold spatialPartial
+          have hc : ContDiffAt ℝ 1 (fderiv ℝ q) y :=
+            (hq.fderiv_of_isOpen hO (by norm_num)).contDiffAt (hO.mem_nhds hy)
+          rw [fderiv_clm_apply (hc.differentiableAt (by norm_num))
+            (differentiableAt_const (c := PDE.basisVec a))]
+          have hb : fderiv ℝ (fun _ : PDE.Vec d => PDE.basisVec a) y = 0 := by
+            exact fderiv_const_apply (𝕜 := ℝ) (c := PDE.basisVec a)
+          rw [hb]
+          simp
+        rw [show spatialSecond q j k y = spatialPartial k (spatialPartial j q) y by rfl,
+          show spatialSecond q k j y = spatialPartial j (spatialPartial k q) y by rfl,
+          heval j k, heval k j]
+        exact hs.eq (PDE.basisVec k) (PDE.basisVec j)
+      rw [_h_inl_13]
     have htwo :
         (∫ y in O, η y * spatialPartial i η y * A y i j * spatialPartial k q y *
           spatialSecond q j k y * 2 ∂volume) =

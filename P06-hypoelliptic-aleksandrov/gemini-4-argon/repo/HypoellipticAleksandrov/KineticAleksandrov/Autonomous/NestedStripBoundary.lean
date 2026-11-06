@@ -41,7 +41,7 @@ theorem nested_intervalDomain_frontier_of_endpoint (H : Interval) (v : PDE.Vec 1
 on both terminal and lateral exits of their own interval. -/
 theorem nestedSourcePotential_continuous_zero_exit
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (f : exitProbeSubmodule)
     (hfn : ∀ p, 0 ≤ exitProbePhysical f p)

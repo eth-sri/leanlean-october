@@ -39,7 +39,7 @@ theorem localRepresentation_source_correction
     (F : KineticPoint d → ℝ) (hF : Measurable F)
     (he : ∀ P ∈ localStrip a T v₀ R,
       forwardKineticOperator (ofTimeVelocityCoefficient B) u P = F P)
-    (M : ℝ) (hM : 0 ≤ M) (hb : ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M) :
+    (M ) (hM : 0 ≤ M) (hb : ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M) :
     let E := fun P => u P + ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F P
     ContDiffOn ℝ (⊤ : ℕ∞) (E ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' localStrip a T v₀ R) ∧
@@ -118,7 +118,7 @@ theorem localRepresentation_bounded_source_formula
     (F : KineticPoint d → ℝ) (hF : Measurable F)
     (he : ∀ Q ∈ localStrip P.1.time T.1 v₀ R,
       forwardKineticOperator (ofTimeVelocityCoefficient B) u Q = F Q)
-    (M : ℝ) (hM : 0 ≤ M)
+    (M ) (hM : 0 ≤ M)
     (hb : ∀ Q ∈ localStrip P.1.time T.1 v₀ R, |F Q| ≤ M) :
     u P.1 + ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1 F P.1 =
       ∫ Q, u Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T := by
@@ -143,10 +143,7 @@ theorem localRepresentation_bounded_source_formula
   have hEb : ∃ L' : ℝ, ∀ Q ∈ localClosedStrip P.1.time T.1 v₀ R, |E Q| ≤ L' := by
     refine ⟨L + M * (T.1 - P.1.time), fun Q hQ => ?_⟩
     exact (abs_add_le (u Q) (W Q)).trans (add_le_add (hL Q hQ) (hWbound Q hQ))
-  have hEr : IsKineticC112On E (localStrip P.1.time T.1 v₀ R) :=
-    isKineticC112On_of_contDiffOn (isOpen_localStrip P.1.time T.1 v₀ R)
-      (boundary_physical_smooth_to_native hEs)
-  have hid := ballExit_represents hH hLE hd hlam hLam B hB v₀ hR P T E hEc hEr hEb hEe
+  have hid := ballExit_represents hH hLE hd hlam hLam B hB v₀ hR P T E hEc (isKineticC112On_of_contDiffOn (isOpen_localStrip P.1.time T.1 v₀ R) (boundary_physical_smooth_to_native hEs)) hEb hEe
   refine hid.trans (integral_congr_ae ?_)
   filter_upwards [ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR P T] with Q hQ
   exact hEtr hQ

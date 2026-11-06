@@ -18,8 +18,7 @@ open Filter MeasureTheory Set
 open scoped BigOperators Matrix.Norms.Elementwise
 
 /-- A classical root satisfying the actual coherent weak-family equation solves it pointwise. -/
-theorem classical_homogeneous_equation_of_weak_family {d L : ℕ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U) (hL : 2 ≤ L)
+theorem classical_homogeneous_equation_of_weak_family {d L U} (hU : IsOpen U) (hL : 2 ≤ L)
     (u : TimeVelocity d → ℝ) (hu : IsScalarC12On u U)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (E : ParabolicWeakDerivativeFamily d L U u)
@@ -30,7 +29,7 @@ theorem classical_homogeneous_equation_of_weak_family {d L : ℕ}
   intro z hz
   obtain ⟨V, hV, hzV, hVU, hVc⟩ := exists_open_between_and_isCompact_closure
     (isCompact_singleton (x := z)) hU (singleton_subset_iff.mpr hz)
-  have hsub : V ⊆ U := subset_closure.trans hVU
+  have hsub := subset_closure.trans hVU
   let J := classicalLocalW12Jet u hu hV hVc hVU
   let D := (E.restrict hsub).truncate hL
   let F := J.toWeakDerivativeFamily hV
@@ -81,9 +80,7 @@ theorem classical_homogeneous_equation_of_weak_family {d L : ℕ}
     intro i _
     apply continuousOn_finsetSum
     intro j _
-    have ha : Continuous (fun y : TimeVelocity d => A y.1 y.2 i j) :=
-      (continuous_apply j).comp ((continuous_apply i).comp hA.continuous)
-    exact ha.continuousOn.mul (((continuous_apply j).comp_continuousOn
+    exact ((continuous_apply j).comp ((continuous_apply i).comp hA.continuous)).continuousOn.mul (((continuous_apply j).comp_continuousOn
       ((continuous_apply i).comp_continuousOn
         hu.continuousOn_scalarSpatialHessian)).mono hsub)
   exact Measure.eqOn_open_of_ae_eq hQzero hV hQc continuousOn_const

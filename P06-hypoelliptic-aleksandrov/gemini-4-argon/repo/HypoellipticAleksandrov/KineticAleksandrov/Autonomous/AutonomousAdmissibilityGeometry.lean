@@ -16,25 +16,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Holder Set MeasureTheory Evolution TheoremA
 open scoped MatrixOrder
 
-/-- The scalar autonomous lift is Borel on the literal kinetic carrier. -/
-theorem autonomous_lift_measurable {a : ℝ → ℝ → ℝ}
-    (ha : Measurable (Function.uncurry a)) :
-    Measurable (fullKineticCoefficientAt (autonomousCoefficient a)) := by
-  apply Measurable.of_eval
-  intro i
-  apply Measurable.of_eval
-  intro j
-  exact ha.comp (((continuous_apply 0).comp continuous_position).measurable.prodMk
-    (((continuous_apply 0).comp continuous_velocity).measurable))
-
-/-- The one-dimensional lift is symmetric at every point. -/
+/- The scalar autonomous lift is Borel on the literal kinetic carrier. -/
 theorem autonomous_lift_symm (a : ℝ → ℝ → ℝ) (P : Point) :
     (fullKineticCoefficientAt (autonomousCoefficient a) P).IsSymm := by
   ext i j
   rfl
 
-/-- The scalar range gives pointwise matrix ellipticity without an exceptional set. -/
-theorem autonomous_lift_elliptic {a : ℝ → ℝ → ℝ} {lam Lam : ℝ}
+/- The scalar range gives pointwise matrix ellipticity without an exceptional set. -/
+theorem autonomous_lift_elliptic {a lam Lam}
     (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) (P : Point) :
     lam • (1 : PDE.Mat 1) ≤ fullKineticCoefficientAt (autonomousCoefficient a) P ∧
       fullKineticCoefficientAt (autonomousCoefficient a) P ≤ Lam • (1 : PDE.Mat 1) := by
@@ -50,8 +39,8 @@ theorem autonomous_lift_elliptic {a : ℝ → ℝ → ℝ} {lam Lam : ℝ}
   exact ⟨smul_le_smul_of_nonneg_right (hb _ _).1 hI,
     smul_le_smul_of_nonneg_right (hb _ _).2 hI⟩
 
-/-- Source-near smooth tests have the existing anisotropic classical regularity. -/
-theorem smoothNear_regular {psi : Point → ℝ} {E : Set Point}
+/- Source-near smooth tests have the existing anisotropic classical regularity. -/
+theorem smoothNear_regular {psi E}
     (hpsi : IsSmoothNear psi E) : ∃ U : Set Point,
       IsOpen U ∧ E ⊆ U ∧ IsKineticC112On psi U := by
   obtain ⟨U, hU, hEU, hs⟩ := hpsi
@@ -61,10 +50,10 @@ theorem smoothNear_regular {psi : Point → ℝ} {E : Set Point}
     exact ⟨evolutionHomeomorph 1 x, hx, rfl⟩)
   exact h
 
-/-- The full backward operator is additive on the existing C112 class. -/
-theorem autonomous_operator_add {u v : Point → ℝ} {D : Set Point}
+/- The full backward operator is additive on the existing C112 class. -/
+theorem autonomous_operator_add {u v D}
     (hu : IsKineticC112On u D) (hv : IsKineticC112On v D)
-    (a : ℝ → ℝ → ℝ) {P : Point} (hP : P ∈ D) :
+    (a : ℝ → ℝ → ℝ) {P } (hP : P ∈ D) :
     autonomousScalarOperator a (fun Q => u Q + v Q) P =
       autonomousScalarOperator a u P + autonomousScalarOperator a v P := by
   rw [autonomousScalarOperator_apply,
@@ -77,10 +66,10 @@ theorem autonomous_operator_add {u v : Point → ℝ} {D : Set Point}
   simp only [autonomousScalarOperator_apply, Pi.add_apply, Matrix.add_apply]
   ring
 
-/-- Scalar multiplication commutes with the autonomous operator on C112 functions. -/
-theorem autonomous_operator_const_mul {u : Point → ℝ} {D : Set Point}
+/- Scalar multiplication commutes with the autonomous operator on C112 functions. -/
+theorem autonomous_operator_const_mul {u D}
     (hu : IsKineticC112On u D) (c : ℝ) (a : ℝ → ℝ → ℝ)
-    {P : Point} (hP : P ∈ D) :
+    {P } (hP : P ∈ D) :
     autonomousScalarOperator a (fun Q => c * u Q) P = c * autonomousScalarOperator a u P := by
   rw [autonomousScalarOperator_apply,
     show kineticTimeDerivative (fun Q => c * u Q) P = c * kineticTimeDerivative u P from

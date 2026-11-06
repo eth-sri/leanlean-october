@@ -29,7 +29,7 @@ theorem isOpen_stackComparisonRegion (d m : ℕ) : IsOpen (stackComparisonRegion
 /-- A compact rectangular envelope bounds the comparison region. -/
 theorem isBounded_stackComparisonRegion (d m : ℕ) :
     Bornology.IsBounded (stackComparisonRegion d m) := by
-  let E : Set (KineticPoint d) := (KineticPoint.equivProd d) ⁻¹'
+  let E := (KineticPoint.equivProd d) ⁻¹'
     (Icc (-2 : ℝ) ((m : ℝ)+1) ×ˢ
       (PDE.euclideanClosedBall (0 : PDE.Vec d) (stackPathBound m+1) ×ˢ
         PDE.euclideanClosedBall (0 : PDE.Vec d) (stackPathBound m+1)))

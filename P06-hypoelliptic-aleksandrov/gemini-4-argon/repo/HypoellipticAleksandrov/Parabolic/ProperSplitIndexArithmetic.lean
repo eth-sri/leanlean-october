@@ -18,14 +18,14 @@ open scoped BigOperators
 
 namespace TimeVelocityMultiIndex
 
-/-- A nonzero time--velocity multi-index has positive parabolic weight. -/
+/- A nonzero time--velocity multi-index has positive parabolic weight. -/
 theorem parabolicWeight_pos_of_ne_zero
-    {d : ℕ} {alpha : TimeVelocityMultiIndex d}
+    {d } {alpha : TimeVelocityMultiIndex d}
     (halpha : alpha ≠ 0) :
     0 < alpha.parabolicWeight := by
   by_contra hweight
   apply halpha
-  have hweight_zero : alpha.parabolicWeight = 0 :=
+  have hweight_zero :=
     Nat.eq_zero_of_not_pos hweight
   have htime : alpha.timeOrder = 0 := by
     unfold TimeVelocityMultiIndex.parabolicWeight at hweight_zero
@@ -43,9 +43,9 @@ theorem parabolicWeight_pos_of_ne_zero
       exact Finset.single_le_sum (fun _ _ => Nat.zero_le _) (Finset.mem_univ i)
     exact Nat.eq_zero_of_le_zero (hvelocity_order ▸ hle)
 
-/-- A proper split loses at least one parabolic weight on its right side. -/
+/- A proper split loses at least one parabolic weight on its right side. -/
 theorem Split.parabolicWeight_right_add_one_le
-    {d : ℕ} {beta : TimeVelocityMultiIndex d}
+    {d } {beta : TimeVelocityMultiIndex d}
     (gamma : TimeVelocityMultiIndex.Split beta)
     (hproper : gamma.left ≠ 0) :
     gamma.right.parabolicWeight + 1 ≤ beta.parabolicWeight := by
@@ -57,9 +57,9 @@ end TimeVelocityMultiIndex
 
 namespace ParabolicDerivativeIndex
 
-/-- The ordered two-velocity right factor in a proper commutator split. -/
+/- The ordered two-velocity right factor in a proper commutator split. -/
 def properSplitRightVelocityTwo
-    {d M : ℕ}
+    {d M }
     (beta : ParabolicDerivativeIndex d M)
     (gamma : TimeVelocityMultiIndex.Split beta.1)
     (hproper : gamma.left ≠ 0)
@@ -72,9 +72,9 @@ def properSplitRightVelocityTwo
     have hloss := gamma.parabolicWeight_right_add_one_le hproper
     omega⟩
 
-/-- The one-velocity right factor in a proper commutator split. -/
+/- The one-velocity right factor in a proper commutator split. -/
 def properSplitRightVelocity
-    {d M : ℕ}
+    {d M }
     (beta : ParabolicDerivativeIndex d M)
     (gamma : TimeVelocityMultiIndex.Split beta.1)
     (hproper : gamma.left ≠ 0)
@@ -86,9 +86,9 @@ def properSplitRightVelocity
     have hloss := gamma.parabolicWeight_right_add_one_le hproper
     omega⟩
 
-/-- The unshifted right factor in a proper zero-order commutator split. -/
+/- The unshifted right factor in a proper zero-order commutator split. -/
 def properSplitRightValue
-    {d M : ℕ}
+    {d M }
     (beta : ParabolicDerivativeIndex d M)
     (gamma : TimeVelocityMultiIndex.Split beta.1)
     (hproper : gamma.left ≠ 0) :
@@ -97,21 +97,9 @@ def properSplitRightValue
     have hloss := gamma.parabolicWeight_right_add_one_le hproper
     omega⟩
 
-/-- The proper two-velocity right factor has the prescribed ordered underlying index. -/
-@[simp] theorem coe_properSplitRightVelocityTwo
-    {d M : ℕ}
-    (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (hproper : gamma.left ≠ 0)
-    (j i : Fin d) :
-    (properSplitRightVelocityTwo beta gamma hproper j i).1 =
-      gamma.right + Pi.single (velocityCoord j) 1 +
-        Pi.single (velocityCoord i) 1 :=
-  rfl
-
-/-- The proper one-velocity right factor has the prescribed underlying index. -/
+/- The proper two-velocity right factor has the prescribed ordered underlying index. -/
 @[simp] theorem coe_properSplitRightVelocity
-    {d M : ℕ}
+    {d M }
     (beta : ParabolicDerivativeIndex d M)
     (gamma : TimeVelocityMultiIndex.Split beta.1)
     (hproper : gamma.left ≠ 0)
@@ -120,15 +108,7 @@ def properSplitRightValue
       gamma.right + Pi.single (velocityCoord j) 1 :=
   rfl
 
-/-- The proper value right factor has the split's right underlying index. -/
-@[simp] theorem coe_properSplitRightValue
-    {d M : ℕ}
-    (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (hproper : gamma.left ≠ 0) :
-    (properSplitRightValue beta gamma hproper).1 = gamma.right :=
-  rfl
-
+/- The proper value right factor has the split's right underlying index. -/
 end ParabolicDerivativeIndex
 
 end HypoellipticAleksandrov.Parabolic

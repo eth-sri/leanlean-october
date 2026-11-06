@@ -43,7 +43,7 @@ theorem IsCompact.exists_spatialCoordinateShiftCarrier_subset_open
 /-- Containment of the coordinate-shift carrier gives the corresponding
 signed coordinate-shift map into the outer set. -/
 theorem mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset
-    {d : ℕ} {K Ω : Set (PDE.Vec d)} {δ h : ℝ}
+    {d K Ω δ h}
     (hcarrier : spatialCoordinateShiftCarrier K δ ⊆ Ω)
     (k : Fin d) (hh : |h| ≤ δ) :
     Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k) K Ω := by
@@ -53,7 +53,7 @@ theorem mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset
 /-- A time--velocity coordinate segment over `K` stays in the closed time slab
 and the literal signed coordinate-shift carrier. -/
 theorem segment_spatialShift_subset_Icc_prod_spatialCoordinateShiftCarrier
-    {d : ℕ} {K : Set (PDE.Vec d)} {T δ h : ℝ}
+    {d K T δ h}
     (k : Fin d) (z : TimeVelocity d)
     (hh : |h| ≤ δ) (hz : z ∈ Set.Icc 0 T ×ˢ K) :
     [z -[ℝ] spatialShift k h z] ⊆

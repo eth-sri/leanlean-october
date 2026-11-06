@@ -16,7 +16,7 @@ def abpPositiveCutoff (ε : ℝ) (s : ℝ) : ℝ :=
   Real.smoothTransition ((2 * s - ε) / ε)
 
 /-- Smoothness and the exact range and threshold properties of the cutoff. -/
-theorem abpPositiveCutoff_spec {ε : ℝ} (hε : 0 < ε) :
+theorem abpPositiveCutoff_spec {ε } (hε : 0 < ε) :
     ContDiff ℝ (⊤ : ℕ∞) (abpPositiveCutoff ε) ∧
       (∀ s, 0 ≤ abpPositiveCutoff ε s ∧ abpPositiveCutoff ε s ≤ 1) ∧
       (∀ s, s ≤ ε / 2 → abpPositiveCutoff ε s = 0) ∧
@@ -35,8 +35,7 @@ theorem abpPositiveCutoff_spec {ε : ℝ} (hε : 0 < ε) :
     linarith only [hs]
 
 /-- Contraction of two continuous matrix fields is continuous in the native matrix API. -/
-theorem continuousOn_matrixContraction {E : Type*} [TopologicalSpace E] {d : ℕ}
-    {D : Set E} {A H : E → PDE.Mat d}
+theorem continuousOn_matrixContraction {E : Type*} [TopologicalSpace E] {d D} {A H : E → PDE.Mat d}
     (hA : ContinuousOn A D) (hH : ContinuousOn H D) :
     ContinuousOn (fun P => HypoellipticAleksandrov.matrixContraction (A P) (H P)) D := by
   unfold HypoellipticAleksandrov.matrixContraction
@@ -49,8 +48,7 @@ theorem continuousOn_matrixContraction {E : Type*} [TopologicalSpace E] {d : ℕ
     ((continuous_apply j).comp_continuousOn ((continuous_apply i).comp_continuousOn hH))
 
 /-- The forward operator of a classical function is continuous for continuous coefficients. -/
-theorem continuousOn_forwardKineticOperator {d : ℕ} {D : Set (KineticPoint d)}
-    {u : KineticPoint d → ℝ} (hu : IsKineticC112On u D) (A : FullKineticCoefficient d)
+theorem continuousOn_forwardKineticOperator {d D u} (hu : IsKineticC112On u D) (A : FullKineticCoefficient d)
     (hA : ContinuousOn (fun P : KineticPoint d => A P.time P.position P.velocity) D) :
     ContinuousOn (forwardKineticOperator A u) D := by
   have hdot : ContinuousOn (fun P => PDE.vecDot P.velocity (kineticPositionGradient u P)) D := by
@@ -63,7 +61,7 @@ theorem continuousOn_forwardKineticOperator {d : ℕ} {D : Set (KineticPoint d)}
     (continuousOn_matrixContraction hA hu.continuousOn_kineticVelocityHessian)
 
 /-- The continuous defect and its positive-set cutoff have the source a.e. domination. -/
-theorem abp_defect_cutoff {d : ℕ} {Q : Set (KineticPoint d)} (hQ : MeasurableSet Q)
+theorem abp_defect_cutoff {d Q} (hQ : MeasurableSet Q)
     (A : FullKineticCoefficient d) (u g₀ : KineticPoint d → ℝ)
     (hu : IsKineticC112On u Q)
     (hA : ContinuousOn (fun P : KineticPoint d => A P.time P.position P.velocity) Q)

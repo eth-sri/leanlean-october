@@ -39,7 +39,6 @@ theorem bellmanRadialTest_integrable (β : ℝ) (ψ : ℝ → ℝ) (hψ : Contin
 measure. -/
 theorem bellmanAngularTestFactor_integrable (F : Measure ℝ) [IsFiniteMeasureOnCompacts F]
     (ψ : ℝ → ℝ) (hψ : Continuous ψ) (hc : HasCompactSupport ψ) (n : ℕ) :
-    Integrable (fun y => y ^ n * ψ y) F := by
-  exact ((continuous_id.pow n).mul hψ).integrable_of_hasCompactSupport hc.mul_left
+    Integrable (fun y => y ^ n * ψ y) F :=  ((continuous_id.pow n).mul hψ).integrable_of_hasCompactSupport hc.mul_left
 
 end HypoellipticAleksandrov.KineticAleksandrov

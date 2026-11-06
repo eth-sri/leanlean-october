@@ -23,7 +23,7 @@ theorem abs_flatteningPsi_le (s : ℝ) : |flatteningPsi s| ≤ |s| := by
   simpa only [flatteningPsi_eq_zero 0 (by norm_num), sub_zero, one_mul, Real.norm_eq_abs] using h
 
 /-- A scalar bound on the unflattened value gives a uniform bound on its literal flattening. -/
-theorem abs_flatProfile_le {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ) (hr : 0 < r)
+theorem abs_flatProfile_le {d } (H : XV d → ℝ) (alpha r : ℝ) (hr : 0 < r)
     (q : XV d) :
     |flatProfile H flatteningPsi flatteningOffset alpha r q| ≤
       1 + |flatteningOffset| * Real.rpow r alpha + |H q| := by

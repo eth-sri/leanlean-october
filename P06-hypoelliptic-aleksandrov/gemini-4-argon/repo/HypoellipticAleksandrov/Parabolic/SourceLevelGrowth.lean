@@ -17,44 +17,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
-private theorem parabolicOperator_const_sub {d : ℕ} (B : CoefficientField d)
-    (c : ℝ) (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
-    parabolicOperator B (fun y ↦ c - u y) z = -parabolicOperator B u z := by
-  calc
-    parabolicOperator B (fun y ↦ c - u y) z =
-        parabolicOperator B (fun y ↦ -u y + c) z := by
-      congr 1
-      funext y
-      ring
-    _ = parabolicOperator B (fun y ↦ -u y) z :=
-      parabolicOperator_add_const B (fun y ↦ -u y) c z
-    _ = -parabolicOperator B u z := parabolicOperator_neg B u z
-
-private theorem parabolicBox_subset_parabolicClosedBox {d : ℕ}
-    {vartheta r t₀ : ℝ} {v₀ : PDE.Vec d} :
-    parabolicBox vartheta r t₀ v₀ ⊆ parabolicClosedBox vartheta r t₀ v₀ := by
-  intro z hz
-  rcases hz with ⟨⟨hzleft, hzright⟩, hzv⟩
-  exact ⟨⟨hzleft.le, hzright.le⟩, fun i ↦ (hzv i).le⟩
-
-private theorem terminalCenter_mem_parabolicClosedBox {d : ℕ} {R t₀ : ℝ}
-    {v₀ : PDE.Vec d} (hR : 0 < R) :
-    (t₀ + R ^ 2, v₀) ∈ parabolicClosedBox 1 R t₀ v₀ := by
-  refine ⟨⟨?_, ?_⟩, ?_⟩
-  · nlinarith [sq_nonneg R]
-  · apply le_of_eq
-    ring
-  · intro i
-    simp only [sub_self, abs_zero]
-    exact hR.le
-
-private theorem center_mem_velocityClosedCube {d : ℕ} {R : ℝ}
-    {v₀ : PDE.Vec d} (hR : 0 < R) :
-    v₀ ∈ velocityClosedCube v₀ (R / 2) := by
-  intro i
-  simp only [sub_self, abs_zero]
-  linarith
-
 private theorem contDiffOn_const_sub_div {d : ℕ} {U : Set (TimeVelocity d)}
     {M D : ℝ} {u : TimeVelocity d → ℝ} (hu : ContDiffOn ℝ 2 u U) :
     ContDiffOn ℝ 2 (fun z ↦ (M - u z) / D) U :=
@@ -71,7 +33,7 @@ private theorem memLp_of_continuousOn_compact_carrier
     (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
     (hQK : Q ⊆ K) :
     MemLp F (parabolicExponent d) (volume.restrict Q) := by
-  have hFK : ContinuousOn F K := hF.mono hKU
+  have hFK := hF.mono hKU
   have hKmeas : MeasurableSet K := hKcompact.measurableSet
   letI : IsFiniteMeasure (volume.restrict K) :=
     ⟨by
@@ -84,66 +46,6 @@ private theorem memLp_of_continuousOn_compact_carrier
     exact hA z hz
   exact hKmem.mono_measure (Measure.restrict_mono_set volume hQK)
 
-private theorem parabolicLpNormOn_abs_div
-    {d : ℕ} {F : TimeVelocity d → ℝ} {Q : Set (TimeVelocity d)} {D : ℝ}
-    (hD : 0 < D) (hFmem : MemLp F (parabolicExponent d) (volume.restrict Q)) :
-    parabolicLpNormOn d (fun z ↦ |F z| / D) Q =
-      D⁻¹ * parabolicLpNormOn d F Q := by
-  have hFtop : parabolicELpNormOn d F Q ≠ ⊤ := by
-    simpa only [parabolicELpNormOn] using hFmem.eLpNorm_ne_top
-  have habsmem : MemLp (fun z ↦ |F z|) (parabolicExponent d) (volume.restrict Q) := by
-    simpa only [Real.norm_eq_abs] using hFmem.norm
-  have habstop : parabolicELpNormOn d (fun z ↦ |F z|) Q ≠ ⊤ := by
-    simpa only [parabolicELpNormOn] using habsmem.eLpNorm_ne_top
-  have hinv : 0 ≤ D⁻¹ := inv_nonneg.mpr hD.le
-  calc
-    parabolicLpNormOn d (fun z ↦ |F z| / D) Q =
-        parabolicLpNormOn d (D⁻¹ • fun z ↦ |F z|) Q := by
-      congr 2
-      funext z
-      simp only [Pi.smul_apply, smul_eq_mul, div_eq_mul_inv]
-      ring
-    _ = D⁻¹ * parabolicLpNormOn d (fun z ↦ |F z|) Q := by
-      unfold parabolicLpNormOn parabolicELpNormOn
-      rw [eLpNorm_const_smul, ENNReal.toReal_mul]
-      simp only [Real.enorm_of_nonneg hinv, ENNReal.toReal_ofReal hinv]
-    _ = D⁻¹ * parabolicLpNormOn d F Q := by
-      congr 1
-      unfold parabolicLpNormOn parabolicELpNormOn
-      apply congrArg ENNReal.toReal
-      apply eLpNorm_congr_enorm_ae habsmem.aestronglyMeasurable hFmem.aestronglyMeasurable
-      filter_upwards [] with z
-      exact Real.enorm_abs (F z)
-
-private theorem source_supersolution_const_sub_div
-    {d : ℕ} {B : CoefficientField d} {M D : ℝ} {F u : TimeVelocity d → ℝ}
-    {Q : Set (TimeVelocity d)} (hD : 0 < D)
-    (heq : ∀ z ∈ Q, parabolicOperator B u z = F z) :
-    IsParabolicSupersolutionOn B (fun z ↦ -(|F z| / D))
-      (fun z ↦ (M - u z) / D) Q := by
-  intro z hz
-  have hoperator : parabolicOperator B (fun y ↦ (M - u y) / D) z =
-      D⁻¹ * (-parabolicOperator B u z) := by
-    calc
-      parabolicOperator B (fun y ↦ (M - u y) / D) z =
-          parabolicOperator B (D⁻¹ • fun y ↦ M - u y) z := by
-        congr 1
-        funext y
-        simp only [Pi.smul_apply, smul_eq_mul, div_eq_mul_inv]
-        ring
-      _ = D⁻¹ * parabolicOperator B (fun y ↦ M - u y) z :=
-        parabolicOperator_const_smul B D⁻¹ (fun y ↦ M - u y) z
-      _ = D⁻¹ * (-parabolicOperator B u z) := by
-        rw [parabolicOperator_const_sub]
-  rw [hoperator, heq z hz]
-  have hquotient : F z / D ≤ |F z| / D :=
-    (div_le_div_iff_of_pos_right hD).mpr (le_abs_self (F z))
-  calc
-    -(|F z| / D) ≤ -(F z / D) := neg_le_neg hquotient
-    _ = D⁻¹ * (-F z) := by field_simp [hD.ne']
-
-/-- A supplied `SourceDensityToPoint` relation yields raw-equation source-aware level growth
-on a physical box. -/
 theorem source_level_growth_of_low_set_density
     {d : Nat} {lam Lam beta g C : Real}
     (hdtp : SourceDensityToPoint d lam Lam beta g C)
@@ -172,13 +74,22 @@ theorem source_level_growth_of_low_set_density
   let D := M - nu / 2
   let w : TimeVelocity d → Real := fun z ↦ (M - u z) / D
   let Fabs : TimeVelocity d → Real := fun z ↦ |F z| / D
-  have hterminal : (t0 + R ^ 2, v0) ∈ Qclosed :=
-    terminalCenter_mem_parabolicClosedBox hR
+  have hterminal : (t0 + R ^ 2, v0) ∈ Qclosed := by
+    refine ⟨⟨?_, ?_⟩, ?_⟩
+    · nlinarith [sq_nonneg R]
+    · apply le_of_eq
+      ring
+    · intro i
+      simp only [sub_self, abs_zero]
+      exact hR.le
   have hnuM : nu ≤ M := htop.trans (hM _ hterminal)
   have hD : 0 < D := by
     dsimp [D]
     linarith
-  have hQsubset : Q ⊆ Qclosed := parabolicBox_subset_parabolicClosedBox
+  have hQsubset : Q ⊆ Qclosed := by
+    intro z hz
+    rcases hz with ⟨⟨hzleft, hzright⟩, hzv⟩
+    exact ⟨⟨hzleft.le, hzright.le⟩, fun i ↦ (hzv i).le⟩
   have hFmem : MemLp F (parabolicExponent d) (volume.restrict Q) :=
     memLp_of_continuousOn_compact_carrier hF hclosed
       (isCompact_parabolicClosedBox 1 R t0 v0) hQsubset
@@ -212,7 +123,37 @@ theorem source_level_growth_of_low_set_density
     exact hF.abs.div_const D
   have hwsuper : IsParabolicSupersolutionOn B (fun z ↦ -Fabs z) w Q := by
     dsimp only [Fabs, w]
-    exact source_supersolution_const_sub_div hD (by simpa only [Q] using heq)
+    have heq := (by simpa only [Q] using heq)
+    intro z hz
+    have hoperator : parabolicOperator B (fun y ↦ (M - u y) / D) z =
+        D⁻¹ * (-parabolicOperator B u z) := by
+      calc
+        parabolicOperator B (fun y ↦ (M - u y) / D) z =
+            parabolicOperator B (D⁻¹ • fun y ↦ M - u y) z := by
+          congr 1
+          funext y
+          simp only [Pi.smul_apply, smul_eq_mul, div_eq_mul_inv]
+          ring
+        _ = D⁻¹ * parabolicOperator B (fun y ↦ M - u y) z :=
+          parabolicOperator_const_smul B D⁻¹ (fun y ↦ M - u y) z
+        _ = D⁻¹ * (-parabolicOperator B u z) := by
+          have _h_inl_6 (B : CoefficientField d) (c) (u : TimeVelocity d → ℝ) (z) : parabolicOperator B (fun y ↦ c - u y) z = -parabolicOperator B u z := by
+            calc
+              parabolicOperator B (fun y ↦ c - u y) z =
+                  parabolicOperator B (fun y ↦ -u y + c) z := by
+                congr 1
+                funext y
+                ring
+              _ = parabolicOperator B (fun y ↦ -u y) z :=
+                parabolicOperator_add_const B (fun y ↦ -u y) c z
+              _ = -parabolicOperator B u z := parabolicOperator_neg B u z
+          rw [_h_inl_6]
+    rw [hoperator, heq z hz]
+    have hquotient : F z / D ≤ |F z| / D :=
+      (div_le_div_iff_of_pos_right hD).mpr (le_abs_self (F z))
+    calc
+      -(|F z| / D) ≤ -(F z / D) := neg_le_neg hquotient
+      _ = D⁻¹ * (-F z) := by field_simp [hD.ne']
   have hlow : Q ∩ {z | u z ≤ nu / 2} ⊆ Q ∩ {z | 1 ≤ w z} := by
     intro z hz
     refine ⟨hz.1, ?_⟩
@@ -228,8 +169,10 @@ theorem source_level_growth_of_low_set_density
   have hwdensity : beta * ((volume : Measure (TimeVelocity d)) Q).toReal ≤
       ((volume : Measure (TimeVelocity d)) (Q ∩ {z | 1 ≤ w z})).toReal :=
     hdensity.trans (volume_toReal_mono_of_subset hvolfin hlow)
-  have hcenter : v0 ∈ velocityClosedCube v0 (R / 2) :=
-    center_mem_velocityClosedCube hR
+  have hcenter : v0 ∈ velocityClosedCube v0 (R / 2) := by
+    intro i
+    simp only [sub_self, abs_zero]
+    linarith
   have hpoint : g ≤ w (t0 + R ^ 2, v0) +
       C * R ^ ((d : Real) / ((d : Real) + 1)) * parabolicLpNormOn d Fabs Q := by
     simpa only [one_mul] using hdtp.scaled hR one_pos U B Fabs w hU hclosed hB
@@ -237,7 +180,31 @@ theorem source_level_growth_of_low_set_density
       v0 hcenter
   have hnorm : parabolicLpNormOn d Fabs Q = D⁻¹ * parabolicLpNormOn d F Q := by
     dsimp only [Fabs]
-    exact parabolicLpNormOn_abs_div hD hFmem
+    have hFtop : parabolicELpNormOn d F Q ≠ ⊤ := by
+      simpa only [parabolicELpNormOn] using hFmem.eLpNorm_ne_top
+    have habsmem : MemLp (fun z ↦ |F z|) (parabolicExponent d) (volume.restrict Q) := by
+      simpa only [Real.norm_eq_abs] using hFmem.norm
+    have habstop : parabolicELpNormOn d (fun z ↦ |F z|) Q ≠ ⊤ := by
+      simpa only [parabolicELpNormOn] using habsmem.eLpNorm_ne_top
+    have hinv : 0 ≤ D⁻¹ := inv_nonneg.mpr hD.le
+    calc
+      parabolicLpNormOn d (fun z ↦ |F z| / D) Q =
+          parabolicLpNormOn d (D⁻¹ • fun z ↦ |F z|) Q := by
+        congr 2
+        funext z
+        simp only [Pi.smul_apply, smul_eq_mul, div_eq_mul_inv]
+        ring
+      _ = D⁻¹ * parabolicLpNormOn d (fun z ↦ |F z|) Q := by
+        unfold parabolicLpNormOn parabolicELpNormOn
+        rw [eLpNorm_const_smul, ENNReal.toReal_mul]
+        simp only [Real.enorm_of_nonneg hinv, ENNReal.toReal_ofReal hinv]
+      _ = D⁻¹ * parabolicLpNormOn d F Q := by
+        congr 1
+        unfold parabolicLpNormOn parabolicELpNormOn
+        apply congrArg ENNReal.toReal
+        apply eLpNorm_congr_enorm_ae habsmem.aestronglyMeasurable hFmem.aestronglyMeasurable
+        filter_upwards [] with z
+        exact Real.enorm_abs (F z)
   rw [hnorm] at hpoint
   have hterminalBound : w (t0 + R ^ 2, v0) ≤ (M - nu) / D := by
     dsimp only [w]

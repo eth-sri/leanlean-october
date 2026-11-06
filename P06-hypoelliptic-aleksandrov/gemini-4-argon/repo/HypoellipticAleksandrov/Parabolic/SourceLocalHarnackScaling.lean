@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SourceLocalHarnackEndpoint
 public import HypoellipticAleksandrov.Parabolic.ScalingMeasure
+import HypoellipticAleksandrov.Parabolic.LocalHarnackEndpoint
+import HypoellipticAleksandrov.Parabolic.SourceLocalHarnack
 
 /-!
 # Physical scaling for the source-aware local parabolic Harnack estimate
@@ -17,6 +19,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic
 
 open Set
+open Filter
 
 private def parabolicAffineHomeomorph
     {d : ℕ} (t0 : ℝ) (v0 : PDE.Vec d) (s : ℝ) (hs : 0 < s) :
@@ -73,16 +76,6 @@ private theorem normalized_target_velocity
       mul_lt_mul_of_pos_left hvi hscale
     _ = 1 := by field_simp [hr.ne']
 
-private theorem physical_target_from_normalized_velocity
-    {d : ℕ} {r : ℝ} {v v0 : PDE.Vec d} (hr : 0 < r) :
-    v0 + (r / 2) • ((2 / r) • (v - v0)) = v := by
-  ext i
-  change v0 i + (r / 2) * ((2 / r) * (v i - v0 i)) = v i
-  field_simp [hr.ne']
-  ring
-
-/-- The normalized source-aware local Harnack estimate at every positive
-physical radius, with the same constants and physical source norm. -/
 theorem exists_source_local_parabolic_harnack
     (d : Nat) (hd : 1 <= d) (lam : Real) (hlam : 0 < lam)
     (Lam : Real) (hlamLam : lam <= Lam) :
@@ -99,8 +92,54 @@ theorem exists_source_local_parabolic_harnack
           hBox * q (t0, v0) <= q (t0 + r ^ 2, v) +
             C * r ^ ((d : Real) / ((d : Real) + 1)) *
               parabolicLpNormOn d F K := by
-  obtain ⟨hBox, C, hhBox0, hhBox1, hC, hnormalized⟩ :=
-    exists_source_local_parabolic_harnack_nonnegative d hd lam hlam Lam hlamLam
+  obtain ⟨hBox, C, hhBox0, hhBox1, hC, hnormalized⟩ : ∃ hBox C : Real, 0 < hBox ∧ hBox ≤ 1 ∧ 0 < C ∧
+      ∀ (K U : Set (TimeVelocity d)) (B : CoefficientField d)
+        (q F : TimeVelocity d → Real),
+        IsCompact K → K ⊆ U → IsOpen U →
+        parabolicClosedBox 2 2 0 0 ⊆ K →
+        IsContinuousCoefficientOn B U → ContDiffOn Real 2 q U →
+        ContinuousOn F U → IsNonnegativeOn q K →
+        HasLowerEllipticityOn lam B K → HasUpperEllipticityOn Lam B K →
+        (∀ x ∈ K, parabolicOperator B q x = F x) →
+        ∀ v : PDE.Vec d, v ∈ velocityCube (0 : PDE.Vec d) 1 →
+          hBox * q (4, (0 : PDE.Vec d)) ≤
+            q (8, v) + C * parabolicLpNormOn d F K := by
+    obtain ⟨hBox, C, hhBox0, hhBox1, hC, hpositive⟩ :=
+      exists_source_local_parabolic_harnack_positive d hd lam hlam Lam hlamLam
+    refine ⟨hBox, C, hhBox0, hhBox1, hC, ?_⟩
+    intro K U B q F hK hKU hU hbox hB hq hF hnonneg hlower hupper heq v hv
+    have hqClosed :=
+      hq.continuousOn.mono (hbox.trans hKU)
+    have hsource : (4, (0 : PDE.Vec d)) ∈ parabolicClosedBox 2 2 0 0 := by
+      rw [mem_parabolicClosedBox_iff]
+      refine ⟨by norm_num, by norm_num, ?_⟩
+      intro i
+      norm_num
+    apply le_of_forall_pos_le_add
+    intro eps heps
+    have hstrictEps : 0 < q (4, (0 : PDE.Vec d)) + eps :=
+      add_pos_of_nonneg_of_pos (hnonneg _ (hbox hsource)) heps
+    have hlimitEps : hBox * (q (4, (0 : PDE.Vec d)) + eps) ≤
+        q (8, v) + eps + C * parabolicLpNormOn d F K := by
+      exact le_of_tendsto_of_tendsto'
+        (tendsto_const_nhds : Tendsto
+          (fun _ : ℕ => hBox * (q (4, (0 : PDE.Vec d)) + eps)) atTop
+          (_root_.nhds (hBox * (q (4, (0 : PDE.Vec d)) + eps))))
+        (((ContinuousOn.tendsto_localHarnackTerminalApprox hqClosed hv).add
+          (tendsto_const_nhds : Tendsto (fun _ : ℕ => eps) atTop (_root_.nhds eps))).add
+          (tendsto_const_nhds : Tendsto
+            (fun _ : ℕ => C * parabolicLpNormOn d F K) atTop
+            (_root_.nhds (C * parabolicLpNormOn d F K))))
+        (fun j => hpositive K U B (fun z => q z + eps) F hK hKU hU hbox hB
+          (hq.add contDiffOn_const) hF
+          (fun z hz => add_nonneg (hnonneg z hz) heps.le) hlower hupper
+          (fun z hz => by rw [parabolicOperator_add_const, heq z hz]) hstrictEps j v hv)
+    calc
+      hBox * q (4, (0 : PDE.Vec d)) ≤ hBox * (q (4, (0 : PDE.Vec d)) + eps) := by
+        gcongr
+        linarith
+      _ ≤ q (8, v) + C * parabolicLpNormOn d F K + eps := by
+        linarith
   refine ⟨hBox, C, hhBox0, hhBox1, hC, ?_⟩
   intro K U B q F t0 v0 r hr hK hKU hU hbox hB hq hF hnonneg hlower hupper heq v hv
   let s : ℝ := r / 2
@@ -156,7 +195,13 @@ theorem exists_source_local_parabolic_harnack
   have hw : w ∈ velocityCube (0 : PDE.Vec d) 1 := by
     exact normalized_target_velocity hr hv
   have hphysical : v0 + (r / 2) • w = v := by
-    exact physical_target_from_normalized_velocity hr
+      ext i
+      change v0 i + (r / 2) * ((2 / r) * (v i - v0 i)) = v i
+      field_simp [hr.ne']
+      ring
+
+    /- The normalized source-aware local Harnack estimate at every positive
+    physical radius, with the same constants and physical source norm. -/
   have hKHatUHat : KHat ⊆ UHat := by
     exact Set.preimage_mono hKU
   have hnormalizedOut := hnormalized KHat UHat BHat qHat FHat hKHat hKHatUHat hUHat hboxHat

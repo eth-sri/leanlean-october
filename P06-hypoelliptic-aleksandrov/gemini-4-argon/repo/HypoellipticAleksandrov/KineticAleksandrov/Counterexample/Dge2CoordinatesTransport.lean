@@ -2,6 +2,10 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2CoordinatesDifferential
 import Mathlib.Tactic.LinearCombination
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2Coordinates
+import Mathlib.Analysis.Calculus.Deriv.Inv
+import Mathlib.Analysis.SpecialFunctions.Sqrt
+import Mathlib.Tactic.FieldSimp
 
 /-! # Exact transport contraction of the homogeneous ansatz -/
 
@@ -11,8 +15,8 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-/-- The full joint derivative splits into the two literal slice derivatives. -/
-theorem fderiv_uncurry_split {d : ℕ} (phi : PDE.Vec d → PDE.Vec d → ℝ)
+/- The full joint derivative splits into the two literal slice derivatives. -/
+theorem fderiv_uncurry_split {d } (phi : PDE.Vec d → PDE.Vec d → ℝ)
     (y e u w : PDE.Vec d) (hphi : DifferentiableAt ℝ (Function.uncurry phi) (y, e)) :
     fderiv ℝ (Function.uncurry phi) (y, e) (u, w) =
       fderiv ℝ (fun z => phi z e) y u + fderiv ℝ (fun z => phi y z) e w := by
@@ -50,8 +54,8 @@ theorem fderiv_uncurry_split {d : ℕ} (phi : PDE.Vec d → PDE.Vec d → ℝ)
   simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.prod_apply,
     ContinuousLinearMap.id_apply, zero_apply]
 
-/-- The normalized velocity differential has the exact inverse-radius factor. -/
-theorem normalizedVelocityDifferential_apply {d : ℕ} (x v w : PDE.Vec d) (hx : x ≠ 0) :
+/- The normalized velocity differential has the exact inverse-radius factor. -/
+theorem normalizedVelocityDifferential_apply {d } (x v w : PDE.Vec d) (hx : x ≠ 0) :
     normalizedVelocityDifferential x v w =
       (-(1 / 3 : ℝ) * (PDE.vecEuclideanNorm x)⁻¹ *
         PDE.vecDot (positionDirection x) w) • normalizedVelocity x v := by
@@ -67,18 +71,8 @@ theorem normalizedVelocityDifferential_apply {d : ℕ} (x v w : PDE.Vec d) (hx :
   congr 1
   ring
 
-/-- The cube-root physical velocity is recovered exactly from the normalized velocity. -/
-theorem velocity_eq_cubeRoot_smul {d : ℕ} (x v : PDE.Vec d) (hx : x ≠ 0) :
-    v = Real.rpow (PDE.vecEuclideanNorm x) (1 / 3) • normalizedVelocity x v := by
-  have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
-  unfold normalizedVelocity
-  rw [smul_smul]
-  simp only [Real.rpow_eq_pow]
-  rw [← Real.rpow_add hr]
-  norm_num
-
-/-- The exact position derivative gives the angular expression before transport contraction. -/
-theorem fderiv_homogeneousAnsatz_position {d : ℕ} (alpha : ℝ)
+/- The cube-root physical velocity is recovered exactly from the normalized velocity. -/
+theorem fderiv_homogeneousAnsatz_position {d } (alpha : ℝ)
     (phi : PDE.Vec d → PDE.Vec d → ℝ) (x v w : PDE.Vec d) (hx : x ≠ 0)
     (hphi : DifferentiableAt ℝ (Function.uncurry phi)
       (normalizedVelocity x v, positionDirection x)) :
@@ -97,7 +91,26 @@ theorem fderiv_homogeneousAnsatz_position {d : ℕ} (alpha : ℝ)
     simp only [Real.rpow_eq_pow]
     rw [Real.rpow_sub hr, Real.rpow_one]
     simp only [div_eq_mul_inv]
-  rw [(hasFDerivAt_homogeneousAnsatz_position alpha phi x v hx hphi).fderiv]
+  have _h_xinl_1 : HasFDerivAt (fun z => homogeneousAnsatz alpha phi z v)
+      ((phi (normalizedVelocity x v) (positionDirection x)) •
+          ((alpha / 3 * Real.rpow (PDE.vecEuclideanNorm x) (alpha / 3 - 1)) •
+            positionRadiusDifferential x) +
+        (Real.rpow (PDE.vecEuclideanNorm x) (alpha / 3)) •
+          (fderiv ℝ (Function.uncurry phi) (normalizedVelocity x v, positionDirection x)).comp
+            ((normalizedVelocityDifferential x v).prod (positionDirectionDifferential x))) x := by
+    have hr := (hasFDerivAt_positionRadius x hx).rpow_const
+      (p := alpha / 3) (Or.inl (PDE.vecEuclideanNorm_eq_zero_iff.not.mpr hx))
+    have _h_xinl_0 : HasFDerivAt (positionDirection (d := d)) (positionDirectionDifferential x) x := by
+      convert ((hasDerivAt_inv (PDE.vecEuclideanNorm_eq_zero_iff.not.mpr hx)).comp_hasFDerivAt x (hasFDerivAt_positionRadius x hx)).smul (hasFDerivAt_id x) using 1
+      · rfl
+      · simp only [positionDirectionDifferential, Function.comp_apply, id_eq, inv_pow]
+    convert hr.mul (hphi.hasFDerivAt.comp x ((hasFDerivAt_normalizedVelocity x v hx).prodMk _h_xinl_0)) using 1
+    · rfl
+    · ext w
+      simp only [add_apply, smul_apply, smul_eq_mul, Real.rpow_eq_pow,
+        Function.comp_apply, Function.uncurry_apply_pair]
+      ring
+  rw [_h_xinl_1.fderiv]
   simp only [add_apply, smul_apply, smul_eq_mul, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.prod_apply, positionRadiusDifferential_apply,
     normalizedVelocityDifferential_apply x v w hx, positionDirectionDifferential_apply]
@@ -111,8 +124,8 @@ theorem fderiv_homogeneousAnsatz_position {d : ℕ} (alpha : ℝ)
       fderiv ℝ (fun z => phi (normalizedVelocity x v) z) (positionDirection x)
         (w - PDE.vecDot (positionDirection x) w • positionDirection x)) * hp
 
-/-- Transport and the velocity Hessian have the identical kinetic prefactor. -/
-theorem homogeneousAnsatz_transport {d : ℕ} (alpha : ℝ)
+/- Transport and the velocity Hessian have the identical kinetic prefactor. -/
+theorem homogeneousAnsatz_transport {d } (alpha : ℝ)
     (phi : PDE.Vec d → PDE.Vec d → ℝ) (x v : PDE.Vec d) (hx : x ≠ 0)
     (hphi : DifferentiableAt ℝ (Function.uncurry phi)
       (normalizedVelocity x v, positionDirection x)) :
@@ -120,7 +133,15 @@ theorem homogeneousAnsatz_transport {d : ℕ} (alpha : ℝ)
       Real.rpow (PDE.vecEuclideanNorm x) ((alpha - 2) / 3) *
         ansatzTransport alpha phi (normalizedVelocity x v) (positionDirection x) := by
   have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
-  have hv := velocity_eq_cubeRoot_smul x v hx
+  have hv : v = Real.rpow (PDE.vecEuclideanNorm x) (1 / 3) • normalizedVelocity x v := by
+      have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
+      unfold normalizedVelocity
+      rw [smul_smul]
+      simp only [Real.rpow_eq_pow]
+      rw [← Real.rpow_add hr]
+      norm_num
+
+    /- The exact position derivative gives the angular expression before transport contraction. -/
   have hdot : PDE.vecDot (positionDirection x) v =
       Real.rpow (PDE.vecEuclideanNorm x) (1 / 3) *
         PDE.vecDot (normalizedVelocity x v) (positionDirection x) := by

@@ -28,19 +28,16 @@ namespace PDE
 
 open MeasureTheory
 
-/-- Reinterpret a native vector field in the internal Euclidean Hilbert
+/- Reinterpret a native vector field in the internal Euclidean Hilbert
 carrier. -/
 def toHilbertVecField {d : ℕ} (F : Vec d → Vec d) :
     Vec d → HilbertVec d :=
   fun x => (F x).toHilbertVec
 
 @[simp]
-theorem toHilbertVecField_apply {d : ℕ} (F : Vec d → Vec d)
-    (x : Vec d) :
-    toHilbertVecField F x = (F x).toHilbertVec :=
-  rfl
+theorem toHilbertVecField_apply {d : ℕ} (F : Vec d → Vec d) (x : Vec d) :
+    toHilbertVecField F x = (F x).toHilbertVec := rfl
 
-/-- The internal Hilbert lift commutes exactly with pointwise subtraction. -/
 @[simp]
 theorem toHilbertVecField_sub {d : ℕ}
     (F G : Vec d → Vec d) :
@@ -50,14 +47,14 @@ theorem toHilbertVecField_sub {d : ℕ}
   ext i
   rfl
 
-/-- The Hilbert norm of a lifted native field is exactly its explicit
+/- The Hilbert norm of a lifted native field is exactly its explicit
 Euclidean magnitude.  There is no dimension-dependent comparison factor. -/
 theorem norm_toHilbertVecField_apply {d : ℕ} (F : Vec d → Vec d)
     (x : Vec d) :
     ‖toHilbertVecField F x‖ = vecEuclideanNorm (F x) :=
   (Vec.vecEuclideanNorm_eq_norm_toHilbertVec (F x)).symm
 
-/-- The `L^p` seminorm of the Hilbert lift is exactly the scalar `L^p`
+/- The `L^p` seminorm of the Hilbert lift is exactly the scalar `L^p`
 seminorm of the explicit Euclidean magnitude, for an a.e. strongly measurable
 field. -/
 theorem eLpNorm_toHilbertVecField_eq
@@ -75,10 +72,10 @@ theorem eLpNorm_toHilbertVecField_eq
       exact Filter.Eventually.of_forall
         (norm_toHilbertVecField_apply F)
 
-/-- Coordinatewise `L^p` membership of a native gradient is exactly
+/- Coordinatewise `L^p` membership of a native gradient is exactly
 `L^p` membership of its Euclidean Hilbert lift. -/
 theorem gradMemLpOn_iff_memLp_toHilbertVecField
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+    {d U p}
     {Du : Vec d → Vec d} :
     GradMemLpOn U p Du ↔
       MemLp (toHilbertVecField Du) p (volumeOn U) := by
@@ -90,15 +87,15 @@ theorem gradMemLpOn_iff_memLp_toHilbertVecField
 
 namespace MemLpOn
 
-/-- Promote a scalar representative on `U` to its quotient `L^p(U)` class. -/
-def toScalarLp {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+/- Promote a scalar representative on `U` to its quotient `L^p(U)` class. -/
+def toScalarLp {d U p}
     {u : Vec d → ℝ} (hu : MemLpOn U p u) :
     ScalarLp U p :=
   hu.toLp u
 
-/-- The scalar quotient class agrees almost everywhere with the representative
+/- The scalar quotient class agrees almost everywhere with the representative
 used to construct it. -/
-theorem coeFn_toScalarLp {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+theorem coeFn_toScalarLp {d U p}
     {u : Vec d → ℝ} (hu : MemLpOn U p u) :
     ⇑hu.toScalarLp =ᵐ[volumeOn U] u :=
   hu.coeFn_toLp
@@ -107,27 +104,26 @@ end MemLpOn
 
 namespace GradMemLpOn
 
-/-- Promote a native gradient representative to Euclidean Hilbert-vector
+/- Promote a native gradient representative to Euclidean Hilbert-vector
 `L^p(U)`. -/
-def toHilbertVectorLp {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+def toHilbertVectorLp {d U p}
     {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du) :
     HilbertVectorLp U p :=
   (gradMemLpOn_iff_memLp_toHilbertVecField.mp hDu).toLp
     (toHilbertVecField Du)
 
-/-- The Hilbert-vector quotient class agrees almost everywhere with the
+/- The Hilbert-vector quotient class agrees almost everywhere with the
 lifted native gradient used to construct it. -/
 theorem coeFn_toHilbertVectorLp
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+    {d U p}
     {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du) :
     ⇑hDu.toHilbertVectorLp =ᵐ[volumeOn U] toHilbertVecField Du :=
   (gradMemLpOn_iff_memLp_toHilbertVecField.mp hDu).coeFn_toLp
 
-/-- Coordinatewise form of
+/- Coordinatewise form of
 `PDE.GradMemLpOn.coeFn_toHilbertVectorLp`. -/
 theorem coeFn_toHilbertVectorLp_apply
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du)
+    {d U p Du} (hDu : GradMemLpOn U p Du)
     (i : Fin d) :
     (fun x => hDu.toHilbertVectorLp x i) =ᵐ[volumeOn U]
       fun x => Du x i := by

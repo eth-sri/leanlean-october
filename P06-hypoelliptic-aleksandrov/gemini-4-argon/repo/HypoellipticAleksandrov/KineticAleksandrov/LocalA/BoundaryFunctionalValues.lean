@@ -32,7 +32,7 @@ theorem ballBoundarySolution_bounded
   intro P hP
   have hw := abs_duhamelPotential_le (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
     _ M hM hgb (sectionTwoPoint P) T hP.2.1
-  have ht : (T - P.time) * M ≤ (T - a) * M :=
+  have ht :=
     mul_le_mul_of_nonneg_right (sub_le_sub_left hP.1 T) hM
   change |φ P + ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F P| ≤ _
   exact (abs_add_le _ _).trans (add_le_add (hC P) (hw.trans ht))
@@ -41,7 +41,7 @@ theorem ballBoundarySolution_bounded
 theorem ballBoundarySolution_le_of_trace
     (a T : ℝ) (haT : a < T) (φ : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
-    (hc : HasCompactSupport φ) (c : ℝ)
+    (hc : HasCompactSupport φ) (c )
     (htrace : ∀ P ∈ localTrace a T v₀ R, φ P ≤ c) :
     ∀ P ∈ localClosedStrip a T v₀ R,
       ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ P ≤ c := by

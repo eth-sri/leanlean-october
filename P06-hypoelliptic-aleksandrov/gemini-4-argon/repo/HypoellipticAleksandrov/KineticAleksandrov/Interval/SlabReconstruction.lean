@@ -13,7 +13,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.Green
 open scoped ENNReal NNReal
 
 /-- Reconstruction arithmetic retains the killing factor raised to `q-1`. -/
-theorem killed_slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T k q : ℝ}
+theorem killed_slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T k q }
     (hT : 0 < T) (hq : 1 < q) (hq2 : q < 2) :
     ((a : ℝ≥0∞) * M * ENNReal.ofReal
         (T ^ (slabBeta 1 (slabGamma 1 q) - 3 / 2) * Real.exp (-k * T))) ^ (q - 1) *
@@ -26,10 +26,10 @@ theorem killed_slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T k q : ℝ}
   have he' : (q - 1) * (slabBeta 1 (slabGamma 1 q) - 3 / 2) +
       slabBeta 1 (slabQ1 1 q) = 3 - 2 * q := by linarith
   have hq0 : 0 ≤ q - 1 := by linarith
-  let X : ℝ≥0∞ := (a : ℝ≥0∞) * M *
+  let X := (a : ℝ≥0∞) * M *
     ENNReal.ofReal (T ^ (slabBeta 1 (slabGamma 1 q) - 3 / 2))
-  let Y : ℝ≥0∞ := (b : ℝ≥0∞) * M * ENNReal.ofReal (T ^ slabBeta 1 (slabQ1 1 q))
-  let E : ℝ≥0∞ := ENNReal.ofReal (Real.exp (-k * T))
+  let Y := (b : ℝ≥0∞) * M * ENNReal.ofReal (T ^ slabBeta 1 (slabQ1 1 q))
+  let E := ENNReal.ofReal (Real.exp (-k * T))
   calc
     _ = (X * E) ^ (q - 1) * Y := by
       dsimp only [X, Y, E]
@@ -48,11 +48,11 @@ theorem killed_slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T k q : ℝ}
       ring
 
 /-- The shared reconstruction proof with the interval killing height estimate. -/
-theorem killed_slab_reconstruction {Ω : Set (PDE.Vec 1)} {γ : ℝ → PDE.Vec 1}
-    (C : ℝ → ℝ≥0) (k : ℝ) (K : MovingFiberKernel Ω γ) (σ : ℝ)
+theorem killed_slab_reconstruction {Ω γ}
+    (C : ℝ → ℝ≥0) (k ) (K : MovingFiberKernel Ω γ) (σ )
     (μ : Measure (EvolutionState Ω γ σ)) [IsFiniteMeasure μ]
     (Γ : Measure (GreenCarrier 1)) (hΓ : IsGreenMeasure K σ ⊤ μ Γ)
-    {q T : ℝ} (hq : 1 < q) (hq2 : q < 2) (hT : 0 < T)
+    {q T } (hq : 1 < q) (hq2 : q < 2) (hT : 0 < T)
     (g : SlabBase 1 → ℝ≥0∞) (hgm : Measurable g)
     (hgmarg : (slabMeasure 1 T Γ).fst = (slabBase 1 T).withDensity g)
     (hgnorm : ∀ r : ℝ, 1 ≤ r → r ≤ slabGamma0 1 →
@@ -76,14 +76,14 @@ theorem killed_slab_reconstruction {Ω : Set (PDE.Vec 1)} {γ : ℝ → PDE.Vec 
   have hq0 : 0 ≤ q - 1 := by linarith
   obtain ⟨hqγ, hγ0⟩ := slab_q_lt_gamma (d := 1) hq hqd
   obtain ⟨hq1a, hq1b⟩ := slab_q1_bounds (d := 1) hq hqd
-  have hγ1 : 1 ≤ slabGamma 1 q := (slab_gamma_one_lt (d := 1) hq hqd).le
+  have hγ1 := (slab_gamma_one_lt (d := 1) hq hqd).le
   have hMfin : μ univ < ⊤ := measure_lt_top μ _
   have : IsFiniteMeasure (slabMeasure 1 T Γ) := ⟨by
     rw [slabMeasure_univ]
     exact (green_slab_le K σ μ Γ hΓ hT).trans_lt
       (ENNReal.mul_lt_top hMfin ENNReal.ofReal_lt_top)⟩
   have hgn := hgnorm (slabQ1 1 q) hq1a hq1b
-  have hgL : eLpNorm g (ENNReal.ofReal (slabQ1 1 q)) (slabBase 1 T) < ⊤ :=
+  have hgL :=
     hgn.trans_lt (ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.coe_lt_top hMfin)
       ENNReal.ofReal_lt_top)
   have hH : ENNReal.ofReal (((2 * Real.pi) ^ 1)⁻¹) *

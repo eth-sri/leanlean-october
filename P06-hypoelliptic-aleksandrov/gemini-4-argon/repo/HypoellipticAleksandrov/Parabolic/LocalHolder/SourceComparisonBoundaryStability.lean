@@ -17,8 +17,7 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
 /-- Homogeneous solutions with uniformly close boundary data are uniformly close inside. -/
-theorem abs_homogeneous_solution_sub_le_boundary_error {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+theorem abs_homogeneous_solution_sub_le_boundary_error {d Ω} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (A : CoefficientField d)
     (hAc : IsContinuousCoefficient A) (hApsd : ∀ t y, (A t y).PosSemidef)
     (φ₁ φ₂ : PDE.Vec d → ℝ) (b₁ b₂ u v : TimeVelocity d → ℝ)
@@ -26,7 +25,7 @@ theorem abs_homogeneous_solution_sub_le_boundary_error {d : ℕ}
       (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => 0) φ₁ b₁ u)
     (hv : IsClassicalBackwardDirichletSolution a T Ω A
       (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => 0) φ₂ b₂ v)
-    (ε : ℝ) (hε : 0 ≤ ε)
+    (ε ) (hε : 0 ≤ ε)
     (hφ : ∀ y ∈ closure Ω, |φ₁ y - φ₂ y| ≤ ε)
     (hb : ∀ z ∈ scalarParabolicLateralFace a T Ω, |b₁ z - b₂ z| ≤ ε) :
     ∀ z ∈ scalarParabolicClosedCylinder a T Ω, |u z - v z| ≤ 2 * ε := by

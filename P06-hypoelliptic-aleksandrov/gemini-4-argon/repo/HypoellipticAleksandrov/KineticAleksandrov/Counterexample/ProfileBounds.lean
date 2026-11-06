@@ -13,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Set
 
-/-- Powers above degree minus d are locally integrable in each native vector factor. -/
+/- Powers above degree minus d are locally integrable in each native vector factor. -/
 theorem norm_rpow_locallyIntegrable (d : ℕ) (hd : 1 ≤ d) (p : ℝ) (hp : -1 < p) :
     LocallyIntegrable (fun x : PDE.Vec d => ‖x‖ ^ p) volume := by
   have hdim : Module.finrank ℝ (PDE.Vec d) = d := by
@@ -29,22 +29,7 @@ theorem norm_rpow_locallyIntegrable (d : ℕ) (hd : 1 ≤ d) (p : ℝ) (hp : -1 
     exact le_rfl
   · exact (measurable_norm.pow measurable_const).aestronglyMeasurable
 
-/-- Products of integrable factor powers are locally integrable on product volume. -/
-theorem product_norm_rpow_locallyIntegrable (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
-    (hp : -1 < p) :
-    LocallyIntegrable (fun q : XV d => ‖q.1‖ ^ p * ‖q.2‖ ^ p) volume := by
-  rw [locallyIntegrable_iff]
-  intro K hK
-  have h1 := (norm_rpow_locallyIntegrable d hd p hp).integrableOn_isCompact
-    (hK.image continuous_fst)
-  have h2 := (norm_rpow_locallyIntegrable d hd p hp).integrableOn_isCompact
-    (hK.image continuous_snd)
-  have hi := h1.mul_prod h2
-  rw [Measure.prod_restrict, ← Measure.volume_eq_prod] at hi
-  change IntegrableOn _ ((Prod.fst '' K) ×ˢ (Prod.snd '' K)) volume at hi
-  exact hi.mono_set (fun q hq => ⟨mem_image_of_mem _ hq, mem_image_of_mem _ hq⟩)
-
-/-- Both vector axes are null when the vector dimension is positive. -/
+/- Products of integrable factor powers are locally integrable on product volume. -/
 theorem coordinates_ne_zero_ae (d : ℕ) (hd : 1 ≤ d) :
     ∀ᵐ q : XV d ∂volume, q.1 ≠ 0 ∧ q.2 ≠ 0 := by
   have : Nonempty (Fin d) := ⟨⟨0, hd⟩⟩
@@ -56,8 +41,8 @@ theorem coordinates_ne_zero_ae (d : ℕ) (hd : 1 ≤ d) :
   filter_upwards [volume.ae_ne (0 : PDE.Vec d)] with v hv
   exact ⟨hx, hv⟩
 
-/-- Negative gauge powers have an integrable product majorant of degree beta/4. -/
-theorem rho_rpow_product_bound (d : ℕ) (beta : ℝ) (hb : beta ≤ 0)
+/- Negative gauge powers have an integrable product majorant of degree beta/4. -/
+theorem rho_rpow_product_bound (d ) (beta : ℝ) (hb : beta ≤ 0)
     (q : XV d) (hx : q.1 ≠ 0) (hv : q.2 ≠ 0) :
     Real.rpow (rho q) beta ≤ ‖q.1‖ ^ (beta / 4) * ‖q.2‖ ^ (beta / 4) := by
   have hr := rho_nonneg q
@@ -80,28 +65,33 @@ theorem rho_rpow_product_bound (d : ℕ) (beta : ℝ) (hb : beta ≤ 0)
   simp only [Real.rpow_eq_pow]
   rwa [he] at hh
 
-/-- Gauge degree greater than minus four gives local integrability for all d≥1. -/
-theorem rho_rpow_locallyIntegrable (d : ℕ) (hd : 1 ≤ d) (beta : ℝ)
-    (hb : -4 < beta) (hb0 : beta ≤ 0) :
-    LocallyIntegrable (fun q : XV d => Real.rpow (rho q) beta) volume := by
-  simp only [Real.rpow_eq_pow]
-  have hprod := product_norm_rpow_locallyIntegrable d hd (beta / 4) (by linarith only [hb])
-  apply hprod.mono
-    (((continuous_rho d).measurable.pow measurable_const).aestronglyMeasurable)
-  filter_upwards [coordinates_ne_zero_ae d hd] with q hq
-  simp only [Real.norm_eq_abs,
-    abs_of_nonneg (Real.rpow_nonneg (rho_nonneg q) _),
-    abs_of_nonneg (mul_nonneg (Real.rpow_nonneg (norm_nonneg _) _)
-      (Real.rpow_nonneg (norm_nonneg _) _))]
-  exact rho_rpow_product_bound d beta hb0 q hq.1 hq.2
-
-/-- Measurable jets with the proved kinetic power bound are locally integrable. -/
-theorem locallyIntegrable_of_rho_bound (d : ℕ) (hd : 1 ≤ d) (beta : ℝ)
+/- Gauge degree greater than minus four gives local integrability for all d≥1. -/
+theorem locallyIntegrable_of_rho_bound (d ) (hd : 1 ≤ d) (beta )
     (hb : -4 < beta) (hb0 : beta ≤ 0) (f : XV d → ℝ) (hf : Measurable f)
-    (C : ℝ) (hC : 0 ≤ C)
+    (C ) (hC : 0 ≤ C)
     (hbound : ∀ᵐ q ∂volume, |f q| ≤ C * Real.rpow (rho q) beta) :
     LocallyIntegrable f volume := by
-  apply ((rho_rpow_locallyIntegrable d hd beta hb hb0).smul C).mono hf.aestronglyMeasurable
+  have _h_inl_11 : LocallyIntegrable (fun q : XV d => Real.rpow (rho q) beta) volume := by
+    simp only [Real.rpow_eq_pow]
+    have hprod : LocallyIntegrable (fun q : XV d => ‖q.1‖ ^ (beta / 4) * ‖q.2‖ ^ (beta / 4)) volume := by
+      let p := (beta / 4)
+      have hp : -1 < (beta / 4) := by
+        linarith only [hb]
+      rw [locallyIntegrable_iff]
+      intro K hK
+      have hi := ((norm_rpow_locallyIntegrable d hd p hp).integrableOn_isCompact (hK.image continuous_fst)).mul_prod ((norm_rpow_locallyIntegrable d hd p hp).integrableOn_isCompact (hK.image continuous_snd))
+      rw [Measure.prod_restrict, ← Measure.volume_eq_prod] at hi
+      change IntegrableOn _ ((Prod.fst '' K) ×ˢ (Prod.snd '' K)) volume at hi
+      exact hi.mono_set (fun q hq => ⟨mem_image_of_mem _ hq, mem_image_of_mem _ hq⟩)
+    apply hprod.mono
+      (((continuous_rho d).measurable.pow measurable_const).aestronglyMeasurable)
+    filter_upwards [coordinates_ne_zero_ae d hd] with q hq
+    simp only [Real.norm_eq_abs,
+      abs_of_nonneg (Real.rpow_nonneg (rho_nonneg q) _),
+      abs_of_nonneg (mul_nonneg (Real.rpow_nonneg (norm_nonneg _) _)
+        (Real.rpow_nonneg (norm_nonneg _) _))]
+    exact rho_rpow_product_bound d beta hb0 q hq.1 hq.2
+  apply (_h_inl_11.smul C).mono hf.aestronglyMeasurable
   filter_upwards [hbound] with q hq
   change ‖f q‖ ≤ ‖C * Real.rpow (rho q) beta‖
   simp only [Real.rpow_eq_pow] at hq ⊢

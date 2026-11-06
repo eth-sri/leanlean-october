@@ -13,16 +13,15 @@ noncomputable section
 open Set Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-/-- The anisotropic dilation is a genuine continuous linear map of the plane. -/
+/- The anisotropic dilation is a genuine continuous linear map of the plane. -/
 def bellmanDilationLinear (r : ℝ) : (ℝ × ℝ) →L[ℝ] (ℝ × ℝ) :=
   (r ^ 3 • ContinuousLinearMap.fst ℝ ℝ ℝ).prod
     (r • ContinuousLinearMap.snd ℝ ℝ ℝ)
 
-/-- The linear-map representation preserves the literal source dilation. -/
 theorem bellmanDilationLinear_apply (r : ℝ) (q : ℝ × ℝ) :
     bellmanDilationLinear r q = bellmanPlaneDilation r q := rfl
 
-/-- The position chain rule has the anisotropic cubic factor. -/
+/- The linear-map representation preserves the literal source dilation. -/
 theorem bellmanDx_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ)
     (hphi : DifferentiableAt ℝ phi (bellmanPlaneDilation r q)) :
     bellmanDx (fun z => phi (bellmanPlaneDilation r z)) q =
@@ -37,7 +36,7 @@ theorem bellmanDx_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ 
   rw [he, map_smul]
   rfl
 
-/-- The velocity chain rule has the linear radial factor. -/
+/- The velocity chain rule has the linear radial factor. -/
 theorem bellmanDv_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ)
     (hphi : DifferentiableAt ℝ phi (bellmanPlaneDilation r q)) :
     bellmanDv (fun z => phi (bellmanPlaneDilation r z)) q =
@@ -52,7 +51,7 @@ theorem bellmanDv_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ 
   rw [he, map_smul]
   rfl
 
-/-- The second velocity chain rule has the quadratic radial factor. -/
+/- The second velocity chain rule has the quadratic radial factor. -/
 theorem bellmanDvv_comp_dilation (r : ℝ) (hr : 0 < r)
     (phi : (ℝ × ℝ) → ℝ) (hp : ContDiffOn ℝ 2 phi bellmanPuncturedSet)
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
@@ -86,10 +85,10 @@ theorem bellmanDvv_comp_dilation (r : ℝ) (hr : 0 < r)
   change r * (r * bellmanDvv phi (bellmanPlaneDilation r q)) = _
   ring
 
-/-- Both terms in the Bellman operator acquire the same quadratic factor under dilation. -/
+/- Both terms in the Bellman operator acquire the same quadratic factor under dilation. -/
 theorem bellmanOperator_comp_dilation (r : ℝ) (hr : 0 < r)
     (phi : (ℝ × ℝ) → ℝ) (hp : ContDiffOn ℝ 2 phi bellmanPuncturedSet)
-    (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) (b : ℝ) :
+    (q ) (hq : q ∈ bellmanPuncturedSet) (b : ℝ) :
     bellmanOperator b (fun z => phi (bellmanPlaneDilation r z)) q =
       r ^ 2 * bellmanOperator b phi (bellmanPlaneDilation r q) := by
   have hmap := bellmanPlaneDilation_ne_zero r hr q hq

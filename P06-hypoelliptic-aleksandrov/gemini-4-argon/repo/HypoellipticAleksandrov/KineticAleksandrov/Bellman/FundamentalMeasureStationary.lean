@@ -5,6 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeas
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasureDegree
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasurePositive
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasureEndpoint
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasurePlaneScaling
+import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+import Mathlib.MeasureTheory.Integral.Prod
 
 /-! # The degree-two stationary adjoint witness from the explicit Kolmogorov Gaussian -/
 
@@ -13,7 +17,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- The actual fundamental measure solves the stationary adjoint identity on punctured tests. -/
+/- The actual fundamental measure solves the stationary adjoint identity on punctured tests. -/
 theorem bellmanFundamentalMeasure_stationary :
     IsBellmanStationaryAdjointPair bellmanFundamentalMeasure bellmanFundamentalMeasure := by
   intro φ hφ hc hs
@@ -37,8 +41,49 @@ theorem bellmanFundamentalMeasure_stationary :
   change (∫ q, fx q.val ∂bellmanFundamentalMeasure) +
     (∫ q, fv q.val ∂bellmanFundamentalMeasure) = 0
   rw [← integral_add hiX hiV]
-  rw [bellmanFundamentalMeasure_integral_test (f := fun q => fx q + fv q) (hx.add hv) (hcx.add hcv)
-    ((tsupport_add fx fv).trans (union_subset hsx hsv))]
+  have _h_xinl_0 : (∫ q : BellmanPuncturedPlane, (fun q => fx q + fv q) q.val ∂bellmanFundamentalMeasure) =
+      ∫ t : BellmanPositiveTime, (∫ q : ℝ × ℝ, bellmanGaussianKernel t q * (fun q => fx q + fv q) q)
+        ∂bellmanPositiveTimeVolume := by
+    let f := (fun q => fx q + fv q)
+    have hf := (hx.add hv)
+    have hc := (hcx.add hcv)
+    have hs := ((tsupport_add fx fv).trans (union_subset hsx hsv))
+    have he : MeasurableEmbedding (Subtype.val : BellmanPuncturedPlane → ℝ × ℝ) :=
+      MeasurableEmbedding.subtype_coe isOpen_compl_singleton.measurableSet
+    rw [bellmanFundamentalMeasure, integral_withDensity_eq_integral_toReal_smul
+      measurable_bellmanFundamentalDensity
+      (ae_of_all _ fun q => (bellmanFundamentalDensity_ne_top q).lt_top)]
+    simp only [smul_eq_mul, bellmanFundamentalDensity_toReal, ← integral_mul_const]
+    have _h_xinl_0 : Integrable (fun w : BellmanPositiveTime × BellmanPuncturedPlane => bellmanGaussianKernel w.1 w.2.val * f w.2.val) (bellmanPositiveTimeVolume.prod bellmanPuncturedVolume) := by
+      have hcp := bellman_test_compact_subtype hc hs
+      obtain ⟨a, ha, hb⟩ := bellmanPunctured_compact_lower_bound _ hcp
+      have hfi : Integrable (fun q : BellmanPuncturedPlane => |f q.val|)
+          bellmanPuncturedVolume :=
+        ((hf.comp continuous_subtype_val).integrable_of_hasCompactSupport hcp).abs
+      have hm : Measurable (fun w : BellmanPositiveTime × BellmanPuncturedPlane =>
+          bellmanGaussianKernel w.1 w.2.val * f w.2.val) := by
+        apply Continuous.measurable
+        exact (continuous_bellmanGaussianKernel.comp
+          (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd))).mul
+          (hf.comp (continuous_subtype_val.comp continuous_snd))
+      refine ((integrable_bellmanTimeMajorant a).mul_prod hfi).mono'
+        hm.aestronglyMeasurable (ae_of_all _ fun w => ?_)
+      rw [norm_mul, Real.norm_eq_abs, Real.norm_eq_abs,
+        abs_of_pos (bellmanGaussianKernel_pos w.1 w.2.val)]
+      by_cases hq : w.2 ∈ tsupport (fun q : BellmanPuncturedPlane => f q.val)
+      · exact mul_le_mul_of_nonneg_right
+          (bellmanGaussianKernel_le_timeMajorant a ha w.2.val (hb _ hq) w.1) (abs_nonneg _)
+      · simp [image_eq_zero_of_notMem_tsupport hq]
+    rw [integral_integral_swap
+      (f := fun q : BellmanPuncturedPlane => fun t : BellmanPositiveTime =>
+        bellmanGaussianKernel t q.val * f q.val)
+      _h_xinl_0.swap]
+    apply integral_congr_ae
+    apply ae_of_all
+    intro t
+    dsimp only
+    rw [← map_bellmanPuncturedVolume_coe, he.integral_map]
+  rw [_h_xinl_0]
   have heq (t : BellmanPositiveTime) (q : ℝ × ℝ) :
       -q.2 * fderiv ℝ (bellmanGaussianKernel t) q (1, 0) +
         fderiv ℝ (fun z => fderiv ℝ (bellmanGaussianKernel t) z (0, 1)) q (0, 1) =
@@ -54,8 +99,8 @@ theorem bellmanFundamentalMeasure_stationary :
   simp_rw [bellmanGaussianKernel_integral_generator _ φ hφ hc, heq]
   exact bellmanGaussianTimeDerivative_integral_test_eq_zero hφ.continuous hc hs
 
-/-- The explicit Gaussian fundamental measure supplies the degree-two witness at every ratio. -/
-theorem two_mem_bellmanAdmissibleDegrees (R : ℝ) (hR : 1 ≤ R) :
+/- The explicit Gaussian fundamental measure supplies the degree-two witness at every ratio. -/
+theorem two_mem_bellmanAdmissibleDegrees (R ) (hR : 1 ≤ R) :
     (2 : ℝ) ∈ bellmanAdmissibleDegrees R := by
   rw [mem_bellmanAdmissibleDegrees_iff]
   refine ⟨bellmanFundamentalMeasure, bellmanFundamentalMeasure,

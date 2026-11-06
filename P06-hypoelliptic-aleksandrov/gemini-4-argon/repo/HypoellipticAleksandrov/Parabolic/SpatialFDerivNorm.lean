@@ -20,27 +20,27 @@ namespace HypoellipticAleksandrov.Parabolic
 open scoped BigOperators
 
 /-- Euclidean norm of the spatial-coordinate Fréchet derivative of a scalar field. -/
-noncomputable def spatialScalarFDerivEuclideanNorm {d : ℕ}
+noncomputable def spatialScalarFDerivEuclideanNorm {d }
     (f : TimeVelocity d → ℝ) (z : TimeVelocity d) : ℝ :=
   Real.sqrt (∑ k : Fin d,
     ((fderiv ℝ f z) (0, PDE.basisVec k)) ^ 2)
 
 /-- Frobenius norm of the spatial-coordinate Fréchet derivative of a vector field. -/
-noncomputable def spatialVectorFDerivFrobeniusNorm {d : ℕ}
+noncomputable def spatialVectorFDerivFrobeniusNorm {d }
     (f : TimeVelocity d → PDE.Vec d) (z : TimeVelocity d) : ℝ :=
   Real.sqrt (∑ j : Fin d, ∑ k : Fin d,
     ((fderiv ℝ (fun w : TimeVelocity d => f w j) z)
       (0, PDE.basisVec k)) ^ 2)
 
 /-- Frobenius norm of the spatial-coordinate Fréchet derivative of a matrix field. -/
-noncomputable def spatialMatrixFDerivFrobeniusNorm {d : ℕ}
+noncomputable def spatialMatrixFDerivFrobeniusNorm {d }
     (f : TimeVelocity d → PDE.Mat d) (z : TimeVelocity d) : ℝ :=
   Real.sqrt (∑ i : Fin d, ∑ j : Fin d, ∑ k : Fin d,
     ((fderiv ℝ (fun w : TimeVelocity d => f w i j) z)
       (0, PDE.basisVec k)) ^ 2)
 
 /-- Each scalar spatial derivative coordinate is bounded by its Euclidean norm. -/
-theorem abs_spatialScalarFDeriv_le {d : ℕ}
+theorem abs_spatialScalarFDeriv_le {d }
     (f : TimeVelocity d → ℝ) (z : TimeVelocity d) (k : Fin d) :
     |(fderiv ℝ f z) (0, PDE.basisVec k)| ≤
       spatialScalarFDerivEuclideanNorm f z := by
@@ -52,7 +52,7 @@ theorem abs_spatialScalarFDeriv_le {d : ℕ}
     (Finset.mem_univ k)
 
 /-- Each vector spatial derivative coordinate is bounded by its Frobenius norm. -/
-theorem abs_spatialVectorFDeriv_le {d : ℕ}
+theorem abs_spatialVectorFDeriv_le {d }
     (f : TimeVelocity d → PDE.Vec d) (z : TimeVelocity d) (j k : Fin d) :
     |(fderiv ℝ (fun w : TimeVelocity d => f w j) z)
         (0, PDE.basisVec k)| ≤
@@ -84,7 +84,7 @@ theorem abs_spatialVectorFDeriv_le {d : ℕ}
         (Finset.mem_univ j)
 
 /-- Each matrix spatial derivative coordinate is bounded by its Frobenius norm. -/
-theorem abs_spatialMatrixFDeriv_le {d : ℕ}
+theorem abs_spatialMatrixFDeriv_le {d }
     (f : TimeVelocity d → PDE.Mat d) (z : TimeVelocity d) (i j k : Fin d) :
     |(fderiv ℝ (fun w : TimeVelocity d => f w i j) z)
         (0, PDE.basisVec k)| ≤

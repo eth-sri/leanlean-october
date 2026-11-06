@@ -24,19 +24,12 @@ open MeasureTheory Set
 
 noncomputable section
 
-/-- The interval primitive of a scalar function, based at `a`. -/
+/- The interval primitive of a scalar function, based at `a`. -/
 def intervalPrimitive (a : ℝ) (g : ℝ → ℝ) (t : ℝ) : ℝ :=
   ∫ x in a..t, g x
 
-@[simp] theorem intervalPrimitive_self (a : ℝ) (g : ℝ → ℝ) :
-    intervalPrimitive a g a = 0 := by
-  simp [intervalPrimitive]
-
-/-- A locally integrable interval primitive is continuous.  This is a
-continuity theorem only; the later weak-derivative bridge must still establish
-the a.e. derivative identity separately. -/
 theorem continuousOn_intervalPrimitive
-    {a b : ℝ} {g : ℝ → ℝ} (hab : a ≤ b)
+    {a b g} (hab : a ≤ b)
     (hg : IntegrableOn g (Icc a b) volume) :
     ContinuousOn (intervalPrimitive a g) (Icc a b) := by
   have hg' : IntegrableOn g (uIcc a b) volume := by

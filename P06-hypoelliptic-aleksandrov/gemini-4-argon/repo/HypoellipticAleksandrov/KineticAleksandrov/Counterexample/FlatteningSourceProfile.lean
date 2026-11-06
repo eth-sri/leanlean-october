@@ -2,6 +2,10 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.FlatteningWeakSource
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.FlatteningGeTwo
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.FlatteningBounds
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.FlatteningCalculus
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ProfileBounds
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ProfileGeTwoHomogeneity
 
 /-! # The complete conditional flattened-profile source theorem
 
@@ -13,23 +17,24 @@ assumed as an additional profile field.
 @[expose] public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
+open MeasureTheory Set Filter
 
-/-- The literal flattening has the complete selected weak-jet and source interface. -/
-theorem flatProfile_source_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
+/- The literal flattening has the complete selected weak-jet and source interface. -/
+theorem flatProfile_source {d } (hd : 1 ≤ d) {alpha }
+    (_ha : 0 < alpha) (_ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
     FlatProfileSourceStatement h r := by
   obtain ⟨hmx, hmv, hmh⟩ := measurable_flatProfile_jets h r
   obtain ⟨hx, hv, hh⟩ := flatProfile_jets_locallyIntegrable_of_profile h r hr
+  have _h_xinl_0 : ∀ᵐ q ∂volume, statOp (profileMatrix h) (selectedFlatProfile h r) q = flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r q := by
+    filter_upwards [flatProfile_jets_ae_of_profile h r hr,
+      flatProfile_representatives_source h r] with q hj hs
+    unfold statOp
+    rw [← hj.1, ← hj.2.2]
+    exact hs
   exact ⟨continuous_selectedFlatProfile h r, hmx, hmv, hmh,
     flatProfile_jets_compact_bound_of_profile h r hr, hx, hv, hh,
     flatProfile_jets_ae_of_profile h r hr, flatProfile_weak_of_profile hd h r hr,
-    flatProfile_representatives_source h r, flatProfile_operator_ae_of_profile h r hr⟩
-
-/-- The requested source-range facade for the complete conditional flattened-profile theorem. -/
-theorem flatProfile_source {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
-    (_ha : 0 < alpha) (_ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
-    FlatProfileSourceStatement h r :=
-  flatProfile_source_of_profile hd h r hr
+    flatProfile_representatives_source h r, _h_xinl_0⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

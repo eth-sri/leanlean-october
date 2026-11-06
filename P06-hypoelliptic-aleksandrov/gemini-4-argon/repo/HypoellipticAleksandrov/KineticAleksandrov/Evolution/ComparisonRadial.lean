@@ -174,8 +174,7 @@ theorem hasDerivAt_comp_vecNormSq_sub_moving {n : ℕ} {Ψ : ℝ → ℝ} {m : �
   have hi : ∀ i : Fin n, HasDerivAt (fun t => (y i - m t i) ^ 2)
       (2 * (y i - m σ i) * (-(m' i))) σ := by
     intro i
-    have h1 : HasDerivAt (fun t => m t i) (m' i) σ := (hasDerivAt_pi.1 hm) i
-    have h2 := (h1.const_sub (y i)).pow 2
+    have h2 := (((hasDerivAt_pi.1 hm) i).const_sub (y i)).pow 2
     convert h2 using 1
     norm_num
   have hsum : HasDerivAt (fun t => PDE.vecNormSq (y - m t))

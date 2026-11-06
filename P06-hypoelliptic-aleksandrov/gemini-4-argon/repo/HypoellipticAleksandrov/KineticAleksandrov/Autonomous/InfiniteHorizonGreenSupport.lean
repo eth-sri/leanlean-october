@@ -13,7 +13,7 @@ open Set MeasureTheory HypoellipticAleksandrov
   limit. -/
 theorem stripGreen_infinite_ae_of_finite
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
     (P : Point → Prop)
     (hP : ∀ T : ℝ, ∀ ht : e.1.time < T,
@@ -38,7 +38,7 @@ theorem stripGreen_infinite_ae_of_finite
 /-- Actual infinite Green measure is strictly future supported inside the velocity interval. -/
 theorem stripGreen_infinite_ae_future_carrier
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤) :
     ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H ⊤ e,
       e.1.time < p.time ∧ p.velocity 0 ∈ H.carrier := by

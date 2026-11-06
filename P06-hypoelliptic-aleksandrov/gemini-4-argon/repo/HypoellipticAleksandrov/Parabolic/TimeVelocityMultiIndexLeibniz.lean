@@ -44,7 +44,7 @@ private theorem directionalFDeriv_comm {E F : Type*} [NormedAddCommGroup E]
     directionalFDeriv b (directionalFDeriv a f) =
       directionalFDeriv a (directionalFDeriv b f) := by
   funext x
-  have hd : DifferentiableAt ℝ (fderiv ℝ f) x :=
+  have hd :=
     (hf.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num) x
   change fderiv ℝ (fun y => fderiv ℝ f y a) x b =
     fderiv ℝ (fun y => fderiv ℝ f y b) x a
@@ -114,71 +114,71 @@ private theorem directionalFDerivs_reverse_ofFn {E F : Type*} [NormedAddCommGrou
           _ = _ := (iteratedFDeriv_succ_apply_right v).symm
       · exact contDiff_directionalFDeriv (v (Fin.last n)) f hf
 
-/-- The coordinate multiset of a multi-index, represented by the fixed `Finset.univ.toList`
+/- The coordinate multiset of a multi-index, represented by the fixed `Finset.univ.toList`
 coordinate order and repeated according to multiplicity. -/
 def coordinateList (beta : TimeVelocityMultiIndex d) : List (TimeVelocityCoord d) :=
   (Finset.univ.toList).flatMap fun c => List.replicate (beta c) c
 
-/-- The coordinatewise multinomial coefficient. -/
+/- The coordinatewise multinomial coefficient. -/
 def choose (beta gamma : TimeVelocityMultiIndex d) : ℕ :=
   ∏ c, Nat.choose (beta c) (gamma c)
 
-/-- A coordinatewise split of `beta`, recording the multiplicity sent to the left factor. -/
+/- A coordinatewise split of `beta`, recording the multiplicity sent to the left factor. -/
 abbrev Split (beta : TimeVelocityMultiIndex d) :=
   (c : TimeVelocityCoord d) → Fin (beta c + 1)
 
-/-- The left multi-index of a split. -/
+/- The left multi-index of a split. -/
 def Split.left {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
     TimeVelocityMultiIndex d := fun c => gamma c
 
-/-- The complementary right multi-index of a split. -/
+/- The complementary right multi-index of a split. -/
 def Split.right {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
     TimeVelocityMultiIndex d := beta - gamma.left
 
-/-- The classical coordinate derivative associated to `beta`, implemented by evaluating the
+/- The classical coordinate derivative associated to `beta`, implemented by evaluating the
 actual iterated Fréchet derivative on its fixed coordinate list. -/
 def coordinateIteratedFDeriv (beta : TimeVelocityMultiIndex d)
     (f : TimeVelocity d → ℝ) (z : TimeVelocity d) : ℝ :=
   iteratedFDeriv ℝ beta.coordinateList.length f z fun i =>
     timeVelocityBasis (beta.coordinateList.get i)
 
-/-- The zero multi-index has no coordinate directions. -/
+/- The zero multi-index has no coordinate directions. -/
 @[simp] theorem coordinateList_zero (d : ℕ) :
     coordinateList (0 : TimeVelocityMultiIndex d) = [] := by
   simp [coordinateList]
 
-/-- The coordinate list has length equal to the total differential order. -/
+/- The coordinate list has length equal to the total differential order. -/
 @[simp] theorem length_coordinateList (beta : TimeVelocityMultiIndex d) :
     beta.coordinateList.length = beta.order := by
   simp [coordinateList, TimeVelocityMultiIndex.order,
     TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
     VelocityMultiIndex.order, timeCoord, velocityCoord]
 
-/-- Choosing zero derivatives in every coordinate has coefficient one. -/
+/- Choosing zero derivatives in every coordinate has coefficient one. -/
 @[simp] theorem choose_zero_right (beta : TimeVelocityMultiIndex d) :
     beta.choose 0 = 1 := by
   simp [choose]
 
-/-- Choosing every derivative in every coordinate has coefficient one. -/
+/- Choosing every derivative in every coordinate has coefficient one. -/
 @[simp] theorem choose_self (beta : TimeVelocityMultiIndex d) :
     beta.choose beta = 1 := by
   simp [choose]
 
-/-- The left side of a split is bounded coordinatewise by the original index. -/
+/- The left side of a split is bounded coordinatewise by the original index. -/
 theorem Split.left_le {beta : TimeVelocityMultiIndex d}
     (gamma : Split beta) :
     gamma.left ≤ beta := by
   intro c
   exact Nat.le_of_lt_succ (gamma c).isLt
 
-/-- The two sides of a split add back to the original multi-index. -/
+/- The two sides of a split add back to the original multi-index. -/
 @[simp] theorem Split.left_add_right
     {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
     gamma.left + gamma.right = beta := by
   funext c
   exact Nat.add_sub_of_le (gamma.left_le c)
 
-/-- Total differential order is additive. -/
+/- Total differential order is additive. -/
 @[simp] theorem order_add (beta gamma : TimeVelocityMultiIndex d) :
     (beta + gamma).order = beta.order + gamma.order := by
   simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
@@ -186,7 +186,7 @@ theorem Split.left_le {beta : TimeVelocityMultiIndex d}
     Finset.sum_add_distrib]
   omega
 
-/-- Parabolic weight is additive. -/
+/- Parabolic weight is additive. -/
 @[simp] theorem parabolicWeight_add (beta gamma : TimeVelocityMultiIndex d) :
     (beta + gamma).parabolicWeight = beta.parabolicWeight + gamma.parabolicWeight := by
   simp [TimeVelocityMultiIndex.parabolicWeight,
@@ -195,7 +195,7 @@ theorem Split.left_le {beta : TimeVelocityMultiIndex d}
     VelocityMultiIndex.order, Finset.sum_add_distrib]
   omega
 
-/-- A single coordinate derivative has total order one. -/
+/- A single coordinate derivative has total order one. -/
 @[simp] theorem order_single (c : TimeVelocityCoord d) :
     TimeVelocityMultiIndex.order (Pi.single c 1 : TimeVelocityMultiIndex d) = 1 := by
   cases c with
@@ -212,16 +212,7 @@ theorem Split.left_le {beta : TimeVelocityMultiIndex d}
       · intro hi
         exact (hi (Finset.mem_univ i)).elim
 
-/-- A single time derivative has parabolic weight two. -/
-@[simp] theorem parabolicWeight_single_time :
-    TimeVelocityMultiIndex.parabolicWeight
-      (Pi.single (timeCoord d) 1 : TimeVelocityMultiIndex d) = 2 := by
-  simp [TimeVelocityMultiIndex.parabolicWeight,
-    VelocityMultiIndex.parabolicWeight,
-    TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
-    VelocityMultiIndex.order, timeCoord, velocityCoord]
-
-/-- A single velocity derivative has parabolic weight one. -/
+/- A single time derivative has parabolic weight two. -/
 @[simp] theorem parabolicWeight_single_velocity (i : Fin d) :
     TimeVelocityMultiIndex.parabolicWeight
       (Pi.single (velocityCoord i) 1 : TimeVelocityMultiIndex d) = 1 := by
@@ -235,7 +226,7 @@ theorem Split.left_le {beta : TimeVelocityMultiIndex d}
   · intro hi
     exact (hi (Finset.mem_univ i)).elim
 
-/-- The coordinate derivative of order zero is evaluation of the function. -/
+/- The coordinate derivative of order zero is evaluation of the function. -/
 @[simp] theorem coordinateIteratedFDeriv_zero
     (f : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     coordinateIteratedFDeriv 0 f z = f z := by
@@ -283,7 +274,7 @@ private theorem coordinateList_add_single_perm
     rw [hb]
     rfl
 
-/-- Adding one coordinate to a multi-index differentiates the associated
+/- Adding one coordinate to a multi-index differentiates the associated
 classical coordinate derivative in that direction. -/
 theorem coordinateIteratedFDeriv_add_single
     (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
@@ -334,7 +325,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
-/-- Dependent choices of derivative counts, one for each coordinate block. -/
+/- Dependent choices of derivative counts, one for each coordinate block. -/
 private def BlockSplit {C : Type*} (beta : C → ℕ) : List C → Type
   | [] => PUnit
   | c :: cs => Fin (beta c + 1) × BlockSplit beta cs
@@ -348,11 +339,11 @@ variable {d : ℕ}
 
 variable {d : ℕ}
 
-/-- Coordinate iterated derivatives depend only on the germ of a function at
+/- Coordinate iterated derivatives depend only on the germ of a function at
 the evaluation point. -/
 theorem coordinateIteratedFDeriv_congr_of_eventuallyEq
     (beta : TimeVelocityMultiIndex d)
-    {f g : TimeVelocity d → ℝ} {z : TimeVelocity d}
+    {f g z}
     (hfg : f =ᶠ[nhds z] g) :
     coordinateIteratedFDeriv beta f z =
       coordinateIteratedFDeriv beta g z := by
@@ -361,24 +352,24 @@ theorem coordinateIteratedFDeriv_congr_of_eventuallyEq
     (fun L => L (fun i => timeVelocityBasis (beta.coordinateList.get i)))
     (hfg.iteratedFDeriv ℝ beta.coordinateList.length).self_of_nhds
 
-/-- On an open set, pointwise equality gives equality of every actual
+/- On an open set, pointwise equality gives equality of every actual
 coordinate iterated derivative at each point of that set. -/
 theorem coordinateIteratedFDeriv_congr_of_eqOn
-    (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (U ) (hU : IsOpen U)
     (beta : TimeVelocityMultiIndex d)
-    {f g : TimeVelocity d → ℝ}
+    {f g }
     (hfg : Set.EqOn f g U)
-    (z : TimeVelocity d) (hz : z ∈ U) :
+    (z ) (hz : z ∈ U) :
     coordinateIteratedFDeriv beta f z =
       coordinateIteratedFDeriv beta g z := by
   apply coordinateIteratedFDeriv_congr_of_eventuallyEq beta
   filter_upwards [hU.mem_nhds hz] with x hx
   exact hfg hx
 
-/-- Pointwise finite-order addition rule for actual coordinate derivatives. -/
+/- Pointwise finite-order addition rule for actual coordinate derivatives. -/
 theorem coordinateIteratedFDeriv_add_at
     (beta : TimeVelocityMultiIndex d)
-    (f g : TimeVelocity d → ℝ) (z : TimeVelocity d)
+    (f g : TimeVelocity d → ℝ) (z )
     (hf : ContDiffAt ℝ beta.order f z)
     (hg : ContDiffAt ℝ beta.order g z) :
     coordinateIteratedFDeriv beta (fun x ↦ f x + g x) z =

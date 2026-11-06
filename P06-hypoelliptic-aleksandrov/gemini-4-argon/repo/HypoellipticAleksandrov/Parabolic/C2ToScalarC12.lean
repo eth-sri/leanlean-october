@@ -88,7 +88,7 @@ private theorem scalarSpatialHessian_eq_coordinate_local
   have hgradientDiff : DifferentiableAt ℝ
       (fun x : TimeVelocity d ↦ scalarSpatialGradient u x j) z :=
     hgradient.differentiableAt_iff.mpr (hq.differentiableAt (by norm_num))
-  have hslice : ContDiffAt ℝ 2 (fun y : PDE.Vec d ↦ u (z.1, y)) z.2 :=
+  have hslice :=
     hu.comp z.2 (contDiffAt_const.prodMk contDiffAt_id)
   have hgradientApply :
       (fderiv ℝ (fun y : PDE.Vec d ↦
@@ -101,8 +101,7 @@ private theorem scalarSpatialHessian_eq_coordinate_local
         (fun y ↦ PDE.classicalGradient (fun w : PDE.Vec d ↦ u (z.1, w)) y) z.2 := by
       apply differentiableAt_pi.2
       intro k
-      have hd : DifferentiableAt ℝ
-          (fderiv ℝ (fun w : PDE.Vec d ↦ u (z.1, w))) z.2 :=
+      have hd :=
         (hslice.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
       exact hd.clm_apply (differentiableAt_const (c := PDE.basisVec k))
     rw [fderiv_pi (fun k ↦ (differentiableAt_pi.mp hgrad) k)]
@@ -181,7 +180,7 @@ theorem isScalarC12On_of_contDiff_two
 
 /-- The scalar time derivative is the canonical time-coordinate derivative. -/
 theorem scalarTimeDerivative_eq_coordinateIteratedFDeriv_of_contDiff_two
-    {d : ℕ} {v : TimeVelocity d → ℝ} (hv : ContDiff ℝ 2 v)
+    {d v} (hv : ContDiff ℝ 2 v)
     (z : TimeVelocity d) :
     scalarTimeDerivative v z =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
@@ -191,7 +190,7 @@ theorem scalarTimeDerivative_eq_coordinateIteratedFDeriv_of_contDiff_two
 /-- Each scalar spatial-gradient entry is its canonical velocity-coordinate
 derivative. -/
 theorem scalarSpatialGradient_apply_eq_coordinateIteratedFDeriv_of_contDiff_two
-    {d : ℕ} {v : TimeVelocity d → ℝ} (hv : ContDiff ℝ 2 v)
+    {d v} (hv : ContDiff ℝ 2 v)
     (z : TimeVelocity d) (j : Fin d) :
     scalarSpatialGradient v z j =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
@@ -200,7 +199,7 @@ theorem scalarSpatialGradient_apply_eq_coordinateIteratedFDeriv_of_contDiff_two
 
 /-- The ordered Hessian entry `(i,j)` is `D_i(D_j v)`. -/
 theorem scalarSpatialHessian_apply_eq_coordinateIteratedFDeriv_of_contDiff_two
-    {d : ℕ} {v : TimeVelocity d → ℝ} (hv : ContDiff ℝ 2 v)
+    {d v} (hv : ContDiff ℝ 2 v)
     (z : TimeVelocity d) (i j : Fin d) :
     scalarSpatialHessian v z i j =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv

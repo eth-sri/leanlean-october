@@ -88,7 +88,7 @@ theorem Continuous.memLp_parabolicMorreyUnitBox {d : ℕ}
     {f : TimeVelocity d → ℝ} (hf : Continuous f) :
     MemLp f (parabolicExponent d)
       (volume.restrict (parabolicMorreyUnitBox d)) := by
-  let K : Set (TimeVelocity d) :=
+  let K :=
     parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
   have hKcompact : IsCompact K :=
     isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d)

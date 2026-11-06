@@ -37,7 +37,7 @@ theorem nativeToXV_measurable : Measurable nativeToXV := by
     (measurable_pi_apply 0 |>.comp measurable_fst)
 
 /-- Scalar kernels have probability mass. -/
-theorem kernelXV_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
+theorem kernelXV_mass_one {lam Lam } (hlam : 0 < lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (t : NNReal) (z : Z) : kernelXV E t z univ = 1 := by
   rw [kernelXV, Measure.map_apply nativeToXV_measurable MeasurableSet.univ,
@@ -62,7 +62,7 @@ theorem terminalPhysicalPoint_operator (a : ℝ → ℝ → ℝ) (W : Point → 
 
 /-- A nonnegative supersolution bounds compact-data classical terminal solutions.
 The bounded-above difference uses the proved epsilon-Lyapunov comparison. -/
-theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
+theorem terminal_polynomial_comparison {lam Lam } (hlam : 0 < lam)
     (A : SmoothAutonomous lam Lam) (tau : ℝ)
     (F : BoundedBorel (EvolutionAmbientState 1)) (u W : Point → ℝ)
     (hu : IsClassicalTerminalSolution autonomousWholeDomain (fun _ => 0)

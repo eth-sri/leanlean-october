@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsBarrierError
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsBarrierCutoff
 
 /-! # Quantitative R⁻¹ removal errors for sublinear regularized barriers -/
 
@@ -9,7 +10,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Set MeasureTheory
 
-/-- The actual cutoff error vanishes outside the same physical rectangle. -/
+/- The actual cutoff error vanishes outside the same physical rectangle. -/
 theorem barrierRectError_zero_outside (a : ℝ → ℝ → ℝ) (f : Z → ℝ) (Y R : ℝ) (z : Z)
     (hz : 2 < |(z.1 - Y) / R ^ 3| ∨ 2 < |z.2 / R|) :
     barrierRectError a f Y R z = 0 := by
@@ -19,7 +20,7 @@ theorem barrierRectError_zero_outside (a : ℝ → ℝ → ℝ) (f : Z → ℝ) 
   · obtain ⟨h0, h1, h2⟩ := barrierCutoff_zero_jets hv
     simp only [barrierRectError, h0, h1, h2, zero_div, mul_zero, zero_mul, add_zero]
 
-/-- The three actual errors have an explicit uniform inverse-radius bound.
+/- The three actual errors have an explicit uniform inverse-radius bound.
 Only the coefficient value, the coordinate modulus and the actual first velocity jet enter. -/
 theorem barrierRectError_quantitative (a : ℝ → ℝ → ℝ) (f : Z → ℝ)
     (Lam alpha D Bv D1 D2 Y R : ℝ)
@@ -33,7 +34,7 @@ theorem barrierRectError_quantitative (a : ℝ → ℝ → ℝ) (f : Z → ℝ)
     (hR : 1 ≤ R) (z : Z) (haz : 0 ≤ a z.1 z.2) (haL : a z.1 z.2 ≤ Lam) :
     |barrierRectError a f Y R z| ≤
       ((2 * D1 + Lam * D2) * (|f (Y, 0)| + 4 * D) + 2 * Lam * D1 * Bv) / R := by
-  have hR0 : 0 < R := lt_of_lt_of_le zero_lt_one hR
+  have hR0 := lt_of_lt_of_le zero_lt_one hR
   have hC : 0 ≤ (2 * D1 + Lam * D2) * (|f (Y, 0)| + 4 * D) +
       2 * Lam * D1 * Bv := by positivity
   by_cases hx : |(z.1 - Y) / R ^ 3| ≤ 2
@@ -50,7 +51,18 @@ theorem barrierRectError_quantitative (a : ℝ → ℝ → ℝ) (f : Z → ℝ)
     (by simpa only [abs_div, abs_of_pos hR0] using hv)
   let B := |f (Y, 0)| + 4 * D
   have hB : 0 ≤ B := by dsimp only [B]; positivity
-  have hfg := barrier_rectangle_growth f alpha D ha ha1 hD hm Y R hR z hxp hvp
+  have hfg : |f z| ≤ (|f (Y, 0)| + 4 * D) * R := by
+    have hh := hm z (Y, 0)
+    simp only [sub_zero] at hh
+    have hpx := barrier_rectangle_position_power ha ha1 hR hxp
+    have hpv := barrier_rectangle_velocity_power ha ha1 hR hvp
+    have hbound : |f z - f (Y, 0)| ≤ D * (4 * R) :=
+      hh.trans (mul_le_mul_of_nonneg_left (by linarith only [hpx, hpv]) hD)
+    have hcenter : |f (Y, 0)| ≤ |f (Y, 0)| * R := by
+      simpa only [mul_one] using mul_le_mul_of_nonneg_left hR (abs_nonneg (f (Y, 0)))
+    have htriangle : |f z| ≤ |f z - f (Y, 0)| + |f (Y, 0)| := by
+      convert abs_add_le (f z - f (Y, 0)) (f (Y, 0)) using 1; ring
+    nlinarith only [htriangle, hbound, hcenter]
   have hχ (x : ℝ) : |barrierCutoff x| ≤ 1 := by
     rw [abs_of_nonneg (barrierCutoff_bounds x).1]
     exact (barrierCutoff_bounds x).2

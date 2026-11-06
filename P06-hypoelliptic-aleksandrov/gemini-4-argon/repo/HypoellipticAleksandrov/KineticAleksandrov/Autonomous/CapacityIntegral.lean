@@ -14,13 +14,13 @@ open Set MeasureTheory HypoellipticAleksandrov
 /-- The integral of a velocity diffusion test is bounded by its oscillation on the strip. -/
 theorem capacity_diffusion_integral_le
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (Phi chi : ℝ → ℝ)
     (hPhi : ContDiff ℝ (⊤ : ℕ∞) Phi) (_hchi : ContDiff ℝ (⊤ : ℕ∞) chi)
     (hn : ∀ v, 0 ≤ chi v ∧ chi v ≤ 1)
     (hsecond : ∀ v, deriv (deriv Phi) v = 2 * chi v)
-    {D : ℝ} (hD : 0 ≤ D) (hd : ∀ v, |deriv Phi v| ≤ D) :
+    {D } (hD : 0 ≤ D) (hd : ∀ v, |deriv Phi v| ≤ D) :
     (∫ p, 2 * A.a (p.position 0) (p.velocity 0) * chi (p.velocity 0)
       ∂stripGreen hH hLE hlam hLam A H T e) ≤ D * (H.hi - H.lo) := by
   let phi : Point → ℝ := fun p => Phi (p.velocity 0)
@@ -38,7 +38,7 @@ theorem capacity_diffusion_integral_le
       2 * A.a (p.position 0) (p.velocity 0) * chi (p.velocity 0) := by
     rw [capacity_velocity_operator, hsecond]
     ring
-  have hLam0 : 0 ≤ Lam := (hlam.trans_le hLam).le
+  have hLam0 := (hlam.trans_le hLam).le
   have hsrc (p : Point) :
       |forwardScalarOperator A.a phi p| ≤ 2 * Lam := by
     rw [hop, abs_of_nonneg]
@@ -76,8 +76,7 @@ theorem capacity_diffusion_integral_le
           dsimp only [phi]
           linarith [le_abs_self (Phi (p.velocity 0) - Phi (e.1.velocity 0)), hdiff _ hp'])
       _ = _ := by simp
-  have hopeq : forwardScalarOperator A.a phi =
-      fun p => 2 * A.a (p.position 0) (p.velocity 0) * chi (p.velocity 0) := funext hop
+  have hopeq := funext hop
   rw [hopeq] at hid
   change Phi (e.1.velocity 0) = _ at hid
   change (∫ p, phi p ∂Ω) ≤ _ at hupper

@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassQuadraticCalculus
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelTheorem
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EvolutionInstance
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonGrowth
 
 /-! # Quadratic comparison for compact interior source potentials -/
 
@@ -11,9 +13,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo Evolution Occupation
 open scoped Topology
+open HypoellipticAleksandrov.Parabolic
 
-/-- Closing the native interval gives precisely the scalar endpoint inequalities. -/
-theorem intervalDomain_closure_bounds (H : Interval) {v : PDE.Vec 1}
+/- Closing the native interval gives precisely the scalar endpoint inequalities. -/
+theorem intervalDomain_closure_bounds (H : Interval) {v }
     (hv : v ∈ closure (intervalDomain H)) : H.lo ≤ v 0 ∧ v 0 ≤ H.hi := by
   constructor
   · exact closure_minimal (fun y hy =>
@@ -23,18 +26,8 @@ theorem intervalDomain_closure_bounds (H : Interval) {v : PDE.Vec 1}
       (PDE.mem_oneDimensionalAxisBox_iff.mp hy).2.le)
       (isClosed_le (continuous_apply 0) continuous_const) hv
 
-/-- The literal interval barrier is continuous on spacetime. -/
-theorem stripQuadraticBarrier_continuous (H : Interval) (lam : ℝ) :
-    Continuous (stripQuadraticBarrier H lam) := by
-  have heq : stripQuadraticBarrier H lam = fun p =>
-      (p.position 0 - H.lo) * (H.hi - p.position 0) / (2 * lam) :=
-    funext (stripQuadraticBarrier_eq H lam)
-  rw [heq]
-  have hv : Continuous (fun p : Point => p.position 0) :=
-    (continuous_apply 0).comp continuous_position
-  exact ((hv.sub continuous_const).mul (continuous_const.sub hv)).div_const _
-
-private theorem sliceRegular_of_smooth {u : Point → ℝ} {D : Set Point}
+/- The literal interval barrier is continuous on spacetime. -/
+private theorem sliceRegular_of_smooth {u D}
     (hD : IsOpen D)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D)) (p : Point) (hp : p ∈ D) :
@@ -57,7 +50,7 @@ private theorem sliceRegular_of_smooth {u : Point → ℝ} {D : Set Point}
     (p.time, p.position, p.velocity) at h
   rwa [heq] at h
 
-/-- The exact `1/(2 lambda)` barrier bounds each nonnegative compact interior unit source. -/
+/- The exact `1/(2 lambda)` barrier bounds each nonnegative compact interior unit source. -/
 theorem strip_duhamel_le_quadratic
     (hH : HormanderHypoellipticityStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -89,6 +82,14 @@ theorem strip_duhamel_le_quadratic
     apply intervalDomain_closure_bounds H
     simpa only [mem_closure_movingDomain_iff, sub_zero] using hp.2.2
   have hreg := fun p hp => sliceRegular_of_smooth hD hsm p (ha p₀.time hp)
+  have _h_inl_10 : Continuous (stripQuadraticBarrier H lam) := by
+    have heq : stripQuadraticBarrier H lam = fun p =>
+        (p.position 0 - H.lo) * (H.hi - p.position 0) / (2 * lam) :=
+      funext (stripQuadraticBarrier_eq H lam)
+    rw [heq]
+    have hv : Continuous (fun p : Point => p.position 0) :=
+      (continuous_apply 0).comp continuous_position
+    exact ((hv.sub continuous_const).mul (continuous_const.sub hv)).div_const _
   have hmax := growth_comparison hΩ continuous_const hlam (evolutionCoefficient_bounds A)
     (identityDrift_bounds 1).1 (le_refl 0) zero_le_one
     (a := p₀.time) (T := T) (u := fun p => duhamelPotential E.2 T g p -
@@ -98,12 +99,41 @@ theorem strip_duhamel_le_quadratic
       have h2 := hCb p
       have h3 := hq p₀.time p hp
       linarith⟩
-    ((hc.mono (hs p₀.time)).sub (stripQuadraticBarrier_continuous H lam).continuousOn)
+    ((hc.mono (hs p₀.time)).sub _h_inl_10.continuousOn)
     (fun p hp => (hreg p hp).sub (stripQuadraticBarrier_regular H lam p))
     (fun p hp => by
+      have _h_xinl_0 (a : ℝ → ℝ → ℝ) (H : Interval) (lam p) : transportedForwardOperator (evolutionCoefficient a) (SectionTwo.identityDrift 1) (stripQuadraticBarrier H lam) p = -a (p.velocity 0) (p.position 0) / lam := by
+        have hslice : (fun y : PDE.Vec 1 => stripQuadraticBarrier H lam
+            ⟨p.time, y, p.velocity⟩) = fun y =>
+            (fun s : ℝ => (-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 + s))
+              (PDE.vecNormSq (y - intervalMidpoint H)) := rfl
+        have hd := matrixContraction_sliceHessian_comp_vecNormSq_sub
+          (m := intervalMidpoint H) (x := p.position)
+          (contDiffAt_affine_weight (-1 / (2 * lam)) (-(H.hi - H.lo) ^ 2 / 4) _)
+          (evolutionCoefficient a p.time p.position p.velocity)
+        rw [transportedForwardOperator_apply]
+        unfold fullKineticCoefficientAt
+        rw [diffusedHessian_eq_sliceHessian, hslice, hd]
+        have hgrad : kineticVelocityGradient (stripQuadraticBarrier H lam) p = 0 := by
+          ext i
+          change fderiv ℝ (fun _ : PDE.Vec 1 =>
+            (-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 +
+              PDE.vecNormSq (p.position - intervalMidpoint H))) p.velocity (PDE.basisVec i) = 0
+          rw [(hasFDerivAt_const
+            ((-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 +
+              PDE.vecNormSq (p.position - intervalMidpoint H))) p.velocity).fderiv]
+          rfl
+        rw [hgrad]
+        simp only [kineticTimeDerivative, stripQuadraticBarrier, deriv_const,
+          deriv_affine_weight, zero_mul, zero_add, PDE.vecDot, Pi.zero_apply, mul_zero,
+          Finset.sum_const_zero, Matrix.trace, Matrix.diag, Fin.sum_univ_one,
+          evolutionCoefficient, add_zero]
+        by_cases hl : lam = 0
+        · simp [hl]
+        · field_simp
       rw [viscousTransportedOperator_sub (hreg p hp) (stripQuadraticBarrier_regular H lam p),
         viscousTransportedOperator_zero, viscousTransportedOperator_zero,
-        heq p (ha p₀.time hp), stripQuadraticBarrier_operator]
+        heq p (ha p₀.time hp), _h_xinl_0]
       have hb := (A.bounds (p.velocity 0) (p.position 0)).1
       have hv : 1 ≤ A.a (p.velocity 0) (p.position 0) / lam :=
         (le_div_iff₀ hlam).2 (by simpa using hb)

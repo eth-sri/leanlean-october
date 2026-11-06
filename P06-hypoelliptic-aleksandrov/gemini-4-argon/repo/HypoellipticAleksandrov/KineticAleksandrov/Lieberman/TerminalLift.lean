@@ -12,15 +12,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov.Parabolic HypoellipticAleksandrov.Parabolic.LocalHolder Set Filter
 open scoped Topology Matrix
 
-private theorem scalarTimeDerivative_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+private theorem scalarTimeDerivative_add {n u v D} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarTimeDerivative (fun q => u q + v q) z =
-      scalarTimeDerivative u z + scalarTimeDerivative v z := by
-  exact ((hu.timeSlice_hasDerivAt hz).add (hv.timeSlice_hasDerivAt hz)).deriv
+      scalarTimeDerivative u z + scalarTimeDerivative v z :=  ((hu.timeSlice_hasDerivAt hz).add (hv.timeSlice_hasDerivAt hz)).deriv
 
-private theorem scalarSpatialGradient_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+private theorem scalarSpatialGradient_add {n u v D} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarSpatialGradient (fun q => u q + v q) z =
       scalarSpatialGradient u z + scalarSpatialGradient v z := by
@@ -31,15 +28,14 @@ private theorem scalarSpatialGradient_add {n : ℕ} {u v : TimeVelocity n → �
     ((hv.spatialSlice_contDiffAt hz).differentiableAt (by norm_num))]
   rfl
 
-private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
+private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n u} {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
     (i j : Fin n) :
     scalarSpatialHessian u z i j =
       fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2
         (PDE.basisVec i) (PDE.basisVec j) := by
   let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  have hsecond : HasFDerivAt (fderiv ℝ g) (fderiv ℝ (fderiv ℝ g) z.2) z.2 :=
+  have hsecond :=
     ((hu.fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num)).hasFDerivAt
   have hdiff : ∀ j : Fin n,
@@ -49,12 +45,10 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
   change (fderiv ℝ (fun y : PDE.Vec n => fun j =>
       fderiv ℝ g y (PDE.basisVec j)) z.2 (PDE.basisVec i)) j = _
   rw [fderiv_pi hdiff]
-  have hj := (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv
-  have hjApply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hj
+  have hjApply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) ((hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv)
   simpa [ContinuousLinearMap.flip_apply] using hjApply
 
-private theorem scalarSpatialHessian_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+private theorem scalarSpatialHessian_add {n u v D} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarSpatialHessian (fun q => u q + v q) z =
       scalarSpatialHessian u z + scalarSpatialHessian v z := by
@@ -66,12 +60,10 @@ private theorem scalarSpatialHessian_add {n : ℕ} {u v : TimeVelocity n → ℝ
       (hv.spatialSlice_contDiffAt hz).eventually (by norm_num)] with y huy hvy
     exact fderiv_fun_add (huy.differentiableAt (by norm_num))
       (hvy.differentiableAt (by norm_num))
-  have huSecond : HasFDerivAt (fun y : PDE.Vec n => fderiv ℝ g_u y)
-      (fderiv ℝ (fderiv ℝ g_u) z.2) z.2 :=
+  have huSecond :=
     ((hu.spatialSlice_contDiffAt hz).fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num) |>.hasFDerivAt
-  have hvSecond : HasFDerivAt (fun y : PDE.Vec n => fderiv ℝ g_v y)
-      (fderiv ℝ (fderiv ℝ g_v) z.2) z.2 :=
+  have hvSecond :=
     ((hv.spatialSlice_contDiffAt hz).fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num) |>.hasFDerivAt
   have hsecond : fderiv ℝ (fderiv ℝ (fun y => g_u y + g_v y)) z.2 =
@@ -91,7 +83,7 @@ private theorem scalarSpatialHessian_add {n : ℕ} {u v : TimeVelocity n → ℝ
     hsecond]
   rfl
 
-private theorem isScalarC12On_add {n : ℕ} {u v : TimeVelocity n → ℝ}
+private theorem isScalarC12On_add {n u v}
     {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D) :
     IsScalarC12On (fun q => u q + v q) D := by
   refine ⟨hu.continuousOn.add hv.continuousOn, ?_, ?_, ?_, ?_, ?_⟩
@@ -112,10 +104,9 @@ private theorem isScalarC12On_add {n : ℕ} {u v : TimeVelocity n → ℝ}
     intro z hz
     exact scalarSpatialHessian_add hu hv hz
 
-private theorem scalarParabolicZeroOrderOperator_add {n : ℕ}
+private theorem scalarParabolicZeroOrderOperator_add {n }
     (a : CoefficientField n) (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c : ℝ → PDE.Vec n → ℝ) {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    (c : ℝ → PDE.Vec n → ℝ) {u v D} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarParabolicZeroOrderOperator a b c (fun q => u q + v q) z =
       scalarParabolicZeroOrderOperator a b c u z +
@@ -150,9 +141,7 @@ theorem contDiff_terminal_lift_source {d : ℕ}
     hφ.comp contDiff_snd
   have hg (j : Fin d) : ContDiff ℝ (⊤ : ℕ∞)
       (fun z : TimeVelocity d => scalarSpatialGradient (fun p => φ p.2) z j) := by
-    have heq : (fun z : TimeVelocity d => scalarSpatialGradient (fun p => φ p.2) z j) =
-        TimeVelocityMultiIndex.coordinateIteratedFDeriv
-          (Pi.single (velocityCoord j) 1) (fun p => φ p.2) :=
+    have heq :=
       funext (fun z => scalarSpatialGradient_apply_eq_coordinateIteratedFDeriv_of_contDiff_two
         (hw.of_le (by simp)) z j)
     rw [heq]
@@ -168,7 +157,7 @@ theorem contDiff_terminal_lift_source {d : ℕ}
     using hres.neg
 
 /-- Adding the smooth terminal lift cancels the correction's negative source. -/
-theorem terminal_lift_assembly {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+theorem terminal_lift_assembly {d Ω} (hΩ : IsOpen Ω)
     (a T : ℝ) (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (φ : PDE.Vec d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hs : tsupport φ ⊆ Ω)
     (W : TimeVelocity d → ℝ)
@@ -195,7 +184,7 @@ theorem terminal_lift_assembly {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω
       have hf := hz.2
       rw [hΩ.frontier_eq] at hf
       exact hf.2
-    have hzero : φ z.2 = 0 := image_eq_zero_of_notMem_tsupport (fun h => hn (hs h))
+    have hzero := image_eq_zero_of_notMem_tsupport (fun h => hn (hs h))
     change φ z.2 + W z = 0
     rw [hzero, hW.2.2.2.2 z hz, zero_add]
 

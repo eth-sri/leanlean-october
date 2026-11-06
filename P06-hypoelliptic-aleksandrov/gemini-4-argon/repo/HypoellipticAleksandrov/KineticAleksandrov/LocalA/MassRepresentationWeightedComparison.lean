@@ -10,9 +10,9 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
 /-- Absolute weighted trace error bounds the difference of two actual homogeneous solutions. -/
-theorem mass_homogeneous_abs_weighted {d : ℕ} {lam Lam : ℝ}
-    (B : CoefficientField d) (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
-    (a T : ℝ) (haT : a < T) (v₀ : PDE.Vec d) (R : ℝ)
+theorem mass_homogeneous_abs_weighted {d lam Lam}
+    (B ) (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
+    (a T : ℝ) (haT : a < T) (v₀ : PDE.Vec d) (R )
     (u v : KineticPoint d → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' localStrip a T v₀ R))
@@ -26,7 +26,7 @@ theorem mass_homogeneous_abs_weighted {d : ℕ} {lam Lam : ℝ}
     (hcv : ContinuousOn v (localClosedStrip a T v₀ R))
     (hbu : ∃ M : ℝ, ∀ P ∈ localClosedStrip a T v₀ R, |u P| ≤ M)
     (hbv : ∃ M : ℝ, ∀ P ∈ localClosedStrip a T v₀ R, |v P| ≤ M)
-    (ε : ℝ) (hε : 0 ≤ ε)
+    (ε ) (hε : 0 ≤ ε)
     (htr : ∀ P ∈ localTrace a T v₀ R, |u P - v P| ≤ ε * massGrowthBarrier Lam T P) :
     ∀ P ∈ localClosedStrip a T v₀ R, |u P - v P| ≤ ε * massGrowthBarrier Lam T P := by
   obtain ⟨M, hM⟩ := hbu

@@ -32,7 +32,7 @@ def point (t X v : ℝ) : Point := ⟨t, fun _ => X, fun _ => v⟩
 
 /-- The full-space terminal measure pushed into physical scalar coordinate order. -/
 def Kphysical (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ}
+    (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam }
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (t : ℝ) (z : Z) : Measure Z :=
   if ht : 0 ≤ t then
@@ -43,7 +43,7 @@ def Kphysical (hH : HormanderHypoellipticityStatement)
 
 /-- The literal elapsed-time action of the canonical kernel on scalar physical data. -/
 def S (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ}
+    (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam }
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (t : ℝ) (F : BoundedBorel Z) (z : Z) : ℝ :=
   fullSpaceAction (fullSpaceEvolution hH hLE hlam hLam A)

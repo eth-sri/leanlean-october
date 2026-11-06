@@ -1,6 +1,11 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelLayer
+import Mathlib.Analysis.SpecialFunctions.SmoothTransition
+import Mathlib.MeasureTheory.Group.Integral
+import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
 /-!
 # The terminal-layer limit
@@ -21,17 +26,17 @@ open scoped Topology
 
 variable {E : Type*} [MeasurableSpace E]
 
-/-- Where the kernel is nonzero, the rescaled argument lies in `(1,2)`. -/
-theorem layerKernel_ne_zero_mem {s : ℝ} (h : layerKernel s ≠ 0) : 1 < s ∧ s < 2 := by
+/- Where the kernel is nonzero, the rescaled argument lies in `(1,2)`. -/
+theorem layerKernel_ne_zero_mem {s } (h : layerKernel s ≠ 0) : 1 < s ∧ s < 2 := by
   constructor
   · by_contra h1
     exact h (layerKernel_eq_zero_of_le (not_lt.1 h1))
   · by_contra h2
     exact h (layerKernel_eq_zero_of_ge (not_lt.1 h2))
 
-/-- For a fixed `w`, the inner layer integral converges to `m₀ w`. -/
-theorem layer_inner_tendsto (r : ℝ) (m : ℝ → ℝ) (hm : Measurable m) (M : ℝ)
-    (hM : ∀ t, |m t| ≤ M) (m₀ : ℝ) (hlim : Tendsto m (𝓝[<] r) (𝓝 m₀)) :
+/- For a fixed `w`, the inner layer integral converges to `m₀ w`. -/
+theorem layer_inner_tendsto (r ) (m : ℝ → ℝ) (hm : Measurable m) (M : ℝ)
+    (hM : ∀ t, |m t| ≤ M) (m₀ ) (hlim : Tendsto m (𝓝[<] r) (𝓝 m₀)) :
     Tendsto (fun h : ℝ => ∫ s, layerKernel s * m (r - h * s)) (𝓝[>] 0) (𝓝 m₀) := by
   have hbound : Integrable (fun s => |layerKernel s| * M) :=
     integrable_layerKernel.norm.mul_const M
@@ -64,10 +69,10 @@ theorem layer_inner_tendsto (r : ℝ) (m : ℝ → ℝ) (hm : Measurable m) (M :
         exact (hlim.comp this).const_mul _)
   simpa [integral_mul_const, integral_layerKernel] using h
 
-/-- **The terminal-layer limit.**  The averages of `m` against the rescaled layer kernel at `t = r`
+/- **The terminal-layer limit.**  The averages of `m` against the rescaled layer kernel at `t = r`
 converge to the integral of the left limit `m₀`. -/
-theorem layer_prod_tendsto (ν : Measure E) [SigmaFinite ν] (r : ℝ) (m : ℝ × E → ℝ)
-    (hm : Measurable m) (M : ℝ) (hM0 : 0 ≤ M) (hM : ∀ q, |m q| ≤ M) (K : Set E)
+theorem layer_prod_tendsto (ν : Measure E) [SigmaFinite ν] (r ) (m : ℝ × E → ℝ)
+    (hm : Measurable m) (M : ℝ) (hM0 : 0 ≤ M) (hM : ∀ q, |m q| ≤ M) (K )
     (hK : MeasurableSet K) (hKν : ν K < ⊤) (hmK : ∀ t w, w ∉ K → m (t, w) = 0) (m₀ : E → ℝ)
     (hlim : ∀ w, Tendsto (fun t => m (t, w)) (𝓝[<] r) (𝓝 (m₀ w))) :
     Tendsto (fun h : ℝ =>
@@ -115,7 +120,21 @@ theorem layer_prod_tendsto (ν : Measure E) [SigmaFinite ν] (r : ℝ) (m : ℝ 
     rw [integral_prod_symm _ (hGint h hh)]
     congr 1
     funext w
-    exact integral_layer_substitution r h hh (fun t => m (t, w))
+    let F := (fun t => m (t, w))
+    set g : ℝ → ℝ := fun t => h⁻¹ * layerKernel ((r - t) / h) * F t with hg
+    have h1 : ∫ t, g t = ∫ x, g (r - x) := (integral_sub_left_eq_self g volume r).symm
+    have h2 : ∫ x, g (r - x) = h • ∫ s, g (r - h * s) := by
+      have := Measure.integral_comp_mul_left (fun x => g (r - x)) h
+      simp only [abs_inv, abs_of_pos hh] at this
+      rw [this, smul_smul, mul_inv_cancel₀ hh.ne', one_smul]
+    have h3 : ∀ s, g (r - h * s) = h⁻¹ * (layerKernel s * F (r - h * s)) := by
+      intro s
+      simp only [hg, sub_sub_cancel]
+      rw [mul_div_cancel_left₀ _ hh.ne']
+      ring
+    rw [h1, h2]
+    simp_rw [h3]
+    rw [integral_const_mul, smul_eq_mul, ← mul_assoc, mul_inv_cancel₀ hh.ne', one_mul]
   have hΦ : Tendsto (fun h : ℝ => ∫ w, ∫ s, layerKernel s * m (r - h * s, w) ∂volume ∂ν)
       (𝓝[>] 0) (𝓝 (∫ w, m₀ w ∂ν)) := by
     have hdom := tendsto_integral_filter_of_dominated_convergence
@@ -152,7 +171,7 @@ theorem layer_prod_tendsto (ν : Measure E) [SigmaFinite ν] (r : ℝ) (m : ℝ 
   filter_upwards [self_mem_nhdsWithin] with h hh
   exact (hEq h hh).symm
 
-/-- The smooth step tends to one at `+∞`. -/
+/- The smooth step tends to one at `+∞`. -/
 theorem tendsto_layerStep_atTop : Tendsto layerStep atTop (𝓝 1) := by
   apply tendsto_const_nhds.congr'
   filter_upwards [Ici_mem_atTop (2 : ℝ)] with y hy using (layerStep_of_ge hy).symm
@@ -162,10 +181,10 @@ section Identity
 variable [TopologicalSpace E] [BorelSpace E] [T2Space E] [SecondCountableTopology E]
   (ν : Measure E) [SigmaFinite ν] [IsFiniteMeasureOnCompacts ν]
 
-/-- **Terminal-layer identity.**  If the cut-off weak identities hold for every layer width `h`,
+/- **Terminal-layer identity.**  If the cut-off weak identities hold for every layer width `h`,
 then in the limit the weak identity holds on the open slab `t < r`, with the terminal trace
 `m₀` as boundary term. -/
-theorem layer_slice_identity (r : ℝ) (U Ψ Λ : ℝ × E → ℝ) (hU : Measurable U) (C : ℝ)
+theorem layer_slice_identity (r ) (U Ψ Λ : ℝ × E → ℝ) (hU : Measurable U) (C )
     (hC0 : 0 ≤ C) (hUb : ∀ q, |U q| ≤ C) (hΨ : Continuous Ψ) (hΨc : HasCompactSupport Ψ)
     (hΛ : Continuous Λ) (hΛc : HasCompactSupport Λ)
     (hI : ∀ h : ℝ, 0 < h →
@@ -178,7 +197,7 @@ theorem layer_slice_identity (r : ℝ) (U Ψ Λ : ℝ × E → ℝ) (hU : Measur
         ∂((volume : Measure ℝ).prod ν) + ∫ w, m₀ w ∂ν = 0 := by
   obtain ⟨MΨ, hMΨ⟩ := hΨ.bounded_above_of_compact_support hΨc
   have hMΨ0 : 0 ≤ max MΨ 0 := le_max_right _ _
-  have hKc : IsCompact (Prod.snd '' tsupport Ψ) := hΨc.image continuous_snd
+  have hKc := hΨc.image continuous_snd
   have hmeasΛ : Measurable Λ := hΛ.measurable
   have hΛint : Integrable Λ ((volume : Measure ℝ).prod ν) := by
     have : Integrable Λ (volume.prod ν) := hΛ.integrable_of_hasCompactSupport hΛc
@@ -220,7 +239,7 @@ theorem layer_slice_identity (r : ℝ) (U Ψ Λ : ℝ × E → ℝ) (hU : Measur
           div_nonpos_of_nonpos_of_nonneg (by linarith [not_lt.1 hq]) (le_of_lt hh)
         rw [layerStep_of_le (by linarith)]
         simp
-  have hKm : MeasurableSet (Prod.snd '' tsupport Ψ) := hKc.isClosed.measurableSet
+  have hKm := hKc.isClosed.measurableSet
   have h2 := layer_prod_tendsto ν r (fun q => U q * Ψ q) (hU.mul hΨ.measurable)
     (C * max MΨ 0) (mul_nonneg hC0 hMΨ0)
     (fun q => by

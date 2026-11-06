@@ -41,7 +41,7 @@ theorem tendsto_setIntegral_mul_wholeSpace_ball_solutions
   have hK : IsCompact K := isCompact_movingClosedSlab_inter continuous_const α τ S0
   have hU := (tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S0)
     hlam hB hb hε hε1 hC F hFC r hrlim v hv).1
-  have hnear : ∀ᶠ j : ℕ in atTop, |S0| < r j :=
+  have hnear :=
     hrlim.eventually (eventually_gt_atTop |S0|)
   have hclosed (j : ℕ) (hj : |S0| < r j) :
       K ⊆ evolutionPastClosedCylinder (PDE.euclideanBall 0 (r j)) (fun _ => 0) τ :=

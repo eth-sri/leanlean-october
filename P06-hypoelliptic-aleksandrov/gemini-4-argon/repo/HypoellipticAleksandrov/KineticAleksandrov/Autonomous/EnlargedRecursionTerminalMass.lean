@@ -13,7 +13,7 @@ open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 /-- The sum of active terminal masses at the recursion horizon is at most one. -/
 theorem enlarged_active_terminal_mass_le_one
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier)
     (hJ : closure c.active ⊆ J.carrier) (N : ℕ) :

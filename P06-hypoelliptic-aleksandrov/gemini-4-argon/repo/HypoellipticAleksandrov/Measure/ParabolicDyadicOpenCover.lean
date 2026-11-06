@@ -1,6 +1,9 @@
 module
 
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicAddress
+import HypoellipticAleksandrov.Measure.ParabolicDyadicGrid
+import HypoellipticAleksandrov.Measure.TimeVelocity
+import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
 /-!
 # Open covers from parabolic dyadic addresses
@@ -19,17 +22,17 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
-/-- The part of a half-open addressed cell omitted by its open interior. -/
-def parabolicDyadicAddressBoundary {d : Nat}
+/- The part of a half-open addressed cell omitted by its open interior. -/
+def parabolicDyadicAddressBoundary {d }
     (a : ParabolicDyadicAddress d) : Set (TimeVelocity d) :=
   parabolicDyadicHalfOpenCell a.2 \ parabolicDyadicOpenCell a.2
 
-/-- The countable union of all addressed parabolic dyadic boundaries. -/
+/- The countable union of all addressed parabolic dyadic boundaries. -/
 def parabolicDyadicAllBoundary (d : Nat) : Set (TimeVelocity d) :=
   ⋃ a : ParabolicDyadicAddress d, parabolicDyadicAddressBoundary a
 
-/-- The non-root addressed cells that first become wholly contained in `U`. -/
-def parabolicDyadicFirstEntry {d : Nat} (U : Set (TimeVelocity d)) :
+/- The non-root addressed cells that first become wholly contained in `U`. -/
+def parabolicDyadicFirstEntry {d } (U : Set (TimeVelocity d)) :
     Set (ParabolicDyadicAddress d) :=
   fun a => match a with
     | ⟨0, _⟩ => False
@@ -37,16 +40,15 @@ def parabolicDyadicFirstEntry {d : Nat} (U : Set (TimeVelocity d)) :
         parabolicDyadicOpenCell index ⊆ U ∧
           ¬ parabolicDyadicOpenCell (parabolicDyadicParent index) ⊆ U
 
-private theorem parabolicDyadicOpenCell_subset_of_firstEntry {d : Nat}
-    {U : Set (TimeVelocity d)} {a : ParabolicDyadicAddress d}
+private theorem parabolicDyadicOpenCell_subset_of_firstEntry {d U} {a : ParabolicDyadicAddress d}
     (ha : a ∈ parabolicDyadicFirstEntry U) : parabolicDyadicOpenCell a.2 ⊆ U := by
   rcases a with ⟨n, index⟩
   cases n with
   | zero => exact False.elim ha
   | succ n => exact ha.1
 
-/-- The open cell of a child is contained in the open cell of its parent. -/
-theorem parabolicDyadicOpenCell_child_subset {d n : Nat}
+/- The open cell of a child is contained in the open cell of its parent. -/
+theorem parabolicDyadicOpenCell_child_subset {d n }
     (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d) :
     parabolicDyadicOpenCell (parabolicDyadicChildIndex index child) ⊆
       parabolicDyadicOpenCell index := by
@@ -86,7 +88,7 @@ theorem parabolicDyadicOpenCell_child_subset {d n : Nat}
       field_simp [ne_of_gt hpow] at hvelocity ⊢
       nlinarith [hvelocity.2]
 
-private theorem parabolicDyadicOpenCell_subset_truncate {d m n : Nat}
+private theorem parabolicDyadicOpenCell_subset_truncate {d m n }
     (hmn : m ≤ n) (index : ParabolicDyadicIndex d n) :
     parabolicDyadicOpenCell index ⊆
       parabolicDyadicOpenCell (parabolicDyadicTruncate hmn index) := by
@@ -106,16 +108,16 @@ private theorem parabolicDyadicOpenCell_subset_truncate {d m n : Nat}
             (parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index) := by
           congr 1
 
-/-- An open addressed cell is contained in the open cell of every ancestor. -/
-theorem parabolicDyadicOpenCell_subset_of_addressPrefix {d : Nat}
+/- An open addressed cell is contained in the open cell of every ancestor. -/
+theorem parabolicDyadicOpenCell_subset_of_addressPrefix {d }
     {a b : ParabolicDyadicAddress d} (hab : parabolicDyadicAddressPrefix a b) :
     parabolicDyadicOpenCell b.2 ⊆ parabolicDyadicOpenCell a.2 := by
   rcases hab with ⟨hmn, htruncate⟩
   rw [← htruncate]
   exact parabolicDyadicOpenCell_subset_truncate hmn b.2
 
-/-- First-entry addresses are an antichain for the address-prefix relation. -/
-theorem isAntichain_parabolicDyadicFirstEntry {d : Nat} (U : Set (TimeVelocity d)) :
+/- First-entry addresses are an antichain for the address-prefix relation. -/
+theorem isAntichain_parabolicDyadicFirstEntry {d } (U : Set (TimeVelocity d)) :
     IsAntichain (parabolicDyadicAddressPrefix (d := d))
       (parabolicDyadicFirstEntry U) := by
   rintro ⟨m, a⟩ ha ⟨n, b⟩ hb hne hab
@@ -161,8 +163,8 @@ theorem isAntichain_parabolicDyadicFirstEntry {d : Nat} (U : Set (TimeVelocity d
                 _ = a := by simpa only using htruncate
             exact hb.2 ((parabolicDyadicOpenCell_subset_of_addressPrefix hprefix).trans ha.1)
 
-/-- Open cells indexed by distinct first entries are pairwise disjoint. -/
-theorem pairwiseDisjoint_parabolicDyadicFirstEntry_openCell {d : Nat}
+/- Open cells indexed by distinct first entries are pairwise disjoint. -/
+theorem pairwiseDisjoint_parabolicDyadicFirstEntry_openCell {d }
     (U : Set (TimeVelocity d)) :
     (parabolicDyadicFirstEntry U).Pairwise
       (Disjoint on (fun a : ParabolicDyadicAddress d => parabolicDyadicOpenCell a.2)) := by
@@ -173,89 +175,14 @@ theorem pairwiseDisjoint_parabolicDyadicFirstEntry_openCell {d : Nat}
   · intro hbaPrefix
     exact isAntichain_parabolicDyadicFirstEntry U hb ha hab.symm hbaPrefix
 
-/-- An open set captures an interior dyadic cell around each point off every
+/- An open set captures an interior dyadic cell around each point off every
 addressed boundary. -/
-theorem exists_parabolicDyadicOpenCell_subset_of_mem_isOpen_off_boundary
-    (d : Nat) (U : Set (TimeVelocity d)) (hU : IsOpen U)
-    (z : TimeVelocity d) (hzRef : z ∈ parabolicDyadicReferenceCell d)
-    (hzU : z ∈ U) (hzBoundary : z ∉ parabolicDyadicAllBoundary d) :
-    ∃ a : ParabolicDyadicAddress d,
-      z ∈ parabolicDyadicOpenCell a.2 ∧ parabolicDyadicOpenCell a.2 ⊆ U := by
-  obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp (hU.mem_nhds hzU)
-  obtain ⟨n, htime, hvelocity⟩ :=
-    ((tendsto_parabolicDyadicTimeWidth_atTop.eventually_lt_const hε).and
-      (tendsto_parabolicDyadicVelocityWidth_atTop.eventually_lt_const hε)).exists
-  rw [← iUnion_parabolicDyadicHalfOpenCell_eq_reference d n] at hzRef
-  obtain ⟨index, hzHalf⟩ := Set.mem_iUnion.mp hzRef
-  have hzOpen : z ∈ parabolicDyadicOpenCell index := by
-    by_contra hzNotOpen
-    apply hzBoundary
-    exact Set.mem_iUnion.mpr ⟨⟨n, index⟩, ⟨hzHalf, hzNotOpen⟩⟩
-  refine ⟨⟨n, index⟩, hzOpen, ?_⟩
-  rintro ⟨time', velocity'⟩ hy
-  apply hball
-  have hyHalf : (time', velocity') ∈ parabolicDyadicHalfOpenCell index :=
-    parabolicDyadicOpenCell_subset_halfOpenCell index hy
-  rcases z with ⟨time, velocity⟩
-  rw [Metric.mem_ball, Prod.dist_eq]
-  apply max_lt
-  · simpa only [Real.dist_eq, abs_sub_comm] using
-      (abs_sub_le_parabolicDyadicTimeWidth index hyHalf hzHalf).trans_lt htime
-  · rw [dist_pi_lt_iff hε]
-    intro coordinate
-    simpa only [Real.dist_eq, abs_sub_comm] using
-      (abs_sub_le_parabolicDyadicVelocityWidth index coordinate hyHalf hzHalf).trans_lt hvelocity
-
-private theorem exists_parabolicDyadicFirstEntry_of_mem_isOpen_off_boundary
-    (d : Nat) (U : Set (TimeVelocity d)) (hU : IsOpen U)
-    (hURef : U ⊆ parabolicDyadicOpenCell (fun i => Fin.elim0 i))
-    (hRoot : ¬ parabolicDyadicOpenCell (fun i => Fin.elim0 i) ⊆ U)
-    (z : TimeVelocity d) (hzU : z ∈ U) (hzBoundary : z ∉ parabolicDyadicAllBoundary d) :
-    ∃ a : ParabolicDyadicAddress d,
-      a ∈ parabolicDyadicFirstEntry U ∧ z ∈ parabolicDyadicOpenCell a.2 := by
-  classical
-  let root : ParabolicDyadicIndex d 0 := fun i => Fin.elim0 i
-  have hzRoot : z ∈ parabolicDyadicOpenCell root := hURef hzU
-  have hzReference : z ∈ parabolicDyadicReferenceCell d := by
-    rw [← parabolicDyadicHalfOpenCell_zero_eq_reference d root]
-    exact parabolicDyadicOpenCell_subset_halfOpenCell root hzRoot
-  obtain ⟨address, hzAddress, hAddressU⟩ :=
-    exists_parabolicDyadicOpenCell_subset_of_mem_isOpen_off_boundary
-      d U hU z hzReference hzU hzBoundary
-  let P : Nat → Prop := fun n => ∃ index : ParabolicDyadicIndex d n,
-    z ∈ parabolicDyadicOpenCell index ∧ parabolicDyadicOpenCell index ⊆ U
-  have hP : ∃ n, P n := ⟨address.1, address.2, hzAddress, hAddressU⟩
-  have hnZero : Nat.find hP ≠ 0 := by
-    intro hn
-    have hZero : P 0 := by simpa only [hn] using Nat.find_spec hP
-    obtain ⟨index, hzIndex, hIndexU⟩ := hZero
-    apply hRoot
-    simpa only [Subsingleton.elim index root] using hIndexU
-  obtain ⟨m, hm⟩ := Nat.exists_eq_succ_of_ne_zero hnZero
-  have hSucc : P (m + 1) := by simpa only [hm] using Nat.find_spec hP
-  obtain ⟨index, hzIndex, hIndexU⟩ := hSucc
-  refine ⟨⟨m + 1, index⟩, ?_, hzIndex⟩
-  change parabolicDyadicOpenCell index ⊆ U ∧
-    ¬ parabolicDyadicOpenCell (parabolicDyadicParent index) ⊆ U
-  refine ⟨hIndexU, ?_⟩
-  intro hParentU
-  have hzChild : z ∈ parabolicDyadicOpenCell
-      (parabolicDyadicChildIndex (parabolicDyadicParent index) (index (Fin.last m))) := by
-    simpa only [parabolicDyadicChildIndex_parent_last] using hzIndex
-  have hMin := Nat.find_min' hP (show P m from ⟨parabolicDyadicParent index,
-    parabolicDyadicOpenCell_child_subset (parabolicDyadicParent index) (index (Fin.last m))
-      hzChild, hParentU⟩)
-  rw [hm] at hMin
-  omega
-
-/-- Subject to the root exclusion, an open subset of the root is a.e. the
-union of its first-entry open cells. -/
 theorem ae_eq_iUnion_parabolicDyadicFirstEntry_openCell
-    (d : Nat) (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (d ) (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (hURef : U ⊆ parabolicDyadicOpenCell (fun i => Fin.elim0 i))
     (hRoot : ¬ parabolicDyadicOpenCell (fun i => Fin.elim0 i) ⊆ U) :
     U =ᵐ[volume] ⋃ a ∈ parabolicDyadicFirstEntry U, parabolicDyadicOpenCell a.2 := by
-  let V : Set (TimeVelocity d) :=
+  let V :=
     ⋃ a ∈ parabolicDyadicFirstEntry U, parabolicDyadicOpenCell a.2
   have hVsub : V ⊆ U := by
     intro z hz
@@ -272,9 +199,74 @@ theorem ae_eq_iUnion_parabolicDyadicFirstEntry_openCell
   · apply measure_mono_null ?_ hBoundaryZero
     intro z hz
     by_contra hzBoundary
-    obtain ⟨address, hEntry, hzAddress⟩ :=
-      exists_parabolicDyadicFirstEntry_of_mem_isOpen_off_boundary
-        d U hU hURef hRoot z hz.1 hzBoundary
+    obtain ⟨address, hEntry, hzAddress⟩ : ∃ a : ParabolicDyadicAddress d,
+      a ∈ parabolicDyadicFirstEntry U ∧ z ∈ parabolicDyadicOpenCell a.2 := by
+      have hzU := hz.1
+      classical
+      let root : ParabolicDyadicIndex d 0 := fun i => Fin.elim0 i
+      have hzRoot := hURef hzU
+      have hzReference : z ∈ parabolicDyadicReferenceCell d := by
+        rw [← parabolicDyadicHalfOpenCell_zero_eq_reference d root]
+        exact parabolicDyadicOpenCell_subset_halfOpenCell root hzRoot
+      obtain ⟨address, hzAddress, hAddressU⟩ : ∃ a : ParabolicDyadicAddress d,
+          z ∈ parabolicDyadicOpenCell a.2 ∧ parabolicDyadicOpenCell a.2 ⊆ U := by
+        obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.mp (hU.mem_nhds hzU)
+        obtain ⟨n, htime, hvelocity⟩ :=
+          ((tendsto_parabolicDyadicTimeWidth_atTop.eventually_lt_const hε).and
+            (tendsto_parabolicDyadicVelocityWidth_atTop.eventually_lt_const hε)).exists
+        rw [← iUnion_parabolicDyadicHalfOpenCell_eq_reference d n] at hzReference
+        obtain ⟨index, hzHalf⟩ := Set.mem_iUnion.mp hzReference
+        have hzOpen : z ∈ parabolicDyadicOpenCell index := by
+          by_contra hzNotOpen
+          apply hzBoundary
+          exact Set.mem_iUnion.mpr ⟨⟨n, index⟩, ⟨hzHalf, hzNotOpen⟩⟩
+        refine ⟨⟨n, index⟩, hzOpen, ?_⟩
+        rintro ⟨time', velocity'⟩ hy
+        apply hball
+        have hyHalf :=
+          parabolicDyadicOpenCell_subset_halfOpenCell index hy
+        rcases z with ⟨time, velocity⟩
+        rw [Metric.mem_ball, Prod.dist_eq]
+        apply max_lt
+        · have _h_xinl_1 : |time - time'| ≤ parabolicDyadicTimeWidth n := by
+              rw [mem_parabolicDyadicHalfOpenCell_iff] at hyHalf hzHalf
+              rw [abs_sub_le_iff]
+              rw [← parabolicDyadicTimeCell_width index]
+              constructor <;> linarith [hyHalf.1.1, hyHalf.1.2, hzHalf.1.1, hzHalf.1.2]
+
+
+
+          simpa only [Real.dist_eq, abs_sub_comm] using
+            _h_xinl_1.trans_lt htime
+        · rw [dist_pi_lt_iff hε]
+          intro coordinate
+          simpa only [Real.dist_eq, abs_sub_comm] using
+            (abs_sub_le_parabolicDyadicVelocityWidth index coordinate hyHalf hzHalf).trans_lt hvelocity
+      let P : Nat → Prop := fun n => ∃ index : ParabolicDyadicIndex d n,
+        z ∈ parabolicDyadicOpenCell index ∧ parabolicDyadicOpenCell index ⊆ U
+      have hP : ∃ n, P n := ⟨address.1, address.2, hzAddress, hAddressU⟩
+      have hnZero : Nat.find hP ≠ 0 := by
+        intro hn
+        have hZero : P 0 := by simpa only [hn] using Nat.find_spec hP
+        obtain ⟨index, hzIndex, hIndexU⟩ := hZero
+        apply hRoot
+        simpa only [Subsingleton.elim index root] using hIndexU
+      obtain ⟨m, hm⟩ := Nat.exists_eq_succ_of_ne_zero hnZero
+      have hSucc : P (m + 1) := by simpa only [hm] using Nat.find_spec hP
+      obtain ⟨index, hzIndex, hIndexU⟩ := hSucc
+      refine ⟨⟨m + 1, index⟩, ?_, hzIndex⟩
+      change parabolicDyadicOpenCell index ⊆ U ∧
+        ¬ parabolicDyadicOpenCell (parabolicDyadicParent index) ⊆ U
+      refine ⟨hIndexU, ?_⟩
+      intro hParentU
+      have hzChild : z ∈ parabolicDyadicOpenCell
+          (parabolicDyadicChildIndex (parabolicDyadicParent index) (index (Fin.last m))) := by
+        simpa only [parabolicDyadicChildIndex_parent_last] using hzIndex
+      have hMin := Nat.find_min' hP (show P m from ⟨parabolicDyadicParent index,
+        parabolicDyadicOpenCell_child_subset (parabolicDyadicParent index) (index (Fin.last m))
+          hzChild, hParentU⟩)
+      rw [hm] at hMin
+      omega
     exact hz.2 (Set.mem_iUnion.mpr ⟨address,
       Set.mem_iUnion.mpr ⟨hEntry, hzAddress⟩⟩)
   · rw [diff_eq_empty.mpr hVsub]

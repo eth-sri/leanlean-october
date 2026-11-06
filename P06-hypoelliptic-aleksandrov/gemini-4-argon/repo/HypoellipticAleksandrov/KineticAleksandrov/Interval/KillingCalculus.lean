@@ -38,12 +38,11 @@ theorem tendsto_intervalHeat_time_zero {lam x : ℝ} (hlam : 0 < lam) (hx : 0 < 
     refine tendsto_nhdsWithin_iff.mpr ⟨hs, ?_⟩
     filter_upwards [self_mem_nhdsWithin] with θ hθ
     exact mul_pos (by norm_num) (Real.sqrt_pos.2 (mul_pos hlam hθ))
-  have hr := hsg.inv_tendsto_nhdsGT_zero.const_mul_atTop hx
-  have he := tendsto_intervalErf_atTop.comp hr
+  have he := tendsto_intervalErf_atTop.comp (hsg.inv_tendsto_nhdsGT_zero.const_mul_atTop hx)
   simpa only [intervalHeat, div_eq_mul_inv, Pi.inv_apply, Function.comp_def] using he
 
 /-- Fixed positive-time heat barriers are increasing with spatial distance. -/
-theorem intervalHeat_mono_distance {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ) :
+theorem intervalHeat_mono_distance {lam θ } (hlam : 0 < lam) (hθ : 0 < θ) :
     Monotone (intervalHeat lam θ) := by
   intro x y hxy
   exact strictMono_intervalErf.monotone

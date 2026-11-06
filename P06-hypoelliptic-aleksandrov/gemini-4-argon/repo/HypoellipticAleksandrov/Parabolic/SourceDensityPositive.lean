@@ -5,6 +5,14 @@ public import HypoellipticAleksandrov.Parabolic.DensityPositiveConstants
 public import HypoellipticAleksandrov.Parabolic.SourceDensityPositivePropagation
 public import HypoellipticAleksandrov.Measure.InkSpots
 public import HypoellipticAleksandrov.Measure.InkSpotsSelection
+import Mathlib.Algebra.Order.Archimedean.Basic
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Positivity
+import HypoellipticAleksandrov.Measure.InkSpotsHotWind
+import HypoellipticAleksandrov.Measure.InkSpotsWind
+import HypoellipticAleksandrov.Measure.ParabolicDyadicSaturation
 
 /-!
 # Positive source-aware density-to-point bounds
@@ -23,21 +31,8 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped ENNReal Topology
 
-/-- Converts the source near-one seed into the squared-density normalization
+/- Converts the source near-one seed into the squared-density normalization
 used by the ink-spots descent. -/
-private theorem source_near_one_square_seed
-    (d : Nat) (hd : 0 < d) (lam : Real) (hlam : 0 < lam)
-    (Lam : Real) (hlamLam : lam ≤ Lam) :
-    ∃ a C₀ : Real, 0 < a ∧ a < 1 ∧ 0 ≤ C₀ ∧
-      SourceDensityToPoint d lam Lam (a ^ 2) (1 / 2) C₀ := by
-  obtain ⟨b, hb0, hb1, C₀, hC₀, hseed⟩ :=
-    exists_sourceDensityToPoint_near_one d hd lam hlam Lam hlamLam (1 / 2)
-      (by norm_num) (by norm_num)
-  refine ⟨Real.sqrt b, C₀, Real.sqrt_pos.2 hb0, ?_, hC₀.le, ?_⟩
-  · exact (Real.sqrt_lt' (by norm_num : (0 : Real) < 1)).mpr (by simpa using hb1)
-  · rw [Real.sq_sqrt hb0.le]
-    exact hseed
-
 private theorem unit_high_measurable
     {d : Nat} {U : Set (TimeVelocity d)} {u : TimeVelocity d → Real}
     (hclosed : parabolicClosedBox 1 1 0 0 ⊆ U)
@@ -67,24 +62,6 @@ private theorem unit_high_measurable
   rw [← hdiff]
   exact hbox.diff hlow
 
-private theorem inkSpots_radius_le_one_of_strictDense {d : Nat}
-    {Gamma : Set (TimeVelocity d)} {xi : Real} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) : q.radius ≤ 1 := by
-  have hclosed := inkSpots_closedSourceBox_subset_closedUnitBox d q hq.1 hq.2.1
-  have htop : (q.baseTime + q.radius ^ 2, q.center) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    exact ⟨by linarith [sq_nonneg q.radius], by norm_num, fun i => by simp [hq.1.le]⟩
-  have hbottom : (q.baseTime, q.center) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    exact ⟨le_rfl, by nlinarith [sq_nonneg q.radius], fun i => by simp [hq.1.le]⟩
-  have htop' := hclosed htop
-  have hbottom' := hclosed hbottom
-  rw [mem_parabolicClosedBox_iff] at htop' hbottom'
-  norm_num at htop' hbottom'
-  nlinarith [sq_nonneg (q.radius - 1)]
-
 private theorem inkSpotsD3_finite
     (d : Nat) (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real)
     (heta0 : 0 < eta) (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) :
@@ -98,7 +75,21 @@ private theorem inkSpotsD3_finite
       rcases Set.mem_iUnion.mp hz with ⟨hq, hzq⟩
       rcases mem_inkSpotsQ3_iff.mp hzq with ⟨y, hy, rfl⟩
       rcases mem_inkSpotsQ2_iff.mp hy with ⟨hyleft, hyright, hycenter, hyunit⟩
-      have hRle : q.radius ≤ 1 := inkSpots_radius_le_one_of_strictDense hq
+      have hRle : q.radius ≤ 1 := by
+        have hclosed := inkSpots_closedSourceBox_subset_closedUnitBox d q hq.1 hq.2.1
+        have htop : (q.baseTime + q.radius ^ 2, q.center) ∈
+            parabolicClosedBox 1 q.radius q.baseTime q.center := by
+          rw [mem_parabolicClosedBox_iff]
+          exact ⟨by linarith [sq_nonneg q.radius], by norm_num, fun i => by simp [hq.1.le]⟩
+        have hbottom : (q.baseTime, q.center) ∈
+            parabolicClosedBox 1 q.radius q.baseTime q.center := by
+          rw [mem_parabolicClosedBox_iff]
+          exact ⟨le_rfl, by nlinarith [sq_nonneg q.radius], fun i => by simp [hq.1.le]⟩
+        have htop' := hclosed htop
+        have hbottom' := hclosed hbottom
+        rw [mem_parabolicClosedBox_iff] at htop' hbottom'
+        norm_num at htop' hbottom'
+        nlinarith [sq_nonneg (q.radius - 1)]
       rw [mem_parabolicClosedBox_iff]
       constructor
       · dsimp [inkSpotsContraction]
@@ -116,7 +107,7 @@ private theorem inkSpotsD3_finite
           rw [inkSpotsTerminalTime_eq]
           exact add_pos (add_pos_of_nonneg_of_pos hbase (sq_pos_of_pos hq.1))
             (div_pos (mul_pos (by norm_num) (sq_pos_of_pos hq.1)) heta0)
-        have hypos : 0 < y.1 :=
+        have hypos :=
           (add_pos_of_nonneg_of_pos hbase (sq_pos_of_pos hq.1)).trans hyleft
         have hzetaSq : zeta ^ 2 < 1 := by nlinarith
         have hrewrite : inkSpotsTerminalTime eta q - zeta ^ 2 *
@@ -140,8 +131,8 @@ private theorem inkSpotsD3_finite
           rw [mem_parabolicClosedBox_iff] at this
           norm_num at this
           exact this.2.1
-        have hzetaSq : 0 ≤ zeta ^ 2 := sq_nonneg zeta
-        have hR2' : q.radius ^ 2 ≤ 1 ^ 2 :=
+        have hzetaSq := sq_nonneg zeta
+        have hR2' :=
           (sq_le_sq₀ hq.1.le (by norm_num : (0 : ℝ) ≤ 1)).2 hRle
         have hR2 : q.radius ^ 2 ≤ 1 := by simpa using hR2'
         have hspan : 4 * q.radius ^ 2 / eta ≤ 4 / eta := by
@@ -235,13 +226,9 @@ private theorem nonneg_at_terminal_half_cube
   have hmaps : MapsTo u (parabolicBox 1 1 0 (0 : PDE.Vec d)) (Ici 0) := by
     intro y hy
     exact hnonneg y hy
-  have hcont : ContinuousAt u (1, v) :=
-    (contDiffAt_of_contDiffOn_of_isOpen hU hu htargetU).continuousAt
-  have himage : u (1, v) ∈ closure (Ici 0) :=
-    hcont.continuousWithinAt.mem_closure htargetClosed hmaps
-  simpa only [isClosed_Ici.closure_eq, Set.mem_Ici] using himage
+  simpa only [isClosed_Ici.closure_eq, Set.mem_Ici] using (((contDiffAt_of_contDiffOn_of_isOpen hU hu htargetU).continuousAt).continuousWithinAt.mem_closure htargetClosed hmaps)
 
-/-- One source-faithful crawling-of-ink-spots descent step. -/
+/- One source-faithful crawling-of-ink-spots descent step. -/
 private theorem source_density_descent_step
     (d : Nat) (hd : 0 < d) (lam : Real) (hlam : 0 < lam)
     (Lam : Real) (hlamLam : lam ≤ Lam)
@@ -304,8 +291,27 @@ private theorem source_density_descent_step
       (by simpa only [Gamma, inkSpotsUnitBox] using hseedDensity) v hv)
   have hsubcritical : (volume Gamma).toReal <
       a * (volume (inkSpotsUnitBox d)).toReal := lt_of_not_ge hlarge
-  have haggregate := volume_Gamma_le_inkSpotsD3 d Gamma a eta zeta hGamma hGammaUnit
-    ⟨ha0, ha1⟩ ⟨heta0, heta1⟩ ⟨hzeta0, hzeta1⟩ hsubcritical
+  have haggregate : (volume Gamma).toReal ≤ a * (1 + eta) * zeta ^ (-((d : Int) + 2)) * (volume (inkSpotsD3 Gamma a eta zeta)).toReal := by
+    have hxi : a ∈ Set.Ioo (0 : Real) 1 := ⟨ha0, ha1⟩
+    have heta : eta ∈ Set.Ioo (0 : Real) 1 := ⟨heta0, heta1⟩
+    have hzeta : zeta ∈ Set.Ioo (0 : Real) 1 := ⟨hzeta0, hzeta1⟩
+    have hD1 := (volume_Gamma_le_xi_volume_inkSpotsD1 d Gamma a hGamma hGammaUnit hxi
+      hsubcritical).2
+    have hwind := volume_inkSpotsD1_toReal_le_one_add_eta_mul_D2 Gamma a eta heta.1 heta.2
+    have hhot := volume_inkSpotsD2_toReal_le_zeta_zpow_mul_D3
+      Gamma a eta zeta heta.1 hzeta.1 hzeta.2
+    have hxi_nonneg := hxi.1.le
+    have hone_eta_nonneg := (add_pos_of_pos_of_nonneg zero_lt_one heta.1.le).le
+    calc
+      (volume Gamma).toReal ≤ a * (volume (inkSpotsD1 Gamma a)).toReal := hD1
+      _ ≤ a * ((1 + eta) * (volume (inkSpotsD2 Gamma a eta)).toReal) :=
+        mul_le_mul_of_nonneg_left hwind hxi_nonneg
+      _ ≤ a * ((1 + eta) * (zeta ^ (-((d : Int) + 2)) *
+          (volume (inkSpotsD3 Gamma a eta zeta)).toReal)) :=
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hhot hone_eta_nonneg) hxi_nonneg
+      _ = a * (1 + eta) * zeta ^ (-((d : Int) + 2)) *
+          (volume (inkSpotsD3 Gamma a eta zeta)).toReal := by
+        simp only [mul_assoc]
   rw [hfactor] at haggregate
   let D : Set (TimeVelocity d) := inkSpotsD3 Gamma a eta zeta
   have hDfinite : volume D ≠ ∞ := by
@@ -449,7 +455,7 @@ private theorem source_density_descent_step
   simpa [add_comm] using
     (add_le_add_left (mul_le_mul_of_nonneg_right hCsC hnorm) (u (1, v)))
 
-/-- Krylov--Safonov's finite source-aware descent upgrades the near-one
+/- Krylov--Safonov's finite source-aware descent upgrades the near-one
 density relation to every positive density threshold. -/
 theorem exists_sourceDensityToPoint_positive
     (d : Nat) (hd : 0 < d) (lam : Real) (hlam : 0 < lam)
@@ -457,8 +463,15 @@ theorem exists_sourceDensityToPoint_positive
     (hbeta0 : 0 < beta) (hbeta1 : beta < 1) :
     ∃ g C : Real, 0 < g ∧ g < 1 ∧ 0 ≤ C ∧
       SourceDensityToPoint d lam Lam beta g C := by
-  obtain ⟨a, C₀, ha0, ha1, hC₀, hseed⟩ :=
-    source_near_one_square_seed d hd lam hlam Lam hlamLam
+  obtain ⟨a, C₀, ha0, ha1, hC₀, hseed⟩ : ∃ a C₀ : Real, 0 < a ∧ a < 1 ∧ 0 ≤ C₀ ∧
+      SourceDensityToPoint d lam Lam (a ^ 2) (1 / 2) C₀ := by
+    obtain ⟨b, hb0, hb1, C₀, hC₀, hseed⟩ :=
+      exists_sourceDensityToPoint_near_one d hd lam hlam Lam hlamLam (1 / 2)
+        (by norm_num) (by norm_num)
+    refine ⟨Real.sqrt b, C₀, Real.sqrt_pos.2 hb0, ?_, hC₀.le, ?_⟩
+    · exact (Real.sqrt_lt' (by norm_num : (0 : Real) < 1)).mpr (by simpa using hb1)
+    · rw [Real.sq_sqrt hb0.le]
+      exact hseed
   let eta : Real := positiveDensityEta a
   let zeta : Real := positiveDensityZeta d a
   let L : Real := positiveDensityDescentRatio a eta
@@ -468,21 +481,56 @@ theorem exists_sourceDensityToPoint_positive
     exact positiveDensityEta_pos ha0 ha1
   have heta1 : eta < 1 := by
     dsimp [eta]
-    exact positiveDensityEta_lt_one ha0 ha1
+    have heta0 := positiveDensityEta_pos ha0 ha1
+    have hetaHalf : positiveDensityEta a ≤ 1 / 2 := by
+      rw [positiveDensityEta]
+      exact min_le_left _ _
+    calc
+      positiveDensityEta a < positiveDensityEta a + positiveDensityEta a := by
+        linarith
+      _ ≤ 1 := by linarith
   have hzeta0 : 0 < zeta := by
     dsimp [zeta]
-    exact positiveDensityZeta_pos d ha0
+    rw [positiveDensityZeta]
+    exact Real.rpow_pos_of_pos ha0 _
   have hzeta1 : zeta < 1 := by
     dsimp [zeta]
-    exact positiveDensityZeta_lt_one d ha0 ha1
+    rw [positiveDensityZeta]
+    apply Real.rpow_lt_one ha0.le ha1
+    positivity
   have hL0 : 0 < L := by
     dsimp [L, eta]
     exact positiveDensityCanonicalRatio_pos ha0 ha1
   have hL1 : L < 1 := by
     dsimp [L, eta]
-    exact positiveDensityCanonicalRatio_lt_one ha0 ha1
-  obtain ⟨-, hLq, hq1⟩ := positiveDensityQ_bounds hL0 hL1
-  have hq0 : 0 < q := hL0.trans hLq
+    rw [positiveDensityDescentRatio]
+    have hs0 := Real.sqrt_pos.2 ha0
+    have hs1 : Real.sqrt a < 1 := by
+      nlinarith [Real.sq_sqrt ha0.le]
+    have heta : positiveDensityEta a ≤ (Real.sqrt a)⁻¹ / 2 - 1 / 2 := by
+      have _h_inl_14 : a ^ (-(1 / 2 : ℝ)) = (Real.sqrt a)⁻¹ := by
+        rw [Real.sqrt_eq_rpow, ← Real.rpow_neg ha0.le]
+      rw [positiveDensityEta, _h_inl_14]
+      calc
+        min (1 / 2 : ℝ) (((Real.sqrt a)⁻¹ - 1) / 2) ≤
+            ((Real.sqrt a)⁻¹ - 1) / 2 := min_le_right _ _
+        _ = (Real.sqrt a)⁻¹ / 2 - 1 / 2 := by ring
+    calc
+      (1 + positiveDensityEta a) * Real.sqrt a ≤
+          (1 + ((Real.sqrt a)⁻¹ / 2 - 1 / 2)) * Real.sqrt a :=
+        mul_le_mul_of_nonneg_right (by linarith) hs0.le
+      _ = (1 + Real.sqrt a) / 2 := by
+        field_simp [hs0.ne']
+        ring
+      _ < 1 := by linarith
+  obtain ⟨-, hLq, hq1⟩ : 0 < L ∧ L < positiveDensityQ L ∧ positiveDensityQ L < 1 := by
+      rw [positiveDensityQ]
+      constructor
+      · exact hL0
+      constructor <;> linarith
+
+    /- Each successor in the finite density sequence is strictly smaller. -/
+  have hq0 := hL0.trans hLq
   have hfactor : a * (1 + eta) * zeta ^ (-((d : Int) + 2)) = L := by
     dsimp [L, eta, zeta]
     exact positiveDensityAggregateFactor_eq d ha0
@@ -495,11 +543,34 @@ theorem exists_sourceDensityToPoint_positive
         simpa only [positiveDensityBeta, pow_zero, one_mul] using hseed
     | succ n ih =>
         obtain ⟨g₂, C₂, hg₂0, hg₂1, hC₂, hprev⟩ := ih
+        have _h_xinl_0 : positiveDensityBeta q a n < positiveDensityBeta q a (n + 1) / L := by
+          rw [lt_div_iff₀ hL0]
+          rw [mul_comm]
+          have hterm : 0 < q ^ n * a ^ 2 := by positivity
+          rw [positiveDensityBeta, pow_succ]
+          calc
+            L * (q ^ n * a ^ 2) < q * (q ^ n * a ^ 2) :=
+              mul_lt_mul_of_pos_right hLq hterm
+            _ = q ^ n * q * a ^ 2 := by ring
         apply source_density_descent_step d hd lam hlam Lam hlamLam a eta zeta L
           (positiveDensityBeta q a n) (positiveDensityBeta q a (n + 1)) g₂ C₂ C₀
           ha0 ha1 heta0 heta1 hzeta0 hzeta1 hL0 hfactor
-          (positiveDensityBeta_step_div n hL0 hLq hq0 ha0) hC₂ hC₀ hseed hprev hg₂0 hg₂1
-  obtain ⟨N, hN⟩ := exists_positiveDensityBeta_lt hq0 hq1 ha0 hbeta0
+          _h_xinl_0 hC₂ hC₀ hseed hprev hg₂0 hg₂1
+  obtain ⟨N, hN⟩ : ∃ N : ℕ, positiveDensityBeta q a N < beta := by
+    have ha2 := sq_pos_of_pos ha0
+    obtain ⟨N, hN⟩ := exists_pow_lt_of_lt_one (div_pos hbeta0 ha2) hq1
+    have _h_inl_28 : positiveDensityBeta q a (N + 1) < positiveDensityBeta q a N := by
+        have hterm : 0 < q ^ N * a ^ 2 := by positivity
+        rw [positiveDensityBeta, pow_succ]
+        calc
+          q ^ N * q * a ^ 2 = q * (q ^ N * a ^ 2) := by ring
+          _ < 1 * (q ^ N * a ^ 2) := mul_lt_mul_of_pos_right hq1 hterm
+          _ = q ^ N * a ^ 2 := by ring
+
+      /- Multiplication by an admissible ratio moves one density term below its successor. -/
+    refine ⟨N + 1, _h_inl_28.trans ?_⟩
+    rw [positiveDensityBeta]
+    exact (lt_div_iff₀ ha2).mp hN
   obtain ⟨g, C, hg0, hg1, hC, hNrel⟩ := hdescent N
   let g' : Real := min g (1 - beta)
   have hg'0 : 0 < g' := by

@@ -102,7 +102,7 @@ theorem parabolicMarginalKernel_comp_of_master_eq
       parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) r τ hrτ ∘ₖ
         parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ r hσr := by
   refine ProbabilityTheory.Kernel.ext fun y => Measure.ext fun s hs => ?_
-  have hfirst : ∀ ρ : ℝ, Measurable (MovingFiberKernel.firstPosition Ω γ ρ) :=
+  have hfirst :=
     MovingFiberKernel.measurable_firstPosition Ω γ
   have hind : ∀ x : EvolutionState Ω γ r,
       parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) r τ hrτ
@@ -117,8 +117,7 @@ theorem parabolicMarginalKernel_comp_of_master_eq
   rw [parabolicMarginalKernel_apply, MovingFiberKernel.fiberFirstMarginal,
     ProbabilityTheory.Kernel.map_apply _ (hfirst τ), Measure.map_apply (hfirst τ) hs,
     hComp σ r τ hσr hrτ, ProbabilityTheory.Kernel.comp_apply' _ _ _ (hfirst τ hs)]
-  have hmeas : Measurable fun y' : EvolutionPosition Ω γ r =>
-      parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) r τ hrτ y' s :=
+  have hmeas :=
     (parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ)
       r τ hrτ).measurable_coe hs
   have hmarg : parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ)

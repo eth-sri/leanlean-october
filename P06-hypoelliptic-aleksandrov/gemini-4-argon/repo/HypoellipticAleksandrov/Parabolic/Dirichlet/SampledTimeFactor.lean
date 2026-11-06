@@ -18,33 +18,31 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem isClosedEmbedding_fixedSpatial {d : ℕ} (y : PDE.Vec d) :
-    IsClosedEmbedding (fun τ : ℝ => ((τ, y) : TimeVelocity d)) := by
-  refine IsClosedEmbedding.of_continuous_injective_isClosedMap
-    (continuous_id.prodMk continuous_const) (fun x z h => by
-      simpa using congrArg Prod.fst h) ?_
-  intro s hs
-  have himage : (fun τ : ℝ => ((τ, y) : TimeVelocity d)) '' s =
-      s ×ˢ ({y} : Set (PDE.Vec d)) := by
-    ext z
-    simp only [mem_image, mem_prod, mem_singleton_iff]
-    constructor
-    · rintro ⟨τ, hτ, rfl⟩
-      exact ⟨hτ, rfl⟩
-    · rintro ⟨hτ, hy⟩
-      exact ⟨z.1, hτ, Prod.ext rfl hy.symm⟩
-  rw [himage]
-  exact hs.prod isClosed_singleton
-
 private theorem hasCompactSupport_fixedSpatial
-    {d : ℕ} (y : PDE.Vec d) (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
+    {d } (y : PDE.Vec d) (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
     HasCompactSupport (fun τ : ℝ => f (τ, y)) := by
+  have _h_inl_8 : IsClosedEmbedding (fun τ : ℝ => ((τ, y) : TimeVelocity d)) := by
+    refine IsClosedEmbedding.of_continuous_injective_isClosedMap
+      (continuous_id.prodMk continuous_const) (fun x z h => by
+        simpa using congrArg Prod.fst h) ?_
+    intro s hs
+    have himage : (fun τ : ℝ => ((τ, y) : TimeVelocity d)) '' s =
+        s ×ˢ ({y} : Set (PDE.Vec d)) := by
+      ext z
+      simp only [mem_image, mem_prod, mem_singleton_iff]
+      constructor
+      · rintro ⟨τ, hτ, rfl⟩
+        exact ⟨hτ, rfl⟩
+      · rintro ⟨hτ, hy⟩
+        exact ⟨z.1, hτ, Prod.ext rfl hy.symm⟩
+    rw [himage]
+    exact hs.prod isClosed_singleton
   refine HasCompactSupport.of_support_subset_isCompact
-    ((isClosedEmbedding_fixedSpatial y).isCompact_preimage hf) ?_
+    (_h_inl_8.isCompact_preimage hf) ?_
   intro τ hτ
   exact subset_tsupport f hτ
 
-/-- A sampled time slice is an original-time scalar test, with its expected derivative and
+/- A sampled time slice is an original-time scalar test, with its expected derivative and
 support in the compact time projection. -/
 theorem exists_sampledTimeFactor
     {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} {hO : IsOpen O}

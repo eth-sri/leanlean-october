@@ -12,7 +12,7 @@ open HypoellipticAleksandrov
 /-- Repack the scalar return comparison without changing its constant or data quantifiers. -/
 theorem return_time_ambient_of_scalar
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hReturn : ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
       0 < t → 2 * t ≤ s → s ≤ 3 * t → |v| ≤ Real.sqrt t →

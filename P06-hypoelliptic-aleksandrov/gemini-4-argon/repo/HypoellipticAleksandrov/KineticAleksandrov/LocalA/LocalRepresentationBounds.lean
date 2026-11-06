@@ -27,9 +27,7 @@ theorem localRepresentation_supported_mul_continuousOn {d : ℕ} (Z₀ : Kinetic
   · have hp := local_closed_strip_mem_outer Z₀ P hR ha hT hP (hs hx)
     have hmem : closure (forwardCylinder Z₀ R hR) ∈
         𝓝[localClosedStrip a T Z₀.velocity R] P := by
-      have hpos := hrel.continuousAt.preimage_mem_nhds
-        ((PDE.isOpen_euclideanBall 0 (R ^ 3)).mem_nhds (hs hx))
-      apply mem_of_superset (inter_mem (mem_nhdsWithin_of_mem_nhds hpos)
+      apply mem_of_superset (inter_mem (mem_nhdsWithin_of_mem_nhds (hrel.continuousAt.preimage_mem_nhds ((PDE.isOpen_euclideanBall 0 (R ^ 3)).mem_nhds (hs hx))))
         self_mem_nhdsWithin)
       intro Q hQ
       exact local_closed_strip_mem_outer Z₀ Q hR ha hT hQ.2 hQ.1
@@ -61,8 +59,8 @@ theorem localRepresentation_supported_mul_bounded {d : ℕ} (Z₀ : KineticPoint
     exact le_max_right _ _
 
 /-- A continuous strip residual has a measurable literal zero extension. -/
-theorem localRepresentation_indicator_measurable {d : ℕ} (a T : ℝ)
-    (v₀ : PDE.Vec d) (R : ℝ) (F : KineticPoint d → ℝ)
+theorem localRepresentation_indicator_measurable {d } (a T : ℝ)
+    (v₀ : PDE.Vec d) (R ) (F : KineticPoint d → ℝ)
     (hF : ContinuousOn F (localStrip a T v₀ R)) :
     Measurable ((localStrip a T v₀ R).indicator F) := by
   classical

@@ -42,7 +42,7 @@ theorem viscousTransportedOperator_sub {n : ℕ} {B : FullKineticCoefficient n}
 
 /-- A matrix coefficient with a positive lower Loewner bound is positive semidefinite. -/
 theorem posSemidef_of_hasEverywhereLoewnerBounds {n : ℕ} {lam Lam : ℝ} (hlam : 0 ≤ lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
+    {B } (hB : HasEverywhereLoewnerBounds lam Lam B)
     (σ : ℝ) (y z : PDE.Vec n) : (B σ y z).PosSemidef := by
   have h0 : (0 : PDE.Mat n) ≤ lam • (1 : PDE.Mat n) := by
     rw [Matrix.nonneg_iff_posSemidef]
@@ -86,16 +86,15 @@ theorem isOpen_evolutionPastInteriorRaw {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : 
     isOpen_lt continuous_fst continuous_const
   have hc : Continuous (fun q : ℝ × (PDE.Vec n × PDE.Vec n) => q.2.1 - γ q.1) :=
     (continuous_fst.comp continuous_snd).sub (hγ.comp continuous_fst)
-  have h2 := hΩ.preimage hc
-  have := h1.inter h2
+  have := h1.inter (hΩ.preimage hc)
   convert this using 1
   ext q
   simp only [evolutionPastInteriorRaw, mem_inter_iff, Set.mem_ofPred_eq, mem_preimage,
     mem_movingDomain_iff]
 
 /-- A viscous classical solution is slice regular at every point of the open cylinder. -/
-theorem IsClassicalViscousTerminalSolution.isSliceRegularAt {n : ℕ} {Ω : Set (PDE.Vec n)}
-    (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+theorem IsClassicalViscousTerminalSolution.isSliceRegularAt {n Ω}
+    (hΩ : IsOpen Ω) {γ } (hγ : Continuous γ)
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {ε τ : ℝ}
     {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
     (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u)
@@ -103,7 +102,6 @@ theorem IsClassicalViscousTerminalSolution.isSliceRegularAt {n : ℕ} {Ω : Set 
     IsSliceRegularAt u p := by
   apply IsSliceRegularAt.of_contDiffAt
   have hmem : (p.time, p.position, p.velocity) ∈ evolutionPastInteriorRaw Ω γ τ := hp
-  have hnhds := (isOpen_evolutionPastInteriorRaw hΩ hγ τ).mem_nhds hmem
-  exact (hu.2.2.1.contDiffAt hnhds).of_le (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
+  exact (hu.2.2.1.contDiffAt ((isOpen_evolutionPastInteriorRaw hΩ hγ τ).mem_nhds hmem)).of_le (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
 
 end HypoellipticAleksandrov.KineticAleksandrov

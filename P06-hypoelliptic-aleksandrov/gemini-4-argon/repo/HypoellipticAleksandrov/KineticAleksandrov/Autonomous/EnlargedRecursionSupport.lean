@@ -11,10 +11,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory
 open scoped Classical
 
-/-- Active outgoing pieces of the canonical enlarged alternating recursion. -/
+/- Active outgoing pieces of the canonical enlarged alternating recursion. -/
 def enlargedVisitOutgoing
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (n : ℕ) : Measure Point :=
   visitBeta P (visitEntranceInterval c)
@@ -23,7 +23,7 @@ def enlargedVisitOutgoing
     (enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T)
     (enlargedVisitExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) T) n
 
-/-- Every individual outgoing piece is finite. -/
+/- Every individual outgoing piece is finite. -/
 instance enlargedVisitOutgoing_isFiniteMeasure
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -33,7 +33,7 @@ instance enlargedVisitOutgoing_isFiniteMeasure
   unfold enlargedVisitOutgoing
   infer_instance
 
-/-- Incoming restriction puts every later entrance strictly inside the active spacetime strip. -/
+/- Incoming restriction puts every later entrance strictly inside the active spacetime strip. -/
 theorem enlargedGamma_ae_activePole (P : Point) (c : Clock) (J : Interval) (s T : ℝ)
     (exitActive exitWaiting : Kernel Point Point)
     (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
@@ -64,35 +64,28 @@ theorem enlargedGamma_ae_activePole (P : Point) (c : Clock) (J : Interval) (s T 
       (fun _ hp => let h := visitIncomingFace_subset_activePole c J s T hp;
           ⟨h.1.le, h.2⟩)
 
-/-- Every active outgoing measure is supported strictly inside the waiting spacetime strip. -/
-theorem enlargedBeta_ae_waitingPole (P : Point) (c : Clock) (J : Interval) (s T : ℝ)
-    (exitActive exitWaiting : Kernel Point Point) (n : ℕ) :
-    ∀ᵐ p ∂visitBeta P (visitEntranceInterval c)
-      (visitBoundary s T (visitEntranceInterval c) J)
-      (visitBoundary s T (visitActiveInterval c) J) exitActive exitWaiting n,
-      s ≤ p.time ∧ p ∈ enlargedVisitPoleSet (visitWaitingUnion c J) T :=
-  (ae_restrict_mem (measurableSet_visitBoundary s T (visitActiveInterval c) J)).mono
-    (fun _ hp => let h := visitOutgoingFace_subset_waitingPole c J s T hp;
-      ⟨h.1.le, h.2⟩)
-
-/-- The actual entrance family satisfies the corrected nested theorem's source support. -/
+/- Every active outgoing measure is supported strictly inside the waiting spacetime strip. -/
 theorem enlargedEntrance_ae_activePole
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
     (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
     ∀ᵐ p ∂enlargedVisitEntrance hH hLE hlam hLam A c J s T P n,
       s ≤ p.time ∧ p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T :=
   enlargedGamma_ae_activePole P c J s T _ _ hP n
 
-/-- The actual outgoing family satisfies the corrected nested theorem's source support. -/
+/- The actual outgoing family satisfies the corrected nested theorem's source support. -/
 theorem enlargedOutgoing_ae_waitingPole
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
     (n : ℕ) :
     ∀ᵐ p ∂enlargedVisitOutgoing hH hLE hlam hLam A c J s T P n,
-      s ≤ p.time ∧ p ∈ enlargedVisitPoleSet (visitWaitingUnion c J) T :=
-  enlargedBeta_ae_waitingPole P c J s T _ _ n
+      s ≤ p.time ∧ p ∈ enlargedVisitPoleSet (visitWaitingUnion c J) T := by
+    exact (
+  (ae_restrict_mem (measurableSet_visitBoundary s T (visitActiveInterval c) J)).mono
+      (fun _ hp => let h := visitOutgoingFace_subset_waitingPole c J s T hp;
+        ⟨h.1.le, h.2⟩)
+  )
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

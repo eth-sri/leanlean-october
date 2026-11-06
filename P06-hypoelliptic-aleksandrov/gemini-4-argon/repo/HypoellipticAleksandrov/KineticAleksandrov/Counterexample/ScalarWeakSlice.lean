@@ -28,7 +28,7 @@ theorem scalar_integral_mul_deriv_off_zero (u up v vp : ℝ → ℝ)
     (ht : Tendsto (fun x => u x * v x) atTop (𝓝 0))
     (hb : Tendsto (fun x => u x * v x) atBot (𝓝 0)) :
     (∫ x, u x * vp x) = -(∫ x, up x * v x) := by
-  have hzero : Tendsto (u * v) (𝓝 0) (𝓝 (u 0 * v 0)) :=
+  have hzero :=
     (hu.mul hv).tendsto 0
   have hp := integral_Ioi_mul_deriv_eq_deriv_mul
     (a := (0 : ℝ)) (fun x hx => hdu x hx.ne') (fun x _ => hdv x)

@@ -18,10 +18,10 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 private theorem normalized_half_mass {d : ℕ}
     (μ : Measure (EvolutionAmbientState d)) [IsFiniteMeasure μ]
-    (a : ℝ) (ha : 0 < a) (hμ : a ≤ μ.real univ) :
+    (a ) (ha : 0 < a) (hμ : a ≤ μ.real univ) :
     (ENNReal.ofReal (a / (2 * μ.real univ)) • μ).real univ = a / 2 ∧
     ENNReal.ofReal (a / (2 * μ.real univ)) • μ ≤ ENNReal.ofReal (1 / 2) • μ := by
-  have hp : 0 < μ.real univ := ha.trans_le hμ
+  have hp := ha.trans_le hμ
   have hc : 0 ≤ a / (2 * μ.real univ) := by positivity
   constructor
   · rw [measureReal_ennreal_smul_apply, ENNReal.toReal_ofReal hc]

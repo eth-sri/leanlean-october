@@ -46,7 +46,7 @@ namespace WeakTestFunction
 
 variable {d : ℕ} {U : Set (Vec d)}
 
-/-- Smooth compactly supported weak test functions are closed under the
+/- Smooth compactly supported weak test functions are closed under the
 linear operations used by zero-boundary density. -/
 instance : Zero (WeakTestFunction U) where
   zero :=
@@ -91,30 +91,9 @@ instance : SMul ℝ (WeakTestFunction U) where
         (tsupport_smul_subset_right (fun _ : Vec d => c) φ.toFun).trans
           φ.tsupport_subset }
 
-@[simp]
-theorem zero_toFun :
-    (0 : WeakTestFunction U).toFun = 0 :=
-  rfl
-
-@[simp]
-theorem add_toFun (φ ψ : WeakTestFunction U) :
-    (φ + ψ).toFun = fun x => φ x + ψ x :=
-  rfl
-
-@[simp]
-theorem neg_toFun (φ : WeakTestFunction U) :
-    (-φ).toFun = fun x => -φ x :=
-  rfl
-
-@[simp]
-theorem sub_toFun (φ ψ : WeakTestFunction U) :
-    (φ - ψ).toFun = fun x => φ x - ψ x :=
-  rfl
-
-@[simp]
-theorem smul_toFun (c : ℝ) (φ : WeakTestFunction U) :
-    (c • φ).toFun = fun x => c * φ x :=
-  rfl
+@[simp] theorem add_toFun (φ ψ : WeakTestFunction U) : (φ + ψ).toFun = φ.toFun + ψ.toFun := rfl
+@[simp] theorem sub_toFun (φ ψ : WeakTestFunction U) : (φ - ψ).toFun = φ.toFun - ψ.toFun := rfl
+@[simp] theorem smul_toFun (c : ℝ) (φ : WeakTestFunction U) : (c • φ).toFun = c • φ.toFun := rfl
 
 @[ext]
 theorem ext {φ ψ : WeakTestFunction U} (h : φ.toFun = ψ.toFun) : φ = ψ := by
@@ -145,7 +124,7 @@ instance : AddCommGroup (WeakTestFunction U) :=
       change ((n : ℝ) • φ.toFun) x = (n • φ.toFun) x
       simp only [Pi.smul_apply, zsmul_eq_mul, smul_eq_mul])
 
-/-- The underlying-function additive homomorphism transfers the standard
+/- The underlying-function additive homomorphism transfers the standard
 real module structure to bundled weak test functions. -/
 def toFunAddMonoidHom : WeakTestFunction U →+ (Vec d → ℝ) where
   toFun := fun φ => φ.toFun
@@ -163,7 +142,7 @@ namespace W1pFunction
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 variable {u : W1pFunction U p}
 
-/-- Explicit supported smooth approximation data for a representative-level
+/- Explicit supported smooth approximation data for a representative-level
 `W^{1,p}(U)` function.  The value and every native gradient coordinate
 converge in the exact same exponent. -/
 structure SupportedSmoothApproximation
@@ -186,7 +165,7 @@ structure SupportedSmoothApproximation
             p (volumeOn U))
         atTop (𝓝 0)
 
-/-- Regard one member of a supported approximation as a bundled weak test
+/- Regard one member of a supported approximation as a bundled weak test
 function. -/
 noncomputable def SupportedSmoothApproximation.toWeakTestFunction
     (happrox : u.SupportedSmoothApproximation) (n : ℕ) :
@@ -196,7 +175,7 @@ noncomputable def SupportedSmoothApproximation.toWeakTestFunction
   hasCompactSupport := happrox.approx_hasCompactSupport n
   tsupport_subset := happrox.approx_tsupport_subset n
 
-/-- Convergence of representatives and all native gradient coordinates gives
+/- Convergence of representatives and all native gradient coordinates gives
 convergence in the closed quotient-level `W^{1,p}` graph. -/
 theorem tendsto_toW1pGraph_of_tendsto_eLpNorm
     [Fact (1 ≤ p)]
@@ -279,7 +258,7 @@ theorem tendsto_toW1pGraph_of_tendsto_eLpNorm
       hValueLp.prodMk_nhds hGradientLp
   exact hPair
 
-/-- The graph images of a supported smooth approximation converge to the graph
+/- The graph images of a supported smooth approximation converge to the graph
 image of its target representative. -/
 theorem SupportedSmoothApproximation.tendsto_toW1pGraph
     [Fact (1 ≤ p)] (hU : IsOpen U)
@@ -299,7 +278,7 @@ end W1pFunction
 
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
-/-- The complete graph point associated to a globally smooth function with
+/- The complete graph point associated to a globally smooth function with
 compact support contained in `U`. -/
 noncomputable def smoothCompactlySupportedW1pGraph
     [Fact (1 ≤ p)] (hU : IsOpen U) (φ : WeakTestFunction U) :
@@ -307,7 +286,7 @@ noncomputable def smoothCompactlySupportedW1pGraph
   (W1pFunction.ofContDiff hU
     (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph
 
-/-- The graph image of supported smooth test functions respects addition. -/
+/- The graph image of supported smooth test functions respects addition. -/
 theorem smoothCompactlySupportedW1pGraph_add
     [Fact (1 ≤ p)] (hU : IsOpen U) (φ ψ : WeakTestFunction U) :
     smoothCompactlySupportedW1pGraph (p := p) hU (φ + ψ) =
@@ -400,7 +379,7 @@ theorem smoothCompactlySupportedW1pGraph_add
     · exact φ.contDiff.differentiable (by simp) x
     · exact ψ.contDiff.differentiable (by simp) x
 
-/-- The graph image of supported smooth test functions respects real scalar
+/- The graph image of supported smooth test functions respects real scalar
 multiplication. -/
 theorem smoothCompactlySupportedW1pGraph_smul
     [Fact (1 ≤ p)] (hU : IsOpen U) (c : ℝ) (φ : WeakTestFunction U) :
@@ -471,7 +450,7 @@ theorem smoothCompactlySupportedW1pGraph_smul
     rfl
     exact φ.contDiff.differentiable (by simp) x
 
-/-- The exact linear map from bundled smooth compactly supported test
+/- The exact linear map from bundled smooth compactly supported test
 functions to the complete weak-gradient graph. -/
 noncomputable def smoothCompactlySupportedW1pGraphLinearMap
     [Fact (1 ≤ p)] (hU : IsOpen U) :
@@ -480,7 +459,7 @@ noncomputable def smoothCompactlySupportedW1pGraphLinearMap
   map_add' := smoothCompactlySupportedW1pGraph_add hU
   map_smul' := smoothCompactlySupportedW1pGraph_smul hU
 
-/-- The graph-level submodule of actual bundled smooth compactly supported
+/- The graph-level submodule of actual bundled smooth compactly supported
 test functions.  Because this is the range of a linear map, it is not merely
 a formal span with unbundled finite combinations. -/
 noncomputable def smoothCompactlySupportedW1pGraphSubmodule
@@ -488,26 +467,20 @@ noncomputable def smoothCompactlySupportedW1pGraphSubmodule
     Submodule ℝ (W1pGraph U p) :=
   LinearMap.range (smoothCompactlySupportedW1pGraphLinearMap (p := p) hU)
 
-/-- The closed zero-boundary graph: the closure, in `W1pGraph U p`, of the
+/- The closed zero-boundary graph: the closure, in `W1pGraph U p`, of the
 range of actual bundled smooth compactly supported test functions. -/
 noncomputable def w10pGraphClosedSubmodule
     [Fact (1 ≤ p)] (hU : IsOpen U) :
     ClosedSubmodule ℝ (W1pGraph U p) :=
   (smoothCompactlySupportedW1pGraphSubmodule (p := p) hU).closure
 
-/-- The canonical complete quotient-level `W^{1,p}_0(U)` carrier. -/
+/- The canonical complete quotient-level `W^{1,p}_0(U)` carrier. -/
 noncomputable abbrev W10pGraph
     [Fact (1 ≤ p)] (hU : IsOpen U) :=
   ↥((w10pGraphClosedSubmodule (p := p) hU).toSubmodule)
 
-/-- The zero-boundary graph is complete because it is a closed submodule of
+/- The zero-boundary graph is complete because it is a closed submodule of
 the complete `W1pGraph` carrier. -/
-noncomputable instance w10pGraphCompleteSpace
-    [Fact (1 ≤ p)] (hU : IsOpen U) :
-    CompleteSpace (W10pGraph (p := p) hU) :=
-  (w10pGraphClosedSubmodule (p := p) hU).isClosed.completeSpace_coe
-
-/-- A supported smooth function belongs to the complete zero-boundary graph. -/
 theorem smoothCompactlySupportedW1pGraph_mem_w10pGraph
     [Fact (1 ≤ p)] (hU : IsOpen U) (φ : WeakTestFunction U) :
     smoothCompactlySupportedW1pGraph (p := p) hU φ ∈
@@ -520,7 +493,7 @@ namespace W1pFunction
 
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
-/-- A representative-level supported smooth approximation places its graph
+/- A representative-level supported smooth approximation places its graph
 class in the canonical complete zero-boundary carrier. -/
 theorem mem_w10pGraph_of_supportedSmoothApproximation
     [Fact (1 ≤ p)] (hU : IsOpen U) (u : W1pFunction U p)
@@ -538,33 +511,31 @@ namespace W10pGraph
 
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
-/-- Every complete zero-boundary graph point is a limit of actual bundled
+/- Every complete zero-boundary graph point is a limit of actual bundled
 smooth compactly supported test-function images. -/
-theorem exists_tendsto_smooth_span
-    [Fact (1 ≤ p)] (hU : IsOpen U) (u : W10pGraph (p := p) hU) :
-    ∃ v : ℕ → W1pGraph U p,
-      (∀ n, v n ∈ smoothCompactlySupportedW1pGraphSubmodule (p := p) hU) ∧
-        Tendsto v atTop (𝓝 (u : W1pGraph U p)) := by
-  have huClosure :
-      (u : W1pGraph U p) ∈
-        closure
-          ((smoothCompactlySupportedW1pGraphSubmodule (p := p) hU :
-            Submodule ℝ (W1pGraph U p)) : Set (W1pGraph U p)) := by
-    simpa only [w10pGraphClosedSubmodule,
-      Submodule.topologicalClosure_coe] using! u.property
-  exact mem_closure_iff_seq_limit.mp huClosure
-
-/-- Every complete zero-boundary graph point is a limit of actual bundled
-smooth compactly supported test functions.  This is the density theorem used
-by weak-formulation and duality arguments; no finite linear combination is
-left unbundled. -/
 theorem exists_tendsto_smooth
     [Fact (1 ≤ p)] (hU : IsOpen U) (u : W10pGraph (p := p) hU) :
     ∃ φ : ℕ → WeakTestFunction U,
       Tendsto
         (fun n => smoothCompactlySupportedW1pGraph (p := p) hU (φ n))
         atTop (𝓝 (u : W1pGraph U p)) := by
-  rcases exists_tendsto_smooth_span hU u with ⟨v, hv, hvTendsto⟩
+  have _h_inl_48 : ∃ v : ℕ → W1pGraph U p,
+      (∀ n, v n ∈ smoothCompactlySupportedW1pGraphSubmodule (p := p) hU) ∧
+        Tendsto v atTop (𝓝 (u : W1pGraph U p)) := by
+      have huClosure :
+          (u : W1pGraph U p) ∈
+            closure
+              ((smoothCompactlySupportedW1pGraphSubmodule (p := p) hU :
+                Submodule ℝ (W1pGraph U p)) : Set (W1pGraph U p)) := by
+        simpa only [w10pGraphClosedSubmodule,
+          Submodule.topologicalClosure_coe] using! u.property
+      exact mem_closure_iff_seq_limit.mp huClosure
+
+    /- Every complete zero-boundary graph point is a limit of actual bundled
+    smooth compactly supported test functions.  This is the density theorem used
+    by weak-formulation and duality arguments; no finite linear combination is
+    left unbundled. -/
+  rcases _h_inl_48 with ⟨v, hv, hvTendsto⟩
   have hactual : ∀ n, ∃ φ : WeakTestFunction U,
       smoothCompactlySupportedW1pGraph (p := p) hU φ = v n := by
     intro n

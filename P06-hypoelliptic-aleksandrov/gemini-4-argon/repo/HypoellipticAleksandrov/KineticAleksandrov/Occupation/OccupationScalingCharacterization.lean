@@ -14,7 +14,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Scalin
 open scoped ENNReal
 
 /-- Elapsed-time pairing is the ordinary open-interval pairing with the marginal kernel. -/
-theorem occupation_rhs_interval {d : ℕ} (K : WholeKernel d) (σ T : ℝ) (hT : 0 < T)
+theorem occupation_rhs_interval {d } (K : WholeKernel d) (σ T : ℝ) (hT : 0 < T)
     (ρ : Measure (PDE.Vec d)) (φ : TimeVelocity d → ℝ) :
     (∫ v, ∫ τ : ElapsedTime (ENNReal.ofReal T),
       ∫ w, φ (τ.1, w) ∂K.firstMarginal
@@ -33,7 +33,7 @@ theorem occupation_rhs_interval {d : ℕ} (K : WholeKernel d) (σ T : ℝ) (hT :
   rw [Green.occupationKernel_of_nonneg K σ τ.1 τ.2.1.le v]
 
 /-- Bounded-Borel pullback by the forward parabolic dilation. -/
-def occupation_scaledTest {d : ℕ} (T : ℝ) (φ : BoundedBorel (TimeVelocity d)) :
+def occupation_scaledTest {d } (T : ℝ) (φ : BoundedBorel (TimeVelocity d)) :
     BoundedBorel (TimeVelocity d) :=
   ⟨fun q => φ (parabolicAffine 0 0 (Real.sqrt T) q),
     φ.measurable.comp ((contDiff_infty_parabolicAffine 0 0 (Real.sqrt T)).continuous.measurable),
@@ -42,7 +42,7 @@ def occupation_scaledTest {d : ℕ} (T : ℝ) (φ : BoundedBorel (TimeVelocity d
       exact ⟨C, hC, fun q => hb _⟩⟩
 
 /-- The real-interval occupation pairing of the constructed scaled kernel. -/
-theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
+theorem occupation_rhs_scaled {d } (K : WholeKernel d) (σ₀ : ℝ)
     {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d))
     (φ : TimeVelocity d → ℝ) :
     let r : {r : ℝ // 0 < r} := ⟨Real.sqrt T, Real.sqrt_pos.mpr hT⟩
@@ -80,9 +80,7 @@ theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
       (KineticAffineScaling.mapsDomain_wholeSpace Φ) K).firstMarginal _ = _
     dsimp only at hkernel
     rw [hcancel] at hkernel
-    have hh := Green.occupationKernel_of_nonneg K σ₀
-      (T * t) (mul_nonneg hT.le ht.1.le) v
-    simpa only [r, hsq, zero_add, hh] using hkernel
+    simpa only [r, hsq, zero_add, (Green.occupationKernel_of_nonneg K σ₀ (T * t) (mul_nonneg hT.le ht.1.le) v)] using hkernel
   rw [hKT, he.integral_map]
   apply integral_congr_ae
   refine Filter.Eventually.of_forall fun w => ?_
@@ -95,8 +93,8 @@ theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
     rw [zero_add, smul_smul, mul_inv_cancel₀ hs, one_smul]
 
 /-- A unit-time density for the constructed pushforward yields the original slab density. -/
-theorem isOccupationDensity_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
-    {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d)) (gt : TimeVelocity d → ℝ)
+theorem isOccupationDensity_scaled {d } (K : WholeKernel d) (σ₀ : ℝ)
+    {T } (hT : 0 < T) (ρ : Measure (PDE.Vec d)) (gt : TimeVelocity d → ℝ)
     (hgt : IsOccupationDensity
       (KineticAffineScaling.pushKernel (KineticAffineScaling.mapsDomain_wholeSpace
         (KineticAffineScaling.ofRadius σ₀ 0 0 (identityDrift d)

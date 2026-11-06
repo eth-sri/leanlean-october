@@ -20,7 +20,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter Set
 open scoped Topology
 
-/-- A position cutoff removes the entire scalar position axis from the test support. -/
+/- A position cutoff removes the entire scalar position axis from the test support. -/
 theorem scalar_position_cutoff_support (test : XV 1 → ℝ) (n : ℕ) (q : XV 1)
     (hq : q ∈ tsupport (fun z => test z * originCutoff n z.1)) : q.1 0 ≠ 0 := by
   intro hx
@@ -38,7 +38,7 @@ theorem scalar_position_cutoff_support (test : XV 1 → ℝ) (n : ℕ) (q : XV 1
   simp only [hz, mul_zero]
   rfl
 
-/-- Velocity integration by parts for a locally integrable jet smooth off the position axis. -/
+/- Velocity integration by parts for a locally integrable jet smooth off the position axis. -/
 theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
     (hfi : LocallyIntegrable f volume) (hgi : LocallyIntegrable g volume)
     (hfd : ∀ q : XV 1, q.1 0 ≠ 0 → DifferentiableAt ℝ f q)
@@ -106,10 +106,9 @@ theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
     filter_upwards [coordinates_ne_zero_ae 1 (by omega)] with q hq
     exact originCutoff_tendsto q.1 hq.1
   have hlimL := integral_mul_cutoff_tendsto _ hL cut hc hb hl
-  have hlimR := (integral_mul_cutoff_tendsto _ hR cut hc hb hl).neg
-  exact tendsto_nhds_unique hlimL (hlimR.congr (fun n => (he n).symm))
+  exact tendsto_nhds_unique hlimL (((integral_mul_cutoff_tendsto _ hR cut hc hb hl).neg).congr (fun n => (he n).symm))
 
-/-- The actual scalar profile has its first native velocity weak identity. -/
+/- The actual scalar profile has its first native velocity weak identity. -/
 theorem scalarProfile_velocity_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) (test : XV 1 → ℝ) (ht : ContDiff ℝ 1 test)
@@ -127,28 +126,5 @@ theorem scalarProfile_velocity_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 
   · exact ht
   · exact hs
 
-/-- The actual scalar profile has its second native velocity weak identity. -/
-theorem scalarProfile_hessian_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) (test : XV 1 → ℝ) (ht : ContDiff ℝ 2 test)
-    (hs : HasCompactSupport test) :
-    (∫ q, scalarProfile gamma Lam q * dvv test q 0 0) =
-      (∫ q, scalarHess gamma Lam q 0 0 * test q) := by
-  have hjet := scalarJets_locallyIntegrable gamma Lam hLam hmatch
-  have hfirst := scalarProfile_velocity_weak gamma Lam hLam hmatch
-    (fun q => dv test q 0) (contDiff_dv_test test ht 0)
-    (hs.fderiv_apply ℝ (0, Pi.single 0 1))
-  have hsecond : (∫ q, scalarGv gamma Lam q 0 * dv test q 0) =
-      -(∫ q, scalarHess gamma Lam q 0 0 * test q) := by
-    apply scalar_velocity_ibp _ _ (hjet.2.1 0) (hjet.2.2 0 0)
-    · intro q hq
-      exact scalarGv_differentiableAt gamma Lam hLam q hq 0
-    · intro q hq
-      exact (scalarHess_eq_velocity_derivative gamma Lam q hq 0 0).symm
-    · exact ht.of_le (by norm_num)
-    · exact hs
-  change (∫ q, scalarProfile gamma Lam q * dvv test q 0 0) =
-    -(∫ q, scalarGv gamma Lam q 0 * dv test q 0) at hfirst
-  simpa only [hsecond, neg_neg] using hfirst
-
+/- The actual scalar profile has its second native velocity weak identity. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

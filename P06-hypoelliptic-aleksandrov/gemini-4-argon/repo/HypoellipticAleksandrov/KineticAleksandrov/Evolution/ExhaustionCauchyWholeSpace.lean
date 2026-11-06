@@ -20,10 +20,9 @@ open scoped Topology MatrixOrder
 
 /-- Actual classical solutions on sufficiently large balls satisfy the pure-growth
 Cauchy estimate on a common whole-space inner cylinder. -/
-theorem abs_sub_le_growth_ball_solutions {n : ℕ} {lam Lam Lb : ℝ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+theorem abs_sub_le_growth_ball_solutions {n lam Lam Lb B b}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : HasEuclideanLipschitzDrift Lb b) {ε τ α S C : ℝ}
+    (hb : HasEuclideanLipschitzDrift Lb b) {ε τ α S C }
     (hε : 0 ≤ ε) (hε1 : ε ≤ 1) (hS : 0 ≤ S) (hC : 0 ≤ C)
     (F : BoundedBorel (EvolutionAmbientState n)) (hFC : ∀ q, |F q| ≤ C)
     (r : Fin 2 → ℝ) (hr : ∀ i, S < r i) (v : Fin 2 → KineticPoint n → ℝ)

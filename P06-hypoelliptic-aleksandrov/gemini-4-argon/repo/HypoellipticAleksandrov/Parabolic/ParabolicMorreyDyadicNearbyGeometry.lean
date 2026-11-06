@@ -25,7 +25,7 @@ whose source-box radius is no greater than their coordinate distance. -/
 theorem exists_parabolicDyadicGeneration_radius_le_coordinateDist_lt_two_mul_radius
     (d : Nat) (z : TimeVelocity d)
     (hz : z ∈ parabolicDyadicReferenceCell d)
-    (w : TimeVelocity d)
+    (w )
     (hw : w ∈ parabolicDyadicReferenceCell d)
     (hzw : z ≠ w) :
     ∃ n : Nat,
@@ -88,7 +88,7 @@ theorem exists_parabolicDyadicGeneration_radius_le_coordinateDist_lt_two_mul_rad
       have hmin := Nat.find_min' hP hmP
       rw [hm] at hmin
       omega
-    have hltPrevious : rho < radius m := lt_of_not_ge hnot
+    have hltPrevious := lt_of_not_ge hnot
     rw [hm]
     change rho < 2 * ((2 : Real) ^ (m + 1))⁻¹
     calc
@@ -104,7 +104,7 @@ theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
     (hz : z ∈ parabolicDyadicReferenceCell d)
     (w : TimeVelocity d)
     (hw : w ∈ parabolicDyadicReferenceCell d)
-    (n : Nat)
+    (n )
     (hr :
       (parabolicDyadicSourceBox
         (parabolicDyadicAddressContaining d z hz n).2).radius ≤
@@ -175,7 +175,7 @@ theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
     change 0 < (parabolicDyadicSourceBox
       (parabolicDyadicAddressContaining d z hz n).2).radius
     exact parabolicDyadicSourceBox_radius_pos _
-  have hrhoPos : 0 < rho := lt_of_lt_of_le hqzRadiusPos hr
+  have hrhoPos := lt_of_lt_of_le hqzRadiusPos hr
   have hRadius : qz.radius = qw.radius := by
     change ((2 : Real) ^ n)⁻¹ = ((2 : Real) ^ n)⁻¹
     rfl

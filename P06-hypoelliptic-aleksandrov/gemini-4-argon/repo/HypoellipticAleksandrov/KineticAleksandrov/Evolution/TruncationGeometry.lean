@@ -7,6 +7,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.EllipsoidDirichlet
 import PDEFoundation.Geometry.EuclideanBall.Topology
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.SpatialBlock
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.StraightenedCoefficients
+import HypoellipticAleksandrov.Coefficients.Ellipticity
+import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
+import HypoellipticAleksandrov.KineticAleksandrov.Operator
+import Mathlib.Analysis.Calculus.ContDiff.Deriv
 
 /-!
 # Geometry of the straightened truncation
@@ -32,11 +36,11 @@ open scoped MatrixOrder ContDiff Matrix
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-/-- The matrix `diag(r⁻² I, R⁻² I)` of the straightened truncation ellipsoid. -/
+/- The matrix `diag(r⁻² I, R⁻² I)` of the straightened truncation ellipsoid. -/
 noncomputable def straightenedEllipsoidMatrix (n : ℕ) (r R : ℝ) : PDE.Mat (n + n) :=
   viscousBlockMatrix ((r ^ 2)⁻¹ • (1 : PDE.Mat n)) ((R ^ 2)⁻¹)
 
-/-- Block form of the quadratic form of the ellipsoid matrix. -/
+/- Block form of the quadratic form of the ellipsoid matrix. -/
 theorem vecDot_straightenedEllipsoidMatrix_mulVec (n : ℕ) (r R : ℝ) (x : PDE.Vec (n + n)) :
     PDE.vecDot x (straightenedEllipsoidMatrix n r R *ᵥ x) =
       PDE.vecNormSq (spatialY x) / r ^ 2 + PDE.vecNormSq (spatialZ x) / R ^ 2 := by
@@ -46,7 +50,7 @@ theorem vecDot_straightenedEllipsoidMatrix_mulVec (n : ℕ) (r R : ℝ) (x : PDE
   congr 1
   exact Finset.sum_congr rfl fun i _ => by ring
 
-/-- The straightened ellipsoid matrix is positive definite and its open ellipsoid is
+/- The straightened ellipsoid matrix is positive definite and its open ellipsoid is
 `{|Y|² / r² + |z|² / R² < 1}`. -/
 theorem straightenedEllipsoid_characterization
     (n : ℕ) (r R : ℝ) (hr : 0 < r) (hR : 0 < R) :
@@ -64,7 +68,7 @@ section TerminalDatum
 
 variable {n : ℕ}
 
-/-- The affine terminal-coordinate homeomorphism `(Y, z) ↦ (c + Y, z)`. -/
+/- The affine terminal-coordinate homeomorphism `(Y, z) ↦ (c + Y, z)`. -/
 def terminalCoordinateHomeomorph (c : PDE.Vec n) :
     PDE.Vec (n + n) ≃ₜ (PDE.Vec n × PDE.Vec n) where
   toFun x := (c + spatialY x, spatialZ x)
@@ -76,13 +80,13 @@ def terminalCoordinateHomeomorph (c : PDE.Vec n) :
   continuous_invFun :=
     (contDiff_spatialPack (contDiff_fst.sub contDiff_const) contDiff_snd (m := 0)).continuous
 
-/-- The transformed terminal datum `x ↦ F (c + Y, z)` of a smooth datum is smooth. -/
+/- The transformed terminal datum `x ↦ F (c + Y, z)` of a smooth datum is smooth. -/
 theorem contDiff_terminalDatum (c : PDE.Vec n) {F : PDE.Vec n × PDE.Vec n → ℝ}
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : PDE.Vec (n + n) => F (c + spatialY x, spatialZ x)) :=
   hF.comp ((contDiff_const.add contDiff_spatialY).prodMk contDiff_spatialZ)
 
-/-- The transformed terminal datum of a compactly supported datum has compact support: the
+/- The transformed terminal datum of a compactly supported datum has compact support: the
 affine terminal-coordinate map is a homeomorphism, hence proper. -/
 theorem hasCompactSupport_terminalDatum (c : PDE.Vec n) {F : PDE.Vec n × PDE.Vec n → ℝ}
     (hF : HasCompactSupport F) :
@@ -101,7 +105,7 @@ section AnchorPremises
 
 variable {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
 
-/-- Every premise of the smooth-data Dirichlet solvability theorem
+/- Every premise of the smooth-data Dirichlet solvability theorem
 (`exists_isClassicalBackwardDirichletSolution_openEllipsoid_uniqueOn_of_lieberman`) that concerns
 the geometry, the straightened coefficient, the drift and the transformed terminal datum, in
 dimension `N = n + n`, for the ellipsoid matrix `Q = diag(r⁻² I, R⁻² I)`, the coefficient
@@ -130,9 +134,23 @@ theorem straightened_base_premises
     ContDiff ℝ (⊤ : ℕ∞)
       (fun x : PDE.Vec (n + n) => F (g τ + spatialY x, spatialZ x)) ∧
     HasCompactSupport (fun x : PDE.Vec (n + n) => F (g τ + spatialY x, spatialZ x)) := by
-  obtain ⟨hsm, hsy, hlo, hup, hdr⟩ :=
-    straightenedCoefficient_bounds_smooth hB_smooth hB_symm hB_ell hb_smooth g hg ε
-  obtain ⟨h0, h1⟩ := straightened_ellipticity_constants hlam hlamLam hε
+  obtain ⟨hsm, hsy, hlo, hup, hdr⟩ : IsSmoothCoefficient (straightenedCoefficient B g ε) ∧
+    (∀ s x, (straightenedCoefficient B g ε s x).IsSymm) ∧
+    (∀ s x, min lam ε • (1 : PDE.Mat (n + n)) ≤ straightenedCoefficient B g ε s x) ∧
+    (∀ s x, straightenedCoefficient B g ε s x ≤ max Lam ε • (1 : PDE.Mat (n + n))) ∧
+    ContDiff ℝ (⊤ : ℕ∞)
+      (fun q : TimeVelocity (n + n) => straightenedDrift b g q.1 q.2) := by
+      exact (
+    ⟨isSmoothCoefficient_straightenedCoefficient hB_smooth hg ε,
+        isSymm_straightenedCoefficient hB_symm g ε,
+        straightenedCoefficient_lower hB_ell g ε,
+        straightenedCoefficient_upper hB_ell g ε,
+        contDiff_straightenedDrift hb_smooth hg⟩
+    )
+  obtain ⟨h0, h1⟩ : 0 < min lam ε ∧ min lam ε ≤ max Lam ε := by
+      exact (
+    ⟨lt_min hlam hε, (min_le_left lam ε).trans (hlamLam.trans (le_max_left Lam ε))⟩
+    )
   exact ⟨(straightenedEllipsoid_characterization n r R hr hR).1, h0, h1, hsy, hsm, hlo, hup,
     hdr, contDiff_terminalDatum (g τ) hF, hasCompactSupport_terminalDatum (g τ) hFc⟩
 

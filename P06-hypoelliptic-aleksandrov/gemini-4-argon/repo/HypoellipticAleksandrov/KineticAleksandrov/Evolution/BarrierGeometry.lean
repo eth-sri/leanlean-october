@@ -70,8 +70,8 @@ theorem vecNormSq_eq_of_mem_frontier_movingDomain {n : ℕ} {c : PDE.Vec n} {r�
 
 /-- A Euclidean-Lipschitz curve has derivative of Euclidean norm at most the Lipschitz
 constant. -/
-theorem vecEuclideanNorm_le_of_hasDerivAt_lipschitz {n : ℕ} {γ : ℝ → PDE.Vec n}
-    {γ' : PDE.Vec n} {σ Lγ : ℝ} (hLγ : 0 ≤ Lγ) (hγ : HasDerivAt γ γ' σ)
+theorem vecEuclideanNorm_le_of_hasDerivAt_lipschitz {n γ}
+    {γ' : PDE.Vec n} {σ Lγ } (hLγ : 0 ≤ Lγ) (hγ : HasDerivAt γ γ' σ)
     (hL : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ Lγ * |s - t|) :
     PDE.vecEuclideanNorm γ' ≤ Lγ := by
   have hφ : HasDerivAt (fun x => PDE.vecDot γ' (γ x)) (PDE.vecDot γ' γ') σ := by
@@ -105,13 +105,13 @@ theorem vecEuclideanNorm_le_of_hasDerivAt_lipschitz {n : ℕ} {γ : ℝ → PDE.
 
 /-- A continuous piecewise `C¹` curve is differentiable at the interior points of the
 pieces of a partition of a compact interval. -/
-theorem exists_partition_differentiableAt {n : ℕ} {γ : ℝ → PDE.Vec n}
-    (hγ : IsContinuousPiecewiseC1 γ) {a b : ℝ} (hab : a < b) :
+theorem exists_partition_differentiableAt {n } {γ : ℝ → PDE.Vec n}
+    (hγ : IsContinuousPiecewiseC1 γ) {a b } (hab : a < b) :
     ∃ N : ℕ, ∃ t : Fin (N + 2) → ℝ, StrictMono t ∧ t 0 = a ∧ t (Fin.last (N + 1)) = b ∧
       ∀ i : Fin (N + 1), ∀ σ ∈ Ioo (t i.castSucc) (t i.succ), DifferentiableAt ℝ γ σ := by
   obtain ⟨N, t, ht, h0, hl, hpiece⟩ := hγ.2 a b hab
   refine ⟨N, t, ht, h0, hl, fun i σ hσ => ?_⟩
-  have h1 : DifferentiableOn ℝ γ (Icc (t i.castSucc) (t i.succ)) :=
+  have h1 :=
     (hpiece i).differentiableOn (by norm_num)
   exact h1.differentiableAt (Icc_mem_nhds hσ.1 hσ.2)
 

@@ -77,8 +77,7 @@ theorem UNr_expansion_deriv (a : NegThird) (N : ℕ) :
       fun w => w ^ (1 / 3 : ℝ) * f w := by
     filter_upwards [Ioi_mem_nhds hz] with w hw
     exact UNr_remainder_eq_power a N w hw
-  have hf := (hasDerivAt_UIr_remainder c (4 / 3) N z hz).differentiableAt.hasDerivAt
-  have hd := ((hasDerivAt_power_mul f (1 / 3) z hz hf).congr_of_eventuallyEq heq).deriv
+  have hd := ((hasDerivAt_power_mul f (1 / 3) z hz ((hasDerivAt_UIr_remainder c (4 / 3) N z hz).differentiableAt.hasDerivAt)).congr_of_eventuallyEq heq).deriv
   exact (by convert hd.symm using 1; ring)
 
 /-- The second derivative remainder has two additional inverse powers. -/
@@ -109,8 +108,7 @@ theorem UNr_expansion_deriv2 (a : NegThird) (N : ℕ) :
   have hf : ∀ w ∈ Ioi (0 : ℝ), HasDerivAt f (deriv f w) w := by
     intro w hw
     exact (hasDerivAt_UIr_remainder c (4 / 3) N w hw).differentiableAt.hasDerivAt
-  have hf' := (hasDerivAt_deriv_UIr_remainder c (4 / 3) N z hz).differentiableAt.hasDerivAt
-  have hd := deriv_deriv_power_mul f (1 / 3) z hz hf hf'
+  have hd := deriv_deriv_power_mul f (1 / 3) z hz hf ((hasDerivAt_deriv_UIr_remainder c (4 / 3) N z hz).differentiableAt.hasDerivAt)
   have hder := heq.deriv.deriv_eq
   rw [hd] at hder
   exact (by convert hder.symm using 1; ring)

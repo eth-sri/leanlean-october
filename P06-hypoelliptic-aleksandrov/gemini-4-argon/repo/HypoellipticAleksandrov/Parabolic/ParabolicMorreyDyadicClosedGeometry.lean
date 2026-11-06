@@ -23,7 +23,7 @@ noncomputable section
 /-- A literal closed dyadic forward child box is contained in its literal
 closed forward parent box. -/
 theorem parabolicDyadicClosedForwardBox_child_subset
-    {d n : Nat} (index : ParabolicDyadicIndex d n)
+    {d n } (index : ParabolicDyadicIndex d n)
     (child : ParabolicDyadicChild d) :
     parabolicClosedBox 1
         (parabolicDyadicSourceBox
@@ -36,10 +36,9 @@ theorem parabolicDyadicClosedForwardBox_child_subset
         (parabolicDyadicSourceBox index).radius
         (parabolicDyadicSourceBox index).baseTime
         (parabolicDyadicSourceBox index).center := by
-  have hchildRadius : 0 <
-      (parabolicDyadicSourceBox (parabolicDyadicChildIndex index child)).radius :=
+  have hchildRadius :=
     parabolicDyadicSourceBox_radius_pos (parabolicDyadicChildIndex index child)
-  have hparentRadius : 0 < (parabolicDyadicSourceBox index).radius :=
+  have hparentRadius :=
     parabolicDyadicSourceBox_radius_pos index
   rw [← closure_parabolicBox_of_pos (d := d) (vartheta := (1 : Real))
         (r := (parabolicDyadicSourceBox

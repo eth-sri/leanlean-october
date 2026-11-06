@@ -23,29 +23,14 @@ open MeasureTheory Set
 open scoped ENNReal Topology
 
 private theorem spatialShift_neg_comp_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
+    {d } (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
     spatialShift k (-h) (spatialShift k h z) = z := by
   change (spatialShift k (-h) ∘ spatialShift k h) z = z
   rw [spatialShift_comp]
   simp
 
-private theorem spatialShift_comp_neg_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
-    spatialShift k h (spatialShift k (-h) z) = z := by
-  change (spatialShift k h ∘ spatialShift k (-h)) z = z
-  rw [spatialShift_comp]
-  simp
-
-private theorem spatialShift_measurableEmbedding
-    {d : ℕ} (k : Fin d) (h : ℝ) :
-    MeasurableEmbedding (spatialShift k h) := by
-  change MeasurableEmbedding (fun z => z + (0, h • PDE.basisVec k))
-  simpa only [Homeomorph.coe_addRight] using
-    (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
-
-/-- A native coordinate spatial shift preserves product Lebesgue volume. -/
 theorem spatialShift_measurePreserving
-    {d : ℕ} (k : Fin d) (h : ℝ) :
+    {d } (k : Fin d) (h : ℝ) :
     MeasurePreserving (spatialShift k h)
       (volume : Measure (TimeVelocity d))
       (volume : Measure (TimeVelocity d)) := by
@@ -53,25 +38,25 @@ theorem spatialShift_measurePreserving
     (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k)) volume volume
   exact measurePreserving_add_right volume _
 
-/-- Time differentiation commutes exactly with spatial translation. -/
+/- Time differentiation commutes exactly with spatial translation. -/
 @[simp] theorem timeDerivative_spatialTranslate
-    {d : ℕ} (k : Fin d) (h : ℝ)
+    {d } (k : Fin d) (h : ℝ)
     (f : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     timeDerivative (spatialTranslate k h f) z =
       timeDerivative f (spatialShift k h z) := by
   unfold timeDerivative spatialTranslate spatialShift
   rw [fderiv_comp_add_right]
 
-/-- The velocity gradient commutes exactly with spatial translation. -/
+/- The velocity gradient commutes exactly with spatial translation. -/
 @[simp] theorem velocityGradient_spatialTranslate
-    {d : ℕ} (k : Fin d) (h : ℝ)
+    {d } (k : Fin d) (h : ℝ)
     (f : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     velocityGradient (spatialTranslate k h f) z =
       velocityGradient f (spatialShift k h z) := by
   unfold velocityGradient spatialTranslate spatialShift
   rw [fderiv_comp_add_right]
 
-/-- A weak velocity derivative transports to any subdomain whose forward shift lies
+/- A weak velocity derivative transports to any subdomain whose forward shift lies
 in the original domain. -/
 theorem HasWeakVelocityPartialDerivOn.spatialTranslate_of_mapsTo
     {d : ℕ} {U V : Set (TimeVelocity d)} {i : Fin d}
@@ -93,11 +78,18 @@ theorem HasWeakVelocityPartialDerivOn.spatialTranslate_of_mapsTo
     intro z hz
     rw [mem_tsupport_spatialTranslate_iff] at hz
     refine ⟨spatialShift k (-h) z, hφSupport hz, ?_⟩
-    exact spatialShift_comp_neg_apply k h z
+    change (spatialShift k h ∘ spatialShift k (-h)) z = z
+    rw [spatialShift_comp]
+    simp
   have hweak := hu.restrict himageVU (spatialTranslate k (-h) φ)
     hbackSmooth hbackCompact hbackSupport
   have hmeasure := spatialShift_measurePreserving k h
-  have hembed := spatialShift_measurableEmbedding k h
+  have hembed : MeasurableEmbedding (spatialShift k h) := by
+      change MeasurableEmbedding (fun z => z + (0, h • PDE.basisVec k))
+      simpa only [Homeomorph.coe_addRight] using
+        (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
+
+    /- A native coordinate spatial shift preserves product Lebesgue volume. -/
   calc
     ∫ z in V, spatialTranslate k h u z * velocityGradient φ z i ∂volume =
         ∫ z in spatialShift k h '' V,

@@ -49,9 +49,9 @@ theorem propagation_dimensionless
   have hsqrt : 0 < Real.sqrt T1 := Real.sqrt_pos.mpr hT1
   have hkx : 0 < cx * T1 ^ (3 / 2 : ℝ) :=
     mul_pos hcx (Real.rpow_pos_of_pos hT1 _)
-  have hkv : 0 < cv * Real.sqrt T1 := mul_pos hcv hsqrt
-  have hH : 0 < b0 / Real.sqrt T1 := div_pos hb0 hsqrt
-  have hT0 : 0 < a0 * T1 := mul_pos ha0 hT1
+  have hkv := mul_pos hcv hsqrt
+  have hH := div_pos hb0 hsqrt
+  have hT0 := mul_pos ha0 hT1
   have hT01 : a0 * T1 ≤ T1 := by
     simpa only [one_mul] using mul_le_mul_of_nonneg_right ha01 hT1.le
   have hbarrier := (propagation_barrier_scaling d lam Lam b0 hT1).1

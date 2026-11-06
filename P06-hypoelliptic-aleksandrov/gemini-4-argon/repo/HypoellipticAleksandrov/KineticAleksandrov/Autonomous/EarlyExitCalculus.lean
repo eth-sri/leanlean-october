@@ -11,11 +11,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
 
-/-- An exponential plane depending only on time and physical velocity. -/
+/- An exponential plane depending only on time and physical velocity. -/
 def reconstructionExponentialPlane (alpha beta gamma : ℝ) (p : Point) : ℝ :=
   Real.exp (alpha * p.time + beta * p.velocity 0 + gamma)
 
-/-- The exponential plane is smooth in the prescribed packed physical coordinates. -/
+/- The exponential plane is smooth in the prescribed packed physical coordinates. -/
 theorem reconstructionExponentialPlane_smooth (alpha beta gamma : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞)
       (reconstructionExponentialPlane alpha beta gamma ∘ reconstructionPhysicalHomeomorph) := by
@@ -27,19 +27,6 @@ theorem reconstructionExponentialPlane_smooth (alpha beta gamma : ℝ) :
     (contDiff_const.mul ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp
       (diffusedCoord 1).contDiff)) |>.add contDiff_const).exp
 
-private theorem exponentialPlane_second_deriv (c beta : ℝ) (v : ℝ) :
-    deriv (deriv (fun w => Real.exp (c + beta * w))) v =
-      beta ^ 2 * Real.exp (c + beta * v) := by
-  have hd (w : ℝ) : HasDerivAt (fun w => Real.exp (c + beta * w))
-      (Real.exp (c + beta * w) * beta) w :=
-    by simpa only [id_eq, mul_one] using
-      (((hasDerivAt_id w).const_mul beta).const_add c).exp
-  have heq : deriv (fun w => Real.exp (c + beta * w)) =
-      fun w => Real.exp (c + beta * w) * beta := funext (fun w => (hd w).deriv)
-  rw [heq, (hd v |>.mul_const beta).deriv]
-  ring
-
-/-- No coefficient derivative occurs in the exponential plane operator. -/
 theorem reconstructionExponentialPlane_operator (a : ℝ → ℝ → ℝ)
     (alpha beta gamma : ℝ) (p : Point) :
     forwardScalarOperator a (reconstructionExponentialPlane alpha beta gamma) p =
@@ -66,7 +53,15 @@ theorem reconstructionExponentialPlane_operator (a : ℝ → ℝ → ℝ)
       dsimp only [reconstructionExponentialPlane]
       congr 1
       ring
-    rw [heq, exponentialPlane_second_deriv]
+    have _h_inl_10 (c beta v) : deriv (deriv (fun w => Real.exp (c + beta * w))) v = beta ^ 2 * Real.exp (c + beta * v) := by
+      have hd (w : ℝ) : HasDerivAt (fun w => Real.exp (c + beta * w))
+          (Real.exp (c + beta * w) * beta) w :=
+        by simpa only [id_eq, mul_one] using
+          (((hasDerivAt_id w).const_mul beta).const_add c).exp
+      have heq := funext (fun w => (hd w).deriv)
+      rw [heq, (hd v |>.mul_const beta).deriv]
+      ring
+    rw [heq, _h_inl_10]
     dsimp only [reconstructionExponentialPlane]
     congr 2
     ring

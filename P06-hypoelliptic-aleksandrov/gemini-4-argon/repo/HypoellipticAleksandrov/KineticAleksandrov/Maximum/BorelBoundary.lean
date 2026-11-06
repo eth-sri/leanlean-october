@@ -2,6 +2,12 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelInnerSequence
 import HypoellipticAleksandrov.KineticAleksandrov.Maximum.Comparison
+import HypoellipticAleksandrov.KineticAleksandrov.Maximum.InnerCylinderReflectedRetraction
+import Mathlib.Topology.Order.Compact
+import Mathlib.Topology.Order.Lattice
+import Mathlib.Topology.UniformSpace.HeineCantor
+import HypoellipticAleksandrov.KineticAleksandrov.Maximum.InnerCylinderReflection
+import HypoellipticAleksandrov.KineticAleksandrov.Maximum.InnerCylinderUniform
 
 /-! # The source's second limit from reflected inner cylinders to the original closure -/
 
@@ -11,15 +17,15 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set Filter
 open scoped Topology
 
-/-- Every backward kinetic boundary is nonempty, including all grazing conventions. -/
-theorem borel_kineticBoundary_nonempty {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+/- Every backward kinetic boundary is nonempty, including all grazing conventions. -/
+theorem borel_kineticBoundary_nonempty {d } (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     (kineticBoundary P₀ R).Nonempty := by
   have hn := (comparison_exitBoundary_nonempty (kineticReflection P₀) R hR).image
     kineticReflection
   rw [kineticReflection_image_exitBoundary,kineticReflection_involutive P₀] at hn
   exact hn
 
-/-- Inner estimates exhaust the original closure with the same constant and either source norm. -/
+/- Inner estimates exhaust the original closure with the same constant and either source norm. -/
 theorem borel_boundary_limit {d : ℕ} (p : ℝ) (hp : 1 ≤ p) (alpha C₀ : ℝ)
     (localised : Bool) (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (u f : KineticPoint d → ℝ)
@@ -73,7 +79,47 @@ theorem borel_boundary_limit {d : ℕ} (p : ℝ) (hp : 1 ≤ p) (alpha C₀ : �
     intro P hP
     apply le_of_forall_pos_le_add
     intro ε hε
-    obtain ⟨η,hη,hboundary⟩ := comparison_kinetic_boundary_approx P₀ R hR u hcont hε
+    obtain ⟨η,hη,hboundary⟩ : ∃ η : ℝ, 0 < η ∧ ∀ (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2),
+      δ < η → ∀ P ∈ kineticBoundary
+        ⟨P₀.time - δ, P₀.position - δ • P₀.velocity, P₀.velocity⟩
+        (innerRatio R hR δ hδ0 hδlt * R),
+        max (u P) 0 ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₀ R) + ε := by
+      have hS : kineticBoundary P₀ R ⊆ closure (backwardCylinder P₀ R) := fun _ h => h.1
+      have hcompact : IsCompact (closure (backwardCylinder P₀ R)) := by
+        have h := (isCompact_closure_forwardCylinder (kineticReflection P₀) R hR).image
+          (continuous_kineticReflection d)
+        rw [kineticReflection_image_closure, kineticReflection_image_forwardCylinder,
+          kineticReflection_involutive P₀] at h
+        exact h
+      obtain ⟨r,hr,hbound⟩ := boundary_value_le_of_close_map hcompact hcont hS hε
+      obtain ⟨η,hη,hclose⟩ := reflectedInnerRetraction_uniformly_to_identity P₀ R hR r hr
+      refine ⟨η,hη,?_⟩
+      intro δ hδ0 hδlt hδη P hP
+      have _h_xinl_0 : reflectedInnerRetraction P₀ R hR δ hδ0 hδlt '' kineticBoundary P₀ R =
+      kineticBoundary
+        ⟨P₀.time - δ, P₀.position - δ • P₀.velocity, P₀.velocity⟩
+        (innerRatio R hR δ hδ0 hδlt * R) := by
+          change (kineticReflection ∘ (innerRetraction (kineticReflection P₀) R hR δ hδ0 hδlt ∘
+            kineticReflection)) '' _ = _
+          simp only [Function.comp_def]
+          rw [← image_image kineticReflection
+            (fun P => innerRetraction (kineticReflection P₀) R hR δ hδ0 hδlt
+              (kineticReflection P)),
+            ← image_image (innerRetraction (kineticReflection P₀) R hR δ hδ0 hδlt)
+              kineticReflection, kineticReflection_image_kineticBoundary P₀ R hR,
+            innerRetraction_image_exitBoundary,kineticReflection_image_innerExitBoundary]
+
+        /- Reflection preserves the existing product-metric distance, used only topologically. -/
+      rw [← _h_xinl_0] at hP
+      obtain ⟨x,hx,rfl⟩ := hP
+      apply hbound (reflectedInnerRetraction P₀ R hR δ hδ0 hδlt) ?_ ?_ x hx
+      · intro y hy
+        have hi := closure_reflected_innerCylinder_subset P₀ R hR δ hδ0 hδlt
+        apply subset_closure (hi ?_)
+        rw [kineticReflection_image_innerCylinder P₀ R hR δ hδ0 hδlt]
+        rw [← reflectedInnerRetraction_image_closure P₀ R hR δ hδ0 hδlt]
+        exact mem_image_of_mem _ (hS hy)
+      · exact fun y hy => hclose δ hδ0 hδlt hδη y (hS hy)
     have hsmall := (tendsto_order.mp (borelInnerDelta_tendsto R)).2 η hη
     have hm := borel_inner_exhaustion P₀ R hR P hP
     have hb : ∀ᶠ n in atTop, u P ≤ M + ε + C₀ * (borelInnerRadius R hR n) ^ alpha *

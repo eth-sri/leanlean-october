@@ -28,7 +28,7 @@ theorem bellmanRadiusWindow_isCompact (a b : ℝ) (ha : 0 < a) :
 
 /-- Restricting a test to a compact radial window is exactly a subtype integral. -/
 theorem bellman_integral_compact_radius_subtype {F : Type*} [NormedAddCommGroup F]
-    [NormedSpace ℝ F] (K : Set BellmanPositiveTime) (hK : IsCompact K)
+    [NormedSpace ℝ F] (K ) (hK : IsCompact K)
     (f : BellmanPositiveTime → F) (hf : ∀ r, r ∉ K → f r = 0) :
     (∫ r, f r ∂bellmanPositiveTimeVolume) =
       ∫ r : K, f r.val ∂Measure.comap Subtype.val bellmanPositiveTimeVolume := by

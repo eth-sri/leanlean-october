@@ -74,30 +74,6 @@ private theorem hasDerivAt_fderiv_restrict_affine_line
   simpa only [zero_smul, add_zero, map_zero] using
     hgrad.clm_apply (hasDerivAt_const (x := 0) (c := q))
 
-private theorem hasDerivAt_deriv_restrict_affine_line_of_contDiffAt
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
-    (hg : ContDiffAt ℝ 2 g x) :
-    HasDerivAt (deriv (fun r : ℝ => g (x + r • q)))
-      (fderiv ℝ (fderiv ℝ g) x q q) 0 := by
-  have hgGradDiffAt : DifferentiableAt ℝ (fderiv ℝ g) x :=
-    (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
-  have hEvalLine : HasDerivAt
-      (fun r : ℝ => fderiv ℝ g (x + r • q) q)
-      (fderiv ℝ (fderiv ℝ g) x q q) 0 :=
-    hasDerivAt_fderiv_restrict_affine_line hgGradDiffAt.hasFDerivAt
-  have hgEventually : ∀ᶠ y in 𝓝 x, ContDiffAt ℝ 2 g y :=
-    hg.eventually (by norm_num)
-  have hgEventuallyAtLineZero :
-      ∀ᶠ y in 𝓝 (x + (0 : ℝ) • q), ContDiffAt ℝ 2 g y := by
-    simpa only [zero_smul, add_zero] using hgEventually
-  apply hEvalLine.congr_of_eventuallyEq
-  filter_upwards [
-    (hasDerivAt_affine_line x q 0).continuousAt hgEventuallyAtLineZero] with r hr
-  change ContDiffAt ℝ 2 g (x + r • q) at hr
-  exact (hr.differentiableAt (by norm_num)).hasFDerivAt.comp_hasDerivAt
-    r (hasDerivAt_affine_line x q r) |>.deriv
-
 private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {g : E → ℝ} {x q : E}
@@ -108,10 +84,28 @@ private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
     (hasDerivAt_affine_line x q 0).continuousAt
   have hgAtLineZero : ContinuousAt g (x + (0 : ℝ) • q) := by
     simpa only [zero_smul, add_zero] using hg.continuousAt
-  have hcompCont : ContinuousAt (fun r : ℝ => g (x + r • q)) 0 :=
+  have hcompCont :=
     hgAtLineZero.comp' (f := fun r : ℝ => x + r • q) hlineCont
+  have _h_inl_18 : HasDerivAt (deriv (fun r : ℝ => g (x + r • q))) (fderiv ℝ (fderiv ℝ g) x q q) 0 := by
+    have hgGradDiffAt : DifferentiableAt ℝ (fderiv ℝ g) x :=
+      (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
+    have hEvalLine : HasDerivAt
+        (fun r : ℝ => fderiv ℝ g (x + r • q) q)
+        (fderiv ℝ (fderiv ℝ g) x q q) 0 :=
+      hasDerivAt_fderiv_restrict_affine_line hgGradDiffAt.hasFDerivAt
+    have hgEventually : ∀ᶠ y in 𝓝 x, ContDiffAt ℝ 2 g y :=
+      hg.eventually (by norm_num)
+    have hgEventuallyAtLineZero :
+        ∀ᶠ y in 𝓝 (x + (0 : ℝ) • q), ContDiffAt ℝ 2 g y := by
+      simpa only [zero_smul, add_zero] using hgEventually
+    apply hEvalLine.congr_of_eventuallyEq
+    filter_upwards [
+      (hasDerivAt_affine_line x q 0).continuousAt hgEventuallyAtLineZero] with r hr
+    change ContDiffAt ℝ 2 g (x + r • q) at hr
+    exact (hr.differentiableAt (by norm_num)).hasFDerivAt.comp_hasDerivAt
+      r (hasDerivAt_affine_line x q r) |>.deriv
   exact deriv_deriv_nonpos_of_isLocalMax hmax
-    (hasDerivAt_deriv_restrict_affine_line_of_contDiffAt hg) hcompCont
+    _h_inl_18 hcompCont
 
 private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
     {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
@@ -121,7 +115,7 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
       fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2
         (PDE.basisVec i) (PDE.basisVec j) := by
   let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  have hsecond : HasFDerivAt (fderiv ℝ g) (fderiv ℝ (fderiv ℝ g) z.2) z.2 :=
+  have hsecond :=
     ((hu.fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num)).hasFDerivAt
   have hdiff : ∀ j : Fin n,
@@ -131,42 +125,8 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
   change (fderiv ℝ (fun y : PDE.Vec n => fun j =>
       fderiv ℝ g y (PDE.basisVec j)) z.2 (PDE.basisVec i)) j = _
   rw [fderiv_pi hdiff]
-  have hj := (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv
-  have hjapply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hj
+  have hjapply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) ((hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv)
   simpa [ContinuousLinearMap.flip_apply] using hjapply
-
-private theorem scalarSpatialHessian_quadratic_eq {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
-    (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
-    (q : PDE.Vec n) :
-    dotProduct q ((scalarSpatialHessian u z).mulVec q) =
-      fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2 q q := by
-  let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  let H := fderiv ℝ (fderiv ℝ g) z.2
-  change (∑ i : Fin n, q i * ∑ j : Fin n,
-      scalarSpatialHessian u z i j * q j) = H q q
-  simp_rw [scalarSpatialHessian_apply_eq_sndFDeriv hu]
-  change (∑ i : Fin n, q i * ∑ j : Fin n,
-      H (PDE.basisVec i) (PDE.basisVec j) * q j) = H q q
-  calc
-    (∑ i : Fin n, q i * ∑ j : Fin n,
-        H (PDE.basisVec i) (PDE.basisVec j) * q j) =
-        ∑ i : Fin n, q i * H (PDE.basisVec i)
-          (∑ j : Fin n, q j • PDE.basisVec j) := by
-      apply Finset.sum_congr rfl
-      intro i _
-      congr 1
-      rw [map_sum]
-      simp only [map_smul, smul_eq_mul]
-      apply Finset.sum_congr rfl
-      intro j _
-      ring
-    _ = ∑ i : Fin n, q i * H (PDE.basisVec i) q := by
-      rw [PDE.sum_smul_basisVec]
-    _ = H (∑ i : Fin n, q i • PDE.basisVec i) q := by
-      rw [map_sum, _root_.sum_apply]
-      simp only [map_smul, _root_.smul_apply, smul_eq_mul]
-    _ = H q q := by rw [PDE.sum_smul_basisVec]
 
 private theorem scalarSpatialHessian_isSymm_of_contDiffAt {n : ℕ}
     {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
@@ -202,7 +162,35 @@ private theorem neg_scalarSpatialHessian_posSemidef_of_spatial_localMax
         (hasDerivAt_affine_line z.2 q 0).continuousAt
     change -dotProduct q
       ((scalarSpatialHessian u z).mulVec q) ≥ 0
-    rw [scalarSpatialHessian_quadratic_eq hu q]
+    have _h_inl_21 : dotProduct q ((scalarSpatialHessian u z).mulVec q) =
+      fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2 q q := by
+      let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
+      let H := fderiv ℝ (fderiv ℝ g) z.2
+      change (∑ i : Fin n, q i * ∑ j : Fin n,
+          scalarSpatialHessian u z i j * q j) = H q q
+      simp_rw [scalarSpatialHessian_apply_eq_sndFDeriv hu]
+      change (∑ i : Fin n, q i * ∑ j : Fin n,
+          H (PDE.basisVec i) (PDE.basisVec j) * q j) = H q q
+      calc
+        (∑ i : Fin n, q i * ∑ j : Fin n,
+            H (PDE.basisVec i) (PDE.basisVec j) * q j) =
+            ∑ i : Fin n, q i * H (PDE.basisVec i)
+              (∑ j : Fin n, q j • PDE.basisVec j) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          congr 1
+          rw [map_sum]
+          simp only [map_smul, smul_eq_mul]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+        _ = ∑ i : Fin n, q i * H (PDE.basisVec i) q := by
+          rw [PDE.sum_smul_basisVec]
+        _ = H (∑ i : Fin n, q i • PDE.basisVec i) q := by
+          rw [map_sum, _root_.sum_apply]
+          simp only [map_smul, _root_.smul_apply, smul_eq_mul]
+        _ = H q q := by rw [PDE.sum_smul_basisVec]
+    rw [_h_inl_21]
     exact neg_nonneg.mpr
       (fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine hu hlineMax)
 
@@ -214,7 +202,7 @@ private theorem trace_mul_nonneg_of_posSemidef {n : ℕ} {A H : PDE.Mat n}
   have hS : S.PosSemidef := by
     dsimp [S]
     exact CFC.sqrt_nonneg H |>.posSemidef
-  have hconj : (S * A * Sᴴ).PosSemidef := hA.mul_mul_conjTranspose_same S
+  have hconj := hA.mul_mul_conjTranspose_same S
   calc
     0 ≤ (S * A * Sᴴ).trace := hconj.trace_nonneg
     _ = (S * A * S).trace := by rw [hS.isHermitian.eq]
@@ -224,19 +212,18 @@ private theorem trace_mul_nonneg_of_posSemidef {n : ℕ} {A H : PDE.Mat n}
       dsimp [S]
       exact CFC.sqrt_mul_sqrt_self H hH.nonneg]
 
-private theorem matrixContraction_nonpos_of_psd_neg {n : ℕ} {A H : PDE.Mat n}
+private theorem matrixContraction_nonpos_of_psd_neg {n } {A H : PDE.Mat n}
     (hA : A.PosSemidef) (hH : (-H).PosSemidef) (hHsymm : H.IsSymm) :
     matrixContraction A H ≤ 0 := by
-  have htrace : 0 ≤ (A * (-H)).trace := trace_mul_nonneg_of_posSemidef hA hH
+  have htrace := trace_mul_nonneg_of_posSemidef hA hH
   rw [matrixContraction_eq_trace_mul_of_isSymm A H hHsymm]
   calc
     (A * H).trace = -((A * (-H)).trace) := by simp
     _ ≤ 0 := neg_nonpos.mpr htrace
 
-/-- A positive semidefinite diffusion contracts the Hessian at a diffused
+/- A positive semidefinite diffusion contracts the Hessian at a diffused
 slice maximum to a nonpositive scalar. -/
-theorem diffused_contraction_nonpos_of_localMax {d : ℕ}
-    {u : KineticPoint d → ℝ} {p : KineticPoint d} {A : PDE.Mat d}
+theorem diffused_contraction_nonpos_of_localMax {d u} {p : KineticPoint d} {A : PDE.Mat d}
     (hu : ContDiffAt ℝ 2 (fun y => u ⟨p.time, y, p.velocity⟩) p.position)
     (hmax : IsLocalMax (fun y => u ⟨p.time, y, p.velocity⟩) p.position)
     (hA : A.PosSemidef) :
@@ -248,34 +235,5 @@ theorem diffused_contraction_nonpos_of_localMax {d : ℕ}
     (neg_scalarSpatialHessian_posSemidef_of_spatial_localMax hu hmax)
     (scalarSpatialHessian_isSymm_of_contDiffAt hu)
 
-/-- A differentiable transported slice has zero gradient at a local maximum. -/
-theorem transported_gradient_eq_zero_of_localMax {d : ℕ}
-    {u : KineticPoint d → ℝ} {p : KineticPoint d}
-    (hu : DifferentiableAt ℝ (fun z => u ⟨p.time, p.position, z⟩) p.velocity)
-    (hmax : IsLocalMax (fun z => u ⟨p.time, p.position, z⟩) p.velocity) :
-    kineticVelocityGradient u p = 0 := by
-  ext i
-  change fderiv ℝ (fun z => u ⟨p.time, p.position, z⟩)
-    p.velocity (PDE.basisVec i) = 0
-  rw [hmax.hasFDerivAt_eq_zero hu.hasFDerivAt]
-  rfl
-
-/-- Pointwise maximum calculus for the transported operator, with only the
-anisotropic derivatives used by the source. -/
-theorem transportedForwardOperator_nonpos_of_slice_localMax {d : ℕ}
-    {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {u : KineticPoint d → ℝ} {p : KineticPoint d}
-    (htime : kineticTimeDerivative u p ≤ 0)
-    (hv : ContDiffAt ℝ 2 (fun y => u ⟨p.time, y, p.velocity⟩) p.position)
-    (hz : DifferentiableAt ℝ (fun z => u ⟨p.time, p.position, z⟩) p.velocity)
-    (hvmax : IsLocalMax (fun y => u ⟨p.time, y, p.velocity⟩) p.position)
-    (hzmax : IsLocalMax (fun z => u ⟨p.time, p.position, z⟩) p.velocity)
-    (hB : (B p.time p.position p.velocity).PosSemidef) :
-    transportedForwardOperator B b u p ≤ 0 := by
-  have hdiff := diffused_contraction_nonpos_of_localMax hv hvmax hB
-  rw [transportedForwardOperator_apply,
-    transported_gradient_eq_zero_of_localMax hz hzmax]
-  simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero, add_zero]
-  exact add_nonpos htime hdiff
-
+/- A differentiable transported slice has zero gradient at a local maximum. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

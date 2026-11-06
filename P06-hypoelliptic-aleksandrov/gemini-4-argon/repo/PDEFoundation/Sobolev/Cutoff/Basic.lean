@@ -33,28 +33,28 @@ explicit Euclidean norm of `PDE.classicalGradient`.
 
 namespace PDE
 
-/-- A quantitative smooth cutoff between `inner` and `outer`.
+/- A quantitative smooth cutoff between `inner` and `outer`.
 
 The constant `K` bounds the explicit Euclidean norm of the coordinate
 gradient pointwise. In particular, the field does not use the operator norm
 induced by the ambient product norm. -/
 structure QuantitativeSmoothCutoff {d : ℕ}
     (inner outer : Set (Vec d)) (K : ℝ) where
-  /-- The cutoff function. -/
+  /- The cutoff function. -/
   toFun : Vec d → ℝ
-  /-- Smoothness to every order. -/
+  /- Smoothness to every order. -/
   smooth : ContDiff ℝ (⊤ : ℕ∞) toFun
-  /-- The cutoff has compact topological support. -/
+  /- The cutoff has compact topological support. -/
   hasCompactSupport : HasCompactSupport toFun
-  /-- The topological support lies in the prescribed outer set. -/
+  /- The topological support lies in the prescribed outer set. -/
   tsupport_subset : tsupport toFun ⊆ outer
-  /-- The cutoff is nonnegative. -/
+  /- The cutoff is nonnegative. -/
   nonneg : ∀ x, 0 ≤ toFun x
-  /-- The cutoff is at most one. -/
+  /- The cutoff is at most one. -/
   le_one : ∀ x, toFun x ≤ 1
-  /-- The cutoff equals one throughout the inner set. -/
+  /- The cutoff equals one throughout the inner set. -/
   eq_one_on_inner : ∀ x ∈ inner, toFun x = 1
-  /-- Pointwise explicit Euclidean gradient bound. -/
+  /- Pointwise explicit Euclidean gradient bound. -/
   gradient_bound :
     ∀ x, vecEuclideanNorm (classicalGradient toFun x) ≤ K
 
@@ -69,31 +69,8 @@ instance :
       (fun _ => Vec d → ℝ) where
   coe η := η.toFun
 
-/-- Restrict the plateau set and enlarge the permitted support set without
+/- Restrict the plateau set and enlarge the permitted support set without
 changing the cutoff function or its gradient constant. -/
-def reindex
-    {inner' outer' : Set (Vec d)}
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hinner : inner' ⊆ inner) (houter : outer ⊆ outer') :
-    QuantitativeSmoothCutoff inner' outer' K where
-  toFun := η.toFun
-  smooth := η.smooth
-  hasCompactSupport := η.hasCompactSupport
-  tsupport_subset := η.tsupport_subset.trans houter
-  nonneg := η.nonneg
-  le_one := η.le_one
-  eq_one_on_inner := fun x hx =>
-    η.eq_one_on_inner x (hinner hx)
-  gradient_bound := η.gradient_bound
-
-@[simp]
-theorem reindex_toFun
-    {inner' outer' : Set (Vec d)}
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hinner : inner' ⊆ inner) (houter : outer ⊆ outer') :
-    (η.reindex hinner houter).toFun = η.toFun :=
-  rfl
-
 private theorem classicalGradient_sq_toFun
     (η : QuantitativeSmoothCutoff inner outer K) (x : Vec d) :
     classicalGradient (fun y => η.toFun y ^ 2) x =
@@ -110,7 +87,7 @@ private theorem classicalGradient_sq_toFun
   simp only [add_apply, smul_apply, smul_eq_mul]
   ring
 
-/-- Square a quantitative cutoff.
+/- Square a quantitative cutoff.
 
 The support and plateau sets are unchanged, while the explicit Euclidean
 gradient constant becomes `2 * K`.
@@ -153,52 +130,46 @@ def sq (η : QuantitativeSmoothCutoff inner outer K) :
         mul_le_mul_of_nonneg_left (η.gradient_bound x) (by norm_num)
 
 @[simp]
-theorem sq_toFun
-    (η : QuantitativeSmoothCutoff inner outer K) :
-    η.sq.toFun = fun x => η.toFun x ^ 2 :=
-  rfl
+theorem sq_toFun (η : QuantitativeSmoothCutoff inner outer K) :
+    η.sq.toFun = fun x => η.toFun x ^ 2 := rfl
 
 @[simp]
-theorem sq_apply
-    (η : QuantitativeSmoothCutoff inner outer K) (x : Vec d) :
-    η.sq x = η x ^ 2 :=
-  rfl
+theorem sq_apply (η : QuantitativeSmoothCutoff inner outer K) (x : Vec d) :
+    η.sq x = η x ^ 2 := rfl
 
-/-- The classical gradient of the squared cutoff is exactly
-`2 * η * ∇η`. -/
 theorem sq_classicalGradient
     (η : QuantitativeSmoothCutoff inner outer K) (x : Vec d) :
     classicalGradient η.sq.toFun x =
       (2 * η x) • classicalGradient η.toFun x :=
   classicalGradient_sq_toFun η x
 
-/-- The ordinary support is contained in the prescribed outer set. -/
+/- The ordinary support is contained in the prescribed outer set. -/
 theorem support_subset
     (η : QuantitativeSmoothCutoff inner outer K) :
     Function.support η.toFun ⊆ outer :=
   (subset_tsupport η.toFun).trans η.tsupport_subset
 
-/-- A quantitative cutoff is stationary at every point of its plateau.
+/- A quantitative cutoff is stationary at every point of its plateau.
 
 No openness hypothesis on `inner` is needed: a plateau point has value one,
 and the global upper bound `η ≤ 1` makes it a local maximum. -/
 theorem classicalGradient_eq_zero_of_mem_inner
     (η : QuantitativeSmoothCutoff inner outer K)
-    {x : Vec d} (hx : x ∈ inner) :
+    {x } (hx : x ∈ inner) :
     classicalGradient η.toFun x = 0 := by
   have hmax : IsMaxOn η.toFun Set.univ x := by
     intro y _
     rw [η.eq_one_on_inner x hx]
     exact η.le_one y
-  have hlocal : IsLocalMax η.toFun x :=
+  have hlocal :=
     hmax.isLocalMax (by simp)
-  have hfderiv : fderiv ℝ η.toFun x = 0 :=
+  have hfderiv :=
     IsLocalMax.fderiv_eq_zero hlocal
   funext i
   rw [classicalGradient_apply, hfderiv]
   exact zero_apply _
 
-/-- The plateau and support properties force the inner set to lie in the
+/- The plateau and support properties force the inner set to lie in the
 outer set. -/
 theorem inner_subset_outer
     (η : QuantitativeSmoothCutoff inner outer K) :
@@ -209,7 +180,7 @@ theorem inner_subset_outer
   rw [η.eq_one_on_inner x hx]
   exact one_ne_zero
 
-/-- Any realized pointwise Euclidean gradient bound is nonnegative. -/
+/- Any realized pointwise Euclidean gradient bound is nonnegative. -/
 theorem gradient_bound_nonneg
     (η : QuantitativeSmoothCutoff inner outer K) :
     0 ≤ K :=
@@ -217,7 +188,7 @@ theorem gradient_bound_nonneg
     (classicalGradient η.toFun (0 : Vec d))).trans
       (η.gradient_bound 0)
 
-/-- Every coordinate of the classical gradient is bounded by `K`. -/
+/- Every coordinate of the classical gradient is bounded by `K`. -/
 theorem abs_classicalGradient_apply_le
     (η : QuantitativeSmoothCutoff inner outer K)
     (x : Vec d) (i : Fin d) :

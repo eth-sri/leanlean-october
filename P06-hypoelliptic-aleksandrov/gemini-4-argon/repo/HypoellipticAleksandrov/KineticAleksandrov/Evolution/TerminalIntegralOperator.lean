@@ -37,7 +37,7 @@ theorem integrable_boundedBorel {Y : Type*} [MeasurableSpace Y] (f : BoundedBore
 /-- The integral of a bounded Borel function against a subprobability measure is bounded by
 the bound of the function. -/
 theorem abs_integral_boundedBorel_le {Y : Type*} [MeasurableSpace Y] (f : BoundedBorel Y)
-    (μ : Measure Y) (hμ : μ univ ≤ 1) {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ y, |f y| ≤ C) :
+    (μ : Measure Y) (hμ : μ univ ≤ 1) {C } (hC0 : 0 ≤ C) (hC : ∀ y, |f y| ≤ C) :
     |∫ y, f y ∂μ| ≤ C := by
   have : IsFiniteMeasure μ := ⟨hμ.trans_lt ENNReal.one_lt_top⟩
   have hreal : μ.real univ ≤ 1 := by

@@ -42,7 +42,7 @@ theorem singular_line_weak_derivative (f g : ℝ → ℝ) (hf : Continuous f)
   linarith only [hz]
 
 /-- Each actual position derivative fiber is locally integrable on the full position line. -/
-theorem barrier_dx_fiber_locallyIntegrable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_dx_fiber_locallyIntegrable {alpha phi}
     (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1) (v : ℝ) :
     LocallyIntegrable (fun X => bellmanDx phi (X, v)) volume := by
   rw [locallyIntegrable_iff]
@@ -55,7 +55,7 @@ theorem barrier_dx_fiber_locallyIntegrable {alpha : ℝ} {phi : (ℝ × ℝ) →
   exact abs_le.mp hh.le
 
 /-- The actual position convolution moves its derivative onto the source jet even at v=0. -/
-theorem barrier_position_fiber_weak_dx {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_position_fiber_weak_dx {alpha phi}
     (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
     (v : ℝ) (test : ℝ → ℝ) (ht : ContDiff ℝ 1 test) (hs : HasCompactSupport test) :
     (∫ X, bellmanOriginExtension phi (X, v) * deriv test X) =

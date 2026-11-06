@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementContinuousBoundary
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonForward
 public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
+import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementReflection
+import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonStability
 
 /-! # The forward homogeneous replacement and sharp source comparison
 
@@ -17,15 +19,15 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 open scoped Matrix.Norms.Elementwise
 
-/-- The planned forward replacement has the exact initial/lateral traces and source error. -/
+/- The planned forward replacement has the exact initial/lateral traces and source error. -/
 theorem exists_parabolic_homogeneous_replacement
     (hLE : KineticAleksandrov.LiebermanEllipsoidDirichletStatement)
-    {N : ℕ} (hN : 1 ≤ N) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {N } (hN : 1 ≤ N) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : CoefficientField N) (hA : IsSmoothCoefficient A)
     (hs : IsSymmetricCoefficient A) (hlo : HasLowerEllipticity lam A)
     (hhi : HasUpperEllipticity Lam A)
-    (a T : ℝ) (haT : a < T) (v₀ : PDE.Vec N) (r : ℝ) (hr : 0 < r)
-    (w : TimeVelocity N → ℝ) (M : ℝ) (hM : 0 ≤ M)
+    (a T : ℝ) (haT : a < T) (v₀ : PDE.Vec N) (r ) (hr : 0 < r)
+    (w : TimeVelocity N → ℝ) (M ) (hM : 0 ≤ M)
     (hw : IsScalarC12On w (scalarParabolicOpenCylinder a T (PDE.euclideanBall v₀ r)))
     (hc : ContinuousOn w (scalarParabolicClosedCylinder a T (PDE.euclideanBall v₀ r)))
     (hf : ∀ z ∈ scalarParabolicOpenCylinder a T (PDE.euclideanBall v₀ r),
@@ -68,9 +70,9 @@ theorem exists_parabolic_homogeneous_replacement
     exact ⟨⟨by dsimp [timeReflection]; linarith only [hz.1.2],
       by dsimp [timeReflection]; linarith only [hz.1.1]⟩, hz.2⟩
   let v := timeReflectedScalar u
-  have hv12 : IsScalarC12On v (scalarParabolicOpenCylinder a T Ω) :=
+  have hv12 :=
     scalarC12On_mono (isScalarC12On_timeReflectedScalar hu.2.1) hopen
-  have hvc : ContinuousOn v (scalarParabolicClosedCylinder a T Ω) :=
+  have hvc :=
     hu.1.comp continuous_timeReflection.continuousOn hclosed
   have htrace : EqOn v w (({a} ×ˢ closure Ω) ∪ (Icc a T ×ˢ frontier Ω)) := by
     intro z hz
@@ -100,9 +102,13 @@ theorem exists_parabolic_homogeneous_replacement
       matrixContraction (A z.1 z.2) (scalarSpatialHessian u (timeReflection z)) = 0 at he
     linarith only [he]
   refine ⟨v, hv12, hvc, htrace, hve, ?_⟩
-  exact abs_forward_replacement_error_le_horizon (PDE.isOpen_euclideanBall v₀ r)
-    (KineticAleksandrov.Occupation.isBounded_euclideanBall v₀ hr) haT A hA.continuous
-    (KineticAleksandrov.Occupation.posSemidef_of_lower_loewner hlam hlo)
-    w v hw hv12 hc hvc htrace hve M hM hf
+  have hΩo := (PDE.isOpen_euclideanBall v₀ r)
+  have hΩb := (KineticAleksandrov.Occupation.isBounded_euclideanBall v₀ hr)
+  have hAc := hA.continuous
+  have hApsd := (KineticAleksandrov.Occupation.posSemidef_of_lower_loewner hlam hlo)
+  intro z hz
+  exact (abs_forward_replacement_error_le_time hΩo hΩb haT A hAc hApsd
+    w v hw hv12 hc hvc htrace hve M hM hf z hz).trans
+      (mul_le_mul_of_nonneg_left (sub_le_sub_right hz.1.2 a) hM)
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

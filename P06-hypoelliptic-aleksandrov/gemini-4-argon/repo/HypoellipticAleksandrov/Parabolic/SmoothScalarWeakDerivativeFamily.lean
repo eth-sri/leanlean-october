@@ -56,7 +56,7 @@ private theorem coordinateIteratedFDeriv_continuousOn
   exact (coordinateIteratedFDeriv_contDiffOn (m := 0) hU f hf alpha
     (by simpa using horder)).continuousOn
 
-/-- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
+/- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
 theorem coordinateIteratedFDeriv_memLp
     {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)
     (hUfinite : (volume : Measure (TimeVelocity d)) U < ∞)
@@ -80,7 +80,7 @@ theorem coordinateIteratedFDeriv_memLp
   filter_upwards [ae_restrict_mem hUopen.measurableSet] with z hz
   simpa only [Real.norm_eq_abs] using hbound alpha z hz
 
-/-- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
+/- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
 theorem coordinateIteratedFDeriv_timeSucc
     {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)
     (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ L f U)
@@ -105,7 +105,7 @@ theorem coordinateIteratedFDeriv_timeSucc
         exact_mod_cast (show beta.1.order + 1 ≤ L by omega)))
   simpa only [timeVelocityBasis_time, timeDerivative] using hadd.symm
 
-/-- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
+/- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
 theorem coordinateIteratedFDeriv_velocitySucc
     {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)
     (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ L f U)
@@ -130,7 +130,7 @@ theorem coordinateIteratedFDeriv_velocitySucc
         exact_mod_cast (show beta.1.order + 1 ≤ L by omega)))
   simpa only [timeVelocityBasis_velocity, velocityGradient, PDE.basisVec] using hadd.symm
 
-/-- The canonical coherent weak-derivative family of a classically smooth
+/- The canonical coherent weak-derivative family of a classically smooth
 scalar function with bounded derivatives on a finite-volume open set. -/
 noncomputable def ParabolicWeakDerivativeFamily.ofContDiffOnBounded
     (d L : ℕ)
@@ -154,27 +154,6 @@ noncomputable def ParabolicWeakDerivativeFamily.ofContDiffOnBounded
     exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f z
   hasWeakTimeSucc := coordinateIteratedFDeriv_timeSucc hUopen f hf
   hasWeakVelocitySucc := coordinateIteratedFDeriv_velocitySucc hUopen f hf
-
-@[simp] theorem
-    ParabolicWeakDerivativeFamily.ofContDiffOnBounded_representative
-    (d L : ℕ)
-    (U : Set (TimeVelocity d))
-    (hUopen : IsOpen U)
-    (hUfinite :
-      (volume : Measure (TimeVelocity d)) U < ∞)
-    (B : ParabolicDerivativeIndex d L → ℝ)
-    (f : TimeVelocity d → ℝ)
-    (hf : ContDiffOn ℝ L f U)
-    (hbound :
-      ∀ (alpha : ParabolicDerivativeIndex d L)
-        (z : TimeVelocity d), z ∈ U →
-        |TimeVelocityMultiIndex.coordinateIteratedFDeriv
-          alpha.1 f z| ≤ B alpha)
-    (alpha : ParabolicDerivativeIndex d L) :
-    (ParabolicWeakDerivativeFamily.ofContDiffOnBounded
-      d L U hUopen hUfinite B f hf hbound).representative alpha =
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 f :=
-  rfl
 
 private theorem coordinateIteratedFDeriv_eLpNorm_sq_le
     {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)

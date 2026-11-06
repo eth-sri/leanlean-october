@@ -13,8 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 open HypoellipticAleksandrov Set
 
 /-- The regularized adjoint of a smooth compact test is smooth. -/
-theorem contDiff_regularizedAdjoint {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} (hB : IsSmoothFullKineticCoefficient B)
+theorem contDiff_regularizedAdjoint {n B b} (hB : IsSmoothFullKineticCoefficient B)
     (hb : IsSmoothDrift b) {ψ : EvolutionVec n → ℝ}
     (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (ε : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (regularizedAdjoint B b ε ψ) := by
@@ -24,8 +23,7 @@ theorem contDiff_regularizedAdjoint {n : ℕ} {B : FullKineticCoefficient n}
       contDiff_fderiv_apply (contDiff_fderiv_apply hψ (basisZ l)) (basisZ l)))
 
 /-- The regularized adjoint vanishes outside the original test support. -/
-theorem regularizedAdjoint_eq_zero_of_notMem_tsupport {n : ℕ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (ε : ℝ)
+theorem regularizedAdjoint_eq_zero_of_notMem_tsupport {n B b} (ε : ℝ)
     (ψ : EvolutionVec n → ℝ) {x : EvolutionVec n} (hx : x ∉ tsupport ψ) :
     regularizedAdjoint B b ε ψ x = 0 := by
   have hzero (l : Fin n) :

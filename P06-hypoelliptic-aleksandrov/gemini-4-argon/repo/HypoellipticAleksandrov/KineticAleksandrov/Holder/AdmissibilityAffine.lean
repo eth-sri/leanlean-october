@@ -19,8 +19,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Set MeasureTheory
 
 /-- Positive affine transformations preserve precisely the same Aleksandrov data. -/
-theorem admissible_pos_affine {d : ℕ} {A : FullKineticCoefficient d}
-    {O : Set (KineticPoint d)} {p C_A : ℝ} {u : KineticPoint d → ℝ}
+theorem admissible_pos_affine {d A O p C_A} {u : KineticPoint d → ℝ}
     (hu : IsAdmissibleSupersolution A O p C_A u) (a b : ℝ) (ha : 0 < a) :
     IsAdmissibleSupersolution A O p C_A (fun P => a * u P + b) := by
   refine ⟨continuousOn_const.mul hu.1 |>.add continuousOn_const, ?_⟩

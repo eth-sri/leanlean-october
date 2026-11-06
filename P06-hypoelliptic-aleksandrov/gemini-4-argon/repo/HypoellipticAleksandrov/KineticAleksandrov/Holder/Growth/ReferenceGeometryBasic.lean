@@ -31,9 +31,9 @@ theorem isOpen_referenceRegion (d m : ℕ) (L : ℝ) : IsOpen (referenceRegion d
           continuous_const)))
 
 /-- A finite rectangular envelope bounds the reference region. -/
-theorem isBounded_referenceRegion (d m : ℕ) {L : ℝ} (hL : 0 ≤ L) :
+theorem isBounded_referenceRegion (d m : ℕ) {L } (hL : 0 ≤ L) :
     Bornology.IsBounded (referenceRegion d m L) := by
-  let E : Set (KineticPoint d) := (KineticPoint.equivProd d) ⁻¹'
+  let E := (KineticPoint.equivProd d) ⁻¹'
     (Icc (-((m : ℝ) + 5)) 0 ×ˢ
       (PDE.euclideanClosedBall (0 : PDE.Vec d) L ×ˢ
         PDE.euclideanClosedBall (0 : PDE.Vec d) L))

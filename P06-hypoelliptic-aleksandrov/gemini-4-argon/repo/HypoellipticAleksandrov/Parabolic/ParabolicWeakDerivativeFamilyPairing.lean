@@ -86,8 +86,7 @@ private theorem integral_mul_congr_ae
 /-- Distributional compact-test characterization of every selected bounded
 time--velocity weak derivative. -/
 theorem ParabolicWeakDerivativeFamily.integral_representative_mul_test
-    {d L : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d L U u}
     (D : ParabolicWeakDerivativeFamily d L U u)
     (alpha : ParabolicDerivativeIndex d L)
     (φ : TimeVelocity d → ℝ)

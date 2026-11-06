@@ -48,7 +48,7 @@ theorem bellman_exp_neg_le_inv_sq (y : ℝ) (hy : 0 < y) :
 
 /-- At small time the kernel is uniformly bounded on each plane set away from the origin. -/
 theorem bellmanGaussianKernel_le_smallTime (t : BellmanPositiveTime) (ht : t.val ≤ 1)
-    (q : ℝ × ℝ) (a : ℝ) (ha : 0 < a) (hq : a ≤ q.1 ^ 2 + q.2 ^ 2) :
+    (q : ℝ × ℝ) (a ) (ha : 0 < a) (hq : a ≤ q.1 ^ 2 + q.2 ^ 2) :
     bellmanGaussianKernel t q ≤ 64 * Real.sqrt 3 / (Real.pi * a ^ 2) := by
   have hE : bellmanGaussianExponent t q ≤ -a / (8 * t.val) := by
     refine (bellmanGaussianExponent_le_smallTime t ht q).trans ?_

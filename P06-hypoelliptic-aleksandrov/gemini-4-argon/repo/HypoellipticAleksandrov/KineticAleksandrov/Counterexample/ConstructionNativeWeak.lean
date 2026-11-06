@@ -11,8 +11,8 @@ open MeasureTheory
 
 /-- A packed weak directional derivative transfers back to the native spatial carrier.
 The measure-preserving chart introduces no Jacobian factor. -/
-theorem construction_weak_directional_native {d : ℕ}
-    (u g : PDE.Vec (d + d) → ℝ) (z : PDE.Vec (d + d))
+theorem construction_weak_directional_native {d }
+    (u g : PDE.Vec (d + d) → ℝ) (z )
     (hweak : ∀ test : PDE.Vec (d + d) → ℝ, ContDiff ℝ (⊤ : ℕ∞) test →
       HasCompactSupport test →
       (∫ x, u x * fderiv ℝ test x z) = -(∫ x, g x * test x))
@@ -23,7 +23,7 @@ theorem construction_weak_directional_native {d : ℕ}
       -(∫ q, g ((spatialCoordinateCLE d).symm q) * test q) := by
   let e := spatialCoordinateCLE d
   let psi := test ∘ e
-  have hp : ContDiff ℝ (⊤ : ℕ∞) psi := ht.comp e.contDiff
+  have hp := ht.comp e.contDiff
   have hc : HasCompactSupport psi := hs.comp_homeomorph e.toHomeomorph
   have hd : ∀ x, fderiv ℝ psi x z = fderiv ℝ test (e x) (e z) := by
     intro x
@@ -44,7 +44,7 @@ theorem construction_weak_directional_native {d : ℕ}
   exact hLn.symm.trans ((hweak psi hp hc).trans (congrArg Neg.neg hRn))
 
 /-- Local integrability transfers to the native carrier through the same chart. -/
-theorem construction_locallyIntegrable_native {d : ℕ} (f : PDE.Vec (d + d) → ℝ)
+theorem construction_locallyIntegrable_native {d } (f : PDE.Vec (d + d) → ℝ)
     (hf : LocallyIntegrable f volume) :
     LocallyIntegrable (fun q => f ((spatialCoordinateCLE d).symm q)) volume := by
   apply locallyIntegrable_iff.mpr
@@ -53,13 +53,11 @@ theorem construction_locallyIntegrable_native {d : ℕ} (f : PDE.Vec (d + d) →
   have hK' : IsCompact (e.symm '' K) :=
     hK.image (spatialCoordinateCLE d).symm.continuous
   have hi := hf.integrableOn_isCompact hK'
-  have hm := (measurePreserving_spatialCoordinate d).symm.restrict_image_emb
-    e.symm.measurableEmbedding K
-  have he := hm.integrable_comp_of_integrable hi
+  have he := ((measurePreserving_spatialCoordinate d).symm.restrict_image_emb e.symm.measurableEmbedding K).integrable_comp_of_integrable hi
   simpa only [Function.comp_def, e] using! he
 
 /-- Almost-everywhere statements transfer to the native carrier without exceptional mass. -/
-theorem construction_ae_native {d : ℕ} (prop : PDE.Vec (d + d) → Prop)
+theorem construction_ae_native {d } (prop : PDE.Vec (d + d) → Prop)
     (hp : ∀ᵐ x ∂volume, prop x) :
     ∀ᵐ q ∂volume, prop ((spatialCoordinateCLE d).symm q) :=
   (measurePreserving_spatialCoordinate d).symm.quasiMeasurePreserving.ae hp

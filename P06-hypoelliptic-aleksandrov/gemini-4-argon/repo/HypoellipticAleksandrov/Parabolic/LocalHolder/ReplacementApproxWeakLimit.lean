@@ -20,19 +20,19 @@ open Filter MeasureTheory Set
 open scoped Topology ENNReal BigOperators
 
 /-- Uniformly bounded weak derivative families survive strong L2 convergence of their roots. -/
-theorem exists_weakDerivativeFamily_testing_limit_of_tendsto_toLp {d L : ℕ}
+theorem exists_weakDerivativeFamily_testing_limit_of_tendsto_toLp {d L }
     (U : Set (TimeVelocity d)) (u : ℕ → TimeVelocity d → ℝ)
     (D : ∀ n, ParabolicWeakDerivativeFamily d L U (u n))
     (hu : ∀ n, ParabolicMemLpOn U 2 (u n))
     (v : TimeVelocity d → ℝ) (hv : ParabolicMemLpOn U 2 v)
     (hstrong : Tendsto (fun n => (hu n).toLp (u n)) atTop (𝓝 (hv.toLp v)))
-    (C : ℝ) (hC : 0 ≤ C) (hb : ∀ n, (D n).squaredL2Norm ≤ C ^ 2) :
+    (C ) (hC : 0 ≤ C) (hb : ∀ n, (D n).squaredL2Norm ≤ C ^ 2) :
     ∃ (E : ParabolicWeakDerivativeFamily d L U v) (σ : ℕ → ℕ),
       StrictMono σ ∧ ∀ β (φ : TimeVelocity d → ℝ),
         ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ U →
         Tendsto (fun n => ∫ z in U, (D (σ n)).representative β z * φ z) atTop
           (𝓝 (∫ z in U, E.representative β z * φ z)) := by
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn U
+  let μ := timeVelocityVolumeOn U
   let : IsLocallyFiniteMeasure μ :=
     Measure.isLocallyFiniteMeasure_of_le Measure.restrict_le_self
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩

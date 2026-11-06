@@ -33,7 +33,7 @@ theorem isCompact_quadratic_weight_sublevel
   nlinarith only [hn, hR, hs, hr, hx']
 
 /-- The quadratic ambient norm weight is bounded by the actual Euclidean state weight. -/
-theorem quadratic_state_weight_le_radial {n : ℕ} (r : ℝ) (x : EvolutionAmbientState n) :
+theorem quadratic_state_weight_le_radial {n } (r : ℝ) (x : EvolutionAmbientState n) :
     1 + ‖x‖ ^ 2 ≤ 1 + radialSq (⟨r, x.1, x.2⟩ : KineticPoint n) := by
   have hcomponent (y : PDE.Vec n) : ‖y‖ ^ 2 ≤ PDE.vecNormSq y := by
     rw [← PDE.vecEuclideanNorm_sq]

@@ -35,7 +35,7 @@ theorem spatialPackedBarrier_fderiv (d : ℕ) (mu R t : ℝ)
   ring
 
 /-- The position gradient of the barrier is exactly zero in packed coordinates. -/
-theorem spatialPackedBarrier_positionGradient {d : ℕ} (mu R t : ℝ)
+theorem spatialPackedBarrier_positionGradient {d } (mu R t : ℝ)
     (x : PDE.Vec (d + d)) (i : Fin d) :
     PDE.classicalGradient (spatialPackedBarrier d mu R t) x (Fin.castAdd d i) = 0 := by
   change fderiv ℝ (spatialPackedBarrier d mu R t) x (PDE.basisVec (Fin.castAdd d i)) = 0
@@ -43,7 +43,7 @@ theorem spatialPackedBarrier_positionGradient {d : ℕ} (mu R t : ℝ)
   simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero]
 
 /-- The velocity gradient has the same normalization as the native barrier. -/
-theorem spatialPackedBarrier_velocityGradient {d : ℕ} (mu R t : ℝ)
+theorem spatialPackedBarrier_velocityGradient {d } (mu R t : ℝ)
     (x : PDE.Vec (d + d)) (i : Fin d) :
     PDE.classicalGradient (spatialPackedBarrier d mu R t) x (Fin.natAdd d i) =
       -(2 * Real.exp (-mu * t) / R ^ 2) * (spatialCoordinateCLE d x).2 i := by
@@ -52,18 +52,16 @@ theorem spatialPackedBarrier_velocityGradient {d : ℕ} (mu R t : ℝ)
   rw [PDE.vecDot_basisVec_right]
 
 /-- The packed second velocity derivative is the exact diagonal barrier Hessian. -/
-theorem spatialPackedBarrier_velocityHessian {d : ℕ} (mu R t : ℝ)
+theorem spatialPackedBarrier_velocityHessian {d } (mu R t : ℝ)
     (x : PDE.Vec (d + d)) (i k : Fin d) :
     PDE.classicalGradient
       (fun y => PDE.classicalGradient (spatialPackedBarrier d mu R t) y (Fin.natAdd d k))
       x (Fin.natAdd d i) =
         -(2 * Real.exp (-mu * t) / R ^ 2) * (1 : PDE.Mat d) i k := by
-  have hg : (fun y => PDE.classicalGradient (spatialPackedBarrier d mu R t) y
-      (Fin.natAdd d k)) =
-      fun y => -(2 * Real.exp (-mu * t) / R ^ 2) * (spatialCoordinateCLE d y).2 k :=
+  have hg :=
     funext (fun y => spatialPackedBarrier_velocityGradient mu R t y k)
   rw [hg]
-  let L : PDE.Vec (d + d) →L[ℝ] ℝ :=
+  let L :=
     (ContinuousLinearMap.proj k).comp
       ((ContinuousLinearMap.snd ℝ (PDE.Vec d) (PDE.Vec d)).comp
         (spatialCoordinateCLE d).toContinuousLinearMap)

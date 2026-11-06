@@ -130,14 +130,14 @@ theorem isClosed_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ →
   tauto
 
 /-- Bounded truncations of the closed moving slab are compact. -/
-theorem isCompact_movingClosedSlab_inter {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem isCompact_movingClosedSlab_inter {n Ω} {γ : ℝ → PDE.Vec n}
     (hγ : Continuous γ) (a b R : ℝ) :
     IsCompact (movingClosedSlab Ω γ a b ∩ {p | radialSq p ≤ R ^ 2}) :=
   isCompact_inter_radialSq (isClosed_movingClosedSlab hγ a b) (fun _ hp => ⟨hp.1, hp.2.1⟩) R
 
 /-- The active part of the moving slab has the one-sided neighbourhood property. -/
-theorem eventually_future_mem_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)}
-    (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {a b : ℝ} {p : KineticPoint n}
+theorem eventually_future_mem_movingClosedSlab {n Ω}
+    (hΩ : IsOpen Ω) {γ } (hγ : Continuous γ) {a b } {p : KineticPoint n}
     (hp : p ∈ movingActiveSlab Ω γ a b) :
     ∀ᶠ q in 𝓝 p, p.time ≤ q.time → q ∈ movingClosedSlab Ω γ a b := by
   obtain ⟨hat, htb, hpm⟩ := hp
@@ -150,8 +150,8 @@ theorem eventually_future_mem_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)}
 
 /-- A point of the closed moving slab that is not in the active part lies on the
 terminal face or the lateral frontier. -/
-theorem mem_boundary_of_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} {a b : ℝ} {p : KineticPoint n}
+theorem mem_boundary_of_movingClosedSlab {n Ω} (hΩ : IsOpen Ω)
+    {γ a b} {p : KineticPoint n}
     (hp : p ∈ movingClosedSlab Ω γ a b) (hnot : p ∉ movingActiveSlab Ω γ a b) :
     p.time = b ∨ p.position ∈ frontier (movingDomain Ω γ p.time) := by
   obtain ⟨hat, htb, hpc⟩ := hp
@@ -166,8 +166,8 @@ theorem mem_boundary_of_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ :
 
 /-- The active part of a bounded truncation has the one-sided neighbourhood property:
 every nearby point of no earlier time still lies in the truncated closed slab. -/
-theorem eventually_future_mem_truncated {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {a b R : ℝ} {p : KineticPoint n}
+theorem eventually_future_mem_truncated {n Ω} (hΩ : IsOpen Ω)
+    {γ } (hγ : Continuous γ) {a b R } {p : KineticPoint n}
     (hp : p ∈ movingActiveSlab Ω γ a b ∩ {q | radialSq q < R ^ 2}) :
     ∀ᶠ q in 𝓝 p, p.time ≤ q.time →
       q ∈ movingClosedSlab Ω γ a b ∩ {q | radialSq q ≤ R ^ 2} := by
@@ -183,8 +183,8 @@ theorem eventually_future_mem_truncated {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : 
 
 /-- A point of the truncated closed slab that is not in the active part lies on the
 terminal face, the lateral frontier, or the artificial radial boundary. -/
-theorem mem_boundary_of_truncated {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} {a b R : ℝ} {p : KineticPoint n}
+theorem mem_boundary_of_truncated {n Ω} (hΩ : IsOpen Ω)
+    {γ a b R} {p : KineticPoint n}
     (hp : p ∈ movingClosedSlab Ω γ a b ∩ {q | radialSq q ≤ R ^ 2})
     (hnot : p ∉ movingActiveSlab Ω γ a b ∩ {q | radialSq q < R ^ 2}) :
     p.time = b ∨ p.position ∈ frontier (movingDomain Ω γ p.time) ∨ radialSq p = R ^ 2 := by

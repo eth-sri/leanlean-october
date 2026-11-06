@@ -100,7 +100,7 @@ theorem posSemidef_of_lower_loewner (hlam : 0 < lam)
 theorem classical_solution_nonneg (hlam : 0 < lam) (hF0 : ∀ z, 0 ≤ F z)
     (hα1 : α < 1) (hR : 0 < R)
     (hsmooth : IsSmoothCoefficient B) (hlow : ∀ r v, lam • (1 : PDE.Mat d) ≤ B r v)
-    {V : TimeVelocity d → ℝ}
+    {V }
     (hV : IsClassicalBackwardDirichletSolution α 1 (PDE.euclideanBall vStar R) B
       (fun _ _ => 0) (fun _ _ => 0) (fun r v => -F (r, v)) (fun _ => 0) (fun _ => 0) V) :
     ∀ z ∈ scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R), 0 ≤ V z := by
@@ -120,13 +120,13 @@ theorem classical_solution_nonneg (hlam : 0 < lam) (hF0 : ∀ z, 0 ≤ F z)
       rintro ⟨r, y⟩ hz
       rw [mem_scalarParabolicTerminalFace_iff] at hz
       obtain ⟨rfl, hy⟩ := hz
-      have h0 : V (1, y) = 0 := hterm y hy
+      have h0 := hterm y hy
       show -1 * V (1, y) + 0 ≤ 0
       rw [h0]
       norm_num)
     (by
       intro z hz
-      have h0 : V z = 0 := hlat z hz
+      have h0 := hlat z hz
       show -1 * V z + 0 ≤ 0
       rw [h0]
       norm_num)

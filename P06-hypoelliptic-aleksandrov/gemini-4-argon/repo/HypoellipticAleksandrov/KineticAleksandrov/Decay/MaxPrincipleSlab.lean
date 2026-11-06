@@ -19,10 +19,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 
 /-- Moving-domain comparison at every strictly later time. -/
-theorem nonpos_at_later_time_maximumClosedTube {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
-    {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
-    {u : KineticPoint d → ℝ}
+theorem nonpos_at_later_time_maximumClosedTube {d Ω γ a b B drift u}
     (hΩ : IsOpen Ω) (hcΩ : IsCompact (closure Ω))
     (hγ : ContinuousOn γ (Icc a b))
     (hu : ContinuousOn u (maximumClosedTube Ω γ a b))
@@ -42,9 +39,9 @@ theorem nonpos_at_later_time_maximumClosedTube {d : ℕ}
     u q ≤ 0 := by
   by_cases hqb : q.time = b
   · exact hterminal q hq hqb
-  have hqt : q.time < b := lt_of_le_of_ne hq.1.2 hqb
+  have hqt := lt_of_le_of_ne hq.1.2 hqb
   by_contra hnot
-  have hpos : 0 < u q := lt_of_not_ge hnot
+  have hpos := lt_of_not_ge hnot
   let ε : ℝ := u q / (2 * (b - q.time))
   have hε : 0 < ε := div_pos hpos (mul_pos (by norm_num) (sub_pos.mpr hqt))
   let w := maximumTerminalTilt u ε b
@@ -93,9 +90,7 @@ theorem nonpos_at_later_time_maximumClosedTube {d : ℕ}
 
 
 /-- Moving-domain comparison on the entire closed time slab, including its initial slice. -/
-theorem nonpos_on_maximumClosedTube {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
-    {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
+theorem nonpos_on_maximumClosedTube {d Ω γ a b B drift}
     {u : KineticPoint d → ℝ}
     (hab : a < b) (hΩ : IsOpen Ω) (hcΩ : IsCompact (closure Ω))
     (hγ : ContinuousOn γ (Icc a b))
@@ -131,14 +126,13 @@ theorem nonpos_on_maximumClosedTube {d : ℕ}
       intro t ht
       refine ⟨ht, ?_⟩
       rw [mem_closure_movingDomain_iff]
-      have hv := (mem_closure_movingDomain_iff Ω γ q.time q.position).mp hq.2
-      simpa only [f, add_sub_cancel_right, hqa] using hv
-    have hfc : ContinuousWithinAt (u ∘ f) (Icc a b) a :=
+      simpa only [f, add_sub_cancel_right, hqa] using ((mem_closure_movingDomain_iff Ω γ q.time q.position).mp hq.2)
+    have hfc :=
       (hu.comp hf hfmem) a ⟨le_rfl, hab.le⟩
     have haClosure : a ∈ closure (Ioc a b) := by
       rw [closure_Ioc hab.ne]
       exact ⟨le_rfl, hab.le⟩
-    have hbound : (u ∘ f) a ≤ (0 : ℝ) :=
+    have hbound :=
       (hfc.mono Ioc_subset_Icc_self).closure_le haClosure continuousWithinAt_const
         (fun t ht => hlater (hfmem t ⟨ht.1.le, ht.2⟩) ht.1)
     have hfa : f a = q := by

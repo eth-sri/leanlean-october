@@ -55,12 +55,12 @@ private theorem localDirs_ofFn_eq_iteratedFDeriv (n : ℕ) (v : Fin n → E)
           (show (n : WithTop ℕ∞) ≤ n + 1 by simp))
       change (fderiv ℝ (localDirs (List.ofFn fun i => v i.succ) f) z) (v 0) = _
       rw [hfun.fderiv_eq]
-      have hd : DifferentiableAt ℝ (iteratedFDeriv ℝ n f) z :=
+      have hd :=
         hf.differentiableAt_iteratedFDeriv (by exact_mod_cast Nat.lt_succ_self n)
       rw [fderiv_continuousMultilinear_apply_const_apply hd]
       rfl
 
-private theorem localDirs_contDiffAt (l : List E) (m : ℕ) (f : E → ℝ) (z : E)
+private theorem localDirs_contDiffAt (l : List E) (m : ℕ) (f : E → ℝ) (z )
     (hf : ContDiffAt ℝ (m + l.length) f z) : ContDiffAt ℝ m (localDirs l f) z := by
   induction l generalizing m f with
   | nil => simpa [localDirs] using hf
@@ -77,7 +77,7 @@ private theorem localDirectional_comm (a b : E) (f : E → ℝ) (z : E)
     (hf : ContDiffAt ℝ 2 f z) :
     fderiv ℝ (fun y => fderiv ℝ f y a) z b =
       fderiv ℝ (fun y => fderiv ℝ f y b) z a := by
-  have hd : DifferentiableAt ℝ (fderiv ℝ f) z :=
+  have hd :=
     (hf.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   rw [fderiv_clm_apply hd (differentiableAt_const a),
     fderiv_clm_apply hd (differentiableAt_const b)]
@@ -86,7 +86,7 @@ private theorem localDirectional_comm (a b : E) (f : E → ℝ) (z : E)
   exact (hf.isSymmSndFDerivAt (by simp)).eq b a
 
 private theorem localDirs_perm {l₁ l₂ : List E} (hperm : l₁.Perm l₂)
-    (f : E → ℝ) (z : E) (hf : ContDiffAt ℝ l₁.length f z) :
+    (f : E → ℝ) (z ) (hf : ContDiffAt ℝ l₁.length f z) :
     localDirs l₁ f z = localDirs l₂ f z := by
   induction hperm generalizing f z with
   | nil => rfl
@@ -147,7 +147,7 @@ private theorem coordinateList_add_single_perm_local
 at a point under the exact finite germ-local regularity. -/
 theorem coordinateIteratedFDeriv_add_single_at
     (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
+    (f : TimeVelocity d → ℝ) (z )
     (hf : ContDiffAt ℝ (beta.order + 1) f z) :
     coordinateIteratedFDeriv (beta + Pi.single c 1) f z =
       fderiv ℝ (coordinateIteratedFDeriv beta f) z
@@ -188,7 +188,7 @@ theorem coordinateIteratedFDeriv_add_single_at
 with addition of that coordinate, under exact finite germ-local regularity. -/
 theorem coordinateIteratedFDeriv_comp_single_at
     (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
+    (f : TimeVelocity d → ℝ) (z )
     (hf : ContDiffAt ℝ (beta.order + 1) f z) :
     coordinateIteratedFDeriv beta
         (coordinateIteratedFDeriv (Pi.single c 1) f) z =

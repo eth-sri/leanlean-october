@@ -19,7 +19,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open scoped BigOperators ENNReal Matrix Matrix.Norms.Elementwise RealInnerProductSpace
 
 private theorem map_galerkinReconstruct_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (N : ℕ) {Z : Type} [NormedAddCommGroup Z] [NormedSpace ℝ Z]
     (Q : H10HilbertGraph hΩ →L[ℝ] Z)
     (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
@@ -50,7 +50,7 @@ private theorem map_galerkinReconstruct_sum
 
 /-- Exact finite Galerkin basis rows hold against every finite Galerkin test. -/
 theorem reverseTimeGalerkin_basisRows_forall
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -69,7 +69,7 @@ theorem reverseTimeGalerkin_basisRows_forall
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (N : ℕ) (τ : Set.Icc 0 (r₁ - r₀))
-    (x xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
+    (x xdot )
     (hrows : ∀ i : Fin (Module.finrank ℝ (galerkinSpace hΩ N)),
       inner ℝ
           (valueCLM hΩ (galerkinReconstruct hΩ N xdot : H10HilbertGraph hΩ))
@@ -87,20 +87,20 @@ theorem reverseTimeGalerkin_basisRows_forall
         (v : H10HilbertGraph hΩ) =
       reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ.1
         (v : H10HilbertGraph hΩ) := by
-  let q : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ :=
+  let q :=
     (galerkinSpaceBasis hΩ N).equivFun v
   let u : H10HilbertGraph hΩ := galerkinReconstruct hΩ N x
-  let udot : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let udot :=
     valueCLM hΩ (galerkinReconstruct hΩ N xdot : H10HilbertGraph hΩ)
   let e : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → H10HilbertGraph hΩ :=
     fun i => galerkinSpaceBasis hΩ N i
-  let B : H10HilbertGraph hΩ →L[ℝ] ℝ :=
+  let B :=
     reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth τ u
-  let A : H10HilbertGraph hΩ →L[ℝ] ℝ :=
+  let A :=
     (innerSL ℝ udot).comp (valueCLM hΩ)
-  let T : H10HilbertGraph hΩ →L[ℝ] ℝ := A + B
-  let S : H10HilbertGraph hΩ →L[ℝ] ℝ :=
+  let T := A + B
+  let S :=
     reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ.1
   have hu : (galerkinReconstruct hΩ N q : H10HilbertGraph hΩ) = v := by
     exact congrArg (fun w : galerkinSpace hΩ N => (w : H10HilbertGraph hΩ))

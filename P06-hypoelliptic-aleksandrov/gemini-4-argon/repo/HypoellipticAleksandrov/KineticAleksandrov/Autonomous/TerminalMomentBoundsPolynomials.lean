@@ -135,7 +135,7 @@ theorem positionSecondBarrier_start (Lam X0 v0 T : ℝ) :
   ring
 
 /-- Velocity second-moment barrier is nonnegative on its terminal past. -/
-theorem velocitySecondBarrier_nonneg {Lam : ℝ} (hLam : 0 ≤ Lam)
+theorem velocitySecondBarrier_nonneg {Lam } (hLam : 0 ≤ Lam)
     (v0 tau : ℝ) (p : Point) (ht : p.time ≤ tau) :
     0 ≤ velocitySecondBarrier Lam v0 tau p := by
   dsimp [velocitySecondBarrier]
@@ -143,7 +143,7 @@ theorem velocitySecondBarrier_nonneg {Lam : ℝ} (hLam : 0 ≤ Lam)
   positivity
 
 /-- Position second-moment barrier is nonnegative on the same past. -/
-theorem positionSecondBarrier_nonneg {Lam : ℝ} (hLam : 0 ≤ Lam)
+theorem positionSecondBarrier_nonneg {Lam } (hLam : 0 ≤ Lam)
     (X0 tau : ℝ) (p : Point) (ht : p.time ≤ tau) :
     0 ≤ positionSecondBarrier Lam X0 tau p := by
   dsimp [positionSecondBarrier]

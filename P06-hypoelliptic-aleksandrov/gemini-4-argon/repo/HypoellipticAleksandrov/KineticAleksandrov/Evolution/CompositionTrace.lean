@@ -51,7 +51,7 @@ local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hm
 /-- The terminal integral operators compose on smooth compact terminal data. -/
 theorem terminalOperators_comp_smooth
     (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ)
-    (F : BoundedBorel (EvolutionAmbientState n))
+    (F )
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     P₀ σ τ (hσr.trans hrτ) (terminalStateDatum F) =
       P₀ σ r hσr (P₀ r τ hrτ (terminalStateDatum F)) := by
@@ -91,8 +91,7 @@ theorem terminalOperators_comp_smooth
     exact hGerr j q hq
   apply BoundedBorel.ext
   intro p
-  have hp : (⟨σ, p.1.1, p.1.2⟩ : KineticPoint n) ∈
-      evolutionPastClosedCylinder Ω γ r := mk_mem_evolutionPastClosedCylinder hσr p
+  have hp := mk_mem_evolutionPastClosedCylinder hσr p
   have hvalues : Tendsto (fun j => v j ⟨σ, p.1.1, p.1.2⟩) atTop
       (𝓝 (u ⟨σ, p.1.1, p.1.2⟩)) := by
     apply tendsto_iff_norm_sub_tendsto_zero.mpr

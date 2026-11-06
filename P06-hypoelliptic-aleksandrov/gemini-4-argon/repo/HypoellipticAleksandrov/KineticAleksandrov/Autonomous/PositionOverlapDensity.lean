@@ -35,7 +35,7 @@ theorem measurable_positionKernelDensity {X Y : Type*}
 theorem withDensity_positionKernelDensity {X Y : Type*}
     [MeasurableSpace X] [MeasurableSpace Y] [MeasurableSpace.CountableOrCountablyGenerated X Y]
     (k : Kernel X Y) [IsFiniteKernel k] (m : Measure Y) [SigmaFinite m]
-    (x : X) (hx : k x ≪ m) :
+    (x ) (hx : k x ≪ m) :
     m.withDensity (positionKernelDensity k m x) = k x := by
   let eta := Kernel.const X m.toFinite
   have hxe : k x ≪ eta x := by

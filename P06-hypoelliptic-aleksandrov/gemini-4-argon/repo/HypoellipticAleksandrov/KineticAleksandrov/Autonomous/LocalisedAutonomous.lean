@@ -20,7 +20,7 @@ open scoped ENNReal
 theorem autonomous_localised_borel_of_below_four_density
     (hdensity : BelowFourDensityStatement)
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p : ℝ)
+    (lam Lam ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p )
     (hp : criticalP ⟨Lam / lam, (le_div_iff₀ hlam).2
       (by simpa only [one_mul] using hLam)⟩ < p) :
     ∃ C : ℝ, 0 < C ∧ ∀ (a : ℝ → ℝ → ℝ),
@@ -58,8 +58,7 @@ theorem autonomous_localised_borel_of_below_four_density
             (eLpNorm (borelSource true u f) (ENNReal.ofReal p)
               (volume.restrict (backwardCylinder P₀ R))).toReal := by
     intro a ha hb P₀ R hR u f hcont hreg _hf hLp hsub P hP
-    have hbound := hsm ⟨a, ha, hb⟩ P₀ R hR u f hcont hreg hLp hsub P hP
-    simpa only [borelSource, ite_true] using hbound
+    simpa only [borelSource, ite_true] using (hsm ⟨a, ha, hb⟩ P₀ R hR u f hcont hreg hLp hsub P hP)
   refine ⟨C, hC, ?_⟩
   intro a ha hb P₀ R hR u f hcont hreg hf hLp hsub
   exact autonomous_abp_smooth_to_borel lam Lam hlam hLam p hp1 (2 - 6 / p) C true
@@ -72,7 +71,7 @@ theorem kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
     (hdensity : Autonomous.BelowFourDensityStatement)
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam p : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (lam Lam p ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hp : 1 + bellmanAdjointExponent (Lam / lam)
       ((le_div_iff₀ hlam).2 (by simpa only [one_mul] using hLam)) < p) :
     ∃ C : ℝ, 0 ≤ C ∧
@@ -113,7 +112,6 @@ theorem kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
     change autonomousScalarOperator a u P ≤ (backwardCylinder P₀ R).indicator f P
     rw [hEq]
     exact hsub
-  have hbound := hborel a ha hb P₀ R hR u f₀ hcont hreg hf₀ hLp₀ hsub₀ P hP
-  simpa only [f₀, eLpNorm_localized_source_indicator hQ f u] using hbound
+  simpa only [f₀, eLpNorm_localized_source_indicator hQ f u] using (hborel a ha hb P₀ R hR u f₀ hcont hreg hf₀ hLp₀ hsub₀ P hP)
 
 end HypoellipticAleksandrov.KineticAleksandrov

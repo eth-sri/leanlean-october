@@ -43,7 +43,7 @@ instance ballExitRaw_isFiniteMeasure (P : LocalBallStart v₀ R)
 
 /-- The stated smooth-test identity alone determines the selected finite ambient measure. -/
 theorem ballExitRaw_unique (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
-    (μ : Measure (KineticPoint d)) [IsFiniteMeasure μ]
+    (μ ) [IsFiniteMeasure μ]
     (hμ : ∀ φ : KineticPoint d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
       HasCompactSupport φ → (∫ Q, φ Q ∂μ) =

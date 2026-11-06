@@ -19,11 +19,11 @@ def boundaryProbeSubmodule (d : ℕ) : Submodule ℝ (ℝ × PDE.Vec d × PDE.Ve
   smul_mem' := fun _c _f hf => ⟨contDiff_const.smul hf.1, hf.2.smul_left⟩
 
 /-- The literal physical function represented by an ambient product probe. -/
-def boundaryProbePhysical {d : ℕ} (f : boundaryProbeSubmodule d) : KineticPoint d → ℝ :=
+def boundaryProbePhysical {d } (f : boundaryProbeSubmodule d) : KineticPoint d → ℝ :=
   f.1 ∘ KineticPoint.equivProd d
 
 /-- Every probe has the full stipulated smoothness, continuity and compact support. -/
-theorem boundaryProbePhysical_regular {d : ℕ} (f : boundaryProbeSubmodule d) :
+theorem boundaryProbePhysical_regular {d } (f : boundaryProbeSubmodule d) :
     ContDiff ℝ (⊤ : ℕ∞) (boundaryProbePhysical f ∘ (KineticPoint.equivProd d).symm) ∧
       Continuous (boundaryProbePhysical f) ∧ HasCompactSupport (boundaryProbePhysical f) := by
   have heq : boundaryProbePhysical f ∘ (KineticPoint.equivProd d).symm = f.1 := by
@@ -34,7 +34,7 @@ theorem boundaryProbePhysical_regular {d : ℕ} (f : boundaryProbeSubmodule d) :
   · exact f.2.2.comp_homeomorph (KineticPoint.homeomorphProd d)
 
 /-- A probe restricts to a genuine compactly supported continuous function on the full trace. -/
-def boundaryProbeCc {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
+def boundaryProbeCc {d } (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
     (f : boundaryProbeSubmodule d) : C_c(localTrace a T v₀ R, ℝ) where
   toFun P := boundaryProbePhysical f P.1
   continuous_toFun := (boundaryProbePhysical_regular f).2.1.comp continuous_subtype_val
@@ -42,14 +42,14 @@ def boundaryProbeCc {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
     (isClosed_localTrace a T v₀ R).isClosedEmbedding_subtypeVal
 
 /-- Trace restriction is linear before any functional or measure is selected. -/
-def boundaryProbeCcLinear {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+def boundaryProbeCcLinear {d } (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
     boundaryProbeSubmodule d →ₗ[ℝ] C_c(localTrace a T v₀ R, ℝ) where
   toFun := boundaryProbeCc a T v₀ R
   map_add' f g := by ext P; rfl
   map_smul' c f := by ext P; rfl
 
 /-- Products of a probe with itself supply squares in the dense trace range. -/
-theorem boundaryProbeCc_sq {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
+theorem boundaryProbeCc_sq {d } (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
     (f : boundaryProbeSubmodule d) :
     ∃ g : boundaryProbeSubmodule d,
       boundaryProbeCcLinear a T v₀ R g =

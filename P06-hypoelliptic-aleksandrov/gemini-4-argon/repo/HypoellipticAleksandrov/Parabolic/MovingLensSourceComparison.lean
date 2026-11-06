@@ -24,46 +24,23 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter Set
 open scoped MatrixOrder Topology
 
-private theorem parabolicOperator_const_smul
-    {d : Nat} (A : CoefficientField d) (c : Real)
-    (u : TimeVelocity d -> Real) (z : TimeVelocity d) :
-    parabolicOperator A (c • u) z = c * parabolicOperator A u z := by
-  have hfirst : fderiv Real (c • u) = c • fderiv Real u :=
-    fderiv_const_smul_field c
-  have htime : timeDerivative (c • u) z = c * timeDerivative u z := by
-    unfold timeDerivative
-    rw [fderiv_const_smul_field]
-    rfl
-  have hhessian : velocityHessian (c • u) z = c • velocityHessian u z := by
-    have hsecond : fderiv Real (fderiv Real (c • u)) z =
-        c • fderiv Real (fderiv Real u) z := by
-      rw [hfirst]
-      exact congrFun (fderiv_const_smul_field (f := fderiv Real u) c) z
-    ext i j
-    unfold velocityHessian
-    rw [hsecond]
-    rfl
-  rw [parabolicOperator_apply, parabolicOperator_apply, htime, hhessian,
-    HypoellipticAleksandrov.matrixContraction_smul_right]
-  ring
-
 private theorem parabolicOperator_sub_of_contDiffAt
-    {d : Nat} (A : CoefficientField d) (u v : TimeVelocity d -> Real)
-    (z : TimeVelocity d) (hu : ContDiffAt Real 2 u z)
+    {d } (A : CoefficientField d) (u v : TimeVelocity d -> Real)
+    (z ) (hu : ContDiffAt Real 2 u z)
     (hv : ContDiffAt Real 2 v z) :
     parabolicOperator A (fun q => u q - v q) z =
       parabolicOperator A u z - parabolicOperator A v z := by
-  have huDiff : DifferentiableAt Real u z := hu.differentiableAt (by norm_num)
-  have hvDiff : DifferentiableAt Real v z := hv.differentiableAt (by norm_num)
+  have huDiff := hu.differentiableAt (by norm_num)
+  have hvDiff := hv.differentiableAt (by norm_num)
   have hfirst : fderiv Real (fun q => u q - v q) =ᶠ[𝓝 z]
       fun q => fderiv Real u q - fderiv Real v q := by
     filter_upwards [hu.eventually (by norm_num), hv.eventually (by norm_num)]
       with q huq hvq
     exact fderiv_fun_sub (huq.differentiableAt (by norm_num))
       (hvq.differentiableAt (by norm_num))
-  have huFirstDiff : DifferentiableAt Real (fderiv Real u) z :=
+  have huFirstDiff :=
     (hu.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
-  have hvFirstDiff : DifferentiableAt Real (fderiv Real v) z :=
+  have hvFirstDiff :=
     (hv.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have hsecond : fderiv Real (fderiv Real (fun q => u q - v q)) z =
       fderiv Real (fderiv Real u) z - fderiv Real (fderiv Real v) z := by
@@ -90,18 +67,8 @@ private theorem parabolicOperator_sub_of_contDiffAt
     HypoellipticAleksandrov.matrixContraction_neg_right]
   ring
 
-private theorem movingLensSignXi_nonneg {kappa : Real} (hkappa : 0 < kappa) :
-    0 <= movingLensSignXi kappa := by
-  unfold movingLensSignXi
-  positivity
-
-private theorem movingLensSignExponent_pos (d : Nat) (lam Lam kappa : Real) :
-    0 < movingLensSignExponent d lam Lam kappa := by
-  unfold movingLensSignExponent
-  omega
-
 private theorem movingLensDenominator_lt_kappa_sq
-    {kappa eps tau t : Real} (hkappa : 0 < kappa)
+    {kappa eps tau t } (hkappa : 0 < kappa)
     (hsmall : 2 * eps ^ 2 < kappa ^ 2) (ht : t <= tau)
     (htau : tau <= kappa⁻¹) :
     movingLensDenominator (movingLensSignXi kappa) eps t < kappa ^ 2 := by
@@ -114,7 +81,7 @@ private theorem movingLensDenominator_lt_kappa_sq
         field_simp [hkappa.ne']
   nlinarith
 
-/-- A supplied nonnegative source changes the small-seed terminal comparison
+/- A supplied nonnegative source changes the small-seed terminal comparison
 only by a structural multiple of its restricted parabolic norm. -/
 theorem exists_movingLens_source_terminal_lower_bound
     (d : Nat) (hd : 0 < d) (lam Lam kappa : Real)
@@ -156,40 +123,42 @@ theorem exists_movingLens_source_terminal_lower_bound
     hF hucont hudiff hunonneg hlower hupper hFnonneg hsuper hseed
   let xi : Real := movingLensSignXi kappa
   let n : Nat := movingLensSignExponent d lam Lam kappa
-  let psi : TimeVelocity d -> Real := movingLensBarrier xi eps n y
+  let psi := movingLensBarrier xi eps n y
   let c : Real := ell * eps ^ (2 * n)
   let w : TimeVelocity d -> Real := fun z => u z - c * psi z
   have hxi : 0 <= xi := by
     dsimp only [xi]
-    exact movingLensSignXi_nonneg hkappa
+    unfold movingLensSignXi
+    positivity
   have hn : 0 < n := by
     dsimp only [n]
-    exact movingLensSignExponent_pos d lam Lam kappa
+    unfold movingLensSignExponent
+    omega
   have hc : 0 < c := by
     dsimp only [c]
     positivity
   have hpsiCont : ContinuousOn psi (movingLensClosed xi eps tau y) := by
     intro z hz
-    have hden : 0 < movingLensDenominator xi eps z.1 :=
+    have hden :=
       movingLensDenominator_pos hxi heps hz.1
     exact (contDiffAt_movingLensBarrier hden.ne').continuousAt.continuousWithinAt
   have hwcont : ContinuousOn w (movingLensClosed xi eps tau y) := by
     exact hucont.sub (continuousOn_const.mul hpsiCont)
   have hwDiff : ∀ z ∈ movingLensActive xi eps tau y, ContDiffAt Real 2 w z := by
     intro z hz
-    have hden : 0 < movingLensDenominator xi eps z.1 :=
+    have hden :=
       movingLensDenominator_pos hxi heps hz.1.le
     exact (hudiff z hz).sub
       (ContDiffAt.const_smul c (contDiffAt_movingLensBarrier hden.ne'))
   have hwSuper : IsParabolicSupersolutionOn A (fun z => -F z)
       w (movingLensActive xi eps tau y) := by
     intro z hz
-    have hden : 0 < movingLensDenominator xi eps z.1 :=
+    have hden :=
       movingLensDenominator_pos hxi heps hz.1.le
     have hden_lt : movingLensDenominator xi eps z.1 < kappa ^ 2 := by
       dsimp only [xi]
       exact movingLensDenominator_lt_kappa_sq hkappa hsmall hz.2.1 htau_upper
-    have hr : movingLensRadiusSq xi eps y z < 1 :=
+    have hr :=
       (movingLensRadiusSq_lt_one_iff hden).2 hz.2.2
     have hpsiNeg : parabolicOperator A psi z < 0 := by
       dsimp only [psi, xi, n]
@@ -207,9 +176,28 @@ theorem exists_movingLens_source_terminal_lower_bound
             parabolicOperator_sub_of_contDiffAt A u (c • psi) z (hudiff z hz)
               ((contDiffAt_movingLensBarrier hden.ne').const_smul c)
         _ = parabolicOperator A u z - c * parabolicOperator A psi z := by
-          rw [parabolicOperator_const_smul]
+          have _h_inl_12 (A : CoefficientField d) (c) (u : TimeVelocity d -> Real) (z) : parabolicOperator A (c • u) z = c * parabolicOperator A u z := by
+            have hfirst : fderiv Real (c • u) = c • fderiv Real u :=
+              fderiv_const_smul_field c
+            have htime : timeDerivative (c • u) z = c * timeDerivative u z := by
+              unfold timeDerivative
+              rw [fderiv_const_smul_field]
+              rfl
+            have hhessian : velocityHessian (c • u) z = c • velocityHessian u z := by
+              have hsecond : fderiv Real (fderiv Real (c • u)) z =
+                  c • fderiv Real (fderiv Real u) z := by
+                rw [hfirst]
+                exact congrFun (fderiv_const_smul_field (f := fderiv Real u) c) z
+              ext i j
+              unfold velocityHessian
+              rw [hsecond]
+              rfl
+            rw [parabolicOperator_apply, parabolicOperator_apply, htime, hhessian,
+              HypoellipticAleksandrov.matrixContraction_smul_right]
+            ring
+          rw [_h_inl_12]
     rw [hoperator]
-    have huSuper : -F z <= parabolicOperator A u z := hsuper z hz
+    have huSuper := hsuper z hz
     nlinarith [mul_pos hc (neg_pos.mpr hpsiNeg)]
   have hwBoundary : ∀ z ∈ movingLensClosed xi eps tau y \
       movingLensActive xi eps tau y, 0 <= w z := by
@@ -217,7 +205,7 @@ theorem exists_movingLens_source_terminal_lower_bound
     rw [mem_movingLensClosed_diff_active_iff] at hz
     rcases hz with hinitial | hlateral
     · rcases hinitial with ⟨hzTime, hzTau, hzSpatial⟩
-      have hden : 0 < movingLensDenominator xi eps z.1 :=
+      have hden :=
         movingLensDenominator_pos hxi heps hzTime.ge
       have hdispInitial : movingLensDisplacement y z = z.2 := by
         unfold movingLensDisplacement
@@ -239,10 +227,9 @@ theorem exists_movingLens_source_terminal_lower_bound
         have hrnonneg : 0 <= movingLensRadiusSq xi eps y z := by
           unfold movingLensRadiusSq
           exact div_nonneg (PDE.vecNormSq_nonneg _) hden.le
-        have hrle : movingLensRadiusSq xi eps y z <= 1 :=
+        have hrle :=
           (movingLensRadiusSq_le_one_iff hden).2 hzSpatial
-        have hrproduct : 0 <= movingLensRadiusSq xi eps y z *
-            (2 - movingLensRadiusSq xi eps y z) :=
+        have hrproduct :=
           mul_nonneg hrnonneg (by linarith)
         have hfactor : (1 - movingLensRadiusSq xi eps y z) ^ 2 <= 1 := by
           nlinarith [hrproduct]
@@ -271,7 +258,7 @@ theorem exists_movingLens_source_terminal_lower_bound
         rw [hbarrierZero, mul_zero, sub_zero]
         exact hunonneg z ⟨hzTime.ge, hzTau, hzSpatial⟩
     · rcases hlateral with ⟨hzTime, hzTau, hspatialEq⟩
-      have hden : 0 < movingLensDenominator xi eps z.1 :=
+      have hden :=
         movingLensDenominator_pos hxi heps hzTime
       have hbarrierZero : psi z = 0 := by
         dsimp only [psi, movingLensBarrier, movingLensRadiusSq]
@@ -286,7 +273,7 @@ theorem exists_movingLens_source_terminal_lower_bound
   have hdenTerminal : movingLensDenominator xi eps tau < kappa ^ 2 := by
     dsimp only [xi]
     exact movingLensDenominator_lt_kappa_sq hkappa hsmall le_rfl htau_upper
-  have hdenTerminalPos : 0 < movingLensDenominator xi eps tau :=
+  have hdenTerminalPos :=
     movingLensDenominator_pos hxi heps htau.le
   have hpsiTerminal : psi (tau, tau • y) =
       1 / (movingLensDenominator xi eps tau) ^ n := by
@@ -314,7 +301,7 @@ theorem exists_movingLens_source_terminal_lower_bound
       ring
     rw [hrewrite] at hsource'
     linarith
-  have hdenPow : (movingLensDenominator xi eps tau) ^ n < (kappa ^ 2) ^ n :=
+  have hdenPow :=
     pow_lt_pow_left₀ hdenTerminal hdenTerminalPos.le hn.ne'
   have hstrict : ell * eps ^ (2 * n) / kappa ^ (2 * n) <
       c / (movingLensDenominator xi eps tau) ^ n := by

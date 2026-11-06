@@ -14,7 +14,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 
 /-- Integration by parts for a locally integrable jet smooth away from the origin. -/
-theorem punctured_directional_ibp {d : ℕ} (f : XV d → ℝ) (w : XV d)
+theorem punctured_directional_ibp {d } (f : XV d → ℝ) (w )
     (hf : LocallyIntegrable f volume)
     (hdf : LocallyIntegrable (fun q => fderiv ℝ f q w) volume)
     (hs : ∀ q : XV d, q ≠ 0 → DifferentiableAt ℝ f q)
@@ -40,9 +40,9 @@ theorem punctured_directional_ibp {d : ℕ} (f : XV d → ℝ) (w : XV d)
     exact ht.differentiable (by norm_num) q
 
 /-- The two constant velocity derivatives of a C2 test commute. -/
-theorem dvv_test_swap {d : ℕ} (test : XV d → ℝ) (ht : ContDiff ℝ 2 test)
+theorem dvv_test_swap {d } (test : XV d → ℝ) (ht : ContDiff ℝ 2 test)
     (q : XV d) (i k : Fin d) : dvv test q i k = dvv test q k i := by
-  have hd : DifferentiableAt ℝ (fderiv ℝ test) q :=
+  have hd :=
     ((ht.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num)) q
   unfold dvv dv
   rw [fderiv_clm_apply hd (differentiableAt_const _),
@@ -53,7 +53,7 @@ theorem dvv_test_swap {d : ℕ} (test : XV d → ℝ) (ht : ContDiff ℝ 2 test)
       (0, Pi.single i 1) (0, Pi.single k 1)
 
 /-- The higher-dimensional classical profile has all punctured weak identities. -/
-theorem classical_punctured_weak_from_jets {d : ℕ} (H : XV d → ℝ)
+theorem classical_punctured_weak_from_jets {d } (H : XV d → ℝ)
     (hH : Continuous H)
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d)))
     (hx : ∀ i, LocallyIntegrable (fun q => dx H q i) volume)
@@ -73,8 +73,8 @@ theorem classical_punctured_weak_from_jets {d : ℕ} (H : XV d → ℝ)
     exact punctured_directional_ibp H (0, Pi.single i 1) hH.locallyIntegrable (hv i)
       hdiff test (ht.of_le (by norm_num)) hc hz
   · intro i k
-    have htest : ContDiff ℝ 1 (fun q => dv test q i) := contDiff_dv_test test ht i
-    have hsupport : HasCompactSupport (fun q => dv test q i) :=
+    have htest := contDiff_dv_test test ht i
+    have hsupport :=
       hc.fderiv_apply ℝ (0, Pi.single i 1)
     have htestzero : (0 : XV d) ∉ tsupport (fun q => dv test q i) :=
       fun hmem => hz ((tsupport_fderiv_apply_subset ℝ (0, Pi.single i 1)) hmem)
@@ -89,8 +89,8 @@ theorem classical_punctured_weak_from_jets {d : ℕ} (H : XV d → ℝ)
     simpa only [dvv_test_swap test ht _ k i, hsecond, neg_neg] using hfirst
 
 /-- The higher-dimensional classical profile has all punctured weak identities. -/
-theorem profile_classical_punctured_weak (d : ℕ) (hd : 1 ≤ d)
-    (H : XV d → ℝ) (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1)
+theorem profile_classical_punctured_weak (d ) (hd : 1 ≤ d)
+    (H : XV d → ℝ) (alpha ) (ha : 0 < alpha) (ha1 : alpha < 1)
     (hH : Continuous H)
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d)))

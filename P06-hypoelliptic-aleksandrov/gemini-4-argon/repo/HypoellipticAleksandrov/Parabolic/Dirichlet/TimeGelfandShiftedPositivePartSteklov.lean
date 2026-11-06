@@ -13,11 +13,11 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- Fixed-window forward Steklov shifted-positive-part energy identity. -/
 theorem reverseTimeForwardSteklov_shiftedPositivePart_energy_identity
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (hΩb : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T) (M N : ℝ≥0)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    {h a b : ℝ} (hh : 0 < h) (ha : 0 ≤ a) (hab : a ≤ b) (hb : b + h ≤ T) :
+    {h a b } (hh : 0 < h) (ha : 0 ≤ a) (hab : a ≤ b) (hb : b + h ≤ T) :
     shiftedPositivePartEnergy hΩ M N (fun t ↦ reverseTimeForwardSteklov T h u t) b -
       shiftedPositivePartEnergy hΩ M N (fun t ↦ reverseTimeForwardSteklov T h u t) a =
       2 * ∫ t in Icc a b, shiftedPositivePartEnergyRate hΩ hΩb M N

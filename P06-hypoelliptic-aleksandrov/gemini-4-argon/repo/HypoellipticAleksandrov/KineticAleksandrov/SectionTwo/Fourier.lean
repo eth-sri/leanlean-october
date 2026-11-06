@@ -81,14 +81,13 @@ def fourierProjection {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
     ComplexMeasure (PDE.Vec d) := (existsUnique_fourierProjection K q ξ).exists.choose
 
 /-- The full characterization accompanies the unique-choice definition. -/
-theorem fourierProjection_spec {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+theorem fourierProjection_spec {d Ω γ}
     (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ) (ξ : PDE.Vec d) :
     IsFourierProjection K q ξ (fourierProjection K q ξ) :=
   (existsUnique_fourierProjection K q ξ).exists.choose_spec
 
 /-- Any characterized measure equals the integrable density pushforward. -/
-theorem fourierProjection_eq_densityMap {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
+theorem fourierProjection_eq_densityMap {d Ω γ} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
     (ξ : PDE.Vec d) (ν : ComplexMeasure (PDE.Vec d)) (hν : IsFourierProjection K q ξ ν) :
     ν = ((K.master q).withDensityᵥ (fourierPhase ξ q.1.2.2.2)).map Prod.fst := by
   apply VectorMeasure.ext

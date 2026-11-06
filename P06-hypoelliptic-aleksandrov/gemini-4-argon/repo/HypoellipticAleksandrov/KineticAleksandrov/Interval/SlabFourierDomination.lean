@@ -47,16 +47,16 @@ theorem interval_evolved_variation_finite
   isFiniteMeasure_of_le _ (interval_evolved_variation_domination μ κ ph π hph hph1)
 
 /-- Combined Fourier killing bounds control the half-time complex initial mass. -/
-theorem killed_halfMeasure_mass_le {d : ℕ}
+theorem killed_halfMeasure_mass_le {d }
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
-    (C k : ℝ)
+    (C k )
     (hdec : ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d),
       totalVariationNorm (fourierKernel K σ τ hστ ξ v) ≤
         ENNReal.ofReal (C * Real.exp (-k * (τ - σ) *
           (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))))
     (σ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ))
-    [IsFiniteMeasure μ] {T : ℝ} (hT : 0 < T) (ξ : PDE.Vec d) :
+    [IsFiniteMeasure μ] {T } (hT : 0 < T) (ξ : PDE.Vec d) :
     (halfMeasure K σ T hT.le μ ξ).variation univ ≤
       μ univ * ENNReal.ofReal (C * Real.exp
         (-(k * (T / 2) * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))))) := by

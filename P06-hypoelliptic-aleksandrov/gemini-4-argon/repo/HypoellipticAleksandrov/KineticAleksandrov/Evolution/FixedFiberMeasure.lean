@@ -99,7 +99,7 @@ theorem measurable_terminalFiberMeasure
 
 /-- The fixed-time fiber kernel `κ σ τ hστ`, defined literally as the measurable
 fiber-measure function of `measurable_terminalFiberMeasure`. -/
-def terminalFiberKernel (σ τ : ℝ) (hστ : σ ≤ τ) :
+def terminalFiberKernel (σ τ ) (hστ : σ ≤ τ) :
     ProbabilityTheory.Kernel (EvolutionState Ω γ σ) (EvolutionState Ω γ τ) :=
   ⟨fun p : EvolutionState Ω γ σ =>
       Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
@@ -120,9 +120,7 @@ theorem terminalFiberKernel_apply (σ τ : ℝ) (hστ : σ ≤ τ) (p : Evoluti
 /-- The fiber kernel has mass at most one. -/
 theorem terminalFiberKernel_univ_le_one (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
     κ σ τ hστ p univ ≤ 1 := by
-  have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ)
-    (isOpen_of_isAdmissibleEvolutionDomain hΩ)
-  rw [terminalFiberKernel_apply, (MeasurableEmbedding.subtype_coe hU).comap_apply,
+  rw [terminalFiberKernel_apply, (MeasurableEmbedding.subtype_coe (measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ) (isOpen_of_isAdmissibleEvolutionDomain hΩ))).comap_apply,
     image_univ, Subtype.range_coe]
   exact (measure_mono (subset_univ _)).trans
     (terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b

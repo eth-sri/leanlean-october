@@ -20,28 +20,23 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem normSq_sub_eq_inner_add_sub_inner
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℝ H] (r s : H) :
-    ‖r‖ ^ 2 - ‖s‖ ^ 2 = inner ℝ (r + s) r - inner ℝ (r + s) s := by
-  rw [inner_add_left, inner_add_left, ← real_inner_self_eq_norm_sq,
-    ← real_inner_self_eq_norm_sq, real_inner_comm s r]
-  ring
-
 private theorem pivot_normSq_sub_eq_dualSub_apply_add
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (r s : H10HilbertGraph hΩ) :
     ‖valueCLM hΩ r‖ ^ 2 - ‖valueCLM hΩ s‖ ^ 2 =
       (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ r) -
         scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ s)) (r + s) := by
-  let vr : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ r
-  let vs : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ s
-  have hvalue : valueCLM hΩ (r + s) = vr + vs :=
+  let vr := valueCLM hΩ r
+  let vs := valueCLM hΩ s
+  have hvalue :=
     (valueCLM hΩ).map_add r s
   change ‖vr‖ ^ 2 - ‖vs‖ ^ 2 = _
   rw [ContinuousLinearMap.sub_apply,
     scalarLpToH10HilbertGraphDual_apply,
     scalarLpToH10HilbertGraphDual_apply, hvalue]
-  exact normSq_sub_eq_inner_add_sub_inner vr vs
+  rw [inner_add_left, inner_add_left, ← real_inner_self_eq_norm_sq,
+    ← real_inner_self_eq_norm_sq, real_inner_comm vs vr]
+  ring
 
 private theorem tendsto_clm_apply
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -65,13 +60,12 @@ private theorem hasDerivAt_of_pivoted_curve
     (hx.continuousAt.tendsto).mono_left nhdsWithin_le_nhds
   have hsum : Filter.Tendsto (fun s => x s + x t) (𝓝[≠] t) (𝓝 (x t + x t)) :=
     hxWithin.add tendsto_const_nhds
-  have hEval : Filter.Tendsto
-      (fun s => slope U t s (x s + x t)) (𝓝[≠] t) (𝓝 (y t (x t + x t))) :=
+  have hEval :=
     tendsto_clm_apply hSlopeU hsum
   have hSlopeEq : slope E t =ᶠ[𝓝[≠] t]
       fun s => slope U t s (x s + x t) := by
     filter_upwards [self_mem_nhdsWithin] with s hs
-    have hst : s ≠ t := hs
+    have hst := hs
     rw [slope_def_field, slope_def_module, hpivot s t,
       ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply]
     rw [smul_eq_mul, ContinuousLinearMap.sub_apply]
@@ -84,12 +78,12 @@ private theorem hasDerivAt_of_pivoted_curve
     exact hEval.congr' hSlopeEq.symm
   exact hasDerivAt_iff_tendsto_slope.mpr hSlopeE
 
-private theorem reverseTimeForwardSteklov_energy_identity_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem reverseTimeForwardSteklov_energy_identity
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    {h a b : ℝ} (hh : 0 < h) (ha0 : 0 ≤ a) (hab : a ≤ b)
+    {h a b } (hh : 0 < h) (ha0 : 0 ≤ a) (hab : a ≤ b)
     (hbT : b + h ≤ T) :
     ‖valueCLM hΩ (reverseTimeForwardSteklov T h u b)‖ ^ 2 -
         ‖valueCLM hΩ (reverseTimeForwardSteklov T h u a)‖ ^ 2 =
@@ -122,20 +116,5 @@ private theorem reverseTimeForwardSteklov_energy_identity_raw
       rw [integral_Icc_eq_integral_Ioc]
     _ = 2 * (∫ t in Icc a b,
         (reverseTimeForwardSteklov T h g t) (reverseTimeForwardSteklov T h u t)) := rfl
-
-/-- Fixed-window forward Steklov energy identity in the reverse-time Gelfand triple. -/
-theorem reverseTimeForwardSteklov_energy_identity
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    {h a b : ℝ} (hh : 0 < h) (ha0 : 0 ≤ a) (hab : a ≤ b)
-    (hbT : b + h ≤ T) :
-    ‖valueCLM hΩ (reverseTimeForwardSteklov T h u b)‖ ^ 2 -
-        ‖valueCLM hΩ (reverseTimeForwardSteklov T h u a)‖ ^ 2 =
-      2 * (∫ t in Set.Icc a b,
-        (reverseTimeForwardSteklov T h g t)
-          (reverseTimeForwardSteklov T h u t)) :=
-  reverseTimeForwardSteklov_energy_identity_raw hΩ T hT u g hderiv hh ha0 hab hbT
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

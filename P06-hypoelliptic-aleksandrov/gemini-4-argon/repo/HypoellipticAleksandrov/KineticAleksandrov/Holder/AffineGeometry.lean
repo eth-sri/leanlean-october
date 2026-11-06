@@ -79,7 +79,7 @@ def kineticAffineHomeomorph {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : R 
   continuous_invFun := continuous_kineticAffineInverse P₀ R
 
 /-- Membership in a source cylinder is transported from the unit cylinder. -/
-theorem kineticAffine_mem_cylinder {d : ℕ} (P₀ P : KineticPoint d) {R : ℝ}
+theorem kineticAffine_mem_cylinder {d } (P₀ P : KineticPoint d) {R }
     (hR : 0 < R) :
     kineticAffine P₀ R P ∈ backwardCylinder P₀ R ↔
       P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
@@ -92,7 +92,7 @@ theorem kineticAffine_mem_cylinder {d : ℕ} (P₀ P : KineticPoint d) {R : ℝ}
   rw [add_comm P₀.velocity, hv]
   simp only [add_zero] at hx
   rw [hx]
-  have hR2 : 0 < R ^ 2 := sq_pos_of_pos hR
+  have hR2 := sq_pos_of_pos hR
   constructor
   · rintro ⟨ha, hb, hv', hx'⟩
     refine ⟨?_, ?_, hv', hx'⟩ <;> nlinarith
@@ -100,7 +100,7 @@ theorem kineticAffine_mem_cylinder {d : ℕ} (P₀ P : KineticPoint d) {R : ℝ}
     refine ⟨?_, ?_, hv', hx'⟩ <;> nlinarith
 
 /-- The kinetic affine image of the unit cylinder is the exact source cylinder. -/
-theorem kineticAffine_image_unitCylinder {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
+theorem kineticAffine_image_unitCylinder {d } (P₀ : KineticPoint d) {R }
     (hR : 0 < R) :
     kineticAffine P₀ R '' backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 =
       backwardCylinder P₀ R := by

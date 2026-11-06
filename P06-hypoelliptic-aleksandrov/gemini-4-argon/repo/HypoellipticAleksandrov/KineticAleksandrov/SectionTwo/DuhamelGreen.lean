@@ -25,7 +25,7 @@ theorem duhamelPotential_eq_green {d : ℕ} {Ω : Set (PDE.Vec d)}
   have hgm : Measurable g := hgcont.measurable
   obtain ⟨C, hC⟩ := hgcont.bounded_above_of_compact_support hgc
   have hgb : ∀ p, g p ≤ C := fun p => (le_abs_self _).trans (by simpa using hC p)
-  have hLpos : 0 < T - s := sub_pos.2 hs
+  have hLpos := sub_pos.2 hs
   have hC0 : 0 ≤ C := (hg0 ⟨0, 0, 0⟩).trans (hgb _)
   let p0 := p
   let F : ElapsedTime (ENNReal.ofReal (T - s)) × EvolutionAmbientState d → ℝ≥0∞ := fun q =>

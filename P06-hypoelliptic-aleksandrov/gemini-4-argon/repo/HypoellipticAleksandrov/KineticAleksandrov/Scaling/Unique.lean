@@ -32,11 +32,10 @@ and `(S', K')` realizes it for the rescaled data `(Ω', γ', Φ.coefficient B, �
 theorem realizes_unique_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     (hΩ' : IsAdmissibleEvolutionDomain Ω')
-    {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S : TerminalOperatorFamily Ω γ} {K : MovingFiberKernel Ω γ}
+    {B b S K}
     (hreal : SectionTwo.RealizesTerminalEvolution Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S K)
-    {S' : TerminalOperatorFamily Ω' γ'} {K' : MovingFiberKernel Ω' γ'}
+    {S' K'}
     (hreal' : SectionTwo.RealizesTerminalEvolution Ω' γ'
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ') (Φ.coefficient B) (Φ.drift b) S' K') :
     K' = pushKernel h K ∧
@@ -52,11 +51,10 @@ theorem realizes_unique_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
 theorem realizes_master_eq_map (h : Φ.MapsDomain Ω γ Ω' γ')
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     (hΩ' : IsAdmissibleEvolutionDomain Ω')
-    {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S : TerminalOperatorFamily Ω γ} {K : MovingFiberKernel Ω γ}
+    {B b S} {K : MovingFiberKernel Ω γ}
     (hreal : SectionTwo.RealizesTerminalEvolution Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S K)
-    {S' : TerminalOperatorFamily Ω' γ'} {K' : MovingFiberKernel Ω' γ'}
+    {S' } {K' : MovingFiberKernel Ω' γ'}
     (hreal' : SectionTwo.RealizesTerminalEvolution Ω' γ'
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ') (Φ.coefficient B) (Φ.drift b) S' K')
     (q : EvolutionQuery Ω' γ') :

@@ -26,14 +26,14 @@ namespace W1pFunction
 
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
-/-- The value representative of a `W1pFunction` is locally integrable with
+/- The value representative of a `W1pFunction` is locally integrable with
 respect to restricted volume when `1 ≤ p`. -/
 theorem locallyIntegrable_toFun [Fact (1 ≤ p)]
     (u : W1pFunction U p) :
     MeasureTheory.LocallyIntegrable u.toFun (volumeOn U) :=
   u.memLp.locallyIntegrable Fact.out
 
-/-- Every chosen gradient component of a `W1pFunction` is locally integrable
+/- Every chosen gradient component of a `W1pFunction` is locally integrable
 with respect to restricted volume when `1 ≤ p`. -/
 theorem locallyIntegrable_grad [Fact (1 ≤ p)]
     (u : W1pFunction U p) (i : Fin d) :
@@ -110,13 +110,11 @@ theorem zero_grad :
 
 @[simp]
 theorem add_toFun [Fact (1 ≤ p)] (u v : W1pFunction U p) :
-    (u + v).toFun = fun x => u x + v x :=
-  rfl
+    (u + v).toFun = fun x => u x + v x := rfl
 
 @[simp]
 theorem add_grad [Fact (1 ≤ p)] (u v : W1pFunction U p) :
-    (u + v).grad = fun x => u.grad x + v.grad x :=
-  rfl
+    (u + v).grad = fun x => u.grad x + v.grad x := rfl
 
 @[simp]
 theorem neg_toFun (u : W1pFunction U p) :
@@ -154,7 +152,7 @@ instance [Fact (1 ≤ p)] : SMul ℕ (W1pFunction U p) where
 instance [Fact (1 ≤ p)] : SMul ℤ (W1pFunction U p) where
   smul n u := (n : ℝ) • u
 
-/-- The value-gradient projection is injective; proof fields carry no
+/- The value-gradient projection is injective; proof fields carry no
 additional data. -/
 theorem toFunGrad_injective :
     Function.Injective
@@ -199,7 +197,7 @@ instance [Fact (1 ≤ p)] : AddCommGroup (W1pFunction U p) :=
         simp only [smul_grad, Pi.smul_apply, zsmul_eq_mul,
           smul_eq_mul])
 
-/-- Additive value-gradient projection used to transfer the real module laws
+/- Additive value-gradient projection used to transfer the real module laws
 without inspecting proof fields. -/
 def toFunGradAddMonoidHom [Fact (1 ≤ p)] :
     W1pFunction U p →+ ((Vec d → ℝ) × (Vec d → Vec d)) where

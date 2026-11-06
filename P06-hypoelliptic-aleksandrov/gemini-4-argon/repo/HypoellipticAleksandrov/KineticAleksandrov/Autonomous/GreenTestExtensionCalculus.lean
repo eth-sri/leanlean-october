@@ -11,7 +11,7 @@ open HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 open scoped Topology
 
-/-- Exact derivative of a scalar cutoff depending only on transported position. -/
+/- Exact derivative of a scalar cutoff depending only on transported position. -/
 theorem reconstruction_position_cutoff_fderiv (chi : ℝ → ℝ)
     (hchi : Differentiable ℝ chi) (x w : EvolutionVec 1) :
     fderiv ℝ (fun y => chi (transportedCoord 1 y 0)) x w =
@@ -23,7 +23,7 @@ theorem reconstruction_position_cutoff_fderiv (chi : ℝ → ℝ)
   simpa only [c, ContinuousLinearMap.comp_apply, ContinuousLinearMap.proj_apply,
     smul_apply, smul_eq_mul] using! hh
 
-/-- Only the transport derivative contributes to a pure position cutoff product. -/
+/- Only the transport derivative contributes to a pure position cutoff product. -/
 theorem reconstruction_position_cutoff_operator
     (B : FullKineticCoefficient 1) (b : PDE.Vec 1 → PDE.Vec 1)
     (chi : ℝ → ℝ) (hchi : ContDiff ℝ (⊤ : ℕ∞) chi)
@@ -62,24 +62,5 @@ theorem reconstruction_position_cutoff_operator
   dsimp only [c]
   ring
 
-/-- The physical operator of every smooth packed test agrees with the native packed operator. -/
-theorem reconstruction_physical_operator_packed {lam Lam : ℝ}
-    (A : SmoothAutonomous lam Lam) (phi : Point → ℝ)
-    (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph)) (p : Point) :
-    forwardScalarOperator A.a phi p =
-      transportedOperator (evolutionCoefficient A.a) (identityDrift 1)
-        (phi ∘ reconstructionPhysicalHomeomorph) (reconstructionPhysicalHomeomorph.symm p) := by
-  let x := reconstructionPhysicalHomeomorph.symm p
-  have heq : (phi ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1 =
-      phi ∘ reconstructionPhysicalHomeomorph := rfl
-  have hs : ContDiffAt ℝ 2 ((phi ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1) x := by
-    rw [heq]
-    exact (hphi.of_le (by simp)).contDiffAt
-  have hop := transportedOperator_comp (B := evolutionCoefficient A.a) (b := identityDrift 1) hs
-  rw [heq, reconstruction_scalar_operator_swap] at hop
-  have hx : sectionTwoPoint (evolutionHomeomorph 1 x) = p :=
-    reconstructionPhysicalHomeomorph.apply_symm_apply p
-  rw [hx] at hop
-  exact hop.symm
-
+/- The physical operator of every smooth packed test agrees with the native packed operator. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -15,9 +15,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Set MeasureTheory
 
 /-- A smooth test with zero localized source and controlled kinetic boundary lies below u. -/
-theorem admissible_test_le_of_zero_source {d : ℕ} {A : FullKineticCoefficient d}
-    {O : Set (KineticPoint d)} {p C_A : ℝ} {u psi : KineticPoint d → ℝ}
-    (hu : IsAdmissibleSupersolution A O p C_A u) (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R)
+theorem admissible_test_le_of_zero_source {d A O p C_A u psi}
+    (hu : IsAdmissibleSupersolution A O p C_A u) (P₀ : KineticPoint d) {R } (hR : 0 < R)
     (hQO : closure (backwardCylinder P₀ R) ⊆ O)
     (hpsi : IsSmoothNear psi (closure (backwardCylinder P₀ R)))
     (hboundary : ∀ P ∈ kineticBoundary P₀ R, psi P ≤ u P)

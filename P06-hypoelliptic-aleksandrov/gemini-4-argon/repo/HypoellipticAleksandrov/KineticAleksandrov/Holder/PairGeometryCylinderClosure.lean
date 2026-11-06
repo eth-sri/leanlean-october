@@ -14,7 +14,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Set
 
 /-- Every point satisfying the weak unit bounds is an explicit limit of interior points. -/
-theorem mem_closure_unitCylinder_of_bounds {d : ℕ} (P : KineticPoint d)
+theorem mem_closure_unitCylinder_of_bounds {d } (P : KineticPoint d)
     (htlo : -1 ≤ P.time) (hthi : P.time ≤ 0)
     (hx : PDE.vecEuclideanNorm P.position ≤ 1)
     (hv : PDE.vecEuclideanNorm P.velocity ≤ 1) :
@@ -50,13 +50,11 @@ theorem mem_closure_unitCylinder_of_bounds {d : ℕ} (P : KineticPoint d)
   have hz : (0 : ℝ) ∈ closure (Ioo 0 1) := by
     rw [closure_Ioo (by norm_num : (0 : ℝ) ≠ 1)]
     exact ⟨le_rfl, zero_le_one⟩
-  have hp := closure_mono hsub
-    (hf.continuousOn.image_closure (mem_image_of_mem f hz))
-  simpa only [f, sub_zero, mul_one, one_mul, zero_div, one_smul] using hp
+  simpa only [f, sub_zero, mul_one, one_mul, zero_div, one_smul] using (closure_mono hsub (hf.continuousOn.image_closure (mem_image_of_mem f hz)))
 
 /-- Weak physical time, position and velocity bounds imply cylinder-closure membership. -/
-theorem mem_closure_backwardCylinder_of_bounds {d : ℕ} (P0 P : KineticPoint d)
-    {r : ℝ} (hr : 0 < r) (htlo : -(r ^ 2) ≤ P.time - P0.time)
+theorem mem_closure_backwardCylinder_of_bounds {d } (P0 P : KineticPoint d)
+    {r } (hr : 0 < r) (htlo : -(r ^ 2) ≤ P.time - P0.time)
     (hthi : P.time - P0.time ≤ 0)
     (hx : PDE.vecEuclideanNorm (relativePosition P0 P) ≤ r ^ 3)
     (hv : PDE.vecEuclideanNorm (relativeVelocity P0 P) ≤ r) :

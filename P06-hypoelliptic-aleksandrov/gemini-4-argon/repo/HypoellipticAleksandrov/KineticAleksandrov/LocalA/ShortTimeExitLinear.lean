@@ -63,7 +63,7 @@ theorem ballExit_operator_mul {d : ℕ} (B : CoefficientField d) (c : ℝ)
 
 /-- The zero-drift scalar operator commutes with finite smooth sums. -/
 theorem ballExit_operator_sum {d : ℕ} {ι : Type*} (B : CoefficientField d)
-    (s : Finset ι) (f : ι → TimeVelocity d → ℝ)
+    (s ) (f : ι → TimeVelocity d → ℝ)
     (hf : ∀ i ∈ s, ContDiff ℝ 2 (f i)) (p : TimeVelocity d) :
     scalarParabolicOperator B 0 (fun q => ∑ i ∈ s, f i q) p =
       ∑ i ∈ s, scalarParabolicOperator B 0 (f i) p := by

@@ -35,7 +35,7 @@ theorem kineticC112_fixedPosition {d : ℕ} {u : KineticPoint d → ℝ}
   · exact hu.continuousOn_kineticVelocityHessian.comp hc hE
 
 /-- The source's fixed-position parabolic cylinder lies inside the unit kinetic cylinder. -/
-theorem normalized_slice_mem {d : ℕ} (x : PDE.Vec d)
+theorem normalized_slice_mem {d } (x )
     (hx : x ∈ PDE.euclideanBall 0 (1 / 8 : ℝ))
     (z : TimeVelocity d)
     (hz : z ∈ scalarParabolicOpenCylinder (-9 / 16) 0
@@ -53,7 +53,7 @@ theorem normalized_slice_mem {d : ℕ} (x : PDE.Vec d)
       PDE.euclideanBall_mono (by norm_num) (by norm_num : (1 / 8 : ℝ) ≤ 1) hx
 
 /-- The normalized homogeneous kinetic equation is the forced scalar slice equation. -/
-theorem normalized_slice_equation {d : ℕ}
+theorem normalized_slice_equation {d }
     (A : CoefficientField d) (u : KineticPoint d → ℝ)
     (hu : IsKineticC112On u (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1))
     (he : ∀ P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1,

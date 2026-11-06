@@ -19,7 +19,7 @@ open scoped Topology BigOperators
 theorem exists_strictMono_tendsto_clm_family_of_sum_norm_sq_le
     {I H : Type*} [Fintype I] [NormedAddCommGroup H] [InnerProductSpace ℝ H]
     [CompleteSpace H] [TopologicalSpace.SeparableSpace H]
-    (u : ℕ → I → H) (C : ℝ) (hC : 0 ≤ C)
+    (u : ℕ → I → H) (C ) (hC : 0 ≤ C)
     (hb : ∀ n, ∑ i, ‖u n i‖ ^ 2 ≤ C ^ 2) :
     ∃ (v : I → H) (σ : ℕ → ℕ), StrictMono σ ∧
       ∀ i (ell : H →L[ℝ] ℝ),

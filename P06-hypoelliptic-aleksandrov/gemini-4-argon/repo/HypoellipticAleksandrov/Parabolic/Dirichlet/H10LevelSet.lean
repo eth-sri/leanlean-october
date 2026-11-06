@@ -28,7 +28,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
-/-- The concrete representatives selected by a Hilbert `H¹₀` graph point,
+/- The concrete representatives selected by a Hilbert `H¹₀` graph point,
 viewed as a representative-level `H¹` function. -/
 private def h1FunctionOfH10HilbertGraph
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) : PDE.H1Function Ω where
@@ -50,22 +50,6 @@ private def h1FunctionOfH10HilbertGraph
       PDE.volumeOn, PDE.H1HilbertGraph.toH1Graph, PDE.h1HilbertAmbientEquiv,
         WithLp.prodContinuousLinearEquiv] using! hconstraint
 
-@[simp]
-private theorem h1FunctionOfH10HilbertGraph_toFun
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
-    (h1FunctionOfH10HilbertGraph hΩ u).toFun = valueCLM hΩ u :=
-  rfl
-
-@[simp]
-private theorem h1FunctionOfH10HilbertGraph_grad
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
-    (h1FunctionOfH10HilbertGraph hΩ u).grad =
-      fun x => (gradientCLM hΩ u x).ofLp :=
-  rfl
-
-/-- On an arbitrary open domain, the selected weak gradient of a spatial
-`H¹₀` graph point vanishes almost everywhere on each fixed level set of
-its selected value representative. -/
 theorem gradientCLM_ae_zero_on_level_set
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (c : ℝ) :
     ∀ᵐ x ∂(PDE.volumeOn Ω),
@@ -88,7 +72,7 @@ theorem gradientCLM_ae_zero_on_level_set
     simp only [mem_iUnion] at hy
     obtain ⟨x, _hx, hxy⟩ := hy
     exact hrSub x hxy
-  have hUnion : (⋃ x ∈ s, B x) = Ω :=
+  have hUnion :=
     Subset.antisymm hUnionSub hsCover
   have hOnUnion :
       ∀ᵐ y ∂volume.restrict (⋃ x ∈ s, B x),
@@ -98,17 +82,13 @@ theorem gradientCLM_ae_zero_on_level_set
     have hBDomain : PDE.IsOpenBoundedConvexDomain (B x) := by
       refine ⟨Metric.isOpen_ball, ?_, convex_ball (x : PDE.Vec d) (r x)⟩
       exact PDE.Bornology.IsBounded.isBoundedDomain Metric.isBounded_ball
-    have hlocal := PDE.H1Function.grad_ae_zero_on_level_set
-      hBDomain (w.restrict Metric.isOpen_ball (hrSub x)) c
-    filter_upwards [hlocal] with y hy
+    filter_upwards [(PDE.H1Function.grad_ae_zero_on_level_set hBDomain (w.restrict Metric.isOpen_ball (hrSub x)) c)] with y hy
     intro hyLevel
     apply (WithLp.ofLp_eq_zero 2).mp
     exact hy hyLevel
   have hmeasure :
       PDE.volumeOn Ω = volume.restrict (⋃ x ∈ s, B x) := by
     rw [hUnion]
-  have hae : ae (PDE.volumeOn Ω) =
-      ae (volume.restrict (⋃ x ∈ s, B x)) := congrArg ae hmeasure
-  exact hOnUnion.filter_mono hae.le
+  exact hOnUnion.filter_mono (congrArg ae hmeasure).le
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

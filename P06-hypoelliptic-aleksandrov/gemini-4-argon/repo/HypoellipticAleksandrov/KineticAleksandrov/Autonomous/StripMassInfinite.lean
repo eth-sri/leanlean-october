@@ -14,7 +14,7 @@ open scoped ENNReal
 /-- The quadratic barrier controls total Green mass even at the infinite horizon. -/
 theorem stripGreenOfRealization_infinite_quadratic_mass
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (e : StripPole H ⊤) :
     stripGreenOfKernel H E.2 ⊤ e univ ≤
@@ -54,7 +54,7 @@ theorem stripGreenOfRealization_infinite_quadratic_mass
 /-- The canonical Green measure has the exact quadratic bound at every admitted horizon. -/
 theorem stripGreen_quadratic_mass
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ)
     (e : StripPole H T) :
     stripGreen hH hLE hlam hLam A H T e univ ≤

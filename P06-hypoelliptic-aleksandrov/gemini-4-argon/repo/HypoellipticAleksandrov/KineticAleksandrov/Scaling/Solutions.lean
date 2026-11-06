@@ -129,13 +129,11 @@ theorem isClassicalTerminalSolution_comp_point_iff
         F' (p.position, p.velocity) = F ((Φ.point p).position, (Φ.point p).velocity) := by
       intro p hp
       rw [hF]
-      have hpt : p.time = τ := hp.1
-      simp only [ambientEquiv_apply, point_position, point_velocity, hpt]
+      simp only [ambientEquiv_apply, point_position, point_velocity, hp.1]
     rw [forall_congr' fun p => forall_congr' fun hp => by rw [hFp p hp]]
     exact Φ.forall_mem_iff
       (f := fun q => u q = F (q.position, q.velocity)) (h.mem_terminalClosure_iff τ)
-  have c6 : (∀ p ∈ evolutionLateralFrontier Ω' γ' τ, u (Φ.point p) = 0) ↔
-      ∀ p ∈ evolutionLateralFrontier Ω γ (Φ.time τ), u p = 0 :=
+  have c6 :=
     Φ.forall_mem_iff (f := fun q => u q = 0) (h.mem_lateralFrontier_iff τ)
   unfold IsClassicalTerminalSolution
   constructor

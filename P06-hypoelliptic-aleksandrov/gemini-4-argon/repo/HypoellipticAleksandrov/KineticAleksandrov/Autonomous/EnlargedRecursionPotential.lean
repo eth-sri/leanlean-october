@@ -15,7 +15,7 @@ open SectionTwo TheoremA Evolution
 /-- Full-space evolution supplies every regularity and positivity premise of stopped tests. -/
 theorem enlarged_exists_fullspace_potential
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (b : ℝ)
     (F : BoundedBorel (EvolutionAmbientState 1)) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
     (hF0 : ∀ z, 0 ≤ F z) :
@@ -39,7 +39,7 @@ theorem enlarged_exists_fullspace_potential
     refine ⟨hp, ?_⟩
     rw [hwhole, closure_univ]
     trivial
-  have hc : ContinuousOn u {p | p.time ≤ b} := hv.2.1.comp
+  have hc := hv.2.1.comp
     (continuous_sectionTwoPoint 1).continuousOn (fun p hp => hm p hp)
   have hs : IsKineticC112On u {p | p.time < b} := by
     apply nested_raw_isKineticC112On (isOpen_lt continuous_time continuous_const)

@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisitMassSupport
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassIntegratedGreen
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisitsPieces
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassEntranceIntegrals
 
 /-! # Finite quadratic Green integrals for enlarged-strip entrances -/
 
@@ -11,7 +13,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
-/-- On poles after `s`, the enlarged Green kernel agrees with a finite clipped kernel. -/
+/- On poles after `s`, the enlarged Green kernel agrees with a finite clipped kernel. -/
 theorem enlargedVisitGreen_comp_eq_clipped
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -39,10 +41,10 @@ theorem enlargedVisitGreen_comp_eq_clipped
     rfl
   · rw [dite_eq_right h, dite_eq_right (fun hh => h (he.mpr hh))]
 
-/-- Each actual active occupation is finite, although its unrestricted kernel is not uniform. -/
+/- Each actual active occupation is finite, although its unrestricted kernel is not uniform. -/
 theorem enlargedActivePiece_isFiniteMeasure
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     IsFiniteMeasure (enlargedActivePiece hH hLE hlam hLam A c J s T P n) := by
@@ -52,10 +54,10 @@ theorem enlargedActivePiece_isFiniteMeasure
       fun _ hp => hp.1)]
   infer_instance
 
-/-- Actual enlarged exit mixtures remain in the closed active interval. -/
+/- Actual enlarged exit mixtures remain in the closed active interval. -/
 theorem enlargedActiveExitMixture_ae_velocity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu),
@@ -79,10 +81,10 @@ theorem enlargedActiveExitMixture_ae_velocity
     exact inter_subset_left
   · simp only [ae_zero, Filter.eventually_bot]
 
-/-- The quadratic is integrable against each finite enlarged active exit mixture. -/
+/- The quadratic is integrable against each finite enlarged active exit mixture. -/
 theorem enlargedQuadratic_integrable_exit
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (fun q => visitQuadratic c (q.velocity 0))
@@ -96,10 +98,10 @@ theorem enlargedQuadratic_integrable_exit
   rw [Real.norm_eq_abs, abs_of_nonneg (visitQuadratic_nonneg c hq)]
   exact visitQuadratic_le c _
 
-/-- Every actual entrance satisfies the integrated quadratic identity on its active domain. -/
+/- Every actual entrance satisfies the integrated quadratic identity on its active domain. -/
 theorem enlargedQuadratic_entrance_green_identity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
     (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (n : ℕ) :
@@ -117,7 +119,7 @@ theorem enlargedQuadratic_entrance_green_identity
   let G := enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T
   let f := fun p : Point => visitQuadratic c (p.velocity 0)
   let g := fun p : Point => 2 * A.a (p.position 0) (p.velocity 0)
-  have hE : Integrable f (E ∘ₘ mu) :=
+  have hE :=
     enlargedQuadratic_integrable_exit hH hLE hlam hLam A c J T mu
   have : IsFiniteMeasure (G ∘ₘ mu) :=
     enlargedActivePiece_isFiniteMeasure hH hLE hlam hLam A c J s T P hs hT n
@@ -129,7 +131,15 @@ theorem enlargedQuadratic_entrance_green_identity
     rw [Measure.comp_eq_comp_const_apply] at hG
     simpa only [Kernel.const_apply] using hG.integral_comp
   have hp : f =ᵐ[mu] fun p => (∫ q, f q ∂E p) + ∫ q, g q ∂G p := by
-    filter_upwards [enlargedVisitEntrance_ae_activePole hH hLE hlam hLam A c J s T P hs hT hJ n]
+    have _h_xinl_0 : ∀ᵐ p ∂enlargedVisitEntrance hH hLE hlam hLam A c J s T P n,
+      p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T := by
+      apply (enlargedVisitEntrance_ae_support hH hLE hlam hLam A c J s T P hs hT n).mono
+      intro p hp
+      refine ⟨hp.2.1, ?_⟩
+      rw [visitActiveUnion_carrier]
+      have hv := enlarged_closedEntrance_subset_active c hp.2.2
+      exact ⟨hv, hJ (subset_closure hv)⟩
+    filter_upwards [_h_xinl_0]
       with p hp
     let ep := enlargedVisitPole (visitActiveUnion c J) T ⟨p, hp⟩
     have he : E p = finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T ep := by

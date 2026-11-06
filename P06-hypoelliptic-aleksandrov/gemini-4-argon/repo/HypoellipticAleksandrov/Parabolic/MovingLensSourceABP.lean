@@ -32,18 +32,18 @@ noncomputable section
 open Filter Set
 open scoped Topology
 
-/-- Concrete physical contact/area API for supplied-source lower-bound proof: sign set. -/
+/- Concrete physical contact/area API for supplied-source lower-bound proof: sign set. -/
 def movingLensSourceSignSet {d : ℕ} (xi eps tau : ℝ) (y : PDE.Vec d)
     (u : TimeVelocity d → ℝ) : Set (TimeVelocity d) :=
   {z | 0 < z.1 ∧ z.1 < tau ∧
     PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1 ∧
     0 < u z ∧ 0 ≤ timeDerivative u z ∧ (-velocityHessian u z).PosSemidef}
 
-/-- Concrete physical contact/area API for supplied-source lower-bound proof: velocity footprint. -/
+/- Concrete physical contact/area API for supplied-source lower-bound proof: velocity footprint. -/
 def movingLensVelocityFootprint (d : ℕ) (kappa : ℝ) : ℝ :=
   kappa + Real.sqrt d * kappa ^ (-3 : ℤ)
 
-/-- Concrete physical contact/area API for supplied-source lower-bound proof: its wedge. -/
+/- Concrete physical contact/area API for supplied-source lower-bound proof: its wedge. -/
 def movingLensSlopeInterceptWedge (d : ℕ) (R M : ℝ) : Set (TimeVelocity d) :=
   Set.Ioo (M / 2) (3 * M / 4) ×ˢ
     PDE.euclideanBall (0 : PDE.Vec d) (M / (4 * R))
@@ -88,7 +88,7 @@ private theorem movingLensClosed_velocity_norm_lt_footprint
     PDE.vecEuclideanNorm z.2 < movingLensVelocityFootprint d kappa := by
   rcases hz with ⟨hz0, hztau, hzspatial⟩
   have hkappa_sq : 0 < kappa ^ 2 := sq_pos_of_pos hkappa
-  have hden : movingLensDenominator (movingLensSignXi kappa) eps z.1 < kappa ^ 2 :=
+  have hden :=
     movingLensDenominator_lt_kappa_sq hkappa heps_small hztau htau_kappa
   have hdisp_sq : PDE.vecNormSq (movingLensDisplacement y z) < kappa ^ 2 :=
     hzspatial.trans_lt hden
@@ -117,8 +117,7 @@ private theorem movingLensClosed_velocity_norm_lt_footprint
   have htime_norm : PDE.vecEuclideanNorm (z.1 • y) ≤
       Real.sqrt d * kappa ^ (-3 : ℤ) := by
     rw [PDE.vecEuclideanNorm_smul, abs_of_nonneg hz0]
-    have hfirst : z.1 * PDE.vecEuclideanNorm y ≤
-        z.1 * (Real.sqrt d * kappa ^ (-2 : ℤ)) :=
+    have hfirst :=
       mul_le_mul_of_nonneg_left hybound hz0
     calc
       z.1 * PDE.vecEuclideanNorm y ≤ z.1 * (Real.sqrt d * kappa ^ (-2 : ℤ)) := hfirst
@@ -212,8 +211,8 @@ private theorem affineVelocity_lt_on_movingLens
   linarith
 
 private theorem movingLensChartInv_mem_closed
-    {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d}
-    (hxi : 0 ≤ xi) (heps : 0 < eps) {q : TimeVelocity d}
+    {d xi eps tau y}
+    (hxi : 0 ≤ xi) (heps : 0 < eps) {q }
     (hq : q ∈ closedParabolicCylinder tau (0 : PDE.Vec d)) :
     movingLensChartInv xi eps y q ∈ movingLensClosed xi eps tau y := by
   have hqImage : q ∈ movingLensChart xi eps y '' movingLensClosed xi eps tau y := by
@@ -225,50 +224,8 @@ private theorem movingLensChartInv_mem_closed
     exact movingLensChartInv_apply_movingLensChart hxi heps hz.1
   rwa [hEq]
 
-private theorem affineVelocity_line_deriv_at_zero
-    {d : ℕ} (h : ℝ) (p v : PDE.Vec d) (i : Fin d) :
-    HasDerivAt
-      (fun r : ℝ => affineVelocity 0 h p
-        (v + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
-      (p i) 0 := by
-  let e : PDE.Vec d := Pi.single i 1
-  change HasDerivAt (fun r : ℝ => affineVelocity 0 h p (v + r • e)) (p i) 0
-  have hfun :
-      (fun r : ℝ => affineVelocity 0 h p (v + r • e)) =
-        fun r => affineVelocity 0 h p v + r * p i := by
-    classical
-    funext r
-    have hsingle : (∑ x : Fin d, p x * r * e x) = r * p i := by
-      dsimp [e]
-      rw [Fintype.sum_eq_single i]
-      · simp
-        ring
-      · intro x hxi
-        simp [hxi]
-    unfold affineVelocity PDE.vecDot
-    simp only [Pi.add_apply, Pi.smul_apply, Pi.sub_apply, Pi.zero_apply, smul_eq_mul,
-      sub_zero]
-    have hsplit :
-        h + (∑ x, p x * (v x + r * e x)) =
-          h + (∑ x, p x * v x) + (∑ x, p x * r * e x) := by
-      calc
-        h + (∑ x, p x * (v x + r * e x)) =
-            h + (∑ x, (p x * v x + p x * r * e x)) := by
-              congr 1
-              apply Finset.sum_congr rfl
-              intro x hx
-              ring
-        _ = h + (∑ x, p x * v x) + (∑ x, p x * r * e x) := by
-              rw [Finset.sum_add_distrib]
-              ring
-    rw [hsplit, hsingle]
-  rw [hfun]
-  simpa only [one_mul] using
-    ((hasDerivAt_id' (𝕜 := ℝ) 0).mul_const (p i)).const_add
-      (affineVelocity 0 h p v)
-
 private theorem movingLensChart_path_mem_closed
-    {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d} {z : TimeVelocity d}
+    {d xi eps tau y} {z : TimeVelocity d}
     (hxi : 0 ≤ xi) (heps : 0 < eps)
     (hz : z ∈ movingLensClosed xi eps tau y) {s : ℝ}
     (hs : s ∈ Set.Icc 0 z.1) :
@@ -288,7 +245,7 @@ private theorem movingLensChart_path_mem_closed
   exact ⟨hpathTrunc.1, hpathTrunc.2.1.trans hz.2.1, hpathTrunc.2.2⟩
 
 private theorem movingLensChart_path_initial_mem_causalBoundary
-    {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d} {z : TimeVelocity d}
+    {d xi eps tau y} {z : TimeVelocity d}
     (hxi : 0 ≤ xi) (heps : 0 < eps)
     (hz : z ∈ movingLensClosed xi eps tau y) :
     movingLensChartInv xi eps y (0, (movingLensChart xi eps y z).2) ∈
@@ -326,7 +283,7 @@ private theorem zero_between_of_continuousOn_of_neg_pos_local
     linarith
 
 private theorem time_slice_hasDerivAt_of_contDiffAt_local
-    {d : ℕ} {u : TimeVelocity d → ℝ} {z : TimeVelocity d}
+    {d u} {z : TimeVelocity d}
     (hu : ContDiffAt ℝ 2 u z) :
     HasDerivAt (fun t : ℝ => u (t, z.2)) (timeDerivative u z) z.1 := by
   have hline : HasDerivAt (fun t : ℝ => (t, z.2))
@@ -337,7 +294,7 @@ private theorem time_slice_hasDerivAt_of_contDiffAt_local
     hu.differentiableAt (by norm_num) |>.hasFDerivAt.comp_hasDerivAt z.1 hline
 
 private theorem velocity_slice_hasDerivAt_of_contDiffAt_local
-    {d : ℕ} {u : TimeVelocity d → ℝ} {z : TimeVelocity d}
+    {d u} {z : TimeVelocity d}
     (hu : ContDiffAt ℝ 2 u z) (i : Fin d) :
     HasDerivAt
       (fun r : ℝ => u (z.1,
@@ -347,8 +304,7 @@ private theorem velocity_slice_hasDerivAt_of_contDiffAt_local
   have hvline : HasDerivAt (fun r : ℝ => z.2 + r • e) e 0 := by
     simpa only [one_smul] using
       ((hasDerivAt_id' (𝕜 := ℝ) 0).smul_const e).const_add z.2
-  have hline : HasDerivAt (fun r : ℝ => (z.1, z.2 + r • e))
-      (((0 : ℝ), e) : TimeVelocity d) 0 :=
+  have hline :=
     (hasDerivAt_const (x := (0 : ℝ)) (c := z.1)).prodMk hvline
   have huAt : HasFDerivAt u (fderiv ℝ u z)
       (z.1, z.2 + (0 : ℝ) • e) := by
@@ -357,7 +313,7 @@ private theorem velocity_slice_hasDerivAt_of_contDiffAt_local
   have hcomp := huAt.comp_hasDerivAt 0 hline
   simpa only [e, velocityGradient, Function.comp_def] using hcomp
 
-/-- Concrete physical contact/area API for supplied-source lower-bound proof: local coverage. -/
+/- Concrete physical contact/area API for supplied-source lower-bound proof: local coverage. -/
 theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
     (d : ℕ) (hd : 0 < d) (kappa tau eps : ℝ) (y : PDE.Vec d)
     (hkappa : 0 < kappa) (hkappa_one : kappa ≤ 1)
@@ -371,14 +327,14 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
       ContDiffAt ℝ 2 u z)
     (hboundary : ∀ z ∈ movingLensClosed (movingLensSignXi kappa) eps tau y \
       movingLensActive (movingLensSignXi kappa) eps tau y, u z ≤ 0)
-    (M : ℝ) (hM : 0 < M) (hMvalue : M = u (tau, tau • y)) :
+    (M ) (hM : 0 < M) (hMvalue : M = u (tau, tau • y)) :
     movingLensSlopeInterceptWedge d (movingLensVelocityFootprint d kappa) M ⊆
       parabolicNormalMap u 0 ''
         movingLensSourceSignSet (movingLensSignXi kappa) eps tau y u := by
   rintro ⟨h, p⟩ hpWedge
   rcases hpWedge with ⟨⟨hhLower, hhUpper⟩, hp⟩
   let xi : ℝ := movingLensSignXi kappa
-  let ell : PDE.Vec d → ℝ := affineVelocity 0 h p
+  let ell := affineVelocity 0 h p
   let g : TimeVelocity d → ℝ := fun z => u z - ell z.2
   have hxi : 0 ≤ xi := by
     dsimp only [xi]
@@ -412,8 +368,6 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
       isCompact_movingLensClosed hxi heps htau.le
     have hSClosed : IsClosed S := by
       dsimp only [S]
-      change IsClosed
-        (movingLensClosed xi eps tau y ∩ g ⁻¹' Set.Ici 0)
       exact hgCont.preimage_isClosed_of_isClosed hLensCompact.isClosed isClosed_Ici
     exact hLensCompact.of_isClosed_subset hSClosed inter_subset_left
   rcases hSCompact.exists_isMinOn ⟨(tau, tau • y), hcenterS⟩
@@ -462,7 +416,6 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
     have hgZero : g (path 0) < 0 := by
       have hbd := hboundary _ hpathZero
       have hpz := hellPos _ hpathZero.1
-      change u (path 0) - ell (path 0).2 < 0
       linarith
     have hpathEnd : path zc.1 = zc := by
       dsimp only [path]
@@ -483,7 +436,6 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
         exact movingLensChart_path_mem_closed hxi heps hzcClosed ⟨hs.1.le, hs.2.le⟩
       · simpa [f] using hfs.ge
     have hmin := hzcMin hsS
-    change zc.1 ≤ s at hmin
     exact (not_lt_of_ge hmin) hs.2
   have htcLt : zc.1 < tau := by
     let zT : TimeVelocity d := (tau, tau • y)
@@ -500,7 +452,6 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
     have hgZero : g (path 0) < 0 := by
       have hbd := hboundary _ hpathZero
       have hpz := hellPos _ hpathZero.1
-      change u (path 0) - ell (path 0).2 < 0
       linarith
     have hpathEnd : path tau = zT := by
       dsimp only [path]
@@ -521,7 +472,6 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
         exact movingLensChart_path_mem_closed hxi heps hclosedCenter ⟨hs.1.le, hs.2.le⟩
       · simpa [f] using hfs.ge
     have hmin := hzcMin hsS
-    change zc.1 ≤ s at hmin
     exact hmin.trans_lt hs.2
   have hspatialNonpos : ∀ v : PDE.Vec d,
       (zc.1, v) ∈ movingLensClosed xi eps tau y → g (zc.1, v) ≤ 0 := by
@@ -542,7 +492,6 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
     have hgZero : g (path 0) < 0 := by
       have hbd := hboundary _ hpathZero
       have hpz := hellPos _ hpathZero.1
-      change u (path 0) - ell (path 0).2 < 0
       linarith
     have hpathEnd : path zc.1 = zv := by
       dsimp only [path, zv]
@@ -563,25 +512,22 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
         exact movingLensChart_path_mem_closed hxi heps hv ⟨hs.1.le, hs.2.le⟩
       · simpa [f] using hfs.ge
     have hmin := hzcMin hsS
-    change zc.1 ≤ s at hmin
     exact (not_lt_of_ge hmin) hs.2
   have hzcSpatial : PDE.vecNormSq (movingLensDisplacement y zc) <
       movingLensDenominator xi eps zc.1 := by
     by_contra hnot
     have heq : PDE.vecNormSq (movingLensDisplacement y zc) =
         movingLensDenominator xi eps zc.1 := le_antisymm hzcClosed.2.2 (not_lt.mp hnot)
-    have hbd : u zc ≤ 0 := hboundary zc (by
+    have hbd := hboundary zc (by
       rw [mem_movingLensClosed_diff_active_iff]
       exact Or.inr ⟨hzcClosed.1, hzcClosed.2.1, heq⟩)
     have hpz := hellPos zc hzcClosed
-    change u zc - ell zc.2 = 0 at hgcZero
     linarith
   have hzcActive : zc ∈ movingLensActive xi eps tau y :=
     ⟨htcPos, hzcClosed.2.1, hzcSpatial⟩
-  have huz : ContDiffAt ℝ 2 u zc := hulocal zc hzcActive
+  have huz := hulocal zc hzcActive
   have huzcPos : 0 < u zc := by
     have hpz := hellPos zc hzcClosed
-    change u zc - ell zc.2 = 0 at hgcZero
     linarith
   have hspatialLocalMax : IsLocalMax
       (fun v : PDE.Vec d => u (zc.1, v) - ell v) zc.2 := by
@@ -601,7 +547,7 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
     ext i
     let q : PDE.Vec d := Pi.single i 1
     let line : ℝ → PDE.Vec d := fun r => zc.2 + r • q
-    have hlineCont : ContinuousAt line 0 :=
+    have hlineCont :=
       (((hasDerivAt_id' (𝕜 := ℝ) 0).smul_const q).const_add zc.2).continuousAt
     have hmaxLine : IsLocalMax
         (fun r : ℝ => u (zc.1, line r) - ell (line r)) 0 := by
@@ -609,13 +555,50 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
           (fun v : PDE.Vec d => u (zc.1, v) - ell v) (line 0) := by
         simpa [line, q] using hspatialLocalMax
       exact hmaxAtLine.comp_continuous hlineCont
+    have _h_inl_28 : HasDerivAt (fun r : ℝ => affineVelocity 0 h p (zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d))) (p i) 0 := by
+      let v := zc.2
+      let e : PDE.Vec d := Pi.single i 1
+      change HasDerivAt (fun r : ℝ => affineVelocity 0 h p (v + r • e)) (p i) 0
+      have hfun :
+          (fun r : ℝ => affineVelocity 0 h p (v + r • e)) =
+            fun r => affineVelocity 0 h p v + r * p i := by
+        classical
+        funext r
+        have hsingle : (∑ x : Fin d, p x * r * e x) = r * p i := by
+          dsimp [e]
+          rw [Fintype.sum_eq_single i]
+          · simp
+            ring
+          · intro x hxi
+            simp [hxi]
+        unfold affineVelocity PDE.vecDot
+        simp only [Pi.add_apply, Pi.smul_apply, Pi.sub_apply, Pi.zero_apply, smul_eq_mul,
+          sub_zero]
+        have hsplit :
+            h + (∑ x, p x * (v x + r * e x)) =
+              h + (∑ x, p x * v x) + (∑ x, p x * r * e x) := by
+          calc
+            h + (∑ x, p x * (v x + r * e x)) =
+                h + (∑ x, (p x * v x + p x * r * e x)) := by
+                  congr 1
+                  apply Finset.sum_congr rfl
+                  intro x hx
+                  ring
+            _ = h + (∑ x, p x * v x) + (∑ x, p x * r * e x) := by
+                  rw [Finset.sum_add_distrib]
+                  ring
+        rw [hsplit, hsingle]
+      rw [hfun]
+      simpa only [one_mul] using
+        ((hasDerivAt_id' (𝕜 := ℝ) 0).mul_const (p i)).const_add
+          (affineVelocity 0 h p v)
     have hderiv : HasDerivAt
         (fun r : ℝ => u (zc.1,
           zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)) -
           ell (zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
         (velocityGradient u zc i - p i) 0 :=
       (velocity_slice_hasDerivAt_of_contDiffAt_local huz i).sub
-        (affineVelocity_line_deriv_at_zero h p zc.2 i)
+        _h_inl_28
     have hzero := hmaxLine.hasDerivAt_eq_zero (by simpa [line, q] using hderiv)
     exact sub_eq_zero.mp (by simpa using hzero)
   have hcontact : IsLocalMax
@@ -644,7 +627,7 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
       linarith
     rw [← hrewrite]
     exact hspatialLocalMax
-  have hhess : (-velocityHessian u zc).PosSemidef :=
+  have hhess :=
     neg_velocityHessian_posSemidef_of_spatial_localMax_affineContact_of_contDiffAt huz hcontact
   have htimeMax : IsLocalMaxOn
       (fun t : ℝ => u (t, zc.2) - ell zc.2) (Set.Iic zc.1) zc.1 := by
@@ -657,12 +640,11 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
         ((continuous_id.prodMk continuous_const).continuousAt.tendsto), ?_⟩
       filter_upwards [eventually_mem_nhdsWithin] with t ht
       exact ⟨ht, mem_univ _⟩
-    have hactiveEventually : ∀ᶠ t in 𝓝[Set.Iic zc.1] zc.1,
-        (t, zc.2) ∈ movingLensActive xi eps tau y := hlineTendsto.eventually hpast
+    have hactiveEventually := hlineTendsto.eventually hpast
     filter_upwards [hactiveEventually, eventually_mem_nhdsWithin] with t ht hle
     have htime : g (t, zc.2) ≤ 0 := by
       by_contra hnot
-      have hpos : 0 < g (t, zc.2) := lt_of_not_ge hnot
+      have hpos := lt_of_not_ge hnot
       have htS : (t, zc.2) ∈ S :=
         ⟨movingLensActive_subset_movingLensClosed xi eps tau y ht, hpos.le⟩
       have hmin := hzcMin htS
@@ -671,14 +653,13 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
         intro heq
         subst t
         linarith [hgcZero]
-      have hlt : zc.1 < t := lt_of_le_of_ne hmin hne
+      have hlt := lt_of_le_of_ne hmin hne
       exact (not_lt_of_ge hle) hlt
     change u (t, zc.2) - ell zc.2 ≤ u zc - ell zc.2
     change g (t, zc.2) ≤ g zc
     rw [hgcZero]
     exact htime
-  have htimeDeriv : HasDerivAt
-      (fun t : ℝ => u (t, zc.2) - ell zc.2) (timeDerivative u zc) zc.1 :=
+  have htimeDeriv :=
     (time_slice_hasDerivAt_of_contDiffAt_local huz).sub_const (ell zc.2)
   have hminusOne : (-1 : ℝ) ∈ posTangentConeAt (Set.Iic zc.1) zc.1 := by
     have hsegment : segment ℝ zc.1 (zc.1 - 1) ⊆ Set.Iic zc.1 := by
@@ -725,11 +706,6 @@ private theorem movingLensSourceSignSet_areaFormulaData_of_localC2
         PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1} ∩
           {z | z.1 < tau} by
       ext z
-      change (0 < z.1 /\ z.1 < tau /\
-        PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1) ↔
-        ((0 < z.1 /\
-          PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1) /\
-          z.1 < tau)
       constructor
       · rintro ⟨ht0, httau, hspatial⟩
         exact ⟨⟨ht0, hspatial⟩, httau⟩
@@ -819,11 +795,6 @@ private theorem movingLensSourceSignSet_areaFormulaData_of_localC2
         (O ∩ {z | 0 < u z}) ∩ (O ∩ {z | 0 ≤ timeDerivative u z}) ∩
           (O ∩ {z | (-velocityHessian u z).PosSemidef}) by
       ext z
-      change (0 < z.1 /\ z.1 < tau /\
-        PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1 /\
-        0 < u z /\ 0 ≤ timeDerivative u z /\ (-velocityHessian u z).PosSemidef) ↔
-        ((z ∈ O /\ 0 < u z) /\ (z ∈ O /\ 0 ≤ timeDerivative u z)) /\
-          (z ∈ O /\ (-velocityHessian u z).PosSemidef)
       constructor
       · rintro ⟨ht0, httau, hspatial, hpositivez, htimez, hpsdz⟩
         exact ⟨⟨⟨⟨ht0, httau, hspatial⟩, hpositivez⟩,
@@ -838,10 +809,9 @@ private theorem movingLensSourceSignSet_areaFormulaData_of_localC2
   exact parabolicNormalMap_hasFDerivWithinAt_of_contDiffAt
     (hlocal z (hO_active ⟨hz.1, hz.2.1, hz.2.2.1⟩))
 
-/-- Concrete physical contact/area API for supplied-source lower-bound proof: wedge-volume bound. -/
+/- Concrete physical contact/area API for supplied-source lower-bound proof: wedge-volume bound. -/
 theorem movingLensSlopeInterceptWedge_volume_le_lintegral_abs_det_fderiv
-    {d : Nat} {xi eps tau M R : Real} {y : PDE.Vec d}
-    {u : TimeVelocity d -> Real}
+    {d xi eps tau M R y u}
     (hlocal : ∀ z ∈ movingLensActive xi eps tau y, ContDiffAt Real 2 u z)
     (hcoverage :
       movingLensSlopeInterceptWedge d R M ⊆
@@ -868,19 +838,5 @@ theorem movingLensSlopeInterceptWedge_volume_le_lintegral_abs_det_fderiv
           rw [hderiv.fderiv]
           exact hderiv.hasFDerivWithinAt)
 
-/-- Concrete physical contact/area API for supplied-source lower-bound proof: wedge volume. -/
-theorem volume_movingLensSlopeInterceptWedge
-    {d : Nat} {R M : Real} (hR : 0 < R) (hM : 0 < M) :
-    MeasureTheory.MeasureSpace.volume (movingLensSlopeInterceptWedge d R M) =
-      ENNReal.ofReal (M / 4) *
-        (ENNReal.ofReal ((M / (4 * R)) ^ d) *
-          MeasureTheory.MeasureSpace.volume
-            (PDE.euclideanBall (0 : PDE.Vec d) 1)) := by
-  unfold movingLensSlopeInterceptWedge
-  have hradius : 0 < M / (4 * R) := div_pos hM (mul_pos (by norm_num) hR)
-  have hinterval : 3 * M / 4 - M / 2 = M / 4 := by ring
-  rw [MeasureTheory.Measure.volume_eq_prod, MeasureTheory.Measure.prod_prod,
-    Real.volume_Ioo, hinterval,
-    PDE.volume_euclideanBall_eq_unit_mul_of_pos (0 : PDE.Vec d) hradius]
-
+/- Concrete physical contact/area API for supplied-source lower-bound proof: wedge volume. -/
 end HypoellipticAleksandrov.Parabolic

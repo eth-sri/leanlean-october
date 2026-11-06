@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.InnerBallExhaustion
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionTerminalApproximation
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionTerminalGeometry
 
 /-!
 # Actual finite Dirichlet approximation sequences on a ball
@@ -21,16 +22,16 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter
 open scoped Topology MatrixOrder
 
-/-- A smooth inner-ball approximation sequence with actual finite Dirichlet solutions
+/- A smooth inner-ball approximation sequence with actual finite Dirichlet solutions
 exists relative only to the Lieberman premise. -/
 theorem exists_innerBall_dirichlet_sequence
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n lam Lam B b}
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hBs : IsSmoothFullKineticCoefficient B) (hBsym : IsSymmetricFullKineticCoefficient B)
     (hB : HasEverywhereLoewnerBounds lam Lam B) (hbs : IsSmoothDrift b)
-    {Γ : ℝ → PDE.Vec n} (hΓ : IsContinuousPiecewiseC1 Γ)
-    {a τ r0 d ε : ℝ} (haτ : a < τ) (hd : 0 < d) (hdr : d < r0 / 4) (hε : 0 < ε)
+    {Γ } (hΓ : IsContinuousPiecewiseC1 Γ)
+    {a τ r0 d ε } (haτ : a < τ) (hd : 0 < d) (hdr : d < r0 / 4) (hε : 0 < ε)
     (F : BoundedBorel (EvolutionAmbientState n))
     (hF : ContDiff ℝ (⊤ : ℕ∞) (F : EvolutionAmbientState n → ℝ))
     (hFc : HasCompactSupport (F : EvolutionAmbientState n → ℝ))
@@ -54,7 +55,15 @@ theorem exists_innerBall_dirichlet_sequence
   let g (k : ℕ) := g0 (k + j0)
   have hβ (k : ℕ) : 0 < β k ∧ β k ≤ d :=
     ⟨(hβ0 _).1, (hj0 _ (by omega)).le⟩
-  obtain ⟨Z, -, hZ⟩ := exists_transported_terminal_support_bound hFc
+  obtain ⟨Z, -, hZ⟩ : ∃ Z : ℝ, 0 ≤ Z ∧ ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
+      PDE.vecEuclideanNorm q.2 ≤ Z := by
+      obtain ⟨Z, hZ⟩ := hFc.bddAbove_image
+        (PDE.continuous_vecEuclideanNorm.comp continuous_snd).continuousOn
+      refine ⟨max Z 0, le_max_right _ _, fun q hq => ?_⟩
+      exact (hZ ⟨q, hq, rfl⟩).trans (le_max_left _ _)
+
+    /- Every sufficiently large transported radius satisfies the terminal support margin
+    condition. The threshold depends only on the fixed diffused radius, collar margin and Z. -/
   obtain ⟨R0, hR0, hsize⟩ := exists_transportedRadius_terminal_window
     (by linarith : 0 < r0) hd (by linarith : d < r0) Z
   let R (k : ℕ) := R0 + (k : ℝ) + 1
@@ -82,7 +91,7 @@ theorem exists_innerBall_dirichlet_sequence
         openEllipsoid (straightenedEllipsoidMatrix n (r0 - β k) (R k)) := by
       intro x hx
       let H := terminalCoordinateHomeomorph (g k τ)
-      have hx' : x ∈ tsupport ((F : EvolutionAmbientState n → ℝ) ∘ H) := hx
+      have hx' := hx
       have hxF := tsupport_comp_subset_preimage (F : EvolutionAmbientState n → ℝ)
         H.continuous hx'
       let p : KineticPoint n := ⟨τ, g k τ + spatialY x, spatialZ x⟩

@@ -95,7 +95,7 @@ def IterationEvolutionStatement : Prop :=
 
 /-- The unit-frequency block statement in case W (`D = ℝ^d`), Proposition 3.9.
 It is `UnitBlockStatement` restricted to the whole-space domain. -/
-def UnitBlockStatementW (d : ℕ) (hd : 1 ≤ d)
+def UnitBlockStatementW (d ) (hd : 1 ≤ d)
     (lam Lam m Lb : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) : Prop :=
     ∃ L δ : ℝ, 0 < L ∧ 0 < δ ∧ δ < 1 ∧

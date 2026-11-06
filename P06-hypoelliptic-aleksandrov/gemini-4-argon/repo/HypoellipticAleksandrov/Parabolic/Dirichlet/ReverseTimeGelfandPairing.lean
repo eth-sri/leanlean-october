@@ -19,20 +19,8 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem scalarLpToH10HilbertGraphDual_apply_smul
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (u0 v0 : H10HilbertGraph hΩ) (q0 : ℝ) :
-    scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ u0) (q0 • v0) =
-      inner ℝ (valueCLM hΩ v0) (valueCLM hΩ u0) * q0 := by
-  rw [scalarLpToH10HilbertGraphDual_apply, (valueCLM hΩ).map_smul,
-    inner_smul_left]
-  simp only [starRingEnd_apply, star_trivial]
-  ring
-
-/-- Pairing the Gelfand image with a bounded separated multiplier is the
-literal spatial `L²` mass integral. -/
 theorem reverseTimeGelfand_pairing_multiplier_eq_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+    {d } {Ω : Set (PDE.Vec d)} {T }
     (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ T)
     (q : ℝ → ℝ)
@@ -59,6 +47,11 @@ theorem reverseTimeGelfand_pairing_multiplier_eq_integral
         ae_reverseTimeSeparatedVTestOfMemLp hΩ q hq v] with tau hG hz
       dsimp only [G, z]
       rw [hG, hz]
-      exact scalarLpToH10HilbertGraphDual_apply_smul hΩ (u tau) v (q tau)
+      let u0 := (u tau)
+      let q0 := (q tau)
+      rw [scalarLpToH10HilbertGraphDual_apply, (valueCLM hΩ).map_smul,
+        inner_smul_left]
+      simp only [starRingEnd_apply, star_trivial]
+      ring
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

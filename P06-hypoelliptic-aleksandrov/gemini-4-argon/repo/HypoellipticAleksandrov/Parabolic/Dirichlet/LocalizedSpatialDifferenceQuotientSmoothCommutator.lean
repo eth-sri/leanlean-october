@@ -5,6 +5,9 @@ public import
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientEnergyWeakTest
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialBounds
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientIntegration
+import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientEnergyTestH10
+import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
+import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
 
 /-!
 # Smooth fixed-time localized commutator
@@ -68,7 +71,7 @@ private theorem local_transpose
     exact (hFcont.comp (continuous_id.sub continuous_const)).integrable_of_hasCompactSupport
       (hFsupport.comp_homeomorph (Homeomorph.subRight z))
   have hshift : (∫ y, F (y - z) ∂volume) = ∫ y, F y ∂volume := by
-    let hμ : MeasurePreserving (fun y : PDE.Vec d => y + -z) volume volume :=
+    let hμ :=
       measurePreserving_add_right volume (-z)
     simpa [sub_eq_add_neg] using
       hμ.integral_comp (Homeomorph.addRight (-z)).measurableEmbedding F
@@ -119,7 +122,7 @@ private theorem local_transpose
       ring
 
 private theorem energy_value_eq_backward
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
     (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -142,98 +145,8 @@ private theorem energy_value_eq_backward
   rw [hcancel]
   ring_nf
 
-private theorem energy_deriv_eq_backward
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
-    (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
-    (i : Fin d) (y : PDE.Vec d) :
-    (localizedSpatialDifferenceQuotientEnergyWeakTest
-      η k h φ φ.contDiff hηΩ hηshift).partialDeriv i y =
-      ((fun x =>
-        2 * η x * PDE.classicalGradient η.toFun x i *
-            ((φ (x + h • PDE.basisVec k) - φ x) / h) +
-          η x ^ 2 *
-            ((φ.partialDeriv i (x + h • PDE.basisVec k) - φ.partialDeriv i x) / h))
-        (y + (-h) • PDE.basisVec k) -
-        (fun x =>
-          2 * η x * PDE.classicalGradient η.toFun x i *
-              ((φ (x + h • PDE.basisVec k) - φ x) / h) +
-            η x ^ 2 *
-              ((φ.partialDeriv i (x + h • PDE.basisVec k) - φ.partialDeriv i x) / h)) y) / h := by
-  rw [localizedSpatialDifferenceQuotientEnergyWeakTest_partialDeriv
-    η k h φ hηΩ hηshift i y]
-
-private theorem continuousOn_reverseTimeCoefficientEntry
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ τ : ℝ) (a : CoefficientField d) (i j : Fin d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
-    ContinuousOn (fun y : PDE.Vec d => a (r₁ - τ) y i j) Ω := by
-  rcases ha with ⟨V, hVopen, hKV, hV⟩
-  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
-    exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV (by
-      intro z hz
-      exact Set.mem_univ _)
-  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by
-      intro z hz
-      exact Set.mem_univ _)
-  have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
-    constructor <;> linarith [hτ.1, hτ.2]
-  have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
-    intro y hy
-    exact ⟨htime, subset_closure hy⟩
-  simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
-    (Continuous.prodMk_right _).continuousOn hmap
-
-private theorem continuousOn_reverseTimeDivergenceDriftEntry
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (j : Fin d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
-    ContinuousOn (fun y : PDE.Vec d => reverseTimeDivergenceDrift r₁ a b τ y j) Ω := by
-  have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
-    constructor <;> linarith [hτ.1, hτ.2]
-  have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
-    intro y hy
-    exact ⟨htime, subset_closure hy⟩
-  have hdiv : ContinuousOn (fun y : PDE.Vec d =>
-      scalarSpatialCoefficientDivergence (reverseTimeCoefficient r₁ a) (τ, y) j) Ω := by
-    have hcont := continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
-      r₀ r₁ a ha
-    have hvec : ContinuousOn (fun y : PDE.Vec d =>
-        scalarSpatialCoefficientDivergence a (r₁ - τ, y)) Ω := by
-      simpa only [Function.comp_def] using hcont.comp (Continuous.prodMk_right _).continuousOn hmap
-    have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
-      (continuous_apply j).continuousOn
-    simpa only [scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
-      reverseTimeMap_apply, Function.comp_def] using heval.comp hvec (by intro y hy; simp)
-  rcases hb with ⟨V, hVopen, hKV, hV⟩
-  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by
-      intro z hz
-      exact Set.mem_univ _)
-  have hbcont : ContinuousOn (fun y : PDE.Vec d => b (r₁ - τ) y j) Ω := by
-    simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
-      (Continuous.prodMk_right _).continuousOn hmap
-  simpa only [reverseTimeDivergenceDrift, reverseTimeVectorCoefficient_apply,
-    Pi.sub_def] using hdiv.sub hbcont
-
-/-- The fixed-time smooth localized energy test satisfies the literal
-source-minus-form spatial difference-quotient commutator identity. -/
 theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commutator
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -251,9 +164,9 @@ theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commut
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (τ : ℝ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
+    (τ ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+    (k h) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -269,7 +182,7 @@ theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commut
       localizedSpatialDifferenceQuotientEnergyTestH10CLM
         hΩ η k h hηΩ hηshift u
     let source : PDE.Vec d → ℝ := fun y => F (r₁ - τ) y
-    let sourceSlice : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+    let sourceSlice :=
       reverseTimeSourceSlice r₁ τ F
         (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
           r₀ r₁ hΩ hΩbounded F hFSmooth τ hτ)
@@ -299,13 +212,116 @@ theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commut
         ∫ y in Ω,
           (T γ y * D φ y + D γ y * φ y) * Q y ∂volume := by
   dsimp only
-  rw [reverseTimeSourceFunctional_apply_smooth_localizedSpatialDifferenceQuotientEnergyTest_eq
-    hΩ r₁ τ F
-    (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
+  have _h_xinl_1 : reverseTimeSourceFunctional hΩ
+        (reverseTimeSourceSlice r₁ τ F (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
+      r₀ r₁ hΩ hΩbounded F hFSmooth τ hτ))
+        (localizedSpatialDifferenceQuotientEnergyTestH10CLM
+          hΩ η k h hηΩ hηshift
+          (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ)) =
+      -∫ y in Ω, F (r₁ - τ) y *
+        (localizedSpatialDifferenceQuotientEnergyWeakTest
+          η k h φ φ.contDiff hηΩ hηshift) y ∂volume := by
+    let hF := (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
       r₀ r₁ hΩ hΩbounded F hFSmooth τ hτ)
-    η k h φ hηΩ hηshift,
-    reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEnergyTest_eq
-      hΩ r₁ τ a b c η k h φ hηΩ hηshift]
+    rw [reverseTimeSourceFunctional_apply,
+      localizedSpatialDifferenceQuotientEnergyTestH10CLM_apply_smooth
+        hΩ η k h φ hηΩ hηshift,
+      L2.inner_def]
+    congr 1
+    apply integral_congr_ae
+    filter_upwards
+      [coeFn_reverseTimeSourceSlice r₁ τ F hF,
+        ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ
+          (localizedSpatialDifferenceQuotientEnergyWeakTest
+            η k h φ φ.contDiff hηΩ hηshift)] with y hF hψ
+    rw [hψ, hF]
+    simp only [RCLike.inner_apply, conj_trivial]
+  have _h_xinl_0 : reverseTimeSpatialForm hΩ r₁ τ a b c (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ) (localizedSpatialDifferenceQuotientEnergyTestH10CLM hΩ η k h hηΩ hηshift (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ)) = (∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω, a (r₁ - τ) y i j * φ.partialDeriv j y * (localizedSpatialDifferenceQuotientEnergyWeakTest η k h φ φ.contDiff hηΩ hηshift).partialDeriv i y ∂volume) + (∑ j : Fin d, ∫ y in Ω, reverseTimeDivergenceDrift r₁ a b τ y j * φ.partialDeriv j y * (localizedSpatialDifferenceQuotientEnergyWeakTest η k h φ φ.contDiff hηΩ hηshift) y ∂volume) - ∫ y in Ω, reverseTimeScalarCoefficient r₁ c τ y * φ y * (localizedSpatialDifferenceQuotientEnergyWeakTest η k h φ φ.contDiff hηΩ hηshift) y ∂volume := by
+    have hinput :
+        smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ =
+          smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ := by
+      apply Subtype.ext
+      rfl
+    rw [localizedSpatialDifferenceQuotientEnergyTestH10CLM_apply_smooth
+        hΩ η k h φ hηΩ hηshift,
+      reverseTimeSpatialForm_apply, hinput]
+    have hprincipal (i j : Fin d) :
+        (∫ y in Ω,
+          a (r₁ - τ) y i j *
+            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+              (gradientCLM hΩ
+                (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ))) y *
+            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+              (gradientCLM hΩ
+                (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ
+                  (localizedSpatialDifferenceQuotientEnergyWeakTest
+                    η k h φ φ.contDiff hηΩ hηshift)))) y) =
+          ∫ y in Ω,
+            a (r₁ - τ) y i j * φ.partialDeriv j y *
+              (localizedSpatialDifferenceQuotientEnergyWeakTest
+                η k h φ φ.contDiff hηΩ hηshift).partialDeriv i y := by
+      apply integral_congr_ae
+      filter_upwards
+        [PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+            (gradientCLM hΩ
+              (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ)),
+          ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ φ j,
+          PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+            (gradientCLM hΩ
+              (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ
+                (localizedSpatialDifferenceQuotientEnergyWeakTest
+                  η k h φ φ.contDiff hηΩ hηshift))),
+          ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ
+            (localizedSpatialDifferenceQuotientEnergyWeakTest
+              η k h φ φ.contDiff hηΩ hηshift) i] with y hφj hφ hψi hψ
+      rw [hφj, hφ, hψi, hψ]
+    have hdrift (j : Fin d) :
+        (∫ y in Ω,
+          reverseTimeDivergenceDrift r₁ a b τ y j *
+            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+              (gradientCLM hΩ
+                (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ))) y *
+            (valueCLM hΩ
+              (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ
+                (localizedSpatialDifferenceQuotientEnergyWeakTest
+                  η k h φ φ.contDiff hηΩ hηshift))) y) =
+          ∫ y in Ω,
+            reverseTimeDivergenceDrift r₁ a b τ y j * φ.partialDeriv j y *
+              (localizedSpatialDifferenceQuotientEnergyWeakTest
+                η k h φ φ.contDiff hηΩ hηshift) y := by
+      apply integral_congr_ae
+      filter_upwards
+        [PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+            (gradientCLM hΩ
+              (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ)),
+          ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ φ j,
+          ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ
+            (localizedSpatialDifferenceQuotientEnergyWeakTest
+              η k h φ φ.contDiff hηΩ hηshift)] with y hφj hφ hψ
+      rw [hφj, hφ, hψ]
+    have hscalar :
+        (∫ y in Ω,
+          reverseTimeScalarCoefficient r₁ c τ y *
+            (valueCLM hΩ
+              (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ)) y *
+            (valueCLM hΩ
+              (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ
+                (localizedSpatialDifferenceQuotientEnergyWeakTest
+                  η k h φ φ.contDiff hηΩ hηshift))) y) =
+          ∫ y in Ω,
+            reverseTimeScalarCoefficient r₁ c τ y * φ y *
+              (localizedSpatialDifferenceQuotientEnergyWeakTest
+                η k h φ φ.contDiff hηΩ hηshift) y := by
+      apply integral_congr_ae
+      filter_upwards
+        [ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ φ,
+          ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ
+            (localizedSpatialDifferenceQuotientEnergyWeakTest
+              η k h φ φ.contDiff hηΩ hηshift)] with y hφ hψ
+      rw [hφ, hψ]
+    simp_rw [hprincipal, hdrift, hscalar]
+  rw [_h_xinl_1,
+    _h_xinl_0]
   let Q : PDE.Vec d → ℝ := fun y =>
     η y ^ 2 * ((φ (y + h • PDE.basisVec k) - φ y) / h)
   let R : Fin d → PDE.Vec d → ℝ := fun i y =>
@@ -322,7 +338,8 @@ theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commut
       (localizedSpatialDifferenceQuotientEnergyWeakTest
         η k h φ φ.contDiff hηΩ hηshift).partialDeriv i y =
         (R i (y + (-h) • PDE.basisVec k) - R i y) / h := by
-    exact energy_deriv_eq_backward η k h φ hηΩ hηshift i y
+    rw [localizedSpatialDifferenceQuotientEnergyWeakTest_partialDeriv
+      η k h φ hηΩ hηshift i y]
   simp_rw [hBvalue, hBderiv]
   have hDφcont : Continuous (fun y : PDE.Vec d =>
       (φ (y + h • PDE.basisVec k) - φ y) / h) :=
@@ -345,8 +362,7 @@ theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commut
       (g := fun y => (φ (y + h • PDE.basisVec k) - φ y) / h)).trans ?_
     simpa only [pow_two] using
       (tsupport_mul_subset_left (f := η.toFun) (g := η.toFun))
-  have hQshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport Q) Ω :=
+  have hQshift :=
     hηshift.mono_left hQsupport
   have hgradηcont (i : Fin d) : Continuous
       (fun y : PDE.Vec d => PDE.classicalGradient η.toFun y i) := by
@@ -420,13 +436,57 @@ theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commut
       (continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
         r₀ r₁ τ F hFSmooth hτ)
   have hαcont (i j : Fin d) : ContinuousOn
-      (fun y : PDE.Vec d => a (r₁ - τ) y i j) Ω :=
-    continuousOn_reverseTimeCoefficientEntry r₀ r₁ τ a i j haSmooth hτ
+      (fun y : PDE.Vec d => a (r₁ - τ) y i j) Ω := by
+    rcases haSmooth with ⟨V, hVopen, hKV, hV⟩
+    have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
+      exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV (by
+        intro z hz
+        exact Set.mem_univ _)
+    have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V := by
+      exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by
+        intro z hz
+        exact Set.mem_univ _)
+    have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
+      constructor <;> linarith [hτ.1, hτ.2]
+    have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
+        (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
+      intro y hy
+      exact ⟨htime, subset_closure hy⟩
+    simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
+      (Continuous.prodMk_right _).continuousOn hmap
   have hdriftcont (j : Fin d) : ContinuousOn
-      (fun y : PDE.Vec d => reverseTimeDivergenceDrift r₁ a b τ y j) Ω :=
-    continuousOn_reverseTimeDivergenceDriftEntry r₀ r₁ τ a b j haSmooth hbSmooth hτ
-  have hγcont : ContinuousOn
-      (fun y : PDE.Vec d => reverseTimeScalarCoefficient r₁ c τ y) Ω :=
+      (fun y : PDE.Vec d => reverseTimeDivergenceDrift r₁ a b τ y j) Ω := by
+      have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
+        constructor <;> linarith [hτ.1, hτ.2]
+      have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
+          (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
+        intro y hy
+        exact ⟨htime, subset_closure hy⟩
+      have hdiv : ContinuousOn (fun y : PDE.Vec d =>
+          scalarSpatialCoefficientDivergence (reverseTimeCoefficient r₁ a) (τ, y) j) Ω := by
+        have hcont := continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
+          r₀ r₁ a haSmooth
+        have hvec : ContinuousOn (fun y : PDE.Vec d =>
+            scalarSpatialCoefficientDivergence a (r₁ - τ, y)) Ω := by
+          simpa only [Function.comp_def] using hcont.comp (Continuous.prodMk_right _).continuousOn hmap
+        have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
+          (continuous_apply j).continuousOn
+        simpa only [scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
+          reverseTimeMap_apply, Function.comp_def] using heval.comp hvec (by intro y hy; simp)
+      rcases hbSmooth with ⟨V, hVopen, hKV, hV⟩
+      have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
+        exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by
+          intro z hz
+          exact Set.mem_univ _)
+      have hbcont : ContinuousOn (fun y : PDE.Vec d => b (r₁ - τ) y j) Ω := by
+        simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
+          (Continuous.prodMk_right _).continuousOn hmap
+      simpa only [reverseTimeDivergenceDrift, reverseTimeVectorCoefficient_apply,
+        Pi.sub_def] using hdiv.sub hbcont
+
+    /- The fixed-time smooth localized energy test satisfies the literal
+    source-minus-form spatial difference-quotient commutator identity. -/
+  have hγcont :=
     continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
       r₀ r₁ τ c hcSmooth hτ
   have hsourceTranspose := local_transpose Ω hΩ k h

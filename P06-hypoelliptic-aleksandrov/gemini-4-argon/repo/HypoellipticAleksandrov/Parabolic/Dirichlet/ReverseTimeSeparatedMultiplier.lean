@@ -26,7 +26,7 @@ theorem reverseTimeVolume_isFiniteMeasure_ofMemLp (T : ℝ) :
 
 /-- The reverse-time `L²(V)` class represented by `tau ↦ q tau • v`. -/
 noncomputable def reverseTimeSeparatedVTestOfMemLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+    {d } {Ω : Set (PDE.Vec d)} {T : ℝ}
     (hΩ : IsOpen Ω) (q : ℝ → ℝ)
     (hq : MeasureTheory.MemLp q (∞ : ℝ≥0∞) (reverseTimeVolume T))
     (v : H10HilbertGraph hΩ) : ReverseTimeL2V hΩ T := by
@@ -41,7 +41,7 @@ noncomputable def reverseTimeSeparatedVTestOfMemLp
 
 /-- The separated multiplier has the literal scalar-multiple representative. -/
 theorem ae_reverseTimeSeparatedVTestOfMemLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+    {d } {Ω : Set (PDE.Vec d)} {T : ℝ}
     (hΩ : IsOpen Ω) (q : ℝ → ℝ)
     (hq : MeasureTheory.MemLp q (∞ : ℝ≥0∞) (reverseTimeVolume T))
     (v : H10HilbertGraph hΩ) :
@@ -79,7 +79,7 @@ theorem tendsto_reverseTimeSeparatedVTestOfMemLp
       Filter.atTop (𝓝 (reverseTimeSeparatedVTestOfMemLp hΩ q hq v)) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) :=
     reverseTimeVolume_isFiniteMeasure_ofMemLp T
-  let L : H10HilbertGraph hΩ →L[ℝ] ReverseTimeL2V hΩ T :=
+  let L :=
     ((((ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
       H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)).holderL
       (reverseTimeVolume T) (∞ : ℝ≥0∞) (2 : ℝ≥0∞) (2 : ℝ≥0∞)

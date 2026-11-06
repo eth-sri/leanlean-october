@@ -37,7 +37,7 @@ def bellmanCompactIntegral (mu : Measure X) [IsFiniteMeasure mu] : C(X, ℝ) →
 
 /-- Local mass bounds give the corresponding dual norm bounds. -/
 theorem bellmanCompactIntegral_norm_le (mu : Measure X) [IsFiniteMeasure mu]
-    (C : ℝ) (hC : 0 ≤ C) (hm : mu.real univ ≤ C) :
+    (C ) (hC : 0 ≤ C) (hm : mu.real univ ≤ C) :
     ‖bellmanCompactIntegral mu‖ ≤ C := by
   apply ContinuousLinearMap.opNorm_le_bound _ hC
   intro f
@@ -77,8 +77,7 @@ theorem bellman_compact_functionals_subsequence {iota : Type*} [Countable iota]
   intro i
   refine ⟨WeakDual.toStrongDual (ell i).val, ?_⟩
   intro f
-  have hi := (continuous_apply i).tendsto ell |>.comp ht
-  have hv := continuous_subtype_val.tendsto (ell i) |>.comp hi
+  have hv := continuous_subtype_val.tendsto (ell i) |>.comp ((continuous_apply i).tendsto ell |>.comp ht)
   convert! (WeakDual.eval_continuous f).tendsto (ell i).val |>.comp hv using 1
 
 end HypoellipticAleksandrov.KineticAleksandrov

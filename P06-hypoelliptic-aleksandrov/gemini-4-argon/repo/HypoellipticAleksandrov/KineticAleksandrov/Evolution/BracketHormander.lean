@@ -27,7 +27,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 variable {n : ℕ}
 
 /-- Spanning on a set implies spanning on any subset. -/
-theorem lieAlgebraSpansOn_mono {k N : ℕ} {Ω Ω' : Set (PDE.Vec N)} (h : Ω' ⊆ Ω)
+theorem lieAlgebraSpansOn_mono {k N Ω Ω'} (h : Ω' ⊆ Ω)
     {X : Fin (k + 1) → PDE.Vec N → PDE.Vec N} (hX : LieAlgebraSpansOn Ω X) :
     LieAlgebraSpansOn Ω' X :=
   fun x hx => hX x (h hx)
@@ -36,8 +36,7 @@ theorem lieAlgebraSpansOn_mono {k N : ℕ} {Ω Ω' : Set (PDE.Vec N)} (h : Ω' �
 (`B` smooth, symmetric, `lam I ≤ B ≤ Lam I`; `b` smooth with `ξ · Db ξ ≥ m`, `m > 0`), the
 generators `X_0, X_1, …, X_d` of `Lop` are smooth on `ℝ^{1+2d}` and generate a Lie algebra
 spanning every tangent space.  Valid also when `B` depends on `z`. -/
-theorem hormander_hypotheses_transportedFields {lam Lam m : ℝ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam) (hB : IsSmoothFullKineticCoefficient B)
+theorem hormander_hypotheses_transportedFields {lam Lam m B b} (hlam : 0 < lam) (hB : IsSmoothFullKineticCoefficient B)
     (hell : HasEverywhereLoewnerBounds lam Lam B) (hb : IsSmoothDrift b) (hm : 0 < m)
     (hcoerc : HasUnitDirectionDriftCoercivity m b) (Ω : Set (EvolutionVec n)) :
     (∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (transportedFields B b i) Ω) ∧
@@ -50,8 +49,7 @@ theorem hormander_hypotheses_transportedFields {lam Lam m : ℝ} {B : FullKineti
 `X_0, X_i, Y_l` of `L_ε` are smooth and their Lie algebra (indeed the generators themselves)
 spans every tangent space of `ℝ^{1+2d}`.  Only `0 < lam`, the lower Loewner bound, `B` smooth
 and `b` smooth are used (no drift coercivity is needed for `ε > 0`). -/
-theorem hormander_hypotheses_regularizedFields {lam Lam ε : ℝ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam) (hB : IsSmoothFullKineticCoefficient B)
+theorem hormander_hypotheses_regularizedFields {lam Lam ε B b} (hlam : 0 < lam) (hB : IsSmoothFullKineticCoefficient B)
     (hell : HasEverywhereLoewnerBounds lam Lam B) (hb : IsSmoothDrift b) (hε : 0 < ε)
     (Ω : Set (EvolutionVec n)) :
     (∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (regularizedFields B b ε i) Ω) ∧

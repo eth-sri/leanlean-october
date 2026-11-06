@@ -12,7 +12,7 @@ open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 /-- Actual union exits remain in the closure of the physical union velocity carrier. -/
 theorem visitUnionExit_ae_velocity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
     (p : FiniteUnionPole H (T : WithTop ℝ)) :
     ∀ᵐ q ∂finiteUnionExit hH hLE hlam hLam A H T p,
@@ -28,7 +28,7 @@ theorem visitUnionExit_ae_velocity
 /-- Every active exit kernel is concentrated on the closed active interval. -/
 theorem visitActiveExitKernel_ae_velocity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (p : Point) :
     ∀ᵐ q ∂visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T p,
       q.velocity 0 ∈ closure c.active := by
@@ -49,7 +49,7 @@ theorem visitActiveExitKernel_ae_velocity
 /-- Integrating the active exit family preserves its closed physical velocity support. -/
 theorem visitActiveExitMixture_ae_velocity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu),
@@ -63,7 +63,7 @@ theorem visitActiveExitMixture_ae_velocity
 /-- The source quadratic is integrable against each finite actual active exit mixture. -/
 theorem visitQuadratic_integrable_activeExitMixture
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (fun q => visitQuadratic c (q.velocity 0))

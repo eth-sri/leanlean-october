@@ -22,7 +22,7 @@ local instance instReverseTimeL2VStarModuleEnvelope
 /-- A reverse-time variational energy solution is bounded in absolute value by
 the sharp affine envelope determined by its initial and source bounds. -/
 theorem IsReverseTimeVariationalEnergySolution.abs_reverseTimeHilbertRepresentative_le_affine
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -40,7 +40,7 @@ theorem IsReverseTimeVariationalEnergySolution.abs_reverseTimeHilbertRepresentat
         lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
     (hcNonpos : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
-    (Minit MF : ℝ) (hMinit : 0 ≤ Minit) (hMF : 0 ≤ MF)
+    (Minit MF ) (hMinit : 0 ≤ Minit) (hMF : 0 ≤ MF)
     (hFbound : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → |F z.1 z.2| ≤ MF)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
@@ -62,11 +62,10 @@ theorem IsReverseTimeVariationalEnergySolution.abs_reverseTimeHilbertRepresentat
     r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth hFSmooth
       hLower hcNonpos Minit MF hMinit hMF hFbound initial hinitialUpper u g hdu
   let Fneg : ℝ → PDE.Vec d → ℝ := fun r y => -F r y
-  let initialNeg : PDE.ScalarLp Ω (2 : ℝ≥0∞) := -initial
-  let uneg : ReverseTimeL2V hΩ (r₁ - r₀) := (-1 : ℝ) • u
-  let gneg : ReverseTimeL2VStar hΩ (r₁ - r₀) := (-1 : ℝ) • g
-  let hduneg : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
-      (sub_pos.mpr h₀₁) uneg gneg := hdu.smul (-1)
+  let initialNeg := -initial
+  let uneg := (-1 : ℝ) • u
+  let gneg := (-1 : ℝ) • g
+  let hduneg := hdu.smul (-1)
   have hFnegSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => Fneg z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω) :=

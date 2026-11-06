@@ -28,7 +28,7 @@ theorem continuousOn_forwardScalarOperator {lam Lam : ℝ} (A : SmoothAutonomous
     (continuous_apply 0).comp continuous_position
   have hv : Continuous (fun p : Point => p.velocity 0) :=
     (continuous_apply 0).comp continuous_velocity
-  have ha : Continuous (fun p : Point => A.a (p.position 0) (p.velocity 0)) :=
+  have ha :=
     A.smooth.continuous.comp (hx.prodMk hv)
   have hg := (continuous_apply 0).comp_continuousOn
     hphi.continuousOn_kineticPositionGradient
@@ -38,7 +38,7 @@ theorem continuousOn_forwardScalarOperator {lam Lam : ℝ} (A : SmoothAutonomous
     (ha.continuousOn.mul hh)
 
 /-- The source assumptions supply an actual zero-extended bounded Borel negative operator. -/
-theorem exists_bounded_reconstruction_source {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem exists_bounded_reconstruction_source {lam Lam } (A : SmoothAutonomous lam Lam)
     (H : Interval) (sMinus T : ℝ) (phi : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
     (hb : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H sMinus T,

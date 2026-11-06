@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.HomogeneousTestLiftIntegral
 import Mathlib.Analysis.Normed.Operator.Bilinear
 import Mathlib.Tactic
+import Mathlib.Analysis.Calculus.ContDiff.Operations
+import Mathlib.Analysis.Calculus.ParametricIntegral
+import Mathlib.MeasureTheory.Function.LocallyIntegrable
 
 /-! # C² compact-parameter integrals of jointly C² functions -/
 
@@ -10,8 +13,9 @@ import Mathlib.Tactic
 noncomputable section
 open Set MeasureTheory Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
+open Metric
 
-/-- Joint C² regularity gives spatial C² regularity after compact radius integration. -/
+/- Joint C² regularity gives spatial C² regularity after compact radius integration. -/
 theorem bellman_joint_contDiff_integral {E F A : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
     [NormedAddCommGroup F] [NormedSpace ℝ F]
@@ -62,8 +66,22 @@ theorem bellman_joint_contDiff_integral {E F A : Type*}
     have hc : HasFDerivAt (fun q : E => (q, radius a)) L q :=
       (hasFDerivAt_id q).prodMk (hasFDerivAt_const (radius a) q)
     exact hd.hasFDerivAt.comp q hc
-  exact bellman_compact_parameter_contDiffOn_two mu hU
-    (fun q a => f (q, radius a)) (fun q a => g (q, radius a))
-    (fun q a => g' (q, radius a)) hc0 hc1 hc2 hd0 hd1
+  let f := (fun q a => f (q, radius a))
+  let f' := (fun q a => g (q, radius a))
+  let f'' := (fun q a => g' (q, radius a))
+  have hc : ContinuousOn (fun x => ∫ a, f'' x a ∂mu) U := by
+    intro q hq
+    exact (bellman_compact_parameter_continuousAt mu hU f'' hc2 hq).continuousWithinAt
+  intro q hq
+  apply ContDiffAt.contDiffWithinAt
+  apply contDiffAt_succ_iff_hasFDerivAt.mpr
+  refine ⟨fun x => ∫ a, f' x a ∂mu, ⟨U, hU.mem_nhds hq, ?_⟩, ?_⟩
+  · intro x hx
+    exact bellman_compact_parameter_hasFDerivAt mu hU f f' hc0 hc1 hd0 hx
+  · apply contDiffAt_succ_iff_hasFDerivAt.mpr
+    refine ⟨fun x => ∫ a, f'' x a ∂mu, ⟨U, hU.mem_nhds hq, ?_⟩, ?_⟩
+    · intro x hx
+      exact bellman_compact_parameter_hasFDerivAt mu hU f' f'' hc1 hc2 hd1 hx
+    · exact contDiffAt_zero.mpr ⟨U, hU.mem_nhds hq, hc⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

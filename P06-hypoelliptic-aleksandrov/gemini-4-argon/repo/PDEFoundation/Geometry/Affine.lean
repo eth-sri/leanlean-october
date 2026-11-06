@@ -14,12 +14,11 @@ transport statements belong in the later measure layer.
 
 namespace PDE
 
-/-- Translate a set of native vectors by `z`. -/
-def translateSet {d : ℕ} (z : Vec d) (U : Set (Vec d)) : Set (Vec d) :=
+/- Translate a set of native vectors by `z`. -/
+def translateSet {d } (z : Vec d) (U : Set (Vec d)) : Set (Vec d) :=
   {x | ∃ y ∈ U, x = y + z}
 
-theorem mem_translateSet_iff_sub_mem {d : ℕ}
-    {z x : Vec d} {U : Set (Vec d)} :
+theorem mem_translateSet_iff_sub_mem {d z x} {U : Set (Vec d)} :
     x ∈ translateSet z U ↔ x - z ∈ U := by
   constructor
   · rintro ⟨y, hy, rfl⟩
@@ -29,41 +28,25 @@ theorem mem_translateSet_iff_sub_mem {d : ℕ}
     ext i
     simp [sub_eq_add_neg, add_assoc]
 
-theorem preimage_subRight_eq_translateSet {d : ℕ}
+theorem preimage_subRight_eq_translateSet {d }
     (z : Vec d) (U : Set (Vec d)) :
     (fun x : Vec d => x - z) ⁻¹' U = translateSet z U := by
   ext x
   simp [mem_translateSet_iff_sub_mem]
 
-theorem preimage_addNeg_eq_translateSet {d : ℕ}
+theorem preimage_addNeg_eq_translateSet {d }
     (z : Vec d) (U : Set (Vec d)) :
     (fun x : Vec d => x + -z) ⁻¹' U = translateSet z U := by
   ext x
   simp [mem_translateSet_iff_sub_mem, sub_eq_add_neg]
 
-theorem preimage_addRight_translateSet_eq {d : ℕ}
-    (z : Vec d) (U : Set (Vec d)) :
-    (fun x : Vec d => x + z) ⁻¹' translateSet z U = U := by
-  ext x
-  simp [mem_translateSet_iff_sub_mem, sub_eq_add_neg, add_assoc]
-
-theorem image_addRight_eq_translateSet {d : ℕ}
-    (z : Vec d) (U : Set (Vec d)) :
-    (fun x : Vec d => x + z) '' U = translateSet z U := by
-  ext x
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y, hy, rfl⟩
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y, hy, rfl⟩
-
 @[simp]
-theorem translateSet_zero {d : ℕ} (U : Set (Vec d)) :
+theorem translateSet_zero {d } (U : Set (Vec d)) :
     translateSet (0 : Vec d) U = U := by
   ext x
   simp [translateSet]
 
-theorem translateSet_translateSet {d : ℕ}
+theorem translateSet_translateSet {d }
     (z w : Vec d) (U : Set (Vec d)) :
     translateSet w (translateSet z U) = translateSet (z + w) U := by
   ext x

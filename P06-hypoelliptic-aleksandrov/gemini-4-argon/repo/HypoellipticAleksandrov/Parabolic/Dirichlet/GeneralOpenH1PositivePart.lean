@@ -183,7 +183,7 @@ theorem exists_h1PositivePartSubConst_of_isOpen
   have hweakSeq : ∀ n,
       PDE.HasWeakGradientOn U (valueSeq n) (gradSeq n) := by
     intro n
-    have hzero : PDE.smoothPositivePartApprox c (δ n) 0 = 0 :=
+    have hzero :=
       PDE.smoothPositivePartApprox_eq_zero_of_le (hδPos n) hc
     simpa only [valueSeq, gradSeq, PDE.deriv_smoothPositivePartApprox] using
       hasWeakGradient_comp_contDiff_of_deriv_bounded_of_isOpen
@@ -236,9 +236,6 @@ theorem exists_h1PositivePartSubConst_of_isOpen
           _ = ‖u.grad x i‖ * ‖(2 : ℝ)‖ := by norm_num; ring)
     · filter_upwards with x
       exact tendsto_sub_nhds_zero_iff.2 (hgradTendsto i x)
-  have hweak : PDE.HasWeakGradientOn U f Du :=
-    PDE.HasWeakGradientOn.of_tendsto_eLpNorm
-      hfMem hDuMem hvalueSeqMem hgradSeqMem hweakSeq hvalueConv hgradConv
-  exact ⟨⟨f, Du, hfMem, hDuMem, hweak⟩, rfl, rfl⟩
+  exact ⟨⟨f, Du, hfMem, hDuMem, (PDE.HasWeakGradientOn.of_tendsto_eLpNorm hfMem hDuMem hvalueSeqMem hgradSeqMem hweakSeq hvalueConv hgradConv)⟩, rfl, rfl⟩
 
 end PDE.H1Function

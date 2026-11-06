@@ -30,14 +30,13 @@ theorem positionStartQuadratic_operator (c : Clock) (eta : ℝ → ℝ)
   have hsecond : deriv (deriv (fun v => eta (p.position 0) * visitQuadratic c v)) (p.velocity 0) =
       eta (p.position 0) * (-2) := by
     rw [hfirst]
-    have hh := ((hasDerivAt_id (p.velocity 0)).sub_const c.vbar).const_mul (-2)
-    simpa only [id_eq, mul_one] using (hh.const_mul (eta (p.position 0))).deriv
+    simpa only [id_eq, mul_one] using ((((hasDerivAt_id (p.velocity 0)).sub_const c.vbar).const_mul (-2)).const_mul (eta (p.position 0))).deriv
   rw [forwardScalarOperator, kineticPositionGradient_scalar, kineticVelocityHessian_scalar]
   simp only [kineticTimeDerivative, deriv_const, hposition, zero_add, hsecond]
   ring
 
 /-- New starts in the chosen position cell retain the exact `5*r²/16` weight. -/
-theorem positionStartQuadratic_start_lower (c : Clock) (x : ℝ) (k : ℤ) (p : Point)
+theorem positionStartQuadratic_start_lower (c : Clock) (x : ℝ) (k ) (p : Point)
     (hx : p.position 0 ∈ enlargedPositionCell c.r x k)
     (hv : p.velocity 0 ∈ closure c.entrance) :
     5 * c.r ^ 2 / 16 ≤

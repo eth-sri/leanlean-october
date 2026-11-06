@@ -17,26 +17,21 @@ open Filter Set
 
 namespace HypoellipticAleksandrov.Parabolic
 
-/-- A compact subset of an open set admits a positive native-metric collar
+/- A compact subset of an open set admits a positive native-metric collar
 that contains every sufficiently small mollifier scale. -/
-theorem exists_native_kernel_collar
-    (d : Nat) (K U : Set (TimeVelocity d))
-    (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
-    ∃ delta : Real, 0 < delta ∧ Metric.cthickening delta K ⊆ U ∧
-      ∀ᶠ n in Filter.atTop, parabolicMollifierScale n < delta := by
-  obtain ⟨delta, hdelta_pos, hdeltaU⟩ := hK.exists_cthickening_subset_open hU hKU
-  refine ⟨delta, hdelta_pos, hdeltaU, ?_⟩
-  exact tendsto_parabolicMollifierScale_zero.eventually_lt_const hdelta_pos
-
-/-- Eventually, every point sampled by the translated right mollifier at a
-compact carrier lies in the surrounding open set. -/
 theorem eventually_translated_parabolicMollifier_support_subset
     (d : Nat) (K U : Set (TimeVelocity d))
     (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∀ᶠ n in Filter.atTop, ∀ z ∈ K,
       {y | parabolicMollifier d n (z - y) ≠ 0} ⊆ U := by
-  obtain ⟨delta, hdelta_pos, hdeltaU, hscale⟩ :=
-    exists_native_kernel_collar d K U hK hU hKU
+  obtain ⟨delta, hdelta_pos, hdeltaU, hscale⟩ : ∃ delta : Real, 0 < delta ∧ Metric.cthickening delta K ⊆ U ∧
+      ∀ᶠ n in Filter.atTop, parabolicMollifierScale n < delta := by
+      obtain ⟨delta, hdelta_pos, hdeltaU⟩ := hK.exists_cthickening_subset_open hU hKU
+      refine ⟨delta, hdelta_pos, hdeltaU, ?_⟩
+      exact tendsto_parabolicMollifierScale_zero.eventually_lt_const hdelta_pos
+
+    /- Eventually, every point sampled by the translated right mollifier at a
+    compact carrier lies in the surrounding open set. -/
   filter_upwards [hscale] with n hn
   intro z hz y hy
   apply hdeltaU

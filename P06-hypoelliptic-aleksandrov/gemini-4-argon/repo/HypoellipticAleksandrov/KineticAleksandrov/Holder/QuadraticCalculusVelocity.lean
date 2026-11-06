@@ -20,7 +20,7 @@ open HypoellipticAleksandrov.Parabolic
 open scoped BigOperators
 
 /-- Explicit classical gradient of a scalar Euclidean quadratic with a linear term. -/
-theorem classicalGradient_velocity_quadratic {d : ℕ} (C b c : ℝ) (y W : PDE.Vec d) :
+theorem classicalGradient_velocity_quadratic {d } (C b c : ℝ) (y W : PDE.Vec d) :
     PDE.classicalGradient (fun V => C + 2 * b * PDE.vecDot y V + c * PDE.vecDot V V) W =
       (2 * b) • y + (2 * c) • W := by
   have hl := HasFDerivAt.fun_sum (u := Finset.univ) (fun (i : Fin d) _ =>
@@ -47,7 +47,7 @@ theorem classicalGradient_velocity_quadratic {d : ℕ} (C b c : ℝ) (y W : PDE.
   ring
 
 /-- The velocity gradient is twice the velocity component of inverse covariance. -/
-theorem kineticVelocityGradient_qform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem kineticVelocityGradient_qform {d } (lam : ℝ) {h } (hh : 0 < h)
     (sigma : ℝ) (y V : PDE.Vec d) :
     kineticVelocityGradient
       (fun P : KineticPoint d => qform lam h sigma P.position P.velocity) ⟨0, y, V⟩ =
@@ -65,7 +65,7 @@ theorem kineticVelocityGradient_qform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < 
   ring
 
 /-- The velocity Hessian is twice the velocity block of inverse covariance. -/
-theorem kineticVelocityHessian_qform {d : ℕ} (lam : ℝ) {h : ℝ}
+theorem kineticVelocityHessian_qform {d } (lam : ℝ) {h }
     (sigma : ℝ) (y V : PDE.Vec d) :
     kineticVelocityHessian
       (fun P : KineticPoint d => qform lam h sigma P.position P.velocity) ⟨0, y, V⟩ =

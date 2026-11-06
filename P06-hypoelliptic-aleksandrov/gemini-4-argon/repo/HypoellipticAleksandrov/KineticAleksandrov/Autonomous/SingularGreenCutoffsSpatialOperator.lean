@@ -10,7 +10,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set MeasureTheory
 
 /-- An actual compact C² native spatial test has a continuous compactly supported generator. -/
-theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem compact_spatial_generator {lam Lam } (A : SmoothAutonomous lam Lam)
     (F : EvolutionAmbientState 1 → ℝ) (hF : ContDiff ℝ 2 F) (hc : HasCompactSupport F) :
     Continuous (fun x : EvolutionAmbientState 1 =>
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1)
@@ -23,7 +23,7 @@ theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
   let fraw := fun x : EvolutionVec 1 => F (π x)
   have hπ : Continuous π :=
     (diffusedCoord 1).continuous.prodMk (transportedCoord 1).continuous
-  have hfraw : ContDiff ℝ 2 fraw := hF.comp
+  have hfraw := hF.comp
     ((diffusedCoord 1).contDiff.prodMk (transportedCoord 1).contDiff)
   have hfeq : f ∘ evolutionHomeomorph 1 = fraw := by
     funext x
@@ -64,9 +64,7 @@ theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
         have hh := (evolutionProdCLE 1).apply_symm_apply (0, x)
         exact congrArg Prod.snd hh
       rwa [hpx] at hhit
-    have hz := transportedOperator_eq_zero_of_notMem_tsupport hnx
-      (evolutionCoefficient A.a) (identityDrift 1)
-    exact hx (by rw [hHeq]; exact hz)
+    exact hx (by rw [hHeq]; exact (transportedOperator_eq_zero_of_notMem_tsupport hnx (evolutionCoefficient A.a) (identityDrift 1)))
   exact ⟨hHc, hHk⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

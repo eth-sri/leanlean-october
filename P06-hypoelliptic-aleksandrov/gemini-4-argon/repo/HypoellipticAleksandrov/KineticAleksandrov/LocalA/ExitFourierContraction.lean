@@ -39,7 +39,7 @@ theorem ballExitRestart_fourier_variation_le
         (fun x y => by simpa only [LinearMap.mul_apply', one_mul] using norm_mul_le x y))).trans_eq
       ENNReal.ofReal_one
   by_contra hn
-  have hlt : ν.variation univ < η.variation univ := lt_of_not_ge hn
+  have hlt := lt_of_not_ge hn
   obtain ⟨partition, _, hpartitiond, hpartitionm, hpartitiongt⟩ :=
     VectorMeasure.exists_lt_sum_of_lt_variation η MeasurableSet.univ hlt
   have hsum : ∑ E ∈ partition, ‖η E‖ₑ ≤ ν.variation univ := by

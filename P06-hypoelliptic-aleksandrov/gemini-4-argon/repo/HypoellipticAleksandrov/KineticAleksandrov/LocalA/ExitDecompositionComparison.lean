@@ -11,18 +11,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic TheoremA
 
 /-- Increasing the lower time endpoint shrinks the open strip. -/
-theorem localStrip_lower_subset {d : ℕ} {a b T R : ℝ} (hab : a ≤ b) (v₀ : PDE.Vec d) :
+theorem localStrip_lower_subset {d a b T R} (hab : a ≤ b) (v₀ : PDE.Vec d) :
     localStrip b T v₀ R ⊆ localStrip a T v₀ R :=
   fun _ h => ⟨hab.trans_lt h.1, h.2⟩
 
 /-- Increasing the lower time endpoint shrinks the closed strip. -/
-theorem localClosedStrip_lower_subset {d : ℕ} {a b T R : ℝ}
+theorem localClosedStrip_lower_subset {d a b T R}
     (hab : a ≤ b) (v₀ : PDE.Vec d) :
     localClosedStrip b T v₀ R ⊆ localClosedStrip a T v₀ R :=
   fun _ h => ⟨hab.trans h.1, h.2⟩
 
 /-- The later terminal and lateral traces are contained in the earlier trace. -/
-theorem localTrace_lower_subset {d : ℕ} {a b T R : ℝ} (hab : a ≤ b) (v₀ : PDE.Vec d) :
+theorem localTrace_lower_subset {d a b T R} (hab : a ≤ b) (v₀ : PDE.Vec d) :
     localTrace b T v₀ R ⊆ localTrace a T v₀ R := by
   intro Q hQ
   rcases hQ with hQ | hQ
@@ -38,7 +38,7 @@ variable (hH : HormanderHypoellipticityStatement)
 
 /-- Boundary solutions with identical terminal time and data agree on their common strip. -/
 theorem ballBoundarySolution_lowerTime_eq (a b T : ℝ) (hab : a ≤ b) (hbT : b < T)
-    (φ : KineticPoint d → ℝ)
+    (φ )
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
     (hc : HasCompactSupport φ) :
     EqOn (ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ)
@@ -65,8 +65,7 @@ theorem ballBoundarySolution_lowerTime_eq (a b T : ℝ) (hab : a ≤ b) (hbT : b
       rw [hu.2.2.2 (localTrace_lower_subset hab v₀ hQ), hv.2.2.2 hQ]
       simp)
   intro Q hQ
-  have h := he Q hQ
-  have hz : |u Q - v Q| = 0 := le_antisymm (by simpa only [zero_mul] using h)
+  have hz : |u Q - v Q| = 0 := le_antisymm (by simpa only [zero_mul] using (he Q hQ))
     (abs_nonneg _)
   exact sub_eq_zero.mp (abs_eq_zero.mp hz)
 

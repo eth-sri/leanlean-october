@@ -97,7 +97,7 @@ theorem contDiff_coeffAt_entry {B : FullKineticCoefficient n}
 
 /-- The positive square root `β` of the coefficient is entrywise smooth in packed
 coordinates, under the standing ellipticity hypotheses. -/
-theorem contDiff_sqrtCoeffAt_entry {lam Lam : ℝ} {B : FullKineticCoefficient n}
+theorem contDiff_sqrtCoeffAt_entry {lam Lam B}
     (hlam : 0 < lam) (hB : IsSmoothFullKineticCoefficient B)
     (hell : HasEverywhereLoewnerBounds lam Lam B) (i j : Fin n) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j) :=

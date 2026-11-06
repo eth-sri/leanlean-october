@@ -17,33 +17,27 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
-/-- The forward parabolic operator `∂ₜ u - A : Dᵥ² u`. -/
-def parabolicOperator {d : ℕ} (A : CoefficientField d)
+/- The forward parabolic operator `∂ₜ u - A : Dᵥ² u`. -/
+def parabolicOperator {d } (A : CoefficientField d)
     (u : TimeVelocity d → ℝ) (z : TimeVelocity d) : ℝ :=
   timeDerivative u z - matrixContraction (coefficientAt A z) (velocityHessian u z)
 
-/-- Evaluation of the forward parabolic operator. -/
+/- Evaluation of the forward parabolic operator. -/
 @[simp]
-theorem parabolicOperator_apply {d : ℕ} (A : CoefficientField d)
+theorem parabolicOperator_apply {d } (A : CoefficientField d)
     (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     parabolicOperator A u z =
       timeDerivative u z - matrixContraction (coefficientAt A z) (velocityHessian u z) :=
   rfl
 
-/-- A function is a subsolution when the forward operator is bounded by its source on a set. -/
-def IsParabolicSubsolutionOn {d : ℕ} (A : CoefficientField d)
+/- A function is a subsolution when the forward operator is bounded by its source on a set. -/
+def IsParabolicSubsolutionOn {d } (A : CoefficientField d)
     (f u : TimeVelocity d → ℝ) (s : Set (TimeVelocity d)) : Prop :=
   ∀ z ∈ s, parabolicOperator A u z ≤ f z
 
 namespace IsParabolicSubsolutionOn
 
-/-- A subsolution inequality holds at every point of its defining set. -/
-theorem le {d : ℕ} {A : CoefficientField d} {f u : TimeVelocity d → ℝ}
-    {s : Set (TimeVelocity d)} (h : IsParabolicSubsolutionOn A f u s)
-    {z : TimeVelocity d} (hz : z ∈ s) :
-    parabolicOperator A u z ≤ f z :=
-  h z hz
-
+/- A subsolution inequality holds at every point of its defining set. -/
 end IsParabolicSubsolutionOn
 
 end HypoellipticAleksandrov.Parabolic

@@ -61,7 +61,7 @@ theorem nested_physical_isKineticC112On {u : Point → ℝ} {D : Set Point}
     (nested_physical_contDiffOn hu)
 
 /-- Raw physical smoothness on an open set supplies the literal C112 interface. -/
-theorem nested_raw_isKineticC112On {u : Point → ℝ} {D : Set Point}
+theorem nested_raw_isKineticC112On {u D}
     (hD : IsOpen D)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
       (KineticPoint.equivProd 1 '' D)) : IsKineticC112On u D := by

@@ -22,8 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- Two continuous spatial-`L²` curves which agree with the same reverse-time
 Bochner curve almost everywhere have the same closed-time representative. -/
 theorem ReverseTimeHilbertRepresentativeAgrees.unique
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω} {T : ℝ}
-    {u : ReverseTimeL2V hΩ T}
+    {d } {Ω : Set (PDE.Vec d)} {hΩ T u}
     {Ubar Vbar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞))}
     (hUbar : ReverseTimeHilbertRepresentativeAgrees hΩ T u Ubar)
     (hT : 0 < T)
@@ -68,7 +67,7 @@ theorem ReverseTimeHilbertRepresentativeAgrees.unique
       _ = valueCLM hΩ (u t) := hUbar ht
       _ = Vbar ⟨t, htIcc⟩ := (hVbar ht).symm
       _ = Vext t := by simp only [Vext, dif_pos htIcc]
-  have hEqOn : EqOn Uext Vext (Icc 0 T) :=
+  have hEqOn :=
     Measure.eqOn_Icc_of_ae_eq volume hT.ne hUVAE hUextCont hVextCont
   apply ContinuousMap.ext
   intro t
@@ -77,9 +76,9 @@ theorem ReverseTimeHilbertRepresentativeAgrees.unique
 /-- The canonical continuous spatial-`L²` representative supplied by the
 reverse-time Hilbert-representative theorem. -/
 noncomputable def reverseTimeHilbertRepresentative
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    (u : ReverseTimeL2V hΩ T) (g )
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
     C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)) :=
   Classical.choose (ExistsUnique.exists
@@ -88,7 +87,7 @@ noncomputable def reverseTimeHilbertRepresentative
 /-- The canonical representative agrees with the reverse-time Bochner curve
 almost everywhere and satisfies the positive-sign energy increment. -/
 theorem reverseTimeHilbertRepresentative_spec
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
@@ -106,9 +105,9 @@ theorem reverseTimeHilbertRepresentative_spec
 /-- The reverse-time initial spatial-`L²` trace, defined at `tau = 0` from
 the canonical continuous representative and not from the raw Bochner curve. -/
 noncomputable def reverseTimeInitialTrace
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    (u : ReverseTimeL2V hΩ T) (g )
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
     PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
   reverseTimeHilbertRepresentative hΩ T hT u g hderiv

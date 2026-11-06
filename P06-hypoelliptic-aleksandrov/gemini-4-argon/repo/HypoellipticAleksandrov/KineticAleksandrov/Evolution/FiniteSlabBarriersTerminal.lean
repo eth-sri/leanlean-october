@@ -113,7 +113,7 @@ theorem classical_sub_terminalDatum_le_core_of_slab {n : ℕ} {Ω : Set (PDE.Vec
 everywhere Loewner bound on `B` and the Lipschitz drift, no derivative bound on `B`. -/
 theorem exists_uniform_terminalDatum_operator_bound {n : ℕ} {Ω : Set (PDE.Vec n)}
     {γ : ℝ → PDE.Vec n} {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
-    (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
+    (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb b}
     (hb : HasEuclideanLipschitzDrift Lb b) (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 → ∀ p : KineticPoint n,

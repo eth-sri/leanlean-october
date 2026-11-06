@@ -24,37 +24,12 @@ open MeasureTheory
 open scoped ENNReal
 
 private theorem spatialShift_neg_comp_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
+    {d } (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
     spatialShift k (-h) (spatialShift k h z) = z := by
   change (spatialShift k (-h) ∘ spatialShift k h) z = z
   rw [spatialShift_comp]
   simp
 
-private theorem spatialShift_comp_neg_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
-    spatialShift k h (spatialShift k (-h) z) = z := by
-  change (spatialShift k h ∘ spatialShift k (-h)) z = z
-  rw [spatialShift_comp]
-  simp
-
-private theorem spatialShift_measurableEmbedding
-    {d : ℕ} (k : Fin d) (h : ℝ) :
-    MeasurableEmbedding (spatialShift k h) := by
-  change MeasurableEmbedding (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k))
-  simpa only [Homeomorph.coe_addRight] using
-    (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
-
-private theorem spatialShift_measurePreserving
-    {d : ℕ} (k : Fin d) (h : ℝ) :
-    MeasurePreserving (spatialShift k h)
-      (volume : Measure (TimeVelocity d))
-      (volume : Measure (TimeVelocity d)) := by
-  change MeasurePreserving
-    (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k)) volume volume
-  exact measurePreserving_add_right volume _
-
-/-- A forward spatial difference quotient transposes to the negative backward
-quotient on any raw carrier containing the test support and its forward shift. -/
 theorem setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQuotient_neg
     {d : ℕ} (U : Set (TimeVelocity d))
     (k : Fin d) (h : ℝ) (u φ : TimeVelocity d → ℝ)
@@ -83,7 +58,11 @@ theorem setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQu
     intro z hz
     rw [mem_tsupport_spatialTranslate_iff] at hz
     have hforward := hφshift hz
-    simpa only [ψ, spatialShift_comp_neg_apply] using hforward
+    have _h_inl_13 (k : Fin d) (h : ℝ) (z) : spatialShift k h (spatialShift k (-h) z) = z := by
+      change (spatialShift k h ∘ spatialShift k (-h)) z = z
+      rw [spatialShift_comp]
+      simp
+    simpa only [ψ, _h_inl_13] using hforward
   have hqcont : Continuous (spatialDifferenceQuotient k (-h) φ) := by
     change Continuous (fun z => (ψ z - φ z) / (-h))
     exact (hψcont.sub hφ).div_const _
@@ -119,8 +98,19 @@ theorem setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQu
     (integrableOn_iff_integrable_of_support_subset hBsupport).mp hBOn
   have hC : Integrable C volume :=
     (integrableOn_iff_integrable_of_support_subset hCsupport).mp hCOn
-  let hμ := spatialShift_measurePreserving k h
-  let hembed := spatialShift_measurableEmbedding k h
+  let hμ : MeasurePreserving (spatialShift k h)
+      (volume : Measure (TimeVelocity d))
+      (volume : Measure (TimeVelocity d)) := by
+      change MeasurePreserving
+        (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k)) volume volume
+      exact measurePreserving_add_right volume _
+
+    /- A forward spatial difference quotient transposes to the negative backward
+    quotient on any raw carrier containing the test support and its forward shift. -/
+  let hembed : MeasurableEmbedding (spatialShift k h) := by
+    change MeasurableEmbedding (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k))
+    simpa only [Homeomorph.coe_addRight] using
+      (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
   have hA : Integrable A volume := by
     have hcomp : Integrable (C ∘ spatialShift k h) volume :=
       (hμ.integrable_comp_emb hembed).mpr hC

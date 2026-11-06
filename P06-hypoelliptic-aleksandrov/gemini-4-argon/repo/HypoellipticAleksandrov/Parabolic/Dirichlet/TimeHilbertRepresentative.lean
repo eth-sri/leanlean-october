@@ -20,22 +20,16 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-/-- A continuous closed-time spatial-`L²` curve agrees almost everywhere with
+/- A continuous closed-time spatial-`L²` curve agrees almost everywhere with
 the spatial value image of the reverse-time Bochner curve. -/
 def ReverseTimeHilbertRepresentativeAgrees
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (u : ReverseTimeL2V hΩ T)
     (Ubar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞))) : Prop :=
   ∀ᵐ tau ∂reverseTimeVolume T,
     ∀ htau : tau ∈ Set.Ioo 0 T,
       Ubar ⟨tau, ⟨le_of_lt htau.1, le_of_lt htau.2⟩⟩ =
         valueCLM hΩ (u tau)
-
-private theorem collar_bounds {T : ℝ} (hT : 0 < T) :
-    0 < T / 3 ∧ T / 3 < 2 * T / 3 ∧ 2 * T / 3 < T := by
-  constructor
-  · positivity
-  constructor <;> linarith
 
 private theorem tendstoInMeasure_of_tendsto_sqNorm_integral
     {E : Type*} [NormedAddCommGroup E] {μ : Measure ℝ}
@@ -77,13 +71,13 @@ private theorem memLp_two_on_full_Icc
     restrict_Ioo_eq_restrict_Icc] using Lp.memLp f
 
 private theorem tendsto_value_sqNorm_integral_on_Icc
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (T : ℝ) (_hT : 0 < T) (u : ReverseTimeL2V hΩ T)
     (F : ℕ → ℝ → H10HilbertGraph hΩ)
     (hF : ∀ n, Continuous (F n))
     (hfull : Tendsto (fun n => ∫ t in Icc 0 T, ‖F n t - u t‖ ^ 2)
       atTop (𝓝 0))
-    {c e : ℝ} (hc : 0 ≤ c) (_hce : c ≤ e) (he : e ≤ T) :
+    {c e } (hc : 0 ≤ c) (_hce : c ≤ e) (he : e ≤ T) :
     Tendsto (fun n => ∫ t in Icc c e,
       ‖valueCLM hΩ (F n t) - valueCLM hΩ (u t)‖ ^ 2) atTop (𝓝 0) := by
   have hsub : Icc c e ⊆ Icc 0 T := by
@@ -136,10 +130,9 @@ private theorem tendsto_value_sqNorm_integral_on_Icc
 
 private theorem tendsto_continuousMap_apply
     {X E ι : Type*} [TopologicalSpace X] [TopologicalSpace E]
-    {l : Filter ι} (F : ι → C(X, E)) (U : C(X, E)) (x : X)
+    {l } (F : ι → C(X, E)) (U : C(X, E)) (x : X)
     (hF : Tendsto F l (𝓝 U)) :
-    Tendsto (fun n => F n x) l (𝓝 (U x)) := by
-  exact ((continuous_eval_const x).tendsto U).comp hF
+    Tendsto (fun n => F n x) l (𝓝 (U x)) :=  ((continuous_eval_const x).tendsto U).comp hF
 
 private theorem exists_continuousMap_glue_of_local_ae
     {E : Type*} [NormedAddCommGroup E]
@@ -153,8 +146,8 @@ private theorem exists_continuousMap_glue_of_local_ae
     ∃ Ubar : C(↥(Icc 0 T), E),
       ∀ᵐ t ∂volume.restrict (Icc 0 T),
         ∀ ht : t ∈ Icc 0 T, Ubar ⟨t, ht⟩ = f t := by
-  have h0b : 0 ≤ b := ha0.le.trans hab.le
-  have haT : a ≤ T := hab.le.trans hbT.le
+  have h0b := ha0.le.trans hab.le
+  have haT := hab.le.trans hbT.le
   have hLsub : Icc 0 b ⊆ Icc 0 T := by
     intro t ht
     exact ⟨ht.1, ht.2.trans hbT.le⟩
@@ -192,7 +185,7 @@ private theorem exists_continuousMap_glue_of_local_ae
   have hOverlapAE : leftExt =ᵐ[volume.restrict (Icc a b)] rightExt := by
     filter_upwards [hLeftOverlap, hRightOverlap] with t hL hR
     rw [hL, hR]
-  have hOverlapEqOn : EqOn leftExt rightExt (Icc a b) :=
+  have hOverlapEqOn :=
     Measure.eqOn_Icc_of_ae_eq volume hab.ne hOverlapAE
       hLeftExtCont.continuousOn hRightExtCont.continuousOn
   let glue : ↥(Icc 0 T) → E := fun t =>
@@ -240,18 +233,17 @@ private theorem exists_continuousMap_glue_of_local_ae
       simpa only [max_eq_right t.2.1, min_eq_right htb, Subsingleton.elim] using heq
     ·
       rw [dif_neg htb]
-      change UR ⟨t, ⟨ht, t.2.2⟩⟩ = UR ⟨max a (min T t), _⟩
       apply congrArg UR
       apply Subtype.ext
       dsimp
       rw [min_eq_right t.2.2, max_eq_right ht]
-  have hGlueS : ContinuousOn glue S :=
+  have hGlueS :=
     ContinuousOn.congr (f := fun t : ↥(Icc 0 T) => leftExt t) (g := glue)
       (hLeftExtCont.comp continuous_subtype_val).continuousOn hGlueEqLeft
-  have hGlueR : ContinuousOn glue R :=
+  have hGlueR :=
     ContinuousOn.congr (f := fun t : ↥(Icc 0 T) => rightExt t) (g := glue)
       (hRightExtCont.comp continuous_subtype_val).continuousOn hGlueEqRight
-  have hGlueOn : ContinuousOn glue (S ∪ R) :=
+  have hGlueOn :=
     ContinuousOn.union_of_isClosed hGlueS hGlueR hSclosed hRclosed
   have hGlue : Continuous glue := by
     rw [hSR] at hGlueOn
@@ -273,11 +265,9 @@ private theorem exists_continuousMap_glue_of_local_ae
       change a ≤ t
       exact ht'.1
     have hEq := hGlueEqRight hxR
-    change Ubar x = _
     calc
       Ubar x = rightExt t := by
         change glue x = rightExt t
-        change glue x = rightExt (x : ℝ) at hEq
         exact hEq
       _ = f t := hRight
   have hcover : Icc 0 b ∪ Icc a T = Icc 0 T := by
@@ -290,8 +280,7 @@ private theorem exists_continuousMap_glue_of_local_ae
       by_cases htb : t ≤ b
       · exact Or.inl ⟨ht.1, htb⟩
       · exact Or.inr ⟨le_of_lt (hab.trans (lt_of_not_ge htb)), ht.2⟩
-  have hUnionAE : ∀ᵐ t ∂volume.restrict (Icc 0 b ∪ Icc a T),
-      ∀ ht : t ∈ Icc 0 T, Ubar ⟨t, ht⟩ = f t :=
+  have hUnionAE :=
     (ae_restrict_union_iff (μ := volume) (Icc 0 b) (Icc a T)
     fun t => ∀ ht : t ∈ Icc 0 T, Ubar ⟨t, ht⟩ = f t).mpr
     ⟨by
@@ -305,216 +294,8 @@ private theorem exists_continuousMap_glue_of_local_ae
   refine ⟨Ubar, ?_⟩
   simpa only [hcover] using hUnionAE
 
-private theorem exists_reverseTimeHilbertRepresentative_agrees
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
-    ∃ Ubar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)),
-      ReverseTimeHilbertRepresentativeAgrees hΩ T u Ubar := by
-  let a : ℝ := T / 3
-  let b : ℝ := 2 * T / 3
-  obtain ⟨ha0, hab, hbT⟩ := collar_bounds hT
-  have h0b : 0 ≤ b := by
-    dsimp only [b]
-    positivity
-  have haT : a ≤ T := by
-    dsimp only [a]
-    linarith
-  obtain ⟨UL, hUL⟩ := cauchySeq_tendsto_of_complete
-    (cauchySeq_reverseTimeForwardSteklovHilbertOnIcc hΩ T hT u g hderiv
-      (by simpa only [b] using (show 0 < 2 * T / 3 by linarith))
-      (by simpa only [b] using hbT))
-  obtain ⟨UR, hUR⟩ := cauchySeq_tendsto_of_complete
-    (cauchySeq_reverseTimeBackwardSteklovHilbertOnIcc hΩ T hT u g hderiv
-      (by simpa only [a] using ha0)
-      (by simpa only [a] using (show T / 3 < T by linarith)))
-  have hUL' : Tendsto (reverseTimeForwardSteklovHilbertOnIcc hΩ T hT u b)
-      atTop (𝓝 UL) := by
-    simpa only [b] using hUL
-  have hUR' : Tendsto (reverseTimeBackwardSteklovHilbertOnIcc hΩ T hT u a)
-      atTop (𝓝 UR) := by
-    simpa only [a] using hUR
-  let SL : ℕ → C(↥(Icc 0 b), PDE.ScalarLp Ω (2 : ℝ≥0∞)) :=
-    reverseTimeForwardSteklovHilbertOnIcc hΩ T hT u b
-  let SR : ℕ → C(↥(Icc a T), PDE.ScalarLp Ω (2 : ℝ≥0∞)) :=
-    reverseTimeBackwardSteklovHilbertOnIcc hΩ T hT u a
-  have hSL : Tendsto SL atTop (𝓝 UL) := hUL'
-  have hSR : Tendsto SR atTop (𝓝 UR) := hUR'
-  let FL : ℕ → ℝ → H10HilbertGraph hΩ := fun n t =>
-    reverseTimeForwardSteklov T (reverseTimeSteklovStep T n) u t
-  let FR : ℕ → ℝ → H10HilbertGraph hΩ := fun n t =>
-    reverseTimeBackwardSteklov T (reverseTimeSteklovStep T n) u t
-  have hFLcont : ∀ n, Continuous (FL n) := by
-    intro n
-    simpa only [FL] using continuous_reverseTimeForwardSteklov T
-      (reverseTimeSteklovStep T n) (by
-        unfold reverseTimeSteklovStep
-        positivity) u
-  have hFRcont : ∀ n, Continuous (FR n) := by
-    intro n
-    simpa only [FR] using continuous_reverseTimeBackwardSteklov T
-      (reverseTimeSteklovStep T n) (by
-        unfold reverseTimeSteklovStep
-        positivity) u
-  have hFLraw : Tendsto (fun n => ∫ t in Icc 0 T, ‖FL n t - u t‖ ^ 2)
-      atTop (𝓝 0) := by
-    simpa only [FL, Function.comp_def] using
-      (tendsto_forwardSteklov_sqNorm_integral_on_Icc_zero_T T hT u).comp
-        (tendsto_reverseTimeSteklovStep T hT)
-  have hFRraw : Tendsto (fun n => ∫ t in Icc 0 T, ‖FR n t - u t‖ ^ 2)
-      atTop (𝓝 0) := by
-    simpa only [FR, Function.comp_def] using
-      (tendsto_backwardSteklov_sqNorm_integral_on_Icc_zero_T T hT u).comp
-        (tendsto_reverseTimeSteklovStep T hT)
-  have hVL : Tendsto (fun n => ∫ t in Icc 0 b,
-      ‖valueCLM hΩ (FL n t) - valueCLM hΩ (u t)‖ ^ 2) atTop (𝓝 0) := by
-    exact tendsto_value_sqNorm_integral_on_Icc hΩ T hT u FL hFLcont hFLraw
-      le_rfl h0b hbT.le
-  have hVR : Tendsto (fun n => ∫ t in Icc a T,
-      ‖valueCLM hΩ (FR n t) - valueCLM hΩ (u t)‖ ^ 2) atTop (𝓝 0) := by
-    exact tendsto_value_sqNorm_integral_on_Icc hΩ T hT u FR hFRcont hFRraw
-      ha0.le haT le_rfl
-  have huFull := memLp_two_on_full_Icc T u
-  have hLsub : Icc 0 b ⊆ Icc 0 T := by
-    intro t ht
-    exact ⟨ht.1, ht.2.trans hbT.le⟩
-  have hRsub : Icc a T ⊆ Icc 0 T := by
-    intro t ht
-    exact ⟨ha0.le.trans ht.1, ht.2⟩
-  have huL : MemLp (u : ℝ → H10HilbertGraph hΩ) (2 : ℝ≥0∞)
-      (volume.restrict (Icc 0 b)) := by
-    simpa only [Measure.restrict_restrict_of_subset hLsub] using
-      huFull.restrict (Icc 0 b)
-  have huR : MemLp (u : ℝ → H10HilbertGraph hΩ) (2 : ℝ≥0∞)
-      (volume.restrict (Icc a T)) := by
-    simpa only [Measure.restrict_restrict_of_subset hRsub] using
-      huFull.restrict (Icc a T)
-  have hVDL : ∀ n, MemLp
-      ((fun t => valueCLM hΩ (FL n t)) - fun t => valueCLM hΩ (u t))
-      (2 : ℝ≥0∞) (volume.restrict (Icc 0 b)) := by
-    intro n
-    have hdiff := (memLp_two_on_Icc_of_continuous (FL n) (hFLcont n) 0 b).sub huL
-    simpa only [Pi.sub_def, ContinuousLinearMap.map_sub] using
-      hdiff.continuousLinearMap_comp (valueCLM hΩ)
-  have hVDR : ∀ n, MemLp
-      ((fun t => valueCLM hΩ (FR n t)) - fun t => valueCLM hΩ (u t))
-      (2 : ℝ≥0∞) (volume.restrict (Icc a T)) := by
-    intro n
-    have hdiff := (memLp_two_on_Icc_of_continuous (FR n) (hFRcont n) a T).sub huR
-    simpa only [Pi.sub_def, ContinuousLinearMap.map_sub] using
-      hdiff.continuousLinearMap_comp (valueCLM hΩ)
-  have hIML : TendstoInMeasure (volume.restrict (Icc 0 b))
-      (fun n t => valueCLM hΩ (FL n t)) atTop (fun t => valueCLM hΩ (u t)) := by
-    apply tendstoInMeasure_of_tendsto_sqNorm_integral
-      (fun n => ((valueCLM hΩ).continuous.comp (hFLcont n)).aestronglyMeasurable)
-      (huL.continuousLinearMap_comp (valueCLM hΩ)).aestronglyMeasurable hVDL
-    exact hVL
-  have hIMR : TendstoInMeasure (volume.restrict (Icc a T))
-      (fun n t => valueCLM hΩ (FR n t)) atTop (fun t => valueCLM hΩ (u t)) := by
-    apply tendstoInMeasure_of_tendsto_sqNorm_integral
-      (fun n => ((valueCLM hΩ).continuous.comp (hFRcont n)).aestronglyMeasurable)
-      (huR.continuousLinearMap_comp (valueCLM hΩ)).aestronglyMeasurable hVDR
-    exact hVR
-  obtain ⟨nsL, hnsL, hsubL⟩ := hIML.exists_seq_tendsto_ae
-  obtain ⟨nsR, hnsR, hsubR⟩ := hIMR.exists_seq_tendsto_ae
-  have hULAE : ∀ᵐ t ∂volume.restrict (Icc 0 b),
-      ∀ ht : t ∈ Icc 0 b, UL ⟨t, ht⟩ = valueCLM hΩ (u t) := by
-    filter_upwards [hsubL, ae_restrict_mem measurableSet_Icc] with t ht htb
-    intro htb'
-    have hPoint : Tendsto (fun n =>
-        SL (nsL n) ⟨t, htb'⟩) atTop (𝓝 (UL ⟨t, htb'⟩)) := by
-      exact (tendsto_continuousMap_apply SL UL ⟨t, htb'⟩ hSL).comp hnsL.tendsto_atTop
-    apply tendsto_nhds_unique
-      (by
-        convert hPoint using 1
-        funext n
-        rfl)
-      ht
-  have hURAE : ∀ᵐ t ∂volume.restrict (Icc a T),
-      ∀ ht : t ∈ Icc a T, UR ⟨t, ht⟩ = valueCLM hΩ (u t) := by
-    filter_upwards [hsubR, ae_restrict_mem measurableSet_Icc] with t ht hta
-    intro hta'
-    have hPoint : Tendsto (fun n =>
-        SR (nsR n) ⟨t, hta'⟩) atTop (𝓝 (UR ⟨t, hta'⟩)) := by
-      exact (tendsto_continuousMap_apply SR UR ⟨t, hta'⟩ hSR).comp hnsR.tendsto_atTop
-    apply tendsto_nhds_unique
-      (by
-        convert hPoint using 1
-        funext n
-        rfl)
-      ht
-  obtain ⟨Ubar, hClosedAE⟩ := exists_continuousMap_glue_of_local_ae ha0 hab hbT
-    (fun t => valueCLM hΩ (u t)) UL UR hULAE hURAE
-  refine ⟨Ubar, ?_⟩
-  change ∀ᵐ tau ∂volume.restrict (Ioo 0 T),
-    ∀ htau : tau ∈ Ioo 0 T,
-      Ubar ⟨tau, ⟨le_of_lt htau.1, le_of_lt htau.2⟩⟩ = valueCLM hΩ (u tau)
-  rw [restrict_Ioo_eq_restrict_Icc]
-  filter_upwards [hClosedAE] with tau hTau
-  intro htau
-  simpa only [Subsingleton.elim] using
-    hTau ⟨le_of_lt htau.1, le_of_lt htau.2⟩
-
-private theorem reverseTimeHilbertRepresentative_energy_increment
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    (Ubar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
-    (hUbar : ReverseTimeHilbertRepresentativeAgrees hΩ T u Ubar) :
-    ∀ s t : ℝ, ∀ hs : s ∈ Set.Icc 0 T, ∀ ht : t ∈ Set.Icc 0 T,
-      s ≤ t →
-        ‖Ubar ⟨t, ht⟩‖ ^ 2 - ‖Ubar ⟨s, hs⟩‖ ^ 2 =
-          2 * (∫ r in Set.Ioc s t,
-            (g r) (u r) ∂reverseTimeVolume T) := by
-  obtain ⟨e, heCont, _heNonneg, heAE, heInc⟩ :=
-    exists_continuous_reverseTimeScalarEnergyRepresentative hΩ T hT u g hderiv
-  let Uext : ℝ → PDE.ScalarLp Ω (2 : ℝ≥0∞) := fun t =>
-    if ht : t ∈ Icc 0 T then Ubar ⟨t, ht⟩ else 0
-  have hUextCont : ContinuousOn Uext (Icc 0 T) := by
-    rw [continuousOn_iff_continuous_domRestrict]
-    have hEq : (Icc 0 T).domRestrict Uext = Ubar := by
-      funext t
-      simp only [Set.domRestrict_apply, Uext, dif_pos t.2]
-    rw [hEq]
-    exact Ubar.continuous
-  have hIoo : ∀ᵐ t ∂volume.restrict (Icc 0 T), t ∈ Ioo 0 T := by
-    rw [← restrict_Ioo_eq_restrict_Icc]
-    exact ae_restrict_mem measurableSet_Ioo
-  have hUbarIcc : ∀ᵐ t ∂volume.restrict (Icc 0 T),
-      ∀ ht : t ∈ Ioo 0 T,
-        Ubar ⟨t, ⟨le_of_lt ht.1, le_of_lt ht.2⟩⟩ = valueCLM hΩ (u t) := by
-    simpa only [ReverseTimeHilbertRepresentativeAgrees, reverseTimeVolume,
-      reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc] using hUbar
-  have heAEIcc : e =ᵐ[volume.restrict (Icc 0 T)]
-      fun t => ‖valueCLM hΩ (u t)‖ ^ 2 := by
-    simpa only [reverseTimeVolume, reverseTimeOpenInterval,
-      restrict_Ioo_eq_restrict_Icc] using heAE
-  have hNormSqAE : (fun t => ‖Uext t‖ ^ 2) =ᵐ[volume.restrict (Icc 0 T)] e := by
-    filter_upwards [hIoo, hUbarIcc, heAEIcc] with t ht hUbar he
-    have htIcc : t ∈ Icc 0 T := ⟨le_of_lt ht.1, le_of_lt ht.2⟩
-    calc
-      ‖Uext t‖ ^ 2 = ‖Ubar ⟨t, htIcc⟩‖ ^ 2 := by
-        simp only [Uext, dif_pos htIcc]
-      _ = ‖valueCLM hΩ (u t)‖ ^ 2 := by rw [hUbar ht]
-      _ = e t := he.symm
-  have hNormSqCont : ContinuousOn (fun t => ‖Uext t‖ ^ 2) (Icc 0 T) :=
-    (hUextCont.norm.pow 2)
-  have hNormSqEqOn : EqOn (fun t => ‖Uext t‖ ^ 2) e (Icc 0 T) :=
-    Measure.eqOn_Icc_of_ae_eq volume hT.ne hNormSqAE hNormSqCont heCont
-  intro s t hs ht hst
-  calc
-    ‖Ubar ⟨t, ht⟩‖ ^ 2 - ‖Ubar ⟨s, hs⟩‖ ^ 2 =
-        ‖Uext t‖ ^ 2 - ‖Uext s‖ ^ 2 := by
-          simp only [Uext, dif_pos hs, dif_pos ht]
-    _ = e t - e s := congrArg₂ (fun x y : ℝ => x - y)
-      (hNormSqEqOn ht) (hNormSqEqOn hs)
-    _ = 2 * (∫ r in Ioc s t, (g r) (u r) ∂reverseTimeVolume T) :=
-      heInc s t hs ht hst
-
 private theorem reverseTimeHilbertRepresentative_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T)
     (Ubar Vbar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
@@ -560,16 +341,16 @@ private theorem reverseTimeHilbertRepresentative_eq
       _ = valueCLM hΩ (u t) := hUbar ht
       _ = Vbar ⟨t, htIcc⟩ := (hVbar ht).symm
       _ = Vext t := by simp only [Vext, dif_pos htIcc]
-  have hEqOn : EqOn Uext Vext (Icc 0 T) :=
+  have hEqOn :=
     Measure.eqOn_Icc_of_ae_eq volume hT.ne hUVAE hUextCont hVextCont
   apply ContinuousMap.ext
   intro t
   simpa only [Uext, Vext, dif_pos t.2] using hEqOn t.2
 
-/-- The continuous spatial-`L²` representative of a reverse-time Gelfand
+/- The continuous spatial-`L²` representative of a reverse-time Gelfand
 weak derivative, with its one-curve energy increment. -/
 theorem existsUnique_reverseTimeHilbertRepresentative
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
@@ -580,10 +361,196 @@ theorem existsUnique_reverseTimeHilbertRepresentative
           ‖Ubar ⟨t, ht⟩‖ ^ 2 - ‖Ubar ⟨s, hs⟩‖ ^ 2 =
             2 * (∫ r in Set.Ioc s t,
               (g r) (u r) ∂reverseTimeVolume T) := by
-  obtain ⟨Ubar, hUbar⟩ :=
-    exists_reverseTimeHilbertRepresentative_agrees hΩ T hT u g hderiv
+  obtain ⟨Ubar, hUbar⟩ : ∃ Ubar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)),
+      ReverseTimeHilbertRepresentativeAgrees hΩ T u Ubar := by
+    let a := T / 3
+    let b := 2 * T / 3
+    obtain ⟨ha0, hab, hbT⟩ : 0 < T / 3 ∧ T / 3 < 2 * T / 3 ∧ 2 * T / 3 < T := by
+      constructor
+      · positivity
+      constructor <;> linarith
+    have h0b : 0 ≤ b := by
+      dsimp only [b]
+      positivity
+    have haT : a ≤ T := by
+      dsimp only [a]
+      linarith
+    obtain ⟨UL, hUL⟩ := cauchySeq_tendsto_of_complete
+      (cauchySeq_reverseTimeForwardSteklovHilbertOnIcc hΩ T hT u g hderiv
+        (by simpa only [b] using (show 0 < 2 * T / 3 by linarith))
+        (by simpa only [b] using hbT))
+    obtain ⟨UR, hUR⟩ := cauchySeq_tendsto_of_complete
+      (cauchySeq_reverseTimeBackwardSteklovHilbertOnIcc hΩ T hT u g hderiv
+        (by simpa only [a] using ha0)
+        (by simpa only [a] using (show T / 3 < T by linarith)))
+    have hUL' : Tendsto (reverseTimeForwardSteklovHilbertOnIcc hΩ T hT u b)
+        atTop (𝓝 UL) := by
+      simpa only [b] using hUL
+    have hUR' : Tendsto (reverseTimeBackwardSteklovHilbertOnIcc hΩ T hT u a)
+        atTop (𝓝 UR) := by
+      simpa only [a] using hUR
+    let SL :=
+      reverseTimeForwardSteklovHilbertOnIcc hΩ T hT u b
+    let SR :=
+      reverseTimeBackwardSteklovHilbertOnIcc hΩ T hT u a
+    have hSL := hUL'
+    have hSR := hUR'
+    let FL := fun n t =>
+      reverseTimeForwardSteklov T (reverseTimeSteklovStep T n) u t
+    let FR := fun n t =>
+      reverseTimeBackwardSteklov T (reverseTimeSteklovStep T n) u t
+    have hFLcont : ∀ n, Continuous (FL n) := by
+      intro n
+      simpa only [FL] using continuous_reverseTimeForwardSteklov T
+        (reverseTimeSteklovStep T n) (by
+          unfold reverseTimeSteklovStep
+          positivity) u
+    have hFRcont : ∀ n, Continuous (FR n) := by
+      intro n
+      simpa only [FR] using continuous_reverseTimeBackwardSteklov T
+        (reverseTimeSteklovStep T n) (by
+          unfold reverseTimeSteklovStep
+          positivity) u
+    have hFLraw : Tendsto (fun n => ∫ t in Icc 0 T, ‖FL n t - u t‖ ^ 2)
+        atTop (𝓝 0) := by
+      simpa only [FL, Function.comp_def] using
+        (tendsto_forwardSteklov_sqNorm_integral_on_Icc_zero_T T hT u).comp
+          (tendsto_reverseTimeSteklovStep T hT)
+    have hFRraw : Tendsto (fun n => ∫ t in Icc 0 T, ‖FR n t - u t‖ ^ 2)
+        atTop (𝓝 0) := by
+      simpa only [FR, Function.comp_def] using
+        (tendsto_backwardSteklov_sqNorm_integral_on_Icc_zero_T T hT u).comp
+          (tendsto_reverseTimeSteklovStep T hT)
+    have hVL : Tendsto (fun n => ∫ t in Icc 0 b,
+        ‖valueCLM hΩ (FL n t) - valueCLM hΩ (u t)‖ ^ 2) atTop (𝓝 0) := by
+      exact tendsto_value_sqNorm_integral_on_Icc hΩ T hT u FL hFLcont hFLraw
+        le_rfl h0b hbT.le
+    have hVR : Tendsto (fun n => ∫ t in Icc a T,
+        ‖valueCLM hΩ (FR n t) - valueCLM hΩ (u t)‖ ^ 2) atTop (𝓝 0) := by
+      exact tendsto_value_sqNorm_integral_on_Icc hΩ T hT u FR hFRcont hFRraw
+        ha0.le haT le_rfl
+    have huFull := memLp_two_on_full_Icc T u
+    have hLsub : Icc 0 b ⊆ Icc 0 T := by
+      intro t ht
+      exact ⟨ht.1, ht.2.trans hbT.le⟩
+    have hRsub : Icc a T ⊆ Icc 0 T := by
+      intro t ht
+      exact ⟨ha0.le.trans ht.1, ht.2⟩
+    have huL : MemLp (u : ℝ → H10HilbertGraph hΩ) (2 : ℝ≥0∞)
+        (volume.restrict (Icc 0 b)) := by
+      simpa only [Measure.restrict_restrict_of_subset hLsub] using
+        huFull.restrict (Icc 0 b)
+    have huR : MemLp (u : ℝ → H10HilbertGraph hΩ) (2 : ℝ≥0∞)
+        (volume.restrict (Icc a T)) := by
+      simpa only [Measure.restrict_restrict_of_subset hRsub] using
+        huFull.restrict (Icc a T)
+    have hVDL : ∀ n, MemLp
+        ((fun t => valueCLM hΩ (FL n t)) - fun t => valueCLM hΩ (u t))
+        (2 : ℝ≥0∞) (volume.restrict (Icc 0 b)) := by
+      intro n
+      have hdiff := (memLp_two_on_Icc_of_continuous (FL n) (hFLcont n) 0 b).sub huL
+      simpa only [Pi.sub_def, ContinuousLinearMap.map_sub] using
+        hdiff.continuousLinearMap_comp (valueCLM hΩ)
+    have hVDR : ∀ n, MemLp
+        ((fun t => valueCLM hΩ (FR n t)) - fun t => valueCLM hΩ (u t))
+        (2 : ℝ≥0∞) (volume.restrict (Icc a T)) := by
+      intro n
+      have hdiff := (memLp_two_on_Icc_of_continuous (FR n) (hFRcont n) a T).sub huR
+      simpa only [Pi.sub_def, ContinuousLinearMap.map_sub] using
+        hdiff.continuousLinearMap_comp (valueCLM hΩ)
+    have hIML : TendstoInMeasure (volume.restrict (Icc 0 b))
+        (fun n t => valueCLM hΩ (FL n t)) atTop (fun t => valueCLM hΩ (u t)) := by
+      apply tendstoInMeasure_of_tendsto_sqNorm_integral
+        (fun n => ((valueCLM hΩ).continuous.comp (hFLcont n)).aestronglyMeasurable)
+        (huL.continuousLinearMap_comp (valueCLM hΩ)).aestronglyMeasurable hVDL
+      exact hVL
+    have hIMR : TendstoInMeasure (volume.restrict (Icc a T))
+        (fun n t => valueCLM hΩ (FR n t)) atTop (fun t => valueCLM hΩ (u t)) := by
+      apply tendstoInMeasure_of_tendsto_sqNorm_integral
+        (fun n => ((valueCLM hΩ).continuous.comp (hFRcont n)).aestronglyMeasurable)
+        (huR.continuousLinearMap_comp (valueCLM hΩ)).aestronglyMeasurable hVDR
+      exact hVR
+    obtain ⟨nsL, hnsL, hsubL⟩ := hIML.exists_seq_tendsto_ae
+    obtain ⟨nsR, hnsR, hsubR⟩ := hIMR.exists_seq_tendsto_ae
+    have hULAE : ∀ᵐ t ∂volume.restrict (Icc 0 b),
+        ∀ ht : t ∈ Icc 0 b, UL ⟨t, ht⟩ = valueCLM hΩ (u t) := by
+      filter_upwards [hsubL, ae_restrict_mem measurableSet_Icc] with t ht htb
+      intro htb'
+      have hPoint := (tendsto_continuousMap_apply SL UL ⟨t, htb'⟩ hSL).comp hnsL.tendsto_atTop
+      apply tendsto_nhds_unique
+        (by
+          convert hPoint using 1
+          funext n
+          rfl)
+        ht
+    have hURAE : ∀ᵐ t ∂volume.restrict (Icc a T),
+        ∀ ht : t ∈ Icc a T, UR ⟨t, ht⟩ = valueCLM hΩ (u t) := by
+      filter_upwards [hsubR, ae_restrict_mem measurableSet_Icc] with t ht hta
+      intro hta'
+      have hPoint := (tendsto_continuousMap_apply SR UR ⟨t, hta'⟩ hSR).comp hnsR.tendsto_atTop
+      apply tendsto_nhds_unique
+        (by
+          convert hPoint using 1
+          funext n
+          rfl)
+        ht
+    obtain ⟨Ubar, hClosedAE⟩ := exists_continuousMap_glue_of_local_ae ha0 hab hbT
+      (fun t => valueCLM hΩ (u t)) UL UR hULAE hURAE
+    refine ⟨Ubar, ?_⟩
+    change ∀ᵐ tau ∂volume.restrict (Ioo 0 T),
+      ∀ htau : tau ∈ Ioo 0 T,
+        Ubar ⟨tau, ⟨le_of_lt htau.1, le_of_lt htau.2⟩⟩ = valueCLM hΩ (u tau)
+    rw [restrict_Ioo_eq_restrict_Icc]
+    filter_upwards [hClosedAE] with tau hTau
+    intro htau
+    simpa only [Subsingleton.elim] using
+      hTau ⟨le_of_lt htau.1, le_of_lt htau.2⟩
   refine ⟨Ubar, ⟨hUbar, ?_⟩, ?_⟩
-  · exact reverseTimeHilbertRepresentative_energy_increment hΩ T hT u g hderiv Ubar hUbar
+  ·
+    obtain ⟨e, heCont, _heNonneg, heAE, heInc⟩ :=
+      exists_continuous_reverseTimeScalarEnergyRepresentative hΩ T hT u g hderiv
+    let Uext : ℝ → PDE.ScalarLp Ω (2 : ℝ≥0∞) := fun t =>
+      if ht : t ∈ Icc 0 T then Ubar ⟨t, ht⟩ else 0
+    have hUextCont : ContinuousOn Uext (Icc 0 T) := by
+      rw [continuousOn_iff_continuous_domRestrict]
+      have hEq : (Icc 0 T).domRestrict Uext = Ubar := by
+        funext t
+        simp only [Set.domRestrict_apply, Uext, dif_pos t.2]
+      rw [hEq]
+      exact Ubar.continuous
+    have hIoo : ∀ᵐ t ∂volume.restrict (Icc 0 T), t ∈ Ioo 0 T := by
+      rw [← restrict_Ioo_eq_restrict_Icc]
+      exact ae_restrict_mem measurableSet_Ioo
+    have hUbarIcc : ∀ᵐ t ∂volume.restrict (Icc 0 T),
+        ∀ ht : t ∈ Ioo 0 T,
+          Ubar ⟨t, ⟨le_of_lt ht.1, le_of_lt ht.2⟩⟩ = valueCLM hΩ (u t) := by
+      simpa only [ReverseTimeHilbertRepresentativeAgrees, reverseTimeVolume,
+        reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc] using hUbar
+    have heAEIcc : e =ᵐ[volume.restrict (Icc 0 T)]
+        fun t => ‖valueCLM hΩ (u t)‖ ^ 2 := by
+      simpa only [reverseTimeVolume, reverseTimeOpenInterval,
+        restrict_Ioo_eq_restrict_Icc] using heAE
+    have hNormSqAE : (fun t => ‖Uext t‖ ^ 2) =ᵐ[volume.restrict (Icc 0 T)] e := by
+      filter_upwards [hIoo, hUbarIcc, heAEIcc] with t ht hUbar he
+      have htIcc : t ∈ Icc 0 T := ⟨le_of_lt ht.1, le_of_lt ht.2⟩
+      calc
+        ‖Uext t‖ ^ 2 = ‖Ubar ⟨t, htIcc⟩‖ ^ 2 := by
+          simp only [Uext, dif_pos htIcc]
+        _ = ‖valueCLM hΩ (u t)‖ ^ 2 := by rw [hUbar ht]
+        _ = e t := he.symm
+    have hNormSqCont :=
+      (hUextCont.norm.pow 2)
+    have hNormSqEqOn :=
+      Measure.eqOn_Icc_of_ae_eq volume hT.ne hNormSqAE hNormSqCont heCont
+    intro s t hs ht hst
+    calc
+      ‖Ubar ⟨t, ht⟩‖ ^ 2 - ‖Ubar ⟨s, hs⟩‖ ^ 2 =
+          ‖Uext t‖ ^ 2 - ‖Uext s‖ ^ 2 := by
+            simp only [Uext, dif_pos hs, dif_pos ht]
+      _ = e t - e s := congrArg₂ (fun x y : ℝ => x - y)
+        (hNormSqEqOn ht) (hNormSqEqOn hs)
+      _ = 2 * (∫ r in Ioc s t, (g r) (u r) ∂reverseTimeVolume T) :=
+        heInc s t hs ht hst
   · intro Vbar hVbar
     exact reverseTimeHilbertRepresentative_eq hΩ T hT u Vbar Ubar hVbar.1 hUbar
 

@@ -22,7 +22,7 @@ open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-/-- The localized difference quotient as a linear map on bundled smooth tests. -/
+/- The localized difference quotient as a linear map on bundled smooth tests. -/
 noncomputable def localizedSpatialDifferenceQuotientWeakTestLinearMap
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
@@ -42,24 +42,6 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTestLinearMap
       PDE.WeakTestFunction.smul_toFun, Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
     ring
 
-private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (j : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j G‖ ≤ ‖G‖ := by
-  rw [PDE.hilbertVectorLpCoord]
-  calc
-    ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j).compLpL
-        (2 : ℝ≥0∞) (PDE.volumeOn Ω) G‖ ≤
-        ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j‖ * ‖G‖ := by
-          exact ContinuousLinearMap.norm_compLp_le _ _
-    _ ≤ 1 * ‖G‖ := by
-      gcongr
-      apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
-      intro x
-      simpa only [ContinuousLinearMap.coe_coe, Function.comp_def, one_mul, PiLp.proj_apply] using
-        PiLp.norm_apply_le x j
-    _ = ‖G‖ := one_mul _
-
 private theorem norm_h10HilbertGraph_le_value_add_gradient
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (u : H10HilbertGraph hΩ) :
@@ -75,7 +57,7 @@ private theorem norm_h10HilbertGraph_le_value_add_gradient
       exact mul_nonneg (by norm_num) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ = (‖valueCLM hΩ u‖ + ‖gradientCLM hΩ u‖) ^ 2 := by ring
 
-/-- The cutoff-localized forward spatial quotient as a linear map from
+/- The cutoff-localized forward spatial quotient as a linear map from
 actual bundled smooth tests into the zero-boundary Sobolev graph. -/
 noncomputable def localizedSpatialDifferenceQuotientSmoothCoreLinearMap
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
@@ -86,7 +68,7 @@ noncomputable def localizedSpatialDifferenceQuotientSmoothCoreLinearMap
   (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ).comp
     (localizedSpatialDifferenceQuotientWeakTestLinearMap η k h hηΩ)
 
-/-- The quotient-safe vector `L²` expression for the gradient of the
+/- The quotient-safe vector `L²` expression for the gradient of the
 localized quotient on the actual smooth core. -/
 noncomputable def localizedSpatialDifferenceQuotientSmoothGradientCLM
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
@@ -102,10 +84,10 @@ noncomputable def localizedSpatialDifferenceQuotientSmoothGradientCLM
         ((PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j).comp
           (gradientCLM hΩ))
 
-/-- The smooth-core value class is the quotient-level localized value
+/- The smooth-core value class is the quotient-level localized value
 operator applied to the exact dense-core inclusion. -/
 theorem valueCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
@@ -144,10 +126,10 @@ theorem valueCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
   rw [hleft, hright, localizedSpatialDifferenceQuotientWeakTest_apply]
   rfl
 
-/-- The smooth-core gradient class is the assembled quotient-safe vector
+/- The smooth-core gradient class is the assembled quotient-safe vector
 operator applied to the exact dense-core inclusion. -/
 theorem gradientCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
@@ -214,10 +196,10 @@ theorem gradientCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
   ext j
   simpa only [PiLp.coe_continuousLinearEquiv, PiLp.coe_symm_continuousLinearEquiv] using hcoords j
 
-/-- The actual smooth localized quotient is bounded relative to the exact
+/- The actual smooth localized quotient is bounded relative to the exact
 dense-core inclusion, with a totalized dimension/cutoff/step witness. -/
 theorem norm_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
@@ -289,8 +271,23 @@ theorem norm_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply_le
         apply add_le_add
         · apply mul_le_mul_of_nonneg_left hvalueInput
           exact div_nonneg (mul_nonneg (by norm_num) η.gradient_bound_nonneg) (abs_nonneg h)
-        · apply mul_le_mul_of_nonneg_left
-            ((norm_hilbertVectorLpCoord_le j (gradientCLM hΩ x)).trans hgradientInput)
+        · have _h_inl_11 : ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ x)‖ ≤ ‖(gradientCLM hΩ x)‖ := by
+            let G := (gradientCLM hΩ x)
+            rw [PDE.hilbertVectorLpCoord]
+            calc
+              ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j).compLpL
+                  (2 : ℝ≥0∞) (PDE.volumeOn Ω) G‖ ≤
+                  ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j‖ * ‖G‖ := by
+                    exact ContinuousLinearMap.norm_compLp_le _ _
+              _ ≤ 1 * ‖G‖ := by
+                gcongr
+                apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
+                intro x
+                simpa only [ContinuousLinearMap.coe_coe, Function.comp_def, one_mul, PiLp.proj_apply] using
+                  PiLp.norm_apply_le x j
+              _ = ‖G‖ := one_mul _
+          apply mul_le_mul_of_nonneg_left
+            (_h_inl_11.trans hgradientInput)
           exact div_nonneg (by norm_num) (abs_nonneg h)
       _ = ((2 * K / |h|) + (2 / |h|)) * ‖x‖ := by ring
   have hgradientBound : ‖gradientCLM hΩ q‖ ≤

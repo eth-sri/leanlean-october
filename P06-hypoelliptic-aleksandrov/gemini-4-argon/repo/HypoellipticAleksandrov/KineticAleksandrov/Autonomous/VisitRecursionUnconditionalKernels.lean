@@ -83,7 +83,7 @@ instance visitUnionExitKernel_isFiniteKernel
 /-- The actual union Green measure has the same finite-time mass bound as its component. -/
 theorem visitUnionGreen_mass_le
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
     (p : FiniteUnionPole H (T : WithTop ℝ)) :
     finiteUnionGreen hH hLE hlam hLam A H T p univ ≤ ENNReal.ofReal (T - p.1.time) :=

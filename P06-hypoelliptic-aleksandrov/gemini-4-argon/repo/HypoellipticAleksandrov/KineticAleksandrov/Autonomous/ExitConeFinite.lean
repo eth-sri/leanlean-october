@@ -13,7 +13,7 @@ open SectionTwo TheoremA Evolution
 /-- Both actual measures lie in the literal physical finite-speed cone. -/
 theorem strip_cone_ae_of_realization
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     (∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
@@ -31,7 +31,7 @@ theorem strip_cone_ae_of_realization
     (-V) (-1) (V * e.1.time + e.1.position 0)
     (by dsimp only [reconstructionConeCoordinate]; ring)
     (fun v hv => by
-      have hh : -V ≤ v := ((neg_le_neg (le_max_left |H.lo| |H.hi|)).trans
+      have hh := ((neg_le_neg (le_max_left |H.lo| |H.hi|)).trans
         (neg_abs_le H.lo)).trans hv.1.le
       linarith)
   have hbound (p : Point)
@@ -50,7 +50,7 @@ theorem strip_cone_ae_of_realization
 /-- The finite-horizon Green measure gives zero mass to violations of the physical cone. -/
 theorem strip_cone_finite_of_realization
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripGreenOfKernel H E.2 T e

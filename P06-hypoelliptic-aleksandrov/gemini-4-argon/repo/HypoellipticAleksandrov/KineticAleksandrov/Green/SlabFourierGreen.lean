@@ -25,8 +25,8 @@ open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal NNReal ProbabilityTheory
 
-/-- The first marginal of the master kernel is independent of the starting `z` (case W). -/
-theorem firstMarginal_startingPosition {d : ℕ}
+/- The first marginal of the master kernel is independent of the starting `z` (case W). -/
+theorem firstMarginal_startingPosition {d }
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d) :
@@ -50,47 +50,39 @@ theorem firstMarginal_startingPosition {d : ℕ}
     Measure.map_map measurable_fst (measurable_evolutionAmbientStateShift z)]
   rfl
 
-/-- A Green measure is the explicit kernel-product measure. -/
-theorem green_eq_compProd {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+/- A Green measure is the explicit kernel-product measure. -/
+theorem green_integral {d Ω γ}
     (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
-    [IsFiniteMeasure μ] (Γ : Measure (ElapsedTime ⊤ × EvolutionAmbientState d))
-    (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ) :
-    Γ = (((μ.prod (elapsedVolume ⊤)).compProd (elapsedKernel K σ₀ ⊤)).map
-      (fun q => (q.1.2, q.2))) :=
-  (existsUnique_greenMeasure K σ₀ ⊤ (by simp) μ).unique hΓ (compProd_isGreenMeasure K σ₀ ⊤ μ)
-
-
-/-- A bounded Borel function supported in the slab is integrable against a Green measure. -/
-theorem integrable_green_slab {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
-    [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
-    {T : ℝ} (hT : 0 < T) (f : GreenCarrier d → ℂ) (hf : Measurable f)
-    (hfb : ∀ p, ‖f p‖ ≤ 1) (hsupp : ∀ p, p ∉ slabSet T → f p = 0) : Integrable f Γ := by
-  have hfin : Γ (slabSet (d := d) T) < ⊤ :=
-    (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt
-      (ENNReal.mul_lt_top (measure_lt_top _ _) ENNReal.ofReal_lt_top)
-  have hi : Integrable ((slabSet (d := d) T).indicator (fun _ => (1 : ℝ))) Γ :=
-    (integrable_indicator_iff (measurableSet_slabSet T)).2 (integrableOn_const hfin.ne)
-  refine Integrable.mono' hi hf.aestronglyMeasurable (Filter.Eventually.of_forall (fun p => ?_))
-  by_cases hp : p ∈ slabSet T
-  · simpa [Set.indicator_of_mem hp] using hfb p
-  · simp [hsupp p hp, Set.indicator_of_notMem hp]
-
-
-/-- **Green integral calculus.**  For bounded complex Borel `f` supported in the slab,
-`∫ f dΓ = ∫_τ ∫_μ ∫_{master (σ₀ → σ₀ + τ)} f(τ, ·)`. -/
-theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
-    [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
-    {T : ℝ} (hT : 0 < T) (f : GreenCarrier d → ℂ) (hf : Measurable f)
+    [IsFiniteMeasure μ] (Γ ) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
+    {T } (hT : 0 < T) (f : GreenCarrier d → ℂ) (hf : Measurable f)
     (hfb : ∀ p, ‖f p‖ ≤ 1) (hsupp : ∀ p, p ∉ slabSet T → f p = 0) :
     ∫ p, f p ∂Γ = ∫ τ, (∫ p, (∫ w, f (τ, w) ∂K.master (elapsedQuery σ₀ p τ)) ∂μ)
       ∂elapsedVolume ⊤ := by
-  have hint := integrable_green_slab K σ₀ μ Γ hΓ hT f hf hfb hsupp
+  have hint : Integrable f Γ := by
+      have hfin : Γ (slabSet (d := d) T) < ⊤ :=
+        (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt
+          (ENNReal.mul_lt_top (measure_lt_top _ _) ENNReal.ofReal_lt_top)
+      have hi : Integrable ((slabSet (d := d) T).indicator (fun _ => (1 : ℝ))) Γ :=
+        (integrable_indicator_iff (measurableSet_slabSet T)).2 (integrableOn_const hfin.ne)
+      refine Integrable.mono' hi hf.aestronglyMeasurable (Filter.Eventually.of_forall (fun p => ?_))
+      by_cases hp : p ∈ slabSet T
+      · simpa [Set.indicator_of_mem hp] using hfb p
+      · simp [hsupp p hp, Set.indicator_of_notMem hp]
+
+
+    /- **Green integral calculus.**  For bounded complex Borel `f` supported in the slab,
+    `∫ f dΓ = ∫_τ ∫_μ ∫_{master (σ₀ → σ₀ + τ)} f(τ, ·)`. -/
   have hι : Measurable (fun q : (EvolutionState Ω γ σ₀ × ElapsedTime ⊤) × EvolutionAmbientState d =>
       (q.1.2, q.2)) := by fun_prop
   set Ξ := (μ.prod (elapsedVolume ⊤)).compProd (elapsedKernel K σ₀ ⊤) with hΞ
-  have hΓeq := green_eq_compProd K σ₀ μ Γ hΓ
+  have hΓeq : Γ = (((μ.prod (elapsedVolume ⊤)).compProd (elapsedKernel K σ₀ ⊤)).map
+      (fun q => (q.1.2, q.2))) := by
+      exact (
+    (existsUnique_greenMeasure K σ₀ ⊤ (by simp) μ).unique hΓ (compProd_isGreenMeasure K σ₀ ⊤ μ)
+
+
+    /- A bounded Borel function supported in the slab is integrable against a Green measure. -/
+    )
   rw [hΓeq] at hint ⊢
   rw [integral_map hι.aemeasurable hf.aestronglyMeasurable]
   have hint' : Integrable (fun q : (EvolutionState Ω γ σ₀ × ElapsedTime ⊤) ×
@@ -103,8 +95,7 @@ theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
   set G : EvolutionState Ω γ σ₀ × ElapsedTime ⊤ → ℂ :=
     fun a => ∫ w, f (a.2, w) ∂elapsedKernel K σ₀ ⊤ a with hG
   have hGm : StronglyMeasurable G := by
-    have h1 : StronglyMeasurable (fun q : (EvolutionState Ω γ σ₀ × ElapsedTime ⊤) ×
-        EvolutionAmbientState d => f (q.1.2, q.2)) := (hf.comp hι).stronglyMeasurable
+    have h1 := (hf.comp hι).stronglyMeasurable
     exact h1.integral_kernel_prod_right' (κ := elapsedKernel K σ₀ ⊤)
   have hGb : ∀ a, ‖G a‖ ≤ (slabTimeSet T).indicator (fun _ => (1 : ℝ)) a.2 := by
     intro a

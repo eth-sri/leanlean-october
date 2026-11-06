@@ -15,7 +15,7 @@ namespace HypoellipticAleksandrov.Parabolic.ParabolicDerivativeIndex
 
 /-- Enlarging the parabolic bound preserves the zero index exactly. -/
 @[simp] theorem castLE_zero
-    {d M L : ℕ} (hML : M ≤ L) :
+    {d M L } (hML : M ≤ L) :
     castLE hML (zero d M) = zero d L := by
   apply Subtype.ext
   rfl
@@ -23,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic.ParabolicDerivativeIndex
 /-- Enlarging the parabolic bound commutes with a fixed-bound time
 successor. -/
 @[simp] theorem castLE_timeSucc
-    {d M L : ℕ} (hML : M ≤ L)
+    {d M L } (hML : M ≤ L)
     (beta : ParabolicDerivativeIndex d M)
     (h : beta.1.parabolicWeight + 2 ≤ M) :
     castLE hML (timeSucc beta h) =
@@ -34,7 +34,7 @@ successor. -/
 /-- Enlarging the parabolic bound commutes with a fixed-bound velocity
 successor. -/
 @[simp] theorem castLE_velocitySucc
-    {d M L : ℕ} (hML : M ≤ L)
+    {d M L } (hML : M ≤ L)
     (beta : ParabolicDerivativeIndex d M) (i : Fin d)
     (h : beta.1.parabolicWeight + 1 ≤ M) :
     castLE hML (velocitySucc beta i h) =

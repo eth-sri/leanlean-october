@@ -16,7 +16,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 open Set MeasureTheory
 
 /-- Relative superlevels are measurable without assuming global measurability of u. -/
-theorem measurableSet_superlevel_inter {d : ℕ} {O E : Set (KineticPoint d)}
+theorem measurableSet_superlevel_inter {d O E}
     (hO : IsOpen O) (hE : MeasurableSet E) (hEO : E ⊆ O)
     {u : KineticPoint d → ℝ} (hu : ContinuousOn u O) (ell : ℝ) :
     MeasurableSet ({P | ell ≤ u P} ∩ E) := by
@@ -35,13 +35,13 @@ theorem measurableSet_superlevel_inter {d : ℕ} {O E : Set (KineticPoint d)}
   exact (measurableSet_le measurable_const hf).inter hE
 
 /-- All source level intersections are bounded by their comparison region. -/
-theorem superlevel_inter_isBounded {d : ℕ} {E : Set (KineticPoint d)}
+theorem superlevel_inter_isBounded {d E}
     (hE : Bornology.IsBounded E) (u : KineticPoint d → ℝ) (ell : ℝ) :
     Bornology.IsBounded ({P | ell ≤ u P} ∩ E) :=
   hE.subset inter_subset_right
 
 /-- Exact source volume scaling also holds after conversion to real volume. -/
-theorem volume_affine_image_toReal {d : ℕ} (P0 : KineticPoint d) {R : ℝ}
+theorem volume_affine_image_toReal {d } (P0 : KineticPoint d) {R }
     (hR : 0 < R) (E : Set (KineticPoint d)) :
     (volume (kineticAffine P0 R '' E)).toReal = R ^ (4 * d + 2) * (volume E).toReal := by
   rw [volume_kineticAffine_image P0 hR, ENNReal.toReal_mul,

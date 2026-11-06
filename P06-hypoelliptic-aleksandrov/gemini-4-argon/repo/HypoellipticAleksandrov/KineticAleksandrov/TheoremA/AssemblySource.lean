@@ -12,7 +12,7 @@ open MeasureTheory Set
 open scoped ENNReal
 
 /-- Subtype measurability yields a globally measurable zero extension. -/
-theorem measurable_source_indicator {d : ℕ} {Q : Set (KineticPoint d)}
+theorem measurable_source_indicator {d } {Q : Set (KineticPoint d)}
     (hQ : MeasurableSet Q) (f : KineticPoint d → ℝ)
     (hf : Measurable (fun P : Q => f P)) : Measurable (Q.indicator f) := by
   classical
@@ -29,14 +29,14 @@ theorem measurable_source_indicator {d : ℕ} {Q : Set (KineticPoint d)}
     exact measurable_const
 
 /-- Zero extension agrees with the original source almost everywhere on its cylinder. -/
-theorem source_indicator_ae_eq {d : ℕ} {Q : Set (KineticPoint d)}
+theorem source_indicator_ae_eq {d } {Q : Set (KineticPoint d)}
     (hQ : MeasurableSet Q) (f : KineticPoint d → ℝ) :
     Q.indicator f =ᵐ[volume.restrict Q] f := by
   filter_upwards [ae_restrict_mem hQ] with P hP
   exact Set.indicator_of_mem hP f
 
 /-- The positive source norm is unchanged by the measurable zero extension. -/
-theorem eLpNorm_positive_source_indicator {d : ℕ} {Q : Set (KineticPoint d)}
+theorem eLpNorm_positive_source_indicator {d } {Q : Set (KineticPoint d)}
     (hQ : MeasurableSet Q) (f : KineticPoint d → ℝ) (p : ℝ≥0∞) :
     eLpNorm (fun P => max (Q.indicator f P) 0) p (volume.restrict Q) =
       eLpNorm (fun P => max (f P) 0) p (volume.restrict Q) := by

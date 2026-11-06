@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelSlice
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelCutoffSequence
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelFixedTest
 
 /-! # Jointly measurable integrals of compact time-state probes -/
 
@@ -13,6 +15,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
 open scoped Topology
+open Function
 
 section EvolutionData
 
@@ -41,7 +44,7 @@ local notation "κ" => terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hm
 local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
-/-- Integrating a smooth compact graph-supported time-state probe against the terminal
+/- Integrating a smooth compact graph-supported time-state probe against the terminal
 measure at its own terminal time is jointly Borel measurable. -/
 theorem measurable_joint_terminal_probe
     (Φ : BoundedBorel (ℝ × EvolutionAmbientState n))
@@ -80,9 +83,28 @@ theorem measurable_joint_terminal_probe
       simpa only [Real.norm_eq_abs] using hC (terminalTimeMesh j q.1.2.1, x))
     (Eventually.of_forall fun x => hΦ.continuous.continuousAt.tendsto.comp
       ((tendsto_terminalTimeMesh q.1.2.1).prodMk_nhds tendsto_const_nhds))
+  have _h_xinl_0 : ∀ᶠ t in 𝓝 q.1.2.1, IsSmoothCompactTerminalDatum Ω γ q.1.2.1 (jointTerminalProbeSlice Φ t) := by
+    have hΩ := (isOpen_of_isAdmissibleEvolutionDomain hΩ)
+    let τ := q.1.2.1
+    let K :=
+      tsupport Φ ∩ {z | z.2 ∉ evolutionStateSet Ω γ τ}
+    have hK : IsCompact K := hc.inter_right
+      (((isOpen_movingDomain hΩ τ).prod isOpen_univ).isClosed_compl.preimage continuous_snd)
+    have hclosed := (hK.image continuous_fst).isClosed
+    have hnot : τ ∉ Prod.fst '' K := by
+      rintro ⟨z, hz, hzt⟩
+      have hi := hs hz.1
+      change z.2 ∈ evolutionStateSet Ω γ z.1 at hi
+      rw [hzt] at hi
+      exact hz.2 hi
+    filter_upwards [(hclosed.isOpen_compl.mem_nhds hnot)] with t ht
+    obtain ⟨hr, hcompact⟩ := jointTerminalProbeSlice_regular Φ hΦ hc t
+    refine ⟨hr, hcompact, ?_⟩
+    intro x hx
+    by_contra hxu
+    exact ht ⟨(t, x), ⟨(tsupport_comp_subset_preimage Φ (continuous_const.prodMk continuous_id) hx), hxu⟩, rfl⟩
   have hnear := (tendsto_terminalTimeMesh q.1.2.1).eventually
-    (eventually_jointTerminalProbeSlice_admissible
-      (isOpen_of_isAdmissibleEvolutionDomain hΩ) Φ hΦ hc hs q.1.2.1)
+    _h_xinl_0
   apply hlim.congr'
   filter_upwards [hnear] with j hj
   exact (ite_eq_left hj).symm

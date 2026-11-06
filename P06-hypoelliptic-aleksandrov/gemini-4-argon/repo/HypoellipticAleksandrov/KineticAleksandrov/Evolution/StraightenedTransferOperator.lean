@@ -34,13 +34,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 variable {n : ℕ}
 
-/-- The pullback `u(σ, y, z) = ũ(σ, (y - g(σ), z))` of a function of the straightened variables
+/- The pullback `u(σ, y, z) = ũ(σ, (y - g(σ), z))` of a function of the straightened variables
 to the absolute kinetic variables. -/
 def straightenedPullback (g : ℝ → PDE.Vec n) (ũ : TimeVelocity (n + n) → ℝ) :
     KineticPoint n → ℝ :=
   fun p => ũ (p.time, spatialPack (p.position - g p.time) p.velocity)
 
-/-- The straightened point `(σ, (y - g(σ), z))` of an absolute kinetic point. -/
+/- The straightened point `(σ, (y - g(σ), z))` of an absolute kinetic point. -/
 def straightenedPoint (g : ℝ → PDE.Vec n) (p : KineticPoint n) : TimeVelocity (n + n) :=
   (p.time, spatialPack (p.position - g p.time) p.velocity)
 
@@ -64,7 +64,7 @@ theorem vecDot_spatialPack_left (a b : PDE.Vec n) (w : PDE.Vec (n + n)) :
     PDE.vecDot (spatialPack a b) w = PDE.vecDot a (spatialY w) + PDE.vecDot b (spatialZ w) := by
   rw [PDE.vecDot_comm, vecDot_spatialPack_right, PDE.vecDot_comm, PDE.vecDot_comm b]
 
-/-- Contraction with the block matrix `diag(A, ε I)` splits along the blocks. -/
+/- Contraction with the block matrix `diag(A, ε I)` splits along the blocks. -/
 theorem matrixContraction_viscousBlockMatrix (A : PDE.Mat n) (ε : ℝ) (H : PDE.Mat (n + n)) :
     matrixContraction (viscousBlockMatrix A ε) H =
       matrixContraction A (fun i j => H (Fin.castAdd n i) (Fin.castAdd n j)) +
@@ -88,29 +88,7 @@ section Derivatives
 
 variable {g : ℝ → PDE.Vec n} {ũ : TimeVelocity (n + n) → ℝ} {p : KineticPoint n}
 
-/-- The velocity gradient of the pullback is the transported block of the spatial gradient. -/
-theorem kineticVelocityGradient_straightenedPullback
-    (h : DifferentiableAt ℝ (fun X => ũ (p.time, X)) (straightenedPoint g p).2) :
-    kineticVelocityGradient (straightenedPullback g ũ) p =
-      spatialZ (scalarSpatialGradient ũ (straightenedPoint g p)) := by
-  have := classicalGradient_comp_block
-    (f := fun X => ũ (p.time, X)) (ι := fun z' => spatialPack (p.position - g p.time) z')
-    (hasFDerivAt_pack_right (p.position - g p.time) p.velocity) h (e := Fin.natAdd n)
-    (fun i => embedZCLM_basisVec i)
-  exact this
-
-/-- The diffused Hessian of the pullback is the `YY` block of the spatial Hessian. -/
-theorem diffusedHessian_straightenedPullback
-    (h : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2) (i j : Fin n) :
-    diffusedHessian (straightenedPullback g ũ) p i j =
-      scalarSpatialHessian ũ (straightenedPoint g p) (Fin.castAdd n i) (Fin.castAdd n j) := by
-  have := hessian_comp_block
-    (f := fun X => ũ (p.time, X)) (ι := fun y' => spatialPack (y' - g p.time) p.velocity)
-    (fun y' => hasFDerivAt_pack_left (g p.time) p.velocity y') (y := p.position) h
-    (e := Fin.castAdd n) (fun i => embedYCLM_basisVec i) i j
-  exact this
-
-/-- The velocity Hessian of the pullback is the `zz` block of the spatial Hessian. -/
+/- The velocity gradient of the pullback is the transported block of the spatial gradient. -/
 theorem kineticVelocityHessian_straightenedPullback
     (h : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2) (i j : Fin n) :
     kineticVelocityHessian (straightenedPullback g ũ) p i j =
@@ -121,7 +99,7 @@ theorem kineticVelocityHessian_straightenedPullback
     (e := Fin.natAdd n) (fun i => embedZCLM_basisVec i) i j
   exact this
 
-/-- The time derivative of the pullback: the straightened time derivative plus the drift
+/- The time derivative of the pullback: the straightened time derivative plus the drift
 term `-g'(σ) · ∇_Y ũ` produced by the moving frame. -/
 theorem kineticTimeDerivative_straightenedPullback
     (hg : DifferentiableAt ℝ g p.time) (hũ : DifferentiableAt ℝ ũ (straightenedPoint g p)) :
@@ -131,9 +109,9 @@ theorem kineticTimeDerivative_straightenedPullback
           (spatialY (scalarSpatialGradient ũ (straightenedPoint g p))) := by
   set X := (straightenedPoint g p).2 with hX
   set L := fderiv ℝ ũ (straightenedPoint g p) with hL
-  have hL' : HasFDerivAt ũ L (straightenedPoint g p) := hũ.hasFDerivAt
+  have hL' := hũ.hasFDerivAt
   -- the curve `r ↦ (r, (y - g r, z))`
-  have hcurve1 : HasDerivAt (fun r : ℝ => p.position - g r) (-deriv g p.time) p.time :=
+  have hcurve1 :=
     hg.hasDerivAt.const_sub p.position
   have hcurve2 : HasDerivAt (fun r : ℝ => spatialPack (p.position - g r) p.velocity)
       (spatialPack (-deriv g p.time) 0) p.time := by
@@ -146,8 +124,7 @@ theorem kineticTimeDerivative_straightenedPullback
       rw [embedYCLM_apply, ← spatialPack_add, add_zero, zero_add]
     rw [hfun]
     exact h
-  have hcurve : HasDerivAt (fun r : ℝ => (r, spatialPack (p.position - g r) p.velocity))
-      (1, spatialPack (-deriv g p.time) 0) p.time :=
+  have hcurve :=
     HasDerivAt.prodMk (hasDerivAt_id p.time) hcurve2
   have hcomp := hL'.comp_hasDerivAt p.time hcurve
   have h1 : kineticTimeDerivative (straightenedPullback g ũ) p =
@@ -191,7 +168,7 @@ section Operator
 variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {ε : ℝ}
   {g : ℝ → PDE.Vec n} {ũ : TimeVelocity (n + n) → ℝ} {p : KineticPoint n}
 
-/-- The straightened coefficient at the straightened point of `p` is the block matrix of the
+/- The straightened coefficient at the straightened point of `p` is the block matrix of the
 original coefficient at `p`. -/
 theorem straightenedCoefficient_straightenedPoint (B : FullKineticCoefficient n)
     (g : ℝ → PDE.Vec n) (ε : ℝ) (p : KineticPoint n) :
@@ -199,14 +176,14 @@ theorem straightenedCoefficient_straightenedPoint (B : FullKineticCoefficient n)
       viscousBlockMatrix (B p.time p.position p.velocity) ε := by
   simp [straightenedCoefficient, straightenedPoint]
 
-/-- The straightened drift at the straightened point of `p`. -/
+/- The straightened drift at the straightened point of `p`. -/
 theorem straightenedDrift_straightenedPoint (b : PDE.Vec n → PDE.Vec n) (g : ℝ → PDE.Vec n)
     (p : KineticPoint n) :
     straightenedDrift b g (straightenedPoint g p).1 (straightenedPoint g p).2 =
       spatialPack (-deriv g p.time) (b p.position) := by
   simp [straightenedDrift, straightenedPoint]
 
-/-- **Chain-rule transfer of the operator.**  At a point where `ũ` is jointly differentiable and
+/- **Chain-rule transfer of the operator.**  At a point where `ũ` is jointly differentiable and
 its spatial slice is `C²`, the viscous transported operator `L_ε` of the pullback
 `u(σ, y, z) = ũ(σ, (y - g(σ), z))` equals the straightened scalar operator
 `∂σ + diag(B, ε I) : D² + (-g', b(g + Y)) · ∇` of `ũ` at `(σ, (y - g(σ), z))`. -/
@@ -216,17 +193,30 @@ theorem viscousTransportedOperator_straightenedPullback
     viscousTransportedOperator B b ε (straightenedPullback g ũ) p =
       scalarParabolicOperator (straightenedCoefficient B g ε) (straightenedDrift b g) ũ
         (straightenedPoint g p) := by
-  have hdiff : DifferentiableAt ℝ (fun X => ũ (p.time, X)) (straightenedPoint g p).2 :=
+  have hdiff :=
     hslice.differentiableAt (by norm_num)
+  have _h_inl_27 : kineticVelocityGradient (straightenedPullback g ũ) p = spatialZ (scalarSpatialGradient ũ (straightenedPoint g p)) := by
+    have := classicalGradient_comp_block
+      (f := fun X => ũ (p.time, X)) (ι := fun z' => spatialPack (p.position - g p.time) z')
+      (hasFDerivAt_pack_right (p.position - g p.time) p.velocity) hdiff (e := Fin.natAdd n)
+      (fun i => embedZCLM_basisVec i)
+    exact this
   rw [viscousTransportedOperator_apply, transportedForwardOperator_apply,
     scalarParabolicOperator_apply, kineticTimeDerivative_straightenedPullback hg hũ,
-    kineticVelocityGradient_straightenedPullback hdiff,
+    _h_inl_27,
     straightenedCoefficient_straightenedPoint, straightenedDrift_straightenedPoint,
     matrixContraction_viscousBlockMatrix, vecDot_spatialPack_left]
   have hH : (fun i j => scalarSpatialHessian ũ (straightenedPoint g p) (Fin.castAdd n i)
       (Fin.castAdd n j)) = diffusedHessian (straightenedPullback g ũ) p := by
     funext i j
-    exact (diffusedHessian_straightenedPullback hslice i j).symm
+    have _h_inl_28 : diffusedHessian (straightenedPullback g ũ) p i j =
+      scalarSpatialHessian ũ (straightenedPoint g p) (Fin.castAdd n i) (Fin.castAdd n j) := by
+      have := hessian_comp_block
+        (f := fun X => ũ (p.time, X)) (ι := fun y' => spatialPack (y' - g p.time) p.velocity)
+        (fun y' => hasFDerivAt_pack_left (g p.time) p.velocity y') (y := p.position) hslice
+        (e := Fin.castAdd n) (fun i => embedYCLM_basisVec i) i j
+      exact this
+    exact _h_inl_28.symm
   have hV : ∑ i, kineticVelocityHessian (straightenedPullback g ũ) p i i =
       ∑ i : Fin n, scalarSpatialHessian ũ (straightenedPoint g p) (Fin.natAdd n i)
         (Fin.natAdd n i) :=
@@ -241,7 +231,7 @@ section Regularity
 
 variable {g : ℝ → PDE.Vec n} {ũ : TimeVelocity (n + n) → ℝ} {p : KineticPoint n}
 
-/-- Joint differentiability of `ũ` at the straightened point and differentiability of `g` give
+/- Joint differentiability of `ũ` at the straightened point and differentiability of `g` give
 differentiability of the time slice of the pullback. -/
 theorem differentiableAt_time_straightenedPullback (hg : DifferentiableAt ℝ g p.time)
     (hũ : DifferentiableAt ℝ ũ (straightenedPoint g p)) :
@@ -260,7 +250,7 @@ theorem differentiableAt_time_straightenedPullback (hg : DifferentiableAt ℝ g 
   exact DifferentiableAt.comp (g := ũ) (f := fun r : ℝ => (r, spatialPack (p.position - g r)
     p.velocity)) p.time hũ (differentiableAt_id.prodMk hc)
 
-/-- `C²` regularity of the spatial slice of `ũ` at the straightened point gives `C²` regularity
+/- `C²` regularity of the spatial slice of `ũ` at the straightened point gives `C²` regularity
 of the diffused slice of the pullback. -/
 theorem contDiffAt_position_straightenedPullback
     (hslice : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2) :
@@ -269,7 +259,7 @@ theorem contDiffAt_position_straightenedPullback
     (f := fun y : PDE.Vec n => spatialPack (y - g p.time) p.velocity) p.position hslice
     (contDiff_spatialPack (contDiff_id.sub contDiff_const) contDiff_const).contDiffAt
 
-/-- `C²` regularity of the spatial slice of `ũ` at the straightened point gives `C²` regularity
+/- `C²` regularity of the spatial slice of `ũ` at the straightened point gives `C²` regularity
 of the transported slice of the pullback. -/
 theorem contDiffAt_velocity_straightenedPullback
     (hslice : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2) :
@@ -278,7 +268,7 @@ theorem contDiffAt_velocity_straightenedPullback
     (f := fun z : PDE.Vec n => spatialPack (p.position - g p.time) z) p.velocity hslice
     (contDiff_spatialPack contDiff_const contDiff_id).contDiffAt
 
-/-- The pullback is slice regular wherever `ũ` is jointly differentiable with a `C²` spatial
+/- The pullback is slice regular wherever `ũ` is jointly differentiable with a `C²` spatial
 slice.  This is the regularity hypothesis of the comparison theorems. -/
 theorem isSliceRegularAt_straightenedPullback (hg : DifferentiableAt ℝ g p.time)
     (hũ : DifferentiableAt ℝ ũ (straightenedPoint g p))

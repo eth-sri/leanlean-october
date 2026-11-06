@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.PairSetting
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasureDegree
 import Mathlib.MeasureTheory.Measure.Regular
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.Geometry
+import Mathlib.Topology.Algebra.Module.Equiv
 
 /-! # Radon and homogeneous measure transport under position normalization -/
 
@@ -13,7 +15,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- A homeomorphism preserves the literal Radon conditions used for Bellman pairs. -/
+/- A homeomorphism preserves the literal Radon conditions used for Bellman pairs. -/
 theorem IsBellmanRadon.map_homeomorph {μ : Measure BellmanPuncturedPlane}
     (hμ : IsBellmanRadon μ) (T : BellmanPuncturedPlane ≃ₜ BellmanPuncturedPlane) :
     IsBellmanRadon (Measure.map T μ) := by
@@ -35,23 +37,25 @@ theorem IsBellmanRadon.map_homeomorph {μ : Measure BellmanPuncturedPlane}
   rw [he]
   exact (hK.image T.symm.continuous).measure_lt_top
 
-/-- Finite scalar multiplication preserves the literal Radon conditions. -/
+/- Finite scalar multiplication preserves the literal Radon conditions. -/
 theorem IsBellmanRadon.smul {μ : Measure BellmanPuncturedPlane}
     (hμ : IsBellmanRadon μ) (c : ENNReal) (hc : c ≠ ⊤) : IsBellmanRadon (c • μ) := by
   let : IsFiniteMeasureOnCompacts μ := hμ.1
   let : Measure.InnerRegular μ := hμ.2
   exact ⟨IsFiniteMeasureOnCompacts.smul μ hc, inferInstance⟩
 
-/-- Position rescaling preserves every density degree without changing its exponent. -/
-theorem HasBellmanDensityDegree.map_position {β : ℝ}
-    {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ)
+/- Position rescaling preserves every density degree without changing its exponent. -/
+theorem HasBellmanDensityDegree.map_position {β μ} (hμ : HasBellmanDensityDegree β μ)
     (s : ℝ) (hs : 0 < s) :
     HasBellmanDensityDegree β (Measure.map (bellmanPositionHomeomorph s hs) μ) := by
   intro r hr E hE
   let T := bellmanPositionHomeomorph s hs
   let D := bellmanDilationHomeomorph r hr
-  have hcomm (q : BellmanPuncturedPlane) : T (D q) = D (T q) :=
-    bellmanPositionHomeomorph_dilation s hs r hr q
+  have hcomm (q : BellmanPuncturedPlane) : T (D q) = D (T q) := by
+    apply Subtype.ext
+    change (s * (r ^ 3 * q.val.1), r * q.val.2) =
+      (r ^ 3 * (s * q.val.1), r * q.val.2)
+    ext <;> ring
   have hset : T ⁻¹' (D '' E) = D '' (T ⁻¹' E) := by
     ext q
     constructor
@@ -67,8 +71,8 @@ theorem HasBellmanDensityDegree.map_position {β : ℝ}
     hset, Measure.map_apply T.measurable hE]
   exact hμ r hr (T ⁻¹' E) (T.measurable hE)
 
-/-- Scalar multiplication preserves every density degree. -/
-theorem HasBellmanDensityDegree.smul {β : ℝ} {μ : Measure BellmanPuncturedPlane}
+/- Scalar multiplication preserves every density degree. -/
+theorem HasBellmanDensityDegree.smul {β μ}
     (hμ : HasBellmanDensityDegree β μ) (c : ENNReal) :
     HasBellmanDensityDegree β (c • μ) := by
   intro r hr E hE

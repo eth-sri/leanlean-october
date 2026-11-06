@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.PiBernsteinCore
 public import Mathlib.Topology.ContinuousMap.LocallyConvex
+import HypoellipticAleksandrov.Parabolic.Dirichlet.FiniteFunctionProductSum
+import Mathlib.Analysis.SpecialFunctions.Bernstein
 
 /-!
 # Uniform convergence of product Bernstein approximations
@@ -24,7 +26,7 @@ section PiBernstein
 variable {E : Type*} [AddCommGroup E] [TopologicalSpace E]
   [IsTopologicalAddGroup E] [Module ℝ E] [ContinuousSMul ℝ E]
 
-/-- Product Bernstein approximations converge uniformly on every finite unit cube. -/
+/- Product Bernstein approximations converge uniformly on every finite unit cube. -/
 theorem piBernsteinApproximation_uniform {d : ℕ} [LocallyConvexSpace ℝ E]
     (f : C(Fin d → I, E)) :
     Tendsto (fun n : ℕ => piBernsteinApproximation n f) atTop (𝓝 f) := by
@@ -114,8 +116,25 @@ theorem piBernsteinApproximation_uniform {d : ℕ} [LocallyConvexSpace ℝ E]
           have hfar : ¬ dist (piBernsteinGrid k) x < δ := by
             simpa only [Finset.mem_compl, Finset.mem_filter, Finset.mem_univ,
               true_and, S] using hk
-          have hsquare :=
-            sq_le_sum_sq_sub_of_not_dist_lt_piBernsteinGrid k x δ hδ₀.le hfar
+          have hsquare : δ ^ 2 ≤ ∑ i : Fin d,
+      ((x i : ℝ) - (piBernsteinGrid k i : ℝ)) ^ 2 := by
+            have hδ := hδ₀.le
+            rcases hδ.eq_or_lt with rfl | hδpos
+            · norm_num
+              exact Finset.sum_nonneg fun i _ => sq_nonneg
+                ((x i : ℝ) - (piBernsteinGrid k i : ℝ))
+            · rw [dist_pi_lt_iff hδpos] at hfar
+              push_neg at hfar
+              obtain ⟨i, hi⟩ := hfar
+              calc
+                δ ^ 2 ≤ dist (piBernsteinGrid k i) (x i) ^ 2 := by nlinarith
+                _ = ((x i : ℝ) - (piBernsteinGrid k i : ℝ)) ^ 2 := by
+                  rw [Subtype.dist_eq, Real.dist_eq]
+                  rw [abs_sub_comm, sq_abs]
+                _ ≤ ∑ j : Fin d,
+                    ((x j : ℝ) - (piBernsteinGrid k j : ℝ)) ^ 2 := by
+                  exact Finset.single_le_sum (fun j _ => sq_nonneg
+                    ((x j : ℝ) - (piBernsteinGrid k j : ℝ))) (Finset.mem_univ i)
           have hratio : 1 ≤
               (∑ i : Fin d, ((x i : ℝ) - (piBernsteinGrid k i : ℝ)) ^ 2) /
                 δ ^ 2 := by
@@ -142,7 +161,7 @@ theorem piBernsteinApproximation_uniform {d : ℕ} [LocallyConvexSpace ℝ E]
           rw [sum_sq_sub_piBernsteinGrid_mul_piBernsteinBasis hn₀]
           ring
         _ ≤ C / δ ^ 2 * d / n := by
-          have hCδ : 0 ≤ C / δ ^ 2 := div_nonneg hC₀ (sq_nonneg δ)
+          have hCδ := div_nonneg hC₀ (sq_nonneg δ)
           have hsum : (∑ i : Fin d, (x i : ℝ) * (1 - (x i : ℝ))) ≤ d := by
             calc
               (∑ i : Fin d, (x i : ℝ) * (1 - (x i : ℝ))) ≤

@@ -12,19 +12,7 @@ open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.Green
 open scoped ENNReal
 
-/-- The killed power moment is finite whenever its exponent at zero is integrable. -/
-theorem killed_power_moment_finite {δ k : ℝ} (hδ : 0 < δ) (hk : 0 < k) :
-    (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
-      (T ^ (δ - 1) * Real.exp (-k * T))) < ⊤ := by
-  have hi : IntegrableOn (fun T : ℝ => T ^ (δ - 1) * Real.exp (-k * T)) (Ioi 0) := by
-    simpa only [Real.rpow_one] using integrableOn_rpow_mul_exp_neg_mul_rpow
-      (p := 1) (s := δ - 1) (by linarith) (by norm_num) hk
-  rw [← ofReal_integral_eq_lintegral_ofReal hi]
-  · exact ENNReal.ofReal_lt_top
-  · filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with T hT
-    exact mul_nonneg (Real.rpow_nonneg hT.le _) (Real.exp_pos _).le
-
-/-- The inverse-time weight combines with the killed slab power exactly. -/
+/- The killed power moment is finite whenever its exponent at zero is integrable. -/
 theorem lintegral_inv_killed_power (δ k : ℝ) (A : ℝ≥0∞) :
     (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal T⁻¹ *
       (A * ENNReal.ofReal (T ^ δ * Real.exp (-k * T)))) =
@@ -45,9 +33,9 @@ theorem lintegral_inv_killed_power (δ k : ℝ) (A : ℝ≥0∞) :
     ENNReal.ofReal_mul (Real.rpow_nonneg hT.le _)]
   ring
 
-/-- Logarithmic averaging over all positive times, obtained by increasing finite horizons. -/
+/- Logarithmic averaging over all positive times, obtained by increasing finite horizons. -/
 theorem log_mul_measure_univ_le {X : Type*} [MeasurableSpace X]
-    (ν : Measure X) [SFinite ν] {h : X → ℝ} (hh : Measurable h)
+    (ν : Measure X) [SFinite ν] {h } (hh : Measurable h)
     (hpos : ∀ x, 0 < h x) :
     ENNReal.ofReal (Real.log 2) * ν univ ≤
       ∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal T⁻¹ * ν {x | T < h x ∧ h x < 2 * T} := by

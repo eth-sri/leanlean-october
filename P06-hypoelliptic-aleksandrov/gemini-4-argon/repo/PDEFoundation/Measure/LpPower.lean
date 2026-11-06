@@ -34,7 +34,7 @@ theorem toReal_eLpNorm_ofReal_eq_integral_rpow_norm_rpow_inv
   have hp0 : ENNReal.ofReal p ≠ 0 := by
     intro hzero
     exact (not_le_of_gt hp) (ENNReal.ofReal_eq_zero.mp hzero)
-  have hpReal : (ENNReal.ofReal p).toReal = p :=
+  have hpReal :=
     ENNReal.toReal_ofReal hp.le
   rw [hf.eLpNorm_eq_integral_rpow_norm hp0 ENNReal.ofReal_ne_top]
   have hnonneg :
@@ -60,9 +60,7 @@ theorem toReal_eLpNorm_ofReal_rpow_eq_integral_rpow_norm
       Filter.Eventually.of_forall fun x =>
         Real.rpow_nonneg (norm_nonneg _) _
   rw [← Real.rpow_mul hintegralNonneg]
-  have hpNe : p ≠ 0 :=
-    hp.ne'
-  rw [show (1 / p : ℝ) * p = 1 by field_simp [hpNe]]
+  rw [show (1 / p : ℝ) * p = 1 by field_simp [hp.ne']]
   simp only [Real.rpow_one]
 
 end PDE

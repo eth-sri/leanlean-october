@@ -22,10 +22,10 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- A bounded scalar multiplier preserves spatial `L²` membership. -/
 theorem scalarL2Multiplier_memLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : MeasureTheory.AEStronglyMeasurable q (PDE.volumeOn Ω))
-    (C : ℝ)
+    (C )
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     MemLp (fun y => q y * f y) (2 : ℝ≥0∞) (PDE.volumeOn Ω) := by
@@ -37,10 +37,10 @@ theorem scalarL2Multiplier_memLp
 
 /-- The linear map underlying the bounded spatial multiplier. -/
 noncomputable def scalarL2MultiplierLinearMap
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : MeasureTheory.AEStronglyMeasurable q (PDE.volumeOn Ω))
-    (C : ℝ)
+    (C )
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C) :
     PDE.ScalarLp Ω (2 : ℝ≥0∞) →ₗ[ℝ]
       PDE.ScalarLp Ω (2 : ℝ≥0∞) where
@@ -87,19 +87,18 @@ noncomputable def scalarL2MultiplierLinearMap
       _ = _ := hyrhs.symm
 
 private theorem scalarL2MultiplierLinearMap_apply_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : MeasureTheory.AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ⇑(scalarL2MultiplierLinearMap q hq C hqBound f) =ᵐ[PDE.volumeOn Ω]
-      fun y => q y * f y := by
-  exact (scalarL2Multiplier_memLp q hq C hqBound f).coeFn_toLp
+      fun y => q y * f y :=  (scalarL2Multiplier_memLp q hq C hqBound f).coeFn_toLp
 
 /-- The pointwise coefficient bound controls the norm of the underlying linear map. -/
 theorem norm_scalarL2MultiplierLinearMap_apply_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : MeasureTheory.AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ)
@@ -114,10 +113,10 @@ theorem norm_scalarL2MultiplierLinearMap_apply_le
 
 /-- Multiplication by an essentially bounded real coefficient on spatial restricted-volume `L²`. -/
 noncomputable def scalarL2Multiplier
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : MeasureTheory.AEStronglyMeasurable q (PDE.volumeOn Ω))
-    (C : ℝ) (hC : 0 ≤ C)
+    (C ) (hC : 0 ≤ C)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C) :
     PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ]
       PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
@@ -126,25 +125,23 @@ noncomputable def scalarL2Multiplier
 
 /-- The multiplier is represented almost everywhere by pointwise multiplication. -/
 theorem scalarL2Multiplier_apply_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : MeasureTheory.AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ⇑(scalarL2Multiplier q hq C hC hqBound f) =ᵐ[PDE.volumeOn Ω]
-      fun y => q y * f y := by
-  exact scalarL2MultiplierLinearMap_apply_ae q hq C hqBound f
+      fun y => q y * f y :=  scalarL2MultiplierLinearMap_apply_ae q hq C hqBound f
 
 /-- The `L²` norm of a multiplied class is bounded by the essential coefficient bound. -/
 theorem norm_scalarL2Multiplier_apply_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (q : PDE.Vec d → ℝ)
     (hq : MeasureTheory.AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    ‖scalarL2Multiplier q hq C hC hqBound f‖ ≤ C * ‖f‖ := by
-  exact norm_scalarL2MultiplierLinearMap_apply_le q hq C hqBound f
+    ‖scalarL2Multiplier q hq C hC hqBound f‖ ≤ C * ‖f‖ :=  norm_scalarL2MultiplierLinearMap_apply_le q hq C hqBound f
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

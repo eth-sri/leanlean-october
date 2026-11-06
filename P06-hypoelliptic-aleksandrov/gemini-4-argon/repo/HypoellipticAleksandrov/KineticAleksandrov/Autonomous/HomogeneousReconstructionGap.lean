@@ -12,7 +12,7 @@ open SectionTwo TheoremA Evolution
 
 /-- Growth comparison controls a homogeneous solution gap by its actual exit discrepancy. -/
 theorem reconstruction_homogeneous_gap_le_barrier
-    {lam Lam : ℝ} (hlam : 0 < lam) (A : SmoothAutonomous lam Lam)
+    {lam Lam } (hlam : 0 < lam) (A : SmoothAutonomous lam Lam)
     (H : Interval) (lower T : ℝ) (e : StripPole H (T : WithTop ℝ)) (he : lower < e.1.time)
     (u v : Point → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
@@ -23,10 +23,10 @@ theorem reconstruction_homogeneous_gap_le_barrier
     (hvop : ∀ p ∈ reconstructionStrip H lower T, forwardScalarOperator A.a v p = 0)
     (huc : ContinuousOn u (reconstructionStrip H lower T ∪ reconstructionExit H lower T))
     (hvc : ContinuousOn v (reconstructionStrip H lower T ∪ reconstructionExit H lower T))
-    (Mu Mv : ℝ)
+    (Mu Mv )
     (hub : ∀ p ∈ reconstructionClosedSlab H e.1.time T, |u p| ≤ Mu)
     (hvb : ∀ p ∈ reconstructionClosedSlab H e.1.time T, |v p| ≤ Mv)
-    (eps : ℝ) (q : Point → ℝ) (hqc : Continuous q)
+    (eps ) (q : Point → ℝ) (hqc : Continuous q)
     (hqr : ∀ p, IsSliceRegularAt q p) (hqn : ∀ p, 0 ≤ q p)
     (hqo : ∀ p ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T,
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) q p ≤ 0)

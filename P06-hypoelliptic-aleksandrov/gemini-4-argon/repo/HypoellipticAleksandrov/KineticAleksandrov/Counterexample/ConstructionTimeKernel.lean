@@ -12,7 +12,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 
 /-- Differentiating in time acts only on the cutoff, and commutes with its compact integral. -/
-theorem construction_deriv_cutoff_integral {d : ℕ} {A : Type*}
+theorem construction_deriv_cutoff_integral {d } {A : Type*}
     [TopologicalSpace A] [CompactSpace A] [MeasurableSpace A] [BorelSpace A]
     (nu : Measure A) [IsFiniteMeasure nu]
     (y : A → XV d) (hy : Continuous y) (u : A → ℝ) (hu : Continuous u)

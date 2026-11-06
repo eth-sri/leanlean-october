@@ -23,19 +23,39 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set Filter MeasureTheory Evolution
 open scoped Topology MatrixOrder
 
-private theorem weak_transport_limit {n : ℕ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
-    (U : Set (KineticPoint n)) (ε : ℕ → ℝ) (hεlim : Tendsto ε atTop (𝓝 0))
+theorem weak_transport_equation_of_vanishing_viscosity
+    (n ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
+    (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
+    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+    (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
+    (hB_smooth : IsSmoothFullKineticCoefficient B)
+    (hB_symm : IsSymmetricFullKineticCoefficient B)
+    (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
+    (hb_smooth : IsSmoothDrift b) (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
+    (hb_coercive : HasUnitDirectionDriftCoercivity m b)
+    (τ ) (ε : ℕ → ℝ) (hε : ∀ j, 0 ≤ ε j)
+    (hεlim : Tendsto ε atTop (nhds 0))
     (v : ℕ → KineticPoint n → ℝ) (u : KineticPoint n → ℝ)
-    (C : ℝ) (hC : 0 ≤ C)
-    (hv : ∀ j, IsKineticWeakRegularizedSolution B b (ε j) U (v j) (fun _ => 0))
-    (hb : ∀ j, ∀ᵐ p ∂volume.restrict U, |v j p| ≤ C)
-    (hu : AEStronglyMeasurable u (volume.restrict U))
-    (hub : ∀ᵐ p ∂volume.restrict U, |u p| ≤ C)
-    (hlim : ∀ ψ : KineticPoint n → ℝ, IntegrableOn ψ U volume →
-      Tendsto (fun j => ∫ p in U, v j p * ψ p) atTop (𝓝 (∫ p in U, u p * ψ p))) :
-    IsKineticWeakTransportedSolution B b U u (fun _ => 0) := by
+    (C ) (hC : 0 ≤ C)
+    (hv : ∀ j, IsKineticWeakRegularizedSolution B b (ε j)
+      (evolutionPastOpenCylinder Ω γ τ) (v j) (fun _ => 0))
+    (hb : ∀ j, ∀ᵐ p ∂volume.restrict (evolutionPastOpenCylinder Ω γ τ),
+      |v j p| ≤ C)
+    (hu : AEStronglyMeasurable u
+      (volume.restrict (evolutionPastOpenCylinder Ω γ τ)))
+    (hub : ∀ᵐ p ∂volume.restrict (evolutionPastOpenCylinder Ω γ τ), |u p| ≤ C)
+    (hlim : ∀ ψ : KineticPoint n → ℝ,
+      IntegrableOn ψ (evolutionPastOpenCylinder Ω γ τ) volume →
+        Tendsto (fun j => ∫ p in evolutionPastOpenCylinder Ω γ τ, v j p * ψ p)
+          atTop (nhds (∫ p in evolutionPastOpenCylinder Ω γ τ, u p * ψ p))) :
+    IsKineticWeakTransportedSolution B b
+      (evolutionPastOpenCylinder Ω γ τ) u (fun _ => 0) := by
+  have _hstanding := And.intro hn (And.intro hlam (And.intro hlamLam
+    (And.intro hm (And.intro hmLb (And.intro hΩ (And.intro hγ
+      (And.intro hB_symm (And.intro hB_ell (And.intro hb_lipschitz
+        (And.intro hb_coercive hε))))))))))
+  let U := (evolutionPastOpenCylinder Ω γ τ)
   let : SecondCountableTopology (KineticPoint n) :=
     (KineticPoint.homeomorphProd n).isEmbedding.secondCountableTopology
   have _hC := hC
@@ -52,10 +72,10 @@ private theorem weak_transport_limit {n : ℕ}
       regularizedAdjoint B b e ψ ((evolutionHomeomorph n).symm p)) U volume := by
     have hcompact : HasCompactSupport (regularizedAdjoint B b e ψ) :=
       HasCompactSupport.intro hc fun x hx => regularizedAdjoint_eq_zero_of_notMem_tsupport e ψ hx
-    exact ((contDiff_regularizedAdjoint hBs hbs hψ e).continuous.comp
+    exact ((contDiff_regularizedAdjoint hB_smooth hb_smooth hψ e).continuous.comp
       (evolutionHomeomorph n).symm.continuous).integrable_of_hasCompactSupport
       (hcompact.comp_homeomorph (evolutionHomeomorph n).symm) |>.integrableOn
-  have hA : IntegrableOn A U volume := htest 0
+  have hA := htest 0
   have hD : IntegrableOn D U volume := (htest 1).sub hA
   have hprod (j : ℕ) (f : KineticPoint n → ℝ) (hf : IntegrableOn f U volume) :
       IntegrableOn (fun p => v j p * f p) U volume := by
@@ -82,41 +102,5 @@ private theorem weak_transport_limit {n : ℕ}
   have heq := tendsto_nhds_unique ht hz
   simp only [zero_mul, add_zero] at heq
   simpa only [A, regularizedAdjoint, zero_mul, add_zero, integral_zero] using heq
-
-/-- Bounded weak convergence removes the regularizing viscosity term. -/
-theorem weak_transport_equation_of_vanishing_viscosity
-    (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
-    (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-    (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
-    (hB_smooth : IsSmoothFullKineticCoefficient B)
-    (hB_symm : IsSymmetricFullKineticCoefficient B)
-    (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb_smooth : IsSmoothDrift b) (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
-    (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-    (τ : ℝ) (ε : ℕ → ℝ) (hε : ∀ j, 0 ≤ ε j)
-    (hεlim : Tendsto ε atTop (nhds 0))
-    (v : ℕ → KineticPoint n → ℝ) (u : KineticPoint n → ℝ)
-    (C : ℝ) (hC : 0 ≤ C)
-    (hv : ∀ j, IsKineticWeakRegularizedSolution B b (ε j)
-      (evolutionPastOpenCylinder Ω γ τ) (v j) (fun _ => 0))
-    (hb : ∀ j, ∀ᵐ p ∂volume.restrict (evolutionPastOpenCylinder Ω γ τ),
-      |v j p| ≤ C)
-    (hu : AEStronglyMeasurable u
-      (volume.restrict (evolutionPastOpenCylinder Ω γ τ)))
-    (hub : ∀ᵐ p ∂volume.restrict (evolutionPastOpenCylinder Ω γ τ), |u p| ≤ C)
-    (hlim : ∀ ψ : KineticPoint n → ℝ,
-      IntegrableOn ψ (evolutionPastOpenCylinder Ω γ τ) volume →
-        Tendsto (fun j => ∫ p in evolutionPastOpenCylinder Ω γ τ, v j p * ψ p)
-          atTop (nhds (∫ p in evolutionPastOpenCylinder Ω γ τ, u p * ψ p))) :
-    IsKineticWeakTransportedSolution B b
-      (evolutionPastOpenCylinder Ω γ τ) u (fun _ => 0) := by
-  have _hstanding := And.intro hn (And.intro hlam (And.intro hlamLam
-    (And.intro hm (And.intro hmLb (And.intro hΩ (And.intro hγ
-      (And.intro hB_symm (And.intro hB_ell (And.intro hb_lipschitz
-        (And.intro hb_coercive hε))))))))))
-  exact weak_transport_limit hB_smooth hb_smooth (evolutionPastOpenCylinder Ω γ τ)
-    ε hεlim v u C hC hv hb hu hub hlim
 
 end HypoellipticAleksandrov.KineticAleksandrov

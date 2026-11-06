@@ -129,9 +129,7 @@ theorem Fminus_negative_ray_asymptotic_of_M_expansion (gamma : ScalarGamma) (Lam
           Real.rpow s (3 * gamma.1))
       (fun s => Real.rpow s (3 * gamma.1 - 3)) := by
   obtain ⟨h1, h2⟩ := scalar_M_remainders_of_M_expansion hm gamma
-  have h := (h1.const_mul_left (gammaA gamma.1)).sub
-    (h2.const_mul_left (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)))
-  apply h.congr' _ EventuallyEq.rfl
+  apply ((h1.const_mul_left (gammaA gamma.1)).sub (h2.const_mul_left (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)))).congr' _ EventuallyEq.rfl
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
   rw [← scalar_negative_leading gamma Lam s hLam hs]
   unfold Fminus

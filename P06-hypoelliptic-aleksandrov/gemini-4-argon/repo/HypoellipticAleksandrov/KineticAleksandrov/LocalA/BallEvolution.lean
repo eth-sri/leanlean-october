@@ -24,7 +24,7 @@ abbrev LocalBallEvolution {d : ℕ} (v₀ : PDE.Vec d) (R : ℝ) :=
     MovingFiberKernel (PDE.euclideanBall v₀ R) (fun _ => 0)
 
 /-- Positive-radius Euclidean balls satisfy the source domain admissibility criterion. -/
-theorem localBall_admissible {d : ℕ} (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) :
+theorem localBall_admissible {d } (v₀ : PDE.Vec d) {R } (hR : 0 < R) :
     IsAdmissibleEvolutionDomain (PDE.euclideanBall v₀ R) :=
   Or.inr (Or.inl ⟨v₀, R, hR, rfl⟩)
 
@@ -32,10 +32,10 @@ theorem localBall_admissible {d : ℕ} (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 theorem existsUnique_localBallEvolution
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
+    {d } (hd : 1 ≤ d) {lam Lam }
     (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) :
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R) :
     ∃! E : LocalBallEvolution v₀ R,
       RealizesTerminalEvolution (PDE.euclideanBall v₀ R) (fun _ => 0)
         (PDE.isOpen_euclideanBall v₀ R).measurableSet

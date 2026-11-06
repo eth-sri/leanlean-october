@@ -20,13 +20,6 @@ namespace PDE
 
 open MeasureTheory
 
-private theorem eLpNorm_abs_eq
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    (f : α → ℝ) (p : ℝ≥0∞) (hf : AEStronglyMeasurable f μ) :
-    eLpNorm (fun x => |f x|) p μ = eLpNorm f p μ := by
-  simpa only [Real.norm_eq_abs] using!
-    eLpNorm_norm f (p := p) (μ := μ) hf
-
 private theorem aestronglyMeasurable_vecEuclideanNorm_of_coord'
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
     {d : ℕ} {F : α → Vec d}
@@ -42,7 +35,7 @@ private theorem aestronglyMeasurable_vecEuclideanNorm_of_coord'
   exact Real.continuous_sqrt.comp_aestronglyMeasurable (by
     simpa only [vecEuclideanNorm, vecNormSq_eq_sum_sq] using hsum)
 
-/-- Coordinatewise `L^p` convergence of native vector fields implies
+/- Coordinatewise `L^p` convergence of native vector fields implies
 `L^p` convergence of their explicit Euclidean difference. -/
 theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
@@ -78,9 +71,10 @@ theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
         fun n =>
           eLpNorm (fun x => F n x i - G x i) p μ := by
       funext n
-      exact
-        eLpNorm_abs_eq
-          (fun x => F n x i - G x i) p (hMeas n i)
+      let f := (fun x => F n x i - G x i)
+      have hf := (hMeas n i)
+      simpa only [Real.norm_eq_abs] using!
+        eLpNorm_norm f (p := p) (μ := μ) hf
     rw [hFunctions]
     exact hCoordinate i
   have hSum :

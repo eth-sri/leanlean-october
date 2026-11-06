@@ -19,7 +19,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Set MeasureTheory
 
 /-- The tangent-line position error has exactly the source coefficient one half. -/
-theorem skeleton_position_remainder_le {d : ℕ} {x v : ℝ → PDE.Vec d} {H : ℝ}
+theorem skeleton_position_remainder_le {d } {x v : ℝ → PDE.Vec d} {H : ℝ}
     (hv : Continuous v) (hkin : ∀ t, HasDerivAt x (v t) t)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|)
     (s b : ℝ) (hsb : s ≤ b) :

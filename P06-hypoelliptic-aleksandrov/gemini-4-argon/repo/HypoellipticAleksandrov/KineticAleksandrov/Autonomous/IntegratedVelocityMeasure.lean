@@ -15,8 +15,8 @@ open scoped ENNReal
 theorem measure_mass_le_of_smooth_unit_tests {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
     [SigmaCompactSpace E]
-    (mu : Measure E) [IsFiniteMeasure mu] {U : Set E} (hU : IsOpen U)
-    (hs : mu.restrict U = mu) (C : ℝ)
+    (mu : Measure E) [IsFiniteMeasure mu] {U } (hU : IsOpen U)
+    (hs : mu.restrict U = mu) (C )
     (h : ∀ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f → HasCompactSupport f →
       tsupport f ⊆ U → (∀ x, 0 ≤ f x ∧ f x ≤ 1) → ∫ x, f x ∂mu ≤ C) :
     mu univ ≤ ENNReal.ofReal C := by

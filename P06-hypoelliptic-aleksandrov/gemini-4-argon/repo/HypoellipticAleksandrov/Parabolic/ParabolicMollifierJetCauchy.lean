@@ -86,12 +86,12 @@ private theorem velocityHessian_sub_of_contDiff {d : Nat} {f g : TimeVelocity d 
   funext z
   have hcoeTop : (⊤ : ENat) <= (↑(⊤ : ENat) : WithTop ENat) :=
     WithTop.coe_le_coe.2 (OrderTop.le_top _)
-  have hff : DifferentiableAt Real (fderiv Real f) z :=
+  have hff :=
     (hf.fderiv_right (m := 1)
       (ENat.add_one_natCast_le_withTop_of_lt
         (ENat.natCast_lt_of_coe_top_le_withTop hcoeTop 1))).differentiable
         (by norm_num) z
-  have hgf : DifferentiableAt Real (fderiv Real g) z :=
+  have hgf :=
     (hg.fderiv_right (m := 1)
       (ENat.add_one_natCast_le_withTop_of_lt
         (ENat.natCast_lt_of_coe_top_le_withTop hcoeTop 1))).differentiable
@@ -231,9 +231,9 @@ private theorem tendsto_eLpNorm_convolution_pair_sub
     _ <= eta / 2 + eta / 2 := add_le_add hm hn
     _ = eta := ENNReal.add_halves eta
 
-/-- Every difference of two value mollifications has a finite selected
+/- Every difference of two value mollifications has a finite selected
 smooth-jet `L^(d+1)` norm. -/
-theorem parabolicSmoothJetMemLp_convolution_sub {d : Nat}
+theorem parabolicSmoothJetMemLp_convolution_sub {d }
     (w : ParabolicW12Function d Set.univ (parabolicExponent d)) (m n : Nat) :
     ParabolicSmoothJetMemLp d (fun z => parabolicConvolution w.toFun (parabolicMollifier d m) z -
       parabolicConvolution w.toFun (parabolicMollifier d n) z) := by
@@ -267,64 +267,9 @@ theorem parabolicSmoothJetMemLp_convolution_sub {d : Nat}
         (memLp_parabolicConvolution_parabolicMollifier hpOne hpTop
           (velocityHessian_memLp_global w i j) n)
 
-/-- The full extended-real selected smooth-jet norm of two mollifications
+/- The full extended-real selected smooth-jet norm of two mollifications
 tends to zero as both mollifier indices tend to infinity. -/
-theorem tendsto_parabolicSmoothJetELpNorm_convolution_sub {d : Nat}
-    (w : ParabolicW12Function d Set.univ (parabolicExponent d)) :
-    Tendsto (fun mn : Nat × Nat => parabolicSmoothJetELpNorm d
-      (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
-        parabolicConvolution w.toFun (parabolicMollifier d mn.2) z)) atTop (nhds 0) := by
-  let p : ENNReal := parabolicExponent d
-  have hpOne : (1 : ENNReal) <= p := by
-    simpa only [p] using parabolicExponent_one_le d
-  have hpTop : p ≠ ⊤ := by
-    simpa only [p] using parabolicExponent_ne_top d
-  have hvalue := tendsto_eLpNorm_convolution_pair_sub hpOne hpTop (toFun_memLp_global w)
-    (w.tendsto_eLpNorm_convolution_toFun_sub hpOne hpTop)
-  have htime := tendsto_eLpNorm_convolution_pair_sub hpOne hpTop (timeDeriv_memLp_global w)
-    (w.tendsto_eLpNorm_convolution_timeDeriv_sub hpOne hpTop)
-  have hgrad (i : Fin d) :=
-    tendsto_eLpNorm_convolution_pair_sub hpOne hpTop (velocityGrad_memLp_global w i)
-      (w.tendsto_eLpNorm_convolution_velocityGrad_sub hpOne hpTop i)
-  have hhess (i j : Fin d) :=
-    tendsto_eLpNorm_convolution_pair_sub hpOne hpTop (velocityHessian_memLp_global w i j)
-      (w.tendsto_eLpNorm_convolution_velocityHessian_sub hpOne hpTop i j)
-  have htime' : Tendsto (fun mn : Nat × Nat => parabolicELpNorm d (timeDerivative
-      (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
-        parabolicConvolution w.toFun (parabolicMollifier d mn.2) z))) atTop (nhds 0) := by
-    simp_rw [timeDerivative_convolution_sub w]
-    simpa only [parabolicELpNorm, p] using htime
-  have hgrad' (i : Fin d) : Tendsto (fun mn : Nat × Nat => parabolicELpNorm d
-      (fun z => velocityGradient
-        (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
-          parabolicConvolution w.toFun (parabolicMollifier d mn.2) z) z i)) atTop (nhds 0) := by
-    simp_rw [velocityGradient_convolution_sub w]
-    simpa only [parabolicELpNorm, p] using hgrad i
-  have hhess' (i j : Fin d) : Tendsto (fun mn : Nat × Nat => parabolicELpNorm d
-      (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian
-        (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
-          parabolicConvolution w.toFun (parabolicMollifier d mn.2) z) z i j)) atTop (nhds 0) := by
-    simp_rw [velocityHessian_convolution_sub w]
-    simpa only [parabolicELpNorm, p] using hhess i j
-  unfold parabolicSmoothJetELpNorm
-  have hgradSum : Tendsto (fun mn : Nat × Nat => ∑ i : Fin d, parabolicELpNorm d
-      (fun z => velocityGradient
-        (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
-          parabolicConvolution w.toFun (parabolicMollifier d mn.2) z) z i)) atTop (nhds 0) := by
-    simpa only [Finset.sum_const_zero] using
-      (tendsto_finset_sum Finset.univ fun i _ => hgrad' i)
-  have hhessSum : Tendsto (fun mn : Nat × Nat => ∑ i : Fin d, ∑ j : Fin d,
-      parabolicELpNorm d (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian
-        (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
-          parabolicConvolution w.toFun (parabolicMollifier d mn.2) z) z i j)) atTop (nhds 0) := by
-    simpa only [Finset.sum_const_zero] using
-      (tendsto_finset_sum Finset.univ fun i _ =>
-        tendsto_finset_sum Finset.univ fun j _ => hhess' i j)
-  simpa only [parabolicELpNorm, p, add_zero] using
-    (((hvalue.add htime').add hgradSum).add hhessSum)
-
-/-- The real selected smooth-jet norm of two value mollifications is Cauchy. -/
-theorem parabolicSmoothJetLpNorm_convolution_cauchy {d : Nat}
+theorem parabolicSmoothJetLpNorm_convolution_cauchy {d }
     (w : ParabolicW12Function d Set.univ (parabolicExponent d)) :
     forall eps : Real, 0 < eps -> exists N : Nat, forall m : Nat, N <= m -> forall n : Nat,
       N <= n -> parabolicSmoothJetLpNorm d
@@ -333,20 +278,62 @@ theorem parabolicSmoothJetLpNorm_convolution_cauchy {d : Nat}
   intro eps heps
   have hepsHalf : 0 < ENNReal.ofReal (eps / 2) :=
     ENNReal.ofReal_pos.mpr (half_pos heps)
-  have hevent : ∀ᶠ mn : Nat × Nat in atTop, parabolicSmoothJetELpNorm d
-      (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
-        parabolicConvolution w.toFun (parabolicMollifier d mn.2) z) <= ENNReal.ofReal (eps / 2) :=
-    ENNReal.tendsto_nhds_zero.1 (tendsto_parabolicSmoothJetELpNorm_convolution_sub w)
-      (ENNReal.ofReal (eps / 2)) hepsHalf
-  rcases (eventually_atTop.1 hevent) with ⟨MN, hMN⟩
+  have _h_inl_23 : Tendsto (fun mn : Nat × Nat => parabolicSmoothJetELpNorm d (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z - parabolicConvolution w.toFun (parabolicMollifier d mn.2) z)) atTop (nhds 0) := by
+    let p : ENNReal := parabolicExponent d
+    have hpOne : (1 : ENNReal) <= p := by
+      simpa only [p] using parabolicExponent_one_le d
+    have hpTop : p ≠ ⊤ := by
+      simpa only [p] using parabolicExponent_ne_top d
+    have hvalue := tendsto_eLpNorm_convolution_pair_sub hpOne hpTop (toFun_memLp_global w)
+      (w.tendsto_eLpNorm_convolution_toFun_sub hpOne hpTop)
+    have htime := tendsto_eLpNorm_convolution_pair_sub hpOne hpTop (timeDeriv_memLp_global w)
+      (w.tendsto_eLpNorm_convolution_timeDeriv_sub hpOne hpTop)
+    have hgrad (i : Fin d) :=
+      tendsto_eLpNorm_convolution_pair_sub hpOne hpTop (velocityGrad_memLp_global w i)
+        (w.tendsto_eLpNorm_convolution_velocityGrad_sub hpOne hpTop i)
+    have hhess (i j : Fin d) :=
+      tendsto_eLpNorm_convolution_pair_sub hpOne hpTop (velocityHessian_memLp_global w i j)
+        (w.tendsto_eLpNorm_convolution_velocityHessian_sub hpOne hpTop i j)
+    have htime' : Tendsto (fun mn : Nat × Nat => parabolicELpNorm d (timeDerivative
+        (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
+          parabolicConvolution w.toFun (parabolicMollifier d mn.2) z))) atTop (nhds 0) := by
+      simp_rw [timeDerivative_convolution_sub w]
+      simpa only [parabolicELpNorm, p] using htime
+    have hgrad' (i : Fin d) : Tendsto (fun mn : Nat × Nat => parabolicELpNorm d
+        (fun z => velocityGradient
+          (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
+            parabolicConvolution w.toFun (parabolicMollifier d mn.2) z) z i)) atTop (nhds 0) := by
+      simp_rw [velocityGradient_convolution_sub w]
+      simpa only [parabolicELpNorm, p] using hgrad i
+    have hhess' (i j : Fin d) : Tendsto (fun mn : Nat × Nat => parabolicELpNorm d
+        (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian
+          (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
+            parabolicConvolution w.toFun (parabolicMollifier d mn.2) z) z i j)) atTop (nhds 0) := by
+      simp_rw [velocityHessian_convolution_sub w]
+      simpa only [parabolicELpNorm, p] using hhess i j
+    unfold parabolicSmoothJetELpNorm
+    have hgradSum : Tendsto (fun mn : Nat × Nat => ∑ i : Fin d, parabolicELpNorm d
+        (fun z => velocityGradient
+          (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
+            parabolicConvolution w.toFun (parabolicMollifier d mn.2) z) z i)) atTop (nhds 0) := by
+      simpa only [Finset.sum_const_zero] using
+        (tendsto_finset_sum Finset.univ fun i _ => hgrad' i)
+    have hhessSum : Tendsto (fun mn : Nat × Nat => ∑ i : Fin d, ∑ j : Fin d,
+        parabolicELpNorm d (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian
+          (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
+            parabolicConvolution w.toFun (parabolicMollifier d mn.2) z) z i j)) atTop (nhds 0) := by
+      simpa only [Finset.sum_const_zero] using
+        (tendsto_finset_sum Finset.univ fun i _ =>
+          tendsto_finset_sum Finset.univ fun j _ => hhess' i j)
+    simpa only [parabolicELpNorm, p, add_zero] using
+      (((hvalue.add htime').add hgradSum).add hhessSum)
+  rcases (eventually_atTop.1 (ENNReal.tendsto_nhds_zero.1 _h_inl_23 (ENNReal.ofReal (eps / 2)) hepsHalf)) with ⟨MN, hMN⟩
   refine ⟨max MN.1 MN.2, ?_⟩
   intro m hm n hn
   have hbound := hMN (m, n) ⟨(le_max_left _ _).trans hm, (le_max_right _ _).trans hn⟩
   have htop := parabolicSmoothJetELpNorm_ne_top
     (parabolicSmoothJetMemLp_convolution_sub w m n)
-  have hstrict : parabolicSmoothJetELpNorm d
-      (fun z => parabolicConvolution w.toFun (parabolicMollifier d m) z -
-        parabolicConvolution w.toFun (parabolicMollifier d n) z) < ENNReal.ofReal eps :=
+  have hstrict :=
     hbound.trans_lt ((ENNReal.ofReal_lt_ofReal_iff heps).2 (half_lt_self heps))
   unfold parabolicSmoothJetLpNorm
   rw [← ENNReal.toReal_ofReal heps.le]

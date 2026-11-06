@@ -16,7 +16,7 @@ open scoped Topology ENNReal
 
 /-- Vanishing uniform errors give strong convergence of the selected L2 quotient classes. -/
 theorem tendsto_toLp_two_of_ae_sub_le {X : Type*} [MeasurableSpace X]
-    (μ : Measure X) [IsFiniteMeasure μ]
+    (μ ) [IsFiniteMeasure μ]
     (u : ℕ → X → ℝ) (hu : ∀ n, MemLp (u n) 2 μ)
     (v : X → ℝ) (hv : MemLp v 2 μ) (ε : ℕ → ℝ)
     (hε : ∀ n, 0 ≤ ε n) (hlim : Tendsto ε atTop (𝓝 0))

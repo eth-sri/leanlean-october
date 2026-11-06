@@ -14,14 +14,13 @@ open Filter Set
 open scoped Topology
 
 /-- The interior representative extended by zero to the ambient cylinder. -/
-def sourceInteriorZeroExtension {d : ℕ} (a T : ℝ) (Ω : Set (PDE.Vec d))
+def sourceInteriorZeroExtension {d } (a T : ℝ) (Ω : Set (PDE.Vec d))
     (w : TimeVelocity d → ℝ) : TimeVelocity d → ℝ := by
   classical
   exact (scalarParabolicOpenCylinder a T Ω).piecewise w (fun _ => 0)
 
 /-- A time envelope gives a continuous zero terminal trace for the interior extension. -/
-theorem continuousWithinAt_source_zeroExtension_terminal {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (a T M : ℝ) (hM : 0 ≤ M)
+theorem continuousWithinAt_source_zeroExtension_terminal {d Ω} (a T M : ℝ) (hM : 0 ≤ M)
     (w : TimeVelocity d → ℝ)
     (hb : ∀ z ∈ scalarParabolicOpenCylinder a T Ω, |w z| ≤ M * (T - z.1))
     (p : TimeVelocity d) (hp : p.1 = T) :

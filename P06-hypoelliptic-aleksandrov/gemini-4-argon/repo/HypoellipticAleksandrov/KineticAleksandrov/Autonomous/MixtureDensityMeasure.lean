@@ -21,7 +21,7 @@ open scoped ENNReal
 /-- The all-time active Green kernel is uniformly finite by the quadratic occupation bound. -/
 theorem mixtureActiveGreenKernel_isFiniteKernel
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) :
     IsFiniteKernel (enlargedActiveGreenKernel hH hLE hlam hLam A c) := by
   classical
@@ -40,7 +40,7 @@ theorem mixtureActiveGreenKernel_isFiniteKernel
 /-- A finite starting measure gives a finite all-time Green mixture. -/
 theorem enlargedActiveGreen_isFiniteMeasure
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [IsFiniteMeasure nu] :
     IsFiniteMeasure (enlargedActiveGreen hH hLE hlam hLam A c nu) := by
   unfold enlargedActiveGreen

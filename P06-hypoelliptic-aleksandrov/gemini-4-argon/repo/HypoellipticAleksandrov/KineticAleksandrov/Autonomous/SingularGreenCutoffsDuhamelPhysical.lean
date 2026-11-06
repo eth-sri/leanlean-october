@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsPhysicalOperator
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoxConcentrationSetting
+import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 
 /-! # Exact stationary Duhamel integration in physical coordinates -/
 
@@ -8,11 +10,13 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic SectionTwo Evolution MeasureTheory Set Filter
+open ProbabilityTheory
+open scoped ENNReal
 
-/-- On the open source time interval, the stationary source integral is the physical kernel
+/- On the open source time interval, the stationary source integral is the physical kernel
   action. -/
-theorem duhamelIntegrand_physical (E : FullSpaceEvolution) (z : Z) (T : ℝ)
-    (g : Z → ℝ) (hg : Measurable g) {s : ℝ} (hs : 0 < s) (hsT : s < T) :
+theorem duhamelIntegrand_physical (E : FullSpaceEvolution) (z : Z) (T )
+    (g : Z → ℝ) (hg : Measurable g) {s } (hs : 0 < s) (hsT : s < T) :
     duhamelIntegrand E.2
       ((evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T).indicator
         (fun q => g (nativeToXV (q.position, q.velocity))))
@@ -33,21 +37,8 @@ theorem duhamelIntegrand_physical (E : FullSpaceEvolution) (z : Z) (T : ℝ)
   rw [indicator_of_mem]
   exact ⟨hsT, by simp [movingDomain, autonomousWholeDomain, PDE.translateSet]⟩
 
-/-- Stationary Duhamel potentials are literal iterated physical kernel integrals. -/
-theorem duhamelPotential_physical (E : FullSpaceEvolution) (z : Z) (T : ℝ)
-    (g : Z → ℝ) (hg : Measurable g) :
-    duhamelPotential E.2 T
-      ((evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T).indicator
-        (fun q => g (nativeToXV (q.position, q.velocity))))
-      ⟨0, fun _ => z.2, fun _ => z.1⟩ =
-      ∫ t in Ioc 0 T, ∫ w, g w ∂kernelXV E (Real.toNNReal t) z := by
-  unfold duhamelPotential
-  apply setIntegral_congr_ae measurableSet_Ioc
-  filter_upwards [volume.ae_ne T] with t ht hmem
-  exact duhamelIntegrand_physical E z T g hg hmem.1 (lt_of_le_of_ne hmem.2 ht)
-
-/-- An integrable stationary test has the actual occupation measure as its Duhamel integral. -/
-theorem duhamelPotential_physical_occupation (E : FullSpaceEvolution) (z : Z) (T : ℝ)
+/- Stationary Duhamel potentials are literal iterated physical kernel integrals. -/
+theorem duhamelPotential_physical_occupation (E : FullSpaceEvolution) (z : Z) (T )
     (g : Z → ℝ) (hg : Measurable g)
     (hgi : Integrable g (physicalOccupationMeasure E z T)) :
     duhamelPotential E.2 T
@@ -55,7 +46,22 @@ theorem duhamelPotential_physical_occupation (E : FullSpaceEvolution) (z : Z) (T
         (fun q => g (nativeToXV (q.position, q.velocity))))
       ⟨0, fun _ => z.2, fun _ => z.1⟩ =
       ∫ w, g w ∂physicalOccupationMeasure E z T := by
-  rw [duhamelPotential_physical E z T g hg,
-    ← physicalOccupationMeasure_integral E z T g hgi]
+  have _h_inl_7 : duhamelPotential E.2 T
+      ((evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T).indicator
+        (fun q => g (nativeToXV (q.position, q.velocity))))
+      ⟨0, fun _ => z.2, fun _ => z.1⟩ =
+      ∫ t in Ioc 0 T, ∫ w, g w ∂kernelXV E (Real.toNNReal t) z := by
+      unfold duhamelPotential
+      apply setIntegral_congr_ae measurableSet_Ioc
+      filter_upwards [volume.ae_ne T] with t ht hmem
+      exact duhamelIntegrand_physical E z T g hg hmem.1 (lt_of_le_of_ne hmem.2 ht)
+
+    /- An integrable stationary test has the actual occupation measure as its Duhamel integral. -/
+  have _h_xinl_0 : (∫ w, g w ∂physicalOccupationMeasure E z T) = ∫ t in Ioc 0 T, ∫ w, g w ∂kernelXV E (Real.toNNReal t) z := by
+    rw [physicalOccupationMeasure, Measure.comp_eq_comp_const_apply] at hgi ⊢
+    simpa only [Kernel.const_apply, physicalElapsedKernel, Kernel.coe_mk] using
+      ProbabilityTheory.Kernel.integral_comp hgi
+  rw [_h_inl_7,
+    ← _h_xinl_0]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

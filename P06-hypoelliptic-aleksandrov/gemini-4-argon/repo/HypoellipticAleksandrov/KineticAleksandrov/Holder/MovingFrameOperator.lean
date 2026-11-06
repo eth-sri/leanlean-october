@@ -50,8 +50,7 @@ theorem deriv_raw_time_slice {d : ℕ}
     {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (s : ℝ) (y V : PDE.Vec d) :
     deriv (fun r => f (r, (y, V))) s = fderiv ℝ f (s, (y, V)) (1, (0, 0)) := by
-  have hc := (hasDerivAt_id s).prodMk (hasDerivAt_const s (y, V))
-  exact ((hf.differentiable (by norm_num) _).hasFDerivAt.comp_hasDerivAt s hc).deriv
+  exact ((hf.differentiable (by norm_num) _).hasFDerivAt.comp_hasDerivAt s ((hasDerivAt_id s).prodMk (hasDerivAt_const s (y, V)))).deriv
 
 /-- The source position-line derivative is the raw transport-direction derivative. -/
 theorem deriv_raw_position_line {d : ℕ}

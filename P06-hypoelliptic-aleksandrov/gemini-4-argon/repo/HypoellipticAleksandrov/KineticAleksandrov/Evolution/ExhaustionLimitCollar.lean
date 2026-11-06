@@ -24,14 +24,14 @@ open scoped Topology MatrixOrder
 /-- The actual limit inherits the original-boundary collar estimate from the
 actual finite approximants. -/
 theorem abs_le_collar_innerBall_dirichlet_limit
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n lam Lam Lb B b}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
-    {a α τ r0 δ0 S0 d L C ε : ℝ} (haα : a < α) (hατ : α < τ)
+    {a α τ r0 δ0 S0 d L C ε } (haα : a < α) (hατ : α < τ)
     (hδ0 : 0 < δ0) (hδr : δ0 < r0) (hd : 0 < d) (hdr : d < r0 / 4)
     (hL : 0 ≤ L) (hε : 0 ≤ ε) (hε1 : ε ≤ 1) (hC : 0 ≤ C)
-    {Γ : ℝ → PDE.Vec n} (hΓ : Continuous Γ)
+    {Γ } (hΓ : Continuous Γ)
     (F : BoundedBorel (EvolutionAmbientState n)) (hFC : ∀ q, |F q| ≤ C)
     (hsupp : ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
       4 * d ≤ r0 - PDE.vecEuclideanNorm (q.1 - Γ τ))

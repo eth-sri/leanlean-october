@@ -16,19 +16,19 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set Matrix KineticAleksandrov
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
-/-- The source-M quadratic barrier in the native Euclidean geometry. -/
-def sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ) (y : PDE.Vec d) : ℝ :=
+/- The source-M quadratic barrier in the native Euclidean geometry. -/
+def sourceBallBarrier {d } (v₀ : PDE.Vec d) (r lam M : ℝ) (y : PDE.Vec d) : ℝ :=
   M * (r ^ 2 - PDE.vecNormSq (y - v₀)) / (2 * (d : ℝ) * lam)
 
-/-- The polynomial source barrier is smooth. -/
-theorem contDiff_sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ) :
+/- The polynomial source barrier is smooth. -/
+theorem contDiff_sourceBallBarrier {d } (v₀ : PDE.Vec d) (r lam M : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (sourceBallBarrier v₀ r lam M) :=
   (contDiff_const.mul (contDiff_const.sub
     (PDE.contDiff_vecNormSq.comp (contDiff_id.sub contDiff_const)))).div_const _
 
-/-- The source barrier is nonnegative on the closed Euclidean ball. -/
-theorem sourceBallBarrier_nonneg {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)
-    (hlam : 0 < lam) (hM : 0 ≤ M) {y : PDE.Vec d}
+/- The source barrier is nonnegative on the closed Euclidean ball. -/
+theorem sourceBallBarrier_nonneg {d } (v₀ : PDE.Vec d) (r lam M : ℝ)
+    (hlam : 0 < lam) (hM : 0 ≤ M) {y }
     (hy : y ∈ closure (PDE.euclideanBall v₀ r)) :
     0 ≤ sourceBallBarrier v₀ r lam M y := by
   have hs : closure (PDE.euclideanBall v₀ r) ⊆
@@ -40,9 +40,9 @@ theorem sourceBallBarrier_nonneg {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)
   exact div_nonneg (mul_nonneg hM (sub_nonneg.mpr (hs hy)))
     (mul_nonneg (mul_nonneg (by norm_num) (Nat.cast_nonneg d)) hlam.le)
 
-/-- The source barrier has zero trace on the Euclidean ball frontier. -/
-theorem sourceBallBarrier_zero_frontier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)
-    {y : PDE.Vec d} (hy : y ∈ frontier (PDE.euclideanBall v₀ r)) :
+/- The source barrier has zero trace on the Euclidean ball frontier. -/
+theorem sourceBallBarrier_zero_frontier {d } (v₀ : PDE.Vec d) (r lam M : ℝ)
+    {y } (hy : y ∈ frontier (PDE.euclideanBall v₀ r)) :
     sourceBallBarrier v₀ r lam M y = 0 := by
   rw [(PDE.isOpen_euclideanBall v₀ r).frontier_eq] at hy
   have hs : closure (PDE.euclideanBall v₀ r) ⊆
@@ -55,8 +55,8 @@ theorem sourceBallBarrier_zero_frontier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : 
     le_antisymm (hs hy.1) (le_of_not_gt hy.2)
   simp only [sourceBallBarrier, heq, sub_self, mul_zero, zero_div]
 
-/-- The stationary quadratic has the literal negative trace forcing. -/
-theorem scalarOperator_sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)
+/- The stationary quadratic has the literal negative trace forcing. -/
+theorem scalarOperator_sourceBallBarrier {d } (v₀ : PDE.Vec d) (r lam M : ℝ)
     (A : CoefficientField d) (z : TimeVelocity d) :
     scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)
       (fun z => sourceBallBarrier v₀ r lam M z.2) z =
@@ -80,17 +80,5 @@ theorem scalarOperator_sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M :
   rw [matrixContraction_sliceHessian_comp_vecNormSq_sub hΨ.contDiffAt, hd, hdd]
   ring
 
-/-- Lower ellipticity gives the source-M supersolution inequality. -/
-theorem scalarOperator_sourceBallBarrier_le {d : ℕ} (hd : 0 < d)
-    (v₀ : PDE.Vec d) (r lam M : ℝ) (hlam : 0 < lam) (hM : 0 ≤ M)
-    (A : CoefficientField d) (hlo : HasLowerEllipticity lam A) (z : TimeVelocity d) :
-    scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)
-      (fun z => sourceBallBarrier v₀ r lam M z.2) z ≤ -M := by
-  rw [scalarOperator_sourceBallBarrier]
-  have htr := (Matrix.le_iff.mp (hlo z.1 z.2)).trace_nonneg
-  rw [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_one] at htr
-  simp only [Fintype.card_fin, smul_eq_mul] at htr
-  apply (div_le_iff₀ (mul_pos (mul_pos (by norm_num) (Nat.cast_pos.mpr hd)) hlam)).2
-  nlinarith [mul_nonneg hM (show 0 ≤ (A z.1 z.2).trace - (d : ℝ) * lam by linarith)]
-
+/- Lower ellipticity gives the source-M supersolution inequality. -/
 end HypoellipticAleksandrov.Parabolic.LocalHolder

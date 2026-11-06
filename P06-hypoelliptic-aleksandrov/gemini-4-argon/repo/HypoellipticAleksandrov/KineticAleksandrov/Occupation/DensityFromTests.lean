@@ -26,7 +26,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 omit [MeasurableSpace E] [BorelSpace E] in
 /-- An open set has compact interior subsets eventually containing each of its points. -/
-theorem exists_compact_interior_exhaustion {U : Set E} (hU : IsOpen U) :
+theorem exists_compact_interior_exhaustion {U } (hU : IsOpen U) :
     ∃ K : ℕ → Set E, (∀ n, IsCompact (K n)) ∧ (∀ n, K n ⊆ U) ∧
       ∀ x ∈ U, ∀ᶠ n in atTop, x ∈ K n := by
   let : LocallyCompactSpace U := hU.locallyCompactSpace
@@ -46,8 +46,8 @@ theorem exists_compact_interior_exhaustion {U : Set E} (hU : IsOpen U) :
 The finite tested measure is concentrated on the open region `U`; all norms use `ν.restrict U`.
 The same density has its exact `L¹` mass and represents every real test integral. -/
 theorem exists_density_of_smooth_tests (ν μ : Measure E)
-    [ν.IsAddHaarMeasure] [IsFiniteMeasure μ] {U : Set E} (hU : IsOpen U)
-    (hμU : μ Uᶜ = 0) {r C : ℝ} (hr : 1 < r) (hC : 0 ≤ C)
+    [ν.IsAddHaarMeasure] [IsFiniteMeasure μ] {U } (hU : IsOpen U)
+    (hμU : μ Uᶜ = 0) {r C } (hr : 1 < r) (hC : 0 ≤ C)
     (htest : ∀ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f → HasCompactSupport f →
       tsupport f ⊆ U → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂μ) ≤ C *

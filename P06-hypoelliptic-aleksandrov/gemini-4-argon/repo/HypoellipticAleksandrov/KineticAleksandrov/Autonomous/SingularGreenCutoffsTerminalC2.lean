@@ -19,11 +19,11 @@ open scoped Topology
 /-- A bounded C² test with uniformly continuous terminal datum obeys the exact actual
 Green identity. Smoothness of the terminal datum is discharged by uniform approximation. -/
 theorem fullspace_green_terminal_c2
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
+    (hH : HormanderHypoellipticityStatement) {lam Lam }
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) (T : ℝ)
     (f : Point → ℝ) (hf : ContDiff ℝ 2 (f ∘ evolutionHomeomorph 1))
-    (Cf M : ℝ) (hM : 0 ≤ M) (hfb : ∀ p, |f p| ≤ Cf)
+    (Cf M ) (hM : 0 ≤ M) (hfb : ∀ p, |f p| ≤ Cf)
     (hLf : ∀ p, |transportedForwardOperator (evolutionCoefficient A.a)
       (identityDrift 1) f p| ≤ M)
     (F : BoundedBorel (EvolutionAmbientState 1)) (hF : UniformContinuous F)

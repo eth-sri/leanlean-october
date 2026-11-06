@@ -107,14 +107,11 @@ def scalarMeasurableEquiv : Point ≃ᵐ (Fin 3 → ℝ) where
 theorem scalarCoordinates_volumePreserving :
     MeasurePreserving scalarMeasurableEquiv volume volume := by
   have hp := KineticPoint.measurePreserving_equivProd 1
-  have hv := PDE.volumePreserving_vecOneEquivReal.prod
-    PDE.volumePreserving_vecOneEquivReal
-  have ht := (MeasurePreserving.id (volume : Measure ℝ)).prod hv
+  have ht := (MeasurePreserving.id (volume : Measure ℝ)).prod (PDE.volumePreserving_vecOneEquivReal.prod PDE.volumePreserving_vecOneEquivReal)
   have hf := (volume_preserving_piFinTwo (fun _ : Fin 2 => ℝ)).symm
   have hh := (MeasurePreserving.id (volume : Measure ℝ)).prod hf
   have hs := (volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).symm
-  have hm := hs.comp (hh.comp (ht.comp hp))
-  apply hm.congr scalarMeasurableEquiv.measurable
+  apply (hs.comp (hh.comp (ht.comp hp))).congr scalarMeasurableEquiv.measurable
   apply Filter.Eventually.of_forall
   intro p
   ext i
@@ -159,7 +156,7 @@ theorem Clock.mapCoordinates_smooth (c : Clock) (e : Point) :
 theorem Clock.map_volume (c : Clock) (e : Point) :
     Measure.map (c.map e) volume = ENNReal.ofReal (c.r ^ 6) •
       (volume : Measure Point) := by
-  have hr : 0 < c.r ^ 6 := pow_pos c.positive 6
+  have hr := pow_pos c.positive 6
   have hs : ENNReal.ofReal (c.r ^ 6) • Measure.map (c.inverse e) volume =
       (volume : Measure Point) := by
     rw [c.map_inverse_volume, smul_smul, ← ENNReal.ofReal_mul hr.le,

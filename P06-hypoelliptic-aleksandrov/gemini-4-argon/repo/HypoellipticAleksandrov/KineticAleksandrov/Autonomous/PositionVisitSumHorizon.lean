@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionVisitSum
 import Mathlib.Algebra.Order.Floor.Ring
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionVisitsStatement
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TimePowerCount
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.DegreeGap
 
 /-! # Finite-horizon q-power summation for the literal visit measure -/
 
@@ -10,8 +13,9 @@ public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
+open scoped BigOperators
 
-/-- A visit cell beyond the supported time horizon has zero mass. -/
+/- A visit cell beyond the supported time horizon has zero mass. -/
 theorem enlargedPositionVisitMass_eq_zero_of_horizon
     (nu : Measure Point) (c : Clock) (s x T : ℝ) (j : ℕ) (k : ℤ)
     (hs : ∀ᵐ p ∂nu, p.time < s + T) (hj : T ≤ (j : ℝ) * c.r ^ 2) :
@@ -26,13 +30,13 @@ theorem enlargedPositionVisitMass_eq_zero_of_horizon
   unfold enlargedPositionVisitMass
   rw [hz, ENNReal.toReal_zero]
 
-/-- The source double q-power sum follows from the literal time and cell counts.
+/- The source double q-power sum follows from the literal time and cell counts.
 This helper is applied only after its two decay premises are proved for the same measure. -/
 theorem enlargedPositionVisitMass_power_sum_horizon_le
     (nu : Measure Point) [IsFiniteMeasure nu] (c : Clock) (s x R T : ℝ)
     (hR : 0 < R) (hT : 0 < T) (hTR : T ≤ R ^ 2)
     (hs : ∀ᵐ p ∂nu, p.time < s + T)
-    (Ct Cp g q : ℝ) (hCt : 0 ≤ Ct) (hCp : 0 ≤ Cp)
+    (Ct Cp g q ) (hCt : 0 ≤ Ct) (hCp : 0 ≤ Cp)
     (hg : 1 < g ∧ g < 2) (hq : 1 < q ∧ q < 3 / 2)
     (htime : ∀ j : ℕ,
       enlargedTimeVisitMass nu c s j ≤ Ct * (1 + (j : ℝ)) ^ (-1 / 2 : ℝ))
@@ -45,7 +49,7 @@ theorem enlargedPositionVisitMass_power_sum_horizon_le
             (1 + R / c.r) ^ (1 - g * (q - 1))) := by
   let N : ℕ := ⌊T / c.r ^ 2⌋₊ + 1
   have hr := c.positive
-  have hr2 : 0 < c.r ^ 2 := sq_pos_of_pos hr
+  have hr2 := sq_pos_of_pos hr
   have hNlo : T / c.r ^ 2 < (N : ℝ) := by
     simpa only [N, Nat.cast_add, Nat.cast_one] using Nat.lt_floor_add_one (T / c.r ^ 2)
   have hNhi : (N : ℝ) ≤ T / c.r ^ 2 + 1 := by
@@ -78,8 +82,18 @@ theorem enlargedPositionVisitMass_power_sum_horizon_le
   rw [← ENNReal.ofReal_sum_of_nonneg (fun j _ =>
     mul_nonneg hcoef (Real.rpow_nonneg (by positivity) _)), ← Finset.mul_sum]
   apply ENNReal.ofReal_le_ofReal
+  have _h_xinl_0 : (∑ j ∈ Finset.range (N + 1), (1 + (j : ℝ)) ^ (-(1 + g * (q - 1)) / 2)) ≤ ((1 + 1 / (1 - (1 + g * (q - 1)) / 2)) * (3 : ℝ) ^ (1 - (1 + g * (q - 1)) / 2)) * (1 + R / c.r) ^ (1 - g * (q - 1)) := by
+    let r := c.r
+    have hR := hR.le
+    have hprod : 0 < g * (q - 1) := mul_pos (by linarith [hg.1]) (by linarith [hq.1])
+    have hprod1 : g * (q - 1) < 1 := by
+      have h := mul_lt_mul_of_pos_right hg.2 (by linarith [hq.1] : 0 < q - 1)
+      linarith [hq.2]
+    have hs := time_decay_power_sum_horizon_le (1 + g * (q - 1))
+      (by linarith) (by linarith) R r hR hr N hNhorizon
+    simpa only [show 2 - (1 + g * (q - 1)) = 1 - g * (q - 1) by ring] using hs
   have h := mul_le_mul_of_nonneg_left
-    (position_decay_power_sum_horizon_le g q hg hq R c.r hR.le hr N hNhorizon) hcoef
+    _h_xinl_0 hcoef
   exact h.trans_eq (mul_assoc _ _ _).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularDisintegrationReweight
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularDisintegrationFactorization
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularCoordinates
+import Mathlib.MeasureTheory.Measure.Regular
+import Mathlib.Topology.Maps.Basic
 
 /-! # Factorization of the actual homogeneous measure after degree reweighting -/
 
@@ -10,13 +13,16 @@ import Mathlib.Tactic
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
+open Topology
 
-/-- The actual reweighted log-coordinate measure remains finite on compact sets. -/
+/- The actual reweighted log-coordinate measure remains finite on compact sets. -/
 theorem bellmanLogAngularMeasure_finiteOnCompacts (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ) :
+    (μ ) (hμ : IsFiniteMeasureOnCompacts μ) :
     IsFiniteMeasureOnCompacts (bellmanLogAngularMeasure β μ) := by
-  let : IsFiniteMeasureOnCompacts (bellmanAngularPullback μ) :=
-    bellmanAngularPullback_finiteOnCompacts μ hμ
+  let : IsFiniteMeasureOnCompacts (bellmanAngularPullback μ) := by
+    let : IsFiniteMeasureOnCompacts μ := hμ
+    exact IsFiniteMeasureOnCompacts.comap' μ continuous_bellmanAngularPoint
+      isOpenEmbedding_bellmanAngularPoint.measurableEmbedding
   have hw : Continuous (fun w : BellmanPositiveTime × ℝ => w.1.val ^ (β - 4)) := by
     apply Continuous.rpow_const
     · fun_prop
@@ -27,14 +33,5 @@ theorem bellmanLogAngularMeasure_finiteOnCompacts (β : ℝ)
     bellman_withDensity_finiteOnCompacts (bellmanAngularPullback μ) _ hw
   exact bellman_map_homeomorph_finiteOnCompacts bellmanLogAngularHomeomorph _
 
-/-- Homogeneity alone produces a literal angular measure after passing to log radius. -/
-theorem bellmanLogAngularMeasure_factorization (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ)
-    (hd : HasBellmanDensityDegree β μ) :
-    bellmanLogAngularMeasure β μ =
-      (volume : Measure ℝ).prod (bellmanUnitSection (bellmanLogAngularMeasure β μ)) := by
-  let : IsFiniteMeasureOnCompacts (bellmanLogAngularMeasure β μ) :=
-    bellmanLogAngularMeasure_finiteOnCompacts β μ hμ
-  exact bellman_translation_factorization _ hd.logAngularMeasure_invariant
-
+/- Homogeneity alone produces a literal angular measure after passing to log radius. -/
 end HypoellipticAleksandrov.KineticAleksandrov

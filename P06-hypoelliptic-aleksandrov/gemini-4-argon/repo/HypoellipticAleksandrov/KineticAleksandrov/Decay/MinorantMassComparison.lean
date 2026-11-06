@@ -74,10 +74,8 @@ private theorem movingBarrier_time_derivative {d N : ℕ} (hN : 3 ≤ N)
         (rate * barrier N s (y - γ t) -
           PDE.vecDot (deriv γ t) (PDE.classicalGradient (barrier N s) (y - γ t)))) t := by
   have hf := (retention_barrier_contDiff (d := d) hN s).differentiable (by norm_num)
-  have hpath := hγ.hasDerivAt.const_sub y
-  have hcomp := (hf (y - γ t)).hasFDerivAt.comp_hasDerivAt t hpath
-  have he := (((hasDerivAt_id t).const_sub τ).const_mul (-rate)).exp
-  have h := he.mul hcomp
+  have hcomp := (hf (y - γ t)).hasFDerivAt.comp_hasDerivAt t (hγ.hasDerivAt.const_sub y)
+  have h := ((((hasDerivAt_id t).const_sub τ).const_mul (-rate)).exp).mul hcomp
   refine h.congr_deriv ?_
   simp only [id_eq, Function.comp_apply]
   rw [PDE.fderiv_apply_eq_vecDot_classicalGradient]
@@ -136,33 +134,6 @@ private theorem lifted_operator {d : ℕ} (B : CoefficientField d)
     scalarSpatialGradient kineticPositionGradient
   simp [PDE.classicalGradient, PDE.vecDot]
 
-private theorem scalar_difference_operator {d : ℕ} (B : CoefficientField d)
-    (U V : TimeVelocity d → ℝ) (p : TimeVelocity d)
-    (hUt : DifferentiableAt ℝ (fun t => U (t, p.2)) p.1)
-    (hVt : DifferentiableAt ℝ (fun t => V (t, p.2)) p.1)
-    (hUy : ContDiffAt ℝ 2 (fun y => U (p.1, y)) p.2)
-    (hVy : ContDiffAt ℝ 2 (fun y => V (p.1, y)) p.2) :
-    scalarParabolicOperator B 0 (fun q => U q - V q) p =
-      scalarParabolicOperator B 0 U p - scalarParabolicOperator B 0 V p := by
-  have htime := deriv_fun_sub hUt hVt
-  have hhess : scalarSpatialHessian (fun q => U q - V q) p =
-      scalarSpatialHessian U p - scalarSpatialHessian V p := by
-    have hneg := sliceHessian_const_mul (-1) hVy
-    have hadd := sliceHessian_add hUy ((contDiffAt_const (c := (-1 : ℝ))).mul hVy)
-    have heq : (fun y => U (p.1, y) - V (p.1, y)) =
-        (fun y => U (p.1, y) + (-1) * V (p.1, y)) := by
-      funext y
-      ring
-    change sliceHessian (fun y => U (p.1, y) - V (p.1, y)) p.2 = _
-    rw [heq, hadd, hneg]
-    simp only [neg_one_smul, sub_eq_add_neg]
-    rfl
-  unfold scalarParabolicOperator scalarTimeDerivative
-  rw [htime, hhess]
-  simp only [matrixContraction, Matrix.sub_apply, mul_sub, Finset.sum_sub_distrib,
-    Pi.zero_apply, PDE.vecDot, zero_mul, Finset.sum_const_zero, add_zero]
-  ring
-
 private theorem lifted_difference_subsolution {d : ℕ} (B : CoefficientField d)
     (U V : TimeVelocity d → ℝ) (p : KineticPoint d)
     (hUt : DifferentiableAt ℝ (fun t => U (t, p.position)) p.time)
@@ -174,7 +145,27 @@ private theorem lifted_difference_subsolution {d : ℕ} (B : CoefficientField d)
     0 ≤ transportedForwardOperator (zIndependentCoefficient B) (fun _ => 0)
       (fun q => U (q.time, q.position) - V (q.time, q.position)) p := by
   have hlift := lifted_operator B (fun _ => 0) (fun x => U x - V x) p
-  have hdiff := scalar_difference_operator B U V (p.time, p.position) hUt hVt hUy hVy
+  have hdiff : scalarParabolicOperator B 0 (fun q => U q - V q) (p.time, p.position) =
+      scalarParabolicOperator B 0 U (p.time, p.position) - scalarParabolicOperator B 0 V (p.time, p.position) := by
+    let p := (p.time, p.position)
+    have htime := deriv_fun_sub hUt hVt
+    have hhess : scalarSpatialHessian (fun q => U q - V q) p =
+        scalarSpatialHessian U p - scalarSpatialHessian V p := by
+      have hneg := sliceHessian_const_mul (-1) hVy
+      have hadd := sliceHessian_add hUy ((contDiffAt_const (c := (-1 : ℝ))).mul hVy)
+      have heq : (fun y => U (p.1, y) - V (p.1, y)) =
+          (fun y => U (p.1, y) + (-1) * V (p.1, y)) := by
+        funext y
+        ring
+      change sliceHessian (fun y => U (p.1, y) - V (p.1, y)) p.2 = _
+      rw [heq, hadd, hneg]
+      simp only [neg_one_smul, sub_eq_add_neg]
+      rfl
+    unfold scalarParabolicOperator scalarTimeDerivative
+    rw [htime, hhess]
+    simp only [matrixContraction, Matrix.sub_apply, mul_sub, Finset.sum_sub_distrib,
+      Pi.zero_apply, PDE.vecDot, zero_mul, Finset.sum_const_zero, add_zero]
+    ring
   rw [hlift, hdiff, hV, sub_zero]
   exact hU
 
@@ -183,7 +174,7 @@ private theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hc : 0 < barrierC d N lam Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (γ : ℝ → PDE.Vec d) (hγ : Continuous γ)
-    (n : ℕ) (r : Fin (n + 2) → ℝ) (hr : StrictMono r)
+    (n ) (r : Fin (n + 2) → ℝ) (hr : StrictMono r)
     (hγpieces : ∀ i : Fin (n + 1), ContDiffOn ℝ 1 γ (Icc (r i.castSucc) (r i.succ)))
     (hspd : HasCurveSpeedOn H γ (r 0) (r (Fin.last (n + 1))))
     (F : BoundedBorel (PDE.Vec d)) (V : TimeVelocity d → ℝ)
@@ -196,7 +187,7 @@ private theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
   let rate := barrierRate d N lam Lam s H
   let U := movingBarrier N s rate τ γ
   let W : KineticPoint d → ℝ := fun p => U (p.time, p.position) - V (p.time, p.position)
-  have hρ : 0 < ρ := hs.trans hsρ
+  have hρ := hs.trans hsρ
   have hopen : IsOpen (ParabolicProbe.scalarPastOpenCylinder (PDE.euclideanBall 0 ρ) γ τ) := by
     have heq : ParabolicProbe.scalarPastOpenCylinder (PDE.euclideanBall 0 ρ) γ τ =
         {p : TimeVelocity d | p.1 < τ ∧ PDE.vecNormSq (p.2 - γ p.1) < ρ ^ 2} := by
@@ -207,8 +198,7 @@ private theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
     exact (isOpen_lt continuous_fst continuous_const).inter
       (isOpen_lt (PDE.contDiff_vecNormSq.continuous.comp
         (continuous_snd.sub (hγ.comp continuous_fst))) continuous_const)
-  have hVc : ContinuousOn V
-      (ParabolicProbe.scalarPastClosedCylinder (PDE.euclideanBall 0 ρ) γ τ) := hV.2.1
+  have hVc := hV.2.1
   have hVjet : ∀ i : Fin (n + 1), ∀ p ∈
       maximumOpenTube (PDE.euclideanBall 0 ρ) γ (r i.castSucc) (r i.succ),
       ContDiffAt ℝ 2 V (p.time, p.position) := by
@@ -230,8 +220,6 @@ private theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
     intro i p hp
     refine ⟨(movingBarrier_time_derivative hN s rate τ p.time γ p.position
       (hγd i p hp)).differentiableAt, ?_⟩
-    change ContDiffAt ℝ 2 (fun y => Real.exp (-rate * (τ - p.time)) *
-      barrier N s (y - γ p.time)) p.position
     exact (contDiffAt_const (c := Real.exp (-rate * (τ - p.time)))).mul
       ((retention_barrier_contDiff hN s).contDiffAt.comp p.position
         (contDiffAt_id.sub (contDiffAt_const (c := γ p.time))))
@@ -271,7 +259,6 @@ private theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
       have hsol := hV.2.2.2.1 (p.time, p.position)
         ⟨hp.1.2.trans_le (hr.monotone (Fin.le_last _)), hp.2⟩
       change scalarParabolicOperator B 0 V (p.time, p.position) = 0 at hsol
-      change 0 ≤ scalarParabolicOperator B 0 U (p.time, p.position) at hsub
       exact lifted_difference_subsolution B U V p (hUjet i p hp).1 ht
         (hUjet i p hp).2 hy hsub hsol
 
@@ -307,7 +294,7 @@ private theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
   exact sub_nonpos.mp h
 
 
-/-- The stationary scalar retention barrier gives the normalized mass-floor rate. -/
+/- The stationary scalar retention barrier gives the normalized mass-floor rate. -/
 theorem minorant_scalar_barrier_floor {d N : ℕ} (hN : 3 ≤ N)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hc : 0 < barrierC d N lam Lam) (B : CoefficientField d)
@@ -320,7 +307,7 @@ theorem minorant_scalar_barrier_floor {d N : ℕ} (hN : 3 ≤ N)
   let r : Fin (0 + 2) → ℝ := ![-1, 0]
   have hr : StrictMono r := by
     intro i j hij
-    have hijv : i.val < j.val := hij
+    have hijv := hij
     have hi : i = 0 := by apply Fin.ext; change i.val = 0; omega
     have hj : j = 1 := by apply Fin.ext; change j.val = 1; omega
     subst i j

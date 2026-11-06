@@ -14,17 +14,8 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
-/-- The actual zero function has zero coordinate derivative of every multi-index order. -/
-theorem coordinateIteratedFDeriv_zero_function {d : ℕ}
-    (beta : TimeVelocityMultiIndex d) :
-    TimeVelocityMultiIndex.coordinateIteratedFDeriv beta
-      (fun _ : TimeVelocity d => (0 : ℝ)) = 0 := by
-  funext z
-  simp only [TimeVelocityMultiIndex.coordinateIteratedFDeriv, iteratedFDeriv_fun_zero,
-    Pi.zero_apply, zero_apply]
-
-/-- Homogeneous jets have uniformly controlled higher families on a common smaller collar. -/
-theorem exists_homogeneous_higher_family_constant {d : ℕ}
+/- The actual zero function has zero coordinate derivative of every multi-index order. -/
+theorem exists_homogeneous_higher_family_constant {d }
     {Ω O₀ O : Set (PDE.Vec d)}
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
@@ -78,7 +69,11 @@ theorem exists_homogeneous_higher_family_constant {d : ℕ}
     unfold ParabolicWeakDerivativeFamily.squaredL2Norm
     apply Finset.sum_eq_zero
     intro beta _
-    rw [hErep beta, coordinateIteratedFDeriv_zero_function]
+    have _h_inl_7 (beta) : TimeVelocityMultiIndex.coordinateIteratedFDeriv beta (fun _ : TimeVelocity d => (0 : ℝ)) = 0 := by
+      funext z
+      simp only [TimeVelocityMultiIndex.coordinateIteratedFDeriv, iteratedFDeriv_fun_zero,
+        Pi.zero_apply, zero_apply]
+    rw [hErep beta, _h_inl_7]
     simp
   have hsub : Ioo s₀ s₁ ×ˢ O ⊆ Ioo l r ×ˢ Oc := by
     intro z hz

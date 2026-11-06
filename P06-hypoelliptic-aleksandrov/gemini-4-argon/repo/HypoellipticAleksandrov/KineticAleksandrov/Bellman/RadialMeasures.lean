@@ -13,13 +13,13 @@ open MeasureTheory Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Positive radial dilation of a unit-gauge point stays away from the origin. -/
-theorem sphereRadialPoint_ne_zero {lam Lam : ℝ}
+theorem sphereRadialPoint_ne_zero {lam Lam }
     (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam)) :
     bellmanPlaneDilation w.1.val w.2.1.val ≠ (0, 0) :=
   bellmanPlaneDilation_ne_zero w.1.val w.1.property w.2.1.val w.2.1.ne_zero
 
 /-- The radial projection uses the source's anisotropic dilation. -/
-def sphereRadialPoint {lam Lam : ℝ}
+def sphereRadialPoint {lam Lam }
     (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam)) :
     BellmanPuncturedPlane :=
   ⟨bellmanPlaneDilation w.1.val w.2.1.val, sphereRadialPoint_ne_zero w⟩
@@ -33,13 +33,13 @@ def bellmanRadiusMeasure (alpha : ℝ) : Measure BellmanPositiveTime :=
   bellmanPositiveTimeVolume.withDensity (bellmanRadiusWeight alpha)
 
 /-- The first radial adjoint measure is the actual radial pushforward. -/
-def radialMu {lam Lam : ℝ} (alpha : ℝ)
+def radialMu {lam Lam } (alpha : ℝ)
     (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) :
     Measure BellmanPuncturedPlane :=
   Measure.map sphereRadialPoint ((bellmanRadiusMeasure alpha).prod pi)
 
 /-- The second radial adjoint measure includes the actual diffusion coefficient density. -/
-def radialEta {lam Lam : ℝ} (alpha : ℝ)
+def radialEta {lam Lam } (alpha : ℝ)
     (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) :
     Measure BellmanPuncturedPlane :=
   Measure.map sphereRadialPoint (((bellmanRadiusMeasure alpha).prod pi).withDensity
@@ -53,7 +53,7 @@ theorem continuous_sphereRadialPoint (lam Lam : ℝ) :
   fun_prop
 
 /-- The radius coordinate is exactly the gauge of the projected point. -/
-theorem sphereRadialPoint_gauge {lam Lam : ℝ}
+theorem sphereRadialPoint_gauge {lam Lam }
     (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam)) :
     bellmanGauge (sphereRadialPoint w).val = w.1.val := by
   rw [sphereRadialPoint, bellmanGauge_dilation _ w.1.property, w.2.1.property, mul_one]

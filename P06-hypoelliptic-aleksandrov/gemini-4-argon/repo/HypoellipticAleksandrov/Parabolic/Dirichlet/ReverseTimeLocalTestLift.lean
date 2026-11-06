@@ -15,8 +15,8 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-/-- Regard a scalar test on a local time interval as a reverse-time scalar test. -/
-def reverseTimeScalarTestOfLocal {τ₁ τ₂ T : ℝ}
+/- Regard a scalar test on a local time interval as a reverse-time scalar test. -/
+def reverseTimeScalarTestOfLocal {τ₁ τ₂ T }
     (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval T)
     (eta : OriginalTimeScalarTest τ₁ τ₂) : ReverseTimeScalarTest T where
   toFun := eta
@@ -24,16 +24,14 @@ def reverseTimeScalarTestOfLocal {τ₁ τ₂ T : ℝ}
   hasCompactSupport' := eta.hasCompactSupport
   tsupport_subset' := eta.tsupport_subset.trans htime
 
-@[simp] theorem reverseTimeScalarTestOfLocal_apply {τ₁ τ₂ T : ℝ}
+@[simp] theorem reverseTimeScalarTestOfLocal_apply {τ₁ τ₂ T }
     (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval T)
     (eta : OriginalTimeScalarTest τ₁ τ₂) (τ : ℝ) :
-    reverseTimeScalarTestOfLocal htime eta τ = eta τ :=
-  rfl
+    reverseTimeScalarTestOfLocal htime eta τ = eta τ := rfl
 
-@[simp] theorem reverseTimeScalarTestOfLocal_deriv {τ₁ τ₂ T : ℝ}
+@[simp] theorem reverseTimeScalarTestOfLocal_deriv {τ₁ τ₂ T }
     (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval T)
     (eta : OriginalTimeScalarTest τ₁ τ₂) (τ : ℝ) :
-    (reverseTimeScalarTestOfLocal htime eta).deriv τ = eta.deriv τ :=
-  rfl
+    (reverseTimeScalarTestOfLocal htime eta).deriv τ = eta.deriv τ := rfl
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

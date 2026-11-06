@@ -33,7 +33,7 @@ theorem barrier_position_fiber_bound (beta : ℝ) (hb : beta ≤ 0)
   exact (hbound _ hq).trans (mul_le_mul_of_nonneg_left hh hC)
 
 /-- The three jet fibers are integrable on every compact position interval, uniformly in v. -/
-theorem barrier_jet_fiber_integrable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_jet_fiber_integrable {alpha phi}
     (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
     (v a b : ℝ) :
     IntegrableOn (fun X => bellmanDx phi (X, v)) (Icc a b) volume ∧

@@ -17,24 +17,11 @@ open scoped Topology
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
-/-- The flux whose integral derivative supplies Kummer's equation. -/
+/- The flux whose integral derivative supplies Kummer's equation. -/
 def laplaceFlux (a b z t : ℝ) : ℝ :=
   Real.exp (-(z * t)) * t ^ a * (1 + t) ^ (b - a)
 
-/-- The flux vanishes at the lower endpoint for positive shape. -/
-theorem laplaceFlux_zero (a b z : ℝ) (ha : 0 < a) : laplaceFlux a b z 0 = 0 := by
-  simp only [laplaceFlux, Real.zero_rpow ha.ne', mul_zero, zero_mul]
-
-/-- The endpoint extension of the flux is continuous. -/
-theorem continuousAt_laplaceFlux_zero (a b z : ℝ) (ha : 0 < a) :
-    ContinuousAt (laplaceFlux a b z) 0 := by
-  apply ContinuousAt.mul
-  · exact ((continuous_const.mul continuous_id).neg.rexp.continuousAt).mul
-      (Real.continuousAt_rpow_const 0 a (Or.inr ha.le))
-  · exact (continuousAt_const.add continuousAt_id).rpow_const
-      (Or.inl (by norm_num))
-
-/-- The flux vanishes at infinity by exponential domination of its polynomial bound. -/
+/- The flux vanishes at the lower endpoint for positive shape. -/
 theorem tendsto_laplaceFlux_atTop (a b z : ℝ) (hz : 0 < z) :
     Tendsto (laplaceFlux a b z) atTop (𝓝 0) := by
   obtain ⟨n, hn⟩ := exists_nat_gt (b - a)
@@ -58,13 +45,13 @@ theorem tendsto_laplaceFlux_atTop (a b z : ℝ) (hz : 0 < z) :
     simp only [laplaceFlux, neg_mul] at h ⊢
     exact h.trans_eq (by ring)
 
-/-- Exact flux derivative expressed by the first three integral moments. -/
+/- Exact flux derivative expressed by the first three integral moments. -/
 theorem hasDerivAt_laplaceFlux (a b z t : ℝ) (ht : 0 < t) :
     HasDerivAt (laplaceFlux a b z)
       (a * laplaceKernelReal a b z t +
         (b - z) * laplaceKernelReal (a + 1) (b + 1) z t -
         z * laplaceKernelReal (a + 2) (b + 2) z t) t := by
-  have ht1 : 0 < 1 + t := add_pos zero_lt_one ht
+  have ht1 := add_pos zero_lt_one ht
   have he := (((hasDerivAt_id t).const_mul z).neg.exp.mul
     (Real.hasDerivAt_rpow_const (Or.inl ht.ne') :
       HasDerivAt (fun u : ℝ => u ^ a) (a * t ^ (a - 1)) t)).mul
@@ -99,7 +86,7 @@ theorem hasDerivAt_laplaceFlux (a b z t : ℝ) (ht : 0 < t) :
   · dsimp only [Pi.add_apply, Pi.mul_apply, Pi.neg_apply, id_eq]
     ring
 
-/-- The flux moment relation, with zero endpoint terms. -/
+/- The flux moment relation, with zero endpoint terms. -/
 theorem laplaceIntegral_moment_relation (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) :
     a * laplaceIntegral a b z + (b - z) * laplaceIntegral (a + 1) (b + 1) z -
       z * laplaceIntegral (a + 2) (b + 2) z = 0 := by
@@ -108,12 +95,22 @@ theorem laplaceIntegral_moment_relation (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) 
     (add_pos ha zero_lt_one) hz
   have h2 := integrableOn_laplaceKernelReal (a + 2) (b + 2) z
     (by linarith only [ha]) hz
+  have _h_inl_8 : ContinuousAt (laplaceFlux a b z) 0 := by
+    apply ContinuousAt.mul
+    · exact ((continuous_const.mul continuous_id).neg.rexp.continuousAt).mul
+        (Real.continuousAt_rpow_const 0 a (Or.inr ha.le))
+    · exact (continuousAt_const.add continuousAt_id).rpow_const
+        (Or.inl (by norm_num))
   have hf := integral_Ioi_of_hasDerivAt_of_tendsto
-    (continuousAt_laplaceFlux_zero a b z ha).continuousWithinAt
+    _h_inl_8.continuousWithinAt
     (fun t ht => hasDerivAt_laplaceFlux a b z t ht)
     (((h0.const_mul a).add (h1.const_mul (b - z))).sub (h2.const_mul z))
     (tendsto_laplaceFlux_atTop a b z hz)
-  rw [laplaceFlux_zero a b z ha, sub_self] at hf
+  have _h_inl_8 : laplaceFlux a b z 0 = 0 := by
+      simp only [laplaceFlux, Real.zero_rpow ha.ne', mul_zero, zero_mul]
+
+    /- The endpoint extension of the flux is continuous. -/
+  rw [_h_inl_8, sub_self] at hf
   have hsub := integral_sub ((h0.const_mul a).add (h1.const_mul (b - z)))
     (h2.const_mul z)
   have hadd := integral_add (h0.const_mul a) (h1.const_mul (b - z))
@@ -121,24 +118,23 @@ theorem laplaceIntegral_moment_relation (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) 
   rw [hsub, hadd, integral_const_mul, integral_const_mul, integral_const_mul] at hf
   exact hf
 
-/-- Second derivative of the normalized integral at a positive argument. -/
-theorem deriv_deriv_UIr (a : Pos) (b z : ℝ) (hz : 0 < z) :
-    deriv (deriv (UIr a b)) z =
-      (Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 2) (b + 2) z := by
-  have h := (hasDerivAt_laplaceIntegral (a.1 + 1) (b + 1) z
-    (add_pos a.2 zero_lt_one) hz).const_mul (-(Real.Gamma a.1)⁻¹)
-  have heq : deriv (UIr a b) =ᶠ[𝓝 z]
-      fun w => -(Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 1) (b + 1) w := by
-    filter_upwards [Ioi_mem_nhds hz] with w hw
-    exact (hasDerivAt_UIr a b w hw).deriv
-  have hd := (h.congr_of_eventuallyEq heq).deriv
-  simpa only [neg_mul_neg, show a.1 + 1 + 1 = a.1 + 2 by ring,
-    show b + 1 + 1 = b + 2 by ring] using hd
-
-/-- Kummer's equation for the positive integral definition. -/
+/- Second derivative of the normalized integral at a positive argument. -/
 theorem UIr_ode (a : Pos) (b z : ℝ) (hz : 0 < z) :
     z * deriv (deriv (UIr a b)) z + (b - z) * deriv (UIr a b) z - a.1 * UIr a b z = 0 := by
-  rw [deriv_deriv_UIr a b z hz, (hasDerivAt_UIr a b z hz).deriv]
+  have _h_inl_13 : deriv (deriv (UIr a b)) z =
+      (Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 2) (b + 2) z := by
+      have h := (hasDerivAt_laplaceIntegral (a.1 + 1) (b + 1) z
+        (add_pos a.2 zero_lt_one) hz).const_mul (-(Real.Gamma a.1)⁻¹)
+      have heq : deriv (UIr a b) =ᶠ[𝓝 z]
+          fun w => -(Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 1) (b + 1) w := by
+        filter_upwards [Ioi_mem_nhds hz] with w hw
+        exact (hasDerivAt_UIr a b w hw).deriv
+      have hd := (h.congr_of_eventuallyEq heq).deriv
+      simpa only [neg_mul_neg, show a.1 + 1 + 1 = a.1 + 2 by ring,
+        show b + 1 + 1 = b + 2 by ring] using hd
+
+    /- Kummer's equation for the positive integral definition. -/
+  rw [_h_inl_13, (hasDerivAt_UIr a b z hz).deriv]
   change z * ((Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 2) (b + 2) z) +
     (b - z) * (-(Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 1) (b + 1) z) -
     a.1 * ((Real.Gamma a.1)⁻¹ * laplaceIntegral a.1 b z) = 0

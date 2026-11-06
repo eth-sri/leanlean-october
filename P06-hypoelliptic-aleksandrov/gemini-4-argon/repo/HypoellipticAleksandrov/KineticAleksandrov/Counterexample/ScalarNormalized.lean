@@ -18,7 +18,7 @@ open Filter Asymptotics
 open scoped Topology
 
 /-- A three-degree lower power remainder gives the exact normalized limit. -/
-theorem scalar_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ)
+theorem scalar_tail_ratio (f : ℝ → ℝ) (alpha c )
     (hr : IsBigO atTop (fun s => f s - c * Real.rpow s alpha)
       (fun s => Real.rpow s (alpha - 3))) :
     Tendsto (fun s => f s / Real.rpow s alpha) atTop (𝓝 c) := by
@@ -28,8 +28,7 @@ theorem scalar_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ)
   have hp : Tendsto (fun s : ℝ => Real.rpow s (-3)) atTop (𝓝 0) := by
     simpa only [Real.rpow_eq_pow] using
       tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 3)
-  have hzero := hb.trans_tendsto hp
-  have h := tendsto_const_nhds.add hzero (a := c)
+  have h := tendsto_const_nhds.add (hb.trans_tendsto hp) (a := c)
   simp only [add_zero] at h
   apply h.congr'
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
@@ -43,9 +42,7 @@ theorem scalar_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ)
 theorem F_ratio_atTop (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
     Tendsto (fun s => F gamma Lam s / Real.rpow |s| (3 * gamma.1))
       atTop (𝓝 (Real.rpow (9 * Lam) (-gamma.1))) := by
-  have h := scalar_tail_ratio (Fplus gamma Lam) (3 * gamma.1)
-    (Real.rpow (9 * Lam) (-gamma.1)) (Fplus_asymptotic gamma Lam hLam)
-  apply h.congr'
+  apply (scalar_tail_ratio (Fplus gamma Lam) (3 * gamma.1) (Real.rpow (9 * Lam) (-gamma.1)) (Fplus_asymptotic gamma Lam hLam)).congr'
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
   simp only [F, hs, ↓reduceIte, abs_of_pos hs]
 
@@ -60,8 +57,7 @@ theorem F_ratio_atBot (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
   rw [scalar_matching_trace_coefficient gamma Lam hLam hmatch] at hb
   have h := scalar_tail_ratio (fun s => Fminus gamma Lam (-s)) (3 * gamma.1)
     (Real.rpow (9 * Lam) (-gamma.1)) hb
-  have ht := h.comp tendsto_neg_atBot_atTop
-  apply ht.congr'
+  apply (h.comp tendsto_neg_atBot_atTop).congr'
   filter_upwards [eventually_lt_atBot (0 : ℝ)] with s hs
   simp only [Function.comp_def, neg_neg, F, hs, not_lt.mpr hs.le,
     ↓reduceIte, abs_of_neg hs]

@@ -20,15 +20,14 @@ open scoped Convex
 /-- A signed spatial difference quotient is bounded by the corresponding directed
 spatial Fréchet derivative along its coordinate segment. -/
 theorem abs_spatialDifferenceQuotient_le_of_segment_spatialFDeriv_bound
-    {d : ℕ} {f : TimeVelocity d → ℝ} {M h : ℝ}
-    {k : Fin d} {z : TimeVelocity d}
+    {d f M h k} {z : TimeVelocity d}
     (hdiff : ∀ w ∈ [z -[ℝ] spatialShift k h z], DifferentiableAt ℝ f w)
     (hdir : ∀ w ∈ [z -[ℝ] spatialShift k h z],
       |(fderiv ℝ f w) (0, PDE.basisVec k)| ≤ M) :
     |spatialDifferenceQuotient k h f z| ≤ M := by
   by_cases hzero : h = 0
   · subst h
-    have hMnonneg : 0 ≤ M :=
+    have hMnonneg :=
       (abs_nonneg ((fderiv ℝ f z) (0, PDE.basisVec k))).trans
         (hdir z (left_mem_segment ℝ z (spatialShift k 0 z)))
     simpa only [spatialDifferenceQuotient_apply, spatialTranslate_apply,

@@ -15,23 +15,7 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter Set
 open scoped Topology
 
-/-- Every contraction factor admits a strictly positive Hölder exponent below one. -/
-theorem exists_holder_exponent_of_contraction {q : ℝ} (hq : q < 1) :
-    ∃ α : ℝ, 0 < α ∧ α < 1 ∧ q ≤ (1 / 2 : ℝ) ^ α := by
-  have hcont : ContinuousAt (fun α : ℝ => (1 / 2 : ℝ) ^ α) 0 :=
-    Real.continuousAt_const_rpow (by norm_num)
-  have hnhds : {α : ℝ | q < (1 / 2 : ℝ) ^ α} ∈ 𝓝 0 :=
-    hcont.preimage_mem_nhds (Ioi_mem_nhds (by simpa only [Real.rpow_zero] using hq))
-  obtain ⟨ε, hε, hsub⟩ := Metric.mem_nhds_iff.mp hnhds
-  let α := min (ε / 2) (1 / 2)
-  have hα : 0 < α := lt_min (half_pos hε) (by norm_num)
-  have hαε : α < ε := (min_le_left _ _).trans_lt (half_lt_self hε)
-  have hα1 : α < 1 := (min_le_right _ _).trans_lt (by norm_num)
-  refine ⟨α, hα, hα1, le_of_lt (hsub ?_)⟩
-  change dist α 0 < ε
-  simpa only [Real.dist_eq, sub_zero, abs_of_pos hα] using hαε
-
-/-- A dyadic scale chosen above `x` bounds the corresponding geometric decay by `2x`. -/
+/- Every contraction factor admits a strictly positive Hölder exponent below one. -/
 theorem geometric_decay_le_holder_power {q α x : ℝ}
     (hq : 0 ≤ q) (hα : 0 < α) (hqx : q ≤ (1 / 2 : ℝ) ^ α)
     (n : ℕ) (hn : (1 / 2 : ℝ) ^ (n + 1) < x) :

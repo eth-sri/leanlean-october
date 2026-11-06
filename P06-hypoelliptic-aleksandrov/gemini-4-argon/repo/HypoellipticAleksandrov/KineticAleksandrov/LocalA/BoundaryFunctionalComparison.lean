@@ -13,9 +13,9 @@ open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
 open scoped Topology
 
 /-- A bounded homogeneous physical solution is ordered by its terminal and lateral traces. -/
-theorem bounded_homogeneous_trace_comparison {d : ℕ} {lam Lam : ℝ}
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (a T : ℝ) (haT : a < T) (v₀ : PDE.Vec d) (R : ℝ)
+theorem bounded_homogeneous_trace_comparison {d lam Lam}
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (a T : ℝ) (haT : a < T) (v₀ : PDE.Vec d) (R )
     (u : KineticPoint d → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' localStrip a T v₀ R))
@@ -23,7 +23,7 @@ theorem bounded_homogeneous_trace_comparison {d : ℕ} {lam Lam : ℝ}
       forwardKineticOperator (ofTimeVelocityCoefficient B) u P = 0)
     (hc : ContinuousOn u (localClosedStrip a T v₀ R))
     (hb : ∃ M : ℝ, ∀ P ∈ localClosedStrip a T v₀ R, |u P| ≤ M)
-    (c : ℝ) (htr : ∀ P ∈ localTrace a T v₀ R, u P ≤ c) :
+    (c ) (htr : ∀ P ∈ localTrace a T v₀ R, u P ≤ c) :
     ∀ P ∈ localClosedStrip a T v₀ R, u P ≤ c := by
   obtain ⟨M, hM⟩ := hb
   have hopen : ∀ P ∈ localStrip a T v₀ R, u P ≤ c := by
@@ -54,8 +54,7 @@ theorem bounded_homogeneous_trace_comparison {d : ℕ} {lam Lam : ℝ}
       (a := s) (T := T) (u := fun Q => u (sectionTwoPoint Q) - c)
       ⟨M + |c|, fun Q hQ => by
         have hbQ := le_of_abs_le (hM _ (hmclosed hQ))
-        have hcc := neg_le_abs c
-        linarith only [hbQ, hcc]⟩
+        linarith only [hbQ, (neg_le_abs c)]⟩
       ((hc.comp (continuous_sectionTwoPoint d).continuousOn hmclosed).sub continuousOn_const)
       (fun Q hQ => (hreg Q hQ).sub (IsSliceRegularAt.const c Q))
       (fun Q hQ => by

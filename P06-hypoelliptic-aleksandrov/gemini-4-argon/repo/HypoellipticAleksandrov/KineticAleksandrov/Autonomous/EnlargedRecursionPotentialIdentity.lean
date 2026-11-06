@@ -13,11 +13,11 @@ open SectionTwo TheoremA Evolution
 /-- The actual exit action equals the value of a bounded homogeneous classical potential. -/
 theorem enlarged_stripExit_potential_identity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
     (b : ℝ) (hb : e.1.time < b) (u : Point → ℝ)
     (hphi : IsKineticC112On u {p | p.time < b})
-    (hc : ContinuousOn u {p | p.time ≤ b}) (M : ℝ) (hM : 0 ≤ M)
+    (hc : ContinuousOn u {p | p.time ≤ b}) (M ) (hM : 0 ≤ M)
     (hbound : ∀ p, p.time ≤ b → |u p| ≤ M)
     (hop : ∀ p, p.time < b → forwardScalarOperator A.a u p = 0) :
     (∫ p, u p ∂stripExit hH hLE hlam hLam A H b (stripPoleFinite H e b hb)) = u e.1 := by

@@ -13,7 +13,7 @@ open Set Filter
 open scoped Topology
 
 /-- The Euclidean open ball has the expected closure on the native vector carrier. -/
-theorem comparison_closure_euclideanBall_zero {d : ℕ} {R : ℝ} (hR : 0 < R) :
+theorem comparison_closure_euclideanBall_zero {d R} (hR : 0 < R) :
     closure (PDE.euclideanBall (0 : PDE.Vec d) R) = PDE.euclideanClosedBall 0 R := by
   apply Subset.antisymm
   · exact closure_minimal (PDE.euclideanBall_subset_euclideanClosedBall _ _)
@@ -33,7 +33,7 @@ theorem comparison_closure_euclideanBall_zero {d : ℕ} {R : ℝ} (hR : 0 < R) :
       _ < R ^ 2 := by nlinarith [sq_pos_of_pos hR]
 
 /-- A forward cylinder is the open product box in its free-transport coordinates. -/
-theorem comparison_forwardCylinder_eq_preimage {d : ℕ}
+theorem comparison_forwardCylinder_eq_preimage {d }
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     forwardCylinder Z₀ R hR = (relativeHomeomorph Z₀) ⁻¹'
       (Ioo Z₀.time (Z₀.time + R ^ 2) ×ˢ
@@ -45,7 +45,7 @@ theorem comparison_forwardCylinder_eq_preimage {d : ℕ}
   tauto
 
 /-- The closed forward cylinder is the exact closed product box, including all faces. -/
-theorem comparison_closure_forwardCylinder_eq {d : ℕ}
+theorem comparison_closure_forwardCylinder_eq {d }
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     closure (forwardCylinder Z₀ R hR) =
       relativeClosedBox Z₀ Z₀.time (Z₀.time + R ^ 2) R (R ^ 3) := by
@@ -56,7 +56,7 @@ theorem comparison_closure_forwardCylinder_eq {d : ℕ}
   rfl
 
 /-- Forward kinetic cylinders are open in the physical topology. -/
-theorem isOpen_forwardCylinder {d : ℕ}
+theorem isOpen_forwardCylinder {d }
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     IsOpen (forwardCylinder Z₀ R hR) := by
   rw [comparison_forwardCylinder_eq_preimage]

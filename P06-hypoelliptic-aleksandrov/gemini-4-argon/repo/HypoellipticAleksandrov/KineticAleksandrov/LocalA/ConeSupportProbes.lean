@@ -11,56 +11,44 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter MeasureTheory Parabolic SectionTwo
 open scoped Topology
 
-/-- Compact ambient cutoffs expanding to every physical point. -/
+/- Compact ambient cutoffs expanding to every physical point. -/
 def coneAmbientBump (d n : ℕ) : ContDiffBump (0 : ℝ × PDE.Vec d × PDE.Vec d) :=
   ⟨(n : ℝ) + 1, 2 * ((n : ℝ) + 1), by positivity, by
     have hn : 0 < (n : ℝ) + 1 := by positivity
     linarith only [hn]⟩
 
-/-- The ambient cutoff is eventually one at every fixed point. -/
-theorem coneAmbientBump_tendsto (d : ℕ) (P : KineticPoint d) :
-    Tendsto (fun n => coneAmbientBump d n ((KineticPoint.equivProd d) P)) atTop (𝓝 1) := by
-  apply tendsto_const_nhds.congr'
-  filter_upwards [tendsto_natCast_atTop_atTop.eventually_ge_atTop
-    (‖(KineticPoint.equivProd d) P‖ : ℝ)] with n hn
-  symm
-  apply (coneAmbientBump d n).one_of_mem_closedBall
-  rw [Metric.mem_closedBall, dist_zero_right]
-  exact hn.trans (le_add_of_nonneg_right zero_le_one)
-
-/-- A genuine smooth compact physical probe detecting the positive affine half-space. -/
-def coneCompactProbe {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ)
+/- The ambient cutoff is eventually one at every fixed point. -/
+def coneCompactProbe {d } (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ)
     (P : KineticPoint d) : ℝ :=
   expNegInvGlue (coneCoordinate α e γ P) *
     coneAmbientBump d n ((KineticPoint.equivProd d) P)
 
-/-- The cutoff probe retains exactly the prescribed ambient smoothness. -/
-theorem coneCompactProbe_smooth {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ) :
+/- The cutoff probe retains exactly the prescribed ambient smoothness. -/
+theorem coneCompactProbe_smooth {d } (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ) :
     ContDiff ℝ (⊤ : ℕ∞) (coneCompactProbe α e γ n ∘ (KineticPoint.equivProd d).symm) := by
-  have hs := (coneProbe_smooth α e γ).mul (coneAmbientBump d n).contDiff
-  simpa only [coneCompactProbe, Function.comp_apply, Equiv.apply_symm_apply] using! hs
+  simpa only [coneCompactProbe, Function.comp_apply, Equiv.apply_symm_apply] using! ((coneProbe_smooth α e γ).mul (coneAmbientBump d n).contDiff)
 
-/-- Its support is compact in the actual physical carrier. -/
-theorem coneCompactProbe_compact {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ) :
+/- Its support is compact in the actual physical carrier. -/
+theorem coneCompactProbe_compact {d } (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ) :
     HasCompactSupport (coneCompactProbe α e γ n) :=
   ((coneAmbientBump d n).hasCompactSupport.comp_homeomorph
     (KineticPoint.homeomorphProd d)).mul_left
 
-/-- Every compact probe is nonnegative and below the bounded transition. -/
-theorem coneCompactProbe_bounds {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ)
+/- Every compact probe is nonnegative and below the bounded transition. -/
+theorem coneCompactProbe_bounds {d } (α : ℝ) (e : PDE.Vec d) (γ : ℝ)
     (n : ℕ) (P : KineticPoint d) :
     0 ≤ coneCompactProbe α e γ n P ∧
       coneCompactProbe α e γ n P ≤ expNegInvGlue (coneCoordinate α e γ P) := by
   exact ⟨mul_nonneg (expNegInvGlue.nonneg _) (coneAmbientBump d n).nonneg,
     mul_le_of_le_one_right (expNegInvGlue.nonneg _) (coneAmbientBump d n).le_one⟩
 
-/-- Nonpositive directional speed forces the actual exit measure onto its closed half-space. -/
+/- Nonpositive directional speed forces the actual exit measure onto its closed half-space. -/
 theorem ballExitRaw_directional_cone
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (α : ℝ) (e : PDE.Vec d) (γ : ℝ)
     (hP : coneCoordinate α e γ P.1 = 0)
@@ -101,8 +89,16 @@ theorem ballExitRaw_directional_cone
       rw [Real.norm_eq_abs, abs_of_nonneg (coneCompactProbe_bounds α e γ n Q).1]
       exact (coneCompactProbe_bounds α e γ n Q).2.trans (coneProbe_transition_bound _).2
     · exact Eventually.of_forall (fun Q => by
+        have _h_inl_9 : Tendsto (fun n => coneAmbientBump d n ((KineticPoint.equivProd d) Q)) atTop (𝓝 1) := by
+          apply tendsto_const_nhds.congr'
+          filter_upwards [tendsto_natCast_atTop_atTop.eventually_ge_atTop
+            (‖(KineticPoint.equivProd d) Q‖ : ℝ)] with n hn
+          symm
+          apply (coneAmbientBump d n).one_of_mem_closedBall
+          rw [Metric.mem_closedBall, dist_zero_right]
+          exact hn.trans (le_add_of_nonneg_right zero_le_one)
         simpa only [coneCompactProbe, χ, Function.comp_apply, mul_one] using
-          (coneAmbientBump_tendsto d Q).const_mul
+          _h_inl_9.const_mul
             (expNegInvGlue (coneCoordinate α e γ Q)))
   have hint : Integrable χ μ := Integrable.mono' (integrable_const (1 : ℝ))
     hχc.measurable.aestronglyMeasurable (Eventually.of_forall (fun Q => by

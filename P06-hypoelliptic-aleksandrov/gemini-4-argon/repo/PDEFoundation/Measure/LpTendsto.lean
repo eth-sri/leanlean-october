@@ -32,7 +32,7 @@ namespace PDE
 
 open Filter MeasureTheory
 
-/-- The extended-real `L^p` seminorm is continuous along `L^p`-convergent
+/- The extended-real `L^p` seminorm is continuous along `L^p`-convergent
 families when `p ≥ 1` and the limiting seminorm is finite. -/
 theorem tendsto_eLpNorm_of_tendsto_sub
     {ι α E : Type*} [MeasurableSpace α]
@@ -104,57 +104,12 @@ theorem tendsto_eLpNorm_of_tendsto_sub
       Tendsto.const_add (eLpNorm f p μ) h
     simpa only [add_zero] using hupperTendsto
 
-/-- On a probability measure, `L^p` convergence with `p ≥ 1` implies
+/- On a probability measure, `L^p` convergence with `p ≥ 1` implies
 convergence of Bochner integrals.
 
 Only integrability of the limit and strong measurability of the approximants
 are assumed. The `L^p` convergence itself makes the approximants integrable
 eventually. -/
-theorem tendsto_integral_of_tendsto_eLpNorm_sub
-    {ι α E : Type*} [MeasurableSpace α]
-    [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {μ : Measure α} [IsProbabilityMeasure μ]
-    {p : ℝ≥0∞} (hp : 1 ≤ p)
-    {F : ι → α → E} {f : α → E} {l : Filter ι}
-    (_hF : ∀ i, AEStronglyMeasurable (F i) μ)
-    (hf : Integrable f μ)
-    (h :
-      Tendsto
-        (fun i => eLpNorm (F i - f) p μ)
-        l (𝓝 0)) :
-    Tendsto
-      (fun i => ∫ x, F i x ∂μ)
-      l (𝓝 (∫ x, f x ∂μ)) := by
-  have hFIntegrable :
-      ∀ᶠ i in l, Integrable (F i) μ := by
-    filter_upwards
-      [(tendsto_order.1 h).2 1 zero_lt_one] with i hi
-    have hdiffMemLp :
-        MemLp (F i - f) p μ :=
-      (hi.trans ENNReal.one_lt_top)
-    have hdiffIntegrable :
-        Integrable (F i - f) μ :=
-      hdiffMemLp.integrable hp
-    simpa only [sub_add_cancel] using
-      hdiffIntegrable.add hf
-  have hL1 :
-      Tendsto
-        (fun i => eLpNorm (F i - f) 1 μ)
-        l (𝓝 0) := by
-    refine
-      tendsto_of_tendsto_of_tendsto_of_le_of_le'
-        tendsto_const_nhds h
-        (Eventually.of_forall fun _ => zero_le)
-        ?_
-    exact
-      Eventually.of_forall fun i =>
-        eLpNorm_le_eLpNorm_of_exponent_le hp
-  exact
-    tendsto_integral_of_L1'
-      f hFIntegrable hL1
-
-/-- On a probability measure, centering an `L^p`-convergent sequence by its
-integral preserves `L^p` convergence. This includes the endpoint `p = 1`. -/
 theorem tendsto_eLpNorm_centered_sub_zero
     {ι α : Type*} [MeasurableSpace α]
     {μ : Measure α} [IsProbabilityMeasure μ]
@@ -176,9 +131,39 @@ theorem tendsto_eLpNorm_centered_sub_zero
       l (𝓝 0) := by
   have hpZero : p ≠ 0 :=
     ne_of_gt (zero_lt_one.trans_le hp)
-  have hIntegral :=
-    tendsto_integral_of_tendsto_eLpNorm_sub
-      hp hF hf h
+  have hIntegral : Tendsto
+      (fun i => ∫ x, F i x ∂μ)
+      l (𝓝 (∫ x, f x ∂μ)) := by
+      have hFIntegrable :
+          ∀ᶠ i in l, Integrable (F i) μ := by
+        filter_upwards
+          [(tendsto_order.1 h).2 1 zero_lt_one] with i hi
+        have hdiffMemLp :
+            MemLp (F i - f) p μ :=
+          (hi.trans ENNReal.one_lt_top)
+        have hdiffIntegrable :
+            Integrable (F i - f) μ :=
+          hdiffMemLp.integrable hp
+        simpa only [sub_add_cancel] using
+          hdiffIntegrable.add hf
+      have hL1 :
+          Tendsto
+            (fun i => eLpNorm (F i - f) 1 μ)
+            l (𝓝 0) := by
+        refine
+          tendsto_of_tendsto_of_tendsto_of_le_of_le'
+            tendsto_const_nhds h
+            (Eventually.of_forall fun _ => zero_le)
+            ?_
+        exact
+          Eventually.of_forall fun i =>
+            eLpNorm_le_eLpNorm_of_exponent_le hp
+      exact
+        tendsto_integral_of_L1'
+          f hFIntegrable hL1
+
+    /- On a probability measure, centering an `L^p`-convergent sequence by its
+    integral preserves `L^p` convergence. This includes the endpoint `p = 1`. -/
   have hIntegralDiff :
       Tendsto
         (fun i => (∫ y, f y ∂μ) - ∫ y, F i y ∂μ)

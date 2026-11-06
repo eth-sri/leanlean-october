@@ -46,7 +46,7 @@ theorem exitProbeCc_dense (H : Interval) (T : ℝ) (g : C_c(stripClosedExit H T,
     (isClosed_stripClosedExit H T).isClosedEmbedding_subtypeVal
   obtain ⟨G, -, hG⟩ := BoundedContinuousFunction.exists_extension_norm_eq_of_isClosedEmbedding
     g.toBoundedContinuousFunction hj
-  have hK : IsCompact (j '' tsupport (g : stripClosedExit H T → ℝ)) :=
+  have hK :=
     g.hasCompactSupport.isCompact.image hj.continuous
   obtain ⟨χ, hχ, hc, -, -, hone⟩ :=
     exists_smooth_bump_of_isCompact_subset_isOpen hK isOpen_univ (subset_univ _)

@@ -209,8 +209,7 @@ product rule `D(φu) = φ Du + u Dφ`.
 The value representative and every chosen weak-gradient coordinate must be
 locally integrable with respect to restricted volume.
 -/
-theorem mul_contDiff {d : ℕ} {U : Set (Vec d)}
-    {u φ : Vec d → ℝ} {Du : Vec d → Vec d}
+theorem mul_contDiff {d U u φ Du}
     (h : HasWeakGradientOn U u Du)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (huLoc : MeasureTheory.LocallyIntegrable u (volumeOn U))

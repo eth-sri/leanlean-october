@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTestGerm
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTestEvolution
+import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelTheorem
 
 /-! # Actual normalized clock source potentials and their global strip equation -/
 
@@ -9,21 +11,22 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
+open scoped Topology
 
-/-- The clock test is the genuine normalized killed Duhamel potential. -/
+/- The clock test is the genuine normalized killed Duhamel potential. -/
 def clockSourcePotential
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (T : ℝ)
     (f : exitProbeSubmodule) : Point → ℝ :=
   duhamelPotential (clockEvolution hH hLE hlam hLam A c e).2 T
     (exitProbePhysical f ∘ sectionTwoPoint)
 
-/-- The actual clock test is bounded, smooth on the whole normalized strip, vanishes late,
+/- The actual clock test is bounded, smooth on the whole normalized strip, vanishes late,
 and solves the literal extended transported equation there. -/
 theorem clockSourcePotential_regular
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
     (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
     (hs : tsupport (exitProbePhysical f) ⊆
@@ -59,8 +62,20 @@ theorem clockSourcePotential_regular
   have hzero : ∀ p, R ≤ p.time → duhamelPotential E.2 T
       (exitProbePhysical f ∘ sectionTwoPoint) p = 0 := by
     intro p hp
-    exact clock_duhamel_zero_after E.2 T R (exitProbePhysical f ∘ sectionTwoPoint)
-      (fun q hq => hz (sectionTwoPoint q) hq) p hp
+    let K := E.2
+    let g := (exitProbePhysical f ∘ sectionTwoPoint)
+    have hg := (fun q hq => hz (sectionTwoPoint q) hq)
+    apply setIntegral_eq_zero_of_forall_eq_zero
+    intro r hr
+    unfold duhamelIntegrand
+    split
+    · unfold duhamelSourceIntegral
+      have hz : (fun w : EvolutionAmbientState 1 => g ⟨r, w.1, w.2⟩) = 0 := by
+        funext w
+        exact hg ⟨r, w.1, w.2⟩ (hp.trans hr.1.le)
+      rw [hz]
+      exact integral_zero' _ _
+    · rfl
   refine ⟨⟨C, hC, hb⟩,
     clock_native_smooth_to_scalar _
       (clock_native_smooth_of_zero_after _ R T hRT hsm hzero), hzero, ?_⟩

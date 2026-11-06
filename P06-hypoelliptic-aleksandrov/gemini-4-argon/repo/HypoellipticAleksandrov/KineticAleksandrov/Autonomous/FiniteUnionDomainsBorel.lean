@@ -51,16 +51,13 @@ theorem finiteUnion_component_family_measurable
       exact False.elim (hn (Finset.mem_univ _))
   have hm : Measurable (fun e => ∑ i : Fin H.count, g i e) :=
     Finset.measurable_sum _ (fun i _ => hg i)
-  have hfun : (fun e : FiniteUnionPole H T =>
-      f (finiteUnionPoleIndex H T e) (finiteUnionComponentPole H T e) B) =
-        fun e => ∑ i : Fin H.count, g i e := funext heq
-  rw [hfun]
+  rw [(funext heq)]
   exact hm
 
 /-- The actual Green family of a finite union has Borel pole dependence. -/
 theorem finiteUnionGreen_measurable
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : WithTop ℝ) :
     Measurable (finiteUnionGreen hH hLE hlam hLam A H T) := by
   unfold finiteUnionGreen
@@ -72,7 +69,7 @@ theorem finiteUnionGreen_measurable
 /-- The actual finite-horizon exit family of a finite union has Borel pole dependence. -/
 theorem finiteUnionExit_measurable
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) :
     Measurable (finiteUnionExit hH hLE hlam hLam A H T) := by
   unfold finiteUnionExit

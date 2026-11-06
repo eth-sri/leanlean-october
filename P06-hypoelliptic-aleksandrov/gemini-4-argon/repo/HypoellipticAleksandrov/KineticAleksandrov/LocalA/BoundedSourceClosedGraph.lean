@@ -75,8 +75,7 @@ def compactRepresentativeMap : H →ₗ[ℝ] C(K, ℝ) := by
 theorem compactRepresentativeMap_apply_eq (u : H) (g : E → ℝ)
     (hg : ContinuousOn g U) (he : (u.1 : E → ℝ) =ᵐ[μ.restrict U] g) (z : K) :
     compactRepresentativeMap μ U K hU hKU H hrep u z = g z := by
-  have hae := (continuousWeakRepresentative_ae μ U H hrep u).symm.trans he
-  have hpoint := Measure.eqOn_open_of_ae_eq hae hU
+  have hpoint := Measure.eqOn_open_of_ae_eq ((continuousWeakRepresentative_ae μ U H hrep u).symm.trans he) hU
     (continuousWeakRepresentative_continuous μ U H hrep u) hg
   exact hpoint (hKU z.2)
 
@@ -92,9 +91,7 @@ theorem continuous_compactRepresentativeMap :
   let f := continuousWeakRepresentative μ U H hrep
   have hf := continuousWeakRepresentative_continuous μ U H hrep x
   have hx := continuousWeakRepresentative_ae μ U H hrep x
-  have hlp : Tendsto (fun n => (u n).1) atTop (𝓝 x.1) :=
-    continuous_subtype_val.tendsto x |>.comp hu
-  obtain ⟨σ, hσ, hae⟩ := (tendstoInMeasure_of_tendsto_Lp hlp).exists_seq_tendsto_ae
+  obtain ⟨σ, hσ, hae⟩ := (tendstoInMeasure_of_tendsto_Lp (continuous_subtype_val.tendsto x |>.comp hu)).exists_seq_tendsto_ae
   have hseq : ∀ᵐ z ∂μ.restrict U, ∀ n, (u n).1 z = f (u n) z :=
     ae_all_iff.mpr (fun n => continuousWeakRepresentative_ae μ U H hrep (u n))
   let yext : E → ℝ := fun z => if hz : z ∈ K then y ⟨z, hz⟩ else 0
@@ -108,12 +105,11 @@ theorem continuous_compactRepresentativeMap :
       ae_restrict_of_ae_restrict_of_subset hKU hseq,
       ae_restrict_of_ae_restrict_of_subset hKU hx, ae_restrict_mem hK.measurableSet]
       with z hz hs hxz hzK
-    have hp := (continuous_eval_const ⟨z, hzK⟩).tendsto y |>.comp hy
-    have hpσ := hp.comp hσ.tendsto_atTop
+    have hpσ := ((continuous_eval_const ⟨z, hzK⟩).tendsto y |>.comp hy).comp hσ.tendsto_atTop
     have hactual : Tendsto (fun n => f (u (σ n)) z) atTop (𝓝 (f x z)) := by
       rw [hxz] at hz
       exact hz.congr' (Eventually.of_forall fun n => hs (σ n))
-    have hp' : Tendsto (fun n => f (u (σ n)) z) atTop (𝓝 (y ⟨z, hzK⟩)) := hpσ
+    have hp' := hpσ
     change yext z = f x z
     rw [show yext z = y ⟨z, hzK⟩ from dite_eq_left hzK]
     exact tendsto_nhds_unique hp' hactual

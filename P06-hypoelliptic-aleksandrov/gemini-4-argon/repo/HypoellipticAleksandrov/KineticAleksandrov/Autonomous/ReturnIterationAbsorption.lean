@@ -18,13 +18,13 @@ theorem return_height_absorption (beta gamma c eps d Ma Mb U : ℝ)
     (hMa : 0 ≤ Ma) (hMb : Ma ≤ Mb) (hU : 0 ≤ U)
     (hheight : 0 < Mb → c * d ^ beta * Ma ^ (1 + gamma) * Mb ^ (-gamma) ≤ U) :
     Ma ≤ eps * Mb + (c * eps ^ gamma)⁻¹ * d ^ (-beta) * U := by
-  have hMb0 : 0 ≤ Mb := hMa.trans hMb
+  have hMb0 := hMa.trans hMb
   have herr0 : 0 ≤ (c * eps ^ gamma)⁻¹ * d ^ (-beta) * U := by positivity
   by_cases hsmall : Ma ≤ eps * Mb
   · exact hsmall.trans (le_add_of_nonneg_right herr0)
-  have hlarge : eps * Mb < Ma := lt_of_not_ge hsmall
-  have hMapos : 0 < Ma := (mul_nonneg heps.le hMb0).trans_lt hlarge
-  have hMbpos : 0 < Mb := hMapos.trans_le hMb
+  have hlarge := lt_of_not_ge hsmall
+  have hMapos := (mul_nonneg heps.le hMb0).trans_lt hlarge
+  have hMbpos := hMapos.trans_le hMb
   have hpow := Real.rpow_le_rpow (mul_nonneg hMb0 heps.le)
     (by nlinarith : Mb * eps ≤ Ma) hgamma.le
   rw [Real.mul_rpow hMb0 heps.le] at hpow

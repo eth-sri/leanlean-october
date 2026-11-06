@@ -5,6 +5,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.ContinuedPhaseSta
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.BlockParameters
 import Mathlib.MeasureTheory.Measure.Module
 import Mathlib.Tactic.Linarith
+import HypoellipticAleksandrov.KineticAleksandrov.Decay.PhaseCurve
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonEvolution
+import Mathlib.Tactic.FunProp
 
 /-! # Source block phase errors after continuation and trimming -/
 
@@ -15,7 +18,7 @@ open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
-/-- The two actual corridor phases remain in quarter-width strips after continuation. -/
+/- The two actual corridor phases remain in quarter-width strips after continuation. -/
 theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
     (lam Lam m Lb Cstar σ : ℝ) (D : Set (PDE.Vec d))
     (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
@@ -113,8 +116,35 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
       have h := q.2.2.1
       simpa only [hq] using h
     have hq' : q = movingQuery σ (σ + blockL0 m) hστ v0 z0 hv := Subtype.ext hq
-    have hphase := phase_localization_of_continuous_curve d lam Lam m Lb D B b
-      hsetting σ (σ + blockL0 m) (blockEta m Lb) γ hη hγ.1 S K hreal ξ z0 v0 hξ hστ hv
+    have hphase : ∀ᵐ x ∂K.master (movingQuery σ (σ + blockL0 m) hστ v0 z0 hv),
+      |phaseCoordinate ξ z0 x - phaseCenter ξ b γ σ (σ + blockL0 m)| ≤ Lb * (blockEta m Lb) * ((σ + blockL0 m) - σ) := by
+      let τ := (σ + blockL0 m)
+      let ρ := (blockEta m Lb)
+      have hγ := hγ.1
+      let μ := K.master (movingQuery σ τ hστ v0 z0 hv)
+      have hfinite : IsFiniteMeasure μ := ⟨(K.mass_le_one _).trans_lt ENNReal.one_lt_top⟩
+      let U := evolutionStateSet (PDE.euclideanBall 0 ρ) γ τ
+      have hU : IsOpen U := (isOpen_movingDomain (PDE.isOpen_euclideanBall 0 ρ) τ).prod
+        isOpen_univ
+      have hμ : μ Uᶜ = 0 := by
+        have hr : μ.restrict U = μ := K.terminal_support _
+        calc
+          μ Uᶜ = (μ.restrict U) Uᶜ := by rw [hr]
+          _ = μ (Uᶜ ∩ U) := Measure.restrict_apply hU.measurableSet.compl
+          _ = 0 := by simp only [compl_inter_self, measure_empty]
+      have hq : Continuous (fun x : EvolutionAmbientState d =>
+          phaseCoordinate ξ z0 x - phaseCenter ξ b γ σ τ) := by
+        unfold phaseCoordinate PDE.vecDot
+        simp only [Pi.sub_apply]
+        fun_prop
+      apply ae_phase_strip_of_forbidden_tests hU hμ hq (Lb * ρ * (τ - σ))
+      intro sgn hsgn φ hφ hc hs hbound
+      let φB := smoothTestDatum φ hφ hbound
+      have hdatum : IsSmoothCompactTerminalDatum (PDE.euclideanBall 0 ρ)
+          γ τ φB := ⟨hφ, hc, fun x hx => (hs hx).2⟩
+      exact phase_test_zero_of_continuous_curve d lam Lam
+        m Lb D B b hsetting σ τ ρ γ hη hγ S K hreal
+        ξ z0 v0 hξ hστ hv sgn hsgn φB hdatum hbound (fun x hx => (hs hx).1)
     rw [← hq'] at hphase
     have hRphase : ∀ᵐ p ∂R, |phaseCoordinate ξ z0 p.1 -
         phaseCenter ξ b γ σ (σ + blockL0 m)| ≤ Lb * blockEta m Lb * blockL0 m := by

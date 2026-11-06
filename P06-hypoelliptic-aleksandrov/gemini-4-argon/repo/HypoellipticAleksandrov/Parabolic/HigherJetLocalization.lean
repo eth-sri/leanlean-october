@@ -16,7 +16,7 @@ compact plateau.  Its representatives are the full multi-index Leibniz sums.
 namespace HypoellipticAleksandrov.Parabolic
 
 private theorem coordinateIteratedFDeriv_tsupport_subset
-    {d : ℕ} (alpha : TimeVelocityMultiIndex d)
+    {d } (alpha : TimeVelocityMultiIndex d)
     (f : TimeVelocity d → ℝ) :
     tsupport (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) ⊆
       tsupport f := by
@@ -32,12 +32,12 @@ private theorem coordinateIteratedFDeriv_tsupport_subset
     rfl
   · exact isClosed_closure
 
-/-- Every representative in the weak Leibniz family is supported in the
+/- Every representative in the weak Leibniz family is supported in the
 topological support of its classical multiplier. -/
 theorem parabolicWeakMulRepresentative_tsupport_subset
-    {d L : ℕ}
+    {d L }
     (b : TimeVelocity d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U u}
     (D : ParabolicWeakDerivativeFamily d L U u)
     (beta : ParabolicDerivativeIndex d L) :
     tsupport (parabolicWeakMulRepresentative b D beta) ⊆ tsupport b := by
@@ -56,17 +56,17 @@ theorem parabolicWeakMulRepresentative_tsupport_subset
     rw [hderiv, mul_zero, zero_mul]
   · exact isClosed_closure
 
-/-- On an open plateau, the ordinary representatives of the full weak
+/- On an open plateau, the ordinary representatives of the full weak
 Leibniz family agree pointwise with the original ordinary representatives. -/
 theorem ParabolicWeakDerivativeFamily.mulContDiffOn_ordinaryRepresentative_eqOn
-    {d m : ℕ} {U V : Set (TimeVelocity d)}
+    {d m U V}
     (hU : IsOpen U) (hV : IsOpen V)
     (B : ParabolicDerivativeIndex d (2 * m) → ℝ)
     (hB : ∀ alpha, 0 ≤ B alpha)
     (b : TimeVelocity d → ℝ)
     (hbFinite : ContDiffOn ℝ (2 * m) b U)
     (hbOne : Set.EqOn b 1 V)
-    {u : TimeVelocity d → ℝ}
+    {u }
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
     (hbBound :
       ∀ (alpha : ParabolicDerivativeIndex d (2 * m)) z,
@@ -114,7 +114,7 @@ theorem ParabolicWeakDerivativeFamily.mulContDiffOn_ordinaryRepresentative_eqOn
       have horder : gamma.left.order ≠ 0 := by
         obtain ⟨c, hc⟩ := Function.ne_iff.mp hleft_ne
         have hc' : gamma.left c ≠ 0 := by simpa using hc
-        have hcpos : 0 < gamma.left c := Nat.pos_of_ne_zero hc'
+        have hcpos := Nat.pos_of_ne_zero hc'
         have hle : gamma.left c ≤ gamma.left.order := by
           cases c with
           | inl t =>
@@ -138,36 +138,23 @@ theorem ParabolicWeakDerivativeFamily.mulContDiffOn_ordinaryRepresentative_eqOn
       unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
       rw [iteratedFDeriv_const_of_ne (by simpa using horder) (1 : ℝ)]
       rfl
-    have hderiv_zero :
-        TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left b z = 0 :=
-      hconst.trans hconst_zero
-    rw [hderiv_zero, mul_zero, zero_mul]
-
-private theorem coordinateIteratedFDeriv_continuous
-    {d : ℕ} (alpha : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    Continuous (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) := by
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := hf.iteratedFDeriv_right
-    (m := 0) (i := alpha.coordinateList.length) (by exact_mod_cast le_top)
-  exact ((contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi).continuous
+    rw [(hconst.trans hconst_zero), mul_zero, zero_mul]
 
 private theorem coordinateIteratedFDeriv_hasCompactSupport
-    {d : ℕ} (alpha : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
+    {d } (alpha : TimeVelocityMultiIndex d)
+    (f ) (hf : HasCompactSupport f) :
     HasCompactSupport
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) :=
   hf.of_isClosed_subset isClosed_closure
     (coordinateIteratedFDeriv_tsupport_subset alpha f)
 
-/-- A compact subset of an open carrier admits a smooth compact plateau whose
+/- A compact subset of an open carrier admits a smooth compact plateau whose
 full finite weak Leibniz family is supported in the plateau support and agrees
 with the original ordinary family on a strictly smaller closed collar. -/
 theorem exists_localizedHigherJetFamily
-    {d m : ℕ} {U C : Set (TimeVelocity d)}
+    {d m U C}
     (hU : IsOpen U) (hC : IsCompact C) (hCU : C ⊆ U)
-    {u : TimeVelocity d → ℝ}
+    {u }
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u) :
     ∃ (δ : ℝ) (_ : 0 < δ)
       (b : TimeVelocity d → ℝ)
@@ -203,9 +190,16 @@ theorem exists_localizedHigherJetFamily
   have hbound (alpha : ParabolicDerivativeIndex d (2 * m)) :
       ∃ M : ℝ, ∀ z,
         |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 b z| ≤ M := by
+    have _h_inl_9 : Continuous (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 b) := by
+      let alpha := alpha.1
+      unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
+      have hi := hbSmooth.iteratedFDeriv_right
+        (m := 0) (i := alpha.coordinateList.length) (by exact_mod_cast le_top)
+      exact ((contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
+        (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi).continuous
     obtain ⟨M, hM⟩ :=
       (coordinateIteratedFDeriv_hasCompactSupport alpha.1 b hbCompact).exists_bound_of_continuous
-        (coordinateIteratedFDeriv_continuous alpha.1 b hbSmooth)
+        _h_inl_9
     exact ⟨M, by simpa [Real.norm_eq_abs] using hM⟩
   let B : ParabolicDerivativeIndex d (2 * m) → ℝ := fun alpha ↦
     max 0 (Classical.choose (hbound alpha))
@@ -215,7 +209,7 @@ theorem exists_localizedHigherJetFamily
         |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 b z| ≤ B alpha := by
     intro alpha z hz
     exact (Classical.choose_spec (hbound alpha) z).trans (le_max_right _ _)
-  let Dloc : ParabolicWeakDerivativeFamily d (2 * m) U (fun z ↦ b z * u z) :=
+  let Dloc :=
     D.mulContDiffOn hU B hB b hbFinite hbBound
   refine ⟨δ, hδ, b, hbSmooth, hbCompact, hbSupport, hbOne,
     B, hB, hbBound, Dloc, ?_, ?_, δ / 2, by positivity, by linarith, ?_⟩

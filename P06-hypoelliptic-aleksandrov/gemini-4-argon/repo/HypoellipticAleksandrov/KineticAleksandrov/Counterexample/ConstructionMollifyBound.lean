@@ -1,6 +1,13 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyApproximateIdentity
+import Mathlib.Analysis.Calculus.BumpFunction.Convolution
+import Mathlib.Analysis.Calculus.ContDiff.Convolution
+import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+import Mathlib.Tactic.Positivity
+import PDEFoundation.Ambient.Basic
 
 /-! # Essential bounds suffice for normalized spatial convolution -/
 
@@ -9,8 +16,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 open scoped Convolution
+open Filter ContinuousLinearMap
+open scoped Topology ENNReal
 
-/-- The normalized mollifier respects an essential bound, without changing the selected
+/- The normalized mollifier respects an essential bound, without changing the selected
 representative on its exceptional null set. -/
 theorem construction_spatialMollify_norm_le_ae {G : Type*}
     [NormedAddCommGroup G] [NormedSpace ℝ G] [MeasureSpace G] [BorelSpace G]
@@ -35,6 +44,9 @@ theorem construction_spatialMollify_norm_le_ae {G : Type*}
     exact convolution_congr (ContinuousLinearMap.lsmul ℝ ℝ)
       (Filter.Eventually.of_forall (fun _ => rfl)) he
   rw [← hc]
-  exact spatialMollify_norm_le phi f hf C hC hfB q
+  have h := dist_convolution_le (μ := volume) (x₀ := q) (z₀ := (0 : ℝ)) hC
+    phi.support_normed_eq.subset phi.nonneg_normed phi.integral_normed hf
+    (fun y _ => by simpa only [dist_zero_right] using! hfB y)
+  simpa only [spatialMollify, dist_zero_right] using! h
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

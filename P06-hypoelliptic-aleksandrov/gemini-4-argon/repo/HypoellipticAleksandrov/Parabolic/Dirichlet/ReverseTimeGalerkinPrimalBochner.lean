@@ -110,7 +110,7 @@ theorem ae_reverseTimeGalerkinPrimal_eq_raw
 
 private theorem reverseTimeGalerkinPrimal_value_energy_le_bound
     (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
-    (t : ℝ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
+    (t ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
     ‖valueCLM hΩ
       (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial t)‖ ^ 2 ≤

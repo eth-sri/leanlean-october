@@ -13,11 +13,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
 
-/-- The positive geometric power appearing in the source cover. -/
+/- The positive geometric power appearing in the source cover. -/
 def geometricBandPower (delta : ℝ) (j : ℕ) : ℝ :=
   (4 * (7 / 8 : ℝ) ^ j) ^ delta
 
-/-- The geometric band powers are summable exactly in the positive-exponent regime. -/
+/- The geometric band powers are summable exactly in the positive-exponent regime. -/
 theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
     Summable (geometricBandPower delta) := by
   have he (j : ℕ) : geometricBandPower delta j =
@@ -33,14 +33,14 @@ theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
   · positivity
   · exact Real.rpow_lt_one (by norm_num) (by norm_num) hd
 
-/-- The geometric band sum is strictly positive. -/
+/- The geometric band sum is strictly positive. -/
 theorem geometricBandPower_tsum_pos (delta : ℝ) (hd : 0 < delta) :
     0 < ∑' j, geometricBandPower delta j := by
   exact (geometricBandPower_summable delta hd).tsum_pos
     (fun j => by unfold geometricBandPower; positivity) 0
     (by unfold geometricBandPower; positivity)
 
-/-- Sum both velocity signs, retaining the source uniform power of R. -/
+/- Sum both velocity signs, retaining the source uniform power of R. -/
 theorem geometricBandPower_sum (C R delta k : ℝ) (hC : 0 ≤ C) (hR : 0 < R)
     (hd : 0 < delta) :
     (∑' i : Bool × ℕ, ENNReal.ofReal (C * R ^ k * geometricBandPower delta i.2)) =
@@ -55,10 +55,10 @@ theorem geometricBandPower_sum (C R delta k : ℝ) (hC : 0 ≤ C) (hR : 0 < R)
   congr 1
   ring
 
-/-- A finite q-power integral bound yields the source real Lq norm bound. -/
+/- A finite q-power integral bound yields the source real Lq norm bound. -/
 theorem density_norm_of_power_bound {X : Type*} [MeasurableSpace X]
     (m : Measure X) (g : X → ℝ) (hgm : Measurable g)
-    (q K : ℝ) (hq : 0 < q) (hK : 0 ≤ K)
+    (q K ) (hq : 0 < q) (hK : 0 ≤ K)
     (hint : ∫⁻ x, ‖g x‖ₑ ^ q ∂m ≤ ENNReal.ofReal K) :
     MemLp g (ENNReal.ofReal q) m ∧
       (eLpNorm g (ENNReal.ofReal q) m).toReal ≤ K ^ (1 / q) := by
@@ -74,14 +74,5 @@ theorem density_norm_of_power_bound {X : Type*} [MeasurableSpace X]
   exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hn).trans_eq
     (ENNReal.toReal_ofReal (Real.rpow_nonneg hK _))
 
-/-- Taking the q-th root gives exactly the homogeneous source power 6/q-4. -/
-theorem geometricBandPower_root (C R delta q : ℝ) (hC : 0 ≤ C) (hR : 0 < R)
-    (hd : 0 < delta) (hq : 0 < q) :
-    (2 * C * (∑' j, geometricBandPower delta j) * R ^ (6 - 4 * q)) ^ (1 / q) =
-      (2 * C * (∑' j, geometricBandPower delta j)) ^ (1 / q) * R ^ (6 / q - 4) := by
-  have hs := (geometricBandPower_tsum_pos delta hd).le
-  rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_mul hR.le]
-  congr 2
-  field_simp
-
+/- Taking the q-th root gives exactly the homogeneous source power 6/q-4. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -115,8 +115,7 @@ theorem mollify_weak_second_jet (phi : ContDiffBump (0 : G))
   have hd : ContDiff ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ test x z) := by
     exact (ht.contDiff_fderiv_apply (by simp)).comp (contDiff_id.prodMk contDiff_const)
   have ha := hfirst (fun x => fderiv ℝ test x z) hd (hs.fderiv_apply (𝕜 := ℝ) z)
-  have hb := hsecond test ht hs
-  rw [hb] at ha
+  rw [(hsecond test ht hs)] at ha
   simpa only [neg_neg] using (congrArg Neg.neg ha).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

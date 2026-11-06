@@ -21,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic
 /-- A compact subset of an open time--velocity carrier has a smooth compact
 plateau on a positive closed metric thickening. -/
 theorem exists_contDiff_one_on_cthickening_tsupport_subset
-    {d : ℕ} {U K : Set (TimeVelocity d)}
+    {d U K}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U) :
     ∃ δ : ℝ, 0 < δ ∧
       ∃ b : TimeVelocity d → ℝ,
@@ -41,14 +41,12 @@ theorem exists_contDiff_one_on_cthickening_tsupport_subset
     exact (Metric.cthickening_mono (by linarith) K).trans hrU
   obtain ⟨f, hf_one, hf_compact, hfU, _⟩ :=
     exists_continuousMap_one_of_isCompact_subset_isOpen hL_compact hU hLU
-  let S : Set (TimeVelocity d) := Metric.cthickening δ K
-  let N : Set (TimeVelocity d) := Metric.thickening δ S
-  have hNS : N ∈ 𝓝ˢ S := by
-    exact Metric.thickening_mem_nhdsSet S hδ
+  let S := Metric.cthickening δ K
+  let N := Metric.thickening δ S
+  have hNS := Metric.thickening_mem_nhdsSet S hδ
   have hNL : N ⊆ L := by
     intro z hz
-    have hz' : z ∈ Metric.thickening (r / 4 + r / 4) K := by
-      exact Metric.thickening_cthickening_subset (r / 4) (by positivity) K hz
+    have hz' := Metric.thickening_cthickening_subset (r / 4) (by positivity) K hz
     have hradius : r / 4 + r / 4 = r / 2 := by ring
     rw [hradius] at hz'
     dsimp [L]

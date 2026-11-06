@@ -5,6 +5,7 @@ import Mathlib.LinearAlgebra.Matrix.Notation
 import Mathlib.LinearAlgebra.Matrix.Adjugate
 import Mathlib.Algebra.GroupWithZero.Units.Basic
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.CovarianceBounds
 
 /-! # Uniform covariance estimates with the original ellipticity parameter -/
 
@@ -17,30 +18,100 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Matrix
 open scoped MatrixOrder
 
-/-- Ellipticity is a scalar factor in the dimensionless covariance. -/
+/- Ellipticity is a scalar factor in the dimensionless covariance. -/
 theorem ghat_smul (lam theta : ℝ) : ghat lam theta = lam • ghat 1 theta := by
   ext i j
   fin_cases i <;> fin_cases j <;> simp [ghat, Matrix.smul_apply] <;> ring
 
-/-- Nonnegative scalar multiplication preserves Loewner order. -/
+/- Nonnegative scalar multiplication preserves Loewner order. -/
 theorem covariance_smul_le {A B : Matrix (Fin 2) (Fin 2) ℝ} {c : ℝ}
     (h : A ≤ B) (hc : 0 ≤ c) : c • A ≤ c • B := by
   apply Matrix.le_iff.mpr
   rw [← smul_sub]
   exact (Matrix.le_iff.mp h).smul hc
 
-/-- Upper covariance bound uniform in the ellipticity parameter. -/
+/- Upper covariance bound uniform in the ellipticity parameter. -/
 theorem ghat_upper {lam theta : ℝ} (hlam : 0 < lam) (ht : |theta| ≤ 1) :
     ghat lam theta ≤ (2 * lam) • (1 : Matrix (Fin 2) (Fin 2) ℝ) := by
-  have h := covariance_smul_le (ghat_unit_upper ht) hlam.le
+  have _h_xinl_0 : ghat 1 theta ≤ (2 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) := by
+    have ht0 := (abs_le.mp ht).1
+    have ht1 := (abs_le.mp ht).2
+    have hsq : theta ^ 2 ≤ 1 := by nlinarith
+    have hcube : theta ^ 3 ≤ 1 := by
+      by_cases h0 : 0 ≤ theta
+      · simpa using pow_le_pow_left₀ h0 ht1 3
+      · have := mul_nonpos_of_nonneg_of_nonpos (sq_nonneg theta) (not_le.mp h0).le
+        nlinarith
+    have hc : |theta / 64 + theta ^ 2 / 2| ≤ 33 / 64 := by
+      rw [abs_le]
+      constructor <;> nlinarith [sq_nonneg theta]
+    have ha : |-(theta / 64 + theta ^ 2 / 2)| ≤
+        2 - ((1 + theta ^ 2) / 64 + theta ^ 3 / 3) := by
+      rw [abs_neg]
+      linarith
+    have hb : |-(theta / 64 + theta ^ 2 / 2)| ≤ 2 - (1 / 64 + theta) := by
+      rw [abs_neg]
+      linarith
+    apply Matrix.le_iff.mpr
+    convert posSemidef_two_of_diagonal ha hb using 1
+    ext i j
+    fin_cases i <;> fin_cases j <;> simp [ghat, Matrix.sub_apply, Matrix.smul_apply]
+    all_goals ring
+  have h := covariance_smul_le _h_xinl_0 hlam.le
   simpa only [← ghat_smul, smul_smul, mul_comm lam 2] using h
 
-/-- The next-block overlap factor is the source's exact dimensionless factor. -/
+/- The next-block overlap factor is the source's exact dimensionless factor. -/
 theorem ghat_overlap {lam theta : ℝ} (hlam : 0 < lam)
     (ht0 : -(1 / 128 : ℝ) ≤ theta) (ht1 : theta ≤ 0) :
     ghat lam theta ≤ (13 / 50 : ℝ) • ghat lam (theta + 1) := by
-  have hupper := ghat_unit_cutoff_upper ht0 ht1
-  have hlower := covariance_smul_le (ghat_unit_next_lower ht0)
+  have hupper : ghat 1 theta ≤ (65 / 4096 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) := by
+      have hsq : theta ^ 2 ≤ (1 / 128 : ℝ) ^ 2 := by nlinarith
+      have hcube : theta ^ 3 ≤ 0 := by nlinarith [sq_nonneg theta]
+      have hc : |theta / 64 + theta ^ 2 / 2| ≤ (1 / 8192 : ℝ) := by
+        rw [abs_le]
+        constructor <;> nlinarith [sq_nonneg theta]
+      have ha : |-(theta / 64 + theta ^ 2 / 2)| ≤
+          65 / 4096 - ((1 + theta ^ 2) / 64 + theta ^ 3 / 3) := by
+        rw [abs_neg]
+        linarith
+      have hb : |-(theta / 64 + theta ^ 2 / 2)| ≤ 65 / 4096 - (1 / 64 + theta) := by
+        rw [abs_neg]
+        linarith
+      apply Matrix.le_iff.mpr
+      convert posSemidef_two_of_diagonal ha hb using 1
+      ext i j
+      fin_cases i <;> fin_cases j <;> simp [ghat, Matrix.sub_apply, Matrix.smul_apply]
+      all_goals ring
+
+    /- Lower covariance bound at the next block, proved by a positive shifted polynomial. -/
+  have _h_xinl_1 : (125 / 2048 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) ≤ ghat 1 (theta + 1) := by
+    let u := theta + 1 / 128
+    have hu : 0 ≤ u := by dsimp [u]; linarith
+    have ha : 0 < (1 + (theta + 1) ^ 2) / 64 + (theta + 1) ^ 3 / 3 - 125 / 2048 := by
+      have heq : (1 + (theta + 1) ^ 2) / 64 + (theta + 1) ^ 3 / 3 - 125 / 2048 =
+          u ^ 3 / 3 + 129 * u ^ 2 / 128 + 16637 * u / 16384 + 1859461 / 6291456 := by
+        dsimp [u]
+        ring
+      rw [heq]
+      positivity
+    have hd : 0 <
+        ((1 + (theta + 1) ^ 2) / 64 + (theta + 1) ^ 3 / 3 - 125 / 2048) *
+          (1 / 64 + (theta + 1) - 125 / 2048) -
+        ((theta + 1) / 64 + (theta + 1) ^ 2 / 2) ^ 2 := by
+      have heq :
+          ((1 + (theta + 1) ^ 2) / 64 + (theta + 1) ^ 3 / 3 - 125 / 2048) *
+            (1 / 64 + (theta + 1) - 125 / 2048) -
+          ((theta + 1) / 64 + (theta + 1) ^ 2 / 2) ^ 2 =
+          u ^ 4 / 12 + 1939 * u ^ 3 / 6144 + 116971 * u ^ 2 / 262144 +
+            23512501 * u / 100663296 + 284017651 / 12884901888 := by dsimp [u]; ring
+      rw [heq]
+      positivity
+    apply Matrix.le_iff.mpr
+    convert (posDef_two_of_det ha hd).posSemidef using 1
+    ext i j
+    fin_cases i <;> fin_cases j <;> simp [ghat, Matrix.sub_apply, Matrix.smul_apply]
+    all_goals ring
+  have hlower := covariance_smul_le _h_xinl_1
     (by norm_num : (0 : ℝ) ≤ 13 / 50)
   have heq : (13 / 50 : ℝ) • ((125 / 2048 : ℝ) •
       (1 : Matrix (Fin 2) (Fin 2) ℝ)) =
@@ -52,21 +123,21 @@ theorem ghat_overlap {lam theta : ℝ} (hlam : 0 < lam)
   rw [ghat_smul lam theta, ghat_smul lam (theta + 1)]
   simpa only [smul_smul, mul_comm] using h
 
-/-- Exact velocity diagonal entry of the inverse dimensionless covariance. -/
+/- Exact velocity diagonal entry of the inverse dimensionless covariance. -/
 theorem ghat_inv_velocity (lam theta : ℝ) :
     (ghat lam theta)⁻¹ 1 1 =
       (lam / 64 * (1 + theta ^ 2) + lam * theta ^ 3 / 3) / (ghat lam theta).det := by
   rw [Matrix.inv_def, Matrix.adjugate_fin_two, Ring.inverse_eq_inv]
   simp [ghat, Matrix.smul_apply, div_eq_mul_inv, mul_comm]
 
-/-- Inverse velocity bound, with exactly the source's constant. -/
-theorem ghat_inv_velocity_le {lam theta : ℝ} (hlam : 0 < lam)
+/- Inverse velocity bound, with exactly the source's constant. -/
+theorem ghat_inv_velocity_le {lam theta } (hlam : 0 < lam)
     (ht0 : 0 ≤ theta) (ht1 : theta ≤ 1) : (ghat lam theta)⁻¹ 1 1 ≤ 128 / lam := by
   have hstrip : -(1 / 128 : ℝ) ≤ theta := by linarith
   have hdet := (posDef_ghat hlam hstrip).det_pos
   have hsq : theta ^ 2 ≤ theta := by nlinarith
-  have hcube : 0 ≤ theta ^ 3 := pow_nonneg ht0 3
-  have hfour : 0 ≤ theta ^ 4 := pow_nonneg ht0 4
+  have hcube := pow_nonneg ht0 3
+  have hfour := pow_nonneg ht0 4
   have hscalar : (1 + theta ^ 2) / 64 + theta ^ 3 / 3 ≤
       128 * (1 / 4096 + theta / 64 + theta ^ 3 / 192 + theta ^ 4 / 12) := by
     nlinarith

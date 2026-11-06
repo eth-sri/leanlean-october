@@ -27,22 +27,22 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Scaling
 open MeasureTheory Set
 open HypoellipticAleksandrov
 
-/-- The affine change of variables `σ = σ₀ + a τ`, `y = y₀ + c Y`,
+/- The affine change of variables `σ = σ₀ + a τ`, `y = y₀ + c Y`,
 `z = z₀ + (a τ) w + e Z` (hat variables `(τ, Y, Z)` to original variables `(σ, y, z)`). -/
 structure KineticAffineScaling (d : ℕ) where
-  /-- Time scale `a` (the source's `r²`). -/
+  /- Time scale `a` (the source's `r²`). -/
   a : ℝ
-  /-- Diffused-coordinate scale `c` (the source's `r`). -/
+  /- Diffused-coordinate scale `c` (the source's `r`). -/
   c : ℝ
-  /-- Transported-coordinate scale `e` (the source's `r³`). -/
+  /- Transported-coordinate scale `e` (the source's `r³`). -/
   e : ℝ
-  /-- Time origin `σ₀`. -/
+  /- Time origin `σ₀`. -/
   σ₀ : ℝ
-  /-- Diffused-coordinate origin `y₀`. -/
+  /- Diffused-coordinate origin `y₀`. -/
   y₀ : PDE.Vec d
-  /-- Transported-coordinate origin `z₀`. -/
+  /- Transported-coordinate origin `z₀`. -/
   z₀ : PDE.Vec d
-  /-- Constant transport velocity subtracted from the drift (the source's `b(v_*)`). -/
+  /- Constant transport velocity subtracted from the drift (the source's `b(v_*)`). -/
   w : PDE.Vec d
   a_pos : 0 < a
   c_pos : 0 < c
@@ -54,23 +54,23 @@ variable {d : ℕ} (Φ : KineticAffineScaling d)
 
 /-! ### Coordinate maps, hat to original -/
 
-/-- Original time from hat time. -/
+/- Original time from hat time. -/
 def time (τ : ℝ) : ℝ := Φ.σ₀ + Φ.a * τ
 
-/-- Original diffused coordinate from the hat one. -/
+/- Original diffused coordinate from the hat one. -/
 def position (Y : PDE.Vec d) : PDE.Vec d := Φ.y₀ + Φ.c • Y
 
-/-- Original transported coordinate from the hat one, at hat time `τ`. -/
+/- Original transported coordinate from the hat one, at hat time `τ`. -/
 def transport (τ : ℝ) (Z : PDE.Vec d) : PDE.Vec d :=
   Φ.z₀ + (Φ.a * τ) • Φ.w + Φ.e • Z
 
-/-- Hat time from original time. -/
+/- Hat time from original time. -/
 def timeInv (σ : ℝ) : ℝ := (σ - Φ.σ₀) / Φ.a
 
-/-- Hat diffused coordinate from the original one. -/
+/- Hat diffused coordinate from the original one. -/
 def positionInv (y : PDE.Vec d) : PDE.Vec d := Φ.c⁻¹ • (y - Φ.y₀)
 
-/-- Hat transported coordinate from the original one, at hat time `τ`. -/
+/- Hat transported coordinate from the original one, at hat time `τ`. -/
 def transportInv (τ : ℝ) (z : PDE.Vec d) : PDE.Vec d :=
   Φ.e⁻¹ • (z - Φ.z₀ - (Φ.a * τ) • Φ.w)
 
@@ -120,7 +120,7 @@ theorem continuous_transportInv (τ : ℝ) : Continuous (Φ.transportInv τ) := 
   unfold transportInv
   fun_prop
 
-/-- The change of the diffused coordinate as a homeomorphism. -/
+/- The change of the diffused coordinate as a homeomorphism. -/
 def positionHomeo : PDE.Vec d ≃ₜ PDE.Vec d where
   toFun := Φ.position
   invFun := Φ.positionInv
@@ -129,9 +129,6 @@ def positionHomeo : PDE.Vec d ≃ₜ PDE.Vec d where
   continuous_toFun := Φ.continuous_position
   continuous_invFun := Φ.continuous_positionInv
 
-@[simp] theorem positionHomeo_apply (Y : PDE.Vec d) : Φ.positionHomeo Y = Φ.position Y := rfl
-
-/-- The change of the ambient fixed-time state `(y, z)`, hat to original, at hat time `τ`. -/
 def ambientHomeo (τ : ℝ) : EvolutionAmbientState d ≃ₜ EvolutionAmbientState d where
   toFun x := (Φ.position x.1, Φ.transport τ x.2)
   invFun x := (Φ.positionInv x.1, Φ.transportInv τ x.2)
@@ -144,13 +141,6 @@ def ambientHomeo (τ : ℝ) : EvolutionAmbientState d ≃ₜ EvolutionAmbientSta
   continuous_invFun := (Φ.continuous_positionInv.comp continuous_fst).prodMk
     ((Φ.continuous_transportInv τ).comp continuous_snd)
 
-@[simp] theorem ambientHomeo_apply (τ : ℝ) (x : EvolutionAmbientState d) :
-    Φ.ambientHomeo τ x = (Φ.position x.1, Φ.transport τ x.2) := rfl
-
-@[simp] theorem ambientHomeo_symm_apply (τ : ℝ) (x : EvolutionAmbientState d) :
-    (Φ.ambientHomeo τ).symm x = (Φ.positionInv x.1, Φ.transportInv τ x.2) := rfl
-
-/-- The ambient change of variables as a measurable equivalence. -/
 def ambientEquiv (τ : ℝ) : EvolutionAmbientState d ≃ᵐ EvolutionAmbientState d :=
   (Φ.ambientHomeo τ).toMeasurableEquiv
 
@@ -160,13 +150,10 @@ def ambientEquiv (τ : ℝ) : EvolutionAmbientState d ≃ᵐ EvolutionAmbientSta
 @[simp] theorem ambientEquiv_symm_apply (τ : ℝ) (x : EvolutionAmbientState d) :
     (Φ.ambientEquiv τ).symm x = (Φ.positionInv x.1, Φ.transportInv τ x.2) := rfl
 
-/-! ### The change of variables on kinetic points -/
-
-/-- The change of variables on kinetic points `(τ, Y, Z) ↦ (σ, y, z)`. -/
 def point (p : KineticPoint d) : KineticPoint d :=
   ⟨Φ.time p.time, Φ.position p.position, Φ.transport p.time p.velocity⟩
 
-/-- The inverse change of variables on kinetic points. -/
+/- The inverse change of variables on kinetic points. -/
 def pointInv (p : KineticPoint d) : KineticPoint d :=
   ⟨Φ.timeInv p.time, Φ.positionInv p.position,
     Φ.transportInv (Φ.timeInv p.time) p.velocity⟩
@@ -187,11 +174,11 @@ theorem pointInv_point (p : KineticPoint d) : Φ.pointInv (Φ.point p) = p := by
   simp only [point, pointInv, Φ.timeInv_time, Φ.positionInv_position,
     Φ.transportInv_transport]
 
-/-- The change of variables on raw coordinates `(σ, (y, z))`. -/
+/- The change of variables on raw coordinates `(σ, (y, z))`. -/
 def raw (q : ℝ × (PDE.Vec d × PDE.Vec d)) : ℝ × (PDE.Vec d × PDE.Vec d) :=
   (Φ.time q.1, (Φ.position q.2.1, Φ.transport q.1 q.2.2))
 
-/-- The inverse change of variables on raw coordinates. -/
+/- The inverse change of variables on raw coordinates. -/
 def rawInv (q : ℝ × (PDE.Vec d × PDE.Vec d)) : ℝ × (PDE.Vec d × PDE.Vec d) :=
   (Φ.timeInv q.1, (Φ.positionInv q.2.1, Φ.transportInv (Φ.timeInv q.1) q.2.2))
 
@@ -222,25 +209,14 @@ theorem continuous_pointInv : Continuous Φ.pointInv := by
 
 /-! ### Rescaled coefficient and drift -/
 
-/-- The rescaled coefficient `B̂(τ, Y, Z) = (a / c²) B(σ, y, z)`. -/
+/- The rescaled coefficient `B̂(τ, Y, Z) = (a / c²) B(σ, y, z)`. -/
 def coefficient (B : FullKineticCoefficient d) : FullKineticCoefficient d :=
   fun τ Y Z => (Φ.a / Φ.c ^ 2) • B (Φ.time τ) (Φ.position Y) (Φ.transport τ Z)
 
-/-- The rescaled drift `b̂(Y) = (a / e) (b(y₀ + c Y) - w)`. -/
+/- The rescaled drift `b̂(Y) = (a / e) (b(y₀ + c Y) - w)`. -/
 def drift (b : PDE.Vec d → PDE.Vec d) : PDE.Vec d → PDE.Vec d :=
   fun Y => (Φ.a / Φ.e) • (b (Φ.position Y) - Φ.w)
 
-@[simp] theorem coefficient_apply (B : FullKineticCoefficient d) (τ : ℝ) (Y Z : PDE.Vec d) :
-    Φ.coefficient B τ Y Z =
-      (Φ.a / Φ.c ^ 2) • B (Φ.time τ) (Φ.position Y) (Φ.transport τ Z) := rfl
-
-@[simp] theorem drift_apply (b : PDE.Vec d → PDE.Vec d) (Y : PDE.Vec d) :
-    Φ.drift b Y = (Φ.a / Φ.e) • (b (Φ.position Y) - Φ.w) := rfl
-
-/-! ### Compatibility of the moving domains -/
-
-/-- The hat moving domains are the preimages of the original ones:
-`movingDomain Ω̂ γ̂ τ = {Y | y₀ + c Y ∈ movingDomain Ω γ (σ₀ + a τ)}`. -/
 def MapsDomain (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
     (Ω' : Set (PDE.Vec d)) (γ' : ℝ → PDE.Vec d) : Prop :=
   ∀ τ, movingDomain Ω' γ' τ = Φ.position ⁻¹' movingDomain Ω γ (Φ.time τ)

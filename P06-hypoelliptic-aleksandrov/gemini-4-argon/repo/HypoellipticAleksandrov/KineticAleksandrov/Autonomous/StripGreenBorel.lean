@@ -16,25 +16,22 @@ private def infinitePoleQuery (H : Interval) (q : StripPole H ⊤ × ElapsedTime
   ⟨(q.1.1.time, (q.1.1.time + q.2.1, (q.1.1.velocity, q.1.1.position))),
     le_add_of_nonneg_right q.2.2.1.le, (stripPoleState H ⊤ q.1).2⟩
 
-private theorem measurable_infinitePoleQuery (H : Interval) :
-    Measurable (infinitePoleQuery H) := by
-  have ht : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.1.1.time) :=
-    (continuous_time.measurable.comp measurable_subtype_coe).comp measurable_fst
-  have hv : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.1.1.velocity) :=
-    (continuous_velocity.measurable.comp measurable_subtype_coe).comp measurable_fst
-  have hx : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.1.1.position) :=
-    (continuous_position.measurable.comp measurable_subtype_coe).comp measurable_fst
-  have hτ : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.2.1) :=
-    measurable_subtype_coe.comp measurable_snd
-  apply Measurable.subtype_mk
-  exact ht.prodMk ((ht.add hτ).prodMk (hv.prodMk hx))
-
-/-- Set evaluations of the infinite-horizon measure are Borel in the actual valid pole. -/
 theorem stripGreenOfKernel_infinite_measurable_apply (H : Interval)
     (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (E : Set Point)
     (hE : MeasurableSet E) :
     Measurable (fun e : StripPole H ⊤ => stripGreenOfKernel H K ⊤ e E) := by
-  let κ := K.master.comap (infinitePoleQuery H) (measurable_infinitePoleQuery H)
+  have _h_inl_9 : Measurable (infinitePoleQuery H) := by
+    have ht : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.1.1.time) :=
+      (continuous_time.measurable.comp measurable_subtype_coe).comp measurable_fst
+    have hv : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.1.1.velocity) :=
+      (continuous_velocity.measurable.comp measurable_subtype_coe).comp measurable_fst
+    have hx : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.1.1.position) :=
+      (continuous_position.measurable.comp measurable_subtype_coe).comp measurable_fst
+    have hτ : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.2.1) :=
+      measurable_subtype_coe.comp measurable_snd
+    apply Measurable.subtype_mk
+    exact ht.prodMk ((ht.add hτ).prodMk (hv.prodMk hx))
+  let κ := K.master.comap (infinitePoleQuery H) _h_inl_9
   have : ProbabilityTheory.IsFiniteKernel κ := by dsimp [κ]; infer_instance
   have ht : Measurable (fun q : (StripPole H ⊤ × ElapsedTime ⊤) × EvolutionAmbientState 1 =>
       q.1.1.1.time + q.1.2.1) :=
@@ -59,7 +56,7 @@ theorem stripGreenOfKernel_infinite_measurable_apply (H : Interval)
   rw [he]
   exact hi
 
-/-- Every admitted terminal horizon gives Borel pole dependence, without invalid query branches. -/
+/- Every admitted terminal horizon gives Borel pole dependence, without invalid query branches. -/
 theorem stripGreenOfKernel_measurable_apply (H : Interval)
     (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : WithTop ℝ)
     (E : Set Point) (hE : MeasurableSet E) :
@@ -79,12 +76,12 @@ theorem stripGreenOfKernel_measurable_apply (H : Interval)
     rw [he]
     exact hi
 
-/-- The unique autonomous killed family has the source-required Borel pole dependence. -/
+/- The unique autonomous killed family has the source-required Borel pole dependence. -/
 theorem stripGreen_measurable_apply
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ)
-    (E : Set Point) (hE : MeasurableSet E) :
+    (E ) (hE : MeasurableSet E) :
     Measurable (fun e : StripPole H T => stripGreen hH hLE hlam hLam A H T e E) :=
   stripGreenOfKernel_measurable_apply H _ T E hE
 

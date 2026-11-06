@@ -45,12 +45,12 @@ open Filter MeasureTheory
 
 /-! ## One-sided smooth approximations -/
 
-/-- A smooth step which is zero below `c + δ`, one above `c + 2δ`, and takes
+/- A smooth step which is zero below `c + δ`, one above `c + 2δ`, and takes
 values in `[0, 1]`. -/
 noncomputable def smoothPositivePartStep (c δ t : ℝ) : ℝ :=
   Real.smoothTransition ((t - c) / δ - 1)
 
-/-- The one-sided smooth approximation to `t ↦ max (t - c) 0` obtained by
+/- The one-sided smooth approximation to `t ↦ max (t - c) 0` obtained by
 integrating `smoothPositivePartStep`. -/
 noncomputable def smoothPositivePartApprox (c δ t : ℝ) : ℝ :=
   ∫ s in c..t, smoothPositivePartStep c δ s
@@ -117,7 +117,7 @@ theorem smoothPositivePartApprox_contDiff_one (c δ : ℝ) :
   · rw [deriv_smoothPositivePartApprox]
     exact smoothPositivePartStep_continuous c δ
 
-/-- The one-sided positive-part approximation is smooth to every order. -/
+/- The one-sided positive-part approximation is smooth to every order. -/
 theorem smoothPositivePartApprox_contDiff (c δ : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (smoothPositivePartApprox c δ) := by
   rw [contDiff_infty_iff_deriv]
@@ -132,7 +132,7 @@ theorem abs_deriv_smoothPositivePartApprox_le (c δ t : ℝ) :
     abs_of_nonneg (smoothPositivePartStep_nonneg c δ t)]
   exact smoothPositivePartStep_le_one c δ t
 
-/-- The smooth steps converge pointwise to the strict-superlevel indicator. -/
+/- The smooth steps converge pointwise to the strict-superlevel indicator. -/
 theorem tendsto_smoothPositivePartStep
     {c : ℝ} {δ : ℕ → ℝ} (hδPos : ∀ n, 0 < δ n)
     (hδ : Tendsto δ atTop (𝓝 0)) (t : ℝ) :
@@ -174,7 +174,7 @@ theorem abs_smoothPositivePartApprox_le (c δ t : ℝ) :
     abs_of_nonneg (smoothPositivePartStep_nonneg c δ s)]
   exact smoothPositivePartStep_le_one c δ s
 
-/-- The one-sided approximation vanishes at and below its truncation
+/- The one-sided approximation vanishes at and below its truncation
 threshold. -/
 theorem smoothPositivePartApprox_eq_zero_of_le
     {c δ t : ℝ} (hδ : 0 < δ) (ht : t ≤ c) :
@@ -189,7 +189,7 @@ theorem smoothPositivePartApprox_eq_zero_of_le
     smoothPositivePartStep_eq_zero hδ
       (by linarith [hs.2, le_of_lt hδ])
 
-/-- The one-sided approximation to the positive part is pointwise
+/- The one-sided approximation to the positive part is pointwise
 nonnegative. -/
 theorem smoothPositivePartApprox_nonneg
     {c δ : ℝ} (hδ : 0 < δ) (t : ℝ) :
@@ -200,7 +200,7 @@ theorem smoothPositivePartApprox_nonneg
     exact intervalIntegral.integral_nonneg hct
       (fun s _ => smoothPositivePartStep_nonneg c δ s)
 
-/-- The scalar approximation is uniformly within `2δ` of the positive part. -/
+/- The scalar approximation is uniformly within `2δ` of the positive part. -/
 theorem abs_smoothPositivePartApprox_sub_le
     {c δ : ℝ} (hδ : 0 < δ) (t : ℝ) :
     |smoothPositivePartApprox c δ t - max (t - c) 0| ≤ 2 * δ := by
@@ -269,7 +269,7 @@ namespace W1pFunction
 
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
-/-- Value integrability, gradient integrability, and weak differentiation for truncation. -/
+/- Value integrability, gradient integrability, and weak differentiation for truncation. -/
 theorem positivePartSubConst_data
     (hU : IsOpenBoundedConvexDomain U)
     (hp : 1 ≤ p) (hpTop : p ≠ ∞)
@@ -352,11 +352,7 @@ theorem positivePartSubConst_data
           (fun n => gradSeq n x i)
           atTop (𝓝 (Du x i)) := by
     intro i x
-    have htendsto :=
-      (tendsto_smoothPositivePartStep
-        (c := c) hδPos hδTendsto (u.toFun x)).mul_const
-        (u.grad x i)
-    simpa only [gradSeq, hDuCoord x i] using htendsto
+    simpa only [gradSeq, hDuCoord x i] using ((tendsto_smoothPositivePartStep (c := c) hδPos hδTendsto (u.toFun x)).mul_const (u.grad x i))
   have hfAesm :
       AEStronglyMeasurable f (volumeOn U) :=
     (((continuous_id.sub continuous_const).max continuous_const)
@@ -486,14 +482,9 @@ theorem positivePartSubConst_data
         hp hpTop (hgradSeqAesm i) (hDuMem i)
         (u.grad_memLp i) hbound
         (Filter.Eventually.of_forall (hgradTendsto i))
-  have hweak :
-      HasWeakGradientOn U f Du :=
-    HasWeakGradientOn.of_tendsto_eLpNorm
-      hfMem hDuMem hvalueSeqMem hgradSeqMem hweakSeq
-      hvalueConv hgradConv
-  exact ⟨hfMem, hDuMem, hweak⟩
+  exact ⟨hfMem, hDuMem, (HasWeakGradientOn.of_tendsto_eLpNorm hfMem hDuMem hvalueSeqMem hgradSeqMem hweakSeq hvalueConv hgradConv)⟩
 
-/-- Positive-part truncation of a representative `W^{1,p}` function at a
+/- Positive-part truncation of a representative `W^{1,p}` function at a
 constant level.  Both the value and gradient representatives are literal. -/
 noncomputable def positivePartSubConst
     (hU : IsOpenBoundedConvexDomain U)
@@ -509,24 +500,6 @@ noncomputable def positivePartSubConst
     (positivePartSubConst_data hU hp hpTop u c).2.1
   hasWeakGradient :=
     (positivePartSubConst_data hU hp hpTop u c).2.2
-
-@[simp]
-theorem positivePartSubConst_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) (c : ℝ) :
-    (u.positivePartSubConst hU hp hpTop c).toFun =
-      fun x => max (u.toFun x - c) 0 :=
-  rfl
-
-@[simp]
-theorem positivePartSubConst_grad
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) (c : ℝ) :
-    (u.positivePartSubConst hU hp hpTop c).grad =
-      fun x => {y | c < u.toFun y}.indicator u.grad x :=
-  rfl
 
 end W1pFunction
 

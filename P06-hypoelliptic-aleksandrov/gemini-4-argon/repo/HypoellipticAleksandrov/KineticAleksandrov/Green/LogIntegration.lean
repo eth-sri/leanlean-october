@@ -25,33 +25,32 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Green
 open MeasureTheory Set
 open scoped ENNReal
 
-/-- `∫_{a/2}^{a} dT/T = log 2`. -/
-lemma lintegral_inv_Ioo_half {a : ℝ} (ha : 0 < a) :
-    ∫⁻ T in Ioo (a / 2) a, ENNReal.ofReal T⁻¹ = ENNReal.ofReal (Real.log 2) := by
-  have ha2 : 0 < a / 2 := by positivity
-  have hle : a / 2 ≤ a := by linarith
-  have hint : IntervalIntegrable (fun x : ℝ => x⁻¹) volume (a / 2) a :=
-    intervalIntegral.intervalIntegrable_inv (fun x hx => by
-      rw [Set.uIcc_of_le hle] at hx
-      exact (lt_of_lt_of_le ha2 hx.1).ne') continuousOn_id
-  have h1 : ∫⁻ T in Ioo (a / 2) a, ENNReal.ofReal T⁻¹ =
-      ∫⁻ T in Ioc (a / 2) a, ENNReal.ofReal T⁻¹ :=
-    setLIntegral_congr Ioo_ae_eq_Ioc
-  rw [h1, ← ofReal_integral_eq_lintegral_ofReal
-    (by simpa [IntegrableOn, Set.uIoc_of_le hle] using hint.1)
-    ((ae_restrict_iff' measurableSet_Ioc).2 (Filter.Eventually.of_forall fun T hT =>
-      inv_nonneg.2 (by linarith [hT.1])))]
-  congr 1
-  rw [← intervalIntegral.integral_of_le hle, integral_inv_of_pos ha2 ha]
-  congr 1
-  field_simp
-
-/-- The inner logarithmic integral of the indicator of `T < h < 2T` over `(0,S]`. -/
+/- `∫_{a/2}^{a} dT/T = log 2`. -/
 lemma lintegral_inv_indicator {h S : ℝ} (hh : 0 < h) (hhS : h < S) :
     ∫⁻ T in Ioc 0 S, ENNReal.ofReal T⁻¹ *
         ({p : ℝ | p < h ∧ h < 2 * p}.indicator (fun _ => (1 : ℝ≥0∞)) T) =
       ENNReal.ofReal (Real.log 2) := by
-  rw [← lintegral_inv_Ioo_half hh]
+  have _h_inl_11 : ∫⁻ T in Ioo (h / 2) h, ENNReal.ofReal T⁻¹ = ENNReal.ofReal (Real.log 2) := by
+      have ha2 : 0 < h / 2 := by positivity
+      have hle : h / 2 ≤ h := by linarith
+      have hint : IntervalIntegrable (fun x : ℝ => x⁻¹) volume (h / 2) h :=
+        intervalIntegral.intervalIntegrable_inv (fun x hx => by
+          rw [Set.uIcc_of_le hle] at hx
+          exact (lt_of_lt_of_le ha2 hx.1).ne') continuousOn_id
+      have h1 : ∫⁻ T in Ioo (h / 2) h, ENNReal.ofReal T⁻¹ =
+          ∫⁻ T in Ioc (h / 2) h, ENNReal.ofReal T⁻¹ :=
+        setLIntegral_congr Ioo_ae_eq_Ioc
+      rw [h1, ← ofReal_integral_eq_lintegral_ofReal
+        (by simpa [IntegrableOn, Set.uIoc_of_le hle] using hint.1)
+        ((ae_restrict_iff' measurableSet_Ioc).2 (Filter.Eventually.of_forall fun T hT =>
+          inv_nonneg.2 (by linarith [hT.1])))]
+      congr 1
+      rw [← intervalIntegral.integral_of_le hle, integral_inv_of_pos ha2 hh]
+      congr 1
+      field_simp
+
+    /- The inner logarithmic integral of the indicator of `T < h < 2T` over `(0,S]`. -/
+  rw [← _h_inl_11]
   have hset : {p : ℝ | p < h ∧ h < 2 * p} = Ioo (h / 2) h := by
     ext p; simp only [mem_ofPred_eq, mem_Ioo]; constructor <;> rintro ⟨h1, h2⟩ <;> constructor <;>
       linarith
@@ -72,7 +71,7 @@ lemma lintegral_inv_indicator {h S : ℝ} (hh : 0 < h) (hhS : h < S) :
   · intro hp
     exact ⟨hp, by linarith [hp.1], by linarith [hp.2]⟩
 
-/-- Logarithmic averaging: `log 2 · ν{h < S} ≤ ∫_0^S ν{T < h < 2T} dT/T`. -/
+/- Logarithmic averaging: `log 2 · ν{h < S} ≤ ∫_0^S ν{T < h < 2T} dT/T`. -/
 lemma log_mul_measure_le {X : Type*} [MeasurableSpace X] (ν : Measure X) [SFinite ν]
     {h : X → ℝ} (hh : Measurable h) (hpos : ∀ x, 0 < h x) (S : ℝ) :
     ENNReal.ofReal (Real.log 2) * ν {x | h x < S} ≤
@@ -113,14 +112,14 @@ lemma log_mul_measure_le {X : Type*} [MeasurableSpace X] (ν : Measure X) [SFini
         congr 1
         exact lintegral_indicator_one hs
 
-/-- `∫_0^S T^{-1} (K T^δ) dT = K S^δ / δ`. -/
+/- `∫_0^S T^{-1} (K T^δ) dT = K S^δ / δ`. -/
 lemma lintegral_inv_mul_rpow {S δ : ℝ} (hS : 0 < S) (hδ : 0 < δ) (K : ℝ≥0∞) :
     ∫⁻ T in Ioc 0 S, ENNReal.ofReal T⁻¹ * (K * ENNReal.ofReal (T ^ δ)) =
       K * ENNReal.ofReal (S ^ δ / δ) := by
   have h1 : ∀ T ∈ Ioc 0 S, ENNReal.ofReal T⁻¹ * (K * ENNReal.ofReal (T ^ δ)) =
       K * ENNReal.ofReal (T ^ (δ - 1)) := by
     intro T hT
-    have hT0 : 0 < T := hT.1
+    have hT0 := hT.1
     have : T ^ (δ - 1) = T⁻¹ * T ^ δ := by
       rw [Real.rpow_sub hT0, Real.rpow_one]; field_simp
     rw [this, ENNReal.ofReal_mul (inv_nonneg.2 hT0.le), mul_left_comm]

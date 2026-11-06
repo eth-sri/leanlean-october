@@ -18,36 +18,11 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set
 open scoped BigOperators MatrixOrder
 
-/-- Entry bounds control the square of the literal principal contraction. -/
-theorem principal_contraction_sq_le {d : ℕ} (A H : PDE.Mat d)
-    (L : ℝ) (hL : 0 ≤ L) (hA : ∀ i j, |A i j| ≤ L) :
-    (∑ i, ∑ j, A i j * H j i) ^ 2 ≤
-      (d : ℝ) ^ 2 * L ^ 2 * ∑ i, ∑ j, H j i ^ 2 := by
-  classical
-  have hcs : (∑ i, ∑ j, A i j * H j i) ^ 2 ≤
-      (∑ i, ∑ j, A i j ^ 2) * ∑ i, ∑ j, H j i ^ 2 := by
-    simpa only [Fintype.sum_prod_type] using
-      Finset.sum_mul_sq_le_sq_mul_sq (Finset.univ : Finset (Fin d × Fin d))
-        (fun p => A p.1 p.2) (fun p => H p.2 p.1)
-  have hb : (∑ i, ∑ j, A i j ^ 2) ≤ (d : ℝ) ^ 2 * L ^ 2 := by
-    calc
-      _ ≤ ∑ _i : Fin d, ∑ _j : Fin d, L ^ 2 := by
-        apply Finset.sum_le_sum
-        intro i _
-        apply Finset.sum_le_sum
-        intro j _
-        simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _) hL).2 (hA i j)
-      _ = _ := by
-        simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-        ring
-  exact hcs.trans (mul_le_mul_of_nonneg_right hb
-    (Finset.sum_nonneg (fun i _ => Finset.sum_nonneg (fun j _ => sq_nonneg _))))
-
-/-- The homogeneous equation bounds time energy by the actual spatial Hessian energy. -/
-theorem integral_local_time_derivative_sq_le {d : ℕ}
-    (U : Set (TimeVelocity d)) (hU : MeasurableSet U)
+/- Entry bounds control the square of the literal principal contraction. -/
+theorem integral_local_time_derivative_sq_le {d }
+    (U ) (hU : MeasurableSet U)
     (u : TimeVelocity d → ℝ) (A : CoefficientField d)
-    (L : ℝ) (hL : 0 ≤ L)
+    (L ) (hL : 0 ≤ L)
     (hA : ∀ z ∈ U, ∀ i j, |A z.1 z.2 i j| ≤ L)
     (ht : MemLp (scalarTimeDerivative u) 2 (timeVelocityVolumeOn U))
     (hh : ∀ i j, MemLp (fun z => scalarSpatialHessian u z i j) 2
@@ -84,8 +59,28 @@ theorem integral_local_time_derivative_sq_le {d : ℕ}
       rw [hsym] at he
       exact eq_neg_of_add_eq_zero_left he
     rw [hv, neg_sq]
-    exact principal_contraction_sq_le (fun i j => A z.1 z.2 j i)
-      (scalarSpatialHessian u z) L hL (fun i j => hA z hz j i)
+    let A := (fun i j => A z.1 z.2 j i)
+    let H := (scalarSpatialHessian u z)
+    have hA := (fun i j => hA z hz j i)
+    classical
+    have hcs : (∑ i, ∑ j, A i j * H j i) ^ 2 ≤
+        (∑ i, ∑ j, A i j ^ 2) * ∑ i, ∑ j, H j i ^ 2 := by
+      simpa only [Fintype.sum_prod_type] using
+        Finset.sum_mul_sq_le_sq_mul_sq (Finset.univ : Finset (Fin d × Fin d))
+          (fun p => A p.1 p.2) (fun p => H p.2 p.1)
+    have hb : (∑ i, ∑ j, A i j ^ 2) ≤ (d : ℝ) ^ 2 * L ^ 2 := by
+      calc
+        _ ≤ ∑ _i : Fin d, ∑ _j : Fin d, L ^ 2 := by
+          apply Finset.sum_le_sum
+          intro i _
+          apply Finset.sum_le_sum
+          intro j _
+          simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _) hL).2 (hA i j)
+        _ = _ := by
+          simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+          ring
+    exact hcs.trans (mul_le_mul_of_nonneg_right hb
+      (Finset.sum_nonneg (fun i _ => Finset.sum_nonneg (fun j _ => sq_nonneg _))))
   have hb := integral_mono_ae hti (hs.const_mul ((d : ℝ) ^ 2 * L ^ 2)) hp
   simpa only [integral_const_mul] using hb
 

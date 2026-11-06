@@ -46,8 +46,7 @@ theorem scalarLpToH10HilbertGraphDual_apply
 /-- The pivot embedding is bounded by the operator norm of the spatial value map. -/
 theorem norm_scalarLpToH10HilbertGraphDual_apply_le
     (hΩ : IsOpen Ω) (h : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    ‖scalarLpToH10HilbertGraphDual hΩ h‖ ≤ ‖valueCLM hΩ‖ * ‖h‖ := by
-  exact ContinuousLinearMap.toSesqForm_apply_norm_le
+    ‖scalarLpToH10HilbertGraphDual hΩ h‖ ≤ ‖valueCLM hΩ‖ * ‖h‖ :=  ContinuousLinearMap.toSesqForm_apply_norm_le
 
 /-- Dense range of the spatial value map makes the pivot embedding injective. -/
 theorem scalarLpToH10HilbertGraphDual_injective
@@ -63,9 +62,7 @@ theorem scalarLpToH10HilbertGraphDual_injective
   apply h_dense.eq_of_inner_right (𝕜 := ℝ)
   intro x hx
   obtain ⟨v, rfl⟩ := hx
-  have h_eval :
-      scalarLpToH10HilbertGraphDual hΩ h v =
-        scalarLpToH10HilbertGraphDual hΩ k v :=
+  have h_eval :=
     congrArg (fun ℓ : H10HilbertGraphDual hΩ => ℓ v) hhk
   simpa only [scalarLpToH10HilbertGraphDual_apply, ContinuousLinearMap.coe_coe] using h_eval
 

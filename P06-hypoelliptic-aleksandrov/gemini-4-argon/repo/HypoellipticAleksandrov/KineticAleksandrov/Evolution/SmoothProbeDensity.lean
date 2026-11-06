@@ -35,7 +35,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
   [MeasurableSpace E] [BorelSpace E]
 
 omit [NormedSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E] in
-/-- The extension by zero of a compactly supported continuous function on an open subtype is
+/- The extension by zero of a compactly supported continuous function on an open subtype is
 continuous, with compact support. -/
 theorem extendByZero_continuous_hasCompactSupport {U : Set E} (hU : IsOpen U) (f : C_c(U, ℝ)) :
     Continuous (Subtype.val.extend (f : U → ℝ) 0) ∧
@@ -43,7 +43,7 @@ theorem extendByZero_continuous_hasCompactSupport {U : Set E} (hU : IsOpen U) (f
   ⟨f.hasCompactSupport.continuous_extend_zero hU f.continuous,
     f.hasCompactSupport.extend_zero continuous_subtype_val⟩
 
-/-- Smooth uniform approximation of a compactly supported continuous function on an open
+/- Smooth uniform approximation of a compactly supported continuous function on an open
 subset by a smooth function with compact support inside the subset. -/
 theorem exists_smooth_compactSupport_close {U : Set E} (hU : IsOpen U) (f : C_c(U, ℝ))
     (ε : ℝ) (hε : 0 < ε) :
@@ -98,23 +98,9 @@ end General
 
 section Outside
 
-/-- Smooth compactly supported terminal data approximate every compactly supported continuous
+/- Smooth compactly supported terminal data approximate every compactly supported continuous
 test on the open terminal fiber uniformly, for an admissible base domain.  This is the
 outside-context form of `exists_smooth_terminal_test_close`, and needs only openness. -/
-theorem exists_smooth_terminal_test_close_of_isOpen {n : ℕ} {Ω : Set (PDE.Vec n)}
-    (hΩ : IsOpen Ω) (γ : ℝ → PDE.Vec n) (τ : ℝ) (f : C_c(EvolutionState Ω γ τ, ℝ))
-    (ε : ℝ) (hε : 0 < ε) :
-    ∃ F : BoundedBorel (EvolutionAmbientState n),
-      IsSmoothCompactTerminalDatum Ω γ τ F ∧
-      ∀ p : EvolutionState Ω γ τ, |F p.1 - f p| ≤ ε := by
-  have hU : IsOpen (evolutionStateSet Ω γ τ) :=
-    (isOpen_movingDomain hΩ τ).prod isOpen_univ
-  obtain ⟨φ, hφs, hφc, hφU, hφε⟩ := exists_smooth_compactSupport_close hU f ε hε
-  have hcont : Continuous φ := hφs.continuous
-  obtain ⟨C, hC⟩ := hφc.exists_bound_of_continuous hcont
-  refine ⟨⟨φ, hcont.measurable, ⟨max C 0, le_max_right _ _,
-    fun x => (hC x).trans (le_max_left _ _)⟩⟩, ⟨hφs, hφc, hφU⟩, hφε⟩
-
 end Outside
 
 section EvolutionData

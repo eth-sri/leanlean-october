@@ -4,6 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularCoordina
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularDisintegrationDensity
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasureDegree
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasureTimeScaling
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.PairSetting
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import Mathlib.Topology.Homeomorph.Defs
 
 /-! # Measure-level radial homogeneity in the source coordinates -/
 
@@ -12,7 +16,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- Density degree gives the exact pushforward factor under kinetic dilation. -/
+/- Density degree gives the exact pushforward factor under kinetic dilation. -/
 theorem HasBellmanDensityDegree.map_dilation {β : ℝ} {μ : Measure BellmanPuncturedPlane}
     (hμ : HasBellmanDensityDegree β μ) (r : ℝ) (hr : 0 < r) :
     Measure.map (bellmanDilation r hr) μ = ENNReal.ofReal (r ^ (β - 4)) • μ := by
@@ -36,14 +40,14 @@ theorem HasBellmanDensityDegree.map_dilation {β : ℝ} {μ : Measure BellmanPun
     ring
   rw [hp]
 
-/-- Kinetic dilation preserves the positive-position part of the punctured carrier. -/
+/- Kinetic dilation preserves the positive-position part of the punctured carrier. -/
 theorem bellmanDilation_preimage_positive (r : ℝ) (hr : 0 < r) :
     bellmanDilation r hr ⁻¹' {q : BellmanPuncturedPlane | 0 < q.val.1} =
       {q : BellmanPuncturedPlane | 0 < q.val.1} := by
   ext q
   exact mul_pos_iff_of_pos_left (pow_pos hr 3)
 
-/-- Density degree also gives the exact pushforward factor on the positive-position
+/- Density degree also gives the exact pushforward factor on the positive-position
 restriction. -/
 theorem HasBellmanDensityDegree.map_positive_restrict {β : ℝ}
     {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ)
@@ -56,9 +60,8 @@ theorem HasBellmanDensityDegree.map_positive_restrict {β : ℝ}
     ← Measure.restrict_map (measurable_bellmanDilation r hr) hm,
     hμ.map_dilation r hr, Measure.restrict_smul, bellmanDilation_preimage_positive r hr]
 
-/-- The source coordinate pullback has the same degree, acting only on its radial coordinate. -/
-theorem HasBellmanDensityDegree.map_angularPullback {β : ℝ}
-    {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ)
+/- The source coordinate pullback has the same degree, acting only on its radial coordinate. -/
+theorem HasBellmanDensityDegree.map_angularPullback {β μ} (hμ : HasBellmanDensityDegree β μ)
     (r : ℝ) (hr : 0 < r) :
     Measure.map ((bellmanRadialScale r hr).prodCongr (Homeomorph.refl ℝ))
       (bellmanAngularPullback μ) =
@@ -70,7 +73,13 @@ theorem HasBellmanDensityDegree.map_angularPullback {β : ℝ}
     Measure.map_smul _ he.measurable.aemeasurable, map_bellmanAngularPullback]
   have hc : bellmanAngularPoint ∘ S = bellmanDilation r hr ∘ bellmanAngularPoint := by
     funext w
-    exact (bellmanAngularPoint_dilation r hr w).symm
+    have _h_xinl_0 : bellmanDilation r hr (bellmanAngularPoint w) =
+      bellmanAngularPoint (⟨r * w.1.val, mul_pos hr w.1.property⟩, w.2) := by
+      apply Subtype.ext
+      change (r ^ 3 * w.1.val ^ 3, r * (w.1.val * w.2)) =
+        ((r * w.1.val) ^ 3, (r * w.1.val) * w.2)
+      ext <;> ring
+    exact _h_xinl_0.symm
   rw [hc, ← Measure.map_map (measurable_bellmanDilation r hr) he.measurable,
     map_bellmanAngularPullback, hμ.map_positive_restrict r hr]
 

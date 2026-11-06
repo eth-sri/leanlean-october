@@ -45,9 +45,7 @@ theorem weakRegularized_wholeSpace_ball_limit :
     {p | radialSq p ≤ S0 ^ 2}
   have hU : IsOpen U := isOpen_wholeSpaceInnerCylinder α τ S0
   have hUK : U ⊆ K := wholeSpaceInnerCylinder_subset_closed α τ S0
-  have hcont := (tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S0)
-    hlam hB hb hε.le hε1 hC F hFC r hrlim v hv).2.1.mono hUK
-  refine ⟨hcont.locallyIntegrableOn hU.measurableSet, ?_⟩
+  refine ⟨((tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S0) hlam hB hb hε.le hε1 hC F hFC r hrlim v hv).2.1.mono hUK).locallyIntegrableOn hU.measurableSet, ?_⟩
   intro ψ hψ hc hs
   let φ (p : KineticPoint n) := regularizedAdjoint B b ε ψ
     ((evolutionHomeomorph n).symm p)

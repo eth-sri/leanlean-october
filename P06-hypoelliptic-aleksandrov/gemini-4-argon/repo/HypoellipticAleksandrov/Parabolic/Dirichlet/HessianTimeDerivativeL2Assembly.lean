@@ -22,7 +22,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem memLp_mul_of_continuousOn_of_bound
-    {d : ℕ} {S : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ} {M : ℝ}
+    {d S} {f g : TimeVelocity d → ℝ} {M }
     (hS : MeasurableSet S) (hf : ContinuousOn f S)
     (hbound : ∀ z ∈ S, |f z| ≤ M)
     (hg : ParabolicMemLpOn S (2 : ℝ≥0∞) g) :
@@ -36,7 +36,7 @@ private theorem memLp_mul_of_continuousOn_of_bound
 /-- The literal coefficient--Hessian, drift--gradient, zeroth-order, and source
 combination in the reverse-time equation is locally square-integrable. -/
 theorem hessianTimeDerivative_memLp
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+    {d Ω O}
     (r₀ r₁ τ₁ τ₂ : ℝ)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hO : IsOpen O) (hOΩ : O ⊆ Ω)
@@ -72,7 +72,7 @@ theorem hessianTimeDerivative_memLp
           reverseTimeVectorCoefficient r₁ b z.1 z.2 j * G j z) +
         reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z -
         reverseTimeScalarCoefficient r₁ F z.1 z.2) := by
-  let Qin : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
+  let Qin := Set.Ioo τ₁ τ₂ ×ˢ O
   have hQin : MeasurableSet Qin := measurableSet_Ioo.prod hO.measurableSet
   let rev : TimeVelocity d → TimeVelocity d := fun z => (r₁ - z.1, z.2)
   have hrev : Continuous rev :=
@@ -86,13 +86,13 @@ theorem hessianTimeDerivative_memLp
   rcases hbSmooth with ⟨VB, _hVBopen, hKVB, hVB⟩
   rcases hcSmooth with ⟨VC, _hVCopen, hKVC, hVC⟩
   rcases hFSmooth with ⟨VF, _hVFopen, hKVF, hVF⟩
-  have hcontA : ContinuousOn (fun z : TimeVelocity d => a (r₁ - z.1) z.2) Qin :=
+  have hcontA :=
     (hVA.continuousOn.mono hKVA).comp hrev.continuousOn hrevMaps
-  have hcontB : ContinuousOn (fun z : TimeVelocity d => b (r₁ - z.1) z.2) Qin :=
+  have hcontB :=
     (hVB.continuousOn.mono hKVB).comp hrev.continuousOn hrevMaps
-  have hcontC : ContinuousOn (fun z : TimeVelocity d => c (r₁ - z.1) z.2) Qin :=
+  have hcontC :=
     (hVC.continuousOn.mono hKVC).comp hrev.continuousOn hrevMaps
-  have hcontF : ContinuousOn (fun z : TimeVelocity d => F (r₁ - z.1) z.2) Qin :=
+  have hcontF :=
     (hVF.continuousOn.mono hKVF).comp hrev.continuousOn hrevMaps
   obtain ⟨MC, hMC⟩ :=
     (isCompact_scalarParabolicClosedCylinder r₀ r₁ hΩbounded).exists_bound_of_continuousOn

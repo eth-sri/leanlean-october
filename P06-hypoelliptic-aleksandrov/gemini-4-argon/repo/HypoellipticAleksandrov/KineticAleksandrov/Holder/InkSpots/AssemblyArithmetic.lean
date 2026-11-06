@@ -13,14 +13,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.InkSpots
 
 open Set MeasureTheory Covering
 
-/-- Proportional gain from factor-eight kinetic selection. -/
+/- Proportional gain from factor-eight kinetic selection. -/
 def coveringGain (d : ℕ) : ℝ := ((8 : ℝ)^(4*d+2))⁻¹
 
-/-- A single dimension-only constant absorbs both spatial and delayed leakage shells. -/
+/- A single dimension-only constant absorbs both spatial and delayed leakage shells. -/
 def coveringLeakage (d : ℕ) : ℝ :=
   (32+4*(5 : ℝ)^d+4*(d : ℝ))*(volume (unitCylinder d)).toReal
 
-/-- The gain is positive and no larger than one half. -/
+/- The gain is positive and no larger than one half. -/
 theorem coveringGain_bounds (d : ℕ) : 0 < coveringGain d ∧ coveringGain d ≤ 1/2 := by
   have hB : 2 ≤ (8 : ℝ)^(4*d+2) := by
     rw [pow_add]
@@ -31,30 +31,19 @@ theorem coveringGain_bounds (d : ℕ) : 0 < coveringGain d ∧ coveringGain d �
   have heq : coveringGain d*(8 : ℝ)^(4*d+2) = 1 := inv_mul_cancel₀ (by positivity)
   exact ⟨hpos, by nlinarith⟩
 
-/-- The leakage constant is positive and at least 32 times unit volume. -/
-theorem coveringLeakage_bounds (d : ℕ) : 0 < coveringLeakage d ∧
-    32*(volume (unitCylinder d)).toReal ≤ coveringLeakage d := by
-  have hV : 0 < (volume (unitCylinder d)).toReal := ENNReal.toReal_pos
-    (volume_cylinder_pos_ne_top _ zero_lt_one).1.ne'
-    (volume_cylinder_pos_ne_top _ zero_lt_one).2
-  have hn : 0 ≤ (d : ℝ) := Nat.cast_nonneg d
-  have hk : 0 ≤ (5 : ℝ)^d := by positivity
-  dsimp [coveringLeakage]
-  constructor <;> nlinarith
-
-/-- The delayed multiplier is at least one for every positive natural height. -/
+/- The leakage constant is positive and at least 32 times unit volume. -/
 theorem delay_multiplier_ge_one {m : ℕ} (hm : 0 < m) :
     1 ≤ ((m : ℝ)+1)/(m : ℝ) := by
   apply (le_div_iff₀ (by exact_mod_cast hm : (0 : ℝ) < m)).mpr
   linarith
 
-/-- A positive threshold leaves at least half of the multiplicative density factor. -/
-theorem density_factor_bounds (d : ℕ) {eta : ℝ} (heta : 0 < eta) (heta1 : eta < 1) :
+/- A positive threshold leaves at least half of the multiplicative density factor. -/
+theorem density_factor_bounds (d : ℕ) {eta } (heta : 0 < eta) (heta1 : eta < 1) :
     1/2 ≤ 1-coveringGain d*eta ∧ 1-coveringGain d*eta ≤ 1 := by
   obtain ⟨hc, hc1⟩ := coveringGain_bounds d
   constructor <;> nlinarith
 
-/-- The two small-height errors fit inside the chosen final leakage constant. -/
+/- The two small-height errors fit inside the chosen final leakage constant. -/
 theorem absorb_covering_errors {e f V k n a q h s : ℝ}
     (hV : 0 ≤ V) (hk : 0 ≤ k) (hn : 0 ≤ n) (ha : 1/2 ≤ a) (hq : 1 ≤ q)
     (hh : 0 ≤ h) (hs : s ≤ h)
@@ -71,7 +60,7 @@ theorem absorb_covering_errors {e f V k n a q h s : ℝ}
       _ ≤ _ := mul_le_mul_of_nonneg_right hqa (mul_nonneg hcoef hh)
   nlinarith only [he, herr]
 
-/-- When the error height is at least 1/16 the desired upper bound is already unit volume. -/
+/- When the error height is at least 1/16 the desired upper bound is already unit volume. -/
 theorem trivial_large_height {V f C q a h : ℝ} (hV : 0 ≤ V) (hf : 0 ≤ f)
     (hC : 32*V ≤ C) (hq : 1 ≤ q) (ha : 1/2 ≤ a) (hh : 1/16 ≤ h) :
     V ≤ q*a*(f+C*h) := by

@@ -21,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- Multiplying a product-Bernstein polynomial by the fixed cutoff gives a spatial weak test. -/
 theorem exists_cutoffPiBernsteinSpatialFactor
-    {d n : ℕ} {O : Set (PDE.Vec d)}
+    {d n O}
     (χ : PDE.Vec d → ℝ) (hχ : ContDiff ℝ (⊤ : ℕ∞) χ)
     (hχcompact : IsCompact (tsupport χ)) (hχO : tsupport χ ⊆ O)
     (R : ℝ) (hR : 0 < R)
@@ -30,7 +30,7 @@ theorem exists_cutoffPiBernsteinSpatialFactor
       (∀ y, ψ y = χ y *
         ∏ i : Fin d, (bernsteinPolynomial ℝ n (k i)).eval (((y i / R) + 1) / 2)) ∧
       tsupport (ψ : PDE.Vec d → ℝ) ⊆ tsupport χ := by
-  have _hRne : R ≠ 0 := hR.ne'
+  have _hRne := hR.ne'
   let p : PDE.Vec d → ℝ := fun y =>
     ∏ i : Fin d, (bernsteinPolynomial ℝ n (k i)).eval (((y i / R) + 1) / 2)
   have hp : ContDiff ℝ (⊤ : ℕ∞) p := by

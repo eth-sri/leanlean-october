@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SobolevJetAEIdentification
 public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+import HypoellipticAleksandrov.Parabolic.LocalizedHigherJetMollification
+import HypoellipticAleksandrov.Parabolic.UniformC2JetLimit
 
 /-!
 # Finite-order Sobolev representatives with scalar parabolic regularity
@@ -15,15 +17,17 @@ open MeasureTheory
 open scoped Topology
 
 noncomputable section
+open Filter
+open scoped ENNReal
 
-/-- A finite ordinary weak-derivative family through parabolic weight
+/- A finite ordinary weak-derivative family through parabolic weight
 `2 * (d + 4)` has one scalar `C^1,2` representative on a positive collar of
 every compact subset of its open carrier, with its complete order-two
 coordinate jet identified almost everywhere. -/
 theorem exists_finiteOrderSobolevC12Representative
-    {d : ℕ} {U C : Set (TimeVelocity d)}
+    {d U C}
     (hU : IsOpen U) (hC : IsCompact C) (hCU : C ⊆ U)
-    {u : TimeVelocity d → ℝ}
+    {u }
     (D : ParabolicWeakDerivativeFamily d (2 * (d + 4)) U u) :
     ∃ (rho : ℝ) (_ : 0 < rho) (v : TimeVelocity d → ℝ),
       Metric.thickening rho C ⊆ U ∧
@@ -54,9 +58,59 @@ theorem exists_finiteOrderSobolevC12Representative
   obtain ⟨v, hv, huniform⟩ :=
     exists_contDiff_two_uniformLimit_coordinateJet_spacetimeMollification_shrinkingRadius
       G rho hrho K hK hsupp
-  have hglobal := coordinateJet_aeEq_ordinaryRepresentative_of_uniformLimit
-    G rho hrho v huniform
-  let S : Set (TimeVelocity d) := Metric.thickening rho C
+  have hglobal : ∀ alpha : TimeVelocityDerivativeIndex d 2,
+      TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 v =ᵐ[
+        (volume : Measure (TimeVelocity d))]
+        G.ordinaryRepresentative
+          (TimeVelocityDerivativeIndex.castLE (by omega : 2 ≤ d + 4) alpha) := by
+    intro alpha
+    let beta :=
+      TimeVelocityDerivativeIndex.castLE (by omega : 2 ≤ d + 4) alpha
+    let f : ℕ → TimeVelocity d → ℝ := fun n =>
+      SpacetimeMollifier.spacetimeMollification (shrinkingRadius rho n)
+        (G.ordinaryRepresentative beta)
+    have hf_eq : ∀ n,
+        TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
+            (SpacetimeMollifier.spacetimeMollification (shrinkingRadius rho n)
+              (G.ordinaryRepresentative
+                (TimeVelocityDerivativeIndex.zero d (d + 4)))) = f n := by
+      intro n
+      exact G.coordinateIteratedFDeriv_spacetimeMollification_ordinaryRepresentative
+        (shrinkingRadius rho n) (shrinkingRadius_pos rho hrho n) beta
+    have hLp : Tendsto (fun n => eLpNorm
+        (f n - G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
+        (volume : Measure (TimeVelocity d))) atTop (nhds 0) := by
+      exact (G.tendsto_eLpNorm_spacetimeMollification_ordinaryRepresentative_sub beta).comp
+        (tendsto_shrinkingRadius_nhdsWithin rho hrho)
+    have hbetaMem : MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
+        (volume : Measure (TimeVelocity d)) := by
+        have h := G.ordinaryRepresentative_memLp beta
+        change MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
+          ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
+        simpa only [Measure.restrict_univ] using h
+
+      /- A uniform coordinate-jet limit agrees almost everywhere with the selected
+      ambient weak representative. -/
+    have hfMeas : ∀ n, AEStronglyMeasurable (f n)
+        (volume : Measure (TimeVelocity d)) := by
+      intro n
+      exact (SpacetimeMollifier.contDiff_spacetimeMollification
+        (shrinkingRadius_pos rho hrho n) _
+        (hbetaMem.locallyIntegrable (by norm_num))).continuous.aestronglyMeasurable
+    have hmeasure :=
+      tendstoInMeasure_of_tendsto_eLpNorm (by norm_num) hLp
+    obtain ⟨ns, hns, hnae⟩ := hmeasure.exists_seq_tendsto_ae
+    filter_upwards [hnae] with z hz
+    have huPoint :=
+      (huniform alpha).tendsto_at z
+    have huSub := huPoint.comp hns.tendsto_atTop
+    have huSub' : Tendsto (fun i => f (ns i) z) atTop
+        (nhds (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 v z)) := by
+      convert huSub using 1
+      funext i
+      exact (congrFun (hf_eq (ns i)) z).symm
+    exact tendsto_nhds_unique huSub' hz
+  let S := Metric.thickening rho C
   have hSMeas : MeasurableSet S := Metric.isOpen_thickening.measurableSet
   have hjet : ∀ alpha : TimeVelocityDerivativeIndex d 2,
       TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 v =ᵐ[
@@ -64,7 +118,7 @@ theorem exists_finiteOrderSobolevC12Representative
         D.ordinaryRepresentative
           (TimeVelocityDerivativeIndex.castLE (by omega : 2 ≤ d + 4) alpha) := by
     intro alpha
-    let beta : TimeVelocityDerivativeIndex d (d + 4) :=
+    let beta :=
       TimeVelocityDerivativeIndex.castLE (by omega : 2 ≤ d + 4) alpha
     rw [timeVelocityVolumeOn]
     filter_upwards [
@@ -74,7 +128,7 @@ theorem exists_finiteOrderSobolevC12Representative
           hrepEq beta (Metric.thickening_subset_cthickening rho C hz))] with z hz hEqz
     exact hz.trans hEqz
   have hvalue : v =ᵐ[timeVelocityVolumeOn S] u := by
-    let zero : TimeVelocityDerivativeIndex d 2 :=
+    let zero :=
       TimeVelocityDerivativeIndex.zero d 2
     have hcast : TimeVelocityDerivativeIndex.castLE
         (by omega : 2 ≤ d + 4) zero =
@@ -89,11 +143,7 @@ theorem exists_finiteOrderSobolevC12Representative
         D.ordinaryRepresentative (TimeVelocityDerivativeIndex.zero d (d + 4)) := by
       filter_upwards [hvzero] with z hz
       simpa only [TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero] using hz
-    have hDzero : D.ordinaryRepresentative (TimeVelocityDerivativeIndex.zero d (d + 4))
-        =ᵐ[timeVelocityVolumeOn S] u :=
-      D.ordinaryRepresentative_zero_ae.filter_mono
-        (ae_mono (Measure.restrict_mono_set volume hcollar))
-    exact hvrep.trans hDzero
+    exact hvrep.trans (D.ordinaryRepresentative_zero_ae.filter_mono (ae_mono (Measure.restrict_mono_set volume hcollar)))
   refine ⟨rho, hrho, v, hcollar, hv, isScalarC12On_of_contDiff_two hv S,
     hvalue, ?_⟩
   exact hjet

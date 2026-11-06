@@ -28,8 +28,7 @@ theorem duhamel_isKineticWeakTransportedSolution (hΩa : IsAdmissibleEvolutionDo
     (hgU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) :
     IsKineticWeakTransportedSolution B b (evolutionPastOpenCylinder Ω γ T)
       (duhamelPotential K T g) (fun p => -g p) := by
-  have hU₀ := isOpen_duhamelCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T
-  have hU := hU₀.preimage (evolutionHomeomorph d).continuous
+  have hU := (isOpen_duhamelCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T).preimage (evolutionHomeomorph d).continuous
   have hWc : ContinuousOn (duhamelPotential K T g) (evolutionPastOpenCylinder Ω γ T) :=
     (continuousOn_duhamelPotential hΩa hΩ hγ B b S K hreal g hgn hg hgc hgs T hgU
       ).mono (fun p hp => ⟨hp.1.le, subset_closure hp.2⟩)
@@ -65,8 +64,7 @@ theorem duhamelPotential_contDiffOn (hH : HormanderHypoellipticityStatement)
     (hcoerc : HasUnitDirectionDriftCoercivity m b) :
     ContDiffOn ℝ (⊤ : ℕ∞) (duhamelPotential K T g ∘ evolutionHomeomorph d)
       (evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ T) := by
-  have hU₀ := isOpen_duhamelCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T
-  have hU := hU₀.preimage (evolutionHomeomorph d).continuous
+  have hU := (isOpen_duhamelCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T).preimage (evolutionHomeomorph d).continuous
   have hWc : ContinuousOn (duhamelPotential K T g) (evolutionPastOpenCylinder Ω γ T) :=
     (continuousOn_duhamelPotential hΩa hΩ hγ B b S K hreal g hgn hg hgc hgs T hgU
       ).mono (fun p hp => ⟨hp.1.le, subset_closure hp.2⟩)
@@ -79,7 +77,6 @@ theorem duhamelPotential_contDiffOn (hH : HormanderHypoellipticityStatement)
     ((hgs.comp (evolutionProdCLE d).contDiff).neg).contDiffOn
   obtain ⟨f, hf, hae⟩ := exists_smooth_representative_transported_source hH hlam hB hell hb
     hm hcoerc hU hweak hg'
-  have heq := Measure.eqOn_open_of_ae_eq hae hU hWQ hf.continuousOn
-  exact hf.congr (fun x hx => heq hx)
+  exact hf.congr (fun x hx => (Measure.eqOn_open_of_ae_eq hae hU hWQ hf.continuousOn) hx)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

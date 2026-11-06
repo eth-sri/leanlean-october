@@ -5,6 +5,8 @@ public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 import Mathlib.Analysis.Normed.Lp.SmoothApprox
 import Mathlib.Geometry.Manifold.SmoothApprox
 import Mathlib.Analysis.SpecificLimits.Basic
+import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
+import Mathlib.Topology.Compactness.SigmaCompact
 
 /-! # Bounded smooth source approximation for actual finite measures
 
@@ -18,13 +20,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open Set Filter MeasureTheory Function
 open scoped Topology
 
-/-- Nonnegative bounded Borel data have uniformly bounded positive smooth approximants
+/- Nonnegative bounded Borel data have uniformly bounded positive smooth approximants
 supported in an open domain, converging almost everywhere for the supplied finite measure. -/
 theorem exists_boundedSourceSmoothApproximation
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     [MeasurableSpace E] [BorelSpace E]
-    (μ : Measure E) [IsFiniteMeasure μ] (U : Set E) (hU : IsOpen U)
-    (F : E → ℝ) (hF : Measurable F) (M : ℝ) (hM : 0 ≤ M)
+    (μ : Measure E) [IsFiniteMeasure μ] (U ) (hU : IsOpen U)
+    (F : E → ℝ) (hF : Measurable F) (M ) (hM : 0 ≤ M)
     (hFb : ∀ x, 0 ≤ F x ∧ F x ≤ M) (hFz : ∀ x ∉ U, F x = 0) :
     ∃ f : ℕ → E → ℝ,
       (∀ n, ContDiff ℝ (⊤ : ℕ∞) (f n) ∧ HasCompactSupport (f n) ∧ tsupport (f n) ⊆ U) ∧
@@ -79,7 +81,25 @@ theorem exists_boundedSourceSmoothApproximation
   have hχex (n : ℕ) := exists_smooth_cutoff (hGcompact n) isOpen_univ
     (subset_univ (tsupport (G n)))
   choose χ hχs hχc hχsub hχb hχone using hχex
-  obtain ⟨ρ, hρs, hρb, hρone⟩ := exists_boundedSourceCutoffSequence U hU
+  obtain ⟨ρ, hρs, hρb, hρone⟩ : ∃ χ : ℕ → E → ℝ,
+      (∀ n, ContDiff ℝ (⊤ : ℕ∞) (χ n) ∧ HasCompactSupport (χ n) ∧ tsupport (χ n) ⊆ U) ∧
+      (∀ n x, 0 ≤ χ n x ∧ χ n x ≤ 1) ∧
+      ∀ x ∈ U, ∀ᶠ n in atTop, χ n x = 1 := by
+    classical
+    let : LocallyCompactSpace U := hU.locallyCompactSpace
+    let C (n : ℕ) : Set E := Subtype.val '' compactCovering U n
+    have hC (n : ℕ) : IsCompact (C n) :=
+      (isCompact_compactCovering U n).image continuous_subtype_val
+    have hCU (n : ℕ) : C n ⊆ U := by
+      rintro x ⟨y, _, rfl⟩
+      exact y.2
+    have hex (n : ℕ) := exists_smooth_cutoff (hC n) hU (hCU n)
+    choose χ hs hc hsub hb he using hex
+    refine ⟨χ, fun n => ⟨hs n, hc n, hsub n⟩, hb, ?_⟩
+    intro x hx
+    obtain ⟨n, hn⟩ := exists_mem_compactCovering (⟨x, hx⟩ : U)
+    filter_upwards [eventually_ge_atTop n] with m hm
+    exact he m x ⟨⟨x, hx⟩, compactCovering_subset U hm hn, rfl⟩
   let f (n : ℕ) (x : E) := ρ n x * (q n x + ε n * χ n x)
   refine ⟨f, ?_, ?_, ?_⟩
   · intro n
@@ -129,7 +149,7 @@ theorem exists_boundedSourceSmoothApproximation
         simpa only [add_zero] using hlim
       exact hlim'.congr' heq.symm
     · have hz (n : ℕ) : f n x = 0 := by
-        have hρz : ρ n x = 0 := image_eq_zero_of_notMem_tsupport
+        have hρz := image_eq_zero_of_notMem_tsupport
           (fun h => hxU ((hρs n).2.2 h))
         simp only [f, hρz, zero_mul]
       simpa only [hz, hFz x hxU] using (tendsto_const_nhds :

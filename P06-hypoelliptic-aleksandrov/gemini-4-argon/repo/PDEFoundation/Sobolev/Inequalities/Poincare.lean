@@ -51,10 +51,10 @@ namespace IsUniformMeanZeroPoincareConstant
 
 /-- The normalized statement on a bounded open convex domain. This named
 projection is the common theorem used by the shape-specific interfaces. -/
-theorem on_domain {d : ℕ} {C : ℝ}
+theorem on_domain {d C}
     (hC : IsUniformMeanZeroPoincareConstant d C)
-    {p : ℝ} (hp : 1 ≤ p) {U : Set (Vec d)}
-    {D : ℝ}
+    {p } (hp : 1 ≤ p) {U : Set (Vec d)}
+    {D }
     (hU : IsOpenBoundedConvexDomain U)
     (hUDiameter : HasEuclideanDiameterLE U D)
     (hD : 0 ≤ D) (hUPos : 0 < volume U)
@@ -70,10 +70,10 @@ theorem on_domain {d : ℕ} {C : ℝ}
 /-- The unnormalized form on a bounded open convex domain. The same exponent
 appears on both sides, so the exact volume factors cancel without changing
 the constant. -/
-theorem on_domain_unnormalized {d : ℕ} {C : ℝ}
+theorem on_domain_unnormalized {d C}
     (hC : IsUniformMeanZeroPoincareConstant d C)
-    {p : ℝ} (hp : 1 ≤ p) {U : Set (Vec d)}
-    {D : ℝ}
+    {p } (hp : 1 ≤ p) {U : Set (Vec d)}
+    {D }
     (hU : IsOpenBoundedConvexDomain U)
     (hUDiameter : HasEuclideanDiameterLE U D)
     (hD : 0 ≤ D) (hUPos : 0 < volume U)
@@ -104,10 +104,10 @@ theorem on_domain_unnormalized {d : ℕ} {C : ℝ}
       ac_rfl
 
 /-- Unnormalized axis-cube specialization. -/
-theorem on_axisCube_unnormalized {d : ℕ} {C : ℝ}
+theorem on_axisCube_unnormalized {d C}
     (hC : IsUniformMeanZeroPoincareConstant d C)
-    {p : ℝ} (hp : 1 ≤ p) (z : Vec d)
-    {L : ℝ} (hL : 0 < L)
+    {p } (hp : 1 ≤ p) (z : Vec d)
+    {L } (hL : 0 < L)
     (u : W1pFunction (axisCube z L) (ENNReal.ofReal p))
     (huMean : MeanZeroOn (axisCube z L) u.toFun) :
     eLpNormOn (axisCube z L)

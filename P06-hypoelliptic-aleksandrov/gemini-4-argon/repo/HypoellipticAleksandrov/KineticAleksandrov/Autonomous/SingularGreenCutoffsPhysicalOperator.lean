@@ -11,8 +11,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic SectionTwo Evolution MeasureTheory Set
 
 /-- A compact physical C² test has a continuous compactly supported physical generator. -/
-theorem physicalSpatialOperator_continuous_compact {lam Lam : ℝ}
-    (A : SmoothAutonomous lam Lam) (f : Z → ℝ) (hf : ContDiff ℝ 2 f)
+theorem physicalSpatialOperator_continuous_compact {lam Lam }
+    (A : SmoothAutonomous lam Lam) (f ) (hf : ContDiff ℝ 2 f)
     (hc : HasCompactSupport f) :
     Continuous (physicalSpatialOperator A.a f) ∧
       HasCompactSupport (physicalSpatialOperator A.a f) := by
@@ -31,8 +31,8 @@ theorem physicalSpatialOperator_continuous_compact {lam Lam : ℝ}
     hh.2.comp_homeomorph physicalStateCLE.symm.toHomeomorph⟩
 
 /-- Every compact physical generator is integrable for the finite actual occupation measure. -/
-theorem physicalSpatialOperator_occupation_integrable {lam Lam : ℝ}
-    (A : SmoothAutonomous lam Lam) (f : Z → ℝ) (hf : ContDiff ℝ 2 f)
+theorem physicalSpatialOperator_occupation_integrable {lam Lam }
+    (A : SmoothAutonomous lam Lam) (f ) (hf : ContDiff ℝ 2 f)
     (hc : HasCompactSupport f) (E : FullSpaceEvolution) (z : Z) (T : ℝ) :
     Integrable (physicalSpatialOperator A.a f) (physicalOccupationMeasure E z T) := by
   obtain ⟨hL, hcL⟩ := physicalSpatialOperator_continuous_compact A f hf hc

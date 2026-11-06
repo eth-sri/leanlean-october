@@ -73,10 +73,9 @@ theorem integrableOn_reverseTimeClassicalRemainder_weakTest
     continuous_const.prodMk continuous_id
   have hpairMem : MapsTo (fun y : PDE.Vec d ↦ (r₁ - τ, y)) D
       ({r₁ - τ} ×ˢ D) := fun y hy ↦ ⟨Set.mem_singleton _, hy⟩
-  have htime : ContinuousOn
-      (fun y ↦ scalarTimeDerivative p (r₁ - τ, y)) D :=
+  have htime :=
     hp.continuousOn_scalarTimeDerivative.comp hpair.continuousOn hpairMem
-  have hpvalue : ContinuousOn (fun y ↦ p (r₁ - τ, y)) D :=
+  have hpvalue :=
     hp.continuousOn.comp hpair.continuousOn hpairMem
   have hgradient (j : Fin d) : ContinuousOn
       (fun y ↦ scalarSpatialGradient p (r₁ - τ, y) j) D :=
@@ -106,10 +105,7 @@ theorem integrableOn_reverseTimeClassicalRemainder_weakTest
     htime.neg.add
       (continuousOn_finset_sum Finset.univ fun j _ ↦ (hdrift j).mul (hgradient j)) |>.sub
         (hc.mul hpvalue)
-  have hint : Integrable (fun y ↦ amplitude y * ψ y) :=
-    integrable_mul_of_right_compactSupport hamp ψ.contDiff.continuous
-      ψ.hasCompactSupport ψ.tsupport_subset
-  apply hint.integrableOn.congr_fun
+  apply (integrable_mul_of_right_compactSupport hamp ψ.contDiff.continuous ψ.hasCompactSupport ψ.tsupport_subset).integrableOn.congr_fun
   · intro y _hy
     dsimp only [amplitude]
     ring_nf
@@ -245,11 +241,7 @@ theorem integral_reverseTimeClassicalResidual_weakTest_eq_neg_operator
       contDiffOn_const |>.continuousOn
   have hhessianContinuous (i j : Fin d) : ContinuousOn
       (fun y ↦ scalarSpatialHessian ell (r₁ - τ, y) i j) D := by
-    have hentry : ContinuousOn (fun z ↦ scalarSpatialHessian ell z i j)
-        ({r₁ - τ} ×ˢ D) :=
-      (continuous_apply j).comp_continuousOn
-        ((continuous_apply i).comp_continuousOn hell.continuousOn_scalarSpatialHessian)
-    exact hentry.comp (continuous_const.prodMk continuous_id).continuousOn
+    exact ((continuous_apply j).comp_continuousOn ((continuous_apply i).comp_continuousOn hell.continuousOn_scalarSpatialHessian)).comp (continuous_const.prodMk continuous_id).continuousOn
       fun y hy ↦ ⟨Set.mem_singleton _, hy⟩
   have hqij (i j : Fin d) : Integrable (fun y ↦
       -((spatialPartial i (fun x ↦ a (r₁ - τ) x i j) y *

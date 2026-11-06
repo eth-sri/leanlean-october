@@ -12,20 +12,20 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic ProbabilityTheory
 
 /-- The literal physical test for a Fourier measure on an exit-data set. -/
-def exitFourierTest {d : ℕ} (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
+def exitFourierTest {d } (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
     (E : Set (TimeVelocity d)) (Q : KineticPoint d) : ℂ :=
   {Q : KineticPoint d | (Q.time, Q.velocity) ∈ E}.indicator
     (exitPhase ξ ∘ exitCoordinates P v₀) Q
 
 /-- Fourier tests are measurable for each Borel exit-data set. -/
-theorem measurable_exitFourierTest {d : ℕ} (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
+theorem measurable_exitFourierTest {d } (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
     {E : Set (TimeVelocity d)} (hE : MeasurableSet E) :
     Measurable (exitFourierTest P v₀ ξ E) :=
   ((continuous_exitPhase ξ).comp (continuous_exitCoordinates P v₀)).measurable.indicator
     (hE.preimage (continuous_time.prodMk continuous_velocity).measurable)
 
 /-- Every physical Fourier test has modulus at most one. -/
-theorem norm_exitFourierTest_le_one {d : ℕ} (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
+theorem norm_exitFourierTest_le_one {d } (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
     (E : Set (TimeVelocity d)) (Q : KineticPoint d) :
     ‖exitFourierTest P v₀ ξ E Q‖ ≤ 1 := by
   unfold exitFourierTest
@@ -36,7 +36,7 @@ theorem norm_exitFourierTest_le_one {d : ℕ} (P : KineticPoint d) (v₀ ξ : PD
     simp only [norm_zero, zero_le_one]
 
 /-- The centered Fourier measure of any finite physical measure has the raw test formula. -/
-theorem exitFourier_map_exitCoordinates_apply {d : ℕ}
+theorem exitFourier_map_exitCoordinates_apply {d }
     (μ : Measure (KineticPoint d)) [IsFiniteMeasure μ]
     (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
     (E : Set (TimeVelocity d)) (hE : MeasurableSet E) :
@@ -56,9 +56,9 @@ theorem exitFourier_map_exitCoordinates_apply {d : ℕ}
 theorem ballExitRestart_integral_complex
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (H : {t : ℝ // P.1.time < t ∧ t < T.1})
     (g : KineticPoint d → ℂ) (hg : Measurable g)

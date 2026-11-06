@@ -25,7 +25,7 @@ theorem isOpen_terminal_state_graph {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOp
 theorem IsCompact.eventually_subset_terminal_state
     {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
-    {K : Set (EvolutionAmbientState n)} (hK : IsCompact K) {τ : ℝ}
+    {K : Set (EvolutionAmbientState n)} (hK : IsCompact K) {τ }
     (hKT : K ⊆ evolutionStateSet Ω γ τ) :
     ∀ᶠ t in 𝓝 τ, K ⊆ evolutionStateSet Ω γ t := by
   apply hK.eventually_forall_of_forall_eventually
@@ -46,7 +46,7 @@ theorem IsCompact.isOpen_terminal_support_times
 /-- A compact interior datum remains a valid terminal datum on a whole time window. -/
 theorem IsSmoothCompactTerminalDatum.exists_terminal_window
     {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {τ : ℝ}
+    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {τ }
     {F : BoundedBorel (EvolutionAmbientState n)}
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     ∃ δ : ℝ, 0 < δ ∧ ∀ t : ℝ, dist t τ < δ →
@@ -75,8 +75,7 @@ def evolutionQueryPoint {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n
     (q : EvolutionQuery Ω γ) : KineticPoint n := ⟨q.1.1, q.1.2.2.1, q.1.2.2.2⟩
 
 /-- Extracting the actual starting point is continuous on the valid query subtype. -/
-theorem continuous_evolutionQueryPoint {n : ℕ} {Ω : Set (PDE.Vec n)}
-    {γ : ℝ → PDE.Vec n} : Continuous (@evolutionQueryPoint n Ω γ) := by
+theorem continuous_evolutionQueryPoint {n Ω γ} : Continuous (@evolutionQueryPoint n Ω γ) := by
   exact KineticPoint.continuous_mk (continuous_fst.comp continuous_subtype_val)
     (continuous_fst.comp (continuous_snd.comp (continuous_snd.comp continuous_subtype_val)))
     (continuous_snd.comp (continuous_snd.comp (continuous_snd.comp continuous_subtype_val)))

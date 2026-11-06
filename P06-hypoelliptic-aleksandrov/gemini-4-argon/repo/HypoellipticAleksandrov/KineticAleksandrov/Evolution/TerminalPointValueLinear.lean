@@ -41,10 +41,10 @@ theorem IsSmoothCompactTerminalDatum.smul (c : ℝ) {F : BoundedBorel (Evolution
     (tsupport_smul_subset_right (fun _ => c) (F : EvolutionAmbientState n → ℝ)).trans hF.2.2⟩
 
 /-- Comparison of classical terminal solutions with ordered data. -/
-theorem IsClassicalTerminalSolution.le_of_le {lam Lam : ℝ} (hΩ : IsOpen Ω)
+theorem IsClassicalTerminalSolution.le_of_le {lam Lam } (hΩ : IsOpen Ω)
     (hγ : Continuous γ) (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
-    {F₁ F₂ : BoundedBorel (EvolutionAmbientState n)} {u₁ u₂ : KineticPoint n → ℝ}
+    {Lb } (hb : HasEuclideanLipschitzDrift Lb b)
+    {F₁ F₂ u₁ u₂}
     (h₁ : IsClassicalTerminalSolution Ω γ B b τ F₁ u₁)
     (h₂ : IsClassicalTerminalSolution Ω γ B b τ F₂ u₂)
     (hF : ∀ y z, y ∈ closure (movingDomain Ω γ τ) → F₁ (y, z) ≤ F₂ (y, z)) :
@@ -127,7 +127,7 @@ theorem terminalValue_nonneg
 theorem abs_terminalValue_le
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
     (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (C : ℝ) (hC : 0 ≤ C)
+    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (C ) (hC : 0 ≤ C)
     (hFC : ∀ q, |F q| ≤ C) :
     |S σ τ hστ p F hF| ≤ C := by
   obtain ⟨u, hu, hbd, -⟩ := hEx τ F hF

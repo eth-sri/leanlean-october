@@ -14,28 +14,9 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter Evolution
 open scoped Topology
 
-/-- The diffused quadratic vanishes on the actual Euclidean ball frontier. -/
-theorem boundedSourceQuadratic_eq_zero_of_frontier {d : ℕ} (c : PDE.Vec d) (R lam : ℝ)
-    (p : KineticPoint d) (hp : p.position ∈ frontier (PDE.euclideanBall c R)) :
-    boundedSourceQuadratic c R lam p = 0 := by
-  rw [(PDE.isOpen_euclideanBall c R).frontier_eq] at hp
-  have hs : closure (PDE.euclideanBall c R) ⊆
-      {y : PDE.Vec d | PDE.vecNormSq (y - c) ≤ R ^ 2} := by
-    apply closure_minimal
-    · intro y hy
-      change PDE.vecNormSq (y - c) < R ^ 2 at hy
-      exact hy.le
-    · exact isClosed_le (contDiff_vecNormSq_sub c).continuous continuous_const
-  have hlo := hs hp.1
-  have hhi : R ^ 2 ≤ PDE.vecNormSq (p.position - c) := by
-    apply le_of_not_gt
-    exact hp.2
-  have heq := le_antisymm hlo hhi
-  simp only [boundedSourceQuadratic, heq, sub_self, zero_div]
-
-/-- The bounded signed potential is continuous with value zero at the lateral frontier. -/
+/- The diffused quadratic vanishes on the actual Euclidean ball frontier. -/
 theorem continuousWithinAt_duhamelPotential_bounded_lateral
-    (hH : HormanderHypoellipticityStatement) {d : ℕ} (hd : 0 < d)
+    (hH : HormanderHypoellipticityStatement) {d } (hd : 0 < d)
     {c : PDE.Vec d} {R : ℝ} (hR : 0 < R) {lam Lam m Lb : ℝ}
     (hlam : 0 < lam) (hm : 0 < m)
     (B : FullKineticCoefficient d) (hB : IsSmoothFullKineticCoefficient B)
@@ -53,7 +34,22 @@ theorem continuousWithinAt_duhamelPotential_bounded_lateral
     (hfront : p.position ∈ frontier (PDE.euclideanBall c R)) :
     ContinuousWithinAt (duhamelPotential K T g)
       (evolutionPastClosedCylinder (PDE.euclideanBall c R) (fun _ => 0) T) p := by
-  have hQ0 := boundedSourceQuadratic_eq_zero_of_frontier c R lam p hfront
+  have hQ0 : boundedSourceQuadratic c R lam p = 0 := by
+      rw [(PDE.isOpen_euclideanBall c R).frontier_eq] at hfront
+      have hs : closure (PDE.euclideanBall c R) ⊆
+          {y : PDE.Vec d | PDE.vecNormSq (y - c) ≤ R ^ 2} := by
+        apply closure_minimal
+        · intro y hy
+          change PDE.vecNormSq (y - c) < R ^ 2 at hy
+          exact hy.le
+        · exact isClosed_le (contDiff_vecNormSq_sub c).continuous continuous_const
+      have hlo := hs hfront.1
+      have hhi : R ^ 2 ≤ PDE.vecNormSq (p.position - c) := by
+        apply le_of_not_gt
+        exact hfront.2
+      simp only [boundedSourceQuadratic, (le_antisymm hlo hhi), sub_self, zero_div]
+
+    /- The bounded signed potential is continuous with value zero at the lateral frontier. -/
   have hWp : duhamelPotential K T g p = 0 := by
     apply duhamelPotential_eq_zero_of_not_mem
     rw [boundedSource_stationary_domain]

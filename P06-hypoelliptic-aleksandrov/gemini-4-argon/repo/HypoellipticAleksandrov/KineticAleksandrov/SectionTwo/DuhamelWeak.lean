@@ -12,29 +12,13 @@ open Evolution Occupation
 open scoped Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
-/-- Packing the product coordinates agrees with the existing kinetic coordinate homeomorphism. -/
+/- Packing the product coordinates agrees with the existing kinetic coordinate homeomorphism. -/
 @[simp] theorem duhamel_homeomorph_packQ (q : ℝ × EvolutionAmbientState d) :
     evolutionHomeomorph d (packQ d q) = ⟨q.1, q.2.1, q.2.2⟩ := by
   simp only [evolutionHomeomorph_apply, packQ, timeCoord_packPoint,
     diffusedCoord_packPoint, transportedCoord_packPoint]
 
-/-- Source integrands vanish at all source times at or beyond the terminal face. -/
-theorem duhamelIntegrand_eq_zero_of_ge (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (T : ℝ)
-    (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T)
-    (p : KineticPoint d) {r : ℝ} (hr : T ≤ r) : duhamelIntegrand K g p r = 0 := by
-  unfold duhamelIntegrand
-  split
-  · unfold duhamelSourceIntegral
-    have hz : ∀ w : EvolutionAmbientState d, g ⟨r, w.1, w.2⟩ = 0 := by
-      intro w
-      apply image_eq_zero_of_notMem_tsupport
-      intro h
-      exact absurd (hU h).1 (not_lt.2 hr)
-    simp only [hz, integral_zero]
-  · rfl
-
-/-- Compact interior source support allows integration over every later source time. -/
+/- Source integrands vanish at all source times at or beyond the terminal face. -/
 theorem duhamelPotential_eq_integral_Ioi (K : MovingFiberKernel Ω γ)
     (g : KineticPoint d → ℝ) (T : ℝ)
     (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) (p : KineticPoint d) :
@@ -43,10 +27,19 @@ theorem duhamelPotential_eq_integral_Ioi (K : MovingFiberKernel Ω γ)
   symm
   refine setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi
     Ioc_subset_Ioi_self (fun r hr => ?_)
-  have hrT : T ≤ r := not_lt.1 fun h => hr.2 ⟨hr.1, h.le⟩
-  exact duhamelIntegrand_eq_zero_of_ge K g T hU p hrT
+  have hrT := not_lt.1 fun h => hr.2 ⟨hr.1, h.le⟩
+  unfold duhamelIntegrand
+  split
+  · unfold duhamelSourceIntegral
+    have hz : ∀ w : EvolutionAmbientState d, g ⟨r, w.1, w.2⟩ = 0 := by
+      intro w
+      apply image_eq_zero_of_notMem_tsupport
+      intro h
+      exact absurd (hU h).1 (not_lt.2 hrT)
+    simp only [hz, integral_zero]
+  · rfl
 
-/-- The kinetic source potential satisfies the exact full adjoint distributional identity. -/
+/- The kinetic source potential satisfies the exact full adjoint distributional identity. -/
 theorem duhamel_weak_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
     (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)

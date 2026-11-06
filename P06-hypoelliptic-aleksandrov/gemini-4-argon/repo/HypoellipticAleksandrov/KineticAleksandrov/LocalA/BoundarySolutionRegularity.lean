@@ -13,7 +13,7 @@ open scoped Topology
 /-- A continuous actual kinetic weak solution with smooth forcing is pointwise smooth. -/
 theorem boundary_continuous_weak_smooth
     (hH : HormanderHypoellipticityStatement) {d : ℕ} {lam Lam : ℝ}
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
     (D : Set (KineticPoint d)) (hD : IsOpen D)
     (u g : KineticPoint d → ℝ) (hc : ContinuousOn u D)
     (hw : IsKineticWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d) D u g)
@@ -30,8 +30,7 @@ theorem boundary_continuous_weak_smooth
   have huc := hc.comp (evolutionHomeomorph d).continuous.continuousOn (fun _ hx => hx)
   obtain ⟨f, hf, hae⟩ := exists_smooth_representative_transported_source hH hB.1
     hsm hell (identityDrift_smooth d) zero_lt_one (identityDrift_bounds d).2 hU hweak hg
-  have heq := Measure.eqOn_open_of_ae_eq hae hU huc hf.continuousOn
-  have hu := hf.congr (fun x hx => heq hx)
+  have hu := hf.congr (fun x hx => (Measure.eqOn_open_of_ae_eq hae hU huc hf.continuousOn) hx)
   exact ⟨hu, duhamel_operator_eq_of_smooth_weak hU hsm hsym
     (identityDrift_smooth d) hu hg.continuousOn hweak⟩
 

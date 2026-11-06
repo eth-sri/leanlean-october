@@ -37,94 +37,88 @@ open scoped ENNReal Topology
 
 namespace HypoellipticAleksandrov.Parabolic
 
-/-- Contraction of a real coordinate about its prescribed centre. -/
+/- Contraction of a real coordinate about its prescribed centre. -/
 def centeredCoordinateContraction (c zeta : Real) : Real -> Real :=
   fun x => c + zeta * (x - c)
 
-/-- An open interval of the reference coordinate interval which contains the
+/- An open interval of the reference coordinate interval which contains the
 prescribed contraction centre. -/
 def IsClippedCoordinateInterval (c : Real) (I : Set Real) : Prop :=
   IsOpenSubinterval (Ioo (-1 : Real) 1) I /\ c ∈ I
 
-private theorem isOpen_ordConnected_eq_Ioo_csInf_csSup (I : Set Real)
-    (hIopen : IsOpen I) (hIord : I.OrdConnected) (hInonempty : I.Nonempty)
-    (hIbelow : BddBelow I) (hIabove : BddAbove I) :
-    I = Ioo (sInf I) (sSup I) := by
-  apply Subset.antisymm
-  · intro x hx
-    have hinf : sInf I ≤ x := csInf_le hIbelow hx
-    have hsup : x ≤ sSup I := le_csSup hIabove hx
-    constructor
-    · by_contra hnot
-      have hxeq : x = sInf I := le_antisymm (le_of_not_gt hnot) hinf
-      rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hleft : x - eps / 2 ∈ I := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x - eps / 2) - x| = eps / 2 := by
-          rw [show (x - eps / 2) - x = -(eps / 2) by ring, abs_neg,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : sInf I ≤ x - eps / 2 := csInf_le hIbelow hleft
-      rw [← hxeq] at hle
-      linarith
-    · by_contra hnot
-      have hxeq : sSup I = x := le_antisymm (le_of_not_gt hnot) hsup
-      rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hright : x + eps / 2 ∈ I := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x + eps / 2) - x| = eps / 2 := by
-          rw [show (x + eps / 2) - x = eps / 2 by ring,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : x + eps / 2 ≤ sSup I := le_csSup hIabove hright
-      rw [hxeq] at hle
-      linarith
-  · exact IsConnected.Ioo_csInf_csSup_subset
-      ⟨hInonempty, hIord.isPreconnected⟩ hIbelow hIabove
-
-private theorem clipped_coordinate_interval_data {c : Real} {I : Set Real}
-    (hI : IsClippedCoordinateInterval c I) :
-    BddBelow I ∧ BddAbove I ∧ I = Ioo (sInf I) (sSup I) ∧
-      sInf I < c ∧ c < sSup I ∧ (-1 : Real) ≤ sInf I ∧ sSup I ≤ 1 := by
-  have hIbelow : BddBelow I :=
-    ⟨-1, fun x hx => (hI.1.2.2.2 hx).1.le⟩
-  have hIabove : BddAbove I :=
-    ⟨1, fun x hx => (hI.1.2.2.2 hx).2.le⟩
-  have hIeq : I = Ioo (sInf I) (sSup I) :=
-    isOpen_ordConnected_eq_Ioo_csInf_csSup I hI.1.2.1 hI.1.2.2.1 hI.1.1
-      hIbelow hIabove
-  have hc : sInf I < c ∧ c < sSup I := by
-    have hc' := hI.2
-    rw [hIeq] at hc'
-    exact hc'
-  have hlow : (-1 : Real) ≤ sInf I := by
-    by_contra hnot
-    have hlt : sInf I < -1 := lt_of_not_ge hnot
-    obtain ⟨x, hx, hxc⟩ := exists_between hlt
-    have hxI : x ∈ I := by
-      rw [hIeq]
-      have hminus : (-1 : Real) < c := (hI.1.2.2.2 hI.2).1
-      exact ⟨hx, (hxc.trans hminus).trans hc.2⟩
-    exact (not_lt_of_ge ((hI.1.2.2.2 hxI).1.le)) hxc
-  have hupp : sSup I ≤ 1 := by
-    by_contra hnot
-    have hlt : 1 < sSup I := lt_of_not_ge hnot
-    obtain ⟨x, hcx, hx⟩ := exists_between hlt
-    have hxI : x ∈ I := by
-      rw [hIeq]
-      exact ⟨hc.1.trans ((hI.1.2.2.2 hI.2).2.trans hcx), hx⟩
-    exact (not_lt_of_ge ((hI.1.2.2.2 hxI).2.le)) hcx
-  exact ⟨hIbelow, hIabove, hIeq, hc.1, hc.2, hlow, hupp⟩
-
-/-- Centered coordinate contraction preserves clipped coordinate intervals. -/
 theorem isClippedCoordinateInterval_centeredCoordinateContraction_image
     (c zeta : Real) (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1)
-    {I : Set Real} (hI : IsClippedCoordinateInterval c I) :
+    {I } (hI : IsClippedCoordinateInterval c I) :
     IsClippedCoordinateInterval c
       (centeredCoordinateContraction c zeta '' I) := by
-  rcases clipped_coordinate_interval_data hI with
+  have _h_inl_13 : BddBelow I ∧ BddAbove I ∧ I = Ioo (sInf I) (sSup I) ∧
+      sInf I < c ∧ c < sSup I ∧ (-1 : Real) ≤ sInf I ∧ sSup I ≤ 1 := by
+      have hIbelow : BddBelow I :=
+        ⟨-1, fun x hx => (hI.1.2.2.2 hx).1.le⟩
+      have hIabove : BddAbove I :=
+        ⟨1, fun x hx => (hI.1.2.2.2 hx).2.le⟩
+      have hIeq : I = Ioo (sInf I) (sSup I) := by
+        have hIopen := hI.1.2.1
+        have hIord := hI.1.2.2.1
+        have hInonempty := hI.1.1
+        apply Subset.antisymm
+        · intro x hx
+          have hinf := csInf_le hIbelow hx
+          have hsup := le_csSup hIabove hx
+          constructor
+          · by_contra hnot
+            have hxeq := le_antisymm (le_of_not_gt hnot) hinf
+            rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
+            have hleft := hball (by
+              rw [Metric.mem_ball, Real.dist_eq]
+              have habs : |(x - eps / 2) - x| = eps / 2 := by
+                rw [show (x - eps / 2) - x = -(eps / 2) by ring, abs_neg,
+                  abs_of_pos (by linarith)]
+              rw [habs]
+              linarith)
+            have hle := csInf_le hIbelow hleft
+            rw [← hxeq] at hle
+            linarith
+          · by_contra hnot
+            have hxeq := le_antisymm (le_of_not_gt hnot) hsup
+            rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
+            have hright := hball (by
+              rw [Metric.mem_ball, Real.dist_eq]
+              have habs : |(x + eps / 2) - x| = eps / 2 := by
+                rw [show (x + eps / 2) - x = eps / 2 by ring,
+                  abs_of_pos (by linarith)]
+              rw [habs]
+              linarith)
+            have hle := le_csSup hIabove hright
+            rw [hxeq] at hle
+            linarith
+        · exact IsConnected.Ioo_csInf_csSup_subset
+            ⟨hInonempty, hIord.isPreconnected⟩ hIbelow hIabove
+      have hc : sInf I < c ∧ c < sSup I := by
+        have hc' := hI.2
+        rw [hIeq] at hc'
+        exact hc'
+      have hlow : (-1 : Real) ≤ sInf I := by
+        by_contra hnot
+        have hlt := lt_of_not_ge hnot
+        obtain ⟨x, hx, hxc⟩ := exists_between hlt
+        have hxI : x ∈ I := by
+          rw [hIeq]
+          have hminus := (hI.1.2.2.2 hI.2).1
+          exact ⟨hx, (hxc.trans hminus).trans hc.2⟩
+        exact (not_lt_of_ge ((hI.1.2.2.2 hxI).1.le)) hxc
+      have hupp : sSup I ≤ 1 := by
+        by_contra hnot
+        have hlt := lt_of_not_ge hnot
+        obtain ⟨x, hcx, hx⟩ := exists_between hlt
+        have hxI : x ∈ I := by
+          rw [hIeq]
+          exact ⟨hc.1.trans ((hI.1.2.2.2 hI.2).2.trans hcx), hx⟩
+        exact (not_lt_of_ge ((hI.1.2.2.2 hxI).2.le)) hcx
+      exact ⟨hIbelow, hIabove, hIeq, hc.1, hc.2, hlow, hupp⟩
+
+    /- Centered coordinate contraction preserves clipped coordinate intervals. -/
+  rcases _h_inl_13 with
     ⟨_, _, hIeq, hcinf, hcsup, hinf, hsup⟩
   rw [hIeq]
   unfold centeredCoordinateContraction
@@ -149,14 +143,14 @@ theorem isClippedCoordinateInterval_centeredCoordinateContraction_image
     · exact Ioo_subset_Ioo hlow.le hupp.le
   · exact ⟨hleft, hright⟩
 
-/-- The section obtained by varying `i`; remaining coordinates use
+/- The section obtained by varying `i`; remaining coordinates use
 `i.succAbove` order. -/
-def coordinateSection {n : Nat} (i : Fin (n + 1))
+def coordinateSection {n } (i : Fin (n + 1))
     (S : Set (Fin (n + 1) -> Real)) (w : Fin n -> Real) : Set Real :=
   {x | (MeasurableEquiv.piFinSuccAbove
     (fun _ : Fin (n + 1) => Real) i).symm (x, w) ∈ S}
 
-private theorem coordinateSection_eq_preimage_image {n : Nat}
+private theorem coordinateSection_eq_preimage_image {n }
     (i : Fin (n + 1)) (S : Set (Fin (n + 1) -> Real)) (w : Fin n -> Real) :
     (fun x : Real => (x, w)) ⁻¹'
       (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => Real) i '' S) =
@@ -175,7 +169,7 @@ private theorem coordinateSection_eq_preimage_image {n : Nat}
   · intro hx
     exact ⟨e.symm (x, w), hx, e.apply_symm_apply (x, w)⟩
 
-private theorem volume_eq_lintegral_coordinateSection {n : Nat}
+private theorem volume_eq_lintegral_coordinateSection {n }
     (i : Fin (n + 1)) (S : Set (Fin (n + 1) -> Real))
     (hS : MeasurableSet S) :
     volume S = ∫⁻ w, volume (coordinateSection i S w) := by
@@ -193,10 +187,10 @@ private theorem volume_eq_lintegral_coordinateSection {n : Nat}
       exact lintegral_congr fun w =>
         congr_arg volume (coordinateSection_eq_preimage_image i S w)
 
-/-- Fubini lift of pointwise one-coordinate section inequalities. -/
+/- Fubini lift of pointwise one-coordinate section inequalities. -/
 theorem volume_le_of_forall_volume_coordinateSection_le
-    {n : Nat} (i : Fin (n + 1)) (S T : Set (Fin (n + 1) -> Real))
-    (hS : MeasurableSet S) (hT : MeasurableSet T) (kappa : Real)
+    {n } (i : Fin (n + 1)) (S T : Set (Fin (n + 1) -> Real))
+    (hS : MeasurableSet S) (hT : MeasurableSet T) (kappa )
     (hsection : ∀ w : Fin n -> Real,
       volume (coordinateSection i S w) ≤
         ENNReal.ofReal kappa * volume (coordinateSection i T w)) :
@@ -211,20 +205,20 @@ theorem volume_le_of_forall_volume_coordinateSection_le
         ∫⁻ w, volume (coordinateSection i T w) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
 
-/-- Time is coordinate zero and velocity coordinate `j` is `Fin.succ j`. -/
+/- Time is coordinate zero and velocity coordinate `j` is `Fin.succ j`. -/
 def timeVelocityCoordinateEquiv (d : Nat) :
     TimeVelocity d ≃ᵐ (Fin (d + 1) -> Real) :=
   (MeasurableEquiv.piFinSuccAbove
     (fun _ : Fin (d + 1) => Real) 0).symm
 
-/-- Coordinate section of a time--velocity set after the fixed coordinate
+/- Coordinate section of a time--velocity set after the fixed coordinate
 identification. -/
-def timeVelocityCoordinateSection (d : Nat) (i : Fin (d + 1))
+def timeVelocityCoordinateSection (d ) (i : Fin (d + 1))
     (S : Set (TimeVelocity d)) (w : Fin d -> Real) : Set Real :=
   coordinateSection i (timeVelocityCoordinateEquiv d '' S) w
 
-private theorem volume_timeVelocityCoordinateEquiv_image {d : Nat}
-    (S : Set (TimeVelocity d)) (hS : MeasurableSet S) :
+private theorem volume_timeVelocityCoordinateEquiv_image {d }
+    (S ) (hS : MeasurableSet S) :
     volume (timeVelocityCoordinateEquiv d '' S) = volume S := by
   let e := timeVelocityCoordinateEquiv d
   have he : MeasurePreserving e :=
@@ -232,10 +226,10 @@ private theorem volume_timeVelocityCoordinateEquiv_image {d : Nat}
   rw [← he.map_eq, Measure.map_apply e.measurable (e.measurableSet_image.2 hS),
     e.preimage_image]
 
-/-- Fubini lift of coordinate-section bounds to time--velocity volume. -/
+/- Fubini lift of coordinate-section bounds to time--velocity volume. -/
 theorem volume_timeVelocity_le_of_forall_volume_coordinateSection_le
-    {d : Nat} (i : Fin (d + 1)) (S T : Set (TimeVelocity d))
-    (hS : MeasurableSet S) (hT : MeasurableSet T) (kappa : Real)
+    {d } (i : Fin (d + 1)) (S T : Set (TimeVelocity d))
+    (hS : MeasurableSet S) (hT : MeasurableSet T) (kappa )
     (hsection : ∀ w : Fin d -> Real,
       volume (timeVelocityCoordinateSection d i S w) ≤
         ENNReal.ofReal kappa * volume (timeVelocityCoordinateSection d i T w)) :

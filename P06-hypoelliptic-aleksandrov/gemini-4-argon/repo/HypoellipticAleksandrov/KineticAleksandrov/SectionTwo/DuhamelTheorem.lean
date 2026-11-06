@@ -29,7 +29,7 @@ theorem duhamelPotential_eq_greenMeasure (K : MovingFiberKernel Ω γ)
 and the supplied terminal evolution, with source normalization and zero traces. -/
 theorem kinetic_duhamel (hH : HormanderHypoellipticityStatement) (_hd : 1 ≤ d)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
-    {lam Lam m Lb : ℝ} (hlam : 0 < lam) (_hLam : lam ≤ Lam) (hm : 0 < m)
+    {lam Lam m Lb } (hlam : 0 < lam) (_hLam : lam ≤ Lam) (hm : 0 < m)
     (B : FullKineticCoefficient d) (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B)
     (hell : HasEverywhereLoewnerBounds lam Lam B)

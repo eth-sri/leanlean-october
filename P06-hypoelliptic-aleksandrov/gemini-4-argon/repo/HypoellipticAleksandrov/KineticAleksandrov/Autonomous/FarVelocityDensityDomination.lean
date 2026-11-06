@@ -54,7 +54,7 @@ theorem density_of_le_withDensity {X : Type*} [MeasurableSpace X]
 /-- A restricted dominated measure inherits the local norm of the dominating density. -/
 theorem density_restrict_of_le_withDensity {X : Type*} [MeasurableSpace X]
     (m ν : Measure X) [SigmaFinite m] [IsFiniteMeasure ν]
-    (D Q : Set X) (hD : MeasurableSet D) (hQ : MeasurableSet Q)
+    (D Q ) (hD : MeasurableSet D) (hQ : MeasurableSet Q)
     (f : X → ℝ) (hf : Measurable f) (hf0 : ∀ x, 0 ≤ f x)
     (p : ℝ≥0∞) (hfp : MemLp f p (m.restrict D))
     (hle : ν ≤ (m.restrict D).withDensity (fun x => ENNReal.ofReal (f x))) :
@@ -65,7 +65,7 @@ theorem density_restrict_of_le_withDensity {X : Type*} [MeasurableSpace X]
   let F := D.indicator f
   have hFm : Measurable F := hf.indicator hD
   have hF0 : ∀ x, 0 ≤ F x := fun x => indicator_nonneg (fun _ _ => hf0 _) x
-  have hFp : MemLp F p m := (memLp_indicator_iff_restrict hD).2 hfp
+  have hFp := (memLp_indicator_iff_restrict hD).2 hfp
   have hd : m.withDensity (fun x => ENNReal.ofReal (F x)) =
       (m.restrict D).withDensity (fun x => ENNReal.ofReal (f x)) := by
     rw [← withDensity_indicator hD]

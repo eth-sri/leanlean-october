@@ -12,7 +12,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 
 /-- Removing source localisation only increases a finite source norm. -/
-theorem autonomous_localised_norm_le (P₀ : Point) (R p : ℝ) (hR : 0 < R)
+theorem autonomous_localised_norm_le (P₀ : Point) (R p ) (hR : 0 < R)
     (u f : Point → ℝ) (hu : ContinuousOn u (backwardCylinder P₀ R))
     (hLp : MemLp (fun P => max (f P) 0) (ENNReal.ofReal p)
       (volume.restrict (backwardCylinder P₀ R))) :
@@ -27,7 +27,7 @@ theorem autonomous_localised_norm_le (P₀ : Point) (R p : ℝ) (hR : 0 < R)
 theorem autonomous_borel_of_below_four_density
     (hdensity : BelowFourDensityStatement)
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p : ℝ)
+    (lam Lam ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p )
     (hp : criticalP ⟨Lam / lam, (le_div_iff₀ hlam).2
       (by simpa only [one_mul] using hLam)⟩ < p) :
     ∃ C : ℝ, 0 < C ∧ ∀ (a : ℝ → ℝ → ℝ),
@@ -65,8 +65,7 @@ theorem autonomous_borel_of_below_four_density
             (eLpNorm (borelSource false u f) (ENNReal.ofReal p)
               (volume.restrict (backwardCylinder P₀ R))).toReal := by
     intro a ha hb P₀ R hR u f hcont hreg _hf hLp hsub P hP
-    have hbound := hsm ⟨a, ha, hb⟩ P₀ R hR u f hcont hreg hLp hsub P hP
-    apply hbound.trans
+    apply (hsm ⟨a, ha, hb⟩ P₀ R hR u f hcont hreg hLp hsub P hP).trans
     apply add_le_add_right
     exact mul_le_mul_of_nonneg_left
       (autonomous_localised_norm_le P₀ R p hR u f hreg.continuousOn hLp)

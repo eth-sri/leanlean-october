@@ -12,7 +12,7 @@ open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 /-- Every actual waiting Green kernel gives zero occupation to the core. -/
 theorem enlargedWaitingGreenKernel_core_zero
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (p : Point) :
     enlargedVisitGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) T p
       {q | q.velocity 0 ∈ c.core} = 0 := by
@@ -22,9 +22,7 @@ theorem enlargedWaitingGreenKernel_core_zero
       (enlargedVisitPole _ T ⟨p, hp⟩) else 0) {q | q.velocity 0 ∈ c.core} = 0
   split
   · rename_i hp
-    have hae := visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitWaitingUnion c J) T
-      (enlargedVisitPole _ T ⟨p, hp⟩)
-    have hz := ae_iff.mp hae
+    have hz := ae_iff.mp (visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitWaitingUnion c J) T (enlargedVisitPole _ T ⟨p, hp⟩))
     apply le_antisymm _ zero_le
     apply (measure_mono (show {q : Point | q.velocity 0 ∈ c.core} ⊆
         {q | q.velocity 0 ∉ (visitWaitingUnion c J).carrier} from

@@ -39,7 +39,7 @@ theorem open_ordConnected_eq_Ioo {s : Set ℝ} (hs : IsOpen s) (hn : s.Nonempty)
     exact hc.out ha hb ⟨hax.le, hxb.le⟩
 
 /-- The order component of a point in an open real set is open. -/
-theorem isOpen_ordConnectedComponent {U : Set ℝ} (hU : IsOpen U) (x : ℝ) :
+theorem isOpen_ordConnectedComponent {U } (hU : IsOpen U) (x : ℝ) :
     IsOpen (ordConnectedComponent U x) := by
   rw [isOpen_iff_mem_nhds]
   intro y hy
@@ -48,13 +48,13 @@ theorem isOpen_ordConnectedComponent {U : Set ℝ} (hU : IsOpen U) (x : ℝ) :
 
 /-- A bounded open real set is a countable disjoint union of nonempty open intervals.
 Every nonempty open interval in the set is contained in one of these components. -/
-theorem bounded_open_interval_components {U : Set ℝ} (hU : IsOpen U)
+theorem bounded_open_interval_components {U } (hU : IsOpen U)
     (hbelow : BddBelow U) (habove : BddAbove U) :
     ∃ C : Set (Set ℝ), C.Countable ∧ C.PairwiseDisjoint id ∧
       (∀ s ∈ C, s.Nonempty ∧ s = Ioo (sInf s) (sSup s)) ∧
       (⋃ s ∈ C, s) = U ∧
       (∀ a b : ℝ, a < b → Ioo a b ⊆ U → ∃ s ∈ C, Ioo a b ⊆ s) := by
-  let C : Set (Set ℝ) := {s | ∃ x ∈ U, s = ordConnectedComponent U x}
+  let C := {s | ∃ x ∈ U, s = ordConnectedComponent U x}
   have hnonempty : ∀ s ∈ C, s.Nonempty := by
     rintro s ⟨x, hx, rfl⟩
     exact nonempty_ordConnectedComponent.mpr hx
@@ -105,7 +105,7 @@ theorem backwardInterval_subset_component_extension {a h m l b : ℝ}
     lt_of_lt_of_le hx.2 (le_trans hab.le hright)⟩
 
 /-- The left extension has precisely the delayed-union length multiplier. -/
-theorem volume_component_extension {l b m : ℝ} (hm : 0 < m) :
+theorem volume_component_extension {l b m } (hm : 0 < m) :
     volume (Ioo (l-(b-l)/m) b) =
       ENNReal.ofReal ((m+1)/m) * volume (Ioo l b) := by
   rw [Real.volume_Ioo, Real.volume_Ioo, ← ENNReal.ofReal_mul (by positivity)]

@@ -51,16 +51,16 @@ theorem bellmanPositionEquiv_fderiv_velocity_twice (s : ℝ) (hs : 0 < s)
     ((bellman_contDiff_direction hφ (0, 1)).differentiable (by simp)) q
 
 /-- The adjoint identity is preserved by the literal normalization of both measures. -/
-theorem IsBellmanStationaryAdjointPair.map_position {μ η : Measure BellmanPuncturedPlane}
+theorem IsBellmanStationaryAdjointPair.map_position {μ η }
     (hp : IsBellmanStationaryAdjointPair μ η) (s : ℝ) (hs : 0 < s) :
     IsBellmanStationaryAdjointPair (Measure.map (bellmanPositionHomeomorph s hs) μ)
       (ENNReal.ofReal s⁻¹ • Measure.map (bellmanPositionHomeomorph s hs) η) := by
   intro φ hφ hc haway
   let T := bellmanPositionEquiv s hs
   let H := bellmanPositionHomeomorph s hs
-  have hcomp : ContDiff ℝ (⊤ : ℕ∞) (fun q => φ (T q)) :=
+  have hcomp :=
     hφ.comp T.contDiff
-  have hccomp : HasCompactSupport (fun q => φ (T q)) := hc.comp_homeomorph T.toHomeomorph
+  have hccomp := hc.comp_homeomorph T.toHomeomorph
   have hscomp : tsupport (fun q => φ (T q)) ⊆ {q | q ≠ (0, 0)} := by
     intro q hq hzero
     have h := tsupport_comp_subset_preimage φ T.continuous hq

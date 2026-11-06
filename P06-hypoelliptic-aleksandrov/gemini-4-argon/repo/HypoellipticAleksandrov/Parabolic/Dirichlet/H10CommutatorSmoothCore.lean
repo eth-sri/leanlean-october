@@ -25,31 +25,6 @@ open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω)
-    (i : Fin d) (u : H10HilbertGraph hΩ) :
-    PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-        (gradientCLM hΩ
-          (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift u)) =
-      cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
-          (valueCLM hΩ u) +
-        localizedSpatialDifferenceQuotientL2 hΩ.measurableSet η k h
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ u)) := by
-  have hgrad := congrArg (fun T : H10HilbertGraph hΩ →L[ℝ]
-      PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) =>
-      PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (T u))
-    (gradientCLM_comp_localizedSpatialDifferenceQuotientH10CLM
-      hΩ η k h hηΩ hηshift)
-  simpa only [ContinuousLinearMap.comp_apply,
-    localizedSpatialDifferenceQuotientSmoothGradientCLM,
-    ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.comp_apply,
-    PDE.hilbertVectorLpCoord_hilbertVectorLpAssemble] using hgrad
-
 private theorem outerCutoff_mul_innerCutoff_eq
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
@@ -157,54 +132,7 @@ private def h10CommutatorRawRhs
     ζ τ * χ y * spatialDifferenceQuotient k h γ (τ, y)
   h10CommutatorRawLeaf (Ω := Ω) sourceD V aT aD E H U driftT driftD γT γD U₀
 
-private theorem h10CommutatorRawRhs_eq_leaf
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (F : ℝ → PDE.Vec d → ℝ)
-    (ζ : ReverseTimeScalarTest (r₁ - r₀))
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
-    (k : Fin d) (h τ : ℝ)
-    (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
-    (u : H10HilbertGraph hΩ) :
-    h10CommutatorRawRhs r₀ r₁ hΩ a b c F ζ η χ k h τ hηshift u =
-      h10CommutatorRawLeaf (Ω := Ω)
-        (fun y => ζ τ * η y * spatialDifferenceQuotient k h
-          (fun z => F (r₁ - z.1) z.2) (τ, y))
-        (fun y => valueCLM hΩ
-          (localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift u) y)
-        (fun i j y => ζ τ * χ y * spatialTranslate k h
-          (fun z => reverseTimeCoefficient r₁ a z.1 z.2 i j) (τ, y))
-        (fun i j y => ζ τ * χ y * spatialDifferenceQuotient k h
-          (fun z => reverseTimeCoefficient r₁ a z.1 z.2 i j) (τ, y))
-        (fun i y =>
-          PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-            (gradientCLM hΩ
-              (localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift u)) y -
-            cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
-              (valueCLM hΩ u) y)
-        (fun i y =>
-          PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-            (gradientCLM hΩ
-              (localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift u)) y +
-            cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
-              (valueCLM hΩ u) y)
-        (fun j y => η y * PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
-          (gradientCLM hΩ u) y)
-        (fun j y => ζ τ * χ y * spatialTranslate k h
-          (fun z => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) (τ, y))
-        (fun j y => ζ τ * χ y * spatialDifferenceQuotient k h
-          (fun z => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) (τ, y))
-        (fun y => ζ τ * χ y * spatialTranslate k h
-          (fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2) (τ, y))
-        (fun y => ζ τ * χ y * spatialDifferenceQuotient k h
-          (fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2) (τ, y))
-        (fun y => η y * valueCLM hΩ u y) := rfl
-
-/-- The literal fixed-step H¹₀ commutator identity. -/
+/- The literal fixed-step H¹₀ commutator identity. -/
 def h10CommutatorFixedStepOutput
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
@@ -230,7 +158,7 @@ def h10CommutatorFixedStepOutput
         let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
           localizedSpatialDifferenceQuotientH10CLM
             hΩ η k h η.tsupport_subset hηshift
-        let B : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
+        let B :=
           localizedSpatialDifferenceQuotientEnergyTestH10CLM
             hΩ η k h η.tsupport_subset hηshift
         let V : PDE.Vec d → ℝ :=
@@ -333,7 +261,7 @@ private def smoothCoreFactoredExpression
     (∑ j : Fin d, driftSmooth j) + scalarSmooth)
 
 private theorem smoothCore_rawRhs_eq_factoredExpression
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d Ω inner Kη Kχ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -347,8 +275,7 @@ private theorem smoothCore_rawRhs_eq_factoredExpression
     h10CommutatorRawRhs r₀ r₁ hΩ a b c F ζ η χ k h τ hηshift
       (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ) =
       smoothCoreFactoredExpression r₀ r₁ a b c F ζ η k h τ φ := by
-  rw [h10CommutatorRawRhs_eq_leaf]
-  dsimp only [h10CommutatorRawLeaf, smoothCoreFactoredExpression]
+  dsimp only [h10CommutatorRawRhs, h10CommutatorRawLeaf, smoothCoreFactoredExpression]
   let u : H10HilbertGraph hΩ := smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ
   let A := localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
   let B := localizedSpatialDifferenceQuotientEnergyTestH10CLM hΩ η k h η.tsupport_subset hηshift
@@ -443,8 +370,17 @@ private theorem smoothCore_rawRhs_eq_factoredExpression
           (valueCLM hΩ u) +
           localizedSpatialDifferenceQuotientL2 hΩ.measurableSet η k h (gc i u) := by
       dsimp only [A, gc, ContinuousLinearMap.comp_apply]
-      exact gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq
-        hΩ η k h η.tsupport_subset hηshift i u
+      have hηΩ := η.tsupport_subset
+      have hgrad := congrArg (fun T : H10HilbertGraph hΩ →L[ℝ]
+          PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) =>
+          PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (T u))
+        (gradientCLM_comp_localizedSpatialDifferenceQuotientH10CLM
+          hΩ η k h hηΩ hηshift)
+      simpa only [ContinuousLinearMap.comp_apply,
+        localizedSpatialDifferenceQuotientSmoothGradientCLM,
+        ContinuousLinearMap.add_apply,
+        ContinuousLinearMap.comp_apply,
+        PDE.hilbertVectorLpCoord_hilbertVectorLpAssemble] using hgrad
     rw [hGClass]
     filter_upwards [MeasureTheory.Lp.coeFn_add
       (cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
@@ -542,56 +478,8 @@ private theorem smoothCore_rawRhs_eq_factoredExpression
   rw [fintype_sum_sum_const_mul, fintype_sum_const_mul]
   ring
 
-private theorem smoothCore_lhs_eq_factoredExpression
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (ζ : ReverseTimeScalarTest (r₁ - r₀))
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (k : Fin d) (h τ : ℝ)
-    (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
-    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) (φ : PDE.WeakTestFunction Ω) :
-    h10CommutatorLhs r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η k h τ hηshift
-      (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ) =
-      smoothCoreFactoredExpression r₀ r₁ a b c F ζ η k h τ φ := by
-  dsimp only [h10CommutatorLhs, smoothCoreFactoredExpression]
-  let u : H10HilbertGraph hΩ := smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ
-  let B := localizedSpatialDifferenceQuotientEnergyTestH10CLM
-    hΩ η k h η.tsupport_subset hηshift
-  let source : TimeVelocity d → ℝ := fun z => F (r₁ - z.1) z.2
-  let α : Fin d → Fin d → TimeVelocity d → ℝ := fun i j z =>
-    reverseTimeCoefficient r₁ a z.1 z.2 i j
-  let drift : Fin d → TimeVelocity d → ℝ := fun j z =>
-    reverseTimeDivergenceDrift r₁ a b z.1 z.2 j
-  let γ : TimeVelocity d → ℝ := fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2
-  let D : PDE.Vec d → ℝ := fun y =>
-    (φ (y + h • PDE.basisVec k) - φ y) / h
-  let Dg : Fin d → PDE.Vec d → ℝ := fun i y =>
-    (φ.partialDeriv i (y + h • PDE.basisVec k) - φ.partialDeriv i y) / h
-  have hsmooth := reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commutator
-    r₀ r₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth τ hτ
-      η k h φ η.tsupport_subset hηshift
-  rw [reverseTimeNegativeSourceRaw_eq_sourceFunctional_of_mem_Icc
-    r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ hτ]
-  have hmul := congrArg (fun x : ℝ => ζ τ * x) hsmooth
-  simpa only [B, u, source, α, drift, γ, D, Dg, spatialDifferenceQuotient_apply,
-    spatialTranslate_apply, spatialShift_apply, reverseTimeCoefficient_apply,
-    reverseTimeDivergenceDrift, reverseTimeScalarCoefficient_apply, mul_assoc] using hmul
-
-/-- The literal fixed-step commutator identity on the dense smooth H¹₀ core. -/
 theorem smoothCore_fixedStep_reverseTimeSource_sub_reverseTimeSpatialForm_eq_commutator
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d Ω inner Kη Kχ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -614,12 +502,33 @@ theorem smoothCore_fixedStep_reverseTimeSource_sub_reverseTimeSpatialForm_eq_com
     h10CommutatorFixedStepOutput r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth
       hcSmooth F hFSmooth ζ η χ k h τ hτ hηshift
       (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ) := by
-  change h10CommutatorLhs r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η k h τ hηshift
+  have _h_inl_22 : h10CommutatorLhs r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η k h τ hηshift
       (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ) =
-    h10CommutatorRawRhs r₀ r₁ hΩ a b c F ζ η χ k h τ hηshift
-      (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ)
-  exact (smoothCore_lhs_eq_factoredExpression r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth
-    hbSmooth hcSmooth F hFSmooth ζ η k h τ hηshift hτ φ).trans
+      smoothCoreFactoredExpression r₀ r₁ a b c F ζ η k h τ φ := by
+    dsimp only [h10CommutatorLhs, smoothCoreFactoredExpression]
+    let u : H10HilbertGraph hΩ := smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ
+    let B := localizedSpatialDifferenceQuotientEnergyTestH10CLM
+      hΩ η k h η.tsupport_subset hηshift
+    let source : TimeVelocity d → ℝ := fun z => F (r₁ - z.1) z.2
+    let α : Fin d → Fin d → TimeVelocity d → ℝ := fun i j z =>
+      reverseTimeCoefficient r₁ a z.1 z.2 i j
+    let drift : Fin d → TimeVelocity d → ℝ := fun j z =>
+      reverseTimeDivergenceDrift r₁ a b z.1 z.2 j
+    let γ : TimeVelocity d → ℝ := fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2
+    let D : PDE.Vec d → ℝ := fun y =>
+      (φ (y + h • PDE.basisVec k) - φ y) / h
+    let Dg : Fin d → PDE.Vec d → ℝ := fun i y =>
+      (φ.partialDeriv i (y + h • PDE.basisVec k) - φ.partialDeriv i y) / h
+    have hsmooth := reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commutator
+      r₀ r₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth τ hτ
+        η k h φ η.tsupport_subset hηshift
+    rw [reverseTimeNegativeSourceRaw_eq_sourceFunctional_of_mem_Icc
+      r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ hτ]
+    have hmul := congrArg (fun x : ℝ => ζ τ * x) hsmooth
+    simpa only [B, u, source, α, drift, γ, D, Dg, spatialDifferenceQuotient_apply,
+      spatialTranslate_apply, spatialShift_apply, reverseTimeCoefficient_apply,
+      reverseTimeDivergenceDrift, reverseTimeScalarCoefficient_apply, mul_assoc] using hmul
+  exact _h_inl_22.trans
     (smoothCore_rawRhs_eq_factoredExpression r₀ r₁ hΩ a b c F ζ η χ k h τ hηshift φ).symm
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

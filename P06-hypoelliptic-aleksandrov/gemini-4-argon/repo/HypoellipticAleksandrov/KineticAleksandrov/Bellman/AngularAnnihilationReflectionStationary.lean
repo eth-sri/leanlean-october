@@ -2,6 +2,9 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularAnnihilationReflectionMeasure
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularDisintegrationHomogeneity
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasureJets
+import Mathlib.Analysis.Calculus.FDeriv.Add
 
 /-! # Preservation of the stationary adjoint equation under simultaneous reflection -/
 
@@ -10,14 +13,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- Simultaneous position–velocity reflection preserves the stationary adjoint equation. -/
-theorem IsBellmanStationaryAdjointPair.reflect {μ η : Measure BellmanPuncturedPlane}
+/- Simultaneous position–velocity reflection preserves the stationary adjoint equation. -/
+theorem IsBellmanStationaryAdjointPair.reflect {μ η }
     (hpair : IsBellmanStationaryAdjointPair μ η) :
     IsBellmanStationaryAdjointPair (Measure.map bellmanReflection μ)
       (Measure.map bellmanReflection η) := by
   intro φ hφ hc hs
   let ψ := fun q : ℝ × ℝ => φ (-q)
-  have hψ : ContDiff ℝ (⊤ : ℕ∞) ψ := hφ.comp contDiff_neg
+  have hψ := hφ.comp contDiff_neg
   have hcψ : HasCompactSupport ψ := hc.comp_homeomorph (Homeomorph.neg (ℝ × ℝ))
   have hsψ : tsupport ψ ⊆ {q : ℝ × ℝ | q ≠ (0, 0)} := by
     intro q hq hzero
@@ -40,12 +43,28 @@ theorem IsBellmanStationaryAdjointPair.reflect {μ η : Measure BellmanPunctured
       fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) (bellmanReflection q).val (0, 1)) =
       (fun q => fderiv ℝ (fun z => fderiv ℝ ψ z (0, 1)) q.val (0, 1)) := by
     funext q
-    exact (bellman_reflected_second_velocity φ hφ q.val).symm
+    have _h_xinl_0 : fderiv ℝ (fun z => fderiv ℝ (fun w => φ (-w)) z (0, 1)) q.val (0, 1) =
+      fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) (-q.val) (0, 1) := by
+      let q := q.val
+      have hjet := bellman_contDiff_direction hφ (0, 1)
+      have he : (fun z => fderiv ℝ (fun w => φ (-w)) z (0, 1)) =
+          (fun z => -(fderiv ℝ φ (-z) (0, 1))) := by
+        funext z
+        exact bellman_reflected_fderiv φ hφ z (0, 1)
+      let g := fun z => fderiv ℝ φ z (0, 1)
+      have hd := ((hjet.differentiable (by simp) (-q)).hasFDerivAt.comp q
+        ((hasFDerivAt_id q).neg)).neg
+      rw [he]
+      change fderiv ℝ (-(g ∘ Neg.neg)) q (0, 1) = _
+      rw [hd.fderiv]
+      change -(fderiv ℝ g (-q) (-(0, 1))) = fderiv ℝ g (-q) (0, 1)
+      rw [map_neg, neg_neg]
+    exact _h_xinl_0.symm
   rw [htransport, hvv]
   exact he
 
-/-- Reflection preserves the complete genuine homogeneous adjoint-pair condition. -/
-theorem IsBellmanAdjointPair.reflect {R β : ℝ} {μ η : Measure BellmanPuncturedPlane}
+/- Reflection preserves the complete genuine homogeneous adjoint-pair condition. -/
+theorem IsBellmanAdjointPair.reflect {R β μ η}
     (hp : IsBellmanAdjointPair 1 R β μ η) :
     IsBellmanAdjointPair 1 R β (Measure.map bellmanReflection μ)
       (Measure.map bellmanReflection η) := by

@@ -24,7 +24,7 @@ namespace PDE
 
 namespace W1pFunction
 
-/-- Package a globally `C¹` function as a `W^{1,p}` representative on a
+/- Package a globally `C¹` function as a `W^{1,p}` representative on a
 bounded measurable domain. -/
 noncomputable def ofContDiffOnIsSobolevRegularDomain
     {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
@@ -37,13 +37,13 @@ noncomputable def ofContDiffOnIsSobolevRegularDomain
       hU.isFiniteMeasure_volumeOn
     have hfContinuous : Continuous f :=
       (hf.differentiable (by simp)).continuous
-    have hclosureCompact : IsCompact (closure U) :=
+    have hclosureCompact :=
       hU.isBoundedDomain.isBounded.isCompact_closure
     let C : ℝ :=
       Classical.choose
         (hclosureCompact.exists_bound_of_continuousOn
           hfContinuous.continuousOn)
-    have hC : ∀ x ∈ closure U, ‖f x‖ ≤ C :=
+    have hC :=
       Classical.choose_spec
         (hclosureCompact.exists_bound_of_continuousOn
           hfContinuous.continuousOn)
@@ -55,7 +55,7 @@ noncomputable def ofContDiffOnIsSobolevRegularDomain
   gradMemLp := by
     have : MeasureTheory.IsFiniteMeasure (volumeOn U) :=
       hU.isFiniteMeasure_volumeOn
-    have hclosureCompact : IsCompact (closure U) :=
+    have hclosureCompact :=
       hU.isBoundedDomain.isBounded.isCompact_closure
     intro i
     have hgradContinuous :
@@ -66,8 +66,7 @@ noncomputable def ofContDiffOnIsSobolevRegularDomain
       Classical.choose
         (hclosureCompact.exists_bound_of_continuousOn
           hgradContinuous.continuousOn)
-    have hC :
-        ∀ x ∈ closure U, ‖classicalGradient f x i‖ ≤ C :=
+    have hC :=
       Classical.choose_spec
         (hclosureCompact.exists_bound_of_continuousOn
           hgradContinuous.continuousOn)
@@ -79,26 +78,6 @@ noncomputable def ofContDiffOnIsSobolevRegularDomain
   hasWeakGradient :=
     HasWeakGradientOn.of_contDiff hf
 
-@[simp]
-theorem ofContDiffOnIsSobolevRegularDomain_toFun
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    (hU : IsSobolevRegularDomain U) {f : Vec d → ℝ}
-    (hf : ContDiff ℝ 1 f) :
-    (ofContDiffOnIsSobolevRegularDomain
-      (p := p) hU hf).toFun = f :=
-  rfl
-
-@[simp]
-theorem ofContDiffOnIsSobolevRegularDomain_grad
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    (hU : IsSobolevRegularDomain U) {f : Vec d → ℝ}
-    (hf : ContDiff ℝ 1 f) :
-    (ofContDiffOnIsSobolevRegularDomain
-      (p := p) hU hf).grad = classicalGradient f :=
-  rfl
-
-/-- Bounded open convex domains provide the bounded-domain smooth
-`W^{1,p}` constructor. -/
 noncomputable def ofContDiffOnIsOpenBoundedConvexDomain
     {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     (hU : IsOpenBoundedConvexDomain U) {f : Vec d → ℝ}
@@ -108,21 +87,17 @@ noncomputable def ofContDiffOnIsOpenBoundedConvexDomain
 
 @[simp]
 theorem ofContDiffOnIsOpenBoundedConvexDomain_toFun
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+    {d U p}
     (hU : IsOpenBoundedConvexDomain U) {f : Vec d → ℝ}
     (hf : ContDiff ℝ 1 f) :
-    (ofContDiffOnIsOpenBoundedConvexDomain
-      (p := p) hU hf).toFun = f :=
-  rfl
+    (ofContDiffOnIsOpenBoundedConvexDomain (p := p) hU hf).toFun = f := rfl
 
 @[simp]
 theorem ofContDiffOnIsOpenBoundedConvexDomain_grad
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+    {d U p}
     (hU : IsOpenBoundedConvexDomain U) {f : Vec d → ℝ}
     (hf : ContDiff ℝ 1 f) :
-    (ofContDiffOnIsOpenBoundedConvexDomain
-      (p := p) hU hf).grad = classicalGradient f :=
-  rfl
+    (ofContDiffOnIsOpenBoundedConvexDomain (p := p) hU hf).grad = classicalGradient f := rfl
 
 end W1pFunction
 

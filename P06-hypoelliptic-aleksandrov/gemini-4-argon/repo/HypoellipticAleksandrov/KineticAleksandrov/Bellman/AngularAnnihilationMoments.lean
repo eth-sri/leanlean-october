@@ -12,8 +12,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
 /-- The oriented first moment stays nonnegative on the negative half-line. -/
-theorem bellmanAngularFirstMoment_nonneg_negative {f : ℝ → ℝ}
-    (hf : ∀ᵐ z ∂volume, 0 ≤ f z) {y : ℝ} (hy : y ≤ 0) :
+theorem bellmanAngularFirstMoment_nonneg_negative {f }
+    (hf : ∀ᵐ z ∂volume, 0 ≤ f z) {y } (hy : y ≤ 0) :
     0 ≤ bellmanAngularFirstMoment f y := by
   rw [bellmanAngularFirstMoment, intervalIntegral.integral_of_ge hy]
   apply neg_nonneg.mpr
@@ -22,8 +22,8 @@ theorem bellmanAngularFirstMoment_nonneg_negative {f : ℝ → ℝ}
   exact mul_nonpos_of_nonpos_of_nonneg hz.2 hfz
 
 /-- The oriented second moment is nonpositive on the negative half-line. -/
-theorem bellmanAngularSecondMoment_nonpos_negative {f : ℝ → ℝ}
-    (hf : ∀ᵐ z ∂volume, 0 ≤ f z) {y : ℝ} (hy : y ≤ 0) :
+theorem bellmanAngularSecondMoment_nonpos_negative {f }
+    (hf : ∀ᵐ z ∂volume, 0 ≤ f z) {y } (hy : y ≤ 0) :
     bellmanAngularSecondMoment f y ≤ 0 := by
   rw [bellmanAngularSecondMoment, intervalIntegral.integral_symm]
   apply neg_nonpos.mpr
@@ -32,9 +32,9 @@ theorem bellmanAngularSecondMoment_nonpos_negative {f : ℝ → ℝ}
   exact mul_nonneg (sq_nonneg z) hz
 
 /-- On the negative side minus the second moment is bounded by minus y times the first moment. -/
-theorem bellmanAngularSecondMoment_negative_bound {f : ℝ → ℝ}
+theorem bellmanAngularSecondMoment_negative_bound {f }
     (hi : LocallyIntegrable f volume) (hf : ∀ᵐ z ∂volume, 0 ≤ f z)
-    {y : ℝ} (hy : y ≤ 0) :
+    {y } (hy : y ≤ 0) :
     -bellmanAngularSecondMoment f y ≤ -y * bellmanAngularFirstMoment f y := by
   rw [bellmanAngularSecondMoment, bellmanAngularFirstMoment,
     intervalIntegral.integral_symm (a := y) (b := 0),
@@ -53,7 +53,7 @@ theorem bellmanAngularSecondMoment_negative_bound {f : ℝ → ℝ}
   nlinarith [mul_nonneg (sub_nonneg.mpr hzy.1) (mul_nonneg (neg_nonneg.mpr hzy.2) hz)]
 
 /-- The second moment divided by its endpoint is bounded in norm by the first moment. -/
-theorem bellmanAngularSecondMoment_div_norm_le {f : ℝ → ℝ}
+theorem bellmanAngularSecondMoment_div_norm_le {f }
     (hi : LocallyIntegrable f volume) (hf : ∀ᵐ z ∂volume, 0 ≤ f z) (y : ℝ) :
     ‖bellmanAngularSecondMoment f y / y‖ ≤ bellmanAngularFirstMoment f y := by
   rcases lt_trichotomy y 0 with hy | hy | hy

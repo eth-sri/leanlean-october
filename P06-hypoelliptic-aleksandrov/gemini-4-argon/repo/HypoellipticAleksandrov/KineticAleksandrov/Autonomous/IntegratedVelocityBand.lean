@@ -2,6 +2,10 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.IntegratedVelocityGreen
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.IntegratedVelocityMeasure
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.IntegratedVelocitySource
+import Mathlib.Basic.Real.Basic
+import Mathlib.MeasureTheory.Function.LocallyIntegrable
 
 /-! # Measurable velocity-band occupation from smooth convex sources -/
 
@@ -11,18 +15,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Set MeasureTheory Filter
 open SectionTwo
 open scoped ENNReal
+open HypoellipticAleksandrov.Parabolic
 
-/-- Velocity band in raw evolution spacetime coordinates. -/
+/- Velocity band in raw evolution spacetime coordinates. -/
 def velocityRawBand (r : ℝ) : Set (ℝ × EvolutionAmbientState 1) :=
   {q | |q.2.1 0| ≤ 3 * r}
 
-/-- The raw velocity band is measurable. -/
+/- The raw velocity band is measurable. -/
 theorem velocityRawBand_measurable (r : ℝ) : MeasurableSet (velocityRawBand r) := by
   apply measurableSet_le
   · exact continuous_abs.measurable.comp ((measurable_pi_apply 0).comp measurable_snd.fst)
   · exact measurable_const
 
-/-- A unit test of restricted band occupation is bounded by its actual convex source. -/
+/- A unit test of restricted band occupation is bounded by its actual convex source. -/
 theorem velocityGreenRaw_band_test_le (hH : HormanderHypoellipticityStatement)
     {lam Lam r T : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
@@ -64,12 +69,43 @@ theorem velocityGreenRaw_band_test_le (hH : HormanderHypoellipticityStatement)
     · rw [indicator_of_notMem hq]
       exact mul_nonneg hc0 (mul_nonneg (hf01 q).1
         (mul_nonneg hlam.le (velocityOccupationDensity_nonneg r _)))
+  have _h_xinl_0 : (∫ q, f q * (lam * velocityOccupationDensity r (q.2.1 0)) ∂velocityGreenRaw E T hT z) ≤ Real.sqrt (2 * Lam * T) := by
+    let g := fun q : Point => f (q.time, q.position, q.velocity) *
+      (lam * velocityOccupationDensity r (q.position 0))
+    have hs : ContDiff ℝ (⊤ : ℕ∞) (rawLift g) := hf.mul
+      (contDiff_const.mul ((velocityOccupationDensity_contDiff hr).comp
+        ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.fst)))
+    have hc : HasCompactSupport g :=
+      (hfc.comp_homeomorph (KineticPoint.homeomorphProd 1)).mul_right
+    have hg : Continuous g := hs.continuous.comp (KineticPoint.homeomorphProd 1).continuous
+    have hn : ∀ q, 0 ≤ g q := fun q => mul_nonneg (hf01 _).1
+      (mul_nonneg hlam.le (velocityOccupationDensity_nonneg r _))
+    have hrep := duhamelPotential_eq_greenMeasure E.2 autonomousWholeDomain_measurable
+      continuous_const T g hn hg hc 0 hT (velocityInitialState z)
+    have hb := velocity_profile_source_bound hH hlam hLam A E hE hr T f hf hfc hfU hf01
+      ⟨0, fun _ => z.2, fun _ => z.1⟩ hT
+    change (∫ q, rawLift g q ∂(velocityGreen E T hT z).map velocityElapsedRaw) ≤ _
+    rw [integral_map (velocityElapsedRaw_measurable T).aemeasurable
+      hs.continuous.aestronglyMeasurable]
+    have hI (D : ℝ) (hD : 0 < D) (hDT : D = T) :
+        (∫ q : ElapsedTime (ENNReal.ofReal D) × EvolutionAmbientState 1,
+          g ⟨0 + q.1.1, q.2.1, q.2.2⟩ ∂greenMeasure E.2 0 (ENNReal.ofReal D)
+            (ENNReal.ofReal_pos.mpr hD) (Measure.dirac (velocityInitialState z))) =
+        ∫ q, rawLift g (velocityElapsedRaw q) ∂velocityGreen E T hT z := by
+      subst D
+      apply integral_congr_ae
+      exact Eventually.of_forall fun q => by
+        change g ⟨0 + q.1.1, q.2.1, q.2.2⟩ = g ⟨q.1.1, q.2.1, q.2.2⟩
+        rw [show (0 : ℝ) + q.1.1 = q.1.1 by ring]
+    have hi := (hI (T - 0) (sub_pos.mpr hT) (by ring)).symm.trans hrep.symm
+    exact hi.trans_le (by simpa only [velocityInitialState, wholeQuery, wholeSpaceQuery,
+      sub_zero] using hb)
   exact hm.trans (mul_le_mul_of_nonneg_left
-    (velocityGreenRaw_source_integral_le hH hlam hLam A E hE hr hT z f hf hfc hfU hf01) hc0)
+    _h_xinl_0 hc0)
 
-/-- Uniform measurable-band occupation bound, with a constant depending only on ellipticity. -/
+/- Uniform measurable-band occupation bound, with a constant depending only on ellipticity. -/
 theorem velocityGreenRaw_band_mass_le (hH : HormanderHypoellipticityStatement)
-    {lam Lam r T : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam r T } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (hr : 0 < r) (hT : 0 < T) (z : Z) :
     velocityGreenRaw E T hT z (velocityRawBand r) ≤

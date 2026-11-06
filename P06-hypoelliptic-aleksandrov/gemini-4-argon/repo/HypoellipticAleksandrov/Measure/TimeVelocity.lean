@@ -38,17 +38,17 @@ theorem volume_timeVelocity_eq_prod (d : ℕ) :
 def parabolicExponent (d : ℕ) : ℝ≥0∞ := d + 1
 
 /-- The extended-real `L^(d + 1)` norm on all time--velocity space. -/
-def parabolicELpNorm (d : ℕ) (f : TimeVelocity d → ℝ) : ℝ≥0∞ :=
+def parabolicELpNorm (d ) (f : TimeVelocity d → ℝ) : ℝ≥0∞ :=
   eLpNorm f (parabolicExponent d) volume
 
 /-- The `ENNReal.toReal` encoding of the extended-real `L^(d + 1)` norm on all
 time--velocity space. It agrees with the usual finite real `L^(d + 1)` norm whenever
 `parabolicELpNorm d f ≠ ∞`, in particular under `MemLp f (parabolicExponent d) volume`. -/
-def parabolicLpNorm (d : ℕ) (f : TimeVelocity d → ℝ) : ℝ :=
+def parabolicLpNorm (d ) (f : TimeVelocity d → ℝ) : ℝ :=
   (parabolicELpNorm d f).toReal
 
 /-- The extended-real `L^(d + 1)` norm restricted to a time--velocity set. -/
-def parabolicELpNormOn (d : ℕ) (f : TimeVelocity d → ℝ)
+def parabolicELpNormOn (d ) (f : TimeVelocity d → ℝ)
     (s : Set (TimeVelocity d)) : ℝ≥0∞ :=
   eLpNorm f (parabolicExponent d) (volume.restrict s)
 
@@ -56,7 +56,7 @@ def parabolicELpNormOn (d : ℕ) (f : TimeVelocity d → ℝ)
 time--velocity set. It agrees with the usual finite real `L^(d + 1)` norm whenever
 `parabolicELpNormOn d f s ≠ ∞`, in particular under
 `MemLp f (parabolicExponent d) (volume.restrict s)`. -/
-def parabolicLpNormOn (d : ℕ) (f : TimeVelocity d → ℝ)
+def parabolicLpNormOn (d ) (f : TimeVelocity d → ℝ)
     (s : Set (TimeVelocity d)) : ℝ :=
   (parabolicELpNormOn d f s).toReal
 

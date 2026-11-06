@@ -20,8 +20,7 @@ theorem integrable_evolution_mul_test
     (hsub : tsupport ψ ⊆ U) : Integrable (fun z => f z * ψ z) := by
   have hK : IntegrableOn f (tsupport ψ) volume :=
     (hf.mono hsub).integrableOn_compact hc.isCompact
-  have hprod := hK.mul_continuousOn hψ.continuousOn hc.isCompact
-  apply (integrableOn_iff_integrable_of_support_subset ?_).mp hprod
+  apply (integrableOn_iff_integrable_of_support_subset ?_).mp (hK.mul_continuousOn hψ.continuousOn hc.isCompact)
   intro z hz
   exact tsupport_mul_subset_right (subset_closure hz)
 
@@ -56,7 +55,7 @@ theorem setIntegral_mul_evolution_directional_test
   · rw [image_eq_zero_of_notMem_tsupport (fun h => hz ((hDsub.trans hsub) h)), mul_zero]
 
 /-- A directional derivative does not enlarge the support of a smooth test. -/
-theorem tsupport_evolution_fderiv_apply {n : ℕ} (φ : EvolutionVec n → ℝ)
+theorem tsupport_evolution_fderiv_apply {n } (φ : EvolutionVec n → ℝ)
     (v : EvolutionVec n) :
     tsupport (fun x => fderiv ℝ φ x v) ⊆ tsupport φ := by
   refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)

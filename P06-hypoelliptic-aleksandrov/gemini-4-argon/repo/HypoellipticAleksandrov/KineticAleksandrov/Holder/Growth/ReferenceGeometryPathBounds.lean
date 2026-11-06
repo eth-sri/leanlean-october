@@ -14,7 +14,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 open Set
 
 /-- The reference endpoint estimates use the Euclidean triangle inequality for differences. -/
-theorem reference_norm_sub_le {d : ℕ} (x y : PDE.Vec d) :
+theorem reference_norm_sub_le {d } (x y : PDE.Vec d) :
     PDE.vecEuclideanNorm (x - y) ≤ PDE.vecEuclideanNorm x + PDE.vecEuclideanNorm y := by
   rw [sub_eq_add_neg]
   simpa only [PDE.vecEuclideanNorm_neg] using PDE.vecEuclideanNorm_add_le x (-y)
@@ -23,7 +23,7 @@ theorem reference_norm_sub_le {d : ℕ} (x y : PDE.Vec d) :
 def referenceBound (m : ℕ) : ℝ := 16 * stackPathBound m + (m : ℝ) + 20
 
 /-- Reference endpoints give the source travel-time and Hermite displacement bounds. -/
-theorem reference_endpoint_bounds {d : ℕ} (m : ℕ) (S P : KineticPoint d)
+theorem reference_endpoint_bounds {d } (m : ℕ) (S P : KineticPoint d)
     (hS : S ∈ closure (samplingCylinder d m))
     (hP : P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1) :
     (m : ℝ) + 1 ≤ P.time - S.time ∧ P.time - S.time ≤ (m : ℝ) + 3 ∧

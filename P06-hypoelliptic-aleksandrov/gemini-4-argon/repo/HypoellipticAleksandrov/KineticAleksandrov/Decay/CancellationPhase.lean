@@ -36,12 +36,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open MeasureTheory Set
 open scoped ENNReal
 
-/-- The phase factor `exp (-i θ)` of a real phase `θ`. -/
+/- The phase factor `exp (-i θ)` of a real phase `θ`. -/
 noncomputable def phaseFactor (θ : ℝ) : ℂ := Complex.exp (-Complex.I * (θ : ℂ))
 
 variable {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
 
-/-- `ν` is the phase projection of `N` for the phase `ψ`: on every measurable `E`, `ν E` is
+/- `ν` is the phase projection of `N` for the phase `ψ`: on every measurable `E`, `ν E` is
 `∫_{E × univ} exp (-i ψ) dN`. -/
 def IsPhaseProjection (ψ : α × β → ℝ) (N : Measure (α × β)) (ν : ComplexMeasure α) : Prop :=
   ∀ E : Set α, MeasurableSet E → ν E = ∫ x in E ×ˢ (univ : Set β), phaseFactor (ψ x) ∂N
@@ -51,7 +51,7 @@ theorem norm_phaseFactor (θ : ℝ) : ‖phaseFactor θ‖ = 1 := by
   rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring]
   exact Complex.norm_exp_ofReal_mul_I _
 
-/-- The phase factor is a `1`-Lipschitz function of the phase. -/
+/- The phase factor is a `1`-Lipschitz function of the phase. -/
 theorem norm_phaseFactor_sub_le (θ Φ : ℝ) : ‖phaseFactor θ - phaseFactor Φ‖ ≤ |θ - Φ| := by
   have h : phaseFactor θ - phaseFactor Φ =
       phaseFactor Φ * (Complex.exp (Complex.I * ((-(θ - Φ) : ℝ) : ℂ)) - 1) := by
@@ -77,31 +77,20 @@ theorem integrable_phaseFactor_comp {ψ : α × β → ℝ} (hψ : Measurable ψ
   Integrable.of_bound (measurable_phaseFactor_comp hψ).aestronglyMeasurable 1
     (Filter.Eventually.of_forall fun _ => (norm_phaseFactor _).le)
 
-/-- The first marginal of a measure of a measurable set is the mass of its cylinder. -/
-theorem map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableSet E) :
+/- The first marginal of a measure of a measurable set is the mass of its cylinder. -/
+theorem map_fst_apply_eq {N : Measure (α × β)} {E } (hE : MeasurableSet E) :
     (N.map Prod.fst) E = N (E ×ˢ (univ : Set β)) := by
   rw [Measure.map_apply measurable_fst hE]
   congr 1
   ext x
   simp
 
-/-- The real mass of a cylinder is the real mass of the first marginal. -/
-theorem real_map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableSet E) :
+/- The real mass of a cylinder is the real mass of the first marginal. -/
+theorem real_map_fst_apply_eq {N : Measure (α × β)} {E } (hE : MeasurableSet E) :
     (N.map Prod.fst).real E = N.real (E ×ˢ (univ : Set β)) := by
   simp [Measure.real, map_fst_apply_eq hE]
 
-/-- Norm of the cylinder phase integral: the phase has modulus one. -/
-theorem norm_integral_phase_le (ψ : α × β → ℝ) (N : Measure (α × β)) [IsFiniteMeasure N]
-    (S : Set (α × β)) :
-    ‖∫ x in S, phaseFactor (ψ x) ∂N‖ ≤ N.real S := by
-  have := norm_setIntegral_le_of_norm_le_const_ae (μ := N) (s := S)
-    (f := fun x => phaseFactor (ψ x)) (C := 1) (measure_lt_top N S)
-    (Filter.Eventually.of_forall fun x => (norm_phaseFactor _).le)
-  simpa using this
-
-/-- Setwise phase-error estimate: if `F` is carried by `{|ψ - Φ| ≤ ε}` then on every
-cylinder the phase integral differs from `exp (-iΦ)` times the mass by at most `ε` times
-the mass. -/
+/- Norm of the cylinder phase integral: the phase has modulus one. -/
 theorem norm_integral_phase_sub_le {ψ : α × β → ℝ} (hψ : Measurable ψ)
     {F : Measure (α × β)} [IsFiniteMeasure F] {Φ ε : ℝ}
     (hsupp : ∀ᵐ x ∂F, |ψ x - Φ| ≤ ε) (S : Set (α × β)) :

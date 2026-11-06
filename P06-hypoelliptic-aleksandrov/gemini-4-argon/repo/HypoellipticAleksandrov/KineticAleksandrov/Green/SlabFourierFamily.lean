@@ -28,7 +28,7 @@ open scoped ENNReal NNReal
 
 variable {d : ℕ}
 
-/-- The positive weight `w(τ, y) = exp(-|y|^{2/3})` making `w · slabBase` finite. -/
+/- The positive weight `w(τ, y) = exp(-|y|^{2/3})` making `w · slabBase` finite. -/
 def slabWeight (d : ℕ) (y : SlabBase d) : ℝ≥0∞ := decayProfile d 1 y.2
 
 lemma measurable_slabWeight (d : ℕ) : Measurable (slabWeight d) :=
@@ -37,40 +37,12 @@ lemma measurable_slabWeight (d : ℕ) : Measurable (slabWeight d) :=
 lemma slabWeight_pos (y : SlabBase d) : 0 < slabWeight d y :=
   ENNReal.ofReal_pos.2 (Real.exp_pos _)
 
-/-- The finite reference measure `m' = w · slabBase`. -/
+/- The finite reference measure `m' = w · slabBase`. -/
 def slabRef (d : ℕ) (T : ℝ) : Measure (SlabBase d) := (slabBase d T).withDensity (slabWeight d)
 
-lemma isFiniteMeasure_slabRef (hd : 0 < d) {T : ℝ} (hT : 0 < T) :
-    IsFiniteMeasure (slabRef d T) := by
-  refine ⟨?_⟩
-  rw [slabRef, withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
-  have h : ∫⁻ y, slabWeight d y ∂slabBase d T =
-      (∫⁻ _τ : ElapsedTime ⊤, (1 : ℝ≥0∞) ∂(elapsedVolume ⊤).restrict (slabTimeSet T)) *
-        ∫⁻ ζ, decayProfile d 1 ζ := by
-    unfold slabBase slabWeight
-    have := lintegral_prod_mul (μ := (elapsedVolume ⊤).restrict (slabTimeSet T))
-      (ν := (volume : Measure (PDE.Vec d))) (f := fun _ => (1 : ℝ≥0∞))
-      (g := decayProfile d 1) aemeasurable_const (measurable_decayProfile d 1).aemeasurable
-    simpa only [one_mul] using this
-  rw [h, lintegral_const, one_mul, Measure.restrict_apply MeasurableSet.univ, univ_inter,
-    elapsedVolume_slabTimeSet hT]
-  exact ENNReal.mul_lt_top (by simp)
-    (lintegral_decayProfile_lt_top hd one_pos)
-
-/-- The `ℝ≥0∞`-valued density `ofReal (F (e^{-iξ·z'}))` on the Green carrier. -/
 def phaseDensity (d : ℕ) (F : ℂ → ℝ) (ξ : PDE.Vec d) (p : GreenCarrier d) : ℝ≥0∞ :=
   ENNReal.ofReal (F (greenPhase d ξ p))
 
-lemma measurable_greenPhase_joint (d : ℕ) :
-    Measurable (fun x : PDE.Vec d × GreenCarrier d => greenPhase d x.1 x.2) := by
-  unfold greenPhase PDE.vecDot
-  fun_prop
-
-lemma measurable_phaseDensity {F : ℂ → ℝ} (hF : Measurable F) :
-    Measurable (Function.uncurry (phaseDensity d F)) :=
-  ENNReal.measurable_ofReal.comp (hF.comp (measurable_greenPhase_joint d))
-
-/-- The kernel `ξ ↦` pushforward of `φ_ξ`-channel `F` times `Γ|slab` to the slab base. -/
 def phaseKernel (d : ℕ) (T : ℝ) (Γ : Measure (GreenCarrier d)) [IsFiniteMeasure
     (Γ.restrict (slabSet (d := d) T))] (F : ℂ → ℝ) : Kernel (PDE.Vec d) (SlabBase d) :=
   (Kernel.withDensity (Kernel.const (PDE.Vec d) (Γ.restrict (slabSet T)))
@@ -88,7 +60,16 @@ lemma phaseKernel_apply (hF : Measurable F) (ξ : PDE.Vec d) {E : Set (SlabBase 
         phaseDensity d F ξ p ∂Γ := by
   have hπ : Measurable (fun p : GreenCarrier d => (p.1, p.2.1)) := by fun_prop
   unfold phaseKernel
-  rw [Kernel.map_apply' _ hπ _ hE, Kernel.withDensity_apply' _ (measurable_phaseDensity hF),
+  have _h_inl_17 : Measurable (fun x : PDE.Vec d × GreenCarrier d => greenPhase d x.1 x.2) := by
+    unfold greenPhase PDE.vecDot
+    fun_prop
+  have _h_inl_19 : Measurable (Function.uncurry (phaseDensity d F)) := by
+      exact (
+    ENNReal.measurable_ofReal.comp (hF.comp _h_inl_17)
+
+    /- The kernel `ξ ↦` pushforward of `φ_ξ`-channel `F` times `Γ|slab` to the slab base. -/
+    )
+  rw [Kernel.map_apply' _ hπ _ hE, Kernel.withDensity_apply' _ _h_inl_19,
     Kernel.const_apply, Measure.restrict_restrict (hπ hE), slabPreimage_eq T E, inter_comm]
 
 lemma phaseKernel_le (hF : Measurable F) (hFb : ∀ z : ℂ, ‖z‖ = 1 → F z ≤ 1) (ξ : PDE.Vec d)
@@ -117,7 +98,7 @@ theorem phaseKernel_isFiniteKernel (hFb : ∀ z : ℂ, ‖z‖ = 1 → F z ≤ 1
   unfold phaseKernel
   infer_instance
 
-/-- **One real channel.**  A jointly measurable family `r^ξ ≥ 0` of densities, on the slab base,
+/- **One real channel.**  A jointly measurable family `r^ξ ≥ 0` of densities, on the slab base,
 of the measures `E ↦ ∫_{S_E} ofReal (F (e^{-iξ·z'})) dΓ`. -/
 theorem exists_channel (hd : 0 < d) (hT : 0 < T) (hF : Measurable F)
     (hFb : ∀ z : ℂ, ‖z‖ = 1 → F z ≤ 1) (g : SlabBase d → ℝ≥0∞)
@@ -128,7 +109,23 @@ theorem exists_channel (hd : 0 < d) (hT : 0 < T) (hF : Measurable F)
         ∫ y in E, r ξ y ∂slabBase d T =
           (∫⁻ p in {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
             ENNReal.ofReal (F (greenPhase d ξ p)) ∂Γ).toReal := by
-  have hmfin := isFiniteMeasure_slabRef hd hT
+  have hmfin : IsFiniteMeasure (slabRef d T) := by
+      refine ⟨?_⟩
+      rw [slabRef, withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
+      have h : ∫⁻ y, slabWeight d y ∂slabBase d T =
+          (∫⁻ _τ : ElapsedTime ⊤, (1 : ℝ≥0∞) ∂(elapsedVolume ⊤).restrict (slabTimeSet T)) *
+            ∫⁻ ζ, decayProfile d 1 ζ := by
+        unfold slabBase slabWeight
+        have := lintegral_prod_mul (μ := (elapsedVolume ⊤).restrict (slabTimeSet T))
+          (ν := (volume : Measure (PDE.Vec d))) (f := fun _ => (1 : ℝ≥0∞))
+          (g := decayProfile d 1) aemeasurable_const (measurable_decayProfile d 1).aemeasurable
+        simpa only [one_mul] using this
+      rw [h, lintegral_const, one_mul, Measure.restrict_apply MeasurableSet.univ, univ_inter,
+        elapsedVolume_slabTimeSet hT]
+      exact ENNReal.mul_lt_top (by simp)
+        (lintegral_decayProfile_lt_top hd one_pos)
+
+    /- The `ℝ≥0∞`-valued density `ofReal (F (e^{-iξ·z'}))` on the Green carrier. -/
   have hκfin := phaseKernel_isFiniteKernel (d := d) (T := T) (Γ := Γ) (F := F) hFb
   set κ := phaseKernel d T Γ F with hκ
   let η : Kernel (PDE.Vec d) (SlabBase d) := Kernel.const (PDE.Vec d) (slabRef d T)
@@ -140,7 +137,7 @@ theorem exists_channel (hd : 0 < d) (hT : 0 < T) (hF : Measurable F)
     have h1 : slabBase d T t = 0 := by
       rw [slabRef, withDensity_apply _ ht] at hnull
       have h2 := (lintegral_eq_zero_iff' (measurable_slabWeight d).aemeasurable).1 hnull
-      have h3 : ∀ᵐ x ∂(slabBase d T).restrict t, False :=
+      have h3 :=
         h2.mono (fun x hx => (slabWeight_pos x).ne' hx)
       rw [Filter.eventually_false_iff_eq_bot, ae_eq_bot] at h3
       have := congrArg (fun μ => μ univ) h3
@@ -181,7 +178,7 @@ theorem exists_channel (hd : 0 < d) (hT : 0 < T) (hF : Measurable F)
 
 end
 
-/-- **A jointly Borel family of Fourier densities.**  For every `ξ` the function `k^ξ` is a density
+/- **A jointly Borel family of Fourier densities.**  For every `ξ` the function `k^ξ` is a density
 of the complex measure `E ↦ ∫_{(τ,w)∈E, T<τ<2T} e^{-iξ·z'} dΓ`, and `(ξ, y) ↦ k^ξ(y)` is Borel. -/
 theorem exists_measurable_fourier_family (hd : 0 < d) {T : ℝ} (hT : 0 < T)
     (Γ : Measure (GreenCarrier d)) [IsFiniteMeasure (Γ.restrict (slabSet (d := d) T))]
@@ -222,8 +219,7 @@ theorem exists_measurable_fourier_family (hd : 0 < d) {T : ℝ} (hT : 0 < T)
     have hSEm := measurableSet_slabPreimage T hE
     have hsub : {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} ⊆
         slabSet T := fun p hp => ⟨hp.2.1, hp.2.2⟩
-    have hΓE : IsFiniteMeasure (Γ.restrict
-        {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T}) :=
+    have hΓE :=
       isFiniteMeasure_of_le (Γ.restrict (slabSet (d := d) T)) (Measure.restrict_mono hsub le_rfl)
     have hφ : Integrable (greenPhase d ξ) (Γ.restrict
         {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T}) :=

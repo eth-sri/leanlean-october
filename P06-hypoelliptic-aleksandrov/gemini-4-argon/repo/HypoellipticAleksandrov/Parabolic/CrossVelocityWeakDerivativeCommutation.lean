@@ -18,7 +18,7 @@ open scoped ENNReal Topology
 namespace HypoellipticAleksandrov.Parabolic
 
 private theorem cross_ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) {du dv : TimeVelocity d → ℝ}
+    (hU : IsOpen U) {du dv }
     (hdu : LocallyIntegrableOn du U volume)
     (hdv : LocallyIntegrableOn dv U volume)
     (hpair : ∀ φ : TimeVelocity d → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ →
@@ -30,9 +30,9 @@ private theorem cross_ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
       (f := fun z => du z - dv z) (hdu.sub hdv) ?_
     intro φ hφSmooth hφCompact hφSub
     have hφCont : Continuous φ := hφSmooth.continuous
-    have hduK : IntegrableOn du (tsupport φ) volume :=
+    have hduK :=
       hdu.integrableOn_compact_subset hφSub hφCompact.isCompact
-    have hdvK : IntegrableOn dv (tsupport φ) volume :=
+    have hdvK :=
       hdv.integrableOn_compact_subset hφSub hφCompact.isCompact
     have hduφK : IntegrableOn (fun z => du z * φ z) (tsupport φ) volume := by
       simpa [smul_eq_mul] using
@@ -76,13 +76,6 @@ private theorem cross_ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
   rw [Filter.EventuallyEq, ae_restrict_iff' hU.measurableSet]
   filter_upwards [hdiffZero] with z hz hzU
   exact sub_eq_zero.mp (hz hzU)
-
-private theorem cross_velocityGradient_contDiff_infty {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
 private theorem cross_velocityGradient_hasCompactSupport {d : ℕ}
     {f : TimeVelocity d → ℝ} {i : Fin d}
@@ -140,10 +133,10 @@ private theorem cross_velocityGradient_velocityGradient_commute {d : ℕ}
 
 namespace HasWeakVelocityPartialDerivOn
 
-/-- Two crossed second weak velocity derivatives of the same raw function
+/- Two crossed second weak velocity derivatives of the same raw function
 agree almost everywhere on an open domain. -/
 theorem cross_ae_eq_of_memLp
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d U}
     (hU : IsOpen U)
     (i j : Fin d)
     (u ui uj dij dji : TimeVelocity d → ℝ)
@@ -159,8 +152,9 @@ theorem cross_ae_eq_of_memLp
     (hdji.locallyIntegrableOn (by norm_num))
   intro φ hφSmooth hφCompact hφSub
   have htestSmooth (k : Fin d) :
-      ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient φ z k) :=
-    cross_velocityGradient_contDiff_infty hφSmooth
+      ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient φ z k) := by
+    unfold velocityGradient
+    exact (contDiff_infty_iff_fderiv.mp hφSmooth).2.clm_apply contDiff_const
   have htestCompact (k : Fin d) :
       HasCompactSupport (fun z => velocityGradient φ z k) :=
     cross_velocityGradient_hasCompactSupport hφCompact

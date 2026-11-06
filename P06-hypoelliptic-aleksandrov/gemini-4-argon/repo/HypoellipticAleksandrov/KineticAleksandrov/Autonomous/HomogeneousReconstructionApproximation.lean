@@ -14,7 +14,7 @@ open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo Evolution
 open scoped CompactlySupported Topology
 
-/-- Multiplying a locally continuous source by an interior compact cutoff is continuous. -/
+/- Multiplying a locally continuous source by an interior compact cutoff is continuous. -/
 theorem reconstruction_cutoff_mul_continuous
     {V : Set (ℝ × PDE.Vec 1 × PDE.Vec 1)} (hV : IsOpen V)
     {g χ : (ℝ × PDE.Vec 1 × PDE.Vec 1) → ℝ}
@@ -34,9 +34,9 @@ theorem reconstruction_cutoff_mul_continuous
       exact hy (subset_tsupport χ hh)
     simp only [hz, zero_mul]
 
-/-- A continuous compact interior function admits a smooth compact interior approximation. -/
+/- A continuous compact interior function admits a smooth compact interior approximation. -/
 theorem reconstruction_smooth_compact_close
-    {V : Set (ℝ × PDE.Vec 1 × PDE.Vec 1)} (hV : IsOpen V)
+    {V } (hV : IsOpen V)
     (g : (ℝ × PDE.Vec 1 × PDE.Vec 1) → ℝ) (hg : Continuous g)
     (hc : HasCompactSupport g) (hs : tsupport g ⊆ V)
     {ε : ℝ} (hε : 0 < ε) :
@@ -57,21 +57,14 @@ theorem reconstruction_smooth_compact_close
   rw [heq, abs_mul, abs_of_nonneg (hb x).1]
   exact (mul_le_of_le_one_left (abs_nonneg _) (hb x).2).trans (hclose x)
 
-/-- Closed scalar truncation, embedded in native product coordinates. -/
+/- Closed scalar truncation, embedded in native product coordinates. -/
 def reconstructionTrim (H : Interval) (a T δ R : ℝ) :
     Set (ℝ × PDE.Vec 1 × PDE.Vec 1) :=
   (fun q : ℝ × ℝ × ℝ => (q.1, (fun _ : Fin 1 => q.2.1),
     (fun _ : Fin 1 => q.2.2))) ''
       (Icc a (T - δ) ×ˢ (Icc (H.lo + δ) (H.hi - δ) ×ˢ Icc (-R) R))
 
-/-- The trimmed coordinate box is compact. -/
-theorem isCompact_reconstructionTrim (H : Interval) (a T δ R : ℝ) :
-    IsCompact (reconstructionTrim H a T δ R) :=
-  (isCompact_Icc.prod (isCompact_Icc.prod isCompact_Icc)).image
-    (continuous_fst.prodMk ((continuous_pi fun _ => continuous_snd.fst).prodMk
-      (continuous_pi fun _ => continuous_snd.snd)))
-
-/-- Membership in the trimmed box is exactly its scalar coordinate inequalities. -/
+/- The trimmed coordinate box is compact. -/
 theorem mem_reconstructionTrim (H : Interval) (a T δ R : ℝ)
     (x : ℝ × PDE.Vec 1 × PDE.Vec 1) :
     x ∈ reconstructionTrim H a T δ R ↔
@@ -85,25 +78,12 @@ theorem mem_reconstructionTrim (H : Interval) (a T δ R : ℝ)
     change (x.1, (fun _ : Fin 1 => x.2.1 0), (fun _ : Fin 1 => x.2.2 0)) = x
     refine Prod.ext rfl (Prod.ext ?_ ?_) <;> (funext i; fin_cases i; rfl)
 
-/-- Interior source domain in native product coordinates. -/
+/- Interior source domain in native product coordinates. -/
 def reconstructionSourceDomain (H : Interval) (sMinus T : ℝ) :
     Set (ℝ × PDE.Vec 1 × PDE.Vec 1) :=
   {x | sMinus < x.1 ∧ x.1 < T ∧ x.2.1 0 ∈ H.carrier}
 
-/-- The native source domain is open. -/
-theorem isOpen_reconstructionSourceDomain (H : Interval) (sMinus T : ℝ) :
-    IsOpen (reconstructionSourceDomain H sMinus T) := by
-  have heq : reconstructionSourceDomain H sMinus T =
-      (Prod.fst ⁻¹' Ioo sMinus T) ∩
-        ((fun x : ℝ × PDE.Vec 1 × PDE.Vec 1 => x.2.1 0) ⁻¹' H.carrier) := by
-    ext x
-    simp only [reconstructionSourceDomain, mem_ofPred, mem_inter_iff, mem_preimage,
-      mem_Ioo, and_assoc]
-  rw [heq]
-  exact (isOpen_Ioo.preimage continuous_fst).inter
-    (isOpen_Ioo.preimage ((continuous_apply 0).comp continuous_snd.fst))
-
-/-- The proper exponential weight bounds the absolute spatial coordinate. -/
+/- The native source domain is open. -/
 theorem abs_le_reconstructionSpatialWeight (x : ℝ) :
     |x| ≤ reconstructionSpatialWeight x := by
   have hp := Real.add_one_le_exp x
@@ -117,59 +97,13 @@ theorem abs_le_reconstructionSpatialWeight (x : ℝ) :
   · rw [abs_of_nonpos hx]
     linarith only [hm, hxp]
 
-/-- The localization error weight, including terminal, velocity, and spatial collars. -/
+/- The localization error weight, including terminal, velocity, and spatial collars. -/
 def reconstructionErrorWeight (H : Interval) (T δ R : ℝ)
     (x : ℝ × PDE.Vec 1 × PDE.Vec 1) : ℝ :=
   Real.exp 1 * reconstructionCollarWeight H δ (x.2.1 0) +
     (if T - δ < x.1 then 1 else 0) + reconstructionSpatialWeight (x.2.2 0) / R
 
-/-- Outside the trimmed box at future times, the localization error weight is at least one. -/
-theorem reconstructionErrorWeight_ge_one (H : Interval) (a T : ℝ) {δ R : ℝ}
-    (hδ : 0 < δ) (hR : 0 < R) (x : ℝ × PDE.Vec 1 × PDE.Vec 1)
-    (ha : a ≤ x.1) (hx : x ∉ reconstructionTrim H a T δ R) :
-    1 ≤ reconstructionErrorWeight H T δ R x := by
-  classical
-  have hcol : 0 ≤ Real.exp 1 * reconstructionCollarWeight H δ (x.2.1 0) :=
-    mul_nonneg (Real.exp_pos _).le (reconstructionCollarWeight_nonneg _ _ _)
-  have hsp : 0 ≤ reconstructionSpatialWeight (x.2.2 0) / R :=
-    div_nonneg (add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le) hR.le
-  unfold reconstructionErrorWeight
-  by_cases ht : T - δ < x.1
-  · rw [ite_eq_left ht]
-    linarith only [hcol, hsp]
-  · rw [ite_eq_right ht, add_zero]
-    have htu := le_of_not_gt ht
-    by_cases hl : H.lo + δ ≤ x.2.1 0
-    · by_cases hh : x.2.1 0 ≤ H.hi - δ
-      · have hs : R < |x.2.2 0| := lt_of_not_ge
-          (fun hs => hx ((mem_reconstructionTrim H a T δ R x).mpr ⟨ha, htu, hl, hh, hs⟩))
-        have hd : 1 ≤ reconstructionSpatialWeight (x.2.2 0) / R :=
-          (le_div_iff₀ hR).mpr (by
-            simpa only [one_mul] using hs.le.trans (abs_le_reconstructionSpatialWeight _))
-        linarith only [hcol, hd]
-      · have hs : H.hi - δ < x.2.1 0 := lt_of_not_ge hh
-        have hd : -1 ≤ (x.2.1 0 - H.hi) / δ :=
-          (le_div_iff₀ hδ).mpr (by linarith only [hs])
-        have he : 1 ≤ Real.exp 1 * Real.exp ((x.2.1 0 - H.hi) / δ) := by
-          rw [← Real.exp_add]
-          exact Real.one_le_exp_iff.mpr (by linarith only [hd])
-        have hn := mul_nonneg (Real.exp_pos (1 : ℝ)).le
-          (Real.exp_pos ((H.lo - x.2.1 0) / δ)).le
-        unfold reconstructionCollarWeight
-        nlinarith only [he, hn, hsp]
-    · have hs : x.2.1 0 < H.lo + δ := lt_of_not_ge hl
-      have hd : -1 ≤ (H.lo - x.2.1 0) / δ :=
-        (le_div_iff₀ hδ).mpr (by linarith only [hs])
-      have he : 1 ≤ Real.exp 1 * Real.exp ((H.lo - x.2.1 0) / δ) := by
-        rw [← Real.exp_add]
-        exact Real.one_le_exp_iff.mpr (by linarith only [hd])
-      have hn := mul_nonneg (Real.exp_pos (1 : ℝ)).le
-        (Real.exp_pos ((x.2.1 0 - H.hi) / δ)).le
-      unfold reconstructionCollarWeight
-      nlinarith only [he, hn, hsp]
-
-/-- Bounded continuous strip sources have actual smooth compact approximants with an
-explicit pointwise collar error. -/
+/- Outside the trimmed box at future times, the localization error weight is at least one. -/
 theorem exists_reconstruction_compact_source_approx
     (H : Interval) (sMinus a T : ℝ) (ha : sMinus < a) {δ R ε : ℝ}
     (hδ : 0 < δ) (hR : 0 < R) (hε : 0 < ε)
@@ -181,14 +115,31 @@ theorem exists_reconstruction_compact_source_approx
       tsupport f ⊆ reconstructionSourceDomain H sMinus T ∧
       ∀ x, a ≤ x.1 →
         |f x - g x| ≤ ε + C * reconstructionErrorWeight H T δ R x := by
-  have hU := isOpen_reconstructionSourceDomain H sMinus T
+  have hU : IsOpen (reconstructionSourceDomain H sMinus T) := by
+      have heq : reconstructionSourceDomain H sMinus T =
+          (Prod.fst ⁻¹' Ioo sMinus T) ∩
+            ((fun x : ℝ × PDE.Vec 1 × PDE.Vec 1 => x.2.1 0) ⁻¹' H.carrier) := by
+        ext x
+        simp only [reconstructionSourceDomain, mem_ofPred, mem_inter_iff, mem_preimage,
+          mem_Ioo, and_assoc]
+      rw [heq]
+      exact (isOpen_Ioo.preimage continuous_fst).inter
+        (isOpen_Ioo.preimage ((continuous_apply 0).comp continuous_snd.fst))
+
+    /- The proper exponential weight bounds the absolute spatial coordinate. -/
   have hKU : reconstructionTrim H a T δ R ⊆ reconstructionSourceDomain H sMinus T := by
     intro x hx
     obtain ⟨htl, htu, hvl, hvu, _⟩ := (mem_reconstructionTrim H a T δ R x).mp hx
     exact ⟨ha.trans_le htl, by linarith only [htu, hδ],
       by constructor <;> linarith only [hvl, hvu, hδ]⟩
+  have _h_inl_14 : IsCompact (reconstructionTrim H a T δ R) := by
+      exact (
+    (isCompact_Icc.prod (isCompact_Icc.prod isCompact_Icc)).image
+        (continuous_fst.prodMk ((continuous_pi fun _ => continuous_snd.fst).prodMk
+          (continuous_pi fun _ => continuous_snd.snd)))
+    )
   obtain ⟨χ, hχ, hc, hs, hb, hone⟩ := exists_smooth_bump_of_isCompact_subset_isOpen
-    (isCompact_reconstructionTrim H a T δ R) hU hKU
+    _h_inl_14 hU hKU
   have hcont := reconstruction_cutoff_mul_continuous hU hg hχ.continuous hs
   have hcomp : HasCompactSupport (fun x => χ x * g x) := hc.mul_right
   obtain ⟨f, hf, hfc, hfs, hclose⟩ := reconstruction_smooth_compact_close hU
@@ -208,8 +159,48 @@ theorem exists_reconstruction_compact_source_approx
       rw [he, abs_mul, abs_neg, abs_of_nonneg (sub_nonneg.mpr (hb x).2)]
       have hh : (1 - χ x) * |g x| ≤ C :=
         (mul_le_of_le_one_left (abs_nonneg _) (by linarith only [(hb x).1])).trans (hgb x)
+      have _h_inl_19 : 1 ≤ reconstructionErrorWeight H T δ R x := by
+        classical
+        have hcol : 0 ≤ Real.exp 1 * reconstructionCollarWeight H δ (x.2.1 0) :=
+          mul_nonneg (Real.exp_pos _).le (reconstructionCollarWeight_nonneg _ _ _)
+        have hsp : 0 ≤ reconstructionSpatialWeight (x.2.2 0) / R :=
+          div_nonneg (add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le) hR.le
+        unfold reconstructionErrorWeight
+        by_cases ht : T - δ < x.1
+        · rw [ite_eq_left ht]
+          linarith only [hcol, hsp]
+        · rw [ite_eq_right ht, add_zero]
+          have htu := le_of_not_gt ht
+          by_cases hl : H.lo + δ ≤ x.2.1 0
+          · by_cases hh : x.2.1 0 ≤ H.hi - δ
+            · have hs : R < |x.2.2 0| := lt_of_not_ge
+                (fun hs => hx ((mem_reconstructionTrim H a T δ R x).mpr ⟨hax, htu, hl, hh, hs⟩))
+              have hd : 1 ≤ reconstructionSpatialWeight (x.2.2 0) / R :=
+                (le_div_iff₀ hR).mpr (by
+                  simpa only [one_mul] using hs.le.trans (abs_le_reconstructionSpatialWeight _))
+              linarith only [hcol, hd]
+            · have hs : H.hi - δ < x.2.1 0 := lt_of_not_ge hh
+              have hd : -1 ≤ (x.2.1 0 - H.hi) / δ :=
+                (le_div_iff₀ hδ).mpr (by linarith only [hs])
+              have he : 1 ≤ Real.exp 1 * Real.exp ((x.2.1 0 - H.hi) / δ) := by
+                rw [← Real.exp_add]
+                exact Real.one_le_exp_iff.mpr (by linarith only [hd])
+              have hn := mul_nonneg (Real.exp_pos (1 : ℝ)).le
+                (Real.exp_pos ((H.lo - x.2.1 0) / δ)).le
+              unfold reconstructionCollarWeight
+              nlinarith only [he, hn, hsp]
+          · have hs : x.2.1 0 < H.lo + δ := lt_of_not_ge hl
+            have hd : -1 ≤ (H.lo - x.2.1 0) / δ :=
+              (le_div_iff₀ hδ).mpr (by linarith only [hs])
+            have he : 1 ≤ Real.exp 1 * Real.exp ((H.lo - x.2.1 0) / δ) := by
+              rw [← Real.exp_add]
+              exact Real.one_le_exp_iff.mpr (by linarith only [hd])
+            have hn := mul_nonneg (Real.exp_pos (1 : ℝ)).le
+              (Real.exp_pos ((x.2.1 0 - H.hi) / δ)).le
+            unfold reconstructionCollarWeight
+            nlinarith only [he, hn, hsp]
       exact hh.trans (le_mul_of_one_le_right hC
-        (reconstructionErrorWeight_ge_one H a T hδ hR x hax hx))
+        _h_inl_19)
   have heq : f x - g x = (f x - χ x * g x) + (χ x * g x - g x) := by ring
   rw [heq]
   exact (abs_add_le _ _).trans (add_le_add (hclose x) herror)

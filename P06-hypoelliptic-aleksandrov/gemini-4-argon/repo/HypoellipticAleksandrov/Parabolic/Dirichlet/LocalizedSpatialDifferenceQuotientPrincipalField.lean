@@ -20,14 +20,6 @@ open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
-    {y : PDE.Vec d} (hy : y ∉ tsupport η.toFun) :
-    PDE.classicalGradient η.toFun y i = 0 := by
-  rw [PDE.classicalGradient_apply, fderiv_of_notMem_tsupport ℝ hy]
-  exact ContinuousLinearMap.zero_apply _
-
 private theorem cutoffL2Multiplier_apply_cutoffGradientSpatialDifferenceQuotientL2
     {d : ℕ}
     {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
@@ -47,10 +39,13 @@ private theorem cutoffL2Multiplier_apply_cutoffGradientSpatialDifferenceQuotient
   rw [hχ, hη]
   by_cases hy : y ∈ tsupport η.toFun
   · rw [χ.eq_one_on_inner y (hηχ hy), one_mul]
-  · rw [cutoffGradient_eq_zero_of_not_mem_tsupport η i hy]
+  · have _h_inl_8 : PDE.classicalGradient η.toFun y i = 0 := by
+      rw [PDE.classicalGradient_apply, fderiv_of_notMem_tsupport ℝ hy]
+      exact ContinuousLinearMap.zero_apply _
+    rw [_h_inl_8]
     ring
 
-/-- Assemble the cutoff-gradient quotient coordinates as a
+/- Assemble the cutoff-gradient quotient coordinates as a
 Hilbert-vector-valued restricted-`L²` field on `H¹₀`. -/
 noncomputable def cutoffGradientSpatialDifferenceQuotientH10CLM
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
@@ -62,7 +57,7 @@ noncomputable def cutoffGradientSpatialDifferenceQuotientH10CLM
     (cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h).comp
       (valueCLM hΩ)
 
-/-- The assembled cutoff-gradient field has its literal quotient-safe scalar
+/- The assembled cutoff-gradient field has its literal quotient-safe scalar
 coordinate. -/
 theorem hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
@@ -76,7 +71,7 @@ theorem hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM
         (valueCLM hΩ u) := by
   exact PDE.hilbertVectorLpCoord_hilbertVectorLpAssemble _ u i
 
-/-- The principal field `E = G - W` for the localized spatial quotient. -/
+/- The principal field `E = G - W` for the localized spatial quotient. -/
 noncomputable def localizedSpatialDifferenceQuotientPrincipalFieldCLM
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (hΩ : IsOpen Ω)
@@ -91,7 +86,7 @@ noncomputable def localizedSpatialDifferenceQuotientPrincipalFieldCLM
       (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift) -
     cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h
 
-/-- The companion field `H = G + W` for the localized spatial quotient. -/
+/- The companion field `H = G + W` for the localized spatial quotient. -/
 noncomputable def localizedSpatialDifferenceQuotientCompanionFieldCLM
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (hΩ : IsOpen Ω)
@@ -106,9 +101,9 @@ noncomputable def localizedSpatialDifferenceQuotientCompanionFieldCLM
       (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift) +
     cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h
 
-/-- The principal-field coordinate is `Gᵢ - Wᵢ`. -/
+/- The principal-field coordinate is `Gᵢ - Wᵢ`. -/
 theorem hilbertVectorLpCoord_localizedSpatialDifferenceQuotientPrincipalFieldCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (i k : Fin d) (h : ℝ)
@@ -135,9 +130,9 @@ theorem hilbertVectorLpCoord_localizedSpatialDifferenceQuotientPrincipalFieldCLM
           (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift u)) - w)
     (hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η i k h u)
 
-/-- The companion-field coordinate is `Gᵢ + Wᵢ`. -/
+/- The companion-field coordinate is `Gᵢ + Wᵢ`. -/
 theorem hilbertVectorLpCoord_localizedSpatialDifferenceQuotientCompanionFieldCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (i k : Fin d) (h : ℝ)
@@ -164,12 +159,10 @@ theorem hilbertVectorLpCoord_localizedSpatialDifferenceQuotientCompanionFieldCLM
           (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift u)) + w)
     (hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η i k h u)
 
-/-- A larger plateau cutoff fixes each principal-field coordinate in
+/- A larger plateau cutoff fixes each principal-field coordinate in
 restricted `L²`. -/
 theorem cutoffL2Multiplier_apply_principalFieldCoord
-    {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
-    {Kη Kχ : ℝ}
+    {d Ω innerη outerη innerχ outerχ Kη Kχ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
     (χ : PDE.QuantitativeSmoothCutoff innerχ outerχ Kχ)
@@ -194,12 +187,10 @@ theorem cutoffL2Multiplier_apply_principalFieldCoord
   rw [cutoffL2Multiplier_apply_cutoffGradientSpatialDifferenceQuotientL2
     η χ hηχ hΩ.measurableSet i k h (valueCLM hΩ u)]
 
-/-- A larger plateau cutoff fixes each companion-field coordinate in
+/- A larger plateau cutoff fixes each companion-field coordinate in
 restricted `L²`. -/
 theorem cutoffL2Multiplier_apply_companionFieldCoord
-    {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
-    {Kη Kχ : ℝ}
+    {d Ω innerη outerη innerχ outerχ Kη Kχ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
     (χ : PDE.QuantitativeSmoothCutoff innerχ outerχ Kχ)

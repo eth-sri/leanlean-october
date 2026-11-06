@@ -16,8 +16,7 @@ open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
-private theorem master_mass_eq_marginal_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
+private theorem master_mass_eq_marginal_mass {d Ω γ} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d) (hv : v ∈ movingDomain Ω γ σ)
     (hfirst : (parabolicMarginalKernel K hΩ σ τ hστ) ⟨v, hv⟩ =
       (K.fiberFirstMarginal hΩ σ τ hστ) (evolutionStateOfPosition Ω γ σ ⟨v, hv⟩ z)) :
@@ -37,10 +36,10 @@ private theorem master_mass_eq_marginal_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 
 /-- Scalar marginal mass equals the ambient master mass of the same query. -/
-theorem interval_parabolic_mass_eq_master {a c : ℝ}
+theorem interval_parabolic_mass_eq_master {a c }
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (B : CoefficientField 1)
+    (B )
     (hp : HasParabolicMarginalBundle (PDE.oneDimensionalAxisBox a c) stationary hJ
       (zIndependentCoefficient B) K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec 1)
@@ -56,7 +55,7 @@ theorem interval_parabolic_mass_eq_master {a c : ℝ}
 theorem interval_killing
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam m Lb a c : ℝ} (hac : a < c)
+    {lam Lam m Lb a c } (hac : a < c)
     (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1)
     (hsetting : SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b)
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
@@ -96,15 +95,15 @@ theorem interval_killing
     ring
 
 /-- Fourier total variation is bounded by scalar marginal mass on the same kernel. -/
-theorem interval_fourier_tv_le_mass {a c : ℝ}
+theorem interval_fourier_tv_le_mass {a c }
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (B : CoefficientField 1)
+    (B )
     (hp : HasParabolicMarginalBundle (PDE.oneDimensionalAxisBox a c) stationary hJ
       (zIndependentCoefficient B) K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z ξ : PDE.Vec 1)
     (hv : v ∈ movingDomain (PDE.oneDimensionalAxisBox a c) stationary σ)
-    (ν : ComplexMeasure (PDE.Vec 1))
+    (ν )
     (hν : IsFourierProjection K (movingQuery σ τ hστ v z hv) ξ ν) :
     TV ν ≤ (P K hJ (scalarQuery σ τ hστ v hv)).real univ := by
   have h := (Measure.le_iff.mp (fourierProjection_variation_le K _ ξ ν hν))

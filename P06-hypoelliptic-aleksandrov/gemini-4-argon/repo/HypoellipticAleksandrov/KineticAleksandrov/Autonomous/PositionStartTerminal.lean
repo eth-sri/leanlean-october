@@ -12,7 +12,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical
 
-/-- The concrete terminal family, including its zero-duration atom, is measurable. -/
+/- The concrete terminal family, including its zero-duration atom, is measurable. -/
 theorem positionStartTerminalFamily_measurable
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -29,35 +29,10 @@ theorem positionStartTerminalFamily_measurable
     (hS.inter ((visitActiveUnion c J).isOpen_carrier.measurableSet.preimage
       ((continuous_apply 0).comp continuous_velocity).measurable)) hm
 
-/-- The position cutoff preserves the exact zero internal-exit contribution. -/
-theorem positionStartQuadratic_exit_integral_eq_terminal
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y T : ℝ)
-    (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point)
-    (ht : ∀ᵐ p ∂mu, p.time < T) :
-    (∫ q, positionStartCutoff Y c.r c.positive (q.position 0) *
-      visitQuadratic c (q.velocity 0)
-      ∂(enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu)) =
-    ∫ q, positionStartCutoff Y c.r c.positive (q.position 0) *
-      visitQuadratic c (q.velocity 0)
-      ∂mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J T) := by
-  rw [enlargedActiveTerminal_bind_eq_restrict hH hLE hlam hLam A c J T mu ht]
-  symm
-  rw [← integral_indicator (isClosed_eq continuous_time continuous_const).measurableSet]
-  apply integral_congr_ae
-  filter_upwards [enlargedActiveExit_ae_quadratic_zero_or_terminal
-    hH hLE hlam hLam A c J T hJ mu] with q hq
-  rcases hq with hq | hq
-  · simp only [Set.indicator, mem_ofPred_eq, hq, ite_true]
-  · by_cases htq : q.time = T
-    · simp only [Set.indicator, mem_ofPred_eq, htq, ite_true]
-    · simp only [Set.indicator, mem_ofPred_eq, htq, ite_false, hq, mul_zero]
-
-/-- Before a finite observation time, the concrete terminal family obeys the Green identity. -/
+/- The position cutoff preserves the exact zero internal-exit contribution. -/
 theorem positionStartQuadratic_terminal_identity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y b : ℝ)
     (hc : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
     (p : Point) (hv : p.velocity 0 ∈ c.active) (ht : p.time < b) :
@@ -81,9 +56,25 @@ theorem positionStartQuadratic_terminal_identity
       finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) b e := by
     change (if h : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b then _ else 0) = _
     rw [dite_eq_left hp]
-  have he := positionStartQuadratic_exit_integral_eq_terminal
-    hH hLE hlam hLam A c J Y b hJ (Measure.dirac p)
-      ((ae_dirac_iff (isOpen_lt continuous_time continuous_const).measurableSet).mpr ht)
+  have he : (∫ q, positionStartCutoff Y c.r c.positive (q.position 0) *
+      visitQuadratic c (q.velocity 0)
+      ∂(enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ (Measure.dirac p))) =
+    ∫ q, positionStartCutoff Y c.r c.positive (q.position 0) *
+      visitQuadratic c (q.velocity 0)
+      ∂(Measure.dirac p).bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b) := by
+    let mu := (Measure.dirac p)
+    have ht := ((ae_dirac_iff (isOpen_lt continuous_time continuous_const).measurableSet).mpr ht)
+    rw [enlargedActiveTerminal_bind_eq_restrict hH hLE hlam hLam A c J b mu ht]
+    symm
+    rw [← integral_indicator (isClosed_eq continuous_time continuous_const).measurableSet]
+    apply integral_congr_ae
+    filter_upwards [enlargedActiveExit_ae_quadratic_zero_or_terminal
+      hH hLE hlam hLam A c J b hJ mu] with q hq
+    rcases hq with hq | hq
+    · simp only [Set.indicator, mem_ofPred_eq, hq, ite_true]
+    · by_cases htq : q.time = b
+      · simp only [Set.indicator, mem_ofPred_eq, htq, ite_true]
+      · simp only [Set.indicator, mem_ofPred_eq, htq, ite_false, hq, mul_zero]
   rw [visitKernel_comp_dirac,
     Measure.dirac_bind (positionStartTerminalFamily_measurable
       hH hLE hlam hLam A c J b)] at he
@@ -92,10 +83,10 @@ theorem positionStartQuadratic_terminal_identity
   rw [← hG, he] at hi
   exact hi
 
-/-- Clipping the genuine all-time active occupation at `b` gives its finite Green kernel. -/
+/- Clipping the genuine all-time active occupation at `b` gives its finite Green kernel. -/
 theorem positionStartGreen_eq_restrict
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (p : Point)
     (hv : p.velocity 0 ∈ c.active) (ht : p.time < b) :

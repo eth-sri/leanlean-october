@@ -38,8 +38,7 @@ theorem hasDerivAt_collarProfile {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : �
   have h1 : HasDerivAt Real.sqrt (1 / (2 * Real.sqrt s)) s := Real.hasDerivAt_sqrt hs.ne'
   have h2 : HasDerivAt (fun s => -κ * (r₀ - Real.sqrt s))
       (-κ * (-(1 / (2 * Real.sqrt s)))) s := (h1.const_sub r₀).const_mul (-κ)
-  have h3 := h2.exp
-  have h4 := ((hasDerivAt_const s (1 : ℝ)).sub h3).div_const κ
+  have h4 := ((hasDerivAt_const s (1 : ℝ)).sub h2.exp).div_const κ
   refine h4.congr_deriv ?_
   field_simp
   ring
@@ -67,7 +66,7 @@ theorem hasDerivAt_collarProfile_deriv {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) 
     filter_upwards [lt_mem_nhds hs] with t ht
     exact deriv_collarProfile hκ r₀ ht
   refine (h5.congr_of_eventuallyEq heq).congr_deriv ?_
-  have hs2 : Real.sqrt s ^ 2 = s := Real.sq_sqrt hs.le
+  have hs2 := Real.sq_sqrt hs.le
   generalize Real.sqrt s = ρ at *
   subst hs2
   field_simp
@@ -83,7 +82,7 @@ theorem contDiffAt_collarProfile (κ r₀ : ℝ) {s : ℝ} (hs : 0 < s) :
   exact (contDiffAt_const.sub h2.exp).div_const κ
 
 /-- The second derivative of the collar profile. -/
-theorem deriv_deriv_collarProfile {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s) :
+theorem deriv_deriv_collarProfile {κ } (hκ : κ ≠ 0) (r₀ : ℝ) {s } (hs : 0 < s) :
     deriv (deriv (collarProfile κ r₀)) s =
       -(Real.exp (-κ * (r₀ - Real.sqrt s)) / (4 * s)) * (κ - 1 / Real.sqrt s) :=
   (hasDerivAt_collarProfile_deriv hκ r₀ hs).deriv

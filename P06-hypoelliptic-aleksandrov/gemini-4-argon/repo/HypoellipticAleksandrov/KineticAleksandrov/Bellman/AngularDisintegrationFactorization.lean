@@ -26,13 +26,13 @@ theorem bellman_finiteSpanning_closedIntervals (μ : Measure ℝ)
   exact ⟨n, by linarith only [neg_abs_le x, hn], by linarith only [le_abs_self x, hn]⟩
 
 /-- Radial translation invariance forces a product with the unit-radius angular section. -/
-theorem bellman_translation_factorization (ρ : Measure (ℝ × ℝ))
+theorem bellman_translation_factorization (ρ )
     [IsFiniteMeasureOnCompacts ρ]
     (hρ : ∀ a : ℝ, Measure.map (fun q : ℝ × ℝ => (a + q.1, q.2)) ρ = ρ) :
     ρ = (volume : Measure ℝ).prod (bellmanUnitSection ρ) := by
   let F := bellmanUnitSection ρ
   let : IsFiniteMeasureOnCompacts F := bellmanUnitSection_finiteOnCompacts ρ
-  let C : Set (Set ℝ) := {S | ∃ a b : ℝ, a ≤ b ∧ Icc a b = S}
+  let C := {S | ∃ a b : ℝ, a ≤ b ∧ Icc a b = S}
   have hgen : MeasurableSpace.generateFrom C = (inferInstance : MeasurableSpace ℝ) :=
     (BorelSpace.measurable_eq.trans (borel_eq_generateFrom_Icc ℝ)).symm
   have hpi : IsPiSystem C := isPiSystem_Icc id id

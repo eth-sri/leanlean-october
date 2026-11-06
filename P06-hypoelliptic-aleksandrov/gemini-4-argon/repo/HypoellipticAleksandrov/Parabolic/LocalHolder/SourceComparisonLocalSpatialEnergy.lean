@@ -15,8 +15,8 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set
 
-private theorem spatialPartial_mul_at {d : ℕ} {O : Set (PDE.Vec d)}
-    (hO : IsOpen O) (i : Fin d) {f g : PDE.Vec d → ℝ}
+private theorem spatialPartial_mul_at {d O}
+    (hO : IsOpen O) (i : Fin d) {f g }
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     {y : PDE.Vec d} (hy : y ∈ O) :
     spatialPartial i (fun x => f x * g x) y =

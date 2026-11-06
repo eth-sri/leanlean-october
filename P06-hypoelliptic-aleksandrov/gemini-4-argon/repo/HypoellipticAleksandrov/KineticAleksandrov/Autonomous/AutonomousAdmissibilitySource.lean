@@ -50,8 +50,7 @@ theorem autonomous_test_source {a : ℝ → ℝ → ℝ} {lam Lam : ℝ}
       |kineticVelocityHessian psi P 0 0|
   have hF : ContinuousOn F (closure Q) := ht.abs.add (hv.mul hx0).abs |>.add
     (continuousOn_const.mul hh0.abs)
-  have hk := isCompact_closure_backwardCylinder P₀ R hR
-  obtain ⟨B, hB⟩ := (hk.bddAbove_image hF).exists_ge (0 : ℝ)
+  obtain ⟨B, hB⟩ := ((isCompact_closure_backwardCylinder P₀ R hR).bddAbove_image hF).exists_ge (0 : ℝ)
   have hbound (P : Point) (hP : P ∈ Q) : |autonomousScalarOperator a psi P| ≤ B := by
     have hab : |a (P.position 0) (P.velocity 0)| ≤ Lam := by
       rw [abs_of_nonneg (hlam.le.trans (hb _ _).1)]

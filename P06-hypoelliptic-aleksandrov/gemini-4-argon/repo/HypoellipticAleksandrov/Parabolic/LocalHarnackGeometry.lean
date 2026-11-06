@@ -19,27 +19,27 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
-/-- Times below the terminal face used to approach the normalized terminal value. -/
+/- Times below the terminal face used to approach the normalized terminal value. -/
 def localHarnackTerminalApprox (j : ℕ) : ℝ :=
   8 - (((j : ℝ) + 1)⁻¹)
 
-/-- The elapsed time from a selected peak to an interior terminal approximation. -/
+/- The elapsed time from a selected peak to an interior terminal approximation. -/
 def selectedLocalHarnackForwardTime (t1 : ℝ) (j : ℕ) : ℝ :=
   localHarnackTerminalApprox j - t1
 
-/-- Lower coordinate faces for the target-dependent propagation corridor. -/
+/- Lower coordinate faces for the target-dependent propagation corridor. -/
 def localHarnackCorridorLower {d : ℕ} (v1 v : PDE.Vec d) : PDE.Vec d :=
   fun i => (min (v1 i) (v i) - 3) / 2
 
-/-- Upper coordinate faces for the target-dependent propagation corridor. -/
+/- Upper coordinate faces for the target-dependent propagation corridor. -/
 def localHarnackCorridorUpper {d : ℕ} (v1 v : PDE.Vec d) : PDE.Vec d :=
   fun i => (max (v1 i) (v i) + 3) / 2
 
-/-- The open normalized work box pulled back by translation from a peak time. -/
+/- The open normalized work box pulled back by translation from a peak time. -/
 def localHarnackCorridorNeighborhood {d : ℕ} (t1 : ℝ) : Set (TimeVelocity d) :=
   parabolicAffine t1 (0 : PDE.Vec d) 1 ⁻¹' parabolicBox 2 2 0 0
 
-/-- A terminal-inclusive backward box is the corresponding closed forward box. -/
+/- A terminal-inclusive backward box is the corresponding closed forward box. -/
 theorem backwardParabolicClosedBox_eq_parabolicClosedBox {d : ℕ}
     (s terminalTime : ℝ) (v0 : PDE.Vec d) :
     backwardParabolicClosedBox s terminalTime v0 =
@@ -50,7 +50,7 @@ theorem backwardParabolicClosedBox_eq_parabolicClosedBox {d : ℕ}
   constructor <;> rintro ⟨hlower, hupper, hv⟩ <;>
     refine ⟨?_, ?_, hv⟩ <;> nlinarith
 
-/-- The unit peak-selection box lies strictly inside the normalized open work box. -/
+/- The unit peak-selection box lies strictly inside the normalized open work box. -/
 theorem backwardParabolicClosedBox_one_four_subset_normalizedOpenBox {d : ℕ} :
     backwardParabolicClosedBox 1 4 (0 : PDE.Vec d) ⊆
       parabolicBox 2 2 0 0 := by
@@ -82,7 +82,7 @@ private theorem selected_peak_time_bounds {d : ℕ} {t1 : ℝ} {v1 : PDE.Vec d}
   norm_num at hpoint
   exact ⟨hpoint.1, hpoint.2.1⟩
 
-/-- The selected peak velocity has strict normalized-cube margin. -/
+/- The selected peak velocity has strict normalized-cube margin. -/
 theorem selected_peak_velocity_mem_velocityCube_one {d : ℕ}
     {t1 r0 : ℝ} {v1 : PDE.Vec d}
     (_hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d))
@@ -100,20 +100,12 @@ theorem selected_peak_velocity_mem_velocityCube_one {d : ℕ}
   have hcoord := (pi_norm_le_iff_of_nonneg hr0nonneg).mp hnorm' i
   simpa only [Pi.zero_apply, sub_zero, Real.norm_eq_abs] using hcoord.trans_lt hr0lt
 
-/-- The selected half-gap radius is positive. -/
+/- The selected half-gap radius is positive. -/
 theorem selected_backward_radius_pos {r0 : ℝ} (hr0lt : r0 < 1) :
     0 < (1 - r0) / 2 := by
   linarith
 
-private theorem selected_backward_radius_le_half {d : ℕ} {t1 r0 : ℝ}
-    {v1 : PDE.Vec d}
-    (hr0 : r0 = backwardParabolicRadius 4 (0 : PDE.Vec d) (t1, v1)) :
-    (1 - r0) / 2 ≤ 1 / 2 := by
-  have hr0nonneg := selected_peak_radius_nonneg hr0
-  linarith
-
-private theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox_aux {d : ℕ}
-    {t1 r0 : ℝ} {v1 : PDE.Vec d}
+theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox {d t1 r0 v1}
     (hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d))
     (hr0 : r0 = backwardParabolicRadius 4 (0 : PDE.Vec d) (t1, v1))
     (hr0lt : r0 < 1) :
@@ -126,7 +118,8 @@ private theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox_aux
   have hsnonneg : 0 ≤ s := hspos.le
   have hsle : s ≤ 1 / 2 := by
     dsimp [s]
-    exact selected_backward_radius_le_half hr0
+    have hr0nonneg := selected_peak_radius_nonneg hr0
+    linarith
   have hsq : s ^ 2 ≤ 1 / 4 := by
     have hprod : 0 ≤ s * (1 / 2 - s) :=
       mul_nonneg hsnonneg (sub_nonneg.mpr hsle)
@@ -164,17 +157,7 @@ private theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox_aux
         _ < 2 := by norm_num
     simpa only [Pi.zero_apply, sub_zero] using hlt
 
-/-- The selected nested closed backward box lies strictly inside the open work box. -/
-theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox {d : ℕ}
-    {t1 r0 : ℝ} {v1 : PDE.Vec d}
-    (hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d))
-    (hr0 : r0 = backwardParabolicRadius 4 (0 : PDE.Vec d) (t1, v1))
-    (hr0lt : r0 < 1) :
-    backwardParabolicClosedBox ((1 - r0) / 2) t1 v1 ⊆
-      parabolicBox 2 2 0 0 :=
-  selected_backwardParabolicClosedBox_subset_normalizedOpenBox_aux hpoint hr0 hr0lt
-
-/-- Every interior terminal approximation is at least seven. -/
+/- Every interior terminal approximation is at least seven. -/
 theorem localHarnackTerminalApprox_seven_le (j : ℕ) :
     7 ≤ localHarnackTerminalApprox j := by
   unfold localHarnackTerminalApprox
@@ -184,14 +167,14 @@ theorem localHarnackTerminalApprox_seven_le (j : ℕ) :
     linarith
   linarith
 
-/-- Every interior terminal approximation is strictly below the terminal face. -/
+/- Every interior terminal approximation is strictly below the terminal face. -/
 theorem localHarnackTerminalApprox_lt_eight (j : ℕ) :
     localHarnackTerminalApprox j < 8 := by
   unfold localHarnackTerminalApprox
   have hpos : 0 < ((j : ℝ) + 1)⁻¹ := by positivity
   linarith
 
-/-- The interior terminal approximations converge to the terminal time. -/
+/- The interior terminal approximations converge to the terminal time. -/
 theorem tendsto_localHarnackTerminalApprox :
     Tendsto localHarnackTerminalApprox atTop (nhds 8) := by
   have h := (tendsto_const_nhds (x := (8 : ℝ))).sub
@@ -199,9 +182,8 @@ theorem tendsto_localHarnackTerminalApprox :
   change Tendsto (fun j : ℕ => 8 - ((j : ℝ) + 1)⁻¹) atTop (nhds 8)
   simpa only [one_div, sub_zero] using h
 
-/-- An interior terminal approximation at an open target velocity lies in the work box. -/
-theorem localHarnackTerminalApprox_mem_normalizedOpenBox {d : ℕ}
-    {v : PDE.Vec d} (j : ℕ) (hv : v ∈ velocityCube (0 : PDE.Vec d) 1) :
+/- An interior terminal approximation at an open target velocity lies in the work box. -/
+theorem localHarnackTerminalApprox_mem_normalizedOpenBox {d v} (j : ℕ) (hv : v ∈ velocityCube (0 : PDE.Vec d) 1) :
     (localHarnackTerminalApprox j, v) ∈ parabolicBox 2 2 0 0 := by
   rw [mem_parabolicBox_iff]
   refine ⟨?_, ?_, ?_⟩
@@ -212,78 +194,12 @@ theorem localHarnackTerminalApprox_mem_normalizedOpenBox {d : ℕ}
     have hvi := hv i
     simpa only [Pi.zero_apply, sub_zero] using hvi.trans (by norm_num : (1 : ℝ) < 2)
 
-/-- The final open target lies on the terminal face of the normalized closed box. -/
-theorem normalized_terminal_target_mem_normalizedClosedBox {d : ℕ}
-    {v : PDE.Vec d} (hv : v ∈ velocityCube (0 : PDE.Vec d) 1) :
-    (8, v) ∈ parabolicClosedBox 2 2 0 0 := by
-  rw [mem_parabolicClosedBox_iff]
-  refine ⟨by norm_num, by norm_num, ?_⟩
-  intro i
-  have hvi := hv i
-  simpa only [Pi.zero_apply, sub_zero] using hvi.le.trans (by norm_num : (1 : ℝ) ≤ 2)
-
-/-- Translating the selected elapsed time recovers the terminal approximation. -/
-theorem selectedLocalHarnackForwardTime_eq {t1 : ℝ} (j : ℕ) :
+/- The final open target lies on the terminal face of the normalized closed box. -/
+theorem selectedLocalHarnackForwardTime_eq {t1 } (j : ℕ) :
     t1 + selectedLocalHarnackForwardTime t1 j = localHarnackTerminalApprox j := by
   unfold selectedLocalHarnackForwardTime
   ring
 
-private theorem selected_localHarnack_corridor_faces {d : ℕ}
-    {t1 r0 : ℝ} {v1 v : PDE.Vec d}
-    (hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d))
-    (hr0 : r0 = backwardParabolicRadius 4 (0 : PDE.Vec d) (t1, v1))
-    (hr0lt : r0 < 1) (hv : v ∈ velocityCube (0 : PDE.Vec d) 1) :
-    (∀ i, 2 < localHarnackCorridorUpper v1 v i - localHarnackCorridorLower v1 v i ∧
-      localHarnackCorridorUpper v1 v i - localHarnackCorridorLower v1 v i ≤ 4) ∧
-    (∀ i, localHarnackCorridorLower v1 v i + 1 ≤ v1 i ∧
-      v1 i < localHarnackCorridorUpper v1 v i - 1) ∧
-    (∀ i, localHarnackCorridorLower v1 v i + 1 < v i ∧
-      v i < localHarnackCorridorUpper v1 v i - 1) ∧
-    (∀ i, -2 < localHarnackCorridorLower v1 v i ∧
-      localHarnackCorridorUpper v1 v i < 2) := by
-  have hv1 := selected_peak_velocity_mem_velocityCube_one hpoint hr0 hr0lt
-  refine ⟨?_, ?_, ?_, ?_⟩
-  · intro i
-    have hv1i := by simpa only [Pi.zero_apply, sub_zero] using hv1 i
-    have hvi := by simpa only [Pi.zero_apply, sub_zero] using hv i
-    dsimp only [localHarnackCorridorLower, localHarnackCorridorUpper]
-    have hmin : min (v1 i) (v i) ≤ max (v1 i) (v i) := min_le_max
-    have hspan : max (v1 i) (v i) - min (v1 i) (v i) < 2 := by
-      have hv1bounds := abs_lt.mp hv1i
-      have hvbounds := abs_lt.mp hvi
-      have hmin_lower : -1 < min (v1 i) (v i) := lt_min hv1bounds.1 hvbounds.1
-      have hmax_upper : max (v1 i) (v i) < 1 := max_lt hv1bounds.2 hvbounds.2
-      linarith
-    constructor <;> linarith
-  · intro i
-    have hv1i := by simpa only [Pi.zero_apply, sub_zero] using hv1 i
-    have hvi := by simpa only [Pi.zero_apply, sub_zero] using hv i
-    have hv1bounds := abs_lt.mp hv1i
-    have hvbounds := abs_lt.mp hvi
-    dsimp only [localHarnackCorridorLower, localHarnackCorridorUpper]
-    have hmin : min (v1 i) (v i) ≤ v1 i := min_le_left _ _
-    have hmax : v1 i ≤ max (v1 i) (v i) := le_max_left _ _
-    constructor <;> linarith [hv1bounds.1, hv1bounds.2, hvbounds.1, hvbounds.2]
-  · intro i
-    have hv1i := by simpa only [Pi.zero_apply, sub_zero] using hv1 i
-    have hvi := by simpa only [Pi.zero_apply, sub_zero] using hv i
-    have hv1bounds := abs_lt.mp hv1i
-    have hvbounds := abs_lt.mp hvi
-    dsimp only [localHarnackCorridorLower, localHarnackCorridorUpper]
-    have hmin : min (v1 i) (v i) ≤ v i := min_le_right _ _
-    have hmax : v i ≤ max (v1 i) (v i) := le_max_right _ _
-    constructor <;> linarith [hv1bounds.1, hv1bounds.2, hvbounds.1, hvbounds.2]
-  · intro i
-    have hv1i := by simpa only [Pi.zero_apply, sub_zero] using hv1 i
-    have hvi := by simpa only [Pi.zero_apply, sub_zero] using hv i
-    have hv1bounds := abs_lt.mp hv1i
-    have hvbounds := abs_lt.mp hvi
-    dsimp only [localHarnackCorridorLower, localHarnackCorridorUpper]
-    have hmin_lower : -1 < min (v1 i) (v i) := lt_min hv1bounds.1 hvbounds.1
-    have hmax_upper : max (v1 i) (v i) < 1 := max_lt hv1bounds.2 hvbounds.2
-    constructor <;> linarith
-
-/-- The selected peak and an open target determine a closed propagation corridor. -/
 theorem selected_localHarnack_corridor {d : ℕ}
     {t1 r0 : ℝ} {v1 v : PDE.Vec d} {j : ℕ}
     (hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d))
@@ -303,7 +219,57 @@ theorem selected_localHarnack_corridor {d : ℕ}
   have ht1 := selected_peak_time_bounds hpoint
   have hseven := localHarnackTerminalApprox_seven_le j
   have height := localHarnackTerminalApprox_lt_eight j
-  have hfaces := selected_localHarnack_corridor_faces hpoint hr0 hr0lt hv
+  have hfaces : (∀ i, 2 < localHarnackCorridorUpper v1 v i - localHarnackCorridorLower v1 v i ∧
+      localHarnackCorridorUpper v1 v i - localHarnackCorridorLower v1 v i ≤ 4) ∧
+    (∀ i, localHarnackCorridorLower v1 v i + 1 ≤ v1 i ∧
+      v1 i < localHarnackCorridorUpper v1 v i - 1) ∧
+    (∀ i, localHarnackCorridorLower v1 v i + 1 < v i ∧
+      v i < localHarnackCorridorUpper v1 v i - 1) ∧
+    (∀ i, -2 < localHarnackCorridorLower v1 v i ∧
+      localHarnackCorridorUpper v1 v i < 2) := by
+      have hv1 := selected_peak_velocity_mem_velocityCube_one hpoint hr0 hr0lt
+      refine ⟨?_, ?_, ?_, ?_⟩
+      · intro i
+        have hv1i := by simpa only [Pi.zero_apply, sub_zero] using hv1 i
+        have hvi := by simpa only [Pi.zero_apply, sub_zero] using hv i
+        dsimp only [localHarnackCorridorLower, localHarnackCorridorUpper]
+        have hmin : min (v1 i) (v i) ≤ max (v1 i) (v i) := min_le_max
+        have hspan : max (v1 i) (v i) - min (v1 i) (v i) < 2 := by
+          have hv1bounds := abs_lt.mp hv1i
+          have hvbounds := abs_lt.mp hvi
+          have hmin_lower : -1 < min (v1 i) (v i) := lt_min hv1bounds.1 hvbounds.1
+          have hmax_upper : max (v1 i) (v i) < 1 := max_lt hv1bounds.2 hvbounds.2
+          linarith
+        constructor <;> linarith
+      · intro i
+        have hv1i := by simpa only [Pi.zero_apply, sub_zero] using hv1 i
+        have hvi := by simpa only [Pi.zero_apply, sub_zero] using hv i
+        have hv1bounds := abs_lt.mp hv1i
+        have hvbounds := abs_lt.mp hvi
+        dsimp only [localHarnackCorridorLower, localHarnackCorridorUpper]
+        have hmin : min (v1 i) (v i) ≤ v1 i := min_le_left _ _
+        have hmax : v1 i ≤ max (v1 i) (v i) := le_max_left _ _
+        constructor <;> linarith [hv1bounds.1, hv1bounds.2, hvbounds.1, hvbounds.2]
+      · intro i
+        have hv1i := by simpa only [Pi.zero_apply, sub_zero] using hv1 i
+        have hvi := by simpa only [Pi.zero_apply, sub_zero] using hv i
+        have hv1bounds := abs_lt.mp hv1i
+        have hvbounds := abs_lt.mp hvi
+        dsimp only [localHarnackCorridorLower, localHarnackCorridorUpper]
+        have hmin : min (v1 i) (v i) ≤ v i := min_le_right _ _
+        have hmax : v i ≤ max (v1 i) (v i) := le_max_right _ _
+        constructor <;> linarith [hv1bounds.1, hv1bounds.2, hvbounds.1, hvbounds.2]
+      · intro i
+        have hv1i := by simpa only [Pi.zero_apply, sub_zero] using hv1 i
+        have hvi := by simpa only [Pi.zero_apply, sub_zero] using hv i
+        have hv1bounds := abs_lt.mp hv1i
+        have hvbounds := abs_lt.mp hvi
+        dsimp only [localHarnackCorridorLower, localHarnackCorridorUpper]
+        have hmin_lower : -1 < min (v1 i) (v i) := lt_min hv1bounds.1 hvbounds.1
+        have hmax_upper : max (v1 i) (v i) < 1 := max_lt hv1bounds.2 hvbounds.2
+        constructor <;> linarith
+
+    /- The selected peak and an open target determine a closed propagation corridor. -/
   refine ⟨?_, ?_, hfaces.1, hfaces.2.1, hfaces.2.2.1, ?_⟩
   · unfold selectedLocalHarnackForwardTime
     linarith
@@ -367,9 +333,8 @@ private theorem mem_parabolicAffine_localHarnackClosedBox_iff {d : ℕ}
         mul_le_mul_of_nonneg_right (by simpa only [sub_zero] using hwi) hscale.le
       nlinarith
 
-/-- The public radius-two closed Harnack box has the exact normalized affine preimage. -/
-theorem parabolicAffine_preimage_localHarnackClosedBox {d : ℕ}
-    {t0 r : ℝ} {v0 : PDE.Vec d} (hr : 0 < r) :
+/- The public radius-two closed Harnack box has the exact normalized affine preimage. -/
+theorem parabolicAffine_preimage_localHarnackClosedBox {d t0 r} {v0 : PDE.Vec d} (hr : 0 < r) :
     parabolicAffine (t0 - r ^ 2) v0 (r / 2) ⁻¹'
         parabolicClosedBox 2 r (t0 - r ^ 2) v0 =
       parabolicClosedBox 2 2 0 0 := by
@@ -377,8 +342,8 @@ theorem parabolicAffine_preimage_localHarnackClosedBox {d : ℕ}
   rcases z with ⟨t, w⟩
   exact mem_parabolicAffine_localHarnackClosedBox_iff hr
 
-/-- The normalized Harnack source maps to the public source point. -/
-@[simp] theorem parabolicAffine_localHarnack_source {d : ℕ}
+/- The normalized Harnack source maps to the public source point. -/
+@[simp] theorem parabolicAffine_localHarnack_source {d }
     (t0 r : ℝ) (v0 : PDE.Vec d) :
     parabolicAffine (t0 - r ^ 2) v0 (r / 2) (4, 0) = (t0, v0) := by
   ext
@@ -386,8 +351,8 @@ theorem parabolicAffine_preimage_localHarnackClosedBox {d : ℕ}
     ring
   · simp [parabolicAffine]
 
-/-- The normalized terminal slice maps to the public terminal slice. -/
-@[simp] theorem parabolicAffine_localHarnack_terminal {d : ℕ}
+/- The normalized terminal slice maps to the public terminal slice. -/
+@[simp] theorem parabolicAffine_localHarnack_terminal {d }
     (t0 r : ℝ) (v0 w : PDE.Vec d) :
     parabolicAffine (t0 - r ^ 2) v0 (r / 2) (8, w) =
       (t0 + r ^ 2, v0 + (r / 2) • w) := by

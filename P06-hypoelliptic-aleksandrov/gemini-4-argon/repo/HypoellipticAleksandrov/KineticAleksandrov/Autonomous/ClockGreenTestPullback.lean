@@ -12,7 +12,7 @@ open SectionTwo TheoremA Evolution
 
 /-- Scalar-coordinate smoothness of a normalized test gives literal physical C112 smoothness
 of its clock pullback throughout the physical active strip. -/
-theorem clock_pullback_C112 (c : Clock) (e : Point) (h : Point → ℝ)
+theorem clock_pullback_C112 (c : Clock) (e : Point) (h )
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (h ∘ scalarPoint)
       {q : Fin 3 → ℝ | q 2 ∈ normalizedActive}) :
     IsKineticC112On (h ∘ c.map e) {p | p.velocity 0 ∈ c.active} := by

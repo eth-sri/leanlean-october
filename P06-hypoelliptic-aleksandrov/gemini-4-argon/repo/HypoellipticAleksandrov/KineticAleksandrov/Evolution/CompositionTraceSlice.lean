@@ -23,9 +23,7 @@ open scoped Topology
 /-- A classical solution restricted to any earlier state slice is continuous on the
 closed state fiber. -/
 theorem IsClassicalTerminalSolution.continuousOn_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
+    {n Ω γ B b τ r F u}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r ≤ τ) :
     ContinuousOn (fun x : EvolutionAmbientState n => u ⟨r, x.1, x.2⟩)
       (closure (evolutionStateSet Ω γ r)) := by
@@ -38,9 +36,7 @@ theorem IsClassicalTerminalSolution.continuousOn_slice
 
 /-- Extending an intermediate slice by zero outside its state fiber is continuous. -/
 theorem IsClassicalTerminalSolution.continuous_zeroExtended_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
+    {n Ω γ B b τ r F u}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r ≤ τ) :
     Continuous ((evolutionStateSet Ω γ r).indicator
       (fun x : EvolutionAmbientState n => u ⟨r, x.1, x.2⟩)) := by
@@ -52,9 +48,7 @@ theorem IsClassicalTerminalSolution.continuous_zeroExtended_slice
 
 /-- A strictly earlier slice is smooth on the open state fiber. -/
 theorem IsClassicalTerminalSolution.contDiffOn_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
+    {n Ω γ B b τ r F u}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r < τ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x : EvolutionAmbientState n => u ⟨r, x.1, x.2⟩)
       (evolutionStateSet Ω γ r) := by

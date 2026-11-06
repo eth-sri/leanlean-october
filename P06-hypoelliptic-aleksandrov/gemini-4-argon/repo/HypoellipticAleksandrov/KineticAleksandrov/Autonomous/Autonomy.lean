@@ -28,7 +28,7 @@ def autonomousQueryShift (h : ℝ)
     by linarith [q.2.1], by rw [autonomous_stateSet]; trivial⟩
 
 /-- Time translation leaves the entire full-space terminal measure unchanged. -/
-theorem fullspace_kernel_timeShift {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem fullspace_kernel_timeShift {lam Lam } (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) (h : ℝ)
     (q : EvolutionQuery autonomousWholeDomain (fun _ => 0)) :
     E.2.master (autonomousQueryShift h q) = E.2.master q := by
@@ -62,7 +62,6 @@ theorem fullspace_kernel_timeShift {lam Lam : ℝ} (A : SmoothAutonomous lam Lam
         σ τ hστ s F F.measurable).symm
   have h1 := (hru (q.1.1 + h) (autonomousQueryShift h q).2.1 ph).trans
     (hrep _ _ _ ph)
-  have h2 := (hrv q.1.1 q.2.1 p).trans (hrep _ _ _ p)
-  exact h1.symm.trans (heq.trans h2)
+  exact h1.symm.trans (heq.trans ((hrv q.1.1 q.2.1 p).trans (hrep _ _ _ p)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

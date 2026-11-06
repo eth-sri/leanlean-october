@@ -22,7 +22,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
 /-- The viscous operator annihilates constants. -/
-theorem viscousTransportedOperator_const {n : ℕ} (B : FullKineticCoefficient n)
+theorem viscousTransportedOperator_const {n } (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n) (ε c : ℝ) (p : KineticPoint n) :
     viscousTransportedOperator B b ε (fun _ => c) p = 0 := by
   have h1 : kineticTimeDerivative (fun _ : KineticPoint n => c) p = 0 := by
@@ -38,9 +38,8 @@ theorem viscousTransportedOperator_const {n : ℕ} (B : FullKineticCoefficient n
   simp [PDE.vecDot]
 
 /-- The negative of a viscous classical solution solves the problem with negated datum. -/
-theorem IsClassicalViscousTerminalSolution.neg {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} {ε τ : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
+theorem IsClassicalViscousTerminalSolution.neg {n Ω} (hΩ : IsOpen Ω)
+    {γ } (hγ : Continuous γ) {B b ε τ F}
     {u : KineticPoint n → ℝ} (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u) :
     IsClassicalViscousTerminalSolution Ω γ B b ε τ (-F) (fun q => -u q) := by
   obtain ⟨⟨C, hC0, hC⟩, hcont, hsmooth, hop, hterm, hlat⟩ := hu
@@ -63,13 +62,12 @@ theorem IsClassicalViscousTerminalSolution.neg {n : ℕ} {Ω : Set (PDE.Vec n)} 
     simp
 
 /-- A viscous classical solution with terminal datum at most `c ≥ 0` is at most `c`. -/
-theorem classical_le_const {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) {τ : ℝ}
-    {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
-    (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u) {c : ℝ} (hc : 0 ≤ c)
+theorem classical_le_const {n Ω} (hΩ : IsOpen Ω)
+    {γ } (hγ : Continuous γ) {lam Lam } (hlam : 0 < lam)
+    {B } (hB : HasEverywhereLoewnerBounds lam Lam B)
+    {Lb b} (hb : HasEuclideanLipschitzDrift Lb b)
+    {ε } (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) {τ F} {u : KineticPoint n → ℝ}
+    (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u) {c } (hc : 0 ≤ c)
     (hFc : ∀ y z, y ∈ closure (movingDomain Ω γ τ) → F (y, z) ≤ c) :
     ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, u p ≤ c := by
   intro p₀ hp₀
@@ -109,13 +107,12 @@ theorem classical_le_const {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     linarith
 
 /-- A viscous classical solution with terminal datum bounded by `c ≥ 0` is bounded by `c`. -/
-theorem classical_abs_le_const {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) {τ : ℝ}
-    {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
-    (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u) {c : ℝ}
+theorem classical_abs_le_const {n Ω} (hΩ : IsOpen Ω)
+    {γ } (hγ : Continuous γ) {lam Lam } (hlam : 0 < lam)
+    {B } (hB : HasEverywhereLoewnerBounds lam Lam B)
+    {Lb b} (hb : HasEuclideanLipschitzDrift Lb b)
+    {ε } (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) {τ F} {u : KineticPoint n → ℝ}
+    (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u) {c }
     (hFc : ∀ q, |F q| ≤ c) :
     ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |u p| ≤ c := by
   have hc : 0 ≤ c := le_trans (abs_nonneg _) (hFc 0)
@@ -128,7 +125,7 @@ theorem classical_abs_le_const {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω
       have := neg_abs_le (F (y, z))
       simp only [BoundedBorel.neg_apply]
       linarith) p hp
-  have h2' : -u p ≤ c := h2
+  have h2' := h2
   exact abs_le.mpr ⟨by linarith, h1⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -59,13 +59,13 @@ theorem basisZ_eq_basisVec (l : Fin n) :
         Fin.natAdd_inj]
 
 /-- The divergence of a differentiable field, split over the three coordinate blocks. -/
-theorem euclideanDivergence_eq {V : EvolutionVec n → EvolutionVec n} {x : EvolutionVec n}
+theorem euclideanDivergence_eq {V x}
     (hV : DifferentiableAt ℝ V x) :
     euclideanDivergence V x =
       fderiv ℝ (fun y => V y 0) x basisT +
         ∑ j, fderiv ℝ (fun y => V y (Fin.succ (Fin.castAdd n j))) x (basisV j) +
         ∑ l, fderiv ℝ (fun y => V y (Fin.succ (Fin.natAdd n l))) x (basisZ l) := by
-  have hcomp : ∀ i, DifferentiableAt ℝ (fun y => V y i) x := differentiableAt_pi.1 hV
+  have hcomp := differentiableAt_pi.1 hV
   have key : ∀ (i : Fin (EvolutionDim n)) (w : EvolutionVec n),
       fderiv ℝ V x w i = fderiv ℝ (fun y => V y i) x w := by
     intro i w

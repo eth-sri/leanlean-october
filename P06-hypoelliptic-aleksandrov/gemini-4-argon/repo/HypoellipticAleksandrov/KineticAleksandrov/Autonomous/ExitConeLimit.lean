@@ -14,7 +14,7 @@ open scoped Topology
 /-- A nonpositive transport direction gives closed-cone support for both actual measures. -/
 theorem reconstruction_transport_cone_ae
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (alpha beta gamma : ℝ)
@@ -33,8 +33,7 @@ theorem reconstruction_transport_cone_ae
       (ha : ∀ n, ∀ᵐ p ∂μ,
         reconstructionConeCoordinate (alpha - r n) beta (gamma + r n * e.1.time) p ≤ 0) :
       ∀ᵐ p ∂μ, reconstructionConeCoordinate alpha beta gamma p ≤ 0 := by
-    have hall := ae_all_iff.mpr ha
-    filter_upwards [hall] with p hp
+    filter_upwards [(ae_all_iff.mpr ha)] with p hp
     have hr0 : Tendsto r atTop (𝓝 0) := tendsto_one_div_add_atTop_nhds_zero_nat
     have ht : Tendsto (fun n => reconstructionConeCoordinate alpha beta gamma p -
         r n * p.time + r n * e.1.time) atTop

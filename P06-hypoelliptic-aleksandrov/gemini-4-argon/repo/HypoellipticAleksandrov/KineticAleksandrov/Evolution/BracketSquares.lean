@@ -40,14 +40,14 @@ section Algebra
 variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
 
 /-- `∑_i β_ij β_ik = B_jk`: the square-root factorisation (uses symmetry of `β`). -/
-theorem sum_sqrtCoeffAt_mul {lam Lam : ℝ} (hlam : 0 < lam)
+theorem sum_sqrtCoeffAt_mul {lam Lam } (hlam : 0 < lam)
     (hell : HasEverywhereLoewnerBounds lam Lam B) (x : EvolutionVec n) (j k : Fin n) :
     ∑ i, sqrtCoeffAt B x i j * sqrtCoeffAt B x i k =
       B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) j k := by
   set A := B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) with hA
   have hApd : A.PosDef := posDef_of_smul_one_le hlam (hell _ _ _).1
-  have hsq : CFC.sqrt A * CFC.sqrt A = A := CFC.sqrt_mul_sqrt_self A hApd.posSemidef.nonneg
-  have hsymm : (CFC.sqrt A)ᴴ = CFC.sqrt A := (CFC.sqrt_nonneg A).isSelfAdjoint.star_eq
+  have hsq := CFC.sqrt_mul_sqrt_self A hApd.posSemidef.nonneg
+  have hsymm := (CFC.sqrt_nonneg A).isSelfAdjoint.star_eq
   have hsymm' : ∀ i j, CFC.sqrt A i j = CFC.sqrt A j i := fun i j => by
     have := congrFun (congrFun hsymm j) i
     simpa [Matrix.conjTranspose_apply] using this

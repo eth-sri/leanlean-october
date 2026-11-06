@@ -57,9 +57,7 @@ theorem bellmanGaussianKernel_integral_generator (t : BellmanPositiveTime)
   simp only [hd] at hx
   have hv := bellman_integral_mul_direction hk (bellman_contDiff_direction hφ (0, 1))
     (hc.fderiv_apply ℝ (0, 1)) (0, 1)
-  have hv2 := bellman_integral_mul_direction (bellman_contDiff_direction hk (0, 1)) hφ
-    hc (0, 1)
-  rw [hv2, neg_neg] at hv
+  rw [(bellman_integral_mul_direction (bellman_contDiff_direction hk (0, 1)) hφ hc (0, 1)), neg_neg] at hv
   have hiX : Integrable (fun q => bellmanGaussianKernel t q *
       (q.2 * fderiv ℝ φ q (1, 0))) :=
     bellman_integrable_mul_test hk.continuous

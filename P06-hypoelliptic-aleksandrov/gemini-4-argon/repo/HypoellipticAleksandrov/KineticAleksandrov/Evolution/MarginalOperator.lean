@@ -36,7 +36,7 @@ section Outside
 variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
   (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
 
-/-- The scalar marginal kernel has mass at most one. -/
+/- The scalar marginal kernel has mass at most one. -/
 theorem parabolicMarginalKernel_univ_le_one (σ τ : ℝ) (hστ : σ ≤ τ)
     (y : EvolutionPosition Ω γ σ) : parabolicMarginalKernel K hΩ σ τ hστ y univ ≤ 1 := by
   rw [parabolicMarginalKernel_apply, MovingFiberKernel.fiberFirstMarginal,
@@ -45,14 +45,14 @@ theorem parabolicMarginalKernel_univ_le_one (σ τ : ℝ) (hστ : σ ≤ τ)
     preimage_univ]
   exact K.fiberKernel_mass_le_one hΩ σ τ hστ _
 
-/-- The scalar marginal kernel is a finite kernel. -/
+/- The scalar marginal kernel is a finite kernel. -/
 theorem isFiniteKernel_parabolicMarginalKernel (σ τ : ℝ) (hστ : σ ≤ τ) :
     ProbabilityTheory.IsFiniteKernel (parabolicMarginalKernel K hΩ σ τ hστ) :=
   ⟨⟨1, ENNReal.one_lt_top, fun y => parabolicMarginalKernel_univ_le_one K hΩ σ τ hστ y⟩⟩
 
-/-- The integral of a bounded Borel function against the scalar marginal kernel, as a bounded
+/- The integral of a bounded Borel function against the scalar marginal kernel, as a bounded
 Borel function of the source position. -/
-def marginalIntegralDatum (σ τ : ℝ) (hστ : σ ≤ τ) (f : BoundedBorel (EvolutionPosition Ω γ τ)) :
+def marginalIntegralDatum (σ τ ) (hστ : σ ≤ τ) (f : BoundedBorel (EvolutionPosition Ω γ τ)) :
     BoundedBorel (EvolutionPosition Ω γ σ) :=
   haveI := isFiniteKernel_parabolicMarginalKernel K hΩ σ τ hστ
   ⟨fun y => ∫ y', f y' ∂(parabolicMarginalKernel K hΩ σ τ hστ y),
@@ -63,14 +63,14 @@ def marginalIntegralDatum (σ τ : ℝ) (hστ : σ ≤ τ) (f : BoundedBorel (E
       exact ⟨C, hC0, fun y => abs_integral_boundedBorel_le f _
         (parabolicMarginalKernel_univ_le_one K hΩ σ τ hστ y) hC0 hC⟩⟩
 
-/-- Evaluation of `marginalIntegralDatum`. -/
+/- Evaluation of `marginalIntegralDatum`. -/
 theorem marginalIntegralDatum_apply (σ τ : ℝ) (hστ : σ ≤ τ)
     (f : BoundedBorel (EvolutionPosition Ω γ τ)) (y : EvolutionPosition Ω γ σ) :
     marginalIntegralDatum K hΩ σ τ hστ f y =
       ∫ y', f y' ∂(parabolicMarginalKernel K hΩ σ τ hστ y) :=
   rfl
 
-/-- The integral operator against the scalar marginal kernel is the unique real-linear
+/- The integral operator against the scalar marginal kernel is the unique real-linear
 map of bounded Borel functions with the integral formula. -/
 theorem exists_unique_marginalIntegralOperator (σ τ : ℝ) (hστ : σ ≤ τ) :
     ∃! T : BoundedBorel (EvolutionPosition Ω γ τ) →ₗ[ℝ] BoundedBorel (EvolutionPosition Ω γ σ),
@@ -90,26 +90,26 @@ theorem exists_unique_marginalIntegralOperator (σ τ : ℝ) (hστ : σ ≤ τ)
   exact LinearMap.ext fun f => BoundedBorel.ext fun y => by
     rw [hT' f y]; rfl
 
-/-- The family `Q₀` of scalar marginal integral operators, chosen from the `∃!`
+/- The family `Q₀` of scalar marginal integral operators, chosen from the `∃!`
 statements `exists_unique_marginalIntegralOperator`. -/
 def marginalOperators : ParabolicOperatorFamily Ω γ :=
   fun σ τ hστ => (exists_unique_marginalIntegralOperator K hΩ σ τ hστ).choose
 
-/-- The integral formula for the marginal operators. -/
+/- The integral formula for the marginal operators. -/
 theorem marginalOperators_apply (σ τ : ℝ) (hστ : σ ≤ τ)
     (f : BoundedBorel (EvolutionPosition Ω γ τ)) (y : EvolutionPosition Ω γ σ) :
     marginalOperators K hΩ σ τ hστ f y =
       ∫ y', f y' ∂(parabolicMarginalKernel K hΩ σ τ hστ y) :=
   (exists_unique_marginalIntegralOperator K hΩ σ τ hστ).choose_spec.1 f y
 
-/-- The marginal operators are positive. -/
+/- The marginal operators are positive. -/
 theorem marginalOperators_nonneg (σ τ : ℝ) (hστ : σ ≤ τ)
     (f : BoundedBorel (EvolutionPosition Ω γ τ)) (hf : 0 ≤ f) :
     0 ≤ marginalOperators K hΩ σ τ hστ f := fun y => by
   rw [BoundedBorel.zero_apply, marginalOperators_apply]
   exact integral_nonneg fun x => hf x
 
-/-- The marginal operators are contractions on the constant one. -/
+/- The marginal operators are contractions on the constant one. -/
 theorem marginalOperators_one_le (σ τ : ℝ) (hστ : σ ≤ τ) :
     marginalOperators K hΩ σ τ hστ (1 : BoundedBorel (EvolutionPosition Ω γ τ)) ≤
       (1 : BoundedBorel (EvolutionPosition Ω γ σ)) := fun y => by
@@ -119,34 +119,30 @@ theorem marginalOperators_one_le (σ τ : ℝ) (hστ : σ ≤ τ) :
   rw [Measure.real]
   exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using hmass)
 
-/-- The lift of a parabolic query to the kinetic query with transported source `0`. -/
+/- The lift of a parabolic query to the kinetic query with transported source `0`. -/
 def parabolicQueryLift (q : ParabolicEvolutionQuery Ω γ) : EvolutionQuery Ω γ :=
   evolutionQueryOfState Ω γ q.1.1 q.1.2.1 q.property.1
     (positionStateZero Ω γ q.1.1 (parabolicQuerySource q))
 
-/-- The parabolic query lift is measurable. -/
+/- The parabolic query lift is measurable. -/
 theorem measurable_parabolicQueryLift : Measurable (parabolicQueryLift (Ω := Ω) (γ := γ)) := by
   apply Measurable.subtype_mk
   show Measurable fun q : ParabolicEvolutionQuery Ω γ =>
     ((q.1.1, (q.1.2.1, (q.1.2.2, (0 : PDE.Vec n)))) : RawEvolutionQuery n)
   fun_prop
 
-/-- The ambient marginal measure is the first marginal of the master measure at the lifted query. -/
-theorem parabolicMarginalAmbientMeasure_eq (q : ParabolicEvolutionQuery Ω γ) :
-    parabolicMarginalAmbientMeasure K hΩ q = K.firstMarginal (parabolicQueryLift q) := by
-  rw [parabolicMarginalAmbientMeasure, parabolicMarginalKernel_apply,
-    MovingFiberKernel.map_fiberFirstMarginal_eq_firstMarginal]
-  rfl
-
-/-- Constrained joint measurability of the ambient marginal measure: the evaluation on
-a Borel set is measurable in the parabolic query (no hypothesis on `B`). -/
-theorem measurable_parabolicMarginalAmbientMeasure (E : Set (PDE.Vec n)) (hE : MeasurableSet E) :
+/- The ambient marginal measure is the first marginal of the master measure at the lifted query. -/
+theorem measurable_parabolicMarginalAmbientMeasure (E ) (hE : MeasurableSet E) :
     Measurable (fun q : ParabolicEvolutionQuery Ω γ =>
       parabolicMarginalAmbientMeasure K hΩ q E) := by
   have h : (fun q : ParabolicEvolutionQuery Ω γ => parabolicMarginalAmbientMeasure K hΩ q E) =
       fun q => K.master (parabolicQueryLift q) {p | p.1 ∈ E} := by
     funext q
-    rw [parabolicMarginalAmbientMeasure_eq, MovingFiberKernel.firstMarginal_apply _ _ _ hE]
+    have _h_inl_23 (q) : parabolicMarginalAmbientMeasure K hΩ q = K.firstMarginal (parabolicQueryLift q) := by
+      rw [parabolicMarginalAmbientMeasure, parabolicMarginalKernel_apply,
+        MovingFiberKernel.map_fiberFirstMarginal_eq_firstMarginal]
+      rfl
+    rw [_h_inl_23, MovingFiberKernel.firstMarginal_apply _ _ _ hE]
   rw [h]
   exact (K.master.measurable_coe (measurable_fst hE)).comp measurable_parabolicQueryLift
 
@@ -174,7 +170,7 @@ include hb_smooth hb_lipschitz hb_coercive hEx
 local notation "μ" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
-/-- **Marginal independence** (Proposition 2.1, first clause), for every moving fiber kernel `K`
+/- **Marginal independence** (Proposition 2.1, first clause), for every moving fiber kernel `K`
 whose master measures are the terminal measures `μ q`.  If `B` does not depend on the transported
 coordinate, the zero-`z` pullback of the first marginal equals the first marginal at every
 transported coordinate `z` of the source. -/

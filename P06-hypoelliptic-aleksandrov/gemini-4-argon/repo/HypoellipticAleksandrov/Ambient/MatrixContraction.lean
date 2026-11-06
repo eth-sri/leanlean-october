@@ -18,62 +18,56 @@ open scoped BigOperators
 
 namespace HypoellipticAleksandrov
 
-/-- The entrywise Frobenius contraction of two real square matrices. -/
-def matrixContraction {d : ℕ} (A H : PDE.Mat d) : ℝ :=
+/- The entrywise Frobenius contraction of two real square matrices. -/
+def matrixContraction {d } (A H : PDE.Mat d) : ℝ :=
   ∑ i, ∑ j, A i j * H i j
 
-/-- The contraction with a zero left factor vanishes. -/
+/- The contraction with a zero left factor vanishes. -/
 @[simp]
-theorem matrixContraction_zero_left {d : ℕ} (H : PDE.Mat d) :
-    matrixContraction 0 H = 0 := by
-  simp [matrixContraction]
-
-/-- The contraction with a zero right factor vanishes. -/
-@[simp]
-theorem matrixContraction_zero_right {d : ℕ} (A : PDE.Mat d) :
+theorem matrixContraction_zero_right {d } (A : PDE.Mat d) :
     matrixContraction A 0 = 0 := by
   simp [matrixContraction]
 
-/-- The contraction is additive in its left factor. -/
+/- The contraction is additive in its left factor. -/
 @[simp]
-theorem matrixContraction_add_left {d : ℕ} (A B H : PDE.Mat d) :
+theorem matrixContraction_add_left {d } (A B H : PDE.Mat d) :
     matrixContraction (A + B) H =
       matrixContraction A H + matrixContraction B H := by
   simp [matrixContraction, add_mul, Finset.sum_add_distrib]
 
-/-- The contraction is additive in its right factor. -/
+/- The contraction is additive in its right factor. -/
 @[simp]
-theorem matrixContraction_add_right {d : ℕ} (A H K : PDE.Mat d) :
+theorem matrixContraction_add_right {d } (A H K : PDE.Mat d) :
     matrixContraction A (H + K) =
       matrixContraction A H + matrixContraction A K := by
   simp [matrixContraction, mul_add, Finset.sum_add_distrib]
 
-/-- The contraction is homogeneous in its left factor. -/
+/- The contraction is homogeneous in its left factor. -/
 @[simp]
-theorem matrixContraction_smul_left {d : ℕ} (c : ℝ) (A H : PDE.Mat d) :
+theorem matrixContraction_smul_left {d } (c : ℝ) (A H : PDE.Mat d) :
     matrixContraction (c • A) H = c * matrixContraction A H := by
   simp [matrixContraction, smul_eq_mul, mul_assoc, Finset.mul_sum]
 
-/-- The contraction is homogeneous in its right factor. -/
+/- The contraction is homogeneous in its right factor. -/
 @[simp]
-theorem matrixContraction_smul_right {d : ℕ} (c : ℝ) (A H : PDE.Mat d) :
+theorem matrixContraction_smul_right {d } (c : ℝ) (A H : PDE.Mat d) :
     matrixContraction A (c • H) = c * matrixContraction A H := by
   simp [matrixContraction, smul_eq_mul, mul_left_comm, Finset.mul_sum]
 
-/-- Negating the left factor negates the contraction. -/
+/- Negating the left factor negates the contraction. -/
 @[simp]
-theorem matrixContraction_neg_left {d : ℕ} (A H : PDE.Mat d) :
+theorem matrixContraction_neg_left {d } (A H : PDE.Mat d) :
     matrixContraction (-A) H = -matrixContraction A H := by
   simp [matrixContraction]
 
-/-- Negating the right factor negates the contraction. -/
+/- Negating the right factor negates the contraction. -/
 @[simp]
-theorem matrixContraction_neg_right {d : ℕ} (A H : PDE.Mat d) :
+theorem matrixContraction_neg_right {d } (A H : PDE.Mat d) :
     matrixContraction A (-H) = -matrixContraction A H := by
   simp [matrixContraction]
 
-/-- For a symmetric right factor, entrywise contraction equals the trace product. -/
-theorem matrixContraction_eq_trace_mul_of_isSymm {d : ℕ}
+/- For a symmetric right factor, entrywise contraction equals the trace product. -/
+theorem matrixContraction_eq_trace_mul_of_isSymm {d }
     (A H : PDE.Mat d) (hH : H.IsSymm) :
     matrixContraction A H = (A * H).trace := by
   unfold matrixContraction

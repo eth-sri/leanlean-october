@@ -75,15 +75,6 @@ private theorem split_left_eq_zero_of_not_ne
     {d : ℕ} {beta : TimeVelocityMultiIndex d}
     (gamma : TimeVelocityMultiIndex.Split beta) (h : ¬ gamma.left ≠ 0) :
     gamma.left = 0 := not_ne_iff.mp h
-private theorem split_eq_default_of_left_eq_zero
-    {d : ℕ} {beta : TimeVelocityMultiIndex d}
-    (gamma : TimeVelocityMultiIndex.Split beta) (h : gamma.left = 0) :
-    gamma = default := by
-  funext c
-  apply Fin.ext
-  have hc : (gamma c : ℕ) = gamma.left c := rfl
-  rw [hc, h]
-  rfl
 private theorem order_le_parabolicWeight
     {d : ℕ} (alpha : TimeVelocityMultiIndex d) :
     alpha.order ≤ alpha.parabolicWeight := by
@@ -122,31 +113,6 @@ private theorem coordinateDerivative_contDiffOn
       (alpha.coordinateList.get k)))).clm_apply
         hi).contDiffWithinAt
 
-private theorem coordinateDerivative_majorant
-    {d M : ℕ} {U : Set (TimeVelocity d)}
-    (f : TimeVelocity d → ℝ)
-    (B : ParabolicDerivativeIndex d (M + 1) → ℝ)
-    (hB : ∀ alpha z, z ∈ U →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 f z| ≤ B alpha)
-    (i : Fin d) (alpha : ParabolicDerivativeIndex d M)
-    (z : TimeVelocity d) (hz : z ∈ U)
-    (hf : ContDiffAt ℝ (alpha.1.order + 1) f z) :
-    |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (TimeVelocityMultiIndex.coordinateIteratedFDeriv
-          (Pi.single (velocityCoord i) 1) f) z| ≤
-      B (addVelocityIndex alpha i) := by
-  rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_comp_single_at]
-  exact hB (addVelocityIndex alpha i) z hz
-  exact hf
-
-private theorem splitRight_default
-    {d L : ℕ} (beta : ParabolicDerivativeIndex d L) :
-    ParabolicDerivativeIndex.splitRight beta default = beta := by
-  apply Subtype.ext
-  funext c
-  change beta.1 c - 0 = beta.1 c
-  exact Nat.sub_zero _
-
 private theorem parabolicWeakMulRepresentative_eq_zero_left_add_proper
     {d L : ℕ} (q : TimeVelocity d → ℝ)
     {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
@@ -175,11 +141,21 @@ private theorem parabolicWeakMulRepresentative_eq_zero_left_add_proper
       (default : TimeVelocityMultiIndex.Split beta.1)]
     · have hleft :
           (default : TimeVelocityMultiIndex.Split beta.1).left = 0 := rfl
-      rw [hleft, splitRight_default]
+      have _h_inl_23 (beta : ParabolicDerivativeIndex d L) : ParabolicDerivativeIndex.splitRight beta default = beta := by
+        apply Subtype.ext
+        funext c
+        exact Nat.sub_zero _
+      rw [hleft, _h_inl_23]
       simp
     · intro gamma hne
       by_cases hleft : gamma.left = 0
-      · exact (hne (split_eq_default_of_left_eq_zero gamma hleft)).elim
+      · have _h_inl_18 : gamma = default := by
+          funext c
+          apply Fin.ext
+          have hc : (gamma c : ℕ) = gamma.left c := rfl
+          rw [hc, hleft]
+          rfl
+        exact (hne _h_inl_18).elim
       · simp [hleft]
   rw [← hsingle, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
@@ -219,7 +195,7 @@ private def properDiffusionDerivedCoefficientSum
             beta gamma hproper j) z
     else 0
 
-/-- The proper-split diffusion Hessian contribution. -/
+/- The proper-split diffusion Hessian contribution. -/
 def properDiffusionHessianSum
     {d M : ℕ} (q : TimeVelocity d → ℝ)
     {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
@@ -498,39 +474,6 @@ private theorem properDiffusionSums_data
   refine ⟨hgradientMem, hderivedMem, hhessianMem, ?_⟩
   simpa only [hvalEq, hder] using hsum
 
-private theorem properDiffusion_compactTest_identity
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ (M + 1) q V)
-    (B : ParabolicDerivativeIndex d (M + 1) → ℝ)
-    (hB : ∀ alpha, 0 ≤ B alpha)
-    (hqBound : ∀ alpha z, z ∈ V →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 q z| ≤ B alpha)
-    {u : TimeVelocity d → ℝ}
-    (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
-    (beta : ParabolicDerivativeIndex d M) (j i : Fin d)
-    (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) (hφV : tsupport φ ⊆ V) :
-    -( ∫ z in V, properDiffusionGradientSum q D beta j z *
-        velocityGradient φ z i ∂(volume : Measure (TimeVelocity d))) -
-      ∫ z in V, properDiffusionDerivedCoefficientSum q D beta j i z * φ z
-        ∂(volume : Measure (TimeVelocity d)) =
-      ∫ z in V, properDiffusionHessianSum q D beta j i z * φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
-  have hdata := properDiffusionSums_data hV q hq B hB hqBound D beta j i
-  have hraw := hdata.2.2.2 φ hφ hφCompact hφV
-  have hφLp : MemLp φ 2 (timeVelocityVolumeOn V) :=
-    (hφ.continuous.memLp_of_hasCompactSupport hφCompact).restrict V
-  have hderivedInt : Integrable
-      (fun z ↦ properDiffusionDerivedCoefficientSum q D beta j i z * φ z)
-      (timeVelocityVolumeOn V) := hdata.2.1.integrable_mul hφLp
-  have hhessianInt : Integrable
-      (fun z ↦ properDiffusionHessianSum q D beta j i z * φ z)
-      (timeVelocityVolumeOn V) := hdata.2.2.1.integrable_mul hφLp
-  simp only [add_mul] at hraw
-  rw [integral_add hderivedInt hhessianInt] at hraw
-  linarith
-
-/-- Pair the root time component with an iterated compactly supported test. -/
 theorem timeComponent_pairing
     {d M : ℕ} {V : Set (TimeVelocity d)}
     {u : TimeVelocity d → ℝ}
@@ -624,7 +567,7 @@ theorem timeComponent_pairing
   rw [mul_neg, ← mul_assoc, hsquare, one_mul]
   ring
 
-/-- Pair the differentiated source component with a compactly supported test. -/
+/- Pair the differentiated source component with a compactly supported test. -/
 theorem sourceComponent_pairing
     {d M : ℕ} {V : Set (TimeVelocity d)}
     {F : TimeVelocity d → ℝ}
@@ -736,7 +679,7 @@ private theorem coefficientProductComponent_pairing
     at hpair
   simpa only [parabolicWeakMulRepresentative_eq_zero_left_add_proper] using hpair
 
-/-- Pair one differentiated principal component after one velocity integration by parts. -/
+/- Pair one differentiated principal component after one velocity integration by parts. -/
 theorem principalComponent_pairing
     {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ (M + 1) q V)
@@ -799,12 +742,14 @@ theorem principalComponent_pairing
   have hdqBound : ∀ alpha z, z ∈ V →
       |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 dq z| ≤ Bdq alpha := by
     intro alpha z hz
-    exact coordinateDerivative_majorant q Bq hqBound i alpha z hz
-      ((hq.contDiffAt (hV.mem_nhds hz)).of_le (by
-        exact_mod_cast (show alpha.1.order + 1 ≤ M + 1 by
-          have ho := order_le_parabolicWeight alpha.1
-          have hw := alpha.2
-          omega)))
+    have hf : ContDiffAt ℝ (alpha.1.order + 1) q z := ((hq.contDiffAt (hV.mem_nhds hz)).of_le (by
+      exact_mod_cast (show alpha.1.order + 1 ≤ M + 1 by
+        have ho := order_le_parabolicWeight alpha.1
+        have hw := alpha.2
+        omega)))
+    rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_comp_single_at]
+    exact hqBound (addVelocityIndex alpha i) z hz
+    exact hf
   have hgradEq : (fun z ↦ velocityGradient φ z i) =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (Pi.single (velocityCoord i) 1) φ := by
@@ -928,8 +873,27 @@ theorem principalComponent_pairing
     filter_upwards [ae_restrict_mem hV.measurableSet] with z hz
     rw [hderivedSum z hz]
   rw [← hsecondLhs] at hsecond
-  have hproper := properDiffusion_compactTest_identity hV q hq Bq hBq hqBound
-    D beta j i φ hφ hφCompact hφV
+  have hproper : -( ∫ z in V, properDiffusionGradientSum q D beta j z *
+        velocityGradient φ z i ∂(volume : Measure (TimeVelocity d))) -
+      ∫ z in V, properDiffusionDerivedCoefficientSum q D beta j i z * φ z
+        ∂(volume : Measure (TimeVelocity d)) =
+      ∫ z in V, properDiffusionHessianSum q D beta j i z * φ z
+        ∂(volume : Measure (TimeVelocity d)) := by
+      have hdata := properDiffusionSums_data hV q hq Bq hBq hqBound D beta j i
+      have hraw := hdata.2.2.2 φ hφ hφCompact hφV
+      have hφLp : MemLp φ 2 (timeVelocityVolumeOn V) :=
+        (hφ.continuous.memLp_of_hasCompactSupport hφCompact).restrict V
+      have hderivedInt : Integrable
+          (fun z ↦ properDiffusionDerivedCoefficientSum q D beta j i z * φ z)
+          (timeVelocityVolumeOn V) := hdata.2.1.integrable_mul hφLp
+      have hhessianInt : Integrable
+          (fun z ↦ properDiffusionHessianSum q D beta j i z * φ z)
+          (timeVelocityVolumeOn V) := hdata.2.2.1.integrable_mul hφLp
+      simp only [add_mul] at hraw
+      rw [integral_add hderivedInt hhessianInt] at hraw
+      linarith
+
+    /- Pair the root time component with an iterated compactly supported test. -/
   let rj := ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
     (ParabolicDerivativeIndex.velocityOne j)
   let rji := ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
@@ -1181,7 +1145,7 @@ theorem principalComponent_pairing
   linear_combination -hfirst - hsecond - hproper -
     ((-1 : ℝ) ^ beta.1.order) * hroot
 
-/-- Pair one differentiated drift component with a compactly supported test. -/
+/- Pair one differentiated drift component with a compactly supported test. -/
 theorem driftComponent_pairing
     {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -1265,7 +1229,7 @@ theorem driftComponent_pairing
   simp_rw [hsum] at hpair
   exact hpair
 
-/-- Pair the differentiated zeroth-order component with a compactly supported test. -/
+/- Pair the differentiated zeroth-order component with a compactly supported test. -/
 theorem zerothOrderComponent_pairing
     {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -1340,7 +1304,7 @@ theorem zerothOrderComponent_pairing
   simp_rw [hsum] at hpair
   exact hpair
 
-/-- Select one precompact test neighborhood with majorants for all coefficients. -/
+/- Select one precompact test neighborhood with majorants for all coefficients. -/
 theorem exists_precompactOpen_coefficient_majorants
     {d M : ℕ} {U K : Set (TimeVelocity d)}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)

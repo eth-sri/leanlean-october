@@ -34,7 +34,7 @@ theorem bellmanFundamentalMeasure_densityDegree :
   intro r hr E hE
   let D := bellmanDilationHomeomorph r hr
   have hm : MeasurableSet (D '' E) := D.measurableEmbedding.measurableSet_image.mpr hE
-  have hi : D ⁻¹' (D '' E) = E := D.injective.preimage_image E
+  have hi := D.injective.preimage_image E
   have hscale : ENNReal.ofReal (r⁻¹ ^ 4) * bellmanFundamentalMeasure (D '' E) =
       ENNReal.ofReal (r⁻¹ ^ 2) * bellmanFundamentalMeasure E := by
     calc

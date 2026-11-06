@@ -15,7 +15,7 @@ open HypoellipticAleksandrov MeasureTheory Set
 /-- The band itself has square-root decay; the constant precedes all coefficient and pole data. -/
 theorem velocity_band_return_of_return_time
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hReturn : ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
       0 < t → 2 * t ≤ s → s ≤ 3 * t → |v| ≤ Real.sqrt t →
@@ -45,7 +45,7 @@ theorem velocity_band_return_of_return_time
       velocityBandProbability_eq_kernelXV, Real.toNNReal_coe]
   by_cases hlarge : 9 * r ^ 2 ≤ (t : ℝ)
   · have ht : 0 < (t : ℝ) := lt_of_lt_of_le (by positivity) hlarge
-    have hv : |z.2| ≤ Real.sqrt (t : ℝ) := hz.trans
+    have hv := hz.trans
       (Real.le_sqrt_of_sq_le (by nlinarith))
     have hfcomp (s : ℝ) (hs : s ∈ Ioc (2 * (t : ℝ)) (3 * (t : ℝ))) :
         f t ≤ CR * f s := by

@@ -23,44 +23,26 @@ noncomputable section
 
 open Set
 
-/-- An open coordinate rectangle in velocity space. -/
-def velocityRectangle {d : ℕ} (lower upper : PDE.Vec d) : Set (PDE.Vec d) :=
+/- An open coordinate rectangle in velocity space. -/
+def velocityRectangle {d } (lower upper : PDE.Vec d) : Set (PDE.Vec d) :=
   {v | ∀ i, lower i < v i ∧ v i < upper i}
 
-/-- The closed coordinate rectangle with the same faces. -/
-def velocityClosedRectangle {d : ℕ} (lower upper : PDE.Vec d) : Set (PDE.Vec d) :=
+/- The closed coordinate rectangle with the same faces. -/
+def velocityClosedRectangle {d } (lower upper : PDE.Vec d) : Set (PDE.Vec d) :=
   {v | ∀ i, lower i ≤ v i ∧ v i ≤ upper i}
 
-/-- The source open time--velocity rectangle based at time zero. -/
-def parabolicRectangle {d : ℕ} (tau : ℝ) (lower upper : PDE.Vec d) :
+/- The source open time--velocity rectangle based at time zero. -/
+def parabolicRectangle {d } (tau : ℝ) (lower upper : PDE.Vec d) :
     Set (TimeVelocity d) :=
   Ioo 0 tau ×ˢ velocityRectangle lower upper
 
-/-- The compact closed counterpart of `parabolicRectangle`. -/
-def parabolicClosedRectangle {d : ℕ} (tau : ℝ) (lower upper : PDE.Vec d) :
+/- The compact closed counterpart of `parabolicRectangle`. -/
+def parabolicClosedRectangle {d } (tau : ℝ) (lower upper : PDE.Vec d) :
     Set (TimeVelocity d) :=
   Icc 0 tau ×ˢ velocityClosedRectangle lower upper
 
-/-- The positive-time rectangle including its terminal face. -/
-def parabolicTerminalRectangle {d : ℕ} (tau : ℝ) (lower upper : PDE.Vec d) :
-    Set (TimeVelocity d) :=
-  Ioc 0 tau ×ˢ velocityRectangle lower upper
-
-/-- Membership in an open velocity rectangle. -/
-@[simp] theorem mem_velocityRectangle_iff {d : ℕ} {lower upper v : PDE.Vec d} :
-    v ∈ velocityRectangle lower upper ↔
-      ∀ i, lower i < v i ∧ v i < upper i :=
-  Iff.rfl
-
-/-- Membership in a closed velocity rectangle. -/
-@[simp] theorem mem_velocityClosedRectangle_iff {d : ℕ}
-    {lower upper v : PDE.Vec d} :
-    v ∈ velocityClosedRectangle lower upper ↔
-      ∀ i, lower i ≤ v i ∧ v i ≤ upper i :=
-  Iff.rfl
-
-/-- Membership in the source open time--velocity rectangle. -/
-@[simp] theorem mem_parabolicRectangle_iff {d : ℕ} {tau t : ℝ}
+/- The positive-time rectangle including its terminal face. -/
+@[simp] theorem mem_parabolicRectangle_iff {d tau t}
     {lower upper v : PDE.Vec d} :
     (t, v) ∈ parabolicRectangle tau lower upper ↔
       0 < t ∧ t < tau ∧ v ∈ velocityRectangle lower upper := by
@@ -70,8 +52,8 @@ def parabolicTerminalRectangle {d : ℕ} (tau : ℝ) (lower upper : PDE.Vec d) :
   · rintro ⟨ht0, htau, hv⟩
     exact ⟨⟨ht0, htau⟩, hv⟩
 
-/-- Membership in the compact closed time--velocity rectangle. -/
-@[simp] theorem mem_parabolicClosedRectangle_iff {d : ℕ} {tau t : ℝ}
+/- Membership in the compact closed time--velocity rectangle. -/
+@[simp] theorem mem_parabolicClosedRectangle_iff {d tau t}
     {lower upper v : PDE.Vec d} :
     (t, v) ∈ parabolicClosedRectangle tau lower upper ↔
       0 ≤ t ∧ t ≤ tau ∧ v ∈ velocityClosedRectangle lower upper := by
@@ -81,19 +63,8 @@ def parabolicTerminalRectangle {d : ℕ} (tau : ℝ) (lower upper : PDE.Vec d) :
   · rintro ⟨ht0, htau, hv⟩
     exact ⟨⟨ht0, htau⟩, hv⟩
 
-/-- Membership in the terminal-inclusive time--velocity rectangle. -/
-@[simp] theorem mem_parabolicTerminalRectangle_iff {d : ℕ} {tau t : ℝ}
-    {lower upper v : PDE.Vec d} :
-    (t, v) ∈ parabolicTerminalRectangle tau lower upper ↔
-      0 < t ∧ t ≤ tau ∧ v ∈ velocityRectangle lower upper := by
-  constructor
-  · rintro ⟨⟨ht0, htau⟩, hv⟩
-    exact ⟨ht0, htau, hv⟩
-  · rintro ⟨ht0, htau, hv⟩
-    exact ⟨⟨ht0, htau⟩, hv⟩
-
-/-- The coordinate presentation of an open rectangle as a finite product. -/
-theorem velocityRectangle_eq_pi {d : ℕ} (lower upper : PDE.Vec d) :
+/- Membership in the terminal-inclusive time--velocity rectangle. -/
+theorem velocityRectangle_eq_pi {d } (lower upper : PDE.Vec d) :
     velocityRectangle lower upper =
       Set.univ.pi fun i => Ioo (lower i) (upper i) := by
   ext v
@@ -103,8 +74,8 @@ theorem velocityRectangle_eq_pi {d : ℕ} (lower upper : PDE.Vec d) :
   · intro hv i
     exact hv i (Set.mem_univ i)
 
-/-- The coordinate presentation of a closed rectangle as a finite product. -/
-theorem velocityClosedRectangle_eq_pi {d : ℕ} (lower upper : PDE.Vec d) :
+/- The coordinate presentation of a closed rectangle as a finite product. -/
+theorem velocityClosedRectangle_eq_pi {d } (lower upper : PDE.Vec d) :
     velocityClosedRectangle lower upper =
       Set.univ.pi fun i => Icc (lower i) (upper i) := by
   ext v
@@ -114,62 +85,24 @@ theorem velocityClosedRectangle_eq_pi {d : ℕ} (lower upper : PDE.Vec d) :
   · intro hv i
     exact hv i (Set.mem_univ i)
 
-/-- Open coordinate rectangles are open in the native product topology. -/
-theorem isOpen_velocityRectangle {d : ℕ} (lower upper : PDE.Vec d) :
-    IsOpen (velocityRectangle lower upper) := by
-  rw [velocityRectangle_eq_pi]
-  have hpi : Set.univ.pi (fun i : Fin d => Ioo (lower i) (upper i)) =
-      ⋂ i ∈ (Finset.univ : Finset (Fin d)),
-        (fun v : PDE.Vec d => v i) ⁻¹' Ioo (lower i) (upper i) := by
-    ext v
-    simp
-  rw [hpi]
-  exact isOpen_biInter_finset fun i _ =>
-    isOpen_Ioo.preimage (continuous_apply i)
-
-/-- Closed coordinate rectangles are compact. -/
-theorem isCompact_velocityClosedRectangle {d : ℕ}
-    (lower upper : PDE.Vec d) :
-    IsCompact (velocityClosedRectangle lower upper) := by
-  rw [velocityClosedRectangle_eq_pi]
-  exact isCompact_univ_pi fun i => isCompact_Icc
-
-/-- Open parabolic rectangles are open. -/
-theorem isOpen_parabolicRectangle {d : ℕ} (tau : ℝ)
-    (lower upper : PDE.Vec d) :
-    IsOpen (parabolicRectangle tau lower upper) :=
-  isOpen_Ioo.prod (isOpen_velocityRectangle lower upper)
-
-/-- Closed parabolic rectangles are compact. -/
-theorem isCompact_parabolicClosedRectangle {d : ℕ} (tau : ℝ)
-    (lower upper : PDE.Vec d) :
-    IsCompact (parabolicClosedRectangle tau lower upper) :=
-  isCompact_Icc.prod (isCompact_velocityClosedRectangle lower upper)
-
-/-- A nonempty closed velocity rectangle is the closure of its open counterpart. -/
-theorem closure_velocityRectangle {d : ℕ} {lower upper : PDE.Vec d}
-    (hfaces : ∀ i, lower i < upper i) :
-    closure (velocityRectangle lower upper) =
-      velocityClosedRectangle lower upper := by
-  rw [velocityRectangle_eq_pi, closure_pi_set,
-    velocityClosedRectangle_eq_pi]
-  exact Set.pi_congr rfl fun i _ => closure_Ioo (ne_of_lt (hfaces i))
-
-/-- A nonempty closed parabolic rectangle is exactly the closure of its open
-counterpart. -/
-theorem closure_parabolicRectangle {d : ℕ} {tau : ℝ}
+/- Open coordinate rectangles are open in the native product topology. -/
+theorem closure_parabolicRectangle {d tau}
     {lower upper : PDE.Vec d} (htau : 0 < tau)
     (hfaces : ∀ i, lower i < upper i) :
     closure (parabolicRectangle tau lower upper) =
       parabolicClosedRectangle tau lower upper := by
   unfold parabolicRectangle parabolicClosedRectangle
+  have _h_inl_18 : closure (velocityRectangle lower upper) = velocityClosedRectangle lower upper := by
+    rw [velocityRectangle_eq_pi, closure_pi_set,
+      velocityClosedRectangle_eq_pi]
+    exact Set.pi_congr rfl fun i _ => closure_Ioo (ne_of_lt (hfaces i))
   rw [closure_prod_eq, closure_Ioo (ne_of_lt htau),
-    closure_velocityRectangle hfaces]
+    _h_inl_18]
 
-/-- Continuity extends nonnegativity from an open parabolic rectangle to its
+/- Continuity extends nonnegativity from an open parabolic rectangle to its
 closed counterpart. -/
 theorem IsNonnegativeOn.parabolicClosedRectangle
-    {d : ℕ} {tau : ℝ} {lower upper : PDE.Vec d}
+    {d tau lower upper}
     {u : TimeVelocity d → ℝ} (htau : 0 < tau)
     (hfaces : ∀ i, lower i < upper i)
     (hcont : ContinuousOn u
@@ -179,8 +112,7 @@ theorem IsNonnegativeOn.parabolicClosedRectangle
     HypoellipticAleksandrov.Parabolic.IsNonnegativeOn u
       (HypoellipticAleksandrov.Parabolic.parabolicClosedRectangle tau lower upper) := by
   let Q := HypoellipticAleksandrov.Parabolic.parabolicRectangle tau lower upper
-  have hclosure : closure Q =
-      HypoellipticAleksandrov.Parabolic.parabolicClosedRectangle tau lower upper :=
+  have hclosure :=
     closure_parabolicRectangle htau hfaces
   have hcontClosure : ContinuousOn u (closure Q) := by
     rw [hclosure]
@@ -188,7 +120,7 @@ theorem IsNonnegativeOn.parabolicClosedRectangle
   have hmaps : MapsTo u Q (Ici (0 : ℝ)) := by
     intro z hz
     exact hnonneg z hz
-  have hmapsClosure : MapsTo u (closure Q) (closure (Ici (0 : ℝ))) :=
+  have hmapsClosure :=
     hmaps.closure_of_continuousOn hcontClosure
   intro z hz
   have hzClosure : z ∈ closure Q := by
@@ -196,66 +128,17 @@ theorem IsNonnegativeOn.parabolicClosedRectangle
   have huz := hmapsClosure hzClosure
   simpa only [isClosed_Ici.closure_eq, mem_Ici] using huz
 
-/-- Inverting the target time preserves the normalized coordinate-square
+/- Inverting the target time preserves the normalized coordinate-square
 bound, including in dimension zero. -/
-theorem vecNormSq_inv_smul_le_of_mem_rectangle
-    {d : ℕ} {kappa tStar : ℝ} {lower upper vStar : PDE.Vec d}
-    (hkappa : 0 < kappa) (htStar : kappa ≤ tStar)
-    (hwidth : ∀ i, upper i - lower i ≤ kappa⁻¹)
-    (hzero : (0 : PDE.Vec d) ∈ velocityClosedRectangle lower upper)
-    (hvStar : vStar ∈ velocityClosedRectangle lower upper) :
-    PDE.vecNormSq (tStar⁻¹ • vStar) ≤
-      (d : ℝ) * kappa ^ (-4 : ℤ) := by
-  have htStarPos : 0 < tStar := hkappa.trans_le htStar
-  have hinv : tStar⁻¹ ≤ kappa⁻¹ :=
-    (inv_le_inv₀ htStarPos hkappa).2 htStar
-  have hkappaInv : 0 ≤ kappa⁻¹ := (inv_pos.mpr hkappa).le
-  rw [PDE.vecNormSq_eq_sum_sq]
-  calc
-    ∑ i, (tStar⁻¹ • vStar) i ^ 2 ≤
-        ∑ _i : Fin d, kappa ^ (-4 : ℤ) := by
-      apply Finset.sum_le_sum
-      intro i _
-      have hvLower := (hvStar i).1
-      have hvUpper := (hvStar i).2
-      have hzeroLower := (hzero i).1
-      have hzeroUpper := (hzero i).2
-      simp only [Pi.zero_apply] at hzeroLower hzeroUpper
-      have hvAbs : |vStar i| ≤ kappa⁻¹ := by
-        rw [abs_le]
-        constructor <;> nlinarith [hwidth i]
-      have hyAbs : |(tStar⁻¹ • vStar) i| ≤ kappa⁻¹ * kappa⁻¹ := by
-        simp only [Pi.smul_apply, smul_eq_mul, abs_mul,
-          abs_of_pos (inv_pos.mpr htStarPos)]
-        calc
-          tStar⁻¹ * |vStar i| ≤ kappa⁻¹ * |vStar i| :=
-            mul_le_mul_of_nonneg_right hinv (abs_nonneg _)
-          _ ≤ kappa⁻¹ * kappa⁻¹ :=
-            mul_le_mul_of_nonneg_left hvAbs hkappaInv
-      have hySq : |(tStar⁻¹ • vStar) i| ^ 2 ≤
-          (kappa⁻¹ * kappa⁻¹) ^ 2 :=
-        (sq_le_sq₀ (abs_nonneg _) (mul_nonneg hkappaInv hkappaInv)).2 hyAbs
-      calc
-        (tStar⁻¹ • vStar) i ^ 2 = |(tStar⁻¹ • vStar) i| ^ 2 := by
-          rw [sq_abs]
-        _ ≤ (kappa⁻¹ * kappa⁻¹) ^ 2 := hySq
-        _ = kappa ^ (-4 : ℤ) := by
-          rw [show (kappa⁻¹ * kappa⁻¹) ^ 2 = kappa⁻¹ ^ 4 by ring]
-          norm_num [zpow_neg, inv_pow]
-    _ = (d : ℝ) * kappa ^ (-4 : ℤ) := by
-      simp [nsmul_eq_mul]
-
-/-- A Euclidean seed ball lies in both the source coordinate cube and a
-rectangle whose centre has the stated face margin. -/
 theorem euclideanBall_subset_velocityCube_inter_velocityRectangle
-    {d : ℕ} {center lower upper : PDE.Vec d} {rho eps margin : ℝ}
+    {d } {center lower upper : PDE.Vec d} {rho eps margin : ℝ}
     (hrho : 0 < rho) (hrhoEps : rho ≤ eps) (hrhoMargin : rho < margin)
     (hcenter : ∀ i, lower i + margin ≤ center i ∧
       center i ≤ upper i - margin) :
     PDE.euclideanBall center rho ⊆
       velocityCube center eps ∩ velocityRectangle lower upper := by
   intro v hv
-  have hvCube : v ∈ velocityCube center rho :=
+  have hvCube :=
     euclideanBall_subset_velocityCube hrho hv
   constructor
   · intro i
@@ -265,7 +148,7 @@ theorem euclideanBall_subset_velocityCube_inter_velocityRectangle
     rcases hcenter i with ⟨hcenterLower, hcenterUpper⟩
     constructor <;> nlinarith
 
-/-- The fixed moving-lens denominator stays strictly below `kappa²` under
+/- The fixed moving-lens denominator stays strictly below `kappa²` under
 the normalized time and small-seed bounds. -/
 theorem movingLensDenominator_lt_kappa_sq
     {kappa rho tau t : ℝ} (hkappa : 0 < kappa)
@@ -286,11 +169,10 @@ theorem movingLensDenominator_lt_kappa_sq
   unfold movingLensDenominator
   nlinarith
 
-/-- Every velocity section of a normalized closed moving lens lies strictly
+/- Every velocity section of a normalized closed moving lens lies strictly
 inside the source coordinate rectangle. -/
 theorem movingLensClosed_velocity_mem_velocityRectangle
-    {d : ℕ} {kappa rho tau tStar : ℝ}
-    {lower upper vStar : PDE.Vec d}
+    {d kappa rho tau tStar lower upper vStar}
     (hkappa : 0 < kappa) (hrho : 0 < rho)
     (hsmall : 2 * rho ^ 2 < kappa ^ 2)
     (htStar : 0 < tStar) (htStarTau : tStar ≤ tau)
@@ -317,7 +199,7 @@ theorem movingLensClosed_velocity_mem_velocityRectangle
     ⟨hdenPos, hden⟩
   let s : ℝ := z.1 * tStar⁻¹
   have htInvNonneg : 0 ≤ tStar⁻¹ := (inv_pos.mpr htStar).le
-  have hs0 : 0 ≤ s := mul_nonneg hz0 htInvNonneg
+  have hs0 := mul_nonneg hz0 htInvNonneg
   have hs1 : s ≤ 1 := by
     dsimp only [s]
     calc
@@ -328,13 +210,13 @@ theorem movingLensClosed_velocity_mem_velocityRectangle
   have hcenterLower : lower i + kappa ≤ s * vStar i := by
     have hleft : (1 - s) * (lower i + kappa) ≤ 0 :=
       mul_nonpos_of_nonneg_of_nonpos (sub_nonneg.mpr hs1) (hbase i).1
-    have hright : s * (lower i + kappa) ≤ s * vStar i :=
+    have hright :=
       mul_le_mul_of_nonneg_left (htarget i).1 hs0
     nlinarith
   have hcenterUpper : s * vStar i ≤ upper i - kappa := by
     have hleft : 0 ≤ (1 - s) * (upper i - kappa) :=
       mul_nonneg (sub_nonneg.mpr hs1) (hbase i).2
-    have hright : s * vStar i ≤ s * (upper i - kappa) :=
+    have hright :=
       mul_le_mul_of_nonneg_left (htarget i).2 hs0
     nlinarith
   have hcoordSq :
@@ -345,8 +227,7 @@ theorem movingLensClosed_velocity_mem_velocityRectangle
         PDE.sq_apply_le_vecNormSq _ i
       _ ≤ movingLensDenominator (movingLensSignXi kappa) rho z.1 := hzSpatial
       _ < kappa ^ 2 := hdenBounds.2
-  have hcoordAbs :
-      |movingLensDisplacement (tStar⁻¹ • vStar) z i| < kappa :=
+  have hcoordAbs :=
     abs_lt_of_sq_lt_sq hcoordSq hkappa.le
   have hdispEq : movingLensDisplacement (tStar⁻¹ • vStar) z i =
       z.2 i - s * vStar i := by
@@ -357,10 +238,10 @@ theorem movingLensClosed_velocity_mem_velocityRectangle
   rw [hdispEq, abs_lt] at hcoordAbs
   constructor <;> nlinarith
 
-/-- The normalized closed moving lens lies in the concrete closed source
+/- The normalized closed moving lens lies in the concrete closed source
 rectangle. -/
 theorem movingLensClosed_subset_parabolicClosedRectangle
-    {d : ℕ} {kappa rho tau tStar : ℝ}
+    {d kappa rho tau tStar}
     {lower upper vStar : PDE.Vec d}
     (hkappa : 0 < kappa) (hrho : 0 < rho)
     (hsmall : 2 * rho ^ 2 < kappa ^ 2)
@@ -373,7 +254,7 @@ theorem movingLensClosed_subset_parabolicClosedRectangle
         (tStar⁻¹ • vStar) ⊆
       parabolicClosedRectangle tau lower upper := by
   intro z hz
-  have hvOpen : z.2 ∈ velocityRectangle lower upper :=
+  have hvOpen :=
     movingLensClosed_velocity_mem_velocityRectangle hkappa hrho hsmall
       htStar htStarTau htauUpper hbase htarget hz
   rcases hz with ⟨hz0, hzStar, _⟩
@@ -381,10 +262,10 @@ theorem movingLensClosed_subset_parabolicClosedRectangle
   exact ⟨hz0, hzStar.trans htStarTau,
     fun i => ⟨(hvOpen i).1.le, (hvOpen i).2.le⟩⟩
 
-/-- When its terminal time is below the ambient top face, the normalized
+/- When its terminal time is below the ambient top face, the normalized
 active moving lens lies in the open source rectangle. -/
 theorem movingLensActive_subset_parabolicRectangle
-    {d : ℕ} {kappa rho tau tStar : ℝ}
+    {d kappa rho tau tStar}
     {lower upper vStar : PDE.Vec d}
     (hkappa : 0 < kappa) (hrho : 0 < rho)
     (hsmall : 2 * rho ^ 2 < kappa ^ 2)
@@ -400,62 +281,26 @@ theorem movingLensActive_subset_parabolicRectangle
   have hzClosed : z ∈ movingLensClosed (movingLensSignXi kappa) rho tStar
       (tStar⁻¹ • vStar) :=
     movingLensActive_subset_movingLensClosed _ _ _ _ hz
-  have hvOpen : z.2 ∈ velocityRectangle lower upper :=
+  have hvOpen :=
     movingLensClosed_velocity_mem_velocityRectangle hkappa hrho hsmall
       htStar htStarTau.le htauUpper hbase htarget hzClosed
   rw [mem_parabolicRectangle_iff]
   exact ⟨hz.1, hz.2.1.trans_lt htStarTau, hvOpen⟩
 
-/-- The lower faces of a velocity rectangle in positive-scale pullback
+/- The lower faces of a velocity rectangle in positive-scale pullback
 coordinates. -/
-def pullbackRectangleLower {d : ℕ} (v0 lower : PDE.Vec d) (R : ℝ) : PDE.Vec d :=
+def pullbackRectangleLower {d } (v0 lower : PDE.Vec d) (R : ℝ) : PDE.Vec d :=
   R⁻¹ • (lower - v0)
 
-/-- The upper faces of a velocity rectangle in positive-scale pullback
+/- The upper faces of a velocity rectangle in positive-scale pullback
 coordinates. -/
-def pullbackRectangleUpper {d : ℕ} (v0 upper : PDE.Vec d) (R : ℝ) : PDE.Vec d :=
+def pullbackRectangleUpper {d } (v0 upper : PDE.Vec d) (R : ℝ) : PDE.Vec d :=
   R⁻¹ • (upper - v0)
 
-/-- Positive affine velocity scaling pulls an open rectangle back to its
-normalized coordinate rectangle. -/
-theorem mem_affineVelocity_velocityRectangle_iff
-    {d : ℕ} {R : ℝ} {v0 lower upper v : PDE.Vec d} (hR : 0 < R) :
-    v0 + R • v ∈ velocityRectangle lower upper ↔
-      v ∈ velocityRectangle (pullbackRectangleLower v0 lower R)
-        (pullbackRectangleUpper v0 upper R) := by
-  constructor
-  · intro hv i
-    have hlPhysical : lower i - v0 i < R * v i := by
-      have := (hv i).1
-      simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at this
-      linarith
-    have huPhysical : R * v i < upper i - v0 i := by
-      have := (hv i).2
-      simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at this
-      linarith
-    constructor
-    · change R⁻¹ * (lower i - v0 i) < v i
-      exact (inv_mul_lt_iff₀ hR).2 hlPhysical
-    · change v i < R⁻¹ * (upper i - v0 i)
-      exact (lt_inv_mul_iff₀ hR).2 huPhysical
-  · intro hv i
-    have hlNormalized : R⁻¹ * (lower i - v0 i) < v i := by
-      simpa only [pullbackRectangleLower, Pi.smul_apply, Pi.sub_apply,
-        smul_eq_mul] using (hv i).1
-    have huNormalized : v i < R⁻¹ * (upper i - v0 i) := by
-      simpa only [pullbackRectangleUpper, Pi.smul_apply, Pi.sub_apply,
-        smul_eq_mul] using (hv i).2
-    have hlPhysical : lower i - v0 i < R * v i :=
-      (inv_mul_lt_iff₀ hR).1 hlNormalized
-    have huPhysical : R * v i < upper i - v0 i :=
-      (lt_inv_mul_iff₀ hR).1 huNormalized
-    simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
-    constructor <;> linarith
-
-/-- Positive affine velocity scaling pulls a closed rectangle back to its
+/- Positive affine velocity scaling pulls an open rectangle back to its
 normalized coordinate rectangle. -/
 theorem mem_affineVelocity_velocityClosedRectangle_iff
-    {d : ℕ} {R : ℝ} {v0 lower upper v : PDE.Vec d} (hR : 0 < R) :
+    {d R} {v0 lower upper v : PDE.Vec d} (hR : 0 < R) :
     v0 + R • v ∈ velocityClosedRectangle lower upper ↔
       v ∈ velocityClosedRectangle (pullbackRectangleLower v0 lower R)
         (pullbackRectangleUpper v0 upper R) := by
@@ -481,27 +326,61 @@ theorem mem_affineVelocity_velocityClosedRectangle_iff
     have huNormalized : v i ≤ R⁻¹ * (upper i - v0 i) := by
       simpa only [pullbackRectangleUpper, Pi.smul_apply, Pi.sub_apply,
         smul_eq_mul] using (hv i).2
-    have hlPhysical : lower i - v0 i ≤ R * v i :=
+    have hlPhysical :=
       (inv_mul_le_iff₀ hR).1 hlNormalized
-    have huPhysical : R * v i ≤ upper i - v0 i :=
+    have huPhysical :=
       (le_inv_mul_iff₀ hR).1 huNormalized
     simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
     constructor <;> linarith
 
-/-- Membership in the positive-scale affine preimage of an open parabolic
+/- Membership in the positive-scale affine preimage of an open parabolic
 rectangle. -/
 theorem mem_parabolicAffine_preimage_parabolicRectangle_iff
-    {d : ℕ} {R tau : ℝ} {v0 lower upper : PDE.Vec d}
+    {d R tau v0 lower upper}
     {z : TimeVelocity d} (hR : 0 < R) :
     parabolicAffine 0 v0 R z ∈ parabolicRectangle tau lower upper ↔
       z ∈ parabolicRectangle (tau / R ^ 2)
         (pullbackRectangleLower v0 lower R)
         (pullbackRectangleUpper v0 upper R) := by
   rcases z with ⟨t, v⟩
-  have hRsq : 0 < R ^ 2 := sq_pos_of_pos hR
+  have hRsq := sq_pos_of_pos hR
   rw [mem_parabolicRectangle_iff, mem_parabolicRectangle_iff]
   simp only [parabolicAffine, zero_add]
-  rw [mem_affineVelocity_velocityRectangle_iff hR]
+  have _h_inl_30 : v0 + R • v ∈ velocityRectangle lower upper ↔
+      v ∈ velocityRectangle (pullbackRectangleLower v0 lower R)
+        (pullbackRectangleUpper v0 upper R) := by
+      constructor
+      · intro hv i
+        have hlPhysical : lower i - v0 i < R * v i := by
+          have := (hv i).1
+          simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at this
+          linarith
+        have huPhysical : R * v i < upper i - v0 i := by
+          have := (hv i).2
+          simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at this
+          linarith
+        constructor
+        · change R⁻¹ * (lower i - v0 i) < v i
+          exact (inv_mul_lt_iff₀ hR).2 hlPhysical
+        · change v i < R⁻¹ * (upper i - v0 i)
+          exact (lt_inv_mul_iff₀ hR).2 huPhysical
+      · intro hv i
+        have hlNormalized : R⁻¹ * (lower i - v0 i) < v i := by
+          simpa only [pullbackRectangleLower, Pi.smul_apply, Pi.sub_apply,
+            smul_eq_mul] using (hv i).1
+        have huNormalized : v i < R⁻¹ * (upper i - v0 i) := by
+          simpa only [pullbackRectangleUpper, Pi.smul_apply, Pi.sub_apply,
+            smul_eq_mul] using (hv i).2
+        have hlPhysical :=
+          (inv_mul_lt_iff₀ hR).1 hlNormalized
+        have huPhysical :=
+          (lt_inv_mul_iff₀ hR).1 huNormalized
+        simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+        constructor <;> linarith
+
+    /- Positive affine velocity scaling pulls a closed rectangle back to its
+    normalized coordinate rectangle. -/
+  rw [_h_inl_30]
   constructor
   · rintro ⟨ht0, htau, hv⟩
     refine ⟨?_, ?_, hv⟩
@@ -514,46 +393,10 @@ theorem mem_parabolicAffine_preimage_parabolicRectangle_iff
     · have := (lt_div_iff₀ hRsq).1 htau
       simpa only [mul_comm] using this
 
-/-- Membership in the positive-scale affine preimage of a closed parabolic
+/- Membership in the positive-scale affine preimage of a closed parabolic
 rectangle. -/
-theorem mem_parabolicAffine_preimage_parabolicClosedRectangle_iff
-    {d : ℕ} {R tau : ℝ} {v0 lower upper : PDE.Vec d}
-    {z : TimeVelocity d} (hR : 0 < R) :
-    parabolicAffine 0 v0 R z ∈ parabolicClosedRectangle tau lower upper ↔
-      z ∈ parabolicClosedRectangle (tau / R ^ 2)
-        (pullbackRectangleLower v0 lower R)
-        (pullbackRectangleUpper v0 upper R) := by
-  rcases z with ⟨t, v⟩
-  have hRsq : 0 < R ^ 2 := sq_pos_of_pos hR
-  rw [mem_parabolicClosedRectangle_iff, mem_parabolicClosedRectangle_iff]
-  simp only [parabolicAffine, zero_add]
-  rw [mem_affineVelocity_velocityClosedRectangle_iff hR]
-  constructor
-  · rintro ⟨ht0, htau, hv⟩
-    refine ⟨?_, ?_, hv⟩
-    · nlinarith
-    · rw [le_div_iff₀ hRsq]
-      simpa only [mul_comm] using htau
-  · rintro ⟨ht0, htau, hv⟩
-    refine ⟨?_, ?_, hv⟩
-    · nlinarith
-    · have := (le_div_iff₀ hRsq).1 htau
-      simpa only [mul_comm] using this
-
-/-- The exact positive-scale preimage of an open parabolic rectangle. -/
-theorem parabolicAffine_preimage_parabolicRectangle
-    {d : ℕ} {R tau : ℝ} {v0 lower upper : PDE.Vec d} (hR : 0 < R) :
-    parabolicAffine 0 v0 R ⁻¹' parabolicRectangle tau lower upper =
-      parabolicRectangle (tau / R ^ 2)
-        (pullbackRectangleLower v0 lower R)
-        (pullbackRectangleUpper v0 upper R) := by
-  ext z
-  exact mem_parabolicAffine_preimage_parabolicRectangle_iff hR
-
-/-- Positive parabolic scaling maps the normalized open rectangle into its
-physical counterpart. -/
 theorem mapsTo_parabolicAffine_parabolicRectangle
-    {d : ℕ} {R tau : ℝ} {v0 lower upper : PDE.Vec d} (hR : 0 < R) :
+    {d R tau} {v0 lower upper : PDE.Vec d} (hR : 0 < R) :
     MapsTo (parabolicAffine 0 v0 R)
       (parabolicRectangle (tau / R ^ 2)
         (pullbackRectangleLower v0 lower R)
@@ -562,46 +405,39 @@ theorem mapsTo_parabolicAffine_parabolicRectangle
   intro z hz
   exact (mem_parabolicAffine_preimage_parabolicRectangle_iff hR).2 hz
 
-/-- Positive parabolic scaling maps the normalized closed rectangle into its
+/- Positive parabolic scaling maps the normalized closed rectangle into its
 physical counterpart. -/
 theorem mapsTo_parabolicAffine_parabolicClosedRectangle
-    {d : ℕ} {R tau : ℝ} {v0 lower upper : PDE.Vec d} (hR : 0 < R) :
+    {d R tau} {v0 lower upper : PDE.Vec d} (hR : 0 < R) :
     MapsTo (parabolicAffine 0 v0 R)
       (parabolicClosedRectangle (tau / R ^ 2)
         (pullbackRectangleLower v0 lower R)
         (pullbackRectangleUpper v0 upper R))
       (parabolicClosedRectangle tau lower upper) := by
   intro z hz
-  exact (mem_parabolicAffine_preimage_parabolicClosedRectangle_iff hR).2 hz
+  have _h_inl_30 : parabolicAffine 0 v0 R z ∈ parabolicClosedRectangle tau lower upper ↔
+      z ∈ parabolicClosedRectangle (tau / R ^ 2)
+        (pullbackRectangleLower v0 lower R)
+        (pullbackRectangleUpper v0 upper R) := by
+    rcases z with ⟨t, v⟩
+    have hRsq := sq_pos_of_pos hR
+    rw [mem_parabolicClosedRectangle_iff, mem_parabolicClosedRectangle_iff]
+    simp only [parabolicAffine, zero_add]
+    rw [mem_affineVelocity_velocityClosedRectangle_iff hR]
+    constructor
+    · rintro ⟨ht0, htau, hv⟩
+      refine ⟨?_, ?_, hv⟩
+      · nlinarith
+      · rw [le_div_iff₀ hRsq]
+        simpa only [mul_comm] using htau
+    · rintro ⟨ht0, htau, hv⟩
+      refine ⟨?_, ?_, hv⟩
+      · nlinarith
+      · have := (le_div_iff₀ hRsq).1 htau
+        simpa only [mul_comm] using this
+  exact _h_inl_30.2 hz
 
-private theorem parabolicAffine_zero_surjective
-    {d : ℕ} {R : ℝ} {v0 : PDE.Vec d} (hR : 0 < R) :
-    Function.Surjective (parabolicAffine 0 v0 R) := by
-  intro z
-  refine ⟨(z.1 / R ^ 2, R⁻¹ • (z.2 - v0)), ?_⟩
-  ext
-  · dsimp [parabolicAffine]
-    field_simp [hR.ne']
-    ring
-  · dsimp [parabolicAffine]
-    rw [← mul_assoc, mul_inv_cancel₀ hR.ne', one_mul]
-    ring
-
-/-- The exact positive-scale affine image of an open parabolic rectangle. -/
-theorem parabolicAffine_image_parabolicRectangle
-    {d : ℕ} {R tau : ℝ} {v0 lower upper : PDE.Vec d} (hR : 0 < R) :
-    parabolicAffine 0 v0 R ''
-        parabolicRectangle (tau / R ^ 2)
-          (pullbackRectangleLower v0 lower R)
-          (pullbackRectangleUpper v0 upper R) =
-      parabolicRectangle tau lower upper := by
-  rw [← parabolicAffine_preimage_parabolicRectangle hR]
-  exact Set.image_preimage_eq _ (parabolicAffine_zero_surjective hR)
-
-/-- Positive affine velocity scaling pulls a translated coordinate cube back
-to its normalized coordinate cube. -/
-theorem mem_affineVelocity_velocityCube_iff {d : ℕ} {R eps : ℝ}
-    {v0 v : PDE.Vec d} (hR : 0 < R) :
+theorem mem_affineVelocity_velocityCube_iff {d R eps v0 v} (hR : 0 < R) :
     v0 + R • v ∈ velocityCube v0 (eps * R) ↔
       v ∈ velocityCube (0 : PDE.Vec d) eps := by
   constructor <;> intro hv <;> intro i

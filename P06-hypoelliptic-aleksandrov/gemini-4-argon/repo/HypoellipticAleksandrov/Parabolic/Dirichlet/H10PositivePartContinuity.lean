@@ -2,6 +2,10 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10PositivePart
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevNorm
+import HypoellipticAleksandrov.Parabolic.Dirichlet.GeneralOpenPositivePartApproximation
+import HypoellipticAleksandrov.Parabolic.Dirichlet.H10LevelSet
+import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevExtensionality
+import Mathlib.MeasureTheory.Function.LpOrder
 
 /-!
 # Continuity of positive parts in spatial `H¹₀`
@@ -40,7 +44,7 @@ private theorem tendsto_eLpNorm_two_zero_of_ae_dominated
     have henorm : ‖F n x‖ₑ ≤ ‖bound x‖ₑ := by
       simpa only [ofReal_norm_eq_enorm] using ENNReal.ofReal_le_ofReal hx
     exact ENNReal.rpow_le_rpow henorm (by norm_num)
-  have hBFinite : ∫⁻ x, B x ∂μ ≠ ∞ :=
+  have hBFinite :=
     (lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top
       (p := (2 : ℝ≥0∞)) (by norm_num) (by norm_num) hboundMem).ne
   have hGZero : ∀ᵐ x ∂μ, Tendsto (fun n => G n x) atTop (𝓝 0) := by
@@ -104,20 +108,25 @@ private theorem indicator_gradient_error_ae
   simp only [Pi.sub_apply, indicator_apply]
   split <;> split <;> simp
 
-/-- Taking the positive part contracts the full spatial `H¹₀` graph norm,
+/- Taking the positive part contracts the full spatial `H¹₀` graph norm,
 with sharp constant one. -/
 theorem norm_h10PositivePart_le
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
     ‖h10PositivePart hΩ u‖ ≤ ‖u‖ := by
   rw [← sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)]
   rw [norm_sq_h10HilbertGraph hΩ, norm_sq_h10HilbertGraph hΩ]
+  have _h_xinl_0 : ‖valueCLM hΩ (h10PositivePart hΩ u)‖ ≤ ‖valueCLM hΩ u‖ := by
+    rw [valueCLM_h10PositivePart]
+    change ‖Lp.lipschitzWith_pos_part.compLp (max_eq_right le_rfl) (valueCLM hΩ u)‖ ≤ _
+    simpa using Lp.lipschitzWith_pos_part.norm_compLp_le
+      (max_eq_right le_rfl) (valueCLM hΩ u)
   exact add_le_add
     (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _) |>.2
-      (norm_valueCLM_h10PositivePart_le hΩ u))
+      _h_xinl_0)
     (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _) |>.2
       (norm_gradientCLM_h10PositivePart_le hΩ u))
 
-/-- The positive-part operation is strongly continuous on the spatial
+/- The positive-part operation is strongly continuous on the spatial
 `H¹₀` Hilbert graph. -/
 theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
     Continuous (h10PositivePart hΩ :
@@ -128,15 +137,13 @@ theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
       atTop (𝓝 (valueCLM hΩ (h10PositivePart hΩ u))) := by
     simpa only [valueCLM_h10PositivePart, Function.comp_def] using
       Lp.continuous_posPart.comp (valueCLM hΩ).continuous |>.tendsto u |>.comp hun
-  have huValue : Tendsto (fun n => valueCLM hΩ (un n))
-      atTop (𝓝 (valueCLM hΩ u)) :=
+  have huValue :=
     ((valueCLM hΩ).continuous.tendsto u).comp hun
-  have huGrad : Tendsto (fun n => gradientCLM hΩ (un n))
-      atTop (𝓝 (gradientCLM hΩ u)) :=
+  have huGrad :=
     ((gradientCLM hΩ).continuous.tendsto u).comp hun
   let μ := PDE.volumeOn Ω
   let f : ℕ → PDE.Vec d → ℝ := fun n => valueCLM hΩ (un n)
-  let f₀ : PDE.Vec d → ℝ := valueCLM hΩ u
+  let f₀ := valueCLM hΩ u
   let g : ℕ → PDE.Vec d → WithLp 2 (PDE.Vec d) :=
     fun n => gradientCLM hΩ (un n)
   let g₀ : PDE.Vec d → WithLp 2 (PDE.Vec d) := gradientCLM hΩ u
@@ -224,7 +231,7 @@ theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
       (Filter.Eventually.of_forall fun _ => rfl)).symm
   rw [Metric.tendsto_atTop] at hvalue hgrad ⊢
   intro ε hε
-  have hεsq : 0 < ε ^ 2 := sq_pos_of_pos hε
+  have hεsq := sq_pos_of_pos hε
   obtain ⟨Nv, hNv⟩ := hvalue (ε / Real.sqrt 2)
     (div_pos hε (Real.sqrt_pos.2 (by norm_num)))
   obtain ⟨Ng, hNg⟩ := hgrad (ε / Real.sqrt 2)

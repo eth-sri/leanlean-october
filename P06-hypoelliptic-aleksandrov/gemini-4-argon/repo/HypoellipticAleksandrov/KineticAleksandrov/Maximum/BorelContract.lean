@@ -11,7 +11,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set
 
 /-- The source permits either the full positive part or its positive-solution localisation. -/
-abbrev borelSource {d : ℕ} (localised : Bool) (u f : KineticPoint d → ℝ) :
+abbrev borelSource {d } (localised : Bool) (u f : KineticPoint d → ℝ) :
     KineticPoint d → ℝ :=
   if localised then {P | 0 < u P}.indicator (fun P => max (f P) 0)
   else fun P => max (f P) 0
@@ -35,7 +35,7 @@ abbrev BorelSmoothEstimate {d : ℕ} (lam Lam p alpha C₀ : ℝ) (localised : B
         (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R))).toReal
 
 /-- Both source variants are nonnegative pointwise. -/
-theorem borelSource_nonneg {d : ℕ} (localised : Bool) (u f : KineticPoint d → ℝ)
+theorem borelSource_nonneg {d } (localised : Bool) (u f : KineticPoint d → ℝ)
     (P : KineticPoint d) : 0 ≤ borelSource localised u f P := by
   cases localised
   · exact le_max_right _ _
@@ -45,8 +45,8 @@ theorem borelSource_nonneg {d : ℕ} (localised : Bool) (u f : KineticPoint d �
     · simp only [borelSource,ite_true,indicator_of_notMem (show P ∉ {z | 0 < u z} from h),le_refl]
 
 /-- A nonnegative additive error changes either source variant by at most that error. -/
-theorem borelSource_error_le {d : ℕ} (localised : Bool) (u f : KineticPoint d → ℝ)
-    {e : KineticPoint d → ℝ} (P : KineticPoint d) (he : 0 ≤ e P) :
+theorem borelSource_error_le {d } (localised : Bool) (u f : KineticPoint d → ℝ)
+    {e } (P : KineticPoint d) (he : 0 ≤ e P) :
     |borelSource localised u (f + e) P - borelSource localised u f P| ≤ e P := by
   have hscalar : |max (f P + e P) 0 - max (f P) 0| ≤ e P := by
     by_cases hf : 0 ≤ f P

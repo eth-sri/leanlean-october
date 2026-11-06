@@ -18,7 +18,7 @@ open scoped ENNReal
 /-- The source modulus controls signed endpoint differences using the actual kernel moments. -/
 theorem deterministic_barrier_endpoint_of_modulus
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (alpha B : ℝ) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) (hB : 0 ≤ B)
     (Phi : Z → ℝ) (hPhi : Continuous Phi)
     (hmod : ∀ z w : Z, |Phi z-Phi w| ≤
@@ -53,9 +53,8 @@ theorem deterministic_barrier_endpoint_of_modulus
   apply hi.trans
   change (∫ w, B*(|w.1-z.1|^(alpha/3)+|w.2-z.2|^alpha) ∂kernelXV E T z) ≤ _
   rw [integral_const_mul]
-  have hxi : Integrable (fun w : Z => |w.1-z.1|^(alpha/3)) (kernelXV E T z) := hx.1
-  have hvi : Integrable (fun w : Z => |w.2-z.2|^alpha) (kernelXV E T z) := hv.1
-  rw [integral_add hxi hvi]
+  have hxi := hx.1
+  rw [integral_add hxi hv.1]
   simpa only [he] using hsum
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

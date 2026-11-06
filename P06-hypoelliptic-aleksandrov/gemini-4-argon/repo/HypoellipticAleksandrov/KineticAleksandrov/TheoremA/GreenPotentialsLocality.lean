@@ -11,21 +11,19 @@ open Parabolic Filter
 open scoped Topology
 
 /-- The total classical kinetic operator depends only on a neighbourhood of its point. -/
-theorem forwardKineticOperator_eq_of_eventuallyEq {d : ℕ}
-    (A : FullKineticCoefficient d) {u v : KineticPoint d → ℝ} {P : KineticPoint d}
+theorem forwardKineticOperator_eq_of_eventuallyEq {d }
+    (A : FullKineticCoefficient d) {u v } {P : KineticPoint d}
     (h : u =ᶠ[𝓝 P] v) : forwardKineticOperator A u P = forwardKineticOperator A v P := by
   have ht : (fun t => u ⟨t, P.position, P.velocity⟩) =ᶠ[𝓝 P.time]
       (fun t => v ⟨t, P.position, P.velocity⟩) :=
     h.comp_tendsto (by
       simpa using (KineticPoint.continuous_mk continuous_id continuous_const
         continuous_const).continuousAt.tendsto (x := P.time))
-  have hx : (fun x => u ⟨P.time, x, P.velocity⟩) =ᶠ[𝓝 P.position]
-      (fun x => v ⟨P.time, x, P.velocity⟩) :=
+  have hx :=
     h.comp_tendsto (by
       simpa using (KineticPoint.continuous_mk continuous_const continuous_id
         continuous_const).continuousAt.tendsto (x := P.position))
-  have hv : (fun w => u ⟨P.time, P.position, w⟩) =ᶠ[𝓝 P.velocity]
-      (fun w => v ⟨P.time, P.position, w⟩) :=
+  have hv :=
     h.comp_tendsto (by
       simpa using (KineticPoint.continuous_mk continuous_const continuous_const
         continuous_id).continuousAt.tendsto (x := P.velocity))

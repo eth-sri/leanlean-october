@@ -33,7 +33,7 @@ private theorem timeSlice_hasDerivAt
     {d : Nat} {u : TimeVelocity d -> Real}
     (hu : ContDiff Real 2 u) (z : TimeVelocity d) :
     HasDerivAt (fun s : Real => u (s, z.2)) (timeDerivative u z) z.1 := by
-  have huDiff : Differentiable Real u := hu.differentiable (by norm_num)
+  have huDiff := hu.differentiable (by norm_num)
   have hline : HasDerivAt (fun s : Real => (s, z.2))
       ((1, 0) : TimeVelocity d) z.1 := by
     simpa using
@@ -45,7 +45,6 @@ private theorem timeSlice_hasDerivAt
 private theorem continuous_timeDerivative
     {d : Nat} {u : TimeVelocity d -> Real}
     (hu : ContDiff Real 2 u) : Continuous (timeDerivative u) := by
-  change Continuous (fun z : TimeVelocity d => fderiv Real u z (1, 0))
   exact ((hu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)).continuous
 
@@ -217,7 +216,7 @@ private theorem unitTime_meanPoincare_rpow
     simpa only [J] using hfp_pow_cont.integrableOn_Icc
   have hosc : ∀ ⦃t s : ℝ⦄, t ∈ J → s ∈ J → |f t - f s| ≤ B := by
     intro t s ht hs
-    have hft : ∫ x in s..t, f' x = f t - f s :=
+    have hft :=
       intervalIntegral.integral_eq_sub_of_hasDerivAt
         (fun x _hx => hderiv x) (hf'.intervalIntegrable s t)
     rw [← hft]
@@ -345,33 +344,11 @@ private theorem continuous_parabolicMorreyUnitAffineProjection
   intro i _
   exact continuous_const.mul (continuous_apply i |>.comp continuous_snd)
 
-private theorem continuous_integrable_parabolicMorreyUnitBox
-    {d : Nat} {f : TimeVelocity d -> Real} (hf : Continuous f) :
-    Integrable f (volume.restrict (parabolicMorreyUnitBox d)) := by
-  let K : Set (TimeVelocity d) :=
-    parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
-  have hKcompact : IsCompact K :=
-    isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
-  have hsubset : parabolicMorreyUnitBox d ⊆ K := by
-    rintro ⟨t, v⟩ hz
-    change (t, v) ∈ parabolicBox 1 1 0 0 at hz
-    change (t, v) ∈ parabolicClosedBox 1 1 0 0
-    rcases hz with ⟨⟨htLeft, htRight⟩, hv⟩
-    exact ⟨⟨htLeft.le, htRight.le⟩, fun i => (hv i).le⟩
-  exact (hf.continuousOn.integrableOn_compact hKcompact).mono_set hsubset
-
 private theorem parabolicExponent_eq_ofReal (d : Nat) :
     parabolicExponent d = ENNReal.ofReal ((d : Real) + 1) := by
   rw [show ((d : Real) + 1) = ((d + 1 : Nat) : Real) by norm_num]
   simpa only [parabolicExponent, Nat.cast_add, Nat.cast_one] using
     (ENNReal.ofReal_natCast (d + 1)).symm
-
-private theorem parabolicMorreyUnitBox_volume_toReal_eq_velocityCube (d : Nat) :
-    (volume (parabolicMorreyUnitBox d)).toReal =
-      (volume (velocityCube (0 : PDE.Vec d) 1)).toReal := by
-  rw [volume_parabolicMorreyUnitBox_toReal,
-    volume_velocityCube_toReal (v₀ := (0 : PDE.Vec d)) (by norm_num : (0 : Real) ≤ 1)]
-  simp only [mul_one]
 
 private theorem integrableOn_parabolicMorreyUnitBox_as_prod
     {d : Nat} {f : TimeVelocity d -> Real}
@@ -391,8 +368,18 @@ private theorem parabolicMorreyUnitAverage_eq_integral_velocityAverage
       ∫ t in Set.Ioo (0 : Real) 1, parabolicMorreyUnitVelocityAverage u t := by
   let I : Set Real := Set.Ioo 0 1
   let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
-  have huInt : Integrable u (volume.restrict (parabolicMorreyUnitBox d)) :=
-    continuous_integrable_parabolicMorreyUnitBox hu
+  have huInt : Integrable u (volume.restrict (parabolicMorreyUnitBox d)) := by
+    let K :=
+      parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
+    have hKcompact : IsCompact K :=
+      isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
+    have hsubset : parabolicMorreyUnitBox d ⊆ K := by
+      rintro ⟨t, v⟩ hz
+      change (t, v) ∈ parabolicBox 1 1 0 0 at hz
+      change (t, v) ∈ parabolicClosedBox 1 1 0 0
+      rcases hz with ⟨⟨htLeft, htRight⟩, hv⟩
+      exact ⟨⟨htLeft.le, htRight.le⟩, fun i => (hv i).le⟩
+    exact (hu.continuousOn.integrableOn_compact hKcompact).mono_set hsubset
   have huProd : IntegrableOn u (I ×ˢ V)
       ((volume : Measure Real).prod (volume : Measure (PDE.Vec d))) := by
     simpa only [I, V] using integrableOn_parabolicMorreyUnitBox_as_prod huInt
@@ -407,7 +394,11 @@ private theorem parabolicMorreyUnitAverage_eq_integral_velocityAverage
       exact huProd
     simpa only [I, V] using MeasureTheory.integral_prod u huProd'
   unfold parabolicMorreyUnitAverage parabolicMorreyUnitVelocityAverage
-  rw [hFubini, parabolicMorreyUnitBox_volume_toReal_eq_velocityCube]
+  have _h_inl_36 (d) : (volume (parabolicMorreyUnitBox d)).toReal = (volume (velocityCube (0 : PDE.Vec d) 1)).toReal := by
+    rw [volume_parabolicMorreyUnitBox_toReal,
+      volume_velocityCube_toReal (v₀ := (0 : PDE.Vec d)) (by norm_num : (0 : Real) ≤ 1)]
+    simp only [mul_one]
+  rw [hFubini, _h_inl_36]
   rw [← MeasureTheory.integral_const_mul]
 
 private theorem parabolicMorreyUnitVelocityCoeff_eq_integral_coeffAt
@@ -427,36 +418,6 @@ private theorem parabolicMorreyUnitVelocityCoeff_eq_integral_coeffAt
   unfold parabolicMorreyUnitVelocityAverage
   ring
 
-private theorem parabolicMorreyUnitAffineProjection_eq_time_mean_spatialProjection
-    {d : Nat} {u : TimeVelocity d -> Real}
-    (hu : ContDiff Real 2 u) (v : PDE.Vec d) :
-    parabolicMorreyUnitAffineProjection u (0, v) =
-      ∫ t in Set.Ioo (0 : Real) 1,
-        parabolicMorreyUnitSpatialAffineProjection u (t, v) := by
-  let I : Set Real := Set.Ioo 0 1
-  have hAvgCont : Continuous (parabolicMorreyUnitVelocityAverage u) :=
-    continuous_parabolicMorreyUnitVelocityAverage hu
-  have hAvgInt : IntegrableOn (parabolicMorreyUnitVelocityAverage u) I volume := by
-    exact (hAvgCont.integrableOn_Icc).mono_set Set.Ioo_subset_Icc_self
-  have hCoeffCont : ∀ i : Fin d,
-      Continuous (fun t => parabolicMorreyUnitVelocityCoeffAt u t i) :=
-    fun i => continuous_parabolicMorreyUnitVelocityCoeffAt hu i
-  have hCoeffInt : ∀ i : Fin d, IntegrableOn
-      (fun t => parabolicMorreyUnitVelocityCoeffAt u t i * v i) I volume := by
-    intro i
-    exact ((hCoeffCont i).mul continuous_const).integrableOn_Icc.mono_set
-      Set.Ioo_subset_Icc_self
-  have hSumInt : IntegrableOn (fun t => ∑ i : Fin d,
-      parabolicMorreyUnitVelocityCoeffAt u t i * v i) I volume := by
-    exact integrable_finset_sum Finset.univ fun i _ => hCoeffInt i
-  unfold parabolicMorreyUnitAffineProjection parabolicMorreyUnitSpatialAffineProjection
-  rw [parabolicMorreyUnitAverage_eq_integral_velocityAverage hu.continuous]
-  simp_rw [parabolicMorreyUnitVelocityCoeff_eq_integral_coeffAt hu]
-  rw [MeasureTheory.integral_add hAvgInt hSumInt,
-    MeasureTheory.integral_finset_sum Finset.univ (fun i _ => hCoeffInt i)]
-  simp_rw [MeasureTheory.integral_mul_const]
-  ring
-
 end HypoellipticAleksandrov.Parabolic
 
 namespace HypoellipticAleksandrov.Parabolic
@@ -472,7 +433,7 @@ private theorem continuous_integral_velocity_weighted_of_continuous
   intro t
   let J : Set Real := Set.Icc (t - 1) (t + 1)
   let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
-  let W : Set (PDE.Vec d) := velocityClosedCube (0 : PDE.Vec d) 1
+  let W := velocityClosedCube (0 : PDE.Vec d) 1
   let F : Real -> PDE.Vec d -> Real := fun s v => g (s, v) * w v
   have hVW : V ⊆ W := by
     intro v hv i
@@ -520,8 +481,7 @@ private theorem continuous_parabolicMorreyUnitSpatialAffineProjection_of_continu
         (continuous_fst : Continuous (fun z : TimeVelocity d => z.1))
   · apply continuous_finset_sum
     intro i _
-    have hInt : Continuous (fun t : Real =>
-        ∫ v in velocityCube (0 : PDE.Vec d) 1, g (t, v) * v i) :=
+    have hInt :=
       continuous_integral_velocity_weighted_of_continuous hg
         (fun v : PDE.Vec d => v i) (continuous_apply i)
     simpa only [Function.comp_def, Pi.mul_def, parabolicMorreyUnitVelocityCoeffAt] using
@@ -555,7 +515,7 @@ private theorem parabolicELpNormOn_spatialAffineProjection_timeDerivative_le
       eLpNormOn_parabolicMorreyUnitVelocityAffineProjection_le
         (fun v => timeDerivative u (t, v))
         (htime.comp (continuous_const.prodMk continuous_id)).aestronglyMeasurable
-  have hScont : Continuous (parabolicMorreyUnitSpatialAffineProjection (timeDerivative u)) :=
+  have hScont :=
     continuous_parabolicMorreyUnitSpatialAffineProjection_of_continuous htime
   have hsliceNorm : eLpNorm q p (volume.restrict I) ≤
       ENNReal.ofReal (1 + 3 * (d : Real)) * eLpNorm r p (volume.restrict I) := by
@@ -585,110 +545,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators
 
-private theorem temporalResidual_setIntegral_rpow_le_spatialProjection
-    (d : Nat) (u : TimeVelocity d -> Real) (hu : ContDiff Real 2 u) :
-    ∫ z in parabolicMorreyUnitBox d,
-        |parabolicMorreyUnitSpatialAffineProjection u z -
-          parabolicMorreyUnitAffineProjection u z| ^ ((d : Real) + 1) <=
-      ∫ z in parabolicMorreyUnitBox d,
-        |parabolicMorreyUnitSpatialAffineProjection (timeDerivative u) z| ^
-          ((d : Real) + 1) := by
-  let I : Set Real := Set.Ioo 0 1
-  let V : Set (PDE.Vec d) := velocityCube 0 1
-  let B : Set (TimeVelocity d) := parabolicMorreyUnitBox d
-  let p : Real := (d : Real) + 1
-  let R : TimeVelocity d -> Real := fun z =>
-    parabolicMorreyUnitSpatialAffineProjection u z -
-      parabolicMorreyUnitAffineProjection u z
-  let S : TimeVelocity d -> Real :=
-    parabolicMorreyUnitSpatialAffineProjection (timeDerivative u)
-  let μ : Measure Real := volume.restrict I
-  let ν : Measure (PDE.Vec d) := volume.restrict V
-
-  have hp : 0 < p := by
-    dsimp only [p]
-    positivity
-  have hp1 : 1 <= p := by
-    dsimp only [p]
-    have hd : (0 : Real) <= (d : Real) := Nat.cast_nonneg d
-    linarith
-  have hRcont : Continuous R :=
-    (continuous_parabolicMorreyUnitSpatialAffineProjection hu).sub
-      (continuous_parabolicMorreyUnitAffineProjection u)
-  have hScont : Continuous S :=
-    continuous_parabolicMorreyUnitSpatialAffineProjection_of_continuous
-      (continuous_timeDerivative hu)
-  have hRpow : Integrable (fun z => |R z| ^ p) (volume.restrict B) := by
-    have hRmem : MemLp R (parabolicExponent d) (volume.restrict B) := by
-      simpa only [B] using Continuous.memLp_parabolicMorreyUnitBox hRcont
-    simpa [parabolicExponent_eq_ofReal, p, ENNReal.toReal_ofReal hp.le,
-      Real.norm_eq_abs] using hRmem.integrable_norm_rpow
-        (by simp [parabolicExponent]) (by simp [parabolicExponent])
-  have hSpow : Integrable (fun z => |S z| ^ p) (volume.restrict B) := by
-    have hSmem : MemLp S (parabolicExponent d) (volume.restrict B) := by
-      simpa only [B] using Continuous.memLp_parabolicMorreyUnitBox hScont
-    simpa [parabolicExponent_eq_ofReal, p, ENNReal.toReal_ofReal hp.le,
-      Real.norm_eq_abs] using hSmem.integrable_norm_rpow
-        (by simp [parabolicExponent]) (by simp [parabolicExponent])
-  have hRprod : Integrable (Function.uncurry fun t : Real => fun v : PDE.Vec d =>
-      |R (t, v)| ^ p) (μ.prod ν) := by
-    change Integrable (Function.uncurry fun t : Real => fun v : PDE.Vec d =>
-      |R (t, v)| ^ p) ((volume.restrict I).prod (volume.restrict V))
-    rw [Measure.prod_restrict]
-    change IntegrableOn (fun z => |R z| ^ p) (I ×ˢ V)
-      ((volume : Measure Real).prod (volume : Measure (PDE.Vec d)))
-    exact integrableOn_parabolicMorreyUnitBox_as_prod hRpow
-  have hSprod : Integrable (Function.uncurry fun t : Real => fun v : PDE.Vec d =>
-      |S (t, v)| ^ p) (μ.prod ν) := by
-    change Integrable (Function.uncurry fun t : Real => fun v : PDE.Vec d =>
-      |S (t, v)| ^ p) ((volume.restrict I).prod (volume.restrict V))
-    rw [Measure.prod_restrict]
-    change IntegrableOn (fun z => |S z| ^ p) (I ×ˢ V)
-      ((volume : Measure Real).prod (volume : Measure (PDE.Vec d)))
-    exact integrableOn_parabolicMorreyUnitBox_as_prod hSpow
-  have hpoint (v : PDE.Vec d) :
-      ∫ t, |R (t, v)| ^ p ∂μ <= ∫ t, |S (t, v)| ^ p ∂μ := by
-    have hmean := parabolicMorreyUnitAffineProjection_eq_time_mean_spatialProjection
-      hu v
-    have hscalar := unitTime_meanPoincare_rpow (p := p) hp1
-      ((continuous_parabolicMorreyUnitSpatialAffineProjection_of_continuous
-        (continuous_timeDerivative hu)).comp (continuous_id.prodMk continuous_const))
-      (hasDerivAt_parabolicMorreyUnitSpatialAffineProjection hu v)
-    have haffine (t : Real) :
-        parabolicMorreyUnitAffineProjection u (t, v) =
-          parabolicMorreyUnitAffineProjection u (0, v) := by
-      simp only [parabolicMorreyUnitAffineProjection]
-    change ∫ t in I,
-        |parabolicMorreyUnitSpatialAffineProjection u (t, v) -
-          parabolicMorreyUnitAffineProjection u (t, v)| ^ p <=
-      ∫ t in I, |S (t, v)| ^ p
-    simp_rw [haffine, hmean]
-    simpa only [I, S, p, Function.comp_def, id_eq] using hscalar
-  have hiter :
-      ∫ t, ∫ v, |R (t, v)| ^ p ∂ν ∂μ <=
-        ∫ t, ∫ v, |S (t, v)| ^ p ∂ν ∂μ := by
-    rw [MeasureTheory.integral_integral_swap hRprod,
-      MeasureTheory.integral_integral_swap hSprod]
-    exact MeasureTheory.integral_mono_ae hRprod.integral_prod_right
-      hSprod.integral_prod_right (Filter.Eventually.of_forall hpoint)
-  calc
-    ∫ z in parabolicMorreyUnitBox d,
-        |parabolicMorreyUnitSpatialAffineProjection u z -
-          parabolicMorreyUnitAffineProjection u z| ^ ((d : Real) + 1) =
-        ∫ t, ∫ v, |R (t, v)| ^ p ∂ν ∂μ := by
-      change ∫ z, |R z| ^ p ∂volume.restrict B = _
-      rw [show volume.restrict B = μ.prod ν by
-        simpa only [B, μ, ν, I, V] using parabolicMorreyUnitBox_restrict_volume_eq_prod d]
-      exact MeasureTheory.integral_prod _ hRprod
-    _ <= ∫ t, ∫ v, |S (t, v)| ^ p ∂ν ∂μ := hiter
-    _ = ∫ z in parabolicMorreyUnitBox d,
-        |parabolicMorreyUnitSpatialAffineProjection (timeDerivative u) z| ^
-          ((d : Real) + 1) := by
-      change _ = ∫ z, |S z| ^ p ∂volume.restrict B
-      rw [show volume.restrict B = μ.prod ν by
-        simpa only [B, μ, ν, I, V] using parabolicMorreyUnitBox_restrict_volume_eq_prod d]
-      exact (MeasureTheory.integral_prod _ hSprod).symm
-
 end HypoellipticAleksandrov.Parabolic
 
 namespace HypoellipticAleksandrov.Parabolic
@@ -704,7 +560,7 @@ private theorem parabolicELpNormOn_temporalResidual_le_spatialProjection
   let p : Real := (d : Real) + 1
   let R : TimeVelocity d -> Real := fun z => parabolicMorreyUnitSpatialAffineProjection u z -
     parabolicMorreyUnitAffineProjection u z
-  let S : TimeVelocity d -> Real := parabolicMorreyUnitSpatialAffineProjection (timeDerivative u)
+  let S := parabolicMorreyUnitSpatialAffineProjection (timeDerivative u)
   have hp : 0 < p := by dsimp [p]; positivity
   have hR : MemLp R (ENNReal.ofReal p) (volume.restrict (parabolicMorreyUnitBox d)) := by
     simpa [R, S, Pi.sub_def, p, parabolicExponent_eq_ofReal] using
@@ -716,7 +572,127 @@ private theorem parabolicELpNormOn_temporalResidual_le_spatialProjection
       Continuous.memLp_parabolicMorreyUnitBox
         (continuous_parabolicMorreyUnitSpatialAffineProjection_of_continuous
           (continuous_timeDerivative hu))
-  have hpower := temporalResidual_setIntegral_rpow_le_spatialProjection d u hu
+  have hpower : ∫ z in parabolicMorreyUnitBox d,
+        |parabolicMorreyUnitSpatialAffineProjection u z -
+          parabolicMorreyUnitAffineProjection u z| ^ ((d : Real) + 1) <=
+      ∫ z in parabolicMorreyUnitBox d,
+        |parabolicMorreyUnitSpatialAffineProjection (timeDerivative u) z| ^
+          ((d : Real) + 1) := by
+    let I : Set Real := Set.Ioo 0 1
+    let V : Set (PDE.Vec d) := velocityCube 0 1
+    let B : Set (TimeVelocity d) := parabolicMorreyUnitBox d
+    let p : Real := (d : Real) + 1
+    let R : TimeVelocity d -> Real := fun z =>
+      parabolicMorreyUnitSpatialAffineProjection u z -
+        parabolicMorreyUnitAffineProjection u z
+    let S :=
+      parabolicMorreyUnitSpatialAffineProjection (timeDerivative u)
+    let μ : Measure Real := volume.restrict I
+    let ν := volume.restrict V
+
+    have hp : 0 < p := by
+      dsimp only [p]
+      positivity
+    have hp1 : 1 <= p := by
+      dsimp only [p]
+      have hd : (0 : Real) <= (d : Real) := Nat.cast_nonneg d
+      linarith
+    have hRcont : Continuous R :=
+      (continuous_parabolicMorreyUnitSpatialAffineProjection hu).sub
+        (continuous_parabolicMorreyUnitAffineProjection u)
+    have hScont : Continuous S :=
+      continuous_parabolicMorreyUnitSpatialAffineProjection_of_continuous
+        (continuous_timeDerivative hu)
+    have hRpow : Integrable (fun z => |R z| ^ p) (volume.restrict B) := by
+      have hRmem : MemLp R (parabolicExponent d) (volume.restrict B) := by
+        simpa only [B] using Continuous.memLp_parabolicMorreyUnitBox hRcont
+      simpa [parabolicExponent_eq_ofReal, p, ENNReal.toReal_ofReal hp.le,
+        Real.norm_eq_abs] using hRmem.integrable_norm_rpow
+          (by simp [parabolicExponent]) (by simp [parabolicExponent])
+    have hSpow : Integrable (fun z => |S z| ^ p) (volume.restrict B) := by
+      have hSmem : MemLp S (parabolicExponent d) (volume.restrict B) := by
+        simpa only [B] using Continuous.memLp_parabolicMorreyUnitBox hScont
+      simpa [parabolicExponent_eq_ofReal, p, ENNReal.toReal_ofReal hp.le,
+        Real.norm_eq_abs] using hSmem.integrable_norm_rpow
+          (by simp [parabolicExponent]) (by simp [parabolicExponent])
+    have hRprod : Integrable (Function.uncurry fun t : Real => fun v : PDE.Vec d =>
+        |R (t, v)| ^ p) (μ.prod ν) := by
+      change Integrable (Function.uncurry fun t : Real => fun v : PDE.Vec d =>
+        |R (t, v)| ^ p) ((volume.restrict I).prod (volume.restrict V))
+      rw [Measure.prod_restrict]
+      exact integrableOn_parabolicMorreyUnitBox_as_prod hRpow
+    have hSprod : Integrable (Function.uncurry fun t : Real => fun v : PDE.Vec d =>
+        |S (t, v)| ^ p) (μ.prod ν) := by
+      change Integrable (Function.uncurry fun t : Real => fun v : PDE.Vec d =>
+        |S (t, v)| ^ p) ((volume.restrict I).prod (volume.restrict V))
+      rw [Measure.prod_restrict]
+      exact integrableOn_parabolicMorreyUnitBox_as_prod hSpow
+    have hpoint (v : PDE.Vec d) :
+        ∫ t, |R (t, v)| ^ p ∂μ <= ∫ t, |S (t, v)| ^ p ∂μ := by
+      have hmean : parabolicMorreyUnitAffineProjection u (0, v) =
+        ∫ t in Set.Ioo (0 : Real) 1,
+          parabolicMorreyUnitSpatialAffineProjection u (t, v) := by
+        let I : Set Real := Set.Ioo 0 1
+        have hAvgCont : Continuous (parabolicMorreyUnitVelocityAverage u) :=
+          continuous_parabolicMorreyUnitVelocityAverage hu
+        have hAvgInt : IntegrableOn (parabolicMorreyUnitVelocityAverage u) I volume := by
+          exact (hAvgCont.integrableOn_Icc).mono_set Set.Ioo_subset_Icc_self
+        have hCoeffCont : ∀ i : Fin d,
+            Continuous (fun t => parabolicMorreyUnitVelocityCoeffAt u t i) :=
+          fun i => continuous_parabolicMorreyUnitVelocityCoeffAt hu i
+        have hCoeffInt : ∀ i : Fin d, IntegrableOn
+            (fun t => parabolicMorreyUnitVelocityCoeffAt u t i * v i) I volume := by
+          intro i
+          exact ((hCoeffCont i).mul continuous_const).integrableOn_Icc.mono_set
+            Set.Ioo_subset_Icc_self
+        have hSumInt : IntegrableOn (fun t => ∑ i : Fin d,
+            parabolicMorreyUnitVelocityCoeffAt u t i * v i) I volume := by
+          exact integrable_finset_sum Finset.univ fun i _ => hCoeffInt i
+        unfold parabolicMorreyUnitAffineProjection parabolicMorreyUnitSpatialAffineProjection
+        rw [parabolicMorreyUnitAverage_eq_integral_velocityAverage hu.continuous]
+        simp_rw [parabolicMorreyUnitVelocityCoeff_eq_integral_coeffAt hu]
+        rw [MeasureTheory.integral_add hAvgInt hSumInt,
+          MeasureTheory.integral_finset_sum Finset.univ (fun i _ => hCoeffInt i)]
+        simp_rw [MeasureTheory.integral_mul_const]
+        ring
+      have hscalar := unitTime_meanPoincare_rpow (p := p) hp1
+        ((continuous_parabolicMorreyUnitSpatialAffineProjection_of_continuous
+          (continuous_timeDerivative hu)).comp (continuous_id.prodMk continuous_const))
+        (hasDerivAt_parabolicMorreyUnitSpatialAffineProjection hu v)
+      have haffine (t : Real) :
+          parabolicMorreyUnitAffineProjection u (t, v) =
+            parabolicMorreyUnitAffineProjection u (0, v) := by
+        simp only [parabolicMorreyUnitAffineProjection]
+      change ∫ t in I,
+          |parabolicMorreyUnitSpatialAffineProjection u (t, v) -
+            parabolicMorreyUnitAffineProjection u (t, v)| ^ p <=
+        ∫ t in I, |S (t, v)| ^ p
+      simp_rw [haffine, hmean]
+      simpa only [I, S, p, Function.comp_def, id_eq] using hscalar
+    have hiter :
+        ∫ t, ∫ v, |R (t, v)| ^ p ∂ν ∂μ <=
+          ∫ t, ∫ v, |S (t, v)| ^ p ∂ν ∂μ := by
+      rw [MeasureTheory.integral_integral_swap hRprod,
+        MeasureTheory.integral_integral_swap hSprod]
+      exact MeasureTheory.integral_mono_ae hRprod.integral_prod_right
+        hSprod.integral_prod_right (Filter.Eventually.of_forall hpoint)
+    calc
+      ∫ z in parabolicMorreyUnitBox d,
+          |parabolicMorreyUnitSpatialAffineProjection u z -
+            parabolicMorreyUnitAffineProjection u z| ^ ((d : Real) + 1) =
+          ∫ t, ∫ v, |R (t, v)| ^ p ∂ν ∂μ := by
+        change ∫ z, |R z| ^ p ∂volume.restrict B = _
+        rw [show volume.restrict B = μ.prod ν by
+          simpa only [B, μ, ν, I, V] using parabolicMorreyUnitBox_restrict_volume_eq_prod d]
+        exact MeasureTheory.integral_prod _ hRprod
+      _ <= ∫ t, ∫ v, |S (t, v)| ^ p ∂ν ∂μ := hiter
+      _ = ∫ z in parabolicMorreyUnitBox d,
+          |parabolicMorreyUnitSpatialAffineProjection (timeDerivative u) z| ^
+            ((d : Real) + 1) := by
+        change _ = ∫ z, |S z| ^ p ∂volume.restrict B
+        rw [show volume.restrict B = μ.prod ν by
+          simpa only [B, μ, ν, I, V] using parabolicMorreyUnitBox_restrict_volume_eq_prod d]
+        exact (MeasureTheory.integral_prod _ hSprod).symm
   have hpow :
       (eLpNorm R (ENNReal.ofReal p) (volume.restrict (parabolicMorreyUnitBox d))).toReal ^ p <=
         (eLpNorm S (ENNReal.ofReal p) (volume.restrict (parabolicMorreyUnitBox d))).toReal ^ p := by
@@ -740,7 +716,7 @@ private theorem parabolicELpNormOn_temporalResidual_le_spatialProjection
     (ENNReal.toReal_le_toReal hR.eLpNorm_ne_top hS.eLpNorm_ne_top).mp hroot
   simpa [parabolicELpNormOn, R, S, p, parabolicExponent_eq_ofReal] using hENN
 
-/-- Temporal Poincare control of the time-dependent moment-affine projection
+/- Temporal Poincare control of the time-dependent moment-affine projection
 by the time derivative on the literal unit box. -/
 theorem parabolicMorreyUnitTemporalAffinePoincareELpNorm_le
     (d : Nat) (u : TimeVelocity d -> Real) (hu : ContDiff Real 2 u) :
@@ -751,15 +727,14 @@ theorem parabolicMorreyUnitTemporalAffinePoincareELpNorm_le
   (parabolicELpNormOn_temporalResidual_le_spatialProjection d u hu).trans
     (parabolicELpNormOn_spatialAffineProjection_timeDerivative_le d u hu)
 
-/-- Real-valued corollary of the temporal moment-affine Poincare estimate. -/
+/- Real-valued corollary of the temporal moment-affine Poincare estimate. -/
 theorem parabolicMorreyUnitTemporalAffinePoincareLpNorm_le
     (d : Nat) (u : TimeVelocity d -> Real) (hu : ContDiff Real 2 u) :
     parabolicLpNormOn d (fun z => parabolicMorreyUnitSpatialAffineProjection u z -
       parabolicMorreyUnitAffineProjection u z) (parabolicMorreyUnitBox d) <=
       (1 + 3 * (d : Real)) * parabolicLpNormOn d (timeDerivative u)
         (parabolicMorreyUnitBox d) := by
-  have hT : MemLp (timeDerivative u) (parabolicExponent d)
-      (volume.restrict (parabolicMorreyUnitBox d)) :=
+  have hT :=
     Continuous.memLp_parabolicMorreyUnitBox (continuous_timeDerivative hu)
   have h := ENNReal.toReal_mono
     (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hT.eLpNorm_ne_top)

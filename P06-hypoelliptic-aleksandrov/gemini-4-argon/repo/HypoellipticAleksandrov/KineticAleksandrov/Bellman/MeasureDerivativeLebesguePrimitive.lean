@@ -15,7 +15,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- The oriented Lebesgue primitive of a locally integrable function is locally absolutely
+/- The oriented Lebesgue primitive of a locally integrable function is locally absolutely
 continuous. -/
 theorem bellman_lebesguePrimitive_locallyAC (g : ℝ → ℝ) (hg : LocallyIntegrable g volume)
     (a b : ℝ) (hab : a ≤ b) :
@@ -32,20 +32,12 @@ theorem bellman_lebesguePrimitive_locallyAC (g : ℝ → ℝ) (hg : LocallyInteg
   rw [uIcc_of_le hab, uIcc_of_le hlu]
   exact Icc_subset_Icc (min_le_right _ _) (le_max_right _ _)
 
-/-- The oriented Lebesgue primitive is globally continuous. -/
+/- The oriented Lebesgue primitive is globally continuous. -/
 theorem bellman_lebesguePrimitive_continuous (g : ℝ → ℝ)
     (hg : LocallyIntegrable g volume) : Continuous (fun x => ∫ z in 0..x, g z) :=
   bellman_locallyAC_continuous (bellman_lebesguePrimitive_locallyAC g hg)
 
-/-- Changing the base point of a Lebesgue primitive subtracts a constant. -/
-theorem bellman_lebesguePrimitive_sub (g : ℝ → ℝ) (hg : LocallyIntegrable g volume)
-    (r x : ℝ) : (∫ z in 0..x, g z) - (∫ z in 0..r, g z) = ∫ z in r..x, g z := by
-  have hi (a b : ℝ) : IntervalIntegrable g volume a b :=
-    (intervalIntegrable_iff').2 (hg.integrableOn_isCompact isCompact_uIcc)
-  have he := intervalIntegral.integral_add_adjacent_intervals (hi 0 r) (hi r x)
-  linarith
-
-/-- A locally integrable Lebesgue primitive has its original function as weak derivative. -/
+/- Changing the base point of a Lebesgue primitive subtracts a constant. -/
 theorem bellman_lebesguePrimitive_weak (g : ℝ → ℝ) (hg : LocallyIntegrable g volume)
     (φ : ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hcφ : HasCompactSupport φ) :
     (∫ x, (∫ z in 0..x, g z) * deriv φ x) = -∫ x, g x * φ x := by
@@ -92,7 +84,13 @@ theorem bellman_lebesguePrimitive_weak (g : ℝ → ℝ) (hg : LocallyIntegrable
           (fun x => (fun x => ∫ z in 0..x, g z) x * deriv φ x -
             (fun x => ∫ z in 0..x, g z) r * deriv φ x) := by
         funext x
-        have hp := bellman_lebesguePrimitive_sub g hg r x
+        have hp : (∫ z in 0..x, g z) - (∫ z in 0..r, g z) = ∫ z in r..x, g z := by
+            have hi (a b : ℝ) : IntervalIntegrable g volume a b :=
+              (intervalIntegrable_iff').2 (hg.integrableOn_isCompact isCompact_uIcc)
+            have he := intervalIntegral.integral_add_adjacent_intervals (hi 0 r) (hi r x)
+            linarith
+
+          /- A locally integrable Lebesgue primitive has its original function as weak derivative. -/
         change (fun x => ∫ z in 0..x, g z) x - (fun x => ∫ z in 0..x, g z) r =
           (fun x => ∫ z in r..x, g z) x at hp
         rw [← hp]

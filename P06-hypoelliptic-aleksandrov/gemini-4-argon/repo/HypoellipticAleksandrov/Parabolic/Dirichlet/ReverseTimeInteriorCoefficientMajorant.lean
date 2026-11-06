@@ -22,7 +22,7 @@ open scoped BigOperators Matrix.Norms.Elementwise
 
 private theorem IsSmoothOnNeighborhood.reverseTimeNormed
     {d : ℕ} {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {S K : Set (TimeVelocity d)} (r₁ : ℝ) {f : TimeVelocity d → E}
+    {S K } (r₁ : ℝ) {f : TimeVelocity d → E}
     (hSK : reverseTimeMap r₁ '' S ⊆ K) (hf : IsSmoothOnNeighborhood f K) :
     IsSmoothOnNeighborhood (f ∘ reverseTimeMap r₁) S := by
   rcases hf with ⟨V, hVopen, hKV, hV⟩
@@ -84,26 +84,11 @@ private theorem IsSmoothOnNeighborhood.divergenceDrift
       (((hentry i).contDiffAt (hVaopen.mem_nhds hz)).differentiableAt (by simp))
   · exact hVb.mono Set.inter_subset_right
 
-private theorem reverseTimeImage_subset_closedCylinder
-    {d : ℕ} {r₀ r₁ : ℝ} {Ω K : Set (PDE.Vec d)}
-    (hKΩ : K ⊆ Ω) :
-    reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ K) ⊆
-      scalarParabolicClosedCylinder r₀ r₁ Ω := by
-  rintro w ⟨z, hz, rfl⟩
-  rw [mem_scalarParabolicClosedCylinder_iff]
-  refine ⟨?_, ?_, subset_closure (hKΩ hz.2)⟩
-  · simp only [reverseTimeMap_apply]
-    linarith [hz.1.2]
-  · simp only [reverseTimeMap_apply]
-    linarith [hz.1.1]
-
-/-- Smooth data have one common finite majorant for all coefficient and source
-quantities used by the interior difference-quotient estimate. -/
 theorem exists_reverseTimeInteriorCoefficientMajorant
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
     (r₀ r₁ : ℝ)
     (χ : PDE.QuantitativeSmoothCutoff inner Ω Kχ)
-    (δ : ℝ)
+    (δ )
     (hcarrier :
       spatialCoordinateShiftCarrier (tsupport χ.toFun) δ ⊆ Ω)
     (a : CoefficientField d)
@@ -152,12 +137,21 @@ theorem exists_reverseTimeInteriorCoefficientMajorant
   classical
   let Q : Set (TimeVelocity d) := Set.Icc 0 (r₁ - r₀) ×ˢ
     spatialCoordinateShiftCarrier (tsupport χ.toFun) δ
-  have hχcompact : IsCompact (tsupport χ.toFun) := χ.hasCompactSupport
+  have hχcompact := χ.hasCompactSupport
   have hQcompact : IsCompact Q := isCompact_Icc.prod
     (HypoellipticAleksandrov.Parabolic.Dirichlet.IsCompact.spatialCoordinateShiftCarrier
       hχcompact δ)
-  have himage : reverseTimeMap r₁ '' Q ⊆ scalarParabolicClosedCylinder r₀ r₁ Ω :=
-    reverseTimeImage_subset_closedCylinder hcarrier
+  have himage : reverseTimeMap r₁ '' Q ⊆ scalarParabolicClosedCylinder r₀ r₁ Ω := by
+      rintro w ⟨z, hz, rfl⟩
+      rw [mem_scalarParabolicClosedCylinder_iff]
+      refine ⟨?_, ?_, subset_closure (hcarrier hz.2)⟩
+      · simp only [reverseTimeMap_apply]
+        linarith [hz.1.2]
+      · simp only [reverseTimeMap_apply]
+        linarith [hz.1.1]
+
+    /- Smooth data have one common finite majorant for all coefficient and source
+    quantities used by the interior difference-quotient estimate. -/
   have haR : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => reverseTimeCoefficient r₁ a z.1 z.2) Q := by
     change IsSmoothOnNeighborhood

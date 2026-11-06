@@ -21,8 +21,7 @@ open MeasureTheory
 /-- A weak velocity derivative commutes with a spatial difference quotient
 on a domain supporting both the original and translated relations. -/
 theorem HasWeakVelocityPartialDerivOn.spatialDifferenceQuotient_of_subset_mapsTo
-    {d : ℕ} {U V : Set (TimeVelocity d)} {i : Fin d}
-    {u dui : TimeVelocity d → ℝ}
+    {d U V i u dui}
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (huLoc : LocallyIntegrableOn u U volume)
     (hduiLoc : LocallyIntegrableOn dui U volume)
@@ -40,9 +39,7 @@ theorem HasWeakVelocityPartialDerivOn.spatialDifferenceQuotient_of_subset_mapsTo
     LocallyIntegrableOn.spatialTranslate_of_mapsTo hduiLoc k h hshift
   have huOriginalLoc := huLoc.mono_set hVU
   have hduiOriginalLoc := hduiLoc.mono_set hVU
-  have hsub := htranslated.sub horiginal huTranslatedLoc hduiTranslatedLoc
-    huOriginalLoc hduiOriginalLoc
-  have hsmul := hsub.smul h⁻¹
+  have hsmul := (htranslated.sub horiginal huTranslatedLoc hduiTranslatedLoc huOriginalLoc hduiOriginalLoc).smul h⁻¹
   convert hsmul using 1 <;> ext z <;>
     simp only [spatialDifferenceQuotient_apply, Pi.smul_apply, smul_eq_mul,
       div_eq_mul_inv] <;> ring

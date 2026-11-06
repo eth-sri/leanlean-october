@@ -24,19 +24,19 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- Integration over a bounded spatial domain, as a continuous linear
 functional on its restricted-volume `L²` space. -/
 noncomputable def spatialMassCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩbounded : Bornology.IsBounded Ω) :
     MeasureTheory.Lp ℝ 2 (PDE.volumeOn Ω) →L[ℝ] ℝ := by
   letI : IsFiniteMeasure (PDE.volumeOn Ω) :=
     isFiniteMeasure_restrict.mpr hΩbounded.measure_lt_top.ne
-  let pairing : ℝ →L[ℝ] ℝ →L[ℝ] ℝ := ContinuousLinearMap.mul ℝ ℝ
+  let pairing := ContinuousLinearMap.mul ℝ ℝ
   exact ContinuousLinearMap.flip
     (pairing.lpPairing (PDE.volumeOn Ω) (2 : ℝ≥0∞) (2 : ℝ≥0∞))
     (MeasureTheory.Lp.const (2 : ℝ≥0∞) (PDE.volumeOn Ω) 1)
 
 /-- Spatial mass is the literal integral of the chosen `L²` representative. -/
 theorem spatialMassCLM_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩbounded : Bornology.IsBounded Ω)
     (f : MeasureTheory.Lp ℝ 2 (PDE.volumeOn Ω)) :
     spatialMassCLM hΩbounded f = ∫ y, f y ∂PDE.volumeOn Ω := by
@@ -59,17 +59,17 @@ theorem spatialMassCLM_apply
 /-- The spatial mass of the affine-threshold shifted positive part is
 integrable in reverse time. -/
 theorem integrable_reverseTimeShiftedPositivePart_spatialMass
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (T : ℝ) (M N : ℝ≥0) (u : ReverseTimeL2V hΩ T) :
+    (T ) (M N : ℝ≥0) (u : ReverseTimeL2V hΩ T) :
     Integrable (fun τ => ∫ y,
       valueCLM hΩ (h10ShiftedPositivePart hΩ (u τ)
         (reverseTimeAffineThreshold M N τ)) y ∂PDE.volumeOn Ω)
       (reverseTimeVolume T) := by
-  let Q : H10HilbertGraph hΩ →L[ℝ] ℝ :=
+  let Q :=
     (spatialMassCLM hΩbounded).comp (valueCLM hΩ)
-  let w : ReverseTimeL2V hΩ T := reverseTimeShiftedPositivePart hΩ T M N u
-  let Qw : MeasureTheory.Lp ℝ 2 (reverseTimeVolume T) :=
+  let w := reverseTimeShiftedPositivePart hΩ T M N u
+  let Qw :=
     Q.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) w
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
     unfold reverseTimeVolume reverseTimeOpenInterval

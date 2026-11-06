@@ -15,8 +15,8 @@ open scoped Topology Convolution
 
 /-- Normalized mollification approximates a compactly supported continuous function uniformly. -/
 theorem eventually_uniform_parabolicConvolution_close
-    {N : ℕ} (f : TimeVelocity N → ℝ) (hf : Continuous f)
-    (hc : HasCompactSupport f) {ε : ℝ} (hε : 0 < ε) :
+    {N } (f : TimeVelocity N → ℝ) (hf : Continuous f)
+    (hc : HasCompactSupport f) {ε } (hε : 0 < ε) :
     ∀ᶠ n : ℕ in atTop, ∀ z,
       |parabolicConvolution f (parabolicMollifier N n) z - f z| ≤ ε := by
   obtain ⟨δ, hδ, hd⟩ := Metric.uniformContinuous_iff.mp

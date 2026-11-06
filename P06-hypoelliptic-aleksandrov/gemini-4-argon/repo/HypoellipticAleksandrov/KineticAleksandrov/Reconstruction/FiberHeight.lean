@@ -2,6 +2,9 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Reconstruction.FiberDisintegration
 public import HypoellipticAleksandrov.KineticAleksandrov.Reconstruction.Minkowski
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import Mathlib.MeasureTheory.Integral.MeanInequalities
+import Mathlib.MeasureTheory.Measure.Prod
 
 /-!
 # Minkowski bound for the fibre height
@@ -21,10 +24,11 @@ open MeasureTheory ProbabilityTheory Complex Set
 open scoped ENNReal
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Reconstruction
+open Filter
 
 variable {Y : Type*} [MeasurableSpace Y] {d : ℕ}
 
-/-- The `L^γ(m)` norm of the fibre height is the Minkowski integral of the `L^γ` norms of the
+/- The `L^γ(m)` norm of the fibre height is the Minkowski integral of the `L^γ` norms of the
 Fourier representatives, for any measurable `g` and Markov kernel `κ`. -/
 lemma eLpNorm_fiberHeight_le {m : Measure Y} [SigmaFinite m] {g : Y → ℝ≥0∞}
     (hg : Measurable g) (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] {γ : ℝ} (hγ : 1 < γ) :
@@ -38,7 +42,46 @@ lemma eLpNorm_fiberHeight_le {m : Measure Y} [SigmaFinite m] {g : Y → ℝ≥0�
   set F : Y → PDE.Vec d → ℝ≥0∞ := fun y ξ => ‖fiberDensity g κ ξ y‖ₑ with hF
   have hFm : Measurable (Function.uncurry F) :=
     ((measurable_fiberDensity hg κ).comp measurable_swap).enorm
-  have hmink := minkowski_integral (m := m) (ν := (volume : Measure (PDE.Vec d))) hγ hFm
+  have hmink : (∫⁻ y, (∫⁻ ξ, F y ξ ∂((volume : Measure (PDE.Vec d)))) ^ γ ∂(m)) ^ (1 / γ) ≤
+      ∫⁻ ξ, (∫⁻ y, F y ξ ^ γ ∂(m)) ^ (1 / γ) ∂((volume : Measure (PDE.Vec d))) := by
+    let m := (m)
+    let ν := ((volume : Measure (PDE.Vec d)))
+    have hp0 : 0 < γ := by linarith
+    set B := ∫⁻ ξ, (∫⁻ y, F y ξ ^ γ ∂m) ^ (1 / γ) ∂ν with hB
+    have hGm := measurable_trunc (m := m) (ν := ν) hFm
+    have hn : ∀ n, ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ γ ∂m ≤ B ^ γ := by
+      intro n
+      have h1 := minkowski_aux (m := m) (ν := ν) hγ (hGm n) (lintegral_trunc_ne_top hp0 n)
+      have h2 : ∫⁻ ξ, (∫⁻ y, trunc m ν F n y ξ ^ γ ∂m) ^ (1 / γ) ∂ν ≤ B := by
+        refine lintegral_mono fun ξ => ?_
+        refine ENNReal.rpow_le_rpow (lintegral_mono fun y => ?_) (by positivity)
+        exact ENNReal.rpow_le_rpow (trunc_le n y ξ) hp0.le
+      have h3 := ENNReal.rpow_le_rpow (h1.trans h2) hp0.le
+      rwa [← ENNReal.rpow_mul, one_div, inv_mul_cancel₀ hp0.ne', ENNReal.rpow_one] at h3
+    have hI : ∀ y, ⨆ n, ∫⁻ ξ, trunc m ν F n y ξ ∂ν = ∫⁻ ξ, F y ξ ∂ν := by
+      intro y
+      have hmeas : ∀ n, Measurable fun ξ => trunc m ν F n y ξ :=
+        fun n => (hGm n).comp measurable_prodMk_left
+      have := lintegral_iSup (μ := ν) hmeas (fun a b hab ξ => trunc_mono y ξ hab)
+      rw [← this]
+      exact lintegral_congr fun ξ => iSup_trunc y ξ
+    have hA : ∫⁻ y, (∫⁻ ξ, F y ξ ∂ν) ^ γ ∂m =
+        ⨆ n, ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ γ ∂m := by
+      have hmono : ∀ y, Monotone fun n => ∫⁻ ξ, trunc m ν F n y ξ ∂ν :=
+        fun y a b hab => lintegral_mono fun ξ => trunc_mono y ξ hab
+      rw [← lintegral_iSup]
+      · refine lintegral_congr fun y => ?_
+        rw [← hI y]
+        exact (ENNReal.monotone_rpow_of_nonneg hp0.le).map_iSup_of_continuousAt
+          (ENNReal.continuous_rpow_const.continuousAt) (ENNReal.zero_rpow_of_pos hp0)
+      · intro n
+        exact ((hGm n).lintegral_prod_right').pow_const _
+      · intro a b hab y
+        exact ENNReal.rpow_le_rpow (lintegral_mono fun ξ => trunc_mono y ξ hab) hp0.le
+    have hAB : ∫⁻ y, (∫⁻ ξ, F y ξ ∂ν) ^ γ ∂m ≤ B ^ γ := by
+      rw [hA]; exact iSup_le hn
+    have := ENNReal.rpow_le_rpow hAB (show 0 ≤ 1 / γ by positivity)
+    rwa [← ENNReal.rpow_mul, mul_one_div_cancel hp0.ne', ENNReal.rpow_one] at this
   have hHm := measurable_fiberHeight hg κ
   have hnorm : ∀ ξ, eLpNorm (fiberDensity g κ ξ) (ENNReal.ofReal γ) m =
       (∫⁻ y, F y ξ ^ γ ∂m) ^ (1 / γ) := by
@@ -59,21 +102,20 @@ lemma eLpNorm_fiberHeight_le {m : Measure Y} [SigmaFinite m] {g : Y → ℝ≥0�
   exact mul_le_mul_right hmink c
 
 
-/-- A function in `L^γ` with `γ > 0` is finite almost everywhere. -/
+/- A function in `L^γ` with `γ > 0` is finite almost everywhere. -/
 lemma ae_lt_top_of_eLpNorm_lt_top {m : Measure Y} {H : Y → ℝ≥0∞} (hH : Measurable H) {γ : ℝ}
     (hγ : 0 < γ) (h : eLpNorm H (ENNReal.ofReal γ) m < ∞) : ∀ᵐ y ∂m, H y < ∞ := by
   have hp0 : ENNReal.ofReal γ ≠ 0 := by simpa using hγ
   rw [eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top hp0 ENNReal.ofReal_ne_top
     hH.aestronglyMeasurable, ENNReal.toReal_ofReal hγ.le] at h
-  have h2 := ae_lt_top (hH.enorm.pow_const γ) h.ne
-  filter_upwards [h2] with y hy
+  filter_upwards [(ae_lt_top (hH.enorm.pow_const γ) h.ne)] with y hy
   rw [enorm_eq_self] at hy
   by_contra hcon
   rw [not_lt, top_le_iff] at hcon
   rw [hcon, ENNReal.top_rpow_of_pos hγ] at hy
   exact lt_irrefl _ hy
 
-/-- **Step Lemma 5.2.**  Under the hypotheses of
+/- **Step Lemma 5.2.**  Under the hypotheses of
 `fiber_disintegration`, Minkowski's integral inequality gives
 `‖H‖_{L^γ(m)} ≤ 𝖧 = (2π)^{-d} ∫ ‖k ξ‖_{L^γ(m)} dξ`.  If `𝖧 < ∞` then `H(y) < ∞` and
 `ξ ↦ k̃^ξ(y)` is integrable for `m`-almost every `y`. -/
@@ -95,7 +137,7 @@ theorem fiber_height_minkowski {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y 
   have hle := eLpNorm_fiberHeight_le (m := m) hg Γ.condKernel hγ
   rw [hnorm (ENNReal.ofReal γ)] at hle
   refine ⟨hle, fun hfin => ?_⟩
-  have hlt : eLpNorm (fiberHeight g Γ.condKernel) (ENNReal.ofReal γ) m < ∞ :=
+  have hlt :=
     lt_of_le_of_lt hle hfin
   filter_upwards [ae_lt_top_of_eLpNorm_lt_top hHm (by linarith) hlt] with y hy
   refine ⟨hy, ⟨(continuous_const.mul (continuous_fiberFourier _ y)).aestronglyMeasurable, ?_⟩⟩

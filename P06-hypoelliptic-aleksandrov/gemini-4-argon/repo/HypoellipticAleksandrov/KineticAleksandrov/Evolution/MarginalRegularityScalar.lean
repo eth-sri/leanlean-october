@@ -72,7 +72,7 @@ theorem ParabolicProbe.IsClassicalScalarTerminalSolution.toKinetic
 /-- A classical kinetic terminal solution of the `z`-independent datum which does not depend on
 `z` on the past closed cylinder restricts, at `z = 0`, to a classical scalar terminal solution. -/
 theorem IsClassicalTerminalSolution.toScalar
-    {V : KineticPoint n → ℝ}
+    {V }
     (hV : IsClassicalTerminalSolution Ω γ B b τ (lowerDatum F) V)
     (hz : ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, V p = V ⟨p.time, p.position, 0⟩) :
     ParabolicProbe.IsClassicalScalarTerminalSolution Ω γ B τ F

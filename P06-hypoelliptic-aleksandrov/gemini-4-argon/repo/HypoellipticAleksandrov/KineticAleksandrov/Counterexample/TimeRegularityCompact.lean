@@ -5,6 +5,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyN
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoff
 public import PDEFoundation.Geometry.EuclideanBall.Topology
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.HomogeneousTestLiftIntegral
+import Mathlib.Analysis.Calculus.ContDiff.Comp
+import Mathlib.Analysis.Normed.Operator.Bilinear
 
 /-! # Mixed smoothness of the explicit cutoff integral on a compact spatial carrier -/
 
@@ -12,8 +15,10 @@ import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
+open Set
+open scoped Topology
 
-/-- Spatial integration of the explicit cutoff formula is jointly smooth in time and
+/- Spatial integration of the explicit cutoff formula is jointly smooth in time and
 space. The underlying profile parameter is assumed only continuous, never smooth. -/
 theorem compact_cutoff_mollification_contDiff {d : ℕ} {A : Type}
     [TopologicalSpace A] [CompactSpace A] [MeasurableSpace A] [BorelSpace A]
@@ -39,6 +44,10 @@ theorem compact_cutoff_mollification_contDiff {d : ℕ} {A : Type}
       (contDiff_timeCutoffTheta.comp (hs.sub
         ((Real.contDiff_exp.comp (contDiff_const.mul ht)).mul
           (contDiff_const.sub ((PDE.contDiff_vecNormSq.comp hv).div_const (R ^ 2))))))
-  exact compact_parameter_contDiff nu (fun a => (y a, u a)) (hy.prodMk hu) f hf
+  let radius := (fun a => (y a, u a))
+  have hr := (hy.prodMk hu)
+  apply contDiff_infty.mpr
+  intro n
+  exact compact_parameter_contDiff_nat nu radius hr n f (hf.of_le (by simp))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

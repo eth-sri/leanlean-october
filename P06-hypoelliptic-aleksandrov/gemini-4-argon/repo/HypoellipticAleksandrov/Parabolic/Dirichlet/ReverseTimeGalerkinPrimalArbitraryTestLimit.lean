@@ -42,7 +42,7 @@ variable
 
 /-- The quotient-level reverse-time identity against an arbitrary spatial test. -/
 def reverseTimeGalerkinPrimal_arbitrary_test_identity_prop
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -152,7 +152,7 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_arbitraryTests
   have hRight : Tendsto (fun n => -source (vN n) + form (vN n)) atTop
       (𝓝 (-source v + form v)) :=
     hSource.neg.add hForm
-  have hLimit : mass v = -source v + form v :=
+  have hLimit :=
     tendsto_nhds_unique_of_eventuallyEq hMass hRight (Eventually.of_forall hFixed)
   simpa only [reverseTimeGalerkinPrimal_arbitrary_test_identity_prop, mass, source, form, G,
     S, A] using hLimit

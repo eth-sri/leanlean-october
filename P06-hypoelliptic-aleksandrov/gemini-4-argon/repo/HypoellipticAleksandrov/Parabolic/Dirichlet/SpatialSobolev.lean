@@ -25,7 +25,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
-/-- The continuous linear equivalence from the Hilbert-norm weak-gradient
+/- The continuous linear equivalence from the Hilbert-norm weak-gradient
 graph to the corresponding maximum-norm graph. -/
 noncomputable def h1HilbertGraphContinuousLinearEquiv
     (Ω : Set (PDE.Vec d)) :
@@ -37,11 +37,8 @@ noncomputable def h1HilbertGraphContinuousLinearEquiv
 theorem h1HilbertGraphContinuousLinearEquiv_apply
     (z : PDE.H1HilbertGraph Ω) :
     h1HilbertGraphContinuousLinearEquiv Ω z =
-      PDE.H1HilbertGraph.toH1Graph z :=
-  rfl
+      PDE.H1HilbertGraph.toH1Graph z := rfl
 
-/-- The linear map taking an actual bundled smooth compactly supported test
-function to the Hilbert-norm weak-gradient graph. -/
 noncomputable def smoothCompactlySupportedH1HilbertGraphLinearMap
     (hΩ : IsOpen Ω) :
     PDE.WeakTestFunction Ω →ₗ[ℝ] PDE.H1HilbertGraph Ω :=
@@ -49,20 +46,20 @@ noncomputable def smoothCompactlySupportedH1HilbertGraphLinearMap
     (PDE.smoothCompactlySupportedW1pGraphLinearMap
       (p := (2 : ℝ≥0∞)) hΩ)
 
-/-- The submodule of Hilbert-graph points coming from actual bundled smooth
+/- The submodule of Hilbert-graph points coming from actual bundled smooth
 compactly supported test functions. -/
 noncomputable def smoothCompactlySupportedH1HilbertGraphSubmodule
     (hΩ : IsOpen Ω) :
     Submodule ℝ (PDE.H1HilbertGraph Ω) :=
   LinearMap.range (smoothCompactlySupportedH1HilbertGraphLinearMap hΩ)
 
-/-- The closed Hilbert-graph submodule defining spatial `H¹₀`. -/
+/- The closed Hilbert-graph submodule defining spatial `H¹₀`. -/
 noncomputable def h10HilbertGraphClosedSubmodule
     (hΩ : IsOpen Ω) :
     ClosedSubmodule ℝ (PDE.H1HilbertGraph Ω) :=
   (smoothCompactlySupportedH1HilbertGraphSubmodule hΩ).closure
 
-/-- The complete Hilbert realization of spatial `H¹₀(Ω)`. -/
+/- The complete Hilbert realization of spatial `H¹₀(Ω)`. -/
 noncomputable abbrev H10HilbertGraph (hΩ : IsOpen Ω) :=
   ↥((h10HilbertGraphClosedSubmodule hΩ).toSubmodule)
 
@@ -92,13 +89,13 @@ noncomputable instance (hΩ : IsOpen Ω) :
     CompleteSpace (H10HilbertGraph hΩ) :=
   (h10HilbertGraphClosedSubmodule hΩ).isClosed.completeSpace_coe
 
-/-- The continuous scalar-value map from spatial `H¹₀` to spatial `L²`. -/
+/- The continuous scalar-value map from spatial `H¹₀` to spatial `L²`. -/
 noncomputable def valueCLM (hΩ : IsOpen Ω) :
     H10HilbertGraph hΩ →L[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
   PDE.H1HilbertGraph.valueCLM.comp
     (h10HilbertGraphClosedSubmodule hΩ).toSubmodule.subtypeL
 
-/-- The continuous weak-gradient map from spatial `H¹₀` to vector-valued
+/- The continuous weak-gradient map from spatial `H¹₀` to vector-valued
 spatial `L²`. -/
 noncomputable def gradientCLM (hΩ : IsOpen Ω) :
     H10HilbertGraph hΩ →L[ℝ]
@@ -108,16 +105,12 @@ noncomputable def gradientCLM (hΩ : IsOpen Ω) :
 
 @[simp]
 theorem valueCLM_apply (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
-    valueCLM hΩ u = PDE.H1HilbertGraph.value (u : PDE.H1HilbertGraph Ω) :=
-  rfl
+    valueCLM hΩ u = PDE.H1HilbertGraph.value (u : PDE.H1HilbertGraph Ω) := rfl
 
 @[simp]
 theorem gradientCLM_apply (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
-    gradientCLM hΩ u = PDE.H1HilbertGraph.gradient (u : PDE.H1HilbertGraph Ω) :=
-  rfl
+    gradientCLM hΩ u = PDE.H1HilbertGraph.gradient (u : PDE.H1HilbertGraph Ω) := rfl
 
-/-- The canonical inclusion of an actual bundled smooth compactly supported
-test function into the Hilbert realization of spatial `H¹₀`. -/
 noncomputable def smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph
     (hΩ : IsOpen Ω) (φ : PDE.WeakTestFunction Ω) : H10HilbertGraph hΩ :=
   ⟨smoothCompactlySupportedH1HilbertGraphLinearMap hΩ φ,
@@ -125,7 +118,7 @@ noncomputable def smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph
       (LinearMap.mem_range_self
         (smoothCompactlySupportedH1HilbertGraphLinearMap hΩ) φ)⟩
 
-/-- Every Hilbert-graph `H¹₀` point is a sequential limit of images of actual
+/- Every Hilbert-graph `H¹₀` point is a sequential limit of images of actual
 bundled smooth compactly supported test functions. -/
 theorem exists_tendsto_smooth
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
@@ -156,7 +149,7 @@ theorem exists_tendsto_smooth
   refine ⟨φ, ?_⟩
   simpa only [hφ] using hvTendsto
 
-/-- The direct Hilbert closure of actual tests is the pullback of the sibling
+/- The direct Hilbert closure of actual tests is the pullback of the sibling
 maximum-norm zero-boundary graph through the Hilbert/max-norm equivalence. -/
 theorem h10HilbertGraphClosedSubmodule_eq_comap
     (hΩ : IsOpen Ω) :
@@ -196,7 +189,7 @@ theorem h10HilbertGraphClosedSubmodule_eq_comap
       (LinearMap.mem_range_self
         (smoothCompactlySupportedH1HilbertGraphLinearMap hΩ) (φ n))
 
-/-- The continuous linear equivalence between the direct Hilbert `H¹₀`
+/- The continuous linear equivalence between the direct Hilbert `H¹₀`
 closure and the sibling maximum-norm `H¹₀` graph. -/
 noncomputable def h10HilbertGraphContinuousLinearEquiv
     (hΩ : IsOpen Ω) :

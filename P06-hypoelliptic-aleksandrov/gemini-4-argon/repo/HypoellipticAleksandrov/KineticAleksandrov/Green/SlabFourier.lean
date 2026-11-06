@@ -5,6 +5,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierFamily
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierCovariance
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierIntegral
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.Main
+import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Radius
+import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Unique
+import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierKernelsTranslation
 
 /-!
 # Lemma 5.1 (case W), conditional on Proposition 4.2 and Proposition 3.1
@@ -36,16 +39,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Green
 open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal NNReal ProbabilityTheory
+open HypoellipticAleksandrov.KineticAleksandrov.Scaling
 
-/-- The Gauss-type constant `∫ exp(-c|ζ|^{2/3}) dζ` of the frequency integral. -/
+/- The Gauss-type constant `∫ exp(-c|ζ|^{2/3}) dζ` of the frequency integral. -/
 def slabFreqConstant (d : ℕ) (c : ℝ) : ℝ := (∫⁻ ζ, decayProfile d c ζ).toReal
 
-/-- The structural constant `K₁(γ) = 2^{β_γ} (1 + C)(1 + (2π)^{-d} A_{c/2})`. -/
+/- The structural constant `K₁(γ) = 2^{β_γ} (1 + C)(1 + (2π)^{-d} A_{c/2})`. -/
 def slabK1 (d : ℕ) (Cdec cdec γ : ℝ) : ℝ :=
   (2 : ℝ) ^ slabBeta d γ * (1 + Cdec) *
     (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2))
 
-/-- The constants `C_γ` of Lemma 5.1: `C_γ^{occ} · K₁(γ)`. -/
+/- The constants `C_γ` of Lemma 5.1: `C_γ^{occ} · K₁(γ)`. -/
 def slabConstant' (d : ℕ) (Cocc : ℝ → ℝ) (Cdec cdec : ℝ) (γ : ℝ) : ℝ≥0 :=
   Real.toNNReal (Cocc γ * slabK1 d Cdec cdec γ)
 
@@ -55,19 +59,7 @@ lemma one_le_slabK1_factor {d : ℕ} {Cdec : ℝ} (hCdec : 0 < Cdec) (cdec : ℝ
     unfold slabFreqConstant; positivity
   nlinarith
 
-/-- Real arithmetic of the frequency integral. -/
-lemma freq_arith (Co Cd a M t1 t2 A q : ℝ) (hCo : 0 ≤ Co) (hCd : 0 ≤ Cd) (ha : 0 ≤ a)
-    (hM : 0 ≤ M) (ht1 : 0 ≤ t1) (ht2 : 0 ≤ t2) (hA : 0 ≤ A) (hq : 0 ≤ q) :
-    q * ((Co * Cd * a) * M * t1 * (t2 * A)) ≤
-      (Co * (a * (1 + Cd) * (1 + q * A))) * M * (t1 * t2) := by
-  have hP : 0 ≤ Co * a * M * t1 * t2 := by positivity
-  have key : q * Cd * A ≤ (1 + Cd) * (1 + q * A) := by
-    nlinarith [mul_nonneg hq hA, mul_nonneg hCd (mul_nonneg hq hA)]
-  calc q * ((Co * Cd * a) * M * t1 * (t2 * A)) = (Co * a * M * t1 * t2) * (q * Cd * A) := by ring
-    _ ≤ (Co * a * M * t1 * t2) * ((1 + Cd) * (1 + q * A)) := mul_le_mul_of_nonneg_left key hP
-    _ = _ := by ring
-
-/-- The frequency-integral arithmetic in `ℝ≥0∞`. -/
+/- Real arithmetic of the frequency integral. -/
 lemma freq_ennreal (Co Cd a M t1 t2 A q K1 s : ℝ) (hCo : 0 ≤ Co) (hCd : 0 ≤ Cd) (ha : 0 ≤ a)
     (hM : 0 ≤ M) (ht1 : 0 ≤ t1) (ht2 : 0 ≤ t2) (hA : 0 ≤ A) (hq : 0 ≤ q)
     (hK : K1 = a * (1 + Cd) * (1 + q * A)) (hs : s = t1 * t2) :
@@ -84,9 +76,14 @@ lemma freq_ennreal (Co Cd a M t1 t2 A q K1 s : ℝ) (hCo : 0 ≤ Co) (hCd : 0 �
     ← ENNReal.ofReal_mul (by positivity)]
   refine ENNReal.ofReal_le_ofReal ?_
   rw [hK, hs]
-  exact freq_arith Co Cd a M t1 t2 A q hCo hCd ha hM ht1 ht2 hA hq
+  have hP : 0 ≤ Co * a * M * t1 * t2 := by positivity
+  have key : q * Cd * A ≤ (1 + Cd) * (1 + q * A) := by
+    nlinarith [mul_nonneg hq hA, mul_nonneg hCd (mul_nonneg hq hA)]
+  calc q * ((Co * Cd * a) * M * t1 * (t2 * A)) = (Co * a * M * t1 * t2) * (q * Cd * A) := by ring
+    _ ≤ (Co * a * M * t1 * t2) * ((1 + Cd) * (1 + q * A)) := mul_le_mul_of_nonneg_left key hP
+    _ = _ := by ring
 
-/-- The Fourier part of `SlabFourierBounds` for an explicit family `k` of densities: integrable
+/- The Fourier part of `SlabFourierBounds` for an explicit family `k` of densities: integrable
 densities of the Fourier marginals, the decay bound, and the integrated height bound. -/
 def SlabFourierBoundsFamily (d : ℕ) (C : ℝ → ℝ≥0) (c : ℝ) (M : ℝ≥0∞) (T : ℝ)
     (Γ : Measure (GreenCarrier d)) (k : PDE.Vec d → SlabBase d → ℂ) : Prop :=
@@ -103,145 +100,10 @@ def SlabFourierBoundsFamily (d : ℕ) (C : ℝ → ℝ≥0) (c : ℝ) (M : ℝ�
         ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
       (C γ : ℝ≥0∞) * M * ENNReal.ofReal (T ^ (slabBeta d γ - 3 * (d : ℝ) / 2))
 
-/-- **Lemma 5.1 for one realized kernel**, conditional on the occupation and decay
+/- **Lemma 5.1 for one realized kernel**, conditional on the occupation and decay
 estimates for that kernel (constants `Cocc`, `Cdec`, `cdec`).  The Fourier densities can be taken
 jointly Borel in `(ξ, y)`, so that `ξ ↦ ‖k^ξ‖_{L^γ}` is measurable. -/
-theorem slabFourierBounds_meas_of_occupation_decay_kernel {d : ℕ} (hd : 0 < d)
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
-    (hcomp : K.HasComposition MeasurableSet.univ)
-    (Cocc : ℝ → ℝ) (hocc : OccupationBoundedBy K Cocc)
-    (Cdec cdec : ℝ) (hCdec : 0 < Cdec) (hcdec : 0 < cdec) (hdec : FourierDecayBoundedBy K Cdec cdec)
-    (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
-    [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
-    {T : ℝ} (hT : 0 < T) :
-    SlabFourierBounds d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ ∧
-      ∃ k : PDE.Vec d → SlabBase d → ℂ, Measurable (Function.uncurry k) ∧
-        SlabFourierBoundsFamily d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ k := by
-  obtain ⟨g, hgm, hgE, hgnorm⟩ := slab_marginal_density hd K hcov Cocc hocc σ₀ μ Γ hΓ hT
-  have hΓfin : IsFiniteMeasure (Γ.restrict (slabSet (d := d) T)) := by
-    refine ⟨?_⟩
-    rw [Measure.restrict_apply MeasurableSet.univ, univ_inter]
-    exact (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt
-      (ENNReal.mul_lt_top (measure_lt_top _ _) ENNReal.ofReal_lt_top)
-  obtain ⟨kf, hkm, hkf⟩ := exists_measurable_fourier_family hd hT Γ g hgE
-  have hk : ∀ (ξ : PDE.Vec d) (γ : ℝ), 1 ≤ γ → γ ≤ slabGamma0 d →
-      eLpNorm (kf ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
-        ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
-          ENNReal.ofReal (T ^ slabBeta d γ) *
-          ENNReal.ofReal (Real.exp
-            (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) :=
-    fun ξ => slab_fourier_density_bound K hd hcov hcomp Cocc hocc Cdec cdec hCdec hdec σ₀ μ Γ hΓ
-      hT ξ (kf ξ) (hkf ξ).1 (hkf ξ).2
-  have hCγ : ∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d →
-      (slabConstant' d Cocc Cdec cdec γ : ℝ≥0∞) = ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) :=
-    fun _ _ _ => rfl
-  have hfin : ∫⁻ ζ, decayProfile d (cdec / 2) ζ < ⊤ :=
-    lintegral_decayProfile_lt_top hd (by linarith)
-  have hAeq : ∫⁻ ζ, decayProfile d (cdec / 2) ζ = ENNReal.ofReal (slabFreqConstant d (cdec / 2)) :=
-    (ENNReal.ofReal_toReal hfin.ne).symm
-  have hA0 : 0 ≤ slabFreqConstant d (cdec / 2) := ENNReal.toReal_nonneg
-  set M : ℝ := (μ univ).toReal with hMdef
-  have hM : μ univ = ENNReal.ofReal M := (ENNReal.ofReal_toReal (measure_ne_top _ _)).symm
-  have hM0 : 0 ≤ M := ENNReal.toReal_nonneg
-  have hq0 : (0 : ℝ) ≤ ((2 * Real.pi) ^ d)⁻¹ := by positivity
-  have hF1 := one_le_slabK1_factor (d := d) hCdec cdec
-  have hF2 : Cdec ≤ (1 + Cdec) * (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2)) := by
-    nlinarith [mul_nonneg hq0 hA0]
-  have hK1 : ∀ γ : ℝ, slabK1 d Cdec cdec γ =
-      (2 : ℝ) ^ slabBeta d γ * ((1 + Cdec) *
-        (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2))) := fun γ => by
-    unfold slabK1; ring
-  have hfam : SlabFourierBoundsFamily d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ
-      kf := by
-    refine ⟨fun ξ => ⟨(hkf ξ).1, (hkf ξ).2⟩, fun γ h1 h2 => ⟨fun ξ => ?_, ?_⟩⟩
-    · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
-      have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
-      refine (hk ξ γ h1 h2).trans ?_
-      rw [hCγ γ h1 h2]
-      have hle : ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) ≤
-          ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) := by
-        refine ENNReal.ofReal_le_ofReal ?_
-        rw [hK1]
-        nlinarith [mul_nonneg hC0 h2b, mul_nonneg hC0 hCdec.le]
-      exact mul_le_mul' (mul_le_mul' (mul_le_mul' hle le_rfl) le_rfl) le_rfl
-    · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
-      have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
-      have ht1 : 0 ≤ T ^ slabBeta d γ := Real.rpow_nonneg hT.le _
-      have ht2 : 0 ≤ T ^ (-(3 * (d : ℝ) / 2)) := Real.rpow_nonneg hT.le _
-      set D : ℝ≥0∞ := ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
-        ENNReal.ofReal (T ^ slabBeta d γ) with hD
-      have hDtop : D ≠ ⊤ := by
-        rw [hD]
-        exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top _ _))
-          ENNReal.ofReal_ne_top
-      have hscale := lintegral_decayProfile_scaling d (cdec / 2) T hT
-      calc ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
-            ∫⁻ ξ, eLpNorm (kf ξ) (ENNReal.ofReal γ) (slabBase d T)
-          ≤ ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
-            ∫⁻ ξ : PDE.Vec d, D * ENNReal.ofReal (Real.exp
-              (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) :=
-            mul_le_mul' le_rfl (lintegral_mono (fun ξ => hk ξ γ h1 h2))
-        _ = ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
-            (D * (ENNReal.ofReal (T ^ (-(3 * (d : ℝ) / 2))) *
-              ENNReal.ofReal (slabFreqConstant d (cdec / 2)))) := by
-            rw [lintegral_const_mul' D _ hDtop, hscale, hAeq]
-        _ ≤ _ := by
-            rw [hCγ γ h1 h2, hD, hM]
-            have hrp : T ^ (slabBeta d γ - 3 * (d : ℝ) / 2) =
-                T ^ slabBeta d γ * T ^ (-(3 * (d : ℝ) / 2)) := by
-              rw [← Real.rpow_add hT, sub_eq_add_neg]
-            rw [hrp]
-            exact freq_ennreal (Cocc γ) Cdec ((2 : ℝ) ^ slabBeta d γ) M (T ^ slabBeta d γ)
-              (T ^ (-(3 * (d : ℝ) / 2))) (slabFreqConstant d (cdec / 2)) (((2 * Real.pi) ^ d)⁻¹)
-              (slabK1 d Cdec cdec γ) _ hC0 hCdec.le h2b hM0 ht1 ht2 hA0 hq0
-              (by unfold slabK1; ring) rfl
-  refine ⟨⟨⟨g, hgm.aemeasurable, hgE, fun γ h1 h2 => ?_⟩, kf, hfam⟩, kf, hkm, hfam⟩
-  · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
-    have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
-    refine (hgnorm γ h1 h2).trans ?_
-    rw [hCγ γ h1 h2]
-    have hle : ENNReal.ofReal (Cocc γ * (2 : ℝ) ^ slabBeta d γ) ≤
-        ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) := by
-      refine ENNReal.ofReal_le_ofReal ?_
-      rw [hK1]
-      nlinarith [mul_nonneg hC0 h2b]
-    exact mul_le_mul' (mul_le_mul' hle le_rfl) le_rfl
-
-/-- **Lemma 5.1 (case W), family level.**  Conditional on the conclusions of Proposition 4.2
-(`ParabolicOccupationFamily`) and Proposition 3.1 (`FourierDecayFamily`) for the coefficient bounds
-`λ, Λ`: there are constants `C_γ, c` (depending only on `d` and the constants of the two premises)
-such that for every Section 2 coefficient `B` with these bounds, every realizing evolution `(S, K)`
-of `(B, id)`, every `σ₀`, finite `μ`, Green measure `Γ` of `μ` (infinite horizon) and `T > 0`,
-`SlabFourierBounds d C c (μ univ) T Γ` holds, with Fourier densities `k^ξ` that are jointly Borel
-in `(ξ, y)` (so `ξ ↦ ‖k^ξ‖_{L^γ}` is measurable, see `measurable_eLpNorm_family`).  The translation
-covariance and composition clauses needed by the proof are derived from the realization
-(`isTranslationCovariant_of_realizes`). -/
-theorem slabFourierBounds_meas_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ)
-    (hocc : ParabolicOccupationFamily d lam Lam) (hdec : FourierDecayFamily d lam Lam) :
-    ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
-      IsSectionTwoCoefficient lam Lam B →
-      ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-        (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))),
-      RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
-        (zIndependentCoefficient B) (identityDrift d) S K →
-      ∀ (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
-        [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)), IsGreenMeasure K σ₀ ⊤ μ Γ →
-      ∀ T : ℝ, 0 < T → SlabFourierBounds d C c (μ univ) T Γ ∧
-        ∃ k : PDE.Vec d → SlabBase d → ℂ, Measurable (Function.uncurry k) ∧
-          SlabFourierBoundsFamily d C c (μ univ) T Γ k := by
-  obtain ⟨Cocc, hoc⟩ := hocc
-  obtain ⟨Cdec, cdec, hCdec, hcdec, hdc⟩ := hdec
-  refine ⟨slabConstant' d Cocc Cdec cdec, cdec / 2, fun B hB S K hreal σ₀ μ _ Γ hΓ T hT => ?_⟩
-  exact slabFourierBounds_meas_of_occupation_decay_kernel (Nat.pos_of_ne_zero (by omega)) K
-    (isTranslationCovariant_of_realizes B S K hreal) hreal.2.2.2 Cocc (hoc B hB S K hreal)
-    Cdec cdec hCdec hcdec (hdc B hB S K hreal) σ₀ μ Γ hΓ hT
-
-/-- **Lemma 5.1 (case W), family level, in the form consumed by Theorem 1.1.**  Exactly the
-conclusion of `slabFourierBounds_meas_of_occupation_decay` without the measurability clause: the
-`hbounds` premise of `Green.green_density_of_slab_marginals` and of
-`TheoremA.green_density_bound_of_slabFourierBounds`. -/
-theorem slabFourierBounds_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ)
+theorem slabFourierBounds_of_occupation_decay {d } (hd : 1 ≤ d) (lam Lam : ℝ)
     (hocc : ParabolicOccupationFamily d lam Lam) (hdec : FourierDecayFamily d lam Lam) :
     ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
@@ -252,7 +114,172 @@ theorem slabFourierBounds_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam Lam 
       ∀ (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
         [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)), IsGreenMeasure K σ₀ ⊤ μ Γ →
       ∀ T : ℝ, 0 < T → SlabFourierBounds d C c (μ univ) T Γ := by
-  obtain ⟨C, c, h⟩ := slabFourierBounds_meas_of_occupation_decay hd lam Lam hocc hdec
+  obtain ⟨C, c, h⟩ : ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
+      IsSectionTwoCoefficient lam Lam B →
+      ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+        (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))),
+      RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
+        (zIndependentCoefficient B) (identityDrift d) S K →
+      ∀ (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
+        [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)), IsGreenMeasure K σ₀ ⊤ μ Γ →
+      ∀ T : ℝ, 0 < T → SlabFourierBounds d C c (μ univ) T Γ ∧
+        ∃ k : PDE.Vec d → SlabBase d → ℂ, Measurable (Function.uncurry k) ∧
+          SlabFourierBoundsFamily d C c (μ univ) T Γ k := by
+    obtain ⟨Cocc, hoc⟩ := hocc
+    obtain ⟨Cdec, cdec, hCdec, hcdec, hdc⟩ := hdec
+    refine ⟨slabConstant' d Cocc Cdec cdec, cdec / 2, fun B hB S K hreal σ₀ μ _ Γ hΓ T hT => ?_⟩
+    have hd : 0 < d := (Nat.pos_of_ne_zero (by omega))
+    have hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K := by
+      intro σ τ hστ h0 p
+      let r1 : {r : ℝ // 0 < r} := ⟨1, one_pos⟩
+      let Φ := KineticAffineScaling.ofRadius (d := d) 0 0 h0 (identityDrift d) r1
+      have hmaps : Φ.MapsDomain (wholeSpace d) (fun _ => (0 : PDE.Vec d)) (wholeSpace d)
+          (fun _ => (0 : PDE.Vec d)) := KineticAffineScaling.mapsDomain_wholeSpace Φ
+      have hB : scaledCoefficient B 0 0 r1 = B := by
+        funext t Y
+        simp [scaledCoefficient, r1]
+      have hreal' : RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+          (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d))
+          (Φ.coefficient (zIndependentCoefficient B)) (Φ.drift (identityDrift d)) S K := by
+        rw [KineticAffineScaling.ofRadius_coefficient, KineticAffineScaling.ofRadius_drift,
+          scaledDrift_identity, hB]
+        exact hreal
+      have hmaster : ∀ q' : EvolutionQuery (wholeSpace d) (fun _ => (0 : PDE.Vec d)),
+          K.master q' = (K.master (KineticAffineScaling.queryMap hmaps q')).map
+            (Φ.ambientEquiv q'.1.2.1).symm := fun q' =>
+        KineticAffineScaling.realizes_master_eq_map hmaps
+          (wholeSpace_admissible d) (zeroCurve_piecewiseC1 d) (wholeSpace_admissible d) hreal hreal' q'
+      set q' := evolutionQueryOfState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ τ hστ p with hq'
+      have hqm : KineticAffineScaling.queryMap hmaps q' =
+          evolutionQueryOfState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ τ hστ
+            (evolutionStateShift (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ h0 p) := by
+        apply Subtype.ext
+        simp [KineticAffineScaling.queryMap, KineticAffineScaling.rawQuery, KineticAffineScaling.time,
+          KineticAffineScaling.position, KineticAffineScaling.transport, Φ,
+          KineticAffineScaling.ofRadius,
+          r1, hq', evolutionQueryOfState, evolutionStateShift, evolutionAmbientStateShift,
+          identityDrift, add_comm]
+      have hM : Measure.map (evolutionAmbientStateShift h0) (K.master q') =
+          K.master (evolutionQueryOfState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ τ hστ
+            (evolutionStateShift (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ h0 p)) := by
+        rw [hmaster q', hqm, Measure.map_map (measurable_evolutionAmbientStateShift h0)
+          (Φ.ambientEquiv _).symm.measurable]
+        have hid : evolutionAmbientStateShift h0 ∘ (Φ.ambientEquiv (q'.1.2.1)).symm = id := by
+          funext x
+          simp [evolutionAmbientStateShift, KineticAffineScaling.positionInv,
+            KineticAffineScaling.transportInv, Φ, KineticAffineScaling.ofRadius, r1, identityDrift]
+        rw [hid, Measure.map_id]
+      have hU : MeasurableSet (wholeSpace d) := MeasurableSet.univ
+
+      have hemb := MeasurableEmbedding.subtype_coe
+        (measurableSet_evolutionStateSet (γ := fun _ => (0 : PDE.Vec d)) hU τ)
+      rw [← hemb.comap_map (Measure.map (evolutionStateShift (wholeSpace d) (fun _ => 0) τ h0)
+          (K.fiberKernel hU σ τ hστ p)),
+        ← hemb.comap_map (K.fiberKernel hU σ τ hστ
+          (evolutionStateShift (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ h0 p))]
+      congr 1
+      rw [Measure.map_map measurable_subtype_coe (measurable_evolutionStateShift _ _ _ _),
+        K.map_fiberKernel_eq_master hU σ τ hστ _]
+      have hc : ((↑) : EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) τ →
+          EvolutionAmbientState d) ∘ evolutionStateShift (wholeSpace d) (fun _ => 0) τ h0 =
+          evolutionAmbientStateShift h0 ∘ ((↑) : EvolutionState (wholeSpace d)
+            (fun _ => (0 : PDE.Vec d)) τ → EvolutionAmbientState d) := rfl
+      rw [hc, ← Measure.map_map (measurable_evolutionAmbientStateShift h0) measurable_subtype_coe,
+        K.map_fiberKernel_eq_master hU σ τ hστ p]
+      exact hM
+
+    have hcomp := hreal.2.2.2
+    have hocc := (hoc B hB S K hreal)
+    have hdec := (hdc B hB S K hreal)
+    obtain ⟨g, hgm, hgE, hgnorm⟩ := slab_marginal_density hd K hcov Cocc hocc σ₀ μ Γ hΓ hT
+    have hΓfin : IsFiniteMeasure (Γ.restrict (slabSet (d := d) T)) := by
+      refine ⟨?_⟩
+      rw [Measure.restrict_apply MeasurableSet.univ, univ_inter]
+      exact (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt
+        (ENNReal.mul_lt_top (measure_lt_top _ _) ENNReal.ofReal_lt_top)
+    obtain ⟨kf, hkm, hkf⟩ := exists_measurable_fourier_family hd hT Γ g hgE
+    have hk : ∀ (ξ : PDE.Vec d) (γ : ℝ), 1 ≤ γ → γ ≤ slabGamma0 d →
+        eLpNorm (kf ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
+          ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
+            ENNReal.ofReal (T ^ slabBeta d γ) *
+            ENNReal.ofReal (Real.exp
+              (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) :=
+      fun ξ => slab_fourier_density_bound K hd hcov hcomp Cocc hocc Cdec cdec hCdec hdec σ₀ μ Γ hΓ
+        hT ξ (kf ξ) (hkf ξ).1 (hkf ξ).2
+    have hCγ : ∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d →
+        (slabConstant' d Cocc Cdec cdec γ : ℝ≥0∞) = ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) :=
+      fun _ _ _ => rfl
+    have hfin : ∫⁻ ζ, decayProfile d (cdec / 2) ζ < ⊤ :=
+      lintegral_decayProfile_lt_top hd (by linarith)
+    have hAeq : ∫⁻ ζ, decayProfile d (cdec / 2) ζ = ENNReal.ofReal (slabFreqConstant d (cdec / 2)) :=
+      (ENNReal.ofReal_toReal hfin.ne).symm
+    have hA0 : 0 ≤ slabFreqConstant d (cdec / 2) := ENNReal.toReal_nonneg
+    set M : ℝ := (μ univ).toReal with hMdef
+    have hM : μ univ = ENNReal.ofReal M := (ENNReal.ofReal_toReal (measure_ne_top _ _)).symm
+    have hM0 : 0 ≤ M := ENNReal.toReal_nonneg
+    have hq0 : (0 : ℝ) ≤ ((2 * Real.pi) ^ d)⁻¹ := by positivity
+    have hF1 := one_le_slabK1_factor (d := d) hCdec cdec
+    have hF2 : Cdec ≤ (1 + Cdec) * (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2)) := by
+      nlinarith [mul_nonneg hq0 hA0]
+    have hK1 : ∀ γ : ℝ, slabK1 d Cdec cdec γ =
+        (2 : ℝ) ^ slabBeta d γ * ((1 + Cdec) *
+          (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2))) := fun γ => by
+      unfold slabK1; ring
+    have hfam : SlabFourierBoundsFamily d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ
+        kf := by
+      refine ⟨fun ξ => ⟨(hkf ξ).1, (hkf ξ).2⟩, fun γ h1 h2 => ⟨fun ξ => ?_, ?_⟩⟩
+      · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
+        have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
+        refine (hk ξ γ h1 h2).trans ?_
+        rw [hCγ γ h1 h2]
+        have hle : ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) ≤
+            ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) := by
+          refine ENNReal.ofReal_le_ofReal ?_
+          rw [hK1]
+          nlinarith [mul_nonneg hC0 h2b, mul_nonneg hC0 hCdec.le]
+        exact mul_le_mul' (mul_le_mul' (mul_le_mul' hle le_rfl) le_rfl) le_rfl
+      · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
+        have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
+        have ht1 : 0 ≤ T ^ slabBeta d γ := Real.rpow_nonneg hT.le _
+        have ht2 : 0 ≤ T ^ (-(3 * (d : ℝ) / 2)) := Real.rpow_nonneg hT.le _
+        set D : ℝ≥0∞ := ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
+          ENNReal.ofReal (T ^ slabBeta d γ) with hD
+        have hDtop : D ≠ ⊤ := by
+          rw [hD]
+          exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top _ _))
+            ENNReal.ofReal_ne_top
+        have hscale := lintegral_decayProfile_scaling d (cdec / 2) T hT
+        calc ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
+              ∫⁻ ξ, eLpNorm (kf ξ) (ENNReal.ofReal γ) (slabBase d T)
+            ≤ ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
+              ∫⁻ ξ : PDE.Vec d, D * ENNReal.ofReal (Real.exp
+                (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) :=
+              mul_le_mul' le_rfl (lintegral_mono (fun ξ => hk ξ γ h1 h2))
+          _ = ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
+              (D * (ENNReal.ofReal (T ^ (-(3 * (d : ℝ) / 2))) *
+                ENNReal.ofReal (slabFreqConstant d (cdec / 2)))) := by
+              rw [lintegral_const_mul' D _ hDtop, hscale, hAeq]
+          _ ≤ _ := by
+              rw [hCγ γ h1 h2, hD, hM]
+              have hrp : T ^ (slabBeta d γ - 3 * (d : ℝ) / 2) =
+                  T ^ slabBeta d γ * T ^ (-(3 * (d : ℝ) / 2)) := by
+                rw [← Real.rpow_add hT, sub_eq_add_neg]
+              rw [hrp]
+              exact freq_ennreal (Cocc γ) Cdec ((2 : ℝ) ^ slabBeta d γ) M (T ^ slabBeta d γ)
+                (T ^ (-(3 * (d : ℝ) / 2))) (slabFreqConstant d (cdec / 2)) (((2 * Real.pi) ^ d)⁻¹)
+                (slabK1 d Cdec cdec γ) _ hC0 hCdec.le h2b hM0 ht1 ht2 hA0 hq0
+                (by unfold slabK1; ring) rfl
+    refine ⟨⟨⟨g, hgm.aemeasurable, hgE, fun γ h1 h2 => ?_⟩, kf, hfam⟩, kf, hkm, hfam⟩
+    · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
+      have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
+      refine (hgnorm γ h1 h2).trans ?_
+      rw [hCγ γ h1 h2]
+      have hle : ENNReal.ofReal (Cocc γ * (2 : ℝ) ^ slabBeta d γ) ≤
+          ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) := by
+        refine ENNReal.ofReal_le_ofReal ?_
+        rw [hK1]
+        nlinarith [mul_nonneg hC0 h2b]
+      exact mul_le_mul' (mul_le_mul' hle le_rfl) le_rfl
   exact ⟨C, c, fun B hB S K hreal σ₀ μ _ Γ hΓ T hT => (h B hB S K hreal σ₀ μ Γ hΓ T hT).1⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

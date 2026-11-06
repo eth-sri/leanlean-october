@@ -13,15 +13,15 @@ open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set Measu
 /-- The actual signed Green potential of a smooth test is its value minus its
 actual terminal-kernel value. The forcing is its literal kinetic operator. -/
 theorem fullspace_green_terminal_error_smooth_datum
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
+    (hH : HormanderHypoellipticityStatement) {lam Lam }
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) (T : ℝ)
     (f : Point → ℝ) (hf : ContDiff ℝ 2 (f ∘ evolutionHomeomorph 1))
-    (Cf M : ℝ) (hM : 0 ≤ M) (hfb : ∀ p, |f p| ≤ Cf)
+    (Cf M ) (hM : 0 ≤ M) (hfb : ∀ p, |f p| ≤ Cf)
     (hLf : ∀ p, |transportedForwardOperator (evolutionCoefficient A.a)
       (identityDrift 1) f p| ≤ M)
     (F : BoundedBorel (EvolutionAmbientState 1)) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
-    (δ : ℝ) (hFt : ∀ p, p.time = T → |f p - F (p.position, p.velocity)| ≤ δ)
+    (δ ) (hFt : ∀ p, p.time = T → |f p - F (p.position, p.velocity)| ≤ δ)
     (p : Point) (hp : p.time < T) :
     |duhamelPotential E.2 T
       ((evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T).indicator
@@ -36,7 +36,7 @@ theorem fullspace_green_terminal_error_smooth_datum
   have hD : IsOpen D := isOpen_duhamelCylinder
     (isOpen_of_isAdmissibleEvolutionDomain autonomousWholeDomain_admissible)
     continuous_const T
-  have hU : IsOpen (evolutionHomeomorph 1 ⁻¹' D) :=
+  have hU :=
     hD.preimage (evolutionHomeomorph 1).continuous
   have hus : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D) := by

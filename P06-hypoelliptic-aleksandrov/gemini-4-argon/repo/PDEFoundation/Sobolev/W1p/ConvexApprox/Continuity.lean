@@ -20,7 +20,7 @@ open scoped Pointwise Convolution
 
 namespace PDE
 
-/-- The classical coordinate derivative of the smooth representative agrees
+/- The classical coordinate derivative of the smooth representative agrees
 almost everywhere with the correspondingly smoothed weak derivative, including
 the exact affine factor `1 - ε`. -/
 theorem ae_eq_fderiv_convexApproxSmoothRepresentative_apply_basisVec
@@ -126,14 +126,6 @@ theorem continuous_convexApproxSample_right
   unfold convexApproxSample
   fun_prop
 
-theorem continuous_convexApproxSample_prod
-    {d : ℕ} (x0 : Vec d) (r ε : ℝ) :
-    Continuous
-      (fun xz : Vec d × Vec d =>
-        convexApproxSample x0 xz.2 r ε xz.1) := by
-  unfold convexApproxSample
-  fun_prop
-
 theorem continuous_convexApproxIntegrand_right
     {d : ℕ} {ρ u : Vec d → ℝ}
     (hρ : Continuous ρ) (hu : Continuous u)
@@ -145,28 +137,6 @@ theorem continuous_convexApproxIntegrand_right
     hρ.mul
       (hu.comp
         (continuous_convexApproxSample_right x0 r ε x))
-
-theorem continuous_convexApproxIntegrand_prod
-    {d : ℕ} {ρ u : Vec d → ℝ}
-    (hρ : Continuous ρ) (hu : Continuous u)
-    (x0 : Vec d) (r ε : ℝ) :
-    Continuous
-      (fun xz : Vec d × Vec d =>
-        convexApproxIntegrand
-          ρ u x0 r ε xz.1 xz.2) := by
-  have hρProd :
-      Continuous
-        (fun xz : Vec d × Vec d => ρ xz.2) :=
-    hρ.comp continuous_snd
-  have huProd :
-      Continuous
-        (fun xz : Vec d × Vec d =>
-          u (convexApproxSample
-            x0 xz.2 r ε xz.1)) :=
-    hu.comp
-      (continuous_convexApproxSample_prod x0 r ε)
-  simpa only [convexApproxIntegrand] using!
-    hρProd.mul huProd
 
 theorem hasCompactSupport_convexApproxIntegrand
     {d : ℕ} {ρ u : Vec d → ℝ}
@@ -258,7 +228,7 @@ theorem integrable_convexApproxKernelMulConst
     hContinuous.integrable_of_hasCompactSupport hCompact
 
 theorem continuous_convexApproxSmoothing
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    {d ρ u}
     (hρ : Continuous ρ)
     (hρCompact : HasCompactSupport ρ)
     (hu : Continuous u)
@@ -270,9 +240,20 @@ theorem continuous_convexApproxSmoothing
         (Function.uncurry
           (fun x z =>
             convexApproxIntegrand ρ u x0 r ε x z)) := by
-    simpa only [Function.uncurry] using!
-      continuous_convexApproxIntegrand_prod
-        hρ hu x0 r ε
+    have _h_inl_8 : Continuous (fun xz : Vec d × Vec d => convexApproxIntegrand ρ u x0 r ε xz.1 xz.2) := by
+      have hρProd :
+          Continuous
+            (fun xz : Vec d × Vec d => ρ xz.2) :=
+        hρ.comp continuous_snd
+      have _h_inl_7 : Continuous (fun xz : Vec d × Vec d => convexApproxSample x0 xz.2 r ε xz.1) := by
+        unfold convexApproxSample
+        fun_prop
+      have huProd :=
+        hu.comp
+          _h_inl_7
+      simpa only [convexApproxIntegrand] using!
+        hρProd.mul huProd
+    simpa only [Function.uncurry] using! _h_inl_8
   simpa only [convexApproxSmoothing] using!
     (continuous_parametric_integral_of_continuous
       (μ := MeasureTheory.volume)

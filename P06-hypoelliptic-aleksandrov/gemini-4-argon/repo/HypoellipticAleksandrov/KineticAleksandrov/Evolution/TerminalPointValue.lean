@@ -34,7 +34,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 supported terminal datum, with the global bound by every uniform bound on the datum, and
 uniqueness on the past closed cylinder).  It supplies the existence half of the statement below and
 is discharged by that theorem. -/
-def ClassicalTerminalExistence {n : ℕ} (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+def ClassicalTerminalExistence {n } (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) : Prop :=
   ∀ (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)),
     IsSmoothCompactTerminalDatum Ω γ τ F →
@@ -53,7 +53,7 @@ variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
 
 /-- Sums of classical terminal solutions solve the problem for the summed data. -/
 theorem IsClassicalTerminalSolution.add (hΩ : IsOpen Ω) (hγ : Continuous γ)
-    {F G : BoundedBorel (EvolutionAmbientState n)} {u v : KineticPoint n → ℝ}
+    {F G u v}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u)
     (hv : IsClassicalTerminalSolution Ω γ B b τ G v) :
     IsClassicalTerminalSolution Ω γ B b τ (F + G) (fun q => u q + v q) := by
@@ -81,7 +81,7 @@ theorem IsClassicalTerminalSolution.add (hΩ : IsOpen Ω) (hγ : Continuous γ)
 
 /-- Real multiples of classical terminal solutions solve the problem for the scaled data. -/
 theorem IsClassicalTerminalSolution.smul (hΩ : IsOpen Ω) (hγ : Continuous γ) (c : ℝ)
-    {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
+    {F u}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) :
     IsClassicalTerminalSolution Ω γ B b τ (c • F) (fun q => c * u q) := by
   have hu' := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F u).2 hu
@@ -105,10 +105,10 @@ theorem IsClassicalTerminalSolution.smul (hΩ : IsOpen Ω) (hγ : Continuous γ)
     simp
 
 /-- Two classical terminal solutions with the same datum agree on the past closed cylinder. -/
-theorem IsClassicalTerminalSolution.eqOn_of_lam {lam Lam : ℝ} (hΩ : IsOpen Ω)
+theorem IsClassicalTerminalSolution.eqOn_of_lam {lam Lam } (hΩ : IsOpen Ω)
     (hγ : Continuous γ) (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
-    {F : BoundedBorel (EvolutionAmbientState n)} {u v : KineticPoint n → ℝ}
+    {Lb } (hb : HasEuclideanLipschitzDrift Lb b)
+    {F u v}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u)
     (hv : IsClassicalTerminalSolution Ω γ B b τ F v) :
     EqOn u v (evolutionPastClosedCylinder Ω γ τ) := fun _ hp =>
@@ -117,7 +117,7 @@ theorem IsClassicalTerminalSolution.eqOn_of_lam {lam Lam : ℝ} (hΩ : IsOpen Ω
     ((isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F v).2 hv) _ hp
 
 /-- A fixed-time source state at an earlier time lies in the past closed cylinder. -/
-theorem mk_mem_evolutionPastClosedCylinder {σ : ℝ} (hστ : σ ≤ τ)
+theorem mk_mem_evolutionPastClosedCylinder {σ } (hστ : σ ≤ τ)
     (p : EvolutionState Ω γ σ) :
     (⟨σ, p.1.1, p.1.2⟩ : KineticPoint n) ∈ evolutionPastClosedCylinder Ω γ τ :=
   ⟨hστ, subset_closure p.2.1⟩
@@ -164,7 +164,7 @@ theorem exists_unique_terminalValue
 state `p`, chosen from the `∃!` statement `exists_unique_terminalValue`. -/
 def terminalValue
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
-    (F : BoundedBorel (EvolutionAmbientState n))
+    (F )
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) : ℝ :=
   (exists_unique_terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF).choose

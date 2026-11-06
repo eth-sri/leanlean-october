@@ -20,7 +20,7 @@ open scoped MatrixOrder
 /-- Bounded classical terminal solutions exist and are unique on the closed past
 cylinder, relative only to the Lieberman ellipsoid and Hörmander inputs. -/
 theorem exists_classical_terminalSolution
-    (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
+    (n ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
     (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
@@ -55,7 +55,7 @@ theorem exists_classical_terminalSolution
 /-- The existence premise used for the terminal point value and its consumers is discharged
 by the existence theorem above, with only the same two hypotheses. -/
 theorem classicalTerminalExistence_holds
-    (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
+    (n ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
     (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)

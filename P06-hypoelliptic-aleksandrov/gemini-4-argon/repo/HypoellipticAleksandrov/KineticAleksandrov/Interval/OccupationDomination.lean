@@ -17,8 +17,8 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
 /-- The scalar interval transition is dominated by the whole-space scalar transition. -/
-theorem interval_parabolic_le_whole {a c lam Lam σ τ : ℝ}
-    (hac : a < c) (hστ : σ < τ) (B : CoefficientField 1)
+theorem interval_parabolic_le_whole {a c lam Lam σ τ }
+    (hac : a < c) (hστ : σ < τ) (B )
     (hB : IsSectionTwoCoefficient lam Lam B)
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
@@ -52,7 +52,7 @@ theorem interval_parabolic_le_whole {a c lam Lam σ τ : ℝ}
       simp only [mem_preimage, mem_compl_iff, mem_empty_iff_false, iff_false, not_not]
       simpa only [movingDomain_stationary] using w.2
     rw [he, measure_empty]
-  have hs : ν.restrict (PDE.oneDimensionalAxisBox a c) = ν :=
+  have hs :=
     Measure.restrict_eq_self_of_ae_mem (by
       rw [ae_iff]; exact hcompl)
   exact HypoellipticAleksandrov.KineticAleksandrov.measure_le_of_smooth_integral_le

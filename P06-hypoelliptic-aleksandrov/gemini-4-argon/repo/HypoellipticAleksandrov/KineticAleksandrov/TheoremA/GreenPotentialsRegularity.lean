@@ -14,8 +14,7 @@ open scoped Topology
 variable {d : ℕ}
 
 /-- Joint smoothness in packed Euclidean coordinates supplies the full kinetic C112 API. -/
-theorem isKineticC112On_of_contDiffOn {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hD : IsOpen D)
+theorem isKineticC112On_of_contDiffOn {u D} (hD : IsOpen D)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph d)
       (evolutionHomeomorph d ⁻¹' D)) : IsKineticC112On u D := by
   let e := evolutionHomeomorph d
@@ -35,7 +34,7 @@ theorem isKineticC112On_of_contDiffOn {u : KineticPoint d → ℝ}
     fun v w => (((hj v).fderiv_of_isOpen (m := 0) hU (by simp)).clm_apply
       contDiffOn_const).continuousOn
   have hc : ContinuousOn e.symm D := e.symm.continuous.continuousOn
-  have hm : MapsTo e.symm D U := hx
+  have hm := hx
   have hslice : ∀ p ∈ D, IsSliceRegularAt u p := by
     intro p hp
     apply IsSliceRegularAt.of_contDiffAt

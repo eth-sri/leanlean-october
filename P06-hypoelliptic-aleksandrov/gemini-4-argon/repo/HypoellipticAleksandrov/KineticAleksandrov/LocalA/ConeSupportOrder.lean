@@ -12,12 +12,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo TheoremA
 
 /-- Smooth physical differences obey the literal operator subtraction identity. -/
-theorem cone_forward_sub {d : ℕ} (B : CoefficientField d)
-    {D : Set (KineticPoint d)} (hD : IsOpen D) (u v : KineticPoint d → ℝ)
+theorem cone_forward_sub {d } (B : CoefficientField d)
+    {D } (hD : IsOpen D) (u v : KineticPoint d → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' D))
     (hv : ContDiffOn ℝ (⊤ : ℕ∞) (v ∘ (KineticPoint.equivProd d).symm)
-      ((KineticPoint.equivProd d) '' D)) (P : KineticPoint d) (hP : P ∈ D) :
+      ((KineticPoint.equivProd d) '' D)) (P ) (hP : P ∈ D) :
     forwardKineticOperator (ofTimeVelocityCoefficient B) (fun Q => u Q - v Q) P =
       forwardKineticOperator (ofTimeVelocityCoefficient B) u P -
         forwardKineticOperator (ofTimeVelocityCoefficient B) v P := by
@@ -35,9 +35,9 @@ theorem cone_forward_sub {d : ℕ} (B : CoefficientField d)
 theorem cone_boundarySolution_le_supersolution
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (a T : ℝ) (haT : a < T) (φ v : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
     (hc : HasCompactSupport φ)

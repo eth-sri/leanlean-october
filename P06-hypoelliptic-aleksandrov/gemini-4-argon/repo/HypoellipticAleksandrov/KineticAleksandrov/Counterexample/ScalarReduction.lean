@@ -87,9 +87,7 @@ theorem scalarCubic_second_ode (f : ℝ → ℝ) (gamma a s : ℝ) (ha : a ≠ 0
         (deriv f (scalarCubic a t) * (t ^ 2 / (3 * a)))) t := by
     simpa only [one_mul, Function.comp_def, Pi.mul_def, id_eq] using
       (hasDerivAt_id t).mul ((hd t).hasDerivAt.comp t (hasDerivAt_scalarCubic a t))
-  have hfirsteq : deriv (fun w => w * f (scalarCubic a w)) =
-      fun t => f (scalarCubic a t) + t *
-        (deriv f (scalarCubic a t) * (t ^ 2 / (3 * a))) := funext (fun t => (hfirst t).deriv)
+  have hfirsteq := funext (fun t => (hfirst t).deriv)
   have hc2 : HasDerivAt (fun t : ℝ => t ^ 2 / (3 * a)) (2 * s / (3 * a)) s := by
     convert ((hasDerivAt_id s).pow 2).div_const (3 * a) using 1 <;> simp
   have hsecond := ((hd s).hasDerivAt.comp s (hasDerivAt_scalarCubic a s)).add

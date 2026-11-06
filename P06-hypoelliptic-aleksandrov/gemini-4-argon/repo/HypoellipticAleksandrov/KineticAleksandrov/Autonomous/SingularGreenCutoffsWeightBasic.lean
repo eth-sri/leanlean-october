@@ -13,7 +13,7 @@ open HypoellipticAleksandrov MeasureTheory Set
 
 /-- A measurable position convolution is a measurable physical-plane function. -/
 theorem positionConvolution_measurable (eta : ℝ → ℝ) (heta : Measurable eta)
-    (Phi : Z → ℝ) (hPhi : Measurable Phi) : Measurable (positionConvolution eta Phi) := by
+    (Phi ) (hPhi : Measurable Phi) : Measurable (positionConvolution eta Phi) := by
   have hm : Measurable (fun p : Z × ℝ => eta (p.1.1 - p.2) * Phi (p.2, p.1.2)) :=
     (heta.comp ((measurable_fst.comp measurable_fst).sub measurable_snd)).mul
       (hPhi.comp (measurable_snd.prodMk (measurable_snd.comp measurable_fst)))

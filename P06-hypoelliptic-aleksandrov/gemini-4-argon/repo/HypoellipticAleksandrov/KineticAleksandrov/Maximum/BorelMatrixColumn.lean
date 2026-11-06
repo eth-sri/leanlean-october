@@ -12,12 +12,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open scoped MatrixOrder Matrix.Norms.L2Operator
 
 /-- Every column has Euclidean norm at most the upper ellipticity constant. -/
-theorem borel_matrix_column_sq_sum_le {d : ℕ} {lam Lam : ℝ} {A : PDE.Mat d}
+theorem borel_matrix_column_sq_sum_le {d lam Lam A}
     (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hlo : lam • (1 : PDE.Mat d) ≤ A) (hhi : A ≤ Lam • (1 : PDE.Mat d))
     (j : Fin d) : ∑ i, (A i j) ^ 2 ≤ Lam ^ 2 := by
   classical
-  have hLam0 : 0 ≤ Lam := hlam.le.trans hLam
+  have hLam0 := hlam.le.trans hLam
   have hpos := (HypoellipticAleksandrov.posDef_of_loewner_lower hlam hlo).posSemidef
   have hgap : (Lam • (1 : PDE.Mat d) - A).PosSemidef := Matrix.le_iff.mp hhi
   have hcomm : Commute A (Lam • (1 : PDE.Mat d) - A) := by

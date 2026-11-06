@@ -27,7 +27,7 @@ theorem occupationEvolutionStatement_of_conclusion (h : TerminalEvolutionConclus
 
 /-- The premise of Theorem A follows by whole-space identity-drift specialization. -/
 theorem taAssemblyEvolution_of_conclusion (h : TerminalEvolutionConclusion)
-    (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
+    (d ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
     ∀ B : CoefficientField d, IsSectionTwoCoefficient lam Lam B →
       ∃ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
         (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))),

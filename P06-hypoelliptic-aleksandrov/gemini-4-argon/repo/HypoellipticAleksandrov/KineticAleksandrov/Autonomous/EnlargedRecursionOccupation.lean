@@ -1,6 +1,10 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionFullSpace
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.Autonomy
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionDomination
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FullSpaceIdentificationDomination
+import Mathlib.Tactic
 
 /-! # Domination of finite enlarged active occupations by full-space evolution -/
 
@@ -11,10 +15,10 @@ open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
 
-/-- Every killed strip occupation is dominated by the full-space physical occupation. -/
+/- Every killed strip occupation is dominated by the full-space physical occupation. -/
 theorem enlarged_stripGreen_le_fullspace
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (P : Point) (T : ℝ) (hT : 0 < T)
     (hv : P.velocity 0 ∈ H.carrier) :
     stripGreen hH hLE hlam hLam A H (P.time + T)
@@ -33,8 +37,31 @@ theorem enlarged_stripGreen_le_fullspace
   rw [← lintegral_indicator_one hB, ← lintegral_indicator_one hB]
   change (∫⁻ p, F p ∂stripGreen hH hLE hlam hLam A H (P.time + T) e) ≤
     ∫⁻ p, F p ∂enlargedFullSpaceOccupation hH hLE hlam hLam A P T
+  have _h_xinl_0 : (∫⁻ p, F p ∂enlargedFullSpaceOccupation hH hLE hlam hLam A P T) = ∫⁻ t : ElapsedTime (ENNReal.ofReal T), ∫⁻ z, F (enlargedTerminalPoint (P.time + t.1) z) ∂kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t.1) (P.position 0, P.velocity 0) ∂elapsedVolume (ENNReal.ofReal T) := by
+    let E := fullSpaceEvolution hH hLE hlam hLam A
+    let f := fun t : ℝ => ∫⁻ z, F (enlargedTerminalPoint (P.time + t) z)
+      ∂kernelXV E (Real.toNNReal t) (P.position 0, P.velocity 0)
+    have hm : Measurable (fun tz : ℝ × Z => F (enlargedTerminalPoint (P.time + tz.1) tz.2)) := by
+      apply hF.comp
+      unfold enlargedTerminalPoint
+      exact (KineticPoint.measurable_equivProd_symm 1).comp
+        ((measurable_const.add measurable_fst).prodMk
+          ((measurable_pi_iff.mpr (fun _ => measurable_fst.comp measurable_snd)).prodMk
+            (measurable_pi_iff.mpr (fun _ => measurable_snd.comp measurable_snd))))
+    have hf : Measurable f := hm.lintegral_kernel_prod_right'
+      (κ := physicalElapsedKernel E (P.position 0, P.velocity 0))
+    have he : {t : ℝ | 0 < t ∧ ENNReal.ofReal t < ENNReal.ofReal T} = Ioo 0 T := by
+      ext t
+      simp only [mem_ofPred_eq, mem_Ioo, ENNReal.ofReal_lt_ofReal_iff hT]
+    have hmap : (elapsedVolume (ENNReal.ofReal T)).map Subtype.val = volume.restrict (Ioo 0 T) := by
+      exact (map_comap_subtype_coe (measurableSet_elapsedTime (ENNReal.ofReal T)) volume).trans
+        (congrArg (fun B => volume.restrict B) he)
+    rw [enlargedFullSpaceOccupation_lintegral hH hLE hlam hLam A P T F hF]
+    change (∫⁻ t in Ioc 0 T, f t) = ∫⁻ t, f t.1 ∂elapsedVolume (ENNReal.ofReal T)
+    rw [← lintegral_map hf measurable_subtype_coe, hmap]
+    rw [Measure.restrict_congr_set (Ioo_ae_eq_Ioc (μ := volume)).symm]
   rw [stripGreen_lintegral hH hLE hlam hLam A H (P.time + T) e F hF,
-    enlargedFullSpaceOccupation_elapsed_lintegral hH hLE hlam hLam A P T hT F hF]
+    _h_xinl_0]
   have hh : stripHorizon ((P.time + T : ℝ) : WithTop ℝ) P.time = ENNReal.ofReal T := by
     simp [stripHorizon]
   let K := (stripEvolution hH hLE hlam hLam A H).2
@@ -58,10 +85,10 @@ theorem enlarged_stripGreen_le_fullspace
   exact hi.trans_eq (enlargedFullSpace_native_elapsed_lintegral
     hH hLE hlam hLam A P t.1 t.2.1.le F hF)
 
-/-- Every finite enlarged active sum is dominated by the actual full-space occupation. -/
+/- Every finite enlarged active sum is dominated by the actual full-space occupation. -/
 theorem enlarged_active_occupation_le_fullspace
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (hT : 0 < T)
     (P : Point) (hv : P.velocity 0 ∈ J.carrier) (N : ℕ) :
     (∑ n ∈ Finset.range N,

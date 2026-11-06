@@ -21,12 +21,12 @@ namespace PDE
 noncomputable abbrev volumeOn {d : ℕ} (U : Set (Vec d)) :=
   MeasureTheory.volume.restrict U
 
-theorem IsBoundedDomain.volume_lt_top {d : ℕ}
+theorem IsBoundedDomain.volume_lt_top {d }
     {U : Set (Vec d)} (hU : IsBoundedDomain U) :
     MeasureTheory.volume U < ⊤ :=
   hU.isBounded.measure_lt_top
 
-theorem IsBoundedDomain.isFiniteMeasure_volumeOn {d : ℕ}
+theorem IsBoundedDomain.isFiniteMeasure_volumeOn {d }
     {U : Set (Vec d)} (hU : IsBoundedDomain U) :
     MeasureTheory.IsFiniteMeasure (volumeOn U) := by
   let : Fact (MeasureTheory.volume U < ⊤) :=
@@ -35,22 +35,22 @@ theorem IsBoundedDomain.isFiniteMeasure_volumeOn {d : ℕ}
 
 namespace IsOpenBoundedConvexDomain
 
-theorem volume_pos {d : ℕ} {U : Set (Vec d)}
+theorem volume_pos {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) (hne : U.Nonempty) :
     0 < MeasureTheory.volume U :=
   hU.isOpen.measure_pos MeasureTheory.volume hne
 
-theorem volume_lt_top {d : ℕ} {U : Set (Vec d)}
+theorem volume_lt_top {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     MeasureTheory.volume U < ⊤ :=
   hU.isBoundedDomain.volume_lt_top
 
-theorem volume_ne_top {d : ℕ} {U : Set (Vec d)}
+theorem volume_ne_top {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     MeasureTheory.volume U ≠ ⊤ :=
   hU.volume_lt_top.ne
 
-theorem isFiniteMeasure_volumeOn {d : ℕ} {U : Set (Vec d)}
+theorem isFiniteMeasure_volumeOn {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     MeasureTheory.IsFiniteMeasure (PDE.volumeOn U) :=
   hU.isBoundedDomain.isFiniteMeasure_volumeOn
@@ -59,7 +59,7 @@ end IsOpenBoundedConvexDomain
 
 namespace IsSobolevRegularDomain
 
-theorem isFiniteMeasure_volumeOn {d : ℕ} {U : Set (Vec d)}
+theorem isFiniteMeasure_volumeOn {d } {U : Set (Vec d)}
     (hU : IsSobolevRegularDomain U) :
     MeasureTheory.IsFiniteMeasure (PDE.volumeOn U) :=
   hU.isBoundedDomain.isFiniteMeasure_volumeOn

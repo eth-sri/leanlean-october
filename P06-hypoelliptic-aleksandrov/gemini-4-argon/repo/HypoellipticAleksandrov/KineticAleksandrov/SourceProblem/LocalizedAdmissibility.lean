@@ -1,6 +1,20 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylov
+import HypoellipticAleksandrov.Parabolic.KrylovCylinder
+import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ScalarAffine
+import HypoellipticAleksandrov.Parabolic.TimeReversal
+import Mathlib.Analysis.Calculus.Deriv.Shift
+import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovCalculus
+import HypoellipticAleksandrov.Measure.TimeVelocity
+import HypoellipticAleksandrov.Parabolic.ScalingMeasure
+import Mathlib.Analysis.Convex.Basic
+import Mathlib.Basic.Real.Pointwise
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
+import PDEFoundation.Ambient.EuclideanNorm
+import PDEFoundation.Geometry.Affine
+import PDEFoundation.Geometry.EuclideanBall.Topology
 
 /-!
 # Localized source estimate for the companion paper, Proposition 4.2
@@ -29,6 +43,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
 open scoped Topology MatrixOrder Matrix.Norms.Elementwise ENNReal
+open PDE
+open scoped Pointwise
 
 variable {d : ℕ}
 
@@ -48,7 +64,7 @@ variable {lam Lam : ℝ} {B : CoefficientField d}
 include hd hlam hLam hsymm hsmooth hlow hup hF0 hFs hFc hFsupp hα0 hα1 hR hR1 hV
 
 omit hd hLam hFsupp in
-/-- Admissibility of the reflected and rescaled localized solution (for any `R ≥ 1`). -/
+/- Admissibility of the reflected and rescaled localized solution (for any `R ≥ 1`). -/
 theorem localizedKrylov_admissible_of_one_le_direct :
     IsScalarC12On (localizedScaled R vStar V)
         (krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d)) ∧
@@ -87,8 +103,12 @@ theorem localizedKrylov_admissible_of_one_le_direct :
     fun z hz => (mem_krylovCylinder_iff_reflectScale hR z).1 hz
   have hFcont : Continuous F := hFs.continuous
   have hKsub := krylovClosedCylinder_subset_preimage (α := α) (vStar := vStar) (d := d) hR
+  have _h_xinl_0 : 0 < localHeight α R := by
+      exact (
+    div_pos (sub_pos.mpr hα1) (pow_pos hR 2)
+    )
   refine ⟨?_, ?_, ?_, ?_, ?_,
-    localHeight_pos hα1 hR, localHeight_le_one hα0 hR1, ?_, ?_, ?_, ?_, ?_,
+    _h_xinl_0, localHeight_le_one hα0 hR1, ?_, ?_, ?_, ?_, ?_,
     classical_solution_nonneg hlam hF0 hα1 hR hsmooth hlow hV⟩
   · have hc := (isScalarC12On_reflectScale hQV hV.2.1 hR vStar).1
     exact ⟨hc.continuousOn.mono hQ,
@@ -110,7 +130,18 @@ theorem localizedKrylov_admissible_of_one_le_direct :
         matrixContraction (coefficientAt B (reflectScale R vStar z))
           (scalarSpatialHessian (fun w => V (reflectScale R vStar w)) z) =
         R ^ 2 * F (reflectScale R vStar z)
-    rw [scaled_operator_eq hQV hV.2.1 hR vStar B hz']
+    have _h_xinl_0 : scalarTimeDerivative (fun w => V (reflectScale R vStar w)) z -
+        matrixContraction (coefficientAt B (reflectScale R vStar z))
+          (scalarSpatialHessian (fun w => V (reflectScale R vStar w)) z) =
+      -R ^ 2 * (scalarTimeDerivative V (reflectScale R vStar z) +
+        matrixContraction (coefficientAt B (reflectScale R vStar z))
+          (scalarSpatialHessian V (reflectScale R vStar z))) := by
+      have hV := hV.2.1
+      obtain ⟨-, hform⟩ := isScalarC12On_reflectScale hQV hV hR vStar
+      obtain ⟨h1, -, h3⟩ := hform z hz'
+      rw [h1, h3, HypoellipticAleksandrov.matrixContraction_smul_right]
+      ring
+    rw [_h_xinl_0]
     have hp := hV.2.2.1 _ hz'
     simp only [scalarParabolicZeroOrderOperator_apply] at hp
     have hv0 : PDE.vecDot (0 : PDE.Vec d)
@@ -137,11 +168,15 @@ theorem localizedKrylov_admissible_of_one_le_direct :
       obtain ⟨rfl, hy⟩ := ht
       exact hV.2.2.2.1 y hy
     · exact hV.2.2.2.2 _ hl
-  · exact parabolicLpNormOn_localizedSource hR hFcont
+  ·
+    rw [localizedSource_eq, parabolicLpNormOn_pullback 0 vStar hR,
+      parabolicAffine_image_krylovCylinder hR]
+    unfold parabolicLpNormOn
+    rw [parabolicELpNormOn_timeReflectedScalar_preimage hFcont (measurableSet_sourceCylinder α R vStar)]
 
 end Admissibility
 
-/-- The admissibility statement: `R > 0` with `R² = max {1, 4 d Λ}`. -/
+/- The admissibility statement: `R > 0` with `R² = max {1, 4 d Λ}`. -/
 theorem localizedKrylov_admissible_direct
     {lam Lam : ℝ} {B : CoefficientField d}
     {F : TimeVelocity d → ℝ} {α R : ℝ} {vStar : PDE.Vec d} {V : TimeVelocity d → ℝ}

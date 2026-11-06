@@ -12,12 +12,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter Set
 
 /-- Uniform eventual bounds on a compact test support allow dominated convergence of pairings. -/
-theorem integral_mul_test_tendsto {d : ℕ} (F : ℕ → XV d → ℝ) (f : XV d → ℝ)
+theorem integral_mul_test_tendsto {d } (F : ℕ → XV d → ℝ) (f : XV d → ℝ)
     (hm : ∀ n, AEStronglyMeasurable (F n) volume)
     (hl : ∀ᵐ q ∂volume, Tendsto (fun n => F n q) atTop (nhds (f q)))
     (test : XV d → ℝ) (ht : Continuous test) (hs : HasCompactSupport test)
     (K : Set (XV d)) (hsub : tsupport test ⊆ K)
-    (C : ℝ) (_hC : 0 ≤ C) (hb : ∀ᶠ n in atTop, ∀ q ∈ K, ‖F n q‖ ≤ C) :
+    (C ) (_hC : 0 ≤ C) (hb : ∀ᶠ n in atTop, ∀ q ∈ K, ‖F n q‖ ≤ C) :
     Tendsto (fun n => ∫ q, F n q * test q) atTop (nhds (∫ q, f q * test q)) := by
   apply tendsto_integral_filter_of_dominated_convergence (fun q => C * ‖test q‖)
   · exact Eventually.of_forall (fun n => (hm n).mul ht.aestronglyMeasurable)

@@ -118,7 +118,7 @@ theorem integral_intervalOccupationMeasure (K : MovingFiberKernel (PDE.oneDimens
 theorem intervalOccupationMeasure_apply
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
     (ρ : Measure (PDE.oneDimensionalAxisBox a c)) [IsFiniteMeasure ρ]
-    (A : Set (TimeVelocity 1)) (hA : MeasurableSet A) :
+    (A ) (hA : MeasurableSet A) :
     intervalOccupationMeasure σ T K ρ A =
       ∫⁻ v, ∫⁻ t : ElapsedTime (ENNReal.ofReal T),
         intervalOccupationKernel σ T K (v, t) {w | (t.1, w) ∈ A}

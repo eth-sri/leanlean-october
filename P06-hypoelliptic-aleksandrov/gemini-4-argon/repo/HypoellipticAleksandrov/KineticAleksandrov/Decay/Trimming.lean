@@ -26,7 +26,7 @@ open scoped ENNReal
 /-- The first marginal of `E.withDensity (g ∘ Prod.fst)` is the first marginal of `E`
 reweighted by `g`. -/
 theorem map_fst_withDensity_comp_fst {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
-    (E : Measure (α × β)) (g : α → ℝ≥0∞) (hg : Measurable g) :
+    (E : Measure (α × β)) (g ) (hg : Measurable g) :
     (E.withDensity (g ∘ Prod.fst)).map Prod.fst = (E.map Prod.fst).withDensity g := by
   ext A hA
   rw [Measure.map_apply measurable_fst hA, withDensity_apply _ (measurable_fst hA),
@@ -36,7 +36,7 @@ theorem map_fst_withDensity_comp_fst {α β : Type*} [MeasurableSpace α] [Measu
 
 /-- One trimming step: a measure below the first marginal of a finite measure `E` is the
 first marginal of a trimmed `F ≤ E`. -/
-theorem exists_trimming_of_le_map_fst {d : ℕ}
+theorem exists_trimming_of_le_map_fst {d }
     (E : Measure (EvolutionAmbientState d)) [IsFiniteMeasure E]
     (Θ : Measure (PDE.Vec d)) (hΘ : Θ ≤ E.map Prod.fst) :
     ∃ g : PDE.Vec d → ℝ≥0∞, Measurable g ∧ (∀ᵐ w ∂E.map Prod.fst, g w ≤ 1) ∧
@@ -44,7 +44,7 @@ theorem exists_trimming_of_le_map_fst {d : ℕ}
       (E.withDensity (g ∘ Prod.fst)).map Prod.fst = Θ ∧
       E.withDensity (g ∘ Prod.fst) ≤ E := by
   have : IsFiniteMeasure Θ := isFiniteMeasure_of_le _ hΘ
-  have hac : Θ ≪ E.map Prod.fst := Measure.absolutelyContinuous_of_le hΘ
+  have hac := Measure.absolutelyContinuous_of_le hΘ
   have hle : ∀ᵐ w ∂E.map Prod.fst, Θ.rnDeriv (E.map Prod.fst) w ≤ 1 := by
     filter_upwards [Measure.rnDeriv_le_one_of_le hΘ] with w hw using hw
   have hΘeq : Θ = (E.map Prod.fst).withDensity (Θ.rnDeriv (E.map Prod.fst)) :=

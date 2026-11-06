@@ -20,7 +20,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators
 
-/-- The source derivative minus all proper coefficient commutators at one
+/- The source derivative minus all proper coefficient commutators at one
 bounded parabolic multi-index. -/
 noncomputable def properDifferentiatedScalarCommutatorResidual
     {d M : ℕ} {U : Set (TimeVelocity d)}
@@ -61,30 +61,6 @@ noncomputable def properDifferentiatedScalarCommutatorResidual
               (ParabolicDerivativeIndex.properSplitRightValue
                 beta gamma hproper) z
         else 0)
-
-private theorem coordinateIteratedFDeriv_continuousOn
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ M q U)
-    (alpha : TimeVelocityMultiIndex d) (halpha : alpha.order ≤ M) :
-    ContinuousOn (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha q) U := by
-  intro z hz
-  apply ContinuousAt.continuousWithinAt
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := (hq.contDiffAt (hU.mem_nhds hz)).iteratedFDeriv_right
-    (m := 0) (i := alpha.coordinateList.length) (by simpa using halpha)
-  exact (contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi |>.continuousAt
-
-private theorem splitLeft_order_le
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1) :
-    gamma.left.order ≤ M := by
-  have horder_weight : beta.1.order ≤ beta.1.parabolicWeight := by
-    simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-      TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
-      TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight]
-    omega
-  exact gamma.order_left_le.trans (horder_weight.trans beta.2)
 
 private theorem ae_restrict_of_forall_mem
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
@@ -127,9 +103,25 @@ private theorem properAtom_memLp_and_eLpNorm_toReal_le
     let multiplier := fun z : TimeVelocity d =>
       (beta.1.choose gamma.left : ℝ) *
         TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z
+    have _h_inl_10 : ContinuousOn (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q) U := by
+      let alpha := gamma.left
+      have halpha : gamma.left.order ≤ M := by
+        have horder_weight : beta.1.order ≤ beta.1.parabolicWeight := by
+          simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
+            TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
+            TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight]
+          omega
+        exact gamma.order_left_le.trans (horder_weight.trans beta.2)
+
+      intro z hz
+      apply ContinuousAt.continuousWithinAt
+      unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
+      have hi := (hq.contDiffAt (hU.mem_nhds hz)).iteratedFDeriv_right
+        (m := 0) (i := alpha.coordinateList.length) (by simpa using halpha)
+      exact (contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
+        (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi |>.continuousAt
     have hcontinuous : ContinuousOn multiplier U :=
-      continuousOn_const.mul (coordinateIteratedFDeriv_continuousOn hU q hq gamma.left
-        (splitLeft_order_le beta gamma))
+      continuousOn_const.mul _h_inl_10
     have hmeas : AEStronglyMeasurable multiplier (timeVelocityVolumeOn U) :=
       hcontinuous.aestronglyMeasurable hU.measurableSet
     have hbound : ∀ᵐ z ∂timeVelocityVolumeOn U,
@@ -181,14 +173,14 @@ private theorem eLpNorm_sub_toReal_le
   rw [ENNReal.toReal_add hf.eLpNorm_ne_top hg.eLpNorm_ne_top] at hr
   exact hr
 
-/-- The proper commutator residual is in restricted `L²` and obeys the literal
+/- The proper commutator residual is in restricted `L²` and obeys the literal
 componentwise convolution bound with no principal split. -/
 theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
     {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
-    (u : TimeVelocity d → ℝ)
+    (u )
     (F : ℝ → PDE.Vec d → ℝ)
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U

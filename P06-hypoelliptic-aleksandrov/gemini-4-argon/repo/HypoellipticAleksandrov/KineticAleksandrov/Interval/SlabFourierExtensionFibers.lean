@@ -42,7 +42,7 @@ theorem intervalExtensionMaster_outside {a c : ℝ}
   simpa only [movingDomain_stationary] using p.2.2.1
 
 /-- Interior extended fibers are literal pushforwards of the original interval fibers. -/
-theorem intervalExtension_fiber_inside {a c : ℝ}
+theorem intervalExtension_fiber_inside {a c }
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
     (σ τ : ℝ) (hστ : σ ≤ τ)
@@ -61,7 +61,7 @@ theorem intervalExtension_fiber_inside {a c : ℝ}
   rw [intervalExtensionMaster_inside, K.map_fiberKernel_eq_master]
 
 /-- Starting outside the interval gives the zero fixed-time fiber. -/
-theorem intervalExtension_fiber_outside {a c : ℝ}
+theorem intervalExtension_fiber_outside {a c }
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
     (σ τ : ℝ) (hστ : σ ≤ τ)

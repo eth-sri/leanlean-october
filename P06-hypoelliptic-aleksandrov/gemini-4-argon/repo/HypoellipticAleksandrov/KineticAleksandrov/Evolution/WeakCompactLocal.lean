@@ -21,7 +21,7 @@ subsequence. -/
 theorem exists_hilbert_weak_subsequence
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℝ H]
     [CompleteSpace H] [TopologicalSpace.SeparableSpace H]
-    (v : ℕ → H) (R : ℝ) (hv : ∀ j, ‖v j‖ ≤ R) :
+    (v : ℕ → H) (R ) (hv : ∀ j, ‖v j‖ ≤ R) :
     ∃ (u : H) (ν : ℕ → ℕ), StrictMono ν ∧
       ∀ w : H, Tendsto (fun j => inner ℝ (v (ν j)) w)
         atTop (nhds (inner ℝ u w)) := by

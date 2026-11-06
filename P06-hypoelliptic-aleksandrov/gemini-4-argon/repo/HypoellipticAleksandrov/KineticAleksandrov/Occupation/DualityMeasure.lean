@@ -25,12 +25,7 @@ open scoped ENNReal ProbabilityTheory
 
 variable {d : ℕ}
 
-/-- Unit elapsed-time Lebesgue measure is finite. -/
-instance unitElapsedVolume_finite : IsFiniteMeasure (elapsedVolume (ENNReal.ofReal (1 : ℝ))) := ⟨by
-  rw [elapsedVolume_univ 1 zero_lt_one]
-  exact ENNReal.ofReal_lt_top⟩
-
-/-- Pull back the first marginal along the literal unit-time occupation queries. -/
+/- Unit elapsed-time Lebesgue measure is finite. -/
 def unitOccupationKernel (K : WholeKernel d) :
     ProbabilityTheory.Kernel (PDE.Vec d × ElapsedTime (ENNReal.ofReal (1 : ℝ))) (PDE.Vec d) :=
   K.firstMarginal.comap (fun q => wholeSpaceQuery 0 q.2.1 q.2.2.1.le q.1 0) (by
@@ -39,13 +34,13 @@ def unitOccupationKernel (K : WholeKernel d) :
       (0, (q.2.1, (q.1, 0))))
     fun_prop)
 
-/-- The pulled-back velocity kernel is finite. -/
+/- The pulled-back velocity kernel is finite. -/
 instance unitOccupationKernel_finite (K : WholeKernel d) :
     ProbabilityTheory.IsFiniteKernel (unitOccupationKernel K) := by
   unfold unitOccupationKernel MovingFiberKernel.firstMarginal
   infer_instance
 
-/-- The pulled-back kernel remains a subprobability kernel. -/
+/- The pulled-back kernel remains a subprobability kernel. -/
 theorem unitOccupationKernel_mass_le (K : WholeKernel d)
     (q : PDE.Vec d × ElapsedTime (ENNReal.ofReal (1 : ℝ))) :
     unitOccupationKernel K q univ ≤ 1 := by
@@ -53,7 +48,7 @@ theorem unitOccupationKernel_mass_le (K : WholeKernel d)
   rw [K.firstMarginal_apply _ _ MeasurableSet.univ]
   simpa using K.mass_le_one (wholeSpaceQuery 0 q.2.1 q.2.2.1.le q.1 0)
 
-/-- The product-kernel measure has mass at most the initial mass. -/
+/- The product-kernel measure has mass at most the initial mass. -/
 theorem unitOccupationProduct_mass_le (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
     [IsFiniteMeasure ρ] :
     ((ρ.prod (elapsedVolume (ENNReal.ofReal (1 : ℝ)))).compProd
@@ -68,46 +63,26 @@ theorem unitOccupationProduct_mass_le (K : WholeKernel d) (ρ : Measure (PDE.Vec
         rw [elapsedVolume_univ (1 : ℝ) zero_lt_one, ENNReal.ofReal_one]
       rw [he, mul_one]
 
-/-- The unprojected product-kernel occupation measure is finite. -/
+/- The unprojected product-kernel occupation measure is finite. -/
 instance unitOccupationProduct_finite (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
     [IsFiniteMeasure ρ] :
     IsFiniteMeasure ((ρ.prod (elapsedVolume (ENNReal.ofReal (1 : ℝ)))).compProd
       (unitOccupationKernel K)) :=
   ⟨(unitOccupationProduct_mass_le K ρ).trans_lt (measure_lt_top ρ univ)⟩
 
-/-- The unit-time occupation measure, with time and velocity in source order. -/
+/- The unit-time occupation measure, with time and velocity in source order. -/
 def unitOccupationMeasure (K : WholeKernel d) (ρ : Measure (PDE.Vec d)) :
     Measure (TimeVelocity d) :=
   ((ρ.prod (elapsedVolume (ENNReal.ofReal (1 : ℝ)))).compProd (unitOccupationKernel K)).map
     (fun q => (q.1.2.1, q.2))
 
-/-- The projected occupation measure is finite for finite initial measures. -/
+/- The projected occupation measure is finite for finite initial measures. -/
 instance unitOccupationMeasure_finite (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
     [IsFiniteMeasure ρ] : IsFiniteMeasure (unitOccupationMeasure K ρ) := by
   unfold unitOccupationMeasure
   infer_instance
 
-/-- Unit-time occupation mass is at most the initial mass. -/
-theorem unitOccupationMeasure_mass_le (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
-    [IsFiniteMeasure ρ] : unitOccupationMeasure K ρ univ ≤ ρ univ := by
-  rw [unitOccupationMeasure, Measure.map_apply (by fun_prop) MeasurableSet.univ, preimage_univ]
-  exact unitOccupationProduct_mass_le K ρ
-
-/-- Positive elapsed time puts the entire occupation measure in the open unit slab. -/
-theorem unitOccupationMeasure_compl_slab (K : WholeKernel d) (ρ : Measure (PDE.Vec d)) :
-    unitOccupationMeasure K ρ (Ioo (0 : ℝ) 1 ×ˢ univ)ᶜ = 0 := by
-  rw [unitOccupationMeasure, Measure.map_apply (by fun_prop)
-    ((measurableSet_Ioo.prod MeasurableSet.univ).compl)]
-  have he : (fun q : (PDE.Vec d × ElapsedTime (ENNReal.ofReal (1 : ℝ))) × PDE.Vec d =>
-      (q.1.2.1, q.2)) ⁻¹'
-      (Ioo (0 : ℝ) 1 ×ˢ univ)ᶜ = ∅ := by
-    ext q
-    simp only [mem_preimage, mem_compl_iff, mem_prod, mem_Ioo, mem_univ, and_true,
-      mem_empty_iff_false, iff_false, not_not]
-    exact ⟨q.1.2.2.1, ((ENNReal.ofReal_lt_ofReal_iff zero_lt_one).mp q.1.2.2.2)⟩
-  rw [he, measure_empty]
-
-/-- Projected occupation integration is the full iterated first-marginal characterization. -/
+/- Unit-time occupation mass is at most the initial mass. -/
 theorem integral_unitOccupationMeasure (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
     [IsFiniteMeasure ρ] (φ : TimeVelocity d → ℝ) (hφ : Measurable φ)
     (hφb : ∃ M : ℝ, ∀ q, |φ q| ≤ M) :

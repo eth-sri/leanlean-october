@@ -73,11 +73,11 @@ private theorem extend_integral_tests {α : Type*} [MeasurableSpace α]
     refine (Lp.simpleFunc.denseRange (E := ℝ) (μ := μ) (p := 1) (by simp)).induction_on
       (p := fun φ => Tendsto (fun j => F j φ) atTop (nhds (G φ))) ψ hclosed ?_
     intro f
-    let φ : Lp ℝ 1 μ := f
+    let φ := f
     let s := Lp.simpleFunc.toSimpleFunc f
     have hs : MemLp s 2 μ := s.memLp_of_finite_measure_preimage 2
       (fun _ _ => measure_lt_top _ _)
-    have he : (s : α → ℝ) =ᵐ[μ] φ := Lp.simpleFunc.toSimpleFunc_eq_toFun f
+    have he := Lp.simpleFunc.toSimpleFunc_eq_toFun f
     have hvEq : ∀ j, (∫ x, v j x * s x ∂μ) = F j φ := by
       intro j
       apply integral_congr_ae

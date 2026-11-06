@@ -23,14 +23,14 @@ open scoped BigOperators ENNReal
 
 /-- The global raw `L^(d + 1)` norm of the time derivative and all ordered
 velocity-Hessian components used by parabolic Morrey dyadic estimates. -/
-noncomputable def parabolicMorreyDerivativeLpNorm (d : Nat)
+noncomputable def parabolicMorreyDerivativeLpNorm (d )
     (u : TimeVelocity d -> Real) : Real :=
   parabolicLpNorm d (timeDerivative u) +
     ∑ i : Fin d, ∑ j : Fin d,
       parabolicLpNorm d (fun z => velocityHessian u z i j)
 
 /-- The raw restricted counterpart of `parabolicMorreyDerivativeLpNorm`. -/
-noncomputable def parabolicMorreyDerivativeLpNormOn (d : Nat)
+noncomputable def parabolicMorreyDerivativeLpNormOn (d )
     (u : TimeVelocity d -> Real) (Q : Set (TimeVelocity d)) : Real :=
   parabolicLpNormOn d (timeDerivative u) Q +
     ∑ i : Fin d, ∑ j : Fin d,
@@ -38,7 +38,7 @@ noncomputable def parabolicMorreyDerivativeLpNormOn (d : Nat)
 
 /-- A globally `L^(d + 1)` scalar has no larger raw restricted norm. -/
 theorem parabolicLpNormOn_le_parabolicLpNorm
-    {d : Nat} (f : TimeVelocity d -> Real) (Q : Set (TimeVelocity d))
+    {d } (f : TimeVelocity d -> Real) (Q : Set (TimeVelocity d))
     (hf : MemLp f (parabolicExponent d) volume) :
     parabolicLpNormOn d f Q <= parabolicLpNorm d f := by
   unfold parabolicLpNormOn parabolicLpNorm parabolicELpNormOn parabolicELpNorm
@@ -48,7 +48,7 @@ theorem parabolicLpNormOn_le_parabolicLpNorm
 /-- Under componentwise global selected-jet integrability, restricting the
 time/Hessian Morrey right-hand side cannot increase it. -/
 theorem parabolicMorreyDerivativeLpNormOn_le
-    {d : Nat} (u : TimeVelocity d -> Real) (Q : Set (TimeVelocity d))
+    {d } (u : TimeVelocity d -> Real) (Q : Set (TimeVelocity d))
     (hu : ParabolicSmoothJetMemLp d u) :
     parabolicMorreyDerivativeLpNormOn d u Q <=
       parabolicMorreyDerivativeLpNorm d u := by

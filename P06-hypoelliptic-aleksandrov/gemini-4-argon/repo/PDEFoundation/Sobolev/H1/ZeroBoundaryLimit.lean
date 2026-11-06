@@ -82,19 +82,13 @@ theorem memH10_of_tendsto_H1 {d : ℕ} {U : Set (Vec d)}
         eLpNorm (fun x => (fderiv ℝ ((W n).approx k) x) (basisVec i) -
           (W n).toH1Function.grad x i) 2 μU < ε n := by
     intro n
-    have e1 : ∀ᶠ k in atTop,
-        eLpNorm (fun x => (W n).approx k x - (W n).toH1Function.toFun x)
-            2 μU < ε n :=
+    have e1 :=
       (W n).tendsto_approx.eventually_lt_const (hε_pos n)
     have e2 : ∀ i : Fin d, ∀ᶠ k in atTop,
         eLpNorm (fun x => (fderiv ℝ ((W n).approx k) x) (basisVec i) -
           (W n).toH1Function.grad x i) 2 μU < ε n :=
       fun i => ((W n).tendsto_approx_grad i).eventually_lt_const (hε_pos n)
-    have e2' : ∀ᶠ k in atTop, ∀ i : Fin d,
-        eLpNorm (fun x => (fderiv ℝ ((W n).approx k) x) (basisVec i) -
-          (W n).toH1Function.grad x i) 2 μU < ε n :=
-      Filter.eventually_all.2 e2
-    exact (e1.and e2').exists
+    exact (e1.and (Filter.eventually_all.2 e2)).exists
   choose k hk using hex
   set ψ : ℕ → Vec d → ℝ := fun n => (W n).approx (k n) with hψ
   have htf : Tendsto

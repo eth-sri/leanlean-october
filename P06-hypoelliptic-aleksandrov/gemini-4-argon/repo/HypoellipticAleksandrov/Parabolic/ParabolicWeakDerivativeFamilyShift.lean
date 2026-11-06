@@ -24,7 +24,7 @@ namespace ParabolicDerivativeIndex
 /-- Add a bounded right index to a fixed left index while staying inside the
 original parabolic-weight bound. -/
 def addWithin
-    {d L M : ℕ}
+    {d L M }
     (alpha : ParabolicDerivativeIndex d L)
     (beta : ParabolicDerivativeIndex d M)
     (hαM : alpha.1.parabolicWeight + M ≤ L) :
@@ -35,7 +35,7 @@ def addWithin
 
 /-- The underlying multi-index of `addWithin` is literal addition. -/
 @[simp] theorem coe_addWithin
-    {d L M : ℕ}
+    {d L M }
     (alpha : ParabolicDerivativeIndex d L)
     (beta : ParabolicDerivativeIndex d M)
     (hαM : alpha.1.parabolicWeight + M ≤ L) :
@@ -45,7 +45,7 @@ def addWithin
 
 /-- Adding the bounded zero index leaves the fixed left index unchanged. -/
 @[simp] theorem addWithin_zero
-    {d L M : ℕ}
+    {d L M }
     (alpha : ParabolicDerivativeIndex d L)
     (hαM : alpha.1.parabolicWeight + M ≤ L) :
     ParabolicDerivativeIndex.addWithin alpha
@@ -54,7 +54,7 @@ def addWithin
   exact add_zero alpha.1
 
 private theorem addWithin_timeSucc
-    {d L M : ℕ}
+    {d L M }
     (alpha : ParabolicDerivativeIndex d L)
     (beta : ParabolicDerivativeIndex d M)
     (hαM : alpha.1.parabolicWeight + M ≤ L)
@@ -71,7 +71,7 @@ private theorem addWithin_timeSucc
   · rfl
 
 private theorem addWithin_velocitySucc
-    {d L M : ℕ}
+    {d L M }
     (alpha : ParabolicDerivativeIndex d L)
     (beta : ParabolicDerivativeIndex d M)
     (i : Fin d)
@@ -98,8 +98,7 @@ namespace ParabolicWeakDerivativeFamily
 /-- Re-root a coherent weak derivative family at a fixed selected derivative,
 retaining `M` further parabolic weights. -/
 def shift
-    {d L M : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d L M U u}
     (D : ParabolicWeakDerivativeFamily d L U u)
     (alpha : ParabolicDerivativeIndex d L)
     (hαM : alpha.1.parabolicWeight + M ≤ L) :
@@ -130,8 +129,7 @@ def shift
 
 /-- A shifted family selects the literal sum of its root and increment indices. -/
 @[simp] theorem shift_representative
-    {d L M : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d L M U u}
     (D : ParabolicWeakDerivativeFamily d L U u)
     (alpha : ParabolicDerivativeIndex d L)
     (hαM : alpha.1.parabolicWeight + M ≤ L)
@@ -144,8 +142,8 @@ def shift
 /-- Coherent restricted-`L²` weak derivative families on an open carrier are
 determined almost everywhere by their root functions. -/
 theorem representative_ae_eq_of_root_ae
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    {u v : TimeVelocity d → ℝ}
+    {d L U} (hU : IsOpen U)
+    {u v }
     (D : ParabolicWeakDerivativeFamily d L U u)
     (E : ParabolicWeakDerivativeFamily d L U v)
     (hroot : u =ᵐ[timeVelocityVolumeOn U] v)

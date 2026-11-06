@@ -25,7 +25,6 @@ theorem exists_subcritical_alpha (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
     (show max (0 : ℝ) (2 - 4 * (d : ℝ) / p) < 1 from
       max_lt zero_lt_one (by linarith only [hratio]))
   refine ⟨alpha, lt_of_le_of_lt (le_max_left _ _) ha, ha1, ?_⟩
-  have hlow := lt_of_le_of_lt (le_max_right (0 : ℝ) (2 - 4 * (d : ℝ) / p)) ha
-  linarith only [hlow, hratio0]
+  linarith only [(lt_of_le_of_lt (le_max_right (0 : ℝ) (2 - 4 * (d : ℝ) / p)) ha), hratio0]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

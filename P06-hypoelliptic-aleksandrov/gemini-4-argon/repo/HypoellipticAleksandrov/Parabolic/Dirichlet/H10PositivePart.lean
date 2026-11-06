@@ -43,92 +43,6 @@ private def h1FunctionOfH10
         (PDE.H1HilbertGraph.toH1Graph
           (u : PDE.H1HilbertGraph Ω)) i φ
 
-private theorem h1FunctionOfH10_hasSupportedSmoothApproximation
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
-    Nonempty (h1FunctionOfH10 hΩ u).SupportedSmoothApproximation := by
-  let ug := h10HilbertGraphContinuousLinearEquiv hΩ u
-  rcases PDE.H10Graph.exists_tendsto_smooth hΩ ug with ⟨φ, hφ⟩
-  let w := h1FunctionOfH10 hΩ u
-  have hvalue : Tendsto
-      (fun n => (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.1)
-      atTop (𝓝 (valueCLM hΩ u)) := by
-    simpa only [ug, h10HilbertGraphContinuousLinearEquiv, valueCLM_apply,
-      h1HilbertGraphContinuousLinearEquiv_apply, Function.comp_def,
-      ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans, ContinuousLinearEquiv.ofEq,
-      ContinuousLinearEquiv.ofSubmodule'_apply, PDE.H1HilbertGraph.value,
-      PDE.H1HilbertGraph.gradient, PDE.H1HilbertGraph.toH1Graph] using!
-      ((continuous_fst.comp continuous_subtype_val).tendsto _ |>.comp hφ)
-  have hgradient : Tendsto
-      (fun n => (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2)
-      atTop (𝓝 (gradientCLM hΩ u)) := by
-    simpa only [ug, h10HilbertGraphContinuousLinearEquiv, gradientCLM_apply,
-      h1HilbertGraphContinuousLinearEquiv_apply, Function.comp_def,
-      ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans, ContinuousLinearEquiv.ofEq,
-      ContinuousLinearEquiv.ofSubmodule'_apply, PDE.H1HilbertGraph.value,
-      PDE.H1HilbertGraph.gradient, PDE.H1HilbertGraph.toH1Graph] using!
-      ((continuous_snd.comp continuous_subtype_val).tendsto _ |>.comp hφ)
-  refine ⟨{
-    approx := fun n => (φ n).toFun
-    approx_smooth := fun n => (φ n).contDiff
-    approx_hasCompactSupport := fun n => (φ n).hasCompactSupport
-    approx_tsupport_subset := fun n => (φ n).tsupport_subset
-    tendsto_value := ?_
-    tendsto_grad := ?_ }⟩
-  · exact (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
-      (fun n => (φ n).toFun) (fun n => (φ n).memLp_toFun (2 : ℝ≥0∞))
-      w.toFun w.memL2).mp (by
-        simpa only [w, h1FunctionOfH10,
-          PDE.smoothCompactlySupportedH1Graph,
-          PDE.smoothCompactlySupportedW1pGraph,
-          PDE.W1pFunction.toW1pGraph, PDE.W1pFunction.ofContDiff,
-          Lp.toLp_coeFn, PDE.w1pGraphOfRepresentatives,
-          PDE.weakGradientLpPairOfRepresentatives] using! hvalue)
-  · intro i
-    apply (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
-      (fun n x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i))
-      (fun n => (φ n).memLp_partialDeriv i (2 : ℝ≥0∞))
-      (fun x => w.grad x i) (w.gradMemL2 i)).mp
-    have heval := (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i).continuous.tendsto _ |>.comp hgradient
-    have hseq : ∀ n,
-        PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-            (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2 =
-          ((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
-            (fun x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i)) := by
-      intro n
-      apply Lp.ext
-      filter_upwards [PDE.coeFn_hilbertVectorLpCoord Ω 2 i
-          (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2,
-        PDE.W1pFunction.coeFn_toW1pGraph_snd
-          (PDE.W1pFunction.ofContDiff hΩ
-            ((φ n).contDiff.of_le (by simp)) (φ n).hasCompactSupport 2),
-        ((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).coeFn_toLp] with x hc hg ht
-      have hg' :
-          ⇑(PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2 x =
-            PDE.toHilbertVecField
-              (PDE.W1pFunction.ofContDiff hΩ
-                ((φ n).contDiff.of_le (by simp)) (φ n).hasCompactSupport 2).grad x := by
-        simpa only [PDE.smoothCompactlySupportedH1Graph,
-          PDE.smoothCompactlySupportedW1pGraph] using hg
-      have ht' :
-          ⇑(((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
-            (fun x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i))) x =
-            (fderiv ℝ (φ n).toFun x) (PDE.basisVec i) := by
-        change ⇑(((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
-          ((φ n).partialDeriv i)) x = _
-        exact ht
-      rw [hc, hg', ht']
-      rfl
-    have hlim : PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-          (gradientCLM hΩ u) =
-        (w.gradMemL2 i).toLp (fun x => w.grad x i) := by
-      apply Lp.ext
-      filter_upwards [PDE.coeFn_hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ u),
-        (w.gradMemL2 i).coeFn_toLp] with x hc ht
-      rw [hc, ht]
-      rfl
-    rw [← hlim]
-    simpa only [Function.comp_def, hseq] using heval
-
 private theorem exists_positivePart_data
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
     ∃ v : H10HilbertGraph hΩ,
@@ -137,9 +51,92 @@ private theorem exists_positivePart_data
         gradientCLM hΩ v x =
           {y | 0 < valueCLM hΩ u y}.indicator (gradientCLM hΩ u) x := by
   let w := h1FunctionOfH10 hΩ u
+  have _h_inl_12 : Nonempty (h1FunctionOfH10 hΩ u).SupportedSmoothApproximation := by
+    let ug := h10HilbertGraphContinuousLinearEquiv hΩ u
+    rcases PDE.H10Graph.exists_tendsto_smooth hΩ ug with ⟨φ, hφ⟩
+    let w := h1FunctionOfH10 hΩ u
+    have hvalue : Tendsto
+        (fun n => (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.1)
+        atTop (𝓝 (valueCLM hΩ u)) := by
+      simpa only [ug, h10HilbertGraphContinuousLinearEquiv, valueCLM_apply,
+        h1HilbertGraphContinuousLinearEquiv_apply, Function.comp_def,
+        ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans, ContinuousLinearEquiv.ofEq,
+        ContinuousLinearEquiv.ofSubmodule'_apply, PDE.H1HilbertGraph.value,
+        PDE.H1HilbertGraph.gradient, PDE.H1HilbertGraph.toH1Graph] using!
+        ((continuous_fst.comp continuous_subtype_val).tendsto _ |>.comp hφ)
+    have hgradient : Tendsto
+        (fun n => (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2)
+        atTop (𝓝 (gradientCLM hΩ u)) := by
+      simpa only [ug, h10HilbertGraphContinuousLinearEquiv, gradientCLM_apply,
+        h1HilbertGraphContinuousLinearEquiv_apply, Function.comp_def,
+        ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans, ContinuousLinearEquiv.ofEq,
+        ContinuousLinearEquiv.ofSubmodule'_apply, PDE.H1HilbertGraph.value,
+        PDE.H1HilbertGraph.gradient, PDE.H1HilbertGraph.toH1Graph] using!
+        ((continuous_snd.comp continuous_subtype_val).tendsto _ |>.comp hφ)
+    refine ⟨{
+      approx := fun n => (φ n).toFun
+      approx_smooth := fun n => (φ n).contDiff
+      approx_hasCompactSupport := fun n => (φ n).hasCompactSupport
+      approx_tsupport_subset := fun n => (φ n).tsupport_subset
+      tendsto_value := ?_
+      tendsto_grad := ?_ }⟩
+    · exact (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
+        (fun n => (φ n).toFun) (fun n => (φ n).memLp_toFun (2 : ℝ≥0∞))
+        w.toFun w.memL2).mp (by
+          simpa only [w, h1FunctionOfH10,
+            PDE.smoothCompactlySupportedH1Graph,
+            PDE.smoothCompactlySupportedW1pGraph,
+            PDE.W1pFunction.toW1pGraph, PDE.W1pFunction.ofContDiff,
+            Lp.toLp_coeFn, PDE.w1pGraphOfRepresentatives,
+            PDE.weakGradientLpPairOfRepresentatives] using! hvalue)
+    · intro i
+      apply (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
+        (fun n x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i))
+        (fun n => (φ n).memLp_partialDeriv i (2 : ℝ≥0∞))
+        (fun x => w.grad x i) (w.gradMemL2 i)).mp
+      have heval := (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i).continuous.tendsto _ |>.comp hgradient
+      have hseq : ∀ n,
+          PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+              (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2 =
+            ((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
+              (fun x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i)) := by
+        intro n
+        apply Lp.ext
+        filter_upwards [PDE.coeFn_hilbertVectorLpCoord Ω 2 i
+            (PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2,
+          PDE.W1pFunction.coeFn_toW1pGraph_snd
+            (PDE.W1pFunction.ofContDiff hΩ
+              ((φ n).contDiff.of_le (by simp)) (φ n).hasCompactSupport 2),
+          ((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).coeFn_toLp] with x hc hg ht
+        have hg' :
+            ⇑(PDE.smoothCompactlySupportedH1Graph hΩ (φ n)).1.2 x =
+              PDE.toHilbertVecField
+                (PDE.W1pFunction.ofContDiff hΩ
+                  ((φ n).contDiff.of_le (by simp)) (φ n).hasCompactSupport 2).grad x := by
+          simpa only [PDE.smoothCompactlySupportedH1Graph,
+            PDE.smoothCompactlySupportedW1pGraph] using hg
+        have ht' :
+            ⇑(((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
+              (fun x => (fderiv ℝ (φ n).toFun x) (PDE.basisVec i))) x =
+              (fderiv ℝ (φ n).toFun x) (PDE.basisVec i) := by
+          change ⇑(((φ n).memLp_partialDeriv i (2 : ℝ≥0∞)).toLp
+            ((φ n).partialDeriv i)) x = _
+          exact ht
+        rw [hc, hg', ht']
+        rfl
+      have hlim : PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+            (gradientCLM hΩ u) =
+          (w.gradMemL2 i).toLp (fun x => w.grad x i) := by
+        apply Lp.ext
+        filter_upwards [PDE.coeFn_hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ u),
+          (w.gradMemL2 i).coeFn_toLp] with x hc ht
+        rw [hc, ht]
+        rfl
+      rw [← hlim]
+      simpa only [Function.comp_def, hseq] using heval
   obtain ⟨z, hzValue, hzGrad, hzApprox⟩ :=
     PDE.H1Function.exists_positivePart_supportedSmoothApproximation
-      (Classical.choice (h1FunctionOfH10_hasSupportedSmoothApproximation hΩ u))
+      (Classical.choice _h_inl_12)
       (by
         filter_upwards [gradientCLM_ae_zero_on_level_set hΩ u 0] with x hx
         intro hzero
@@ -168,7 +165,7 @@ private theorem exists_positivePart_data
     simp only [h1FunctionOfH10, indicator_apply]
     split <;> rfl
 
-/-- The positive part has a unique spatial `H¹₀` graph representative. -/
+/- The positive part has a unique spatial `H¹₀` graph representative. -/
 theorem exists_unique_h10PositivePart
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
     ∃! v : H10HilbertGraph hΩ,
@@ -176,12 +173,12 @@ theorem exists_unique_h10PositivePart
   obtain ⟨v, hv, _⟩ := exists_positivePart_data hΩ u
   exact ⟨v, hv, fun z hz => valueCLM_injective hΩ (hz.trans hv.symm)⟩
 
-/-- The canonical positive part in the Hilbert realization of spatial `H¹₀`. -/
+/- The canonical positive part in the Hilbert realization of spatial `H¹₀`. -/
 noncomputable def h10PositivePart
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) : H10HilbertGraph hΩ :=
   Classical.choose (exists_unique_h10PositivePart hΩ u)
 
-/-- The value component of the canonical `H¹₀` positive part is the
+/- The value component of the canonical `H¹₀` positive part is the
 `L²` positive part of the original value component. -/
 @[simp]
 theorem valueCLM_h10PositivePart
@@ -190,7 +187,7 @@ theorem valueCLM_h10PositivePart
       MeasureTheory.Lp.posPart (valueCLM hΩ u) :=
   (Classical.choose_spec (exists_unique_h10PositivePart hΩ u)).1
 
-/-- The weak gradient of the positive part is the original gradient on its
+/- The weak gradient of the positive part is the original gradient on its
 strictly positive set and zero elsewhere. -/
 theorem gradientCLM_h10PositivePart
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
@@ -202,16 +199,7 @@ theorem gradientCLM_h10PositivePart
     valueCLM_injective hΩ (valueCLM_h10PositivePart hΩ u |>.trans hv.symm)
   simpa only [heq] using hvGrad
 
-/-- Taking the positive part contracts the value `L²` norm. -/
-theorem norm_valueCLM_h10PositivePart_le
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
-    ‖valueCLM hΩ (h10PositivePart hΩ u)‖ ≤ ‖valueCLM hΩ u‖ := by
-  rw [valueCLM_h10PositivePart]
-  change ‖Lp.lipschitzWith_pos_part.compLp (max_eq_right le_rfl) (valueCLM hΩ u)‖ ≤ _
-  simpa using Lp.lipschitzWith_pos_part.norm_compLp_le
-    (max_eq_right le_rfl) (valueCLM hΩ u)
-
-/-- Taking the positive part contracts the weak-gradient `L²` norm. -/
+/- Taking the positive part contracts the value `L²` norm. -/
 theorem norm_gradientCLM_h10PositivePart_le
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
     ‖gradientCLM hΩ (h10PositivePart hΩ u)‖ ≤ ‖gradientCLM hΩ u‖ := by

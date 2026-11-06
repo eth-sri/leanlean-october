@@ -4,6 +4,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKry
 public import HypoellipticAleksandrov.Parabolic.ScalingMeasure
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import PDEFoundation.Geometry.EuclideanBall.Topology
+import Mathlib.Analysis.Convex.Basic
+import Mathlib.Basic.Real.Pointwise
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
+import PDEFoundation.Ambient.EuclideanNorm
+import PDEFoundation.Geometry.Affine
 
 /-!
 # Geometry and `L^{d+1}` scaling of the localized occupation reflection
@@ -22,14 +28,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
 open scoped Topology ENNReal
+open PDE
+open scoped Pointwise
 
 variable {d : ℕ}
 
-/-- The scaled height `h = (1 - α) / R²` of the reflected cylinder. -/
+/- The scaled height `h = (1 - α) / R²` of the reflected cylinder. -/
 def localHeight (α R : ℝ) : ℝ := (1 - α) / R ^ 2
-
-theorem localHeight_pos {α R : ℝ} (hα : α < 1) (hR : 0 < R) : 0 < localHeight α R :=
-  div_pos (sub_pos.mpr hα) (pow_pos hR 2)
 
 theorem localHeight_le_one {α R : ℝ} (hα : 0 ≤ α) (hR : 1 ≤ R) : localHeight α R ≤ 1 := by
   unfold localHeight
@@ -40,7 +45,7 @@ theorem mul_localHeight {α R : ℝ} (hR : 0 < R) : R ^ 2 * localHeight α R = 1
   unfold localHeight
   field_simp
 
-/-- A closed Euclidean ball lies in the closure of the open ball of the same radius. -/
+/- A closed Euclidean ball lies in the closure of the open ball of the same radius. -/
 theorem euclideanClosedBall_subset_closure_euclideanBall {x : PDE.Vec d} {R : ℝ}
     (hR : 0 < R) : PDE.euclideanClosedBall x R ⊆ closure (PDE.euclideanBall x R) := by
   intro y hy
@@ -60,7 +65,7 @@ theorem euclideanClosedBall_subset_closure_euclideanBall {x : PDE.Vec d} {R : �
   have ht2 : t ^ 2 < 1 := by nlinarith [ht.1, ht.2]
   nlinarith [PDE.euclideanSqDist_nonneg y x, sq_nonneg t]
 
-/-- The open Euclidean ball is bounded. -/
+/- The open Euclidean ball is bounded. -/
 theorem isBounded_euclideanBall (x : PDE.Vec d) {R : ℝ} (hR : 0 < R) :
     Bornology.IsBounded (PDE.euclideanBall x R) :=
   (Metric.isBounded_ball (x := x) (r := R)).subset (PDE.euclideanBall_subset_supBall hR)
@@ -69,20 +74,25 @@ section Cylinders
 
 variable {α R : ℝ} {vStar : PDE.Vec d}
 
-/-- The ball part: `v_* + R y` lies in `B_R(v_*)` iff `y ∈ B_1(0)`. -/
+/- The ball part: `v_* + R y` lies in `B_R(v_*)` iff `y ∈ B_1(0)`. -/
 theorem vStar_add_smul_mem_ball_iff (hR : 0 < R) (y : PDE.Vec d) :
     vStar + R • y ∈ PDE.euclideanBall vStar R ↔ y ∈ PDE.euclideanBall (0 : PDE.Vec d) 1 := by
   rw [add_comm]
   exact PDE.affine_mem_euclideanBall_iff_of_pos vStar y hR
 
-/-- The closed-ball part of the same correspondence. -/
+/- The closed-ball part of the same correspondence. -/
 theorem vStar_add_smul_mem_closedBall_iff (hR : 0 < R) (y : PDE.Vec d) :
     vStar + R • y ∈ PDE.euclideanClosedBall vStar R ↔
       y ∈ PDE.euclideanClosedBall (0 : PDE.Vec d) 1 := by
   rw [add_comm]
-  exact PDE.affine_mem_euclideanClosedBall_iff_of_pos vStar y hR
+  change euclideanSqDist (R • y + vStar) vStar ≤ R ^ 2 ↔
+    euclideanSqDist y 0 ≤ 1 ^ 2
+  rw [euclideanSqDist_affine_center]
+  have hr2 := sq_pos_of_pos hR
+  norm_num
+  constructor <;> intro h <;> nlinarith
 
-/-- The Krylov cylinder is exactly the preimage of the source cylinder. -/
+/- The Krylov cylinder is exactly the preimage of the source cylinder. -/
 theorem mem_krylovCylinder_iff_reflectScale (hR : 0 < R) (z : TimeVelocity d) :
     z ∈ krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d) ↔
       reflectScale R vStar z ∈ scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R) := by
@@ -104,7 +114,7 @@ theorem mem_krylovCylinder_iff_reflectScale (hR : 0 < R) (z : TimeVelocity d) :
     · by_contra hcon
       nlinarith
 
-/-- The closed Krylov cylinder maps into the closed source cylinder. -/
+/- The closed Krylov cylinder maps into the closed source cylinder. -/
 theorem krylovClosedCylinder_subset_preimage (hR : 0 < R) :
     krylovClosedCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d) ⊆
       reflectScale R vStar ⁻¹'
@@ -120,7 +130,7 @@ theorem krylovClosedCylinder_subset_preimage (hR : 0 < R) :
   exact euclideanClosedBall_subset_closure_euclideanBall hR
     ((vStar_add_smul_mem_closedBall_iff hR y).mpr hy)
 
-/-- The bottom and lateral Krylov faces map to the terminal and lateral faces. -/
+/- The bottom and lateral Krylov faces map to the terminal and lateral faces. -/
 theorem krylovParabolicBoundary_subset_preimage (hR : 0 < R) :
     krylovParabolicBoundary (localHeight α R) (localHeight α R) (0 : PDE.Vec d) ⊆
       reflectScale R vStar ⁻¹'
@@ -158,7 +168,7 @@ theorem krylovParabolicBoundary_subset_preimage (hR : 0 < R) :
     have h2 : PDE.euclideanSqDist (vStar + R • y) vStar = R ^ 2 := hsph
     exact lt_irrefl _ (h2 ▸ h1)
 
-/-- The inverse of `reflectScale` on points of the source cylinder. -/
+/- The inverse of `reflectScale` on points of the source cylinder. -/
 def reflectScaleInv (R : ℝ) (vStar : PDE.Vec d) (w : TimeVelocity d) : TimeVelocity d :=
   ((1 - w.1) / R ^ 2, R⁻¹ • (w.2 - vStar))
 
@@ -174,17 +184,8 @@ theorem reflectScale_reflectScaleInv (hR : 0 < R) (w : TimeVelocity d) :
     field_simp
     ring
 
-/-- A point of the source cylinder is the image of a point of the Krylov cylinder. -/
-theorem exists_mem_krylovCylinder (hR : 0 < R) {w : TimeVelocity d}
-    (hw : w ∈ scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) :
-    ∃ z ∈ krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d),
-      reflectScale R vStar z = w := by
-  refine ⟨reflectScaleInv R vStar w, ?_, reflectScale_reflectScaleInv hR w⟩
-  rw [mem_krylovCylinder_iff_reflectScale hR (vStar := vStar) (α := α),
-    reflectScale_reflectScaleInv hR]
-  exact hw
-
-theorem parabolicAffine_surjective {t₀ : ℝ} (hR : 0 < R) :
+/- A point of the source cylinder is the image of a point of the Krylov cylinder. -/
+theorem parabolicAffine_surjective {t₀ } (hR : 0 < R) :
     Function.Surjective (parabolicAffine t₀ vStar R) := by
   rintro ⟨s, y⟩
   refine ⟨((s - t₀) / R ^ 2, R⁻¹ • (y - vStar)), ?_⟩
@@ -197,7 +198,7 @@ theorem parabolicAffine_surjective {t₀ : ℝ} (hR : 0 < R) :
     field_simp
     ring
 
-/-- The image of the Krylov cylinder under the forward parabolic affine map. -/
+/- The image of the Krylov cylinder under the forward parabolic affine map. -/
 theorem parabolicAffine_image_krylovCylinder (hR : 0 < R) :
     parabolicAffine 0 vStar R ''
         krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d) =
@@ -217,21 +218,21 @@ section Norms
 
 variable {α R : ℝ} {vStar : PDE.Vec d}
 
-/-- Reflection of a measurable set preserves the restricted `L^{d+1}` extended norm. -/
-theorem parabolicELpNormOn_timeReflectedScalar_preimage {F : TimeVelocity d → ℝ}
-    (hF : Continuous F) {S : Set (TimeVelocity d)} (hS : MeasurableSet S) :
+/- Reflection of a measurable set preserves the restricted `L^{d+1}` extended norm. -/
+theorem parabolicELpNormOn_timeReflectedScalar_preimage {F }
+    (hF : Continuous F) {S } (hS : MeasurableSet S) :
     parabolicELpNormOn d (timeReflectedScalar F) (timeReflection ⁻¹' S) =
       parabolicELpNormOn d F S := by
   unfold parabolicELpNormOn timeReflectedScalar
   exact eLpNorm_comp_measurePreserving hF.aestronglyMeasurable
     (timeReflection_measurePreserving.restrict_preimage hS)
 
-/-- The source cylinder is measurable. -/
+/- The source cylinder is measurable. -/
 theorem measurableSet_sourceCylinder (α R : ℝ) (vStar : PDE.Vec d) :
     MeasurableSet (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) :=
   measurableSet_Ioo.prod (PDE.measurableSet_euclideanBall vStar R)
 
-/-- The localized source `f(t, y) = R² F(1 - R² t, v_* + R y)`. -/
+/- The localized source `f(t, y) = R² F(1 - R² t, v_* + R y)`. -/
 def localizedSource (R : ℝ) (vStar : PDE.Vec d) (F : TimeVelocity d → ℝ) :
     TimeVelocity d → ℝ :=
   fun z => R ^ 2 * F (reflectScale R vStar z)
@@ -244,37 +245,23 @@ theorem localizedSource_eq (R : ℝ) (vStar : PDE.Vec d) (F : TimeVelocity d →
   rw [reflectScale_eq]
   rfl
 
-/-- The extended `L^{d+1}` norm of the localized source is the rescaled source norm. -/
-theorem parabolicELpNormOn_localizedSource (hR : 0 < R) {F : TimeVelocity d → ℝ}
-    (hF : Continuous F) :
-    parabolicELpNormOn d (localizedSource R vStar F)
-        (krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d)) =
-      ‖R ^ 2‖ₑ * (ENNReal.ofReal ((R ^ (d + 2))⁻¹) ^ (1 / parabolicExponent d).toReal) *
-        parabolicELpNormOn d F (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) := by
-  rw [localizedSource_eq, parabolicELpNormOn_pullback_raw 0 vStar hR,
-    parabolicAffine_image_krylovCylinder hR,
-    parabolicELpNormOn_timeReflectedScalar_preimage hF (measurableSet_sourceCylinder α R vStar)]
-
-/-- The real `L^{d+1}` norm of the localized source: Jacobian factor `R^(d/(d+1))`. -/
-theorem parabolicLpNormOn_localizedSource (hR : 0 < R) {F : TimeVelocity d → ℝ}
-    (hF : Continuous F) :
-    parabolicLpNormOn d (localizedSource R vStar F)
-        (krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d)) =
-      R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
-        parabolicLpNormOn d F (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) := by
-  rw [localizedSource_eq, parabolicLpNormOn_pullback 0 vStar hR,
-    parabolicAffine_image_krylovCylinder hR]
-  unfold parabolicLpNormOn
-  rw [parabolicELpNormOn_timeReflectedScalar_preimage hF (measurableSet_sourceCylinder α R vStar)]
-
-/-- The localized source is in `L^{d+1}` of the Krylov cylinder when `F` is in `L^{d+1}`. -/
-theorem memLp_localizedSource (hR : 0 < R) {F : TimeVelocity d → ℝ}
+/- The extended `L^{d+1}` norm of the localized source is the rescaled source norm. -/
+theorem memLp_localizedSource (hR : 0 < R) {F }
     (hF : Continuous F) (hFp : MemLp F (parabolicExponent d) volume) :
     MemLp (localizedSource R vStar F) (parabolicExponent d)
       (volume.restrict
         (krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d))) := by
   change parabolicELpNormOn d (localizedSource R vStar F) _ < ⊤
-  rw [parabolicELpNormOn_localizedSource hR hF]
+  have _h_inl_36 : parabolicELpNormOn d (localizedSource R vStar F)
+        (krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d)) =
+      ‖R ^ 2‖ₑ * (ENNReal.ofReal ((R ^ (d + 2))⁻¹) ^ (1 / parabolicExponent d).toReal) *
+        parabolicELpNormOn d F (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) := by
+      rw [localizedSource_eq, parabolicELpNormOn_pullback_raw 0 vStar hR,
+        parabolicAffine_image_krylovCylinder hR,
+        parabolicELpNormOn_timeReflectedScalar_preimage hF (measurableSet_sourceCylinder α R vStar)]
+
+    /- The real `L^{d+1}` norm of the localized source: Jacobian factor `R^(d/(d+1))`. -/
+  rw [_h_inl_36]
   have hfin : parabolicELpNormOn d F
       (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) < ⊤ := by
     refine lt_of_le_of_lt ?_ hFp

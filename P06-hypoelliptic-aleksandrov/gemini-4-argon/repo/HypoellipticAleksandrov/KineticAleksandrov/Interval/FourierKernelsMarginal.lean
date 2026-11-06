@@ -12,10 +12,10 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
 /-- The ambient velocity marginal is exactly the derived scalar parabolic measure. -/
-theorem interval_firstMarginal_eq_parabolic {a c : ℝ}
+theorem interval_firstMarginal_eq_parabolic {a c }
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (B : CoefficientField 1)
+    (B )
     (hp : HasParabolicMarginalBundle (PDE.oneDimensionalAxisBox a c) stationary hJ
       (zIndependentCoefficient B) K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec 1)

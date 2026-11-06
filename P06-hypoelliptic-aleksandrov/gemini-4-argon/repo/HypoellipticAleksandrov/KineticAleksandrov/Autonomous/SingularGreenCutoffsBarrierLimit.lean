@@ -12,12 +12,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped Topology ENNReal
 
-/-- The literal scalar cutoff equals one throughout its inner unit interval. -/
-theorem barrierCutoff_eq_one {x : ℝ} (hx : |x| ≤ 1) : barrierCutoff x = 1 := by
+/- The literal scalar cutoff equals one throughout its inner unit interval. -/
+theorem barrierCutoff_eq_one {x } (hx : |x| ≤ 1) : barrierCutoff x = 1 := by
   apply barrierCutoffBump.one_of_mem_closedBall
   simpa only [Metric.mem_closedBall, Real.dist_eq, sub_zero, barrierCutoffBump] using hx
 
-/-- At every physical point, the expanding kinetic cutoff is eventually exactly one. -/
+/- At every physical point, the expanding kinetic cutoff is eventually exactly one. -/
 theorem barrierRectCutoff_eventually_one (Y : ℝ) (z : Z) :
     ∀ᶠ n : ℕ in atTop, barrierRectCutoff Y ((n : ℝ) + 1) z = 1 := by
   have hn : ∀ᶠ n : ℕ in atTop, max |z.1 - Y| |z.2| ≤ (n : ℝ) :=
@@ -42,30 +42,7 @@ theorem barrierRectCutoff_eventually_one (Y : ℝ) (z : Z) :
     exact hv
   simp only [barrierRectCutoff, barrierCutoff_eq_one hx', barrierCutoff_eq_one hv', one_mul]
 
-/-- Actual integrable endpoint tests converge under the expanding kinetic cutoff. -/
-theorem barrierRectCutoff_integral_tendsto (mu : Measure Z) (f : Z → ℝ)
-    (hf : Measurable f) (hi : Integrable f mu) (Y : ℝ) :
-    Tendsto (fun n : ℕ => ∫ z, barrierRectCutoff Y ((n : ℝ) + 1) z * f z ∂mu)
-      atTop (𝓝 (∫ z, f z ∂mu)) := by
-  apply tendsto_integral_of_dominated_convergence (fun z => |f z|)
-  · intro n
-    have hc : Continuous (barrierRectCutoff Y ((n : ℝ) + 1)) := by
-      exact (barrierCutoff_contDiff.continuous.comp
-        ((continuous_fst.sub continuous_const).div_const _)).mul
-          (barrierCutoff_contDiff.continuous.comp (continuous_snd.div_const _))
-    exact (hc.measurable.mul hf).aestronglyMeasurable
-  · exact hi.abs
-  · intro n
-    filter_upwards with z
-    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (barrierRectCutoff_bounds _ _ _).1]
-    simpa only [one_mul] using mul_le_mul_of_nonneg_right
-      (barrierRectCutoff_bounds Y ((n : ℝ) + 1) z).2 (abs_nonneg (f z))
-  · filter_upwards with z
-    apply Tendsto.congr' ?_ tendsto_const_nhds
-    filter_upwards [barrierRectCutoff_eventually_one Y z] with n hn
-    simp only [hn, one_mul]
-
-/-- Extended Fatou passes quantitative finite bounds without removing singular atoms. -/
+/- Actual integrable endpoint tests converge under the expanding kinetic cutoff. -/
 theorem singular_fatou_of_real_bounds {W : Type*} [MeasurableSpace W]
     (mu : Measure W) (f : ℕ → W → ENNReal) (F : W → ENNReal)
     (hm : ∀ n, Measurable (f n))

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Unique
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.EllipticityScaling
+import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierBounds
 
 /-!
 # Fourier projections under an affine change of variables (companion paper, (2.12))
@@ -31,18 +32,15 @@ theorem vecDot_smul_right {d : ℕ} (c : ℝ) (x y : PDE.Vec d) :
   simp only [PDE.vecDot, Pi.smul_apply, smul_eq_mul, mul_left_comm, Finset.mul_sum]
 
 namespace KineticAffineScaling
+open scoped ENNReal MatrixOrder
 
 variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : Set (PDE.Vec d)}
   {γ γ' : ℝ → PDE.Vec d}
 
-/-- The affine change of the diffused coordinate as a measurable equivalence. -/
+/- The affine change of the diffused coordinate as a measurable equivalence. -/
 def positionEquiv (Φ : KineticAffineScaling d) : PDE.Vec d ≃ᵐ PDE.Vec d :=
   Φ.positionHomeo.toMeasurableEquiv
 
-@[simp] theorem positionEquiv_apply (Φ : KineticAffineScaling d) (Y : PDE.Vec d) :
-    Φ.positionEquiv Y = Φ.position Y := rfl
-
-/-- The constant phase `exp (-i a (τ' - τ) ξ · w)` of the source's Lemma 2.5. -/
 def fourierShiftPhase (Φ : KineticAffineScaling d) (τ τ' : ℝ) (ξ : PDE.Vec d) : ℂ :=
   Complex.exp (-Complex.I * ((Φ.a * (τ' - τ) * PDE.vecDot ξ Φ.w : ℝ) : ℂ))
 
@@ -50,7 +48,7 @@ theorem norm_fourierShiftPhase (Φ : KineticAffineScaling d) (τ τ' : ℝ) (ξ 
     ‖Φ.fourierShiftPhase τ τ' ξ‖ = 1 := by
   simp [fourierShiftPhase, Complex.norm_exp, Complex.mul_re]
 
-/-- Pointwise phase identity: the original phase is the constant phase times the rescaled
+/- Pointwise phase identity: the original phase is the constant phase times the rescaled
 phase at frequency `e ξ`. -/
 theorem fourierPhase_comp (Φ : KineticAffineScaling d) (τ τ' : ℝ) (ξ Z : PDE.Vec d)
     (x : EvolutionAmbientState d) :
@@ -78,7 +76,7 @@ theorem fourierPhase_comp (Φ : KineticAffineScaling d) (τ τ' : ℝ) (ξ Z : P
   push_cast
   ring
 
-/-- **Fourier projections** (companion paper, Lemma 2.5).  If `ν` is the Fourier projection
+/- **Fourier projections** (companion paper, Lemma 2.5).  If `ν` is the Fourier projection
 of `K` at the original query `Φ q'` and frequency `ξ`, and `ν'` that of the pushed-forward
 kernel at `q'` and frequency `e ξ`, then
 `ν E = exp (-i a (τ' - τ) ξ · w) · ν' (Φ⁻¹ E)` for every Borel set `E`. -/
@@ -99,41 +97,15 @@ theorem isFourierProjection_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : Mo
   refine setIntegral_congr_fun (hE.prod MeasurableSet.univ) fun x _ => ?_
   exact Φ.fourierPhase_comp q'.1.1 q'.1.2.1 ξ q'.1.2.2.2 x
 
-/-- **Total variation** (companion paper, (2.12)): under the hypotheses of
+/- **Total variation** (companion paper, (2.12)): under the hypotheses of
 `isFourierProjection_pushKernel`, `‖ν‖_TV = ‖ν'‖_TV`. -/
-theorem totalVariation_fourier_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
-    (K : MovingFiberKernel Ω γ) (q' : EvolutionQuery Ω' γ') (ξ : PDE.Vec d)
-    (ν ν' : ComplexMeasure (PDE.Vec d))
-    (hν : IsFourierProjection K (queryMap h q') ξ ν)
-    (hν' : IsFourierProjection (pushKernel h K) q' (Φ.e • ξ) ν') :
-    totalVariationNorm ν = totalVariationNorm ν' := by
-  have hmap : ν = Φ.fourierShiftPhase q'.1.1 q'.1.2.1 ξ • ν'.map Φ.positionEquiv := by
-    apply VectorMeasure.ext
-    intro E hE
-    rw [isFourierProjection_pushKernel h K q' ξ ν ν' hν hν' E hE,
-      smul_apply, VectorMeasure.map_apply _ Φ.positionEquiv.measurable hE]
-    rfl
-  unfold totalVariationNorm
-  rw [hmap, VectorMeasure.variation_smul, Measure.smul_apply,
-    variation_map_equiv_univ Φ.positionEquiv ν']
-  have : ‖Φ.fourierShiftPhase q'.1.1 q'.1.2.1 ξ‖₊ = 1 := by
-    rw [← NNReal.coe_inj]
-    exact Φ.norm_fourierShiftPhase _ _ _
-  rw [this, one_smul]
-
-/-- **Fourier projections of any two realizations** (companion paper, Lemma 2.5 and
-(2.12)): for realizations `(S, K)` of the original problem and `(S', K')` of the rescaled
-one, the Fourier projections `ν` of `K` (at `Φ q'`, frequency `ξ`) and `ν'` of `K'` (at `q'`,
-frequency `e ξ`) satisfy `ν E = exp (-i a (τ' - τ) ξ · w) · ν' (Φ⁻¹ E)` and have equal total
-variation. -/
 theorem realizes_fourier_tv (h : Φ.MapsDomain Ω γ Ω' γ')
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     (hΩ' : IsAdmissibleEvolutionDomain Ω')
-    {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S : TerminalOperatorFamily Ω γ} {K : MovingFiberKernel Ω γ}
+    {B b S K}
     (hreal : RealizesTerminalEvolution Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S K)
-    {S' : TerminalOperatorFamily Ω' γ'} {K' : MovingFiberKernel Ω' γ'}
+    {S' K'}
     (hreal' : RealizesTerminalEvolution Ω' γ'
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ') (Φ.coefficient B) (Φ.drift b) S' K')
     (q' : EvolutionQuery Ω' γ') (ξ : PDE.Vec d) (ν ν' : ComplexMeasure (PDE.Vec d))
@@ -144,8 +116,26 @@ theorem realizes_fourier_tv (h : Φ.MapsDomain Ω γ Ω' γ')
       totalVariationNorm ν = totalVariationNorm ν' := by
   have hK := (realizes_unique_pushKernel h hΩ hγ hΩ' hreal hreal').1
   subst hK
+  have _h_inl_18 : totalVariationNorm ν = totalVariationNorm ν' := by
+    have hmap : ν = Φ.fourierShiftPhase q'.1.1 q'.1.2.1 ξ • ν'.map Φ.positionEquiv := by
+      apply VectorMeasure.ext
+      intro E hE
+      rw [isFourierProjection_pushKernel h K q' ξ ν ν' hν hν' E hE,
+        smul_apply, VectorMeasure.map_apply _ Φ.positionEquiv.measurable hE]
+      rfl
+    unfold totalVariationNorm
+    have _h_xinl_0 : (ν'.map Φ.positionEquiv).variation univ = ν'.variation univ := by
+      let e := Φ.positionEquiv
+      rw [e.measurableEmbedding.variation_map, Measure.map_apply e.measurable MeasurableSet.univ,
+        preimage_univ]
+    rw [hmap, VectorMeasure.variation_smul, Measure.smul_apply,
+      _h_xinl_0]
+    have : ‖Φ.fourierShiftPhase q'.1.1 q'.1.2.1 ξ‖₊ = 1 := by
+      rw [← NNReal.coe_inj]
+      exact Φ.norm_fourierShiftPhase _ _ _
+    rw [this, one_smul]
   exact ⟨fun E hE => isFourierProjection_pushKernel h K q' ξ ν ν' hν hν' E hE,
-    totalVariation_fourier_pushKernel h K q' ξ ν ν' hν hν'⟩
+    _h_inl_18⟩
 
 end KineticAffineScaling
 

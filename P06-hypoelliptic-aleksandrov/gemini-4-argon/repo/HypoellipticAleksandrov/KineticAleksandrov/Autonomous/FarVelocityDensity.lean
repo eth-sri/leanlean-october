@@ -13,7 +13,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
-/-- The source's single clock, with centre v₀ and radius 4R. -/
+/- The source's single clock, with centre v₀ and radius 4R. -/
 def farVelocityClock (Z₀ : Point) (R : ℝ) (hR : 0 < R)
     (hfar : 8 * R < |Z₀.velocity 0|) : Clock where
   vbar := Z₀.velocity 0
@@ -22,18 +22,7 @@ def farVelocityClock (Z₀ : Point) (R : ℝ) (hR : 0 < R)
   positive := by positivity
   radius := by linarith
 
-/-- The cylinder velocity interval is contained in the single clock's active interval. -/
-theorem farVelocityClock_contains (Z₀ : Point) (R : ℝ) (hR : 0 < R)
-    (hfar : 8 * R < |Z₀.velocity 0|) :
-    (capacityCylinderInterval Z₀ R hR).carrier ⊆
-      (farVelocityClock Z₀ R hR hfar).active := by
-  intro v hv
-  change Z₀.velocity 0 - R < v ∧ v < Z₀.velocity 0 + R at hv
-  change Z₀.velocity 0 - 3 * (4 * R) / 4 < v ∧
-    v < Z₀.velocity 0 + 3 * (4 * R) / 4
-  constructor <;> linarith [hv.1, hv.2]
-
-/-- The source far-velocity density estimate, conditional only on p:pushforward. -/
+/- The cylinder velocity interval is contained in the single clock's active interval. -/
 theorem cylinder_density_far (hpush : PushforwardStatement)
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -55,7 +44,15 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
   refine ⟨C * (4 : ℝ) ^ (6 / q - 4), by positivity, ?_⟩
   intro A Z₀ R hR P hP hfar
   let c := farVelocityClock Z₀ R hR hfar
-  have hsub := farVelocityClock_contains Z₀ R hR hfar
+  have hsub : (capacityCylinderInterval Z₀ R hR).carrier ⊆
+      (farVelocityClock Z₀ R hR hfar).active := by
+      intro v hv
+      change Z₀.velocity 0 - R < v ∧ v < Z₀.velocity 0 + R at hv
+      change Z₀.velocity 0 - 3 * (4 * R) / 4 < v ∧
+        v < Z₀.velocity 0 + 3 * (4 * R) / 4
+      constructor <;> linarith [hv.1, hv.2]
+
+    /- The source far-velocity density estimate, conditional only on p:pushforward. -/
   let e := capacityCylinderPole Z₀ P R hR hP
   have he : P.velocity 0 ∈ c.active := hsub e.2.2
   obtain ⟨f, hfm, hf0, hfd, hfp, hfn⟩ := hc A c P he

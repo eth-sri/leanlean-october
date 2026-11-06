@@ -19,7 +19,7 @@ open scoped Topology
 /-- The existing inclusion of bundled smooth compactly supported tests into
 the spatial `H¹₀` Hilbert graph has dense range. -/
 theorem denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
     DenseRange
       (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ) := by
   rw [denseRange_iff_closure_range]

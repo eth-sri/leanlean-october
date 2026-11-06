@@ -65,7 +65,7 @@ lemma evolved_integral (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) (hπ
     (∫ᵛ z, h z ∂[ContinuousLinearMap.mul ℝ ℂ; evolvedMeasure μ κ ph π]) =
       ∫ x, ∫ y, h (π y) * ph y ∂κ x ∂μ := by
   set Λ : Measure Y := (μ ⊗ₘ κ).snd with hΛ
-  have hv : (Λ.withDensityᵥ ph).variation = Λ := variation_density_one Λ ph hph hph1
+  have hv := variation_density_one Λ ph hph hph1
   have hi : Integrable (fun y : Y => h (π y)) Λ := by
     obtain ⟨C, hC⟩ := hb
     exact Integrable.mono' (integrable_const C) (hh.comp hπ).aestronglyMeasurable
@@ -114,7 +114,7 @@ lemma evolvedMeasure_apply (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) 
 
 /-- **Mass of `|η|`.**  If every fibre has total variation at most `δ`, so does `η` up to `μ(X)`. -/
 lemma evolved_variation_le (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) (hπ : Measurable π)
-    (δ : ℝ≥0∞) (hδ : ∀ x, (fibreMeasure κ ph π x).variation univ ≤ δ) :
+    (δ ) (hδ : ∀ x, (fibreMeasure κ ph π x).variation univ ≤ δ) :
     (evolvedMeasure μ κ ph π).variation univ ≤ μ univ * δ := by
   refine le_of_forall_lt (fun a ha => ?_)
   obtain ⟨P, hPs, hPd, hPm, hsum⟩ :=

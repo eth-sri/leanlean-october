@@ -19,8 +19,8 @@ open scoped ENNReal
 
 namespace TimeVelocityDerivativeIndex
 
-/-- Add one time derivative while remaining at the ordinary order bound. -/
-def timeSucc {d m : ℕ} (beta : TimeVelocityDerivativeIndex d m)
+/- Add one time derivative while remaining at the ordinary order bound. -/
+def timeSucc {d m } (beta : TimeVelocityDerivativeIndex d m)
     (h : beta.1.order + 1 ≤ m) : TimeVelocityDerivativeIndex d m :=
   ⟨TimeVelocityMultiIndex.ofTimeVelocity
       (beta.1.timeOrder + 1) beta.1.velocity, by
@@ -28,8 +28,8 @@ def timeSucc {d m : ℕ} (beta : TimeVelocityDerivativeIndex d m)
     change beta.1.timeOrder + beta.1.velocity.order + 1 ≤ m at h
     omega⟩
 
-/-- Add one velocity derivative while remaining at the ordinary order bound. -/
-def velocitySucc {d m : ℕ} (beta : TimeVelocityDerivativeIndex d m)
+/- Add one velocity derivative while remaining at the ordinary order bound. -/
+def velocitySucc {d m } (beta : TimeVelocityDerivativeIndex d m)
     (i : Fin d) (h : beta.1.order + 1 ≤ m) :
     TimeVelocityDerivativeIndex d m :=
   ⟨TimeVelocityMultiIndex.ofTimeVelocity beta.1.timeOrder
@@ -47,16 +47,16 @@ def velocitySucc {d m : ℕ} (beta : TimeVelocityDerivativeIndex d m)
     change beta.1.timeOrder + (∑ j, beta.1.velocity j) + 1 ≤ m at h
     omega⟩
 
-/-- The time successor has the expected underlying time--velocity multi-index. -/
-@[simp] theorem coe_timeSucc {d m : ℕ}
+/- The time successor has the expected underlying time--velocity multi-index. -/
+@[simp] theorem coe_timeSucc {d m }
     (beta : TimeVelocityDerivativeIndex d m)
     (h : beta.1.order + 1 ≤ m) :
     (timeSucc beta h).1 =
       TimeVelocityMultiIndex.ofTimeVelocity
         (beta.1.timeOrder + 1) beta.1.velocity := rfl
 
-/-- The velocity successor has the expected underlying time--velocity multi-index. -/
-@[simp] theorem coe_velocitySucc {d m : ℕ}
+/- The velocity successor has the expected underlying time--velocity multi-index. -/
+@[simp] theorem coe_velocitySucc {d m }
     (beta : TimeVelocityDerivativeIndex d m) (i : Fin d)
     (h : beta.1.order + 1 ≤ m) :
     (velocitySucc beta i h).1 =
@@ -64,8 +64,8 @@ def velocitySucc {d m : ℕ} (beta : TimeVelocityDerivativeIndex d m)
         (Function.update beta.1.velocity i
           (beta.1.velocity i + 1)) := rfl
 
-/-- The ordinary-to-parabolic embedding commutes with the time successor. -/
-theorem toParabolic_timeSucc {d m : ℕ}
+/- The ordinary-to-parabolic embedding commutes with the time successor. -/
+theorem toParabolic_timeSucc {d m }
     (beta : TimeVelocityDerivativeIndex d m)
     (h : beta.1.order + 1 ≤ m) :
     toParabolic (timeSucc beta h) =
@@ -77,8 +77,8 @@ theorem toParabolic_timeSucc {d m : ℕ}
   apply Subtype.ext
   rfl
 
-/-- The ordinary-to-parabolic embedding commutes with a velocity successor. -/
-theorem toParabolic_velocitySucc {d m : ℕ}
+/- The ordinary-to-parabolic embedding commutes with a velocity successor. -/
+theorem toParabolic_velocitySucc {d m }
     (beta : TimeVelocityDerivativeIndex d m) (i : Fin d)
     (h : beta.1.order + 1 ≤ m) :
     toParabolic (velocitySucc beta i h) =
@@ -94,39 +94,34 @@ end TimeVelocityDerivativeIndex
 
 namespace ParabolicWeakDerivativeFamily
 
-/-- The literal ordinary-order view of the selected parabolic representatives. -/
+/- The literal ordinary-order view of the selected parabolic representatives. -/
 def ordinaryRepresentative
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d m U u}
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
     (beta : TimeVelocityDerivativeIndex d m) :
     TimeVelocity d → ℝ :=
   D.representative beta.toParabolic
 
-/-- Every selected ordinary representative belongs locally to the supplied `L²` family. -/
+/- Every selected ordinary representative belongs locally to the supplied `L²` family. -/
 theorem ordinaryRepresentative_memLp
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d m U u}
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
     (beta : TimeVelocityDerivativeIndex d m) :
     ParabolicMemLpOn U (2 : ℝ≥0∞)
       (D.ordinaryRepresentative beta) :=
   D.memLp beta.toParabolic
 
-/-- The zero ordinary representative agrees almost everywhere with the root function. -/
+/- The zero ordinary representative agrees almost everywhere with the root function. -/
 theorem ordinaryRepresentative_zero_ae
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d m U u}
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u) :
     D.ordinaryRepresentative (TimeVelocityDerivativeIndex.zero d m)
-      =ᵐ[timeVelocityVolumeOn U] u := by
-  simpa only [ordinaryRepresentative,
-    TimeVelocityDerivativeIndex.toParabolic_zero] using D.zero_ae
+      =ᵐ[timeVelocityVolumeOn U] u :=
+  D.zero_ae
 
-/-- The selected time successor is the weak time derivative of an ordinary representative. -/
+/- The selected time successor is the weak time derivative of an ordinary representative. -/
 theorem hasWeakTimeDerivOn_ordinaryRepresentative_timeSucc
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d m U u}
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
     (beta : TimeVelocityDerivativeIndex d m)
     (h : beta.1.order + 1 ≤ m) :
@@ -141,10 +136,9 @@ theorem hasWeakTimeDerivOn_ordinaryRepresentative_timeSucc
         have hw := beta.1.parabolicWeight_le_two_mul_order
         omega)
 
-/-- A selected velocity successor is the corresponding weak velocity derivative. -/
+/- A selected velocity successor is the corresponding weak velocity derivative. -/
 theorem hasWeakVelocityPartialDerivOn_ordinaryRepresentative_velocitySucc
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d m U u}
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
     (beta : TimeVelocityDerivativeIndex d m) (i : Fin d)
     (h : beta.1.order + 1 ≤ m) :
@@ -159,15 +153,7 @@ theorem hasWeakVelocityPartialDerivOn_ordinaryRepresentative_velocitySucc
         have hw := beta.1.parabolicWeight_le_two_mul_order
         omega)
 
-/-- Restriction preserves the selected ordinary representatives literally. -/
-@[simp] theorem ordinaryRepresentative_restrict
-    {d m : ℕ} {U V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
-    (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
-    (hVU : V ⊆ U) (beta : TimeVelocityDerivativeIndex d m) :
-    (D.restrict hVU).ordinaryRepresentative beta =
-      D.ordinaryRepresentative beta := rfl
-
+/- Restriction preserves the selected ordinary representatives literally. -/
 end ParabolicWeakDerivativeFamily
 
 end HypoellipticAleksandrov.Parabolic

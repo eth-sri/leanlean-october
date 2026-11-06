@@ -11,7 +11,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- The scalar spatial gradient supplies every first distributional spatial derivative. -/
 theorem IsScalarC12On.hasWeakVelocityPartialDerivOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d U u}
     (hU : IsOpen U) (hu : IsScalarC12On u U) (i : Fin d) :
     HasWeakVelocityPartialDerivOn U i u
       (fun z => scalarSpatialGradient u z i) := by
@@ -27,7 +27,7 @@ theorem IsScalarC12On.hasWeakVelocityPartialDerivOn
 
 /-- Scalar Hessian components supply second weak spatial derivatives in selected-jet order. -/
 theorem IsScalarC12On.hasWeakVelocitySecondPartialDerivOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d U u}
     (hU : IsOpen U) (hu : IsScalarC12On u U) (i j : Fin d) :
     HasWeakVelocityPartialDerivOn U j
       (fun z => scalarSpatialGradient u z i)
@@ -40,7 +40,7 @@ theorem IsScalarC12On.hasWeakVelocitySecondPartialDerivOn
     (0, PDE.basisVec j) ?_ hφ hc hsub
   intro z hz
   have hc2 := hu.spatialSlice_contDiffAt hz
-  have hd : DifferentiableAt ℝ (fderiv ℝ (fun y => u (z.1, y))) z.2 :=
+  have hd :=
     (hc2.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have hg := (hd.clm_apply (differentiableAt_const (PDE.basisVec i))).hasFDerivAt
     |>.hasLineDerivAt (PDE.basisVec j)

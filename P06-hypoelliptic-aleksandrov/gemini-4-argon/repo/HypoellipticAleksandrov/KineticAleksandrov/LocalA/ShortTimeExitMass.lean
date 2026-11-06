@@ -43,7 +43,7 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
     _hmeas, _hend, _hkc, hsolve⟩ := hpar (fun _ _ _ _ => rfl)
   have hεbound : ∀ ε : ℝ, 0 < ε → 1 - Ψ (σ, v) - ε ≤ μ.real univ := by
     intro ε hε
-    let C : Set (PDE.Vec d) := closure D ∩ {w | ε ≤ 1 - Ψ (τ, w)}
+    let C := closure D ∩ {w | ε ≤ 1 - Ψ (τ, w)}
     have hclosed : IsClosed {w : PDE.Vec d | ε ≤ 1 - Ψ (τ, w)} :=
       isClosed_le continuous_const
         (continuous_const.sub (hΨ.continuous.comp (continuous_const.prodMk continuous_id)))

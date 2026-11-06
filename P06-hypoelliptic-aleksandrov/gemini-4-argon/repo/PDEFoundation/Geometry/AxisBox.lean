@@ -17,15 +17,15 @@ namespace PDE
 
 /-- The open axis box `∏ i, (a i, b i)` in the native `Vec d` ambient
 space. -/
-def axisBox {d : ℕ} (a b : Vec d) : Set (Vec d) :=
+def axisBox {d } (a b : Vec d) : Set (Vec d) :=
   Set.pi Set.univ fun i => Set.Ioo (a i) (b i)
 
-theorem isOpen_axisBox {d : ℕ} (a b : Vec d) :
+theorem isOpen_axisBox {d } (a b : Vec d) :
     IsOpen (axisBox a b) := by
   dsimp [axisBox]
   exact isOpen_set_pi Set.finite_univ fun _ _ => isOpen_Ioo
 
-theorem isBoundedDomain_axisBox {d : ℕ} (a b : Vec d) :
+theorem isBoundedDomain_axisBox {d } (a b : Vec d) :
     IsBoundedDomain (axisBox a b) := by
   dsimp [axisBox]
   exact Bornology.IsBounded.isBoundedDomain <|

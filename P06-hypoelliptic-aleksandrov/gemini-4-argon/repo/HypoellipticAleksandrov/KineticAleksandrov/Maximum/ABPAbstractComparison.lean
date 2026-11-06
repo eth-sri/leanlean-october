@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.Comparison
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonConstant
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ABPAbstractDefect
+import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonLinear
+import Mathlib.Analysis.Calculus.Deriv.Basic
 
 /-! # Comparison with a nonnegative source potential on compact inner cylinders -/
 
@@ -11,8 +13,8 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic Set
 
-/-- Potential comparison with the operator inequality derived from its source premises. -/
-theorem abp_potential_comparison {d : ℕ}
+/- Potential comparison with the operator inequality derived from its source premises. -/
+theorem abp_potential_comparison {d }
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (A : FullKineticCoefficient d) (u W g : KineticPoint d → ℝ)
     (hu : IsKineticC112On u (forwardCylinder Z₀ R hR))
@@ -39,7 +41,7 @@ theorem abp_potential_comparison {d : ℕ}
     dsimp only [Q]
     rw [← heq]
     exact hc
-  have hQi : Q ⊆ forwardCylinder Z₀ R hR := subset_closure.trans hcl
+  have hQi := subset_closure.trans hcl
   have hsub : ∀ P ∈ Q, 0 < w P → 0 ≤ forwardKineticOperator A w P := by
     intro P hP hpos
     have hPQ := hQi hP
@@ -55,12 +57,16 @@ theorem abp_potential_comparison {d : ℕ}
     rw [hθ,one_mul] at hm
     have hd := le_max_left (-forwardKineticOperator A u P) 0
     dsimp only [w]
+    have _h_xinl_0 (A : FullKineticCoefficient d) (c P) : forwardKineticOperator A (fun _ : KineticPoint d => c) P = 0 := by
+      obtain ⟨ht,hx,_,hv⟩ := comparison_const_formulas c P
+      rw [forwardKineticOperator_apply,ht,hx,hv]
+      simp [PDE.vecDot, HypoellipticAleksandrov.matrixContraction]
     rw [comparison_forwardOperator_add
       (comparison_regular_add hu (comparison_regular_const_mul hW (-1)))
       (comparison_regular_const (-ε) _) A hPQ,
       comparison_forwardOperator_add hu (comparison_regular_const_mul hW (-1)) A hPQ,
       comparison_forwardOperator_const_mul hW (-1) A hPQ,
-      comparison_forwardOperator_const, hWop P hPQ]
+      _h_xinl_0, hWop P hPQ]
     linarith only [hm,hd]
   have hcompare := kinetic_comparison (innerCentre Z₀ δ) _ hr A w
     (fun P hP => hA P (hQi hP)) (hw.continuousOn.mono hcl)

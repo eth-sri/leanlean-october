@@ -33,7 +33,6 @@ private theorem parabolicConvolution_eq_leftConvolution {d : Nat}
   simp only [parabolicConvolution, convolution_def]
   apply integral_congr_ae
   filter_upwards with y
-  change f y * rho (z - y) = rho (z - y) * f y
   exact mul_comm _ _
 
 private theorem abs_integral_rpow_le_integral_abs_rpow
@@ -53,19 +52,6 @@ private theorem abs_integral_rpow_le_integral_abs_rpow
   exact
     (Real.rpow_le_rpow (abs_nonneg _)
       MeasureTheory.abs_integral_le_integral_abs hqNonneg).trans hJensen
-
-private theorem isProbabilityMeasure_withDensity_ofReal
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {rho : α → Real}
-    (hrhoNonneg : ∀ x, 0 ≤ rho x)
-    (hrhoInt : Integrable rho μ)
-    (hrhoOne : ∫ x, rho x ∂μ = 1) :
-    IsProbabilityMeasure (μ.withDensity fun x => ENNReal.ofReal (rho x)) := by
-  constructor
-  rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
-  rw [← ofReal_integral_eq_lintegral_ofReal hrhoInt
-    (ae_of_all _ hrhoNonneg), hrhoOne]
-  simp
 
 private theorem lintegral_comp_sub_right {d : Nat}
     (f : TimeVelocity d → ENNReal) (hf : Measurable f)
@@ -164,8 +150,12 @@ private theorem young_left_convolution_nonneg_integral_one
     exact (ENNReal.toReal_le_toReal ENNReal.one_ne_top hpTop).mpr hp
   let mu : Measure (TimeVelocity d) :=
     volume.withDensity fun t => ENNReal.ofReal (rho t)
-  letI : IsProbabilityMeasure mu :=
-    isProbabilityMeasure_withDensity_ofReal hrhoNonneg hrhoInt hrhoOne
+  letI : IsProbabilityMeasure mu := by
+    constructor
+    rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
+    rw [← ofReal_integral_eq_lintegral_ofReal hrhoInt
+      (ae_of_all _ hrhoNonneg), hrhoOne]
+    simp
   rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hpNeZero hpTop
     (AEStronglyMeasurable.convolution (ContinuousLinearMap.lsmul ℝ ℝ)
       hrhoMeas.aestronglyMeasurable hgMeas.aestronglyMeasurable)]
@@ -284,7 +274,7 @@ private theorem young_left_convolution_nonneg_integral_one
       ext x
       rw [Real.enorm_eq_ofReal_abs]
 
-/-- Normalized nonnegative right convolution is contractive in every finite
+/- Normalized nonnegative right convolution is contractive in every finite
 `Lᵖ` exponent on time--velocity product volume. -/
 theorem eLpNorm_parabolicConvolution_le_of_nonneg_integral_one
     {d : Nat} {rho g : TimeVelocity d → Real} {p : ENNReal}
@@ -295,7 +285,7 @@ theorem eLpNorm_parabolicConvolution_le_of_nonneg_integral_one
     (hrhoMeas : Measurable rho)
     (hgMeas : AEMeasurable g volume) :
     eLpNorm (parabolicConvolution g rho) p volume ≤ eLpNorm g p volume := by
-  let g' : TimeVelocity d → Real := hgMeas.mk g
+  let g' := hgMeas.mk g
   have hconv : parabolicConvolution g rho = parabolicConvolution g' rho := by
     rw [parabolicConvolution_eq_leftConvolution, parabolicConvolution_eq_leftConvolution]
     simpa [g'] using
@@ -310,7 +300,7 @@ theorem eLpNorm_parabolicConvolution_le_of_nonneg_integral_one
         hrhoMeas hgMeas.measurable_mk
     _ = eLpNorm g p volume := eLpNorm_congr_ae hgMeas.ae_eq_mk.symm
 
-/-- Every fixed normalized parabolic mollification of an `Lᵖ` function is in
+/- Every fixed normalized parabolic mollification of an `Lᵖ` function is in
 the same finite-exponent `Lᵖ` space. -/
 theorem memLp_parabolicConvolution_parabolicMollifier
     {d : Nat} {p : ENNReal} {f : TimeVelocity d → Real}
@@ -354,10 +344,10 @@ private theorem tendsto_eLpNorm_parabolicConvolution_sub_of_contDiff_hasCompactS
   by_cases hetaTop : eta = ∞
   · exact Eventually.of_forall fun n => by simp [hetaTop]
   let delta : Real := eta.toReal / (c + 1)
-  have hetaReal : 0 < eta.toReal := ENNReal.toReal_pos heta.ne' hetaTop
+  have hetaReal := ENNReal.toReal_pos heta.ne' hetaTop
   have hdelta : 0 < delta := by dsimp [delta]; positivity
   obtain ⟨eps, hepsPos, heps⟩ := (Metric.uniformContinuous_iff.1 hgUniform) delta hdelta
-  have hscale : ∀ᶠ n : Nat in atTop, parabolicMollifierScale n < eps :=
+  have hscale :=
     (tendsto_order.1 tendsto_parabolicMollifierScale_zero).2 eps hepsPos
   filter_upwards [hscale] with n hn
   have hball : ∀ z x, x ∈ Metric.ball z (parabolicMollifierBump d n).rOut →
@@ -417,30 +407,6 @@ private theorem tendsto_eLpNorm_parabolicConvolution_sub_of_contDiff_hasCompactS
       rw [← ENNReal.ofReal_toReal hetaTop]
       exact ENNReal.ofReal_le_ofReal hdeltaMul
 
-private theorem exists_contDiff_hasCompactSupport_eLpNorm_sub_le
-    {d : Nat} {p eps : ENNReal} {f : TimeVelocity d → Real}
-    (hpOne : 1 ≤ p) (hpTop : p ≠ ∞) (hf : MemLp f p volume)
-    (heps : eps ≠ 0) :
-    ∃ g : TimeVelocity d → Real, HasCompactSupport g ∧ ContDiff Real (⊤ : ℕ∞) g ∧
-      eLpNorm (f - g) p volume ≤ eps := by
-  by_cases hepsTop : eps = ∞
-  · refine ⟨0, HasCompactSupport.zero, contDiff_const, ?_⟩
-    rw [hepsTop]
-    exact le_top
-  let r : Real := eps.toReal / 2
-  have hr : 0 < r := by
-    dsimp [r]
-    exact div_pos (ENNReal.toReal_pos heps hepsTop) (by norm_num)
-  obtain ⟨g, hgCompact, hgSmooth, hg⟩ := hf.exist_eLpNorm_sub_le hpTop hpOne hr
-  refine ⟨g, hgCompact, hgSmooth, hg.trans ?_⟩
-  rw [show eps = ENNReal.ofReal eps.toReal by
-    exact (ENNReal.ofReal_toReal hepsTop).symm]
-  apply ENNReal.ofReal_le_ofReal
-  dsimp [r]
-  exact half_le_self ENNReal.toReal_nonneg
-
-/-- Strong finite-exponent convergence for the right parabolic
-convolution against the actual normalized shrinking mollifier sequence. -/
 theorem tendsto_eLpNorm_parabolicConvolution_sub
     {d : Nat} {p : ENNReal} {f : TimeVelocity d → Real}
     (hpOne : 1 ≤ p) (hpTop : p ≠ ∞)
@@ -457,16 +423,32 @@ theorem tendsto_eLpNorm_parabolicConvolution_sub
   obtain ⟨eta2, heta2Pos, heta2⟩ :=
     exists_Lp_half (μ := (volume : Measure (TimeVelocity d))) (ε := Real) (p := p) heta1Pos.ne'
   let eps : ENNReal := min eta1 eta2
-  have hepsPos : 0 < eps := lt_min heta1Pos heta2Pos
-  obtain ⟨g, hgCompact, hgSmooth, hfg⟩ :=
-    exists_contDiff_hasCompactSupport_eLpNorm_sub_le hpOne hpTop hf hepsPos.ne'
+  have hepsPos := lt_min heta1Pos heta2Pos
+  obtain ⟨g, hgCompact, hgSmooth, hfg⟩ : ∃ g : TimeVelocity d → Real, HasCompactSupport g ∧ ContDiff Real (⊤ : ℕ∞) g ∧
+      eLpNorm (f - g) p volume ≤ eps := by
+    have heps := hepsPos.ne'
+    by_cases hepsTop : eps = ∞
+    · refine ⟨0, HasCompactSupport.zero, contDiff_const, ?_⟩
+      rw [hepsTop]
+      exact le_top
+    let r : Real := eps.toReal / 2
+    have hr : 0 < r := by
+      dsimp [r]
+      exact div_pos (ENNReal.toReal_pos heps hepsTop) (by norm_num)
+    obtain ⟨g, hgCompact, hgSmooth, hg⟩ := hf.exist_eLpNorm_sub_le hpTop hpOne hr
+    refine ⟨g, hgCompact, hgSmooth, hg.trans ?_⟩
+    rw [show eps = ENNReal.ofReal eps.toReal by
+      exact (ENNReal.ofReal_toReal hepsTop).symm]
+    apply ENNReal.ofReal_le_ofReal
+    dsimp [r]
+    exact half_le_self ENNReal.toReal_nonneg
   have hgMem : MemLp g p volume :=
     hgSmooth.continuous.memLp_of_hasCompactSupport hgCompact
   have hdiffMem : MemLp (f - g) p volume := hf.sub hgMem
   have hkernelCont (n : Nat) : Continuous (parabolicMollifier d n) :=
     (contDiff_parabolicMollifier d n).continuous
-  have hdiffLoc : LocallyIntegrable (f - g) volume := hdiffMem.locallyIntegrable hpOne
-  have hgLoc : LocallyIntegrable g volume := hgMem.locallyIntegrable hpOne
+  have hdiffLoc := hdiffMem.locallyIntegrable hpOne
+  have hgLoc := hgMem.locallyIntegrable hpOne
   have hlin (n : Nat) :
       parabolicConvolution ((f - g) + g) (parabolicMollifier d n) =
         parabolicConvolution (f - g) (parabolicMollifier d n) +
@@ -504,10 +486,7 @@ theorem tendsto_eLpNorm_parabolicConvolution_sub
         ((contDiff_parabolicMollifier d n).continuous.measurable)
         hdiffMem.aestronglyMeasurable.aemeasurable).trans
           (hfg.trans (min_le_left _ _))
-  have hmiddleEventually : ∀ᶠ n : Nat in atTop, eLpNorm
-      (fun z => parabolicConvolution g (parabolicMollifier d n) z - g z) p volume ≤ eta2 :=
-    ENNReal.tendsto_nhds_zero.1 hmiddleTendsto eta2 heta2Pos
-  filter_upwards [hfirstEventually, hmiddleEventually] with n hfirst hmiddle
+  filter_upwards [hfirstEventually, (ENNReal.tendsto_nhds_zero.1 hmiddleTendsto eta2 heta2Pos)] with n hfirst hmiddle
   let a : TimeVelocity d → Real := fun z =>
     parabolicConvolution f (parabolicMollifier d n) z -
       parabolicConvolution g (parabolicMollifier d n) z
@@ -543,10 +522,10 @@ theorem tendsto_eLpNorm_parabolicConvolution_sub
 
 namespace ParabolicW12Function
 
-/-- The stored value representative converges strongly under parabolic
+/- The stored value representative converges strongly under parabolic
 mollification at every finite exponent. -/
 theorem tendsto_eLpNorm_convolution_toFun_sub
-    {d : Nat} {p : ENNReal} (w : ParabolicW12Function d Set.univ p)
+    {d p} (w : ParabolicW12Function d Set.univ p)
     (hpOne : 1 ≤ p) (hpTop : p ≠ ∞) :
     Tendsto (fun n : Nat => eLpNorm
       (fun z => parabolicConvolution w.toFun (parabolicMollifier d n) z - w.toFun z)
@@ -557,10 +536,10 @@ theorem tendsto_eLpNorm_convolution_toFun_sub
       change MemLp w.toFun p ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
       simpa only [Measure.restrict_univ] using h
 
-/-- The stored time-derivative representative converges strongly under
+/- The stored time-derivative representative converges strongly under
 parabolic mollification at every finite exponent. -/
 theorem tendsto_eLpNorm_convolution_timeDeriv_sub
-    {d : Nat} {p : ENNReal} (w : ParabolicW12Function d Set.univ p)
+    {d p} (w : ParabolicW12Function d Set.univ p)
     (hpOne : 1 ≤ p) (hpTop : p ≠ ∞) :
     Tendsto (fun n : Nat => eLpNorm
       (fun z => parabolicConvolution w.timeDeriv (parabolicMollifier d n) z - w.timeDeriv z)
@@ -571,10 +550,10 @@ theorem tendsto_eLpNorm_convolution_timeDeriv_sub
       change MemLp w.timeDeriv p ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
       simpa only [Measure.restrict_univ] using h
 
-/-- Each stored velocity-gradient representative converges strongly under
+/- Each stored velocity-gradient representative converges strongly under
 parabolic mollification at every finite exponent. -/
 theorem tendsto_eLpNorm_convolution_velocityGrad_sub
-    {d : Nat} {p : ENNReal} (w : ParabolicW12Function d Set.univ p)
+    {d p} (w : ParabolicW12Function d Set.univ p)
     (hpOne : 1 ≤ p) (hpTop : p ≠ ∞) (i : Fin d) :
     Tendsto (fun n : Nat => eLpNorm
       (fun z => parabolicConvolution (fun y => w.velocityGrad y i)
@@ -586,10 +565,10 @@ theorem tendsto_eLpNorm_convolution_velocityGrad_sub
         ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
       simpa only [Measure.restrict_univ] using h
 
-/-- Each stored ordered velocity-Hessian representative converges strongly
+/- Each stored ordered velocity-Hessian representative converges strongly
 under parabolic mollification at every finite exponent. -/
 theorem tendsto_eLpNorm_convolution_velocityHessian_sub
-    {d : Nat} {p : ENNReal} (w : ParabolicW12Function d Set.univ p)
+    {d p} (w : ParabolicW12Function d Set.univ p)
     (hpOne : 1 ≤ p) (hpTop : p ≠ ∞) (i j : Fin d) :
     Tendsto (fun n : Nat => eLpNorm
       (fun z => parabolicConvolution (fun y => w.velocityHessian y i j)

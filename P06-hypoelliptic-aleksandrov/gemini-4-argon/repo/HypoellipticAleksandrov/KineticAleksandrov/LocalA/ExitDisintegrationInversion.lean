@@ -12,12 +12,12 @@ open Set MeasureTheory Parabolic SectionTwo Reconstruction ProbabilityTheory
 open scoped ENNReal
 
 /-- The jointly measurable real inverse representative in the original coordinate order. -/
-def exitJointDensity {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d))
+def exitJointDensity {d } (ν : Measure (PDE.Vec d × TimeVelocity d))
     [IsFiniteMeasure ν] (p : PDE.Vec d × TimeVelocity d) : ℝ :=
   ((2 * Real.pi) ^ d)⁻¹ * (vecInvIntegral (fun ξ => exitFourierRep ν ξ p.2) p.1).re
 
 /-- The real inverse integral is measurable jointly in position and exit data. -/
-theorem measurable_exitJointDensity {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem measurable_exitJointDensity {d } (ν : Measure (PDE.Vec d × TimeVelocity d))
     [IsFiniteMeasure ν] : Measurable (exitJointDensity ν) := by
   unfold exitJointDensity vecInvIntegral
   apply measurable_const.mul
@@ -26,21 +26,15 @@ theorem measurable_exitJointDensity {d : ℕ} (ν : Measure (PDE.Vec d × TimeVe
       Complex.exp (Complex.I * (PDE.vecDot p.1 p.2 : ℂ))) := by
     unfold PDE.vecDot
     fun_prop
-  have hm : Measurable (fun q : (PDE.Vec d × TimeVelocity d) × PDE.Vec d =>
-      Complex.exp (Complex.I * (PDE.vecDot q.2 q.1.1 : ℂ)) *
-        exitFourierRep ν q.2 q.1.2) :=
-    (hc.measurable.comp (measurable_snd.prodMk (measurable_fst.comp measurable_fst))).mul
-      ((measurable_exitFourierRep ν).comp
-        (measurable_snd.prodMk (measurable_snd.comp measurable_fst)))
-  exact hm.stronglyMeasurable.integral_prod_right.measurable
+  exact ((hc.measurable.comp (measurable_snd.prodMk (measurable_fst.comp measurable_fst))).mul ((measurable_exitFourierRep ν).comp (measurable_snd.prodMk (measurable_snd.comp measurable_fst)))).stronglyMeasurable.integral_prod_right.measurable
 
 /-- Joint integrability of the Fourier representatives follows from the actual decay. -/
 theorem ballExitFourierRep_integrable_prod
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
@@ -63,9 +57,9 @@ theorem ballExitFourierRep_integrable_prod
 theorem ballExitPositionKernel_density
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
@@ -76,10 +70,8 @@ theorem ballExitPositionKernel_density
       ∀ y, 0 ≤ exitJointDensity ν (y, z) := by
   dsimp only
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
-  have hi := (ballExitFourierRep_integrable_prod hH hLE hd hlam hLam B hB v₀ hR
-    P T hv hT).prod_left_ae
-  filter_upwards [hi] with z hz
-  have hint : Integrable (vecFourier (exitPositionKernel ν z)) := hz
+  filter_upwards [((ballExitFourierRep_integrable_prod hH hLE hd hlam hLam B hB v₀ hR P T hv hT).prod_left_ae)] with z hz
+  have hint := hz
   refine ⟨?_, ?_⟩
   · exact eq_withDensity_vecInvDensity (exitPositionKernel ν z) hint
   · exact vecInvDensity_nonneg (exitPositionKernel ν z) hint
@@ -88,9 +80,9 @@ theorem ballExitPositionKernel_density
 theorem ballExit_eq_withDensity_exitJointDensity
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :

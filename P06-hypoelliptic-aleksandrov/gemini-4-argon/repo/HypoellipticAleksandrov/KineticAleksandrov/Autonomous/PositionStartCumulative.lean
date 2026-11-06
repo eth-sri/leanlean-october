@@ -14,7 +14,7 @@ open scoped Classical
 /-- The all-time active occupation has no atom on a fixed time slice. -/
 theorem positionStartGreen_ae_time_ne
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (p : Point)
     (hv : p.velocity 0 ∈ c.active) (b : ℝ) :
     ∀ᵐ q ∂stripGreen hH hLE hlam hLam A c.activeInterval ⊤
@@ -26,7 +26,7 @@ theorem positionStartGreen_ae_time_ne
 /-- The cumulative identity retains a start exactly at `b` as a zero-duration terminal atom. -/
 theorem positionStartQuadratic_cumulative_identity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y b : ℝ)
     (hc : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
     (p : Point) (hv : p.velocity 0 ∈ c.active) :
@@ -55,7 +55,7 @@ theorem positionStartQuadratic_cumulative_identity
   · have hbp : b ≤ p.time := le_of_not_gt ht
     have hz : G.restrict {q : Point | q.time ≤ b} = 0 := by
       apply Measure.restrict_eq_zero.mpr
-      have hn : ∀ᵐ q ∂G, ¬q.time ≤ b :=
+      have hn :=
         (stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A c.activeInterval
           (densityClockPole c p hv)).mono fun q hq => not_le_of_gt (hbp.trans_lt hq.1)
       rw [ae_iff] at hn

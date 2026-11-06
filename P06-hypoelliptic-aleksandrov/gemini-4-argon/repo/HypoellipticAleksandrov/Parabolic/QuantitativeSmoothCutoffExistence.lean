@@ -19,7 +19,7 @@ open scoped Manifold
 /-- A compact subset of an open velocity set admits a quantitative smooth
 cutoff with topological support in that open set. -/
 theorem exists_quantitativeSmoothCutoff_tsupport_subset
-    {d : ℕ} {E Ω : Set (PDE.Vec d)}
+    {d } {E Ω : Set (PDE.Vec d)}
     (hE : IsCompact E) (hΩ : IsOpen Ω) (hEΩ : E ⊆ Ω) :
     ∃ K : ℝ, Nonempty (PDE.QuantitativeSmoothCutoff E Ω K) := by
   obtain ⟨V, hVopen, hEV, hclosureVΩ, hclosureVcompact⟩ :=
@@ -30,7 +30,7 @@ theorem exists_quantitativeSmoothCutoff_tsupport_subset
     change IsCompact (closure (Function.support f))
     rw [hfSupport]
     exact hclosureVcompact
-  have hgradientContinuous : Continuous (PDE.classicalGradient f) :=
+  have hgradientContinuous :=
     PDE.ContDiff.continuous_classicalGradient (hfSmooth.contDiff.of_le (by simp))
   have hgradientCompact : HasCompactSupport (PDE.classicalGradient f) := by
     change HasCompactSupport

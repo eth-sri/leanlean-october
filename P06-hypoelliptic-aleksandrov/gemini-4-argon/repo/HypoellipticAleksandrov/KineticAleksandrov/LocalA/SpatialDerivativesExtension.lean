@@ -35,7 +35,7 @@ theorem spatialData_compact_extension
 
 /-- Uniformly continuous bounded joint data vary continuously in the bounded-function norm. -/
 def spatialDataCurry {V Z : Type} [PseudoMetricSpace V] [PseudoMetricSpace Z]
-    (H : V × Z → ℝ) (hH : UniformContinuous H) (M : ℝ)
+    (H : V × Z → ℝ) (hH : UniformContinuous H) (M )
     (hb : ∀ p, ‖H p‖ ≤ M) (x : V) : Z →ᵇ ℝ :=
   BoundedContinuousFunction.ofNormedAddCommGroup (fun z => H (x, z))
     (hH.continuous.comp (continuous_const.prodMk continuous_id)) M (fun z => hb (x, z))

@@ -41,43 +41,11 @@ private def terminalTilt {n : ℕ} (u : TimeVelocity n → ℝ) (ε r₁ : ℝ) 
     TimeVelocity n → ℝ :=
   fun z => u z - ε * (r₁ - z.1)
 
-private theorem isCompact_insetCylinder {n : ℕ} {α r₁ : ℝ}
-    {Ω : Set (PDE.Vec n)} (hΩbounded : Bornology.IsBounded Ω) :
-    IsCompact (insetCylinder α r₁ Ω) :=
-  isCompact_Icc.prod hΩbounded.isCompact_closure
-
 private theorem insetActive_subset_original_open {n : ℕ} {r₀ α r₁ : ℝ}
     {Ω : Set (PDE.Vec n)} (hr₀α : r₀ < α) :
     insetActive α r₁ Ω ⊆ scalarParabolicOpenCylinder r₀ r₁ Ω := by
   rintro z ⟨⟨hzα, hzr₁⟩, hzΩ⟩
   exact ⟨⟨lt_of_lt_of_le hr₀α hzα, hzr₁⟩, hzΩ⟩
-
-private theorem insetCylinder_diff_insetActive_eq {n : ℕ} {α r₁ : ℝ}
-    {Ω : Set (PDE.Vec n)} (hΩopen : IsOpen Ω) (hαr₁ : α < r₁) :
-    insetCylinder α r₁ Ω \ insetActive α r₁ Ω =
-      scalarParabolicTerminalFace r₁ Ω ∪
-        (Set.Icc α r₁ ×ˢ frontier Ω) := by
-  ext z
-  rcases z with ⟨r, y⟩
-  rw [hΩopen.frontier_eq]
-  constructor
-  · rintro ⟨⟨⟨hrα, hr₁⟩, hycl⟩, hnot⟩
-    by_cases hr : r = r₁
-    · left
-      exact ⟨hr, hycl⟩
-    · right
-      refine ⟨⟨hrα, hr₁⟩, ?_⟩
-      exact ⟨hycl, fun hy => hnot ⟨⟨hrα, lt_of_le_of_ne hr₁ hr⟩, hy⟩⟩
-  · rintro (hterminal | hlateral)
-    · rcases hterminal with ⟨hr, hycl⟩
-      simp only [mem_singleton_iff] at hr
-      subst r
-      refine ⟨⟨⟨le_of_lt hαr₁, le_rfl⟩, hycl⟩, ?_⟩
-      simp [insetActive]
-    · rcases hlateral with ⟨⟨hrα, hr₁⟩, hycl, hynot⟩
-      refine ⟨⟨⟨hrα, hr₁⟩, hycl⟩, ?_⟩
-      intro hactive
-      exact hynot hactive.2
 
 private theorem hasDerivAt_affine_line
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -129,30 +97,6 @@ private theorem hasDerivAt_fderiv_restrict_affine_line
   simpa only [zero_smul, add_zero, map_zero] using
     hgrad.clm_apply (hasDerivAt_const (x := 0) (c := q))
 
-private theorem hasDerivAt_deriv_restrict_affine_line_of_contDiffAt
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
-    (hg : ContDiffAt ℝ 2 g x) :
-    HasDerivAt (deriv (fun r : ℝ => g (x + r • q)))
-      (fderiv ℝ (fderiv ℝ g) x q q) 0 := by
-  have hgGradDiffAt : DifferentiableAt ℝ (fderiv ℝ g) x :=
-    (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
-  have hEvalLine : HasDerivAt
-      (fun r : ℝ => fderiv ℝ g (x + r • q) q)
-      (fderiv ℝ (fderiv ℝ g) x q q) 0 :=
-    hasDerivAt_fderiv_restrict_affine_line hgGradDiffAt.hasFDerivAt
-  have hgEventually : ∀ᶠ y in 𝓝 x, ContDiffAt ℝ 2 g y :=
-    hg.eventually (by norm_num)
-  have hgEventuallyAtLineZero :
-      ∀ᶠ y in 𝓝 (x + (0 : ℝ) • q), ContDiffAt ℝ 2 g y := by
-    simpa only [zero_smul, add_zero] using hgEventually
-  apply hEvalLine.congr_of_eventuallyEq
-  filter_upwards [
-    (hasDerivAt_affine_line x q 0).continuousAt hgEventuallyAtLineZero] with r hr
-  change ContDiffAt ℝ 2 g (x + r • q) at hr
-  exact (hr.differentiableAt (by norm_num)).hasFDerivAt.comp_hasDerivAt
-    r (hasDerivAt_affine_line x q r) |>.deriv
-
 private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {g : E → ℝ} {x q : E}
@@ -163,10 +107,28 @@ private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
     (hasDerivAt_affine_line x q 0).continuousAt
   have hgAtLineZero : ContinuousAt g (x + (0 : ℝ) • q) := by
     simpa only [zero_smul, add_zero] using hg.continuousAt
-  have hcompCont : ContinuousAt (fun r : ℝ => g (x + r • q)) 0 :=
+  have hcompCont :=
     hgAtLineZero.comp' (f := fun r : ℝ => x + r • q) hlineCont
+  have _h_inl_23 : HasDerivAt (deriv (fun r : ℝ => g (x + r • q))) (fderiv ℝ (fderiv ℝ g) x q q) 0 := by
+    have hgGradDiffAt : DifferentiableAt ℝ (fderiv ℝ g) x :=
+      (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
+    have hEvalLine : HasDerivAt
+        (fun r : ℝ => fderiv ℝ g (x + r • q) q)
+        (fderiv ℝ (fderiv ℝ g) x q q) 0 :=
+      hasDerivAt_fderiv_restrict_affine_line hgGradDiffAt.hasFDerivAt
+    have hgEventually : ∀ᶠ y in 𝓝 x, ContDiffAt ℝ 2 g y :=
+      hg.eventually (by norm_num)
+    have hgEventuallyAtLineZero :
+        ∀ᶠ y in 𝓝 (x + (0 : ℝ) • q), ContDiffAt ℝ 2 g y := by
+      simpa only [zero_smul, add_zero] using hgEventually
+    apply hEvalLine.congr_of_eventuallyEq
+    filter_upwards [
+      (hasDerivAt_affine_line x q 0).continuousAt hgEventuallyAtLineZero] with r hr
+    change ContDiffAt ℝ 2 g (x + r • q) at hr
+    exact (hr.differentiableAt (by norm_num)).hasFDerivAt.comp_hasDerivAt
+      r (hasDerivAt_affine_line x q r) |>.deriv
   exact deriv_deriv_nonpos_of_isLocalMax hmax
-    (hasDerivAt_deriv_restrict_affine_line_of_contDiffAt hg) hcompCont
+    _h_inl_23 hcompCont
 
 private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
     {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
@@ -176,7 +138,7 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
       fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2
         (PDE.basisVec i) (PDE.basisVec j) := by
   let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  have hsecond : HasFDerivAt (fderiv ℝ g) (fderiv ℝ (fderiv ℝ g) z.2) z.2 :=
+  have hsecond :=
     ((hu.fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num)).hasFDerivAt
   have hdiff : ∀ j : Fin n,
@@ -186,42 +148,8 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
   change (fderiv ℝ (fun y : PDE.Vec n => fun j =>
       fderiv ℝ g y (PDE.basisVec j)) z.2 (PDE.basisVec i)) j = _
   rw [fderiv_pi hdiff]
-  have hj := (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv
-  have hjapply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hj
+  have hjapply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) ((hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv)
   simpa [ContinuousLinearMap.flip_apply] using hjapply
-
-private theorem scalarSpatialHessian_quadratic_eq {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
-    (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
-    (q : PDE.Vec n) :
-    dotProduct q ((scalarSpatialHessian u z).mulVec q) =
-      fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2 q q := by
-  let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  let H := fderiv ℝ (fderiv ℝ g) z.2
-  change (∑ i : Fin n, q i * ∑ j : Fin n,
-      scalarSpatialHessian u z i j * q j) = H q q
-  simp_rw [scalarSpatialHessian_apply_eq_sndFDeriv hu]
-  change (∑ i : Fin n, q i * ∑ j : Fin n,
-      H (PDE.basisVec i) (PDE.basisVec j) * q j) = H q q
-  calc
-    (∑ i : Fin n, q i * ∑ j : Fin n,
-        H (PDE.basisVec i) (PDE.basisVec j) * q j) =
-        ∑ i : Fin n, q i * H (PDE.basisVec i)
-          (∑ j : Fin n, q j • PDE.basisVec j) := by
-      apply Finset.sum_congr rfl
-      intro i _
-      congr 1
-      rw [map_sum]
-      simp only [map_smul, smul_eq_mul]
-      apply Finset.sum_congr rfl
-      intro j _
-      ring
-    _ = ∑ i : Fin n, q i * H (PDE.basisVec i) q := by
-      rw [PDE.sum_smul_basisVec]
-    _ = H (∑ i : Fin n, q i • PDE.basisVec i) q := by
-      rw [map_sum, ContinuousLinearMap.sum_apply]
-      simp only [map_smul, ContinuousLinearMap.smul_apply, smul_eq_mul]
-    _ = H q q := by rw [PDE.sum_smul_basisVec]
 
 private theorem scalarSpatialHessian_isSymm_of_contDiffAt {n : ℕ}
     {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
@@ -243,7 +171,6 @@ private theorem neg_scalarSpatialHessian_posSemidef_of_spatial_localMax
   · apply Matrix.IsHermitian.ext
     intro i j
     simp only [star_trivial]
-    change -scalarSpatialHessian u z j i = -scalarSpatialHessian u z i j
     exact congrArg Neg.neg ((scalarSpatialHessian_isSymm_of_contDiffAt hu).apply i j)
   · intro q
     rw [neg_mulVec, dotProduct_neg]
@@ -257,7 +184,33 @@ private theorem neg_scalarSpatialHessian_posSemidef_of_spatial_localMax
         (hasDerivAt_affine_line z.2 q 0).continuousAt
     change -dotProduct q
       ((scalarSpatialHessian u z).mulVec q) ≥ 0
-    rw [scalarSpatialHessian_quadratic_eq hu q]
+    have _h_inl_27 : dotProduct q ((scalarSpatialHessian u z).mulVec q) =
+      fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2 q q := by
+      let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
+      let H := fderiv ℝ (fderiv ℝ g) z.2
+      change (∑ i : Fin n, q i * ∑ j : Fin n,
+          scalarSpatialHessian u z i j * q j) = H q q
+      simp_rw [scalarSpatialHessian_apply_eq_sndFDeriv hu]
+      calc
+        (∑ i : Fin n, q i * ∑ j : Fin n,
+            H (PDE.basisVec i) (PDE.basisVec j) * q j) =
+            ∑ i : Fin n, q i * H (PDE.basisVec i)
+              (∑ j : Fin n, q j • PDE.basisVec j) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          congr 1
+          rw [map_sum]
+          simp only [map_smul, smul_eq_mul]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+        _ = ∑ i : Fin n, q i * H (PDE.basisVec i) q := by
+          rw [PDE.sum_smul_basisVec]
+        _ = H (∑ i : Fin n, q i • PDE.basisVec i) q := by
+          rw [map_sum, ContinuousLinearMap.sum_apply]
+          simp only [map_smul, ContinuousLinearMap.smul_apply, smul_eq_mul]
+        _ = H q q := by rw [PDE.sum_smul_basisVec]
+    rw [_h_inl_27]
     exact neg_nonneg.mpr
       (fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine hu hlineMax)
 
@@ -280,7 +233,7 @@ private theorem trace_mul_nonneg_of_posSemidef {n : ℕ} {A H : PDE.Mat n}
   have hS : S.PosSemidef := by
     dsimp [S]
     exact CFC.sqrt_nonneg H |>.posSemidef
-  have hconj : (S * A * Sᴴ).PosSemidef := hA.mul_mul_conjTranspose_same S
+  have hconj := hA.mul_mul_conjTranspose_same S
   calc
     0 ≤ (S * A * Sᴴ).trace := hconj.trace_nonneg
     _ = (S * A * S).trace := by rw [hS.isHermitian.eq]
@@ -293,7 +246,7 @@ private theorem trace_mul_nonneg_of_posSemidef {n : ℕ} {A H : PDE.Mat n}
 private theorem matrixContraction_nonpos_of_psd_neg {n : ℕ} {A H : PDE.Mat n}
     (hA : A.PosSemidef) (hH : (-H).PosSemidef) (hHsymm : H.IsSymm) :
     matrixContraction A H ≤ 0 := by
-  have htrace : 0 ≤ (A * (-H)).trace := trace_mul_nonneg_of_posSemidef hA hH
+  have htrace := trace_mul_nonneg_of_posSemidef hA hH
   rw [matrixContraction_eq_trace_mul_of_isSymm A H hHsymm]
   calc
     (A * H).trace = -((A * (-H)).trace) := by simp
@@ -358,14 +311,8 @@ private theorem spatial_localMax_of_inset_localMax {n : ℕ} {α r₁ : ℝ}
       (continuous_const.prodMk continuous_id).continuousOn hz.2
   exact hslice.isLocalMax (hΩopen.mem_nhds hz.2)
 
-private theorem terminalTilt_spatialContDiffAt {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} {z : TimeVelocity n} (hu : IsScalarC12On u D)
-    (hz : z ∈ D) (ε r₁ : ℝ) :
-    ContDiffAt ℝ 2 (fun y : PDE.Vec n => terminalTilt u ε r₁ (z.1, y)) z.2 := by
-  simpa [terminalTilt] using (hu.spatialSlice_contDiffAt hz).sub contDiffAt_const
-
 private theorem timeDerivative_terminalTilt_nonpos_of_inset_localMax
-    {n : ℕ} {α r₁ : ℝ} {Ω : Set (PDE.Vec n)} {w : TimeVelocity n → ℝ}
+    {n α r₁ Ω w}
     {z : TimeVelocity n} (hz : z ∈ insetActive α r₁ Ω)
     (hmax : IsLocalMaxOn w (insetCylinder α r₁ Ω) z)
     (hderiv : HasDerivAt (fun r : ℝ => w (r, z.2)) (scalarTimeDerivative w z) z.1) :
@@ -388,7 +335,7 @@ private theorem timeDerivative_terminalTilt_nonpos_of_inset_localMax
   exact nonpos_of_mul_nonpos_right hproduct hpos
 
 private theorem scalarOperator_nonpos_at_inset_tilt_max
-    {n : ℕ} {r₀ α r₁ : ℝ} {Ω : Set (PDE.Vec n)} (hΩopen : IsOpen Ω)
+    {n r₀ α r₁ Ω} (hΩopen : IsOpen Ω)
     (hr₀α : r₀ < α) (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n) (u : TimeVelocity n → ℝ)
     (huC12 : IsScalarC12On u (scalarParabolicOpenCylinder r₀ r₁ Ω))
@@ -401,21 +348,21 @@ private theorem scalarOperator_nonpos_at_inset_tilt_max
   have hspatialMax : IsLocalMax (fun y : PDE.Vec n => terminalTilt u ε r₁ (z.1, y)) z.2 :=
     spatial_localMax_of_inset_localMax hΩopen hz hmax
   have htiltDiff : ContDiffAt ℝ 2
-      (fun y : PDE.Vec n => terminalTilt u ε r₁ (z.1, y)) z.2 :=
-    terminalTilt_spatialContDiffAt huC12 hzopen ε r₁
-  have hgradientTilt : scalarSpatialGradient (terminalTilt u ε r₁) z = 0 :=
+      (fun y : PDE.Vec n => terminalTilt u ε r₁ (z.1, y)) z.2 := by
+    simpa [terminalTilt] using (huC12.spatialSlice_contDiffAt hzopen).sub contDiffAt_const
+  have hgradientTilt :=
     scalarSpatialGradient_eq_zero_of_spatial_localMax htiltDiff hspatialMax
   have hgradient : scalarSpatialGradient u z = 0 := by
     rw [← terminalTilt_spatialGradient_eq]
     exact hgradientTilt
-  have hhessianTilt : (-scalarSpatialHessian (terminalTilt u ε r₁) z).PosSemidef :=
+  have hhessianTilt :=
     neg_scalarSpatialHessian_posSemidef_of_spatial_localMax htiltDiff hspatialMax
   have hhessian : (-scalarSpatialHessian u z).PosSemidef := by
     rw [← terminalTilt_spatialHessian_eq]
     exact hhessianTilt
-  have hsymmetric : (scalarSpatialHessian u z).IsSymm :=
+  have hsymmetric :=
     scalarSpatialHessian_isSymm_of_contDiffAt (huC12.spatialSlice_contDiffAt hzopen)
-  have hcontraction : matrixContraction (a z.1 z.2) (scalarSpatialHessian u z) ≤ 0 :=
+  have hcontraction :=
     matrixContraction_nonpos_of_psd_neg (haPsd z.1 z.2) hhessian hsymmetric
   have htimeTilt : scalarTimeDerivative (terminalTilt u ε r₁) z ≤ 0 := by
     have hderivTilt : HasDerivAt (fun r : ℝ => terminalTilt u ε r₁ (r, z.2))
@@ -434,7 +381,7 @@ private theorem scalarOperator_nonpos_at_inset_tilt_max
   linarith
 
 private theorem le_on_insetCylinder_of_terminal_lateral_le
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ α r₁ : ℝ}
+    {n Ω r₀ α r₁}
     (hΩopen : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hr₀α : r₀ < α) (hαr₁ : α < r₁) (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n)
@@ -449,12 +396,16 @@ private theorem le_on_insetCylinder_of_terminal_lateral_le
     ∀ z ∈ insetCylinder α r₁ Ω, terminalTilt u ε r₁ z ≤ M := by
   intro z hz
   by_cases hKempty : (insetCylinder α r₁ Ω).Nonempty
-  · obtain ⟨zmax, hzmax, hmax⟩ :=
-      (isCompact_insetCylinder hΩbounded).exists_isMaxOn hKempty
+  · have _h_inl_18 : IsCompact (insetCylinder α r₁ Ω) := by
+        exact (
+      isCompact_Icc.prod hΩbounded.isCompact_closure
+      )
+    obtain ⟨zmax, hzmax, hmax⟩ :=
+      _h_inl_18.exists_isMaxOn hKempty
         (terminalTilt_continuousOn (hu.mono (by
           rintro q ⟨⟨hqα, hqr₁⟩, hqΩ⟩
           exact ⟨⟨le_trans (le_of_lt hr₀α) hqα, hqr₁⟩, hqΩ⟩)) ε r₁)
-    have hmaxle : terminalTilt u ε r₁ z ≤ terminalTilt u ε r₁ zmax := hmax hz
+    have hmaxle := hmax hz
     by_cases hzactive : zmax ∈ insetActive α r₁ Ω
     · have hnonpos := scalarOperator_nonpos_at_inset_tilt_max hΩopen hr₀α a b u
         huC12 haPsd hzactive hmax.localize
@@ -466,7 +417,31 @@ private theorem le_on_insetCylinder_of_terminal_lateral_le
     · have hboundary : terminalTilt u ε r₁ zmax ≤ M := by
         have hzmaxBoundary : zmax ∈ insetCylinder α r₁ Ω \ insetActive α r₁ Ω :=
           ⟨hzmax, hzactive⟩
-        rw [insetCylinder_diff_insetActive_eq hΩopen hαr₁] at hzmaxBoundary
+        have _h_inl_20 : insetCylinder α r₁ Ω \ insetActive α r₁ Ω =
+      scalarParabolicTerminalFace r₁ Ω ∪
+        (Set.Icc α r₁ ×ˢ frontier Ω) := by
+          ext z
+          rcases z with ⟨r, y⟩
+          rw [hΩopen.frontier_eq]
+          constructor
+          · rintro ⟨⟨⟨hrα, hr₁⟩, hycl⟩, hnot⟩
+            by_cases hr : r = r₁
+            · left
+              exact ⟨hr, hycl⟩
+            · right
+              refine ⟨⟨hrα, hr₁⟩, ?_⟩
+              exact ⟨hycl, fun hy => hnot ⟨⟨hrα, lt_of_le_of_ne hr₁ hr⟩, hy⟩⟩
+          · rintro (hterminal | hlateral)
+            · rcases hterminal with ⟨hr, hycl⟩
+              simp only [mem_singleton_iff] at hr
+              subst r
+              refine ⟨⟨⟨le_of_lt hαr₁, le_rfl⟩, hycl⟩, ?_⟩
+              simp [insetActive]
+            · rcases hlateral with ⟨⟨hrα, hr₁⟩, hycl, hynot⟩
+              refine ⟨⟨⟨hrα, hr₁⟩, hycl⟩, ?_⟩
+              intro hactive
+              exact hynot hactive.2
+        rw [_h_inl_20] at hzmaxBoundary
         rcases hzmaxBoundary with hterminalFace | hlateralFace
         · calc
             terminalTilt u ε r₁ zmax ≤ u zmax := by
@@ -492,7 +467,7 @@ active-set branch.
 -/
 
 private theorem le_at_strictly_later_time
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ r r₁ : ℝ}
+    {n Ω r₀ r r₁}
     (hΩopen : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hr₀r : r₀ < r) (hrr₁ : r < r₁) (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n)
@@ -525,14 +500,14 @@ private theorem le_at_strictly_later_time
   rw [hhalf] at htilt
   linarith
 
-/--
+/-
 If the scalar plus-sign parabolic operator is nonnegative on the open cylinder,
 then terminal and lateral constant upper bounds control the whole closed cylinder.
 The proof uses strictly inset cylinders before passing to the initial face by
 continuity, so no derivative or PDE assertion is used at the initial time.
 -/
 theorem scalar_le_on_closedCylinder_of_terminal_lateral_le
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ r₁ : ℝ}
+    {n Ω r₀ r₁}
     (hΩopen : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (hr : r₀ < r₁)
@@ -546,7 +521,7 @@ theorem scalar_le_on_closedCylinder_of_terminal_lateral_le
     (huC12 : IsScalarC12On u (scalarParabolicOpenCylinder r₀ r₁ Ω))
     (hsub : ∀ z ∈ scalarParabolicOpenCylinder r₀ r₁ Ω,
       0 ≤ scalarParabolicOperator a b u z)
-    {M : ℝ}
+    {M }
     (hterminal : ∀ z ∈ scalarParabolicTerminalFace r₁ Ω, u z ≤ M)
     (hlateral : ∀ z ∈ scalarParabolicLateralFace r₀ r₁ Ω, u z ≤ M) :
     ∀ z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω, u z ≤ M := by

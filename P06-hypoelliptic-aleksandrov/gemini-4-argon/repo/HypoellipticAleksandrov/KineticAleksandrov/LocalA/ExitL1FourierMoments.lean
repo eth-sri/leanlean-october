@@ -12,8 +12,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
 /-- Every polynomial moment of stretched exponential radial decay is integrable. -/
-theorem integrable_exitFrequency_moment {d : ℕ} (hd : 1 ≤ d) (n : ℕ)
-    {c : ℝ} (hc : 0 < c) :
+theorem integrable_exitFrequency_moment {d } (hd : 1 ≤ d) (n : ℕ)
+    {c } (hc : 0 < c) :
     Integrable (fun ξ : PDE.Vec d =>
       ‖ξ‖ ^ n * Real.exp (-c * ‖ξ‖ ^ (1 / 3 : ℝ))) := by
   have : NeZero d := ⟨by omega⟩
@@ -35,13 +35,11 @@ theorem integrable_exitFrequency_moment {d : ℕ} (hd : 1 ≤ d) (n : ℕ)
   ring
 
 /-- Rescaling the stretched exponential preserves every polynomial moment. -/
-theorem integrable_exitFrequency_scaled_moment {d : ℕ} (hd : 1 ≤ d) (n : ℕ)
-    {c R : ℝ} (hc : 0 < c) (hR : 0 < R) :
+theorem integrable_exitFrequency_scaled_moment {d } (hd : 1 ≤ d) (n : ℕ)
+    {c R } (hc : 0 < c) (hR : 0 < R) :
     Integrable (fun ξ : PDE.Vec d =>
       ‖ξ‖ ^ n * Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ))) := by
-  have hi := integrable_exitFrequency_moment hd n (c := c * (R ^ 3) ^ (1 / 3 : ℝ))
-    (mul_pos hc (Real.rpow_pos_of_pos (pow_pos hR 3) _))
-  convert hi using 1
+  convert (integrable_exitFrequency_moment hd n (c := c * (R ^ 3) ^ (1 / 3 : ℝ)) (mul_pos hc (Real.rpow_pos_of_pos (pow_pos hR 3) _))) using 1
   funext ξ
   rw [Real.mul_rpow (pow_nonneg hR.le _) (norm_nonneg _)]
   ring_nf
@@ -50,9 +48,9 @@ theorem integrable_exitFrequency_scaled_moment {d : ℕ} (hd : 1 ≤ d) (n : ℕ
 theorem ballExitL1Fourier_integrable_moments
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (n : ℕ) :
@@ -61,8 +59,7 @@ theorem ballExitL1Fourier_integrable_moments
   obtain ⟨C, c, hC, hc, hdecay⟩ :=
     ballExit_fourier_decay hH hLE d hd lam Lam hlam hLam
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
-  have hi := (integrable_exitFrequency_scaled_moment hd n hc hR).const_mul C
-  apply hi.mono'
+  apply ((integrable_exitFrequency_scaled_moment hd n hc hR).const_mul C).mono'
     (continuous_norm.pow n |>.mul (continuous_exitL1Fourier ν).norm).aestronglyMeasurable
   apply Filter.Eventually.of_forall
   intro ξ

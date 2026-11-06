@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.TransportSlices
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.IntervalDelay
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.InflationVolume
+import Mathlib.MeasureTheory.Group.Prod
 
 /-! # The sharp delayed-union estimate in kinetic transport coordinates -/
 
@@ -14,13 +16,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
-/-- Open stack interiors avoid any uncountable union of terminal faces. -/
-def openForwardStack {d : ℕ} (P : KineticPoint d) (r : ℝ) (m : ℕ) :
+/- Open stack interiors avoid any uncountable union of terminal faces. -/
+def openForwardStack {d } (P : KineticPoint d) (r : ℝ) (m : ℕ) :
     Set (KineticPoint d) :=
   forwardStack P r m ∩ {X | X.time < P.time+(m : ℝ)*r^2}
 
-/-- Open forward stack interiors are open. -/
-theorem isOpen_openForwardStack {d : ℕ} (P : KineticPoint d) (r : ℝ) (m : ℕ) :
+/- Open forward stack interiors are open. -/
+theorem isOpen_openForwardStack {d } (P : KineticPoint d) (r : ℝ) (m : ℕ) :
     IsOpen (openForwardStack P r m) := by
   have hx : Continuous (relativePosition P) :=
     (continuous_position.sub continuous_const).sub
@@ -42,22 +44,49 @@ theorem isOpen_openForwardStack {d : ℕ} (P : KineticPoint d) (r : ℝ) (m : �
       (((PDE.isOpen_euclideanBall _ _).preimage continuous_velocity).inter
         ((PDE.isOpen_euclideanBall _ _).preimage hx)))
 
-/-- Kinetic volume equals integration of time-slice volumes in transport coordinates. -/
-theorem volume_transport_slices {d : ℕ} {S : Set (KineticPoint d)}
+/- Kinetic volume equals integration of time-slice volumes in transport coordinates. -/
+theorem volume_transport_slices {d S}
     (hS : MeasurableSet S) :
     volume S = ∫⁻ v : PDE.Vec d, ∫⁻ y : PDE.Vec d,
       volume {t : ℝ | transportChart (v,y,t) ∈ S} := by
-  have hs : MeasurableSet (transportChart ⁻¹' S) :=
-    hS.preimage (continuous_transportChart d).measurable
-  rw [← (measurePreserving_transportChart d).measure_preimage hS.nullMeasurableSet,
+  have _h_xinl_0 : Continuous (@transportChart d) := by
+    apply KineticPoint.continuous_mk <;> fun_prop
+  have hs :=
+    hS.preimage _h_xinl_0.measurable
+  have _h_xinl_0 : MeasurePreserving (@transportChart d) volume volume := by
+    have hshear : MeasurePreserving
+        (fun z : PDE.Vec d × (PDE.Vec d × ℝ) => (z.1, z.2.2, z.2.1+z.2.2 • z.1))
+        ((volume : Measure (PDE.Vec d)).prod volume)
+        ((volume : Measure (PDE.Vec d)).prod volume) := by
+      refine (MeasurePreserving.id (volume : Measure (PDE.Vec d))).skew_product
+        (g := fun (v : PDE.Vec d) (z : PDE.Vec d × ℝ) => (z.2, z.1+z.2 • v)) ?_ ?_
+      · exact (continuous_snd.snd.prodMk
+          (continuous_snd.fst.add (continuous_snd.snd.smul continuous_fst))).measurable
+      · exact Filter.Eventually.of_forall fun v => (measurePreserving_transport_fiber v).map_eq
+    have hperm : MeasurePreserving
+        (fun z : PDE.Vec d × (ℝ × PDE.Vec d) => (z.2.1, z.2.2, z.1)) volume volume := by
+      simpa only [Measure.volume_eq_prod, Function.comp_def, Prod.swap,
+      MeasurableEquiv.prodAssoc, MeasurableEquiv.coe_mk, Equiv.prodAssoc_apply] using
+        (measurePreserving_prodAssoc (volume : Measure ℝ) (volume : Measure (PDE.Vec d))
+          (volume : Measure (PDE.Vec d))).comp
+          (Measure.measurePreserving_swap (μ := (volume : Measure (PDE.Vec d)))
+            (ν := (volume : Measure (ℝ × PDE.Vec d))))
+    have hinv : MeasurePreserving (KineticPoint.equivProd d).symm volume volume :=
+      ⟨KineticPoint.measurable_equivProd_symm d, rfl⟩
+    change MeasurePreserving
+      (fun z : PDE.Vec d × (PDE.Vec d × ℝ) =>
+        KineticPoint.mk z.2.2 (z.2.1+z.2.2 • z.1) z.1) _ _
+    simpa only [Measure.volume_eq_prod, Function.comp_def, transportChart,
+      KineticPoint.equivProd, Equiv.coe_fn_symm_mk] using hinv.comp (hperm.comp hshear)
+  rw [← _h_xinl_0.measure_preimage hS.nullMeasurableSet,
     Measure.volume_eq_prod, Measure.prod_apply hs]
   apply lintegral_congr
   intro v
   rw [Measure.volume_eq_prod, Measure.prod_apply (measurable_prodMk_left hs)]
   rfl
 
-/-- Each transport slice satisfies the sharp one-dimensional delayed-union inequality. -/
-theorem delayed_union_slice {d : ℕ} {ι : Type*} [Countable ι]
+/- Each transport slice satisfies the sharp one-dimensional delayed-union inequality. -/
+theorem delayed_union_slice {d } {ι : Type*} [Countable ι]
     (P : ι → KineticPoint d) (r : ι → ℝ) (hr : ∀ i, 0 < r i)
     (m : ℕ) (hm : 0 < m) (v y : PDE.Vec d) :
     volume {t : ℝ | transportChart (v,y,t) ∈ ⋃ i, backwardCylinder (P i) (r i)} ≤
@@ -85,21 +114,5 @@ theorem delayed_union_slice {d : ℕ} {ι : Type*} [Countable ι]
         (by exact_mod_cast hm) (fun i => sq_pos_of_pos (hr i))
     _ ≤ _ := mul_le_mul_right (measure_mono hforward) _
 
-/-- Countable kinetic cylinder families satisfy the sharp delayed-union estimate. -/
-theorem delayed_union_countable {d : ℕ} {ι : Type*} [Countable ι]
-    (P : ι → KineticPoint d) (r : ι → ℝ) (hr : ∀ i, 0 < r i)
-    (m : ℕ) (hm : 0 < m) :
-    volume (⋃ i, backwardCylinder (P i) (r i)) ≤
-      ENNReal.ofReal (((m : ℝ)+1)/(m : ℝ)) *
-        volume (⋃ i, openForwardStack (P i) (r i) m) := by
-  rw [volume_transport_slices (isOpen_iUnion (fun i => isOpen_cylinder (P i) (r i))).measurableSet,
-    volume_transport_slices
-      (isOpen_iUnion (fun i => isOpen_openForwardStack (P i) (r i) m)).measurableSet,
-    ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-  apply lintegral_mono
-  intro v
-  dsimp only
-  rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-  exact lintegral_mono fun y => delayed_union_slice P r hr m hm v y
-
+/- Countable kinetic cylinder families satisfy the sharp delayed-union estimate. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

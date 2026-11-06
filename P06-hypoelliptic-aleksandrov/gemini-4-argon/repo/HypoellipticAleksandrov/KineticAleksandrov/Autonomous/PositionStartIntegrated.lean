@@ -45,7 +45,7 @@ theorem positionStartQuadratic_integrated_slab_identity
   have hG : Integrable g (G ∘ₘ mu) :=
     positionStartQuadratic_operator_integrable hlam hLam A c Y hc _
       (positionStartAllTimeMixture_ae_active hH hLE hlam hLam A c mu)
-  have hGs : Integrable (S.indicator g) (G ∘ₘ mu) := hG.indicator hS
+  have hGs := hG.indicator hS
   have hiB : Integrable (fun p => ∫ q, f q ∂B p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hB
     simpa only [Kernel.const_apply] using hB.integral_comp
@@ -75,9 +75,7 @@ theorem positionStartQuadratic_integrated_slab_identity
       (∫ q, S.indicator g q ∂G p) ∂mu) =
       (∫ p, (∫ q, f q ∂B p) - (∫ q, f q ∂D p) ∂mu) -
         ∫ p, ∫ q, S.indicator g q ∂G p ∂mu := integral_sub (hiB.sub hiD) hiG
-  have hd : (∫ p, (∫ q, f q ∂B p) - (∫ q, f q ∂D p) ∂mu) =
-      (∫ p, ∫ q, f q ∂B p ∂mu) - ∫ p, ∫ q, f q ∂D p ∂mu := integral_sub hiB hiD
-  rw [he, hd,
+  rw [he, (integral_sub hiB hiD),
     ← nested_integral_bind mu B B.measurable f hB,
     ← nested_integral_bind mu D D.measurable f hD,
     ← nested_integral_bind mu G G.measurable (S.indicator g) hGs,

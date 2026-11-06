@@ -12,26 +12,8 @@ open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
 open scoped Topology
 
-/-- A source vanishing after a time has an actual Duhamel potential vanishing after that time. -/
-theorem clock_duhamel_zero_after {Ω : Set (PDE.Vec 1)} {γ : ℝ → PDE.Vec 1}
-    (K : MovingFiberKernel Ω γ) (T R : ℝ) (g : Point → ℝ)
-    (hg : ∀ p, R ≤ p.time → g p = 0) (p : Point) (hp : R ≤ p.time) :
-    duhamelPotential K T g p = 0 := by
-  apply setIntegral_eq_zero_of_forall_eq_zero
-  intro r hr
-  unfold duhamelIntegrand
-  split
-  · unfold duhamelSourceIntegral
-    have hz : (fun w : EvolutionAmbientState 1 => g ⟨r, w.1, w.2⟩) = 0 := by
-      funext w
-      exact hg ⟨r, w.1, w.2⟩ (hp.trans hr.1.le)
-    rw [hz]
-    exact integral_zero' _ _
-  · rfl
-
-/-- Smoothness below a terminal time and exact vanishing on an earlier half-space imply
-smoothness throughout the native open velocity strip. -/
-theorem clock_native_smooth_of_zero_after (u : Point → ℝ) (R T : ℝ) (hRT : R < T)
+/- A source vanishing after a time has an actual Duhamel potential vanishing after that time. -/
+theorem clock_native_smooth_of_zero_after (u : Point → ℝ) (R T ) (hRT : R < T)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹'
         evolutionPastOpenCylinder (intervalDomain clockNormalizedInterval) (fun _ => 0) T))

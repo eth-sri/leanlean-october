@@ -11,7 +11,7 @@ namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 
 /-- Extend a continuous matrix field from a closed set, preserving its values there. -/
 theorem exists_continuous_matrix_extension
-    {N : ℕ} {K : Set (TimeVelocity N)} (hK : IsClosed K)
+    {N K} (hK : IsClosed K)
     (a : TimeVelocity N → PDE.Mat N) (ha : ContinuousOn a K) :
     ∃ ae : TimeVelocity N → PDE.Mat N,
       Continuous ae ∧ Set.EqOn ae a K := by

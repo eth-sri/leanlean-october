@@ -21,10 +21,10 @@ open scoped MatrixOrder
 /-- The actual finite Dirichlet solution obeys the full minimum-form collar bound on
 its entire inset closed cylinder, uniformly in the transported truncation radius. -/
 theorem abs_le_min_collar_straightened_dirichlet
-    {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n lam Lam B b}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
-    {a α τ r R d L C ε : ℝ} (haα : a < α) (hατ : α < τ)
+    {a α τ r R d L C ε } (haα : a < α) (hατ : α < τ)
     (hr : 0 < r) (hR : 0 < R) (hd : 0 < d) (hdr : d < r)
     {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hL : 0 ≤ L)
     (hgL : ∀ s t, PDE.vecEuclideanNorm (g s - g t) ≤ L * |s - t|)

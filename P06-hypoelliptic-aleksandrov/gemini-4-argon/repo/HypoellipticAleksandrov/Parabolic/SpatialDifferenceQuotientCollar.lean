@@ -14,15 +14,9 @@ time--velocity supports inside an open set under small coordinate shifts.
 
 namespace HypoellipticAleksandrov.Parabolic
 
-/-- A spatial shift leaves the time coordinate unchanged. -/
-@[simp] theorem spatialShift_fst
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
-    (spatialShift k h z).1 = z.1 := by
-  simp [spatialShift]
-
-/-- A coordinate spatial shift has native product-metric distance `|h|`. -/
+/- A spatial shift leaves the time coordinate unchanged. -/
 theorem dist_spatialShift
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
+    {d } (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
     dist (spatialShift k h z) z = |h| := by
   rcases z with ⟨t, y⟩
   rw [spatialShift_apply, dist_prod_same_left, dist_eq_norm]
@@ -32,10 +26,10 @@ theorem dist_spatialShift
     _ = ‖h‖ * ‖PDE.basisVec k‖ := norm_smul _ _
     _ = |h| := by simp [PDE.basisVec, Pi.norm_single]
 
-/-- A compact subset of an open time--velocity set has a positive native
+/- A compact subset of an open time--velocity set has a positive native
 collar stable under every coordinate shift of at most the collar radius. -/
 theorem IsCompact.exists_spatialShift_cthickening_collar
-    {d : ℕ} {K U : Set (TimeVelocity d)}
+    {d K U}
     (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∃ δ : ℝ, 0 < δ ∧ Metric.cthickening δ K ⊆ U ∧
       ∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
@@ -47,10 +41,10 @@ theorem IsCompact.exists_spatialShift_cthickening_collar
   exact Metric.mem_cthickening_of_dist_le (spatialShift k h z) z δ K hz
     (by simpa only [dist_spatialShift] using hh)
 
-/-- A forward translate is supported in `U` when the corresponding backward
+/- A forward translate is supported in `U` when the corresponding backward
 shift maps its original support carrier into `U`. -/
 theorem tsupport_spatialTranslate_subset_of_mapsTo_spatialShift_neg
-    {d : ℕ} {α : Type*} [Zero α] {K U : Set (TimeVelocity d)}
+    {d } {α : Type*} [Zero α] {K U }
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → α)
     (hfK : tsupport f ⊆ K)
     (hshift : Set.MapsTo (spatialShift k (-h)) K U) :
@@ -58,7 +52,7 @@ theorem tsupport_spatialTranslate_subset_of_mapsTo_spatialShift_neg
   intro z hz
   rw [tsupport_spatialTranslate] at hz
   change spatialShift k h z ∈ tsupport f at hz
-  have hback : spatialShift k (-h) (spatialShift k h z) ∈ U :=
+  have hback :=
     hshift (hfK hz)
   have hcancel : spatialShift k (-h) (spatialShift k h z) = z := by
     calc

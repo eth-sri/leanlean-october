@@ -20,12 +20,12 @@ noncomputable section
 
 open scoped BigOperators
 
-/-- The continuous linear functional `w ↦ 2 (z · w)`. -/
-noncomputable def vecNormSqFDeriv {d : ℕ} (z : PDE.Vec d) : PDE.Vec d →L[ℝ] ℝ :=
+/- The continuous linear functional `w ↦ 2 (z · w)`. -/
+noncomputable def vecNormSqFDeriv {d } (z : PDE.Vec d) : PDE.Vec d →L[ℝ] ℝ :=
   ∑ i, (2 * z i) • ContinuousLinearMap.proj i
 
 @[simp]
-theorem vecNormSqFDeriv_apply {d : ℕ} (z w : PDE.Vec d) :
+theorem vecNormSqFDeriv_apply {d } (z w : PDE.Vec d) :
     vecNormSqFDeriv z w = 2 * PDE.vecDot z w := by
   classical
   unfold vecNormSqFDeriv PDE.vecDot
@@ -36,8 +36,8 @@ theorem vecNormSqFDeriv_apply {d : ℕ} (z w : PDE.Vec d) :
   intro i _hi
   ring
 
-/-- The squared explicit Euclidean norm has derivative `w ↦ 2 (z · w)`. -/
-theorem hasFDerivAt_vecNormSq {d : ℕ} (z : PDE.Vec d) :
+/- The squared explicit Euclidean norm has derivative `w ↦ 2 (z · w)`. -/
+theorem hasFDerivAt_vecNormSq {d } (z : PDE.Vec d) :
     HasFDerivAt PDE.vecNormSq (vecNormSqFDeriv z) z := by
   classical
   have hd : DifferentiableAt ℝ PDE.vecNormSq z := by
@@ -58,20 +58,7 @@ theorem hasFDerivAt_vecNormSq {d : ℕ} (z : PDE.Vec d) :
   simp only [ContinuousLinearMap.proj_apply]
   ring
 
-/-- The continuous linear functional `w ↦ (z · w) / |z|`. -/
-noncomputable def vecEuclideanNormFDeriv {d : ℕ} (z : PDE.Vec d) :
-    PDE.Vec d →L[ℝ] ℝ :=
-  (PDE.vecEuclideanNorm z)⁻¹ • ∑ i, z i • ContinuousLinearMap.proj i
-
-@[simp]
-theorem vecEuclideanNormFDeriv_apply {d : ℕ} (z w : PDE.Vec d) :
-    vecEuclideanNormFDeriv z w = PDE.vecDot z w / PDE.vecEuclideanNorm z := by
-  classical
-  unfold vecEuclideanNormFDeriv PDE.vecDot
-  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.sum_apply,
-    ContinuousLinearMap.proj_apply, smul_eq_mul]
-  rw [div_eq_inv_mul]
-
+/- The continuous linear functional `w ↦ (z · w) / |z|`. -/
 end
 
 end HypoellipticAleksandrov

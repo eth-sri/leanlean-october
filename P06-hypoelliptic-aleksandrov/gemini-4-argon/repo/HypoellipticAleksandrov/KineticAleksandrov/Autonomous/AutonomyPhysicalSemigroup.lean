@@ -29,7 +29,7 @@ def fullSpacePhysicalSemigroup (E : FullSpaceEvolution) (t : NNReal) :
     ((fullSpaceSemigroup E t).comp physicalBorelEquiv.toLinearMap)
 
 /-- The physical semigroup and the literal kernel action are the same function. -/
-theorem fullSpacePhysicalSemigroup_eq_action {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem fullSpacePhysicalSemigroup_eq_action {lam Lam } (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (t : NNReal) (F : BoundedBorel (EvolutionAmbientState 1)) (x : EvolutionAmbientState 1) :
     fullSpacePhysicalSemigroup E t F x = fullSpaceAction E F ⟨t, x.1, x.2⟩ := by

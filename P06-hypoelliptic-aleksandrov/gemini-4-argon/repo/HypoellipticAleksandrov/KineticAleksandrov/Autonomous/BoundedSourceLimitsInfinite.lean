@@ -22,7 +22,7 @@ instance stripGreen_isFiniteMeasure
 /-- Every bounded Borel source is integrable against the same finite or infinite Green measure. -/
 theorem stripGreen_integrable
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ) (e : StripPole H T)
     (g : BoundedBorel Point) : Integrable g (stripGreen hH hLE hlam hLam A H T e) := by
   obtain ⟨C, -, hg⟩ := g.exists_bound

@@ -19,7 +19,7 @@ open scoped BigOperators MatrixOrder
 
 namespace HypoellipticAleksandrov.Parabolic
 
-/-- The constant in fixed-time principal coercivity. -/
+/- The constant in fixed-time principal coercivity. -/
 def principalCoercivityConstant
     (d : ℕ) (lam Lam M K : ℝ) : ℝ :=
   2 * (d : ℝ) ^ 3 / lam * (M + Lam * K) ^ 2
@@ -52,47 +52,6 @@ private theorem spatialSecond_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen 
     show spatialSecond q k j y = spatialPartial j (spatialPartial k q) y by rfl,
     heval j k, heval k j]
   exact hs.eq (PDE.basisVec k) (PDE.basisVec j)
-
-private theorem principal_lower_pointwise
-    {d : ℕ} {lam : ℝ} {O : Set (PDE.Vec d)}
-    (A : PDE.Vec d → PDE.Mat d) (q η : PDE.Vec d → ℝ)
-    (hAlower : ∀ y ∈ O, lam • (1 : PDE.Mat d) ≤ A y)
-    {y : PDE.Vec d} (hy : y ∈ O) :
-    lam * (η y) ^ 2 * (∑ k, ∑ i, spatialSecond q k i y ^ 2) ≤
-      (η y) ^ 2 * (∑ i, ∑ j, ∑ k,
-        A y i j * spatialSecond q k i y * spatialSecond q k j y) := by
-  have hrow (k : Fin d) :
-      lam * (∑ i, spatialSecond q k i y ^ 2) ≤
-        ∑ i, ∑ j, spatialSecond q k i y *
-          (A y i j * spatialSecond q k j y) := by
-    simpa only [PDE.vecNormSq, PDE.vecDot, Matrix.mulVec, dotProduct,
-      Finset.mul_sum, pow_two] using
-      (vecDot_mulVec_lower_of_loewner (hAlower y hy)
-        (fun i => spatialSecond q k i y))
-  have hsum :
-      lam * (∑ k, ∑ i, spatialSecond q k i y ^ 2) ≤
-        ∑ k, ∑ i, ∑ j, spatialSecond q k i y *
-          (A y i j * spatialSecond q k j y) := by
-    rw [Finset.mul_sum]
-    exact Finset.sum_le_sum fun k _ => hrow k
-  calc
-    lam * (η y) ^ 2 * (∑ k, ∑ i, spatialSecond q k i y ^ 2) =
-        (η y) ^ 2 * (lam * (∑ k, ∑ i, spatialSecond q k i y ^ 2)) := by ring
-    _ ≤ (η y) ^ 2 * (∑ k, ∑ i, ∑ j, spatialSecond q k i y *
-          (A y i j * spatialSecond q k j y)) :=
-      mul_le_mul_of_nonneg_left hsum (sq_nonneg (η y))
-    _ = (η y) ^ 2 * (∑ i, ∑ j, ∑ k,
-        A y i j * spatialSecond q k i y * spatialSecond q k j y) := by
-      rw [Finset.sum_comm]
-      congr 1
-      apply Finset.sum_congr rfl
-      intro i _
-      rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro j _
-      apply Finset.sum_congr rfl
-      intro k _
-      ring
 
 private theorem contDiff_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
     (hO : IsOpen O) (f : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 0 f O)
@@ -401,133 +360,6 @@ private theorem remainder_lower_pointwise
   rw [hbudget] at hcombined
   linarith
 
-private theorem principal_remainder_lower_pointwise_on_support
-    {d : ℕ} (lam Lam M K : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
-    (A : PDE.Vec d → PDE.Mat d) (q η : PDE.Vec d → ℝ)
-    (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-    (_hA : ∀ i j : Fin d, ContDiffOn ℝ 1 (fun y => A y i j) O)
-    (hAlower : ∀ y ∈ O, lam • (1 : PDE.Mat d) ≤ A y)
-    (hAupper : ∀ y ∈ O, A y ≤ Lam • (1 : PDE.Mat d))
-    (hAderiv : ∀ y ∈ O, ∀ i j k : Fin d,
-      |spatialPartial k (fun x => A x i j) y| ≤ M)
-    (hq : ContDiffOn ℝ 3 q O)
-    (_hη : ContDiff ℝ (⊤ : ℕ∞) η)
-    (_hηcompact : HasCompactSupport η)
-    (_hηsupport : tsupport η ⊆ O)
-    (hηnonneg : ∀ y, 0 ≤ η y) (hηle : ∀ y, η y ≤ 1)
-    (hηderiv : ∀ y ∈ O, ∀ i : Fin d, |spatialPartial i η y| ≤ K)
-    {y : PDE.Vec d} (hy : y ∈ O) :
-    η y ^ 2 * (∑ i, ∑ j, ∑ k,
-        A y i j * spatialSecond q k i y * spatialSecond q k j y)
-      + 2 * (η y * (∑ i, ∑ j, ∑ k, spatialPartial i η y * A y i j *
-        spatialPartial k q y * spatialSecond q j k y))
-      + η y ^ 2 * (∑ i, ∑ j, ∑ k,
-        spatialPartial i (fun x => A x i j) y * spatialPartial k q y *
-          spatialSecond q j k y)
-      - η y ^ 2 * (∑ i, ∑ j, ∑ k,
-        spatialPartial k (fun x => A x i j) y * spatialSecond q j i y *
-          spatialPartial k q y) ≥
-      lam / 2 * (η y ^ 2 * (∑ k, ∑ i, spatialSecond q k i y ^ 2)) -
-        principalCoercivityConstant d lam Lam M K *
-          (tsupport η).indicator (fun z => ∑ k, spatialPartial k q z ^ 2) y := by
-  by_cases hd : 0 < d
-  · by_cases hys : y ∈ tsupport η
-    · have hLam : 0 < Lam := lt_of_lt_of_le hlam hlamLam
-      let i0 : Fin d := ⟨0, hd⟩
-      have hM : 0 ≤ M := le_trans (abs_nonneg _)
-        (hAderiv y hy i0 i0 i0)
-      have hK : 0 ≤ K := le_trans (abs_nonneg _) (hηderiv y hy i0)
-      have hCnonneg : 0 ≤ M + Lam * K := add_nonneg hM (mul_nonneg hLam.le hK)
-      have hp := principal_lower_pointwise A q η hAlower hy
-      by_cases hCzero : M + Lam * K = 0
-      · have hMzero : M = 0 := by
-          nlinarith [mul_nonneg hLam.le hK]
-        have hKzero : K = 0 := by
-          have : Lam * K = 0 := by nlinarith
-          exact (mul_eq_zero.mp this).resolve_left (ne_of_gt hLam)
-        have hηderivZero (i : Fin d) : spatialPartial i η y = 0 := by
-          have := hηderiv y hy i
-          rw [hKzero] at this
-          exact abs_eq_zero.mp (le_antisymm this (abs_nonneg _))
-        have hAderivZero (i j k : Fin d) :
-            spatialPartial k (fun x => A x i j) y = 0 := by
-          have := hAderiv y hy i j k
-          rw [hMzero] at this
-          exact abs_eq_zero.mp (le_antisymm this (abs_nonneg _))
-        rw [Set.indicator_of_mem hys]
-        simp_rw [hηderivZero, hAderivZero]
-        simp only [zero_mul, Finset.sum_const_zero, mul_zero, add_zero, sub_zero]
-        dsimp [principalCoercivityConstant]
-        rw [hMzero, hKzero]
-        norm_num
-        have henergy : 0 ≤ η y ^ 2 *
-            (∑ k, ∑ i, spatialSecond q k i y ^ 2) := by positivity
-        have hp' : lam * (η y ^ 2 *
-            (∑ k, ∑ i, spatialSecond q k i y ^ 2)) ≤
-            η y ^ 2 * (∑ i, ∑ j, ∑ k,
-              A y i j * spatialSecond q k i y * spatialSecond q k j y) := by
-          simpa only [mul_assoc] using hp
-        have hhalf : lam / 2 * (η y ^ 2 *
-            (∑ k, ∑ i, spatialSecond q k i y ^ 2)) ≤
-            lam * (η y ^ 2 *
-              (∑ k, ∑ i, spatialSecond q k i y ^ 2)) := by
-          nlinarith
-        exact hhalf.trans hp'
-      · have hC : 0 < M + Lam * K := lt_of_le_of_ne hCnonneg (Ne.symm hCzero)
-        have hr := remainder_lower_pointwise hd hO A q η hlam hlamLam hAlower hAupper
-          hAderiv (hq.of_le (by norm_num)) hηnonneg hηle hηderiv hM hK hC hy
-        rw [Set.indicator_of_mem hys]
-        linarith
-    · have hηzero : η y = 0 := by
-        by_contra hne
-        exact hys (subset_closure hne)
-      have hηpartialZero (i : Fin d) : spatialPartial i η y = 0 := by
-        unfold spatialPartial
-        rw [fderiv_of_notMem_tsupport ℝ hys]
-        simp
-      rw [Set.indicator_of_notMem hys]
-      simp_rw [hηzero, hηpartialZero]
-      norm_num
-  · have hd0 : d = 0 := Nat.eq_zero_of_not_pos hd
-    subst d
-    simp
-
-private theorem integrableOn_weighted_spatialSecond_sq
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
-    (q η : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 3 q O)
-    (hη : ContDiff ℝ (⊤ : ℕ∞) η) (hηcompact : HasCompactSupport η)
-    (hηsupport : tsupport η ⊆ O) :
-    IntegrableOn (fun y => η y ^ 2 *
-      (∑ k, ∑ i, spatialSecond q k i y ^ 2)) O := by
-  have hqsecond (k i : Fin d) : ContDiffOn ℝ 0 (spatialSecond q k i) O :=
-    (contDiffOn_spatialPartial hO i
-      (contDiffOn_spatialPartial hO k hq)).of_le (by norm_num)
-  have hsum : ContDiffOn ℝ 0
-      (fun y => ∑ k, ∑ i, spatialSecond q k i y ^ 2) O := by
-    simpa only [Finset.sum_filter, Finset.filter_true_of_mem] using
-      (ContDiffOn.sum (s := Finset.univ) fun k _ =>
-        ContDiffOn.sum (s := Finset.univ) fun i _ => (hqsecond k i).pow 2)
-  have hη0 : ContDiffOn ℝ 0 η O := hη.contDiffOn.of_le (by simp)
-  have hcompact2 : HasCompactSupport (fun y => η y ^ 2) := by
-    simpa only [pow_two, Pi.mul_def] using hηcompact.mul_left
-  have hsupport2 : tsupport (fun y => η y ^ 2) ⊆ O :=
-    (by simpa [pow_two] using tsupport_mul_subset_left.trans hηsupport)
-  exact integrableOn_of_local_compactSupport hO _ ((hη0.pow 2).mul hsum)
-    hcompact2.mul_right (tsupport_mul_subset_left.trans hsupport2)
-
-private theorem integrableOn_spatialPartial_sq_tsupport
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
-    (q η : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 3 q O)
-    (hηcompact : HasCompactSupport η) (hηsupport : tsupport η ⊆ O) :
-    IntegrableOn (fun y => ∑ k, spatialPartial k q y ^ 2) (tsupport η) := by
-  have hqp (k : Fin d) : ContDiffOn ℝ 0 (spatialPartial k q) O :=
-    contDiffOn_spatialPartial (n := 0) hO k (hq.of_le (by norm_num))
-  have hsum : ContDiffOn ℝ 0 (fun y => ∑ k, spatialPartial k q y ^ 2) O := by
-    simpa only [Finset.sum_filter, Finset.filter_true_of_mem] using
-      (ContDiffOn.sum (s := Finset.univ) fun k _ => (hqp k).pow 2)
-  exact (hsum.continuousOn.mono hηsupport).integrableOn_compact hηcompact
-
 private theorem integrableOn_principal_remainder_identity_side
     {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
     (A : PDE.Vec d → PDE.Mat d) (q η : PDE.Vec d → ℝ)
@@ -613,7 +445,7 @@ private theorem integrableOn_principal_remainder_identity_side
   exact integrableOn_of_local_compactSupport hO R hR hηcompact.mul_right
     (tsupport_mul_subset_left.trans hηsupport)
 
-/-- Quantitative fixed-time coercivity of the negative localized principal
+/- Quantitative fixed-time coercivity of the negative localized principal
 pairing, modulo the gradient remainder on the cutoff's topological support. -/
 theorem smoothPrincipalIntegrationByParts_coercive
     {d : ℕ} (lam Lam M K : ℝ)
@@ -661,10 +493,29 @@ theorem smoothPrincipalIntegrationByParts_coercive
   have hLint : IntegrableOn L O := by
     exact integrableOn_principal_remainder_identity_side hO A q η hA hq hη
       hηcompact hηsupport
-  have hEint : IntegrableOn E O :=
-    integrableOn_weighted_spatialSecond_sq hO q η hq hη hηcompact hηsupport
-  have hGint : IntegrableOn G (tsupport η) :=
-    integrableOn_spatialPartial_sq_tsupport hO q η hq hηcompact hηsupport
+  have hEint : IntegrableOn E O := by
+    have hqsecond (k i : Fin d) : ContDiffOn ℝ 0 (spatialSecond q k i) O :=
+      (contDiffOn_spatialPartial hO i
+        (contDiffOn_spatialPartial hO k hq)).of_le (by norm_num)
+    have hsum : ContDiffOn ℝ 0
+        (fun y => ∑ k, ∑ i, spatialSecond q k i y ^ 2) O := by
+      simpa only [Finset.sum_filter, Finset.filter_true_of_mem] using
+        (ContDiffOn.sum (s := Finset.univ) fun k _ =>
+          ContDiffOn.sum (s := Finset.univ) fun i _ => (hqsecond k i).pow 2)
+    have hη0 : ContDiffOn ℝ 0 η O := hη.contDiffOn.of_le (by simp)
+    have hcompact2 : HasCompactSupport (fun y => η y ^ 2) := by
+      simpa only [pow_two, Pi.mul_def] using hηcompact.mul_left
+    have hsupport2 : tsupport (fun y => η y ^ 2) ⊆ O :=
+      (by simpa [pow_two] using tsupport_mul_subset_left.trans hηsupport)
+    exact integrableOn_of_local_compactSupport hO _ ((hη0.pow 2).mul hsum)
+      hcompact2.mul_right (tsupport_mul_subset_left.trans hsupport2)
+  have hGint : IntegrableOn G (tsupport η) := by
+    have hqp (k : Fin d) : ContDiffOn ℝ 0 (spatialPartial k q) O :=
+      contDiffOn_spatialPartial (n := 0) hO k (hq.of_le (by norm_num))
+    have hsum : ContDiffOn ℝ 0 (fun y => ∑ k, spatialPartial k q y ^ 2) O := by
+      simpa only [Finset.sum_filter, Finset.filter_true_of_mem] using
+        (ContDiffOn.sum (s := Finset.univ) fun k _ => (hqp k).pow 2)
+    exact (hsum.continuousOn.mono hηsupport).integrableOn_compact hηcompact
   have hGindicator : IntegrableOn ((tsupport η).indicator G) O := by
     exact (hGint.integrable_indicator (isClosed_tsupport η).measurableSet).integrableOn
   have hrightInt : IntegrableOn (fun y => lam / 2 * E y -
@@ -675,10 +526,116 @@ theorem smoothPrincipalIntegrationByParts_coercive
           (tsupport η).indicator G y ≤ L y := by
     filter_upwards [ae_restrict_mem hO.measurableSet] with y hy
     dsimp [L, E, G]
-    simpa only [mul_assoc] using
-      (principal_remainder_lower_pointwise_on_support lam Lam M K O hO A q η
-        hlam hlamLam hA hAlower hAupper hAderiv hq hη hηcompact hηsupport
-        hηnonneg hηle hηderiv hy)
+    have _h_inl_17 : η y ^ 2 * (∑ i, ∑ j, ∑ k,
+        A y i j * spatialSecond q k i y * spatialSecond q k j y)
+      + 2 * (η y * (∑ i, ∑ j, ∑ k, spatialPartial i η y * A y i j *
+        spatialPartial k q y * spatialSecond q j k y))
+      + η y ^ 2 * (∑ i, ∑ j, ∑ k,
+        spatialPartial i (fun x => A x i j) y * spatialPartial k q y *
+          spatialSecond q j k y)
+      - η y ^ 2 * (∑ i, ∑ j, ∑ k,
+        spatialPartial k (fun x => A x i j) y * spatialSecond q j i y *
+          spatialPartial k q y) ≥
+      lam / 2 * (η y ^ 2 * (∑ k, ∑ i, spatialSecond q k i y ^ 2)) -
+        principalCoercivityConstant d lam Lam M K *
+          (tsupport η).indicator (fun z => ∑ k, spatialPartial k q z ^ 2) y := by
+      by_cases hd : 0 < d
+      · by_cases hys : y ∈ tsupport η
+        · have hLam : 0 < Lam := lt_of_lt_of_le hlam hlamLam
+          let i0 : Fin d := ⟨0, hd⟩
+          have hM : 0 ≤ M := le_trans (abs_nonneg _)
+            (hAderiv y hy i0 i0 i0)
+          have hK : 0 ≤ K := le_trans (abs_nonneg _) (hηderiv y hy i0)
+          have hCnonneg : 0 ≤ M + Lam * K := add_nonneg hM (mul_nonneg hLam.le hK)
+          have hp : lam * (η y) ^ 2 * (∑ k, ∑ i, spatialSecond q k i y ^ 2) ≤
+          (η y) ^ 2 * (∑ i, ∑ j, ∑ k,
+            A y i j * spatialSecond q k i y * spatialSecond q k j y) := by
+            have hrow (k : Fin d) :
+                lam * (∑ i, spatialSecond q k i y ^ 2) ≤
+                  ∑ i, ∑ j, spatialSecond q k i y *
+                    (A y i j * spatialSecond q k j y) := by
+              simpa only [PDE.vecNormSq, PDE.vecDot, Matrix.mulVec, dotProduct,
+                Finset.mul_sum, pow_two] using
+                (vecDot_mulVec_lower_of_loewner (hAlower y hy)
+                  (fun i => spatialSecond q k i y))
+            have hsum :
+                lam * (∑ k, ∑ i, spatialSecond q k i y ^ 2) ≤
+                  ∑ k, ∑ i, ∑ j, spatialSecond q k i y *
+                    (A y i j * spatialSecond q k j y) := by
+              rw [Finset.mul_sum]
+              exact Finset.sum_le_sum fun k _ => hrow k
+            calc
+              lam * (η y) ^ 2 * (∑ k, ∑ i, spatialSecond q k i y ^ 2) =
+                  (η y) ^ 2 * (lam * (∑ k, ∑ i, spatialSecond q k i y ^ 2)) := by ring
+              _ ≤ (η y) ^ 2 * (∑ k, ∑ i, ∑ j, spatialSecond q k i y *
+                    (A y i j * spatialSecond q k j y)) :=
+                mul_le_mul_of_nonneg_left hsum (sq_nonneg (η y))
+              _ = (η y) ^ 2 * (∑ i, ∑ j, ∑ k,
+                  A y i j * spatialSecond q k i y * spatialSecond q k j y) := by
+                rw [Finset.sum_comm]
+                congr 1
+                apply Finset.sum_congr rfl
+                intro i _
+                rw [Finset.sum_comm]
+                apply Finset.sum_congr rfl
+                intro j _
+                apply Finset.sum_congr rfl
+                intro k _
+                ring
+          by_cases hCzero : M + Lam * K = 0
+          · have hMzero : M = 0 := by
+              nlinarith [mul_nonneg hLam.le hK]
+            have hKzero : K = 0 := by
+              have : Lam * K = 0 := by nlinarith
+              exact (mul_eq_zero.mp this).resolve_left (ne_of_gt hLam)
+            have hηderivZero (i : Fin d) : spatialPartial i η y = 0 := by
+              have := hηderiv y hy i
+              rw [hKzero] at this
+              exact abs_eq_zero.mp (le_antisymm this (abs_nonneg _))
+            have hAderivZero (i j k : Fin d) :
+                spatialPartial k (fun x => A x i j) y = 0 := by
+              have := hAderiv y hy i j k
+              rw [hMzero] at this
+              exact abs_eq_zero.mp (le_antisymm this (abs_nonneg _))
+            rw [Set.indicator_of_mem hys]
+            simp_rw [hηderivZero, hAderivZero]
+            simp only [zero_mul, Finset.sum_const_zero, mul_zero, add_zero, sub_zero]
+            dsimp [principalCoercivityConstant]
+            rw [hMzero, hKzero]
+            norm_num
+            have henergy : 0 ≤ η y ^ 2 *
+                (∑ k, ∑ i, spatialSecond q k i y ^ 2) := by positivity
+            have hp' : lam * (η y ^ 2 *
+                (∑ k, ∑ i, spatialSecond q k i y ^ 2)) ≤
+                η y ^ 2 * (∑ i, ∑ j, ∑ k,
+                  A y i j * spatialSecond q k i y * spatialSecond q k j y) := by
+              simpa only [mul_assoc] using hp
+            have hhalf : lam / 2 * (η y ^ 2 *
+                (∑ k, ∑ i, spatialSecond q k i y ^ 2)) ≤
+                lam * (η y ^ 2 *
+                  (∑ k, ∑ i, spatialSecond q k i y ^ 2)) := by
+              nlinarith
+            exact hhalf.trans hp'
+          · have hC : 0 < M + Lam * K := lt_of_le_of_ne hCnonneg (Ne.symm hCzero)
+            have hr := remainder_lower_pointwise hd hO A q η hlam hlamLam hAlower hAupper
+              hAderiv (hq.of_le (by norm_num)) hηnonneg hηle hηderiv hM hK hC hy
+            rw [Set.indicator_of_mem hys]
+            linarith
+        · have hηzero : η y = 0 := by
+            by_contra hne
+            exact hys (subset_closure hne)
+          have hηpartialZero (i : Fin d) : spatialPartial i η y = 0 := by
+            unfold spatialPartial
+            rw [fderiv_of_notMem_tsupport ℝ hys]
+            simp
+          rw [Set.indicator_of_notMem hys]
+          simp_rw [hηzero, hηpartialZero]
+          norm_num
+      · have hd0 : d = 0 := Nat.eq_zero_of_not_pos hd
+        subst d
+        simp
+    simpa only [mul_assoc] using _h_inl_17
+
   have hmono := integral_mono_ae hrightInt hLint hpoint
   have hindicatorIntegral :
       (∫ y in O, (tsupport η).indicator G y ∂volume) = ∫ y in tsupport η, G y ∂volume := by

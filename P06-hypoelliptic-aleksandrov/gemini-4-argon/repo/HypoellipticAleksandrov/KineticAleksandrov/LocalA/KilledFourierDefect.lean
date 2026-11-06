@@ -19,8 +19,7 @@ open scoped ENNReal
 /-- Fourier variation of a smaller terminal measure is bounded by full Fourier
 variation plus the lost mass. Query coordinates, including the physical position,
 are retained exactly. -/
-theorem killedFourier_variation_le_full_add_loss {d : ℕ}
-    {D D' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+theorem killedFourier_variation_le_full_add_loss {d D D' γ γ'}
     (Kb : MovingFiberKernel D γ) (Kf : MovingFiberKernel D' γ')
     (qb : EvolutionQuery D γ) (qf : EvolutionQuery D' γ')
     (hq : qb.1 = qf.1) (hdom : Kb.master qb ≤ Kf.master qf) (ξ : PDE.Vec d) :
@@ -64,10 +63,10 @@ theorem killedFourier_variation_le_full_add_loss {d : ℕ}
   have hη : η.variation univ ≤ ρ univ := by
     have h := Measure.le_iff.mp hηvar univ MeasurableSet.univ
     rwa [Measure.map_apply measurable_fst MeasurableSet.univ, preimage_univ] at h
-  have hηfin : η.variation univ ≠ ⊤ := ne_of_lt (hη.trans_lt (measure_lt_top ρ univ))
+  have hηfin := ne_of_lt (hη.trans_lt (measure_lt_top ρ univ))
   have hfvar := fourierProjection_totalVariation_le_one Kf qf ξ _
     (fourierProjection_spec Kf qf ξ)
-  have hff : (fourierProjection Kf qf ξ).variation univ ≠ ⊤ :=
+  have hff :=
     ne_of_lt (hfvar.trans_lt ENNReal.one_lt_top)
   have htriangle : (fourierProjection Kb qb ξ).variation univ ≤
       (fourierProjection Kf qf ξ).variation univ + η.variation univ := by

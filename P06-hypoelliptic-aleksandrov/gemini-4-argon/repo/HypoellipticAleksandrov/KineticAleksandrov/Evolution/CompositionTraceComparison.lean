@@ -90,8 +90,7 @@ theorem classical_intermediate_sub_le_growth
   · intro p hp ht
     have he := hterm p ⟨ht, ht ▸ hp.2.2⟩
     have hg := one_add_radialSq_le_growthBarrier hcg hp.2.1
-    have hbound := he.trans (mul_le_mul_of_nonneg_left hg hδ)
-    linarith only [hbound]
+    linarith only [(he.trans (mul_le_mul_of_nonneg_left hg hδ))]
   · intro p hp hfr
     rw [hu'.2.2.2.2.2 p ⟨hp.2.1.trans hrτ, hfr⟩,
       hv'.2.2.2.2.2 p ⟨hp.2.1, hfr⟩, sub_self]

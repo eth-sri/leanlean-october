@@ -31,27 +31,15 @@ open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal NNReal
 
-/-- The exponent `δ_q = 1 - 2d(q-1)`. -/
+/- The exponent `δ_q = 1 - 2d(q-1)`. -/
 def greenDelta (d : ℕ) (q : ℝ) : ℝ := 1 - 2 * (d : ℝ) * (q - 1)
 
-/-- The constant `C_{d,λ,Λ,q}` of Theorem 2.4: `(C_q / (δ_q log 2))^{1/q}`, with `C_q` the
+/- The constant `C_{d,λ,Λ,q}` of Theorem 2.4: `(C_q / (δ_q log 2))^{1/q}`, with `C_q` the
 constant of Proposition 5.3. -/
 def greenConstant (d : ℕ) (q : ℝ) (C : ℝ → ℝ≥0) : ℝ≥0 :=
   (((slabConstant d q C : ℝ≥0∞) * (ENNReal.ofReal (Real.log 2))⁻¹ *
     ENNReal.ofReal (1 / greenDelta d q)) ^ (1 / q)).toNNReal
 
-lemma greenDelta_pos {d : ℕ} {q : ℝ} (hq : 1 < q) (hqd : q < 1 + 1 / (2 * (d : ℝ))) :
-    0 < greenDelta d q := by
-  have hd : 0 < (d : ℝ) := by
-    rcases Nat.eq_zero_or_pos d with h | h
-    · subst h; simp at hqd; linarith
-    · exact_mod_cast h
-  unfold greenDelta
-  have h1 : q - 1 < 1 / (2 * (d : ℝ)) := by linarith
-  rw [lt_div_iff₀ (by positivity)] at h1
-  linarith
-
-/-- The final `ℝ≥0∞` arithmetic: `(c₁ · M^q · (log 2)⁻¹ · S^δ/δ)^{1/q} = C_g · M · S^{δ/q}`. -/
 lemma green_arith (a : ℝ≥0) (M : ℝ≥0∞) {S δ q : ℝ} (hS : 0 < S) (hδ : 0 < δ) (hq : 1 < q) :
     ((a : ℝ≥0∞) * M ^ q * (ENNReal.ofReal (Real.log 2))⁻¹ * ENNReal.ofReal (S ^ δ / δ)) ^
         (1 / q) =
@@ -78,7 +66,7 @@ lemma green_arith (a : ℝ≥0) (M : ℝ≥0∞) {S δ q : ℝ} (hS : 0 < S) (h�
     _ = _ := by
         rw [ENNReal.mul_rpow_of_nonneg _ _ h1q, ENNReal.mul_rpow_of_nonneg _ _ h1q, e3, e2]
 
-/-- **Conditional Theorem 2.4 (case W).**  Let `μ` be a finite measure of mass `M = μ univ` and
+/- **Conditional Theorem 2.4 (case W).**  Let `μ` be a finite measure of mass `M = μ univ` and
 suppose the infinite-horizon Green measure `Γ_μ^∞` has the outputs `SlabFourierBounds` of
 Lemma 5.1 on every slab `(T,2T)`, `T > 0`.  Then for every `S > 0` and
 `1 < q < 1 + 1/(2d)` the finite-horizon Green measure `Γ_μ^S` has a Lebesgue density `G` on
@@ -101,7 +89,17 @@ theorem green_density_of_slab_marginals {d : ℕ} (C : ℝ → ℝ≥0) (c : ℝ
         (volume : Measure (EvolutionAmbientState d))) ≤
         (greenConstant d q C : ℝ≥0∞) * μ univ *
           ENNReal.ofReal (S ^ (greenDelta d q / q)) := by
-  have hδ := greenDelta_pos hq hqd
+  have hδ : 0 < greenDelta d q := by
+      have hd : 0 < (d : ℝ) := by
+        rcases Nat.eq_zero_or_pos d with h | h
+        · subst h; simp at hqd; linarith
+        · exact_mod_cast h
+      unfold greenDelta
+      have h1 : q - 1 < 1 / (2 * (d : ℝ)) := by linarith
+      rw [lt_div_iff₀ (by positivity)] at h1
+      linarith
+
+    /- The final `ℝ≥0∞` arithmetic: `(c₁ · M^q · (log 2)⁻¹ · S^δ/δ)^{1/q} = C_g · M · S^{δ/q}`. -/
   have hd : 0 < (d : ℝ) := by
     rcases Nat.eq_zero_or_pos d with h | h
     · subst h; simp at hqd; linarith

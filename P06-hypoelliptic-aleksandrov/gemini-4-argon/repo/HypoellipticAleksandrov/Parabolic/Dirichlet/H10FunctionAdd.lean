@@ -21,7 +21,7 @@ open Filter MeasureTheory
 
 variable {d : ℕ} {U : Set (PDE.Vec d)}
 
-/-- Add two representative-level `H¹₀` functions, using the pointwise sum
+/- Add two representative-level `H¹₀` functions, using the pointwise sum
 of their supplied smooth compactly supported approximations. -/
 noncomputable def add (u v : PDE.H10Function U) : PDE.H10Function U where
   toH1Function := u.toH1Function + v.toH1Function
@@ -113,11 +113,6 @@ noncomputable def add (u v : PDE.H10Function U) : PDE.H10Function U where
       (2 : ℝ≥0∞) (volume.restrict U) ≤ _
     rw [heq]
     exact eLpNorm_add_le (by norm_num)
-
-@[simp]
-theorem add_toH1Function (u v : PDE.H10Function U) :
-    (add u v).toH1Function = u.toH1Function + v.toH1Function :=
-  rfl
 
 noncomputable instance : Add (PDE.H10Function U) where
   add := add

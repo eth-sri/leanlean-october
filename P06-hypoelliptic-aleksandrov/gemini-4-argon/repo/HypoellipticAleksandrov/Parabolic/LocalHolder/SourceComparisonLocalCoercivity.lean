@@ -24,7 +24,7 @@ private theorem error_row_young (lam a b : ℝ) (hlam : 0 < lam) :
   nlinarith only [hs]
 
 /-- A bounded error row is absorbed into half of the weighted elliptic energy. -/
-theorem local_value_energy_flux_coercivity {d : ℕ}
+theorem local_value_energy_flux_coercivity {d }
     (lam ρ q K : ℝ) (hlam : 0 < lam) (hK : 0 ≤ K)
     (A : PDE.Mat d) (G B : PDE.Vec d)
     (hA : lam • (1 : PDE.Mat d) ≤ A) (hB : ∀ j, |B j| ≤ K) :
@@ -75,7 +75,7 @@ theorem local_value_energy_flux_coercivity {d : ℕ}
   linarith only [hprincipal, herror]
 
 /-- The expanded cutoff flux has its exact principal-plus-error-row decomposition. -/
-theorem local_value_energy_flux_eq {d : ℕ} (ρ q : ℝ)
+theorem local_value_energy_flux_eq {d } (ρ q : ℝ)
     (A D : PDE.Mat d) (G R : PDE.Vec d) :
     (∑ i, ∑ j, (A i j * G j * (ρ ^ 2 * G i + 2 * ρ * R i * q) +
       D i j * G j * q * ρ ^ 2)) =

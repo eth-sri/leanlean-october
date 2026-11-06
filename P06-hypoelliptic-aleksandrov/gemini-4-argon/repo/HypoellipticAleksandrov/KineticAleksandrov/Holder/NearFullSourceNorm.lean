@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Holder.NearFullCutoffMe
 import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
 import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.NearFullCutoffOperator
+import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 
 /-! # Quantitative source localization to the strict sublevel set -/
 
@@ -15,9 +17,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set MeasureTheory
 open scoped ENNReal
+open Parabolic
 
-/-- A bounded localized positive source is controlled by the strict-sublevel volume. -/
-theorem localizedSource_norm_le_sublevel_volume {d : ℕ} (A : FullKineticCoefficient d)
+/- A bounded localized positive source is controlled by the strict-sublevel volume. -/
+theorem localizedSource_norm_le_sublevel_volume {d } (A : FullKineticCoefficient d)
     {psi u : KineticPoint d → ℝ} {Q : Set (KineticPoint d)} (hQ : IsOpen Q)
     (hQfinite : volume Q ≠ ⊤) (hpsi : ContinuousOn psi Q) (hu : ContinuousOn u Q)
     (hopm : Measurable (backwardOperator A psi)) (ell B p : ℝ)
@@ -29,7 +32,17 @@ theorem localizedSource_norm_le_sublevel_volume {d : ℕ} (A : FullKineticCoeffi
   have hE : MeasurableSet E := by
     simpa only [E, Set.preimage, mem_Iio, inter_comm] using
       (hu.isOpen_inter_preimage hQ (isOpen_Iio (a := ell))).measurableSet
-  have hm := localizedSource_aestronglyMeasurable A hQ hpsi hu hopm
+  have hm : AEStronglyMeasurable (localizedSource A psi u) (volume.restrict Q) := by
+    have hE : MeasurableSet (Q ∩ {P | u P < psi P}) := by
+      simpa only [Set.preimage, mem_Ioi, Pi.sub_apply, sub_pos] using
+        ((hpsi.sub hu).isOpen_inter_preimage hQ (isOpen_Ioi (a := 0))).measurableSet
+    have hm : AEStronglyMeasurable
+        ((Q ∩ {P | u P < psi P}).indicator
+          (fun P => max (backwardOperator A psi P) 0)) volume :=
+      ((hopm.max measurable_const).aestronglyMeasurable).indicator hE
+    apply hm.restrict.congr
+    filter_upwards [ae_restrict_mem hQ.measurableSet] with P hP
+    simp only [localizedSource, indicator, mem_inter_iff, mem_ofPred_eq, hP, true_and]
   have hbound : ∀ᵐ P ∂(volume.restrict Q),
       ‖localizedSource A psi u P‖ ≤ ‖E.indicator (fun _ => B) P‖ := by
     filter_upwards [ae_restrict_mem hQ.measurableSet, hop] with P hP hb

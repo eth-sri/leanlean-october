@@ -36,7 +36,7 @@ theorem clock_continuous_of_zero_after (u : Point → ℝ) (R T : ℝ) (hRT : R 
 both lateral faces; the boundary conclusions come from the genuine Duhamel theorem. -/
 theorem clockSourcePotential_boundary
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
     (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
     (hs : tsupport (exitProbePhysical f) ⊆
@@ -62,9 +62,7 @@ theorem clockSourcePotential_boundary
       (nested_native_probe_raw_smooth f)
       ((exitProbePhysical_continuous_compact f).2.comp_homeomorph (sectionTwoHomeomorph 1))
       (nested_native_probe_source_support clockNormalizedInterval T f hs)
-  have hzero := (clockSourcePotential_regular hH hLE hlam hLam A c e R T hRT
-    f hfn hs hz).2.2.1
-  refine ⟨clock_continuous_of_zero_after _ R T hRT ?_ hzero, ?_⟩
+  refine ⟨clock_continuous_of_zero_after _ R T hRT ?_ ((clockSourcePotential_regular hH hLE hlam hLam A c e R T hRT f hfn hs hz).2.2.1), ?_⟩
   · apply hc.mono
     intro p hp
     refine ⟨hp.1, ?_⟩

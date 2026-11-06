@@ -28,7 +28,7 @@ theorem measurableSet_enlargedVisitPoleSet (H : FiniteIntervalUnion) (T : ℝ) :
       ((continuous_apply 0).comp continuous_velocity).measurable)
 
 /-- Physical poles enter the canonical finite-union pole carrier. -/
-def enlargedVisitPole (H : FiniteIntervalUnion) (T : ℝ)
+def enlargedVisitPole (H : FiniteIntervalUnion) (T )
     (p : enlargedVisitPoleSet H T) : FiniteUnionPole H (T : WithTop ℝ) :=
   ⟨p.1, WithTop.coe_lt_coe.mpr p.2.1, p.2.2⟩
 
@@ -39,7 +39,7 @@ theorem measurable_enlargedVisitPole (H : FiniteIntervalUnion) (T : ℝ) :
 /-- Canonical exit kernel extended by zero only outside its valid pole carrier. -/
 def enlargedVisitExitKernel
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) :
     Kernel Point Point :=
   visitExtendKernel (enlargedVisitPoleSet H T) (measurableSet_enlargedVisitPoleSet H T)
@@ -65,7 +65,7 @@ instance enlargedVisitExitKernel_isFiniteKernel
 /-- Entrance number `n+1` in the literal enlarged-strip alternating recursion. -/
 def enlargedVisitEntrance
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (n : ℕ) : Measure Point :=
   visitGamma P (visitEntranceInterval c)
@@ -77,7 +77,7 @@ def enlargedVisitEntrance
 /-- The enlarged-strip counting measure, including the initial atom exactly once. -/
 def enlargedVisitStarts
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) : Measure Point :=
   Measure.sum (enlargedVisitEntrance hH hLE hlam hLam A c J s T P)
@@ -95,7 +95,7 @@ instance enlargedVisitEntrance_isFiniteMeasure
 /-- A canonical all-time Green kernel on the active interval. -/
 def enlargedActiveGreenKernel
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) : Kernel Point Point :=
   visitExtendKernel {p | p.velocity 0 ∈ c.active}
     (isOpen_Ioo.measurableSet.preimage
@@ -110,7 +110,7 @@ def enlargedActiveGreenKernel
 /-- Integrate the actual all-time active Green family against physical starting points. -/
 def enlargedActiveGreen
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) : Measure Point :=
   enlargedActiveGreenKernel hH hLE hlam hLam A c ∘ₘ nu
 

@@ -13,7 +13,7 @@ open Set MeasureTheory HypoellipticAleksandrov
 /-- Capacity implies that every exact velocity slice has zero occupation mass. -/
 theorem stripGreen_velocity_slice_zero
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (v : ℝ) :
     stripGreen hH hLE hlam hLam A H T e {p | p.velocity 0 = v} = 0 := by

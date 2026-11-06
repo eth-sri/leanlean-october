@@ -19,7 +19,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- The scalar time derivative of a constant affine transformation. -/
 @[simp] theorem scalarTimeDerivative_const_mul_add_const
-    {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+    {d } (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     scalarTimeDerivative (fun q => K * ell q + epsilon) z =
       K * scalarTimeDerivative ell z := by
   unfold scalarTimeDerivative
@@ -27,7 +27,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- The scalar spatial gradient of a constant affine transformation. -/
 @[simp] theorem scalarSpatialGradient_const_mul_add_const
-    {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+    {d } (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     scalarSpatialGradient (fun q => K * ell q + epsilon) z =
       K • scalarSpatialGradient ell z := by
   unfold scalarSpatialGradient PDE.classicalGradient
@@ -39,7 +39,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- The scalar spatial Hessian of a constant affine transformation. -/
 @[simp] theorem scalarSpatialHessian_const_mul_add_const
-    {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+    {d } (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     scalarSpatialHessian (fun q => K * ell q + epsilon) z =
       K • scalarSpatialHessian ell z := by
   unfold scalarSpatialHessian
@@ -60,7 +60,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- Scalar `C¹˒²` regularity is preserved by a constant affine transformation. -/
 theorem IsScalarC12On.const_mul_add_const
-    {d : ℕ} {ell : TimeVelocity d → ℝ} {Q : Set (TimeVelocity d)}
+    {d ell} {Q : Set (TimeVelocity d)}
     (hell : IsScalarC12On ell Q) (K epsilon : ℝ) :
     IsScalarC12On (fun z => K * ell z + epsilon) Q := by
   refine ⟨hell.continuousOn.const_smul K |>.add continuousOn_const, ?_, ?_, ?_, ?_, ?_⟩
@@ -86,7 +86,7 @@ theorem IsScalarC12On.const_mul_add_const
 
 /-- The zero-order scalar parabolic operator under a constant affine transformation. -/
 @[simp] theorem scalarParabolicZeroOrderOperator_const_mul_add_const
-    {d : ℕ} (a : CoefficientField d)
+    {d } (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     scalarParabolicZeroOrderOperator a b c

@@ -6,6 +6,13 @@ import Mathlib.MeasureTheory.Integral.Bochner.Set
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import Mathlib.MeasureTheory.Function.AEEqOfIntegral
 import all Mathlib.Basic.Complex.Basic
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitDisintegration
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitFourier
+import HypoellipticAleksandrov.KineticAleksandrov.Reconstruction.FiberDisintegration
+import Mathlib.MeasureTheory.Function.L1Space.AEEqFun
+import Mathlib.MeasureTheory.Function.L1Space.Integrable
+import Mathlib.MeasureTheory.Function.LpSpace.Complete
+import Mathlib.Topology.Sequences
 
 /-! # Testing the inverse Fourier function against measurable exit-data sets -/
 
@@ -14,13 +21,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo Reconstruction
 open scoped ENNReal
+open Filter Topology ProbabilityTheory
 
-/-- Integrating an `L¹` element over any measurable exit-data set is a continuous linear map. -/
+/- Integrating an `L¹` element over any measurable exit-data set is a continuous linear map. -/
 def exitL1SetIntegral {d : ℕ} (m : Measure (TimeVelocity d)) (E : Set (TimeVelocity d)) :
     Lp ℂ 1 m →L[ℂ] ℂ :=
   (L1.integralCLM' ℂ).comp (LpToLpRestrictCLM (TimeVelocity d) ℂ ℂ m 1 E)
 
-/-- The continuous linear testing map is the literal set integral of a representative. -/
+/- The continuous linear testing map is the literal set integral of a representative. -/
 theorem exitL1SetIntegral_apply {d : ℕ} (m : Measure (TimeVelocity d))
     (E : Set (TimeVelocity d)) (f : Lp ℂ 1 m) :
     exitL1SetIntegral m E f = ∫ z in E, f z ∂m := by
@@ -31,19 +39,7 @@ theorem exitL1SetIntegral_apply {d : ℕ} (m : Measure (TimeVelocity d))
   apply integral_congr_ae
   exact LpToLpRestrictCLM_coeFn ℂ E f
 
-/-- The Fourier normalization pairing produces the physical positive inverse phase. -/
-theorem exitInversePairing_phase {d : ℕ} (ξ y : PDE.Vec d) :
-    (Real.fourierChar (-(exitInversePairing d ξ y)) : ℂ) =
-      Complex.exp (Complex.I * (PDE.vecDot ξ y : ℂ)) := by
-  rw [Real.fourierChar_apply]
-  simp only [exitInversePairing, smul_apply, smul_eq_mul, exitDot_apply]
-  congr 1
-  push_cast
-  have hp : (2 * Real.pi : ℂ) ≠ 0 := by
-    exact_mod_cast (mul_ne_zero (by norm_num) Real.pi_ne_zero)
-  field_simp
-
-/-- The inverse in the complete space has the literal physical Fourier-integral formula. -/
+/- The Fourier normalization pairing produces the physical positive inverse phase. -/
 theorem exitL1Inversion_eq_integral {d : ℕ}
     (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν] (y : PDE.Vec d) :
     exitL1Inversion ν y = ((2 * Real.pi) ^ d)⁻¹ •
@@ -54,15 +50,26 @@ theorem exitL1Inversion_eq_integral {d : ℕ}
   exact Filter.Eventually.of_forall (fun ξ => by
     dsimp only
     rw [Circle.smul_def]
-    exact congrArg (fun c : ℂ => c • exitL1Fourier ν ξ) (exitInversePairing_phase ξ y))
+    have _h_inl_14 : (Real.fourierChar (-(exitInversePairing d ξ y)) : ℂ) =
+      Complex.exp (Complex.I * (PDE.vecDot ξ y : ℂ)) := by
+        rw [Real.fourierChar_apply]
+        simp only [exitInversePairing, smul_apply, smul_eq_mul, exitDot_apply]
+        congr 1
+        push_cast
+        have hp : (2 * Real.pi : ℂ) ≠ 0 := by
+          exact_mod_cast (mul_ne_zero (by norm_num) Real.pi_ne_zero)
+        field_simp
 
-/-- Multiplication by an inverse phase preserves joint integrability. -/
+      /- The inverse in the complete space has the literal physical Fourier-integral formula. -/
+    exact congrArg (fun c : ℂ => c • exitL1Fourier ν ξ) _h_inl_14)
+
+/- Multiplication by an inverse phase preserves joint integrability. -/
 theorem ballExitInverseIntegrand_integrable
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (y : PDE.Vec d) :
@@ -89,13 +96,13 @@ theorem ballExitInverseIntegrand_integrable
   rw [norm_mul, Complex.norm_exp]
   simp
 
-/-- The complete-space inverse agrees with the joint inverse representative on every test set. -/
+/- The complete-space inverse agrees with the joint inverse representative on every test set. -/
 theorem ballExitL1Inversion_setIntegral
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (y : PDE.Vec d)
@@ -140,19 +147,23 @@ theorem ballExitL1Inversion_setIntegral
       dsimp only
       rw [map_smul, exitL1SetIntegral_apply, smul_eq_mul]
       congr 1
-      exact integral_congr_ae (ae_restrict_of_ae (coe_exitL1Fourier ν ξ))
+      have _h_xinl_0 : (exitL1Fourier ν ξ : TimeVelocity d → ℂ) =ᵐ[exitMarginal ν] exitFourierRep ν ξ := by
+          exact (
+        Integrable.coeFn_toL1 (integrable_exitFourierRep ν ξ)
+        )
+      exact integral_congr_ae (ae_restrict_of_ae _h_xinl_0)
     _ = ∫ z in E, vecInvIntegral (fun ξ => exitFourierRep ν ξ z) y
         ∂exitMarginal ν := by
       simp_rw [← integral_const_mul]
       exact integral_integral_swap hir
 
-/-- The complete-space inverse has the explicit inverse-integral representative at every y. -/
+/- The complete-space inverse has the explicit inverse-integral representative at every y. -/
 theorem ballExitL1Inversion_coe
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (y : PDE.Vec d) :

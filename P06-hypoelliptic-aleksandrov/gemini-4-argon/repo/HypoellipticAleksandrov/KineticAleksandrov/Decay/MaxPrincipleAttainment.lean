@@ -16,21 +16,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov Set
 
 /-- Independence of the transported coordinate on a given tube. -/
-def IsTransportIndependentOn {d : ℕ} (u : KineticPoint d → ℝ)
+def IsTransportIndependentOn {d } (u : KineticPoint d → ℝ)
     (K : Set (KineticPoint d)) : Prop :=
   ∀ p ∈ K, ∀ z : PDE.Vec d, u ⟨p.time, p.position, z⟩ = u p
 
 /-- Uniform decay to negative infinity in the explicit Euclidean transported norm. -/
-def IsUniformlyNegAtInfinityOn {d : ℕ} (u : KineticPoint d → ℝ)
+def IsUniformlyNegAtInfinityOn {d } (u : KineticPoint d → ℝ)
     (K : Set (KineticPoint d)) : Prop :=
   ∀ M : ℝ, ∃ R : ℝ, 0 ≤ R ∧
     ∀ p ∈ K, R ≤ PDE.vecEuclideanNorm p.velocity → u p ≤ M
 
 /-- Under either spatial-infinity alternative, a positive value yields a positive
 maximum on the entire moving tube. -/
-theorem exists_positive_isMaxOn_maximumClosedTube {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
-    {u : KineticPoint d → ℝ}
+theorem exists_positive_isMaxOn_maximumClosedTube {d Ω γ a b u}
     (hΩ : IsCompact (closure Ω)) (hγ : ContinuousOn γ (Icc a b))
     (hu : ContinuousOn u (maximumClosedTube Ω γ a b))
     (hcontrol : IsTransportIndependentOn u (maximumClosedTube Ω γ a b) ∨
@@ -48,7 +46,7 @@ theorem exists_positive_isMaxOn_maximumClosedTube {d : ℕ}
     have hK : IsCompact K := isCompact_maximumClosedTube_truncated hΩ hγ le_rfl
     obtain ⟨p, hp, hmax⟩ := hK.exists_isMaxOn ⟨q0, hq0⟩ (hu.mono (fun _ h => h.1))
     have hpPos : 0 < u p := by
-      have heq : u q0 = u q := hind q hq 0
+      have heq := hind q hq 0
       exact lt_of_lt_of_le (heq.symm ▸ hpos) (hmax hq0)
     refine ⟨p, hp.1, hpPos, ?_⟩
     intro x hx
@@ -59,7 +57,7 @@ theorem exists_positive_isMaxOn_maximumClosedTube {d : ℕ}
     rw [← hind x hx 0]
     exact hmax hx0
   · obtain ⟨R, hR, hbound⟩ := hinfty 0
-    let K : Set (KineticPoint d) := {p ∈ maximumClosedTube Ω γ a b |
+    let K := {p ∈ maximumClosedTube Ω γ a b |
       p.velocity ∈ PDE.euclideanClosedBall 0 R}
     have hqR : PDE.vecEuclideanNorm q.velocity < R := by
       by_contra hnot
@@ -70,7 +68,7 @@ theorem exists_positive_isMaxOn_maximumClosedTube {d : ℕ}
       simpa only [sub_zero] using hqR.le
     have hK : IsCompact K := isCompact_maximumClosedTube_truncated hΩ hγ hR
     obtain ⟨p, hp, hmax⟩ := hK.exists_isMaxOn ⟨q, hqK⟩ (hu.mono (fun _ h => h.1))
-    have hpPos : 0 < u p := lt_of_lt_of_le hpos (hmax hqK)
+    have hpPos := lt_of_lt_of_le hpos (hmax hqK)
     refine ⟨p, hp.1, hpPos, ?_⟩
     intro x hx
     by_cases hxR : x.velocity ∈ PDE.euclideanClosedBall 0 R

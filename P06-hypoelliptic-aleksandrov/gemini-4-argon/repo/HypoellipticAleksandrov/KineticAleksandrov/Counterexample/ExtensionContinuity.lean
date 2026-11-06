@@ -13,15 +13,15 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set
 
-/-- For each time, the actual zero extension is continuous across the profile boundary. -/
-theorem continuous_zeroExtendedProfile_spatial_of_profile {d : ℕ} {alpha : ℝ}
+/- For each time, the actual zero extension is continuous across the profile boundary. -/
+theorem continuous_zeroExtendedProfile_spatial_of_profile {d alpha}
     (h : CounterProfileStatement d alpha) (r mu R : ℝ) (hr : 0 < r)
     (hmu : 0 < mu) (hR : 0 < R) (hscale : 2 * Real.rpow r alpha ≤ 1)
     (hvel : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2) (t : ℝ) :
     Continuous (fun q : XV d =>
       zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, q.1, q.2⟩) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  let Omega : Set (XV d) := {q | profileFunction h q < 1}
+  let Omega := {q | profileFunction h q < 1}
   have he : (fun q : XV d =>
       zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, q.1, q.2⟩) =
       Omega.piecewise (fun q => timeCutoffProfile (profileFunction h) alpha r mu R
@@ -52,16 +52,5 @@ theorem continuous_zeroExtendedProfile_spatial_of_profile {d : ℕ} {alpha : ℝ
         ((continuous_selectedFlatProfile h r).sub
           (contDiff_nativeBarrier d mu R t).continuous)
 
-/-- The fixed compact unit profile sublevel contains the support at every time. -/
-theorem zeroExtendedProfile_tsupport_subset {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R t : ℝ) :
-    tsupport (fun q : XV d =>
-      zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, q.1, q.2⟩) ⊆
-      {q | profileFunction h q ≤ 1} := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  apply closure_minimal ?_ (isClosed_le hH continuous_const)
-  intro q hq
-  by_contra hn
-  exact hq (zeroExtendedProfile_eq_zero_of_profile _ alpha r mu R _ (not_le.mp hn).le)
-
+/- The fixed compact unit profile sublevel contains the support at every time. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

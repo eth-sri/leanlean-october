@@ -17,7 +17,7 @@ open scoped ENNReal
 
 /-- The physical Green action, stated with positive elapsed times and absolute-time points. -/
 def IsStripGreen (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
-    (T : WithTop ℝ) (e : StripPole H T) (Γ : Measure Point) : Prop :=
+    (T ) (e : StripPole H T) (Γ : Measure Point) : Prop :=
   ∀ F : Point → ℝ≥0∞, Measurable F →
     (∫⁻ p, F p ∂Γ) = ∫⁻ τ, ∫⁻ w, F (elapsedPhysicalPoint e.1.time (τ, w))
       ∂K.master (elapsedQuery e.1.time (stripPoleState H T e) τ)
@@ -56,7 +56,7 @@ theorem stripGreenOfKernel_spec (H : Interval)
 /-- The canonical autonomous measure has the literal killed-kernel integration formula. -/
 theorem stripGreen_lintegral
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ)
     (e : StripPole H T) (F : Point → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, F p ∂stripGreen hH hLE hlam hLam A H T e) =

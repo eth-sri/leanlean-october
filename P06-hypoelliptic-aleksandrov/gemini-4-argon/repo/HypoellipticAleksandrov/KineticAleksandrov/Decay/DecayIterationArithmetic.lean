@@ -14,11 +14,10 @@ theorem decay_floor_power {a x : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) :
     a ^ Nat.floor x ≤ a ^ (x - 1) := by
   rw [← Real.rpow_natCast]
   apply Real.rpow_le_rpow_of_exponent_ge ha ha1
-  have hf := Nat.lt_floor_add_one x
-  linarith only [hf]
+  linarith only [(Nat.lt_floor_add_one x)]
 
 /-- The source real power is exactly its exponential with prefactor a inverse. -/
-theorem decay_power_exponential {a L : ℝ} (ha : 0 < a) (hL : 0 < L) (t N : ℝ) :
+theorem decay_power_exponential {a L } (ha : 0 < a) (hL : 0 < L) (t N : ℝ) :
     a ^ (t * N / L - 1) = a⁻¹ * Real.exp (-(-Real.log a / L) * t * N) := by
   rw [Real.rpow_sub ha, Real.rpow_one, div_eq_mul_inv, mul_comm _ a⁻¹,
     Real.rpow_def_of_pos ha]
@@ -26,7 +25,7 @@ theorem decay_power_exponential {a L : ℝ} (ha : 0 < a) (hL : 0 < L) (t N : ℝ
   field_simp
 
 /-- Block constants produce a prefactor at least one and a positive decay rate. -/
-theorem decay_constants {δ L : ℝ} (hδ : 0 < δ) (hδ1 : δ < 1) (hL : 0 < L) :
+theorem decay_constants {δ L } (hδ : 0 < δ) (hδ1 : δ < 1) (hL : 0 < L) :
     1 ≤ (1 - δ)⁻¹ ∧ 0 < -Real.log (1 - δ) / L := by
   have ha : 0 < 1 - δ := sub_pos.mpr hδ1
   constructor

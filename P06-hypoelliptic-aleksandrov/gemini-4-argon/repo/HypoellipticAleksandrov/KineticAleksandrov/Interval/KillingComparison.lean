@@ -18,7 +18,7 @@ open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
-private theorem lifted_operator {d : ℕ} (B : CoefficientField d)
+private theorem lifted_operator {d } (B : CoefficientField d)
     (b : PDE.Vec d → PDE.Vec d) (V : TimeVelocity d → ℝ) (p : KineticPoint d) :
     transportedForwardOperator (zIndependentCoefficient B) b
       (fun q => V (q.time, q.position)) p = scalarParabolicOperator B 0 V
@@ -28,7 +28,7 @@ private theorem lifted_operator {d : ℕ} (B : CoefficientField d)
     scalarSpatialGradient kineticPositionGradient
   simp [PDE.classicalGradient, PDE.vecDot]
 
-private theorem scalar_difference_operator {d : ℕ} (B : CoefficientField d)
+private theorem scalar_difference_operator {d } (B : CoefficientField d)
     (U V : TimeVelocity d → ℝ) (p : TimeVelocity d)
     (hUt : DifferentiableAt ℝ (fun t => U (t, p.2)) p.1)
     (hVt : DifferentiableAt ℝ (fun t => V (t, p.2)) p.1)
@@ -57,7 +57,7 @@ private theorem scalar_difference_operator {d : ℕ} (B : CoefficientField d)
 
 
 /-- A smooth supersolution dominates the supplied scalar terminal solution on an interval. -/
-theorem interval_terminal_comparison {a c lam Lam σ τ : ℝ}
+theorem interval_terminal_comparison {a c lam Lam σ τ }
     (hac : a < c) (hστ : σ < τ) (hlam : 0 < lam)
     (B : CoefficientField 1) (hB : IsSectionTwoCoefficient lam Lam B)
     (F : BoundedBorel (PDE.Vec 1)) (V U : TimeVelocity 1 → ℝ)
@@ -75,10 +75,10 @@ theorem interval_terminal_comparison {a c lam Lam σ τ : ℝ}
     ∀ v ∈ closure (PDE.oneDimensionalAxisBox a c), V (σ, v) ≤ U (σ, v) := by
   let J := PDE.oneDimensionalAxisBox a c
   let W : KineticPoint 1 → ℝ := fun p => V (p.time, p.position) - U (p.time, p.position)
-  let r : Fin 2 → ℝ := ![σ, τ]
+  let r := ![σ, τ]
   have hr : StrictMono r := (Fin.strictMono_iff_lt_succ).mpr (by
     intro i
-    have hi : i = 0 := Fin.eq_zero i
+    have hi := Fin.eq_zero i
     subst i
     exact hστ)
   have hopen : IsOpen (ParabolicProbe.scalarPastOpenCylinder J stationary τ) := by
@@ -88,7 +88,7 @@ theorem interval_terminal_comparison {a c lam Lam σ τ : ℝ}
         movingDomain_stationary, mem_prod, mem_Iio]
     rw [he]
     exact isOpen_Iio.prod (isOpen_of_isAdmissibleEvolutionDomain (interval_admissible hac))
-  have hVc : ContinuousOn V (ParabolicProbe.scalarPastClosedCylinder J stationary τ) := hV.2.1
+  have hVc := hV.2.1
   have hVj : ∀ p ∈ scalarParabolicOpenCylinder σ τ J, ContDiffAt ℝ 2 V p := by
     intro p hp
     have hm : p ∈ ParabolicProbe.scalarPastOpenCylinder J stationary τ :=
@@ -107,7 +107,7 @@ theorem interval_terminal_comparison {a c lam Lam σ τ : ℝ}
           ⟨hp.1, by simpa only [movingDomain_stationary] using hp.2⟩))
     · exact Or.inl (fun p _ z => rfl)
     · intro i p hp
-      have hi : i = 0 := Fin.eq_zero i
+      have hi := Fin.eq_zero i
       subst i
       have hm : (p.time, p.position) ∈ scalarParabolicOpenCylinder σ τ J :=
         ⟨hp.1, by simpa only [movingDomain_stationary] using hp.2⟩
@@ -121,7 +121,7 @@ theorem interval_terminal_comparison {a c lam Lam σ τ : ℝ}
     · intro i p hp
       exact (posDef_of_loewner_lower hlam (hB.2.2.2.2.1 p.time p.position)).posSemidef
     · intro i p hp
-      have hi : i = 0 := Fin.eq_zero i
+      have hi := Fin.eq_zero i
       subst i
       have hm : (p.time, p.position) ∈ scalarParabolicOpenCylinder σ τ J :=
         ⟨hp.1, by simpa only [movingDomain_stationary] using hp.2⟩
@@ -141,7 +141,7 @@ theorem interval_terminal_comparison {a c lam Lam σ τ : ℝ}
       rw [hsol, zero_sub]
       exact neg_nonneg.mpr (hUs _ hm)
     · intro p hp hpt
-      have hptτ : p.time = τ := hpt
+      have hptτ := hpt
       have ht := hV.2.2.2.2.1 (p.time, p.position)
         ⟨hptτ, by simpa only [movingDomain_stationary] using hp.2⟩
       change V (p.time, p.position) - U (p.time, p.position) ≤ 0

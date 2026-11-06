@@ -25,7 +25,7 @@ open scoped Topology
 /-- Weak gradients on an open set glue from a ball around every point. -/
 theorem HasWeakGradientOn.of_ballwise
     {d : ℕ} {U : Set (Vec d)} (hU : IsOpen U)
-    {f : Vec d → ℝ} {Df : Vec d → Vec d}
+    {f Df}
     (hf : MeasureTheory.LocallyIntegrableOn f U MeasureTheory.volume)
     (hDf : ∀ i : Fin d,
       MeasureTheory.LocallyIntegrableOn (fun x => Df x i) U MeasureTheory.volume)
@@ -34,7 +34,7 @@ theorem HasWeakGradientOn.of_ballwise
       HasWeakGradientOn (euclideanBall x R) f Df) :
     HasWeakGradientOn U f Df := by
   intro i φ hφSmooth hφCompact hφU
-  let K : Set (Vec d) := tsupport φ
+  let K := tsupport φ
   have hKClosed : IsClosed K := by simpa only [K] using isClosed_tsupport φ
   have hKCompact : IsCompact K := hφCompact.isCompact
   choose R hRpos hRsub hweak using fun x : K => hlocal x.1 (hφU x.2)
@@ -111,7 +111,7 @@ theorem HasWeakGradientOn.of_ballwise
         exact subset_tsupport _ (fun hz => hy (by simp [g, hz])))
         (isClosed_tsupport (ψ x))).trans ((hψV x).trans (hVU x))
     have hfK := hf.integrableOn_compact_subset hgU hgCompact.isCompact
-    have hfgK : IntegrableOn (fun y => f y * g y) (tsupport g) volume :=
+    have hfgK :=
       hfK.mul_continuousOn hgCont.continuousOn hgCompact.isCompact
     simpa only [IntegrableOn, volumeOn, g] using
       hfgK.of_forall_sdiff_eq_zero hU.measurableSet fun y hy => by
@@ -120,7 +120,7 @@ theorem HasWeakGradientOn.of_ballwise
       Integrable (fun y => Df y i * ψ x y) (volumeOn U) := by
     have hDfK := (hDf i).integrableOn_compact_subset
       ((hψV x).trans (hVU x)) (hψCompact x).isCompact
-    have hprodK : IntegrableOn (fun y => Df y i * ψ x y) (tsupport (ψ x)) volume :=
+    have hprodK :=
       hDfK.mul_continuousOn (hψSmooth x).continuous.continuousOn (hψCompact x).isCompact
     simpa only [IntegrableOn, volumeOn] using
       hprodK.of_forall_sdiff_eq_zero hU.measurableSet fun y hy => by

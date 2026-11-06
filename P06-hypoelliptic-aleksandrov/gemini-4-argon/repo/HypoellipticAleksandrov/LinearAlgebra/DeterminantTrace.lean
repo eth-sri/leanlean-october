@@ -36,7 +36,7 @@ private theorem finite_amgm_succ (d : ℕ) (s : ℝ) (x : Fin d → ℝ) (hs : 0
     mul_nonneg hs (Finset.prod_nonneg fun i _ => hx i)
   have hn_pos : 0 < (d : ℝ) + 1 := by positivity
   have hpow := Real.rpow_le_rpow (Real.rpow_nonneg hprod_nonneg _) hgm' hn_pos.le
-  have hn_ne : (d : ℝ) + 1 ≠ 0 := ne_of_gt hn_pos
+  have hn_ne := ne_of_gt hn_pos
   calc
     s * ∏ i, x i = (s * ∏ i, x i) ^ (((d : ℝ) + 1)⁻¹ * ((d : ℝ) + 1)) := by
       rw [inv_mul_cancel₀ hn_ne, Real.rpow_one]
@@ -53,7 +53,7 @@ nonnegative scalar `s`, bounds `det A * s * det H` by the `(d + 1)`-st power
 of the arithmetic mean of `s` and `trace (A * H)`.
 -/
 theorem det_mul_time_det_le_arith_mean_pow
-    (d : ℕ) (A H : PDE.Mat d) (s : ℝ)
+    (d ) (A H : PDE.Mat d) (s : ℝ)
     (hA : A.PosDef) (hH : H.PosSemidef) (hs : 0 ≤ s) :
     A.det * s * H.det ≤
       ((s + (A * H).trace) / ((d : ℝ) + 1)) ^ (d + 1) := by

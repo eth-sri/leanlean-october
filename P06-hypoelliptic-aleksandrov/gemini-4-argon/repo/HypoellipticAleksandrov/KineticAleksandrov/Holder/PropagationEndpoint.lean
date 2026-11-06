@@ -3,6 +3,10 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationIteration
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationEndpointQuadratic
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationBlockQuadraticBounds
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationBlockQuadraticScaling
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.CovarianceBoundsFinal
+import Mathlib.LinearAlgebra.Matrix.Notation
 
 /-! # Endpoint closure of the finite source Gaussian chain -/
 
@@ -13,8 +17,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set
+open Matrix
+open scoped MatrixOrder
 
-/-- The source endpoint allowance closes propagation along a smooth approximating path. -/
+/- The source endpoint allowance closes propagation along a smooth approximating path. -/
 theorem propagation_smooth_endpoint {d : ℕ} (hd : 1 ≤ d)
     {lam Lam H T0 T1 kx kv h ell TP : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hH : 0 ≤ H) (hT0 : 0 < T0) (hT1 : T0 ≤ T1) (hkx : 0 < kx) (hkv : 0 < kv)
@@ -85,8 +91,50 @@ theorem propagation_smooth_endpoint {d : ℕ} (hd : 1 ≤ d)
   have hs : P.time - tminus - ((n - 1 : ℕ) : ℝ) * h = h := by
     linarith only [htime, hnstep]
   have hPt : P.time - tminus = TP := by linarith only [htime]
-  have hq := qform_endpoint_half hlam hh hL.le
-    (P.position - x TP) (P.velocity - v TP) hposition hvelocity
+  have hq : qform lam h h (P.position - x TP) (P.velocity - v TP) ≤ L ^ 2 / 2 := by
+    have hL := hL.le
+    let y := (P.position - x TP)
+    let V := (P.velocity - v TP)
+    let C := L * Real.sqrt lam / 8
+    have hC : 0 ≤ C := by positivity
+    have hy' := endpoint_scaled_norm_le (Real.rpow_pos_of_pos hh (3 / 2 : ℝ)) y hposition
+    have hV' := endpoint_scaled_norm_le (Real.sqrt_pos.mpr hh) V hvelocity
+    rw [Real.sqrt_eq_rpow] at hV'
+    have hysq := (sq_le_sq₀ (PDE.vecEuclideanNorm_nonneg _) hC).mpr hy'
+    have hVsq := (sq_le_sq₀ (PDE.vecEuclideanNorm_nonneg _) hC).mpr hV'
+    rw [PDE.vecEuclideanNorm_sq] at hysq hVsq
+    have he : qform lam h h y V ≤ (16 / lam) *
+      (PDE.vecNormSq ((h ^ (3 / 2 : ℝ))⁻¹ • y) +
+        PDE.vecNormSq ((h ^ (1 / 2 : ℝ))⁻¹ • V)) := by
+        rw [qform_eq_dimensionless lam hh, div_self hh.ne']
+        have _h_xinl_0 : (lam / 16 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) ≤ ghat lam 1 := by
+          have hunit : (1 / 16 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) ≤ ghat 1 1 := by
+            apply Matrix.le_iff.mpr
+            have hp := posDef_two_of_det
+              (a := (29 / 96 : ℝ)) (b := (61 / 64 : ℝ)) (c := (33 / 64 : ℝ))
+              (by norm_num) (by norm_num)
+            convert hp.posSemidef using 1
+            ext i j
+            fin_cases i <;> fin_cases j <;> norm_num [ghat, Matrix.sub_apply, Matrix.smul_apply]
+          have h := covariance_smul_le hunit hlam.le
+          rw [ghat_smul lam 1]
+          simpa only [smul_smul, div_eq_mul_inv, one_mul] using h
+        have he := blockQuadratic_inv_upper (posDef_ghat hlam (show -(1 / 128 : ℝ) ≤ 1 by norm_num))
+          (show 0 < lam / 16 by positivity) _h_xinl_0
+          ((h ^ (3 / 2 : ℝ))⁻¹ • y) ((h ^ (1 / 2 : ℝ))⁻¹ • V)
+        convert he using 1
+        field_simp
+
+      /- The source covariance overlap gives the same quadratic contraction in physical coordinates. -/
+    have hn : PDE.vecNormSq ((h ^ (3 / 2 : ℝ))⁻¹ • y) +
+        PDE.vecNormSq ((h ^ (1 / 2 : ℝ))⁻¹ • V) ≤ 2 * C ^ 2 := by
+      linarith only [hysq, hVsq]
+    apply he.trans ((mul_le_mul_of_nonneg_left hn (by positivity)).trans ?_)
+    dsimp only [C]
+    rw [div_pow, mul_pow, Real.sq_sqrt hlam.le]
+    have hl := hlam.ne'
+    field_simp
+    nlinarith only [sq_nonneg L]
   have hlower := gaussianBarrier_terminal_lower hh Lam H L a tminus
     (((n - 1 : ℕ) : ℝ) * h) ha (Xi_nonneg d (H := H) hlam hLam hh)
     hbudget x v P (by rw [hs]; exact hh.le) (by rw [hs]) (by rw [hs, hPt]; exact hq)

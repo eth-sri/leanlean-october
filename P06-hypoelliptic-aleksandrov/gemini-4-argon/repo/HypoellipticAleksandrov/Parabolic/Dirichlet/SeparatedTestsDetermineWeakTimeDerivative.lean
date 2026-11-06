@@ -2,6 +2,14 @@ module
 
 public import HypoellipticAleksandrov.Measure.L2PairingConvergence
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SeparatedSpacetimeTestDensity
+import HypoellipticAleksandrov.Parabolic.Dirichlet.CenteredCutoffPiBernsteinConvergence
+import HypoellipticAleksandrov.Parabolic.Dirichlet.FiniteSeparatedBernsteinAssembly
+import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeSpacetimeTest
+import HypoellipticAleksandrov.Parabolic.Dirichlet.SeparatedSpacetimeCompactSupport
+import HypoellipticAleksandrov.Parabolic.WeakDerivatives
+import Mathlib.Analysis.Normed.Group.Bounded
+import Mathlib.Geometry.Manifold.PartitionOfUnity
+import Mathlib.Topology.Separation.Regular
 
 /-!
 # Separated tests determine the weak time derivative
@@ -18,13 +26,14 @@ open scoped BigOperators ENNReal Topology
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+open scoped Manifold
 
 private theorem memLp_two_separatedProduct
     {d : ℕ} {S : Set (TimeVelocity d)}
     (a : ℝ → ℝ) (ha : Continuous a) (haK : HasCompactSupport a)
     (b : PDE.Vec d → ℝ) (hb : Continuous b) (hbK : HasCompactSupport b) :
     MemLp (fun z : TimeVelocity d => a z.1 * b z.2) 2 (timeVelocityVolumeOn S) := by
-  have hcont : Continuous (fun z : TimeVelocity d => a z.1 * b z.2) :=
+  have hcont :=
     (ha.comp continuous_fst).mul (hb.comp continuous_snd)
   have hcompact : HasCompactSupport (fun z : TimeVelocity d => a z.1 * b z.2) := by
     apply HasCompactSupport.of_support_subset_isCompact (haK.isCompact.prod hbK.isCompact)
@@ -33,61 +42,6 @@ private theorem memLp_two_separatedProduct
     exact ⟨subset_tsupport a (fun h => hz (by simp [h])),
       subset_tsupport b (fun h => hz (by simp [h]))⟩
   exact (hcont.memLp_of_hasCompactSupport hcompact).restrict S
-
-private theorem finiteSeparated_identity
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
-    {U W : TimeVelocity d → ℝ}
-    (hU : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) 2 U)
-    (hW : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) 2 W)
-    (hseparated :
-      ∀ (eta : OriginalTimeScalarTest τ₁ τ₂) (psi : PDE.WeakTestFunction O),
-        (∫ z in Ioo τ₁ τ₂ ×ˢ O,
-            U z * (eta.deriv z.1 * psi z.2) ∂(volume : Measure (TimeVelocity d))) =
-          -∫ z in Ioo τ₁ τ₂ ×ˢ O,
-            W z * (eta z.1 * psi z.2) ∂(volume : Measure (TimeVelocity d)))
-    (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) :
-    (∫ z, U z * q.timeDeriv z ∂timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O)) =
-      -∫ z, W z * q.toFun z ∂timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O) := by
-  let μ := timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O)
-  have hdLp (m : Fin q.termCount) : MemLp
-      (fun z : TimeVelocity d => (q.timeFactor m).deriv z.1 * q.spatialFactor m z.2) 2 μ :=
-    memLp_two_separatedProduct _
-      (contDiff_infty_iff_deriv.mp (q.timeFactor m).contDiff).2.continuous
-      (by simpa only [OriginalTimeScalarTest.deriv] using
-        (q.timeFactor m).hasCompactSupport.deriv)
-      _ (q.spatialFactor m).contDiff.continuous (q.spatialFactor m).hasCompactSupport
-  have hvLp (m : Fin q.termCount) : MemLp
-      (fun z : TimeVelocity d => q.timeFactor m z.1 * q.spatialFactor m z.2) 2 μ :=
-    memLp_two_separatedProduct _ (q.timeFactor m).contDiff.continuous
-      (q.timeFactor m).hasCompactSupport _ (q.spatialFactor m).contDiff.continuous
-      (q.spatialFactor m).hasCompactSupport
-  have hUint (m : Fin q.termCount) : Integrable
-      (fun z => U z * ((q.timeFactor m).deriv z.1 * q.spatialFactor m z.2)) μ := by
-    simpa only [Pi.mul_def] using hU.integrable_mul (hdLp m)
-  have hWint (m : Fin q.termCount) : Integrable
-      (fun z => W z * (q.timeFactor m z.1 * q.spatialFactor m z.2)) μ := by
-    simpa only [Pi.mul_def] using hW.integrable_mul (hvLp m)
-  change (∫ z, U z * (∑ m : Fin q.termCount,
-      (q.timeFactor m).deriv z.1 * q.spatialFactor m z.2) ∂μ) =
-    -∫ z, W z * (∑ m : Fin q.termCount,
-      q.timeFactor m z.1 * q.spatialFactor m z.2) ∂μ
-  rw [show (fun z => U z * ∑ m : Fin q.termCount,
-      (q.timeFactor m).deriv z.1 * q.spatialFactor m z.2) =
-      fun z => ∑ m : Fin q.termCount,
-        U z * ((q.timeFactor m).deriv z.1 * q.spatialFactor m z.2) by
-        funext z; rw [Finset.mul_sum],
-    integral_finset_sum Finset.univ (fun m _ => hUint m)]
-  rw [show (fun z => W z * ∑ m : Fin q.termCount,
-      q.timeFactor m z.1 * q.spatialFactor m z.2) =
-      fun z => ∑ m : Fin q.termCount,
-        W z * (q.timeFactor m z.1 * q.spatialFactor m z.2) by
-        funext z; rw [Finset.mul_sum],
-    integral_finset_sum Finset.univ (fun m _ => hWint m), ← Finset.sum_neg_distrib]
-  apply Finset.sum_congr rfl
-  intro m _
-  simpa only [μ, timeVelocityVolumeOn, Measure.restrict_restrict,
-    MeasurableSet.univ, Measure.restrict_univ] using
-    hseparated (q.timeFactor m) (q.spatialFactor m)
 
 private theorem finiteSeparated_toFun_continuous
     {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
@@ -142,7 +96,7 @@ private theorem finiteSeparated_hasCompactSupport_of_commonCompact
   exact ⟨HasCompactSupport.of_support_subset_isCompact (Kt.isCompact.prod Ky.isCompact) hvalue,
     HasCompactSupport.of_support_subset_isCompact (Kt.isCompact.prod Ky.isCompact) hderiv⟩
 
-/-- An identity against every separated test determines the weak time derivative. -/
+/- An identity against every separated test determines the weak time derivative. -/
 theorem hasWeakTimeDerivOn_of_forall_separatedProduct
     {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
     (hO : IsOpen O)
@@ -164,8 +118,97 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
       zero_on_compl' := fun z hz => image_eq_zero_of_notMem_tsupport hz }
   let Φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞) :=
     TestFunction.ofSupportedIn hφsubset φsupported
-  obtain ⟨Kt, Ky, q, _hKt, _hKy, hqsupport, hval, hderiv⟩ :=
-    exists_finiteSeparatedSpacetimeTest_tendsto_integral_sq hO Φ
+  obtain ⟨Kt, Ky, q, _hKt, _hKy, hqsupport, hval, hderiv⟩ : ∃ (Kt : TopologicalSpace.Compacts ℝ)
+      (Ky : TopologicalSpace.Compacts (PDE.Vec d))
+      (q : ℕ → FiniteSeparatedSpacetimeTest τ₁ τ₂ O),
+      (Kt : Set ℝ) ⊆ Set.Ioo τ₁ τ₂ ∧
+      (Ky : Set (PDE.Vec d)) ⊆ O ∧
+      (∀ n m,
+        tsupport ((q n).timeFactor m : ℝ → ℝ) ×ˢ
+            tsupport ((q n).spatialFactor m : PDE.Vec d → ℝ) ⊆
+          (Kt : Set ℝ) ×ˢ (Ky : Set (PDE.Vec d))) ∧
+      Tendsto
+        (fun n => ∫ z,
+          ((q n).toFun z - Φ z) ^ 2
+          ∂timeVelocityVolumeOn (Set.Ioo τ₁ τ₂ ×ˢ O))
+        atTop (nhds 0) ∧
+      Tendsto
+        (fun n => ∫ z,
+          ((q n).timeDeriv z - timeDerivative Φ z) ^ 2
+          ∂timeVelocityVolumeOn (Set.Ioo τ₁ τ₂ ×ˢ O))
+        atTop (nhds 0) := by
+    obtain ⟨χ, hχ, hχone, hχcompact, hχO⟩ : ∃ χ : PDE.Vec d → ℝ,
+        ContDiff ℝ (⊤ : ℕ∞) χ ∧
+        (∀ᶠ y in 𝓝ˢ (spacetimeTestSpatialSupportCompact Φ : Set (PDE.Vec d)), χ y = 1) ∧
+        IsCompact (tsupport χ) ∧ tsupport χ ⊆ O := by
+        let K : Set (PDE.Vec d) :=
+          spacetimeTestSpatialSupportCompact Φ
+        have hK : IsCompact K :=
+          (spacetimeTestSpatialSupportCompact Φ).isCompact
+        have hKO : K ⊆ O := by
+          rintro y ⟨z, hz, rfl⟩
+          exact (Φ.tsupport_subset hz).2
+        obtain ⟨L, hLcompact, hLclosed, hKinterior, hLO⟩ :=
+          exists_compact_closed_between hK hO hKO
+        obtain ⟨χ, hχOne, hχZero, _hχRange⟩ :=
+          exists_contMDiffMap_one_nhds_of_subset_interior
+            (I := 𝓘(ℝ, PDE.Vec d)) hK.isClosed
+            (by simpa only [interior_interior] using hKinterior)
+        have hsupport : support (χ : PDE.Vec d → ℝ) ⊆ L := by
+          intro y hy
+          by_contra hyL
+          exact (mem_support.mp hy) (hχZero y hyL)
+        have htsupportL :=
+          closure_minimal hsupport hLclosed
+        refine ⟨χ, χ.contMDiff.contDiff, hχOne, ?_, htsupportL.trans hLO⟩
+        exact hLcompact.of_isClosed_subset (isClosed_tsupport χ) htsupportL
+
+      /- Every compact set in the coordinate-function model lies in a nondegenerate cube. -/
+    obtain ⟨R, hR, hcube⟩ :=
+      HypoellipticAleksandrov.Parabolic.Dirichlet.IsCompact.exists_subset_pi_Icc_vec hχcompact
+    let Kt := spacetimeTestTimeSupportCompact Φ
+    let Ksp : Set (PDE.Vec d) := spacetimeTestSpatialSupportCompact Φ
+    let Ky : TopologicalSpace.Compacts (PDE.Vec d) := ⟨tsupport χ, hχcompact⟩
+    choose q hqval hqderiv hqsupport using fun n =>
+      exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein
+        (n := n) hO Φ χ hχ hχcompact hχO R hR
+    have hplateau : Set.EqOn χ 1 Ksp := by
+      intro y hy
+      have hone : χ y = 1 := (subset_of_mem_nhdsSet hχone) hy
+      simpa only [Pi.one_apply] using hone
+    have hφsupport : tsupport (Φ : TimeVelocity d → ℝ) ⊆
+        (Kt : Set ℝ) ×ˢ Ksp := by
+      intro z hz
+      exact ⟨⟨z, hz, rfl⟩, ⟨z, hz, rfl⟩⟩
+    have hdφcont : Continuous (timeDerivative (Φ : TimeVelocity d → ℝ)) := by
+      unfold timeDerivative
+      simpa using (Φ.contDiff.continuous_fderiv (by simp)).clm_apply continuous_const
+    have hdφsupport : tsupport (timeDerivative (Φ : TimeVelocity d → ℝ)) ⊆
+        (Kt : Set ℝ) ×ˢ Ksp := by
+      apply Subset.trans _ hφsupport
+      unfold timeDerivative
+      change closure (support (fun z => fderiv ℝ Φ z (1, 0))) ⊆ tsupport (Φ : TimeVelocity d → ℝ)
+      refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
+      intro z hz
+      rw [mem_support] at hz ⊢
+      intro hzero
+      apply hz
+      simp [hzero]
+    let μ := timeVelocityVolumeOn (Set.Ioo τ₁ τ₂ ×ˢ O)
+    have hval := tendsto_integral_sq_cutoffPiBernsteinApproximation
+      (Kt := Kt) (Ksp := Ksp) χ hχ.continuous hχcompact hplateau R hR hcube
+      (Φ : TimeVelocity d → ℝ) Φ.contDiff.continuous hφsupport (μ := μ)
+    have hderiv := tendsto_integral_sq_cutoffPiBernsteinApproximation
+      (Kt := Kt) (Ksp := Ksp) χ hχ.continuous hχcompact hplateau R hR hcube
+      (timeDerivative (Φ : TimeVelocity d → ℝ)) hdφcont hdφsupport (μ := μ)
+    refine ⟨Kt, Ky, q, ?_, hχO, ?_, ?_, ?_⟩
+    · intro τ hτ
+      rcases hτ with ⟨z, hz, rfl⟩
+      exact (Φ.tsupport_subset hz).1
+    · intro n m
+      exact hqsupport n m
+    · simpa only [μ, hqval] using hval
+    · simpa only [μ, hqderiv] using hderiv
   let μ := timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O)
   have hΦ : (Φ : TimeVelocity d → ℝ) = φ := rfl
   have hdΦ : timeDerivative (Φ : TimeVelocity d → ℝ) = timeDerivative φ := by rw [hΦ]
@@ -235,7 +278,50 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
       atTop (nhds (-∫ z, W z * φ z ∂μ)) := by
     apply hright.neg.congr'
     filter_upwards with n
-    exact (finiteSeparated_identity hU hW hseparated (q n)).symm
+    have _h_inl_18 : (∫ z, U z * (q n).timeDeriv z ∂timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O)) =
+      -∫ z, W z * (q n).toFun z ∂timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O) := by
+      let q := (q n)
+      let μ := timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O)
+      have hdLp (m : Fin q.termCount) : MemLp
+          (fun z : TimeVelocity d => (q.timeFactor m).deriv z.1 * q.spatialFactor m z.2) 2 μ :=
+        memLp_two_separatedProduct _
+          (contDiff_infty_iff_deriv.mp (q.timeFactor m).contDiff).2.continuous
+          (by simpa only [OriginalTimeScalarTest.deriv] using
+            (q.timeFactor m).hasCompactSupport.deriv)
+          _ (q.spatialFactor m).contDiff.continuous (q.spatialFactor m).hasCompactSupport
+      have hvLp (m : Fin q.termCount) : MemLp
+          (fun z : TimeVelocity d => q.timeFactor m z.1 * q.spatialFactor m z.2) 2 μ :=
+        memLp_two_separatedProduct _ (q.timeFactor m).contDiff.continuous
+          (q.timeFactor m).hasCompactSupport _ (q.spatialFactor m).contDiff.continuous
+          (q.spatialFactor m).hasCompactSupport
+      have hUint (m : Fin q.termCount) : Integrable
+          (fun z => U z * ((q.timeFactor m).deriv z.1 * q.spatialFactor m z.2)) μ := by
+        simpa only [Pi.mul_def] using hU.integrable_mul (hdLp m)
+      have hWint (m : Fin q.termCount) : Integrable
+          (fun z => W z * (q.timeFactor m z.1 * q.spatialFactor m z.2)) μ := by
+        simpa only [Pi.mul_def] using hW.integrable_mul (hvLp m)
+      change (∫ z, U z * (∑ m : Fin q.termCount,
+          (q.timeFactor m).deriv z.1 * q.spatialFactor m z.2) ∂μ) =
+        -∫ z, W z * (∑ m : Fin q.termCount,
+          q.timeFactor m z.1 * q.spatialFactor m z.2) ∂μ
+      rw [show (fun z => U z * ∑ m : Fin q.termCount,
+          (q.timeFactor m).deriv z.1 * q.spatialFactor m z.2) =
+          fun z => ∑ m : Fin q.termCount,
+            U z * ((q.timeFactor m).deriv z.1 * q.spatialFactor m z.2) by
+            funext z; rw [Finset.mul_sum],
+        integral_finset_sum Finset.univ (fun m _ => hUint m)]
+      rw [show (fun z => W z * ∑ m : Fin q.termCount,
+          q.timeFactor m z.1 * q.spatialFactor m z.2) =
+          fun z => ∑ m : Fin q.termCount,
+            W z * (q.timeFactor m z.1 * q.spatialFactor m z.2) by
+            funext z; rw [Finset.mul_sum],
+        integral_finset_sum Finset.univ (fun m _ => hWint m), ← Finset.sum_neg_distrib]
+      apply Finset.sum_congr rfl
+      intro m _
+      simpa only [μ, timeVelocityVolumeOn, Measure.restrict_restrict,
+        MeasurableSet.univ, Measure.restrict_univ] using
+        hseparated (q.timeFactor m) (q.spatialFactor m)
+    exact _h_inl_18.symm
   simpa only [μ, timeVelocityVolumeOn] using tendsto_nhds_unique hleft hnegRight
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

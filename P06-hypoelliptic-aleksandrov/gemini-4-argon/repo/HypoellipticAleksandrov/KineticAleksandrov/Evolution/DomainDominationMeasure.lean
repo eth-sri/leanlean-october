@@ -37,7 +37,7 @@ theorem exists_smooth_bump_of_isCompact_subset_isOpen {K V : Set E} (hK : IsComp
     ∃ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f ∧ HasCompactSupport f ∧ tsupport f ⊆ V ∧
       (∀ x, 0 ≤ f x ∧ f x ≤ 1) ∧ ∀ x ∈ K, f x = 1 := by
   obtain ⟨δ, hδ, hδV⟩ := hK.exists_cthickening_subset_open hV hKV
-  have hdisj : Disjoint (thickening δ K)ᶜ K :=
+  have hdisj :=
     disjoint_compl_left_iff_subset.2 (self_subset_thickening hδ K)
   obtain ⟨f, hfs, hfr, hf0, hf1⟩ := exists_contDiff_zero_iff_one_iff_of_isClosed
     (n := (⊤ : ℕ∞)) (isOpen_thickening (δ := δ) (E := K)).isClosed_compl
@@ -46,7 +46,7 @@ theorem exists_smooth_bump_of_isCompact_subset_isOpen {K V : Set E} (hK : IsComp
     intro x hx
     by_contra hxn
     exact hx ((hf0 x).1 hxn)
-  have htsupp : tsupport f ⊆ cthickening δ K :=
+  have htsupp :=
     closure_minimal (hsupp.trans (thickening_subset_cthickening δ K)) isClosed_cthickening
   refine ⟨f, hfs, (hK.cthickening).of_isClosed_subset (isClosed_tsupport f) htsupp,
     htsupp.trans hδV, fun x => hfr ⟨x, rfl⟩, fun x hx => (hf1 x).1 hx⟩

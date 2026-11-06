@@ -15,10 +15,10 @@ open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo Evolution Occupation
 
 /-- Joint native smoothness supplies the slice regularity used by comparison. -/
-theorem reconstruction_slice_regular_of_contDiffOn {u : Point → ℝ} {D : Set Point}
+theorem reconstruction_slice_regular_of_contDiffOn {u D}
     (hD : IsOpen D)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
-      (evolutionHomeomorph 1 ⁻¹' D)) (p : Point) (hp : p ∈ D) :
+      (evolutionHomeomorph 1 ⁻¹' D)) (p ) (hp : p ∈ D) :
     IsSliceRegularAt u p := by
   have hx : (evolutionHomeomorph 1).symm p ∈ evolutionHomeomorph 1 ⁻¹' D := by
     simpa only [mem_preimage, Homeomorph.apply_symm_apply] using hp
@@ -41,7 +41,7 @@ theorem reconstruction_slice_regular_of_contDiffOn {u : Point → ℝ} {D : Set 
 /-- A nonnegative supersolution bounds the actual compact interior source potential. -/
 theorem reconstruction_duhamel_le_barrier
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (g q : Point → ℝ)
     (hgn : ∀ p, 0 ≤ g p)
@@ -51,7 +51,7 @@ theorem reconstruction_duhamel_le_barrier
     (hqn : ∀ p ∈ evolutionPastClosedCylinder (intervalDomain H) (fun _ => 0) T, 0 ≤ q p)
     (hqo : ∀ p ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T,
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) q p ≤ -g p)
-    (p₀ : Point) (hp₀ : p₀ ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T) :
+    (p₀ ) (hp₀ : p₀ ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T) :
     duhamelPotential E.2 T g p₀ ≤ q p₀ := by
   obtain ⟨⟨-, C, -, hCb⟩, -, hsm, -, heq, hc, ht, hl, -⟩ :=
     kinetic_duhamel hH (by omega) (intervalDomain_admissible H) (zeroCurve_piecewiseC1 1)

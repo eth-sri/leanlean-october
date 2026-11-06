@@ -14,7 +14,7 @@ open Set MeasureTheory Evolution Topology
 open scoped CompactlySupported Topology
 
 /-- Every compact continuous datum on the closed trace is uniformly approximated by probes. -/
-theorem boundaryProbeCc_dense {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
+theorem boundaryProbeCc_dense {d } (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
     (g : C_c(localTrace a T v₀ R, ℝ)) (ε : ℝ) (hε : 0 < ε) :
     ∃ f : boundaryProbeSubmodule d,
       ∀ P, |boundaryProbeCcLinear a T v₀ R f P - g P| ≤ ε := by
@@ -24,7 +24,7 @@ theorem boundaryProbeCc_dense {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
     (isClosed_localTrace a T v₀ R).isClosedEmbedding_subtypeVal
   obtain ⟨G, -, hG⟩ := BoundedContinuousFunction.exists_extension_norm_eq_of_isClosedEmbedding
     g.toBoundedContinuousFunction hj
-  have hK : IsCompact (j '' tsupport (g : localTrace a T v₀ R → ℝ)) :=
+  have hK :=
     g.hasCompactSupport.isCompact.image hj.continuous
   obtain ⟨χ, hχ, hc, -, -, hone⟩ :=
     exists_smooth_bump_of_isCompact_subset_isOpen hK isOpen_univ (subset_univ _)

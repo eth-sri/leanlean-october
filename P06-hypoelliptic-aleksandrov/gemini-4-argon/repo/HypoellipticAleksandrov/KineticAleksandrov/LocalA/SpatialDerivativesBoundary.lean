@@ -20,7 +20,7 @@ theorem uniformContinuous_spatialBoundaryData {d : ℕ}
     (uniformContinuous_spatialBoundaryCoordinates P v₀)
 
 /-- The actual centered boundary data viewed in L-infinity of the exit-data marginal. -/
-def spatialBoundaryLpData {d : ℕ}
+def spatialBoundaryLpData {d }
     (μ : Measure (TimeVelocity d)) [IsFiniteMeasure μ]
     (H : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (hH : Continuous H)
     (hc : HasCompactSupport H) (M : ℝ) (hb : ∀ q, ‖H q‖ ≤ M)
@@ -31,7 +31,7 @@ def spatialBoundaryLpData {d : ℕ}
       (fun _ => hb _) x)
 
 /-- The centered L-infinity data are a continuous function of spatial displacement. -/
-theorem continuous_spatialBoundaryLpData {d : ℕ}
+theorem continuous_spatialBoundaryLpData {d }
     (μ : Measure (TimeVelocity d)) [IsFiniteMeasure μ]
     (H : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (hH : Continuous H)
     (hc : HasCompactSupport H) (M : ℝ) (hb : ∀ q, ‖H q‖ ≤ M)
@@ -42,7 +42,7 @@ theorem continuous_spatialBoundaryLpData {d : ℕ}
       M (fun _ => hb _))
 
 /-- The data family is bounded by the local solution oscillation. -/
-theorem spatialBoundaryLpData_norm_le {d : ℕ}
+theorem spatialBoundaryLpData_norm_le {d }
     (μ : Measure (TimeVelocity d)) [IsFiniteMeasure μ]
     (H : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (hH : Continuous H)
     (hc : HasCompactSupport H) (M : ℝ) (hM : 0 ≤ M) (hb : ∀ q, ‖H q‖ ≤ M)
@@ -52,7 +52,7 @@ theorem spatialBoundaryLpData_norm_le {d : ℕ}
     (BoundedContinuousFunction.norm_ofNormedAddCommGroup_le _ hM _)
 
 /-- The data family has the literal centered boundary representative almost everywhere. -/
-theorem spatialBoundaryLpData_coe {d : ℕ}
+theorem spatialBoundaryLpData_coe {d }
     (μ : Measure (TimeVelocity d)) [IsFiniteMeasure μ]
     (H : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (hH : Continuous H)
     (hc : HasCompactSupport H) (M : ℝ) (hb : ∀ q, ‖H q‖ ≤ M)

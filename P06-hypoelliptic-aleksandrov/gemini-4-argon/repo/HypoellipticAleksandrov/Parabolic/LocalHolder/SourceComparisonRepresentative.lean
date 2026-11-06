@@ -19,8 +19,7 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 
 /-- A continuous envelope bounding almost every slice bounds every interior point. -/
-theorem abs_le_of_continuousOn_of_ae_slices {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (a T : ℝ) (w b : TimeVelocity d → ℝ)
+theorem abs_le_of_continuousOn_of_ae_slices {d Ω} (hΩ : IsOpen Ω) (a T : ℝ) (w b : TimeVelocity d → ℝ)
     (hbc : Continuous b)
     (hw : ContinuousOn w (scalarParabolicOpenCylinder a T Ω))
     (hb : ∀ᵐ t ∂volume.restrict (Ioo a T),
@@ -42,10 +41,7 @@ theorem abs_le_of_continuousOn_of_ae_slices {d : ℕ}
       timeVelocityVolumeOn (Ioo a T ×ˢ Ω) := by
     rw [timeVelocityVolumeOn, volume_timeVelocity_eq_prod]
     exact Measure.prod_restrict (Ioo a T) Ω
-  have hm : MeasurableSet {z : TimeVelocity d | |w₀ z| ≤ b z} :=
-    measurableSet_le (continuous_abs.measurable.comp hw₀)
-      hbc.measurable
-  have hae := (Measure.ae_prod_iff_ae_ae hm).2 hbound
+  have hae := (Measure.ae_prod_iff_ae_ae (measurableSet_le (continuous_abs.measurable.comp hw₀) hbc.measurable)).2 hbound
   rw [hprod] at hae
   have heq : (fun z : TimeVelocity d => min (|w z|) (b z)) =ᵐ[
       volume.restrict (scalarParabolicOpenCylinder a T Ω)] fun z => |w z| := by
@@ -60,8 +56,7 @@ theorem abs_le_of_continuousOn_of_ae_slices {d : ℕ}
   exact min_eq_left_iff.mp (hmin hz)
 
 /-- An almost-everywhere time bound holds pointwise for a continuous interior representative. -/
-theorem abs_le_source_time_of_continuousOn_of_ae_slices {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (a T M : ℝ) (w : TimeVelocity d → ℝ)
+theorem abs_le_source_time_of_continuousOn_of_ae_slices {d Ω} (hΩ : IsOpen Ω) (a T M : ℝ) (w : TimeVelocity d → ℝ)
     (hw : ContinuousOn w (scalarParabolicOpenCylinder a T Ω))
     (hb : ∀ᵐ t ∂volume.restrict (Ioo a T),
       ∀ᵐ y ∂PDE.volumeOn Ω, |w (t, y)| ≤ M * (T - t)) :

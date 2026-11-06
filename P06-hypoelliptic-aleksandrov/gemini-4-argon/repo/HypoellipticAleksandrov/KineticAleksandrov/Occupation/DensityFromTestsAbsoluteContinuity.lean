@@ -27,9 +27,9 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 /-- Smooth-test norm bounds force absolute continuity with respect to restricted Haar measure. -/
 theorem absolutelyContinuous_of_smooth_tests (ν μ : Measure E)
-    [ν.IsAddHaarMeasure] [IsFiniteMeasure μ] {U : Set E} (hU : IsOpen U)
-    (hμU : μ Uᶜ = 0) {p : ℝ≥0∞} (hp : 1 ≤ p) (hpt : p ≠ ∞)
-    {C : ℝ} (hC : 0 ≤ C)
+    [ν.IsAddHaarMeasure] [IsFiniteMeasure μ] {U } (hU : IsOpen U)
+    (hμU : μ Uᶜ = 0) {p } (hp : 1 ≤ p) (hpt : p ≠ ∞)
+    {C } (hC : 0 ≤ C)
     (htest : ∀ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f → HasCompactSupport f →
       tsupport f ⊆ U → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂μ) ≤ C * (eLpNorm f p (ν.restrict U)).toReal) :

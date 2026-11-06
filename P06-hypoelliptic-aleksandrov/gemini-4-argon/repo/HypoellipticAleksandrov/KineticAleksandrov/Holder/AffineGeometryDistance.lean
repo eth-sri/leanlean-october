@@ -11,21 +11,21 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 /-- The source kinetic quasi-distance is nonnegative. -/
-theorem quasiDistance_nonneg {d : ℕ} (P Q : KineticPoint d) : 0 ≤ quasiDistance P Q := by
+theorem quasiDistance_nonneg {d } (P Q : KineticPoint d) : 0 ≤ quasiDistance P Q := by
   unfold quasiDistance
   exact add_nonneg (add_nonneg (Real.sqrt_nonneg _)
     (PDE.vecEuclideanNorm_nonneg _))
     (Real.rpow_nonneg (le_max_of_le_left (PDE.vecEuclideanNorm_nonneg _)) _)
 
 /-- The source maximum of the two transported displacements makes the distance symmetric. -/
-theorem quasiDistance_symm {d : ℕ} (P Q : KineticPoint d) :
+theorem quasiDistance_symm {d } (P Q : KineticPoint d) :
     quasiDistance P Q = quasiDistance Q P := by
   unfold quasiDistance
   rw [abs_sub_comm P.time Q.time, PDE.vecEuclideanNorm_sub_comm P.velocity Q.velocity,
     max_comm]
 
 /-- The source quasi-distance separates points, including in dimension zero. -/
-theorem quasiDistance_eq_zero_iff {d : ℕ} (P Q : KineticPoint d) :
+theorem quasiDistance_eq_zero_iff {d } (P Q : KineticPoint d) :
     quasiDistance P Q = 0 ↔ P = Q := by
   constructor
   · intro h

@@ -17,10 +17,7 @@ theorem borel_real_norm_add_le {E : Type*} [MeasurableSpace E] {μ : Measure E}
     (eLpNorm (f + g) (ENNReal.ofReal p) μ).toReal ≤
       (eLpNorm f (ENNReal.ofReal p) μ).toReal +
       (eLpNorm g (ENNReal.ofReal p) μ).toReal := by
-  have ht := ENNReal.toReal_mono
-    (ENNReal.add_ne_top.mpr ⟨hf.eLpNorm_ne_top,hg.eLpNorm_ne_top⟩)
-    (eLpNorm_add_le (ENNReal.one_le_ofReal.mpr hp) (f := f) (g := g))
-  simpa only [ENNReal.toReal_add hf.eLpNorm_ne_top hg.eLpNorm_ne_top] using ht
+  simpa only [ENNReal.toReal_add hf.eLpNorm_ne_top hg.eLpNorm_ne_top] using (ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hf.eLpNorm_ne_top,hg.eLpNorm_ne_top⟩) (eLpNorm_add_le (ENNReal.one_le_ofReal.mpr hp) (f := f) (g := g)))
 
 /-- Vanishing nonnegative error implies convergence of the actual perturbed source norms. -/
 theorem borel_source_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measure E}

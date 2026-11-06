@@ -10,17 +10,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 
 /-- Centering the first time step multiplies its displacement Fourier transform by this phase. -/
-def exitFourierStepPhase {d : ℕ} (P : KineticPoint d) (s : ℝ) (v₀ ξ : PDE.Vec d) : ℂ :=
+def exitFourierStepPhase {d } (P : KineticPoint d) (s : ℝ) (v₀ ξ : PDE.Vec d) : ℂ :=
   Complex.exp (Complex.I * (PDE.vecDot ξ ((s - P.time) • v₀) : ℂ))
 
 /-- The centering step is a phase of modulus one. -/
-theorem norm_exitFourierStepPhase {d : ℕ}
+theorem norm_exitFourierStepPhase {d }
     (P : KineticPoint d) (s : ℝ) (v₀ ξ : PDE.Vec d) :
     ‖exitFourierStepPhase P s v₀ ξ‖ = 1 := by
   simp [exitFourierStepPhase, Complex.norm_exp, Complex.mul_re]
 
 /-- Physical centered Fourier tests factor at the true intermediate physical pole. -/
-theorem exitFourierTest_factor {d : ℕ} (P W Q : KineticPoint d)
+theorem exitFourierTest_factor {d } (P W Q : KineticPoint d)
     (v₀ ξ : PDE.Vec d) (E : Set (TimeVelocity d)) :
     exitFourierTest P v₀ ξ E Q =
       exitFourierStepPhase P W.time v₀ ξ *
@@ -82,7 +82,7 @@ theorem norm_ballLaterExitFourierTest_le_one (s T : ℝ) (hsT : s < T) (ξ : PDE
   · rw [ballLaterExitFourierTest_valid hH hLE hd hlam hLam B hB v₀ hR
       s T hsT ξ E ⟨v, hv⟩]
     let ν := ballLaterExitFourier hH hLE hd hlam hLam B hB v₀ hR s T hsT ξ ⟨v, hv⟩
-    have he : ν.variation E ≤ 1 := (measure_mono (subset_univ E)).trans
+    have he := (measure_mono (subset_univ E)).trans
       (ballLaterExitFourier_variation_le_one hH hLE hd hlam hLam B hB v₀ hR
         s T hsT ξ ⟨v, hv⟩)
     exact (VectorMeasure.norm_measure_le_variation

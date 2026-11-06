@@ -2,6 +2,11 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativesRepresentation
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativesSmooth
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitL1DerivativesFinal
+import Mathlib.MeasureTheory.Function.Holder
+import Mathlib.MeasureTheory.Function.LpSpace.ContinuousFunctions
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentationClosure
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativesExit
 
 /-! # Spatial derivatives of the source-local solution controlled by its raw oscillation -/
 
@@ -10,9 +15,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter MeasureTheory Parabolic SectionTwo
 open scoped Topology Convolution
+open scoped ENNReal BoundedContinuousFunction
 
-/-- The literal three-quarter forward cylinder is contained in the outer cylinder. -/
-theorem spatial_inner_subset_outer {d : ℕ} (Z₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) :
+/- The literal three-quarter forward cylinder is contained in the outer cylinder. -/
+theorem spatial_inner_subset_outer {d } (Z₀ : KineticPoint d) {R } (hR : 0 < R) :
     forwardCylinder Z₀ (3 * R / 4) (by positivity) ⊆ forwardCylinder Z₀ R hR := by
   intro P hP
   refine ⟨hP.1, hP.2.1.trans_le ?_, ?_, ?_⟩
@@ -21,13 +27,13 @@ theorem spatial_inner_subset_outer {d : ℕ} (Z₀ : KineticPoint d) {R : ℝ} (
   · exact PDE.euclideanBall_mono (by positivity)
       (by nlinarith only [pow_nonneg hR.le 3]) hP.2.2.2
 
-/-- The source-local spatial derivative bound uses the actual canonical density integral. -/
+/- The source-local spatial derivative bound uses the actual canonical density integral. -/
 theorem spatial_forward_derivative_bound
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (Z₀ : KineticPoint d) {R : ℝ} (hR : 0 < R)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (Z₀ : KineticPoint d) {R } (hR : 0 < R)
     (U : KineticPoint d → ℝ)
     (hUc : ContinuousOn U (closure (forwardCylinder Z₀ R hR)))
     (hUs : IsKineticC112On U (forwardCylinder Z₀ R hR))
@@ -36,7 +42,7 @@ theorem spatial_forward_derivative_bound
     (P : LocalBallStart Z₀.velocity R)
     (hP : P.1 ∈ forwardCylinder Z₀ (3 * R / 4) (by positivity))
     (T : {t : ℝ // P.1.time < t}) (hT : T.1 - P.1.time = R ^ 2 / 8)
-    (m : ℕ) (hm : 1 ≤ m) :
+    (m ) (hm : 1 ≤ m) :
     let G := exitL1Density (ballExit hH hLE hd hlam hLam B hB Z₀.velocity hR P T)
     ‖iteratedFDeriv ℝ m (physicalPositionSlice U P.1) P.1.position‖ ≤
       Holder.oscillationOn U (forwardCylinder Z₀ R hR) *
@@ -52,16 +58,23 @@ theorem spatial_forward_derivative_bound
   let L := spatialDensityPairing μ
   let g := G ∘ Neg.neg
   let W := f ⋆[L, volume] g
-  have hGs : ContDiff ℝ (⊤ : ℕ∞) G :=
+  have hGs :=
     ballExitL1Density_contDiff hH hLE hd hlam hLam B hB Z₀.velocity hR P T hP.2.2.1 hT
-  have hGc : HasCompactSupport G := spatialDensity_hasCompactSupport G (R ^ 3)
-    (ballExitL1Density_zero_outside hH hLE hd hlam hLam B hB Z₀.velocity hR
+  have hGc : HasCompactSupport G := by
+    let r := (R ^ 3)
+    have hz := (ballExitL1Density_zero_outside hH hLE hd hlam hLam B hB Z₀.velocity hR
       P T hP.2.2.1 hT)
+    apply (isCompact_closedBall (0 : PDE.Vec d) r).of_isClosed_subset (isClosed_tsupport G)
+    apply closure_minimal _ Metric.isClosed_closedBall
+    intro y hy
+    rw [Metric.mem_closedBall, dist_zero_right]
+    by_contra h
+    exact hy (hz y (lt_of_not_ge h))
   let e := LinearIsometryEquiv.neg ℝ (E := PDE.Vec d)
   have hgc : HasCompactSupport g := hGc.comp_homeomorph e.toHomeomorph
   have hgs : ContDiff ℝ (⊤ : ℕ∞) g := hGs.comp contDiff_id.neg
   have hfc : Continuous f := continuous_spatialBoundaryLpData μ H hHc hc M hb P.1 Z₀.velocity
-  have hfb : ∀ y, ‖f y‖ ≤ M := spatialBoundaryLpData_norm_le μ H hHc hc M hM hb P.1 Z₀.velocity
+  have hfb := spatialBoundaryLpData_norm_le μ H hHc hc M hM hb P.1 Z₀.velocity
   have hshift : Continuous (fun x : PDE.Vec d => boundaryPositionShift x P.1) := by
     apply KineticPoint.continuous_mk continuous_const
       (continuous_const.add continuous_id) continuous_const
@@ -73,8 +86,51 @@ theorem spatial_forward_derivative_bound
   let s : PDE.Vec d → ℝ := fun x => U (boundaryPositionShift x P.1) - U P.1
   have hsW : (fun x => (s x : ℂ)) =ᶠ[𝓝 0] W := by
     filter_upwards [hmem] with x hx
-    simpa only [s, Complex.ofReal_sub] using spatial_local_convolution hH hLE hd hlam hLam
-      B hB Z₀ hR U hUc hUs hUe P hP T hT H hHc hc M hb (U P.1) he x hx
+    have _h_xinl_0 :
+        let ν := ballExit hH hLE hd hlam hLam B hB Z₀.velocity hR P T
+            let f := spatialBoundaryLpData (exitMarginal ν) H hHc hc M hb P.1 Z₀.velocity
+            let G := exitL1Density ν
+            (U (boundaryPositionShift x P.1) - (U P.1) : ℂ) =
+              (f ⋆[spatialDensityPairing (exitMarginal ν), volume] (G ∘ Neg.neg)) x := by
+      let c := (U P.1)
+      dsimp only
+      let Px := boundaryStartShift x P
+      let μx := ballExitRaw hH hLE hd hlam hLam B hB Z₀.velocity hR Px T
+      have : IsFiniteMeasure μx :=
+        (ballExitRaw_spec hH hLE hd hlam hLam B hB Z₀.velocity hR Px T).1
+      have hr := local_cone_representation hH hLE hd hlam hLam B hB Z₀.velocity hR
+        Z₀ U hUc hUs hUe Px rfl hx T hT
+      have hs := ballExitRaw_local_outer hH hLE hd hlam hLam B hB Z₀ hR Px hx T hT
+      have hi : Integrable (fun Q => H (KineticPoint.equivProd d Q)) μx :=
+        Integrable.of_bound
+          (hHc.comp (KineticPoint.homeomorphProd d).continuous).aestronglyMeasurable M
+          (Filter.Eventually.of_forall fun Q => hb _)
+      have hm : μx univ = 1 := ballExitRaw_mass hH hLE hd hlam hLam B hB Z₀.velocity hR Px T
+      have hre : U Px.1 = (∫ Q, H (KineticPoint.equivProd d Q) ∂μx) + c := by
+        calc
+          _ = ∫ Q, U Q ∂μx := hr
+          _ = ∫ Q, (H (KineticPoint.equivProd d Q) + c) ∂μx := by
+            apply integral_congr_ae
+            filter_upwards [hs] with Q hQ
+            rw [he Q hQ]
+            exact (sub_add_cancel _ _).symm
+          _ = _ := by
+            rw [integral_add hi (integrable_const c)]
+            simp only [integral_const, Measure.real, hm, ENNReal.toReal_one, one_smul]
+      have hre' : (U Px.1 - c : ℂ) =
+          ∫ Q, (H (KineticPoint.equivProd d Q) : ℂ) ∂μx := by
+        rw [integral_complex_ofReal, hre, Complex.ofReal_add, add_sub_cancel_right]
+      refine hre'.trans ?_
+      change (∫ Q, (H (KineticPoint.equivProd d Q) : ℂ)
+        ∂ballExitRaw hH hLE hd hlam hLam B hB Z₀.velocity hR (boundaryStartShift x P) T) = _
+      rw [← ballExitRaw_translation hH hLE hd hlam hLam B hB Z₀.velocity hR x P T]
+      refine (integral_map (f := fun Q => (H (KineticPoint.equivProd d Q) : ℂ))
+        (boundaryPositionHomeomorph x).measurable.aemeasurable
+        (Complex.continuous_ofReal.comp
+          (hHc.comp (KineticPoint.homeomorphProd d).continuous)).aestronglyMeasurable).trans ?_
+      exact ballExit_boundary_convolution hH hLE hd hlam hLam B hB Z₀.velocity hR P T
+        hP.2.2.1 hT H hHc hc M hb x
+    simpa only [s, Complex.ofReal_sub] using _h_xinl_0
   have hus := spatial_forward_slice_smooth hH B hB Z₀ hR U hUs hUe P.1 hPo
   have hsu : ContDiffAt ℝ (⊤ : ℕ∞)
       (fun x => U (boundaryPositionShift x P.1)) (0 : PDE.Vec d) := by
@@ -105,9 +161,21 @@ theorem spatial_forward_derivative_bound
   have hd := convolution_iteratedFDeriv_bound volume f hfc.locallyIntegrable
     M hM hfb m L g hgc hgs (0 : PDE.Vec d)
   rw [hgint] at hd
+  have _h_xinl_0 : ‖spatialDensityPairing μ‖ ≤ 1 := by
+    refine (spatialDensityPairing μ).opNorm_le_bound₂ zero_le_one ?_
+    intro f g
+    have _h_inl_10 : ‖spatialDensityPairing μ f g‖ ≤ ‖f‖ * ‖g‖ := by
+        have he : spatialDensityPairing μ f g = L1.integral (f • g : Lp ℂ 1 μ) := by
+          rw [spatialDensityPairing_apply, L1.integral_eq_integral]
+          exact integral_congr_ae (Lp.coeFn_lpSMul f g).symm
+        rw [he]
+        exact (L1.norm_integral_le _).trans (Lp.norm_smul_le f g)
+
+
+    simpa only [one_mul] using _h_inl_10
   have hd' : ‖iteratedFDeriv ℝ m W 0‖ ≤ M * ∫ y, ‖iteratedFDeriv ℝ m G y‖ :=
     hd.trans (mul_le_mul_of_nonneg_right
-      ((mul_le_mul_of_nonneg_right (spatialDensityPairing_norm_le μ) hM).trans_eq
+      ((mul_le_mul_of_nonneg_right _h_xinl_0 hM).trans_eq
         (one_mul M)) (integral_nonneg fun _ => norm_nonneg _))
   rw [← hnorm, (hsW.iteratedFDeriv ℝ m).eq_of_nhds]
   exact hd'

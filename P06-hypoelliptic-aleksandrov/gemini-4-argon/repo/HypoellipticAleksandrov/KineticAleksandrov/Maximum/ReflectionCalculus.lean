@@ -14,8 +14,7 @@ open HypoellipticAleksandrov.Parabolic
 theorem kineticTimeDerivative_reflection {d : ℕ} (u : KineticPoint d → ℝ)
     (P : KineticPoint d) :
     kineticTimeDerivative (u ∘ kineticReflection) P =
-      -kineticTimeDerivative u (kineticReflection P) := by
-  exact deriv_comp_neg (fun r : ℝ => u ⟨r, -P.position, P.velocity⟩) P.time
+      -kineticTimeDerivative u (kineticReflection P) :=  deriv_comp_neg (fun r : ℝ => u ⟨r, -P.position, P.velocity⟩) P.time
 
 /-- Position differentiation under reflection reverses sign. -/
 theorem kineticPositionGradient_reflection {d : ℕ} (u : KineticPoint d → ℝ)

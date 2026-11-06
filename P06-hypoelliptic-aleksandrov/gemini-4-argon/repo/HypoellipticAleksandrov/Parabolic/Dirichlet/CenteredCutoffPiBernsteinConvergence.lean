@@ -24,8 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 private theorem piBernsteinApproximation_norm_tendsto_zero
     {d : ℕ} {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (F : C(Fin d → I, E)) :
-    Tendsto (fun n : ℕ => ‖piBernsteinApproximation n F - F‖) atTop (nhds 0) := by
-  exact tendsto_iff_norm_sub_tendsto_zero.mp (piBernsteinApproximation_uniform F)
+    Tendsto (fun n : ℕ => ‖piBernsteinApproximation n F - F‖) atTop (nhds 0) :=  tendsto_iff_norm_sub_tendsto_zero.mp (piBernsteinApproximation_uniform F)
 
 private def centeredUnitPoint {d : ℕ} (R : ℝ) (hR : 0 < R)
     (y : PDE.Vec d) (hy : y ∈ Icc (fun _ => -R) (fun _ => R)) : Fin d → I :=
@@ -47,24 +46,6 @@ private def centeredContinuousField {d : ℕ}
   ContinuousMap.curry ⟨fun p => f (p.2, fun i => R * (2 * (p.1 i : ℝ) - 1)), by
     fun_prop⟩
 
-private theorem cutoffPiBernsteinApproximation_eq_centeredContinuousField
-    {d n : ℕ} (Kt : TopologicalSpace.Compacts ℝ)
-    (R : ℝ) (hR : 0 < R) (χ : PDE.Vec d → ℝ)
-    (f : TimeVelocity d → ℝ) (hf : Continuous f)
-    (τ : ℝ) (hτ : τ ∈ (Kt : Set ℝ))
-    (y : PDE.Vec d) (hy : y ∈ Icc (fun _ => -R) (fun _ => R)) :
-    cutoffPiBernsteinApproximation (n := n) R χ f (τ, y) =
-      χ y * piBernsteinApproximation n (centeredContinuousField Kt R f hf)
-        (centeredUnitPoint R hR y hy) ⟨τ, hτ⟩ := by
-  unfold cutoffPiBernsteinApproximation piBernsteinApproximation
-  simp only [ContinuousMap.sum_apply]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro k _
-  simp [piBernsteinBasis]
-  congr 2
-
-/-- Centered cutoff product-Bernstein approximations converge in squared integral. -/
 theorem tendsto_integral_sq_cutoffPiBernsteinApproximation
     {d : ℕ} {μ : Measure (TimeVelocity d)} [IsFiniteMeasureOnCompacts μ]
     (Kt : TopologicalSpace.Compacts ℝ) (Ksp : Set (PDE.Vec d))
@@ -118,8 +99,18 @@ theorem tendsto_integral_sq_cutoffPiBernsteinApproximation
               simpa using hχone (hfsupport (subset_closure hfz)).2
             rw [hone, one_mul]
         dsimp only [g]
-        rw [cutoffPiBernsteinApproximation_eq_centeredContinuousField
-          Kt R hR χ f hfcont z.1 hτ z.2 (hcube hyts), ← heq, ← mul_sub, abs_mul]
+        have _h_inl_13 : cutoffPiBernsteinApproximation (n := n) R χ f (z.1, z.2) = χ z.2 * piBernsteinApproximation n (centeredContinuousField Kt R f hfcont) (centeredUnitPoint R hR z.2 (hcube hyts)) ⟨z.1, hτ⟩ := by
+          let τ := z.1
+          let y := z.2
+          let hy := (hcube hyts)
+          unfold cutoffPiBernsteinApproximation piBernsteinApproximation
+          simp only [ContinuousMap.sum_apply]
+          congr 1
+          apply Finset.sum_congr rfl
+          intro k _
+          simp [piBernsteinBasis]
+          congr 2
+        rw [_h_inl_13, ← heq, ← mul_sub, abs_mul]
         apply mul_le_mul (hχC hyts) ?_ (abs_nonneg _) hC0
         have hFz : F (centeredUnitPoint R hR z.2 (hcube hyts)) ⟨z.1, hτ⟩ = f z := by
           dsimp [F, centeredContinuousField, centeredUnitPoint]

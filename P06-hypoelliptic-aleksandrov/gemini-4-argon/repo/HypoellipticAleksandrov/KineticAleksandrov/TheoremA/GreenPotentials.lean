@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenPotential
 public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenPotentialsLocality
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelEquation
 import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonGeometry
+import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.CaseW
+import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenDensityTransport
 
 /-! # The whole-space Green source potentials for Theorem A -/
 
@@ -15,10 +17,10 @@ open Set MeasureTheory SectionTwo Evolution Parabolic
 open scoped Topology
 variable {d : ℕ}
 
-/-- The Green source integral has the regularity, sign and equation required by abstract ABP. -/
+/- The Green source integral has the regularity, sign and equation required by abstract ABP. -/
 theorem green_potentials (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSmoothCoefficient B)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (B ) (hB : IsSmoothCoefficient B)
     (hBs : IsSymmetricCoefficient B) (hlo : HasLowerEllipticity lam B)
     (hhi : HasUpperEllipticity Lam B)
     (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
@@ -51,7 +53,11 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
     exact hgs.continuous.comp (KineticPoint.homeomorphProd d).continuous
   have hg₂ : Continuous g₂ := hg.comp (continuous_sectionTwoPoint d)
   have hgc₂ : HasCompactSupport g₂ := hasCompactSupport_sectionTwoPoint hgc
-  have hgs₂ := contDiff_sectionTwoPoint_source hgs
+  have hgs₂ : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
+      (g ∘ sectionTwoPoint) ⟨q.1, q.2.1, q.2.2⟩) := by
+      exact (
+    hgs.comp (contDiff_fst.prodMk (contDiff_snd.snd.prodMk contDiff_snd.fst))
+    )
   have hg₂0 : ∀ P, 0 ≤ g₂ P := fun P => hg0 _
   have hgU : tsupport g₂ ⊆ evolutionPastOpenCylinder (wholeSpace d) (fun _ => 0) T := by
     intro P hP

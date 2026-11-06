@@ -19,7 +19,7 @@ namespace HypoellipticAleksandrov.Parabolic.WeakGradientTimeEnergy
 /-- The localized negative spatial divergence built from selected weak
 gradient and diagonal Hessian representatives. -/
 def localizedGradientDivergence
-    {d : ℕ}
+    {d }
     (η : PDE.Vec d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)

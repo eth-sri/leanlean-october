@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeCalculus
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeTransition
 
 /-! # Vanishing of both actual measures beyond every strict transport cone -/
 
@@ -9,11 +10,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
+open Parabolic
 
-/-- A strict negative transport direction kills both actual measures on its positive side. -/
+/- A strict negative transport direction kills both actual measures on its positive side. -/
 theorem reconstruction_strict_transport_cone_ae
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (alpha beta gamma delta : ℝ) (hdelta : 0 < delta)
@@ -35,8 +37,37 @@ theorem reconstruction_strict_transport_cone_ae
     exact ⟨((neg_le_neg (le_max_left |H.lo| |H.hi|)).trans (neg_abs_le H.lo)).trans hv.1.le,
       hv.2.le.trans ((le_abs_self H.hi).trans (le_max_right _ _))⟩
   have hop (p : Point) : forwardScalarOperator A.a phi p =
-      (alpha + p.velocity 0 * beta) * deriv expNegInvGlue (rho p) :=
-    reconstructionConeProbe_operator A.a alpha beta gamma p
+      (alpha + p.velocity 0 * beta) * deriv expNegInvGlue (rho p) := by
+    let a := A.a
+    have hd (x : ℝ) :=
+      ((expNegInvGlue.contDiff : ContDiff ℝ (⊤ : ℕ∞) expNegInvGlue).differentiable (by simp) x)
+    have ht : kineticTimeDerivative
+        (expNegInvGlue ∘ reconstructionConeCoordinate alpha beta gamma) p =
+        deriv expNegInvGlue (reconstructionConeCoordinate alpha beta gamma p) * alpha := by
+      have hh := (hd _).hasDerivAt.comp p.time
+        ((((hasDerivAt_id p.time).const_mul alpha).add_const (beta * p.position 0)).add_const gamma)
+      simpa only [kineticTimeDerivative, reconstructionConeCoordinate, Function.comp_apply,
+        id_eq, mul_one] using! hh.deriv
+    have hx : kineticPositionGradient
+        (expNegInvGlue ∘ reconstructionConeCoordinate alpha beta gamma) p 0 =
+        deriv expNegInvGlue (reconstructionConeCoordinate alpha beta gamma p) * beta := by
+      rw [kineticPositionGradient_scalar]
+      have hh := (hd _).hasDerivAt.comp (p.position 0)
+        ((((hasDerivAt_id (p.position 0)).const_mul beta).const_add (alpha * p.time)).add_const gamma)
+      simpa only [reconstructionConeCoordinate, Function.comp_apply, id_eq, mul_one] using! hh.deriv
+    have hv : kineticVelocityHessian
+        (expNegInvGlue ∘ reconstructionConeCoordinate alpha beta gamma) p 0 0 = 0 := by
+      rw [kineticVelocityHessian_scalar]
+      change deriv (deriv (fun _ : ℝ => expNegInvGlue
+        (alpha * p.time + beta * p.position 0 + gamma))) (p.velocity 0) = 0
+      have hh : deriv (fun _ : ℝ => expNegInvGlue
+          (alpha * p.time + beta * p.position 0 + gamma)) = fun _ => 0 :=
+        funext (fun x => deriv_const x _)
+      rw [hh]
+      exact deriv_const _ _
+    unfold forwardScalarOperator
+    rw [ht, hx, hv]
+    ring
   have hbd (p : Point) (hp : p.velocity 0 ∈ H.carrier) :
       |forwardScalarOperator A.a phi p| ≤ C * 2 := by
     rw [hop, abs_mul, abs_of_nonneg (reconstructionConeTransition_deriv_bounds _).1]

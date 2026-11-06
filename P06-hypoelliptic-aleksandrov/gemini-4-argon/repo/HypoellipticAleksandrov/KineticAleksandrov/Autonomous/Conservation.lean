@@ -17,7 +17,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped Topology ENNReal
 
 /-- The supplied whole-space kernel conserves mass for every ordered query. -/
-theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
+theorem fullspace_mass_one {lam Lam } (hlam : 0 < lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (q : EvolutionQuery autonomousWholeDomain (fun _ => 0)) : E.2.master q univ = 1 := by
   let σ := q.1.1

@@ -97,8 +97,7 @@ theorem hasLineDerivAt_zIndep_gradient {w : TimeVelocity d → ℝ} {D : Set (Ti
     HasLineDerivAt ℝ (fun y => scalarSpatialGradient w (evolutionToTimeVelocity d y) j)
       (scalarSpatialHessian w (evolutionToTimeVelocity d x) i j) x v := by
   have hc2 := hw.spatialSlice_contDiffAt hx
-  have hd : DifferentiableAt ℝ (fderiv ℝ (fun y => w ((evolutionToTimeVelocity d x).1, y)))
-      (evolutionToTimeVelocity d x).2 :=
+  have hd :=
     (hc2.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have h := (hd.clm_apply (differentiableAt_const (PDE.basisVec j))).hasFDerivAt
     |>.hasLineDerivAt (PDE.basisVec i)
@@ -120,35 +119,35 @@ theorem hasLineDerivAt_zIndep_gradient {w : TimeVelocity d → ℝ} {D : Set (Ti
 /-- **Weak form for `z`-independent smooth functions.**  For `w` smooth on the open set `D`
 and a smooth compactly supported test `ψ` supported in `π ⁻¹' D`,
 `∫ (w ∘ π) Lop^* ψ = ∫ (P₀ w ∘ π) ψ` with `P₀ = ∂_σ + B : D_v²`. -/
-theorem integral_transportedAdjoint_zIndep {B' : CoefficientField d}
+theorem integral_transportedAdjoint_zIndep {B' }
     (hB : IsSmoothFullKineticCoefficient (zIndependentCoefficient B'))
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
+    {b } (hb : IsSmoothDrift b)
     {D : Set (TimeVelocity d)} (hD : IsOpen D) {w : TimeVelocity d → ℝ}
     (hw : ContDiffOn ℝ (⊤ : ℕ∞) w D)
-    {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hc : HasCompactSupport ψ)
+    {ψ } (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hc : HasCompactSupport ψ)
     (hs : tsupport ψ ⊆ evolutionToTimeVelocity d ⁻¹' D) :
     (∫ x in evolutionToTimeVelocity d ⁻¹' D, w (evolutionToTimeVelocity d x) *
         transportedAdjoint (zIndependentCoefficient B') b ψ x) =
       ∫ x in evolutionToTimeVelocity d ⁻¹' D,
         scalarParabolicOperator B' (fun _ _ => 0) w (evolutionToTimeVelocity d x) * ψ x := by
-  have hu : IsScalarC12On w D :=
+  have hu :=
     isScalarC12On_of_isOpen_contDiffOn_two hD (hw.of_le (by norm_num))
   set Qp := evolutionToTimeVelocity d with hQp
   have hQc : Continuous Qp := Qp.continuous
-  have hU : IsOpen (Qp ⁻¹' D) := hD.preimage hQc
+  have hU := hD.preimage hQc
   let T : EvolutionVec d → ℝ := fun x => scalarTimeDerivative w (Qp x)
   let V : Fin d → EvolutionVec d → ℝ := fun i x => scalarSpatialGradient w (Qp x) i
   let Z : Fin d → EvolutionVec d → ℝ := fun _ _ => 0
   let H : Fin d → Fin d → EvolutionVec d → ℝ := fun i j x => scalarSpatialHessian w (Qp x) i j
   let K : Fin d → EvolutionVec d → ℝ := fun _ _ => 0
   have hmaps : Set.MapsTo Qp (Qp ⁻¹' D) D := fun x hx => hx
-  have hw0 : ContinuousOn (w ∘ Qp) (Qp ⁻¹' D) :=
+  have hw0 :=
     hu.continuousOn.comp hQc.continuousOn hmaps
-  have hT : ContinuousOn T (Qp ⁻¹' D) :=
+  have hT :=
     hu.continuousOn_scalarTimeDerivative.comp hQc.continuousOn hmaps
-  have hg0 : ContinuousOn (fun x => scalarSpatialGradient w (Qp x)) (Qp ⁻¹' D) :=
+  have hg0 :=
     hu.continuousOn_scalarSpatialGradient.comp hQc.continuousOn hmaps
-  have hh0 : ContinuousOn (fun x => scalarSpatialHessian w (Qp x)) (Qp ⁻¹' D) :=
+  have hh0 :=
     hu.continuousOn_scalarSpatialHessian.comp hQc.continuousOn hmaps
   have hV : ∀ i, ContinuousOn (V i) (Qp ⁻¹' D) := fun i =>
     (continuous_apply i).comp_continuousOn hg0

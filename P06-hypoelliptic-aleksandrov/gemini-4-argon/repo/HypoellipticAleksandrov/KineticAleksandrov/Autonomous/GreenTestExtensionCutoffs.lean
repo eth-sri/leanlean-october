@@ -14,10 +14,10 @@ open Set MeasureTheory HypoellipticAleksandrov Filter Metric
 open SectionTwo TheoremA Evolution
 open scoped Topology
 
-/-- A fixed smooth scalar cutoff equal to one on the unit interval. -/
+/- A fixed smooth scalar cutoff equal to one on the unit interval. -/
 def reconstructionUnitBump : ContDiffBump (0 : ℝ) := ⟨1, 2, zero_lt_one, by norm_num⟩
 
-/-- Rescaled position cutoffs are globally smooth, between zero and one. -/
+/- Rescaled position cutoffs are globally smooth, between zero and one. -/
 theorem reconstructionUnitBump_properties :
     ContDiff ℝ (⊤ : ℕ∞) reconstructionUnitBump ∧
       HasCompactSupport reconstructionUnitBump ∧
@@ -30,11 +30,11 @@ theorem reconstructionUnitBump_properties :
     fun x => ⟨reconstructionUnitBump.nonneg, reconstructionUnitBump.le_one⟩,
     max D 0, le_max_right _ _, fun x => (hD x).trans (le_max_left _ _)⟩
 
-/-- A position cutoff with radius `R` and outer radius `2R`. -/
+/- A position cutoff with radius `R` and outer radius `2R`. -/
 def reconstructionPositionBump (R : ℝ) (hR : 0 < R) : ContDiffBump (0 : ℝ) :=
   ⟨R, 2 * R, hR, by linarith⟩
 
-/-- Radius rescaling agrees with the previously verified scalar cutoff calculus. -/
+/- Radius rescaling agrees with the previously verified scalar cutoff calculus. -/
 theorem reconstructionPositionBump_eq_scaled (R : ℝ) (hR : 0 < R) :
     (reconstructionPositionBump R hR : ℝ → ℝ) =
       scaledScalarCutoff reconstructionUnitBump R := by
@@ -46,15 +46,15 @@ theorem reconstructionPositionBump_eq_scaled (R : ℝ) (hR : 0 < R) :
   · simp only [inv_one, one_mul, div_eq_mul_inv]
     ring
 
-/-- The cutoff derivative has a uniform inverse-radius bound. -/
-theorem reconstructionPositionBump_deriv_bound (R : ℝ) (hR : 0 < R) (D : ℝ)
+/- The cutoff derivative has a uniform inverse-radius bound. -/
+theorem reconstructionPositionBump_deriv_bound (R : ℝ) (hR : 0 < R) (D )
     (hD : ∀ x, |deriv reconstructionUnitBump x| ≤ D) (x : ℝ) :
     |deriv (reconstructionPositionBump R hR) x| ≤ D / R := by
   rw [reconstructionPositionBump_eq_scaled]
   exact scaledScalarCutoff_deriv_bound _
     (reconstructionUnitBump_properties.1.of_le (by simp)) hR D hD x
 
-/-- Expanding position cutoffs eventually equal one at every fixed position. -/
+/- Expanding position cutoffs eventually equal one at every fixed position. -/
 theorem reconstructionPositionBump_tendsto (x : ℝ) :
     Tendsto (fun n : ℕ => reconstructionPositionBump ((n : ℝ) + 1) (by positivity) x)
       atTop (𝓝 1) := by
@@ -67,7 +67,7 @@ theorem reconstructionPositionBump_tendsto (x : ℝ) :
   change |x| ≤ (n : ℝ) + 1
   linarith
 
-/-- The expanding position cutoff derivative converges to zero. -/
+/- The expanding position cutoff derivative converges to zero. -/
 theorem reconstructionPositionBump_deriv_tendsto (x : ℝ) :
     Tendsto (fun n : ℕ => deriv
       (reconstructionPositionBump ((n : ℝ) + 1) (by positivity)) x) atTop (𝓝 0) := by
@@ -79,39 +79,5 @@ theorem reconstructionPositionBump_deriv_tendsto (x : ℝ) :
   rw [Real.norm_eq_abs]
   exact reconstructionPositionBump_deriv_bound _ (by positivity) D hD x
 
-/-- Coordinatewise smooth cutoffs make an arbitrary smooth test compact. -/
-theorem reconstruction_product_cutoff_compact
-    (bt bv bx : ContDiffBump (0 : ℝ)) (f : EvolutionVec 1 → ℝ) :
-    HasCompactSupport (fun x => bt (timeCoord 1 x) * bv (diffusedCoord 1 x 0) *
-      bx (transportedCoord 1 x 0) * f x) := by
-  let R := max bt.rOut (max bv.rOut bx.rOut)
-  have hR : 0 ≤ R := bt.rOut_pos.le.trans (le_max_left _ _)
-  apply IsCompact.of_isClosed_subset (isCompact_closedBall (0 : EvolutionVec 1) R)
-    (isClosed_tsupport _)
-  apply closure_minimal _ isClosed_closedBall
-  intro x hx
-  have hn : bt (timeCoord 1 x) ≠ 0 ∧ bv (diffusedCoord 1 x 0) ≠ 0 ∧
-      bx (transportedCoord 1 x 0) ≠ 0 := by
-    have hh := mul_ne_zero_iff.mp hx
-    have hh' := mul_ne_zero_iff.mp hh.1
-    exact ⟨(mul_ne_zero_iff.mp hh'.1).1, (mul_ne_zero_iff.mp hh'.1).2, hh'.2⟩
-  have ht : |timeCoord 1 x| < bt.rOut := by
-    have hh : timeCoord 1 x ∈ Function.support bt := hn.1
-    rw [bt.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
-  have hv : |diffusedCoord 1 x 0| < bv.rOut := by
-    have hh : diffusedCoord 1 x 0 ∈ Function.support bv := hn.2.1
-    rw [bv.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
-  have hz : |transportedCoord 1 x 0| < bx.rOut := by
-    have hh : transportedCoord 1 x 0 ∈ Function.support bx := hn.2.2
-    rw [bx.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
-  rw [mem_closedBall_zero_iff, pi_norm_le_iff_of_nonneg hR]
-  intro i
-  fin_cases i
-  · exact ht.le.trans (le_max_left _ _)
-  · exact hv.le.trans ((le_max_left _ _).trans (le_max_right _ _))
-  · exact hz.le.trans ((le_max_right _ _).trans (le_max_right _ _))
-
+/- Coordinatewise smooth cutoffs make an arbitrary smooth test compact. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

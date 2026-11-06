@@ -55,7 +55,7 @@ private theorem positivePower_derivative {N : ℕ} (hN : 2 ≤ N) (x : ℝ) :
     simpa [positivePower, max_eq_left hx.le] using
       ((hasDerivAt_id x).pow N).congr_of_eventuallyEq heq
 
-private theorem positivePower_deriv {N : ℕ} (hN : 2 ≤ N) :
+private theorem positivePower_deriv {N } (hN : 2 ≤ N) :
     deriv (positivePower N) = fun x => (N : ℝ) * positivePower (N - 1) x := by
   funext x
   exact (positivePower_derivative hN x).deriv
@@ -64,13 +64,13 @@ private theorem positivePower_continuous (N : ℕ) : Continuous (positivePower N
   unfold positivePower
   exact (continuous_id.max continuous_const).pow N
 
-private theorem positivePower_contDiff_one {N : ℕ} (hN : 2 ≤ N) :
+private theorem positivePower_contDiff_one {N } (hN : 2 ≤ N) :
     ContDiff ℝ 1 (positivePower N) := by
   rw [contDiff_one_iff_deriv, positivePower_deriv hN]
   exact ⟨fun x => (positivePower_derivative hN x).differentiableAt,
     continuous_const.mul (positivePower_continuous _)⟩
 
-private theorem positivePower_contDiff_two {N : ℕ} (hN : 3 ≤ N) :
+private theorem positivePower_contDiff_two {N } (hN : 3 ≤ N) :
     ContDiff ℝ 2 (positivePower N) := by
   rw [show (2 : WithTop ℕ∞) = 1 + 1 by norm_num, contDiff_succ_iff_deriv]
   refine ⟨fun x => (positivePower_derivative (by omega) x).differentiableAt, ?_, ?_⟩
@@ -79,7 +79,7 @@ private theorem positivePower_contDiff_two {N : ℕ} (hN : 3 ≤ N) :
     exact contDiff_const.mul (positivePower_contDiff_one (by omega))
 
 
-/-- A source-admissible integer gives a strictly positive barrier constant. -/
+/- A source-admissible integer gives a strictly positive barrier constant. -/
 theorem exists_retention_barrier_order (d : ℕ) (hd : 1 ≤ d)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
     ∃ N : ℕ, 3 ≤ N ∧ 2 * (N - 1 : ℕ) * lam > (d : ℝ) * Lam ∧
@@ -101,8 +101,8 @@ theorem exists_retention_barrier_order (d : ℕ) (hd : 1 ≤ d)
     have hpos : 0 < (n : ℝ) + 1 := by positivity
     nlinarith [mul_pos hpos (show 0 < 2 * (n : ℝ) * lam - (d : ℝ) * Lam by linarith)]
 
-/-- The positive-part polynomial barrier is globally twice continuously differentiable. -/
-theorem retention_barrier_contDiff {d N : ℕ} (hN : 3 ≤ N) (s : ℝ) :
+/- The positive-part polynomial barrier is globally twice continuously differentiable. -/
+theorem retention_barrier_contDiff {d N } (hN : 3 ≤ N) (s : ℝ) :
     ContDiff ℝ 2 (barrier (d := d) N s) := by
   have hw : ContDiff ℝ 2 (fun Y : PDE.Vec d => 1 - PDE.vecNormSq Y / s ^ 2) :=
     contDiff_const.sub (PDE.contDiff_vecNormSq.of_le (by norm_num) |>.div_const _)
@@ -111,20 +111,18 @@ theorem retention_barrier_contDiff {d N : ℕ} (hN : 3 ≤ N) (s : ℝ) :
 
 private def radialProfile (N : ℕ) (s r : ℝ) : ℝ := positivePower N (1 - r / s ^ 2)
 
-private theorem radialProfile_derivative {N : ℕ} (hN : 2 ≤ N) (s r : ℝ) :
+private theorem radialProfile_derivative {N } (hN : 2 ≤ N) (s r : ℝ) :
     HasDerivAt (radialProfile N s)
       (-((N : ℝ) / s ^ 2) * positivePower (N - 1) (1 - r / s ^ 2)) r := by
-  have hw := ((hasDerivAt_id r).div_const (s ^ 2)).const_sub 1
-  have h := (positivePower_derivative hN (1 - r / s ^ 2)).comp r hw
-  exact h.congr_deriv (by ring)
+  exact ((positivePower_derivative hN (1 - r / s ^ 2)).comp r (((hasDerivAt_id r).div_const (s ^ 2)).const_sub 1)).congr_deriv (by ring)
 
-private theorem radialProfile_deriv {N : ℕ} (hN : 2 ≤ N) (s : ℝ) :
+private theorem radialProfile_deriv {N } (hN : 2 ≤ N) (s : ℝ) :
     deriv (radialProfile N s) =
       fun r => -((N : ℝ) / s ^ 2) * positivePower (N - 1) (1 - r / s ^ 2) := by
   funext r
   exact (radialProfile_derivative hN s r).deriv
 
-private theorem radialProfile_second_deriv {N : ℕ} (hN : 3 ≤ N) (s r : ℝ) :
+private theorem radialProfile_second_deriv {N } (hN : 3 ≤ N) (s r : ℝ) :
     deriv (deriv (radialProfile N s)) r =
       ((N : ℝ) / s ^ 2) * ((N - 1 : ℕ) / s ^ 2) *
         positivePower (N - 2) (1 - r / s ^ 2) := by
@@ -138,13 +136,7 @@ private theorem radialProfile_second_deriv {N : ℕ} (hN : 3 ≤ N) (s r : ℝ) 
   rw [show N - 1 - 1 = N - 2 by omega]
   ring
 
-private theorem radialProfile_contDiff {N : ℕ} (hN : 3 ≤ N) (s : ℝ) :
-    ContDiff ℝ 2 (radialProfile N s) :=
-  (positivePower_contDiff_two hN).comp
-    (contDiff_const.sub (contDiff_id.div_const _))
-
-/-- The global gradient formula uses the literal positive part, including the boundary. -/
-theorem retention_barrier_gradient {d N : ℕ} (hN : 3 ≤ N) (s : ℝ) (Y : PDE.Vec d) :
+theorem retention_barrier_gradient {d N } (hN : 3 ≤ N) (s : ℝ) (Y : PDE.Vec d) :
     PDE.classicalGradient (barrier N s) Y =
       (-2 * N / s ^ 2 * (max (1 - PDE.vecNormSq Y / s ^ 2) 0) ^ (N - 1)) • Y := by
   have h := classicalGradient_comp_vecNormSq_sub
@@ -158,20 +150,25 @@ theorem retention_barrier_gradient {d N : ℕ} (hN : 3 ≤ N) (s : ℝ) (Y : PDE
   simp only [Pi.smul_apply, smul_eq_mul, Pi.zero_apply, sub_zero, positivePower]
   ring
 
-/-- The global Hessian formula uses the literal positive part through order two. -/
-theorem retention_barrier_hessian {d N : ℕ} (hN : 3 ≤ N)
+/- The global Hessian formula uses the literal positive part through order two. -/
+theorem retention_barrier_hessian {d N } (hN : 3 ≤ N)
     (s : ℝ) (hs : 0 < s) (Y : PDE.Vec d) :
     Hess (barrier N s) Y =
       (-2 * N / s ^ 2 * (max (1 - PDE.vecNormSq Y / s ^ 2) 0) ^ (N - 1)) • (1 : PDE.Mat d) +
       ((4 * N * (N - 1 : ℕ) / s ^ 4 *
         (max (1 - PDE.vecNormSq Y / s ^ 2) 0) ^ (N - 2)) •
           Matrix.of (fun i j => Y i * Y j) : PDE.Mat d) := by
-  have hs0 : s ≠ 0 := hs.ne'
+  have hs0 := hs.ne'
   ext i j
   change sliceHessian (fun y => radialProfile N s (PDE.vecNormSq y)) Y i j = _
+  have _h_inl_27 : ContDiff ℝ 2 (radialProfile N s) := by
+      exact (
+    (positivePower_contDiff_two hN).comp
+        (contDiff_const.sub (contDiff_id.div_const _))
+    )
   have h := sliceHessian_comp_vecNormSq_sub
     (m := (0 : PDE.Vec d)) (x := Y)
-    (radialProfile_contDiff hN s).contDiffAt i j
+    _h_inl_27.contDiffAt i j
   simp only [sub_zero] at h
   rw [h, radialProfile_second_deriv hN, radialProfile_deriv (by omega)]
   simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul, Matrix.one_apply,
@@ -179,8 +176,8 @@ theorem retention_barrier_hessian {d N : ℕ} (hN : 3 ≤ N)
   generalize max (1 - PDE.vecNormSq Y / s ^ 2) 0 = w
   split_ifs <;> field_simp [hs0] <;> ring
 
-/-- The source retention polynomial, including its boundary jets. -/
-theorem retention_polynomial_barrier {d N : ℕ} (hN : 3 ≤ N)
+/- The source retention polynomial, including its boundary jets. -/
+theorem retention_polynomial_barrier {d N } (hN : 3 ≤ N)
     (s : ℝ) (hs : 0 < s) :
     ContDiff ℝ 2 (barrier (d := d) N s) ∧
     (∀ Y : PDE.Vec d, 0 ≤ barrier N s Y ∧ barrier N s Y ≤ 1) ∧ barrier (d := d) N s 0 = 1 ∧
@@ -195,7 +192,7 @@ theorem retention_polynomial_barrier {d N : ℕ} (hN : 3 ≤ N)
     (∀ Y : PDE.Vec d, Y ∉ PDE.euclideanBall 0 s →
       barrier N s Y = 0 ∧ PDE.classicalGradient (barrier N s) Y = 0 ∧
         Hess (barrier N s) Y = 0) := by
-  have hs2 : 0 < s ^ 2 := sq_pos_of_pos hs
+  have hs2 := sq_pos_of_pos hs
   have hpow1 : N - 1 ≠ 0 := by omega
   have hpow2 : N - 2 ≠ 0 := by omega
   refine ⟨retention_barrier_contDiff hN s, ?_, ?_, ?_, ?_⟩

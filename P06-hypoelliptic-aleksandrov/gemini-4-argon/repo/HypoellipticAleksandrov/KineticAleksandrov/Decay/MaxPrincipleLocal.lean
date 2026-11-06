@@ -2,6 +2,14 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrincipleCalculus
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrincipleGeometry
+import HypoellipticAleksandrov.KineticAleksandrov.Operator
+import HypoellipticAleksandrov.Parabolic.ScalarClassical
+import Mathlib.Analysis.Calculus.DerivativeTest
+import Mathlib.Analysis.Calculus.FDeriv.Symmetric
+import Mathlib.Analysis.Calculus.LocalExtr.Basic
+import Mathlib.Analysis.Matrix.Order
+import Mathlib.LinearAlgebra.Matrix.PosDef
+import Mathlib.Tactic.Linarith
 
 /-!
 # One-sided time calculus at a moving-tube maximum
@@ -15,13 +23,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology
+open Matrix
+open scoped MatrixOrder
 
-/-- The transported operator is nonpositive at a tube maximum strictly before
+/- The transported operator is nonpositive at a tube maximum strictly before
 terminal time, with differentiability only in the slices required by the source. -/
-theorem transportedForwardOperator_nonpos_at_tube_max {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
-    {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
-    {u : KineticPoint d → ℝ} {p : KineticPoint d}
+theorem transportedForwardOperator_nonpos_at_tube_max {d Ω γ a b B drift u} {p : KineticPoint d}
     (hΩ : IsOpen Ω) (hγ : ContinuousAt γ p.time)
     (ht : p.time ∈ Ico a b) (hv : p.position ∈ movingDomain Ω γ p.time)
     (hmax : IsMaxOn u (maximumClosedTube Ω γ a b) p)
@@ -59,6 +66,16 @@ theorem transportedForwardOperator_nonpos_at_tube_max {d : ℕ}
       simpa only [kineticTimeDerivative, ContinuousLinearMap.toSpanSingleton_apply,
         smul_eq_mul] using htprod
     exact nonpos_of_mul_nonpos_right hproduct (sub_pos.mpr ht.2)
-  exact transportedForwardOperator_nonpos_of_slice_localMax htime huv huz hvmax hzmax hB
+  have hdiff := diffused_contraction_nonpos_of_localMax huv hvmax hB
+  have _h_xinl_0 : kineticVelocityGradient u p = 0 := by
+    ext i
+    change fderiv ℝ (fun z => u ⟨p.time, p.position, z⟩)
+      p.velocity (PDE.basisVec i) = 0
+    rw [hzmax.hasFDerivAt_eq_zero huz.hasFDerivAt]
+    rfl
+  rw [transportedForwardOperator_apply,
+    _h_xinl_0]
+  simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero, add_zero]
+  exact add_nonpos htime hdiff
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

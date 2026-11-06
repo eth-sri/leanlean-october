@@ -12,7 +12,7 @@ open HypoellipticAleksandrov MeasureTheory
 open scoped ENNReal
 
 /-- The source velocity restriction gives the cubic position moment scale. -/
-theorem position_moment_scale_le {v M T Lam : ℝ} (hT : 0 ≤ T)
+theorem position_moment_scale_le {v M T Lam } (hT : 0 ≤ T)
     (hv : |v| ≤ M*Real.sqrt T) :
     2*v^2*T^2+4/3*Lam*T^3 ≤ (2*M^2+4/3*Lam)*T^3 := by
   have hs := Real.sq_sqrt hT
@@ -20,14 +20,13 @@ theorem position_moment_scale_le {v M T Lam : ℝ} (hT : 0 ≤ T)
     have h := mul_self_le_mul_self (abs_nonneg v) hv
     rw [← pow_two, ← pow_two, sq_abs, mul_pow, hs] at h
     exact h
-  have hmul := mul_le_mul_of_nonneg_right hsq (sq_nonneg T)
-  nlinarith only [hmul]
+  nlinarith only [(mul_le_mul_of_nonneg_right hsq (sq_nonneg T))]
 
 /-- The origin-extension modulus yields the exact source uniform endpoint time power.
 The constant is fixed before the coefficient, pole, terminal time and spatial shift. -/
 theorem deterministic_barrier_endpoint_uniform_of_modulus
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (alpha B M : ℝ) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) (hB : 0 ≤ B)
     (Phi : Z → ℝ) (hPhi : Continuous Phi)
     (hmod : ∀ z w : Z, |Phi z-Phi w| ≤
@@ -40,7 +39,7 @@ theorem deterministic_barrier_endpoint_uniform_of_modulus
           C*(T : ℝ)^(alpha/2) := by
   let D := 2*M^2+4/3*Lam
   let C0 := B*(D^(alpha/6)+(2*Lam)^(alpha/2))
-  have hL : 0 ≤ Lam := hlam.le.trans hLam
+  have hL := hlam.le.trans hLam
   have hD : 0 ≤ D := by dsimp only [D]; positivity
   have hC : 0 ≤ C0 := by
     exact mul_nonneg hB (add_nonneg (Real.rpow_nonneg hD _) (Real.rpow_nonneg (by positivity) _))

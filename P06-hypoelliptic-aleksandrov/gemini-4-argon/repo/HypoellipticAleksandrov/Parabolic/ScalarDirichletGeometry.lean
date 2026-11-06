@@ -15,8 +15,8 @@ problem.  It contains no barrier, regularity, or solvability result.
 
 namespace HypoellipticAleksandrov.Parabolic
 
-/-- `Ω` has a uniform exterior cone with strictly positive angular opening. -/
-def HasUniformNondegenerateExteriorCone {n : ℕ}
+/- `Ω` has a uniform exterior cone with strictly positive angular opening. -/
+def HasUniformNondegenerateExteriorCone {n }
     (Ω : Set (PDE.Vec n)) : Prop :=
   ∃ ρ θ : ℝ, 0 < ρ ∧ 0 < θ ∧ θ < 1 ∧
     ∀ y ∈ frontier Ω, ∃ ν : PDE.Vec n,
@@ -27,26 +27,5 @@ def HasUniformNondegenerateExteriorCone {n : ℕ}
           θ * PDE.vecEuclideanNorm z ≤ PDE.vecDot z ν →
           y + z ∉ Ω
 
-/-- The initial face `{r₀} × closure Ω` of a scalar parabolic cylinder. -/
-def scalarParabolicInitialFace {n : ℕ} (r₀ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
-  ({r₀} : Set ℝ) ×ˢ closure Ω
-
-/-- Membership in the initial face of a scalar parabolic cylinder. -/
-@[simp] theorem mem_scalarParabolicInitialFace_iff {n : ℕ} {r₀ r : ℝ}
-    {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
-    (r, y) ∈ scalarParabolicInitialFace r₀ Ω ↔ r = r₀ ∧ y ∈ closure Ω := by
-  simp [scalarParabolicInitialFace]
-
-/-- The terminal corner `{r₁} × frontier Ω` of a scalar parabolic cylinder. -/
-def scalarParabolicTerminalCorner {n : ℕ} (r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
-  ({r₁} : Set ℝ) ×ˢ frontier Ω
-
-/-- Membership in the terminal corner of a scalar parabolic cylinder. -/
-@[simp] theorem mem_scalarParabolicTerminalCorner_iff {n : ℕ} {r₁ r : ℝ}
-    {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
-    (r, y) ∈ scalarParabolicTerminalCorner r₁ Ω ↔ r = r₁ ∧ y ∈ frontier Ω := by
-  simp [scalarParabolicTerminalCorner]
-
+/- The initial face `{r₀} × closure Ω` of a scalar parabolic cylinder. -/
 end HypoellipticAleksandrov.Parabolic

@@ -28,7 +28,7 @@ def Clock.inverse (c : Clock) (e p : Point) : Point :=
 
 /-- Applying the inverse after the clock recovers the physical point. -/
 theorem Clock.inverse_map (c : Clock) (e p : Point) : c.inverse e (c.map e p) = p := by
-  have hr : c.r ≠ 0 := ne_of_gt c.positive
+  have hr := ne_of_gt c.positive
   have hv : c.vbar ≠ 0 := c.nonzero
   ext i
   · simp only [Clock.inverse, Clock.map]
@@ -47,7 +47,7 @@ theorem Clock.inverse_map (c : Clock) (e p : Point) : c.inverse e (c.map e p) = 
 
 /-- Applying the clock after its inverse recovers the normalized point. -/
 theorem Clock.map_inverse (c : Clock) (e p : Point) : c.map e (c.inverse e p) = p := by
-  have hr : c.r ≠ 0 := ne_of_gt c.positive
+  have hr := ne_of_gt c.positive
   have hv : c.vbar ≠ 0 := c.nonzero
   ext i
   · simp only [Clock.inverse, Clock.map]
@@ -79,7 +79,7 @@ theorem Clock.mem_active_iff (c : Clock) (v : ℝ) :
   constructor <;> intro h <;> constructor <;> linarith only [h.1, h.2]
 
 /-- Velocity in the active interval differs from the centre by less than half its size. -/
-theorem Clock.active_distance (c : Clock) {v : ℝ} (hv : v ∈ c.active) :
+theorem Clock.active_distance (c : Clock) {v } (hv : v ∈ c.active) :
     |v - c.vbar| < |c.vbar| / 2 := by
   have hp : 0 < |c.vbar| := abs_pos.mpr c.nonzero
   have hh : |v - c.vbar| < 3 * c.r / 4 := by
@@ -88,7 +88,7 @@ theorem Clock.active_distance (c : Clock) {v : ℝ} (hv : v ∈ c.active) :
   linarith only [hh, c.radius]
 
 /-- The two source absolute-velocity bounds on the active interval. -/
-theorem Clock.active_abs_bounds (c : Clock) {v : ℝ} (hv : v ∈ c.active) :
+theorem Clock.active_abs_bounds (c : Clock) {v } (hv : v ∈ c.active) :
     |c.vbar| / 2 ≤ |v| ∧ |v| ≤ 3 * |c.vbar| / 2 := by
   have hd := c.active_distance hv
   have h1 := abs_sub_abs_le_abs_sub c.vbar v

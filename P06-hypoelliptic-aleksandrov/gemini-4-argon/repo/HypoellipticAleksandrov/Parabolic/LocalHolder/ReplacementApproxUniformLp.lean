@@ -31,7 +31,7 @@ theorem continuousOn_continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity
   simp only [Set.domRestrict_apply, continuousMapZeroExtension, dite_eq_left z.property]
 
 /-- Uniform closed-carrier convergence implies strong restricted L2 convergence. -/
-theorem tendsto_local_toLp_of_continuousMap_tendsto {d : ℕ}
+theorem tendsto_local_toLp_of_continuousMap_tendsto {d }
     (K S : Set (TimeVelocity d)) [CompactSpace K]
     (hS : IsOpen S) (hSc : IsCompact (closure S)) (hSK : closure S ⊆ K)
     (U : ℕ → C(K, ℝ)) (V : C(K, ℝ)) (hlim : Tendsto U atTop (𝓝 V))

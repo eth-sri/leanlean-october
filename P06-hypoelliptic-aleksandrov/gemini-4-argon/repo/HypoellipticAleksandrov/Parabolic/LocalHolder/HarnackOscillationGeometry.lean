@@ -9,26 +9,9 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
-/-- Unit points map into the physical backward cylinder of radius `r`. -/
-theorem parabolicAffine_mapsTo_backward_ball {N : ℕ} (T : ℝ) (v : PDE.Vec N)
-    {r : ℝ} (hr : 0 < r) :
-    MapsTo (parabolicAffine (T - r ^ 2) v r)
-      (Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall 0 1)
-      (scalarParabolicOpenCylinder (T - r ^ 2) T (PDE.euclideanBall v r)) := by
-  intro z hz
-  change (T - r ^ 2 + r ^ 2 * z.1, v + r • z.2) ∈ _
-  constructor
-  · have hs := sq_pos_of_pos hr
-    constructor <;> nlinarith only [hs, hz.1.1, hz.1.2]
-  · rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr]
-    rw [add_sub_cancel_left, PDE.vecEuclideanNorm_smul, abs_of_pos hr]
-    have hn := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt zero_lt_one).mp hz.2
-    simp only [sub_zero] at hn
-    nlinarith only [hr, hn]
-
-/-- Inverse coordinates of a physical point recover the point exactly. -/
-theorem parabolicAffine_inverse_apply {N : ℕ} (T : ℝ) (v : PDE.Vec N)
-    {r : ℝ} (hr : 0 < r) (z : TimeVelocity N) :
+/- Unit points map into the physical backward cylinder of radius `r`. -/
+theorem parabolicAffine_inverse_apply {N } (T : ℝ) (v : PDE.Vec N)
+    {r } (hr : 0 < r) (z : TimeVelocity N) :
     parabolicAffine (T - r ^ 2) v r
       ((z.1 - (T - r ^ 2)) / r ^ 2, r⁻¹ • (z.2 - v)) = z := by
   apply Prod.ext
@@ -38,9 +21,9 @@ theorem parabolicAffine_inverse_apply {N : ℕ} (T : ℝ) (v : PDE.Vec N)
   · change v + r • (r⁻¹ • (z.2 - v)) = z.2
     rw [smul_smul, mul_inv_cancel₀ hr.ne', one_smul, add_sub_cancel]
 
-/-- The half-radius backward cylinder corresponds to the later Harnack slab. -/
-theorem backward_half_ball_inverse_mem {N : ℕ} (T : ℝ) (v : PDE.Vec N)
-    {r : ℝ} (hr : 0 < r) {z : TimeVelocity N}
+/- The half-radius backward cylinder corresponds to the later Harnack slab. -/
+theorem backward_half_ball_inverse_mem {N } (T ) (v : PDE.Vec N)
+    {r } (hr : 0 < r) {z : TimeVelocity N}
     (hz : z ∈ scalarParabolicOpenCylinder (T - (r / 2) ^ 2) T
       (PDE.euclideanBall v (r / 2))) :
     ((z.1 - (T - r ^ 2)) / r ^ 2, r⁻¹ • (z.2 - v)) ∈

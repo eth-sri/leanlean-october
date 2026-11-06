@@ -25,7 +25,7 @@ def boundedConservationDatum (F : BoundedBorel (EvolutionAmbientState 1)) (N : �
 
 /-- The compact approximation has the same absolute bound as its terminal datum. -/
 theorem boundedConservationDatum_bound (F : BoundedBorel (EvolutionAmbientState 1))
-    {C : ℝ} (hC : ∀ x, |F x| ≤ C) (N : ℕ) (x : EvolutionAmbientState 1) :
+    {C } (hC : ∀ x, |F x| ≤ C) (N : ℕ) (x : EvolutionAmbientState 1) :
     |boundedConservationDatum F N x| ≤ C := by
   change |F x * conservationDatum N x| ≤ C
   rw [abs_mul, abs_of_nonneg (conservationDatum_bounds N x).1]
@@ -44,23 +44,21 @@ theorem boundedConservationDatum_smoothCompact
 
 /-- The approximation error is controlled by a vanishing quadratic coefficient. -/
 theorem boundedConservationDatum_error (F : BoundedBorel (EvolutionAmbientState 1))
-    {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
+    {C } (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
     (N : ℕ) (x : EvolutionAmbientState 1) :
     |F x - boundedConservationDatum F N x| ≤ C / ((N : ℝ) + 1) ^ 2 *
       (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
   change |F x - F x * conservationDatum N x| ≤ _
   rw [← mul_one_sub, abs_mul, abs_of_nonneg
     (sub_nonneg.mpr (conservationDatum_bounds N x).2)]
-  have h := mul_le_mul (hC x) (conservationDatum_deficit N x)
-    (sub_nonneg.mpr (conservationDatum_bounds N x).2) hC0
-  convert h using 1
+  convert (mul_le_mul (hC x) (conservationDatum_deficit N x) (sub_nonneg.mpr (conservationDatum_bounds N x).2) hC0) using 1
   simp only [div_eq_mul_inv, inv_pow]
   ring
 
 /-- Ordered compact approximations satisfy the quadratic Cauchy estimate. -/
 theorem boundedConservationDatum_sub (F : BoundedBorel (EvolutionAmbientState 1))
-    {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
-    {N M : ℕ} (hNM : N ≤ M) (x : EvolutionAmbientState 1) :
+    {C } (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
+    {N M } (hNM : N ≤ M) (x : EvolutionAmbientState 1) :
     |boundedConservationDatum F M x - boundedConservationDatum F N x| ≤
       (2 * C) / ((N : ℝ) + 1) ^ 2 *
         (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by

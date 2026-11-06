@@ -15,7 +15,7 @@ open scoped Topology
 homogeneous reconstruction value. This uses the proved pointwise reconstruction. -/
 theorem reconstruction_boundary_comparison
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (sMinus T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (he : sMinus < e.1.time) (phi : Point → ℝ)
@@ -23,7 +23,7 @@ theorem reconstruction_boundary_comparison
     (hc : Continuous phi)
     (hb : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H sMinus T,
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M)
-    (M : ℝ) (hM : ∀ p, |phi p| ≤ M) (c : ℝ)
+    (M ) (hM : ∀ p, |phi p| ≤ M) (c )
     (hbd : ∀ p ∈ stripClosedExit H T, phi p ≤ c) :
     phi e.1 - ∫ p, -forwardScalarOperator A.a phi p ∂stripGreenOfKernel H E.2 T e ≤ c := by
   obtain ⟨g, f, hg, hg0, hf, heq, hop⟩ :=
@@ -67,8 +67,7 @@ theorem reconstruction_boundary_comparison
   obtain ⟨C, hC, hgb⟩ := g.exists_bound
   have hcand := reconstruction_candidate_continuousOn_exit hH hlam hLam A H E hE
     sMinus T phi hphi hc.continuousOn g hg
-  have hcslab : ContinuousOn (u ∘ sectionTwoPoint)
-      (movingClosedSlab (intervalDomain H) (fun _ => 0) a T) :=
+  have hcslab :=
     hcand.comp (continuous_sectionTwoPoint 1).continuousOn (reconstruction_closedSlab_mapsTo H he)
   have hmax := growth_comparison
     (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)) continuous_const

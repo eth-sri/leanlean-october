@@ -74,9 +74,7 @@ theorem ballExit_smooth_short_strip_decomposition
     intro w
     have hpoint : j w ∈ localClosedStrip H.1 T.1 v₀ R :=
       ⟨le_rfl, H.2.2.le, subset_closure (ball_state_velocity_mem H.1 w)⟩
-    have heq := ballBoundarySolution_lowerTime_eq hH hLE hd hlam hLam B hB v₀ hR
-      P.1.time H.1 T.1 H.2.1.le H.2.2 φ hφ hc hpoint
-    exact heq.trans
+    exact (ballBoundarySolution_lowerTime_eq hH hLE hd hlam hLam B hB v₀ hR P.1.time H.1 T.1 H.2.1.le H.2.2 φ hφ hc hpoint).trans
       ((ballExitRaw_spec hH hLE hd hlam hLam B hB v₀ hR
         (ballStateStart H.1 w) ⟨T.1, H.2.2⟩).2.2 φ hφ hc).symm
   rw [ballExit_smooth_short_strip_representation hH hLE hd hlam hLam B hB v₀ hR

@@ -20,7 +20,7 @@ open scoped ENNReal
 /-- The one-pole density estimate bounds every positive bounded conjugate test uniformly. -/
 theorem mixture_density_conjugate_tests
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (q p : ℝ) (hpq : q.HolderConjugate p) (hq2 : q < (3 : ℝ) / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (nu : Measure Point) [IsFiniteMeasure nu] (f : BoundedBorel Point),
@@ -41,7 +41,7 @@ theorem mixture_density_conjugate_tests
     intro e
     by_cases he : e.velocity 0 ∈ c.active
     · obtain ⟨g, hgm, hgn, hgd, hgb, _⟩ := hc A c e he
-      have hgp : MemLp g (ENNReal.ofReal q) volume :=
+      have hgp :=
         hgb.trans_lt ENNReal.ofReal_lt_top
       have hgr : (eLpNorm g (ENNReal.ofReal q) volume).toReal ≤
           C * c.r ^ (6 / q - 4) :=

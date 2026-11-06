@@ -16,12 +16,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open Set Function
 
-/-- Accumulate cutoffs using the smooth union operation `a + (1-a)b`. -/
+/- Accumulate cutoffs using the smooth union operation `a + (1-a)b`. -/
 def accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ) : ℕ → E → ℝ
   | 0 => χ 0
   | j + 1 => fun x => accumulatedCutoffs χ j x + (1 - accumulatedCutoffs χ j x) * χ (j + 1) x
 
-/-- Accumulated cutoffs take values in `[0,1]` when all their inputs do. -/
+/- Accumulated cutoffs take values in `[0,1]` when all their inputs do. -/
 theorem accumulatedCutoffs_bounds {E : Type*} (χ : ℕ → E → ℝ)
     (hχ : ∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1) :
     ∀ j x, 0 ≤ accumulatedCutoffs χ j x ∧ accumulatedCutoffs χ j x ≤ 1 := by
@@ -37,7 +37,7 @@ theorem accumulatedCutoffs_bounds {E : Type*} (χ : ℕ → E → ℝ)
     dsimp only [accumulatedCutoffs]
     constructor <;> nlinarith only [ha.1, hprod, hnon]
 
-/-- Accumulated cutoffs increase pointwise. -/
+/- Accumulated cutoffs increase pointwise. -/
 theorem monotone_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
     (hχ : ∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1) (x : E) :
     Monotone (fun j => accumulatedCutoffs χ j x) := by
@@ -48,7 +48,7 @@ theorem monotone_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
   exact le_add_of_nonneg_right (mul_nonneg
     (sub_nonneg.mpr (accumulatedCutoffs_bounds χ hχ j x).2) (hχ (j + 1) x).1)
 
-/-- The accumulated cutoff at an index dominates that index's input cutoff. -/
+/- The accumulated cutoff at an index dominates that index's input cutoff. -/
 theorem le_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
     (hχ : ∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1) (j : ℕ) (x : E) :
     χ j x ≤ accumulatedCutoffs χ j x := by
@@ -60,27 +60,10 @@ theorem le_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
     dsimp only [accumulatedCutoffs]
     nlinarith only [hp]
 
-/-- Accumulation preserves smoothness, compact support and an interior support condition. -/
-theorem accumulatedCutoffs_regular
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {U : Set E}
-    (χ : ℕ → E → ℝ)
-    (hχ : ∀ j, ContDiff ℝ (⊤ : ℕ∞) (χ j) ∧ HasCompactSupport (χ j) ∧ tsupport (χ j) ⊆ U) :
-    ∀ j, ContDiff ℝ (⊤ : ℕ∞) (accumulatedCutoffs χ j) ∧
-      HasCompactSupport (accumulatedCutoffs χ j) ∧ tsupport (accumulatedCutoffs χ j) ⊆ U := by
-  intro j
-  induction j with
-  | zero => exact hχ 0
-  | succ j ih =>
-    refine ⟨ih.1.add ((contDiff_const.sub ih.1).mul (hχ (j + 1)).1),
-      ih.2.1.add (hχ (j + 1)).2.1.mul_left, ?_⟩
-    exact (tsupport_add _ _).trans (union_subset ih.2.2
-      (tsupport_mul_subset_right.trans (hχ (j + 1)).2.2))
-
-/-- Every open finite-dimensional real set has increasing smooth compact interior cutoffs,
-eventually identically one at each of its points. -/
+/- Accumulation preserves smoothness, compact support and an interior support condition. -/
 theorem exists_increasing_smooth_interior_cutoffs
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-    {U : Set E} (hU : IsOpen U) :
+    {U } (hU : IsOpen U) :
     ∃ χ : ℕ → E → ℝ,
       (∀ j, ContDiff ℝ (⊤ : ℕ∞) (χ j) ∧ HasCompactSupport (χ j) ∧ tsupport (χ j) ⊆ U) ∧
       (∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1) ∧ (∀ x, Monotone (fun j => χ j x)) ∧
@@ -95,8 +78,17 @@ theorem exists_increasing_smooth_interior_cutoffs
     exact y.2
   choose χ hs hc ht hb h1 using
     (fun j => exists_smooth_bump_of_isCompact_subset_isOpen (hK j) hU (hKU j))
-  refine ⟨accumulatedCutoffs χ, accumulatedCutoffs_regular χ
-    (fun j => ⟨hs j, hc j, ht j⟩), accumulatedCutoffs_bounds χ hb,
+  have _h_inl_14 : ∀ j, ContDiff ℝ (⊤ : ℕ∞) (accumulatedCutoffs χ j) ∧ HasCompactSupport (accumulatedCutoffs χ j) ∧ tsupport (accumulatedCutoffs χ j) ⊆ U := by
+    have hχ : ∀ j, ContDiff ℝ (⊤ : ℕ∞) (χ j) ∧ HasCompactSupport (χ j) ∧ tsupport (χ j) ⊆ U := (fun j => ⟨hs j, hc j, ht j⟩)
+    intro j
+    induction j with
+    | zero => exact hχ 0
+    | succ j ih =>
+      refine ⟨ih.1.add ((contDiff_const.sub ih.1).mul (hχ (j + 1)).1),
+        ih.2.1.add (hχ (j + 1)).2.1.mul_left, ?_⟩
+      exact (tsupport_add _ _).trans (union_subset ih.2.2
+        (tsupport_mul_subset_right.trans (hχ (j + 1)).2.2))
+  refine ⟨accumulatedCutoffs χ, _h_inl_14, accumulatedCutoffs_bounds χ hb,
     monotone_accumulatedCutoffs χ hb, ?_⟩
   intro x hx
   obtain ⟨N, hN⟩ := exists_mem_compactCovering (⟨x, hx⟩ : U)

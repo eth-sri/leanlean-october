@@ -18,7 +18,7 @@ open Filter
 open scoped Topology
 
 /-- A smooth Euclidean Lipschitz velocity has the same Euclidean acceleration bound. -/
-theorem vecEuclideanNorm_deriv_le {d : ℕ} {v : ℝ → PDE.Vec d} {H : ℝ}
+theorem vecEuclideanNorm_deriv_le {d } {v : ℝ → PDE.Vec d} {H }
     (hH : 0 ≤ H) (hv : Differentiable ℝ v)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|) (s : ℝ) :
     PDE.vecEuclideanNorm (deriv v s) ≤ H := by
@@ -37,7 +37,7 @@ theorem vecEuclideanNorm_deriv_le {d : ℕ} {v : ℝ → PDE.Vec d} {H : ℝ}
   exact hnorm
 
 /-- Young's inequality with exactly the source coefficient `3 lam / 2`. -/
-theorem acceleration_young {d : ℕ} {lam H : ℝ} (hlam : 0 < lam)
+theorem acceleration_young {d lam H} (hlam : 0 < lam)
     (a p : PDE.Vec d) (ha : PDE.vecEuclideanNorm a ≤ H) :
     2 * PDE.vecDot a p ≤ (3 * lam / 2) * PDE.vecNormSq p + 2 * H ^ 2 / (3 * lam) := by
   have hdot := (le_abs_self (PDE.vecDot a p)).trans

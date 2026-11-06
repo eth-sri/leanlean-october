@@ -22,7 +22,7 @@ open MeasureTheory Set
 open scoped Convex ENNReal MatrixOrder
 
 private theorem setIntegral_eq_setIntegral_of_subset_of_eq_zero
-    {d : ℕ} {V S : Set (TimeVelocity d)} (hS : MeasurableSet S)
+    {d V S} (hS : MeasurableSet S)
     (hV : MeasurableSet V) (hVS : V ⊆ S) (f : TimeVelocity d → ℝ)
     (hoff : ∀ z ∈ S, z ∉ V → f z = 0) :
     ∫ z in S, f z = ∫ z in V, f z := by
@@ -40,7 +40,7 @@ private theorem setIntegral_eq_setIntegral_of_subset_of_eq_zero
 then transport only the cutoff-supported energy and flux terms to the outer
 carrier. -/
 theorem setIntegral_fixedDirection_fluxPairing_coercive_absorbed_on_safeCarrier
-    {d : ℕ} {V S : Set (TimeVelocity d)}
+    {d V S}
     (hS : MeasurableSet S) (hV : MeasurableSet V) (hVS : V ⊆ S)
     (A : TimeVelocity d → PDE.Mat d)
     (G H : Fin d → TimeVelocity d → ℝ)
@@ -82,7 +82,7 @@ theorem setIntegral_fixedDirection_fluxPairing_coercive_absorbed_on_safeCarrier
         ((d : ℝ) ^ 2 + (d : ℝ)) * Ma * Keta) *
         ((∫ z in V, Q z ^ 2) +
           ∑ j : Fin d, ∫ z in V, G j z ^ 2) := by
-  have _hMa : 0 ≤ Ma := hMa
+  have _hMa := hMa
   let Gamma : ℝ :=
     8 * (d : ℝ) ^ 3 / lam * Lam ^ 2 * Keta ^ 2 +
       2 * (d : ℝ) ^ 2 / lam * Ma ^ 2 +

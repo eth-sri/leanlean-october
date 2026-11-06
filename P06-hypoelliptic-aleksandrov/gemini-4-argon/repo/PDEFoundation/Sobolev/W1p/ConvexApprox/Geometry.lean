@@ -21,13 +21,13 @@ and convexity keeps the sample point in `U`.
 
 namespace PDE
 
-/-- A nonempty bounded open convex domain contains a positive-radius closed
+/- A nonempty bounded open convex domain contains a positive-radius closed
 ball for the inherited native-vector metric. Since that metric is the
 finite-product supremum metric, this is an internal base cube, not a round
 Euclidean ball. -/
 theorem
     exists_metricClosedBall_subset_of_isOpenBoundedConvexDomain
-    {d : ℕ} {U : Set (Vec d)}
+    {d } {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) (hUNonempty : U.Nonempty) :
     ∃ x0 : Vec d, ∃ r : ℝ,
       0 < r ∧ Metric.closedBall x0 r ⊆ U := by
@@ -39,26 +39,19 @@ theorem
     (Metric.closedBall_subset_ball
       (by linarith : δ / 2 < δ)).trans hball
 
-/-- The affine sample point used by the convex-domain smoothing operator. -/
-def convexApproxSample {d : ℕ}
+/- The affine sample point used by the convex-domain smoothing operator. -/
+def convexApproxSample {d }
     (x0 z : Vec d) (r ε : ℝ) (x : Vec d) : Vec d :=
   (1 - ε) • x + ε • (x0 - r • z)
 
-@[simp]
-theorem convexApproxSample_apply {d : ℕ}
-    (x0 z : Vec d) (r ε : ℝ) (x : Vec d) :
-    convexApproxSample x0 z r ε x =
-      (1 - ε) • x + ε • (x0 - r • z) :=
-  rfl
-
-theorem convexApproxSample_eq_segmentBlend {d : ℕ}
+theorem convexApproxSample_eq_segmentBlend {d }
     (x0 z : Vec d) (r ε : ℝ) (x : Vec d) :
     convexApproxSample x0 z r ε x =
       segmentBlend (x0 - r • z) ε x := by
   rw [convexApproxSample, segmentBlend_eq_smul_add]
 
-theorem sub_smul_mem_closedBall {d : ℕ}
-    {x0 z : Vec d} {r : ℝ} (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1) :
+theorem sub_smul_mem_closedBall {d }
+    {x0 z : Vec d} {r } (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1) :
     x0 - r • z ∈ Metric.closedBall x0 r := by
   rw [Metric.mem_closedBall, dist_eq_norm]
   have hsub : (x0 - r • z) - x0 = -(r • z) := by
@@ -71,34 +64,33 @@ theorem sub_smul_mem_closedBall {d : ℕ}
       rw [abs_of_nonneg hr]
       ring
 
-theorem sub_smul_mem_of_closedBall_subset {d : ℕ}
-    {U : Set (Vec d)} {x0 z : Vec d} {r : ℝ}
+theorem sub_smul_mem_of_closedBall_subset {d U} {x0 z : Vec d} {r }
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1) :
     x0 - r • z ∈ U :=
   hball (sub_smul_mem_closedBall hr hz)
 
-/-- The base-ball sample point remains in the convex domain. -/
+/- The base-ball sample point remains in the convex domain. -/
 theorem convexApproxSample_mem_of_isOpenBoundedConvexDomain
-    {d : ℕ} {U : Set (Vec d)}
+    {d U}
     (hU : IsOpenBoundedConvexDomain U)
-    {x x0 z : Vec d} {r ε : ℝ} (hx : x ∈ U)
+    {x x0 z : Vec d} {r ε } (hx : x ∈ U)
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1)
     (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
     convexApproxSample x0 z r ε x ∈ U := by
-  have hy : x0 - r • z ∈ U :=
+  have hy :=
     sub_smul_mem_of_closedBall_subset hball hr hz
   rw [convexApproxSample_eq_segmentBlend]
   exact
     segmentBlend_mem_of_isOpenBoundedConvexDomain
       hU hy hx hε0 hε1
 
-/-- The base-ball sampling map sends the whole convex domain to itself. -/
+/- The base-ball sampling map sends the whole convex domain to itself. -/
 theorem convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
-    {d : ℕ} {U : Set (Vec d)}
+    {d U}
     (hU : IsOpenBoundedConvexDomain U)
-    {x0 z : Vec d} {r ε : ℝ}
+    {x0 z : Vec d} {r ε }
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1)
     (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
@@ -108,28 +100,23 @@ theorem convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
     convexApproxSample_mem_of_isOpenBoundedConvexDomain
       hU hx hball hr hz hε0 hε1
 
-theorem norm_convexApproxSample_sub {d : ℕ}
-    (x0 z : Vec d) (r ε : ℝ) (x : Vec d) :
-    ‖convexApproxSample x0 z r ε x - x‖ =
-      |ε| * ‖(x0 - r • z) - x‖ := by
-  rw [convexApproxSample_eq_segmentBlend,
-    norm_segmentBlend_sub_right]
-
-theorem norm_convexApproxSample_sub_le {d : ℕ}
+theorem norm_convexApproxSample_sub_le {d }
     (x0 z : Vec d) (r ε : ℝ) (x : Vec d)
     (hε0 : 0 ≤ ε) :
     ‖convexApproxSample x0 z r ε x - x‖ ≤
       ε * ‖(x0 - r • z) - x‖ := by
-  rw [norm_convexApproxSample_sub, abs_of_nonneg hε0]
+  have _h_inl_12 (x0 z : Vec d) (r ε : ℝ) (x : Vec d) : ‖convexApproxSample x0 z r ε x - x‖ = |ε| * ‖(x0 - r • z) - x‖ := by
+    rw [convexApproxSample_eq_segmentBlend,
+      norm_segmentBlend_sub_right]
+  rw [_h_inl_12, abs_of_nonneg hε0]
 
 private theorem IsBoundedDomain.norm_sub_le_two_mul_choose'
-    {d : ℕ} {U : Set (Vec d)} (hU : IsBoundedDomain U)
+    {d U} (hU : IsBoundedDomain U)
     {x y : Vec d} (hx : x ∈ U) (hy : y ∈ U) :
     ‖x - y‖ ≤ 2 * Classical.choose hU := by
-  have hRPos : 0 < Classical.choose hU :=
+  have hRPos :=
     (Classical.choose_spec hU).1
-  have hR :
-      ∀ z ∈ U, ∀ i, |z i| ≤ Classical.choose hU :=
+  have hR :=
     (Classical.choose_spec hU).2
   have hxNorm : ‖x‖ ≤ Classical.choose hU := by
     refine (pi_norm_le_iff_of_nonneg hRPos.le).2 ?_
@@ -147,14 +134,17 @@ private theorem IsBoundedDomain.norm_sub_le_two_mul_choose'
     _ = 2 * Classical.choose hU := by
       ring
 
-theorem norm_convexApproxSample_sub_le_two_mul_choose
-    {d : ℕ} {U : Set (Vec d)} (hU : IsBoundedDomain U)
-    {x x0 z : Vec d} {r ε : ℝ} (hx : x ∈ U)
+theorem
+    norm_convexApproxSample_sub_le_two_mul_choose_of_isOpenBoundedConvexDomain
+    {d U}
+    (hU : IsOpenBoundedConvexDomain U)
+    {x x0 z : Vec d} {r ε } (hx : x ∈ U)
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1) (hε0 : 0 ≤ ε) :
     ‖convexApproxSample x0 z r ε x - x‖ ≤
-      ε * (2 * Classical.choose hU) := by
-  have hy : x0 - r • z ∈ U :=
+      ε * (2 * Classical.choose hU.isBoundedDomain) := by
+  have hU := hU.isBoundedDomain
+  have hy :=
     sub_smul_mem_of_closedBall_subset hball hr hz
   calc
     ‖convexApproxSample x0 z r ε x - x‖ ≤
@@ -163,17 +153,5 @@ theorem norm_convexApproxSample_sub_le_two_mul_choose
     _ ≤ ε * (2 * Classical.choose hU) :=
       mul_le_mul_of_nonneg_left
         (hU.norm_sub_le_two_mul_choose' hy hx) hε0
-
-theorem
-    norm_convexApproxSample_sub_le_two_mul_choose_of_isOpenBoundedConvexDomain
-    {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U)
-    {x x0 z : Vec d} {r ε : ℝ} (hx : x ∈ U)
-    (hball : Metric.closedBall x0 r ⊆ U)
-    (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1) (hε0 : 0 ≤ ε) :
-    ‖convexApproxSample x0 z r ε x - x‖ ≤
-      ε * (2 * Classical.choose hU.isBoundedDomain) :=
-  norm_convexApproxSample_sub_le_two_mul_choose
-    hU.isBoundedDomain hx hball hr hz hε0
 
 end PDE

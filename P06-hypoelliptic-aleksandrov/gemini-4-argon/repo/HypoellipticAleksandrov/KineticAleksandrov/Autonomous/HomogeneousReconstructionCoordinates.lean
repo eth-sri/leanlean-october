@@ -41,8 +41,8 @@ private theorem physical_position_line (x : EvolutionVec 1) (i : Fin 1) (t : ℝ
   simp [reconstructionPhysicalPoint, basisZ, PDE.basisVec]
 
 /-- The physical time slice supplies the packed time line derivative. -/
-theorem reconstruction_time_hasLineDerivAt {phi : Point → ℝ} {D : Set Point}
-    (hphi : IsKineticC112On phi D) {x : EvolutionVec 1}
+theorem reconstruction_time_hasLineDerivAt {phi D}
+    (hphi : IsKineticC112On phi D) {x }
     (hx : reconstructionPhysicalPoint x ∈ D) :
     HasLineDerivAt ℝ (phi ∘ reconstructionPhysicalPoint)
       (kineticTimeDerivative phi (reconstructionPhysicalPoint x)) x basisT := by
@@ -55,8 +55,8 @@ theorem reconstruction_time_hasLineDerivAt {phi : Point → ℝ} {D : Set Point}
   simpa only [Function.comp_def, mul_one, reconstructionPhysicalPoint] using! h
 
 /-- The physical velocity slice supplies each packed diffused line derivative. -/
-theorem reconstruction_velocity_hasLineDerivAt {phi : Point → ℝ} {D : Set Point}
-    (hphi : IsKineticC112On phi D) {x : EvolutionVec 1}
+theorem reconstruction_velocity_hasLineDerivAt {phi D}
+    (hphi : IsKineticC112On phi D) {x }
     (hx : reconstructionPhysicalPoint x ∈ D) (i : Fin 1) :
     HasLineDerivAt ℝ (phi ∘ reconstructionPhysicalPoint)
       (kineticVelocityGradient phi (reconstructionPhysicalPoint x) i) x (basisV i) := by
@@ -67,8 +67,8 @@ theorem reconstruction_velocity_hasLineDerivAt {phi : Point → ℝ} {D : Set Po
   exact h
 
 /-- The physical position slice supplies each packed transported line derivative. -/
-theorem reconstruction_position_hasLineDerivAt {phi : Point → ℝ} {D : Set Point}
-    (hphi : IsKineticC112On phi D) {x : EvolutionVec 1}
+theorem reconstruction_position_hasLineDerivAt {phi D}
+    (hphi : IsKineticC112On phi D) {x }
     (hx : reconstructionPhysicalPoint x ∈ D) (i : Fin 1) :
     HasLineDerivAt ℝ (phi ∘ reconstructionPhysicalPoint)
       (kineticPositionGradient phi (reconstructionPhysicalPoint x) i) x (basisZ i) := by
@@ -79,15 +79,15 @@ theorem reconstruction_position_hasLineDerivAt {phi : Point → ℝ} {D : Set Po
   exact h
 
 /-- Differentiating a physical velocity gradient entry gives the actual Hessian entry. -/
-theorem reconstruction_hessian_hasLineDerivAt {phi : Point → ℝ} {D : Set Point}
-    (hphi : IsKineticC112On phi D) {x : EvolutionVec 1}
+theorem reconstruction_hessian_hasLineDerivAt {phi D}
+    (hphi : IsKineticC112On phi D) {x }
     (hx : reconstructionPhysicalPoint x ∈ D) (i j : Fin 1) :
     HasLineDerivAt ℝ
       (fun y => kineticVelocityGradient phi (reconstructionPhysicalPoint y) i)
       (kineticVelocityHessian phi (reconstructionPhysicalPoint x) j i) x (basisV j) := by
   let p := reconstructionPhysicalPoint x
   let f : PDE.Vec 1 → ℝ := fun v => phi ⟨p.time, p.position, v⟩
-  have hd : DifferentiableAt ℝ (fderiv ℝ f) p.velocity :=
+  have hd :=
     ((hphi.velocitySlice_contDiffAt hx).fderiv_right (m := 1) (by norm_num))
       |>.differentiableAt (by norm_num)
   have hg : DifferentiableAt ℝ (PDE.classicalGradient f) p.velocity := by

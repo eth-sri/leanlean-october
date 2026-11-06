@@ -65,7 +65,7 @@ theorem measurableSet_finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : �
 /-- The componentwise exit is supported on the actual union exit, with no lower-time defect. -/
 theorem finiteUnionExit_compl_exit
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (sMinus T : ℝ)
     (e : FiniteUnionPole H (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
     finiteUnionExit hH hLE hlam hLam A H T e (finiteUnionExitSet H sMinus T)ᶜ = 0 := by

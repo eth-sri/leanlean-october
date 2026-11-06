@@ -68,7 +68,7 @@ theorem tendsto_upper_terminal_probe
   obtain ⟨M, hM0, herr⟩ := terminalOperators_terminal_time_error n hn lam Lam m L_b
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
     hb_smooth hb_lipschitz hb_coercive hEx τ F hF
-  have hnear : ∀ᶠ j in atTop, dist (terminalTimeMesh j τ) τ < δ :=
+  have hnear :=
     (tendsto_terminalTimeMesh τ).eventually (Metric.ball_mem_nhds τ hδ)
   have hevent : ∀ᶠ j in atTop,
       |extendedTerminalProbe n Ω γ B b hEx (terminalTimeMesh j τ) F (evolutionQueryPoint q) -

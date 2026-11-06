@@ -53,7 +53,7 @@ theorem ballExit_terminal_interior_map (P : LocalBallStart v₀ R)
     filter_upwards [ae_restrict_mem hSm] with Q hQ
     exact ⟨by simpa only [movingDomain_ball_zero, exitStateCoordinates, S, mem_ofPred_eq] using hQ,
       mem_univ _⟩
-  have hρ : ρ.restrict U = ρ := K.terminal_support (ballEvolutionQuery P T)
+  have hρ := K.terminal_support (ballEvolutionQuery P T)
   have heq (f : EvolutionAmbientState d → ℝ) (hfs : ContDiff ℝ (⊤ : ℕ∞) f)
       (hfc : HasCompactSupport f) (hfU : tsupport f ⊆ U) :
       (∫ x, f x ∂ν) = ∫ x, f x ∂ρ := by

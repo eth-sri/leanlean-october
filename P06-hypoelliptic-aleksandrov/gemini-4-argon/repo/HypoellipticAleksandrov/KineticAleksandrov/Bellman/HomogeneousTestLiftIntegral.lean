@@ -19,7 +19,7 @@ variable {E F A : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace
 
 omit [NormedSpace ℝ E] [ProperSpace E] [NormedSpace ℝ F] [CompleteSpace F]
   [SecondCountableTopology A] in
-/-- A jointly continuous function has integrable parameter slices on a compact finite carrier. -/
+/- A jointly continuous function has integrable parameter slices on a compact finite carrier. -/
 theorem bellman_compact_parameter_integrable (mu : Measure A) [IsFiniteMeasure mu]
     {U : Set E} {f : E → A → F} (hf : ContinuousOn (Function.uncurry f) (U ×ˢ univ))
     {q : E} (hq : q ∈ U) : Integrable (f q) mu := by
@@ -31,13 +31,13 @@ theorem bellman_compact_parameter_integrable (mu : Measure A) [IsFiniteMeasure m
 
 omit [NormedSpace ℝ E] [NormedSpace ℝ F] [CompleteSpace F]
   [MeasurableSpace A] [BorelSpace A] [SecondCountableTopology A] in
-/-- Compactness bounds the parameter uniformly on a spatial neighborhood. -/
+/- Compactness bounds the parameter uniformly on a spatial neighborhood. -/
 theorem bellman_compact_parameter_bound {U : Set E} (hU : IsOpen U)
     {f : E → A → F} (hf : ContinuousOn (Function.uncurry f) (U ×ˢ univ))
     {q : E} (hq : q ∈ U) : ∃ s ∈ 𝓝 q, s ⊆ U ∧ ∃ C : ℝ,
       ∀ x ∈ s, ∀ a : A, ‖f x a‖ ≤ C := by
   obtain ⟨r, hr, hsub⟩ := Metric.isOpen_iff.mp hU q hq
-  have hp : 0 < r / 2 := half_pos hr
+  have hp := half_pos hr
   have hsmall : closedBall q (r / 2) ⊆ U := by
     intro x hx
     apply hsub
@@ -48,7 +48,7 @@ theorem bellman_compact_parameter_bound {U : Set E} (hU : IsOpen U)
     fun x hx a => hC ⟨(x, a), ⟨hx, trivial⟩, rfl⟩⟩
 
 omit [CompleteSpace F] [SecondCountableTopology A] in
-/-- On an open spatial set a compact parameter integral has its expected first derivative. -/
+/- On an open spatial set a compact parameter integral has its expected first derivative. -/
 theorem bellman_compact_parameter_hasFDerivAt (mu : Measure A) [IsFiniteMeasure mu]
     {U : Set E} (hU : IsOpen U) (f : E → A → F) (f' : E → A → E →L[ℝ] F)
     (hf : ContinuousOn (Function.uncurry f) (U ×ˢ univ))
@@ -67,7 +67,7 @@ theorem bellman_compact_parameter_hasFDerivAt (mu : Measure A) [IsFiniteMeasure 
   · exact ae_of_all _ (fun a x hx => hd x (hsub hx) a)
 
 omit [NormedSpace ℝ E] [CompleteSpace F] [SecondCountableTopology A] in
-/-- Joint continuity on a compact parameter gives continuity of the parameter integral. -/
+/- Joint continuity on a compact parameter gives continuity of the parameter integral. -/
 theorem bellman_compact_parameter_continuousAt (mu : Measure A) [IsFiniteMeasure mu]
     {U : Set E} (hU : IsOpen U) (f : E → A → F)
     (hf : ContinuousOn (Function.uncurry f) (U ×ˢ univ))
@@ -85,31 +85,5 @@ theorem bellman_compact_parameter_continuousAt (mu : Measure A) [IsFiniteMeasure
       hf.comp (continuous_id.prodMk continuous_const).continuousOn
         (fun x hx => ⟨hx, trivial⟩)
     exact hc.continuousAt (hU.mem_nhds hq)
-
-omit [CompleteSpace F] [SecondCountableTopology A] in
-/-- Two continuous parameter derivatives yield C² regularity of the actual integral. -/
-theorem bellman_compact_parameter_contDiffOn_two (mu : Measure A) [IsFiniteMeasure mu]
-    {U : Set E} (hU : IsOpen U) (f : E → A → F) (f' : E → A → E →L[ℝ] F)
-    (f'' : E → A → E →L[ℝ] (E →L[ℝ] F))
-    (hf : ContinuousOn (Function.uncurry f) (U ×ˢ univ))
-    (hf' : ContinuousOn (Function.uncurry f') (U ×ˢ univ))
-    (hf'' : ContinuousOn (Function.uncurry f'') (U ×ˢ univ))
-    (hd : ∀ q ∈ U, ∀ a, HasFDerivAt (fun x => f x a) (f' q a) q)
-    (hd' : ∀ q ∈ U, ∀ a, HasFDerivAt (fun x => f' x a) (f'' q a) q) :
-    ContDiffOn ℝ 2 (fun x => ∫ a, f x a ∂mu) U := by
-  have hc : ContinuousOn (fun x => ∫ a, f'' x a ∂mu) U := by
-    intro q hq
-    exact (bellman_compact_parameter_continuousAt mu hU f'' hf'' hq).continuousWithinAt
-  intro q hq
-  apply ContDiffAt.contDiffWithinAt
-  apply contDiffAt_succ_iff_hasFDerivAt.mpr
-  refine ⟨fun x => ∫ a, f' x a ∂mu, ⟨U, hU.mem_nhds hq, ?_⟩, ?_⟩
-  · intro x hx
-    exact bellman_compact_parameter_hasFDerivAt mu hU f f' hf hf' hd hx
-  · apply contDiffAt_succ_iff_hasFDerivAt.mpr
-    refine ⟨fun x => ∫ a, f'' x a ∂mu, ⟨U, hU.mem_nhds hq, ?_⟩, ?_⟩
-    · intro x hx
-      exact bellman_compact_parameter_hasFDerivAt mu hU f' f'' hf' hf'' hd' hx
-    · exact contDiffAt_zero.mpr ⟨U, hU.mem_nhds hq, hc⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

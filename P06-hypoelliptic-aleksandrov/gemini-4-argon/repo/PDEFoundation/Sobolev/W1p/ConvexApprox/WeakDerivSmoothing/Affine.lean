@@ -23,11 +23,11 @@ namespace HasWeakPartialDerivOn
 /-- Precomposition by the affine convex-approximation sample multiplies a
 weak partial derivative by the exact linear factor `1 - ε`. -/
 theorem comp_convexApproxSample
-    {d : ℕ} {U : Set (Vec d)}
+    {d U}
     (hU : IsOpenBoundedConvexDomain U)
-    {i : Fin d} {u gi : Vec d → ℝ}
+    {i u gi}
     (hu : HasWeakPartialDerivOn U i u gi)
-    {x0 z : Vec d} {r ε : ℝ}
+    {x0 z : Vec d} {r ε }
     (hball : Metric.closedBall x0 r ⊆ U)
     (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1)
     (hε0 : 0 ≤ ε) (hε1 : ε < 1) :
@@ -37,12 +37,11 @@ theorem comp_convexApproxSample
         (1 - ε) * gi (convexApproxSample x0 z r ε x)) := by
   let a : ℝ := 1 - ε
   let b : Vec d := ε • (x0 - r • z)
-  let V : Set (Vec d) := translateSet b (a • U)
+  let V := translateSet b (a • U)
   have ha : 0 < a := by
     dsimp only [a]
     linarith
-  have hmap :
-      Set.MapsTo (convexApproxSample x0 z r ε) U U :=
+  have hmap :=
     convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
       hU hball hr hz hε0 hε1.le
   have hVU : V ⊆ U := by
@@ -53,8 +52,7 @@ theorem comp_convexApproxSample
       IsOpenBoundedConvexDomain V := by
     simpa only [V] using
       (hU.smul_of_pos ha).translateSet b
-  have hRestricted :
-      HasWeakPartialDerivOn V i u gi :=
+  have hRestricted :=
     hu.restrict hV.isOpen hVU
   have hTranslated :
       HasWeakPartialDerivOn (a • U) i

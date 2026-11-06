@@ -61,8 +61,8 @@ theorem construction_extendedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
               |>.mul_continuous hdd)
 
 /-- The extended first velocity jet has precisely the selected second weak derivative. -/
-theorem construction_extended_velocityJet_weak {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+theorem construction_extended_velocityJet_weak {d } (hd : 1 ≤ d)
+    {alpha } (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (mu R m t : ℝ) (i k : Fin d) (test : PDE.Vec (d + d) → ℝ)
     (ht : ContDiff ℝ (⊤ : ℕ∞) test) (hs : HasCompactSupport test) :

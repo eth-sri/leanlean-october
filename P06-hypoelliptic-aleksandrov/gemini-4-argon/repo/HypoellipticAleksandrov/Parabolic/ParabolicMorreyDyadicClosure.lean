@@ -21,7 +21,7 @@ open Set
 open scoped Topology
 
 private theorem continuous_parabolicMorreyBoxAffineProjection
-    {d : Nat} (t : Real) (v : PDE.Vec d) (r : Real)
+    {d } (t : Real) (v : PDE.Vec d) (r : Real)
     (u : TimeVelocity d -> Real) :
     Continuous (parabolicMorreyBoxAffineProjection t v r u) := by
   unfold parabolicMorreyBoxAffineProjection
@@ -74,7 +74,7 @@ theorem exists_parabolicMorreyDyadicChildProjectionClosedConst (d : Nat)
   refine ⟨C, hCpos, ?_⟩
   intro n index child u hu z hz
   let qC := parabolicDyadicSourceBox (parabolicDyadicChildIndex index child)
-  let QC : Set (TimeVelocity d) := parabolicBox 1 qC.radius qC.baseTime qC.center
+  let QC := parabolicBox 1 qC.radius qC.baseTime qC.center
   let B : Real := C * (parabolicDyadicSourceBox index).radius ^
       parabolicMorreyExponent d *
     (parabolicLpNormOn d (timeDerivative u) (parabolicBox 1
@@ -92,9 +92,9 @@ theorem exists_parabolicMorreyDyadicChildProjectionClosedConst (d : Nat)
         (parabolicDyadicSourceBox index).baseTime
         (parabolicDyadicSourceBox index).center
         (parabolicDyadicSourceBox index).radius u w|
-  have hqC : 0 < qC.radius :=
+  have hqC :=
     parabolicDyadicSourceBox_radius_pos (parabolicDyadicChildIndex index child)
-  have hclosure : closure QC = parabolicClosedBox 1 qC.radius qC.baseTime qC.center :=
+  have hclosure :=
     closure_parabolicBox_of_pos (d := d) (vartheta := (1 : Real))
       (r := qC.radius) (t0 := qC.baseTime) (v0 := qC.center) (by norm_num) hqC
   have hcontF : Continuous F :=
@@ -106,12 +106,11 @@ theorem exists_parabolicMorreyDyadicChildProjectionClosedConst (d : Nat)
   have hmaps : MapsTo F QC (Iic B) := by
     intro w hw
     exact hopen n index child u hu w (by simpa only [qC, QC] using hw)
-  have hmapsClosure : MapsTo F (closure QC) (closure (Iic B)) :=
+  have hmapsClosure :=
     hmaps.closure_of_continuousOn hcontF.continuousOn
   have hzClosure : z ∈ closure QC := by
     rw [hclosure]
     simpa only [qC] using hz
-  have hFz := hmapsClosure hzClosure
-  simpa only [isClosed_Iic.closure_eq, mem_Iic, F, B] using hFz
+  simpa only [isClosed_Iic.closure_eq, mem_Iic, F, B] using (hmapsClosure hzClosure)
 
 end HypoellipticAleksandrov.Parabolic

@@ -12,7 +12,7 @@ open Set MeasureTheory HypoellipticAleksandrov
 /-- Subtracting the cumulative identities gives the exact source slab identity for one pole. -/
 theorem positionStartQuadratic_slab_identity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y a b : ℝ)
     (hc : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
     (p : Point) (hv : p.velocity 0 ∈ c.active) (hab : a ≤ b) :

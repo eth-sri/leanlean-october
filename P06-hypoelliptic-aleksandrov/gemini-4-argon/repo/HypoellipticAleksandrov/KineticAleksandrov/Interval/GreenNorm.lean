@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.GreenIntegrals
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.Gluing
+import HypoellipticAleksandrov.KineticAleksandrov.Green.LogIntegration
+import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 /-! # Uniform infinite-horizon norm from killed slab estimates -/
 
@@ -12,26 +14,37 @@ open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.Green
 open scoped ENNReal
 
-/-- The uniform constant obtained by logarithmic averaging of the killed moment. -/
+/- The uniform constant obtained by logarithmic averaging of the killed moment. -/
 def killedGreenConstant (A δ k q : ℝ) : ℝ≥0∞ :=
   (ENNReal.ofReal A * (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
     (T ^ (δ - 1) * Real.exp (-k * T))) *
       (ENNReal.ofReal (Real.log 2))⁻¹) ^ (1 / q)
 
-/-- The averaging constant is finite. -/
-theorem killedGreenConstant_ne_top {A δ k q : ℝ}
+/- The averaging constant is finite. -/
+theorem killedGreenConstant_ne_top {A δ k q }
     (hδ : 0 < δ) (hk : 0 < k) (hq : 0 < q) :
     killedGreenConstant A δ k q ≠ ⊤ := by
   unfold killedGreenConstant
   apply ENNReal.rpow_ne_top_of_nonneg (by positivity)
   apply ENNReal.mul_ne_top
-  · exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (killed_power_moment_finite hδ hk).ne
+  · have _h_xinl_0 : (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
+      (T ^ (δ - 1) * Real.exp (-k * T))) < ⊤ := by
+        have hi : IntegrableOn (fun T : ℝ => T ^ (δ - 1) * Real.exp (-k * T)) (Ioi 0) := by
+          simpa only [Real.rpow_one] using integrableOn_rpow_mul_exp_neg_mul_rpow
+            (p := 1) (s := δ - 1) (by linarith) (by norm_num) hk
+        rw [← ofReal_integral_eq_lintegral_ofReal hi]
+        · exact ENNReal.ofReal_lt_top
+        · filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with T hT
+          exact mul_nonneg (Real.rpow_nonneg hT.le _) (Real.exp_pos _).le
+
+      /- The inverse-time weight combines with the killed slab power exactly. -/
+    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top _h_xinl_0.ne
   · exact ENNReal.inv_ne_top.mpr (ENNReal.ofReal_pos.mpr
       (Real.log_pos one_lt_two)).ne'
 
-/-- Killed local bounds imply the global norm, with no finite horizon factor. -/
-theorem killed_green_norm_bound {d : ℕ} (G : GreenCarrier d → ℝ≥0∞)
-    (hGm : Measurable G) (A δ k q : ℝ) (M : ℝ≥0∞) (hq : 0 < q)
+/- Killed local bounds imply the global norm, with no finite horizon factor. -/
+theorem killed_green_norm_bound {d } (G : GreenCarrier d → ℝ≥0∞)
+    (hGm : Measurable G) (A δ k q : ℝ) (M ) (hq : 0 < q)
     (hslab : ∀ T : ℝ, 0 < T →
       ∫⁻ p in slabSet T, G p ^ q ∂greenLebesgue d ≤
         ENNReal.ofReal A * M ^ q *

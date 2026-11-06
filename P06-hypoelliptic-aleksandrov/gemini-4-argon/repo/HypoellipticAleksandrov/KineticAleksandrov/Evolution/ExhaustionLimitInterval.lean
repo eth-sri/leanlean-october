@@ -35,7 +35,7 @@ theorem exists_viscous_terminalSolution_interval
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω Γ τ F)
     (ε : ℝ) (hε : 0 < ε) (hε1 : ε ≤ 1)
-    (C : ℝ) (hC : 0 ≤ C) (hFC : ∀ q, |F q| ≤ C) :
+    (C ) (hC : 0 ≤ C) (hFC : ∀ q, |F q| ≤ C) :
     ∃ v : KineticPoint n → ℝ,
       IsClassicalViscousTerminalSolution Ω Γ B b ε τ F v ∧
       (∀ p ∈ evolutionPastClosedCylinder Ω Γ τ, |v p| ≤ C) ∧

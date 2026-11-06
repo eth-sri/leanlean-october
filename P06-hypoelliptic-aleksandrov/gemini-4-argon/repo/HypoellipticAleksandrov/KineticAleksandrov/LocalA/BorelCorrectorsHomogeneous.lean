@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BorelCorrectorsGreen
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundarySolution
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceRestriction
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentationRegularity
 
 /-! # Smoothness and homogeneity of the literal compactly corrected solution -/
 
@@ -11,14 +13,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo TheoremA Evolution Occupation
 open scoped Topology Matrix.Norms.Elementwise
 
-/-- Correct the actual classical residual by the signed whole-space source integral. -/
+/- Correct the actual classical residual by the signed whole-space source integral. -/
 def borelCorrectedFunction {d : ℕ}
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
     (T : ℝ) (χ : KineticPoint d → ℝ) (B : CoefficientField d)
     (U : KineticPoint d → ℝ) (P : KineticPoint d) : ℝ :=
   U P + borelCorrectorPotential K T (borelCorrectorSource χ B U) P
 
-/-- The literal correction is smooth and homogeneous where the cutoff equals one. -/
+/- The literal correction is smooth and homogeneous where the cutoff equals one. -/
 theorem borelCorrectedFunction_smooth_homogeneous
     (hH : HormanderHypoellipticityStatement) {d : ℕ} {lam Lam : ℝ}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
@@ -71,8 +73,23 @@ theorem borelCorrectedFunction_smooth_homogeneous
     rintro Q ⟨P, hP, rfl⟩
     refine ⟨hDt P (hOD hP), ?_⟩
     simp only [movingDomain_wholeSpace, mem_univ]
-  have hWweak := borelCorrectorPotential_weak B hB S K hreal T F hFc.measurable
-    (max M 0) hM0 hFb
+  have hWweak : IsKineticWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
+      (evolutionPastOpenCylinder (wholeSpace d) (fun _ => (0 : PDE.Vec d)) T)
+      (borelCorrectorPotential K T F ∘ sectionTwoPoint)
+      (fun Q => -F (sectionTwoPoint Q)) := by
+    have hF := hFc.measurable
+    let M := (max M 0)
+    have heq : borelCorrectorPotential K T F ∘ sectionTwoPoint =
+        duhamelPotential K T (F ∘ sectionTwoPoint) := by
+      funext Q
+      simp only [borelCorrectorPotential, Function.comp_apply]
+      rw [sectionTwoPoint_involutive Q]
+    rw [heq]
+    obtain ⟨hsm, hsym, _⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB
+    exact duhamel_bounded_isKineticWeakTransportedSolution (wholeSpace_admissible d)
+      MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
+      S K hreal hsm hsym (identityDrift_smooth d) (F ∘ sectionTwoPoint)
+      (hF.comp (continuous_sectionTwoPoint d).measurable) M hM0 (fun Q => hFb _) T
   have hw := boundedSource_weak_restrict hsub (zIndependentCoefficient B) (identityDrift d)
     (W ∘ sectionTwoPoint) (fun Q => -F (sectionTwoPoint Q)) hWweak
   have heqV : V = evolutionHomeomorph d ⁻¹' O' := by

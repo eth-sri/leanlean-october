@@ -21,7 +21,7 @@ theorem exists_bellman_annular_cutoff :
   obtain ⟨psi, hp, _hpc, hps, hpr, hp1⟩ := SectionTwo.exists_smooth_cutoff
     (C := Icc (1 : ℝ) 64) (V := Ioo (1 / 64 : ℝ) 4096) isCompact_Icc isOpen_Ioo
     (by intro x hx; constructor <;> linarith only [hx.1, hx.2])
-  let chi : (ℝ × ℝ) → ℝ := psi ∘ bellmanGaugePower
+  let chi := psi ∘ bellmanGaugePower
   have hs : tsupport chi ⊆ bellmanGaugePower ⁻¹' tsupport psi :=
     fun _ hq => tsupport_comp_subset_preimage psi bellmanGaugePower_continuous hq
   have hb : tsupport chi ⊆ {q | bellmanGaugePower q ≤ 4096} := by
@@ -37,7 +37,7 @@ theorem exists_bellman_annular_cutoff :
     have he := bellmanGauge_pow_six q
     constructor
     · by_contra h
-      have hh : bellmanGauge q ≤ 1 / 2 := le_of_not_gt h
+      have hh := le_of_not_gt h
       have hx := pow_le_pow_left₀ (bellmanGauge_nonneg q) hh 6
       rw [he] at hx
       norm_num at hx

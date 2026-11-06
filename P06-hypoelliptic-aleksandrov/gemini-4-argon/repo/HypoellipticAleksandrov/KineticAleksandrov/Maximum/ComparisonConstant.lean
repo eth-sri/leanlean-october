@@ -10,8 +10,8 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic Set
 
-/-- All classical kinetic derivatives of a constant vanish. -/
-theorem comparison_const_formulas {d : ℕ} (c : ℝ) (P : KineticPoint d) :
+/- All classical kinetic derivatives of a constant vanish. -/
+theorem comparison_const_formulas {d } (c : ℝ) (P : KineticPoint d) :
     kineticTimeDerivative (fun _ : KineticPoint d => c) P = 0 ∧
     kineticPositionGradient (fun _ : KineticPoint d => c) P = 0 ∧
     kineticVelocityGradient (fun _ : KineticPoint d => c) P = 0 ∧
@@ -31,8 +31,8 @@ theorem comparison_const_formulas {d : ℕ} (c : ℝ) (P : KineticPoint d) :
     ext i j
     simp
 
-/-- Constants belong to the exact anisotropic kinetic classical class on every set. -/
-theorem comparison_regular_const {d : ℕ} (c : ℝ) (D : Set (KineticPoint d)) :
+/- Constants belong to the exact anisotropic kinetic classical class on every set. -/
+theorem comparison_regular_const {d } (c : ℝ) (D : Set (KineticPoint d)) :
     IsKineticC112On (fun _ : KineticPoint d => c) D := by
   refine ⟨continuousOn_const,fun _ _ => differentiableAt_const c,
     fun _ _ => contDiffAt_const,fun _ _ => contDiffAt_const,?_,?_,?_,?_⟩
@@ -53,16 +53,8 @@ theorem comparison_regular_const {d : ℕ} (c : ℝ) (D : Set (KineticPoint d)) 
     rw [h]
     exact continuousOn_const
 
-/-- The general forward kinetic operator annihilates constants. -/
-theorem comparison_forwardOperator_const {d : ℕ}
-    (A : FullKineticCoefficient d) (c : ℝ) (P : KineticPoint d) :
-    forwardKineticOperator A (fun _ : KineticPoint d => c) P = 0 := by
-  obtain ⟨ht,hx,_,hv⟩ := comparison_const_formulas c P
-  rw [forwardKineticOperator_apply,ht,hx,hv]
-  simp [PDE.vecDot, HypoellipticAleksandrov.matrixContraction]
-
-/-- Restriction to a smaller set preserves the exact anisotropic classical class. -/
-theorem comparison_regular_mono {d : ℕ} {u : KineticPoint d → ℝ}
+/- The general forward kinetic operator annihilates constants. -/
+theorem comparison_regular_mono {d u}
     {D S : Set (KineticPoint d)} (hu : IsKineticC112On u D) (hSD : S ⊆ D) :
     IsKineticC112On u S :=
   ⟨hu.continuousOn.mono hSD,

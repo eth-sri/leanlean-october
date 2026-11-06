@@ -59,7 +59,7 @@ theorem closure_reconstructionStrip (H : Interval) (a T : ℝ) (ha : a < T) :
 
 /-- Every closed future slab lies in the regular strip together with its prescribed exit. -/
 theorem reconstructionClosedSlab_subset_strip_union_exit (H : Interval)
-    {lower a T : ℝ} (ha : lower < a) :
+    {lower a T } (ha : lower < a) :
     reconstructionClosedSlab H a T ⊆ reconstructionStrip H lower T ∪ reconstructionExit H
       lower T := by
   intro p hp
@@ -77,10 +77,10 @@ theorem reconstructionClosedSlab_subset_strip_union_exit (H : Interval)
 
 /-- The original interior bound extends to every closed future slab by the prescribed continuity. -/
 theorem reconstruction_closed_slab_test_bound
-    (H : Interval) {lower a T : ℝ} (ha : lower < a) (hT : a < T)
+    (H : Interval) {lower a T } (ha : lower < a) (hT : a < T)
     (phi : Point → ℝ)
     (hc : ContinuousOn phi (reconstructionStrip H lower T ∪ reconstructionExit H lower T))
-    (M : ℝ) (hM : ∀ p ∈ reconstructionStrip H lower T, |phi p| ≤ M) :
+    (M ) (hM : ∀ p ∈ reconstructionStrip H lower T, |phi p| ≤ M) :
     ∀ p ∈ reconstructionClosedSlab H a T, |phi p| ≤ M := by
   have hcl := closure_reconstructionStrip H a T hT
   intro p hp

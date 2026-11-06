@@ -15,12 +15,12 @@ open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo
 
 /-- Remaining mass of the actual killed evolution between two ordered absolute times. -/
-def stripSurvivingMass (H : Interval) (E : StripEvolution H) (s t : ℝ) (hst : s ≤ t)
+def stripSurvivingMass (H ) (E : StripEvolution H) (s t ) (hst : s ≤ t)
     (z : EvolutionState (intervalDomain H) (fun _ => 0) s) : ℝ :=
   E.1 s t hst 1 z
 
 /-- Remaining mass is the real mass of the native killed terminal kernel. -/
-theorem stripSurvivingMass_eq_kernel_mass {lam Lam : ℝ}
+theorem stripSurvivingMass_eq_kernel_mass {lam Lam }
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (s t : ℝ) (hst : s ≤ t)
     (z : EvolutionState (intervalDomain H) (fun _ => 0) s) :
@@ -31,7 +31,7 @@ theorem stripSurvivingMass_eq_kernel_mass {lam Lam : ℝ}
     measureReal_def]
 
 /-- Sub-Markov positivity bounds every killed survival mass between zero and one. -/
-theorem stripSurvivingMass_bounds {lam Lam : ℝ}
+theorem stripSurvivingMass_bounds {lam Lam }
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (s t : ℝ) (hst : s ≤ t)
     (z : EvolutionState (intervalDomain H) (fun _ => 0) s) :
@@ -43,7 +43,7 @@ theorem stripSurvivingMass_bounds {lam Lam : ℝ}
       (evolutionCoefficient A.a) (identityDrift 1) E.1 E.2 hE s t hst z
 
 /-- Killed evolution preserves pointwise order of bounded Borel terminal data. -/
-theorem stripEvolution_apply_mono {lam Lam : ℝ}
+theorem stripEvolution_apply_mono {lam Lam }
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (s t : ℝ) (hst : s ≤ t)
     (f g : BoundedBorel (EvolutionState (intervalDomain H) (fun _ => 0) t))
@@ -56,7 +56,7 @@ theorem stripEvolution_apply_mono {lam Lam : ℝ}
   exact integral_mono (boundedBorel_integrable f _) (boundedBorel_integrable g _) hfg
 
 /-- Composition and contraction make remaining mass nonincreasing in the terminal time. -/
-theorem stripSurvivingMass_antitone {lam Lam : ℝ}
+theorem stripSurvivingMass_antitone {lam Lam }
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (s t u : ℝ) (hst : s ≤ t) (htu : t ≤ u)
     (z : EvolutionState (intervalDomain H) (fun _ => 0) s) :
@@ -72,7 +72,7 @@ theorem stripSurvivingMass_antitone {lam Lam : ℝ}
   exact hm z
 
 /-- A uniform later survival bound multiplies the surviving mass at the restart time. -/
-theorem stripSurvivingMass_le_mul_of_later_bound {lam Lam : ℝ}
+theorem stripSurvivingMass_le_mul_of_later_bound {lam Lam }
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (s t u k : ℝ) (hst : s ≤ t) (htu : t ≤ u)
     (hk : ∀ w, E.1 t u htu 1 w ≤ k)

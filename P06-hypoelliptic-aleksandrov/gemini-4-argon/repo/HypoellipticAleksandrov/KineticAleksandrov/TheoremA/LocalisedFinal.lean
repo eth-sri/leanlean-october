@@ -10,10 +10,3 @@ is restricted to positive solution values. Evolution, occupation and decay are p
 internally, relative to the three explicit analytic hypotheses.
 -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov
-open Set MeasureTheory
-open scoped ENNReal MatrixOrder
-
-end HypoellipticAleksandrov.KineticAleksandrov

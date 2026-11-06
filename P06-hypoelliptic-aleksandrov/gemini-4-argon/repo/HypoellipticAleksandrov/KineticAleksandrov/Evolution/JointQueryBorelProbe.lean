@@ -70,8 +70,8 @@ local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hm
 
 /-- A fixed terminal probe solution, extended by zero outside its past closed cylinder.
 For a datum not supported in the terminal fiber the auxiliary function is zero. -/
-def extendedTerminalProbe (n : ℕ) (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+def extendedTerminalProbe (n ) (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+    (B : FullKineticCoefficient n) (b )
     (hEx : ClassicalTerminalExistence Ω γ B b)
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)) : KineticPoint n → ℝ := by
   classical
@@ -96,7 +96,7 @@ theorem measurable_extendedTerminalProbe
 /-- On a valid earlier source the extension is exactly the terminal integral operator. -/
 theorem extendedTerminalProbe_eq_operator
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
-    (F : BoundedBorel (EvolutionAmbientState n))
+    (F )
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     extendedTerminalProbe n Ω γ B b hEx τ F
       ⟨σ, p.1.1, p.1.2⟩ = P₀ σ τ hστ (terminalStateDatum F) p := by

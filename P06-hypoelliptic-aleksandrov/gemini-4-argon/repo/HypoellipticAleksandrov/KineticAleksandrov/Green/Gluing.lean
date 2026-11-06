@@ -26,16 +26,16 @@ instance greenLebesgue_sigmaFinite (d : ℕ) : SigmaFinite (greenLebesgue d) := 
   unfold greenLebesgue; infer_instance
 
 /-- Every point with positive time lies in a slab with rational parameter. -/
-lemma exists_rat_slab {d : ℕ} (p : GreenCarrier d) :
+lemma exists_rat_slab {d } (p : GreenCarrier d) :
     ∃ r : ℚ, 0 < (r : ℝ) ∧ p ∈ slabSet (d := d) (r : ℝ) := by
-  have hp : 0 < p.1.1 := p.1.2.1
+  have hp := p.1.2.1
   obtain ⟨r, hr1, hr2⟩ := exists_rat_btwn (show p.1.1 / 2 < p.1.1 by linarith)
   refine ⟨r, by linarith, ?_⟩
   simp only [slabSet, slabTimeSet, mem_preimage, mem_ofPred_eq]
   constructor <;> linarith
 
 /-- Slabs with non-positive parameter are empty. -/
-lemma slabSet_eq_empty {d : ℕ} {T : ℝ} (hT : T ≤ 0) : slabSet (d := d) T = ∅ := by
+lemma slabSet_eq_empty {d T} (hT : T ≤ 0) : slabSet (d := d) T = ∅ := by
   ext p
   have := p.1.2.1
   simp only [slabSet, slabTimeSet, mem_preimage, mem_ofPred_eq, mem_empty_iff_false, iff_false]
@@ -43,8 +43,8 @@ lemma slabSet_eq_empty {d : ℕ} {T : ℝ} (hT : T ≤ 0) : slabSet (d := d) T =
   linarith
 
 /-- Slab gluing: local slab densities give one global density, equal to each of them a.e. -/
-theorem exists_global_density {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
+theorem exists_global_density {d Ω γ}
+    (K : MovingFiberKernel Ω γ) (σ₀ ) (μ : Measure (EvolutionState Ω γ σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     (Gl : ℝ → GreenCarrier d → ℝ≥0∞)
     (hGm : ∀ T : ℝ, 0 < T → Measurable (Gl T))

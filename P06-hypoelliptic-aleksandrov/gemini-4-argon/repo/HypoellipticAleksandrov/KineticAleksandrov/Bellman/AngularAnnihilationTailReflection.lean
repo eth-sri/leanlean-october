@@ -11,7 +11,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- Reflection preserves the two-sided density-tail integrability condition. -/
+/- Reflection preserves the two-sided density-tail integrability condition. -/
 theorem bellmanAngularTail_reflect (β : ℝ) (f : ℝ → ℝ)
     (ht : IntegrableOn (fun y => f y * |y| ^ (β - 4)) {y : ℝ | 2 < |y|} volume) :
     IntegrableOn (fun y => f (-y) * |y| ^ (β - 4)) {y : ℝ | 2 < |y|} volume := by
@@ -26,10 +26,5 @@ theorem bellmanAngularTail_reflect (β : ℝ) (f : ℝ → ℝ)
   change f (-y) * |-y| ^ (β - 4) = f (-y) * |y| ^ (β - 4)
   rw [abs_neg]
 
-/-- An almost everywhere comparison on the real line holds after reflection. -/
-theorem bellmanAngularComparison_reflect (R : ℝ) (f h : ℝ → ℝ)
-    (hc : ∀ᵐ y ∂volume, h y ≤ R * f y) :
-    ∀ᵐ y ∂volume, h (-y) ≤ R * f (-y) :=
-  (Measure.measurePreserving_neg (volume : Measure ℝ)).quasiMeasurePreserving.ae hc
-
+/- An almost everywhere comparison on the real line holds after reflection. -/
 end HypoellipticAleksandrov.KineticAleksandrov

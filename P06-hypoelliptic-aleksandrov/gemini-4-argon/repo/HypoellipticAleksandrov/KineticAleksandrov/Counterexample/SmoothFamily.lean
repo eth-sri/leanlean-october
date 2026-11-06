@@ -2,6 +2,9 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionInterface
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothFamilyOperator
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifySource
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothFamilyError
+import Mathlib.MeasureTheory.Function.LpSeminorm.TriangleInequality
 
 /-! # The smooth-coefficient family from the measurable-coefficient family
 
@@ -15,10 +18,9 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter MeasureTheory HypoellipticAleksandrov.Parabolic
 open scoped Topology ENNReal MatrixOrder Matrix.Norms.Elementwise
 
-/-- Coefficient mollification after fixing each smooth function proves the literal smooth
+/- Coefficient mollification after fixing each smooth function proves the literal smooth
 family conjunct, with the same ellipticity bounds, cylinder and function sequence. -/
-theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
-    {P₀ : KineticPoint d} {R : ℝ} (hp : 1 ≤ p) (hR : 0 < R)
+theorem smoothFamily_of_measurable {d p lam Lam P₀ R} (hp : 1 ≤ p) (hR : 0 < R)
     (h : MeasurableFamilyStatement d p lam Lam P₀ R) :
     SmoothFamilyStatement d p lam Lam P₀ R := by
   classical
@@ -69,7 +71,34 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
     apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hlim0
       (fun j => bot_le)
     intro j
-    exact positive_source_norm_le_coefficient_error A (B j) hA (hBm j) (U j) (hU j)
-      (volume.restrict (backwardCylinder P₀ R)) (ENNReal.ofReal p) hp1
+    let B := (B j)
+    have hB := (hBm j)
+    let u := (U j)
+    have hu := (hU j)
+    let nu := (volume.restrict (backwardCylinder P₀ R))
+    let p := (ENNReal.ofReal p)
+    let E := fun P => matrixContraction (B (P.position, P.velocity) - A (P.position, P.velocity))
+      (kineticVelocityHessian u P)
+    have hma := measurable_backwardOperator_of_joint_smooth A hA u hu
+    have hmb := measurable_backwardOperator_of_joint_smooth B hB u hu
+    have he : Measurable E := by
+      have h := hma.sub hmb
+      convert h using 1
+      funext P
+      simp only [Pi.sub_apply]
+      rw [backwardOperator_coefficient_change A B u P]
+      dsimp [E]
+      ring
+    have hm := eLpNorm_mono_ae_real (p := p) ((hmb.max (measurable_const (a := (0 : ℝ)))).aestronglyMeasurable (μ := nu))
+      (Filter.Eventually.of_forall (fun P => show
+        ‖max (backwardOperator (fun _t x v => B (x, v)) u P) 0‖ ≤
+          max (backwardOperator (fun _t x v => A (x, v)) u P) 0 + ‖E P‖ from by
+        rw [Real.norm_of_nonneg (le_max_right _ _), backwardOperator_coefficient_change A B u P]
+        simpa only [sub_eq_add_neg, abs_neg, Real.norm_eq_abs] using!
+          positive_part_add_le (backwardOperator (fun _t x v => A (x, v)) u P)
+            (max (backwardOperator (fun _t x v => A (x, v)) u P) 0) (-(E P))
+            (le_max_right _ _) (le_max_left _ _)))
+    exact hm.trans ((eLpNorm_add_le hp1).trans_eq
+      (by rw [eLpNorm_norm E he.aestronglyMeasurable]))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

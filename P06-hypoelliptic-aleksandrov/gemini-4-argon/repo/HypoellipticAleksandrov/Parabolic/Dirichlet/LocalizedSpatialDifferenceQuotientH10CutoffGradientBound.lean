@@ -20,7 +20,7 @@ open scoped ENNReal
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem cutoffGradientL2Multiplier_apply_ae
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ⇑(cutoffGradientL2Multiplier (Ω := Ω) η i f) =ᵐ[PDE.volumeOn Ω]
@@ -32,7 +32,7 @@ private theorem cutoffGradientL2Multiplier_apply_ae
 /-- The assembled cutoff-gradient commutator field is uniformly controlled
 by the input weak gradient through any larger shifted plateau cutoff. -/
 theorem norm_sq_cutoffGradientSpatialDifferenceQuotientH10CLM_apply_le_gradient
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d Ω inner Kη Kχ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
@@ -49,14 +49,12 @@ theorem norm_sq_cutoffGradientSpatialDifferenceQuotientH10CLM_apply_le_gradient
     change χ y ≠ 0
     rw [χ.eq_one_on_inner y hy]
     exact one_ne_zero
-  let hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω := hχshift.mono_left hηχ
-  let Q : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let hηshift := hχshift.mono_left hηχ
+  let Q :=
     valueCLM hΩ
       (localizedSpatialDifferenceQuotientH10CLM
         hΩ χ k h χ.tsupport_subset hχshift u)
-  let W : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
+  let W :=
     cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h u
   have hfactor (i : Fin d) :
       cutoffGradientSpatialDifferenceQuotientL2
@@ -132,7 +130,7 @@ theorem norm_sq_cutoffGradientSpatialDifferenceQuotientH10CLM_apply_le_gradient
       _ ≤ (|Q y| * Kη) ^ 2 := (sq_le_sq₀ hnonnegLeft hnonnegRight).mpr hleft
       _ = |Q y| ^ 2 * Kη ^ 2 := by ring
       _ = Kη ^ 2 * Q y ^ 2 := by rw [sq_abs]; ring
-  have hWenergy : (∫ y, w y ^ 2 ∂PDE.volumeOn Ω) = ‖W‖ ^ 2 :=
+  have hWenergy :=
     PDE.integral_norm_sq_eq_sq_norm_of_ae_eq_hilbert W w hnorm
   have hQenergy : (∫ y, Q y ^ 2 ∂PDE.volumeOn Ω) = ‖Q‖ ^ 2 :=
     PDE.integral_sq_eq_sq_norm_of_ae_eq Q (fun y => Q y)

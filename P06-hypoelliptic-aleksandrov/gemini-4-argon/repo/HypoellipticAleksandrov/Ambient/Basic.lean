@@ -12,4 +12,3 @@ round Euclidean geometry; this module instead exposes the sibling project's
 explicit Euclidean dot product, norm, balls, closed balls, and spheres.
 -/
 
-@[expose] public section

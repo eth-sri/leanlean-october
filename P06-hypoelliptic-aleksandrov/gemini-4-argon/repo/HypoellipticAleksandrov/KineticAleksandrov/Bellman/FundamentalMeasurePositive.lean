@@ -10,7 +10,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- Positive-time Lebesgue measure has infinite total mass. -/
+/- Positive-time Lebesgue measure has infinite total mass. -/
 theorem bellmanPositiveTimeVolume_univ : bellmanPositiveTimeVolume univ = ⊤ := by
   unfold bellmanPositiveTimeVolume
   calc
@@ -23,24 +23,7 @@ theorem bellmanPositiveTimeVolume_univ : bellmanPositiveTimeVolume univ = ⊤ :=
       change (volume.restrict (Ioi (0 : ℝ))) (Ioi 0) = ⊤
       rw [Measure.restrict_apply measurableSet_Ioi, inter_self, Real.volume_Ioi]
 
-/-- The time-integrated Gaussian density is strictly positive off its pole. -/
-theorem bellmanFundamentalDensity_pos (q : BellmanPuncturedPlane) :
-    0 < bellmanFundamentalDensity q := by
-  have hf : Measurable (fun t : BellmanPositiveTime =>
-      ENNReal.ofReal (bellmanGaussianKernel t q.val)) :=
-    ENNReal.measurable_ofReal.comp
-      (continuous_bellmanGaussianKernel.comp
-        (continuous_id.prodMk continuous_const)).measurable
-  have hs : Function.support (fun t : BellmanPositiveTime =>
-      ENNReal.ofReal (bellmanGaussianKernel t q.val)) = univ := by
-    apply eq_univ_of_forall
-    intro t
-    exact (ENNReal.ofReal_pos.mpr (bellmanGaussianKernel_pos t q.val)).ne'
-  apply (lintegral_pos_iff_support hf).mpr
-  rw [hs, bellmanPositiveTimeVolume_univ]
-  exact ENNReal.zero_lt_top
-
-/-- Punctured-plane Lebesgue measure retains the infinite mass of the whole plane. -/
+/- The time-integrated Gaussian density is strictly positive off its pole. -/
 theorem bellmanPuncturedVolume_univ : bellmanPuncturedVolume univ = ⊤ := by
   unfold bellmanPuncturedVolume
   calc
@@ -67,7 +50,7 @@ theorem bellmanPuncturedVolume_univ : bellmanPuncturedVolume univ = ⊤ := by
       rw [h0, zero_add, hu] at h
       exact h
 
-/-- The actual fundamental measure is nonzero, without assuming a solution exists. -/
+/- The actual fundamental measure is nonzero, without assuming a solution exists. -/
 theorem bellmanFundamentalMeasure_ne_zero : bellmanFundamentalMeasure ≠ 0 := by
   intro h
   have hz : ∫⁻ q, bellmanFundamentalDensity q ∂bellmanPuncturedVolume = 0 := by
@@ -77,7 +60,21 @@ theorem bellmanFundamentalMeasure_ne_zero : bellmanFundamentalMeasure ≠ 0 := b
   have hs : Function.support bellmanFundamentalDensity = univ := by
     apply eq_univ_of_forall
     intro q
-    exact (bellmanFundamentalDensity_pos q).ne'
+    have _h_inl_8 : 0 < bellmanFundamentalDensity q := by
+      have hf : Measurable (fun t : BellmanPositiveTime =>
+          ENNReal.ofReal (bellmanGaussianKernel t q.val)) :=
+        ENNReal.measurable_ofReal.comp
+          (continuous_bellmanGaussianKernel.comp
+            (continuous_id.prodMk continuous_const)).measurable
+      have hs : Function.support (fun t : BellmanPositiveTime =>
+          ENNReal.ofReal (bellmanGaussianKernel t q.val)) = univ := by
+        apply eq_univ_of_forall
+        intro t
+        exact (ENNReal.ofReal_pos.mpr (bellmanGaussianKernel_pos t q.val)).ne'
+      apply (lintegral_pos_iff_support hf).mpr
+      rw [hs, bellmanPositiveTimeVolume_univ]
+      exact ENNReal.zero_lt_top
+    exact _h_inl_8.ne'
   have hp := (lintegral_pos_iff_support measurable_bellmanFundamentalDensity).mpr
     (show 0 < bellmanPuncturedVolume (Function.support bellmanFundamentalDensity) by
       rw [hs, bellmanPuncturedVolume_univ]; exact ENNReal.zero_lt_top)

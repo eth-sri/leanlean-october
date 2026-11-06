@@ -35,9 +35,9 @@ theorem bellmanMeasurePrimitive_stronglyMeasurable (μ : Measure ℝ) [SFinite �
   have hB : MeasurableSet B := by
     exact (measurableSet_lt measurable_fst measurable_snd).inter
       (measurableSet_le measurable_snd measurable_const)
-  have hfa : StronglyMeasurable (A.indicator (fun w : ℝ × ℝ => g w.2)) :=
+  have hfa :=
     ((hg.comp measurable_snd).indicator hA).stronglyMeasurable
-  have hfb : StronglyMeasurable (B.indicator (fun w : ℝ × ℝ => g w.2)) :=
+  have hfb :=
     ((hg.comp measurable_snd).indicator hB).stronglyMeasurable
   have ha := hfa.integral_prod_right' (ν := μ)
   have hb := hfb.integral_prod_right' (ν := μ)

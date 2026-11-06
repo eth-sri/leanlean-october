@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalizedHigherJetMollification
 public import HypoellipticAleksandrov.Parabolic.UniformJetCauchyEstimate
 public import Mathlib.Topology.MetricSpace.Cauchy
+import HypoellipticAleksandrov.Parabolic.FiniteSupportL1L2
+import HypoellipticAleksandrov.Parabolic.SobolevGridFTC
 
 @[expose] public section
 
@@ -14,7 +16,7 @@ open scoped ENNReal Topology BigOperators
 noncomputable section
 
 private theorem ordinaryRepresentative_memLp_volume_local
-    {d m : ℕ} {root : TimeVelocity d → ℝ}
+    {d m root}
     (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
     (beta : TimeVelocityDerivativeIndex d m) :
     MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
@@ -24,49 +26,32 @@ private theorem ordinaryRepresentative_memLp_volume_local
     ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
   simpa only [Measure.restrict_univ] using h
 
-private theorem coordinateIteratedFDeriv_contDiff_infty_local
-    {d : ℕ} (beta : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞)
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv beta f) := by
-  rw [contDiff_infty]
-  intro m
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := (contDiff_infty.mp hf (m + beta.order)).iteratedFDeriv_right
-    (m := m) (i := beta.coordinateList.length) (by simp)
-  exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (beta.coordinateList.get i)))).clm_apply hi
-
-/-- A positive sequence of mollifier radii strictly below `rho`. -/
 def shrinkingRadius (rho : ℝ) (n : ℕ) : ℝ :=
   rho / (n + 2)
 
 theorem shrinkingRadius_pos (rho : ℝ) (hrho : 0 < rho) (n : ℕ) :
-    0 < shrinkingRadius rho n := by
-  exact div_pos hrho (by positivity)
+    0 < shrinkingRadius rho n :=  div_pos hrho (by positivity)
 
 theorem shrinkingRadius_lt (rho : ℝ) (hrho : 0 < rho) (n : ℕ) :
     shrinkingRadius rho n < rho := by
   rw [shrinkingRadius, div_lt_iff₀ (by positivity : (0 : ℝ) < n + 2)]
   nlinarith
 
-theorem tendsto_shrinkingRadius (rho : ℝ) :
-    Tendsto (shrinkingRadius rho) atTop (nhds 0) := by
-  unfold shrinkingRadius
-  apply Filter.Tendsto.const_div_atTop
-  exact tendsto_atTop_add_const_right atTop 2
-    (tendsto_natCast_atTop_atTop (R := ℝ))
-
 theorem tendsto_shrinkingRadius_nhdsWithin
     (rho : ℝ) (hrho : 0 < rho) :
     Tendsto (shrinkingRadius rho) atTop
       (nhdsWithin 0 (Set.Ioi 0)) := by
   rw [tendsto_nhdsWithin_iff]
-  exact ⟨tendsto_shrinkingRadius rho,
+  have _h_inl_16 : Tendsto (shrinkingRadius rho) atTop (nhds 0) := by
+    unfold shrinkingRadius
+    apply Filter.Tendsto.const_div_atTop
+    exact tendsto_atTop_add_const_right atTop 2
+      (tendsto_natCast_atTop_atTop (R := ℝ))
+  exact ⟨_h_inl_16,
     Eventually.of_forall (shrinkingRadius_pos rho hrho)⟩
 
 private def addAllOnes
-    {d : ℕ} (alpha : TimeVelocityDerivativeIndex d 2) :
+    {d } (alpha : TimeVelocityDerivativeIndex d 2) :
     TimeVelocityDerivativeIndex d (d + 4) :=
   ⟨alpha.1 + TimeVelocityMultiIndex.allOnes d, by
     rw [TimeVelocityMultiIndex.order_add,
@@ -74,8 +59,8 @@ private def addAllOnes
     omega⟩
 
 private theorem coordinateIteratedFDeriv_sub
-    {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (f g : TimeVelocity d → ℝ)
+    {d } (beta : TimeVelocityMultiIndex d)
+    (f g )
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv beta (f - g) =
@@ -91,15 +76,9 @@ private theorem coordinateIteratedFDeriv_sub
   · exact (contDiff_infty.mp hf beta.order).contDiffAt
   · exact ((contDiff_infty.mp hg beta.order).neg).contDiffAt
 
-private theorem allOnes_eq_sum_single (d : ℕ) :
-    TimeVelocityMultiIndex.allOnes d =
-      ∑ c : TimeVelocityCoord d, Pi.single c 1 := by
-  funext c
-  simp [TimeVelocityMultiIndex.allOnes]
-
 private theorem coordinateIteratedFDeriv_sum_single_comp
-    {d : ℕ} (s : Finset (TimeVelocityCoord d))
-    (alpha : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ)
+    {d } (s : Finset (TimeVelocityCoord d))
+    (alpha : TimeVelocityMultiIndex d) (f )
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (∑ c ∈ s, Pi.single c 1)
@@ -122,30 +101,41 @@ private theorem coordinateIteratedFDeriv_sum_single_comp
         rw [← add_assoc]
         rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single]
         · exact contDiff_infty.mp hf _
-      · exact contDiff_infty.mp
-          (coordinateIteratedFDeriv_contDiff_infty_local alpha f hf) _
+      · have _h_inl_12 : ContDiff ℝ (⊤ : ℕ∞) (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) := by
+          rw [contDiff_infty]
+          intro m
+          unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
+          have hi := (contDiff_infty.mp hf (m + alpha.order)).iteratedFDeriv_right
+            (m := m) (i := alpha.coordinateList.length) (by simp)
+          exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
+            (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi
+        exact contDiff_infty.mp
+          _h_inl_12 _
 
 private theorem coordinateIteratedFDeriv_allOnes_comp
-    {d : ℕ} (alpha : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+    {d } (alpha : TimeVelocityMultiIndex d)
+    (f ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (TimeVelocityMultiIndex.allOnes d)
         (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (alpha + TimeVelocityMultiIndex.allOnes d) f := by
   classical
-  rw [allOnes_eq_sum_single]
+  have _h_inl_20 (d) : TimeVelocityMultiIndex.allOnes d = ∑ c : TimeVelocityCoord d, Pi.single c 1 := by
+    funext c
+    simp [TimeVelocityMultiIndex.allOnes]
+  rw [_h_inl_20]
   simpa only using
     coordinateIteratedFDeriv_sum_single_comp
       (Finset.univ : Finset (TimeVelocityCoord d)) alpha f hf
 
-/-- Every coordinate jet through ordinary order two is uniformly Cauchy
+/- Every coordinate jet through ordinary order two is uniformly Cauchy
 along the common shrinking mollifier radii. -/
 theorem uniformCauchySeqOn_coordinateJet_spacetimeMollification_shrinkingRadius
-    {d : ℕ} {root : TimeVelocity d → ℝ}
+    {d root}
     (G : ParabolicWeakDerivativeFamily d (2 * (d + 4)) Set.univ root)
     (rho : ℝ) (hrho : 0 < rho)
-    (K : Set (TimeVelocity d)) (hK : IsCompact K)
+    (K ) (hK : IsCompact K)
     (hsupp : ∀ ε, 0 < ε → ε < rho →
       ∀ beta : TimeVelocityDerivativeIndex d (d + 4),
         tsupport (SpacetimeMollifier.spacetimeMollification ε
@@ -157,13 +147,13 @@ theorem uniformCauchySeqOn_coordinateJet_spacetimeMollification_shrinkingRadius
           (G.ordinaryRepresentative
             (TimeVelocityDerivativeIndex.zero d (d + 4)))))
       atTop Set.univ := by
-  let beta : TimeVelocityDerivativeIndex d (d + 4) := addAllOnes alpha
-  let r : ℕ → ℝ := shrinkingRadius rho
+  let beta := addAllOnes alpha
+  let r := shrinkingRadius rho
   let u : ℕ → TimeVelocity d → ℝ := fun n =>
     SpacetimeMollifier.spacetimeMollification (r n)
       (G.ordinaryRepresentative (alpha.castLE (by omega)))
-  have hrpos : ∀ n, 0 < r n := shrinkingRadius_pos rho hrho
-  have hrlt : ∀ n, r n < rho := shrinkingRadius_lt rho hrho
+  have hrpos := shrinkingRadius_pos rho hrho
+  have hrlt := shrinkingRadius_lt rho hrho
   have hu_eq : ∀ n,
       TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
           (SpacetimeMollifier.spacetimeMollification (r n)
@@ -232,8 +222,39 @@ theorem uniformCauchySeqOn_coordinateJet_spacetimeMollification_shrinkingRadius
       exact fun hxn => hxK ((subset_tsupport (u n)) hxn |> hsupp (r n) (hrpos n)
         (hrlt n) (alpha.castLE (by omega)))
     exact hx (by simp [f, hm0, hn0])
-  have hpoint := abs_le_sqrt_volume_mul_eLpNorm_coordinateIteratedFDeriv_allOnes
-    d K hK f hf hfsupp z
+  have hpoint : |f z| ≤ Real.sqrt (volume.real K) *
+      ENNReal.toReal
+        (eLpNorm
+          (TimeVelocityMultiIndex.coordinateIteratedFDeriv
+            (TimeVelocityMultiIndex.allOnes d) f)
+          (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) := by
+    let g := TimeVelocityMultiIndex.coordinateIteratedFDeriv
+      (TimeVelocityMultiIndex.allOnes d) f
+    have hfcompact : HasCompactSupport f :=
+      hK.of_isClosed_subset (isClosed_tsupport (f := f)) hfsupp
+    have hgsupp : Function.support g ⊆ K :=
+      (subset_tsupport g).trans
+        ((coordinateIteratedFDeriv_tsupport_subset _ f).trans hfsupp)
+    have hgcontdiff : ContDiff ℝ (⊤ : ℕ∞) g := by
+      rw [contDiff_infty]
+      intro m
+      unfold g TimeVelocityMultiIndex.coordinateIteratedFDeriv
+      have hi := (contDiff_infty.mp hf
+        (m + (TimeVelocityMultiIndex.allOnes d).order)).iteratedFDeriv_right
+        (m := m)
+        (i := (TimeVelocityMultiIndex.allOnes d).coordinateList.length) (by simp)
+      exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
+        (fun i ↦ timeVelocityBasis
+          ((TimeVelocityMultiIndex.allOnes d).coordinateList.get i)))).clm_apply hi
+    have hgcontinuous : Continuous g := hgcontdiff.continuous
+    have hgcompact : HasCompactSupport g :=
+      HasCompactSupport.of_support_subset_isCompact hK hgsupp
+    have hgmem : MemLp g (2 : ℝ≥0∞)
+        (volume : Measure (TimeVelocity d)) :=
+      hgcontinuous.memLp_of_hasCompactSupport hgcompact
+    exact (abs_le_integral_abs_coordinateIteratedFDeriv_allOnes d f hf hfcompact z).trans
+      (integral_abs_le_sqrt_volume_mul_eLpNorm K hK.measurableSet
+        hK.measure_lt_top g hgmem hgsupp)
   have hgrid : TimeVelocityMultiIndex.coordinateIteratedFDeriv
       (TimeVelocityMultiIndex.allOnes d) f =
       SpacetimeMollifier.spacetimeMollification (r m)

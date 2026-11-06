@@ -21,7 +21,7 @@ def fullSpaceAction (E : FullSpaceEvolution) (F : BoundedBorel (EvolutionAmbient
   else F (p.position, p.velocity)
 
 /-- The definition agrees exactly with the source kernel formula at times `0,t`. -/
-theorem fullSpaceAction_eq_zeroTime {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem fullSpaceAction_eq_zeroTime {lam Lam } (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (F : BoundedBorel (EvolutionAmbientState 1)) (p : Point) (hp : 0 ≤ p.time) :
     fullSpaceAction E F p = ∫ x, F (x.2, x.1) ∂E.2.master

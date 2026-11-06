@@ -12,52 +12,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- The explicit primitive of a flux minus a weighted measure is locally integrable. -/
-theorem bellman_fluxMeasurePrimitive_locallyIntegrable (F : Measure ℝ)
-    [IsFiniteMeasureOnCompacts F] (g J : ℝ → ℝ) (hg : Continuous g)
-    (hJ : LocallyIntegrable J volume) (a : ℝ) :
-    LocallyIntegrable
-      (fun x => (∫ z in 0..x, J z) - a * bellmanMeasurePrimitive F g 0 x) volume := by
-  convert!
-    (bellman_lebesguePrimitive_continuous J hJ).locallyIntegrable.sub
-      ((bellmanMeasurePrimitive_locallyIntegrable F g hg).smul a) using 1
-
-/-- The explicit primitive satisfies the corresponding first weak derivative identity. -/
-theorem bellman_fluxMeasurePrimitive_weak (F : Measure ℝ)
-    [IsFiniteMeasureOnCompacts F] (g J : ℝ → ℝ) (hg : Continuous g)
-    (hJ : LocallyIntegrable J volume) (a : ℝ) (φ : BellmanRealTest) :
-    (∫ x, φ x * J x) - a * (∫ x, g x * φ x ∂F) =
-      -(∫ x, deriv φ x *
-        ((∫ z in 0..x, J z) - a * bellmanMeasurePrimitive F g 0 x)) := by
-  have h1 := bellman_lebesguePrimitive_weak J hJ φ φ.contDiff φ.hasCompactSupport
-  have h2 := bellmanMeasurePrimitive_weak F g hg φ φ.contDiff φ.hasCompactSupport
-  have hd : Continuous (deriv φ) := (contDiff_infty_iff_deriv.mp φ.contDiff).2.continuous
-  have hc : HasCompactSupport (deriv φ) := φ.hasCompactSupport.deriv
-  have hi1 : Integrable (fun x => deriv φ x * (∫ z in 0..x, J z)) volume := by
-    exact LocallyIntegrable.integrable_smul_left_of_hasCompactSupport
-      (bellman_lebesguePrimitive_continuous J hJ).locallyIntegrable hd hc
-  have hi2 : Integrable (fun x => deriv φ x * bellmanMeasurePrimitive F g 0 x) volume := by
-    exact LocallyIntegrable.integrable_smul_left_of_hasCompactSupport
-      (bellmanMeasurePrimitive_locallyIntegrable F g hg) hd hc
-  rw [show (fun x => deriv φ x *
-      ((∫ z in 0..x, J z) - a * bellmanMeasurePrimitive F g 0 x)) =
-      (fun x => deriv φ x * (∫ z in 0..x, J z) -
-        a * (deriv φ x * bellmanMeasurePrimitive F g 0 x)) by funext x; ring,
-    integral_sub hi1 (hi2.const_mul a), integral_const_mul]
-  have hs1 : (∫ x, deriv φ x * (∫ z in 0..x, J z)) = -∫ x, φ x * J x := by
-    rw [show (fun x => deriv φ x * (∫ z in 0..x, J z)) =
-      (fun x => (∫ z in 0..x, J z) * deriv φ x) by funext x; ring, h1]
-    congr 1
-    apply integral_congr_ae
-    exact ae_of_all _ fun x => mul_comm _ _
-  have hs2 : (∫ x, deriv φ x * bellmanMeasurePrimitive F g 0 x) =
-      -∫ x, g x * φ x ∂F := by
-    rw [show (fun x => deriv φ x * bellmanMeasurePrimitive F g 0 x) =
-      (fun x => bellmanMeasurePrimitive F g 0 x * deriv φ x) by funext x; ring, h2]
-  rw [hs1, hs2]
-  ring
-
-/-- A measure with flux minus weighted-measure derivative has an actual explicit density. -/
+/- The explicit primitive of a flux minus a weighted measure is locally integrable. -/
 theorem bellman_measure_density_of_flux (F H : Measure ℝ)
     [IsFiniteMeasureOnCompacts F] [IsFiniteMeasureOnCompacts H]
     (g J : ℝ → ℝ) (hg : Continuous g) (hJ : LocallyIntegrable J volume) (a : ℝ)
@@ -68,8 +23,12 @@ theorem bellman_measure_density_of_flux (F H : Measure ℝ)
       ∀ᵐ x ∂volume, 0 ≤ c + (∫ z in 0..x, J z) -
         a * bellmanMeasurePrimitive F g 0 x := by
   let p := fun x => (∫ z in 0..x, J z) - a * bellmanMeasurePrimitive F g 0 x
-  have hp : LocallyIntegrable p volume :=
-    bellman_fluxMeasurePrimitive_locallyIntegrable F g J hg hJ a
+  have hp : LocallyIntegrable p volume := by
+      convert!
+        (bellman_lebesguePrimitive_continuous J hJ).locallyIntegrable.sub
+          ((bellmanMeasurePrimitive_locallyIntegrable F g hg).smul a) using 1
+
+    /- The explicit primitive satisfies the corresponding first weak derivative identity. -/
   have h1 : LocallyIntegrable (fun _ : ℝ => (1 : ℝ)) H :=
     continuous_const.locallyIntegrable
   let L := bellmanWeightedTestIntegral H (fun _ => 1) - bellmanWeightedTestIntegral volume p
@@ -82,7 +41,38 @@ theorem bellman_measure_density_of_flux (F H : Measure ℝ)
     change (∫ x, deriv φ x * 1 ∂H) - (∫ x, deriv φ x * p x) = 0
     simp only [mul_one]
     rw [hw φ]
-    have he := bellman_fluxMeasurePrimitive_weak F g J hg hJ a φ
+    have he : (∫ x, φ x * J x) - a * (∫ x, g x * φ x ∂F) =
+      -(∫ x, deriv φ x *
+        ((∫ z in 0..x, J z) - a * bellmanMeasurePrimitive F g 0 x)) := by
+        have h1 := bellman_lebesguePrimitive_weak J hJ φ φ.contDiff φ.hasCompactSupport
+        have h2 := bellmanMeasurePrimitive_weak F g hg φ φ.contDiff φ.hasCompactSupport
+        have hd : Continuous (deriv φ) := (contDiff_infty_iff_deriv.mp φ.contDiff).2.continuous
+        have hc := φ.hasCompactSupport.deriv
+        have hi1 : Integrable (fun x => deriv φ x * (∫ z in 0..x, J z)) volume := by
+          exact LocallyIntegrable.integrable_smul_left_of_hasCompactSupport
+            (bellman_lebesguePrimitive_continuous J hJ).locallyIntegrable hd hc
+        have hi2 : Integrable (fun x => deriv φ x * bellmanMeasurePrimitive F g 0 x) volume := by
+          exact LocallyIntegrable.integrable_smul_left_of_hasCompactSupport
+            (bellmanMeasurePrimitive_locallyIntegrable F g hg) hd hc
+        rw [show (fun x => deriv φ x *
+            ((∫ z in 0..x, J z) - a * bellmanMeasurePrimitive F g 0 x)) =
+            (fun x => deriv φ x * (∫ z in 0..x, J z) -
+              a * (deriv φ x * bellmanMeasurePrimitive F g 0 x)) by funext x; ring,
+          integral_sub hi1 (hi2.const_mul a), integral_const_mul]
+        have hs1 : (∫ x, deriv φ x * (∫ z in 0..x, J z)) = -∫ x, φ x * J x := by
+          rw [show (fun x => deriv φ x * (∫ z in 0..x, J z)) =
+            (fun x => (∫ z in 0..x, J z) * deriv φ x) by funext x; ring, h1]
+          congr 1
+          apply integral_congr_ae
+          exact ae_of_all _ fun x => mul_comm _ _
+        have hs2 : (∫ x, deriv φ x * bellmanMeasurePrimitive F g 0 x) =
+            -∫ x, g x * φ x ∂F := by
+          rw [show (fun x => deriv φ x * bellmanMeasurePrimitive F g 0 x) =
+            (fun x => bellmanMeasurePrimitive F g 0 x * deriv φ x) by funext x; ring, h2]
+        rw [hs1, hs2]
+        ring
+
+      /- A measure with flux minus weighted-measure derivative has an actual explicit density. -/
     change (∫ x, φ x * J x) - a * (∫ x, g x * φ x ∂F) =
       -(∫ x, deriv φ x * p x) at he
     linarith

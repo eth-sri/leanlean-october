@@ -22,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- A cutoff supported in a relatively compact set has compact support. -/
 theorem hasCompactSupport_of_tsupport_subset_of_isCompact_closure
-    {d : ℕ} {V : Set (TimeVelocity d)} {b : TimeVelocity d → ℝ}
+    {d V} {b : TimeVelocity d → ℝ}
     (hbV : tsupport b ⊆ V) (hVCompact : IsCompact (closure V)) :
     HasCompactSupport b := by
   change IsCompact (tsupport b)
@@ -32,7 +32,7 @@ theorem hasCompactSupport_of_tsupport_subset_of_isCompact_closure
 /-- A relatively compact smooth cutoff localizes a selected weak jet while
 preserving all four selected representatives near the plateau compact set. -/
 theorem exists_smooth_compact_cutoff_mul_eventuallyEq_jet
-    {d : ℕ} {K V : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d K V p}
     (hK : IsCompact K) (hV : IsOpen V)
     (hVCompact : IsCompact (closure V)) (hKV : K ⊆ V)
     (w : ParabolicW12Function d V p) (hp : 1 ≤ p) :
@@ -61,7 +61,7 @@ theorem exists_smooth_compact_cutoff_mul_eventuallyEq_jet
       unfold timeDerivative
       rw [hbz.fderiv_eq]
       simp
-    simp [hdb, hbO z hzO]
+    simp [ParabolicW12Function.mulContDiffHasCompactSupport, hdb, hbO z hzO]
   · filter_upwards [hOOpen.mem_nhdsSet.mpr hKO] with z hzO
     have hbz : b =ᶠ[𝓝 z] fun _ : TimeVelocity d => (1 : ℝ) :=
       (show ∀ᶠ y in 𝓝 z, y ∈ O from hOOpen.mem_nhds hzO).mono
@@ -71,7 +71,7 @@ theorem exists_smooth_compact_cutoff_mul_eventuallyEq_jet
       unfold velocityGradient
       rw [hbz.fderiv_eq]
       simp
-    simp [hgrad, hbO z hzO]
+    simp [ParabolicW12Function.mulContDiffHasCompactSupport, hgrad, hbO z hzO]
   · filter_upwards [hOOpen.mem_nhdsSet.mpr hKO] with z hzO
     have hbz : b =ᶠ[𝓝 z] fun _ : TimeVelocity d => (1 : ℝ) :=
       (show ∀ᶠ y in 𝓝 z, y ∈ O from hOOpen.mem_nhds hzO).mono
@@ -86,7 +86,7 @@ theorem exists_smooth_compact_cutoff_mul_eventuallyEq_jet
       unfold velocityGradient
       rw [hbz.fderiv_eq]
       simp
-    simp [hgrad, hhess, hbO z hzO]
+    simp [ParabolicW12Function.mulContDiffHasCompactSupport, hgrad, hhess, hbO z hzO]
     funext i j
     rfl
 

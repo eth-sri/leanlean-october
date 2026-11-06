@@ -11,20 +11,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
 
-/-- Ambient position translation is Borel. -/
-theorem measurable_evolutionAmbientStateShift {d : ℕ} (h : PDE.Vec d) :
-    Measurable (evolutionAmbientStateShift h) := by
-  exact measurable_fst.prodMk (measurable_snd.add_const h)
+/- Ambient position translation is Borel. -/
+theorem measurable_evolutionAmbientStateShift {d } (h : PDE.Vec d) :
+    Measurable (evolutionAmbientStateShift h) :=  measurable_fst.prodMk (measurable_snd.add_const h)
 
-/-- Translation on the terminal state subtype is Borel. -/
-theorem measurable_evolutionStateShift {d : ℕ} (Ω : Set (PDE.Vec d))
+/- Translation on the terminal state subtype is Borel. -/
+theorem measurable_evolutionStateShift {d } (Ω : Set (PDE.Vec d))
     (γ : ℝ → PDE.Vec d) (σ : ℝ) (h : PDE.Vec d) :
     Measurable (evolutionStateShift Ω γ σ h) :=
   ((measurable_evolutionAmbientStateShift h).comp measurable_subtype_coe).subtype_mk
 
-/-- Fiber covariance pushes forward to the ambient master measures. -/
-theorem master_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
+/- Fiber covariance pushes forward to the ambient master measures. -/
+theorem master_translation {d Ω γ} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
     (hcov : IsTranslationCovariantEvolution Ω γ hΩ K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (h : PDE.Vec d) :
     Measure.map (evolutionAmbientStateShift h)
@@ -39,14 +37,8 @@ theorem master_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
     (measurable_evolutionStateShift Ω γ τ h), K.map_fiberKernel_eq_master] at hc
   exact hc
 
-/-- Translating both positions leaves the displacement Fourier phase unchanged. -/
-theorem fourierPhase_shift {d : ℕ} (ξ z h : PDE.Vec d) (w : EvolutionAmbientState d) :
-    fourierPhase ξ (z + h) (evolutionAmbientStateShift h w) = fourierPhase ξ z w := by
-  simp only [fourierPhase, evolutionAmbientStateShift, add_sub_add_right_eq_sub]
-
-/-- The Fourier projection is independent of simultaneous starting-position translation. -/
-theorem fourierProjection_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
+/- Translating both positions leaves the displacement Fourier phase unchanged. -/
+theorem fourierProjection_translation {d Ω γ} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
     (hcov : IsTranslationCovariantEvolution Ω γ hΩ K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (h ξ : PDE.Vec d) :
     fourierProjection K
@@ -67,13 +59,15 @@ theorem fourierProjection_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
   change (E ×ˢ univ).indicator (fourierPhase ξ (p.1.2 + h))
     (evolutionAmbientStateShift h w) = (E ×ˢ univ).indicator (fourierPhase ξ p.1.2) w
   by_cases hw : w.1 ∈ E
-  · rw [indicator_of_mem (by exact ⟨hw, mem_univ _⟩),
-      indicator_of_mem (by exact ⟨hw, mem_univ _⟩), fourierPhase_shift]
+  · have _h_inl_11 (ξ z h : PDE.Vec d) (w : EvolutionAmbientState d) : fourierPhase ξ (z + h) (evolutionAmbientStateShift h w) = fourierPhase ξ z w := by
+      simp only [fourierPhase, evolutionAmbientStateShift, add_sub_add_right_eq_sub]
+    rw [indicator_of_mem (by exact ⟨hw, mem_univ _⟩),
+      indicator_of_mem (by exact ⟨hw, mem_univ _⟩), _h_inl_11]
   · rw [indicator_of_notMem (by exact fun hw' => hw hw'.1),
       indicator_of_notMem (by exact fun hw' => hw hw'.1)]
 
-/-- Starting position does not affect the whole-space Fourier kernel. -/
-theorem fourierKernel_eq_startingPosition {d : ℕ}
+/- Starting position does not affect the whole-space Fourier kernel. -/
+theorem fourierKernel_eq_startingPosition {d }
     (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0)
       MeasurableSet.univ K)

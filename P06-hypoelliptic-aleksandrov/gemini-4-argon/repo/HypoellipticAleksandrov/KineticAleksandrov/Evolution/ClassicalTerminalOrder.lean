@@ -62,8 +62,7 @@ private theorem weak_limit_le_on_finite_set {α : Type*} [MeasurableSpace α]
     apply integral_mono_ae hi (integrableOn_const hSEf)
     filter_upwards [ae_restrict_mem hSE] with x hx
     exact hle j x hx.2
-  have hh := le_of_tendsto ht (Filter.Eventually.of_forall hineq)
-  simpa only [Measure.restrict_restrict hS] using hh
+  simpa only [Measure.restrict_restrict hS] using (le_of_tendsto ht (Filter.Eventually.of_forall hineq))
 
 /-- The existing kinetic volume assigns positive mass to every nonempty open set. -/
 instance kineticVolume_isOpenPosMeasure (n : ℕ) :
@@ -76,7 +75,7 @@ instance kineticVolume_isOpenPosMeasure (n : ℕ) :
 /-- A smooth representative inherits every uniform upper bound on an open subregion. -/
 theorem bounded_weak_limit_le_on_open {n : ℕ}
     (U W : Set (KineticPoint n)) (hW : IsOpen W) (hWU : W ⊆ U)
-    (v : ℕ → KineticPoint n → ℝ) (u V : KineticPoint n → ℝ) (C a : ℝ)
+    (v : ℕ → KineticPoint n → ℝ) (u V : KineticPoint n → ℝ) (C a )
     (hv : ∀ j, AEStronglyMeasurable (v j) (volume.restrict U))
     (hb : ∀ j, ∀ᵐ x ∂volume.restrict U, |v j x| ≤ C)
     (hu : AEStronglyMeasurable u (volume.restrict U))
@@ -105,14 +104,13 @@ theorem bounded_weak_limit_le_on_open {n : ℕ}
     filter_upwards [hleV] with p hp
     exact (min_eq_left hp).symm
   have hcV := hV.mono hOU
-  have heq := Measure.eqOn_open_of_ae_eq hae hO hcV (hcV.inf continuousOn_const)
-  rw [heq hxO]
+  rw [(Measure.eqOn_open_of_ae_eq hae hO hcV (hcV.inf continuousOn_const)) hxO]
   exact min_le_right _ _
 
 /-- Uniform local absolute trace bounds pass to the continuous weak-limit representative. -/
-theorem bounded_weak_limit_abs_sub_le_on_open {n : ℕ}
+theorem bounded_weak_limit_abs_sub_le_on_open {n }
     (U W : Set (KineticPoint n)) (hW : IsOpen W) (hWU : W ⊆ U)
-    (v : ℕ → KineticPoint n → ℝ) (u V : KineticPoint n → ℝ) (C a η : ℝ)
+    (v : ℕ → KineticPoint n → ℝ) (u V : KineticPoint n → ℝ) (C a η )
     (hv : ∀ j, AEStronglyMeasurable (v j) (volume.restrict U))
     (hb : ∀ j, ∀ᵐ x ∂volume.restrict U, |v j x| ≤ C)
     (hu : AEStronglyMeasurable u (volume.restrict U))

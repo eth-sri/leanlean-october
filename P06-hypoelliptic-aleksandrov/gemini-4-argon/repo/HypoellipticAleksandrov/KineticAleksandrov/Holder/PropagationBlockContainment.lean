@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationBlockGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationBlockTaylor
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationParametersPositive
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.BarrierSign
 
 /-! # Source block cylinders lie in the smooth path corridor with halved radii -/
 
@@ -14,7 +16,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set
 
-/-- The source block closure lies in the path tube with halved position and velocity radii. -/
+/- The source block closure lies in the path tube with halved position and velocity radii. -/
 theorem propagation_block_containment {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
     (hH : 0 ≤ H) (_hT0 : 0 < T0) (hT1 : T0 ≤ T1) (hkx : 0 < kx) (hkv : 0 < kv)
     (hh : 0 < h) (hhstar : h ≤ stepSize d lam Lam H T0 T1 kx kv)
@@ -55,8 +57,8 @@ theorem propagation_block_containment {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
     dsimp only [b, s]
     constructor <;> linarith only [htlo, htup]
   have hs : s ∈ Icc (-T0) TP := by
-    have hb : b ≤ TP := hblock
-    have ht : W ^ 2 * h ≤ T0 := htime.1
+    have hb := hblock
+    have ht := htime.1
     constructor <;> dsimp only [b] at * <;> linarith only [hdelta.1, hdelta.2, hb, ht, hsblock, hh]
   have hvelEq : P.velocity - v s = (P.velocity - v b) + (v b - v s) := by abel
   have hvelPath := hLip b s
@@ -101,7 +103,39 @@ theorem propagation_block_containment {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
           (H * W ^ 4 / 2) * (Real.sqrt T1 * h ^ (3 / 2 : ℝ)) :=
         add_le_add le_rfl (mul_le_mul_of_nonneg_left hthree (by positivity))
       _ = _ := by dsimp only [W, positionTubeConstant]; ring
-  exact ⟨hs, hposTube.trans (propagation_step_position hH hkx hh hhstar),
-    hvelTube.trans (propagation_step_velocity hH hkv hh hhstar)⟩
+  have _h_xinl_1 : positionTubeConstant d lam Lam H T1 * h ^ (3 / 2 : ℝ) ≤ kx / 2 := by
+    have hc := (tubeConstants_pos (d := d) (lam := lam) (Lam := Lam) (T1 := T1) hH).2
+    have hratio : 0 < kx / (2 * positionTubeConstant d lam Lam H T1) := by positivity
+    have _h_xinl_0 : stepSize d lam Lam H T0 T1 kx kv ≤ (kx / (2 * positionTubeConstant d lam Lam H T1)) ^ (2 / 3 : ℝ) := by
+        exact (
+      (min_le_right _ _).trans (min_le_right _ _)
+      )
+    have hb := Real.rpow_le_rpow hh.le
+      (hhstar.trans _h_xinl_0)
+      (show (0 : ℝ) ≤ 3 / 2 by norm_num)
+    rw [← Real.rpow_mul hratio.le] at hb
+    norm_num only [show (2 / 3 : ℝ) * (3 / 2) = 1 by norm_num, Real.rpow_one] at hb
+    calc
+      _ ≤ positionTubeConstant d lam Lam H T1 *
+          (kx / (2 * positionTubeConstant d lam Lam H T1)) :=
+        mul_le_mul_of_nonneg_left hb hc.le
+      _ = _ := by field_simp
+  have _h_xinl_0 : velocityTubeConstant d lam Lam H T1 * Real.sqrt h ≤ kv / 2 := by
+    have hc := (tubeConstants_pos (d := d) (lam := lam) (Lam := Lam) (T1 := T1) hH).1
+    have hratio : 0 < kv / (2 * velocityTubeConstant d lam Lam H T1) := by positivity
+    have _h_xinl_0 : stepSize d lam Lam H T0 T1 kx kv ≤ (kv / (2 * velocityTubeConstant d lam Lam H T1)) ^ 2 := by
+        exact (
+      (min_le_right _ _).trans (min_le_left _ _)
+      )
+    have hb := Real.sqrt_le_sqrt
+      (hhstar.trans _h_xinl_0)
+    rw [Real.sqrt_sq_eq_abs, abs_of_pos hratio] at hb
+    calc
+      _ ≤ velocityTubeConstant d lam Lam H T1 *
+          (kv / (2 * velocityTubeConstant d lam Lam H T1)) :=
+        mul_le_mul_of_nonneg_left hb hc.le
+      _ = _ := by field_simp
+  exact ⟨hs, hposTube.trans _h_xinl_1,
+    hvelTube.trans _h_xinl_0⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

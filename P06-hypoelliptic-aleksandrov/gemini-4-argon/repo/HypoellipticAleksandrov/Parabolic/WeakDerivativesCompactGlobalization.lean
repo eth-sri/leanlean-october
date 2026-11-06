@@ -139,30 +139,28 @@ private theorem weakFDerivApply_univ_of_tsupport_subset
 carrier is
 also the ambient raw weak time derivative. -/
 theorem HasWeakTimeDerivOn.univ_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d U} (hU : IsOpen U)
     {u du : TimeVelocity d → ℝ}
     (h : HasWeakTimeDerivOn U u du)
     (hu : tsupport u ⊆ U)
     (hdu : tsupport du ⊆ U) :
-    HasWeakTimeDerivOn Set.univ u du := by
-  exact weakFDerivApply_univ_of_tsupport_subset hU (1, 0) h hu hdu
+    HasWeakTimeDerivOn Set.univ u du :=  weakFDerivApply_univ_of_tsupport_subset hU (1, 0) h hu hdu
 
 /-- A raw weak velocity derivative whose topological supports lie in an open
 carrier is also the ambient raw weak velocity derivative. -/
 theorem HasWeakVelocityPartialDerivOn.univ_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    {i : Fin d} {u dui : TimeVelocity d → ℝ}
+    {d U} (hU : IsOpen U)
+    {i } {u dui : TimeVelocity d → ℝ}
     (h : HasWeakVelocityPartialDerivOn U i u dui)
     (hu : tsupport u ⊆ U)
     (hdui : tsupport dui ⊆ U) :
-    HasWeakVelocityPartialDerivOn Set.univ i u dui := by
-  exact weakFDerivApply_univ_of_tsupport_subset hU (0, Pi.single i 1) h hu hdui
+    HasWeakVelocityPartialDerivOn Set.univ i u dui :=  weakFDerivApply_univ_of_tsupport_subset hU (0, Pi.single i 1) h hu hdui
 
 /-- Restricted `Lᵖ` membership globalizes when the selected representative
 vanishes pointwise off the measurable carrier. -/
 theorem ParabolicMemLpOn.memLp_of_support_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : MeasurableSet U)
-    {p : ℝ≥0∞} {f : TimeVelocity d → ℝ}
+    {d U} (hU : MeasurableSet U)
+    {p f}
     (hf : ParabolicMemLpOn U p f)
     (hsupp : Function.support f ⊆ U) :
     MeasureTheory.MemLp f p

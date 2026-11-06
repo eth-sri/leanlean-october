@@ -15,7 +15,7 @@ variable {d : ℕ}
 theorem integrable_compact_weight_bounded
     (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ)
     (hc : HasCompactSupport Λ) (f : ℝ × EvolutionAmbientState d → ℝ)
-    (hf : Measurable f) (C : ℝ) (_hC : 0 ≤ C)
+    (hf : Measurable f) (C ) (_hC : 0 ≤ C)
     (hb : ∀ q, Λ q ≠ 0 → |f q| ≤ C) : Integrable (fun q => Λ q * f q) := by
   have hi : Integrable (fun q => C * ‖Λ q‖) :=
     (hΛ.integrable_of_hasCompactSupport hc).norm.const_mul C
@@ -38,7 +38,7 @@ theorem positive_weight_compact (Λ : ℝ × EvolutionAmbientState d → ℝ)
 theorem integral_positive_negative_weight_sub
     (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ)
     (hc : HasCompactSupport Λ) (f : ℝ × EvolutionAmbientState d → ℝ)
-    (hf : Measurable f) (C : ℝ) (hC : 0 ≤ C)
+    (hf : Measurable f) (C ) (hC : 0 ≤ C)
     (hb : ∀ q, Λ q ≠ 0 → |f q| ≤ C) :
     (∫ q, max (Λ q) 0 * f q) - (∫ q, max (-Λ q) 0 * f q) = ∫ q, Λ q * f q := by
   obtain ⟨hpcont, hpcomp⟩ := positive_weight_compact Λ hΛ hc

@@ -19,12 +19,12 @@ open Set Filter Parabolic
 open scoped Topology
 
 /-- The position differential reconstructed from the coordinate gradient. -/
-def positionDifferential {d : ℕ} (u : KineticPoint d → ℝ) (P : KineticPoint d) :
+def positionDifferential {d } (u : KineticPoint d → ℝ) (P : KineticPoint d) :
     PDE.Vec d →L[ℝ] ℝ :=
   ∑ i : Fin d, kineticPositionGradient u P i • ContinuousLinearMap.proj i
 
 /-- Reconstruction agrees with the actual physical slice differential. -/
-theorem positionDifferential_eq {d : ℕ} (u : KineticPoint d → ℝ)
+theorem positionDifferential_eq {d } (u : KineticPoint d → ℝ)
     (P : KineticPoint d) :
     positionDifferential u P = fderiv ℝ (physicalPositionSlice u P) P.position := by
   ext v
@@ -34,7 +34,7 @@ theorem positionDifferential_eq {d : ℕ} (u : KineticPoint d → ℝ)
   rfl
 
 /-- Continuous position jets give a continuous family of linear differentials. -/
-theorem continuousOn_positionDifferential {d : ℕ} {u : KineticPoint d → ℝ}
+theorem continuousOn_positionDifferential {d u}
     {D : Set (KineticPoint d)} (hu : IsKineticC112On u D) :
     ContinuousOn (positionDifferential u) D := by
   apply continuousOn_finsetSum
@@ -43,8 +43,7 @@ theorem continuousOn_positionDifferential {d : ℕ} {u : KineticPoint d → ℝ}
     hu.continuousOn_kineticPositionGradient).smul continuousOn_const
 
 /-- Time and position partial derivatives assemble at every interior point. -/
-theorem kinetic_timePosition_hasFDerivAt {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hD : IsOpen D) (hu : IsKineticC112On u D)
+theorem kinetic_timePosition_hasFDerivAt {d u D} (hD : IsOpen D) (hu : IsKineticC112On u D)
     {P : KineticPoint d} (hP : P ∈ D) :
     HasFDerivAt (fun q : ℝ × PDE.Vec d => u ⟨q.1, q.2, P.velocity⟩)
       ((kineticTimeDerivative u P • ContinuousLinearMap.id ℝ ℝ).coprod
@@ -54,7 +53,7 @@ theorem kinetic_timePosition_hasFDerivAt {d : ℕ} {u : KineticPoint d → ℝ}
     KineticPoint.continuous_mk continuous_fst continuous_snd continuous_const
   let E := e ⁻¹' D
   have hE : IsOpen E := hD.preimage he
-  have hp : (P.time, P.position) ∈ E := hP
+  have hp := hP
   have ht : ContinuousOn (fun q => kineticTimeDerivative u (e q)) E :=
     hu.continuousOn_kineticTimeDerivative.comp he.continuousOn (fun _ h => h)
   have hx : ContinuousOn (fun q => positionDifferential u (e q)) E :=
@@ -81,9 +80,8 @@ theorem kinetic_timePosition_hasFDerivAt {d : ℕ} {u : KineticPoint d → ℝ}
   · exact hx.continuousAt (hE.mem_nhds hp)
 
 /-- A moving physical position contributes its transport derivative to the time jet. -/
-theorem kinetic_moving_time_hasDerivAt {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hD : IsOpen D) (hu : IsKineticC112On u D)
-    (a c : ℝ) (b w v : PDE.Vec d) (t : ℝ)
+theorem kinetic_moving_time_hasDerivAt {d u D} (hD : IsOpen D) (hu : IsKineticC112On u D)
+    (a c ) (b w v : PDE.Vec d) (t )
     (hp : (⟨a + c * t, b + t • w, v⟩ : KineticPoint d) ∈ D) :
     HasDerivAt (fun s => u ⟨a + c * s, b + s • w, v⟩)
       (c * kineticTimeDerivative u ⟨a + c * t, b + t • w, v⟩ +

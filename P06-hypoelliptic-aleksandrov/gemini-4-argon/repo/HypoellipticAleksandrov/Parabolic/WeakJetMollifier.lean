@@ -20,22 +20,10 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped Convolution ENNReal Topology
 
-/-- Right convolution on time--velocity space against its literal product volume. -/
+/- Right convolution on time--velocity space against its literal product volume. -/
 noncomputable def parabolicConvolution {d : Nat}
     (f rho : TimeVelocity d -> Real) : TimeVelocity d -> Real :=
   f ⋆[ContinuousLinearMap.mul Real Real, (volume : Measure (TimeVelocity d))] rho
-
-private theorem contDiff_translatedKernel {d : Nat} {rho : TimeVelocity d -> Real}
-    (hrho : ContDiff Real (⊤ : ℕ∞) rho) (z : TimeVelocity d) :
-    ContDiff Real (⊤ : ℕ∞) (fun y => rho (z - y)) := by
-  simpa only [Function.comp_def, id_eq, Homeomorph.coe_subLeft] using
-    hrho.comp (contDiff_const.sub contDiff_id)
-
-private theorem hasCompactSupport_translatedKernel {d : Nat} {rho : TimeVelocity d -> Real}
-    (hrho : HasCompactSupport rho) (z : TimeVelocity d) :
-    HasCompactSupport (fun y => rho (z - y)) := by
-  simpa only [Function.comp_def, id_eq, Homeomorph.coe_subLeft] using
-    hrho.comp_homeomorph (Homeomorph.subLeft z)
 
 private theorem fderiv_translatedKernel_apply {d : Nat} {rho : TimeVelocity d -> Real}
     (hrho : ContDiff Real (⊤ : ℕ∞) rho) (z y q : TimeVelocity d) :
@@ -64,8 +52,12 @@ private theorem fderiv_parabolicConvolution_eq {d : Nat}
     fderiv Real (parabolicConvolution u rho) z q = parabolicConvolution du rho z := by
   let _ : LocallyIntegrable du (volume : Measure (TimeVelocity d)) := hduLoc
   let phi : TimeVelocity d -> Real := fun y => rho (z - y)
-  have hphi : ContDiff Real (⊤ : ℕ∞) phi := contDiff_translatedKernel hrho z
-  have hphiCompact : HasCompactSupport phi := hasCompactSupport_translatedKernel hrhoCompact z
+  have hphi : ContDiff Real (⊤ : ℕ∞) phi := by
+    simpa only [Function.comp_def, id_eq, Homeomorph.coe_subLeft] using
+      hrho.comp (contDiff_const.sub contDiff_id)
+  have hphiCompact : HasCompactSupport phi := by
+    simpa only [Function.comp_def, id_eq, Homeomorph.coe_subLeft] using
+      hrhoCompact.comp_homeomorph (Homeomorph.subLeft z)
   have hraw := hweak phi hphi hphiCompact
   have hleft : (∫ y, u y * D phi y) =
       -(∫ y, u y * fderiv Real rho (z - y) q) := by
@@ -107,9 +99,9 @@ private theorem fderiv_parabolicConvolution_eq {d : Nat}
     _ = ∫ y, du y * phi y := by simp only [hraw, neg_neg]
     _ = parabolicConvolution du rho z := hright
 
-/-- Convolution by a smooth compactly supported kernel is globally smooth. -/
+/- Convolution by a smooth compactly supported kernel is globally smooth. -/
 theorem contDiff_parabolicConvolution
-    {d : Nat} {f rho : TimeVelocity d -> Real}
+    {d f rho}
     (hf : LocallyIntegrable f (volume : Measure (TimeVelocity d)))
     (hrho : ContDiff Real (⊤ : ℕ∞) rho)
     (hrhoCompact : HasCompactSupport rho) :
@@ -117,9 +109,9 @@ theorem contDiff_parabolicConvolution
   simpa only [parabolicConvolution] using
     hrhoCompact.contDiff_convolution_right (ContinuousLinearMap.mul Real Real) hf hrho
 
-/-- Right convolution commutes with the selected global weak time derivative. -/
+/- Right convolution commutes with the selected global weak time derivative. -/
 theorem timeDerivative_parabolicConvolution
-    {d : Nat} {u du rho : TimeVelocity d -> Real}
+    {d u du rho}
     (hu : HasWeakTimeDerivOn Set.univ u du)
     (huLoc : LocallyIntegrable u (volume : Measure (TimeVelocity d)))
     (hduLoc : LocallyIntegrable du (volume : Measure (TimeVelocity d)))
@@ -135,9 +127,9 @@ theorem timeDerivative_parabolicConvolution
   · intro x y
     simpa only [timeDerivative] using fderiv_translatedKernel_apply hrho x y (1, 0)
 
-/-- Right convolution commutes with every selected global weak velocity derivative. -/
+/- Right convolution commutes with every selected global weak velocity derivative. -/
 theorem velocityGradient_parabolicConvolution
-    {d : Nat} {u dui rho : TimeVelocity d -> Real} {i : Fin d}
+    {d u dui rho i}
     (hu : HasWeakVelocityPartialDerivOn Set.univ i u dui)
     (huLoc : LocallyIntegrable u (volume : Measure (TimeVelocity d)))
     (hduiLoc : LocallyIntegrable dui (volume : Measure (TimeVelocity d)))
@@ -156,17 +148,7 @@ theorem velocityGradient_parabolicConvolution
     simpa only [velocityGradient] using
       fderiv_translatedKernel_apply hrho x y (0, Pi.single i 1)
 
-private theorem fderiv_velocityGradient_apply {d : Nat} {f : TimeVelocity d -> Real}
-    (hf : ContDiff Real 2 f) (z qi qj : TimeVelocity d) :
-    fderiv Real (fun x => fderiv Real f x qi) z qj =
-      fderiv Real (fderiv Real f) z qj qi := by
-  have hderiv : DifferentiableAt Real (fderiv Real f) z :=
-    (hf.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num) z
-  rw [fderiv_clm_apply hderiv (differentiableAt_const (c := qi))]
-  simp
-
-private theorem velocityHessian_eq_fderiv_velocityGradient {d : Nat}
-    {f : TimeVelocity d -> Real} {i j : Fin d} (hf : ContDiff Real 2 f)
+private theorem velocityHessian_eq_fderiv_velocityGradient {d f i j} (hf : ContDiff Real 2 f)
     (z : TimeVelocity d) :
     velocityHessian f z i j =
       fderiv Real (fun x => velocityGradient f x i) z (0, Pi.single j 1) := by
@@ -176,13 +158,19 @@ private theorem velocityHessian_eq_fderiv_velocityGradient {d : Nat}
     velocityHessian f z i j = velocityHessian f z j i := by
       exact (congrFun (congrFun (velocityHessian_isSymm hf z).eq i) j).symm
     _ = fderiv Real (fun x => fderiv Real f x qi) z qj := by
-      exact (fderiv_velocityGradient_apply hf z qi qj).symm
+      have _h_inl_14 : fderiv Real (fun x => fderiv Real f x qi) z qj =
+      fderiv Real (fderiv Real f) z qj qi := by
+        have hderiv :=
+          (hf.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num) z
+        rw [fderiv_clm_apply hderiv (differentiableAt_const (c := qi))]
+        simp
+      exact _h_inl_14.symm
     _ = fderiv Real (fun x => velocityGradient f x i) z (0, Pi.single j 1) := by
       rfl
 
-/-- Right convolution commutes with the ordered selected global velocity Hessian. -/
+/- Right convolution commutes with the ordered selected global velocity Hessian. -/
 theorem velocityHessian_parabolicConvolution
-    {d : Nat} {u dui duij rho : TimeVelocity d -> Real} {i j : Fin d}
+    {d u dui duij rho i j}
     (hui : HasWeakVelocityPartialDerivOn Set.univ i u dui)
     (huij : HasWeakVelocityPartialDerivOn Set.univ j dui duij)
     (huLoc : LocallyIntegrable u (volume : Measure (TimeVelocity d)))
@@ -203,29 +191,29 @@ theorem velocityHessian_parabolicConvolution
 
 namespace ParabolicW12Function
 
-/-- The convolution of a global selected jet value is smooth. -/
-theorem contDiff_convolution {d : Nat} {p : ENNReal}
+/- The convolution of a global selected jet value is smooth. -/
+theorem contDiff_convolution {d p}
     (w : ParabolicW12Function d Set.univ p) (hp : 1 <= p)
-    (rho : TimeVelocity d -> Real) (hrho : ContDiff Real (⊤ : ℕ∞) rho)
+    (rho ) (hrho : ContDiff Real (⊤ : ℕ∞) rho)
     (hrhoCompact : HasCompactSupport rho) :
     ContDiff Real (⊤ : ℕ∞) (parabolicConvolution w.toFun rho) := by
   apply contDiff_parabolicConvolution (rho := rho) ?_ hrho hrhoCompact
   exact locallyIntegrableOn_univ.mp (w.memLp.locallyIntegrableOn hp)
 
-/-- The convolution of a global selected jet commutes with its time representative. -/
-theorem timeDerivative_convolution {d : Nat} {p : ENNReal}
+/- The convolution of a global selected jet commutes with its time representative. -/
+theorem timeDerivative_convolution {d p}
     (w : ParabolicW12Function d Set.univ p) (hp : 1 <= p)
-    (rho : TimeVelocity d -> Real) (hrho : ContDiff Real (⊤ : ℕ∞) rho)
+    (rho ) (hrho : ContDiff Real (⊤ : ℕ∞) rho)
     (hrhoCompact : HasCompactSupport rho) :
     timeDerivative (parabolicConvolution w.toFun rho) = parabolicConvolution w.timeDeriv rho := by
   apply timeDerivative_parabolicConvolution w.hasWeakTimeDeriv ?_ ?_ hrho hrhoCompact
   · exact locallyIntegrableOn_univ.mp (w.memLp.locallyIntegrableOn hp)
   · exact locallyIntegrableOn_univ.mp (w.timeDeriv_memLp.locallyIntegrableOn hp)
 
-/-- The convolution of a global selected jet commutes with each velocity gradient. -/
-theorem velocityGradient_convolution {d : Nat} {p : ENNReal}
+/- The convolution of a global selected jet commutes with each velocity gradient. -/
+theorem velocityGradient_convolution {d p}
     (w : ParabolicW12Function d Set.univ p) (hp : 1 <= p)
-    (rho : TimeVelocity d -> Real) (hrho : ContDiff Real (⊤ : ℕ∞) rho)
+    (rho ) (hrho : ContDiff Real (⊤ : ℕ∞) rho)
     (hrhoCompact : HasCompactSupport rho) (i : Fin d) :
     (fun z => velocityGradient (parabolicConvolution w.toFun rho) z i) =
       parabolicConvolution (fun y => w.velocityGrad y i) rho := by
@@ -234,10 +222,10 @@ theorem velocityGradient_convolution {d : Nat} {p : ENNReal}
   · exact locallyIntegrableOn_univ.mp (w.memLp.locallyIntegrableOn hp)
   · exact locallyIntegrableOn_univ.mp ((w.velocityGrad_memLp i).locallyIntegrableOn hp)
 
-/-- The convolution of a global selected jet commutes with its ordered velocity Hessian. -/
-theorem velocityHessian_convolution {d : Nat} {p : ENNReal}
+/- The convolution of a global selected jet commutes with its ordered velocity Hessian. -/
+theorem velocityHessian_convolution {d p}
     (w : ParabolicW12Function d Set.univ p) (hp : 1 <= p)
-    (rho : TimeVelocity d -> Real) (hrho : ContDiff Real (⊤ : ℕ∞) rho)
+    (rho ) (hrho : ContDiff Real (⊤ : ℕ∞) rho)
     (hrhoCompact : HasCompactSupport rho) (i j : Fin d) :
     (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian
         (parabolicConvolution w.toFun rho) z i j) =

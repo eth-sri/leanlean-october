@@ -63,12 +63,12 @@ local notation "μ" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb �
 /-- The limit `V` of the cutoff solutions at a point of the open fiber is the integral of the
 `z`-independent datum against the terminal measure, and it is invariant under the shift of the
 transported coordinate. -/
-theorem terminalMeasure_integral_lowerDatum_limit {τ : ℝ}
-    (F : BoundedBorel (PDE.Vec n)) (C : ℝ) (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
+theorem terminalMeasure_integral_lowerDatum_limit {τ }
+    (F : BoundedBorel (PDE.Vec n)) (C ) (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
     (hF : ParabolicProbe.IsSmoothCompactScalarTerminalDatum Ω γ τ F)
     (u : ℕ → KineticPoint n → ℝ)
     (hu : ∀ N, IsClassicalTerminalSolution Ω γ B b τ (cutoffDatum F N) (u N))
-    (σ : ℝ) (hστ : σ ≤ τ) (s : EvolutionState Ω γ σ) (v : ℝ)
+    (σ : ℝ) (hστ : σ ≤ τ) (s : EvolutionState Ω γ σ) (v )
     (hv : Tendsto (fun N => u N ⟨σ, s.1.1, s.1.2⟩) atTop (𝓝 v)) :
     v = ∫ x, lowerDatum F x ∂(μ (evolutionQueryOfState Ω γ σ τ hστ s)) := by
   have hspec := terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
@@ -173,9 +173,7 @@ theorem exists_classical_terminalMarginal_of_master_eq
     rw [hrhs]
     exact e
   · intro W hW q hq
-    have hEq := IsClassicalTerminalSolution.eqOn_of_lam hΩo hγ.1 hlam hB_ell hb_lipschitz
-      (hW.toKinetic (b := b) hBz) hVcl
-    exact hEq (show (⟨q.1, q.2, 0⟩ : KineticPoint n) ∈ evolutionPastClosedCylinder Ω γ τ from hq)
+    exact (IsClassicalTerminalSolution.eqOn_of_lam hΩo hγ.1 hlam hB_ell hb_lipschitz (hW.toKinetic (b := b) hBz) hVcl) (show (⟨q.1, q.2, 0⟩ : KineticPoint n) ∈ evolutionPastClosedCylinder Ω γ τ from hq)
 
 end EvolutionData
 

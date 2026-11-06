@@ -13,7 +13,7 @@ open Set MeasureTheory
 
 /-- Comap lifts an ambient retained ball measure to the larger valid source fiber,
 preserving its measure, mass and smaller-ball support. -/
-theorem retained_ball_comap_properties {d : ℕ} (v : PDE.Vec d) (η r s : ℝ)
+theorem retained_ball_comap_properties {d } (v : PDE.Vec d) (η r s : ℝ)
     (hη : 0 ≤ η) (hηr : η ≤ r)
     (μ : Measure (EvolutionAmbientState d)) [IsFiniteMeasure μ]
     (hsupport : μ (PDE.euclideanBall v η ×ˢ univ)ᶜ = 0) :

@@ -21,10 +21,7 @@ open KineticAleksandrov
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
 /-- Subtracting supplied classical solutions subtracts their source and boundary data. -/
-theorem isClassicalBackwardDirichletSolution_sub {n : ℕ}
-    {a T : ℝ} {Ω : Set (PDE.Vec n)} {A : CoefficientField n}
-    {b : ℝ → PDE.Vec n → PDE.Vec n} {c F G : ℝ → PDE.Vec n → ℝ}
-    {φ χ : PDE.Vec n → ℝ} {h k u v : TimeVelocity n → ℝ}
+theorem isClassicalBackwardDirichletSolution_sub {n a T Ω A b c F G φ χ} {h k u v : TimeVelocity n → ℝ}
     (hu : IsClassicalBackwardDirichletSolution a T Ω A b c F φ h u)
     (hv : IsClassicalBackwardDirichletSolution a T Ω A b c G χ k v) :
     IsClassicalBackwardDirichletSolution a T Ω A b c

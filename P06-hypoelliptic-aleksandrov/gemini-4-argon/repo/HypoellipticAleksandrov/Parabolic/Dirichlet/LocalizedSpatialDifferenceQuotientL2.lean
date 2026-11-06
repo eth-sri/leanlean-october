@@ -49,19 +49,15 @@ noncomputable def localizedSpatialDifferenceQuotientL2
   let μ : Measure (PDE.Vec d) := volume
   let z : PDE.Vec d := h • PDE.basisVec k
   let T : PDE.Vec d → PDE.Vec d := fun y => y + z
-  let hT : MeasurePreserving T μ μ :=
+  let hT :=
     measurePreserving_add_right μ z
-  let E : PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ]
-      Lp ℝ (2 : ℝ≥0∞) μ :=
+  let E :=
     (Lp.zeroExtendLinearIsometry (μ := μ) hΩ).toContinuousLinearMap
-  let P : Lp ℝ (2 : ℝ≥0∞) μ →L[ℝ]
-      Lp ℝ (2 : ℝ≥0∞) μ :=
+  let P :=
     (Lp.compMeasurePreservingₗᵢ ℝ T hT).toContinuousLinearMap
-  let R : Lp ℝ (2 : ℝ≥0∞) μ →L[ℝ]
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let R :=
     LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ μ (2 : ℝ≥0∞) Ω
-  let M : PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ]
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let M :=
     scalarL2Multiplier η.toFun (cutoff_aestronglyMeasurable η) 1 zero_le_one
       (cutoff_norm_le_one η)
   h⁻¹ • M.comp (R.comp (P.comp E - E))
@@ -69,7 +65,7 @@ noncomputable def localizedSpatialDifferenceQuotientL2
 /-- The restricted-space quotient agrees almost everywhere with the canonical
 zero-extension representative formula. -/
 theorem localizedSpatialDifferenceQuotientL2_apply_ae
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : MeasurableSet Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
@@ -140,11 +136,11 @@ theorem localizedSpatialDifferenceQuotientL2_apply_ae
 /-- A supplied restricted-space representative may replace the canonical zero
 extension on the cutoff's forward active collar. -/
 theorem localizedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : MeasurableSet Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞))
-    (g : PDE.Vec d → ℝ)
+    (g )
     (hfg : ⇑f =ᵐ[PDE.volumeOn Ω] g)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -175,15 +171,13 @@ theorem localizedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
   rw [hq, localizedSpatialDifferenceQuotient_apply]
   by_cases hη : η.toFun y = 0
   · simp [hη]
-  have hysupport : y ∈ tsupport η.toFun :=
-    subset_tsupport η.toFun hη
-  have hyshiftmem : y + h • PDE.basisVec k ∈ Ω := hηshift hysupport
+  have hyshiftmem := hηshift (subset_tsupport η.toFun hη)
   rw [hy hymem, hyshift hyshiftmem]
   rfl
 
 /-- The localized quotient has the sharp totalized `L²` application bound. -/
 theorem norm_localizedSpatialDifferenceQuotientL2_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : MeasurableSet Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :

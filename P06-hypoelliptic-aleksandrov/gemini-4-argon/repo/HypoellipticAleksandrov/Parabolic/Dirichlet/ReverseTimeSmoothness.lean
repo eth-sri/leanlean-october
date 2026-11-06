@@ -17,9 +17,8 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open scoped BigOperators Matrix.Norms.Elementwise
 
 /-- The reverse-time map is smooth. -/
-theorem contDiff_reverseTimeMap {d : ℕ} (r₁ : ℝ) :
-    ContDiff ℝ ⊤ (reverseTimeMap r₁ : TimeVelocity d → TimeVelocity d) := by
-  exact (contDiff_const.sub contDiff_fst).prodMk contDiff_snd
+theorem contDiff_reverseTimeMap {d } (r₁ : ℝ) :
+    ContDiff ℝ ⊤ (reverseTimeMap r₁ : TimeVelocity d → TimeVelocity d) :=  (contDiff_const.sub contDiff_fst).prodMk contDiff_snd
 
 /-- A function smooth on a neighborhood of a set is differentiable at each
 point of the set. -/
@@ -34,7 +33,7 @@ theorem IsSmoothOnNeighborhood.differentiableAt
 
 /-- Reverse-time pullback preserves smoothness on corresponding neighborhoods. -/
 theorem IsSmoothOnNeighborhood.reverseTime
-    {d : ℕ} {S K : Set (TimeVelocity d)} (r₁ : ℝ)
+    {d S K} (r₁ : ℝ)
     {f : TimeVelocity d → ℝ}
     (hSK : reverseTimeMap r₁ '' S ⊆ K)
     (hf : IsSmoothOnNeighborhood f K) :
@@ -50,7 +49,7 @@ theorem IsSmoothOnNeighborhood.reverseTime
 
 /-- Matrix-valued coefficient smoothness gives smoothness of each entry. -/
 theorem IsSmoothOnNeighborhood.coefficientEntry
-    {d : ℕ} {K : Set (TimeVelocity d)} (a : CoefficientField d)
+    {d K} (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (i j : Fin d) :
     IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2 i j) K := by
@@ -63,7 +62,7 @@ theorem IsSmoothOnNeighborhood.coefficientEntry
 /-- The spatial slice derivative is the full derivative applied to a purely
 spatial tangent vector. -/
 theorem fderiv_spatialSlice_apply
-    {d : ℕ} (a : CoefficientField d) (r : ℝ)
+    {d } (a : CoefficientField d) (r : ℝ)
     (y v : PDE.Vec d) (i j : Fin d)
     (ha : DifferentiableAt ℝ
       (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) :
@@ -79,7 +78,7 @@ theorem fderiv_spatialSlice_apply
 
 /-- Smooth matrix and drift fields give a smooth divergence-form drift entry. -/
 theorem IsSmoothOnNeighborhood.divergenceDriftEntry
-    {d : ℕ} {K : Set (TimeVelocity d)}
+    {d K}
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2) K)

@@ -26,22 +26,22 @@ open Set MeasureTheory
 open scoped ENNReal
 
 /-- Smooth on an open neighbourhood of the specified set, in (t,x,v) coordinates. -/
-def IsSmoothNear {d : ℕ} (psi : KineticPoint d → ℝ) (E : Set (KineticPoint d)) : Prop :=
+def IsSmoothNear {d } (psi : KineticPoint d → ℝ) (E : Set (KineticPoint d)) : Prop :=
   ∃ U : Set (KineticPoint d), IsOpen U ∧ E ⊆ U ∧
     ContDiffOn ℝ (⊤ : ℕ∞) (psi ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' U)
 
 /-- The local neighbourhood Ω_{R₀,𝒞} in the source Hölder estimate. -/
-def holderNeighbourhood {d : ℕ} (R₀ : ℝ) (K : Set (KineticPoint d)) :
+def holderNeighbourhood {d } (R₀ : ℝ) (K : Set (KineticPoint d)) :
     Set (KineticPoint d) :=
   ⋃ P ∈ K, backwardCylinder P (2 * R₀)
 
 /-- Literal oscillation: supremum of values minus infimum of values. -/
-def oscillationOn {d : ℕ} (u : KineticPoint d → ℝ) (E : Set (KineticPoint d)) : ℝ :=
+def oscillationOn {d } (u : KineticPoint d → ℝ) (E : Set (KineticPoint d)) : ℝ :=
   sSup (u '' E) - sInf (u '' E)
 
 /-- The localised positive source in e:amp, including its superlevel indicator. -/
-def localizedSource {d : ℕ} (A : FullKineticCoefficient d)
+def localizedSource {d } (A : FullKineticCoefficient d)
     (psi u : KineticPoint d → ℝ) : KineticPoint d → ℝ :=
   {P | u P < psi P}.indicator (fun P => max (backwardOperator A psi P) 0)
 
@@ -50,7 +50,7 @@ The coefficient is an explicit parameter because the predicate contains P_A.
 Under the standing bounded elliptic Borel coefficient assumptions, the local
 source norm is finite for every smooth-near-closure barrier; `toReal` is then
 its ordinary real Lp norm, as in the Aleksandrov estimate. -/
-def IsAdmissibleSupersolution {d : ℕ} (A : FullKineticCoefficient d)
+def IsAdmissibleSupersolution {d } (A : FullKineticCoefficient d)
     (O : Set (KineticPoint d)) (p C_A : ℝ) (u : KineticPoint d → ℝ) : Prop :=
   ContinuousOn u O ∧
     ∀ (P₀ : KineticPoint d) (R : ℝ), 0 < R →
@@ -64,7 +64,7 @@ def IsAdmissibleSupersolution {d : ℕ} (A : FullKineticCoefficient d)
                 (volume.restrict (backwardCylinder P₀ R))).toReal
 
 /-- A source-defined admissible solution: both u and -u are admissible supersolutions. -/
-def IsAdmissibleSolution {d : ℕ} (A : FullKineticCoefficient d)
+def IsAdmissibleSolution {d } (A : FullKineticCoefficient d)
     (O : Set (KineticPoint d)) (p C_A : ℝ) (u : KineticPoint d → ℝ) : Prop :=
   IsAdmissibleSupersolution A O p C_A u ∧
     IsAdmissibleSupersolution A O p C_A (fun P => -u P)

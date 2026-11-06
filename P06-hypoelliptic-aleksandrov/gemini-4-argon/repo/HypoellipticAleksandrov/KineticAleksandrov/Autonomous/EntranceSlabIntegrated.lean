@@ -23,7 +23,7 @@ theorem entranceSlabGreen_isFiniteMeasure
 /-- Finite mixtures of starts up to `b` obey the exact actual terminal/occupation identity. -/
 theorem entranceSlabQuadratic_integrated_identity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) [IsFiniteMeasure mu]
     (hmu : ∀ᵐ p ∂mu, a ≤ p.time ∧ p.time ≤ b ∧
@@ -60,8 +60,8 @@ theorem entranceSlabQuadratic_integrated_identity
 /-- The exact source quadratic bounds starts by their actual terminal and clipped occupation. -/
 theorem entranceSlabQuadratic_mass_bound
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b )
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) [IsFiniteMeasure mu]
     (hmu : ∀ᵐ p ∂mu, a ≤ p.time ∧ p.time ≤ b ∧ p.velocity 0 ∈ closure c.entrance) :
     5 * c.r ^ 2 / 16 * (mu univ).toReal ≤
@@ -82,15 +82,12 @@ theorem entranceSlabQuadratic_mass_bound
       exact ⟨hv, hJ (subset_closure hv)⟩⟩)
   have hm := entranceSlabQuadratic_mass_lower c mu (hmu.mono fun _ hp => hp.2.2)
   rw [hi] at hm
-  have ht' := entranceSlabQuadratic_integral_le_active c
-    (mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b))
-    (entranceSlabTerminal_quadratic_integrable hH hLE hlam hLam A c J b mu)
-  exact hm.trans (add_le_add ht' (visitCoefficient_integral_le hlam A _))
+  exact hm.trans (add_le_add (entranceSlabQuadratic_integral_le_active c (mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b)) (entranceSlabTerminal_quadratic_integrable hH hLE hlam hLam A c J b mu)) (visitCoefficient_integral_le hlam A _))
 
 /-- Finite canonical slab counts satisfy the source quadratic estimate without a past-mass term. -/
 theorem entranceSlabQuadratic_partial_mass_bound
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (a b : ℝ) (N : ℕ) :

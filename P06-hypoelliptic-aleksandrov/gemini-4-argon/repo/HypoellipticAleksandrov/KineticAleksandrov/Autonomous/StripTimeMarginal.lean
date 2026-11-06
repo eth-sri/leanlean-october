@@ -16,7 +16,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
 
 /-- Restricting elapsed times can only decrease the Lebesgue mass of an absolute-time set. -/
-theorem elapsedVolume_absoluteTime_le (R : ℝ≥0∞) (s : ℝ) (J : Set ℝ)
+theorem elapsedVolume_absoluteTime_le (R : ℝ≥0∞) (s : ℝ) (J )
     (hJ : MeasurableSet J) :
     elapsedVolume R {τ | s + τ.1 ∈ J} ≤ volume J := by
   have hm : Measurable (fun τ : ElapsedTime R => s + τ.1) :=
@@ -36,7 +36,7 @@ theorem elapsedVolume_absoluteTime_le (R : ℝ≥0∞) (s : ℝ) (J : Set ℝ)
 /-- The literal killed kernel has physical-time marginal at most Lebesgue measure. -/
 theorem stripGreenOfKernel_timeMarginal (H : Interval)
     (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
-    (T : WithTop ℝ) (e : StripPole H T) (J : Set ℝ) (hJ : MeasurableSet J) :
+    (T : WithTop ℝ) (e : StripPole H T) (J ) (hJ : MeasurableSet J) :
     stripGreenOfKernel H K T e {p | p.time ∈ J} ≤ volume J := by
   have hm : Measurable (fun τ : ElapsedTime (stripHorizon T e.1.time) =>
       e.1.time + τ.1) := measurable_const.add measurable_subtype_coe
@@ -57,9 +57,9 @@ theorem stripGreenOfKernel_timeMarginal (H : Interval)
 /-- The canonical autonomous strip Green measure has the exact constant-one time bound. -/
 theorem stripGreen_timeMarginal
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ)
-    (e : StripPole H T) (J : Set ℝ) (hJ : MeasurableSet J) :
+    (e : StripPole H T) (J ) (hJ : MeasurableSet J) :
     stripGreen hH hLE hlam hLam A H T e {p | p.time ∈ J} ≤ volume J :=
   stripGreenOfKernel_timeMarginal H _ T e J hJ
 

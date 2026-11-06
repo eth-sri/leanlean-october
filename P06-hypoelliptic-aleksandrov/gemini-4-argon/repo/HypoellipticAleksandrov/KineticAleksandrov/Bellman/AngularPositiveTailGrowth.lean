@@ -18,7 +18,7 @@ theorem bellmanAngularTail_no_positive_linear_limit (R β : ℝ) (hR : 1 ≤ R) 
     (hcomp : ∀ᵐ y ∂volume, h y ≤ R * f y) (L : ℝ) (hL : 0 < L)
     (hlim : Tendsto (fun y => h y / y) atTop (𝓝 L)) : False := by
   have hRp : 0 < R := by linarith
-  have he : ∀ᶠ y : ℝ in atTop, L / 2 < h y / y :=
+  have he :=
     hlim.eventually (eventually_gt_nhds (by linarith : L / 2 < L))
   obtain ⟨a, ha⟩ := eventually_atTop.mp he
   let b := max 2 a
@@ -28,8 +28,7 @@ theorem bellmanAngularTail_no_positive_linear_limit (R β : ℝ) (hR : 1 ≤ R) 
     htail hb hc (by linarith)
   filter_upwards [ae_restrict_mem measurableSet_Ioi, ae_restrict_of_ae hcomp] with y hy hcy
   have hyp : 0 < y := by have := (le_max_left 2 a).trans hy.le; linarith
-  have hg := ha y ((le_max_right 2 a).trans hy.le)
-  have hly : L / 2 * y < h y := (lt_div_iff₀ hyp).mp hg
+  have hly : L / 2 * y < h y := (lt_div_iff₀ hyp).mp (ha y ((le_max_right 2 a).trans hy.le))
   have hfy : (L / (2 * R)) * y ≤ f y := by
     have heq : R * ((L / (2 * R)) * y) = L / 2 * y := by field_simp
     rw [← heq] at hly

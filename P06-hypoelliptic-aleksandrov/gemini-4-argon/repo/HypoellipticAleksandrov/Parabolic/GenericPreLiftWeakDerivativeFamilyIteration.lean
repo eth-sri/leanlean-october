@@ -22,24 +22,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open Set MeasureTheory
 open scoped BigOperators ENNReal MatrixOrder Matrix.Norms.Elementwise
 
-private theorem chainBox_subset_zero
-    {d N : ℕ} {q₀ s₀ s₁ q₁ : ℝ}
-    {Ω O₀ O : Set (PDE.Vec d)}
-    {left right : ℕ → ℝ} {spatial : ℕ → Set (PDE.Vec d)}
-    (hchain : IsHigherOrderNestedProductBoxChain
-      d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial)
-    {k : ℕ} (hk : k ≤ N + 2) :
-    Set.Ioo (left k) (right k) ×ˢ spatial k ⊆
-      Set.Ioo (left 0) (right 0) ×ˢ spatial 0 := by
-  induction k with
-  | zero => exact Subset.rfl
-  | succ k ih =>
-      have hklt : k < N + 2 := by omega
-      rcases hchain.step hklt with
-        ⟨hl, _, hr, _, _, _, _, hs⟩
-      exact (Set.prod_mono (Set.Ioo_subset_Ioo hl.le hr.le)
-        (subset_closure.trans hs)).trans (ih (by omega))
-
 private theorem matrix_isSymm_of_lower_bound
     {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
     (hlower : lam • (1 : PDE.Mat d) ≤ A) : A.IsSymm := by
@@ -54,7 +36,7 @@ private theorem matrix_isSymm_of_lower_bound
     simpa only [star_trivial, Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply,
       hij, hji, if_false, mul_zero, smul_zero, sub_zero] using h
 
-/-- Iterate exactly `N` generic pre-lift calls along the first `N` gaps of a
+/- Iterate exactly `N` generic pre-lift calls along the first `N` gaps of a
 higher-order nested product-box chain. -/
 theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
     (d N : ℕ) (hN : 1 ≤ N)
@@ -212,14 +194,22 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
     induction k with
     | zero => simp only [K, Nat.rec_zero, zero_le_one]
     | succ k ih =>
-        have hsum : 0 ≤ K k + 1 := add_nonneg ih zero_le_one
-        have hprod : 0 ≤ Cstep k * (K k + 1) :=
+        have hsum := add_nonneg ih zero_le_one
+        have hprod :=
           mul_nonneg (hCstep_nonneg k) hsum
         simpa only [K, Nat.rec_add_one] using hprod
   refine ⟨K N, hK N, ?_⟩
   intro a b c F u Dseed Emax hEll ha hb hc haBound hbBound hcBound hEq
   let Q : ℕ → Set (TimeVelocity d) := fun k => Set.Ioo (left k) (right k) ×ˢ spatial k
-  have hQsub (k : ℕ) (hk : k ≤ N) : Q k ⊆ Q 0 := chainBox_subset_zero hchain (by omega)
+  have hQsub (k : ℕ) (hk : k ≤ N) : Q k ⊆ Q 0 := by
+    induction k with
+    | zero => exact Subset.rfl
+    | succ k ih =>
+        have hklt : k < N + 2 := by omega
+        rcases hchain.step hklt with
+          ⟨hl, _, hr, _, _, _, _, hs⟩
+        exact (Set.prod_mono (Set.Ioo_subset_Ioo hl.le hr.le)
+          (subset_closure.trans hs)).trans (ih (by omega))
   have hiterate : ∀ k, k ≤ N →
       ∃ D : ParabolicWeakDerivativeFamily d (k + 2) (Q k) u,
         (∀ alpha : ParabolicDerivativeIndex d 2,
@@ -240,11 +230,9 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
         have hkN : k < N := by omega
         obtain ⟨D, hDseed, hDnorm⟩ := ih (by omega)
         have hsub := hQsub k (by omega)
-        let E : ParabolicWeakDerivativeFamily d (k + 1) (Q k)
-            (fun z : TimeVelocity d => F z.1 z.2) :=
+        let E :=
           (Emax.truncate (by omega)).restrict hsub
-        have hEnorm : ParabolicWeakDerivativeFamily.squaredL2Norm E ≤
-            ParabolicWeakDerivativeFamily.squaredL2Norm Emax :=
+        have hEnorm :=
           (ParabolicWeakDerivativeFamily.squaredL2Norm_restrict_le
             (Emax.truncate (by omega)) hsub).trans
             (ParabolicWeakDerivativeFamily.squaredL2Norm_truncate_le Emax (by omega))

@@ -11,6 +11,17 @@ public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
 public import HypoellipticAleksandrov.Parabolic.ScalarJetPointGermCongruence
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeProductRepresentativeUnique
+import HypoellipticAleksandrov.Parabolic.WeakDerivatives
+import Mathlib.Analysis.Calculus.ContDiff.Defs
+import Mathlib.MeasureTheory.Measure.OpenPos
+import Mathlib.Topology.Compactness.Lindelof
+import HypoellipticAleksandrov.Parabolic.Dirichlet.H10InteriorCaccioppoliTimeDerivative
+import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeInteriorGeometry
+import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeProductRepresentative
+import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeInteriorCoefficientMajorant
+import HypoellipticAleksandrov.Parabolic.ParabolicW12TimeReflection
+import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGradientProductRepresentative
+import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeProductRepresentative
 
 /-!
 # Smooth interior bootstrap
@@ -30,12 +41,14 @@ open Set MeasureTheory
 open scoped ENNReal Topology MatrixOrder Matrix.Norms.Elementwise BigOperators
 
 noncomputable section
+open HypoellipticAleksandrov.Parabolic
+open Filter IsReverseTimeVariationalEnergySolution
 
-/-- The supplied variational solution has one original-time representative
+/- The supplied variational solution has one original-time representative
 that is scalar `C¹,²` in the full interior, satisfies the original-time PDE
 pointwise, and retains the selected local weak jets almost everywhere. -/
 theorem exists_smoothInteriorBootstrap
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (hd : 0 < d)
     (r₀ r₁ : ℝ)
     (h₀₁ : r₀ < r₁)
@@ -113,10 +126,73 @@ theorem exists_smoothInteriorBootstrap
               timeVelocityVolumeOn (Set.Ioo s₀ s₁ ×ˢ O)]
               fun z => J.velocityHessian z j i := by
   classical
-  obtain ⟨w₀, hw₀mem, hw₀slice, hw₀local⟩ :=
-    exists_originalTimeValueRepresentative_localL2StrongJets hd r₀ r₁ h₀₁
-      hΩ hΩbounded lam Lam hlam hlamLam a b c F haSmooth hbSmooth hcSmooth hFSmooth
-      hLower hUpper hcNonpos initial u g hdu hu
+  obtain ⟨w₀, hw₀mem, hw₀slice, hw₀local⟩ : ∃ w : TimeVelocity d → ℝ,
+      MemLp w (2 : ℝ≥0∞)
+          (timeVelocityVolumeOn (Set.Ioo r₀ r₁ ×ˢ Ω)) ∧
+      (∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
+        (fun y => w (r, y)) =ᵐ[PDE.volumeOn Ω]
+          fun y => valueCLM hΩ (u (r₁ - r)) y) ∧
+      ∀ (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)),
+        r₀ < s₀ →
+        s₀ < s₁ →
+        s₁ < r₁ →
+        IsOpen O →
+        O.Nonempty →
+        IsCompact (closure O) →
+        closure O ⊆ Ω →
+        ∃ J : ParabolicW12Function d
+            (Set.Ioo s₀ s₁ ×ˢ O) (2 : ℝ≥0∞),
+          J.toFun =ᵐ[
+            timeVelocityVolumeOn (Set.Ioo s₀ s₁ ×ˢ O)] w ∧
+          ∀ᵐ z ∂timeVelocityVolumeOn (Set.Ioo s₀ s₁ ×ˢ O),
+            J.timeDeriv z +
+                  (∑ i : Fin d, ∑ j : Fin d,
+                    a z.1 z.2 i j * J.velocityHessian z j i) +
+                (∑ j : Fin d,
+                  b z.1 z.2 j * J.velocityGrad z j) +
+              c z.1 z.2 * J.toFun z =
+            F z.1 z.2 := by
+    obtain ⟨w, hwmem, hwslice⟩ : ∃ U : TimeVelocity d → ℝ,
+      MemLp U (2 : ℝ≥0∞)
+        (timeVelocityVolumeOn (Set.Ioo r₀ r₁ ×ˢ Ω)) ∧
+      ∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
+        (fun y => U (r, y)) =ᵐ[PDE.volumeOn Ω]
+          fun y => valueCLM hΩ (u (r₁ - r)) y := by
+      obtain ⟨Urev, hU_memLp, hU_slice⟩ :=
+        exists_reverseTimeL2V_value_product_representative hΩ (r₁ - r₀) u
+      let htime : MeasurePreserving (fun r : ℝ => r₁ - r)
+          (volume.restrict (Set.Ioo r₀ r₁)) (reverseTimeVolume (r₁ - r₀)) := by
+        have hreflection : MeasurePreserving (fun r : ℝ => r₁ - r)
+            (volume : Measure ℝ) volume := by
+          simpa only [Function.comp_def, sub_eq_add_neg] using
+            (measurePreserving_add_left (volume : Measure ℝ) r₁).comp
+              (Measure.measurePreserving_neg (volume : Measure ℝ))
+        have hpreimage : (fun r : ℝ => r₁ - r) ⁻¹' Set.Ioo 0 (r₁ - r₀) =
+            Set.Ioo r₀ r₁ := by
+          rw [preimage_const_sub_Ioo]
+          congr 1 <;> ring
+        rw [reverseTimeVolume, reverseTimeOpenInterval, ← hpreimage]
+        exact hreflection.restrict_preimage isOpen_Ioo.measurableSet
+      let hproduct := htime.prod (MeasurePreserving.id (PDE.volumeOn Ω))
+      rw [← reverseTimeVolume_prod_volumeOn_eq_timeVelocityVolumeOn (r₁ - r₀) Ω] at hU_memLp
+      refine ⟨fun z => Urev (r₁ - z.1, z.2), ?_, ?_⟩
+      · have _h_inl_9 : (volume.restrict (Set.Ioo r₀ r₁)).prod (PDE.volumeOn Ω) =
+          timeVelocityVolumeOn (Set.Ioo r₀ r₁ ×ˢ Ω) := by
+          rw [timeVelocityVolumeOn, volume_timeVelocity_eq_prod]
+          simpa using Measure.prod_restrict (μ := (volume : Measure ℝ))
+            (ν := (volume : Measure (PDE.Vec d))) (Set.Ioo r₀ r₁) Ω
+        rw [← _h_inl_9]
+        simpa only [Function.comp_def, Prod.map_def, id_eq] using
+          hU_memLp.comp_measurePreserving hproduct
+      · filter_upwards [htime.quasiMeasurePreserving.ae hU_slice] with r hr
+        exact hr
+    refine ⟨w, hwmem, hwslice, ?_⟩
+    intro s₀ s₁ O hr₀s₀ hs₀s₁ hs₁r₁ hOopen hOnonempty hOcompact hOΩ
+    exact exists_originalTimeLocalL2StrongJet_of_valueRepresentative
+      hd r₀ s₀ s₁ r₁ h₀₁ hr₀s₀ hs₀s₁ hs₁r₁ hΩ hΩbounded
+      hOopen hOnonempty hOcompact hOΩ lam Lam hlam hlamLam a b c F
+      haSmooth hbSmooth hcSmooth hFSmooth hLower hUpper hcNonpos initial u g hdu hu
+      w hwmem hwslice
   let Q : Set (TimeVelocity d) := Set.Ioo r₀ r₁ ×ˢ Ω
   have hQopen : IsOpen Q := isOpen_Ioo.prod hΩ
   have hlocal : ∀ z : Q, ∃ (V : Set (TimeVelocity d)) (v : TimeVelocity d → ℝ),
@@ -150,7 +226,7 @@ theorem exists_smoothInteriorBootstrap
       exists_open_between_and_isCompact_closure
         (isCompact_singleton : IsCompact ({(z : TimeVelocity d).2} : Set (PDE.Vec d)))
         hΩ hsingleton
-    have hsingletonO₀ : ({(z : TimeVelocity d).2} : Set (PDE.Vec d)) ⊆ O₀ := hzO₀
+    have hsingletonO₀ := hzO₀
     obtain ⟨O, hOopen, hzO, hOO₀, hOcompact⟩ :=
       exists_open_between_and_isCompact_closure
         (isCompact_singleton : IsCompact ({(z : TimeVelocity d).2} : Set (PDE.Vec d)))
@@ -174,9 +250,51 @@ theorem exists_smoothInteriorBootstrap
     exact hSsub.trans (Set.prod_mono (Set.Ioo_subset_Ioo hrq₀.le hq₁r.le)
       (fun y hy => hO₀Ω (subset_closure hy)))
   choose V v hVopen hzV hVQ hvC2 hvAE hpde using hlocal
-  obtain ⟨w, hwC2, hww₀, hwv⟩ :=
-    exists_contDiffOn_two_gluing V v hVopen hzV hVQ hvC2 hvAE
-  have hwC12 : IsScalarC12On w Q :=
+  obtain ⟨w, hwC2, hww₀, hwv⟩ : ∃ w : TimeVelocity d → ℝ,
+      ContDiffOn ℝ 2 w Q ∧
+      w =ᵐ[timeVelocityVolumeOn Q] w₀ ∧
+      ∀ z, Set.EqOn w (v z) (V z) := by
+    classical
+    have hcompat (x y : Q) : Set.EqOn (v x) (v y) (V x ∩ V y) := by
+      have hx : v x =ᵐ[timeVelocityVolumeOn (V x ∩ V y)] w₀ :=
+        (hvAE x).filter_mono
+          (ae_mono (Measure.restrict_mono_set volume inter_subset_left))
+      have hy : v y =ᵐ[timeVelocityVolumeOn (V x ∩ V y)] w₀ :=
+        (hvAE y).filter_mono
+          (ae_mono (Measure.restrict_mono_set volume inter_subset_right))
+      have hxy : v x =ᵐ[timeVelocityVolumeOn (V x ∩ V y)] v y := hx.trans hy.symm
+      exact Measure.eqOn_open_of_ae_eq hxy ((hVopen x).inter (hVopen y))
+        (hvC2 x).continuous.continuousOn (hvC2 y).continuous.continuousOn
+    let w : TimeVelocity d → ℝ := fun y => if hy : y ∈ Q then v ⟨y, hy⟩ y else 0
+    have hwv (x : Q) : Set.EqOn w (v x) (V x) := by
+      intro y hy
+      have hyQ := hVQ x hy
+      rw [show w y = v ⟨y, hyQ⟩ y by simp [w, hyQ]]
+      exact hcompat ⟨y, hyQ⟩ x ⟨hzV ⟨y, hyQ⟩, hy⟩
+    have hwC2 : ContDiffOn ℝ 2 w Q := by
+      apply contDiffOn_of_locally_contDiffOn
+      intro x hx
+      refine ⟨V ⟨x, hx⟩, hVopen ⟨x, hx⟩, hzV ⟨x, hx⟩, ?_⟩
+      exact (hvC2 ⟨x, hx⟩).contDiffOn.congr_mono
+        (fun y hy => hwv ⟨x, hx⟩ hy.2) inter_subset_right
+    obtain ⟨t, htcount, hQcover⟩ :=
+      (HereditarilyLindelofSpace.isLindelof Q).elim_nhds_subcover'
+        (fun x hx => V ⟨x, hx⟩)
+        (fun x hx => (hVopen ⟨x, hx⟩).mem_nhds (hzV ⟨x, hx⟩))
+    have hunionQ : (⋃ x ∈ t, V x) = Q := by
+      apply Set.Subset.antisymm
+      · exact iUnion₂_subset fun x _ => hVQ x
+      · exact hQcover
+    have hwAEunion : w =ᵐ[timeVelocityVolumeOn (⋃ x ∈ t, V x)] w₀ := by
+      rw [timeVelocityVolumeOn, MeasureTheory.ae_eq_restrict_biUnion_iff V htcount]
+      intro x hx
+      have hwvx : w =ᵐ[timeVelocityVolumeOn (V x)] v x := by
+        filter_upwards [ae_restrict_mem (hVopen x).measurableSet] with y hy
+        exact hwv x hy
+      exact hwvx.trans (hvAE x)
+    refine ⟨w, hwC2, ?_, hwv⟩
+    simpa [hunionQ] using hwAEunion
+  have hwC12 :=
     isScalarC12On_of_isOpen_contDiffOn_two hQopen hwC2
   have hwmem : MemLp w (2 : ℝ≥0∞) (timeVelocityVolumeOn Q) :=
     hw₀mem.ae_eq hww₀.symm
@@ -202,9 +320,9 @@ theorem exists_smoothInteriorBootstrap
     let zQ : Q := ⟨z, hz⟩
     have hEq : w =ᶠ[nhds z] v zQ :=
       (hVopen zQ).eventually_mem (hzV zQ) |>.mono (fun _ hy => hwv zQ hy)
-    have hwAt : ContDiffAt ℝ 2 w z := hwC2.contDiffAt (hQopen.mem_nhds hz)
+    have hwAt := hwC2.contDiffAt (hQopen.mem_nhds hz)
     obtain ⟨ht, hg, hh⟩ := scalarJet_eqAt_of_eventuallyEq hwAt (hvC2 zQ).contDiffAt hEq
-    have hvval : w z = v zQ z := hEq.eq_of_nhds
+    have hvval := hEq.eq_of_nhds
     simpa [ht, hg, hh, hvval] using hpde zQ z (hzV zQ)
   refine ⟨w, hwmem, hwslice, hwC12, hpdeGlobal, ?_⟩
   intro s₀ s₁ O hr₀s₀ hs₀s₁ hs₁r₁ hOopen hOne hOcompact hOΩ
@@ -224,8 +342,8 @@ theorem exists_smoothInteriorBootstrap
       hs₁q₁ hq₁r hΩ hΩbounded hO₀open hO₀ne hO₀compact hO₀Ω
       hOopen hOne hOcompact hOO₀ lam Lam hlam hlamLam a b c haSmooth hbSmooth
       hcSmooth hLower hUpper hcNonpos F hFSmooth initial u g hdu hu w₀ hw₀mem hw₀slice
-  let B : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
-  have hBQ : B ⊆ Q := Set.prod_mono (Set.Ioo_subset_Ioo hr₀s₀.le hs₁r₁.le)
+  let B := Set.Ioo s₀ s₁ ×ˢ O
+  have hBQ := Set.prod_mono (Set.Ioo_subset_Ioo hr₀s₀.le hs₁r₁.le)
     (fun y hy => hOΩ (subset_closure hy))
   have hBS : B ⊆ Metric.thickening rho (Set.Icc s₀ s₁ ×ˢ closure O) := by
     intro z hz

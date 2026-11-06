@@ -27,8 +27,8 @@ def bellmanDilation (r : ℝ) (hr : 0 < r) :
     BellmanPuncturedPlane → BellmanPuncturedPlane := fun q =>
   ⟨(r ^ 3 * q.1.1, r * q.1.2), by
     intro h
-    have hx : r ^ 3 * q.1.1 = 0 := congrArg Prod.fst h
-    have hv : r * q.1.2 = 0 := congrArg Prod.snd h
+    have hx := congrArg Prod.fst h
+    have hv := congrArg Prod.snd h
     apply q.2
     apply Prod.ext
     · exact (mul_eq_zero.mp hx).resolve_left (pow_ne_zero 3 hr.ne')

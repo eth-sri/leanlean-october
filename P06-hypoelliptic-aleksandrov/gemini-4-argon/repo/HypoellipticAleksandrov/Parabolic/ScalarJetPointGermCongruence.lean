@@ -18,7 +18,7 @@ noncomputable section
 open TimeVelocityMultiIndex
 
 private theorem scalarTimeDerivative_eq_coordinate_open_local
-    {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d)
+    {d } (u : TimeVelocity d → ℝ) (z : TimeVelocity d)
     (hu : ContDiffAt ℝ 1 u z) :
     scalarTimeDerivative u z =
       coordinateIteratedFDeriv (Pi.single (timeCoord d) 1) u z := by
@@ -40,7 +40,7 @@ private theorem scalarTimeDerivative_eq_coordinate_open_local
   exact hs.deriv
 
 private theorem scalarSpatialGradient_eq_coordinate_open_local
-    {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (j : Fin d)
+    {d } (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (j : Fin d)
     (hu : ContDiffAt ℝ 1 u z) :
     scalarSpatialGradient u z j =
       coordinateIteratedFDeriv (Pi.single (velocityCoord j) 1) u z := by
@@ -60,7 +60,7 @@ private theorem scalarSpatialGradient_eq_coordinate_open_local
   simp
 
 private theorem scalarSpatialHessian_eq_coordinate_open_local
-    {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (i j : Fin d)
+    {d } (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (i j : Fin d)
     (hu : ContDiffAt ℝ 2 u z) :
     scalarSpatialHessian u z i j =
       coordinateIteratedFDeriv
@@ -87,7 +87,7 @@ private theorem scalarSpatialHessian_eq_coordinate_open_local
   have hgradientDiff : DifferentiableAt ℝ
       (fun x : TimeVelocity d ↦ scalarSpatialGradient u x j) z :=
     hgradient.differentiableAt_iff.mpr (hq.differentiableAt (by norm_num))
-  have hslice : ContDiffAt ℝ 2 (fun y : PDE.Vec d ↦ u (z.1, y)) z.2 :=
+  have hslice :=
     hu.comp z.2 (contDiffAt_const.prodMk contDiffAt_id)
   have hgradientApply :
       (fderiv ℝ (fun y : PDE.Vec d ↦
@@ -100,8 +100,7 @@ private theorem scalarSpatialHessian_eq_coordinate_open_local
         (fun y ↦ PDE.classicalGradient (fun w : PDE.Vec d ↦ u (z.1, w)) y) z.2 := by
       apply differentiableAt_pi.2
       intro k
-      have hd : DifferentiableAt ℝ
-          (fderiv ℝ (fun w : PDE.Vec d ↦ u (z.1, w))) z.2 :=
+      have hd :=
         (hslice.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
       exact hd.clm_apply (differentiableAt_const (c := PDE.basisVec k))
     rw [fderiv_pi (fun k ↦ (differentiableAt_pi.mp hgrad) k)]
@@ -134,7 +133,7 @@ private theorem scalarSpatialHessian_eq_coordinate_open_local
 /-- Two ambient `C²` germs that agree near a point have the same scalar time,
 gradient, and ordered Hessian jets at that point. -/
 theorem scalarJet_eqAt_of_eventuallyEq
-    {d : ℕ} {f g : TimeVelocity d → ℝ} {z : TimeVelocity d}
+    {d f g} {z : TimeVelocity d}
     (hf : ContDiffAt ℝ 2 f z) (hg : ContDiffAt ℝ 2 g z)
     (hfg : f =ᶠ[nhds z] g) :
     scalarTimeDerivative f z = scalarTimeDerivative g z ∧

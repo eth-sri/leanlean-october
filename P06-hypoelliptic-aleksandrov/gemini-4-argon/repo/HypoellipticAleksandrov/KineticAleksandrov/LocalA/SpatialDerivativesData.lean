@@ -12,7 +12,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
 /-- Local data, after subtracting one value, extend with norm at most their raw oscillation. -/
-theorem spatialData_local_extension {d : ℕ} (Z₀ P : KineticPoint d) {R : ℝ} (hR : 0 < R)
+theorem spatialData_local_extension {d } (Z₀ P : KineticPoint d) {R } (hR : 0 < R)
     (hP : P ∈ forwardCylinder Z₀ R hR) (U : KineticPoint d → ℝ)
     (hU : ContinuousOn U (closure (forwardCylinder Z₀ R hR))) :
     let M := Holder.oscillationOn U (forwardCylinder Z₀ R hR)
@@ -48,12 +48,12 @@ theorem spatialData_local_extension {d : ℕ} (Z₀ P : KineticPoint d) {R : ℝ
     IsometryEquiv.coe_toHomeomorph, IsometryEquiv.coe_mk] using hv
 
 /-- Boundary displacement and exit data give literal physical product coordinates. -/
-def spatialBoundaryCoordinates {d : ℕ} (P : KineticPoint d) (v₀ : PDE.Vec d)
+def spatialBoundaryCoordinates {d } (P : KineticPoint d) (v₀ : PDE.Vec d)
     (p : PDE.Vec d × TimeVelocity d) : ℝ × (PDE.Vec d × PDE.Vec d) :=
   (p.2.1, (P.position + p.1 + (p.2.1 - P.time) • v₀, p.2.2))
 
 /-- Centered free-transport reconstruction is uniformly continuous. -/
-theorem uniformContinuous_spatialBoundaryCoordinates {d : ℕ}
+theorem uniformContinuous_spatialBoundaryCoordinates {d }
     (P : KineticPoint d) (v₀ : PDE.Vec d) :
     UniformContinuous (spatialBoundaryCoordinates P v₀) := by
   have hs : UniformContinuous (fun p : PDE.Vec d × TimeVelocity d =>

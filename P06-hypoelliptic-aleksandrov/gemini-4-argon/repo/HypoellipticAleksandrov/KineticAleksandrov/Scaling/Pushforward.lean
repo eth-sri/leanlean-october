@@ -25,7 +25,7 @@ open MeasureTheory ProbabilityTheory Set
 open HypoellipticAleksandrov
 open scoped ENNReal
 
-/-- A measurable equivalence restricts to measurable equivalences of subtypes. -/
+/- A measurable equivalence restricts to measurable equivalences of subtypes. -/
 def measurableEquivSubtype {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
     (e : α ≃ᵐ β) {p : α → Prop} {q : β → Prop} (h : ∀ x, p x ↔ q (e x)) :
     {x // p x} ≃ᵐ {y // q y} where
@@ -33,17 +33,6 @@ def measurableEquivSubtype {α β : Type*} [MeasurableSpace α] [MeasurableSpace
   measurable_toFun := (e.measurable.comp measurable_subtype_coe).subtype_mk
   measurable_invFun := (e.symm.measurable.comp measurable_subtype_coe).subtype_mk
 
-@[simp] theorem coe_measurableEquivSubtype {α β : Type*} [MeasurableSpace α]
-    [MeasurableSpace β] (e : α ≃ᵐ β) {p : α → Prop} {q : β → Prop}
-    (h : ∀ x, p x ↔ q (e x)) (x : {x // p x}) :
-    ((measurableEquivSubtype e h x : {y // q y}) : β) = e x := rfl
-
-@[simp] theorem coe_measurableEquivSubtype_symm {α β : Type*} [MeasurableSpace α]
-    [MeasurableSpace β] (e : α ≃ᵐ β) {p : α → Prop} {q : β → Prop}
-    (h : ∀ x, p x ↔ q (e x)) (y : {y // q y}) :
-    (((measurableEquivSubtype e h).symm y : {x // p x}) : α) = e.symm y := rfl
-
-/-- Every master kernel is a finite kernel, by its sub-Markov bound. -/
 instance isFiniteKernel_master {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) : IsFiniteKernel K.master :=
   ⟨1, ENNReal.one_lt_top, fun q => by simpa using K.mass_le_one q⟩
@@ -52,7 +41,7 @@ namespace KineticAffineScaling
 
 variable {d : ℕ} (Φ : KineticAffineScaling d)
 
-/-- The change of variables on raw queries `(σ, (τ, (y, z)))`. -/
+/- The change of variables on raw queries `(σ, (τ, (y, z)))`. -/
 def rawQuery (q : RawEvolutionQuery d) : RawEvolutionQuery d :=
   (Φ.time q.1, (Φ.time q.2.1, (Φ.position q.2.2.1, Φ.transport q.1 q.2.2.2)))
 
@@ -68,7 +57,7 @@ theorem continuous_ambientSymm :
 
 variable {Φ} {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
 
-/-- The change of variables on queries, rescaled to original. -/
+/- The change of variables on queries, rescaled to original. -/
 def queryMap (h : Φ.MapsDomain Ω γ Ω' γ') (q : EvolutionQuery Ω' γ') :
     EvolutionQuery Ω γ :=
   ⟨Φ.rawQuery q.1, Φ.time_le_iff.2 q.2.1, (h.stateSet_mem_iff q.1.1 q.1.2.2).1 q.2.2⟩
@@ -83,7 +72,7 @@ theorem measurable_outEquiv (Ω' : Set (PDE.Vec d)) (γ' : ℝ → PDE.Vec d) :
     ((measurable_fst.comp (measurable_snd.comp (measurable_subtype_coe.comp
       measurable_fst))).prodMk measurable_snd)
 
-/-- The pushed-forward master kernel. -/
+/- The pushed-forward master kernel. -/
 def pushMaster (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
     Kernel (EvolutionQuery Ω' γ') (EvolutionAmbientState d) :=
   depMap (K.master.comap (queryMap h) (measurable_queryMap h))
@@ -94,7 +83,7 @@ theorem pushMaster_apply (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKerne
     pushMaster h K q = (K.master (queryMap h q)).map (Φ.ambientEquiv q.1.2.1).symm := by
   rw [pushMaster, depMap_apply, Kernel.comap_apply]
 
-/-- The pushed-forward moving-fiber kernel
+/- The pushed-forward moving-fiber kernel
 `K̂.master q' = (K.master (Φ q')).map (Φ_{τ'})⁻¹`. -/
 def pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
     MovingFiberKernel Ω' γ' where
@@ -114,39 +103,17 @@ def pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
       MeasurableSet.univ, preimage_univ]
     exact K.mass_le_one (queryMap h q)
 
-@[simp] theorem pushKernel_master (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
-    (pushKernel h K).master = pushMaster h K := rfl
-
-/-- **Master pushforward**: `K̂.master q' = (K.master (Φ q')).map (Φ_{τ'})⁻¹`. -/
 theorem pushKernel_master_apply (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
     (q : EvolutionQuery Ω' γ') :
     (pushKernel h K).master q =
       (K.master (queryMap h q)).map (Φ.ambientEquiv q.1.2.1).symm :=
   pushMaster_apply h K q
 
-/-- The change of variables on moving fibre states, hat to original. -/
+/- The change of variables on moving fibre states, hat to original. -/
 def stateEquiv (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) :
     EvolutionState Ω' γ' τ ≃ᵐ EvolutionState Ω γ (Φ.time τ) :=
   measurableEquivSubtype (Φ.ambientEquiv τ) (h.stateSet_mem_iff τ)
 
-@[simp] theorem coe_stateEquiv (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
-    (p : EvolutionState Ω' γ' τ) :
-    ((stateEquiv h τ p : EvolutionState Ω γ (Φ.time τ)) : EvolutionAmbientState d) =
-      Φ.ambientEquiv τ p.1 := rfl
-
-@[simp] theorem coe_stateEquiv_symm (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
-    (p : EvolutionState Ω γ (Φ.time τ)) :
-    (((stateEquiv h τ).symm p : EvolutionState Ω' γ' τ) : EvolutionAmbientState d) =
-      (Φ.ambientEquiv τ).symm p.1 := rfl
-
-theorem queryMap_queryOfState (h : Φ.MapsDomain Ω γ Ω' γ') {τ τ' : ℝ} (hττ' : τ ≤ τ')
-    (p : EvolutionState Ω' γ' τ) :
-    queryMap h (evolutionQueryOfState Ω' γ' τ τ' hττ' p) =
-      evolutionQueryOfState Ω γ (Φ.time τ) (Φ.time τ') (Φ.time_le_iff.2 hττ')
-        (stateEquiv h τ p) := rfl
-
-/-- **Fibre pushforward**: the fixed-time fibre kernel of `K̂` is the conjugate of that of
-`K` by the state equivalences. -/
 theorem fiberKernel_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
     (hΩ : MeasurableSet Ω) (hΩ' : MeasurableSet Ω') (τ τ' : ℝ) (hττ' : τ ≤ τ')
     (p : EvolutionState Ω' γ' τ) :
@@ -164,9 +131,13 @@ theorem fiberKernel_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFibe
       (stateEquiv h τ').symm =
       (Φ.ambientEquiv τ').symm ∘ ((↑) : EvolutionState Ω γ (Φ.time τ') →
         EvolutionAmbientState d) := rfl
+  have _h_inl_26 (h : Φ.MapsDomain Ω γ Ω' γ') (hττ' : τ ≤ τ') (p) : queryMap h (evolutionQueryOfState Ω' γ' τ τ' hττ' p) = evolutionQueryOfState Ω γ (Φ.time τ) (Φ.time τ') (Φ.time_le_iff.2 hττ') (stateEquiv h τ p) := by
+      exact (
+    rfl
+    )
   rw [hcomp, ← Measure.map_map (Φ.ambientEquiv τ').symm.measurable measurable_subtype_coe,
     MovingFiberKernel.map_fiberKernel_eq_master, pushKernel_master_apply,
-    queryMap_queryOfState]
+    _h_inl_26]
   rfl
 
 end KineticAffineScaling

@@ -25,7 +25,7 @@ def IsSmoothOnNeighborhood
   ∃ V : Set E, IsOpen V ∧ K ⊆ V ∧ ContDiffOn ℝ (⊤ : ℕ∞) f V
 
 /-- The backward scalar operator with its source zero-order term. -/
-def scalarParabolicZeroOrderOperator {n : ℕ}
+def scalarParabolicZeroOrderOperator {n }
     (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n)
     (c : ℝ → PDE.Vec n → ℝ)
@@ -34,7 +34,7 @@ def scalarParabolicZeroOrderOperator {n : ℕ}
   scalarParabolicOperator a b u z + c z.1 z.2 * u z
 
 /-- Evaluation of the scalar parabolic operator with its zero-order term. -/
-@[simp] theorem scalarParabolicZeroOrderOperator_apply {n : ℕ}
+@[simp] theorem scalarParabolicZeroOrderOperator_apply {n }
     (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n)
     (c : ℝ → PDE.Vec n → ℝ)
@@ -48,7 +48,7 @@ def scalarParabolicZeroOrderOperator {n : ℕ}
   rfl
 
 /-- A supplied classical solution of the backward scalar Dirichlet problem. -/
-def IsClassicalBackwardDirichletSolution {n : ℕ}
+def IsClassicalBackwardDirichletSolution {n }
     (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec n))
     (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n)

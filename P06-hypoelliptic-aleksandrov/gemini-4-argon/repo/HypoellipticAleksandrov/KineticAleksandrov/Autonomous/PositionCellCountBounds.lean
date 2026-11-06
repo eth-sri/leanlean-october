@@ -53,14 +53,10 @@ theorem position_box_probability_integrable (E : FullSpaceEvolution) (z : Z)
     (A0 r Y a b : ℝ) :
     Integrable (fun t => (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal)
       (volume.restrict (Ioc a b)) := by
-  have hm := (kernelXV_realTime_measurable E z _ (box_measurable A0 r Y)).ennreal_toReal
-  apply Integrable.mono' (integrable_const (1 : ℝ)) hm.aestronglyMeasurable
+  apply Integrable.mono' (integrable_const (1 : ℝ)) ((kernelXV_realTime_measurable E z _ (box_measurable A0 r Y)).ennreal_toReal).aestronglyMeasurable
   apply Filter.Eventually.of_forall
   intro t
   rw [Real.norm_of_nonneg ENNReal.toReal_nonneg]
-  have h : kernelXV E (Real.toNNReal t) z (box A0 r Y) ≤ 1 :=
-    (measure_mono (subset_univ (box A0 r Y))).trans
-      (kernelXV_mass_le_one E (Real.toNNReal t) z)
-  simpa only [ENNReal.toReal_one] using ENNReal.toReal_mono ENNReal.one_ne_top h
+  simpa only [ENNReal.toReal_one] using ENNReal.toReal_mono ENNReal.one_ne_top ((measure_mono (subset_univ (box A0 r Y))).trans (kernelXV_mass_le_one E (Real.toNNReal t) z))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

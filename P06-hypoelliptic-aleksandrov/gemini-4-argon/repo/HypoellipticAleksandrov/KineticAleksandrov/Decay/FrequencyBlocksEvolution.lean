@@ -12,10 +12,10 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- The authorized evolution premise supplies all structural clauses on the given kernel. -/
 theorem iteration_evolution_clauses (hEvol : IterationEvolutionStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
     (S : TerminalOperatorFamily (wholeSpace d) stationary)
-    (K : MovingFiberKernel (wholeSpace d) stationary)
+    (K )
     (hreal : RealizesTerminalEvolution (wholeSpace d) stationary MeasurableSet.univ
       (zIndependentCoefficient B) (identityDrift d) S K) :
     IsDomainMonotoneEvolution (wholeSpace d) stationary

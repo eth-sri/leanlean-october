@@ -11,8 +11,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
 
 /-- Scalar factors commute with the literal Duhamel potential. -/
-theorem boundary_duhamelPotential_const_mul {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (c : ℝ)
+theorem boundary_duhamelPotential_const_mul {d Ω γ} (K : MovingFiberKernel Ω γ) (c : ℝ)
     (g : KineticPoint d → ℝ) (T : ℝ) (P : KineticPoint d) :
     duhamelPotential K T (fun Q => c * g Q) P = c * duhamelPotential K T g P := by
   unfold duhamelPotential
@@ -35,7 +34,7 @@ variable (hH : HormanderHypoellipticityStatement)
 /-- Bounded measurable sources add under the canonical finite-strip integral. -/
 theorem boundary_ballSourcePotential_add (a T : ℝ) (F G : KineticPoint d → ℝ)
     (hF : Measurable F) (hG : Measurable G)
-    (M N : ℝ) (hM : 0 ≤ M) (hN : 0 ≤ N)
+    (M N ) (hM : 0 ≤ M) (hN : 0 ≤ N)
     (hFb : ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M)
     (hGb : ∀ P ∈ localStrip a T v₀ R, |G P| ≤ N) (P : KineticPoint d) :
     ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T (fun Q => F Q + G Q) P =

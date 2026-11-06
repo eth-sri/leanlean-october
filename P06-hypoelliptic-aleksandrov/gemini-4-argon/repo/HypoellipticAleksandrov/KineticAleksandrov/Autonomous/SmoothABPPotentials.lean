@@ -19,7 +19,7 @@ open SectionTwo TheoremA Evolution
 The zero value outside the cylinder is immaterial to all interior assertions. -/
 def autonomousCylinderGreen
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (Z₀ : Point) (R : ℝ) (hR : 0 < R)
     (P : Point) : Measure Point := by
   classical
@@ -33,7 +33,7 @@ def autonomousCylinderGreen
 /-- Compact cylinder sources have the exact ABP potential regularity and equation. -/
 theorem autonomous_cylinder_green_potentials
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (Z₀ : Point) (R : ℝ) (hR : 0 < R)
     (g : Point → ℝ)
     (hgs : ContDiff ℝ (⊤ : ℕ∞) (fun z => g ((KineticPoint.equivProd 1).symm z)))

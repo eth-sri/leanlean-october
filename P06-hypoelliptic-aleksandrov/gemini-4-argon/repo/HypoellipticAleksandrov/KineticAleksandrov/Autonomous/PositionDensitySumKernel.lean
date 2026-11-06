@@ -31,8 +31,7 @@ theorem position_overlap_majorant (c h k : ℝ) (hc : 0 < c) (hh : 0 ≤ h)
   apply Real.exp_le_exp.mpr
   rw [abs_of_nonneg hh]
   have hm := le_max_left (h - 1) 0
-  have hm0 := le_max_right (h - 1) 0
-  nlinarith only [hc, hh, hk, hm, hm0]
+  nlinarith only [hc, hh, hk, hm, (le_max_right (h - 1) 0)]
 
 /-- Exponential absolute-value tails on the integer grid are summable. -/
 theorem position_exp_abs_summable (d : ℝ) (hd : 0 < d) :

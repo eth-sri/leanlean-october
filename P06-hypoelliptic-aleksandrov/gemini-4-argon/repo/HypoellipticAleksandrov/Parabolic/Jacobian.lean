@@ -40,7 +40,7 @@ open Matrix
 
 /-! ## The actual Fréchet derivative -/
 
-/-- The derivative candidate for the parabolic normal map. -/
+/- The derivative candidate for the parabolic normal map. -/
 def parabolicNormalMapDerivative {d : ℕ} (u : TimeVelocity d → ℝ) (y₀ : PDE.Vec d)
     (z : TimeVelocity d) : TimeVelocity d →L[ℝ] TimeVelocity d :=
   let Du := fderiv ℝ u z
@@ -51,7 +51,7 @@ def parabolicNormalMapDerivative {d : ℕ} (u : TimeVelocity d → ℝ) (y₀ : 
   (Du - ∑ i, ((velocityGradient u z i) • velocityCoordinate i +
       (z.2 i - y₀ i) • ((ContinuousLinearMap.proj i).comp Dg))).prod Dg
 
-/-- A globally `C²` scalar function has the displayed Fréchet derivative of
+/- A globally `C²` scalar function has the displayed Fréchet derivative of
 the parabolic normal map. -/
 theorem parabolicNormalMap_hasFDerivAt {d : ℕ} {u : TimeVelocity d → ℝ}
     (hu : ContDiff ℝ 2 u) (y₀ : PDE.Vec d) (z : TimeVelocity d) :
@@ -62,16 +62,14 @@ theorem parabolicNormalMap_hasFDerivAt {d : ℕ} {u : TimeVelocity d → ℝ}
   let velocityCoordinate : Fin d → TimeVelocity d →L[ℝ] ℝ := fun i ↦
     (ContinuousLinearMap.proj i).comp
       (ContinuousLinearMap.snd ℝ ℝ (PDE.Vec d))
-  have hu' : HasFDerivAt u Du z :=
+  have hu' :=
     (hu.differentiable (by norm_num) z).hasFDerivAt
-  have hg' : HasFDerivAt (velocityGradient u) Dg z :=
+  have hg' :=
     (differentiable_velocityGradient hu z).hasFDerivAt
   have hdot : HasFDerivAt
       (fun x : TimeVelocity d ↦ PDE.vecDot (velocityGradient u x) (x.2 - y₀))
       (∑ i, ((velocityGradient u z i) • velocityCoordinate i +
         (z.2 i - y₀ i) • ((ContinuousLinearMap.proj i).comp Dg))) z := by
-    change HasFDerivAt
-      (fun x : TimeVelocity d ↦ ∑ i, velocityGradient u x i * (x.2 i - y₀ i)) _ z
     refine HasFDerivAt.fun_sum fun i _hi ↦ ?_
     have hgi : HasFDerivAt (fun x : TimeVelocity d ↦ velocityGradient u x i)
         ((ContinuousLinearMap.proj i).comp Dg) z := by
@@ -88,7 +86,7 @@ theorem parabolicNormalMap_hasFDerivAt {d : ℕ} {u : TimeVelocity d → ℝ}
   simpa [parabolicNormalMapDerivative, Du, Dg,
     velocityCoordinate, Function.comp_def] using (hu'.sub hdot).prodMk hg'
 
-/-- The corresponding Fréchet derivative formula for the parabolic normal map. -/
+/- The corresponding Fréchet derivative formula for the parabolic normal map. -/
 theorem parabolicNormalMap_fderiv {d : ℕ} {u : TimeVelocity d → ℝ}
     (hu : ContDiff ℝ 2 u) (y₀ : PDE.Vec d) (z : TimeVelocity d) :
     fderiv ℝ (parabolicNormalMap u y₀) z = parabolicNormalMapDerivative u y₀ z :=
@@ -96,7 +94,7 @@ theorem parabolicNormalMap_fderiv {d : ℕ} {u : TimeVelocity d → ℝ}
 
 /-! ## Private time-first coordinate calculation -/
 
-/-- Product coordinates before the final `finAddFlip`: time is first. -/
+/- Product coordinates before the final `finAddFlip`: time is first. -/
 private noncomputable def timeFirstCoordinates (d : ℕ) :
     TimeVelocity d ≃L[ℝ] ((Fin 1 ⊕ Fin d) → ℝ) :=
   ((ContinuousLinearEquiv.piUnique ℝ (fun _ : Fin 1 ↦ ℝ)).prodCongr
@@ -104,33 +102,16 @@ private noncomputable def timeFirstCoordinates (d : ℕ) :
     (ContinuousLinearEquiv.sumPiEquivProdPi ℝ (Fin 1) (Fin d)
       (fun _ ↦ ℝ)).symm
 
-/-- The time-first conjugate of a time--velocity endomorphism. -/
+/- The time-first conjugate of a time--velocity endomorphism. -/
 private def timeFirstCoordinateConjugate {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
     ((Fin 1 ⊕ Fin d) → ℝ) →L[ℝ] ((Fin 1 ⊕ Fin d) → ℝ) :=
   (timeFirstCoordinates d).toContinuousLinearMap.comp
     (L.comp (timeFirstCoordinates d).symm.toContinuousLinearMap)
 
-/-- The Pi-basis matrix of the private time-first conjugate. -/
+/- The Pi-basis matrix of the private time-first conjugate. -/
 private def timeFirstCoordinateMatrix {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
     Matrix (Fin 1 ⊕ Fin d) (Fin 1 ⊕ Fin d) ℝ :=
   LinearMap.toMatrix' (timeFirstCoordinateConjugate L).toLinearMap
-
-private theorem det_timeFirstCoordinateMatrix {d : ℕ} (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
-    (timeFirstCoordinateMatrix L).det = L.det := by
-  calc
-    (timeFirstCoordinateMatrix L).det = (timeFirstCoordinateConjugate L).det := by
-      simp [timeFirstCoordinateMatrix]
-    _ = L.det :=
-      LinearMap.det_conj L.toLinearMap (timeFirstCoordinates d).toLinearEquiv
-
-/-- The time-first and time-last matrices have equal determinants.
-This determinant bridge is deliberately not a definitional equality of matrices. -/
-private theorem det_timeFirstCoordinateMatrix_eq_det_coordinateMatrix {d : ℕ}
-    (L : TimeVelocity d →L[ℝ] TimeVelocity d) :
-    (timeFirstCoordinateMatrix L).det = (coordinateMatrix L).det := by
-  rw [det_timeFirstCoordinateMatrix, det_coordinateMatrix]
-
-/-! ## Private determinant-one row operation -/
 
 private def scalarBlock (a : ℝ) : Matrix (Fin 1) (Fin 1) ℝ := fun _ _ ↦ a
 
@@ -140,7 +121,7 @@ private def rowBlock {d : ℕ} (r : PDE.Vec d) :
 private def colBlock {d : ℕ} (q : PDE.Vec d) :
     Matrix (Fin d) (Fin 1) ℝ := fun i _ ↦ q i
 
-/-- The raw velocity Jacobian keeps input and output derivative coordinates in
+/- The raw velocity Jacobian keeps input and output derivative coordinates in
 their genuine order until the explicit Schwarz step below. -/
 private def rawVelocityJacobian {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     PDE.Mat d :=
@@ -156,48 +137,40 @@ private def normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.Mat d) :
   Matrix.fromBlocks (scalarBlock (a - PDE.vecDot r q)) (-(rowMulMatrix r H))
     (colBlock q) H
 
-/-- Add `rᵀ` times the lower block row to the top block row. -/
+/- Add `rᵀ` times the lower block row to the top block row. -/
 private def normalRowOperation {d : ℕ} (r : PDE.Vec d) :
     Matrix (Fin 1 ⊕ Fin d) (Fin 1 ⊕ Fin d) ℝ :=
   Matrix.fromBlocks 1 (rowBlock r) 0 1
 
-private theorem normalRowOperation_mul_normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d)
-    (H : PDE.Mat d) :
-    normalRowOperation r * normalBlock a q r H =
-      Matrix.fromBlocks (scalarBlock a) 0 (colBlock q) H := by
-  simp only [normalRowOperation, normalBlock, Matrix.fromBlocks_multiply,
-    Matrix.one_mul, Matrix.zero_mul, zero_add]
-  congr 1
-  · ext ⟨⟩ ⟨⟩
-    simp [scalarBlock, rowBlock, colBlock, Matrix.mul_apply, PDE.vecDot]
-  · ext ⟨⟩ j
-    simp [rowBlock, rowMulMatrix, Matrix.mul_apply]
-
-private theorem det_normalRowOperation {d : ℕ} (r : PDE.Vec d) :
-    (normalRowOperation r).det = 1 := by
-  simp [normalRowOperation]
-
-private theorem det_normalBlock {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.Mat d) :
-    (normalBlock a q r H).det = a * H.det := by
-  calc
-    (normalBlock a q r H).det =
-        (normalRowOperation r * normalBlock a q r H).det := by
-      rw [Matrix.det_mul, det_normalRowOperation]
-      ring
-    _ = (Matrix.fromBlocks (scalarBlock a) 0 (colBlock q) H).det := by
-      rw [normalRowOperation_mul_normalBlock]
-    _ = a * H.det := by
-      simp [scalarBlock, Matrix.det_fromBlocks_zero₁₂]
-
 private theorem abs_det_normalBlock_eq {d : ℕ} (a : ℝ) (q r : PDE.Vec d) (H : PDE.Mat d)
     (ha : 0 ≤ a) (hH : (-H).PosSemidef) :
     |(normalBlock a q r H).det| = a * (-H).det := by
-  have hdet : 0 ≤ (-H).det := Matrix.PosSemidef.det_nonneg hH
+  have hdet := Matrix.PosSemidef.det_nonneg hH
   have habs : |H.det| = (-H).det := by
     calc
       |H.det| = |(-H).det| := by rw [Matrix.det_neg, abs_mul]; simp
       _ = (-H).det := abs_of_nonneg hdet
-  rw [det_normalBlock, abs_mul, abs_of_nonneg ha, habs]
+  have _h_inl_31 (a : ℝ) (q : PDE.Vec d) (r : PDE.Vec d) (H) : (normalBlock a q r H).det = a * H.det := by
+    calc
+      (normalBlock a q r H).det =
+          (normalRowOperation r * normalBlock a q r H).det := by
+        have _h_inl_30 (r : PDE.Vec d) : (normalRowOperation r).det = 1 := by
+          simp [normalRowOperation]
+        rw [Matrix.det_mul, _h_inl_30]
+        ring
+      _ = (Matrix.fromBlocks (scalarBlock a) 0 (colBlock q) H).det := by
+        have _h_inl_30 (a : ℝ) (q : PDE.Vec d) (r : PDE.Vec d) (H) : normalRowOperation r * normalBlock a q r H = Matrix.fromBlocks (scalarBlock a) 0 (colBlock q) H := by
+          simp only [normalRowOperation, normalBlock, Matrix.fromBlocks_multiply,
+            Matrix.one_mul, Matrix.zero_mul, zero_add]
+          congr 1
+          · ext ⟨⟩ ⟨⟩
+            simp [scalarBlock, rowBlock, colBlock, Matrix.mul_apply, PDE.vecDot]
+          · ext ⟨⟩ j
+            simp [rowBlock, rowMulMatrix, Matrix.mul_apply]
+        rw [_h_inl_30]
+      _ = a * H.det := by
+        simp [scalarBlock, Matrix.det_fromBlocks_zero₁₂]
+  rw [_h_inl_31, abs_mul, abs_of_nonneg ha, habs]
 
 /-! ## Private coordinate bridge for the actual derivative -/
 
@@ -253,8 +226,7 @@ private theorem rawVelocityJacobian_apply_eq {d : ℕ} {u : TimeVelocity d → �
         (fun _ : TimeVelocity d ↦ ei)
           (0 : TimeVelocity d →L[ℝ] TimeVelocity d) z :=
       hasFDerivAt_const ei z
-    have happly := hDu.hasFDerivAt.clm_apply hconst
-    simpa [H] using happly.fderiv
+    simpa [H] using (hDu.hasFDerivAt.clm_apply hconst).fderiv
   have hcomponents : ∀ k : Fin d,
       DifferentiableAt ℝ (fun x : TimeVelocity d ↦ fderiv ℝ u x (0, Pi.single k 1)) z := by
     intro k
@@ -282,51 +254,45 @@ private theorem rawVelocityJacobian_eq_velocityHessian {d : ℕ} {u : TimeVeloci
         ((0 : ℝ), Pi.single j 1) ((0 : ℝ), Pi.single i 1)
     _ = velocityHessian u z i j := rfl
 
-private theorem timeFirstCoordinateMatrix_parabolicNormalMapDerivative_raw {d : ℕ}
-    {u : TimeVelocity d → ℝ} (y₀ : PDE.Vec d) (z : TimeVelocity d) :
-    timeFirstCoordinateMatrix (parabolicNormalMapDerivative u y₀ z) =
-      normalBlock (timeDerivative u z)
-        (fun i ↦ fderiv ℝ (velocityGradient u) z ((1 : ℝ), 0) i)
-        (z.2 - y₀) (rawVelocityJacobian u z) := by
-  ext i j
-  rcases i with i | i <;> rcases j with j | j
-  · fin_cases i
-    fin_cases j
-    simp [timeFirstCoordinateMatrix_apply, timeFirstCoordinates_symm_time,
-      timeFirstCoordinates_apply_time, parabolicNormalMapDerivative,
-      normalBlock, scalarBlock, PDE.vecDot, timeDerivative]
-  · fin_cases i
-    simp [timeFirstCoordinateMatrix_apply, timeFirstCoordinates_symm_velocity,
-      timeFirstCoordinates_apply_time, parabolicNormalMapDerivative,
-      normalBlock, rowMulMatrix, rawVelocityJacobian, velocityGradient]
-    rw [Finset.sum_add_distrib]
-    have hsingle :
-        (∑ x : Fin d, (fderiv ℝ u z) (0, Pi.single x 1) *
-          (Pi.single j (1 : ℝ) : PDE.Vec d) x) =
-          (fderiv ℝ u z) (0, Pi.single j 1) := by
-      simp [Pi.single_apply]
-    rw [hsingle]
-    ring
-  · fin_cases j
-    simp [timeFirstCoordinateMatrix_apply, timeFirstCoordinates_symm_time,
-      timeFirstCoordinates_apply_velocity, parabolicNormalMapDerivative,
-      normalBlock, colBlock]
-  · simp [timeFirstCoordinateMatrix_apply, timeFirstCoordinates_symm_velocity,
-      timeFirstCoordinates_apply_velocity, parabolicNormalMapDerivative,
-      normalBlock, rawVelocityJacobian]
-
 private theorem timeFirstCoordinateMatrix_parabolicNormalMapDerivative {d : ℕ}
     {u : TimeVelocity d → ℝ} (hu : ContDiff ℝ 2 u) (y₀ : PDE.Vec d) (z : TimeVelocity d) :
     timeFirstCoordinateMatrix (parabolicNormalMapDerivative u y₀ z) =
       normalBlock (timeDerivative u z)
         (fun i ↦ fderiv ℝ (velocityGradient u) z ((1 : ℝ), 0) i)
         (z.2 - y₀) (velocityHessian u z) := by
-  rw [timeFirstCoordinateMatrix_parabolicNormalMapDerivative_raw,
+  have _h_inl_41 (y₀ : PDE.Vec d) (z : TimeVelocity d) : timeFirstCoordinateMatrix (parabolicNormalMapDerivative u y₀ z) = normalBlock (timeDerivative u z) (fun i ↦ fderiv ℝ (velocityGradient u) z ((1 : ℝ), 0) i) (z.2 - y₀) (rawVelocityJacobian u z) := by
+    ext i j
+    rcases i with i | i <;> rcases j with j | j
+    · fin_cases i
+      fin_cases j
+      simp [timeFirstCoordinateMatrix_apply, timeFirstCoordinates_symm_time,
+        timeFirstCoordinates_apply_time, parabolicNormalMapDerivative,
+        normalBlock, scalarBlock, PDE.vecDot, timeDerivative]
+    · fin_cases i
+      simp [timeFirstCoordinateMatrix_apply, timeFirstCoordinates_symm_velocity,
+        timeFirstCoordinates_apply_time, parabolicNormalMapDerivative,
+        normalBlock, rowMulMatrix, rawVelocityJacobian, velocityGradient]
+      rw [Finset.sum_add_distrib]
+      have hsingle :
+          (∑ x : Fin d, (fderiv ℝ u z) (0, Pi.single x 1) *
+            (Pi.single j (1 : ℝ) : PDE.Vec d) x) =
+            (fderiv ℝ u z) (0, Pi.single j 1) := by
+        simp [Pi.single_apply]
+      rw [hsingle]
+      ring
+    · fin_cases j
+      simp [timeFirstCoordinateMatrix_apply, timeFirstCoordinates_symm_time,
+        timeFirstCoordinates_apply_velocity, parabolicNormalMapDerivative,
+        normalBlock, colBlock]
+    · simp [timeFirstCoordinateMatrix_apply, timeFirstCoordinates_symm_velocity,
+        timeFirstCoordinates_apply_velocity, parabolicNormalMapDerivative,
+        normalBlock, rawVelocityJacobian]
+  rw [_h_inl_41,
     rawVelocityJacobian_eq_velocityHessian hu]
 
 /-! ## Absolute determinant identity -/
 
-/-- The absolute determinant of the Fréchet derivative of the parabolic normal
+/- The absolute determinant of the Fréchet derivative of the parabolic normal
 map equals the time derivative times the determinant of the negative velocity
 Hessian, under the pointwise sign conditions and with no contact premise. -/
 theorem abs_det_fderiv_parabolicNormalMap_eq {d : ℕ} {u : TimeVelocity d → ℝ}
@@ -336,13 +302,21 @@ theorem abs_det_fderiv_parabolicNormalMap_eq {d : ℕ} {u : TimeVelocity d → �
       timeDerivative u z * (-velocityHessian u z).det := by
   rw [parabolicNormalMap_fderiv hu]
   rw [← det_coordinateMatrix]
-  rw [← det_timeFirstCoordinateMatrix_eq_det_coordinateMatrix]
+  have _h_inl_21 (L : TimeVelocity d →L[ℝ] TimeVelocity d) : (timeFirstCoordinateMatrix L).det = (coordinateMatrix L).det := by
+    have _h_inl_21 (L : TimeVelocity d →L[ℝ] TimeVelocity d) : (timeFirstCoordinateMatrix L).det = L.det := by
+      calc
+        (timeFirstCoordinateMatrix L).det = (timeFirstCoordinateConjugate L).det := by
+          simp [timeFirstCoordinateMatrix]
+        _ = L.det :=
+          LinearMap.det_conj L.toLinearMap (timeFirstCoordinates d).toLinearEquiv
+    rw [_h_inl_21, det_coordinateMatrix]
+  rw [← _h_inl_21]
   rw [timeFirstCoordinateMatrix_parabolicNormalMapDerivative hu]
   exact abs_det_normalBlock_eq _ _ _ _ ht hH
 
 /-! ## Determinant-weighted pointwise source bound -/
 
-/-- A positive-definite matrix paired with a positive-semidefinite matrix has
+/- A positive-definite matrix paired with a positive-semidefinite matrix has
 nonnegative product trace, without assuming the two matrices commute. -/
 private theorem trace_mul_nonneg_of_posDef_posSemidef
     {d : ℕ} (A H : PDE.Mat d) (hA : A.PosDef) (hH : H.PosSemidef) :
@@ -365,30 +339,8 @@ private theorem trace_mul_nonneg_of_posDef_posSemidef
   rw [← htrace]
   exact hB.trace_nonneg
 
-/-- The forward operator at a `C²` point is the time derivative plus the
+/- The forward operator at a `C²` point is the time derivative plus the
 trace contribution of the negative velocity Hessian. -/
-private theorem parabolicOperator_eq_timeDerivative_add_trace_neg_velocityHessian
-    {d : ℕ} {u : TimeVelocity d → ℝ} (hu : ContDiff ℝ 2 u)
-    (A : CoefficientField d) (z : TimeVelocity d) :
-    parabolicOperator A u z =
-      timeDerivative u z +
-        (coefficientAt A z * (-velocityHessian u z)).trace := by
-  have hHsymm : (-velocityHessian u z).IsSymm :=
-    (velocityHessian_isSymm hu z).neg
-  calc
-    parabolicOperator A u z =
-        timeDerivative u z - matrixContraction (coefficientAt A z) (velocityHessian u z) :=
-      rfl
-    _ = timeDerivative u z +
-        matrixContraction (coefficientAt A z) (-velocityHessian u z) := by
-      rw [matrixContraction_neg_right]
-      ring
-    _ = timeDerivative u z +
-        (coefficientAt A z * (-velocityHessian u z)).trace := by
-      rw [matrixContraction_eq_trace_mul_of_isSymm _ _ hHsymm]
-
-/-- At a point of the parabolic sign set, the normal-map Jacobian is bounded
-by the positive source part with the exact determinant weight. -/
 theorem abs_det_fderiv_parabolicNormalMap_le_source
     {d : ℕ} {A : CoefficientField d} {f u : TimeVelocity d → ℝ}
     (hu : ContDiff ℝ 2 u) {T : ℝ} {y₀ : PDE.Vec d} {z : TimeVelocity d}
@@ -405,8 +357,23 @@ theorem abs_det_fderiv_parabolicNormalMap_le_source
   have hoperator :
       parabolicOperator A u z =
         timeDerivative u z +
-          (coefficientAt A z * (-velocityHessian u z)).trace :=
-    parabolicOperator_eq_timeDerivative_add_trace_neg_velocityHessian hu A z
+          (coefficientAt A z * (-velocityHessian u z)).trace := by
+      have hHsymm :=
+        (velocityHessian_isSymm hu z).neg
+      calc
+        parabolicOperator A u z =
+            timeDerivative u z - matrixContraction (coefficientAt A z) (velocityHessian u z) :=
+          rfl
+        _ = timeDerivative u z +
+            matrixContraction (coefficientAt A z) (-velocityHessian u z) := by
+          rw [matrixContraction_neg_right]
+          ring
+        _ = timeDerivative u z +
+            (coefficientAt A z * (-velocityHessian u z)).trace := by
+          rw [matrixContraction_eq_trace_mul_of_isSymm _ _ hHsymm]
+
+    /- At a point of the parabolic sign set, the normal-map Jacobian is bounded
+    by the positive source part with the exact determinant weight. -/
   have hsource :
       timeDerivative u z +
           (coefficientAt A z * (-velocityHessian u z)).trace ≤ f z := by

@@ -22,7 +22,7 @@ open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-/-- A cutoff gradient coordinate is measurable for restricted volume. -/
+/- A cutoff gradient coordinate is measurable for restricted volume. -/
 theorem cutoffGradient_aestronglyMeasurable
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (j : Fin d) :
@@ -33,7 +33,7 @@ theorem cutoffGradient_aestronglyMeasurable
       (η.smooth.continuous_fderiv (by simp)).clm_apply continuous_const
   exact hcontinuous.aestronglyMeasurable
 
-/-- A cutoff gradient coordinate obeys the cutoff bound almost everywhere. -/
+/- A cutoff gradient coordinate obeys the cutoff bound almost everywhere. -/
 theorem cutoffGradient_norm_le
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (j : Fin d) :
@@ -42,16 +42,6 @@ theorem cutoffGradient_norm_le
     rw [Real.norm_eq_abs]
     exact η.abs_classicalGradient_apply_le y j
 
-private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (j : Fin d)
-    {y : PDE.Vec d} (hy : y ∉ tsupport η.toFun) :
-    PDE.classicalGradient η.toFun y j = 0 := by
-  rw [PDE.classicalGradient_apply, fderiv_of_notMem_tsupport ℝ hy]
-  exact ContinuousLinearMap.zero_apply _
-
-/-- The cutoff-coordinate-gradient times forward spatial difference quotient
-on restricted-volume scalar `L²`, totalized at zero increment. -/
 noncomputable def cutoffGradientSpatialDifferenceQuotientL2
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (hΩ : MeasurableSet Ω)
@@ -60,29 +50,25 @@ noncomputable def cutoffGradientSpatialDifferenceQuotientL2
     PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ]
       PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
   let μ : Measure (PDE.Vec d) := volume
-  let z : PDE.Vec d := h • PDE.basisVec k
-  let T : PDE.Vec d → PDE.Vec d := fun y => y + z
-  let hT : MeasurePreserving T μ μ :=
+  let z := h • PDE.basisVec k
+  let T := fun y => y + z
+  let hT :=
     measurePreserving_add_right μ z
-  let E : PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ]
-      Lp ℝ (2 : ℝ≥0∞) μ :=
+  let E :=
     (Lp.zeroExtendLinearIsometry (μ := μ) hΩ).toContinuousLinearMap
-  let P : Lp ℝ (2 : ℝ≥0∞) μ →L[ℝ]
-      Lp ℝ (2 : ℝ≥0∞) μ :=
+  let P :=
     (Lp.compMeasurePreservingₗᵢ ℝ T hT).toContinuousLinearMap
-  let R : Lp ℝ (2 : ℝ≥0∞) μ →L[ℝ]
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let R :=
     LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ μ (2 : ℝ≥0∞) Ω
-  let M : PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ]
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let M :=
     scalarL2Multiplier (fun y => PDE.classicalGradient η.toFun y j)
       (cutoffGradient_aestronglyMeasurable η j) K η.gradient_bound_nonneg
       (cutoffGradient_norm_le η j)
   h⁻¹ • M.comp (R.comp (P.comp E - E))
 
-/-- The cutoff-gradient quotient uses the canonical global zero extension. -/
+/- The cutoff-gradient quotient uses the canonical global zero extension. -/
 theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : MeasurableSet Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (j k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
@@ -155,10 +141,10 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae
   simp only [Function.comp_apply, div_eq_mul_inv]
   ring
 
-/-- A supplied representative gives the literal cutoff-gradient quotient
+/- A supplied representative gives the literal cutoff-gradient quotient
 under the forward active-support collar. -/
 theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : MeasurableSet Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (j k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞))
@@ -199,13 +185,18 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
     simp [hgradient']
   have hysupport : y ∈ tsupport η.toFun := by
     by_contra hytsupport
-    exact hgradient (cutoffGradient_eq_zero_of_not_mem_tsupport η j hytsupport)
-  have hyshiftmem : y + h • PDE.basisVec k ∈ Ω := hηshift hysupport
-  rw [hy hymem, hyshift hyshiftmem]
+    have _h_inl_12 : PDE.classicalGradient η.toFun y j = 0 := by
+        rw [PDE.classicalGradient_apply, fderiv_of_notMem_tsupport ℝ hytsupport]
+        exact ContinuousLinearMap.zero_apply _
 
-/-- The cutoff-gradient quotient has the totalized `L²` application bound. -/
+      /- The cutoff-coordinate-gradient times forward spatial difference quotient
+      on restricted-volume scalar `L²`, totalized at zero increment. -/
+    exact hgradient _h_inl_12
+  rw [hy hymem, hyshift (hηshift hysupport)]
+
+/- The cutoff-gradient quotient has the totalized `L²` application bound. -/
 theorem norm_cutoffGradientSpatialDifferenceQuotientL2_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d Ω inner outer K}
     (hΩ : MeasurableSet Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (j k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
@@ -272,12 +263,7 @@ theorem norm_cutoffGradientSpatialDifferenceQuotientL2_apply_le
           (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ := by
     simpa using hM
   have hR' := hR.trans hD
-  have hKR : K * ‖(LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
-      ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
-        (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
-          (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
-        (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ ≤ K * (2 * ‖f‖) :=
+  have hKR :=
     mul_le_mul_of_nonneg_left hR' η.gradient_bound_nonneg
   calc
     _ ≤ |h|⁻¹ * (K * ‖(LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)

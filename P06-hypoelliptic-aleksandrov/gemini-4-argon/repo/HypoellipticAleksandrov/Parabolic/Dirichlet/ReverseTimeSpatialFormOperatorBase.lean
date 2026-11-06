@@ -177,7 +177,7 @@ theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
 
 /-- Multiplier inner-product expression for the reverse-time spatial form. -/
 noncomputable def reverseTimeSpatialFormMultiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
@@ -191,7 +191,7 @@ noncomputable def reverseTimeSpatialFormMultiplierExpression
         (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω))
     (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
       ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j)
-    (Cc : ℝ) (hCc : 0 ≤ Cc)
+    (Cc ) (hCc : 0 ≤ Cc)
     (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
       AEStronglyMeasurable
         (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω))
@@ -216,7 +216,7 @@ noncomputable def reverseTimeSpatialFormMultiplierExpression
       (valueCLM hΩ v)
 
 private theorem reverseTimeSpatialForm_eq_multiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
@@ -246,7 +246,7 @@ private theorem reverseTimeSpatialForm_eq_multiplierExpression
 
 /-- The reverse-time spatial form as a bounded bilinear map. -/
 noncomputable def reverseTimeSpatialFormBilinear
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
@@ -260,7 +260,7 @@ noncomputable def reverseTimeSpatialFormBilinear
         (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω))
     (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
       ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j)
-    (Cc : ℝ) (hCc : 0 ≤ Cc)
+    (Cc ) (hCc : 0 ≤ Cc)
     (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
       AEStronglyMeasurable
         (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω))
@@ -296,7 +296,7 @@ noncomputable def reverseTimeSpatialFormBilinear
 
 /-- The reverse-time spatial form as a continuous operator at a local time. -/
 noncomputable def reverseTimeSpatialFormOperator
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -345,7 +345,7 @@ noncomputable def reverseTimeSpatialFormOperator
 
 /-- The local operator evaluates to the literal reverse-time spatial form. -/
 theorem reverseTimeSpatialFormOperator_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -373,7 +373,7 @@ theorem reverseTimeSpatialFormOperator_apply
 
 /-- The local operator curve has one time-uniform application bound. -/
 theorem exists_reverseTimeSpatialFormOperator_bound
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)

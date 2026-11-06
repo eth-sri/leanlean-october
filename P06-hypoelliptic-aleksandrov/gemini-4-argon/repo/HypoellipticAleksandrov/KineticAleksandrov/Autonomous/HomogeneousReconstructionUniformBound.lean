@@ -13,7 +13,7 @@ open SectionTwo TheoremA Evolution
 /-- An actual reconstruction satisfying its proved formula and trace continuity remains
 uniformly bounded up to every closed future slab. -/
 theorem reconstruction_uniform_bound
-    (H : Interval) (E : StripEvolution H) {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+    (H : Interval) (E : StripEvolution H) {lam Lam } (A : SmoothAutonomous lam Lam)
     (lower T : ℝ) (e : StripPole H (T : WithTop ℝ)) (he : lower < e.1.time)
     (phi u : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H lower T))

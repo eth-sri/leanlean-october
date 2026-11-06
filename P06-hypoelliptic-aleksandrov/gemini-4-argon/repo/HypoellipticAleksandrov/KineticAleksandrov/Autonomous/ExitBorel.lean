@@ -32,7 +32,7 @@ theorem reconstruction_green_potential_measurable (H : Interval)
   exact hp.ennreal_toReal.sub hn.ennreal_toReal
 
 /-- The unique homogeneous value of any fixed smooth exit probe depends measurably on its pole. -/
-theorem exitProbeValue_measurable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem exitProbeValue_measurable {lam Lam } (A : SmoothAutonomous lam Lam)
     (H : Interval) (E : StripEvolution H) (T : ℝ) (f : exitProbeSubmodule) :
     Measurable (fun e : StripPole H (T : WithTop ℝ) => exitProbeValue A H E T e f) :=
   ((exitProbePhysical_continuous_compact f).1.measurable.comp measurable_subtype_coe).add
@@ -41,7 +41,7 @@ theorem exitProbeValue_measurable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
 /-- The unique physical exit family is a Borel measure family. -/
 theorem stripExitOfRealization_measurable
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) :
     Measurable (fun e : StripPole H (T : WithTop ℝ) =>

@@ -12,18 +12,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory
 
-/-- Changing the transported base point splits the phase coordinate additively. -/
-theorem phaseCoordinate_split {d : ℕ} (ξ z0 : PDE.Vec d)
-    (x y : EvolutionAmbientState d) :
-    phaseCoordinate ξ z0 x = phaseCoordinate ξ z0 y + phaseCoordinate ξ y.2 x := by
-  unfold phaseCoordinate PDE.vecDot
-  rw [← Finset.sum_add_distrib]
-  apply Finset.sum_congr rfl
-  intro i hi
-  simp only [Pi.sub_apply]
-  ring
-
-/-- Source and conditional continuation phase errors add under kernel integration. -/
+/- Changing the transported base point splits the phase coordinate additively. -/
 theorem continuation_phase_support {d : ℕ} {α : Type*} [MeasurableSpace α]
     (sourceState : α → EvolutionAmbientState d) (hsource : Measurable sourceState)
     (ξ z0 : PDE.Vec d) (a c e1 e2 : ℝ)
@@ -50,7 +39,15 @@ theorem continuation_phase_support {d : ℕ} {α : Type*} [MeasurableSpace α]
   have he : phaseCoordinate ξ z0 x - (a + c) =
       (phaseCoordinate ξ z0 (sourceState p) - a) +
       (phaseCoordinate ξ (sourceState p).2 x - c) := by
-    rw [phaseCoordinate_split ξ z0 x (sourceState p)]
+    have _h_inl_9 : phaseCoordinate ξ z0 x = phaseCoordinate ξ z0 (sourceState p) + phaseCoordinate ξ (sourceState p).2 x := by
+      let y := (sourceState p)
+      unfold phaseCoordinate PDE.vecDot
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro i hi
+      simp only [Pi.sub_apply]
+      ring
+    rw [_h_inl_9]
     ring
   rw [he]
   exact (abs_add_le _ _).trans (add_le_add hp hx)

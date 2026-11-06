@@ -36,14 +36,14 @@ theorem memLp_intermediate_of_unit_bounds {r γ : ℝ} (hr : 1 < r)
     simpa only [ENNReal.toReal_ofReal hrpos.le] using
       (memLp_one_iff_integrable.1 (hrLp.norm_rpow
         (ne_of_gt (ENNReal.ofReal_pos.2 hrpos)) ENNReal.ofReal_ne_top))
-  have hg1 : Integrable (fun x => ‖g x‖) μ := (memLp_one_iff_integrable.1 h1).norm
+  have hg1 := (memLp_one_iff_integrable.1 h1).norm
   have hpoint (x : α) : ‖g x‖ ^ γ ≤ ‖g x‖ + ‖g x‖ ^ r := by
     by_cases hx : ‖g x‖ ≤ 1
     · exact (Real.rpow_le_self_of_le_one (norm_nonneg _) hx hγ).trans
         (le_add_of_nonneg_right (Real.rpow_nonneg (norm_nonneg _) _))
     · exact (Real.rpow_le_rpow_of_exponent_le (le_of_not_ge hx) hγr).trans
         (le_add_of_nonneg_left (norm_nonneg _))
-  have hpowmeas : AEStronglyMeasurable (fun x => ‖g x‖ ^ γ) μ :=
+  have hpowmeas :=
     (Real.continuous_rpow_const hγpos.le).comp_aestronglyMeasurable h1.aestronglyMeasurable.norm
   have hgγ : Integrable (fun x => ‖g x‖ ^ γ) μ :=
     (hg1.add hgr).mono' hpowmeas (Eventually.of_forall fun x => by
@@ -84,7 +84,7 @@ theorem toReal_eLpNorm_const_mul (c : ℝ) (f : α → ℝ) (p : ℝ≥0∞) (μ
 
 /-- Two endpoint bounds of size `A` give an intermediate bound of size `2A`, even
 when the reference measure has infinite mass. -/
-theorem memLp_intermediate_of_bounds {r γ A : ℝ} (hr : 1 < r)
+theorem memLp_intermediate_of_bounds {r γ A } (hr : 1 < r)
     (hγ : 1 ≤ γ) (hγr : γ ≤ r) (hA : 0 ≤ A) (h1 : MemLp g 1 μ)
     (hrLp : MemLp g (ENNReal.ofReal r) μ)
     (h1n : (eLpNorm g 1 μ).toReal ≤ A)

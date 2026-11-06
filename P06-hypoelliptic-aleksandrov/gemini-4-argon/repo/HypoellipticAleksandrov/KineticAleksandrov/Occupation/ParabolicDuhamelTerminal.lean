@@ -25,11 +25,11 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 variable (K : MovingFiberKernel Ω γ)
 
 /-- The slice integrand has the terminal value `g(r,v)` as a left limit at interior points. -/
-theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
+theorem slice_leftLimit {B } (hΩa : IsAdmissibleEvolutionDomain Ω)
     (hγ : Continuous γ)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
-    (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
+    (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T )
     (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (r : ℝ) (v : PDE.Vec d)
     (hv : (r, v) ∈ duhamelFiber Ω γ T) :
     Tendsto (fun t : ℝ => parabolicDuhamelIntegrand K
@@ -39,9 +39,7 @@ theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDo
   have hU := isOpen_duhamelFiber (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T
   have hcl : (r, v) ∈ sliceClosedCylinder Ω γ r := ⟨le_rfl, subset_closure hv.2⟩
   have hev : ∀ᶠ t in 𝓝[<] r, (t, v) ∈ sliceClosedCylinder Ω γ r := by
-    have hn : ∀ᶠ t in 𝓝 r, (t, v) ∈ duhamelFiber Ω γ T :=
-      (continuous_id.prodMk continuous_const).continuousAt.eventually (hU.mem_nhds hv)
-    filter_upwards [hn.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht ht2
+    filter_upwards [((continuous_id.prodMk continuous_const).continuousAt.eventually (hU.mem_nhds hv)).filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht ht2
     exact ⟨le_of_lt ht2, subset_closure ht.2⟩
   have hcw : ContinuousWithinAt V (sliceClosedCylinder Ω γ r) (r, v) := hVc _ hcl
   have hmap : Tendsto (fun t : ℝ => (t, v)) (𝓝[<] r) (𝓝[sliceClosedCylinder Ω γ r] (r, v)) := by
@@ -54,11 +52,11 @@ theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDo
   exact (hVeq (t, v) ht).symm
 
 /-- The left limit of `u_r ψ` at `σ = r` is `g(r,v) ψ(r,v,z)`. -/
-theorem slice_terminal_limit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
+theorem slice_terminal_limit {B } (hΩa : IsAdmissibleEvolutionDomain Ω)
     (hγ : Continuous γ)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
-    (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
+    (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T )
     (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (C : ℝ)
     (hub : ∀ p r, |parabolicDuhamelIntegrand K
         (measurableSet_of_isAdmissibleEvolutionDomain hΩa) g p r| ≤ C)

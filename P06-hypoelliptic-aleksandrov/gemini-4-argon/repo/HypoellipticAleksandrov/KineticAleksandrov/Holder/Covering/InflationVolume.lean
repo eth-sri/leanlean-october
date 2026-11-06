@@ -21,19 +21,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
-/-- At a fixed time, the free-transport position condition is an ordinary translated ball. -/
-theorem position_ball_slice {d : ℕ} (P : KineticPoint d) (t : ℝ)
-    (x : PDE.Vec d) {r : ℝ} (hr : 0 < r) :
-    x - P.position - (t-P.time) • P.velocity ∈ PDE.euclideanBall 0 (r ^ 3) ↔
-      x ∈ PDE.euclideanBall (P.position+(t-P.time) • P.velocity) (r ^ 3) := by
-  rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hr 3),
-    PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hr 3), sub_zero]
-  have heq : x - P.position - (t-P.time) • P.velocity =
-      x - (P.position+(t-P.time) • P.velocity) := by abel
-  rw [heq]
-
-/-- Cylinder volume is time length times the two Euclidean ball volumes. -/
-theorem volume_cylinder_product {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+/- At a fixed time, the free-transport position condition is an ordinary translated ball. -/
+theorem volume_cylinder_product {d } (P : KineticPoint d) {r } (hr : 0 < r) :
     volume (backwardCylinder P r) = ENNReal.ofReal (r ^ 2) *
       (volume (PDE.euclideanBall (0 : PDE.Vec d) (r ^ 3)) *
         volume (PDE.euclideanBall (0 : PDE.Vec d) r)) := by
@@ -53,7 +42,15 @@ theorem volume_cylinder_product {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
     ext z
     simp only [mem_preimage, s, mem_backwardCylinder_iff, KineticPoint.equivProd,
       Equiv.coe_fn_symm_mk, relativePosition]
-    rw [position_ball_slice P t z.1 hr]
+    have _h_inl_11 : z.1 - P.position - (t-P.time) • P.velocity ∈ PDE.euclideanBall 0 (r ^ 3) ↔
+      z.1 ∈ PDE.euclideanBall (P.position+(t-P.time) • P.velocity) (r ^ 3) := by
+      let x := z.1
+      rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hr 3),
+        PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hr 3), sub_zero]
+      have heq : x - P.position - (t-P.time) • P.velocity =
+          x - (P.position+(t-P.time) • P.velocity) := by abel
+      rw [heq]
+    rw [_h_inl_11]
     by_cases ht : t ∈ Ioo (P.time-r^2) P.time
     · simp only [ht, ite_true, mem_prod]
       rcases ht with ⟨ht1, ht2⟩
@@ -81,8 +78,8 @@ theorem volume_cylinder_product {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
   simp only [sub_sub_cancel]
   exact mul_comm _ _
 
-/-- Exact homogeneous scaling of cylinder volume, independent of the center. -/
-theorem volume_cylinder_eq_unit {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+/- Exact homogeneous scaling of cylinder volume, independent of the center. -/
+theorem volume_cylinder_eq_unit {d } (P : KineticPoint d) {r } (hr : 0 < r) :
     volume (backwardCylinder P r) = ENNReal.ofReal (r ^ (4*d+2)) *
       volume (backwardCylinder (⟨0,0,0⟩ : KineticPoint d) 1) := by
   rw [volume_cylinder_product P hr, volume_cylinder_product ⟨0,0,0⟩ zero_lt_one]
@@ -100,8 +97,8 @@ theorem volume_cylinder_eq_unit {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
   rw [hcoeff]
   ring
 
-/-- Positive-radius cylinders have positive finite volume. -/
-theorem volume_cylinder_pos_ne_top {d : ℕ} (P : KineticPoint d) {r : ℝ}
+/- Positive-radius cylinders have positive finite volume. -/
+theorem volume_cylinder_pos_ne_top {d } (P : KineticPoint d) {r }
     (hr : 0 < r) :
     0 < volume (backwardCylinder P r) ∧ volume (backwardCylinder P r) ≠ ⊤ := by
   rw [volume_cylinder_product P hr]
@@ -112,8 +109,8 @@ theorem volume_cylinder_pos_ne_top {d : ℕ} (P : KineticPoint d) {r : ℝ}
       (ENNReal.mul_ne_top (PDE.volume_euclideanBall_ne_top 0 (pow_pos hr 3).le)
         (PDE.volume_euclideanBall_ne_top 0 hr.le))⟩
 
-/-- Eightfold centered inflation has exactly the homogeneous volume multiplier. -/
-theorem volume_inflatedCylinder {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+/- Eightfold centered inflation has exactly the homogeneous volume multiplier. -/
+theorem volume_inflatedCylinder {d } (P : KineticPoint d) {r } (hr : 0 < r) :
     volume (inflatedCylinder P r 8) = ENNReal.ofReal ((8 : ℝ) ^ (4*d+2)) *
       volume (backwardCylinder P r) := by
   rw [inflatedCylinder, volume_cylinder_eq_unit _ (mul_pos (by norm_num) hr),

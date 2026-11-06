@@ -16,24 +16,24 @@ def Clock.activeInterval (c : Clock) : Interval :=
   ⟨c.vbar - 3 * c.r / 4, c.vbar + 3 * c.r / 4, by linarith [c.positive]⟩
 
 /-- Every active velocity advances the normalized position clock at a rate at least one half. -/
-theorem Clock.active_ratio_lower (c : Clock) {v : ℝ} (hv : v ∈ c.active) :
+theorem Clock.active_ratio_lower (c : Clock) {v } (hv : v ∈ c.active) :
     (1 : ℝ) / 2 ≤ v / c.vbar := by
   rcases lt_or_gt_of_ne c.nonzero with hneg | hpos
   · apply (le_div_iff_of_neg hneg).mpr
     have hr := c.radius
     rw [abs_of_neg hneg] at hr
-    have hv' : v < c.vbar + 3 * c.r / 4 := hv.2
+    have hv' := hv.2
     nlinarith
   · apply (le_div_iff₀ hpos).mpr
     have hr := c.radius
     rw [abs_of_pos hpos] at hr
-    have hv' : c.vbar - 3 * c.r / 4 < v := hv.1
+    have hv' := hv.1
     nlinarith
 
 /-- The source's physical forward cone implies a lower bound on elapsed position-clock time. -/
 theorem clock_forward_cone_finite
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (T : ℝ)
     (e : StripPole c.activeInterval (T : WithTop ℝ)) :
     (∀ᵐ p ∂stripExit hH hLE hlam hLam A c.activeInterval T e,

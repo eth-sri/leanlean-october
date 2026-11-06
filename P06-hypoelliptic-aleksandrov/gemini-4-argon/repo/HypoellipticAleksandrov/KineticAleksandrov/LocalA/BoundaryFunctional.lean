@@ -20,7 +20,7 @@ variable (hH : HormanderHypoellipticityStatement)
 
 /-- Smooth probe values obey the boundary supremum contraction. -/
 theorem boundaryProbeValueLinear_bound (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) (f : boundaryProbeSubmodule d) (c : ℝ)
+    (T : {t : ℝ // P.1.time < t}) (f : boundaryProbeSubmodule d) (c )
     (_hc : 0 ≤ c) (hbd : ∀ Q, |boundaryProbeCcLinear P.1.time T.1 v₀ R f Q| ≤ c) :
     |boundaryProbeValueLinear hH hLE hd hlam hLam B hB v₀ hR P T f| ≤ c := by
   have hp : P.1 ∈ localClosedStrip P.1.time T.1 v₀ R :=

@@ -13,7 +13,7 @@ namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set MeasureTheory
 
 /-- The scalar residual is continuous wherever the coefficient and selected jet are continuous. -/
-theorem continuousOn_residual {N : ℕ} {V : Set (TimeVelocity N)}
+theorem continuousOn_residual {N V}
     (a : TimeVelocity N → PDE.Mat N) (q : TimeVelocity N → ℝ)
     (ha : ContinuousOn a V) (hq : IsScalarC12On q V) :
     ContinuousOn (residual a q) V := by
@@ -29,15 +29,15 @@ theorem continuousOn_residual {N : ℕ} {V : Set (TimeVelocity N)}
       ((continuous_apply i).comp_continuousOn hq.continuousOn_scalarSpatialHessian)))
 
 /-- Smooth functions and continuous coefficients have a continuous scalar residual. -/
-theorem continuous_residual {N : ℕ} (a : TimeVelocity N → PDE.Mat N)
+theorem continuous_residual {N } (a : TimeVelocity N → PDE.Mat N)
     (q : TimeVelocity N → ℝ) (ha : Continuous a) (hq : ContDiff ℝ 2 q) :
     Continuous (residual a q) := by
   apply continuousOn_univ.mp
   exact continuousOn_residual a q ha.continuousOn (isScalarC12On_of_contDiff_two hq univ)
 
 /-- A bounded coefficient contraction amplifies uniform selected-jet errors by a finite factor. -/
-theorem residual_difference_le {N : ℕ} (a : PDE.Mat N)
-    (q w : TimeVelocity N → ℝ) (z : TimeVelocity N) {δ M : ℝ}
+theorem residual_difference_le {N } (a : PDE.Mat N)
+    (q w : TimeVelocity N → ℝ) (z : TimeVelocity N) {δ M }
     (hδ : 0 ≤ δ) (hM : (∑ i, ∑ j, |a i j|) ≤ M)
     (ht : |scalarTimeDerivative w z - scalarTimeDerivative q z| ≤ δ)
     (hh : ∀ i j, |scalarSpatialHessian w z i j - scalarSpatialHessian q z i j| ≤ δ) :
@@ -72,7 +72,7 @@ theorem residual_difference_le {N : ℕ} (a : PDE.Mat N)
 
 /-- A nonnegative source plus a constant bounds the positive residual in the restricted norm. -/
 theorem positive_norm_le_add_constant
-    {N : ℕ} {Q : Set (TimeVelocity N)} (hQ : MeasurableSet Q)
+    {N Q} (hQ : MeasurableSet Q)
     (hfinite : volume Q < ⊤) (F G : TimeVelocity N → ℝ)
     (hF : AEStronglyMeasurable F (volume.restrict Q))
     (hG : MemLp G (parabolicExponent N) (volume.restrict Q))

@@ -15,7 +15,7 @@ open Evolution Occupation
 open scoped Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
-/-- The kinetic past cylinder is open for an open base domain and continuous motion. -/
+/- The kinetic past cylinder is open for an open base domain and continuous motion. -/
 theorem isOpen_duhamelCylinder (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ) :
     IsOpen (evolutionPastOpenCylinder Ω γ T) := by
   have hc : Continuous (fun p : KineticPoint d => p.position - γ p.time) :=
@@ -27,43 +27,7 @@ theorem isOpen_duhamelCylinder (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ)
   rw [PDE.mem_translateSet_iff_sub_mem]
   rfl
 
-/-- The source integrand tends to its terminal datum at every interior terminal state. -/
-theorem duhamelSlice_leftLimit (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
-    (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
-    (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T)
-    (r : ℝ) (w : EvolutionAmbientState d)
-    (hw : (KineticPoint.mk r w.1 w.2) ∈ evolutionPastOpenCylinder Ω γ T) :
-    Tendsto (fun t => duhamelIntegrand K g ⟨t, w.1, w.2⟩ r)
-      (𝓝[<] r) (𝓝 (g ⟨r, w.1, w.2⟩)) := by
-  obtain ⟨V, hV, hVe⟩ := exists_duhamelSlice_solution hΩ B b S K hreal g hg hc hs T hU r
-  have hopen := isOpen_duhamelCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T
-  have hmapc : Continuous (fun t : ℝ => (KineticPoint.mk t w.1 w.2)) :=
-    KineticPoint.continuous_mk continuous_id continuous_const continuous_const
-  have hcl : (KineticPoint.mk r w.1 w.2) ∈ evolutionPastClosedCylinder Ω γ r :=
-    ⟨le_rfl, subset_closure hw.2⟩
-  have hev : ∀ᶠ t in 𝓝[<] r,
-      (KineticPoint.mk t w.1 w.2) ∈ evolutionPastClosedCylinder Ω γ r := by
-    have hn := hmapc.continuousAt.eventually (hopen.mem_nhds hw)
-    filter_upwards [hn.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht ht2
-    exact ⟨le_of_lt ht2, subset_closure ht.2⟩
-  have hmap : Tendsto (fun t => (KineticPoint.mk t w.1 w.2)) (𝓝[<] r)
-      (𝓝[evolutionPastClosedCylinder Ω γ r] (KineticPoint.mk r w.1 w.2)) :=
-    tendsto_nhdsWithin_iff.2 ⟨(hmapc.tendsto r).mono_left nhdsWithin_le_nhds, hev⟩
-  have h1 := (hV.2.1 _ hcl).tendsto.comp hmap
-  have ht := hV.2.2.2.2.1 ⟨r, w.1, w.2⟩ ⟨rfl, hcl.2⟩
-  change V ⟨r, w.1, w.2⟩ = g ⟨r, w.1, w.2⟩ at ht
-  rw [ht] at h1
-  refine h1.congr' ?_
-  filter_upwards [hev] with t ht
-  exact (duhamelIntegrand_eq_slice_solution hΩa K g r V hV.2.2.2.2.2 hVe _ ht).symm
-
-/-- The slice times a compact test has the precise terminal limit, also outside the test support. -/
+/- The source integrand tends to its terminal datum at every interior terminal state. -/
 theorem duhamelSlice_terminalLimit (hΩa : IsAdmissibleEvolutionDomain Ω)
     (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
@@ -71,7 +35,7 @@ theorem duhamelSlice_terminalLimit (hΩa : IsAdmissibleEvolutionDomain Ω)
     (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
     (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
     (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
+      g ⟨q.1, q.2.1, q.2.2⟩)) (T )
     (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) (C : ℝ)
     (hub : ∀ p r, |duhamelIntegrand K g p r| ≤ C)
     {ψ : EvolutionVec d → ℝ} (hψ : Continuous ψ)
@@ -94,6 +58,28 @@ theorem duhamelSlice_terminalLimit (hΩa : IsAdmissibleEvolutionDomain Ω)
     have hp : (KineticPoint.mk r w.1 w.2) ∈ evolutionPastOpenCylinder Ω γ T := by
       simpa only [mem_preimage, evolutionHomeomorph_apply, packQ, timeCoord_packPoint,
         diffusedCoord_packPoint, transportedCoord_packPoint] using hw
-    exact (duhamelSlice_leftLimit hΩa hΩ hγ B b S K hreal g hg hc hs T hU r w hp).mul hψt
+    have _h_inl_13 : Tendsto (fun t => duhamelIntegrand K g ⟨t, w.1, w.2⟩ r)
+      (𝓝[<] r) (𝓝 (g ⟨r, w.1, w.2⟩)) := by
+      obtain ⟨V, hV, hVe⟩ := exists_duhamelSlice_solution hΩ B b S K hreal g hg hc hs T hU r
+      have hopen := isOpen_duhamelCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T
+      have hmapc : Continuous (fun t : ℝ => (KineticPoint.mk t w.1 w.2)) :=
+        KineticPoint.continuous_mk continuous_id continuous_const continuous_const
+      have hcl : (KineticPoint.mk r w.1 w.2) ∈ evolutionPastClosedCylinder Ω γ r :=
+        ⟨le_rfl, subset_closure hp.2⟩
+      have hev : ∀ᶠ t in 𝓝[<] r,
+          (KineticPoint.mk t w.1 w.2) ∈ evolutionPastClosedCylinder Ω γ r := by
+        have hn := hmapc.continuousAt.eventually (hopen.mem_nhds hp)
+        filter_upwards [hn.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht ht2
+        exact ⟨le_of_lt ht2, subset_closure ht.2⟩
+      have hmap :=
+        tendsto_nhdsWithin_iff.2 ⟨(hmapc.tendsto r).mono_left nhdsWithin_le_nhds, hev⟩
+      have h1 := (hV.2.1 _ hcl).tendsto.comp hmap
+      have ht := hV.2.2.2.2.1 ⟨r, w.1, w.2⟩ ⟨rfl, hcl.2⟩
+      change V ⟨r, w.1, w.2⟩ = g ⟨r, w.1, w.2⟩ at ht
+      rw [ht] at h1
+      refine h1.congr' ?_
+      filter_upwards [hev] with t ht
+      exact (duhamelIntegrand_eq_slice_solution hΩa K g r V hV.2.2.2.2.2 hVe _ ht).symm
+    exact _h_inl_13.mul hψt
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

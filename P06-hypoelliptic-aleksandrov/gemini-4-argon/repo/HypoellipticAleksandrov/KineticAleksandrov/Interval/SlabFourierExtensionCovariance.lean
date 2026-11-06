@@ -15,18 +15,10 @@ open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
-/-- Inclusion of interval states commutes with position translation. -/
-theorem intervalStateInclusion_shift {a c : ℝ} (σ : ℝ) (z : PDE.Vec 1)
-    (p : EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ) :
-    evolutionStateShift (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ z
-      (intervalStateInclusion σ p) =
-      intervalStateInclusion σ
-        (evolutionStateShift (PDE.oneDimensionalAxisBox a c) stationary σ z p) := rfl
-
-/-- Literal zero extension preserves position-translation covariance. -/
-theorem intervalExtension_covariance {a c : ℝ}
+/- Inclusion of interval states commutes with position translation. -/
+theorem intervalExtension_covariance {a c }
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
+    (K )
     (hc : IsTranslationCovariantEvolution (PDE.oneDimensionalAxisBox a c)
       stationary hJ K) :
     IsTranslationCovariantEvolution (wholeSpace 1) (fun _ => (0 : PDE.Vec 1))
@@ -37,7 +29,11 @@ theorem intervalExtension_covariance {a c : ℝ}
       ⟨p.1, by simpa only [evolutionStateSet, mem_prod, movingDomain_stationary,
         mem_univ, and_true] using hp⟩
     have he : intervalStateInclusion σ pj = p := Subtype.ext rfl
-    rw [← he, intervalStateInclusion_shift, intervalExtension_fiber_inside,
+    have _h_inl_8 (σ : ℝ) (z : PDE.Vec 1) (p) : evolutionStateShift (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ z (intervalStateInclusion σ p) = intervalStateInclusion σ (evolutionStateShift (PDE.oneDimensionalAxisBox a c) stationary σ z p) := by
+        exact (
+      rfl
+      )
+    rw [← he, _h_inl_8, intervalExtension_fiber_inside,
       intervalExtension_fiber_inside,
       Measure.map_map (measurable_evolutionStateShift _ _ τ z)
         (measurable_intervalStateInclusion τ),

@@ -37,7 +37,7 @@ theorem parabolic_aleksandrov_aux
     refine ⟨⟨by dsimp [Z]; linarith [hz.1.1],
       by dsimp [Z]; linarith [hz.1.2]⟩, ?_⟩
     change PDE.euclideanSqDist (z.2 - v₀) 0 ≤ 1 ^ 2
-    have hv : PDE.euclideanSqDist z.2 v₀ ≤ 1 ^ 2 :=
+    have hv :=
       (show PDE.euclideanSqDist z.2 v₀ < 1 ^ 2 from hz.2).le
     simpa only [PDE.euclideanSqDist, Pi.sub_apply, sub_zero] using hv
   have hmap : KrylovEstimate.innerMap t₀ h v₀ 1 Z = z := by

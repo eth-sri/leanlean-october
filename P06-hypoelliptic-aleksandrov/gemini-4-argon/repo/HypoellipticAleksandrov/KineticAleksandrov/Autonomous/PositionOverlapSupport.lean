@@ -11,20 +11,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
 
-/-- The source centred active interval has speed bounded by `3r`. -/
-theorem positionActive_speed (c : Clock) (hc : |c.vbar| = 2 * c.r) :
-    max |c.activeInterval.lo| |c.activeInterval.hi| ≤ 3 * c.r := by
-  apply max_le
-  · have h := abs_sub c.vbar (3 * c.r / 4)
-    rw [hc, abs_of_nonneg (by linarith [c.positive] : 0 ≤ 3 * c.r / 4)] at h
-    change |c.vbar - 3 * c.r / 4| ≤ 3 * c.r
-    linarith only [h, c.positive]
-  · have h := abs_add_le c.vbar (3 * c.r / 4)
-    rw [hc, abs_of_nonneg (by linarith [c.positive] : 0 ≤ 3 * c.r / 4)] at h
-    change |c.vbar + 3 * c.r / 4| ≤ 3 * c.r
-    linarith only [h, c.positive]
-
-/-- Every nonzero canonical active density value lies in its strict future finite-speed cone. -/
+/- The source centred active interval has speed bounded by `3r`. -/
 theorem positionActiveDensity_support (hpush : PushforwardStatement)
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -58,7 +45,17 @@ theorem positionActiveDensity_support (hpush : PushforwardStatement)
     simpa only [not_le, densityClockPole] using strip_cone hH hLE hlam hLam A c.activeInterval ⊤
       (densityClockPole c e he)
   filter_upwards [hmem, hcone] with z hz hcZ
+  have _h_inl_8 : max |c.activeInterval.lo| |c.activeInterval.hi| ≤ 3 * c.r := by
+    apply max_le
+    · have h := abs_sub c.vbar (3 * c.r / 4)
+      rw [hc, abs_of_nonneg (by linarith [c.positive] : 0 ≤ 3 * c.r / 4)] at h
+      change |c.vbar - 3 * c.r / 4| ≤ 3 * c.r
+      linarith only [h, c.positive]
+    · have h := abs_add_le c.vbar (3 * c.r / 4)
+      rw [hc, abs_of_nonneg (by linarith [c.positive] : 0 ≤ 3 * c.r / 4)] at h
+      change |c.vbar + 3 * c.r / 4| ≤ 3 * c.r
+      linarith only [h, c.positive]
   exact ⟨hz.1, hz.2, hcZ.trans
-    (mul_le_mul_of_nonneg_right (positionActive_speed c hc) (sub_nonneg.mpr hz.1.le))⟩
+    (mul_le_mul_of_nonneg_right _h_inl_8 (sub_nonneg.mpr hz.1.le))⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

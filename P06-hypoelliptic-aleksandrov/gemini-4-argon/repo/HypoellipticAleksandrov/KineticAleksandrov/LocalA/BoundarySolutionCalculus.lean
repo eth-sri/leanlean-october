@@ -13,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
 open scoped Topology
 
-/-- Smoothness in physical product coordinates gives smoothness in the fixed native packing. -/
+/- Smoothness in physical product coordinates gives smoothness in the fixed native packing. -/
 theorem boundary_probe_native_smooth {d : ℕ} (φ : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm)) :
     ContDiff ℝ (⊤ : ℕ∞) ((φ ∘ sectionTwoPoint) ∘ evolutionHomeomorph d) := by
@@ -22,7 +22,7 @@ theorem boundary_probe_native_smooth {d : ℕ} (φ : KineticPoint d → ℝ)
     contDiff_fst.prodMk (contDiff_snd.snd.prodMk contDiff_snd.fst)
   exact (hφ.comp hs).comp (evolutionProdCLE d).contDiff
 
-/-- Smooth physical compact probes have globally continuous values. -/
+/- Smooth physical compact probes have globally continuous values. -/
 theorem boundary_probe_continuous {d : ℕ} (φ : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm)) : Continuous φ := by
   have hc := hφ.continuous.comp (KineticPoint.homeomorphProd d).continuous
@@ -32,7 +32,7 @@ theorem boundary_probe_continuous {d : ℕ} (φ : KineticPoint d → ℝ)
   rw [heq] at hc
   exact hc
 
-/-- The compact-support finite-sum API in pointwise form. -/
+/- The compact-support finite-sum API in pointwise form. -/
 theorem boundary_compact_sum {X ι : Type*} [TopologicalSpace X] [Fintype ι]
     (f : ι → X → ℝ) (hf : ∀ i, HasCompactSupport (f i)) :
     HasCompactSupport (fun x => ∑ i, f i x) := by
@@ -43,37 +43,7 @@ theorem boundary_compact_sum {X ι : Type*} [TopologicalSpace X] [Fintype ι]
   rw [heq] at h
   exact h
 
-/-- An actual smooth compact probe has a compactly supported native kinetic operator. -/
-theorem boundary_probe_operator_compact {d : ℕ}
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    {f : EvolutionVec d → ℝ} (hc : HasCompactSupport f) :
-    HasCompactSupport (transportedOperator B b f) := by
-  have hij (i j : Fin d) : HasCompactSupport (fun x =>
-      B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
-        fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) :=
-    ((hc.fderiv_apply ℝ (basisV j)).fderiv_apply ℝ (basisV i)).mul_left
-  have hj (i : Fin d) : HasCompactSupport (fun x => ∑ j,
-      B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
-        fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) := by
-    exact boundary_compact_sum (fun j => fun x =>
-      B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
-        fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) (fun j => hij i j)
-  have hh : HasCompactSupport (fun x => ∑ i, ∑ j,
-      B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
-        fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) := by
-    exact boundary_compact_sum (fun i => fun x => ∑ j,
-      B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
-        fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) (fun i => hj i)
-  have hzi (i : Fin d) : HasCompactSupport
-      (fun x => b (diffusedCoord d x) i * fderiv ℝ f x (basisZ i)) :=
-    (hc.fderiv_apply ℝ (basisZ i)).mul_left
-  have hz : HasCompactSupport (fun x => ∑ i,
-      b (diffusedCoord d x) i * fderiv ℝ f x (basisZ i)) := by
-    exact boundary_compact_sum (fun i => fun x =>
-      b (diffusedCoord d x) i * fderiv ℝ f x (basisZ i)) (fun i => hzi i)
-  exact ((hc.fderiv_apply ℝ basisT).add hh).add hz
-
-/-- The physical kinetic operator equals the native operator at the fixed swapped packing. -/
+/- An actual smooth compact probe has a compactly supported native kinetic operator. -/
 theorem boundary_probe_operator_native {d : ℕ} (B : CoefficientField d)
     (φ : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
@@ -86,7 +56,7 @@ theorem boundary_probe_operator_native {d : ℕ} (B : CoefficientField d)
   exact (transportedOperator_comp
     ((boundary_probe_native_smooth φ hφ).of_le (by simp)).contDiffAt).symm
 
-/-- Smooth compact physical tests have smooth bounded actual operator data. -/
+/- Smooth compact physical tests have smooth bounded actual operator data. -/
 theorem boundary_probe_operator_bounded {d : ℕ} {lam Lam : ℝ}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (φ : KineticPoint d → ℝ)
@@ -105,8 +75,33 @@ theorem boundary_probe_operator_bounded {d : ℕ} {lam Lam : ℝ}
   have hopc : Continuous
       (transportedOperator (zIndependentCoefficient B) (identityDrift d) f) :=
     (contDiffOn_univ.mp hsm).continuous
-  have hopk := boundary_probe_operator_compact
-    (zIndependentCoefficient B) (identityDrift d) hfc
+  have hopk : HasCompactSupport (transportedOperator (zIndependentCoefficient B) (identityDrift d) f) := by
+    let B := (zIndependentCoefficient B)
+    let b := (identityDrift d)
+    have hij (i j : Fin d) : HasCompactSupport (fun x =>
+        B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
+          fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) :=
+      ((hfc.fderiv_apply ℝ (basisV j)).fderiv_apply ℝ (basisV i)).mul_left
+    have hj (i : Fin d) : HasCompactSupport (fun x => ∑ j,
+        B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
+          fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) := by
+      exact boundary_compact_sum (fun j => fun x =>
+        B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
+          fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) (fun j => hij i j)
+    have hh : HasCompactSupport (fun x => ∑ i, ∑ j,
+        B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
+          fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) := by
+      exact boundary_compact_sum (fun i => fun x => ∑ j,
+        B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j *
+          fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x (basisV i)) (fun i => hj i)
+    have hzi (i : Fin d) : HasCompactSupport
+        (fun x => b (diffusedCoord d x) i * fderiv ℝ f x (basisZ i)) :=
+      (hfc.fderiv_apply ℝ (basisZ i)).mul_left
+    have hz : HasCompactSupport (fun x => ∑ i,
+        b (diffusedCoord d x) i * fderiv ℝ f x (basisZ i)) := by
+      exact boundary_compact_sum (fun i => fun x =>
+        b (diffusedCoord d x) i * fderiv ℝ f x (basisZ i)) (fun i => hzi i)
+    exact ((hfc.fderiv_apply ℝ basisT).add hh).add hz
   have heq : forwardKineticOperator (ofTimeVelocityCoefficient B) φ =
       transportedOperator (zIndependentCoefficient B) (identityDrift d) f ∘ H.symm := by
     funext P

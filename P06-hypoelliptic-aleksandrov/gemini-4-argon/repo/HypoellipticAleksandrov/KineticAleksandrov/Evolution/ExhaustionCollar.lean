@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCollarGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyTruncation
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierTwo
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyGeometry
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCollarTransfer
 
 /-!
 # The pre-construction collar estimate on actual finite ellipsoids
@@ -21,7 +23,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter
 open scoped Topology MatrixOrder
 
-/-- The actual finite Dirichlet solution obeys the collar estimate uniformly in the
+/- The actual finite Dirichlet solution obeys the collar estimate uniformly in the
 transported truncation radius. The lower comparison time is strictly inside its slab. -/
 theorem abs_le_collar_straightened_dirichlet
     {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
@@ -106,7 +108,18 @@ theorem abs_le_collar_straightened_dirichlet
       have := hmax p hp
       linarith
     · intro p hp
-      have hf := eventually_future_mem_straightened_closedCylinder hDo hg.continuous hp.1
+      have hf : ∀ᶠ q in 𝓝 p, p.time ≤ q.time →
+      q ∈ straightenedPoint g ⁻¹' scalarParabolicClosedCylinder α τ D := by
+        have hg := hg.continuous
+        have hp := hp.1
+        have ht := hp.1.2
+        have ho :=
+          hDo.preimage ((continuous_straightenedPoint hg).snd)
+        have he := ho.mem_nhds hp.2
+        have ht' :=
+          (isOpen_lt continuous_time continuous_const).mem_nhds ht
+        filter_upwards [he, ht'] with q hq hqt hpq
+        exact ⟨⟨hp.1.1.trans hpq, hqt.le⟩, subset_closure hq⟩
       have ho : ∀ᶠ q in 𝓝 p, (r - d) ^ 2 < centreSq 0 g q :=
         (isOpen_lt continuous_const (continuous_centreSq 0 hg.continuous)).mem_nhds hp.2
       filter_upwards [hf, ho] with q hq hqS hqt

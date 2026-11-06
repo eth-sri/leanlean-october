@@ -22,7 +22,7 @@ open MeasureTheory
 /-- The literal reverse-time and velocity restricted volumes form the
 time--velocity restricted volume on their product set. -/
 theorem reverseTimeVolume_prod_volumeOn_eq_timeVelocityVolumeOn
-    {d : ℕ} (T : ℝ) (Ω : Set (PDE.Vec d)) :
+    {d } (T : ℝ) (Ω : Set (PDE.Vec d)) :
     (reverseTimeVolume T).prod (PDE.volumeOn Ω) =
       timeVelocityVolumeOn (reverseTimeOpenInterval T ×ˢ Ω) := by
   rw [reverseTimeVolume, timeVelocityVolumeOn, volume_timeVelocity_eq_prod]

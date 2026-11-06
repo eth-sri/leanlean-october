@@ -2,6 +2,9 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBoundedFormEnergy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalTimewiseOperator
+import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandOperator
+import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeHilbertIntegrationByParts
+import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeScalarIncrement
 
 /-!
 # Weighted reverse-time variational energy identity
@@ -18,12 +21,13 @@ open scoped ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+open Function Set Topology
 
-/-- A reverse-time variational energy solution satisfies the bounded-pivot
+/- A reverse-time variational energy solution satisfies the bounded-pivot
 weighted energy identity with its source-minus-form residual. -/
 theorem
     IsReverseTimeVariationalEnergySolution.integral_value_norm_sq_mul_reverseTimeScalarTest_deriv_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -71,9 +75,21 @@ theorem
         ∂reverseTimeVolume (r₁ - r₀)) =
         -(∫ t, (2 * (g t) (S (u t))) * eta t
           ∂reverseTimeVolume (r₁ - r₀)) := by
-      exact
-      integral_value_norm_sq_mul_reverseTimeScalarTest_deriv_eq_neg_integral_of_pivot_factorization
-        hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) A S hfactor u g hdu eta
+      let T := (r₁ - r₀)
+      have hT := (sub_pos.mpr h₀₁)
+      obtain ⟨e, hq, he, heq, hinc⟩ :=
+        exists_continuous_value_norm_sq_energy_increment_of_pivot_factorization
+          hΩ T hT A S hfactor u g hdu
+      have hscalar := integral_mul_reverseTimeScalarTest_deriv_eq_neg_integral_of_increment
+        T hT (fun t => 2 * (g t) (S (u t))) e hq he hinc eta
+      calc
+        (∫ t, ‖valueCLM hΩ (A (u t))‖ ^ 2 * eta.deriv t ∂reverseTimeVolume T) =
+            ∫ t, e t * eta.deriv t ∂reverseTimeVolume T := by
+          apply integral_congr_ae
+          filter_upwards [heq] with t ht
+          rw [ht]
+        _ = -(∫ t, (2 * (g t) (S (u t))) * eta t
+            ∂reverseTimeVolume T) := hscalar
     _ = -(∫ t,
         (2 *
           ((reverseTimeNegativeSource

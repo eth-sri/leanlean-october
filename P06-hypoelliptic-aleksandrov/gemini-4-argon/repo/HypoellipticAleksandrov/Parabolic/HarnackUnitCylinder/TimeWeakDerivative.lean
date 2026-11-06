@@ -11,7 +11,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- An anisotropic C¹,² function has its scalar slice derivative as weak time derivative. -/
 theorem IsScalarC12On.hasWeakTimeDerivOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d U} {u : TimeVelocity d → ℝ}
     (hU : IsOpen U) (hu : IsScalarC12On u U) :
     HasWeakTimeDerivOn U u (scalarTimeDerivative u) := by
   intro φ hφ hc hsub

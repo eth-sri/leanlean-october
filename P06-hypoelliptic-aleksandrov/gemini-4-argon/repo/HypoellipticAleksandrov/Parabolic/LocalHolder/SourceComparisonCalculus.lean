@@ -17,16 +17,13 @@ open Filter Set Matrix
 open scoped Topology
 
 /-- Time derivatives commute with subtraction of classical functions. -/
-theorem scalarTimeDerivative_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+theorem scalarTimeDerivative_sub {n u v D} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarTimeDerivative (fun q => u q - v q) z =
-      scalarTimeDerivative u z - scalarTimeDerivative v z := by
-  exact ((hu.timeSlice_hasDerivAt hz).sub (hv.timeSlice_hasDerivAt hz)).deriv
+      scalarTimeDerivative u z - scalarTimeDerivative v z :=  ((hu.timeSlice_hasDerivAt hz).sub (hv.timeSlice_hasDerivAt hz)).deriv
 
 /-- Spatial gradients commute with subtraction of classical functions. -/
-theorem scalarSpatialGradient_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+theorem scalarSpatialGradient_sub {n u v D} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarSpatialGradient (fun q => u q - v q) z =
       scalarSpatialGradient u z - scalarSpatialGradient v z := by
@@ -37,15 +34,14 @@ theorem scalarSpatialGradient_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
     ((hv.spatialSlice_contDiffAt hz).differentiableAt (by norm_num))]
   rfl
 
-private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
+private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n u} {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
     (i j : Fin n) :
     scalarSpatialHessian u z i j =
       fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2
         (PDE.basisVec i) (PDE.basisVec j) := by
   let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  have hsecond : HasFDerivAt (fderiv ℝ g) (fderiv ℝ (fderiv ℝ g) z.2) z.2 :=
+  have hsecond :=
     ((hu.fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num)).hasFDerivAt
   have hdiff : ∀ j : Fin n,
@@ -55,13 +51,11 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
   change (fderiv ℝ (fun y : PDE.Vec n => fun j =>
       fderiv ℝ g y (PDE.basisVec j)) z.2 (PDE.basisVec i)) j = _
   rw [fderiv_pi hdiff]
-  have hj := (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv
-  have hjApply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hj
+  have hjApply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) ((hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv)
   simpa [ContinuousLinearMap.flip_apply] using hjApply
 
 /-- Spatial Hessians commute with subtraction of classical functions. -/
-theorem scalarSpatialHessian_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+theorem scalarSpatialHessian_sub {n u v D} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarSpatialHessian (fun q => u q - v q) z =
       scalarSpatialHessian u z - scalarSpatialHessian v z := by
@@ -73,12 +67,10 @@ theorem scalarSpatialHessian_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
       (hv.spatialSlice_contDiffAt hz).eventually (by norm_num)] with y huy hvy
     exact fderiv_fun_sub (huy.differentiableAt (by norm_num))
       (hvy.differentiableAt (by norm_num))
-  have huSecond : HasFDerivAt (fun y : PDE.Vec n => fderiv ℝ g_u y)
-      (fderiv ℝ (fderiv ℝ g_u) z.2) z.2 :=
+  have huSecond :=
     ((hu.spatialSlice_contDiffAt hz).fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num) |>.hasFDerivAt
-  have hvSecond : HasFDerivAt (fun y : PDE.Vec n => fderiv ℝ g_v y)
-      (fderiv ℝ (fderiv ℝ g_v) z.2) z.2 :=
+  have hvSecond :=
     ((hv.spatialSlice_contDiffAt hz).fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num) |>.hasFDerivAt
   have hsecond : fderiv ℝ (fderiv ℝ (fun y => g_u y - g_v y)) z.2 =
@@ -99,7 +91,7 @@ theorem scalarSpatialHessian_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
   rfl
 
 /-- The anisotropic classical carrier is closed under subtraction. -/
-theorem isScalarC12On_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
+theorem isScalarC12On_sub {n u v}
     {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D) :
     IsScalarC12On (fun q => u q - v q) D := by
   refine ⟨hu.continuousOn.sub hv.continuousOn, ?_, ?_, ?_, ?_, ?_⟩
@@ -121,10 +113,9 @@ theorem isScalarC12On_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
     exact scalarSpatialHessian_sub hu hv hz
 
 /-- The backward operator is linear on classical functions. -/
-theorem scalarParabolicZeroOrderOperator_sub {n : ℕ}
+theorem scalarParabolicZeroOrderOperator_sub {n }
     (a : CoefficientField n) (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c : ℝ → PDE.Vec n → ℝ) {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    (c : ℝ → PDE.Vec n → ℝ) {u v D} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarParabolicZeroOrderOperator a b c (fun q => u q - v q) z =
       scalarParabolicZeroOrderOperator a b c u z -

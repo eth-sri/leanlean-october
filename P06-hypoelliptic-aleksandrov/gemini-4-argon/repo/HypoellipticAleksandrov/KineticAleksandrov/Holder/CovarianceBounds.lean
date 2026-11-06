@@ -15,8 +15,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Matrix
 open scoped MatrixOrder
 
-/-- The two-dimensional Sylvester test, stated in literal scalar block coordinates. -/
-theorem posDef_two_of_det {a b c : ℝ} (ha : 0 < a) (hdet : 0 < a * b - c ^ 2) :
+/- The two-dimensional Sylvester test, stated in literal scalar block coordinates. -/
+theorem posDef_two_of_det {a b c } (ha : 0 < a) (hdet : 0 < a * b - c ^ 2) :
     (!![a, c; c, b] : Matrix (Fin 2) (Fin 2) ℝ).PosDef := by
   apply Matrix.posDef_iff_dotProduct_mulVec.mpr
   constructor
@@ -41,8 +41,8 @@ theorem posDef_two_of_det {a b c : ℝ} (ha : 0 < a) (hdet : 0 < a * b - c ^ 2) 
     · have hp := mul_pos hdet (sq_pos_of_ne_zero h1)
       nlinarith [sq_nonneg (a * x 0 + c * x 1)]
 
-/-- Symmetric diagonal dominance implies positive semidefiniteness in scalar block coordinates. -/
-theorem posSemidef_two_of_diagonal {a b c : ℝ} (ha : |c| ≤ a) (hb : |c| ≤ b) :
+/- Symmetric diagonal dominance implies positive semidefiniteness in scalar block coordinates. -/
+theorem posSemidef_two_of_diagonal {a b c } (ha : |c| ≤ a) (hb : |c| ≤ b) :
     (!![a, c; c, b] : Matrix (Fin 2) (Fin 2) ℝ).PosSemidef := by
   apply Matrix.posSemidef_iff_dotProduct_mulVec.mpr
   constructor
@@ -60,21 +60,19 @@ theorem posSemidef_two_of_diagonal {a b c : ℝ} (ha : |c| ≤ a) (hb : |c| ≤ 
       have h2 := mul_nonneg (neg_nonneg.mpr hc) (sq_nonneg (x 0 - x 1))
       nlinarith
 
-/-- A lower bound for the odd covariance monomial on the whole cutoff strip. -/
-theorem covariance_cube_lower {theta : ℝ} (ht : -(1 / 128 : ℝ) ≤ theta) :
-    -(1 / 128 : ℝ) ^ 3 ≤ theta ^ 3 := by
-  by_cases ht0 : 0 ≤ theta
-  · have hp := pow_nonneg ht0 3
-    linarith
-  · have hneg : 0 ≤ -theta := by linarith
-    have hle : -theta ≤ (1 / 128 : ℝ) := by linarith
-    have hc := pow_le_pow_left₀ hneg hle 3
-    nlinarith
-
-/-- The dimensionless covariance is positive definite on the entire closed cutoff strip. -/
-theorem posDef_ghat {lam theta : ℝ} (hlam : 0 < lam)
+/- A lower bound for the odd covariance monomial on the whole cutoff strip. -/
+theorem posDef_ghat {lam theta } (hlam : 0 < lam)
     (ht : -(1 / 128 : ℝ) ≤ theta) : (ghat lam theta).PosDef := by
-  have hc := covariance_cube_lower ht
+  have hc : -(1 / 128 : ℝ) ^ 3 ≤ theta ^ 3 := by
+      by_cases ht0 : 0 ≤ theta
+      · have hp := pow_nonneg ht0 3
+        linarith
+      · have hneg : 0 ≤ -theta := by linarith
+        have hle : -theta ≤ (1 / 128 : ℝ) := by linarith
+        have hc := pow_le_pow_left₀ hneg hle 3
+        nlinarith
+
+    /- The dimensionless covariance is positive definite on the entire closed cutoff strip. -/
   have hbase : 0 < (1 + theta ^ 2) / 64 + theta ^ 3 / 3 := by
     nlinarith [sq_nonneg theta]
   have hdet : 0 < 1 / 4096 + theta / 64 + theta ^ 3 / 192 + theta ^ 4 / 12 := by

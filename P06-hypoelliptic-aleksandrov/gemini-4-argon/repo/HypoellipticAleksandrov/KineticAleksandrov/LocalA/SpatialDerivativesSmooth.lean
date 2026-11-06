@@ -13,7 +13,7 @@ open Set MeasureTheory Parabolic SectionTwo Evolution
 open scoped Matrix.Norms.Elementwise
 
 /-- Entrywise smoothness of the source lift implies smoothness on time-velocity space. -/
-theorem sectionTwo_coefficient_smooth {d : ℕ} {lam Lam : ℝ}
+theorem sectionTwo_coefficient_smooth {d lam Lam}
     {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B) :
     IsSmoothCoefficient B := by
   apply contDiff_pi.mpr
@@ -24,7 +24,7 @@ theorem sectionTwo_coefficient_smooth {d : ℕ} {lam Lam : ℝ}
     (contDiff_fst.prodMk (contDiff_snd.prodMk (contDiff_const (c := (0 : PDE.Vec d)))))
 
 /-- The full source coefficient class is preserved by the stipulated reflection. -/
-theorem sectionTwo_coefficient_reflection {d : ℕ} {lam Lam : ℝ}
+theorem sectionTwo_coefficient_reflection {d lam Lam}
     {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B) :
     IsSectionTwoCoefficient lam Lam (kineticReflectedCoefficient B) := by
   refine ⟨hB.1, hB.2.1, ?_, ?_, ?_, ?_⟩
@@ -37,7 +37,7 @@ theorem sectionTwo_coefficient_reflection {d : ℕ} {lam Lam : ℝ}
     exact hB.2.2.2.2.2 (-t) v
 
 /-- Continuous classical backward residuals equal zero pointwise when zero almost everywhere. -/
-theorem spatial_backward_equation_pointwise {d : ℕ} {D : Set (KineticPoint d)}
+theorem spatial_backward_equation_pointwise {d D}
     (hD : IsOpen D) (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (u : KineticPoint d → ℝ) (hu : IsKineticC112On u D)
     (he : ∀ᵐ P ∂volume.restrict D, backwardOperatorOfTimeVelocityCoefficient A u P = 0) :
@@ -62,9 +62,9 @@ theorem spatial_backward_equation_pointwise {d : ℕ} {D : Set (KineticPoint d)}
 
 /-- Hormander interior regularity gives the stipulated physical spatial slice smoothness. -/
 theorem spatial_forward_slice_smooth
-    (hH : HormanderHypoellipticityStatement) {d : ℕ} {lam Lam : ℝ}
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (Z₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) (U : KineticPoint d → ℝ)
+    (hH : HormanderHypoellipticityStatement) {d lam Lam}
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (Z₀ : KineticPoint d) {R } (hR : 0 < R) (U : KineticPoint d → ℝ)
     (hUs : IsKineticC112On U (forwardCylinder Z₀ R hR))
     (hUe : ∀ Q ∈ forwardCylinder Z₀ R hR,
       forwardKineticOperator (ofTimeVelocityCoefficient B) U Q = 0)

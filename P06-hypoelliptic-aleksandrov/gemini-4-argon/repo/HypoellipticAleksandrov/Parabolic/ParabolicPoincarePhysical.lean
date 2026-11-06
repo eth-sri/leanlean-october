@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincare
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyScaling
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyProjection
+import HypoellipticAleksandrov.Parabolic.ParabolicPoincareSpatial
+import HypoellipticAleksandrov.Parabolic.ParabolicPoincareTime
 
 /-!
 # Physical parabolic Morrey Poincare estimate
@@ -34,27 +36,10 @@ private theorem continuous_velocityHessian_physical
   intro i j
   change Continuous (fun z : TimeVelocity d =>
     fderiv Real (fderiv Real u) z (0, Pi.single i 1) (0, Pi.single j 1))
-  have hdu : ContDiff Real 1 (fderiv Real u) :=
+  have hdu :=
     hu.fderiv_right (m := 1) (by norm_num)
   exact (((hdu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)).clm_apply contDiff_const).continuous
-
-private theorem continuous_parabolicMorreyUnitAffineProjection_physical
-    {d : Nat} (u : TimeVelocity d -> Real) :
-    Continuous (parabolicMorreyUnitAffineProjection u) := by
-  unfold parabolicMorreyUnitAffineProjection
-  apply Continuous.add continuous_const
-  apply continuous_finset_sum
-  intro i _
-  exact continuous_const.mul (continuous_apply i |>.comp continuous_snd)
-
-private theorem parabolicELpNormPullbackMeasureFactor_pos
-    (d : Nat) {r : Real} (hr : 0 < r) :
-    0 < parabolicELpNormPullbackMeasureFactor d r := by
-  unfold parabolicELpNormPullbackMeasureFactor
-  apply ENNReal.rpow_pos
-  · exact ENNReal.ofReal_pos.mpr (inv_pos.mpr (pow_pos hr _))
-  · exact ENNReal.ofReal_ne_top
 
 private theorem ne_top_of_eq_mul
     {a b c : ENNReal} (ha : a ≠ 0) (hscale : b = a * c) (hb : b ≠ ⊤) :
@@ -63,7 +48,7 @@ private theorem ne_top_of_eq_mul
   apply hb
   rw [hscale, hc, ENNReal.mul_top ha]
 
-/-- Scale-normalized smooth parabolic Poincare inequality on every positive-radius
+/- Scale-normalized smooth parabolic Poincare inequality on every positive-radius
 forward physical box, modulo the transported velocity-affine moment projection. -/
 theorem exists_parabolicMorreyBoxAffinePoincareConst (d : Nat)
     (hd : 1 <= d) :
@@ -82,10 +67,181 @@ theorem exists_parabolicMorreyBoxAffinePoincareConst (d : Nat)
                 parabolicLpNormOn d
                   (fun z => velocityHessian u z i j)
                   (parabolicBox 1 r t₀ v₀)) := by
-  obtain ⟨C, hCpos, hC⟩ := exists_parabolicMorreyUnitAffinePoincareConst d hd
+  obtain ⟨C, hCpos, hC⟩ : ∃ C : Real, 0 < C ∧ ∀ u : TimeVelocity d -> Real, ContDiff Real 2 u -> parabolicLpNormOn d (fun z => u z - parabolicMorreyUnitAffineProjection u z) (parabolicMorreyUnitBox d) <= C * (parabolicLpNormOn d (timeDerivative u) (parabolicMorreyUnitBox d) + ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d (fun z => velocityHessian u z i j) (parabolicMorreyUnitBox d)) := by
+    obtain ⟨Cs, hCsPos, hCs⟩ :=
+      exists_parabolicMorreyUnitSpatialAffinePoincareConst d hd
+    obtain ⟨CsENN, _hCsENNPos, hCsENN⟩ :=
+      exists_parabolicMorreyUnitSpatialAffinePoincareELpConst d hd
+    let Ct : Real := 1 + 3 * (d : Real)
+    refine ⟨Cs + Ct, ?_, ?_⟩
+    · have hCtPos : 0 < Ct := by
+        dsimp only [Ct]
+        have hdnonneg : 0 <= (d : Real) := Nat.cast_nonneg d
+        linarith
+      linarith
+    · intro u hu
+      let S : TimeVelocity d -> Real := fun z =>
+        u z - parabolicMorreyUnitSpatialAffineProjection u z
+      let D : TimeVelocity d -> Real := fun z =>
+        parabolicMorreyUnitSpatialAffineProjection u z -
+          parabolicMorreyUnitAffineProjection u z
+      let T : ENNReal :=
+        parabolicELpNormOn d (timeDerivative u) (parabolicMorreyUnitBox d)
+      let H : ENNReal := ∑ i : Fin d, ∑ j : Fin d,
+        parabolicELpNormOn d (fun z => velocityHessian u z i j)
+          (parabolicMorreyUnitBox d)
+      have hTfin : T ≠ ⊤ := by
+        dsimp only [T]
+        have _h_inl_8 : Continuous (timeDerivative u) := by
+          change Continuous (fun z : TimeVelocity d => fderiv Real u z (1, 0))
+          exact ((hu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
+            (contDiff_id.prodMk contDiff_const)).continuous
+        exact (Continuous.memLp_parabolicMorreyUnitBox
+          _h_inl_8).eLpNorm_ne_top
+      have hHijfin (i : Fin d) (j : Fin d) :
+          parabolicELpNormOn d (fun z => velocityHessian u z i j)
+            (parabolicMorreyUnitBox d) ≠ ⊤ := by
+        have _h_inl_9 : Continuous (velocityHessian u) := by
+          apply continuous_matrix
+          intro i j
+          change Continuous (fun z : TimeVelocity d =>
+            fderiv Real (fderiv Real u) z (0, Pi.single i 1) (0, Pi.single j 1))
+          have hdu :=
+            hu.fderiv_right (m := 1) (by norm_num)
+          exact (((hdu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
+            (contDiff_id.prodMk contDiff_const)).clm_apply contDiff_const).continuous
+        exact (Continuous.memLp_parabolicMorreyUnitBox
+          ((continuous_pi_iff.mp (continuous_pi_iff.mp
+            _h_inl_9 i)) j)).eLpNorm_ne_top
+      have hHfin : H ≠ ⊤ := by
+        dsimp only [H]
+        refine ENNReal.sum_ne_top.mpr fun i _ => ?_
+        exact ENNReal.sum_ne_top.mpr fun j _ => hHijfin i j
+      have hSENN : parabolicELpNormOn d S (parabolicMorreyUnitBox d) <=
+          ENNReal.ofReal CsENN * H := by
+        simpa only [S, H] using hCsENN u hu
+      have hSfin : parabolicELpNormOn d S (parabolicMorreyUnitBox d) ≠ ⊤ :=
+        ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hHfin) hSENN
+      have hDENN : parabolicELpNormOn d D (parabolicMorreyUnitBox d) <=
+          ENNReal.ofReal Ct * T := by
+        simpa only [D, T, Ct] using
+          parabolicMorreyUnitTemporalAffinePoincareELpNorm_le d u hu
+      have hDfin : parabolicELpNormOn d D (parabolicMorreyUnitBox d) ≠ ⊤ :=
+        ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hTfin) hDENN
+      have hSpatialStrong : StronglyMeasurable
+          (parabolicMorreyUnitSpatialAffineProjection u) := by
+        have hu := hu.continuous
+        let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
+        let ν : Measure (PDE.Vec d) := volume.restrict V
+        have huStrong : StronglyMeasurable
+            (Function.uncurry fun t : Real => fun v : PDE.Vec d => u (t, v)) := by
+          change StronglyMeasurable u
+          exact hu.stronglyMeasurable
+        have hAverage : StronglyMeasurable (parabolicMorreyUnitVelocityAverage u) := by
+          unfold parabolicMorreyUnitVelocityAverage
+          apply stronglyMeasurable_const.mul
+          simpa only [ν, V] using (huStrong.integral_prod_right (ν := ν))
+        have hCoeff : ∀ i : Fin d,
+            StronglyMeasurable (fun t => parabolicMorreyUnitVelocityCoeffAt u t i) := by
+          intro i
+          have huCoordinate : StronglyMeasurable
+              (Function.uncurry fun t : Real => fun v : PDE.Vec d => u (t, v) * v i) := by
+            change StronglyMeasurable (fun z : TimeVelocity d => u z * z.2 i)
+            exact (hu.mul ((continuous_apply i).comp continuous_snd)).stronglyMeasurable
+          unfold parabolicMorreyUnitVelocityCoeffAt
+          apply stronglyMeasurable_const.mul
+          simpa only [ν, V] using (huCoordinate.integral_prod_right (ν := ν))
+        unfold parabolicMorreyUnitSpatialAffineProjection
+        apply (hAverage.comp_measurable measurable_fst).add
+        rw [← Finset.sum_fn]
+        refine Finset.stronglyMeasurable_sum Finset.univ fun i _ => ?_
+        exact ((hCoeff i).comp_measurable measurable_fst).mul
+          (((continuous_apply i).comp continuous_snd).stronglyMeasurable)
+      have hSmeas : AEStronglyMeasurable S (volume.restrict (parabolicMorreyUnitBox d)) := by
+        exact (hu.continuous.stronglyMeasurable.sub hSpatialStrong).aestronglyMeasurable
+      have hDmeas : AEStronglyMeasurable D (volume.restrict (parabolicMorreyUnitBox d)) := by
+        have _h_inl_10 : Continuous (parabolicMorreyUnitAffineProjection u) := by
+          unfold parabolicMorreyUnitAffineProjection
+          apply Continuous.add continuous_const
+          apply continuous_finset_sum
+          intro i _
+          exact continuous_const.mul (continuous_apply i |>.comp continuous_snd)
+        exact StronglyMeasurable.aestronglyMeasurable
+          (hSpatialStrong.sub
+            _h_inl_10.stronglyMeasurable)
+      have hp : (1 : ENNReal) <= parabolicExponent d := by
+        simpa only [parabolicExponent] using
+          (le_add_of_nonneg_left (show (0 : ENNReal) <= d from bot_le))
+      have hdecomp :
+          (fun z => u z - parabolicMorreyUnitAffineProjection u z) = S + D := by
+        funext z
+        dsimp only [S, D, Pi.add_apply]
+        ring
+      have htriangle : parabolicELpNormOn d (S + D) (parabolicMorreyUnitBox d) <=
+          parabolicELpNormOn d S (parabolicMorreyUnitBox d) +
+            parabolicELpNormOn d D (parabolicMorreyUnitBox d) := by
+        exact MeasureTheory.eLpNorm_add_le hp
+      have hSDfin : parabolicELpNormOn d S (parabolicMorreyUnitBox d) +
+          parabolicELpNormOn d D (parabolicMorreyUnitBox d) ≠ ⊤ :=
+        ENNReal.add_ne_top.mpr ⟨hSfin, hDfin⟩
+      have hRealTriangle :
+          (parabolicELpNormOn d
+            (fun z => u z - parabolicMorreyUnitAffineProjection u z)
+            (parabolicMorreyUnitBox d)).toReal <=
+            (parabolicELpNormOn d S (parabolicMorreyUnitBox d)).toReal +
+              (parabolicELpNormOn d D (parabolicMorreyUnitBox d)).toReal := by
+        rw [hdecomp]
+        have h := ENNReal.toReal_mono hSDfin htriangle
+        rw [ENNReal.toReal_add hSfin hDfin] at h
+        exact h
+      have hSReal : (parabolicELpNormOn d S (parabolicMorreyUnitBox d)).toReal <=
+          Cs * ∑ i : Fin d, ∑ j : Fin d,
+            (parabolicELpNormOn d (fun z => velocityHessian u z i j)
+              (parabolicMorreyUnitBox d)).toReal := by
+        simpa only [S, parabolicLpNormOn] using hCs u hu
+      have hDReal : (parabolicELpNormOn d D (parabolicMorreyUnitBox d)).toReal <=
+          Ct * (parabolicELpNormOn d (timeDerivative u)
+            (parabolicMorreyUnitBox d)).toReal := by
+        simpa only [D, Ct, parabolicLpNormOn] using
+          parabolicMorreyUnitTemporalAffinePoincareLpNorm_le d u hu
+      have hTnonneg : 0 <= (parabolicELpNormOn d (timeDerivative u)
+          (parabolicMorreyUnitBox d)).toReal := ENNReal.toReal_nonneg
+      have hHnonneg : 0 <= H.toReal := ENNReal.toReal_nonneg
+      have hCtNonneg : 0 <= Ct := by
+        dsimp only [Ct]
+        positivity
+      unfold parabolicLpNormOn
+      have hHtoReal : H.toReal = ∑ i : Fin d, ∑ j : Fin d,
+          (parabolicELpNormOn d (fun z => velocityHessian u z i j)
+            (parabolicMorreyUnitBox d)).toReal := by
+        dsimp only [H]
+        rw [ENNReal.toReal_sum fun i _ =>
+          ENNReal.sum_ne_top.mpr fun j _ => hHijfin i j]
+        apply Finset.sum_congr rfl
+        intro i _
+        exact ENNReal.toReal_sum fun j _ => hHijfin i j
+      rw [← hHtoReal] at hSReal
+      rw [← hHtoReal]
+      calc
+        (parabolicELpNormOn d
+          (fun z => u z - parabolicMorreyUnitAffineProjection u z)
+          (parabolicMorreyUnitBox d)).toReal <=
+            (parabolicELpNormOn d S (parabolicMorreyUnitBox d)).toReal +
+              (parabolicELpNormOn d D (parabolicMorreyUnitBox d)).toReal := hRealTriangle
+        _ <= Cs * H.toReal + Ct * T.toReal := by
+          change _ <= Cs * H.toReal + Ct *
+            (parabolicELpNormOn d (timeDerivative u) (parabolicMorreyUnitBox d)).toReal
+          exact add_le_add hSReal hDReal
+        _ <= (Cs + Ct) * (T.toReal + H.toReal) := by
+          change Cs * H.toReal + Ct *
+            (parabolicELpNormOn d (timeDerivative u) (parabolicMorreyUnitBox d)).toReal <=
+              (Cs + Ct) *
+                ((parabolicELpNormOn d (timeDerivative u)
+                  (parabolicMorreyUnitBox d)).toReal + H.toReal)
+          nlinarith [hCsPos.le]
   refine ⟨C, hCpos, ?_⟩
   intro t₀ v₀ r hr u hu
-  let uhat : TimeVelocity d -> Real := pullbackScalar u t₀ v₀ r
+  let uhat := pullbackScalar u t₀ v₀ r
   let w : TimeVelocity d -> Real := fun z =>
     u z - parabolicMorreyBoxAffineProjection t₀ v₀ r u z
   let what : TimeVelocity d -> Real := fun z =>
@@ -93,8 +249,7 @@ theorem exists_parabolicMorreyBoxAffinePoincareConst (d : Nat)
   let factor : ENNReal := parabolicELpNormPullbackMeasureFactor d r
   let F : Real := factor.toReal
   let box : Set (TimeVelocity d) := parabolicBox 1 r t₀ v₀
-  have huHat : ContDiff Real 2 uhat := by
-    exact hu.comp (contDiff_parabolicAffine t₀ v₀ r)
+  have huHat := hu.comp (contDiff_parabolicAffine t₀ v₀ r)
   have hpullResidual : pullbackScalar w t₀ v₀ r = what := by
     funext z
     simp only [w, what, uhat, pullbackScalar_apply]
@@ -103,7 +258,10 @@ theorem exists_parabolicMorreyBoxAffinePoincareConst (d : Nat)
     exact parabolicAffine_image_parabolicMorreyUnitBox t₀ v₀ hr
   have hfactorPos : 0 < factor := by
     dsimp only [factor]
-    exact parabolicELpNormPullbackMeasureFactor_pos d hr
+    unfold parabolicELpNormPullbackMeasureFactor
+    apply ENNReal.rpow_pos
+    · exact ENNReal.ofReal_pos.mpr (inv_pos.mpr (pow_pos hr _))
+    · exact ENNReal.ofReal_ne_top
   have hfactorNeZero : factor ≠ 0 := ne_of_gt hfactorPos
   have hFpos : 0 < F := by
     dsimp only [F]
@@ -111,8 +269,14 @@ theorem exists_parabolicMorreyBoxAffinePoincareConst (d : Nat)
       (ENNReal.rpow_ne_top_of_nonneg ENNReal.toReal_nonneg ENNReal.ofReal_ne_top)
   have hwhatContinuous : Continuous what := by
     dsimp only [what]
+    have _h_inl_11 : Continuous (parabolicMorreyUnitAffineProjection uhat) := by
+      unfold parabolicMorreyUnitAffineProjection
+      apply Continuous.add continuous_const
+      apply continuous_finset_sum
+      intro i _
+      exact continuous_const.mul (continuous_apply i |>.comp continuous_snd)
     exact huHat.continuous.sub
-      (continuous_parabolicMorreyUnitAffineProjection_physical uhat)
+      _h_inl_11
   have hwhatUnitFin :
       parabolicELpNormOn d what (parabolicMorreyUnitBox d) ≠ ⊤ := by
     exact (Continuous.memLp_parabolicMorreyUnitBox hwhatContinuous).eLpNorm_ne_top
@@ -152,7 +316,7 @@ theorem exists_parabolicMorreyBoxAffinePoincareConst (d : Nat)
         exact parabolicELpNormOn_timeDerivative_pullbackScalar t₀ v₀ hr u hu _
       _ = (‖r ^ 2‖ₑ * factor) * parabolicELpNormOn d (timeDerivative u) box := by
         rw [hboxImage]
-  have htimePhysicalFin : parabolicELpNormOn d (timeDerivative u) box ≠ ⊤ :=
+  have htimePhysicalFin :=
     ne_top_of_eq_mul htimeFactorNeZero htimeScale htimeUnitFin
   have hhessianScale (i j : Fin d) :
       parabolicELpNormOn d (fun z => velocityHessian uhat z i j)
@@ -202,8 +366,7 @@ theorem exists_parabolicMorreyBoxAffinePoincareConst (d : Nat)
   have hunit := hC uhat huHat
   rw [hresidualReal', htimeReal'] at hunit
   simp_rw [hhessianReal'] at hunit
-  have hscalePos : 0 < r ^ 2 * F := mul_pos (sq_pos_of_pos hr) hFpos
-  apply le_of_mul_le_mul_left (a := r ^ 2 * F) ?_ hscalePos
+  apply le_of_mul_le_mul_left (a := r ^ 2 * F) ?_ (mul_pos (sq_pos_of_pos hr) hFpos)
   calc
     (r ^ 2 * F) * ((r ^ 2)⁻¹ * parabolicLpNormOn d w box) =
         F * parabolicLpNormOn d w box := by

@@ -50,7 +50,7 @@ theorem sliceHessian_add {n : ℕ} {g h : PDE.Vec n → ℝ} {x : PDE.Vec n}
   have hgh : ContDiffAt ℝ 2 (fun y => g y + h y) x := hg.add hh
   have hdg : DifferentiableAt ℝ (fderiv ℝ g) x :=
     (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
-  have hdh : DifferentiableAt ℝ (fderiv ℝ h) x :=
+  have hdh :=
     (hh.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   ext i j
   rw [sliceHessian_apply_eq_sndFDeriv hgh, Matrix.add_apply,
@@ -79,36 +79,35 @@ theorem sliceHessian_const_mul {n : ℕ} {g : PDE.Vec n → ℝ} {x : PDE.Vec n}
   simp
 
 /-- Slice regularity is preserved by sums. -/
-theorem IsSliceRegularAt.add {n : ℕ} {u v : KineticPoint n → ℝ} {p : KineticPoint n}
+theorem IsSliceRegularAt.add {n u v} {p : KineticPoint n}
     (hu : IsSliceRegularAt u p) (hv : IsSliceRegularAt v p) :
     IsSliceRegularAt (fun q => u q + v q) p :=
   ⟨hu.time.add hv.time, hu.position.add hv.position, hu.velocity.add hv.velocity⟩
 
 /-- Slice regularity is preserved by constant multiples. -/
-theorem IsSliceRegularAt.const_mul {n : ℕ} {u : KineticPoint n → ℝ} {p : KineticPoint n}
+theorem IsSliceRegularAt.const_mul {n u} {p : KineticPoint n}
     (c : ℝ) (hu : IsSliceRegularAt u p) :
     IsSliceRegularAt (fun q => c * u q) p :=
   ⟨hu.time.const_mul c, contDiffAt_const.mul hu.position, contDiffAt_const.mul hu.velocity⟩
 
 /-- Slice regularity is preserved by differences. -/
-theorem IsSliceRegularAt.sub {n : ℕ} {u v : KineticPoint n → ℝ} {p : KineticPoint n}
+theorem IsSliceRegularAt.sub {n u v} {p : KineticPoint n}
     (hu : IsSliceRegularAt u p) (hv : IsSliceRegularAt v p) :
     IsSliceRegularAt (fun q => u q - v q) p :=
   ⟨hu.time.sub hv.time, hu.position.sub hv.position, hu.velocity.sub hv.velocity⟩
 
 /-- Slice regularity is preserved by negation. -/
-theorem IsSliceRegularAt.neg {n : ℕ} {u : KineticPoint n → ℝ} {p : KineticPoint n}
+theorem IsSliceRegularAt.neg {n u} {p : KineticPoint n}
     (hu : IsSliceRegularAt u p) : IsSliceRegularAt (fun q => -u q) p :=
   ⟨hu.time.neg, hu.position.neg, hu.velocity.neg⟩
 
 /-- Constants are slice regular. -/
-theorem IsSliceRegularAt.const {n : ℕ} (c : ℝ) (p : KineticPoint n) :
+theorem IsSliceRegularAt.const {n } (c : ℝ) (p : KineticPoint n) :
     IsSliceRegularAt (fun _ => c) p :=
   ⟨differentiableAt_const c, contDiffAt_const, contDiffAt_const⟩
 
 /-- Additivity of `L_ε` at a slice-regular point. -/
-theorem viscousTransportedOperator_add {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} {ε : ℝ} {u v : KineticPoint n → ℝ} {p : KineticPoint n}
+theorem viscousTransportedOperator_add {n B b ε u v} {p : KineticPoint n}
     (hu : IsSliceRegularAt u p) (hv : IsSliceRegularAt v p) :
     viscousTransportedOperator B b ε (fun q => u q + v q) p =
       viscousTransportedOperator B b ε u p + viscousTransportedOperator B b ε v p := by
@@ -136,8 +135,7 @@ theorem viscousTransportedOperator_add {n : ℕ} {B : FullKineticCoefficient n}
   ring
 
 /-- Homogeneity of `L_ε` at a slice-regular point. -/
-theorem viscousTransportedOperator_const_mul {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} {ε : ℝ} {u : KineticPoint n → ℝ} {p : KineticPoint n}
+theorem viscousTransportedOperator_const_mul {n B b ε u} {p : KineticPoint n}
     (c : ℝ) (hu : IsSliceRegularAt u p) :
     viscousTransportedOperator B b ε (fun q => c * u q) p =
       c * viscousTransportedOperator B b ε u p := by

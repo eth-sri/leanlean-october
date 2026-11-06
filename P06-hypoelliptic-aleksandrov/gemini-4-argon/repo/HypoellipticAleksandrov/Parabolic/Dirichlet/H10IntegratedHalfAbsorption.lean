@@ -20,83 +20,15 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 namespace IsReverseTimeVariationalEnergySolution
 
-/-- The reducible exact output proposition of integrated positive-lower-bound
+/- The reducible exact output proposition of integrated positive-lower-bound
 H10 half absorption.  This names a conclusion and is not an assumption package. -/
-abbrev integratedH10HalfCoerciveConsequenceOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (_haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (_hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (_hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (ζ : ReverseTimeScalarTest (r₁ - r₀))
-    (_hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) : Prop :=
-    ∃ δ : ℝ, 0 < δ ∧
-      ∀ lam : ℝ, 0 < lam →
-        ∃ C_lam : ℝ, 0 ≤ C_lam ∧
-          ∀ (Lam : ℝ)
-            (hLower : ∀ z : TimeVelocity d,
-              z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-                lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-            (hUpper : ∀ z : TimeVelocity d,
-              z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-                a z.1 z.2 ≤ Lam • (1 : PDE.Mat d)),
-            ∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
-              ∃ hχshift : Set.MapsTo
-                (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-                (tsupport χ.toFun) Ω,
-              ∀ (hζnonneg :
-                  ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀), 0 ≤ ζ τ)
-                (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
-                (u : ReverseTimeL2V hΩ (r₁ - r₀))
-                (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
-                (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
-                  (sub_pos.mpr h₀₁) u g)
-                (hu : IsReverseTimeVariationalEnergySolution
-                  r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu),
-                let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-                  intro y hy
-                  apply subset_tsupport
-                  change χ y ≠ 0
-                  rw [χ.eq_one_on_inner y hy]
-                  exact one_ne_zero
-                let hηshift : Set.MapsTo
-                    (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-                    (tsupport η.toFun) Ω :=
-                  hχshift.mono_left hηχ
-                let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
-                  localizedSpatialDifferenceQuotientH10CLM
-                    hΩ η k h η.tsupport_subset hηshift
-                let Gv : ℝ → PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
-                  fun τ => gradientCLM hΩ (A (u τ))
-                let Wv : ℝ → PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
-                  fun τ =>
-                    cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h (u τ)
-                (-(1 / 2 : ℝ) *
-                    (∫ τ, ‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ
-                      ∂reverseTimeVolume (r₁ - r₀)) +
-                  (∫ τ, ζ τ *
-                    ((lam / 2) * ‖Gv τ‖ ^ 2 - Lam * ‖Wv τ‖ ^ 2)
-                    ∂reverseTimeVolume (r₁ - r₀)) ≤
-                  (∫ τ, ζ τ * (C_lam * (1 + ‖u τ‖ ^ 2))
-                    ∂reverseTimeVolume (r₁ - r₀)))
-
 private theorem integrable_norm_sq_timewise_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T )
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
     Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) := by
   let Lu := L.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u
-  have hLu : Lu =ᵐ[reverseTimeVolume T] fun τ => L (u τ) :=
+  have hLu :=
     ContinuousLinearMap.coeFn_compLpL L u
   refine (show Integrable (fun τ => ‖Lu τ‖ ^ 2) (reverseTimeVolume T) by
     simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) Lu Lu).congr ?_
@@ -104,23 +36,23 @@ private theorem integrable_norm_sq_timewise_apply
   rw [hτ]
 
 private theorem integrable_weighted
-    {T : ℝ} (ζ : ReverseTimeScalarTest T) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T)) :
+    {T } (ζ : ReverseTimeScalarTest T) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
+    {f } (hf : Integrable f (reverseTimeVolume T)) :
     Integrable (fun τ => ζ τ * f τ) (reverseTimeVolume T) := by
   exact hf.bdd_mul ζ.contDiff.continuous.aestronglyMeasurable
     (Filter.Eventually.of_forall hζunit)
 
-/-- The integrated half-coercive H10 inequality has a Young constant uniform
+/- The integrated half-coercive H10 inequality has a Young constant uniform
 in the reverse-time scalar test and all data satisfying the supplied literal
 majorants. -/
 theorem
   exists_uniform_timeTest_integral_h10Commutator_add_halfCoercive_le_nonprincipalYoung_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d Ω inner Kη Kχ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
-    (delta : ℝ)
+    (delta )
     (hcarrier : spatialCoordinateShiftCarrier (tsupport χ.toFun) delta ⊆ Ω)
     (lam : ℝ) (hlam : 0 < lam) (M : ℝ) (hM : 0 ≤ M) :
     ∃ C_lam : ℝ, 0 ≤ C_lam ∧
@@ -193,11 +125,9 @@ theorem
             change χ y ≠ 0
             rw [χ.eq_one_on_inner y hy]
             exact one_ne_zero
-          let hηshift : Set.MapsTo
-              (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-              (tsupport η.toFun) Ω :=
+          let hηshift :=
             hχshift.mono_left hηχ
-          let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
+          let A :=
             localizedSpatialDifferenceQuotientH10CLM
               hΩ η k h η.tsupport_subset hηshift
           let Gv : ℝ → PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
@@ -220,9 +150,7 @@ theorem
   refine ⟨C_lam, hC_lam, ?_⟩
   intro zeta hzetaunit Lam a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hUpper
     hA hB hBD hq hqD hfD k h hh hζnonneg initial u g hdu hu
-  let hχshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport χ.toFun) Ω :=
+  let hχshift :=
     mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset hcarrier k hh
   let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
     intro y hy
@@ -230,9 +158,8 @@ theorem
     change χ y ≠ 0
     rw [χ.eq_one_on_inner y hy]
     exact one_ne_zero
-  let hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω := hχshift.mono_left hηχ
-  let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
+  let hηshift := hχshift.mono_left hηχ
+  let A :=
     localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
   let Gv : ℝ → PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
     fun τ => gradientCLM hΩ (A (u τ))
@@ -240,8 +167,7 @@ theorem
     fun τ => cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h (u τ)
   have hparent' := hparent zeta hzetaunit lam Lam a b c F haSmooth hbSmooth hcSmooth hFSmooth
     hLower hUpper hA hB hBD hq hqD hfD k h hh hζnonneg initial u g hdu hu
-  have hGsq : Integrable (fun τ => ‖Gv τ‖ ^ 2) (reverseTimeVolume (r₁ - r₀)) := by
-    exact integrable_norm_sq_timewise_apply hΩ (r₁ - r₀) ((gradientCLM hΩ).comp A) u
+  have hGsq := integrable_norm_sq_timewise_apply hΩ (r₁ - r₀) ((gradientCLM hΩ).comp A) u
   have hWsq : Integrable (fun τ => ‖Wv τ‖ ^ 2) (reverseTimeVolume (r₁ - r₀)) := by
     exact integrable_norm_sq_timewise_apply hΩ (r₁ - r₀)
       (cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h) u

@@ -10,7 +10,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open MeasureTheory
 
 /-- Finite telescoping retains the genuine continuation measure after the last visit. -/
-theorem alternating_measure_telescope (total initial : Measure Point)
+theorem alternating_measure_telescope (total initial )
     (charge remainder : ℕ → Measure Point)
     (hzero : total = initial + remainder 0)
     (hstep : ∀ n, remainder n = charge n + remainder (n + 1)) (N : ℕ) :

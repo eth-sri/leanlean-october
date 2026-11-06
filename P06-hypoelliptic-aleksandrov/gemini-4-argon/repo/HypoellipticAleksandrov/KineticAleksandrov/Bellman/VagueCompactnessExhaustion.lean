@@ -25,7 +25,7 @@ theorem bellman_compact_comap_mass (K : Set X) (hK : IsCompact K) (mu : Measure 
 
 omit [LocallyCompactSpace X] [SecondCountableTopology X] in
 /-- A test supported in a compact set has the same integral on its compact carrier. -/
-theorem bellman_compact_test_integral (K : Set X) (hK : IsCompact K)
+theorem bellman_compact_test_integral (K ) (hK : IsCompact K)
     (mu : Measure X) (f : C_c(X, ℝ)) (hf : tsupport f ⊆ K) :
     (∫ x : K, f x.val ∂Measure.comap Subtype.val mu) = ∫ x, f x ∂mu := by
   rw [integral_subtype_comap hK.measurableSet]

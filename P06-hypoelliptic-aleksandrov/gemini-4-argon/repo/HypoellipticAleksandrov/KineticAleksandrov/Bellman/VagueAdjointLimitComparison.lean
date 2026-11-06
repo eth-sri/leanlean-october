@@ -12,8 +12,7 @@ open scoped CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Constant scalar multiplication preserves vague convergence. -/
-theorem IsBellmanVagueLimit.smul {mu : ℕ → Measure BellmanPuncturedPlane}
-    {nu : Measure BellmanPuncturedPlane} (h : IsBellmanVagueLimit mu nu) (c : ENNReal) :
+theorem IsBellmanVagueLimit.smul {mu nu} (h : IsBellmanVagueLimit mu nu) (c : ENNReal) :
     IsBellmanVagueLimit (fun n => c • mu n) (c • nu) := by
   intro f hf hfc
   simp only [integral_smul_measure]
@@ -21,7 +20,7 @@ theorem IsBellmanVagueLimit.smul {mu : ℕ → Measure BellmanPuncturedPlane}
 
 /-- Positive compact tests transfer an ordered sequence to ordered Radon limits. -/
 theorem bellman_vague_limit_le (mu eta : ℕ → Measure BellmanPuncturedPlane)
-    (muInf etaInf : Measure BellmanPuncturedPlane)
+    (muInf etaInf )
     (he : ∀ n, IsFiniteMeasureOnCompacts (eta n))
     (hmInf : IsBellmanRadon muInf) (heInf : IsBellmanRadon etaInf)
     (hmv : IsBellmanVagueLimit mu muInf) (hev : IsBellmanVagueLimit eta etaInf)

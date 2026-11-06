@@ -17,7 +17,7 @@ set_option autoImplicit false
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-/-- Bounded real Borel functions, represented as a submodule of all functions. -/
+/- Bounded real Borel functions, represented as a submodule of all functions. -/
 def boundedBorelSubmodule (α : Type*) [MeasurableSpace α] :
     Submodule ℝ (α → ℝ) where
   carrier := {f | Measurable f ∧ ∃ C : ℝ, 0 ≤ C ∧ ∀ x, abs (f x) ≤ C}
@@ -44,7 +44,7 @@ def boundedBorelSubmodule (α : Type*) [MeasurableSpace α] :
       simpa only [Pi.smul_apply, smul_eq_mul, abs_mul] using
         mul_le_mul_of_nonneg_left (hf x) (abs_nonneg c)
 
-/-- The literal bounded-Borel real-function carrier. -/
+/- The literal bounded-Borel real-function carrier. -/
 abbrev BoundedBorel (α : Type*) [MeasurableSpace α] :=
   ↥(boundedBorelSubmodule α)
 
@@ -54,7 +54,7 @@ instance {α : Type*} [MeasurableSpace α] :
 
 namespace BoundedBorel
 
-/-- Bounded-Borel functions are equal when they agree pointwise. -/
+/- Bounded-Borel functions are equal when they agree pointwise. -/
 @[ext]
 theorem ext {α : Type*} [MeasurableSpace α]
     {f g : BoundedBorel α} (h : ∀ x, f x = g x) : f = g := by
@@ -62,20 +62,20 @@ theorem ext {α : Type*} [MeasurableSpace α]
   funext x
   exact h x
 
-/-- The underlying function of a bounded-Borel function is measurable. -/
+/- The underlying function of a bounded-Borel function is measurable. -/
 theorem measurable {α : Type*} [MeasurableSpace α]
     (f : BoundedBorel α) : Measurable f := f.property.1
 
-/-- A bounded-Borel function has a finite nonnegative uniform absolute bound. -/
+/- A bounded-Borel function has a finite nonnegative uniform absolute bound. -/
 theorem exists_bound {α : Type*} [MeasurableSpace α]
     (f : BoundedBorel α) : ∃ C : ℝ, 0 ≤ C ∧ ∀ x, abs (f x) ≤ C :=
   f.property.2
 
-/-- The bounded-Borel constant function with value `c`. -/
+/- The bounded-Borel constant function with value `c`. -/
 def const {α : Type*} [MeasurableSpace α] (c : ℝ) : BoundedBorel α :=
   ⟨fun _ => c, measurable_const, ⟨abs c, abs_nonneg _, fun _ => le_rfl⟩⟩
 
-/-- The constant-one bounded-Borel function. -/
+/- The constant-one bounded-Borel function. -/
 instance {α : Type*} [MeasurableSpace α] : One (BoundedBorel α) :=
   ⟨const 1⟩
 
@@ -88,10 +88,6 @@ theorem one_apply {α : Type*} [MeasurableSpace α] (x : α) :
     (1 : BoundedBorel α) x = 1 := rfl
 
 @[simp]
-theorem const_apply {α : Type*} [MeasurableSpace α] (c : ℝ) (x : α) :
-    const c x = c := rfl
-
-@[simp]
 theorem add_apply {α : Type*} [MeasurableSpace α]
     (f g : BoundedBorel α) (x : α) : (f + g) x = f x + g x := rfl
 
@@ -100,14 +96,10 @@ theorem neg_apply {α : Type*} [MeasurableSpace α]
     (f : BoundedBorel α) (x : α) : (-f) x = -f x := rfl
 
 @[simp]
-theorem sub_apply {α : Type*} [MeasurableSpace α]
-    (f g : BoundedBorel α) (x : α) : (f - g) x = f x - g x := rfl
-
-@[simp]
 theorem smul_apply {α : Type*} [MeasurableSpace α]
     (c : ℝ) (f : BoundedBorel α) (x : α) : (c • f) x = c • f x := rfl
 
-/-- The pointwise maximum of two bounded-Borel functions. -/
+/- The pointwise maximum of two bounded-Borel functions. -/
 def supFn {α : Type*} [MeasurableSpace α]
     (f g : BoundedBorel α) : BoundedBorel α :=
   ⟨fun x => max (f x) (g x), by
@@ -125,7 +117,7 @@ def supFn {α : Type*} [MeasurableSpace α]
         rw [max_eq_left h]
         exact (hf x).trans (le_max_left _ _)⟩
 
-/-- The pointwise minimum of two bounded-Borel functions. -/
+/- The pointwise minimum of two bounded-Borel functions. -/
 def infFn {α : Type*} [MeasurableSpace α]
     (f g : BoundedBorel α) : BoundedBorel α :=
   ⟨fun x => min (f x) (g x), by
@@ -143,7 +135,7 @@ def infFn {α : Type*} [MeasurableSpace α]
         rw [min_eq_right h]
         exact (hg x).trans (le_max_right _ _)⟩
 
-/-- Pointwise order and lattice operations on bounded-Borel functions. -/
+/- Pointwise order and lattice operations on bounded-Borel functions. -/
 instance {α : Type*} [MeasurableSpace α] : Lattice (BoundedBorel α) where
   le f g := ∀ x, f x ≤ g x
   le_refl f x := le_rfl
@@ -159,22 +151,13 @@ instance {α : Type*} [MeasurableSpace α] : Lattice (BoundedBorel α) where
   le_inf f g h hfg hgh x := le_min (hfg x) (hgh x)
 
 @[simp]
-theorem sup_apply {α : Type*} [MeasurableSpace α]
-    (f g : BoundedBorel α) (x : α) : (f ⊔ g) x = max (f x) (g x) := rfl
+theorem const_apply {α : Type*} [MeasurableSpace α] (c : ℝ) (x : α) :
+    const c x = c := rfl
 
 @[simp]
-theorem inf_apply {α : Type*} [MeasurableSpace α]
-    (f g : BoundedBorel α) (x : α) : (f ⊓ g) x = min (f x) (g x) := rfl
+theorem sub_apply {α : Type*} [MeasurableSpace α]
+    (f g : BoundedBorel α) (x : α) : (f - g) x = f x - g x := rfl
 
-/-- The positive part `max f 0` of a bounded-Borel function. -/
-def positivePart {α : Type*} [MeasurableSpace α]
-    (f : BoundedBorel α) : BoundedBorel α := f ⊔ 0
-
-@[simp]
-theorem positivePart_apply {α : Type*} [MeasurableSpace α]
-    (f : BoundedBorel α) (x : α) : f.positivePart x = max (f x) 0 := rfl
-
-/-- Pull a bounded-Borel function back along a measurable map. -/
 def pullback {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
     (g : β → α) (hg : Measurable g) (f : BoundedBorel α) : BoundedBorel β :=
   ⟨fun x => f (g x), by
@@ -184,11 +167,10 @@ def pullback {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
       exact ⟨C, hC, fun x => hf (g x)⟩⟩
 
 @[simp]
-theorem pullback_apply {α β : Type*} [MeasurableSpace α]
-    [MeasurableSpace β] (g : β → α) (hg : Measurable g)
-    (f : BoundedBorel α) (x : β) : f.pullback g hg x = f (g x) := rfl
+theorem pullback_apply {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+    (g : β → α) (hg : Measurable g) (f : BoundedBorel α) (x : β) :
+    f.pullback g hg x = f (g x) := rfl
 
-/-- Restrict a bounded-Borel function to a subtype. -/
 def restrict {α : Type*} [MeasurableSpace α]
     (s : Set α) (f : BoundedBorel α) : BoundedBorel s :=
   pullback ((↑) : s → α) measurable_subtype_coe f

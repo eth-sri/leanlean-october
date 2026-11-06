@@ -23,7 +23,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndex
 
-/-- One derivative in every time--velocity coordinate. -/
+/- One derivative in every time--velocity coordinate. -/
 def allOnes (d : ℕ) : TimeVelocityMultiIndex d :=
   fun _ => 1
 
@@ -57,7 +57,7 @@ private theorem enorm_le_lmarginal_coordinateFTC
       apply lmarginal_mono
       intro y
       let q : ℝ → ℝ := fun t => g s (Function.update y i t)
-      have hq : ContDiff ℝ 1 q := (hg s).comp (contDiff_update 1 y i)
+      have hq := (hg s).comp (contDiff_update 1 y i)
       have hqsupp : HasCompactSupport q :=
         (hgsupp s).comp_isClosedEmbedding (isClosedEmbedding_update y i)
       have hftc := hqsupp.enorm_le_lintegral_Ici_deriv hq (y i)
@@ -77,25 +77,9 @@ private def timeVelocityPiEquiv (d : ℕ) :
     ((ContinuousLinearEquiv.funUnique Unit ℝ ℝ).prodCongr
       (ContinuousLinearEquiv.refl ℝ (Fin d → ℝ)))
 
-@[simp] private theorem timeVelocityPiEquiv_apply_time (d : ℕ)
-    (x : TimeVelocityCoord d → ℝ) :
-    (timeVelocityPiEquiv d x).1 = x (timeCoord d) := rfl
-
-@[simp] private theorem timeVelocityPiEquiv_apply_velocity {d : ℕ}
-    (x : TimeVelocityCoord d → ℝ) (i : Fin d) :
-    (timeVelocityPiEquiv d x).2 i = x (velocityCoord i) := rfl
-
-private theorem timeVelocityPiEquiv_single (d : ℕ) (c : TimeVelocityCoord d) :
-    timeVelocityPiEquiv d (Pi.single c 1) = timeVelocityBasis c := by
-  rcases c with (_ | i)
-  · ext <;> simp [timeVelocityPiEquiv, ContinuousLinearEquiv.sumPiEquivProdPi,
-      LinearEquiv.sumPiEquivProdPi, timeVelocityBasis]
-  · ext <;> simp [timeVelocityPiEquiv, ContinuousLinearEquiv.sumPiEquivProdPi,
-      LinearEquiv.sumPiEquivProdPi, timeVelocityBasis, PDE.basisVec, Pi.single_apply]
-
 private theorem coordinateIteratedFDeriv_contDiff_infty
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+    {d } (gamma : TimeVelocityMultiIndex d)
+    (f ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞)
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) := by
   rw [contDiff_infty]
@@ -107,8 +91,8 @@ private theorem coordinateIteratedFDeriv_contDiff_infty
     (fun i => timeVelocityBasis (gamma.coordinateList.get i)))).clm_apply hi
 
 private theorem coordinateIteratedFDeriv_hasCompactSupport
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
+    {d } (gamma : TimeVelocityMultiIndex d)
+    (f ) (hf : HasCompactSupport f) :
     HasCompactSupport
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) := by
   apply hf.of_isClosed_subset isClosed_closure
@@ -121,24 +105,8 @@ private theorem coordinateIteratedFDeriv_hasCompactSupport
     rw [hzero]
     exact ContinuousMultilinearMap.zero_apply _)
 
-private theorem timeVelocityPiEquiv_measurePreserving (d : ℕ) :
-    MeasurePreserving (timeVelocityPiEquiv d)
-      (volume : Measure (TimeVelocityCoord d → ℝ))
-      (volume : Measure (TimeVelocity d)) := by
-  have hsum := volume_measurePreserving_sumPiEquivProdPi
-    (fun _ : Unit ⊕ Fin d => ℝ)
-  have hprod := (volume_preserving_funUnique Unit ℝ).prod
-    (MeasurePreserving.id (volume : Measure (Fin d → ℝ)))
-  simpa [timeVelocityPiEquiv, ContinuousLinearEquiv.sumPiEquivProdPi,
-    LinearEquiv.sumPiEquivProdPi, ContinuousLinearEquiv.funUnique,
-    LinearEquiv.funUnique, Function.comp_def, Prod.map_def,
-    ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans,
-    ContinuousLinearEquiv.prodCongr] using! hprod.comp hsum
-
-/-- A compactly supported smooth function is bounded pointwise by the `L¹`
-norm of the derivative which differentiates once in every coordinate. -/
 theorem abs_le_integral_abs_coordinateIteratedFDeriv_allOnes
-    (d : ℕ)
+    (d )
     (f : TimeVelocity d → ℝ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hfsupp : HasCompactSupport f)
@@ -186,7 +154,12 @@ theorem abs_le_integral_abs_coordinateIteratedFDeriv_allOnes
       ((coordinateIteratedFDeriv_contDiff_infty (beta s) f hf).differentiable (by simp) _)
       (timeVelocityPiEquiv d).differentiableAt]
     simp only [ContinuousLinearMap.comp_apply, ContinuousLinearEquiv.fderiv]
-    have hb := timeVelocityPiEquiv_single d c
+    have hb : timeVelocityPiEquiv d (Pi.single c 1) = timeVelocityBasis c := by
+      rcases c with (_ | i)
+      · ext <;> simp [timeVelocityPiEquiv, ContinuousLinearEquiv.sumPiEquivProdPi,
+          LinearEquiv.sumPiEquivProdPi, timeVelocityBasis]
+      · ext <;> simp [timeVelocityPiEquiv, ContinuousLinearEquiv.sumPiEquivProdPi,
+          LinearEquiv.sumPiEquivProdPi, timeVelocityBasis, PDE.basisVec, Pi.single_apply]
     change ((timeVelocityPiEquiv d : (TimeVelocityCoord d → ℝ) → TimeVelocity d)
       (Pi.single c 1)) = timeVelocityBasis c at hb
     exact congrArg
@@ -211,7 +184,19 @@ theorem abs_le_integral_abs_coordinateIteratedFDeriv_allOnes
         ‖TimeVelocityMultiIndex.coordinateIteratedFDeriv
           (TimeVelocityMultiIndex.allOnes d) f (timeVelocityPiEquiv d x)‖ₑ
           ∂(Measure.pi fun _ => volume)) := by
-    exact (timeVelocityPiEquiv_measurePreserving d).lintegral_map_equiv _
+    have _h_inl_21 : MeasurePreserving (timeVelocityPiEquiv d)
+      (volume : Measure (TimeVelocityCoord d → ℝ))
+      (volume : Measure (TimeVelocity d)) := by
+      have hsum := volume_measurePreserving_sumPiEquivProdPi
+        (fun _ : Unit ⊕ Fin d => ℝ)
+      have hprod := (volume_preserving_funUnique Unit ℝ).prod
+        (MeasurePreserving.id (volume : Measure (Fin d → ℝ)))
+      simpa [timeVelocityPiEquiv, ContinuousLinearEquiv.sumPiEquivProdPi,
+        LinearEquiv.sumPiEquivProdPi, ContinuousLinearEquiv.funUnique,
+        LinearEquiv.funUnique, Function.comp_def, Prod.map_def,
+        ContinuousLinearEquiv.trans_apply, ContinuousLinearEquiv.trans,
+        ContinuousLinearEquiv.prodCongr] using! hprod.comp hsum
+    exact _h_inl_21.lintegral_map_equiv _
       (timeVelocityPiEquiv d).toHomeomorph.toMeasurableEquiv
   rw [← hlin] at hgrid
   simp only [xz, ContinuousLinearEquiv.apply_symm_apply] at hgrid

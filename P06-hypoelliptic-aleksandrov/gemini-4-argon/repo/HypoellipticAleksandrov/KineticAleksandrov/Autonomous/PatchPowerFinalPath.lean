@@ -14,7 +14,7 @@ open HypoellipticAleksandrov Parabolic Set Holder Holder.Growth
 /-- A fixed positive patch reaches every endpoint with the indicated bounded displacement.
 The displacement is measured relative to the initial transport velocity. -/
 theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (hp6 : SmoothAutonomousP6Statement lam Lam) (r : ℝ) (hr : 0 < r) (hr1 : r ≤ 1 / 8) :
+    (hp6 : SmoothAutonomousP6Statement lam Lam) (r ) (hr : 0 < r) (hr1 : r ≤ 1 / 8) :
     ∃ c : ℝ, 0 < c ∧ ∀ (A : SmoothAutonomous lam Lam) (u : Point → ℝ),
       IsNonnegativeHomogeneousSolution A u → ∀ (z P : Point) (k : ℝ),
       1 / 2 ≤ z.time → 1 / 2 ≤ P.time - z.time → P.time - z.time ≤ 3 →

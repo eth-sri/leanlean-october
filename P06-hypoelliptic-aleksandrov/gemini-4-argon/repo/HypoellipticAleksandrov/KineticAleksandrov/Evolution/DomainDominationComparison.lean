@@ -37,8 +37,7 @@ theorem IsClassicalTerminalSolution.nonneg_of_nonneg {Ω : Set (PDE.Vec n)} {γ 
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hF : ∀ q, 0 ≤ F q) :
     ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, 0 ≤ u p := by
   intro p hp
-  have h0 := IsClassicalTerminalSolution.smul hΩ hγ 0 hu
-  have hle := IsClassicalTerminalSolution.le_of_le hΩ hγ hlam hB hb h0 hu
+  have hle := IsClassicalTerminalSolution.le_of_le hΩ hγ hlam hB hb (IsClassicalTerminalSolution.smul hΩ hγ 0 hu) hu
     (fun y z _ => by simpa using hF (y, z)) p hp
   simpa using hle
 

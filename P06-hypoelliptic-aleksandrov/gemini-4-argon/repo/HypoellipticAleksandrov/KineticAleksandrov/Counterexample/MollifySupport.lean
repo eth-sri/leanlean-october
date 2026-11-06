@@ -15,7 +15,7 @@ variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
 
 /-- A mollified value vanishes outside the open thickening of the original support. -/
 theorem spatialMollify_eq_zero_outside_thickening (phi : ContDiffBump (0 : G))
-    (f : G → ℝ) (K : Set G) (hf : Function.support f ⊆ K) (q : G)
+    (f : G → ℝ) (K ) (hf : Function.support f ⊆ K) (q )
     (hq : q ∉ thickening phi.rOut K) : spatialMollify phi f q = 0 := by
   unfold spatialMollify
   apply integral_eq_zero_of_ae

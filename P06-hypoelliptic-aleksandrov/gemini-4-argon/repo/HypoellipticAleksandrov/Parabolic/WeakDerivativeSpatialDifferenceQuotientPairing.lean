@@ -23,15 +23,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped ENNReal Topology
 
-private theorem spatialShift_segment_formula
-    {d : ℕ} (k : Fin d) (h t : ℝ) (z : TimeVelocity d) :
-    spatialShift k (t * h) z =
-      z + t • (spatialShift k h z - z) := by
-  rcases z with ⟨r, y⟩
-  simp only [spatialShift_apply, Prod.mk_add_mk, add_zero, Prod.mk_sub_mk,
-    sub_self, Prod.smul_mk, smul_zero, Prod.mk.injEq, true_and]
-  module
-
 private theorem backward_spatialDifferenceQuotient_eq_intervalIntegral
     {d : ℕ} (k : Fin d) (h : ℝ) (hh : h ≠ 0)
     (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
@@ -40,7 +31,7 @@ private theorem backward_spatialDifferenceQuotient_eq_intervalIntegral
       ∫ t in (0 : ℝ)..1,
         velocityGradient φ (spatialShift k (-(t * h)) z) k := by
   let F : ℝ → ℝ := fun t => φ (spatialShift k (-(t * h)) z)
-  have hφdiff : Differentiable ℝ φ := hφ.differentiable (by simp)
+  have hφdiff := hφ.differentiable (by simp)
   have hFdiff : Differentiable ℝ F := by
     have hline : Differentiable ℝ (fun t : ℝ => spatialShift k (-(t * h)) z) := by
       dsimp only [spatialShift]
@@ -89,84 +80,9 @@ private theorem backward_spatialDifferenceQuotient_eq_intervalIntegral
   apply (div_eq_iff (neg_ne_zero.mpr hh)).2
   linarith
 
-private theorem translated_test_tsupport_subset
-    {d : ℕ} (U : Set (TimeVelocity d)) (k : Fin d) (h t : ℝ)
-    (ht : t ∈ Icc (0 : ℝ) 1) (φ : TimeVelocity d → ℝ)
-    (hφsafe : tsupport φ ⊆ spatialSegmentSafeSet U k h) :
-    tsupport (fun z => φ (spatialShift k (-(t * h)) z)) ⊆ U := by
-  intro z hz
-  have hz' : spatialShift k (-(t * h)) z ∈ tsupport φ := by
-    change z ∈ tsupport (spatialTranslate k (-(t * h)) φ) at hz
-    rwa [mem_tsupport_spatialTranslate_iff] at hz
-  have hsafe := hφsafe hz'
-  rw [mem_spatialSegmentSafeSet_iff,
-    segment_eq_image' ℝ (spatialShift k (-(t * h)) z)
-      (spatialShift k h (spatialShift k (-(t * h)) z))] at hsafe
-  apply hsafe
-  refine ⟨t, ht, ?_⟩
-  change spatialShift k (-(t * h)) z +
-      t • (spatialShift k h (spatialShift k (-(t * h)) z) -
-        spatialShift k (-(t * h)) z) = z
-  rw [← spatialShift_segment_formula]
-  change (spatialShift k (t * h) ∘ spatialShift k (-(t * h))) z = z
-  rw [spatialShift_comp]
-  simp
-
-private theorem integrable_joint_shifted_mul
-    {d : ℕ} (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ)
-    (u φ : TimeVelocity d → ℝ)
-    (hu : ParabolicMemLpOn U (2 : ℝ≥0∞) u)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hφcompact : HasCompactSupport φ) :
-    Integrable (Function.uncurry fun t z =>
-      u z * velocityGradient φ (spatialShift k (-(t * h)) z) k)
-      ((volume.restrict (uIoc (0 : ℝ) 1)).prod
-        (volume.restrict U : Measure (TimeVelocity d))) := by
-  let μt : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
-  let μU : Measure (TimeVelocity d) := volume.restrict U
-  let shear : ℝ × TimeVelocity d → ℝ × TimeVelocity d :=
-    fun p => (p.1, spatialShift k (-(p.1 * h)) p.2)
-  have hshear : MeasurePreserving shear
-      (μt.prod (volume : Measure (TimeVelocity d)))
-      (μt.prod (volume : Measure (TimeVelocity d))) := by
-    refine MeasurePreserving.skew_product (g := fun t z => spatialShift k (-(t * h)) z)
-      (MeasurePreserving.id _) ?_ ?_
-    · dsimp [spatialShift]
-      fun_prop
-    · filter_upwards [] with t
-      exact (spatialShift_measurePreserving k (-(t * h))).map_eq
-  have hgrad : MemLp (fun z : TimeVelocity d => velocityGradient φ z k)
-      (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) := by
-    exact ((hφ.continuous_fderiv (by simp)).clm_apply continuous_const).memLp_of_hasCompactSupport
-      (hφcompact.fderiv_apply ℝ ((0, PDE.basisVec k) : TimeVelocity d))
-  have hgradProd : MemLp (fun p : ℝ × TimeVelocity d =>
-      velocityGradient φ p.2 k) (2 : ℝ≥0∞)
-      (μt.prod (volume : Measure (TimeVelocity d))) := hgrad.comp_snd μt
-  have hgradShift : MemLp (fun p : ℝ × TimeVelocity d =>
-      velocityGradient φ (spatialShift k (-(p.1 * h)) p.2) k)
-      (2 : ℝ≥0∞) (μt.prod (volume : Measure (TimeVelocity d))) := by
-    simpa only [Function.comp_def, shear, Function.comp_def] using
-      hgradProd.comp_measurePreserving hshear
-  have hprodRestrict : μt.prod μU =
-      (μt.prod (volume : Measure (TimeVelocity d))).restrict (univ ×ˢ U) := by
-    calc
-      μt.prod μU = (μt.restrict univ).prod
-          ((volume : Measure (TimeVelocity d)).restrict U) := by simp [μU]
-      _ = (μt.prod (volume : Measure (TimeVelocity d))).restrict (univ ×ˢ U) :=
-        Measure.prod_restrict univ U
-  have hgradShiftU : MemLp (fun p : ℝ × TimeVelocity d =>
-      velocityGradient φ (spatialShift k (-(p.1 * h)) p.2) k)
-      (2 : ℝ≥0∞) (μt.prod μU) := by
-    rw [hprodRestrict]
-    exact hgradShift.mono_measure Measure.restrict_le_self
-  have huProd : MemLp (fun p : ℝ × TimeVelocity d => u p.2)
-      (2 : ℝ≥0∞) (μt.prod μU) := hu.comp_snd μt
-  simpa only [Function.comp_def, μt, μU, uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1),
-    Function.uncurry_def, Pi.mul_def, timeVelocityVolumeOn] using
-    huProd.integrable_mul hgradShiftU
-
 private theorem sqNorm_integral_eq_norm_sq_toLp
     {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]
-    {μ : Measure α} (F : α → E) (hF : MemLp F (2 : ℝ≥0∞) μ) :
+    {μ } (F : α → E) (hF : MemLp F (2 : ℝ≥0∞) μ) :
     ∫ x, ‖F x‖ ^ 2 ∂μ = ‖hF.toLp F‖ ^ 2 := by
   rw [Lp.norm_def, eLpNorm_congr_ae hF.coeFn_toLp,
     hF.eLpNorm_eq_integral_rpow_norm]
@@ -177,47 +93,6 @@ private theorem sqNorm_integral_eq_norm_sq_toLp
   · norm_num
   · simp
 
-private theorem integrable_joint_shifted_test_mul
-    {d : ℕ} (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ)
-    (g φ : TimeVelocity d → ℝ)
-    (hg : ParabolicMemLpOn U (2 : ℝ≥0∞) g)
-    (hφmem : MemLp φ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
-    Integrable (Function.uncurry fun t z =>
-      g z * φ (spatialShift k (-(t * h)) z))
-      ((volume.restrict (uIoc (0 : ℝ) 1)).prod
-        (volume.restrict U : Measure (TimeVelocity d))) := by
-  let μt : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
-  let shear : ℝ × TimeVelocity d → ℝ × TimeVelocity d :=
-    fun p => (p.1, spatialShift k (-(p.1 * h)) p.2)
-  have hshear : MeasurePreserving shear (μt.prod volume) (μt.prod volume) := by
-    refine MeasurePreserving.skew_product (g := fun t z => spatialShift k (-(t * h)) z)
-      (MeasurePreserving.id _) ?_ ?_
-    · dsimp [spatialShift]
-      fun_prop
-    · filter_upwards [] with t
-      exact (spatialShift_measurePreserving k (-(t * h))).map_eq
-  have hφshift : MemLp (fun p : ℝ × TimeVelocity d =>
-      φ (spatialShift k (-(p.1 * h)) p.2)) (2 : ℝ≥0∞) (μt.prod volume) := by
-    simpa only [Function.comp_def, shear, Function.comp_def] using
-      (hφmem.comp_snd μt).comp_measurePreserving hshear
-  have hprod : μt.prod (volume.restrict U : Measure (TimeVelocity d)) =
-      (μt.prod volume).restrict (univ ×ˢ U) := by
-    calc
-      μt.prod (volume.restrict U : Measure (TimeVelocity d)) =
-          (μt.restrict univ).prod (volume.restrict U) := by simp
-      _ = (μt.prod volume).restrict (univ ×ˢ U) := Measure.prod_restrict univ U
-  have hφshiftU : MemLp (fun p : ℝ × TimeVelocity d =>
-      φ (spatialShift k (-(p.1 * h)) p.2)) (2 : ℝ≥0∞)
-      (μt.prod (volume.restrict U)) := by
-    rw [hprod]
-    exact hφshift.mono_measure Measure.restrict_le_self
-  have hgProd := hg.comp_snd μt
-  simpa only [Function.comp_def, μt, uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1),
-    Function.uncurry_def, Pi.mul_def, timeVelocityVolumeOn] using
-    hgProd.integrable_mul hφshiftU
-
-/-- Pairing a signed spatial difference quotient with a smooth compactly
-supported test equals the average pairing with the selected weak derivative. -/
 theorem HasWeakVelocityPartialDerivOn.setIntegral_spatialDifferenceQuotient_mul_eq_intervalIntegral
     {d : ℕ} (U : Set (TimeVelocity d))
     (k : Fin d) (h : ℝ) (u g φ : TimeVelocity d → ℝ)
@@ -245,7 +120,49 @@ theorem HasWeakVelocityPartialDerivOn.setIntegral_spatialDifferenceQuotient_mul_
     exact hs (right_mem_segment ℝ z (spatialShift k h z))
   rw [setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQuotient_neg
     U k h u φ hu hφ.continuous hφcompact hφU hφshift]
-  have hjoint := integrable_joint_shifted_mul U k h u φ hu hφ hφcompact
+  have hjoint : Integrable (Function.uncurry fun t z =>
+      u z * velocityGradient φ (spatialShift k (-(t * h)) z) k)
+      ((volume.restrict (uIoc (0 : ℝ) 1)).prod
+        (volume.restrict U : Measure (TimeVelocity d))) := by
+    let μt : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
+    let μU := volume.restrict U
+    let shear : ℝ × TimeVelocity d → ℝ × TimeVelocity d :=
+      fun p => (p.1, spatialShift k (-(p.1 * h)) p.2)
+    have hshear : MeasurePreserving shear
+        (μt.prod (volume : Measure (TimeVelocity d)))
+        (μt.prod (volume : Measure (TimeVelocity d))) := by
+      refine MeasurePreserving.skew_product (g := fun t z => spatialShift k (-(t * h)) z)
+        (MeasurePreserving.id _) ?_ ?_
+      · dsimp [spatialShift]
+        fun_prop
+      · filter_upwards [] with t
+        exact (spatialShift_measurePreserving k (-(t * h))).map_eq
+    have hgrad : MemLp (fun z : TimeVelocity d => velocityGradient φ z k)
+        (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) := by
+      exact ((hφ.continuous_fderiv (by simp)).clm_apply continuous_const).memLp_of_hasCompactSupport
+        (hφcompact.fderiv_apply ℝ ((0, PDE.basisVec k) : TimeVelocity d))
+    have hgradProd := hgrad.comp_snd μt
+    have hgradShift : MemLp (fun p : ℝ × TimeVelocity d =>
+        velocityGradient φ (spatialShift k (-(p.1 * h)) p.2) k)
+        (2 : ℝ≥0∞) (μt.prod (volume : Measure (TimeVelocity d))) := by
+      simpa only [Function.comp_def, shear, Function.comp_def] using
+        hgradProd.comp_measurePreserving hshear
+    have hprodRestrict : μt.prod μU =
+        (μt.prod (volume : Measure (TimeVelocity d))).restrict (univ ×ˢ U) := by
+      calc
+        μt.prod μU = (μt.restrict univ).prod
+            ((volume : Measure (TimeVelocity d)).restrict U) := by simp [μU]
+        _ = (μt.prod (volume : Measure (TimeVelocity d))).restrict (univ ×ˢ U) :=
+          Measure.prod_restrict univ U
+    have hgradShiftU : MemLp (fun p : ℝ × TimeVelocity d =>
+        velocityGradient φ (spatialShift k (-(p.1 * h)) p.2) k)
+        (2 : ℝ≥0∞) (μt.prod μU) := by
+      rw [hprodRestrict]
+      exact hgradShift.mono_measure Measure.restrict_le_self
+    have huProd := hu.comp_snd μt
+    simpa only [Function.comp_def, μt, μU, uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1),
+      Function.uncurry_def, Pi.mul_def, timeVelocityVolumeOn] using
+      huProd.integrable_mul hgradShiftU
   have hswap := intervalIntegral_integral_swap hjoint
   rw [show (∫ z in U, u z * spatialDifferenceQuotient k (-h) φ z ∂volume) =
       ∫ z in U, ∫ t in (0 : ℝ)..1,
@@ -266,14 +183,36 @@ theorem HasWeakVelocityPartialDerivOn.setIntegral_spatialDifferenceQuotient_mul_
   have htestCompact : HasCompactSupport
       (HypoellipticAleksandrov.Parabolic.spatialTranslate k (-(t * h)) φ) :=
     HasCompactSupport.spatialTranslate hφcompact
-  have htestSupport := translated_test_tsupport_subset U k h t ht' φ hφsafe
+  have htestSupport : tsupport (fun z => φ (spatialShift k (-(t * h)) z)) ⊆ U := by
+    intro z hz
+    have hz' : spatialShift k (-(t * h)) z ∈ tsupport φ := by
+      change z ∈ tsupport (spatialTranslate k (-(t * h)) φ) at hz
+      rwa [mem_tsupport_spatialTranslate_iff] at hz
+    have hsafe := hφsafe hz'
+    rw [mem_spatialSegmentSafeSet_iff,
+      segment_eq_image' ℝ (spatialShift k (-(t * h)) z)
+        (spatialShift k h (spatialShift k (-(t * h)) z))] at hsafe
+    apply hsafe
+    refine ⟨t, ht', ?_⟩
+    change spatialShift k (-(t * h)) z +
+        t • (spatialShift k h (spatialShift k (-(t * h)) z) -
+          spatialShift k (-(t * h)) z) = z
+    have _h_inl_11 (k : Fin d) (h : ℝ) (t z) : spatialShift k (t * h) z = z + t • (spatialShift k h z - z) := by
+      rcases z with ⟨r, y⟩
+      simp only [spatialShift_apply, Prod.mk_add_mk, add_zero, Prod.mk_sub_mk,
+        sub_self, Prod.smul_mk, smul_zero, Prod.mk.injEq, true_and]
+      module
+    rw [← _h_inl_11]
+    change (spatialShift k (t * h) ∘ spatialShift k (-(t * h))) z = z
+    rw [spatialShift_comp]
+    simp
   have hw := hweak (HypoellipticAleksandrov.Parabolic.spatialTranslate k (-(t * h)) φ)
     htestSmooth htestCompact htestSupport
   simpa only [Function.comp_def, spatialTranslate_apply, velocityGradient_spatialTranslate,
     neg_neg] using
     congrArg Neg.neg hw
 
-/-- The averaged weak-derivative identity obeys the sharp constant-one `L²`
+/- The averaged weak-derivative identity obeys the sharp constant-one `L²`
 Cauchy--Schwarz bound. -/
 theorem HasWeakVelocityPartialDerivOn.abs_setIntegral_spatialDifferenceQuotient_mul_le
     {d : ℕ} (U : Set (TimeVelocity d))
@@ -349,7 +288,42 @@ theorem HasWeakVelocityPartialDerivOn.abs_setIntegral_spatialDifferenceQuotient_
             exact eLpNorm_comp_measurePreserving hφmem.aestronglyMeasurable
               (spatialShift_measurePreserving k (-(t * h)))
       _ = ‖hg.toLp g‖ * ‖hφmem.toLp φ‖ := rfl
-  have hjoint := integrable_joint_shifted_test_mul U k h g φ hg hφmem
+  have hjoint : Integrable (Function.uncurry fun t z =>
+      g z * φ (spatialShift k (-(t * h)) z))
+      ((volume.restrict (uIoc (0 : ℝ) 1)).prod
+        (volume.restrict U : Measure (TimeVelocity d))) := by
+      let μt : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
+      let shear : ℝ × TimeVelocity d → ℝ × TimeVelocity d :=
+        fun p => (p.1, spatialShift k (-(p.1 * h)) p.2)
+      have hshear : MeasurePreserving shear (μt.prod volume) (μt.prod volume) := by
+        refine MeasurePreserving.skew_product (g := fun t z => spatialShift k (-(t * h)) z)
+          (MeasurePreserving.id _) ?_ ?_
+        · dsimp [spatialShift]
+          fun_prop
+        · filter_upwards [] with t
+          exact (spatialShift_measurePreserving k (-(t * h))).map_eq
+      have hφshift : MemLp (fun p : ℝ × TimeVelocity d =>
+          φ (spatialShift k (-(p.1 * h)) p.2)) (2 : ℝ≥0∞) (μt.prod volume) := by
+        simpa only [Function.comp_def, shear, Function.comp_def] using
+          (hφmem.comp_snd μt).comp_measurePreserving hshear
+      have hprod : μt.prod (volume.restrict U : Measure (TimeVelocity d)) =
+          (μt.prod volume).restrict (univ ×ˢ U) := by
+        calc
+          μt.prod (volume.restrict U : Measure (TimeVelocity d)) =
+              (μt.restrict univ).prod (volume.restrict U) := by simp
+          _ = (μt.prod volume).restrict (univ ×ˢ U) := Measure.prod_restrict univ U
+      have hφshiftU : MemLp (fun p : ℝ × TimeVelocity d =>
+          φ (spatialShift k (-(p.1 * h)) p.2)) (2 : ℝ≥0∞)
+          (μt.prod (volume.restrict U)) := by
+        rw [hprod]
+        exact hφshift.mono_measure Measure.restrict_le_self
+      have hgProd := hg.comp_snd μt
+      simpa only [Function.comp_def, μt, uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1),
+        Function.uncurry_def, Pi.mul_def, timeVelocityVolumeOn] using
+        hgProd.integrable_mul hφshiftU
+
+    /- Pairing a signed spatial difference quotient with a smooth compactly
+    supported test equals the average pairing with the selected weak derivative. -/
   have houter : IntervalIntegrable (fun t =>
       ∫ z in U, g z * φ (spatialShift k (-(t * h)) z) ∂volume) volume 0 1 := by
     apply (intervalIntegrable_iff_integrableOn_Ioc_of_le

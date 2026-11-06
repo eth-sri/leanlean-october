@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionTimeConvergence
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothFunctions
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionExtensionSecond
 
 /-! # The literal backward operator of the spatially smoothed zero extension -/
 
@@ -9,11 +10,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothFu
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open HypoellipticAleksandrov.Parabolic
+open MeasureTheory
 
-/-- The exact smoothed operator uses convolution of the same three selected weak jets.
+/- The exact smoothed operator uses convolution of the same three selected weak jets.
 Transport retains the velocity of the evaluation point; coefficients are not convolved. -/
-theorem construction_smoothed_operator_eq {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+theorem construction_smoothed_operator_eq {d } (hd : 1 ≤ d)
+    {alpha } (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)
@@ -61,8 +63,30 @@ theorem construction_smoothed_operator_eq {d : ℕ} (hd : 1 ≤ d)
       kineticVelocityHessian (smoothedZeroExtendedProfile h r mu R phi) P at he
     rw [← he]
     funext i k
-    exact construction_mollified_second_velocity_jet hd ha ha1 h r mu R m hr hmu hR hm
-      hscale hmargin P.time i k phi (P.position, P.velocity)
+    let t := P.time
+    let q := (P.position, P.velocity)
+    have he : (fun y => dv (spatialMollify phi (fun z =>
+        zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, z.1, z.2⟩)) y k) =
+        spatialMollify phi (fun y => constructionExtendedNativeGradient h r mu R m t y
+          (Fin.natAdd d k)) := by
+      funext y
+      have hj := construction_mollified_first_jet hd ha ha1 h r mu R m hr hmu hR hm
+        hscale hmargin t (Fin.natAdd d k) phi y
+      rw [spatialCoordinate_basis_velocity] at hj
+      simpa only [dv, PDE.basisVec] using! hj
+    change fderiv ℝ (fun y => dv (spatialMollify phi (fun z =>
+      zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, z.1, z.2⟩)) y k) q
+        (0, PDE.basisVec i) = _
+    rw [he]
+    apply mollify_weak_directional_jet phi _ _ (construction_locallyIntegrable_native _ (construction_extendedGradient_locallyIntegrable h r hr mu R m t (Fin.natAdd d k))) _ _ q
+    intro test ht hs
+    have he := construction_weak_directional_native
+      (fun x => constructionExtendedPackedGradient h r mu R m t x (Fin.natAdd d k))
+      (fun x => constructionExtendedPackedHessian h r mu R m t x i k)
+      (PDE.basisVec (Fin.natAdd d i))
+      (construction_extended_velocityJet_weak hd ha ha1 h r hr mu R m t i k) test ht hs
+    simpa only [spatialCoordinate_basis_velocity, constructionExtendedNativeGradient,
+      constructionExtendedNativeHessian] using! he
   rw [backwardOperator_apply, hdt, hx, hh]
   rfl
 

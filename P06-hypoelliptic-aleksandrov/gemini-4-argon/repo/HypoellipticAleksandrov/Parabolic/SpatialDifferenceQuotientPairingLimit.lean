@@ -40,15 +40,6 @@ private theorem hasDerivAt_backwardSpatialShift
   simpa only [Function.comp_def, velocityGradient, map_neg, map_prod, map_zero, PDE.basisVec]
     using hcomp
 
-private theorem tendsto_backwardSpatialDifferenceQuotient
-    {d : ℕ} (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ 1 φ)
-    (k : Fin d) (z : TimeVelocity d) :
-    Tendsto (fun h : ℝ => (φ (spatialShift k (-h) z) - φ z) / h)
-      (𝓝[≠] 0) (𝓝 (-velocityGradient φ z k)) := by
-  have h := (hasDerivAt_backwardSpatialShift φ hφ k z).tendsto_slope_zero
-  simpa only [zero_add, smul_eq_mul, div_eq_mul_inv, mul_comm,
-    neg_zero, spatialShift_zero, id_eq] using h
-
 private theorem tsupport_backwardSpatialDifferenceQuotient_subset_cthickening
     {d : ℕ} {φ : TimeVelocity d → ℝ} (k : Fin d) (h r : ℝ)
     (hr : 0 ≤ r) (hh : |h| ≤ r) :
@@ -85,7 +76,7 @@ private theorem eq_zero_of_not_mem_tsupport
   apply hx
   exact subset_closure (Function.mem_support.mpr hzero)
 
-/-- Pairing against a compactly supported `C¹` test has the signed backward
+/- Pairing against a compactly supported `C¹` test has the signed backward
 spatial difference-quotient limit on every open time--velocity set. -/
 theorem tendsto_setIntegral_mul_backwardSpatialDifferenceQuotient
     {d : ℕ} {U : Set (TimeVelocity d)}
@@ -160,8 +151,12 @@ theorem tendsto_setIntegral_mul_backwardSpatialDifferenceQuotient
       exact (mul_le_mul_of_nonneg_left (hh z hz) (abs_nonneg _)).trans_eq (by ring)
     · exact (hIntK.abs.const_mul C)
     · filter_upwards with z
+      have _h_inl_13 : Tendsto (fun h : ℝ => (φ (spatialShift k (-h) z) - φ z) / h) (𝓝[≠] 0) (𝓝 (-velocityGradient φ z k)) := by
+        have h := (hasDerivAt_backwardSpatialShift φ hφ k z).tendsto_slope_zero
+        simpa only [zero_add, smul_eq_mul, div_eq_mul_inv, mul_comm,
+          neg_zero, spatialShift_zero, id_eq] using h
       exact tendsto_const_nhds.mul
-        (tendsto_backwardSpatialDifferenceQuotient φ hφ k z)
+        _h_inl_13
   have hsource :
       (fun h : ℝ => ∫ z, u z * q h z ∂(volume.restrict K)) =ᶠ[𝓝[≠] 0]
         fun h : ℝ => ∫ z in U, u z * q h z ∂(volume : Measure (TimeVelocity d)) := by

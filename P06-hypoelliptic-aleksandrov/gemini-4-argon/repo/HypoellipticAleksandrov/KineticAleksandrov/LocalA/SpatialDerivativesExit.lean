@@ -40,7 +40,7 @@ theorem ballExit_density_nonneg :
 /-- Compactly extended boundary data pair with the canonical density by literal convolution. -/
 theorem ballExit_boundary_convolution
     (H : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (hHc : Continuous H)
-    (hc : HasCompactSupport H) (M : ℝ) (hb : ∀ q, ‖H q‖ ≤ M) (x : PDE.Vec d) :
+    (hc : HasCompactSupport H) (M ) (hb : ∀ q, ‖H q‖ ≤ M) (x : PDE.Vec d) :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
     let f := spatialBoundaryLpData (exitMarginal ν) H hHc hc M hb P.1 v₀
     let G := exitL1Density ν

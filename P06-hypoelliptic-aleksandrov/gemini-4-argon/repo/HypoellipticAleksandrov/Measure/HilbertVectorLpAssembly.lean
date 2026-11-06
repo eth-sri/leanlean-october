@@ -29,19 +29,6 @@ private theorem coordinateInjection_apply
   exact congrFun (PiLp.coe_symm_continuousLinearEquiv 2 ℝ
     (fun _ : Fin d => ℝ)) (Pi.single i a)
 
-private theorem norm_coordinateInjection_le_one
-    {d : ℕ} (i : Fin d) :
-    ‖(PiLp.continuousLinearEquiv 2 ℝ
-      (fun _ : Fin d => ℝ)).symm.toContinuousLinearMap.comp
-        (ContinuousLinearMap.single ℝ (fun _ : Fin d => ℝ) i)‖ ≤ 1 := by
-  apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
-  intro a
-  rw [coordinateInjection_apply]
-  rw [PiLp.norm_toLp_single]
-  exact (one_mul ‖a‖).ge
-
-/-- Assemble finitely many scalar restricted-`L²` maps as one map into the
-existing Hilbert-vector-valued restricted-`L²` carrier. -/
 noncomputable def hilbertVectorLpAssemble
     {d : ℕ} {Ω : Set (PDE.Vec d)} {X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X]
@@ -52,10 +39,10 @@ noncomputable def hilbertVectorLpAssemble
       (ContinuousLinearMap.single ℝ (fun _ : Fin d => ℝ) i)).compLpL
         (2 : ℝ≥0∞) (PDE.volumeOn Ω)).comp (L i))
 
-/-- The assembled map has the canonical Hilbert-vector representative formed
+/- The assembled map has the canonical Hilbert-vector representative formed
 from the scalar coordinate representatives. -/
 theorem hilbertVectorLpAssemble_apply_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {X : Type*}
+    {d Ω} {X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X]
     (L : Fin d → X →L[ℝ] PDE.ScalarLp Ω 2) (x : X) :
     ⇑(hilbertVectorLpAssemble L x) =ᵐ[PDE.volumeOn Ω]
@@ -100,10 +87,10 @@ theorem hilbertVectorLpAssemble_apply_ae
   ext i
   simp
 
-/-- Projecting an assembled Hilbert-vector field recovers the corresponding
+/- Projecting an assembled Hilbert-vector field recovers the corresponding
 scalar restricted-`L²` map. -/
 theorem hilbertVectorLpCoord_hilbertVectorLpAssemble
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {X : Type*}
+    {d Ω} {X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X]
     (L : Fin d → X →L[ℝ] PDE.ScalarLp Ω 2) (x : X) (i : Fin d) :
     PDE.hilbertVectorLpCoord Ω 2 i (hilbertVectorLpAssemble L x) = L i x := by
@@ -113,10 +100,10 @@ theorem hilbertVectorLpCoord_hilbertVectorLpAssemble
       with y hcoord hassemble
   rw [hcoord, hassemble]
 
-/-- The assembled map satisfies the finite coordinatewise triangle bound at
+/- The assembled map satisfies the finite coordinatewise triangle bound at
 each input. -/
 theorem norm_hilbertVectorLpAssemble_apply_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {X : Type*}
+    {d Ω} {X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X]
     (L : Fin d → X →L[ℝ] PDE.ScalarLp Ω 2) (x : X) :
     ‖hilbertVectorLpAssemble L x‖ ≤ ∑ i, ‖L i x‖ := by
@@ -139,8 +126,14 @@ theorem norm_hilbertVectorLpAssemble_apply_le
           ((J i).compLpL (2 : ℝ≥0∞) (PDE.volumeOn Ω)).le_opNorm _
         _ ≤ 1 * ‖L i x‖ := by
           apply mul_le_mul_of_nonneg_right
-          · exact (ContinuousLinearMap.norm_compLpL_le (J i)).trans
-              (norm_coordinateInjection_le_one i)
+          · have _h_inl_8 : ‖(PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin d => ℝ)).symm.toContinuousLinearMap.comp (ContinuousLinearMap.single ℝ (fun _ : Fin d => ℝ) i)‖ ≤ 1 := by
+              apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
+              intro a
+              rw [coordinateInjection_apply]
+              rw [PiLp.norm_toLp_single]
+              exact (one_mul ‖a‖).ge
+            exact (ContinuousLinearMap.norm_compLpL_le (J i)).trans
+              _h_inl_8
           · exact norm_nonneg _
         _ = ‖L i x‖ := one_mul _
 

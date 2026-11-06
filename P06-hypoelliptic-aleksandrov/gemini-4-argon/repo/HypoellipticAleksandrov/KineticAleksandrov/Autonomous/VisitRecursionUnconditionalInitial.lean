@@ -18,8 +18,8 @@ theorem visitKernel_comp_dirac (k : Kernel Point Point) (P : Point) :
 /-- The actual initial visit satisfies both outer Green and exit decompositions. -/
 theorem visitInitial_nested
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T ) (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     let gamma := visitEntrancePiece hH hLE hlam hLam A c J s T P 0
     let GW := visitUnionGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) s T

@@ -56,8 +56,8 @@ theorem mass_time_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (Kineti
   simpa only [Function.comp_def, mul_one, massPhysicalPoint] using! h
 
 /-- The physical velocity slice supplies each packed diffused line derivative. -/
-theorem mass_velocity_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
-    (hphi : IsKineticC112On phi D) {x : EvolutionVec d}
+theorem mass_velocity_hasLineDerivAt {phi D}
+    (hphi : IsKineticC112On phi D) {x }
     (hx : massPhysicalPoint x ∈ D) (i : Fin d) :
     HasLineDerivAt ℝ (phi ∘ massPhysicalPoint)
       (kineticVelocityGradient phi (massPhysicalPoint x) i) x (basisV i) := by
@@ -68,8 +68,8 @@ theorem mass_velocity_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (Ki
   exact h
 
 /-- The physical position slice supplies each packed transported line derivative. -/
-theorem mass_position_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
-    (hphi : IsKineticC112On phi D) {x : EvolutionVec d}
+theorem mass_position_hasLineDerivAt {phi D}
+    (hphi : IsKineticC112On phi D) {x }
     (hx : massPhysicalPoint x ∈ D) (i : Fin d) :
     HasLineDerivAt ℝ (phi ∘ massPhysicalPoint)
       (kineticPositionGradient phi (massPhysicalPoint x) i) x (basisZ i) := by
@@ -80,15 +80,15 @@ theorem mass_position_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (Ki
   exact h
 
 /-- Differentiating a physical velocity gradient entry gives the actual Hessian entry. -/
-theorem mass_hessian_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
-    (hphi : IsKineticC112On phi D) {x : EvolutionVec d}
+theorem mass_hessian_hasLineDerivAt {phi D}
+    (hphi : IsKineticC112On phi D) {x }
     (hx : massPhysicalPoint x ∈ D) (i j : Fin d) :
     HasLineDerivAt ℝ
       (fun y => kineticVelocityGradient phi (massPhysicalPoint y) i)
       (kineticVelocityHessian phi (massPhysicalPoint x) j i) x (basisV j) := by
   let p := massPhysicalPoint x
   let f : PDE.Vec d → ℝ := fun v => phi ⟨p.time, p.position, v⟩
-  have hd : DifferentiableAt ℝ (fderiv ℝ f) p.velocity :=
+  have hd :=
     ((hphi.velocitySlice_contDiffAt hx).fderiv_right (m := 1) (by norm_num))
       |>.differentiableAt (by norm_num)
   have hg : DifferentiableAt ℝ (PDE.classicalGradient f) p.velocity := by

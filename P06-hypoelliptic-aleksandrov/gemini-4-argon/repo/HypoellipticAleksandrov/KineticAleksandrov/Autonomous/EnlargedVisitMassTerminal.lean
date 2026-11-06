@@ -10,7 +10,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
-/-- An outer interval containing the closed active interval does not clip its component. -/
+/- An outer interval containing the closed active interval does not clip its component. -/
 theorem enlarged_activeUnion_eq (c : Clock) (J : Interval)
     (hJ : closure c.active ⊆ J.carrier) :
     visitActiveUnion c J = c.activeInterval.toFiniteUnion := by
@@ -30,10 +30,10 @@ theorem enlarged_activeUnion_eq (c : Clock) (J : Interval)
   rw [dite_eq_left ho]
   rfl
 
-/-- Away from terminal time, actual active exits carry zero quadratic value. -/
+/- Away from terminal time, actual active exits carry zero quadratic value. -/
 theorem enlargedActiveExit_ae_quadratic_zero_or_terminal
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) :
     ∀ᵐ q ∂(enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu),
@@ -70,11 +70,11 @@ theorem enlargedActiveExit_ae_quadratic_zero_or_terminal
       · exact hv ▸ (visitQuadratic_endpoints c).2
   · simp only [ae_zero, Filter.eventually_bot]
 
-/-- At the horizon, the actual terminal mixture is precisely the restricted exit mixture. -/
+/- At the horizon, the actual terminal mixture is precisely the restricted exit mixture. -/
 theorem enlargedActiveTerminal_bind_eq_restrict
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T )
     (mu : Measure Point) (ht : ∀ᵐ p ∂mu, p.time < T) :
     mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J T) =
       (enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu).restrict
@@ -100,27 +100,5 @@ theorem enlargedActiveTerminal_bind_eq_restrict
   intro p
   exact Measure.restrict_apply hB
 
-/-- The integrated quadratic exit value is exactly its terminal-slice value. -/
-theorem enlargedQuadratic_exit_integral_eq_terminal
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
-    (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) [IsFiniteMeasure mu]
-    (ht : ∀ᵐ p ∂mu, p.time < T) :
-    (∫ q, visitQuadratic c (q.velocity 0)
-      ∂(enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu)) =
-    ∫ q, visitQuadratic c (q.velocity 0)
-      ∂mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J T) := by
-  rw [enlargedActiveTerminal_bind_eq_restrict hH hLE hlam hLam A c J T mu ht]
-  symm
-  rw [← integral_indicator (isClosed_eq continuous_time continuous_const).measurableSet]
-  apply integral_congr_ae
-  filter_upwards [enlargedActiveExit_ae_quadratic_zero_or_terminal
-    hH hLE hlam hLam A c J T hJ mu] with q hq
-  rcases hq with hq | hq
-  · simp only [Set.indicator, mem_ofPred_eq, hq, ite_true]
-  · by_cases htq : q.time = T
-    · simp only [Set.indicator, mem_ofPred_eq, htq, ite_true]
-    · simp only [Set.indicator, mem_ofPred_eq, htq, ite_false, hq]
-
+/- The integrated quadratic exit value is exactly its terminal-slice value. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -15,8 +15,8 @@ theorem source_holder_exponent {theta q : ℝ} (ht : 0 < theta) (ht1 : theta < 1
     (hq : 0 < q) (hq1 : q < 1) :
     let alpha := min 1 (Real.log (1 / q) / Real.log (1 / theta))
     0 < alpha ∧ alpha ≤ 1 ∧ q ≤ theta ^ alpha := by
-  have hlt : Real.log theta < 0 := Real.log_neg ht ht1
-  have hlq : Real.log q < 0 := Real.log_neg hq hq1
+  have hlt := Real.log_neg ht ht1
+  have hlq := Real.log_neg hq hq1
   have hratio : Real.log (1 / q) / Real.log (1 / theta) =
       Real.log q / Real.log theta := by rw [one_div, one_div, Real.log_inv, Real.log_inv]; ring
   dsimp only

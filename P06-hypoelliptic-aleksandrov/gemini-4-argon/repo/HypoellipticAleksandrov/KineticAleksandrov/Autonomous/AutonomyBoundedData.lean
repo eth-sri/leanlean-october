@@ -15,7 +15,7 @@ open scoped Topology
 
 /-- Every bounded smooth datum has a classical solution represented by the supplied kernel. -/
 theorem fullspace_bounded_smooth_solution
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
+    (hH : HormanderHypoellipticityStatement) {lam Lam }
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState 1))

@@ -27,29 +27,29 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov
 open HypoellipticAleksandrov.Parabolic
 
-/-- A full matrix coefficient depending on time, position, and velocity. -/
+/- A full matrix coefficient depending on time, position, and velocity. -/
 abbrev FullKineticCoefficient (d : ℕ) :=
   ℝ → PDE.Vec d → PDE.Vec d → PDE.Mat d
 
-/-- Evaluation of a full kinetic coefficient at an explicit kinetic point. -/
-def fullKineticCoefficientAt {d : ℕ} (A : FullKineticCoefficient d)
+/- Evaluation of a full kinetic coefficient at an explicit kinetic point. -/
+def fullKineticCoefficientAt {d } (A : FullKineticCoefficient d)
     (z : KineticPoint d) : PDE.Mat d :=
   A z.time z.position z.velocity
 
-@[simp] theorem fullKineticCoefficientAt_apply {d : ℕ}
+@[simp] theorem fullKineticCoefficientAt_apply {d }
     (A : FullKineticCoefficient d) (z : KineticPoint d) :
     fullKineticCoefficientAt A z = A z.time z.position z.velocity :=
   rfl
 
-/-- The backward kinetic operator with full coefficient dependence. -/
-def backwardOperator {d : ℕ} (A : FullKineticCoefficient d)
+/- The backward kinetic operator with full coefficient dependence. -/
+def backwardOperator {d } (A : FullKineticCoefficient d)
     (u : KineticPoint d → ℝ) (z : KineticPoint d) : ℝ :=
   Parabolic.kineticTimeDerivative u z +
     PDE.vecDot z.velocity (Parabolic.kineticPositionGradient u z) -
       matrixContraction (fullKineticCoefficientAt A z)
         (Parabolic.kineticVelocityHessian u z)
 
-@[simp] theorem backwardOperator_apply {d : ℕ}
+@[simp] theorem backwardOperator_apply {d }
     (A : FullKineticCoefficient d) (u : KineticPoint d → ℝ)
     (z : KineticPoint d) :
     backwardOperator A u z =
@@ -59,23 +59,17 @@ def backwardOperator {d : ℕ} (A : FullKineticCoefficient d)
             (Parabolic.kineticVelocityHessian u z) :=
   rfl
 
-/-- Lift a time--velocity coefficient without introducing position dependence. -/
-def ofTimeVelocityCoefficient {d : ℕ} (A : CoefficientField d) :
+/- Lift a time--velocity coefficient without introducing position dependence. -/
+def ofTimeVelocityCoefficient {d } (A : CoefficientField d) :
     FullKineticCoefficient d :=
   fun t _x v => A t v
 
-@[simp] theorem ofTimeVelocityCoefficient_apply {d : ℕ}
-    (A : CoefficientField d) (t : ℝ) (x v : PDE.Vec d) :
-    ofTimeVelocityCoefficient A t x v = A t v :=
-  rfl
-
-/-- The backward operator specialized to a coefficient independent of position. -/
-def backwardOperatorOfTimeVelocityCoefficient {d : ℕ}
+def backwardOperatorOfTimeVelocityCoefficient {d }
     (A : CoefficientField d) (u : KineticPoint d → ℝ)
     (z : KineticPoint d) : ℝ :=
   backwardOperator (ofTimeVelocityCoefficient A) u z
 
-@[simp] theorem backwardOperatorOfTimeVelocityCoefficient_apply {d : ℕ}
+@[simp] theorem backwardOperatorOfTimeVelocityCoefficient_apply {d }
     (A : CoefficientField d) (u : KineticPoint d → ℝ)
     (z : KineticPoint d) :
     backwardOperatorOfTimeVelocityCoefficient A u z =
@@ -85,7 +79,7 @@ def backwardOperatorOfTimeVelocityCoefficient {d : ℕ}
             (Parabolic.kineticVelocityHessian u z) :=
   rfl
 
-/-- The autonomous scalar backward operator on the one-dimensional carrier. -/
+/- The autonomous scalar backward operator on the one-dimensional carrier. -/
 def autonomousScalarOperator (a : ℝ → ℝ → ℝ)
     (u : KineticPoint 1 → ℝ) (z : KineticPoint 1) : ℝ :=
   Parabolic.kineticTimeDerivative u z +
@@ -102,15 +96,15 @@ def autonomousScalarOperator (a : ℝ → ℝ → ℝ)
             Parabolic.kineticVelocityHessian u z 0 0 :=
   rfl
 
-/-- The Hessian in the diffused `y` coordinate of a transported point. -/
-def diffusedHessian {n : ℕ} (u : KineticPoint n → ℝ)
+/- The Hessian in the diffused `y` coordinate of a transported point. -/
+def diffusedHessian {n } (u : KineticPoint n → ℝ)
     (z : KineticPoint n) : PDE.Mat n :=
   fun i j =>
     (fderiv ℝ (fun y : PDE.Vec n =>
       Parabolic.kineticPositionGradient u ⟨z.time, y, z.velocity⟩)
       z.position (PDE.basisVec i)) j
 
-@[simp] theorem diffusedHessian_apply {n : ℕ}
+@[simp] theorem diffusedHessian_apply {n }
     (u : KineticPoint n → ℝ) (z : KineticPoint n) (i j : Fin n) :
     diffusedHessian u z i j =
       (fderiv ℝ (fun y : PDE.Vec n =>
@@ -118,15 +112,15 @@ def diffusedHessian {n : ℕ} (u : KineticPoint n → ℝ)
         z.position (PDE.basisVec i)) j :=
   rfl
 
-/-- The forward operator with diffusion in `y` and transport in `z`. -/
-def transportedForwardOperator {n : ℕ} (B : FullKineticCoefficient n)
+/- The forward operator with diffusion in `y` and transport in `z`. -/
+def transportedForwardOperator {n } (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n) (u : KineticPoint n → ℝ)
     (z : KineticPoint n) : ℝ :=
   Parabolic.kineticTimeDerivative u z +
     matrixContraction (fullKineticCoefficientAt B z) (diffusedHessian u z) +
       PDE.vecDot (b z.position) (Parabolic.kineticVelocityGradient u z)
 
-@[simp] theorem transportedForwardOperator_apply {n : ℕ}
+@[simp] theorem transportedForwardOperator_apply {n }
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
     (u : KineticPoint n → ℝ) (z : KineticPoint n) :
     transportedForwardOperator B b u z =
@@ -135,24 +129,22 @@ def transportedForwardOperator {n : ℕ} (B : FullKineticCoefficient n)
           PDE.vecDot (b z.position) (Parabolic.kineticVelocityGradient u z) :=
   rfl
 
-/-- Lift a coefficient independent of the transported `z` coordinate. -/
-def zIndependentCoefficient {n : ℕ} (B : CoefficientField n) :
+/- Lift a coefficient independent of the transported `z` coordinate. -/
+def zIndependentCoefficient {n } (B : CoefficientField n) :
     FullKineticCoefficient n :=
   fun sigma y _z => B sigma y
 
-@[simp] theorem zIndependentCoefficient_apply {n : ℕ}
+@[simp] theorem zIndependentCoefficient_apply {n }
     (B : CoefficientField n) (sigma : ℝ) (y z : PDE.Vec n) :
-    zIndependentCoefficient B sigma y z = B sigma y :=
-  rfl
+    zIndependentCoefficient B sigma y z = B sigma y := rfl
 
-/-- The transported operator specialized to a z-independent coefficient. -/
-def transportedForwardOperatorOfTimeDiffusedCoefficient {n : ℕ}
+def transportedForwardOperatorOfTimeDiffusedCoefficient {n }
     (B : CoefficientField n) (b : PDE.Vec n → PDE.Vec n)
     (u : KineticPoint n → ℝ) (z : KineticPoint n) : ℝ :=
   transportedForwardOperator (zIndependentCoefficient B) b u z
 
 @[simp] theorem transportedForwardOperatorOfTimeDiffusedCoefficient_apply
-    {n : ℕ} (B : CoefficientField n) (b : PDE.Vec n → PDE.Vec n)
+    {n } (B : CoefficientField n) (b : PDE.Vec n → PDE.Vec n)
     (u : KineticPoint n → ℝ) (z : KineticPoint n) :
     transportedForwardOperatorOfTimeDiffusedCoefficient B b u z =
       Parabolic.kineticTimeDerivative u z +

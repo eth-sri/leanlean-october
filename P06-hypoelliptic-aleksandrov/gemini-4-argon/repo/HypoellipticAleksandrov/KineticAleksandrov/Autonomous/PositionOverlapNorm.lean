@@ -27,7 +27,7 @@ theorem position_rpow_iSup {ι : Sort*} (a : ι → ℝ≥0∞) (q : ℝ) (hq : 
 
 /-- The extended positive Lq norm satisfies the finite triangle inequality. -/
 theorem positionPositiveNorm_add {X : Type*} [MeasurableSpace X]
-    (m : Measure X) (q : ℝ) (hq : 1 ≤ q) (f g : X → ℝ≥0∞)
+    (m : Measure X) (q : ℝ) (hq : 1 ≤ q) (f g )
     (hf : Measurable f) (hg : Measurable g) :
     positionPositiveNorm m q (f + g) ≤
       positionPositiveNorm m q f + positionPositiveNorm m q g :=

@@ -12,7 +12,7 @@ open HypoellipticAleksandrov.Parabolic MeasureTheory Set
 open scoped MatrixOrder
 
 /-- Source lemma Lemma 6.4, class (a), with C₀ fixed before all coefficient and solution data. -/
-theorem kinetic_abp_smooth_to_borel {d : ℕ}
+theorem kinetic_abp_smooth_to_borel {d }
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (p : ℝ) (hp : 1 ≤ p) (alpha C₀ : ℝ) (localised : Bool)
     (hsmoothEstimate :

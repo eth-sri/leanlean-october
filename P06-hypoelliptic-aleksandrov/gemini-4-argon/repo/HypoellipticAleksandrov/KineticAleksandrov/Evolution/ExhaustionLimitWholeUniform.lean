@@ -75,7 +75,7 @@ theorem uniformCauchySeqOn_wholeSpace_ball_solutions :
     F hFC (fun i => r (ix i)) (fun i => hN _ (hix i)) (fun i => v (ix i))
     (fun i => hv _) p hpS
   have hden : 0 ≤ 1 + S ^ 2 := by positivity
-  have hnum : growthBarrier cg τ p / (1 + S ^ 2) ≤ M / (1 + S ^ 2) :=
+  have hnum :=
     div_le_div_of_nonneg_right (hΦ p hp) hden
   have hfinal := hc.trans_lt (by
     rw [sq_abs]
@@ -100,7 +100,7 @@ theorem tendstoUniformlyOn_wholeSpace_ball_solutions :
   have hU := hCau.tendstoUniformlyOn_of_tendsto
     (f := fun p => limUnder atTop (fun j => v j p))
     (fun p hp => (hCau.cauchySeq hp).tendsto_limUnder)
-  have hnear : ∀ᶠ j : ℕ in atTop, |S0| < r j :=
+  have hnear :=
     hrlim.eventually (eventually_gt_atTop |S0|)
   have hclosed (j : ℕ) (hj : |S0| < r j) :
       K ⊆ evolutionPastClosedCylinder (PDE.euclideanBall 0 (r j)) (fun _ => 0) τ :=

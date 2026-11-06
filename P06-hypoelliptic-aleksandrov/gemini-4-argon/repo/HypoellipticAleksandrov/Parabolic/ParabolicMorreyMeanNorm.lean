@@ -23,17 +23,17 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped ENNReal
 
-/-- Restricted volume, divided by the volume of the set. -/
+/- Restricted volume, divided by the volume of the set. -/
 noncomputable def parabolicNormalizedVolumeOn {d : Nat}
     (Q : Set (TimeVelocity d)) : Measure (TimeVelocity d) :=
   (volume Q)⁻¹ • volume.restrict Q
 
-/-- The authoritative normalized restricted `L^(d + 1)` norm in `ENNReal`. -/
+/- The authoritative normalized restricted `L^(d + 1)` norm in `ENNReal`. -/
 noncomputable def parabolicELpMeanNormOn (d : Nat)
     (f : TimeVelocity d -> Real) (Q : Set (TimeVelocity d)) : ENNReal :=
   eLpNorm f (parabolicExponent d) (parabolicNormalizedVolumeOn Q)
 
-/-- The finite real presentation of the normalized restricted `L^(d + 1)` norm. -/
+/- The finite real presentation of the normalized restricted `L^(d + 1)` norm. -/
 noncomputable def parabolicLpMeanNormOn (d : Nat)
     (f : TimeVelocity d -> Real) (Q : Set (TimeVelocity d))
     (hf : MemLp f (parabolicExponent d) (parabolicNormalizedVolumeOn Q)) : Real :=
@@ -42,7 +42,7 @@ noncomputable def parabolicLpMeanNormOn (d : Nat)
       simpa only [parabolicELpMeanNormOn] using (memLp_iff.mp hf)⟩
   finiteNorm.1.toReal
 
-/-- The proof-indexed real mean norm is definitionally the finite `ENNReal` norm. -/
+/- The proof-indexed real mean norm is definitionally the finite `ENNReal` norm. -/
 theorem parabolicLpMeanNormOn_eq_toReal {d : Nat}
     (f : TimeVelocity d -> Real) (Q : Set (TimeVelocity d))
     (hf : MemLp f (parabolicExponent d) (parabolicNormalizedVolumeOn Q)) :
@@ -56,7 +56,7 @@ private theorem volume_smul_parabolicNormalizedVolumeOn_eq_restrict
   rw [parabolicNormalizedVolumeOn, smul_smul,
     ENNReal.mul_inv_cancel hQpos.ne' hQtop.ne, one_smul]
 
-/-- Raw restricted `L^(d + 1)` membership passes to normalized restricted volume. -/
+/- Raw restricted `L^(d + 1)` membership passes to normalized restricted volume. -/
 theorem memLp_parabolicNormalizedVolumeOn_of_memLp
     {d : Nat} {Q : Set (TimeVelocity d)} {f : TimeVelocity d -> Real}
     (hQpos : 0 < volume Q)
@@ -65,7 +65,7 @@ theorem memLp_parabolicNormalizedVolumeOn_of_memLp
   rw [parabolicNormalizedVolumeOn]
   exact hf.smul_measure (ENNReal.inv_ne_top.mpr hQpos.ne')
 
-/-- Normalized restricted `L^(d + 1)` membership recovers raw restricted volume. -/
+/- Normalized restricted `L^(d + 1)` membership recovers raw restricted volume. -/
 theorem memLp_restrict_of_memLp_parabolicNormalizedVolumeOn
     {d : Nat} {Q : Set (TimeVelocity d)} {f : TimeVelocity d -> Real}
     (hQpos : 0 < volume Q) (hQtop : volume Q < ∞)
@@ -74,7 +74,7 @@ theorem memLp_restrict_of_memLp_parabolicNormalizedVolumeOn
   rw [← volume_smul_parabolicNormalizedVolumeOn_eq_restrict hQpos hQtop]
   exact hf.smul_measure hQtop.ne
 
-/-- The normalized extended norm is the inverse-volume power times the raw norm. -/
+/- The normalized extended norm is the inverse-volume power times the raw norm. -/
 theorem parabolicELpMeanNormOn_eq_volume_inv_rpow_mul_parabolicELpNormOn
     {d : Nat} {Q : Set (TimeVelocity d)} (hQtop : volume Q < ∞)
     (f : TimeVelocity d -> Real) :
@@ -86,7 +86,7 @@ theorem parabolicELpMeanNormOn_eq_volume_inv_rpow_mul_parabolicELpNormOn
     eLpNorm_smul_measure_of_ne_zero hinv]
   rfl
 
-/-- The raw extended norm is the volume power times the normalized norm. -/
+/- The raw extended norm is the volume power times the normalized norm. -/
 theorem parabolicELpNormOn_eq_volume_rpow_mul_parabolicELpMeanNormOn
     {d : Nat} {Q : Set (TimeVelocity d)}
     (hQpos : 0 < volume Q) (hQtop : volume Q < ∞)
@@ -105,7 +105,7 @@ theorem parabolicELpNormOn_eq_volume_rpow_mul_parabolicELpMeanNormOn
       rw [eLpNorm_smul_measure_of_ne_zero hQpos.ne']
       rfl
 
-/-- The guarded real mean norm is the inverse-volume power times the raw real norm. -/
+/- The guarded real mean norm is the inverse-volume power times the raw real norm. -/
 theorem parabolicLpMeanNormOn_eq_volume_toReal_inv_rpow_mul_parabolicLpNormOn
     {d : Nat} {Q : Set (TimeVelocity d)}
     (hQpos : 0 < volume Q) (hQtop : volume Q < ∞)
@@ -124,40 +124,35 @@ theorem parabolicLpMeanNormOn_eq_volume_toReal_inv_rpow_mul_parabolicLpNormOn
     ENNReal.toReal_mul, ← ENNReal.toReal_rpow, ENNReal.toReal_inv] using hnorm
 
 private theorem volume_parabolicMorreyBox_toReal_pos
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) :
+    {d } (t₀ : Real) (v₀ : PDE.Vec d) {r } (hr : 0 < r) :
     0 < (volume (parabolicBox 1 r t₀ v₀)).toReal := by
   rw [volume_parabolicBox_toReal_eq_parabolicScaling (d := d)
     (vartheta := 1) (r := r) (t₀ := t₀) (v₀ := v₀) (by norm_num) hr.le]
   have htwo : 0 < (2 : Real) := by norm_num
   exact mul_pos (mul_pos (by norm_num) (pow_pos htwo _)) (pow_pos hr _)
 
-/-- The literal forward physical box has volume `2^d r^(d + 2)`. -/
+/- The literal forward physical box has volume `2^d r^(d + 2)`. -/
 theorem volume_parabolicMorreyBox_toReal
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) :
+    {d } (t₀ : Real) (v₀ : PDE.Vec d) {r } (hr : 0 < r) :
     (volume (parabolicBox 1 r t₀ v₀)).toReal =
       (2 : Real) ^ d * r ^ (d + 2) := by
   simpa only [one_mul] using
     (volume_parabolicBox_toReal_eq_parabolicScaling (d := d)
       (vartheta := 1) (r := r) (t₀ := t₀) (v₀ := v₀) (by norm_num) hr.le)
 
-/-- Literal forward physical boxes have positive volume at positive radius. -/
+/- Literal forward physical boxes have positive volume at positive radius. -/
 theorem volume_parabolicMorreyBox_pos
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) :
+    {d } (t₀ : Real) (v₀ : PDE.Vec d) {r } (hr : 0 < r) :
     0 < volume (parabolicBox 1 r t₀ v₀) :=
   (ENNReal.toReal_pos_iff.mp
     (volume_parabolicMorreyBox_toReal_pos t₀ v₀ hr)).1
 
-/-- Literal forward physical boxes have finite volume at positive radius. -/
+/- Literal forward physical boxes have finite volume at positive radius. -/
 theorem volume_parabolicMorreyBox_lt_top
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) :
+    {d } (t₀ : Real) (v₀ : PDE.Vec d) {r } (hr : 0 < r) :
     volume (parabolicBox 1 r t₀ v₀) < ∞ :=
   (ENNReal.toReal_pos_iff.mp
     (volume_parabolicMorreyBox_toReal_pos t₀ v₀ hr)).2
 
-/-- Literal forward physical boxes have non-infinite volume at positive radius. -/
-theorem volume_parabolicMorreyBox_ne_top
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) :
-    volume (parabolicBox 1 r t₀ v₀) ≠ ∞ :=
-  ne_of_lt (volume_parabolicMorreyBox_lt_top t₀ v₀ hr)
-
+/- Literal forward physical boxes have non-infinite volume at positive radius. -/
 end HypoellipticAleksandrov.Parabolic

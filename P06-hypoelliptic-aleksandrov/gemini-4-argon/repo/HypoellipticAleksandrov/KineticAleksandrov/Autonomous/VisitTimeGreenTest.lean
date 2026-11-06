@@ -12,8 +12,8 @@ open Set MeasureTheory HypoellipticAleksandrov
 /-- The actual localized quadratic obeys the bounded smooth Green identity. -/
 theorem visitTimeQuadratic_active_identity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b T : ℝ)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (J ) (b T : ℝ)
     (e : FiniteUnionPole (visitActiveUnion c J) (T : WithTop ℝ)) :
     let f := fun q : Point => visitTimeCutoff b c.r c.positive q.time *
       visitQuadratic c (q.velocity 0)
@@ -27,7 +27,7 @@ theorem visitTimeQuadratic_active_identity
   · obtain ⟨D, _hD, hd⟩ := visitTimeQuadratic_uniform_operator_bound
     refine ⟨max (9 * c.r ^ 2 / 16) (9 * D / 16 + 2 * Lam), ?_⟩
     intro p hp
-    have hv : p.velocity 0 ∈ closure c.active :=
+    have hv :=
       subset_closure ((visitActiveUnion_carrier c J).le hp).1
     have he := (visitTimeCutoff_properties b c.r c.positive).2 p.time
     have hf := visitQuadratic_nonneg c hv

@@ -14,18 +14,18 @@ open HypoellipticAleksandrov Set Filter
 open scoped Topology
 
 /-- A strict bounded whole-space cylinder, using the explicit Euclidean radial cutoff. -/
-def wholeSpaceInnerCylinder {n : ℕ} (α τ S : ℝ) : Set (KineticPoint n) :=
+def wholeSpaceInnerCylinder {n } (α τ S : ℝ) : Set (KineticPoint n) :=
   {p | α < p.time ∧ p.time < τ ∧ radialSq p < S ^ 2}
 
 /-- Strict bounded whole-space cylinders are open. -/
-theorem isOpen_wholeSpaceInnerCylinder {n : ℕ} (α τ S : ℝ) :
+theorem isOpen_wholeSpaceInnerCylinder {n } (α τ S : ℝ) :
     IsOpen (wholeSpaceInnerCylinder (n := n) α τ S) :=
   (isOpen_lt continuous_const continuous_time).inter
     ((isOpen_lt continuous_time continuous_const).inter
       (isOpen_lt continuous_radialSq continuous_const))
 
 /-- The strict whole-space cylinder lies in its compact closed counterpart. -/
-theorem wholeSpaceInnerCylinder_subset_closed {n : ℕ} (α τ S : ℝ) :
+theorem wholeSpaceInnerCylinder_subset_closed {n } (α τ S : ℝ) :
     wholeSpaceInnerCylinder (n := n) α τ S ⊆
       movingClosedSlab univ (fun _ => 0) α τ ∩ {p | radialSq p ≤ S ^ 2} := by
   intro p hp
@@ -35,8 +35,7 @@ theorem wholeSpaceInnerCylinder_subset_closed {n : ℕ} (α τ S : ℝ) :
 
 /-- Compact radial cylinders are relative neighbourhoods of all points of a whole-space
 closed slab, including its time faces. -/
-theorem exists_wholeSpace_closedCylinder_mem_nhdsWithin {n : ℕ} {α τ : ℝ}
-    {p : KineticPoint n}
+theorem exists_wholeSpace_closedCylinder_mem_nhdsWithin {n α τ p}
     (_hp : p ∈ movingClosedSlab univ (fun _ => 0) α τ) :
     ∃ S : ℝ, 0 < S ∧ radialSq p < S ^ 2 ∧
       (movingClosedSlab univ (fun _ : ℝ => (0 : PDE.Vec n)) α τ ∩

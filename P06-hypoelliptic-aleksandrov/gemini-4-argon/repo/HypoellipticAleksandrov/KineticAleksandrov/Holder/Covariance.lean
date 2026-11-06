@@ -39,13 +39,13 @@ def gramian (lam h sigma : ℝ) : Matrix (Fin 2) (Fin 2) ℝ :=
   covarianceDilation h * ghat lam (sigma / h) * covarianceDilation h
 
 /-- Covariance quadratic form in native position–velocity coordinates. -/
-def qform {d : ℕ} (lam h sigma : ℝ) (y V : PDE.Vec d) : ℝ :=
+def qform {d } (lam h sigma : ℝ) (y V : PDE.Vec d) : ℝ :=
   (gramian lam h sigma)⁻¹ 0 0 * PDE.vecDot y y +
     2 * (gramian lam h sigma)⁻¹ 0 1 * PDE.vecDot y V +
     (gramian lam h sigma)⁻¹ 1 1 * PDE.vecDot V V
 
 /-- Velocity component of the inverse covariance applied to the native vector pair. -/
-def pform {d : ℕ} (lam h sigma : ℝ) (y V : PDE.Vec d) : PDE.Vec d :=
+def pform {d } (lam h sigma : ℝ) (y V : PDE.Vec d) : PDE.Vec d :=
   (gramian lam h sigma)⁻¹ 1 0 • y + (gramian lam h sigma)⁻¹ 1 1 • V
 
 /-- Determinant of the dimensionless covariance. -/
@@ -57,7 +57,7 @@ theorem det_ghat (lam theta : ℝ) :
   ring
 
 /-- Physical covariance agrees with the polynomial Gramian at every real time. -/
-theorem gramian_eq_polynomial (lam : ℝ) {h : ℝ} (hh : 0 < h) (sigma : ℝ) :
+theorem gramian_eq_polynomial (lam : ℝ) {h } (hh : 0 < h) (sigma : ℝ) :
     gramian lam h sigma =
       !![lam * h ^ 3 / 64 + lam * h * sigma ^ 2 / 64 + lam * sigma ^ 3 / 3,
         lam * h * sigma / 64 + lam * sigma ^ 2 / 2;

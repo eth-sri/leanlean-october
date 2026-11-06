@@ -12,9 +12,8 @@ open MeasureTheory Set
 open scoped ENNReal
 
 /-- Complex bounded Borel integration uses the explicit complex multiplication pairing. -/
-theorem fourierProjection_integral_complex {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
-    (ξ : PDE.Vec d) (ν : ComplexMeasure (PDE.Vec d)) (hν : IsFourierProjection K q ξ ν)
+theorem fourierProjection_integral_complex {d Ω γ} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
+    (ξ : PDE.Vec d) (ν ) (hν : IsFourierProjection K q ξ ν)
     (f : PDE.Vec d → ℂ) (hf : Measurable f) (hbounded : ∃ C : ℝ, ∀ v, ‖f v‖ ≤ C) :
     (∫ᵛ v, f v ∂[ContinuousLinearMap.mul ℝ ℂ; ν]) =
       ∫ w, f w.1 * fourierPhase ξ q.1.2.2.2 w ∂K.master q := by

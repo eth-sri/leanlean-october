@@ -13,7 +13,7 @@ open Set MeasureTheory HypoellipticAleksandrov SectionTwo ProbabilityTheory
 open scoped ENNReal
 
 /-- Killed-kernel composition restarts every measurable nonnegative physical terminal test. -/
-theorem tailRestart_master_lintegral {lam Lam : ℝ}
+theorem tailRestart_master_lintegral {lam Lam }
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (s r u : ℝ) (hsr : s ≤ r) (hru : r ≤ u)
     (z : EvolutionState (intervalDomain H) (fun _ => 0) s)

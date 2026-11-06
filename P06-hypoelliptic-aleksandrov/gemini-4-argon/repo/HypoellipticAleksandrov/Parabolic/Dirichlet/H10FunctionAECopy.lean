@@ -20,7 +20,7 @@ open Filter MeasureTheory
 /-- Copy an `H10Function` approximation certificate to an almost-everywhere equal
 `H1Function` carrier. -/
 noncomputable def copyToH1Function_of_ae_eq
-    {d : ℕ} {U : Set (PDE.Vec d)}
+    {d U}
     (w : PDE.H10Function U) (q : PDE.H1Function U)
     (hfun : w.toH1Function.toFun =ᵐ[PDE.volumeOn U] q.toFun)
     (hgrad : ∀ i : Fin d,
@@ -64,7 +64,7 @@ noncomputable def copyToH1Function_of_ae_eq
     exact w.tendsto_approx_grad i
 
 @[simp] theorem copyToH1Function_of_ae_eq_toH1Function
-    {d : ℕ} {U : Set (PDE.Vec d)}
+    {d U}
     (w : PDE.H10Function U) (q : PDE.H1Function U)
     (hfun : w.toH1Function.toFun =ᵐ[PDE.volumeOn U] q.toFun)
     (hgrad : ∀ i : Fin d,

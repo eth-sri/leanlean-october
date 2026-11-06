@@ -13,46 +13,19 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
 
-/-- Physical position translation, preserving time and velocity. -/
-def boundaryPositionShift {d : ℕ} (h : PDE.Vec d) (P : KineticPoint d) : KineticPoint d :=
+/- Physical position translation, preserving time and velocity. -/
+def boundaryPositionShift {d } (h : PDE.Vec d) (P : KineticPoint d) : KineticPoint d :=
   ⟨P.time, P.position + h, P.velocity⟩
 
-/-- Physical position translation as a homeomorphism. -/
-def boundaryPositionHomeomorph {d : ℕ} (h : PDE.Vec d) :
+/- Physical position translation as a homeomorphism. -/
+def boundaryPositionHomeomorph {d } (h : PDE.Vec d) :
     KineticPoint d ≃ₜ KineticPoint d :=
   (KineticPoint.homeomorphProd d).trans
     (((Homeomorph.refl ℝ).prodCongr
       ((Homeomorph.addRight h).prodCongr (Homeomorph.refl (PDE.Vec d)))).trans
         (KineticPoint.homeomorphProd d).symm)
 
-/-- Position translation preserves the prescribed smooth test class. -/
-theorem boundary_shift_smooth {d : ℕ} (h : PDE.Vec d) (φ : KineticPoint d → ℝ)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm)) :
-    ContDiff ℝ (⊤ : ℕ∞)
-      ((φ ∘ boundaryPositionShift h) ∘ (KineticPoint.equivProd d).symm) :=
-  hφ.comp (contDiff_fst.prodMk
-    ((contDiff_snd.fst.add contDiff_const).prodMk contDiff_snd.snd))
-
-/-- The physical operator commutes with position translation. -/
-theorem boundary_shift_operator {d : ℕ} (B : CoefficientField d)
-    (h : PDE.Vec d) (φ : KineticPoint d → ℝ) (P : KineticPoint d) :
-    forwardKineticOperator (ofTimeVelocityCoefficient B) (φ ∘ boundaryPositionShift h) P =
-      forwardKineticOperator (ofTimeVelocityCoefficient B) φ (boundaryPositionShift h P) := by
-  rw [forwardKineticOperator_apply, forwardKineticOperator_apply]
-  have ht : kineticTimeDerivative (φ ∘ boundaryPositionShift h) P =
-      kineticTimeDerivative φ (boundaryPositionShift h P) := rfl
-  have hv : kineticVelocityHessian (φ ∘ boundaryPositionShift h) P =
-      kineticVelocityHessian φ (boundaryPositionShift h P) := rfl
-  have hx : kineticPositionGradient (φ ∘ boundaryPositionShift h) P =
-      kineticPositionGradient φ (boundaryPositionShift h P) := by
-    funext i
-    simp only [kineticPositionGradient, PDE.classicalGradient_apply]
-    exact congrArg (fun L => L (PDE.basisVec i))
-      (fderiv_comp_add_right (𝕜 := ℝ)
-        (f := fun x : PDE.Vec d => φ ⟨P.time, x, P.velocity⟩) (x := P.position) h)
-  rw [ht, hv, hx]
-  rfl
-
+/- Position translation preserves the prescribed smooth test class. -/
 variable (hH : HormanderHypoellipticityStatement)
   (hLE : LiebermanEllipsoidDirichletStatement)
   {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
@@ -60,7 +33,7 @@ variable (hH : HormanderHypoellipticityStatement)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
-/-- Canonical kernel covariance follows from existence and unique realization. -/
+/- Canonical kernel covariance follows from existence and unique realization. -/
 theorem boundary_ballKernel_covariant :
     IsTranslationCovariantEvolution (PDE.euclideanBall v₀ R) (fun _ => 0)
       (PDE.isOpen_euclideanBall v₀ R).measurableSet
@@ -81,9 +54,9 @@ theorem boundary_ballKernel_covariant :
   rw [← hK]
   exact hcov (fun _ _ _ _ => rfl)
 
-/-- Translation of the actual absolute-time source integral. -/
+/- Translation of the actual absolute-time source integral. -/
 theorem boundary_duhamel_translation (h : PDE.Vec d) (T : ℝ)
-    (g : KineticPoint d → ℝ) (hg : Measurable g) (p : KineticPoint d) :
+    (g ) (hg : Measurable g) (p : KineticPoint d) :
     duhamelPotential (localBallKernel hH hLE hd hlam hLam B hB v₀ hR) T g
       (kineticVelocityShift h p) =
     duhamelPotential (localBallKernel hH hLE hd hlam hLam B hB v₀ hR) T
@@ -123,14 +96,14 @@ theorem boundary_duhamel_translation (h : PDE.Vec d) (T : ℝ)
       exact (hp hs).elim
     · rfl
 
-/-- The finite-strip source cutoff commutes with physical position translation. -/
+/- The finite-strip source cutoff commutes with physical position translation. -/
 theorem ballSourcePotential_translation (h : PDE.Vec d) (a T : ℝ)
-    (F : KineticPoint d → ℝ) (hF : Measurable F) (P : KineticPoint d) :
+    (F ) (hF : Measurable F) (P : KineticPoint d) :
     ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F
       (boundaryPositionShift h P) =
     ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T
       (F ∘ boundaryPositionShift h) P := by
-  have hg : Measurable ((localStrip a T v₀ R).indicator F ∘ sectionTwoPoint) :=
+  have hg :=
     (hF.indicator (isOpen_localStrip a T v₀ R).measurableSet).comp
       (sectionTwoHomeomorph d).measurable
   have ht := boundary_duhamel_translation hH hLE hd hlam hLam B hB v₀ hR
@@ -150,9 +123,9 @@ theorem ballSourcePotential_translation (h : PDE.Vec d) (a T : ℝ)
   rw [he] at ht
   exact ht
 
-/-- Position covariance of the literal smooth boundary solution. -/
+/- Position covariance of the literal smooth boundary solution. -/
 theorem ballBoundarySolution_translation (h : PDE.Vec d) (a T : ℝ)
-    (φ : KineticPoint d → ℝ)
+    (φ )
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
     (hc : HasCompactSupport φ) (P : KineticPoint d) :
     ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ
@@ -165,6 +138,22 @@ theorem ballBoundarySolution_translation (h : PDE.Vec d) (a T : ℝ)
   congr 1
   congr 1
   funext Q
-  exact (boundary_shift_operator B h φ Q).symm
+  have _h_inl_13 : forwardKineticOperator (ofTimeVelocityCoefficient B) (φ ∘ boundaryPositionShift h) Q =
+      forwardKineticOperator (ofTimeVelocityCoefficient B) φ (boundaryPositionShift h Q) := by
+    rw [forwardKineticOperator_apply, forwardKineticOperator_apply]
+    have ht : kineticTimeDerivative (φ ∘ boundaryPositionShift h) Q =
+        kineticTimeDerivative φ (boundaryPositionShift h Q) := rfl
+    have hv : kineticVelocityHessian (φ ∘ boundaryPositionShift h) Q =
+        kineticVelocityHessian φ (boundaryPositionShift h Q) := rfl
+    have hx : kineticPositionGradient (φ ∘ boundaryPositionShift h) Q =
+        kineticPositionGradient φ (boundaryPositionShift h Q) := by
+      funext i
+      simp only [kineticPositionGradient, PDE.classicalGradient_apply]
+      exact congrArg (fun L => L (PDE.basisVec i))
+        (fderiv_comp_add_right (𝕜 := ℝ)
+          (f := fun x : PDE.Vec d => φ ⟨Q.time, x, Q.velocity⟩) (x := Q.position) h)
+    rw [ht, hv, hx]
+    rfl
+  exact _h_inl_13.symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

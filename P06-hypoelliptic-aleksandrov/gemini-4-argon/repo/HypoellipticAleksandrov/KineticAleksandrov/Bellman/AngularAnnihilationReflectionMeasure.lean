@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularAnnihilationReflectionGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularDisintegrationReweight
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularDisintegrationHomogeneity
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasureJets
+import Mathlib.Analysis.Calculus.FDeriv.Add
 
 /-! # Measure-level homogeneity and Radon properties under simultaneous reflection -/
 
@@ -11,8 +14,8 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- The pushforward homogeneity formula implies the source measurable-set density degree. -/
-theorem bellman_densityDegree_of_map_dilation (β : ℝ) (μ : Measure BellmanPuncturedPlane)
+/- The pushforward homogeneity formula implies the source measurable-set density degree. -/
+theorem bellman_densityDegree_of_map_dilation (β : ℝ) (μ )
     (hm : ∀ r : ℝ, ∀ hr : 0 < r, Measure.map (bellmanDilation r hr) μ =
       ENNReal.ofReal (r ^ (β - 4)) • μ) : HasBellmanDensityDegree β μ := by
   intro r hr E hE
@@ -30,8 +33,8 @@ theorem bellman_densityDegree_of_map_dilation (β : ℝ) (μ : Measure BellmanPu
       rfl
     _ = ENNReal.ofReal (r ^ (4 - β)) * μ E := by rw [mul_assoc, ← he]
 
-/-- Simultaneous reflection preserves every source density degree. -/
-theorem HasBellmanDensityDegree.reflect {β : ℝ} {μ : Measure BellmanPuncturedPlane}
+/- Simultaneous reflection preserves every source density degree. -/
+theorem HasBellmanDensityDegree.reflect {β μ}
     (hμ : HasBellmanDensityDegree β μ) :
     HasBellmanDensityDegree β (Measure.map bellmanReflection μ) := by
   apply bellman_densityDegree_of_map_dilation
@@ -39,13 +42,23 @@ theorem HasBellmanDensityDegree.reflect {β : ℝ} {μ : Measure BellmanPuncture
   have he : bellmanDilation r hr ∘ bellmanReflection =
       bellmanReflection ∘ bellmanDilation r hr := by
     funext q
-    exact (bellmanReflection_dilation r hr q).symm
+    have _h_xinl_0 : bellmanReflection (bellmanDilation r hr q) =
+      bellmanDilation r hr (bellmanReflection q) := by
+        apply Subtype.ext
+        apply Prod.ext
+        · change -(r ^ 3 * q.val.1) = r ^ 3 * (-q.val.1)
+          ring
+        · change -(r * q.val.2) = r * (-q.val.2)
+          ring
+
+      /- The first reflected test jet changes sign. -/
+    exact _h_xinl_0.symm
   rw [Measure.map_map (measurable_bellmanDilation r hr) bellmanReflection.measurable,
     he, ← Measure.map_map bellmanReflection.measurable (measurable_bellmanDilation r hr),
     hμ.map_dilation r hr, Measure.map_smul _ bellmanReflection.measurable.aemeasurable]
 
-/-- Simultaneous reflection preserves the positive Radon property on the punctured plane. -/
-theorem IsBellmanRadon.reflect {μ : Measure BellmanPuncturedPlane} (hμ : IsBellmanRadon μ) :
+/- Simultaneous reflection preserves the positive Radon property on the punctured plane. -/
+theorem IsBellmanRadon.reflect {μ } (hμ : IsBellmanRadon μ) :
     IsBellmanRadon (Measure.map bellmanReflection μ) := by
   let : IsFiniteMeasureOnCompacts μ := hμ.1
   let : Measure.InnerRegular μ := hμ.2

@@ -15,10 +15,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo Evolution Occupation
 
-private theorem source_slice_regular {u : Point → ℝ} {D : Set Point}
+private theorem source_slice_regular {u D}
     (hD : IsOpen D)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
-      (evolutionHomeomorph 1 ⁻¹' D)) (p : Point) (hp : p ∈ D) :
+      (evolutionHomeomorph 1 ⁻¹' D)) (p ) (hp : p ∈ D) :
     IsSliceRegularAt u p := by
   have hx : (evolutionHomeomorph 1).symm p ∈ evolutionHomeomorph 1 ⁻¹' D := by
     simpa only [mem_preimage, Homeomorph.apply_symm_apply] using hp
@@ -41,7 +41,7 @@ private theorem source_slice_regular {u : Point → ℝ} {D : Set Point}
 /-- A nonnegative supersolution bounds the actual compact interior source potential. -/
 theorem velocity_duhamel_le_barrier
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution)
     (hE : IsFullSpaceEvolution A E) (T : ℝ) (g q : Point → ℝ)
     (hgn : ∀ p, 0 ≤ g p)
@@ -51,7 +51,7 @@ theorem velocity_duhamel_le_barrier
     (hqn : ∀ p ∈ evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) T, 0 ≤ q p)
     (hqo : ∀ p ∈ evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T,
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) q p ≤ -g p)
-    (p₀ : Point) (hp₀ : p₀ ∈ evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T) :
+    (p₀ ) (hp₀ : p₀ ∈ evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T) :
     duhamelPotential E.2 T g p₀ ≤ q p₀ := by
   obtain ⟨⟨-, C, -, hCb⟩, -, hsm, -, heq, hc, ht, hl, -⟩ :=
     kinetic_duhamel hH (by omega) autonomousWholeDomain_admissible (zeroCurve_piecewiseC1 1)

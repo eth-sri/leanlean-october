@@ -8,4 +8,3 @@ public import PDEFoundation.Sobolev.W1p.ConvexApprox.WeakDerivSmoothing.Integral
 Public facade for affine transport and kernel averaging of weak derivatives.
 -/
 
-@[expose] public section

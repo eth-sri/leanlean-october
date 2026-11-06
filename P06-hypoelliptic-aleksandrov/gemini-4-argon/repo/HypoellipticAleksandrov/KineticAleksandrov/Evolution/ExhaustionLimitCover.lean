@@ -14,14 +14,14 @@ open HypoellipticAleksandrov Set Filter
 open scoped Topology
 
 /-- Membership in a moving ball is measured by the explicit Euclidean norm. -/
-theorem mem_movingBall_iff_norm_lt {n : ℕ} {Γ : ℝ → PDE.Vec n} {r σ : ℝ}
+theorem mem_movingBall_iff_norm_lt {n Γ r σ}
     (hr : 0 < r) {y : PDE.Vec n} :
     y ∈ movingDomain (PDE.euclideanBall 0 r) Γ σ ↔
       PDE.vecEuclideanNorm (y - Γ σ) < r := by
   rw [mem_movingDomain_iff, PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr, sub_zero]
 
 /-- A point in a closed moving ball has distance at most its Euclidean radius. -/
-theorem norm_le_of_mem_closure_movingBall {n : ℕ} {Γ : ℝ → PDE.Vec n} {r σ : ℝ}
+theorem norm_le_of_mem_closure_movingBall {n Γ r σ}
     (hr : 0 < r) {y : PDE.Vec n}
     (hy : y ∈ closure (movingDomain (PDE.euclideanBall 0 r) Γ σ)) :
     PDE.vecEuclideanNorm (y - Γ σ) ≤ r := by
@@ -29,8 +29,8 @@ theorem norm_le_of_mem_closure_movingBall {n : ℕ} {Γ : ℝ → PDE.Vec n} {r 
   exact ⟨hr.le, by simpa only [add_zero] using vecNormSq_le_of_mem_closure_movingDomain hy⟩
 
 /-- Every point of a closed strict inner cylinder lies in the original diffused interior. -/
-theorem innerClosedCylinder_subset_movingBall {n : ℕ} {Γ : ℝ → PDE.Vec n}
-    {r0 δ α τ S : ℝ} (hδ : 0 < δ) (hδr : δ < r0) :
+theorem innerClosedCylinder_subset_movingBall {n } {Γ : ℝ → PDE.Vec n}
+    {r0 δ α τ S } (hδ : 0 < δ) (hδr : δ < r0) :
     movingClosedSlab (PDE.euclideanBall 0 (r0 - δ)) Γ α τ ∩
       {p | radialSq p ≤ S ^ 2} ⊆
       {p | p.position ∈ movingDomain (PDE.euclideanBall 0 r0) Γ p.time} := by
@@ -40,8 +40,7 @@ theorem innerClosedCylinder_subset_movingBall {n : ℕ} {Γ : ℝ → PDE.Vec n}
     (by linarith)
 
 /-- Strict inner cylinders cover every point of the strict original moving interior. -/
-theorem exists_boundedInnerOpenCylinder_mem {n : ℕ} {Γ : ℝ → PDE.Vec n}
-    {r0 α τ : ℝ} (hr0 : 0 < r0) {p : KineticPoint n}
+theorem exists_boundedInnerOpenCylinder_mem {n Γ r0 α τ} (hr0 : 0 < r0) {p : KineticPoint n}
     (ht : α < p.time ∧ p.time < τ)
     (hi : p.position ∈ movingDomain (PDE.euclideanBall 0 r0) Γ p.time) :
     ∃ δ S : ℝ, 0 < δ ∧ δ < r0 ∧
@@ -63,8 +62,8 @@ theorem exists_boundedInnerOpenCylinder_mem {n : ℕ} {Γ : ℝ → PDE.Vec n}
 
 /-- Fixed closed inner cylinders form relative neighbourhoods of every point in the
 original diffused interior, including the two closed time faces. -/
-theorem exists_innerClosedCylinder_mem_nhdsWithin {n : ℕ} {Γ : ℝ → PDE.Vec n}
-    (hΓ : Continuous Γ) {r0 α τ : ℝ} (hr0 : 0 < r0) {p : KineticPoint n}
+theorem exists_innerClosedCylinder_mem_nhdsWithin {n Γ}
+    (hΓ : Continuous Γ) {r0 α τ } (hr0 : 0 < r0) {p : KineticPoint n}
     (hp : p ∈ movingClosedSlab (PDE.euclideanBall 0 r0) Γ α τ)
     (hi : p.position ∈ movingDomain (PDE.euclideanBall 0 r0) Γ p.time) :
     ∃ δ S : ℝ, 0 < δ ∧ δ < r0 ∧

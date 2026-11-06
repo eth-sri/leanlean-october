@@ -37,7 +37,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 variable {n : ℕ}
 
 variable (n) in
-/-- The linear equivalence unpacking `(σ, v, z) ∈ ℝ^{1+2d}` into `ℝ × (ℝ^d × ℝ^d)`. -/
+/- The linear equivalence unpacking `(σ, v, z) ∈ ℝ^{1+2d}` into `ℝ × (ℝ^d × ℝ^d)`. -/
 def evolutionProdLinearEquiv : EvolutionVec n ≃ₗ[ℝ] ℝ × (PDE.Vec n × PDE.Vec n) where
   toFun x := (timeCoord n x, (diffusedCoord n x, transportedCoord n x))
   invFun a := packPoint a.1 a.2.1 a.2.2
@@ -47,7 +47,7 @@ def evolutionProdLinearEquiv : EvolutionVec n ≃ₗ[ℝ] ℝ × (PDE.Vec n × P
   right_inv a := by simp
 
 variable (n) in
-/-- The continuous linear equivalence unpacking `(σ, v, z) ∈ ℝ^{1+2d}` into
+/- The continuous linear equivalence unpacking `(σ, v, z) ∈ ℝ^{1+2d}` into
 `ℝ × (ℝ^d × ℝ^d)` (time, diffused, transported). -/
 def evolutionProdCLE : EvolutionVec n ≃L[ℝ] ℝ × (PDE.Vec n × PDE.Vec n) :=
   (evolutionProdLinearEquiv n).toContinuousLinearEquiv
@@ -59,7 +59,7 @@ def evolutionProdCLE : EvolutionVec n ≃L[ℝ] ℝ × (PDE.Vec n × PDE.Vec n) 
     (evolutionProdCLE n).symm a = packPoint a.1 a.2.1 a.2.2 := rfl
 
 variable (n) in
-/-- The homeomorphism `ℝ^{1+2d} ≃ₜ KineticPoint n`, `(σ, v, z) ↦ ⟨σ, v, z⟩`: the position
+/- The homeomorphism `ℝ^{1+2d} ≃ₜ KineticPoint n`, `(σ, v, z) ↦ ⟨σ, v, z⟩`: the position
 field of the kinetic point is the diffused coordinate `v` and its velocity field is the
 transported coordinate `z`. -/
 def evolutionHomeomorph : EvolutionVec n ≃ₜ KineticPoint n :=
@@ -77,11 +77,8 @@ theorem evolutionHomeomorph_apply (x : EvolutionVec n) :
 @[simp] theorem velocity_evolutionHomeomorph (x : EvolutionVec n) :
     (evolutionHomeomorph n x).velocity = transportedCoord n x := rfl
 
-@[simp] theorem equivProd_evolutionHomeomorph (x : EvolutionVec n) :
-    KineticPoint.equivProd n (evolutionHomeomorph n x) = evolutionProdCLE n x := rfl
-
 variable (n) in
-/-- The measurable equivalence `ℝ^{1+2d} ≃ᵐ ℝ × (ℝ^d × ℝ^d)` along the packing. -/
+/- The measurable equivalence `ℝ^{1+2d} ≃ᵐ ℝ × (ℝ^d × ℝ^d)` along the packing. -/
 def evolutionProdMeasurableEquiv : EvolutionVec n ≃ᵐ ℝ × (PDE.Vec n × PDE.Vec n) :=
   (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + n + 1) => ℝ) 0).trans
     (MeasurableEquiv.prodCongr (MeasurableEquiv.refl ℝ)
@@ -91,7 +88,7 @@ def evolutionProdMeasurableEquiv : EvolutionVec n ≃ᵐ ℝ × (PDE.Vec n × PD
 theorem evolutionProdMeasurableEquiv_apply (x : EvolutionVec n) :
     evolutionProdMeasurableEquiv n x = evolutionProdCLE n x := rfl
 
-/-- Lebesgue measure on `ℝ^{1+2d}` is product Lebesgue measure on `ℝ × (ℝ^d × ℝ^d)`. -/
+/- Lebesgue measure on `ℝ^{1+2d}` is product Lebesgue measure on `ℝ × (ℝ^d × ℝ^d)`. -/
 theorem measurePreserving_evolutionProdMeasurableEquiv :
     MeasurePreserving (evolutionProdMeasurableEquiv n) volume volume := by
   have h1 := volume_preserving_piFinSuccAbove (fun _ : Fin (n + n + 1) => ℝ) 0
@@ -100,23 +97,13 @@ theorem measurePreserving_evolutionProdMeasurableEquiv :
   exact h1.trans ((MeasurePreserving.id volume).prod (h2.trans h3))
 
 variable (n) in
-/-- The measurable equivalence `ℝ^{1+2d} ≃ᵐ KineticPoint n` of `evolutionHomeomorph`. -/
+/- The measurable equivalence `ℝ^{1+2d} ≃ᵐ KineticPoint n` of `evolutionHomeomorph`. -/
 def evolutionMeasurableEquiv : EvolutionVec n ≃ᵐ KineticPoint n :=
   (evolutionHomeomorph n).toMeasurableEquiv
 
-@[simp] theorem evolutionMeasurableEquiv_apply (x : EvolutionVec n) :
-    evolutionMeasurableEquiv n x = evolutionHomeomorph n x := rfl
-
-@[simp] theorem evolutionMeasurableEquiv_symm_apply (z : KineticPoint n) :
-    (evolutionMeasurableEquiv n).symm z = (evolutionHomeomorph n).symm z := rfl
-
-/-- **Measure preservation.**  Lebesgue measure on `ℝ^{1+2d}` is carried by `(σ, v, z) ↦ ⟨σ, v, z⟩`
-to the `KineticPoint` volume of `Geometry/KineticPointMeasure.lean`. -/
 theorem measurePreserving_evolutionHomeomorph :
     MeasurePreserving (evolutionHomeomorph n) volume volume := by
   have h1 := measurePreserving_evolutionProdMeasurableEquiv (n := n)
-  have h2 := (KineticPoint.measurePreserving_equivProd n).symm
-    (KineticPoint.homeomorphProd n).toMeasurableEquiv
-  exact h1.trans h2
+  exact h1.trans ((KineticPoint.measurePreserving_equivProd n).symm (KineticPoint.homeomorphProd n).toMeasurableEquiv)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

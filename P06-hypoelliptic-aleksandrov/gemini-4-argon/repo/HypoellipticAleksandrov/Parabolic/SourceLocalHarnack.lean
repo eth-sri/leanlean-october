@@ -28,7 +28,7 @@ private theorem parabolicBox_subset_closedBox {d : ℕ} {vartheta r t0 : ℝ}
   exact ⟨⟨hzleft.le, hzright.le⟩, fun i ↦ (hzv i).le⟩
 
 private theorem low_density_of_not_high_density {d : ℕ} {R eps t0 beta : ℝ}
-    {v0 : PDE.Vec d} (_hR : 0 < R) (U : Set (TimeVelocity d))
+    {v0 : PDE.Vec d} (_hR : 0 < R) (U )
     (q : TimeVelocity d → ℝ) (_hU : IsOpen U)
     (hQU : parabolicBox 1 R t0 v0 ⊆ U) (hq : ContDiffOn ℝ 2 q U)
     (hnot : ¬ beta * ((volume : Measure (TimeVelocity d))
@@ -41,7 +41,7 @@ private theorem low_density_of_not_high_density {d : ℕ} {R eps t0 beta : ℝ}
         (parabolicBox 1 R t0 v0 ∩ {z | q z ≤ eps})).toReal := by
   let Q := parabolicBox 1 R t0 v0
   let L : Set (TimeVelocity d) := Q ∩ {z | q z < eps}
-  let H : Set (TimeVelocity d) := Q ∩ {z | eps ≤ q z}
+  let H := Q ∩ {z | eps ≤ q z}
   have hL : MeasurableSet L := by
     have hcont : ContinuousOn q Q := hq.continuousOn.mono hQU
     change MeasurableSet (Q ∩ q ⁻¹' Iio eps)
@@ -65,7 +65,7 @@ private theorem low_density_of_not_high_density {d : ℕ} {R eps t0 beta : ℝ}
   have hdecomp : (volume L).toReal + (volume H).toReal = (volume Q).toReal := by
     simpa only [Measure.real, hinter, hdiff] using
       (measureReal_inter_add_diff (μ := volume) (s := Q) hL hQfinite)
-  have hhigh : (volume H).toReal < beta * (volume Q).toReal := lt_of_not_ge hnot
+  have hhigh := lt_of_not_ge hnot
   have hlow : (1 - beta) * (volume Q).toReal < (volume L).toReal := by
     nlinarith
   have hsubset : L ⊆ Q ∩ {z | q z ≤ eps} := by
@@ -92,7 +92,7 @@ private theorem parabolicLpNormOn_mono_of_continuousOn {d : ℕ}
     (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
     (hTK : T ⊆ K) (hST : S ⊆ T) :
     parabolicLpNormOn d F S ≤ parabolicLpNormOn d F T := by
-  have hFK : ContinuousOn F K := hF.mono hKU
+  have hFK := hF.mono hKU
   have hKmeas : MeasurableSet K := hKcompact.measurableSet
   letI : IsFiniteMeasure (volume.restrict K) :=
     ⟨by
@@ -103,9 +103,9 @@ private theorem parabolicLpNormOn_mono_of_continuousOn {d : ℕ}
     refine MemLp.of_bound (hFK.aestronglyMeasurable hKmeas) M ?_
     filter_upwards [ae_restrict_mem hKmeas] with z hz
     exact hM z hz
-  have hTmem : MemLp F (parabolicExponent d) (volume.restrict T) :=
+  have hTmem :=
     hKmem.mono_measure (Measure.restrict_mono_set volume hTK)
-  have hSmem : MemLp F (parabolicExponent d) (volume.restrict S) :=
+  have hSmem :=
     hTmem.mono_measure (Measure.restrict_mono_set volume hST)
   have hTtop : parabolicELpNormOn d F T ≠ ⊤ := by
     simpa only [parabolicELpNormOn] using hTmem.eLpNorm_ne_top

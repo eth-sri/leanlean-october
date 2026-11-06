@@ -44,7 +44,7 @@ open Filter
 
 variable {d : ℕ} {U : Set (Vec d)}
 
-/-- A representative-level `H¹₀(U)` witness with the exact field surface used
+/- A representative-level `H¹₀(U)` witness with the exact field surface used
 by `LeanIntoHomogenization`.
 
 The additional fields are precisely a supported smooth approximation
@@ -76,28 +76,28 @@ structure H10Function {d : ℕ} (U : Set (Vec d)) extends H1Function U where
 instance : CoeFun (H10Function U) (fun _ => Vec d → ℝ) where
   coe u := u.toH1Function.toFun
 
-/-- Representative-level membership of a concrete function in `H¹₀(U)`.
+/- Representative-level membership of a concrete function in `H¹₀(U)`.
 This is the LIH-compatible existential wrapper around `H10Function`. -/
-def MemH10 {d : ℕ} (U : Set (Vec d)) (u : Vec d → ℝ) : Prop :=
+def MemH10 {d } (U : Set (Vec d)) (u : Vec d → ℝ) : Prop :=
   ∃ v : H10Function U, v.toH1Function.toFun = u
 
-/-- The canonical closed `H¹₀(U)` submodule, definitionally inherited from
+/- The canonical closed `H¹₀(U)` submodule, definitionally inherited from
 the generic `W¹,p` zero-boundary construction at `p = 2`. -/
 noncomputable abbrev h10GraphClosedSubmodule (hU : IsOpen U) :
     ClosedSubmodule ℝ (H1Graph U) :=
   w10pGraphClosedSubmodule (p := (2 : ℝ≥0∞)) hU
 
-/-- The canonical complete quotient-level `H¹₀(U)` carrier. -/
+/- The canonical complete quotient-level `H¹₀(U)` carrier. -/
 noncomputable abbrev H10Graph (hU : IsOpen U) :=
   W10pGraph (p := (2 : ℝ≥0∞)) hU
 
-/-- The `H¹` graph point associated to an actual bundled smooth compactly
+/- The `H¹` graph point associated to an actual bundled smooth compactly
 supported test function. -/
 noncomputable abbrev smoothCompactlySupportedH1Graph (hU : IsOpen U)
     (φ : WeakTestFunction U) : H1Graph U :=
   smoothCompactlySupportedW1pGraph (p := (2 : ℝ≥0∞)) hU φ
 
-/-- The actual smooth test-function image belongs to the canonical
+/- The actual smooth test-function image belongs to the canonical
 zero-boundary `H¹` graph. -/
 theorem smoothCompactlySupportedH1Graph_mem_h10Graph
     (hU : IsOpen U) (φ : WeakTestFunction U) :
@@ -109,12 +109,12 @@ namespace H1Function
 
 variable {u : H1Function U}
 
-/-- Explicit supported smooth approximation data for an `H1Function`,
+/- Explicit supported smooth approximation data for an `H1Function`,
 definitionally the generic `W¹,2` certificate. -/
 abbrev SupportedSmoothApproximation (u : H1Function U) : Type :=
   W1pFunction.SupportedSmoothApproximation u.toW1pFunction
 
-/-- Bundle an `H1Function` with an explicit supported smooth approximation.
+/- Bundle an `H1Function` with an explicit supported smooth approximation.
 This is the representative facade constructor; it adds no data beyond the
 certificate. -/
 def toH10Function (u : H1Function U)
@@ -127,19 +127,11 @@ def toH10Function (u : H1Function U)
   tendsto_approx := happrox.tendsto_value
   tendsto_approx_grad := happrox.tendsto_grad
 
-@[simp]
-theorem toH10Function_toH1Function (u : H1Function U)
-    (happrox : u.SupportedSmoothApproximation) :
-    (u.toH10Function happrox).toH1Function = u :=
-  rfl
-
-/-- Regard a member of an `H¹` supported approximation as an actual bundled
-smooth compactly supported test function. -/
 noncomputable abbrev SupportedSmoothApproximation.toWeakTestFunction
     (happrox : u.SupportedSmoothApproximation) (n : ℕ) : WeakTestFunction U :=
   W1pFunction.SupportedSmoothApproximation.toWeakTestFunction happrox n
 
-/-- An explicit supported smooth approximation puts the representative's
+/- An explicit supported smooth approximation puts the representative's
 graph image in the canonical complete `H¹₀` carrier. -/
 theorem mem_h10Graph_of_supportedSmoothApproximation
     (hU : IsOpen U) (u : H1Function U)
@@ -153,18 +145,6 @@ namespace H10Function
 
 variable {u : H10Function U}
 
-@[ext]
-theorem ext {u v : H10Function U}
-    (htoH1Function : u.toH1Function = v.toH1Function)
-    (happrox : u.approx = v.approx) : u = v := by
-  cases u
-  cases v
-  cases htoH1Function
-  cases happrox
-  rfl
-
-/-- Recover the exact supported smooth approximation certificate bundled by an
-`H10Function`. -/
 def supportedSmoothApproximation (u : H10Function U) :
     u.toH1Function.SupportedSmoothApproximation where
   approx := u.approx
@@ -174,32 +154,17 @@ def supportedSmoothApproximation (u : H10Function U) :
   tendsto_value := u.tendsto_approx
   tendsto_grad := u.tendsto_approx_grad
 
-@[simp]
-theorem supportedSmoothApproximation_toH10Function (u : H10Function U) :
-    u.toH1Function.toH10Function u.supportedSmoothApproximation = u := by
-  cases u
-  rfl
-
-/-- The `n`th approximation bundled by an `H10Function`, exposed as an actual
-smooth compactly supported test function. -/
 noncomputable abbrev toWeakTestFunction (u : H10Function U) (n : ℕ) :
     WeakTestFunction U :=
   u.supportedSmoothApproximation.toWeakTestFunction n
 
-@[simp]
-theorem toWeakTestFunction_toFun (u : H10Function U) (n : ℕ) :
-    (u.toWeakTestFunction n).toFun = u.approx n :=
-  rfl
-
-/-- The graph image of an `H10Function` belongs to the same canonical closed
-`H10Graph` used by the quotient-level API. -/
 theorem mem_h10Graph (hU : IsOpen U) (u : H10Function U) :
     u.toH1Function.toW1pFunction.toW1pGraph ∈
       (h10GraphClosedSubmodule hU).toSubmodule :=
   u.toH1Function.mem_h10Graph_of_supportedSmoothApproximation
     hU u.supportedSmoothApproximation
 
-/-- Send a representative-level `H10Function` to its canonical complete graph
+/- Send a representative-level `H10Function` to its canonical complete graph
 point. -/
 noncomputable def toH10Graph (hU : IsOpen U) (u : H10Function U) :
     H10Graph hU :=
@@ -208,15 +173,8 @@ noncomputable def toH10Graph (hU : IsOpen U) (u : H10Function U) :
 @[simp]
 theorem coe_toH10Graph (hU : IsOpen U) (u : H10Function U) :
     (u.toH10Graph hU : H1Graph U) =
-      u.toH1Function.toW1pFunction.toW1pGraph :=
-  rfl
+      u.toH1Function.toW1pFunction.toW1pGraph := rfl
 
-/-- Package a globally smooth compactly supported function as an
-LIH-compatible representative-level `H¹₀` test.
-
-The underlying `H1Function` is the existing `W1pFunction.ofContDiff`
-constructor at `p = 2`; the constant approximation sequence is only its
-supported-smooth certificate. -/
 noncomputable def ofContDiff (hU : IsOpen U)
     {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U) :
@@ -244,41 +202,24 @@ noncomputable def ofContDiff (hU : IsOpen U)
 theorem ofContDiff_toFun (hU : IsOpen U)
     {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U) :
-    (ofContDiff hU hf hcompact hsub).toH1Function.toFun = f :=
-  rfl
+    (ofContDiff hU hf hcompact hsub).toH1Function.toFun = f := rfl
 
 @[simp]
 theorem ofContDiff_grad (hU : IsOpen U)
     {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U) :
     (ofContDiff hU hf hcompact hsub).toH1Function.grad =
-      fun x i => (fderiv ℝ f x) (basisVec i) :=
-  rfl
-
-@[simp]
-theorem ofContDiff_approx (hU : IsOpen U)
-    {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U)
-    (n : ℕ) :
-    (ofContDiff hU hf hcompact hsub).approx n = f :=
-  rfl
+      fun x i => (fderiv ℝ f x) (basisVec i) := rfl
 
 end H10Function
 
 namespace H1Function
 
-@[simp]
-theorem toH10Function_supportedSmoothApproximation
-    (u : H1Function U) (happrox : u.SupportedSmoothApproximation) :
-    (u.toH10Function happrox).supportedSmoothApproximation = happrox := by
-  cases happrox
-  rfl
-
 end H1Function
 
 namespace H10Graph
 
-/-- Every complete `H¹₀` graph point is a limit of actual bundled smooth
+/- Every complete `H¹₀` graph point is a limit of actual bundled smooth
 compactly supported test functions. -/
 theorem exists_tendsto_smooth (hU : IsOpen U) (u : H10Graph hU) :
     ∃ φ : ℕ → WeakTestFunction U,

@@ -83,16 +83,16 @@ theorem weakRegularized_of_straightened_dirichlet
         ((PDE.continuous_vecNormSq.comp (contDiff_spatialZ (m := 0)).continuous).div_const _))
       continuous_const
   have hW : IsOpen W := isOpen_Ioo.prod hD
-  have hQ : ContDiff ℝ (⊤ : ℕ∞) Q := contDiff_truncationPoint hg
+  have hQ := contDiff_truncationPoint hg
   have hU : IsOpen U := hW.preimage hQ.continuous
   have huc : IsScalarC12On u W := hu.2.1
   have hw : ContinuousOn w U := huc.continuousOn.comp hQ.continuous.continuousOn
     (fun x hx => hx)
-  have ht0 : ContinuousOn (fun x => scalarTimeDerivative u (Q x)) U :=
+  have ht0 :=
     huc.continuousOn_scalarTimeDerivative.comp hQ.continuous.continuousOn (fun x hx => hx)
-  have hg0 : ContinuousOn (fun x => scalarSpatialGradient u (Q x)) U :=
+  have hg0 :=
     huc.continuousOn_scalarSpatialGradient.comp hQ.continuous.continuousOn (fun x hx => hx)
-  have hh0 : ContinuousOn (fun x => scalarSpatialHessian u (Q x)) U :=
+  have hh0 :=
     huc.continuousOn_scalarSpatialHessian.comp hQ.continuous.continuousOn (fun x hx => hx)
   have hT : ContinuousOn T U := by
     apply ht0.add

@@ -19,8 +19,7 @@ private theorem integrable_mul_test
     (hsub : tsupport ψ ⊆ U) : Integrable (fun z => f z * ψ z) := by
   have hK : IntegrableOn f (tsupport ψ) volume :=
     (hf.mono hsub).integrableOn_compact hc.isCompact
-  have hprod := hK.mul_continuousOn hψ.continuousOn hc.isCompact
-  apply (integrableOn_iff_integrable_of_support_subset ?_).mp hprod
+  apply (integrableOn_iff_integrable_of_support_subset ?_).mp (hK.mul_continuousOn hψ.continuousOn hc.isCompact)
   intro z hz
   exact tsupport_mul_subset_right (subset_closure hz)
 

@@ -64,10 +64,7 @@ theorem duhamel_operator_eq_of_smooth_weak {U : Set (EvolutionVec d)} (hU : IsOp
         ring
       simp only [Pi.sub_apply]
       rw [hfun, integral_sub iA iF, hEq, sub_self])
-  have hae1 : (fun x => transportedOperator B b u x - f x)
-      =ᵐ[volume.restrict U] fun _ => (0 : ℝ) :=
-    (ae_restrict_iff' hU.measurableSet).2 hae0
-  have heq := Measure.eqOn_open_of_ae_eq hae1 hU hcont continuousOn_const
+  have heq := Measure.eqOn_open_of_ae_eq ((ae_restrict_iff' hU.measurableSet).2 hae0) hU hcont continuousOn_const
   intro x hx
   exact sub_eq_zero.mp (heq hx)
 
@@ -86,7 +83,7 @@ theorem duhamelPotential_source_equation (hH : HormanderHypoellipticityStatement
     (hgs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
       g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
     (hgU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T)
-    {lam Lam m : ℝ} (hlam : 0 < lam) (hm : 0 < m)
+    {lam Lam m } (hlam : 0 < lam) (hm : 0 < m)
     (hell : HasEverywhereLoewnerBounds lam Lam B)
     (hcoerc : HasUnitDirectionDriftCoercivity m b) :
     ∀ p ∈ evolutionPastOpenCylinder Ω γ T,

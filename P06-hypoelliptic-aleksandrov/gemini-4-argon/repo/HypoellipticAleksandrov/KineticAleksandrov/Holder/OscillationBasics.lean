@@ -53,7 +53,7 @@ theorem oscillationOn_mono {d : ℕ} {u : KineticPoint d → ℝ}
 
 /-- Uniform upper and lower bounds control the real oscillation. -/
 theorem oscillationOn_le {d : ℕ} {u : KineticPoint d → ℝ}
-    {E : Set (KineticPoint d)} (hne : E.Nonempty) {a b : ℝ}
+    {E : Set (KineticPoint d)} (hne : E.Nonempty) {a b }
     (hlo : ∀ P ∈ E, a ≤ u P) (hhi : ∀ P ∈ E, u P ≤ b) :
     oscillationOn u E ≤ b - a := by
   apply sub_le_sub
@@ -93,7 +93,7 @@ theorem inf_le_closure_values {d : ℕ} {u : KineticPoint d → ℝ}
   exact (closure_minimal hsub isClosed_Ici) (hu.image_closure (mem_image_of_mem u hP))
 
 /-- Compact closure and continuity make closure oscillation equal open-set oscillation. -/
-theorem oscillationOn_closure {d : ℕ} {u : KineticPoint d → ℝ}
+theorem oscillationOn_closure {d u}
     {E : Set (KineticPoint d)} (hne : E.Nonempty) (hE : IsCompact (closure E))
     (hu : ContinuousOn u (closure E)) : oscillationOn u (closure E) = oscillationOn u E := by
   have hab := hE.bddAbove_image hu

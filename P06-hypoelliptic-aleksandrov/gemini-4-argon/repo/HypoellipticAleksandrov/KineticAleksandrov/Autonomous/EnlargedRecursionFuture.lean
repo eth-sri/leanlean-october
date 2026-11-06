@@ -13,7 +13,7 @@ open Set MeasureTheory HypoellipticAleksandrov
 /-- Every actual enlarged exit occurs strictly after its pole time. -/
 theorem enlargedVisitExitKernel_ae_time_gt
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) (p : Point) :
     ∀ᵐ q ∂enlargedVisitExitKernel hH hLE hlam hLam A H T p, p.time < q.time := by
   classical

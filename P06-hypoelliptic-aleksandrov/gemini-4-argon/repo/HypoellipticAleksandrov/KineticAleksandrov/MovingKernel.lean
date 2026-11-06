@@ -74,12 +74,11 @@ theorem isOpen_movingDomain {n : ℕ} {Ω : Set (PDE.Vec n)}
 /-- Measurability of the ambient moving state fiber. -/
 theorem measurableSet_evolutionStateSet {n : ℕ} {Ω : Set (PDE.Vec n)}
     {γ : ℝ → PDE.Vec n} (hΩ : MeasurableSet Ω) (σ : ℝ) :
-    MeasurableSet (evolutionStateSet Ω γ σ) := by
-  exact (measurableSet_movingDomain hΩ σ).prod MeasurableSet.univ
+    MeasurableSet (evolutionStateSet Ω γ σ) :=  (measurableSet_movingDomain hΩ σ).prod MeasurableSet.univ
 
 /-- The canonical valid query associated with a fixed-time source state. -/
 def evolutionQueryOfState {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (σ τ : ℝ) (hστ : σ ≤ τ)
+    (γ : ℝ → PDE.Vec n) (σ τ ) (hστ : σ ≤ τ)
     (p : EvolutionState Ω γ σ) : EvolutionQuery Ω γ :=
   ⟨(σ, (τ, p.1)), hστ, p.2⟩
 
@@ -108,14 +107,13 @@ theorem jointlyMeasurable_apply {n : ℕ}
     {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (E : Set (EvolutionAmbientState n))
     (hE : MeasurableSet E) :
-    Measurable (fun q : EvolutionQuery Ω γ => K.master q E) := by
-  exact K.master.measurable_coe hE
+    Measurable (fun q : EvolutionQuery Ω γ => K.master q E) :=  K.master.measurable_coe hE
 
 /-- Derive the fixed-time kernel from the one ambient master kernel. -/
 noncomputable def fiberKernel {n : ℕ}
     {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (σ τ : ℝ) (hστ : σ ≤ τ) :
+    (σ τ ) (hστ : σ ≤ τ) :
     ProbabilityTheory.Kernel
       (EvolutionState Ω γ σ) (EvolutionState Ω γ τ) :=
   ProbabilityTheory.Kernel.comapRight
@@ -208,26 +206,22 @@ noncomputable def firstMarginal {n : ℕ}
   K.master.fst
 
 /-- Application of the first marginal is the first-coordinate projection. -/
-theorem firstMarginal_apply {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem firstMarginal_apply {n Ω γ}
     (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
     (E : Set (PDE.Vec n)) (hE : MeasurableSet E) :
-    K.firstMarginal q E = K.master q {p | p.1 ∈ E} := by
-  exact ProbabilityTheory.Kernel.fst_apply' K.master q hE
+    K.firstMarginal q E = K.master q {p | p.1 ∈ E} :=  ProbabilityTheory.Kernel.fst_apply' K.master q hE
 
 /-- The fixed-time first marginal derived from the same fiber kernel. -/
-noncomputable def fiberFirstMarginal {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+noncomputable def fiberFirstMarginal {n Ω} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (σ τ : ℝ) (hστ : σ ≤ τ) :
+    (σ τ ) (hστ : σ ≤ τ) :
     ProbabilityTheory.Kernel
       (EvolutionState Ω γ σ) (EvolutionPosition Ω γ τ) :=
   ProbabilityTheory.Kernel.map
     (K.fiberKernel hΩ σ τ hστ) (firstPosition Ω γ τ)
 
 /-- Mapping the fixed-time first marginal back gives the master first marginal. -/
-theorem map_fiberFirstMarginal_eq_firstMarginal {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem map_fiberFirstMarginal_eq_firstMarginal {n Ω γ}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
     Measure.map
@@ -255,8 +249,7 @@ theorem map_fiberFirstMarginal_eq_firstMarginal {n : ℕ}
       rw [MovingFiberKernel.firstMarginal, ProbabilityTheory.Kernel.fst_apply]
 
 /-- Endpoint identity for the derived fixed-time kernel. -/
-def HasEndpoint {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+def HasEndpoint {n Ω} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) : Prop :=
   ∀ σ : ℝ,
     K.fiberKernel hΩ σ σ le_rfl =
@@ -264,8 +257,7 @@ def HasEndpoint {n : ℕ}
         ProbabilityTheory.Kernel (EvolutionState Ω γ σ) (EvolutionState Ω γ σ))
 
 /-- Chapman--Kolmogorov equality for the same derived kernel family. -/
-def HasComposition {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+def HasComposition {n Ω} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) : Prop :=
   ∀ (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ),
     K.fiberKernel hΩ σ τ (hσr.trans hrτ) =
@@ -274,8 +266,7 @@ def HasComposition {n : ℕ}
 end MovingFiberKernel
 
 /-- Lift a small-domain query to the corresponding large-domain query. -/
-def largeQueryOfSmall {n : ℕ}
-    {Ωsmall Ωlarge : Set (PDE.Vec n)}
+def largeQueryOfSmall {n Ωsmall Ωlarge}
     {γsmall γlarge : ℝ → PDE.Vec n}
     (hsub : ∀ σ, movingDomain Ωsmall γsmall σ ⊆
       movingDomain Ωlarge γlarge σ)
@@ -285,8 +276,7 @@ def largeQueryOfSmall {n : ℕ}
 namespace MovingFiberKernel
 
 /-- Ambient measure domination after zero extension outside the small fiber. -/
-def IsZeroExtensionDominatedBy {n : ℕ}
-    {Ωsmall Ωlarge : Set (PDE.Vec n)}
+def IsZeroExtensionDominatedBy {n Ωsmall Ωlarge}
     {γsmall γlarge : ℝ → PDE.Vec n}
     (Ksmall : MovingFiberKernel Ωsmall γsmall)
     (Klarge : MovingFiberKernel Ωlarge γlarge)

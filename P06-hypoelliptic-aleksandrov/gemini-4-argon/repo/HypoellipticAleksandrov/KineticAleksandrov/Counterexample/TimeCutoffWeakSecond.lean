@@ -21,12 +21,12 @@ open scoped ENNReal
 
 /-- The second weak chain rule for a `C²` scalar cutoff of a Sobolev difference.
 The prescribed mixed second derivative is genuine Sobolev regularity of that difference. -/
-theorem weakSecond_cutoff_sub {d : ℕ} {D : Set (PDE.Vec d)}
+theorem weakSecond_cutoff_sub {d D}
     (hD : PDE.IsOpenBoundedConvexDomain D) (u B : PDE.W1pFunction D 2)
     (i k : Fin d) (hess : PDE.Vec d → ℝ) (hhess : PDE.MemLpOn D 2 hess)
     (hweak : PDE.HasWeakPartialDerivOn D i (fun x => u.grad x k - B.grad x k) hess)
     (theta : ℝ → ℝ) (htheta : ContDiff ℝ 2 theta)
-    (M : ℝ) (hM : 0 ≤ M) (hbound : ∀ s, |deriv (deriv theta) s| ≤ M) :
+    (M ) (hM : 0 ≤ M) (hbound : ∀ s, |deriv (deriv theta) s| ≤ M) :
     PDE.HasWeakPartialDerivOn D i
       (fun x => deriv theta (u.toFun x - B.toFun x) * (u.grad x k - B.grad x k))
       (fun x => deriv theta (u.toFun x - B.toFun x) * hess x +
@@ -38,8 +38,7 @@ theorem weakSecond_cutoff_sub {d : ℕ} {D : Set (PDE.Vec d)}
     hd hM hbound
   have hb : PDE.MemLpOn D 2 (fun x => u.grad x k - B.grad x k) :=
     (u.gradMemLp k).sub (B.gradMemLp k)
-  have he := weakPartial_product_sobolev hD a i _ hess hb hhess hweak
-  convert he using 1
+  convert (weakPartial_product_sobolev hD a i _ hess hb hhess hweak) using 1
   · funext x
     rfl
   · funext x
@@ -49,13 +48,13 @@ theorem weakSecond_cutoff_sub {d : ℕ} {D : Set (PDE.Vec d)}
 
 /-- The second weak chain rule with a smooth subtracted function. Its Sobolev bounds
 and weak derivatives are constructed internally on the bounded convex domain. -/
-theorem weakSecond_cutoff_sub_smooth {d : ℕ} {D : Set (PDE.Vec d)}
+theorem weakSecond_cutoff_sub_smooth {d D}
     (hD : PDE.IsOpenBoundedConvexDomain D) (u : PDE.W1pFunction D 2)
     (B : PDE.Vec d → ℝ) (hB : ContDiff ℝ (⊤ : ℕ∞) B) (i k : Fin d)
     (hess : PDE.Vec d → ℝ) (hhess : PDE.MemLpOn D 2 hess)
     (hweak : PDE.HasWeakPartialDerivOn D i (fun x => u.grad x k) hess)
     (theta : ℝ → ℝ) (htheta : ContDiff ℝ 2 theta)
-    (M : ℝ) (hM : 0 ≤ M) (hbound : ∀ s, |deriv (deriv theta) s| ≤ M) :
+    (M ) (hM : 0 ≤ M) (hbound : ∀ s, |deriv (deriv theta) s| ≤ M) :
     PDE.HasWeakPartialDerivOn D i
       (fun x => deriv theta (u.toFun x - B x) *
         (u.grad x k - PDE.classicalGradient B x k))

@@ -22,7 +22,7 @@ theorem continuousOn_duhamelPotential_bounded_signed
     (hb : IsSmoothDrift b) (lam Lam m : ℝ) (hlam : 0 < lam) (hm : 0 < m)
     (hell : HasEverywhereLoewnerBounds lam Lam B)
     (hcoerc : HasUnitDirectionDriftCoercivity m b)
-    (T : ℝ) (F : KineticPoint d → ℝ) (hF : Measurable F) (M : ℝ) (hM : 0 ≤ M)
+    (T : ℝ) (F : KineticPoint d → ℝ) (hF : Measurable F) (M ) (hM : 0 ≤ M)
     (hFb : ∀ p, |F p| ≤ M)
     (hFz : ∀ p, KineticPoint.equivProd d p ∉ boundedSourcePast Ω γ T → F p = 0) :
     ContinuousOn (duhamelPotential K T F) (evolutionPastOpenCylinder Ω γ T) := by

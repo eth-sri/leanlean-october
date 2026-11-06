@@ -164,9 +164,8 @@ theorem tendsto_eLpNorm_mul_sub_mul_of_tendsto_eLpNorm_two
         (fun x => a x * f n x - a x * f₀ x)
         (2 : ℝ≥0∞) μ)
       l (𝓝 0) := by
-  let C : ℝ≥0 := (eLpNorm a ∞ μ).toNNReal
-  have hC : (C : ℝ≥0∞) = eLpNorm a ∞ μ := by
-    exact ENNReal.coe_toNNReal ha.eLpNorm_ne_top
+  let C := (eLpNorm a ∞ μ).toNNReal
+  have hC := ENNReal.coe_toNNReal ha.eLpNorm_ne_top
   have haBound : ∀ᵐ x ∂μ, ‖a x‖ₑ ≤ (C : ℝ≥0∞) := by
     rw [hC, eLpNorm_exponent_top ha.aestronglyMeasurable]
     exact enorm_ae_le_eLpNormEssSup a μ

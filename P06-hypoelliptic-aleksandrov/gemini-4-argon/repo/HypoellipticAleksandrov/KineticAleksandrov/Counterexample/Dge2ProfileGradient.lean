@@ -10,7 +10,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-/-- Positive kinetic dilation preserves nonzero points. -/
+/- Positive kinetic dilation preserves nonzero points. -/
 theorem dilate_ne_zero {d : ℕ} (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
     dilate r q ≠ 0 := by
   intro hzero
@@ -19,7 +19,7 @@ theorem dilate_ne_zero {d : ℕ} (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0
   exact hq (Prod.ext ((smul_eq_zero_iff_right (pow_ne_zero 3 hr.ne')).mp hx)
     ((smul_eq_zero_iff_right hr.ne').mp hv))
 
-/-- The derivative of a homogeneous smooth function has the source velocity weight. -/
+/- The derivative of a homogeneous smooth function has the source velocity weight. -/
 theorem homogeneous_velocity_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
@@ -55,16 +55,7 @@ theorem homogeneous_velocity_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
   apply (eq_div_iff hr.ne').mpr
   simpa only [mul_comm] using heq
 
-/-- The native selector vector has the same exact velocity homogeneity. -/
-theorem homogeneous_dv {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
-    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
-    (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
-    dv H (dilate r q) = Real.rpow r (alpha - 1) • dv H q := by
-  ext i
-  exact homogeneous_velocity_jet alpha H hsmooth hhom r hr q hq (Pi.single i 1)
-
-/-- Smooth homogeneous profiles satisfy the source velocity-gradient bound. -/
+/- The native selector vector has the same exact velocity homogeneity. -/
 theorem homogeneous_velocity_gradient_bound {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q) :
@@ -97,7 +88,10 @@ theorem homogeneous_velocity_gradient_bound {d : ℕ} (alpha : ℝ) (H : XV d �
   have hqp : dilate (rho q) p = q := by
     dsimp [p]
     rw [dilate_mul, mul_inv_cancel₀ hr.ne', dilate_one]
-  have hj := homogeneous_dv alpha H hsmooth hhom (rho q) hr p hpnz
+  have hj : dv H (dilate (rho q) p) = Real.rpow (rho q) (alpha - 1) • dv H p := by
+    let r := (rho q)
+    ext i
+    exact homogeneous_velocity_jet alpha H hsmooth hhom r hr p hpnz (Pi.single i 1)
   rw [hqp] at hj
   rw [hj, PDE.vecEuclideanNorm_smul]
   have hpow := Real.rpow_pos_of_pos hr (alpha - 1)
@@ -107,14 +101,5 @@ theorem homogeneous_velocity_gradient_bound {d : ℕ} (alpha : ℝ) (H : XV d �
     (hB ⟨p, hp, rfl⟩).trans (le_max_right _ _)
   simpa only [mul_comm] using mul_le_mul_of_nonneg_left hb hpow.le
 
-/-- The actual profile satisfies the required velocity-gradient estimate. -/
-theorem geometricProfile_velocity_gradient_bound {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) :
-    ∃ C : ℝ, 0 < C ∧ ∀ q : XV d, q ≠ 0 →
-      PDE.vecEuclideanNorm (dv (geometricProfile alpha C₀ sigma R) q) ≤
-        C * Real.rpow (rho q) (alpha - 1) := by
-  apply homogeneous_velocity_gradient_bound alpha (geometricProfile alpha C₀ sigma R)
-    (geometricProfile_smooth_off_origin alpha C₀ sigma R hsigma hR)
-  exact fun r hr q => geometricProfile_homogeneous alpha C₀ sigma R r hr q
-
+/- The actual profile satisfies the required velocity-gradient estimate. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

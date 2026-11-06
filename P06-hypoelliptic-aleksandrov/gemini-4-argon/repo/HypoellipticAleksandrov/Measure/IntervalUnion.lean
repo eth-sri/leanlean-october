@@ -29,7 +29,7 @@ def IsOpenSubinterval (J I : Set ℝ) : Prop :=
   I.Nonempty ∧ IsOpen I ∧ I.OrdConnected ∧ I ⊆ J
 
 private theorem connectedComponentIn_eq_ordConnectedComponent_of_mem
-    (U : Set ℝ) {x : ℝ} (hx : x ∈ U) :
+    (U : Set ℝ) {x } (hx : x ∈ U) :
     connectedComponentIn U x = ordConnectedComponent U x := by
   apply Subset.antisymm
   · letI : OrdConnected (connectedComponentIn U x) :=
@@ -49,9 +49,9 @@ namespace HypoellipticAleksandrov.Parabolic
 /-- Non-strict local-measure companion to
 `volume_sUnion_monotone_interval_enlargement`. -/
 theorem volume_sUnion_monotone_interval_enlargement_of_le
-    (kappa : ℝ) (hkappa : 1 < kappa)
+    (kappa ) (hkappa : 1 < kappa)
     (J : Set ℝ) (hJopen : IsOpen J) (hJord : J.OrdConnected)
-    (B : Set (Set ℝ)) (g : Set ℝ → Set ℝ)
+    (B ) (g : Set ℝ → Set ℝ)
     (hB : ∀ I ∈ B, IsOpenSubinterval J I)
     (hUbounded : Bornology.IsBounded (⋃₀ B))
     (hg : ∀ I, IsOpenSubinterval J I → IsOpenSubinterval J (g I))
@@ -60,15 +60,14 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
     (hmono : ∀ I₁ I₂, IsOpenSubinterval J I₁ → IsOpenSubinterval J I₂ →
       I₁ ⊆ I₂ → g I₁ ⊆ g I₂) :
     volume (⋃₀ (g '' B)) ≤ ENNReal.ofReal kappa * volume (⋃₀ B) := by
-  have _hkappa : 0 < kappa := lt_trans zero_lt_one hkappa
+  have _hkappa := lt_trans zero_lt_one hkappa
   have _hJopen : IsOpen J := hJopen
   have _hJord : J.OrdConnected := hJord
-  have _hg : ∀ I, IsOpenSubinterval J I → IsOpenSubinterval J (g I) := hg
+  have _hg := hg
   let U : Set ℝ := ⋃₀ B
   have hUopen : IsOpen U := by
     exact isOpen_sUnion fun I hI => (hB I hI).2.1
-  have hUJ : U ⊆ J := by
-    exact sUnion_subset fun I hI => (hB I hI).2.2.2
+  have hUJ := sUnion_subset fun I hI => (hB I hI).2.2.2
   let R : Set ℝ := ordConnectedSection U
   have hRsub : R ⊆ U := by
     simpa only [R] using (ordConnectedSection_subset (s := U))
@@ -90,7 +89,7 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
     refine disjoint_left.2 fun z hzr hzs => ?_
     have hCeq : C r = C s :=
       (connectedComponentIn_eq hzr).trans (connectedComponentIn_eq hzs).symm
-    have hsCs : s ∈ C s := mem_connectedComponentIn (hRsub hs)
+    have hsCs := mem_connectedComponentIn (hRsub hs)
     have hsCr : s ∈ C r := by
       rw [hCeq]
       exact hsCs
@@ -108,8 +107,7 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
       let r : ℝ := ordConnectedProj U ⟨x, hx⟩
       have hrR : r ∈ R := by
         exact ⟨⟨x, hx⟩, rfl⟩
-      have hxOrd : x ∈ ordConnectedComponent U r := by
-        exact mem_ordConnectedComponent_ordConnectedProj U ⟨x, hx⟩
+      have hxOrd := mem_ordConnectedComponent_ordConnectedProj U ⟨x, hx⟩
       have hxCr : x ∈ C r := by
         change x ∈ connectedComponentIn U r
         rw [connectedComponentIn_eq_ordConnectedComponent_of_mem U (hRsub hrR)]
@@ -121,12 +119,11 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
     rcases hT with ⟨I, hIB, rfl⟩
     have hI : IsOpenSubinterval J I := hB I hIB
     obtain ⟨x, hxI⟩ := hI.1
-    have hxU : x ∈ U := subset_sUnion_of_mem hIB hxI
+    have hxU := subset_sUnion_of_mem hIB hxI
     let r : ℝ := ordConnectedProj U ⟨x, hxU⟩
     have hrR : r ∈ R := by
       exact ⟨⟨x, hxU⟩, rfl⟩
-    have hxOrd : x ∈ ordConnectedComponent U r := by
-      exact mem_ordConnectedComponent_ordConnectedProj U ⟨x, hxU⟩
+    have hxOrd := mem_ordConnectedComponent_ordConnectedProj U ⟨x, hxU⟩
     have hxCr : x ∈ C r := by
       change x ∈ connectedComponentIn U r
       rw [connectedComponentIn_eq_ordConnectedComponent_of_mem U (hRsub hrR)]
@@ -158,8 +155,8 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
 /-- Finite-ambient non-strict local-measure companion to
 `volume_sUnion_monotone_interval_enlargement_Ioo`. -/
 theorem volume_sUnion_monotone_interval_enlargement_Ioo_of_le
-    (kappa : ℝ) (hkappa : 1 < kappa) (t1 t2 : ℝ) (ht : t1 < t2)
-    (B : Set (Set ℝ)) (g : Set ℝ → Set ℝ)
+    (kappa ) (hkappa : 1 < kappa) (t1 t2 : ℝ) (ht : t1 < t2)
+    (B ) (g : Set ℝ → Set ℝ)
     (hB : ∀ I ∈ B, IsOpenSubinterval (Ioo t1 t2) I)
     (hg : ∀ I, IsOpenSubinterval (Ioo t1 t2) I →
       IsOpenSubinterval (Ioo t1 t2) (g I))

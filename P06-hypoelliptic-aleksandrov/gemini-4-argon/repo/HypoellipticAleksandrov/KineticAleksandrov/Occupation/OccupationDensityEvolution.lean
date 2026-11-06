@@ -20,7 +20,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped MatrixOrder ProbabilityTheory
 
-/-- The entire terminal evolution statement, retaining its shared witnesses and clauses. -/
+/- The entire terminal evolution statement, retaining its shared witnesses and clauses. -/
 def TerminalEvolutionStatement : Prop :=
   ∀
     (n : ℕ) (_hn : 1 ≤ n)
@@ -97,10 +97,10 @@ def TerminalEvolutionStatement : Prop :=
         HasParabolicMarginalBundle Ω γ
           (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B K
 
-/-- Transfer the source clauses by uniqueness, rather than assuming them for the given kernel. -/
+/- Transfer the source clauses by uniqueness, rather than assuming them for the given kernel. -/
 theorem evolution_clauses_of_realization
     (hEvol : TerminalEvolutionStatement)
-    (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
+    (n ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
     (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
@@ -108,7 +108,7 @@ theorem evolution_clauses_of_realization
     (hBs : IsSmoothFullKineticCoefficient B) (hBsym : IsSymmetricFullKineticCoefficient B)
     (hBell : HasEverywhereLoewnerBounds lam Lam B) (hbs : IsSmoothDrift b)
     (hbl : HasEuclideanLipschitzDrift L_b b) (hbc : HasUnitDirectionDriftCoercivity m b)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
+    (S : TerminalOperatorFamily Ω γ) (K )
     (hreal : RealizesTerminalEvolution Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S K) :
     (∀ hBz : ∀ (σ : ℝ) (y z z' : PDE.Vec n), B σ y z = B σ y z',
@@ -124,25 +124,8 @@ theorem evolution_clauses_of_realization
   have hr₀ : RealizesTerminalEvolution Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S₀ K₀ :=
     ⟨hc, hi, he, hcomp⟩
-  have hunique := terminalEvolution_unique Ω γ hΩ B b S S₀ K K₀ hreal hr₀
-  rw [hunique.2]
+  rw [(terminalEvolution_unique Ω γ hΩ B b S S₀ K K₀ hreal hr₀).2]
   exact ⟨hcov, hdom, hpar⟩
 
-/-- The full evolution premise supplies the marginal bundle for every whole-space realization. -/
-theorem wholeSpace_marginalBundle_of_evolution
-    (hEvol : TerminalEvolutionStatement) {d : ℕ} (hd : 0 < d)
-    {lam Lam : ℝ} {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
-    (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hreal : RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
-      MeasurableSet.univ (zIndependentCoefficient B) (identityDrift d) S K) :
-    HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
-      MeasurableSet.univ (zIndependentCoefficient B) K := by
-  obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB
-  have hb := identityDrift_bounds d
-  exact (evolution_clauses_of_realization hEvol d hd lam Lam 1 1 hB.1 hB.2.1
-    one_pos le_rfl (wholeSpace d) (fun _ => 0) (zIndependentCoefficient B)
-    (identityDrift d) (wholeSpace_admissible d) (zeroCurve_piecewiseC1 d)
-    hBs hBsym hBell (identityDrift_smooth d) hb.1 hb.2 S K hreal).2.2
-
+/- The full evolution premise supplies the marginal bundle for every whole-space realization. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

@@ -10,8 +10,8 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 /-- Membership in a forward stack is transported from the source unit stack. -/
-theorem kineticAffine_mem_forwardStack {d : ℕ} (P₀ P : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) (m : ℕ) :
+theorem kineticAffine_mem_forwardStack {d } (P₀ P : KineticPoint d)
+    {R } (hR : 0 < R) (m : ℕ) :
     kineticAffine P₀ R P ∈ forwardStack P₀ R m ↔
       P ∈ forwardStack (⟨0, 0, 0⟩ : KineticPoint d) 1 m := by
   have hv := PDE.affine_mem_euclideanBall_iff_of_pos P₀.velocity P.velocity hR
@@ -28,7 +28,7 @@ theorem kineticAffine_mem_forwardStack {d : ℕ} (P₀ P : KineticPoint d)
   simp only [relativePosition, sub_zero, smul_zero, mul_one]
   rw [add_comm P₀.velocity, hv]
   rw [hx]
-  have hR2 : 0 < R ^ 2 := sq_pos_of_pos hR
+  have hR2 := sq_pos_of_pos hR
   constructor
   · rintro ⟨ha, hb, hv', hx'⟩
     refine ⟨?_, ?_, hv', hx'⟩ <;> nlinarith
@@ -36,8 +36,8 @@ theorem kineticAffine_mem_forwardStack {d : ℕ} (P₀ P : KineticPoint d)
     refine ⟨?_, ?_, hv', hx'⟩ <;> nlinarith
 
 /-- The affine image of the unit forward stack is the exact source stack. -/
-theorem kineticAffine_image_forwardStack {d : ℕ} (P₀ : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) (m : ℕ) :
+theorem kineticAffine_image_forwardStack {d } (P₀ : KineticPoint d)
+    {R } (hR : 0 < R) (m : ℕ) :
     kineticAffine P₀ R '' forwardStack (⟨0, 0, 0⟩ : KineticPoint d) 1 m =
       forwardStack P₀ R m := by
   ext P

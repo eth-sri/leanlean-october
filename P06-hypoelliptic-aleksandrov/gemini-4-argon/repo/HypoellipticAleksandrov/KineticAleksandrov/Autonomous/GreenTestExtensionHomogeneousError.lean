@@ -1,6 +1,12 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExtensionSpatialTail
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExtensionTraceApproximation
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionUniformBound
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionGap
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelDense
+import Mathlib.Topology.TietzeExtension
 
 /-! # Actual exit-probe approximation of a bounded smooth homogeneous solution -/
 
@@ -9,12 +15,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
+open Topology
+open scoped CompactlySupported
 
-/-- A bounded homogeneous solution is approximated at its pole by actual compact exit
+/- A bounded homogeneous solution is approximated at its pole by actual compact exit
 integrals, with a proved exponentially vanishing spatial-tail error. -/
 theorem reconstruction_homogeneous_probe_error
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (lower T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (he : lower < e.1.time) (u : Point → ℝ)
@@ -22,7 +30,7 @@ theorem reconstruction_homogeneous_probe_error
       (KineticPoint.equivProd 1 '' reconstructionStrip H lower T))
     (hop : ∀ p ∈ reconstructionStrip H lower T, forwardScalarOperator A.a u p = 0)
     (hc : ContinuousOn u (reconstructionStrip H lower T ∪ reconstructionExit H lower T))
-    (M : ℝ) (hM : 0 ≤ M)
+    (M ) (hM : 0 ≤ M)
     (hb : ∀ p ∈ reconstructionClosedSlab H e.1.time T, |u p| ≤ M)
     (R eps : ℝ) (heps : 0 < eps) :
     ∃ F : exitProbeSubmodule,
@@ -33,8 +41,69 @@ theorem reconstruction_homogeneous_probe_error
         eps + (2 * M + eps) * Real.exp (-R) *
           reconstructionSpatialBarrier (max |H.lo| |H.hi| + 1) T (sectionTwoPoint e.1) := by
   have hT := WithTop.coe_lt_coe.mp e.2.1
-  obtain ⟨F, hFb, hclose⟩ := exists_reconstruction_smooth_trace_probe H e.1.time T hT u
-    (hc.mono (reconstructionClosedSlab_subset_strip_union_exit H he)) M hM hb R eps heps
+  obtain ⟨F, hFb, hclose⟩ : ∃ F : exitProbeSubmodule,
+      (∀ p, |exitProbePhysical F p| ≤ M + eps) ∧
+      ∀ p ∈ reconstructionClosedSlab H e.1.time T, |p.position 0| ≤ R →
+        |exitProbePhysical F p - u p| ≤ eps := by
+    let a := e.1.time
+    have hc := (hc.mono (reconstructionClosedSlab_subset_strip_union_exit H he))
+    let D := reconstructionClosedSlab H a T
+    have hD : IsClosed D := by
+      change IsClosed (reconstructionClosedSlab H a T)
+      rw [← closure_reconstructionStrip H a T hT]
+      exact isClosed_closure
+    let f : BoundedContinuousFunction D ℝ := BoundedContinuousFunction.ofNormedAddCommGroup
+      (fun p => u p.1) (continuousOn_iff_continuous_domRestrict.mp hc) M
+      (fun p => by rw [Real.norm_eq_abs]; exact hb p.1 p.2)
+    let j : D → EvolutionVec 1 := fun p => reconstructionPhysicalHomeomorph.symm p.1
+    have hj : IsClosedEmbedding j := reconstructionPhysicalHomeomorph.symm.isClosedEmbedding.comp
+      hD.isClosedEmbedding_subtypeVal
+    obtain ⟨G, hGb, hG⟩ :=
+      BoundedContinuousFunction.exists_extension_forall_mem_Icc_of_isClosedEmbedding f
+        (fun p => abs_le.mp (hb p.1 p.2)) (by linarith) hj
+    let pack (q : ℝ × ℝ × ℝ) : EvolutionVec 1 :=
+      packPoint q.1 (fun _ => q.2.2) (fun _ => q.2.1)
+    let K := pack '' (Icc a T ×ˢ (Icc (-R) R ×ˢ Icc H.lo H.hi))
+    have hp : Continuous pack := by
+      change Continuous (fun q : ℝ × ℝ × ℝ =>
+        (evolutionProdCLE 1).symm (q.1, (fun _ => q.2.2), (fun _ => q.2.1)))
+      exact (evolutionProdCLE 1).symm.continuous.comp
+        (continuous_fst.prodMk ((continuous_pi fun _ => continuous_snd.snd).prodMk
+          (continuous_pi fun _ => continuous_snd.fst)))
+    have hK : IsCompact K := (isCompact_Icc.prod (isCompact_Icc.prod isCompact_Icc)).image hp
+    obtain ⟨chi, hchi, hcc, _, hcb, hone⟩ :=
+      exists_smooth_bump_of_isCompact_subset_isOpen hK isOpen_univ (subset_univ _)
+    let g : C_c(EvolutionVec 1, ℝ) :=
+      ⟨⟨fun x => chi x * G x, hchi.continuous.mul G.continuous⟩, hcc.mul_right⟩
+    obtain ⟨s, hs, hclose⟩ := exists_smooth_compact_probe_close g eps heps
+    let F : exitProbeSubmodule := ⟨s, hs, s.hasCompactSupport⟩
+    have hg (x : EvolutionVec 1) : |g x| ≤ M := by
+      change |chi x * G x| ≤ M
+      rw [abs_mul, abs_of_nonneg (hcb x).1]
+      exact (mul_le_of_le_one_left (abs_nonneg _) (hcb x).2).trans (abs_le.mpr (hGb x))
+    refine ⟨F, ?_, ?_⟩
+    · intro p
+      have hh := (abs_add_le (s (reconstructionPhysicalHomeomorph.symm p) -
+        g (reconstructionPhysicalHomeomorph.symm p)) (g (reconstructionPhysicalHomeomorph.symm
+          p))).trans
+          (add_le_add (hclose _) (hg _))
+      change |s (reconstructionPhysicalHomeomorph.symm p)| ≤ _
+      rw [sub_add_cancel] at hh
+      exact hh.trans_eq (add_comm eps M)
+    · intro p hpd hpr
+      have hpk : reconstructionPhysicalHomeomorph.symm p ∈ K := by
+        refine ⟨(p.time, p.position 0, p.velocity 0),
+          ⟨⟨hpd.1, hpd.2.1⟩, abs_le.mp hpr, hpd.2.2⟩, ?_⟩
+        ext i
+        fin_cases i <;> rfl
+      have hGp : G (reconstructionPhysicalHomeomorph.symm p) = u p :=
+        congrFun hG ⟨p, hpd⟩
+      have hgp : g (reconstructionPhysicalHomeomorph.symm p) = u p := by
+        change chi _ * G _ = _
+        rw [hone _ hpk, one_mul, hGp]
+      change |s (reconstructionPhysicalHomeomorph.symm p) - u p| ≤ _
+      rw [← hgp]
+      exact hclose _
   have hFc := (exitProbePhysical_continuous_compact F).1
   have hFr := exitProbePhysical_isKineticC112On F (reconstructionStrip H lower T)
     (isOpen_reconstructionStrip H lower T)
@@ -55,8 +124,14 @@ theorem reconstruction_homogeneous_probe_error
   have hqr (p : Point) : IsSliceRegularAt q p :=
     (reconstructionSpatialBarrier_regular _ _ p).const_mul k
   have hqo (p : Point) (hp : p ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T) :
-      transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) q p ≤ 0 :=
-    reconstructionSpatialBarrier_scaled_operator A H T k hk p hp
+      transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) q p ≤ 0 := by
+    rw [← viscousTransportedOperator_zero,
+      viscousTransportedOperator_const_mul k (reconstructionSpatialBarrier_regular _ _ p),
+      viscousTransportedOperator_zero]
+    have hh := reconstructionSpatialBarrier_operator_le A.a H T p hp
+    have hw : 0 ≤ reconstructionSpatialWeight (p.velocity 0) :=
+      add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le
+    exact mul_nonpos_of_nonneg_of_nonpos hk (hh.trans (neg_nonpos.mpr hw))
   have hbd (p : Point) (hp : p ∈ stripClosedExit H T) (ht : e.1.time ≤ p.time) :
       |u p - v p| ≤ eps + q (sectionTwoPoint p) := by
     have hslab : p ∈ reconstructionClosedSlab H e.1.time T := by

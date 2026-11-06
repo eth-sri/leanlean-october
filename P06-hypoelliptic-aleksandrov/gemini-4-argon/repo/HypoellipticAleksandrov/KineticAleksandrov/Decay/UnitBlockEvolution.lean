@@ -14,7 +14,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 /-- The sole authorized evolution input constructs a local tube realization
 with the structural clauses on the same constructed kernel. -/
 theorem exists_unitBlock_evolution (hEvol : IterationEvolutionStatement)
-    {d : ℕ} (hd : 1 ≤ d) (lam Lam m Lb : ℝ)
+    {d } (hd : 1 ≤ d) (lam Lam m Lb : ℝ)
     (D : Set (PDE.Vec d)) (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
     (hsetting : SourceSetting lam Lam m Lb D B b)
     (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)

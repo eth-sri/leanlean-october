@@ -43,8 +43,6 @@ theorem cutoff_error_abs_le (a Lam v chi psi dx dv dvv phi phiv DX DV DVV B0 B1 
     calc
       _ ≤ 2*Lam*1*DV*B1 := by gcongr
       _ = _ := by ring
-  have hsum := (abs_add_le (v*dx*psi*phi+a*chi*dvv*phi) (2*a*chi*dv*phiv)).trans
-    (add_le_add (abs_add_le _ _) le_rfl)
-  linarith only [hsum, h₁, h₂, h₃]
+  linarith only [((abs_add_le (v*dx*psi*phi+a*chi*dvv*phi) (2*a*chi*dv*phiv)).trans (add_le_add (abs_add_le _ _) le_rfl)), h₁, h₂, h₃]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -16,11 +16,12 @@ open Evolution
 open scoped Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
-/-- Signed bounded potentials tend to zero at every point of the terminal face. -/
-theorem tendsto_duhamelPotential_terminal (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (M : ℝ) (hM : 0 ≤ M)
+/- Signed bounded potentials tend to zero at every point of the terminal face. -/
+theorem continuousAt_duhamelPotential_terminal (K : MovingFiberKernel Ω γ)
+    (g : KineticPoint d → ℝ) (M ) (hM : 0 ≤ M)
     (hgb : ∀ p, |g p| ≤ M) (T : ℝ) (p : KineticPoint d) (hp : p.time = T) :
-    Tendsto (duhamelPotential K T g) (𝓝 p) (𝓝 0) := by
+    ContinuousAt (duhamelPotential K T g) p := by
+  rw [ContinuousAt, duhamelPotential_eq_zero_of_terminal_le K T g p hp.ge]
   apply tendsto_zero_iff_norm_tendsto_zero.2
   have hbound : Continuous (fun q : KineticPoint d => |T - q.time| * M) :=
     (continuous_const.sub continuous_time).abs.mul continuous_const
@@ -29,13 +30,5 @@ theorem tendsto_duhamelPotential_terminal (K : MovingFiberKernel Ω γ)
   apply squeeze_zero (fun _ => norm_nonneg _) (fun q => ?_) hzero
   rw [Real.norm_eq_abs]
   exact abs_duhamelPotential_le_abs_time K g M hM hgb q T
-
-/-- The zero extension is continuous at terminal points for every bounded signed source. -/
-theorem continuousAt_duhamelPotential_terminal (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (M : ℝ) (hM : 0 ≤ M)
-    (hgb : ∀ p, |g p| ≤ M) (T : ℝ) (p : KineticPoint d) (hp : p.time = T) :
-    ContinuousAt (duhamelPotential K T g) p := by
-  rw [ContinuousAt, duhamelPotential_eq_zero_of_terminal_le K T g p hp.ge]
-  exact tendsto_duhamelPotential_terminal K g M hM hgb T p hp
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

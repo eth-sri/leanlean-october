@@ -1,6 +1,9 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinCoordinatesBase
+import HypoellipticAleksandrov.Parabolic.Dirichlet.GalerkinDense
+import Mathlib.Analysis.InnerProductSpace.GramMatrix
+import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
 
 /-!
 # Reverse-time finite Galerkin coordinate equation
@@ -41,17 +44,8 @@ private theorem bilinear_mulVec_eq_coe_submodule_sum
     _ = L (∑ j, x j • (e j : E)) (e i : E) := by rw [← map_sum]
     _ = _ := congrArg (fun u => L u (e i : E)) hcoe.symm
 
-private theorem coe_galerkinReconstruct_eq_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
-    (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ) =
-      (↑(∑ j, x j • galerkinSpaceBasis hΩ N j) : H10HilbertGraph hΩ) := by
-  exact congrArg (fun u : galerkinSpace hΩ N => (u : H10HilbertGraph hΩ))
-    (galerkinReconstruct_apply hΩ N x)
-
 private theorem stiffness_mulVec_eq_operator_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -70,15 +64,14 @@ private theorem stiffness_mulVec_eq_operator_sum
       reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth τ
         (↑(∑ j, x j • galerkinSpaceBasis hΩ N j) : H10HilbertGraph hΩ)
         (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) := by
-  let L : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ →L[ℝ] ℝ :=
+  let L :=
     reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth τ
-  let e : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → galerkinSpace hΩ N :=
+  let e :=
     galerkinSpaceBasis hΩ N
-  change ((fun r s => L (e s : H10HilbertGraph hΩ) (e r : H10HilbertGraph hΩ)) *ᵥ x) i = _
   exact bilinear_mulVec_eq_coe_submodule_sum (galerkinSpace hΩ N) L e x i
 
 private theorem operator_sum_eq_operator_reconstruct
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -98,13 +91,17 @@ private theorem operator_sum_eq_operator_reconstruct
       reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth τ
         (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ)
         (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) := by
-  let L : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ →L[ℝ] ℝ :=
+  let L :=
     reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth τ
   let v : H10HilbertGraph hΩ := galerkinSpaceBasis hΩ N i
-  exact congrArg (fun u => L u v) (coe_galerkinReconstruct_eq_sum hΩ N x).symm
+  have _h_inl_7 : (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ) =
+      (↑(∑ j, x j • galerkinSpaceBasis hΩ N j) : H10HilbertGraph hΩ) := by
+    exact congrArg (fun u : galerkinSpace hΩ N => (u : H10HilbertGraph hΩ))
+      (galerkinReconstruct_apply hΩ N x)
+  exact congrArg (fun u => L u v) _h_inl_7.symm
 
 private theorem operator_reconstruct_eq_raw_form
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -128,7 +125,7 @@ private theorem operator_reconstruct_eq_raw_form
     τ _ _
 
 private theorem stiffness_mulVec_eq_form
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -162,7 +159,7 @@ private theorem stiffness_mulVec_eq_form
         N τ x i
 
 private theorem map_galerkinBasis_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (N : ℕ) {W : Type} [NormedAddCommGroup W] [NormedSpace ℝ W]
     (L : H10HilbertGraph hΩ →L[ℝ] W)
     (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
@@ -196,7 +193,7 @@ private theorem gram_mulVec_eq_inner_sum
   exact mul_comm _ _
 
 private theorem galerkinMass_mulVec_eq_inner_reconstruct
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
     (i : Fin (Module.finrank ℝ (galerkinSpace hΩ N))) :
@@ -215,38 +212,6 @@ private theorem galerkinMass_mulVec_eq_inner_reconstruct
         (v i) := congrArg (fun z => inner ℝ z (v i))
           (map_galerkinBasis_sum hΩ N (valueCLM hΩ) x).symm
 
-private theorem weak_rows_iff_matrix_rows
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (N : ℕ) (τ : Set.Icc 0 (r₁ - r₀))
-    (x xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
-    (∀ i,
-      inner ℝ
-          (valueCLM hΩ (galerkinReconstruct hΩ N xdot : H10HilbertGraph hΩ))
-          (valueCLM hΩ (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ)) +
-        reverseTimeSpatialForm hΩ r₁ τ.1 a b c
-          (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ)
-          (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) =
-        reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ i) ↔
-      ∀ i, (galerkinMassGram hΩ N *ᵥ xdot) i +
-        (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ *ᵥ
-          x) i =
-        reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ i := by
-  constructor <;> intro h i
-  · simpa only [galerkinMass_mulVec_eq_inner_reconstruct, stiffness_mulVec_eq_form] using h i
-  · simpa only [galerkinMass_mulVec_eq_inner_reconstruct, stiffness_mulVec_eq_form] using h i
-
 private theorem matrix_coordinateEquation_iff
     {I : Type} [Fintype I] [DecidableEq I]
     (M K : Matrix I I ℝ) (q x xdot : I → ℝ) (hdet : IsUnit M.det) :
@@ -257,7 +222,7 @@ private theorem matrix_coordinateEquation_iff
     have hmk : M *ᵥ xdot + K *ᵥ x = q := by
       ext i
       exact h i
-    have hsolve : M *ᵥ xdot = q - K *ᵥ x := (eq_sub_iff_add_eq).2 hmk
+    have hsolve := (eq_sub_iff_add_eq).2 hmk
     calc
       xdot = (1 : Matrix I I ℝ) *ᵥ xdot := (Matrix.one_mulVec _).symm
       _ = (M⁻¹ * M) *ᵥ xdot := by rw [Matrix.nonsing_inv_mul M hdet]
@@ -288,124 +253,12 @@ private theorem matrix_solution_eq_continuousMulVec_rhs
     -((M * K) *ᵥ x) + M *ᵥ q
   rw [Matrix.mulVec_mulVec]
 
-private theorem matrix_solution_eq_reverseTimeGalerkin_rhs
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (N : ℕ) (τ : Set.Icc 0 (r₁ - r₀))
-    (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
-    -((galerkinMassGram hΩ N)⁻¹ *ᵥ
-      (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ *ᵥ
-        x)) +
-      (galerkinMassGram hΩ N)⁻¹ *ᵥ
-        reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ =
-      reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ x +
-        reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ := by
-  change -((galerkinMassGram hΩ N)⁻¹ *ᵥ
-      (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ *ᵥ
-        x)) +
-      (galerkinMassGram hΩ N)⁻¹ *ᵥ
-        reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ =
-      (- LinearMap.toContinuousLinearMap (Matrix.mulVecLin
-        ((galerkinMassGram hΩ N)⁻¹ *
-          reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
-            N τ))) x +
-        (galerkinMassGram hΩ N)⁻¹ *ᵥ
-          reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ
-  exact matrix_solution_eq_continuousMulVec_rhs (galerkinMassGram hΩ N)⁻¹
-    (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ)
-    (reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ) x
-
 private theorem eq_iff_eq_of_eq_right {E : Type} (x y z : E) (hyz : y = z) :
     (x = y ↔ x = z) := by
   rw [hyz]
 
-private theorem matrix_rows_iff_reverseTimeGalerkin_rhs
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (N : ℕ) (τ : Set.Icc 0 (r₁ - r₀))
-    (x xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
-    (∀ i, (galerkinMassGram hΩ N *ᵥ xdot) i +
-        (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c
-          haSmooth hbSmooth hcSmooth N τ *ᵥ x) i =
-        reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ i) ↔
-      xdot =
-        reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c
-          haSmooth hbSmooth hcSmooth N τ x +
-        reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ := by
-  let M : Matrix (Fin (Module.finrank ℝ (galerkinSpace hΩ N)))
-      (Fin (Module.finrank ℝ (galerkinSpace hΩ N))) ℝ := galerkinMassGram hΩ N
-  let K : Matrix (Fin (Module.finrank ℝ (galerkinSpace hΩ N)))
-      (Fin (Module.finrank ℝ (galerkinSpace hΩ N))) ℝ :=
-    reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ
-  let q : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ :=
-    reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ
-  have hdet : IsUnit M.det := (M.isUnit_iff_isUnit_det).mp (isUnit_galerkinMassGram hΩ N)
-  have hrhs := matrix_solution_eq_reverseTimeGalerkin_rhs r₀ r₁ h₀₁ hΩ hΩbounded a b c F
-    haSmooth hbSmooth hcSmooth hFSmooth N τ x
-  exact (matrix_coordinateEquation_iff M K q x xdot hdet).trans
-    (eq_iff_eq_of_eq_right xdot (-(M⁻¹ *ᵥ (K *ᵥ x)) + M⁻¹ *ᵥ q)
-      (reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ x +
-        reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ) hrhs)
-
-private theorem reverseTimeGalerkin_coordinateEquation_iff_aux
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (N : ℕ) (τ : Set.Icc 0 (r₁ - r₀))
-    (x xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
-    (∀ i,
-      inner ℝ
-          (valueCLM hΩ (galerkinReconstruct hΩ N xdot : H10HilbertGraph hΩ))
-          (valueCLM hΩ (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ)) +
-        reverseTimeSpatialForm hΩ r₁ τ.1 a b c
-          (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ)
-          (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) =
-        reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ i) ↔
-      xdot =
-        reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ
-          x +
-        reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ := by
-  exact (weak_rows_iff_matrix_rows r₀ r₁ h₀₁ hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth
-    hFSmooth N τ x xdot).trans
-    (matrix_rows_iff_reverseTimeGalerkin_rhs r₀ r₁ h₀₁ hΩ hΩbounded a b c F haSmooth hbSmooth
-      hcSmooth hFSmooth N τ x xdot)
-
-/-- The finite weak-coordinate equation is exactly the mass-inverted local linear ODE.
-This theorem neither constructs nor solves a curve. -/
 theorem reverseTimeGalerkin_coordinateEquation_iff
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -432,7 +285,61 @@ theorem reverseTimeGalerkin_coordinateEquation_iff
         reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ
           x +
         reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ := by
-  exact reverseTimeGalerkin_coordinateEquation_iff_aux r₀ r₁ h₀₁ hΩ hΩbounded a b c F haSmooth
-    hbSmooth hcSmooth hFSmooth N τ x xdot
+  have _h_inl_14 : (∀ i,
+      inner ℝ
+          (valueCLM hΩ (galerkinReconstruct hΩ N xdot : H10HilbertGraph hΩ))
+          (valueCLM hΩ (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ)) +
+        reverseTimeSpatialForm hΩ r₁ τ.1 a b c
+          (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ)
+          (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ) =
+        reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ i) ↔
+      ∀ i, (galerkinMassGram hΩ N *ᵥ xdot) i +
+        (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ *ᵥ
+          x) i =
+        reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ i := by
+    constructor <;> intro h i
+    · simpa only [galerkinMass_mulVec_eq_inner_reconstruct, stiffness_mulVec_eq_form] using h i
+    · simpa only [galerkinMass_mulVec_eq_inner_reconstruct, stiffness_mulVec_eq_form] using h i
+  have _h_inl_17 : (∀ i, (galerkinMassGram hΩ N *ᵥ xdot) i + (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ *ᵥ x) i = reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ i) ↔ xdot = reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ x + reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ := by
+    let M := galerkinMassGram hΩ N
+    let K :=
+      reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ
+    let q :=
+      reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ
+    have _h_xinl_0 : (galerkinMassGram hΩ N).PosDef := by
+      let E := galerkinSpace hΩ N
+      let L :=
+        (valueCLM hΩ).toLinearMap.comp E.subtype
+      have hL : Function.Injective L := by
+        intro u v huv
+        apply Subtype.ext
+        exact valueCLM_injective hΩ huv
+      have hli :=
+        (galerkinSpaceBasis hΩ N).linearIndependent.map' L
+          (LinearMap.ker_eq_bot_of_injective hL)
+      simpa only [galerkinMassGram, L, E, Function.comp_def, LinearMap.comp_apply, LinearMap.coe_comp,
+        ContinuousLinearMap.coe_coe, Submodule.coe_subtype] using
+        Matrix.posDef_gram_of_linearIndependent hli
+    have _h_xinl_0 : IsUnit (galerkinMassGram hΩ N) := by
+        exact (
+      _h_xinl_0.isUnit
+      )
+    have hdet : IsUnit M.det := (M.isUnit_iff_isUnit_det).mp _h_xinl_0
+    have hrhs : -((galerkinMassGram hΩ N)⁻¹ *ᵥ
+        (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ *ᵥ
+          x)) +
+        (galerkinMassGram hΩ N)⁻¹ *ᵥ
+          reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ =
+        reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ x +
+          reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ := by
+      exact matrix_solution_eq_continuousMulVec_rhs (galerkinMassGram hΩ N)⁻¹
+        (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ)
+        (reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ) x
+    exact (matrix_coordinateEquation_iff M K q x xdot hdet).trans
+      (eq_iff_eq_of_eq_right xdot (-(M⁻¹ *ᵥ (K *ᵥ x)) + M⁻¹ *ᵥ q)
+        (reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N τ x +
+          reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ) hrhs)
+  exact _h_inl_14.trans
+    _h_inl_17
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

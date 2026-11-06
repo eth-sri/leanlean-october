@@ -22,15 +22,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 open scoped ENNReal
 
-/-- Product Lebesgue measure on the coordinate space of kinetic points is an additive Haar
+/- Product Lebesgue measure on the coordinate space of kinetic points is an additive Haar
 measure. -/
-theorem isAddHaarMeasure_volume_coordinates (d : ℕ) :
-    (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d))).IsAddHaarMeasure := by
-  have h1 : (volume : Measure (PDE.Vec d × PDE.Vec d)).IsAddHaarMeasure :=
-    Measure.prod.instIsAddHaarMeasure volume volume
-  exact Measure.prod.instIsAddHaarMeasure volume volume
-
-/-- Kinetic form of the majorant lemma. -/
 theorem exists_smooth_majorant_kinetic {d : ℕ} {U K : Set (KineticPoint d)}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
     {h F : KineticPoint d → ℝ} (hcont : ContinuousOn h U) (hnn : ∀ z ∈ U, 0 ≤ h z)
@@ -40,7 +33,12 @@ theorem exists_smooth_majorant_kinetic {d : ℕ} {U K : Set (KineticPoint d)}
       ContDiff ℝ (⊤ : ℕ∞) (fun x => g ((KineticPoint.equivProd d).symm x)) ∧
       HasCompactSupport g ∧ tsupport g ⊆ U ∧ (∀ z, 0 ≤ g z) ∧ (∀ z ∈ K, h z ≤ g z) ∧
       eLpNorm g p (volume.restrict U) ≤ eLpNorm F p (volume.restrict U) + ENNReal.ofReal ε := by
-  have := isAddHaarMeasure_volume_coordinates d
+  have : (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d))).IsAddHaarMeasure := by
+      have h1 : (volume : Measure (PDE.Vec d × PDE.Vec d)).IsAddHaarMeasure :=
+        Measure.prod.instIsAddHaarMeasure volume volume
+      exact Measure.prod.instIsAddHaarMeasure volume volume
+
+    /- Kinetic form of the majorant lemma. -/
   let e := KineticPoint.homeomorphProd d
   have hmp : MeasurePreserving e volume volume := KineticPoint.measurePreserving_equivProd d
   have hemb : MeasurableEmbedding e := e.measurableEmbedding

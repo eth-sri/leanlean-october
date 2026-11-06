@@ -19,30 +19,27 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
 /-- Position path in physical affine coordinates, parameterized from its own start time. -/
-def physicalPathPosition {d : ℕ} (P0 : KineticPoint d) (scale start : ℝ)
+def physicalPathPosition {d } (P0 : KineticPoint d) (scale start : ℝ)
     (x : ℝ → PDE.Vec d) (s : ℝ) : PDE.Vec d :=
   P0.position + scale ^ 3 • x (s / scale ^ 2) +
     (scale ^ 2 * start + s) • P0.velocity
 
 /-- Velocity of the physically transported position path. -/
-def physicalPathVelocity {d : ℕ} (P0 : KineticPoint d) (scale : ℝ)
+def physicalPathVelocity {d } (P0 : KineticPoint d) (scale : ℝ)
     (v : ℝ → PDE.Vec d) (s : ℝ) : PDE.Vec d :=
   P0.velocity + scale • v (s / scale ^ 2)
 
 /-- Physical transport preserves position-velocity derivative compatibility. -/
-theorem physicalPath_derivative {d : ℕ} (P0 : KineticPoint d) {scale : ℝ}
+theorem physicalPath_derivative {d } (P0 : KineticPoint d) {scale }
     (_hscale : scale ≠ 0) (start : ℝ) {x v : ℝ → PDE.Vec d}
     (hkin : ∀ s, HasDerivAt x (v s) s) (s : ℝ) :
     HasDerivAt (physicalPathPosition P0 scale start x)
       (physicalPathVelocity P0 scale v s) s := by
   apply hasDerivAt_pi.mpr
   intro i
-  have hin := (hasDerivAt_id s).div_const (scale ^ 2)
-  have hx := ((hasDerivAt_pi.mp (hkin (s / scale ^ 2))) i).comp s hin
+  have hx := ((hasDerivAt_pi.mp (hkin (s / scale ^ 2))) i).comp s ((hasDerivAt_id s).div_const (scale ^ 2))
   have hfirst := (hx.const_mul (scale ^ 3)).const_add (P0.position i)
-  have hlast := ((hasDerivAt_const s (scale ^ 2 * start)).add
-    (hasDerivAt_id s)).mul_const (P0.velocity i)
-  have h := hfirst.add hlast
+  have h := hfirst.add (((hasDerivAt_const s (scale ^ 2 * start)).add (hasDerivAt_id s)).mul_const (P0.velocity i))
   have hd : scale ^ 3 * (v (s / scale ^ 2) i * (1 / scale ^ 2)) +
       (0 + 1 : ℝ) * P0.velocity i = physicalPathVelocity P0 scale v s i := by
     simp only [physicalPathVelocity, Pi.add_apply, Pi.smul_apply, smul_eq_mul, zero_add]
@@ -55,7 +52,7 @@ theorem physicalPath_derivative {d : ℕ} (P0 : KineticPoint d) {scale : ℝ}
       Function.comp_def, id_eq])
 
 /-- Physical transport divides the Euclidean acceleration bound by the length scale. -/
-theorem physicalPath_velocity_lipschitz {d : ℕ} (P0 : KineticPoint d) {scale H : ℝ}
+theorem physicalPath_velocity_lipschitz {d } (P0 : KineticPoint d) {scale H }
     (hscale : 0 < scale) {v : ℝ → PDE.Vec d}
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|) (s t : ℝ) :
     PDE.vecEuclideanNorm (physicalPathVelocity P0 scale v s -
@@ -65,13 +62,12 @@ theorem physicalPath_velocity_lipschitz {d : ℕ} (P0 : KineticPoint d) {scale H
     simp only [physicalPathVelocity, smul_sub]
     abel
   rw [heq, PDE.vecEuclideanNorm_smul, abs_of_pos hscale]
-  have he := mul_le_mul_of_nonneg_left (hLip (s / scale ^ 2) (t / scale ^ 2)) hscale.le
-  apply he.trans_eq
+  apply (mul_le_mul_of_nonneg_left (hLip (s / scale ^ 2) (t / scale ^ 2)) hscale.le).trans_eq
   rw [← sub_div, abs_div, abs_of_pos (pow_pos hscale 2)]
   field_simp
 
 /-- The physically transported velocity is continuous. -/
-theorem physicalPath_velocity_continuous {d : ℕ} (P0 : KineticPoint d) (scale : ℝ)
+theorem physicalPath_velocity_continuous {d } (P0 : KineticPoint d) (scale : ℝ)
     {v : ℝ → PDE.Vec d} (hv : Continuous v) :
     Continuous (physicalPathVelocity P0 scale v) := by
   have ht : Continuous (fun s : ℝ => s / scale ^ 2) := continuous_id.div_const _
@@ -80,7 +76,7 @@ theorem physicalPath_velocity_continuous {d : ℕ} (P0 : KineticPoint d) (scale 
   exact hc
 
 /-- The transported path is a source skeleton on any required closed interval. -/
-theorem physicalPath_isSkeleton {d : ℕ} (P0 : KineticPoint d) {scale H : ℝ}
+theorem physicalPath_isSkeleton {d } (P0 : KineticPoint d) {scale H }
     (hscale : 0 < scale) (start a b : ℝ) {x v : ℝ → PDE.Vec d} (hv : Continuous v)
     (hkin : ∀ s, HasDerivAt x (v s) s)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|) :

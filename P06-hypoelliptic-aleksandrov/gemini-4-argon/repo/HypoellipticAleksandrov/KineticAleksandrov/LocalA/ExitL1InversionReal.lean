@@ -14,7 +14,7 @@ open Set MeasureTheory Parabolic SectionTwo Reconstruction
 def exitRealPart : ℂ →L[ℝ] ℂ := Complex.ofRealCLM.comp Complex.reCLM
 
 /-- The one real inverse density in the complete complex `L¹` space. -/
-def exitL1Density {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν] :
+def exitL1Density {d } (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν] :
     PDE.Vec d → Lp ℂ 1 (exitMarginal ν) :=
   fun y => exitRealPart.compLp (exitL1Inversion ν y)
 
@@ -22,9 +22,9 @@ def exitL1Density {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFini
 theorem ballExitL1Density_coe
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (B ) (hB : IsSectionTwoCoefficient lam Lam B)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (y : PDE.Vec d) :
@@ -52,9 +52,9 @@ theorem ballExitL1Density_coe
 theorem ballExitL1Density_contDiff
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {d } (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :

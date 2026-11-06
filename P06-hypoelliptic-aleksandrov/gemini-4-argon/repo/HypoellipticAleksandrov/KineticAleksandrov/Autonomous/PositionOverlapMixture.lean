@@ -15,22 +15,21 @@ open scoped ENNReal
 /-- Integrating the canonical joint density against a physical starting measure. -/
 def positionMixtureDensity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) : Point → ℝ≥0∞ :=
   fun z => ∫⁻ e, positionActiveDensity hH hLE hlam hLam A c e z ∂nu
 
 /-- The actual density of a finite starting mixture is measurable. -/
 theorem measurable_positionMixtureDensity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [SFinite nu] :
-    Measurable (positionMixtureDensity hH hLE hlam hLam A c nu) := by
-  exact (measurable_positionActiveDensity hH hLE hlam hLam A c).lintegral_prod_left'
+    Measurable (positionMixtureDensity hH hLE hlam hLam A c nu) :=  (measurable_positionActiveDensity hH hLE hlam hLam A c).lintegral_prod_left'
 
 /-- Fubini identifies the actual Green mixture with its integrated joint density. -/
 theorem withDensity_positionMixtureDensity (hpush : PushforwardStatement)
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [SFinite nu] :
     volume.withDensity (positionMixtureDensity hH hLE hlam hLam A c nu) =
       enlargedActiveGreen hH hLE hlam hLam A c nu := by
@@ -52,7 +51,7 @@ theorem positionPositiveNorm_mixture_le {X Y : Type*}
     [MeasurableSpace X] [MeasurableSpace Y]
     (nu : Measure X) [IsFiniteMeasure nu] (m : Measure Y) [SFinite m]
     (F : X → Y → ℝ≥0∞) (hF : Measurable (Function.uncurry F))
-    (q : ℝ) (hq : 1 < q) (K : ℝ≥0∞)
+    (q : ℝ) (hq : 1 < q) (K )
     (hK : ∀ᵐ x ∂nu, positionPositiveNorm m q (F x) ≤ K) :
     positionPositiveNorm m q (fun y => ∫⁻ x, F x y ∂nu) ≤ nu univ * K := by
   have hpow : ∀ᵐ x ∂nu, (∫⁻ y, F x y ^ q ∂m) ≤ K ^ q := by

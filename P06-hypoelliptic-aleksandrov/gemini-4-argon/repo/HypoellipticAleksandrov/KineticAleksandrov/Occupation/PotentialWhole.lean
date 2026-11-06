@@ -26,9 +26,8 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 variable {d : ℕ}
 
 /-- **Proposition 4.2.** -/
-theorem occupation_potential (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
-    {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+theorem occupation_potential (hH : HormanderHypoellipticityStatement) {lam Lam B} (hB : IsSectionTwoCoefficient lam Lam B)
+    (K )
     (hP : HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
       (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d))
       (zIndependentCoefficient B) K)

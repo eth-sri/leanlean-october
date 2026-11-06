@@ -20,8 +20,8 @@ def elapsedVolume (S : ℝ≥0∞) : Measure (ElapsedTime S) :=
   Measure.comap Subtype.val volume
 
 /-- The literal ordered query at a positive elapsed time. -/
-def elapsedQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (σ₀ : ℝ) (p : EvolutionState Ω γ σ₀) {S : ℝ≥0∞} (τ : ElapsedTime S) :
+def elapsedQuery {d Ω} {γ : ℝ → PDE.Vec d}
+    (σ₀ ) (p : EvolutionState Ω γ σ₀) {S : ℝ≥0∞} (τ : ElapsedTime S) :
     EvolutionQuery Ω γ :=
   ⟨(σ₀, (σ₀ + τ.1, p.1)), le_add_of_nonneg_right τ.2.1.le, p.2⟩
 
@@ -32,8 +32,7 @@ theorem measurableSet_elapsedTime (S : ℝ≥0∞) :
 
 /-- Comap on this subtype is ordinary Lebesgue measure of its image. -/
 theorem elapsedVolume_apply (S : ℝ≥0∞) (s : Set (ElapsedTime S))
-    (hs : MeasurableSet s) : elapsedVolume S s = volume (Subtype.val '' s) := by
-  exact (MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime S)).comap_apply volume s
+    (hs : MeasurableSet s) : elapsedVolume S s = volume (Subtype.val '' s) :=  (MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime S)).comap_apply volume s
 
 /-- Elapsed Lebesgue measure is sigma finite for every horizon, including infinity. -/
 instance elapsedVolume_sigmaFinite (S : ℝ≥0∞) : SigmaFinite (elapsedVolume S) := by

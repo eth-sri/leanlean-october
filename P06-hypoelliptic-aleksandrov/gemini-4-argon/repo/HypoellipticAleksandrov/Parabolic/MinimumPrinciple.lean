@@ -36,7 +36,7 @@ open scoped MatrixOrder Topology
 
 /-- The trace of the product of two real positive semidefinite matrices is nonnegative. -/
 theorem trace_mul_nonneg_of_posSemidef
-    {d : ℕ} {A H : PDE.Mat d}
+    {d } {A H : PDE.Mat d}
     (hA : A.PosSemidef) (hH : H.PosSemidef) :
     0 ≤ (A * H).trace := by
   classical
@@ -44,7 +44,7 @@ theorem trace_mul_nonneg_of_posSemidef
   have hS : S.PosSemidef := by
     dsimp [S]
     exact CFC.sqrt_nonneg H |>.posSemidef
-  have hconj : (S * A * Sᴴ).PosSemidef := hA.mul_mul_conjTranspose_same S
+  have hconj := hA.mul_mul_conjTranspose_same S
   calc
     0 ≤ (S * A * Sᴴ).trace := hconj.trace_nonneg
     _ = (S * A * S).trace := by rw [hS.isHermitian.eq]

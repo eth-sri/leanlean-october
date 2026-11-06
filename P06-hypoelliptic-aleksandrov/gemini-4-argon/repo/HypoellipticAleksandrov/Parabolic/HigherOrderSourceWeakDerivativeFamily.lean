@@ -67,7 +67,7 @@ theorem exists_higherOrderSourceWeakDerivativeFamily
       |TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 f z| ≤ B () beta := by
     intro beta z hz
     exact hBbound () beta z (subset_closure (hQV (subset_closure hz)))
-  let Emax : ParabolicWeakDerivativeFamily d (2 * d + 6) Q f :=
+  let Emax :=
     ParabolicWeakDerivativeFamily.ofContDiffOnBounded
       d (2 * d + 6) Q hQopen hQfinite (B ()) f hfQ hboundQ
   refine ⟨B (), Emax, hBnonneg (), ?_, ?_, ?_⟩

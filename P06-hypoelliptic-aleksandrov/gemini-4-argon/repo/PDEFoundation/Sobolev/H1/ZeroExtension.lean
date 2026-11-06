@@ -39,13 +39,13 @@ variable {d : ℕ}
 
 /-! ## Local measure and pairing lemmas -/
 
-/-- Restricting restricted volume to a measurable subset of its domain. -/
+/- Restricting restricted volume to a measurable subset of its domain. -/
 private theorem restrict_restrict_of_subset {U V : Set (Vec d)}
     (hV : MeasurableSet V) (hVU : V ⊆ U) :
     (volume.restrict U).restrict V = volume.restrict V := by
   rw [Measure.restrict_restrict hV, Set.inter_eq_self_of_subset_left hVU]
 
-/-- Zero extension from a measurable subdomain preserves scalar `L²` membership. -/
+/- Zero extension from a measurable subdomain preserves scalar `L²` membership. -/
 theorem memL2On_indicator_of_subset {U V : Set (Vec d)}
     (hV : MeasurableSet V) (hVU : V ⊆ U)
     {u : Vec d → ℝ} (hu : MemL2On V u) :
@@ -53,13 +53,6 @@ theorem memL2On_indicator_of_subset {U V : Set (Vec d)}
   refine (memLp_indicator_iff_restrict hV).2 ?_
   rw [restrict_restrict_of_subset hV hVU]
   exact hu
-
-private theorem indicator_coord (V : Set (Vec d)) (f : Vec d → Vec d) (i : Fin d) :
-    (fun x => Set.indicator V f x i) = Set.indicator V (fun x => f x i) := by
-  funext x
-  by_cases hx : x ∈ V
-  · simp [Set.indicator_of_mem hx]
-  · simp [Set.indicator_of_notMem hx]
 
 private theorem indicator_mul_right (V : Set (Vec d)) (f g : Vec d → ℝ) (x : Vec d) :
     Set.indicator V f x * g x = Set.indicator V (fun y => f y * g y) x := by
@@ -87,13 +80,13 @@ private theorem tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto
     intro n
     have hd_meas : AEStronglyMeasurable (fun x => F n x - f x) μ :=
       ((hF n).sub hf).aestronglyMeasurable
-    have hg_meas : AEStronglyMeasurable g μ := hg.aestronglyMeasurable
+    have hg_meas := hg.aestronglyMeasurable
     simpa using
       (eLpNorm_le_eLpNorm_mul_eLpNorm_of_nnnorm
         (μ := μ) (p := (2 : ENNReal)) (q := (2 : ENNReal)) (r := (1 : ENNReal))
         (fun a b : ℝ => a * b) 1 continuous_mul hd_meas hg_meas
         (Eventually.of_forall fun x => by simp))
-  have hgtop : eLpNorm g 2 μ ≠ ⊤ := hg.eLpNorm_lt_top.ne
+  have hgtop := hg.eLpNorm_lt_top.ne
   have hL1 :
       Tendsto
         (fun n => eLpNorm (fun x => (F n x - f x) * g x) 1 μ)
@@ -145,7 +138,7 @@ private theorem setIntegral_eq_of_zero_off {U V : Set (Vec d)} (hVU : V ⊆ U)
 
 namespace H10Function
 
-/-- Extend an `H¹₀(V)` representative by literal zero to the larger open
+/- Extend an `H¹₀(V)` representative by literal zero to the larger open
 domain `U`.  The companion `H10Function.zeroExtend` retains the approximation
 data certifying the zero boundary condition on `U`. -/
 noncomputable def zeroExtendToH1 {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
@@ -155,7 +148,13 @@ noncomputable def zeroExtendToH1 {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpe
   memL2 := memL2On_indicator_of_subset hV.measurableSet hVU u.toH1Function.memL2
   gradMemL2 := by
     intro i
-    rw [indicator_coord V u.toH1Function.grad i]
+    have _h_inl_9 : (fun x => Set.indicator V u.toH1Function.grad x i) = Set.indicator V (fun x => u.toH1Function.grad x i) := by
+      let f := u.toH1Function.grad
+      funext x
+      by_cases hx : x ∈ V
+      · simp [Set.indicator_of_mem hx]
+      · simp [Set.indicator_of_notMem hx]
+    rw [_h_inl_9]
     exact memL2On_indicator_of_subset hV.measurableSet hVU
       (u.toH1Function.gradMemL2 i)
   hasWeakGradient := by
@@ -266,7 +265,7 @@ theorem zeroExtendToH1_grad {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
       Set.indicator V u.toH1Function.grad :=
   rfl
 
-/-- Extend an `H¹₀(V)` function by literal zero to the larger open domain `U`.
+/- Extend an `H¹₀(V)` function by literal zero to the larger open domain `U`.
 The original smooth compactly supported approximants remain valid, because
 their supports are already contained in `V ⊆ U`. -/
 noncomputable def zeroExtend {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)

@@ -165,8 +165,8 @@ theorem intervalPrimitive_scalar_weak_identity_Icc
 /-- The bounded scalar weak identity on the open interval.  Atomlessness of
 real volume makes the endpoint choice immaterial. -/
 theorem intervalPrimitive_scalar_weak_identity_Ioo
-    {a b : ℝ} {g : ℝ → ℝ}
-    (hg : IntegrableOn g (Icc a b) volume) {φ : ℝ → ℝ}
+    {a b g}
+    (hg : IntegrableOn g (Icc a b) volume) {φ }
     (hφ : ContDiff ℝ 1 φ) (hsupp : tsupport φ ⊆ Ioo a b) :
     ∫ x in Ioo a b, intervalPrimitive a g x * deriv φ x =
       -∫ x in Ioo a b, g x * φ x := by

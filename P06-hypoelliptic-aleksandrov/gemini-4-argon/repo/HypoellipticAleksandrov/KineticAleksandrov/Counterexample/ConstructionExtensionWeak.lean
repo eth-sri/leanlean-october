@@ -13,11 +13,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 
 /-- The smooth velocity cutoff in packed coordinates. -/
-def constructionPackedCutoff (d : ℕ) (m R : ℝ) (x : PDE.Vec (d + d)) : ℝ :=
+def constructionPackedCutoff (d ) (m R : ℝ) (x : PDE.Vec (d + d)) : ℝ :=
   constructionVelocityCutoff m R (spatialCoordinateCLE d x)
 
 /-- The selected first weak derivative of the actual extended profile. -/
-def constructionExtendedPackedGradient {d : ℕ} {alpha : ℝ}
+def constructionExtendedPackedGradient {d alpha}
     (h : CounterProfileStatement d alpha) (r mu R m t : ℝ)
     (x : PDE.Vec (d + d)) (i : Fin (d + d)) : ℝ :=
   constructionPackedCutoff d m R x * spatialPackedCutoffGradient h r mu R t x i +
@@ -30,8 +30,8 @@ theorem contDiff_providerPackedCutoff (d : ℕ) (m R : ℝ) :
   (contDiff_providerVelocityCutoff d m R).comp (spatialCoordinateCLE d).contDiff
 
 /-- The exact zero extension satisfies the first compact-test identities globally. -/
-theorem construction_zero_extension_weak_first {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+theorem construction_zero_extension_weak_first {d } (hd : 1 ≤ d)
+    {alpha } (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)
@@ -64,8 +64,8 @@ theorem construction_zero_extension_weak_first {d : ℕ} (hd : 1 ≤ d)
   simpa only [Measure.restrict_univ, constructionExtendedPackedGradient, ← hz] using! he
 
 /-- The same selected representatives satisfy the first identities on the native carrier. -/
-theorem construction_zero_extension_weak_native {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+theorem construction_zero_extension_weak_native {d } (hd : 1 ≤ d)
+    {alpha } (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)

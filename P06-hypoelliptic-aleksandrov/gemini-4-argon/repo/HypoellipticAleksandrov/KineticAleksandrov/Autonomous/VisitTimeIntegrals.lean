@@ -12,7 +12,7 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
-/-- Closed active velocity support makes the actual localized quadratic integrable. -/
+/- Closed active velocity support makes the actual localized quadratic integrable. -/
 theorem visitTimeQuadratic_integrable_of_active_support (c : Clock) (b : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu]
     (hmu : ∀ᵐ p ∂mu, p.velocity 0 ∈ closure c.active) :
@@ -34,48 +34,10 @@ theorem visitTimeQuadratic_integrable_of_active_support (c : Clock) (b : ℝ)
   simp only [one_mul] at hm
   exact hm.trans (visitQuadratic_le c _)
 
-/-- The exact localized operator is continuous without differentiating the coefficient. -/
-theorem visitTimeQuadratic_operator_continuous {lam Lam : ℝ}
-    (A : SmoothAutonomous lam Lam) (c : Clock) (b : ℝ) :
-    Continuous (fun p : Point => forwardScalarOperator A.a
-      (fun q => visitTimeCutoff b c.r c.positive q.time *
-        visitQuadratic c (q.velocity 0)) p) := by
-  let eta := visitTimeCutoff b c.r c.positive
-  have he := (visitTimeCutoff_properties b c.r c.positive).1
-  have hf : Continuous (fun p : Point => visitQuadratic c (p.velocity 0)) :=
-    (visitQuadratic_smooth c).continuous.comp
-    ((continuous_apply 0).comp continuous_velocity)
-  have hh : (fun p : Point => forwardScalarOperator A.a
-      (fun q => eta q.time * visitQuadratic c (q.velocity 0)) p) =
-      fun p => deriv eta p.time * visitQuadratic c (p.velocity 0) -
-        2 * A.a (p.position 0) (p.velocity 0) * eta p.time :=
-    funext (visitTimeQuadratic_operator c eta he A.a)
-  rw [hh]
-  exact (((he.continuous_deriv (by norm_num)).comp continuous_time).mul hf).sub
-    ((continuous_const.mul (visitCoefficient_continuous A)).mul
-      (he.continuous.comp continuous_time))
-
-/-- Closed active support makes the bounded localized operator integrable. -/
-theorem visitTimeQuadratic_operator_integrable_of_active_support
-    {lam Lam : ℝ} (hlam : 0 < lam) (A : SmoothAutonomous lam Lam)
-    (c : Clock) (b : ℝ) (mu : Measure Point) [IsFiniteMeasure mu]
-    (hmu : ∀ᵐ p ∂mu, p.velocity 0 ∈ closure c.active) :
-    Integrable (fun p => forwardScalarOperator A.a
-      (fun q => visitTimeCutoff b c.r c.positive q.time *
-        visitQuadratic c (q.velocity 0)) p) mu := by
-  obtain ⟨D, _hD, hd⟩ := visitTimeQuadratic_uniform_operator_bound
-  apply Integrable.mono' (integrable_const (9 * D / 16 + 2 * Lam))
-    (visitTimeQuadratic_operator_continuous A c b).measurable.aestronglyMeasurable
-  filter_upwards [hmu] with p hp
-  change ‖forwardScalarOperator A.a
-    (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0)) p‖ ≤ _
-  rw [Real.norm_eq_abs]
-  exact hd c b lam Lam hlam A p hp
-
-/-- The actual active Green mixture has closed active velocity support. -/
+/- The exact localized operator is continuous without differentiating the coefficient. -/
 theorem visitActiveGreenMixture_ae_closedActive
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu),
@@ -96,7 +58,7 @@ theorem visitActiveGreenMixture_ae_closedActive
         subset_closure ((visitActiveUnion_carrier c J).le hq).1
   · simp
 
-/-- The actual active exit mixture discharges the localized test's support condition. -/
+/- The actual active exit mixture discharges the localized test's support condition. -/
 theorem visitTimeQuadratic_integrable_activeExitMixture
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -108,17 +70,39 @@ theorem visitTimeQuadratic_integrable_activeExitMixture
   visitTimeQuadratic_integrable_of_active_support c b _
     (visitActiveExitMixture_ae_velocity hH hLE hlam hLam A c J s T mu)
 
-/-- The actual active Green mixture discharges the localized operator's support condition. -/
+/- The actual active Green mixture discharges the localized operator's support condition. -/
 theorem visitTimeQuadratic_operator_integrable_activeGreenMixture
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (fun p => forwardScalarOperator A.a
       (fun q => visitTimeCutoff b c.r c.positive q.time *
         visitQuadratic c (q.velocity 0)) p)
-      (visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu) :=
-  visitTimeQuadratic_operator_integrable_of_active_support hlam A c b _
-    (visitActiveGreenMixture_ae_closedActive hH hLE hlam hLam A c J s T mu)
+      (visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu) := by
+  have hmu := (visitActiveGreenMixture_ae_closedActive hH hLE hlam hLam A c J s T mu)
+  obtain ⟨D, _hD, hd⟩ := visitTimeQuadratic_uniform_operator_bound
+  have _h_inl_10 : Continuous (fun p : Point => forwardScalarOperator A.a (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0)) p) := by
+    let eta := visitTimeCutoff b c.r c.positive
+    have he := (visitTimeCutoff_properties b c.r c.positive).1
+    have hf : Continuous (fun p : Point => visitQuadratic c (p.velocity 0)) :=
+      (visitQuadratic_smooth c).continuous.comp
+      ((continuous_apply 0).comp continuous_velocity)
+    have hh : (fun p : Point => forwardScalarOperator A.a
+        (fun q => eta q.time * visitQuadratic c (q.velocity 0)) p) =
+        fun p => deriv eta p.time * visitQuadratic c (p.velocity 0) -
+          2 * A.a (p.position 0) (p.velocity 0) * eta p.time :=
+      funext (visitTimeQuadratic_operator c eta he A.a)
+    rw [hh]
+    exact (((he.continuous_deriv (by norm_num)).comp continuous_time).mul hf).sub
+      ((continuous_const.mul (visitCoefficient_continuous A)).mul
+        (he.continuous.comp continuous_time))
+  apply Integrable.mono' (integrable_const (9 * D / 16 + 2 * Lam))
+    _h_inl_10.measurable.aestronglyMeasurable
+  filter_upwards [hmu] with p hp
+  change ‖forwardScalarOperator A.a
+    (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0)) p‖ ≤ _
+  rw [Real.norm_eq_abs]
+  exact hd c b lam Lam hlam A p hp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

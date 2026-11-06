@@ -24,10 +24,10 @@ theorem killed_slab_fourier_density_bound (hd : 0 < d)
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
     (hcomp : K.HasComposition MeasurableSet.univ)
     (Cocc : ℝ → ℝ) (hocc : OccupationBoundedBy K Cocc)
-    (Cdec cdec : ℝ) (hCdec : 0 < Cdec)  (σ₀ : ℝ)
+    (Cdec cdec ) (hCdec : 0 < Cdec)  (σ₀ : ℝ)
     (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
-    [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
-    {T : ℝ} (hT : 0 < T) (ξ : PDE.Vec d) (k : SlabBase d → ℂ) (hk : Integrable k (slabBase d T))
+    [IsFiniteMeasure μ] (Γ ) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
+    {T } (hT : 0 < T) (ξ : PDE.Vec d) (k : SlabBase d → ℂ) (hk : Integrable k (slabBase d T))
     (hkE : ∀ E : Set (SlabBase d), MeasurableSet E →
       ∫ y in E, k y ∂slabBase d T =
         ∫ p in {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
@@ -53,7 +53,7 @@ theorem killed_slab_fourier_density_bound (hd : 0 < d)
     exact memLp_one_iff_integrable.1 this
   have hkae := slab_fourier_ae_bound K hcov hcomp σ₀ μ Γ hΓ hT ξ gξ hgξ hint k hk hkE
   obtain ⟨hmem, hbd⟩ := hnorm γ hγ1 hγ2
-  have hC0 : 0 ≤ Cocc γ := hocc.1 γ hγ1 hγ2
+  have hC0 := hocc.1 γ hγ1 hγ2
   have hβ := slabBeta_nonneg hd hγ1 hγ2
   -- step 1: domination
   have h1 : eLpNorm k (ENNReal.ofReal γ) (slabBase d T) ≤

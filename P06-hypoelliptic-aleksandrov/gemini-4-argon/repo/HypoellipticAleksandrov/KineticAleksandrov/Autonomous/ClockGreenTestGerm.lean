@@ -27,7 +27,7 @@ theorem clock_transport_operator_zero_after
       fun _ => 0 := by
     funext y
     ext i
-    have hi : i = 0 := Fin.eq_zero i
+    have hi := Fin.eq_zero i
     subst i
     rw [kineticPositionGradient_scalar]
     have heq : (fun v : ℝ => u ⟨p.time, fun _ => v, p.velocity⟩) = fun _ => 0 :=

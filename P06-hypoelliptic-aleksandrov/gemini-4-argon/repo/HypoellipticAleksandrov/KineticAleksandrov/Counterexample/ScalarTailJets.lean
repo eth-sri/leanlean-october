@@ -110,8 +110,7 @@ theorem scalarCubic_remainder_derivatives (f : ℝ → ℝ) (p a : ℝ) (ha : 0 
   · apply hfirst.congr' _ (by simp only [Real.rpow_eq_pow]; rfl)
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
     have hz : 0 < scalarCubic a s := div_pos (pow_pos hs _) hD
-    have hc := hf.contDiffAt (isOpen_Ioi.mem_nhds hz)
-    rw [deriv_comp_scalarCubic f a s (hc.differentiableAt (by norm_num))]
+    rw [deriv_comp_scalarCubic f a s ((hf.contDiffAt (isOpen_Ioi.mem_nhds hz)).differentiableAt (by norm_num))]
     simp only [Real.rpow_ofNat, scalarCubic]
     ring
   · apply (hsecond.add hsecond').congr' _ (by simp only [Real.rpow_eq_pow]; rfl)

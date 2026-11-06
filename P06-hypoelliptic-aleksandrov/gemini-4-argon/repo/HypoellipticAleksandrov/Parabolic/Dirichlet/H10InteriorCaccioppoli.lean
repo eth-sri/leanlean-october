@@ -17,12 +17,12 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 namespace IsReverseTimeVariationalEnergySolution
 
 private theorem integrable_norm_sq_timewise_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
     Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) := by
   let Lu := L.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u
-  have hLu : Lu =ᵐ[reverseTimeVolume T] fun τ => L (u τ) :=
+  have hLu :=
     ContinuousLinearMap.coeFn_compLpL L u
   refine (show Integrable (fun τ => ‖Lu τ‖ ^ 2) (reverseTimeVolume T) by
     simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) Lu Lu).congr ?_
@@ -31,18 +31,10 @@ private theorem integrable_norm_sq_timewise_apply
 
 private theorem integrable_weighted
     {T : ℝ} (ζ : ReverseTimeScalarTest T) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T)) :
+    {f } (hf : Integrable f (reverseTimeVolume T)) :
     Integrable (fun τ => ζ τ * f τ) (reverseTimeVolume T) := by
   exact hf.bdd_mul ζ.contDiff.continuous.aestronglyMeasurable
     (Filter.Eventually.of_forall hζunit)
-
-private theorem integral_norm_sq_toLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) :
-    (∫ τ, ‖u τ‖ ^ 2 ∂reverseTimeVolume T) = ‖u‖ ^ 2 := by
-  have h := integral_norm_sq_eq_norm_sq_toLp (fun τ => u τ) (Lp.memLp u)
-  rw [Lp.toLp_coeFn u (Lp.memLp u)] at h
-  exact h
 
 private theorem integral_weighted_const_mul
     {T a : ℝ} (ζ : ReverseTimeScalarTest T) (f : ℝ → ℝ) :
@@ -107,7 +99,10 @@ private theorem temporal_measure_radius_closure
     exact integrable_norm_sq_timewise_apply hΩ T (gradientCLM hΩ) u
   have hUsq : Integrable (fun τ => ‖u τ‖ ^ 2) (reverseTimeVolume T) := by
     simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) u u
-  have hUenergy := integral_norm_sq_toLp hΩ T u
+  have hUenergy : (∫ τ, ‖u τ‖ ^ 2 ∂reverseTimeVolume T) = ‖u‖ ^ 2 := by
+    have h := integral_norm_sq_eq_norm_sq_toLp (fun τ => u τ) (Lp.memLp u)
+    rw [Lp.toLp_coeFn u (Lp.memLp u)] at h
+    exact h
   have hGradEnergy : (∫ τ, ‖gradientCLM hΩ (u τ)‖ ^ 2
       ∂reverseTimeVolume T) ≤ ‖u‖ ^ 2 := by
     rw [← hUenergy]
@@ -233,10 +228,10 @@ private theorem temporal_measure_radius_closure
   exact caccioppoli_scalar_closure hlam hC (by positivity) hLcut hT.le
     hbridge htime hcutoff hsource huSq
 
-/-- Uniform weighted interior Caccioppoli control for localized spatial difference quotients
+/- Uniform weighted interior Caccioppoli control for localized spatial difference quotients
 of supplied reverse-time variational energy solutions. -/
 theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d Ω inner Kη Kχ}
     (hd : 0 < d)
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
@@ -322,11 +317,9 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
               change χ y ≠ 0
               rw [χ.eq_one_on_inner y hy]
               exact one_ne_zero
-            let hηshift : Set.MapsTo
-                (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-                (tsupport η.toFun) Ω :=
+            let hηshift :=
               hχshift.mono_left hηχ
-            let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
+            let A :=
               localizedSpatialDifferenceQuotientH10CLM
                 hΩ η k h η.tsupport_subset hηshift
             let Gv : ℝ → PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
@@ -354,8 +347,7 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
   intro ζ hζnonneg hζleOne hζderiv a b c F haSmooth hbSmooth hcSmooth hFSmooth
     hLower hUpper hcNonpos hA hB hBD hq hqD hfD initial u g hdu hu k h habs hh
   dsimp
-  let hχshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport χ.toFun) Ω :=
+  let hχshift :=
     mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset hcarrier k hh
   let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
     intro y hy
@@ -363,9 +355,8 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
     change χ y ≠ 0
     rw [χ.eq_one_on_inner y hy]
     exact one_ne_zero
-  let hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω := hχshift.mono_left hηχ
-  let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
+  let hηshift := hχshift.mono_left hηχ
+  let A :=
     localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
   let Gv : ℝ → PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
     fun τ => gradientCLM hΩ (A (u τ))
@@ -384,8 +375,7 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
     haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial
   have hRadiusR : ‖u‖ ≤ R := by
     simpa only [R] using hRadius
-  have hGsq : Integrable (fun τ => ‖Gv τ‖ ^ 2) (reverseTimeVolume (r₁ - r₀)) := by
-    exact integrable_norm_sq_timewise_apply hΩ (r₁ - r₀) ((gradientCLM hΩ).comp A) u
+  have hGsq := integrable_norm_sq_timewise_apply hΩ (r₁ - r₀) ((gradientCLM hΩ).comp A) u
   have hValueBound : ∀ τ : ℝ,
       ‖valueCLM hΩ (A (u τ))‖ ^ 2 ≤ ‖gradientCLM hΩ (u τ)‖ ^ 2 := by
     intro τ

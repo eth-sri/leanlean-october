@@ -36,7 +36,7 @@ theorem boundary_swapped_slice_regular {d : ℕ} {D : Set (KineticPoint d)}
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' D)) (Q : KineticPoint d) (hQ : sectionTwoPoint Q ∈ D) :
     IsSliceRegularAt (u ∘ sectionTwoPoint) Q := by
-  have hO : IsOpen ((KineticPoint.equivProd d) '' D) :=
+  have hO :=
     (KineticPoint.homeomorphProd d).isOpenMap D hD
   have hx : (KineticPoint.equivProd d) (sectionTwoPoint Q) ∈
       ((KineticPoint.equivProd d) '' D) := mem_image_of_mem _ hQ

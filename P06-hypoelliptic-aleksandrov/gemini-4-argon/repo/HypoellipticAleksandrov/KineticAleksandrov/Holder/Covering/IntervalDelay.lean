@@ -36,9 +36,7 @@ theorem interval_delay_of_bounded_union {ι : Type*} (a h : ι → ℝ) (I : Set
     have hai : a i < a i+m*h i := by nlinarith only [hm, hh i hi]
     obtain ⟨s, hs, hIs⟩ := hcontains (a i) (a i+m*h i) hai
       (subset_iUnion₂_of_subset i hi Subset.rfl)
-    have hI := backwardInterval_subset_component_extension (hh i hi) hm
-      (hIs.trans (subset_of_eq (hcomp s hs).2))
-    exact mem_iUnion₂.mpr ⟨s, hs, hI hxi⟩
+    exact mem_iUnion₂.mpr ⟨s, hs, (backwardInterval_subset_component_extension (hh i hi) hm (hIs.trans (subset_of_eq (hcomp s hs).2))) hxi⟩
   have hvol : ∀ s ∈ C, volume (ext s) = ENNReal.ofReal ((m+1)/m) * volume s := by
     intro s hs
     change volume (Ioo (sInf s-(sSup s-sInf s)/m) (sSup s)) = _

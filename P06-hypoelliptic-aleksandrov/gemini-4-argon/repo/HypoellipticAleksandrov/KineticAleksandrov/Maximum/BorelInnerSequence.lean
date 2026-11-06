@@ -61,12 +61,12 @@ theorem borelInnerRadius_tendsto (R : ℝ) (hR : 0 < R) :
   simpa only [Function.comp_def,Real.sqrt_one,one_mul] using hs.mul_const R
 
 /-- The source shifted backward centre for the concrete sequence. -/
-def borelInnerCentre {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (n : ℕ) : KineticPoint d :=
+def borelInnerCentre {d } (P₀ : KineticPoint d) (R : ℝ) (n : ℕ) : KineticPoint d :=
   ⟨P₀.time - borelInnerDelta R n,
     P₀.position - borelInnerDelta R n • P₀.velocity,P₀.velocity⟩
 
 /-- Every backward interior point eventually lies in the shifted inner cylinders. -/
-theorem borel_inner_exhaustion {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+theorem borel_inner_exhaustion {d } (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (P : KineticPoint d) (hP : P ∈ backwardCylinder P₀ R) :
     ∀ᶠ n in atTop, P ∈ backwardCylinder (borelInnerCentre P₀ R n) (borelInnerRadius R hR n) := by
   have hP' : kineticReflection P ∈ forwardCylinder (kineticReflection P₀) R hR := by
@@ -74,8 +74,7 @@ theorem borel_inner_exhaustion {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR :
     exact mem_image_of_mem _ hP
   obtain ⟨η,hη,hmem⟩ := innerCylinder_exhaustion (kineticReflection P₀) R hR
     (kineticReflection P) hP'
-  have hsmall := (tendsto_order.mp (borelInnerDelta_tendsto R)).2 η hη
-  filter_upwards [hsmall] with n hn
+  filter_upwards [((tendsto_order.mp (borelInnerDelta_tendsto R)).2 η hη)] with n hn
   have hm := hmem (borelInnerDelta R n)
     (borelInnerDelta_valid R hR n).1 (borelInnerDelta_valid R hR n).2 hn
   change P ∈ backwardCylinder

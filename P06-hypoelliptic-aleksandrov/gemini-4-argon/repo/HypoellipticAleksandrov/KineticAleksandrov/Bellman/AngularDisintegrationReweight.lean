@@ -44,8 +44,7 @@ theorem bellmanRadial_degreeFactors_cancel (β r : ℝ) (hr : 0 < r) :
   simp only [show β - 4 + (4 - β) = 0 by ring, Real.rpow_zero, ENNReal.ofReal_one]
 
 /-- Reweighting the actual homogeneous coordinate measure makes radial scaling invariant. -/
-theorem HasBellmanDensityDegree.map_reweighted_angularPullback {β : ℝ}
-    {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ)
+theorem HasBellmanDensityDegree.map_reweighted_angularPullback {β μ} (hμ : HasBellmanDensityDegree β μ)
     (r : ℝ) (hr : 0 < r) :
     Measure.map ((bellmanRadialScale r hr).prodCongr (Homeomorph.refl ℝ))
       ((bellmanAngularPullback μ).withDensity (bellmanRadialDegreeWeight β)) =
@@ -68,8 +67,7 @@ def bellmanLogAngularMeasure (β : ℝ) (μ : Measure BellmanPuncturedPlane) :
 
 /-- Homogeneity gives first-coordinate translation invariance of the actual log-radius
 measure. -/
-theorem HasBellmanDensityDegree.logAngularMeasure_invariant {β : ℝ}
-    {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ) (a : ℝ) :
+theorem HasBellmanDensityDegree.logAngularMeasure_invariant {β μ} (hμ : HasBellmanDensityDegree β μ) (a : ℝ) :
     Measure.map (fun q : ℝ × ℝ => (a + q.1, q.2))
       (bellmanLogAngularMeasure β μ) = bellmanLogAngularMeasure β μ := by
   let S := (bellmanRadialScale (Real.exp a) (Real.exp_pos a)).prodCongr (Homeomorph.refl ℝ)

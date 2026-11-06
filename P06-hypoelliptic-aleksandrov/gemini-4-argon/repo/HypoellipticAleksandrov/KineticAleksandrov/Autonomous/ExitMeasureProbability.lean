@@ -11,16 +11,16 @@ open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution Parabolic
 open scoped ENNReal
 
-/-- The literal physical kinetic operator annihilates constant tests. -/
+/- The literal physical kinetic operator annihilates constant tests. -/
 theorem reconstruction_forwardScalarOperator_const (a : ℝ → ℝ → ℝ) (c : ℝ) (p : Point) :
     forwardScalarOperator a (fun _ => c) p = 0 := by
   simp [forwardScalarOperator, kineticTimeDerivative, kineticPositionGradient_scalar,
     kineticVelocityHessian_scalar]
 
-/-- The actual finite-horizon exit measure is a probability measure. -/
+/- The actual finite-horizon exit measure is a probability measure. -/
 theorem stripExitOfRealization_mass_one
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripExitOfRealization hH hlam hLam A H E hE T e univ = 1 := by
@@ -33,13 +33,5 @@ theorem stripExitOfRealization_mass_one
     integral_const, smul_eq_mul, mul_one, Measure.real] at hi
   exact (ENNReal.toReal_eq_one_iff _).mp hi.symm
 
-/-- The actual exit measure carries the probability instance with no extra hypothesis. -/
-instance stripExitOfRealization_isProbabilityMeasure
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
-    IsProbabilityMeasure (stripExitOfRealization hH hlam hLam A H E hE T e) :=
-  ⟨stripExitOfRealization_mass_one hH hlam hLam A H E hE T e⟩
-
+/- The actual exit measure carries the probability instance with no extra hypothesis. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -20,7 +20,7 @@ open MeasureTheory Set
 
 noncomputable section
 
-/-- The continuous linear scalar-to-native-one-coordinate equivalence. -/
+/- The continuous linear scalar-to-native-one-coordinate equivalence. -/
 def scalarToVecOneContinuousLinearEquiv : ℝ ≃L[ℝ] Vec 1 :=
   (ContinuousLinearEquiv.piUnique ℝ (fun _ : Fin 1 => ℝ)).symm
 
@@ -39,14 +39,7 @@ def scalarToVecOneContinuousLinearEquiv : ℝ ≃L[ℝ] Vec 1 :=
   subst i
   simp [scalarToVecOne, basisVec]
 
-/-- Pull a native smooth scalar function back to the scalar coordinate. -/
-def scalarPullbackOne (φ : Vec 1 → ℝ) : ℝ → ℝ :=
-  fun t => φ (scalarToVecOne t)
-
-@[simp] theorem scalarPullbackOne_apply (φ : Vec 1 → ℝ) (t : ℝ) :
-    scalarPullbackOne φ t = φ (scalarToVecOne t) :=
-  rfl
-
+/- Pull a native smooth scalar function back to the scalar coordinate. -/
 end
 
 end PDE

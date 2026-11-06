@@ -95,12 +95,12 @@ def CounterProfileStatement (d : ℕ) (alpha : ℝ) : Prop :=
     (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q)
 
 /-- The lam witness selected from the shared conditional profile statement. -/
-noncomputable def profileLowerEllipticity {d : ℕ} {alpha : ℝ}
+noncomputable def profileLowerEllipticity {d alpha}
     (h : CounterProfileStatement d alpha) : ℝ :=
   h.choose
 
 /-- The remaining source conclusions for the selected lam witness. -/
-theorem profileLowerEllipticity_spec {d : ℕ} {alpha : ℝ}
+theorem profileLowerEllipticity_spec {d alpha}
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     ∃ Lam : ℝ,
@@ -137,12 +137,12 @@ theorem profileLowerEllipticity_spec {d : ℕ} {alpha : ℝ}
   exact h.choose_spec
 
 /-- The Lam witness selected from the shared conditional profile statement. -/
-noncomputable def profileUpperEllipticity {d : ℕ} {alpha : ℝ}
+noncomputable def profileUpperEllipticity {d alpha}
     (h : CounterProfileStatement d alpha) : ℝ :=
   (profileLowerEllipticity_spec h).choose
 
 /-- The remaining source conclusions for the selected Lam witness. -/
-theorem profileUpperEllipticity_spec {d : ℕ} {alpha : ℝ}
+theorem profileUpperEllipticity_spec {d alpha}
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -179,12 +179,12 @@ theorem profileUpperEllipticity_spec {d : ℕ} {alpha : ℝ}
   exact (profileLowerEllipticity_spec h).choose_spec
 
 /-- The c witness selected from the shared conditional profile statement. -/
-noncomputable def profileLowerComparison {d : ℕ} {alpha : ℝ}
+noncomputable def profileLowerComparison {d alpha}
     (h : CounterProfileStatement d alpha) : ℝ :=
   (profileUpperEllipticity_spec h).choose
 
 /-- The remaining source conclusions for the selected c witness. -/
-theorem profileLowerComparison_spec {d : ℕ} {alpha : ℝ}
+theorem profileLowerComparison_spec {d alpha}
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -221,12 +221,12 @@ theorem profileLowerComparison_spec {d : ℕ} {alpha : ℝ}
   exact (profileUpperEllipticity_spec h).choose_spec
 
 /-- The C witness selected from the shared conditional profile statement. -/
-noncomputable def profileUpperComparison {d : ℕ} {alpha : ℝ}
+noncomputable def profileUpperComparison {d alpha}
     (h : CounterProfileStatement d alpha) : ℝ :=
   (profileLowerComparison_spec h).choose
 
 /-- The remaining source conclusions for the selected C witness. -/
-theorem profileUpperComparison_spec {d : ℕ} {alpha : ℝ}
+theorem profileUpperComparison_spec {d alpha}
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -263,12 +263,12 @@ theorem profileUpperComparison_spec {d : ℕ} {alpha : ℝ}
   exact (profileLowerComparison_spec h).choose_spec
 
 /-- The A witness selected from the shared conditional profile statement. -/
-noncomputable def profileMatrix {d : ℕ} {alpha : ℝ}
+noncomputable def profileMatrix {d alpha}
     (h : CounterProfileStatement d alpha) : XV d → PDE.Mat d :=
   (profileUpperComparison_spec h).choose
 
 /-- The remaining source conclusions for the selected A witness. -/
-theorem profileMatrix_spec {d : ℕ} {alpha : ℝ}
+theorem profileMatrix_spec {d alpha}
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -305,12 +305,12 @@ theorem profileMatrix_spec {d : ℕ} {alpha : ℝ}
   exact (profileUpperComparison_spec h).choose_spec
 
 /-- The H witness selected from the shared conditional profile statement. -/
-noncomputable def profileFunction {d : ℕ} {alpha : ℝ}
+noncomputable def profileFunction {d alpha}
     (h : CounterProfileStatement d alpha) : XV d → ℝ :=
   (profileMatrix_spec h).choose
 
 /-- The remaining source conclusions for the selected H witness. -/
-theorem profileFunction_spec {d : ℕ} {alpha : ℝ}
+theorem profileFunction_spec {d alpha}
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -347,12 +347,12 @@ theorem profileFunction_spec {d : ℕ} {alpha : ℝ}
   exact (profileMatrix_spec h).choose_spec
 
 /-- The gx witness selected from the shared conditional profile statement. -/
-noncomputable def profilePositionJet {d : ℕ} {alpha : ℝ}
+noncomputable def profilePositionJet {d alpha}
     (h : CounterProfileStatement d alpha) : XV d → PDE.Vec d :=
   (profileFunction_spec h).choose
 
 /-- The remaining source conclusions for the selected gx witness. -/
-theorem profilePositionJet_spec {d : ℕ} {alpha : ℝ}
+theorem profilePositionJet_spec {d alpha}
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -389,12 +389,12 @@ theorem profilePositionJet_spec {d : ℕ} {alpha : ℝ}
   exact (profileFunction_spec h).choose_spec
 
 /-- The gv witness selected from the shared conditional profile statement. -/
-noncomputable def profileVelocityJet {d : ℕ} {alpha : ℝ}
+noncomputable def profileVelocityJet {d alpha}
     (h : CounterProfileStatement d alpha) : XV d → PDE.Vec d :=
   (profilePositionJet_spec h).choose
 
 /-- The remaining source conclusions for the selected gv witness. -/
-theorem profileVelocityJet_spec {d : ℕ} {alpha : ℝ}
+theorem profileVelocityJet_spec {d alpha}
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -431,12 +431,12 @@ theorem profileVelocityJet_spec {d : ℕ} {alpha : ℝ}
   exact (profilePositionJet_spec h).choose_spec
 
 /-- The hess witness selected from the shared conditional profile statement. -/
-noncomputable def profileHessian {d : ℕ} {alpha : ℝ}
+noncomputable def profileHessian {d alpha}
     (h : CounterProfileStatement d alpha) : XV d → PDE.Mat d :=
   (profileVelocityJet_spec h).choose
 
 /-- The remaining source conclusions for the selected hess witness. -/
-theorem selectedProfile_spec {d : ℕ} {alpha : ℝ}
+theorem selectedProfile_spec {d alpha}
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h

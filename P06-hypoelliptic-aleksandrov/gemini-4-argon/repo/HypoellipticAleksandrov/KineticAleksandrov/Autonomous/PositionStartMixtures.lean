@@ -15,7 +15,7 @@ open scoped Classical
 /-- The existing terminal family as a measurable kernel, including zero-duration starts. -/
 def positionStartTerminalKernel
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) :
     Kernel Point Point :=
   ⟨enlargedActiveTerminalFamily hH hLE hlam hLam A c J b,
@@ -24,7 +24,7 @@ def positionStartTerminalKernel
 /-- Every actual active terminal family has mass at most one. -/
 theorem positionStartTerminalKernel_mass_le_one
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) (p : Point) :
     positionStartTerminalKernel hH hLE hlam hLam A c J b p univ ≤ 1 := by
   change (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p) univ ≤ 1
@@ -50,7 +50,7 @@ instance positionStartTerminalKernel_isFiniteKernel
 /-- Terminal mixtures retain the closed active velocity support. -/
 theorem positionStartTerminalMixture_ae_closedActive
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(positionStartTerminalKernel hH hLE hlam hLam A c J b ∘ₘ mu),
@@ -76,7 +76,7 @@ theorem positionStartTerminalMixture_ae_closedActive
 /-- Finite all-time active mixtures retain open active support. -/
 theorem positionStartAllTimeMixture_ae_active
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (mu : Measure Point) :
     ∀ᵐ q ∂(coreAllTimeGreenKernel hH hLE hlam hLam A c ∘ₘ mu),
       q.velocity 0 ∈ c.active := by

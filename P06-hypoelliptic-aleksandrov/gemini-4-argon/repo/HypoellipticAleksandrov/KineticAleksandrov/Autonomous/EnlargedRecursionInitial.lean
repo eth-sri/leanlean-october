@@ -15,8 +15,8 @@ open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 /-- The actual initial visit satisfies both outer Green and exit decompositions. -/
 theorem enlargedInitial_nested
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T ) (hT : s < T)
     (P : Point) (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     let gamma := enlargedVisitEntrance hH hLE hlam hLam A c J s T P 0
     let GW := enlargedVisitGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) T

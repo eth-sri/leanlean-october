@@ -3,6 +3,10 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitTimeIntegratedGreen
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitTimeSupport
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripKernelIntegral
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassOutgoing
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitTimeCalculus
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitTimeIntegrals
 
 /-! # Entrance counting and operator integration in the actual short time window -/
 
@@ -10,10 +14,10 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
-/-- The localized test counts every actual entrance in the closed interval of length r squared. -/
+/- The localized test counts every actual entrance in the closed interval of length r squared. -/
 theorem visitTimeQuadratic_entrance_integral_lower
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
     (P : Point) (n : ℕ) :
     5 * c.r ^ 2 / 16 *
@@ -24,8 +28,12 @@ theorem visitTimeQuadratic_entrance_integral_lower
   let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
   let W := {p : Point | p.time ∈ Icc b (b + c.r ^ 2)}
   have hW : MeasurableSet W := isClosed_Icc.measurableSet.preimage continuous_time.measurable
+  have _h_xinl_0 : Integrable (fun p => visitTimeCutoff b c.r c.positive p.time * visitQuadratic c (p.velocity 0)) (visitEntrancePiece hH hLE hlam hLam A c J s T P n) := by
+    apply visitTimeQuadratic_integrable_of_active_support
+    exact (visitGamma_ae_closedEntrance P c J s T _ _ n).mono
+      (fun p hp => subset_closure (visitClosedEntrance_subset_active c hp))
   have hi := integral_mono_ae ((integrable_const (5 * c.r ^ 2 / 16)).indicator hW)
-    (visitTimeQuadratic_integrable_entrance hH hLE hlam hLam A c J s T b P n) (by
+    _h_xinl_0 (by
       filter_upwards [visitGamma_ae_closedEntrance P c J s T _ _ n] with p hp
       by_cases ht : p ∈ W
       · rw [indicator_of_mem ht, visitTimeCutoff_eq_one b c.r c.positive ht, one_mul]
@@ -37,7 +45,7 @@ theorem visitTimeQuadratic_entrance_integral_lower
   rw [integral_indicator hW, integral_const] at hi
   simpa only [smul_eq_mul, Measure.real, Measure.restrict_apply_univ, mul_comm] using hi
 
-/-- The actual localized Green operator is controlled by occupation only in its short window. -/
+/- The actual localized Green operator is controlled by occupation only in its short window. -/
 theorem visitTimeQuadratic_activeGreen_integral_bound : ∃ D : ℝ, 0 ≤ D ∧
     ∀ (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
       (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
@@ -69,7 +77,20 @@ theorem visitTimeQuadratic_activeGreen_integral_bound : ∃ D : ℝ, 0 ≤ D ∧
       by_cases ht : p ∈ W
       · rw [indicator_of_mem ht]
         exact (neg_le_abs _).trans (hd c b lam Lam hlam A p hp)
-      · have hz : f p = 0 := (visitTimeQuadratic_zero_off_window c b A.a p ht).2
+      · have _h_xinl_1 : visitTimeCutoff b c.r c.positive p.time * visitQuadratic c (p.velocity 0) = 0 ∧ forwardScalarOperator A.a (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0)) p = 0 := by
+          let a := A.a
+          have he : visitTimeCutoff b c.r c.positive p.time = 0 := by
+            by_contra hn
+            exact ht (visitTimeCutoff_tsupport b c.r c.positive (subset_closure hn))
+          have hd : deriv (visitTimeCutoff b c.r c.positive) p.time = 0 := by
+            by_contra hn
+            exact ht (visitTimeCutoff_deriv_tsupport b c.r c.positive (subset_closure hn))
+          constructor
+          · rw [he, zero_mul]
+          · rw [visitTimeQuadratic_operator c _
+              (visitTimeCutoff_properties b c.r c.positive).1, he, hd]
+            simp only [zero_mul, mul_zero, sub_zero]
+        have hz : f p = 0 := _h_xinl_1.2
         rw [indicator_of_notMem ht, hz]
         exact neg_zero.le)
   change (∫ p, -f p ∂G) ≤ ∫ p, W.indicator (fun _ => 9 * D / 16 + 2 * Lam) p ∂G at hi

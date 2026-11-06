@@ -19,50 +19,6 @@ noncomputable section
 private def clip {n : ℕ} (R : NNReal) (z : Fin n → ℝ) : Fin n → ℝ :=
   fun i => (Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) : ℝ)
 
-private theorem lipschitzWith_clip {n : ℕ} (R : NNReal) :
-    LipschitzWith 1 (clip (n := n) R) := by
-  refine LipschitzWith.of_dist_le_mul fun z w => ?_
-  rw [dist_eq_norm]
-  refine (pi_norm_le_iff_of_nonneg (mul_nonneg (by norm_num) dist_nonneg)).mpr fun i => ?_
-  change dist (clip R z i) (clip R w i) ≤ (1 : ℝ) * dist z w
-  calc
-    dist (clip R z i) (clip R w i) ≤ (1 : ℝ) * dist (z i) (w i) := by
-      exact (LipschitzWith.projIcc (neg_le_self R.2)).dist_le_mul _ _
-    _ ≤ (1 : ℝ) * dist z w := by
-      gcongr
-      simpa only [dist_eq_norm, Pi.sub_apply] using norm_le_pi_norm (z - w) i
-
-private theorem norm_clip_le_radius {n : ℕ} (R : NNReal) (z : Fin n → ℝ) :
-    ‖clip R z‖ ≤ R := by
-  refine (pi_norm_le_iff_of_nonneg R.2).mpr fun i => ?_
-  change ‖(Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) : ℝ)‖ ≤ R
-  rw [Real.norm_eq_abs]
-  exact abs_le.2 (Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i)).property
-
-private theorem norm_clip_le {n : ℕ} (R : NNReal) (z : Fin n → ℝ) :
-    ‖clip R z‖ ≤ ‖z‖ := by
-  refine (pi_norm_le_iff_of_nonneg (norm_nonneg z)).mpr fun i => ?_
-  have hzero : (0 : ℝ) ∈ Set.Icc (-(R : ℝ)) (R : ℝ) := by
-    exact ⟨neg_nonpos.mpr R.2, R.2⟩
-  have h := (LipschitzWith.projIcc (neg_le_self R.2)).dist_le_mul (z i) 0
-  have hprojzero :
-      ((Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) 0 :
-        Set.Icc (-(R : ℝ)) (R : ℝ)) : ℝ) = 0 := by
-    simpa using congrArg Subtype.val (Set.projIcc_of_mem (neg_le_self R.2) hzero)
-  change ‖(Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) : ℝ)‖ ≤ ‖z‖
-  rw [← dist_zero_right]
-  calc
-    dist ((Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) :
-      Set.Icc (-(R : ℝ)) (R : ℝ)) : ℝ) 0 =
-        dist ((Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) :
-          Set.Icc (-(R : ℝ)) (R : ℝ)) : ℝ)
-          ((Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) 0 :
-            Set.Icc (-(R : ℝ)) (R : ℝ)) : ℝ) := by
-      rw [hprojzero]
-    _ ≤ (1 : ℝ) * dist (z i) 0 := h
-    _ = ‖z i‖ := by simp only [one_mul, dist_zero_right]
-    _ ≤ ‖z‖ := norm_le_pi_norm z i
-
 private theorem clip_eq_self_of_norm_lt {n : ℕ} {R : NNReal} {z : Fin n → ℝ}
     (hz : ‖z‖ < R) : clip R z = z := by
   ext i
@@ -75,9 +31,9 @@ private theorem clip_eq_self_of_norm_lt {n : ℕ} {R : NNReal} {z : Fin n → �
     Set.Icc (-(R : ℝ)) (R : ℝ)) : ℝ) = z i
   simpa using congrArg Subtype.val (Set.projIcc_of_mem (neg_le_self R.2) hz_mem)
 
-/-- A continuous affine linear field on a compact interval has a solution on that interval. -/
+/- A continuous affine linear field on a compact interval has a solution on that interval. -/
 theorem exists_linear_ode_on_Icc
-    {n : ℕ} {a b : ℝ} (hab : a ≤ b)
+    {n a b} (hab : a ≤ b)
     (A : ℝ → (Fin n → ℝ) →L[ℝ] (Fin n → ℝ))
     (f : ℝ → Fin n → ℝ)
     (hA : ContinuousOn A (Set.Icc a b))
@@ -91,9 +47,9 @@ theorem exists_linear_ode_on_Icc
   let t0 : Set.Icc a b := ⟨a, le_rfl, hab⟩
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hA
   obtain ⟨D, hD⟩ := isCompact_Icc.exists_bound_of_continuousOn hf
-  have hC_nonneg : 0 ≤ C :=
+  have hC_nonneg :=
     (norm_nonneg (A a)).trans (hC a t0.2)
-  have hD_nonneg : 0 ≤ D :=
+  have hD_nonneg :=
     (norm_nonneg (f a)).trans (hD a t0.2)
   let Cnn : NNReal := Real.toNNReal C
   let Dnn : NNReal := Real.toNNReal D
@@ -130,7 +86,18 @@ theorem exists_linear_ode_on_Icc
           exact hCnn t ht
         _ ≤ (Cnn : ℝ) * ((1 : ℝ) * dist z w) := by
           gcongr
-          exact (lipschitzWith_clip R).dist_le_mul z w
+          have _h_inl_7 : LipschitzWith 1 (clip (n := n) R) := by
+            refine LipschitzWith.of_dist_le_mul fun z w => ?_
+            rw [dist_eq_norm]
+            refine (pi_norm_le_iff_of_nonneg (mul_nonneg (by norm_num) dist_nonneg)).mpr fun i => ?_
+            change dist (clip R z i) (clip R w i) ≤ (1 : ℝ) * dist z w
+            calc
+              dist (clip R z i) (clip R w i) ≤ (1 : ℝ) * dist (z i) (w i) := by
+                exact (LipschitzWith.projIcc (neg_le_self R.2)).dist_le_mul _ _
+              _ ≤ (1 : ℝ) * dist z w := by
+                gcongr
+                simpa only [dist_eq_norm, Pi.sub_apply] using norm_le_pi_norm (z - w) i
+          exact _h_inl_7.dist_le_mul z w
         _ = (Cnn : ℝ) * dist z w := by ring
     continuousOn := by
       intro z hz
@@ -146,7 +113,10 @@ theorem exists_linear_ode_on_Icc
           · exact hDnn t ht
         _ ≤ (Cnn : ℝ) * (R : ℝ) + (Dnn : ℝ) := by
           gcongr
-          exact norm_clip_le_radius R z
+          refine (pi_norm_le_iff_of_nonneg R.2).mpr fun i => ?_
+          change ‖(Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) : ℝ)‖ ≤ R
+          rw [Real.norm_eq_abs]
+          exact abs_le.2 (Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i)).property
         _ = (L : ℝ) := by simp only [L, NNReal.coe_add, NNReal.coe_mul]
     mul_max_le := by
       calc
@@ -179,7 +149,28 @@ theorem exists_linear_ode_on_Icc
         exact hC t (Set.Ico_subset_Icc_self ht)
       _ ≤ C * ‖x t‖ + D := by
         gcongr
-        exact norm_clip_le R (x t)
+        let z := (x t)
+        refine (pi_norm_le_iff_of_nonneg (norm_nonneg z)).mpr fun i => ?_
+        have hzero : (0 : ℝ) ∈ Set.Icc (-(R : ℝ)) (R : ℝ) := by
+          exact ⟨neg_nonpos.mpr R.2, R.2⟩
+        have h := (LipschitzWith.projIcc (neg_le_self R.2)).dist_le_mul (z i) 0
+        have hprojzero :
+            ((Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) 0 :
+              Set.Icc (-(R : ℝ)) (R : ℝ)) : ℝ) = 0 := by
+          simpa using congrArg Subtype.val (Set.projIcc_of_mem (neg_le_self R.2) hzero)
+        change ‖(Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) : ℝ)‖ ≤ ‖z‖
+        rw [← dist_zero_right]
+        calc
+          dist ((Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) :
+            Set.Icc (-(R : ℝ)) (R : ℝ)) : ℝ) 0 =
+              dist ((Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) :
+                Set.Icc (-(R : ℝ)) (R : ℝ)) : ℝ)
+                ((Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) 0 :
+                  Set.Icc (-(R : ℝ)) (R : ℝ)) : ℝ) := by
+            rw [hprojzero]
+          _ ≤ (1 : ℝ) * dist (z i) 0 := h
+          _ = ‖z i‖ := by simp only [one_mul, dist_zero_right]
+          _ ≤ ‖z‖ := norm_le_pi_norm z i
   have hxG : ∀ t ∈ Set.Icc a b, ‖x t‖ ≤ G := by
     intro t ht
     have hxa : ‖x a‖ ≤ ‖x0‖ := by

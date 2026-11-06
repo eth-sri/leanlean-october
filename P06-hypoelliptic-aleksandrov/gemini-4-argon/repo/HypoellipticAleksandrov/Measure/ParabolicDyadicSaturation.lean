@@ -2,6 +2,9 @@ module
 
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicOpenCover
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicInkSpotsBridge
+import HypoellipticAleksandrov.Measure.InkSpotsGeometry
+import HypoellipticAleksandrov.Measure.ParabolicDensity
+import HypoellipticAleksandrov.Measure.ParabolicDyadicAddress
 
 /-!
 # Parabolic dyadic saturation of the first ink-spots union
@@ -21,13 +24,13 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
-/-- The non-root dyadic cells which first enter the actual source D1 union. -/
-def parabolicDyadicD1Entry {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real) :
+/- The non-root dyadic cells which first enter the actual source D1 union. -/
+def parabolicDyadicD1Entry {d } (Gamma : Set (TimeVelocity d)) (xi : Real) :
     Set (ParabolicDyadicAddress d) :=
   parabolicDyadicFirstEntry (inkSpotsD1 Gamma xi)
 
 private theorem parabolicDyadicD1_subset_unit
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (xi : Real) :
+    (d ) (Gamma : Set (TimeVelocity d)) (xi : Real) :
     inkSpotsD1 Gamma xi ⊆ inkSpotsUnitBox d := by
   intro z hz
   simp only [inkSpotsD1, Set.mem_iUnion] at hz
@@ -47,47 +50,8 @@ private theorem parabolicDyadicRoot_openCell_eq_inkSpotsUnitBox (d : Nat) :
   · exact ⟨(hvelocity coordinate).1, by linarith [(hvelocity coordinate).2]⟩
   · exact ⟨(hvelocity coordinate).1, by linarith [(hvelocity coordinate).2]⟩
 
-private theorem volume_inkSpotsUnitBox_ne_top (d : Nat) :
-    volume (inkSpotsUnitBox d) ≠ ∞ := by
-  intro htop
-  have hformula : (volume (inkSpotsUnitBox d)).toReal =
-      ((1 : Real) * 1 ^ 2) * (2 * 1) ^ d := by
-    simpa only [inkSpotsUnitBox] using
-      (volume_parabolicBox_toReal (d := d) (vartheta := (1 : Real)) (r := (1 : Real))
-        (t₀ := (0 : Real)) (v₀ := (0 : PDE.Vec d)) (by norm_num) (by norm_num))
-  rw [htop] at hformula
-  norm_num at hformula
-  exact (ne_of_gt (pow_pos (by norm_num : (0 : Real) < 2) d)) hformula.symm
-
-private theorem parabolicDyadicD1Entry_openCell_subset
-    {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real)
-    (a : {a : ParabolicDyadicAddress d // a ∈ parabolicDyadicD1Entry Gamma xi}) :
-    parabolicDyadicOpenCell a.1.2 ⊆ inkSpotsD1 Gamma xi := by
-  rcases a with ⟨⟨n, index⟩, ha⟩
-  cases n with
-  | zero => exact False.elim ha
-  | succ n => exact ha.1
-
-private theorem parabolicDyadicD1_entry_density_le
-    {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real)
-    (a : {a : ParabolicDyadicAddress d // a ∈ parabolicDyadicD1Entry Gamma xi}) :
-    (volume (Gamma ∩ parabolicDyadicOpenCell a.1.2)).toReal ≤
-      xi * (volume (parabolicDyadicOpenCell a.1.2)).toReal := by
-  rcases a with ⟨⟨n, index⟩, ha⟩
-  cases n with
-  | zero => exact False.elim ha
-  | succ n =>
-      change parabolicDyadicOpenCell index ⊆ inkSpotsD1 Gamma xi ∧
-        ¬ parabolicDyadicOpenCell (parabolicDyadicParent index) ⊆ inkSpotsD1 Gamma xi at ha
-      by_contra hle
-      have hstrict : xi * (volume (parabolicDyadicOpenCell index)).toReal <
-          (volume (Gamma ∩ parabolicDyadicOpenCell index)).toReal :=
-        lt_of_not_ge hle
-      exact ha.2
-        (parabolicDyadicOpenCell_parent_subset_inkSpotsD1_of_density_gt Gamma xi index hstrict)
-
 theorem volume_Gamma_le_xi_volume_inkSpotsD1
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (xi : Real)
+    (d ) (Gamma : Set (TimeVelocity d)) (xi )
     (hGamma : MeasurableSet Gamma) (hGammaUnit : Gamma ⊆ inkSpotsUnitBox d)
     (hxi : xi ∈ Set.Ioo (0 : Real) 1)
     (hsubcritical : (volume Gamma).toReal <
@@ -142,16 +106,29 @@ theorem volume_Gamma_le_xi_volume_inkSpotsD1
     have hmeasGammaC : ∀ a : E, MeasurableSet (Gamma ∩ C a) := by
       intro a
       exact hGamma.inter (hmeasC a)
-    have hunit_ne_top : volume (inkSpotsUnitBox d) ≠ ∞ :=
-      volume_inkSpotsUnitBox_ne_top d
+    have hunit_ne_top : volume (inkSpotsUnitBox d) ≠ ∞ := by
+      intro htop
+      have hformula : (volume (inkSpotsUnitBox d)).toReal =
+          ((1 : Real) * 1 ^ 2) * (2 * 1) ^ d := by
+        simpa only [inkSpotsUnitBox] using
+          (volume_parabolicBox_toReal (d := d) (vartheta := (1 : Real)) (r := (1 : Real))
+            (t₀ := (0 : Real)) (v₀ := (0 : PDE.Vec d)) (by norm_num) (by norm_num))
+      rw [htop] at hformula
+      norm_num at hformula
+      exact (ne_of_gt (pow_pos (by norm_num : (0 : Real) < 2) d)) hformula.symm
     have hU_ne_top : volume U ≠ ∞ :=
       measure_ne_top_of_subset hUUnit hunit_ne_top
-    have hGamma_ne_top : volume Gamma ≠ ∞ :=
+    have hGamma_ne_top :=
       measure_ne_top_of_subset hGammaUnit hunit_ne_top
     have hC_ne_top : ∀ a : E, volume (C a) ≠ ∞ := by
       intro a
       apply measure_ne_top_of_subset
-      exact (parabolicDyadicD1Entry_openCell_subset Gamma xi a).trans hUUnit
+      have _h_inl_15 : parabolicDyadicOpenCell a.1.2 ⊆ inkSpotsD1 Gamma xi := by
+        rcases a with ⟨⟨n, index⟩, ha⟩
+        cases n with
+        | zero => exact False.elim ha
+        | succ n => exact ha.1
+      exact _h_inl_15.trans hUUnit
       exact hunit_ne_top
     have hGammaC_ne_top : ∀ a : E, volume (Gamma ∩ C a) ≠ ∞ := by
       intro a
@@ -161,8 +138,31 @@ theorem volume_Gamma_le_xi_volume_inkSpotsD1
       intro a
       apply (ENNReal.toReal_le_toReal (hGammaC_ne_top a)
         (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (hC_ne_top a))).mp
-      simpa only [xie, ENNReal.toReal_mul, ENNReal.toReal_ofReal hxi.1.le] using
-        (parabolicDyadicD1_entry_density_le Gamma xi a)
+      have _h_inl_16 : (volume (Gamma ∩ parabolicDyadicOpenCell a.1.2)).toReal ≤ xi * (volume (parabolicDyadicOpenCell a.1.2)).toReal := by
+        rcases a with ⟨⟨n, index⟩, ha⟩
+        cases n with
+        | zero => exact False.elim ha
+        | succ n =>
+            change parabolicDyadicOpenCell index ⊆ inkSpotsD1 Gamma xi ∧
+              ¬ parabolicDyadicOpenCell (parabolicDyadicParent index) ⊆ inkSpotsD1 Gamma xi at ha
+            by_contra hle
+            have hstrict :=
+              lt_of_not_ge hle
+            have _h_xinl_1 : parabolicDyadicOpenCell (parabolicDyadicParent index) ⊆ inkSpotsD1 Gamma xi := by
+              have h := hstrict
+              have hstrict : inkSpotsStrictDense Gamma xi (parabolicDyadicSourceBox index) := by
+                refine ⟨parabolicDyadicSourceBox_radius_pos index,
+                  inkSpotsSourceBox_parabolicDyadicSourceBox_subset_unit index, ?_⟩
+                rw [inkSpotsSourceBox_parabolicDyadicSourceBox]
+                simpa only [inter_comm] using h
+              intro z hz
+              refine Set.mem_iUnion.mpr ⟨parabolicDyadicSourceBox index, ?_⟩
+              refine Set.mem_iUnion.mpr ⟨hstrict, ?_⟩
+              exact parabolicDyadicOpenCell_parent_subset_inkSpotsQ1 index hz
+            exact ha.2
+              _h_xinl_1
+      simpa only [xie, ENNReal.toReal_mul, ENNReal.toReal_ofReal hxi.1.le] using _h_inl_16
+
     have hGammaAEInter : Gamma =ᵐ[volume] (Gamma ∩ U : Set (TimeVelocity d)) := by
       filter_upwards [hGammaAE] with z hz
       apply propext
@@ -188,8 +188,7 @@ theorem volume_Gamma_le_xi_volume_inkSpotsD1
         _ = xie * volume U := by rw [measure_congr hcover]
     have hxieU_ne_top : xie * volume U ≠ ∞ :=
       ENNReal.mul_ne_top ENNReal.ofReal_ne_top hU_ne_top
-    have hreal := ENNReal.toReal_mono hxieU_ne_top hmeasure
-    simpa only [U, xie, ENNReal.toReal_mul, ENNReal.toReal_ofReal hxi.1.le] using hreal
+    simpa only [U, xie, ENNReal.toReal_mul, ENNReal.toReal_ofReal hxi.1.le] using (ENNReal.toReal_mono hxieU_ne_top hmeasure)
 
 end
 

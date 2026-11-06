@@ -66,8 +66,7 @@ theorem scaledUnitCutoff_velocityHessian {d : ℕ}
   rfl
 
 /-- The physical backward operator is the exact inverse-square unit jet expression. -/
-theorem scaledUnitCutoff_backwardOperator {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem scaledUnitCutoff_backwardOperator {d f}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (A : FullKineticCoefficient d)
     (P₀ P : KineticPoint d) (R ell : ℝ) :
     backwardOperator A (scaledUnitCutoff f P₀ R ell) P =

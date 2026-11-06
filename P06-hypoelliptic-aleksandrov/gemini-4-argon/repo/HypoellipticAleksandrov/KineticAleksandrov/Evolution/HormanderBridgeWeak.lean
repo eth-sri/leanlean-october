@@ -77,14 +77,14 @@ theorem hasWeakHormanderEquation_transportedFields_iff (hlam : 0 < lam)
 `Ω`) satisfies the Hörmander weak equation for `transportedFields B b`, `c = 0`. -/
 theorem hasWeakHormanderEquation_transportedFields (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) {Ω : Set (EvolutionVec n)} {u g : EvolutionVec n → ℝ}
+    (hb : IsSmoothDrift b) {Ω u g}
     (hu : IsWeakTransportedSolution B b Ω u g) (hg : ContDiffOn ℝ (⊤ : ℕ∞) g Ω) :
     HasWeakHormanderEquation Ω (transportedFields B b) (fun _ => 0) g u :=
   (hasWeakHormanderEquation_transportedFields_iff hlam hB hell hb Ω u g).2 ⟨hu, hg⟩
 
 /-- For the fields of `L_ε` (`ε ≥ 0`), the Hörmander weak equation with `c = 0` is the
 distributional equation `L_ε u = g` together with smoothness of `g` on `Ω`. -/
-theorem hasWeakHormanderEquation_regularizedFields_iff {ε : ℝ} (hε : 0 ≤ ε) (hlam : 0 < lam)
+theorem hasWeakHormanderEquation_regularizedFields_iff {ε } (hε : 0 ≤ ε) (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
     (hb : IsSmoothDrift b) (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) :
     HasWeakHormanderEquation Ω (regularizedFields B b ε) (fun _ => 0) g u ↔
@@ -104,9 +104,9 @@ theorem hasWeakHormanderEquation_regularizedFields_iff {ε : ℝ} (hε : 0 ≤ �
 /-- **Weak-form bridge for `L_ε`** (Proposition 2.1).  A distributional
 solution of `L_ε u = g` (`∫ u (Lop^* ψ + ε Δ_z ψ) = ∫ g ψ`, `g` smooth on `Ω`) satisfies the
 Hörmander weak equation for `regularizedFields B b ε`, `c = 0`. -/
-theorem hasWeakHormanderEquation_regularizedFields {ε : ℝ} (hε : 0 ≤ ε) (hlam : 0 < lam)
+theorem hasWeakHormanderEquation_regularizedFields {ε } (hε : 0 ≤ ε) (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) {Ω : Set (EvolutionVec n)} {u g : EvolutionVec n → ℝ}
+    (hb : IsSmoothDrift b) {Ω u g}
     (hu : IsWeakRegularizedSolution B b ε Ω u g) (hg : ContDiffOn ℝ (⊤ : ℕ∞) g Ω) :
     HasWeakHormanderEquation Ω (regularizedFields B b ε) (fun _ => 0) g u :=
   (hasWeakHormanderEquation_regularizedFields_iff hε hlam hB hell hb Ω u g).2 ⟨hu, hg⟩

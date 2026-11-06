@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionFinite
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominationWaiting
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionInitial
 
 /-! # Active occupations and outer exits in the finite alternating decomposition
 
@@ -14,34 +15,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
-/-- Actual active Green mixtures are supported in the open active velocity interval. -/
-theorem enlargedGreenMixture_ae_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
-    (mu : Measure Point) :
-    ∀ᵐ q ∂(enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu),
-      q.velocity 0 ∈ c.active := by
-  classical
-  apply Measure.ae_comp_of_ae_ae
-    (isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable)
-  apply Filter.Eventually.of_forall
-  intro p
-  change ∀ᵐ q ∂(if hp : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T then
-    finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
-      (enlargedVisitPole _ T ⟨p, hp⟩) else 0), q.velocity 0 ∈ c.active
-  split
-  · rename_i hp
-    exact (visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitActiveUnion c J) T
-      (enlargedVisitPole _ T ⟨p, hp⟩)).mono fun q hq =>
-        ((visitActiveUnion_carrier c J).le hq).1
-  · simp only [ae_zero, Filter.eventually_bot]
-
-/-- Literal finite-piece active domination in the source open physical observation strip. -/
+/- Actual active Green mixtures are supported in the open active velocity interval. -/
 theorem enlarged_piece_domination
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T ) (P : Point)
     (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
     let gamma := enlargedVisitEntrance hH hLE hlam hLam A c J s T P
     let GA := enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T
@@ -62,9 +40,25 @@ theorem enlarged_piece_domination
   let EO := enlargedVisitExitKernel hH hLE hlam hLam A J.toFiniteUnion T
   let beta := enlargedVisitOutgoing hH hLE hlam hLam A c J s T P
   let outer := finiteUnionExitSet J.toFiniteUnion s T
-  have hT : s < T := hP.1.trans_lt hP.2.1
+  have hT := hP.1.trans_lt hP.2.1
   have hG := enlargedAlternating_green hH hLE hlam hLam A c J s T hT P hP N
-  have hE := enlargedAlternating_exit hH hLE hlam hLam A c J s T hT P hP N
+  have hE :
+      let EA := enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T
+          let EW := enlargedVisitExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) T
+          let EO := enlargedVisitExitKernel hH hLE hlam hLam A J.toFiniteUnion T
+          let gamma := enlargedVisitEntrance hH hLE hlam hLam A c J s T P
+          let beta := enlargedVisitOutgoing hH hLE hlam hLam A c J s T P
+          let outer := finiteUnionExitSet J.toFiniteUnion s T
+          EO P = visitInitialExit P (visitEntranceInterval c) outer EW +
+            ∑ n ∈ Finset.range N,
+              ((EA ∘ₘ gamma n).restrict outer + (EW ∘ₘ beta n).restrict outer) +
+                EO ∘ₘ gamma N := by
+    apply alternating_exit_of_nested_splitting
+    · exact (enlargedInitial_nested hH hLE hlam hLam A c J s T hT P hP).2
+    · intro n
+      exact (enlargedEntrance_nested hH hLE hlam hLam A c J s T hT P hP n).2
+    · intro n
+      exact (enlargedOutgoing_nested hH hLE hlam hLam A c J s T hT P n).2
   have hGle : (∑ n ∈ Finset.range N, GA ∘ₘ gamma n) ≤ GO P := by
     rw [hG]
     calc
@@ -91,7 +85,21 @@ theorem enlarged_piece_domination
   have hs : ∀ᵐ p ∂(∑ n ∈ Finset.range N, GA ∘ₘ gamma n), p.velocity 0 ∈ c.active := by
     apply ae_finsetSum_measure_iff.mpr
     intro n _
-    exact enlargedGreenMixture_ae_active hH hLE hlam hLam A c J T (gamma n)
+    let mu := (gamma n)
+    classical
+    apply Measure.ae_comp_of_ae_ae
+      (isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable)
+    apply Filter.Eventually.of_forall
+    intro p
+    change ∀ᵐ q ∂(if hp : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T then
+      finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
+        (enlargedVisitPole _ T ⟨p, hp⟩) else 0), q.velocity 0 ∈ c.active
+    split
+    · rename_i hp
+      exact (visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitActiveUnion c J) T
+        (enlargedVisitPole _ T ⟨p, hp⟩)).mono fun q hq =>
+          ((visitActiveUnion_carrier c J).le hq).1
+    · simp only [ae_zero, Filter.eventually_bot]
   have hrestrict := Measure.restrict_mono (subset_refl {p : Point | p.velocity 0 ∈ c.active})
     hGle
   have hr : (∑ n ∈ Finset.range N, GA ∘ₘ gamma n).restrict

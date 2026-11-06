@@ -20,19 +20,19 @@ namespace HypoellipticAleksandrov.Parabolic
 open scoped BigOperators
 
 /-- The canonical average transported from the unit forward parabolic box. -/
-noncomputable def parabolicMorreyBoxAverage {d : Nat}
+noncomputable def parabolicMorreyBoxAverage {d }
     (t₀ : Real) (v₀ : PDE.Vec d) (r : Real)
     (u : TimeVelocity d -> Real) : Real :=
   parabolicMorreyUnitAverage (pullbackScalar u t₀ v₀ r)
 
 /-- The dimensional physical velocity slope of the transported moment projection. -/
-noncomputable def parabolicMorreyBoxVelocitySlope {d : Nat}
+noncomputable def parabolicMorreyBoxVelocitySlope {d }
     (t₀ : Real) (v₀ : PDE.Vec d) (r : Real)
     (u : TimeVelocity d -> Real) (i : Fin d) : Real :=
   r⁻¹ * parabolicMorreyUnitVelocityCoeff (pullbackScalar u t₀ v₀ r) i
 
 /-- The canonical time-independent velocity-affine projection on a forward box. -/
-noncomputable def parabolicMorreyBoxAffineProjection {d : Nat}
+noncomputable def parabolicMorreyBoxAffineProjection {d }
     (t₀ : Real) (v₀ : PDE.Vec d) (r : Real)
     (u : TimeVelocity d -> Real) : TimeVelocity d -> Real :=
   fun z => parabolicMorreyBoxAverage t₀ v₀ r u +
@@ -42,7 +42,7 @@ noncomputable def parabolicMorreyBoxAffineProjection {d : Nat}
 /-- A positive-radius affine scaling maps the unit forward box onto the
 corresponding physical forward box. -/
 theorem parabolicAffine_image_parabolicMorreyUnitBox
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) :
+    {d } (t₀ : Real) (v₀ : PDE.Vec d) {r } (hr : 0 < r) :
     parabolicAffine t₀ v₀ r '' parabolicMorreyUnitBox d =
       parabolicBox 1 r t₀ v₀ := by
   simpa only [parabolicMorreyUnitBox] using
@@ -51,7 +51,7 @@ theorem parabolicAffine_image_parabolicMorreyUnitBox
 /-- The physical projection evaluated in affine coordinates is exactly the
 unit-box projection of the scalar pullback. -/
 @[simp] theorem parabolicMorreyBoxAffineProjection_parabolicAffine
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+    {d } (t₀ : Real) (v₀ : PDE.Vec d) {r } (hr : 0 < r)
     (u : TimeVelocity d -> Real) (z : TimeVelocity d) :
     parabolicMorreyBoxAffineProjection t₀ v₀ r u
         (parabolicAffine t₀ v₀ r z) =

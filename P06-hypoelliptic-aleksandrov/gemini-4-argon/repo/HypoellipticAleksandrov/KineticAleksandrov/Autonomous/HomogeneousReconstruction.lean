@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReconstructionTracesContinuity
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoundedSourceWeakAssembly
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionSource
 
 /-! # Actual bounded-source homogeneous reconstruction on a finite strip -/
 
@@ -11,7 +13,7 @@ open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
 open SectionTwo TheoremA Evolution
 open scoped Topology
 
-/-- The physical scalar operator is the native transported operator after coordinate exchange. -/
+/- The physical scalar operator is the native transported operator after coordinate exchange. -/
 theorem reconstruction_scalar_operator_swap (a : ℝ → ℝ → ℝ) (u : Point → ℝ) (p : Point) :
     transportedForwardOperator (evolutionCoefficient a) (identityDrift 1)
       (u ∘ sectionTwoPoint) p = forwardScalarOperator a u (sectionTwoPoint p) := by
@@ -24,10 +26,10 @@ theorem reconstruction_scalar_operator_swap (a : ℝ → ℝ → ℝ) (u : Point
   dsimp only [sectionTwoPoint]
   ring
 
-/-- The packed operator depends only on the function germ, including its second derivatives. -/
+/- The packed operator depends only on the function germ, including its second derivatives. -/
 theorem reconstruction_transportedOperator_congr
     (B : FullKineticCoefficient 1) (b : PDE.Vec 1 → PDE.Vec 1)
-    {u f : EvolutionVec 1 → ℝ} {x : EvolutionVec 1} (h : u =ᶠ[𝓝 x] f) :
+    {u f x} (h : u =ᶠ[𝓝 x] f) :
     transportedOperator B b u x = transportedOperator B b f x := by
   have hd := h.fderiv_eq (𝕜 := ℝ)
   have hh (j : Fin 1) :
@@ -44,11 +46,11 @@ theorem reconstruction_transportedOperator_congr
   intro j _
   rw [(hh j).fderiv_eq (𝕜 := ℝ)]
 
-/-- A bounded C112 test has an actual smooth homogeneous reconstruction, with the prescribed
+/- A bounded C112 test has an actual smooth homogeneous reconstruction, with the prescribed
 exit values and the literal Green integral at every strictly interior pole. -/
 theorem strip_bounded_source_reconstruction
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (sMinus T : ℝ) (phi : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
@@ -79,9 +81,29 @@ theorem strip_bounded_source_reconstruction
       Filter.mem_of_superset (hU.mem_nhds hx) (fun y hy => heq hy)
     rw [reconstruction_transportedOperator_congr _ _ hh]
     exact hop x hx
+  have _h_xinl_0 : EqOn (stripReconstructionCandidate H E.2 T phi g) phi (reconstructionExit H sMinus T) := by
+    let K := E.2
+    intro p hp
+    have hz : stripSourcePotential H K T g p = 0 := by
+      rcases hp with ht | hv
+      · exact duhamelPotential_eq_zero_of_terminal_le K T (nativeStripSource g)
+          (sectionTwoPoint p) (by change T ≤ p.time; exact ht.1.ge)
+      · apply duhamelPotential_eq_zero_of_not_mem K T (nativeStripSource g)
+          (sectionTwoPoint p)
+        change p.velocity ∉ movingDomain (intervalDomain H) (fun _ => 0) p.time
+        rw [movingDomain, PDE.mem_translateSet_iff_sub_mem, sub_zero]
+        rw [intervalDomain, PDE.mem_oneDimensionalAxisBox_iff]
+        change p.velocity 0 ∉ Set.Ioo H.lo H.hi
+        rcases hv.2.2 with hl | hh
+        · rw [hl]
+          exact fun h => (lt_irrefl H.lo) h.1
+        · rw [hh]
+          exact fun h => (lt_irrefl H.hi) h.2
+    change phi p - stripSourcePotential H K T g p = phi p
+    rw [hz, sub_zero]
   refine ⟨u, ?_, ?_, ?_,
     reconstruction_candidate_continuousOn_exit hH hlam hLam A H E hE sMinus T phi hphi hc g hg,
-    stripReconstructionCandidate_eqOn_exit H E.2 sMinus T phi g⟩
+    _h_xinl_0⟩
   · intro e he
     have hgAE : g =ᵐ[stripGreenOfKernel H E.2 T e] fun p => -forwardScalarOperator A.a phi p := by
       filter_upwards [stripGreenOfKernel_ae_mem_stripPast H E.2 T e,

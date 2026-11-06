@@ -19,9 +19,7 @@ private theorem normSq_lt_quarter_of_mem_halfBall {d : ℕ} {w : PDE.Vec d}
 private theorem coordinate_lt_half_of_mem_halfBall {d : ℕ} {w : PDE.Vec d}
     (hw : w ∈ PDE.euclideanBall (0 : PDE.Vec d) (1 / 2 : ℝ)) (i : Fin d) :
     |w i| < 1 / 2 := by
-  have hs := (PDE.sq_apply_le_vecNormSq w i).trans_lt
-    (normSq_lt_quarter_of_mem_halfBall hw)
-  apply abs_lt_of_sq_lt_sq (by nlinarith [hs]) (by norm_num)
+  apply abs_lt_of_sq_lt_sq (by nlinarith [((PDE.sq_apply_le_vecNormSq w i).trans_lt (normSq_lt_quarter_of_mem_halfBall hw))]) (by norm_num)
 
 /-- A fixed number of links reaches every upper point without crossing the terminal time. -/
 theorem unitCylinder_harnack_link_geometry

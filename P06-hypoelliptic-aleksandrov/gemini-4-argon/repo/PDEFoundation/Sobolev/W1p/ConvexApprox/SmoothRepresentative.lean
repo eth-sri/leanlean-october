@@ -4,6 +4,14 @@ public import PDEFoundation.Measure.Jensen
 public import PDEFoundation.Sobolev.W1p.Basic
 public import PDEFoundation.Sobolev.W1p.ConvexApprox.Kernel
 public import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.Algebra.GroupWithZero.Action.Pointwise.Set
+import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+import Mathlib.Analysis.Calculus.BumpFunction.Normed
+import Mathlib.Analysis.Convolution
+import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.MeasureTheory.Integral.Bochner.Set
+import PDEFoundation.Measure.AffineVolume
+import PDEFoundation.Sobolev.W1p.ConvexApprox.Geometry
 
 /-!
 # Smooth representatives for convex-domain approximation
@@ -25,6 +33,7 @@ namespace PDE
 open MeasureTheory
 
 noncomputable section
+open IsConvexApproxKernel ContDiffBump
 
 private theorem isProbabilityMeasure_withDensity_ofReal
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
@@ -153,7 +162,7 @@ private theorem young_convolution_nonneg_integral_one
           (ContinuousLinearMap.lsmul ℝ ℝ) volume)
         p volume ≤
       eLpNorm g p volume := by
-  have hpNeZero : p ≠ 0 :=
+  have hpNeZero :=
     ne_of_gt (lt_of_lt_of_le zero_lt_one hp)
   have hpPos : 0 < p.toReal :=
     ENNReal.toReal_pos hpNeZero hpTop
@@ -295,11 +304,7 @@ private theorem young_convolution_nonneg_integral_one
                 Measurable (fun t => |g (x - t)|) :=
               continuous_abs.measurable.comp
                 (hgMeas.comp hsub)
-            have hMeasPow :
-                Measurable
-                  (fun t =>
-                    (ENNReal.ofReal |g (x - t)|) ^
-                      p.toReal) :=
+            have hMeasPow :=
               Measurable.pow_const
                 hAbsMeas.ennreal_ofReal p.toReal
             symm
@@ -392,7 +397,7 @@ private theorem young_convolution_nonneg_integral_one_of_aemeasurable
           (ContinuousLinearMap.lsmul ℝ ℝ) volume)
         p volume ≤
       eLpNorm g p volume := by
-  let g' : Vec d → ℝ :=
+  let g' :=
     hgMeas.mk g
   have hconv :
       convolution ρ g
@@ -418,7 +423,7 @@ private theorem young_convolution_nonneg_integral_one_of_aemeasurable
     _ = eLpNorm g p volume :=
       eLpNorm_congr_ae hgMeas.ae_eq_mk.symm
 
-/-- A globally smooth representative of convex-domain approximation. -/
+/- A globally smooth representative of convex-domain approximation. -/
 noncomputable def convexApproxSmoothRepresentative
     {d : ℕ} (U : Set (Vec d)) (ρ u : Vec d → ℝ)
     (x0 : Vec d) (r ε : ℝ) : Vec d → ℝ :=
@@ -444,14 +449,16 @@ theorem contDiff_convexApproxSmoothRepresentative
       MemLp (Set.indicator U u) p volume := by
     rw [memLp_indicator_iff_restrict hU]
     exact hu
-  have huLocallyIntegrable :
-      LocallyIntegrable (Set.indicator U u) volume :=
+  have huLocallyIntegrable :=
     huIndicator.locallyIntegrable hp
-  have hconv :
-      ContDiff ℝ (⊤ : ℕ∞)
-        (scaledConvexApproxKernel ρ (ε * r) ⋆[
-            ContinuousLinearMap.lsmul ℝ ℝ, volume]
-          Set.indicator U u) :=
+  have _h_xinl_0 : ContDiff ℝ (⊤ : ℕ∞) (scaledConvexApproxKernel ρ (ε * r)) := by
+    let a := (ε * r)
+    have hscale :
+        ContDiff ℝ (⊤ : ℕ∞) (fun y : Vec d => a⁻¹ • y) := by
+      fun_prop
+    simpa only [scaledConvexApproxKernel] using!
+      contDiff_const.mul (hρ.smooth.comp hscale)
+  have hconv :=
     HasCompactSupport.contDiff_convolution_left
       (L := ContinuousLinearMap.lsmul ℝ ℝ)
       (μ := volume)
@@ -459,7 +466,7 @@ theorem contDiff_convexApproxSmoothRepresentative
       (g := Set.indicator U u)
       (hasCompactSupport_scaledConvexApproxKernel
         hρ.compactSupport hεr)
-      (contDiff_scaledConvexApproxKernel hρ (ε * r))
+      _h_xinl_0
       huLocallyIntegrable
   have haffine :
       ContDiff ℝ (⊤ : ℕ∞)
@@ -486,31 +493,6 @@ theorem
     (convexApproxSmoothing_eq_convolution_scaledConvexApproxKernel_indicator
       hU hρ hx hball hr hε hεOne).symm
 
-theorem measurableEmbedding_convexApproxSample
-    {d : ℕ} (x0 z : Vec d) (r ε : ℝ)
-    (hε : ε < 1) :
-    MeasurableEmbedding
-      (convexApproxSample x0 z r ε) := by
-  let a : ℝ :=
-    1 - ε
-  let b : Vec d :=
-    ε • (x0 - r • z)
-  have haPos : 0 < a := by
-    dsimp only [a]
-    linarith
-  have haNe : a ≠ 0 :=
-    haPos.ne'
-  let e : Homeomorph (Vec d) (Vec d) :=
-    (Homeomorph.smulOfNeZero a haNe).trans
-      (Homeomorph.addRight b)
-  have heq :
-      (fun x : Vec d => e x) =
-        convexApproxSample x0 z r ε := by
-    funext x
-    simp [e, a, b, convexApproxSample]
-  rw [← heq]
-  exact e.toMeasurableEquiv.measurableEmbedding
-
 theorem map_restrict_convexApproxSample
     {d : ℕ} {U : Set (Vec d)}
     (_hU : MeasurableSet U)
@@ -527,9 +509,9 @@ theorem map_restrict_convexApproxSample
   have haPos : 0 < a := by
     dsimp only [a]
     linarith
-  have haNe : a ≠ 0 :=
+  have haNe :=
     haPos.ne'
-  let e : Homeomorph (Vec d) (Vec d) :=
+  let e :=
     (Homeomorph.smulOfNeZero a haNe).trans
       (Homeomorph.addRight b)
   have heq :
@@ -560,7 +542,7 @@ theorem map_restrict_convexApproxSample
           ENNReal.ofReal ((a ^ d)⁻¹) • volume := by
       have hpowNonneg : 0 ≤ a ^ d := by
         positivity
-      let f : Vec d →ₗ[ℝ] Vec d :=
+      let f :=
         a • (1 : Vec d →ₗ[ℝ] Vec d)
       have hf : LinearMap.det f ≠ 0 := by
         simp [f, haNe]
@@ -655,9 +637,28 @@ theorem eLpNorm_comp_convexApproxSample_le
           (convexApproxSample x0 z r ε)
           (volume.restrict U)) := by
       symm
+      have _h_inl_19 : MeasurableEmbedding (convexApproxSample x0 z r ε) := by
+        let a : ℝ :=
+          1 - ε
+        let b : Vec d :=
+          ε • (x0 - r • z)
+        have haPos : 0 < a := by
+          dsimp only [a]
+          linarith
+        have haNe :=
+          haPos.ne'
+        let e :=
+          (Homeomorph.smulOfNeZero a haNe).trans
+            (Homeomorph.addRight b)
+        have heq :
+            (fun x : Vec d => e x) =
+              convexApproxSample x0 z r ε := by
+          funext x
+          simp [e, a, b, convexApproxSample]
+        rw [← heq]
+        exact e.toMeasurableEquiv.measurableEmbedding
       exact
-        (measurableEmbedding_convexApproxSample
-          x0 z r ε hε).eLpNorm_map_measure
+        _h_inl_19.eLpNorm_map_measure
     _ =
         eLpNorm u p
           (ENNReal.ofReal (((1 - ε) ^ d)⁻¹) •
@@ -781,118 +782,6 @@ theorem eLpNorm_convexApproxSmoothing_le
           eLpNorm u p (volume.restrict U) := by
       rw [eLpNorm_indicator_eq_eLpNorm_restrict hUMeas]
 
-theorem convexApproxSmoothing_sub_ae_eq
-    {d : ℕ} {U : Set (Vec d)}
-    {ρ u v : Vec d → ℝ} {p : ENNReal}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hρ : IsConvexApproxKernel ρ)
-    (hp : 1 ≤ p)
-    (hu : MemLpOn U p u) (hv : MemLpOn U p v)
-    {x0 : Vec d} {r ε : ℝ}
-    (hball : Metric.closedBall x0 r ⊆ U)
-    (hr : 0 < r) (hε : 0 < ε) (hεOne : ε < 1) :
-    (fun x =>
-      convexApproxSmoothing ρ
-        (fun y => u y - v y) x0 r ε x) =ᵐ[
-          volume.restrict U]
-      fun x =>
-        convexApproxSmoothing ρ u x0 r ε x -
-          convexApproxSmoothing ρ v x0 r ε x := by
-  let k : Vec d → ℝ :=
-    scaledConvexApproxKernel ρ (ε * r)
-  let gu : Vec d → ℝ :=
-    k ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume]
-      Set.indicator U u
-  let gv : Vec d → ℝ :=
-    k ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume]
-      Set.indicator U v
-  let gw : Vec d → ℝ :=
-    k ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume]
-      Set.indicator U (fun y => u y - v y)
-  have hUMeas : MeasurableSet U :=
-    hU.isOpen.measurableSet
-  have hεr : 0 < ε * r := by
-    positivity
-  have hkContinuous : Continuous k := by
-    dsimp only [k]
-    exact
-      continuous_scaledConvexApproxKernel
-        hρ.continuous (ε * r)
-  have hkCompact : HasCompactSupport k := by
-    dsimp only [k]
-    exact
-      hasCompactSupport_scaledConvexApproxKernel
-        hρ.compactSupport hεr
-  have huIndicator :
-      MemLp (Set.indicator U u) p volume := by
-    rw [memLp_indicator_iff_restrict hUMeas]
-    exact hu
-  have hvIndicator :
-      MemLp (Set.indicator U v) p volume := by
-    rw [memLp_indicator_iff_restrict hUMeas]
-    exact hv
-  have huLocallyIntegrable :
-      LocallyIntegrable (Set.indicator U u) volume :=
-    huIndicator.locallyIntegrable hp
-  have hvLocallyIntegrable :
-      LocallyIntegrable (Set.indicator U v) volume :=
-    hvIndicator.locallyIntegrable hp
-  have hnegvLocallyIntegrable :
-      LocallyIntegrable
-        ((-1 : ℝ) • Set.indicator U v) volume := by
-    simpa using hvLocallyIntegrable.smul (-1 : ℝ)
-  have hconvU :
-      ConvolutionExists k (Set.indicator U u)
-        (ContinuousLinearMap.lsmul ℝ ℝ) volume :=
-    hkCompact.convolutionExists_left
-      (L := ContinuousLinearMap.lsmul ℝ ℝ)
-      hkContinuous huLocallyIntegrable
-  have hconvNegV :
-      ConvolutionExists k
-        ((-1 : ℝ) • Set.indicator U v)
-        (ContinuousLinearMap.lsmul ℝ ℝ) volume :=
-    hkCompact.convolutionExists_left
-      (L := ContinuousLinearMap.lsmul ℝ ℝ)
-      hkContinuous hnegvLocallyIntegrable
-  have hindicatorSub :
-      Set.indicator U (fun y => u y - v y) =
-        Set.indicator U u +
-          (-1 : ℝ) • Set.indicator U v := by
-    funext x
-    by_cases hx : x ∈ U
-    · simp [hx, sub_eq_add_neg]
-    · simp [hx]
-  have hconvSub :
-      gw = fun x => gu x - gv x := by
-    ext x
-    dsimp only [gw, gu, gv]
-    rw [hindicatorSub,
-      hconvU.distrib_add hconvNegV, convolution_smul]
-    simp [sub_eq_add_neg]
-  filter_upwards [ae_restrict_mem hUMeas] with x hx
-  have huRepresentative :
-      convexApproxSmoothing ρ u x0 r ε x =
-        gu (convexApproxSample x0 0 r ε x) := by
-    simpa [gu, convexApproxSample] using
-      (convexApproxSmoothing_eq_convolution_scaledConvexApproxKernel_indicator
-        (u := u) hU hρ hx hball hr hε hεOne)
-  have hvRepresentative :
-      convexApproxSmoothing ρ v x0 r ε x =
-        gv (convexApproxSample x0 0 r ε x) := by
-    simpa [gv, convexApproxSample] using
-      (convexApproxSmoothing_eq_convolution_scaledConvexApproxKernel_indicator
-        (u := v) hU hρ hx hball hr hε hεOne)
-  have hwRepresentative :
-      convexApproxSmoothing ρ
-          (fun y => u y - v y) x0 r ε x =
-        gw (convexApproxSample x0 0 r ε x) := by
-    simpa [gw, convexApproxSample] using
-      (convexApproxSmoothing_eq_convolution_scaledConvexApproxKernel_indicator
-        (u := fun y => u y - v y)
-        hU hρ hx hball hr hε hεOne)
-  rw [huRepresentative, hvRepresentative, hwRepresentative]
-  rw [hconvSub]
-
 theorem eLpNorm_sub_convexApproxSmoothing_le
     {d : ℕ} {U : Set (Vec d)}
     {ρ u v : Vec d → ℝ} {p : ENNReal}
@@ -925,11 +814,103 @@ theorem eLpNorm_sub_convexApproxSmoothing_le
         (convexApproxSmoothing ρ
           (fun y => u y - v y) x0 r ε)
         p (volume.restrict U) := by
+      have _h_inl_23 : (fun x =>
+      convexApproxSmoothing ρ
+        (fun y => u y - v y) x0 r ε x) =ᵐ[
+          volume.restrict U]
+      fun x =>
+        convexApproxSmoothing ρ u x0 r ε x -
+          convexApproxSmoothing ρ v x0 r ε x := by
+        let k :=
+          scaledConvexApproxKernel ρ (ε * r)
+        let gu :=
+          k ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume]
+            Set.indicator U u
+        let gv :=
+          k ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume]
+            Set.indicator U v
+        let gw :=
+          k ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume]
+            Set.indicator U (fun y => u y - v y)
+        have hUMeas : MeasurableSet U :=
+          hU.isOpen.measurableSet
+        have hεr : 0 < ε * r := by
+          positivity
+        have hkContinuous : Continuous k := by
+          dsimp only [k]
+          exact
+            continuous_scaledConvexApproxKernel
+              hρ.continuous (ε * r)
+        have hkCompact : HasCompactSupport k := by
+          dsimp only [k]
+          exact
+            hasCompactSupport_scaledConvexApproxKernel
+              hρ.compactSupport hεr
+        have huIndicator :
+            MemLp (Set.indicator U u) p volume := by
+          rw [memLp_indicator_iff_restrict hUMeas]
+          exact hu
+        have hvIndicator :
+            MemLp (Set.indicator U v) p volume := by
+          rw [memLp_indicator_iff_restrict hUMeas]
+          exact hv
+        have huLocallyIntegrable :=
+          huIndicator.locallyIntegrable hpOne
+        have hvLocallyIntegrable :=
+          hvIndicator.locallyIntegrable hpOne
+        have hnegvLocallyIntegrable :
+            LocallyIntegrable
+              ((-1 : ℝ) • Set.indicator U v) volume := by
+          simpa using hvLocallyIntegrable.smul (-1 : ℝ)
+        have hconvU :=
+          hkCompact.convolutionExists_left
+            (L := ContinuousLinearMap.lsmul ℝ ℝ)
+            hkContinuous huLocallyIntegrable
+        have hconvNegV :=
+          hkCompact.convolutionExists_left
+            (L := ContinuousLinearMap.lsmul ℝ ℝ)
+            hkContinuous hnegvLocallyIntegrable
+        have hindicatorSub :
+            Set.indicator U (fun y => u y - v y) =
+              Set.indicator U u +
+                (-1 : ℝ) • Set.indicator U v := by
+          funext x
+          by_cases hx : x ∈ U
+          · simp [hx, sub_eq_add_neg]
+          · simp [hx]
+        have hconvSub :
+            gw = fun x => gu x - gv x := by
+          ext x
+          dsimp only [gw, gu, gv]
+          rw [hindicatorSub,
+            hconvU.distrib_add hconvNegV, convolution_smul]
+          simp [sub_eq_add_neg]
+        filter_upwards [ae_restrict_mem hUMeas] with x hx
+        have huRepresentative :
+            convexApproxSmoothing ρ u x0 r ε x =
+              gu (convexApproxSample x0 0 r ε x) := by
+          simpa [gu, convexApproxSample] using
+            (convexApproxSmoothing_eq_convolution_scaledConvexApproxKernel_indicator
+              (u := u) hU hρ hx hball hr hε hεOne)
+        have hvRepresentative :
+            convexApproxSmoothing ρ v x0 r ε x =
+              gv (convexApproxSample x0 0 r ε x) := by
+          simpa [gv, convexApproxSample] using
+            (convexApproxSmoothing_eq_convolution_scaledConvexApproxKernel_indicator
+              (u := v) hU hρ hx hball hr hε hεOne)
+        have hwRepresentative :
+            convexApproxSmoothing ρ
+                (fun y => u y - v y) x0 r ε x =
+              gw (convexApproxSample x0 0 r ε x) := by
+          simpa [gw, convexApproxSample] using
+            (convexApproxSmoothing_eq_convolution_scaledConvexApproxKernel_indicator
+              (u := fun y => u y - v y)
+              hU hρ hx hball hr hε hεOne)
+        rw [huRepresentative, hvRepresentative, hwRepresentative]
+        rw [hconvSub]
       exact
         eLpNorm_congr_ae
-          (convexApproxSmoothing_sub_ae_eq
-            hU hρ hpOne hu hv
-            hball hr hε hεOne).symm
+          _h_inl_23.symm
     _ ≤
         ENNReal.ofReal (((1 - ε) ^ d)⁻¹) ^
             (1 / p).toReal *

@@ -22,14 +22,14 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped Convolution ENNReal Topology
 
-/-- The entrywise right convolution of a time--velocity matrix field. -/
+/- The entrywise right convolution of a time--velocity matrix field. -/
 noncomputable def parabolicMatrixConvolution
     {d : Nat} (H : TimeVelocity d → PDE.Mat d) (n : Nat) :
     TimeVelocity d → PDE.Mat d :=
   fun z i j => parabolicConvolution
     (fun y => H y i j) (parabolicMollifier d n) z
 
-/-- The residual caused by convolving a coefficient and a Hessian separately. -/
+/- The residual caused by convolving a coefficient and a Hessian separately. -/
 noncomputable def parabolicConvolutionCommutator
     {d : Nat} (A : CoefficientField d)
     (H : TimeVelocity d → PDE.Mat d) (n : Nat) : TimeVelocity d → Real :=
@@ -41,7 +41,7 @@ noncomputable def parabolicConvolutionCommutator
       (coefficientAt (parabolicMollifyCoefficient A n) z)
       (parabolicMatrixConvolution H n z)
 
-/-- A bounded a.e.-convergent multiplier commutes with two strongly
+/- A bounded a.e.-convergent multiplier commutes with two strongly
 convergent finite-`L^p` approximations. -/
 theorem tendsto_eLpNorm_bounded_multiplier_commutator
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
@@ -88,8 +88,7 @@ theorem tendsto_eLpNorm_bounded_multiplier_commutator
     filter_upwards [hae] with x hx
     have hdiff :=
       (tendsto_const_nhds : Tendsto (fun _ : Nat => a x) atTop (nhds (a x))).sub hx
-    have hmul := hdiff.mul_const (h x)
-    simpa using hmul
+    simpa using (hdiff.mul_const (h x))
   have hmiddle : Tendsto (fun n => eLpNorm
       (fun x => (a x - an n x) * h x) p μ) atTop (nhds 0) := by
     simpa using PDE.tendsto_eLpNorm_sub_zero_of_tendsto_ae_of_dominated
@@ -103,7 +102,6 @@ theorem tendsto_eLpNorm_bounded_multiplier_commutator
       ((han n).mul ((hhn n).sub hh.aestronglyMeasurable)) ?_ _
     filter_upwards [haBound n] with x hx
     simp only [Pi.mul_apply, Pi.sub_apply, Real.norm_eq_abs, abs_mul]
-    change |an n x| * |hn n x - h x| ≤ M * |hn n x - h x|
     exact mul_le_mul_of_nonneg_right hx (abs_nonneg _)
   have hlast : Tendsto (fun n => eLpNorm
       (fun x => an n x * (hn n x - h x)) p μ) atTop (nhds 0) := by
@@ -138,9 +136,6 @@ theorem tendsto_eLpNorm_bounded_multiplier_commutator
       eLpNorm (cn n - c) p μ +
         eLpNorm (fun x => (a x - an n x) * h x) p μ +
         eLpNorm (fun x => an n x * (h x - hn n x)) p μ := by
-    change eLpNorm ((cn n - c) +
-      ((fun x => (a x - an n x) * h x) +
-        fun x => an n x * (h x - hn n x))) p μ ≤ _
     calc
       eLpNorm ((cn n - c) +
           (fun x => (a x - an n x) * h x + an n x * (h x - hn n x))) p μ ≤
@@ -191,7 +186,6 @@ private theorem parabolicConvolution_eq_leftConvolution {d : Nat}
   simp only [parabolicConvolution, convolution_def]
   apply integral_congr_ae
   filter_upwards with y
-  change f y * rho (z - y) = rho (z - y) * f y
   exact mul_comm _ _
 
 private theorem abs_parabolicConvolution_le_of_abs_le
@@ -231,7 +225,7 @@ private theorem abs_parabolicConvolution_le_of_abs_le
     exact hmono.trans hconst.le
 
 private theorem parabolicConvolution_finset_sum {d : Nat} {ι : Type*}
-    (s : Finset ι) (f : ι → TimeVelocity d → Real)
+    (s ) (f : ι → TimeVelocity d → Real)
     (hf : ∀ i ∈ s, LocallyIntegrable (f i) volume) (n : Nat) :
     parabolicConvolution (fun z => ∑ i ∈ s, f i z) (parabolicMollifier d n) =
       fun z => ∑ i ∈ s, parabolicConvolution (f i) (parabolicMollifier d n) z := by
@@ -241,8 +235,7 @@ private theorem parabolicConvolution_finset_sum {d : Nat} {ι : Type*}
     rw [parabolicConvolution_eq_leftConvolution]
     exact convolution_zero
   | insert a s has ih =>
-    have hsum : LocallyIntegrable (fun z => ∑ i ∈ s, f i z) volume := by
-      exact locallyIntegrable_finset_sum s fun i hi => hf i (Finset.mem_insert_of_mem hi)
+    have hsum := locallyIntegrable_finset_sum s fun i hi => hf i (Finset.mem_insert_of_mem hi)
     have ha : LocallyIntegrable (f a) volume := hf a (Finset.mem_insert_self _ _)
     have hconv : parabolicConvolution (f a + (fun z => ∑ i ∈ s, f i z))
         (parabolicMollifier d n) =
@@ -261,50 +254,11 @@ private theorem parabolicConvolution_finset_sum {d : Nat} {ι : Type*}
     rw [hconv, ih (fun i hi => hf i (Finset.mem_insert_of_mem hi))]
     rfl
 
-private theorem parabolicConvolution_matrixContraction_eq_sum
-    {d : Nat} (A : CoefficientField d) (H : TimeVelocity d → PDE.Mat d)
-    (hprod : ∀ i j : Fin d,
-      LocallyIntegrable (fun z => coefficientAt A z i j * H z i j) volume)
-    (n : Nat) :
-    parabolicConvolution (fun z => matrixContraction (coefficientAt A z) (H z))
-      (parabolicMollifier d n) =
-      fun z => ∑ i : Fin d, ∑ j : Fin d,
-        parabolicConvolution (fun y => coefficientAt A y i j * H y i j)
-          (parabolicMollifier d n) z := by
-  letI : DecidableEq (Fin d) := Classical.decEq _
-  have hrow (i : Fin d) : LocallyIntegrable
-      (fun z => ∑ j : Fin d, coefficientAt A z i j * H z i j) volume := by
-    exact locallyIntegrable_finset_sum Finset.univ fun j _ => hprod i j
-  calc
-    parabolicConvolution (fun z => matrixContraction (coefficientAt A z) (H z))
-        (parabolicMollifier d n) =
-        parabolicConvolution
-          (fun z => ∑ i : Fin d, ∑ j : Fin d, coefficientAt A z i j * H z i j)
-          (parabolicMollifier d n) := by
-          rfl
-    _ = fun z => ∑ i : Fin d, parabolicConvolution
-        (fun y => ∑ j : Fin d, coefficientAt A y i j * H y i j)
-        (parabolicMollifier d n) z :=
-      parabolicConvolution_finset_sum Finset.univ
-        (fun i z => ∑ j : Fin d, coefficientAt A z i j * H z i j)
-        (fun i _ => hrow i) n
-    _ = fun z => ∑ i : Fin d, ∑ j : Fin d,
-        parabolicConvolution (fun y => coefficientAt A y i j * H y i j)
-          (parabolicMollifier d n) z := by
-      ext z
-      apply Finset.sum_congr rfl
-      intro i _
-      exact congrFun (parabolicConvolution_finset_sum Finset.univ
-        (fun j y => coefficientAt A y i j * H y i j)
-        (fun j _ => hprod i j) n) z
-
-/-- The entrywise parabolic convolution commutator tends to zero in finite
-`L^(d + 1)` norm on every compact carrier. -/
 theorem tendsto_eLpNorm_parabolicConvolutionCommutator_on_compact
     {d : Nat} (A : CoefficientField d)
     (H : TimeVelocity d → PDE.Mat d)
     (K : Set (TimeVelocity d)) (hK : IsCompact K)
-    (M : Real) (hM : 0 ≤ M)
+    (M ) (hM : 0 ≤ M)
     (hAmeas : ∀ i j : Fin d,
       AEStronglyMeasurable (fun z => coefficientAt A z i j) volume)
     (hALoc : ∀ i j : Fin d,
@@ -357,9 +311,39 @@ theorem tendsto_eLpNorm_parabolicConvolutionCommutator_on_compact
         (parabolicMollifier d n) =
         fun z => ∑ i : Fin d, ∑ j : Fin d,
           cn i j n z := by
-    simpa only [cn, c, a, h] using
-      parabolicConvolution_matrixContraction_eq_sum A H
-        (fun i j => hprodLoc i j) n
+    have _h_inl_16 : parabolicConvolution (fun z => matrixContraction (coefficientAt A z) (H z))
+      (parabolicMollifier d n) =
+      fun z => ∑ i : Fin d, ∑ j : Fin d,
+        parabolicConvolution (fun y => coefficientAt A y i j * H y i j)
+          (parabolicMollifier d n) z := by
+      have hprod := (fun i j => hprodLoc i j)
+      letI : DecidableEq (Fin d) := Classical.decEq _
+      have hrow (i : Fin d) : LocallyIntegrable
+          (fun z => ∑ j : Fin d, coefficientAt A z i j * H z i j) volume := by
+        exact locallyIntegrable_finset_sum Finset.univ fun j _ => hprod i j
+      calc
+        parabolicConvolution (fun z => matrixContraction (coefficientAt A z) (H z))
+            (parabolicMollifier d n) =
+            parabolicConvolution
+              (fun z => ∑ i : Fin d, ∑ j : Fin d, coefficientAt A z i j * H z i j)
+              (parabolicMollifier d n) := by
+              rfl
+        _ = fun z => ∑ i : Fin d, parabolicConvolution
+            (fun y => ∑ j : Fin d, coefficientAt A y i j * H y i j)
+            (parabolicMollifier d n) z :=
+          parabolicConvolution_finset_sum Finset.univ
+            (fun i z => ∑ j : Fin d, coefficientAt A z i j * H z i j)
+            (fun i _ => hrow i) n
+        _ = fun z => ∑ i : Fin d, ∑ j : Fin d,
+            parabolicConvolution (fun y => coefficientAt A y i j * H y i j)
+              (parabolicMollifier d n) z := by
+          ext z
+          apply Finset.sum_congr rfl
+          intro i _
+          exact congrFun (parabolicConvolution_finset_sum Finset.univ
+            (fun j y => coefficientAt A y i j * H y i j)
+            (fun j _ => hprod i j) n) z
+    simpa only [cn, c, a, h] using _h_inl_16
   have hhnSub (i j : Fin d) : Tendsto
       (fun n => eLpNorm (hn i j n - h i j) p μK) atTop (nhds 0) := by
     have hglobal := tendsto_eLpNorm_parabolicConvolution_sub hpOne hpTop (hHMem i j)

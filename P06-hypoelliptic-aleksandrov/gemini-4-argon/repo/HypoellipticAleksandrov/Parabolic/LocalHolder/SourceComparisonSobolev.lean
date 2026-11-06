@@ -123,7 +123,7 @@ theorem exists_h10_smooth_barrier_eqOn {d : ℕ} {Ω : Set (PDE.Vec d)}
   obtain ⟨χ, hχ, hχc, _, hχn, hχone⟩ :=
     KineticAleksandrov.SectionTwo.exists_smooth_cutoff hcl isOpen_univ (subset_univ _)
   let F : PDE.Vec d → ℝ := fun x => χ x * f x
-  have hF : ContDiff ℝ (⊤ : ℕ∞) F := hχ.mul hf
+  have hF := hχ.mul hf
   have hFc : HasCompactSupport F := hχc.mul_right
   let H := (PDE.H10Function.ofContDiff isOpen_univ hF hFc (subset_univ _)).toH1Function
   let HΩ := H.restrict hΩ (subset_univ _)

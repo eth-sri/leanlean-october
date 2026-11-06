@@ -11,7 +11,7 @@ open Set
 open KineticAleksandrov.LocalA
 
 /-- A ball closure retains its Euclidean norm bound. -/
-theorem norm_sub_le_of_mem_ball_closure {N : ℕ} (v : PDE.Vec N) {r : ℝ}
+theorem norm_sub_le_of_mem_ball_closure {N } (v : PDE.Vec N) {r }
     (hr : 0 < r) {y : PDE.Vec N} (hy : y ∈ closure (PDE.euclideanBall v r)) :
     PDE.vecEuclideanNorm (y - v) ≤ r := by
   have hc : IsClosed {y : PDE.Vec N | PDE.vecEuclideanNorm (y - v) ≤ r} :=
@@ -21,9 +21,9 @@ theorem norm_sub_le_of_mem_ball_closure {N : ℕ} (v : PDE.Vec N) {r : ℝ}
     ((PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr).mp hy).le) hc hy
 
 /-- The fixed-radius common cylinder remains inside the outer source cylinder. -/
-theorem pair_base_closed_cylinder_subset {N : ℕ} {z : TimeVelocity N}
+theorem pair_base_closed_cylinder_subset {N } {z : TimeVelocity N}
     (hz : z ∈ scalarParabolicOpenCylinder (-1 / 4) 0
-      (PDE.euclideanBall 0 (1 / 2 : ℝ))) {T : ℝ} (hzt : z.1 < T) (hT : T < 0) :
+      (PDE.euclideanBall 0 (1 / 2 : ℝ))) {T } (hzt : z.1 < T) (hT : T < 0) :
     scalarParabolicClosedCylinder (T - (1 / 8 : ℝ) ^ 2) T
       (PDE.euclideanBall z.2 (1 / 8 : ℝ)) ⊆
     scalarParabolicOpenCylinder (-9 / 16) 0 (PDE.euclideanBall 0 (3 / 4 : ℝ)) := by
@@ -41,15 +41,15 @@ theorem pair_base_closed_cylinder_subset {N : ℕ} {z : TimeVelocity N}
     linarith only [hcenter, hdiff, htri]
 
 /-- Both points fit in a common cylinder of radius at least twice their distance. -/
-theorem pair_mem_common_backward_cylinder {N : ℕ} {z z' : TimeVelocity N}
-    (hne : z ≠ z') {T r : ℝ} (hT : max z.1 z'.1 < T)
+theorem pair_mem_common_backward_cylinder {N } {z z' : TimeVelocity N}
+    (hne : z ≠ z') {T r } (hT : max z.1 z'.1 < T)
     (hmargin : T - max z.1 z'.1 ≤ parabolicDistance z z' ^ 2)
     (hr : 2 * parabolicDistance z z' ≤ r) :
     z ∈ scalarParabolicOpenCylinder (T - r ^ 2) T (PDE.euclideanBall z.2 r) ∧
     z' ∈ scalarParabolicOpenCylinder (T - r ^ 2) T (PDE.euclideanBall z.2 r) := by
   let δ := parabolicDistance z z'
-  have hδ : 0 < δ := parabolicDistance_pos hne
-  have hrpos : 0 < r := (mul_pos (by norm_num) hδ).trans_le hr
+  have hδ := parabolicDistance_pos hne
+  have hrpos := (mul_pos (by norm_num) hδ).trans_le hr
   have ht := abs_time_sub_le_parabolicDistance_sq z z'
   have hd := abs_le.mp ht
   have hdiff : max z.1 z'.1 - z.1 ≤ δ ^ 2 := by

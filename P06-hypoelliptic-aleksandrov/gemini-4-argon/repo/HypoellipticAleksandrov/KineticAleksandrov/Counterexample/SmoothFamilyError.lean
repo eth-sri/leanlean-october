@@ -7,6 +7,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothCo
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyApproximateIdentity
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 import HypoellipticAleksandrov.Coefficients.ParabolicRegularization
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothFamilyGeometry
+import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenPotentialsRegularity
+import Mathlib.Analysis.Matrix.Normed
+import HypoellipticAleksandrov.Coefficients.Ellipticity
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyNativeMeasure
+import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! # Coefficient errors vanish for each fixed smooth function -/
 
@@ -15,8 +21,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter MeasureTheory HypoellipticAleksandrov.Parabolic
 open scoped Topology ENNReal MatrixOrder Matrix.Norms.Elementwise
+open Set HypoellipticAleksandrov.KineticAleksandrov.Evolution
+open ContinuousLinearMap
+open scoped Convolution
 
-/-- A spatial almost everywhere statement lifts to native kinetic spacetime volume. -/
+/- A spatial almost everywhere statement lifts to native kinetic spacetime volume. -/
 theorem ae_spatial_lift {d : ℕ} {P : XV d → Prop} (hP : ∀ᵐ q ∂volume, P q) :
     ∀ᵐ z : KineticPoint d ∂volume, P (z.position, z.velocity) := by
   have hs : Measure.QuasiMeasurePreserving Prod.snd
@@ -25,7 +34,7 @@ theorem ae_spatial_lift {d : ℕ} {P : XV d → Prop} (hP : ∀ᵐ q ∂volume, 
     exact Measure.quasiMeasurePreserving_snd
   exact (hs.comp (KineticPoint.measurePreserving_equivProd d).quasiMeasurePreserving).ae hP
 
-/-- Fixed-function coefficient mollification has vanishing full contraction error in Lp. -/
+/- Fixed-function coefficient mollification has vanishing full contraction error in Lp. -/
 theorem smooth_coefficient_error_tendsto {d : ℕ}
     (A : XV d → PDE.Mat d) (lam Lam : ℝ)
     (hA : ∀ i k, Measurable (fun q => A q i k))
@@ -41,7 +50,15 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
       p (volume.restrict (backwardCylinder P₀ R))) atTop (𝓝 0) := by
   let C := 3 * (|lam| + |Lam|)
   have hC : 0 ≤ C := by dsimp [C]; positivity
-  obtain ⟨M, hM, hH⟩ := kineticVelocityHessian_bound_on_cylinder P₀ R hR u hu
+  obtain ⟨M, hM, hH⟩ : ∃ M : ℝ, 0 ≤ M ∧ ∀ P ∈ backwardCylinder P₀ R, ∀ i k,
+      ‖kineticVelocityHessian u P i k‖ ≤ M := by
+    obtain ⟨K, hK, hQK⟩ := backwardCylinder_subset_compact P₀ R hR
+    have hc := continuous_kineticVelocityHessian_of_joint_smooth u hu
+    obtain ⟨B, hb⟩ := (hK.image hc).isBounded.exists_norm_le
+    refine ⟨max B 0, le_max_right _ _, ?_⟩
+    intro P hP i k
+    apply (Matrix.norm_le_iff (le_max_right B 0)).mp _ i k
+    exact (hb _ ⟨P, hQK hP, rfl⟩).trans (le_max_left _ _)
   have hcv := continuous_kineticVelocityHessian_of_joint_smooth u hu
   have hsp : Continuous (fun P : KineticPoint d => (P.position, P.velocity)) :=
     continuous_position.prodMk continuous_velocity
@@ -97,8 +114,13 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
       _ = _ := by
         simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
         ring
-  · filter_upwards [ae_restrict_of_ae (ae_spatial_lift
-      (ae_tendsto_mollifiedMatrix A lam Lam hA hbound))] with P hP
+  · have _h_xinl_0 : ∀ᵐ q ∂volume, Tendsto (fun n => mollifiedMatrix (standardMollifierSequence n) A q) atTop (𝓝 (A q)) := by
+      exact ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable
+        standardMollifierSequence_rOut_tendsto
+        (Filter.Eventually.of_forall standardMollifierSequence_radius_ratio)
+        (locallyIntegrable_matrix_of_ellipticity A lam Lam hA hbound)
+    filter_upwards [ae_restrict_of_ae (ae_spatial_lift
+      _h_xinl_0)] with P hP
     have he i k : Tendsto (fun n =>
         (mollifiedMatrix (standardMollifierSequence n) A (P.position, P.velocity) i k -
           A (P.position, P.velocity) i k) * kineticVelocityHessian u P i k)

@@ -43,7 +43,7 @@ variable
 
 /-- The quotient-level reverse-time identity against a fixed actual Galerkin test. -/
 def reverseTimeGalerkinPrimal_fixed_test_identity_prop
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -98,13 +98,13 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_fixedTests
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial
   refine ⟨U, φ, hφ, hclm, ?_⟩
   intro k eta
-  let hEtaDeriv : MemLp eta.deriv (∞ : ℝ≥0∞) (reverseTimeVolume (r₁ - r₀)) :=
+  let hEtaDeriv :=
     eta.memLp_deriv ∞
-  let massEll : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ :=
+  let massEll :=
     (reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
       (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv hEtaDeriv
         (galerkinVector hΩ k))).comp (reverseTimeGelfandCLM hΩ (r₁ - r₀))
-  let formEll : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ :=
+  let formEll :=
     (reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
       (reverseTimeSeparatedVTest hΩ eta (galerkinVector hΩ k))).comp
       (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded
@@ -138,23 +138,15 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_fixedTests
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos (φ n) initial v eta
     simpa only [reverseTimeGalerkinPrimal_pairing_identity_prop, massEll, formEll,
       source, ContinuousLinearMap.comp_apply, v, hEtaDeriv] using h
-  have hMass' : Tendsto
-      (fun n => massEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial)) atTop (𝓝 (massEll U)) := hMass
-  have hForm' : Tendsto
-      (fun n => formEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial)) atTop (𝓝 (formEll U)) := hForm
+  have hMass' := hMass
+  have hForm' := hForm
   have hRight : Tendsto
       (fun n => -source + formEll
         (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
           a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
           (φ n) initial)) atTop (𝓝 (-source + formEll U)) :=
     (tendsto_const_nhds.neg).add hForm'
-  have hLimit : massEll U = -source + formEll U :=
+  have hLimit :=
     tendsto_nhds_unique_of_eventuallyEq hMass' hRight hFinite
   simpa only [reverseTimeGalerkinPrimal_fixed_test_identity_prop, massEll, formEll,
     source, ContinuousLinearMap.comp_apply, hEtaDeriv] using hLimit

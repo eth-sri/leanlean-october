@@ -69,9 +69,7 @@ theorem enlargedPositionVisitMass_power_sum_decay_le
     (Cp * (1 + (j : ℝ)) ^ (-g / 2)) q
       (mul_nonneg hCp (Real.rpow_nonneg hp.le _)) hq hcell).trans
   apply ENNReal.ofReal_le_ofReal
-  have h := mul_le_mul_of_nonneg_left htime
-    (Real.rpow_nonneg (mul_nonneg hCp (Real.rpow_nonneg hp.le (-g / 2))) (q - 1))
-  apply h.trans_eq
+  apply (mul_le_mul_of_nonneg_left htime (Real.rpow_nonneg (mul_nonneg hCp (Real.rpow_nonneg hp.le (-g / 2))) (q - 1))).trans_eq
   rw [Real.mul_rpow hCp (Real.rpow_nonneg hp.le _), ← Real.rpow_mul hp.le]
   calc
     _ = Cp ^ (q - 1) * Ct *

@@ -14,7 +14,7 @@ open scoped CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The pushforward characterization recovers the exact density-degree formula. -/
-theorem bellman_degree_of_map_dilation (beta : ℝ) (mu : Measure BellmanPuncturedPlane)
+theorem bellman_degree_of_map_dilation (beta : ℝ) (mu )
     (hm : ∀ r : ℝ, ∀ hr : 0 < r,
       Measure.map (bellmanDilation r hr) mu = ENNReal.ofReal (r ^ (beta - 4)) • mu) :
     HasBellmanDensityDegree beta mu := by

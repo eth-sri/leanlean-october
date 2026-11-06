@@ -15,7 +15,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 open Set MeasureTheory
 
 /-- The closure of a kinetic cylinder satisfies all four weak coordinate inequalities. -/
-theorem closure_cylinder_bounds {d : ℕ} (P : KineticPoint d) (r : ℝ) :
+theorem closure_cylinder_bounds {d } (P : KineticPoint d) (r : ℝ) :
     closure (backwardCylinder P r) ⊆ {X | P.time-r^2 ≤ X.time ∧ X.time ≤ P.time ∧
       PDE.vecNormSq (X.velocity-P.velocity) ≤ r^2 ∧
       PDE.vecNormSq (relativePosition P X) ≤ (r^3)^2} := by

@@ -123,7 +123,7 @@ theorem scalarC12On_affine_pullback
       (ρ ^ 2)).congr
     exact fun z hz => hh z hz
 
-private theorem coordinate_single_smooth {N : ℕ} (w : TimeVelocity N → ℝ)
+private theorem coordinate_single_smooth {N } (w : TimeVelocity N → ℝ)
     (hw : ContDiff ℝ 2 w) (c : TimeVelocityCoord N) (z : TimeVelocity N) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv (Pi.single c 1) w z =
       fderiv ℝ w z (timeVelocityBasis c) := by
@@ -140,7 +140,7 @@ private theorem coordinate_single_smooth {N : ℕ} (w : TimeVelocity N → ℝ)
 
 /-- For a smooth function the scalar residual is the existing ABP operator. -/
 theorem scalar_residual_eq_parabolicOperator
-    {N : ℕ} (a : TimeVelocity N → PDE.Mat N)
+    {N } (a : TimeVelocity N → PDE.Mat N)
     (w : TimeVelocity N → ℝ) (hw : ContDiff ℝ 2 w) (z : TimeVelocity N) :
     residual a w z = parabolicOperator (fun t v => a (t, v)) w z := by
   have ht : scalarTimeDerivative w z = timeDerivative w z := by

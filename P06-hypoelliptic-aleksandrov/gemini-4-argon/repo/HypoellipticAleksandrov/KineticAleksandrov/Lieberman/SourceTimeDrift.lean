@@ -20,16 +20,15 @@ open scoped ENNReal Topology MatrixOrder Matrix.Norms.Elementwise
 
 /-- A continuous classical representative of the zero-initial energy correction has
 the sharp source-amplitude time bound at every interior point. -/
-theorem classical_abs_le_source_time_withDrift {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+theorem classical_abs_le_source_time_withDrift {d Ω} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T lam : ℝ) (haT : a < T) (hlam : 0 < lam)
-    (A : CoefficientField d)
+    (A )
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (hb : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2))
     (hA : IsSmoothCoefficient A)
     (hlo : HasLowerEllipticity lam A)
     (F : TimeVelocity d → ℝ) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
-    (M : ℝ) (hM : 0 ≤ M)
+    (M ) (hM : 0 ≤ M)
     (hFM : ∀ z ∈ scalarParabolicClosedCylinder a T Ω, |F z| ≤ M)
     (u : ReverseTimeL2V hΩ (T - a)) (g : ReverseTimeL2VStar hΩ (T - a))
     (hdu : HasGelfandWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) u g)

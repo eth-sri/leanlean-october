@@ -12,26 +12,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
 
-/-- A finite absolutely continuous measure has a nonnegative measurable real density. -/
-theorem density_of_absolutelyContinuous {X : Type*} [MeasurableSpace X]
-    (m ν : Measure X) [SigmaFinite m] [IsFiniteMeasure ν] (hac : ν ≪ m) :
-    ∃ g : X → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧
-      ν = m.withDensity (fun x => ENNReal.ofReal (g x)) := by
-  let g := fun x => (ν.rnDeriv m x).toReal
-  refine ⟨g,
-    (Measure.measurable_rnDeriv ν m).ennreal_toReal,
-    fun _ => ENNReal.toReal_nonneg, ?_⟩
-  rw [← Measure.withDensity_rnDeriv_eq ν m hac]
-  apply withDensity_congr_ae
-  filter_upwards [Measure.rnDeriv_lt_top ν m] with x hx
-  exact (ENNReal.ofReal_toReal hx.ne).symm
-
-/-- A local density dominates the same restriction of any global nonnegative density. -/
+/- A finite absolutely continuous measure has a nonnegative measurable real density. -/
 theorem density_local_norm_le {X : Type*} [MeasurableSpace X]
     (m : Measure X) [SigmaFinite m] (g f : X → ℝ)
     (hgm : Measurable g) (hg0 : ∀ x, 0 ≤ g x)
     (_hfm : Measurable f) (hf0 : ∀ x, 0 ≤ f x)
-    (S : Set X) (hS : MeasurableSet S) (p : ℝ≥0∞)
+    (S ) (hS : MeasurableSet S) (p : ℝ≥0∞)
     (hle : (m.withDensity (fun x => ENNReal.ofReal (g x))).restrict S ≤
       m.withDensity (fun x => ENNReal.ofReal (f x))) :
     eLpNorm g p (m.restrict S) ≤ eLpNorm f p m := by
@@ -53,7 +39,7 @@ theorem density_local_norm_le {X : Type*} [MeasurableSpace X]
   exact (eLpNorm_mono_ae hgm.aestronglyMeasurable.restrict hn).trans
     (eLpNorm_restrict_le f p m S)
 
-/-- A source real norm bound gives the equivalent bound for its q-power integral. -/
+/- A source real norm bound gives the equivalent bound for its q-power integral. -/
 theorem density_power_integral_le {X : Type*} [MeasurableSpace X]
     (m : Measure X) (f : X → ℝ) (q K : ℝ) (hq : 0 < q) (hK : 0 ≤ K)
     (hf : MemLp f (ENNReal.ofReal q) m)
@@ -72,7 +58,7 @@ theorem density_power_integral_le {X : Type*} [MeasurableSpace X]
       rw [ENNReal.ofReal_rpow_of_nonneg (Real.rpow_nonneg hK _) hq.le,
         ← Real.rpow_mul hK, one_div_mul_cancel hq.ne', Real.rpow_one]
 
-/-- Local densities on a countable cover glue, with a bound by the sum of power integrals. -/
+/- Local densities on a countable cover glue, with a bound by the sum of power integrals. -/
 theorem density_of_countable_cover {X ι : Type*} [MeasurableSpace X] [Countable ι]
     (m ν : Measure X) [SigmaFinite m] [IsFiniteMeasure ν]
     (S : ι → Set X) (hS : ∀ i, MeasurableSet (S i))
@@ -99,7 +85,16 @@ theorem density_of_countable_cover {X ι : Type*} [MeasurableSpace X] [Countable
       · exact Or.inl ⟨hx, hs⟩
       · exact Or.inr hs
     · exact measure_union_null hu hcover
-  obtain ⟨g, hgm, hg0, hgd⟩ := density_of_absolutelyContinuous m ν hac
+  obtain ⟨g, hgm, hg0, hgd⟩ : ∃ g : X → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧
+      ν = m.withDensity (fun x => ENNReal.ofReal (g x)) := by
+    let g := fun x => (ν.rnDeriv m x).toReal
+    refine ⟨g,
+      (Measure.measurable_rnDeriv ν m).ennreal_toReal,
+      fun _ => ENNReal.toReal_nonneg, ?_⟩
+    rw [← Measure.withDensity_rnDeriv_eq ν m hac]
+    apply withDensity_congr_ae
+    filter_upwards [Measure.rnDeriv_lt_top ν m] with x hx
+    exact (ENNReal.ofReal_toReal hx.ne).symm
   have hout : ∀ᵐ x ∂m.restrict (⋃ i, S i)ᶜ, g x = 0 := by
     have hz : ∫⁻ x in (⋃ i, S i)ᶜ, ENNReal.ofReal (g x) ∂m = 0 := by
       rw [← withDensity_apply _ (MeasurableSet.iUnion hS).compl, ← hgd, hcover]

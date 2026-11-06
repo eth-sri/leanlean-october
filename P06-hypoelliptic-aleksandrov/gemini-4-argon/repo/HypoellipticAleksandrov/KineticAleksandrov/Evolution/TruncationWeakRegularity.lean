@@ -18,8 +18,7 @@ open scoped Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The joint first derivative of an anisotropic scalar C1,2 function. -/
-theorem scalarC12_hasFDerivAt {d : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hU : IsOpen U) (hu : IsScalarC12On u U)
+theorem scalarC12_hasFDerivAt {d U u} (hU : IsOpen U) (hu : IsScalarC12On u U)
     {z : TimeVelocity d} (hz : z ∈ U) :
     HasFDerivAt u
       (((ContinuousLinearMap.id ℝ ℝ).smulRight (scalarTimeDerivative u z)).coprod
@@ -56,8 +55,7 @@ theorem scalarC12_hasFDerivAt {d : ℕ} {U : Set (TimeVelocity d)}
     (hT.continuousAt (hU.mem_nhds hz)) (hS.continuousAt (hU.mem_nhds hz))).hasFDerivAt
 
 /-- An anisotropic scalar C1,2 function on an open set is jointly differentiable. -/
-theorem scalarC12_differentiableAt {d : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hU : IsOpen U) (hu : IsScalarC12On u U)
+theorem scalarC12_differentiableAt {d U u} (hU : IsOpen U) (hu : IsScalarC12On u U)
     {z : TimeVelocity d} (hz : z ∈ U) : DifferentiableAt ℝ u z :=
   (scalarC12_hasFDerivAt hU hu hz).differentiableAt
 

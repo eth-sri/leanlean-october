@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicMollifierUniformLimit
 public import HypoellipticAleksandrov.Parabolic.WeakRepresentativeLocalization
 public import HypoellipticAleksandrov.Parabolic.WeakJetExtension
 public import Mathlib.Topology.Compactness.SigmaCompact
+import HypoellipticAleksandrov.Parabolic.Geometry
+import Mathlib.Topology.Separation.Regular
 
 /-!
 # Localized jets for weak-solution mollifier convergence
@@ -23,7 +25,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped ENNReal Topology
 
-/-- A selected local parabolic weak jet together with its concrete compactly
+/- A selected local parabolic weak jet together with its concrete compactly
 supported global cutoff extension around a compact carrier. -/
 structure LocalizedParabolicJet
     (d : Nat) (U K : Set (TimeVelocity d)) (u : TimeVelocity d → Real) where
@@ -56,10 +58,10 @@ structure LocalizedParabolicJet
 
 namespace LocalizedParabolicJet
 
-/-- The selected cutoff jet agrees with its local jet on an open plateau that
+/- The selected cutoff jet agrees with its local jet on an open plateau that
 contains the closure of the compact carrier. -/
 theorem exists_open_plateau
-    {d : Nat} {U K : Set (TimeVelocity d)} {u : TimeVelocity d → Real}
+    {d U K u}
     (J : LocalizedParabolicJet d U K u) :
     ∃ O : Set (TimeVelocity d),
       IsOpen O ∧ closure J.V ⊆ O ∧ O ⊆ J.W ∧
@@ -85,7 +87,7 @@ theorem exists_open_plateau
     exact ⟨hclosureOb hz, hclosureOtoFun hz,
       hclosureOtime hz, hclosureOgrad hz, hclosureOhessian hz⟩
   · intro z hz
-    have hbz : J.b z = 1 := hbOb z hz.1
+    have hbz := hbOb z hz.1
     have hsupport : z ∈ Function.support J.b := by
       change J.b z ≠ 0
       rw [hbz]
@@ -104,95 +106,9 @@ end LocalizedParabolicJet
 
 namespace ParabolicW12Loc
 
-/-- A local parabolic weak function has a concrete cutoff jet whose literal
+/- A local parabolic weak function has a concrete cutoff jet whose literal
 mollifications converge uniformly on a compact carrier to any supplied
 continuous representative of its restricted-volume almost-everywhere class. -/
-theorem exists_localizedJet_mollifications_tendstoUniformlyOn
-    (d : Nat) (hd : 1 ≤ d)
-    {U K : Set (TimeVelocity d)} {u q : TimeVelocity d → Real}
-    (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
-    (hu : ParabolicW12Loc U (parabolicExponent d) u)
-    (hq : ContinuousOn q U)
-    (hqu : q =ᵐ[timeVelocityVolumeOn U] u) :
-    ∃ J : LocalizedParabolicJet d U K u,
-      TendstoUniformlyOn
-        (fun n z =>
-          parabolicConvolution J.g.toFun (parabolicMollifier d n) z)
-        q atTop K := by
-  obtain ⟨V, hVOpen, hKV, hclosureVU, hVCompact⟩ :=
-    exists_open_between_and_isCompact_closure hK hU hKU
-  obtain ⟨W, hWOpen, hWCompact, hclosureVW, hclosureWU⟩ :=
-    exists_open_compact_closure_collar hU hVOpen hVCompact hclosureVU
-  obtain ⟨w, hwu⟩ :=
-    hu.exists_parabolicW12Function hWOpen hWCompact hclosureWU
-  have hp : (1 : ENNReal) ≤ parabolicExponent d := by
-    simp [parabolicExponent]
-  obtain ⟨b, hbSmooth, hbCompact, hbOne, hbW, htoFun, htime, hgrad, hhessian⟩ :=
-    exists_smooth_compact_cutoff_mul_eventuallyEq_jet hVCompact hWOpen hWCompact
-      hclosureVW w hp
-  let J : LocalizedParabolicJet d U K u :=
-    { V := V
-      W := W
-      w := w
-      b := b
-      g := w.mulContDiffHasCompactSupport_univ
-        (by simp [parabolicExponent]) hbSmooth hbCompact hWOpen hbW
-      V_open := hVOpen
-      V_closure_compact := hVCompact
-      K_subset_V := hKV
-      W_open := hWOpen
-      W_closure_compact := hWCompact
-      closure_V_subset_W := hclosureVW
-      closure_W_subset_U := hclosureWU
-      w_ae_eq_u := hwu
-      b_smooth := hbSmooth
-      b_compact := hbCompact
-      b_tsupport_subset_W := hbW
-      b_one_near_closure_V := hbOne
-      g_is_cutoff := by rfl
-      g_toFun_eq_near_closure_V := by
-        simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ] using! htoFun
-      g_timeDeriv_eq_near_closure_V := by
-        simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ] using! htime
-      g_velocityGrad_eq_near_closure_V := by
-        simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ] using! hgrad
-      g_velocityHessian_eq_near_closure_V := by
-        simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ] using! hhessian }
-  have hJCompact : HasCompactSupport J.g.toFun := by
-    change IsCompact (tsupport J.g.toFun)
-    refine IsCompact.of_isClosed_subset J.b_compact (isClosed_tsupport (f := J.g.toFun)) ?_
-    rw [J.g_is_cutoff]
-    simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ_toFun] using
-      (tsupport_mul_subset_left (f := J.b) (g := J.w.toFun))
-  obtain ⟨r, hrContinuous, hrUniform, hrg⟩ :=
-    J.g.exists_continuousOn_tendstoUniformlyOn_ae_eq_toFun_parabolicConvolution
-      hd hJCompact (closure J.V) J.V_closure_compact
-  obtain ⟨O, hOOpen, hclosureVO, hOW, hgwo, -, -, -⟩ := J.exists_open_plateau
-  have hrgV : r =ᵐ[timeVelocityVolumeOn J.V] J.g.toFun :=
-    hrg.filter_mono <| ae_mono <|
-      Measure.restrict_mono_set volume subset_closure
-  have hgwV : J.g.toFun =ᵐ[timeVelocityVolumeOn J.V] J.w.toFun := by
-    filter_upwards [ae_restrict_mem J.V_open.measurableSet] with z hzV
-    exact hgwo (hclosureVO (subset_closure hzV))
-  have hVW : J.V ⊆ J.W := subset_closure.trans J.closure_V_subset_W
-  have hwuV : J.w.toFun =ᵐ[timeVelocityVolumeOn J.V] u :=
-    J.w_ae_eq_u.filter_mono <| ae_mono <|
-      Measure.restrict_mono_set volume hVW
-  have hVU : J.V ⊆ U :=
-    subset_closure.trans (J.closure_V_subset_W.trans
-      (subset_closure.trans J.closure_W_subset_U))
-  have hquV : q =ᵐ[timeVelocityVolumeOn J.V] u :=
-    hqu.filter_mono <| ae_mono <|
-      Measure.restrict_mono_set volume hVU
-  have hrquV : r =ᵐ[timeVelocityVolumeOn J.V] q :=
-    (hrgV.trans hgwV).trans (hwuV.trans hquV.symm)
-  have hrq : EqOn r q J.V :=
-    Measure.eqOn_open_of_ae_eq hrquV J.V_open
-      (hrContinuous.mono subset_closure) (hq.mono hVU)
-  refine ⟨J, ?_⟩
-  exact (hrUniform.mono (J.K_subset_V.trans subset_closure)).congr_right
-    fun z hzK => hrq (J.K_subset_V hzK)
-
 end ParabolicW12Loc
 
 end HypoellipticAleksandrov.Parabolic

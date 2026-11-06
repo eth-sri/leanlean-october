@@ -43,8 +43,7 @@ variable {n : ℕ}
 `U ⊆ KineticPoint n` has a representative `v`, smooth in packed coordinates on the preimage of `U`,
 with `u = v` almost everywhere on `U`. -/
 theorem exists_smooth_viscous_kinetic_representative
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
+    (hH : HormanderHypoellipticityStatement) {lam Lam B b} (hlam : 0 < lam)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
     (hB_ell : HasEverywhereLoewnerBounds lam Lam B) (hb_smooth : IsSmoothDrift b)
     (U : Set (KineticPoint n)) (hU : IsOpen U) (ε : ℝ) (hε : 0 < ε) (u : KineticPoint n → ℝ)
@@ -67,8 +66,7 @@ operator on an open `U ⊆ KineticPoint n` has a representative `v`, smooth in p
 on the preimage of `U`, with `u = v` almost everywhere on `U`.  The bracket check uses `0 < m` and
 unit-direction drift coercivity. -/
 theorem exists_smooth_kinetic_representative
-    (hH : HormanderHypoellipticityStatement) {lam Lam m : ℝ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
+    (hH : HormanderHypoellipticityStatement) {lam Lam m B b} (hlam : 0 < lam)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
     (hB_ell : HasEverywhereLoewnerBounds lam Lam B) (hb_smooth : IsSmoothDrift b)
     (hm : 0 < m) (hb_coercive : HasUnitDirectionDriftCoercivity m b)

@@ -54,7 +54,7 @@ theorem ofRadius_coefficient (B : CoefficientField d) :
     (ofRadius σ₀ v₀ z₀ b r).coefficient (zIndependentCoefficient B) =
       zIndependentCoefficient (scaledCoefficient B σ₀ v₀ r) := by
   funext τ Y Z
-  have hr : r.1 ^ 2 / r.1 ^ 2 = 1 := div_self (pow_pos r.2 2).ne'
+  have hr := div_self (pow_pos r.2 2).ne'
   change (r.1 ^ 2 / r.1 ^ 2) • B (σ₀ + r.1 ^ 2 * τ) (v₀ + r.1 • Y) = _
   rw [hr, one_smul]
   rfl
@@ -78,9 +78,7 @@ evolution on the whole space with identity transport, then `(Ŝ, K̂)` (pushforw
 kinetic scaling) realizes it for the rescaled coefficient `B_r`, again with identity
 transport. -/
 theorem realizes_ofRadius_wholeSpace (σ₀ : ℝ) (v₀ z₀ : PDE.Vec d) (r : {r : ℝ // 0 < r})
-    {B : CoefficientField d}
-    {S : TerminalOperatorFamily (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
-    {K : MovingFiberKernel (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
+    {B S K}
     (hreal : RealizesTerminalEvolution Set.univ (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
       (zIndependentCoefficient B) (identityDrift d) S K) :
     RealizesTerminalEvolution Set.univ (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
@@ -105,14 +103,11 @@ original query `σ = σ₀ + r² τ`, `σ' = σ₀ + r² τ'`, `v = v₀ + r Y`,
 and Fourier projections `ν` (frequency `ξ`) of `K` and `ν'` (frequency `r³ ξ`) of `K'`:
 `ν E = exp (-i r² (τ' - τ) ξ · v₀) ν' (r⁻¹ (E - v₀))` and `‖ν‖_TV = ‖ν'‖_TV`. -/
 theorem realizes_ofRadius_fourier_tv (σ₀ : ℝ) (v₀ z₀ : PDE.Vec d) (r : {r : ℝ // 0 < r})
-    {B : CoefficientField d}
-    {S : TerminalOperatorFamily (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
-    {K : MovingFiberKernel (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
+    {B S K}
     (hreal : RealizesTerminalEvolution Set.univ (fun _ => (0 : PDE.Vec d))
       (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d))
       (zIndependentCoefficient B) (identityDrift d) S K)
-    {S' : TerminalOperatorFamily (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
-    {K' : MovingFiberKernel (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
+    {S' K'}
     (hreal' : RealizesTerminalEvolution Set.univ (fun _ => (0 : PDE.Vec d))
       (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d))
       (zIndependentCoefficient (scaledCoefficient B σ₀ v₀ r)) (identityDrift d) S' K')

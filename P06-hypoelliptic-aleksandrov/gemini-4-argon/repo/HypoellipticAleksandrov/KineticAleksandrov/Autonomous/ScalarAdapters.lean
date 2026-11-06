@@ -33,14 +33,13 @@ theorem autonomousScalarOperator_reflection (a : ℝ → ℝ → ℝ)
   ring
 
 /-- Reflection preserves the scalar pointwise coefficient bounds. -/
-theorem reflectedAutonomous_bounds {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
+theorem reflectedAutonomous_bounds {lam Lam } (A : SmoothAutonomous lam Lam) :
     ∀ x v, lam ≤ reflectedAutonomous A.a x v ∧ reflectedAutonomous A.a x v ≤ Lam := by
   intro x v
   exact A.bounds (-x) v
 
 /-- Reflection preserves genuine C-infinity smoothness of the scalar coefficient. -/
-theorem reflectedAutonomous_smooth {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
-    ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry (reflectedAutonomous A.a)) := by
-  exact A.smooth.comp (contDiff_fst.neg.prodMk contDiff_snd)
+theorem reflectedAutonomous_smooth {lam Lam } (A : SmoothAutonomous lam Lam) :
+    ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry (reflectedAutonomous A.a)) :=  A.smooth.comp (contDiff_fst.neg.prodMk contDiff_snd)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

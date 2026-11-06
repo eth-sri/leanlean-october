@@ -22,7 +22,7 @@ open Filter MeasureTheory Set
 open scoped ENNReal Topology
 
 private theorem ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) {du dv : TimeVelocity d → ℝ}
+    (hU : IsOpen U) {du dv }
     (hdu : LocallyIntegrableOn du U volume)
     (hdv : LocallyIntegrableOn dv U volume)
     (hpair : ∀ φ : TimeVelocity d → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ →
@@ -34,9 +34,9 @@ private theorem ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
       (f := fun z => du z - dv z) (hdu.sub hdv) ?_
     intro φ hφSmooth hφCompact hφSub
     have hφCont : Continuous φ := hφSmooth.continuous
-    have hduK : IntegrableOn du (tsupport φ) volume :=
+    have hduK :=
       hdu.integrableOn_compact_subset hφSub hφCompact.isCompact
-    have hdvK : IntegrableOn dv (tsupport φ) volume :=
+    have hdvK :=
       hdv.integrableOn_compact_subset hφSub hφCompact.isCompact
     have hduφK : IntegrableOn (fun z => du z * φ z) (tsupport φ) volume := by
       simpa [smul_eq_mul] using
@@ -82,7 +82,7 @@ private theorem ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
 
 namespace HasWeakTimeDerivOn
 
-/-- Locally integrable weak time-derivative representatives agree almost
+/- Locally integrable weak time-derivative representatives agree almost
 everywhere on an open domain. -/
 theorem ae_eq {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
     {u du dv : TimeVelocity d → ℝ}
@@ -100,7 +100,7 @@ end HasWeakTimeDerivOn
 
 namespace HasWeakVelocityPartialDerivOn
 
-/-- Locally integrable weak velocity-partial representatives agree almost
+/- Locally integrable weak velocity-partial representatives agree almost
 everywhere on an open domain. -/
 theorem ae_eq {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
     {i : Fin d} {u dui dvi : TimeVelocity d → ℝ}
@@ -118,7 +118,7 @@ end HasWeakVelocityPartialDerivOn
 
 namespace ParabolicMemLpOn
 
-/-- Restricted `L^p` membership with exponent at least one is locally
+/- Restricted `L^p` membership with exponent at least one is locally
 integrable on the underlying raw set. -/
 theorem locallyIntegrableOn {d : ℕ} {U : Set (TimeVelocity d)}
     {p : ℝ≥0∞} {f : TimeVelocity d → ℝ}
@@ -132,7 +132,7 @@ end ParabolicMemLpOn
 
 namespace HasWeakTimeDerivOn
 
-/-- Weak time-derivative representatives in restricted `L^p`, with `p ≥ 1`,
+/- Weak time-derivative representatives in restricted `L^p`, with `p ≥ 1`,
 agree almost everywhere on an open domain. -/
 theorem ae_eq_of_memLp {d : ℕ} {U : Set (TimeVelocity d)}
     {p : ℝ≥0∞} (hU : IsOpen U) (hp : 1 ≤ p)
@@ -148,7 +148,7 @@ end HasWeakTimeDerivOn
 
 namespace HasWeakVelocityPartialDerivOn
 
-/-- Weak velocity-partial representatives in restricted `L^p`, with `p ≥ 1`,
+/- Weak velocity-partial representatives in restricted `L^p`, with `p ≥ 1`,
 agree almost everywhere on an open domain. -/
 theorem ae_eq_of_memLp {d : ℕ} {U : Set (TimeVelocity d)}
     {p : ℝ≥0∞} (hU : IsOpen U) (hp : 1 ≤ p)
@@ -164,7 +164,7 @@ end HasWeakVelocityPartialDerivOn
 
 namespace ParabolicW12Function
 
-/-- A.e.-equal values of two weak jets force a.e. equality of their selected
+/- A.e.-equal values of two weak jets force a.e. equality of their selected
 time, velocity-gradient, and ordered velocity-Hessian representatives. -/
 theorem ae_eq_jet_of_value_ae {d : ℕ} {U : Set (TimeVelocity d)}
     {p : ℝ≥0∞} (hU : IsOpen U) (hp : 1 ≤ p)
@@ -195,13 +195,6 @@ theorem ae_eq_jet_of_value_ae {d : ℕ} {U : Set (TimeVelocity d)}
     (w.velocityHessian_memLp i j) (w'.velocityHessian_memLp i j)
     (w.hasWeakVelocitySecondPartialDeriv i j)
     ((w'.hasWeakVelocitySecondPartialDeriv i j).congr_value_ae (hgrad i).symm)
-
-private theorem velocityGradient_contDiff_infty {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
 private theorem velocityGradient_hasCompactSupport {d : ℕ}
     {f : TimeVelocity d → ℝ} {i : Fin d}
@@ -257,10 +250,10 @@ private theorem velocityGradient_velocityGradient_commute {d : ℕ}
         change ((2 : ℕ∞) : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞)
         exact WithTop.coe_le_coe.mpr le_top)) z).apply i j
 
-/-- Ordered weak velocity-Hessian representatives commute almost everywhere
+/- Ordered weak velocity-Hessian representatives commute almost everywhere
 on an open domain. -/
 theorem velocityHessian_ae_eq_swap
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d U}
     (hU : IsOpen U)
     (w : ParabolicW12Function d U 2)
     (i j : Fin d) :
@@ -272,8 +265,9 @@ theorem velocityHessian_ae_eq_swap
     ((w.velocityHessian_memLp j i).locallyIntegrableOn (by norm_num))
   intro φ hφSmooth hφCompact hφSub
   have htestSmooth (k : Fin d) :
-      ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient φ z k) :=
-    velocityGradient_contDiff_infty hφSmooth
+      ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient φ z k) := by
+    unfold velocityGradient
+    exact (contDiff_infty_iff_fderiv.mp hφSmooth).2.clm_apply contDiff_const
   have htestCompact (k : Fin d) :
       HasCompactSupport (fun z => velocityGradient φ z k) :=
     velocityGradient_hasCompactSupport hφCompact

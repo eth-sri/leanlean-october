@@ -17,11 +17,10 @@ namespace HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 
 open MeasureTheory
 
-/-- Restrict a coherent weak-derivative family to a smaller raw domain,
+/- Restrict a coherent weak-derivative family to a smaller raw domain,
 without changing its selected representatives. -/
 def restrict
-    {d L : ℕ} {U V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d L U V u}
     (F : ParabolicWeakDerivativeFamily d L U u)
     (hVU : V ⊆ U) :
     ParabolicWeakDerivativeFamily d L V u where
@@ -33,20 +32,15 @@ def restrict
   hasWeakVelocitySucc beta i h :=
     (F.hasWeakVelocitySucc beta i h).restrict hVU
 
-/-- Domain restriction preserves every selected representative literally. -/
 @[simp] theorem restrict_representative
-    {d L : ℕ} {U V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d L U V u}
     (F : ParabolicWeakDerivativeFamily d L U u)
     (hVU : V ⊆ U) (beta : ParabolicDerivativeIndex d L) :
-    (restrict F hVU).representative beta = F.representative beta :=
-  rfl
+    (restrict F hVU).representative beta = F.representative beta := rfl
 
-/-- Truncate a coherent weak-derivative family to a lower parabolic bound,
-using the bound cast to retain the same representatives. -/
+/- Domain restriction preserves every selected representative literally. -/
 def truncate
-    {d M L : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+    {d M L U u}
     (F : ParabolicWeakDerivativeFamily d L U u)
     (hML : M ≤ L) :
     ParabolicWeakDerivativeFamily d M U u where
@@ -63,15 +57,6 @@ def truncate
       F.hasWeakVelocitySucc
         (ParabolicDerivativeIndex.castLE hML beta) i (h.trans hML)
 
-/-- Bound truncation selects the representative at the corresponding
+/- Bound truncation selects the representative at the corresponding
 enlarged-bound index literally. -/
-@[simp] theorem truncate_representative
-    {d M L : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
-    (F : ParabolicWeakDerivativeFamily d L U u)
-    (hML : M ≤ L) (beta : ParabolicDerivativeIndex d M) :
-    (truncate F hML).representative beta =
-      F.representative (ParabolicDerivativeIndex.castLE hML beta) :=
-  rfl
-
 end HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily

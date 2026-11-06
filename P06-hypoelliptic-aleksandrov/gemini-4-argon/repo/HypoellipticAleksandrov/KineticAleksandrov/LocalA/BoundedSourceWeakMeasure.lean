@@ -86,7 +86,7 @@ instance boundedSourceActionMeasure_isFinite (K : MovingFiberKernel Ω γ)
 /-- A bounded real Borel function is integrable against a finite measure. -/
 theorem integrable_bounded_real {E : Type*} [MeasurableSpace E]
     (μ : Measure E) [IsFiniteMeasure μ] (f : E → ℝ) (hf : Measurable f)
-    (M : ℝ) (hb : ∀ x, |f x| ≤ M) : Integrable f μ := by
+    (M ) (hb : ∀ x, |f x| ≤ M) : Integrable f μ := by
   refine ⟨hf.aestronglyMeasurable, HasFiniteIntegral.of_bounded (C := M) ?_⟩
   exact Filter.Eventually.of_forall fun x => by
     rw [Real.norm_eq_abs]
@@ -97,7 +97,7 @@ theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
     (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (ν : Measure (KineticPoint d)) [IsFiniteMeasure ν] (a T : ℝ)
     (g : KineticPoint d → ℝ) (hg : Measurable g)
-    (M : ℝ) (hM : 0 ≤ M) (hb : ∀ p, |g p| ≤ M) :
+    (M ) (hM : 0 ≤ M) (hb : ∀ p, |g p| ≤ M) :
     (∫ q, g ⟨q.1, q.2.1, q.2.2⟩ ∂boundedSourceActionMeasure K ν a T) =
       ∫ p, (∫ r in Ioo a T, duhamelIntegrand K g p r) ∂ν := by
   let ρ := ν.prod (volume.restrict (Ioo a T))

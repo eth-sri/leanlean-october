@@ -18,8 +18,8 @@ open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
 /-- Nonnegative smooth interior tests have smaller interval transition integral. -/
-theorem interval_scalar_test_le_whole {a c lam Lam σ τ : ℝ}
-    (hac : a < c) (hστ : σ < τ) (B : CoefficientField 1)
+theorem interval_scalar_test_le_whole {a c lam Lam σ τ }
+    (hac : a < c) (hστ : σ < τ) (B )
     (hB : IsSectionTwoCoefficient lam Lam B)
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)

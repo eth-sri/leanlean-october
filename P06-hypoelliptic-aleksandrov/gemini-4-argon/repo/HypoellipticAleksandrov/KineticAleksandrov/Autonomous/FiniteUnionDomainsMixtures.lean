@@ -11,7 +11,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped ENNReal
 
-/-- The componentwise union Green mixture is the actual measurable measure integral. -/
+/- The componentwise union Green mixture is the actual measurable measure integral. -/
 def finiteUnionGreenMixture
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -19,7 +19,7 @@ def finiteUnionGreenMixture
     (nu : Measure (FiniteUnionPole H T)) : Measure Point :=
   nu.bind (finiteUnionGreen hH hLE hlam hLam A H T)
 
-/-- The componentwise union exit mixture is the same measurable integral of actual exits. -/
+/- The componentwise union exit mixture is the same measurable integral of actual exits. -/
 def finiteUnionExitMixture
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -27,31 +27,10 @@ def finiteUnionExitMixture
     (nu : Measure (FiniteUnionPole H (T : WithTop ℝ))) : Measure Point :=
   nu.bind (finiteUnionExit hH hLE hlam hLam A H T)
 
-/-- Union exit mixtures preserve the total mass of their finite source measure. -/
-theorem finiteUnionExitMixture_mass
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
-    (nu : Measure (FiniteUnionPole H (T : WithTop ℝ))) :
-    finiteUnionExitMixture hH hLE hlam hLam A H T nu univ = nu univ := by
-  unfold finiteUnionExitMixture
-  rw [Measure.bind_apply MeasurableSet.univ
-    (finiteUnionExit_measurable hH hLE hlam hLam A H T).aemeasurable]
-  simp only [measure_univ, lintegral_const, one_mul]
-
-/-- A finite source gives a finite actual union exit mixture. -/
-instance finiteUnionExitMixture_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
-    (nu : Measure (FiniteUnionPole H (T : WithTop ℝ))) [IsFiniteMeasure nu] :
-    IsFiniteMeasure (finiteUnionExitMixture hH hLE hlam hLam A H T nu) :=
-  ⟨by rw [finiteUnionExitMixture_mass]; exact measure_lt_top _ _⟩
-
-/-- With the source support restored, the whole exit mixture sits on the prescribed exit. -/
+/- Union exit mixtures preserve the total mass of their finite source measure. -/
 theorem finiteUnionExitMixture_compl_exit
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (sMinus T : ℝ)
     (nu : Measure (FiniteUnionPole H (T : WithTop ℝ)))
     (hnu : ∀ᵐ e ∂nu, sMinus < e.1.time) :

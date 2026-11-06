@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ConeSupport
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentationRegularity
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentationApproximationBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentationWeightedComparison
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentationApproximation
 
 /-! # Representation of the exact bounded classical solution class by the actual exit measure -/
 
@@ -20,7 +21,7 @@ variable (hH : HormanderHypoellipticityStatement)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
-/-- The actual exit measure represents bounded physical C112 homogeneous solutions. -/
+/- The actual exit measure represents bounded physical C112 homogeneous solutions. -/
 theorem ballExit_represents (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (u : KineticPoint d → ℝ)
     (hUc : ContinuousOn u (localClosedStrip P.1.time T.1 v₀ R))
@@ -33,10 +34,32 @@ theorem ballExit_represents (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.tim
   have hp : P.1 ∈ localClosedStrip P.1.time T.1 v₀ R :=
     ⟨le_rfl, T.2.le, subset_closure P.2⟩
   obtain ⟨M, hM⟩ := hUb
-  have hMn : 0 ≤ M := (abs_nonneg (u P.1)).trans (hM P.1 hp)
+  have hMn := (abs_nonneg (u P.1)).trans (hM P.1 hp)
   let ε (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
   let L (n : ℕ) : ℝ := (2 * M + 1) * ((n : ℝ) + 1) + 1 + (n : ℝ)
-  have hn (n : ℕ) := mass_aperture_size M hMn n
+  have hn (n : ℕ) :
+      let ε := 1 / ((n : ℝ) + 1)
+          let L := (2 * M + 1) * ((n : ℝ) + 1) + 1 + (n : ℝ)
+          0 < ε ∧ ε ≤ 1 ∧ 0 ≤ L ∧ (n : ℝ) ≤ L ∧ 2 * M + ε ≤ ε * L ^ 2 := by
+    dsimp only
+    have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+    have hp : 0 < (n : ℝ) + 1 := by positivity
+    have he : 0 < 1 / ((n : ℝ) + 1) := one_div_pos.mpr hp
+    have he1 : 1 / ((n : ℝ) + 1) ≤ 1 := (div_le_one hp).mpr (by linarith only [hn])
+    let L := (2 * M + 1) * ((n : ℝ) + 1) + 1 + (n : ℝ)
+    have hL : 1 ≤ L := by dsimp only [L]; nlinarith only [hn, hMn]
+    have hnL : (n : ℝ) ≤ L := by dsimp only [L]; nlinarith only [hn, hMn]
+    have hsz : (2 * M + 1) * ((n : ℝ) + 1) ≤ L := by
+      dsimp only [L]
+      linarith only [hn]
+    have hsq : L ≤ L ^ 2 := by nlinarith only [hL]
+    have hsz' : 2 * M + 1 ≤ (1 / ((n : ℝ) + 1)) * L := by
+      rw [one_div, ← div_eq_inv_mul]
+      exact (le_div_iff₀ hp).mpr hsz
+    refine ⟨he, he1, (by linarith only [hL]), hnL, ?_⟩
+    have hsmall : 2 * M + 1 / ((n : ℝ) + 1) ≤ 2 * M + 1 := by
+      linarith only [he1]
+    exact hsmall.trans (hsz'.trans (mul_le_mul_of_nonneg_left hsq he.le))
   choose F hFb hFc using fun n => exists_mass_trace_probe P.1.time T.1 v₀ hR u hUc
     M hMn hM (L n) (ε n) (hn n).1
   let φ (n : ℕ) := boundaryProbePhysical (F n)

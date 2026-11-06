@@ -63,28 +63,23 @@ theorem tendsto_parabolicMollifierScale_zero :
 
 /-- Each normalized native-norm mollifier is smooth. -/
 theorem contDiff_parabolicMollifier (d n : ℕ) :
-    ContDiff ℝ ∞ (parabolicMollifier d n) := by
-  exact (parabolicMollifierBump d n).contDiff_normed
+    ContDiff ℝ ∞ (parabolicMollifier d n) :=  (parabolicMollifierBump d n).contDiff_normed
 
 /-- Each normalized native-norm mollifier has compact topological support. -/
 theorem hasCompactSupport_parabolicMollifier (d n : ℕ) :
-    HasCompactSupport (parabolicMollifier d n) := by
-  exact (parabolicMollifierBump d n).hasCompactSupport_normed
+    HasCompactSupport (parabolicMollifier d n) :=  (parabolicMollifierBump d n).hasCompactSupport_normed
 
 /-- Normalized native-norm mollifiers are pointwise nonnegative. -/
 theorem parabolicMollifier_nonneg (d n : ℕ) (z : TimeVelocity d) :
-    0 ≤ parabolicMollifier d n z := by
-  exact (parabolicMollifierBump d n).nonneg_normed z
+    0 ≤ parabolicMollifier d n z :=  (parabolicMollifierBump d n).nonneg_normed z
 
 /-- Each normalized native-norm mollifier integrates to one against product volume. -/
 theorem integral_parabolicMollifier (d n : ℕ) :
-    (integral (volume : Measure (TimeVelocity d)) (parabolicMollifier d n)) = 1 := by
-  exact (parabolicMollifierBump d n).integral_normed
+    (integral (volume : Measure (TimeVelocity d)) (parabolicMollifier d n)) = 1 :=  (parabolicMollifierBump d n).integral_normed
 
 /-- The function support is exactly the open native-norm ball at its scale. -/
 theorem support_parabolicMollifier (d n : ℕ) :
     Function.support (parabolicMollifier d n) =
-      Metric.ball (0 : TimeVelocity d) (parabolicMollifierScale n) := by
-  exact (parabolicMollifierBump d n).support_normed_eq
+      Metric.ball (0 : TimeVelocity d) (parabolicMollifierScale n) :=  (parabolicMollifierBump d n).support_normed_eq
 
 end HypoellipticAleksandrov.Parabolic

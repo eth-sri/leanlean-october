@@ -20,7 +20,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Parabolic
 
 /-- Differentiating a negative exponential gives its native classical gradient. -/
-theorem classicalGradient_exp_neg {d : ℕ} {g : PDE.Vec d → ℝ} {W : PDE.Vec d}
+theorem classicalGradient_exp_neg {d g} {W : PDE.Vec d}
     (hg : DifferentiableAt ℝ g W) :
     PDE.classicalGradient (fun V => Real.exp (-g V)) W =
       (-Real.exp (-g W)) • PDE.classicalGradient g W := by

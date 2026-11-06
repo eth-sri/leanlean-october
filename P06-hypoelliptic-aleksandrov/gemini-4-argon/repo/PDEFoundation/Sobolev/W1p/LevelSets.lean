@@ -39,12 +39,12 @@ theorem grad_ae_zero_on_level_set
   let : Fact (1 ≤ p) := ⟨hp⟩
   let : IsFiniteMeasure (volumeOn U) :=
     hU.isSobolevRegularDomain.isFiniteMeasure_volumeOn
-  let v₁ : W1pFunction U p :=
+  let v₁ :=
     u.positivePartSubConst hU hp hpTop c
-  let v₂ : W1pFunction U p :=
+  let v₂ :=
     (-u).positivePartSubConst hU hp hpTop (-c)
-  let v : W1pFunction U p := v₁ - v₂
-  let w : W1pFunction U p := u.addConst (-c)
+  let v := v₁ - v₂
+  let w := u.addConst (-c)
   have htoFun_eq : v.toFun = w.toFun := by
     funext x
     have hneg : (-u).toFun x - -c = c - u.toFun x := by

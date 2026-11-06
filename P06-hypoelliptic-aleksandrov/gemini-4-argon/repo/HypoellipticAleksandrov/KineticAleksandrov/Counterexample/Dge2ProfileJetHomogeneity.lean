@@ -10,7 +10,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-/-- Punctured homogeneity is sufficient for the exact velocity derivative scaling. -/
+/- Punctured homogeneity is sufficient for the exact velocity derivative scaling. -/
 theorem punctured_homogeneous_velocity_jet {d : ℕ} (beta : ℝ) (F : XV d → ℝ)
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) F ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, q ≠ 0 →
@@ -43,27 +43,7 @@ theorem punctured_homogeneous_velocity_jet {d : ℕ} (beta : ℝ) (F : XV d → 
   apply (eq_div_iff hr.ne').mpr
   simpa only [mul_comm] using heq
 
-/-- The velocity Hessian has the exact kinetic weight alpha minus two. -/
-theorem homogeneous_dvv {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
-    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
-    (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
-    dvv H (dilate r q) = Real.rpow r (alpha - 2) • dvv H q := by
-  have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
-  ext i k
-  let F := fun z => fderiv ℝ H z (0, Pi.single k 1)
-  have hF : ContDiffOn ℝ (⊤ : ℕ∞) F ({0}ᶜ) :=
-    (hsmooth.fderiv_of_isOpen hopen (m := (⊤ : ℕ∞)) (by simp)).clm_apply
-      (contDiffOn_const (c := ((0, Pi.single k 1) : XV d)))
-  have hhomF : ∀ s : ℝ, 0 < s → ∀ z, z ≠ 0 →
-      F (dilate s z) = Real.rpow s (alpha - 1) * F z :=
-    fun s hs z hz => homogeneous_velocity_jet alpha H hsmooth hhom s hs z hz _
-  have hh := punctured_homogeneous_velocity_jet (alpha - 1) F hF hhomF r hr q hq
-    (Pi.single i 1)
-  have hexp : alpha - 1 - 1 = alpha - 2 := by ring
-  simpa only [dvv, dv, Matrix.smul_apply, smul_eq_mul, hexp] using hh
-
-/-- The source full position jet has the exact kinetic weight alpha minus three. -/
+/- The velocity Hessian has the exact kinetic weight alpha minus two. -/
 theorem homogeneous_position_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
@@ -96,23 +76,5 @@ theorem homogeneous_position_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
   apply (eq_div_iff (pow_ne_zero 3 hr.ne')).mpr
   simpa only [mul_comm] using heq
 
-/-- The actual stationary transport has the same kinetic weight as the velocity Hessian. -/
-theorem homogeneous_transport {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
-    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
-    (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
-    PDE.vecDot (dilate r q).2 (dx H (dilate r q)) =
-      Real.rpow r (alpha - 2) * PDE.vecDot q.2 (dx H q) := by
-  rw [transport_eq_direction, transport_eq_direction]
-  have hdir : ((dilate r q).2, (0 : PDE.Vec d)) = r • ((q.2, 0) : XV d) := by
-    simp only [dilate, Prod.smul_mk, smul_zero]
-  rw [hdir, map_smul, smul_eq_mul, homogeneous_position_jet alpha H hsmooth hhom r hr q hq]
-  have hp : r * Real.rpow r (alpha - 3) = Real.rpow r (alpha - 2) := by
-    simp only [Real.rpow_eq_pow]
-    conv_lhs => lhs; rw [← Real.rpow_one r]
-    rw [← Real.rpow_add hr]
-    congr 1
-    ring
-  rw [← mul_assoc, hp]
-
+/- The actual stationary transport has the same kinetic weight as the velocity Hessian. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

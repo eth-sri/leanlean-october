@@ -11,6 +11,12 @@ public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+import HypoellipticAleksandrov.Parabolic.LocalClassical
+import HypoellipticAleksandrov.Parabolic.MovingLensSign
+import HypoellipticAleksandrov.Parabolic.ForwardPropagationGeometry
+import HypoellipticAleksandrov.Parabolic.MovingLensComparison
+import HypoellipticAleksandrov.Parabolic.Scaling
+import Mathlib.Analysis.SpecificLimits.Basic
 
 /-!
 # Source-aware forward propagation
@@ -30,48 +36,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped ENNReal MatrixOrder Topology
 
-private theorem parabolicELpNormOn_movingLensClosed_le_rectangle
-    {d : Nat} {xi eps tLens tau : Real}
-    {y lower upper : PDE.Vec d} {F : TimeVelocity d -> Real}
-    (hLens :
-      movingLensClosed xi eps tLens y ⊆
-        parabolicClosedRectangle tau lower upper)
-    (hLensVel : ∀ z ∈ movingLensClosed xi eps tLens y,
-      z.2 ∈ velocityRectangle lower upper) :
-    parabolicELpNormOn d F (movingLensClosed xi eps tLens y) ≤
-      parabolicELpNormOn d F (parabolicRectangle tau lower upper) := by
-  let L := movingLensClosed xi eps tLens y
-  let V := velocityRectangle lower upper
-  let C : Set (TimeVelocity d) := Icc (0 : Real) tau ×ˢ V
-  let Q := parabolicRectangle tau lower upper
-  have hLC : L ⊆ C := by
-    intro z hz
-    rcases (mem_parabolicClosedRectangle_iff.mp (hLens hz)) with
-      ⟨hz0, hztau, _⟩
-    exact ⟨⟨hz0, hztau⟩, hLensVel z hz⟩
-  have hCQ : C =ᵐ[volume] Q := by
-    change (Icc (0 : Real) tau ×ˢ V : Set (TimeVelocity d)) =ᵐ[volume]
-      (Ioo 0 tau ×ˢ V : Set (TimeVelocity d))
-    rw [volume_timeVelocity_eq_prod]
-    exact Measure.set_prod_ae_eq Ioo_ae_eq_Icc.symm (EventuallyEq.rfl)
-  have hLQ : L =ᵐ[volume] Set.inter L Q := by
-    filter_upwards [hCQ] with z hzCQ
-    apply propext
-    constructor
-    · intro hzL
-      refine ⟨hzL, ?_⟩
-      change z ∈ Q
-      rw [← hzCQ]
-      exact hLC hzL
-    · rintro ⟨hzL, _⟩
-      exact hzL
-  have hrestrict : volume.restrict L = volume.restrict (Set.inter L Q) :=
-    Measure.restrict_congr_set hLQ
-  unfold parabolicELpNormOn
-  rw [hrestrict]
-  exact eLpNorm_mono_measure F
-    (Measure.restrict_mono_set volume Set.inter_subset_right)
-
 private theorem parabolicLpNormOn_movingLensClosed_le_rectangle
     {d : Nat} {xi eps tLens tau : Real}
     {y lower upper : PDE.Vec d}
@@ -88,10 +52,17 @@ private theorem parabolicLpNormOn_movingLensClosed_le_rectangle
   let K := parabolicClosedRectangle tau lower upper
   let Q := parabolicRectangle tau lower upper
   let L := movingLensClosed xi eps tLens y
-  have hFK : ContinuousOn F K := hF.mono hclosedU
-  have hKcompact : IsCompact K :=
-    isCompact_parabolicClosedRectangle tau lower upper
-  have hKmeas : MeasurableSet K := hKcompact.measurableSet
+  have hFK := hF.mono hclosedU
+  have _h_xinl_1 : IsCompact (velocityClosedRectangle lower upper) := by
+    rw [velocityClosedRectangle_eq_pi]
+    exact isCompact_univ_pi fun i => isCompact_Icc
+  have hKcompact : IsCompact (parabolicClosedRectangle tau lower upper) := by
+      exact (
+    isCompact_Icc.prod _h_xinl_1
+
+    /- A nonempty closed velocity rectangle is the closure of its open counterpart. -/
+    )
+  have hKmeas := hKcompact.measurableSet
   letI : IsFiniteMeasure (volume.restrict K) :=
     ⟨by
       rw [Measure.restrict_apply_univ]
@@ -105,16 +76,46 @@ private theorem parabolicLpNormOn_movingLensClosed_le_rectangle
     rintro ⟨t, v⟩ ⟨⟨ht0, httau⟩, hv⟩
     exact ⟨⟨ht0.le, httau.le⟩,
       fun i => ⟨(hv i).1.le, (hv i).2.le⟩⟩
-  have hQmem : MemLp F (parabolicExponent d) (volume.restrict Q) :=
+  have hQmem :=
     hKmem.mono_measure (Measure.restrict_mono_set volume hQK)
-  have hLmem : MemLp F (parabolicExponent d) (volume.restrict L) :=
+  have hLmem :=
     hKmem.mono_measure (Measure.restrict_mono_set volume hLens)
   have hQtop : parabolicELpNormOn d F Q ≠ ∞ := by
     simpa only [parabolicELpNormOn] using hQmem.eLpNorm_ne_top
   have hLtop : parabolicELpNormOn d F L ≠ ∞ := by
     simpa only [parabolicELpNormOn] using hLmem.eLpNorm_ne_top
-  have hENN : parabolicELpNormOn d F L ≤ parabolicELpNormOn d F Q :=
-    parabolicELpNormOn_movingLensClosed_le_rectangle hLens hLensVel
+  have hENN : parabolicELpNormOn d F L ≤ parabolicELpNormOn d F Q := by
+    let L := movingLensClosed xi eps tLens y
+    let V := velocityRectangle lower upper
+    let C := Icc (0 : Real) tau ×ˢ V
+    let Q := parabolicRectangle tau lower upper
+    have hLC : L ⊆ C := by
+      intro z hz
+      rcases (mem_parabolicClosedRectangle_iff.mp (hLens hz)) with
+        ⟨hz0, hztau, _⟩
+      exact ⟨⟨hz0, hztau⟩, hLensVel z hz⟩
+    have hCQ : C =ᵐ[volume] Q := by
+      change (Icc (0 : Real) tau ×ˢ V : Set (TimeVelocity d)) =ᵐ[volume]
+        (Ioo 0 tau ×ˢ V : Set (TimeVelocity d))
+      rw [volume_timeVelocity_eq_prod]
+      exact Measure.set_prod_ae_eq Ioo_ae_eq_Icc.symm (EventuallyEq.rfl)
+    have hLQ : L =ᵐ[volume] Set.inter L Q := by
+      filter_upwards [hCQ] with z hzCQ
+      apply propext
+      constructor
+      · intro hzL
+        refine ⟨hzL, ?_⟩
+        change z ∈ Q
+        rw [← hzCQ]
+        exact hLC hzL
+      · rintro ⟨hzL, _⟩
+        exact hzL
+    have hrestrict :=
+      Measure.restrict_congr_set hLQ
+    unfold parabolicELpNormOn
+    rw [hrestrict]
+    exact eLpNorm_mono_measure F
+      (Measure.restrict_mono_set volume Set.inter_subset_right)
   unfold parabolicLpNormOn
   exact (ENNReal.toReal_le_toReal hLtop hQtop).mpr hENN
 
@@ -122,7 +123,7 @@ private def sourceForwardInteriorTime (kappa tau : Real) (j : Nat) : Real :=
   tau - (tau - kappa) / (j + 1 : Real)
 
 private theorem kappa_lt_sourceForwardInteriorTime
-    {kappa tau : Real} (htau : kappa < tau) {j : Nat} (hj : 0 < j) :
+    {kappa tau : Real} (htau : kappa < tau) {j } (hj : 0 < j) :
     kappa < sourceForwardInteriorTime kappa tau j := by
   unfold sourceForwardInteriorTime
   have hjone : 1 < (j + 1 : Real) := by
@@ -139,32 +140,10 @@ private theorem sourceForwardInteriorTime_lt_tau
   rw [sub_lt_iff_lt_add]
   exact lt_add_of_pos_right _ (div_pos (sub_pos.mpr htau) (by positivity))
 
-private theorem tendsto_sourceForwardInteriorTime (kappa tau : Real) :
-    Tendsto (sourceForwardInteriorTime kappa tau) atTop (𝓝 tau) := by
-  unfold sourceForwardInteriorTime
-  have hdiv : Tendsto (fun j : Nat => (tau - kappa) / (j + 1 : Real)) atTop
-      (𝓝 0) := by
-    simpa only [div_eq_mul_inv, one_mul, mul_zero] using
-      (Tendsto.const_mul (tau - kappa)
-        (tendsto_one_div_add_atTop_nhds_zero_nat :
-          Tendsto (fun j : Nat => 1 / (j + 1 : Real)) atTop (𝓝 0)))
-  simpa using tendsto_const_nhds.sub hdiv
-
 private theorem small_source_seed_radius_lt_kappa {rho kappa : Real}
     (hrho : 0 < rho) (hkappa : 0 < kappa)
     (hsmall : 2 * rho ^ 2 < kappa ^ 2) : rho < kappa := by
   nlinarith [sq_nonneg (rho + kappa)]
-
-private theorem large_source_seed_radius_le {eps kappa : Real}
-    (heps : 0 < eps) (hkappa : 0 < kappa)
-    (hlarge : ¬ 2 * eps ^ 2 < kappa ^ 2) : kappa / 2 ≤ eps := by
-  have hsq : kappa ^ 2 ≤ 2 * eps ^ 2 := le_of_not_gt hlarge
-  have hhalfSq : (kappa / 2) ^ 2 ≤ eps ^ 2 := by nlinarith
-  exact (sq_le_sq₀ (by positivity) heps.le).1 hhalfSq
-
-private theorem source_half_kappa_small {kappa : Real} (hkappa : 0 < kappa) :
-    2 * (kappa / 2) ^ 2 < kappa ^ 2 := by
-  nlinarith [sq_pos_of_pos hkappa]
 
 private theorem source_seed_lower_bound_on_ball
     {d : Nat} {lower upper : PDE.Vec d} {kappa rho eps ell : Real}
@@ -244,8 +223,8 @@ private theorem source_forward_propagation_normalized_interior
     dsimp only [n]
     unfold movingLensSignExponent
     omega
-  have htStarPos : 0 < tStar := hkappa.trans htStarLower
-  have htauPos : 0 < tau := hkappa.trans htauLower
+  have htStarPos := hkappa.trans htStarLower
+  have htauPos := hkappa.trans htauLower
   have hfaces : ∀ i, lower i < upper i := by
     intro i
     nlinarith [(hwidth i).1]
@@ -256,10 +235,48 @@ private theorem source_forward_propagation_normalized_interior
   have hvStar : vStar ∈ velocityClosedRectangle lower upper := by
     intro i
     exact ⟨by nlinarith [(htarget i).1], by nlinarith [(htarget i).2]⟩
-  have hy : PDE.vecNormSq (tStar⁻¹ • vStar) <=
-      (d : Real) * kappa ^ (-4 : Int) :=
-    vecNormSq_inv_smul_le_of_mem_rectangle hkappa htStarLower.le
-      (fun i => (hwidth i).2) hzero hvStar
+  have hy : PDE.vecNormSq (tStar⁻¹ • vStar) ≤
+      (d : ℝ) * kappa ^ (-4 : ℤ) := by
+    have htStar := htStarLower.le
+    have hwidth := (fun i => (hwidth i).2)
+    have htStarPos := hkappa.trans_le htStar
+    have hinv :=
+      (inv_le_inv₀ htStarPos hkappa).2 htStar
+    have hkappaInv : 0 ≤ kappa⁻¹ := (inv_pos.mpr hkappa).le
+    rw [PDE.vecNormSq_eq_sum_sq]
+    calc
+      ∑ i, (tStar⁻¹ • vStar) i ^ 2 ≤
+          ∑ _i : Fin d, kappa ^ (-4 : ℤ) := by
+        apply Finset.sum_le_sum
+        intro i _
+        have hvLower := (hvStar i).1
+        have hvUpper := (hvStar i).2
+        have hzeroLower := (hzero i).1
+        have hzeroUpper := (hzero i).2
+        simp only [Pi.zero_apply] at hzeroLower hzeroUpper
+        have hvAbs : |vStar i| ≤ kappa⁻¹ := by
+          rw [abs_le]
+          constructor <;> nlinarith [hwidth i]
+        have hyAbs : |(tStar⁻¹ • vStar) i| ≤ kappa⁻¹ * kappa⁻¹ := by
+          simp only [Pi.smul_apply, smul_eq_mul, abs_mul,
+            abs_of_pos (inv_pos.mpr htStarPos)]
+          calc
+            tStar⁻¹ * |vStar i| ≤ kappa⁻¹ * |vStar i| :=
+              mul_le_mul_of_nonneg_right hinv (abs_nonneg _)
+            _ ≤ kappa⁻¹ * kappa⁻¹ :=
+              mul_le_mul_of_nonneg_left hvAbs hkappaInv
+        have hySq : |(tStar⁻¹ • vStar) i| ^ 2 ≤
+            (kappa⁻¹ * kappa⁻¹) ^ 2 :=
+          (sq_le_sq₀ (abs_nonneg _) (mul_nonneg hkappaInv hkappaInv)).2 hyAbs
+        calc
+          (tStar⁻¹ • vStar) i ^ 2 = |(tStar⁻¹ • vStar) i| ^ 2 := by
+            rw [sq_abs]
+          _ ≤ (kappa⁻¹ * kappa⁻¹) ^ 2 := hySq
+          _ = kappa ^ (-4 : ℤ) := by
+            rw [show (kappa⁻¹ * kappa⁻¹) ^ 2 = kappa⁻¹ ^ 4 by ring]
+            norm_num [zpow_neg, inv_pow]
+      _ = (d : ℝ) * kappa ^ (-4 : ℤ) := by
+        simp [nsmul_eq_mul]
   have hrectNonneg : IsNonnegativeOn u
       (parabolicClosedRectangle tau lower upper) := by
     apply IsNonnegativeOn.parabolicClosedRectangle htauPos hfaces
@@ -271,14 +288,12 @@ private theorem source_forward_propagation_normalized_interior
   by_cases hsmall : 2 * eps ^ 2 < kappa ^ 2
   · have hepsKappa : eps < kappa :=
       small_source_seed_radius_lt_kappa heps hkappa hsmall
-    have hclosedLens : movingLensClosed (movingLensSignXi kappa) eps tStar
-        (tStar⁻¹ • vStar) ⊆ parabolicClosedRectangle tau lower upper :=
+    have hclosedLens :=
       movingLensClosed_subset_parabolicClosedRectangle hkappa heps hsmall
         htStarPos htStarUpper.le htauUpper
         (fun i => ⟨(hbase i).1, (hbase i).2.le⟩)
         (fun i => ⟨(htarget i).1.le, (htarget i).2.le⟩)
-    have hactiveLens : movingLensActive (movingLensSignXi kappa) eps tStar
-        (tStar⁻¹ • vStar) ⊆ parabolicRectangle tau lower upper :=
+    have hactiveLens :=
       movingLensActive_subset_parabolicRectangle hkappa heps hsmall
         htStarPos htStarUpper htauUpper
         (fun i => ⟨(hbase i).1, (hbase i).2.le⟩)
@@ -323,30 +338,28 @@ private theorem source_forward_propagation_normalized_interior
           (movingLensClosed (movingLensSignXi kappa) eps tStar (tStar⁻¹ • vStar)) := by
       simpa only [smul_smul, mul_inv_cancel₀ htStarPos.ne', one_smul] using
         hsourceBound
-    have hnorm' : C * parabolicLpNormOn d F
-        (movingLensClosed (movingLensSignXi kappa) eps tStar (tStar⁻¹ • vStar)) <=
-        C * parabolicLpNormOn d F (parabolicRectangle tau lower upper) :=
+    have hnorm' :=
       mul_le_mul_of_nonneg_left hnorm hC.le
     simpa only [n, mul_assoc, mul_left_comm, mul_comm] using
       hmain.trans (hcompare.trans_le (add_le_add_right hnorm' _))
   · let rho : Real := kappa / 2
     have hrho : 0 < rho := by dsimp only [rho]; positivity
-    have hrhoEps : rho <= eps :=
-      large_source_seed_radius_le heps hkappa hsmall
+    have hrhoEps : kappa / 2 ≤ eps := by
+      have hsq := le_of_not_gt hsmall
+      have hhalfSq : (kappa / 2) ^ 2 ≤ eps ^ 2 := by nlinarith
+      exact (sq_le_sq₀ (by positivity) heps.le).1 hhalfSq
     have hrhoSmall : 2 * rho ^ 2 < kappa ^ 2 := by
       dsimp only [rho]
-      exact source_half_kappa_small hkappa
+      nlinarith [sq_pos_of_pos hkappa]
     have hrhoKappa : rho < kappa := by
       dsimp only [rho]
       linarith
-    have hclosedLens : movingLensClosed (movingLensSignXi kappa) rho tStar
-        (tStar⁻¹ • vStar) ⊆ parabolicClosedRectangle tau lower upper :=
+    have hclosedLens :=
       movingLensClosed_subset_parabolicClosedRectangle hkappa hrho hrhoSmall
         htStarPos htStarUpper.le htauUpper
         (fun i => ⟨(hbase i).1, (hbase i).2.le⟩)
         (fun i => ⟨(htarget i).1.le, (htarget i).2.le⟩)
-    have hactiveLens : movingLensActive (movingLensSignXi kappa) rho tStar
-        (tStar⁻¹ • vStar) ⊆ parabolicRectangle tau lower upper :=
+    have hactiveLens :=
       movingLensActive_subset_parabolicRectangle hkappa hrho hrhoSmall
         htStarPos htStarUpper htauUpper
         (fun i => ⟨(hbase i).1, (hbase i).2.le⟩)
@@ -388,116 +401,13 @@ private theorem source_forward_propagation_normalized_interior
           (movingLensClosed (movingLensSignXi kappa) rho tStar (tStar⁻¹ • vStar)) := by
       simpa only [smul_smul, mul_inv_cancel₀ htStarPos.ne', one_smul] using
         hsourceBound
-    have hnorm' : C * parabolicLpNormOn d F
-        (movingLensClosed (movingLensSignXi kappa) rho tStar (tStar⁻¹ • vStar)) <=
-        C * parabolicLpNormOn d F (parabolicRectangle tau lower upper) :=
+    have hnorm' :=
       mul_le_mul_of_nonneg_left hnorm hC.le
     simpa only [n, mul_assoc, mul_left_comm, mul_comm] using
       hlargeBound.trans_lt (hcompare.trans_le (add_le_add_right hnorm' _))
 
-/-- Uniform normalized forward-propagation constants with a nonnegative
+/- Uniform normalized forward-propagation constants with a nonnegative
 supplied source on the open physical rectangle. -/
-theorem exists_forward_propagation_source_constants_normalized
-    (d : Nat) (hd : 0 < d) (lam Lam kappa : Real)
-    (hlam : 0 < lam) (hlamLam : lam <= Lam)
-    (hkappa : 0 < kappa) (hkappa_one : kappa <= 1) :
-    ∃ delta : Real, 0 < delta ∧ ∃ m : Nat, 0 < m ∧ ∃ C : Real, 0 < C ∧
-      ∀ (A : CoefficientField d) (lower upper : PDE.Vec d) (tau : Real)
-        (U : Set (TimeVelocity d)) (F u : TimeVelocity d -> Real)
-        (eps ell tStar : Real) (vStar : PDE.Vec d),
-        kappa < tau -> tau <= kappa⁻¹ ->
-        (∀ i, 2 * kappa < upper i - lower i ∧
-          upper i - lower i <= kappa⁻¹) ->
-        (∀ i, lower i + kappa <= 0 ∧ 0 < upper i - kappa) ->
-        IsOpen U -> parabolicClosedRectangle tau lower upper ⊆ U ->
-        IsContinuousCoefficientOn A U ->
-        ContDiffOn Real 2 u U -> ContinuousOn F U ->
-        IsNonnegativeOn u (parabolicRectangle tau lower upper) ->
-        HasLowerEllipticityOn lam A (parabolicRectangle tau lower upper) ->
-        HasUpperEllipticityOn Lam A (parabolicRectangle tau lower upper) ->
-        IsNonnegativeOn F (parabolicRectangle tau lower upper) ->
-        IsParabolicSupersolutionOn A (fun z => -F z) u
-          (parabolicRectangle tau lower upper) ->
-        0 < eps -> eps <= 1 -> 0 < ell ->
-        (∀ v ∈ velocityClosedRectangle lower upper,
-          v ∈ velocityCube (0 : PDE.Vec d) eps -> ell <= u (0, v)) ->
-        kappa < tStar -> tStar <= tau ->
-        (∀ i, lower i + kappa < vStar i ∧
-          vStar i < upper i - kappa) ->
-        delta * eps ^ m * ell < u (tStar, vStar) +
-          C * parabolicLpNormOn d F (parabolicRectangle tau lower upper) := by
-  obtain ⟨C, hC, hsource⟩ :=
-    exists_movingLens_source_terminal_lower_bound d hd lam Lam kappa
-      hlam hlamLam hkappa hkappa_one
-  refine ⟨forwardPropagationDelta d lam Lam kappa,
-    forwardPropagationDelta_pos d lam Lam kappa,
-    forwardPropagationExponent d lam Lam kappa,
-    forwardPropagationExponent_pos d lam Lam kappa, C, hC, ?_⟩
-  intro A lower upper tau U F u eps ell tStar vStar
-    htauLower htauUpper hwidth hbase hU hclosedU hA hu hF hnonneg hlower
-    hupper hFnonneg hsuper heps hepsOne hell hseed htStarLower htStarUpper
-    htarget
-  rcases htStarUpper.lt_or_eq with hinterior | rfl
-  · have hsharp := source_forward_propagation_normalized_interior d lam Lam
-      kappa hkappa hkappa_one C hC hsource A lower upper tau U F u
-      eps ell tStar vStar htauLower htauUpper hwidth hbase hU hclosedU hA hu hF
-      hnonneg hlower hupper hFnonneg hsuper heps hepsOne hell hseed htStarLower
-      hinterior htarget
-    unfold forwardPropagationDelta forwardPropagationExponent
-    have hhalf : (1 / 2 : Real) * ((1 / 4 : Real) ^
-        movingLensSignExponent d lam Lam kappa * eps ^
-          (2 * movingLensSignExponent d lam Lam kappa) * ell) <
-        (1 / 4 : Real) ^ movingLensSignExponent d lam Lam kappa * eps ^
-          (2 * movingLensSignExponent d lam Lam kappa) * ell := by
-      have hq : 0 < (1 / 4 : Real) ^ movingLensSignExponent d lam Lam kappa *
-          eps ^ (2 * movingLensSignExponent d lam Lam kappa) * ell := by
-        positivity
-      nlinarith
-    simpa only [mul_assoc] using hhalf.trans hsharp
-  ·
-    let q : Real := (1 / 4 : Real) ^ movingLensSignExponent d lam Lam kappa *
-      eps ^ forwardPropagationExponent d lam Lam kappa * ell
-    let N : Real := C * parabolicLpNormOn d F
-      (parabolicRectangle tStar lower upper)
-    have hq : 0 < q := by
-      dsimp only [q]
-      positivity
-    have htopClosed : (tStar, vStar) ∈
-        parabolicClosedRectangle tStar lower upper := by
-      rw [mem_parabolicClosedRectangle_iff]
-      exact ⟨(hkappa.trans htauLower).le, le_rfl,
-        fun i => ⟨by nlinarith [(htarget i).1],
-          by nlinarith [(htarget i).2]⟩⟩
-    have htopMem : (tStar, vStar) ∈ U := hclosedU htopClosed
-    have htopDiff : ContDiffAt Real 2 u (tStar, vStar) :=
-      contDiffAt_of_contDiffOn_of_isOpen hU hu htopMem
-    have hzu : Tendsto (fun j : Nat =>
-        u (sourceForwardInteriorTime kappa tStar j, vStar) + N) atTop
-        (𝓝 (u (tStar, vStar) + N)) :=
-      htopDiff.continuousAt.tendsto.comp
-        ((tendsto_sourceForwardInteriorTime kappa tStar).prodMk_nhds
-          tendsto_const_nhds) |>.add tendsto_const_nhds
-    have hinterior : ∀ j : Nat, 0 < j -> q <
-        u (sourceForwardInteriorTime kappa tStar j, vStar) + N := by
-      intro j hj
-      have hjprop := source_forward_propagation_normalized_interior d lam Lam
-        kappa hkappa hkappa_one C hC hsource A lower upper tStar U F u
-        eps ell (sourceForwardInteriorTime kappa tStar j) vStar
-        htauLower htauUpper hwidth hbase hU hclosedU hA hu hF hnonneg hlower hupper
-        hFnonneg hsuper heps hepsOne hell hseed
-        (kappa_lt_sourceForwardInteriorTime htauLower hj)
-        (sourceForwardInteriorTime_lt_tau htauLower j) htarget
-      simpa only [q, N] using hjprop
-    have hsharpTop : q <= u (tStar, vStar) + N :=
-      le_of_tendsto_of_tendsto tendsto_const_nhds hzu (by
-        filter_upwards [eventually_gt_atTop (0 : Nat)] with j hj
-        exact (hinterior j hj).le)
-    unfold forwardPropagationDelta
-    have hhalf : (1 / 2 : Real) * q < q := by nlinarith
-    simpa only [q, N, mul_assoc] using hhalf.trans_le hsharpTop
-
-/-- Uniform positive-scale forward propagation with the exact scaled source
-norm factor. -/
 theorem exists_forward_propagation_source_constants
     (d : Nat) (hd : 0 < d) (lam Lam kappa : Real)
     (hlam : 0 < lam) (hlamLam : lam <= Lam)
@@ -531,24 +441,133 @@ theorem exists_forward_propagation_source_constants
         delta * eps ^ m * ell < u (tStar, vStar) +
           C * R ^ ((d : Real) / ((d : Real) + 1)) *
             parabolicLpNormOn d F (parabolicRectangle tau lower upper) := by
-  obtain ⟨delta, hdelta, m, hm, C, hC, hnorm⟩ :=
-    exists_forward_propagation_source_constants_normalized d hd lam Lam kappa
-      hlam hlamLam hkappa hkappa_one
+  obtain ⟨delta, hdelta, m, hm, C, hC, hnorm⟩ : ∃ delta : Real, 0 < delta ∧ ∃ m : Nat, 0 < m ∧ ∃ C : Real, 0 < C ∧
+      ∀ (A : CoefficientField d) (lower upper : PDE.Vec d) (tau : Real)
+        (U : Set (TimeVelocity d)) (F u : TimeVelocity d -> Real)
+        (eps ell tStar : Real) (vStar : PDE.Vec d),
+        kappa < tau -> tau <= kappa⁻¹ ->
+        (∀ i, 2 * kappa < upper i - lower i ∧
+          upper i - lower i <= kappa⁻¹) ->
+        (∀ i, lower i + kappa <= 0 ∧ 0 < upper i - kappa) ->
+        IsOpen U -> parabolicClosedRectangle tau lower upper ⊆ U ->
+        IsContinuousCoefficientOn A U ->
+        ContDiffOn Real 2 u U -> ContinuousOn F U ->
+        IsNonnegativeOn u (parabolicRectangle tau lower upper) ->
+        HasLowerEllipticityOn lam A (parabolicRectangle tau lower upper) ->
+        HasUpperEllipticityOn Lam A (parabolicRectangle tau lower upper) ->
+        IsNonnegativeOn F (parabolicRectangle tau lower upper) ->
+        IsParabolicSupersolutionOn A (fun z => -F z) u
+          (parabolicRectangle tau lower upper) ->
+        0 < eps -> eps <= 1 -> 0 < ell ->
+        (∀ v ∈ velocityClosedRectangle lower upper,
+          v ∈ velocityCube (0 : PDE.Vec d) eps -> ell <= u (0, v)) ->
+        kappa < tStar -> tStar <= tau ->
+        (∀ i, lower i + kappa < vStar i ∧
+          vStar i < upper i - kappa) ->
+        delta * eps ^ m * ell < u (tStar, vStar) +
+          C * parabolicLpNormOn d F (parabolicRectangle tau lower upper) := by
+      obtain ⟨C, hC, hsource⟩ :=
+        exists_movingLens_source_terminal_lower_bound d hd lam Lam kappa
+          hlam hlamLam hkappa hkappa_one
+      have _h_xinl_0 : 0 < forwardPropagationExponent d lam Lam kappa := by
+        unfold forwardPropagationExponent
+        have hn : 0 < movingLensSignExponent d lam Lam kappa := by
+          unfold movingLensSignExponent
+          omega
+        omega
+      refine ⟨forwardPropagationDelta d lam Lam kappa,
+        forwardPropagationDelta_pos d lam Lam kappa,
+        forwardPropagationExponent d lam Lam kappa,
+        _h_xinl_0, C, hC, ?_⟩
+      intro A lower upper tau U F u eps ell tStar vStar
+        htauLower htauUpper hwidth hbase hU hclosedU hA hu hF hnonneg hlower
+        hupper hFnonneg hsuper heps hepsOne hell hseed htStarLower htStarUpper
+        htarget
+      rcases htStarUpper.lt_or_eq with hinterior | rfl
+      · have hsharp := source_forward_propagation_normalized_interior d lam Lam
+          kappa hkappa hkappa_one C hC hsource A lower upper tau U F u
+          eps ell tStar vStar htauLower htauUpper hwidth hbase hU hclosedU hA hu hF
+          hnonneg hlower hupper hFnonneg hsuper heps hepsOne hell hseed htStarLower
+          hinterior htarget
+        unfold forwardPropagationDelta forwardPropagationExponent
+        have hhalf : (1 / 2 : Real) * ((1 / 4 : Real) ^
+            movingLensSignExponent d lam Lam kappa * eps ^
+              (2 * movingLensSignExponent d lam Lam kappa) * ell) <
+            (1 / 4 : Real) ^ movingLensSignExponent d lam Lam kappa * eps ^
+              (2 * movingLensSignExponent d lam Lam kappa) * ell := by
+          have hq : 0 < (1 / 4 : Real) ^ movingLensSignExponent d lam Lam kappa *
+              eps ^ (2 * movingLensSignExponent d lam Lam kappa) * ell := by
+            positivity
+          nlinarith
+        simpa only [mul_assoc] using hhalf.trans hsharp
+      ·
+        let q : Real := (1 / 4 : Real) ^ movingLensSignExponent d lam Lam kappa *
+          eps ^ forwardPropagationExponent d lam Lam kappa * ell
+        let N : Real := C * parabolicLpNormOn d F
+          (parabolicRectangle tStar lower upper)
+        have hq : 0 < q := by
+          dsimp only [q]
+          positivity
+        have htopClosed : (tStar, vStar) ∈
+            parabolicClosedRectangle tStar lower upper := by
+          rw [mem_parabolicClosedRectangle_iff]
+          exact ⟨(hkappa.trans htauLower).le, le_rfl,
+            fun i => ⟨by nlinarith [(htarget i).1],
+              by nlinarith [(htarget i).2]⟩⟩
+        have htopMem := hclosedU htopClosed
+        have htopDiff :=
+          contDiffAt_of_contDiffOn_of_isOpen hU hu htopMem
+        have _h_inl_27 : Tendsto (sourceForwardInteriorTime kappa tStar) atTop (𝓝 tStar) := by
+          unfold sourceForwardInteriorTime
+          have hdiv : Tendsto (fun j : Nat => (tStar - kappa) / (j + 1 : Real)) atTop
+              (𝓝 0) := by
+            simpa only [div_eq_mul_inv, one_mul, mul_zero] using
+              (Tendsto.const_mul (tStar - kappa)
+                (tendsto_one_div_add_atTop_nhds_zero_nat :
+                  Tendsto (fun j : Nat => 1 / (j + 1 : Real)) atTop (𝓝 0)))
+          simpa using tendsto_const_nhds.sub hdiv
+        have hzu : Tendsto (fun j : Nat =>
+            u (sourceForwardInteriorTime kappa tStar j, vStar) + N) atTop
+            (𝓝 (u (tStar, vStar) + N)) :=
+          htopDiff.continuousAt.tendsto.comp
+            (_h_inl_27.prodMk_nhds
+              tendsto_const_nhds) |>.add tendsto_const_nhds
+        have hinterior : ∀ j : Nat, 0 < j -> q <
+            u (sourceForwardInteriorTime kappa tStar j, vStar) + N := by
+          intro j hj
+          have hjprop := source_forward_propagation_normalized_interior d lam Lam
+            kappa hkappa hkappa_one C hC hsource A lower upper tStar U F u
+            eps ell (sourceForwardInteriorTime kappa tStar j) vStar
+            htauLower htauUpper hwidth hbase hU hclosedU hA hu hF hnonneg hlower hupper
+            hFnonneg hsuper heps hepsOne hell hseed
+            (kappa_lt_sourceForwardInteriorTime htauLower hj)
+            (sourceForwardInteriorTime_lt_tau htauLower j) htarget
+          simpa only [q, N] using hjprop
+        have hsharpTop :=
+          le_of_tendsto_of_tendsto tendsto_const_nhds hzu (by
+            filter_upwards [eventually_gt_atTop (0 : Nat)] with j hj
+            exact (hinterior j hj).le)
+        unfold forwardPropagationDelta
+        have hhalf : (1 / 2 : Real) * q < q := by nlinarith
+        simpa only [q, N, mul_assoc] using hhalf.trans_le hsharpTop
+
+    /- Uniform positive-scale forward propagation with the exact scaled source
+    norm factor. -/
   refine ⟨delta, hdelta, m, hm, C, hC, ?_⟩
   intro R A v0 lower upper tau U F u eps ell tStar vStar
     hR _hRtwo htauLower htauUpper hwidth hbase hU hclosedU hA hu hF hnonneg
     hlower hupper hFnonneg hsuper heps hepsOne hell hseed htStarLower
     htStarUpper htarget
-  let tauHat : Real := tau / R ^ 2
-  let tStarHat : Real := tStar / R ^ 2
+  let tauHat := tau / R ^ 2
+  let tStarHat := tStar / R ^ 2
   let lowerHat : PDE.Vec d := pullbackRectangleLower v0 lower R
   let upperHat : PDE.Vec d := pullbackRectangleUpper v0 upper R
-  let vStarHat : PDE.Vec d := R⁻¹ • (vStar - v0)
+  let vStarHat := R⁻¹ • (vStar - v0)
   let UHat : Set (TimeVelocity d) := parabolicAffine 0 v0 R ⁻¹' U
-  let AHat : CoefficientField d := pullbackCoefficient A 0 v0 R
+  let AHat := pullbackCoefficient A 0 v0 R
   let uHat : TimeVelocity d -> Real := pullbackScalar u 0 v0 R
-  let FHat : TimeVelocity d -> Real := fun z => R ^ 2 * F (parabolicAffine 0 v0 R z)
-  have hRsq : 0 < R ^ 2 := sq_pos_of_pos hR
+  let FHat := fun z => R ^ 2 * F (parabolicAffine 0 v0 R z)
+  have hRsq := sq_pos_of_pos hR
   have htauLowerHat : kappa < tauHat := by
     dsimp only [tauHat]
     exact (lt_div_iff₀ hRsq).2 htauLower
@@ -665,10 +684,24 @@ theorem exists_forward_propagation_source_constants
   have hsuperHat : IsParabolicSupersolutionOn AHat (fun z => -FHat z) uHat
       (parabolicRectangle tauHat lowerHat upperHat) := by
     dsimp only [AHat, uHat, FHat]
+    have _h_xinl_0 : IsOpen (velocityRectangle lower upper) := by
+      rw [velocityRectangle_eq_pi]
+      have hpi : Set.univ.pi (fun i : Fin d => Ioo (lower i) (upper i)) =
+          ⋂ i ∈ (Finset.univ : Finset (Fin d)),
+            (fun v : PDE.Vec d => v i) ⁻¹' Ioo (lower i) (upper i) := by
+        ext v
+        simp
+      rw [hpi]
+      exact isOpen_biInter_finset fun i _ =>
+        isOpen_Ioo.preimage (continuous_apply i)
+    have _h_xinl_0 : IsOpen (parabolicRectangle tau lower upper) := by
+        exact (
+      isOpen_Ioo.prod _h_xinl_0
+      )
     simpa only [mul_neg] using IsParabolicSupersolutionOn.pullback
       (U := parabolicRectangle tau lower upper)
       (V := parabolicRectangle tauHat lowerHat upperHat)
-      (isOpen_parabolicRectangle tau lower upper) (hu.mono hQsubU) hsuper hmapQ
+      _h_xinl_0 (hu.mono hQsubU) hsuper hmapQ
   have hseedHat : ∀ v ∈ velocityClosedRectangle lowerHat upperHat,
       v ∈ velocityCube (0 : PDE.Vec d) eps -> ell <= uHat (0, v) := by
     intro v hvRect hvCube
@@ -698,7 +731,38 @@ theorem exists_forward_propagation_source_constants
         parabolicLpNormOn d F (parabolicRectangle tau lower upper) := by
     dsimp only [FHat]
     rw [parabolicLpNormOn_pullback 0 v0 hR F]
-    rw [parabolicAffine_image_parabolicRectangle hR]
+    have _h_xinl_10 : parabolicAffine 0 v0 R ''
+        parabolicRectangle (tau / R ^ 2)
+          (pullbackRectangleLower v0 lower R)
+          (pullbackRectangleUpper v0 upper R) =
+      parabolicRectangle tau lower upper := by
+        have _h_inl_34 : parabolicAffine 0 v0 R ⁻¹' parabolicRectangle tau lower upper =
+            parabolicRectangle (tau / R ^ 2)
+              (pullbackRectangleLower v0 lower R)
+              (pullbackRectangleUpper v0 upper R) := by
+            ext z
+            exact mem_parabolicAffine_preimage_parabolicRectangle_iff hR
+
+          /- Positive parabolic scaling maps the normalized open rectangle into its
+          physical counterpart. -/
+        rw [← _h_inl_34]
+        have _h_inl_37 : Function.Surjective (parabolicAffine 0 v0 R) := by
+            intro z
+            refine ⟨(z.1 / R ^ 2, R⁻¹ • (z.2 - v0)), ?_⟩
+            ext
+            · dsimp [parabolicAffine]
+              field_simp [hR.ne']
+              ring
+            · dsimp [parabolicAffine]
+              rw [← mul_assoc, mul_inv_cancel₀ hR.ne', one_mul]
+              ring
+
+          /- The exact positive-scale affine image of an open parabolic rectangle. -/
+        exact Set.image_preimage_eq _ _h_inl_37
+
+      /- Positive affine velocity scaling pulls a translated coordinate cube back
+      to its normalized coordinate cube. -/
+    rw [_h_xinl_10]
   rw [hscale] at hHat
   simpa only [uHat, pullbackScalar_apply, heval, mul_assoc] using hHat
 

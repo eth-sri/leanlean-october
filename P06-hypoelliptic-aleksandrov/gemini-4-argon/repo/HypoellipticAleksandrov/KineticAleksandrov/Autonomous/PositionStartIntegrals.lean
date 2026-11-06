@@ -10,7 +10,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
-/-- Closed active support bounds the localized test by the exact quadratic maximum. -/
+/- Closed active support bounds the localized test by the exact quadratic maximum. -/
 theorem positionStartQuadratic_integrable (c : Clock) (Y : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu]
     (hmu : ∀ᵐ p ∂mu, p.velocity 0 ∈ closure c.active) :
@@ -33,23 +33,7 @@ theorem positionStartQuadratic_integrable (c : Clock) (Y : ℝ)
     (visitQuadratic_nonneg c hp)).trans (by
       simpa only [one_mul] using visitQuadratic_le c (p.velocity 0))
 
-/-- The exact spatially localized operator is continuous. -/
-theorem positionStartQuadratic_operator_continuous {lam Lam : ℝ}
-    (A : SmoothAutonomous lam Lam) (c : Clock) (Y : ℝ) :
-    Continuous (fun p : Point => forwardScalarOperator A.a
-      (fun q => positionStartCutoff Y c.r c.positive (q.position 0) *
-        visitQuadratic c (q.velocity 0)) p) := by
-  let eta := positionStartCutoff Y c.r c.positive
-  have he := (positionStartCutoff_properties Y c.r c.positive).1
-  have hx := (continuous_apply (0 : Fin 1)).comp continuous_position
-  have hv := (continuous_apply (0 : Fin 1)).comp continuous_velocity
-  have hh := funext (positionStartQuadratic_operator c eta he A.a)
-  rw [hh]
-  exact ((hv.mul ((he.continuous_deriv (by norm_num)).comp hx)).mul
-    ((visitQuadratic_smooth c).continuous.comp hv)).sub
-      ((continuous_const.mul (visitCoefficient_continuous A)).mul (he.continuous.comp hx))
-
-/-- Finite active occupation makes the exact position-localized operator integrable. -/
+/- The exact spatially localized operator is continuous. -/
 theorem positionStartQuadratic_operator_integrable {lam Lam : ℝ}
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (c : Clock) (Y : ℝ) (hc : |c.vbar| = 2 * c.r)
@@ -59,8 +43,17 @@ theorem positionStartQuadratic_operator_integrable {lam Lam : ℝ}
       (fun q => positionStartCutoff Y c.r c.positive (q.position 0) *
         visitQuadratic c (q.velocity 0)) p) mu := by
   obtain ⟨C, hC, hb⟩ := positionStartQuadratic_operator_bound hlam hLam
+  have _h_inl_8 : Continuous (fun p : Point => forwardScalarOperator A.a (fun q => positionStartCutoff Y c.r c.positive (q.position 0) * visitQuadratic c (q.velocity 0)) p) := by
+    let eta := positionStartCutoff Y c.r c.positive
+    have he := (positionStartCutoff_properties Y c.r c.positive).1
+    have hx := (continuous_apply (0 : Fin 1)).comp continuous_position
+    have hv := (continuous_apply (0 : Fin 1)).comp continuous_velocity
+    rw [(funext (positionStartQuadratic_operator c eta he A.a))]
+    exact ((hv.mul ((he.continuous_deriv (by norm_num)).comp hx)).mul
+      ((visitQuadratic_smooth c).continuous.comp hv)).sub
+        ((continuous_const.mul (visitCoefficient_continuous A)).mul (he.continuous.comp hx))
   apply Integrable.mono' (integrable_const C)
-    (positionStartQuadratic_operator_continuous A c Y).measurable.aestronglyMeasurable
+    _h_inl_8.measurable.aestronglyMeasurable
   filter_upwards [hmu] with p hp
   rw [Real.norm_eq_abs]
   apply (hb A c Y p hc hp).trans

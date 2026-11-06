@@ -38,25 +38,8 @@ section Outside
 
 variable {n : ℕ}
 
-/-- Clause 6 of the antecedent identifies the integral of a terminal datum against the master
+/- Clause 6 of the antecedent identifies the integral of a terminal datum against the master
 measure of a query with the `P'` value of the restricted datum. -/
-theorem integral_master_eq_operator {Ω' : Set (PDE.Vec n)} {γ' : ℝ → PDE.Vec n}
-    (hΩ' : IsAdmissibleEvolutionDomain Ω') (K' : MovingFiberKernel Ω' γ')
-    (P' : TerminalOperatorFamily Ω' γ') {τ : ℝ}
-    (h6 : ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω' γ' σ)
-      (f : BoundedBorel (EvolutionState Ω' γ' τ)),
-        P' σ τ hστ f p = ∫ q, f q ∂(K'.fiberKernel
-          (measurableSet_of_isAdmissibleEvolutionDomain hΩ') σ τ hστ p))
-    (σ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω' γ' σ)
-    (F : BoundedBorel (EvolutionAmbientState n)) :
-    P' σ τ hστ (terminalStateDatum F) p =
-      ∫ x, F x ∂(K'.master (evolutionQueryOfState Ω' γ' σ τ hστ p)) := by
-  rw [h6 σ τ hστ p (terminalStateDatum F),
-    ← MovingFiberKernel.map_fiberKernel_eq_master K'
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩ') σ τ hστ p,
-    integral_map measurable_subtype_coe.aemeasurable F.measurable.aestronglyMeasurable]
-  rfl
-
 end Outside
 
 section EvolutionData
@@ -83,7 +66,7 @@ local notation "S" => terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω �
 local notation "μ" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
-/-- Domain domination at the level of master measures, from clauses 1 and 6 of the antecedent only:
+/- Domain domination at the level of master measures, from clauses 1 and 6 of the antecedent only:
 the master measure of ANY small kernel `K'` with the clause-1 solution representation and the
 clause-6 operator integral is dominated by the terminal measure of the corresponding large query. -/
 theorem terminalMeasure_domination
@@ -130,18 +113,19 @@ theorem terminalMeasure_domination
   obtain ⟨u, hu, -, -⟩ := hEx τ F hF
   have hcmp := classical_le_of_subdomain hΩo hΩo' hγ.1 hγ'.1 hsub hlam hB_ell hb_lipschitz
     hu hu' hfnn ⟨σ, w.1, w.2⟩ ⟨hστ, subset_closure hw.1⟩
-  have hA := integral_master_eq_operator hΩ' K' P' h6 σ hστ ⟨w, hw⟩ F
+  have hA : P' σ τ hστ (terminalStateDatum F) ⟨w, hw⟩ = ∫ x, F x ∂(K'.master (evolutionQueryOfState Ω' γ' σ τ hστ ⟨w, hw⟩)) := by
+    let p : EvolutionState Ω' γ' σ := ⟨w, hw⟩
+    rw [h6 σ τ hστ p (terminalStateDatum F),
+      ← MovingFiberKernel.map_fiberKernel_eq_master K'
+        (measurableSet_of_isAdmissibleEvolutionDomain hΩ') σ τ hστ p,
+      integral_map measurable_subtype_coe.aemeasurable F.measurable.aestronglyMeasurable]
+    rfl
   have hlhs : ∫ x, f x ∂(K'.master ⟨(σ, τ, w), hστ, hw⟩) = u' ⟨σ, w.1, w.2⟩ :=
     ((hrep σ hστ ⟨w, hw⟩).trans hA).symm
-  have hS := terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ
-    ⟨w, ⟨hsub σ hw.1, hw.2⟩⟩ F hF u hu
-  have hrhs : ∫ x, f x ∂(μ (largeQueryOfSmall hsub ⟨(σ, τ, w), hστ, hw⟩)) =
-      u ⟨σ, w.1, w.2⟩ := (hspec.2.2 F hF).trans hS
-  rw [hlhs, hrhs]
+  rw [hlhs, ((hspec.2.2 F hF).trans (terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ ⟨w, ⟨hsub σ hw.1, hw.2⟩⟩ F hF u hu))]
   exact hcmp
 
-/-- Domain domination for every moving fiber kernel `K` whose master measures are the
+/- Domain domination for every moving fiber kernel `K` whose master measures are the
 terminal measures `μ q` (the master kernel `K₀` is such a kernel by definition): ANY
 smaller admissible problem `(Ω', γ', P', K')` satisfying the complete eight-clause antecedent of
 the fourteenth conjunct is zero-extension dominated by `K`. -/

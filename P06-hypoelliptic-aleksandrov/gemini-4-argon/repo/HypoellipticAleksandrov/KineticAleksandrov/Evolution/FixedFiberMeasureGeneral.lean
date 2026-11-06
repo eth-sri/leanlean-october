@@ -57,7 +57,7 @@ variable {α : Type*} [MeasurableSpace α]
 theorem measurable_integral_of_continuous_bounded (ν : α → Measure X)
     [∀ a, IsFiniteMeasure (ν a)]
     (H : ∀ f : C_c(X, ℝ), Measurable fun a => ∫ x, f x ∂ν a)
-    (h : X → ℝ) (hc : Continuous h) (M : ℝ) (hM : ∀ x, |h x| ≤ M) :
+    (h : X → ℝ) (hc : Continuous h) (M ) (hM : ∀ x, |h x| ≤ M) :
     Measurable fun a => ∫ x, h x ∂ν a := by
   obtain ⟨φ, hφ01, hφlim⟩ := exists_compactSupport_cutoff (X := X)
   let g : ℕ → C_c(X, ℝ) := fun j =>
@@ -81,7 +81,7 @@ theorem measurable_integral_of_continuous_bounded (ν : α → Measure X)
 theorem measurable_measure_closed [PseudoMetrizableSpace X] (ν : α → Measure X)
     [∀ a, IsFiniteMeasure (ν a)]
     (H : ∀ f : C_c(X, ℝ), Measurable fun a => ∫ x, f x ∂ν a)
-    {C : Set X} (hC : IsClosed C) : Measurable fun a => ν a C := by
+    {C } (hC : IsClosed C) : Measurable fun a => ν a C := by
   have hlim : ∀ a, Tendsto (fun n => ∫⁻ x, (hC.apprSeq n x : ℝ≥0∞) ∂ν a) atTop (𝓝 (ν a C)) :=
     fun a => HasOuterApproxClosed.tendsto_lintegral_apprSeq hC (ν a)
   refine measurable_of_tendsto_metrizable (f := fun n a => ∫⁻ x, (hC.apprSeq n x : ℝ≥0∞) ∂ν a)

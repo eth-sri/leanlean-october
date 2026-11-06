@@ -34,7 +34,7 @@ theorem scaledScalarCutoff_deriv (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
 
 /-- The second derivative has the exact inverse-square radius factor. -/
 theorem scaledScalarCutoff_second_deriv (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
-    {R : ℝ} (hR : R ≠ 0) (s : ℝ) :
+    {R } (hR : R ≠ 0) (s : ℝ) :
     deriv (deriv (scaledScalarCutoff chi R)) s = deriv (deriv chi) (s/R)/R^2 := by
   have he : deriv (scaledScalarCutoff chi R) = fun t => deriv chi (t/R)/R := by
     funext t
@@ -50,7 +50,7 @@ theorem scaledScalarCutoff_second_deriv (chi : ℝ → ℝ) (hchi : ContDiff ℝ
 
 /-- Uniform first-derivative bounds acquire one inverse-radius factor. -/
 theorem scaledScalarCutoff_deriv_bound (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
-    {R : ℝ} (hR : 0 < R) (C : ℝ) (hC : ∀ s, |deriv chi s| ≤ C) (s : ℝ) :
+    {R } (hR : 0 < R) (C ) (hC : ∀ s, |deriv chi s| ≤ C) (s : ℝ) :
     |deriv (scaledScalarCutoff chi R) s| ≤ C/R := by
   rw [scaledScalarCutoff_deriv chi hchi, abs_div, abs_of_pos hR]
   exact div_le_div_of_nonneg_right (hC _) hR.le

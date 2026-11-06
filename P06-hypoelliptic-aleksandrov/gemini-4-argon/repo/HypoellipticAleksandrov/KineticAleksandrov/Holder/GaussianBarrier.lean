@@ -17,7 +17,7 @@ open Filter Set Parabolic Scaling
 open scoped Topology
 
 /-- The literal Gaussian formula, used analytically only on the definite covariance strip. -/
-def gaussianFormula {d : ℕ} (chi : ℝ → ℝ)
+def gaussianFormula {d } (chi : ℝ → ℝ)
     (lam Lam H h L ell tminus sblock : ℝ) (x v : ℝ → PDE.Vec d)
     (P : KineticPoint d) : ℝ :=
   let s := P.time - tminus
@@ -27,14 +27,14 @@ def gaussianFormula {d : ℕ} (chi : ℝ → ℝ)
       qform lam h sigma (P.position - x s) (P.velocity - v s)) - Real.exp (-L ^ 2))
 
 /-- The source barrier, extended by zero from the positive-definite cutoff strip. -/
-def gaussianBarrier {d : ℕ} (lam Lam H h L ell tminus sblock : ℝ)
+def gaussianBarrier {d } (lam Lam H h L ell tminus sblock : ℝ)
     (x v : ℝ → PDE.Vec d) (P : KineticPoint d) : ℝ :=
   if -(1 / 128 : ℝ) < (P.time - tminus - sblock) / h then
     gaussianFormula barrierCutoff lam Lam H h L ell tminus sblock x v P
   else 0
 
 /-- Outside the covariance strip the source cutoff kills the entire formula. -/
-theorem gaussianBarrier_eq_formula {d : ℕ} (lam Lam H h L ell tminus sblock : ℝ)
+theorem gaussianBarrier_eq_formula {d } (lam Lam H h L ell tminus sblock : ℝ)
     (x v : ℝ → PDE.Vec d) (P : KineticPoint d) :
     gaussianBarrier lam Lam H h L ell tminus sblock x v P =
       gaussianFormula barrierCutoff lam Lam H h L ell tminus sblock x v P := by
@@ -46,9 +46,9 @@ theorem gaussianBarrier_eq_formula {d : ℕ} (lam Lam H h L ell tminus sblock : 
     rw [barrierCutoff_zero (le_of_not_gt hs), mul_zero, zero_mul]
 
 /-- Smoothness of the literal formula at each point of the closed definite strip. -/
-theorem contDiffAt_raw_gaussianFormula {d : ℕ} {lam h : ℝ}
+theorem contDiffAt_raw_gaussianFormula {d lam h}
     (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell tminus sblock : ℝ)
-    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
+    {x v } (hx : ContDiff ℝ (⊤ : ℕ∞) x)
     (hv : ContDiff ℝ (⊤ : ℕ∞) v) (Q : ℝ × (PDE.Vec d × PDE.Vec d))
     (hQ : -(1 / 128 : ℝ) ≤ (Q.1 - tminus - sblock) / h) :
     ContDiffAt ℝ (⊤ : ℕ∞)
@@ -79,7 +79,7 @@ theorem contDiffAt_raw_gaussianFormula {d : ℕ} {lam h : ℝ}
     (((contDiffAt_const.mul htime.contDiffAt).sub hq).exp.sub contDiffAt_const)
 
 /-- Global smoothness follows by gluing to zero, without a global inverse smoothness claim. -/
-theorem contDiff_raw_gaussianBarrier {d : ℕ} {lam h : ℝ}
+theorem contDiff_raw_gaussianBarrier {d lam h}
     (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell tminus sblock : ℝ)
     {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
     (hv : ContDiff ℝ (⊤ : ℕ∞) v) :
@@ -93,7 +93,7 @@ theorem contDiff_raw_gaussianBarrier {d : ℕ} {lam h : ℝ}
     exact Eventually.of_forall (fun T => gaussianBarrier_eq_formula _ _ _ _ _ _ _ _ _ _ _)
   · have ht : Continuous (fun T : ℝ × (PDE.Vec d × PDE.Vec d) =>
         (T.1 - tminus - sblock) / h) := by fun_prop
-    have he : ∀ᶠ T in 𝓝 Q, (T.1 - tminus - sblock) / h < -(1 / 128 : ℝ) :=
+    have he :=
       ht.continuousAt.eventually (gt_mem_nhds (lt_of_not_ge hs))
     apply (contDiffAt_const (c := (0 : ℝ))).congr_of_eventuallyEq
     filter_upwards [he] with T hT

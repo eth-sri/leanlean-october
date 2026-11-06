@@ -68,8 +68,7 @@ theorem integrableOn_gammaKernel (a z : ℝ) (ha : 0 < a) (hz : 0 < z) :
     apply (integrableOn_Ioi_comp_mul_left_iff
       (fun t : ℝ => Real.exp (-t) * t ^ (a - 1)) 0 hz).mpr
     simpa only [mul_zero] using Real.GammaIntegral_convergent ha
-  have h := hscaled.const_mul (z ^ (a - 1))⁻¹
-  apply IntegrableOn.congr_fun h _ measurableSet_Ioi
+  apply IntegrableOn.congr_fun (hscaled.const_mul (z ^ (a - 1))⁻¹) _ measurableSet_Ioi
   intro t ht
   change (z ^ (a - 1))⁻¹ *
     (Real.exp (-(z * t)) * (z * t) ^ (a - 1)) =
@@ -83,14 +82,11 @@ theorem integrableOn_laplaceKernelReal (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) :
     IntegrableOn (laplaceKernelReal a b z) (Ioi 0) volume := by
   obtain ⟨n, hn⟩ := exists_nat_gt (b - a - 1)
   have hnshape : 0 < a + (n : ℝ) := add_pos_of_pos_of_nonneg ha (Nat.cast_nonneg n)
-  have hdom := ((integrableOn_gammaKernel a z ha hz).add
-    (integrableOn_gammaKernel (a + n) z hnshape hz)).const_mul ((2 : ℝ) ^ n)
-  apply hdom.mono'
+  apply (((integrableOn_gammaKernel a z ha hz).add (integrableOn_gammaKernel (a + n) z hnshape hz)).const_mul ((2 : ℝ) ^ n)).mono'
   · exact (continuousOn_laplaceKernelReal a b z).aestronglyMeasurable measurableSet_Ioi
   · filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
     rw [Real.norm_eq_abs, abs_of_pos (laplaceKernelReal_pos a b z t ht)]
-    have hp := one_add_rpow_le_polynomial (b - a - 1) n hn.le t ht.le
-    have hmul := mul_le_mul_of_nonneg_left hp
+    have hmul := mul_le_mul_of_nonneg_left (one_add_rpow_le_polynomial (b - a - 1) n hn.le t ht.le)
       (mul_pos (Real.exp_pos (-(z * t))) (Real.rpow_pos_of_pos ht (a - 1))).le
     have heq : t ^ (a + (n : ℝ) - 1) = t ^ (a - 1) * t ^ n := by
       rw [show a + (n : ℝ) - 1 = (a - 1) + (n : ℝ) by ring,

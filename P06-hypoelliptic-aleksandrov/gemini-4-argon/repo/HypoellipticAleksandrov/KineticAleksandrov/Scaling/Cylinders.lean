@@ -23,7 +23,7 @@ namespace KineticAffineScaling
 
 variable {d : ℕ} (Φ : KineticAffineScaling d)
 
-theorem time_lt_iff {x y : ℝ} : Φ.time x < Φ.time y ↔ x < y := by
+theorem time_lt_iff {x y } : Φ.time x < Φ.time y ↔ x < y := by
   unfold time
   constructor
   · intro h
@@ -31,7 +31,7 @@ theorem time_lt_iff {x y : ℝ} : Φ.time x < Φ.time y ↔ x < y := by
   · intro h
     nlinarith [Φ.a_pos]
 
-theorem time_le_iff {x y : ℝ} : Φ.time x ≤ Φ.time y ↔ x ≤ y := by
+theorem time_le_iff {x y } : Φ.time x ≤ Φ.time y ↔ x ≤ y := by
   unfold time
   constructor
   · intro h
@@ -39,7 +39,7 @@ theorem time_le_iff {x y : ℝ} : Φ.time x ≤ Φ.time y ↔ x ≤ y := by
   · intro h
     nlinarith [Φ.a_pos]
 
-theorem time_inj {x y : ℝ} : Φ.time x = Φ.time y ↔ x = y := by
+theorem time_inj {x y } : Φ.time x = Φ.time y ↔ x = y := by
   constructor
   · intro h
     exact le_antisymm (Φ.time_le_iff.1 h.le) (Φ.time_le_iff.1 h.ge)
@@ -49,7 +49,7 @@ theorem time_inj {x y : ℝ} : Φ.time x = Φ.time y ↔ x = y := by
 variable {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
 
 /-- Membership in a moving domain, in terms of the subtraction of the curve. -/
-theorem mem_movingDomain_iff {y : PDE.Vec d} {σ : ℝ} :
+theorem mem_movingDomain_iff {y σ} :
     y ∈ movingDomain Ω γ σ ↔ y - γ σ ∈ Ω := by
   rw [movingDomain, ← PDE.preimage_subRight_eq_translateSet]
   rfl

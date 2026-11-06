@@ -14,8 +14,8 @@ open scoped ENNReal
 
 /-- A chosen positive density has no greater norm than any nonnegative representative. -/
 theorem positionPositiveNorm_of_density_le {X : Type*} [MeasurableSpace X]
-    (m : Measure X) [SigmaFinite m] (F : X → ℝ≥0∞) (hF : Measurable F)
-    (S E : Set X) (hS : MeasurableSet S) (G : X → ℝ)
+    (m : Measure X) [SigmaFinite m] (F ) (hF : Measurable F)
+    (S E ) (hS : MeasurableSet S) (G : X → ℝ)
     (hG : Measurable G) (hG0 : ∀ x, 0 ≤ G x)
     (hd : m.withDensity F = (m.restrict S).withDensity (fun x => ENNReal.ofReal (G x)))
     (q K : ℝ) (hq : 0 < q) (hK : 0 ≤ K)
@@ -53,8 +53,8 @@ theorem positionPositiveNorm_of_density_le {X : Type*} [MeasurableSpace X]
 theorem positionActiveDensity_tail (hpush : PushforwardStatement)
     (htail : RestartTailStatement)
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) :
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (q ) (hq : 1 < q ∧ q < 3 / 2) :
     ∃ C c₀ : ℝ, 0 < C ∧ 0 < c₀ ∧ ∀ (A : SmoothAutonomous lam Lam)
       (c : Clock) (e : Point) (_he : e.velocity 0 ∈ c.active) (t : ℝ),
       0 ≤ t →

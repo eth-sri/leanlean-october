@@ -29,7 +29,7 @@ private theorem zero_between_of_continuous_of_neg_pos
     {a b : ℝ} {f : ℝ → ℝ} (hab : a < b) (hf : Continuous f)
     (hfa : f a < 0) (hfb : 0 < f b) :
     ∃ c ∈ Set.Ioo a b, f c = 0 := by
-  have hab' : a ≤ b := hab.le
+  have hab' := hab.le
   have hzero : (0 : ℝ) ∈ Set.Icc (f a) (f b) := by
     exact ⟨hfa.le, hfb.le⟩
   rcases intermediate_value_Icc hab' hf.continuousOn hzero with ⟨c, hc, hfc⟩
@@ -45,7 +45,7 @@ private theorem zero_between_of_continuous_of_neg_pos
     linarith
 
 private theorem affineVelocity_pos_on_closedBall
-    {d : ℕ} {M h : ℝ} {y₀ p v : PDE.Vec d}
+    {d : ℕ} {M h : ℝ} {y₀ p v }
     (hM : 0 < M) (hh : M / 2 < h)
     (hp : p ∈ PDE.euclideanBall (0 : PDE.Vec d) (M / 4))
     (hv : v ∈ PDE.euclideanClosedBall y₀ 1) :
@@ -64,7 +64,7 @@ private theorem affineVelocity_pos_on_closedBall
           PDE.vecEuclideanNorm p * 1 :=
         mul_le_mul_of_nonneg_left hvNorm (PDE.vecEuclideanNorm_nonneg p)
       _ < M / 4 := by simpa using hpNorm
-  have hdotAbs : |PDE.vecDot p (v - y₀)| < M / 4 :=
+  have hdotAbs :=
     (PDE.abs_vecDot_le_vecEuclideanNorm_mul p (v - y₀)).trans_lt hprod
   have hdot : -(M / 4) < PDE.vecDot p (v - y₀) := by
     nlinarith [neg_abs_le (PDE.vecDot p (v - y₀))]
@@ -97,49 +97,6 @@ private theorem affineVelocity_lt_of_wedge_at_closedBall
   rw [affineVelocity_apply]
   linarith
 
-private theorem affineVelocity_line_deriv
-    {d : ℕ} (y₀ : PDE.Vec d) (h : ℝ) (p v : PDE.Vec d) (i : Fin d) :
-    HasDerivAt
-      (fun r : ℝ => affineVelocity y₀ h p
-        (v + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
-      (p i) 0 := by
-  let e : PDE.Vec d := Pi.single i 1
-  change HasDerivAt (fun r : ℝ => affineVelocity y₀ h p (v + r • e)) (p i) 0
-  have hfun :
-      (fun r : ℝ => affineVelocity y₀ h p (v + r • e)) =
-        fun r => affineVelocity y₀ h p v + r * p i := by
-    classical
-    funext r
-    have hsingle : (∑ x : Fin d,
-        p x * r * e x) = r * p i := by
-      dsimp [e]
-      rw [Fintype.sum_eq_single i]
-      · simp
-        ring
-      · intro x hxi
-        simp [hxi]
-    unfold affineVelocity PDE.vecDot
-    simp only [Pi.add_apply, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
-    have hsplit :
-        h + (∑ x, p x * (v x + r * e x - y₀ x)) =
-          h + (∑ x, p x * (v x - y₀ x)) +
-            (∑ x, p x * r * e x) := by
-      calc
-        h + (∑ x, p x * (v x + r * e x - y₀ x)) =
-            h + (∑ x, (p x * (v x - y₀ x) + p x * r * e x)) := by
-          congr 1
-          apply Finset.sum_congr rfl
-          intro x hx
-          ring
-        _ = h + (∑ x, p x * (v x - y₀ x)) + (∑ x, p x * r * e x) := by
-          rw [Finset.sum_add_distrib]
-          ring
-    rw [hsplit, hsingle]
-  rw [hfun]
-  simpa only [one_mul] using
-    ((hasDerivAt_id' (𝕜 := ℝ) 0).mul_const (p i)).const_add
-      (affineVelocity y₀ h p v)
-
 private theorem time_slice_hasDerivAt
     {d : ℕ} {u : TimeVelocity d → ℝ} (hu : ContDiff ℝ 2 u)
     (z : TimeVelocity d) :
@@ -152,32 +109,6 @@ private theorem time_slice_hasDerivAt
   simpa only [timeDerivative, Function.comp_def] using
     (huDiff z).hasFDerivAt.comp_hasDerivAt z.1 hline
 
-private theorem velocity_slice_hasDerivAt
-    {d : ℕ} {u : TimeVelocity d → ℝ} (hu : ContDiff ℝ 2 u)
-    (z : TimeVelocity d) (i : Fin d) :
-    HasDerivAt
-      (fun r : ℝ => u (z.1,
-        z.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
-      (velocityGradient u z i) 0 := by
-  have huDiff : Differentiable ℝ u := hu.differentiable (by norm_num)
-  have hvline : HasDerivAt
-      (fun r : ℝ => z.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d))
-      ((Pi.single i (1 : ℝ)) : PDE.Vec d) 0 := by
-    simpa only [one_smul] using
-      ((hasDerivAt_id' (𝕜 := ℝ) 0).smul_const
-        ((Pi.single i (1 : ℝ)) : PDE.Vec d)).const_add z.2
-  have hline : HasDerivAt
-      (fun r : ℝ => (z.1,
-        z.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
-      (((0 : ℝ), ((Pi.single i (1 : ℝ)) : PDE.Vec d)) : TimeVelocity d) 0 := by
-    exact ((hasDerivAt_const (x := (0 : ℝ)) (c := z.1)).prodMk hvline)
-  have huAt := (huDiff (z.1,
-    z.2 + (0 : ℝ) • ((Pi.single i (1 : ℝ)) : PDE.Vec d))).hasFDerivAt
-  have hcomp := huAt.comp_hasDerivAt 0 hline
-  simpa [velocityGradient, Function.comp_def] using hcomp
-
-/-- Every wedge parameter is attained by the parabolic normal map at a genuine
-first-contact point in the parabolic sign set. -/
 theorem slopeInterceptWedge_subset_image_parabolicSignSet
     {d : ℕ} {T : ℝ} {y₀ : PDE.Vec d} {u : TimeVelocity d → ℝ}
     (hu : ContDiff ℝ 2 u) (hT : 0 < T)
@@ -190,11 +121,11 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
   rintro ⟨h, p⟩ hpWedge
   rcases mem_slopeInterceptWedge_iff.mp hpWedge with ⟨hhLower, hhUpper, hp⟩
   let M : ℝ := u zStar
-  have hM : 0 < M := hzPositive
-  have hTnonneg : 0 ≤ T := hT.le
-  have hhLower' : M / 2 < h := hhLower
-  have hhUpper' : h < 3 * M / 4 := hhUpper
-  have hp' : p ∈ PDE.euclideanBall (0 : PDE.Vec d) (M / 4) := hp
+  have hM := hzPositive
+  have hTnonneg := hT.le
+  have hhLower' := hhLower
+  have hhUpper' := hhUpper
+  have hp' := hp
   let ell : PDE.Vec d → ℝ := affineVelocity y₀ h p
   let g : TimeVelocity d → ℝ := fun z => u z - ell z.2
   have hellPos : ∀ v ∈ PDE.euclideanClosedBall y₀ 1, 0 < ell v := by
@@ -225,16 +156,15 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
       (isClosed_Ici.preimage hgCont)
   rcases hSCompact.exists_isMinOn ⟨zStar, hzStarS⟩ continuous_fst.continuousOn with
       ⟨zc, hzcS, hzcMin⟩
-  have hzcClosed : zc ∈ closedParabolicCylinder zStar.1 y₀ := hzcS.1
+  have hzcClosed := hzcS.1
   have hzcNonneg : 0 ≤ g zc := hzcS.2
   have hzcVelClosed : zc.2 ∈ PDE.euclideanClosedBall y₀ 1 :=
     (mem_closedParabolicCylinder_iff.mp hzcClosed).2.2
   have hgAtZero : g (0, zc.2) < 0 := by
-    have hell : 0 < ell zc.2 := hellPos zc.2 hzcVelClosed
+    have hell := hellPos zc.2 hzcVelClosed
     have hbd : u (0, zc.2) ≤ 0 := hboundary (0, zc.2) (by
       rw [mem_forwardParabolicBoundary_iff]
       exact Or.inl ⟨rfl, hzcVelClosed⟩)
-    change u (0, zc.2) - ell zc.2 < 0
     linarith
   have htcPos : 0 < zc.1 := by
     have htcNonneg : 0 ≤ zc.1 := (mem_closedParabolicCylinder_iff.mp hzcClosed).1
@@ -259,14 +189,13 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
         hzcVelClosed⟩
       simpa [f] using hfs.ge
     have := hzcMin hsS
-    change zc.1 ≤ s at this
     exact (not_lt_of_ge this) hs.2
   have htcLtStar : zc.1 < zStar.1 := by
     have hztPos : 0 < zStar.1 := by
       rcases mem_closedParabolicCylinder_iff.mp hzStar with ⟨ht0, htT, hv⟩
       by_contra hnot
       have htzero : zStar.1 = 0 := le_antisymm (not_lt.mp hnot) ht0
-      have hbd : u zStar ≤ 0 := hboundary zStar (by
+      have hbd := hboundary zStar (by
         rw [mem_forwardParabolicBoundary_iff]
         exact Or.inl ⟨htzero, hv⟩)
       linarith
@@ -287,7 +216,6 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
       exact ⟨hs.1.le, hs.2.le, hzStarClosed⟩
       simpa [f] using hfs.ge
     have hmin := hzcMin hsS
-    change zc.1 ≤ s at hmin
     exact lt_of_le_of_lt hmin hs.2
   have hspatialNonpos : ∀ v ∈ PDE.euclideanClosedBall y₀ 1, g (zc.1, v) ≤ 0 := by
     intro v hv
@@ -311,7 +239,6 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
         hs.2.le.trans (mem_closedParabolicCylinder_iff.mp hzcClosed).2.1, hv⟩
       simpa [f] using hfs.ge
     have hmin := hzcMin hsS
-    change zc.1 ≤ s at hmin
     exact (not_lt_of_ge hmin) hs.2
   have hzcTimeUpperStar : zc.1 ≤ zStar.1 :=
     (mem_closedParabolicCylinder_iff.mp hzcClosed).2.1
@@ -323,26 +250,23 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
     by_contra hnot
     have hsphere : zc.2 ∈ PDE.euclideanSphere y₀ 1 := by
       change PDE.euclideanSqDist zc.2 y₀ = 1 ^ 2
-      change PDE.euclideanSqDist zc.2 y₀ ≤ 1 ^ 2 at hzcVelClosed
       exact le_antisymm hzcVelClosed (not_lt.mp (by simpa [PDE.euclideanBall] using hnot))
-    have hbd : u zc ≤ 0 := hboundary zc (by
+    have hbd := hboundary zc (by
       rw [mem_forwardParabolicBoundary_iff]
       exact Or.inr ⟨htcPos.le, hzcTimeUpper, hsphere⟩)
-    have hell : 0 < ell zc.2 := hellPos zc.2 hzcVelClosed
-    change u zc - ell zc.2 = 0 at hgcZero
+    have hell := hellPos zc.2 hzcVelClosed
     linarith
   have hzcInterior : zc ∈ parabolicInterior T y₀ := by
     rw [mem_parabolicInterior_iff]
     exact ⟨htcPos, htcLtStar.trans_le hzStarTimeUpper,
       hzcVelOpen⟩
   have huzcPos : 0 < u zc := by
-    have hell : 0 < ell zc.2 := hellPos zc.2 hzcVelClosed
-    change u zc - ell zc.2 = 0 at hgcZero
+    have hell := hellPos zc.2 hzcVelClosed
     linarith
   have hspatialLocalMax : IsLocalMax
       (fun v : PDE.Vec d => u (zc.1, v) - ell v) zc.2 := by
     rw [IsLocalMax]
-    have hopen : PDE.euclideanBall y₀ 1 ∈ 𝓝 zc.2 :=
+    have hopen :=
       PDE.isOpen_euclideanBall y₀ 1 |>.mem_nhds hzcVelOpen
     filter_upwards [hopen] with v hv
     change g (zc.1, v) ≤ g zc
@@ -352,16 +276,77 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
     ext i
     let q : PDE.Vec d := Pi.single i 1
     let line : ℝ → PDE.Vec d := fun r => zc.2 + r • q
-    have hlineCont : ContinuousAt line 0 := by
-      exact (((hasDerivAt_id' (𝕜 := ℝ) 0).smul_const q).const_add zc.2).continuousAt
+    have hlineCont := (((hasDerivAt_id' (𝕜 := ℝ) 0).smul_const q).const_add zc.2).continuousAt
     have hmaxLine : IsLocalMax
         (fun r : ℝ => u (zc.1, line r) - ell (line r)) 0 := by
       have hmaxAtLine : IsLocalMax
           (fun v : PDE.Vec d => u (zc.1, v) - ell v) (line 0) := by
         simpa [line, q] using hspatialLocalMax
       exact hmaxAtLine.comp_continuous hlineCont
-    have huLine := velocity_slice_hasDerivAt hu zc i
-    have hellLine := affineVelocity_line_deriv y₀ h p zc.2 i
+    have huLine : HasDerivAt
+      (fun r : ℝ => u (zc.1,
+        zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
+      (velocityGradient u zc i) 0 := by
+        have huDiff : Differentiable ℝ u := hu.differentiable (by norm_num)
+        have hvline : HasDerivAt
+            (fun r : ℝ => zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d))
+            ((Pi.single i (1 : ℝ)) : PDE.Vec d) 0 := by
+          simpa only [one_smul] using
+            ((hasDerivAt_id' (𝕜 := ℝ) 0).smul_const
+              ((Pi.single i (1 : ℝ)) : PDE.Vec d)).const_add zc.2
+        have hline : HasDerivAt
+            (fun r : ℝ => (zc.1,
+              zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
+            (((0 : ℝ), ((Pi.single i (1 : ℝ)) : PDE.Vec d)) : TimeVelocity d) 0 := by
+          exact ((hasDerivAt_const (x := (0 : ℝ)) (c := zc.1)).prodMk hvline)
+        have huAt := (huDiff (zc.1,
+          zc.2 + (0 : ℝ) • ((Pi.single i (1 : ℝ)) : PDE.Vec d))).hasFDerivAt
+        have hcomp := huAt.comp_hasDerivAt 0 hline
+        simpa [velocityGradient, Function.comp_def] using hcomp
+
+      /- Every wedge parameter is attained by the parabolic normal map at a genuine
+      first-contact point in the parabolic sign set. -/
+    have hellLine : HasDerivAt
+      (fun r : ℝ => affineVelocity y₀ h p
+        (zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
+      (p i) 0 := by
+      let v := zc.2
+      let e : PDE.Vec d := Pi.single i 1
+      change HasDerivAt (fun r : ℝ => affineVelocity y₀ h p (v + r • e)) (p i) 0
+      have hfun :
+          (fun r : ℝ => affineVelocity y₀ h p (v + r • e)) =
+            fun r => affineVelocity y₀ h p v + r * p i := by
+        classical
+        funext r
+        have hsingle : (∑ x : Fin d,
+            p x * r * e x) = r * p i := by
+          dsimp [e]
+          rw [Fintype.sum_eq_single i]
+          · simp
+            ring
+          · intro x hxi
+            simp [hxi]
+        unfold affineVelocity PDE.vecDot
+        simp only [Pi.add_apply, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
+        have hsplit :
+            h + (∑ x, p x * (v x + r * e x - y₀ x)) =
+              h + (∑ x, p x * (v x - y₀ x)) +
+                (∑ x, p x * r * e x) := by
+          calc
+            h + (∑ x, p x * (v x + r * e x - y₀ x)) =
+                h + (∑ x, (p x * (v x - y₀ x) + p x * r * e x)) := by
+              congr 1
+              apply Finset.sum_congr rfl
+              intro x hx
+              ring
+            _ = h + (∑ x, p x * (v x - y₀ x)) + (∑ x, p x * r * e x) := by
+              rw [Finset.sum_add_distrib]
+              ring
+        rw [hsplit, hsingle]
+      rw [hfun]
+      simpa only [one_mul] using
+        ((hasDerivAt_id' (𝕜 := ℝ) 0).mul_const (p i)).const_add
+          (affineVelocity y₀ h p v)
     have hderiv : HasDerivAt
         (fun r : ℝ => u (zc.1,
           zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)) -
@@ -394,7 +379,7 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
       linarith
     rw [← hrewrite]
     exact hspatialLocalMax
-  have hhess : (-velocityHessian u zc).PosSemidef :=
+  have hhess :=
     neg_velocityHessian_posSemidef_of_spatial_localMax_affineContact hu hcontact
   have htimeMax : IsLocalMaxOn
       (fun t : ℝ => u (t, zc.2) - ell zc.2) (Set.Iic zc.1) zc.1 := by
@@ -418,14 +403,12 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
           hzcVelClosed⟩
         simpa [f] using hfs.ge
       have hmin := hzcMin hsS
-      change zc.1 ≤ s at hmin
       exact (lt_irrefl zc.1) (hmin.trans_lt (hs.2.trans_le htIic))
     change u (t, zc.2) - ell zc.2 ≤ u zc - ell zc.2
     change g (t, zc.2) ≤ g zc
     rw [hgcZero]
     exact htime
-  have htimeDeriv : HasDerivAt
-      (fun t : ℝ => u (t, zc.2) - ell zc.2) (timeDerivative u zc) zc.1 :=
+  have htimeDeriv :=
     (time_slice_hasDerivAt hu zc).sub_const (ell zc.2)
   have hminusOne : (-1 : ℝ) ∈ posTangentConeAt (Set.Iic zc.1) zc.1 := by
     have hsegment : segment ℝ zc.1 (zc.1 - 1) ⊆ Set.Iic zc.1 := by

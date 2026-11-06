@@ -23,8 +23,8 @@ theorem positionStartQuadratic_smooth (c : Clock) (eta : ℝ → ℝ)
 /-- The actual position test satisfies the Green identity, with no analytic bridge premise. -/
 theorem positionStartQuadratic_active_identity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y T : ℝ)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (J ) (Y T : ℝ)
     (hc : |c.vbar| = 2 * c.r)
     (e : FiniteUnionPole (visitActiveUnion c J) (T : WithTop ℝ)) :
     let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *

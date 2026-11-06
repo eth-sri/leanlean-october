@@ -26,50 +26,33 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped ENNReal MatrixOrder
 
-/-- Reflection of a time--velocity point about the time slice `t = 1 / 2`. -/
-def timeReflection {d : ℕ} (z : TimeVelocity d) : TimeVelocity d :=
+/- Reflection of a time--velocity point about the time slice `t = 1 / 2`. -/
+def timeReflection {d } (z : TimeVelocity d) : TimeVelocity d :=
   (1 - z.1, z.2)
 
-/-- Pullback of a scalar field by the fixed time reflection. -/
-def timeReflectedScalar {d : ℕ} (f : TimeVelocity d → ℝ) : TimeVelocity d → ℝ :=
+/- Pullback of a scalar field by the fixed time reflection. -/
+def timeReflectedScalar {d } (f : TimeVelocity d → ℝ) : TimeVelocity d → ℝ :=
   fun z => f (timeReflection z)
 
-/-- Pullback of a curried coefficient field by the fixed time reflection. -/
-def timeReflectedCoefficient {d : ℕ} (A : CoefficientField d) : CoefficientField d :=
+/- Pullback of a curried coefficient field by the fixed time reflection. -/
+def timeReflectedCoefficient {d } (A : CoefficientField d) : CoefficientField d :=
   fun t v => A (1 - t) v
 
-/-- Evaluation of a reflected scalar field. -/
-@[simp] theorem timeReflectedScalar_apply {d : ℕ} (f : TimeVelocity d → ℝ)
+@[simp] theorem timeReflectedScalar_apply {d } (f : TimeVelocity d → ℝ)
     (z : TimeVelocity d) :
-    timeReflectedScalar f z = f (timeReflection z) :=
-  rfl
+    timeReflectedScalar f z = f (timeReflection z) := rfl
 
-/-- Evaluation of a reflected coefficient field at a time--velocity pair. -/
-@[simp] theorem coefficientAt_timeReflectedCoefficient {d : ℕ}
-    (A : CoefficientField d) (z : TimeVelocity d) :
-    coefficientAt (timeReflectedCoefficient A) z =
-      coefficientAt A (timeReflection z) :=
-  rfl
-
-/-- Time reflection is an involution. -/
-@[simp] theorem timeReflection_involutive {d : ℕ} :
+/- Evaluation of a reflected scalar field. -/
+@[simp] theorem timeReflection_involutive {d } :
     Function.Involutive (@timeReflection d) := by
   intro z
   ext <;> simp [timeReflection]
 
-/-- Time reflection is continuous. -/
-theorem continuous_timeReflection {d : ℕ} : Continuous (@timeReflection d) := by
-  exact (continuous_const.sub continuous_fst).prodMk continuous_snd
+/- Time reflection is continuous. -/
+theorem continuous_timeReflection {d } : Continuous (@timeReflection d) :=  (continuous_const.sub continuous_fst).prodMk continuous_snd
 
-/-- Coefficient pullback preserves continuity. -/
-theorem isContinuousCoefficient_timeReflected {d : ℕ} {A : CoefficientField d}
-    (hA : IsContinuousCoefficient A) :
-    IsContinuousCoefficient (timeReflectedCoefficient A) := by
-  change Continuous (coefficientAt A ∘ timeReflection)
-  exact hA.comp continuous_timeReflection
-
-/-- Reflection preserves product Lebesgue volume. -/
-theorem timeReflection_measurePreserving {d : ℕ} :
+/- Coefficient pullback preserves continuity. -/
+theorem timeReflection_measurePreserving {d } :
     MeasurePreserving (@timeReflection d) (volume : Measure (TimeVelocity d)) volume := by
   let htime : MeasurePreserving (fun t : ℝ => 1 - t)
       (volume : Measure ℝ) volume := by

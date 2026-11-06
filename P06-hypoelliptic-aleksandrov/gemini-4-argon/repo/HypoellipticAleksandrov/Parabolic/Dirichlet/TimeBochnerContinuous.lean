@@ -32,7 +32,7 @@ theorem reverseTimeVolume_real_univ (T : ℝ) (hT : 0 < T) :
 /-- The squared Bochner `L²` norm is the integral of the pointwise squared norm. -/
 theorem integral_norm_sq_eq_norm_sq_toLp
     {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]
-    {μ : MeasureTheory.Measure α} (w : α → E)
+    {μ } (w : α → E)
     (hw : MeasureTheory.MemLp w (2 : ℝ≥0∞) μ) :
     (∫ t, ‖w t‖ ^ 2 ∂μ) = ‖hw.toLp w‖ ^ 2 := by
   rw [Lp.norm_def, eLpNorm_congr_ae hw.coeFn_toLp,
@@ -49,7 +49,7 @@ theorem integral_norm_sq_eq_norm_sq_toLp
 For nonpositive `T`, the literal carrier `Ioo 0 T` is empty. -/
 theorem memLp_two_reverseTime_of_continuousOn
     {E : Type*} [NormedAddCommGroup E]
-    (T : ℝ) (w : ℝ → E) (hw : ContinuousOn w (Set.Icc 0 T)) :
+    (T ) (w : ℝ → E) (hw : ContinuousOn w (Set.Icc 0 T)) :
     MeasureTheory.MemLp w (2 : ℝ≥0∞) (reverseTimeVolume T) := by
   by_cases hT : 0 < T
   · let K : Set ℝ := Icc 0 T
@@ -78,7 +78,7 @@ theorem memLp_two_reverseTime_of_continuousOn
 /-- The quotient-valued reverse-time Bochner `L²` class of a continuous curve. -/
 noncomputable def reverseTimeL2OfContinuousOn
     {E : Type*} [NormedAddCommGroup E]
-    (T : ℝ) (w : ℝ → E) (hw : ContinuousOn w (Set.Icc 0 T)) :
+    (T ) (w : ℝ → E) (hw : ContinuousOn w (Set.Icc 0 T)) :
     MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T) :=
   (memLp_two_reverseTime_of_continuousOn T w hw).toLp w
 

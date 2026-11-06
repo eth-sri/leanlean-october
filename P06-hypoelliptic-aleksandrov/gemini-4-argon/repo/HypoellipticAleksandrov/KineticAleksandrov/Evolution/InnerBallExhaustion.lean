@@ -22,7 +22,7 @@ open Set Filter
 open scoped Topology
 
 /-- A Euclidean ball is the moving ball of the constant curve with that centre. -/
-theorem euclideanBall_eq_movingDomain_const {n : ℕ} (x : PDE.Vec n) {R : ℝ} (hR : 0 < R) :
+theorem euclideanBall_eq_movingDomain_const {n } (x : PDE.Vec n) {R } (hR : 0 < R) :
     PDE.euclideanBall x R =
       movingDomain (PDE.euclideanBall (0 : PDE.Vec n) R) (fun _ : ℝ => x) 0 := by
   ext y
@@ -32,10 +32,10 @@ theorem euclideanBall_eq_movingDomain_const {n : ℕ} (x : PDE.Vec n) {R : ℝ} 
 /-- The geometric radii `α k = r / 2 · (1/4)ᵏ`. -/
 noncomputable def innerBallRadius (r : ℝ) (k : ℕ) : ℝ := r / 2 * (1 / 4) ^ k
 
-theorem innerBallRadius_pos {r : ℝ} (hr : 0 < r) (k : ℕ) : 0 < innerBallRadius r k := by
+theorem innerBallRadius_pos {r } (hr : 0 < r) (k : ℕ) : 0 < innerBallRadius r k := by
   unfold innerBallRadius; positivity
 
-theorem innerBallRadius_lt {r : ℝ} (hr : 0 < r) (k : ℕ) : innerBallRadius r k < r := by
+theorem innerBallRadius_lt {r } (hr : 0 < r) (k : ℕ) : innerBallRadius r k < r := by
   unfold innerBallRadius
   have : (1 / 4 : ℝ) ^ k ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
   nlinarith
@@ -52,7 +52,7 @@ theorem tendsto_innerBallRadius (r : ℝ) : Tendsto (innerBallRadius r) atTop (�
 
 /-- Nested curve approximation for the regularized truncations. -/
 theorem exists_nested_smooth_inner_balls
-    {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ : IsContinuousPiecewiseC1 γ)
+    {n γ} (hγ : IsContinuousPiecewiseC1 γ)
     (a τ r : ℝ) (haτ : a < τ) (hr : 0 < r) :
     ∃ (α : ℕ → ℝ) (g : ℕ → ℝ → PDE.Vec n) (L : ℝ),
       0 ≤ L ∧ (∀ k, 0 < α k ∧ α k < r) ∧

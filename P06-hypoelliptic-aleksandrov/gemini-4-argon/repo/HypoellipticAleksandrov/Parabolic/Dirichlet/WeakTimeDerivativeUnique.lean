@@ -22,20 +22,8 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Filter MeasureTheory Set
 open scoped ENNReal
 
-private theorem memLp_two_weakDerivativePairing_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω} {T : ℝ}
-    (g g' : ReverseTimeL2VStar hΩ T) (v : H10HilbertGraph hΩ) :
-    MemLp (fun tau => (g tau) v - (g' tau) v)
-      (2 : ℝ≥0∞) (reverseTimeVolume T) := by
-  simpa only [Pi.sub_def, ContinuousLinearMap.apply_apply] using
-    ((MeasureTheory.Lp.memLp g).continuousLinearMap_comp
-        (ContinuousLinearMap.apply ℝ ℝ v)).sub
-      ((MeasureTheory.Lp.memLp g').continuousLinearMap_comp
-        (ContinuousLinearMap.apply ℝ ℝ v))
-
 private theorem integral_weakDerivativePairing_sub_eq_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
-    {u : ReverseTimeL2V hΩ T} {g g' : ReverseTimeL2VStar hΩ T}
+    {d } {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω} {T hT u g g'}
     (hg : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (hg' : HasGelfandWeakTimeDerivative hΩ T hT u g')
     (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) :
@@ -64,27 +52,32 @@ private theorem integral_weakDerivativePairing_sub_eq_zero
           integral_sub hright hright'
     _ = 0 := by rw [hrightEq, sub_self]
 
-/-- A fixed reverse-time curve has at most one Gelfand weak time derivative,
+/- A fixed reverse-time curve has at most one Gelfand weak time derivative,
 as an `L²(V*)` equivalence class. -/
 theorem HasGelfandWeakTimeDerivative.unique
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
-    {u : ReverseTimeL2V hΩ T}
-    {g g' : ReverseTimeL2VStar hΩ T}
+    {d } {Ω : Set (PDE.Vec d)}
+    {hΩ : IsOpen Ω} {T hT u g g'}
     (hg : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (hg' : HasGelfandWeakTimeDerivative hΩ T hT u g') :
     g = g' := by
   letI : TopologicalSpace.SeparableSpace (H10HilbertGraph hΩ) :=
     h10HilbertGraphSeparableSpace hΩ
-  let q : ℕ → H10HilbertGraph hΩ :=
+  let q :=
     TopologicalSpace.denseSeq (H10HilbertGraph hΩ)
   have hqDense : DenseRange q :=
     TopologicalSpace.denseRange_denseSeq (H10HilbertGraph hΩ)
   have hpairAE : ∀ n : ℕ, ∀ᵐ tau ∂reverseTimeVolume T,
       (g tau) (q n) = (g' tau) (q n) := by
     intro n
+    have _h_inl_9 : MemLp (fun tau => (g tau) (q n) - (g' tau) (q n)) (2 : ℝ≥0∞) (reverseTimeVolume T) := by
+      let v := (q n)
+      simpa only [Pi.sub_def, ContinuousLinearMap.apply_apply] using
+        ((MeasureTheory.Lp.memLp g).continuousLinearMap_comp
+            (ContinuousLinearMap.apply ℝ ℝ v)).sub
+          ((MeasureTheory.Lp.memLp g').continuousLinearMap_comp
+            (ContinuousLinearMap.apply ℝ ℝ v))
     filter_upwards [ae_eq_zero_of_memLp_two_integral_reverseTimeScalarTest T
-      (memLp_two_weakDerivativePairing_sub g g' (q n))
+      _h_inl_9
       (fun eta => integral_weakDerivativePairing_sub_eq_zero hg hg' (q n) eta)] with tau htau
     exact sub_eq_zero.mp htau
   have hpairAll : ∀ᵐ tau ∂reverseTimeVolume T, ∀ n : ℕ,

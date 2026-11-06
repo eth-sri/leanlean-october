@@ -16,7 +16,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Set
 
 /-- The closure has precisely the weak time and Euclidean radius bounds needed for blocks. -/
-theorem closure_backwardCylinder_bounds {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
+theorem closure_backwardCylinder_bounds {d } (P₀ : KineticPoint d) {R }
     (hR : 0 < R) :
     closure (backwardCylinder P₀ R) ⊆
       {P | P₀.time - R ^ 2 ≤ P.time ∧ P.time ≤ P₀.time ∧
@@ -40,11 +40,11 @@ theorem closure_backwardCylinder_bounds {d : ℕ} (P₀ : KineticPoint d) {R : �
           (isClosed_le (PDE.continuous_vecEuclideanNorm.comp hx) continuous_const)))
 
 /-- The block radius has its literal source time scale. -/
-theorem propagation_block_radius_sq {h W : ℝ} (hh : 0 ≤ h) :
+theorem propagation_block_radius_sq {h W } (hh : 0 ≤ h) :
     (W * Real.sqrt h) ^ 2 = W ^ 2 * h := by rw [mul_pow, Real.sq_sqrt hh]
 
 /-- The block radius has its literal source position scale. -/
-theorem propagation_block_radius_cube {h W : ℝ} (hh : 0 ≤ h) :
+theorem propagation_block_radius_cube {h W } (hh : 0 ≤ h) :
     (W * Real.sqrt h) ^ 3 = W ^ 3 * h ^ (3 / 2 : ℝ) := by
   rw [mul_pow, Real.sqrt_eq_rpow, ← Real.rpow_natCast (h ^ (1 / 2 : ℝ)) 3,
     ← Real.rpow_mul hh]

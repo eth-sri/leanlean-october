@@ -42,7 +42,7 @@ theorem pastGluedFunction_eq {a : ℝ} (haτ : a < τ) {p : KineticPoint n}
     (hu _ ht) (hu a haτ) p hp hs ha
 
 /-- Gluing preserves the uniform global bound, continuity, smoothness, equation and traces. -/
-theorem pastGluedFunction_isClassical {C : ℝ} (hC : 0 ≤ C)
+theorem pastGluedFunction_isClassical {C } (hC : 0 ≤ C)
     (hbound : ∀ a, a < τ → ∀ p ∈ movingClosedSlab Ω γ a τ, |u a p| ≤ C) :
     IsClassicalViscousTerminalSolution Ω γ B b ε τ F (pastGluedFunction τ u) ∧
       (∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |pastGluedFunction τ u p| ≤ C) := by
@@ -85,11 +85,10 @@ theorem pastGluedFunction_isClassical {C : ℝ} (hC : 0 ≤ C)
     have ha : a < p.time := sub_lt_self _ zero_lt_one
     have haτ : a < τ := ha.trans hp.1
     have he : pastGluedFunction τ u =ᶠ[𝓝 p] u a := by
-      have ht : ∀ᶠ q : KineticPoint n in 𝓝 p, a < q.time ∧ q.time < τ :=
+      have ht :=
         ((isOpen_lt continuous_const continuous_time).inter
           (isOpen_lt continuous_time continuous_const)).mem_nhds ⟨ha, hp.1⟩
-      have hd := (isOpen_setOf_mem_movingDomain hΩ hγ).mem_nhds hp.2
-      filter_upwards [ht, hd] with q hqt hqd
+      filter_upwards [ht, ((isOpen_setOf_mem_movingDomain hΩ hγ).mem_nhds hp.2)] with q hqt hqd
       exact pastGluedFunction_eq hΩ hγ hlam hB hb hε0 hε1 u hu haτ
         ⟨hqt.2.le, subset_closure hqd⟩ hqt.1
     rw [viscousTransportedOperator_congr_germ B b ε he]
@@ -102,7 +101,7 @@ theorem pastGluedFunction_isClassical {C : ℝ} (hC : 0 ≤ C)
     exact (hu _ haτ).2.2.2.2.1 p hp
   · intro p hp
     have ha : p.time - 1 < p.time := sub_lt_self _ zero_lt_one
-    have haτ : p.time - 1 < τ := ha.trans_le hp.1
+    have haτ := ha.trans_le hp.1
     have hpc : p ∈ evolutionPastClosedCylinder Ω γ τ :=
       ⟨hp.1, frontier_subset_closure hp.2⟩
     rw [pastGluedFunction_eq hΩ hγ hlam hB hb hε0 hε1 u hu haτ hpc ha]
@@ -112,13 +111,11 @@ end Family
 
 /-- The PastGluing step consumes actual uniformly bounded solutions on every finite slab.
 It does not assert that the exhaustion construction supplying those solutions is complete. -/
-theorem exists_viscous_terminalSolution_of_finiteSlabs {n : ℕ}
-    {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
-    {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
-    (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ}
-    {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) (τ : ℝ)
-    (F : BoundedBorel (EvolutionAmbientState n)) (C : ℝ) (hC : 0 ≤ C)
+theorem exists_viscous_terminalSolution_of_finiteSlabs {n Ω} (hΩ : IsOpen Ω) {γ } (hγ : Continuous γ)
+    {lam Lam } (hlam : 0 < lam) {B }
+    (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb b} (hb : HasEuclideanLipschitzDrift Lb b)
+    {ε } (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) (τ : ℝ)
+    (F : BoundedBorel (EvolutionAmbientState n)) (C ) (hC : 0 ≤ C)
     (hfinite : ∀ a : ℝ, a < τ → ∃ u : KineticPoint n → ℝ,
       IsClassicalViscousFiniteSolution Ω γ B b ε a τ F u ∧
         ∀ p ∈ movingClosedSlab Ω γ a τ, |u p| ≤ C) :

@@ -41,22 +41,22 @@ private theorem half_sq_sub_sq_le_shiftedPositivePart_mul_sub
     simp only [max_eq_left, max_eq_right, hx, hz] <;>
     nlinarith [sq_nonneg ((x - k) - (z - l))]
 
-/-- Half the squared `L²` norm of an affine-threshold shifted positive part. -/
+/- Half the squared `L²` norm of an affine-threshold shifted positive part. -/
 def shiftedPositivePartHalfEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (v : H10HilbertGraph hΩ) (k : ℝ≥0) : ℝ :=
   (1 / 2 : ℝ) * ‖shiftedPositivePartValue k (valueCLM hΩ v)‖ ^ 2
 
-/-- Squared `L²` energy of the shifted positive part at an affine threshold. -/
+/- Squared `L²` energy of the shifted positive part at an affine threshold. -/
 def shiftedPositivePartEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (M N : ℝ≥0) (x : ℝ → H10HilbertGraph hΩ) (t : ℝ) : ℝ :=
   ‖valueCLM hΩ (h10ShiftedPositivePart hΩ (x t)
     (reverseTimeAffineThreshold M N t))‖ ^ 2
 
-/-- Rate in the moving-threshold shifted-positive-part energy identity. -/
+/- Rate in the moving-threshold shifted-positive-part energy identity. -/
 def shiftedPositivePartEnergyRate
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (M N : ℝ≥0)
     (x : ℝ → H10HilbertGraph hΩ) (y : ℝ → H10HilbertGraphDual hΩ)
     (t : ℝ) : ℝ :=
@@ -66,7 +66,7 @@ def shiftedPositivePartEnergyRate
         (reverseTimeAffineThreshold M N t)))
 
 private theorem scalarLp_norm_sq_eq_integral_sq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    {d } {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ‖f‖ ^ 2 = ∫ a, (f a) ^ 2 ∂(PDE.volumeOn Ω) := by
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
   congr 1
@@ -74,7 +74,7 @@ private theorem scalarLp_norm_sq_eq_integral_sq
   simp only [RCLike.inner_apply, conj_trivial, pow_two]
 
 private theorem scalarLp_integrable_sq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    {d } {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     Integrable (fun a => (f a) ^ 2) (PDE.volumeOn Ω) := by
   exact (Lp.memLp f).integrable_sq
 
@@ -85,7 +85,7 @@ private theorem correctedDual_apply
   simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
 
 private theorem spatialMassComp_shiftedPositivePart_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (x : H10HilbertGraph hΩ) (m : ℝ≥0) :
     ((spatialMassCLM hΩbounded).comp (valueCLM hΩ))
         (h10ShiftedPositivePart hΩ x m) =
@@ -93,7 +93,7 @@ private theorem spatialMassComp_shiftedPositivePart_apply
   rw [ContinuousLinearMap.comp_apply, valueCLM_h10ShiftedPositivePart hΩ]
 
 private theorem scalarLpDual_shiftedPositivePart_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (p x z : H10HilbertGraph hΩ) (m : ℝ≥0) :
     scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x - valueCLM hΩ z)
         (h10ShiftedPositivePart hΩ p m) =
@@ -104,7 +104,7 @@ private theorem scalarLpDual_shiftedPositivePart_apply
     valueCLM_h10ShiftedPositivePart hΩ]
 
 private theorem shiftedPositivePart_integral_support_lower
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩbounded : Bornology.IsBounded Ω)
     (f z : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (k l : ℝ≥0) :
     @inner ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) _
@@ -138,7 +138,7 @@ private theorem shiftedPositivePart_integral_support_lower
     (f a) (z a) (k : ℝ) (l : ℝ)]
 
 private theorem shiftedPositivePart_integral_support_upper
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d } {Ω : Set (PDE.Vec d)}
     (hΩbounded : Bornology.IsBounded Ω)
     (f z : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (k l : ℝ≥0) :
     (1 / 2 : ℝ) * ‖shiftedPositivePartValue k f‖ ^ 2 -
@@ -171,15 +171,51 @@ private theorem shiftedPositivePart_integral_support_upper
   nlinarith [half_sq_sub_sq_le_shiftedPositivePart_mul_sub
     (f a) (z a) (k : ℝ) (l : ℝ)]
 
-private theorem shiftedPositivePart_support_lower
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+private theorem correctedDualPair_sub
+    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    (A B Q : V) (k l : ℝ) :
+    (A - k • Q) - (B - l • Q) = (A - B) - (k - l) • Q := by
+  module
+
+private theorem scalarLpDual_value_sub
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    (x z : H10HilbertGraph hΩ) :
+    scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
+        scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) =
+      scalarLpToH10HilbertGraphDual hΩ
+        (valueCLM hΩ x - valueCLM hΩ z) := by
+  rw [map_sub]
+
+private theorem shiftedPositivePart_curve_support_lower
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (x z : H10HilbertGraph hΩ) (k l : ℝ≥0) :
-    (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x - valueCLM hΩ z) -
-      ((k : ℝ) - (l : ℝ)) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ))
+    ((scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
+        (k : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) -
+      (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) -
+        (l : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)))
         (h10ShiftedPositivePart hΩ z l) ≤
-      shiftedPositivePartHalfEnergy hΩ x k -
-        shiftedPositivePartHalfEnergy hΩ z l := by
+      shiftedPositivePartHalfEnergy hΩ x k - shiftedPositivePartHalfEnergy hΩ z l := by
+  have hmap :
+      (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
+          (k : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) -
+        (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) -
+          (l : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) =
+      scalarLpToH10HilbertGraphDual hΩ
+          (valueCLM hΩ x - valueCLM hΩ z) -
+        ((k : ℝ) - (l : ℝ)) •
+          (spatialMassCLM hΩbounded).comp (valueCLM hΩ) := by
+    calc
+      _ = (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
+            scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z)) -
+          ((k : ℝ) - (l : ℝ)) •
+            (spatialMassCLM hΩbounded).comp (valueCLM hΩ) :=
+        correctedDualPair_sub _ _ _ _ _
+      _ = _ := congrArg (fun A : H10HilbertGraphDual hΩ =>
+        A - ((k : ℝ) - (l : ℝ)) •
+          (spatialMassCLM hΩbounded).comp (valueCLM hΩ))
+        (scalarLpDual_value_sub hΩ x z)
+  rw [hmap]
   have hmass := spatialMassCLM_apply hΩbounded
     (shiftedPositivePartValue l (valueCLM hΩ z))
   calc
@@ -219,15 +255,36 @@ private theorem shiftedPositivePart_support_lower
     _ ≤ _ := shiftedPositivePart_integral_support_lower hΩbounded
       (valueCLM hΩ x) (valueCLM hΩ z) k l
 
-private theorem shiftedPositivePart_support_upper
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+private theorem shiftedPositivePart_curve_support_upper
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (x z : H10HilbertGraph hΩ) (k l : ℝ≥0) :
-    shiftedPositivePartHalfEnergy hΩ x k -
-        shiftedPositivePartHalfEnergy hΩ z l ≤
-    (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x - valueCLM hΩ z) -
-      ((k : ℝ) - (l : ℝ)) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ))
+    shiftedPositivePartHalfEnergy hΩ x k - shiftedPositivePartHalfEnergy hΩ z l ≤
+    ((scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
+        (k : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) -
+      (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) -
+        (l : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)))
         (h10ShiftedPositivePart hΩ x k) := by
+  have hmap :
+      (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
+          (k : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) -
+        (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) -
+          (l : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) =
+      scalarLpToH10HilbertGraphDual hΩ
+          (valueCLM hΩ x - valueCLM hΩ z) -
+        ((k : ℝ) - (l : ℝ)) •
+          (spatialMassCLM hΩbounded).comp (valueCLM hΩ) := by
+    calc
+      _ = (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
+            scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z)) -
+          ((k : ℝ) - (l : ℝ)) •
+            (spatialMassCLM hΩbounded).comp (valueCLM hΩ) :=
+        correctedDualPair_sub _ _ _ _ _
+      _ = _ := congrArg (fun A : H10HilbertGraphDual hΩ =>
+        A - ((k : ℝ) - (l : ℝ)) •
+          (spatialMassCLM hΩbounded).comp (valueCLM hΩ))
+        (scalarLpDual_value_sub hΩ x z)
+  rw [hmap]
   have hmass := spatialMassCLM_apply hΩbounded
     (shiftedPositivePartValue k (valueCLM hΩ x))
   calc
@@ -266,85 +323,6 @@ private theorem shiftedPositivePart_support_upper
           ((k : ℝ) - (l : ℝ)) * q)
         (spatialMassComp_shiftedPositivePart_apply hΩ hΩbounded x k).symm
     _ = _ := (correctedDual_apply _ _ _ _).symm
-
-private theorem correctedDualPair_sub
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    (A B Q : V) (k l : ℝ) :
-    (A - k • Q) - (B - l • Q) = (A - B) - (k - l) • Q := by
-  module
-
-private theorem scalarLpDual_value_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (x z : H10HilbertGraph hΩ) :
-    scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
-        scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) =
-      scalarLpToH10HilbertGraphDual hΩ
-        (valueCLM hΩ x - valueCLM hΩ z) := by
-  rw [map_sub]
-
-private theorem shiftedPositivePart_curve_support_lower
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω)
-    (x z : H10HilbertGraph hΩ) (k l : ℝ≥0) :
-    ((scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
-        (k : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) -
-      (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) -
-        (l : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)))
-        (h10ShiftedPositivePart hΩ z l) ≤
-      shiftedPositivePartHalfEnergy hΩ x k - shiftedPositivePartHalfEnergy hΩ z l := by
-  have hmap :
-      (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
-          (k : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) -
-        (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) -
-          (l : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) =
-      scalarLpToH10HilbertGraphDual hΩ
-          (valueCLM hΩ x - valueCLM hΩ z) -
-        ((k : ℝ) - (l : ℝ)) •
-          (spatialMassCLM hΩbounded).comp (valueCLM hΩ) := by
-    calc
-      _ = (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
-            scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z)) -
-          ((k : ℝ) - (l : ℝ)) •
-            (spatialMassCLM hΩbounded).comp (valueCLM hΩ) :=
-        correctedDualPair_sub _ _ _ _ _
-      _ = _ := congrArg (fun A : H10HilbertGraphDual hΩ =>
-        A - ((k : ℝ) - (l : ℝ)) •
-          (spatialMassCLM hΩbounded).comp (valueCLM hΩ))
-        (scalarLpDual_value_sub hΩ x z)
-  rw [hmap]
-  exact shiftedPositivePart_support_lower hΩ hΩbounded x z k l
-
-private theorem shiftedPositivePart_curve_support_upper
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω)
-    (x z : H10HilbertGraph hΩ) (k l : ℝ≥0) :
-    shiftedPositivePartHalfEnergy hΩ x k - shiftedPositivePartHalfEnergy hΩ z l ≤
-    ((scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
-        (k : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) -
-      (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) -
-        (l : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)))
-        (h10ShiftedPositivePart hΩ x k) := by
-  have hmap :
-      (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
-          (k : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) -
-        (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) -
-          (l : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) =
-      scalarLpToH10HilbertGraphDual hΩ
-          (valueCLM hΩ x - valueCLM hΩ z) -
-        ((k : ℝ) - (l : ℝ)) •
-          (spatialMassCLM hΩbounded).comp (valueCLM hΩ) := by
-    calc
-      _ = (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
-            scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z)) -
-          ((k : ℝ) - (l : ℝ)) •
-            (spatialMassCLM hΩbounded).comp (valueCLM hΩ) :=
-        correctedDualPair_sub _ _ _ _ _
-      _ = _ := congrArg (fun A : H10HilbertGraphDual hΩ =>
-        A - ((k : ℝ) - (l : ℝ)) •
-          (spatialMassCLM hΩbounded).comp (valueCLM hΩ))
-        (scalarLpDual_value_sub hΩ x z)
-  rw [hmap]
-  exact shiftedPositivePart_support_upper hΩ hΩbounded x z k l
 
 private theorem tendsto_clm_apply
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -420,7 +398,7 @@ private theorem hasDerivAt_of_support_inequalities
 
 private theorem hasDerivAt_correctedPivot
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    (M N : ℝ≥0) (U : ℝ → V) (y : V) (Q : V) (t : ℝ) (ht0 : 0 < t)
+    (M N : ℝ≥0) (U : ℝ → V) (y : V) (Q : V) (t ) (ht0 : 0 < t)
     (hx : HasDerivAt U y t) :
     HasDerivAt
       (fun s => U s - (reverseTimeAffineThreshold M N s : ℝ) • Q)
@@ -429,20 +407,18 @@ private theorem hasDerivAt_correctedPivot
     convert (hasDerivAt_const t (M : ℝ)).add
       ((hasDerivAt_id t).mul_const (N : ℝ)) using 1
     all_goals first | (funext s; simp [Pi.add_def, mul_comm]) | ring
-  have hkQ : HasDerivAt (fun s : ℝ => ((M : ℝ) + s * (N : ℝ)) • Q)
-      ((N : ℝ) • Q) t := hk.smul_const Q
-  have hraw := hx.sub hkQ
+  have hraw := hx.sub (hk.smul_const Q)
   apply hraw.congr_of_eventuallyEq
   filter_upwards [Ioi_mem_nhds ht0] with s hs
   rw [coe_reverseTimeAffineThreshold_of_nonneg M N hs.le]
   rfl
 
-/-- The moving-threshold half-energy derivative obtained from convex support. -/
+/- The moving-threshold half-energy derivative obtained from convex support. -/
 theorem hasDerivAt_shiftedPositivePartHalfEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d } {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (M N : ℝ≥0)
     (x : ℝ → H10HilbertGraph hΩ) (hx : Continuous x)
-    (y : H10HilbertGraphDual hΩ) (t : ℝ) (ht0 : 0 < t)
+    (y : H10HilbertGraphDual hΩ) (t ) (ht0 : 0 < t)
     (hpivot : HasDerivAt
       (fun s => scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ (x s))) y t) :
     HasDerivAt

@@ -46,7 +46,7 @@ theorem HasCompactSupport.spatialDifferenceQuotient
 
 /-- The quotient support lies in the union of the translated and original supports. -/
 theorem tsupport_spatialDifferenceQuotient_subset
-    {d : ℕ} (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ) :
+    {d } (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ) :
     tsupport (spatialDifferenceQuotient k h f) ⊆
       tsupport (spatialTranslate k h f) ∪ tsupport f := by
   have hquotient : spatialDifferenceQuotient k h f =
@@ -61,7 +61,7 @@ theorem tsupport_spatialDifferenceQuotient_subset
 /-- A quotient is supported in `U` when the original carrier lies in `U` and
 the corresponding backward shift maps that carrier into `U`. -/
 theorem tsupport_spatialDifferenceQuotient_subset_of_mapsTo_spatialShift_neg
-    {d : ℕ} {K U : Set (TimeVelocity d)}
+    {d K U}
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
     (hfK : tsupport f ⊆ K) (hKU : K ⊆ U)
     (hshift : Set.MapsTo (spatialShift k (-h)) K U) :

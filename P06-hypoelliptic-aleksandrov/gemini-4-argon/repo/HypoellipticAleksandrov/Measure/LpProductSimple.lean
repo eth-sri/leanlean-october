@@ -21,12 +21,12 @@ open MeasureTheory
 
 noncomputable section
 
-/-- The raw product representative obtained from a finite-range outer simple function. -/
+/- The raw product representative obtained from a finite-range outer simple function. -/
 noncomputable def simpleUncurry {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
     {ν : Measure β} (s : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν)) : α × β → ℝ :=
   fun z => s z.1 z.2
 
-/-- A finite-range outer `L²` function has a jointly strongly measurable raw lift. -/
+/- A finite-range outer `L²` function has a jointly strongly measurable raw lift. -/
 theorem stronglyMeasurable_simpleUncurry
     {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
     {ν : Measure β} (s : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν)) :
@@ -53,7 +53,7 @@ private theorem integral_sq_coeFn_eq_norm_sq
     _ = inner ℝ c c := (MeasureTheory.L2.inner_def c c).symm
     _ = ‖c‖ ^ 2 := real_inner_self_eq_norm_sq c
 
-/-- The raw lift of an outer simple `L²` function belongs to product `L²`. -/
+/- The raw lift of an outer simple `L²` function belongs to product `L²`. -/
 theorem memLp_simpleUncurry_two
     {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
     (μ : Measure α) (ν : Measure β) [SFinite ν]
@@ -83,20 +83,7 @@ theorem memLp_simpleUncurry_two
         exact abs_of_nonneg (sq_nonneg (s x y))
       _ = ‖s x‖ ^ 2 := integral_sq_coeFn_eq_norm_sq ν (s x)
 
-/-- Subtraction of raw lifts agrees almost everywhere with the raw lift of subtraction. -/
-theorem ae_simpleUncurry_sub
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
-    (μ : Measure α) (ν : Measure β) [SFinite ν]
-    (s t : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν)) :
-    simpleUncurry (s - t) =ᵐ[μ.prod ν] simpleUncurry s - simpleUncurry t := by
-  apply (MeasureTheory.Measure.ae_prod_iff_ae_ae
-    ((stronglyMeasurable_simpleUncurry (s - t)).measurableSet_eq_fun
-      ((stronglyMeasurable_simpleUncurry s).sub (stronglyMeasurable_simpleUncurry t)))).2
-  filter_upwards with x
-  filter_upwards [MeasureTheory.Lp.coeFn_sub (s x) (t x)] with y hy
-  exact hy
-
-/-- The `L²` norm of the product lift equals the outer `L²` norm. -/
+/- Subtraction of raw lifts agrees almost everywhere with the raw lift of subtraction. -/
 theorem norm_simpleUncurry_toLp_eq
     {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
     (μ : Measure α) (ν : Measure β) [SFinite ν]
@@ -128,7 +115,7 @@ theorem norm_simpleUncurry_toLp_eq
       simpa using (MeasureTheory.eLpNorm_nnreal_pow_eq_lintegral
         (f := s) (μ := μ) (p := (2 : NNReal)) (by norm_num) hs.aestronglyMeasurable).symm
 
-/-- The norm of the difference of two product lifts equals the outer difference norm. -/
+/- The norm of the difference of two product lifts equals the outer difference norm. -/
 theorem norm_sub_simpleUncurry_toLp_eq
     {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
     (μ : Measure α) (ν : Measure β) [SFinite ν]
@@ -144,7 +131,14 @@ theorem norm_sub_simpleUncurry_toLp_eq
       (memLp_simpleUncurry_two μ ν (s - t) (hs.sub ht)).toLp (simpleUncurry (s - t)) := by
     rw [← MeasureTheory.MemLp.toLp_sub]
     apply MeasureTheory.MemLp.toLp_congr
-    exact (ae_simpleUncurry_sub μ ν s t).symm
+    have _h_inl_13 : simpleUncurry (s - t) =ᵐ[μ.prod ν] simpleUncurry s - simpleUncurry t := by
+      apply (MeasureTheory.Measure.ae_prod_iff_ae_ae
+        ((stronglyMeasurable_simpleUncurry (s - t)).measurableSet_eq_fun
+          ((stronglyMeasurable_simpleUncurry s).sub (stronglyMeasurable_simpleUncurry t)))).2
+      filter_upwards with x
+      filter_upwards [MeasureTheory.Lp.coeFn_sub (s x) (t x)] with y hy
+      exact hy
+    exact _h_inl_13.symm
   calc
     ‖(memLp_simpleUncurry_two μ ν s hs).toLp (simpleUncurry s) -
         (memLp_simpleUncurry_two μ ν t ht).toLp (simpleUncurry t)‖ =

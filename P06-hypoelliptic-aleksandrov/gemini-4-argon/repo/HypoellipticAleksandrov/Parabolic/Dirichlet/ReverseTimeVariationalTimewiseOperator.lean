@@ -23,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The declared reverse-time variational derivative is the canonical Bochner
 source-minus-form residual. -/
 theorem IsReverseTimeVariationalEnergySolution.g_eq_reverseTimeFormResidual
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -61,8 +61,8 @@ theorem IsReverseTimeVariationalEnergySolution.g_eq_reverseTimeFormResidual
   linarith
 
 private theorem ae_sub_apply_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
+    {d } {Ω : Set (PDE.Vec d)}
+    (hΩ : IsOpen Ω) (T )
     (source action : ReverseTimeL2VStar hΩ T)
     (u : ReverseTimeL2V hΩ T)
     (Q : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ) :
@@ -78,7 +78,7 @@ private theorem ae_sub_apply_timewiseCLM
 /-- The declared derivative evaluated on a timewise bounded spatial image is
 the totalized negative-source evaluation minus the totalized form action. -/
 theorem ae_reverseTimeVariationalEnergySolution_apply_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d Ω}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -124,14 +124,14 @@ theorem ae_reverseTimeVariationalEnergySolution_apply_timewiseCLM
 /-- Pairing a dual Bochner curve with a bounded timewise spatial image is
 integrable on the reverse-time volume. -/
 theorem integrable_reverseTimeDualPairing_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
+    {d } {Ω : Set (PDE.Vec d)}
+    (hΩ : IsOpen Ω) (T )
     (Q : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     MeasureTheory.Integrable (fun τ => (g τ) (Q (u τ)))
       (reverseTimeVolume T) := by
   let Qu := Q.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u
-  have hQu : Qu =ᵐ[reverseTimeVolume T] fun τ => Q (u τ) :=
+  have hQu :=
     ContinuousLinearMap.coeFn_compLpL Q u
   refine (integrable_reverseTimeDualPairing hΩ T Qu g).congr ?_
   filter_upwards [hQu] with τ hQ

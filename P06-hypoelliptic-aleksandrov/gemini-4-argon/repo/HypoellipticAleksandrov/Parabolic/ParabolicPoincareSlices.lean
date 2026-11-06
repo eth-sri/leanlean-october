@@ -20,20 +20,20 @@ open MeasureTheory
 open scoped BigOperators
 
 /-- The normalized velocity-cube average at a fixed time. -/
-noncomputable def parabolicMorreyUnitVelocityAverage {d : Nat}
+noncomputable def parabolicMorreyUnitVelocityAverage {d }
     (u : TimeVelocity d -> Real) (t : Real) : Real :=
   ((volume (velocityCube (0 : PDE.Vec d) 1)).toReal)⁻¹ *
     ∫ v in velocityCube 0 1, u (t, v)
 
 /-- The normalized `i`th velocity moment coefficient at a fixed time. -/
-noncomputable def parabolicMorreyUnitVelocityCoeffAt {d : Nat}
+noncomputable def parabolicMorreyUnitVelocityCoeffAt {d }
     (u : TimeVelocity d -> Real) (t : Real) (i : Fin d) : Real :=
   3 * ((volume (velocityCube (0 : PDE.Vec d) 1)).toReal)⁻¹ *
     ∫ v in velocityCube 0 1, u (t, v) * v i
 
 /-- The canonical moment-affine velocity projection, performed separately at
 each time. -/
-noncomputable def parabolicMorreyUnitSpatialAffineProjection {d : Nat}
+noncomputable def parabolicMorreyUnitSpatialAffineProjection {d }
     (u : TimeVelocity d -> Real) : TimeVelocity d -> Real :=
   fun z => parabolicMorreyUnitVelocityAverage u z.1 +
     ∑ i : Fin d, parabolicMorreyUnitVelocityCoeffAt u z.1 i * z.2 i

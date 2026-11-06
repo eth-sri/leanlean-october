@@ -90,18 +90,6 @@ private theorem velocityGradient_timeSlice_eq_partialDeriv
   rw [hslice.fderiv]
   rfl
 
-private theorem h10HilbertGraph_integral_partialDeriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (v : H10HilbertGraph hΩ) (i : Fin d) (ψ : PDE.WeakTestFunction Ω) :
-    (∫ y, valueCLM hΩ v y * ψ.partialDeriv i y ∂PDE.volumeOn Ω) =
-      -∫ y, gradientCLM hΩ v y i * ψ y ∂PDE.volumeOn Ω := by
-  let w : PDE.H1Graph Ω := PDE.H1HilbertGraph.toH1Graph (v : PDE.H1HilbertGraph Ω)
-  have hzero :
-      (∫ y, w.1.1 y * ψ.partialDeriv i y ∂PDE.volumeOn Ω) +
-        ∫ y, w.1.2 y i * ψ y ∂PDE.volumeOn Ω = 0 := by
-    exact (PDE.mem_weakGradientGraph_iff_integral w.1).mp w.2 i ψ
-  exact eq_neg_of_add_eq_zero_left hzero
-
 private theorem integrable_mul_of_memLp_two_of_continuous_compact
     {d : ℕ} {W q : TimeVelocity d → ℝ}
     {S : Set (TimeVelocity d)}
@@ -112,7 +100,7 @@ private theorem integrable_mul_of_memLp_two_of_continuous_compact
     (hq.memLp_of_hasCompactSupport hqcompact).restrict S
   simpa only [Pi.mul_def] using hW.integrable_mul hqLp
 
-/-- Reverse-time product representatives of a spatial Sobolev curve retain
+/- Reverse-time product representatives of a spatial Sobolev curve retain
 their joint raw weak velocity derivatives. -/
 theorem reverseTime_hasWeakVelocityPartialDerivOn_of_product_representatives
     {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -182,6 +170,13 @@ theorem reverseTime_hasWeakVelocityPartialDerivOn_of_product_representatives
     rw [hy]
     rfl
   rw [hleftSlice, hrightSlice]
-  exact h10HilbertGraph_integral_partialDeriv hΩ (u τ) i (ψ τ)
+  let v := (u τ)
+  let ψ := (ψ τ)
+  let w : PDE.H1Graph Ω := PDE.H1HilbertGraph.toH1Graph (v : PDE.H1HilbertGraph Ω)
+  have hzero :
+      (∫ y, w.1.1 y * ψ.partialDeriv i y ∂PDE.volumeOn Ω) +
+        ∫ y, w.1.2 y i * ψ y ∂PDE.volumeOn Ω = 0 := by
+    exact (PDE.mem_weakGradientGraph_iff_integral w.1).mp w.2 i ψ
+  exact eq_neg_of_add_eq_zero_left hzero
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

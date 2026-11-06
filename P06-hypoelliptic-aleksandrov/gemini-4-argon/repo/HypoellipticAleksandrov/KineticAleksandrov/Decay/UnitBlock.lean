@@ -167,8 +167,6 @@ theorem unit_frequency_block_W (hEvol : IterationEvolutionStatement)
   have hphaseν : IsPhaseProjection (phaseCoordinate ξ (0 : PDE.Vec d)) M ν := by
     intro A hA
     exact hν A hA
-  have hcancel := (block_interior_cancellation ξ 0 M F1 F2 Θ (blockMass Cstar 1 1)
-    h q0 _ _ hMone hFsum hmap1 hmap2 hmass hΦ hf1 hf2 ν hphaseν).2
-  exact hcancel.trans (sub_le_sub_left (min_le_left δ0 (1 / 2)) 1)
+  exact ((block_interior_cancellation ξ 0 M F1 F2 Θ (blockMass Cstar 1 1) h q0 _ _ hMone hFsum hmap1 hmap2 hmass hΦ hf1 hf2 ν hphaseν).2).trans (sub_le_sub_left (min_le_left δ0 (1 / 2)) 1)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

@@ -13,61 +13,22 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
-/-- Replace only matrices violating the source ellipticity bounds. -/
-def borelEllipticRepresentative {d : ℕ} (lam Lam : ℝ) (A : CoefficientField d) :
+/- Replace only matrices violating the source ellipticity bounds. -/
+def borelEllipticRepresentative {d } (lam Lam : ℝ) (A : CoefficientField d) :
     CoefficientField d := by
   classical
   exact fun t v => if lam • (1 : PDE.Mat d) ≤ A t v ∧ A t v ≤ Lam • (1 : PDE.Mat d)
   then A t v else lam • (1 : PDE.Mat d)
 
-/-- The replacement is Borel, symmetric, elliptic everywhere, and a.e. unchanged. -/
-theorem borelEllipticRepresentative_spec {d : ℕ} (lam Lam : ℝ)
-    (_hlam : 0 < lam) (hLam : lam ≤ Lam) (A : CoefficientField d)
-    (hBorel : IsBorelCoefficient A) (hsymm : IsSymmetricCoefficient A)
-    (hlo : HasLowerEllipticityAE lam A) (hhi : HasUpperEllipticityAE Lam A) :
-    IsBorelCoefficient (borelEllipticRepresentative lam Lam A) ∧
-    IsSymmetricCoefficient (borelEllipticRepresentative lam Lam A) ∧
-    HasLowerEllipticity lam (borelEllipticRepresentative lam Lam A) ∧
-    HasUpperEllipticity Lam (borelEllipticRepresentative lam Lam A) ∧
-    coefficientAt (borelEllipticRepresentative lam Lam A) =ᵐ[volume] coefficientAt A := by
-  classical
-  let : SecondCountableTopology (PDE.Mat d) :=
-    inferInstanceAs (SecondCountableTopology (Fin d → Fin d → ℝ))
-  change Measurable (coefficientAt A) at hBorel
-  have hscalar : lam • (1 : PDE.Mat d) ≤ Lam • (1 : PDE.Mat d) := by
-    rw [Matrix.le_iff,← sub_smul]
-    exact Matrix.PosSemidef.one.smul (sub_nonneg.mpr hLam)
-  refine ⟨?_,?_,?_,?_,?_⟩
-  · exact hBorel.ite
-      ((measurableSet_le measurable_const hBorel).inter
-        (measurableSet_le hBorel measurable_const)) measurable_const
-  · intro t v
-    unfold borelEllipticRepresentative
-    split_ifs
-    · exact hsymm t v
-    · exact Matrix.isSymm_one.smul lam
-  · intro t v
-    unfold borelEllipticRepresentative
-    split_ifs with h
-    · exact h.1
-    · exact le_rfl
-  · intro t v
-    unfold borelEllipticRepresentative
-    split_ifs with h
-    · exact h.2
-    · exact hscalar
-  · filter_upwards [hlo,hhi] with z hl hh
-    exact ite_eq_left ⟨hl,hh⟩
-
-/-- The matrix bridge uses precisely the inherited finite-product supremum norm. -/
-@[instance_reducible] def borelMatrixContinuousENorm {d : ℕ} :
+/- The replacement is Borel, symmetric, elliptic everywhere, and a.e. unchanged. -/
+@[instance_reducible] def borelMatrixContinuousENorm {d } :
     ContinuousENorm (PDE.Mat d) :=
   inferInstanceAs (ContinuousENorm (Fin d → Fin d → ℝ))
 
 attribute [local instance] borelMatrixContinuousENorm
 
-/-- Global ellipticity provides the local integrability required for convolution. -/
-theorem borel_coefficient_locallyIntegrable {d : ℕ} {lam Lam : ℝ}
+/- Global ellipticity provides the local integrability required for convolution. -/
+theorem borel_coefficient_locallyIntegrable {d lam Lam}
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : CoefficientField d)
     (hBorel : IsBorelCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A) :
@@ -79,7 +40,7 @@ theorem borel_coefficient_locallyIntegrable {d : ℕ} {lam Lam : ℝ}
   let : SecondCountableTopology (PDE.Mat d) :=
     inferInstanceAs (SecondCountableTopology (Fin d → Fin d → ℝ))
   change Measurable (coefficientAt A) at hBorel
-  have hLam0 : 0 ≤ Lam := (hlam.le.trans hLam)
+  have hLam0 := (hlam.le.trans hLam)
   apply (locallyIntegrable_const Lam).mono hBorel.aestronglyMeasurable
   filter_upwards with z
   rw [Real.norm_of_nonneg hLam0,Matrix.norm_le_iff hLam0]

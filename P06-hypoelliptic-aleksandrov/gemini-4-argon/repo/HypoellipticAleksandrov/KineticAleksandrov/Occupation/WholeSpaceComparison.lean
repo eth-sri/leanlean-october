@@ -5,6 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceQu
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceCoefficient
 public import HypoellipticAleksandrov.Parabolic.ScalarMaximum
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
+import HypoellipticAleksandrov.Parabolic.AffineScalarCalculus
+import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+import Mathlib.Analysis.Calculus.FDeriv.Pow
+import Mathlib.Tactic.FunProp
 
 /-! # Maximum-principle comparison with the occupation quadratic -/
 
@@ -13,18 +17,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Set
 open scoped MatrixOrder Matrix.Norms.Elementwise
+open scoped BigOperators
 
-/-- The quadratic is nonnegative before the terminal time. -/
-theorem occupationQuadratic_nonneg {d : ℕ} {Lam : ℝ} (hLam : 0 ≤ Lam)
-    (vStar : PDE.Vec d) {z : TimeVelocity d} (hz : z.1 ≤ 1) :
-    0 ≤ occupationQuadratic Lam vStar z := by
-  unfold occupationQuadratic
-  exact add_nonneg (Finset.sum_nonneg fun _ _ => sq_nonneg _)
-    (mul_nonneg (by positivity) (sub_nonneg.mpr hz))
-
-/-- A smooth quadratic majorant controls a classical comparison defect. -/
-theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
-    {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
+/- The quadratic is nonnegative before the terminal time. -/
+theorem wholeSpace_quadratic_comparison {d lam Lam α R H B} (hB : IsSectionTwoCoefficient lam Lam B)
     (hα : α < 1) (vStar : PDE.Vec d)
     (hΩbounded : Bornology.IsBounded (PDE.euclideanBall vStar R))
     (hH : 0 ≤ H)
@@ -47,7 +43,7 @@ theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
   let c := H / R ^ 2
   let Q := occupationQuadratic Lam vStar
   let ψ := fun z => c * Q z + 0
-  have hc : 0 ≤ c := div_nonneg hH (sq_nonneg R)
+  have hc := div_nonneg hH (sq_nonneg R)
   have hQreg : IsScalarC12On Q
       (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) :=
     isScalarC12On_of_contDiff_two
@@ -55,8 +51,7 @@ theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
   have hψreg := hQreg.const_mul_add_const c 0
   have hdiff := isScalarC12On_sub hWreg hV.2.1
   let u := fun z => W z - V z - ψ z
-  have hureg : IsScalarC12On u
-      (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) :=
+  have hureg :=
     isScalarC12On_sub hdiff hψreg
   have huc : ContinuousOn u
       (scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R)) :=
@@ -73,8 +68,21 @@ theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
     have hψop := scalarParabolicZeroOrderOperator_const_mul_add_const B
       (fun _ _ => 0) (fun _ _ => 0) c 0 Q z
     have hVeq := hV.2.2.1 z hz
-    have hQop := scalarParabolicOperator_occupationQuadratic_le B Lam vStar z
-      (hB.2.2.2.2.2 z.1 z.2)
+    have hQop : scalarParabolicOperator B (fun _ _ => 0) (occupationQuadratic Lam vStar) z ≤ 0 := by
+      have hB := (hB.2.2.2.2.2 z.1 z.2)
+      have hpsd : (Lam • (1 : PDE.Mat d) - B z.1 z.2).PosSemidef :=
+        Matrix.le_iff.mp hB
+      have htrace := hpsd.trace_nonneg
+      rw [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_one] at htrace
+      simp only [Fintype.card_fin, smul_eq_mul] at htrace
+      have hcontract : matrixContraction (B z.1 z.2) (1 : PDE.Mat d) =
+          (B z.1 z.2).trace := by
+        simp [matrixContraction, Matrix.trace, Matrix.diag, Matrix.one_apply]
+      unfold scalarParabolicOperator
+      rw [scalarTimeDerivative_occupationQuadratic, scalarSpatialHessian_occupationQuadratic,
+        matrixContraction_smul_right, hcontract]
+      simp only [PDE.vecDot, Pi.zero_apply, zero_mul, Finset.sum_const_zero, add_zero]
+      linarith
     simp only [scalarParabolicZeroOrderOperator, zero_mul, add_zero] at huop hdop hψop hVeq
     change 0 ≤ scalarParabolicOperator B (fun _ _ => 0) u z
     simp only [u, ψ, add_zero]
@@ -89,8 +97,12 @@ theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
       have he : z = (1, z.2) := Prod.ext htime rfl
       rw [he]
       exact hV.2.2.2.1 z.2 hv
-    have hQ0 := occupationQuadratic_nonneg (hB.1.le.trans hB.2.1) vStar
-      (show z.1 ≤ 1 from htime.le)
+    have hQ0 : 0 ≤ occupationQuadratic Lam vStar z := by
+      have hLam := (hB.1.le.trans hB.2.1)
+      have hz := (show z.1 ≤ 1 from htime.le)
+      unfold occupationQuadratic
+      exact add_nonneg (Finset.sum_nonneg fun _ _ => sq_nonneg _)
+        (mul_nonneg (by positivity) (sub_nonneg.mpr hz))
     dsimp [u, ψ]
     rw [hterminal z hz, hVz]
     nlinarith [mul_nonneg hc hQ0]

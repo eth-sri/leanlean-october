@@ -2,6 +2,10 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.UAsymptoticsMoments
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.IntegralKernel
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.Series
+import Mathlib.Tactic.Linarith
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.UAsymptoticsTaylor
 
 /-!
 # Positive-axis finite-order expansion of the Kummer integral
@@ -16,7 +20,7 @@ open Set MeasureTheory Filter
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
-/-- A uniform polynomial majorant integrates to the required inverse argument power. -/
+/- A uniform polynomial majorant integrates to the required inverse argument power. -/
 theorem laplaceTaylor_remainder_bound (a : Pos) (q : ℝ) (N L : ℕ) (C : ℝ)
     (hC : 0 ≤ C) (hrem : ∀ t : ℝ, 0 ≤ t →
       ‖(1 + t) ^ q - powerTaylor q N t‖ ≤ C * t ^ N * (1 + t) ^ L)
@@ -81,15 +85,15 @@ theorem laplaceTaylor_remainder_bound (a : Pos) (q : ℝ) (N L : ℕ) (C : ℝ)
   have hfinal := h.trans hlast
   simpa only [s, K, neg_add, sub_eq_add_neg] using hfinal
 
-/-- A concrete inverse-power bound for every finite U truncation. -/
+/- A concrete inverse-power bound for every finite U truncation. -/
 theorem UIr_remainder_bound (a : Pos) (b : ℝ) (N : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℝ, 1 ≤ z →
       ‖UIr a b z - uExpansion a.1 b N z‖ ≤ C * z ^ (-a.1 - (N : ℝ)) := by
   obtain ⟨C₀, L, hC₀, hrem⟩ := exists_powerTaylor_remainder_bound (b - a.1 - 1) N
   let C := (Real.Gamma a.1)⁻¹ * (C₀ * 2 ^ L *
     (Real.Gamma (a.1 + N) + Real.Gamma (a.1 + N + L)))
-  have hs : 0 < a.1 + (N : ℝ) := add_pos_of_pos_of_nonneg a.2 (Nat.cast_nonneg N)
-  have hsL : 0 < a.1 + (N : ℝ) + (L : ℝ) :=
+  have hs := add_pos_of_pos_of_nonneg a.2 (Nat.cast_nonneg N)
+  have hsL :=
     add_pos_of_pos_of_nonneg hs (Nat.cast_nonneg L)
   have hC : 0 < C := mul_pos (inv_pos.mpr (Real.Gamma_pos_of_pos a.2))
     (mul_pos (mul_pos hC₀ (pow_pos (by norm_num) L))
@@ -97,8 +101,23 @@ theorem UIr_remainder_bound (a : Pos) (b : ℝ) (N : ℕ) :
   refine ⟨C, hC, ?_⟩
   intro z hz
   have hz0 := zero_lt_one.trans_le hz
-  have hpol := integrableOn_gammaKernel_powerTaylor a (b - a.1 - 1) z hz0 N
-  have hker := integrable_laplaceKernel a b z hz0
+  have hpol : IntegrableOn (fun t : ℝ => Real.exp (-(z * t)) * t ^ (a.1 - 1) * powerTaylor (b - a.1 - 1) N t)
+      (Ioi 0) volume := by
+    let q := (b - a.1 - 1)
+    have h := integrable_finsetSum (Finset.range N)
+      (fun n _ => (integrableOn_gammaKernel_moment a z hz0 n).const_mul (Ring.choose q n))
+    apply IntegrableOn.congr_fun h _ measurableSet_Ioi
+    intro t _
+    simp only [powerTaylor, Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro n _
+    ring
+  have hker : IntegrableOn (laplaceKernel a b z) (Ioi 0) volume := by
+      exact (
+    integrableOn_laplaceKernelReal a.1 b z a.2 hz0
+
+    /- Strict positivity of the unbundled integral on its positive argument domain. -/
+    )
   have heq : UIr a b z - uExpansion a.1 b N z = (Real.Gamma a.1)⁻¹ *
       ∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) *
         ((1 + t) ^ (b - a.1 - 1) - powerTaylor (b - a.1 - 1) N t) := by
@@ -110,7 +129,50 @@ theorem UIr_remainder_bound (a : Pos) (b : ℝ) (N : ℕ) :
       funext t
       simp only [laplaceKernel, laplaceKernelReal]
       ring
-    rw [he, hd, integral_powerTaylor a b z hz0 N]
+    have _h_xinl_0 : (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) *
+      powerTaylor (b - a.1 - 1) N t) = Real.Gamma a.1 * uExpansion a.1 b N z := by
+      have hsum : (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) *
+          powerTaylor (b - a.1 - 1) N t) =
+          ∑ n ∈ Finset.range N, Ring.choose (b - a.1 - 1) n *
+            (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n) := by
+        simp only [powerTaylor, Finset.mul_sum]
+        have heq : (fun t : ℝ => ∑ n ∈ Finset.range N,
+            Real.exp (-(z * t)) * t ^ (a.1 - 1) * (Ring.choose (b - a.1 - 1) n * t ^ n)) =
+            (fun t => ∑ n ∈ Finset.range N, Ring.choose (b - a.1 - 1) n *
+              (Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n)) := by
+          funext t
+          apply Finset.sum_congr rfl
+          intro n _
+          ring
+        rw [heq, integral_finsetSum]
+        · simp only [integral_const_mul]
+        · intro n _
+          exact (integrableOn_gammaKernel_moment a z hz0 n).const_mul _
+      rw [hsum]
+      simp only [uExpansion, Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro n _
+      have _h_inl_10 : (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n) =
+          Real.Gamma a.1 * poch a.1 n * z ^ (-a.1) * z⁻¹ ^ n := by
+          have heq : (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n) =
+              ∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 + (n : ℝ) - 1) := by
+            apply setIntegral_congr_fun measurableSet_Ioi
+            intro t ht
+            dsimp only
+            rw [show a.1 + (n : ℝ) - 1 = (a.1 - 1) + (n : ℝ) by ring,
+              Real.rpow_add ht, Real.rpow_natCast]
+            ring
+          rw [heq, integral_gammaKernel _ z
+            (add_pos_of_pos_of_nonneg a.2 (Nat.cast_nonneg n)) hz0, Gamma_add_nat_eq_poch]
+          rw [neg_add, Real.rpow_add hz0]
+          simp only [Real.rpow_neg_eq_inv_rpow, Real.rpow_natCast]
+          ring
+
+        /- Integrability of each Taylor moment before finite summation. -/
+      rw [_h_inl_10, choose_eq_signed_poch,
+        show -(b - a.1 - 1) = a.1 - b + 1 by ring]
+      ring
+    rw [he, hd, _h_xinl_0]
     change (Real.Gamma a.1)⁻¹ * _ - _ = _
     rw [mul_sub, ← mul_assoc, inv_mul_cancel₀ (Real.Gamma_pos_of_pos a.2).ne', one_mul]
   rw [heq, norm_mul, Real.norm_of_nonneg (inv_pos.mpr (Real.Gamma_pos_of_pos a.2)).le]
@@ -118,7 +180,7 @@ theorem UIr_remainder_bound (a : Pos) (b : ℝ) (N : ℕ) :
   exact (mul_le_mul_of_nonneg_left h (inv_pos.mpr (Real.Gamma_pos_of_pos a.2)).le).trans_eq
     (by dsimp only [C]; ring)
 
-/-- Positive-axis finite-order U expansion with the exact source coefficients. -/
+/- Positive-axis finite-order U expansion with the exact source coefficients. -/
 theorem UIr_expansion (a : Pos) (b : ℝ) (N : ℕ) :
     Asymptotics.IsBigO atTop (fun z => UIr a b z - uExpansion a.1 b N z)
       (fun z => Real.rpow z (-a.1 - (N : ℝ))) := by
@@ -129,7 +191,7 @@ theorem UIr_expansion (a : Pos) (b : ℝ) (N : ℕ) :
   simpa only [Real.rpow_eq_pow, Real.norm_of_nonneg
     (Real.rpow_nonneg (zero_le_one.trans hz) _)] using h z hz
 
-/-- The finite U polynomial respects the same power transformation as the integral. -/
+/- The finite U polynomial respects the same power transformation as the integral. -/
 theorem uExpansion_transform (a : NegThird) (N : ℕ) (z : ℝ) (hz : 0 < z) :
     z ^ (1 / 3 : ℝ) * uExpansion (a.1 + 1 / 3) (4 / 3) N z =
       uExpansion a.1 (2 / 3) N z := by
@@ -146,36 +208,34 @@ theorem uExpansion_transform (a : NegThird) (N : ℕ) (z : ℝ) (hz : 0 < z) :
     show a.1 - 2 / 3 + 1 = a.1 + 1 / 3 by ring]
   ring
 
-/-- A concrete remainder bound for the transformed negative-shape solution. -/
-theorem UNr_remainder_bound (a : NegThird) (N : ℕ) :
-    ∃ C : ℝ, 0 < C ∧ ∀ z : ℝ, 1 ≤ z →
-      ‖UNr a z - uExpansion a.1 (2 / 3) N z‖ ≤ C * z ^ (-a.1 - (N : ℝ)) := by
-  let c : Pos := ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩
-  obtain ⟨C, hC, h⟩ := UIr_remainder_bound c (4 / 3) N
-  refine ⟨C, hC, ?_⟩
-  intro z hz
-  have hz0 := zero_lt_one.trans_le hz
-  have heq : UNr a z - uExpansion a.1 (2 / 3) N z =
-      z ^ (1 / 3 : ℝ) * (UIr c (4 / 3) z - uExpansion c.1 (4 / 3) N z) := by
-    rw [mul_sub, uExpansion_transform a N z hz0]
-    rfl
-  have hscale : z ^ (1 / 3 : ℝ) * z ^ (-c.1 - (N : ℝ)) = z ^ (-a.1 - (N : ℝ)) := by
-    rw [← Real.rpow_add hz0]
-    congr 1
-    dsimp only [c]
-    ring
-  rw [heq, norm_mul, Real.norm_of_nonneg (Real.rpow_nonneg hz0.le _)]
-  calc
-    _ ≤ z ^ (1 / 3 : ℝ) * (C * z ^ (-c.1 - (N : ℝ))) :=
-      mul_le_mul_of_nonneg_left (h z hz) (Real.rpow_nonneg hz0.le _)
-    _ = C * (z ^ (1 / 3 : ℝ) * z ^ (-c.1 - (N : ℝ))) := by ring
-    _ = _ := by rw [hscale]
-
-/-- Positive-axis finite-order expansion for the negative-shape source solution. -/
+/- A concrete remainder bound for the transformed negative-shape solution. -/
 theorem UNr_expansion (a : NegThird) (N : ℕ) :
     Asymptotics.IsBigO atTop (fun z => UNr a z - uExpansion a.1 (2 / 3) N z)
       (fun z => Real.rpow z (-a.1 - (N : ℝ))) := by
-  obtain ⟨C, _, h⟩ := UNr_remainder_bound a N
+  obtain ⟨C, _, h⟩ : ∃ C : ℝ, 0 < C ∧ ∀ z : ℝ, 1 ≤ z →
+      ‖UNr a z - uExpansion a.1 (2 / 3) N z‖ ≤ C * z ^ (-a.1 - (N : ℝ)) := by
+      let c : Pos := ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩
+      obtain ⟨C, hC, h⟩ := UIr_remainder_bound c (4 / 3) N
+      refine ⟨C, hC, ?_⟩
+      intro z hz
+      have hz0 := zero_lt_one.trans_le hz
+      have heq : UNr a z - uExpansion a.1 (2 / 3) N z =
+          z ^ (1 / 3 : ℝ) * (UIr c (4 / 3) z - uExpansion c.1 (4 / 3) N z) := by
+        rw [mul_sub, uExpansion_transform a N z hz0]
+        rfl
+      have hscale : z ^ (1 / 3 : ℝ) * z ^ (-c.1 - (N : ℝ)) = z ^ (-a.1 - (N : ℝ)) := by
+        rw [← Real.rpow_add hz0]
+        congr 1
+        dsimp only [c]
+        ring
+      rw [heq, norm_mul, Real.norm_of_nonneg (Real.rpow_nonneg hz0.le _)]
+      calc
+        _ ≤ z ^ (1 / 3 : ℝ) * (C * z ^ (-c.1 - (N : ℝ))) :=
+          mul_le_mul_of_nonneg_left (h z hz) (Real.rpow_nonneg hz0.le _)
+        _ = C * (z ^ (1 / 3 : ℝ) * z ^ (-c.1 - (N : ℝ))) := by ring
+        _ = _ := by rw [hscale]
+
+    /- Positive-axis finite-order expansion for the negative-shape source solution. -/
   apply Asymptotics.isBigO_iff.mpr
   refine ⟨C, ?_⟩
   filter_upwards [eventually_ge_atTop (1 : ℝ)] with z hz

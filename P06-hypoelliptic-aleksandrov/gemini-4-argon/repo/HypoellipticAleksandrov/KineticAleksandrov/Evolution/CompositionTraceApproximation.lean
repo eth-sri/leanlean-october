@@ -21,9 +21,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Function
 /-- A strictly earlier classical slice has smooth compact interior approximants with
 an arbitrarily small Euclidean weighted error and the same uniform bound. -/
 theorem IsClassicalTerminalSolution.exists_compact_slice_approximation
-    {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r C ε : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
+    {n Ω} (hΩ : IsOpen Ω) {γ B b τ r C ε F u}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r < τ)
     (hC0 : 0 ≤ C) (hC : ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |u p| ≤ C)
     (hε : 0 < ε) :

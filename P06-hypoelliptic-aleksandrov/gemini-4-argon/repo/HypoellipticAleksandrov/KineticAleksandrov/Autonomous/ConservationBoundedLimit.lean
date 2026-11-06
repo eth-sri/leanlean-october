@@ -17,9 +17,9 @@ open scoped Topology MatrixOrder
 solution. Its compact approximating solutions are supplied by the realization. -/
 theorem exists_bounded_fullspace_classical_limit
     (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam)
-    (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState 1)) (C : ℝ) (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
+    (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState 1)) (C ) (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
     (u : ℕ → KineticPoint 1 → ℝ)
     (hu : ∀ N, IsClassicalTerminalSolution autonomousWholeDomain (fun _ => 0)
       (evolutionCoefficient A.a) (identityDrift 1) τ (boundedConservationDatum F N) (u N))
@@ -155,11 +155,9 @@ theorem exists_bounded_fullspace_classical_limit
   obtain ⟨V', hV', hrep⟩ := exists_smooth_kinetic_representative hH hlam
     (evolutionCoefficient_smooth A) (evolutionCoefficient_bounds A)
     (identityDrift_smooth 1) one_pos (identityDrift_bounds 1).2 U hU V hweak
-  have hcontP : ContinuousOn (V ∘ evolutionHomeomorph 1) (evolutionHomeomorph 1 ⁻¹' U) :=
+  have hcontP :=
     (hcont.mono hUS).comp (evolutionHomeomorph 1).continuous.continuousOn (fun x hx => hx)
-  have hEq : EqOn V V' U := eqOn_of_ae_eq_of_continuousOn_kinetic hU hcontP hV'.continuousOn hrep
-  have hVsmooth : ContDiffOn ℝ (⊤ : ℕ∞) (V ∘ evolutionHomeomorph 1)
-      (evolutionHomeomorph 1 ⁻¹' U) := hV'.congr fun x hx => hEq hx
+  have hVsmooth := hV'.congr fun x hx => (eqOn_of_ae_eq_of_continuousOn_kinetic hU hcontP hV'.continuousOn hrep) hx
   refine ⟨V, hV, ⟨C, hC0, fun p hp => hVbd p hp⟩, hcont, ?_, ?_, ?_, ?_⟩
   · rw [evolutionPastInteriorRaw_eq_image]
     exact contDiffOn_comp_evolutionHomeomorph_iff.mp hVsmooth

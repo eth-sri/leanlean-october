@@ -2,6 +2,10 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoff
 import Mathlib.Tactic.Linarith
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Barrier
+import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Flattening
+import Mathlib.Tactic.Positivity
+import Mathlib.Tactic.Ring
 
 /-!
 # Zero extension and the fixed spatial collar
@@ -14,34 +18,38 @@ separate step from these pointwise identities.
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set
+open scoped ContDiff
 
-/-- Extension by zero outside the positive-time profile domain. -/
+/- Extension by zero outside the positive-time profile domain. -/
 def zeroExtendedProfile {d : ℕ} (H : XV d → ℝ) (alpha r mu R : ℝ)
     (P : KineticPoint d) : ℝ :=
   if 0 < P.time ∧ H (P.position, P.velocity) < 1 then
     timeCutoffProfile H alpha r mu R P else 0
 
-/-- The extension is globally nonnegative. -/
+/- The extension is globally nonnegative. -/
 theorem zeroExtendedProfile_nonneg {d : ℕ} (H : XV d → ℝ) (alpha r mu R : ℝ)
     (P : KineticPoint d) : 0 ≤ zeroExtendedProfile H alpha r mu R P := by
   unfold zeroExtendedProfile
   split
-  · exact timeCutoffProfile_nonneg H alpha r mu R P
+  ·
+      exact (
+    timeCutoffTheta_nonneg _
+    )
   · exact le_refl 0
 
-/-- The extension vanishes at every nonpositive time. -/
+/- The extension vanishes at every nonpositive time. -/
 theorem zeroExtendedProfile_eq_zero_of_time {d : ℕ} (H : XV d → ℝ)
     (alpha r mu R : ℝ) (P : KineticPoint d) (ht : P.time ≤ 0) :
     zeroExtendedProfile H alpha r mu R P = 0 := by
   simp only [zeroExtendedProfile, not_lt.mpr ht, false_and, ite_false]
 
-/-- The extension vanishes everywhere outside the profile domain. -/
+/- The extension vanishes everywhere outside the profile domain. -/
 theorem zeroExtendedProfile_eq_zero_of_profile {d : ℕ} (H : XV d → ℝ)
     (alpha r mu R : ℝ) (P : KineticPoint d) (hH : 1 ≤ H (P.position, P.velocity)) :
     zeroExtendedProfile H alpha r mu R P = 0 := by
   simp only [zeroExtendedProfile, not_lt.mpr hH, and_false, ite_false]
 
-/-- The flattened profile never exceeds one, independently of the profile value. -/
+/- The flattened profile never exceeds one, independently of the profile value. -/
 theorem flatProfile_le_one {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ) (hr : 0 < r)
     (q : XV d) : flatProfile H flatteningPsi flatteningOffset alpha r q ≤ 1 := by
   have hpow := (Real.rpow_pos_of_pos hr alpha).le

@@ -16,10 +16,10 @@ open scoped Topology
 /-- Uniformly bounded functions on a finite measure space converge strongly in L2 when
 an actual almost-everywhere pointwise limit is supplied. -/
 theorem tendsto_toLp_two_of_bounded_ae
-    {E : Type*} [MeasurableSpace E] (μ : Measure E) [IsFiniteMeasure μ]
+    {E : Type*} [MeasurableSpace E] (μ ) [IsFiniteMeasure μ]
     (f : ℕ → E → ℝ) (F : E → ℝ)
     (hf : ∀ n, MemLp (f n) 2 μ) (hF : MemLp F 2 μ)
-    (C : ℝ) (hC : 0 ≤ C) (hb : ∀ n, ∀ᵐ x ∂μ, |f n x| ≤ C)
+    (C ) (hC : 0 ≤ C) (hb : ∀ n, ∀ᵐ x ∂μ, |f n x| ≤ C)
     (hFb : ∀ᵐ x ∂μ, |F x| ≤ C)
     (hae : ∀ᵐ x ∂μ, Tendsto (fun n => f n x) atTop (𝓝 (F x))) :
     Tendsto (fun n => (hf n).toLp (f n)) atTop (𝓝 (hF.toLp F)) := by

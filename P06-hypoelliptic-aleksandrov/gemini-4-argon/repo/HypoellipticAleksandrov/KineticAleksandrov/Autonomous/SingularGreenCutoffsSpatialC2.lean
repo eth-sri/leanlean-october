@@ -13,7 +13,7 @@ open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set Measu
 /-- Compact C² spatial tests obey the actual full-space Green identity.
 Size and operator bounds are derived, and no Green identity is assumed. -/
 theorem fullspace_green_spatial_compact_c2
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
+    (hH : HormanderHypoellipticityStatement) {lam Lam }
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) (T : ℝ)
     (F : BoundedBorel (EvolutionAmbientState 1)) (hF : ContDiff ℝ 2 F)
@@ -29,7 +29,7 @@ theorem fullspace_green_spatial_compact_c2
   let fraw := fun x : EvolutionVec 1 => F (π x)
   have hπ : Continuous π :=
     (diffusedCoord 1).continuous.prodMk (transportedCoord 1).continuous
-  have hfraw : ContDiff ℝ 2 fraw := hF.comp
+  have hfraw := hF.comp
     ((diffusedCoord 1).contDiff.prodMk (transportedCoord 1).contDiff)
   have hfeq : f ∘ evolutionHomeomorph 1 = fraw := by
     funext x
@@ -70,9 +70,7 @@ theorem fullspace_green_spatial_compact_c2
         have hh := (evolutionProdCLE 1).apply_symm_apply (0, x)
         exact congrArg Prod.snd hh
       rwa [hpx] at hhit
-    have hz := transportedOperator_eq_zero_of_notMem_tsupport hnx
-      (evolutionCoefficient A.a) (identityDrift 1)
-    exact hx (by rw [hHeq]; exact hz)
+    exact hx (by rw [hHeq]; exact (transportedOperator_eq_zero_of_notMem_tsupport hnx (evolutionCoefficient A.a) (identityDrift 1)))
   have hstation (q : Point) :
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) f q =
         H (q.position, q.velocity) := by

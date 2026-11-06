@@ -11,15 +11,7 @@ import Mathlib.Tactic
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 
-/-- A fixed contraction dominates a sufficiently large integer power of one half. -/
-theorem return_loss_exponent {c : ℝ} (hc : 0 < c) :
-    ∃ m : ℕ, 0 < m ∧ (1 / 2 : ℝ) ^ m ≤ c := by
-  obtain ⟨n, hn⟩ := exists_pow_lt_of_lt_one hc (by norm_num : (1 / 2 : ℝ) < 1)
-  refine ⟨n + 1, by omega, ?_⟩
-  rw [pow_succ]
-  nlinarith [pow_nonneg (by norm_num : (0 : ℝ) ≤ 1 / 2) n]
-
-/-- Stop doubling at a radius between the fixed cutoff and twice that cutoff. -/
+/- A fixed contraction dominates a sufficiently large integer power of one half. -/
 theorem return_doubling_cutoff (r ell : ℝ) (_hr : 0 < r) (hell : 0 < ell)
     (hsmall : ell ≤ r) :
     ∃ N : ℕ, r ≤ returnExpandedRadius ell N ∧ returnExpandedRadius ell N ≤ 2 * r := by
@@ -33,7 +25,7 @@ theorem return_doubling_cutoff (r ell : ℝ) (_hr : 0 < r) (hell : 0 < ell)
     rw [pow_succ]
     nlinarith
 
-/-- The power loss is bounded by the accumulated uniform contractions. -/
+/- The power loss is bounded by the accumulated uniform contractions. -/
 theorem return_loss_power {c ell : ℝ} {m N : ℕ}
     (_hc : 0 ≤ c) (hell : 0 ≤ ell) (hbase : (1 / 2 : ℝ) ^ m ≤ c)
     (hrad : returnExpandedRadius ell N ≤ 1) : ell ^ m ≤ c ^ N := by

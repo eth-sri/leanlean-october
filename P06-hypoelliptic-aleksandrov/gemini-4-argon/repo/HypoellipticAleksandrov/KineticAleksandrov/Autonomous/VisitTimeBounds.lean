@@ -23,7 +23,7 @@ theorem visitTimeQuadratic_uniform_operator_bound : ∃ D : ℝ, 0 ≤ D ∧
   have he := (visitTimeCutoff_properties b c.r c.positive).2 p.time
   have hf := visitQuadratic_nonneg c hp
   have ha := A.bounds (p.position 0) (p.velocity 0)
-  have han : 0 ≤ A.a (p.position 0) (p.velocity 0) := hlam.le.trans ha.1
+  have han := hlam.le.trans ha.1
   have hfirst : |deriv eta p.time * visitQuadratic c (p.velocity 0)| ≤ 9 * D / 16 := by
     rw [abs_mul, abs_of_nonneg hf]
     have hm := mul_le_mul (hd b c.r c.positive p.time) (visitQuadratic_le c _)

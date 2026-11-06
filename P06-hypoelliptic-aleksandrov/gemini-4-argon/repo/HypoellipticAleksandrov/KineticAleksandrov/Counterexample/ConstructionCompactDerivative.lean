@@ -29,14 +29,14 @@ theorem construction_deriv_compact_parameter {Y A : Type*}
       (g (s, radius a)) s :=
     (hf.differentiable (by simp) (s, radius a)).hasFDerivAt.comp s
       ((hasFDerivAt_id s).prodMk (hasFDerivAt_const (radius a) s))
-  have hfc : Continuous (fun w : ℝ × A => f (w.1, radius w.2)) :=
+  have hfc :=
     hf.continuous.comp (continuous_fst.prodMk (hr.comp continuous_snd))
-  have hgc : Continuous (fun w : ℝ × A => g (w.1, radius w.2)) :=
+  have hgc :=
     hg.comp (continuous_fst.prodMk (hr.comp continuous_snd))
   have he := bellman_compact_parameter_hasFDerivAt mu isOpen_univ
     (fun s a => f (s, radius a)) (fun s a => g (s, radius a))
     hfc.continuousOn hgc.continuousOn (fun s _ a => hd s a) (mem_univ t)
-  have hi : Integrable (fun a => g (t, radius a)) mu :=
+  have hi :=
     bellman_compact_parameter_integrable mu (f := fun s a => g (s, radius a))
       hgc.continuousOn (mem_univ t)
   rw [he.hasDerivAt.deriv, ContinuousLinearMap.integral_apply hi]

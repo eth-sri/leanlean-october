@@ -162,10 +162,9 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
     simpa only [ParabolicWeakDerivativeFamily.restrict_representative] using hDold alpha
   · have hDrestrict :=
       ParabolicWeakDerivativeFamily.squaredL2Norm_restrict_le D hVU
-    have hEnorm : 0 ≤ ParabolicWeakDerivativeFamily.squaredL2Norm E :=
+    have hEnorm :=
       ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E
-    have htotal : 0 ≤ ParabolicWeakDerivativeFamily.squaredL2Norm D +
-        ParabolicWeakDerivativeFamily.squaredL2Norm E := add_nonneg
+    have htotal := add_nonneg
       (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D) hEnorm
     calc
       ParabolicWeakDerivativeFamily.squaredL2Norm Dnext ≤

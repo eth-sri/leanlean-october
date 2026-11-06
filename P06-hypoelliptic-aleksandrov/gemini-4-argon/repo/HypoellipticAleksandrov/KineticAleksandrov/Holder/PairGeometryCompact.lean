@@ -14,8 +14,8 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set
 
-/-- A positive affine map takes the closed unit cylinder onto the physical cylinder closure. -/
-theorem kineticAffine_image_closedUnitCylinder {d : ℕ} (P : KineticPoint d) {r : ℝ}
+/- A positive affine map takes the closed unit cylinder onto the physical cylinder closure. -/
+theorem kineticAffine_image_closedUnitCylinder {d } (P : KineticPoint d) {r }
     (hr : 0 < r) :
     kineticAffine P r '' closure (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1) =
       closure (backwardCylinder P r) := by
@@ -25,28 +25,8 @@ theorem kineticAffine_image_closedUnitCylinder {d : ℕ} (P : KineticPoint d) {r
   rw [kineticAffine_image_unitCylinder P hr] at hc
   exact hc
 
-/-- The affine cylinder map is jointly continuous in its center and reference point. -/
-theorem continuous_kineticAffine_pair (d : ℕ) (r : ℝ) :
-    Continuous (fun z : KineticPoint d × KineticPoint d => kineticAffine z.1 r z.2) := by
-  have ht1 := (continuous_time (d := d)).comp
-    (continuous_fst (X := KineticPoint d) (Y := KineticPoint d))
-  have ht2 := (continuous_time (d := d)).comp
-    (continuous_snd (X := KineticPoint d) (Y := KineticPoint d))
-  have hx1 := (continuous_position (d := d)).comp
-    (continuous_fst (X := KineticPoint d) (Y := KineticPoint d))
-  have hx2 := (continuous_position (d := d)).comp
-    (continuous_snd (X := KineticPoint d) (Y := KineticPoint d))
-  have hv1 := (continuous_velocity (d := d)).comp
-    (continuous_fst (X := KineticPoint d) (Y := KineticPoint d))
-  have hv2 := (continuous_velocity (d := d)).comp
-    (continuous_snd (X := KineticPoint d) (Y := KineticPoint d))
-  exact KineticPoint.continuous_mk
-    (ht1.add (ht2.const_mul (r ^ 2)))
-    ((hx1.add (hx2.const_smul (r ^ 3))).add ((ht2.const_mul (r ^ 2)).smul hv1))
-    (hv1.add (hv2.const_smul r))
-
-/-- Compact centers and one compact model cylinder give the exact compact neighbourhood closure. -/
-theorem holder_neighbourhood_compact {d : ℕ}
+/- The affine cylinder map is jointly continuous in its center and reference point. -/
+theorem holder_neighbourhood_compact {d }
     (K : Set (KineticPoint d)) (hK : IsCompact K) (R0 : ℝ) (hR0 : 0 < R0) :
     closure (holderNeighbourhood R0 K) =
         ⋃ P ∈ K, closure (backwardCylinder P (2 * R0)) ∧
@@ -68,8 +48,25 @@ theorem holder_neighbourhood_compact {d : ℕ}
       exact ⟨(P, Q), ⟨hP, hQ⟩, heq⟩
   have hUc : IsCompact U := by
     rw [← himage]
+    have _h_inl_9 : Continuous (fun z : KineticPoint d × KineticPoint d => kineticAffine z.1 r z.2) := by
+      have ht1 := (continuous_time (d := d)).comp
+        (continuous_fst (X := KineticPoint d) (Y := KineticPoint d))
+      have ht2 := (continuous_time (d := d)).comp
+        (continuous_snd (X := KineticPoint d) (Y := KineticPoint d))
+      have hx1 := (continuous_position (d := d)).comp
+        (continuous_fst (X := KineticPoint d) (Y := KineticPoint d))
+      have hx2 := (continuous_position (d := d)).comp
+        (continuous_snd (X := KineticPoint d) (Y := KineticPoint d))
+      have hv1 := (continuous_velocity (d := d)).comp
+        (continuous_fst (X := KineticPoint d) (Y := KineticPoint d))
+      have hv2 := (continuous_velocity (d := d)).comp
+        (continuous_snd (X := KineticPoint d) (Y := KineticPoint d))
+      exact KineticPoint.continuous_mk
+        (ht1.add (ht2.const_mul (r ^ 2)))
+        ((hx1.add (hx2.const_smul (r ^ 3))).add ((ht2.const_mul (r ^ 2)).smul hv1))
+        (hv1.add (hv2.const_smul r))
     exact (hK.prod (isCompact_closure_backwardCylinder _ 1 zero_lt_one)).image
-      (continuous_kineticAffine_pair d r)
+      _h_inl_9
   have hNsub : holderNeighbourhood R0 K ⊆ U := by
     intro Z hZ
     simp only [holderNeighbourhood, mem_iUnion] at hZ

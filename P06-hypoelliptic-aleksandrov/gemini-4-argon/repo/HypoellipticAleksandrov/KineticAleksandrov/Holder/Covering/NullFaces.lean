@@ -16,7 +16,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 open Set MeasureTheory
 
 /-- A complete kinetic time slice has zero Lebesgue measure. -/
-theorem volume_time_face {d : ℕ} (t : ℝ) :
+theorem volume_time_face {d } (t : ℝ) :
     volume {P : KineticPoint d | P.time = t} = 0 := by
   have hset : {P : KineticPoint d | P.time = t} =
       (KineticPoint.equivProd d) ⁻¹'

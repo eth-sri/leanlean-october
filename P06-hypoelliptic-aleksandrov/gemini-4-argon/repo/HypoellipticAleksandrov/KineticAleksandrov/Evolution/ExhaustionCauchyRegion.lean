@@ -36,7 +36,7 @@ theorem mem_straightenedEllipsoid_of_common_innerCylinder
     exact ⟨hρ.le, by simpa only [add_zero] using hsq⟩
   have hng := vecEuclideanNorm_sub_add_le (c := (0 : PDE.Vec n)) hc p.position
   simp only [add_zero] at hng
-  have hng' : PDE.vecEuclideanNorm (p.position - g p.time) ≤ ρ + η :=
+  have hng' :=
     hng.trans (add_le_add hnorm (le_refl η))
   have hY : PDE.vecNormSq (p.position - g p.time) ≤ (ρ + η) ^ 2 := by
     have he := pow_le_pow_left₀ (PDE.vecEuclideanNorm_nonneg _) hng' 2

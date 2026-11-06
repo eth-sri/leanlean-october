@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitL1Derivative
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitL1FourierScaling
 import all Mathlib.Basic.Real.Basic
 import all Mathlib.Basic.Complex.Basic
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitL1FourierMoments
+import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
 /-! # Uniform raw supremum estimates for derivatives of the single inverse -/
 
@@ -12,40 +14,13 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
-/-- The actual total-variation bound implies a raw, dimension-sensitive moment estimate. -/
-theorem exitL1Fourier_moment_bound {d : ℕ} (hd : 1 ≤ d)
-    (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν]
-    {C c R : ℝ} (hC : 0 ≤ C) (hc : 0 < c) (hR : 0 < R)
-    (hdecay : ∀ ξ, ((exitFourier ν ξ).variation univ).toReal ≤
-      C * Real.exp (-c * (R ^ 3 * PDE.vecEuclideanNorm ξ) ^ (1 / 3 : ℝ)))
-    (j : ℕ) (hi : Integrable (fun ξ => ‖ξ‖ ^ j * ‖exitL1Fourier ν ξ‖)) :
-    (∫ ξ, ‖ξ‖ ^ j * ‖exitL1Fourier ν ξ‖) ≤
-      C * ((R ^ 3) ^ (d + j))⁻¹ * exitFrequencyMoment (d := d) c j := by
-  have hi' := (integrable_exitFrequency_scaled_moment hd j hc hR).const_mul C
-  have hb (ξ : PDE.Vec d) : ‖ξ‖ ^ j * ‖exitL1Fourier ν ξ‖ ≤
-      C * (‖ξ‖ ^ j * Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ))) := by
-    rw [norm_exitL1Fourier]
-    have hexp : Real.exp (-c * (R ^ 3 * PDE.vecEuclideanNorm ξ) ^ (1 / 3 : ℝ)) ≤
-        Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ)) := by
-      apply Real.exp_le_exp.mpr
-      apply mul_le_mul_of_nonpos_left _ (neg_nonpos.mpr hc.le)
-      apply Real.rpow_le_rpow (mul_nonneg (pow_nonneg hR.le _) (norm_nonneg _))
-        (mul_le_mul_of_nonneg_left (PDE.norm_le_vecEuclideanNorm ξ)
-          (pow_nonneg hR.le _)) (by norm_num)
-    have hb := (hdecay ξ).trans (mul_le_mul_of_nonneg_left hexp hC)
-    simpa only [mul_assoc, mul_left_comm C] using
-      mul_le_mul_of_nonneg_left hb (pow_nonneg (norm_nonneg ξ) j)
-  have h := integral_mono hi hi' hb
-  rw [integral_const_mul, exitFrequencyMoment_scaling c j hR] at h
-  exact h.trans_eq (by ring)
-
-/-- A derivative of the actual inverse is controlled by the corresponding raw Fourier moment. -/
+/- The actual total-variation bound implies a raw, dimension-sensitive moment estimate. -/
 theorem ballExitL1Inversion_derivative_le_moment
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+    (v₀ : PDE.Vec d) {R } (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (j : ℕ) (y : PDE.Vec d) :
@@ -82,11 +57,11 @@ theorem ballExitL1Inversion_derivative_le_moment
       ring
     _ = _ := by rw [integral_const_mul]
 
-/-- Structural constants precede coefficients and pole data in the raw derivative bound. -/
+/- Structural constants precede coefficients and pole data in the raw derivative bound. -/
 theorem ballExitL1Inversion_uniform_derivative_bound
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
-    (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+    (d ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C_m : ℕ → ℝ, (∀ j, 0 ≤ C_m j) ∧
       ∀ (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
         (v₀ : PDE.Vec d) (R : ℝ) (hR : 0 < R)
@@ -109,8 +84,47 @@ theorem ballExitL1Inversion_uniform_derivative_bound
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
   have hi := ballExitL1Fourier_integrable_moments hH hLE hd hlam hLam B hB v₀ hR
     P T hv hT j
-  have hb := exitL1Fourier_moment_bound hd ν hC.le hc hR
-    (hdecay B hB v₀ R hR P T hv hT) j hi
+  have hb : (∫ ξ, ‖ξ‖ ^ j * ‖exitL1Fourier ν ξ‖) ≤ C * ((R ^ 3) ^ (d + j))⁻¹ * exitFrequencyMoment (d := d) c j := by
+    have hC := hC.le
+    have hdecay := (hdecay B hB v₀ R hR P T hv hT)
+    have hi' := (integrable_exitFrequency_scaled_moment hd j hc hR).const_mul C
+    have hb (ξ : PDE.Vec d) : ‖ξ‖ ^ j * ‖exitL1Fourier ν ξ‖ ≤
+        C * (‖ξ‖ ^ j * Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ))) := by
+      rw [norm_exitL1Fourier]
+      have hexp : Real.exp (-c * (R ^ 3 * PDE.vecEuclideanNorm ξ) ^ (1 / 3 : ℝ)) ≤
+          Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ)) := by
+        apply Real.exp_le_exp.mpr
+        apply mul_le_mul_of_nonpos_left _ (neg_nonpos.mpr hc.le)
+        apply Real.rpow_le_rpow (mul_nonneg (pow_nonneg hR.le _) (norm_nonneg _))
+          (mul_le_mul_of_nonneg_left (PDE.norm_le_vecEuclideanNorm ξ)
+            (pow_nonneg hR.le _)) (by norm_num)
+      have hb := (hdecay ξ).trans (mul_le_mul_of_nonneg_left hexp hC)
+      simpa only [mul_assoc, mul_left_comm C] using
+        mul_le_mul_of_nonneg_left hb (pow_nonneg (norm_nonneg ξ) j)
+    have h := integral_mono hi hi' hb
+    have _h_xinl_0 : (∫ ξ : PDE.Vec d, ‖ξ‖ ^ j *
+        Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ))) =
+        ((R ^ 3) ^ (d + j))⁻¹ * exitFrequencyMoment (d := d) c j := by
+      let f : PDE.Vec d → ℝ := fun ξ =>
+        ‖ξ‖ ^ j * Real.exp (-c * ‖ξ‖ ^ (1 / 3 : ℝ))
+      have hn := (pow_pos hR 3).ne'
+      have heq : (fun ξ : PDE.Vec d => ‖ξ‖ ^ j *
+          Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ))) =
+          fun ξ => ((R ^ 3) ^ j)⁻¹ * f (R ^ 3 • ξ) := by
+        funext ξ
+        simp only [f, norm_smul, Real.norm_eq_abs, abs_of_pos (pow_pos hR 3), mul_pow]
+        field_simp
+      rw [heq, integral_const_mul,
+        Measure.integral_comp_smul_of_nonneg volume f (R ^ 3)
+          (hR := (pow_pos hR 3).le)]
+      have hdim : Module.finrank ℝ (PDE.Vec d) = d := by
+        simpa only [Fintype.card_fin] using
+          (Module.finrank_fintype_fun_eq_card ℝ (η := Fin d))
+      rw [hdim]
+      change ((R ^ 3) ^ j)⁻¹ * (((R ^ 3) ^ d)⁻¹ * exitFrequencyMoment c j) = _
+      rw [pow_add, mul_inv_rev, mul_assoc]
+    rw [integral_const_mul, _h_xinl_0] at h
+    exact h.trans_eq (by ring)
   have hdv := ballExitL1Inversion_derivative_le_moment hH hLE hd hlam hLam B hB v₀ hR
     P T hv hT j y
   have hp : ((R ^ 3) ^ (d + j))⁻¹ = R ^ (-3 * ((d : ℝ) + (j : ℝ))) := by

@@ -29,7 +29,6 @@ theorem enlargedBoundary_restrict_lower_eq (I J : Interval) (s L T : ℝ) (hs : 
     mu.restrict (visitBoundary s T I J) = mu.restrict (visitBoundary L T I J) := by
   apply Measure.restrict_congr_set
   filter_upwards [hmu] with p hp
-  have hsp := hs.trans_lt hp
-  simp only [visitBoundary, mem_ofPred_eq, hsp, hp, true_and]
+  simp only [visitBoundary, mem_ofPred_eq, (hs.trans_lt hp), hp, true_and]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

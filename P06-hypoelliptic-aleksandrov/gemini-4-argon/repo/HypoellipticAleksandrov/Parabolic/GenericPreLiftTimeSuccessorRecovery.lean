@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Parabolic.MeasurableSpatialC1WeakLeibniz
 public import HypoellipticAleksandrov.Parabolic.ProperCommutatorSquaredAggregation
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2Norm
 public import HypoellipticAleksandrov.Analysis.FiniteSumL2Norm
+import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientEstimate
+import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientL2WeakDerivative
 
 /-! # Generic pre-lift time-successor recovery -/
 
@@ -38,29 +40,6 @@ private theorem coordinateIteratedFDeriv_tsupport_subset
     unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
     rw [hzero]
     exact ContinuousMultilinearMap.zero_apply _)
-
-private theorem timeDerivative_tsupport_subset
-    {d : ℕ} (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  have heq : timeDerivative f =
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (Pi.single (timeCoord d) 1) f := by
-    funext z
-    have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-      (0 : TimeVelocityMultiIndex d) (timeCoord d) f z
-        (by
-          simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
-            TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity] using
-            hf.contDiffAt.of_le
-              (show (1 : WithTop ℕ∞) ≤ (↑(⊤ : ℕ∞) : WithTop ℕ∞) by simp))
-    simp only [zero_add, timeVelocityBasis_time] at h
-    rw [show TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (0 : TimeVelocityMultiIndex d) f = f by
-      funext x
-      exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f x] at h
-    exact h.symm
-  rw [heq]
-  exact coordinateIteratedFDeriv_tsupport_subset _ f
 
 private theorem velocityGradient_tsupport_subset
     {d : ℕ} (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
@@ -105,7 +84,7 @@ private theorem singletonCoefficientIndex_coe
     · simp [Function.update, Ne.symm hik]
 
 private theorem residual_memLp
-    {d m n : ℕ} {V : Set (TimeVelocity d)}
+    {d m n V}
     (R : TimeVelocity d → ℝ)
     (AH : Fin m → Fin n → TimeVelocity d → ℝ)
     (BG : Fin n → TimeVelocity d → ℝ)
@@ -137,23 +116,6 @@ private def timeSuccessorAtomTerm
   | Sum.inr (Sum.inl (i, j)) => fun z => -AH i j z
   | Sum.inr (Sum.inr (Sum.inl j)) => fun z => -BG j z
   | Sum.inr (Sum.inr (Sum.inr _)) => fun z => -CQ z
-
-private theorem sum_timeSuccessorAtomTerm
-    {d : ℕ} (R : TimeVelocity d → ℝ)
-    (AH : Fin d → Fin d → TimeVelocity d → ℝ)
-    (BG : Fin d → TimeVelocity d → ℝ)
-    (CQ : TimeVelocity d → ℝ) :
-    (∑ s : TimeSuccessorAtom d, timeSuccessorAtomTerm R AH BG CQ s) =
-      fun z => R z - (∑ i, ∑ j, AH i j z) - (∑ j, BG j z) - CQ z := by
-  funext z
-  simp [TimeSuccessorAtom, timeSuccessorAtomTerm, Fintype.sum_prod_type]
-  ring
-
-private theorem card_timeSuccessorAtom (d : ℕ) :
-    (Fintype.card (TimeSuccessorAtom d) : ℝ) =
-      (d : ℝ) ^ 2 + (d : ℝ) + 2 := by
-  simp [TimeSuccessorAtom]
-  ring
 
 private theorem timeSuccessorResidual_memLp_and_sq_le
     {d : ℕ} {V : Set (TimeVelocity d)}
@@ -189,9 +151,16 @@ private theorem timeSuccessorResidual_memLp_and_sq_le
     · simpa [term, timeSuccessorAtomTerm, Pi.neg_def] using hCQ.neg
   have hsum := HypoellipticAleksandrov.Analysis.eLpNorm_sum_toReal_sq_le_card_mul
     term hterm
-  rw [sum_timeSuccessorAtomTerm] at hsum
+  have _h_inl_22 (R : TimeVelocity d → ℝ) (AH : Fin d → Fin d → TimeVelocity d → ℝ) (BG : Fin d → TimeVelocity d → ℝ) (CQ : TimeVelocity d → ℝ) : (∑ s : TimeSuccessorAtom d, timeSuccessorAtomTerm R AH BG CQ s) = fun z => R z - (∑ i, ∑ j, AH i j z) - (∑ j, BG j z) - CQ z := by
+    funext z
+    simp [TimeSuccessorAtom, timeSuccessorAtomTerm, Fintype.sum_prod_type]
+    ring
+  rw [_h_inl_22] at hsum
   refine ⟨residual_memLp R AH BG CQ hR hAH hBG hCQ, ?_⟩
-  rw [card_timeSuccessorAtom] at hsum
+  have _h_inl_23 (d) : (Fintype.card (TimeSuccessorAtom d) : ℝ) = (d : ℝ) ^ 2 + (d : ℝ) + 2 := by
+    simp [TimeSuccessorAtom]
+    ring
+  rw [_h_inl_23] at hsum
   calc
     _ ≤ ((d : ℝ) ^ 2 + (d : ℝ) + 2) *
         ∑ s : TimeSuccessorAtom d,
@@ -216,7 +185,7 @@ private theorem timeSuccessorResidual_memLp_and_sq_le
 
 private theorem sum_sq_le_of_four_family_bounds
     {beta : Type*} [Fintype beta]
-    (W R AH BG CQ : beta → ℝ) (N CR CA CB CC Etotal : ℝ)
+    (W R AH BG CQ : beta → ℝ) (N CR CA CB CC Etotal )
     (hN : 0 ≤ N) (_hCR : 0 ≤ CR) (_hCA : 0 ≤ CA)
     (_hCB : 0 ≤ CB) (_hCC : 0 ≤ CC) (_hE : 0 ≤ Etotal)
     (hW : ∀ b, W b ≤ N * (R b + AH b + BG b + CQ b))
@@ -344,7 +313,7 @@ private theorem velocityGradient_coefficient_eq_singletonDerivative
   rfl
 
 private theorem hasWeakTimeDerivOn_of_testedEquation_cancellation
-    {d n : ℕ} {V : Set (TimeVelocity d)}
+    {d n V}
     (q R W : TimeVelocity d → ℝ)
     (P DA AH : Fin d → Fin n → TimeVelocity d → ℝ)
     (BG : Fin n → TimeVelocity d → ℝ)
@@ -389,7 +358,7 @@ private theorem hasWeakTimeDerivOn_of_testedEquation_cancellation
   have hBGint (j : Fin n) :
       Integrable (fun z ↦ BG j z * φ z) (timeVelocityVolumeOn V) :=
     (hBG j).integrable_mul (hφTwo.restrict V)
-  have hCQint : Integrable (fun z ↦ CQ z * φ z) (timeVelocityVolumeOn V) :=
+  have hCQint :=
     hCQ.integrable_mul (hφTwo.restrict V)
   have hAHsumInt : Integrable
       (fun z ↦ (∑ i, ∑ j, AH i j z) * φ z) (timeVelocityVolumeOn V) := by
@@ -467,7 +436,7 @@ private theorem hasWeakTimeDerivOn_of_testedEquation_cancellation
   simp only [Finset.sum_add_distrib, Finset.sum_neg_distrib] at hraw
   linarith
 
-/-- Canonical weak time-successor candidate obtained after recovering every
+/- Canonical weak time-successor candidate obtained after recovering every
 spatial derivative of the selected generic pre-lift gradients. -/
 def genericPreliftTimeSuccessorResidual
     {d M : ℕ} (a : CoefficientField d)
@@ -494,7 +463,7 @@ def genericPreliftTimeSuccessorResidual
       D.representative
         (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z
 
-/-- Exact joint weak spatial-and-time conclusion of generic pre-lift
+/- Exact joint weak spatial-and-time conclusion of generic pre-lift
 time-successor recovery. -/
 def GenericPreliftTimeSuccessorConclusion
     {d M : ℕ} (V : Set (TimeVelocity d))
@@ -541,7 +510,7 @@ def GenericPreliftTimeSuccessorConclusion
         (ParabolicWeakDerivativeFamily.squaredL2Norm D +
           ParabolicWeakDerivativeFamily.squaredL2Norm E)
 
-/-- The generic pre-lift Hessian determines all selected weak time successors
+/- The generic pre-lift Hessian determines all selected weak time successors
 on the interior cylinder, with a joint spatial-and-time `L²` estimate. -/
 theorem exists_genericPrelift_hessian_timeSuccessor_family_estimate
     (d M : ℕ) (hM : 1 ≤ M)
@@ -614,10 +583,193 @@ theorem exists_genericPrelift_hessian_timeSuccessor_family_estimate
         GenericPreliftTimeSuccessorConclusion
           (Set.Ioo t₁ t₂ ×ˢ O₁) a b c D E C_HW := by
   classical
-  obtain ⟨C_H, hC_H, hHessian⟩ :=
-    exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
-      d M hM t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁ hO₁ne
-        hO₁compact hO₁O₀ lam Lam hlam hlamLam Ba Bb Bc hBa hBb hBc
+  obtain ⟨C_H, hC_H, hHessian⟩ : ∃ C_H : ℝ, 0 ≤ C_H ∧
+      ∀ (a : CoefficientField d)
+        (b : ℝ → PDE.Vec d → PDE.Vec d)
+        (c F : ℝ → PDE.Vec d → ℝ)
+        (u : TimeVelocity d → ℝ)
+        (D : ParabolicWeakDerivativeFamily d (M + 1)
+          (Set.Ioo t₀ t₃ ×ˢ O₀) u)
+        (E : ParabolicWeakDerivativeFamily d M
+          (Set.Ioo t₀ t₃ ×ˢ O₀)
+          (fun z : TimeVelocity d => F z.1 z.2)),
+        (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀, (a z.1 z.2).IsSymm) →
+        (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀,
+          lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧
+            a z.1 z.2 ≤ Lam • (1 : PDE.Mat d)) →
+        (∀ i j, ContDiffOn ℝ (M + 1)
+          (fun z : TimeVelocity d => a z.1 z.2 i j)
+          (Set.Ioo t₀ t₃ ×ˢ O₀)) →
+        (∀ j, ContDiffOn ℝ M
+          (fun z : TimeVelocity d => b z.1 z.2 j)
+          (Set.Ioo t₀ t₃ ×ˢ O₀)) →
+        ContDiffOn ℝ M (fun z : TimeVelocity d => c z.1 z.2)
+          (Set.Ioo t₀ t₃ ×ˢ O₀) →
+        (∀ i j alpha z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
+          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
+            (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤ Ba i j alpha) →
+        (∀ j alpha z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
+          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
+            (fun x : TimeVelocity d => b x.1 x.2 j) z| ≤ Bb j alpha) →
+        (∀ alpha z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
+          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
+            (fun x : TimeVelocity d => c x.1 x.2) z| ≤ Bc alpha) →
+        ((fun z =>
+          D.representative
+              (ParabolicDerivativeIndex.castLE
+                (by omega : 2 ≤ M + 1)
+                (ParabolicDerivativeIndex.timeOne d)) z +
+            (∑ i, ∑ j, a z.1 z.2 i j *
+              D.representative
+                (ParabolicDerivativeIndex.castLE
+                  (by omega : 2 ≤ M + 1)
+                  (ParabolicDerivativeIndex.velocityTwo j i)) z) +
+            (∑ j, b z.1 z.2 j *
+              D.representative
+                (ParabolicDerivativeIndex.castLE
+                  (by omega : 2 ≤ M + 1)
+                  (ParabolicDerivativeIndex.velocityOne j)) z) +
+            c z.1 z.2 *
+              D.representative
+                (ParabolicDerivativeIndex.castLE
+                  (by omega : 2 ≤ M + 1)
+                  (ParabolicDerivativeIndex.zeroTwo d)) z)
+          =ᵐ[timeVelocityVolumeOn (Set.Ioo t₀ t₃ ×ˢ O₀)]
+            fun z => F z.1 z.2) →
+        ∃ H : TimeVelocity d → ParabolicDerivativeIndex d M →
+            Fin d → Fin d → ℝ,
+          (∀ beta j i, ParabolicMemLpOn (Set.Ioo t₁ t₂ ×ˢ O₁) 2
+            (fun z => H z beta j i)) ∧
+          (∀ beta j i, HasWeakVelocityPartialDerivOn
+            (Set.Ioo t₁ t₂ ×ˢ O₁) i
+            (fun z =>
+              D.representative
+                (ParabolicDerivativeIndex.velocitySucc
+                  (ParabolicDerivativeIndex.castLE
+                    (Nat.le_succ M) beta) j
+                  (by
+                    change beta.1.parabolicWeight + 1 ≤ M + 1
+                    omega)) z)
+            (fun z => H z beta j i)) ∧
+          (∑ beta : ParabolicDerivativeIndex d M,
+            ∑ j : Fin d, ∑ i : Fin d,
+              (ENNReal.toReal (eLpNorm (fun z => H z beta j i) 2
+                (timeVelocityVolumeOn
+                  (Set.Ioo t₁ t₂ ×ˢ O₁)))) ^ 2) ≤
+            C_H *
+              (ParabolicWeakDerivativeFamily.squaredL2Norm D +
+                ParabolicWeakDerivativeFamily.squaredL2Norm E) := by
+    classical
+    obtain ⟨C_DQ, δ, hC_DQ, hδ, hmain⟩ :=
+      exists_genericPrelift_gradient_spatialDifferenceQuotient_estimate
+        d M hM t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁ hO₁ne
+          hO₁compact hO₁O₀ lam Lam hlam hlamLam Ba Bb Bc hBa hBb hBc
+    let C_H : ℝ :=
+      (Fintype.card (ParabolicDerivativeIndex d M) : ℝ) * (d : ℝ) ^ 2 * C_DQ
+    refine ⟨C_H, mul_nonneg (mul_nonneg (by positivity) (by positivity)) hC_DQ, ?_⟩
+    intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
+    let V : Set (TimeVelocity d) := Set.Ioo t₁ t₂ ×ˢ O₁
+    let Etotal : ℝ := ParabolicWeakDerivativeFamily.squaredL2Norm D +
+      ParabolicWeakDerivativeFamily.squaredL2Norm E
+    have hEtotal : 0 ≤ Etotal := add_nonneg
+      (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D)
+      (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E)
+    have hDQ := hmain a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
+    have hlocal (beta : ParabolicDerivativeIndex d M) (j : Fin d) :
+        ParabolicMemLpOn V 2
+          (fun z => D.representative
+            (ParabolicDerivativeIndex.velocitySucc
+              (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
+              (by
+                change beta.1.parabolicWeight + 1 ≤ M + 1
+                omega)) z) := by
+      exact (D.memLp _).mono_measure
+        (Measure.restrict_mono_set volume (Set.prod_mono
+          (Set.Ioo_subset_Ioo ht₀₁.le ht₂₃.le) (subset_closure.trans hO₁O₀)))
+    have hclose : ∀ beta : ParabolicDerivativeIndex d M, ∀ j i : Fin d,
+        ∃ g : TimeVelocity d → ℝ, ∃ hg : ParabolicMemLpOn V 2 g,
+          HasWeakVelocityPartialDerivOn V i
+            (fun z => D.representative
+              (ParabolicDerivativeIndex.velocitySucc
+                (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
+                (by
+                  change beta.1.parabolicWeight + 1 ≤ M + 1
+                  omega)) z) g ∧
+            ‖hg.toLp g‖ ≤ Real.sqrt (C_DQ * Etotal) := by
+      intro beta j i
+      let G : TimeVelocity d → ℝ := fun z => D.representative
+        (ParabolicDerivativeIndex.velocitySucc
+          (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
+          (by
+            change beta.1.parabolicWeight + 1 ≤ M + 1
+            omega)) z
+      have hmem : ∀ h : ℝ, 0 < h → h < δ → ParabolicMemLpOn V 2
+          (spatialDifferenceQuotient i h G) := by
+        intro h hh hhd
+        simpa only [G] using (hDQ h hh hhd).1 beta j i
+      have hsq : ∀ (h : ℝ) (hh : 0 < h) (hhd : h < δ),
+          ‖(hmem h hh hhd).toLp (spatialDifferenceQuotient i h G)‖ ^ 2 ≤
+            C_DQ * Etotal := by
+        intro h hh hhd
+        have hjoint := (hDQ h hh hhd).2
+        let q : ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ :=
+          fun beta j i => (ENNReal.toReal (eLpNorm
+            (spatialDifferenceQuotient i h
+              (D.representative
+                (ParabolicDerivativeIndex.velocitySucc
+                  (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
+                  (by
+                    change beta.1.parabolicWeight + 1 ≤ M + 1
+                    omega)))) 2 (timeVelocityVolumeOn V))) ^ 2
+        have hi : q beta j i ≤ ∑ i : Fin d, q beta j i :=
+          Finset.single_le_sum (fun i _ => by dsimp [q]; positivity) (Finset.mem_univ i)
+        have hj : (∑ i : Fin d, q beta j i) ≤
+            ∑ j : Fin d, ∑ i : Fin d, q beta j i :=
+          Finset.single_le_sum
+            (fun j _ => Finset.sum_nonneg fun i _ => by dsimp [q]; positivity)
+            (Finset.mem_univ j)
+        have hbeta : (∑ j : Fin d, ∑ i : Fin d, q beta j i) ≤
+            ∑ beta : ParabolicDerivativeIndex d M,
+              ∑ j : Fin d, ∑ i : Fin d, q beta j i :=
+          Finset.single_le_sum
+            (fun beta _ => Finset.sum_nonneg fun j _ =>
+              Finset.sum_nonneg fun i _ => by dsimp [q]; positivity)
+            (Finset.mem_univ beta)
+        rw [Lp.norm_toLp]
+        exact (hi.trans (hj.trans hbeta)).trans (by
+          simpa only [q, V, Etotal] using hjoint)
+      have hnorm : ∀ (h : ℝ) (hh : 0 < h) (hhd : h < δ),
+          ‖(hmem h hh hhd).toLp (spatialDifferenceQuotient i h G)‖ ≤
+            Real.sqrt (C_DQ * Etotal) := by
+        intro h hh hhd
+        calc
+          _ = Real.sqrt
+              (‖(hmem h hh hhd).toLp (spatialDifferenceQuotient i h G)‖ ^ 2) :=
+            (Real.sqrt_sq (norm_nonneg _)).symm
+          _ ≤ Real.sqrt (C_DQ * Etotal) := Real.sqrt_le_sqrt (hsq h hh hhd)
+      simpa only [G] using
+        exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenceQuotient
+          V (isOpen_Ioo.prod hO₁) i G (hlocal beta j) δ
+            (Real.sqrt (C_DQ * Etotal)) hδ hmem hnorm
+    choose g hg hweak hnorm using hclose
+    let H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ :=
+      fun z beta j i => g beta j i z
+    refine ⟨H, (fun beta j i => hg beta j i), (fun beta j i => hweak beta j i), ?_⟩
+    have hentry : ∀ beta j i,
+        (ENNReal.toReal (eLpNorm (fun z => H z beta j i) 2
+          (timeVelocityVolumeOn V))) ^ 2 ≤ C_DQ * Etotal := by
+      intro beta j i
+      have hs := hnorm beta j i
+      rw [Lp.norm_toLp] at hs
+      have hCE : 0 ≤ C_DQ * Etotal := mul_nonneg hC_DQ hEtotal
+      have hsquared := (sq_le_sq₀ (ENNReal.toReal_nonneg) (Real.sqrt_nonneg _)).2 hs
+      simpa only [Real.sq_sqrt hCE, H] using hsquared
+    calc
+      _ ≤ ∑ beta : ParabolicDerivativeIndex d M,
+          ∑ j : Fin d, ∑ i : Fin d, C_DQ * Etotal :=
+        Finset.sum_le_sum fun beta _ => Finset.sum_le_sum fun j _ =>
+          Finset.sum_le_sum fun i _ => hentry beta j i
+      _ = C_H * Etotal := by simp [C_H]; ring
   let BaM : Fin d → Fin d → ParabolicDerivativeIndex d M → ℝ :=
     fun i j alpha => Ba i j
       (ParabolicDerivativeIndex.castLE (Nat.le_succ M) alpha)
@@ -771,11 +923,31 @@ theorem exists_genericPrelift_hessian_timeSuccessor_family_estimate
       have hout := integral_genericPreliftDifferentiatedScalarEquation hM U
         (isOpen_Ioo.prod hO₀) a b c F u D E ha hb hc hEq beta φ hφ hφc
           (hφV.trans hVU)
+      have _h_inl_15 : tsupport (timeDerivative φ) ⊆ tsupport φ := by
+        have heq : timeDerivative φ =
+            TimeVelocityMultiIndex.coordinateIteratedFDeriv
+              (Pi.single (timeCoord d) 1) φ := by
+          funext z
+          have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
+            (0 : TimeVelocityMultiIndex d) (timeCoord d) φ z
+              (by
+                simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
+                  TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity] using
+                  hφ.contDiffAt.of_le
+                    (show (1 : WithTop ℕ∞) ≤ (↑(⊤ : ℕ∞) : WithTop ℕ∞) by simp))
+          simp only [zero_add, timeVelocityBasis_time] at h
+          rw [show TimeVelocityMultiIndex.coordinateIteratedFDeriv
+              (0 : TimeVelocityMultiIndex d) φ = φ by
+            funext x
+            exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero φ x] at h
+          exact h.symm
+        rw [heq]
+        exact coordinateIteratedFDeriv_tsupport_subset _ φ
       have ht := setIntegral_mul_eq_of_tsupport_subset
         (isOpen_Ioo.prod hO₀).measurableSet hVU
         (D.representative
           (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta)) (timeDerivative φ)
-        ((timeDerivative_tsupport_subset φ hφ).trans hφV)
+        (_h_inl_15.trans hφV)
       have hv (i j : Fin d) := setIntegral_mul_eq_of_tsupport_subset
         (isOpen_Ioo.prod hO₀).measurableSet hVU
         (fun z => a z.1 z.2 i j *

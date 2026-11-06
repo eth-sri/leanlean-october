@@ -9,18 +9,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
-/-- The literal finite physical slab is closed. -/
-theorem nestedClosedSlab_isClosed (H : Interval) (s T : ℝ) :
-    IsClosed (reconstructionClosedSlab H s T) := by
-  have hv : Continuous (fun p : Point => p.velocity 0) :=
-    (continuous_apply 0).comp continuous_velocity
-  exact (isClosed_le continuous_const continuous_time).inter
-    ((isClosed_le continuous_time continuous_const).inter (isClosed_Icc.preimage hv))
-
-/-- Smaller exits lie in the genuine larger closed future slab. -/
+/- The literal finite physical slab is closed. -/
 theorem nested_exit_ae_larger_slab
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H1 H2 : Interval)
     (hsub : H1.carrier ⊆ H2.carrier) (sMinus T : ℝ)
     (e : StripPole H1 (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
@@ -34,21 +26,5 @@ theorem nested_exit_ae_larger_slab
     (stripEvolution_spec hH hLE hlam hLam A H1) T e] with p hp
   exact ⟨he.trans hp.1, hp.2.1, hcl hp.2.2⟩
 
-/-- Continuity and a proved uniform bound on the actual supporting slab imply integrability. -/
-theorem nestedSlab_integrable (H : Interval) (s T : ℝ) (μ : Measure Point)
-    [IsFiniteMeasure μ] (u : Point → ℝ)
-    (hs : ∀ᵐ p ∂μ, p ∈ reconstructionClosedSlab H s T)
-    (hc : ContinuousOn u (reconstructionClosedSlab H s T))
-    (hb : ∃ C : ℝ, 0 ≤ C ∧ ∀ p ∈ reconstructionClosedSlab H s T, |u p| ≤ C) :
-    Integrable u μ := by
-  obtain ⟨C, -, hC⟩ := hb
-  have hμ := Measure.restrict_eq_self_of_ae_mem hs
-  have hm := hc.aestronglyMeasurable (nestedClosedSlab_isClosed H s T).measurableSet
-    (μ := μ)
-  rw [hμ] at hm
-  apply Integrable.mono' (integrable_const C) hm
-  filter_upwards [hs] with p hp
-  rw [Real.norm_eq_abs]
-  exact hC p hp
-
+/- Continuity and a proved uniform bound on the actual supporting slab imply integrability. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

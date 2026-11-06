@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2N
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientFixedCore
 public import HypoellipticAleksandrov.Analysis.BoundedMultiplierLp
 public import HypoellipticAleksandrov.Analysis.FiniteSumL2Norm
+import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientFixedDirection
 
 /-!
 # Generic pre-lift spatial difference-quotient estimate
@@ -24,6 +25,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 open scoped BigOperators ENNReal MatrixOrder
+open scoped Convex
 
 private def singletonCoefficientIndex {d M : ℕ} (hM : 1 ≤ M) (i : Fin d) :
     ParabolicDerivativeIndex d (M + 1) :=
@@ -68,8 +70,7 @@ private theorem diffusionGradientMajorant_nonneg
 private theorem driftValueMajorant_nonneg
     {d M : ℕ} (Bb : Fin d → ParabolicDerivativeIndex d M → ℝ)
     (hBb : ∀ j alpha, 0 ≤ Bb j alpha) :
-    0 ≤ driftValueMajorant Bb := by
-  exact Finset.sum_nonneg fun j _ => hBb j (ParabolicDerivativeIndex.zero d M)
+    0 ≤ driftValueMajorant Bb :=  Finset.sum_nonneg fun j _ => hBb j (ParabolicDerivativeIndex.zero d M)
 
 private theorem potentialValueMajorant_nonneg
     {d M : ℕ} (Bc : ParabolicDerivativeIndex d M → ℝ)
@@ -327,8 +328,7 @@ private theorem properResidual_memLp_and_sum_sq_le_coarse
   intro beta hbeta
   have hD := ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D
   have hE := ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E
-  have htotal : 0 ≤ ParabolicWeakDerivativeFamily.squaredL2Norm D +
-      ParabolicWeakDerivativeFamily.squaredL2Norm E := add_nonneg hD hE
+  have htotal := add_nonneg hD hE
   rw [mul_assoc]
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   calc
@@ -500,12 +500,6 @@ private theorem sum_genericPreliftFullResidualTerm
     genericPreliftFullResidual, Fintype.sum_prod_type]
   abel
 
-private theorem card_fullResidualTermIndex (d : ℕ) :
-    (Fintype.card (FullResidualTermIndex d) : ℝ) =
-      (d : ℝ) ^ 2 + (d : ℝ) + 2 := by
-  simp [FullResidualTermIndex]
-  ring
-
 private theorem genericPreliftFullResidual_memLp_and_sq_le
     {d : ℕ} {U : Set (TimeVelocity d)}
     (Rproper : TimeVelocity d → ℝ)
@@ -561,7 +555,10 @@ private theorem genericPreliftFullResidual_memLp_and_sq_le
     convert hm using 1
     ext z
     simp [term], ?_⟩
-  rw [card_fullResidualTermIndex] at hsum
+  have _h_inl_46 (d) : (Fintype.card (FullResidualTermIndex d) : ℝ) = (d : ℝ) ^ 2 + (d : ℝ) + 2 := by
+    simp [FullResidualTermIndex]
+    ring
+  rw [_h_inl_46] at hsum
   calc
     _ ≤ ((d : ℝ) ^ 2 + (d : ℝ) + 2) *
         ∑ s : FullResidualTermIndex d,
@@ -675,75 +672,13 @@ private theorem fullResidualCoarseConstant_nonneg
       (Nat.le_succ M) alpha)) Bb Bc
   positivity
 
-private theorem sum_le_coarse_product_of_pointwise_four_term
-    {ι : Type*} [Fintype ι]
-    (r p doubleG singleG q : ι → ℝ)
-    (N Cp K Ada Ab Ac d Dnorm Enorm : ℝ)
-    (hN : 0 ≤ N) (_hCp : 0 ≤ Cp) (hK : 0 ≤ K)
-    (_hAda : 0 ≤ Ada) (_hAb : 0 ≤ Ab) (_hAc : 0 ≤ Ac)
-    (hd : 0 ≤ d) (_hD : 0 ≤ Dnorm) (hE : 0 ≤ Enorm)
-    (hpoint : ∀ beta,
-      r beta ≤ N * (p beta + Ada ^ 2 * doubleG beta +
-        Ab ^ 2 * singleG beta + Ac ^ 2 * q beta))
-    (hp : (∑ beta, p beta) ≤ Cp * (Dnorm + Enorm))
-    (hdoubleG : (∑ beta, doubleG beta) ≤ K * d ^ 2 * Dnorm)
-    (hsingleG : (∑ beta, singleG beta) ≤ K * d * Dnorm)
-    (hq : (∑ beta, q beta) ≤ K * Dnorm) :
-    (∑ beta, r beta) ≤
-      N * (Cp + K * (Ada ^ 2 * d ^ 2 + Ab ^ 2 * d + Ac ^ 2)) *
-        (Dnorm + Enorm) := by
-  have hDtoTotal : Dnorm ≤ Dnorm + Enorm := le_add_of_nonneg_right hE
-  calc
-    (∑ beta, r beta) ≤ ∑ beta,
-        N * (p beta + Ada ^ 2 * doubleG beta +
-          Ab ^ 2 * singleG beta + Ac ^ 2 * q beta) :=
-      Finset.sum_le_sum fun beta _ => hpoint beta
-    _ = N * ((∑ beta, p beta) + Ada ^ 2 * (∑ beta, doubleG beta) +
-        Ab ^ 2 * (∑ beta, singleG beta) + Ac ^ 2 * (∑ beta, q beta)) := by
-      rw [← Finset.mul_sum]
-      congr 1
-      simp only [Finset.sum_add_distrib, Finset.mul_sum]
-    _ ≤ N * (Cp * (Dnorm + Enorm) +
-        Ada ^ 2 * (K * d ^ 2 * Dnorm) +
-        Ab ^ 2 * (K * d * Dnorm) + Ac ^ 2 * (K * Dnorm)) := by
-      apply mul_le_mul_of_nonneg_left _ hN
-      exact add_le_add (add_le_add (add_le_add hp
-        (mul_le_mul_of_nonneg_left hdoubleG (sq_nonneg Ada)))
-        (mul_le_mul_of_nonneg_left hsingleG (sq_nonneg Ab)))
-        (mul_le_mul_of_nonneg_left hq (sq_nonneg Ac))
-    _ ≤ N * (Cp * (Dnorm + Enorm) +
-        Ada ^ 2 * (K * d ^ 2 * (Dnorm + Enorm)) +
-        Ab ^ 2 * (K * d * (Dnorm + Enorm)) +
-        Ac ^ 2 * (K * (Dnorm + Enorm))) := by
-      apply mul_le_mul_of_nonneg_left _ hN
-      have htail := add_le_add (add_le_add
-          (mul_le_mul_of_nonneg_left
-            (mul_le_mul_of_nonneg_left hDtoTotal
-              (mul_nonneg hK (sq_nonneg d))) (sq_nonneg Ada))
-          (mul_le_mul_of_nonneg_left
-            (mul_le_mul_of_nonneg_left hDtoTotal (mul_nonneg hK hd)) (sq_nonneg Ab)))
-          (mul_le_mul_of_nonneg_left
-            (mul_le_mul_of_nonneg_left hDtoTotal hK) (sq_nonneg Ac))
-      calc
-        _ = Cp * (Dnorm + Enorm) +
-            (Ada ^ 2 * (K * d ^ 2 * Dnorm) +
-              Ab ^ 2 * (K * d * Dnorm) + Ac ^ 2 * (K * Dnorm)) := by ring
-        _ ≤ Cp * (Dnorm + Enorm) +
-            (Ada ^ 2 * (K * d ^ 2 * (Dnorm + Enorm)) +
-              Ab ^ 2 * (K * d * (Dnorm + Enorm)) +
-              Ac ^ 2 * (K * (Dnorm + Enorm))) := add_le_add le_rfl htail
-        _ = _ := by ring
-    _ = N * (Cp + K *
-        (Ada ^ 2 * d ^ 2 + Ab ^ 2 * d + Ac ^ 2)) *
-          (Dnorm + Enorm) := by ring
-
 private theorem genericPreliftFullResidual_family_memLp_and_sum_sq_le
     {ι : Type*} [Fintype ι] {d : ℕ} {U : Set (TimeVelocity d)}
     (Rproper q : ι → TimeVelocity d → ℝ)
     (G : ι → Fin d → TimeVelocity d → ℝ)
     (da : Fin d → Fin d → TimeVelocity d → ℝ)
     (b : Fin d → TimeVelocity d → ℝ) (c : TimeVelocity d → ℝ)
-    (Cp Ada Ab Ac Dnorm Enorm : ℝ)
+    (Cp Ada Ab Ac Dnorm Enorm )
     (hCp : 0 ≤ Cp) (hAda : 0 ≤ Ada) (hAb : 0 ≤ Ab) (hAc : 0 ≤ Ac)
     (hD : 0 ≤ Dnorm) (hE : 0 ≤ Enorm)
     (hproperMem : ∀ beta, ParabolicMemLpOn U 2 (Rproper beta))
@@ -786,24 +721,65 @@ private theorem genericPreliftFullResidual_family_memLp_and_sum_sq_le
     (hproperMem beta) (hqMem beta) (hGMem beta)
     Ada Ab Ac hAda hAb hAc hdaMeas hbMeas hcMeas hdaBound hbBound hcBound
   refine ⟨fun beta => (hbeta beta).1, ?_⟩
-  exact sum_le_coarse_product_of_pointwise_four_term
-    (fun beta => (ENNReal.toReal (eLpNorm
-      (genericPreliftFullResidual (Rproper beta) da b c (q beta) (G beta))
-      2 (timeVelocityVolumeOn U))) ^ 2)
-    (fun beta => (ENNReal.toReal (eLpNorm
-      (Rproper beta) 2 (timeVelocityVolumeOn U))) ^ 2)
-    (fun beta => ∑ _i : Fin d, ∑ j : Fin d,
-      (ENNReal.toReal (eLpNorm (G beta j) 2
-        (timeVelocityVolumeOn U))) ^ 2)
-    (fun beta => ∑ j : Fin d, (ENNReal.toReal (eLpNorm (G beta j) 2
-      (timeVelocityVolumeOn U))) ^ 2)
-    (fun beta => (ENNReal.toReal (eLpNorm
-      (q beta) 2 (timeVelocityVolumeOn U))) ^ 2)
-    ((d : ℝ) ^ 2 + (d : ℝ) + 2) Cp (Fintype.card ι : ℝ)
-      Ada Ab Ac (d : ℝ) Dnorm Enorm
-      (by positivity) hCp (by positivity) hAda hAb hAc
-      (by positivity) hD hE (fun beta => (hbeta beta).2)
-      hproperSum hdoubleG hsingleG hqSum
+  let r : ι → ℝ := (fun beta => (ENNReal.toReal (eLpNorm (genericPreliftFullResidual (Rproper beta) da b c (q beta) (G beta)) 2 (timeVelocityVolumeOn U))) ^ 2)
+  let p : ι → ℝ := (fun beta => (ENNReal.toReal (eLpNorm (Rproper beta) 2 (timeVelocityVolumeOn U))) ^ 2)
+  let doubleG : ι → ℝ := (fun beta => ∑ _i : Fin d, ∑ j : Fin d, (ENNReal.toReal (eLpNorm (G beta j) 2 (timeVelocityVolumeOn U))) ^ 2)
+  let singleG := (fun beta => ∑ j : Fin d, (ENNReal.toReal (eLpNorm (G beta j) 2 (timeVelocityVolumeOn U))) ^ 2)
+  let q : ι → ℝ := (fun beta => (ENNReal.toReal (eLpNorm (q beta) 2 (timeVelocityVolumeOn U))) ^ 2)
+  let N := ((d : ℝ) ^ 2 + (d : ℝ) + 2)
+  let K := (Fintype.card ι : ℝ)
+  let d := (d : ℝ)
+  have hN : 0 ≤ N := by
+    positivity
+  have hK : 0 ≤ K := by
+    positivity
+  have hd : 0 ≤ d := by
+    positivity
+  have hpoint : ∀ beta, r beta ≤ N * (p beta + Ada ^ 2 * doubleG beta + Ab ^ 2 * singleG beta + Ac ^ 2 * q beta) := (fun beta => (hbeta beta).2)
+  have hDtoTotal : Dnorm ≤ Dnorm + Enorm := le_add_of_nonneg_right hE
+  calc
+    (∑ beta, r beta) ≤ ∑ beta,
+        N * (p beta + Ada ^ 2 * doubleG beta +
+          Ab ^ 2 * singleG beta + Ac ^ 2 * q beta) :=
+      Finset.sum_le_sum fun beta _ => hpoint beta
+    _ = N * ((∑ beta, p beta) + Ada ^ 2 * (∑ beta, doubleG beta) +
+        Ab ^ 2 * (∑ beta, singleG beta) + Ac ^ 2 * (∑ beta, q beta)) := by
+      rw [← Finset.mul_sum]
+      congr 1
+      simp only [Finset.sum_add_distrib, Finset.mul_sum]
+    _ ≤ N * (Cp * (Dnorm + Enorm) +
+        Ada ^ 2 * (K * d ^ 2 * Dnorm) +
+        Ab ^ 2 * (K * d * Dnorm) + Ac ^ 2 * (K * Dnorm)) := by
+      apply mul_le_mul_of_nonneg_left _ hN
+      exact add_le_add (add_le_add (add_le_add hproperSum
+        (mul_le_mul_of_nonneg_left hdoubleG (sq_nonneg Ada)))
+        (mul_le_mul_of_nonneg_left hsingleG (sq_nonneg Ab)))
+        (mul_le_mul_of_nonneg_left hqSum (sq_nonneg Ac))
+    _ ≤ N * (Cp * (Dnorm + Enorm) +
+        Ada ^ 2 * (K * d ^ 2 * (Dnorm + Enorm)) +
+        Ab ^ 2 * (K * d * (Dnorm + Enorm)) +
+        Ac ^ 2 * (K * (Dnorm + Enorm))) := by
+      apply mul_le_mul_of_nonneg_left _ hN
+      have htail := add_le_add (add_le_add
+          (mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_left hDtoTotal
+              (mul_nonneg hK (sq_nonneg d))) (sq_nonneg Ada))
+          (mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_left hDtoTotal (mul_nonneg hK hd)) (sq_nonneg Ab)))
+          (mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_left hDtoTotal hK) (sq_nonneg Ac))
+      calc
+        _ = Cp * (Dnorm + Enorm) +
+            (Ada ^ 2 * (K * d ^ 2 * Dnorm) +
+              Ab ^ 2 * (K * d * Dnorm) + Ac ^ 2 * (K * Dnorm)) := by ring
+        _ ≤ Cp * (Dnorm + Enorm) +
+            (Ada ^ 2 * (K * d ^ 2 * (Dnorm + Enorm)) +
+              Ab ^ 2 * (K * d * (Dnorm + Enorm)) +
+              Ac ^ 2 * (K * (Dnorm + Enorm))) := add_le_add le_rfl htail
+        _ = _ := by ring
+    _ = N * (Cp + K *
+        (Ada ^ 2 * d ^ 2 + Ab ^ 2 * d + Ac ^ 2)) *
+          (Dnorm + Enorm) := by ring
 
 private def sourceSpecificFullResidual
     {d M : ℕ} (hM : 1 ≤ M)
@@ -823,105 +799,6 @@ private def sourceSpecificFullResidual
     (D.representative (preliftValueIndex beta))
     (fun j => D.representative (preliftGradientIndex beta j))
 
-private theorem sourceSpecificFullResidual_memLp_and_sum_sq_le
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U) (hM : 1 ≤ M)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ) (u : TimeVelocity d → ℝ)
-    (F : ℝ → PDE.Vec d → ℝ)
-    (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
-    (E : ParabolicWeakDerivativeFamily d M U
-      (fun z : TimeVelocity d => F z.1 z.2))
-    (Ba : Fin d → Fin d → ParabolicDerivativeIndex d (M + 1) → ℝ)
-    (Bb : Fin d → ParabolicDerivativeIndex d M → ℝ)
-    (Bc : ParabolicDerivativeIndex d M → ℝ)
-    (hBa : ∀ i j alpha, 0 ≤ Ba i j alpha)
-    (hBb : ∀ j alpha, 0 ≤ Bb j alpha)
-    (hBc : ∀ alpha, 0 ≤ Bc alpha)
-    (ha : ∀ i j, ContDiffOn ℝ (M + 1)
-      (fun z : TimeVelocity d => a z.1 z.2 i j) U)
-    (hb : ∀ j, ContDiffOn ℝ M
-      (fun z : TimeVelocity d => b z.1 z.2 j) U)
-    (hc : ContDiffOn ℝ M (fun z : TimeVelocity d => c z.1 z.2) U)
-    (haBound : ∀ i j alpha z, z ∈ U →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤ Ba i j alpha)
-    (hbBound : ∀ j alpha z, z ∈ U →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (fun x : TimeVelocity d => b x.1 x.2 j) z| ≤ Bb j alpha)
-    (hcBound : ∀ alpha z, z ∈ U →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (fun x : TimeVelocity d => c x.1 x.2) z| ≤ Bc alpha) :
-    (∀ beta : ParabolicDerivativeIndex d M, ParabolicMemLpOn U 2
-      (sourceSpecificFullResidual hM a b c D E beta)) ∧
-    (∑ beta : ParabolicDerivativeIndex d M,
-      (ENNReal.toReal (eLpNorm
-        (sourceSpecificFullResidual hM a b c D E beta)
-        2 (timeVelocityVolumeOn U))) ^ 2) ≤
-      fullResidualCoarseConstant hM Ba Bb Bc *
-        (ParabolicWeakDerivativeFamily.squaredL2Norm D +
-          ParabolicWeakDerivativeFamily.squaredL2Norm E) := by
-  classical
-  let BaM : Fin d → Fin d → ParabolicDerivativeIndex d M → ℝ :=
-    fun i j alpha => Ba i j
-      (ParabolicDerivativeIndex.castLE (Nat.le_succ M) alpha)
-  have hproper := properResidual_memLp_and_sum_sq_le_coarse
-    U hU a b c u F D E BaM Bb Bc
-    (fun i j alpha => hBa i j
-      (ParabolicDerivativeIndex.castLE (Nat.le_succ M) alpha))
-    hBb hBc (fun i j => (ha i j).of_le (by
-      exact_mod_cast Nat.le_succ M)) hb hc
-    (fun i j alpha z hz => haBound i j
-      (ParabolicDerivativeIndex.castLE (Nat.le_succ M) alpha) z hz)
-    hbBound hcBound
-  have hdaBound : ∀ i j, ∀ᵐ z ∂timeVelocityVolumeOn U,
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (singletonCoefficientIndex hM i).1
-        (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤
-          diffusionGradientMajorant hM Ba := by
-    intro i j
-    filter_upwards [ae_restrict_mem hU.measurableSet] with z hz
-    exact diffusionGradient_abs_le_majorant hM a Ba hBa haBound i j i z hz
-  have hbBoundAE : ∀ j, ∀ᵐ z ∂timeVelocityVolumeOn U,
-      |b z.1 z.2 j| ≤ driftValueMajorant Bb := by
-    intro j
-    filter_upwards [ae_restrict_mem hU.measurableSet] with z hz
-    exact driftValue_abs_le_majorant b Bb hBb hbBound j z hz
-  have hcBoundAE : ∀ᵐ z ∂timeVelocityVolumeOn U,
-      |c z.1 z.2| ≤ potentialValueMajorant Bc := by
-    filter_upwards [ae_restrict_mem hU.measurableSet] with z hz
-    exact potentialValue_abs_le_majorant c Bc hcBound z hz
-  have hfull := genericPreliftFullResidual_family_memLp_and_sum_sq_le
-    (fun beta : ParabolicDerivativeIndex d M =>
-      properDifferentiatedScalarCommutatorResidual a b c D E beta)
-    (fun beta : ParabolicDerivativeIndex d M =>
-      D.representative (preliftValueIndex beta))
-    (fun beta j => D.representative (preliftGradientIndex beta j))
-    (fun i j z => TimeVelocityMultiIndex.coordinateIteratedFDeriv
-      (singletonCoefficientIndex hM i).1
-      (fun x : TimeVelocity d => a x.1 x.2 i j) z)
-    (fun j z => b z.1 z.2 j) (fun z => c z.1 z.2)
-    (properResidualCoarseConstant BaM Bb Bc)
-    (diffusionGradientMajorant hM Ba) (driftValueMajorant Bb)
-    (potentialValueMajorant Bc)
-    (ParabolicWeakDerivativeFamily.squaredL2Norm D)
-    (ParabolicWeakDerivativeFamily.squaredL2Norm E)
-    (properResidualCoarseConstant_nonneg BaM Bb Bc)
-    (diffusionGradientMajorant_nonneg hM Ba hBa)
-    (driftValueMajorant_nonneg Bb hBb)
-    (potentialValueMajorant_nonneg Bc hBc)
-    (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D)
-    (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E)
-    hproper.1 hproper.2 (fun beta => D.memLp (preliftValueIndex beta))
-    (fun beta j => D.memLp (preliftGradientIndex beta j))
-    (fun i j => diffusionGradient_aestronglyMeasurable hU hM a ha i j)
-    (fun j => driftValue_aestronglyMeasurable hU b hb j)
-    (potentialValue_aestronglyMeasurable hU c hc)
-    hdaBound hbBoundAE hcBoundAE
-    (allPreliftGradient_double_component_sum_sq_le D)
-    (allPreliftGradient_component_sum_sq_le D)
-    (allPreliftValue_component_sum_sq_le D)
-  simpa only [sourceSpecificFullResidual, fullResidualCoarseConstant, BaM] using hfull
-
 private theorem integrable_mul_test_of_memLp
     {d : ℕ} {U : Set (TimeVelocity d)} {f φ : TimeVelocity d → ℝ}
     (hf : ParabolicMemLpOn U 2 f) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
@@ -934,7 +811,7 @@ private theorem integrable_mul_test_of_memLp
 private theorem sourceSpecific_testedEquation
     {d M : ℕ} (hM : 1 ≤ M) (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ) (u : TimeVelocity d → ℝ)
+    (c F : ℝ → PDE.Vec d → ℝ) (u )
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
       (fun z : TimeVelocity d => F z.1 z.2))
@@ -1072,7 +949,7 @@ private theorem sourceSpecific_testedEquation
   simp_rw [singletonCoefficientIndex_coe hM] at ⊢
   linear_combination hraw
 
-/-- Uniform interior spatial-difference-quotient control of every selected
+/- Uniform interior spatial-difference-quotient control of every selected
 gradient in the generic tested pre-lift equation. -/
 theorem exists_genericPrelift_gradient_spatialDifferenceQuotient_estimate
     (d M : ℕ) (hM : 1 ≤ M)
@@ -1171,11 +1048,66 @@ theorem exists_genericPrelift_gradient_spatialDifferenceQuotient_estimate
                 ParabolicWeakDerivativeFamily.squaredL2Norm E) := by
   classical
   let Ma := diffusionGradientMajorant hM Ba
-  obtain ⟨Ccore, δ, hCcore, hδ, hcore⟩ :=
-    exists_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
-      d t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁ hO₁ne
-      hO₁compact hO₁O₀ lam Lam Ma hlam hlamLam
-      (diffusionGradientMajorant_nonneg hM Ba hBa)
+  obtain ⟨Ccore, δ, hCcore, hδ, hcore⟩ : ∃ C δ : ℝ, 0 ≤ C ∧ 0 < δ ∧
+      ∀ (A : TimeVelocity d → PDE.Mat d) (q : TimeVelocity d → ℝ)
+        (G : Fin d → TimeVelocity d → ℝ) (R : TimeVelocity d → ℝ),
+        (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀, (A z).IsSymm) →
+        (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀,
+          lam • (1 : PDE.Mat d) ≤ A z ∧ A z ≤ Lam • (1 : PDE.Mat d)) →
+        (∀ i j, ContDiffOn ℝ 1 (fun z : TimeVelocity d => A z i j)
+          (Set.Ioo t₀ t₃ ×ˢ O₀)) →
+        (∀ i j k z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
+          |spatialPartial k
+              (fun y : PDE.Vec d => A (z.1, y) i j) z.2| ≤ Ma) →
+        ParabolicMemLpOn (Set.Ioo t₀ t₃ ×ˢ O₀) 2 q →
+        (∀ j, ParabolicMemLpOn (Set.Ioo t₀ t₃ ×ˢ O₀) 2 (G j)) →
+        ParabolicMemLpOn (Set.Ioo t₀ t₃ ×ˢ O₀) 2 R →
+        (∀ j, HasWeakVelocityPartialDerivOn
+          (Set.Ioo t₀ t₃ ×ˢ O₀) j q (G j)) →
+        (∀ φ : TimeVelocity d → ℝ,
+          ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ →
+          tsupport φ ⊆ Set.Ioo t₀ t₃ ×ˢ O₀ →
+          -(∫ z in Set.Ioo t₀ t₃ ×ˢ O₀,
+              q z * timeDerivative φ z) -
+              (∑ i, ∑ j, ∫ z in Set.Ioo t₀ t₃ ×ˢ O₀,
+                A z i j * G j z * velocityGradient φ z i) =
+            ∫ z in Set.Ioo t₀ t₃ ×ˢ O₀, R z * φ z) →
+        ∀ h : ℝ, 0 < h → h < δ →
+          (∀ j k, ParabolicMemLpOn (Set.Ioo t₁ t₂ ×ˢ O₁) 2
+            (spatialDifferenceQuotient k h (G j))) ∧
+          (∑ j, ∑ k, (ENNReal.toReal (eLpNorm
+            (spatialDifferenceQuotient k h (G j)) 2
+            (timeVelocityVolumeOn (Set.Ioo t₁ t₂ ×ˢ O₁)))) ^ 2) ≤
+            C * ((ENNReal.toReal (eLpNorm q 2
+              (timeVelocityVolumeOn (Set.Ioo t₀ t₃ ×ˢ O₀)))) ^ 2 +
+              (∑ j, (ENNReal.toReal (eLpNorm (G j) 2
+                (timeVelocityVolumeOn (Set.Ioo t₀ t₃ ×ˢ O₀)))) ^ 2) +
+              (ENNReal.toReal (eLpNorm R 2
+                (timeVelocityVolumeOn (Set.Ioo t₀ t₃ ×ˢ O₀)))) ^ 2) := by
+    have hMa := (diffusionGradientMajorant_nonneg hM Ba hBa)
+    classical
+    by_cases hd : d = 0
+    · subst d
+      refine ⟨0, 1, le_rfl, zero_lt_one, ?_⟩
+      intro A q G R hSymm hEll hA hAbound hq hG hR hWeak hEq h hh hhone
+      constructor
+      · intro j
+        exact Fin.elim0 j
+      · simp
+    · obtain ⟨C, δ, hC, hδ, hfixed⟩ :=
+        exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
+          d t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁ hO₁ne
+          hO₁compact hO₁O₀ lam Lam Ma hlam hlamLam hMa
+      refine ⟨(d : ℝ) * C, δ, mul_nonneg (Nat.cast_nonneg d) hC, hδ, ?_⟩
+      intro A q G R hSymm hEll hA hAbound hq hG hR hWeak hEq h hh hhd
+      have hk (k : Fin d) := hfixed A q G R hSymm hEll hA hAbound hq hG hR
+        hWeak hEq k h hh hhd
+      constructor
+      · exact fun j k ↦ (hk k).1 j
+      · have hsum := Finset.sum_le_sum fun k (_hk : k ∈ Finset.univ) ↦ (hk k).2
+        rw [Finset.sum_comm]
+        simpa only [Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+          nsmul_eq_mul, Nat.cast_ofNat, Nat.cast_id, mul_assoc] using hsum
   let K := (Fintype.card (ParabolicDerivativeIndex d M) : ℝ) * (1 + (d : ℝ)) +
     fullResidualCoarseConstant hM Ba Bb Bc
   refine ⟨Ccore * K, δ, mul_nonneg hCcore ?_, hδ, ?_⟩
@@ -1186,8 +1118,76 @@ theorem exists_genericPrelift_gradient_spatialDifferenceQuotient_estimate
   · intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
     let U : Set (TimeVelocity d) := Set.Ioo t₀ t₃ ×ˢ O₀
     have hU : IsOpen U := isOpen_Ioo.prod hO₀
-    have hres := sourceSpecificFullResidual_memLp_and_sum_sq_le U hU hM
-      a b c u F D E Ba Bb Bc hBa hBb hBc ha hb hc haBound hbBound hcBound
+    have hres : (∀ beta : ParabolicDerivativeIndex d M, ParabolicMemLpOn U 2
+      (sourceSpecificFullResidual hM a b c D E beta)) ∧
+    (∑ beta : ParabolicDerivativeIndex d M,
+      (ENNReal.toReal (eLpNorm
+        (sourceSpecificFullResidual hM a b c D E beta)
+        2 (timeVelocityVolumeOn U))) ^ 2) ≤
+      fullResidualCoarseConstant hM Ba Bb Bc *
+        (ParabolicWeakDerivativeFamily.squaredL2Norm D +
+          ParabolicWeakDerivativeFamily.squaredL2Norm E) := by
+      classical
+      let BaM : Fin d → Fin d → ParabolicDerivativeIndex d M → ℝ :=
+        fun i j alpha => Ba i j
+          (ParabolicDerivativeIndex.castLE (Nat.le_succ M) alpha)
+      have hproper := properResidual_memLp_and_sum_sq_le_coarse
+        U hU a b c u F D E BaM Bb Bc
+        (fun i j alpha => hBa i j
+          (ParabolicDerivativeIndex.castLE (Nat.le_succ M) alpha))
+        hBb hBc (fun i j => (ha i j).of_le (by
+          exact_mod_cast Nat.le_succ M)) hb hc
+        (fun i j alpha z hz => haBound i j
+          (ParabolicDerivativeIndex.castLE (Nat.le_succ M) alpha) z hz)
+        hbBound hcBound
+      have hdaBound : ∀ i j, ∀ᵐ z ∂timeVelocityVolumeOn U,
+          |TimeVelocityMultiIndex.coordinateIteratedFDeriv
+            (singletonCoefficientIndex hM i).1
+            (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤
+              diffusionGradientMajorant hM Ba := by
+        intro i j
+        filter_upwards [ae_restrict_mem hU.measurableSet] with z hz
+        exact diffusionGradient_abs_le_majorant hM a Ba hBa haBound i j i z hz
+      have hbBoundAE : ∀ j, ∀ᵐ z ∂timeVelocityVolumeOn U,
+          |b z.1 z.2 j| ≤ driftValueMajorant Bb := by
+        intro j
+        filter_upwards [ae_restrict_mem hU.measurableSet] with z hz
+        exact driftValue_abs_le_majorant b Bb hBb hbBound j z hz
+      have hcBoundAE : ∀ᵐ z ∂timeVelocityVolumeOn U,
+          |c z.1 z.2| ≤ potentialValueMajorant Bc := by
+        filter_upwards [ae_restrict_mem hU.measurableSet] with z hz
+        exact potentialValue_abs_le_majorant c Bc hcBound z hz
+      have hfull := genericPreliftFullResidual_family_memLp_and_sum_sq_le
+        (fun beta : ParabolicDerivativeIndex d M =>
+          properDifferentiatedScalarCommutatorResidual a b c D E beta)
+        (fun beta : ParabolicDerivativeIndex d M =>
+          D.representative (preliftValueIndex beta))
+        (fun beta j => D.representative (preliftGradientIndex beta j))
+        (fun i j z => TimeVelocityMultiIndex.coordinateIteratedFDeriv
+          (singletonCoefficientIndex hM i).1
+          (fun x : TimeVelocity d => a x.1 x.2 i j) z)
+        (fun j z => b z.1 z.2 j) (fun z => c z.1 z.2)
+        (properResidualCoarseConstant BaM Bb Bc)
+        (diffusionGradientMajorant hM Ba) (driftValueMajorant Bb)
+        (potentialValueMajorant Bc)
+        (ParabolicWeakDerivativeFamily.squaredL2Norm D)
+        (ParabolicWeakDerivativeFamily.squaredL2Norm E)
+        (properResidualCoarseConstant_nonneg BaM Bb Bc)
+        (diffusionGradientMajorant_nonneg hM Ba hBa)
+        (driftValueMajorant_nonneg Bb hBb)
+        (potentialValueMajorant_nonneg Bc hBc)
+        (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D)
+        (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E)
+        hproper.1 hproper.2 (fun beta => D.memLp (preliftValueIndex beta))
+        (fun beta j => D.memLp (preliftGradientIndex beta j))
+        (fun i j => diffusionGradient_aestronglyMeasurable hU hM a ha i j)
+        (fun j => driftValue_aestronglyMeasurable hU b hb j)
+        (potentialValue_aestronglyMeasurable hU c hc)
+        hdaBound hbBoundAE hcBoundAE
+        (allPreliftGradient_double_component_sum_sq_le D)
+        (allPreliftGradient_component_sum_sq_le D)
+        (allPreliftValue_component_sum_sq_le D)
+      simpa only [sourceSpecificFullResidual, fullResidualCoarseConstant, BaM] using hfull
     let BaM : Fin d → Fin d → ParabolicDerivativeIndex d M → ℝ :=
       fun i j alpha => Ba i j
         (ParabolicDerivativeIndex.castLE (Nat.le_succ M) alpha)

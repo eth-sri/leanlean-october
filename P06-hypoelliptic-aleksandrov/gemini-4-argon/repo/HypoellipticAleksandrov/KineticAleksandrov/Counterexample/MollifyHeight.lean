@@ -17,11 +17,9 @@ variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
 /-- Every continuous spatial trace with a strict height margin retains height one
 quarter at the same point for every sufficiently small member of the concrete sequence. -/
 theorem mollify_preserves_height_eventually (f : G → ℝ) (hf : Continuous f)
-    (q : G) (hq : 5 / 16 < f q) :
+    (q ) (hq : 5 / 16 < f q) :
     ∀ᶠ n in atTop, 1 / 4 < spatialMollify (standardMollifierSequence n) f q := by
-  have he := ContDiffBump.convolution_tendsto_right_of_continuous
-    (μ := volume) standardMollifierSequence_rOut_tendsto hf q
-  apply he.eventually (Ioi_mem_nhds ?_)
+  apply (ContDiffBump.convolution_tendsto_right_of_continuous (μ := volume) standardMollifierSequence_rOut_tendsto hf q).eventually (Ioi_mem_nhds ?_)
   exact lt_trans (by norm_num : (1 / 4 : ℝ) < 5 / 16) hq
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

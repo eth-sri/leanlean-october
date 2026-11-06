@@ -24,10 +24,10 @@ theorem localTimeVelocityRegularity_of_smooth :
     hsmooth hH hLE d hd lam Lam hlam hLam
   refine ⟨C_m, C, α, hCm, hC, hα, hα1, ?_⟩
   intro A hA hs hlo hhi P₀ R hR u hc hu he
-  have hab : BddAbove (u '' backwardCylinder P₀ R) :=
+  have hab :=
     ((isCompact_closure_backwardCylinder P₀ R hR).bddAbove_image hc).mono
       (image_mono subset_closure)
-  have hbb : BddBelow (u '' backwardCylinder P₀ R) :=
+  have hbb :=
     ((isCompact_closure_backwardCylinder P₀ R hR).bddBelow_image hc).mono
       (image_mono subset_closure)
   have hKD n : closure (backwardCylinder (borelInnerCentre P₀ R n)

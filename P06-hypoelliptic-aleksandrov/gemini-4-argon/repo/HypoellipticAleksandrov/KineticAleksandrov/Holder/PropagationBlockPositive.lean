@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationBlockQuadraticBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationParametersBounds
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationBlockQuadraticScaling
 
 /-! # Exact source positivity-set bounds for the Gaussian block barrier -/
 
@@ -11,15 +12,17 @@ import Mathlib.Tactic
 noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
+open Matrix
+open scoped MatrixOrder
 
-/-- The source damping coefficient is nonnegative under positive ellipticity. -/
+/- The source damping coefficient is nonnegative under positive ellipticity. -/
 theorem Xi_nonneg (d : ℕ) {lam Lam H h : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hh : 0 < h) : 0 ≤ Xi d lam Lam H h := by
-  have hLam0 : 0 ≤ Lam := (hlam.trans_le hLam).le
+  have hLam0 := (hlam.trans_le hLam).le
   unfold Xi
   positivity
 
-/-- Positivity of the whole-carrier barrier forces the definite strip and the source q bound. -/
+/- Positivity of the whole-carrier barrier forces the definite strip and the source q bound. -/
 theorem gaussianBarrier_pos_quadratic {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (Lam H L ell tminus sblock : ℝ) (hLam : lam ≤ Lam) (hell : 0 ≤ ell)
     (hbudget : Xi d lam Lam H h * h ≤ L ^ 2 / 4)
@@ -51,8 +54,8 @@ theorem gaussianBarrier_pos_quadratic {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (
       (P.velocity - v (P.time - tminus)) < (513 / 512 : ℝ) * L ^ 2
     linarith only [hexp, hm, hbudget]
 
-/-- The covariance upper bound turns the source q bound into both scaled Euclidean bounds. -/
-theorem qform_scaled_norm_bounds {d : ℕ} {lam h sigma L : ℝ}
+/- The covariance upper bound turns the source q bound into both scaled Euclidean bounds. -/
+theorem qform_scaled_norm_bounds {d lam h sigma L}
     (hlam : 0 < lam) (hh : 0 < h) (hL : 0 ≤ L) (hs : -(h / 128) ≤ sigma)
     (ht : |sigma / h| ≤ 1) (y V : PDE.Vec d)
     (hq : qform lam h sigma y V ≤ (513 / 512 : ℝ) * L ^ 2) :
@@ -62,7 +65,16 @@ theorem qform_scaled_norm_bounds {d : ℕ} {lam h sigma L : ℝ}
   let U := (h ^ (1 / 2 : ℝ))⁻¹ • V
   let C := (3 / 2 : ℝ) * L * Real.sqrt lam
   have hC : 0 ≤ C := by positivity
-  have hb := qform_scaled_normSq_le hlam hh hs ht y V
+  have hb : PDE.vecNormSq ((h ^ (3 / 2 : ℝ))⁻¹ • y) +
+      PDE.vecNormSq ((h ^ (1 / 2 : ℝ))⁻¹ • V) ≤ 2 * lam * qform lam h sigma y V := by
+      have hstrip : -(1 / 128 : ℝ) ≤ sigma / h := by
+        apply (le_div_iff₀ hh).mpr
+        linarith only [hs]
+      rw [qform_eq_dimensionless lam hh]
+      exact blockQuadratic_inv_lower (posDef_ghat hlam hstrip) (mul_pos (by norm_num) hlam)
+        (ghat_upper hlam ht) _ _
+
+    /- The endpoint covariance lower bound has the exact source constant sixteen. -/
   have hq' := mul_le_mul_of_nonneg_left hq (show 0 ≤ 2 * lam by positivity)
   have hupper : PDE.vecNormSq Y + PDE.vecNormSq U ≤ C ^ 2 := by
     apply hb.trans (hq'.trans ?_)
@@ -77,16 +89,16 @@ theorem qform_scaled_norm_bounds {d : ℕ} {lam h sigma L : ℝ}
     rw [PDE.vecEuclideanNorm_sq]
     linarith only [hupper, PDE.vecNormSq_nonneg Y]
 
-/-- Undoing a positive scalar scaling preserves the native Euclidean radius bound exactly. -/
-theorem vecEuclideanNorm_le_of_scaled {d : ℕ} {a C : ℝ} (ha : 0 < a)
+/- Undoing a positive scalar scaling preserves the native Euclidean radius bound exactly. -/
+theorem vecEuclideanNorm_le_of_scaled {d a C} (ha : 0 < a)
     (y : PDE.Vec d) (h : PDE.vecEuclideanNorm (a⁻¹ • y) ≤ C) :
     PDE.vecEuclideanNorm y ≤ C * a := by
   rw [PDE.vecEuclideanNorm_smul, abs_of_pos (inv_pos.mpr ha)] at h
   have hm := mul_le_mul_of_nonneg_left h ha.le
   simpa only [← mul_assoc, mul_inv_cancel₀ ha.ne', one_mul, mul_comm a C] using hm
 
-/-- Both native Euclidean coordinates obey the exact source positivity-set radii. -/
-theorem gaussianBarrier_positive_set {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h)
+/- Both native Euclidean coordinates obey the exact source positivity-set radii. -/
+theorem gaussianBarrier_positive_set {d lam h} (hlam : 0 < lam) (hh : 0 < h)
     (Lam H L ell tminus sblock : ℝ) (hLam : lam ≤ Lam) (hell : 0 ≤ ell) (hL : 0 ≤ L)
     (hbudget : Xi d lam Lam H h * h ≤ L ^ 2 / 4)
     (x v : ℝ → PDE.Vec d) (P : KineticPoint d)

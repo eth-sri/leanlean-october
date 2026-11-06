@@ -29,7 +29,7 @@ private theorem integrable_restrict_mul_of_locallyIntegrableOn
     (hf : LocallyIntegrableOn f U volume) (hg : Continuous g)
     (hgCompact : HasCompactSupport g) (hgSub : tsupport g ⊆ U) :
     Integrable (fun z => f z * g z) (timeVelocityVolumeOn U) := by
-  have hfK : IntegrableOn f (tsupport g) volume :=
+  have hfK :=
     hf.integrableOn_compact_subset hgSub hgCompact.isCompact
   have hfgK : IntegrableOn (fun z => f z * g z) (tsupport g) volume := by
     simpa only [smul_eq_mul] using
@@ -183,7 +183,6 @@ private theorem timeDerivative_compact {d : ℕ} {f : TimeVelocity d → ℝ}
 private theorem timeDerivative_tsupport {d : ℕ} (f : TimeVelocity d → ℝ) :
     tsupport (timeDerivative f) ⊆ tsupport f := by
   unfold timeDerivative
-  change closure (Function.support (fun z => fderiv ℝ f z (1, 0))) ⊆ tsupport f
   refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
   intro z hz
   rw [Function.mem_support] at hz ⊢
@@ -214,7 +213,6 @@ private theorem velocityGradient_compact {d : ℕ} {f : TimeVelocity d → ℝ} 
 private theorem velocityGradient_tsupport {d : ℕ} {i : Fin d} (f : TimeVelocity d → ℝ) :
     tsupport (fun z => velocityGradient f z i) ⊆ tsupport f := by
   unfold velocityGradient
-  change closure (Function.support (fun z => fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
   refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
   intro z hz
   rw [Function.mem_support] at hz ⊢
@@ -224,7 +222,7 @@ private theorem velocityGradient_tsupport {d : ℕ} {i : Fin d} (f : TimeVelocit
 
 namespace HasWeakTimeDerivOn
 
-/-- Smooth scalar multiplication obeys the raw weak time-derivative product rule. -/
+/- Smooth scalar multiplication obeys the raw weak time-derivative product rule. -/
 theorem mul_contDiff {d : ℕ} {U : Set (TimeVelocity d)} {u du b : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du) (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (huLoc : LocallyIntegrableOn u U volume)
@@ -239,7 +237,7 @@ end HasWeakTimeDerivOn
 
 namespace HasWeakVelocityPartialDerivOn
 
-/-- Smooth scalar multiplication obeys the raw weak velocity product rule. -/
+/- Smooth scalar multiplication obeys the raw weak velocity product rule. -/
 theorem mul_contDiff {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
     {u dui b : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui) (hb : ContDiff ℝ (⊤ : ℕ∞) b)
@@ -273,8 +271,7 @@ private theorem velocityHessian_compact {d : ℕ} {f : TimeVelocity d → ℝ}
     {i j : Fin d} (hf : HasCompactSupport f) :
     HasCompactSupport (fun z => velocityHessian f z i j) := by
   unfold velocityHessian
-  have hfirst : HasCompactSupport (fderiv ℝ f) := hf.fderiv ℝ
-  have hsecond : HasCompactSupport (fderiv ℝ (fderiv ℝ f)) := hfirst.fderiv ℝ
+  have hsecond := (hf.fderiv ℝ).fderiv ℝ
   simpa only [Function.comp_def] using hsecond.comp_left
     (g := fun H : TimeVelocity d →L[ℝ] TimeVelocity d →L[ℝ] ℝ =>
       H ((0, Pi.single i 1) : TimeVelocity d) ((0, Pi.single j 1) : TimeVelocity d)) rfl
@@ -304,7 +301,7 @@ private theorem velocityGradient_velocityGradient {d : ℕ} {b : TimeVelocity d 
 
 namespace ParabolicW12Function
 
-/-- Multiply a raw parabolic weak jet by a globally smooth compactly supported scalar. -/
+/- Multiply a raw parabolic weak jet by a globally smooth compactly supported scalar. -/
 noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p) (hp : 1 ≤ p) {b : TimeVelocity d → ℝ}
     (hb : ContDiff ℝ (⊤ : ℕ∞) b) (hbCompact : HasCompactSupport b) :
@@ -427,10 +424,7 @@ noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity 
         rw [hEq]
         simpa only [mul_comm] using (w.memLp.mul' (r := p) hddTop)
       exact hA.add hB
-    have hsum := hfirst.add hsecond
-      (hleftValue.locallyIntegrableOn hp) (hleftDeriv.locallyIntegrableOn hp)
-      (hrightValue.locallyIntegrableOn hp) (hrightDeriv.locallyIntegrableOn hp)
-    convert hsum using 1 <;> funext z
+    convert (hfirst.add hsecond (hleftValue.locallyIntegrableOn hp) (hleftDeriv.locallyIntegrableOn hp) (hrightValue.locallyIntegrableOn hp) (hrightDeriv.locallyIntegrableOn hp)) using 1 <;> funext z
     · simp only [dbi]
       ring
     · rw [show velocityGradient dbi z j =
@@ -438,35 +432,6 @@ noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity 
           simpa only [dbi] using velocityGradient_velocityGradient hb z]
       simp only [dbi]
       ring
-
-@[simp] theorem mulContDiffHasCompactSupport_toFun {d : ℕ} {U : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) :
-    (w.mulContDiffHasCompactSupport hp hb hbCompact).toFun = fun z => b z * w.toFun z := rfl
-
-@[simp] theorem mulContDiffHasCompactSupport_timeDeriv {d : ℕ} {U : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) :
-    (w.mulContDiffHasCompactSupport hp hb hbCompact).timeDeriv =
-      fun z => b z * w.timeDeriv z + w.toFun z * timeDerivative b z := rfl
-
-@[simp] theorem mulContDiffHasCompactSupport_velocityGrad {d : ℕ} {U : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) :
-    (w.mulContDiffHasCompactSupport hp hb hbCompact).velocityGrad =
-      fun z i => b z * w.velocityGrad z i + w.toFun z * velocityGradient b z i := rfl
-
-@[simp] theorem mulContDiffHasCompactSupport_velocityHessian {d : ℕ} {U : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) :
-    (w.mulContDiffHasCompactSupport hp hb hbCompact).velocityHessian =
-      fun z i j => b z * w.velocityHessian z i j + velocityGradient b z j * w.velocityGrad z i +
-        w.velocityGrad z j * velocityGradient b z i + w.toFun z *
-          HypoellipticAleksandrov.Parabolic.velocityHessian b z i j := rfl
 
 end ParabolicW12Function
 

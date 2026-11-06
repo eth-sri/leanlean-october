@@ -23,44 +23,43 @@ noncomputable section
 open Filter
 open scoped Topology
 
-/-- The positive exponential weight based at the time `tBase`. -/
+/- The positive exponential weight based at the time `tBase`. -/
 def exponentialTimeWeight {d : ℕ} (rho tBase : ℝ) (z : TimeVelocity d) : ℝ :=
   Real.exp (rho * (z.1 - tBase))
 
-/-- The exponential time conjugate of a scalar function. -/
+/- The exponential time conjugate of a scalar function. -/
 def exponentialConjugate {d : ℕ} (rho tBase : ℝ)
     (w : TimeVelocity d → ℝ) (z : TimeVelocity d) : ℝ :=
   exponentialTimeWeight rho tBase z * w z
 
-/-- Evaluation of the exponential time weight. -/
+/- Evaluation of the exponential time weight. -/
 @[simp] theorem exponentialTimeWeight_apply {d : ℕ} (rho tBase : ℝ)
     (z : TimeVelocity d) :
     exponentialTimeWeight rho tBase z = Real.exp (rho * (z.1 - tBase)) :=
   rfl
 
-/-- Evaluation of the exponential time conjugate. -/
+/- Evaluation of the exponential time conjugate. -/
 @[simp] theorem exponentialConjugate_apply {d : ℕ} (rho tBase : ℝ)
     (w : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     exponentialConjugate rho tBase w z = exponentialTimeWeight rho tBase z * w z :=
   rfl
 
-/-- The exponential time weight is strictly positive at every point. -/
+/- The exponential time weight is strictly positive at every point. -/
 theorem exponentialTimeWeight_pos {d : ℕ} (rho tBase : ℝ) (z : TimeVelocity d) :
     0 < exponentialTimeWeight rho tBase z :=
   Real.exp_pos _
 
-/-- The exponential time weight is globally smooth. -/
+/- The exponential time weight is globally smooth. -/
 theorem contDiff_exponentialTimeWeight {d : ℕ} (rho tBase : ℝ) :
     ContDiff ℝ ⊤ (exponentialTimeWeight (d := d) rho tBase) := by
   unfold exponentialTimeWeight
   fun_prop
 
-/-- Exponential conjugation preserves local `C²` regularity. -/
+/- Exponential conjugation preserves local `C²` regularity. -/
 theorem contDiffOn_exponentialConjugate {d : ℕ} {U : Set (TimeVelocity d)}
     {rho tBase : ℝ} {w : TimeVelocity d → ℝ}
     (hw : ContDiffOn ℝ 2 w U) :
-    ContDiffOn ℝ 2 (exponentialConjugate rho tBase w) U := by
-  exact (((contDiff_exponentialTimeWeight rho tBase).of_le (by norm_num)).contDiffOn).mul hw
+    ContDiffOn ℝ 2 (exponentialConjugate rho tBase w) U :=  (((contDiff_exponentialTimeWeight rho tBase).of_le (by norm_num)).contDiffOn).mul hw
 
 private theorem fderiv_timeCoordinate_apply {d : ℕ}
     (z direction : TimeVelocity d) :
@@ -121,24 +120,7 @@ private theorem fderiv_fderiv_exponentialTimeWeight_apply {d : ℕ}
       rw [fderiv_exponentialTimeWeight_apply]
       ring
 
-/-- The exact time derivative after exponential time conjugation. -/
-theorem timeDerivative_exponentialConjugate {d : ℕ} {rho tBase : ℝ}
-    {w : TimeVelocity d → ℝ} {z : TimeVelocity d}
-    (hw : ContDiffAt ℝ 2 w z) :
-    timeDerivative (exponentialConjugate rho tBase w) z =
-      exponentialTimeWeight rho tBase z * (timeDerivative w z + rho * w z) := by
-  have heDiff : DifferentiableAt ℝ (exponentialTimeWeight rho tBase) z :=
-    (contDiff_exponentialTimeWeight rho tBase).differentiable (by norm_num) z
-  have hwDiff : DifferentiableAt ℝ w z := hw.differentiableAt (by norm_num)
-  unfold timeDerivative exponentialConjugate
-  rw [fderiv_fun_mul heDiff hwDiff]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-    smul_eq_mul]
-  rw [fderiv_exponentialTimeWeight_apply]
-  simp only [mul_add]
-  ring
-
-/-- The exact velocity Hessian after exponential time conjugation. -/
+/- The exact time derivative after exponential time conjugation. -/
 theorem velocityHessian_exponentialConjugate {d : ℕ} {rho tBase : ℝ}
     {w : TimeVelocity d → ℝ} {z : TimeVelocity d}
     (hw : ContDiffAt ℝ 2 w z) :
@@ -227,21 +209,32 @@ theorem velocityHessian_exponentialConjugate {d : ℕ} {rho tBase : ℝ}
       simp only [mul_zero, zero_mul, add_zero,
         Matrix.smul_apply, smul_eq_mul, velocityHessian]
 
-/-- The exact project-sign operator identity after exponential time
+/- The exact project-sign operator identity after exponential time
 conjugation. -/
 theorem parabolicOperator_exponentialConjugate {d : ℕ} (A : CoefficientField d)
-    {rho tBase : ℝ} {w : TimeVelocity d → ℝ} {z : TimeVelocity d}
+    {rho tBase w} {z : TimeVelocity d}
     (hw : ContDiffAt ℝ 2 w z) :
     parabolicOperator A (exponentialConjugate rho tBase w) z =
       exponentialTimeWeight rho tBase z * (parabolicOperator A w z + rho * w z) := by
+  have _h_inl_21 : timeDerivative (exponentialConjugate rho tBase w) z = exponentialTimeWeight rho tBase z * (timeDerivative w z + rho * w z) := by
+    have heDiff :=
+      (contDiff_exponentialTimeWeight rho tBase).differentiable (by norm_num) z
+    have hwDiff := hw.differentiableAt (by norm_num)
+    unfold timeDerivative exponentialConjugate
+    rw [fderiv_fun_mul heDiff hwDiff]
+    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
+      smul_eq_mul]
+    rw [fderiv_exponentialTimeWeight_apply]
+    simp only [mul_add]
+    ring
   rw [parabolicOperator_apply, parabolicOperator_apply,
-    timeDerivative_exponentialConjugate hw,
+    _h_inl_21,
     velocityHessian_exponentialConjugate hw,
     HypoellipticAleksandrov.matrixContraction_smul_right]
   ring
 
-/-- At a point, exponential conjugation preserves a nonpositive scalar sign. -/
-theorem exponentialConjugate_nonpos_iff {d : ℕ} (rho tBase : ℝ)
+/- At a point, exponential conjugation preserves a nonpositive scalar sign. -/
+theorem exponentialConjugate_nonpos_iff {d } (rho tBase : ℝ)
     (w : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     exponentialConjugate rho tBase w z ≤ 0 ↔ w z ≤ 0 := by
   rw [exponentialConjugate_apply]

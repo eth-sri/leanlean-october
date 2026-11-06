@@ -146,11 +146,11 @@ a Lebesgue density `G` on `(T,2T) × ℝ^d × ℝ^d` with
 `‖G‖_{L^q}^q ≤ C_q M^q T^{1-2d(q-1)}`, where `C_q = slabConstant d q C` depends only on `d`, `q`
 and the constants `C_γ` of Lemma 5.1.  The only premise besides the Green measure
 `hΓ` ((2.6)) is `hbounds`, which Lemma 5.1 must discharge. -/
-theorem slab_density_of_fourier_marginals {d : ℕ} (C : ℝ → ℝ≥0) (c : ℝ)
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ₀ : ℝ)
+theorem slab_density_of_fourier_marginals {d } (C : ℝ → ℝ≥0) (c : ℝ)
+    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ₀ )
     (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
-    {q T : ℝ} (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) (hT : 0 < T)
+    {q T } (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) (hT : 0 < T)
     (hbounds : SlabFourierBounds d C c (μ univ) T Γ) :
     ∃ G : GreenCarrier d → ℝ≥0∞, Measurable G ∧
       Γ.restrict (slabSet T) = ((greenLebesgue d).restrict (slabSet T)).withDensity G ∧
@@ -161,19 +161,18 @@ theorem slab_density_of_fourier_marginals {d : ℕ} (C : ℝ → ℝ≥0) (c : �
   have hq0 : 0 ≤ q - 1 := by linarith
   obtain ⟨hqγ, hγ0⟩ := slab_q_lt_gamma hq hqd
   obtain ⟨hq1a, hq1b⟩ := slab_q1_bounds hq hqd
-  have hγ1 : 1 ≤ slabGamma d q := (slab_gamma_one_lt hq hqd).le
+  have hγ1 := (slab_gamma_one_lt hq hqd).le
   have hMfin : μ univ < ⊤ := measure_lt_top μ _
   have hfin : IsFiniteMeasure (slabMeasure d T Γ) := ⟨by
     rw [slabMeasure_univ]
     exact (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt
       (ENNReal.mul_lt_top hMfin ENNReal.ofReal_lt_top)⟩
   have hgn := hgnorm (slabQ1 d q) hq1a hq1b
-  have hgL : eLpNorm g (ENNReal.ofReal (slabQ1 d q)) (slabBase d T) < ⊤ :=
+  have hgL :=
     hgn.trans_lt (ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.coe_lt_top hMfin)
       ENNReal.ofReal_lt_top)
   obtain ⟨-, hkγ⟩ := hkb (slabGamma d q) hγ1 hγ0.le
-  have hH : ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
-      ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal (slabGamma d q)) (slabBase d T) < ⊤ :=
+  have hH :=
     hkγ.trans_lt (ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.coe_lt_top hMfin)
       ENNReal.ofReal_lt_top)
   obtain ⟨G', hG'm, hΓG', hbd, -⟩ := Reconstruction.reconstruction (m := slabBase d T)

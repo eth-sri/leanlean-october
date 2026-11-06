@@ -16,7 +16,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- Smooth forbidden-phase tests have zero integral against the supplied moving kernel. -/
-theorem stationary_phase_test_zero (d : ℕ)
+theorem stationary_phase_test_zero (d )
     (lam Lam : ℝ)
     (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
     (b : PDE.Vec d → PDE.Vec d) (hsetting : SourceSetting lam Lam m Lb D B b)
@@ -60,8 +60,7 @@ theorem stationary_phase_test_zero (d : ℕ)
     obtain ⟨u, hu, hup, -⟩ := hreal.1 τ φ hφ
     have hB : ∀ t v, (B t v).PosSemidef := by
       intro t v
-      have hbounds := (sectionTwoCoefficient_fullBounds lam Lam B hsetting.1).2.2
-      exact posSemidef_of_hasEverywhereLoewnerBounds hsetting.1.1.le hbounds t v 0
+      exact posSemidef_of_hasEverywhereLoewnerBounds hsetting.1.1.le ((sectionTwoCoefficient_fullBounds lam Lam B hsetting.1).2.2) t v 0
     have hmove : ∀ t, movingDomain (PDE.euclideanBall 0 ρ) (fun _ => c) t =
         movingDomain (PDE.euclideanBall c ρ) stationary t := by
       intro t
@@ -93,7 +92,7 @@ theorem stationary_phase_test_zero (d : ℕ)
 
 
 /-- The supplied moving kernel is concentrated in the source closed phase strip. -/
-theorem stationary_phase_localization (d : ℕ)
+theorem stationary_phase_localization (d )
     (lam Lam : ℝ)
     (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
     (b : PDE.Vec d → PDE.Vec d) (hsetting : SourceSetting lam Lam m Lb D B b)

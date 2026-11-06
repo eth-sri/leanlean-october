@@ -18,25 +18,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set
 
-/-- The center of the time-centered inflation, transported along the center velocity. -/
-def inflationCenter {d : ℕ} (P : KineticPoint d) (r k : ℝ) : KineticPoint d :=
+/- The center of the time-centered inflation, transported along the center velocity. -/
+def inflationCenter {d } (P : KineticPoint d) (r k : ℝ) : KineticPoint d :=
   ⟨P.time + (k ^ 2 - 1) * r ^ 2 / 2,
     P.position + ((k ^ 2 - 1) * r ^ 2 / 2) • P.velocity, P.velocity⟩
 
-/-- Centered kinetic inflation by the factor k. -/
-def inflatedCylinder {d : ℕ} (P : KineticPoint d) (r k : ℝ) :
+/- Centered kinetic inflation by the factor k. -/
+def inflatedCylinder {d } (P : KineticPoint d) (r k : ℝ) :
     Set (KineticPoint d) := backwardCylinder (inflationCenter P r k) (k * r)
 
-/-- Inflation preserves the free-transport position coordinates. -/
-theorem relativePosition_inflationCenter {d : ℕ} (P Z : KineticPoint d) (r k : ℝ) :
-    relativePosition (inflationCenter P r k) Z = relativePosition P Z := by
-  ext i
-  simp only [relativePosition, inflationCenter, Pi.sub_apply, Pi.add_apply, Pi.smul_apply,
-    smul_eq_mul]
-  ring
-
-/-- Every backward kinetic cylinder is open in the transported product topology. -/
-theorem isOpen_cylinder {d : ℕ} (P : KineticPoint d) (r : ℝ) :
+/- Inflation preserves the free-transport position coordinates. -/
+theorem isOpen_cylinder {d } (P : KineticPoint d) (r : ℝ) :
     IsOpen (backwardCylinder P r) := by
   have hx : Continuous (relativePosition P) :=
     (continuous_position.sub continuous_const).sub
@@ -46,8 +38,8 @@ theorem isOpen_cylinder {d : ℕ} (P : KineticPoint d) (r : ℝ) :
       (((PDE.isOpen_euclideanBall P.velocity r).preimage continuous_velocity).inter
         ((PDE.isOpen_euclideanBall 0 (r ^ 3)).preimage hx)))
 
-/-- Positive-radius cylinders have an explicit interior point. -/
-theorem cylinder_nonempty {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+/- Positive-radius cylinders have an explicit interior point. -/
+theorem cylinder_nonempty {d } (P : KineticPoint d) {r } (hr : 0 < r) :
     (backwardCylinder P r).Nonempty := by
   refine ⟨⟨P.time - r ^ 2 / 2, P.position - (r ^ 2 / 2) • P.velocity, P.velocity⟩,
     ?_, ?_, PDE.center_mem_euclideanBall _ hr, ?_⟩
@@ -61,38 +53,15 @@ theorem cylinder_nonempty {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) 
     rw [heq]
     exact PDE.center_mem_euclideanBall 0 (pow_pos hr 3)
 
-/-- Two points in the same backward cylinder differ in time by less than its squared radius. -/
-theorem abs_time_sub_lt_sq {d : ℕ} {P X Y : KineticPoint d} {r : ℝ}
+/- Two points in the same backward cylinder differ in time by less than its squared radius. -/
+theorem abs_time_sub_lt_sq {d } {P X Y : KineticPoint d} {r }
     (hX : X ∈ backwardCylinder P r) (hY : Y ∈ backwardCylinder P r) :
     |X.time - Y.time| < r ^ 2 := by
   rw [abs_lt]
   constructor <;> linarith only [hX.1, hX.2.1, hY.1, hY.2.1]
 
-/-- Relative position at different centers can be compared using a shared point. -/
-theorem relativePosition_change_center {d : ℕ} (P Q X Z : KineticPoint d) :
-    relativePosition Q X = relativePosition P X - relativePosition P Z +
-      relativePosition Q Z + (X.time - Z.time) • (P.velocity - Q.velocity) := by
-  ext i
-  simp only [relativePosition, Pi.sub_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
-  ring
-
-/-- Euclidean velocity separation between intersecting cylinders. -/
-theorem velocity_centers_lt {d : ℕ} {P Q Z : KineticPoint d} {r s : ℝ}
-    (hr : 0 < r) (hs : 0 < s) (hZP : Z ∈ backwardCylinder P r)
-    (hZQ : Z ∈ backwardCylinder Q s) :
-    PDE.vecEuclideanNorm (P.velocity - Q.velocity) < r + s := by
-  have hP := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr).mp hZP.2.2.1
-  have hQ := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hs).mp hZQ.2.2.1
-  have heq : P.velocity - Q.velocity =
-      -(Z.velocity - P.velocity) + (Z.velocity - Q.velocity) := by abel
-  rw [heq]
-  calc
-    _ ≤ PDE.vecEuclideanNorm (-(Z.velocity - P.velocity)) +
-        PDE.vecEuclideanNorm (Z.velocity - Q.velocity) := PDE.vecEuclideanNorm_add_le _ _
-    _ < r + s := by rw [PDE.vecEuclideanNorm_neg]; exact add_lt_add hP hQ
-
-/-- A cylinder intersecting another of at least half its radius lies in its eightfold inflation. -/
-theorem cylinder_subset_inflation_of_inter {d : ℕ} {P Q : KineticPoint d} {r s : ℝ}
+/- Relative position at different centers can be compared using a shared point. -/
+theorem cylinder_subset_inflation_of_inter {d } {P Q : KineticPoint d} {r s }
     (hr : 0 < r) (hs : 0 < s) (hrs : r ≤ 2 * s)
     (hinter : (backwardCylinder P r ∩ backwardCylinder Q s).Nonempty) :
     backwardCylinder P r ⊆ inflatedCylinder Q s 8 := by
@@ -103,7 +72,18 @@ theorem cylinder_subset_inflation_of_inter {d : ℕ} {P Q : KineticPoint d} {r s
   have hr3 : r ^ 3 ≤ 8 * s ^ 3 := by
     have h := pow_le_pow_left₀ hr.le hrs 3
     nlinarith only [h]
-  have hvPQ := velocity_centers_lt hr hs hZP hZQ
+  have hvPQ : PDE.vecEuclideanNorm (P.velocity - Q.velocity) < r + s := by
+      have hP := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr).mp hZP.2.2.1
+      have hQ := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hs).mp hZQ.2.2.1
+      have heq : P.velocity - Q.velocity =
+          -(Z.velocity - P.velocity) + (Z.velocity - Q.velocity) := by abel
+      rw [heq]
+      calc
+        _ ≤ PDE.vecEuclideanNorm (-(Z.velocity - P.velocity)) +
+            PDE.vecEuclideanNorm (Z.velocity - Q.velocity) := PDE.vecEuclideanNorm_add_le _ _
+        _ < r + s := by rw [PDE.vecEuclideanNorm_neg]; exact add_lt_add hP hQ
+
+    /- A cylinder intersecting another of at least half its radius lies in its eightfold inflation. -/
   intro X hX
   have htime := abs_time_sub_lt_sq hX hZP
   have hXP := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hr 3)).mp hX.2.2.2
@@ -113,7 +93,14 @@ theorem cylinder_subset_inflation_of_inter {d : ℕ} {P Q : KineticPoint d} {r s
     (pow_pos hs 3)).mp hZQ.2.2.2
   simp only [sub_zero] at hXP hZP' hZQ'
   have hpos : PDE.vecEuclideanNorm (relativePosition Q X) < 29 * s ^ 3 := by
-    rw [relativePosition_change_center P Q X Z]
+    have _h_inl_14 : relativePosition Q X = relativePosition P X - relativePosition P Z +
+      relativePosition Q Z + (X.time - Z.time) • (P.velocity - Q.velocity) := by
+        ext i
+        simp only [relativePosition, Pi.sub_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+        ring
+
+      /- Euclidean velocity separation between intersecting cylinders. -/
+    rw [_h_inl_14]
     have htri := PDE.vecEuclideanNorm_add_le
       (relativePosition P X - relativePosition P Z + relativePosition Q Z)
       ((X.time - Z.time) • (P.velocity - Q.velocity))
@@ -150,7 +137,12 @@ theorem cylinder_subset_inflation_of_inter {d : ℕ} {P Q : KineticPoint d} {r s
     linarith only [htri, hXPv, hvPQ, hrs, hs]
   · apply (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt
       (pow_pos (by positivity : 0 < 8*s) 3)).mpr
-    rw [sub_zero, relativePosition_inflationCenter]
+    have _h_inl_10 (P Z : KineticPoint d) (r k : ℝ) : relativePosition (inflationCenter P r k) Z = relativePosition P Z := by
+      ext i
+      simp only [relativePosition, inflationCenter, Pi.sub_apply, Pi.add_apply, Pi.smul_apply,
+        smul_eq_mul]
+      ring
+    rw [sub_zero, _h_inl_10]
     nlinarith only [hpos, pow_pos hs 3]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

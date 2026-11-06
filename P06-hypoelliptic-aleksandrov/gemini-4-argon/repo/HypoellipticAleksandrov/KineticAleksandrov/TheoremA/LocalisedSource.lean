@@ -12,7 +12,7 @@ open scoped ENNReal
 
 /-- Localization to positive solution values commutes with source zero extension on Q. -/
 theorem eLpNorm_localized_source_indicator
-    {d : ℕ} {Q : Set (KineticPoint d)} (hQ : MeasurableSet Q)
+    {d } {Q : Set (KineticPoint d)} (hQ : MeasurableSet Q)
     (f u : KineticPoint d → ℝ) (p : ℝ≥0∞) :
     eLpNorm ({P | 0 < u P}.indicator (fun P => max (Q.indicator f P) 0))
       p (volume.restrict Q) =

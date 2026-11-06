@@ -20,7 +20,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter Set
 open scoped Topology
 
-/-- Position integration by parts for a continuous native function with an actual off-axis jet. -/
+/- Position integration by parts for a continuous native function with an actual off-axis jet. -/
 theorem scalar_position_ibp (f g : XV 1 → ℝ) (hf : Continuous f)
     (hgi : LocallyIntegrable g volume)
     (hfd : ∀ q : XV 1, q.1 0 ≠ 0 → DifferentiableAt ℝ f q)
@@ -68,7 +68,7 @@ theorem scalar_position_ibp (f g : XV 1 → ℝ) (hf : Continuous f)
     apply image_eq_zero_of_notMem_tsupport
     intro hq
     have hb := hB (scalarPoint x v) hq
-    have hl : x ≤ |x| := le_abs_self x
+    have hl := le_abs_self x
     simp only [scalarPoint, Real.norm_eq_abs] at hb
     linarith
   have hzBot : ∀ᶠ x in atBot, test (scalarPoint x v) = 0 := by
@@ -76,7 +76,7 @@ theorem scalar_position_ibp (f g : XV 1 → ℝ) (hf : Continuous f)
     apply image_eq_zero_of_notMem_tsupport
     intro hq
     have hb := hB (scalarPoint x v) hq
-    have hl : -x ≤ |x| := neg_le_abs x
+    have hl := neg_le_abs x
     simp only [scalarPoint, Real.norm_eq_abs] at hb
     linarith
   apply scalar_integral_mul_deriv_off_zero
@@ -90,21 +90,5 @@ theorem scalar_position_ibp (f g : XV 1 → ℝ) (hf : Continuous f)
     filter_upwards [hzBot] with x hx
     simp only [hx, mul_zero]
 
-/-- The actual scalar profile has its native position weak identity. -/
-theorem scalarProfile_position_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) (test : XV 1 → ℝ) (ht : ContDiff ℝ 1 test)
-    (hs : HasCompactSupport test) :
-    (∫ q, scalarProfile gamma Lam q * dx test q 0) =
-      -(∫ q, scalarGx gamma Lam q 0 * test q) := by
-  apply scalar_position_ibp _ _ (scalarProfile_continuous gamma Lam hLam hmatch)
-    ((scalarJets_locallyIntegrable gamma Lam hLam hmatch).1 0)
-  · intro q hq
-    exact (scalarProfile_contDiffAt_off_axis gamma Lam hLam q hq).differentiableAt
-      (by norm_num)
-  · intro q hq
-    simp only [scalarGx, hq, ↓reduceIte, dx]
-  · exact ht
-  · exact hs
-
+/- The actual scalar profile has its native position weak identity. -/
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

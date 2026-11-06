@@ -16,7 +16,7 @@ open scoped ENNReal
 theorem spatialDensity_integral
     {Y Z : Type} [MeasurableSpace Y] [MeasurableSpace Z]
     (dy : Measure Y) (dz : Measure Z) [SFinite dy] [SFinite dz]
-    (ν : Measure (Y × Z)) (g : Y × Z → ℝ) (hg : Measurable g)
+    (ν ) (g : Y × Z → ℝ) (hg : Measurable g)
     (hn : ∀ᵐ p ∂dy.prod dz, 0 ≤ g p)
     (he : ν = (dy.prod dz).withDensity (fun p => ENNReal.ofReal (g p)))
     (G : Y → Lp ℂ 1 dz) (hG : ∀ y, (G y : Z → ℂ) =ᵐ[dz] fun z => (g (y, z) : ℂ))

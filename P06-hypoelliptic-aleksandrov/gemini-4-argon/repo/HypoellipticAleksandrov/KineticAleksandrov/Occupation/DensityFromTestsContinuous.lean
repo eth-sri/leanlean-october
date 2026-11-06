@@ -59,16 +59,16 @@ theorem integral_le_of_smooth_tests (ν μ : Measure E) [ν.IsAddHaarMeasure]
 
 /-- Positive smooth-test bounds control the absolute integral of signed continuous tests. -/
 theorem abs_integral_le_of_smooth_tests (ν μ : Measure E) [ν.IsAddHaarMeasure]
-    [IsFiniteMeasure μ] {U : Set E} (hU : IsOpen U) {p : ℝ≥0∞}
-    (hp : 1 ≤ p) (hpt : p ≠ ∞) {C : ℝ} (hC : 0 ≤ C)
+    [IsFiniteMeasure μ] {U } (hU : IsOpen U) {p }
+    (hp : 1 ≤ p) (hpt : p ≠ ∞) {C } (hC : 0 ≤ C)
     (htest : ∀ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f → HasCompactSupport f →
       tsupport f ⊆ U → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂μ) ≤ C * (eLpNorm f p (ν.restrict U)).toReal)
-    {f : E → ℝ} (hf : Continuous f) (hfc : HasCompactSupport f)
+    {f } (hf : Continuous f) (hfc : HasCompactSupport f)
     (hfs : tsupport f ⊆ U) :
     |∫ x, f x ∂μ| ≤ C * (eLpNorm f p (ν.restrict U)).toReal := by
-  have ha : Continuous (fun x => |f x|) := hf.abs
-  have hac : HasCompactSupport (fun x => |f x|) := hfc.norm
+  have ha := hf.abs
+  have hac := hfc.norm
   have has : tsupport (fun x => |f x|) ⊆ U := by
     exact (closure_mono (fun x hx => by
       exact fun hz => hx (by simp [hz]))).trans hfs

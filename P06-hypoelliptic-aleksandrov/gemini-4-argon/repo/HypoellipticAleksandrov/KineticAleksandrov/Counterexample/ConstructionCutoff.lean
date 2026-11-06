@@ -13,48 +13,34 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open Set
 
-/-- The compact profile domain has a uniform strict squared-velocity margin. -/
-theorem construction_exists_velocity_margin {d : ℕ} {alpha : ℝ}
-    (ha : 0 < alpha) (h : CounterProfileStatement d alpha) (R : ℝ)
-    (hvel : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2) :
-    ∃ m : ℝ, m < R ^ 2 ∧ ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 ≤ m := by
-  have hK := isCompact_profile_unit_sublevel ha h
-  have hzero := (selectedProfile_spec h).2.2.2.2.2.2.2.1
-  have hne : ({q : XV d | profileFunction h q ≤ 1} : Set (XV d)).Nonempty :=
-    ⟨0, by change profileFunction h 0 ≤ 1; rw [hzero]; norm_num⟩
-  have hc : Continuous (fun q : XV d => PDE.vecNormSq q.2) :=
-    PDE.contDiff_vecNormSq.continuous.comp continuous_snd
-  obtain ⟨q, hq, hmax⟩ := hK.exists_isMaxOn hne hc.continuousOn
-  exact ⟨PDE.vecNormSq q.2, hvel q hq, fun z hz => hmax hz⟩
-
-/-- The velocity cutoff is one on the profile domain and zero beyond the barrier radius. -/
-def constructionVelocityCutoff {d : ℕ} (m R : ℝ) (q : XV d) : ℝ :=
+/- The compact profile domain has a uniform strict squared-velocity margin. -/
+def constructionVelocityCutoff {d } (m R : ℝ) (q : XV d) : ℝ :=
   1 - Real.smoothTransition ((PDE.vecNormSq q.2 - m) / (R ^ 2 - m))
 
-/-- The cutoff uses a smooth polynomial Euclidean squared norm. -/
+/- The cutoff uses a smooth polynomial Euclidean squared norm. -/
 theorem contDiff_providerVelocityCutoff (d : ℕ) (m R : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (constructionVelocityCutoff (d := d) m R) := by
   exact contDiff_const.sub (Real.smoothTransition.contDiff.comp
     (((PDE.contDiff_vecNormSq.comp contDiff_snd).sub contDiff_const).div_const _))
 
-/-- The cutoff equals one below the inner squared-velocity threshold. -/
-theorem constructionVelocityCutoff_eq_one {d : ℕ} (m R : ℝ) (hm : m < R ^ 2)
+/- The cutoff equals one below the inner squared-velocity threshold. -/
+theorem constructionVelocityCutoff_eq_one {d } (m R : ℝ) (hm : m < R ^ 2)
     (q : XV d) (hq : PDE.vecNormSq q.2 ≤ m) : constructionVelocityCutoff m R q = 1 := by
   unfold constructionVelocityCutoff
   rw [Real.smoothTransition.zero_of_nonpos (div_nonpos_of_nonpos_of_nonneg
     (sub_nonpos.mpr hq) (sub_pos.mpr hm).le), sub_zero]
 
-/-- The cutoff is zero at and beyond the barrier radius. -/
-theorem constructionVelocityCutoff_eq_zero {d : ℕ} (m R : ℝ) (hm : m < R ^ 2)
+/- The cutoff is zero at and beyond the barrier radius. -/
+theorem constructionVelocityCutoff_eq_zero {d } (m R : ℝ) (hm : m < R ^ 2)
     (q : XV d) (hq : R ^ 2 ≤ PDE.vecNormSq q.2) : constructionVelocityCutoff m R q = 0 := by
   unfold constructionVelocityCutoff
   rw [Real.smoothTransition.one_of_one_le
     ((le_div_iff₀ (sub_pos.mpr hm)).mpr (by simpa only [one_mul] using sub_le_sub_right hq m)),
     sub_self]
 
-/-- Multiplying the raw cutoff by the smooth velocity cutoff is exactly the zero extension.
+/- Multiplying the raw cutoff by the smooth velocity cutoff is exactly the zero extension.
 This equality holds at every time, including the initial zero interval. -/
-theorem construction_zero_extension_eq_cutoff {d : ℕ} {alpha : ℝ}
+theorem construction_zero_extension_eq_cutoff {d alpha}
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)

@@ -12,54 +12,54 @@ Open coordinate cubes as instances of the bounded open convex domain API.
 
 namespace PDE
 
-/-- The open axis cube `z + (0,L)^d`, parametrized by a corner and side. -/
-def axisCube {d : ℕ} (z : Vec d) (L : ℝ) : Set (Vec d) :=
+/- The open axis cube `z + (0,L)^d`, parametrized by a corner and side. -/
+def axisCube {d } (z : Vec d) (L : ℝ) : Set (Vec d) :=
   Set.pi Set.univ fun i => Set.Ioo (z i) (z i + L)
 
-/-- The coordinate center of an axis cube. -/
-noncomputable def axisCubeCenter {d : ℕ} (z : Vec d) (L : ℝ) : Vec d :=
+/- The coordinate center of an axis cube. -/
+noncomputable def axisCubeCenter {d } (z : Vec d) (L : ℝ) : Vec d :=
   fun i => z i + L / 2
 
 @[simp]
-theorem axisCubeCenter_apply {d : ℕ}
+theorem axisCubeCenter_apply {d }
     (z : Vec d) (L : ℝ) (i : Fin d) :
     axisCubeCenter z L i = z i + L / 2 :=
   rfl
 
-theorem axisCube_nonempty {d : ℕ} (z : Vec d) {L : ℝ}
+theorem axisCube_nonempty {d } (z : Vec d) {L }
     (hL : 0 < L) :
     (axisCube z L).Nonempty := by
   refine ⟨axisCubeCenter z L, ?_⟩
   intro i _hi
   constructor <;> dsimp <;> linarith
 
-theorem isOpen_axisCube {d : ℕ} (z : Vec d) (L : ℝ) :
+theorem isOpen_axisCube {d } (z : Vec d) (L : ℝ) :
     IsOpen (axisCube z L) := by
   dsimp [axisCube]
   exact isOpen_set_pi Set.finite_univ fun _i _hi => isOpen_Ioo
 
-theorem isBoundedDomain_axisCube {d : ℕ}
+theorem isBoundedDomain_axisCube {d }
     (z : Vec d) (L : ℝ) :
     IsBoundedDomain (axisCube z L) := by
   dsimp [axisCube]
   exact Bornology.IsBounded.isBoundedDomain <|
     Bornology.IsBounded.pi fun _i => Metric.isBounded_Ioo _ _
 
-theorem convex_axisCube {d : ℕ} (z : Vec d) (L : ℝ) :
+theorem convex_axisCube {d } (z : Vec d) (L : ℝ) :
     Convex ℝ (axisCube z L) := by
   dsimp [axisCube]
   refine convex_pi ?_
   intro _i _hi
   exact convex_Ioo _ _
 
-theorem isOpenBoundedConvexDomain_axisCube {d : ℕ}
+theorem isOpenBoundedConvexDomain_axisCube {d }
     (z : Vec d) (L : ℝ) :
     IsOpenBoundedConvexDomain (axisCube z L) :=
   ⟨isOpen_axisCube z L, isBoundedDomain_axisCube z L,
     convex_axisCube z L⟩
 
-theorem hasEuclideanDiameterLE_axisCube {d : ℕ}
-    (z : Vec d) {L : ℝ} (hL : 0 ≤ L) :
+theorem hasEuclideanDiameterLE_axisCube {d }
+    (z : Vec d) {L } (hL : 0 ≤ L) :
     HasEuclideanDiameterLE (axisCube z L)
       (Real.sqrt d * L) := by
   intro x hx y hy

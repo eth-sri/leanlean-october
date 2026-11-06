@@ -19,14 +19,14 @@ open scoped Topology
 
 /-- A bounded potential is an actual homogeneous weak solution before its source starts. -/
 theorem duhamelPotential_weak_before_source
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+    {d Ω γ}
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
     (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
     (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
     (hb : IsSmoothDrift b) (g : KineticPoint d → ℝ) (hg : Measurable g)
-    (M : ℝ) (hM : 0 ≤ M) (hgb : ∀ p, |g p| ≤ M) (s T : ℝ) (hsT : s ≤ T)
+    (M ) (hM : 0 ≤ M) (hgb : ∀ p, |g p| ≤ M) (s T : ℝ) (hsT : s ≤ T)
     (hgz : ∀ p : KineticPoint d, p.time < s → g p = 0) :
     IsWeakTransportedSolution B b
       (evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ s)

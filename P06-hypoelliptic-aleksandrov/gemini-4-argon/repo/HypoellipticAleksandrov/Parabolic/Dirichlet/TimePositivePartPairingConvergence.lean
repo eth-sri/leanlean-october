@@ -18,7 +18,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Filter Function MeasureTheory Set Topology
 open scoped ENNReal RealInnerProductSpace
 
-/-- The (L^2)-Cauchy--Schwarz bound in integral square-norm form. -/
+/- The (L^2)-Cauchy--Schwarz bound in integral square-norm form. -/
 theorem integral_mul_norm_le_sqrt_mul_sqrt
     {E F : Type*} [NormedAddCommGroup E] [NormedAddCommGroup F]
     {μ : Measure ℝ} (f : ℝ → E) (g : ℝ → F)
@@ -44,8 +44,7 @@ private theorem dualPairing_first_integral_le
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ)
     (hu : MemLp u 2 μ) (hg : MemLp g 2 μ) :
-    (∫ t, ‖g t‖ * ‖u t‖ ∂μ) ≤ dualPairingFirstBound hΩ μ u g := by
-  exact integral_mul_norm_le_sqrt_mul_sqrt g u hg hu
+    (∫ t, ‖g t‖ * ‖u t‖ ∂μ) ≤ dualPairingFirstBound hΩ μ u g :=  integral_mul_norm_le_sqrt_mul_sqrt g u hg hu
 
 private theorem dualPairing_pointwise_le
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
@@ -53,7 +52,6 @@ private theorem dualPairing_pointwise_le
     (t : ℝ) :
     |(gh t) (uh t) - (g t) (u t)| ≤
       ‖gh t - g t‖ * ‖uh t‖ + ‖g t‖ * ‖uh t - u t‖ := by
-  change ‖(gh t) (uh t) - (g t) (u t)‖ ≤ _
   calc
     _ = ‖(gh t - g t) (uh t) + (g t) (uh t - u t)‖ := by
       congr 1
@@ -98,88 +96,6 @@ private theorem integral_sqNorm_eq_toLp_norm_sq
   exact (Real.rpow_inv_natCast_pow
     (integral_nonneg fun _ => sq_nonneg _) (by norm_num)).symm
 
-private theorem eventually_sqrt_sqNorm_le_of_tendsto
-    {E : Type*} [NormedAddCommGroup E] (μ : Measure ℝ)
-    (u : ℝ → E) (uh : ℝ → ℝ → E)
-    (hu : MemLp u 2 μ) (huh : ∀ᶠ h : ℝ in 𝓝[>] 0, MemLp (uh h) 2 μ)
-    (hU : Tendsto (sqNormApproximationError μ u uh) (𝓝[>] 0) (𝓝 0)) :
-    ∃ C : ℝ, ∀ᶠ h : ℝ in 𝓝[>] 0,
-      √(∫ t, ‖uh h t‖ ^ 2 ∂μ) ≤ C + √(∫ t, ‖u t‖ ^ 2 ∂μ) := by
-  rcases hU.sqrt.isBoundedUnder_le.eventually_le with ⟨C, hC⟩
-  refine ⟨C, ?_⟩
-  filter_upwards [huh, hC] with h hmh hbound
-  have hd := hmh.sub hu
-  let hy := hu
-  let hxy := hd
-  have hEq : hmh.toLp (uh h) = hxy.toLp (uh h - u) + hy.toLp u := by
-    rw [show hxy.toLp (uh h - u) = hmh.toLp (uh h) - hy.toLp u by
-      exact MemLp.toLp_sub hmh hu]
-    abel
-  have hsDiff : (∫ t, ‖uh h t - u t‖ ^ 2 ∂μ) = ‖hxy.toLp (uh h - u)‖ ^ 2 := by
-    simpa only [Pi.sub_apply] using
-      integral_sqNorm_eq_toLp_norm_sq μ (uh h - u) hxy
-  have hboundNorm : ‖hxy.toLp (uh h - u)‖ ≤ C := by
-    calc
-      ‖hxy.toLp (uh h - u)‖ = √(‖hxy.toLp (uh h - u)‖ ^ 2) := by
-        rw [Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)]
-      _ = √(∫ t, ‖uh h t - u t‖ ^ 2 ∂μ) := congrArg Real.sqrt hsDiff.symm
-      _ ≤ C := hbound
-  rw [integral_sqNorm_eq_toLp_norm_sq μ (uh h) hmh,
-    integral_sqNorm_eq_toLp_norm_sq μ u hy, hEq]
-  simpa only [Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)] using
-    (norm_add_le (hxy.toLp (uh h - u)) (hy.toLp u)).trans
-      (add_le_add hboundNorm le_rfl)
-
-private theorem tendsto_dualPairing_of_sqNorm
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
-    (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ)
-    (uh : ℝ → ℝ → H10HilbertGraph hΩ) (gh : ℝ → ℝ → H10HilbertGraphDual hΩ)
-    (hu : MemLp u 2 μ) (hg : MemLp g 2 μ)
-    (huh : ∀ᶠ h : ℝ in 𝓝[>] 0, MemLp (uh h) 2 μ)
-    (hgh : ∀ᶠ h : ℝ in 𝓝[>] 0, MemLp (gh h) 2 μ)
-    (hU : Tendsto (sqNormApproximationError μ u uh) (𝓝[>] 0) (𝓝 0))
-    (hG : Tendsto (sqNormApproximationError μ g gh) (𝓝[>] 0) (𝓝 0)) :
-    Tendsto (dualPairingApproximationError hΩ μ u g uh gh) (𝓝[>] 0) (𝓝 0) := by
-  have hUs := hU.sqrt
-  have hGs := hG.sqrt
-  obtain ⟨C, huhBound⟩ := eventually_sqrt_sqNorm_le_of_tendsto μ u uh hu huh hU
-  have hfirst : Tendsto (fun h => √(∫ t, ‖gh h t - g t‖ ^ 2 ∂μ) *
-      √(∫ t, ‖uh h t‖ ^ 2 ∂μ)) (𝓝[>] 0) (𝓝 0) := by
-    have hGs0 : Tendsto (fun h => √(∫ t, ‖gh h t - g t‖ ^ 2 ∂μ))
-        (𝓝[>] 0) (𝓝 0) := by
-      simpa only [Real.sqrt_zero, sqNormApproximationError, Pi.sub_def] using hGs
-    apply hGs0.zero_mul_isBoundedUnder_le
-    exact isBoundedUnder_of_eventually_le (huhBound.mono fun h hh => by
-      simpa only [Function.comp_apply, Real.norm_eq_abs,
-        abs_of_nonneg (Real.sqrt_nonneg _)] using hh)
-  have hsecond : Tendsto (fun h => √(∫ t, ‖g t‖ ^ 2 ∂μ) *
-      √(∫ t, ‖uh h t - u t‖ ^ 2 ∂μ)) (𝓝[>] 0) (𝓝 0) := by
-    simpa only [Real.sqrt_zero, mul_zero, sqNormApproximationError, Pi.sub_def]
-      using tendsto_const_nhds.mul hUs
-  apply squeeze_zero'
-  · filter_upwards with h
-    exact integral_nonneg fun _ => abs_nonneg _
-  · filter_upwards [huh, hgh] with h hmh hmg
-    have hdU : MemLp (uh h - u) 2 μ := hmh.sub hu
-    have hdG : MemLp (gh h - g) 2 μ := hmg.sub hg
-    have hp1 := integrable_dualPairing hΩ μ (uh h) (gh h) hmh hmg
-    have hp0 := integrable_dualPairing hΩ μ u g hu hg
-    calc
-      _ ≤ ∫ t, ‖gh h t - g t‖ * ‖uh h t‖ +
-          ‖g t‖ * ‖uh h t - u t‖ ∂μ := by
-        apply integral_mono
-        · simpa only [Real.norm_eq_abs, Pi.sub_def] using (hp1.sub hp0).norm
-        · exact (hdG.norm.integrable_mul hmh.norm).add
-            (hg.norm.integrable_mul hdU.norm)
-        · exact dualPairing_pointwise_le hΩ u (uh h) g (gh h)
-      _ = (∫ t, ‖gh h t - g t‖ * ‖uh h t‖ ∂μ) +
-          ∫ t, ‖g t‖ * ‖uh h t - u t‖ ∂μ := integral_add
-            (hdG.norm.integrable_mul hmh.norm) (hg.norm.integrable_mul hdU.norm)
-      _ ≤ _ := add_le_add
-        (dualPairing_first_integral_le hΩ μ (uh h) (gh h - g) hmh hdG)
-        (dualPairing_first_integral_le hΩ μ (uh h - u) g hdU hg)
-  · simpa only [add_zero, dualPairingFirstBound, Pi.sub_def] using hfirst.add hsecond
-
 private theorem localPositivePart_memLp
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     (f : MeasureTheory.Lp (H10HilbertGraph hΩ) (2 : ℝ≥0∞) μ) :
@@ -212,10 +128,9 @@ private theorem continuous_localPositivePart
   let G : ℕ → ℝ → H10HilbertGraph hΩ := fun n t => h10PositivePart hΩ (fn n t)
   let G₀ : ℝ → H10HilbertGraph hΩ := fun t => h10PositivePart hΩ (f t)
   have hFmem : ∀ n, MemLp (F n) (2 : ℝ≥0∞) μ := fun n => Lp.memLp (fn n)
-  have hfmem : MemLp (fun t => f t) (2 : ℝ≥0∞) μ := Lp.memLp f
-  have hFLp : Tendsto (fun n => eLpNorm (F n - fun t => f t) 2 μ)
-      atTop (𝓝 0) := (Lp.tendsto_Lp_iff_tendsto_eLpNorm' (fn) f).1 hfn
-  have hFui : UnifIntegrable F (2 : ℝ≥0∞) μ :=
+  have hfmem := Lp.memLp f
+  have hFLp := (Lp.tendsto_Lp_iff_tendsto_eLpNorm' (fn) f).1 hfn
+  have hFui :=
     unifIntegrable_of_tendsto_Lp (by norm_num) (by norm_num) hFmem hfmem hFLp
   have hGmem : ∀ n, MemLp (G n) (2 : ℝ≥0∞) μ := by
     intro n
@@ -292,7 +207,7 @@ private theorem tendsto_localToLp_of_sqNorm
   · filter_upwards [hfh] with h hh
     simpa only [FLp, dif_pos hh] using hh.coeFn_toLp
 
-/-- Strong \(L^2\) convergence is preserved by the pointwise positive-part map. -/
+/- Strong \(L^2\) convergence is preserved by the pointwise positive-part map. -/
 theorem tendsto_positivePart_sqNorm_integral_of_sqNorm
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     [IsFiniteMeasure μ] (f : ℝ → H10HilbertGraph hΩ)
@@ -312,7 +227,7 @@ theorem tendsto_positivePart_sqNorm_integral_of_sqNorm
   simpa only [zero_pow (by norm_num : (2 : ℕ) ≠ 0)] using hsquare.congr' (by
     filter_upwards [hfh, hFLpAE] with h hh hfhAE
     let A := localPositivePart hΩ μ (FLp h) - localPositivePart hΩ μ fLp
-    have hAmem : MemLp (A : ℝ → H10HilbertGraph hΩ) (2 : ℝ≥0∞) μ := Lp.memLp A
+    have hAmem := Lp.memLp A
     have hsquare : (∫ t, ‖A t‖ ^ 2 ∂μ) = ‖A‖ ^ 2 := by
       rw [Lp.norm_def, hAmem.eLpNorm_eq_integral_rpow_norm (by norm_num) (by simp)]
       simp
@@ -330,7 +245,7 @@ theorem tendsto_positivePart_sqNorm_integral_of_sqNorm
     simp only [A, h5, Pi.sub_apply]
     rw [h1, h2, h3, h4])
 
-/-- Strong \(L^2\) convergence of primal and dual approximations implies
+/- Strong \(L^2\) convergence of primal and dual approximations implies
 \(L^1\) convergence of their dual pairing after applying the positive-part map
 to the primal approximation. -/
 theorem tendsto_dualPairing_positivePart_of_sqNorm
@@ -363,9 +278,71 @@ theorem tendsto_dualPairing_positivePart_of_sqNorm
         hh.aestronglyMeasurable
     · filter_upwards with t
       exact norm_h10PositivePart_le hΩ _
-  exact tendsto_dualPairing_of_sqNorm hΩ μ
-    (fun t => h10PositivePart hΩ (u t)) g
-    (fun h t => h10PositivePart hΩ (uh h t)) gh
-    huPos hg huhPos hgh hUpos hG
+  let u := (fun t => h10PositivePart hΩ (u t))
+  let uh := (fun h t => h10PositivePart hΩ (uh h t))
+  have hUs := hUpos.sqrt
+  have hGs := hG.sqrt
+  obtain ⟨C, huhBound⟩ : ∃ C : ℝ, ∀ᶠ h : ℝ in 𝓝[>] 0,
+      √(∫ t, ‖uh h t‖ ^ 2 ∂μ) ≤ C + √(∫ t, ‖u t‖ ^ 2 ∂μ) := by
+    rcases hUpos.sqrt.isBoundedUnder_le.eventually_le with ⟨C, hC⟩
+    refine ⟨C, ?_⟩
+    filter_upwards [huhPos, hC] with h hmh hbound
+    have hd := hmh.sub huPos
+    let hy := huPos
+    let hxy := hd
+    have hEq : hmh.toLp (uh h) = hxy.toLp (uh h - u) + hy.toLp u := by
+      rw [show hxy.toLp (uh h - u) = hmh.toLp (uh h) - hy.toLp u by
+        exact MemLp.toLp_sub hmh huPos]
+      abel
+    have hsDiff : (∫ t, ‖uh h t - u t‖ ^ 2 ∂μ) = ‖hxy.toLp (uh h - u)‖ ^ 2 := by
+      simpa only [Pi.sub_apply] using
+        integral_sqNorm_eq_toLp_norm_sq μ (uh h - u) hxy
+    have hboundNorm : ‖hxy.toLp (uh h - u)‖ ≤ C := by
+      calc
+        ‖hxy.toLp (uh h - u)‖ = √(‖hxy.toLp (uh h - u)‖ ^ 2) := by
+          rw [Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)]
+        _ = √(∫ t, ‖uh h t - u t‖ ^ 2 ∂μ) := congrArg Real.sqrt hsDiff.symm
+        _ ≤ C := hbound
+    rw [integral_sqNorm_eq_toLp_norm_sq μ (uh h) hmh,
+      integral_sqNorm_eq_toLp_norm_sq μ u hy, hEq]
+    simpa only [Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)] using
+      (norm_add_le (hxy.toLp (uh h - u)) (hy.toLp u)).trans
+        (add_le_add hboundNorm le_rfl)
+  have hfirst : Tendsto (fun h => √(∫ t, ‖gh h t - g t‖ ^ 2 ∂μ) *
+      √(∫ t, ‖uh h t‖ ^ 2 ∂μ)) (𝓝[>] 0) (𝓝 0) := by
+    have hGs0 : Tendsto (fun h => √(∫ t, ‖gh h t - g t‖ ^ 2 ∂μ))
+        (𝓝[>] 0) (𝓝 0) := by
+      simpa only [Real.sqrt_zero, sqNormApproximationError, Pi.sub_def] using hGs
+    apply hGs0.zero_mul_isBoundedUnder_le
+    exact isBoundedUnder_of_eventually_le (huhBound.mono fun h hh => by
+      simpa only [Function.comp_apply, Real.norm_eq_abs,
+        abs_of_nonneg (Real.sqrt_nonneg _)] using hh)
+  have hsecond : Tendsto (fun h => √(∫ t, ‖g t‖ ^ 2 ∂μ) *
+      √(∫ t, ‖uh h t - u t‖ ^ 2 ∂μ)) (𝓝[>] 0) (𝓝 0) := by
+    simpa only [Real.sqrt_zero, mul_zero, sqNormApproximationError, Pi.sub_def]
+      using tendsto_const_nhds.mul hUs
+  apply squeeze_zero'
+  · filter_upwards with h
+    exact integral_nonneg fun _ => abs_nonneg _
+  · filter_upwards [huhPos, hgh] with h hmh hmg
+    have hdU : MemLp (uh h - u) 2 μ := hmh.sub huPos
+    have hdG : MemLp (gh h - g) 2 μ := hmg.sub hg
+    have hp1 := integrable_dualPairing hΩ μ (uh h) (gh h) hmh hmg
+    have hp0 := integrable_dualPairing hΩ μ u g huPos hg
+    calc
+      _ ≤ ∫ t, ‖gh h t - g t‖ * ‖uh h t‖ +
+          ‖g t‖ * ‖uh h t - u t‖ ∂μ := by
+        apply integral_mono
+        · simpa only [Real.norm_eq_abs, Pi.sub_def] using (hp1.sub hp0).norm
+        · exact (hdG.norm.integrable_mul hmh.norm).add
+            (hg.norm.integrable_mul hdU.norm)
+        · exact dualPairing_pointwise_le hΩ u (uh h) g (gh h)
+      _ = (∫ t, ‖gh h t - g t‖ * ‖uh h t‖ ∂μ) +
+          ∫ t, ‖g t‖ * ‖uh h t - u t‖ ∂μ := integral_add
+            (hdG.norm.integrable_mul hmh.norm) (hg.norm.integrable_mul hdU.norm)
+      _ ≤ _ := add_le_add
+        (dualPairing_first_integral_le hΩ μ (uh h) (gh h - g) hmh hdG)
+        (dualPairing_first_integral_le hΩ μ (uh h - u) g hdU hg)
+  · simpa only [add_zero, dualPairingFirstBound, Pi.sub_def] using hfirst.add hsecond
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBarrierForm
 import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalSmoothObstacleWeakIdentity
 import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
+import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonSobolevJets
 
 /-! # Classical integration by parts for stationary barriers
 
@@ -24,7 +27,7 @@ private theorem integrableOn_mul_compact_test {d : ℕ} {Ω : Set (PDE.Vec d)}
   exact ((integrableOn_iff_integrable_of_support_subset
     ((Function.support_mul_subset_right f g).trans (subset_tsupport g))).mp hK).integrableOn
 
-/-- The smooth stationary barrier form equals its negative classical operator integral. -/
+/- The smooth stationary barrier form equals its negative classical operator integral. -/
 theorem reverseTimeSpatialForm_stationary_barrier_weakIdentity {d : ℕ}
     {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T τ : ℝ) (A : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -78,7 +81,7 @@ theorem reverseTimeSpatialForm_stationary_barrier_weakIdentity {d : ℕ}
         scalarSpatialGradient ell (T - τ, y) j * ψ y) Ω :=
     integrableOn_mul_compact_test ((hd j).mul (hg j)) ψ.contDiff.continuous
       ψ.hasCompactSupport ψ.tsupport_subset
-  have hci : IntegrableOn (fun y => c (T - τ) y * ell (T - τ, y) * ψ y) Ω :=
+  have hci :=
     integrableOn_mul_compact_test
       (hc.mul (hell.continuousOn.comp hpair.continuousOn hmaps))
       ψ.contDiff.continuous ψ.hasCompactSupport ψ.tsupport_subset
@@ -106,8 +109,46 @@ theorem reverseTimeSpatialForm_stationary_barrier_weakIdentity {d : ℕ}
       integrable_finsetSum Finset.univ (fun j _ => hp i j)),
     integral_finsetSum Finset.univ (fun j _ => hdi j)] at hid
   simp_rw [integral_finsetSum Finset.univ (fun j _ => hp _ j), hgrad] at hid
-  rw [reverseTimeSpatialForm_smooth_barrier_test hΩ T τ A b c q
-    (hq.of_le (by norm_num)) ψ]
+  have _h_xinl_0 : reverseTimeSpatialForm hΩ T τ A b c (h10HilbertGraphOfH10Function hΩ q) (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ) = (∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω, A (T - τ) y i j * PDE.classicalGradient q.toH1Function.toFun y j * ψ.partialDeriv i y) + (∑ j : Fin d, ∫ y in Ω, reverseTimeDivergenceDrift T A b τ y j * PDE.classicalGradient q.toH1Function.toFun y j * ψ y) - ∫ y in Ω, reverseTimeScalarCoefficient T c τ y * q.toH1Function.toFun y * ψ y := by
+    have hq : ContDiff ℝ 1 q.toH1Function.toFun := (hq.of_le (by norm_num))
+    rw [reverseTimeSpatialForm_apply]
+    have hp (i j : Fin d) :
+        (∫ y in Ω, A (T - τ) y i j *
+          PDE.hilbertVectorLpCoord Ω 2 j
+            (gradientCLM hΩ (h10HilbertGraphOfH10Function hΩ q)) y *
+          PDE.hilbertVectorLpCoord Ω 2 i
+            (gradientCLM hΩ (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ)) y) =
+        ∫ y in Ω, A (T - τ) y i j *
+          PDE.classicalGradient q.toH1Function.toFun y j * ψ.partialDeriv i y := by
+      apply integral_congr_ae
+      filter_upwards [gradientCoord_h10HilbertGraph_ae_classical hΩ q hq j,
+        PDE.coeFn_hilbertVectorLpCoord Ω 2 i
+          (gradientCLM hΩ (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ)),
+        ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ i]
+        with y hqj hpi hψi
+      rw [hqj, hpi, hψi]
+    have hb (j : Fin d) :
+        (∫ y in Ω, reverseTimeDivergenceDrift T A b τ y j *
+          PDE.hilbertVectorLpCoord Ω 2 j
+            (gradientCLM hΩ (h10HilbertGraphOfH10Function hΩ q)) y *
+          valueCLM hΩ (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ) y) =
+        ∫ y in Ω, reverseTimeDivergenceDrift T A b τ y j *
+          PDE.classicalGradient q.toH1Function.toFun y j * ψ y := by
+      apply integral_congr_ae
+      filter_upwards [gradientCoord_h10HilbertGraph_ae_classical hΩ q hq j,
+        ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ] with y hqj hψ
+      rw [hqj, hψ]
+    have hc :
+        (∫ y in Ω, reverseTimeScalarCoefficient T c τ y *
+          valueCLM hΩ (h10HilbertGraphOfH10Function hΩ q) y *
+          valueCLM hΩ (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ) y) =
+        ∫ y in Ω, reverseTimeScalarCoefficient T c τ y * q.toH1Function.toFun y * ψ y := by
+      apply integral_congr_ae
+      filter_upwards [valueCLM_h10HilbertGraphOfH10Function hΩ q,
+        ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ] with y hqv hψ
+      rw [hqv, hψ]
+    simp_rw [hp, hb, hc]
+  rw [_h_xinl_0]
   exact hid
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

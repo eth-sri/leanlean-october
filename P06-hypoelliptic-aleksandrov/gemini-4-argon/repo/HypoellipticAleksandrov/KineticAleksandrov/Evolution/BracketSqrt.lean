@@ -53,9 +53,9 @@ theorem sylvester_injective {β : PDE.Mat d} (hβ : β.PosDef) :
     rw [← Matrix.mul_assoc Xᴴ β X] at this
     rw [← Matrix.mul_assoc Xᴴ X β] at this
     exact this
-  have h0 : (Xᴴ * β * X).trace = 0 :=
+  have h0 :=
     le_antisymm (by linarith [h2.trace_nonneg]) h1.trace_nonneg
-  have hM : Xᴴ * β * X = 0 := (h1.trace_eq_zero_iff).1 h0
+  have hM := (h1.trace_eq_zero_iff).1 h0
   have hXy : ∀ y : Fin d → ℝ, X.mulVec y = 0 := by
     intro y
     by_contra hy
@@ -72,9 +72,7 @@ theorem sylvester_injective {β : PDE.Mat d} (hβ : β.PosDef) :
 
 /-- The positive square root of a positive-definite matrix is positive definite. -/
 theorem posDef_sqrt {B : PDE.Mat d} (hB : B.PosDef) : (CFC.sqrt B).PosDef := by
-  have hpsd : (CFC.sqrt B).PosSemidef :=
-    Matrix.nonneg_iff_posSemidef.1 (CFC.sqrt_nonneg B)
-  rw [hpsd.posDef_iff_mulVec_injective]
+  rw [(Matrix.nonneg_iff_posSemidef.1 (CFC.sqrt_nonneg B)).posDef_iff_mulVec_injective]
   intro x y hxy
   apply hB.mulVec_injective
   have h := congrArg (fun z => (CFC.sqrt B).mulVec z) hxy
@@ -111,18 +109,15 @@ theorem contDiffAt_sqrt_comp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
   have hf' := hasFDerivAt_matrix_sq hβpd
   have hstrict := hf.hasStrictFDerivAt' hf' (by simp)
   set g := hf.localInverse hf' (by simp) with hg
-  have hg_cd : ContDiffAt ℝ (⊤ : ℕ∞) g (β₀ * β₀) := hf.to_localInverse hf' (by simp)
+  have hg_cd := hf.to_localInverse hf' (by simp)
   rw [hsq] at hg_cd
-  have hcomp : ContDiffAt ℝ (⊤ : ℕ∞) (fun p => g (B p)) p₀ :=
-    hg_cd.comp p₀ hB.contDiffAt
-  refine hcomp.congr_of_eventuallyEq ?_
+  refine (hg_cd.comp p₀ hB.contDiffAt).congr_of_eventuallyEq ?_
   have hcont : ContinuousAt (fun p => CFC.sqrt (B p)) p₀ := by
     have h1 : ContinuousOn (fun p => CFC.sqrt (B p)) Set.univ :=
       (CFC.continuousOn_sqrt (A := PDE.Mat d)).comp hB.continuous.continuousOn
         (fun p _ => (hpd p).posSemidef.nonneg)
     exact h1.continuousAt Filter.univ_mem
-  have hev := hstrict.eventually_left_inverse
-  have hev2 := hcont.eventually hev
+  have hev2 := hcont.eventually hstrict.eventually_left_inverse
   filter_upwards [hev2] with p hp
   have h2 : g (B p) = CFC.sqrt (B p) := by
     have h3 := hp
@@ -141,8 +136,7 @@ theorem contDiff_matrix_iff {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ 
   · intro h i j
     have h1 : ContDiff ℝ (⊤ : ℕ∞) (fun p => (matrixCLE d).symm (B p)) :=
       (matrixCLE d).symm.contDiff.comp h
-    have h2 := contDiff_pi.1 h1 i
-    exact contDiff_pi.1 h2 j
+    exact contDiff_pi.1 (contDiff_pi.1 h1 i) j
   · intro h
     have h1 : ContDiff ℝ (⊤ : ℕ∞) (fun p => fun i j => B p i j) :=
       contDiff_pi.2 fun i => contDiff_pi.2 fun j => h i j

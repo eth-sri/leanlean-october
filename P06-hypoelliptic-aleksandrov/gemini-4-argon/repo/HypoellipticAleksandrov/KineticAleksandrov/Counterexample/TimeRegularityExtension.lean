@@ -15,18 +15,17 @@ open Set MeasureTheory
 
 /-- Spatial smoothing of the actual zero extension is globally jointly smooth.
 The integration carrier is the fixed compact profile domain; no time smoothing is used. -/
-theorem spatial_zeroExtendedProfile_contDiff_of_profile {d : ℕ} {alpha : ℝ}
+theorem spatial_zeroExtendedProfile_contDiff_of_profile {d alpha}
     (ha : 0 < alpha) (h : CounterProfileStatement d alpha)
     (r mu R : ℝ) (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R)
     (hvel : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2)
     (phi : ContDiffBump (0 : XV d)) :
     ContDiff ℝ (⊤ : ℕ∞) (fun z : ℝ × XV d => spatialMollify phi
       (fun y => zeroExtendedProfile (profileFunction h) alpha r mu R ⟨z.1, y.1, y.2⟩) z.2) := by
-  let K : Set (XV d) := {q | profileFunction h q ≤ 1}
-  let Omega : Set (XV d) := {q | profileFunction h q < 1}
+  let K := {q | profileFunction h q ≤ 1}
+  let Omega := {q | profileFunction h q < 1}
   have hK : IsCompact K := isCompact_profile_unit_sublevel ha h
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hOmega : MeasurableSet Omega := (isOpen_lt hH continuous_const).measurableSet
+  have hOmega : MeasurableSet Omega := (isOpen_lt ((selectedProfile_spec h).2.2.2.2.2.2.1) continuous_const).measurableSet
   have hOK : Omega ⊆ K := by
     intro q hq
     change profileFunction h q ≤ 1

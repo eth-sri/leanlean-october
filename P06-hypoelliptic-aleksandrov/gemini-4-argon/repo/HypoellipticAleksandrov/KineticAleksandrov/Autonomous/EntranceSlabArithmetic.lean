@@ -12,14 +12,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 def entranceSlabConstant (Lam : ℝ) : ℝ := 9 / 5 + 32 * Lam / 5
 
 /-- The source slab constant is strictly positive for positive ellipticity. -/
-theorem entranceSlabConstant_pos {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+theorem entranceSlabConstant_pos {lam Lam } (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     0 < entranceSlabConstant Lam := by
   have hL := hlam.trans_le hLam
   unfold entranceSlabConstant
   positivity
 
 /-- Dividing the source quadratic inequality gives its radius-normalized slab estimate. -/
-theorem entranceSlab_mass_arithmetic {r Lam M p g : ℝ}
+theorem entranceSlab_mass_arithmetic {r Lam M p g }
     (hr : 0 < r) (hLam : 0 ≤ Lam) (hp : 0 ≤ p) (hg : 0 ≤ g)
     (hM : 5 * r ^ 2 / 16 * M ≤ 9 * r ^ 2 / 16 * p + 2 * Lam * g) :
     M ≤ entranceSlabConstant Lam * (p + r ^ (-2 : ℤ) * g) := by

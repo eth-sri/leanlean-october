@@ -49,7 +49,7 @@ def collarSupersolution {n : ℕ} (c : PDE.Vec n) (r₀ dstar Lγ lam FB : ℝ)
     collarBarrier (collarKappa Lγ lam) r₀ (fun t => γ t + c) p
 
 /-- The profile `w` is positive on positive arguments. -/
-theorem barrierW_pos {κ t : ℝ} (hκ : 0 < κ) (ht : 0 < t) : 0 < barrierW κ t := by
+theorem barrierW_pos {κ t } (hκ : 0 < κ) (ht : 0 < t) : 0 < barrierW κ t := by
   unfold barrierW
   have : Real.exp (-κ * t) < 1 := by
     rw [Real.exp_lt_one_iff]
@@ -80,14 +80,14 @@ theorem continuous_collarBarrier {n : ℕ} (c : PDE.Vec n) (κ r₀ : ℝ) {γ :
   fun_prop
 
 /-- Continuity of the scaled collar supersolution. -/
-theorem continuous_collarSupersolution {n : ℕ} (c : PDE.Vec n) (r₀ dstar Lγ lam FB : ℝ)
+theorem continuous_collarSupersolution {n } (c : PDE.Vec n) (r₀ dstar Lγ lam FB : ℝ)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) :
     Continuous (collarSupersolution c r₀ dstar Lγ lam FB γ) :=
   continuous_const.mul (continuous_collarBarrier c _ r₀ hγ)
 
 /-- The collar barrier is nonnegative inside the closed ball. -/
-theorem collarBarrier_nonneg {n : ℕ} {c : PDE.Vec n} {κ r₀ : ℝ} (hκ : 0 < κ) (hr₀ : 0 ≤ r₀)
-    {γ : ℝ → PDE.Vec n} {p : KineticPoint n} (hS : centreSq c γ p ≤ r₀ ^ 2) :
+theorem collarBarrier_nonneg {n c κ r₀} (hκ : 0 < κ) (hr₀ : 0 ≤ r₀)
+    {γ } {p : KineticPoint n} (hS : centreSq c γ p ≤ r₀ ^ 2) :
     0 ≤ collarBarrier κ r₀ (fun t => γ t + c) p := by
   unfold collarBarrier collarProfile
   have h1 : Real.sqrt (PDE.vecNormSq (p.position - (γ p.time + c))) ≤ r₀ :=
@@ -108,9 +108,9 @@ theorem collarBarrier_inner {n : ℕ} {c : PDE.Vec n} {κ r₀ dstar : ℝ} (hd 
   ring
 
 /-- On the inner edge of the collar the supersolution equals `‖F‖`. -/
-theorem collarSupersolution_inner {n : ℕ} {c : PDE.Vec n} {r₀ dstar Lγ lam FB : ℝ}
+theorem collarSupersolution_inner {n c r₀ dstar Lγ lam FB}
     (hd : dstar < r₀) (hκ : 0 < collarKappa Lγ lam) (hdpos : 0 < dstar)
-    {γ : ℝ → PDE.Vec n} {p : KineticPoint n} (hS : centreSq c γ p = (r₀ - dstar) ^ 2) :
+    {γ } {p : KineticPoint n} (hS : centreSq c γ p = (r₀ - dstar) ^ 2) :
     collarSupersolution c r₀ dstar Lγ lam FB γ p = FB := by
   unfold collarSupersolution
   rw [collarBarrier_inner hd hS]

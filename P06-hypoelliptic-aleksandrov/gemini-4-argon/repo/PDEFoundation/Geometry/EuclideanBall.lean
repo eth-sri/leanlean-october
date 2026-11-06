@@ -9,4 +9,3 @@ public import PDEFoundation.Geometry.EuclideanBall.Topology
 Public facade for explicit round-ball geometry on `PDE.Vec`.
 -/
 
-@[expose] public section

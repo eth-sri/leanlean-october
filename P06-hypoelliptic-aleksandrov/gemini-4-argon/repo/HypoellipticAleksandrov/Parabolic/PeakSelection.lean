@@ -19,33 +19,33 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
-/-- The coordinate sup norm on a velocity vector. -/
-def velocitySupNorm {d : Nat} (v : PDE.Vec d) : Real :=
+/- The coordinate sup norm on a velocity vector. -/
+def velocitySupNorm {d } (v : PDE.Vec d) : Real :=
   ↑(Finset.univ.sup fun i : Fin d => ‖v i‖₊)
 
-/-- The terminal-inclusive closed backward parabolic coordinate box. -/
-def backwardParabolicClosedBox {d : Nat} (r terminalTime : Real)
+/- The terminal-inclusive closed backward parabolic coordinate box. -/
+def backwardParabolicClosedBox {d } (r terminalTime : Real)
     (v0 : PDE.Vec d) : Set (TimeVelocity d) :=
   Set.Icc (terminalTime - r ^ 2) terminalTime ×ˢ velocityClosedCube v0 r
 
-/-- The backward parabolic radius relative to a terminal time and velocity. -/
-def backwardParabolicRadius {d : Nat} (terminalTime : Real) (v0 : PDE.Vec d)
+/- The backward parabolic radius relative to a terminal time and velocity. -/
+def backwardParabolicRadius {d } (terminalTime : Real) (v0 : PDE.Vec d)
     (z : TimeVelocity d) : Real :=
   max (velocitySupNorm (z.2 - v0)) (Real.sqrt (terminalTime - z.1))
 
-/-- The compact-selection weight used by the backward peak argument. -/
-def weightedBackwardPeak {d : Nat} (m : Nat) (terminalTime : Real)
+/- The compact-selection weight used by the backward peak argument. -/
+def weightedBackwardPeak {d } (m : Nat) (terminalTime : Real)
     (v0 : PDE.Vec d) (u : TimeVelocity d → Real) (z : TimeVelocity d) : Real :=
   (1 - backwardParabolicRadius terminalTime v0 z) ^ m * u z
 
-/-- The coordinate sup norm agrees with the native finite-product norm. -/
-theorem velocitySupNorm_eq_norm {d : Nat} (v : PDE.Vec d) :
+/- The coordinate sup norm agrees with the native finite-product norm. -/
+theorem velocitySupNorm_eq_norm {d } (v : PDE.Vec d) :
     velocitySupNorm v = ‖v‖ := by
   rfl
 
-/-- Membership in a coordinate cube is precisely a coordinate-sup bound. -/
-theorem mem_velocityClosedCube_iff_velocitySupNorm_sub_le {d : Nat}
-    {v v0 : PDE.Vec d} {r : Real} (hr : 0 ≤ r) :
+/- Membership in a coordinate cube is precisely a coordinate-sup bound. -/
+theorem mem_velocityClosedCube_iff_velocitySupNorm_sub_le {d }
+    {v v0 : PDE.Vec d} {r } (hr : 0 ≤ r) :
     v ∈ velocityClosedCube v0 r ↔ velocitySupNorm (v - v0) ≤ r := by
   constructor
   · intro hv
@@ -55,11 +55,10 @@ theorem mem_velocityClosedCube_iff_velocitySupNorm_sub_le {d : Nat}
   · intro hv i
     have hnorm : ‖v - v0‖ ≤ r := by
       simpa only [velocitySupNorm_eq_norm] using hv
-    have hcoord := (pi_norm_le_iff_of_nonneg hr).mp hnorm i
-    simpa only [Pi.sub_apply, Real.norm_eq_abs] using hcoord
+    simpa only [Pi.sub_apply, Real.norm_eq_abs] using ((pi_norm_le_iff_of_nonneg hr).mp hnorm i)
 
-/-- Membership in a terminal-inclusive backward box. -/
-theorem mem_backwardParabolicClosedBox_iff {d : Nat} {r terminalTime t : Real}
+/- Membership in a terminal-inclusive backward box. -/
+theorem mem_backwardParabolicClosedBox_iff {d r terminalTime t}
     {v0 v : PDE.Vec d} :
     (t, v) ∈ backwardParabolicClosedBox r terminalTime v0 ↔
       terminalTime - r ^ 2 ≤ t ∧ t ≤ terminalTime ∧ v ∈ velocityClosedCube v0 r := by
@@ -69,29 +68,22 @@ theorem mem_backwardParabolicClosedBox_iff {d : Nat} {r terminalTime t : Real}
   · rintro ⟨ht0, ht, hv⟩
     exact ⟨⟨ht0, ht⟩, hv⟩
 
-/-- Terminal-inclusive backward coordinate boxes are compact. -/
-theorem isCompact_backwardParabolicClosedBox {d : Nat} (r terminalTime : Real)
-    (v0 : PDE.Vec d) :
-    IsCompact (backwardParabolicClosedBox r terminalTime v0) :=
-  isCompact_Icc.prod (isCompact_velocityClosedCube v0 r)
-
-/-- The coordinate sup norm is continuous. -/
-theorem continuous_velocitySupNorm {d : Nat} :
+/- Terminal-inclusive backward coordinate boxes are compact. -/
+theorem continuous_velocitySupNorm {d } :
     Continuous (velocitySupNorm : PDE.Vec d → Real) := by
   rw [show velocitySupNorm = fun v : PDE.Vec d => ‖v‖ from funext velocitySupNorm_eq_norm]
   exact continuous_norm
 
-/-- The backward parabolic radius is continuous. -/
-theorem continuous_backwardParabolicRadius {d : Nat} (terminalTime : Real)
+/- The backward parabolic radius is continuous. -/
+theorem continuous_backwardParabolicRadius {d } (terminalTime : Real)
     (v0 : PDE.Vec d) :
     Continuous (backwardParabolicRadius terminalTime v0) := by
   unfold backwardParabolicRadius
   exact (continuous_velocitySupNorm.comp (continuous_snd.sub continuous_const)).max
     (Real.continuous_sqrt.comp (continuous_const.sub continuous_fst))
 
-/-- The backward radius is at most one on the normalized closed unit box. -/
-theorem backwardParabolicRadius_le_one_of_mem_unitClosedBox {d : Nat}
-    {z : TimeVelocity d} (hz : z ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d)) :
+/- The backward radius is at most one on the normalized closed unit box. -/
+theorem backwardParabolicRadius_le_one_of_mem_unitClosedBox {d z} (hz : z ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d)) :
     backwardParabolicRadius 4 (0 : PDE.Vec d) z ≤ 1 := by
   rcases (mem_backwardParabolicClosedBox_iff.mp hz) with ⟨htlower, htupper, hv⟩
   apply max_le
@@ -101,10 +93,9 @@ theorem backwardParabolicRadius_le_one_of_mem_unitClosedBox {d : Nat}
     norm_num at htlower ⊢
     linarith
 
-/-- A point in the half-gap box around a radius-`r0` point has radius at most
+/- A point in the half-gap box around a radius-`r0` point has radius at most
 `(1 + r0) / 2`. -/
-theorem backwardParabolicRadius_nested_le {d : Nat} {t1 r0 : Real}
-    {v1 : PDE.Vec d} (hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 0)
+theorem backwardParabolicRadius_nested_le {d t1 r0 v1} (hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 0)
     (hr0 : r0 = backwardParabolicRadius 4 0 (t1, v1)) (hr0lt : r0 < 1)
     {z : TimeVelocity d}
     (hz : z ∈ backwardParabolicClosedBox ((1 - r0) / 2) t1 v1) :
@@ -152,7 +143,7 @@ theorem backwardParabolicRadius_nested_le {d : Nat} {t1 r0 : Real}
     change t1 - s ^ 2 ≤ z.1 at hztime
     nlinarith
   have htime' : Real.sqrt (4 - z.1) ≤ (1 + r0) / 2 := by
-    have hsum : 0 ≤ r0 + s := add_nonneg hr0nonneg hs
+    have hsum := add_nonneg hr0nonneg hs
     have hsq : 4 - z.1 ≤ (r0 + s) ^ 2 := by
       nlinarith [sq_nonneg (r0 - s)]
     have hsqrt : Real.sqrt (4 - z.1) ≤ r0 + s :=
@@ -163,24 +154,14 @@ theorem backwardParabolicRadius_nested_le {d : Nat} {t1 r0 : Real}
   change max (velocitySupNorm (z.2 - 0)) (Real.sqrt (4 - z.1)) ≤ (1 + r0) / 2
   simpa using max_le hspace htime'
 
-private theorem terminal_zero_mem_unitClosedBox {d : Nat} :
-    (4, (0 : PDE.Vec d)) ∈ backwardParabolicClosedBox 1 4 0 := by
-  rw [mem_backwardParabolicClosedBox_iff]
-  constructor
-  · norm_num
-  constructor
-  · norm_num
-  · intro i
-    simp
-
-private theorem backwardParabolicRadius_terminal_zero {d : Nat} :
+private theorem backwardParabolicRadius_terminal_zero {d } :
     backwardParabolicRadius 4 (0 : PDE.Vec d) (4, 0) = 0 := by
   simp [backwardParabolicRadius, velocitySupNorm_eq_norm]
 
-/-- A continuous function which is positive at the terminal center has a
+/- A continuous function which is positive at the terminal center has a
 strictly interior weighted maximizer, together with the exact nested-box bound. -/
 theorem exists_weighted_backward_peak
-    {d : Nat} (m : Nat) (hm : 0 < m) (u : TimeVelocity d → Real)
+    {d } (m : Nat) (hm : 0 < m) (u : TimeVelocity d → Real)
     (hu : ContinuousOn u
       (backwardParabolicClosedBox 1 4 (0 : PDE.Vec d)))
     (hu0 : 0 < u (4, (0 : PDE.Vec d))) :
@@ -197,8 +178,18 @@ theorem exists_weighted_backward_peak
         u z ≤ (2 : Real) ^ m * u (t1, v1) := by
   let K : Set (TimeVelocity d) := backwardParabolicClosedBox 1 4 0
   let W : TimeVelocity d → Real := weightedBackwardPeak m 4 0 u
-  have hKcompact : IsCompact K := isCompact_backwardParabolicClosedBox 1 4 0
-  have hterminal : (4, (0 : PDE.Vec d)) ∈ K := terminal_zero_mem_unitClosedBox
+  have hKcompact : IsCompact K := by
+      exact (
+    isCompact_Icc.prod (isCompact_velocityClosedCube 0 1)
+    )
+  have hterminal : (4, (0 : PDE.Vec d)) ∈ K := by
+    rw [mem_backwardParabolicClosedBox_iff]
+    constructor
+    · norm_num
+    constructor
+    · norm_num
+    · intro i
+      simp
   have hW : ContinuousOn W K := by
     dsimp [W]
     exact
@@ -226,7 +217,7 @@ theorem exists_weighted_backward_peak
   have hweighted : u (4, (0 : PDE.Vec d)) ≤ (1 - r0) ^ m * u z1 := by
     simpa only [W, weightedBackwardPeak, r0] using hmax_terminal
   have hfactor_pos : 0 < (1 - r0) ^ m := pow_pos (by linarith) _
-  have hu1 : 0 < u z1 :=
+  have hu1 :=
     pos_of_mul_pos_right (hu0.trans_le hweighted) hfactor_pos.le
   refine ⟨t1, v1, r0, ?_, ?_, ?_, hr0lt, ?_, ?_, ?_⟩
   · simpa [t1, v1, K] using hz1
@@ -245,7 +236,7 @@ theorem exists_weighted_backward_peak
     have hfactor : s ≤ 1 - backwardParabolicRadius 4 0 z := by
       dsimp [s]
       linarith
-    have hfactor_nonneg : 0 ≤ 1 - backwardParabolicRadius 4 0 z :=
+    have hfactor_nonneg :=
       hspos.le.trans hfactor
     have hsub : backwardParabolicClosedBox s t1 v1 ⊆ K := by
       intro y hy
@@ -279,9 +270,9 @@ theorem exists_weighted_backward_peak
     by_cases huz : 0 < u z
     · have hpow : s ^ m ≤ (1 - backwardParabolicRadius 4 0 z) ^ m :=
         pow_le_pow_left₀ hspos.le hfactor _
-      have hleft : s ^ m * u z ≤ (1 - backwardParabolicRadius 4 0 z) ^ m * u z :=
+      have hleft :=
         mul_le_mul_of_nonneg_right hpow huz.le
-      have hpeak : weightedBackwardPeak m 4 0 u z ≤ weightedBackwardPeak m 4 0 u z1 :=
+      have hpeak :=
         hmax (hsub (by simpa [s] using hz))
       have hmiddle : s ^ m * u z ≤ (1 - r0) ^ m * u z1 := by
         calc
