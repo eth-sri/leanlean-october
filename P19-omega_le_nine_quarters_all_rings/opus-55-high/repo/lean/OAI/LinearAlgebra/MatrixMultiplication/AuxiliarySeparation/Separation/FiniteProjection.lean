@@ -1,5 +1,0 @@
-module
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.Fourier
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.NoWrap
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.SquareWeights
-public import Mathlib.Algebra.Polynomial.Degree.Lemmas
