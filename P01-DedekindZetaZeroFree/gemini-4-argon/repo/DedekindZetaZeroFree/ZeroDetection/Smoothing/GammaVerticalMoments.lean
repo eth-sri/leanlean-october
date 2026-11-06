@@ -1,0 +1,2 @@
+module
+public import DedekindZetaZeroFree.Analysis.GammaStripDecay

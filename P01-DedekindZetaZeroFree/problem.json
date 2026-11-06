@@ -1,0 +1,92 @@
+{
+  "problem_idx": 1,
+  "id": "PALOMAR-2026-10-13-000010-v2",
+  "title": "A uniform zero-free region for Dedekind zeta functions",
+  "abstract": "A Lean formalization of Theorem 1.1 and Corollary 1.2 of A quasi-Riemann hypothesis for Dedekind zeta functions: for every number field K, its Dedekind zeta function has no zeros in Re(s) > 31/32. The formal statement asserts the existence of a holomorphic function away from 1 that agrees with Mathlib's Dedekind zeta function for Re(s) > 1 and is nonzero for Re(s) > 31/32 with s different from 1. The corollary gives the same zero-free bound for Hecke L-functions associated with finite-order Hecke characters, including s = 1 for nonprincipal characters. These characters are represented in Lean as ray class characters. This repository contains the substantive Lean development, including its Challenge and Solution.",
+  "authors": [
+    "Dean Cureton"
+  ],
+  "repository": "AxiomMath/DedekindZetaZeroFree",
+  "repository_url": "https://github.com/AxiomMath/DedekindZetaZeroFree",
+  "commit": "09afbb4ce6570c1615d58509dc197fc9f0956b7d",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "XL",
+  "baseline_tokens": 10053215,
+  "lean_files": 5510,
+  "protected_theorem_names": [
+    "DedekindZetaZeroFree.main",
+    "DedekindZetaZeroFree.heckeCorollary"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "DedekindZetaChallenge",
+  "challenge_path": "Challenge/DedekindZetaChallenge.lean",
+  "solution_module": "DedekindZetaSolution",
+  "solution_path": "Solution/DedekindZetaSolution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.NT"
+  ],
+  "msc2020": [
+    "11M41",
+    "11F70"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "A quasi-Riemann hypothesis for Dedekind zeta functions",
+      "authors": [
+        "Dean Cureton",
+        "Jesse Thorner"
+      ],
+      "type": "paper",
+      "identifier": "https://hexagonmath.org/2610.00200v1",
+      "location": "Version 1 (12 October 2026), Theorem 1.1 and Corollary 1.2",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Metaplectic forms",
+      "authors": [
+        "D. A. Kazhdan",
+        "S. J. Patterson"
+      ],
+      "type": "paper",
+      "identifier": "https://www.numdam.org/article/PMIHES_1984__59__35_0.pdf",
+      "location": "IHES 59 (1984), I.1.3, I.2.9, I.6.4(c), I.6.5(c), II.1.3, p. 113, II.2.1–II.2.6",
+      "relationship": "background"
+    },
+    {
+      "title": "Correction to Metaplectic forms",
+      "authors": [
+        "D. A. Kazhdan",
+        "S. J. Patterson"
+      ],
+      "type": "paper",
+      "identifier": "https://www.numdam.org/articles/10.1007/BF02698809/",
+      "location": "1985 correction",
+      "relationship": "background"
+    },
+    {
+      "title": "Smooth Frechet globalizations of Harish-Chandra modules",
+      "authors": [
+        "Joseph Bernstein",
+        "Bernhard Krotz"
+      ],
+      "type": "paper",
+      "identifier": "https://arxiv.org/abs/0812.1684v3",
+      "location": "Section 11.1, Proposition 11.2 and Example 11.1(a)",
+      "relationship": "background"
+    }
+  ],
+  "dependency_graph_nodes": 45460,
+  "dependency_graph_edges": 757814,
+  "project_path": "repos/PALOMAR-2026-10-13-000010-v2/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-13-000010-v2/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-13-000010-v2/LICENSE"
+}
