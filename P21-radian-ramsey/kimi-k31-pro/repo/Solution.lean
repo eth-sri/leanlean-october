@@ -11,14 +11,11 @@ import OAI.Combinatorics.EuclideanRamsey.FiniteEuclidean
 import OAI.Combinatorics.EuclideanRamsey.Hessian
 import OAI.Combinatorics.EuclideanRamsey.IndependentTensor
 import OAI.Combinatorics.EuclideanRamsey.LatticeMoments
-import OAI.Combinatorics.EuclideanRamsey.NineGeometry
 import OAI.Combinatorics.EuclideanRamsey.PathFractions
 import OAI.Combinatorics.EuclideanRamsey.PathWords
 import OAI.Combinatorics.EuclideanRamsey.TensorDescent
 import OAI.Combinatorics.EuclideanRamsey.TensorPresentation
 import OAI.Combinatorics.EuclideanRamsey.UltrafilterStrings
-
-public section
 
 /-!
 # Proved solution

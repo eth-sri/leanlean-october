@@ -18,18 +18,8 @@ universe uDomain uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-
-open MeasureTheory
-open scoped BigOperators
+open scoped Pointwise Topology
+open MeasureTheory Filter
 namespace EuclideanRamsey
 
 lemma compact_taylor_bound {E : Type uDomain} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -72,16 +62,13 @@ lemma compact_taylor_bound {E : Type uDomain} [NormedAddCommGroup E] [NormedSpac
 
 end EuclideanRamsey
 
-open scoped BigOperators
 namespace EuclideanRamsey
 
 lemma linear_moment_contract {ι : Type uIndex} {k : ℕ}
     (S : Finset ι) (q : ι → ℝ) (v : ι → (Fin k → ℝ))
     (L : (Fin k → ℝ) →L[ℝ] ℝ) :
     ∑ γ ∈ S,q γ*L (v γ) = ∑ j,(∑ γ ∈ S,q γ*v γ j)*L (Pi.single j 1) := by
-  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := by
-    ext l
-    simp [Pi.single_apply]
+  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := pi_basis_expansion (v γ)
   conv_lhs => arg 2; intro γ; rw [hv γ]
   simp only [map_sum,map_smul,smul_eq_mul,Finset.mul_sum,Finset.sum_mul]
   rw [Finset.sum_comm]
@@ -96,9 +83,7 @@ lemma bilinear_moment_contract {ι : Type uIndex} {k : ℕ}
     (L : (Fin k → ℝ) →L[ℝ] (Fin k → ℝ) →L[ℝ] ℝ) :
     ∑ γ ∈ S,q γ*L (v γ) (v γ) =
       ∑ j,∑ l,(∑ γ ∈ S,q γ*v γ j*v γ l)*L (Pi.single j 1) (Pi.single l 1) := by
-  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := by
-    ext l
-    simp [Pi.single_apply]
+  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := pi_basis_expansion (v γ)
   have he (γ : ι) : q γ*L (v γ) (v γ) =
       ∑ j,∑ l,q γ*v γ j*v γ l*L (Pi.single j 1) (Pi.single l 1) := by
     have hfirst := congrArg (fun a => L a (v γ)) (hv γ)
@@ -121,8 +106,6 @@ lemma bilinear_moment_contract {ι : Type uIndex} {k : ℕ}
 
 end EuclideanRamsey
 
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
 namespace EuclideanRamsey
 
 abbrev realLattice (k : ℕ) := Submodule.span ℤ (Set.range (Pi.basisFun ℝ (Fin k)))

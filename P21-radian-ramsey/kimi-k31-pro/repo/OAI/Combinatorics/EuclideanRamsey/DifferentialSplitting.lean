@@ -18,13 +18,8 @@ universe uDomain uAction uVertical uCodomain
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-
-open scoped BigOperators
-open Matrix MeasureTheory
+open scoped RealInnerProductSpace
+open MeasureTheory
 namespace EuclideanRamsey
 
 section Operator
@@ -132,7 +127,6 @@ lemma split_differential
 end SplitDifferential
 end EuclideanRamsey
 
-open MeasureTheory
 namespace EuclideanRamsey
 
 lemma haar_linear_change {E : Type uDomain} {F : Type uCodomain}
@@ -164,7 +158,6 @@ lemma compact_prod_mul {E : Type uDomain} {F : Type uCodomain} [TopologicalSpace
 
 end EuclideanRamsey
 
-open MeasureTheory
 namespace EuclideanRamsey
 
 lemma product_negative_integral_bound {E : Type uDomain} {F : Type uCodomain}
@@ -209,7 +202,6 @@ end EuclideanRamsey
 
 namespace EuclideanRamsey
 open MeasureTheory Matrix
-open scoped BigOperators
 
 lemma halfLaplacian_continuous {H : Type uAction} [NormedAddCommGroup H]
     [InnerProductSpace ℝ H] [FiniteDimensional ℝ H] {f : H → ℝ}

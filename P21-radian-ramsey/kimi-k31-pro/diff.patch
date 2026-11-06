@@ -1,0 +1,2099 @@
+diff --git a/OAI/Combinatorics/EuclideanRamsey/AdicLifting.lean b/OAI/Combinatorics/EuclideanRamsey/AdicLifting.lean
+index afa899b1b..a2e834e9c 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/AdicLifting.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/AdicLifting.lean
+@@ -18,20 +18,6 @@ universe uRing uGroup uSemigroup uModule uModuleTarget uIndex
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-
+ open scoped TensorProduct
+ namespace EuclideanRamsey
+ 
+@@ -39,21 +25,24 @@ section NilpotentLog
+ variable {R : Type uRing} [CommRing R] [Algebra ℚ R]
+ open Finset
+ 
+-lemma nil_exp_quadratic {a : R} (ha : IsNilpotent a) :
+-    ∃ b : R, IsNilpotent b ∧ IsNilpotent.exp a = 1 + a * (1 + b) := by
++lemma nil_exp_factor {a : R} (ha : IsNilpotent a) :
++    ∃ c : R, IsNilpotent.exp a = 1 + a + a ^ 2 * c := by
+   obtain ⟨n, hn⟩ := ha
+   let c : R := ∑ i ∈ range n, ((i + 2).factorial : ℚ)⁻¹ • a ^ i
+-  refine ⟨a * c, ?_, ?_⟩
+-  · exact ⟨n, by rw [mul_pow, hn, zero_mul]⟩
+-  · rw [IsNilpotent.exp_eq_sum (pow_eq_zero_of_le (Nat.le_add_right n 2) hn)]
+-    rw [show n + 2 = 2 + n by omega, sum_range_add]
+-    have h2 : (∑ i ∈ range 2, (i.factorial : ℚ)⁻¹ • a ^ i) = 1 + a := by
+-      simp [sum_range_succ]
+-    rw [h2]
+-    have ht : (∑ i ∈ range n, ((2 + i).factorial : ℚ)⁻¹ • a ^ (2 + i)) = a ^ 2 * c := by
+-      simp only [c, mul_sum, pow_add, mul_smul_comm, add_comm 2, mul_comm]
+-    rw [ht]
+-    ring
++  refine ⟨c, ?_⟩
++  rw [IsNilpotent.exp_eq_sum (pow_eq_zero_of_le (Nat.le_add_right n 2) hn),
++    show n + 2 = 2 + n by omega, sum_range_add]
++  have h2 : (∑ i ∈ range 2, (i.factorial : ℚ)⁻¹ • a ^ i) = 1 + a := by
++    simp [sum_range_succ]
++  rw [h2]
++  have ht : (∑ i ∈ range n, ((2 + i).factorial : ℚ)⁻¹ • a ^ (2 + i)) = a ^ 2 * c := by
++    simp only [c, mul_sum, pow_add, mul_smul_comm, add_comm 2, mul_comm]
++  rw [ht]
++
++lemma nil_exp_quadratic {a : R} (ha : IsNilpotent a) :
++    ∃ b : R, IsNilpotent b ∧ IsNilpotent.exp a = 1 + a * (1 + b) := by
++  obtain ⟨c, hc⟩ := nil_exp_factor ha
++  exact ⟨a * c, (Commute.all _ _).isNilpotent_mul_right ha, by rw [hc]; ring⟩
+ 
+ lemma nil_exp_eq_one_iff {a : R} (ha : IsNilpotent a) :
+     IsNilpotent.exp a = 1 ↔ a = 0 := by
+@@ -63,40 +52,24 @@ lemma nil_exp_eq_one_iff {a : R} (ha : IsNilpotent a) :
+   · intro h
+     have hmul : a * (1 + b) = 0 := by linear_combination h
+     exact hb.isUnit_one_add.mul_right_cancel (by simpa using hmul)
+-  · intro h
+-    simp [h]
++  · rintro rfl
++    simp
+ 
+ lemma nil_exp_sub_one_sub_mem {J : Ideal R} {a : R} (ha : IsNilpotent a) (hJ : a ∈ J) :
+     IsNilpotent.exp a - 1 - a ∈ J ^ 2 := by
+-  obtain ⟨n, hn⟩ := ha
+-  rw [IsNilpotent.exp_eq_sum (pow_eq_zero_of_le (Nat.le_add_right n 2) hn)]
+-  rw [show n + 2 = 2 + n by omega, sum_range_add]
+-  have h2 : (∑ i ∈ range 2, (i.factorial : ℚ)⁻¹ • a ^ i) = 1 + a := by
+-    simp [sum_range_succ]
+-  rw [h2]
+-  have he : 1 + a + (∑ i ∈ range n, ((2 + i).factorial : ℚ)⁻¹ • a ^ (2 + i)) - 1 - a =
+-      ∑ i ∈ range n, ((2 + i).factorial : ℚ)⁻¹ • a ^ (2 + i) := by ring
+-  rw [he]
+-  apply Submodule.sum_mem
+-  intro i hi
+-  rw [Algebra.smul_def]
+-  apply Ideal.mul_mem_left
+-  rw [pow_add]
++  obtain ⟨c, hc⟩ := nil_exp_factor ha
++  rw [hc, show 1 + a + a ^ 2 * c - 1 - a = a ^ 2 * c by ring]
+   exact Ideal.mul_mem_right _ _ (Ideal.pow_mem_pow hJ 2)
+ 
+ lemma nil_exp_sub_one_mem {J : Ideal R} {a : R} (ha : IsNilpotent a) (hJ : a ∈ J) :
+     IsNilpotent.exp a - 1 ∈ J := by
+-  have h2 := nil_exp_sub_one_sub_mem ha hJ
+-  have hle : J ^ 2 ≤ J := Ideal.pow_le_self (by omega)
+-  have := J.add_mem (hle h2) hJ
++  have := J.add_mem (Ideal.pow_le_self (by omega) (nil_exp_sub_one_sub_mem ha hJ)) hJ
+   simpa only [sub_add_cancel] using this
+ 
+ omit [Algebra ℚ R] in
+ lemma nilpotent_of_mem_nil_ideal {I : Ideal R} {n : ℕ} (hI : I ^ n = ⊥)
+-    {x : R} (hx : x ∈ I) : IsNilpotent x := by
+-  refine ⟨n, ?_⟩
+-  have := Ideal.pow_mem_pow hx n
+-  simpa only [hI, Ideal.mem_bot] using this
++    {x : R} (hx : x ∈ I) : IsNilpotent x :=
++  ⟨n, by simpa only [hI, Ideal.mem_bot] using Ideal.pow_mem_pow hx n⟩
+ 
+ lemma nil_ideal_exp_surjective {I : Ideal R} {n : ℕ} (hI : I ^ n = ⊥)
+     {z : R} (hz : z ∈ I) : ∃ x ∈ I, IsNilpotent.exp x = 1 + z := by
+@@ -431,12 +404,8 @@ theorem finite_lattice_identity : FiniteLatticeIdentity := by
+   obtain ⟨y, hy, hxy⟩ := hn (quadraticStencil C l) hx
+   have he := moments_eq_of_sub_mem_cube hxy
+   have hM := quadraticStencil_moments C hCs l hm hfirst
+-  refine ⟨y, fun i => (mem_cosetIdeal_iff _ _).mp (hy i), ?_, ?_, ?_⟩
+-  · exact he.1.symm.trans hM.1
+-  · intro a
+-    exact (he.2.1 a).symm.trans (hM.2.1 a)
+-  · intro a b
+-    exact (he.2.2 a b).symm.trans (hM.2.2 a b)
++  exact ⟨y, fun i => (mem_cosetIdeal_iff _ _).mp (hy i), he.1.symm.trans hM.1,
++    fun a => (he.2.1 a).symm.trans (hM.2.1 a), fun a b => (he.2.2 a b).symm.trans (hM.2.2 a b)⟩
+ 
+ end Construction
+ 
+diff --git a/OAI/Combinatorics/EuclideanRamsey/CircleExtension.lean b/OAI/Combinatorics/EuclideanRamsey/CircleExtension.lean
+deleted file mode 100644
+index 61fbbafc6..000000000
+--- a/OAI/Combinatorics/EuclideanRamsey/CircleExtension.lean
++++ /dev/null
+@@ -1,29 +0,0 @@
+-/-
+-From openai/math (https://github.com/openai/math), commit
+-fd4aeeb2ee4fc729c18d98444fed42fd0529eeeb, lean/OAI/Combinatorics/EuclideanRamsey/CircleExtension.lean;
+-licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt and NOTICE).
+-Modified: ported to the Lean module system for Lean v4.35.0-rc2 / Mathlib v4.35.0-rc2 (this
+-notice, a `module` header, `public import`, `@[expose] public section`). No other line was
+-changed; see docs/PORT-LOG.md.
+--/
+-module
+-
+-public import OAI.Combinatorics.EuclideanRamsey.CircleGeometry
+-public import Mathlib.Data.Set.Finite.Basic
+-public import Mathlib.Data.Fintype.EquivFin
+-
+-@[expose] public section
+-
+-namespace OAI
+-noncomputable section
+-namespace EuclideanRamsey.CircleConsequence
+-
+-/-- Rational parametrization of a genuine radius-r circle. -/
+-def stereographic (c : Space 2) (r t : ℝ) : Space 2 :=
+-  c + r • WithLp.toLp 2 ![(1-t^2)/(1+t^2), (2*t)/(1+t^2)]
+-
+-end EuclideanRamsey.CircleConsequence
+-
+-end
+-
+-end OAI
+diff --git a/OAI/Combinatorics/EuclideanRamsey/CircleGeometry.lean b/OAI/Combinatorics/EuclideanRamsey/CircleGeometry.lean
+deleted file mode 100644
+index ece6d510e..000000000
+--- a/OAI/Combinatorics/EuclideanRamsey/CircleGeometry.lean
++++ /dev/null
+@@ -1,99 +0,0 @@
+-/-
+-From openai/math (https://github.com/openai/math), commit
+-fd4aeeb2ee4fc729c18d98444fed42fd0529eeeb, lean/OAI/Combinatorics/EuclideanRamsey/CircleGeometry.lean;
+-licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt and NOTICE).
+-Modified: ported to the Lean module system for Lean v4.35.0-rc2 / Mathlib v4.35.0-rc2 (this
+-notice, a `module` header, `public import`, `@[expose] public section`). No other line was
+-changed; see docs/PORT-LOG.md.
+--/
+-module
+-
+-public import OAI.Combinatorics.EuclideanRamsey.Model
+-
+-@[expose] public section
+-
+-namespace OAI
+-
+-noncomputable section
+-namespace EuclideanRamsey.CircleConsequence
+-
+-/-- Three points on a real circle cannot occupy three distinct parameters
+-on a secant. No positive-radius assumption is needed. -/
+-theorem circle_parameter_eq_zero_or_one
+-    (x₀ x₁ y₀ y₁ c₀ c₁ R t : ℝ)
+-    (hx : (x₀-c₀)^2 + (x₁-c₁)^2 = R)
+-    (hy : (y₀-c₀)^2 + (y₁-c₁)^2 = R)
+-    (hz : (x₀+t*(y₀-x₀)-c₀)^2 + (x₁+t*(y₁-x₁)-c₁)^2 = R)
+-    (hxy : x₀ ≠ y₀ ∨ x₁ ≠ y₁) : t = 0 ∨ t = 1 := by
+-  have hnorm : (y₀-x₀)^2 + (y₁-x₁)^2 ≠ 0 := by
+-    intro h
+-    have h₀ : y₀-x₀ = 0 := by nlinarith [sq_nonneg (y₁-x₁)]
+-    have h₁ : y₁-x₁ = 0 := by nlinarith [sq_nonneg (y₀-x₀)]
+-    rcases hxy with hxy | hxy <;> apply hxy <;> linarith
+-  have hprod : t * (t-1) * ((y₀-x₀)^2 + (y₁-x₁)^2) = 0 := by
+-    linear_combination hz - (1-t)*hx - t*hy
+-  rcases mul_eq_zero.mp ((mul_eq_zero.mp hprod).resolve_right hnorm) with h | h
+-  · exact Or.inl h
+-  · exact Or.inr (sub_eq_zero.mp h)
+-
+-/-- The determinant of a secant line is nonzero at a third distinct
+-point on the same circle. Distinctness excludes radius zero. -/
+-theorem secant_nonzero
+-    (x₀ x₁ y₀ y₁ z₀ z₁ c₀ c₁ R : ℝ)
+-    (hx : (x₀-c₀)^2 + (x₁-c₁)^2 = R)
+-    (hy : (y₀-c₀)^2 + (y₁-c₁)^2 = R)
+-    (hz : (z₀-c₀)^2 + (z₁-c₁)^2 = R)
+-    (hxy : x₀ ≠ y₀ ∨ x₁ ≠ y₁)
+-    (hxz : x₀ ≠ z₀ ∨ x₁ ≠ z₁)
+-    (hyz : y₀ ≠ z₀ ∨ y₁ ≠ z₁) :
+-    (y₀-x₀)*(z₁-x₁) - (y₁-x₁)*(z₀-x₀) ≠ 0 := by
+-  intro hdet
+-  by_cases hdx : y₀-x₀ = 0
+-  · have hdy : y₁-x₁ ≠ 0 := by
+-      intro hdy
+-      rcases hxy with hxy | hxy <;> apply hxy <;> linarith
+-    have hzx : z₀ = x₀ := by
+-      have : (y₁-x₁)*(z₀-x₀) = 0 := by rw [hdx] at hdet; nlinarith
+-      have := (mul_eq_zero.mp this).resolve_left hdy
+-      linarith
+-    let t := (z₁-x₁)/(y₁-x₁)
+-    have ht : x₁+t*(y₁-x₁) = z₁ := by dsimp [t]; field_simp; ring
+-    have htx : x₀+t*(y₀-x₀) = z₀ := by rw [hdx]; simp [hzx]
+-    have he := circle_parameter_eq_zero_or_one x₀ x₁ y₀ y₁ c₀ c₁ R t hx hy
+-      (by rw [ht, htx]; exact hz) hxy
+-    rcases he with he | he
+-    · rcases hxz with h | h <;> apply h <;> simp_all
+-    · rcases hyz with h | h
+-      · apply h
+-        calc
+-          y₀ = x₀ := sub_eq_zero.mp hdx
+-          _ = z₀ := hzx.symm
+-      · apply h
+-        simpa [he] using ht
+-  · let t := (z₀-x₀)/(y₀-x₀)
+-    have ht : x₀+t*(y₀-x₀) = z₀ := by dsimp [t]; field_simp; ring
+-    have hty : x₁+t*(y₁-x₁) = z₁ := by
+-      dsimp [t]
+-      apply (mul_right_cancel₀ hdx)
+-      field_simp
+-      nlinarith [hdet]
+-    have he := circle_parameter_eq_zero_or_one x₀ x₁ y₀ y₁ c₀ c₁ R t hx hy
+-      (by rw [ht, hty]; exact hz) hxy
+-    rcases he with he | he
+-    · rcases hxz with h | h <;> apply h <;> simp_all
+-    · rcases hyz with h | h <;> apply h <;> simp_all
+-
+-/-- The metric circle equation implies the scalar coordinate equation. -/
+-theorem circle_coordinates {s : ℕ} (a : Fin s → Space 2)
+-    (c : Space 2) (r : ℝ) (hc : ∀ i, dist (a i) c = r) :
+-    ∀ i, (a i 0-c 0)^2 + (a i 1-c 1)^2 = r^2 := by
+-  intro i
+-  have h := congrArg (fun x : ℝ => x^2) (hc i)
+-  simpa [dist_eq_norm, EuclideanSpace.norm_sq_eq, Fin.sum_univ_two,
+-    Real.norm_eq_abs, sq_abs] using h
+-
+-end EuclideanRamsey.CircleConsequence
+-
+-end
+-
+-end OAI
+diff --git a/OAI/Combinatorics/EuclideanRamsey/CircleInterpolation.lean b/OAI/Combinatorics/EuclideanRamsey/CircleInterpolation.lean
+deleted file mode 100644
+index 8b7d823bd..000000000
+--- a/OAI/Combinatorics/EuclideanRamsey/CircleInterpolation.lean
++++ /dev/null
+@@ -1,57 +0,0 @@
+-/-
+-From openai/math (https://github.com/openai/math), commit
+-fd4aeeb2ee4fc729c18d98444fed42fd0529eeeb, lean/OAI/Combinatorics/EuclideanRamsey/CircleInterpolation.lean;
+-licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt and NOTICE).
+-Modified: ported to the Lean module system for Lean v4.35.0-rc2 / Mathlib v4.35.0-rc2 (this
+-notice, a `module` header, `public import`, `@[expose] public section`). No other line was
+-changed; see docs/PORT-LOG.md.
+--/
+-module
+-
+-public import OAI.Combinatorics.EuclideanRamsey.CircleGeometry
+-
+-@[expose] public section
+-
+-namespace OAI
+-
+-/- The secant equations and quadratic isolators have coefficients in the coordinate field. -/
+-noncomputable section
+-namespace EuclideanRamsey.CircleConsequence
+-
+-def secantRow {s : ℕ} (a : Fin s → Space 2) (i j : Fin s) :
+-    Option (Fin 2) → Coeff a
+-  | none => coordinate a i 0 * coordinate a j 1 - coordinate a j 0 * coordinate a i 1
+-  | some k => if k = 0 then coordinate a i 1 - coordinate a j 1
+-      else coordinate a j 0 - coordinate a i 0
+-
+-def secantValue {s : ℕ} (a : Fin s → Space 2) (i j k : Fin s) : Coeff a :=
+-  (coordinate a j 0-coordinate a i 0)*(coordinate a k 1-coordinate a i 1) -
+-  (coordinate a j 1-coordinate a i 1)*(coordinate a k 0-coordinate a i 0)
+-
+-/-- Nonzero evaluation follows from actual planar circle equations. -/
+-theorem secantValue_ne_zero {s : ℕ} (a : Fin s → Space 2)
+-    (ha : Function.Injective a) (c : Space 2) (R : ℝ)
+-    (hc : ∀ m, (a m 0-c 0)^2 + (a m 1-c 1)^2 = R)
+-    (i j k : Fin s) (hij : i ≠ j) (hik : i ≠ k) (hjk : j ≠ k) :
+-    secantValue a i j k ≠ 0 := by
+-  have different (u v : Fin s) (huv : u ≠ v) :
+-      a u 0 ≠ a v 0 ∨ a u 1 ≠ a v 1 := by
+-    by_contra h
+-    push Not at h
+-    apply huv
+-    apply ha
+-    ext q
+-    fin_cases q <;> simp_all
+-  have h := secant_nonzero (a i 0) (a i 1) (a j 0) (a j 1)
+-    (a k 0) (a k 1) (c 0) (c 1) R (hc i) (hc j) (hc k)
+-    (different i j hij) (different i k hik) (different j k hjk)
+-  intro hz
+-  apply h
+-  have he := congrArg (fun z : Coeff a => (z : ℝ)) hz
+-  simpa [secantValue, coordinate] using he
+-
+-end EuclideanRamsey.CircleConsequence
+-
+-end
+-
+-end OAI
+diff --git a/OAI/Combinatorics/EuclideanRamsey/CircleSpan.lean b/OAI/Combinatorics/EuclideanRamsey/CircleSpan.lean
+deleted file mode 100644
+index d6d662939..000000000
+--- a/OAI/Combinatorics/EuclideanRamsey/CircleSpan.lean
++++ /dev/null
+@@ -1,61 +0,0 @@
+-/-
+-From openai/math (https://github.com/openai/math), commit
+-fd4aeeb2ee4fc729c18d98444fed42fd0529eeeb, lean/OAI/Combinatorics/EuclideanRamsey/CircleSpan.lean;
+-licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt and NOTICE).
+-Modified: ported to the Lean module system for Lean v4.35.0-rc2 / Mathlib v4.35.0-rc2 (this
+-notice, a `module` header, `public import`, `@[expose] public section`). No other line was
+-changed; see docs/PORT-LOG.md.
+--/
+-module
+-
+-public import OAI.Combinatorics.EuclideanRamsey.CircleInterpolation
+-
+-@[expose] public section
+-
+-namespace OAI
+-noncomputable section
+-namespace EuclideanRamsey.CircleConsequence
+-
+-/-- Three actual distinct circle points already affinely span the plane.
+-The inverse two-by-two determinant is written explicitly. -/
+-theorem circle_five_affineSpan (a : Fin 5 → Space 2)
+-    (ha : Function.Injective a) (c : Space 2) (r : ℝ)
+-    (hc : ∀ i, dist (a i) c = r) : affineSpan ℝ (Set.range a) = ⊤ := by
+-  classical
+-  let A := affineSpan ℝ (Set.range a)
+-  have hp (i : Fin 5) : a i ∈ A := mem_affineSpan ℝ (Set.mem_range_self i)
+-  let u := a 1 - a 0
+-  let v := a 2 - a 0
+-  let D : ℝ := u 0 * v 1 - v 0 * u 1
+-  have hfield := secantValue_ne_zero a ha c (r^2) (circle_coordinates a c r hc)
+-    0 1 2 (by decide) (by decide) (by decide)
+-  have hD : D ≠ 0 := by
+-    intro h
+-    apply hfield
+-    apply Subtype.ext
+-    simpa [D, u, v, secantValue, coordinate, mul_comm] using h
+-  have hu : u ∈ A.direction := by
+-    simpa [u, vsub_eq_sub] using AffineSubspace.vsub_mem_direction (hp 1) (hp 0)
+-  have hv : v ∈ A.direction := by
+-    simpa [v, vsub_eq_sub] using AffineSubspace.vsub_mem_direction (hp 2) (hp 0)
+-  apply top_unique
+-  intro x hx
+-  let w := x - a 0
+-  let α : ℝ := (w 0 * v 1 - v 0 * w 1) / D
+-  let β : ℝ := (u 0 * w 1 - w 0 * u 1) / D
+-  have hcomb : α • u + β • v = w := by
+-    ext j
+-    fin_cases j <;>
+-      simp only [PiLp.add_apply, PiLp.smul_apply, smul_eq_mul] <;>
+-      dsimp [α, β] <;>
+-      field_simp [hD] <;>
+-      dsimp [D] <;> ring
+-  have hm : α • u + β • v ∈ A.direction :=
+-    A.direction.add_mem (A.direction.smul_mem α hu) (A.direction.smul_mem β hv)
+-  have he := AffineSubspace.vadd_mem_of_mem_direction hm (hp 0)
+-  simpa [hcomb, w, vadd_eq_add] using he
+-end EuclideanRamsey.CircleConsequence
+-
+-end
+-
+-end OAI
+diff --git a/OAI/Combinatorics/EuclideanRamsey/ColoringCompactness.lean b/OAI/Combinatorics/EuclideanRamsey/ColoringCompactness.lean
+index 15627189f..0d39cc200 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/ColoringCompactness.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/ColoringCompactness.lean
+@@ -18,28 +18,9 @@ universe uModule uColor
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+ open Filter
+-open Set
+ 
+ namespace EuclideanRamsey
+-open Filter
+-open scoped BigOperators
+ attribute [local instance] Ultrafilter.mul Ultrafilter.semigroup
+ 
+ lemma exists_ultra_color {M : Type uModule} {κ : Type uColor} [Finite κ] (U : Ultrafilter M) (c : M → κ) :
+@@ -134,8 +115,6 @@ theorem paths_monochromatic {s : ℕ} (a : Fin s → FiniteEuclidean)
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+ namespace FiniteEuclidean
+-open Filter
+-open scoped BigOperators
+ noncomputable def truncate (d : ℕ) (x : FiniteEuclidean) : EuclideanSpace ℝ (Fin d) :=
+   WithLp.toLp 2 (fun i => coords x i)
+ 
+@@ -167,13 +146,11 @@ theorem finite_coloring_compactness {s : ℕ} (a : Fin s → FiniteEuclidean) (r
+       (∀ i j,‖b i-b j‖=‖a i-a j‖) ∧ ∃ k : Fin r,∀ i,c (b i)=k := by
+   classical
+   by_contra hbad
++  push Not at hbad
+   have hc : ∀ n : ℕ,∃ c : EuclideanSpace ℝ (Fin (n+1)) → Fin r,
+       ¬ ∃ b : Fin s → EuclideanSpace ℝ (Fin (n+1)),
+-        (∀ i j,‖b i-b j‖=‖a i-a j‖) ∧ ∃ k : Fin r,∀ i,c (b i)=k := by
+-    intro n
+-    by_contra hh
+-    push Not at hh
+-    exact hbad ⟨n+1,by omega,hh⟩
++        (∀ i j,‖b i-b j‖=‖a i-a j‖) ∧ ∃ k : Fin r,∀ i,c (b i)=k :=
++    fun n => by push Not; exact hbad (n+1) (by omega)
+   choose c hc using hc
+   let U : Ultrafilter ℕ := Ultrafilter.of Filter.atTop
+   let C : FiniteEuclidean → Fin r := fun z => ultraColor
+diff --git a/OAI/Combinatorics/EuclideanRamsey/Congruence.lean b/OAI/Combinatorics/EuclideanRamsey/Congruence.lean
+index 563d82541..8d7e615da 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/Congruence.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/Congruence.lean
+@@ -18,7 +18,7 @@ universe uIndex uDomain uCodomain
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
++open scoped RealInnerProductSpace
+ 
+ namespace EuclideanRamsey
+ 
+diff --git a/OAI/Combinatorics/EuclideanRamsey/CornerGroup.lean b/OAI/Combinatorics/EuclideanRamsey/CornerGroup.lean
+index beb03ffd2..1d5527ff9 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/CornerGroup.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/CornerGroup.lean
+@@ -18,25 +18,7 @@ universe uSemigroup
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+-open Filter
+ 
+-open Set
+ namespace EuclideanRamsey
+ 
+ theorem exists_group_corner {S : Type uSemigroup} [Nonempty S] [Semigroup S]
+@@ -91,7 +73,6 @@ instance : Mul (Corner p) := ⟨fun x y => ⟨x.val*y.val, by
+   constructor
+   · rw [← mul_assoc,x.property.1]
+   · rw [mul_assoc,y.property.2]⟩⟩
+-@[simp] lemma val_mul (x y : Corner p) : (x*y).val=x.val*y.val := rfl
+ instance : Semigroup (Corner p) where
+   mul_assoc _x _y _z := Subtype.ext (mul_assoc _ _ _)
+ 
+diff --git a/OAI/Combinatorics/EuclideanRamsey/CorrectionPaths.lean b/OAI/Combinatorics/EuclideanRamsey/CorrectionPaths.lean
+index 0cb78931d..2b5246311 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/CorrectionPaths.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/CorrectionPaths.lean
+@@ -18,27 +18,8 @@ universe uGroup uIndex uAction uPoint
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+-open Filter
+-open Set
+ 
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ variable {G : Type uGroup} {ι : Type uIndex} [Group G] [Fintype ι] [DecidableEq ι]
+ namespace GradedPaths
+ variable (P : GradedPaths ι G) (L : Subgroup G) [L.Normal]
+@@ -109,7 +90,6 @@ lemma correction_cost (g : ι → G) (hg : ∀ i,g i∈L) (B : ℝ)
+ end GradedPaths
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ variable {ι : Type uIndex} {H : Type uAction} {X : Type uPoint} [Fintype ι] [DecidableEq ι]
+ variable [Group H] [MulAction H X] [Fintype H] [Fintype X]
+ 
+@@ -171,17 +151,12 @@ theorem averaged_equal_endpoints (a : ι → FiniteEuclidean) (ha : Function.Inj
+   nlinarith
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ 
+ noncomputable def permute {ℓ : ℕ} (σ : Equiv.Perm (Fin ℓ)) :
+     EuclideanSpace ℝ (Fin ℓ) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin ℓ) :=
+   LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ σ
+-@[simp] lemma permute_apply {ℓ : ℕ} (σ : Equiv.Perm (Fin ℓ))
+-    (x : EuclideanSpace ℝ (Fin ℓ)) (j : Fin ℓ) : permute σ x j=x (σ.symm j) := rfl
+ lemma permute_mul {ℓ : ℕ} (σ τ : Equiv.Perm (Fin ℓ)) (x : EuclideanSpace ℝ (Fin ℓ)) :
+-    permute (σ*τ) x=permute σ (permute τ x) := by ext j; rfl
+-@[simp] lemma permute_one {ℓ : ℕ} (x : EuclideanSpace ℝ (Fin ℓ)) :
+-    permute 1 x=x := by ext j; rfl
++    permute (σ*τ) x=permute σ (permute τ x) := rfl
+ 
+ theorem permutation_equal_endpoints {s d ℓ : ℕ} (a : Fin s → EuclideanSpace ℝ (Fin d))
+     (ha : Function.Injective a) (f g : Fin s → EuclideanSpace ℝ (Fin ℓ))
+@@ -202,7 +177,7 @@ theorem permutation_equal_endpoints {s d ℓ : ℕ} (a : Fin s → EuclideanSpac
+   let z : X → FiniteEuclidean := fun x => FiniteEuclidean.embed ℓ (permute x.1 (f x.2))
+   have hσ' (i : Fin s) : permute (σ i) (f i)=g i := by
+     ext j
+-    simpa using (hσ i ((σ i).symm j)).symm
++    simpa [permute] using (hσ i ((σ i).symm j)).symm
+   have hcopy (h : H) (i : Fin s) :
+       z (h • ((σ i,i):X))=FiniteEuclidean.embed ℓ (permute h (g i)) := by
+     change FiniteEuclidean.embed ℓ (permute (h*σ i) (f i))=_
+diff --git a/OAI/Combinatorics/EuclideanRamsey/DerivedFractions.lean b/OAI/Combinatorics/EuclideanRamsey/DerivedFractions.lean
+index 98e687cb6..419c0aa92 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/DerivedFractions.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/DerivedFractions.lean
+@@ -18,22 +18,6 @@ universe uGroup uIndex uColor uPoint
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+ 
+ namespace EuclideanRamsey
+ open scoped commutatorElement
+diff --git a/OAI/Combinatorics/EuclideanRamsey/DifferentialSplitting.lean b/OAI/Combinatorics/EuclideanRamsey/DifferentialSplitting.lean
+index 94c78254d..e6288bddb 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/DifferentialSplitting.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/DifferentialSplitting.lean
+@@ -18,13 +18,8 @@ universe uDomain uAction uVertical uCodomain
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-
+-open scoped BigOperators
+-open Matrix MeasureTheory
++open scoped RealInnerProductSpace
++open MeasureTheory
+ namespace EuclideanRamsey
+ 
+ section Operator
+@@ -132,7 +127,6 @@ lemma split_differential
+ end SplitDifferential
+ end EuclideanRamsey
+ 
+-open MeasureTheory
+ namespace EuclideanRamsey
+ 
+ lemma haar_linear_change {E : Type uDomain} {F : Type uCodomain}
+@@ -164,7 +158,6 @@ lemma compact_prod_mul {E : Type uDomain} {F : Type uCodomain} [TopologicalSpace
+ 
+ end EuclideanRamsey
+ 
+-open MeasureTheory
+ namespace EuclideanRamsey
+ 
+ lemma product_negative_integral_bound {E : Type uDomain} {F : Type uCodomain}
+@@ -209,7 +202,6 @@ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+ open MeasureTheory Matrix
+-open scoped BigOperators
+ 
+ lemma halfLaplacian_continuous {H : Type uAction} [NormedAddCommGroup H]
+     [InnerProductSpace ℝ H] [FiniteDimensional ℝ H] {f : H → ℝ}
+diff --git a/OAI/Combinatorics/EuclideanRamsey/Discretization.lean b/OAI/Combinatorics/EuclideanRamsey/Discretization.lean
+index c1f5b579d..97b47b698 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/Discretization.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/Discretization.lean
+@@ -18,18 +18,8 @@ universe uDomain uIndex
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-
+-open MeasureTheory
+-open scoped BigOperators
++open scoped Pointwise Topology
++open MeasureTheory Filter
+ namespace EuclideanRamsey
+ 
+ lemma compact_taylor_bound {E : Type uDomain} [NormedAddCommGroup E] [NormedSpace ℝ E]
+@@ -72,16 +62,13 @@ lemma compact_taylor_bound {E : Type uDomain} [NormedAddCommGroup E] [NormedSpac
+ 
+ end EuclideanRamsey
+ 
+-open scoped BigOperators
+ namespace EuclideanRamsey
+ 
+ lemma linear_moment_contract {ι : Type uIndex} {k : ℕ}
+     (S : Finset ι) (q : ι → ℝ) (v : ι → (Fin k → ℝ))
+     (L : (Fin k → ℝ) →L[ℝ] ℝ) :
+     ∑ γ ∈ S,q γ*L (v γ) = ∑ j,(∑ γ ∈ S,q γ*v γ j)*L (Pi.single j 1) := by
+-  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := by
+-    ext l
+-    simp [Pi.single_apply]
++  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := pi_basis_expansion (v γ)
+   conv_lhs => arg 2; intro γ; rw [hv γ]
+   simp only [map_sum,map_smul,smul_eq_mul,Finset.mul_sum,Finset.sum_mul]
+   rw [Finset.sum_comm]
+@@ -96,9 +83,7 @@ lemma bilinear_moment_contract {ι : Type uIndex} {k : ℕ}
+     (L : (Fin k → ℝ) →L[ℝ] (Fin k → ℝ) →L[ℝ] ℝ) :
+     ∑ γ ∈ S,q γ*L (v γ) (v γ) =
+       ∑ j,∑ l,(∑ γ ∈ S,q γ*v γ j*v γ l)*L (Pi.single j 1) (Pi.single l 1) := by
+-  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := by
+-    ext l
+-    simp [Pi.single_apply]
++  have hv (γ : ι) : v γ = ∑ j, v γ j • Pi.single j (1:ℝ) := pi_basis_expansion (v γ)
+   have he (γ : ι) : q γ*L (v γ) (v γ) =
+       ∑ j,∑ l,q γ*v γ j*v γ l*L (Pi.single j 1) (Pi.single l 1) := by
+     have hfirst := congrArg (fun a => L a (v γ)) (hv γ)
+@@ -121,8 +106,6 @@ lemma bilinear_moment_contract {ι : Type uIndex} {k : ℕ}
+ 
+ end EuclideanRamsey
+ 
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+ namespace EuclideanRamsey
+ 
+ abbrev realLattice (k : ℕ) := Submodule.span ℤ (Set.range (Pi.basisFun ℝ (Fin k)))
+diff --git a/OAI/Combinatorics/EuclideanRamsey/FiniteEuclidean.lean b/OAI/Combinatorics/EuclideanRamsey/FiniteEuclidean.lean
+index 694fa44ef..193db93aa 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/FiniteEuclidean.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/FiniteEuclidean.lean
+@@ -18,23 +18,8 @@ universe uValue
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-
+-open scoped BigOperators RealInnerProductSpace
++open scoped RealInnerProductSpace
++
+ namespace EuclideanRamsey
+ 
+ def FiniteEuclidean := ℕ →₀ ℝ
+@@ -81,10 +66,6 @@ lemma norm_sq (x : FiniteEuclidean) : ‖x‖^2=(coords x).sum (fun _ r => r^2)
+   rw [← real_inner_self_eq_norm_sq]
+   change product x x = _
+   simp [product,Finsupp.sum,pow_two]
+-@[simp] lemma coords_add (x y : FiniteEuclidean) : coords (x+y)=coords x+coords y := rfl
+-@[simp] lemma coords_sub (x y : FiniteEuclidean) : coords (x-y)=coords x-coords y := rfl
+-@[simp] lemma coords_smul (c : ℝ) (x : FiniteEuclidean) : coords (c • x)=c • coords x := rfl
+-
+ def reindex (f : ℕ → ℕ) (hf : Function.Injective f) : FiniteEuclidean →ₗᵢ[ℝ] FiniteEuclidean where
+   toLinearMap :=
+     { toFun := fun x => (coords x).mapDomain f
+@@ -101,7 +82,6 @@ end FiniteEuclidean
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+ namespace FiniteEuclidean
+-open scoped BigOperators RealInnerProductSpace
+ 
+ noncomputable def embed (d : ℕ) : EuclideanSpace ℝ (Fin d) →ₗᵢ[ℝ] FiniteEuclidean where
+   toLinearMap :=
+@@ -128,8 +108,7 @@ noncomputable def embed (d : ℕ) : EuclideanSpace ℝ (Fin d) →ₗᵢ[ℝ] Fi
+     · intro _; simp
+ 
+ @[simp] lemma embed_apply (d : ℕ) (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) :
+-    coords (embed d x) i.val=x i := by
+-  exact Finsupp.mapDomain_apply_of_injective Fin.val_injective _ i
++    coords (embed d x) i.val=x i := Finsupp.mapDomain_apply_of_injective Fin.val_injective _ i
+ 
+ lemma embed_outside (d : ℕ) (x : EuclideanSpace ℝ (Fin d)) (n : ℕ) (hn : d≤n) :
+     coords (embed d x) n=0 := by
+@@ -183,17 +162,6 @@ end FiniteEuclidean
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+ namespace FiniteEuclidean
+-open scoped BigOperators RealInnerProductSpace
+-
+-noncomputable def unit (n : ℕ) : FiniteEuclidean := Finsupp.single n 1
+-lemma norm_unit (n : ℕ) : ‖unit n‖=1 := by
+-  apply (sq_eq_sq₀ (norm_nonneg _) zero_le_one).mp
+-  rw [norm_sq]
+-  simp [unit,coords]
+-lemma inner_unit (x : FiniteEuclidean) (n : ℕ) : ⟪x,unit n⟫=coords x n := by
+-  rw [real_inner_comm]
+-  change product (unit n) x=coords x n
+-  simp [product,unit,coords]
+ 
+ lemma common_vertex (r : ℝ) (hr : 0 < r) (x y : FiniteEuclidean) (hxy : ‖y-x‖≤2*r) :
+     ∃ z : FiniteEuclidean,‖z-x‖=r ∧ ‖z-y‖=r := by
+@@ -201,9 +169,15 @@ lemma common_vertex (r : ℝ) (hr : 0 < r) (x y : FiniteEuclidean) (hxy : ‖y-x
+   let v := y-x
+   obtain ⟨n,hn⟩ := (coords v).support.exists_notMem
+   have hz : coords v n=0 := Finsupp.notMem_support_iff.mp hn
+-  let e := unit n
+-  have he : ‖e‖=1 := norm_unit n
+-  have hv : ⟪v,e⟫=0 := by simpa [e] using (inner_unit v n).trans hz
++  let e : FiniteEuclidean := Finsupp.single n 1
++  have he : ‖e‖=1 := by
++    apply (sq_eq_sq₀ (norm_nonneg _) zero_le_one).mp
++    rw [norm_sq]
++    simp [e,coords]
++  have hv : ⟪v,e⟫=0 := by
++    rw [real_inner_comm]
++    change product e v=0
++    simpa [product,e,coords] using hz
+   let t := Real.sqrt (r^2-‖v‖^2/4)
+   have ht0 : 0≤r^2-‖v‖^2/4 := by
+     have hv0 := norm_nonneg v
+diff --git a/OAI/Combinatorics/EuclideanRamsey/GramCompletion.lean b/OAI/Combinatorics/EuclideanRamsey/GramCompletion.lean
+index 130d9ab5b..42b0b9800 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/GramCompletion.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/GramCompletion.lean
+@@ -18,23 +18,8 @@ universe uIndex uRow uColor
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+ open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-
+ open Matrix
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+ namespace EuclideanRamsey
+ lemma trace_gram_complement {ι : Type uIndex} [Fintype ι] [DecidableEq ι]
+     (B : Matrix ι ι ℝ) (hB : B.PosSemidef) (η : ℝ) (hη : B.trace ≤ η) :
+@@ -109,7 +94,6 @@ theorem complete_gram_pair {d : ℕ} {τ : Type uRow} [Fintype τ]
+ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+-open Matrix
+ lemma row_gram_distance {d : ℕ} {τ : Type uRow} [Fintype τ]
+     (v : τ → ℝ) (U : Matrix (Fin d) τ ℝ) (q : ℝ)
+     (hU : U*U.transpose=q • (1 : Matrix (Fin d) (Fin d) ℝ))
+@@ -191,7 +175,6 @@ theorem two_scale_of_signed_rows {α : Type} [DecidableEq α] {d s : ℕ}
+ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ lemma evaluation_coset_pushforward {k : ℕ} (φ : Lattice k →+ ℝ)
+     (μ : LatticeRing k) (hμ : cosetPushforward φ.ker μ=0) (n : ℝ) :
+     μ.coeff.mapDomain (fun x => φ x/n)=0 := by
+diff --git a/OAI/Combinatorics/EuclideanRamsey/Hessian.lean b/OAI/Combinatorics/EuclideanRamsey/Hessian.lean
+index b2d3ba131..24eaddf67 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/Hessian.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/Hessian.lean
+@@ -18,12 +18,7 @@ universe uDomain uCodomain uIndex uColor uAction
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-
+-open scoped BigOperators
+-open Matrix MeasureTheory
++open scoped RealInnerProductSpace
+ namespace EuclideanRamsey
+ 
+ section Hessian
+@@ -219,9 +214,6 @@ def rightInverseSplit (U : E →ₗ[ℝ] H) (R : H →ₗ[ℝ] E)
+   map_add' v w := by ext <;> simp [map_add] ; abel
+   map_smul' c x := by ext <;> simp [map_smul, smul_sub]
+ 
+-@[simp] lemma rightInverseSplit_fst (U : E →ₗ[ℝ] H) (R : H →ₗ[ℝ] E)
+-    (hUR : U.comp R = LinearMap.id) (x : E) : (rightInverseSplit U R hUR x).1 = U x := rfl
+-
+ @[simp] lemma rightInverseSplit_apply_R (U : E →ₗ[ℝ] H) (R : H →ₗ[ℝ] E)
+     (hUR : U.comp R = LinearMap.id) (y : H) : (rightInverseSplit U R hUR (R y)) = (y,0) := by
+   have h : U (R y) = y := LinearMap.congr_fun hUR y
+diff --git a/OAI/Combinatorics/EuclideanRamsey/IndependentTensor.lean b/OAI/Combinatorics/EuclideanRamsey/IndependentTensor.lean
+index d01afc037..7eb6610a9 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/IndependentTensor.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/IndependentTensor.lean
+@@ -61,45 +61,20 @@ def rightMap : Rat ι →ₐ[ℚ] JointField ι :=
+ 
+ @[simp] theorem leftMap_algebraMap (p : Poly ι) :
+     leftMap ι (algebraMap (Poly ι) (Rat ι) p) =
+-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.rename Sum.inl p) := by
+-  exact IsFractionRing.lift_algebraMap (K := Rat ι)
++      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.rename Sum.inl p) := IsFractionRing.lift_algebraMap (K := Rat ι)
+     (g := (leftPolynomialMap ι).toRingHom) (leftPolynomialMap_injective ι) p
+ 
+ @[simp] theorem rightMap_algebraMap (p : Poly ι) :
+     rightMap ι (algebraMap (Poly ι) (Rat ι) p) =
+-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.rename Sum.inr p) := by
+-  exact IsFractionRing.lift_algebraMap (K := Rat ι)
++      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.rename Sum.inr p) := IsFractionRing.lift_algebraMap (K := Rat ι)
+     (g := (rightPolynomialMap ι).toRingHom) (rightPolynomialMap_injective ι) p
+ 
+-@[simp] theorem leftMap_X (i : ι) :
+-    leftMap ι (algebraMap (Poly ι) (Rat ι) (MvPolynomial.X i)) =
+-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.X (Sum.inl i)) := by
+-  simp
+-
+-@[simp] theorem rightMap_X (i : ι) :
+-    rightMap ι (algebraMap (Poly ι) (Rat ι) (MvPolynomial.X i)) =
+-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.X (Sum.inr i)) := by
+-  simp
+-
+ /-- The map to the joint rational-function field. -/
+ def tensorEmbedding : Rat ι ⊗[ℚ] Rat ι →ₐ[ℚ] JointField ι :=
+   Algebra.TensorProduct.lift (leftMap ι) (rightMap ι) (fun _ _ => Commute.all _ _)
+ 
+ @[simp] theorem tensorEmbedding_tmul (x y : Rat ι) :
+-    tensorEmbedding ι (x ⊗ₜ[ℚ] y) = leftMap ι x * rightMap ι y := by
+-  rfl
+-
+-@[simp] theorem tensorEmbedding_X_tmul_one (i : ι) :
+-    tensorEmbedding ι
+-      ((algebraMap (Poly ι) (Rat ι) (MvPolynomial.X i)) ⊗ₜ[ℚ] 1) =
+-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.X (Sum.inl i)) := by
+-  simp
+-
+-@[simp] theorem tensorEmbedding_one_tmul_X (i : ι) :
+-    tensorEmbedding ι
+-      (1 ⊗ₜ[ℚ] (algebraMap (Poly ι) (Rat ι) (MvPolynomial.X i))) =
+-      algebraMap (JointPoly ι) (JointField ι) (MvPolynomial.X (Sum.inr i)) := by
+-  simp
++    tensorEmbedding ι (x ⊗ₜ[ℚ] y) = leftMap ι x * rightMap ι y := rfl
+ 
+ def localizeLeft : Poly ι ⊗[ℚ] Poly ι →ₐ[ℚ] Rat ι ⊗[ℚ] Poly ι :=
+   Algebra.TensorProduct.map (polyToRat ι) (AlgHom.id ℚ (Poly ι))
+@@ -122,11 +97,7 @@ theorem polynomialEmbedding_injective :
+ followed by the injective fraction-ring inclusion. -/
+ theorem halfEmbedding_comp_localizeLeft :
+     (halfEmbedding ι).comp (localizeLeft ι) = polynomialEmbedding ι := by
+-  apply Algebra.TensorProduct.ext
+-  · ext i
+-    simp [halfEmbedding, localizeLeft, localizeRight, polyToRat,
+-      polynomialEmbedding, jointToField, IsScalarTower.toAlgHom_apply]
+-  · ext i
++  apply Algebra.TensorProduct.ext <;> ext i <;>
+     simp [halfEmbedding, localizeLeft, localizeRight, polyToRat,
+       polynomialEmbedding, jointToField, IsScalarTower.toAlgHom_apply]
+ 
+diff --git a/OAI/Combinatorics/EuclideanRamsey/LatticeMoments.lean b/OAI/Combinatorics/EuclideanRamsey/LatticeMoments.lean
+index 7eeb176e7..536ac6119 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/LatticeMoments.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/LatticeMoments.lean
+@@ -18,15 +18,6 @@ universe uIndex
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-
+ open scoped TensorProduct
+ namespace EuclideanRamsey
+ 
+@@ -128,8 +119,7 @@ lemma secondMoment_linear (a b : Fin k) :
+     firstMoment (r • x) a = r * firstMoment x a := by
+   change coefficientFunctional _ (r • x) = _ * _
+   exact map_smul _ _ _
+-@[simp] lemma firstMoment_zero (a : Fin k) : firstMoment (0 : LatticeRing k) a = 0 := by
+-  exact map_zero (coefficientFunctional (k := k) (fun γ => γ a))
++@[simp] lemma firstMoment_zero (a : Fin k) : firstMoment (0 : LatticeRing k) a = 0 := map_zero (coefficientFunctional (k := k) (fun γ => γ a))
+ @[simp] lemma firstMoment_single (γ : Lattice k) (q : ℚ) (a : Fin k) :
+     firstMoment (AddMonoidAlgebra.single γ q) a = q * γ a := coefficientFunctional_single _ _ _
+ @[simp] lemma secondMoment_add (x y : LatticeRing k) (a b : Fin k) :
+@@ -174,21 +164,14 @@ lemma secondMoment_mul (x y : LatticeRing k) (a b : Fin k) :
+ @[simp] lemma mass_sub (x y : LatticeRing k) : mass (x-y) = mass x - mass y := by
+   simp only [mass_linear, map_sub]
+ @[simp] lemma firstMoment_sub (x y : LatticeRing k) (a : Fin k) :
+-    firstMoment (x-y) a = firstMoment x a - firstMoment y a := by
+-  exact map_sub (coefficientFunctional (k := k) (fun γ => γ a)) x y
++    firstMoment (x-y) a = firstMoment x a - firstMoment y a := map_sub (coefficientFunctional (k := k) (fun γ => γ a)) x y
+ @[simp] lemma secondMoment_sub (x y : LatticeRing k) (a b : Fin k) :
+     secondMoment (x-y) a b = secondMoment x a b - secondMoment y a b := by
+   have hh := congrFun (secondMoment_linear a b)
+   simp only [hh, map_sub]
+-@[simp] lemma mass_one : mass (1 : LatticeRing k) = 1 := by
+-  change mass (AddMonoidAlgebra.single 0 1) = 1
+-  simp
+ @[simp] lemma firstMoment_one (a : Fin k) : firstMoment (1 : LatticeRing k) a = 0 := by
+   change firstMoment (AddMonoidAlgebra.single 0 1) a = 0
+   simp
+-@[simp] lemma secondMoment_one (a b : Fin k) : secondMoment (1 : LatticeRing k) a b = 0 := by
+-  change secondMoment (AddMonoidAlgebra.single 0 1) a b = 0
+-  simp
+ 
+ lemma mem_augmentationIdeal (x : LatticeRing k) :
+     x ∈ augmentationIdeal ↔ mass x = 0 := by
+@@ -241,8 +224,7 @@ lemma moments_eq_of_sub_mem_cube {x y : LatticeRing k}
+     mass (∑ i ∈ t, x i) = ∑ i ∈ t, mass (x i) := by
+   simp only [mass_linear, map_sum]
+ @[simp] lemma firstMoment_sum {ι : Type uIndex} (t : Finset ι) (x : ι → LatticeRing k) (a : Fin k) :
+-    firstMoment (∑ i ∈ t, x i) a = ∑ i ∈ t, firstMoment (x i) a := by
+-  exact map_sum (coefficientFunctional (k := k) (fun γ => γ a)) x t
++    firstMoment (∑ i ∈ t, x i) a = ∑ i ∈ t, firstMoment (x i) a := map_sum (coefficientFunctional (k := k) (fun γ => γ a)) x t
+ @[simp] lemma secondMoment_sum {ι : Type uIndex} (t : Finset ι) (x : ι → LatticeRing k) (a b : Fin k) :
+     secondMoment (∑ i ∈ t, x i) a b = ∑ i ∈ t, secondMoment (x i) a b := by
+   have hh := congrFun (secondMoment_linear a b)
+diff --git a/OAI/Combinatorics/EuclideanRamsey/Main.lean b/OAI/Combinatorics/EuclideanRamsey/Main.lean
+index c72f2ee29..5b5d62ebb 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/Main.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/Main.lean
+@@ -16,24 +16,6 @@ namespace OAI
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+-open Filter
+-open Set
+ 
+ namespace EuclideanRamsey
+ 
+@@ -80,14 +62,6 @@ theorem fieldCriterion_ramsey {s d : ℕ} (a : Fin s → Space d)
+ 
+ end EuclideanRamsey
+ 
+-namespace EuclideanRamsey
+-
+-end EuclideanRamsey
+-
+-namespace EuclideanRamsey
+-
+-end EuclideanRamsey
+-
+ end
+ 
+ end OAI
+diff --git a/OAI/Combinatorics/EuclideanRamsey/NineGeometry.lean b/OAI/Combinatorics/EuclideanRamsey/NineGeometry.lean
+deleted file mode 100644
+index 0fc72cbb1..000000000
+--- a/OAI/Combinatorics/EuclideanRamsey/NineGeometry.lean
++++ /dev/null
+@@ -1,47 +0,0 @@
+-/-
+-From openai/math (https://github.com/openai/math), commit
+-fd4aeeb2ee4fc729c18d98444fed42fd0529eeeb, lean/OAI/Combinatorics/EuclideanRamsey/NineGeometry.lean;
+-licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt and NOTICE).
+-Modified: ported to the Lean module system for Lean v4.35.0-rc2 / Mathlib v4.35.0-rc2 (this
+-notice, a `module` header, `public import`, `@[expose] public section`). No other line was
+-changed; see docs/PORT-LOG.md.
+--/
+-module
+-
+-public import OAI.Combinatorics.EuclideanRamsey.CircleExtension
+-public import OAI.Combinatorics.EuclideanRamsey.CircleSpan
+-public import Mathlib.RingTheory.AlgebraicIndependent.Basic
+-
+-@[expose] public section
+-
+-namespace OAI
+-
+-/-! Rational parametrization of the unit circle and its coordinate field. -/
+-
+-noncomputable section
+-namespace EuclideanRamsey.NineGeometry
+-
+-def circlePoint (x : ℝ) : Space 2 :=
+-  CircleConsequence.stereographic (0 : Space 2) 1 x
+-
+-@[simp] theorem circlePoint_zero (x : ℝ) :
+-    circlePoint x 0 = (1 - x^2) / (1 + x^2) := by
+-  simp [circlePoint, CircleConsequence.stereographic]
+-
+-@[simp] theorem circlePoint_one (x : ℝ) :
+-    circlePoint x 1 = (2*x) / (1 + x^2) := by
+-  simp [circlePoint, CircleConsequence.stereographic]
+-
+-/-- Restriction to the first five points. -/
+-def firstFive (i : Fin 5) : Fin 9 := ⟨i.val, by omega⟩
+-
+-theorem firstFive_injective : Function.Injective firstFive := by
+-  intro i j h
+-  apply Fin.ext
+-  simpa only [firstFive] using congrArg (fun k : Fin 9 => k.val) h
+-
+-end EuclideanRamsey.NineGeometry
+-
+-end
+-
+-end OAI
+diff --git a/OAI/Combinatorics/EuclideanRamsey/NineLinearObstruction.lean b/OAI/Combinatorics/EuclideanRamsey/NineLinearObstruction.lean
+index fd39190d5..150473cd2 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/NineLinearObstruction.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/NineLinearObstruction.lean
+@@ -18,17 +18,10 @@ namespace OAI
+ /-! Nonsingular tensor evaluation matrices obstruct the Euclidean Ramsey property. -/
+ 
+ noncomputable section
+-open scoped TensorProduct BigOperators
++open scoped TensorProduct
+ 
+ namespace EuclideanRamsey.NineLinearObstruction
+ 
+-theorem vector_eq_zero_of_det_ne_zero {J K : Type*} [Fintype J]
+-    [DecidableEq J] [Field K] (M : Matrix J J K) (hM : M.det ≠ 0)
+-    (v : J → K) (hv : M.mulVec v = 0) : v = 0 := by
+-  have hu : IsUnit M := M.isUnit_iff_isUnit_det.mpr (isUnit_iff_ne_zero.mpr hM)
+-  apply (Matrix.mulVec_injective_iff_isUnit.mpr hu)
+-  simpa using hv
+-
+ abbrev Column (d : ℕ) := Option (Fin d) × Option (Fin d)
+ 
+ /-- Rows are reindexed by an actual equivalence; entries are the exact
+@@ -56,32 +49,18 @@ theorem not_fieldCriterion_of_det_ne_zero {s d : ℕ} (a : Fin s → Space d)
+     rw [Fintype.sum_prod_type]
+     convert h using 1
+     apply Finset.sum_congr rfl
+-    intro α hα
++    intro α _
+     apply Finset.sum_congr rfl
+-    intro β hβ
++    intro β _
+     dsimp [evaluationMatrix, v]
+     ring
+-  have hvzero := vector_eq_zero_of_det_ne_zero (evaluationMatrix a f e) hdet v hv
+-  have hPzero (α β : Option (Fin d)) : P α β = 0 := by
+-    apply hf
+-    have h := congrFun hvzero (α, β)
+-    simpa only [v, Pi.zero_apply, map_zero] using h
++  have hvzero : v = 0 := Matrix.mulVec_injective_iff_isUnit.mpr
++    ((evaluationMatrix a f e).isUnit_iff_isUnit_det.mpr (isUnit_iff_ne_zero.mpr hdet))
++    (by simpa using hv)
++  have hPzero (α β : Option (Fin d)) : P α β = 0 := hf (by
++    simpa only [v, Pi.zero_apply, map_zero] using congrFun hvzero (α, β))
+   let j : Fin d := ⟨0, hd⟩
+-  have hbad := hspatial j j
+-  rw [hPzero, map_zero, ite_eq_left rfl] at hbad
+-  exact zero_ne_one hbad
+-
+-/-- Ramsey configurations cannot have a nonsingular tensor evaluation matrix. -/
+-theorem not_ramsey_of_det_ne_zero {s d : ℕ} (a : Fin s → Space d)
+-    (hs : 0 < s) (hd : 0 < d)
+-    (hspan : affineSpan ℝ (Set.range a) = ⊤)
+-    {K : Type*} [Field K] [Algebra ℚ K]
+-    (f : TensorRing a →ₐ[ℚ] K) (hf : Function.Injective f)
+-    (e : Column d ≃ Fin s) (hdet : (evaluationMatrix a f e).det ≠ 0) :
+-    ¬ Ramsey a := by
+-  intro hR
+-  exact not_fieldCriterion_of_det_ne_zero a hd f hf e hdet
+-    (ramsey_fieldCriterion a hs hspan hR)
++  simpa [hPzero] using hspatial j j
+ 
+ end EuclideanRamsey.NineLinearObstruction
+ 
+diff --git a/OAI/Combinatorics/EuclideanRamsey/NormalCost.lean b/OAI/Combinatorics/EuclideanRamsey/NormalCost.lean
+index dff6f293a..a6ea14609 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/NormalCost.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/NormalCost.lean
+@@ -18,27 +18,9 @@ universe uGroup uAction uPoint uAlpha
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+-open Filter
+-open Set
++open scoped commutatorElement
+ 
+ namespace EuclideanRamsey
+-open scoped BigOperators commutatorElement
+ variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X]
+ 
+ def SameOrbit (x y : X) : Prop := ∃ h : H,h • x=y
+@@ -75,11 +57,9 @@ omit [L.Normal] in
+ lemma list_bound_const (l : List G) (h : ∀ g∈l,g∈L) (B : ℝ) (hB : ∀ g∈l,c.cost g≤B) :
+     c.cost l.prod ≤ (l.length:ℝ)*B := by
+   refine (c.list_bound l h).trans ?_
+-  induction l with
+-  | nil => simp
+-  | cons g l ih =>
+-    have hh := ih (fun x hx => h x (by simp [hx])) (fun x hx => hB x (by simp [hx]))
+-    simpa [Nat.cast_add,Nat.cast_one,add_mul,add_comm] using add_le_add (hB g (by simp)) hh
++  calc
++    _ ≤ (l.map fun _ => B).sum := List.sum_le_sum hB
++    _ = _ := by simp [List.map_const', List.sum_replicate, nsmul_eq_mul]
+ 
+ lemma product_difference {α : Type uAlpha} (l : List α) (a b : α → G)
+     (h : ∀ j∈l,a j*(b j)⁻¹∈L) :
+diff --git a/OAI/Combinatorics/EuclideanRamsey/OrbitAveraging.lean b/OAI/Combinatorics/EuclideanRamsey/OrbitAveraging.lean
+index 1789b2ac7..46be0d478 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/OrbitAveraging.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/OrbitAveraging.lean
+@@ -18,27 +18,8 @@ universe uGroup uAction uPoint
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+-open Filter
+-open Set
+ 
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X]
+ 
+ inductive OrbitWords (letter : X → G) : (X → G) → ℕ → Prop
+@@ -151,7 +132,6 @@ lemma contraction_bound [Fintype H] {L : Subgroup G} [L.Normal] (c : NormalCost
+     _ ≤ _ := by rw [hn]; nlinarith
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X] [Fintype H]
+ 
+ inductive Evolution : (X → G) → ℕ → (X → G) → ℕ → Prop
+@@ -272,7 +252,6 @@ lemma contraction_rate (h m : ℕ) (hh : 0 < h) (hm : 0 < m) (B δ : ℝ) (hB :
+   simpa only [Nat.cast_mul,Nat.cast_pow] using (show 2*(B*(h-1:ℝ)^k)≤δ*((h:ℝ)^k*m) by nlinarith [he])
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X] [Fintype H] [Fintype X]
+ 
+ lemma orbit_make_small {L : Subgroup G} [L.Normal] (c : NormalCost L)
+diff --git a/OAI/Combinatorics/EuclideanRamsey/PathFractions.lean b/OAI/Combinatorics/EuclideanRamsey/PathFractions.lean
+index 7ff0b6c06..bbebec065 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/PathFractions.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/PathFractions.lean
+@@ -18,24 +18,6 @@ universe uGroup uIndex
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+-
+-open scoped BigOperators
+ namespace EuclideanRamsey
+ section Fractions
+ variable {G : Type uGroup} {ι : Type uIndex} [Group G] [DecidableEq ι]
+@@ -130,7 +112,6 @@ lemma RightFraction.mul_pair {M : Submonoid (ι → G)} (hM : PairInverse M)
+ end Fractions
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ variable {G : Type uGroup} {ι : Type uIndex} [Group G] [DecidableEq ι]
+ 
+ structure GradedPaths (ι : Type uIndex) (G : Type uGroup) [Group G] where
+diff --git a/OAI/Combinatorics/EuclideanRamsey/PathSynchronization.lean b/OAI/Combinatorics/EuclideanRamsey/PathSynchronization.lean
+index 8b910f95c..49c4badb4 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/PathSynchronization.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/PathSynchronization.lean
+@@ -18,26 +18,8 @@ universe uIndex uAlpha
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+-open Filter
+ 
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ variable {ι : Type uIndex} {a : ι → FiniteEuclidean}
+ 
+ def scaleGroup (c : ℝ) : LetterGroup →* LetterGroup := FreeGroup.map (fun z => Real.sqrt c • z)
+diff --git a/OAI/Combinatorics/EuclideanRamsey/PathWords.lean b/OAI/Combinatorics/EuclideanRamsey/PathWords.lean
+index e29c03107..a8b34876d 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/PathWords.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/PathWords.lean
+@@ -18,25 +18,9 @@ universe uIndex
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
++open scoped RealInnerProductSpace
+ 
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ abbrev LetterGroup := FreeGroup FiniteEuclidean
+ variable {ι : Type uIndex}
+ 
+@@ -64,12 +48,6 @@ lemma UnitWords.path {a : ι → FiniteEuclidean} {w n} (h : UnitWords a w n) :
+   | copy b hb =>
+     simpa only [Nat.cast_one] using (Path.copy (a:=a) (u:=1) b ⟨zero_le_one,by intro i j; simp [hb i j]⟩)
+   | mul _ _ ihu ihv => simpa only [Nat.cast_add] using ihu.mul ihv
+-lemma Path.nonneg {a : ι → FiniteEuclidean} {w lmb} (h : Path a w lmb) : 0≤lmb := by
+-  induction h with
+-  | diag => exact le_rfl
+-  | copy _ h => exact h.1
+-  | mul _ _ ih1 ih2 => exact add_nonneg ih1 ih2
+-
+ lemma extend_pair_E (a : ι → FiniteEuclidean) (i j : ι) (z z' : FiniteEuclidean)
+     (h : ‖z'-z‖=‖a j-a i‖) :
+     ∃ b : ι → FiniteEuclidean,b i=z ∧ b j=z' ∧ ∀ k l,‖b k-b l‖=‖a k-a l‖ := by
+@@ -176,7 +154,6 @@ lemma unit_pair_coverage (a : ι → FiniteEuclidean) (ha : Function.Injective a
+   exact ⟨v,hv,congrArg Prod.fst hv',congrArg Prod.snd hv'⟩
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ abbrev Strings := FreeMonoid FiniteEuclidean
+ 
+ def stringEnergy : List FiniteEuclidean → List FiniteEuclidean → ℝ
+diff --git a/OAI/Combinatorics/EuclideanRamsey/RationalConvolution.lean b/OAI/Combinatorics/EuclideanRamsey/RationalConvolution.lean
+index 928d3f5e3..6d783c66c 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/RationalConvolution.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/RationalConvolution.lean
+@@ -18,21 +18,10 @@ universe uGroup uIndex
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
++open scoped Pointwise Topology
+ open MeasureTheory Filter
+ 
+ namespace EuclideanRamsey
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise Topology
+ 
+ lemma bounded_grid_finite {k n : ℕ} (hn : n ≠ 0) {s : Set (Fin k → ℝ)}
+     (hs : Bornology.IsBounded s) :
+@@ -92,7 +81,6 @@ theorem lattice_riemann_perturb {k : ℕ} (f : (Fin k → ℝ) → ℝ)
+ 
+ end EuclideanRamsey
+ 
+-open scoped BigOperators Pointwise
+ namespace EuclideanRamsey
+ 
+ lemma rational_convolution_coeff {G : Type uGroup} [AddCommGroup G] [DecidableEq G]
+@@ -113,7 +101,7 @@ lemma rational_convolution_coeff {G : Type uGroup} [AddCommGroup G] [DecidableEq
+ 
+ end EuclideanRamsey
+ 
+-open scoped BigOperators Topology
++open scoped Topology
+ namespace EuclideanRamsey
+ 
+ lemma rational_vector_strict {ι : Type uIndex} [Fintype ι]
+@@ -128,7 +116,6 @@ lemma rational_vector_strict {ι : Type uIndex} [Fintype ι]
+ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+-open scoped BigOperators Pointwise
+ 
+ lemma rationalize_convolution {G : Type uGroup} [AddCommGroup G] [DecidableEq G]
+     (ν : AddMonoidAlgebra ℚ G) (w : G → ℝ) (t η : ℝ)
+diff --git a/OAI/Combinatorics/EuclideanRamsey/SignedRows.lean b/OAI/Combinatorics/EuclideanRamsey/SignedRows.lean
+index 5e49b40d8..904014cdb 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/SignedRows.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/SignedRows.lean
+@@ -18,22 +18,7 @@ universe uAlpha uBeta
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+ open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-
+-open scoped BigOperators
+ namespace EuclideanRamsey
+ 
+ lemma integerize_finsupp {α : Type uAlpha} (f : α →₀ ℚ) :
+@@ -51,11 +36,6 @@ lemma integerize_finsupp {α : Type uAlpha} (f : α →₀ ℚ) :
+     simp only [z,Finsupp.mapRange_apply,← hn,Int.floor_intCast]
+   · simp [z,Finsupp.notMem_support_iff.mp ha]
+ 
+-lemma integerize_finsupp_real {α : Type uAlpha} (f : α →₀ ℚ) :
+-    ∃ (M : ℕ) (z : α →₀ ℤ), 0 < M ∧ ∀ a, (z a:ℝ) = M*(f a:ℝ) := by
+-  obtain ⟨M,z,hM,hz⟩ := integerize_finsupp f
+-  exact ⟨M,z,hM,fun a => by exact_mod_cast hz a⟩
+-
+ def positiveCount {α : Type uAlpha} (z : α →₀ ℤ) : α →₀ ℕ := z.mapRange Int.toNat (by simp)
+ def negativeCount {α : Type uAlpha} (z : α →₀ ℤ) : α →₀ ℕ := z.mapRange (fun n => (-n).toNat) (by simp)
+ 
+@@ -122,11 +102,6 @@ lemma equal_count_pushforward {α : Type uAlpha} {β : Type uBeta} (f : α →
+     Finsupp.mapDomain_smul,Finsupp.mapDomain_mapRange g _ _ _ (fun x y => Rat.cast_add x y),hg]
+   simp
+ 
+-lemma equal_evaluated_multisets {α : Type uAlpha} {β : Type uBeta} (f : α →₀ ℚ) (M : ℕ) (z : α →₀ ℤ)
+-    (hz : ∀ a,(z a:ℝ) = M*(f a:ℝ)) (g : α → β) (hg : f.mapDomain g = 0) :
+-    (positiveCount z).toMultiset.map g = (negativeCount z).toMultiset.map g := by
+-  simp only [Finsupp.toMultiset_map,equal_count_pushforward f M z hz g hg]
+-
+ lemma sum_counts_difference {α : Type uAlpha} [DecidableEq α]
+     (f : α →₀ ℚ) (M : ℕ) (z : α →₀ ℤ)
+     (hz : ∀ a,(z a:ℝ) = M*(f a:ℝ)) (g : α → ℝ) :
+@@ -165,7 +140,6 @@ lemma sum_counts_negative {α : Type uAlpha} [DecidableEq α]
+ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+-open Matrix
+ 
+ theorem normalized_signed_rows {α : Type} [DecidableEq α] {d s : ℕ} (hs : 0 < s)
+     (a : Fin s → Fin d → ℝ) (v : α → ℝ) (g : α → Fin d → ℝ)
+@@ -178,12 +152,15 @@ theorem normalized_signed_rows {α : Type} [DecidableEq α] {d s : ℕ} (hs : 0
+       ∀ i,∃ σ : Equiv.Perm τ,∀ x,
+         vn (σ x)+∑ j,a i j*V j (σ x) = vp x+∑ j,a i j*U j x := by
+   classical
+-  obtain ⟨M,z,hM,hz⟩ := integerize_finsupp_real f
++  obtain ⟨M,z,hM,hzq⟩ := integerize_finsupp f
++  have hz (a) : (z a:ℝ) = M*(f a:ℝ) := by exact_mod_cast hzq a
+   let m := (positiveCount z).toMultiset
+   let n := (negativeCount z).toMultiset
+   have hh (i : Fin s) : ∃ e : m ≃ n,∀ x : m,
+       v (e x)+∑ j,a i j*g (e x) j = v x+∑ j,a i j*g x j :=
+-    multiset_map_equiv m n _ (equal_evaluated_multisets f M z hz _ (heval i))
++    multiset_map_equiv m n (fun x => v x+∑ j,a i j*g x j) (by
++      simp only [m,n,Finsupp.toMultiset_map,equal_count_pushforward f M z hz
++        (fun x => v x+∑ j,a i j*g x j) (heval i)])
+   choose e he using hh
+   let e₀ := e ⟨0,hs⟩
+   let c := (Real.sqrt ((M:ℝ)*ζ))⁻¹
+diff --git a/OAI/Combinatorics/EuclideanRamsey/SmoothingKernel.lean b/OAI/Combinatorics/EuclideanRamsey/SmoothingKernel.lean
+index 5fe87c514..02737b954 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/SmoothingKernel.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/SmoothingKernel.lean
+@@ -18,10 +18,7 @@ universe uDomain
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
++open MeasureTheory Polynomial
+ namespace EuclideanRamsey
+ 
+ def smoothPositivePart (t : ℝ) : ℝ := t * expNegInvGlue t
+@@ -92,9 +89,8 @@ variable {E : Type uDomain} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+ def radialPower (a p : ℝ) (x : E) : ℝ := (a + ‖x‖^2) ^ p
+ 
+ lemma radialPower_contDiff {a : ℝ} (ha : 0 < a) (p : ℝ) :
+-    ContDiff ℝ (⊤ : ℕ∞) (radialPower (E := E) a p) := by
+-  exact (contDiff_const.add (contDiff_norm_sq ℝ)).rpow_const_of_ne
+-    (fun x => ne_of_gt (add_pos_of_pos_of_nonneg ha (sq_nonneg _)))
++    ContDiff ℝ (⊤ : ℕ∞) (radialPower (E := E) a p) := (contDiff_const.add (contDiff_norm_sq ℝ)).rpow_const_of_ne
++    (fun _ => ne_of_gt (add_pos_of_pos_of_nonneg ha (sq_nonneg _)))
+ 
+ lemma radialPower_hasFDerivAt {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
+     HasFDerivAt (radialPower a p)
+@@ -269,9 +265,8 @@ lemma radialBump_negative_le {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
+   have hb := smoothPositivePart'_bounds (radialPower a p x-1)
+   have hc : 0 ≤ 2 * smoothPositivePart'' (radialPower a p x-1) * p^2 *
+       ((a+‖x‖^2)^(p-1))^2 * ‖x‖^2 := by
+-    exact mul_nonneg (mul_nonneg (mul_nonneg
+-      (mul_nonneg (by norm_num) (smoothPositivePart''_nonneg _)) (sq_nonneg _))
+-      (sq_nonneg _)) (sq_nonneg _)
++    have h := smoothPositivePart''_nonneg (radialPower a p x-1)
++    positivity
+   apply max_le
+   · by_cases h : 0 ≤ halfLaplacian (radialPower a p) x
+     · exact le_trans (by nlinarith [mul_nonneg hb.1 h]) (le_max_right _ _)
+@@ -437,13 +432,11 @@ lemma radialBump_integral_negative_bound {ε : ℝ} (hε : 0 < ε)
+     ENNReal.toReal_ofReal (pow_nonneg hR _)]
+   dsimp [R,K,n,p]
+   rw [mul_pow]
+-  have he := radial_weight_exponent (E := E) hε
+-  have he' : ε^(Module.finrank ℝ E)*(ε^2)^(smoothingExponent E) = Real.sqrt ε := he
+   change ((Module.finrank ℝ E + 1 : ℝ)^(Module.finrank ℝ E)*ε^(Module.finrank ℝ E)*
+     μ.real (Metric.ball (0:E) 1)) *
+     ((-smoothingExponent E)*(Module.finrank ℝ E : ℝ)*(Module.finrank ℝ E + 1 : ℝ)^2*
+     (ε^2)^(smoothingExponent E)) = _
+-  rw [pow_add, ← he']
++  rw [pow_add, ← radial_weight_exponent (E := E) hε]
+   ring
+ 
+ theorem exists_radial_smoothing (hn : 1 ≤ Module.finrank ℝ E) {η : ℝ} (hη : 0 < η) :
+diff --git a/OAI/Combinatorics/EuclideanRamsey/SmoothingMatrix.lean b/OAI/Combinatorics/EuclideanRamsey/SmoothingMatrix.lean
+index 0a7ae0b44..5dc8c94fc 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/SmoothingMatrix.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/SmoothingMatrix.lean
+@@ -16,14 +16,8 @@ namespace OAI
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
++open MeasureTheory Matrix
++
+ namespace EuclideanRamsey
+ 
+ lemma covariance_splitting {k d : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
+@@ -56,8 +50,6 @@ lemma covariance_splitting {k d : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
+ 
+ end EuclideanRamsey
+ 
+-open scoped BigOperators
+-open MeasureTheory Matrix
+ namespace EuclideanRamsey
+ 
+ def stencilDifferential {k : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
+@@ -79,7 +71,6 @@ def CompactSmoothing : Prop :=
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+ open MeasureTheory Matrix
+-open scoped BigOperators
+ 
+ theorem compact_smoothing : CompactSmoothing := by
+   intro k d hd C U hC hU η hη
+diff --git a/OAI/Combinatorics/EuclideanRamsey/StencilConvolution.lean b/OAI/Combinatorics/EuclideanRamsey/StencilConvolution.lean
+index 4242b8261..1d01ee703 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/StencilConvolution.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/StencilConvolution.lean
+@@ -18,22 +18,10 @@ universe uIndex
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
++open scoped Topology
+ open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+ 
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ 
+ lemma stencil_taylor_uniform {ι : Type uIndex} {k : ℕ} (S : Finset ι)
+     (q : ι → ℝ) (v : ι → (Fin k → ℝ)) (C : Matrix (Fin k) (Fin k) ℝ)
+@@ -99,7 +87,7 @@ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+ open MeasureTheory Filter
+-open scoped BigOperators Topology
++open scoped Topology
+ 
+ lemma stencilDifferential_continuous {k : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
+     {b : (Fin k → ℝ) → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b) :
+@@ -216,7 +204,7 @@ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+ open Filter MeasureTheory
+-open scoped BigOperators Topology
++open scoped Topology
+ 
+ theorem exists_discrete_smoothing {k d : ℕ} (S : Finset (Fin k → ℤ))
+     (q : (Fin k → ℤ) → ℝ) (C : Matrix (Fin k) (Fin k) ℝ) (U : Matrix (Fin d) (Fin k) ℝ)
+@@ -264,7 +252,6 @@ theorem exists_discrete_smoothing {k d : ℕ} (S : Finset (Fin k → ℤ))
+ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+-open scoped BigOperators
+ 
+ lemma cosetPushforward_mul {k : ℕ} (Λ : AddSubgroup (Lattice k)) (ν b : LatticeRing k)
+     (hν : cosetPushforward Λ ν = 0) : cosetPushforward Λ (ν*b) = 0 := by
+@@ -289,10 +276,7 @@ theorem rational_smoothing {k d s : ℕ} (hd : 1 ≤ d)
+       (∀ j l,secondMoment μ j l/(n:ℚ)^2 = ζ*C j l) ∧
+       (∑' δ : Lattice k,max (-(μ.coeff δ:ℝ)) 0*gradientWeight U (latticeSample n δ)) < η*ζ := by
+   classical
+-  have hC' : (C.map (Rat.cast : ℚ → ℝ)).IsSymm := by
+-    ext j l
+-    change (C l j:ℝ) = (C j l:ℝ)
+-    exact congrArg Rat.cast (congrFun (congrFun hC j) l)
++  have hC' : (C.map (Rat.cast : ℚ → ℝ)).IsSymm := hC.map _
+   obtain ⟨b,hb,hbc,hb0,hbI,hbη⟩ := compact_smoothing k d hd (C.map (Rat.cast : ℚ → ℝ)) U hC' hU η hη
+   have hz : ∑ γ ∈ ν.coeff.support,(ν.coeff γ:ℝ) = 0 := by
+     exact_mod_cast hzero
+diff --git a/OAI/Combinatorics/EuclideanRamsey/TensorDescent.lean b/OAI/Combinatorics/EuclideanRamsey/TensorDescent.lean
+index 3af120e64..9fb8e2238 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/TensorDescent.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/TensorDescent.lean
+@@ -18,7 +18,7 @@ universe uIndex
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
++open scoped TensorProduct
+ 
+ namespace EuclideanRamsey
+ 
+@@ -130,15 +130,9 @@ theorem realCriterion_fieldCriterion {s d : ℕ} (a : Fin s → Space d)
+     · simp only [Matrix.one_apply, heq, ite_true, hφ]
+     · simp only [Matrix.one_apply, heq, ite_false, map_zero]
+ 
+-theorem ramsey_fieldCriterion {s d : ℕ} (a : Fin s → Space d)
+-    (hs : 0 < s) (hspan : affineSpan ℝ (Set.range a) = ⊤)
+-    (hR : Ramsey a) : FieldCriterion a :=
+-  realCriterion_fieldCriterion a (ramsey_realCriterion a hs hspan hR)
+-
+ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+-open scoped TensorProduct BigOperators
+ 
+ theorem fieldCriterion_realCriterion {s d : ℕ} (a : Fin s → Space d)
+     (h : FieldCriterion a) : RealCriterion a := by
+diff --git a/OAI/Combinatorics/EuclideanRamsey/TensorPresentation.lean b/OAI/Combinatorics/EuclideanRamsey/TensorPresentation.lean
+index 0b9a5a29f..89db0367d 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/TensorPresentation.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/TensorPresentation.lean
+@@ -19,25 +19,7 @@ universe uVector
+ noncomputable section
+ 
+ open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-
+-open scoped TensorProduct RealInnerProductSpace
+-namespace EuclideanRamsey
+-
+-end EuclideanRamsey
+ namespace EuclideanRamsey
+-open scoped TensorProduct BigOperators
+ 
+ abbrev AffineVector (d : ℕ) := Option (Fin d) → ℝ
+ 
+@@ -47,8 +29,7 @@ def affineArray {d : ℕ} :
+     (LinearEquiv.piCongrRight (fun _ => TensorProduct.piRight ℚ ℚ ℝ (fun _ : Option (Fin d) => ℝ)))
+ 
+ @[simp] lemma affineArray_tmul {d : ℕ} (w z : AffineVector d) (α β : Option (Fin d)) :
+-    affineArray (w ⊗ₜ[ℚ] z) α β = w α ⊗ₜ[ℚ] z β := by
+-  rfl
++    affineArray (w ⊗ₜ[ℚ] z) α β = w α ⊗ₜ[ℚ] z β := rfl
+ 
+ def rowEvaluation {s d : ℕ} (a : Fin s → Space d) (i : Fin s) : AffineVector d →ₗ[ℚ] ℝ where
+   toFun w := ∑ α,realAugmented a i α * w α
+@@ -97,7 +78,7 @@ lemma spatialMultiply_comm {d : ℕ} (T : AffineVector d ⊗[ℚ] AffineVector d
+ 
+ end EuclideanRamsey
+ 
+-open scoped TensorProduct BigOperators
++open scoped TensorProduct
+ namespace EuclideanRamsey
+ 
+ theorem exists_symmetric_tensor_presentation {W : Type uVector} [AddCommGroup W] [Module ℚ W]
+@@ -140,12 +121,7 @@ theorem exists_symmetric_tensor_presentation {W : Type uVector} [AddCommGroup W]
+ 
+ end EuclideanRamsey
+ 
+-open scoped TensorProduct
+-namespace EuclideanRamsey
+-
+-end EuclideanRamsey
+ namespace EuclideanRamsey
+-open scoped TensorProduct
+ 
+ lemma rational_lattice_kernel {k : ℕ} (f : RationalSpace k →ₗ[ℚ] ℝ) :
+     latticeSpan (AddMonoidHom.ker (f.toAddMonoidHom.comp rationalize)) = f.ker := by
+@@ -196,7 +172,6 @@ lemma quotientTensor_zero_of_evaluation {k : ℕ} (f : RationalSpace k →ₗ[
+ end EuclideanRamsey
+ 
+ namespace EuclideanRamsey
+-open scoped TensorProduct BigOperators
+ 
+ lemma matrixTensor_map_family {k : ℕ} {W : Type uVector} [AddCommGroup W] [Module ℚ W]
+     (w : Fin k → W) (C : Matrix (Fin k) (Fin k) ℚ) :
+diff --git a/OAI/Combinatorics/EuclideanRamsey/UltrafilterStrings.lean b/OAI/Combinatorics/EuclideanRamsey/UltrafilterStrings.lean
+index bc70c5efb..202a7022c 100644
+--- a/OAI/Combinatorics/EuclideanRamsey/UltrafilterStrings.lean
++++ b/OAI/Combinatorics/EuclideanRamsey/UltrafilterStrings.lean
+@@ -18,53 +18,28 @@ universe uModule uIndex uAlpha
+ 
+ noncomputable section
+ 
+-open scoped TensorProduct RealInnerProductSpace
+-open scoped BigOperators
+-open Real Filter Topology MeasureTheory Polynomial
+-open Matrix MeasureTheory
+-open MeasureTheory
+-open Matrix
+-open scoped MatrixOrder Matrix.Norms.L2Operator
+-open MeasureTheory Matrix
+-open scoped TensorProduct
+-open scoped BigOperators Pointwise Topology
+-open MeasureTheory Filter
+-open scoped BigOperators Pointwise
+-open scoped BigOperators Topology
+-open scoped TensorProduct BigOperators
+-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+-open scoped BigOperators RealInnerProductSpace
+-
+ open Filter
+ namespace EuclideanRamsey
+ attribute [local instance] Ultrafilter.mul Ultrafilter.semigroup
+ 
+ section Ultrafilters
+ variable {M : Type uModule} [Monoid M]
+-@[simp] lemma pure_mul_ultra (x : M) (V : Ultrafilter M) :
+-    (pure x : Ultrafilter M)*V = V.map (x*·) := by
+-  apply Ultrafilter.coe_inj.mp
+-  apply Filter.ext'
+-  intro p
+-  simp [Ultrafilter.eventually_mul]
+-@[simp] lemma mul_pure_ultra (U : Ultrafilter M) (y : M) :
+-    U*(pure y : Ultrafilter M) = U.map (·*y) := by
+-  apply Ultrafilter.coe_inj.mp
+-  apply Filter.ext'
+-  intro p
+-  simp [Ultrafilter.eventually_mul]
+ 
+ @[instance_reducible] def ultrafilterMonoid : Monoid (Ultrafilter M) where
+   toSemigroup := Ultrafilter.semigroup
+   one := pure 1
+   one_mul U := by
+     change (pure (1:M) : Ultrafilter M)*U=U
+-    rw [pure_mul_ultra]
+-    simp
++    apply Ultrafilter.coe_inj.mp
++    apply Filter.ext'
++    intro p
++    simp [Ultrafilter.eventually_mul]
+   mul_one U := by
+     change U*(pure (1:M) : Ultrafilter M)=U
+-    rw [mul_pure_ultra]
+-    simp
++    apply Ultrafilter.coe_inj.mp
++    apply Filter.ext'
++    intro p
++    simp [Ultrafilter.eventually_mul]
+ 
+ end Ultrafilters
+ 
+@@ -122,7 +97,6 @@ theorem simultaneously_realize [Finite ι] [Monoid M] (qs : List (UltraColumn ι
+ end UltraColumn
+ end EuclideanRamsey
+ namespace EuclideanRamsey
+-open Filter
+ attribute [local instance] Ultrafilter.mul Ultrafilter.semigroup
+ variable {ι : Type uIndex}
+ 
+diff --git a/RadianRamsey/AlgebraicRamsey.lean b/RadianRamsey/AlgebraicRamsey.lean
+index b7dd6675b..ddba9d34c 100644
+--- a/RadianRamsey/AlgebraicRamsey.lean
++++ b/RadianRamsey/AlgebraicRamsey.lean
+@@ -117,7 +117,7 @@ theorem fieldCriterion_of_algebraic
+     intro i
+     simp only [Fintype.sum_option, h, augmented]
+     simp only [mul_one, one_mul, zero_mul, mul_ite, ite_mul, mul_zero,
+-      Finset.sum_ite_eq, Finset.mem_univ, ite_true, add_zero, zero_add, Finset.sum_const_zero]
++      Finset.sum_ite_eq, Finset.mem_univ, ite_true, zero_add]
+     linear_combination hk i
+   refine ⟨fun α β => t * (h α β ⊗ₜ[ℚ] (1 : Coeff a)), fun i => ?_, fun α β => ?_⟩
+   · have term : ∀ α β,
+@@ -142,15 +142,6 @@ theorem fieldCriterion_of_algebraic
+       mul_zero]
+   · simp only [multiply, map_mul, ht1, Algebra.TensorProduct.lmul'_apply_tmul, mul_one, one_mul, h]
+ 
+-/-- **Graham's spherical conjecture holds for algebraic configurations.** Fully checked: uses OpenAI's
+-proved sufficiency direction `fieldCriterion_ramsey` of the classification. -/
+-theorem ramsey_of_algebraic
+-    (hs : 2 ≤ s) (hd : 1 ≤ d) (ha : Function.Injective a)
+-    (halg : ∀ i j, IsAlgebraic ℚ (a i j))
+-    (hsph : ∃ c : Space d, ∃ ρ : ℝ, ∀ i, dist (a i) c = ρ) :
+-    Ramsey a :=
+-  fieldCriterion_ramsey a hs hd ha (fieldCriterion_of_algebraic a halg hsph)
+-
+ end Algebraic
+ 
+ end EuclideanRamsey
+diff --git a/RadianRamsey/Radian.lean b/RadianRamsey/Radian.lean
+index ee9885bf0..0cd4a4fca 100644
+--- a/RadianRamsey/Radian.lean
++++ b/RadianRamsey/Radian.lean
+@@ -3,7 +3,6 @@ module
+ public import RadianRamsey.RadianAlgebra
+ public import RadianRamsey.AlgebraicRamsey
+ public import OAI.Combinatorics.EuclideanRamsey.NineLinearObstruction
+-public import OAI.Combinatorics.EuclideanRamsey.NineGeometry
+ public import OAI.Combinatorics.EuclideanRamsey.IndependentTensor
+ 
+ @[expose] public section
+@@ -65,6 +64,7 @@ theorem trig_rot {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) (n : ℕ) :
+     (1 + Real.tan (θ / 2) ^ 2) ^ n * Real.cos (n * θ) = (rot (Real.tan (θ / 2)) n).1 ∧
+       (1 + Real.tan (θ / 2) ^ 2) ^ n * Real.sin (n * θ) = (rot (Real.tan (θ / 2)) n).2 := by
+   obtain ⟨h1, h2⟩ := half_angle hc
++  set t := Real.tan (θ / 2)
+   induction n with
+   | zero => simp [rot]
+   | succ n ih =>
+@@ -78,12 +78,10 @@ theorem trig_rot {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) (n : ℕ) :
+     rw [hca, hsa]
+     simp only [rot]
+     constructor
+-    · linear_combination ((1 + Real.tan (θ / 2) ^ 2) * Real.cos θ) * i1 +
+-        (rot (Real.tan (θ / 2)) n).1 * h1 - ((1 + Real.tan (θ / 2) ^ 2) * Real.sin θ) * i2 -
+-        (rot (Real.tan (θ / 2)) n).2 * h2
+-    · linear_combination ((1 + Real.tan (θ / 2) ^ 2) * Real.cos θ) * i2 +
+-        (rot (Real.tan (θ / 2)) n).2 * h1 + ((1 + Real.tan (θ / 2) ^ 2) * Real.sin θ) * i1 +
+-        (rot (Real.tan (θ / 2)) n).1 * h2
++    · linear_combination ((1 + t ^ 2) * Real.cos θ) * i1 + (rot t n).1 * h1 -
++        ((1 + t ^ 2) * Real.sin θ) * i2 - (rot t n).2 * h2
++    · linear_combination ((1 + t ^ 2) * Real.cos θ) * i2 + (rot t n).2 * h1 +
++        ((1 + t ^ 2) * Real.sin θ) * i1 + (rot t n).1 * h2
+ 
+ theorem one_add_tan_sq_ne (θ : ℝ) : 1 + Real.tan (θ / 2) ^ 2 ≠ 0 := by positivity
+ 
+@@ -130,10 +128,8 @@ theorem tan_mem : Real.tan (θ / 2) ∈ coordinateField (radianConfig θ) := by
+   let F := coordinateField (radianConfig θ)
+   have hc (j : Fin 2) : radianConfig θ 1 j ∈ F :=
+     IntermediateField.subset_adjoin ℚ _ (Set.mem_range_self ((1 : Fin 9), j))
+-  have h0 := hc 0
+-  have h1 := hc 1
+-  simp only [radianConfig_zero, radianConfig_one, Fin.val_one, Nat.cast_one, one_mul] at h0 h1
+-  exact F.div_mem h1 (F.add_mem F.one_mem h0)
++  simpa only [radianConfig_zero, radianConfig_one, Fin.val_one, Nat.cast_one, one_mul] using
++    F.div_mem (hc 1) (F.add_mem F.one_mem (hc 0))
+ 
+ /-- The parameter `t = tan (θ/2)` as an element of the coordinate field. -/
+ def tau : Coeff (radianConfig θ) := ⟨Real.tan (θ / 2), tan_mem θ ht⟩
+@@ -305,37 +301,68 @@ theorem radianConfig_injective : Function.Injective (radianConfig θ) := by
+   simp only [NineLinearObstruction.evaluationMatrix, Equiv.apply_symm_apply, haug]
+ 
+ theorem radianConfig_affineSpan : affineSpan ℝ (Set.range (radianConfig θ)) = ⊤ := by
+-  have hfive : affineSpan ℝ (Set.range (radianConfig θ ∘ NineGeometry.firstFive)) = ⊤ :=
+-    CircleConsequence.circle_five_affineSpan (radianConfig θ ∘ NineGeometry.firstFive)
+-      ((radianConfig_injective θ ht).comp NineGeometry.firstFive_injective) 0 1
+-      (fun i => radianConfig_on_circle θ (NineGeometry.firstFive i))
++  classical
++  let A := affineSpan ℝ (Set.range (radianConfig θ))
++  have hp (i : Fin 9) : radianConfig θ i ∈ A := mem_affineSpan ℝ (Set.mem_range_self i)
++  let u := radianConfig θ 1 - radianConfig θ 0
++  let v := radianConfig θ 2 - radianConfig θ 0
++  let D : ℝ := u 0 * v 1 - v 0 * u 1
++  have hid : D = 2 * Real.sin θ * (1 - Real.cos θ) := by
++    simp [D, u, v, radianConfig_zero, radianConfig_one, Real.cos_two_mul, Real.sin_two_mul] <;> ring
++  have h10 : radianConfig θ 1 ≠ radianConfig θ 0 := by
++    intro h
++    have hi := radianConfig_injective θ ht h
++    norm_num at hi
++  have h20 : radianConfig θ 2 ≠ radianConfig θ 0 := by
++    intro h
++    have hi := radianConfig_injective θ ht h
++    norm_num at hi
++  have hs : Real.sin θ ≠ 0 := by
++    intro hs
++    have hc : Real.cos θ ^ 2 = 1 := by nlinarith [Real.sin_sq_add_cos_sq θ]
++    apply h20
++    ext j
++    fin_cases j <;> simp [radianConfig, Real.cos_two_mul, Real.sin_two_mul, hs, hc] <;> norm_num
++  have hc : Real.cos θ ≠ 1 := by
++    intro hc
++    have hs : Real.sin θ = 0 := by nlinarith [Real.sin_sq_add_cos_sq θ]
++    exact h10 (by ext j; fin_cases j <;> simp [radianConfig, hc, hs])
++  have hD : D ≠ 0 := by
++    rw [hid]
++    exact mul_ne_zero (mul_ne_zero (by norm_num) hs) (sub_ne_zero.mpr (Ne.symm hc))
++  have hu : u ∈ A.direction := by
++    simpa [u, vsub_eq_sub] using AffineSubspace.vsub_mem_direction (hp 1) (hp 0)
++  have hv : v ∈ A.direction := by
++    simpa [v, vsub_eq_sub] using AffineSubspace.vsub_mem_direction (hp 2) (hp 0)
+   apply top_unique
+-  rw [← hfive]
+-  apply affineSpan_mono
+-  rintro p ⟨i, rfl⟩
+-  exact Set.mem_range_self (NineGeometry.firstFive i)
+-
+-/-- The main theorem inside the section, where the local `Algebra ℚ` instance on `ℚ(T, U)`
+-matches the one `tensorMap` was built with. -/
+-theorem radian_configuration_aux :
++  intro x hx
++  let w := x - radianConfig θ 0
++  let α : ℝ := (w 0 * v 1 - v 0 * w 1) / D
++  let β : ℝ := (u 0 * w 1 - w 0 * u 1) / D
++  have hcomb : α • u + β • v = w := by
++    ext j
++    fin_cases j <;> simp only [PiLp.add_apply, PiLp.smul_apply, smul_eq_mul] <;>
++      dsimp [α, β] <;> field_simp [hD] <;> dsimp [D] <;> ring
++  have hm : α • u + β • v ∈ A.direction :=
++    A.direction.add_mem (A.direction.smul_mem α hu) (A.direction.smul_mem β hv)
++  have he := AffineSubspace.vadd_mem_of_mem_direction hm (hp 0)
++  simpa [hcomb, w, vadd_eq_add] using he
++
++/-- **Theorem D, ⇒.** If `tan (θ/2)` is transcendental, the nine points at angles
++`0, θ, …, 8θ` are distinct, lie on the unit circle, and are not Euclidean Ramsey. -/
++theorem radian_configuration :
+     Function.Injective (radianConfig θ) ∧ (∀ k, dist (radianConfig θ k) 0 = 1) ∧
+       ¬ Ramsey (radianConfig θ) :=
+-  ⟨radianConfig_injective θ ht, radianConfig_on_circle θ,
+-    NineLinearObstruction.not_ramsey_of_det_ne_zero (radianConfig θ) (by decide) (by decide)
+-      (radianConfig_affineSpan θ ht) (tensorMap θ ht) (tensorMap_injective θ ht) e
+-      (evaluationMatrix_det_ne_zero θ ht)⟩
++  ⟨radianConfig_injective θ ht, radianConfig_on_circle θ, fun hR =>
++    NineLinearObstruction.not_fieldCriterion_of_det_ne_zero (radianConfig θ) (by decide)
++      (tensorMap θ ht) (tensorMap_injective θ ht) e (evaluationMatrix_det_ne_zero θ ht)
++      (realCriterion_fieldCriterion _
++        (ramsey_realCriterion _ (by decide) (radianConfig_affineSpan θ ht) hR))⟩
+ 
+ end CoordField
+ 
+ /-! ## Main theorems -/
+ 
+-/-- **Theorem D, ⇒.** If `tan (θ/2)` is transcendental, the nine points at angles
+-`0, θ, …, 8θ` are distinct, lie on the unit circle, and are not Euclidean Ramsey. -/
+-theorem radian_configuration (θ : ℝ) (ht : Transcendental ℚ (Real.tan (θ / 2))) :
+-    Function.Injective (radianConfig θ) ∧ (∀ k, dist (radianConfig θ k) 0 = 1) ∧
+-      ¬ Ramsey (radianConfig θ) :=
+-  radian_configuration_aux θ ht
+-
+ theorem radian_not_ramsey (θ : ℝ) (ht : Transcendental ℚ (Real.tan (θ / 2))) :
+     ¬ Ramsey (radianConfig θ) :=
+   (radian_configuration θ ht).2.2
+@@ -366,8 +393,7 @@ theorem algebraic_multiples {θ : ℝ} (hc : IsAlgebraic ℚ (Real.cos θ))
+     (hs : IsAlgebraic ℚ (Real.sin θ)) (n : ℕ) :
+     IsAlgebraic ℚ (Real.cos (n * θ)) ∧ IsAlgebraic ℚ (Real.sin (n * θ)) := by
+   let A := algebraicClosure ℚ ℝ
+-  rw [← mem_algebraicClosure_iff] at hc hs ⊢
+-  rw [← mem_algebraicClosure_iff]
++  simp only [← mem_algebraicClosure_iff] at hc hs ⊢
+   induction n with
+   | zero => simp
+   | succ n ih =>
+@@ -384,8 +410,8 @@ theorem radian_ramsey_iff (θ : ℝ) (hinj : Function.Injective (radianConfig θ
+     by_contra hna
+     exact radian_not_ramsey θ (fun htan => hna (algebraic_of_tan htan)) hR
+   · rintro ⟨hc, hs⟩
+-    refine ramsey_of_algebraic (radianConfig θ) (by norm_num) (by norm_num) hinj ?_
+-      ⟨0, 1, radianConfig_on_circle θ⟩
++    refine fieldCriterion_ramsey _ (by norm_num) (by norm_num) hinj
++      (fieldCriterion_of_algebraic _ ?_ ⟨0, 1, radianConfig_on_circle θ⟩)
+     intro k j
+     fin_cases j
+     · simpa using (algebraic_multiples hc hs k).1
+diff --git a/RadianRamsey/RadianAlgebra.lean b/RadianRamsey/RadianAlgebra.lean
+index 6e3bbc634..3864dfe0d 100644
+--- a/RadianRamsey/RadianAlgebra.lean
++++ b/RadianRamsey/RadianAlgebra.lean
+@@ -56,8 +56,7 @@ theorem map_rot (f : R →+* S) (z : R) (n : ℕ) :
+     f (rot z n).1 = (rot (f z) n).1 ∧ f (rot z n).2 = (rot (f z) n).2 := by
+   induction n with
+   | zero => simp [rot]
+-  | succ n ih =>
+-    constructor <;> simp only [rot, map_add, map_sub, map_mul, map_pow, map_one, map_ofNat, ih.1, ih.2]
++  | succ n ih => constructor <;> simp [rot, ih.1, ih.2, map_ofNat]
+ 
+ theorem map_qv (f : R →+* S) (z : R) (n : ℕ) (a : Fin 3) : f (qv z n a) = qv (f z) n a := by
+   fin_cases a <;> simp [qv, (map_rot f z n).1, (map_rot f z n).2]
+@@ -85,21 +84,17 @@ def Lcert : Matrix (Fin 9) (Fin 9) ℤ :=
+   3314062500000000, -35771875000000, -1655300000000, -50915250000, 100680000, -5610100, 148320,
+     3613, 127]
+ 
+-theorem Lcert_lower : ∀ j i : Fin 9, i < j → Lcert i j = 0 := by decide +kernel
+-
+-theorem Lcert_diag : ∏ i : Fin 9, Lcert i i ≠ 0 := by decide +kernel
+-
+-theorem LE_upper : ∀ i j : Fin 9, j < i → (Lcert * Ecl (2 : ℤ) 3) i j = 0 := by decide +kernel
+-
+-theorem LE_diag : ∏ i : Fin 9, (Lcert * Ecl (2 : ℤ) 3) i i ≠ 0 := by decide +kernel
+-
+ theorem det_Ecl_int : (Ecl (2 : ℤ) 3).det ≠ 0 := by
++  have hlower : ∀ j i : Fin 9, i < j → Lcert i j = 0 := by decide +kernel
++  have hdiag : ∏ i : Fin 9, Lcert i i ≠ 0 := by decide +kernel
++  have hupper : ∀ i j : Fin 9, j < i → (Lcert * Ecl (2 : ℤ) 3) i j = 0 := by decide +kernel
++  have hEdiag : ∏ i : Fin 9, (Lcert * Ecl (2 : ℤ) 3) i i ≠ 0 := by decide +kernel
+   have hL : Lcert.det ≠ 0 := by
+-    rw [Matrix.det_of_isLowerTriangular Lcert (fun i j h => Lcert_lower j i h)]
+-    exact Lcert_diag
++    rw [Matrix.det_of_isLowerTriangular Lcert (fun i j h => hlower j i h)]
++    exact hdiag
+   have hLE : (Lcert * Ecl (2 : ℤ) 3).det ≠ 0 := by
+-    rw [Matrix.det_of_isUpperTriangular (fun i j h => LE_upper i j h)]
+-    exact LE_diag
++    rw [Matrix.det_of_isUpperTriangular (fun i j h => hupper i j h)]
++    exact hEdiag
+   rw [Matrix.det_mul] at hLE
+   exact right_ne_zero_of_mul hLE
+ 
+diff --git a/Solution.lean b/Solution.lean
+index 5ab700569..37ffa9ddc 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -11,15 +11,12 @@ import OAI.Combinatorics.EuclideanRamsey.FiniteEuclidean
+ import OAI.Combinatorics.EuclideanRamsey.Hessian
+ import OAI.Combinatorics.EuclideanRamsey.IndependentTensor
+ import OAI.Combinatorics.EuclideanRamsey.LatticeMoments
+-import OAI.Combinatorics.EuclideanRamsey.NineGeometry
+ import OAI.Combinatorics.EuclideanRamsey.PathFractions
+ import OAI.Combinatorics.EuclideanRamsey.PathWords
+ import OAI.Combinatorics.EuclideanRamsey.TensorDescent
+ import OAI.Combinatorics.EuclideanRamsey.TensorPresentation
+ import OAI.Combinatorics.EuclideanRamsey.UltrafilterStrings
+ 
+-public section
+-
+ /-!
+ # Proved solution
+ 

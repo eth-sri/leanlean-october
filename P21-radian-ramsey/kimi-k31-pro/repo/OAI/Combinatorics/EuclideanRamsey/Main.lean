@@ -16,24 +16,6 @@ namespace OAI
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
-open Set
 
 namespace EuclideanRamsey
 
@@ -77,14 +59,6 @@ theorem fieldCriterion_ramsey {s d : ℕ} (a : Fin s → Space d)
   refine ⟨b,?_,k,hk⟩
   intro i j
   rw [dist_eq_norm,dist_eq_norm,hb,← map_sub,LinearIsometry.norm_map]
-
-end EuclideanRamsey
-
-namespace EuclideanRamsey
-
-end EuclideanRamsey
-
-namespace EuclideanRamsey
 
 end EuclideanRamsey
 

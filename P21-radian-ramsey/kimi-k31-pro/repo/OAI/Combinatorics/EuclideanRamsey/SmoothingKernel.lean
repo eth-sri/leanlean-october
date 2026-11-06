@@ -18,10 +18,7 @@ universe uDomain
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
+open MeasureTheory Polynomial
 namespace EuclideanRamsey
 
 def smoothPositivePart (t : ℝ) : ℝ := t * expNegInvGlue t
@@ -92,9 +89,8 @@ variable {E : Type uDomain} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
 def radialPower (a p : ℝ) (x : E) : ℝ := (a + ‖x‖^2) ^ p
 
 lemma radialPower_contDiff {a : ℝ} (ha : 0 < a) (p : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (radialPower (E := E) a p) := by
-  exact (contDiff_const.add (contDiff_norm_sq ℝ)).rpow_const_of_ne
-    (fun x => ne_of_gt (add_pos_of_pos_of_nonneg ha (sq_nonneg _)))
+    ContDiff ℝ (⊤ : ℕ∞) (radialPower (E := E) a p) := (contDiff_const.add (contDiff_norm_sq ℝ)).rpow_const_of_ne
+    (fun _ => ne_of_gt (add_pos_of_pos_of_nonneg ha (sq_nonneg _)))
 
 lemma radialPower_hasFDerivAt {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
     HasFDerivAt (radialPower a p)
@@ -269,9 +265,8 @@ lemma radialBump_negative_le {a : ℝ} (ha : 0 < a) (p : ℝ) (x : E) :
   have hb := smoothPositivePart'_bounds (radialPower a p x-1)
   have hc : 0 ≤ 2 * smoothPositivePart'' (radialPower a p x-1) * p^2 *
       ((a+‖x‖^2)^(p-1))^2 * ‖x‖^2 := by
-    exact mul_nonneg (mul_nonneg (mul_nonneg
-      (mul_nonneg (by norm_num) (smoothPositivePart''_nonneg _)) (sq_nonneg _))
-      (sq_nonneg _)) (sq_nonneg _)
+    have h := smoothPositivePart''_nonneg (radialPower a p x-1)
+    positivity
   apply max_le
   · by_cases h : 0 ≤ halfLaplacian (radialPower a p) x
     · exact le_trans (by nlinarith [mul_nonneg hb.1 h]) (le_max_right _ _)
@@ -437,13 +432,11 @@ lemma radialBump_integral_negative_bound {ε : ℝ} (hε : 0 < ε)
     ENNReal.toReal_ofReal (pow_nonneg hR _)]
   dsimp [R,K,n,p]
   rw [mul_pow]
-  have he := radial_weight_exponent (E := E) hε
-  have he' : ε^(Module.finrank ℝ E)*(ε^2)^(smoothingExponent E) = Real.sqrt ε := he
   change ((Module.finrank ℝ E + 1 : ℝ)^(Module.finrank ℝ E)*ε^(Module.finrank ℝ E)*
     μ.real (Metric.ball (0:E) 1)) *
     ((-smoothingExponent E)*(Module.finrank ℝ E : ℝ)*(Module.finrank ℝ E + 1 : ℝ)^2*
     (ε^2)^(smoothingExponent E)) = _
-  rw [pow_add, ← he']
+  rw [pow_add, ← radial_weight_exponent (E := E) hε]
   ring
 
 theorem exists_radial_smoothing (hn : 1 ≤ Module.finrank ℝ E) {η : ℝ} (hη : 0 < η) :

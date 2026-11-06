@@ -18,28 +18,9 @@ universe uModule uColor
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
 open Filter
-open Set
 
 namespace EuclideanRamsey
-open Filter
-open scoped BigOperators
 attribute [local instance] Ultrafilter.mul Ultrafilter.semigroup
 
 lemma exists_ultra_color {M : Type uModule} {κ : Type uColor} [Finite κ] (U : Ultrafilter M) (c : M → κ) :
@@ -134,8 +115,6 @@ theorem paths_monochromatic {s : ℕ} (a : Fin s → FiniteEuclidean)
 end EuclideanRamsey
 namespace EuclideanRamsey
 namespace FiniteEuclidean
-open Filter
-open scoped BigOperators
 noncomputable def truncate (d : ℕ) (x : FiniteEuclidean) : EuclideanSpace ℝ (Fin d) :=
   WithLp.toLp 2 (fun i => coords x i)
 
@@ -167,13 +146,11 @@ theorem finite_coloring_compactness {s : ℕ} (a : Fin s → FiniteEuclidean) (r
       (∀ i j,‖b i-b j‖=‖a i-a j‖) ∧ ∃ k : Fin r,∀ i,c (b i)=k := by
   classical
   by_contra hbad
+  push Not at hbad
   have hc : ∀ n : ℕ,∃ c : EuclideanSpace ℝ (Fin (n+1)) → Fin r,
       ¬ ∃ b : Fin s → EuclideanSpace ℝ (Fin (n+1)),
-        (∀ i j,‖b i-b j‖=‖a i-a j‖) ∧ ∃ k : Fin r,∀ i,c (b i)=k := by
-    intro n
-    by_contra hh
-    push Not at hh
-    exact hbad ⟨n+1,by omega,hh⟩
+        (∀ i j,‖b i-b j‖=‖a i-a j‖) ∧ ∃ k : Fin r,∀ i,c (b i)=k :=
+    fun n => by push Not; exact hbad (n+1) (by omega)
   choose c hc using hc
   let U : Ultrafilter ℕ := Ultrafilter.of Filter.atTop
   let C : FiniteEuclidean → Fin r := fun z => ultraColor

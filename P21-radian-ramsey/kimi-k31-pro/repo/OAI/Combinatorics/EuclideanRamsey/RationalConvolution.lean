@@ -18,21 +18,10 @@ universe uGroup uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
+open scoped Pointwise Topology
 open MeasureTheory Filter
 
 namespace EuclideanRamsey
-open MeasureTheory Filter
-open scoped BigOperators Pointwise Topology
 
 lemma bounded_grid_finite {k n : ℕ} (hn : n ≠ 0) {s : Set (Fin k → ℝ)}
     (hs : Bornology.IsBounded s) :
@@ -92,7 +81,6 @@ theorem lattice_riemann_perturb {k : ℕ} (f : (Fin k → ℝ) → ℝ)
 
 end EuclideanRamsey
 
-open scoped BigOperators Pointwise
 namespace EuclideanRamsey
 
 lemma rational_convolution_coeff {G : Type uGroup} [AddCommGroup G] [DecidableEq G]
@@ -113,7 +101,7 @@ lemma rational_convolution_coeff {G : Type uGroup} [AddCommGroup G] [DecidableEq
 
 end EuclideanRamsey
 
-open scoped BigOperators Topology
+open scoped Topology
 namespace EuclideanRamsey
 
 lemma rational_vector_strict {ι : Type uIndex} [Fintype ι]
@@ -128,7 +116,6 @@ lemma rational_vector_strict {ι : Type uIndex} [Fintype ι]
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped BigOperators Pointwise
 
 lemma rationalize_convolution {G : Type uGroup} [AddCommGroup G] [DecidableEq G]
     (ν : AddMonoidAlgebra ℚ G) (w : G → ℝ) (t η : ℝ)

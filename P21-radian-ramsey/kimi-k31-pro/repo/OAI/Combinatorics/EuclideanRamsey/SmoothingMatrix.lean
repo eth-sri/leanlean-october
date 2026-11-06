@@ -16,14 +16,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
+open MeasureTheory Matrix
 
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
 namespace EuclideanRamsey
 
 lemma covariance_splitting {k d : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
@@ -56,8 +50,6 @@ lemma covariance_splitting {k d : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
 
 end EuclideanRamsey
 
-open scoped BigOperators
-open MeasureTheory Matrix
 namespace EuclideanRamsey
 
 def stencilDifferential {k : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
@@ -79,7 +71,6 @@ def CompactSmoothing : Prop :=
 end EuclideanRamsey
 namespace EuclideanRamsey
 open MeasureTheory Matrix
-open scoped BigOperators
 
 theorem compact_smoothing : CompactSmoothing := by
   intro k d hd C U hC hU η hη

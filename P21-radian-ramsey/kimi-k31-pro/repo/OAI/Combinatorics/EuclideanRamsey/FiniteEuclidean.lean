@@ -18,23 +18,8 @@ universe uValue
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
+open scoped RealInnerProductSpace
 
-open scoped BigOperators RealInnerProductSpace
 namespace EuclideanRamsey
 
 def FiniteEuclidean := ℕ →₀ ℝ
@@ -81,10 +66,6 @@ lemma norm_sq (x : FiniteEuclidean) : ‖x‖^2=(coords x).sum (fun _ r => r^2) 
   rw [← real_inner_self_eq_norm_sq]
   change product x x = _
   simp [product,Finsupp.sum,pow_two]
-@[simp] lemma coords_add (x y : FiniteEuclidean) : coords (x+y)=coords x+coords y := rfl
-@[simp] lemma coords_sub (x y : FiniteEuclidean) : coords (x-y)=coords x-coords y := rfl
-@[simp] lemma coords_smul (c : ℝ) (x : FiniteEuclidean) : coords (c • x)=c • coords x := rfl
-
 def reindex (f : ℕ → ℕ) (hf : Function.Injective f) : FiniteEuclidean →ₗᵢ[ℝ] FiniteEuclidean where
   toLinearMap :=
     { toFun := fun x => (coords x).mapDomain f
@@ -101,7 +82,6 @@ end FiniteEuclidean
 end EuclideanRamsey
 namespace EuclideanRamsey
 namespace FiniteEuclidean
-open scoped BigOperators RealInnerProductSpace
 
 noncomputable def embed (d : ℕ) : EuclideanSpace ℝ (Fin d) →ₗᵢ[ℝ] FiniteEuclidean where
   toLinearMap :=
@@ -128,8 +108,7 @@ noncomputable def embed (d : ℕ) : EuclideanSpace ℝ (Fin d) →ₗᵢ[ℝ] Fi
     · intro _; simp
 
 @[simp] lemma embed_apply (d : ℕ) (x : EuclideanSpace ℝ (Fin d)) (i : Fin d) :
-    coords (embed d x) i.val=x i := by
-  exact Finsupp.mapDomain_apply_of_injective Fin.val_injective _ i
+    coords (embed d x) i.val=x i := Finsupp.mapDomain_apply_of_injective Fin.val_injective _ i
 
 lemma embed_outside (d : ℕ) (x : EuclideanSpace ℝ (Fin d)) (n : ℕ) (hn : d≤n) :
     coords (embed d x) n=0 := by
@@ -183,17 +162,6 @@ end FiniteEuclidean
 end EuclideanRamsey
 namespace EuclideanRamsey
 namespace FiniteEuclidean
-open scoped BigOperators RealInnerProductSpace
-
-noncomputable def unit (n : ℕ) : FiniteEuclidean := Finsupp.single n 1
-lemma norm_unit (n : ℕ) : ‖unit n‖=1 := by
-  apply (sq_eq_sq₀ (norm_nonneg _) zero_le_one).mp
-  rw [norm_sq]
-  simp [unit,coords]
-lemma inner_unit (x : FiniteEuclidean) (n : ℕ) : ⟪x,unit n⟫=coords x n := by
-  rw [real_inner_comm]
-  change product (unit n) x=coords x n
-  simp [product,unit,coords]
 
 lemma common_vertex (r : ℝ) (hr : 0 < r) (x y : FiniteEuclidean) (hxy : ‖y-x‖≤2*r) :
     ∃ z : FiniteEuclidean,‖z-x‖=r ∧ ‖z-y‖=r := by
@@ -201,9 +169,15 @@ lemma common_vertex (r : ℝ) (hr : 0 < r) (x y : FiniteEuclidean) (hxy : ‖y-x
   let v := y-x
   obtain ⟨n,hn⟩ := (coords v).support.exists_notMem
   have hz : coords v n=0 := Finsupp.notMem_support_iff.mp hn
-  let e := unit n
-  have he : ‖e‖=1 := norm_unit n
-  have hv : ⟪v,e⟫=0 := by simpa [e] using (inner_unit v n).trans hz
+  let e : FiniteEuclidean := Finsupp.single n 1
+  have he : ‖e‖=1 := by
+    apply (sq_eq_sq₀ (norm_nonneg _) zero_le_one).mp
+    rw [norm_sq]
+    simp [e,coords]
+  have hv : ⟪v,e⟫=0 := by
+    rw [real_inner_comm]
+    change product e v=0
+    simpa [product,e,coords] using hz
   let t := Real.sqrt (r^2-‖v‖^2/4)
   have ht0 : 0≤r^2-‖v‖^2/4 := by
     have hv0 := norm_nonneg v

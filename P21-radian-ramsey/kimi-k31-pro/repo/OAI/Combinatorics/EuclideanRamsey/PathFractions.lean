@@ -18,24 +18,6 @@ universe uGroup uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-
-open scoped BigOperators
 namespace EuclideanRamsey
 section Fractions
 variable {G : Type uGroup} {ι : Type uIndex} [Group G] [DecidableEq ι]
@@ -130,7 +112,6 @@ lemma RightFraction.mul_pair {M : Submonoid (ι → G)} (hM : PairInverse M)
 end Fractions
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {ι : Type uIndex} [Group G] [DecidableEq ι]
 
 structure GradedPaths (ι : Type uIndex) (G : Type uGroup) [Group G] where

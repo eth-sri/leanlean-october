@@ -18,25 +18,7 @@ universe uSemigroup
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
 
-open Set
 namespace EuclideanRamsey
 
 theorem exists_group_corner {S : Type uSemigroup} [Nonempty S] [Semigroup S]
@@ -91,7 +73,6 @@ instance : Mul (Corner p) := ⟨fun x y => ⟨x.val*y.val, by
   constructor
   · rw [← mul_assoc,x.property.1]
   · rw [mul_assoc,y.property.2]⟩⟩
-@[simp] lemma val_mul (x y : Corner p) : (x*y).val=x.val*y.val := rfl
 instance : Semigroup (Corner p) where
   mul_assoc _x _y _z := Subtype.ext (mul_assoc _ _ _)
 

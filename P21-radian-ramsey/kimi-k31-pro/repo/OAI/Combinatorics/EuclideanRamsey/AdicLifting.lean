@@ -18,20 +18,6 @@ universe uRing uGroup uSemigroup uModule uModuleTarget uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-
 open scoped TensorProduct
 namespace EuclideanRamsey
 
@@ -39,21 +25,24 @@ section NilpotentLog
 variable {R : Type uRing} [CommRing R] [Algebra ℚ R]
 open Finset
 
-lemma nil_exp_quadratic {a : R} (ha : IsNilpotent a) :
-    ∃ b : R, IsNilpotent b ∧ IsNilpotent.exp a = 1 + a * (1 + b) := by
+lemma nil_exp_factor {a : R} (ha : IsNilpotent a) :
+    ∃ c : R, IsNilpotent.exp a = 1 + a + a ^ 2 * c := by
   obtain ⟨n, hn⟩ := ha
   let c : R := ∑ i ∈ range n, ((i + 2).factorial : ℚ)⁻¹ • a ^ i
-  refine ⟨a * c, ?_, ?_⟩
-  · exact ⟨n, by rw [mul_pow, hn, zero_mul]⟩
-  · rw [IsNilpotent.exp_eq_sum (pow_eq_zero_of_le (Nat.le_add_right n 2) hn)]
-    rw [show n + 2 = 2 + n by omega, sum_range_add]
-    have h2 : (∑ i ∈ range 2, (i.factorial : ℚ)⁻¹ • a ^ i) = 1 + a := by
-      simp [sum_range_succ]
-    rw [h2]
-    have ht : (∑ i ∈ range n, ((2 + i).factorial : ℚ)⁻¹ • a ^ (2 + i)) = a ^ 2 * c := by
-      simp only [c, mul_sum, pow_add, mul_smul_comm, add_comm 2, mul_comm]
-    rw [ht]
-    ring
+  refine ⟨c, ?_⟩
+  rw [IsNilpotent.exp_eq_sum (pow_eq_zero_of_le (Nat.le_add_right n 2) hn),
+    show n + 2 = 2 + n by omega, sum_range_add]
+  have h2 : (∑ i ∈ range 2, (i.factorial : ℚ)⁻¹ • a ^ i) = 1 + a := by
+    simp [sum_range_succ]
+  rw [h2]
+  have ht : (∑ i ∈ range n, ((2 + i).factorial : ℚ)⁻¹ • a ^ (2 + i)) = a ^ 2 * c := by
+    simp only [c, mul_sum, pow_add, mul_smul_comm, add_comm 2, mul_comm]
+  rw [ht]
+
+lemma nil_exp_quadratic {a : R} (ha : IsNilpotent a) :
+    ∃ b : R, IsNilpotent b ∧ IsNilpotent.exp a = 1 + a * (1 + b) := by
+  obtain ⟨c, hc⟩ := nil_exp_factor ha
+  exact ⟨a * c, (Commute.all _ _).isNilpotent_mul_right ha, by rw [hc]; ring⟩
 
 lemma nil_exp_eq_one_iff {a : R} (ha : IsNilpotent a) :
     IsNilpotent.exp a = 1 ↔ a = 0 := by
@@ -63,40 +52,24 @@ lemma nil_exp_eq_one_iff {a : R} (ha : IsNilpotent a) :
   · intro h
     have hmul : a * (1 + b) = 0 := by linear_combination h
     exact hb.isUnit_one_add.mul_right_cancel (by simpa using hmul)
-  · intro h
-    simp [h]
+  · rintro rfl
+    simp
 
 lemma nil_exp_sub_one_sub_mem {J : Ideal R} {a : R} (ha : IsNilpotent a) (hJ : a ∈ J) :
     IsNilpotent.exp a - 1 - a ∈ J ^ 2 := by
-  obtain ⟨n, hn⟩ := ha
-  rw [IsNilpotent.exp_eq_sum (pow_eq_zero_of_le (Nat.le_add_right n 2) hn)]
-  rw [show n + 2 = 2 + n by omega, sum_range_add]
-  have h2 : (∑ i ∈ range 2, (i.factorial : ℚ)⁻¹ • a ^ i) = 1 + a := by
-    simp [sum_range_succ]
-  rw [h2]
-  have he : 1 + a + (∑ i ∈ range n, ((2 + i).factorial : ℚ)⁻¹ • a ^ (2 + i)) - 1 - a =
-      ∑ i ∈ range n, ((2 + i).factorial : ℚ)⁻¹ • a ^ (2 + i) := by ring
-  rw [he]
-  apply Submodule.sum_mem
-  intro i hi
-  rw [Algebra.smul_def]
-  apply Ideal.mul_mem_left
-  rw [pow_add]
+  obtain ⟨c, hc⟩ := nil_exp_factor ha
+  rw [hc, show 1 + a + a ^ 2 * c - 1 - a = a ^ 2 * c by ring]
   exact Ideal.mul_mem_right _ _ (Ideal.pow_mem_pow hJ 2)
 
 lemma nil_exp_sub_one_mem {J : Ideal R} {a : R} (ha : IsNilpotent a) (hJ : a ∈ J) :
     IsNilpotent.exp a - 1 ∈ J := by
-  have h2 := nil_exp_sub_one_sub_mem ha hJ
-  have hle : J ^ 2 ≤ J := Ideal.pow_le_self (by omega)
-  have := J.add_mem (hle h2) hJ
+  have := J.add_mem (Ideal.pow_le_self (by omega) (nil_exp_sub_one_sub_mem ha hJ)) hJ
   simpa only [sub_add_cancel] using this
 
 omit [Algebra ℚ R] in
 lemma nilpotent_of_mem_nil_ideal {I : Ideal R} {n : ℕ} (hI : I ^ n = ⊥)
-    {x : R} (hx : x ∈ I) : IsNilpotent x := by
-  refine ⟨n, ?_⟩
-  have := Ideal.pow_mem_pow hx n
-  simpa only [hI, Ideal.mem_bot] using this
+    {x : R} (hx : x ∈ I) : IsNilpotent x :=
+  ⟨n, by simpa only [hI, Ideal.mem_bot] using Ideal.pow_mem_pow hx n⟩
 
 lemma nil_ideal_exp_surjective {I : Ideal R} {n : ℕ} (hI : I ^ n = ⊥)
     {z : R} (hz : z ∈ I) : ∃ x ∈ I, IsNilpotent.exp x = 1 + z := by
@@ -431,12 +404,8 @@ theorem finite_lattice_identity : FiniteLatticeIdentity := by
   obtain ⟨y, hy, hxy⟩ := hn (quadraticStencil C l) hx
   have he := moments_eq_of_sub_mem_cube hxy
   have hM := quadraticStencil_moments C hCs l hm hfirst
-  refine ⟨y, fun i => (mem_cosetIdeal_iff _ _).mp (hy i), ?_, ?_, ?_⟩
-  · exact he.1.symm.trans hM.1
-  · intro a
-    exact (he.2.1 a).symm.trans (hM.2.1 a)
-  · intro a b
-    exact (he.2.2 a b).symm.trans (hM.2.2 a b)
+  exact ⟨y, fun i => (mem_cosetIdeal_iff _ _).mp (hy i), he.1.symm.trans hM.1,
+    fun a => (he.2.1 a).symm.trans (hM.2.1 a), fun a b => (he.2.2 a b).symm.trans (hM.2.2 a b)⟩
 
 end Construction
 

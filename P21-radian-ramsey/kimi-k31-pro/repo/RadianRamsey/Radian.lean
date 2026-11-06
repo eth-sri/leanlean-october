@@ -3,7 +3,6 @@ module
 public import RadianRamsey.RadianAlgebra
 public import RadianRamsey.AlgebraicRamsey
 public import OAI.Combinatorics.EuclideanRamsey.NineLinearObstruction
-public import OAI.Combinatorics.EuclideanRamsey.NineGeometry
 public import OAI.Combinatorics.EuclideanRamsey.IndependentTensor
 
 @[expose] public section
@@ -65,6 +64,7 @@ theorem trig_rot {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) (n : ℕ) :
     (1 + Real.tan (θ / 2) ^ 2) ^ n * Real.cos (n * θ) = (rot (Real.tan (θ / 2)) n).1 ∧
       (1 + Real.tan (θ / 2) ^ 2) ^ n * Real.sin (n * θ) = (rot (Real.tan (θ / 2)) n).2 := by
   obtain ⟨h1, h2⟩ := half_angle hc
+  set t := Real.tan (θ / 2)
   induction n with
   | zero => simp [rot]
   | succ n ih =>
@@ -78,12 +78,10 @@ theorem trig_rot {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) (n : ℕ) :
     rw [hca, hsa]
     simp only [rot]
     constructor
-    · linear_combination ((1 + Real.tan (θ / 2) ^ 2) * Real.cos θ) * i1 +
-        (rot (Real.tan (θ / 2)) n).1 * h1 - ((1 + Real.tan (θ / 2) ^ 2) * Real.sin θ) * i2 -
-        (rot (Real.tan (θ / 2)) n).2 * h2
-    · linear_combination ((1 + Real.tan (θ / 2) ^ 2) * Real.cos θ) * i2 +
-        (rot (Real.tan (θ / 2)) n).2 * h1 + ((1 + Real.tan (θ / 2) ^ 2) * Real.sin θ) * i1 +
-        (rot (Real.tan (θ / 2)) n).1 * h2
+    · linear_combination ((1 + t ^ 2) * Real.cos θ) * i1 + (rot t n).1 * h1 -
+        ((1 + t ^ 2) * Real.sin θ) * i2 - (rot t n).2 * h2
+    · linear_combination ((1 + t ^ 2) * Real.cos θ) * i2 + (rot t n).2 * h1 +
+        ((1 + t ^ 2) * Real.sin θ) * i1 + (rot t n).1 * h2
 
 theorem one_add_tan_sq_ne (θ : ℝ) : 1 + Real.tan (θ / 2) ^ 2 ≠ 0 := by positivity
 
@@ -130,10 +128,8 @@ theorem tan_mem : Real.tan (θ / 2) ∈ coordinateField (radianConfig θ) := by
   let F := coordinateField (radianConfig θ)
   have hc (j : Fin 2) : radianConfig θ 1 j ∈ F :=
     IntermediateField.subset_adjoin ℚ _ (Set.mem_range_self ((1 : Fin 9), j))
-  have h0 := hc 0
-  have h1 := hc 1
-  simp only [radianConfig_zero, radianConfig_one, Fin.val_one, Nat.cast_one, one_mul] at h0 h1
-  exact F.div_mem h1 (F.add_mem F.one_mem h0)
+  simpa only [radianConfig_zero, radianConfig_one, Fin.val_one, Nat.cast_one, one_mul] using
+    F.div_mem (hc 1) (F.add_mem F.one_mem (hc 0))
 
 /-- The parameter `t = tan (θ/2)` as an element of the coordinate field. -/
 def tau : Coeff (radianConfig θ) := ⟨Real.tan (θ / 2), tan_mem θ ht⟩
@@ -305,36 +301,67 @@ theorem radianConfig_injective : Function.Injective (radianConfig θ) := by
   simp only [NineLinearObstruction.evaluationMatrix, Equiv.apply_symm_apply, haug]
 
 theorem radianConfig_affineSpan : affineSpan ℝ (Set.range (radianConfig θ)) = ⊤ := by
-  have hfive : affineSpan ℝ (Set.range (radianConfig θ ∘ NineGeometry.firstFive)) = ⊤ :=
-    CircleConsequence.circle_five_affineSpan (radianConfig θ ∘ NineGeometry.firstFive)
-      ((radianConfig_injective θ ht).comp NineGeometry.firstFive_injective) 0 1
-      (fun i => radianConfig_on_circle θ (NineGeometry.firstFive i))
+  classical
+  let A := affineSpan ℝ (Set.range (radianConfig θ))
+  have hp (i : Fin 9) : radianConfig θ i ∈ A := mem_affineSpan ℝ (Set.mem_range_self i)
+  let u := radianConfig θ 1 - radianConfig θ 0
+  let v := radianConfig θ 2 - radianConfig θ 0
+  let D : ℝ := u 0 * v 1 - v 0 * u 1
+  have hid : D = 2 * Real.sin θ * (1 - Real.cos θ) := by
+    simp [D, u, v, radianConfig_zero, radianConfig_one, Real.cos_two_mul, Real.sin_two_mul] <;> ring
+  have h10 : radianConfig θ 1 ≠ radianConfig θ 0 := by
+    intro h
+    have hi := radianConfig_injective θ ht h
+    norm_num at hi
+  have h20 : radianConfig θ 2 ≠ radianConfig θ 0 := by
+    intro h
+    have hi := radianConfig_injective θ ht h
+    norm_num at hi
+  have hs : Real.sin θ ≠ 0 := by
+    intro hs
+    have hc : Real.cos θ ^ 2 = 1 := by nlinarith [Real.sin_sq_add_cos_sq θ]
+    apply h20
+    ext j
+    fin_cases j <;> simp [radianConfig, Real.cos_two_mul, Real.sin_two_mul, hs, hc] <;> norm_num
+  have hc : Real.cos θ ≠ 1 := by
+    intro hc
+    have hs : Real.sin θ = 0 := by nlinarith [Real.sin_sq_add_cos_sq θ]
+    exact h10 (by ext j; fin_cases j <;> simp [radianConfig, hc, hs])
+  have hD : D ≠ 0 := by
+    rw [hid]
+    exact mul_ne_zero (mul_ne_zero (by norm_num) hs) (sub_ne_zero.mpr (Ne.symm hc))
+  have hu : u ∈ A.direction := by
+    simpa [u, vsub_eq_sub] using AffineSubspace.vsub_mem_direction (hp 1) (hp 0)
+  have hv : v ∈ A.direction := by
+    simpa [v, vsub_eq_sub] using AffineSubspace.vsub_mem_direction (hp 2) (hp 0)
   apply top_unique
-  rw [← hfive]
-  apply affineSpan_mono
-  rintro p ⟨i, rfl⟩
-  exact Set.mem_range_self (NineGeometry.firstFive i)
+  intro x hx
+  let w := x - radianConfig θ 0
+  let α : ℝ := (w 0 * v 1 - v 0 * w 1) / D
+  let β : ℝ := (u 0 * w 1 - w 0 * u 1) / D
+  have hcomb : α • u + β • v = w := by
+    ext j
+    fin_cases j <;> simp only [PiLp.add_apply, PiLp.smul_apply, smul_eq_mul] <;>
+      dsimp [α, β] <;> field_simp [hD] <;> dsimp [D] <;> ring
+  have hm : α • u + β • v ∈ A.direction :=
+    A.direction.add_mem (A.direction.smul_mem α hu) (A.direction.smul_mem β hv)
+  have he := AffineSubspace.vadd_mem_of_mem_direction hm (hp 0)
+  simpa [hcomb, w, vadd_eq_add] using he
 
-/-- The main theorem inside the section, where the local `Algebra ℚ` instance on `ℚ(T, U)`
-matches the one `tensorMap` was built with. -/
-theorem radian_configuration_aux :
+/-- **Theorem D, ⇒.** If `tan (θ/2)` is transcendental, the nine points at angles
+`0, θ, …, 8θ` are distinct, lie on the unit circle, and are not Euclidean Ramsey. -/
+theorem radian_configuration :
     Function.Injective (radianConfig θ) ∧ (∀ k, dist (radianConfig θ k) 0 = 1) ∧
       ¬ Ramsey (radianConfig θ) :=
-  ⟨radianConfig_injective θ ht, radianConfig_on_circle θ,
-    NineLinearObstruction.not_ramsey_of_det_ne_zero (radianConfig θ) (by decide) (by decide)
-      (radianConfig_affineSpan θ ht) (tensorMap θ ht) (tensorMap_injective θ ht) e
-      (evaluationMatrix_det_ne_zero θ ht)⟩
+  ⟨radianConfig_injective θ ht, radianConfig_on_circle θ, fun hR =>
+    NineLinearObstruction.not_fieldCriterion_of_det_ne_zero (radianConfig θ) (by decide)
+      (tensorMap θ ht) (tensorMap_injective θ ht) e (evaluationMatrix_det_ne_zero θ ht)
+      (realCriterion_fieldCriterion _
+        (ramsey_realCriterion _ (by decide) (radianConfig_affineSpan θ ht) hR))⟩
 
 end CoordField
 
 /-! ## Main theorems -/
-
-/-- **Theorem D, ⇒.** If `tan (θ/2)` is transcendental, the nine points at angles
-`0, θ, …, 8θ` are distinct, lie on the unit circle, and are not Euclidean Ramsey. -/
-theorem radian_configuration (θ : ℝ) (ht : Transcendental ℚ (Real.tan (θ / 2))) :
-    Function.Injective (radianConfig θ) ∧ (∀ k, dist (radianConfig θ k) 0 = 1) ∧
-      ¬ Ramsey (radianConfig θ) :=
-  radian_configuration_aux θ ht
 
 theorem radian_not_ramsey (θ : ℝ) (ht : Transcendental ℚ (Real.tan (θ / 2))) :
     ¬ Ramsey (radianConfig θ) :=
@@ -366,8 +393,7 @@ theorem algebraic_multiples {θ : ℝ} (hc : IsAlgebraic ℚ (Real.cos θ))
     (hs : IsAlgebraic ℚ (Real.sin θ)) (n : ℕ) :
     IsAlgebraic ℚ (Real.cos (n * θ)) ∧ IsAlgebraic ℚ (Real.sin (n * θ)) := by
   let A := algebraicClosure ℚ ℝ
-  rw [← mem_algebraicClosure_iff] at hc hs ⊢
-  rw [← mem_algebraicClosure_iff]
+  simp only [← mem_algebraicClosure_iff] at hc hs ⊢
   induction n with
   | zero => simp
   | succ n ih =>
@@ -384,8 +410,8 @@ theorem radian_ramsey_iff (θ : ℝ) (hinj : Function.Injective (radianConfig θ
     by_contra hna
     exact radian_not_ramsey θ (fun htan => hna (algebraic_of_tan htan)) hR
   · rintro ⟨hc, hs⟩
-    refine ramsey_of_algebraic (radianConfig θ) (by norm_num) (by norm_num) hinj ?_
-      ⟨0, 1, radianConfig_on_circle θ⟩
+    refine fieldCriterion_ramsey _ (by norm_num) (by norm_num) hinj
+      (fieldCriterion_of_algebraic _ ?_ ⟨0, 1, radianConfig_on_circle θ⟩)
     intro k j
     fin_cases j
     · simpa using (algebraic_multiples hc hs k).1

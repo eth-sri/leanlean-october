@@ -56,8 +56,7 @@ theorem map_rot (f : R →+* S) (z : R) (n : ℕ) :
     f (rot z n).1 = (rot (f z) n).1 ∧ f (rot z n).2 = (rot (f z) n).2 := by
   induction n with
   | zero => simp [rot]
-  | succ n ih =>
-    constructor <;> simp only [rot, map_add, map_sub, map_mul, map_pow, map_one, map_ofNat, ih.1, ih.2]
+  | succ n ih => constructor <;> simp [rot, ih.1, ih.2, map_ofNat]
 
 theorem map_qv (f : R →+* S) (z : R) (n : ℕ) (a : Fin 3) : f (qv z n a) = qv (f z) n a := by
   fin_cases a <;> simp [qv, (map_rot f z n).1, (map_rot f z n).2]
@@ -85,21 +84,17 @@ def Lcert : Matrix (Fin 9) (Fin 9) ℤ :=
   3314062500000000, -35771875000000, -1655300000000, -50915250000, 100680000, -5610100, 148320,
     3613, 127]
 
-theorem Lcert_lower : ∀ j i : Fin 9, i < j → Lcert i j = 0 := by decide +kernel
-
-theorem Lcert_diag : ∏ i : Fin 9, Lcert i i ≠ 0 := by decide +kernel
-
-theorem LE_upper : ∀ i j : Fin 9, j < i → (Lcert * Ecl (2 : ℤ) 3) i j = 0 := by decide +kernel
-
-theorem LE_diag : ∏ i : Fin 9, (Lcert * Ecl (2 : ℤ) 3) i i ≠ 0 := by decide +kernel
-
 theorem det_Ecl_int : (Ecl (2 : ℤ) 3).det ≠ 0 := by
+  have hlower : ∀ j i : Fin 9, i < j → Lcert i j = 0 := by decide +kernel
+  have hdiag : ∏ i : Fin 9, Lcert i i ≠ 0 := by decide +kernel
+  have hupper : ∀ i j : Fin 9, j < i → (Lcert * Ecl (2 : ℤ) 3) i j = 0 := by decide +kernel
+  have hEdiag : ∏ i : Fin 9, (Lcert * Ecl (2 : ℤ) 3) i i ≠ 0 := by decide +kernel
   have hL : Lcert.det ≠ 0 := by
-    rw [Matrix.det_of_isLowerTriangular Lcert (fun i j h => Lcert_lower j i h)]
-    exact Lcert_diag
+    rw [Matrix.det_of_isLowerTriangular Lcert (fun i j h => hlower j i h)]
+    exact hdiag
   have hLE : (Lcert * Ecl (2 : ℤ) 3).det ≠ 0 := by
-    rw [Matrix.det_of_isUpperTriangular (fun i j h => LE_upper i j h)]
-    exact LE_diag
+    rw [Matrix.det_of_isUpperTriangular (fun i j h => hupper i j h)]
+    exact hEdiag
   rw [Matrix.det_mul] at hLE
   exact right_ne_zero_of_mul hLE
 

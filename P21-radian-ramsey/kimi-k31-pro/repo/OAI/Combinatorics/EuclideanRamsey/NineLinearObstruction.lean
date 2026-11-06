@@ -18,16 +18,9 @@ namespace OAI
 /-! Nonsingular tensor evaluation matrices obstruct the Euclidean Ramsey property. -/
 
 noncomputable section
-open scoped TensorProduct BigOperators
+open scoped TensorProduct
 
 namespace EuclideanRamsey.NineLinearObstruction
-
-theorem vector_eq_zero_of_det_ne_zero {J K : Type*} [Fintype J]
-    [DecidableEq J] [Field K] (M : Matrix J J K) (hM : M.det ≠ 0)
-    (v : J → K) (hv : M.mulVec v = 0) : v = 0 := by
-  have hu : IsUnit M := M.isUnit_iff_isUnit_det.mpr (isUnit_iff_ne_zero.mpr hM)
-  apply (Matrix.mulVec_injective_iff_isUnit.mpr hu)
-  simpa using hv
 
 abbrev Column (d : ℕ) := Option (Fin d) × Option (Fin d)
 
@@ -56,32 +49,18 @@ theorem not_fieldCriterion_of_det_ne_zero {s d : ℕ} (a : Fin s → Space d)
     rw [Fintype.sum_prod_type]
     convert h using 1
     apply Finset.sum_congr rfl
-    intro α hα
+    intro α _
     apply Finset.sum_congr rfl
-    intro β hβ
+    intro β _
     dsimp [evaluationMatrix, v]
     ring
-  have hvzero := vector_eq_zero_of_det_ne_zero (evaluationMatrix a f e) hdet v hv
-  have hPzero (α β : Option (Fin d)) : P α β = 0 := by
-    apply hf
-    have h := congrFun hvzero (α, β)
-    simpa only [v, Pi.zero_apply, map_zero] using h
+  have hvzero : v = 0 := Matrix.mulVec_injective_iff_isUnit.mpr
+    ((evaluationMatrix a f e).isUnit_iff_isUnit_det.mpr (isUnit_iff_ne_zero.mpr hdet))
+    (by simpa using hv)
+  have hPzero (α β : Option (Fin d)) : P α β = 0 := hf (by
+    simpa only [v, Pi.zero_apply, map_zero] using congrFun hvzero (α, β))
   let j : Fin d := ⟨0, hd⟩
-  have hbad := hspatial j j
-  rw [hPzero, map_zero, ite_eq_left rfl] at hbad
-  exact zero_ne_one hbad
-
-/-- Ramsey configurations cannot have a nonsingular tensor evaluation matrix. -/
-theorem not_ramsey_of_det_ne_zero {s d : ℕ} (a : Fin s → Space d)
-    (hs : 0 < s) (hd : 0 < d)
-    (hspan : affineSpan ℝ (Set.range a) = ⊤)
-    {K : Type*} [Field K] [Algebra ℚ K]
-    (f : TensorRing a →ₐ[ℚ] K) (hf : Function.Injective f)
-    (e : Column d ≃ Fin s) (hdet : (evaluationMatrix a f e).det ≠ 0) :
-    ¬ Ramsey a := by
-  intro hR
-  exact not_fieldCriterion_of_det_ne_zero a hd f hf e hdet
-    (ramsey_fieldCriterion a hs hspan hR)
+  simpa [hPzero] using hspatial j j
 
 end EuclideanRamsey.NineLinearObstruction
 

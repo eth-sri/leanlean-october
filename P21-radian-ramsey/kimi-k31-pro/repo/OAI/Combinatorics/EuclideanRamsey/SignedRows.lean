@@ -18,22 +18,7 @@ universe uAlpha uBeta
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
 open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-
-open scoped BigOperators
 namespace EuclideanRamsey
 
 lemma integerize_finsupp {α : Type uAlpha} (f : α →₀ ℚ) :
@@ -50,11 +35,6 @@ lemma integerize_finsupp {α : Type uAlpha} (f : α →₀ ℚ) :
       exact ((div_eq_iff hd).mp he).trans (mul_comm _ _)
     simp only [z,Finsupp.mapRange_apply,← hn,Int.floor_intCast]
   · simp [z,Finsupp.notMem_support_iff.mp ha]
-
-lemma integerize_finsupp_real {α : Type uAlpha} (f : α →₀ ℚ) :
-    ∃ (M : ℕ) (z : α →₀ ℤ), 0 < M ∧ ∀ a, (z a:ℝ) = M*(f a:ℝ) := by
-  obtain ⟨M,z,hM,hz⟩ := integerize_finsupp f
-  exact ⟨M,z,hM,fun a => by exact_mod_cast hz a⟩
 
 def positiveCount {α : Type uAlpha} (z : α →₀ ℤ) : α →₀ ℕ := z.mapRange Int.toNat (by simp)
 def negativeCount {α : Type uAlpha} (z : α →₀ ℤ) : α →₀ ℕ := z.mapRange (fun n => (-n).toNat) (by simp)
@@ -122,11 +102,6 @@ lemma equal_count_pushforward {α : Type uAlpha} {β : Type uBeta} (f : α →�
     Finsupp.mapDomain_smul,Finsupp.mapDomain_mapRange g _ _ _ (fun x y => Rat.cast_add x y),hg]
   simp
 
-lemma equal_evaluated_multisets {α : Type uAlpha} {β : Type uBeta} (f : α →₀ ℚ) (M : ℕ) (z : α →₀ ℤ)
-    (hz : ∀ a,(z a:ℝ) = M*(f a:ℝ)) (g : α → β) (hg : f.mapDomain g = 0) :
-    (positiveCount z).toMultiset.map g = (negativeCount z).toMultiset.map g := by
-  simp only [Finsupp.toMultiset_map,equal_count_pushforward f M z hz g hg]
-
 lemma sum_counts_difference {α : Type uAlpha} [DecidableEq α]
     (f : α →₀ ℚ) (M : ℕ) (z : α →₀ ℤ)
     (hz : ∀ a,(z a:ℝ) = M*(f a:ℝ)) (g : α → ℝ) :
@@ -165,7 +140,6 @@ lemma sum_counts_negative {α : Type uAlpha} [DecidableEq α]
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open Matrix
 
 theorem normalized_signed_rows {α : Type} [DecidableEq α] {d s : ℕ} (hs : 0 < s)
     (a : Fin s → Fin d → ℝ) (v : α → ℝ) (g : α → Fin d → ℝ)
@@ -178,12 +152,15 @@ theorem normalized_signed_rows {α : Type} [DecidableEq α] {d s : ℕ} (hs : 0 
       ∀ i,∃ σ : Equiv.Perm τ,∀ x,
         vn (σ x)+∑ j,a i j*V j (σ x) = vp x+∑ j,a i j*U j x := by
   classical
-  obtain ⟨M,z,hM,hz⟩ := integerize_finsupp_real f
+  obtain ⟨M,z,hM,hzq⟩ := integerize_finsupp f
+  have hz (a) : (z a:ℝ) = M*(f a:ℝ) := by exact_mod_cast hzq a
   let m := (positiveCount z).toMultiset
   let n := (negativeCount z).toMultiset
   have hh (i : Fin s) : ∃ e : m ≃ n,∀ x : m,
       v (e x)+∑ j,a i j*g (e x) j = v x+∑ j,a i j*g x j :=
-    multiset_map_equiv m n _ (equal_evaluated_multisets f M z hz _ (heval i))
+    multiset_map_equiv m n (fun x => v x+∑ j,a i j*g x j) (by
+      simp only [m,n,Finsupp.toMultiset_map,equal_count_pushforward f M z hz
+        (fun x => v x+∑ j,a i j*g x j) (heval i)])
   choose e he using hh
   let e₀ := e ⟨0,hs⟩
   let c := (Real.sqrt ((M:ℝ)*ζ))⁻¹

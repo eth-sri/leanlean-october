@@ -18,27 +18,8 @@ universe uGroup uIndex uAction uPoint
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
-open Set
 
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {ι : Type uIndex} [Group G] [Fintype ι] [DecidableEq ι]
 namespace GradedPaths
 variable (P : GradedPaths ι G) (L : Subgroup G) [L.Normal]
@@ -109,7 +90,6 @@ lemma correction_cost (g : ι → G) (hg : ∀ i,g i∈L) (B : ℝ)
 end GradedPaths
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {ι : Type uIndex} {H : Type uAction} {X : Type uPoint} [Fintype ι] [DecidableEq ι]
 variable [Group H] [MulAction H X] [Fintype H] [Fintype X]
 
@@ -171,17 +151,12 @@ theorem averaged_equal_endpoints (a : ι → FiniteEuclidean) (ha : Function.Inj
   nlinarith
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 
 noncomputable def permute {ℓ : ℕ} (σ : Equiv.Perm (Fin ℓ)) :
     EuclideanSpace ℝ (Fin ℓ) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin ℓ) :=
   LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ σ
-@[simp] lemma permute_apply {ℓ : ℕ} (σ : Equiv.Perm (Fin ℓ))
-    (x : EuclideanSpace ℝ (Fin ℓ)) (j : Fin ℓ) : permute σ x j=x (σ.symm j) := rfl
 lemma permute_mul {ℓ : ℕ} (σ τ : Equiv.Perm (Fin ℓ)) (x : EuclideanSpace ℝ (Fin ℓ)) :
-    permute (σ*τ) x=permute σ (permute τ x) := by ext j; rfl
-@[simp] lemma permute_one {ℓ : ℕ} (x : EuclideanSpace ℝ (Fin ℓ)) :
-    permute 1 x=x := by ext j; rfl
+    permute (σ*τ) x=permute σ (permute τ x) := rfl
 
 theorem permutation_equal_endpoints {s d ℓ : ℕ} (a : Fin s → EuclideanSpace ℝ (Fin d))
     (ha : Function.Injective a) (f g : Fin s → EuclideanSpace ℝ (Fin ℓ))
@@ -202,7 +177,7 @@ theorem permutation_equal_endpoints {s d ℓ : ℕ} (a : Fin s → EuclideanSpac
   let z : X → FiniteEuclidean := fun x => FiniteEuclidean.embed ℓ (permute x.1 (f x.2))
   have hσ' (i : Fin s) : permute (σ i) (f i)=g i := by
     ext j
-    simpa using (hσ i ((σ i).symm j)).symm
+    simpa [permute] using (hσ i ((σ i).symm j)).symm
   have hcopy (h : H) (i : Fin s) :
       z (h • ((σ i,i):X))=FiniteEuclidean.embed ℓ (permute h (g i)) := by
     change FiniteEuclidean.embed ℓ (permute (h*σ i) (f i))=_

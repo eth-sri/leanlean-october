@@ -18,12 +18,7 @@ universe uDomain uCodomain uIndex uColor uAction
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-
-open scoped BigOperators
-open Matrix MeasureTheory
+open scoped RealInnerProductSpace
 namespace EuclideanRamsey
 
 section Hessian
@@ -218,9 +213,6 @@ def rightInverseSplit (U : E →ₗ[ℝ] H) (R : H →ₗ[ℝ] E)
       abel
   map_add' v w := by ext <;> simp [map_add] ; abel
   map_smul' c x := by ext <;> simp [map_smul, smul_sub]
-
-@[simp] lemma rightInverseSplit_fst (U : E →ₗ[ℝ] H) (R : H →ₗ[ℝ] E)
-    (hUR : U.comp R = LinearMap.id) (x : E) : (rightInverseSplit U R hUR x).1 = U x := rfl
 
 @[simp] lemma rightInverseSplit_apply_R (U : E →ₗ[ℝ] H) (R : H →ₗ[ℝ] E)
     (hUR : U.comp R = LinearMap.id) (y : H) : (rightInverseSplit U R hUR (R y)) = (y,0) := by

@@ -18,7 +18,7 @@ universe uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
+open scoped TensorProduct
 
 namespace EuclideanRamsey
 
@@ -130,15 +130,9 @@ theorem realCriterion_fieldCriterion {s d : ℕ} (a : Fin s → Space d)
     · simp only [Matrix.one_apply, heq, ite_true, hφ]
     · simp only [Matrix.one_apply, heq, ite_false, map_zero]
 
-theorem ramsey_fieldCriterion {s d : ℕ} (a : Fin s → Space d)
-    (hs : 0 < s) (hspan : affineSpan ℝ (Set.range a) = ⊤)
-    (hR : Ramsey a) : FieldCriterion a :=
-  realCriterion_fieldCriterion a (ramsey_realCriterion a hs hspan hR)
-
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped TensorProduct BigOperators
 
 theorem fieldCriterion_realCriterion {s d : ℕ} (a : Fin s → Space d)
     (h : FieldCriterion a) : RealCriterion a := by

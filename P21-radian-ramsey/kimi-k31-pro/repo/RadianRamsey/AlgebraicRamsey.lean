@@ -117,7 +117,7 @@ theorem fieldCriterion_of_algebraic
     intro i
     simp only [Fintype.sum_option, h, augmented]
     simp only [mul_one, one_mul, zero_mul, mul_ite, ite_mul, mul_zero,
-      Finset.sum_ite_eq, Finset.mem_univ, ite_true, add_zero, zero_add, Finset.sum_const_zero]
+      Finset.sum_ite_eq, Finset.mem_univ, ite_true, zero_add]
     linear_combination hk i
   refine ⟨fun α β => t * (h α β ⊗ₜ[ℚ] (1 : Coeff a)), fun i => ?_, fun α β => ?_⟩
   · have term : ∀ α β,
@@ -141,15 +141,6 @@ theorem fieldCriterion_of_algebraic
     simp only [term, ← Finset.mul_sum, ← TensorProduct.sum_tmul, hquad, TensorProduct.zero_tmul,
       mul_zero]
   · simp only [multiply, map_mul, ht1, Algebra.TensorProduct.lmul'_apply_tmul, mul_one, one_mul, h]
-
-/-- **Graham's spherical conjecture holds for algebraic configurations.** Fully checked: uses OpenAI's
-proved sufficiency direction `fieldCriterion_ramsey` of the classification. -/
-theorem ramsey_of_algebraic
-    (hs : 2 ≤ s) (hd : 1 ≤ d) (ha : Function.Injective a)
-    (halg : ∀ i j, IsAlgebraic ℚ (a i j))
-    (hsph : ∃ c : Space d, ∃ ρ : ℝ, ∀ i, dist (a i) c = ρ) :
-    Ramsey a :=
-  fieldCriterion_ramsey a hs hd ha (fieldCriterion_of_algebraic a halg hsph)
 
 end Algebraic
 

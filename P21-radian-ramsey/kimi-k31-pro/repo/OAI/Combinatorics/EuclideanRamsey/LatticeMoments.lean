@@ -18,15 +18,6 @@ universe uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-
 open scoped TensorProduct
 namespace EuclideanRamsey
 
@@ -128,8 +119,7 @@ lemma secondMoment_linear (a b : Fin k) :
     firstMoment (r • x) a = r * firstMoment x a := by
   change coefficientFunctional _ (r • x) = _ * _
   exact map_smul _ _ _
-@[simp] lemma firstMoment_zero (a : Fin k) : firstMoment (0 : LatticeRing k) a = 0 := by
-  exact map_zero (coefficientFunctional (k := k) (fun γ => γ a))
+@[simp] lemma firstMoment_zero (a : Fin k) : firstMoment (0 : LatticeRing k) a = 0 := map_zero (coefficientFunctional (k := k) (fun γ => γ a))
 @[simp] lemma firstMoment_single (γ : Lattice k) (q : ℚ) (a : Fin k) :
     firstMoment (AddMonoidAlgebra.single γ q) a = q * γ a := coefficientFunctional_single _ _ _
 @[simp] lemma secondMoment_add (x y : LatticeRing k) (a b : Fin k) :
@@ -174,20 +164,13 @@ lemma secondMoment_mul (x y : LatticeRing k) (a b : Fin k) :
 @[simp] lemma mass_sub (x y : LatticeRing k) : mass (x-y) = mass x - mass y := by
   simp only [mass_linear, map_sub]
 @[simp] lemma firstMoment_sub (x y : LatticeRing k) (a : Fin k) :
-    firstMoment (x-y) a = firstMoment x a - firstMoment y a := by
-  exact map_sub (coefficientFunctional (k := k) (fun γ => γ a)) x y
+    firstMoment (x-y) a = firstMoment x a - firstMoment y a := map_sub (coefficientFunctional (k := k) (fun γ => γ a)) x y
 @[simp] lemma secondMoment_sub (x y : LatticeRing k) (a b : Fin k) :
     secondMoment (x-y) a b = secondMoment x a b - secondMoment y a b := by
   have hh := congrFun (secondMoment_linear a b)
   simp only [hh, map_sub]
-@[simp] lemma mass_one : mass (1 : LatticeRing k) = 1 := by
-  change mass (AddMonoidAlgebra.single 0 1) = 1
-  simp
 @[simp] lemma firstMoment_one (a : Fin k) : firstMoment (1 : LatticeRing k) a = 0 := by
   change firstMoment (AddMonoidAlgebra.single 0 1) a = 0
-  simp
-@[simp] lemma secondMoment_one (a b : Fin k) : secondMoment (1 : LatticeRing k) a b = 0 := by
-  change secondMoment (AddMonoidAlgebra.single 0 1) a b = 0
   simp
 
 lemma mem_augmentationIdeal (x : LatticeRing k) :
@@ -241,8 +224,7 @@ lemma moments_eq_of_sub_mem_cube {x y : LatticeRing k}
     mass (∑ i ∈ t, x i) = ∑ i ∈ t, mass (x i) := by
   simp only [mass_linear, map_sum]
 @[simp] lemma firstMoment_sum {ι : Type uIndex} (t : Finset ι) (x : ι → LatticeRing k) (a : Fin k) :
-    firstMoment (∑ i ∈ t, x i) a = ∑ i ∈ t, firstMoment (x i) a := by
-  exact map_sum (coefficientFunctional (k := k) (fun γ => γ a)) x t
+    firstMoment (∑ i ∈ t, x i) a = ∑ i ∈ t, firstMoment (x i) a := map_sum (coefficientFunctional (k := k) (fun γ => γ a)) x t
 @[simp] lemma secondMoment_sum {ι : Type uIndex} (t : Finset ι) (x : ι → LatticeRing k) (a b : Fin k) :
     secondMoment (∑ i ∈ t, x i) a b = ∑ i ∈ t, secondMoment (x i) a b := by
   have hh := congrFun (secondMoment_linear a b)

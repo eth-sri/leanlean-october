@@ -18,7 +18,7 @@ universe uIndex uDomain uCodomain
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
+open scoped RealInnerProductSpace
 
 namespace EuclideanRamsey
 

@@ -18,25 +18,9 @@ universe uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
+open scoped RealInnerProductSpace
 
 namespace EuclideanRamsey
-open scoped BigOperators
 abbrev LetterGroup := FreeGroup FiniteEuclidean
 variable {ι : Type uIndex}
 
@@ -64,12 +48,6 @@ lemma UnitWords.path {a : ι → FiniteEuclidean} {w n} (h : UnitWords a w n) : 
   | copy b hb =>
     simpa only [Nat.cast_one] using (Path.copy (a:=a) (u:=1) b ⟨zero_le_one,by intro i j; simp [hb i j]⟩)
   | mul _ _ ihu ihv => simpa only [Nat.cast_add] using ihu.mul ihv
-lemma Path.nonneg {a : ι → FiniteEuclidean} {w lmb} (h : Path a w lmb) : 0≤lmb := by
-  induction h with
-  | diag => exact le_rfl
-  | copy _ h => exact h.1
-  | mul _ _ ih1 ih2 => exact add_nonneg ih1 ih2
-
 lemma extend_pair_E (a : ι → FiniteEuclidean) (i j : ι) (z z' : FiniteEuclidean)
     (h : ‖z'-z‖=‖a j-a i‖) :
     ∃ b : ι → FiniteEuclidean,b i=z ∧ b j=z' ∧ ∀ k l,‖b k-b l‖=‖a k-a l‖ := by
@@ -176,7 +154,6 @@ lemma unit_pair_coverage (a : ι → FiniteEuclidean) (ha : Function.Injective a
   exact ⟨v,hv,congrArg Prod.fst hv',congrArg Prod.snd hv'⟩
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 abbrev Strings := FreeMonoid FiniteEuclidean
 
 def stringEnergy : List FiniteEuclidean → List FiniteEuclidean → ℝ

@@ -18,27 +18,8 @@ universe uGroup uAction uPoint
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
-open Set
 
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X]
 
 inductive OrbitWords (letter : X → G) : (X → G) → ℕ → Prop
@@ -151,7 +132,6 @@ lemma contraction_bound [Fintype H] {L : Subgroup G} [L.Normal] (c : NormalCost 
     _ ≤ _ := by rw [hn]; nlinarith
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X] [Fintype H]
 
 inductive Evolution : (X → G) → ℕ → (X → G) → ℕ → Prop
@@ -272,7 +252,6 @@ lemma contraction_rate (h m : ℕ) (hh : 0 < h) (hm : 0 < m) (B δ : ℝ) (hB : 
   simpa only [Nat.cast_mul,Nat.cast_pow] using (show 2*(B*(h-1:ℝ)^k)≤δ*((h:ℝ)^k*m) by nlinarith [he])
 end EuclideanRamsey
 namespace EuclideanRamsey
-open scoped BigOperators
 variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X] [Fintype H] [Fintype X]
 
 lemma orbit_make_small {L : Subgroup G} [L.Normal] (c : NormalCost L)

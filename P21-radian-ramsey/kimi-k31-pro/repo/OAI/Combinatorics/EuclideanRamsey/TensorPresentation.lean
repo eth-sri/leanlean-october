@@ -19,25 +19,7 @@ universe uVector
 noncomputable section
 
 open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-
-open scoped TensorProduct RealInnerProductSpace
 namespace EuclideanRamsey
-
-end EuclideanRamsey
-namespace EuclideanRamsey
-open scoped TensorProduct BigOperators
 
 abbrev AffineVector (d : ℕ) := Option (Fin d) → ℝ
 
@@ -47,8 +29,7 @@ def affineArray {d : ℕ} :
     (LinearEquiv.piCongrRight (fun _ => TensorProduct.piRight ℚ ℚ ℝ (fun _ : Option (Fin d) => ℝ)))
 
 @[simp] lemma affineArray_tmul {d : ℕ} (w z : AffineVector d) (α β : Option (Fin d)) :
-    affineArray (w ⊗ₜ[ℚ] z) α β = w α ⊗ₜ[ℚ] z β := by
-  rfl
+    affineArray (w ⊗ₜ[ℚ] z) α β = w α ⊗ₜ[ℚ] z β := rfl
 
 def rowEvaluation {s d : ℕ} (a : Fin s → Space d) (i : Fin s) : AffineVector d →ₗ[ℚ] ℝ where
   toFun w := ∑ α,realAugmented a i α * w α
@@ -97,7 +78,7 @@ lemma spatialMultiply_comm {d : ℕ} (T : AffineVector d ⊗[ℚ] AffineVector d
 
 end EuclideanRamsey
 
-open scoped TensorProduct BigOperators
+open scoped TensorProduct
 namespace EuclideanRamsey
 
 theorem exists_symmetric_tensor_presentation {W : Type uVector} [AddCommGroup W] [Module ℚ W]
@@ -140,12 +121,7 @@ theorem exists_symmetric_tensor_presentation {W : Type uVector} [AddCommGroup W]
 
 end EuclideanRamsey
 
-open scoped TensorProduct
 namespace EuclideanRamsey
-
-end EuclideanRamsey
-namespace EuclideanRamsey
-open scoped TensorProduct
 
 lemma rational_lattice_kernel {k : ℕ} (f : RationalSpace k →ₗ[ℚ] ℝ) :
     latticeSpan (AddMonoidHom.ker (f.toAddMonoidHom.comp rationalize)) = f.ker := by
@@ -196,7 +172,6 @@ lemma quotientTensor_zero_of_evaluation {k : ℕ} (f : RationalSpace k →ₗ[�
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped TensorProduct BigOperators
 
 lemma matrixTensor_map_family {k : ℕ} {W : Type uVector} [AddCommGroup W] [Module ℚ W]
     (w : Fin k → W) (C : Matrix (Fin k) (Fin k) ℚ) :

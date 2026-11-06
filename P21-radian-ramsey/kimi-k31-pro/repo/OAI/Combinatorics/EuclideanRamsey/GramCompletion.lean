@@ -18,23 +18,8 @@ universe uIndex uRow uColor
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
 open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-
 open Matrix
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
 namespace EuclideanRamsey
 lemma trace_gram_complement {ι : Type uIndex} [Fintype ι] [DecidableEq ι]
     (B : Matrix ι ι ℝ) (hB : B.PosSemidef) (η : ℝ) (hη : B.trace ≤ η) :
@@ -109,7 +94,6 @@ theorem complete_gram_pair {d : ℕ} {τ : Type uRow} [Fintype τ]
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open Matrix
 lemma row_gram_distance {d : ℕ} {τ : Type uRow} [Fintype τ]
     (v : τ → ℝ) (U : Matrix (Fin d) τ ℝ) (q : ℝ)
     (hU : U*U.transpose=q • (1 : Matrix (Fin d) (Fin d) ℝ))
@@ -191,7 +175,6 @@ theorem two_scale_of_signed_rows {α : Type} [DecidableEq α] {d s : ℕ}
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped BigOperators
 lemma evaluation_coset_pushforward {k : ℕ} (φ : Lattice k →+ ℝ)
     (μ : LatticeRing k) (hμ : cosetPushforward φ.ker μ=0) (n : ℝ) :
     μ.coeff.mapDomain (fun x => φ x/n)=0 := by

@@ -18,27 +18,9 @@ universe uGroup uAction uPoint uAlpha
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-open Filter
-open Set
+open scoped commutatorElement
 
 namespace EuclideanRamsey
-open scoped BigOperators commutatorElement
 variable {G : Type uGroup} {H : Type uAction} {X : Type uPoint} [Group G] [Group H] [MulAction H X]
 
 def SameOrbit (x y : X) : Prop := ∃ h : H,h • x=y
@@ -75,11 +57,9 @@ omit [L.Normal] in
 lemma list_bound_const (l : List G) (h : ∀ g∈l,g∈L) (B : ℝ) (hB : ∀ g∈l,c.cost g≤B) :
     c.cost l.prod ≤ (l.length:ℝ)*B := by
   refine (c.list_bound l h).trans ?_
-  induction l with
-  | nil => simp
-  | cons g l ih =>
-    have hh := ih (fun x hx => h x (by simp [hx])) (fun x hx => hB x (by simp [hx]))
-    simpa [Nat.cast_add,Nat.cast_one,add_mul,add_comm] using add_le_add (hB g (by simp)) hh
+  calc
+    _ ≤ (l.map fun _ => B).sum := List.sum_le_sum hB
+    _ = _ := by simp [List.map_const', List.sum_replicate, nsmul_eq_mul]
 
 lemma product_difference {α : Type uAlpha} (l : List α) (a b : α → G)
     (h : ∀ j∈l,a j*(b j)⁻¹∈L) :

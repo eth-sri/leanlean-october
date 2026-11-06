@@ -18,53 +18,28 @@ universe uModule uIndex uAlpha
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
-open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
-open scoped TensorProduct BigOperators
-open scoped BigOperators MatrixOrder Matrix.Norms.L2Operator
-open scoped BigOperators RealInnerProductSpace
-
 open Filter
 namespace EuclideanRamsey
 attribute [local instance] Ultrafilter.mul Ultrafilter.semigroup
 
 section Ultrafilters
 variable {M : Type uModule} [Monoid M]
-@[simp] lemma pure_mul_ultra (x : M) (V : Ultrafilter M) :
-    (pure x : Ultrafilter M)*V = V.map (x*·) := by
-  apply Ultrafilter.coe_inj.mp
-  apply Filter.ext'
-  intro p
-  simp [Ultrafilter.eventually_mul]
-@[simp] lemma mul_pure_ultra (U : Ultrafilter M) (y : M) :
-    U*(pure y : Ultrafilter M) = U.map (·*y) := by
-  apply Ultrafilter.coe_inj.mp
-  apply Filter.ext'
-  intro p
-  simp [Ultrafilter.eventually_mul]
 
 @[instance_reducible] def ultrafilterMonoid : Monoid (Ultrafilter M) where
   toSemigroup := Ultrafilter.semigroup
   one := pure 1
   one_mul U := by
     change (pure (1:M) : Ultrafilter M)*U=U
-    rw [pure_mul_ultra]
-    simp
+    apply Ultrafilter.coe_inj.mp
+    apply Filter.ext'
+    intro p
+    simp [Ultrafilter.eventually_mul]
   mul_one U := by
     change U*(pure (1:M) : Ultrafilter M)=U
-    rw [mul_pure_ultra]
-    simp
+    apply Ultrafilter.coe_inj.mp
+    apply Filter.ext'
+    intro p
+    simp [Ultrafilter.eventually_mul]
 
 end Ultrafilters
 
@@ -122,7 +97,6 @@ theorem simultaneously_realize [Finite ι] [Monoid M] (qs : List (UltraColumn ι
 end UltraColumn
 end EuclideanRamsey
 namespace EuclideanRamsey
-open Filter
 attribute [local instance] Ultrafilter.mul Ultrafilter.semigroup
 variable {ι : Type uIndex}
 

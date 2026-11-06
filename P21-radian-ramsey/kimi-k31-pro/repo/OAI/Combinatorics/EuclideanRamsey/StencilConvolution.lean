@@ -18,22 +18,10 @@ universe uIndex
 
 noncomputable section
 
-open scoped TensorProduct RealInnerProductSpace
-open scoped BigOperators
-open Real Filter Topology MeasureTheory Polynomial
-open Matrix MeasureTheory
-open MeasureTheory
-open Matrix
-open scoped MatrixOrder Matrix.Norms.L2Operator
-open MeasureTheory Matrix
-open scoped TensorProduct
-open scoped BigOperators Pointwise Topology
+open scoped Topology
 open MeasureTheory Filter
-open scoped BigOperators Pointwise
-open scoped BigOperators Topology
 
 namespace EuclideanRamsey
-open scoped BigOperators
 
 lemma stencil_taylor_uniform {ι : Type uIndex} {k : ℕ} (S : Finset ι)
     (q : ι → ℝ) (v : ι → (Fin k → ℝ)) (C : Matrix (Fin k) (Fin k) ℝ)
@@ -99,7 +87,7 @@ end EuclideanRamsey
 
 namespace EuclideanRamsey
 open MeasureTheory Filter
-open scoped BigOperators Topology
+open scoped Topology
 
 lemma stencilDifferential_continuous {k : ℕ} (C : Matrix (Fin k) (Fin k) ℝ)
     {b : (Fin k → ℝ) → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b) :
@@ -216,7 +204,7 @@ end EuclideanRamsey
 
 namespace EuclideanRamsey
 open Filter MeasureTheory
-open scoped BigOperators Topology
+open scoped Topology
 
 theorem exists_discrete_smoothing {k d : ℕ} (S : Finset (Fin k → ℤ))
     (q : (Fin k → ℤ) → ℝ) (C : Matrix (Fin k) (Fin k) ℝ) (U : Matrix (Fin d) (Fin k) ℝ)
@@ -264,7 +252,6 @@ theorem exists_discrete_smoothing {k d : ℕ} (S : Finset (Fin k → ℤ))
 end EuclideanRamsey
 
 namespace EuclideanRamsey
-open scoped BigOperators
 
 lemma cosetPushforward_mul {k : ℕ} (Λ : AddSubgroup (Lattice k)) (ν b : LatticeRing k)
     (hν : cosetPushforward Λ ν = 0) : cosetPushforward Λ (ν*b) = 0 := by
@@ -289,10 +276,7 @@ theorem rational_smoothing {k d s : ℕ} (hd : 1 ≤ d)
       (∀ j l,secondMoment μ j l/(n:ℚ)^2 = ζ*C j l) ∧
       (∑' δ : Lattice k,max (-(μ.coeff δ:ℝ)) 0*gradientWeight U (latticeSample n δ)) < η*ζ := by
   classical
-  have hC' : (C.map (Rat.cast : ℚ → ℝ)).IsSymm := by
-    ext j l
-    change (C l j:ℝ) = (C j l:ℝ)
-    exact congrArg Rat.cast (congrFun (congrFun hC j) l)
+  have hC' : (C.map (Rat.cast : ℚ → ℝ)).IsSymm := hC.map _
   obtain ⟨b,hb,hbc,hb0,hbI,hbη⟩ := compact_smoothing k d hd (C.map (Rat.cast : ℚ → ℝ)) U hC' hU η hη
   have hz : ∑ γ ∈ ν.coeff.support,(ν.coeff γ:ℝ) = 0 := by
     exact_mod_cast hzero
