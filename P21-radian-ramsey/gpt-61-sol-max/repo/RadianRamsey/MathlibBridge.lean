@@ -2,7 +2,7 @@ module
 
 public import OAI.Combinatorics.EuclideanRamsey.Model
 
-@[expose] public section
+public section
 
 /-!
 # OpenAI's `Congruent` and `Ramsey` in Mathlib vocabulary
@@ -16,21 +16,14 @@ unfolded Mathlib-vocabulary property.
 
 namespace RadianRamsey
 
-/-- OpenAI's `Congruent` (`dist (b i) (b j) = dist (a i) (a j)`) is Mathlib's `Congruent`
-(`edist (a i) (a j) = edist (b i) (b j)`). -/
-theorem oai_congruent_iff {s d D : ℕ} (a : Fin s → EuclideanSpace ℝ (Fin d))
-    (b : Fin s → EuclideanSpace ℝ (Fin D)) :
-    OAI.EuclideanRamsey.Congruent a b ↔ Congruent a b := by
-  rw [congruent_iff_dist_eq]
-  exact forall₂_congr fun _ _ => eq_comm
-
 /-- OpenAI's `Ramsey`, unfolded into Mathlib vocabulary. -/
 theorem oai_ramsey_iff {s d : ℕ} (a : Fin s → EuclideanSpace ℝ (Fin d)) :
     OAI.EuclideanRamsey.Ramsey a ↔
       ∀ r : ℕ, 2 ≤ r → ∃ D : ℕ, 1 ≤ D ∧
         ∀ χ : EuclideanSpace ℝ (Fin D) → Fin r, ∃ b : Fin s → EuclideanSpace ℝ (Fin D),
           Congruent a b ∧ ∃ k : Fin r, ∀ i, χ (b i) = k := by
-  unfold OAI.EuclideanRamsey.Ramsey
-  simp only [oai_congruent_iff]
+  simp [OAI.EuclideanRamsey.Ramsey, OAI.EuclideanRamsey.Congruent,
+    congruent_iff_dist_eq, eq_comm]
+
 
 end RadianRamsey

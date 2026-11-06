@@ -2,23 +2,7 @@ module
 
 public import RadianRamsey.Radian
 public import RadianRamsey.MathlibStatement
-import OAI.Combinatorics.EuclideanRamsey.AdicLifting
-import OAI.Combinatorics.EuclideanRamsey.CornerGroup
-import OAI.Combinatorics.EuclideanRamsey.CorrectionPaths
-import OAI.Combinatorics.EuclideanRamsey.DerivedFractions
-import OAI.Combinatorics.EuclideanRamsey.DifferentialSplitting
-import OAI.Combinatorics.EuclideanRamsey.FiniteEuclidean
-import OAI.Combinatorics.EuclideanRamsey.Hessian
-import OAI.Combinatorics.EuclideanRamsey.IndependentTensor
-import OAI.Combinatorics.EuclideanRamsey.LatticeMoments
-import OAI.Combinatorics.EuclideanRamsey.NineGeometry
-import OAI.Combinatorics.EuclideanRamsey.PathFractions
-import OAI.Combinatorics.EuclideanRamsey.PathWords
-import OAI.Combinatorics.EuclideanRamsey.TensorDescent
-import OAI.Combinatorics.EuclideanRamsey.TensorPresentation
-import OAI.Combinatorics.EuclideanRamsey.UltrafilterStrings
 
-public section
 
 /-!
 # Proved solution

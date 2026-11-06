@@ -3,7 +3,7 @@ module
 public import RadianRamsey.Radian
 public import RadianRamsey.MathlibBridge
 
-@[expose] public section
+public section
 
 /-!
 # Theorem D in Mathlib vocabulary
