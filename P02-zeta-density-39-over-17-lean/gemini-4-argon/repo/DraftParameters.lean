@@ -33,4 +33,3 @@ theorem quadratic_window {s a x : ℝ}
   · nlinarith
   · nlinarith
 
-end Montgomery.DraftParameters

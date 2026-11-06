@@ -35,9 +35,3 @@ theorem RawMoment.scaleEnergy {data : RowData} {W : ℝ→ℂ} {c κ C : ℝ}
   apply mul_le_mul_of_nonneg_left _ (mul_nonneg hC hHp.le)
   apply Real.rpow_le_rpow (by positivity) _ hκ
   exact mul_le_mul_of_nonneg_left (max_le hD hexp) hHp.le
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

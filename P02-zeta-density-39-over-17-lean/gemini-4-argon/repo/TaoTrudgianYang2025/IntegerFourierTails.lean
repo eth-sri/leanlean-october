@@ -163,4 +163,3 @@ theorem tsum_int_eq_sum_Icc_add_far {f : ℤ → ℂ}
     apply Finset.mem_Icc.mpr
     omega
 
-end TaoTrudgianYang2025

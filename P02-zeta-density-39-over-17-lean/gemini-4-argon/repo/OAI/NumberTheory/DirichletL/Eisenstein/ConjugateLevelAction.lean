@@ -8,83 +8,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
+open scoped MatrixGroups Matrix Pointwise
 
 open CubicKubota
-local notation "O" => ActualEisensteinCubic.O
 
 lemma globalKubotaKernel_conjugate_mem (M : levelThree) (N : globalKubotaKernel) :
     (M:SL(2,ActualEisensteinCubic.O))*(N:SL(2,ActualEisensteinCubic.O))*(M:SL(2,ActualEisensteinCubic.O))⁻¹∈globalKubotaKernel := by
@@ -180,8 +112,7 @@ lemma kernelLevelAction_measurePreserving (M : levelThree) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 open CubicKubota
 
@@ -320,10 +251,8 @@ lemma kernelEisensteinResidueVector_nonzero_character_of_initial_overlap (a b : 
 
 end CubicEisenstein
 
-open scoped BigOperators
 namespace QuadraticAllOddCRT
-open ActualEisensteinCubic
-open QuadraticGaussRay hiding O
+open QuadraticGaussRay
 open ActualEisensteinCoordinates hiding O omega
 open EisensteinEPrimaryPhase (Coord odd)
 
@@ -415,18 +344,11 @@ theorem quadraticRayValue_mul (r s : Coord) (hr : odd r) (hs : odd s) :
 
 end QuadraticAllOddCRT
 
-open scoped BigOperators Classical
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open CanonicalQuadraticSieve hiding O
-open CubicJacobiGlobal hiding O
-open QuadraticGaussRay hiding O
-open QuadraticAllOddCRT
+open CompletedGauss CanonicalQuadraticSieve CubicJacobiGlobal QuadraticGaussRay QuadraticAllOddCRT
 open ActualEisensteinCoordinates hiding O omega
-open UniqueFactorizationMonoid
 
 lemma supported_factors_good (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
     ∀P∈normalizedFactors I,P.IsMaximal ∧ lambda∉P ∧ ringChar (ActualEisensteinCubic.O⧸P)≠2 := by
@@ -497,11 +419,7 @@ theorem idealRowHom_prime_reciprocity (p q : ActualEisensteinCubic.O) (hp : Prim
 
 end
 
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open CanonicalQuadraticSieve hiding O
-open CubicJacobiGlobal hiding O
-open QuadraticAllOddCRT
+open CompletedGauss CanonicalQuadraticSieve CubicJacobiGlobal QuadraticAllOddCRT
 open ActualEisensteinCoordinates hiding O omega
 
 def sexticReciprocityPhase (a b : ActualEisensteinCubic.O) : ℂ :=
@@ -583,9 +501,3 @@ theorem idealRowHom_primary_reciprocity (a b : ActualEisensteinCubic.O)
       idealRowHom_prime_primary_reciprocity p b hp.1 hp.2 hprimaryB hsplit.1 hsB,
       ih hsplit.2 htail]
     ring
-
-end CanonicalRowCompletion
-
-end
-
-end OAI

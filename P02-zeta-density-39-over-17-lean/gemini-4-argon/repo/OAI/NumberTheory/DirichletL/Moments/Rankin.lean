@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 open Filter
 namespace SevenEighths.CenteredMomentRankin
 open IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
 
 def primeMass (P : Ideal O) (δ : ℝ) : ℝ := ((Ideal.absNorm P:ℝ)^δ-1)⁻¹
 
@@ -92,9 +91,3 @@ theorem local_power_sum (P : Ideal O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ) (
   apply hsum.trans_eq
   change q⁻¹*(1-q⁻¹)⁻¹=(q-1)⁻¹
   field_simp
-
-end SevenEighths.CenteredMomentRankin
-
-end
-
-end OAI

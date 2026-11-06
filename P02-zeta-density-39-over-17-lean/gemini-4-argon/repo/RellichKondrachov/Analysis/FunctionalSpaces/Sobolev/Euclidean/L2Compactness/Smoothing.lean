@@ -222,13 +222,5 @@ lemma smoothL2_ae_eq (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuo
       smoothFun (E := E) (K := K) ψ u := by
   classical
   simp [smoothL2, MeasureTheory.MemLp.coeFn_toLp]
-end Volume
 
-end
 
-end L2Compactness
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov

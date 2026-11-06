@@ -107,4 +107,3 @@ theorem neumann_source_height_absorb {T : ℝ} (hT : 1 ≤ T) :
   have hh := mul_le_mul_of_nonneg_left h ht0.le
   simpa only [Real.rpow_neg_one, mul_inv_cancel₀ ht0.ne'] using hh
 
-end MathCollab.Density.Stronger.Atkinson

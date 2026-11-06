@@ -47,9 +47,3 @@ lemma central_class_exponent_identity (N : ℕ) (a v d R q e eps loss mesh overh
     mixedSourceExponent a v d R q+ProbeCentralExponent.realLoss N v e eps loss mesh+overhead := by
   unfold mixedSourceExponent ProbeCentralExponent.sourceExponent ProbeCentralExponent.realLoss
   ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

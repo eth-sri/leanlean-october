@@ -111,6 +111,4 @@ theorem heathBrown_block_sum_eq
   rfl
 
 
-end
 
-end GafniTao

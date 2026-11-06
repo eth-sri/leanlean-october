@@ -3,8 +3,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.MediumTypeIEndpoint.Part01
 
 @[expose] public section
 
-open Asymptotics Filter Topology
-open Complex Finset MeasureTheory Real Set
+open Asymptotics Filter Topology Complex Finset MeasureTheory Real Set
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 namespace GuthMaynard.NativeMoment
 set_option maxHeartbeats 1200000
@@ -3502,222 +3501,7 @@ theorem eventually_interior_source_reflected_dyadic_data
   · simpa only [L, S, R, V, Q, M] using hLargeU
   · simpa only [Uscale] using hTauPUpper
 
-/-- The literal quadratic and cubic side conditions needed by the reflected
-Weyl A--B process hold uniformly on the far dyadic branch. -/
-theorem eventually_reflected_weyl_geometry
-    {sigma d s U : ℝ} (hsigmaUpper : sigma < 1) (hd : 0 < d)
-    (hs : 0 < s) (hU : 0 < U) :
-    ∃ T₀ : ℝ, 8 ≤ T₀ ∧ ∀ {T theta w : ℝ} {P : ℕ}, T₀ ≤ T →
-      1 < P → 0 < theta → (P : ℝ) ^ theta = T →
-      1 / (1 / 2 + d) ≤ theta → theta ≤ U →
-      theta < 6 * sigma - 3 - s →
-      T / 2 ≤ w → w ≤ 5 * T / 2 →
-      (((P + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ (2 * T ^ (4 * d)) * w ∧
-        w ≤ (((P + 1 : ℕ) : ℝ) ^ (3 : ℕ)) := by
-  let delta : ℝ := 6 * (1 - sigma) + s
-  have hdelta : 0 < delta := by dsimp only [delta]; positivity
-  let rho : ℝ := delta / U
-  have hrho : 0 < rho := by dsimp only [rho]; positivity
-  have hTwoD : 0 < 2 * d := by positivity
-  have hTopD := tendsto_rpow_atTop hTwoD
-  have hEventuallyFour := (tendsto_atTop.1 hTopD) 4
-  rw [eventually_atTop] at hEventuallyFour
-  obtain ⟨Td, hTd⟩ := hEventuallyFour
-  have hTopRho := tendsto_rpow_atTop hrho
-  have hEventuallyThree := (tendsto_atTop.1 hTopRho) 3
-  rw [eventually_atTop] at hEventuallyThree
-  obtain ⟨Trho, hTrho⟩ := hEventuallyThree
-  let T₀ := max 8 (max Td Trho)
-  refine ⟨T₀, le_max_left _ _, ?_⟩
-  intro T theta w P hT hP htheta hScale hthetaLower hthetaUpper hthetaFar
-    hwLower hwUpper
-  have hTEight : 8 ≤ T := (le_max_left _ _).trans hT
-  have hTRest : max Td Trho ≤ T := (le_max_right _ _).trans hT
-  have hTD : Td ≤ T := (le_max_left _ _).trans hTRest
-  have hTRho : Trho ≤ T := (le_max_right _ _).trans hTRest
-  have hTOne : 1 ≤ T := by linarith
-  have hTPos : 0 < T := by linarith
-  have ha : 0 < 1 / 2 + d := by linarith
-  have hInvTheta : 1 / theta ≤ 1 / 2 + d := by
-    rw [div_le_iff₀ htheta]
-    have hScaled := mul_le_mul_of_nonneg_left hthetaLower ha.le
-    field_simp [ha.ne'] at hScaled
-    nlinarith
-  have hPEq : (P : ℝ) = T ^ (1 / theta) :=
-    natCast_eq_rpow_inv_of_rpow_eq hP htheta hScale
-  have hPUpper : (P : ℝ) ≤ T ^ (1 / 2 + d) := by
-    rw [hPEq]
-    exact Real.rpow_le_rpow_of_exponent_le hTOne hInvTheta
-  have hPSucc : ((P + 1 : ℕ) : ℝ) ≤ 2 * T ^ (1 / 2 + d) := by
-    norm_num only [Nat.cast_add, Nat.cast_one]
-    have hPReal : (1 : ℝ) ≤ P := by exact_mod_cast hP.le
-    nlinarith [Real.rpow_nonneg hTPos.le (1 / 2 + d)]
-  have hFour : 4 ≤ T ^ (2 * d) := hTd T hTD
-  have hSquare : (((P + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤
-      T ^ (1 + 4 * d) := by
-    calc
-      (((P + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤
-          (2 * T ^ (1 / 2 + d)) ^ (2 : ℕ) := by gcongr
-      _ = 4 * (T ^ (1 / 2 + d)) ^ (2 : ℕ) := by ring
-      _ = 4 * T ^ (1 + 2 * d) := by
-        rw [← Real.rpow_natCast, ← Real.rpow_mul hTPos.le]
-        congr 1
-        ring_nf
-      _ ≤ T ^ (2 * d) * T ^ (1 + 2 * d) := by gcongr
-      _ = T ^ (1 + 4 * d) := by
-        rw [← Real.rpow_add hTPos]
-        congr 1
-        ring
-  have hQuadratic : (((P + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤
-      (2 * T ^ (4 * d)) * w := by
-    calc
-      (((P + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ T ^ (1 + 4 * d) := hSquare
-      _ = T ^ (4 * d) * T := by
-        rw [Real.rpow_add hTPos, Real.rpow_one]
-        ring
-      _ ≤ (2 * T ^ (4 * d)) * w := by
-        have hPow : 0 ≤ T ^ (4 * d) := Real.rpow_nonneg hTPos.le _
-        nlinarith
-  have hRhoTheta : rho * theta ≤ delta := by
-    dsimp only [rho]
-    rw [div_mul_eq_mul_div]
-    exact div_le_iff₀ hU |>.2 (by
-      have := mul_le_mul_of_nonneg_left hthetaUpper hdelta.le
-      nlinarith)
-  have hThetaDelta : theta + delta < 3 := by
-    dsimp only [delta]
-    linarith
-  have hRhoExp : 1 + rho ≤ 3 / theta := by
-    rw [le_div_iff₀ htheta]
-    nlinarith
-  have hThree : 3 ≤ T ^ rho := hTrho T hTRho
-  have hThreeT : 3 * T ≤ T ^ (1 + rho) := by
-    calc
-      3 * T ≤ T ^ rho * T := by gcongr
-      _ = T ^ (1 + rho) := by
-        rw [Real.rpow_add hTPos, Real.rpow_one]
-        ring
-  have hCubeP : T ^ (1 + rho) ≤ (P : ℝ) ^ (3 : ℕ) := by
-    calc
-      T ^ (1 + rho) ≤ T ^ (3 / theta) :=
-        Real.rpow_le_rpow_of_exponent_le hTOne hRhoExp
-      _ = ((P : ℝ) ^ theta) ^ (3 / theta) := by rw [hScale]
-      _ = (P : ℝ) ^ (3 : ℕ) := by
-        rw [← Real.rpow_mul (by positivity : (0 : ℝ) ≤ P),
-          show theta * (3 / theta) = 3 by field_simp [htheta.ne']]
-        exact Real.rpow_natCast (P : ℝ) 3
-  refine ⟨hQuadratic, ?_⟩
-  calc
-    w ≤ 3 * T := by linarith
-    _ ≤ T ^ (1 + rho) := hThreeT
-    _ ≤ (P : ℝ) ^ (3 : ℕ) := hCubeP
-    _ ≤ ((P + 1 : ℕ) : ℝ) ^ (3 : ℕ) := by
-      gcongr
-      norm_num
 
-/-- The complementary far dyadic alternative exported by the actual
-reflection data is impossible.  The proof uses the retained ordinate and
-coefficient identity, not merely its cardinality consequence. -/
-theorem eventually_reflected_far_dyadic_data_impossible
-    {sigma d u s Uscale Cref : ℝ}
-    (hsigma : 1 / 2 < sigma) (hsigmaUpper : sigma < 1)
-    (hd : 0 < d) (huD : u ≤ d)
-    (hsDef : s = reflectedEndpointScaleSlack sigma d)
-    (hUscale : 0 < Uscale) (hCref : 1 ≤ Cref) :
-    ∃ T₀ : ℝ, 8 ≤ T₀ ∧
-      ∀ {T tau theta L : ℝ} {P M : ℕ} {U : Finset ℝ} {a : ℕ → ℂ},
-        T₀ ≤ T → 1 < tau → tau < 2 →
-        1 < P → P < M → theta = typeILogarithmicScale T P →
-        theta ≤ Uscale → 1 / (1 / 2 + d) ≤ theta →
-        theta < 6 * sigma - 3 - s →
-        (M : ℝ) ≤ T ^ (1 + d - 1 / tau) →
-        U.Nonempty →
-        (∀ v ∈ U, L ≤ ‖dirichletPoly P a v‖) →
-        (∀ v ∈ U, ∃ w ∈ Set.Icc (T / 2) (5 * T / 2),
-          ‖dirichletPoly P a v‖ =
-            ‖dirichletPoly P
-              (normalizedTypeIReflectedCoeff sigma M) w‖) →
-        T ^ (1 / 2 - u - d * sigma + (sigma - 1) / tau - d) /
-            Cref ≤ L → False := by
-  have hs : 0 < s := by
-    rw [hsDef]
-    exact reflectedEndpointScaleSlack_pos hsigma hd
-  obtain ⟨Tgeo, hTgeo, hGeo⟩ :=
-    eventually_reflected_weyl_geometry hsigmaUpper hd hs hUscale
-  let Cw : ℝ := 60 * 4 ^ sigma * Real.sqrt 12
-  have hCw : 0 < Cw := by dsimp only [Cw]; positivity
-  have hSaving : 0 < s / 24 := by positivity
-  have hTop := tendsto_rpow_atTop hSaving
-  have hEventually := (tendsto_atTop.1 hTop) (Cw * Cref + 1)
-  rw [eventually_atTop] at hEventually
-  obtain ⟨Tconst, hTconst⟩ := hEventually
-  let T₀ := max Tgeo Tconst
-  refine ⟨T₀, hTgeo.trans (le_max_left _ _), ?_⟩
-  intro T tau theta L P M U a hT htauOne htauTwo hP hPM hthetaDef
-    hthetaUpper hthetaLower hthetaFar hMUpper hUNonempty hLarge hOrdinate
-    hThreshold
-  have hTGeo : Tgeo ≤ T := (le_max_left _ _).trans hT
-  have hTConst : Tconst ≤ T := (le_max_right _ _).trans hT
-  have hTEight : 8 ≤ T := hTgeo.trans hTGeo
-  have hTOne : 1 ≤ T := by linarith
-  have hTStrict : 1 < T := by linarith
-  have hTPos : 0 < T := by linarith
-  have htheta : 0 < theta := by
-    rw [hthetaDef]
-    unfold typeILogarithmicScale
-    exact Real.logb_pos (by exact_mod_cast hP) hTStrict
-  have hScale : (P : ℝ) ^ theta = T := by
-    rw [hthetaDef]
-    exact rpow_typeILogarithmicScale_eq hTPos hP
-  have hPEq : (P : ℝ) = T ^ (1 / theta) :=
-    natCast_eq_rpow_inv_of_rpow_eq hP htheta hScale
-  have hPMCast : (P : ℝ) ≤ M := by exact_mod_cast hPM.le
-  have hPowerUpper : T ^ (1 / theta) ≤ T ^ (1 + d - 1 / tau) := by
-    rw [← hPEq]
-    exact hPMCast.trans hMUpper
-  have hDual : 1 / theta ≤ 1 + d - 1 / tau :=
-    (Real.strictMono_rpow_of_base_gt_one hTStrict).le_iff_le.mp hPowerUpper
-  have hMargin := reflected_weyl_exponent_margin hsigma hsigmaUpper hd huD
-    hsDef htauOne htauTwo hDual hthetaLower hthetaFar
-  obtain ⟨v, hv⟩ := hUNonempty
-  obtain ⟨w, hw, hNormEq⟩ := hOrdinate v hv
-  have hwOne : 1 ≤ w := by linarith [hw.1]
-  have hwThree : w ≤ 3 * T := by linarith [hw.2]
-  obtain ⟨hQuadratic, hCubic⟩ := hGeo hTGeo hP htheta hScale
-    hthetaLower hthetaUpper hthetaFar hw.1 hw.2
-  have hWeyl := norm_normalizedTypeIReflectedCoeff_le_physical_weyl
-    (sigma := sigma) (d := d) (T := T) (theta := theta) (w := w)
-    (P := P) (M := M) (by linarith) hd.le hTOne hP hPM htheta hScale
-      hwOne hwThree hQuadratic hCubic
-  let E : ℝ := 1 / 2 - u - d * sigma + (sigma - 1) / tau - d
-  let F : ℝ := 2 * d + 1 / (2 * theta) + 1 / 6
-  have hExponent : F + s / 24 ≤ E := by
-    dsimp only [F, E]
-    linarith
-  have hPowExponent : T ^ F * T ^ (s / 24) ≤ T ^ E := by
-    rw [← Real.rpow_add hTPos]
-    exact Real.rpow_le_rpow_of_exponent_le hTOne hExponent
-  have hConst : Cw * Cref < T ^ (s / 24) :=
-    (show Cw * Cref < Cw * Cref + 1 by linarith).trans_le
-      (hTconst T hTConst)
-  have hNormUpper : Cref * ‖dirichletPoly P a v‖ < T ^ E := by
-    calc
-      Cref * ‖dirichletPoly P a v‖ = Cref *
-          ‖dirichletPoly P (normalizedTypeIReflectedCoeff sigma M) w‖ := by
-            rw [hNormEq]
-      _ ≤ Cref * (Cw * T ^ F) := by
-        exact mul_le_mul_of_nonneg_left
-          (by simpa only [Cw, F] using hWeyl) (zero_le_one.trans hCref)
-      _ = (Cw * Cref) * T ^ F := by ring
-      _ < T ^ (s / 24) * T ^ F := by
-        exact mul_lt_mul_of_pos_right hConst (Real.rpow_pos_of_pos hTPos F)
-      _ = T ^ F * T ^ (s / 24) := by ring
-      _ ≤ T ^ E := hPowExponent
-  have hNormThreshold : ‖dirichletPoly P a v‖ < T ^ E / Cref := by
-    rw [lt_div_iff₀ (zero_lt_one.trans_le hCref)]
-    simpa only [mul_comm] using hNormUpper
-  have hThreshold' : T ^ E / Cref ≤ L := by simpa only [E] using hThreshold
-  linarith [hLarge v hv]
 
 set_option maxHeartbeats 4000000
 
@@ -4382,8 +4166,8 @@ forces the Huxley alternative and hence `σ > 5/6`; the strengthened common
 loss parameter then pays for the detector and source-selection losses in
 the physical Weyl estimate. -/
 theorem eventually_medium_source_tau_ge_two_impossible
-    {σ τ₀ ε : ℝ} (hσ : 1 / 2 < σ) (hσUpper : σ < 1)
-    (hcert : EndpointScaleCertificate σ τ₀) (hε : 0 < ε) :
+    {σ τ₀ ε : ℝ} (hσ : 1 / 2 < σ) (_hσUpper : σ < 1)
+    (hcert : EndpointScaleCertificate σ τ₀) (_hε : 0 < ε) :
     ∃ T₀ : ℝ, 8 ≤ T₀ ∧
       ∀ {T τ : ℝ} {Y A r : ℕ} (W : Finset ℝ), T₀ ≤ T →
         let d := classicalEndpointLossParameter σ τ₀ (ε / 100)
@@ -4398,86 +4182,10 @@ theorem eventually_medium_source_tau_ge_two_impossible
               (Nat.clog 2 A + 1 : ℕ) ≤
             ‖typeISourceSmoothBlock Y A r σ t‖) →
         False := by
-  let d := classicalEndpointLossParameter σ τ₀ (ε / 100)
-  have hεsmall : 0 < ε / 100 := by positivity
-  have hdSpec := classicalEndpointLossParameter_spec hσ hσUpper
-    hcert.tau0_pos hεsmall
-  dsimp only at hdSpec
-  rcases hdSpec with ⟨hd, _hdEps, _hdEpsTau, _hdReflected, _hdGap,
-    _hdUpper, _hdSigma, _hdSmall, _hdHalf, hdOne, _hdSigmaStrict⟩
-  by_cases hσFiveSixths : 5 / 6 < σ
-  · let q : ℝ := 2 * σ - 5 / 3
-    have hq : 0 < q := by dsimp only [q]; linarith
-    have hdFiveSixths : d ≤ (σ - 5 / 6) / 1000 := by
-      dsimp only [d]
-      exact classicalEndpointLossParameter_le_fiveSixthsGap hσFiveSixths
-    let v : ℝ := q / 72
-    have hv : 0 < v := by dsimp only [v]; positivity
-    have hBudget : d ^ 4 + v < q / 18 := by
-      have hdSq : d ^ 2 ≤ d := by
-        nlinarith [mul_nonneg hd.le (sub_nonneg.mpr hdOne)]
-      have hdSqOne : d ^ 2 ≤ 1 := hdSq.trans hdOne
-      have hdFourth : d ^ 4 ≤ d := by
-        nlinarith [mul_nonneg (sq_nonneg d) (sub_nonneg.mpr hdSqOne)]
-      have hdq : d ≤ q / 2000 := by
-        dsimp only [q] at hdFiveSixths ⊢
-        linarith
-      dsimp only [v]
-      nlinarith
-    obtain ⟨Clog, _hClog, Tlog, hTlog, hLogs⟩ :=
-      eventually_source_selection_log_product_le v hv
-    obtain ⟨Tfar, hTfar, hFar⟩ := eventually_source_far_family_impossible
-      hσUpper hq (by dsimp only [q]; linarith) hBudget
-    let T₀ : ℝ := max Tlog Tfar
-    refine ⟨T₀, hTlog.trans (le_max_left _ _), ?_⟩
-    intro T τ Y A r W hT
-    dsimp only
-    intro hA hY hr hInterior hτ hτTwo hτUpper hDisp hW hRange hLarge
-    have hTLog : Tlog ≤ T := (le_max_left _ _).trans hT
-    have hTFar : Tfar ≤ T := (le_max_right _ _).trans hT
-    have hLogProduct := hLogs T hTLog
-    have hAOne : 1 < A := by
-      rw [hA]
-      apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
-      apply Nat.le_floor
-      exact (show (2 : ℝ) ≤ 4 * T by nlinarith [hTlog]).trans
-        (four_mul_lt_sharpZetaCutoff T).le
-    have hSecond : (1 : ℝ) ≤ Nat.clog 2 (A + 1) := by
-      exact_mod_cast Nat.clog_pos Nat.one_lt_two (by omega : 1 < A + 1)
-    have hFirstNonneg : (0 : ℝ) ≤ ((Nat.clog 2 A + 1 : ℕ) : ℝ) := by
-      positivity
-    have hLog : ((Nat.clog 2 A + 1 : ℕ) : ℝ) ≤ Clog * T ^ v := by
-      calc
-        ((Nat.clog 2 A + 1 : ℕ) : ℝ) =
-            ((Nat.clog 2 A + 1 : ℕ) : ℝ) * 1 := by ring
-        _ ≤ ((Nat.clog 2 A + 1 : ℕ) : ℝ) * Nat.clog 2 (A + 1) :=
-          mul_le_mul_of_nonneg_left hSecond hFirstNonneg
-        _ ≤ Clog * T ^ v := by simpa only [hA] using hLogProduct
-    have hCertAlternative := endpointScaleCertificate_tau0_alternative hσUpper hcert
-    have hTauFar : τ < 6 * σ - 3 - q := by
-      rcases hCertAlternative with hI | hH
-      · have hBound : 4 * τ₀ / 3 ≤ 4 * (2 - σ) / 3 := by gcongr
-        nlinarith
-      · have hBound : 4 * τ₀ / 3 ≤ 4 * (3 * σ - 1) / 3 := by gcongr
-        dsimp only [q]
-        nlinarith
-    exact hFar W hTFar hA hY hr hInterior hτ hτTwo hTauFar hDisp hW
-      hRange hLog (by simpa only [d] using hLarge)
-  · refine ⟨8, le_rfl, ?_⟩
-    intro T τ Y A r W hT
-    dsimp only
-    intro _hA _hY _hr _hInterior _hτ hτTwo hτUpper _hDisp _hW _hRange _hLarge
-    have hσLe : σ ≤ 5 / 6 := le_of_not_gt hσFiveSixths
-    rcases endpointScaleCertificate_tau0_alternative hσUpper hcert with hI | hH
-    · have hBound : 4 * τ₀ / 3 ≤ 4 * (2 - σ) / 3 := by gcongr
-      nlinarith
-    · have hBound : 4 * τ₀ / 3 ≤ 4 * (3 * σ - 1) / 3 := by gcongr
-      nlinarith
+  refine ⟨8, le_rfl, fun _ _ _ _ _ _ _ hτTwo hτUpper _ _ _ _ => ?_⟩
+  have := hcert.tau0_le_ingham
+  linarith
 
-/-- Complete consumer for the genuinely reflected source range.  It invokes
-the actual pointwise Poisson reflection, selects its common signed dyadic
-block, and then dispatches the exhaustive powered/Weyl scale split while
-retaining the original multiplicity-weighted count. -/
 theorem actual_interior_reflected_endpoint_consumer
     {σ τ₀ : ℝ} (hσ : 1 / 2 < σ) (hσUpper : σ < 1)
     (hcert : EndpointScaleCertificate σ τ₀) :
@@ -4519,34 +4227,28 @@ theorem actual_interior_reflected_endpoint_consumer
       nlinarith [mul_nonneg hd.le (sub_nonneg.mpr hdOne)]
     have hdSqOne : d ^ 2 ≤ 1 := hdSq.trans hdOne
     nlinarith [mul_nonneg (sq_nonneg d) (sub_nonneg.mpr hdSqOne)]
-  obtain ⟨Clog, _hClog, hCref, hg, hUscale, Tdata, hTdata, hData⟩ :=
+  obtain ⟨Clog, _hClog, _hCref, _hg, _hUscale, Tdata, hTdata, hData⟩ :=
     eventually_interior_source_reflected_dyadic_data hσ hσUpper hd hdOne
       hdGap hu.le huD
-  obtain ⟨Cnear, hCnear, Tnear, hTnear, hNear⟩ :=
+  obtain ⟨Cnear, hCnear, Tnear, _hTnear, hNear⟩ :=
     actual_interior_reflected_near_endpoint_consumer hσ hσUpper hcert
       Clog ε hε
-  let s : ℝ := reflectedEndpointScaleSlack σ d
-  obtain ⟨Tfar, hTfar, hFar⟩ := eventually_reflected_far_dyadic_data_impossible
-    hσ hσUpper hd huD rfl hUscale hCref
-  let T₀ : ℝ := max Tdata (max Tnear Tfar)
+  let T₀ : ℝ := max Tdata Tnear
   refine ⟨Cnear, hCnear, T₀, hTdata.trans (le_max_left _ _), ?_⟩
   intro T hT
   dsimp only
   intro τ r W hA hY hr hLower hUpper hτ hτOne hτTwo hW hSep hRange
     hLarge hCount
   have hTData : Tdata ≤ T := (le_max_left _ _).trans hT
-  have hRest : max Tnear Tfar ≤ T := (le_max_right _ _).trans hT
-  have hTNear : Tnear ≤ T := (le_max_left _ _).trans hRest
-  have hTFar : Tfar ≤ T := (le_max_right _ _).trans hRest
-  have hTPos : 0 < T := by linarith [hTdata]
+  have hTNear : Tnear ≤ T := (le_max_right _ _).trans hT
   let Y : ℕ := ⌊T ^ (d ^ 2)⌋₊
   let A : ℕ := ⌊sharpZetaCutoff T⌋₊
   have hDataAt := hData (T := T) (tau := τ) (Y := Y) (A := A)
     (r := r) W hTData hA hY hr hLower hUpper hτ hτOne hτTwo hW hSep
       hRange (by simpa only [u] using hLarge)
   dsimp only at hDataAt
-  rcases hDataAt with ⟨j, hj, U, a, hSepU, hBaseU, hURange, hCardU,
-    hCoeff, hLargeU, hOrdinate, hPOne, hPM, hThetaLower, hThetaUpper,
+  rcases hDataAt with ⟨j, hj, U, a, hSepU, hBaseU, _hURange, hCardU,
+    hCoeff, hLargeU, _hOrdinate, hPOne, hPM, hThetaLower, hThetaUpper,
     hThresholdExact, _hThresholdGap⟩
   let P : ℕ := 2 ^ j
   let Q : ℕ := 2 ^ r * Y
@@ -4559,51 +4261,23 @@ theorem actual_interior_reflected_endpoint_consumer
   let S : ℝ := R / (2 * (M : ℝ) ^ σ)
   let L : ℝ := S / Nat.clog 2 M
   let θ : ℝ := typeILogarithmicScale T P
-  have hSplit := reflected_actual_scale_powered_gap_or_weyl_margin
-    hσ hσUpper hcert hd (by simpa only [θ] using hThetaLower)
-  dsimp only at hSplit
-  rcases hSplit with hNearScale | hFarScale
-  · apply hNear T hTNear W hA hY hr hLower hUpper hτ hτOne hτTwo hW hSep
-      hRange (by simpa only [u] using hLarge) hCount
-      (by simpa only [P] using hPOne) (by simpa only [P] using hThetaUpper)
-      (by simpa only [P, θ] using hNearScale)
-    refine ⟨j, U, a, rfl, hj, hSepU, hBaseU, hCardU, hCoeff, ?_, ?_, ?_⟩
-    · simpa only [P, Q, M, V, R, S, L, u] using hLargeU
-    · simpa only [P, M] using hPM
-    · simpa only [Q, M, V, R, S, L, u] using hThresholdExact
-  · have hUNonempty : U.Nonempty := by
-      by_contra hnot
-      have hUZero : U.card = 0 := Finset.card_eq_zero.mpr
-        (Finset.not_nonempty_iff_eq_empty.mp hnot)
-      rw [hUZero, mul_zero] at hCardU
-      have hWCard : 0 < W.card := hW.card_pos
-      omega
-    have hQOne : 1 < Q := by
-      dsimp only [Q]
-      have hPow : 4 ≤ 2 ^ r := by
-        simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
-      have : 4 ≤ 2 ^ r * Y := hPow.trans (Nat.le_mul_of_pos_right _ hY)
-      omega
-    have hScaleQ : (Q : ℝ) ^ τ = T := by
-      rw [hτ]
-      simpa only [Q] using rpow_typeILogarithmicScale_eq hTPos hQOne
-    have hQEq : (Q : ℝ) = T ^ (1 / τ) :=
-      natCast_eq_rpow_inv_of_rpow_eq hQOne (by linarith) hScaleQ
-    have hMUpperRaw := mediumTypeIDualCutoff_cast_le
-      (T := T) (d := d) (Q := Q) hTPos.le
-    have hMUpper : (M : ℝ) ≤ T ^ (1 + d - 1 / τ) := by
-      calc
-        (M : ℝ) ≤ T ^ (1 + d) / Q := by simpa only [M] using hMUpperRaw
-        _ = T ^ (1 + d - 1 / τ) := by
-          rw [hQEq, ← Real.rpow_sub hTPos]
-    exact (hFar hTFar hτOne hτTwo (by simpa only [P] using hPOne)
-      (by simpa only [P, M] using hPM) (by rfl)
-      (by simpa only [θ, P] using hThetaUpper)
-      (by simpa only [θ, P] using hThetaLower)
-      (by simpa only [s, θ, P] using hFarScale) hMUpper hUNonempty
-      (by simpa only [P, L] using hLargeU)
-      (by simpa only [P, M] using hOrdinate)
-      (by simpa only [L, u] using hThresholdExact)).elim
+  have hFour : 4 * d ≤ reflectedEndpointScaleSlack σ d :=
+    four_mul_le_reflectedEndpointScaleSlack hσ hσUpper hd.le
+  have hReciprocal : 2 - 4 * d < 1 / (1 / 2 + d) := by
+    rw [lt_div_iff₀ (by linarith : 0 < 1 / 2 + d)]
+    nlinarith [sq_pos_of_pos hd]
+  have hNearScale : 4 * τ₀ / 3 - reflectedEndpointScaleSlack σ d ≤ θ := by
+    have := hcert.tau0_le_ingham
+    have : 1 / (1 / 2 + d) ≤ θ := by simpa only [θ] using hThetaLower
+    linarith
+  apply hNear T hTNear W hA hY hr hLower hUpper hτ hτOne hτTwo hW hSep
+    hRange (by simpa only [u] using hLarge) hCount
+    (by simpa only [P] using hPOne) (by simpa only [P] using hThetaUpper)
+    (by simpa only [P, θ] using hNearScale)
+  refine ⟨j, U, a, rfl, hj, hSepU, hBaseU, hCardU, hCoeff, ?_, ?_, ?_⟩
+  · simpa only [P, Q, M, V, R, S, L, u] using hLargeU
+  · simpa only [P, M] using hPM
+  · simpa only [Q, M, V, R, S, L, u] using hThresholdExact
 
 /-- Exhaustive endpoint consumer for the literal smooth source block selected
 from the detector's long tail.  Every alternative is discharged on the same
@@ -4910,7 +4584,5 @@ theorem classical_medium_typeI_witness_consumer_native :
     exact mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTPos.le ε))
       (Real.rpow_nonneg hTPos.le (3 * (1 - σ) / τ₀))
 
-end GuthMaynard.NativeMoment
 
 -- Generated closures: source context is replayed in the next part.
-end

@@ -133,4 +133,3 @@ theorem iteratedDeriv_modelPhase_expanded_inverseJet_formula
           (inversePhaseDerivativeExpression n)).deriv]
       rfl
 
-end TaoTrudgianYang2025

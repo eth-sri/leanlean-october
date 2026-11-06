@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist
-open CenteredMomentHeckeCancellation CenteredMomentLattice
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeCancellation CenteredMomentLattice
 
 theorem rectangle_source_control (a b ε B : ℝ)
     (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
@@ -61,8 +59,3 @@ theorem rectangle_source_control (a b ε B : ℝ)
     (mul_nonneg (sourceControl_nonneg S W₁) (sourceControl_nonneg S W₂))]
   exact (mul_le_mul_of_nonneg_left h
     (mul_nonneg (sourceControl_nonneg S W₁) (sourceControl_nonneg S W₂))).trans_eq (by ring)
-end SevenEighths.CenteredMomentFiniteProfileExceptional
-
-end
-
-end OAI

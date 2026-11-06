@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalWindow
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorColumns
-open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSmooth CenteredMomentLogDyadic
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentSecondSectorRetained CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorColumns CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization CenteredMomentSmooth CenteredMomentLogDyadic
 
 theorem physical_kernel_window (C D I J : Ideal O)
     (hC : Supported C) (hD : Supported D) (hI : Supported I) (hJ : Supported J)
@@ -66,9 +62,3 @@ theorem physical_kernel_dyadic (C D I J : Ideal O)
     (CenteredMomentFirstScale.norm_pos J hJ.1)]
   exact physical_kernel_window C D I J hC hD hI hJ A h hA hh W K R hK _ _ _ _ _
     (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _) (dyadicScale_pos _)
-
-end SevenEighths.CenteredMomentSecondPhysicalWindow
-
-end
-
-end OAI

@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension
-open RayFourExpansion MixedCrossSeparation
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension RayFourExpansion MixedCrossSeparation
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
     (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
@@ -122,8 +120,3 @@ theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
       intro r hr
       congr 1
       exact first_coprime_coupled_reindex P hprime hinj hg B _ _ H h
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

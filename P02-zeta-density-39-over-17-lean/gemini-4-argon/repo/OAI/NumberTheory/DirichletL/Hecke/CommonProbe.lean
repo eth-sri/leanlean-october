@@ -55,9 +55,3 @@ theorem hecke_ne_zero_of_common_probe (h : UniformCommonProbe)
 theorem zeta_of_common_probe (h : UniformCommonProbe) (s : ℂ)
     (hs : (7/8 : ℝ) < s.re) : riemannZeta s ≠ 0 :=
   HeckeDirichlet.zeta_seven_eighths_of_hecke (hecke_ne_zero_of_common_probe h) s hs
-
-end SevenEighths.HeckeCommonProbe
-
-end
-
-end OAI

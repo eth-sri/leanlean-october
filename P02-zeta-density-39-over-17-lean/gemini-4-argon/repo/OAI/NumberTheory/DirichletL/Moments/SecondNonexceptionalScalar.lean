@@ -11,15 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondNonexceptionalScalar
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel
-open CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily
-open CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows
-open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
 
 lemma scalar_cancel (K G V U c d x y h q M:ℝ)
     (hc:0<c)(hd:0<d)(hx:0<x)(hy:0<y)(hU:0<U)(hq:0≤q) :
@@ -92,9 +84,3 @@ theorem actual_residual_sqrt_cap (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Id
       (4*Hsource)^2/((C.absNorm:ℝ)*D.absNorm):=by ring
   rw [he,Real.sqrt_div (sq_nonneg _),Real.sqrt_sq (by positivity)] at hh
   exact hh
-
-end SevenEighths.CenteredMomentSecondNonexceptionalScalar
-
-end
-
-end OAI

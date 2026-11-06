@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve HeckeInverseAmplification ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 abbrev SixthInnerIndex := HeckeInverseAmplification.NonzeroIdeal×((Id×Id)×Id)
 
@@ -74,8 +72,3 @@ theorem rawArithmeticSeries_eq_sixth_high (S : Finset Id) (hS : ∀P∈S,P.IsMax
   apply tsum_congr
   intro p
   exact rawHighCoefficient_sixth S hS hprime hbad D η x w z (u,p.1) p.2.1.1 p.2.1.2 p.2.2
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

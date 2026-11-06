@@ -13,7 +13,6 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 namespace SevenEighths.CenteredMomentReflectedProfileMeasure
 open HeckeFamily FourierBridge EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 
 theorem row_density_energy {ι : Type*} [Fintype ι]
     (density φ : ι→ℝ→ℂ) (rho : ℝ→ℝ) (w : ℝ→ℝ)
@@ -141,9 +140,3 @@ theorem plain_annular_separation (V F : ℝ→ℂ) (M s X : ℝ) (hX : 0<X)
       (logWindow_support V M hV) le_rfl
     simpa only [Real.exp_log hX] using hh
   exact finite_annular_separation V F s X hX density hsep η S hs hc
-
-end SevenEighths.CenteredMomentReflectedProfileMeasure
-
-end
-
-end OAI

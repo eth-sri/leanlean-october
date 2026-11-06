@@ -8,101 +8,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff MatrixGroups
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical ContDiff
 
-namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
-variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι]
 
-end CompletedGauss
 
-namespace CubicEisenstein
-open ActualEisensteinCubic CompletedGauss CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-namespace FixedFourierGeometry
-variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
-variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι] {p:ι→Eis} {N:Eis}
-
-end FixedFourierGeometry
-end CubicEisenstein
-
-open scoped BigOperators Classical MatrixGroups
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CubicKubota CubicJacobiGlobal
 
 noncomputable local instance primeQuotientFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
   Fintype.ofFinite _
@@ -127,12 +43,8 @@ def activeStratumDatum {ι:Type*} [Fintype ι]
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal
-open CanonicalRowCompletion
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CubicKubota CubicJacobiGlobal CanonicalRowCompletion
 
-noncomputable local instance fixedActiveQuotientFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
-  Fintype.ofFinite _
 
 abbrev FixedActiveCuspIndex {ι:Type*} (c:Eis) (p:ι→Eis) :=
   Σ_h:Eis⧸Ideal.span {c},ΣA:Finset ι,∀i:A,(Eis⧸Ideal.span {p i.val})ˣ
@@ -152,13 +64,11 @@ def fixedActiveCuspDatum (t:FixedActiveCuspIndex c p) : SourceCuspDatum :=
 
 end CubicEisenstein
 
-open scoped BigOperators Classical ContDiff
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein CubicJacobiGlobal
 
 def actualControlledSource (I Q:Ideal Eis) (hI:Supported I)
     (c:Eis) (hc:c≠0) [Fintype (Eis⧸Ideal.span {c})]
@@ -184,8 +94,7 @@ def actualControlledSource (I Q:Ideal Eis) (hI:Supported I)
 end
 section
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 
 structure GoodMaskRowData (m f z:Eis) where
   maskUnit:Eisˣ
@@ -273,8 +182,7 @@ end GoodMaskRowData
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve
 namespace GoodMaskRowData
 variable {m f z:Eis} (D:GoodMaskRowData m f z)
 variable (R I F Q0:Ideal Eis) (hR:R≠0) (hI:I≠0) (hF:Squarefree F)
@@ -321,9 +229,3 @@ noncomputable def fiberGoodMaskRowData (rows:Finset (Ideal Eis)) (R F:Ideal Eis)
   goodMaskRowData _ _ _ hm (ConcretePrimeRowBridge.idealGenerator_ne_zero F hF)
     (mul_ne_zero u.ne_zero (ConcretePrimeRowBridge.idealGenerator_ne_zero I.val
       (hrows I.val (Finset.mem_filter.mp I.property).1)))
-
-end CanonicalRowCompletion
-
-end
-
-end OAI

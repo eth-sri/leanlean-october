@@ -104,8 +104,3 @@ lemma eventually_compensated_source_scales (C : CalibrationData) (B : ℝ) :
   rw [lowPhysicalScale,compensated_gram_ratio _ _ _ _ (calibration_elementNorm_pos C)
     (by positivity) (by positivity) hl]
   exact (le_div_iff₀ (mul_pos (calibration_elementNorm_pos C) (by positivity))).mpr (by simpa using hp)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

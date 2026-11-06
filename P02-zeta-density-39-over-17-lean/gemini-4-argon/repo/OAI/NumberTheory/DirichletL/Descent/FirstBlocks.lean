@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -99,8 +97,3 @@ theorem first_block_normalized_density (F : Finset ι) (selector : Finset ι →
           (normalization * firstNormProfile W₁ W₂ Φ (fun _ _ => 1) K
             (firstCommonNorms p A₁ A₂ C R d h j)) := by ring
       _ = _ := by rw [he j hj hz]; ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

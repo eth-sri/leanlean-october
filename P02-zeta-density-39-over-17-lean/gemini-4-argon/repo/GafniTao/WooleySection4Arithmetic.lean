@@ -65,4 +65,3 @@ theorem wooley_section4_depth_margin
   nlinarith
 
 
-end GafniTao

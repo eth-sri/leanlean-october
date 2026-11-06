@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CanonicalQuadraticSieve IdealMobiusDivisorSum UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialExcludedSource
 open InverseInitialOverlap
-local notation "O"=>ActualEisensteinCubic.O
 
 def columns (S:Finset (Ideal O))(P j:Ideal O):Finset (Ideal O):=
   (original S P j).image (idealQuotient j)
@@ -95,9 +94,3 @@ theorem polynomial_decomposition (S:Finset (Ideal O)){P:Ideal O}(hP:Squarefree P
   apply Finset.sum_congr rfl
   intro j hj
   exact polynomial_slice S hP ((mem_idealDivisors hP.ne_zero).mp hj) ψ a W X
-
-end SevenEighths.InverseInitialExcludedSource
-
-end
-
-end OAI

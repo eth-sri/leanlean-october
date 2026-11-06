@@ -93,4 +93,3 @@ theorem mixed_two_poisson_raw {ε : ℝ} (hε : 0 < ε) :
   unfold gmAffineRegionIIIRawBound
   linarith
 
-end GuthMaynard.Improvement

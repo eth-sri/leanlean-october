@@ -68,9 +68,3 @@ theorem inverseSchwartz_operator_uniform (reverse : Bool) (n : ℕ) (V W : ℝ�
     (hbound (σ,R) hp (t/(2*Real.pi))).trans
       (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (by linarith) J) hB.le)
   exact (mul_le_mul_of_nonneg_left hb hA.le).trans_eq (by ring)
-
-end SevenEighths.DetectorDictionaryInverseUniform
-
-end
-
-end OAI

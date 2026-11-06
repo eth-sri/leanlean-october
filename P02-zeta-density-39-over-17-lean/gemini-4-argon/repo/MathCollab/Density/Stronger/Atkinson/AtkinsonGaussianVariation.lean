@@ -159,4 +159,3 @@ theorem finiteVariationBound_atkinsonSaddleGaussian_physical {T G : ℝ}
   apply (finiteVariationBound_atkinsonSaddleGaussian hT hG hGT m N).mono
   exact mul_le_mul_of_nonneg_left (quadraticFrequencyEnvelope_saddle_le_physical hT G m hm) (by positivity)
 
-end MathCollab.Density.Stronger.Atkinson

@@ -36,4 +36,3 @@ theorem coprime_fourth_insert_product_le {A : Finset ℕ} {e : ℕ}
   simp only [Finset.sum_insert heA, Finset.sum_add_distrib]
   linarith [hH e e]
 
-end Montgomery.RationalMoment

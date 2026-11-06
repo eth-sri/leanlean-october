@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem canonical_probe_exists_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
@@ -65,9 +64,3 @@ theorem canonical_probe_exists_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
     refine ⟨ha0,ha1,hZT,hBH,?_,hnext⟩
     have : 0≤Z^τ := Real.rpow_nonneg (by linarith) _
     linarith
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -57,8 +57,3 @@ theorem fullCorrelation_bezout_norm [Fintype R] (n₁ n₂ a b k : R) (hab : a*n
       rw [norm_mul,norm_star]
       exact (mul_le_of_le_one_left (norm_nonneg _) (hf _)).trans (hg _)
     _ = _ := by simp
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

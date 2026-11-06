@@ -25,9 +25,3 @@ lemma mesh_cost (kappa reserve : ℝ) (hk : 0≤kappa) (hr : 0≤reserve) :
   rw [←mul_div_assoc]
   apply (div_le_iff₀ (by positivity : 0<kappa+1)).mpr
   nlinarith
-
-end SevenEighths.CenteredMomentSuccessorPaidParameters
-
-end
-
-end OAI

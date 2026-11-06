@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-local notation "O" => ActualEisensteinCubic.O
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -38,8 +35,3 @@ theorem original_paired_tail (hp : ∀i,p i≠0)
       priorityTailParent p hg hp hinj extra pool negative Ψ m slots J lists a V X Y R (parent p x) := by
   rw [wholePaired_parent_sq_sum p (fun x=>extra x.cube) hinj]
   simp only [tail_forget]
-
-end SevenEighths.InverseMomentGlobalPriorityTail
-end
-
-end OAI

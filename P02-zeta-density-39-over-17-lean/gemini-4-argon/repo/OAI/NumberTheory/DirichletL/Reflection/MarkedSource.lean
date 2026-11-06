@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 namespace PrimeFamily
 variable {ι : Type*} (P : PrimeFamily ι)
@@ -37,9 +35,3 @@ def activeControlled [Fintype ι]
   Classical.choice ((P.restrict A).exists_controlled N (G h).a0 (G h).c0 (G h).mode
     (G h).denominator_ne_zero (hN h) (G h).primary (G h).coprime
     (P.restrict_pairwise hP A) (fun i => hNp i.val))
-
-end PrimeFamily
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

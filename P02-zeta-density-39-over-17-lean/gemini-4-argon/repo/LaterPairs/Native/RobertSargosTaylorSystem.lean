@@ -41,4 +41,3 @@ theorem robertSargos_reverseR_involution (p : RobertSargosSevenPoint) :
 theorem robertSargos_reverseR_injective : Function.Injective robertSargosReverseR :=
   Function.LeftInverse.injective robertSargos_reverseR_involution
 
-end TaoTrudgianYang2025

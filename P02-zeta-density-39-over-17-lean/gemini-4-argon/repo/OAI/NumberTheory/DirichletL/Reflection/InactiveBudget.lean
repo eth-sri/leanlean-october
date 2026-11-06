@@ -42,8 +42,3 @@ theorem harmonic_product_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
       · congr 1;omega
       · congr 1;norm_num
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hD (Nat.mul_le_mul_left 2 hcard)) (Real.rpow_nonneg hp.le _)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

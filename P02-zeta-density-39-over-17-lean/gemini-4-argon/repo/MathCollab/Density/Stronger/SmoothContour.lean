@@ -10,8 +10,7 @@ public import MathCollab.Density.DetectorContour
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -110,4 +109,3 @@ theorem smoothDetector_finite_rectangle_residue {ψ : ℝ → ℝ} {a b : ℝ}
     exact not_mem_rectangleBorder_of_rectangle_mem_nhds hpInterior (heq ▸ hsBorder)
   exact (smoothContourNumerator_div_eq_kernel ψ ρ X N q hsp).symm
 
-end MathCollab.Density.Stronger

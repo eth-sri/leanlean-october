@@ -56,4 +56,3 @@ theorem abs_dfiBesselY0_le_seven_div_sqrt {x : ℝ} (hx : 0 < x) :
       exact mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hx.le _)
     _ = _ := by rw [Real.rpow_neg hx.le, ← Real.sqrt_eq_rpow, div_eq_mul_inv]
 
-end MathCollab.Density.Stronger.Atkinson

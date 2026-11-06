@@ -69,4 +69,3 @@ theorem ExponentPair.atkinson_gap_sum_bound {k l ε : ℝ}
   convert h using 1
   congr 2 <;> field_simp
 
-end TaoTrudgianYang2025

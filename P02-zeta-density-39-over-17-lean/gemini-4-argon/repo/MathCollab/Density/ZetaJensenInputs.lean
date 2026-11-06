@@ -193,4 +193,3 @@ theorem euler_product_lower_bound_2 (t : ℝ) :
   nlinarith [norm_nonneg (riemannZeta s)]
 
 
-end MathCollab.Density.ZetaGrowth

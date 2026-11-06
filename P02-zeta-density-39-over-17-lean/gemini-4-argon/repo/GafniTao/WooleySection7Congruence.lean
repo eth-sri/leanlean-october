@@ -347,6 +347,4 @@ theorem wooley_section7_common_depth_eq_BPrimeNat
   rw [hdecomp]
   omega
 
-end
 
-end GafniTao

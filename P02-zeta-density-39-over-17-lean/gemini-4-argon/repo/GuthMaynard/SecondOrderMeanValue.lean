@@ -66,4 +66,3 @@ theorem second_order_mean_value
   dsimp only [D] at hxizero ⊢
   linarith
 
-end RiemannZeta.GuthMaynard

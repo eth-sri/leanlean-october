@@ -75,8 +75,3 @@ theorem reflected_kernel_uniform_separation (a b : ℝ) (ha : 0<a)
   congr 1
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun t => by dsimp only; rw [kernel_mode_separation])
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

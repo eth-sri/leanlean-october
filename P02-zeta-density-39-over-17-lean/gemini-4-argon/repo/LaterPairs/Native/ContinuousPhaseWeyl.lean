@@ -81,4 +81,3 @@ theorem continuous_phase_weyl
   rw [sum_integer_zero_interval_eq_range] at hb
   simpa only [Int.cast_natCast] using hb
 
-end TaoTrudgianYang2025

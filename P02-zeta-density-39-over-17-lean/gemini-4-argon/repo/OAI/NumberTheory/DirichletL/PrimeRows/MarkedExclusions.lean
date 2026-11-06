@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem correctionTail_mono {S T : Finset (Ideal O)} (hS : CorrectionTail S) (hst : S⊆T) :
     CorrectionTail T := by
@@ -48,9 +47,3 @@ theorem markedSourceExclusions (S : Finset (Ideal O)) (hS : SourceExclusions S) 
 
 theorem marked_firstTail (eps : ℝ) (S : Finset (Ideal O)) (hS : FirstTail eps S) (T : Finset PrimeIdeal) :
     FirstTail eps (markExclusions S T) := firstTail_mono hS Finset.subset_union_left
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

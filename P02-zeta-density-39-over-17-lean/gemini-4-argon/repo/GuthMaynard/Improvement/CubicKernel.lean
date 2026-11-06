@@ -102,4 +102,3 @@ theorem frequencyKernel_cubic (μ ν : Measure ℝ) [IsFiniteMeasure μ] [IsFini
   simp_rw [hx,cubicIntegrand_time_integral] at hswap
   exact hswap.symm
 
-end GuthMaynard.Improvement

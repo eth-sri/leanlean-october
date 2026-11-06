@@ -42,8 +42,3 @@ lemma sourceNormPower_identity (I J H X : ℝ) (hI : 0<I) (hJ : 0<J) (hH : 0<H) 
   rw [Complex.exp_log hi,Complex.exp_log hj]
   congr 1
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

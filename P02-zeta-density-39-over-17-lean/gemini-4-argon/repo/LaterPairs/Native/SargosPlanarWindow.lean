@@ -93,4 +93,3 @@ theorem sargosPlanar_window_le_nearPairs {ι : Type*} (S : Finset ι)
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (sargosWeightedPlanarIntegral_le_nearPairs S z u v hz hA hB (c+δ/2) (d+lambda/2)) hC
 
-end TaoTrudgianYang2025

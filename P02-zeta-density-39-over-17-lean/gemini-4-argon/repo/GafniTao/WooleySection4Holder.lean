@@ -298,6 +298,4 @@ theorem wooleySourcePolynomial_equation_4_15
         rw [hsumA, hsumB]
 
 
-end
 
-end GafniTao

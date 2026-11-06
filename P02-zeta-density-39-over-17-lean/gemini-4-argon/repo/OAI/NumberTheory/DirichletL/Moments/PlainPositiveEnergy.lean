@@ -9,11 +9,9 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap BigOperators
 namespace SevenEighths.CenteredMomentPlainPositiveEnergy
-open HeckeFamily HeckeDyadic CenteredMomentPlainPositiveScale CenteredMomentPlainGlobalEnergy
-open CenteredMomentOriginalRadialComparison
+open HeckeFamily HeckeDyadic CenteredMomentPlainPositiveScale CenteredMomentPlainGlobalEnergy CenteredMomentOriginalRadialComparison
 open CenteredMomentRadialEligibleEnergy (Radial)
 open QuadraticInitialBound ConcreteTraceCRT
-local notation "O"=>HeckeFamily.O
 
  theorem actual_radial_pair_bound (a b:ℝ)(ha:0<a):
     ∃S:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
@@ -47,9 +45,3 @@ local notation "O"=>HeckeFamily.O
     exact (mul_le_mul h₁ h₂ (norm_nonneg _) (by positivity)).trans_eq (by dsimp [B];ring)
   have hh:=radial_bound_on_keep _ r B hB hp
   exact hh.trans_eq (by dsimp [B];ring)
-
-end SevenEighths.CenteredMomentPlainPositiveEnergy
-
-end
-
-end OAI

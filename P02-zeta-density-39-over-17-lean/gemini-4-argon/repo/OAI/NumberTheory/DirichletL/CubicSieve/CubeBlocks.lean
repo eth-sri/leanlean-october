@@ -7,126 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-namespace SecondPassArithmetic
-
-section
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-open RayFourExpansion (RayCharacter)
-
-end
-section
-
-open scoped BigOperators Classical SchwartzMap
-open MeasureTheory
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm columnLog)
-open RayFourExpansion (RayCharacter crossCoeff)
-
-@[ext] structure GlobalCubeBlock (ι : Type*) where
-  cube : CubeCoordinates ι
-  common : Finset ι
-  firstDivisor : Finset ι
-
-namespace GlobalCubeBlock
-variable {ι : Type*}
-def withCommon (b : GlobalCubeBlock ι) (A : Finset ι) : GlobalFirstData ι :=
-  ⟨b.cube,A,b.common,b.firstDivisor⟩
-end GlobalCubeBlock
-
-namespace GlobalFirstData
-variable {ι : Type*}
-def block (b : GlobalFirstData ι) : GlobalCubeBlock ι := ⟨b.cube,b.common,b.firstDivisor⟩
-@[simp] theorem block_withCommon (b : GlobalCubeBlock ι) (A : Finset ι) : (b.withCommon A).block=b := rfl
-@[simp] theorem withCommon_block (b : GlobalFirstData ι) : b.block.withCommon b.firstCommon=b := by cases b; rfl
-end GlobalFirstData
-
-variable {ι : Type*} [DecidableEq ι]
-
-variable (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
-
-end
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-
-end SecondPassArithmetic
-
-open scoped BigOperators Classical SchwartzMap
 namespace InitialMeanSquare
-open ActualEisensteinCubic SecondPassArithmetic
+open SecondPassArithmetic
 open FirstCauchyArithmetic (supportMobius supportConjugateSum)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -145,11 +29,10 @@ include hc
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve QuadraticSquarefreeKernel UniqueFactorizationMonoid
+open CanonicalQuadraticSieve QuadraticSquarefreeKernel
 
 def PowerfulIdeal (I : Ideal O) : Prop :=
   I≠0 ∧ ∀P∈normalizedFactors I, 2≤(normalizedFactors I).count P
@@ -235,7 +118,7 @@ theorem powerfulBase_norm_bound (I : Ideal O) (hI : PowerfulIdeal I) (X : ℝ)
 
 end
 
-open ActualEisensteinCubic CanonicalQuadraticSieve QuadraticSquarefreeKernel
+open CanonicalQuadraticSieve QuadraticSquarefreeKernel
 
 theorem powerful_fiber_count (S : Finset (Ideal O)) (X : ℝ)
     (hS : ∀I∈S,PowerfulIdeal I ∧ (Ideal.absNorm I:ℝ)≤X)
@@ -304,9 +187,3 @@ theorem powerful_ideal_count (ε : ℝ) (hε : 0<ε) :
       rw [Real.rpow_add (by linarith : 0<X),←Real.sqrt_eq_rpow]
       dsimp [C]
       ring
-
-end CompletedGauss
-
-end
-
-end OAI

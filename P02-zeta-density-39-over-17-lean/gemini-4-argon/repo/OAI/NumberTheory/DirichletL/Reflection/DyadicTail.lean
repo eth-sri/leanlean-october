@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
 def rawDyadicLabel (x : RawTailIndex) : ℕ×ℕ×ℕ :=
   (x.1,Nat.clog 2 (Ideal.absNorm x.2.2.val),Nat.clog 2 (Ideal.absNorm x.2.1.val))
@@ -45,8 +43,3 @@ theorem tsum_cut_dyadic (f : RawTailIndex→ℂ) (cut : (ℕ×ℕ×ℕ)→Prop)
   by_cases hi : cut i
   · simp only [hl,ite_eq_left hi]
   · simp only [hl,ite_eq_right hi,Finset.sum_const_zero]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

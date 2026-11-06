@@ -74,4 +74,3 @@ theorem norm_sum_Icc_le_interior_add_three
         linarith
     _ ≤ _ := by linarith [hz a,hz (a+L+2),hz (a+L+3)]
 
-end TaoTrudgianYang2025

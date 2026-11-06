@@ -11,9 +11,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalWindowPair
-open CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
 
 theorem paired_integrals {κ:Type*}(rows:Finset κ)(f g:κ→ℝ→ℂ)
     (hf:∀z∈rows,Integrable (f z))(hg:∀z∈rows,Integrable (g z))
@@ -45,9 +43,3 @@ theorem paired_integrals {κ:Type*}(rows:Finset κ)(f g:κ→ℝ→ℂ)
       (integrable_finsetSum rows (fun z hz=>(hf z hz).norm.mul_const _))
       ((ha.const_mul E).mul_const _) hinner
     _=E*(∫u,a u)*(∫v,b v):=by rw [integral_mul_const,integral_const_mul]
-
-end SevenEighths.CenteredMomentExceptionalWindowPair
-
-end
-
-end OAI

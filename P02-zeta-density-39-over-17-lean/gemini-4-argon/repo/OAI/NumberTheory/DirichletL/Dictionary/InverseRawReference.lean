@@ -14,16 +14,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap Topology
 open Filter
 namespace SevenEighths.DetectorDictionaryInverseRawReference
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve
-open InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialExcludedPeriod
-open InverseInitialRayAttachment InverseInitialProfileBounds
-open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitialEnergy
-open DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound
-open DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial
-open DetectorDictionaryInverseRawGeometry IdealMobiusDivisorSum
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialExcludedPeriod InverseInitialRayAttachment InverseInitialProfileBounds DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitialEnergy DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial DetectorDictionaryInverseRawGeometry IdealMobiusDivisorSum
 
 theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     (hs:Function.support W⊆Set.Icc a b)(hc:0<c)(hκ:0<κ):
@@ -144,9 +135,3 @@ theorem raw_reference_moment (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     W a b ha hs H₀ hH₀.le
   refine ⟨C+C₀,add_pos hC hC₀,?_⟩
   exact hcomplete data c κ C J hc.le hκ.le hC.le hlarge
-
-end SevenEighths.DetectorDictionaryInverseRawReference
-
-end
-
-end OAI

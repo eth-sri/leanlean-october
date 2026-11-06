@@ -99,6 +99,4 @@ theorem heathBrownPairCountTwo_index_separation
     nlinarith [mul_le_mul_of_nonneg_right hslope hinvPos.le]
 
 
-end
 
-end GafniTao

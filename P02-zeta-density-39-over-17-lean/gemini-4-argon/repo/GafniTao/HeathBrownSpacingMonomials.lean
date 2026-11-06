@@ -136,6 +136,4 @@ theorem heathBrownThreeTerm_pos
   positivity
 
 
-end
 
-end GafniTao

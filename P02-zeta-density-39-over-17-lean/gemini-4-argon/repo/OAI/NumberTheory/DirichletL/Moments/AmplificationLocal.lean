@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationLocal
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical
-open CenteredMomentUnequal CenteredMomentAmplification CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical CenteredMomentUnequal CenteredMomentAmplification CenteredMomentSupportedCorrelation
 
 def centralLocal (p : O) (hp : p ≠ 0) (n : ℕ) (h : O) : ℂ :=
   sexticGauss (p^(n+1)) (pow_ne_zero _ hp) h / (Ideal.absNorm (Ideal.span {p}) : ℂ)^(n+1)
@@ -110,9 +107,3 @@ theorem centralLocal_six_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaxi
   rw [centralLocal_unit_norm p hp hs 5 h (p^6) hph,centralLocal_six p hp hg hc]
   rw [← Complex.ofReal_natCast,← Complex.ofReal_inv,← Complex.ofReal_one,← Complex.ofReal_sub,
     Complex.norm_real,Real.norm_eq_abs,sq_abs]
-
-end SevenEighths.CenteredMomentAmplificationLocal
-
-end
-
-end OAI

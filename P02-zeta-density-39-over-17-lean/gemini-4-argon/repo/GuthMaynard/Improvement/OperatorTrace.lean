@@ -157,4 +157,3 @@ theorem operatorIntegral_cubic_cycle [Countable ι] (b : HilbertBasis ι ℂ E)
   filter_upwards with d
   exact (mul_assoc _ _ _).symm
 
-end GuthMaynard.Improvement

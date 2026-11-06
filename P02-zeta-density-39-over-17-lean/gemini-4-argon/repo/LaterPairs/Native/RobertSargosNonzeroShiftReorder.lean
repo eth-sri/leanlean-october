@@ -48,4 +48,3 @@ theorem robertSargos_nonzero_weighted_shifted_reorder (f : ℝ → ℝ) (M H Q R
   intro n _
   ring
 
-end TaoTrudgianYang2025

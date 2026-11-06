@@ -136,6 +136,4 @@ theorem heathBrown_full_kernel_sum_le_blocks
   exact htsum
 
 
-end
 
-end GafniTao

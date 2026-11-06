@@ -8,15 +8,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialExcludedForcing
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialLargePool
-open InverseInitialExcludedPool InverseInitialExcludedOverlap
-open InverseInitialCommonTuples InverseInitialCommonTransform
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialLargePool InverseInitialExcludedPool InverseInitialExcludedOverlap InverseInitialCommonTuples InverseInitialCommonTransform
 
 theorem pool_product_outside (F E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
     (hF:∀I∈F,outside E I)(A:Finset (primePool F)):
@@ -101,9 +95,3 @@ theorem original_tuples_excluded_input
   rw [residual_excluded_forcing W Z r z G b hZ hW E hE (hP k hk) (hj k hk) (hPE k hk) F hF hFE
     (fun c hc=>hsub (Finset.mem_biUnion.mpr ⟨k,hk,hc⟩)) η hη u]
   ring
-
-end SevenEighths.InverseInitialExcludedForcing
-
-end
-
-end OAI

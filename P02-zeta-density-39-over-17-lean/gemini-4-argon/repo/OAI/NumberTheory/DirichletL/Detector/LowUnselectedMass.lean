@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 local notation "SupportedIdeal" => {I : Ideal O // Supported I}
 
 lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
@@ -83,8 +82,3 @@ theorem lowUnselectedMass_bound (K : ℕ) (M : ℝ) (hM : 0≤M) :
     _≤_ := by
       simp only [Finset.prod_const,Finset.card_univ,Fintype.card_coe]
       exact pow_le_pow_right₀ (le_max_left _ _) (by simpa using Finset.card_le_card (Finset.subset_univ J))
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

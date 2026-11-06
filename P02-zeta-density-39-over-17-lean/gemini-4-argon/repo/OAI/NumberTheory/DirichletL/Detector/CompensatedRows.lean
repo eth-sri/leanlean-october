@@ -11,8 +11,6 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : MeasurableSpace FreeRow := ⊤
 local instance : MeasurableSingletonClass FreeRow := ⟨fun _=>trivial⟩
@@ -97,8 +95,3 @@ theorem compensatedRowTripleIntegral_eq_tsum {K : ℕ} (η : HeckeFamily.Charact
   intro t
   dsimp only
   simp only [compensatedRowOnLines,e,tsum_mul_left,mul_assoc]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

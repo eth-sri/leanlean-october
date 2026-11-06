@@ -12,15 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceChild
-open HeckeFamily HeckeDyadic ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergySlotHeight
-open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
-open CenteredMomentEnergyProfiles CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondHeightFamily CenteredMomentLattice CenteredMomentRetainedProfile CenteredMomentTwist
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource CenteredMomentEnergyAllocatedChildren CenteredMomentEnergySlotHeight CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy CenteredMomentEnergyProfiles CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentLattice CenteredMomentRetainedProfile CenteredMomentTwist
 
 def unpuncturedState {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ):NaturalState Z 0 bΦ where
   character:=s.character
@@ -113,9 +105,3 @@ theorem independent_child_ray_energy {α:Type*}[Fintype α][DecidableEq α]
     (fun i:F=>P i) (fun i:F=>σ i) (fun i:F=>freq i)
     (fun i=>hP i i.property) (fun i I hI=>(hp i i.property I hI).ne_zero)
     t 0 X₁ X₂ _ _ _
-
-end SevenEighths.CenteredMomentEnergyReferenceChild
-
-end
-
-end OAI

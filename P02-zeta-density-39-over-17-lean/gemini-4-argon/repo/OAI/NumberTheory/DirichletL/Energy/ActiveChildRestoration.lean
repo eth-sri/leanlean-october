@@ -10,15 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyActiveChildRestoration
-open ConcretePrimeRowBridge
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonHeightEnvelope
-open CenteredMomentFirstAnnularInput CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy CenteredMomentCommonMaskEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-local notation "O"=>HeckeFamily.O
+open ConcretePrimeRowBridge HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentCommonHeightEnvelope CenteredMomentFirstAnnularInput CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentDivisorAllocation CenteredMomentDivisorRetained CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentRadialEligibleEnergy CenteredMomentCommonMaskEnergy CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 variable {α:Type*}[Fintype α]
 local instance {β:Type*}:DecidableEq β:=Classical.decEq _
 
@@ -82,9 +74,3 @@ theorem child_energy_active (s:Input α)(C R:Ideal O)
     (allocated_row_active s C R B τ v D a z s.W₁ s.W₂
       (s.Y₁ / Ideal.absNorm (B.val (Sum.inr 0)))
       (s.Y₂ / Ideal.absNorm (B.val (Sum.inr 1))))
-
-end SevenEighths.CenteredMomentEnergyActiveChildRestoration
-
-end
-
-end OAI

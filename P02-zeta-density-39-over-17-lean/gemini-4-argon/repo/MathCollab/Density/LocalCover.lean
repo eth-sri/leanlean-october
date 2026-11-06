@@ -164,4 +164,3 @@ theorem localSet_pair_distance {U : Finset ℝ} {H : ℝ} {j : ℤ} {t u : ℝ}
   apply abs_lt.mpr
   constructor <;> nlinarith [htt.1, htt.2, huu.1, huu.2]
 
-end MathCollab.Density

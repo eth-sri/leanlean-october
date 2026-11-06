@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
-open InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
 universe u v
 
 theorem canonical_short_normalized_energy_uniform_degree
@@ -54,9 +52,3 @@ theorem canonical_short_normalized_energy_uniform_degree
     hmargin hreserve hVd hcutd hd labels hlabelsN ConcretePrimeRowBridge.idealGenerator
     (fun f _ => ConcretePrimeRowBridge.span_idealGenerator f) T hT hcard lists H hdis hmax hgood hprime hodd
     hH1 hH hprod Ψ hΨ hperiod θ w hw
-
-end SevenEighths.InverseShortCanonicalNormalization
-
-end
-
-end OAI

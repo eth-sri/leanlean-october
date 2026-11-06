@@ -9,14 +9,8 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationLiveEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-open CenteredMomentLiveSupport CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation
-open CenteredMomentOriginalChildEnergy CenteredMomentAmplificationLiveMask
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentLiveSupport CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation CenteredMomentOriginalChildEnergy CenteredMomentAmplificationLiveMask
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
  theorem masked_live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
@@ -87,9 +81,3 @@ theorem original_masked_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (allocation_data S C B (Finset.mem_filter.mp B.property).1).1 C R s hC
     (Finset.mem_filter.mp B.property).1 (Finset.mem_filter.mp B.property).2
     ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ f W K)
-
-end SevenEighths.CenteredMomentAmplificationLiveEnergy
-
-end
-
-end OAI

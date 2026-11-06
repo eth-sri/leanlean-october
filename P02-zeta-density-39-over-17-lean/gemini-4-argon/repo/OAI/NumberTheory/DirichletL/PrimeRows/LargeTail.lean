@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma absolutePhysicalDyadIntegral_nonneg {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -66,8 +65,3 @@ theorem large_physical_dyads_summable (K : ℕ) (δ a b B r ζ : ℝ)
     _ = A*(Z^((53/32:ℝ)+((13/16:ℝ)+ζ)*(8/5+δ)-ζ*r)*(1-(2:ℝ)^(8/5+δ-r))⁻¹) := by
       rw [show (∑'n,g n)=_ from large_geometric_sum Z ζ δ r hZ0 hr']
     _ = _ := by dsimp [A];ring
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

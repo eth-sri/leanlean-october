@@ -65,4 +65,3 @@ theorem robertSargos_cubic_remainder_radius_jets
     rw [iteratedDeriv_four_robertSargosCubicRemainder (hf _ Set.right_mem_uIcc)]
     simpa only [Nat.sub_self,pow_zero,mul_one] using hb (m+y) Set.right_mem_uIcc
 
-end TaoTrudgianYang2025

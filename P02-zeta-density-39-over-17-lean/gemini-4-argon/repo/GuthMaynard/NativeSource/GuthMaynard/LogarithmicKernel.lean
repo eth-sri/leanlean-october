@@ -29,21 +29,14 @@ theorem dyadicInterval_eq_Ico_succ (N : ℕ) :
   simp only [dyadicInterval, Finset.mem_Ioc, Finset.mem_Ico]
   omega
 
-theorem logarithmicKernel_eq_logarithmicSum (N : ℕ) (t : ℝ) (hN : 0 < N) :
-    logarithmicKernel N t = logarithmicSum t (N + 1) (2 * N + 1) := by
-  rw [logarithmicSum_eq_cpow t (N + 1) (2 * N + 1) (by omega)]
-  unfold logarithmicKernel
-  rw [dyadicInterval_eq_Ico_succ]
-
-theorem logarithmicKernel_eq_shifted_phaseSum (N : ℕ) (t : ℝ) (hN : 0 < N) :
+theorem logarithmicKernel_eq_shifted_phaseSum (N : ℕ) (t : ℝ) (_hN : 0 < N) :
     logarithmicKernel N t =
       ∑ k ∈ range N, unitaryPhase (logarithmicPhase t (N + 1 + k)) := by
-  rw [logarithmicKernel_eq_logarithmicSum N t hN]
-  unfold logarithmicSum phaseSum
-  rw [sum_Ico_eq_sum_range]
-  have hlength : 2 * N + 1 - (N + 1) = N := by omega
-  rw [hlength]
-  simp only [Nat.cast_add, Nat.cast_one]
+  unfold logarithmicKernel
+  rw [dyadicInterval_eq_Ico_succ, sum_Ico_eq_sum_range, show 2 * N + 1 - (N + 1) = N by omega]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  simpa [Nat.cast_add, Nat.cast_one] using
+    (unitaryPhase_logarithmicPhase_eq_cpow t (N + 1 + k) (by omega)).symm
 
 @[simp] theorem logarithmicKernel_zero (N : ℕ) :
     logarithmicKernel N 0 = (N : ℂ) := by
@@ -414,4 +407,3 @@ theorem norm_logarithmicKernel_le_sqrt
   rw [← norm_logarithmicKernel_abs N t]
   exact hB.trans hmajor
 
-end GuthMaynard.NativeMoment

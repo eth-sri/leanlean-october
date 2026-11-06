@@ -49,7 +49,3 @@ lemma unramifiedSelected_central_quotient (Q a e : ℝ) (A eta v x w z : ℂ)
   apply (div_le_iff₀ hp).mpr
   have ht : 0≤Q^(-(51/100:ℝ)) := Real.rpow_nonneg (by linarith) _
   nlinarith
-end SevenEighths.ProbeEuler
-end
-
-end OAI

@@ -93,4 +93,3 @@ theorem robertSargos_frequency_loss_algebra {R H Q δ ε K W : ℝ}
       mul_le_mul (Real.rpow_le_rpow hQ0 hQB hε) hbound hW (by positivity)
     _ = _ := by rw [Real.rpow_add hB,Real.rpow_one]; ring
 
-end TaoTrudgianYang2025

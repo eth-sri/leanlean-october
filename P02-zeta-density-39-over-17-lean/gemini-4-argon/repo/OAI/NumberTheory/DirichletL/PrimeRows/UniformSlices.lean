@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem uniform_buffered_x_slice_decay (K : ℕ)
@@ -74,9 +73,3 @@ theorem uniform_buffered_x_slice_decay (K : ℕ)
     _ ≤ (9*A*(9*(height H)^2))*D*(X^(1/2-r)*Z^(σ+r-1)*Y^((1-a-6*e)-1))/height H^(N+2) := by
       gcongr
     _ = _ := by dsimp [A];rw [pow_add];field_simp;ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

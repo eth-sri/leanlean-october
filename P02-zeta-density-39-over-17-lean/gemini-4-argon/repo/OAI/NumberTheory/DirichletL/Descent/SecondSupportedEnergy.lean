@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open InverseSecondFibers SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -39,8 +38,3 @@ theorem actualSecondTriples_mono {Jo Jn : ℕ} (u v : Eisˣ)
     {S T : Finset (MarkedSecondSource ι Jo Jn)} (hST : S ⊆ T) :
     actualSecondTriples p u v S ⊆ actualSecondTriples p u v T :=
   Finset.image_subset_image hST
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

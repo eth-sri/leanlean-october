@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
   (hp : ∀ i, p i ≠ 0)
 
@@ -82,8 +81,3 @@ theorem actual_second_q0_power_bound
     _ = Z^((ell+eta)+(R+eta)/2-(j-eta)) := by
       rw [←Real.rpow_add hZ,←Real.rpow_sub hZ]
     _ = _ := by congr 1; ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -55,4 +55,3 @@ theorem robertSargos_zero_r_second_derivative_prefix
     (fun x hx => hj 1 (by norm_num) x hx)
     (fun x hx => (hc x hx).1) (fun x hx => (hc x hx).2)
 
-end TaoTrudgianYang2025

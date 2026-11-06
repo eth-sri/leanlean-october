@@ -11,12 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainMomentParameters
-open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
-open CenteredMomentDetectorDictionary
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
-open CenteredMomentDetectorPlainUnmarkedState CenteredMomentNaturalFixedRaySource
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState CenteredMomentDetectorPlainUnmarkedState CenteredMomentNaturalFixedRaySource
 
 variable {Δ:ℝ}
 
@@ -105,9 +100,3 @@ theorem source_label_fixed_allowance (D:Parameters.HighData Δ)
 lemma final_exponent_budget (D:Parameters.HighData Δ)(base:ℝ):
     base+delta D+stageError D≤base+D.t := by
   linarith [(fixed_parameters D).2.2.2.1]
-
-end SevenEighths.CenteredMomentDetectorPlainMomentParameters
-
-end
-
-end OAI

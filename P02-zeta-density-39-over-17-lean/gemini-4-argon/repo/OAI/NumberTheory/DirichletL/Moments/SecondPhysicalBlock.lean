@@ -9,13 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalBlock
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentSectorLocalization
-open CenteredMomentSecondRadicalBlock CenteredMomentHeckeColumnWindow
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentSectorLocalization CenteredMomentSecondRadicalBlock CenteredMomentHeckeColumnWindow
 
 def outerScalar (C D : Ideal O) (K : ℝ) (n : Fin 4→ℤ) : ℝ :=
   K/(Real.sqrt (Ideal.absNorm C:ℝ)*Real.sqrt (Ideal.absNorm D:ℝ)*
@@ -89,9 +83,3 @@ theorem physicalBlock_eq (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β :
     intro J hJ
     exact physicalBlock_scalar _ _ _ _ _ _ hn
   · simp only [hp,ite_false,mul_zero,zero_mul,Finset.sum_const_zero]
-
-end SevenEighths.CenteredMomentSecondPhysicalBlock
-
-end
-
-end OAI

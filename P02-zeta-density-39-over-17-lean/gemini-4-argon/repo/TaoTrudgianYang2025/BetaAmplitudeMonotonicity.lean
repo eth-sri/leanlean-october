@@ -124,4 +124,3 @@ theorem modelPhaseStationaryAmplitude_antitoneOn
   exact inv_anti₀ (Real.sqrt_pos.mpr (modelPhaseCurvatureAt_pos hσ hd₁ hF₁ hv))
     (Real.sqrt_le_sqrt hq)
 
-end TaoTrudgianYang2025

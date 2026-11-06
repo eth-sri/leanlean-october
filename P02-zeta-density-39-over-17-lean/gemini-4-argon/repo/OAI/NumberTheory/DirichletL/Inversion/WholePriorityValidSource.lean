@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityValidSource
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource
-open InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical
-open RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable {Jo : ℕ}
 
@@ -58,11 +54,3 @@ theorem parentPoisson_fixed_whole (hinj : Function.Injective (fun i=>Ideal.span 
   unfold parentPoisson wholePriorityPoisson
   rw [quotientSupport_parent p hinj,hl]
   rfl
-
-variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-
-end SevenEighths.InverseWholePriorityValidSource
-
-end
-
-end OAI

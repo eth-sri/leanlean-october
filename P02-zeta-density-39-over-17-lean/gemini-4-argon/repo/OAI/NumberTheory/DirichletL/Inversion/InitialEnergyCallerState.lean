@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerState
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry
-local notation "Eis"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
 omit [DecidableEq ι] in
@@ -35,12 +31,3 @@ theorem window_quotient_subset_retained
     quotientSet p (windowSource p S ψ Z D B v θ H) ⊆
       quotientSet p (retained p S (fun _=>1) (ψ 0) (ψ 1) Z B θ) :=
   Finset.image_subset_image (windowSource_subset_retained p S ψ Z D B v θ H)
-
-variable (hp:∀i,p i≠0)
-include hp
-
-end SevenEighths.InverseInitialEnergyCallerState
-
-end
-
-end OAI

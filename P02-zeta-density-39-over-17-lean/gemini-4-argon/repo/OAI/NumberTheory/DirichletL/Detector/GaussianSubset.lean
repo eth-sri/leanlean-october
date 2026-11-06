@@ -10,8 +10,6 @@ open scoped Classical SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 abbrev SelectedSlot {K : ℕ} (J : Finset (Fin K)) := ↥(Finset.univ\J)
 
@@ -85,8 +83,3 @@ theorem compensation_subset_common {K : ℕ} {α : Type*}
       unfold compensationSubsetProbe compensationSubsetWeight
       ring
     _ = _ := hh
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

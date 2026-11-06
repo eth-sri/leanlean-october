@@ -10,11 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentFirstCanonicalAllowance
-open ActualEisensteinCubic CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentActive CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentSecondCanonical CenteredMomentFirstCanonicalFamily
-open CenteredMomentRankinRadical CenteredMomentCommonAllowance
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentActive CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentSecondCanonical CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical CenteredMomentCommonAllowance
 
 theorem activeConductor_span_product (I J : Ideal O) :
     Ideal.span {activeConductor I J} =
@@ -67,9 +63,3 @@ theorem activeConductor_span_filter (I J : Ideal O) :
   exact Finset.prod_coe_sort (s := commonSupport I J)
     (f := fun P : Ideal O => if netExponent (CenteredExceptionalCount.valuation I P)
       (CenteredExceptionalCount.valuation J P) ≠ 0 then P else 1)
-
-end SevenEighths.CenteredMomentFirstCanonicalAllowance
-
-end
-
-end OAI

@@ -407,4 +407,3 @@ theorem norm_zeta_zero_sharp_cutoff_sum_le {σ T : ℝ} {ρ : ℂ} (hT : 3 / 4 �
             129 * sharpZetaCutoff T ^ (-ρ.re) := by gcongr
     _ = 149 * sharpZetaCutoff T ^ (-ρ.re) := by ring
 
-end GuthMaynard.NativeMoment

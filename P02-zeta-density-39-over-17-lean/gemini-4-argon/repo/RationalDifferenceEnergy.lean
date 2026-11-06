@@ -120,4 +120,3 @@ theorem dirichlet_difference_energy_le (A : Finset ℕ)
       intro t _
       exact phase_frequency_ratio (by exact_mod_cast hA n hn) (by exact_mod_cast hA m hm) t
 
-end Montgomery.RationalMoment

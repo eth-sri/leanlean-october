@@ -75,5 +75,4 @@ theorem exists_robertSargos_primitive_count_linear_weight (ε : ℝ) (hε : 0 < 
         (robertSargos_weighted_sum_scale hQ (by positivity) hε (by positivity)) hC.le
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 

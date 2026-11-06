@@ -78,6 +78,4 @@ theorem wooleySourcePolynomial_equation_8_3
       phi (wooleyTriangular k) (r - 1) p B bPrime b nu hnuPrime hnub gamma]
     using hfinite
 
-end
 
-end GafniTao

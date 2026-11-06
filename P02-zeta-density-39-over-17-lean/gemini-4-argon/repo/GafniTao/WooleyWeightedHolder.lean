@@ -55,6 +55,4 @@ theorem wooley_weighted_rpow_sum_le
         ∑ i ∈ t, w i * f i ^ p := by rfl
 
 
-end
 
-end GafniTao

@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcreteTraceCRT IdealMobiusDivisorSum UniqueFactorizationMonoid
 
 abbrev GramFrequency := {k : O // k≠0}
 abbrev GramPrime (C : SupportedIdeal) := {P : Id // P∈IdealMobiusDivisorSum.primeSupport C.val}
@@ -73,8 +69,3 @@ lemma canonicalJoint_norm (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayR
     (gramNumeratorData k).good (gramNumeratorData k).supported (gramPrime C) (gramPrime_good C)
     (gramExponent C) (gramExponent_pos C) n m
   simpa only [←gramPrime_product C,canonicalJoint] using hh
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

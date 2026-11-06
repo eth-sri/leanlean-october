@@ -84,4 +84,3 @@ theorem hasDerivAt_robertSargos_zero_q_leading_jet
       (-2*r*iteratedDeriv (j+2) f x) x := by
   exact (hasDerivAt_iteratedDeriv_finite (show j+1 < 4 by omega) hf).const_mul (-2*r)
 
-end TaoTrudgianYang2025

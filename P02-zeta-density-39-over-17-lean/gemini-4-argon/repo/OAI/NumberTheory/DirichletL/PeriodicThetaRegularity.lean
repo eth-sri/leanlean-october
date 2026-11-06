@@ -69,9 +69,3 @@ def primitivePair {N M : ℕ} [NeZero N] [NeZero M]
     simpa only [mul_one_div, Real.rpow_one, smul_eq_mul] using hfeq t ht
   hf_top := scaledTheta_rapid w A hA
   hg_top := scaledTheta_rapid v A hA
-
-end SevenEighths.PeriodicThetaRegularity
-
-end
-
-end OAI

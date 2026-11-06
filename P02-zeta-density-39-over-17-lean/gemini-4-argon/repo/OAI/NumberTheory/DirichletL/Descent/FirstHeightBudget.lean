@@ -41,8 +41,3 @@ theorem first_unequal_prefactor (Z:ℝ)(hZ:0<Z)
   convert Real.rpow_zero Z using 1
   congr 1
   ring
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

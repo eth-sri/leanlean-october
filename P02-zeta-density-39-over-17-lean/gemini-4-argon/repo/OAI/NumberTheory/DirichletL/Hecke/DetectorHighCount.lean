@@ -48,9 +48,3 @@ theorem high_count_from_raw_moments
   have hout := high_bin_count hconst hU.le ha (show 2*a-1≤1 by linarith)
     (show 0≤76*ε by positivity) (show 1-76*ε≤F.r by linarith [hgeom.2.2.2.1]) hb
   convert hout using 1; congr 2; ring
-
-end SevenEighths.HeckeDetectorHighCount
-
-end
-
-end OAI

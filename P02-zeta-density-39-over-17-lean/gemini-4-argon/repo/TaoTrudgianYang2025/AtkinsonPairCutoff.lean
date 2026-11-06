@@ -117,4 +117,3 @@ theorem ExponentPair.atkinson_physical_gram_budget {k l δ ν : ℝ}
             ((W.card : ℝ)*H/G+(W.card : ℝ)^2*L^k*H^(l-k)*G^(1+k-2*l)) := by ring
         _ = _ := by rw [he]
 
-end TaoTrudgianYang2025

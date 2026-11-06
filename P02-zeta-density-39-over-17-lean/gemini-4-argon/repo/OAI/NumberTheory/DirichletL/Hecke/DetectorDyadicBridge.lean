@@ -153,9 +153,3 @@ theorem pair_phase_norm (χ : Character) (V W₁ W₂ : ℝ→ℂ) (Dstar D N : 
     plain_phase_eq χ W₂ N hN s t R hR hcoverR,
     norm_mul, norm_mul, normalization_norm D hD s, normalization_norm N hN s]
   ring
-
-end SevenEighths.HeckeDetectorDyadicBridge
-
-end
-
-end OAI

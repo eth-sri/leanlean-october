@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Fourth.Coefficients
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 def atkinsonLeadingIntegral (T G L : ℝ) (n : ℕ) : ℂ :=
@@ -34,4 +33,3 @@ theorem atkinsonBesselScale_nonneg (α : ℝ) (n : ℕ) : 0 ≤ atkinsonBesselSc
   unfold atkinsonBesselScale
   positivity
 
-end MathCollab.Density.Stronger.Atkinson

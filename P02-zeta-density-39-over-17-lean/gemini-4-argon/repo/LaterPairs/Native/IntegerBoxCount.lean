@@ -52,5 +52,4 @@ theorem integer_box_triples_card_le
         (by positivity) (by linarith)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 

@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_original_completed_energy_uniform_degree
@@ -67,7 +66,3 @@ theorem canonical_original_completed_energy_uniform_degree
   exact congrArg (fun z : ℂ => ‖z‖^2) (original_completed_puncture_lists lists hprime S Ψ m
     (ConcretePrimeRowBridge.idealGenerator F) (u.val*ConcretePrimeRowBridge.idealGenerator I)
     (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat)) w)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

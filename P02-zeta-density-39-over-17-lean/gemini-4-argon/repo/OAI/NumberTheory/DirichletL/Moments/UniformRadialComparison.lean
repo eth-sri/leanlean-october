@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformRadialComparison
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
 
 theorem actual_original_radial_comparison (epsilon Cscale xi saving L : ℝ)
      (hepsilon : 0<epsilon) (hscale : 0<Cscale) (hxi : 0<xi)
@@ -76,9 +73,3 @@ theorem actual_original_radial_comparison (epsilon Cscale xi saving L : ℝ)
     rw [finite_weighted rows keep (fun z=>polynomial (χ z) false (scaleTest (fun y:ℝ=>(annulus y:ℂ)) j) (Real.exp x) 0 (-2*Real.pi*v)*polynomial (χ z) false (scaleTest Wshort k) (Z^bshort) 0 (omega z)*P z) Φ K hΦ]
     exact (hschild.sum_le_tsum rows (fun z _=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)).trans
       (henergy v j k x hx)
-
-end SevenEighths.CenteredMomentUniformRadialComparison
-
-end
-
-end OAI

@@ -71,4 +71,3 @@ theorem finiteVariationBound_zetaBandCutoff_sample {a b c d : ℝ}
   have h₂ := hbnd q (fun _ => ⟨Real.smoothTransition.nonneg _,Real.smoothTransition.le_one _⟩) (Or.inr hq)
   simpa only [p,q,zetaBandCutoff,Complex.ofReal_mul,mul_one] using h₁.mul h₂
 
-end MathCollab.Density.Stronger.Atkinson

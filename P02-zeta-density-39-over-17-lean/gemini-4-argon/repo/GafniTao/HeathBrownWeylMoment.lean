@@ -24,6 +24,4 @@ abbrev heathBrownWeylSum (k Q : ℕ)
     (α : HeathBrownCoefficientTorus k) : ℂ :=
   fordVinogradovWeylSum (k - 1) Q α
 
-end
 
-end GafniTao

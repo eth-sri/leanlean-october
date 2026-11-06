@@ -307,4 +307,3 @@ theorem weightedIntegralTail_eq_sub {σ t m : ℝ} (hσ : σ ∈ Set.Ioo 0 1)
     (weightedIntegral ((σ : ℂ) + (t : ℂ) * I) 0 a m)
   simpa only [weightedIntegral_sub hs] using h
 
-end DhimanKadiriQuesadaHerrera2026

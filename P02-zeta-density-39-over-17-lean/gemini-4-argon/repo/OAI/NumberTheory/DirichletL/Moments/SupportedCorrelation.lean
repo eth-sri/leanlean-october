@@ -8,10 +8,8 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentSupportedCorrelation
-open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCorrelation CenteredMomentCommonSupport
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
 
 def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
     MulChar (Residue d) ℂ where
@@ -161,8 +159,3 @@ theorem actual_complete_common_support (D E a b : O)
   let : Fintype (Residue (D * a)) := Fintype.ofFinite _
   let : Fintype (Residue (E * b)) := Fintype.ofFinite _
   exact supported_complete_common_support D E a b hD hE ha hb hpD hpE hpa hpb hcopA hcopB hab j
-
-end SevenEighths.CenteredMomentSupportedCorrelation
-end
-
-end OAI

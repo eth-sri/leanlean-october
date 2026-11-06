@@ -75,4 +75,3 @@ theorem exponentSumGrowthExponent_le_heathBrown_of_derivative
   exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
     (isExponentSumBoundNonAsymptotic_heathBrown_of_derivative hHB hk hα)
 
-end TaoTrudgianYang2025

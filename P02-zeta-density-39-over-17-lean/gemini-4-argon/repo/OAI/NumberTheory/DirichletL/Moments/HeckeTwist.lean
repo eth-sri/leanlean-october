@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeTwist
-open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
-open CenteredMomentLattice CenteredMomentCounting CenteredMomentTwist
-open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice CenteredMomentCounting CenteredMomentTwist EisensteinSchwartzPoisson
 
 def twistedIdealSum (χ : Character) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=
   ∑' I : Ideal O, idealCoeff χ I*(Ideal.absNorm I:ℂ)^(Complex.I*t)*W ((Ideal.absNorm I:ℝ)/X)
@@ -164,9 +161,3 @@ theorem actual_twisted_rectangle_saving
     X₁ X₂ Y₁ Y₂ T L C E hmain hC hE (he₁ X₁ hX₁) (he₂ X₂ hX₂)
     (he₁ Y₁ hY₁) (he₂ Y₂ hY₂) (habs₂ X₂ hX₂) (hmain₁ X₁ hX₁)
     (habs₂ Y₂ hY₂) (hmain₁ Y₁ hY₁) hL hX₁ hX₂ hY₁ hY₂ hprodX hprodY
-
-end SevenEighths.CenteredMomentHeckeTwist
-
-end
-
-end OAI

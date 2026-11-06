@@ -110,4 +110,3 @@ theorem exists_norm_atkinsonPowerIntegral_le (α : ℝ) :
   convert hfin using 1
   ring
 
-end MathCollab.Density.Stronger.Atkinson

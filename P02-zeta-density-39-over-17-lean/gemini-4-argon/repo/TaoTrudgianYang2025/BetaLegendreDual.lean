@@ -52,4 +52,3 @@ theorem deriv_modelPhaseLegendreDual {σ δ : ℝ} {F : ℝ → ℝ}
     deriv (modelPhaseLegendreDual F) v = modelPhaseInverseSlope F v :=
   (modelPhaseLegendreDual_hasDerivAt hσ hδ hF hv).deriv
 
-end TaoTrudgianYang2025

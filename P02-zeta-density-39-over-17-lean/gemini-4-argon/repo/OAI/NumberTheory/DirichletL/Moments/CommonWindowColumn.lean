@@ -12,14 +12,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentCommonWindowColumn
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonPairedSource
-open CenteredMomentCommonLinearSource CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentFirstSectors CenteredMomentRowNorm CenteredMomentHeckeColumnWindow
-open CenteredMomentExceptionalWholeWindow CenteredMomentSmooth
-local notation "O" => HeckeFamily.O
-local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonPairedSource CenteredMomentCommonLinearSource CenteredMomentExceptionalAmplitudePair CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentFirstSectors CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentExceptionalWholeWindow CenteredMomentSmooth
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 def columns (s:Input ι)(C:Ideal O)(hC:Supported C):Finset (Ideal O):=
@@ -76,9 +69,3 @@ theorem whole_window_pair (s v:Input ι)(C D:Ideal O)(hC:Supported C)(hD:Support
   · simpa only [sourceGenerator_span,windowColumn] using hh
   · intro u w
     simpa only [sourceGenerator_span,coefficient_polynomial] using hpair u w
-
-end SevenEighths.CenteredMomentCommonWindowColumn
-
-end
-
-end OAI

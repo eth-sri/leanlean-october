@@ -9,9 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι]
 
 lemma common_radical_norm_le (C : O) (hC : C≠0) (P : ι→Id) (c : ι→ℕ)
@@ -46,8 +43,3 @@ lemma jointPeriod_nonzero (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     exact hC (Ideal.span_singleton_eq_bot.mp hd)
   exact mul_ne_zero (mul_ne_zero (jointFixedModulus_nonzero S hS) hp)
     (Ideal.span_singleton_eq_bot.not.mpr hr)
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

@@ -27,4 +27,3 @@ theorem eighth_gap_count_absorption {R S C : ℝ}
     norm_num
   simpa only [hleft,mul_pow,hright] using hp
 
-end Montgomery.RationalMoment

@@ -237,6 +237,4 @@ theorem heathBrown_lemma_one_assembled_critical
     _ ≤ _ := by gcongr
 
 
-end
 
-end GafniTao

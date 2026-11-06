@@ -48,8 +48,3 @@ theorem three_branch_bound {N : ℕ} (L R E : ℝ)
       apply mul_le_mul_of_nonneg_left _ hR
       exact Finset.prod_le_prod₀ (fun j _=>add_nonneg (add_nonneg (norm_nonneg _) (norm_nonneg _)) (hy j)) (fun j _=>hpoint j)
     _ = _ := by simp only [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin];ring
-end SevenEighths.ProbeCentralBranchProduct
-
-end
-
-end OAI

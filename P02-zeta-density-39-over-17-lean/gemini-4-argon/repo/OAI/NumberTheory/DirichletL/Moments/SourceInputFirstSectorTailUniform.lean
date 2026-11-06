@@ -12,17 +12,8 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
-open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
-open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
-open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate CenteredMomentSourceInputFirstTailUniform
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 omit [DecidableEq ι] in
 theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
@@ -97,9 +88,3 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
         ((1+Real.exp (2*HN))^2*Z^(-saving)):=
       mul_le_mul_of_nonneg_left hb (by positivity)
     _=_:=by dsimp [C];ring
-
-end SevenEighths.CenteredMomentSourceInputFirstSectorTail
-
-end
-
-end OAI

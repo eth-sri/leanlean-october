@@ -70,4 +70,3 @@ theorem IntervalC1Bound.integral_mul_of_primitive_bound
       (norm_nonneg _) hf.nonneg
   linarith
 
-end TaoTrudgianYang2025

@@ -174,4 +174,3 @@ theorem centered_shell_general (w : MathCollab.Density.ReflectionCutoff)
     gcongr
     linarith)) le_rfl)
 
-end Montgomery.RationalMoment

@@ -7,7 +7,6 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentSupport
 open UniqueFactorizationMonoid IdealMobiusDivisorSum CanonicalQuadraticSieve
 
@@ -132,8 +131,3 @@ open CanonicalRowCompletion CenteredMomentSupportedCorrelation
 def idealCorrelation (I J : Ideal O) (hI : Supported I) (hJ : Supported J) (j : O) : ℂ :=
   actualCorrelation (primaryGenerator I) (primaryGenerator J)
     ((supported_span_primaryGenerator_iff I).mpr hI) ((supported_span_primaryGenerator_iff J).mpr hJ) j
-
-end SevenEighths.CenteredMomentSupport
-end
-
-end OAI

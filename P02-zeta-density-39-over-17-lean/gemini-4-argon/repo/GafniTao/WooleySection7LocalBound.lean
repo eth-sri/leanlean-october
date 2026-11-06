@@ -192,6 +192,4 @@ theorem wooley_equations_7_18_to_7_21_local_bound
       · rw [hmass, hreverse zeta hkappa, hetaInt]
   
 
-end
 
-end GafniTao

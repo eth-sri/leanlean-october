@@ -58,4 +58,3 @@ theorem mollifierCoefficient_norm_le (X : ℝ) (n : ℕ) :
   rw [Complex.norm_intCast]
   exact_mod_cast h
 
-end MathCollab.Density

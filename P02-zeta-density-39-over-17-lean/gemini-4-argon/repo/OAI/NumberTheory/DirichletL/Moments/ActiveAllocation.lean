@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentActiveAllocation
-open HeckeFamily CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
-open CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentRetainedEnergy CenteredMomentDivisorRowEnergy CenteredMomentDivisorRetained
-open CenteredMomentSlotRatios CenteredMomentDivisorActualBoundary CenteredMomentDivisorRectangle
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy CenteredMomentRetainedEnergy CenteredMomentDivisorRowEnergy CenteredMomentDivisorRetained CenteredMomentSlotRatios CenteredMomentDivisorActualBoundary CenteredMomentDivisorRectangle
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 def activeAllocations (η:Character) (m A:O) (t:ℝ) (S:ι→Finset (Ideal O))
@@ -126,9 +122,3 @@ theorem active_formal_boundary (η : Character) (m A : O) (t : ℝ)
   obtain ⟨z,hz⟩:=(Finset.mem_filter.mp hactive).2
   exact original_nonzero_row_formal_boundary η m A z t S hS ν W lo hi P hlo hP hW
     D hD a W₁ W₂ X₁ X₂ Y₁ Y₂ Z hZ hz
-
-end SevenEighths.CenteredMomentActiveAllocation
-
-end
-
-end OAI

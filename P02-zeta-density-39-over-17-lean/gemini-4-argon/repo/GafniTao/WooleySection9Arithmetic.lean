@@ -370,6 +370,4 @@ theorem wooley_twoStep_admissible
         exact Nat.mul_le_mul_right _ (by omega)
   exact ⟨ha, hb', hrel, hindices.1, hindices.2⟩
 
-end
 
-end GafniTao

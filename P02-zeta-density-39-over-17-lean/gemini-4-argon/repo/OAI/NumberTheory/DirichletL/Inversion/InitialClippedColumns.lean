@@ -10,11 +10,8 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open SevenEighths.InverseMoment
+open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss SevenEighths.InverseMoment
 namespace SevenEighths.InverseInitialClippedColumns
-local notation "Eis" => ActualEisensteinCubic.O
 
 def clippedTest (w : ℝ → ℂ) (c h : ℝ) : ℝ → ℂ :=
   childLogTest (fun x => w (c*x)) h
@@ -208,9 +205,3 @@ theorem child_height_moment_bound (K : ℕ) (z : Frequency × (Fin 6 → ℝ)) :
 
 def outerCutoff (ψ : Fin 4 → ℝ → ℂ) (x : Fin 6 → ℝ) : ℂ :=
   ψ 0 (x 0)*ψ 1 (x 1)*ψ 2 (x 2)*ψ 3 (x 3)
-
-end SevenEighths.InverseInitialClippedColumns
-
-end
-
-end OAI

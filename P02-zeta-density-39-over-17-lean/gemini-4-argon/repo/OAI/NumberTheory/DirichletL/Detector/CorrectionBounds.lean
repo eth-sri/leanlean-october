@@ -83,8 +83,3 @@ theorem continuedCorrection_defect_bound (V W D Pstar : ℂ)
       gcongr
       exact inv_one_sub_norm_le_two D hD
     _ = _ := by ring
-
-end SevenEighths.ProbeLocal
-end
-
-end OAI

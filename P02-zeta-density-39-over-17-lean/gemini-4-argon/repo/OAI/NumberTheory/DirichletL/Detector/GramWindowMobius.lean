@@ -10,11 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 variable {ι : Type*} [Fintype ι]
 
 lemma primary_norm (I : SupportedIdeal) :
@@ -79,8 +75,3 @@ theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
   simp only [supported_dilation_generator,shell_dilated_column]
   convert he using 1
   rw [hd]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

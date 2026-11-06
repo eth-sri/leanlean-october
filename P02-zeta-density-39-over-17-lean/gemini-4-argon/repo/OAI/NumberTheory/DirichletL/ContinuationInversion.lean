@@ -113,9 +113,3 @@ theorem signalMellin_eq_on_line (f : ℝ → ℂ) (A : ℂ → ℂ) (c d : ℝ)
   rw [harg] at hid
   rw [← mellin_normalizedSignal]
   convert hid using 1; congr 1; push_cast; ring
-
-end SevenEighths.Continuation
-
-end
-
-end OAI

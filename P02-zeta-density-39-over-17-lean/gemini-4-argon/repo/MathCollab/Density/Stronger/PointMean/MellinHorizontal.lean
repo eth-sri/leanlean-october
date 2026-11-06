@@ -15,8 +15,7 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
@@ -255,4 +254,3 @@ theorem tendsto_heathBrownMellin_HIntegral'_neg_zero
   · simpa using (tendsto_const_nhds.mul tendsto_inv_atTop_zero :
       Tendsto (fun R : ℝ => C * R⁻¹) atTop (nhds (C * 0)))
 
-end MathCollab.Density.Stronger.PointMean

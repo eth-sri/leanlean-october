@@ -69,4 +69,3 @@ theorem coprime_short_fourth_energy {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
     nlinarith [Real.pi_pos]
   exact h.trans (by nlinarith [mul_le_mul_of_nonneg_right hscale he])
 
-end Montgomery.RationalMoment

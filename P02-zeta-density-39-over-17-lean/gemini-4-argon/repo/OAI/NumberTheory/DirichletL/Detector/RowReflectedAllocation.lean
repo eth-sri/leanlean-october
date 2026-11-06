@@ -14,10 +14,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ComplexConjugate
 open Set Complex
 namespace SevenEighths.ProbeRowReflectedAllocation
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds
-open ProbeRowRadicalConductor
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds ProbeRowRadicalConductor
 
 lemma prod_rpow_nonneg {ι : Type*} (T : Finset ι) (q : ι → ℝ)
     (hq : ∀ i ∈ T, 0 ≤ q i) (A : ℝ) :
@@ -299,9 +296,3 @@ theorem source_calibrated_reflected_allocation (e ε : ℝ)
             (a-1/2+6*e)) * ∏ j, ((P j).absNorm : ℝ) ^ (-(1/2 : ℝ))) :=
         mul_le_mul_of_nonneg_left hal (by positivity)
       _ = _ := by ring
-
-end SevenEighths.ProbeRowReflectedAllocation
-
-end
-
-end OAI

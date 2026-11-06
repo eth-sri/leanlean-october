@@ -97,4 +97,3 @@ theorem cubic_time_density_perturbation {μ : ℝ → ℝ} {a b : ℝ}
     _ ≤ 3*e*B^2*(Real.sqrt (b-a)*Real.sqrt (∫ t, μ t^2))^3 := by gcongr
     _ = _ := by ring
 
-end GuthMaynard.Improvement

@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
 def thetaRawIndex (t : ThetaFullIndex) : Eisˣ×RawTailIndex :=
@@ -91,7 +90,3 @@ theorem literalRawSeries_summable_norm (G : PrimeFamily ι)
     (Ideal.absNorm (∏ i,G.ideal i):ℝ) (literalRawScale_pos G s hc X hX) (by norm_num)
     completedRamifiedStep_gt_one (Nat.cast_nonneg _) (literalRawCoefficient G D s hc j S u)
     (literalRawCoefficient_norm G D s hc hN hbase hchar j hj S u)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

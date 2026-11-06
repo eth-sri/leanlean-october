@@ -105,9 +105,3 @@ theorem reflected_external_cost (χ : Character) (U H κ η r R : ℝ)
     _ = U^(r*(3/2)+(3/5)+(1/10+κ)+η) := by
       rw [←Real.rpow_mul hUp.le,←Real.rpow_add hUp,←Real.rpow_add hUp,←Real.rpow_add hUp]
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hU (by nlinarith)
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

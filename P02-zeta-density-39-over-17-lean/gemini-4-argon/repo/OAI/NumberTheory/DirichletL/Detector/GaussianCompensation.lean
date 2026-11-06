@@ -11,8 +11,6 @@ open scoped Classical SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma physicalElementNorm_pos (a : O) (ha : a≠0) : 0<elementNorm a := by
   unfold elementNorm
@@ -59,8 +57,3 @@ lemma compensatedPhysicalProbe_eq_subsets {K : ℕ} (η : HeckeFamily.Character)
   unfold compensatedPhysicalProbe
   simp_rw [compensatedTuple_eq_subsets,Finset.mul_sum]
   exact Finset.sum_comm
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

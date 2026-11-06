@@ -60,8 +60,3 @@ lemma balanced_mixed_saving (δ x Δ loss ζ μ v d other saving : ℝ)
       (Endpoint.balancedRowCount δ (1/2-x)+Δ/4+loss) (δ*x)+other≤3/16+Δ-saving := by
   have hm := balanced_mixed_margin δ x Δ loss ζ μ v d hδ hd hx hx' hΔ hΔ' hl hl' hζ hv hμ hdv
   linarith
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

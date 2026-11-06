@@ -203,4 +203,3 @@ theorem factorizationCountBound_native : FactorizationCountBoundProp := by
     _ ≤ C ^ k * (m : ℝ) ^ eps :=
       mul_le_mul_of_nonneg_left hrpow (pow_nonneg hC.le k)
 
-end GuthMaynard.NativeMoment

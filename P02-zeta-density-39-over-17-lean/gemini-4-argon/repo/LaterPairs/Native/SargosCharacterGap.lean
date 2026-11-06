@@ -43,4 +43,3 @@ theorem sargos_stdAddChar_sub_one_norm {N : ℕ} [NeZero N] (k : ZMod N) :
   rw [he',Real.norm_eq_abs,abs_mul]
   norm_num
 
-end TaoTrudgianYang2025

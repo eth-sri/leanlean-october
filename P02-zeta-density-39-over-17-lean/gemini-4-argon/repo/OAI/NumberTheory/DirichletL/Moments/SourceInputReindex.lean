@@ -10,16 +10,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputReindex
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 variable {α β : Type*} [Fintype α] [Fintype β]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
-local instance : DecidableEq (α⊕Fin 2) := Classical.decEq _
-local instance : DecidableEq (β⊕Fin 2) := Classical.decEq _
 
 def reindex (e : α≃β) (s : Input α) : Input β where
   η := s.η
@@ -126,9 +119,3 @@ lemma sourceRadius_map (e : α≃β) (s : Input α) :
     CenteredMomentOriginalCommonHarmonic.sourceRadius (reindex e s)=
       CenteredMomentOriginalCommonHarmonic.sourceRadius s := by
   simp only [CenteredMomentOriginalCommonHarmonic.sourceRadius,reindex,e.symm.prod_comp]
-
-end SevenEighths.CenteredMomentSourceInputReindex
-
-end
-
-end OAI

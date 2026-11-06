@@ -206,6 +206,4 @@ theorem wooleySourcePolynomial_equation_4_12
     simpa only [theta] using hnormalized
 
 
-end
 
-end GafniTao

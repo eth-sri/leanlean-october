@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentReflectedSeries
-open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli
-open CenteredMomentComparisonReflection CenteredMomentReflectionDeletion
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli CenteredMomentComparisonReflection CenteredMomentReflectionDeletion EisensteinSchwartzPoisson
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 def dyadicIdealTerm (η : Character) (F : ℝ→ℂ) (Y : ℝ) (I : NI) (n : ℤ) : ℂ :=
@@ -37,9 +35,3 @@ lemma dyadic_ideal_absolute (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
       dyadicWeight_partition _ (div_pos (HeckeDyadic.norm_pos I) hY)
     simp_rw [he,one_mul]
     exact (plain_summable η F hF Y hY).norm
-
-end SevenEighths.CenteredMomentReflectedSeries
-
-end
-
-end OAI

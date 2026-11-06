@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 
 theorem ramifiedCorrection_first_analytic_x (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm) (w z : ℂ) (hz : (1/3 : ℝ)≤z.re) :
@@ -110,9 +108,3 @@ theorem continuedCorrection_first_subpower (ε : ℝ) (hε : 0<ε) :
   rw [continuedCorrection,norm_mul]
   apply (mul_le_mul hR hnorm (norm_nonneg _) (by positivity)).trans
   exact le_of_eq (by ring)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

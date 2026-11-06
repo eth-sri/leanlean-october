@@ -274,9 +274,3 @@ theorem detector_hasSum_convolution (χ : Character) (V : ℝ → ℂ) {D Y : �
   change HasSum (fun J : Ideal O => ∑' p : CompletedGauss.MulFiber J,
     pairExponential χ V D ρ Y p.val) _ at h
   simpa only [pairExponential_fiber] using h
-
-end SevenEighths.GammaDetectorExpansion
-
-end
-
-end OAI

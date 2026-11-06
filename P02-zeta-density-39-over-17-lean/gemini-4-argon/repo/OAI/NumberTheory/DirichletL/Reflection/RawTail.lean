@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
 open ActualEisensteinCubic CubicEisenstein CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 abbrev RawTailIndex := ℕ×NonzeroDualIdeal×NonzeroDualIdeal
 
@@ -86,7 +85,3 @@ theorem raw_kernel_tail (a b q : ℝ) (ha : 0<a) (hq : 1<q) (A : ℕ) :
     _ = M*(∑' x,rawTailWeight q x) := tsum_mul_left
     _ ≤ M*D := mul_le_mul_of_nonneg_left (by dsimp only [D]; linarith) hM
     _ = _ := by dsimp only [M]; ring
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

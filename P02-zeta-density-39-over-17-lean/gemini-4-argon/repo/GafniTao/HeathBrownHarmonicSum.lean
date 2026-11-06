@@ -171,6 +171,4 @@ theorem heathBrownPairCountTwo_card_cast_le_harmonic
   simpa only [D] using hcount.trans hsum'
 
 
-end
 
-end GafniTao

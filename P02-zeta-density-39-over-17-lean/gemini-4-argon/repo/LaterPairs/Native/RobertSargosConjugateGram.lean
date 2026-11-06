@@ -115,4 +115,3 @@ theorem robertSargos_even_gram (a : ℤ → ℂ) (M H : ℕ) :
         (Finset.mem_range.mp hs) (Finset.mem_range.mp ht)
     _ = _ := sum_signed_shift_differences H (robertSargosCenteredCorrelation a M)
 
-end TaoTrudgianYang2025

@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalTransport
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
-local notation "Id" => Ideal ActualEisensteinCubic.O
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
 
 lemma gaussianMoment_tendsto (n : ℕ) : Tendsto (gaussianMoment n) atTop (𝓝 0) := by
   have hb (t : ℝ) : gaussianMoment n t ≤ (2:ℝ)^(n-1)*Continuation.polynomialGaussian n t := by
@@ -408,8 +405,3 @@ theorem source_initial_joint_ordered_at_a {ι : Type*} (η : Character) (S : Fin
     simp only [verticalIntegral,integral_const_mul,ofReal_ofNat]
     ring
   exact hi.trans hh
-
-end SevenEighths.ProbePrincipalTransport
-end
-
-end OAI

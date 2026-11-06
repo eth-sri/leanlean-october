@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentRemainingBox
 open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
 def restoreTuple (B : Tuple ι) (v : Tuple (liveIndices B)) : Tuple ι :=
@@ -94,9 +93,3 @@ theorem remaining_box_sum_gate (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Id
       have hui := Fintype.mem_piFinset.mp hu (Sum.inl i)
       rwa [hf i hi _ hui] at hui
     rw [he,Finset.sum_empty]
-
-end SevenEighths.CenteredMomentRemainingBox
-
-end
-
-end OAI

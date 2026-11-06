@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
-open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialRawDictionary
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge JointLogSeparation
+open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialRawDictionary InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge JointLogSeparation
 
 private theorem child_cover (Wref : ℝ→ℂ) (b D : ℝ) (hD : 0<D)
     (hWref : ∀x,Wref x≠0 → x≤b) (s : ℝ) :
@@ -86,9 +85,3 @@ theorem polynomial_clipped_fourier (χ : Character) (inv : Bool)
   apply integral_congr_ae
   filter_upwards with v
   ring
-
-end SevenEighths.DetectorDictionaryInverseRawFourier
-
-end
-
-end OAI

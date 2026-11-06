@@ -43,8 +43,3 @@ lemma low_inverse_sqrt_normalized (q C B Z L d α H E : ℝ) (n : ℕ)
   rw [hp]
   exact mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_left (Real.sqrt_le_self_iff.mpr (Or.inr (one_le_pow₀ hH))) (by positivity)) (by positivity)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

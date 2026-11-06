@@ -80,4 +80,3 @@ theorem norm_betaQuadraticWindow_sub_main {T H : ℝ} (hT : 0 < T) (hH : 0 < H) 
   convert h using 1
   ring
 
-end TaoTrudgianYang2025

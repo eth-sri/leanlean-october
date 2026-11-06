@@ -48,4 +48,3 @@ theorem square_level_monomial_le {q M T U D P s v r : ℝ}
     _ ≤ (256*M^(2*s))*(2*T^v)*(P^10*U^(-2*r)) := by gcongr
     _ = _ := by ring
 
-end Montgomery.RationalMoment

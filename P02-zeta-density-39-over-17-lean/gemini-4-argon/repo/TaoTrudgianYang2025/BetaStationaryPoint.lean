@@ -74,4 +74,3 @@ theorem modelPhaseFrequencyPhase_secondDeriv
   rw [heq.deriv_eq, hh.deriv]
   ring
 
-end TaoTrudgianYang2025

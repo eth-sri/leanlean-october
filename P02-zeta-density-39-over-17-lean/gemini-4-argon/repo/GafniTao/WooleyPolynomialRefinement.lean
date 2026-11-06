@@ -148,6 +148,4 @@ theorem wooleyPolynomial_lemma_6_2
     exact le_of_mul_le_mul_left hfactored hfactorPos
 
 
-end
 
-end GafniTao

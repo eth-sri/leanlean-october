@@ -188,4 +188,3 @@ theorem powered_actual_typeI_block_large_values_bound_bounded_uniform
   · simpa only [Real.rpow_zero, one_mul] using hLarge'
   · simpa only [Real.rpow_zero, one_mul] using hBound
 
-end GuthMaynard.NativeMoment

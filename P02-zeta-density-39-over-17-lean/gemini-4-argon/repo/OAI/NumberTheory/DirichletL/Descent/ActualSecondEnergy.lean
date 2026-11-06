@@ -8,11 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers IdealMobiusDivisorSum
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers IdealMobiusDivisorSum
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_ne_zero)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
@@ -134,8 +132,3 @@ theorem actual_second_weighted_count (hp : ∀ i, p i ≠ 0)
     (Real.sqrt_le_sqrt (actual_second_energy_projection p hp hpr hcop hinj u v source hs labels rows hchild K ho hn (fun x => ‖w x‖) hw F))
     (Real.sqrt_le_sqrt (actual_second_energy_projection p hp hpr hcop hinj u v source hs labels rows hchild K ho hn (fun x => ‖w x‖) hw G))
     (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

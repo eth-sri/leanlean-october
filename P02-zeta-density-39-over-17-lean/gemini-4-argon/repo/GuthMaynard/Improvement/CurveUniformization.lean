@@ -83,4 +83,3 @@ theorem density_curve_uniform_on_interval {a b K : ℝ} {f : ℝ → ℝ}
       (Real.rpow_le_rpow_of_exponent_le (by linarith) hexp) (hC j).le
     _ ≤ B*T^(f σ+ε) := mul_le_mul_of_nonneg_right hCB (by positivity)
 
-end GuthMaynard.Improvement

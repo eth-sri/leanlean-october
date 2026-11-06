@@ -88,4 +88,3 @@ theorem integral_sargosSincKernel_character {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
   rw [← sargos_fourier_eq_character]
   exact fourier_sargosSincKernel hw ξ
 
-end TaoTrudgianYang2025

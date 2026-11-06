@@ -77,4 +77,3 @@ theorem robertSargos_product_image_card_le
         hlast (by positivity) (by positivity)
     _ = _ := by ring
 
-end TaoTrudgianYang2025

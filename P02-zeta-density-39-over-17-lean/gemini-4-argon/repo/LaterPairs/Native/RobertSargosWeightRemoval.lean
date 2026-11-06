@@ -634,7 +634,6 @@ theorem robertSargos_abel_variation_of_mixed_derivatives {ι : Type*}
     _ = _ := by ring
 
 
-open Set
 
 private theorem robertSargos_physical_mixed_points
     (f : ℝ → ℝ) (M H : ℕ) (m : ℤ) {lam r q h n : ℝ}
@@ -799,4 +798,3 @@ theorem robertSargos_physical_rectangle_common_prefix
   exact hbound.trans (mul_le_mul_of_nonneg_right hvar (Finset.sum_nonneg (fun _ _ => norm_nonneg _)))
 
 
-end TaoTrudgianYang2025

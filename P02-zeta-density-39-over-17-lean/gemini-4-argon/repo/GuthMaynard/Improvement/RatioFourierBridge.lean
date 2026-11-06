@@ -77,4 +77,3 @@ theorem mellin_compact_mask_integral {w h : ℝ → ℝ} {a b W : ℝ} {A : Set 
   rw [he] at hp
   simpa only [mellinFrequency,mul_assoc] using hp.2
 
-end GuthMaynard.Improvement

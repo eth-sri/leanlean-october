@@ -42,4 +42,3 @@ theorem exponentPair_taoTrudgianYang_thirdNew :
 not assert the missing short-trace estimate for that row. -/
 theorem exponentPair_BTTY3 : ExponentPair (258221/702192) (186317/351096) := by
   convert exponentPair_taoTrudgianYang_thirdNew.bProcess using 1 <;> norm_num
-end TaoTrudgianYang2025

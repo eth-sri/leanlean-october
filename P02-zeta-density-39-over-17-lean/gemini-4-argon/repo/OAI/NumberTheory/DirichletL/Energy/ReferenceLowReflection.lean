@@ -12,20 +12,9 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowReflection
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceLowMoments CenteredMomentEnergyReferenceLowWindow
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
-open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowMoments CenteredMomentEnergyReferenceLowWindow CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem reference_from_low
@@ -93,9 +82,3 @@ theorem reference_from_low
       (hwindow.2.trans (Real.rpow_le_rpow_of_exponent_le hZ.1.le hL))
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hbshort)
       (by linarith [hwindow.1]) (by linarith [hwindow.1])
-
-end SevenEighths.CenteredMomentEnergyReferenceLowReflection
-
-end
-
-end OAI

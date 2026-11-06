@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbePhase
 open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay QuadraticAllOddCRT
-local notation "O" => ActualEisensteinCubic.O
 
 lemma residue_one_mod_four : residue (1 : O) = (1, 0) := by
   have he : (1 : O) = eval 1 0 := by simp [eval]
@@ -95,8 +94,3 @@ theorem G_completed_prime_power (a : O) (ha : EisensteinEPrimaryPhase.odd (resid
       reciprocitySign_cube_right a a ha ha]
     simp only [pow_one, one_mul, pow_add]
     ring
-
-end SevenEighths.ProbePhase
-end
-
-end OAI

@@ -13,7 +13,6 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss
 
-local notation "Eis" => ActualEisensteinCubic.O
 
 def markedCompletedT (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (X : ℝ)
     (d : Ideal Eis → ℂ) : ℂ :=
@@ -147,9 +146,3 @@ theorem marked_cube_inverse (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
   intro I
   rw [vstar_source_normalization Ψ W X hX I]
   ring
-
-end
-
-end SevenEighths.InverseMoment
-
-end OAI

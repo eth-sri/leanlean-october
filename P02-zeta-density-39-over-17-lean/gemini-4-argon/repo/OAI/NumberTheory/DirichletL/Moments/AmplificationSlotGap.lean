@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 open Filter
 namespace SevenEighths.CenteredMomentAmplificationSlotGap
-local notation "O" => ActualEisensteinCubic.O
 
 theorem eventually_scale_gap (b η ell : ℝ) (hgap : η < ell) :
     ∀ᶠ Z : ℝ in atTop, 1 ≤ Z ∧ b*Z^η < Z^ell := by
@@ -37,9 +36,3 @@ theorem live_profile_norm_bound (W : ℝ → ℂ) (b Z z η : ℝ) (I : Ideal O)
   have hpow : 0 < Z^z := Real.rpow_pos_of_pos (zero_lt_one.trans_le hZ) _
   have h := (div_le_iff₀ hpow).mp (hs hW)
   exact h.trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ hz) hb)
-
-end SevenEighths.CenteredMomentAmplificationSlotGap
-
-end
-
-end OAI

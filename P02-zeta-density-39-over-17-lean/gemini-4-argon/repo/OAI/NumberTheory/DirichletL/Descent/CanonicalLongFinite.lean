@@ -9,10 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers IdealMobiusDivisorSum
 
 theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
     ∃C:ℝ,0<C ∧ ∀{σ:Type*}[DecidableEq σ]
@@ -94,9 +91,3 @@ theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
   have hpow:Z^(-V)*Z^eps=Z^(-V+eps):=(Real.rpow_add hz _ _).symm
   convert add_le_add_left hj (2*Z^(-V)*(∑I∈labels,secondLabelWeight K I*∑z∈ball,‖short I z‖^2)) using 1 <;>
     dsimp [bins,short,long,ball] <;> (try rw [←hpow]) <;> ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

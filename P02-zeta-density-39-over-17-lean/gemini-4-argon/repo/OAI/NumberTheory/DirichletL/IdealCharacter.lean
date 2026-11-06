@@ -8,9 +8,7 @@ namespace OAI
 
 namespace SevenEighths.IdealCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
-open Submodule.IsPrincipal
+open SevenEighths.FiniteFourier SevenEighths.FiniteConductor SevenEighths.ConductorPresentation Submodule.IsPrincipal
 open scoped Classical
 
 noncomputable section
@@ -243,13 +241,3 @@ theorem exists_primitive_product_associate (M N : Ideal A)
     exact (ofResidue_product M N χ ψ hχ hψ I).symm.trans (hmask I)
   · intro I
     exact (ofResidue_product M N χ ψ hχ hψ I).symm.trans (hdelete I)
-
-end Primitive
-
-end Principal
-
-end
-
-end SevenEighths.IdealCharacter
-
-end OAI

@@ -184,4 +184,3 @@ theorem norm_gmR_reciprocal (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
     ‖gmR W (1 / v)‖ = ‖gmR W v‖ := by
   rw [gmR_reciprocal W v hv, norm_star]
 
-end GuthMaynard.NativeMoment

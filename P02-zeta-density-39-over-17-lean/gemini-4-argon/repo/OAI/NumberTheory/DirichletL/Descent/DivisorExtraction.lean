@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem inverseCubicKernel_divisor_overlap_zero (R r P c m : Ideal Eis)
     (hP : primaryGenerator P ≠ 0) (hcm : primaryGenerator (c * m) ≠ 0)
@@ -37,8 +36,3 @@ theorem double_divisor_row_reindex {A : Type*} [AddCommMonoid A]
       simp only [hsel k hk]
     _ = ∑ k ∈ rows with R * r ∣ k, F k := (Finset.sum_filter _ _).symm
     _ = _ := sum_quotientSupport (R * r) rows F
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

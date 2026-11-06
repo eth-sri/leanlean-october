@@ -42,4 +42,3 @@ theorem third_derivative_norm_of_square {S N R C : ℝ}
   change S ≤ 20*C*(u+v)
   nlinarith
 
-end TaoTrudgianYang2025

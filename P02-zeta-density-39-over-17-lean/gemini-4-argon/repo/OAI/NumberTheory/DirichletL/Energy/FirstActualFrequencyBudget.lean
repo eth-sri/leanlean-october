@@ -11,10 +11,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstActualFrequencyBudget
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstDeclaredCapacityLossBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
-open CenteredMomentSectorLocalization
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstDeclaredCapacityLossBudget CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSectorLocalization
 
 theorem eventually_frequency_loss (r:ℝ)(hr:0<r):
     ∀ᶠ Z:ℝ in atTop,1<Z ∧
@@ -76,9 +73,3 @@ theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
     (2*amplification ε+1) hZ.2.2 j
   change losses es (r/4) (r/4) Bcap j+_+es*Bcommon+r/4+r/4+highReflection+zeroReflection≤_ at hfixed ⊢
   linarith only [hfixed,hmono]
-
-end SevenEighths.CenteredMomentEnergyFirstActualFrequencyBudget
-
-end
-
-end OAI

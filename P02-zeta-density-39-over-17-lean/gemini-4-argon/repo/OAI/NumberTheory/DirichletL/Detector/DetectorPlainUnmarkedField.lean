@@ -12,16 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainUnmarkedField
-open HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open CenteredMomentDetectorPlainFiberSource
-open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState
-open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
-open QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open HeckeDyadic HeckeRowClosure HeckeInverseAmplification CenteredMomentDetectorPlainFiberSource HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource QuadraticInitialBound
 
 def radialSupportUpper : ℝ := Classical.choose radialMajorant_support_bound
 
@@ -77,9 +68,3 @@ theorem retained_unmarked_bound (D:Parameters.HighData Δ)
     (fixed_parameters D).1.le radialSupportUpper_spec.2 radialMajorant_nonneg hη j k σ t]
   have hrad:s.radial.profile=radialMajorant:=rfl
   simpa only [hwidth,hrad,norm_zero,add_zero,one_pow,mul_one] using hz
-
-end SevenEighths.ProbeDetectorPlainUnmarkedField
-
-end
-
-end OAI

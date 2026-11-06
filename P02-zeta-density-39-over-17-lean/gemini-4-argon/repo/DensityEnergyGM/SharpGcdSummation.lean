@@ -125,4 +125,3 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
     _ = (C * L) * (T ^ (ε / 2) * T ^ (ε / 2)) * N * sharpCubicProfile T W := by ring
     _ = _ := by rw [hPower]
 
-end Montgomery.RationalMoment

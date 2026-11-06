@@ -45,9 +45,3 @@ theorem actual_long_uniform_parent_cost (Z ell N V L epsilon Ccoef C A loss:ℝ)
     _=(C*Ccoef^2*Real.exp (2*epsilon))*(1+A)*
         (Z^(2*L*epsilon)*Z^((N-3*ell)+3*ell+V+loss)):=by ring
     _=_:=by rw [hpow]
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

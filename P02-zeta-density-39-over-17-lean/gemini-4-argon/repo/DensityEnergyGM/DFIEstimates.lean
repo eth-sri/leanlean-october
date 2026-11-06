@@ -29,4 +29,3 @@ theorem setIntegral_le_integral_of_nonneg
   exact MeasureTheory.integral_mono_measure Measure.restrict_le_self
     (Filter.Eventually.of_forall hgnonneg) hg
 
-end GuthMaynard.NativeMoment

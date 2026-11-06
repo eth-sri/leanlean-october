@@ -24,4 +24,3 @@ theorem energy_monomial_rpow {K N T R V : ℝ} (δ α β γ q : ℝ)
   rw [hExp]
   ring
 
-end Montgomery.RationalMoment

@@ -108,4 +108,3 @@ theorem modelPhaseMorseCoordinate_reciprocal_derivative_amplitude
   rw [(modelPhaseMorseCoordinate_hasDerivAt_inverse hF hv).deriv]
   rfl
 
-end TaoTrudgianYang2025

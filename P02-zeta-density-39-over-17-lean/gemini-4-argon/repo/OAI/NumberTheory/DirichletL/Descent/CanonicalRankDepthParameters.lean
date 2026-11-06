@@ -61,9 +61,3 @@ theorem actual_rank_top_parameters (Mmax Fmax c eps:ℝ)
   refine ⟨actualDepth Mmax (cutoff/2),cutoff,eta,rfl,hn,hcut,heta,heta1,hetacut,
     hcutL,hcutc,hetac,hrow,htop.1,htop.2.1,htop.2.2.1,htop.2.2.2.1,?_⟩
   linarith [htop.2.2.2.2]
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

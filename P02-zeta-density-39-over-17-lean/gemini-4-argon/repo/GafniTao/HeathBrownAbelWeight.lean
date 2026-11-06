@@ -93,6 +93,4 @@ theorem norm_heathBrownTaylorError_phase_succ_sub_le
       gcongr
       simpa using hgdiff
 
-end
 
-end GafniTao

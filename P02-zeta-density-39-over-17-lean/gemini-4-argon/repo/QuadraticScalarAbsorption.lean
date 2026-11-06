@@ -80,4 +80,3 @@ theorem quadratic_scalar_absorption {N L T V R S Q Λ A : ℝ}
       _ = _ := Real.rpow_natCast F 3
   exact hp.trans ((mul_le_mul_of_nonneg_right hcoef hS.le).trans_eq (by dsimp [F]; ring))
 
-end Montgomery.RationalMoment

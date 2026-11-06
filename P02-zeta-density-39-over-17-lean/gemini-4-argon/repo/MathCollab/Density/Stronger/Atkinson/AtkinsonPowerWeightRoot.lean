@@ -34,4 +34,3 @@ theorem exists_intervalC1Bound_atkinsonPowerWeight_root (α : ℝ) :
   exact hf.comp_sq (by positivity) (by nlinarith [Real.sqrt_nonneg T])
 
 
-end MathCollab.Density.Stronger.Atkinson

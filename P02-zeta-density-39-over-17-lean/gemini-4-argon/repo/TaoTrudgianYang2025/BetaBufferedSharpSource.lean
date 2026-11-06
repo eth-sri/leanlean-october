@@ -137,4 +137,3 @@ theorem norm_exponentialSumAt_le_buffered_short
     rw [hs,Finset.card_empty,Nat.cast_zero]
     positivity
 
-end TaoTrudgianYang2025

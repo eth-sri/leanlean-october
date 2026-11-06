@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondMovingSupport
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentPartitionNorm
-open CenteredMomentSupport CenteredMomentSupportedCorrelation CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentPartitionNorm CenteredMomentSupport CenteredMomentSupportedCorrelation CenteredMomentUnequal
 
 theorem actual_unequal_min_six (C D : Ideal O) (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) (w : O)
@@ -60,9 +56,3 @@ theorem fixedActiveSet_subset (C D : Ideal O) (hC : Supported C) (hD : Supported
   · rw [hc,min_self] at ha
     exact heq ⟨hc,by simpa only [hc] using ha⟩
   · exact ha (actual_unequal_min_six C D hC hD hCD w hne P hc)
-
-end SevenEighths.CenteredMomentSecondMovingSupport
-
-end
-
-end OAI

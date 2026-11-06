@@ -63,9 +63,3 @@ theorem Witness.right_exponent {ι : Type*} {χ : ι→Character} {U a ε tstar 
     (w : Witness χ U a ε tstar T allowance i) (hU : 1<U) :
     w.m=Real.logb U ((2 : ℝ)^w.right.val) := by
   rw [←w.right_scale,Real.logb_rpow (zero_lt_one.trans hU) hU.ne']
-
-end SevenEighths.HeckeDetectorWitnessRows
-
-end
-
-end OAI

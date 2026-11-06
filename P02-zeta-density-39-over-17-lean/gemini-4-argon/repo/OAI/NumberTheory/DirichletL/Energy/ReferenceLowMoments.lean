@@ -10,21 +10,10 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowMoments
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
-open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentEnergyReferenceLowChild CenteredMomentEnergyReferenceLowControl
 
-open CenteredMomentEnergyReferenceLowChild CenteredMomentEnergyReferenceLowControl
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem reflected_child_uniform_from_low
@@ -71,9 +60,3 @@ theorem reflected_child_uniform_from_low
   have hmul:=mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb hp) hz
   apply hh.trans
   convert hmul using 1 <;> ring
-
-end SevenEighths.CenteredMomentEnergyReferenceLowMoments
-
-end
-
-end OAI

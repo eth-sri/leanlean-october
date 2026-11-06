@@ -14,4 +14,3 @@ Gamma-zeta-square contour and exponential-overlap chain. -/
 theorem pointMeanInput_native : Peaks.PointMeanInput :=
   heathBrown_equation44_native
 
-end MathCollab.Density.Stronger.PointMean

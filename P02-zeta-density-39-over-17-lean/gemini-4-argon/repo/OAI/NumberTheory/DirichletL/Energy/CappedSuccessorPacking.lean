@@ -11,16 +11,9 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedSuccessorPacking
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyPositiveHighSourceBound CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighSourceBound CenteredMomentNaturalFixedRaySource
 variable {α:Type*}
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem certified_from_stages
@@ -106,9 +99,3 @@ theorem certified_from_stages
     · exact positiveHighAt_transport (α:=α) M H hH W bslot _ _ _ _ _ _ _ _ _ _ _ κ Z
         _ _ _ _ _ _ _ _ η₀ Q Jh J Sh S Ch Cp hold.1.le
         le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl heh hJh hSh hCh.le hCh' hh
-
-end SevenEighths.CenteredMomentEnergyCappedSuccessorPacking
-
-end
-
-end OAI

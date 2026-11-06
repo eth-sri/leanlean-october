@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ]
 variable {N a c : Eis} {mode : Bool}
 variable (G : PrimeFamily φ) (rows : Finset (Ideal Eis)) (hrows : ∀ K∈rows,Admissible K)
@@ -104,7 +103,3 @@ theorem physical_dyad_selection_energy (E : ℝ→ℝ) (hE : ∀ θ,0≤E θ)
     intro p hp
     exact dyadicPhysicalTerm_at G rows hrows tuples hmax hgood Hrow Hslot D s hc jF W θ X r aw i j K p
   exact hid.trans_le (hD i j θ r aw hr haw)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

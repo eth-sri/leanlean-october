@@ -7,74 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open MixedCrossSeparation (columnPrimeCoprime quadraticCrossPhase)
 open FiniteGaussPhase (canonicalProductGauss)
 open ConcreteTraceCRT (eisEmbedding)
@@ -256,24 +192,11 @@ theorem threeGaussRowFactor_eq_transformedPair {ι : Type*} [DecidableEq ι]
 
 end FirstPassCubeLabels
 
-section
-open MeasureTheory
-open scoped FourierTransform SchwartzMap ContDiff
-namespace LocalLogFourier
 
-end LocalLogFourier
-
-namespace EisensteinSchwartzPoisson
-
-end EisensteinSchwartzPoisson
-end
-
-open scoped Classical BigOperators
-open AddChar MulChar
 namespace LocalReflectionBrackets
 
 section
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 
 variable {F : Type*} [Field F] [Fintype F]
 
@@ -392,7 +315,6 @@ theorem phase_norm (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
 
 end
 
-open ActualEisensteinCubic
 
 noncomputable local instance quotientField (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
 
@@ -409,8 +331,6 @@ theorem canonical_phase_norm (P : Ideal O) [P.IsMaximal]
 
 end LocalReflectionBrackets
 
-open scoped Classical BigOperators
-open AddChar MulChar
 namespace LocalReflectionBrackets
 
 variable {F : Type*} [Field F] [Fintype F]
@@ -420,7 +340,6 @@ def activeRow (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (j : ℕ) (σ ε : Fˣ) 
     ∑ h : Fˣ, (∑ t : F, (χ ^ j) t * ψ (-(h * t))) *
       (((χ⁻¹) ^ 2) (σ * h)) * ψ (((ε : F) * x) * ((h⁻¹ : Fˣ) : F))
 
-open ActualEisensteinCubic
 noncomputable local instance quotientFieldNormalized (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance quotientFintypeNormalized (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
 
@@ -476,9 +395,3 @@ theorem canonical_bracket_four_cube_split (P : Ideal O) [P.IsMaximal]
       (rootCard (O ⧸ P) : ℂ) * (if n ∉ P ∧ b ∈ P then 1 else 0) := by
   rw [map_mul, map_pow, bracket_four_cube_split]
   simp only [ne_eq, Ideal.Quotient.eq_zero_iff_mem]
-
-end LocalReflectionBrackets
-
-end
-
-end OAI

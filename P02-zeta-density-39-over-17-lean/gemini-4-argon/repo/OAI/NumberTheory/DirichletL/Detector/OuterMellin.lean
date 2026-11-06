@@ -30,8 +30,3 @@ lemma outer_source_scaled_inverse (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<
   unfold verticalIntegral
   simp_rw [←he,mul_assoc,integral_const_mul]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

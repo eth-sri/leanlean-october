@@ -29,4 +29,3 @@ theorem exists_comparable_source_shift
   · linarith
   · exact hfloor.trans (by nlinarith)
 
-end TaoTrudgianYang2025

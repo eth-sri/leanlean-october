@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorRaw
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorSlots
-open CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentHeckeExpansion
-open CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorSlots CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentHeckeExpansion CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def frozenIndices (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2))) : Finset ι :=
@@ -85,9 +82,3 @@ theorem raw_scale_identity (D : Ideal O) (a : Allocation D (Finset.univ : Finset
   unfold rawRemaining formalReductionFactor
   rw [← split_slot_product D a P]
   field_simp [(selectedNorm_pos D a).ne']
-
-end SevenEighths.CenteredMomentDivisorRaw
-
-end
-
-end OAI

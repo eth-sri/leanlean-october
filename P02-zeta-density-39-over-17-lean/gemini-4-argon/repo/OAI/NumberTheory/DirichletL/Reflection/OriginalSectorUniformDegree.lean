@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem original_sector_literal_energy_uniform_degree
@@ -114,7 +113,3 @@ theorem original_sector_literal_energy_uniform_degree
       exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb hKc.le) (sq_nonneg _)
     _ = (Kc*Cb*C₀^2)*(1+‖θ‖)^(degree*2)*(Ideal.absNorm (∏ b,G.ideal b):ℝ)^ρ*Z^(F₀-cstar/4-O₀/2) := by rw [mul_pow,←pow_mul];ring
     _ ≤ _ := by gcongr;linarith
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

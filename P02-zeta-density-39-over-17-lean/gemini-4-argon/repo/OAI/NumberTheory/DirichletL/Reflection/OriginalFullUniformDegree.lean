@@ -11,7 +11,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 private lemma mul_chain_add_one (a b c d e f : ℝ)
@@ -152,7 +151,3 @@ theorem original_sector_full_energy_uniform_degree
       dsimp only [Et]
       have hp : 0≤(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2) := by positivity
       nlinarith only [hp]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

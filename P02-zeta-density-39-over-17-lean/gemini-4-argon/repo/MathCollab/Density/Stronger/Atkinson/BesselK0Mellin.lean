@@ -179,4 +179,3 @@ theorem mellin_dfiBesselK0_mul_sqrt
   ring
 
 
-end MathCollab.Density.Stronger.Atkinson

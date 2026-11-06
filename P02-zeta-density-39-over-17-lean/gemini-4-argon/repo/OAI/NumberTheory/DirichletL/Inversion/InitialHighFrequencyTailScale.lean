@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic ConcreteTraceCRT InverseInitialProfile
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem initial_denominator_bound (C d v n₁ n₂ L : ℝ)
     (hC : 1≤C) (_hd : 0≤d) (hv : 0≤v) (hn₁ : 0≤n₁) (hn₂ : 0≤n₂)
@@ -73,9 +72,3 @@ theorem physical_frequency_tail_uniform (A : ℕ) :
         ((min 1 (Z^m/L^3))^2*(1+T)^A) := by
       gcongr
     _ = _ := by ring
-
-end SevenEighths.InverseInitialHighFrequencyTail
-
-end
-
-end OAI

@@ -129,4 +129,3 @@ theorem modelPhase_buffered_poisson_core_precision
   exact (hcore N η a b hN hη hη₁ ha hb F δ T hδ hF hT R hR hRA hBR).trans
     (add_le_add (add_le_add le_rfl hbudget) le_rfl)
 
-end TaoTrudgianYang2025

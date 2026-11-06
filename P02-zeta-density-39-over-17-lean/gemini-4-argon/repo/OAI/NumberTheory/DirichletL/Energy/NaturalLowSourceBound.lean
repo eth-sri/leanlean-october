@@ -12,19 +12,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowSourceBound
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyZeroComparison CenteredMomentEnergyOriginalProfileControl
-open CenteredMomentEnergyLowFixedRadialEntry CenteredMomentEnergyInputParentCapacity
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentAmplificationChildInput CenteredMomentInductionEnergy
-open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
-local notation "O" => HeckeFamily.O
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison CenteredMomentEnergyOriginalProfileControl CenteredMomentEnergyLowFixedRadialEntry CenteredMomentEnergyInputParentCapacity CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform CenteredMomentAmplificationChildInput CenteredMomentInductionEnergy CenteredMomentEnergyBands CenteredMomentSecondHeightFamily CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=
-  CenteredMomentEnergyOriginalSource.energyOriginalSourceDecidableSum
 
 section Source
 variable (Q:Ideal O)[NeZero Q]
@@ -158,9 +147,3 @@ theorem natural_low_source_bound
     (mul_nonneg (by norm_num : (0:ℝ)≤2) (diagonalControl_nonneg state.radial.profile))
   dsimp [F] at hh ⊢
   nlinarith only [hh]
-
-end SevenEighths.CenteredMomentEnergyNaturalLowSourceBound
-
-end
-
-end OAI

@@ -7,74 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 namespace IdealMobiusDivisorSum
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 
 def idealDivisors (I : Ideal O) : Finset (Ideal O) :=
   (Ideal.finite_setOfPred_absNorm_le (S := O) (Ideal.absNorm I)).toFinset.filter
@@ -196,14 +134,12 @@ theorem sum_moebius_divisors (I : Ideal O) (hI : I ≠ ⊥) :
 
 end IdealMobiusDivisorSum
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 
 section
 
-abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic
+protected abbrev O := ActualEisensteinCubic.O
 
 def primaryPrime (P : Ideal O) : O :=
   if h : P.IsMaximal ∧ lambda ∉ P then
@@ -325,7 +261,6 @@ theorem primaryGenerator_norm_sq (I : Ideal O) (h : primaryGenerator I ≠ 0) :
     ‖ConcreteTraceCRT.eisEmbedding (primaryGenerator I)‖ ^ 2 = (Ideal.absNorm I : ℝ) := by
   rw [eisEmbedding_norm_sq_eq_absNorm_span, (primaryGenerator_spec I h).1]
 
-open ActualEisensteinCubic
 
 theorem compact_window_bound (W : ℝ → ℂ) (hW : HasCompactSupport W) :
     ∃ B : ℝ, 0 < B ∧ ∀ y, W y ≠ 0 → y ≤ B := by
@@ -386,7 +321,6 @@ theorem finite_support_norm_triple (W : ℝ → ℂ) (hW : HasCompactSupport W)
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT
 
 def primeSupport (I : Ideal O) : Finset (Ideal O) :=
   (UniqueFactorizationMonoid.normalizedFactors I).toFinset
@@ -507,7 +441,6 @@ theorem cubeWeight_zero_of_mask (Ψ : O →* ℂ) (I : Ideal O)
 
 end
 
-open ActualEisensteinCubic
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors sum_moebius_divisors)
 
 def MulFiber (B : Ideal O) := {p : Ideal O × Ideal O // p.1 * p.2 = B}
@@ -587,9 +520,3 @@ theorem ideal_cube_convolution (c : Ideal O →* ℂ) (hc0 : c 0 = 0)
     simpa only [tsum_ite_eq, one_ne_zero] using he
   rw [← hF.tsum_prod]
   exact hsum
-
-end CompletedGauss
-
-end
-
-end OAI

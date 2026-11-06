@@ -79,4 +79,3 @@ theorem robertSargos_zero_q_perturbed_prefix
     (show 0 ≤ K by dsimp [K]; positivity) hp hu hd
   simpa only [← robertSargos_zero_q_phase_identity] using ht
 
-end TaoTrudgianYang2025

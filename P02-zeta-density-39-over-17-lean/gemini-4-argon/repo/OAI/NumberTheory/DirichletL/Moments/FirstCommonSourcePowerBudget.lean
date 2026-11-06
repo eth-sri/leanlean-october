@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonSourcePowerBudget
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
-local notation "O"=>ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 theorem common_energy_power_budget (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<ε):
@@ -48,9 +44,3 @@ theorem common_energy_power_budget (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<�
   apply mul_le_mul_of_nonneg_left _ (hE j)
   exact Real.rpow_le_rpow (CenteredMomentAmplificationChildInput.volume_pos _).le
     (CenteredMomentAmplificationChildSourceCaps.common_volume_le N b hb s hcard hbS C R B τ t hB) (hα j)
-
-end SevenEighths.CenteredMomentFirstCommonSourcePowerBudget
-
-end
-
-end OAI

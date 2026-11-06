@@ -56,9 +56,3 @@ theorem exists_primitive_zero_near_beta {ε : ℝ} (hε : 0 < ε)
     primitiveSet_bddAbove hε hsmall
   obtain ⟨χ, s, hp, hhalf, hone, hpole, hz, rfl⟩ := hx
   exact ⟨χ, s, hp, hhalf, hone, hpole, hz, hlt⟩
-
-end SevenEighths.HeckePrimitiveSupremum
-
-end
-
-end OAI

@@ -12,11 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers
 theorem actual_priority_cell_recursive_window_order_uniform_types
     (om Φ:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -124,9 +120,3 @@ theorem actual_priority_cell_recursive_window_order_uniform_types
     (m * ConcretePrimeRowBridge.idealGenerator x.quotient) z x) * v)
     (actual_priority_profile_common p hp hcop hg₀ pool (secondInheritedProfile p x Ψ m z)
       slots₁ slots₂ _ _ a₁ a₂ om lo hi hlo hsupport negative t Φ Y X hX)
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

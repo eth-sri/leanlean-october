@@ -113,4 +113,3 @@ theorem modelPhaseSlopeRange_positive_window
   have hd₂ := hδ.trans (min_le_right _ _)
   constructor <;> linarith [he.1,he.2]
 
-end TaoTrudgianYang2025

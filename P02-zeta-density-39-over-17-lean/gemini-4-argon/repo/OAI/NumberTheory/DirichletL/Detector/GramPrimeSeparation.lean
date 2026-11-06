@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma maximal_coprime_of_not_dvd (p J : Id) [p.IsMaximal] (h : ¬p∣J) : IsCoprime J p := by
   rw [Ideal.isCoprime_iff_sup_eq]
@@ -41,8 +39,3 @@ theorem exists_nonexceptional_separation (L R I p : Id) (hI : I≠0)
   obtain ⟨J,hJ,hcop,hJ0⟩ := exists_prime_separation I p hI hp0
   exact ⟨J,hJ,((maximal_coprime_of_not_dvd p L hL).mul_left
     (maximal_coprime_of_not_dvd p R hR)).mul_left hcop |>.pow_right,hJ0⟩
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

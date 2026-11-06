@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 
 def continuedMarkedLocal (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
     (x w z : ℂ) : ℂ :=
@@ -97,9 +95,3 @@ theorem continuedMarkedLocal_eq_initial (η : Character) (u : FreeRow) (P : Prim
     (actualACube η p) ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
     ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z)
     _ hρ hgeom.1 hR (multiplicity p u.val) (multiplicity_lt_six u p hp)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -112,9 +112,3 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
       linarith
   simpa only [M,ite_true,Q,Function.iterate_zero,id_eq] using
     chain_rowwise rows M cm dx dy a b c d (16*E) hab hcd σ freq hσ hf he
-
-end SevenEighths.HeckeDetectorRowwisePlain
-
-end
-
-end OAI

@@ -50,8 +50,3 @@ theorem secondRootWindows_smooth_compact (V : Fin 6 → ℝ → ℂ)
     | exact ⟨hV _, hS _⟩
     | exact ⟨inverseNormWindow_contDiff _ (hV _), inverseNormWindow_compact _ (hS _)⟩
     | exact ⟨inverseRootWindow_contDiff _ (hV _), inverseRootWindow_compact _ (hS _)⟩
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

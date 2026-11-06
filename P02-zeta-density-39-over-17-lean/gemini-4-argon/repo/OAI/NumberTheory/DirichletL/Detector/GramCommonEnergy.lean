@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT RayFourExpansion
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT RayFourExpansion CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
 
 lemma gcdCommon_product_coprime (C I J : SupportedIdeal) (h : IsCoprime I.val J.val) :
     gcdCommon (supportedIdealProduct C I) (supportedIdealProduct C J)=C := by
@@ -87,8 +84,3 @@ theorem original_energy_common_blocks (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
   congr 1
   congr 1
   exact original_nonzero_common_sum S hS σ W hW Y Q hY hQ U v
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

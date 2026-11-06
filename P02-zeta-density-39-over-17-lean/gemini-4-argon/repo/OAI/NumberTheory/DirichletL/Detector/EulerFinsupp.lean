@@ -103,8 +103,3 @@ theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     · exact (tsum_subtype {v : α→₀β | (v.support:Set α)⊆S} (fun v=>v.prod f)).symm
   change Tendsto (fun S : Finset α=>∏a∈S,∑' b,f a b) atTop _
   simpa only [he] using ht
-
-end SevenEighths.ProbeEulerFinsupp
-end
-
-end OAI

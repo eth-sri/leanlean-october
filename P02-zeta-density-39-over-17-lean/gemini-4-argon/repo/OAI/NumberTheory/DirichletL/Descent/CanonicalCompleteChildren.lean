@@ -10,11 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
-local notation "O"=>ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
 
 theorem actual_complete_state_from_children
     (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi)(W:ℝ→ℂ)
@@ -153,9 +149,3 @@ theorem actual_complete_state_from_children
   dsimp [E,d]
   rw [Real.rpow_add hz (N+V+lossFinal+2*L*epsFirst) eps]
   ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

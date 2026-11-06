@@ -12,12 +12,9 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentHeckeVolume
-open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound
-open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
+open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
 open PrimaryIdealUnitReindex (GoodIdeal)
 open CubicEisenstein (PrimaryLower primaryLowerIdealEquiv)
-local notation "O" => ActualEisensteinCubic.O
 
 def primaryCoefficient (ψ : Character) : Ideal O →* ℂ where
   toFun I := if primaryGenerator I=0 then 0 else idealCoeff ψ I
@@ -294,9 +291,3 @@ theorem actual_induced_volume (η χ ψ : Character) (Q : Ideal O) (hQ : Q ≠ 0
     ring
   · rw [Nat.card_eq_fintype_card]
     ring
-
-end SevenEighths.CenteredMomentHeckeVolume
-
-end
-
-end OAI

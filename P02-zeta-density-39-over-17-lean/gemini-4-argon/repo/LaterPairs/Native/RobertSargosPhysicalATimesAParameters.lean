@@ -60,4 +60,3 @@ theorem robertSargos_physical_endpoint_budget (M H : ℕ) {lam : ℝ}
   have he := mul_le_mul_of_nonneg_left hHR (show 0 ≤ 16*(M:ℝ) by positivity)
   nlinarith
 
-end TaoTrudgianYang2025

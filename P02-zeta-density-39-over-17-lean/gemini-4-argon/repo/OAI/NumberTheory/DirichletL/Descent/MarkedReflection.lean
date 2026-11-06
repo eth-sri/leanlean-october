@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
 open CompletedGauss CanonicalRowCompletion CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {ι : Type*}
 
@@ -110,8 +109,3 @@ theorem markedCompletedT_canonical_reflection (p : ι → Eis) (S : Finset ι)
       apply Finset.sum_congr rfl
       intro T hT
       ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

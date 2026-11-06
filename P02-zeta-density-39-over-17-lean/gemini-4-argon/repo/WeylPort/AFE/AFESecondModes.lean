@@ -124,4 +124,3 @@ theorem afe_upper_second_tail_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < 
     (afePhase_hasDerivAt c (ha.trans hab)).deriv,
     (afePhase_deriv_hasDerivAt c ha).deriv] using hb
 
-end DhimanKadiriQuesadaHerrera2026

@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorBatch HeckeDetectorSupportedWitness ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def retainedProjection (R : Finset FreeRow) (u0 : FreeRow) (u : FreeRow) : FreeRow :=
   if u∈R then u else u0
@@ -26,7 +25,6 @@ theorem retainedProjection_mem (R : Finset FreeRow) (u0 : FreeRow) (h0 : u0∈R)
   · exact h0
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def retainedSourceBatch {Slot : Type*}
@@ -90,8 +88,3 @@ lemma physical_slot_scale {N : ℕ} (ell : Fin N→ℝ) (Z d : ℝ) (hZ : 0<Z) (
   rw [←Real.rpow_mul hZ.le]
   congr 1
   field_simp
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

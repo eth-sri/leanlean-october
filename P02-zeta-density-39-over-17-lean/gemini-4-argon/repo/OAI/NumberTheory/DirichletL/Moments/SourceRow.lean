@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceRow
-open CenteredMomentHeckeExpansion CenteredMomentRowNorm HeckeFamily CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentHeckeExpansion CenteredMomentRowNorm HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 
 theorem rowWeight_split (η : Character) (m A z : O) (t : ℝ) (I : Ideal O) :
     rowWeight η m A z t I = rowWeight η m A 1 t I*idealRowHom z I := by
@@ -90,9 +88,3 @@ theorem finiteHeckeEnergy_eq (η : Character) (m A : O) (t : ℝ)
         (fun I : supportedColumns S => c I*rowWeight η m A 1 t I) W K := by
   unfold finiteHeckeEnergy rowEnergy
   simp_rw [finite_hecke_sum_eq_rowPolynomial η m A _ t hmLam hm2 S c]
-
-end SevenEighths.CenteredMomentSourceRow
-
-end
-
-end OAI

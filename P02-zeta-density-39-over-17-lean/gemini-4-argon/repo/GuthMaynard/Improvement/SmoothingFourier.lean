@@ -108,4 +108,3 @@ theorem scaled_smooth_power_bound (φ : ℝ → ℝ) (ψ : 𝓢(ℝ, ℂ))
     _ = (|ξ| ^ j * ‖𝓕 (fun x => (φ x : ℂ)) (δ * ξ)‖) * (∫ x, g x) := by ring
     _ ≤ _ := h2
 
-end GuthMaynard.Improvement

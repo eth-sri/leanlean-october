@@ -10,8 +10,6 @@ open scoped Classical SchwartzMap
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowGramCoefficient (C : CalibrationData) (σ : RayRing)
     (s : {I : Id // Supported I}) : ℂ :=
@@ -67,8 +65,3 @@ theorem lowGaussColumn_unnormalized (C : CalibrationData) (W1 : ℝ→ℂ)
           (Real.sqrt ((Ideal.absNorm s.val:ℝ)/Y):ℂ)⁻¹) := by ring_nf
       _ = _ := by rw [hp];unfold lowGramScale lowGramProfile;ring_nf
   · simp
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

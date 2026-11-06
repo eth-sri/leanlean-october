@@ -270,4 +270,3 @@ theorem integral_tail_power_eq_beta (s : ℂ) :
     _ = (1 / 2 : ℂ) * Complex.betaIntegral ((1 - s) / 2) (s / 2) :=
       integral_sinh_cpow_neg_Ioi_eq_beta s
 
-end MathCollab.Density.Stronger.Atkinson

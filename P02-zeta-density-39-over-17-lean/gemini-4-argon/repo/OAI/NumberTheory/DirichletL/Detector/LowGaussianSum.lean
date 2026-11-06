@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical ContDiff SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma low_dyad_norm_split (f : ℕ→ℂ) (p : ℕ→Prop) [DecidablePred p]
     (hc : Summable (fun j=>if p j then 0 else ‖f j‖))
@@ -60,8 +58,3 @@ theorem low_all_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
     _≤Cc*Z^(3/16+256*ε)+Cr*Z^(-1:ℝ) := add_le_add hc'.2 hr'.2
     _≤Cc*Z^(3/16+256*ε)+Cr*Z^(3/16+256*ε) := add_le_add le_rfl (mul_le_mul_of_nonneg_left hp hCr.le)
     _=_ := by ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

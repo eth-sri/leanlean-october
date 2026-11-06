@@ -509,9 +509,3 @@ theorem detector_uniform_small (R θ ε : ℝ) (hR : 0 ≤ R)
   refine ⟨U₀,?_⟩
   intro U hU₀' hU χ hχ V hV D hD hDU hQ ρ hρ hzero ht
   exact (hbound R θ hR hθ χ hχ V hV U D hU hD hDU hQ ρ hρ hzero ht).trans_lt (hU₀ U hU₀')
-
-end SevenEighths.GammaZeroDetector
-
-end
-
-end OAI

@@ -62,4 +62,3 @@ theorem modelPhase_source_canonicalTaylorPhase
   exact canonicalTaylorLegendrePhase_agrees Q hA hwpos hvpos hadmissible.1
     (modelPhaseSharpStationarySet_taylor_plateau hσ hsmall hF₁ hT hN ha hb hq)
 
-end TaoTrudgianYang2025

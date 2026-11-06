@@ -134,4 +134,3 @@ theorem exists_intervalC2Bound_quadraticTransition :
           (mul_le_mul (by nlinarith : 2 * |c| ≤ 2 * R) hb1 (abs_nonneg _) (by positivity))
       _ ≤ M * R ^ 2 := by dsimp [M]; nlinarith [mul_nonneg hA.le (show 0 ≤ R ^ 2 - R by nlinarith)]
 
-end MathCollab.Density.Stronger.Atkinson

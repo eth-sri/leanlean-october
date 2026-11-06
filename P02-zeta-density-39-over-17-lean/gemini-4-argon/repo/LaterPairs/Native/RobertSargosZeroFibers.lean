@@ -79,4 +79,3 @@ theorem exists_robertSargos_zero_fiber_bound (ε : ℝ) (hε : 0 < ε) :
     simp only [Finset.card_empty,Nat.cast_zero]
     positivity
 
-end TaoTrudgianYang2025

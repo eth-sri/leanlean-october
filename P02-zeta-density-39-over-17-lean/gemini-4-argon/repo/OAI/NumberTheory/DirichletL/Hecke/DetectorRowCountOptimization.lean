@@ -73,9 +73,3 @@ theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
     have hs := hchoose.1 hrc'
     dsimp [target]
     linarith
-
-end SevenEighths.HeckeDetectorRowCount
-
-end
-
-end OAI

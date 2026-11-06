@@ -105,4 +105,3 @@ theorem sourceStationaryMain_physical_bound
         (mul_le_mul_of_nonneg_right (le_max_right _ _) (by positivity))
         (Real.rpow_nonneg hT.le _)
 
-end TaoTrudgianYang2025

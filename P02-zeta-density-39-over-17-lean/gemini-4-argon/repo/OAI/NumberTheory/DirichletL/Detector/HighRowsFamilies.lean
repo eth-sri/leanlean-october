@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
@@ -82,8 +81,3 @@ theorem rowMarkedSeries_four_families (eta a X W V rho : ℂ) (hρ : rho^6=1)
   simp only [Fin.sum_univ_two,Fin.val_zero,Fin.val_one]
   rw [(he0.even_add_odd ho0).tsum_eq,(he1.even_add_odd ho1).tsum_eq]
   ring
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

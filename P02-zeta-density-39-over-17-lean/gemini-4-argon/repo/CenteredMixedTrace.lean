@@ -91,40 +91,4 @@ theorem cutoff_continuous_schur (w : MathCollab.Density.ReflectionCutoff) :
         simpa only [abs_sub_comm] using hpoint t u
       _ ≤ _ := hbound u
 
-/-- The mixed trace for the actual centered matrix has the required L^2
-scale. No moment, reflection, Schur, or matrix-norm estimate is assumed. -/
-theorem centered_mixed_trace_short_range (w : MathCollab.Density.ReflectionCutoff)
-    {K : ℕ} (hK : 1 ≤ K) {η : ℝ} (hη : 0 < η) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 1 < T → 1 ≤ L → ∀ W : Finset ℝ,
-      T^(((K:ℝ)+1)/(2*K+1)) ≤ W.card →
-      (T/L)^K ≤ W.card →
-      (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
-      (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
-      ‖Matrix.trace (cutoffContinuousMatrix w L W*cutoffCenteredMatrix w L W*
-        cutoffCenteredMatrix w L W)‖ ≤ C*T^η*L^2*(W.card:ℝ)^2 := by
-  obtain ⟨B,hB,hschur⟩ := cutoff_continuous_schur w
-  obtain ⟨C,hC,hbound⟩ := centered_energy_short_range (reflectionSquare w) hK hη
-  refine ⟨1+B*C,by positivity,?_⟩
-  intro T t₀ L hT hL W hR hlen hW hsep
-  have hLp : 0 ≤ L := by linarith
-  obtain ⟨hrow,hcol⟩ := hschur L hLp W hsep
-  have hh := matrix_mixed_trace_schur (cutoffContinuousMatrix w L W) (cutoffCenteredMatrix w L W)
-    (mul_nonneg hB hLp) hrow hcol
-  have he : (∑ t : W, ∑ u : W, ‖cutoffCenteredMatrix w L W t u‖^2) =
-      ∑ t ∈ W, ∑ u ∈ W, ‖MathCollab.Density.hKernel (reflectionSquare w) L (t-u)‖^2 := by
-    simp only [cutoff_centered_entry]
-    rw [Finset.sum_coe_sort W (fun t => ∑ u : W,
-      ‖MathCollab.Density.hKernel (reflectionSquare w) L (t-(u:ℝ))‖^2)]
-    apply sum_congr rfl
-    intro t _
-    exact Finset.sum_coe_sort W (fun u =>
-      ‖MathCollab.Density.hKernel (reflectionSquare w) L (t-u)‖^2)
-  rw [he] at hh
-  calc
-    _ ≤ (B*L)*(∑ t ∈ W, ∑ u ∈ W, ‖MathCollab.Density.hKernel (reflectionSquare w) L (t-u)‖^2) := hh
-    _ ≤ (B*L)*(C*T^η*L*(W.card:ℝ)^2) := by
-      apply mul_le_mul_of_nonneg_left (hbound T t₀ L hT hL W hR hlen hW hsep) (by positivity)
-    _ = (B*C)*T^η*L^2*(W.card:ℝ)^2 := by ring
-    _ ≤ _ := by gcongr; linarith
 
-end Montgomery.RationalMoment

@@ -74,4 +74,3 @@ theorem sum_positive_displacement_weight_le
     _ = (1+2/ε)*((N:ℝ)^(ε/2)*(N:ℝ)^(ε/2))*((N:ℝ)+A) := by ring
     _ = _ := by rw [hsq]
 
-end TaoTrudgianYang2025

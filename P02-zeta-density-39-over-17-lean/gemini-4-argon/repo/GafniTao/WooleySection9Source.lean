@@ -405,6 +405,4 @@ theorem wooleySourcePolynomial_lemma_9_2_of_lemma_9_1
   exact h91.trans (by simpa only [X] using hselected)
 
 
-end
 
-end GafniTao

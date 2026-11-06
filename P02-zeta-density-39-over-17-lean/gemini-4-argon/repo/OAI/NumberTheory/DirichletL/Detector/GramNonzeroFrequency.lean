@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
 
 lemma nonzero_tsum_indicator (f : O→ℂ) :
     (∑'k : O,if k=0 then 0 else f k)=∑'k : GramFrequency,f k.val := by
@@ -65,8 +63,3 @@ lemma actual_gcd_nonzero_frequency_source (I J : SupportedIdeal) (U : SchwartzMa
     (fun h=>paperRadialFourier U (Q*‖eisEmbedding h‖^2/
       ‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2))
   simpa only [←gcd_generator_left I J,←gcd_generator_right I J] using hh
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

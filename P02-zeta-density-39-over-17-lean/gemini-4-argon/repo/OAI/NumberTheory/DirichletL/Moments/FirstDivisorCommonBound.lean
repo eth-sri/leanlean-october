@@ -13,15 +13,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstDivisorCommonBound
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy
-open CenteredMomentFirstDivisorSupport CenteredMomentChildAssembly
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget
-open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentMobiusRegroup
-open CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBound
-local notation "O"=>ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy CenteredMomentFirstDivisorSupport CenteredMomentChildAssembly CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentMobiusRegroup CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBound
 
 def pairMajorant {α : Type*} (S : Finset α) (a : α→O)
     (ha : ∀i,Supported (Ideal.span {a i})) (b : α→ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
@@ -207,9 +199,3 @@ theorem actual_supported_annular_harmonic (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ :
         _ ≤ ‖scalar C D hC E K (dyadicScale (n 2)) (dyadicScale (n 3))‖*(Cb+1)*Cm*Z^δ*
           (windowBudget J₁ t E₁*windowBudget J₂ t E₂) := by gcongr
         _ = _ := by ring
-
-end SevenEighths.CenteredMomentFirstDivisorCommonBound
-
-end
-
-end OAI

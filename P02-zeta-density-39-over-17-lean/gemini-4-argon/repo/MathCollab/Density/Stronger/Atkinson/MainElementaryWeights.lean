@@ -59,4 +59,3 @@ theorem sourceLogWeight_le_three_log {T : ℝ} (hlog : 1 ≤ Real.log T) :
     Real.log T + 2 * Real.eulerMascheroniConstant ≤ 3 * Real.log T := by
   linarith [Real.eulerMascheroniConstant_lt_two_thirds]
 
-end MathCollab.Density.Stronger.Atkinson

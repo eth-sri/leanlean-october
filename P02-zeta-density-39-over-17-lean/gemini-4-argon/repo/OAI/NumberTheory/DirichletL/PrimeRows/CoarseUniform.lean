@@ -11,7 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 lemma selectedFirstBound_polynomial {Q : ℝ} (hQ : 1≤Q) : selectedFirstBound Q 2≤8192*Q^3 := by
   have hQ0 : 0≤Q := by linarith
@@ -96,9 +95,3 @@ theorem calibrated_numerator_first_uniform_growth
         rw [mul_pow]
         nlinarith [mul_nonneg (pow_nonneg (by positivity : (0:ℝ)≤(Ideal.span {u.val}:Ideal O).absNorm) 3)
           (sq_nonneg (3+|s.im|))]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowError
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentNaturalFixedRaySource
-open CenteredMomentEnergyReferenceHomogeneousError QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison CenteredMomentNaturalFixedRaySource CenteredMomentEnergyReferenceHomogeneousError QuadraticInitialBound
 
 theorem relative_slot_error {α:Type*}(F:Finset α)
     (Wslot:ℝ→ℂ)(aslot bslot lo hi bshort:ℝ)(ha:0<aslot)
@@ -50,9 +46,3 @@ theorem relative_slot_error {α:Type*}(F:Finset α)
     apply hb
     simpa only [heightCoefficient,Complex.ofReal_zero,mul_zero,Complex.cpow_zero,mul_one] using hn
   · exact hΦ
-
-end SevenEighths.CenteredMomentEnergyReferenceLowError
-
-end
-
-end OAI

@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson GaussGeneratorTransport
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson GaussGeneratorTransport
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def pairPrincipalRow (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hcop : IsCoprime I J) : O ⧸ Ideal.span {primaryGenerator I * primaryGenerator J} → ℂ :=
@@ -130,8 +128,3 @@ theorem cubic_pair_poisson (I J : Ideal O) (hI : Admissible I) (hJ : Admissible 
   rw [hG]
   push_cast
   field_simp [hn]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

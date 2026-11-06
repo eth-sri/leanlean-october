@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
@@ -97,8 +96,3 @@ lemma even_base_kone_zero (j : ℕ) (hj : j<6) :
   · rw [ite_eq_left ⟨rfl,hj1⟩,gaussValuationTable,ite_eq_right (by decide : ¬6∣5),
       ite_eq_right (by omega : j-1≠5),mul_zero]
   · rw [ite_eq_right (by omega)]
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

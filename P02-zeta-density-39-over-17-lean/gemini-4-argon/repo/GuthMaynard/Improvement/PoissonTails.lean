@@ -27,4 +27,3 @@ theorem shifted_lattice_decay (α : ℝ) :
 def poissonRemainder (ψ : ℝ → ℂ) (R α H : ℝ) (n : ℤ) : ℂ :=
   if H < |R*((n:ℝ)-α)| then 𝓕 ψ (R*((n:ℝ)-α)) else 0
 
-end GuthMaynard.Improvement

@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceSource CenteredMomentEnergyReferenceWeightedEnergy
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-open CenteredMomentCommonMaskRadialEnergy CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceSource CenteredMomentEnergyReferenceWeightedEnergy CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy CenteredMomentCommonMaskRadialEnergy CenteredMomentInductionEnergy
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
@@ -119,9 +112,3 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
   exact he.trans ((mul_le_mul_of_nonneg_right
     (pow_le_pow_left₀ (Finset.sum_nonneg (fun j _=>mul_nonneg (hρ j) (hq j))) hm 2) hE).trans_eq
     (by rw [mul_pow,hr]))
-
-end SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
-
-end
-
-end OAI

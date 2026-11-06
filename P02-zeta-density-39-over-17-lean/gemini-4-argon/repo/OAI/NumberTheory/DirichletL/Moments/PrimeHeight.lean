@@ -11,10 +11,8 @@ open scoped Classical BigOperators ContDiff
 open Set
 namespace SevenEighths.CenteredMomentPrimeHeight
 open HeckeFamily HeckePrimeRay HeckePrimeAnnular HeckeDyadic HeckeZeroSupremum
-local notation "O" => HeckeFamily.O
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
@@ -203,8 +201,3 @@ theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     _ ≤ C0*P^κ*Z^loss*((3:ℝ)^degree*(1+|freq|)^degree) :=
       mul_le_mul_of_nonneg_left hheight (by positivity)
     _ = _ := by ring
-
-end SevenEighths.CenteredMomentPrimeHeight
-end
-
-end OAI

@@ -114,4 +114,3 @@ theorem signed_cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   rw [integral_add hiP hiN]
   nlinarith only [hbP,hbN]
 
-end GuthMaynard.Improvement

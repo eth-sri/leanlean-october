@@ -80,4 +80,3 @@ theorem heathBrown_physical_monomial {c T N : ℝ}
   rw [Real.log_rpow hc,Real.log_rpow hN,Real.log_rpow hT,Real.log_rpow hN]
   ring
 
-end TaoTrudgianYang2025

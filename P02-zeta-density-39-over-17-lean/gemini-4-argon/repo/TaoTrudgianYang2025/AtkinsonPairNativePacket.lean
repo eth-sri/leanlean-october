@@ -108,4 +108,3 @@ theorem ExponentPair.localMeanPacket_native {k l : ℝ} (hpair : ExponentPair k 
       _ = _ := by ring
   · rw [Finset.not_nonempty_iff_eq_empty.mp hW]
     simp
-end TaoTrudgianYang2025

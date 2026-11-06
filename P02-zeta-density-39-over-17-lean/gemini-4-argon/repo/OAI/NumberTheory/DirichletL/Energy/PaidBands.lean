@@ -10,14 +10,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyPaidBands
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentPrimeSlot CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentPrimeSlot CenteredMomentRetainedEnergy CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource QuadraticInitialBound
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] in
@@ -77,9 +72,3 @@ lemma remaining_energy_bound
         (mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hC₀) hd) hp)
         (pow_nonneg (by positivity) _)) hz
-
-end SevenEighths.CenteredMomentEnergyPaidBands
-
-end
-
-end OAI

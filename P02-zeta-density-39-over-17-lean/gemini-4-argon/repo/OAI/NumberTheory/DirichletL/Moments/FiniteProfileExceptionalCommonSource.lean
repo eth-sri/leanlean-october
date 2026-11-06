@@ -13,15 +13,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
-open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair CenteredMomentSecondHeightFamily CenteredMomentFiniteProfileExceptional
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
@@ -100,9 +92,3 @@ theorem actual_common_exceptional (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
         ((C.absNorm:ℝ)*D.absNorm))):=
       mul_le_mul_of_nonneg_left (hmass Sprofile s v C D R hC.1 hD.1 p q J) hH
     _=_:=by dsimp only [H];ring
-
-end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-
-end
-
-end OAI

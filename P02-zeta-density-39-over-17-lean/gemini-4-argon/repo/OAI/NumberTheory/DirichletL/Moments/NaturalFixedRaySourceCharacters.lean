@@ -12,12 +12,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeRowClosure ConcretePrimeRowBridge CanonicalRowCompletion
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentFixedRayInducingTransport CenteredMomentFixedRowMask CenteredExceptionalProfile
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeRowClosure ConcretePrimeRowBridge CanonicalRowCompletion CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredMomentFixedRayInducingTransport CenteredMomentFixedRowMask CenteredExceptionalProfile
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def relativeCharacter (η₀ : Character) (θ : RayQuotient.Characters M H) : Character :=
@@ -31,9 +27,3 @@ lemma relativeCharacter_ideal (η₀ : Character) (θ : RayQuotient.Characters M
 lemma relativeCharacter_fixedQ (η₀ : Character) (θ : RayQuotient.Characters M H)
     (Q : Ideal O) (hQM : Q≤M) (hQη : Q≤η₀.modulus) :
     Q≤(relativeCharacter M H hH η₀ θ).modulus := le_inf hQM hQη
-
-end SevenEighths.CenteredMomentNaturalFixedRaySource
-
-end
-
-end OAI

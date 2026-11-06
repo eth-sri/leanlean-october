@@ -7,16 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 
 namespace ActualEisensteinCubic
 
@@ -71,58 +63,8 @@ end
 
 section
 
-theorem prime_sixth_row_approx_ideal_norm
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset O) (support : O → Finset ι)
-    (weight : O → ℂ) (p : O) (hp : p ≠ 0)
-    (hprime : (Ideal.span {p} : Ideal O).IsMaximal)
-    (D : ℕ)
-    (hsupport : ∀ n ∈ columns, ∀ i ∈ support n, n ∈ P i)
-    (hcolnorm : ∀ n ∈ columns,
-      Ideal.absNorm (Ideal.span {n}) ≤ D)
-    (hweight : ∀ n ∈ columns, ‖weight n‖ ≤ 1) :
-    ‖(∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (p ^ 6))‖ ≤
-      (64 * (D / Ideal.absNorm (Ideal.span {p}) + 1) : ℕ) := by
-  have hcol : ∀ n ∈ columns, ShortDraftLatticeCount.qNat n ≤ D := by
-    intro n hn
-    rw [qNat_eq_absNorm_span]
-    exact hcolnorm n hn
-  simpa only [qNat_eq_absNorm_span] using
-    (prime_sixth_row_approx_maximal P hgood columns support weight p hp
-      hprime D hsupport hcol hweight)
 
-theorem sixth_power_eq_implies_same_prime_ideal
-    (p q : O)
-    (hp : (Ideal.span {p} : Ideal O).IsMaximal)
-    (hq : (Ideal.span {q} : Ideal O).IsMaximal)
-    (h : p ^ 6 = q ^ 6) :
-    (Ideal.span {p} : Ideal O) = Ideal.span {q} := by
-  have hq6 : q ^ 6 ∈ Ideal.span {q} :=
-    Ideal.mem_span_singleton.mpr (dvd_pow_self q (by decide))
-  have hp6 : p ^ 6 ∈ Ideal.span {q} := by rw [h]; exact hq6
-  have hpmem : p ∈ Ideal.span {q} :=
-    hq.isPrime.mem_of_pow_mem 6 hp6
-  have hle : (Ideal.span {p} : Ideal O) ≤ Ideal.span {q} :=
-    (Ideal.span_singleton_le_iff_mem _).mpr hpmem
-  exact hp.eq_of_le hq.ne_top hle
 
-theorem sixth_power_rows_injective
-    {ι : Type*} (S : Finset ι) (P : ι → Ideal O) (p : ι → O)
-    (hprime : ∀ i ∈ S, (P i).IsMaximal)
-    (hgen : ∀ i ∈ S, P i = Ideal.span {p i})
-    (hinj : Set.InjOn P (S : Set ι)) :
-    Set.InjOn (fun i => p i ^ 6) (S : Set ι) := by
-  intro i hi j hj heq
-  have hsame : Ideal.span {p i} = (Ideal.span {p j} : Ideal O) :=
-    sixth_power_eq_implies_same_prime_ideal (p i) (p j)
-      (hgen i hi ▸ hprime i hi)
-      (hgen j hj ▸ hprime j hj) heq
-  apply hinj hi hj
-  rw [hgen i hi, hgen j hj]
-  exact hsame
 
 open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE
 
@@ -213,7 +155,6 @@ theorem rationalCoordEquiv_apply (m : ℕ) (hm : m ≠ 0)
 
 end
 
-section
 
 theorem cubic_roots_reduce_injective (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) {x y : O}
@@ -250,7 +191,7 @@ theorem finiteSquarefreeRow_one
   intro i hi
   simp
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem breveE_int_trace_div (q u v : ℤ) (_hq : q ≠ 0) :
     ShortDraftTrace.breveE
@@ -311,11 +252,3 @@ theorem breveE_quadratic_coordinate (a b x y : ℤ)
     field_simp [hc, hcb, eisLam_ne_zero]
   change ShortDraftTrace.breveE (z ^ 2 / (c * eisLam)) = _
   rw [hdiv, hnum, breveE_int_trace_div q U V (by simpa [q] using hq)]
-
-end
-
-end ActualEisensteinCubic
-
-end
-
-end OAI

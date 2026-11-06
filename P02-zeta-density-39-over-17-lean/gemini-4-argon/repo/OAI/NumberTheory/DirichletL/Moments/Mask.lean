@@ -7,12 +7,9 @@ public import OAI.NumberTheory.DirichletL.Moments.Basic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
-open scoped ContDiff
-local notation "O" => ActualEisensteinCubic.O
+open scoped BigOperators Classical ContDiff
 namespace SevenEighths.CenteredMomentMask
-open ActualEisensteinCubic IdealMobiusDivisorSum
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic IdealMobiusDivisorSum UniqueFactorizationMonoid
 
 theorem ideal_coprime_mobius (I R : Ideal O) (hR : R ≠ 0) :
     (if IsCoprime I R then (1 : ℂ) else 0) =
@@ -131,8 +128,3 @@ theorem polynomial_mask_divisor_bound (ε B : ℝ) (hε : 0 < ε) (hB : 0 ≤ B)
     _ = C * Z ^ (B * δ) := by rw [← Real.rpow_mul (by linarith : 0 ≤ Z)]
     _ ≤ C * Z ^ ε := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hZ hexp) hC.le
-
-end SevenEighths.CenteredMomentMask
-end
-
-end OAI

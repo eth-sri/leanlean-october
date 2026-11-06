@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRankinCount
 open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentRankin
-local notation "O" => ActualEisensteinCubic.O
 
 def powerCode (R : Finset (Ideal O)) (I : Ideal O) (P : R) : ℕ :=
   (normalizedFactors I).count (P:Ideal O)-1
@@ -106,9 +105,3 @@ theorem fixed_support_count (δ : ℝ) (hδ : 0 < δ) :
     _ = X^δ*∑ I ∈ S,(Ideal.absNorm I:ℝ)^(-δ) := (Finset.mul_sum _ _ _).symm
     _ ≤ X^δ*C := mul_le_mul_of_nonneg_left (hmass R S hR hS hs) (Real.rpow_nonneg hX.le _)
     _ = _ := mul_comm _ _
-
-end SevenEighths.CenteredMomentRankinCount
-
-end
-
-end OAI

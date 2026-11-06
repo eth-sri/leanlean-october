@@ -9,8 +9,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 1200000
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /-- The actual contour detector is uniformly small for the stronger curve's
 parameters. The Weyl input is proved and discharged; no moment is assumed. -/
@@ -52,7 +51,7 @@ theorem detector_eventually_small_physical {σ a δ ε : ℝ}
   have hint : ‖detectorIntegral ρ (detectorX δ T) (detectorY a T)‖ < ε/2 :=
     (hi.trans (by simpa only [mul_assoc] using hscale)).trans_lt hs
   have hr := (norm_residue_le hT hX hXT hY hYT hb hβ'.le hγ hγ').trans_lt hp
-  rw [smoothedDetector_contour_identity hY hb hβ' hzero]
+  rw [smoothedDetector_contour_identity hY (by linarith) hβ' hzero]
   change ‖detectorResidue ρ (detectorX δ T) (detectorY a T) +
     detectorIntegral ρ (detectorX δ T) (detectorY a T)‖ < ε
   exact (norm_add_le _ _).trans_lt (by linarith)
@@ -92,4 +91,3 @@ theorem detectorTail_eventually_large_physical {σ a δ : ℝ}
   linarith
 
 
-end Montgomery.RationalMoment.RightDetector

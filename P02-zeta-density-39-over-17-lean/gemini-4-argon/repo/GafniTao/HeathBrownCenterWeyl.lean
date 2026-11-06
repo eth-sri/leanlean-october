@@ -78,6 +78,4 @@ theorem norm_heathBrownWeylSum_center_eq_TaylorPolynomialSum
   exact (norm_heathBrownTaylorPolynomialSum_eq_reduced hk H f n).symm
 
 
-end
 
-end GafniTao

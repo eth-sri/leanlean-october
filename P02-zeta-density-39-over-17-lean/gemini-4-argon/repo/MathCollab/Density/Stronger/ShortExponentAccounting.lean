@@ -167,4 +167,3 @@ theorem smooth_family_sum_eventually {η σ : ℝ}
       congr 1
       ring
 
-end MathCollab.Density.Stronger

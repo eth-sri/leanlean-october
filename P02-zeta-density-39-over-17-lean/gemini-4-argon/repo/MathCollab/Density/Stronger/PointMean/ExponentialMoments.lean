@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.CriticalMoment
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.ZetaGrowth
+open Complex Set MeasureTheory MathCollab.Density.ZetaGrowth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
@@ -234,4 +233,3 @@ theorem heathBrownFullCriticalMoment_nonneg (t : ℝ) :
   unfold heathBrownFullCriticalMoment
   exact integral_nonneg fun u => by positivity
 
-end MathCollab.Density.Stronger.PointMean

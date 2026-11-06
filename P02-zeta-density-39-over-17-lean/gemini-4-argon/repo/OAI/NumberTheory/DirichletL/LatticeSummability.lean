@@ -83,9 +83,3 @@ theorem summable_weighted_normForm {w : ℤ × ℤ → ℂ} {C σ : ℝ}
   intro n
   simpa only [mul_one_div] using
     div_le_div_of_nonneg_right (hw n) (Real.rpow_nonneg (normForm_nonneg _ _) _)
-
-end SevenEighths.LatticeSummability
-
-end
-
-end OAI

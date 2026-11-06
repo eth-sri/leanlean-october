@@ -10,13 +10,8 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
-open ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-open PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open ProbeHighRowFamily HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_high_probe_from_raw_moments (N : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
@@ -158,9 +153,3 @@ theorem actual_high_probe_from_raw_moments (N : ℕ) (e eps c b A R dmin dmax rm
   have hcentral' := hglobal.trans (mul_le_mul_of_nonneg_left hexp (by positivity))
   have hsum := (norm_add_le _ _).trans (add_le_add herror hcentral')
   simpa only [rows,sub_add_cancel,add_mul] using hsum
-
-end SevenEighths.ProbeFinalAssembly
-
-end
-
-end OAI

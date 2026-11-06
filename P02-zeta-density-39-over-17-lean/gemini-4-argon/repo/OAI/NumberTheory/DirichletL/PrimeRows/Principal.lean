@@ -11,10 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion
-open CanonicalQuadraticSieve UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion CanonicalQuadraticSieve UniqueFactorizationMonoid
 
 lemma rawRow_elementCoeff (u : FreeRow) (n : O) :
     elementCoeff (rawRow u) n = rowTwist (HeckeRowClosure.elementHom
@@ -110,9 +107,3 @@ theorem rowCharacter_principal_supported_eq_one (S : Finset (Ideal O)) (hS : ∀
     subst v
     exact hn hv.symm
   exact rowCharacter_unit_nonprincipal S hS hbad u v hv.symm hv1 hp
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

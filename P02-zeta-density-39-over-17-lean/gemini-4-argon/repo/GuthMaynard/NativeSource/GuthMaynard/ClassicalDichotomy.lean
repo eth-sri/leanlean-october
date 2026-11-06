@@ -959,4 +959,3 @@ theorem classical_typeI_typeII_dichotomy_native :
     hMassI hThresholdI hMassII hThresholdII
   simpa only [ClassicalTypeITypeIIDichotomyConclusion] using hResult
 
-end GuthMaynard.NativeMoment

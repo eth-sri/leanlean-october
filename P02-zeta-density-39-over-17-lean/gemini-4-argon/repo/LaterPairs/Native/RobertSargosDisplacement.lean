@@ -87,4 +87,3 @@ theorem robertSargos_displacement_same_sign {r q₁ q₂ h₁ h₂ d H Q δ : �
     simpa only [abs_neg] using
       robertSargos_displacement_positive hH hQ hh₁ hh₂ hq₁ hq₂ hl he
 
-end TaoTrudgianYang2025

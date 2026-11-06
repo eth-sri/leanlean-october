@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSupportedZeroEnergy
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion IdealMobiusDivisorSum
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentZeroMode
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstLocalization
-open CenteredMomentZeroMeanBridge EisensteinSchwartzPoisson HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion IdealMobiusDivisorSum CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentZeroMode CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstLocalization CenteredMomentZeroMeanBridge EisensteinSchwartzPoisson HeckeFamily
 
 theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported I)
     (c : Ideal O → ℂ) (K : ℝ) (p : Ideal O → Prop) [DecidablePred p]
@@ -163,9 +159,3 @@ theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
     _ = C*((1+D)^(N+2))^2*K*B^2*‖paperRadialFourier W 0‖*
       ((X^(ε/4))^2*X^(1+ε/2)) := by ring
     _ = _ := by rw [hxpow]
-
-end SevenEighths.CenteredMomentSupportedZeroEnergy
-
-end
-
-end OAI

@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentForcing
 open UniqueFactorizationMonoid CenteredExceptionalCount CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def movingIdeal (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Ideal O :=
@@ -115,9 +114,3 @@ theorem movingElement_span (p : ι → O) (c d : ι → ℕ) (V : Finset ι) :
     Ideal.span {movingElement p c d V} = movingIdeal (fun i => Ideal.span {p i}) c d V := by
   simp only [movingElement,movingIdeal,Ideal.span_singleton_pow,
     Ideal.prod_span_singleton,Ideal.span_singleton_mul_span_singleton]
-
-end SevenEighths.CenteredMomentForcing
-
-end
-
-end OAI

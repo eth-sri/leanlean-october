@@ -9,12 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedBlock
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CompletedGauss CanonicalQuadraticSieve
-open CenteredMomentFirstRetainedPhysical CenteredMomentFirstCommonFourierTransport
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstScale
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CompletedGauss CanonicalQuadraticSieve CenteredMomentFirstRetainedPhysical CenteredMomentFirstCommonFourierTransport CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstScale
 
 lemma retained_tsum (R:ℝ)(f:O→ℂ):
     (∑'h:O,(retainedWeight R (normValue h):ℂ)*f h)=
@@ -114,9 +109,3 @@ theorem fixed_sector_blocks
   apply Finset.sum_congr rfl
   intro E hE
   exact fixed_sector_term_block η m A t S c C D hC hD E W K X Z ξ
-
-end SevenEighths.CenteredMomentFirstRetainedBlock
-
-end
-
-end OAI

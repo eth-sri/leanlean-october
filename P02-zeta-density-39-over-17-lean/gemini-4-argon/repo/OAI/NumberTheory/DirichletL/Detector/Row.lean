@@ -10,10 +10,8 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeRow
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open CanonicalQuadraticSieve InitialMeanSquare ProbeCompleted
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve InitialMeanSquare ProbeCompleted
 
-local notation "O" => ActualEisensteinCubic.O
 
 def targetMonoid (η : HeckeFamily.Character) : O →* ℂ where
   toFun := HeckeFamily.elementCoeff η
@@ -87,8 +85,3 @@ theorem spectralRow_summable (S : Finset (Ideal O)) (D : Ideal O)
   exact Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
     (fun p => spectralSummand_norm_le S D Ψ hΨ t p.1 p.2)
     ((h1.mul_of_nonneg h3 (fun _ => norm_nonneg _) (fun _ => norm_nonneg _)).mul_left 2)
-
-end SevenEighths.ProbeRow
-end
-
-end OAI

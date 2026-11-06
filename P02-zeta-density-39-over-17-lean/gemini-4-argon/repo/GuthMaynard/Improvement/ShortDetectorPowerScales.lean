@@ -106,4 +106,3 @@ theorem short_detector_power_piece_bounds {T a : ℝ} {N k ℓ : ℕ}
       _ ≤ (2:ℝ)^100*T^(3*a/2) := mul_le_mul htwo100 hhi (by positivity) (by positivity)
       _ ≤ _ := hbuffer
 
-end GuthMaynard.Improvement

@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentReflectionDeletion
-open HeckeFamily CenteredMomentComparisonReflection UniqueFactorizationMonoid
-open IdealMobiusDivisorSum EisensteinSchwartzPoisson ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentComparisonReflection UniqueFactorizationMonoid IdealMobiusDivisorSum EisensteinSchwartzPoisson ConcreteTraceCRT
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 def norm (I : NI) : ℝ := I.val.absNorm
@@ -529,9 +527,3 @@ theorem primitive_deleted_reflection (c : O) [NeZero c]
     (schwartz_decayTwo W) (reflected_decayTwo W) _ _ _
     (fun Y hY => primitive_normalized_reflection c χ hu hp hχ W Y hY) X hX
   exact sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c)))
-
-end SevenEighths.CenteredMomentReflectionDeletion
-
-end
-
-end OAI

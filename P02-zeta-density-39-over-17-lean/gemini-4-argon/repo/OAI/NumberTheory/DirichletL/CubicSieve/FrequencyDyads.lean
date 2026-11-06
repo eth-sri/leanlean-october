@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def frequencyDyad (j : ℕ) : Finset O :=
   (elementRange ((2 : ℝ)^j)).filter (fun h => Nat.clog 2 (Ideal.absNorm (Ideal.span {h})) = j)
@@ -71,8 +70,3 @@ theorem tsum_frequencyDyads_with_zero (f : O → ℂ) (hf : Summable f) :
       intro j
       rw [tsum_fintype]
       rfl
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

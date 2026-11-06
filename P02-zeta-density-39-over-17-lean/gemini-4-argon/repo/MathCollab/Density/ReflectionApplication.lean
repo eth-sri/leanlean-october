@@ -112,4 +112,3 @@ theorem uniform_reflection_application (w : ReflectionCutoff) :
     nlinarith [mul_nonneg (sq_nonneg K) hn]
   exact ⟨hb.1.trans (add_le_add le_rfl he₂), hb.2.trans he₁⟩
 
-end MathCollab.Density

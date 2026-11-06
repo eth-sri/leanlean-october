@@ -8,9 +8,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -80,8 +78,3 @@ theorem varying_canonical_bin_separation
       intro T hT
       dsimp only [columnLog]
       ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

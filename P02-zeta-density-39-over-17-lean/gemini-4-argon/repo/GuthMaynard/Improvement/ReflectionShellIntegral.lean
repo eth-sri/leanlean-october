@@ -93,4 +93,3 @@ theorem reflection_shell_density (w : MathCollab.Density.ReflectionCutoff)
   exact (reflection_shell_density_energy hm h0 hN hL a hμ).trans
     (hmean N L H r u hN hL hH.le a ha)
 
-end GuthMaynard.Improvement

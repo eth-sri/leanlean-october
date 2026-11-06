@@ -10,11 +10,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedActive
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstRetainedSector CenteredMomentSourceRow CenteredMomentHeckeExpansion
-open CenteredMomentFirstSectors CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstRetainedSector CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstSectors CenteredMomentSupportedCorrelation
 open CenteredMomentActiveSource (activeSource supportedColumns_active)
-local notation "O"=>ActualEisensteinCubic.O
 
  theorem retained_energy_sum (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))
     (β:Ideal O→ℂ)(W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
@@ -45,9 +42,3 @@ local notation "O"=>ActualEisensteinCubic.O
     apply Finset.sum_congr rfl
     intro J hJ
     by_cases hj:β J=0 <;> simp [hj]
-
-end SevenEighths.CenteredMomentFirstRetainedActive
-
-end
-
-end OAI

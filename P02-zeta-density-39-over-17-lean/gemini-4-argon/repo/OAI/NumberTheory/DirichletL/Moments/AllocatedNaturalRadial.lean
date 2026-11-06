@@ -10,15 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentAllocatedNaturalRadial
-open HeckeFamily HeckeDyadic ConcreteTraceCRT MeasureTheory
-open CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskRadialEnergy
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentNaturalRowSource CenteredMomentRetainedProfile CenteredMomentLattice
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentRadialEligibleEnergy
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT MeasureTheory CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskRadialEnergy CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentNaturalRowSource CenteredMomentRetainedProfile CenteredMomentLattice CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentEligibleEnergy CenteredMomentCommonAllocationSum CenteredMomentRadialEligibleEnergy
 
 lemma profile_support (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) :
     Function.support (V.profile U hU t : ℝ→ℂ)⊆Set.Icc (V.a/max 1 V.b) (max 1 V.b) := by
@@ -198,9 +190,3 @@ theorem actual_common_radial_energy (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : �
   have hh:=add_le_add hl hr
   rw [←mul_add] at hh
   simpa only [d,commonData,withHeight,hV₁,hV₂] using hh
-
-end SevenEighths.CenteredMomentAllocatedNaturalRadial
-
-end
-
-end OAI

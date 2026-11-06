@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRowNorm
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCorrelation CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
 
 def pairResidue (a b : O) (ha : Supported (Ideal.span {a}))
     (hb : Supported (Ideal.span {b})) (x : Residue (a * b)) : ℂ :=
@@ -84,9 +80,3 @@ theorem rowEnergy_expand {α : Type*} (S : Finset α) (a : α → O) (c : α →
   intro i hi
   rw [Summable.tsum_finsetSum (fun j _ => hs i j)]
   simp only [tsum_mul_left]
-
-end SevenEighths.CenteredMomentRowNorm
-
-end
-
-end OAI

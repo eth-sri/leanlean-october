@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ActualEisensteinCubic ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
 
 lemma nonzero_norm_one_le (z : O) (hz : z≠0) : (1:ℝ)≤‖eisEmbedding z‖^2 := by
   rw [eisEmbedding_norm_sq_eq_absNorm_span]
@@ -37,8 +36,3 @@ theorem annular_pair_count (F G : Finset O) (b N : ℝ) (hb : 0≤b) (hN : 0≤N
   calc
     _ ≤ (128*b*N)*(128*b*N) := mul_le_mul hf hg (Nat.cast_nonneg _) (by positivity)
     _ = _ := by ring
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

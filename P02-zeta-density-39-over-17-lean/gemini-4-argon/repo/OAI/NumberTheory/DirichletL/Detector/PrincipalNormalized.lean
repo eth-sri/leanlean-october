@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Complex Filter
 namespace SevenEighths.ProbePrincipalNormalized
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
-open PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual ProbeRaySlots
-local notation "Id" => Ideal HeckeFamily.O
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual ProbeRaySlots
 
 lemma normalized_error (A R F N : ℂ) (c d v : ℝ)
     (hc : 0≤c) (hA : ‖A-R‖≤c) (hN : ‖N⁻¹‖≤v)
@@ -112,7 +110,3 @@ theorem actual_ray_principal_comparison {K : ℕ}
     _ ≤ C*Z^(HeckeZeroSupremum.beta-11/16-17/48000+nu)+
         C*Z^(HeckeZeroSupremum.beta-11/16+e-(7/8)*ellMin) := by gcongr
     _ = _ := by ring
-end SevenEighths.ProbePrincipalNormalized
-end
-
-end OAI

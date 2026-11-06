@@ -99,6 +99,4 @@ theorem wooley_two_factor_holder_real
   exact hholder
 
 
-end
 
-end GafniTao

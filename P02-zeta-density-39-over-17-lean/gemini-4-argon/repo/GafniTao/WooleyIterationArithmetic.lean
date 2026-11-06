@@ -86,6 +86,4 @@ theorem wooley_nextB_le_k_mul
   exact hb.trans (by
     simpa only [one_mul] using Nat.mul_le_mul_right (k * b) hr)
 
-end
 
-end GafniTao

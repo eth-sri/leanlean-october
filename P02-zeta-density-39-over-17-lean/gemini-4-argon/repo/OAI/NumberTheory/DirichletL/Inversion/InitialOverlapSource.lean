@@ -60,9 +60,3 @@ theorem insert_original_fresh
   have hf := hFresh (tupleCoordinate I y q) yj yc hcoord hj hc
     (by rwa [tupleCoordinate_product])
   rw [hf,one_mul]
-
-end SevenEighths.InverseInitialOverlapSource
-
-end
-
-end OAI

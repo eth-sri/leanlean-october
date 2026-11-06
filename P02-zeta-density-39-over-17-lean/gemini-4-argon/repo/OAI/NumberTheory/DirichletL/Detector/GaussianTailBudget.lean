@@ -157,8 +157,3 @@ theorem gaussianRemoteMoment_summed (V : SchwartzMap ℝ ℂ)
       rw [tsum_div_const,hsm.tsum_add hsp]
     _ ≤ (Cm*Z^s+Cp*Z^s)/A^N := div_le_div_of_nonneg_right (add_le_add htm htp) hAN.le
     _ = _ := by ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

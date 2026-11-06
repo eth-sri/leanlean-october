@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstRawScaleAdmission
-open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAnnularInput
-open CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice
-open CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAnnularInput CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
 variable {α:Type*}[Fintype α]
 local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
@@ -72,9 +66,3 @@ theorem error_minimum_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
   have h:=parent_lower_scales s Z hZ
   exact active_error_lower s C R hC B τ t p hp k Bp υ v Z (parentLower s Z) hZ
     h.1 h.2.1 h.2.2.1 h.2.2.2
-
-end SevenEighths.CenteredMomentEnergyFirstRawScaleAdmission
-
-end
-
-end OAI

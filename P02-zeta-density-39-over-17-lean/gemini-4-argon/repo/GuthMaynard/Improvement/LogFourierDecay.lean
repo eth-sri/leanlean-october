@@ -48,4 +48,3 @@ theorem logModulated_fourier_decay {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       _ ≤ 2^n*(Dₙ*(1+|s|)^n) := mul_le_mul_of_nonneg_left hn (by positivity)
       _ ≤ _ := by nlinarith [mul_nonneg (show 0 ≤ (2:ℝ)^n*D₀ by positivity) (pow_nonneg (by positivity : 0 ≤ 1+|s|) n)]
 
-end GuthMaynard.Improvement

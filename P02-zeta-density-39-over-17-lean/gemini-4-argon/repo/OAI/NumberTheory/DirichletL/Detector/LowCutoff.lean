@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
 
 def lowOuterCutoff (a b x : ℝ) : ℂ :=
   (Real.smoothTransition (2*x/a-1):ℂ)*(Real.smoothTransition (2-x/b):ℂ)
@@ -95,8 +94,3 @@ theorem physicalRowWeight_insert_cutoff (C : CalibrationData) (W0 W1 : ℝ→ℂ
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
   rw [physical_window_cutoff_one W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     (elementNorm C.generator) (Ideal.absNorm r.1.val) X Y (elementNorm r.2) hq hY h0 h1,one_mul]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -308,4 +308,3 @@ theorem separated_frequency_discrete_mean_value (S : Finset ι) (ω : ι → ℝ
   change (∑ t ∈ W, ‖D t‖ ^ 2) ≤ (2 + L ^ 2) * C * E
   nlinarith
 
-end Montgomery.RationalMoment

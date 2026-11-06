@@ -9,12 +9,9 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadraticSieve
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
+open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadraticSieve SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialQuotientGeometry
 
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
 
 def sourceWeight {J : ℕ} (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ)
@@ -206,9 +203,3 @@ theorem span_source_puncture {J : ℕ} (S : Finset (Source (ι:=ι) J))
   obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp ht
   rw [sourceIdeal_gen p hp hpr]
   simp only [sourceIdeal,Ideal.span_singleton_mul_span_singleton,mul_comm]
-
-end SevenEighths.InverseInitialQuotientGeometry
-
-end
-
-end OAI

@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def rowNorm (u : FreeRow) : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
 
@@ -112,9 +111,3 @@ theorem tsum_dyadicRows (A : ℝ) (hA : 0<A) (f : FreeRow→ℂ) (hf : Summable 
       · rfl
     _ = ∑'p : Σn : ℕ,dyadicRows A n,f p.2.val := (e.tsum_eq (fun u=>f u.val)).symm
     _ = _ := by rw [hs.tsum_sigma];simp_rw [Finset.tsum_subtype]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

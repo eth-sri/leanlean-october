@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel a c₀ : Eis} {mode : Bool}
 
@@ -109,7 +108,3 @@ theorem original_low_sector_full_budget
   apply (add_le_add hmain htailbound).trans
   have hp : 0≤(1+‖θ‖)^deg*Z^((5/6-2*d)+200*η+π+κ+ρ*Lpool-O₀/2) := by positivity
   nlinarith only [hp]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

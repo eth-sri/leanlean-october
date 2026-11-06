@@ -68,9 +68,3 @@ theorem latticeL_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
   funext n
   rw [Complex.cpow_neg]
   field_simp
-
-end SevenEighths.HeckeTheta
-
-end
-
-end OAI

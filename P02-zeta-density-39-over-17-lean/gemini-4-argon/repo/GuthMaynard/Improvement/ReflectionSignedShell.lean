@@ -86,4 +86,3 @@ theorem reflection_both_shell_density (w : MathCollab.Density.ReflectionCutoff)
     reflection_density_mass_negation hm h0 hH.le u]
   exact hh
 
-end GuthMaynard.Improvement

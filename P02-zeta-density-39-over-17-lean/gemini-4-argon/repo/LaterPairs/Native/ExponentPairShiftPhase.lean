@@ -112,4 +112,3 @@ theorem aProcessShiftPhase_physical {F : ℝ → ℝ} {σ T N r m : ℝ}
     (aProcessShiftPoint_physical (m := m) hN hNr).2]
   field_simp
 
-end TaoTrudgianYang2025

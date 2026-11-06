@@ -17,4 +17,3 @@ namespace TaoTrudgianYang2025
 def robertSargosGcdKey (p : RobertSargosPoint) : ℕ × ℕ :=
   (robertSargosCoefficientGcd p,robertSargosFrequencyGcd p)
 
-end TaoTrudgianYang2025

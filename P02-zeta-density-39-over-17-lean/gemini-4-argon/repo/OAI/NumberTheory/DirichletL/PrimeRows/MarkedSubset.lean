@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEulerFinsupp
-local notation "O" => HeckeFamily.O
 
 theorem markedRowSeries_subset_replacement (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (T J : Finset PrimeIdeal) (hJ : J⊆T) (hT : ∀P∈T,P.val∉S)
@@ -101,9 +100,3 @@ theorem indexedCompensatedHigh_eq_spectral {K : ℕ} (η : Character) (S : Finse
       idealCoeff η (P i).val := targetMonoid_primaryGenerator η (P i).val (hs i)
   simp only [tupleIndexedCoefficient,hnorm,hc,span_tupleProduct,
     span_primaryGenerator_of_supported _ (hs _)]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

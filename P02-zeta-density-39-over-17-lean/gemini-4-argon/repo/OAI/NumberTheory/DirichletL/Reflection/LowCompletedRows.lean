@@ -14,7 +14,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem low_completed_rows_energy (Q : Ideal Eis) (hQ : Q≠0)
@@ -82,7 +81,3 @@ theorem low_completed_rows_energy (Q : Ideal Eis) (hQ : Q≠0)
   calc
     _ = (D*C)*(1+‖θ‖)^degree*(Z^η*Z^((5/6-2*d)+506*η)) := by ring
     _ = _ := by rw [←Real.rpow_add hz]; congr 2; ring
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

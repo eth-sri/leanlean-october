@@ -481,6 +481,4 @@ theorem wooley_absorb_contraction
       _ = c * a * U + c * K := by ring
   nlinarith
 
-end
 
-end GafniTao

@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma height_slab_integral_wzx (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
     (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :
@@ -33,11 +32,3 @@ lemma height_slab_integral_wzx (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
   dsimp only
   rw [heq,integral_indicator measurableSet_Icc,integral_Icc_eq_integral_Ioc,
     intervalIntegral.integral_of_le (by linarith)]
-
-variable {ι : Type*} [Fintype ι]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

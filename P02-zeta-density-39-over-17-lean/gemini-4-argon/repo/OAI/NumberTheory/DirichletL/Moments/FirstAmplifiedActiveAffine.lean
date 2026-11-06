@@ -9,13 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedActiveAffine
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentCommonRawScale
-open CenteredMomentFirstAnnularInput CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentAllocatedChildCapacity
-open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentCommonRawScale CenteredMomentFirstAnnularInput CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentAllocatedChildCapacity CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
 variable {ι : Type*} [Fintype ι]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
@@ -42,9 +36,3 @@ theorem active_error_parent_affine (s : Input ι) (C R : Ideal O)
   have hs := active_error_slot_logs_le s C R B τ t Q k Bp υ v Z hZ hP
   have hm := mul_le_mul_of_nonneg_left hs (by linarith : 0≤6*κ-1)
   linarith
-
-end SevenEighths.CenteredMomentFirstAmplifiedActiveAffine
-
-end
-
-end OAI

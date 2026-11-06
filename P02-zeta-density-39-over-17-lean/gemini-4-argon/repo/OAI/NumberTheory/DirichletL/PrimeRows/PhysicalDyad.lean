@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 def finitePhysicalRows {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
@@ -44,7 +43,6 @@ lemma weightedRowOnLines_eq {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusi
   simp only [hnorm,Finset.prod_mul_distrib]
   ring
 
-section
 variable {K : ℕ} (e σ υ r : ℝ) (he : 0<e) (he' : e<1/1000)
     (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ) (hσ3 : σ≤3)
     (hυ : (1/2:ℝ)≤υ) (hυ3 : υ≤3) (hr : (17/50:ℝ)≤r)
@@ -141,10 +139,3 @@ theorem norm_finitePhysicalRows_le_absolute :
   rw [heq,norm_mul]
   apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
   exact (norm_integral_le_integral_norm _).trans (integral_mono hi.norm hgi hp)
-
-end
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicAssembly
-open InverseInitialProfile CenteredMomentSectorLocalization CenteredMomentDyadicCount
-open Filter
+open InverseInitialProfile CenteredMomentSectorLocalization CenteredMomentDyadicCount Filter
 
 def retainedWindows (a b:Fin 4→ℝ)(Z D m L:ℝ) : Finset (Windows a b) :=
   Finset.univ.filter (fun k=>radialCenter m (exponent Z (k 3).val)
@@ -95,9 +94,3 @@ theorem retained_card_subpower (b R Λ ε:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ)(hε
       (Fintype.card (Windows (fun _=>1) (fun _=>Z^(3*R+Λ+1))):ℝ)).trans
     (hc (fun _=>1) (fun _=>Z^(3*R+Λ+1)) (by intro i; norm_num)
       (fun _=>hp) (by intro i; simp))
-
-end SevenEighths.InverseInitialDyadicAssembly
-
-end
-
-end OAI

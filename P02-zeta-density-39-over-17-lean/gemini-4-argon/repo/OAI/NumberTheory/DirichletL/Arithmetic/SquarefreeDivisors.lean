@@ -7,76 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace SquarefreeDivisorBound
-open scoped BigOperators Classical
-open Filter IdealMobiusDivisorSum
+open IdealMobiusDivisorSum
 
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 
 theorem squarefree_divisor_card_le (I : Ideal O) (hI : I ≠ ⊥) :
     ((idealDivisors I).filter Squarefree).card ≤ 2 ^ (primeSupport I).card := by
@@ -219,8 +156,6 @@ theorem first_element_energy_small_power (ε : ℝ) (hε : 0 < ε) :
 end SquarefreeDivisorBound
 
 namespace VerticalContourShift
-open MeasureTheory Filter Set
-open scoped Topology
 
 theorem horizontal_integral_tendsto_zero
     (f : ℂ → ℂ) (a b C : ℝ) (hab : a ≤ b)
@@ -296,10 +231,8 @@ theorem integral_eq_of_strip_decay
 
 end VerticalContourShift
 
-open scoped BigOperators Classical
 namespace FirstPassCubeLabels
-abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic
+protected abbrev O := ActualEisensteinCubic.O
 
 def bit (b : Bool) : ℕ := if b then 1 else 0
 
@@ -562,11 +495,8 @@ end Reassembly
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical SchwartzMap
 namespace QuadraticInitialBound
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open FiniteGaussPhase MixedCrossSeparation ActualEisensteinCoordinates QuadraticGaussRay
-open RayFourExpansion
+open EisensteinSchwartzPoisson FiniteGaussPhase MixedCrossSeparation ActualEisensteinCoordinates QuadraticGaussRay RayFourExpansion
 
 def quadraticSymbol {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) : ℂ :=
@@ -651,9 +581,3 @@ theorem quadraticSymbol_reciprocity_characters {ι : Type*} [Fintype ι] [Decida
   rw [rayMask_prime_product p hc A, rayMask_prime_product p hc B, one_mul, one_mul] at hr
   rw [hr]
   simp only [Finset.sum_mul]
-
-end QuadraticInitialBound
-
-end
-
-end OAI

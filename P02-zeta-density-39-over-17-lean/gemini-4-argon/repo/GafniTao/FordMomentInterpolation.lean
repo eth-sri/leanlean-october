@@ -46,5 +46,3 @@ theorem ford_vinogradov_lintegral_mean_eq (s k Q : ℕ) :
       norm_num
 
 
-end
-end GafniTao

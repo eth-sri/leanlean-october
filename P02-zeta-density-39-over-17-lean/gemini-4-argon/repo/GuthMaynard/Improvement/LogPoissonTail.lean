@@ -77,4 +77,3 @@ theorem logModulated_poisson_tail {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   convert hb' using 1
   ring
 
-end GuthMaynard.Improvement

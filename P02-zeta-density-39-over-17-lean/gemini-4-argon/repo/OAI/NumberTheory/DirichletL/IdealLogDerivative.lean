@@ -290,8 +290,3 @@ theorem coeff_LSeries_eq_neg_logDeriv_of_eq (a : Ideal O →*₀ ℂ)
     exact hF z hz
   rw [hd, hF s hs]
   exact coeff_LSeries_eq_neg_logDeriv a ha s hs
-
-end
-end SevenEighths.IdealLogDerivative
-
-end OAI

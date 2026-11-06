@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonRawScale
 open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
 def frozenScale (B : Tuple ι) (P : ι → ℝ) (i : ι) : ℝ :=
@@ -112,9 +111,3 @@ theorem actual_reduction_norm (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O
     simp only [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ] at hh
     have hh' := mul_le_mul_of_nonneg_left hh (plainNorm_pos B hB).le
     simpa only [rawReduction,mul_left_comm,mul_assoc] using hh'
-
-end SevenEighths.CenteredMomentCommonRawScale
-
-end
-
-end OAI

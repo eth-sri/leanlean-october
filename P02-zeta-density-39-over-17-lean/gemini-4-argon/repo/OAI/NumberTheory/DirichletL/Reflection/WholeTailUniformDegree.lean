@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 
 theorem original_family_whole_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
@@ -70,7 +69,3 @@ theorem original_family_whole_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A 
     _ ≤ (‖fixedRadialCoefficientScalar‖*‖s.stratumShapeFactor c‖)*∑ _v : Eisˣ,Pset.card*E := by
       exact mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun v _ => hb v)) (by positivity)
     _ = _ := by simp only [Finset.sum_const,Finset.card_univ,hcard,nsmul_eq_mul]; dsimp only [E]; ring
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

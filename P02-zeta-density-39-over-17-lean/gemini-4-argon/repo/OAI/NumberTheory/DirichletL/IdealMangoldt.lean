@@ -276,9 +276,3 @@ theorem classCoeff_summable_nterm (C : Set (Ideal O)) {σ : ℝ} (hσ : 1 < σ) 
     Summable (nterm (fun n => (classCoeff C n : ℂ)) σ) :=
   coeff_summable_nterm _ (fun _ => by split_ifs <;> norm_num)
     (fun _ => by split_ifs <;> norm_num) hσ
-
-end
-
-end SevenEighths.IdealMangoldt
-
-end OAI

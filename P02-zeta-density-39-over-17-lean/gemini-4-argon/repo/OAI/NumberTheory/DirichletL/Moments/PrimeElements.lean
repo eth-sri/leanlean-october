@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentPrimeElements
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentPrimePool CenteredMomentAmplificationGlobal
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentPrimePool CenteredMomentAmplificationGlobal
 
 def elementPool (P : Finset (Ideal O)) : Finset O := P.image primaryPrime
 
@@ -96,9 +94,3 @@ theorem eligible_element_card_half (P : Finset (Ideal O))
     (fun Q hQ => hp Q (Finset.mem_filter.mp hQ).1)
     (fun Q hQ => hbad Q (Finset.mem_filter.mp hQ).1)]
   exact eligiblePool_half P hp R hR Z ell B hZ hell hlower hupper hsize
-
-end SevenEighths.CenteredMomentPrimeElements
-
-end
-
-end OAI

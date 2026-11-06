@@ -8,9 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeRow
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeCompleted
 
 def baseRowCoefficient (η : HeckeFamily.Character) (Xi : O →* ℂ)
     (s : O) (hs : Supported (Ideal.span {s})) : O →* ℂ :=
@@ -56,8 +54,3 @@ theorem spectralSummand_zero_completedIndex (S : Finset (Ideal O)) (D I J : Idea
         Ψ (primaryGenerator J)^3 / (Ideal.absNorm J:ℂ)=0
       simp [hJ', FiniteGaussPhase.angularFactor]
     simp only [spectralSummand, hc, mul_zero, zero_mul]
-
-end SevenEighths.ProbeRow
-end
-
-end OAI

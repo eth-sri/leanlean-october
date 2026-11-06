@@ -61,4 +61,3 @@ theorem sargosQuarticPhase_curvature {N α γ x : ℝ}
   have h := abs_le.mp (sargosQuartic_curvature_error hN hα hγ hx)
   constructor <;> linarith [h.1,h.2]
 
-end TaoTrudgianYang2025

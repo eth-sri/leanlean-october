@@ -11,16 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondInputCapacitySource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAllocatedChildCapacity
-open CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentSourceLiveColumn
-open CenteredMomentSecondCapacitySourceShift CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
-open CenteredMomentFirstPhysicalSourceSupport CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonHeightEnvelope
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAllocatedChildCapacity CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentSourceLiveColumn CenteredMomentSecondCapacitySourceShift CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget CenteredMomentFirstPhysicalSourceSupport CenteredMomentOriginalCommonHarmonic CenteredMomentCommonHeightEnvelope
 variable {ι:Type*}[Fintype ι]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
@@ -48,9 +39,3 @@ theorem actual_lower_support (N:ℕ)(slotLower plainLower:ℝ)(hs:0<slotLower)(h
   have hv:0≤volume s:=(volume_pos s).le
   unfold lowerFactor
   nlinarith [mul_le_mul_of_nonneg_right hprod (mul_nonneg (sq_nonneg plainLower) hv)]
-
-end SevenEighths.CenteredMomentSecondInputCapacitySource
-
-end
-
-end OAI

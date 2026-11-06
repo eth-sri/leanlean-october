@@ -11,11 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialDyadicAssembly
-local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open InverseInitialKernelBridge InverseSecondChildWindows
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge InverseSecondChildWindows
 
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
@@ -80,9 +76,3 @@ theorem actual_physical_partition
     (by intro i; norm_num) w Ψ j marks W₁ W₂ Φ Z D m hZ
     (actual_live_caps p hp hcop hg hpr pool S hdiv hf w Ψ j marks W₁ W₂ Φ Z D m b T
       (by linarith) hW₁ hW₂ hT)
-
-end SevenEighths.InverseInitialDyadicAssembly
-
-end
-
-end OAI

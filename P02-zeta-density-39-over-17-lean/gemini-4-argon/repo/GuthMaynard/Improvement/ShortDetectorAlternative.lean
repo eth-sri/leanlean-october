@@ -70,4 +70,3 @@ theorem short_detector_eventually_alternative :
   simp only [one_div] at ht hr hm hnorm hn
   linarith [hn.1, hn.2]
 
-end GuthMaynard.Improvement

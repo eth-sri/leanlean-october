@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
 
 def poissonPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
     (D : Ideal O) (W₀ W₁ : ℝ → ℂ) (X Y Z : ℝ) : ℂ :=
@@ -51,8 +50,3 @@ theorem markedPhysicalProbe_eq_poisson (η : HeckeFamily.Character) (C : Calibra
     simpa only [hn] using inner_mellin_poisson η C D (primaryGenerator s.val) has
       W₀ hWc hWs (elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X) Z hK hZ
   · rfl
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

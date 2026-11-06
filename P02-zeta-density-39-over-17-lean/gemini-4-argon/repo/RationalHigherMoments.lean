@@ -107,4 +107,3 @@ theorem rational_coefficient_energy_subpower {k : ℕ} (hk : 1 ≤ k) : Rational
   apply rational_energy_bound_downward (by omega : 0 < k) (Nat.le_of_lt (Nat.lt_two_pow_self (n := k)))
   exact rational_energy_bound_power_two k
 
-end Montgomery.RationalMoment

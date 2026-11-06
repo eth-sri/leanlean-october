@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonCarrierAlgebra
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem norm_atkinsonPowerIntegrand (T G L α b x : ℝ) :
@@ -105,4 +104,3 @@ theorem zetaAtkinsonTwoTerm_eq_carrierIntegral {T G L : ℝ}
   rw [zetaAtkinsonTwoTerm,
     integral_zetaAtkinsonTwoTermIntegrand_eq_carriers hT hG hL hwidth (Nat.pos_of_ne_zero hn)]
 
-end MathCollab.Density.Stronger.Atkinson

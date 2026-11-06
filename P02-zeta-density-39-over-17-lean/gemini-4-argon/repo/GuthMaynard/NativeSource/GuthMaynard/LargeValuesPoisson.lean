@@ -677,4 +677,3 @@ theorem gmMatrix_hilbertSchmidt_trace_estimate (cutoff : GMSmoothCutoff)
       rw [hjSub, pow_add]
       field_simp
 
-end GuthMaynard.NativeMoment

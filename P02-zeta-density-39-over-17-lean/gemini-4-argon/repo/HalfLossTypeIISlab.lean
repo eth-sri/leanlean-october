@@ -48,4 +48,3 @@ theorem half_loss_typeII_zero_slab_count
   simpa only [W,hcard] using hc
 
 
-end GuthMaynard.Improvement

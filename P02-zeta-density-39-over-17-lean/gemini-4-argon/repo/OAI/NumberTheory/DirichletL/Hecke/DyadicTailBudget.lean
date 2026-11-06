@@ -57,9 +57,3 @@ theorem uniform_external_tail_order (τ dmax B R : ℝ)
       field_simp
     _ ≤ (2 : ℝ)^n*Z^(-dmax*R) := mul_le_mul_of_nonneg_left (hn Z hZ) (by positivity)
     _ ≤ _ := mul_le_mul_of_nonneg_left htarget (by positivity)
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

@@ -9,13 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseMomentGlobalPrincipalMass InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-open InverseWholePriorityRetainedSource FirstCauchyArithmetic
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseMomentGlobalPrincipalMass InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy InverseWholePriorityRetainedSource FirstCauchyArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 theorem global_parent_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
     (hLcap : 0≤Lcap) (htau : 0<tau) :
@@ -123,8 +118,3 @@ theorem global_parent_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
         _ = coefficientBound*Cm^2*Ct*Cs*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
           (SchwartzMap.seminorm ℝ 0 0 om)^2*(Z^(-(saving+13*Lcap))*Z^(13*Lcap)) := by ring
         _ = _ := by rw [he]
-
-end SevenEighths.InverseMomentGlobalPriorityTail
-end
-
-end OAI

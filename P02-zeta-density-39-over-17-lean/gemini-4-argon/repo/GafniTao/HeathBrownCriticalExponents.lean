@@ -89,6 +89,4 @@ theorem heathBrown_critical_core_exponent
   rw [heathBrown_inverse_critical_eq_two_reciprocal hk]
 
 
-end
 
-end GafniTao

@@ -76,4 +76,3 @@ theorem cutoffIntegral_quadratic_decay (w : ReflectionCutoff) :
   apply (le_div_iff₀ (by positivity : (0 : ℝ) < (1+|v|)^2)).2
   nlinarith
 
-end MathCollab.Density

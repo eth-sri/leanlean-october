@@ -88,6 +88,4 @@ theorem heathBrown_lemma_one_finite_preVMVT
       V * ENNReal.ofReal ((H : ℝ) ^ 2) := by gcongr
 
 
-end
 
-end GafniTao

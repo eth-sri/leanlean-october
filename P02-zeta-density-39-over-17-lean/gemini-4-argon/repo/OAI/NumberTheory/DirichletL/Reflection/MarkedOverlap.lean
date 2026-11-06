@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma freePrimeRow_zero_at_prime (I Q : Ideal Eis) (hI : Supported I)
     (P : FreePrimeIndex I Q) (n : Eis) (hn : n∈P.val.val) : freePrimeRow I hI Q n=0 := by
@@ -63,8 +62,3 @@ theorem markedCompletedT_free_overlap_zero {σ : Type*} [Fintype σ]
           (∏ j, if S.ideal j∣n*b^3 then (1:ℂ) else 0)) := by ring
         _ = 0 := by rw [hz,mul_zero]
     _ = 0 := by simp
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

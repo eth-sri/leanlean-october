@@ -8,12 +8,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
-open InverseSecondUniformCutoff
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondUniformCutoff
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 abbrev exponent := InverseFirstGlobalCaps.dyadicExponent
@@ -92,8 +88,3 @@ theorem source_outer_caps (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : Sou
     tau b (columnScale Z r k l negative) Lcol LY Lcap hZ.le
     (by unfold columnScale;positivity) (by unfold firstCellRadius;exact Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _)
     hcol hYi hgeom hphysical
-
-end SevenEighths.InverseMomentFirstLabelCell
-end
-
-end OAI

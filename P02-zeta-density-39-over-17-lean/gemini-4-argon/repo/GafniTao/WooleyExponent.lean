@@ -202,6 +202,4 @@ theorem wooley_arbitrarilyLarge_counterexamples
     hfail C hC B0
   exact ⟨B, phi, gamma, hB, hphi, hgamma, hstrict⟩
 
-end
 
-end GafniTao

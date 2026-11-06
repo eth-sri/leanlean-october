@@ -50,5 +50,4 @@ theorem robertSargos_coefficient_linear_source_gap {r q₁ q₂ h₁ h₂ d R H 
     _ ≤ R*(9*Q)/(H*Q) := hb
     _ = _ := by field_simp
 
-end TaoTrudgianYang2025
 

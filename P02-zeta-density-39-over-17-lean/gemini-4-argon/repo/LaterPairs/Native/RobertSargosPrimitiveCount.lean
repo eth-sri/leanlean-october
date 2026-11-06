@@ -43,5 +43,4 @@ theorem exists_robertSargos_primitive_count (ε : ℝ) (hε : 0 < ε) :
         exact mul_le_mul_of_nonneg_right (by linarith only [hCs]) hnonneg
       _ = _ := by ring
 
-end TaoTrudgianYang2025
 

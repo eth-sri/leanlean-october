@@ -79,4 +79,3 @@ theorem atkinson_card_le_of_height_fibers {H L B : ℝ} {W : Finset ℝ}
     _ ≤ ∑ _k ∈ Finset.range (Nat.floor (H/L)+1), B := Finset.sum_le_sum hcard
     _ = _ := by simp
 
-end MathCollab.Density.Stronger

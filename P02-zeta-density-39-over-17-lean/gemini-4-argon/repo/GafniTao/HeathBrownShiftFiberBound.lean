@@ -150,6 +150,4 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic
     _ = ((D : ℝ) + c) * (b + a * D) / d := by ring
 
 
-end
 
-end GafniTao

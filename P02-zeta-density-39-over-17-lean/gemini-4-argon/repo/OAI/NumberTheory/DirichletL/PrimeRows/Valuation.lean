@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification UniqueFactorizationMonoid
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
 def unitPart (u : FreeRow) (p : O) (hp : Prime p) : O :=
   Classical.choose ((FiniteMultiplicity.of_prime_left hp u.property.1).exists_eq_pow_mul_and_not_dvd)
@@ -64,9 +63,3 @@ theorem idealRowHighLocalFactor_canonical (η : Character) (u : FreeRow) (p : O)
   conv_lhs => rw [(canonical_decomposition u p hp).1]
   exact ProbePhysical.idealRowHighLocalFactor_eq_source η p hp hg hc hprimary hs
     (unitPart u p hp) (unitPart_coprime u p hp) (multiplicity p u.val) x w z
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

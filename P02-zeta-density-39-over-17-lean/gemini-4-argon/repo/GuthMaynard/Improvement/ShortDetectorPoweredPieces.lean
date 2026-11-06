@@ -91,4 +91,3 @@ theorem exists_shortPoweredDetector_piece {N k : ℕ} (hN : 0 < N) (hk : 0 < k)
   rw [← he] at hb
   linarith
 
-end GuthMaynard.Improvement

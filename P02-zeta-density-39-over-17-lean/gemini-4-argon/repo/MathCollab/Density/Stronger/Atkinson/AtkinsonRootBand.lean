@@ -132,4 +132,3 @@ theorem atkinsonPowerIntegral_eq_root_band {T G L : ℝ}
   rw [uIcc_of_le hab] at hy
   exact atkinsonPowerIntegrand_sq hT (ha.trans_le hy.1) G L α b
 
-end MathCollab.Density.Stronger.Atkinson

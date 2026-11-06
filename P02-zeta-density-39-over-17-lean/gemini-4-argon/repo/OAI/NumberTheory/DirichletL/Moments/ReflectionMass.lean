@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectionMass
-open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid
-open IdealMobiusDivisorSum
-local notation "O" => HeckeFamily.O
+open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid IdealMobiusDivisorSum
 
 def weight (I : Ideal O) : ℝ := (Real.sqrt (I.absNorm : ℝ))⁻¹
 lemma weight_nonneg (I : Ideal O) : 0 ≤ weight I := by unfold weight; positivity
@@ -234,8 +232,3 @@ def unitSmooth (S : Finset (Ideal O)) : SmoothIdeal S :=
     change (normalizedFactors (1 : Ideal O)).toFinset ⊆ S
     rw [normalizedFactors_one]
     exact Finset.empty_subset _⟩
-
-end SevenEighths.CenteredMomentReflectionMass
-end
-
-end OAI

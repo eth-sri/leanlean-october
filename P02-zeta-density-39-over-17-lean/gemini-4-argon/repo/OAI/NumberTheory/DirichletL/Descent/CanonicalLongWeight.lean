@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers InverseInitialClippedColumns IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers InverseInitialClippedColumns IdealMobiusDivisorSum
 
 theorem second_label_weight_uniform (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
     ∃C:ℝ,0<C ∧ ∀(Z V:ℝ),1≤Z→V≤L→∀I:Ideal O,I≠0→
@@ -34,9 +31,3 @@ theorem second_label_weight_uniform (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
       exact hnorm.trans (Real.rpow_le_rpow_of_exponent_le hZ hV)
     _=C*Z^(L*delta):=by rw [←Real.rpow_mul hz.le]
     _≤C*Z^eps:=by gcongr
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

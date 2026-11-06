@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
@@ -95,8 +94,3 @@ theorem actual_marked_slot_split_reflection
   apply Finset.prod_congr (by ext; simp only [Finset.mem_sdiff,Finset.mem_univ])
   intro t ht
   rfl
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

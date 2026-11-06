@@ -73,4 +73,3 @@ theorem radial_integral_fourier (a : ℝ → ℂ) (v y L m₁ m₂ m₃ : ℝ) :
   rw [show -L*(m₁*v+m₂*y+m₃)*r = -(L*(m₁*v+m₂*y+m₃))*r by ring]
   ring
 
-end GuthMaynard.Improvement

@@ -99,4 +99,3 @@ theorem contDiffAt_atkinsonGapSlopeProfile
     positivity
   fun_prop (disch := positivity)
 
-end TaoTrudgianYang2025

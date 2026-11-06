@@ -88,9 +88,3 @@ theorem exists_physical_slot_lengths (dmin dmax mesh R : ℝ)
   · exact (by nlinarith : rmin*d≤dmax*rmin).trans (hlo k)
   · exact (hup k).1.trans (by nlinarith)
   · exact (hup k).2.trans (by nlinarith)
-
-end SevenEighths.Parameters
-
-end
-
-end OAI

@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition
-open CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
 
 theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (hcop : IsCoprime a b)
@@ -225,8 +222,3 @@ theorem bareCongruenceCoefficient_product_reduced (A B s r : O) (hA : A≠0) (hB
     hcop.of_mul_left_left.of_mul_right_right.symm
   simp only [idealRowHom_argument_mul]
   field_simp
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

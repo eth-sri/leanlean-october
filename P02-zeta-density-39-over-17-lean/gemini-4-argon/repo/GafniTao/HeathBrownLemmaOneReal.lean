@@ -132,6 +132,4 @@ theorem norm_heathBrownExponentialSum_le_expanded_of_source
   exact htoReal
 
 
-end
 
-end GafniTao

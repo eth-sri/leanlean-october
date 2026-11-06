@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentGaussEnergy CenteredMomentAddedZero CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentGaussEnergy CenteredMomentAddedZero CenteredMomentRectangle
 
 abbrev Tuple (ι : Type*) := (ι ⊕ Fin 2) → Ideal O
 
@@ -68,9 +66,3 @@ theorem originalCoefficient_reindex {ι : Type*} [Fintype ι] {n : ℕ}
   simp only [originalCoefficient, originalFiniteCoefficient, tupleProduct_reindex,
     hslot, hp₀, hp₁, tupleEquiv_plain]
   rw [e.symm.prod_comp (fun j => ν j (v (Sum.inl j)) * Wslot j ((Ideal.absNorm (v (Sum.inl j)) : ℝ) / P j))]
-
-end SevenEighths.CenteredMomentAddedZeroUniform
-
-end
-
-end OAI

@@ -10,16 +10,8 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
-open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
-open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 omit [DecidableEq ι] in
 theorem local_input_tail (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
@@ -51,9 +43,3 @@ theorem local_input_tail (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
     norm_num
     ring
   exact hZ.2 s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K _ hK hVcap hTcap le_rfl
-
-end SevenEighths.CenteredMomentSourceInputFirstSectorTail
-
-end
-
-end OAI

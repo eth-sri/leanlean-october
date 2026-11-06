@@ -9,11 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
-open InverseInitialRayAttachment
-local notation "O"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment InverseInitialRayAttachment
 
 theorem physical_marked_zero_bound (loss L b B:ℝ)(hloss:0<loss)(hL:0≤L)
     (hb:0<b)(hB:0≤B)(Φ:𝓢(ℝ,ℂ)):
@@ -55,9 +51,3 @@ theorem physical_marked_zero_bound (loss L b B:ℝ)(hloss:0<loss)(hL:0≤L)
     apply (div_le_iff₀ (by linarith:0<L+1)).mpr
     nlinarith
   linarith
-
-end SevenEighths.InverseInitialZeroMode
-
-end
-
-end OAI

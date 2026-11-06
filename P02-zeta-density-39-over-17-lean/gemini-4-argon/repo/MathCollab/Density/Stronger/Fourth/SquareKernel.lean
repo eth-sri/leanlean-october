@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareKernelFar
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Set MeasureTheory MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -167,4 +165,3 @@ theorem exists_integral_norm_zetaFourthKernel_le {c : ℝ} (hc : 0 < c) :
     _ = _ := by rw [integral_const_mul, integral_gaussian]
 
 
-end MathCollab.Density.Stronger.Fourth

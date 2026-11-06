@@ -75,9 +75,3 @@ theorem rowMap_injective : Function.Injective rowMap := by
 theorem rowMap_norm (p : FreeRow×NonzeroIdeal) :
     (Ideal.span {rowMap p}).absNorm=(Ideal.span {p.1.val}).absNorm*p.2.val.absNorm^6 := by
   rw [rowMap_span,map_mul,map_pow]
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

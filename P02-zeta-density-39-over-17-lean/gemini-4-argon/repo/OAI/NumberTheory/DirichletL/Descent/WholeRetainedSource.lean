@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMomentWholeRetainedSource
-open ActualEisensteinCubic SecondPassArithmetic InverseMoment InverseInitialArithmetic
-open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
@@ -72,9 +70,3 @@ theorem whole_coefficient_norm
   rw [coefficient_attach p hinj,norm_mul]
   exact (mul_le_of_le_one_right (norm_nonneg _) (pairedSlotWeight_norm_le_one J J lists lists a a
     _ q hq ha ha)).trans (hw x hx)
-
-end SevenEighths.InverseMomentWholeRetainedSource
-
-end
-
-end OAI

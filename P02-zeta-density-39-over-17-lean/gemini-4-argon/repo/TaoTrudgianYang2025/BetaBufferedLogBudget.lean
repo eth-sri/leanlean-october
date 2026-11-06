@@ -167,4 +167,3 @@ theorem three_scale_le_polynomial_budget {C T N : ℝ}
   have hc := mul_nonneg hC (pow_nonneg (show 0 ≤ T+1 by linarith) 3)
   nlinarith
 
-end TaoTrudgianYang2025

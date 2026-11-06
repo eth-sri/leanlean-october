@@ -9,10 +9,8 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentCanonical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation
 
 theorem actualSextic_order_six (P : Ideal O) [P.IsMaximal]
     (hg : goodLambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) :
@@ -90,8 +88,3 @@ theorem canonicalCRTCorrelation {ι : Type*} [Fintype ι]
   rw [fullCorrelation_ringEquiv (IdealGaussCRT.quotientProdEquivPi _ _) u v k
     (fun x => ∏ i, primePowerRow (P i) (hg i) (hc i) (x i))
     (fun x => ∏ i, primePowerRow (P i) (hg i) (hc i) (x i)), fullCorrelation_pi]
-
-end SevenEighths.CenteredMomentCanonical
-end
-
-end OAI

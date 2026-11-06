@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion ProbeCompleted ProbeRow CubicEisenstein
-open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion ProbeCompleted ProbeRow CubicEisenstein EisensteinSchwartzPoisson
 
 lemma verticalIntegral_const_mul (σ : ℝ) (F : ℂ→ℂ) (c : ℂ) :
     verticalIntegral σ (fun z=>c*F z)=c*verticalIntegral σ F := by
@@ -80,8 +78,3 @@ lemma rawPhysicalMellinTerm_radial_join (η : HeckeFamily.Character) (C : Calibr
     intro H
     congr 1 ; congr 1 ; ring_nf
   · simp only [zero_mul,tsum_zero,verticalIntegral,integral_zero,mul_zero]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

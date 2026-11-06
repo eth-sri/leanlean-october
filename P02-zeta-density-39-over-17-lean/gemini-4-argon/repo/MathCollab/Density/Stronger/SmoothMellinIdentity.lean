@@ -159,4 +159,3 @@ theorem smoothMollifierBlock_eq_rightContour {ψ : ℝ → ℝ} {a b N : ℝ}
   rw [← riemannZeta_mul_zetaMollifier_eq_LSeries X (by simp; linarith)]
   ring
 
-end MathCollab.Density.Stronger

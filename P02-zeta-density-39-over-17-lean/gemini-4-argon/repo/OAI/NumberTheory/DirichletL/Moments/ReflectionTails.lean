@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentComparisonReflection
 open HeckeFamily EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma ideal_norm_rpow_summable (B : ℕ) (hB : 2≤B) :
@@ -93,9 +92,3 @@ lemma discarded_rapid_control (F : ℝ→ℂ) (A B : ℕ) (D R : ℝ)
     _≤(x^B*‖F x‖)*x^A :=mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hR.le hRx A) (by positivity)
     _=x^(B+A)*‖F x‖ :=by rw [pow_add];ring
     _≤D :=hF x hx
-
-end SevenEighths.CenteredMomentComparisonReflection
-
-end
-
-end OAI

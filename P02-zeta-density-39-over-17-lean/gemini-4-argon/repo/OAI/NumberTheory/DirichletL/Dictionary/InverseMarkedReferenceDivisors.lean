@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily IdealMobiusDivisorSum UniqueFactorizationMonoid
-open InverseInitialConjugateEnergy InverseInitialPoissonBridge
-local notation "O"=>HeckeFamily.O
+open HeckeFamily IdealMobiusDivisorSum UniqueFactorizationMonoid InverseInitialConjugateEnergy InverseInitialPoissonBridge
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -76,9 +74,3 @@ theorem originalTotal_slot_subsets (S:Finset (Ideal O))
         originalFixedPolynomial S (∏i,P i) (∏i∈J,P i) η a W Z r z u := by
   rw [originalTotalPolynomial_eq_sectors S (tuple_product_squarefree P hP hinj)
     η a W hZ r z (fun _=>0),sum_tuple_divisors P hP hinj]
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

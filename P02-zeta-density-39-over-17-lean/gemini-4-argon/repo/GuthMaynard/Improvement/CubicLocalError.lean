@@ -77,4 +77,3 @@ theorem cubic_local_time_perturbation {μ : ℝ → ℝ} {a b : ℝ}
   rw [hkEq,hjEq]
   exact cubic_time_density_perturbation hab hm h0 hi h2 hs (hK.indicator hE) (hJ.indicator hE) hB he hkb hjb heb
 
-end GuthMaynard.Improvement

@@ -8,9 +8,8 @@ public import GuthMaynard.NativeSource.GuthMaynard.ZeroDetector
 
 @[expose] public section
 
-open Complex Finset
+open Complex Finset Classical
 open scoped BigOperators
-open Classical
 
 namespace GuthMaynard.NativeMoment
 
@@ -176,4 +175,3 @@ theorem finite_weighted_extract_separated {α κ : Type*}
       _ ≤ J.card * (2 * L * W.card) := Nat.mul_le_mul_left _ hWeight
       _ = 2 * J.card * L * W.card := by ring
 
-end GuthMaynard.NativeMoment

@@ -96,4 +96,3 @@ theorem robertSargos_phase_sequence_weighted (f : ℝ → ℝ) (M H : ℕ) :
     rw [robertSargosPhaseSequence,ite_eq_right (by omega)]
     simp only [Int.cast_natCast]
 
-end TaoTrudgianYang2025

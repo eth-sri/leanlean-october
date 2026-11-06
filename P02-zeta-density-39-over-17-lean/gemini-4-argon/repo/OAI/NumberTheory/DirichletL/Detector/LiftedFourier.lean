@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
-local notation "O" => ActualEisensteinCubic.O
 
 theorem primePowerGauss_lift_add (p : O) (hp : Prime p)
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k : ℕ) (h : O) :
@@ -96,8 +95,3 @@ lemma primePowerGauss_eq_quotientFourier (p : O) (hp : p ≠ 0)
   have hm : Ideal.Quotient.mk (Ideal.span {p*p^n}) (H*representative (p*p^n) d) =
       Ideal.Quotient.mk _ H*d := by rw [map_mul, representative_spec]
   rw [hr, hm]
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

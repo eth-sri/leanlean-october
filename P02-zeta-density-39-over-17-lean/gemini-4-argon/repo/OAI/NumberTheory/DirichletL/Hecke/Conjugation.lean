@@ -53,9 +53,3 @@ theorem LFunction_inverse_conj (χ : Character) (hχ : χ.residue≠1) (s : ℂ)
     rw [LFunction_eq_ideal_tsum χ.inverse hz,LFunction_eq_ideal_tsum χ (by simpa using hz),conj_tsum]
     exact tsum_congr (idealTerm_inverse_conj χ z)
   exact congr_fun he s
-
-end SevenEighths.HeckeFamily
-
-end
-
-end OAI

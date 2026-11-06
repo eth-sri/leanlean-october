@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -92,8 +91,3 @@ theorem first_fresh_core_energy_to_second
       exact firstCoreInputRow_finite_le_second_poisson p hg hp hinj hc F D B v ε₁ ε₂
         negative χ Ψ m H (fun u => ω (Real.exp u))
         (columnLog p (primeProductNorm p D*X)) c d r (-t) rows Y hY hrows
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

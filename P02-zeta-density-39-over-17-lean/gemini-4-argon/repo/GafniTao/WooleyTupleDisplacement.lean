@@ -83,6 +83,4 @@ theorem wooleySourcePolynomialPhase_eq_pointCharacter
     wooleyPolynomialValue
   exact wooley_addChar_sum_eq_prod ZMod.stdAddChar _
 
-end
 
-end GafniTao

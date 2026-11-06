@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
 open InverseSecondFibers
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def varyingAssignedGate {Jo : ℕ} (J₁ J₂ : Finset σ)
@@ -138,9 +137,3 @@ theorem actual_second_varying_lists_weighted_count
   rw [he]
   exact actual_second_weighted_count p hp hpr hcop hinj u v S hs' labels rows hc' K ho
     (by omega) w' hw' F G
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonExceptionalCost
-open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale
-open CenteredMomentCommonRawCost CenteredMomentExceptionalAmplitudePair
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentAllocationCost CenteredMomentCommonProfile
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude CenteredMomentAllocationCost CenteredMomentCommonProfile
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 def frozenProfile (s:Input ι):ℝ:=(∏i,s.M i)*(max 1 s.upper)^Fintype.card ι
@@ -85,9 +81,3 @@ theorem common_slotControl (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools
       (fun i _=>zero_le_one.trans (le_max_left _ _)) (fun i _ _=>le_max_left _ _)
   · exact Finset.prod_nonneg (fun i _=>zero_le_one.trans (le_max_left _ _))
   · exact Finset.prod_nonneg (fun i _=>zero_le_one.trans (s.M_ge_one i))
-
-end SevenEighths.CenteredMomentCommonExceptionalCost
-
-end
-
-end OAI

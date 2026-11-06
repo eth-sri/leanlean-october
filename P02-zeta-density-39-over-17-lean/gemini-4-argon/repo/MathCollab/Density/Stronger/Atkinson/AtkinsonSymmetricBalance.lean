@@ -123,4 +123,3 @@ theorem exists_atkinsonPowerIntegral_symmetric_balance (α : ℝ) :
   apply h.trans ((mul_le_mul_of_nonneg_left he (by positivity)).trans_eq ?_)
   ring
 
-end MathCollab.Density.Stronger.Atkinson

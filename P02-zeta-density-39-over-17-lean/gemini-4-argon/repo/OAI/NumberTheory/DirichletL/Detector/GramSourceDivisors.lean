@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-open CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 
 def sourceDivisors (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y) (C : SupportedIdeal) : Finset SupportedIdeal :=
   (divisorPool (lowGaussColumns W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)) Subtype.val).preimage
@@ -71,8 +68,3 @@ theorem originalCommonBlock_eq_rectangle (S : Finset Id) (hS : ∀p∈S,p.IsMaxi
   rw [frequencyScale_ratio]
   congr 1
   simp only [commonResidualScale,gramIdealNorm,div_div]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

@@ -115,4 +115,3 @@ theorem shortFiniteDetector_fixed_family_eventually :
   exact (div_le_div_of_nonneg_left (by positivity) (by positivity) hden).trans
     ((div_le_div_of_nonneg_right hp (by positivity)).trans hdetect)
 
-end GuthMaynard.Improvement

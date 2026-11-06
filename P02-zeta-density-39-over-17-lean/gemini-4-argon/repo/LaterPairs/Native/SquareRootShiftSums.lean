@@ -50,4 +50,3 @@ theorem sum_shift_sqrt_le (H : ℕ) :
     _ = ((Finset.Icc 1 (H-1)).card:ℝ)*Real.sqrt H := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right (by exact_mod_cast hc) (Real.sqrt_nonneg _)
 
-end TaoTrudgianYang2025

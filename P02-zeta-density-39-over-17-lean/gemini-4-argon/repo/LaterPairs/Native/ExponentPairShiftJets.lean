@@ -61,4 +61,3 @@ theorem aProcessShiftPhase_iteratedDeriv
     hc _ hF _ (hi 0 (by norm_num)),hc _ hF _ (hi 1 (by norm_num))] at h
   exact h
 
-end TaoTrudgianYang2025

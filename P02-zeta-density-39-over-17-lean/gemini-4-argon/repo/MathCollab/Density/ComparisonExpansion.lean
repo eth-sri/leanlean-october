@@ -83,4 +83,3 @@ theorem comparisonExtension_identity (w : ComparisonCutoff) {N M : ℕ}
   rw [hq, cutoff_finite_sum w.toReflectionCutoff (by positivity)]
   ring
 
-end MathCollab.Density

@@ -11,14 +11,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.CenteredMomentReflectedChoiceEnergy
-open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum
-open CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
-open CenteredMomentReflectionWeightedEnergy CenteredMomentReflectedTruncation
-open CenteredMomentReflectionDeletion CenteredMomentReflectionTailMass
-open CenteredMomentNaturalPrimitive CenteredMomentReflectionRetainedLength
-open Filter
+open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization CenteredMomentReflectionWeightedEnergy CenteredMomentReflectedTruncation CenteredMomentReflectionDeletion CenteredMomentReflectionTailMass CenteredMomentNaturalPrimitive CenteredMomentReflectionRetainedLength Filter
 
-local notation "O" => HeckeFamily.O
 
 theorem eventually_natural_choice_geometry (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ ∀(χ ψ : Character)(M a : ℝ),
@@ -53,9 +47,3 @@ theorem eventually_natural_choice_geometry (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) 
   have hlog := hh.2.2
   rw [Real.logb] at hlog
   exact (div_le_iff₀ hz).mp hlog
-
-end SevenEighths.CenteredMomentReflectedChoiceEnergy
-
-end
-
-end OAI

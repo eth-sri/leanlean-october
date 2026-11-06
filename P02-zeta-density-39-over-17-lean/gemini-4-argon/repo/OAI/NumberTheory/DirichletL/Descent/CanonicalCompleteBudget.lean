@@ -49,9 +49,3 @@ theorem actual_complete_height_merge (dshort dlong:ℕ)(Z F cstar loss Cs Cb A t
       Cb*(1+A)*(1+‖theta‖)^(max dshort dlong)*Z^(F+loss):=by gcongr
   have hh:=add_le_add hs' hl'
   convert hh using 1 ; ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

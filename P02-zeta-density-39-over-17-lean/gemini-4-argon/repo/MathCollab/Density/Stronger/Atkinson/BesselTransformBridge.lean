@@ -402,4 +402,3 @@ theorem verticalIntegral_dfiVoronoiMinus_mellin_thirteenSixteenths_eq_bessel
       rw [hKernel x hx]
 
 
-end MathCollab.Density.Stronger.Atkinson

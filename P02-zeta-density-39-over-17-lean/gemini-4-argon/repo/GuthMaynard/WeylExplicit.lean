@@ -418,4 +418,3 @@ theorem logarithmic_weyl_exponent_pair_prefix
       nlinarith [norm_nonneg (logarithmicSum (Y ^ 3) A (A + N))]
     nlinarith [norm_nonneg (logarithmicSum (Y ^ 3) A (A + N))]
 
-end RiemannZeta.GuthMaynard

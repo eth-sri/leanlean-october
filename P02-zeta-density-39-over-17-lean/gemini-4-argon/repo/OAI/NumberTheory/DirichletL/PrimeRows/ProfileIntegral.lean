@@ -73,8 +73,3 @@ theorem source_profile_integral_bound (W0 W1 : SchwartzMap ℝ ℂ)
     _ = (E*A*81)*(∫p,M p ∂heightMeasure) := integral_const_mul _ _
     _ ≤ (E*A*81)*D := mul_le_mul_of_nonneg_left hMb (by positivity)
     _ = _ := by ring
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

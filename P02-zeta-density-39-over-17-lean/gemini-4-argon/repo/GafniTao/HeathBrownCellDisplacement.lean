@@ -76,6 +76,4 @@ theorem abs_heathBrownCoefficientDisplacement_le_radius
   simpa only [mem_closedBall, dist_comm] using hj
 
 
-end
 
-end GafniTao

@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 abbrev SupportedIdeal := {I : Id // Supported I}
 
 lemma gram_supported_divisor (I D : Id) (hI : Supported I) (hd : D∣I) : Supported D := by
@@ -65,8 +63,3 @@ lemma gcdTriple_multiply (t : CoprimeTriple) : gcdTriple (multiplyTriple t)=t :=
       dsimp only [multiplyTriple]
       rw [he]
       exact mul_left_cancel₀ t.val.1.property.1 (idealQuotient_mul (dvd_mul_right _ _))
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

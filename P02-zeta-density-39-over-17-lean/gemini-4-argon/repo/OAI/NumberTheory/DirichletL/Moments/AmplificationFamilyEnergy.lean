@@ -11,13 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationFamilyEnergy
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentAmplificationShortening CenteredMomentAmplificationFamily
-open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow
-open CenteredMomentSourceRow CenteredMomentChildRows CenteredMomentOriginalChildEnergy
-open CenteredMomentGaussEnergy CenteredMomentSourceSmoothedAllocation CenteredMomentGaussNormalization
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentAmplificationShortening CenteredMomentAmplificationFamily CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentChildRows CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy CenteredMomentSourceSmoothedAllocation CenteredMomentGaussNormalization
 
 theorem amplification_family_energy (η : Character) (m p : O) (k : ℕ)
     (τ : RayCharacter → Character)
@@ -58,9 +52,3 @@ theorem amplification_family_energy (η : Character) (m p : O) (k : ℕ)
     nlinarith [hb χ,norm_nonneg (b χ)]
   · exact Finset.sum_nonneg (fun χ _ => mul_nonneg (sq_nonneg _) (hd χ))
   · norm_num
-
-end SevenEighths.CenteredMomentAmplificationFamilyEnergy
-
-end
-
-end OAI

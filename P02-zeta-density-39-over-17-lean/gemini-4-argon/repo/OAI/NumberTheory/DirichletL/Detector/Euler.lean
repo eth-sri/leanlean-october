@@ -22,8 +22,3 @@ theorem unramified_marked_error (R V qInv K W D : ℂ)
   unfold markedFactor
   field_simp
   ring
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

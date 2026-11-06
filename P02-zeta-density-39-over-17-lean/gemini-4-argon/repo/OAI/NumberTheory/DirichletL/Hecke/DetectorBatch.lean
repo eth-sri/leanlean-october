@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorBatch
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorFiberPartition
-open HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorFiberPartition HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
 
 structure Batch (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
     (U a ε tstar T allowance : ℝ) (i : ℕ) where
@@ -35,8 +34,7 @@ structure Batch (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
   widths_mesh : ∀ s∈slots,widths s≤mesh
   supply : 7/37≤∑ s∈slots,widths s
 
-variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
-  {U a ε tstar T allowance : ℝ} {i : ℕ}
+variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*} {U a ε tstar T allowance : ℝ} {i : ℕ}
 
 abbrev Batch.Bin (B : Batch M H Label Slot U a ε tstar T allowance i) :=
   BinLabel B.slots ((2*a-1)/2) B.binWidth
@@ -91,9 +89,3 @@ theorem Batch.card_bound [Fintype Label] (B : Batch M H Label Slot U a ε tstar 
       simp_rw [←mul_assoc]
       rw [←Finset.mul_sum]
       ring
-
-end SevenEighths.HeckeDetectorBatch
-
-end
-
-end OAI

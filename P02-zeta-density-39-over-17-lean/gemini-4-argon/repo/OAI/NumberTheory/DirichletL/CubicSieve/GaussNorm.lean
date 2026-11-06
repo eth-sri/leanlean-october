@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma primeIndex_product (I : Ideal O) (hI : Admissible I) :
     (∏ P : PrimeIndex I, P.val) = I := by
@@ -62,8 +61,3 @@ theorem gaussTwo_norm_one (I : Ideal O) (hI : Admissible I) : ‖gaussTwo I hI.2
     (‖eisEmbedding c‖ : ℂ)‖ = 1
   rw [norm_div, hnorm, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)]
   exact div_self (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hI.2))
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

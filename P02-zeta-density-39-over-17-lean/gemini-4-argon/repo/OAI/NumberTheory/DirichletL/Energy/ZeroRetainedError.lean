@@ -13,14 +13,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroRetainedError
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentNaturalPrimitive CenteredMomentUniformReflectionApproximation
-open CenteredMomentEnergyZeroReflectionSupport CenteredMomentOriginalRadialComparison
-open CenteredMomentRadialPolynomialEnergy CenteredMomentEnergyState
-open CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial
-open CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional CenteredMomentLattice
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentEnergyReferenceReflection
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentNaturalPrimitive CenteredMomentUniformReflectionApproximation CenteredMomentEnergyZeroReflectionSupport CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional CenteredMomentLattice CenteredMomentEnergyReferenceHomogeneous CenteredMomentEnergyReferenceReflection
 
 theorem finite_original_error (xi saving Cscale epsilon : ℝ)
     (hxi : 0<xi)(hscale : 0<Cscale)(hepsilon : 0<epsilon) :
@@ -222,9 +215,3 @@ theorem natural_original_error_mass (a b bΦ epsilon xi saving:ℝ)
   have hz:0<Z:=zero_lt_one.trans hZ.1
   apply (hh.trans (mul_le_mul_of_nonneg_left hm (by positivity))).trans_eq
   ring
-
-end SevenEighths.CenteredMomentEnergyZeroRetainedError
-
-end
-
-end OAI

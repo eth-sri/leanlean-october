@@ -88,4 +88,3 @@ theorem norm_integral_fresnelDampedKernel_le {ε c a b : ℝ}
   apply h.trans_eq
   ring
 
-end MathCollab.Density.Stronger.Atkinson

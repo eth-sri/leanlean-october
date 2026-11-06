@@ -119,23 +119,4 @@ theorem small_gcd_cubic_energy :
       gcongr
     _ = _ := by ring
 
-/-- The exact small-gcd contribution in the existing discrete energy
-reduction is now bounded unconditionally. -/
-theorem small_gcd_cubic_sum :
-    ∃ C : ℝ, 0 < C ∧ ∀ T t₀ N : ℝ, 1 < T → 0 < N → ∀ W : Finset ℝ,
-      (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
-      (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
-      smallGcdCubicSum N T W ≤ C*N^2*Real.sqrt (W.card:ℝ)*Real.sqrt (discreteAdditiveEnergy W:ℝ) := by
-  obtain ⟨C,hC,hbound⟩ := small_gcd_cubic_energy
-  refine ⟨C,hC,?_⟩
-  intro T t₀ N hT hN W hW hsep
-  unfold smallGcdCubicSum
-  apply hbound T t₀ N hT hN _ _ W hW hsep
-  intro p hp
-  obtain ⟨hp,hg⟩ := mem_filter.mp hp
-  obtain ⟨hp1,hp2⟩ := mem_product.mp hp
-  obtain ⟨hl1,hu1⟩ := (GuthMaynard.Improvement.sourceRatioIndices_mem hN.le p.1).mp hp1
-  obtain ⟨hl2,hu2⟩ := (GuthMaynard.Improvement.sourceRatioIndices_mem hN.le p.2).mp hp2
-  exact ⟨by exact_mod_cast hN.trans hl1,by exact_mod_cast hN.trans hl2,hl1,hu1,hl2,hu2,hg⟩
 
-end Montgomery.RationalMoment

@@ -98,4 +98,3 @@ theorem robertSargos_zero_zero_physical_a_times_a (f : ℝ → ℝ) (M H : ℕ)
   have hm := mul_le_mul_of_nonneg_left hs (show 0 ≤ 8*(M:ℝ)^2 by positivity)
   convert hm using 1; ring
 
-end TaoTrudgianYang2025

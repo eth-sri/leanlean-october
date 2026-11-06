@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 
 lemma elementCoeff_zero_or_norm_one (eta : HeckeFamily.Character) (p : O) :
     HeckeFamily.elementCoeff eta p=0 ∨ ‖HeckeFamily.elementCoeff eta p‖=1 := by
@@ -43,8 +42,3 @@ theorem actualUnramifiedSelected_bound (eta : HeckeFamily.Character) (p u : O)
     rw [heta,hA]
     exact (unramifiedSelected_zero_bound _ _ x w z hQ hv.le hw hz).trans (by norm_num)
   · exact unramifiedSelected_bound _ _ _ _ x w z hQ (actualAPhase_norm_le_one eta p) heta hv hx hw hz
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

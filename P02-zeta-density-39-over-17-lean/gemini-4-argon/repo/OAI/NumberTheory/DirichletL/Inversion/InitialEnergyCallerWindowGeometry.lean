@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerWindowGeometry
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerGeometry
-open InverseInitialProfile InverseInitialKernelBridge ConcreteTraceCRT
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialEnergyCallerGeometry InverseInitialProfile InverseInitialKernelBridge ConcreteTraceCRT
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
 theorem retained_source_windows
@@ -46,12 +42,3 @@ theorem retained_source_windows
     (div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h1.2,
     (div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h2.2,
     (div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h3.2⟩
-
-variable (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-include hp
-
-end SevenEighths.InverseInitialEnergyCallerWindowGeometry
-
-end
-
-end OAI

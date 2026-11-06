@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondWholeKernel
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentScale CenteredMomentSmooth
-open CenteredMomentFirstWholeKernel CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstWholeKernel CenteredMomentSupportedCorrelation
 
 def secondEffectiveScale (C D : Ideal O) (A : O) (K : ℝ) : ℝ :=
   K*‖eisEmbedding A‖^2/((Ideal.absNorm C:ℝ)*(Ideal.absNorm D:ℝ))
@@ -82,9 +79,3 @@ theorem second_frequency_whole_kernel (C D a b : Ideal O)
     (CenteredMomentFirstScale.norm_pos C hC.1) (CenteredMomentFirstScale.norm_pos D hD.1)
     hK₀ hH₀ hA₀ hB₀
   convert congrArg (fun z : ℂ => F*z) he using 1 <;> ring
-
-end SevenEighths.CenteredMomentSecondWholeKernel
-
-end
-
-end OAI

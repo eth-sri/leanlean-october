@@ -52,4 +52,3 @@ theorem continuous_third_derivative_square_bound
     have hN : 0 ≤ (N:ℝ)*R := by positivity
     nlinarith
 
-end TaoTrudgianYang2025

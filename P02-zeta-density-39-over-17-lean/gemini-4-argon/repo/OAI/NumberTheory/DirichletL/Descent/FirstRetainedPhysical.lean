@@ -11,7 +11,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -89,8 +88,3 @@ theorem canonical_first_physical_split
   · intro D hD
     apply (mem_childFrequencyBall _ (firstPhysicalMultiplier_ne_zero p hp _ _ _ _ _ f hf) _ _).mpr
     simpa only [mul_zero,map_zero,norm_zero,zero_pow (by decide : 2≠0)] using hR D
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

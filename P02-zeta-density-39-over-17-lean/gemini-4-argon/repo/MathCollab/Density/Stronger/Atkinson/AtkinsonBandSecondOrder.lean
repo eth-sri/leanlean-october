@@ -130,4 +130,3 @@ theorem exists_norm_atkinsonPowerPair_band_secondOrder_le (α : ℝ) (cPlus cMin
     _ ≤ (1 + ‖cPlus‖ + ‖cMinus‖) * (C * G ^ 2 * T ^ (-α) * L / (Real.sqrt T * n)) := by nlinarith
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

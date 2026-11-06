@@ -107,6 +107,4 @@ theorem heathBrown_shifted_source_sum_norm_le_partial
         exact norm_heathBrownTaylorError_weight_succ_sub_le_source
           hk hfat hfd hfon hderiv hj))
 
-end
 
-end GafniTao

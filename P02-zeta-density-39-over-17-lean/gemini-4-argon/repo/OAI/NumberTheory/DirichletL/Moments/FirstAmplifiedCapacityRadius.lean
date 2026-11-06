@@ -10,15 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedCapacityRadius
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice
-open CenteredMomentCommonRadiusSaving
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic CenteredMomentSecondHeightFamily CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstPhysicalSource CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadiusSaving
 
 lemma enlarged_gain_extraction (c d w wo sigma branch delta reserve:ℝ)
     (_hw:0≤w)(hwo:wo≤2*w):
@@ -122,9 +114,3 @@ theorem actual_error_reference_shift (η τ:Character)(C D:Ideal O)
   rw [errorCommonRadius]
   simp only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] at hh ⊢
   linarith
-
-end SevenEighths.CenteredMomentFirstAmplifiedCapacityRadius
-
-end
-
-end OAI

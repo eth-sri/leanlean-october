@@ -11,9 +11,7 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
-local notation "O" => ActualEisensteinCubic.O
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
 def initialHighOnLines (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
     (mask : NonzeroFrequency→ℂ) (σ υ ξ : ℝ) (i : FullHighIndex) (p : HeightSpace) : ℂ :=
@@ -34,8 +32,3 @@ lemma initialHighOnLines_norm_le (S : Finset (Ideal O)) (D : Ideal O) (η : Heck
     (i : FullHighIndex) (p : HeightSpace) :
     ‖initialHighOnLines S D η mask σ υ ξ i p‖≤ initialHighMajorant σ υ ξ i := by
   exact fullHighCoefficient_norm_le S D η mask hm _ _ _ σ υ ξ (by simp) (by simp) (by simp) i
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

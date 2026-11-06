@@ -44,4 +44,3 @@ theorem exists_bourgain_dyadic_amplitude {a x : ℝ} (hx : a ≤ x)
 
                                                                        
                                                              
-end TaoTrudgianYang2025

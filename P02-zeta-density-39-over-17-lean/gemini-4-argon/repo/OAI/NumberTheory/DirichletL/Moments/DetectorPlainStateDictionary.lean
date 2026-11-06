@@ -9,13 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainStateDictionary
-open HeckeFamily HeckeDetectorRawFiber HeckePrimeAnnular
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource
-open CenteredMomentDetectorPlainSource CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorDictionary CenteredMomentEnergyState
-open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
-open CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDetectorRawFiber HeckePrimeAnnular CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorPlainSource CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 
@@ -58,9 +52,3 @@ theorem retainedSourceEnergy_empty_eq_plainEnergy
   apply tsum_congr
   intro z
   simp [initialState,NaturalState.mask,detectorProfiles,positiveSlotRow]
-
-end SevenEighths.CenteredMomentDetectorPlainStateDictionary
-
-end
-
-end OAI

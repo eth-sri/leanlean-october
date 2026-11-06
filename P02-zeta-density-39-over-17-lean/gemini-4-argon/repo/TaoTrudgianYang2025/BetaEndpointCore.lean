@@ -42,4 +42,3 @@ theorem modelPhaseEndpoints_inside_core {σ δ T N : ℝ} {F : ℝ → ℝ}
   · exact Int.ceil_mono (mul_le_mul_of_nonneg_left (by linarith : modelPhaseClosedSlope F 1 ≤
       1+δ) (div_nonneg hT hN.le))
 
-end TaoTrudgianYang2025

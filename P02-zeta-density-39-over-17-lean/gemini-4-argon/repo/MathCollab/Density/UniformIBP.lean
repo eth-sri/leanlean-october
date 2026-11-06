@@ -328,4 +328,3 @@ theorem uniform_offBand_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     field_simp [hR.ne']
   rwa [heq] at hh
 
-end MathCollab.Density

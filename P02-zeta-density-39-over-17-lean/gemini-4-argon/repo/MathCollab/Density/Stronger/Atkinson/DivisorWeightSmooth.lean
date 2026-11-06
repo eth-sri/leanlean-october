@@ -12,9 +12,7 @@ public import Mathlib.Analysis.Complex.CauchyIntegral
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -86,4 +84,3 @@ theorem contDiff_zetaDivisorWeight_complex : ContDiff ℂ ∞ zetaDivisorWeight 
 theorem contDiff_zetaDivisorWeight : ContDiff ℝ ∞ zetaDivisorWeight :=
   contDiff_zetaDivisorWeight_complex.restrict_scalars ℝ
 
-end MathCollab.Density.Stronger.Atkinson

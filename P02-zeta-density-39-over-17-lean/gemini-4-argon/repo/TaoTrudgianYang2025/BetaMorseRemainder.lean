@@ -70,5 +70,4 @@ theorem norm_modelPhaseFourierMode_sub_main
   rw [modelPhaseFourierMode_sub_main_eq_morseRemainder hs hσ hδ hF hT hN hv,
     norm_mul,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hN,Circle.norm_coe,mul_one]
 
-end TaoTrudgianYang2025
 

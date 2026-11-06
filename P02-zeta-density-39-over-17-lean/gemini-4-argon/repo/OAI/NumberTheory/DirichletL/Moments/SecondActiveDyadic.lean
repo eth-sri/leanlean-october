@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondActiveDyadic
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns CenteredMomentSectorLocalization
-open CenteredMomentSecondDyadicPartition CenteredMomentSecondWholeKernel CenteredMomentLogDyadic CenteredMomentSmooth
-open CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentSecondRetainedRows
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns CenteredMomentSectorLocalization CenteredMomentSecondDyadicPartition CenteredMomentSecondWholeKernel CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentSecondRetainedRows
 
 def sourceLower (C D : Ideal O) (A : O) (K : ℝ) : Fin 4→ℝ :=
   ![secondEffectiveScale C D A K,1,1,1]
@@ -81,9 +77,3 @@ theorem active_physical_kernel_partition (_η : Character)
   exact physical_kernel_dyadic_partition C D I J hC hD
     (sectorPool_supported C hC.1 _ I) (sectorPool_supported D hD.1 _ J)
     A h hA hh W K R hK _ _ (sourceLower_pos C D hC.1 hD.1 A hA K hK) hb
-
-end SevenEighths.CenteredMomentSecondActiveDyadic
-
-end
-
-end OAI

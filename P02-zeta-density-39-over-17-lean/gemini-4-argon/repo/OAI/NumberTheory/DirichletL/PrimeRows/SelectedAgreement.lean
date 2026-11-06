@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 
 def finiteLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
     (x w z : ℂ) : ℂ :=
@@ -98,9 +96,3 @@ theorem continuedCompensatedLocal_eq_initial (η : Character) (u : FreeRow) (P :
     finiteLocalCorrection_eq_initial η u P hs x w z hx hw hz]
   unfold compensatedLocalCorrection markedLocalCorrection
   ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

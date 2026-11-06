@@ -403,4 +403,3 @@ theorem exponent_le_of_isPowerBounded_of_eventually_norm_ge_rpow
       (Real.rpow_pos_of_pos (zero_lt_one.trans_le (hT i)) _).ne').frequently
   exact hsmall.not_isBigO hnonzero (hpowO.trans hO)
 
-end Expdb

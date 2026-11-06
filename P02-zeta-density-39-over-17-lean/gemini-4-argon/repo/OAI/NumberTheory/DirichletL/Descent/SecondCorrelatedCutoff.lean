@@ -10,7 +10,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem second_correlated_column_denominator {ι : Type*} [DecidableEq ι]
     (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -91,8 +90,3 @@ theorem full_second_correlated_tail (order : ℕ) :
   apply (le_div_iff₀ (mul_pos heN (mul_pos (primeProductNorm_pos p hp S)
     (primeProductNorm_pos p hp T)))).mpr
   exact hbound
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

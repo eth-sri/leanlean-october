@@ -57,4 +57,3 @@ theorem segmentTaylorAverage_second_global
   · exact ⟨by linarith [min_le_left a x],by linarith [le_max_left a x]⟩
   · exact ⟨by linarith [min_le_right a x],by linarith [le_max_right a x]⟩
 
-end TaoTrudgianYang2025

@@ -78,4 +78,3 @@ theorem zetaDensityCount_bound_of_native_bigO {σ p ε : ℝ}
     abs_of_nonneg (mul_nonneg (Real.rpow_nonneg ht.le ε) (Real.rpow_nonneg ht.le p)),
     ← Real.rpow_add ht,add_comm ε p,abs_of_nonneg (Real.rpow_nonneg ht.le (p+ε))] using hh
 
-end GuthMaynard.Improvement

@@ -235,4 +235,3 @@ theorem scaledPower_mul_norm_mellin_line_one_le_seminorm
   simpa only [psi, mellinLogLiftSchwartz, norm_iteratedFDeriv_zero,
     Real.norm_eq_abs] using h
 
-end MathCollab.Density.Transforms

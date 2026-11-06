@@ -118,4 +118,3 @@ theorem norm_fourierCharIntegral_le_of_negative_curvature
   field_simp
   nlinarith [Real.pi_pos]
 
-end TaoTrudgianYang2025

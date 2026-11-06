@@ -9,73 +9,11 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
 section
 open CubicKubota
@@ -107,8 +45,6 @@ def hyperbolicEisenstein (s : ℂ) : HyperbolicSpace → ℂ :=
     rw [hh]
     exact (eisenstein_right_unitary g (g⁻¹*h) s hk).symm)
 
-@[simp] lemma hyperbolicEisenstein_mk (s : ℂ) (g : SL(2,ℂ)) :
-    hyperbolicEisenstein s (g : HyperbolicSpace) = eisenstein g s := rfl
 
 theorem hyperbolicEisenstein_automorphy (M : levelThree) (s : ℂ) (hs : 2 < s.re)
     (w : HyperbolicSpace) :
@@ -157,8 +93,6 @@ def hyperbolicHeight : HyperbolicSpace → ℝ :=
     rw [hh]
     exact (liftedHeight_right_unitary g (g⁻¹*h) hk).symm)
 
-@[simp] lemma hyperbolicHeight_mk (g : SL(2,ℂ)) :
-    hyperbolicHeight (g : HyperbolicSpace) = liftedHeight g := rfl
 
 lemma hyperbolicHeight_pos (w : HyperbolicSpace) : 0 < hyperbolicHeight w := by
   induction w using Quotient.inductionOn with | _ g => exact liftedHeight_pos g
@@ -212,7 +146,7 @@ theorem height_series_summable_norm (s : ℂ) (hs : 2 < s.re) (w : HyperbolicSpa
 
 end
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
+open CubicKubota
 
 def upperTranslation (a : O) : levelThree := by
   let M : SL(2,O) := ⟨!![1, 3*a; 0, 1], by simp⟩
@@ -246,8 +180,6 @@ lemma upperTranslation_section (a : O) (z : ℂ) (v : ℝ) (hv : 0 < v) :
 
 end
 
-open MeasureTheory Set Filter
-open scoped BigOperators Classical
 
 lemma integral_radial_sq (f : ℝ → ℂ) :
     (∫ z : ℂ, f (‖z‖ ^ 2)) = (Real.pi : ℂ) * ∫ t : ℝ in Set.Ioi 0, f t := by
@@ -325,8 +257,7 @@ theorem integral_hyperbolicKernel (s : ℂ) (hs : 1 < s.re) :
   simp only [div_eq_mul_inv, hn]
   ring
 
-open MeasureTheory Set Filter
-open scoped BigOperators Classical FourierTransform RealInnerProductSpace
+open scoped RealInnerProductSpace
 
 lemma breveE_norm (z : ℂ) : ‖ShortDraftTrace.breveE z‖ = 1 := by
   change ‖Complex.exp (2 * Real.pi * Complex.I * (z + starRingEnd ℂ z))‖ = 1
@@ -466,8 +397,6 @@ theorem gaussianMixture_integrable (s freq : ℂ) (hs : 1 < s.re) :
     congr 2
     ring_nf
 
-open MeasureTheory Set Filter
-open scoped BigOperators Classical FourierTransform RealInnerProductSpace
 
 lemma gaussianMixture_laplace_form (s freq : ℂ) (t : ℝ) (z : ℂ) :
     gaussianMixture s freq t z =
@@ -598,9 +527,3 @@ theorem sourceFourierKernel_four_thirds (freq : ℂ) (hf : freq ≠ 0) :
         (2*Real.pi*‖freq‖ : ℂ)^(1/3 : ℂ) *
         schlafliBesselK (1/3) (4*Real.pi*‖freq‖) := by
   convert sourceFourierKernel_bessel (4/3) freq (by norm_num) hf using 1 ; norm_num
-
-end CubicEisenstein
-
-end
-
-end OAI

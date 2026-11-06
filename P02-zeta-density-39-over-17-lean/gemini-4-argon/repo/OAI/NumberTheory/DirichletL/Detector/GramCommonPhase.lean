@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 
 lemma supported_bezout_inverse (n m a b : O) (hn : Supported (Ideal.span {n}))
     (hab : a*n+b*m=1) :
@@ -53,8 +51,3 @@ theorem actual_common_lift (C n₁ n₂ k : O)
     _ = idealRowHom k (Ideal.span {n₁})*star (idealRowHom (-k) (Ideal.span {n₂}))*
         (idealRowHom n₁ (Ideal.span {n₂})*star (idealRowHom n₂ (Ideal.span {n₁})))*actualCommon C hC n₁ n₂ k := by ring
     _ = _ := by rw [hphase]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

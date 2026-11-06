@@ -60,8 +60,3 @@ theorem compensated_phase_error_bound (V W D P B q vInv : ℂ) (T : ℝ)
       gcongr
       exact norm_add_le _ _
     _ ≤ 720 * T := by linarith
-
-end SevenEighths.ProbeLocal
-end
-
-end OAI

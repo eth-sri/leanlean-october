@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein
 
-local notation "O" => ActualEisensteinCubic.O
 
 def primeGauss (p : O) (hp : p ≠ 0) (χ : MulChar (O ⧸ Ideal.span {p}) ℂ)
     (h : O) : ℂ :=
@@ -144,8 +143,3 @@ theorem scalarKOne_eq (p : O) (hp : p ≠ 0)
         (GaussianShiftedPartition.representative p d))
       simpa only [sub_add_cancel] using ha
     rw [primePowerGauss_zero_off_support p hp ξ n _ hndiv, mul_zero]
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

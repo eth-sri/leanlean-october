@@ -80,4 +80,3 @@ theorem uniform_smoothDetectorKernel_critical_bound {ψ : ℝ → ℝ} {a b : �
         (norm_nonneg _) (by positivity)
     _ = _ := by rw [he]; ring
 
-end MathCollab.Density.Stronger

@@ -11,9 +11,7 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
 def SourceRawIndex (S : Finset (Ideal O)) :=
   {p : RawHighIndex // Supported p.2.2 ∧ ∀P∈S,¬P∣p.2.2}
@@ -67,8 +65,3 @@ theorem originalRaw_counting_product_integrable (η : HeckeFamily.Character)
   have hsh : sourceHeightShear.symm p.2=((p.2.1.1-p.2.1.2,p.2.1.2),p.2.2) := rfl
   simp only [he,initialHighOnLines,T,hsh,sourceRawEmbedding,mask,id_eq,Complex.ofReal_ofNat]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

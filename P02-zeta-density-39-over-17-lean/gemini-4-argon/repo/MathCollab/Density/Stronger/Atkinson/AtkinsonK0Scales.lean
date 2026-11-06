@@ -9,8 +9,7 @@ public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -56,4 +55,3 @@ theorem exists_zetaAtkinsonBesselPlus_powerSaving {δ : ℝ} (hδ : 0 < δ) (A :
   intro T G hT hlower hupper
   exact hT₁ T ((le_max_right _ _).trans hT) G hlower hupper
 
-end MathCollab.Density.Stronger.Atkinson

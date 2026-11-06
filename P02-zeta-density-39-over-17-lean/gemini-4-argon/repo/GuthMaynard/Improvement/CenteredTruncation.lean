@@ -84,4 +84,3 @@ theorem centeredKernel_truncation_negligible {a : ℝ → ℂ} (ha : ContDiff �
   rw [mul_div_cancel₀ _ hLp.ne']
   exact (h T L s 0 hT hL hLT hst).2
 
-end GuthMaynard.Improvement

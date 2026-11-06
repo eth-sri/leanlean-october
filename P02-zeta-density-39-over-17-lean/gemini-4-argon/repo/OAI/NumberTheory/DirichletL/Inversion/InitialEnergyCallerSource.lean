@@ -8,11 +8,7 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
-open MeasureTheory JointLogSeparation
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open SevenEighths.InverseMoment SevenEighths.InverseInitialProfile
-open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure
-open SevenEighths.InverseInitialEnergyCallerModes
+open MeasureTheory JointLogSeparation ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic SevenEighths.InverseMoment SevenEighths.InverseInitialProfile SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialEnergyCallerModes
 namespace SevenEighths.InverseInitialEnergyCallerSource
 variable {ι : Type*} [DecidableEq ι]
 
@@ -156,9 +152,3 @@ theorem physicalBlock_rectangular_common_measure
   apply integral_congr_ae
   filter_upwards with z
   rw [canonicalBlock_rows p hp hcop hg hpr F S hE w Ψ j slots lists a ω₁ ω₂ Z D B v θ H z]
-
-end SevenEighths.InverseInitialEnergyCallerSource
-
-end
-
-end OAI

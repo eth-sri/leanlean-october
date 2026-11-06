@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -77,8 +76,3 @@ theorem first_fresh_priority_energy
       apply Finset.sum_congr rfl
       intro z hz
       ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

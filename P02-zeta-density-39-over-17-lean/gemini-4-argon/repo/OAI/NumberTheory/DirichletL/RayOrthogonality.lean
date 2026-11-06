@@ -112,11 +112,3 @@ theorem idealCharacter_one (I : Ideal A) :
     idealCharacter M 1 I =
       if I = ⊥ then 0 else if IsCoprime I M then 1 else 0 :=
   IdealCharacter.ofResidue_one M I
-
-end PrincipalIdeals
-end Residues
-
-end
-end SevenEighths.RayOrthogonality
-
-end OAI

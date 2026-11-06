@@ -664,6 +664,4 @@ theorem WooleySection10GlobalHierarchy.mono_tau
           ((k * nu : ℕ) : ℝ) := by gcongr
       _ ≤ (k : ℝ) ^ 2 * (delta * (thetaNat : ℝ)) := hsecond
 
-end
 
-end GafniTao

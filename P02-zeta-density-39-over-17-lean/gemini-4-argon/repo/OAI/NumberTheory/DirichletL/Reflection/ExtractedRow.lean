@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ : Type*} [Fintype φ]
 
 lemma hybridInner_frozen_dual_reindex (F : PrimeFamily φ)
@@ -64,8 +63,3 @@ lemma quotientSupport_norm_div (D : Ideal Eis) (hD : D ≠ 0) (S : Finset (Ideal
   have hh := hS (D*J) ((mem_quotientSupport D J hD S).mp hJ)
   rw [map_mul,Nat.cast_mul] at hh
   exact (le_div_iff₀ hpos).mpr (by simpa only [mul_comm] using hh)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

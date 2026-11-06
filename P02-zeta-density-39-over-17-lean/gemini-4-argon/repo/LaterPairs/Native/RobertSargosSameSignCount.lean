@@ -104,4 +104,3 @@ theorem robertSargos_primitive_fixed_coeff_card_le
     _ ≤ _ := add_le_add hbP hbM
     _ = _ := by ring
 
-end TaoTrudgianYang2025

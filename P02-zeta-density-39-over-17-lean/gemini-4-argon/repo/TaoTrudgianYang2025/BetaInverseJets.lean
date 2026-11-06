@@ -123,4 +123,3 @@ theorem iteratedDeriv_modelPhaseLegendreDual_formula
   rw [iteratedDeriv_succ', he.iteratedDeriv_eq n]
   exact iteratedDeriv_modelPhaseInverseSlope_formula hσ hδ hF hv n
 
-end TaoTrudgianYang2025

@@ -42,5 +42,4 @@ theorem IntervalC1Bound.fourierChar_of_negative_curvature
   convert h using 1
   ring
 
-end TaoTrudgianYang2025
 

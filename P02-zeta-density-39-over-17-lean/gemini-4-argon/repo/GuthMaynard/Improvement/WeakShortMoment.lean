@@ -83,4 +83,3 @@ theorem weak_short_moment {ε : ℝ} (hε : 0 < ε) :
         _ = (48*(B+1)*2^(1+ε))*(H^((1:ℝ)/25)*H^(1+ε)) := by ring
         _ = _ := by rw [he]
 
-end GuthMaynard.Improvement

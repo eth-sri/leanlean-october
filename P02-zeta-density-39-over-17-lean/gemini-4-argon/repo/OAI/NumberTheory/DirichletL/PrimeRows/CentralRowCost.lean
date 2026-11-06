@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct
-open ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
 
 private lemma cost_power_identity (N L A R eps : ℝ) (hN : 0<N) (hL : 0<L) :
     N^A*N^R*L^2*(2*N^2*L^2)^eps=
@@ -80,9 +78,3 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
       apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hL.le _)
       apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hn.le _)
       exact mul_le_mul_of_nonneg_left hf (Real.rpow_nonneg (by norm_num) _)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

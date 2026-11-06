@@ -6,10 +6,8 @@ public import GuthMaynard.NativeSource.GuthMaynard.TypeIIContour
 
 @[expose] public section
 
-open Asymptotics Filter MeasureTheory Topology
-open Complex Finset
+open Asymptotics Filter MeasureTheory Topology Complex Finset Classical
 open scoped BigOperators Interval
-open Classical
 
 namespace GuthMaynard.NativeMoment
 
@@ -111,4 +109,3 @@ theorem integrableOn_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
   rw [hCompl]
   exact hNegAbs.union hPosAbs
 
-end GuthMaynard.NativeMoment

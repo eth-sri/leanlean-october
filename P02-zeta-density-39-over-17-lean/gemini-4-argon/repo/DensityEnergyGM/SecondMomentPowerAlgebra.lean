@@ -43,4 +43,3 @@ theorem energy_height_rpow {E C T : ℝ} (δ p : ℝ)
     Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hT]
   ring
 
-end Montgomery.RationalMoment

@@ -225,6 +225,4 @@ theorem heathBrownKthDerivativeTheorem_of_vmvt
     hk hN hA hlambda hepsilon hfContinuous hfDiff hkBounds hC hcritical
 
 
-end
 
-end GafniTao

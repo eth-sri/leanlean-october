@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 
 def actualCommon (C : O) (hC : Supported (Ideal.span {C})) (n₁ n₂ k : O) : ℂ := by
   letI := finite_quotient_span (supported_element_ne_zero C hC)
@@ -69,8 +67,3 @@ theorem actual_common_lift_bezout (C n₁ n₂ a b k : O)
   simp only [←map_mul,←map_add]
   simp only [supportedModulusCharacter_mk,hleft,hright,star_mul]
   ring
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

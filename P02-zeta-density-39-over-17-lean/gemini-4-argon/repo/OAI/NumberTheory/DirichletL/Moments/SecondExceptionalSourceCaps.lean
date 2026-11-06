@@ -10,9 +10,7 @@ open scoped BigOperators Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondExceptionalSourceCaps
-open HeckeFamily CenteredMomentSecondExceptionalFamily
-open CenteredMomentSecondExceptionalFamilyUniform
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalFamilyUniform
 
 theorem eventually_source_caps :
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀(η:Character)(R0:Ideal O)(H R B:ℝ),
@@ -39,9 +37,3 @@ theorem eventually_source_caps :
           repeat rw [←Real.rpow_add hz]
           congr 1
           ring
-
-end SevenEighths.CenteredMomentSecondExceptionalSourceCaps
-
-end
-
-end OAI

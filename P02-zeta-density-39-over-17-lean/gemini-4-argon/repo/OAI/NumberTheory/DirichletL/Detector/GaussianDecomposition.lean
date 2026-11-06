@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeRow ProbeCompleted CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma annular_reassembly_summable {α : Type*} (a : α→ℂ) (N : α→ℝ)
     (ha : Summable a) (hN : ∀p,a p≠0→1≤N p) :
@@ -78,8 +76,3 @@ theorem correctedGaussian_eq_tsum_dyadic (S : Finset Id) (D : Id) (Ψ : O→*ℂ
   simp_rw [gaussian_dyadic_correctedSummand S D Ψ Z hZ]
   exact (annular_reassembly _ _ (gaussian_correctedSummand_summable S D Ψ hΨ Z hZ)
     (fun p=>gaussian_correctedSummand_norm_ge_one S D Ψ Z p.1 p.2)).symm
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

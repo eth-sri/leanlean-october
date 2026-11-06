@@ -67,6 +67,4 @@ theorem wooley_section7_hard_power_loss_zero
     _ ≤ (p : ℝ) ^ ((k ^ 2 * nu : ℕ) : ℝ) := hpow
     _ = (p : ℝ) ^ (k ^ 2 * nu) := Real.rpow_natCast _ _
 
-end
 
-end GafniTao

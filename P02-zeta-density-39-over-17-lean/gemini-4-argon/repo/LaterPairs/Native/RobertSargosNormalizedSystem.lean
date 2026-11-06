@@ -74,5 +74,4 @@ theorem RobertSargosReducedSystem.normalized {R H Q δ : ℝ}
         div_le_div_of_nonneg_right h.near (by positivity)
       _ = _ := by field_simp
 
-end TaoTrudgianYang2025
 

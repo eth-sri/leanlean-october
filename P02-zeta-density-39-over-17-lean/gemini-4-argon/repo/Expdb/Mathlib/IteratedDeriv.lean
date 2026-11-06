@@ -46,5 +46,4 @@ theorem iteratedDerivWithin_comp_affine_of_mapsTo
       simp only [pow_succ]
       ring
 
-end Expdb
 

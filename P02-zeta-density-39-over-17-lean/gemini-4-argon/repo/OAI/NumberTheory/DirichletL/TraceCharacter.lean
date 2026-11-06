@@ -12,10 +12,9 @@ open scoped BigOperators SchwartzMap
 
 namespace SevenEighths.TraceCharacter
 
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 
-open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT
-open EisensteinSchwartzPoisson FiniteFourier
+open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT EisensteinSchwartzPoisson FiniteFourier
 
 def traceCharacter (c : O) (hc : c ≠ 0) : AddChar (O ⧸ Ideal.span {c}) ℂ :=
   eisTraceModChar ShortDraftTrace.breveE
@@ -112,9 +111,3 @@ theorem primitive_radial_paper_poisson_normalized (W : 𝓢(ℝ, ℂ)) (scale : 
   have hn : (‖eisEmbedding c‖ : ℂ) ≠ 0 :=
     Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c)))
   field_simp
-
-end SevenEighths.TraceCharacter
-
-end
-
-end OAI

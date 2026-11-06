@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeCompleted CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma outside_mul (S : Finset Id) (hS : ∀P∈S,Prime P) (A B : Id) :
     (∀P∈S,¬P∣A*B) ↔ (∀P∈S,¬P∣A) ∧ (∀P∈S,¬P∣B) := by
@@ -91,8 +89,3 @@ theorem excludedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     have hs := bareIdealHighSummand_support η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2 hh
     exact ⟨hs.2.1.1,hs.2.2.1.1,hs.2.2.2.1.1,hs.2.2.2.2.1⟩
   · exact (markedIdealHighSummand_summable S 1 η 1 x w z hx hw hz).norm
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -163,58 +163,10 @@ theorem typeINormalizedFourier_zero_uniform_decay (σ : ℝ) (j : ℕ) :
 
 /-! ## A fixed logarithmic kernel for interior Type-I blocks -/
 
-/-- After the artificial detector boundary has disappeared, every smooth
-Type-I block is a translate and scalar multiple of this one fixed logarithmic
-Schwartz profile.  Keeping the profile independent of the physical scale is
-what makes its Fourier `L¹` norm a legitimate endpoint constant. -/
-noncomputable def typeIInteriorLogProfile (σ u : ℝ) : ℂ :=
-  (typeIDyadicCutoff (Real.exp u) : ℂ) *
-    Complex.exp ((((-σ * u : ℝ) : ℂ)))
 
-theorem contDiff_typeIInteriorLogProfile (σ : ℝ) :
-    ContDiff ℝ ∞ (typeIInteriorLogProfile σ) := by
-  unfold typeIInteriorLogProfile
-  have hcut : ContDiff ℝ ∞ (fun u : ℝ =>
-      (typeIDyadicCutoff (Real.exp u) : ℂ)) :=
-    Complex.ofRealCLM.contDiff.comp
-      (contDiff_typeIDyadicCutoff.comp Real.contDiff_exp)
-  have hpow : ContDiff ℝ ∞ (fun u : ℝ =>
-      Complex.exp ((((-σ * u : ℝ) : ℂ)))) := by
-    have hinside : ContDiff ℝ ∞ (fun u : ℝ => -σ * u) :=
-      contDiff_const.mul contDiff_id
-    exact Complex.contDiff_exp.comp
-      (Complex.ofRealCLM.contDiff.comp hinside)
-  exact hcut.mul hpow
 
-theorem hasCompactSupport_typeIInteriorLogProfile (σ : ℝ) :
-    HasCompactSupport (typeIInteriorLogProfile σ) := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact
-      (Set.Icc (Real.log (1 / 2 : ℝ)) (Real.log 2)))
-  intro u hu
-  rw [Set.mem_Icc, not_and_or] at hu
-  have hcut : typeIDyadicCutoff (Real.exp u) = 0 := by
-    rcases hu with hu | hu
-    · apply typeIDyadicCutoff_eq_zero_of_le_half
-      rw [← Real.exp_log (by norm_num : (0 : ℝ) < 1 / 2)]
-      exact Real.exp_le_exp.mpr (le_of_lt (lt_of_not_ge hu))
-    · apply typeIDyadicCutoff_eq_zero_of_two_le
-      rw [← Real.exp_log (by norm_num : (0 : ℝ) < 2)]
-      exact Real.exp_le_exp.mpr (le_of_lt (lt_of_not_ge hu))
-  unfold typeIInteriorLogProfile
-  rw [hcut]
-  simp
 
-/-- Schwartz realization of the scale-independent interior log profile. -/
-noncomputable def typeIInteriorLogProfileSchwartz (σ : ℝ) :
-    SchwartzMap ℝ ℂ :=
-  (hasCompactSupport_typeIInteriorLogProfile σ).toSchwartzMap
-    (contDiff_typeIInteriorLogProfile σ)
 
-@[simp]
-theorem typeIInteriorLogProfileSchwartz_apply (σ u : ℝ) :
-    typeIInteriorLogProfileSchwartz σ u =
-      typeIInteriorLogProfile σ u := rfl
 
 /-- Every physical scale at least `4τ₀/3` can be returned to the basic
 endpoint window by a positive integral power.  This is the finite form of
@@ -3057,14 +3009,6 @@ theorem classicalEndpointLossParameter_spec
   · simpa only [classicalEndpointLossParameter, ite_eq_right hFiveSixths,
       min_self] using hbase
 
-/-- In the only strip where a medium source scale can reach two, the common
-loss parameter is smaller than the available Weyl exponent margin. -/
-theorem classicalEndpointLossParameter_le_fiveSixthsGap
-    {σ τ₀ ε : ℝ} (hσ : 5 / 6 < σ) :
-    classicalEndpointLossParameter σ τ₀ ε ≤ (σ - 5 / 6) / 1000 := by
-  unfold classicalEndpointLossParameter
-  rw [ite_eq_left hσ]
-  exact min_le_right _ _
 
 /-- Two-parameter version of the physical Type-II scale bound.  The
 detector's lower cutoff exponent `dX` is allowed to be much smaller than the
@@ -5534,4 +5478,3 @@ theorem actual_typeII_dichotomy_witness_consumer
     _ ≤ Closs * T ^ ε * T ^ (3 * (1 - σ) / τ₀) := by
           exact mul_le_mul_of_nonneg_right hLossAt hEndpointNonneg
 
-end GuthMaynard.NativeMoment

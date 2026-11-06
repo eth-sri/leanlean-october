@@ -57,10 +57,6 @@ def rootSchwartz (v : 𝓢(ℝ, ℂ)) (M B L ρ a H : ℝ)
   (rootedWindow_compact v M B L ρ a H hL hρ hv).toSchwartzMap
     (rootedWindow_contDiff v (v.smooth ⊤) L ρ a H)
 
-@[simp] lemma rootSchwartz_apply (v : 𝓢(ℝ, ℂ)) (M B L ρ a H y : ℝ)
-    (hL : 0 < L) (hρ : |ρ| ≤ B * L)
-    (hv : Function.support v ⊆ Set.Icc (-M) M) :
-    rootSchwartz v M B L ρ a H hL hρ hv y = rootedWindow v L ρ a H y := rfl
 
 def rootDerivativeBound (v : 𝓢(ℝ, ℂ)) (a : ℝ) (n : ℕ) : ℝ :=
   ∑ i ∈ Finset.range (n+1), (2:ℝ)^i * (1+|a|)^i * derivativeSeminormSum v 0 i
@@ -196,9 +192,3 @@ theorem translated_twist_moment_uniform (g : 𝓢(ℝ, ℂ)) (J : ℕ) :
 
 def firstBalancedSlope : Fin 9 → ℝ := ![1/2,1/2,1,-1,-(1/2),0,0,0,0]
 def secondBalancedSlope : Fin 6 → ℝ := ![1,-1,0,0,0,0]
-
-end SevenEighths.InverseClippingProfiles
-
-end
-
-end OAI

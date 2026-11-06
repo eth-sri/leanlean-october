@@ -61,4 +61,3 @@ theorem sourceShiftCorrelation_bound_allHeights
     have hNrpos := zero_lt_one.trans_le hNr
     positivity
 
-end TaoTrudgianYang2025

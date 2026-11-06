@@ -11,10 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseMomentFirstProfileUniform InverseAmbientProfileTower JointLogSeparation FourierBridge
 variable {ι : Type*} [DecidableEq ι]
 
 def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -120,8 +117,3 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
   unfold refinedCellRows
   unfold SevenEighths.InverseMomentFirstOriginalProfile.coefficient SevenEighths.InverseMomentFirstOriginalProfile.weight
   simpa [source,rawScales] using hb
-
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
-
-end OAI

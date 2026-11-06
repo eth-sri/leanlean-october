@@ -49,7 +49,3 @@ theorem actual_dyad_count_budget (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
       norm_num only [Nat.cast_ofNat] at he
       rw [he]
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ hexp) (by positivity)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

@@ -55,4 +55,3 @@ theorem robertSargos_initial_small_or_large_block
       _ = _ := by ring
   · exact Or.inr ⟨k,hk,hkH,lt_of_not_ge hsmall,hbound⟩
 
-end TaoTrudgianYang2025

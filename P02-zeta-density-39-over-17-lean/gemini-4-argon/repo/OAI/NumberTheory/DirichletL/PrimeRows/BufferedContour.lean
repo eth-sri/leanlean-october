@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 lemma reciprocal_differentiableAt_of_nonzero (χ : Character) (s : ℂ) (h0 : s≠0)
     (hnz : ¬(χ.residue=1 ∧ s=1) → LFunction χ s≠0) :
@@ -112,9 +111,3 @@ theorem buffered_x_rectangle {K : ℕ}
   ring_nf at hd ⊢
   simp only [I_sq] at hd
   linear_combination hd
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

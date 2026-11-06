@@ -11,9 +11,7 @@ public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -94,4 +92,3 @@ theorem support_zetaDivisorBandCutoff {T G L : ℝ} (hT : 0 < T) (hG : 0 < G)
 theorem contDiff_zetaDivisorBandCutoff (T G L : ℝ) :
     ContDiff ℝ ∞ (zetaDivisorBandCutoff T G L) := contDiff_zetaBandCutoff _ _ _ _
 
-end MathCollab.Density.Stronger.Atkinson

@@ -137,6 +137,4 @@ theorem wooley_conditioned_grid_mean_eq_one
   field_simp
 
 
-end
 
-end GafniTao

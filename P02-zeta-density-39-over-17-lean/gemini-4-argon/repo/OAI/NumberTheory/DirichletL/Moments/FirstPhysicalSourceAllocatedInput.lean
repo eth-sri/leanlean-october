@@ -11,15 +11,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow ConcretePrimeRowBridge
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy
-open CenteredMomentSmoothedWindowEnergy CenteredMomentGaussEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow ConcretePrimeRowBridge CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentAddedZeroUniform
 variable {ι : Type*} [Fintype ι]
-local instance firstAllocatedInputDecidableEq {κ : Type*} : DecidableEq κ := Classical.decEq _
 
 lemma commonEnergy_real (D : OriginalData ι) (C : Ideal O) (hC : Supported C)
     (τ : Character) (t : ℝ) (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
@@ -58,9 +51,3 @@ lemma allocated_input_energy (s : Input ι) (C R seed L : Ideal O)
   unfold CenteredMomentFirstAllocationGaussEnergy.allocatedEnergy
   rw [hc,hb,allocated_input_volume s C R seed L B τ t]
   rfl
-
-end SevenEighths.CenteredMomentFirstPhysicalSource
-
-end
-
-end OAI

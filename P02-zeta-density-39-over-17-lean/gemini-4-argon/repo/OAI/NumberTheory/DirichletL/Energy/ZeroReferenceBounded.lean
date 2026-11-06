@@ -12,14 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceOriginal CenteredMomentEnergyReferenceScalarReserve
-open CenteredMomentEnergyStageReserveBounded
-open CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalRowSource
-open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyZeroReferenceOriginal CenteredMomentEnergyReferenceScalarReserve CenteredMomentEnergyStageReserveBounded CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional
 
 theorem balanced_reference_from_zero_low
     (a b bΦ rho ε Mcap Bmask:ℝ)
@@ -106,9 +99,3 @@ theorem balanced_reference_from_zero_low
     convert hfirst using 1 <;> (try dsimp only [E,A]) <;> ring
   · dsimp only [E,A]
     ring
-
-end SevenEighths.CenteredMomentEnergyZeroReferenceBounded
-
-end
-
-end OAI

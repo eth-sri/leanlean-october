@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstScale
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 
 def firstNominalScale (I J E : Ideal O) (K X : ℝ) : ℝ :=
   (Ideal.absNorm E:ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*X^2 /
@@ -87,9 +86,3 @@ theorem first_kernel_sector_lower (I J E : Ideal O) (hI : I≠0) (hJ : J≠0) (h
       div_le_div_of_nonneg_left hH (mul_pos (Real.exp_pos _) hT)
         (mul_le_mul_of_nonneg_left hsec (Real.exp_pos _).le)
     _ ≤ _ := first_kernel_lower I J E hI hJ hE K X H HN hK hX hH hi hj
-
-end SevenEighths.CenteredMomentFirstScale
-
-end
-
-end OAI

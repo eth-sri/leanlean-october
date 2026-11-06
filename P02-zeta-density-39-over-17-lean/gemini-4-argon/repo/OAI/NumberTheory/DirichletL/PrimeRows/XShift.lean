@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem first_x_integral_eq {K : ℕ}
     (e eps : ℝ) (he : 0<e) (he' : e<1/1000) (heps : 0<eps)
@@ -32,9 +31,3 @@ theorem first_x_integral_eq {K : ℕ}
     W0 W1 X Y Z hZ x w z (hl.trans hx.1) hw hz (by linarith [hx.1]) ?_).differentiableWithinAt
   intro hpole
   exact HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt _ (by linarith [hx.1]) (by tauto)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

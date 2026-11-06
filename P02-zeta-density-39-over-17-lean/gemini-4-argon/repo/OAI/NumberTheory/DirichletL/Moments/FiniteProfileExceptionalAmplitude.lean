@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction
-open CenteredMomentAllocatedDetectorAmplitude ConcretePrimeRowBridge CenteredMomentDivisorRows
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentAllocatedDetectorAmplitude ConcretePrimeRowBridge CenteredMomentDivisorRows
 theorem allocated_amplitude_source_control (lo hi ε B:ℝ) (hlo:0<lo) (hhi:0≤hi) (hε:0<ε) (hB:0≤B):
     ∃J:ℕ,∃R:Finset (ℕ×ℕ),(0,0)∈R ∧ ∀Q:Ideal O,Q≠0 → ∃C:ℝ,0<C ∧
       ∀W₁ W₂:𝓢(ℝ,ℂ), Function.support (W₁:ℝ→ℂ)⊆Set.Icc lo hi →
@@ -76,9 +73,3 @@ theorem allocated_amplitude_source_control (lo hi ε B:ℝ) (hlo:0<lo) (hhi:0≤
       apply mul_le_mul_of_nonneg_right _ hraw.le
       exact pow_le_pow_left₀ (mul_nonneg hH hFL) (mul_le_mul_of_nonneg_left hp hH) 2
     _=_:=rfl
-
-end SevenEighths.CenteredMomentFiniteProfileExceptional
-
-end
-
-end OAI

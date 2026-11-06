@@ -62,7 +62,3 @@ theorem inverse_square_cube_mask {M : Type*} [Monoid M]
     (ψ (n * b ^ 3))⁻¹ ^ 2 = (ψ n)⁻¹ ^ 2 * ψ b ^ 6 := by
   rw [map_mul, map_pow, mul_inv_rev, mul_pow, inverse_cube_square_eq_sixth h]
   ring
-
-end SevenEighths.InverseMoment
-
-end OAI

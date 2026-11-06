@@ -55,7 +55,6 @@ theorem unramifiedClosed_first_analytic_z (Q : ℝ) (A eta v x w : ℂ)
   exact (unramifiedClosed_differentiableAt_z Q (by linarith) A eta v x w z hd.1 hd.2.1 hd.2.2).differentiableWithinAt
 
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p})
 
@@ -88,8 +87,3 @@ lemma ramifiedClosed_first_analytic_z (eta a rho x w : ℂ)
     (by simpa only [norm_pow] using pow_le_one₀ (norm_nonneg a) ha) (by norm_num) (by norm_num) hx hz.le
   exact (ramifiedClosed_differentiableAt p hp hg eta a rho (fun _=>x) (fun _=>w) id z
     (differentiableAt_const x) (differentiableAt_const w) differentiableAt_id hd.2.1 hd.1 j).differentiableWithinAt
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

@@ -12,9 +12,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 open MeasureTheory
 namespace SevenEighths.HeckeDetectorFrequency
-open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier
-open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorDyadicBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorDyadicBridge
 
 theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
     (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
@@ -81,9 +79,3 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
         · positivity
       _ = _ := by ring
   · exact mul_le_mul_of_nonneg_right (hg₀.trans (by linarith)) (norm_nonneg _)
-
-end SevenEighths.HeckeDetectorFrequency
-
-end
-
-end OAI

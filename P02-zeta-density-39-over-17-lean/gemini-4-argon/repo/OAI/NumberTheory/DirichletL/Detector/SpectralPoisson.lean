@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve
-open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve EisensteinSchwartzPoisson
 
 def transformedSpectralTerm (η : HeckeFamily.Character) (C : CalibrationData)
     (S : Finset (Ideal O)) (D : Ideal O) (s : O) (hs : Supported (Ideal.span {s}))
@@ -39,8 +37,3 @@ theorem physical_spectral_poisson (η : HeckeFamily.Character) (C : CalibrationD
       (supportedElement_ne_zero s hs) W hWc hWs K hK]
     ring
   · rw [dite_eq_right hA, spectralSummand_zero_completedIndex S D p.1 p.2 _ t (not_ne_iff.mp hA), zero_mul]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

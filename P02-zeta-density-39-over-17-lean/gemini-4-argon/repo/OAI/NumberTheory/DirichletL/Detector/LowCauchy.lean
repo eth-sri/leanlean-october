@@ -11,7 +11,6 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
 def lowNumeratorWeight (C : CalibrationData) (Ω : ℝ→ℂ) (X Y : ℝ) (m : O) (v : ℝ) : ℂ :=
   Ω (elementNorm m/lowPhysicalScale C X Y)*C.residueMonoid m*
@@ -35,8 +34,3 @@ lemma lowNumeratorWeight_norm (C : CalibrationData) (Ω : ℝ→ℂ)
   rw [lowNumeratorWeight,norm_mul,norm_mul,he,
     low_mellin_phase_norm _ (-v) (div_pos hmpos (lowPhysicalScale_pos C X Y hX hY)),mul_one]
   exact (mul_le_of_le_one_left (norm_nonneg _) (hΩ _)).trans (C.residueMonoid_norm_le_one m)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

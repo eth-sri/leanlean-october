@@ -11,9 +11,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentAmplificationEligibility
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEnergy
-open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEnergy CanonicalQuadraticSieve
 
 def exclusionIdeal (R s : Ideal O) (h : O) : Ideal O := R*s*Ideal.span {h}
 
@@ -91,9 +89,3 @@ theorem actual_eligible_amplification {α : Type*} (S : Finset α) (a : α → O
     (fun p hpP => hupper (Ideal.span {p}) (elementPool_data P hp hbad p hpP).2.1)
     hrowNorm
   convert hb using 1 ; ring
-
-end SevenEighths.CenteredMomentAmplificationEligibility
-
-end
-
-end OAI

@@ -10,11 +10,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
-open FirstPassCubeLabels
+open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 namespace SevenEighths.InverseInitialOverlapInputFourier
 open InverseMoment InverseInitialOverlapFourier InverseInitialArithmetic InverseInitialRayAttachment
-local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -39,9 +37,3 @@ theorem input_integral (F : Finset ι) (Ψ : Eis→*ℂ) (j u : Eis)
   apply Finset.sum_congr rfl
   intro A hA
   ring
-
-end SevenEighths.InverseInitialOverlapInputFourier
-
-end
-
-end OAI

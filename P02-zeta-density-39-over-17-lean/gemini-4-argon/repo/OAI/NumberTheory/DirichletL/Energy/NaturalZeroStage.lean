@@ -13,15 +13,9 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalZeroStage
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyState
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyWidthSchedule
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstLiveAdmission CenteredMomentNaturalFixedRaySource
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_zero_stage
@@ -132,9 +126,3 @@ theorem actual_zero_stage
   exact zeroAt_transport (internalQ Q η₀) _ _ _ _ _ _ _ Z _ _ _ _ _ _ _
     J J U U _ _ hZ.le le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl
     le_rfl (Finset.Subset.refl _) (by positivity) hfront hfinal
-
-end SevenEighths.CenteredMomentEnergyNaturalZeroStage
-
-end
-
-end OAI

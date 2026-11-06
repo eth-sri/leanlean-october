@@ -10,14 +10,9 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentPlainGlobalEnergy
-open HeckeFamily HeckeDyadic CenteredMomentCoreFloor
-open CenteredMomentPlainGlobalActual CenteredMomentPositiveSummability
+open HeckeFamily HeckeDyadic CenteredMomentCoreFloor CenteredMomentPlainGlobalActual CenteredMomentPositiveSummability
 open CenteredMomentRadialEligibleEnergy (Radial)
-open QuadraticInitialBound ConcreteTraceCRT
-open CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentDetectorDictionary
-open HeckeInverseAmplification CompletedHeight CenteredMomentHeckeHeight
-open CenteredMomentLattice CenteredMomentHeckeCancellation CenteredMomentAbsoluteEnergy
-local notation "O"=>HeckeFamily.O
+open QuadraticInitialBound ConcreteTraceCRT CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentDetectorDictionary HeckeInverseAmplification CompletedHeight CenteredMomentHeckeHeight CenteredMomentLattice CenteredMomentHeckeCancellation CenteredMomentAbsoluteEnergy
 
  theorem plain_height_norm (χ:Character)(W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
     (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W)(t X:ℝ)(hX:0<X):
@@ -83,9 +78,3 @@ local notation "O"=>HeckeFamily.O
   rw [tsum_mul_left] at hh
   exact hh.trans ((mul_le_mul_of_nonneg_left
     (radial_weight_lattice_bound_all r.profile r.scale r.scale_pos) (sq_nonneg B)).trans_eq (by ring))
-
-end SevenEighths.CenteredMomentPlainGlobalEnergy
-
-end
-
-end OAI

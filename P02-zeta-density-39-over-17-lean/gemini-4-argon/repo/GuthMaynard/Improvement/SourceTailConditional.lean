@@ -159,4 +159,3 @@ theorem source_tail_of_sampling {χ : ℝ → ℝ} (hχd : ContDiff ℝ ∞ χ)
     nlinarith
   exact source_tail_scalar_absorption hA hQ hΛ hthreshold hbudget
 
-end GuthMaynard.Improvement

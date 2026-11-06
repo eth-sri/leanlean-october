@@ -54,9 +54,3 @@ theorem nonprincipal_rows_partition (L U : ℝ) (hL : 1≤L) (hLU : L≤U)
     by_cases h : u.val≠1 ∧ U≤rowNorm u <;> simp [g3,h]
   simp_rw [hpoint]
   rw [(hg1.add hg2).tsum_add hg3,hg1.tsum_add hg2,hsum1,hsum2,hsum3,sum_small_dyadicRows]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

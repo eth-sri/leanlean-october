@@ -11,7 +11,6 @@ open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : MeasurableSpace FreeRow := ⊤
 local instance : MeasurableSingletonClass FreeRow := ⟨fun _=>trivial⟩
@@ -61,9 +60,3 @@ theorem rowIntegral_w_shift {K : ℕ}
     rw [integral_prod _ hi]
     congr 1
     exact integral_congr_ae (Filter.Eventually.of_forall heq)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

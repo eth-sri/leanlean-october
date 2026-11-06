@@ -10,18 +10,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainUnmarkedRestrictedField
-open HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open CenteredMomentDetectorPlainFiberSource
-open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState
-open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
-open QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open HeckeDyadic HeckeRowClosure HeckeInverseAmplification CenteredMomentDetectorPlainFiberSource HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource QuadraticInitialBound ProbeDetectorPlainUnmarkedField
 
-open ProbeDetectorPlainUnmarkedField
 variable {Δ:ℝ}
 
 theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
@@ -115,9 +105,3 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
         (mul_le_mul_of_nonneg_right (hC_bound label) (by positivity)) (by positivity)
   refine ⟨hfinal,?_⟩
   simpa only [unmarked_power_eq _ _ _ hU.le,mul_assoc] using hfinal
-
-end SevenEighths.ProbeDetectorPlainUnmarkedRestrictedField
-
-end
-
-end OAI

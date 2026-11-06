@@ -93,6 +93,4 @@ theorem heathBrown_spacing_card_cast_le
       dsimp [z]
 
 
-end
 
-end GafniTao

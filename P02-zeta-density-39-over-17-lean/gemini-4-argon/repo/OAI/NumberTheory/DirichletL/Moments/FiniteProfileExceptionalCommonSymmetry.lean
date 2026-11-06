@@ -10,15 +10,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
-open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair CenteredMomentSecondHeightFamily CenteredMomentFiniteProfileExceptional
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
@@ -78,9 +70,3 @@ theorem actual_common_better_side (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
     rw [mul_comm (D.absNorm:ℝ) (C.absNorm:ℝ)]
     unfold profileMass
     ring
-
-end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-
-end
-
-end OAI

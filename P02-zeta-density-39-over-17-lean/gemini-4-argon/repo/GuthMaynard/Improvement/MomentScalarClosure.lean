@@ -130,4 +130,3 @@ theorem raw_moment_normalized_budget {N L T P M H S C D K A B F X Y Z R : ℝ}
       linarith only [hbase,hprod]
     _ = _ := by dsimp [E,V]; ring
 
-end GuthMaynard.Improvement

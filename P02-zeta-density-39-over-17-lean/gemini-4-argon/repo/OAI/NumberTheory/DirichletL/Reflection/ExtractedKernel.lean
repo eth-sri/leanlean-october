@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def extractedRowFactor (D1 D2 K : Ideal Eis) : ℂ := quadraticRow K (primaryGenerator (D1*D2))
 def extractedSlotFactor (D1 D2 P : Ideal Eis) : ℂ :=
@@ -57,8 +56,3 @@ lemma extractedFrozenColumn_norm_le_one {φ : Type*} [Fintype φ] (F : PrimeFami
     (jF : φ → ℕ) (e : φ → Fin 3) (A : Ideal Eis → Ideal Eis → ℂ)
     (hA : ∀ n b, ‖A n b‖ ≤ 1) (n b : Ideal Eis) : ‖extractedFrozenColumn F jF e A n b‖ ≤ 1 :=
   normalizedFrozenColumn_norm_le_one F jF e A hA _ _
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

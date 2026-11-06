@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma low_actual_scale_caps (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (hQ : Q≠0)
     (hpower : rowPowerfulPart J=rowPowerfulPart I) (hmask : rowMaskPart J Q=rowMaskPart I Q)
@@ -61,7 +60,3 @@ lemma low_reflection_parameters (η : ℝ) (hη : 0<η) :
   · apply (mul_le_mul_iff_left₀ hp).mp
     field_simp
     nlinarith [sq_nonneg η]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

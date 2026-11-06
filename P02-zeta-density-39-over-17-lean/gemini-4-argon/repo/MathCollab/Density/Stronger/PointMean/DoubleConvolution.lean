@@ -349,4 +349,3 @@ theorem integral_strongKernel_mul_strongMoment_le
   rw [integral_strongKernel_mul_strongMoment_eq_double hdelta t]
   exact integral_heathBrownStrongDoubleIntegrand_le hdelta t
 
-end MathCollab.Density.Stronger.PointMean

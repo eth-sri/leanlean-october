@@ -83,4 +83,3 @@ theorem integral_sargosWeightedPlanarIntegrand_eq_gram {ι : Type*}
         (integrable_sargosPlanarKernelTerm_outer ha hb c d (u p.1-u p.2) (v p.1-v p.2)).const_mul (z p.1*conj (z p.2)))
     _ = _ := by simp_rw [integral_const_mul]
 
-end TaoTrudgianYang2025

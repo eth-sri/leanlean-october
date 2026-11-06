@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorTensor
-open IdealMobiusDivisorSum CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
-open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentMask HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open IdealMobiusDivisorSum CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentMask HeckeFamily
 variable {ι : Type*} [DecidableEq ι]
 
 def allocationSign (D : Ideal O) (s : Finset ι) (a : Allocation D s) : ℂ :=
@@ -52,9 +50,3 @@ theorem allocationTerm_eq_product (D : Ideal O) (s : Finset ι) (v : ι → Idea
     push Not at hh
     obtain ⟨i,hi,hnd⟩ := hh
     rw [Finset.prod_eq_zero hi (by simp only [ite_eq_right hnd]),mul_zero]
-
-end SevenEighths.CenteredMomentDivisorTensor
-
-end
-
-end OAI

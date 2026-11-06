@@ -67,4 +67,3 @@ theorem robertSargos_symmetric_correlation_sum (f : ℝ → ℝ) (M H : ℕ) (q 
       rw [← Finset.sum_filter,
         Finset.filter_mem_eq_of_subset (robertSargos_m_overlap_subset M H h q r hh)]
 
-end TaoTrudgianYang2025

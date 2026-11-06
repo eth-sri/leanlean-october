@@ -11,9 +11,7 @@ open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorBatch ProbePhysical
-local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_source_amplitude_batches (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -75,8 +73,3 @@ theorem actual_source_amplitude_batches (S : Finset (Ideal O)) (hS : SourceExclu
   rw [hSlots,hWidths,hW,hUpper,hZ,hBin]
   exact HeckeDetectorAmplitudeFirst.rowMean_eq rows Finset.univ (Z^d) ((2*a-1)/2)
     binWidth hb (fun j=>ell j/d) Q bin u hu'
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -67,9 +67,3 @@ theorem factors_logDeriv_norm (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
     _ = localBound σ * Real.log ((radical M).absNorm : ℝ) := by
       rw [← Finset.mul_sum, ← Real.log_prod (fun P _ => (hp0 P).ne')]
       simp only [radical, SmoothMobiusCorrection.primeProduct, map_prod, Nat.cast_prod]
-
-end SevenEighths.HeckeDeletionDerivative
-
-end
-
-end OAI

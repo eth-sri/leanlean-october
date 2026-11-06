@@ -10,8 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι κ : Type*} [Fintype ι] [Fintype κ] {p : ι→Eis} {N a c : Eis} {mode : Bool}
 
 lemma reindexControlled_matrix_one (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι) :
@@ -56,7 +54,3 @@ theorem mixedReflectedValue_reindex [∀ i, (Ideal.span {p i}).IsMaximal]
     exact e.prod_comp (fun i => mixedActiveBracket hp hg j S D i x)
   simp only [mixedReflectedValue,e.prod_comp p,reindexControlled_fixedFactor,
     reindexControlled_matrix_one,reindexControlled_U,hprod]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

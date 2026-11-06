@@ -10,8 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss CubicEisenstein ConcreteTraceCRT
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 noncomputable local instance activeQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
@@ -128,8 +126,3 @@ theorem fixedActiveFunction_multiplier
       rw [activeStratum_function_multiplier p hp hprimary F (D h) (hN h)
         (G h).denominator_ne_zero (G h).primary (G h).shape n, (G h).point]
       ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

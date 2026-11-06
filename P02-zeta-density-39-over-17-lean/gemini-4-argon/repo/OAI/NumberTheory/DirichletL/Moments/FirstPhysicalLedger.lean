@@ -12,10 +12,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstPhysicalLedger
-open CenteredMomentFirstScale CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentFirstExtractedLedger CenteredMomentDescentLedger
-open CanonicalQuadraticSieve CenteredMomentRankinRadical
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFirstScale CenteredMomentCompleteCommon CenteredMomentCanonicalFirst CenteredMomentSectorLocalization CenteredMomentDescentLedger CanonicalQuadraticSieve CenteredMomentRankinRadical
 
 theorem nominal_log (I J E : Ideal O) (hE : E≠0)
     (Z H X : ℝ) (hH : 0<H) (hX : 0<X) :
@@ -36,9 +33,3 @@ theorem nominal_log (I J E : Ideal O) (hE : E≠0)
     Real.logb_mul (mul_pos hH hc).ne' hd.ne',Real.logb_mul hH.ne' hc.ne']
   push_cast
   ring
-
-end SevenEighths.CenteredMomentFirstPhysicalLedger
-
-end
-
-end OAI

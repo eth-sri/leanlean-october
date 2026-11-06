@@ -97,4 +97,3 @@ theorem source_exponentialSum_differencing_bound
   convert hm using 1
   ring
 
-end TaoTrudgianYang2025

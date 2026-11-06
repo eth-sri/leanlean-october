@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory
 namespace SevenEighths.ProbeFiniteProductX
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
-open HeckeFamily PrincipalMellinResidues ProbeFiniteProductBounds
-local notation "Id" => Ideal ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal HeckeFamily PrincipalMellinResidues ProbeFiniteProductBounds
 
 lemma marked_differentiableAt_x (η : Character) (P : PrimeIdeal) (x w z : ℂ)
     (hQ : 4 ≤ (Ideal.absNorm P.val : ℝ)) (hx : 7/8 ≤ x.re) (hz : 4/25 ≤ z.re) :
@@ -114,8 +112,3 @@ theorem continued_source_differentiable_strip {ι : Type*} (η : Character) (S :
   apply (continued_source_analytic_x η S hS J T b hT W0 W1 X Y Z hZ w z hw hz).differentiableOn.mono
   intro x hx
   exact lt_of_lt_of_le (max_lt ha hβ) hx.1
-
-end SevenEighths.ProbeFiniteProductX
-end
-
-end OAI

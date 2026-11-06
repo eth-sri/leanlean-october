@@ -101,8 +101,3 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
   · have hh := mul_le_mul_of_nonneg_left hE (mul_nonneg hL0 (norm_nonneg B))
     change L*‖B‖*‖unramifiedMarked Q A eta v x w z+D‖≤_
     nlinarith [hLBR,hLBKV]
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

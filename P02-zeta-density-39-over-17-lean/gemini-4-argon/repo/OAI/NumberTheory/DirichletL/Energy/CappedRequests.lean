@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentEnergyCappedRequests
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyWidthInduction CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergySourceCapSchedule
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyWidthInduction CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergySourceCapSchedule
 
 def requestLength (M B L:ℝ):ℝ:=max L (2*M+B+2)+1
 
@@ -72,9 +70,3 @@ lemma band_positive (M B ε:ℝ)(hM:0<M)(hB:0≤B)(hε:0<ε)(k:ℕ):
   have hs:=hh.1
   unfold bandWidth width
   exact lt_min hM (by positivity)
-
-end SevenEighths.CenteredMomentEnergyCappedRequests
-
-end
-
-end OAI

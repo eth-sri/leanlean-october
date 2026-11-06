@@ -94,8 +94,3 @@ lemma unramifiedSelected_zero_bound (Q : ℝ) (v x w z : ℂ)
   rw [norm_one,norm_mul] at ht
   have hp : ‖coordV Q z‖*‖coordW Q v w‖≤1 := by nlinarith [norm_nonneg (coordV Q z)]
   nlinarith [norm_nonneg (1-coordV Q z*coordW Q v w)]
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

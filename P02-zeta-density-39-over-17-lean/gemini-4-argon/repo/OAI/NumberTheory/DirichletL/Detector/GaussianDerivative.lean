@@ -27,8 +27,3 @@ lemma gaussianLog_scaled_analytic (r : ℝ) (hr : 0<r) (z : ℂ) (hz : 0<z.re) :
     AnalyticAt ℂ (fun w : ℂ=>gaussianLog ((r:ℂ)*w)) z := by
   have h : 0<((r:ℂ)*z).re := by simpa using mul_pos hr hz
   exact (gaussianLog_analytic _ h).comp (analyticAt_const.mul analyticAt_id)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

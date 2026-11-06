@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve FiniteGaussPhase
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} {p : ι → Eis} {N a c : Eis} {mode : Bool}
 
 lemma frozenCofactorCharacter_cross_norm [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -65,8 +63,3 @@ lemma frozenCore_norm [∀ i, (Ideal.span {p i}).IsMaximal]
   intro i hi
   rw [norm_mul,frozenPrimeScalar_norm D hp hg hchar hcop i (j i) (hj i hi),one_mul]
   exact frozenCofactorCharacter_product_norm hg hcop i (F.erase i) (by simp) (j i)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

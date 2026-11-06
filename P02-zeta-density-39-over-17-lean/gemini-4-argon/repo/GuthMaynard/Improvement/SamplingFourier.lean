@@ -90,4 +90,3 @@ theorem sampling_fourier_first_variation {ι : Type*} [Fintype ι]
       4*Real.pi*R*Real.sqrt (∫ t, ‖f t‖^2) := by convert hGb using 1; ring
   exact hh.trans (add_le_add le_rfl hb)
 
-end GuthMaynard.Improvement

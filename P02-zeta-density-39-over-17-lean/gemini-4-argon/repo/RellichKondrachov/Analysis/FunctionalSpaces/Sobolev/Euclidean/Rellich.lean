@@ -271,12 +271,5 @@ extension-by-zero map from `volume.restrict K`. We record a codomain-restricted 
 convenient compact map to the restricted `L²` space.
 -/
 
-end Volume
 
-end
 
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov

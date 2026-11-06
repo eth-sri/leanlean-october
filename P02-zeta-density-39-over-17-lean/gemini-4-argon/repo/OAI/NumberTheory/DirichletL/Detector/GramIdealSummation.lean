@@ -10,7 +10,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeGramCommon
 open ActualEisensteinCubic CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 local notation "SupportedIdeal" => {I : Ideal O // Supported I}
 
 def gramIdealNorm (I : SupportedIdeal) : ℝ := Ideal.absNorm I.val
@@ -118,9 +117,3 @@ theorem gram_supported_exceptional_sum (ε : ℝ) (_hε : 0 ≤ ε) (hε1 : ε <
   rw [← Finset.sum_mul_sum]
   exact mul_le_mul (hb F) (hd G)
     (Finset.sum_nonneg (fun J _ => Real.rpow_nonneg (gramIdealNorm_pos J).le _)) hC.le
-
-end SevenEighths.ProbeGramCommon
-
-end
-
-end OAI

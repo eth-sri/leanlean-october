@@ -113,4 +113,3 @@ theorem masked_mixed_affine (a b C₀ : ℝ)
   rw [heq]
   simpa only [hg2, g, integral_indicator hA] using hh
 
-end GuthMaynard.Improvement

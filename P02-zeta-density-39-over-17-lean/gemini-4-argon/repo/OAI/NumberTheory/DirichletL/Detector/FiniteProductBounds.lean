@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory
 namespace SevenEighths.ProbeFiniteProductBounds
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
-open HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
-local notation "Id" => Ideal ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
 
 def localMultiplier (η : Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   let Q : ℝ := Ideal.absNorm P.val
@@ -452,17 +450,9 @@ theorem combined_slot_bound_sharp {ι : Type*} (η : Character) (S : Finset Id) 
   exact mul_le_mul (global_norm_bound η S hS s w z hs (by linarith) (by linarith))
     (slot_norm_bound_sharp η J T b Pmin hPmin hb hQ hη s w z hs hw hz) (norm_nonneg _) (by norm_num)
 
-@[simp] theorem slotMultiplier_empty {ι : Type*} (η : Character) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (s w z : ℂ) : slotMultiplier η ∅ T b s w z = 1 := by
-  simp [slotMultiplier]
 
 lemma boundary_mul_const (F : ℂ → ℂ) (a b : ℝ) (h : BoundaryControl F a b) (c : ℂ) :
     BoundaryControl (fun z => F z*c) a b := by
   refine ⟨h.left.mul_const c,h.right.mul_const c,?_,?_⟩
   · simpa only [intervalIntegral.integral_mul_const,zero_mul] using h.lower.mul_const c
   · simpa only [intervalIntegral.integral_mul_const,zero_mul] using h.upper.mul_const c
-
-end SevenEighths.ProbeFiniteProductBounds
-end
-
-end OAI

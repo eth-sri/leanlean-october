@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic HeckeRowClosure
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 abbrev NonzeroElement := UnrestrictedIdealReindex.NonzeroElement
 
 structure RowData where
@@ -55,9 +54,3 @@ theorem RowData.prime_energy (data : RowData) (u : NonzeroElement)
         ‖polynomial (data.character (amplifiedElement u ⟨P.val,P.property.ne_zero⟩)) true W
           (D/(P.val.absNorm : ℝ)) σ freq‖^2) :=
   prime_column_energy _ _ P (data.amplified_prime_mask u P) W a b ha hWs hW D σ freq hD
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

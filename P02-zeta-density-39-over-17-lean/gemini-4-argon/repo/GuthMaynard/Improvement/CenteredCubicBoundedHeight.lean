@@ -77,4 +77,3 @@ theorem centered_cubic_bounded_height {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
     _ ≤ D*(T₀^4*T^2)*Real.sqrt (∫ t, μ t^2)^3 := by gcongr
     _ = _ := by ring
 
-end GuthMaynard.Improvement

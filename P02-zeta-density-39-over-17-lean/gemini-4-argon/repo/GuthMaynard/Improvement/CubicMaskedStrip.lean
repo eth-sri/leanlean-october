@@ -159,4 +159,3 @@ theorem masked_radial_total_discard_bound {a : ℝ → ℂ} (ha : ContDiff ℝ �
       exact Finset.sum_le_sum (fun m _ => (h L H m μ A B Cmask hH hA hB hCmask hm h0 hi).2)
     _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]; ring
 
-end GuthMaynard.Improvement

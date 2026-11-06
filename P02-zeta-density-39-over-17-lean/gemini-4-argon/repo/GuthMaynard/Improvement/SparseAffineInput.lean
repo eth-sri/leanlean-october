@@ -45,4 +45,3 @@ theorem sparse_affine_all_heights (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 �
         have hbase : 0 ≤ 36992*T₀^8 := by positivity
         nlinarith
 
-end GuthMaynard.Improvement

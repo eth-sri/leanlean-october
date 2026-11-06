@@ -63,4 +63,3 @@ theorem quartic_bad_cells_bound {ε : ℝ} (hε : 0 < ε) :
         (fun t ht => (hw t (hZW ht)).1.le))
   convert hh using 1; ring
 
-end GuthMaynard.Improvement

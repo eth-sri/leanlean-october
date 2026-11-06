@@ -71,4 +71,3 @@ theorem five_sublinear_energy_absorption {E V A B C D F p q r s t : ℝ}
   · have hh := sublinear_energy_power_solve hE (by positivity : 0 ≤ 5 * F) hV ht h
     linarith
 
-end Montgomery.RationalMoment

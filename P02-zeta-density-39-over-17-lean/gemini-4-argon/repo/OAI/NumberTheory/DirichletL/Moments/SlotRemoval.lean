@@ -32,9 +32,3 @@ theorem whole_slot_removal {α : Type*} (s : Finset α) (length : α → ℝ)
     refine ⟨s\T,Finset.sdiff_subset,le_min (by linarith) (by linarith),Or.inr ?_⟩
     have hremove : F/(6*κ) ≤ ∑ i ∈ s\T, length i := by linarith
     exact (div_le_iff₀ (by positivity : 0 < 6*κ)).mp hremove |>.trans_eq (mul_comm _ _)
-
-end SevenEighths.CenteredMomentSlotRemoval
-
-end
-
-end OAI

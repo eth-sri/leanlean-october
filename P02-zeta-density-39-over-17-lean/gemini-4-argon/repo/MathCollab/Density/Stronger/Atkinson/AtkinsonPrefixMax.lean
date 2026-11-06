@@ -45,4 +45,3 @@ theorem atkinsonPrefixGramMax_swap (m N : ℕ) (t u : ℝ) :
   simp_rw [atkinsonPrefixGram_swap m _ u t,Complex.norm_conj]
 
 
-end MathCollab.Density.Stronger.Atkinson

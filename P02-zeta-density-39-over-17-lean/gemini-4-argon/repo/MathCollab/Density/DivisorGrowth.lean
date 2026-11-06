@@ -125,4 +125,3 @@ theorem divisorMaximum_subpower {η : ℝ} (hη : 0 < η) :
   exact (by exact_mod_cast hle : (divisorMaximum T : ℝ) ≤ (⌊C*49^η*T^η⌋₊ : ℝ)).trans
     (Nat.floor_le (by positivity))
 
-end MathCollab.Density

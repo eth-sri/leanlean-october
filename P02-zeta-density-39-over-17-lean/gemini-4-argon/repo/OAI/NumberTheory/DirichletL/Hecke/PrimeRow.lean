@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical ComplexConjugate BigOperators
 namespace SevenEighths.HeckePrimeRow
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
@@ -46,9 +43,3 @@ def canonicalPrimeAmplitude (u : O) (W : ℝ→ℂ) (b D : ℝ) (z : ℂ) : ℂ 
     (fun P => Prime P ∧ P∈RayQuotient.identityClass M H),
     starRingEnd ℂ (idealRowHom u P)*W ((P.absNorm : ℝ)/D)*
       (((P.absNorm : ℝ)/D : ℝ) : ℂ)^(z-1)
-
-end SevenEighths.HeckePrimeRow
-
-end
-
-end OAI

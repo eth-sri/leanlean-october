@@ -83,4 +83,3 @@ theorem short_gamma_window_holder :
   have hpow := pow_le_pow_left₀ (integral_nonneg (fun _ => norm_nonneg _)) hmassR 3
   exact hh.trans (mul_le_mul_of_nonneg_right hpow (integral_nonneg (fun t => by positivity)))
 
-end GuthMaynard.Improvement

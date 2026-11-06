@@ -804,71 +804,9 @@ noncomputable def typeIReflectionKernel
     Complex.exp ((((-σ * Real.log x : ℝ) : ℂ))) *
     Complex.exp ((((-t * Real.log x : ℝ) : ℂ) * I))
 
-theorem contDiff_typeIReflectionKernel
-    (Y A r : ℕ) (σ t : ℝ) (hY : 0 < Y) :
-    ContDiff ℝ ∞ (typeIReflectionKernel Y A r σ t) := by
-  rw [contDiff_iff_contDiffAt]
-  intro x
-  by_cases hx : x = 0
-  · subst x
-    have hYreal : (0 : ℝ) < Y := by exact_mod_cast hY
-    have hEventually : typeIReflectionKernel Y A r σ t =ᶠ[𝓝 0] 0 := by
-      filter_upwards [Iio_mem_nhds hYreal] with y hy
-      have hy' : y < (Y : ℝ) := hy
-      have hleft : Real.smoothTransition (y - (Y : ℝ)) = 0 :=
-        Real.smoothTransition.zero_of_nonpos (by linarith)
-      simp [typeIReflectionKernel, typeISourceSmoothWeight,
-        typeITailBoundary, hleft]
-    exact contDiffAt_const.congr_of_eventuallyEq hEventually
-  · have hweight : ContDiffAt ℝ ∞
-        (fun y : ℝ => (typeISourceSmoothWeight Y A r y : ℂ)) x :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        (contDiff_typeISourceSmoothWeight Y A r).contDiffAt
-    have hlog : ContDiffAt ℝ ∞ Real.log x := Real.contDiffAt_log.2 hx
-    have hsigma : ContDiffAt ℝ ∞
-        (fun y : ℝ => (((-σ * Real.log y : ℝ) : ℂ))) x :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        (contDiffAt_const.mul hlog)
-    have ht : ContDiffAt ℝ ∞
-        (fun y : ℝ => (((-t * Real.log y : ℝ) : ℂ) * I)) x :=
-      (Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        (contDiffAt_const.mul hlog)).mul contDiffAt_const
-    exact (hweight.mul hsigma.cexp).mul ht.cexp
 
-theorem hasCompactSupport_typeIReflectionKernel
-    (Y A r : ℕ) (σ t : ℝ) :
-    HasCompactSupport (typeIReflectionKernel Y A r σ t) := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) (A + 1)))
-  intro x hx
-  have hboundary : typeITailBoundary Y A x = 0 := by
-    rw [Set.mem_Icc, not_and_or] at hx
-    rcases hx with hx | hx
-    · have hleft : Real.smoothTransition (x - (Y : ℝ)) = 0 :=
-        Real.smoothTransition.zero_of_nonpos (by
-          have hYnonneg : (0 : ℝ) ≤ Y := by positivity
-          linarith)
-      rw [typeITailBoundary, hleft, zero_mul]
-    · have hx' : (((A + 1 : ℕ) : ℝ)) ≤ x := by
-        push_cast
-        exact le_of_not_ge hx
-      have hright : Real.smoothTransition
-          (((A + 1 : ℕ) : ℝ) - x) = 0 :=
-        Real.smoothTransition.zero_of_nonpos (by linarith)
-      rw [typeITailBoundary, hright, mul_zero]
-  simp [typeIReflectionKernel, typeISourceSmoothWeight, hboundary]
 
-/-- Schwartz realization of the smooth Type-I kernel. -/
-noncomputable def typeIReflectionSchwartz
-    (Y A r : ℕ) (σ t : ℝ) (hY : 0 < Y) : 𝓢(ℝ, ℂ) :=
-  (hasCompactSupport_typeIReflectionKernel Y A r σ t).toSchwartzMap
-    (contDiff_typeIReflectionKernel Y A r σ t hY)
 
-@[simp]
-theorem typeIReflectionSchwartz_apply
-    (Y A r : ℕ) (σ t x : ℝ) (hY : 0 < Y) :
-    typeIReflectionSchwartz Y A r σ t hY x =
-      typeIReflectionKernel Y A r σ t x := rfl
 
 /-- At positive integers the continuous kernel is exactly the source block
 summand. -/
@@ -1003,9 +941,6 @@ private noncomputable def typeINormalizedAmplitudeSchwartz (σ : ℝ) : 𝓢(ℝ
   (hasCompactSupport_typeINormalizedAmplitude σ).toSchwartzMap
     (contDiff_typeINormalizedAmplitude σ)
 
-@[simp]
-private theorem typeINormalizedAmplitudeSchwartz_apply (σ x : ℝ) :
-    typeINormalizedAmplitudeSchwartz σ x = typeINormalizedAmplitude σ x := rfl
 
 /-- Normalized oscillatory kernel whose Fourier samples are the Poisson
 modes of an interior dyadic block after the change of variables `x=Q*u`. -/
@@ -1663,4 +1598,3 @@ theorem typeINormalizedPoisson_split
   · have hm' : M < m.natAbs := Nat.lt_of_not_ge hm
     simp [hm, hm', f]
 
-end GuthMaynard.NativeMoment

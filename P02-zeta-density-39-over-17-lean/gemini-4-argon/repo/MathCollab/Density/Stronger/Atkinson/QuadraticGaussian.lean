@@ -168,4 +168,3 @@ theorem norm_deriv_zetaGaussianQuadraticIntegral_le {T G : ℝ}
         (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

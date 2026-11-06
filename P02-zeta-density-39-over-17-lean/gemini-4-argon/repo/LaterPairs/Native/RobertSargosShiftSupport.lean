@@ -75,4 +75,3 @@ theorem robertSargos_shifted_boundary_card (M H Q N : ℕ) (h q n : ℤ)
       (2*(H:ℝ)+2*Q+N)+(2*(H:ℝ)+2*Q+N) := by exact_mod_cast hc
   linarith
 
-end TaoTrudgianYang2025

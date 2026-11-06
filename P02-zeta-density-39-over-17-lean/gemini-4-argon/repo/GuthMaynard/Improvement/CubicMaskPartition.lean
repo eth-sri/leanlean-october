@@ -43,4 +43,3 @@ theorem spatialCubicMode_integral_mask_partition {a : ℝ → ℂ} {μ : ℝ →
   simp only [Pi.add_apply] at e₁ e₂ e₃
   rw [e₁,e₂,e₃]
 
-end GuthMaynard.Improvement

@@ -14,13 +14,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstDivisorSupport
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy
-open CenteredMomentSecondDivisorSupport CenteredMomentChildAssembly
-open CenteredMomentHeckeColumnWindow
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
-local notation "O"=>ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy CenteredMomentSecondDivisorSupport CenteredMomentChildAssembly CenteredMomentHeckeColumnWindow CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
 variable {ι : Type*} [Fintype ι]
 
 lemma common_coefficient_zero (s : OriginalData ι) (D : Ideal O) (hD : Supported D)
@@ -56,11 +50,3 @@ theorem supported_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
   refine ⟨hz.1,?_⟩
   intro Ds D H hcap
   exact hz.2 _ (fun L hL _=>(Finset.mem_filter.mp hL).2.trans hcap)
-
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-
-end SevenEighths.CenteredMomentFirstDivisorSupport
-
-end
-
-end OAI

@@ -79,4 +79,3 @@ theorem sum_nat_occupancy_le_of_superlevels
     _ ≤ B*2 := mul_le_mul_of_nonneg_left (sum_pos_nat_inv_sq_le_two M) hB
     _ = 2*B := by ring
 
-end MathCollab.Density.Stronger

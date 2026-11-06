@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 def literalDyadicRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
@@ -48,7 +47,3 @@ theorem literalDyadicRow_eq_physical (F : PrimeFamily φ) (K : Ideal Eis) (hK : 
   rw [literalDyadicBlock_eq_filtered_source F K hK (S P.val.val) jF (D P.val P.property)
     s hc u i QK QP hQK hQP hKr hp W θ X]
   simp only [Finset.mul_sum]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

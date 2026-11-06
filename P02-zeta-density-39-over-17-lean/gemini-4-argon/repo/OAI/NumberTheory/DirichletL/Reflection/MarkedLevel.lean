@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma PrimeFamily.level_coprime {ι : Type*} (P : PrimeFamily ι)
     (Q : Ideal Eis) (c : Eis) (hcQ : Ideal.span {c}=Ideal.span {(9:Eis)}*Q)
@@ -32,8 +31,3 @@ lemma markedRowFamily_period {σ : Type*} {m f z : Eis}
   cases i with
   | inl P => exact freePrimeIndex_coprime _ _ P
   | inr i => exact hS i
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

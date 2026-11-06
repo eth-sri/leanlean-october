@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeRow ProbeCompleted CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 
 def rawArithmeticSeries (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
     (C : CalibrationData) (x w z : ℂ) : ℂ :=
@@ -45,8 +44,3 @@ lemma rawArithmeticSeries_eq_sourceRaw (S : Finset (Ideal O)) (D : Ideal O) (η 
     (s:={p : RawHighIndex | Supported p.2.2 ∧ ∀P∈S,¬P∣p.2.2})
   intro p hp
   exact rawHighCoefficient_outer_support S D η _ x w z p hp
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

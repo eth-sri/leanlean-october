@@ -113,4 +113,3 @@ theorem discrete_energy_adjacent_unrestricted {η : ℝ} (hη : 0 < η) :
         mul_nonneg (show 0 ≤ 2*C₀*C₂ by positivity) (mul_nonneg (by positivity : 0 ≤ T^η) h₁)]
 
 
-end Montgomery.RationalMoment

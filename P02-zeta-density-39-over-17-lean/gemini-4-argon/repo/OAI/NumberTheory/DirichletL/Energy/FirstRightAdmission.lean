@@ -11,27 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstRightAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
-open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
-open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
-open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps
-open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
-open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentFirstMixedRightTransport
-local notation "O" => HeckeFamily.O
-local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily CenteredMomentSourceLiveColumn CenteredMomentActiveSource CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CompletedGauss RayFourExpansion CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentEnergyFirstLiveAdmission CenteredMomentFirstMixedRightTransport
 
 lemma main_radius_right (C D : Ideal O) (E : Finset (CommonIndex C D))
     (K V Z σ δ reserve : ℝ) :
@@ -202,9 +182,3 @@ theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
     A 0 P (3*A+3+σ/3) ξ hKe hξ hz₁ hz₂ hV hKeInv hRN hv hlive
   exact ⟨ready_mono _ _ Ke Z ξ _ _ hz.le (error_exponent_le A P σ ξ hA hP hσ1 hξ1) hr,
     error_lower_support N l a hl ha s hc hs hW₁ hW₂ D R innerL B F.right t _ k Bp υ v⟩
-
-end SevenEighths.CenteredMomentEnergyFirstRightAdmission
-
-end
-
-end OAI

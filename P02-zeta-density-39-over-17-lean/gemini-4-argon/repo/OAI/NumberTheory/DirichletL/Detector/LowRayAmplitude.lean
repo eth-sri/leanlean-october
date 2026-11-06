@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowRayAmplitude (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
     (σ : RayRing) (m : O) (v : ℝ) : ℂ :=
@@ -50,8 +48,3 @@ lemma lowRayAmplitude_group (C : CalibrationData) (W1 : ℝ→ℂ)
   intro s hs
   simp only [ite_mul,zero_mul]
   simp
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

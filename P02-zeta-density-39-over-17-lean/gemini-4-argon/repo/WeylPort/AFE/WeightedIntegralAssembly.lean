@@ -94,4 +94,3 @@ theorem norm_sum_weightedIntegralTail_sub_chi_le {σ t y t₀ : ℝ} (hσ : σ �
     (norm_sum_dual_powers_le hσ.1.le hy) (norm_nonneg _)
     (mul_nonneg (norm_nonneg _) ((norm_nonneg _).trans he))
 
-end DhimanKadiriQuesadaHerrera2026

@@ -116,4 +116,3 @@ theorem modelPhaseSharpStationarySet_chart_natural_interval
   exact positiveSlopeChartFiber_Ioo_natural_interval
     (modelPhaseSlopeMesh_pos σ) hN hT hne hnonneg
 
-end TaoTrudgianYang2025

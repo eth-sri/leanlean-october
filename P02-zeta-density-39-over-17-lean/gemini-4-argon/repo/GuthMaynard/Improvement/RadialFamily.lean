@@ -92,4 +92,3 @@ theorem radialAmplitude_uniform_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
     rw [iteratedDeriv_zero_off_interval hz n hr,norm_zero]
     exact le_trans zero_le_one (le_max_left _ _)
 
-end GuthMaynard.Improvement

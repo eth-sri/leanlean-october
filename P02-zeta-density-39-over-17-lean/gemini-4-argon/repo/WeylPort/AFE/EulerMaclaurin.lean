@@ -156,4 +156,3 @@ theorem abs_fract_sub_half_le (x : ℝ) : |Int.fract x - 1 / 2| ≤ 1 / 2 := by
   apply abs_le.mpr
   constructor <;> linarith [Int.fract_nonneg x, Int.fract_lt_one x]
 
-end DhimanKadiriQuesadaHerrera2026

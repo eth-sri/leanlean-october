@@ -7,81 +7,16 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
-local notation "O" => ActualEisensteinCubic.O
+open CubicKubota
 
 def integralRowPair (M : SL(2,O)) : (Fin 2 → O)×(Fin 2 → O) :=
   (fun j => M 0 j,fun j => M 1 j)
@@ -128,8 +63,7 @@ theorem subgroup_hyperbolic_sublevel_finite (H : Subgroup (SL(2,O)))
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
-local notation "O" => ActualEisensteinCubic.O
+open CubicKubota
 
 lemma integralComplexMatrix_injective : Function.Injective integralComplexMatrix := by
   intro M N h
@@ -251,8 +185,7 @@ theorem levelThree_action_free (M : levelThree) (w : HyperbolicSpace)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
-local notation "O" => ActualEisensteinCubic.O
+open CubicKubota
 
 def hyperbolicKeyCoordinates (w : HyperbolicSpace) : Fin 9 → ℝ :=
   ![hyperbolicFrobenius w,(hyperbolicGram w 0 0).re,(hyperbolicGram w 0 0).im,
@@ -396,11 +329,9 @@ theorem globalKubotaKernel_isFundamentalDomain :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
-local notation "O" => ActualEisensteinCubic.O
+open CubicKubota
 
 instance integralSubgroupMeasurableAction (H : Subgroup (SL(2,O))) :
     MeasurableConstSMul H HyperbolicSpace :=
@@ -514,9 +445,7 @@ def kernelQuotientDefect (a b : ℝ) (s : ℂ) : IntegralOrbitQuotient globalKub
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CompletedGauss
-open ActualEisensteinCubic
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 
 def largeCubeCoefficient (H₀ : ℝ) (B : Ideal O) : ℂ :=
@@ -605,9 +534,3 @@ theorem large_cube_convolution (H₀ : ℝ) (c : Ideal O →* ℂ) (hc0 : c 0=0)
   simp_rw [hfiber] at hs
   rw [← hF.tsum_prod]
   exact hs.tsum_eq.symm
-
-end CompletedGauss
-
-end
-
-end OAI

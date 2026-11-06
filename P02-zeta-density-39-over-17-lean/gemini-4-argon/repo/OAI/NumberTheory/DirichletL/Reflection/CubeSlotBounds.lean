@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
-open IdealMobiusDivisorSum
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment IdealMobiusDivisorSum
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
 lemma cubeDivList_card (H : Ideal Eis) (hH : H≠0) (L : Finset (Ideal Eis)) :
@@ -84,7 +82,3 @@ theorem cubeAbsorbedCoefficient_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε)
       rw [he,Real.rpow_mul_natCast hn0.le δ rmax]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hn hde) (by positivity)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

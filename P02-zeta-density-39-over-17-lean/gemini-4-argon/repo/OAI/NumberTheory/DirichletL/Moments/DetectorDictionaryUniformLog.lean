@@ -68,9 +68,3 @@ lemma interpolatedProfile_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
       _=W x*(x:ℂ)^(Complex.I*t-HeckeDyadic.shift σ 0) := by
         rw [←Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hx.ne')];rfl
       _=_ := by congr 2;unfold HeckeDyadic.shift;simp only [Complex.ofReal_zero,zero_mul,sub_zero];ring
-
-end SevenEighths.CenteredMomentDetectorDictionary
-
-end
-
-end OAI

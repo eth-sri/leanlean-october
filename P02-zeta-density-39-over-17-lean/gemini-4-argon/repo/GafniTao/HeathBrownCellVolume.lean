@@ -72,6 +72,4 @@ theorem measureReal_heathBrownCoefficientCell_exact
   rw [ENNReal.toReal_ofReal]
   exact mul_nonneg (by positivity) (by positivity)
 
-end
 
-end GafniTao

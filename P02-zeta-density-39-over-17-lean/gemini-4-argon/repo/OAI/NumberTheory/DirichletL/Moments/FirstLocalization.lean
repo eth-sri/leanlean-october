@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstLocalization
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
 
 theorem weighted_fourier_summable (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
     (c w : O → ℂ) (B : ℝ) (hc : ∀ h,‖c h‖≤B) (hw : ∀ h,‖w h‖≤1) :
@@ -118,9 +113,3 @@ def zeroEnergy (η : Character) (m A : O) (t : ℝ)
     ((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
       canonicalZeroPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K
-
-end SevenEighths.CenteredMomentFirstLocalization
-
-end
-
-end OAI

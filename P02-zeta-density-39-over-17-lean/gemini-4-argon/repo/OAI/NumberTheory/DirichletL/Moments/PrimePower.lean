@@ -70,9 +70,3 @@ theorem primePower_localCorrelation (χ : MulChar (𝓞 K ⧸ P) ℂ)
   rw [fullCorrelation_reduction_unit_right _ (primePowerReduction_surjective P hc),
     primePowerReduction_multiplicity, Nat.cast_pow]
   rfl
-
-end Local
-end
-end SevenEighths.CenteredMomentCorrelation
-
-end OAI

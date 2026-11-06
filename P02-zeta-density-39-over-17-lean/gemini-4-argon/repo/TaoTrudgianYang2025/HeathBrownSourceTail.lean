@@ -77,4 +77,3 @@ theorem norm_heathBrownSourceTail_eq_signed_characterSum
     rw [he,heathBrownCharacterSum_neg,Complex.norm_conj]
     rfl
 
-end TaoTrudgianYang2025

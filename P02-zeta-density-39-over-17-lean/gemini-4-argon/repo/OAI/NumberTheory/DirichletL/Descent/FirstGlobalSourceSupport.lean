@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -87,8 +86,3 @@ theorem firstPhysicalCommonRows_fixed_pool (F G : Finset ι) (hFG : F⊆G)
   rw [firstPhysicalCommonRows_indexed,firstPhysicalCommonRows_indexed]
   exact Finset.sum_subset (firstCommonIndices_mono hFG) (fun j hj hn=>by
     rw [firstCommonWeight_zero_outside p hg F G C₁ C₂ h hC₁ hC₂ j hj hn,zero_mul])
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -51,4 +51,3 @@ theorem fixed_truncated_source_moment_raw {δ ε : ℝ} (hδ : 0 < δ) (hε : 0 
   apply hh.trans
   convert hout using 1 <;> ring
 
-end GuthMaynard.Improvement

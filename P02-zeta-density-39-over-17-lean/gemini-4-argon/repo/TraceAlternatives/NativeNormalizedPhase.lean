@@ -40,4 +40,3 @@ theorem norm_boundedPolynomial_native_conjugate {M : ℕ} (hM : 0<M)
     ring
   rw [hSum,norm_sourceDirichletPoly_conjugateCoeffs]
 
-end Montgomery.RationalMoment

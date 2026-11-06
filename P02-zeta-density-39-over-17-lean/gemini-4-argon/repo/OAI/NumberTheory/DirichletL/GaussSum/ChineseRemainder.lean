@@ -5,23 +5,12 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 noncomputable section
-open Finset Complex
 
-open scoped Classical
 
-namespace GaussCRT
 
-end GaussCRT
-
-open scoped Classical
 
 namespace IdealGaussCRT
 
@@ -450,9 +439,3 @@ theorem gauss_sum_trace_crt_of_coprime {A : Type*} [CommRing A]
       gaussSum χb (traceModChar ι ψ lam b hb hlam hbase) := by
   obtain ⟨u, v, hbez⟩ := bezout_of_principal_coprime hcop
   exact gauss_sum_trace_crt ι ψ lam hbez ha hb hlam hbase χa χb
-
-end IdealGaussCRT
-
-end
-
-end OAI

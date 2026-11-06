@@ -62,4 +62,3 @@ theorem zero_r_physical_polynomial_budgets {T M H Q R lam : ℝ}
     nlinarith
   exact ⟨hcurv,hdiag,hpos,hinv⟩
 
-end TaoTrudgianYang2025

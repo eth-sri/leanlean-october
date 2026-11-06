@@ -91,4 +91,3 @@ theorem sourceShiftCorrelation_normalized_bound
         (zero_le_one.trans hB)
     _ = _ := by ring
 
-end TaoTrudgianYang2025

@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceState
-open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyState
-open CenteredMomentRadialEligibleEnergy CenteredMomentOriginalRadialComparison
-open CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
-local notation "O"=>HeckeFamily.O
+open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy CenteredMomentOriginalRadialComparison CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
 
 def effectiveRadial (r:Radial):Radial:=
   {r with keep:=fun z=>r.keep z ∧ r.profile (‖eisEmbedding z‖^2/r.scale)≠0}
@@ -74,9 +71,3 @@ lemma comparison_second_power (Z M X₁ X₂:ℝ)(hZ:1<Z)(hX₁:0<X₁)(hX₂:0<
   rw [Real.rpow_sub (zero_lt_one.trans hZ),
     Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' (mul_pos hX₁ hX₂)]
   rfl
-
-end SevenEighths.CenteredMomentEnergyReferenceState
-
-end
-
-end OAI

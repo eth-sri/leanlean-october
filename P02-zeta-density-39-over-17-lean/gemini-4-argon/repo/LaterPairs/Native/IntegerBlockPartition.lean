@@ -47,4 +47,3 @@ theorem norm_sum_range_of_block_bounds
       exact Finset.sum_le_sum (fun k hk => hb k (Finset.mem_range.mp hk))
     _ = _ := by simp only [Finset.sum_const,Finset.card_range,nsmul_eq_mul]; ring
 
-end TaoTrudgianYang2025

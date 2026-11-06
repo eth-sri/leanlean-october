@@ -98,4 +98,3 @@ theorem source_exponentialSum_weyl (F : ℝ → ℝ) (T N : ℝ) (a L H : ℕ) :
   rw [sum_sourceOscillatorySequence] at h
   simpa only [Nat.cast_add,Nat.cast_one] using h
 
-end TaoTrudgianYang2025

@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation CanonicalCoefficientClass
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CanonicalCoefficientClass
 
 theorem joint_mean_of_local_factor (Q P : Ideal O) [P.IsMaximal]
     (hg : goodLambda∉P) (hchar : ringChar (O⧸P)≠2)
@@ -39,8 +37,3 @@ theorem joint_mean_of_local_factor (Q P : Ideal O) [P.IsMaximal]
   apply Finset.sum_congr rfl
   intro y hy
   rw [hp,hf]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

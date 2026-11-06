@@ -70,9 +70,3 @@ theorem disk_control_of_euler_log (e A ε : ℝ)
     exact hb a (complexity η t) (regular η) E ((2 : ℂ)+t*Complex.I) ha ha'
       (complexity_ge_exp η t) (regular_disk_differentiable η ha he) hzero
       (hpoly η hp a e t ha he) hE hEL hEb
-
-end SevenEighths.HeckeLogarithmic
-
-end
-
-end OAI

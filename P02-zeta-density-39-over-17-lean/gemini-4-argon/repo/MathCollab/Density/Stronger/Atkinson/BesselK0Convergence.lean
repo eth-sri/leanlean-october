@@ -228,4 +228,3 @@ theorem mellinConvergent_dfiBesselK0_mul_sqrt
   simpa only [Real.sqrt_eq_rpow] using hroot
 
 
-end MathCollab.Density.Stronger.Atkinson

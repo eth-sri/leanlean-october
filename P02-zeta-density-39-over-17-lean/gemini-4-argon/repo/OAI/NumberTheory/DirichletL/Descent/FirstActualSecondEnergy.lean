@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -66,8 +65,3 @@ theorem first_retained_actual_second_energy (ε : ℝ) (hε : 0<ε) :
     exact firstCanonicalCoefficient_old p hp hcop hg b C negative _ _ d H x
   rw [hcoef]
   exact he
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

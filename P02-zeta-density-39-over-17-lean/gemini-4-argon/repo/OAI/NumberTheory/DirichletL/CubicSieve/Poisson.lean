@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
-open CompletedGauss ConcretePrimeRowBridge
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound CompletedGauss ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem canonical_finite_prime_gauss_transform_scalar_of_nontrivial
     {ι : Type*} [Fintype ι]
@@ -330,8 +328,3 @@ theorem cubicExponent_nonprincipal (P : Ideal O) [P.IsMaximal]
       have he : actualSextic P hg ^ 4 = χ ^ 2 := by
         rw [show (4 : ℕ) = 2 * 2 by decide, pow_mul]
       simpa only [cubicExponent, ite_true, he] using h2
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

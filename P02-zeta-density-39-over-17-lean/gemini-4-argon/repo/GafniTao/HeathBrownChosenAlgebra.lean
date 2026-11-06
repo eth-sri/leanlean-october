@@ -167,6 +167,4 @@ theorem heathBrownChosenShiftFactor_le_source_sum
     _ = heathBrownChosenTotalConstant k A * (L + N) := by ring
 
 
-end
 
-end GafniTao

@@ -8,78 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CompletedGauss
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 open CubicEisenstein
 
@@ -158,12 +90,8 @@ end CompletedGauss
 namespace CubicEisenstein
 
 section
-open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
 
 section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def finiteTranslationMultiplier {ι : Type*} [Fintype ι]
     (shift weight : ι→ℂ) (h : Eis) : ℂ :=
@@ -251,7 +179,6 @@ end SubexponentialBesselCoefficients
 end
 
 section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def finiteAdditiveFourierCoeff {R : Type*} [CommRing R] [Fintype R]
     (ψ : AddChar R ℂ) (φ : R→ℂ) (h : R) : ℂ :=
@@ -330,7 +257,6 @@ lemma thetaFourierTranslation_inversion (c : Eis) (hc : c≠0)
 end
 
 section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma breveE_star (z : ℂ) : star (ShortDraftTrace.breveE z)=ShortDraftTrace.breveE (-z) := by
   change (starRingEnd ℂ) (Complex.exp (2*Real.pi*Complex.I*(z+starRingEnd ℂ z)))=
@@ -442,8 +368,7 @@ theorem traceTwistedConjugateSource_wirtingerBar_zero (c : Eis) (hc : c≠0)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CompletedGauss
 
 def fixedThetaTwist (Ψ : Eis→*ℂ) (x : Eis) : ℂ :=
   if lambda^2∣x-1 then eisEmbedding (symbol ramifiedTraceLambda x)*Ψ x else 0
@@ -540,8 +465,7 @@ theorem fixedThetaTwist_infinity_coefficient (Ψ : Eis→*ℂ) (I J : Ideal Eis)
 
 end
 
-open ActualEisensteinCubic CompletedGauss CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CubicJacobiGlobal
 
 lemma sourceFourier_primary_squarefree_cube_preimage (x:Eis)
     (hx:lambda^2∣x-1) (hT:sourceResidualFourierCoefficient x≠0) :
@@ -587,9 +511,3 @@ theorem sourceFourier_tsum_primary_pairs (w:Eis→ℂ)
     exact ⟨⟨p,hfp⟩,hphi⟩
   · intro p
     rfl
-
-end CubicEisenstein
-
-end
-
-end OAI

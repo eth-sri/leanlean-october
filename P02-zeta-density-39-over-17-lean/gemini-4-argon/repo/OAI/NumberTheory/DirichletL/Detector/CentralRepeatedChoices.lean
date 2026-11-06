@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedChoices
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def activeChoices {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeIdeal)
     (W : Fin k→ℝ→ℂ) (Y : Fin k→ℝ) : Finset (∀j,T j) :=
@@ -86,8 +85,3 @@ lemma sum_products_restrict {k : ℕ} (η : Character) (u : FreeRow)
   by_cases hr : repeatedRowPrime u (P j).val
   · simp [hj hr]
   · simp [centralRepeatedTerm,hr]
-end SevenEighths.ProbeCentralRepeatedChoices
-
-end
-
-end OAI

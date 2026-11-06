@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorTest
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -83,4 +81,3 @@ theorem exists_zetaSmoothDivisor_log_tail_bound (A : ℝ) :
     _ = G * (C * T * Real.exp (-(1 / 8) * (Real.log T) ^ 2)) := by ring
     _ ≤ _ := he
 
-end MathCollab.Density.Stronger.Atkinson

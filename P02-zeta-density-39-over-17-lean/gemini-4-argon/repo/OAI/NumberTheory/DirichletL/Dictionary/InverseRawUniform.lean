@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawUniform
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseRawFourier
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform DetectorDictionaryInverseRawFourier
 
 private theorem rawMoment_mono (data : RowData) (W : ℝ→ℂ) (c κ A B : ℝ)
     (hAB : A≤B) (h : RawMoment data W c κ A) : RawMoment data W c κ B := by
@@ -98,9 +96,3 @@ theorem raw_pair_height_uniform (J : ℕ) :
   have hbound : A*C*(1+‖t‖)^K≤A*C*(1+height)^K := by gcongr
   exact ⟨rawMoment_mono data _ c κ _ _ hbound hh.1,
     rawMoment_mono data _ c κ _ _ hbound hh.2⟩
-
-end SevenEighths.DetectorDictionaryInverseRawUniform
-
-end
-
-end OAI

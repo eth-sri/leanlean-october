@@ -145,6 +145,4 @@ theorem heathBrownLemmaOneExpanded_eq_normalized
   exact heathBrown_normalization_algebra hH hs hD hC hP hNreal
 
 
-end
 
-end GafniTao

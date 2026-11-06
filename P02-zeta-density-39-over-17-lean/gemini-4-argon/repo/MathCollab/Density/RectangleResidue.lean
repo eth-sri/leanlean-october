@@ -14,8 +14,7 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-open Complex BigOperators Nat Classical Real Topology Filter
-open Set MeasureTheory intervalIntegral
+open Complex BigOperators Nat Classical Real Topology Filter Set MeasureTheory intervalIntegral
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -340,4 +339,3 @@ theorem ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : �
   exact ResidueTheoremInRectangle zRe_le_wRe zIm_le_wIm pInRectInterior
 
 
-end MathCollab.Density.Contour

@@ -116,6 +116,4 @@ theorem WooleyPolynomialSystem.Spaced.exists_translated_tail_normal_change
   exact ⟨G, psi, Error, hchange⟩
 
 
-end
 
-end GafniTao

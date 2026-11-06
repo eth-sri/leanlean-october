@@ -118,4 +118,3 @@ theorem modelPhaseBufferedCutoff_tsupport_model {l r η : ℝ}
   have h := modelPhaseBufferedCutoff_tsupport hη hu
   constructor <;> linarith [h.1,h.2]
 
-end TaoTrudgianYang2025

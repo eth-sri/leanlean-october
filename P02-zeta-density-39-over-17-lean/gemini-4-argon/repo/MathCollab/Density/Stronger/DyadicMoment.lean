@@ -55,68 +55,6 @@ theorem exists_dyadic_count_sq_le_rpow {ε : ℝ} (hε : 0 < ε) :
       norm_num
 
 
-/-- A nonnegative continuous function with a dyadic power bound has the
-corresponding bound from zero. The compact initial interval is retained. -/
-theorem integral_zero_le_of_dyadic (f : ℝ → ℝ) (hf : Continuous f)
-    (hf0 : ∀ t, 0 ≤ f t) {p B C : ℝ} (hp : 1 ≤ p) (hB : 1 ≤ B) (hC : 0 ≤ C)
-    (hdyad : ∀ H : ℝ, B ≤ H → (∫ t in H..2*H, f t) ≤ C*H^p) :
-    ∃ K : ℝ, 0 < K ∧ ∀ H : ℝ, B ≤ H →
-      (∫ t in 0..H, f t) ≤ K*H^p := by
-  let A : ℝ := |∫ t in 0..B, f t| + C + 1
-  have hA : 0 < A := by dsimp [A]; positivity
-  have hCA : C ≤ A := by dsimp [A]; linarith [abs_nonneg (∫ t in 0..B, f t)]
-  have hBp : 0 < B := by linarith
-  have htwo : (2 : ℝ) ≤ (2 : ℝ)^p := by
-    simpa using Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) hp
-  have hstep : ∀ m : ℕ, (∫ t in 0..(2 : ℝ)^m*B, f t) ≤ A*((2 : ℝ)^m*B)^p := by
-    intro m
-    induction m with
-    | zero =>
-      simp only [pow_zero, one_mul]
-      have hbpower := Real.one_le_rpow hB (by linarith : 0 ≤ p)
-      calc
-        _ ≤ |∫ t in 0..B, f t| := le_abs_self _
-        _ ≤ A := by dsimp [A]; linarith
-        _ ≤ A*B^p := by nlinarith
-    | succ m ih =>
-      have hm : B ≤ (2 : ℝ)^m*B := by
-        have hpow : 1 ≤ (2 : ℝ)^m := one_le_pow₀ (by norm_num)
-        nlinarith
-      have hX : 0 ≤ (2 : ℝ)^m*B := by positivity
-      have heq : (2 : ℝ)^(m+1)*B = 2*((2 : ℝ)^m*B) := by rw [pow_succ']; ring
-      rw [heq, ← intervalIntegral.integral_add_adjacent_intervals
-        (hf.intervalIntegrable 0 ((2 : ℝ)^m*B))
-        (hf.intervalIntegrable ((2 : ℝ)^m*B) (2*((2 : ℝ)^m*B)))]
-      calc
-        _ ≤ A*((2 : ℝ)^m*B)^p + C*((2 : ℝ)^m*B)^p :=
-          add_le_add ih (hdyad _ hm)
-        _ ≤ A*((2 : ℝ)^m*B)^p + A*((2 : ℝ)^m*B)^p :=
-          add_le_add le_rfl (mul_le_mul_of_nonneg_right hCA (Real.rpow_nonneg hX _))
-        _ = A*2*((2 : ℝ)^m*B)^p := by ring
-        _ ≤ A*(2 : ℝ)^p*((2 : ℝ)^m*B)^p :=
-          mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left htwo hA.le)
-            (Real.rpow_nonneg hX _)
-        _ = _ := by rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hX]; ring
-  refine ⟨A*(2 : ℝ)^p, by positivity, ?_⟩
-  intro H hH
-  have hHp : 0 < H := hBp.trans_le hH
-  obtain ⟨m, hlo, hhi⟩ := exists_dyadic_cutoff
-    ((le_div_iff₀ hBp).mpr (by simpa using hH))
-  have hlo' : H ≤ (2 : ℝ)^m*B := (div_le_iff₀ hBp).mp hlo
-  have hhi' : (2 : ℝ)^m*B ≤ 2*H := by
-    have := (mul_le_mul_iff_left₀ hBp).mpr hhi
-    field_simp at this
-    nlinarith
-  calc
-    _ ≤ ∫ t in 0..(2 : ℝ)^m*B, f t := by
-      apply intervalIntegral.integral_mono_interval le_rfl hHp.le hlo'
-      · exact Filter.Eventually.of_forall hf0
-      · exact hf.intervalIntegrable _ _
-    _ ≤ A*((2 : ℝ)^m*B)^p := hstep m
-    _ ≤ A*(2*H)^p :=
-      mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hhi' (by linarith)) hA.le
-    _ = _ := by rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hHp.le]; ring
 
 
 
-end MathCollab.Density.Stronger

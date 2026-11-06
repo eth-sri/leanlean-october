@@ -94,4 +94,3 @@ theorem rational_energy_pow_le (A : Finset ℚ) (W : Finset ℝ)
     rationalEnergy A W ^ k ≤ (W.card : ℝ) ^ (2 * k - 1) * B :=
   energy_pow_le_of_moment A W (fun r t => phase r t) hk hB hmoment
 
-end Montgomery.RationalMoment

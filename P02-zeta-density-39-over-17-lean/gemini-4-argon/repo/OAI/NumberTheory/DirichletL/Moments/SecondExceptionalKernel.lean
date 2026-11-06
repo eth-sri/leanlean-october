@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalKernel
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
-open CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm
-open CenteredMomentSmooth CenteredMomentCauchy CenteredMomentPlainChildEnergy
-open CenteredMomentSecondScaled CenteredMomentExceptionalKernel RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss CenteredMomentSupportedCorrelation CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentCauchy CenteredMomentPlainChildEnergy CenteredMomentSecondScaled CenteredMomentExceptionalKernel RayFourExpansion
 
 theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
     (M : Fin 4→ℝ) (hM : ∀i,0≤M i)
@@ -168,11 +163,7 @@ theorem whole_kernel_actual_second_pair (W : 𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
     _≤256*(C*E0):=mul_le_mul_of_nonneg_right (phaseTable_mass D E) (mul_nonneg hC hE0)
     _=(256*C)*E0:=by ring
 
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSupport CenteredMomentRestrictedEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization
-open CenteredMomentChildRows CenteredExceptionalProfile
+open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar CenteredMomentLogDyadic CenteredMomentSupport CenteredMomentRestrictedEnergy CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization CenteredMomentChildRows CenteredExceptionalProfile
 
 theorem exceptional_rows_pair (η:Character)(χ₀ χ ξ:RayCharacter)(Q:Ideal O)
     (hQ:Q≤Ideal.span {(72:O)})(m A:O)(hmLam:ConcretePrimeRowBridge.goodLambda∣m)
@@ -272,9 +263,3 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
       IsCoprime (primaryGenerator (I:Ideal O)) (primaryGenerator (J:Ideal O)) ↔
         IsCoprime (I:Ideal O) (J:Ideal O):=hcop I J
   simpa only [sectorElement_span,idealCorrelation,primaryGenerator_mul,sectorElement,hcop'] using he'
-
-end SevenEighths.CenteredMomentSecondExceptionalKernel
-
-end
-
-end OAI

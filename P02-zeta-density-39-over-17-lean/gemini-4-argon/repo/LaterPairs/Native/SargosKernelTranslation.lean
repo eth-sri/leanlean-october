@@ -72,4 +72,3 @@ theorem integrable_sargosSincKernel_shift_character_positive {w : ℝ}
       (sargosSincKernel w (x-c) : ℂ)*fordAdditiveCharacter (ξ*x)) := by
   simpa only [neg_mul,neg_neg] using integrable_sargosSincKernel_shift_character hw c (-ξ)
 
-end TaoTrudgianYang2025

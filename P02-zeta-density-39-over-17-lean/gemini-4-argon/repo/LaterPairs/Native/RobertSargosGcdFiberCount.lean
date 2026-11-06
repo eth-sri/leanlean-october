@@ -49,5 +49,4 @@ theorem exists_robertSargos_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
     simp only [Finset.card_empty,Nat.cast_zero]
     positivity
 
-end TaoTrudgianYang2025
 

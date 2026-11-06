@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonExceptionalMass
-open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentAllocatedDetectorAmplitude
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -27,9 +23,3 @@ lemma scalar_profile_volume (s:Input ι)(C R:Ideal O)(hC:C≠0)(B:actualAllocati
       mul_le_mul (common_slotControl s C R B) (scalar_volume_bound s C R hC B)
         (mul_nonneg (norm_nonneg _) (Real.sqrt_nonneg _)) (slotControl_nonneg s.toData)
     _=_:=by ring
-
-end SevenEighths.CenteredMomentCommonExceptionalMass
-
-end
-
-end OAI

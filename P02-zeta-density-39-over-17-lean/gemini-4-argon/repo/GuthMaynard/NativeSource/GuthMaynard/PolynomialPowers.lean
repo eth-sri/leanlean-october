@@ -166,4 +166,3 @@ theorem exists_dyadic_block_and_subset
     rw [Finset.mem_filter] at ht
     simpa [ht.2] using hIndexLarge t ht.1
 
-end GuthMaynard.NativeMoment

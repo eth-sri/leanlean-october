@@ -55,4 +55,3 @@ theorem robertSargos_physical_nonzero_a_times_a
   have h1M := mul_le_mul_of_nonneg_right h1F (sq_nonneg (M:ℝ))
   nlinarith
 
-end TaoTrudgianYang2025

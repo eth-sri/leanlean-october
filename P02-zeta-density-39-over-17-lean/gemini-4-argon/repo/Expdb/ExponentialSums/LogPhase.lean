@@ -63,6 +63,4 @@ theorem isModelPhaseFunction_log : IsModelPhaseFunction logPhase := by
       iteratedDerivWithin_log_eq_rpow_neg_one, sub_self, norm_zero]
     exact tendsto_const_nhds
 
-end Expdb
 
-end

@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 
 namespace SevenEighths.ProbeFinalAssemblyUnconditional
-open ProbeFinalAssembly ProbeFinalAssemblyCertifiedBands
-open CenteredMomentEnergyCertifiedExistence CenteredMomentDetectorPlainMomentParameters
-open CenteredMomentDetectorPlainSlotProfile
+open ProbeFinalAssembly ProbeFinalAssemblyCertifiedBands CenteredMomentEnergyCertifiedExistence CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainSlotProfile
 
 theorem detector_certified_bands:DetectorCertifiedBands:=by
   intro hβ D _hfine F bΦ hbΦ
@@ -39,9 +37,3 @@ theorem detector_certified_bands:DetectorCertifiedBands:=by
 
 theorem zeta_nonzero (s:ℂ)(hs:(7/8:ℝ)<s.re):riemannZeta s≠0:=
   zeta_of_certified detector_certified_bands s hs
-
-end SevenEighths.ProbeFinalAssemblyUnconditional
-
-end
-
-end OAI

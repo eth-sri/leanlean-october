@@ -31,11 +31,7 @@ theorem fullCorrelation_equal_divided (q k : A) (hq : q ≠ 0)
 
 end Domain
 
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
-open CenteredMomentFourier
-open ConcretePrimeRowBridge hiding O
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss CenteredMomentFourier ConcretePrimeRowBridge
 
 theorem powerReduction_multiplicity (p : O) (_hp : p ≠ 0) {i : ℕ} (hi : 1 ≤ i)
     [Fintype (Residue p)] [Fintype (Residue (p ^ i))] :
@@ -143,9 +139,3 @@ theorem equal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
     _ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ (i - 1) * Ideal.absNorm (Ideal.span {p}) :=
       mul_le_mul_of_nonneg_left hb (by positivity)
     _ = _ := by rw [← pow_succ, Nat.sub_add_cancel hi]
-
-end SevenEighths.CenteredMomentLocal
-
-end
-
-end OAI

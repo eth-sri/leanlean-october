@@ -42,4 +42,3 @@ theorem detector_error_scale_physical {σ a δ T β η : ℝ}
   apply Real.rpow_le_rpow_of_exponent_le hT
   nlinarith only [hproduct,hδ]
 
-end Montgomery.RationalMoment.RightDetector

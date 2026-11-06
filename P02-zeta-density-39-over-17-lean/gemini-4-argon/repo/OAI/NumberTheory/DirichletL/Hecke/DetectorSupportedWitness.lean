@@ -56,9 +56,3 @@ theorem fiber_lengths {Row Label : Type*} (rows : Finset Row) (hne : rows.Nonemp
     rw [(w u).toWitness.right_exponent hU,hK u hu]
   exact hr ▸ hm ▸ ⟨(w u).product_length_lower,(w u).inverse_length_upper,
     (w u).plain_length_upper,(w u).inverse_length_lower,(w u).plain_length_lower⟩
-
-end SevenEighths.HeckeDetectorSupportedWitness
-
-end
-
-end OAI

@@ -109,8 +109,3 @@ theorem tripleCoefficient_weighted_integral (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J
   rw [MeasureTheory.integral_prod_mul
     (fun t : ℝ => (1 + ‖t‖)^J * ‖b₂ t‖) (fun t : ℝ => (1 + ‖t‖)^J * ‖b₃ t‖)]
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

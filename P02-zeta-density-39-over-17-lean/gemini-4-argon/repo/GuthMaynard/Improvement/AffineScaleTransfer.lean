@@ -81,4 +81,3 @@ theorem mixed_affine_real_scales (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
     _ ≤ C*(P*T)^ε*(P^6*(R^2*K^4*(∫ x, f x)^2+R*K^3*(∫ x, f x^2))) := by gcongr
     _ = _ := by rw [Real.mul_rpow hPp.le hTp.le]; ring
 
-end GuthMaynard.Improvement

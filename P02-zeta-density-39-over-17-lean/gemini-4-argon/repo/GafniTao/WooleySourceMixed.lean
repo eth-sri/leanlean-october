@@ -254,6 +254,4 @@ theorem wooleySourcePolynomialMixedMean_eq_boxed
     _ = _ := wooleySourcePolynomialMixedMean_box _ _ _ _ _ _ _ _ _
 
 
-end
 
-end GafniTao

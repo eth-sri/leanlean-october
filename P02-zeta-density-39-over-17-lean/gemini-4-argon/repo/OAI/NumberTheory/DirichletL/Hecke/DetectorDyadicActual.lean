@@ -65,9 +65,3 @@ theorem simultaneous_upper (R dmax τ ε e κ η : ℝ)
     (fun x hx t => hplain 2 x (hstrip hx) t)
     (fun x hx t => hplain (n+2) x (hstrip hx) t)
   exact ⟨hInv.1,hPlain.2⟩
-
-end SevenEighths.HeckeDetectorDyadicActual
-
-end
-
-end OAI

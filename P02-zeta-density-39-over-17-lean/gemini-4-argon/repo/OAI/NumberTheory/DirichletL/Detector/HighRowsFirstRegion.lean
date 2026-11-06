@@ -80,8 +80,3 @@ theorem unramifiedClosed_first_region_bound (Q : ℝ) (A eta v x w z : ℂ) (eps
   have hh := ProbeLocal.continuedCorrection_defect_bound V W D P hVh hDh
   change ‖ProbeLocal.continuedCorrection V W D P-1‖≤240*T
   nlinarith
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

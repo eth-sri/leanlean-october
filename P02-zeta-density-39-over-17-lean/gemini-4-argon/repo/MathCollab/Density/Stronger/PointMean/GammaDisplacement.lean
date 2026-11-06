@@ -12,8 +12,7 @@ public import Mathlib.Analysis.ODE.Gronwall
 
 @[expose] public section
 
-open Complex Set
-open MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Set MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
@@ -146,4 +145,3 @@ theorem exists_norm_Gamma_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb : b
       congr 1
       ring
 
-end MathCollab.Density.Stronger.PointMean

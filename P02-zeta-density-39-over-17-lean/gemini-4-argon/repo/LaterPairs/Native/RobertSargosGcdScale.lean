@@ -56,5 +56,4 @@ theorem robertSargos_gcd_scale_bound {R H Q δ η j k : ℝ}
         Real.rpow_add hBp,Real.rpow_one]
       ring
 
-end TaoTrudgianYang2025
 

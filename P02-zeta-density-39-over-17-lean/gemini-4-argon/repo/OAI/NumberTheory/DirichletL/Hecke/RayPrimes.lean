@@ -13,8 +13,6 @@ open Filter
 namespace SevenEighths.HeckeRayPrimes
 open HeckeFamily
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
 theorem analytic_family : PNT.RayAsymptotic.AnalyticFamily M
     (fun χ => LFunction (HeckeRayFamily.character M χ))
@@ -43,9 +41,3 @@ theorem quotientClassCoeff_ratio_tendsto
     Tendsto (fun N : ℕ => cumsum (PNT.RayAsymptotic.quotientClassCoeff M H) N / N)
       atTop (𝓝 ((RayQuotient.classNumber M H : ℝ)⁻¹)) :=
   PNT.RayAsymptotic.quotientClassCoeff_ratio_tendsto M H hH (analytic_family M)
-
-end SevenEighths.HeckeRayPrimes
-
-end
-
-end OAI

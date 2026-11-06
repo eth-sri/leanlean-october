@@ -10,20 +10,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalSourceAdmission
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyState
-open CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison
-open CenteredMomentEnergyOriginalSource CenteredMomentEnergyOriginalProfileControl
-open CenteredMomentEnergyInputParentCapacity CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
-open CenteredMomentInductionEnergy CenteredMomentSourceRow CenteredMomentRetainedEnergy
-open CenteredMomentSourceInputTailUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
-local notation "O" => HeckeFamily.O
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison CenteredMomentEnergyOriginalSource CenteredMomentEnergyOriginalProfileControl CenteredMomentEnergyInputParentCapacity CenteredMomentAmplificationChildInput CenteredMomentEnergyBands CenteredMomentSecondHeightFamily CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular CenteredMomentInductionEnergy CenteredMomentSourceRow CenteredMomentRetainedEnergy CenteredMomentSourceInputTailUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := energyOriginalSourceDecidableSum
 
 def lowerProduct (N : ℕ) (aslot a : ℝ) : ℝ := (min 1 aslot)^N*a*a
 
@@ -142,9 +130,3 @@ theorem eventually_scale_admission (b L ε : ℝ) (hL : 0 ≤ L) (hε : 0 < ε) 
     exact (mul_le_mul hp hc (by positivity)
       (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _).le).trans_eq
         (Real.rpow_add (zero_lt_one.trans hZ) _ _).symm
-
-end SevenEighths.CenteredMomentEnergyNaturalSourceAdmission
-
-end
-
-end OAI

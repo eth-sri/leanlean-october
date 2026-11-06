@@ -86,4 +86,3 @@ theorem dfiBesselY0_eq_neumannVerticalIntegral {x : ℝ} (hx : 0 < x) :
   rw [dfiBesselY0, h]
   ring
 
-end MathCollab.Density.Stronger.Atkinson

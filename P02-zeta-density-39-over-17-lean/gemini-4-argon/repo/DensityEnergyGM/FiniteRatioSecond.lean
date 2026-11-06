@@ -74,4 +74,3 @@ theorem finiteRatioSecond_insert_le {A : Finset ℕ} {e : ℕ}
         Finset.sum_const, nsmul_eq_mul, heathBrownDifferenceMoment]
       ring
 
-end Montgomery.RationalMoment

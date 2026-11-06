@@ -33,8 +33,3 @@ theorem density_finite_sum {ι κ : Type*} [Fintype ι] (s : Finset κ)
   apply Finset.sum_congr rfl
   intro k hk
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

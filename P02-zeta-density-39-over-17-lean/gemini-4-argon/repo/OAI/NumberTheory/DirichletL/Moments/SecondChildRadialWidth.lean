@@ -12,13 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondChildRadialWidth
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget
-open CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondActualWidth
 
 theorem physicalBlock_live_dyadic_witness (η:Character)(t:ℝ)
     (S:Finset (Ideal O))(β:Ideal O→ℂ)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
@@ -86,11 +80,3 @@ theorem radial_radius_log_budget (Z:ℝ)(hZ:1<Z)(χ:RayCharacter)(b:ℝ)(hb:0<b)
     ring
   rw [Real.logb_mul hb.ne' (dyadicScale_pos (n 1)).ne',hf]
   linarith
-
-end Family
-
-end SevenEighths.CenteredMomentSecondChildRadialWidth
-
-end
-
-end OAI

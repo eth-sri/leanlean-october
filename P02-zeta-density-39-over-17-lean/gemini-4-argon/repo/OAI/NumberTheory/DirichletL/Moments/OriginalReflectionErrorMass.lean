@@ -13,10 +13,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentOriginalReflectionErrorMass
-open HeckeFamily HeckeDyadic HeckePrimeAnnular HeckePrimeRay
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
-open QuadraticInitialBound ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckePrimeAnnular HeckePrimeRay CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection QuadraticInitialBound ConcreteTraceCRT
 
 lemma annularWeight_zero_norm (W : ℝ→ℂ) (D freq : ℝ) (hD : 0<D)
     (I : Ideal O) (hI : I≠0) :
@@ -105,9 +102,3 @@ lemma compact_norm_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   by_cases hx:W x=0
   · simpa only [hx,norm_zero] using hB.le
   · simpa using hbound 0 (by simp) x (hs hx)
-
-end SevenEighths.CenteredMomentOriginalReflectionErrorMass
-
-end
-
-end OAI

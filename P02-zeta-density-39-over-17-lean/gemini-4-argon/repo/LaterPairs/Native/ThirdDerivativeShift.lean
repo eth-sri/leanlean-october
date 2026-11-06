@@ -38,4 +38,3 @@ theorem hasDerivAt_shift_difference
   have he := hxh.comp x ((hasDerivAt_id x).add_const h)
   convert he.sub hx using 1 <;> first | rfl | ring
 
-end TaoTrudgianYang2025

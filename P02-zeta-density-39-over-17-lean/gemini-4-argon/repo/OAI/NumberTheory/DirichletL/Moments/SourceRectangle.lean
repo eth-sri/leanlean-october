@@ -12,11 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceRectangle
-open ActualEisensteinCubic HeckeFamily CenteredMomentHeckeExpansion CenteredMomentRectangle
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentExtraction CenteredMomentFirstSectors
-open CenteredMomentSourceLiveColumn CenteredMomentCommonProfile CenteredMomentRemainingBox
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic HeckeFamily CenteredMomentHeckeExpansion CenteredMomentRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentExtraction CenteredMomentFirstSectors CenteredMomentSourceLiveColumn CenteredMomentCommonProfile CenteredMomentRemainingBox
 variable {ι : Type*} [Fintype ι]
 
 def tuplePools (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) :
@@ -205,9 +201,3 @@ theorem liveBox_eq_tuplePool (S : (ι⊕Fin 2)→Finset (Ideal O)) (B : Tuple ι
       fin_cases j
       · exact h (Sum.inr 0)
       · exact h (Sum.inr 1)
-
-end SevenEighths.CenteredMomentSourceRectangle
-
-end
-
-end OAI

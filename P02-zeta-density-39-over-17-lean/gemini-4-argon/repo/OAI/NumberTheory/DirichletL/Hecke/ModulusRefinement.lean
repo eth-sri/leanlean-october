@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeFamily
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
 def Character.refineModulus (η : Character) (M : Ideal O) (hM : M ≠ ⊥)
     (hle : M ≤ η.modulus) : Character :=
@@ -60,9 +59,3 @@ theorem excludePrimes_mask (η : Character) (S : Finset (Ideal O))
     idealCoeff (η.excludePrimes S hS) I =
       if IsCoprime I (η.excludePrimes S hS).modulus then idealCoeff η I else 0 :=
   idealCoeff_refineModulus η _ _ _ I
-
-end SevenEighths.HeckeFamily
-
-end
-
-end OAI

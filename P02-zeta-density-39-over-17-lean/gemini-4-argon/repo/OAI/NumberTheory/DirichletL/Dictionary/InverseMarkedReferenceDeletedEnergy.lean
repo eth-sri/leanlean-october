@@ -11,14 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification HeckeDyadic CanonicalQuadraticSieve
-open CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT
-open InverseInitialDetectorSource
-open InverseMoment InverseInitialProfile InverseInitialRawDictionary InverseInitialPhysicalSlots
-open InverseInitialConjugateEnergy InverseInitialEnergyCallerWindow InverseInitialExcludedPeriod
-open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawConjugateGates
-open IdealMobiusDivisorSum Filter
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification HeckeDyadic CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT InverseInitialDetectorSource InverseMoment InverseInitialProfile InverseInitialRawDictionary InverseInitialPhysicalSlots InverseInitialConjugateEnergy InverseInitialEnergyCallerWindow InverseInitialExcludedPeriod DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawConjugateGates IdealMobiusDivisorSum Filter
 
 theorem deletedSelectedSource_tuple {ι:Type*}[Fintype ι](data:RowData)
     (M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)(W:ℝ→ℂ)(V:ι→ℝ→ℂ)
@@ -98,9 +91,3 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     hperiod (fun I hI=>raw_conjugate_zero_outside data I (by simpa [hqset] using hI))
     r (shiftedExponent data U r j) hr hjshift.1 hjshift.2.1 hfirst hsecond rows hrows θ
   simpa only [deletedSelectedSource_tuple,L,coeff] using hh
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

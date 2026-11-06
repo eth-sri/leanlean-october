@@ -130,4 +130,3 @@ theorem mediumTypeILargeValue_false
   have hUpper := mediumTypeIBProcess_native C N σ t hσ hN hNC hNt htN
   linarith
 
-end GuthMaynard.NativeMoment

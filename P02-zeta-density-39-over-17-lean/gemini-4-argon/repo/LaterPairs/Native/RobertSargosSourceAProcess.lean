@@ -66,4 +66,3 @@ theorem robertSargos_initial_source_a_process_range (f : ℝ → ℝ) (M H : ℕ
       mul_le_mul_of_nonneg_right hc (by positivity)
     _ = _ := by ring
 
-end TaoTrudgianYang2025

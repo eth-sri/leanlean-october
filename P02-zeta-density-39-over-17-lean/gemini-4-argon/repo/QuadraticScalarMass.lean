@@ -29,4 +29,3 @@ lemma quadratic_mass_scalar {m P b k Z : ℝ}
     _ ≤ P^2*(4*(b^2+Z/k)) := mul_le_mul_of_nonneg_left hsq (sq_nonneg P)
     _ = _ := by ring
 
-end Montgomery.RationalMoment

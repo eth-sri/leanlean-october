@@ -54,8 +54,3 @@ theorem exists_product_log_cutoff :
   have hb1 := annular_log_bound x hx hax
   have hb2 := annular_log_bound y hy hay
   exact (abs_add_le _ _).trans (by linarith)
-
-end
-end SevenEighths.HeckeDetectorProfiles
-
-end OAI

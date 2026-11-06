@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
 include hc
@@ -48,8 +47,3 @@ theorem row_squarefree_kone (r m j : ℕ) (hj : j<6) :
       · rw [ite_eq_left he,ite_eq_left (by omega),zero_sub]
       · rw [ite_eq_right he,ite_eq_right (by omega),sub_self]
   · rw [ite_eq_right (by omega),ite_eq_right (by omega),ite_eq_right (by omega),mul_zero]
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

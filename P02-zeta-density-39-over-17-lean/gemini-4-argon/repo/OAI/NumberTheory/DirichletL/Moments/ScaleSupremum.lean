@@ -30,9 +30,3 @@ lemma scaleTest_support (W : ℝ→ℂ) (a b : ℝ)
   split
   · exact hs
   · exact scaleProfile_support W a b hs
-
-end SevenEighths.CenteredMomentScaleSupremum
-
-end
-
-end OAI

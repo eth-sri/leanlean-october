@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceProfileBudget
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles CenteredMomentFiniteProfileExceptional
 
 lemma control_mono {S T:Finset (ℕ×ℕ)}(h:S⊆T)(W:𝓢(ℝ,ℂ)):
     sourceControl S W≤sourceControl T W:=Seminorm.le_def.mp (Finset.sup_mono h) W
@@ -103,9 +102,3 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
       _≤C*A^2*H^(2*nlong):=by gcongr
       _≤C*A^2*H^J:=mul_le_mul_of_nonneg_left
         (pow_le_pow_right₀ hH (by dsimp only [J];omega)) (mul_nonneg hC.le (sq_nonneg A))
-
-end SevenEighths.CenteredMomentEnergyReferenceProfileBudget
-
-end
-
-end OAI

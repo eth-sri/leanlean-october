@@ -45,4 +45,3 @@ theorem sargos_positive_quadratic_global_remainder {W : ℝ → ℝ} {T H M₀ M
   rw [he,Complex.norm_conj]
   exact norm_quadratic_global_remainder_le hW hT hH hs h₀ h₂ h₃
 
-end TaoTrudgianYang2025

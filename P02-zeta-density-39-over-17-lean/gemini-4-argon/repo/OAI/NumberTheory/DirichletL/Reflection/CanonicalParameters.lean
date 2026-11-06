@@ -41,7 +41,3 @@ lemma canonical_reflected_target_positive (F M Q z margin c O : ℝ)
     0<F-3*c/16-O/2 := by
   obtain ⟨hfirst,hsecond⟩ := h
   linarith
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

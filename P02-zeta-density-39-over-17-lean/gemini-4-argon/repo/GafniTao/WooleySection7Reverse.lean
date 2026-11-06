@@ -150,6 +150,4 @@ theorem wooley_equation_7_21_native
   rw [pow_add]
 
 
-end
 
-end GafniTao

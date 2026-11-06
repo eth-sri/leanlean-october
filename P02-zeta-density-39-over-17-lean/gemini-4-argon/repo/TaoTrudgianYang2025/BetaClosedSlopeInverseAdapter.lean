@@ -68,4 +68,3 @@ theorem modelPhaseClosedSlope_deriv_bounds {σ δ : ℝ} {F : ℝ → ℝ}
     hm (by norm_num) ⟨hu.1.le,hu.2.le⟩ hu.1.le⟩
 
 
-end TaoTrudgianYang2025

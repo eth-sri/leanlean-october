@@ -11,10 +11,8 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseSecondUniformCutoff
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 def uniformSecondRadius {ι : Type*} [DecidableEq ι] (p : ι→O)
     (Z delta eta : ℝ) (G E : Finset ι) (L Y H : ℝ) : ℝ :=
@@ -101,8 +99,3 @@ theorem actual_cell_uniform_source_gates {ι : Type*} [DecidableEq ι]
     (zero_lt_one.trans hZ) hL0 (by simpa [outerNorms] using hE) (by simpa [outerNorms] using hG) hL
   have hb:=(mem_nonzeroChildFrequencyBall _ (actualSecondMultiplier_ne_zero p x) _ _).mp (hgate x hxs)
   exact (mem_nonzeroChildFrequencyBall _ (actualSecondMultiplier_ne_zero p x) _ _).mpr ⟨hb.1,hb.2.trans hr⟩
-
-end SevenEighths.InverseSecondUniformCutoff
-end
-
-end OAI

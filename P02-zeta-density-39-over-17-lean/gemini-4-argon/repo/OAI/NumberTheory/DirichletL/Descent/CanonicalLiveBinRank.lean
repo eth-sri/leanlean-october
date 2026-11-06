@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstChildWindows
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstLabelCell InverseMomentFirstChildWindows
 
 theorem actual_live_bin_rank_children
     (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
@@ -64,9 +61,3 @@ theorem actual_live_bin_rank_children
   calc
     _≤Z^eta*Z^(actualCubeLength Z j):=mul_le_mul_of_nonneg_right hexp (Real.rpow_nonneg (by linarith) _)
     _=Z^(actualCubeLength Z j+eta):=by rw [Real.rpow_add (by linarith : 0<Z)];ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

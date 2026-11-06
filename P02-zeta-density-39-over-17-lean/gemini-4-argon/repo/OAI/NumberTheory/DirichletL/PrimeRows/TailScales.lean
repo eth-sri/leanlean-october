@@ -41,8 +41,3 @@ lemma large_source_scale {K : ℕ} (Z : ℝ) (hZ : 0<Z) (length : Fin K→ℝ)
   rw [physical_scale_power Z hZ,hlength]
   congr 1
   ring
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

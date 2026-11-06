@@ -412,4 +412,3 @@ theorem vanDerCorput_B_process
   exact vanDerCorput_second_derivative f N lambda Lambda (Real.sqrt lambda)
     hlambda (Real.sqrt_pos.2 hlambda) hlower hupper
 
-end RiemannZeta.GuthMaynard

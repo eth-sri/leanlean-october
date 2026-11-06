@@ -11,10 +11,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentRestrictedWindow
-open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy
-open CenteredMomentPlainWindowEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
-open HeckeFamily FourierBridge CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentPlainWindowEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge CenteredMomentSmooth
 
 theorem restricted_hasSum_weighted {α : Type*} (keep : O → Prop)
     (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
@@ -128,9 +125,3 @@ theorem restricted_window_energy_from_height {α : Type*} (keep : O → Prop)
     _ ≤ E*(heightCost t θ*(1+‖w‖))^(2*J) :=
       mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (norm_height_shift t θ w) _) hE
     _ = _ := by rw [mul_pow,mul_assoc]
-
-end SevenEighths.CenteredMomentRestrictedWindow
-
-end
-
-end OAI

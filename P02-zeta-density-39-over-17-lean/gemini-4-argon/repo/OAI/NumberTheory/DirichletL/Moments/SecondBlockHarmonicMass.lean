@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSecondBlockHarmonicMass
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount
-open CenteredMomentSecondActiveCount CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical
-open CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount CenteredMomentSecondActiveCount CenteredMomentActiveSource CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
 
 abbrev ActiveSubsets (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
   (p : ActiveLabel S β) × Finset (CommonIndex p.val.1 p.val.2)
@@ -142,9 +135,3 @@ theorem actual_block_harmonic_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
       calc
         _ = (C₂*C₁)*(Z^(ε/2)*Z^(ε/2))/(seed.absNorm:ℝ) := by ring
         _ = _ := by rw [←Real.rpow_add (by linarith : 0<Z),add_halves]
-
-end SevenEighths.CenteredMomentSecondBlockHarmonicMass
-
-end
-
-end OAI

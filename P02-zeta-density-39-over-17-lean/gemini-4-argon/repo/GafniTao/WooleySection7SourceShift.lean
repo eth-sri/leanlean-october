@@ -214,6 +214,4 @@ theorem wooleySection7_exists_uniform_shifted_forcing
   rw [hfun]
   exact hz
 
-end
 
-end GafniTao

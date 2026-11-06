@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMomentWholePriorityParents
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 
 def wholeExtractedSupport (extra : Source ι Jo→Finset ι)
@@ -153,9 +151,3 @@ theorem whole_assigned_family_conditions (hp : ∀ i,p i≠0)
   · intro y hy
     obtain ⟨x,hx,q,hq,rfl⟩ := (mem_wholeAssignedParents p extra source negative J lists y).mp hy
     exact sourceIdeal_ne_zero p hp x.quotientSupport
-
-end SevenEighths.InverseMomentWholePriorityParents
-
-end
-
-end OAI

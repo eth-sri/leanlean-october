@@ -83,8 +83,3 @@ lemma gaussianFlow_derivative_bound (a L : ℝ) (hL : 0≤L) (n : ℕ) :
     (by norm_num : (0:ℝ)<1) hf.diffContOnCl
     (fun z hz=>hbound R hR y hy z (Metric.sphere_subset_closedBall hz))
   simpa only [one_pow,div_one,mul_assoc] using h
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

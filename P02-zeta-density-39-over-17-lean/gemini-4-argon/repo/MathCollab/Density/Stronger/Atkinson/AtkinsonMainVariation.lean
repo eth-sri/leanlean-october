@@ -55,4 +55,3 @@ theorem exists_finiteVariationBound_atkinsonMainWeights :
     · dsimp [K]
       ring
 
-end MathCollab.Density.Stronger.Atkinson

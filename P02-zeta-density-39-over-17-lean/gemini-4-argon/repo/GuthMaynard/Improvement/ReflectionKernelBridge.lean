@@ -71,4 +71,3 @@ theorem centeredKernel_reflection_shell (w : MathCollab.Density.ReflectionCutoff
       add_le_add (mul_le_mul_of_nonneg_left hb (by norm_num)) le_rfl
     _ = _ := by ring
 
-end GuthMaynard.Improvement

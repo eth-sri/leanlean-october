@@ -80,9 +80,3 @@ theorem common_probe_of_chosen_moments (hmom : ChosenMomentInput) : HeckeCommonP
 theorem zeta_of_chosen_moments (hmom : ChosenMomentInput) (s : ℂ) (hs : (7/8:ℝ)<s.re) :
     riemannZeta s≠0 :=
   HeckeCommonProbe.zeta_of_common_probe (common_probe_of_chosen_moments hmom) s hs
-
-end SevenEighths.ProbeFinalAssembly
-
-end
-
-end OAI

@@ -195,4 +195,3 @@ theorem sum_reflectionBlocks {E : Type*} [AddCommMonoid E] (L H : ℝ) (f : ℕ 
   intro j _ k _ he
   exact Nat.pow_right_injective (by norm_num : 2 ≤ 2) he
 
-end MathCollab.Density

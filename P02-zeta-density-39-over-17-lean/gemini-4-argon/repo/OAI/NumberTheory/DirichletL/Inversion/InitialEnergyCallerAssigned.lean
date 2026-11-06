@@ -131,9 +131,3 @@ theorem coefficient_norm_le_one (S : Finset (Source (ι:=ι) 0))
   rw [paired_assignment_filter] at hq'
   rw [coefficient_attach]
   exact pairedSlotWeight_norm_le_one J₁ J₂ L₁ L₂ a₁ a₂ _ q hq' ha₁ ha₂
-
-end SevenEighths.InverseInitialEnergyCallerAssigned
-
-end
-
-end OAI

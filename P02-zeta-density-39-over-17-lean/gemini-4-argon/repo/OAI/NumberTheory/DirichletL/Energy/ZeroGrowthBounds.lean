@@ -11,13 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthBounds
-open HeckeFamily HeckeDyadic QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReflectionSupport
-open CenteredMomentEnergyZeroReferenceError CenteredMomentOriginalRadialComparison
-open CenteredMomentNaturalRowSource
-open CenteredMomentAllocatedNaturalRadial
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReflectionSupport CenteredMomentEnergyZeroReferenceError CenteredMomentOriginalRadialComparison CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
 
 lemma actual_window_cap (Z b Bmask bΦ Mcap defect xi L Xlong:ℝ)
     (hZ:1<Z)(hb:0<b)(hx:0<Xlong)(hsupport:1≤b*Xlong)
@@ -59,9 +53,3 @@ theorem actual_deleted_short_mass (b:ℝ):
   apply mul_le_mul_of_nonneg_left ((div_le_self hX.le hn).trans hcap)
   exact mul_nonneg (mul_nonneg (mul_nonneg hC.le (sq_nonneg _))
     (diagonalControl_nonneg _)) (le_max_of_le_left zero_le_one)
-
-end SevenEighths.CenteredMomentEnergyZeroGrowthBounds
-
-end
-
-end OAI

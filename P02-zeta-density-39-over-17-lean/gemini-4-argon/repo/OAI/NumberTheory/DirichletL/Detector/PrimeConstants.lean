@@ -8,7 +8,6 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 def localGamma (p : O) (hp : p ≠ 0) [(Ideal.span {p} : Ideal O).IsMaximal]
     (hg : goodLambda ∉ Ideal.span {p}) (r : ℕ) : ℂ :=
@@ -64,8 +63,3 @@ lemma primeGauss_inverse_pair (p : O) (hp : p ≠ 0)
   have hcard : Nat.card (O ⧸ Ideal.span {p}) = Ideal.absNorm (Ideal.span {p}) := rfl
   simpa only [primeGauss, tsum_fintype, map_one, one_mul, gaussSum,
     ← Nat.card_eq_fintype_card, hcard] using ht
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

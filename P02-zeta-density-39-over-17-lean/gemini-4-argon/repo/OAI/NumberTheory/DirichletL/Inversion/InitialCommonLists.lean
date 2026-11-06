@@ -12,7 +12,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
 namespace SevenEighths.InverseInitialCommonLists
 open InverseMoment
-local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
 def poolList (F:Finset (Ideal Eis))(L:Finset (Ideal Eis)) : Finset (primePool F) :=
@@ -53,9 +52,3 @@ theorem original_ideal_mark (F:Finset (Ideal Eis))(I:Finset σ)
   apply Finset.prod_congr rfl
   intro i hi
   exact original_ideal_slot F (L i) (hL i hi) (a i) A
-
-end SevenEighths.InverseInitialCommonLists
-
-end
-
-end OAI

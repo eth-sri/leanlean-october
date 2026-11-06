@@ -9,12 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstAnnularInput
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice
-open CenteredMomentOriginalChildEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentHeckeColumnWindow CenteredMomentGaussNormalization
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentCommonAllocationSum
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentGaussNormalization CenteredMomentCommonRadialData CenteredMomentSourceRow CenteredMomentCommonAllocationSum
 
 variable {ι:Type*}[Fintype ι]
 
@@ -33,9 +28,3 @@ theorem normalized_input_coefficient (s:Input ι)(R seed:Ideal HeckeFamily.O)
     funext I
     rw [←heightCoeff_eq_fixed_rowWeight s.η s.t I (Finset.mem_filter.mp I.property).2]]
   exact gaussEnergy_central _ _ _ _ (volume s) (volume_pos s) W H
-
-end SevenEighths.CenteredMomentFirstAnnularInput
-
-end
-
-end OAI

@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeRowClosure ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def conductorConstant : ℕ :=
   (Ideal.span {rowMaskElement}:Ideal O).absNorm*(Ideal.span {(72 : O)}:Ideal O).absNorm
@@ -48,9 +47,3 @@ theorem targetRow_excluded_conductor (S : Finset (Ideal O)) (hS : ∀P∈S,Prime
   change ((targetRow η u).modulus*(∏P∈S,P)).absNorm≤_
   rw [map_mul]
   exact Nat.mul_le_mul_right _ (targetRow_conductor η u)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

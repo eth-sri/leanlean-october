@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical SchwartzMap
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSecondDiagonal EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSecondDiagonal EisensteinSchwartzPoisson
 
 def lowGramZeroMode (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
     (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ) : ℂ :=
@@ -77,8 +74,3 @@ theorem lowGramZeroMode_source_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
     _ ≤ Q*‖paperRadialFourier U 0‖*(C/Y) := by
       exact mul_le_mul_of_nonneg_left (hb S hS W1 hW1 hWS hWB Y hY σ v) (by positivity)
     _ = _ := by ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

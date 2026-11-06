@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
 open MeasureTheory CompletedGauss CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 private theorem cusp_sum_kernel_integral {ι : Type*} [Fintype ι]
     (d : ι → SourceCuspDatum) (w : ι → ℂ) (F : ℝ → ℂ)
@@ -97,8 +96,3 @@ theorem markedCompletedT_of_cusp_multiplier {ι κ : Type*} [Fintype κ]
   intro n
   simp_rw [finiteTwistCusp_point]
   rw [thetaFourierTranslation_inversion c hc, hmult]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

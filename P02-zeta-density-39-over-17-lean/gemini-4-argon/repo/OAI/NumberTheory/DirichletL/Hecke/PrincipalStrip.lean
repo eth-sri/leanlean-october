@@ -228,9 +228,3 @@ theorem uniform_source_normalized_strip_bound (η : Character)
   apply (sourceNormalized_norm_le η z hz).trans
   have h := mul_le_mul_of_nonneg_left (uniform_normalized_strip_bound η hp z hz) (by norm_num : (0 : ℝ) ≤ 3)
   convert h using 1 ; ring
-
-end SevenEighths.HeckePrincipalStrip
-
-end
-
-end OAI

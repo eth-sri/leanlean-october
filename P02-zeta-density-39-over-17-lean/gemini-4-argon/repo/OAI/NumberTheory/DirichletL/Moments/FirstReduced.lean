@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstReduced
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstMixed CenteredMomentActive
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstMixed CenteredMomentActive
 
 def tripleRow (a b r : O) (χa : MulChar (Residue a) ℂ)
     (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ) (z : O) : ℂ :=
@@ -132,9 +129,3 @@ theorem common_residual_reduced_poisson {ι : Type*}
     (activePrimes_pairwise_coprime P hinj B c d) (fun i => hg i.val)
     (fun i => netExponent (c i.val) (d i.val)) _ (span_finitePrimeModulus _) z]
   ring
-
-end SevenEighths.CenteredMomentFirstReduced
-
-end
-
-end OAI

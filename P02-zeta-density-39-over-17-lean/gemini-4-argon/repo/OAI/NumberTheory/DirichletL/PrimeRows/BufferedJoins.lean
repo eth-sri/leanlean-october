@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem buffered_horizontal_join_arbitrary_decay {K : ℕ}
@@ -56,9 +55,3 @@ theorem buffered_horizontal_join_arbitrary_decay {K : ℕ}
   calc
     _ ≤ 2*A := mul_le_mul_of_nonneg_right (by linarith : 2-(a+16*e)≤2) hA
     _ = _ := by dsimp [A];ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

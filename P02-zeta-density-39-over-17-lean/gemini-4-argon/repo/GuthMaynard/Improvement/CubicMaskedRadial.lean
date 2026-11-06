@@ -37,11 +37,11 @@ theorem maskedSpatialCubicMode_radial {a : ℝ → ℂ}
     (r:ℂ)^2*maskedSpatialCubicMode a μ L m A B C (r*v,r*y,r) =
       radialIntegrand a μ L m r (v,y)*ratioMaskProduct A B C (v,y) := by
   by_cases hr : a r = 0
-  · simp [maskedSpatialCubicMode,spatialCubicMode,radialIntegrand,radialAmplitude,hr]
+  · simp [maskedSpatialCubicMode,spatialCubicMode,AtomicCubic.spatialCubicMode,radialIntegrand,AtomicCubic.radialIntegrand,radialAmplitude,hr]
   by_cases hv : a (r*v) = 0
-  · simp [maskedSpatialCubicMode,spatialCubicMode,radialIntegrand,radialAmplitude,mul_comm v r,hv]
+  · simp [maskedSpatialCubicMode,spatialCubicMode,AtomicCubic.spatialCubicMode,radialIntegrand,AtomicCubic.radialIntegrand,radialAmplitude,mul_comm v r,hv]
   by_cases hy : a (r*y) = 0
-  · simp [maskedSpatialCubicMode,spatialCubicMode,radialIntegrand,radialAmplitude,mul_comm y r,hy]
+  · simp [maskedSpatialCubicMode,spatialCubicMode,AtomicCubic.spatialCubicMode,radialIntegrand,AtomicCubic.radialIntegrand,radialAmplitude,mul_comm y r,hy]
   have hrp : 0 < r := lt_of_not_ge (fun h => hr (ha r h))
   have hvp : 0 < v := by
     by_contra hn
@@ -112,7 +112,7 @@ theorem maskedSpatialCubicMode_radial_fubini {a : ℝ → ℂ} {μ : ℝ → ℝ
     filter_upwards with r
     by_cases hr : r = 0
     · subst r
-      simp [maskedSpatialCubicMode,spatialCubicMode,radialIntegrand,radialAmplitude,ha0 0 le_rfl]
+      simp [maskedSpatialCubicMode,spatialCubicMode,AtomicCubic.spatialCubicMode,radialIntegrand,AtomicCubic.radialIntegrand,radialAmplitude,ha0 0 le_rfl]
     · rw [← two_coordinate_scaling (fun x₁ x₂ => maskedSpatialCubicMode a μ L m A B C (x₁,x₂,r)) hr]
       simp_rw [maskedSpatialCubicMode_radial ha0]
   rw [hscale]
@@ -141,4 +141,3 @@ theorem maskedSpatialCubicMode_radial_fubini {a : ℝ → ℂ} {μ : ℝ → ℝ
     exact hp (radialAmplitude_support hl hlu hs hn).2
   simp [radialKernel,hz]
 
-end GuthMaynard.Improvement

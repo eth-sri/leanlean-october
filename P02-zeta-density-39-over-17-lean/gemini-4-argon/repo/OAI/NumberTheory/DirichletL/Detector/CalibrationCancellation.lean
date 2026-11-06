@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 lemma Xi_apply (C : CalibrationData) (a : O) :
     C.Xi a = C.residueMonoid a * idealRowHom C.generator (Ideal.span {a}) := rfl
@@ -59,8 +58,3 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
   change _ = bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H
   dsimp only [C] at hηA hκA hηs hκs hηHstar hτ hroot
   field_simp
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

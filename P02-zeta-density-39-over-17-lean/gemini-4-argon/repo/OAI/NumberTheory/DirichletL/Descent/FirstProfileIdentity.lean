@@ -10,7 +10,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def firstNormProfile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (V : Fin 9 → ℝ → ℂ) (R : ℝ) (q : Fin 9 → ℝ) : ℂ :=
@@ -83,8 +82,3 @@ theorem canonicalPairMode_whole_profile {ι : Type*} [DecidableEq ι]
         primeProductNorm p N*primeProductNorm p P) from by ring]
   push_cast
   ring_nf
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

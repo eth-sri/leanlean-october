@@ -206,4 +206,3 @@ theorem secondModeTail_source_bound {a b : ℝ} (hab : a < b)
     (add_le_add (le_refl _) (mul_le_mul_of_nonneg_left (harmonic_plus_square_bound ha) (by positivity)))
     (mul_le_mul_of_nonneg_left (harmonic_plus_cube_bound ha) (by positivity))
 
-end DhimanKadiriQuesadaHerrera2026

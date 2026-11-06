@@ -142,4 +142,3 @@ theorem modelPhaseMorseCoordinate_normalForm
   unfold modelPhaseLegendreDual modelPhaseStationaryDeficit
   ring
 
-end TaoTrudgianYang2025

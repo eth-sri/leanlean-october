@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEligibleEnergy
-open HeckeFamily CenteredMomentActiveDivisorShell CenteredMomentActiveAllocation
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-open CenteredMomentDivisorRowEnergy
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentActiveDivisorShell CenteredMomentActiveAllocation CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentDivisorRowEnergy
 
 structure Data (ι:Type*) [Fintype ι] extends Source ι where
   M : ι→ℝ
@@ -95,9 +92,3 @@ theorem actual_source_from_children (N:ℕ) (hslots:Fintype.card ι≤N) (ε:ℝ
       apply Finset.sum_congr rfl
       intro a ha
       ring
-
-end SevenEighths.CenteredMomentEligibleEnergy
-
-end
-
-end OAI

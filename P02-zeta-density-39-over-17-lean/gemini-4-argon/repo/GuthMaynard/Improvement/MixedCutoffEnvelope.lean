@@ -47,4 +47,3 @@ theorem mixedCutoffKernel_bound (w : MathCollab.Density.ReflectionCutoff) (s : â
   simp only [logModulated_eq_phase,norm_mul,phase_norm,mul_one]
   exact le_rfl
 
-end GuthMaynard.Improvement

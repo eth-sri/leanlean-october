@@ -3,8 +3,7 @@ public import MathCollab.Density.Stronger.SmoothContourEstimates
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.Contour
 open scoped BigOperators Topology ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -56,4 +55,3 @@ theorem smoothDetector_contour_identity {ψ : ℝ → ℝ} {a b : ℝ}
   field_simp
   ring
 
-end MathCollab.Density.Stronger

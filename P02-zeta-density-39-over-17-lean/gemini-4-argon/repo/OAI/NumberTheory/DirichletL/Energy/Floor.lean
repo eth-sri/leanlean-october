@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyState
-open HeckeFamily CenteredMomentNaturalMaskedFloor
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound
+open HeckeFamily CenteredMomentNaturalMaskedFloor CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 
 theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
     (hbΦ:0<bΦ)(hmask:0≤Bmask)(hε:0<ε):
@@ -54,9 +53,3 @@ theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
     _=(C*bΦ^4*diagonalControl s.radial.profile*(p.control S)^2*(1+‖t‖)^degree)*
       (Z^(Bmask*e)*Z^(s.width+4*(ε/16))):=by ring
     _≤_:=mul_le_mul_of_nonneg_left hp (by positivity)
-
-end SevenEighths.CenteredMomentEnergyState
-
-end
-
-end OAI

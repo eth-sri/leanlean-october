@@ -10,10 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionCapacity
-open HeckeFamily CenteredMomentEnergyReferenceDeletionBudget
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyBands CenteredMomentLiveCapacity
+open HeckeFamily CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceState CenteredMomentEnergyBands CenteredMomentLiveCapacity
 
-local notation "O"=>HeckeFamily.O
 
 lemma deleted_short_length (Z M:ℝ)(hZ:1<Z)(hM:0≤M)
     (D:Finset (Ideal O))(hD:∀I∈D,Prime I):
@@ -26,9 +24,3 @@ lemma deleted_short_length (Z M:ℝ)(hZ:1<Z)(hM:0≤M)
   have he:=Real.logb_le_logb_of_le hZ
     (lt_of_lt_of_le zero_lt_one (le_max_left 1 _)) hm
   simpa only [length,comparisonFirst,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] using he
-
-end SevenEighths.CenteredMomentEnergyReferenceDeletionCapacity
-
-end
-
-end OAI

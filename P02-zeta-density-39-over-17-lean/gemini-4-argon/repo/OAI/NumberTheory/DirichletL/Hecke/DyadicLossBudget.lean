@@ -61,9 +61,3 @@ theorem squared_bound_of_central_and_error (z : ℂ) (U C E p b ε : ℝ)
         norm_num
         ring
       rw [mul_pow,hp]
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

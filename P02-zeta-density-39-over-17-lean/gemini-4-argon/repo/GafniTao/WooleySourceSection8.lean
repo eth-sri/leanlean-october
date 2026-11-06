@@ -130,6 +130,4 @@ theorem wooleySourcePolynomial_equation_8_2_of_section7_mul
   exact hsection7.trans (mul_le_mul_of_nonneg_left hinside hD)
 
 
-end
 
-end GafniTao

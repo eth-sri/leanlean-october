@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 theorem canonical_trivial_block (a b B : ℝ) (ha : 0<a) (hb : 0≤b) (hB : 0≤B) (A : ℕ) :
     ∃s : Finset (ℕ×ℕ),∃K : ℝ,0<K ∧
@@ -60,8 +58,3 @@ theorem canonical_trivial_block (a b B : ℝ) (ha : 0<a) (hb : 0≤b) (hB : 0≤
       have hb' : (128*b)^2≤(1+128*b)^2 := by nlinarith
       nlinarith [mul_le_mul_of_nonneg_right hb' (show 0≤N^2*((Ideal.absNorm C.val:ℝ)*
         (K*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) U)) by positivity)]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

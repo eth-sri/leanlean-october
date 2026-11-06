@@ -13,10 +13,8 @@ public import Mathlib.Analysis.Calculus.Deriv.Star
 
 @[expose] public section
 
-open Complex MeasureTheory
+open Complex MeasureTheory MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
 open scoped ComplexConjugate
-open MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -116,4 +114,3 @@ theorem abs_zetaSquareGammaFrequency_add_log_le {t : ℝ} (ht : 2 ≤ t) :
   field_simp
   norm_num
 
-end MathCollab.Density.Stronger.Atkinson

@@ -10,17 +10,8 @@ open scoped Classical BigOperators ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors
-open CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondSectorColumns CenteredMomentConjugateWindow
-open CenteredMomentSecondHeightFamily CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum
-open CenteredMomentFirstColumns CenteredMomentChildAssembly CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentCommonSupport RayFourExpansion IdealMobiusDivisorSum
-open FourierBridge
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorColumns CenteredMomentConjugateWindow CenteredMomentSecondHeightFamily CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentFirstColumns CenteredMomentChildAssembly CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCommonSupport RayFourExpansion IdealMobiusDivisorSum FourierBridge
 variable {ι:Type*}[Fintype ι]
-local instance firstWindowCanonicalDecidableEq : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def leftWindowChild (s:OriginalData ι)(η:Character)(m:O)(t:ℝ)
     (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
@@ -43,9 +34,3 @@ def rightWindowChild (s:OriginalData ι)(η:Character)(m:O)(t:ℝ)
     (fun I=>divisorCoefficient L (element C D hD.1 s.columns)
       (fun a=>coefficient η m 1 t s.beta D a*rightCoefficient e r ρ (element C D hD.1 s.columns a)) χ I*
       star (columnPhase V (Real.log (‖eisEmbedding (element C D hD.1 s.columns I)‖^2/X)) θ)) z
-
-end SevenEighths.CenteredMomentFirstPhysicalSource
-
-end
-
-end OAI

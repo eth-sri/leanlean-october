@@ -108,4 +108,3 @@ theorem cubic_masked_spatial_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
       exact add_le_add (mul_le_mul_of_nonneg_right hCmC hX) (mul_le_mul_of_nonneg_right hCtC hY)
     _ = _ := by dsimp [X,Y]; ring
 
-end GuthMaynard.Improvement

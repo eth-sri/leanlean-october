@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 @[fun_prop] lemma measurable_const_cpow {α : Type*} [MeasurableSpace α]
     (Q : ℂ) (hQ : Q≠0) (f : α→ℂ) (hf : Measurable f) : Measurable (fun t=>Q^(f t)) :=
@@ -166,9 +164,3 @@ lemma calibratedTupleValue_onLines_aestronglyMeasurable {K : ℕ}
         ((σ:ℂ)+t.1.1*Complex.I) ((υ:ℂ)+t.2*Complex.I) ((ξ:ℂ)+t.1.2*Complex.I)) μ :=
   (calibratedTupleValue_measurable S hS hmax η u P hPS W Y _ _ _
     (by fun_prop) (by fun_prop) (by fun_prop)).aestronglyMeasurable
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

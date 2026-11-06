@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 theorem compensatedPhysicalProbe_canonical_slots {K : ℕ} (η : HeckeFamily.Character)
     (C : CalibrationData) (W0 W1 : ℝ→ℂ) (T : Fin K→Finset PrimeIdeal)
@@ -51,8 +49,3 @@ theorem compensatedPhysicalProbe_eq_canonical_rows {K : ℕ} (η : HeckeFamily.C
           compensatedRowTripleIntegral_eq_tsum η S _ _ (hn P) W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ]
         exact tsum_mul_left.symm
     _ = _ := (Summable.tsum_finsetSum (fun P _=>hs P)).symm
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

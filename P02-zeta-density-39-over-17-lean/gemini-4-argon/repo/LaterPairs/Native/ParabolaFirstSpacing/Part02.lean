@@ -6,398 +6,9 @@ public import LaterPairs.Native.ParabolaFirstSpacing.Part01
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth MeasureTheory GafniTao Set FourierTransform SchwartzMap
 noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory FourierTransform SchwartzMap Set GafniTao
-open scoped ComplexConjugate Convolution ContDiff
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-namespace TaoTrudgianYang2025
-open MeasureTheory Set
-open scoped BigOperators
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators NNReal ENNReal
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-namespace TaoTrudgianYang2025
-open MeasureTheory Set
-open scoped BigOperators
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory
-open scoped Matrix
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
+open scoped BigOperators ComplexConjugate Convolution ContDiff NNReal ENNReal FourierTransform Matrix Topology
 namespace TaoTrudgianYang2025
 universe u
 
@@ -469,13 +80,7 @@ private theorem bourgainSourceGridBound_coarse_shift_entry
     _ ≤ _ := by
       simpa only [bourgainSourceSixMoment_translate,add_comm] using hmain
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem bourgainSourceGridBound_coarse_average_entry
@@ -582,13 +187,7 @@ private theorem bourgainSourceGridBound_coarse_average_entry
         (fun ji => c ji.1 ji.2) (fun ji => v ji.1 ji.2) x))
   exact havg.trans hcomp
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainSourceCurve_coarse_pair_bound {ε ν : ℝ}
@@ -732,11 +331,8 @@ private theorem exists_bourgainSourceCurve_coarse_pair_bound {ε ν : ℝ}
       (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hcenter.2.2 hP) (hAS i)) (hAV j)
     _ = _ := by dsimp [P]; ring
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_bootstrap_coefficient {x : ℝ} (hx : 0 < x)
     (d : ℕ) (ε D E : ℝ) :
@@ -747,13 +343,7 @@ private theorem bourgain_bootstrap_coefficient {x : ℝ} (hx : 0 < x)
   field_simp
   ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainSourceGridBound_step {ε ν : ℝ}
@@ -845,11 +435,7 @@ private theorem exists_bourgainSourceGridBound_step {ε ν : ℝ}
     _ = ((2*K)^4*(Cstep*D*(2:ℝ)^(ε*d)/R^2))*JS*JV := by rw [hcoef]
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgainSourceGridBound_dyadic_step {ε ν : ℝ}
     (hε : 0 < ε) (hν : 0 < ν) :
@@ -884,11 +470,7 @@ private theorem exists_bourgainSourceGridBound_dyadic_step {ε ν : ℝ}
     (by simpa only [hs] using hsc.2.2.2.2.2.2.1) hD
   exact ⟨hm.1,by simpa only [he] using hresult.2⟩
 
-end TaoTrudgianYang2025
 
-noncomputable section
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgainSourceGridBound_epsilon {ε ν : ℝ}
     (hε : 0 < ε) (hν : 0 < ν) :
@@ -949,13 +531,7 @@ private theorem exists_bourgainSourceGridBound_epsilon {ε ν : ℝ}
         Real.one_le_rpow (by norm_num) (by positivity)
       exact hbaseA.trans (by nlinarith)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
                                                                           
                                                                              
@@ -964,10 +540,6 @@ universe u
                                                                         
                                                                            
                          
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 public  theorem bourgain_anisotropic_rectangle_average (K : Fin 4 → ℝ)
     (hK : ∀ i, 0 ≤ K i) (Q : Fin 4 → ℝ) (f : (Fin 4 → ℝ) → ℝ)
     (hfc : Continuous f) (hf₀ : ∀ x, 0 ≤ f x) :
@@ -1038,14 +610,8 @@ private theorem bourgain_finite_rectangle_average {K : ℝ}
   convert bourgain_anisotropic_rectangle_average (fun _ => K) (fun _ => hK) Q f hfc hf₀ using 1
   simp only [Finset.prod_const,Finset.card_univ,Fintype.card_fin]
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainSourceCurve_rectangle_entry {ε ν : ℝ}
@@ -1162,12 +728,8 @@ private theorem exists_bourgainSourceCurve_rectangle_entry {ε ν : ℝ}
         (fun ji => c ji.1 ji.2) (fun ji => v ji.1 ji.2) x))
   exact havg.trans hcomp
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_periodic_weighted_average {T C : ℝ} (hT : 0<T)
     (W f : ℝ → ℝ) (hf : Continuous f)
@@ -1226,12 +788,8 @@ private theorem bourgain_periodic_weighted_average {T C : ℝ} (hT : 0<T)
     exact integral_mul_const _ _
   exact hh.trans_eq (by rw [he]; ring)
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_periodic_lorentz_average {T K : ℝ} (hT : 0<T) (hTK : T≤K)
     (f : ℝ → ℝ) (hf : Continuous f) (hf₀ : ∀ x, 0≤f x)
@@ -1256,13 +814,8 @@ private theorem bourgain_periodic_lorentz_average {T K : ℝ} (hT : 0<T) (hTK : 
   rw [hmass] at hh
   exact hh.trans_eq (by ring)
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_integer_phase_periodic_average {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) (a : ι → ℝ)
@@ -1312,12 +865,8 @@ private theorem bourgain_integer_phase_periodic_average {ι : Type*}
   apply (mul_le_mul_iff_right₀ hT).mp
   exact hh.trans_eq (by ring)
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_radial_le_lorentz_product (T : ℝ) (x : Fin 4 → ℝ) :
     ((1+‖T⁻¹ • x‖)^100)⁻¹ ≤ ∏ i : Fin 4, (1+(x i/T)^2)⁻¹ := by
@@ -1341,12 +890,7 @@ private theorem bourgain_radial_le_lorentz_product (T : ℝ) (x : Fin 4 → ℝ)
     (Finset.prod_pos (fun (i : Fin 4) (_ : i∈Finset.univ) => by positivity)) hprod
   simpa only [one_div,Finset.prod_inv_distrib] using hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 set_option maxHeartbeats 400000 in
 private theorem bourgain_integer_coordinate_average {ι : Type*}
@@ -1469,24 +1013,6 @@ private theorem bourgain_integer_coordinate_average {ι : Type*}
 
 
 
-end TaoTrudgianYang2025
-noncomputable section
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open GafniTao Set
-open scoped ContDiff
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open GafniTao Set
-open scoped ContDiff
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-open scoped ContDiff Topology
-namespace TaoTrudgianYang2025
 private theorem bourgain_partial_iteratedDeriv_contDiffAt
     {E A : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [NormedAddCommGroup A] [NormedSpace ℝ A]
@@ -1515,60 +1041,15 @@ private theorem bourgain_partial_iteratedDeriv_contDiffAt
     filter_upwards [hV.mem_nhds hq] with r hr
     exact heq r hr
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open Set
-open scoped ContDiff BigOperators
-namespace TaoTrudgianYang2025
 
-end TaoTrudgianYang2025
-noncomputable section
-namespace TaoTrudgianYang2025
 public  theorem bourgain_sqrt_linear_remainder (a u : ℝ)
     (ha : a≠0) (hs : u+a≠0) :
     u=a+(u^2-a^2)/(2*a)-(u^2-a^2)^2/(2*a*(u+a)^2) := by
   field_simp
   ring
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 private theorem bourgain_integer_cell_linear_shift {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) (s : ι → ℝ)
     {t c : ℝ} (ht : t≠0) (hs : ∀ i∈S, t*s i=(m i:ℝ)-c) (η θ : ℝ) :
@@ -1618,36 +1099,9 @@ private theorem bourgain_integer_cell_linear_shift {ι : Type*}
   rw [intervalIntegral.integral_comp_add_right]
   simpa only [zero_add,add_zero,add_comm] using hp.intervalIntegral_add_eq (η/t) 0
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory Set
-open scoped Matrix
-namespace TaoTrudgianYang2025
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-open scoped Matrix
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped ContDiff FourierTransform
-namespace TaoTrudgianYang2025
 private theorem exists_bourgainQuadratic_sargos_kernel :
     ∃ C>(0:ℝ), ∀ β : ℝ, ∃ K : ℝ → ℂ,
       Continuous K ∧ Integrable K ∧
@@ -1718,12 +1172,7 @@ private theorem exists_bourgainQuadratic_sargos_kernel :
       rw [he]
       exact mul_comm _ _
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 set_option maxHeartbeats 400000 in
 private theorem bourgain_integer_cell_kernel_moment {ι : Type*}
@@ -1820,13 +1269,7 @@ private theorem bourgain_integer_cell_kernel_moment {ι : Type*}
       dsimp [A]
       ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgain_integer_cell_quadratic_moment :
@@ -1904,11 +1347,7 @@ private theorem exists_bourgain_integer_cell_quadratic_moment :
       mul_le_mul_of_nonneg_right hpow hJ
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_parabola_weight_product (K α γ : ℝ) :
     parabolaSourceWeight K 0 0 α γ ≤
@@ -1956,13 +1395,7 @@ private theorem bourgain_quadratic_tail_absorption {K h : ℝ}
     _ ≤ _ := inv_anti₀ (by positivity)
       (by nlinarith [sq_abs (γ/K),abs_nonneg (γ/K)])
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem bourgain_integer_parabola_average {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) (w : ι → ℝ)
@@ -2030,13 +1463,7 @@ private theorem exists_bourgain_integer_parabola_period :
   rw [bourgain_integer_cell_linear_shift S z m s ht hc (2*γ*a*h) (γ*h^2)]
   exact hbound S z m s (T*h) (c+T*a) (γ*h^2) ht hc hs
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgain_integer_parabola_weighted_cell :
@@ -2121,13 +1548,7 @@ private theorem exists_bourgain_integer_parabola_weighted_cell :
     _ ≤ ∫ γ : ℝ, (3*Real.pi*K*D)*L γ*J := hlast
     _ = _ := by rw [integral_mul_const,integral_const_mul,hmass]; ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgain_integer_parabola_refinement {ε : ℝ} (hε : 0<ε) :
@@ -2219,12 +1640,7 @@ private theorem exists_bourgain_integer_parabola_refinement {ε : ℝ} (hε : 0<
     _ = D*E*((2:ℝ)^(ε*n)*N^2)*K^2*(∑ j, J j) := by ring
     _ = _ := by rw [hcoef]
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_integer_parabola_periodic_box {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) (w : ι → ℝ)
@@ -2295,13 +1711,7 @@ private theorem bourgain_integer_parabola_periodic_box {ι : Type*}
       dsimp [F]
       ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgain_integer_periodic_refinement {ε : ℝ} (hε : 0<ε) :
     ∃ C>(0:ℝ), ∀ (n : ℕ) (K T H c : ℝ), 0<T → T≤K → H≤K →
@@ -2327,13 +1737,7 @@ private theorem exists_bourgain_integer_periodic_refinement {ε : ℝ} (hε : 0<
     (fun ji hji => hm ji.1 ji.2 (Finset.mem_sigma.mp hji).2)
   exact hentry.trans (hbound n K T c hT hTK hwidth hsmall ι S z x m hx hm)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgain_integer_scaled_periodic_refinement {ε : ℝ} (hε : 0<ε) :
     ∃ C>(0:ℝ), ∀ (n : ℕ) (K T R δ c : ℝ), 0<T → T≤K → 0≤R →
@@ -2372,74 +1776,8 @@ private theorem exists_bourgain_integer_scaled_periodic_refinement {ε : ℝ} (h
   rw [←hchange] at hh
   simpa only [mul_assoc,G] using hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 public  theorem bourgain_rectangle_integral_coordinate {n : ℕ}
     (Q : Fin (n+1) → ℝ) (i : Fin (n+1))
     (f : (Fin (n+1) → ℝ) → ℝ) (hf : Continuous f) :
@@ -2470,11 +1808,7 @@ public  theorem bourgain_rectangle_integral_coordinate {n : ℕ}
   simp only [he,μ]
   rw [←hmeasure (fun j => Q (i.succAbove j))]
   rfl
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_anisotropic_rectangle_integral
     (Q R : ℝ) (f : (Fin 4 → ℝ) → ℝ) (hf : Continuous f) :
@@ -2534,19 +1868,8 @@ private theorem bourgain_anisotropic_rectangle_bound
   rw [hlength] at hh
   exact (le_abs_self _).trans (hh.trans_eq (by ring))
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 public  def bourgainClosedFineCell (n : ℕ) (x : ℝ) : Fin (2^n) :=
   ⟨min ⌊((2^n:ℕ):ℝ)*x⌋₊ (2^n-1),
     lt_of_le_of_lt (min_le_right _ _) (Nat.sub_lt (by positivity) (by decide))⟩
@@ -2582,59 +1905,8 @@ private theorem bourgain_fine_cell_sum {ι : Type*} (S : Finset ι)
     (∑ j : Fin (2^n), ∑ i∈S.filter (fun i => g i=j), F i)=∑ i∈S,F i :=
   Finset.sum_fiberwise_of_maps_to (fun _ _ => Finset.mem_univ _) F
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-namespace TaoTrudgianYang2025
 private theorem exists_bourgain_quadratic_vinogradov_count {ε : ℝ} (hε : 0<ε) :
     ∃ C>(0:ℝ), ∀ Q : ℕ, 1≤Q →
       (fordVinogradovMomentNat 3 2 Q:ℝ)≤C*(Q:ℝ)^((3:ℝ)+ε) := by
@@ -2646,13 +1918,8 @@ private theorem exists_bourgain_quadratic_vinogradov_count {ε : ℝ} (hε : 0<�
   norm_num [fordLambda34] at hh
   exact hh
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory GafniTao
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_weighted_vinogradov_power (s k Q : ℕ)
     (z : Fin Q → ℂ) (α : UnitAddTorus (Fin k)) :
@@ -2736,13 +2003,8 @@ private theorem bourgain_weighted_vinogradov_complex_mean (s k Q : ℕ)
   rw [ho]
   split_ifs <;> simp only [mul_one,mul_zero,A]
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory GafniTao
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_weighted_vinogradov_mean_le (s k Q : ℕ)
     (z : Fin Q → ℂ) {B : ℝ} (hB : 0≤B) (hz : ∀ n, ‖z n‖≤B) :
@@ -2796,13 +2058,8 @@ private theorem bourgain_weighted_vinogradov_mean_le (s k Q : ℕ)
     _ ≤ _ := (Finset.sum_le_sum (fun x _ =>
       Finset.sum_le_sum (fun y _ => hterm x y))).trans_eq hcount
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_vinogradov_monomial_real {k Q : ℕ}
     (n : Fin Q) (α : Fin k → ℝ) :
@@ -2851,12 +2108,7 @@ private theorem exists_bourgain_quadratic_weighted_cube {ε : ℝ} (hε : 0<ε) 
       mul_le_mul_of_nonneg_left (hcount Q hQ) (pow_nonneg hB 6)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
 
 public  theorem bourgain_closed_square_integral (a b : ℝ) (f : (Fin 2 → ℝ) → ℝ)
     (hf : Continuous f) :
@@ -2943,13 +2195,7 @@ private theorem exists_bourgain_quadratic_weighted_integer_interval {ε : ℝ} (
       (u*((n:ℕ)+1:ℝ)+v*((n:ℕ)+1:ℝ)^2)‖^6) ≤ _ at hh
   simpa only [mul_comm] using hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem bourgain_integer_interval_fiber_sum {ι : Type u}
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) (A : ℤ) (Q : ℕ)
@@ -3011,12 +2257,7 @@ theorem exists_bourgain_quadratic_weighted_finite_interval {ε : ℝ} (hε : 0<�
   simp_rw [he] at hh
   exact hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_periodic_eight_periods (f : ℝ → ℝ)
     (hf : Continuous f) (hp : Function.Periodic f 1) :
@@ -3067,13 +2308,7 @@ private theorem bourgain_centered_quadratic_period {ι : Type*}
   exact bourgain_integer_cell_linear_shift S z m (fun i => (m i:ℝ))
     (t:=1) (c:=0) (by norm_num) (by intro i hi; ring) (-2*v*c) v
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem bourgain_integer_quadratic_period_continuous {ι : Type u}
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) :
@@ -3137,24 +2372,8 @@ private theorem bourgain_integer_quadratic_physical_period {ι : Type u}
     (bourgain_integer_quadratic_period_continuous S z m)
     (bourgain_integer_quadratic_period_periodic S z m) hT
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
-universe u
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-namespace TaoTrudgianYang2025
 public  theorem bourgain_fine_cell_integer_interval {T a h : ℝ} {K : ℕ}
     (hT : 0<T) (hwidth : T*h=(K:ℝ)) {m : ℤ}
     (hm : (m:ℝ)/T∈Icc a (a+h)) :
@@ -3173,10 +2392,6 @@ public  theorem bourgain_fine_cell_integer_interval {T a h : ℝ} {K : ℕ}
   · have hh : (m:ℝ)≤((⌊T*a⌋:ℤ):ℝ)-1+((K:ℝ)+2) := by linarith
     exact_mod_cast hh
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-namespace TaoTrudgianYang2025
 public  theorem bourgain_fine_dyadic_physics {j : ℕ} (hj : 3≤j) :
     let N := (2:ℝ)^(2*j)
     let T := N^2
@@ -3249,12 +2464,8 @@ public  theorem bourgain_fine_dyadic_physics {j : ℕ} (hj : 3≤j) :
     rw [he]
     exact (div_le_one (by positivity : 0<2*k)).mpr (by linarith)
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_middle_rectangle_average {K : ℝ}
     (hK : 0 ≤ K) (Q : Fin 2 → ℝ) (f : (Fin 2 → ℝ) → ℝ)
@@ -3315,12 +2526,8 @@ private theorem bourgain_middle_rectangle_average {K : ℝ}
   have hswap := integral_integral_swap (f:=fun q y => f (q+y)) hi
   exact hh.trans_eq hswap.symm
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 private theorem bourgain_anisotropic_rectangle_integral_middle
     (T R : ℝ) (f : (Fin 4 → ℝ) → ℝ) (hf : Continuous f) :
@@ -3388,11 +2595,7 @@ public  theorem bourgain_anisotropic_middle_average {K : ℝ} (hK : 0≤K)
   change f ![r,p 0+y 0,p 1+y 1,q]=f ![r,y 0+p 0,y 1+p 1,q]
   simp only [add_comm]
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-namespace TaoTrudgianYang2025
 
 public  theorem bourgain_affine_fine_cell {b δ w : ℝ} (hδ : 0<δ)
     (n : ℕ) (k : Fin (2^n))
@@ -3410,32 +2613,6 @@ public  theorem bourgain_affine_fine_cell {b δ w : ℝ} (hδ : 0<δ)
   rw [hright] at hhi
   constructor <;> linarith
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
 public  theorem bourgain_fine_count_scale {ε : ℝ} (hε : 0<ε)
     (j Q : ℕ) (hQ : Q≤2^j) :
     let N := (2:ℝ)^(2*j)
@@ -3473,25 +2650,8 @@ public  theorem bourgain_fine_count_scale {ε : ℝ} (hε : 0<ε)
       gcongr
     _ = _ := by simp only [he,mul_pow,he₂]; ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 public  theorem bourgain_rectangle_diagonal_integral
     {n : ℕ} (D a b : Fin n → ℝ) (hD : ∀ i, 0<D i)
     (f : (Fin n → ℝ) → ℝ) :
@@ -3532,23 +2692,9 @@ public  theorem bourgain_rectangle_diagonal_integral
   rw [himg] at h
   simpa only [hd,hL,abs_of_pos (Finset.prod_pos (fun i _ => hD i)),
     smul_eq_mul,integral_const_mul] using h
-end TaoTrudgianYang2025
 
 
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
 public  theorem exists_bourgain_dyadic_scale {ν : ℝ} (hν : 0<ν) :
     ∃ L≥(1:ℝ), ∀ T : ℝ, 1≤T →
       ∃ j k : ℕ, 4≤j ∧ 0<k ∧
@@ -3622,13 +2768,8 @@ public  theorem exists_bourgain_dyadic_scale {ν : ℝ} (hν : 0<ν) :
     apply (div_le_one hR₀).mpr
     exact (le_div_iff₀ hT₀).mp hd
   exact ⟨j,2^d,hj,hk,h4T,hRT,hsep,hαlo,hαhi⟩
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 public  theorem bourgain_integer_dilation_fiber_mass {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) {B : ℝ} (hB : 0≤B)
     (hm : ∀ q : ℤ,(∑ i∈S.filter (fun i => m i=q),‖z i‖)≤B)
@@ -3665,26 +2806,9 @@ public  theorem bourgain_dyadic_epsilon_scale (ε : ℝ) (j : ℕ) :
   rw [hR,Real.rpow_add (by positivity),he]
   norm_num only [Real.rpow_ofNat]
   ring
-end TaoTrudgianYang2025
 
 
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix ContDiff
-namespace TaoTrudgianYang2025
 public  def bourgainShiftRoot (δ t : ℝ) : ℝ := t/(Real.sqrt (1+δ*t)+1)
 public  def bourgainShiftCubic (δ t : ℝ) : ℝ :=
   -(bourgainShiftRoot δ t)^3*(4+3*δ*bourgainShiftRoot δ t)/8
@@ -3804,31 +2928,6 @@ public  def bourgainShiftSixMoment {ι : Type*} (S : Finset ι)
     (x 0*t i+x 1*(t i)^2+x 2*bourgainShiftCubic δ (t i)+
       x 3*bourgainShiftQuartic δ (t i))‖^6
 
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-open scoped ContDiff Topology
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-open scoped ContDiff Topology
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-open scoped ContDiff BigOperators
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open Set
-open scoped ContDiff
-namespace TaoTrudgianYang2025
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
 private def bourgainShiftFrameInverse (δ : ℝ) : Matrix (Fin 4) (Fin 4) ℝ :=
   !![1/2,0,0,0;
      -δ/8,1/4,0,0;
@@ -3876,14 +2975,9 @@ private theorem bourgainShiftFrame_norm_bounds {δ : ℝ} (hδ : |δ|≤1) (x : 
   refine ⟨bourgain_matrix_four_norm _ hm x,?_⟩
   have hh := bourgain_matrix_four_norm _ hi ((bourgainShiftFrame δ).mulVec x)
   rwa [bourgainShiftFrame_inverse_apply] at hh
-end TaoTrudgianYang2025
 
 
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem bourgainSourcePermutation_symm_apply (x : Fin 4 → ℝ) :
     bourgainSourcePermutation.symm x = ![x 1,x 3,x 2,x 0] := by
@@ -3942,12 +3036,7 @@ private theorem bourgainShift_to_source_moment {ι : Type*} (S : Finset ι)
   conv_rhs at hq => rw [h₀,h₁,h₂,h₃]
   simpa only [Real.sqrt_sq hroot] using hf.trans hq.symm
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem bourgainRadialWeight_shift_same_scale {R : ℝ}
     (hR : 0<R) {q : Fin 4 → ℝ} (hq : ‖q‖≤R) (x : Fin 4 → ℝ) :
@@ -3990,13 +3079,7 @@ private theorem bourgainRadialWeight_shift_integral_same_scale {R : ℝ}
       simpa only [add_sub_cancel_right] using he
     _ ≤ _ := hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainSourceCurve_enlarged_cube {ε ν : ℝ}
@@ -4102,12 +3185,7 @@ private theorem exists_bourgainSourceCurve_enlarged_cube {ε ν : ℝ}
   apply (mul_le_mul_iff_right₀ (show 0<(2*R)^4 by positivity)).mp
   exact hb.trans_eq (by dsimp only [R,JS,JV]; ring)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem continuous_bourgainShiftToSource (δ : ℝ) :
     Continuous (bourgainShiftToSource δ) := by
@@ -4234,13 +3312,7 @@ private theorem bourgainShift_cube_transport {ι τ : Type*}
         (bourgainSourceSixMoment_nonneg _ _ _ _) (bourgainSourceSixMoment_nonneg _ _ _ _)))
       (Filter.Eventually.of_forall hsub)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgainShift_dyadic_decoupling {ε ν : ℝ}
     (hε : 0<ε) (hν : 0<ν) :
@@ -4304,13 +3376,7 @@ private theorem exists_bourgainShift_dyadic_decoupling {ε ν : ℝ}
     (by positivity : 0≤C*(2:ℝ)^(ε*n)/(((2:ℝ)^n)^2)^2)
   exact (hentry.trans hm).trans (by simpa only [mul_assoc,w,a] using hlast)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
                                                                            
                                                                       
@@ -4320,9 +3386,6 @@ universe u
                                                                       
                                                                           
          
-end TaoTrudgianYang2025
-noncomputable section
-namespace TaoTrudgianYang2025
 private theorem bourgainShift_cubic_algebra (δ r s : ℝ)
     (ha : 1+δ*r≠0) (hsa : (1+δ*r)+(1+δ*s)≠0) :
     let a := 1+δ*r
@@ -4356,11 +3419,7 @@ private theorem bourgainShift_quartic_algebra (δ r s : ℝ)
   rw [←he,←hu]
   ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
 
 private theorem bourgainShift_taylor_exact {δ b t : ℝ}
     (hb : 0<1+δ*b) (ht : 0<1+δ*t) :
@@ -4392,12 +3451,7 @@ private theorem bourgainShift_taylor_exact {δ b t : ℝ}
   rw [←hr.2] at hq
   exact ⟨hc,hq⟩
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open Set
-open scoped ContDiff
-namespace TaoTrudgianYang2025
 
 private def bourgainShiftRemainderPhase (p : Fin 5 → ℝ) (s : ℝ) : ℝ :=
   let a := Real.sqrt (1+p 0*p 1)
@@ -4441,12 +3495,7 @@ private theorem bourgainShiftRemainderPhase_contDiffAt
   dsimp only
   fun_prop (disch := positivity)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped ContDiff Topology
-namespace TaoTrudgianYang2025
 
 private def bourgainShiftRemainderCutoff (p : Fin 5 → ℝ) (s : ℝ) : ℂ :=
   (modelPhaseBufferedCutoff (-2) 2 (1/2) s : ℂ)*
@@ -4505,12 +3554,7 @@ private theorem bourgainShiftRemainderCutoff_smooth
     exact contDiffAt_const.congr_of_eventuallyEq
       (notMem_tsupport_iff_eventuallyEq.mp hz)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-open scoped ContDiff Topology
-namespace TaoTrudgianYang2025
 
 private theorem bourgainShiftRemainderCutoff_derivative_bound (Q : ℕ) :
     ∃ C : ℝ, 1≤C ∧
@@ -4564,12 +3608,7 @@ private theorem bourgainShiftRemainderCutoff_derivative_bound (Q : ℕ) :
 
 
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
 
 private theorem bourgainShiftRemainderCutoff_derivative_integrable (p : Fin 5 → ℝ)
     (hp : p ∈ Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32]) (j : ℕ) :
@@ -4624,13 +3663,8 @@ private theorem bourgainShiftRemainderCutoff_fourier_moment (p : Fin 5 → ℝ)
   simpa only [norm_iteratedFDeriv_zero, Real.norm_eq_abs, Nat.cast_zero, mul_zero, zero_add,
     pow_zero, one_mul, Finset.range_one, Finset.sum_product, Finset.sum_singleton] using h
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
 
 private theorem bourgainShiftRemainderCutoff_fourier_decay (Q : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ p ∈ Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32],
@@ -4668,13 +3702,8 @@ private theorem bourgainShiftRemainderCutoff_fourier_decay (Q : ℕ) :
         |ξ|^Q*‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (add_le_add hz hp) (by positivity)
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
 
 private theorem bourgainShiftRemainderCutoff_uniform_fourierL1 :
     ∃ C : ℝ, 0 < C ∧ ∀ p ∈ Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32],
@@ -4717,13 +3746,8 @@ private theorem bourgainShiftRemainderCutoff_uniform_fourierL1 :
   rw [integral_const_mul,integral_univ_inv_one_add_sq] at hmain
   exact hmain
 
-end TaoTrudgianYang2025
 
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
 
                                                                                         
                                                                                 
@@ -4777,12 +3801,6 @@ private theorem exists_bourgainShiftRemainder_multiplier_kernel :
           2*(Real.pi:ℂ)*Complex.I*↑(ξ*s) := by push_cast; ring
       rw [he]
       exact mul_comm _ _
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgainShiftRemainder_finite_moment :
     ∃ C : ℝ, 0 < C ∧ ∀ p ∈ Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32],
@@ -4827,13 +3845,7 @@ private theorem exists_bourgainShiftRemainder_finite_moment :
 
 
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgainShift_quadratic_moment :
     ∃ C>(0:ℝ), ∀ (δ b h : ℝ) (x : Fin 4 → ℝ),
@@ -4919,13 +3931,7 @@ private theorem exists_bourgainShift_quadratic_moment :
       filter_upwards with ξ
       rw [hright]
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainShift_periodic_quadratic_moment :
@@ -5028,11 +4034,7 @@ private theorem exists_bourgainShift_periodic_quadratic_moment :
 
 
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
 
 private def bourgainShiftQuadraticCubic (δ t : ℝ) : ℝ :=
   -3*bourgainShiftRoot δ t/(8*Real.sqrt (1+δ*t))
@@ -5105,12 +4107,7 @@ private theorem bourgainShift_quadratic_separation {δ t v : ℝ}
       nlinarith
     _ ≤ _ := by linarith
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-open scoped Matrix
-namespace TaoTrudgianYang2025
 
 private def bourgainShiftQuadraticFrame (δ b d : ℝ) : Matrix (Fin 2) (Fin 2) ℝ :=
   !![1,bourgainShiftQuadraticCubic δ b;1,bourgainShiftQuadraticCubic δ d]
@@ -5243,13 +4240,7 @@ private theorem bourgainShiftQuadraticFrame_box_product {δ b d ν R q : ℝ}
       bourgainShiftQuadraticFrame_affine_integral hδ hb hd hν hsep a G hGm hG₀
     _ = _ := by rw [hprod,integral_indicator hB,integral_indicator hB]; ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainShift_periodic_box_factorization :
@@ -5350,13 +4341,7 @@ private theorem exists_bourgainShift_periodic_box_factorization :
 
 
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 public  theorem exists_bourgainShift_large_plane_vmvt {ε : ℝ} (hε : 0<ε) :
     ∃ C>(0:ℝ), ∀ (δ b d h T q ν : ℝ),
@@ -5420,13 +4405,7 @@ public  theorem exists_bourgainShift_large_plane_vmvt {ε : ℝ} (hε : 0<ε) :
 
 
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
                                                                      
                                                                            
@@ -5435,11 +4414,6 @@ universe u
                                                                        
                                                                        
                                                                
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 private theorem bourgainShift_integer_coordinate_average {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) (δ : ℝ) {T K : ℝ}
     (hT : 0<T) (hTK : T≤K) :
@@ -5455,12 +4429,7 @@ private theorem bourgainShift_integer_coordinate_average {ι : Type*}
       (fun i => bourgainShiftCubic δ ((m i:ℝ)/T))
       (fun i => bourgainShiftQuartic δ ((m i:ℝ)/T)) hT hTK
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 public  theorem bourgainShiftSixMoment_translate {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (t : ι → ℝ) (δ : ℝ) (q x : Fin 4 → ℝ) :
@@ -5509,12 +4478,7 @@ private theorem bourgainShift_integer_period_shift {ι : Type*}
     (c:=0) (fun i hi => by simpa only [sub_zero] using hw i hi) r 0
   simpa only [zero_mul,add_zero] using hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 set_option maxHeartbeats 400000 in
 private theorem bourgainShift_shifted_radial_period_entry {ι : Type*}
@@ -5571,13 +4535,7 @@ private theorem bourgainShift_shifted_radial_period_entry {ι : Type*}
       (fun i _ => hw i) (![q 1,q 2,q 3] : Fin 3 → ℝ) (q 0)
   simpa only [hperiod,zy,w] using hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainShift_periodic_refinement {ε : ℝ} (hε : 0<ε) :
@@ -5674,12 +4632,7 @@ private theorem exists_bourgainShift_periodic_refinement {ε : ℝ} (hε : 0<ε)
 
 
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 public  def bourgainShiftPeriod {ι : Type*} (S : Finset ι) (z : ι → ℂ)
     (w : ι → ℝ) (δ T : ℝ) (q : Fin 3 → ℝ) : ℝ :=
@@ -5728,11 +4681,7 @@ public  theorem bourgainShiftShiftedPeriod_norm_bound {ι : Type*}
   simpa only [Real.volume_real_Icc,sub_zero,max_eq_left (by norm_num : (0:ℝ)≤1),
     one_mul,mul_one,bourgainShiftShiftedPeriod,bourgainShiftPeriod,zy] using hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 private theorem continuous_bourgainShift_radial_average {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (δ : ℝ) {K : ℝ} (hK : 0<K) :
@@ -5757,12 +4706,7 @@ private theorem continuous_bourgainShift_radial_average {ι : Type*}
   · filter_upwards with x
     exact continuous_const.mul (hFc.comp (continuous_id.add continuous_const))
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 set_option maxHeartbeats 400000 in
 public  theorem bourgainShift_radial_pair_period_entry {ι κ : Type*}
@@ -5881,12 +4825,7 @@ public  theorem bourgainShift_radial_pair_period_entry {ι κ : Type*}
   · simpa only [heInner] using hiOuter
   · simpa only [heInner] using hm
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem bourgainShiftPeriod_integer {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (m : ι → ℤ) (w : ι → ℝ) (δ T : ℝ)
@@ -5916,11 +4855,7 @@ private theorem integrable_bourgainShiftShiftedPeriod {ι : Type*}
   exact hW.mul_bdd hc.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun y => bourgainShiftShiftedPeriod_norm_bound S z w δ T y q))
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
 
 public  theorem bourgainShift_anisotropic_dyadic_scales (j : ℕ) (hj : 4≤j) :
     let N := (2:ℝ)^(2*j)
@@ -5963,13 +4898,7 @@ public  theorem bourgainShift_anisotropic_dyadic_scales (j : ℕ) (hj : 4≤j) :
   exact ⟨⟨hh₀,hh₁⟩,by positivity,by positivity,hR,hq,
     by rw [hTh]; linarith,by rw [hβ]; linarith,hwidth,hP,hnormal⟩
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainShift_radial_cell_refinement {ε : ℝ} (hε : 0<ε) :
@@ -6102,13 +5031,7 @@ private theorem exists_bourgainShift_radial_cell_refinement {ε : ℝ} (hε : 0<
       mul_le_mul_of_nonneg_left hmajor (sq_nonneg _)
     _ = _ := by dsimp [E,W,w,v]; ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainShift_dyadic_radial_cell_refinement {ε : ℝ} (hε : 0<ε) :
@@ -6188,13 +5111,7 @@ private theorem exists_bourgainShift_dyadic_radial_cell_refinement {ε : ℝ} (h
   apply (mul_le_mul_iff_right₀ (by positivity : (0:ℝ)<15625/(64*N^2))).mp
   simpa only [mul_assoc] using hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgainShift_dyadic_radial_rectangle_refinement {ε : ℝ} (hε : 0<ε) :
     ∃ C>(0:ℝ), ∀ (j : ℕ), 4≤j →
@@ -6254,12 +5171,7 @@ private theorem exists_bourgainShift_dyadic_radial_rectangle_refinement {ε : �
   dsimp only [FS,FV] at hh
   exact hh.trans_eq (by dsimp [T]; ring)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 public  theorem bourgainShiftSixMoment_fine_fibers {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (α : ℝ) (n : ℕ)
@@ -6273,13 +5185,7 @@ public  theorem bourgainShiftSixMoment_fine_fibers {ι : Type*}
   exact bourgain_fine_cell_sum S n g (fun i => z i*fordAdditiveCharacter
     (x 0*w i+x 1*(w i)^2+x 2*bourgainShiftCubic α (w i)+x 3*bourgainShiftQuartic α (w i)))
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainShift_dyadic_radial_fiber_refinement {ε : ℝ} (hε : 0<ε) :
@@ -6342,11 +5248,7 @@ private theorem exists_bourgainShift_dyadic_radial_fiber_refinement {ε : ℝ} (
   simp_rw [heS,heV] at hh
   exact hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
 
 public  def bourgainShiftCellBase (δ q : ℝ) : ℝ := min 1 (2*q+δ*q^2)
 
@@ -6411,13 +5313,7 @@ private theorem bourgainShift_root_cell_center_separation {δ t v a b N ν : ℝ
     (bourgainShift_root_cell_location hδ hv hN hb hr).1 hsep).1
   simpa only [abs_sub_comm] using hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainShift_root_cell_rectangle {ε : ℝ} (hε : 0<ε) :
@@ -6534,13 +5430,7 @@ private theorem exists_bourgainShift_root_cell_rectangle {ε : ℝ} (hε : 0<ε)
     subst S
     simp [bourgainShiftSixMoment,bourgainShiftShiftedPeriod,bourgainShiftPeriod]
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainShiftCurve_rectangle_entry {ε ν : ℝ}
@@ -6635,13 +5525,7 @@ private theorem exists_bourgainShiftCurve_rectangle_entry {ε ν : ℝ}
         (fun ji => c ji.1 ji.2) (fun ji => v ji.1 ji.2) δ x))
   exact havg.trans hcomp
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 public  theorem exists_bourgainShift_small_anisotropic_refinement
@@ -6754,231 +5638,6 @@ public  theorem exists_bourgainShift_small_anisotropic_refinement
   rw [hcoef] at hfull
   exact (mul_le_mul_iff_right₀ (by positivity : (0:ℝ)<(2*T)^4)).mp hfull
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 -- Generated closures: source context is replayed in the next part.
-end TaoTrudgianYang2025
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end

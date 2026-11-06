@@ -4,8 +4,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.TypeIIFourthMomentReduction
 
 @[expose] public section
 
-open Complex Finset Filter MeasureTheory Real Set
-open ComplexConjugate
+open Complex Finset Filter MeasureTheory Real Set ComplexConjugate
 open scoped BigOperators Interval
 
 namespace GuthMaynard.NativeMoment
@@ -819,4 +818,3 @@ theorem norm_gmTraceNonzeroTailAt_eq
       (N : ℝ) * ‖gmTraceNonzeroFourierSum cutoff N t‖ := by
   rw [gmTraceNonzeroTailAt_eq_scale_mul, norm_mul, Complex.norm_natCast]
 
-end GuthMaynard.NativeMoment

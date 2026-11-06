@@ -259,6 +259,4 @@ theorem wooley_natPrimePower_rpow
   rw [Nat.cast_pow]
   exact (Real.rpow_natCast_mul (by exact_mod_cast hp.le) n Lambda).symm
 
-end
 
-end GafniTao

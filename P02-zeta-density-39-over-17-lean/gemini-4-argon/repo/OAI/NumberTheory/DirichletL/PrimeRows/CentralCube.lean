@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 def centralCubeIntegral {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -113,9 +112,3 @@ theorem uniform_original_row_cube_error (K : ℕ)
     exact pow_nonneg (height_pos _).le _
   apply (norm_sub_le_norm_sub_add_norm_sub _ (centralRectangleIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H) _).trans
   exact (add_le_add h0' h1'').trans_eq (by ring)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstColumns
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFixedRay RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFixedRay RayFourExpansion CenteredMomentGaussEnergy
 
 def leftCoefficient (e r : O) (ρ : O → ℂ) (a : O) : ℂ :=
   idealRowHom (e*r) (Ideal.span {a})*ρ a
@@ -81,9 +79,3 @@ theorem firstExtension_separated (e r a b : O) (ρ : O → ℂ)
   apply Finset.sum_congr rfl
   intro ξ hξ
   ring
-
-end SevenEighths.CenteredMomentFirstColumns
-
-end
-
-end OAI

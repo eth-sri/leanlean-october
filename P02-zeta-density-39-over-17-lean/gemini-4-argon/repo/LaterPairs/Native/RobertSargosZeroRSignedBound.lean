@@ -40,4 +40,3 @@ theorem robertSargos_zero_r_source_bound
     simpa only [abs_of_pos hqr] using
       robertSargos_zero_r_source_positive_bound f M h q hC hh hpos hlam hs hf hlo hhi
 
-end TaoTrudgianYang2025

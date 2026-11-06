@@ -121,4 +121,3 @@ theorem source_ratio_fourier_weighted_shell (S : Finset (ℕ × ℕ)) {Q X : ℝ
         4*Real.pi*R*Real.sqrt (∫ t, ‖f t‖^2)) := mul_le_mul_of_nonneg_left hb (div_nonneg hX hQ0.le)
     _ = _ := by field_simp; ring
 
-end GuthMaynard.Improvement

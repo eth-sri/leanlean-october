@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeInverseAmplification
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion
-open CanonicalQuadraticSieve hiding O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
 
 theorem row_coeff_zero_unsupported (η χ : Character) (m f z : O)
     (heq : ∀ n : O, elementCoeff χ n=rowTwist (elementHom η) m f z n)
@@ -52,9 +50,3 @@ theorem amplified_row_prime_mask (η χ ψ : Character) (m f z a : O)
   · rw [row_coeff_zero_unsupported η ψ m f (z*a^6) hψ hmLam hm2 J hs,
       row_coeff_zero_unsupported η χ m f z hχ hmLam hm2 J hs]
     simp
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

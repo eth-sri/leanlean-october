@@ -11,7 +11,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def poolPrimeFamily (R Q Q₀ : Ideal Eis) : PrimeFamily (FreeReflection.pool R Q Q₀) where
   ideal P := P.val
@@ -79,7 +78,3 @@ lemma original_active_marks
   | inr x => cases x with
     | inl a => simp [markedActiveEquiv_residual,markedSumSlots]
     | inr t => simp [markedActiveEquiv_slot,markedSumSlots]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource
-open InverseSecondPrincipalCaller InversePrincipalEnergy FirstCauchyArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource InverseSecondPrincipalCaller InversePrincipalEnergy FirstCauchyArithmetic
 
 theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
     ∃Cb:ℝ,0<Cb ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
@@ -84,8 +81,3 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
       rw [←he]
       dsimp only [Cr,Cc,N]
       ring
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

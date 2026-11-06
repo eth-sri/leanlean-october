@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialMarkedDictionary
-open HeckeFamily HeckeDyadic InverseInitialRawDictionary InverseInitialConjugateEnergy
-open InverseInitialPoissonBridge UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialPoissonBridge UniqueFactorizationMonoid
 
 theorem indexed_mark_initial {ι : Type*} (T : Finset ι) (P : ι→Ideal O) (A : ι→ℂ)
     (η : Ideal O →* ℂ) (χ : Character) (u : O)
@@ -72,9 +70,3 @@ theorem conjugate_mark_product {ι : Type*} [Fintype ι]
   apply Finset.sum_congr rfl
   intro p hp
   rw [Finset.prod_mul_distrib,map_prod,star_prod]
-
-end SevenEighths.InverseInitialMarkedDictionary
-
-end
-
-end OAI

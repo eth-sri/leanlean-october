@@ -133,4 +133,3 @@ theorem cubic_dyadic_strip_assembly (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     _ ≤ ∑ _k ∈ cubicDyadicClasses U, Z := Finset.sum_le_sum (fun k _ => (hf k).2)
     _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]; dsimp [Z]; ring
 
-end GuthMaynard.Improvement

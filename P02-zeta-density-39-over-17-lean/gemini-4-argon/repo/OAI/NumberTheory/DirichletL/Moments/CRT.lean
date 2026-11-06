@@ -75,8 +75,3 @@ def crtCharacter {S ι : Type*} [CommRing S] [Fintype ι] {R : ι → Type*}
 @[simp] theorem crtCharacter_apply {S ι : Type*} [CommRing S] [Fintype ι] {R : ι → Type*}
     [∀ i, CommRing (R i)] (e : S ≃+* (∀ i, R i)) (χ : ∀ i, MulChar (R i) ℂ) (x : S) :
     crtCharacter e χ x = ∏ i, χ i (e x i) := rfl
-
-end
-end SevenEighths.CenteredMomentCorrelation
-
-end OAI

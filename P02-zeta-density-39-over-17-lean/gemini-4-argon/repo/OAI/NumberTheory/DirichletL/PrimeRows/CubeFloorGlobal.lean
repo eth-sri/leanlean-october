@@ -10,11 +10,8 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots HeckeDetectorPhysicalSelection
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
@@ -110,9 +107,3 @@ theorem actual_global_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax
       calc
         _ = (C*Cg)*(η.modulus.absNorm:ℝ)^(2*eps)*(Z^(loss-1/40+mesh/6)*(Z^v)^θ) := by ring
         _ = _ := by rw [hp]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

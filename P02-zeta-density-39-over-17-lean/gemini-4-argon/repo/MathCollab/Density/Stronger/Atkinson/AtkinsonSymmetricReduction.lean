@@ -109,4 +109,3 @@ theorem exists_atkinsonPowerIntegral_symmetric_approximation (α : ℝ) :
   apply (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans ((add_le_add hf hm').trans_eq ?_)
   ring
 
-end MathCollab.Density.Stronger.Atkinson

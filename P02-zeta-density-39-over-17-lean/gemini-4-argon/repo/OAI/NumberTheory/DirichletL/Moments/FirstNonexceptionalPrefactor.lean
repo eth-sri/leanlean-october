@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstNonexceptionalPrefactor
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalSourceSupport
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstActiveRadicalBudget CenteredMomentRankinRadical
-open CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSupportedCorrelation
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentRankinRadical CenteredMomentExceptionalAmplitudePair CenteredMomentSupportedCorrelation
 
 lemma pair_conductor_root (q₁ q₂ B:ℝ)(_h₁:0≤q₁)(h₂:0≤q₂)
     (hB:0≤B)(hb₁:q₁≤B)(hb₂:q₂≤B):Real.sqrt (q₁*q₂)≤B := by
@@ -66,9 +59,3 @@ theorem weighted_scalar_volume (C D:Ideal O)(hC:Supported C)(E:Finset (CommonInd
           ‖eisEmbedding (activeConductor C D)‖))*(Real.exp M*Real.sqrt ((C.absNorm:ℝ)*D.absNorm)/a):=
       mul_le_mul_of_nonneg_left hratio (by positivity)
     _=_:=by ring
-
-end SevenEighths.CenteredMomentFirstNonexceptionalPrefactor
-
-end
-
-end OAI

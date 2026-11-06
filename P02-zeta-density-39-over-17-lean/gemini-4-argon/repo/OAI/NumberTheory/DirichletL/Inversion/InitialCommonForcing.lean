@@ -8,13 +8,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic
 namespace SevenEighths.InverseInitialCommonForcing
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialEnergyCallerSelector
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialEnergyCallerWindow InverseInitialEnergyCallerSelector
 
 theorem common_selector_window
     (W:ℝ→ℂ)(Z r z G b:ℝ)(hZ:0<Z)(hW:∀x,W x≠0→x≤b)
@@ -39,9 +35,3 @@ theorem common_selector_window
   · have hn : (∏i∈A,i.val)∉columns (originalSource Z r b) P j :=
       fun h=>hd ((mem_columns hP.2.1 hj).mp h).2.2.1
     simp only [hd,hn,ite_false]
-
-end SevenEighths.InverseInitialCommonForcing
-
-end
-
-end OAI

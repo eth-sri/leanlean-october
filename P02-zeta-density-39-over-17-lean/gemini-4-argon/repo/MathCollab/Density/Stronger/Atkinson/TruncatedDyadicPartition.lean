@@ -66,4 +66,3 @@ theorem sum_range_eq_truncatedDyadic {α : Type*} [AddCommMonoid α]
   · have h := sum_range_min_pow_eq_truncatedDyadic f (Nat.pos_of_ne_zero hN) (Nat.clog 2 N)
     simpa only [min_eq_left (Nat.le_pow_clog (by norm_num : 1 < (2:ℕ)) N),hf,zero_add] using h
 
-end MathCollab.Density.Stronger.Atkinson

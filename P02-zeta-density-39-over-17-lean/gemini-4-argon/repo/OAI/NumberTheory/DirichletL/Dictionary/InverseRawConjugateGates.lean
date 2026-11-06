@@ -10,12 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseRawConjugateGates
-open CanonicalRowCompletion
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEnergy
-open InverseInitialRayAttachment InverseInitialExcludedPeriod CanonicalCoefficientClass
-open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPool
-open InverseInitialExcludedOverlap InverseMoment InverseInitialProfile
-local notation "O"=>HeckeFamily.O
+open CanonicalRowCompletion HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEnergy InverseInitialRayAttachment InverseInitialExcludedPeriod CanonicalCoefficientClass DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPool InverseInitialExcludedOverlap InverseMoment InverseInitialProfile
 
 theorem conjugate_element_apply (η:Ideal O→*ℂ)(x:O):
     elementCharacter (conjugateIdealCharacter η) x=star (elementCharacter η x):=rfl
@@ -56,9 +51,3 @@ theorem childLogTest_conjugate (W:ℝ→ℂ)(θ:ℝ):
   funext x
   simp only [childLogTest,star_mul,SecondPassIntegration.logPhase_conjugate]
   ring
-
-end SevenEighths.DetectorDictionaryInverseRawConjugateGates
-
-end
-
-end OAI

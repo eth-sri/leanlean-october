@@ -79,4 +79,3 @@ theorem shortDetectorBlock_scale_bounds {T : ℝ} {N : ℕ} {ρ : ℂ}
   have hhi : (n : ℝ) ≤ 2*N := by exact_mod_cast (Finset.mem_Ioc.mp hn).2
   constructor <;> linarith
 
-end GuthMaynard.Improvement

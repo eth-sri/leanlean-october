@@ -54,5 +54,4 @@ theorem heathBrownPair_inTriangle {r : ℝ} (hr : 3 ≤ r) :
   have hsum := heathBrownPair_sum_le hr
   exact ⟨hp.le,by linarith,by linarith,by linarith,hsum⟩
 
-end TaoTrudgianYang2025
 

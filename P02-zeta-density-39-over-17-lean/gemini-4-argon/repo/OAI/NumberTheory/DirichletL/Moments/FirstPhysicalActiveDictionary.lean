@@ -10,17 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalActiveDictionary
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentHeckeExpansion
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
-open CenteredMomentFirstPhysicalSource CenteredMomentActiveSource
-local notation "O" => HeckeFamily.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentHeckeExpansion CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum CenteredMomentFirstPhysicalSource CenteredMomentActiveSource
 
 theorem columns_active (C D : Ideal O) (hD : D≠0) (S : Finset (Ideal O))
     (β : Ideal O→ℂ) :
@@ -143,10 +133,7 @@ theorem block_active (η : Character) (m A : O) (t : ℝ)
     (fun I J hj=>physicalTerm_zero_right η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J hj)
 
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
-open CenteredMomentCommonRadialData CenteredMomentFirstRetainedNorm
-open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
-open CenteredMomentSectorLocalization CenteredMomentLogDyadic
+open CenteredMomentCommonRadialData CenteredMomentFirstRetainedNorm CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentLogDyadic
 
 theorem original_sectorMass_active (s : Input ι) (R seed : Ideal O)
     (m A : O) (t : ℝ) (S : Finset (Ideal O)) (C D : Ideal O)
@@ -190,9 +177,3 @@ theorem physicalMass_full_source [DecidableEq ι] (s : Input ι) (R seed : Ideal
   exact active_sectorMass_sum s R seed m A s.t
     (CenteredMomentSourceMass.finiteColumns (Fintype.piFinset s.pools)) Φ K
     (CenteredMomentExceptionalAmplitudePair.volume s.toData) Z ξ
-
-end SevenEighths.CenteredMomentFirstPhysicalActiveDictionary
-
-end
-
-end OAI

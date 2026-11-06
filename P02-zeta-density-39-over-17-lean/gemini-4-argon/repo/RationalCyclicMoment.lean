@@ -153,4 +153,3 @@ theorem rational_cyclic_moment_identity {N d : ℕ} [NeZero N]
   congr 2
   omega
 
-end Montgomery.RationalMoment

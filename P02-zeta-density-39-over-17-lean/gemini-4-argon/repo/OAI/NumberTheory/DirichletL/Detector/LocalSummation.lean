@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 
 lemma hasSum_geometric_tail (f : ℕ → ℂ) (a : ℕ) (B V : ℂ) (hV : ‖V‖<1)
     (hz : ∀ m, m<a → f m=0) (hf : ∀ n, f (n+a)=B*V^n) :
@@ -180,8 +179,3 @@ theorem principalMarkedSeries_eq (eta a X W V : ℂ) (hV : ‖V‖<1)
   unfold markedFactor
   simp only [pow_one]
   ring
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

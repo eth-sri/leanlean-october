@@ -9,13 +9,9 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
-open EisensteinSchwartzPoisson UniqueFactorizationMonoid CanonicalQuadraticSieve
-open SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialOverlap
-open SevenEighths.InverseInitialProfile
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson UniqueFactorizationMonoid CanonicalQuadraticSieve SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialProfile
 namespace SevenEighths.InverseInitialKernelBridge
 
-local notation "Eis" => ActualEisensteinCubic.O
 local notation "N" => fun I : Ideal Eis => (Ideal.absNorm I : ℝ)
 variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal Eis)
   [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
@@ -99,9 +95,3 @@ omit [DecidableEq ι] [∀ i, (P i).IsMaximal] in
 theorem pairDivisor_span (E : Finset ι) :
     Ideal.span {primeSubsetGenerator P E} = ∏ i ∈ E,P i :=
   span_idealGenerator _
-
-end SevenEighths.InverseInitialKernelBridge
-
-end
-
-end OAI

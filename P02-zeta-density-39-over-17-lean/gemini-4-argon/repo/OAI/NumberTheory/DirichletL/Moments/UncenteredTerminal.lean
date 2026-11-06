@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentUncenteredTerminal
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentRectangle
 
 def uncenteredProfileCoefficient {ι : Type*} [Fintype ι]
     (R : Ideal O) (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
@@ -61,9 +58,3 @@ theorem profileCoefficient_eq_uncentered {ι : Type*} [Fintype ι]
   simp only [profileCoefficient,idealRectangle,
     comparison_first_zero W₁ a₁ b₁ ha₁ hs₁ B₁ (v (Sum.inr 0)) hB₁,
     zero_mul,sub_zero,uncenteredProfileCoefficient]
-
-end SevenEighths.CenteredMomentUncenteredTerminal
-
-end
-
-end OAI

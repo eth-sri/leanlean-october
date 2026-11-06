@@ -8,9 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ProbeRow CubicEisenstein CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ProbeRow CubicEisenstein CanonicalQuadraticSieve
 
 theorem CalibrationData.residueMonoid_norm_le_one (C : CalibrationData) (a : O) :
     ‖C.residueMonoid a‖ ≤ 1 := by
@@ -51,8 +49,3 @@ theorem physicalRow_integrable (η : HeckeFamily.Character) (C : CalibrationData
   exact spectralRow_vertical_integrable C.excluded D (rowCoefficient η C.Xi s hs m)
     (fun a => rowCoefficient_norm_le_one η C.Xi C.Xi_norm_le_one s hs m a)
     4 (by norm_num) Z hZ
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

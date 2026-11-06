@@ -12,8 +12,7 @@ public import MathCollab.Density.RectangleResidue
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology
 set_option autoImplicit false
 noncomputable section
@@ -164,7 +163,7 @@ set_option maxHeartbeats 800000 in
 /-- Finite-height rectangle shift.  The apparent pole at zero has already
 been removed, so the rectangle crosses exactly the zeta pole `1 - ρ`. -/
 theorem detector_finite_rectangle_residue {ρ : ℂ} {X Y R : ℝ}
-    (hY : 0 < Y) (hβLower : 3/4 ≤ ρ.re) (hβUpper : ρ.re < 1)
+    (hY : 0 < Y) (hβLower : 1/2 < ρ.re) (hβUpper : ρ.re < 1)
     (hR : |ρ.im| < R) (hZero : riemannZeta ρ = 0) :
     let a : ℝ := 1/2 - ρ.re
     RectangleIntegral'
@@ -230,7 +229,7 @@ theorem detector_finite_rectangle_residue {ρ : ℂ} {X Y R : ℝ}
 /-- Exact finite shift for the literal kernel; both exceptional points are
 strictly interior for every independently chosen R>|Im(rho)|. -/
 theorem detector_finite_rectangle_kernel {ρ : ℂ} {X Y R : ℝ}
-    (hY : 0 < Y) (hβLower : 3/4 ≤ ρ.re) (hβUpper : ρ.re < 1)
+    (hY : 0 < Y) (hβLower : 1/2 < ρ.re) (hβUpper : ρ.re < 1)
     (hR : |ρ.im| < R) (hZero : riemannZeta ρ = 0) :
     let a : ℝ := 1/2 - ρ.re
     RectangleIntegral' (detectorKernel ρ X Y)
@@ -286,4 +285,3 @@ theorem detector_finite_rectangle_kernel {ρ : ℂ} {X Y R : ℝ}
   exact (detectorContourNumerator_div_eq_integrand hρOne hZero hsZero hsPole).symm
 
 
-end MathCollab.Density

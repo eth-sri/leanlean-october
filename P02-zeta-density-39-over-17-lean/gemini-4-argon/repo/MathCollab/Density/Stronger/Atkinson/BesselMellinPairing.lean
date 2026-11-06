@@ -230,4 +230,3 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
   intro x hx
   exact hOuter x hx
 
-end MathCollab.Density.Stronger.Atkinson

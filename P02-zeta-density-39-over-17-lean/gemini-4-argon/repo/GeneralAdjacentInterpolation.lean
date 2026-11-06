@@ -97,4 +97,3 @@ theorem adjacent_high_moment {U H R : ℝ} {K : ℕ}
     linarith only [hl,hh]
   convert hb using 1; field_simp; ring
 
-end Montgomery.RationalMoment

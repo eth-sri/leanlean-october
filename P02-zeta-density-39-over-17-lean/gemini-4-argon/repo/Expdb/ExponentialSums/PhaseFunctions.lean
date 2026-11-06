@@ -108,16 +108,7 @@ def IsApproximateModelPhaseFunction
     ∀ p : ℕ, p ≤ P → ∀ u : phaseInterval,
       ‖modelPhaseErrorAt F σ p u‖ ≤ δ
 
-/-- The derivatives of orders `1, …, n` of `F` are bounded by `K` on the phase interval. -/
-def HasPhaseDerivBound (F : ℝ → ℝ) (n : ℕ) (K : ℝ) : Prop :=
-  ∀ k : ℕ, 1 ≤ k → k ≤ n → ∀ u ∈ phaseInterval,
-    ‖iteratedDerivWithin k F phaseInterval u‖ ≤ K
 
-/-- A derivative bound may be restricted to a smaller order. -/
-theorem HasPhaseDerivBound.of_le {F : ℝ → ℝ} {m n : ℕ} {K : ℝ}
-    (hF : HasPhaseDerivBound F n K) (hmn : m ≤ n) :
-    HasPhaseDerivBound F m K :=
-  fun k hk hkm u hu ↦ hF k hk (hkm.trans hmn) u hu
 
 /-- The data defining a model phase when its reference exponent `σ` has already been fixed. -/
 structure IsModelPhaseFunctionWith
@@ -159,4 +150,3 @@ theorem IsModelPhaseFunctionWith.eventually_isApproximate
   intro p hp' u
   exact (hi p (Finset.mem_range.mpr (by omega)) u).le
 
-end Expdb

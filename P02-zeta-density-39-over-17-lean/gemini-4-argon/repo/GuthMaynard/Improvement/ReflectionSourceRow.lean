@@ -68,4 +68,3 @@ theorem centered_source_row (w : MathCollab.Density.ReflectionCutoff)
   rw [horient]
   exact hfull.trans (by nlinarith [show 0 ≤ N^ε*L*N*T by positivity])
 
-end GuthMaynard.Improvement

@@ -13,10 +13,7 @@ open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseUniform HeckeInverseAmplification
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
-open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open DetectorDictionaryInverseUniform HeckeInverseAmplification InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier ActualEisensteinCubic CompletedGauss
 
 theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :
     Function.support (inverseSourceSchwartz scaled reverse n U tstar r σ t : ℝ→ℂ) ⊆
@@ -159,11 +156,3 @@ variable {ι ρ : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-
-end Rows
-
-end SevenEighths.DetectorDictionaryInverseClippedUniform
-
-end
-
-end OAI

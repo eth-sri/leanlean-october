@@ -10,10 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein
 
 def highSupport (I J K L : Id) : Prop :=
   Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported L
@@ -115,8 +112,3 @@ theorem bareIdealHighSummand_mul (η : HeckeFamily.Character) (x w z : ℂ)
   rw [bareIdealHighCoefficient_mul η I J K L I' J' K' L' hcop,
     fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

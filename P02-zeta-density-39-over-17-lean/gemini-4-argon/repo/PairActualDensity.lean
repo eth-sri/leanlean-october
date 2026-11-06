@@ -1,5 +1,7 @@
 module
-public import PairLongZeroCount
+public import LaterPairs.PhysicalPairLongZeroCount
+public import LaterPairs.PhysicalLongMultiplicity
+public import RetunedShortZeroCount
 public import RetunedActualDensity
 
 @[expose] public section
@@ -9,17 +11,17 @@ open Real Filter MeasureTheory Set
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger MathCollab.Density TaoTrudgianYang2025
 
-/-- Actual zeta zeros from a genuine analytic pair, with every detector and
-tail input discharged. The two exact exponent budgets are numerical. -/
-theorem density_of_pair_tail_window {k l σ a ε : ℝ}
-    (hpair : ExponentPair k l) (hk : 0 < k) (hlog : 2+4*l/k ≤ 7)
-    (hw : QuadraticWindow σ a) (hsigma : 7/9 ≤ σ)
-    (hthreshold : 1/8 < (3*a/4)*(σ-1/2))
+theorem density_of_pair_of_short {k l σ a ε m : ℝ}
+    (hpair : ExponentPair k l) (hk : 0 < k) (hwp : PhysicalDetectorWindow σ a)
     (hfirst : 1-6*((3*a/4)*(σ-1/2)) ≤ 3*a*(1-σ))
     (hsecond : 1+l/k-(4+(2+4*l)/k)*((3*a/4)*(σ-1/2)) ≤ 3*a*(1-σ))
-    (hε : 0 < ε) :
+    (hε : 0 < ε) (hm : m ≤ 200)
+    (hshort_fn : ∀ η δ : ℝ, 0 < η → η ≤ 1/3600 → η ≤ (1-3*a/2)/4 → 9*η < a*(4*σ-3) →
+      ∃ Cs : ℝ, 0 < Cs ∧ ∀ᶠ T : ℝ in atTop,
+        (smoothShortZeroCount η σ a δ T:ℝ) ≤ Cs*T^(3*a*(1-σ)+m*η)) :
     ∃ C : ℝ,0 < C ∧ ∀ T : ℝ,2 ≤ T →
       (zetaDensityCount σ T:ℝ) ≤ C*T^(3*a*(1-σ)+ε) := by
+  have hthreshold := hwp.threshold
   let θ : ℝ := (3*a/4)*(σ-1/2)
   let b : ℝ := 4+(2+4*l)/k
   have hl : 0 < l := lt_of_lt_of_le (by norm_num) hpair.inTriangle.2.2.1
@@ -38,18 +40,18 @@ theorem density_of_pair_tail_window {k l σ a ε : ℝ}
   have hδcap : δ ≤ 1/16 := min_le_right _ _
   have hq : 1/8 < q := by dsimp [q]; linarith
   have hmargin : q+δ/2 < θ := by dsimp [q]; linarith
-  let η : ℝ := min (ε/1000) (min ((1-3*a/2)/4) (a*(4*σ-3)/100))
-  have ha : 0 < a := by linarith [hw.a_low]
-  have hgap : 0 < a*(4*σ-3) := mul_pos ha (by linarith [hw.sigma_low])
+  let η : ℝ := min (1/3600) (min (ε/1000) (min ((1-3*a/2)/4) (a*(4*σ-3)/100)))
+  have ha : 0 < a := by linarith [hwp.a_low]
+  have hgap : 0 < a*(4*σ-3) := mul_pos ha (by linarith [hwp.sigma_low])
   have hη : 0 < η := by
     dsimp [η]
-    exact lt_min (by positivity) (lt_min (by linarith [hw.a_high]) (by positivity))
-  have hηeps : η ≤ ε/1000 := min_le_left _ _
-  have hηa : η ≤ (1-3*a/2)/4 := (min_le_right _ _).trans (min_le_left _ _)
-  have hηg : η ≤ a*(4*σ-3)/100 := (min_le_right _ _).trans (min_le_right _ _)
-  obtain ⟨Cs,hCs,hshort⟩ := smoothShortZeroCount_bound hw hη
-    (by linarith [hw.a_high]) (by linarith) δ
-  obtain ⟨Cl,hCl,hlong⟩ := smoothLongZeroCount_pair_tail hpair hk hlog hw hsigma
+    exact lt_min (by norm_num) (lt_min (by positivity) (lt_min (by linarith [hwp.a_high]) (by positivity)))
+  have hηsmall : η ≤ 1/3600 := min_le_left _ _
+  have hηeps : η ≤ ε/1000 := (min_le_right _ _).trans (min_le_left _ _)
+  have hηa : η ≤ (1-3*a/2)/4 := (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))
+  have hηg : η ≤ a*(4*σ-3)/100 := (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _))
+  obtain ⟨Cs,hCs,hshort⟩ := hshort_fn η δ hη hηsmall hηa (by linarith)
+  obtain ⟨Cl,hCl,hlong⟩ := Physical.smoothLongZeroCount_pair_tail_general hpair hk hwp
     hδ (by linarith) hη (show 0 < ε/2 by positivity) hq hmargin
     (show 1-6*q ≤ 3*a*(1-σ)+(ε/2)/2 by dsimp [q,θ] at *; linarith)
     (show 1+l/k-(4+(2+4*l)/k)*q ≤ 3*a*(1-σ)+(ε/2)/2 by
@@ -60,13 +62,25 @@ theorem density_of_pair_tail_window {k l σ a ε : ℝ}
       (zetaSlabCount σ T (2*T):ℝ) ≤ (Cs+Cl)*T^(3*a*(1-σ)+ε) := by
     filter_upwards [hshort,hlong,eventually_ge_atTop (1:ℝ)] with T hsT hlT hT
     have hs' := hsT.trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hT (show 3*a*(1-σ)+52*η ≤ 3*a*(1-σ)+ε by linarith)) hCs.le)
+      (Real.rpow_le_rpow_of_exponent_le hT (show 3*a*(1-σ)+m*η ≤ 3*a*(1-σ)+ε by nlinarith)) hCs.le)
     have hl' := hlT.trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hT (show 3*a*(1-σ)+ε/2 ≤ 3*a*(1-σ)+ε by linarith)) hCl.le)
-    rw [smooth_zeroCount_partition η σ a δ T,Nat.cast_add]
+    rw [Physical.smooth_zeroCount_partition η σ a δ T,Nat.cast_add]
     nlinarith only [hs',hl']
   have hp : 0 < 3*a*(1-σ)+ε := by
-    have hh : 0 < 3*a*(1-σ) := mul_pos (mul_pos (by norm_num) ha) (by linarith [hw.sigma_high])
+    have hh : 0 < 3*a*(1-σ) := mul_pos (mul_pos (by norm_num) ha) (by linarith [hwp.sigma_high])
     linarith
   exact zetaDensity_bound_of_eventual_slabs hp (by positivity : 0 < Cs+Cl) hslab
-end Montgomery.RationalMoment.RightDetector
+
+theorem density_of_pair_tail_window {k l σ a ε : ℝ}
+    (hpair : ExponentPair k l) (hk : 0 < k) (_hlog : 2+4*l/k ≤ 7)
+    (hw : QuadraticWindow σ a) (_hsigma : 7/9 ≤ σ)
+    (hthreshold : 1/8 < (3*a/4)*(σ-1/2))
+    (hfirst : 1-6*((3*a/4)*(σ-1/2)) ≤ 3*a*(1-σ))
+    (hsecond : 1+l/k-(4+(2+4*l)/k)*((3*a/4)*(σ-1/2)) ≤ 3*a*(1-σ))
+    (hε : 0 < ε) :
+    ∃ C : ℝ,0 < C ∧ ∀ T : ℝ,2 ≤ T →
+      (zetaDensityCount σ T:ℝ) ≤ C*T^(3*a*(1-σ)+ε) := by
+  have hwp : PhysicalDetectorWindow σ a := ⟨hw.sigma_low, hw.sigma_high, hw.a_low, hw.a_high, hthreshold⟩
+  exact density_of_pair_of_short hpair hk hwp hfirst hsecond hε (by norm_num)
+    fun η δ hη _ hηa hηg => smoothShortZeroCount_bound hw hwp hη (by linarith [hw.a_high]) hηg δ

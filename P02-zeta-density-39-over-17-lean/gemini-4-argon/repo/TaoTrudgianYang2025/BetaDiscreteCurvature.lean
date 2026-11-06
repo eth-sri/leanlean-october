@@ -14,9 +14,8 @@ are retained separately in the finite-sum consumer.
 
 noncomputable section
 
-open Set Expdb
+open Set Expdb RiemannZeta.GuthMaynard
 open scoped ContDiff
-open RiemannZeta.GuthMaynard
 
 namespace TaoTrudgianYang2025
 
@@ -89,4 +88,3 @@ theorem betaModelSample_secondDifference_bounds
   ring_nf at heq hlower hupper ⊢
   constructor <;> linarith
 
-end TaoTrudgianYang2025

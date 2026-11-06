@@ -24,8 +24,3 @@ def secondRootSchwartz (V : Fin 6 → ℝ → ℂ)
   rootSchwartz (secondRootWindows V)
     (fun i => (secondRootWindows_smooth_compact V hV hS i).1)
     (fun i => (secondRootWindows_smooth_compact V hV hS i).2)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

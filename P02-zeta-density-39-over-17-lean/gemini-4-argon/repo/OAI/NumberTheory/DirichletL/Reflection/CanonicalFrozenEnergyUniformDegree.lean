@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_original_frozen_energy_uniform_degree
@@ -150,7 +149,3 @@ theorem canonical_original_frozen_energy_uniform_degree
       rw [Real.rpow_add hzp]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hz.le (by linarith)) (by positivity)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

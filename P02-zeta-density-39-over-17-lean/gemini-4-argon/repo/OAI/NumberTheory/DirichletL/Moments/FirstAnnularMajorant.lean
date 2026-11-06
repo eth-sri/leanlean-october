@@ -94,9 +94,3 @@ lemma weighted_partition (H q:ℝ)(hH:0<H):
       (div_le_iff₀ hH).mp hx.2⟩
     rw [bands,dyadic_partition_on_interval (H/8) (2*H) q (by positivity) hq]
     exact (one_mul _).symm
-
-end SevenEighths.CenteredMomentFirstAnnularMajorant
-
-end
-
-end OAI

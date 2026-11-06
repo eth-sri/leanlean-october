@@ -171,4 +171,3 @@ theorem cubic_strip_integral (a b : ℝ) (ha : 0 < a) (_hab : a ≤ b) :
         exact hpoint v hv)
     _ = _ := integral_const_mul _ _
 
-end GuthMaynard.Improvement

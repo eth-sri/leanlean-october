@@ -12,13 +12,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourceError
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain
-open CenteredMomentAmplificationSourcePolynomial CenteredMomentAmplificationSourcePool
-open CenteredMomentAmplificationRectangle CenteredMomentGaussNormalization
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePolynomial CenteredMomentAmplificationSourcePool CenteredMomentAmplificationRectangle CenteredMomentGaussNormalization CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow
 
  theorem source_error_residual (S : Finset (Ideal O)) (c : Ideal O → ℂ)
     (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
@@ -65,9 +59,3 @@ theorem normalized_source_error_sq (S : Finset (Ideal O)) (c : Ideal O → ℂ)
             (Real.sqrt (T/(Ideal.absNorm (Ideal.span {p}):ℝ)^(n+1)):ℂ)⁻¹*
             (c ((Ideal.span {p})^(n+1)*I)*residualCharacter p (n+1) (primaryGenerator I))) h‖^2 := by
   rw [normalized_source_error S c p hp hs hpp n h T hT,norm_mul,mul_pow]
-
-end SevenEighths.CenteredMomentAmplificationSourceError
-
-end
-
-end OAI

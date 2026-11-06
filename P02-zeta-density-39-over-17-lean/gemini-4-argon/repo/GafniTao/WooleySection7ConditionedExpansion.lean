@@ -153,6 +153,4 @@ theorem wooley_equation_7_20_expansion
       ring_nf
 
 
-end
 
-end GafniTao

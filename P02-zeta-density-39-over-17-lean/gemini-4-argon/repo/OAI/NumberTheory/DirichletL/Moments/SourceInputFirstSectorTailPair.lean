@@ -9,13 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson ConcretePrimeRowBridge
-open CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentCorrelation
-open CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation
-open CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive
-open CenteredMomentCompleteCommon IdealMobiusDivisorSum CenteredMomentFirstDiscardedEnergy
-open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson ConcretePrimeRowBridge CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive CenteredMomentCompleteCommon IdealMobiusDivisorSum CenteredMomentFirstDiscardedEnergy CenteredMomentSourceInputFirstTailUniform
 
 lemma local_tail_denominator_mono (Tlocal Tupper H Z ξ:ℝ)(A:ℕ)(B:ℝ)
     (hT:0<Tlocal)(hupper:Tlocal≤Tupper)(hB:0≤B)(hZ:0≤Z):
@@ -75,9 +69,3 @@ theorem local_discarded_pair_bound (A : ℕ) (ε : ℝ) (hε : 0<ε) :
           ((min 1 (kernelReference Tsec HN))^2*(1+Z^(ξ/4))^A)) :=
       mul_le_mul_of_nonneg_right hc (by positivity)
     _ = _ := by ring
-
-end SevenEighths.CenteredMomentSourceInputFirstSectorTail
-
-end
-
-end OAI

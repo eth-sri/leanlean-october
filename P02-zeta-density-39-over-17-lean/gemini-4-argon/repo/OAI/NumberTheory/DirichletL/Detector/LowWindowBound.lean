@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma compensatedPhysicalProbe_window_scale {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
     (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
@@ -73,8 +71,3 @@ theorem original_ray_compensatedPhysicalProbe_low_loss
     _≤D^K*(C*Z^(3/16+256*ε)) := mul_le_mul_of_nonneg_left hb (by positivity)
     _≤D^K*(C*Z^(3/16+loss)) := by gcongr
     _=_ := by ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

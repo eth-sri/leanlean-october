@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 lemma coarsePrimeCost_image {K : ℕ} (P : Fin K→PrimeIdeal) (hP : Function.Injective P) :
@@ -120,9 +119,3 @@ theorem rowAmplitudeOnLines_first_polynomial (K : ℕ)
         (mul_le_mul_of_nonneg_left hlarge (mul_nonneg hC (pow_nonneg (by norm_num) _)))
         (pow_nonneg (Finset.prod_nonneg (fun i _ => Nat.cast_nonneg (P i).val.absNorm)) _)) (sq_nonneg _)
     _ = _ := by ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

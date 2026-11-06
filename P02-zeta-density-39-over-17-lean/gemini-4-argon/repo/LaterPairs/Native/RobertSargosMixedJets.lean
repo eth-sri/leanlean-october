@@ -276,4 +276,3 @@ theorem robertSargos_physical_mixed_jet_bound
   rw [abs_of_nonneg (hlam.le.trans (hlo x hx))]
   exact hhi x hx
 
-end TaoTrudgianYang2025

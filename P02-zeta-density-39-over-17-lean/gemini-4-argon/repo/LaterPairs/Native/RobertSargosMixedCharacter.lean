@@ -54,5 +54,4 @@ theorem norm_robertSargos_mixed_sum_eq {ι : Type*} (S : Finset ι)
   simp only [he]
   exact norm_sum_character_add_constant S w φ c
 
-end TaoTrudgianYang2025
 

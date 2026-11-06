@@ -336,6 +336,4 @@ theorem wooleyPolynomial_lemma_6_3_of_initial_conditioning
                 phi s 1 p B theta theta nu gamma := by rw [mul_pow]; ring
         _ = _ := by rw [hpowers]
 
-end
 
-end GafniTao

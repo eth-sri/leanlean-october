@@ -89,4 +89,3 @@ theorem norm_continuous_perturbed_phase_prefix
     (by simpa only [Nat.cast_add,Nat.cast_one] using
       continuous_character_range_variation u u' A N hK hu hd)
 
-end TaoTrudgianYang2025

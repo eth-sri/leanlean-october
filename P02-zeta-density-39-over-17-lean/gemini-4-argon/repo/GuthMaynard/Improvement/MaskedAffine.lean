@@ -70,4 +70,3 @@ theorem compact_smoothed_full_input (a b : ℝ) (hab : a ≤ b) :
       (le_div_iff₀ hξp).mpr (by simpa only [mul_comm] using hnum)
     _ = _ := by rw [div_pow]; ring
 
-end GuthMaynard.Improvement

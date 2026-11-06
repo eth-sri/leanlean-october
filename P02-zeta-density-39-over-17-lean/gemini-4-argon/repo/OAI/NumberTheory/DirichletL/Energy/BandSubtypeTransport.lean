@@ -10,13 +10,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyBandSubtypeTransport
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyState
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot CenteredMomentEnergyReindex
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot CenteredMomentEnergyReindex
 variable {α β : Type*} [Fintype α] [Fintype β]
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] [Fintype β] in
@@ -68,9 +64,3 @@ theorem positiveAt_subtype (T : Finset α)
       η₀ Q degree S C :=
   positiveAt_embedding M H hH ⟨Subtype.val,Subtype.val_injective⟩ W bslot a b bΦ Bmask L
     Lslot lo hi Mcap ε κ Z η₀ Q degree S C h
-
-end SevenEighths.CenteredMomentEnergyBandSubtypeTransport
-
-end
-
-end OAI

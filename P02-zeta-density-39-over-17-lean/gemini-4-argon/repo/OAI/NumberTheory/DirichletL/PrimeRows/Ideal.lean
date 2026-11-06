@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
 
 def idealUnramifiedCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   unramifiedClosed P.val.absNorm (actualAPhase η (primaryGenerator P.val))
@@ -44,9 +42,3 @@ theorem localCorrection_ramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
   have hu : u.val∈P.val := (Ideal.dvd_iff_le.mp hP) (Ideal.subset_span (by simp))
   have hr : idealRowHom u.val P.val=0 := idealRowHom_zero_of_dvd u.val P.property (dvd_refl _) hu
   simp only [localCorrection,hr,map_zero,mul_zero,zero_mul,sub_zero,mul_one,div_one]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

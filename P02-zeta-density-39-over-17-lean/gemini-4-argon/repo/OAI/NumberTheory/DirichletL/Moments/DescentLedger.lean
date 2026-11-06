@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDescentLedger
 open CanonicalQuadraticSieve CenteredMomentSecondLedger CenteredMomentPartitionNorm
-local notation "O" => ActualEisensteinCubic.O
 
 def firstSaving (c D₀ w q wo B g ell : ℝ) : ℝ :=
   c/6+5*D₀/6+w/3+q/6+wo+B-5*g/6+ell
@@ -37,11 +36,3 @@ theorem common_log_ge_unit (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p 
         Real.logb_nonneg hZ (by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1))
       have hm : (1:ℝ) ≤ (min (c i) (d i) : ℕ) := by exact_mod_cast le_min (hc i) (hd i)
       nlinarith
-
-end ActualSecond
-
-end SevenEighths.CenteredMomentDescentLedger
-
-end
-
-end OAI

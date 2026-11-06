@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialInputRadial
-open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT
-open InverseInitialConjugateEnergy
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT InverseInitialConjugateEnergy
 variable {ι:Type*}[DecidableEq ι](p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -53,9 +51,3 @@ theorem finite_rows_le_input_norm (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset
     exact Complex.re_le_norm _
   · simp only [Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,mul_zero,sub_zero]
     exact mul_nonneg (hΦ _) (sq_nonneg _)
-
-end SevenEighths.InverseInitialInputRadial
-
-end
-
-end OAI

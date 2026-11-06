@@ -86,4 +86,3 @@ theorem ExponentPair.aProcess {k l : ℝ} (h : ExponentPair k l) :
   ⟨h.inTriangle.aProcess,isExponentPairEstimate_iff_nonAsymptotic.mpr
     (isExponentPairEstimateNonAsymptotic_aProcess h)⟩
 
-end TaoTrudgianYang2025

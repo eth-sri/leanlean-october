@@ -11,13 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstChildProfileControl
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonProfile
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonRadialPointwise CenteredMomentCommonExceptionalCost
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
-open CenteredMomentFiniteProfileExceptionalPhysical
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonProfile CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonRadialPointwise CenteredMomentCommonExceptionalCost CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def mass (s : Input ι) : ℝ := ∏ i,s.M i
@@ -121,9 +115,3 @@ lemma exceptional_factor_bound {wlo whi : ℝ}
   have hF : 0≤F := by dsimp [F]; positivity
   have hh:=mul_le_mul_of_nonneg_left h hF
   convert hh using 1 <;> simp only [profileFactor,exceptionalConstant,F] <;> ring
-
-end SevenEighths.CenteredMomentFirstChildProfileControl
-
-end
-
-end OAI

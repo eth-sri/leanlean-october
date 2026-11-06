@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorMass
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -77,4 +75,3 @@ theorem zetaSmoothDivisorSum_eq_atkinson_test (T G L : ℝ) :
   intro n
   rw [zetaAtkinsonDivisorTest_nat]
 
-end MathCollab.Density.Stronger.Atkinson

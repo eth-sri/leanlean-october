@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 open MeasureTheory
 namespace SevenEighths.CenteredMomentUniformReflectionProfile
-open HeckeFamily FourierBridge EisensteinSchwartzPoisson
-open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
-open CenteredMomentReflectedUniformPair CenteredMomentOneReflectionEnergy
+open HeckeFamily FourierBridge EisensteinSchwartzPoisson CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy CenteredMomentReflectedUniformPair CenteredMomentOneReflectionEnergy
 
 theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
@@ -146,9 +144,3 @@ lemma polynomial_const_mul (χ : Character) (W : ℝ→ℂ) (X σ omega : ℝ) (
     ring
   rw [he,tsum_mul_left]
   ring
-
-end SevenEighths.CenteredMomentUniformReflectionProfile
-
-end
-
-end OAI

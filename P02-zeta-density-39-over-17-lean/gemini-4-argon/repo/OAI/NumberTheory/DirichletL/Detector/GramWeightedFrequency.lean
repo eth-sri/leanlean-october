@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma min_product_amplification (L T : ℝ) (hL : 0≤L) (hT : 0≤T) (A : ℕ) :
     min 1 ((L*T)^A)≤(1+T)^A*min 1 (L^A) := by
@@ -66,8 +64,3 @@ theorem canonical_nonexceptional_weighted (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
       rw [Real.rpow_neg htp.le,Real.rpow_two,pow_add]
       field_simp
     _=_ := rfl
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

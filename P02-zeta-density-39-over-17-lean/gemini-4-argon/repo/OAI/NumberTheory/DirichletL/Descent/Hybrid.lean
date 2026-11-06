@@ -14,7 +14,6 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid IdealMobiusDivisorSum
 
-local notation "Eis" => ActualEisensteinCubic.O
 
 def inverseCubicKernel (P n : Ideal Eis) : ℂ :=
   star (ConcreteTraceCRT.eisEmbedding
@@ -230,9 +229,3 @@ def hybridRow (Pset nset bset : Finset (Ideal Eis))
     (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ) (k : Ideal Eis) : ℂ :=
   ∑ P ∈ Pset, a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ) *
     (if IsCoprime k P then 1 else 0) * hybridInner nset bset beta k P
-
-end
-
-end SevenEighths.InverseMoment
-
-end OAI

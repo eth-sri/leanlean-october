@@ -1,3 +1,0 @@
-module
-public import TraceAlternatives.FullDashedDensity
-public import PeakTailCombinedDensity

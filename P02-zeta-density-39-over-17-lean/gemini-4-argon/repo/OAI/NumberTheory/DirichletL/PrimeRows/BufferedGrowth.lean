@@ -12,7 +12,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 variable {ι : Type*} [Fintype ι]
 
@@ -80,9 +79,3 @@ theorem calibrated_physicalRow_buffered_joint_growth
       rw [norm_mul]
       exact mul_le_mul hl hrec (norm_nonneg _) hL
     _ = _ := by ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

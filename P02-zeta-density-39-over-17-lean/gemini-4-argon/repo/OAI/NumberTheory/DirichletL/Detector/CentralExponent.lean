@@ -87,8 +87,3 @@ lemma physical_scale_identity (Z a e : ℝ) (hZ : 0<Z) :
   rw [←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le,←Real.rpow_add hZ,←Real.rpow_add hZ]
   congr 1
   ring
-end SevenEighths.ProbeCentralExponent
-
-end
-
-end OAI

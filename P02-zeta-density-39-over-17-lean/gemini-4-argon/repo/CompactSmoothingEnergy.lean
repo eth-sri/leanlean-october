@@ -143,4 +143,3 @@ theorem finite_smooth_support {ι : Type*} (S : Finset ι) (c : ι → ℝ)
   rw [sub_add_cancel] at hh
   linarith [hc i hi]
 
-end Montgomery.RationalMoment

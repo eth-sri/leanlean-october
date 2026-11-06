@@ -11,8 +11,6 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def tupleSourceSeries {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
     (C : CalibrationData) (p : Fin K→O) (x w z : ℂ) : ℂ :=
@@ -93,8 +91,3 @@ theorem compensatedTuple_eq_source_triple {K : ℕ} (η : HeckeFamily.Character)
   unfold tupleSourceSeries
   rw [Finset.mul_sum]
   exact Finset.sum_congr rfl (fun J _=>hpoint J t)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

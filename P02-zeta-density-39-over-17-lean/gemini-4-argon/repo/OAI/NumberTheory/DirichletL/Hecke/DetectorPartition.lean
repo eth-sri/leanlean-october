@@ -175,9 +175,3 @@ theorem exists_large_pair (J K : ℕ) (F : ℕ → ℕ → ℂ) :
     _ ≤ ∑ q ∈ S, ‖F q.1 q.2‖ := norm_sum_le _ _
     _ ≤ ∑ q ∈ S, ‖F p.1 p.2‖ := Finset.sum_le_sum (fun q hq => hmax q hq)
     _ = _ := by simp [S, Finset.card_product, mul_assoc]
-
-end SevenEighths.HeckeDetectorPartition
-
-end
-
-end OAI

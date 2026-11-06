@@ -85,4 +85,3 @@ theorem sum_sourceShiftCorrelation_le
         (mul_le_mul_of_nonneg_left (sum_shift_inv_le H) hI)
     _ = _ := by ring
 
-end TaoTrudgianYang2025

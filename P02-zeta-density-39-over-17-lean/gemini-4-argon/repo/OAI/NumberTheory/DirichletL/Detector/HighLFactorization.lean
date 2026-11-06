@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 theorem principalHigh_L_factorization (S : Finset Id) (hS : ∀P∈S,Prime P)
     (hgood : ∀P : PrimeIdeal,P.val∉S → Supported P.val) (htail : CorrectionTail S)
@@ -44,8 +42,3 @@ theorem principalHigh_L_factorization (S : Finset Id) (hS : ∀P∈S,Prime P)
         LFunction (η.excludePrimes S hS) x * globalClosedCorrection η S x w z) := by
     simpa only [hlocal,div_eq_mul_inv,globalClosedCorrection] using he
   exact (excludedIdealHighSeries_hasProd_outside S hS η x w z hx hw hz).unique he'
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -132,4 +132,3 @@ theorem uniform_reflection (w : ReflectionCutoff) {A : ℕ} (hA : 1 < A) :
     rw [hpow] at hh
     convert hh using 1; ring
 
-end MathCollab.Density

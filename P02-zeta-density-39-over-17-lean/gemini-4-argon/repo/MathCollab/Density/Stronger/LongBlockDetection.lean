@@ -49,4 +49,3 @@ theorem smoothMollifierBlock_eventually_detects_mean {ψ : ℝ → ℝ} {a b : �
   rw [he] at hlarge
   linarith
 
-end MathCollab.Density.Stronger

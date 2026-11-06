@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFixedRay
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open RayFourExpansion CenteredMomentPrimary HeckeFamily HeckeRowClosure
-local notation "O" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation RayFourExpansion CenteredMomentPrimary HeckeFamily HeckeRowClosure
 
 theorem supported_coprime_four (a : O) (ha : Supported (Ideal.span {a})) :
     IsCoprime (4 : O) a := by
@@ -148,9 +145,3 @@ theorem completeSupportExtension_separated (D E h a b : O)
       apply Finset.sum_congr rfl
       intro ξ _
       ring
-
-end SevenEighths.CenteredMomentFixedRay
-
-end
-
-end OAI

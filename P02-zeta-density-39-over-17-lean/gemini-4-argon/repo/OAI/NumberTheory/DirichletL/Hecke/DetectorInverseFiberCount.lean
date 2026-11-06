@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorInverseFiberCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
 
 def inverseTest (U tstar r : ℝ) : ℝ→ℂ :=
   HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular (U^tstar) (U^r)
@@ -73,9 +72,3 @@ theorem inverse_fiber_count {Row Label Slot : Type*}
     (fun u => ∏ s∈selected,physical M H row W b widths zs U u s)
     U (2*a-1) r (weightedMean slots widths g) z (2*ε) ((2*a-1)*mesh) εm
     (12*(1+height)*C) hUp (fun u hu => (hsp u hu).2.2.1) hspike he'
-
-end SevenEighths.HeckeDetectorInverseFiberCount
-
-end
-
-end OAI

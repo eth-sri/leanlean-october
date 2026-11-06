@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFixedRowMask
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
 
 theorem row_mask_mul (η : Character) (m r A z n : O)
     (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m) :
@@ -54,8 +52,3 @@ theorem fixedInducingRow_mul_mask_iff (η : Character) (Q : Ideal O)
       exact ⟨ρ,ψ,hprim,hind,hQ,hρ⟩
   rw [transport χ' (m*r) hχ',transport χ m hχ]
   exact HeckeMaskDescent.fixed_inducing_mask_iff χ χ' r hr hmask Q
-end SevenEighths.CenteredMomentFixedRowMask
-
-end
-
-end OAI

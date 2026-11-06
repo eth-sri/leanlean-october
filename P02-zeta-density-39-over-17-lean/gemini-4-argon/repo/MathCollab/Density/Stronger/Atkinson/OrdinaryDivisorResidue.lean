@@ -12,8 +12,7 @@ public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -89,4 +88,3 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_finiteRectangle
     hg.differentiable_ordinaryDivisorMellinNumerator.differentiableOn).trans
       hg.ordinaryDivisor_laurent_mainTerm
 
-end MathCollab.Density.Stronger.Atkinson

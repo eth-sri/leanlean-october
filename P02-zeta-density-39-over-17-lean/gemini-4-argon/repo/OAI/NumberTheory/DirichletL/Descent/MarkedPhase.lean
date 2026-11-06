@@ -9,8 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss CubicEisenstein ConcreteTraceCRT LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 noncomputable local instance markedPhaseFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
@@ -73,8 +71,3 @@ theorem mixed_model_coefficient [∀ i, (Ideal.span {p i}).IsMaximal]
       (congrArg ((-1 : ℂ) ^ S.card * ·)
         (D.model_coefficient s hp hc0 hg (markedActiveExponent S j) u m I J)).trans
           (mul_assoc _ _ _).symm
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

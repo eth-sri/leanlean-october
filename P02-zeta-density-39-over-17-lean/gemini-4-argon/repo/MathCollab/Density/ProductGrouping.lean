@@ -134,4 +134,3 @@ theorem product_grouping_cutoff (w : ComparisonCutoff) {T : ℝ} {N M : ℕ}
         (fun m _ _ => mul_nonneg (Nat.cast_nonneg _) (mul_nonneg (w.nonneg _) (hF m)))
     _ = _ := (Finset.mul_sum _ _ _).symm
 
-end MathCollab.Density

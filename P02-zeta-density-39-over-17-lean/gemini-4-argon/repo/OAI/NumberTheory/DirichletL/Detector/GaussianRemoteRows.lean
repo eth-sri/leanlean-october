@@ -11,8 +11,6 @@ open scoped Classical SchwartzMap
 open MeasureTheory CompletedGauss FourierBridge
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def gaussianCompletedFamilyIntegral {α ι : Type*} [Fintype ι]
     (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
@@ -118,8 +116,3 @@ theorem gaussianCompletedFamily_remote (V : SchwartzMap ℝ ℂ)
     _ = (Cr*M)*∑'j : ℕ,gaussianRemoteMoment V hV 0 2 Z A j := tsum_mul_left
     _ ≤ (Cr*M)*(Cg*Z^(2:ℝ)/A^N) := mul_le_mul_of_nonneg_left ht (mul_nonneg hCr.le hM)
     _ = _ := by rw [Real.rpow_two];dsimp only [M];ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

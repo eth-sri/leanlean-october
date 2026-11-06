@@ -18,8 +18,3 @@ lemma descendant_unit_scale_le (M N D E : ℝ) (hM : 0 ≤ M) (hN : 0 < N)
   calc
     _ ≤ M*2 := mul_le_mul (div_le_self hM hE) hr (by positivity) hM
     _ = _ := mul_comm _ _
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

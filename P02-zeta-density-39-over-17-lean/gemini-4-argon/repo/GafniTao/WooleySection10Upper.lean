@@ -152,6 +152,4 @@ theorem wooleySourcePolynomial_lemma_4_1_coefficientOne_half
     habsorb (B ⌈/⌉ k) hH0
   exact wooley_lemma41_absorb_constant hp hepsilon hhalf hCscale hraw'
 
-end
 
-end GafniTao

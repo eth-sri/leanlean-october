@@ -65,4 +65,3 @@ theorem robertSargos_zero_r_trimmed_correlation_bound
       exact mul_le_mul_of_nonneg_right
         (by exact_mod_cast robertSargos_h_overlap_card H 0) (by positivity)
 
-end TaoTrudgianYang2025

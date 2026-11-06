@@ -46,4 +46,3 @@ theorem anchoredLegendreError_iteratedDeriv
     iteratedDeriv_fun_sub hG hR, referenceModelPrimitive_iteratedDeriv σ⁻¹ hp n]
   simp [iteratedDeriv_const]
 
-end TaoTrudgianYang2025

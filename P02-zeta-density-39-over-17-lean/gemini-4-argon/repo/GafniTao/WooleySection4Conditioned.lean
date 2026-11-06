@@ -194,6 +194,4 @@ theorem wooleySection4_conditionedInsertedAverage_eq_of_equation_4_12
       exact hconditioned.symm
     exact (mul_left_cancel₀ hmass hmul)
 
-end
 
-end GafniTao

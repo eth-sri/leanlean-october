@@ -44,4 +44,3 @@ theorem robertSargos_reduced_factor {r q₁ q₂ h₁ h₂ d : ℝ}
         (r*d)^2+2*h₁*q₁*(r*d)+r*h₁*q₁^2-r*h₂*q₂^2 := by ring
     _ = _ := by rw [he]; ring
 
-end TaoTrudgianYang2025

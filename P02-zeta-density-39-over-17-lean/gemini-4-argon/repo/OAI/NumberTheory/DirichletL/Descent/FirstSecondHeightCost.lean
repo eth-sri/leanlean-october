@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstSecondHeightCost
-open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge
-open InverseMomentFirstOriginalProfile
+open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge InverseMomentFirstOriginalProfile
 
 def firstDegree (degree : ℕ) : ℕ := 2*InverseClippingProfiles.momentOrder (2*degree)
 
@@ -150,8 +149,3 @@ theorem first_source_requested_loss (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
   apply mul_le_mul_of_nonneg_right _ (le_trans zero_le_one (first_weight_one_le _ z))
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
-
-end SevenEighths.InverseMomentFirstSecondHeightCost
-end
-
-end OAI

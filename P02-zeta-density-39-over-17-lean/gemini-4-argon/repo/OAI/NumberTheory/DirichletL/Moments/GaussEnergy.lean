@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentGaussEnergy
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CenteredMomentFourier CenteredMomentPoisson
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CanonicalQuadraticSieve CenteredMomentFourier CenteredMomentPoisson CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
 
 def gaussRow (a : O) (ha : Supported (Ideal.span {a})) (z : O) : ℂ :=
   ProbePhysical.sexticGauss a (supported_element_ne_zero a ha) z /
@@ -123,9 +120,3 @@ theorem gaussEnergy_poisson {α : Type*} (S : Finset α) (a : α → O)
   intro j hj
   simp only [gaussRow]
   rw [sextic_gauss_pair_poisson (a i) (a j) (ha i) (ha j) W K hK]
-
-end SevenEighths.CenteredMomentGaussEnergy
-
-end
-
-end OAI

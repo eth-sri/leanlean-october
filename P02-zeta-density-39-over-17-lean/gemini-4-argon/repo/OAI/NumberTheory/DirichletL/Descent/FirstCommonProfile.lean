@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem firstNormProfile_common_support (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (A₁ A₂ C D R T H X₁ X₂ K : ℝ) (hT : 0 ≤ T) :
@@ -94,8 +93,3 @@ theorem actual_first_gauss_coupled_reindex
       (hFB.mono_left (Finset.mem_powerset.mp hN)) (hFB.mono_left (Finset.mem_powerset.mp hP))]
     ring
   · simp [hd]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

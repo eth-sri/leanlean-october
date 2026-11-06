@@ -104,4 +104,3 @@ theorem source_exponentialSum_heathBrown_bound_of_derivative
     have hprod := mul_le_mul_of_nonneg_right hK hnonneg
     exact htail.trans (hMone.trans (by simpa only [one_mul] using hprod))
 
-end TaoTrudgianYang2025

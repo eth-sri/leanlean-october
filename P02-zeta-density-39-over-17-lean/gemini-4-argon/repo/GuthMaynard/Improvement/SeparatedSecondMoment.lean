@@ -188,4 +188,3 @@ theorem separated_second_moment_long {N T t₀ : ℝ} (hN : 2 ≤ N) (hNT : N �
   nlinarith [mul_le_mul_of_nonneg_left (show T+N*Real.log (2*N) ≤ 2*T*Real.log (2*N) by linarith)
     (show 0 ≤ 102*N by positivity)]
 
-end GuthMaynard.Improvement

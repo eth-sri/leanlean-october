@@ -81,4 +81,3 @@ theorem aProcessOptimizationScale_cost {q p T N : ℝ}
   field_simp
   ring
 
-end TaoTrudgianYang2025

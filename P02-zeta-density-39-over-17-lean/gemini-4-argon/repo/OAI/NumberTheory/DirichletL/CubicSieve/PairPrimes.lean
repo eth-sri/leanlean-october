@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def pairPrime (I J : Ideal O) : PrimeIndex I ⊕ PrimeIndex J → Ideal O :=
   Sum.elim Subtype.val Subtype.val
@@ -89,8 +88,3 @@ lemma pairPrime_modulus (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) 
     Ideal.span {primaryGenerator I * primaryGenerator J} = ∏ P, pairPrime I J P := by
   rw [pairPrime_product I J hI hJ, ← Ideal.span_singleton_mul_span_singleton,
     (primaryGenerator_spec I hI.2).1, (primaryGenerator_spec J hJ.2).1]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

@@ -11,19 +11,8 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialResidualTupleEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState InverseInitialDyadicAssembly InverseInitialProfileBounds Filter InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool InverseInitialCommonProfile InverseInitialEnergyCallerWindow
 
-open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
-open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
-open InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
-open InverseInitialCommonProfile InverseInitialEnergyCallerWindow
 theorem original_residual_tuple_energy
     (Woriginal W:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)
     (hso:Function.support Woriginal⊆Set.Icc ao bo)(hWo:ContDiff ℝ ∞ Woriginal)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
@@ -147,9 +136,3 @@ theorem original_residual_tuple_energy
     rw [InverseInitialInputReindex.input_puncture_span p hg Finset.univ (elementCharacter χ)
       (primaryGenerator j) (assignedElement assigned qelem) hgj]
   simpa only [hid] using he
-
-end SevenEighths.InverseInitialResidualTupleEnergy
-
-end
-
-end OAI

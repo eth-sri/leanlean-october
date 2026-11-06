@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 open CompletedGauss CanonicalRowCompletion
 open CubicEisenstein hiding summand
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem completed_summand_primary_support (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
     (X : ℝ) (I J : Ideal Eis) (h : summand Ψ W X I J ≠ 0) :
@@ -45,8 +44,3 @@ theorem finiteAdditiveFourierCoeff_zero_delta {R : Type*} [CommRing R] [Fintype 
     finiteAdditiveFourierCoeff ψ (fun x => if x = 0 then 1 else 0) h =
       (Fintype.card R : ℂ)⁻¹ := by
   simp [finiteAdditiveFourierCoeff]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

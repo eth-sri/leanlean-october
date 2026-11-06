@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def highIdealMask (S : Finset Id) (D I J K L : Id) : ℂ :=
   completedMask S D I J *
@@ -45,8 +43,3 @@ theorem markedIdealHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFami
 def markedIdealHighSeries (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
     (u : O) (x w z : ℂ) : ℂ :=
   ∑' p : (Id×Id)×(Id×Id), markedIdealHighSummand S D η u x w z p.1.1 p.1.2 p.2.1 p.2.2
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -7,20 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 
 namespace RankTwoComplex
 
-open Real
 
 theorem lattice_gaussian_summable_of_re_bound (F : ℤ × ℤ → ℂ)
     {eps : ℝ} (heps : 0 < eps)
@@ -426,7 +417,7 @@ end RankTwoAffine
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem eisEmbedding_eval_norm_sq (x y : ℤ) :
     ‖eisEmbedding (ActualEisensteinCoordinates.eval x y)‖ ^ 2 =
@@ -745,9 +736,3 @@ theorem shifted_eisenstein_gaussian_poisson {t : ℝ} (ht : 0 < t) (x y : ℝ) :
       apply tsum_congr
       intro z
       exact shifted_dual_term ht x y z.1 z.2
-
-end RankTwoEisShift
-
-end
-
-end OAI

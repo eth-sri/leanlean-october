@@ -159,9 +159,3 @@ theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
   exact nonzero_of_regularized_signal _ 1 c L Lregular R (gaussianMultiplier H) f
     hL hR (gaussianMultiplier_analytic hH') hlocal htop hzero heq hρ hregular
     hRρ (gaussianMultiplier_ne_zero (hcontract ρ (lt_trans hboundary hρ)))
-
-end SevenEighths.Continuation
-
-end
-
-end OAI

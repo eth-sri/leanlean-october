@@ -91,8 +91,3 @@ theorem gaussian_selected_slot_family {ι : Type*} [Fintype ι]
   dsimp only
   rw [gaussianFixedWindow_Vstar_twist t x hx]
   simp only [gaussianSlotSlope,one_mul,neg_one_mul,logPhase_neg_argument]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

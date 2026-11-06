@@ -11,7 +11,6 @@ open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
 open InverseInitialClippedColumns
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem canonical_clipped_uniform
     (W:ℝ→ℂ)(lo hi b:ℝ)(hlo:0<lo)(hb:1≤b)
@@ -43,9 +42,3 @@ theorem canonical_clipped_uniform
   change E*(1+‖θ‖)^(2*J)*M≤(M+1)*E*(1+‖θ‖)^(2*J)
   have hn:0≤E*(1+‖θ‖)^(2*J):=by positivity
   nlinarith
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

@@ -121,4 +121,3 @@ theorem modelPhaseInverseSlope_contDiffAt {σ δ : ℝ} {F : ℝ → ℝ}
   exact (hc.to_localInverse he.hasFDerivAt (by simp)).congr_of_eventuallyEq
     (he.localInverse_unique hg)
 
-end TaoTrudgianYang2025

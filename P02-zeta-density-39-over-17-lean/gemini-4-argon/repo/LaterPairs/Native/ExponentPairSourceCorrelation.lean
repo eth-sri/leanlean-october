@@ -79,4 +79,3 @@ theorem sourceShiftCorrelation_compressed_endpoints {N : ℝ} {a L r : ℕ}
   rw [Nat.cast_add,Nat.cast_sub hra,Nat.cast_sub hrL]
   constructor <;> linarith
 
-end TaoTrudgianYang2025

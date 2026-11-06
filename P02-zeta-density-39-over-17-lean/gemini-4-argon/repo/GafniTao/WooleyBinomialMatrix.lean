@@ -208,6 +208,4 @@ theorem wooleySection7_sourceMatrix_transpose_exists_leftInverse_primePower
   rw [← hu]
   exact Units.inv_mul u
 
-end
 
-end GafniTao

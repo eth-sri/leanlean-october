@@ -72,4 +72,3 @@ theorem aProcess_power_budget {k l ε U N : ℝ}
       mul_le_mul (mul_le_mul hp₁ hp₂ (by positivity) (by positivity)) hlog hlogpos (by positivity)
     _ = _ := heq
 
-end TaoTrudgianYang2025

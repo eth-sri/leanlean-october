@@ -61,4 +61,3 @@ theorem exists_norm_atkinsonFiniteStationaryMain_sub_main_le (α : ℝ) :
     (hF.trans htail) (norm_nonneg _) (by positivity)).trans_eq
   ring
 
-end MathCollab.Density.Stronger.Atkinson

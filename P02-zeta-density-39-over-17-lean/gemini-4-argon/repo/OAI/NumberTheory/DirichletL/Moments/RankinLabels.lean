@@ -10,7 +10,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRankinLabels
 open IdealMobiusDivisorSum CenteredMomentRankinRadical CenteredMomentRankinSubset
-local notation "O" => ActualEisensteinCubic.O
 
 theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
     ∃ C : ℝ,0 < C ∧ ∀ (s : Ideal O),Squarefree s → s ≠ 0 →
@@ -110,9 +109,3 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_right hpairs (by positivity)
     _ = (C*D)*X₁^a*X₂^a*(Y^(1+ε/2)*Y^(ε/2))/(Ideal.absNorm s:ℝ) := by ring
     _ = _ := by rw [← Real.rpow_add hY]; congr 3; ring
-
-end SevenEighths.CenteredMomentRankinLabels
-
-end
-
-end OAI

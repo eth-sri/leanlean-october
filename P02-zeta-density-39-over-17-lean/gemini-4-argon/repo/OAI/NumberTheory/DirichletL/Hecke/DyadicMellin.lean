@@ -98,9 +98,3 @@ theorem polynomial_mellin (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
         ((D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I)) *
           series χ inverse (((c : ℂ)+t*Complex.I)+shift σ freq) := by ring
     _ = _ := by rw [he]
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

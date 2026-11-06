@@ -12,9 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 namespace SevenEighths.InverseInitialCommonProfile
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios
-open InverseInitialOverlapFourier InverseInitialOverlapIdealFourier
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialOverlapFourier InverseInitialOverlapIdealFourier
 variable {σ:Type*} [DecidableEq σ]
 
 def slotRatio (Z:ℝ)(ell:σ→ℝ)(i:σ)(P:Ideal Eis) : ℝ := (P.absNorm:ℝ)/Z^(ell i)
@@ -77,9 +75,3 @@ theorem common_profile_integrable (g:𝓢(ℝ,ℂ))
         (fun i q=>a i q.val*logPhase (-t) (Real.log (slotRatio Z ell i q.val))) A) :=
   overlap_mode_integrable g I (fun i=>poolList F (L i)) (fun i q=>a i q.val)
     (fun i q=>Real.log (slotRatio Z ell i q.val)) A (Real.log yj) (Real.log yc)
-
-end SevenEighths.InverseInitialCommonProfile
-
-end
-
-end OAI

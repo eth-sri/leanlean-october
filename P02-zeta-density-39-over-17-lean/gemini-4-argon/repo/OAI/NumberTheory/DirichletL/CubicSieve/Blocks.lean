@@ -89,8 +89,3 @@ theorem cube_family_block_energy_le {c : Type*} [Fintype c]
       intro l _
       exact rectangular_block_energy_le A B coef (mask l) hA hB (hmask l)
     _ = _ := by simp [mul_assoc]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

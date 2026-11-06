@@ -32,4 +32,3 @@ theorem sum_signed_triangular_double_constant (Q R : ℕ) (hQ : 0 < Q) (hR : 0 <
       ring
     _ = _ := by rw [sum_signed_triangular_weights Q hQ,sum_signed_triangular_weights R hR]
 
-end TaoTrudgianYang2025

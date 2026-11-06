@@ -11,15 +11,9 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSourceReduction
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentExceptionalAmplitudePair CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceInputFirstRemainder CenteredMomentFirstRetainedNorm
-open CenteredMomentFirstSectorTransform CenteredMomentFirstSectors CenteredMomentFirstEnergy
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentExceptionalAmplitudePair CenteredMomentSourceInputTailUniform CenteredMomentSourceInputFirstRemainder CenteredMomentFirstRetainedNorm CenteredMomentFirstSectorTransform CenteredMomentFirstSectors CenteredMomentFirstEnergy
 open CenteredMomentActiveSource (activeSource)
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def physicalMass (s:Input ι)(R seed:Ideal O)(m A:O)(Φ:𝓢(ℝ,ℂ))(K Z ξ:ℝ):ℝ:=
   let β:=coefficient s R seed
@@ -66,9 +60,3 @@ def physicalMass (s:Input ι)(R seed:Ideal O)(m A:O)(Φ:𝓢(ℝ,ℂ))(K Z ξ:�
   rw [add_div] at hdiv
   have hrdiv:=div_le_div_of_nonneg_right hr (volume_pos s).le
   linarith
-
-end SevenEighths.CenteredMomentFirstSourceReduction
-
-end
-
-end OAI

@@ -11,7 +11,6 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
     (hMm:0≤Mmax) (hFm:0≤Fmax) (heta:0≤eta) (htau:0<tau) :
@@ -118,9 +117,3 @@ theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
   · dsimp only [E]
     norm_num
     ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_completed_rows_energy_uniform_degree
@@ -85,7 +84,3 @@ theorem canonical_completed_rows_energy_uniform_degree
   calc
     _ = (D*C)*(1+‖θ‖)^degree*(Z^(cstar/32)*Z^(N+V-cstar/16)) := by ring
     _ = _ := by rw [←Real.rpow_add hz]; congr 2; ring
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

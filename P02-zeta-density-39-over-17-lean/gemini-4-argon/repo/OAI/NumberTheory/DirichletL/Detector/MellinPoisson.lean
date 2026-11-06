@@ -10,7 +10,6 @@ open scoped Classical BigOperators ContDiff
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 
 lemma finiteSupport_verticalIntegral {α : Type*} (c : α → ℂ)
     (hc : (Function.support c).Finite) (F : α → ℂ → ℂ) (σ : ℝ)
@@ -65,8 +64,3 @@ theorem inner_mellin_poisson (η : HeckeFamily.Character) (C : CalibrationData)
   intro m
   dsimp only [c]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

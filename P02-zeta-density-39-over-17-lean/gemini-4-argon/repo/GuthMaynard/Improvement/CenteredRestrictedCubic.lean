@@ -120,4 +120,3 @@ theorem centered_restricted_cubic {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   convert hh using 1
   ring
 
-end GuthMaynard.Improvement

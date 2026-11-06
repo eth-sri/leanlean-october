@@ -169,6 +169,4 @@ theorem norm_heathBrownExponentialSum_le (N : ℕ) (f : ℝ → ℝ) :
       simp [Nat.card_Icc]
 
 
-end
 
-end GafniTao

@@ -14,16 +14,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentAmplificationLiveMask CenteredMomentLiveDomain CenteredMomentRemainingBox
-open CenteredMomentGaussEnergy CenteredMomentSourceAllocationEnergy CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondHeightFamily CenteredMomentCommonPuncture CenteredMomentOriginalChildEnergy
-local notation "O"=>ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentAmplificationLiveMask CenteredMomentLiveDomain CenteredMomentRemainingBox CenteredMomentGaussEnergy CenteredMomentSourceAllocationEnergy CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily CenteredMomentCommonPuncture CenteredMomentOriginalChildEnergy
 variable {ι:Type*}[Fintype ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def allocatedData (D:OriginalData ι)(C L:Ideal O)(B:actualAllocations D.S C):
     OriginalData (liveIndices B.val) where
@@ -104,9 +96,3 @@ theorem common_gauss_allocation (D:OriginalData ι)
   dsimp only [liveProfile]
   rw [allocated_pools]
   ring
-
-end SevenEighths.CenteredMomentFirstPhysicalSource
-
-end
-
-end OAI

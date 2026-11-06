@@ -93,4 +93,3 @@ theorem box_time_fourth_bound (W : Finset ℝ) :
   rw [he,ordinary_fourier_integral_sq h1 h2]
   simpa only [mul_zero,sub_zero] using pair_smoothing_energy W 0
 
-end Montgomery.RationalMoment

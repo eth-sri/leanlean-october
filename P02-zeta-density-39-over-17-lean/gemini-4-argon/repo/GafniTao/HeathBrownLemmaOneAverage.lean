@@ -199,6 +199,4 @@ theorem heathBrown_source_shift_double_sum_preVMVT
     _ = _ := by rfl
 
 
-end
 
-end GafniTao

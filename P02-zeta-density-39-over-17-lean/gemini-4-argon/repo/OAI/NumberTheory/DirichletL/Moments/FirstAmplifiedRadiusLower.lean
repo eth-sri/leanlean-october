@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedRadiusLower
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentFirstAmplificationChoice CenteredMomentFirstScale
-open CenteredMomentFirstPhysicalDyadicRows
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice CenteredMomentFirstScale CenteredMomentFirstPhysicalDyadicRows
 
 lemma base_radius_identity (Z K0 Csec xi : ℝ) (hZ : 1<Z) (hC : 0<Csec) :
     Z^(K0+frequencyLoss Z (32*Csec) xi)=128*Csec*Z^K0*Z^(xi/2) := by
@@ -78,9 +75,3 @@ theorem active_row_reciprocals (I J E : Ideal O) (hE : E≠0)
     hK hX hZ hC hsigma hreserve hsec (n 1) hn p k
   have ho := (activeRows_scale_gt_one rows n hne).le
   exact ⟨inv_le_one_of_one_le₀ (ho.trans hb.1),inv_le_one_of_one_le₀ (ho.trans hb.2)⟩
-
-end SevenEighths.CenteredMomentFirstAmplifiedRadiusLower
-
-end
-
-end OAI

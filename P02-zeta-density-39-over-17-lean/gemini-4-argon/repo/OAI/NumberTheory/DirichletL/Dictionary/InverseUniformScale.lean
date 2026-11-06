@@ -21,9 +21,3 @@ lemma scaleCLM_apply (W : 𝓢(ℝ,ℂ)) (x : ℝ) : scaleCLM W x=scaleProfile W
     SchwartzMap.derivCLM_apply,Complex.real_smul,scaleProfile]
   push_cast
   ring
-
-end SevenEighths.DetectorDictionaryInverseUniform
-
-end
-
-end OAI

@@ -53,4 +53,3 @@ theorem norm_atkinsonRootPhase_integral_left {T b a c : ℝ}
     exact (atkinsonRootSlope_strictAnti hT.le b).antitoneOn
       (ha.trans_le hx.1) (ha.trans_le hy.1) hxy
 
-end MathCollab.Density.Stronger.Atkinson

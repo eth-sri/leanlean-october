@@ -6,34 +6,10 @@ public import LaterPairs.Native.ParabolaBilinearLocalization.Part01
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open GafniTao Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open MeasureTheory
-open MeasureTheory FourierTransform SchwartzMap Set GafniTao
-open MeasureTheory GafniTao
-open MeasureTheory GafniTao Set
-open MeasureTheory Set
-open Set
-open scoped BigOperators
-open scoped BigOperators ComplexConjugate
-open scoped BigOperators ContDiff
-open scoped BigOperators ContDiff FourierTransform
-open scoped BigOperators Matrix
-open scoped BigOperators Matrix ContDiff
-open scoped BigOperators NNReal ENNReal
-open scoped ComplexConjugate Convolution ContDiff
-open scoped ContDiff
-open scoped ContDiff BigOperators
-open scoped ContDiff FourierTransform
-open scoped ContDiff Topology
-open scoped Matrix
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth GafniTao Set MeasureTheory FourierTransform SchwartzMap Filter
+open scoped BigOperators ComplexConjugate ContDiff FourierTransform Matrix NNReal ENNReal Convolution Topology
 noncomputable section
-open Set Filter MeasureTheory
-open scoped ContDiff Topology FourierTransform BigOperators
 namespace TaoTrudgianYang2025
-open scoped ComplexConjugate
-open scoped ComplexConjugate
 universe v
 
 
@@ -4069,8 +4045,6 @@ theorem exists_bourgain_model_source_global {σ ε : ℝ} (hσ : 0<σ) (hε : 0<
 
                                                                  
 
-open Filter Expdb
-open scoped Topology
 
 private theorem source_smallness_of_scale
     {c C D T P R n : ℝ} (hC : 0 ≤ C) (hD : 0 ≤ D)
@@ -6351,7 +6325,6 @@ theorem exponentSumGrowthExponent_le_bourgain_baseline_interior
   exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
     (isExponentSumBoundNonAsymptotic_bourgain_baseline_interior hα hαupper)
 
-open scoped ContDiff
 
 private theorem compression_power_error {η : ℝ} (hη : 0 ≤ η) (hη₁ : η ≤ 1)
     (p : ℕ) : |(1-η)^p-1| ≤ (p : ℝ)*η := by
@@ -6766,8 +6739,6 @@ theorem exponentSumGrowthExponent_le_bourgain_baseline {α : NNReal}
 
                                                                     
 
-open Expdb Filter Set
-open scoped ContDiff FourierTransform Topology
 
 public  theorem fourth_coordinate_shift_error {K K' τ τ' κ δ₃ δ₄ : ℝ}
     (hκ : 0 < κ) (hK : κ ≤ |K|) (hτ' : |τ'| ≤ 1/2)
@@ -6926,6 +6897,3 @@ public  theorem dual_coefficient_lower
   exact (div_le_iff₀ (Real.sqrt_pos.mpr (by positivity : 0 < U*Q^3))).mpr hone
 
 -- Generated closures: source context is replayed in the next part.
-end TaoTrudgianYang2025
-end
-end

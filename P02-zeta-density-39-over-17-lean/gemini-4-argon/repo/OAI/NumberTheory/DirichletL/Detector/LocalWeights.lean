@@ -89,8 +89,3 @@ lemma weighted_squarefree_bulk (Q eta a G1 C omega X W V : ℂ)
   simp only [mul_pow, div_pow, pow_add, pow_mul]
   field_simp
   ring
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

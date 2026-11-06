@@ -10,7 +10,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε) (order : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (Ct Cm : ℝ),0<Ct ∧ 0<Cm ∧
@@ -100,8 +99,3 @@ theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε) (order : ℕ) :
       (hdis.mono_left (Finset.mem_powerset.mp hN)) false
     simp only [ite_false,Bool.false_eq_true] at he
     exact he ▸ hn'
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

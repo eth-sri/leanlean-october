@@ -72,4 +72,3 @@ theorem exists_intervalC2Bound_atkinsonPowerWeight_root_natural (α : ℝ) :
   simpa only [he, mul_one, mul_one_div] using h
 
 
-end MathCollab.Density.Stronger.Atkinson

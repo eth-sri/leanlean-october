@@ -44,7 +44,3 @@ theorem compensated_reflected_exponent_with_length (d ell₀ O₀ H A₀ N₀ S�
     apply hbound.trans
     dsimp [Td]
     linarith
-
-end SevenEighths.ProbeLowReflected
-
-end OAI

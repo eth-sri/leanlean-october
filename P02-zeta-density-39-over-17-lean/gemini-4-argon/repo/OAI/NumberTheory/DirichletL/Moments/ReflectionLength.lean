@@ -26,9 +26,3 @@ lemma reflected_scale_bound (Z M n xi C Q R d h s : ℝ)
     _=C*Z^(M-n+xi/2) := by
       rw [Real.rpow_add hz,Real.rpow_sub hz]
       ring
-
-end SevenEighths.CenteredMomentComparisonReflection
-
-end
-
-end OAI

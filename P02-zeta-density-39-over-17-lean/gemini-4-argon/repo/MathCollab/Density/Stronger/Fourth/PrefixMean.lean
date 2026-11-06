@@ -255,4 +255,3 @@ theorem integrable_gaussian_dirichletPrefix_norm_pow
     (pow_le_pow_left₀ (norm_nonneg _) (norm_dirichletPrefix_le N a (u-t)) k)
     (Real.exp_pos _).le
 
-end MathCollab.Density.Stronger.Fourth

@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSixthReduction
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentSecondMovingSupport CenteredMomentFixedRowMask
-open CenteredExceptionalProfile CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentSecondMovingSupport CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSupportedCorrelation
 
 def reducedNumerator (C D : Ideal O) (U : Finset (CommonIndex C D)) : O :=
   ∏ P : CommonIndex C D,commonPrime C D P^(fixedExponent C D U P%6)
@@ -79,9 +75,3 @@ theorem fixed_sixth_inducing_iff (η : Character) (Q : Ideal O) (m h : O)
   exact he.trans (fixedInducingRow_mul_mask_iff η Q m (sixthFactor C D U)
     (reducedNumerator C D U) h hm (sixthFactor_ne_zero C D hC U)
     (reducedNumerator_ne_zero C D hC U) hh hmLam hm2)
-
-end SevenEighths.CenteredMomentSecondSixthReduction
-
-end
-
-end OAI

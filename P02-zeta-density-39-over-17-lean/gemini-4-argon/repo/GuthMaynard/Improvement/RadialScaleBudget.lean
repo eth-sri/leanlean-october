@@ -20,4 +20,3 @@ theorem choose_radial_discard_order {η : ℝ} (hη : 0 < η) :
   rw [← Real.rpow_natCast (T^η) n, ← Real.rpow_mul hTp.le, ← Real.rpow_sub hTp]
   exact Real.rpow_le_rpow_of_exponent_le hT (by nlinarith)
 
-end GuthMaynard.Improvement

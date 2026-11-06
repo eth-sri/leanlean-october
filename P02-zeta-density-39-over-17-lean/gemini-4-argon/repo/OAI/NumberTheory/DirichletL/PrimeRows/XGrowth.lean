@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem physicalRow_first_x_growth (e eps : ℝ) (he : 0<e) (he' : e<1/1000)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
@@ -56,9 +55,3 @@ theorem physicalRow_first_x_growth (e eps : ℝ) (he : 0<e) (he' : e<1/1000)
         (mul_le_mul hh' hg (norm_nonneg _) (by dsimp [N];positivity))
         (mul_nonneg (norm_nonneg _) (norm_nonneg _)) (by positivity)
     _ = _ := by ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

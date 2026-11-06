@@ -383,4 +383,3 @@ theorem intervalIntegrable_gmReflectionIntegrand {tau a b : ℝ}
     ((Complex.continuous_ofReal.continuousAt.comp hPhase).mul continuousAt_const).cexp
 
 
-end MathCollab.Density

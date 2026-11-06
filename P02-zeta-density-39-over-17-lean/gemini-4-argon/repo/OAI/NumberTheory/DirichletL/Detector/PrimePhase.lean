@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss
-open ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
 
 theorem normalizedTraceGauss_eq_normalizedGauss (p : O) (hp : p ≠ 0)
     [(Ideal.span {p} : Ideal O).IsMaximal]
@@ -93,8 +91,3 @@ theorem reciprocitySign_self_eq_sextic_neg_one (p : O) (hp : p ≠ 0)
     _ = reciprocitySign p p * (reciprocitySign p p * actualSextic (Ideal.span {p}) hg (-1)) := by rw [hprod]
     _ = reciprocitySign p p ^ 2 * actualSextic (Ideal.span {p}) hg (-1) := by ring
     _ = _ := by rw [reciprocitySign_sq p p ho ho, one_mul]
-
-end SevenEighths.ProbePhase
-end
-
-end OAI

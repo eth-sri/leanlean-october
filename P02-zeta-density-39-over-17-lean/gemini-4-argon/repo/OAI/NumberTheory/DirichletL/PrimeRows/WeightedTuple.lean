@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem tupleOutside {K : ℕ} (S : Finset (Ideal O)) (P : Fin K→PrimeIdeal)
     (hPS : ∀i,(P i).val∉S) : ∀Q∈Finset.univ.image P,Q.val∉S := by
@@ -44,8 +43,3 @@ theorem calibratedTupleValue_factor {K : ℕ} (S : Finset (Ideal O)) (hS : Sourc
   rw [physicalCompensatedRow_indexed S hS P hP hPS]
   simp only [Finset.prod_mul_distrib]
   ring
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

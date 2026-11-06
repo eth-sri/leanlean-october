@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve ProbeEuler ProbeLocal
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 theorem indexedCompensatedHigh_principal_continued {K : ℕ} (η : HeckeFamily.Character)
     (S : Finset Id) (hS : SourceExclusions S) (P : Fin K→PrimeIdeal)
@@ -34,8 +32,3 @@ theorem indexedCompensatedHigh_principal_continued {K : ℕ} (η : HeckeFamily.C
     exact hPS i
   rw [spectralCompensatedHigh_continued S hS (Finset.univ.image P) ht η x w z _ _ hx hw hz,
     Finset.prod_image hP.injOn]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

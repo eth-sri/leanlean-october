@@ -11,7 +11,6 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGau
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis) (hp : ∀ i, p i ≠ 0)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
@@ -151,8 +150,3 @@ theorem actual_second_child_margins_from_cubes
     Z Q ell t g theta eta hZ hQ h1 h2 hT hG hD
   unfold decrease
   linarith
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

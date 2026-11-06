@@ -10,13 +10,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCertifiedExistence
-open HeckeFamily CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyCappedAnalyticSuccessor CenteredMomentEnergyCappedRadialTransport
-open CenteredMomentEnergyWidthSchedule
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyCappedAnalyticSuccessor CenteredMomentEnergyCappedRadialTransport CenteredMomentEnergyWidthSchedule
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem certified_bands (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
@@ -49,9 +45,3 @@ theorem terminal_certificate (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi 
   apply certified_from_max_two (α:=α) M H hH W bslot a b radial Bmask L lo hi Mcap κ ε
   exact certified_bands (α:=α) M H hH W aslot bslot a b (max 2 radial) Bmask L lo hi Mcap κ ε
     haslot hWs hW hbslot ha haUpper hb (le_max_left _ _) hmask hMcap hκ0 hε hbeta hκ _ le_rfl
-
-end SevenEighths.CenteredMomentEnergyCertifiedExistence
-
-end
-
-end OAI

@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalFixedRaySource
-open CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentWholeSlotDeletion
-open CenteredMomentHeckeSlots CenteredMomentPrimeSlot CenteredExceptionalProfile
-open CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentWholeSlotDeletion CenteredMomentHeckeSlots CenteredMomentPrimeSlot CenteredExceptionalProfile CenteredMomentSecondHeightFamily
 
 lemma natural_slot_eq {η : Character} {z : O} (F : NaturalRow η z)
     (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P t : ℝ) :
@@ -30,7 +25,6 @@ lemma natural_slot_eq {η : Character} {z : O} (F : NaturalRow η z)
   ring
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem natural_slot_product {α : Type*} [DecidableEq α]
@@ -96,9 +90,3 @@ theorem natural_slot_product {α : Type*} [DecidableEq α]
   apply (mul_le_mul (pow_le_pow_right₀ hp (Finset.card_le_card hAF))
     (Real.rpow_le_rpow_of_exponent_le hZ.le hexp) (by positivity) (by positivity)).trans_eq
   rw [mul_pow,←pow_mul]
-
-end SevenEighths.CenteredMomentRayMaskedFloor
-
-end
-
-end OAI

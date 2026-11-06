@@ -183,4 +183,3 @@ theorem rational_finite_height_moment (A : Finset ℚ) (c : ℚ → ℂ) (k H : 
   congr 1
   omega
 
-end Montgomery.RationalMoment

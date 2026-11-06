@@ -10,7 +10,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentCommonAllowance
 open CenteredMomentActive CenteredMomentSecondLedger CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 
 def activeIndicator (c d : ℕ) : ℝ := if netExponent c d ≠ 0 then 1 else 0
 
@@ -81,9 +80,3 @@ theorem actual_common_support_allowance (p : ι → O)
     using weighted_allowance c d hc hd
       (fun i => Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ))
       (fun i => Real.logb_nonneg hZ (by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1))))
-
-end SevenEighths.CenteredMomentCommonAllowance
-
-end
-
-end OAI

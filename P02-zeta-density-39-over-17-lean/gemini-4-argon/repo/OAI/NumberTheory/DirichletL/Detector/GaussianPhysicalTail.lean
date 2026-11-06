@@ -11,8 +11,6 @@ open scoped Classical SchwartzMap
 open MeasureTheory CompletedGauss FourierBridge
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def gaussianPhysicalFamilyIntegral {α ι : Type*} [Fintype ι]
     (η : HeckeFamily.Character) (C : CalibrationData) (W0 W1 : ℝ→ℂ)
@@ -92,8 +90,3 @@ theorem gaussianPhysicalFamily_remote (V : SchwartzMap ℝ ℂ)
     (fun p _=>physicalRowMonoid_norm η C p.2) W (fun p=>q p.1) Z A hZ hA
   rw [gaussianPhysicalFamily_mass_eq C W0 W1 F a X Y W q R hR] at hh
   simpa only [gaussianPhysicalFamily_integral_eq η C W0 W1 F a D X Y W q V hV _ Z R hR] using hh
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

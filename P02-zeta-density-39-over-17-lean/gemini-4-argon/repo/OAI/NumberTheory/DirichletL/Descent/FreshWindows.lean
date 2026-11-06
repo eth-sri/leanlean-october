@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem secondChildKernelPair_separated_marked {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
     (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -38,8 +37,3 @@ theorem secondChildKernelPair_separated_marked {ι σ : Type*} [DecidableEq ι] 
   intro M hM
   simp only [secondChildColumn,star_mul,mul_one]
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

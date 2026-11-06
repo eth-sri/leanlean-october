@@ -54,9 +54,3 @@ theorem twistProfile_smooth (W : ℝ→ℂ) (σ freq a b : ℝ) (ha : 0<a)
         exact (not_le_of_gt hy) (hs hn).1
       simp [twistProfile,hw]
     exact contDiffAt_const.congr_of_eventuallyEq he
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

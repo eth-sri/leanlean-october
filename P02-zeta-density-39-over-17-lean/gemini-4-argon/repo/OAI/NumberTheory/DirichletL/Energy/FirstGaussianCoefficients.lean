@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstGaussianCoefficients
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondChildPowerBudget CenteredMomentSecondSourceSeededPowerDescent
-open CenteredMomentSecondSourcePowerDescent CenteredMomentSecondWindowBudget
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSourceInputTailUniform
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentSecondChildPowerBudget CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondSourcePowerDescent CenteredMomentSecondWindowBudget CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSourceInputTailUniform
 
 def fixedFactors (Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed:ℝ)
     (J:ℕ)(Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ)):Fin 4→ℝ:=
@@ -134,9 +130,3 @@ theorem error_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×�
   have hhj:=hh j
   rw [hid] at hhj
   simpa only [mul_assoc] using hhj
-
-end SevenEighths.CenteredMomentEnergyFirstGaussianCoefficients
-
-end
-
-end OAI

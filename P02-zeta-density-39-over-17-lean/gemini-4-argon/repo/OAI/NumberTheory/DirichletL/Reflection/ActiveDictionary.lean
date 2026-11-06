@@ -41,7 +41,3 @@ lemma markedActiveEquiv_residual (e : α⊕β≃γ) (B : Finset β) (T : Finset 
     (markedActiveEquiv e B T (Sum.inr (Sum.inl a))).val=Sum.inl (e (Sum.inl a)) := rfl
 lemma markedActiveEquiv_slot (e : α⊕β≃γ) (B : Finset β) (T : Finset σ) (t : T) :
     (markedActiveEquiv e B T (Sum.inr (Sum.inr t))).val=Sum.inr t.val := rfl
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

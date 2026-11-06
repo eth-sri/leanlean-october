@@ -54,4 +54,3 @@ theorem exponentialSumAtPrefixMax_le {F : ℝ → ℝ} {T N B : ℝ} {a L : ℕ}
   intro j hj
   exact h j (Nat.le_of_lt_succ (Finset.mem_range.mp hj))
 
-end TaoTrudgianYang2025

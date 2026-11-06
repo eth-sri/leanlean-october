@@ -15,19 +15,11 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedAnalyticSuccessor
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighBound
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighBound CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyWidthInduction (remaining lowerAt lengthAt lowerAt_pos child_support child_length)
-open CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
-open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyCappedRequests
-open CenteredMomentEnergySourceCapSchedule CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
+open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyCappedRequests CenteredMomentEnergySourceCapSchedule CenteredMomentNaturalFixedRaySource
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_successor
@@ -175,9 +167,3 @@ theorem actual_successor
       Jlow Jlow Slow Slow Clow Clow hp.1.le le_rfl le_rfl le_rfl le_rfl href le_rfl le_rfl le_rfl
       (Finset.Subset.refl _) hClow.le le_rfl hl.2.1
     exact hh.2 _ C₀ C₁ Clow le_rfl hC₀.le hC₁.le hClow.le hzSmall hpSmall hlRestricted
-
-end SevenEighths.CenteredMomentEnergyCappedAnalyticSuccessor
-
-end
-
-end OAI

@@ -64,4 +64,3 @@ theorem middle_source_moment_raw {δ ε : ℝ} (hδ : 0 < δ) (hε : 0 < ε) :
   dsimp only [M,μ,H] at he2 he3
   simpa only [he1,he2,he3] using hraw
 
-end GuthMaynard.Improvement

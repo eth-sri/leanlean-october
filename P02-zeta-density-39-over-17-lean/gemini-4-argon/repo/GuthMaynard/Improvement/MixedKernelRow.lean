@@ -116,4 +116,3 @@ theorem kernelMixed_time_row_bound {μ ψ : ℝ → ℝ} {C K : ℝ → ℂ} {L 
       mul_le_mul_of_nonneg_left (mixed_timeMeasure_young hm h0 h2 hψ hψ0 hψi) (mul_nonneg hL hQ)
     _ = _ := by ring
 
-end GuthMaynard.Improvement

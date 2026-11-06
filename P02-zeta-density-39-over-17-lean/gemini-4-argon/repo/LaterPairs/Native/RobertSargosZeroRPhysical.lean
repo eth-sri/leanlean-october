@@ -41,4 +41,3 @@ theorem robertSargos_zero_r_physical_a_times_a
     (by exact_mod_cast hH) (by exact_mod_cast hQ) (by exact_mod_cast hR)
     hC hlam hdiag hpos hinv)
 
-end TaoTrudgianYang2025

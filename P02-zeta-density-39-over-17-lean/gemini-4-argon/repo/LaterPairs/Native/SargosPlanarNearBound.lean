@@ -85,4 +85,3 @@ theorem sargosWeightedPlanarIntegral_le_nearPairs {ι : Type*}
       intro p hp
       split_ifs <;> norm_num
 
-end TaoTrudgianYang2025

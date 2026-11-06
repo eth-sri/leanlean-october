@@ -531,6 +531,4 @@ theorem wooleyPolynomialCorollary32_native :
           (wooleyCriticalExponent_eq_zero_of_lower hpPrime hkTwo hkp hlower)
 
 
-end
 
-end GafniTao

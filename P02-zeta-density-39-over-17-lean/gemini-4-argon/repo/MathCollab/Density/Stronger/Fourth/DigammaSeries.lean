@@ -355,4 +355,3 @@ lemma hasSum_digamma_of_re_pos {z₀ : ℂ} (hz₀ : 0 < z₀.re) :
   exact ht ▸ hsm.hasSum
 
 
-end MathCollab.Density.Stronger.Fourth.Digamma

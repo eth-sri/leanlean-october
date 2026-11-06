@@ -167,4 +167,3 @@ theorem norm_poissonHeadBoundary_half_integer_le {f g : ℝ → ℝ} {x y : ℝ}
   obtain ⟨k, rfl⟩ := hx
   exact norm_finiteS1_half_integer_le_of_pos k hy
 
-end DhimanKadiriQuesadaHerrera2026

@@ -17,4 +17,3 @@ theorem ford_norm_sum_sq_le_card_mul_sum_norm_sq
       simpa using
         (sq_sum_le_card_mul_sum_sq (s := B) (f := fun b => ‖V b‖))
 
-end GafniTao

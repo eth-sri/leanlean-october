@@ -75,8 +75,3 @@ theorem finite_pair_separation {α β : Type*} (S : Finset α) (T : Finset β)
   apply integral_congr_ae
   filter_upwards [] with t
   ring
-
-end
-end SevenEighths.HeckeDetectorFourier
-
-end OAI

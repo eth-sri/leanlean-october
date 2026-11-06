@@ -455,4 +455,3 @@ theorem tsum_nat_tail_eq {F : ℕ → ℝ} (N : ℕ)
   rw [hhead, zero_add, htail] at he
   exact he.symm
 
-end DhimanKadiriQuesadaHerrera2026

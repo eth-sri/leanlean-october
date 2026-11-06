@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
 def retainedDyads (scale B : ℝ) : Finset (ℕ×ℕ×ℕ) :=
@@ -48,8 +47,3 @@ lemma tsum_sub_finset_eq_tail {α : Type*} (f : α→ℂ) (hf : Summable f) (A :
         by_cases hi : i∈A <;> simp [hi]
   rw [ht] at hh
   exact eq_sub_of_add_eq' hh |>.symm
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

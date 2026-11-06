@@ -11,7 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
 
 def supportedCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   if hs : Supported P.val then
@@ -73,8 +72,3 @@ theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal O))
   by_cases hp : P∈T
   · simp [hp,hT P hp]
   · simp [hp]
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

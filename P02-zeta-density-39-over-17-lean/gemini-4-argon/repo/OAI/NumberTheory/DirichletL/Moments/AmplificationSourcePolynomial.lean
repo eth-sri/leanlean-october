@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourcePolynomial
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation
-open CenteredMomentSourceRow CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
 
  theorem residual_primaryGaussRow (p : O) (hp : Prime p)
     (hpp : goodLambda^2 ∣ p-1) (I : Ideal O) (hI : Supported I) (h : O) :
@@ -84,9 +79,3 @@ theorem remainder_polynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
   intro I hI
   dsimp only [f]
   ring
-
-end SevenEighths.CenteredMomentAmplificationSourcePolynomial
-
-end
-
-end OAI

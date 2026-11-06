@@ -8,10 +8,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
@@ -100,8 +98,3 @@ theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     _ ≤ ((Cb*B^(1+eps)*H)*(128*V)*(128*T))*(Cf*(B^2*V*T)^eps) :=
       mul_le_mul_of_nonneg_right hQcard (by positivity)
     _ = _ := by ring
-
-end SevenEighths.InverseMomentGlobalPrincipalMass
-end
-
-end OAI

@@ -89,9 +89,3 @@ theorem series_eq_tsum (χ : Character) (inverse : Bool) {s : ℂ} (hs : 1 < s.r
     simp only [coefficient,  ite_true, IdealEuler.weighted,
       IdealEuler.normWeight, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk]
     ring
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

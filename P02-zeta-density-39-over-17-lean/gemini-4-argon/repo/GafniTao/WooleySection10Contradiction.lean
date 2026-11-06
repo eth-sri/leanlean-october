@@ -170,6 +170,4 @@ theorem wooley_section10_force_final_bound
   have hsR : (1 : ℝ) ≤ s := by exact_mod_cast hs
   linarith
 
-end
 
-end GafniTao

@@ -78,4 +78,3 @@ theorem sargosTentPlanarIntegrand_eq_gram {ι : Type*}
   rw [fordAdditiveCharacter_add]
   ring
 
-end TaoTrudgianYang2025

@@ -94,8 +94,3 @@ theorem finite_gauss_convolution {F : Type*} [Field F] [Fintype F]
       intro v _
       rw [MulChar.mul_apply]
       ring
-
-end
-end SevenEighths.ProbeGauss
-
-end OAI

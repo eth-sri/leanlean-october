@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve LocalReflectionBrackets InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma norm_bracket_le_card {F : Type*} [Field F] [Fintype F]
     (χ : MulChar F ℂ) (j : ℕ) (x : F) : ‖bracket χ j x‖≤(Fintype.card F:ℝ) := by
@@ -72,8 +71,3 @@ lemma literal_mixed_coefficient_crude (G : PrimeFamily ι)
   apply (mul_le_of_le_one_left (norm_nonneg _) (s.amplitude_norm u m n b)).trans
   rw [norm_prod,map_prod,Nat.cast_prod]
   exact Finset.prod_le_prod₀ (fun i hi => norm_nonneg _) (fun i hi => mixedActiveBracket_crude_norm G D hchar j hj S i _)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

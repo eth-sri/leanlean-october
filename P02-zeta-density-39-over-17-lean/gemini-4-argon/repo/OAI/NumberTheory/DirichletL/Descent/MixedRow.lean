@@ -9,8 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss CanonicalRowCompletion CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 noncomputable local instance mixedQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 variable {ι : Type*} [Fintype ι]
@@ -86,8 +84,3 @@ theorem markedThetaQuotient_mk (p : ι → Eis) (S : Finset ι)
     (Finset.dvd_prod_of_mem p hi).trans (Ideal.mem_span_singleton.mp
       (Ideal.mul_le_right (Ideal.mul_le_right (hcQ hxy))))
   simp only [dvd_iff_dvd_of_dvd_sub hp]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

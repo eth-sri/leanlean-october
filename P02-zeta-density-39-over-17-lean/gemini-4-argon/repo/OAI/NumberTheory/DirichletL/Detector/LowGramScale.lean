@@ -49,8 +49,3 @@ lemma source_gram_sqrt_power (Z δ : ℝ) (hZ : 0<Z) :
   rw [Real.sqrt_eq_rpow,←Real.rpow_mul hZ.le]
   congr 1
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

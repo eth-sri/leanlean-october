@@ -39,4 +39,3 @@ theorem RobertSargosReducedSystem.linear_real {R H Q δ : ℝ} {p : RobertSargos
     (p.r:ℝ)*p.d+(p.h₁:ℝ)*p.q₁-(p.h₂:ℝ)*p.q₂ = 0 := by
   exact_mod_cast h.linear
 
-end TaoTrudgianYang2025

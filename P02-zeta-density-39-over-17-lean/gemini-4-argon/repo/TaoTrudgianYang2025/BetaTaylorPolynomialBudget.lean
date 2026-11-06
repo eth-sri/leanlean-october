@@ -64,4 +64,3 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_le
     rw [iteratedDeriv_real_comp_order]
     exact hb (j+n) (by omega)
 
-end TaoTrudgianYang2025

@@ -43,9 +43,3 @@ theorem norm_of_oriented_coefficients (χ ψ : Character) (reverse : Bool)
 
 theorem orientedFrequency_abs (reverse : Bool) (freq : ℝ) :
     |orientedFrequency reverse freq|=|freq| := by cases reverse <;> simp [orientedFrequency]
-
-end SevenEighths.HeckeDetectorCoefficientTransfer
-
-end
-
-end OAI

@@ -64,4 +64,3 @@ theorem boundedPolynomial_classical_level_volume {ε : ℝ} (hε : 0 < ε) :
   convert level_volume_interval_multiple hT hs s k using 1
   ring
 
-end GuthMaynard.Improvement

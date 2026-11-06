@@ -99,12 +99,7 @@ def shiftedPair (a b : UnitAddCircle) : WeakFEPair ℂ :=
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel b))
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel b))
 
-@[simp] theorem shiftedPair_k (a b : UnitAddCircle) : (shiftedPair a b).k = 1 := by
-  norm_num [shiftedPair, product, HurwitzZeta.hurwitzEvenFEPair]
 
-@[simp] theorem shiftedPair_f (a b : UnitAddCircle) (t : ℝ) :
-    (shiftedPair a b).f t =
-      (HurwitzZeta.evenKernel a t : ℂ) * (HurwitzZeta.evenKernel b t : ℂ) := rfl
 
 def scaledEvenPair (a : UnitAddCircle) (u : ℝ) (hu : 0 < u) : WeakFEPair ℂ :=
   rescale (HurwitzZeta.hurwitzEvenFEPair a)
@@ -153,9 +148,3 @@ theorem rectangularPair_hasSum (a b u v : ℝ) (hu : 0 < u) (hv : 0 < v)
   simpa only [rectangularPair, product, scaledEvenPair, rescale,
     HurwitzZeta.hurwitzEvenFEPair, Function.comp_apply, Complex.ofReal_mul] using
     (Complex.hasSum_ofReal.mpr hprod)
-
-end SevenEighths.ThetaProduct
-
-end
-
-end OAI

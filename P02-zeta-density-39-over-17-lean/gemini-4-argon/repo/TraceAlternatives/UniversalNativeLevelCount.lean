@@ -38,4 +38,3 @@ theorem universal_native_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
     rw [norm_boundedPolynomial_native_conjugate hN]
     exact hLarge t ht
 
-end Montgomery.RationalMoment

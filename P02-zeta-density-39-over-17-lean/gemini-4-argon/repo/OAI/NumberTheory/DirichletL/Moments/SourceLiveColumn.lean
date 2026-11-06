@@ -9,12 +9,8 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceLiveColumn
-open CenteredMomentSourceLiveAllocation CenteredMomentRemainingBox CenteredMomentCommonProfile
-open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentCommonAllocationBox CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceLiveAllocation CenteredMomentRemainingBox CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentCommonAllocationBox CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 def frozenCoefficient (B : Tuple ι) (C R : Ideal O)
     (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ) : ℂ :=
@@ -96,9 +92,3 @@ theorem original_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂
   simp only [finiteColumnCoefficient, Finset.sum_filter] at h
   exact h
-
-end SevenEighths.CenteredMomentSourceLiveColumn
-
-end
-
-end OAI

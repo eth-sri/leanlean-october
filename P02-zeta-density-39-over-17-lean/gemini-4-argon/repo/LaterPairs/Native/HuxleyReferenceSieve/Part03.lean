@@ -6,15 +6,8 @@ public import LaterPairs.Native.HuxleyReferenceSieve.Part02
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Filter Polynomial Set
+open scoped Classical ContDiff FourierTransform BigOperators Topology
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 
@@ -6564,8 +6557,5 @@ abbrev nativeHuxleyReference_positive_difference_physical_upper_endpoint_compres
 abbrev nativeHuxleyReference_positive_difference_physical_lower_endpoint_compression := @positive_difference_physical_lower_endpoint_compression
 abbrev nativeHuxleyReference_reciprocal_fraction_strictMonoOn := @reciprocal_fraction_strictMonoOn
 
-end TaoTrudgianYang2025.HuxleyRationalPhase
 
 -- Generated closures: source context is replayed in the next part.
-end
-end

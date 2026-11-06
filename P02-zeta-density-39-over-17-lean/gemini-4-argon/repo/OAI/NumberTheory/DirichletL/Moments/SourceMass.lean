@@ -11,7 +11,6 @@ open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.CenteredMomentSourceMass
 open CenteredMomentAddedZero CenteredMomentRectangle CenteredMomentExtraction
-local notation "O" => ActualEisensteinCubic.O
 
 def idealBall (H : ℝ) : Finset (Ideal O) :=
   (Ideal.finite_setOfPred_absNorm_le (S := O) (Nat.ceil H)).toFinset.filter
@@ -350,9 +349,3 @@ lemma finite_original_mass_reindex {ι : Type*} [Fintype ι] {n : ℕ} (e : ι�
   apply Finset.sum_congr rfl
   intro v hv
   rw [originalCoefficient_reindex]
-
-end SevenEighths.CenteredMomentSourceMass
-
-end
-
-end OAI

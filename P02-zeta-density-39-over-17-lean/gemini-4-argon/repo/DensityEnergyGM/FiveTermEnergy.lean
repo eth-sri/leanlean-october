@@ -113,4 +113,3 @@ theorem discrete_energy_five_term_base_eventual (ε : ℝ) (hε : 0 < ε) :
     _ ≤ _ := add_le_add (add_le_add (add_le_add (add_le_add h1 h2) h3) h4) h5
     _ = _ := by dsimp only [R]; norm_num; ring
 
-end Montgomery.RationalMoment

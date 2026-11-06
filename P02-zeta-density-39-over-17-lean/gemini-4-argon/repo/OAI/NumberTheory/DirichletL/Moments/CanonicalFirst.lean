@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentCanonicalFirst
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredExceptionalCount
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentActive
-open CenteredMomentCompleteCommon UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalRowCompletion CanonicalQuadraticSieve CenteredExceptionalCount CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentActive CenteredMomentCompleteCommon UniqueFactorizationMonoid
 
 abbrev CommonIndex (I J : Ideal O) := {P : Ideal O // P∈commonSupport I J}
 instance commonIndexMaximal (I J : Ideal O) (P : CommonIndex I J) : P.val.IsMaximal := by
@@ -142,9 +137,3 @@ theorem activeConductor_span_dvd (I J : Ideal O) :
   apply Finset.prod_dvd_prod_of_dvd
   intro P hP
   simpa only [pow_one] using pow_dvd_pow P.val (leftExponent_pos I J P)
-
-end SevenEighths.CenteredMomentCanonicalFirst
-
-end
-
-end OAI

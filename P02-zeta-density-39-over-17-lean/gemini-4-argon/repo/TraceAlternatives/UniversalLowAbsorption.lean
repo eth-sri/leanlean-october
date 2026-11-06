@@ -1,5 +1,5 @@
 module
-public import TraceAlternatives.UniversalCountTargetWindows
+public import TraceAlternatives.UniversalCountBudgets
 public import DensityEnergyGM.SharpCountScale
 
 @[expose] public section
@@ -39,4 +39,3 @@ theorem universal_low_coefficient_small {A T : ℝ} (hA : 0<A)
   change A/T^(1/200:ℝ)≤1/2
   exact (div_le_iff₀ (by positivity : 0<T^(1/200:ℝ))).mpr (by linarith)
 
-end Montgomery.RationalMoment

@@ -15,8 +15,7 @@ public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
 open scoped ComplexOrder
 set_option autoImplicit false
 noncomputable section
@@ -394,4 +393,3 @@ theorem integrable_heathBrownZetaSquareMellinIntegrand_right
     (pow_le_pow_left₀ (norm_nonneg _) hzeta 2)
     (norm_nonneg (Complex.Gamma (((2 : ℝ) : ℂ) + (v : ℂ) * I)))]
 
-end MathCollab.Density.Stronger.PointMean

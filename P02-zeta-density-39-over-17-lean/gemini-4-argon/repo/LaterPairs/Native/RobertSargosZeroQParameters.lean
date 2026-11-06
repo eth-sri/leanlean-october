@@ -71,4 +71,3 @@ theorem robertSargos_zero_q_block_length {r lam M : ℝ}
   exact (Real.rpow_le_rpow_of_nonpos hlam hmu (by norm_num : -(1:ℝ)/2 ≤ 0)).trans
     ((Real.rpow_le_rpow_of_exponent_ge hlam hlam1 (by norm_num : -(8:ℝ)/13 ≤ -1/2)).trans hM)
 
-end TaoTrudgianYang2025

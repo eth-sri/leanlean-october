@@ -13,10 +13,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstActualFrequencyBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentSectorLocalization
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstActualFrequencyBudget CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentEnergyFirstLiveAdmission CenteredMomentSectorLocalization
 
 def sourceEpsilon (M A B ε:ℝ):ℝ:=reserve M B ε/(4*((A+1)+A+1))
 def maskEpsilon (M B ε:ℝ):ℝ:=reserve M B ε/(B+B+1)
@@ -96,9 +93,3 @@ theorem eventually_actual_four_fit (M A P B κ ε:ℝ)
   unfold columnLoss
   dsimp only [sourceEpsilon,maskEpsilon] at hmono hfit ⊢
   linarith only [hmono,hfit]
-
-end SevenEighths.CenteredMomentEnergyFirstSourceParameters
-
-end
-
-end OAI

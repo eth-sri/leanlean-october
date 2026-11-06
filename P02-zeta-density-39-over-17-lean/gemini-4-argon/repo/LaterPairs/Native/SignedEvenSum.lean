@@ -51,4 +51,3 @@ theorem sum_signed_even (f : ℤ → ℝ) (N : ℕ) (hN : 0 < N)
   rw [he,Finset.sum_insert hn,Finset.sum_union hd,hneg]
   ring
 
-end TaoTrudgianYang2025

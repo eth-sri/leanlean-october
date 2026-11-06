@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Fourth.Coefficients
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -59,4 +58,3 @@ theorem atkinsonStationaryLeadingSum_eq_finite {T G L : ℝ}
       atkinsonStationaryLeadingFiniteSum T G L (atkinsonSourceCutoff T G L) :=
   (hasSum_atkinsonStationaryLeadingTerm hT hG hL hwidth).tsum_eq
 
-end MathCollab.Density.Stronger.Atkinson

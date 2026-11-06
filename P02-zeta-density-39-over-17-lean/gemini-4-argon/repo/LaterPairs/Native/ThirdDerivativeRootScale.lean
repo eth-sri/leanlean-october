@@ -69,4 +69,3 @@ theorem third_derivative_optimized_square_scale {S N H R C μ : ℝ}
       simp only [div_eq_mul_inv] at hCfirst ⊢
       nlinarith
 
-end TaoTrudgianYang2025

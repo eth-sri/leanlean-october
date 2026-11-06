@@ -188,4 +188,3 @@ theorem positiveTail_half_integer (k : ℤ) (y : ℝ) :
     simp
   · simp
 
-end DhimanKadiriQuesadaHerrera2026

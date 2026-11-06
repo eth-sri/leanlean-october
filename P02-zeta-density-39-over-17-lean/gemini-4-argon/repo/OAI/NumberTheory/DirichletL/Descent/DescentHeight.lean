@@ -36,8 +36,3 @@ theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
     unfold coefficientMomentBound
     ring
   simpa only [one_mul, hlin, add_mul, C, H, K, mul_assoc, mul_add] using hh
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

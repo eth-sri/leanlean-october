@@ -58,4 +58,3 @@ theorem sargosQuarticWeightedKernel_hasCompactSupport {χ : ℝ → ℝ} {N : �
   HasCompactSupport.intro isCompact_Icc
     (fun _ hx => sargosQuarticWeightedKernel_zero_of_not_mem hs hN hx α γ)
 
-end TaoTrudgianYang2025

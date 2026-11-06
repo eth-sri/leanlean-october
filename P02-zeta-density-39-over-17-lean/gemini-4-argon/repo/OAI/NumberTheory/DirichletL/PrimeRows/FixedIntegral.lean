@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma continuedPhysicalRowKernel_eq_calibratedTuple {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -104,8 +103,3 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
         (fun i=>hT i (Q i).val (Q i).property) W Yp ((σ:ℂ)+p.1.1*Complex.I)
           ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I))) (Finset.mem_univ P0)
   exact hh
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

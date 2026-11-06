@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 def actualFrozenPhase (F : PrimeFamily φ) (jF : φ → ℕ) (κ : ℂ)
@@ -68,8 +67,3 @@ lemma frozenBranchColumn_eq_normalized (F : PrimeFamily φ) (jF : φ → ℕ) (e
       (frozenBranchScale F jF e : ℂ)*normalizedFrozenColumn F jF e A n b := by
   rw [normalizedFrozenColumn,← mul_assoc,mul_inv_cancel₀,one_mul]
   exact_mod_cast (frozenBranchScale_pos F jF e).ne'
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

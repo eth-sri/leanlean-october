@@ -60,4 +60,3 @@ theorem robertSargos_zero_r_second_curvature
   rw [show (x+q)-x = q by ring] at hb
   simpa only [mul_assoc,mul_comm,mul_left_comm] using hb
 
-end TaoTrudgianYang2025

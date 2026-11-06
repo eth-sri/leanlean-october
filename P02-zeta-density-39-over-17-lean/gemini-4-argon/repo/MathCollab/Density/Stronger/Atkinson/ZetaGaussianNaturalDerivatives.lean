@@ -130,4 +130,3 @@ theorem exists_intervalC2Bound_quadraticGaussian_profile_natural {v : ℝ → �
         have h := mul_le_mul_of_nonneg_right hA2 (show 0 ≤ Real.sqrt Real.pi * G ^ 3 by positivity)
         nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

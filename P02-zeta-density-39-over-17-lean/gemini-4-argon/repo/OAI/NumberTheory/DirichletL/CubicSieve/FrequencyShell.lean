@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson FourierBridge
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson FourierBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma log_shell_ratio (K q : ℝ) (hK : 0 < K) (hq : K / 2 ≤ q ∧ q ≤ K) :
     |Real.log (q / K)| ≤ 4 := by
@@ -76,8 +74,3 @@ theorem cubic_frequency_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
     (fun j => log_inverse_shell_ratio N _ hN (hcols j).2)
   simp_rw [radial_product_log_identity M K N _ _ _ hK hN (hq _) (hn _) (hn _)] at hp
   exact hp
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

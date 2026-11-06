@@ -135,6 +135,4 @@ theorem wooley_equation_7_24_of_local
       _ = D * ((wooleySourceMassSq gamma)⁻¹ ^ 2 * _) := by ring
 
 
-end
 
-end GafniTao

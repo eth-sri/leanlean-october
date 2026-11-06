@@ -56,9 +56,3 @@ theorem conjugate_profile_support (W : ℝ→ℂ) :
 theorem conjugate_profile_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (fun x => conj (W x)) := by
   exact Complex.conjCLE.contDiff.comp hW
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

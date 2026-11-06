@@ -11,7 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrincipalNormalizer
 open HeckeFamily PrincipalMellinResidues PrincipalSignalComparison
-local notation "O" => HeckeFamily.O
 
 theorem sourceResidueConstant_positive (M : Ideal O) [NeZero M]
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -59,8 +58,3 @@ theorem signed_source_normalizer_ne_zero {κ ι : Type*} [DecidableEq κ]
     sourceResidueConstant W0 W1 M*(Probe.principalScalar S Z ℓ (slotMass T w):ℂ)≠0 :=
   mul_ne_zero (sourceResidueConstant_ne_zero M W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     hreal0 hreal1 hpos0 hpos1 hne0 hne1) (source_normalizer_ne_zero S T w hZ hm)
-
-end SevenEighths.ProbePrincipalNormalizer
-end
-
-end OAI

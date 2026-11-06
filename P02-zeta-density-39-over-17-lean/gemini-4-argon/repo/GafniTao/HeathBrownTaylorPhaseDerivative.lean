@@ -95,6 +95,4 @@ theorem norm_deriv_heathBrownTaylorError_le_scale
   exact norm_heathBrown_deriv_taylor_remainder_le_scale
     hk hx hxH hfon hderiv
 
-end
 
-end GafniTao

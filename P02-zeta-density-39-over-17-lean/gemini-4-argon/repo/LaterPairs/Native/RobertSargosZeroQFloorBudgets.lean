@@ -44,4 +44,3 @@ theorem robertSargos_zero_q_floor_budgets (M H : ℕ) {lam : ℝ}
     (Nat.cast_nonneg _) hRhi hlam hscale
   exact ⟨hQ,hR,hRhi,hb⟩
 
-end TaoTrudgianYang2025

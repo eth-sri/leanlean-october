@@ -9,6 +9,7 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.HeckeCoordinates
 open HeckeFamily
+open HeckeFamily (O)
 
 private instance : IsCyclotomicExtension {3} ℚ K :=
   CyclotomicField.isCyclotomicExtension 3 ℚ
@@ -87,9 +88,3 @@ theorem coefficients_eq_quotient_character (χ : Character)
     coefficients χ a = χ.residue (coordinateQuotientHom χ (a.1, a.2)) := by
   simp [HeckeFamily.coefficients, HeckeFamily.elementCoeff, coordinateQuotientHom,
     coordinateElement]
-
-end SevenEighths.HeckeCoordinates
-
-end
-
-end OAI

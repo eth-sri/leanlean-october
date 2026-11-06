@@ -104,4 +104,3 @@ theorem heathBrown_epsilon_budget {α ε : ℝ} (hα : 0 ≤ α) (hε : 0 < ε) 
     linarith
   exact ⟨η,δ,hη,min_le_left _ _,hδ,min_le_left _ _,by linarith⟩
 
-end TaoTrudgianYang2025

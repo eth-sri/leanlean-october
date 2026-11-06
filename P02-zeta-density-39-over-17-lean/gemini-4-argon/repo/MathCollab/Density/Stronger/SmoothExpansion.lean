@@ -129,4 +129,3 @@ theorem smoothDyadicBlock_scale_tail_le {a : ℕ → ℂ}
     _ = ∑' n : ℕ, ∑' j : ℤ, F n j := hF.tsum_comm
     _ ≤ _ := hF.prod.tsum_le_tsum hrow hright
 
-end MathCollab.Density.Stronger

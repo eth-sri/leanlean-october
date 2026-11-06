@@ -96,4 +96,3 @@ theorem norm_atkinsonQuadraticWindow_sub_gaussianValue_le {c H : ℝ}
   filter_upwards [self_mem_nhdsWithin] with ε hε
   exact norm_gaussianValue_sub_fresnelDampedWindow_le hε hc hH
 
-end MathCollab.Density.Stronger.Atkinson

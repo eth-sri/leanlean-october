@@ -11,9 +11,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentHeckeColumnWindow
-open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy
-open CenteredMomentTwist
-local notation "O" => ActualEisensteinCubic.O
+open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy CenteredMomentTwist
 
 def heightCoeff (τ : Character) (t : ℝ) (I : Ideal O) : ℂ :=
   idealCoeff τ I*(Ideal.absNorm I:ℂ)^(Complex.I*t)
@@ -145,9 +143,3 @@ theorem gauss_column_integral {α : Type*} (S : Finset α) (a : α → O)
       apply Finset.sum_congr rfl
       intro i hi
       ring
-
-end SevenEighths.CenteredMomentHeckeColumnWindow
-
-end
-
-end OAI

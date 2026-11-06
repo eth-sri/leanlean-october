@@ -222,6 +222,4 @@ theorem wooleySourcePolynomialConditionedMean_eq_boxed
       rw [wooleyBoxSourceSequence_boxCoefficients]
     _ = _ := wooleySourcePolynomialConditionedMean_box _ _
 
-end
 
-end GafniTao

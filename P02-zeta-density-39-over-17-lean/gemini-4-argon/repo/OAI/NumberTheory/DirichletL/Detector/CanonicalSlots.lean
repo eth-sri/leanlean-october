@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def canonicalSlotSupport (T : Finset PrimeIdeal) : Finset O :=
   T.image (fun P=>primaryGenerator P.val)
@@ -54,9 +52,6 @@ def canonicalTupleEquiv {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     (∀i,↥(T i)) ≃ (∀i,↥(canonicalSlotSupport (T i))) :=
   Equiv.piCongrRight (fun i=>canonicalSlotEquiv (T i) (hT i))
 
-@[simp] lemma canonicalTupleEquiv_val {K : ℕ} (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→Supported P.val) (P : ∀i,↥(T i)) (i : Fin K) :
-    (canonicalTupleEquiv T hT P i).val=primaryGenerator (P i).val.val := rfl
 
 theorem sum_canonical_element_tuples {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→Supported P.val)
@@ -76,8 +71,3 @@ theorem sum_canonical_weighted_tuples {K : ℕ} (T : Fin K→Finset PrimeIdeal)
   apply Finset.sum_congr rfl
   intro P hP
   simp only [primaryTuple_norm (P _).val (hT _ _ (P _).property)]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

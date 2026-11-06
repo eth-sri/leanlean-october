@@ -11,11 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyDeletedChildCapacity
-open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedChildCapacity
-open CenteredMomentRetainedProfile CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentDivisorRaw CenteredMomentEnergyBands CenteredMomentEnergyInputParentCapacity
-open CenteredMomentFirstSecondCapacityLedger CenteredMomentLiveCapacity
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedChildCapacity CenteredMomentRetainedProfile CenteredMomentDivisorAllocation CenteredMomentDivisorRetained CenteredMomentDivisorRaw CenteredMomentEnergyBands CenteredMomentEnergyInputParentCapacity CenteredMomentFirstSecondCapacityLedger CenteredMomentLiveCapacity
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 lemma deletion_norm (F : Finset (Ideal O)) (hF : ∀I∈F,I≠0) :
@@ -109,9 +105,3 @@ theorem child_paid_width (χ : Character) (D : Ideal O)
     (by positivity) hδ₂ hwidth
   rw [show 6*(w+ell)+δ₁+2*θ-(Mactual-Mnom)=6*(w+ell)+δ₁+2*θ+Mnom-Mactual by ring] at hh
   linarith
-
-end SevenEighths.CenteredMomentEnergyDeletedChildCapacity
-
-end
-
-end OAI

@@ -80,5 +80,4 @@ theorem exists_robertSargos_frequency_fiber_linear_bound (ε : ℝ) (hε : 0 < �
     simp only [Finset.card_empty,Nat.cast_zero]
     positivity
 
-end TaoTrudgianYang2025
 

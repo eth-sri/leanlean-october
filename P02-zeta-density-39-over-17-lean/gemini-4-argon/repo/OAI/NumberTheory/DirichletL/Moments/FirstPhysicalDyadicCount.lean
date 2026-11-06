@@ -98,9 +98,3 @@ theorem original_blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   exact hcount _ _ _ _ _ (effectiveScale_pos C D E K hK) hH
     (norm_one C hC) (norm_one D hD) hR hHcap
-
-end SevenEighths.CenteredMomentFirstPhysicalDyadicCount
-
-end
-
-end OAI

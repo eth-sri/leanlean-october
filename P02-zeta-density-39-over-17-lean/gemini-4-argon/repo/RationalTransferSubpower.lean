@@ -106,4 +106,3 @@ theorem rational_moment_transfer_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (h
   exact hb.trans (mul_le_mul_of_nonneg_right (hcost H hH T hT)
     (sum_nonneg (fun _ _ => sq_nonneg _)))
 
-end Montgomery.RationalMoment

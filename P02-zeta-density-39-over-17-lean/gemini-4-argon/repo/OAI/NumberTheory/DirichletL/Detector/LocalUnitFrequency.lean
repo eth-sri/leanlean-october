@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation ConcretePrimeRowBridge ProbePrimePower ProbeLocal ProbeEuler
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport CenteredMomentSupportedCorrelation ConcretePrimeRowBridge ProbePrimePower ProbeLocal ProbeEuler
 
 lemma finite_fourier_unit_scale {R : Type*} [CommRing R] [Fintype R]
     (F : R → ℂ) (ψ : AddChar R ℂ) (u : Rˣ) (c : ℂ) (hc : c ≠ 0)
@@ -82,8 +79,3 @@ lemma idealRowHom_prime_power_value (p b : O) [(Ideal.span {p} : Ideal O).IsMaxi
     idealRowHom b (Ideal.span {p^n}) =
       (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b))^n := by
   rw [← Ideal.span_singleton_pow, map_pow, idealRowHom_prime _ _ hg]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

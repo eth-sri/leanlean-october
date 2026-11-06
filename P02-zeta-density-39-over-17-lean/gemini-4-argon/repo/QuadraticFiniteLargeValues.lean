@@ -55,4 +55,3 @@ theorem finite_quadratic_large_value_comparison (w : MathCollab.Density.Comparis
   exact (mul_le_mul_of_nonneg_right hk (pow_nonneg (le_max_right _ _) 2)).trans hspec
 
 
-end Montgomery.RationalMoment

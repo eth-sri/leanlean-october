@@ -31,4 +31,3 @@ theorem modelPhaseStationaryBlock_eq_range (F : ℝ → ℝ) (T N : ℝ) (a L : 
     (Nat.le_add_right a L)]
   simp only [Nat.add_sub_cancel_left,Nat.cast_add]
 
-end TaoTrudgianYang2025

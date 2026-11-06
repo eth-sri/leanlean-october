@@ -344,4 +344,3 @@ theorem discrete_additive_energy_reproducing :
         ∑ m ∈ GuthMaynard.Improvement.sourceRatioIndices N, ‖∑ t ∈ W, phase ((n:ℝ)/m) t‖^3 := by positivity
     nlinarith))
 
-end Montgomery.RationalMoment

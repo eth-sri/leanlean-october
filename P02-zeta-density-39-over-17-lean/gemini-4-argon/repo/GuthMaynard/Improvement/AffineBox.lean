@@ -19,4 +19,3 @@ theorem twoShell_le {B : ℝ} (hB : 1 ≤ B) (i : Bool) : (twoShell B i:ℝ) ≤
   have h := Nat.floor_le (show 0 ≤ B by linarith)
   cases i <;> simp [twoShell] <;> linarith
 
-end GuthMaynard.Improvement

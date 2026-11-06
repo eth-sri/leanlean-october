@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem physicalCompensatedRow_indexed {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -40,8 +39,3 @@ theorem physicalCompensatedRow_indexed {K : ℕ}
     obtain ⟨i,hi,he⟩ := Finset.mem_image.mp Q.property
     exact ⟨i,hi,Subtype.ext he⟩
   · intro i _; rfl
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

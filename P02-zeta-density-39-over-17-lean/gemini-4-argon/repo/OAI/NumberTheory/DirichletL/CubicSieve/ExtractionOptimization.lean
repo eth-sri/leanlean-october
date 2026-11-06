@@ -132,8 +132,3 @@ theorem extraction_min_two_power (M N X Y ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N
   have hh := extraction_min_shape M N X Y ξ hN hX hY hXY (by linarith)
   have hc := cubic_cross_shape_absorb M N ξ hM hN hξ
   linarith
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

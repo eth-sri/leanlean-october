@@ -8,17 +8,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+
+abbrev O := NumberField.RingOfIntegers (CyclotomicField 3 ℚ)
+abbrev Eis := O
+abbrev Id := Ideal O
+instance (M : Ideal O) [NeZero M] : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 namespace ShortDraftFiniteGaussFourier
 open scoped Classical
-open AddChar MulChar
 variable {F : Type*} [Field F] [Fintype F]
 
 theorem gauss_transform (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
@@ -55,17 +55,7 @@ theorem product_gauss_transform
 
 end ShortDraftFiniteGaussFourier
 
-namespace PoissonChildCRT
-open scoped Classical
 
-variable (n : ℕ) (χ : MulChar (ZMod n) ℂ)
-
-end PoissonChildCRT
-
-namespace PoissonFirstLocal
-open scoped Classical
-
-end PoissonFirstLocal
 
 open Finset Complex
 
@@ -185,7 +175,7 @@ section
 open NumberField
 
 abbrev K := CyclotomicField 3 ℚ
-abbrev O := NumberField.RingOfIntegers K
+protected abbrev O := NumberField.RingOfIntegers K
 
 instance : IsCyclotomicExtension {3} ℚ K :=
   CyclotomicField.isCyclotomicExtension 3 ℚ
@@ -896,9 +886,3 @@ theorem quotient_char_ne_two_of_two_not_mem (P : Ideal O) [P.IsMaximal]
   rw [heq] at hz
   apply h2
   exact (Ideal.Quotient.eq_zero_iff_mem).mp (by simpa only [map_ofNat, Nat.cast_ofNat] using hz)
-
-end ActualEisensteinCubic
-
-end
-
-end OAI

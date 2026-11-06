@@ -78,6 +78,4 @@ theorem norm_heathBrownExponentialSum_le_sourceScale_open_of_vmvt
     _ = _ := by ring
 
 
-end
 
-end GafniTao

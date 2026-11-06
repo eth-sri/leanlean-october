@@ -11,7 +11,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers RayFourExpansion
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -63,8 +62,3 @@ theorem fresh_input_parent_mask {Jo : ℕ} (parent : SecondParentSource ι Jo)
       (m*b*d)*ConcretePrimeRowBridge.idealGenerator parent.quotient by ring]
   simp only [←Ideal.span_singleton_mul_span_singleton,
     ConcretePrimeRowBridge.span_idealGenerator,hq,sourceIdeal]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

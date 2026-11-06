@@ -10,8 +10,6 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma lowRowMellinIntegrand_common_support (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
     (hW1 : HasCompactSupport W1) (hΩ : HasCompactSupport Ω)
@@ -90,8 +88,3 @@ theorem physicalRowWeight_tsum_low_mellin (C : CalibrationData) (W0 W1 : ℝ→�
   repeat rw [tsum_mul_left]
   congr 2
   exact lowRowMellinIntegrand_tsum_integral C W0 W1 Ω a0 b0 ha0 hW0 hWs hW1c hΩ hΩ0 X Y hX hY B
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

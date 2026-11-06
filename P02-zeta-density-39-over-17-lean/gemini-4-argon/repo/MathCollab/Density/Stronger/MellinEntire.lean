@@ -56,4 +56,3 @@ theorem dampedCutoff_mellin_entire {ψ : ℝ → ℝ} {a b : ℝ}
   exact (tsupport_comp_subset (g := fun y : ℝ => (y : ℂ)) rfl _).trans
     ((dampedCutoff_tsupport ψ q).trans hs)
 
-end MathCollab.Density.Stronger

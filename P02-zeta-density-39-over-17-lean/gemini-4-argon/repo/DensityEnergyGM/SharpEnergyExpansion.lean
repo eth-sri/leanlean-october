@@ -161,4 +161,3 @@ theorem discrete_energy_sublinear_native (ε : ℝ) (hε : 0 < ε) :
       simp only [expandedSharpCubicProfile, Real.sqrt_eq_rpow]
       ring
 
-end Montgomery.RationalMoment

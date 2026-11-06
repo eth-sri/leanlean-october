@@ -89,4 +89,3 @@ theorem discrete_energy_sharp_profile_native (ε : ℝ) (hε : 0 < ε) :
     _ ≤ C * T ^ ε * (S + B) := by nlinarith
     _ = _ := rfl
 
-end Montgomery.RationalMoment

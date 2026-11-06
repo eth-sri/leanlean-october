@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
 noncomputable local instance threeBlockFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
@@ -69,8 +67,3 @@ theorem activePhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
     intro i hi
     have hn : i ∉ R := fun hr => Finset.disjoint_left.mp hRP hr hi
     simp [l,hn]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

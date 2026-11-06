@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 def numeratorExtension (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r})) : O→*ℂ :=
   numeratorBadTwist u a b r hr*movingNumeratorRow r hr
@@ -41,8 +39,3 @@ lemma numerator_good_norm_le (u : Oˣ) (a b : ℕ) (r k : O)
   · apply map_dvd Ideal.absNorm
     rw [Ideal.span_singleton_dvd_span_singleton_iff_dvd]
     exact ⟨u.val*λ₀^a*(2:O)^b,by rw [hk];ring⟩
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

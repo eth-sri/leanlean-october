@@ -270,6 +270,4 @@ theorem wooleySourcePolynomialConditionedMean_affinePullback_one
     exact congrArg (fun x : ℝ => (wooleySourceMassSq gamma)⁻¹ * x) hsum
 
 
-end
 
-end GafniTao

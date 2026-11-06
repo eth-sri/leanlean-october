@@ -245,4 +245,3 @@ theorem norm_zetaMollifier_le_sum_rpow (X : ℕ) (s : ℂ) :
         exact mul_le_of_le_one_left (Real.rpow_nonneg (Nat.cast_nonneg n) _) hμ
       · exact lt_of_lt_of_le Nat.zero_lt_one (Finset.mem_Icc.mp hn).1
 
-end GuthMaynard.NativeMoment

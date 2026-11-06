@@ -40,4 +40,3 @@ theorem positive_floor_half_bounds {X : ℝ} (hX : 1 ≤ X) :
   have hn := Nat.lt_floor_add_one X
   exact ⟨hp,by linarith,Nat.floor_le (by linarith)⟩
 
-end TaoTrudgianYang2025

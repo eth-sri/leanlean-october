@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion
-local notation "O" => HeckeFamily.O
 
 def targetRow (η : Character) (u : FreeRow) : Character := η.product (rawRow u).inverse
 
@@ -61,9 +60,3 @@ theorem localCorrection_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   have hD := targetRow_hasProd S hS hbad η u x hx1
   have he := ((hF.mul hZ).mul hW).mul hD
   simpa only [localCorrection,inv_inv,div_eq_mul_inv] using he
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

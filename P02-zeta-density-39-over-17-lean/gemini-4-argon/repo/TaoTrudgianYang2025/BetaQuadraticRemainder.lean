@@ -75,4 +75,3 @@ theorem norm_quadratic_global_remainder_le
   rw [← intervalIntegral.integral_eq_integral_of_support_subset hs']
   exact norm_quadratic_window_remainder_le hW hT hH h₀ h₂ h₃
 
-end TaoTrudgianYang2025

@@ -93,4 +93,3 @@ theorem anchoredLegendreError_expanded_finite_uniformity
       exact (hderiv n F δ hδ hpos hsmall v hv).trans
         (mul_le_mul_of_nonneg_right (by linarith) hd)
 
-end TaoTrudgianYang2025

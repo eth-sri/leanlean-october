@@ -33,4 +33,3 @@ theorem shifted_power_tail_integral {v p : ℝ} (hv : 0 < v) (hp : 1 < p) :
       _ = -v^(1-p)/(1-p) := hval
       _ = _ := by rw [show (1:ℝ)-p=-(p-1) by ring,neg_div_neg_eq]
 
-end Montgomery.RationalMoment.RightDetector

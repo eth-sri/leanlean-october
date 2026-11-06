@@ -34,4 +34,3 @@ theorem smoothCutoff_mul_contDiff {χ H : ℝ → ℝ}
       simp only [hy, zero_mul, Pi.zero_apply]
     exact contDiffAt_const.congr_of_eventuallyEq he
 
-end TaoTrudgianYang2025

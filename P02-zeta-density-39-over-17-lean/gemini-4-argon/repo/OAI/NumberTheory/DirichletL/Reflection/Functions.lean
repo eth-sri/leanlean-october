@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 lemma sourceRowPhase_congr_functions {κ : Type*} [Fintype κ]
     {p q : κ → Eis} [∀ i, (Ideal.span {p i}).IsMaximal] [∀ i, (Ideal.span {q i}).IsMaximal]
@@ -33,8 +31,3 @@ lemma sourceSlotPhase_congr_functions {κ : Type*} [Fintype κ]
   subst q
   subst j'
   rfl
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

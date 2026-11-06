@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeRaySlots
 open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
-local notation "Id" => Ideal HeckeFamily.O
 
 lemma pool_sum_complex (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℂ) :
     (∑P∈pool C S a b x,f P.val)=∑P∈annularPrimeIdeals C a b x\S,f P := by
@@ -115,8 +114,3 @@ theorem power_fixed_exclusions (S : Finset Id) (a ellMin : ℝ) (ha : 0<a) (hmin
     _ ≤ a*Z^ellMin := hnorm
     _ ≤ a*Z^(ell j) := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hZ (hell j)) ha.le
-
-end SevenEighths.ProbeRaySlots
-end
-
-end OAI

@@ -1,5 +1,5 @@
 module
-public import DensityWindowBudgets
+public import GuthMaynard.Improvement.WeakShortDensity
 
 @[expose] public section
 
@@ -72,4 +72,3 @@ theorem general_powered_cover {η : ℝ} (hη : 0 < η) :
 
 
 
-end Montgomery.RationalMoment

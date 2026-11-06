@@ -11,11 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicTailBound
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialDyadicAssembly InverseInitialProfile
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile
 variable {ι : Type*} [DecidableEq ι]
 
 theorem pointSource_erase_mem (pool : Finset ι) (S : Finset (Source (ι:=ι) 0))
@@ -83,9 +79,3 @@ theorem live_mass_radial_gate
     rw [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span]
     rfl
   simpa [coordinates,physicalCoordinates,hn] using hh
-
-end SevenEighths.InverseInitialDyadicTailBound
-
-end
-
-end OAI

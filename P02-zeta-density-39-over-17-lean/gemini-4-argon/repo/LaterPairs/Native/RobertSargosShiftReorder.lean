@@ -41,4 +41,3 @@ theorem robertSargos_shifted_correlation_m_sum (f : ℝ → ℝ) (M H Q N : ℕ)
       rw [Finset.sum_comm]
     _ = _ := Finset.sum_comm
 
-end TaoTrudgianYang2025

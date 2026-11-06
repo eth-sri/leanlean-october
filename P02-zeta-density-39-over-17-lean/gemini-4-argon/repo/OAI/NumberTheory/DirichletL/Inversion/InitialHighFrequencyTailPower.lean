@@ -52,9 +52,3 @@ theorem initial_tail_rapid_order (Lcap saving τ : ℝ) (hτ : 0<τ) :
   apply Real.rpow_le_rpow_of_exponent_le hZ
   have h := (div_lt_iff₀ hτ).mp hA
   nlinarith
-
-end SevenEighths.InverseInitialHighFrequencyTail
-
-end
-
-end OAI

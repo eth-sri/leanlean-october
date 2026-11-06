@@ -59,4 +59,3 @@ theorem robertSargos_primitive_positive_q_fixed_coeff_card_le
         4*Q^2*((A+e)-(A-e))/(r.natAbs:ℝ)^2*(∑ g ∈ r.natAbs.divisors, (g:ℝ)) := hb
     _ = _ := by rw [hrc]; dsimp [e]; field_simp; ring
 
-end TaoTrudgianYang2025

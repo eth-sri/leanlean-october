@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.DetectorDictionaryInverseAssignedCount
-local notation "O" => ActualEisensteinCubic.O
 
 def assignedTuples {ι : Type*} [Fintype ι]
     (L : ι → Finset (Ideal O)) : Finset (ι → Ideal O) := Fintype.piFinset L
@@ -117,9 +116,3 @@ theorem assigned_sum_normalized_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 
     (∑ q ∈ assignedTuples L, ‖assignedCoefficient a q‖ * U^(-(∑ i, ell i))) ≤
       assignedConstant K b :=
   restricted_sum_normalized_le K hb hU hK ell L hL a ha _ (Finset.Subset.refl _)
-
-end SevenEighths.DetectorDictionaryInverseAssignedCount
-
-end
-
-end OAI

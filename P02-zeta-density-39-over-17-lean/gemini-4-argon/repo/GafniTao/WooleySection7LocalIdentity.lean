@@ -135,6 +135,4 @@ theorem wooley_equation_7_19_outer_native
               ‖wooleySourceNormalizedPolynomialSum rightPhi right alpha‖ ^
                 (2 * S)) := by ring
 
-end
 
-end GafniTao

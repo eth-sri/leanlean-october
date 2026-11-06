@@ -134,4 +134,3 @@ theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
     (Nat.cast_nonneg (Nat.clog 2 N) : (0 : ℝ) ≤ _)
   exact hb.trans_eq (by simp only [Finset.sum_const,Finset.card_range,nsmul_eq_mul]; ring)
 
-end TaoTrudgianYang2025

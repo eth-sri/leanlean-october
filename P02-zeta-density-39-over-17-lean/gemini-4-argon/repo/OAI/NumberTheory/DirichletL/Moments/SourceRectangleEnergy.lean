@@ -11,13 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceRectangleEnergy
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentSecondHeightFamily
-open CenteredMomentRestrictedDomain CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
-open CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentSourceRectangle
-open CenteredMomentSourceRectangleMask CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentDivisorRowEnergy CenteredMomentDivisorRetained
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentSecondHeightFamily CenteredMomentRestrictedDomain CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentDivisorRowEnergy CenteredMomentDivisorRetained
 
 theorem height_source_row (η : Character) (t : ℝ) (S : Finset (Ideal O))
     (β : Ideal O→ℂ) (z : O) :
@@ -62,9 +56,3 @@ theorem source_restricted_energy_eq_rectangle {ι : Type*} [Fintype ι] [Decidab
   rw [CenteredMomentSourceRectangleMask.source_polynomial_eq_maskedRectangle
     η fixedBadMask 1 z t (dvd_mul_right _ _) (dvd_mul_left _ _)
     slots S₁ S₂ R L ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ h₁ h₂]
-
-end SevenEighths.CenteredMomentSourceRectangleEnergy
-
-end
-
-end OAI

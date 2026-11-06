@@ -42,4 +42,3 @@ theorem sum_integer_Icc_eq_range_add (w : ℤ → ℂ) (a b : ℤ) (hab : a ≤ 
   rw [he,Finset.sum_insert (by simp),sum_integer_Ico_eq_range]
   exact add_comm _ _
 
-end TaoTrudgianYang2025

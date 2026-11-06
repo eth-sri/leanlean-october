@@ -94,4 +94,3 @@ theorem exists_finiteVariationBound_saddleResidual :
     · rfl
     · ring
 
-end MathCollab.Density.Stronger.Atkinson

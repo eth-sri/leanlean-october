@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 lemma gaussianFixedWindow_support : Function.support gaussianFixedWindow⊆Set.Icc (1/2:ℝ) 2 := by
@@ -107,8 +105,3 @@ theorem low_selected_physical_energy (η : HeckeFamily.Character) (S : Finset Id
     _=(lowCorrectionEnergy*(Fintype.card RayCharacter:ℝ)*6*C)*(1+|t|)^degree*
         Z^((5/6-2*d)+507*ε) := by ring
     _≤_ := by gcongr <;> linarith
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -77,4 +77,3 @@ theorem segmentTaylorAverage_second
   simpa only [p,one_mul,zero_mul,sub_zero,sub_self,zero_add,add_zero,
     add_sub_cancel,sub_add_cancel,sub_add_eq_sub_sub] using h
 
-end TaoTrudgianYang2025

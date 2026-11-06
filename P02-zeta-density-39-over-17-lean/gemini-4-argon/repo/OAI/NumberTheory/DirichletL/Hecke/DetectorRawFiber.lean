@@ -12,9 +12,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff ComplexConjugate
 open Set
 namespace SevenEighths.HeckeDetectorRawFiber
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorWitnessRows
-open HeckeDetectorSupportedWitness HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount
-open HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorWitnessRows HeckeDetectorSupportedWitness HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 
 structure Fiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
     (U a ε tstar T allowance : ℝ) (i : ℕ) where
@@ -51,8 +49,7 @@ structure Fiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
     HeckePrimeAmplitudeBins.amplitude (U^(widths s)) ((2*a-1)/2) binWidth
       (physical M H (fun u : FreeRow => u.val) profile upper widths external U u s)=bin s
 
-variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
-  {U a ε tstar T allowance : ℝ} {i : ℕ}
+variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*} {U a ε tstar T allowance : ℝ} {i : ℕ}
 
 def Fiber.r (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ := Real.logb U ((2 : ℝ)^F.left.val)
 def Fiber.m (F : Fiber M H Label Slot U a ε tstar T allowance i) : ℝ := Real.logb U ((2 : ℝ)^F.right.val)
@@ -91,9 +88,3 @@ theorem Fiber.mean_bounds (F : Fiber M H Label Slot U a ε tstar T allowance i) 
   intro s hs
   rw [←F.fixed_bin u hu s hs]
   exact HeckePrimeAmplitudeBins.amplitude_bounds _ _ _ _ (by linarith)
-
-end SevenEighths.HeckeDetectorRawFiber
-
-end
-
-end OAI

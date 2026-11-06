@@ -107,4 +107,3 @@ theorem interval_weyl_differencing_sum
         (∑ h ∈ range H, ∑ k ∈ range H, ∑ n ∈ s, ⟪b n h,b n k⟫_ℝ) := hcs
     _ ≤ _ := mul_le_mul_of_nonneg_left htotal (Nat.cast_nonneg _)
 
-end TaoTrudgianYang2025

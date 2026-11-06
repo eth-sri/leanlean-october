@@ -64,9 +64,3 @@ theorem chain_rowwise {ι : Type*} (rows : Finset ι) (M : ℕ→ι→ℝ→ℝ�
     · simpa [F,norm_mul] using henergy 2 (by norm_num) x hx y hy
   simpa only [F,ite_true] using
     rowwise_energy_two rows F cF dFx dFy a b c d E hab hcd σ freq hσ hf eF
-
-end SevenEighths.HeckeDetectorRowwise
-
-end
-
-end OAI

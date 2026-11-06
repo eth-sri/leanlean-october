@@ -125,4 +125,3 @@ theorem modelPhaseMorseInverse_quadratic
   simpa only [modelPhaseMorseCoordinate_inverse hz] using
     modelPhaseMorseCoordinate_normalForm hσ hδ hF hv (modelPhaseMorseInverse_mem hz)
 
-end TaoTrudgianYang2025

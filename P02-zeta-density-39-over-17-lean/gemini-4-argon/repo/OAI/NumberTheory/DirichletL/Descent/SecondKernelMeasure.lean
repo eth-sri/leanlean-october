@@ -35,8 +35,3 @@ lemma secondNormProfile_eq_full_of_windows (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(
       secondPoissonProfile W₁ W₂ Φ V R (fun i => Real.log (q i)) := by
   rw [secondPoissonProfile_log W₁ W₂ Φ V R q hq]
   simp only [secondNormProfile, hV, Finset.prod_const_one]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -63,9 +63,3 @@ theorem eq_of_f (P Q : WeakFEPair ℂ) (hP : P.k = 1) (hQ : Q.k = 1)
     dsimp only
     rw [hf t ht, hf₀]) h0 h1
   simpa only [Complex.ofReal_one, Complex.one_cpow, one_mul] using h
-
-end SevenEighths.HeckeMellinIdentity
-
-end
-
-end OAI

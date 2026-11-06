@@ -133,4 +133,3 @@ theorem operator_fixed_cutoff_schur {a : ℝ → ℝ} (ha : Continuous a)
     hl hlu hW hL haW hs
   exact hh.trans (by nlinarith [mul_nonneg hL hB])
 
-end GuthMaynard.Improvement

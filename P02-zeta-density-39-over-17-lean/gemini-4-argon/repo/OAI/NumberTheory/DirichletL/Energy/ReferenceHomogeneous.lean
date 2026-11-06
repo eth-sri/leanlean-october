@@ -10,15 +10,8 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceHomogeneous
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentUniformReflectionProfile CenteredExceptionalProfile CenteredMomentLattice
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentUniformReflectionProfile CenteredExceptionalProfile CenteredMomentLattice CenteredMomentEnergyReferenceReflection CenteredMomentFiniteProfileExceptional
 
-open CenteredMomentEnergyReferenceReflection CenteredMomentFiniteProfileExceptional
 
 theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:ℝ)
     (ha:0<a)(hb:0≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
@@ -95,9 +88,3 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
   dsimp only [Src]
   rw [show (1+‖t‖)^(2*n)=((1+‖t‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
-
-end SevenEighths.CenteredMomentEnergyReferenceHomogeneous
-
-end
-
-end OAI

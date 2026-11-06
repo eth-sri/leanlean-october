@@ -11,11 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceLiveBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceBounded CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyZeroReferenceBounded CenteredMomentFiniteProfileExceptional
 
 theorem balanced_reference_live (a b bΦ rho ε Mcap Bmask:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
@@ -51,9 +47,3 @@ theorem balanced_reference_live (a b bΦ rho ε Mcap Bmask:ℝ)
   · refine Or.inr (hZ.2 e Q degree K he hK hlow s hQ hslo hs p t X₁ X₂ hX₁ hX₂ ?_)
     have hh:=hdft.2.trans (hendpoint Z hZZ)
     linarith
-
-end SevenEighths.CenteredMomentEnergyZeroReferenceLiveBounded
-
-end
-
-end OAI

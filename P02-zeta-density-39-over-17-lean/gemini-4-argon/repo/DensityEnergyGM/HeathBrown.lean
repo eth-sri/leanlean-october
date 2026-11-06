@@ -1726,4 +1726,3 @@ theorem heathBrownDifferenceSetMeanSquare_of_coefficientOne
               T ^ (1 / 2 : ℝ) * N)) :=
       hOneBound N T W hN hT hSep hInterval
 
-end GuthMaynard.NativeMoment

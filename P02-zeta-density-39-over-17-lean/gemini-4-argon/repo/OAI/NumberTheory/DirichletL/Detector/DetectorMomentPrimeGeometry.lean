@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialPhysicalSlots
-open HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialPhysicalSlots HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
 
 theorem sourceMoment_physical_scale (Z d ell : ℝ) (hZ : 0≤Z) (hd : d≠0) :
     (Z^d)^(ell/d)=Z^ell := by
@@ -149,7 +146,6 @@ theorem sourceMoment_capacity_eventually {Slot : Type*} [Fintype Slot]
 
 section Source
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem sourceMoment_fiber_prime_geometry_eventually
@@ -240,10 +236,3 @@ theorem sourceMoment_fiber_prime_geometry_eventually
         rw [hprofile,hwidths]
         exact sourceMoment_live_quotient_norm M H F (B.data j) (Z^d)
           (fun s:selected=>D.ell s/d) (fun s:selected=>B.external s) hu (fun s=>hz s) hl' p (by simpa only [Fintype.mem_piFinset] using hp')
-
-end Source
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

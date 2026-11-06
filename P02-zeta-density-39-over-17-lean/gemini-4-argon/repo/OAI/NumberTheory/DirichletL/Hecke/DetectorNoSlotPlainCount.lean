@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorNoSlotPlainCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorRowwisePolynomial
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorRowwisePolynomial
 
 theorem no_slot_plain_count {Row Label : Type*}
     (rows : Finset Row) (χ : Row→Label→Character)
@@ -55,9 +54,3 @@ theorem no_slot_plain_count {Row Label : Type*}
   have hh := HeckeDetectorRowCount.card_of_energy rows _ U (2*((2*a-1)*m-2*ε))
     (max 1 (2*m)+εm) (192*(1+height)*C) hUp hs he'
   convert hh using 1; congr 2; ring
-
-end SevenEighths.HeckeDetectorNoSlotPlainCount
-
-end
-
-end OAI

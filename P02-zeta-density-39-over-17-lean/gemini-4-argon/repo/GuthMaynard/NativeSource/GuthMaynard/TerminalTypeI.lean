@@ -257,4 +257,3 @@ theorem typeI_scale_lt_height_of_large
     C N σ t hσ hN hNC htOne htN
   linarith
 
-end GuthMaynard.NativeMoment

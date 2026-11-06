@@ -91,9 +91,3 @@ theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
         (by simpa using hf I (Finset.mem_filter.mp hI).1)
     _ = (A.card : ℝ)*B := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right hA hB
-
-end SevenEighths.HeckePrimePowers
-
-end
-
-end OAI

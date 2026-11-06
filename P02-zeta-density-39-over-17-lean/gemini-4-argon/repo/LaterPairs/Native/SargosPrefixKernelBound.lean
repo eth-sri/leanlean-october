@@ -100,4 +100,3 @@ theorem norm_sargosPrefixKernel_le_majorant {N H : ℕ} [NeZero N]
     · rw [min_eq_right (le_of_not_ge hd),one_div] at h
       exact h.trans (le_add_of_nonneg_left (inv_nonneg.mpr (Nat.cast_nonneg _)))
 
-end TaoTrudgianYang2025

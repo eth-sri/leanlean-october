@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma highArray_val_prod (F : HighIdeal→ℂ) (h1 : F 1=1)
     (hmul : ∀ a b : HighIdeal,
@@ -60,8 +58,3 @@ theorem highArray_hasProd (F : HighIdeal→ℂ) (h1 : F 1=1)
     refine ⟨highValuationEquiv b,?_⟩
     rw [highIdeals_eq_equiv,highValuationEquiv.symm_apply_apply]
   simpa only [←hp,hsum] using he
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

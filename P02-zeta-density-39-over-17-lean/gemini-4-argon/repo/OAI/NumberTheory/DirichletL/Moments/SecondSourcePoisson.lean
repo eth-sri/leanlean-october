@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSourcePoisson
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentLiveDomain
-open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
-open CenteredMomentFourier CenteredMomentPoisson
-open CenteredMomentSecondSourceEnergy CenteredMomentSupportedCorrelation CenteredMomentRowNorm
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow CenteredMomentFourier CenteredMomentPoisson CenteredMomentSecondSourceEnergy CenteredMomentSupportedCorrelation CenteredMomentRowNorm
 
 theorem secondSourceKernel_poisson (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
@@ -50,9 +45,3 @@ theorem sourceGaussEnergy_poisson (τ : Character) (t : ℝ)
   simp only [sourceGenerator,primary_span_supported I (Finset.mem_filter.mp I.property).2,
     primary_span_supported J (Finset.mem_filter.mp J.property).2]
   ring
-
-end SevenEighths.CenteredMomentSecondSourcePoisson
-
-end
-
-end OAI

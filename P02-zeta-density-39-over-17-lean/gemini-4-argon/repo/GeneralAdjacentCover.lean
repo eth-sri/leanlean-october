@@ -68,4 +68,3 @@ theorem adjacent_log_remainder {k j r t : ℝ}
     _ ≤ (k/j)*max 0 (t/(2*k)-(2*k+1)/(2*k*(k+1))*r) := mul_le_mul_of_nonneg_left hd hθ
     _ ≤ _ := mul_le_of_le_one_left hd0 hθ1
 
-end Montgomery.RationalMoment

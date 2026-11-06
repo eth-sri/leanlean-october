@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
-local notation "O" => ActualEisensteinCubic.O
 
 def exactQuotient (a b : O) (h : b ∣ a) : O := Classical.choose h
 
@@ -75,8 +74,3 @@ theorem positiveScalar_kone (p : O) (hp : p ≠ 0)
   rw [positiveScalar_kone_convolution, scalarKOne_eq]
   have he : χ^(n+1)*χ⁻¹ = χ^n := by rw [pow_succ, mul_assoc, mul_inv_cancel, mul_one]
   rw [he]
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

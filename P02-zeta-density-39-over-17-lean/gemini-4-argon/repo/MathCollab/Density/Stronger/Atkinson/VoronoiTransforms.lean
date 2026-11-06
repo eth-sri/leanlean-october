@@ -97,4 +97,3 @@ theorem verticalIntegral'_eq_realIntegral (f : ℂ → ℂ) (a : ℝ) :
   simp only [smul_eq_mul]
   field_simp [Real.pi_ne_zero]
 
-end MathCollab.Density.Stronger.Atkinson

@@ -12,7 +12,6 @@ namespace SevenEighths.InverseMomentFirstChildWindows
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels
 open InverseSecondSourceBlocks (dyadIndex dyadScale dyadScale_pos dyadIndex_bounds)
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 abbrev SourceIndex := Fin 6→ℕ
 
@@ -84,8 +83,3 @@ theorem actual_original_cell_ratios {ι κ : Type*} [DecidableEq ι] [DecidableE
   · exact sourceCell_ratios _ S hq k x hx 4
   · exact hD
   · exact sourceCell_ratios _ S hq k x hx 5
-
-end SevenEighths.InverseMomentFirstChildWindows
-end
-
-end OAI

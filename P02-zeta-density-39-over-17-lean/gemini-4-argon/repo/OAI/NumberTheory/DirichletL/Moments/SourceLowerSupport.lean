@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSourceLowerSupport
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform
-open CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentRectangle
 
 lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
     (Ideal.absNorm (finiteTupleProduct v):ℝ)=
@@ -97,9 +95,3 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
   have hh:=profile_product_lower R ν Wslot P a W₁ W₂ a₁ a₂ X₁ X₂ Y₁ Y₂ T B₁ B₂ s
     hP ha ha₁ ha₂ hX₁ hX₂ hY₁ hY₂ hB₁ hB₂ hXT hYT hs hs₁ hs₂ v hv0
   simpa only [he] using hh
-
-end SevenEighths.CenteredMomentSourceLowerSupport
-
-end
-
-end OAI

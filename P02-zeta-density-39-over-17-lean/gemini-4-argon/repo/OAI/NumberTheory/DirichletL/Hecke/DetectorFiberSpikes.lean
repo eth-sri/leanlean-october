@@ -36,9 +36,3 @@ theorem fiber_spikes {Row Label : Type*} (rows : Finset Row) (χ : Row→Label�
   refine ⟨⟨ha.trans (w u).zero_lower,(w u).real_part_upper⟩,(w u).frequency_bound,?_,?_⟩
   · simpa only [hr,hlabel u hu,Witness.frequency] using (w u).inverse_spike
   · simpa only [hm,hlabel u hu,Witness.frequency] using (w u).plain_spike
-
-end SevenEighths.HeckeDetectorFiberSpikes
-
-end
-
-end OAI

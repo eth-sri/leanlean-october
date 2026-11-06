@@ -11,9 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 
 def continuedCompensatedLocal (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
     (x w z B q : ℂ) : ℂ :=
@@ -64,9 +62,3 @@ theorem continuedCompensatedLocal_ramified (η : Character) (u : FreeRow) (P : P
   unfold continuedMarkedLocal
   simp only [hspan]
   rfl
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

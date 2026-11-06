@@ -140,4 +140,3 @@ theorem modelPhase_buffered_poisson
     ← modelPhaseWeightedKernel_tsum_eq_finite hs hN T,exponentialSumAt_eq_int_sum]
   exact norm_modelPhase_source_sub_buffered_le hN hη F T a b
 
-end TaoTrudgianYang2025

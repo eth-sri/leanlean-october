@@ -12,8 +12,6 @@ namespace SevenEighths.HeckeRayFamily
 open HeckeFamily
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
 def character (χ : RayOrthogonality.rayCharacters M) : Character :=
   Character.ofResidue M (NeZero.ne M) χ.val ((RayOrthogonality.mem_rayCharacters_iff M χ.val).mp χ.property)
@@ -38,9 +36,3 @@ theorem character_boundary_ne_zero (χ : RayOrthogonality.rayCharacters M)
 
 theorem principal_pole_ne_zero : HeckeOrigin.poleRemoved (character M 1) 1 ≠ 0 :=
   HeckeOrigin.poleRemoved_one_ne_zero _ rfl
-
-end SevenEighths.HeckeRayFamily
-
-end
-
-end OAI

@@ -68,4 +68,3 @@ theorem mixed_timeMeasure_young {μ ψ : ℝ → ℝ}
   rw [he]
   exact hb
 
-end GuthMaynard.Improvement

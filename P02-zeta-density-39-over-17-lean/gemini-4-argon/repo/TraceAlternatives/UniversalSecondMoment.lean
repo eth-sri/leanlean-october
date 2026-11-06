@@ -94,4 +94,3 @@ theorem actual_second_moment_universal_native (ε : ℝ) (hε : 0<ε) :
       rw [show (L*T^δ)*(A*T^δ*F) = (A*L)*(T^δ*T^δ)*F by ring,
         ← Real.rpow_add hTp,show δ+δ=ε by dsimp only [δ]; ring]
 
-end Montgomery.RationalMoment

@@ -11,8 +11,7 @@ open scoped BigOperators Topology
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector.Physical
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /-- The actual-zero dichotomy with the long alternative expressed as a
 critical-line mean. Both alternatives keep the original ordinate. -/
@@ -77,4 +76,3 @@ theorem smooth_long_mean_or_short_powered_cover {σ a δ η : ℝ}
   · exact Or.inr hshort
 
 
-end Montgomery.RationalMoment.RightDetector.Physical

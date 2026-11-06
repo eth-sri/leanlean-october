@@ -43,4 +43,3 @@ theorem sargos_integer_Ioc_sum_split {A : Type*} [AddCommMonoid A]
     omega
   rw [hu,Finset.sum_union hd]
 
-end TaoTrudgianYang2025

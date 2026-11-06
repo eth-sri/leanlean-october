@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeMellinBoundary
-open PrincipalMellinResidues ProbeFiniteProductBounds
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CompletedGauss CanonicalQuadraticSieve ProbeMellinBoundary PrincipalMellinResidues ProbeFiniteProductBounds
 
 lemma principalTuple_source_integrand {K : ℕ} (η : HeckeFamily.Character)
     (S : Finset Id) (hS : SourceExclusions S) (P : Fin K→PrimeIdeal)
@@ -58,8 +55,3 @@ theorem principalRowIntegral_eq_sourceMultiplier {K : ℕ} (η : HeckeFamily.Cha
     (by norm_num [Complex.add_re,Complex.mul_re])
     (by norm_num [Complex.add_re,Complex.mul_re])
     (by norm_num [Complex.add_re,Complex.mul_re])
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

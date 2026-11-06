@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeRowRadicalConductor
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve UniqueFactorizationMonoid
 
 theorem idealRowHom_congr_radical (I : Ideal O) (x y : O)
     (hxy : x-y ∈ I.radical) : idealRowHom x I = idealRowHom y I := by
@@ -333,9 +330,3 @@ theorem fixedConductorConstant_pos (S : Finset (Ideal O))
     (hnorm _ (Ideal.span_singleton_eq_bot.not.mpr ProbeHighRowFamily.rowMaskElement_ne_zero))
     (hnorm _ (Ideal.span_singleton_eq_bot.not.mpr (by norm_num))))
     (hnorm _ (Finset.prod_ne_zero_iff.mpr (fun P hP => (hS P hP).ne_zero)))
-
-end SevenEighths.ProbeRowRadicalConductor
-
-end
-
-end OAI

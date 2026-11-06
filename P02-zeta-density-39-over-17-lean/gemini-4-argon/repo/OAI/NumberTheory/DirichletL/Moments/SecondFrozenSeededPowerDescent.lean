@@ -16,40 +16,14 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondFrozenSeededPowerDescent
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondNonexceptionalCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentCommonProfile
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
-open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentOriginalCommonHarmonic CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentCommonProfile CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget CenteredMomentSecondActivePhysicalDictionary
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
-open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
+open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson CenteredMomentLogDyadic MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar CenteredMomentSecondSourcePowerDescent CenteredMomentSourceInputTailSeed CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondFrozenUniformSubset
 
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource
-open MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost
-
-open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
-
-open CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
-open CenteredMomentSecondSourcePowerDescent CenteredMomentSourceInputTailSeed
-open CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondNonexceptionalScalar
-
-theorem original_subsets_seeded_power_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
+theorem original_subsets_seeded_power_descent {κ : Type*} [Fintype κ] (t₀ : κ)
+    (sub : κ → Type*) [∀ T, Fintype (sub T)] [∀ T, DecidableEq (sub T)] (valOf : ∀ T, sub T → ι)
+    (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     (lo hi:ι→ℝ)(hhi:∀i,0≤hi i)(W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)
     (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (hb₁ : 1≤b₁) (hb₂ : 1≤b₂)
     (ε δ θ B Bseed ξ saving:ℝ)(hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hξ:0<ξ):
@@ -57,9 +31,9 @@ theorem original_subsets_seeded_power_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0�
       ∃Cmain Cexc Cdiag Ctail:ℝ,0<Cmain ∧ 0≤Cexc ∧ 0<Cdiag ∧ 0<Ctail ∧
       ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
       ∃Kc:ℝ,0<Kc ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-      ∀T : Finset ι, ∀(s:Input T)(p:Profiles wlo whi),(∀i,s.lo i=lo i.val) → (∀i,s.hi i=hi i.val) →
+      ∀T : κ, ∀(s:Input (sub T))(p:Profiles wlo whi),(∀i,s.lo i=lo (valOf T i)) → (∀i,s.hi i=hi (valOf T i)) →
       (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
-      ∀A:ℝ, s.upper≤b → Fintype.card T≤N → 0≤s.b₁ → 0≤s.b₂ →
+      ∀A:ℝ, s.upper≤b → Fintype.card (sub T)≤N → 0≤s.b₁ → 0≤s.b₂ →
       s.b₁≤b₁ → s.b₂≤b₂ → mass s≤A →
       ∀(R0 seed:Ideal O),R0≠0 → Squarefree seed → seed≠0 → (seed.absNorm:ℝ)≤Z^Bseed →
       0≤sourceRadius s → sourceRadius s≤Z^B →
@@ -75,40 +49,8 @@ theorem original_subsets_seeded_power_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0�
       (volume s.toData)^2/Kphys≤Tsec →
       0<frequencyRadius Tsec Z ξ → frequencyRadius Tsec Z ξ≤Z^B →
     ∀E₁ E₂:ℝ,0≤E₁ → 0≤E₂ →
-    (∀q∈liveLabels s.η S β,∀U:Finset (CommonIndex q.val.1 q.val.2),
-      ∀n:SourceBlocks q.val.1 q.val.2 U Kphys (frequencyRadius Tsec Z ξ) (sourceRadius s),
-      physicalBlock s.η s.t (activeSource S β) β q.val.1 q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).1
-        (commonLabels_supported (activeSource S β) _ _ q.property).2 U (frequencyRadius Tsec Z ξ)
-        (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
-        (fun i=>(n i:ℤ))≠0→
-      ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
-      (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
-      ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.1,
-      frozenCoefficient b.val q.val.1 R0 s.ν s.W s.P≠0→
-      ∀a∈(commonData (withHeight s (τ q U χ) v) q.val.1 R0 b).toSource.active D0,
-      childEnergy (commonData (withHeight s (τ q U χ) v) q.val.1 R0 b)
-        (canonicalRadial (τ q U χ) Q (fun i=>(n i:ℤ))) D0 a≤
-          E₁*childEnvelope s.η q.val.1 q.val.2 U (fun i=>(n i:ℤ))*
-          (max 1 (1/retainedRatio (fun i=>(n i:ℤ))))^((1:ℝ)/6)*(1+‖v‖)^(2*J₁))→
-    (∀q∈liveLabels s.η S β,∀U:Finset (CommonIndex q.val.1 q.val.2),
-      ∀n:SourceBlocks q.val.1 q.val.2 U Kphys (frequencyRadius Tsec Z ξ) (sourceRadius s),
-      physicalBlock s.η s.t (activeSource S β) β q.val.1 q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).1
-        (commonLabels_supported (activeSource S β) _ _ q.property).2 U (frequencyRadius Tsec Z ξ)
-        (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
-        (fun i=>(n i:ℤ))≠0→
-      ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
-      (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
-      ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.2,
-      frozenCoefficient b.val q.val.2 R0 s.ν s.W s.P≠0→
-      ∀a∈(commonData (withHeight s (τ q U χ) v) q.val.2 R0 b).toSource.active D0,
-      childEnergy (commonData (withHeight s (τ q U χ) v) q.val.2 R0 b)
-        (canonicalRadial (τ q U χ) Q (fun i=>(n i:ℤ))) D0 a≤
-          E₂*childEnvelope s.η q.val.1 q.val.2 U (fun i=>(n i:ℤ))*
-          (max 1 (1/retainedRatio (fun i=>(n i:ℤ))))^((1:ℝ)/6)*(1+‖v‖)^(2*J₂))→
+    ChildBound₁ s R0 Q S β τ χ₀ m W Kphys Tsec Z ξ (childEnvelope s.η) E₁ J₁ →
+    ChildBound₂ s R0 Q S β τ χ₀ m W Kphys Tsec Z ξ (childEnvelope s.η) E₂ J₂ →
     ∀r:ℝ,Z^r≤s.X₁ → Z^r≤s.X₂ → Z^r≤s.Y₁ → Z^r≤s.Y₂ →
     ‖sourceGaussEnergy S β (heightCoeff s.η s.t) W Kphys‖/volume s.toData≤
       (∑j, coefficients N b b₁ b₂ A Sprofile p J Q Kc s.t ε (seed.absNorm:ℝ)
@@ -116,7 +58,7 @@ theorem original_subsets_seeded_power_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0�
           (s.η.modulus.absNorm:ℝ) E₁ E₂ r (∏i,s.lo i) wlo (seed.absNorm:ℝ) J₁ J₂ SΦ W) j *
         (CenteredMomentAmplificationChildInput.volume s)^(powers ε j))*mass s^2 := by
   obtain ⟨J,Sp,Sf,hSp,Cm,Ce,Cd,Ct,hCm,hCe,hCd,hCt,hall⟩ :=
-    CenteredMomentSecondFrozenUniformSubset.original_subsets_source_descent
+    original_subsets_source_descent t₀ sub valOf
       wlo whi hwlo hwhi lo hi hhi W J₁ J₂ ε δ θ B ξ (saving+Bseed) hε hδ hθ hB hξ
   refine ⟨J,Sp,Sf,hSp,Cm,Ce,Cd,Ct,hCm,hCe,hCd,hCt,?_⟩
   intro Q hQ hQt hQ72
@@ -159,11 +101,5 @@ theorem original_subsets_seeded_power_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0�
     ring_nf at htail ⊢
     linarith only [htail]
   exact hh'.trans (source_rhs s N b b₁ b₂ A hb hb₁ hb₂ hu hc
-    (fun i=>by rw [hhis]; exact hhi i.val) hs1 hs2 hsb1 hsb2 hmass Sp p J Q Kc ε
+    (fun i=>by rw [hhis]; exact hhi (valOf T i)) hs1 hs2 hsb1 hsb2 hmass Sp p J Q Kc ε
     (seed.absNorm:ℝ) hKc.le hε.le (by positivity) a ha)
-
-end SevenEighths.CenteredMomentSecondFrozenSeededPowerDescent
-
-end
-
-end OAI

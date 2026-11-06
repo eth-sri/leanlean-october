@@ -11,8 +11,6 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted CanonicalRowCompletion RayFourExpansion ProbeRow CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowMarkedInverseRow (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (D : Id) (T t : ℝ) (σ : RayRing) (m : O) : ℂ :=
@@ -52,8 +50,3 @@ theorem compensationRowTest_low_separated {K : ℕ} (η : HeckeFamily.Character)
     hW0 hW1 hWs _ _ (div_pos hX (slotProduct_norm_pos p hp J))
       (div_pos hY (slotProduct_norm_pos p hp J))
       (lowMarkedInverseRow η S hS (Ideal.span {slotProduct p (Finset.univ\J)}) T t)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

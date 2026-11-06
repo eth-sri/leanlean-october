@@ -69,4 +69,3 @@ theorem sourceStationaryChart_physical_bound
       mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right hBK (by positivity)) (Real.rpow_nonneg hT.le _)
 
-end TaoTrudgianYang2025

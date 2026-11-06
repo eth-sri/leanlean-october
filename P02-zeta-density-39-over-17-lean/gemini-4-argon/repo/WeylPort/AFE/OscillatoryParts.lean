@@ -234,4 +234,3 @@ theorem norm_negative_exp_integral_sub_boundary_le {a b ν : ℝ} (hab : a < b)
   simpa only [show (p a - ν) ^ 2 = (ν - p a) ^ 2 by ring,
     abs_of_neg (sub_neg.mpr hν), neg_sub] using hbound
 
-end DhimanKadiriQuesadaHerrera2026

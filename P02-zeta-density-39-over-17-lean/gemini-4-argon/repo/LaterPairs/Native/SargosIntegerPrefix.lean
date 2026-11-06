@@ -22,4 +22,3 @@ theorem sargos_sum_Icc_eq_range {A : Type*} [AddCommMonoid A] (a b : â„¤) (f : â
   rw [Int.Icc_eq_finset_map,Finset.sum_map]
   rfl
 
-end TaoTrudgianYang2025

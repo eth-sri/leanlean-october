@@ -193,4 +193,3 @@ theorem FiniteVariationBound.norm_sum_mul_le {w a : ℕ → ℂ} {N : ℕ} {M A 
       _ ≤ A*M := mul_le_mul_of_nonneg_left hv hA
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

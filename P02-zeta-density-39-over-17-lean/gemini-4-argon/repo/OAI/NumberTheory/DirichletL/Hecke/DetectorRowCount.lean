@@ -58,9 +58,3 @@ theorem plain_count {α : Type*} (rows : Finset α) (χ : α→Character)
       (hP u hu) (Real.rpow_nonneg hU.le _) (mul_nonneg (sq_nonneg _) (sq_nonneg _))
   have hh := card_of_energy rows _ U _ (1+εm) C hU hs henergy
   convert hh using 1; congr 2; ring
-
-end SevenEighths.HeckeDetectorRowCount
-
-end
-
-end OAI

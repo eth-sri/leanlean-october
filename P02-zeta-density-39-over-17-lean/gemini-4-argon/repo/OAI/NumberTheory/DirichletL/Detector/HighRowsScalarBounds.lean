@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CubicEisenstein ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
 
 lemma primeGauss_norm_le (p : O) (hp : p≠0)
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (h : O) :
@@ -92,8 +91,3 @@ lemma positiveScalar_norm_le (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).Is
         mul_le_mul_of_nonneg_left (ht n (j-1)) (Real.sqrt_nonneg (Ideal.absNorm (Ideal.span {p}):ℝ))
     · simp only [norm_zero,pow_one]
       positivity
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

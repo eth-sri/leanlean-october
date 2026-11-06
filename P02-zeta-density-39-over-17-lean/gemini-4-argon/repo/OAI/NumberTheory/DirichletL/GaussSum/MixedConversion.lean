@@ -8,70 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
-open scoped BigOperators Classical
 
 namespace MixedGaussConversion
-abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase
+protected abbrev O := ActualEisensteinCubic.O
+open FiniteGaussPhase
 
 def localGauss (p : O) (hp : p ≠ 0) [ (Ideal.span {p}).IsMaximal]
     (hg : lambda ∉ Ideal.span {p}) (j : ℕ) : ℂ :=
@@ -194,11 +137,9 @@ theorem moebius_mixed_gauss_conversion {ι : Type*} [Fintype ι]
 
 end MixedGaussConversion
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace GaussGeneratorTransport
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase
-open MixedGaussConversion
+open EisensteinSchwartzPoisson FiniteGaussPhase MixedGaussConversion
 
 theorem pair_moebius_eq_active
     {ι : Type*} [DecidableEq ι] (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -240,10 +181,9 @@ def activeConvertedGauss
 
 end GaussGeneratorTransport
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT EisensteinSchwartzPoisson
+open ShortDraftHeckeBridge EisensteinSchwartzPoisson
 
 noncomputable def mobiusIdealColumn (C : Ideal O → ℂ) (I : Ideal O) : ℂ :=
   (UniqueFactorizationMonoid.moebius I : ℂ) * C I
@@ -257,8 +197,7 @@ noncomputable def conjugateIdealRowSum
 
 end ConcretePrimeRowBridge
 
-open MeasureTheory Set
-open scoped BigOperators
+open Set
 
 namespace EisensteinSchwartzPoisson
 
@@ -322,7 +261,6 @@ theorem scaled_cauchy_int_bound (b : ℝ) (hb : 0 < b) :
   rw [hh] at this
   linarith
 
-open ConcreteTraceCRT ActualEisensteinCubic
 
 theorem scaled_eisenstein_cauchy_summable (K : ℝ) (hK : 0 < K) :
     Summable (fun h : O => ((1 + K * ‖eisEmbedding h‖ ^ 2) ^ 2)⁻¹) := by
@@ -473,9 +411,3 @@ theorem paperRadialFourier_nonzero_lattice_uniform :
     simpa only [mul_assoc] using lattice_profile_nonzero_scaled_bound
       (paperRadialFourier W) (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)
         (by positivity) (hb W) K hK
-
-end EisensteinSchwartzPoisson
-
-end
-
-end OAI

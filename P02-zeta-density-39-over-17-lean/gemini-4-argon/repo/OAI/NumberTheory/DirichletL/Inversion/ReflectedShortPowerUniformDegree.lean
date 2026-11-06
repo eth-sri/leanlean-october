@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve InverseTerminalWidths InverseReflectedPhase CompletedHeight
 universe u v
 
 theorem canonical_short_completed_power_energy_uniform_degree
@@ -61,9 +59,3 @@ theorem canonical_short_completed_power_energy_uniform_degree
     _=(C*B)*(1+‖θ‖)^degree*Z^(N+V-cstar/128):=by
       rw [show N+V-cstar/128=(N+V-cstar/64)+cstar/128 by ring,Real.rpow_add hz]
       ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

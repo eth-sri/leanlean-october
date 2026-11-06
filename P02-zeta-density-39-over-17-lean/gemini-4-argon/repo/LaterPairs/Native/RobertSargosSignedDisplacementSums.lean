@@ -38,4 +38,3 @@ theorem sum_integer_natAbs_le_twice
       exact mul_le_mul_of_nonneg_right (by exact_mod_cast hcard n) (hf n hn)
     _ = _ := by rw [Finset.mul_sum]
 
-end TaoTrudgianYang2025

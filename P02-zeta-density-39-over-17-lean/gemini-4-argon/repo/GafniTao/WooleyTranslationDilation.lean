@@ -37,6 +37,4 @@ theorem pow_dvd_of_mul_pow_dvd
     simpa [mul_assoc] using hw
   exact ⟨w, hz⟩
 
-end
 
-end GafniTao

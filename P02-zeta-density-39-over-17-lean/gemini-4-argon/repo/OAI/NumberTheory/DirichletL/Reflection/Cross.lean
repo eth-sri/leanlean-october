@@ -103,8 +103,3 @@ theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι
     intro i hi
     have hn : i ∉ R := fun hr => Finset.disjoint_left.mp hRP hr hi
     simp [ll,hn]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

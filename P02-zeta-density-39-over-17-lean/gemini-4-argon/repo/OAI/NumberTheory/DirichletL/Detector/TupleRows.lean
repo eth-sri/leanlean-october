@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma sourceRowSummand_summable (η : HeckeFamily.Character) (S : Finset Id)
     (C : CalibrationData) (D : Id) (x w z : ℂ)
@@ -88,8 +86,3 @@ theorem tupleSourceSeries_eq_rows {K : ℕ} (η : HeckeFamily.Character) (S : Fi
   intro J hJ
   dsimp only [f]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

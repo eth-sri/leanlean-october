@@ -8,9 +8,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 
 theorem marked_column_zero_of_subunit (Ψ : O→*ℂ) (W : ℝ→ℂ) (b Y : ℝ)
     (hY : 0<Y) (hW : ∀ t,W t≠0→t≤b) (hsub : b*Y<1) (mark : Ideal O→ℂ) :
@@ -97,8 +95,3 @@ theorem original_marked_binned_energy (hbad : fixedBadPrimes⊆S) (hSp : ∀ P�
     field_simp
   rw [hn]
   convert mul_le_mul_of_nonneg_left hs hX.le using 1 ; ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

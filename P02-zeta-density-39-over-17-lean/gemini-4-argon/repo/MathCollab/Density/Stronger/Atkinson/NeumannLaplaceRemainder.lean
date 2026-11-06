@@ -97,4 +97,3 @@ theorem norm_neumannLaplaceIntegral_sub_approximation_le {x : ℝ} (hx : 0 < x) 
   convert h using 1
   ring
 
-end MathCollab.Density.Stronger.Atkinson

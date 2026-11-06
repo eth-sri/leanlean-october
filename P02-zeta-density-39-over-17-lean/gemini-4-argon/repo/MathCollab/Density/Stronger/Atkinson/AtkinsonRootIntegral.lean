@@ -102,4 +102,3 @@ theorem norm_atkinsonRootKernel_integral_le_four {T : ℝ} (hT : 0 < T)
       (∫ y in v..c, atkinsonRootKernel T b y)
     linarith)
 
-end MathCollab.Density.Stronger.Atkinson

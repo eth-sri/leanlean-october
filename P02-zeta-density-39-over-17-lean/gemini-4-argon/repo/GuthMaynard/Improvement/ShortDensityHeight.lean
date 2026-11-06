@@ -57,4 +57,3 @@ theorem short_density_small_power {σ H N δ : ℝ} (hσ : 9/13 ≤ σ)
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH
       (mul_le_mul_of_nonneg_right (by linarith : shortDensityB σ+δ ≤ 2) hδ)
 
-end GuthMaynard.Improvement

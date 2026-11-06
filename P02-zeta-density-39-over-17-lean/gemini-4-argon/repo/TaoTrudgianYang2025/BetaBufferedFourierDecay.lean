@@ -97,4 +97,3 @@ theorem modelPhaseBufferedFourierMode_inverse_square_bound
   apply (mul_le_mul_iff_left₀ hN).mp
   nlinarith
 
-end TaoTrudgianYang2025

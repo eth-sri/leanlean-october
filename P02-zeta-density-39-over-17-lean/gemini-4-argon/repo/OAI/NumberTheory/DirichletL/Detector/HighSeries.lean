@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
 
 def bareIdealHighCoefficient (η : HeckeFamily.Character) (u : O) (I J K L : Id) : ℂ :=
   if h : Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported L then
@@ -108,8 +105,3 @@ theorem bareIdealHighSummand_summable (η : HeckeFamily.Character) (u : O) (x w 
   apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ hall
   intro p
   simpa only [mul_assoc] using bareIdealHighSummand_norm_le η u x w z p.1.1 p.1.2 p.2.1 p.2.2
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

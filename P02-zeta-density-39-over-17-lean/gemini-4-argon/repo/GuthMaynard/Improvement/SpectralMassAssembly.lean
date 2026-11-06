@@ -121,4 +121,3 @@ theorem actual_spectral_mass_bound {w : ℝ → ℝ} (hw : ContDiff ℝ ∞ w)
   have he (Z : ℝ) : Z/(L/(2*N))=(2*N/L)*Z := by field_simp
   simpa only [he] using hfinal
 
-end GuthMaynard.Improvement

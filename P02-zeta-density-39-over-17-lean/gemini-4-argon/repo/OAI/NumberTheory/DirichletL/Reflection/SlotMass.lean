@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
 lemma inactive_choices_mass (L : σ→Finset (Ideal Eis)) (T : Finset σ) :
@@ -34,8 +33,3 @@ lemma inactive_choices_mass_bound (L : σ→Finset (Ideal Eis)) (T : Finset σ)
     positivity
   · intro i hi
     simpa only [one_div] using finite_inverse_norm_sum (L i.val) (H i.val) (hzero i.val) (hH i.val)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

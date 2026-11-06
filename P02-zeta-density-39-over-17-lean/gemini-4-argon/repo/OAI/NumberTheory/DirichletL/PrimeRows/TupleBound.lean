@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
-open CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
 
 theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)
     (hδ : 0<δ) (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B) :
@@ -65,8 +63,3 @@ theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)
       calc
         _ = (C₂*C₁)*(N^(δ/2)*N^(δ/2))*∏i,(Y i)^r := by ring
         _ = _ := by rw [hp]
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

@@ -92,4 +92,3 @@ theorem uniform_smoothMollifierBlock_mean_bound {ψ : ℝ → ℝ} {a b : ℝ}
   have hh := mul_le_mul_of_nonneg_left (h ρ X N q hβ hβ'.le hX hN hq) (norm_nonneg c)
   simpa only [mul_assoc] using hh
 
-end MathCollab.Density.Stronger

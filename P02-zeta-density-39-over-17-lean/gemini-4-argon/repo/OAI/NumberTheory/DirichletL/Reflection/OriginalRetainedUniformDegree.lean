@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem original_sector_retained_energy_uniform_degree
@@ -99,7 +98,3 @@ theorem original_sector_retained_energy_uniform_degree
   apply hh.trans_eq
   push_cast
   ring
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

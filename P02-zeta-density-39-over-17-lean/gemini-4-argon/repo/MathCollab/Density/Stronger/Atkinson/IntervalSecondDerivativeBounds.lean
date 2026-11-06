@@ -127,4 +127,3 @@ theorem IntervalC2Bound.norm_sub_le {f : ℝ → ℂ} {a b M R x y : ℝ}
     (fun z hz => (hf.smooth z hz).differentiableAt (by norm_num)) hf.deriv_le hx hy
   simpa only [Real.norm_eq_abs] using h
 
-end MathCollab.Density.Stronger.Atkinson

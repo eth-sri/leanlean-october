@@ -68,4 +68,3 @@ theorem exists_robertSargos_fixed_coeff_bound (ε : ℝ) (hε : 0 < ε) :
   rw [← hrc] at hb
   exact hb.trans (hdiv r.natAbs H Q δ (Int.natAbs_pos.mpr hr) hH hrH' hδ)
 
-end TaoTrudgianYang2025

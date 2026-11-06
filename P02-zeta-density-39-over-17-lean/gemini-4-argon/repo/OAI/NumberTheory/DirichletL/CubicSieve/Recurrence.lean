@@ -9,10 +9,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
     ∃ C : ℝ, 0 ≤ C ∧
@@ -61,8 +59,3 @@ theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
   exact (norm_add_le _ _).trans (add_le_add
     (cubicDualRow_zero_bound cols (fun j => (hcols j).1) hc a W M N hN0
       (fun j => (hcols j).2.1)) hb)
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

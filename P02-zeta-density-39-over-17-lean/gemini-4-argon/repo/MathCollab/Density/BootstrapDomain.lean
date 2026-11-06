@@ -58,4 +58,3 @@ theorem LargeValueData.normalization_lower {κ : ℝ} (d : LargeValueData κ)
     _ ≤ bootstrapScalar d.T d.N d.V*U.card*(L^2+(d.N : ℝ)*localDiameter U) :=
       mul_le_mul (hb.trans hbr) hnle (sq_nonneg _) (by positivity)
 
-end MathCollab.Density

@@ -40,6 +40,4 @@ theorem integral_heathBrownNu_sq_source_bound
   exact h
 
 
-end
 
-end GafniTao

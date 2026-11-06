@@ -49,5 +49,4 @@ theorem integer_card_le_of_abs_sub_le (S : Finset ℤ) {a B : ℝ}
       constructor <;> linarith)
   linarith
 
-end TaoTrudgianYang2025
 

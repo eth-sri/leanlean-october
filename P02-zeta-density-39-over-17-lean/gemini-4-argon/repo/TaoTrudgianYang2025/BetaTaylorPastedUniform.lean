@@ -64,4 +64,3 @@ theorem taylorPastedExtension_uniform_jets
           exact (abs_iteratedDeriv_finiteTaylorPolynomial_le hn hD hdistR
             (fun j hj => hb _ haR j (by omega))).trans (mul_le_mul_of_nonneg_right hGC hM)
 
-end TaoTrudgianYang2025

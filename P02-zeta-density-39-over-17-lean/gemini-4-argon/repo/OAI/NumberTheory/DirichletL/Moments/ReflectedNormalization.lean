@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentReflectedNormalization
-open HeckeFamily CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization EisensteinSchwartzPoisson
 
 lemma actual_log_window :
     CenteredMomentReflectedProfileMeasure.logWindow CenteredMomentReflectedAnnuli.logWindow=
@@ -69,9 +68,3 @@ theorem actual_annular_normalization (χ : Character) (W : ℝ→ℂ) (B n : ℕ
       (heightScale B n (dyadicScale k) t:ℂ)=(Real.sqrt (dyadicScale k):ℂ) := by
     rw [←Complex.ofReal_mul,←Complex.ofReal_mul,hh]
   rw [←mul_assoc _ (heightScale B n (dyadicScale k) t:ℂ),hc]
-
-end SevenEighths.CenteredMomentReflectedNormalization
-
-end
-
-end OAI

@@ -127,4 +127,3 @@ theorem large_values_with_divisors {κ : ℝ} (hκ : 0 < κ) :
     rw [hz, Finset.card_empty, Nat.cast_zero]
     positivity
 
-end MathCollab.Density

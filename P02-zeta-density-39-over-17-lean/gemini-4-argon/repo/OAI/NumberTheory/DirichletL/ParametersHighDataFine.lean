@@ -86,9 +86,3 @@ theorem fine_slot_widths {Δ:ℝ}(D:HighData Δ)(mesh:ℝ→ℝ)
   refine ⟨div_pos (D.slots_bounds j).1 hd0,(div_le_iff₀ hd0).mpr ?_⟩
   have hh:=hfine j
   nlinarith
-
-end SevenEighths.Parameters
-
-end
-
-end OAI

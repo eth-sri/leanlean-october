@@ -9,7 +9,6 @@ noncomputable section
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic InverseTerminalWidths
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_rank_parent_puncture (m:O)(hm:m≠0)(Z:ℝ)(hZ:1<Z):
     (Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^(normWidth Z (Ideal.span {m})) :=by
@@ -21,9 +20,3 @@ theorem actual_rank_parent_puncture (m:O)(hm:m≠0)(Z:ℝ)(hZ:1<Z):
   unfold normWidth
   rw [Real.rpow_logb (by linarith:0<Z) (ne_of_gt hZ) hn]
   exact_mod_cast hle
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

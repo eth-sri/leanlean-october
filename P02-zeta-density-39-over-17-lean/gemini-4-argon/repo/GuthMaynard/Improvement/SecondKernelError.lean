@@ -11,4 +11,3 @@ namespace GuthMaynard.Improvement
 theorem phase_norm (t : ℝ) : ‖phase t‖ = 1 := by
   simp [phase, Complex.norm_exp]
 
-end GuthMaynard.Improvement

@@ -93,9 +93,3 @@ theorem primitive_reciprocal_subpower (e ε : ℝ)
     have hp0 : 0 ≤ D+HeckeReciprocalBound.bound 2 := by linarith
     exact hr.trans ((by linarith : HeckeReciprocalBound.bound 2 ≤ D+HeckeReciprocalBound.bound 2).trans
       (le_mul_of_one_le_right hp0 hcomp))
-
-end SevenEighths.HeckeLogarithmicActual
-
-end
-
-end OAI

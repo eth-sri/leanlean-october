@@ -11,19 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstReferenceBlock
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy
-open CenteredMomentFirstDivisorSupport CenteredMomentChildAssembly
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget
-open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentMobiusRegroup
-open CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBound
-open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstMixedWindow CenteredMomentFirstWindowBudgets
-open CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy CenteredMomentFirstDivisorSupport CenteredMomentChildAssembly CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentMobiusRegroup CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBound CenteredMomentOriginalCommonHarmonic CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedWindow CenteredMomentFirstWindowBudgets CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical
 
 theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
     (B δ:ℝ)(hB:0≤B)(hδ:0<δ):
@@ -106,9 +94,3 @@ theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
       _ = Cb*Z^δ*(‖scalar C D hC E K (dyadicScale (n 2)) (dyadicScale (n 3))‖/V*
           (∑i:Fin 4,∑j:Fin 4,windowBudget J₁ s.t (refL*EL i)*windowBudget J₂ s.t (refR*ER j))) := by ring
       _ ≤ _ := by convert hmul using 1 <;> (try dsimp [refL,refR,V,volume,CenteredMomentExceptionalAmplitudePair.volume]) ; ring
-
-end SevenEighths.CenteredMomentFirstReferenceBlock
-
-end
-
-end OAI

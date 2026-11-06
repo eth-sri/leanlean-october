@@ -11,13 +11,8 @@ noncomputable section
 
 open scoped Classical BigOperators ContDiff Topology
 namespace SevenEighths.CenteredMomentRelativeCapacityRemoval
-open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile
-open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
-open CenteredMomentSecondHeightFamily Filter
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckePrimeAnnular CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily Filter
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 include hH
 
@@ -145,9 +140,3 @@ theorem actual_relative_capacity_removal {ι:Type*}[Fintype ι][DecidableEq ι]
   congr 3
   ext i
   simp
-
-end SevenEighths.CenteredMomentRelativeCapacityRemoval
-
-end
-
-end OAI

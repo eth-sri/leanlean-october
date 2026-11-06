@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentRadialPointwiseUniform
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentRadialPointwiseEnergy CenteredMomentUniformDivisorShell
-open CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentRadialPointwiseEnergy CenteredMomentUniformDivisorShell CenteredMomentSlotRatios
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
@@ -67,9 +64,3 @@ def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
     _≤C*Z^δ*A:=mul_le_mul (mul_le_mul_of_nonneg_left hp hC.le) ha
       (Real.rpow_nonneg hz.le _) (by positivity)
     _=_:=by ring
-
-end SevenEighths.CenteredMomentRadialPointwiseUniform
-
-end
-
-end OAI

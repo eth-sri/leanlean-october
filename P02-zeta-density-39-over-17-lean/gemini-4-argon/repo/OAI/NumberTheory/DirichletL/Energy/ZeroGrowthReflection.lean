@@ -11,14 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthReflection
-open CenteredMomentNaturalRowSource
-open HeckeFamily HeckeDyadic QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth
-open CenteredMomentEnergyZeroGrowthWindow CenteredMomentEnergyZeroReflectionSupport
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentFiniteProfileExceptional
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-local notation "O"=>HeckeFamily.O
+open CenteredMomentNaturalRowSource HeckeFamily HeckeDyadic QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthWindow CenteredMomentEnergyZeroReflectionSupport CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceHomogeneous CenteredMomentFiniteProfileExceptional CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 
 theorem live_deleted_reflection (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
@@ -94,8 +87,3 @@ theorem live_deleted_reflection (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     exact hchild bΦ Bmask L Mcap loss Z Q degree K hK hgrowth hBmask s hQ hs Wshort hsShort
       xi defect Xshort Xlong hxi.le hdefect.le hZ.1 hendpoint.2 hL
       hshort hlong hshortcap hsupport Dshort Dlong hDs hDl hlive j k v t x hx
-end SevenEighths.CenteredMomentEnergyZeroGrowthReflection
-
-end
-
-end OAI

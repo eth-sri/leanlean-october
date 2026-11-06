@@ -86,8 +86,3 @@ theorem energy_le_squaredNorm (A : Matrix m n ℂ) (c : n → ℂ) :
   have h := (operator A).le_opNorm x
   have hs := pow_le_pow_left₀ (norm_nonneg _) h 2
   simpa only [squaredNorm, mul_pow, EuclideanSpace.norm_sq_eq, operator_apply, x] using hs
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

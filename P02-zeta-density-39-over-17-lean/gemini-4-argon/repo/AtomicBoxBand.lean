@@ -68,4 +68,3 @@ theorem atomic_ratio_box_domination (W : Finset ℝ) {p : ℝ × ℝ}
         (2*‖𝓕 (fun t => (boxTimeDensity W t:ℂ)) (mellinFrequency p.2)‖) := by gcongr
     _ = _ := by ring
 
-end Montgomery.RationalMoment

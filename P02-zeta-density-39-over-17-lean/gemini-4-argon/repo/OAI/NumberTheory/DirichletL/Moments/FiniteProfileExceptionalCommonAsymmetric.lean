@@ -10,13 +10,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource
-open CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction
-open CenteredMomentDivisorRectangle CenteredMomentExceptionalAsymmetricSource
-open CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentExceptionalAsymmetricSource CenteredMomentFiniteProfileExceptional
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
@@ -189,9 +183,3 @@ theorem actual_masked_asymmetric (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:�
   refine ⟨hZ.1,?_⟩
   intro I L s v p q hlo hhi r rRight rows hs hv Ds hDs
   exact (whole_masked_le s v Ds rows).trans (hZ.2 I L s v p q hlo hhi r rRight rows hs hv Ds hDs)
-
-end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-
-end
-
-end OAI

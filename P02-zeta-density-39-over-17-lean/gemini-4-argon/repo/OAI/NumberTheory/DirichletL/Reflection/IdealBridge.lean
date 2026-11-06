@@ -7,11 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
-open CanonicalQuadraticSieve CanonicalRowCompletion
+open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets CanonicalQuadraticSieve CanonicalRowCompletion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 noncomputable local instance idealBridgeFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 theorem admissible_primeIndex_product (K : Ideal Eis) (hK : Admissible K) :
@@ -102,8 +99,3 @@ theorem full_branch_sum_hybrid {ι : Type*} [Fintype ι]
   change (∏ i, v i) = _
   rw [hv,hr,hs]
   ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

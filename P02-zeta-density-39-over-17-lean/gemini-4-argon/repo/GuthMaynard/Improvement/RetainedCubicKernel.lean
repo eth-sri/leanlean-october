@@ -114,4 +114,3 @@ theorem mellinFrequency_phase (s x : ℝ) :
     field_simp
   rw [hh]
 
-end GuthMaynard.Improvement

@@ -215,6 +215,4 @@ theorem wooley_normalized_two_factor
         Real.rpow_mul (div_nonneg hY hZ.le)]
 
 
-end
 
-end GafniTao

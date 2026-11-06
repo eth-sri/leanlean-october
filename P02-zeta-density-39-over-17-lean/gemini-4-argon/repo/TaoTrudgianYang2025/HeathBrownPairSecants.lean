@@ -95,4 +95,3 @@ theorem exists_heathBrownPair_segment {τ : ℝ} (hτ : 2 ≤ τ) :
     rw [heq,heathBrownPairLeft_succ]
     exact hlt.le
 
-end TaoTrudgianYang2025

@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstAnnularEnergy
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentFirstAnnularMajorant CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentSmoothedWindowEnergy
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentFirstAnnularMajorant CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentSmoothedWindowEnergy
 
 variable {α:Type*}
 
@@ -77,9 +74,3 @@ theorem energy_le_dyadic (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {
     hs.of_nonneg_of_le (fun z=>mul_nonneg (dyadicWeight_bounds j _).1
       (mul_nonneg (sq_nonneg _) (profile_nonneg _))) hdom
   exact hl.tsum_le_tsum hdom hs
-
-end SevenEighths.CenteredMomentFirstAnnularEnergy
-
-end
-
-end OAI

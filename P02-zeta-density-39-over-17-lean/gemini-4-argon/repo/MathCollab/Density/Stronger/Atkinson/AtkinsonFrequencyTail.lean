@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonRootSlope_far_positive {T b y : ℝ} (hT : 0 < T)
@@ -101,4 +100,3 @@ theorem exists_norm_atkinsonPowerIntegral_far_le (α : ℝ) :
   exact ⟨hp b (fun x hx => (norm_atkinsonRootKernel_integral_far hT hx hb).1),
     hp (-b) (fun x hx => (norm_atkinsonRootKernel_integral_far hT hx hb).2)⟩
 
-end MathCollab.Density.Stronger.Atkinson

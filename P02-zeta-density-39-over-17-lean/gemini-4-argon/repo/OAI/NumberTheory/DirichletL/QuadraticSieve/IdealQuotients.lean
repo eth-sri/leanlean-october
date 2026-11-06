@@ -9,76 +9,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
-open ConcretePrimeRowBridge ActualEisensteinCubic CompletedGauss ConcreteTraceCRT
+open ConcretePrimeRowBridge CompletedGauss
 
 theorem primaryGenerator_admissible (I : Ideal O) (hI : Admissible I) : primaryGenerator I ≠ 0 :=
   PrimaryIdealUnitReindex.primaryGenerator_ne_zero_of_good_factors I hI.1
@@ -150,7 +87,7 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
 
 end
 
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 
 def idealQuotient (D I : Ideal O) : Ideal O := if h : D ∣ I then h.choose else 0
 
@@ -258,8 +195,6 @@ theorem quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
 end CanonicalQuadraticSieve
 
 section
-open MeasureTheory
-open scoped FourierTransform SchwartzMap ContDiff
 namespace FourierBridge
 
 def fourierSeminormBound (k : ℕ) (C : ℝ) : ℝ :=
@@ -441,10 +376,7 @@ theorem paperRadialFourier_log_separation_envelope
 end EisensteinSchwartzPoisson
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius supportRay supportIdealFamily supportIdealFamily_pos
   supportIdealFamily_good recoveredSupport)
 open ConcretePrimeRowBridge (conjugateIdealRowSum)
@@ -471,9 +403,3 @@ def cubeLogCoefficient {ι : Type*} [DecidableEq ι]
     Finset ι → ℂ :=
   if negative then cubeMinusCoefficient p hp hcop hg B v ε₁ ε₂ (logTwistMinus C V y t) d
   else cubePlusCoefficient p hp hcop hg B v ε₁ ε₂ (logTwistPlus C V y t) d
-
-end FirstPassCubeLabels
-
-end
-
-end OAI

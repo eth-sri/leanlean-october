@@ -7,88 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalCubeSeparation
-
-end CanonicalRowCompletion
 
 namespace CompletedHeight
 
-open MeasureTheory Filter Set
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff Topology
 open FourierBridge JointLogSeparation
 
 def positiveCutoff (a b : ℝ) (ha : 0 < a) : ContDiffBump ((a+max a b)/2) where
@@ -236,8 +160,6 @@ end CompletedHeight
 
 namespace LocalLogFourier
 
-open MeasureTheory
-open scoped BigOperators Classical FourierTransform SchwartzMap ContDiff
 theorem coupled_positive_log_separation_linear_constant
     {ι : Type*} [Fintype ι]
     (W : ι → ℝ → ℂ) (a M : ι → ℝ)
@@ -375,33 +297,3 @@ theorem coupled_positive_log_separation_linear_constant
     exact (div_le_div_of_nonneg_right hh (by positivity)).trans_eq (by ring)
 
 end LocalLogFourier
-
-namespace CompletedHeight
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open CompletedGauss
-
-end CompletedHeight
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CompletedHeight
-open CompletedGauss hiding O
-open ActualEisensteinCubic
-open CanonicalQuadraticSieve hiding O
-
-end CompletedHeight
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CompletedHeight
-open CompletedGauss hiding O
-open ActualEisensteinCubic CompletedDyadic
-open CanonicalQuadraticSieve hiding O
-
-end CompletedHeight
-
-end
-
-end OAI

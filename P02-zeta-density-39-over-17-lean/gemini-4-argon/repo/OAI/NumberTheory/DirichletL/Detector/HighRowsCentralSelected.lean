@@ -37,8 +37,3 @@ lemma unramifiedSelected_central_error (Q a e : ℝ) (A eta v x w z : ℂ)
     (Q^(6*e)) (Q^(-(51/100:ℝ))) hL hV hD hW hq (by rw [norm_star,hv])
     hVT hDT hET hBET hi.1 hi.2
   simpa only [unramifiedSelected,unramifiedClosed,unramifiedMarked] using hh
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

@@ -80,4 +80,3 @@ theorem integer_fixed_displacement_band_card_le
       exact hband z hz)
   rwa [hcard] at hb
 
-end TaoTrudgianYang2025

@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve
-open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve EisensteinSchwartzPoisson
 
 lemma spectralSummand_mask_nonzero (S : Finset Id) (D I J : Id) (Ψ : O→*ℂ) (t : ℂ)
     (h : spectralSummand S D Ψ t I J≠0) : completedMask S D I J≠0 := by
@@ -63,8 +60,3 @@ theorem transformedSpectralTerm_radial_mellin (η : HeckeFamily.Character)
         ((spectralSummand_calibration_coprime S hS D I J _ t hz).mul_right hcs)
         W a b ha hW K hK σ hσ]
   · rfl
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -120,9 +120,3 @@ theorem actual_overlap_separation
   intro i hi
   exact (Real.exp_log (hy i.val i.property (p i.val i.property)
     ((Finset.mem_pi.mp hp) i.val i.property))).symm
-
-end SevenEighths.InverseInitialOverlapFourier
-
-end
-
-end OAI

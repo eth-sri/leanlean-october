@@ -11,16 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthMoments
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroReflectionSupport
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentEnergyZeroGrowthChild CenteredMomentEnergyReferenceLowControl
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-open CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroReflectionSupport CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles CenteredMomentEnergyZeroGrowthChild CenteredMomentEnergyReferenceLowControl CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 
 theorem reflected_uniform (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (S:Finset (ℕ×ℕ)):
@@ -71,9 +62,3 @@ lemma actual_growth_power (Z b M xi epsilon loss Xshort Xlong Nshort Nlong x:ℝ
     Real.logb Z Nlong+(M+loss+epsilon+xi) by ring,
     Real.rpow_add (zero_lt_one.trans hZ),
     Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' (zero_lt_one.trans_le hNl)]
-
-end SevenEighths.CenteredMomentEnergyZeroGrowthMoments
-
-end
-
-end OAI

@@ -64,9 +64,3 @@ theorem continuedLattice_eq_of_elementCoeff_eq (χ ψ : Character)
   apply HeckeTheta.latticeL_eq_of_coefficients (coefficients χ) (coefficients ψ) _ hs hs₁
   intro n
   simp only [periodicCoeff_eq_elementCoeff, hχψ]
-
-end SevenEighths.HeckeFamily
-
-end
-
-end OAI

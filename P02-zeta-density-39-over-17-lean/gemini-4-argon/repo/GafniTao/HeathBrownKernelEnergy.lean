@@ -167,6 +167,4 @@ theorem hasSum_heathBrownFrequencyEnergy
   push_cast
   rfl
 
-end
 
-end GafniTao

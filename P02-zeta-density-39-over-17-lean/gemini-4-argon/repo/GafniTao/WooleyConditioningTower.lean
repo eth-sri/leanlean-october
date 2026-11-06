@@ -244,6 +244,4 @@ theorem wooleySourcePolynomialConditionedMean_power_tower
       (q₁ := p ^ h) (q₂ := p ^ (H - h)) phi gamma)
 
 
-end
 
-end GafniTao

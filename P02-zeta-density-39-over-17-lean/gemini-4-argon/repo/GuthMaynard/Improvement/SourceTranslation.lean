@@ -67,4 +67,3 @@ theorem source_large_values_translation {N T V B : ℝ}
       exact hlarge s hs)
   simpa only [hcard] using hh
 
-end GuthMaynard.Improvement

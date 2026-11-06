@@ -46,5 +46,4 @@ theorem exists_robertSargos_seven_count (ε : ℝ) (hε : 0 < ε) :
       add_le_add hz' hu
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 

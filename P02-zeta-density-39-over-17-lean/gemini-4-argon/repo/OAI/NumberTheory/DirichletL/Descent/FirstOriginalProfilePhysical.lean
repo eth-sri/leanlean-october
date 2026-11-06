@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 open InverseMomentFirstProfileUniform InverseAmbientProfileTower
 theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
     (U₀ : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
@@ -111,7 +109,3 @@ theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
           (1+‖θ₂‖)^InverseClippingProfiles.momentOrder J) /
           (1+K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8))^Aker)):=by ring
     _= _:=by rw [hcancel,one_mul]
-end
-end SevenEighths.InverseMoment
-
-end OAI

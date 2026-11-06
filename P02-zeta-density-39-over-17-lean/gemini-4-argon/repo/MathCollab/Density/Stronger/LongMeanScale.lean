@@ -48,4 +48,3 @@ theorem weightedCriticalMean_long_scale {A : ℕ} {C X N Y T σ β γ : ℝ}
     _ ≤ N^(β-1/2) := Real.rpow_le_rpow_of_exponent_le hN (by linarith)
     _ ≤ _ := weightedCriticalMean_detecting_scale hT hNp hmean
 
-end MathCollab.Density.Stronger

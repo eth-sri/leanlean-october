@@ -53,5 +53,4 @@ theorem robertSargos_frequency_fiber_image_valid
   rw [robertSargos_from_fixed_frequency (hfix p hp)]
   exact hmem p hp
 
-end TaoTrudgianYang2025
 

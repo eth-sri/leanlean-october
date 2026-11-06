@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ConcreteTraceCRT ProbeRow CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open ConcreteTraceCRT ProbeRow CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass
 
 def gramPeriodicMonoid (C : CalibrationData) (B : O) (D : GoodMaskRowData B 1 C.generator) : O→*ℂ :=
   conjugateMonoid C.residueMonoid*actualPeriodicRow 1 B D.numeratorUnit D.numeratorLambda D.numeratorTwo
@@ -92,8 +88,3 @@ theorem lowArithmeticCoefficient_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMax
       rw [show C.excluded=S from calibrationForSet_excluded S hS,←he]
       exact fun h=>hc ((calibration_coprime_iff_excluded_span S hS _).mpr h)
     rw [lowArithmeticCoefficient,ite_eq_right hguard,gramPeriodicMonoid_zero C C.generator (calibrationLowData S hS) _ hc,mul_zero]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

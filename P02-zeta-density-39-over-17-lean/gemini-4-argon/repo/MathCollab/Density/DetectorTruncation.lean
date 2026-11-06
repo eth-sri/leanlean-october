@@ -68,45 +68,5 @@ theorem detector_geometric_factor_le {T : ℝ} (hT : 1 ≤ T) :
 /-- The original logarithmic cutoff, with terms retained for n<K. -/
 def firstDetectorCutoff (T : ℝ) : ℕ := ⌈T*(Real.log T)^2⌉₊
 
-/-- Quantitative truncation; no zeta or Weyl bound is used. -/
-theorem norm_firstDetector_tail_le {ρ : ℂ} {T : ℝ}
-    (hT : 1 ≤ T) (hlog : 4 ≤ Real.log T) (hρ : 0 ≤ ρ.re) :
-    ‖∑' n : ℕ, detectorTerm ρ (firstDetectorX T) T (n+firstDetectorCutoff T)‖ ≤
-      4*T^(-2 : ℝ) := by
-  have hTpos : 0 < T := by linarith
-  have hX : 0 ≤ firstDetectorX T := by unfold firstDetectorX; positivity
-  have hXle : (⌊firstDetectorX T⌋₊ : ℝ) ≤ 2*T := by
-    apply (Nat.floor_le hX).trans
-    dsimp [firstDetectorX]
-    have h := Real.rpow_le_rpow_of_exponent_le hT (by norm_num : (1/8 : ℝ) ≤ 1)
-    simpa using mul_le_mul_of_nonneg_left h (by norm_num : (0 : ℝ) ≤ 2)
-  have hk : T*(Real.log T)^2 ≤ (firstDetectorCutoff T : ℝ) := Nat.le_ceil _
-  have hexp : Real.exp (-(firstDetectorCutoff T : ℝ)/T) ≤ T^(-4 : ℝ) := by
-    rw [Real.rpow_def_of_pos hTpos]
-    apply Real.exp_le_exp.mpr
-    have hq : (Real.log T)^2 ≤ (firstDetectorCutoff T : ℝ)/T := (le_div_iff₀ hTpos).2 (by nlinarith)
-    rw [neg_div]
-    nlinarith [mul_nonneg (show 0 ≤ Real.log T by linarith) (show 0 ≤ Real.log T-4 by linarith)]
-  calc
-    _ ≤ (⌊firstDetectorX T⌋₊ : ℝ)*Real.exp (-(firstDetectorCutoff T : ℝ)/T)*(1-Real.exp (-1/T))⁻¹ :=
-      norm_detector_tail_le _ _ hTpos hρ
-    _ ≤ (2*T)*T^(-4 : ℝ)*(2*T) := by
-      apply mul_le_mul _ (detector_geometric_factor_le hT) (le_of_lt (inv_pos.mpr (sub_pos.mpr (Real.exp_lt_one_iff.mpr (div_neg_of_neg_of_pos (by norm_num) hTpos))))) (by positivity)
-      exact mul_le_mul hXle hexp (by positivity) (by positivity)
-    _ = 4*T^(-2 : ℝ) := by
-      have he : T^(-4 : ℝ)*T^2 = T^(-2 : ℝ) := by
-        rw [← Real.rpow_natCast, ← Real.rpow_add hTpos]; norm_num
-      nlinarith [he]
 
-/-- One truncation threshold works for every rho with nonnegative real part. -/
-theorem firstDetector_tail_eventually_small {δ : ℝ} (hδ : 0 < δ) :
-    ∀ᶠ T : ℝ in atTop, ∀ ρ : ℂ, 0 ≤ ρ.re →
-      ‖∑' n : ℕ, detectorTerm ρ (firstDetectorX T) T (n+firstDetectorCutoff T)‖ < δ := by
-  have ht := (tendsto_rpow_neg_atTop (show (0 : ℝ) < 2 by norm_num)).const_mul 4
-  simp only [mul_zero] at ht
-  filter_upwards [eventually_ge_atTop (1 : ℝ), Real.tendsto_log_atTop.eventually (eventually_ge_atTop (4 : ℝ)),
-    ht.eventually (gt_mem_nhds hδ)] with T hT hlog hsmall
-  intro ρ hρ
-  exact (norm_firstDetector_tail_le hT hlog hρ).trans_lt hsmall
 
-end MathCollab.Density

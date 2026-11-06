@@ -12,7 +12,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma height_slab_partial_integrable (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
     (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :
@@ -104,9 +103,3 @@ theorem rowIntegral_central_decomposition {K : ℕ}
   rw [hsplit,integral_const_mul]
   congr 1
   exact congrArg (fun z : ℂ=>I*z) (integral_sub hm hp)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

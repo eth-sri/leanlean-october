@@ -8,8 +8,7 @@ set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter Set
 namespace TaoTrudgianYang2025
-open MathCollab.Density MathCollab.Density.Stronger
-open Montgomery.RationalMoment.RightDetector
+open MathCollab.Density MathCollab.Density.Stronger Montgomery.RationalMoment.RightDetector
 
 theorem ExponentPair.critical_slab_excess_general {k l η ε : ℝ}
     (hpair : ExponentPair k l) (hk : 0 < k)
@@ -57,4 +56,3 @@ theorem ExponentPair.critical_slab_excess_general {k l η ε : ℝ}
   have hh := critical_excess_integral_le_two_tails_interval hv hq htail
   convert hh using 1
   congr 1 <;> ring_nf
-end TaoTrudgianYang2025

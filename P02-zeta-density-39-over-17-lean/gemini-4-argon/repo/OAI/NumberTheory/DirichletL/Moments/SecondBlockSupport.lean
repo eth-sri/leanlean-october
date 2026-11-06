@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondBlockSupport
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorFrequency CenteredMomentSecondWholeKernel
-open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentHeckeColumnWindow
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorFrequency CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentHeckeColumnWindow
 
 theorem normalizedBlock_zero_of_common (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ)
     (C D : Ideal O) (hC:Supported C) (hD:Supported D)
@@ -61,9 +56,3 @@ theorem physicalBlock_nonzero_common (η : Character) (t : ℝ) (S : Finset (Ide
   rw [physicalBlock_eq η t S β C D hC hD U R rows hrows W K hK n] at hne
   exact normalizedBlock_nonzero_common η t S β C D hC hD hCD U R rows W K n
     (right_ne_zero_of_mul hne)
-
-end SevenEighths.CenteredMomentSecondBlockSupport
-
-end
-
-end OAI

@@ -168,6 +168,4 @@ theorem norm_heathBrownExponentialSum_le_small_N_factor
     _ = _ := by ring
 
 
-end
 
-end GafniTao

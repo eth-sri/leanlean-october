@@ -15,8 +15,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 def atkinsonCorrectionIntegral (T G L : ℝ) (n : ℕ) : ℂ :=
@@ -129,4 +128,3 @@ theorem exists_norm_atkinsonCorrectionTerm_le :
       ring
     _ = _ := by rw [hpow]
 
-end MathCollab.Density.Stronger.Atkinson

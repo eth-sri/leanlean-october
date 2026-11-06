@@ -175,4 +175,3 @@ theorem hKernel_poisson (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (v : ℝ) 
   simpa only [modeIntegral_zero_frequency, hKernel] using
     poisson_nonzero_modes w.complex_smooth w.complex_support hL v
 
-end MathCollab.Density

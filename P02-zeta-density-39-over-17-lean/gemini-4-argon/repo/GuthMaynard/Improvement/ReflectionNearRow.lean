@@ -116,4 +116,3 @@ theorem centered_near_row_bound (w : MathCollab.Density.ReflectionCutoff) :
         _ ≤ 4*K^2*T := by simpa using mul_le_mul_of_nonneg_left hdiv (by positivity : 0 ≤ 4*K^2*T)
         _ ≤ _ := by nlinarith [mul_le_mul_of_nonneg_left hLN (show 0 ≤ 4*K^2*T by positivity)]
 
-end GuthMaynard.Improvement

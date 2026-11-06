@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentNaturalRadialCutoff
-open HeckeFamily ConcreteTraceCRT CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialTail CenteredMomentOriginalRadialComparison
-local notation "O" => HeckeFamily.O
+open HeckeFamily ConcreteTraceCRT CenteredMomentNaturalRowSource CenteredMomentOriginalRadialComparison
 
 lemma reciprocal_cutoff_bound (Z xi:ℝ) (order:ℕ) (hZ:0<Z) :
     ((1+Z^xi)^order)⁻¹≤Z^(-xi*(order:ℝ)) := by
@@ -24,9 +22,3 @@ lemma reciprocal_cutoff_bound (Z xi:ℝ) (order:ℕ) (hZ:0<Z) :
   rw [he,←Real.rpow_neg hZ.le]
   congr 1
   ring
-
-end SevenEighths.CenteredMomentNaturalRadialCutoff
-
-end
-
-end OAI

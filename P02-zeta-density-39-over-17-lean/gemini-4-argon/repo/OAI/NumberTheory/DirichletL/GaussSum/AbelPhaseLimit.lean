@@ -7,25 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 private theorem sum_zmod_two_square (f : ZMod 2 × ZMod 2 → ℂ) :
     (∑ p : ZMod 2 × ZMod 2, f p) =
@@ -326,8 +313,6 @@ theorem normalized_dual_phase_sum_error {η a b : ℝ}
       dsimp [t]
       ring
 
-open scoped Topology
-open Filter
 
 private theorem dual_moment_reindex (t : ℝ) :
     (∑' z : ℤ × ℤ, dualQ z * dualRealGauss t z) =
@@ -462,8 +447,6 @@ theorem two_coordinate_norm_four :
 
 end ActualEisensteinCubic
 
-open Filter
-open scoped Topology
 
 theorem abel_transfer (P V W : ℝ → ℂ) (p w : ℂ)
     (hP : Tendsto P (𝓝[>] (0 : ℝ)) (𝓝 p))
@@ -492,7 +475,7 @@ namespace ActualEisensteinCubic
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 private theorem breveE_norm_one_all (z : ℂ) :
     ‖ShortDraftTrace.breveE z‖ = 1 := by
@@ -509,8 +492,7 @@ theorem fixedDualPhase_norm_one (c y : O) :
 
 end
 
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem variableDualPhase_abel_limit (a b : ℤ)
     (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
@@ -616,9 +598,3 @@ theorem variableDualPhase_abel_limit (a b : ℤ)
     rw [← Finset.sum_mul, mul_comm]
   rw [hKsum] at hlim
   exact hlim
-
-end ActualEisensteinCubic
-
-end
-
-end OAI

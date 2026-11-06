@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 
 def rawFourier (a : O) (ha : a≠0) (F : (O ⧸ Ideal.span {a}) → ℂ) (H : O) : ℂ :=
   ∑' m : O ⧸ Ideal.span {a}, F m * quotientTrace a ha (Ideal.Quotient.mk _ H * m)
@@ -113,8 +112,3 @@ theorem congruenceCoefficient_norm_le (a s : O) (ha : a≠0) (hs : s≠0)
       · simp only [mul_zero, norm_zero]
         positivity
     _ = _ := by simp [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

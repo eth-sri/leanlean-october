@@ -123,6 +123,4 @@ theorem heathBrownPairCount_card_le_pairCountOne_card
       (heathBrownPairCountOne N k H f).card :=
   Finset.card_le_card (heathBrownPairCount_subset_pairCountOne hk)
 
-end
 
-end GafniTao

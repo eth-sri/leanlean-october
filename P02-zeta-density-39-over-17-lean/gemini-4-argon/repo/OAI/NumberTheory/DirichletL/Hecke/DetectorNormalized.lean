@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorNormalized
-open HeckeFamily HeckeDyadic HeckeDetectorFourier HeckeDetectorProfiles
-open HeckeDetectorDyadicBridge HeckeDetectorDyadicProfiles HeckeDetectorFrequency
+open HeckeFamily HeckeDyadic HeckeDetectorFourier HeckeDetectorProfiles HeckeDetectorDyadicBridge HeckeDetectorDyadicProfiles HeckeDetectorFrequency
 
 lemma plainCoefficient_positive (χ : Character) (D : ℝ) (hD : 0<D) (s : ℂ) :
     plainCoefficient χ positiveAnnular D s=
@@ -68,9 +67,3 @@ theorem exists_normalized_product (R θ τ : ℝ) (hR : 0≤R)
   refine ⟨j,hj,k,hk,t,ht,?_,hd,hn,hprod⟩
   rw [phaseProduct_norm χ Dstar U ρ j k t hprod] at hb
   convert hb using 1; ring
-
-end SevenEighths.HeckeDetectorNormalized
-
-end
-
-end OAI

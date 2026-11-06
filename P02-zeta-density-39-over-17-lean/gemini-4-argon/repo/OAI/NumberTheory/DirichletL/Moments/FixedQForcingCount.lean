@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFixedQForcingCount
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentForcing CenteredMomentChildRows CenteredMomentRankinRadical
-open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSupport
-open CenteredMomentSourceRow
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentForcing CenteredMomentChildRows CenteredMomentRankinRadical CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSupport CenteredMomentSourceRow UniqueFactorizationMonoid IdealMobiusDivisorSum
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def goodSet (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Finset ι :=
@@ -210,9 +203,3 @@ theorem actual_canonical_exceptional_count_fixedQ (η : Character) (χ : RayFour
       rw [primary_span_supported C hC]
       exact common_prime_dvd_left C D P) Z Cr M hZ hCr hN
   simpa only [commonPrime_span C D hC] using hb
-
-end SevenEighths.CenteredMomentFixedQForcingCount
-
-end
-
-end OAI

@@ -214,4 +214,3 @@ theorem exists_heathBrown_offCritical_plus_strong_le :
       nlinarith [mul_nonneg hS hm, mul_nonneg hR.le hm, mul_nonneg hV.le hm]
 
 
-end MathCollab.Density.Stronger.PointMean

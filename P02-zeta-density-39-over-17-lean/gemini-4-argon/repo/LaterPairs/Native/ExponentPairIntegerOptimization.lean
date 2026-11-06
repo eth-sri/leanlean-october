@@ -80,4 +80,3 @@ theorem integer_shift_optimization
       _ ≤ (20*C/η)*(N^2/R) := mul_le_mul_of_nonneg_right hlargeC hbase.le
       _ ≤ _ := le_mul_of_one_le_right (by positivity) hB
 
-end TaoTrudgianYang2025

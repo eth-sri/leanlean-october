@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondFamilyTransport
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondHeightFamily CenteredMomentSecondChildProfile CenteredMomentChildRows
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion
-open CenteredExceptionalProfile CenteredMomentRestrictedEnergy RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondHeightFamily CenteredMomentSecondChildProfile CenteredMomentChildRows CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion CenteredExceptionalProfile CenteredMomentRestrictedEnergy RayFourExpansion
 
 theorem row_presentation_twist (η τ : Character) (χ : RayCharacter) (A : O)
     (hτ : ∀ n,elementCoeff τ n=rowTwist (elementHom (childCharacter η χ)) fixedBadMask 1 A n)
@@ -44,9 +40,3 @@ theorem fixedInducingRow_transport (η τ : Character) (χ : RayCharacter) (A : 
       FixedInducingRow (childCharacter η χ) Q fixedBadMask A z := by
   unfold FixedInducingRow
   simp only [one_mul,row_presentation_twist η τ χ A hτ]
-
-end SevenEighths.CenteredMomentSecondFamilyTransport
-
-end
-
-end OAI

@@ -9,11 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseRawCompact
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment FourierBridge HeckePrimeAnnular
-open CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting
-open ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment FourierBridge HeckePrimeAnnular CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting ActualEisensteinCubic ConcreteTraceCRT
 
-local notation "O" => HeckeFamily.O
 
 lemma inverse_polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : ℝ) :
     polynomial χ true W D 0 freq =
@@ -158,9 +155,3 @@ theorem rawMoment_of_large_rows_ge_one (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha
   · apply (hlarge s H D (le_of_not_ge hHH0) (le_of_not_ge hD1) hDH rows hrows).trans
     gcongr
     exact le_add_of_nonneg_right (by positivity)
-
-end SevenEighths.DetectorDictionaryInverseRawCompact
-
-end
-
-end OAI

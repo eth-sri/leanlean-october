@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
 
 theorem actual_kernel_upper_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
@@ -34,8 +33,3 @@ theorem actual_kernel_upper_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e : 
     Real.logb_pow,Real.logb_pow]
   norm_num only [Nat.cast_ofNat]
   ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

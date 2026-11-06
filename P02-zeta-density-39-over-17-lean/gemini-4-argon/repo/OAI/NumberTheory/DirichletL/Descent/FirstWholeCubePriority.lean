@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -64,8 +63,3 @@ theorem first_actual_second_whole_cube_priority
     apply Finset.sum_congr rfl
     intro J hJ
     ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -7,10 +7,8 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentFirstPoisson
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 
 lemma principalCRT_scaled_left (a b : O) (hcop : IsCoprime a b) (x : Residue a) :
     principalCRT a b hcop (scaledResidue a b (a * b) rfl x) =
@@ -30,18 +28,19 @@ lemma principalCRT_scaled_right (a b : O) (hcop : IsCoprime a b) (y : Residue b)
     (residue_eq_zero_iff_dvd a a).mpr dvd_rfl
   simp only [map_mul, ha, zero_mul]
 
-theorem coprime_character_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
+theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (hcop : IsCoprime a b)
     [Fintype (Residue a)] [Fintype (Residue b)] [Fintype (Residue (a * b))]
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
+    (χa : MulChar (Residue a) ℂ) (F : Residue b → ℂ)
     (h : Residue (a * b)) :
     (∑ x : Residue (a * b),
       χa (frequencyReduction a (a * b) (dvd_mul_right a b) x) *
-        χb (frequencyReduction b (a * b) (dvd_mul_left b a) x) *
+        F (frequencyReduction b (a * b) (dvd_mul_left b a) x) *
           quotientTrace (a * b) (mul_ne_zero ha hb) (h * x)) =
-      χa (Ideal.Quotient.mk _ b) * χb (Ideal.Quotient.mk _ a) *
-        residueGauss a ha χa (frequencyReduction a (a * b) (dvd_mul_right a b) h) *
-        residueGauss b hb χb (frequencyReduction b (a * b) (dvd_mul_left b a) h) := by
+      χa (Ideal.Quotient.mk _ b) *
+        residueGauss a ha χa (frequencyReduction a (a*b) (dvd_mul_right a b) h) *
+        (∑ y : Residue b, F (Ideal.Quotient.mk _ a*y) *
+          quotientTrace b hb (frequencyReduction b (a*b) (dvd_mul_left b a) h*y)) := by
   let ua := residueUnit a b hcop
   let ub := residueUnit b a hcop.symm
   let e : Residue a × Residue b ≃ Residue (a * b) :=
@@ -85,6 +84,22 @@ theorem coprime_character_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
   intro x _
   ring
 
+theorem coprime_character_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
+    (hcop : IsCoprime a b)
+    [Fintype (Residue a)] [Fintype (Residue b)] [Fintype (Residue (a * b))]
+    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
+    (h : Residue (a * b)) :
+    (∑ x : Residue (a * b),
+      χa (frequencyReduction a (a * b) (dvd_mul_right a b) x) *
+        χb (frequencyReduction b (a * b) (dvd_mul_left b a) x) *
+          quotientTrace (a * b) (mul_ne_zero ha hb) (h * x)) =
+      χa (Ideal.Quotient.mk _ b) * χb (Ideal.Quotient.mk _ a) *
+        residueGauss a ha χa (frequencyReduction a (a * b) (dvd_mul_right a b) h) *
+        residueGauss b hb χb (frequencyReduction b (a * b) (dvd_mul_left b a) h) := by
+  rw [coprime_mixed_fourier a b ha hb hcop χa χb h]
+  simp only [map_mul, residueGauss, tsum_fintype, Finset.mul_sum, Finset.sum_mul]
+  apply Finset.sum_congr rfl; intro y _; apply Finset.sum_congr rfl; intro x _; ring
+
 theorem residueGauss_inverse (d : O) (hd : d ≠ 0)
     (χ : MulChar (Residue d) ℂ) (h : Residue d) :
     residueGauss d hd χ⁻¹ h = star (residueGauss d hd χ (-h)) := by
@@ -98,8 +113,3 @@ theorem residueGauss_inverse (d : O) (hd : d ≠ 0)
   apply Finset.sum_congr rfl
   intro x _
   exact mul_comm _ _
-
-end SevenEighths.CenteredMomentFirstPoisson
-end
-
-end OAI

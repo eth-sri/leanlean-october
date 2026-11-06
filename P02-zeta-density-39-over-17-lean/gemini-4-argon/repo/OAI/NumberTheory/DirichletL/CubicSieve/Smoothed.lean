@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma cubicRow_norm_le_one (I : Ideal O) (hI : Admissible I) (z : O) : ‖cubicRow I z‖ ≤ 1 :=
   elementCharacter_norm_le_one I hI.2 z
@@ -136,8 +134,3 @@ theorem cubicSmoothedCoprime_poisson {n : Type*} [Fintype n]
     rw [map_mul, norm_mul, Complex.ofReal_mul]
     ring
   · simp only [ite_eq_right hcop, mul_zero]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

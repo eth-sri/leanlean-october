@@ -101,4 +101,3 @@ theorem zetaAtkinsonPhase_at_saddle {T : ℝ} (hT : 0 < T) (b : ℝ) :
     zetaAtkinsonSaddle, Real.sqrt_sq hr.le, hs]
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

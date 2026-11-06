@@ -50,5 +50,4 @@ theorem integer_box_quadruples_card_le
   exact hcR.trans (mul_le_mul hX hY (by positivity)
     (mul_nonneg (mul_nonneg (by linarith) (by linarith)) (by linarith)))
 
-end TaoTrudgianYang2025
 

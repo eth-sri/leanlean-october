@@ -346,6 +346,4 @@ theorem wooleyIntegerTupleDisplacement_swap
   unfold wooleyIntegerTupleDisplacement
   ring
 
-end
 
-end GafniTao

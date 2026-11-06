@@ -66,4 +66,3 @@ theorem fixed_truncated_source_regular {N T : ℝ} (hN : 2 ≤ N) (hT : 0 < T)
   · exact source_truncated_domination
       (fun t => (fixedTimeCutoff_bounds (t/T)).2) U
 
-end GuthMaynard.Improvement

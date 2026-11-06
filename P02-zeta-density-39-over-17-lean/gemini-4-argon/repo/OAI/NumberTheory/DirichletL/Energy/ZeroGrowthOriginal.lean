@@ -14,15 +14,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthOriginal
-open HeckeFamily HeckeDyadic QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth
-open CenteredMomentEnergyZeroGrowthBounded CenteredMomentEnergyZeroRetainedError
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentEnergyReferenceProfileBudget
-open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentInductionEnergy CenteredMomentEnergyLiveClippingDefect CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthBounded CenteredMomentEnergyZeroRetainedError CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentEnergyReferenceProfileBudget CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentInductionEnergy CenteredMomentEnergyLiveClippingDefect CenteredMomentRetainedEnergy
 
 def swapProfiles {a b:ℝ}(p:Profiles a b):Profiles a b where
   profile := ![p.profile 1,p.profile 0]
@@ -243,9 +235,3 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     · exact hordered p t X₁ X₂ hX₁ horder hc₁ hs₂
     · have hh:=hordered (swapProfiles p) t X₂ X₁ hX₂ (le_of_not_ge horder) hc₂ hs₁
       simpa only [plainEnergy_swap,swapProfiles_control] using hh
-
-end SevenEighths.CenteredMomentEnergyZeroGrowthOriginal
-
-end
-
-end OAI

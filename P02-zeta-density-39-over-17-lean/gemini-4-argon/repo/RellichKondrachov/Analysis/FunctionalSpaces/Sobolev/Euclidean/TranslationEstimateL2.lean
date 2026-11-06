@@ -39,7 +39,6 @@ open MeasureTheory Set
 
 noncomputable section
 
-section
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
 
@@ -364,12 +363,5 @@ lemma norm_translateL2_sub_toL2_le (a : E) (f : ↥(C1c (E := E))) :
     exact (ENNReal.toReal_le_toReal hA_ne_top hB_ne_top).2 h
   simpa only [ENNReal.toReal_mul, toReal_enorm] using h'
 
-end
 
-end
 
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov

@@ -11,12 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondReducedPredicate
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredExceptionalProfile CenteredMomentFixedRowMask CenteredMomentRestrictedEnergy
-open CenteredMomentSecondFamilyTransport CenteredMomentSecondHeightFamily CenteredMomentChildRows
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondSixthReduction CenteredMomentCanonicalFirst RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredExceptionalProfile CenteredMomentFixedRowMask CenteredMomentRestrictedEnergy CenteredMomentSecondFamilyTransport CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondSixthReduction CenteredMomentCanonicalFirst RayFourExpansion
 
 theorem fixed_mask_change (η : Character) (Q : Ideal O) (m n A z : O)
     (hm:m≠0) (hn:n≠0) (hA:A≠0) (hz:z≠0)
@@ -55,9 +50,3 @@ theorem actual_nonexceptional_iff (η τ : Character) (χ : RayCharacter)
   by_cases hz:z=0
   · simp only [hz,ne_eq,not_true_eq_false,false_and]
   · rw [actual_reduced_inducing_iff η τ χ C D hC U hτ Q m z hm hz hmLam hm2]
-
-end SevenEighths.CenteredMomentSecondReducedPredicate
-
-end
-
-end OAI

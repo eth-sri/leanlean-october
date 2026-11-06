@@ -233,4 +233,3 @@ theorem afe_second_amplitudes_antitone {σ c : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤
     exact mul_le_mul (afeWeight_antitone hσ hu hv huv) (hp hu hv huv)
       (by rw [(afePhase_hasDerivAt c hv).deriv]; exact div_nonneg hc hv.le) (afeWeight_pos σ hu).le
 
-end DhimanKadiriQuesadaHerrera2026

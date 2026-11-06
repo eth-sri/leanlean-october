@@ -64,9 +64,3 @@ theorem differentiable_deletedProduct {ι : Type*} (S : Finset ι) (N : ι → �
       simp only [deletedProduct, Finset.prod_insert hp]
     rw [heq]
     exact (differentiable_factor hpN (a p)).mul (ih hSN)
-
-end
-
-end SevenEighths.EulerFactors
-
-end OAI

@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondActiveCount
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentRankinScale
-open CenteredMomentRankinRadical
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentActiveSource CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentRankinRadical
 
 def commonShell (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ) : Finset (Ideal O×Ideal O) :=
   (commonLabels (supportedColumns (activeSource S β)) (supportedColumns (activeSource S β))).filter
@@ -53,9 +50,3 @@ theorem active_common_data (S : Finset (Ideal O)) (β : Ideal O→ℂ) (s : Idea
     have hr : commonRadical I J=commonRadical J I := by unfold commonRadical;rw [Finset.inter_comm]
     rw [hr] at hsR
     exact hsR.trans (commonRadical_dvd_commonPart J I)
-
-end SevenEighths.CenteredMomentSecondActiveCount
-
-end
-
-end OAI

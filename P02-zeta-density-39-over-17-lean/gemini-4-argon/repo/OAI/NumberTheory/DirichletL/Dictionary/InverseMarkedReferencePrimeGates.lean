@@ -10,11 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialPhysicalSlots
-open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod
-open InverseInitialExcludedPool InverseInitialExcludedOverlap Filter CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialPhysicalSlots DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod InverseInitialExcludedPool InverseInitialExcludedOverlap Filter CanonicalQuadraticSieve CanonicalRowCompletion
 
 theorem deleted_large_eventually {Label Slot:Type*}[Fintype Label][Fintype Slot]
     (data:Label→RowData)(ell:Slot→ℝ)(hell:∀s,0<ell s) :
@@ -59,9 +55,3 @@ theorem deleted_source_live_prime {Δ:ℝ}{D:Parameters.HighData Δ}
   refine ⟨hd.1,hout,hne,hn,?_⟩
   rw [norm_div,norm_star,hn,div_one]
   exact ProbeHighRowFamily.sourceMoment_primeProfile_norm F X ζ hζ P
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

@@ -12,11 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAllocatedChildCapacity
-open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy
-open CenteredMomentCommonRadialData
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy CenteredMomentCommonRadialData
 
 def clippingLoss (Z U₁ U₂ : ℝ) : ℝ :=
   max (-Real.logb Z U₁) 0+max (-Real.logb Z U₂) 0
@@ -147,9 +143,3 @@ theorem excess_le_remaining (D : Ideal O)
   have hc := (clipping_loss_bound Z _ _ b₁ b₂ hZ
     (rawScale_pos D a X₁ h₁ 0) (rawScale_pos D a X₂ h₂ 1) hs₁ hs₂).2
   exact max_le_max (by linarith) le_rfl
-
-end SevenEighths.CenteredMomentAllocatedChildCapacity
-
-end
-
-end OAI

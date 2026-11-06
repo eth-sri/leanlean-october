@@ -246,6 +246,4 @@ theorem wooley_equation_7_22_native
       nlinarith) gamma alpha kappa
 
 
-end
 
-end GafniTao

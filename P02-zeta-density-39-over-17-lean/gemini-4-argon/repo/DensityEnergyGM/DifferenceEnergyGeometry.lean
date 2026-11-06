@@ -72,4 +72,3 @@ theorem card_sq_le_four_quarter_height_energy {T : ℝ} {W : Finset ℝ}
   have h := mul_le_mul_of_nonneg_left hBound (Nat.cast_nonneg W.card : (0 : ℝ) ≤ W.card)
   nlinarith
 
-end Montgomery.RationalMoment

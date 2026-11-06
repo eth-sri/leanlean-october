@@ -7,33 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 
 namespace ShortDraftHeckeBridge
 
@@ -52,11 +27,6 @@ theorem baseChangeChar_ne_one_of_one {q : ℕ} [NeZero q]
   · exact h
 
 end ShortDraftHeckeBridge
-namespace ActualEisensteinCubic
-
-open MulChar AddChar
-
-end ActualEisensteinCubic
 
 namespace ShortDraftHeckeBridge
 
@@ -557,9 +527,3 @@ theorem local_split_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
       have hnorm : Ideal.absNorm (P * Q) = p ^ 2 := by
         rw [map_mul, hPN, hQN, pow_two]
       simp [hnorm, Nat.cast_pow]
-
-end ShortDraftHeckeBridge
-
-end
-
-end OAI

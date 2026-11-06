@@ -122,6 +122,4 @@ def wooleyPolynomialMixedGridMean {Q k : ℕ}
             wooleyPolynomialMixedResidueGridMoment
               phi s r p B a b gamma xi eta
 
-end
 
-end GafniTao

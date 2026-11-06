@@ -48,4 +48,3 @@ theorem atkinsonPowerWeight_eq_amplitude {T x : ℝ} (hT : 0 < T) (hx : 0 < x)
           zetaGaussianQuadraticIntegral T G (Real.log x - Real.log (T / (2 * Real.pi))) * hs
 
 
-end MathCollab.Density.Stronger.Atkinson

@@ -12,11 +12,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentExceptionalAmplitudePair
-open CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentExceptionalAmplitudePair CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSecondHeightFamily
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 open CenteredMomentCommonExceptionalGates CenteredMomentFiniteProfileExceptional
@@ -42,9 +38,3 @@ theorem common_admissible (s:Input ι)(p:Profiles wlo whi)(C R Q:Ideal O)(hC:C�
   · exact extracted_lower s C hC B (Sum.inr 1) Z r s.X₂ hZ hX₂
   · exact extracted_lower s C hC B (Sum.inr 0) Z r s.Y₁ hZ hY₁
   · exact extracted_lower s C hC B (Sum.inr 1) Z r s.Y₂ hZ hY₂
-
-end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-
-end
-
-end OAI

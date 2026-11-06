@@ -12,17 +12,9 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceDeleted
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroReferenceChild
-open CenteredMomentEnergyZeroReferenceGeometry CenteredMomentEnergyZeroReferenceReflection
-open CenteredMomentEnergyZeroReferenceError CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroReferenceChild CenteredMomentEnergyZeroReferenceGeometry CenteredMomentEnergyZeroReferenceReflection CenteredMomentEnergyZeroReferenceError CenteredMomentNaturalRowSource CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
 
-theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
+theorem unbalanced_deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
     (hBmask:0≤Bmask)(hL:Mcap+Bmask+xi≤L)(B:ℕ)(hB:2≤B)(S:Finset (ℕ×ℕ)):
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
@@ -34,13 +26,13 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
       ∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
-      ∀t X₁ X₂:ℝ,0<X₁ →0<X₂ →s.width/4≤Real.logb Z (X₁*X₂) →
+      ∀t X₁ X₂:ℝ,0<X₁ →0<X₂ →Real.logb Z X₁≤s.width/4 →1≤X₂ →
       ∀D₁∈(CompletedGauss.primeSupport s.puncture).powerset,
       ∀D₂∈(CompletedGauss.primeSupport s.puncture).powerset,
       radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false W₁
-          (comparisonFirst Z s.width/((∏I∈D₁,I).absNorm:ℝ)) 0 t *
+          (X₁/((∏I∈D₁,I).absNorm:ℝ)) 0 t *
         polynomial (naturalCharacter s.character z) false W₂
-          (comparisonSecond Z s.width X₁ X₂/((∏I∈D₂,I).absNorm:ℝ)) 0 t)
+          (X₂/((∏I∈D₂,I).absNorm:ℝ)) 0 t)
         (effectiveState s).radial.keep s.radial.profile s.radial.scale ≤
         K*diagonalControl s.radial.profile*
           ((independentProfiles ha W₁ W₂ hs₁ hs₂ t t).control S)^2*Z^(s.width+ε) +
@@ -59,11 +51,11 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
   refine ⟨n,T,Dchild,hDc,nlong,Slong,C,D*Ce,hC,mul_pos hD hCe,?_⟩
   filter_upwards [href] with Z hZ
   refine ⟨hZ.1,?_⟩
-  intro ε Q degree K hK hlow s hQ hs hxiM W₁ W₂ hs₁ hs₂ t X₁ X₂ hX₁ hX₂ hlarge D₁ hD₁ D₂ hD₂
-  let short:=s.width/4-Real.logb Z ((∏I∈D₁,I).absNorm:ℝ)
-  let along:=Real.logb Z (X₁*X₂)-s.width/4-Real.logb Z ((∏I∈D₂,I).absNorm:ℝ)
-  have hg:=actual_deleted_gates s hZ.1 hBmask Mcap L X₁ X₂ xi hs hL
-    hX₁ hX₂ hxi.le hxiM hlarge D₁ D₂ hD₁ hD₂
+  intro ε Q degree K hK hlow s hQ hs hxiM W₁ W₂ hs₁ hs₂ t X₁ X₂ hX₁ hX₂ hshort hlong D₁ hD₁ D₂ hD₂
+  let short:=Real.logb Z X₁-Real.logb Z ((∏I∈D₁,I).absNorm:ℝ)
+  let along:=Real.logb Z X₂-Real.logb Z ((∏I∈D₂,I).absNorm:ℝ)
+  have hg:=unbalanced_deleted_gates s hZ.1 hBmask Mcap L X₁ X₂ xi hs hL
+    hX₁ hX₂ hxi.le hxiM hshort hlong D₁ D₂ hD₁ hD₂
   dsimp only at hg
   rw [←hg.1,←hg.2.1]
   have hZpos:0<Z:=zero_lt_one.trans hZ.1
@@ -105,8 +97,47 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
             · exact hg.2.2.1)
         _=_:=by ring
 
-end SevenEighths.CenteredMomentEnergyZeroReferenceDeleted
-
-end
-
-end OAI
+theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
+    (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
+    (hBmask:0≤Bmask)(hL:Mcap+Bmask+xi≤L)(B:ℕ)(hB:2≤B)(S:Finset (ℕ×ℕ)):
+    ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
+    ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D:ℝ,0<C ∧ 0<D ∧
+      ∀ᶠ Z:ℝ in atTop,1<Z ∧
+      ∀(ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
+      ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤s.width/6 →
+      ∀(W₁ W₂:𝓢(ℝ,ℂ)),
+      ∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
+      ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
+      ∀t X₁ X₂:ℝ,0<X₁ →0<X₂ →s.width/4≤Real.logb Z (X₁*X₂) →
+      ∀D₁∈(CompletedGauss.primeSupport s.puncture).powerset,
+      ∀D₂∈(CompletedGauss.primeSupport s.puncture).powerset,
+      radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false W₁
+          (comparisonFirst Z s.width/((∏I∈D₁,I).absNorm:ℝ)) 0 t *
+        polynomial (naturalCharacter s.character z) false W₂
+          (comparisonSecond Z s.width X₁ X₂/((∏I∈D₂,I).absNorm:ℝ)) 0 t)
+        (effectiveState s).radial.keep s.radial.profile s.radial.scale ≤
+        K*diagonalControl s.radial.profile*
+          ((independentProfiles ha W₁ W₂ hs₁ hs₂ t t).control S)^2*Z^(s.width+ε) +
+        (C*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^epsilon *
+          (sourceControl Slong W₂)^2*(1+‖t‖)^(2*nlong)*
+          (1+2*(L*Real.log Z))*
+          (K*diagonalControl s.radial.profile*Dchild*(sourceControl T W₁)^2*
+            (1+|t|)^(2*n)*Z^(s.width+ε)) +
+        D*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*epsilon)*
+          (sourceControl Slong W₂)^2*(1+‖t‖)^(2*nlong)*Z^(-2*saving)*
+          ((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W₁)^2*
+            diagonalControl s.radial.profile*max 1 s.radial.scale*Z^(s.width/4)):=by
+  obtain ⟨n,T,Dchild,hDc,nlong,Slong,C,D,hC,hD,href⟩:=unbalanced_deleted_from_low
+    a b bΦ epsilon xi saving Mcap Bmask L ha hlo hhi hbΦ hepsilon hxi hBmask hL B hB S
+  refine ⟨n,T,Dchild,hDc,nlong,Slong,C,D,hC,hD,href.mono fun Z hZ=>⟨hZ.1,?_⟩⟩
+  intro ε Q degree K hK hlow s hQ hs hxiM W₁ W₂ hs₁ hs₂ t X₁ X₂ hX₁ hX₂ hlarge D₁ hD₁ D₂ hD₂
+  have hZ0 : 0 < Z := zero_lt_one.trans hZ.1
+  have hp := comparison_positive Z s.width X₁ X₂ hZ0 hX₁ hX₂
+  have hf : Real.logb Z (comparisonFirst Z s.width) ≤ s.width / 4 :=
+    (Real.logb_rpow hZ0 hZ.1.ne').le
+  have hy₂ : 1 ≤ comparisonSecond Z s.width X₁ X₂ := by
+    rw [comparison_second_power Z s.width X₁ X₂ hZ.1 hX₁ hX₂]
+    exact Real.one_le_rpow hZ.1.le (by linarith)
+  exact hZ.2 ε Q degree K hK hlow s hQ hs hxiM W₁ W₂ hs₁ hs₂ t
+    (comparisonFirst Z s.width) (comparisonSecond Z s.width X₁ X₂) hp.1 hp.2 hf hy₂ D₁ hD₁ D₂ hD₂

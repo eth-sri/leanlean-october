@@ -89,9 +89,3 @@ theorem scaleSum_eq_polynomial (χ : Character) (W : ℝ→ℂ) (S : Finset (Ide
   apply Finset.sum_congr rfl
   intro J hJ
   rw [Real.exp_neg,div_eq_mul_inv]
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

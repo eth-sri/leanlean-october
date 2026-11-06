@@ -9,10 +9,8 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeCompleted
-open ActualEisensteinCubic CompletedGauss
-open RayFourExpansion QuadraticGaussRay SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss RayFourExpansion QuadraticGaussRay SecondPassArithmetic
 
-local notation "O" => ActualEisensteinCubic.O
 
 def completedIndex (I J : Ideal O) : O := primaryGenerator I * primaryGenerator J ^ 3
 
@@ -111,8 +109,3 @@ theorem correctedCompletedT_ray_expansion (S : Finset (Ideal O)) (D : Ideal O)
   rw [Summable.tsum_finsetSum (fun χ _ =>
     (markedSummand_summable S D (rayMonoid χ * Ψ) W hW X hX).mul_left (correctionCoeff χ))]
   simp only [tsum_mul_left, markedCompletedT]
-
-end SevenEighths.ProbeCompleted
-end
-
-end OAI

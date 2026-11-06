@@ -61,4 +61,3 @@ theorem exists_tsum_zetaAtkinsonTwoTerm_sub_stationary_above_fourthRoot
     _ ≤ C * G + D * G := add_le_add hc hs
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

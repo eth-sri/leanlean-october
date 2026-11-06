@@ -11,7 +11,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ]
 variable (tuples : Finset (σ→Ideal Eis))
     (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
@@ -90,7 +89,3 @@ theorem literalWholeRow_eq_member_tuples
   · simp only [dite_eq_left hk]
     rw [memberTupleControlled_value]
   · simp only [dite_eq_right hk]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

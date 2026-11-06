@@ -42,9 +42,3 @@ theorem profile_strip_decay (a b : ℝ) (ha : 0<a) (l r : ℝ) (n : ℕ) :
       (1+|y|)^n*‖mellin W ((x : ℂ)+y*I)‖≤
         C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W :=
   CubicReflectionKernel.mellin_strip_source_bound a b ha l r n
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

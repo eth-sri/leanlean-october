@@ -98,9 +98,3 @@ theorem scaled_direct_bound (e κ η : ℝ) (he : 0<e) (he' : e<1/1000)
     _ = (Cb*Real.pi)*C₂*U^((a-1/2+8*e)*r+κ)+
         (4*Cb+E*Real.pi)*Cn*U^(2*R+κ)/(1+V)^n := by ring
     _ ≤ _ := by gcongr
-
-end SevenEighths.HeckePrimeDyadic
-
-end
-
-end OAI

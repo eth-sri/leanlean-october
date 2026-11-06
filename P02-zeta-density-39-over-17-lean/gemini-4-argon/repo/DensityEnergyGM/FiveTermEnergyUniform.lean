@@ -167,4 +167,3 @@ theorem discrete_energy_five_term_native (ε : ℝ) (hε : 0 < ε) :
   rw [discrete_energy_translateSet, translateSet_card] at h
   exact h
 
-end Montgomery.RationalMoment

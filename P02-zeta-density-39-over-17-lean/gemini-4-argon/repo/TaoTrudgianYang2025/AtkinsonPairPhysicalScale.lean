@@ -68,4 +68,3 @@ theorem atkinson_pair_harmonic_le_height_log {H G L : ℝ}
   have hb := harmonic_le_one_add_log (Nat.ceil H)
   linarith
 
-end TaoTrudgianYang2025

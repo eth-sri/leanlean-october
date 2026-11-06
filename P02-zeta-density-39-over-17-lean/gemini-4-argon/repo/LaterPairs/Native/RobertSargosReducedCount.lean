@@ -104,5 +104,4 @@ theorem exists_robertSargos_reduced_count (ε : ℝ) (hε : 0 < ε) :
       ring
     _ = _ := by rw [hpow]
 
-end TaoTrudgianYang2025
 

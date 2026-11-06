@@ -8,11 +8,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open InverseMomentGlobalPrincipalMass
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic InverseMomentGlobalPrincipalMass ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 theorem original_tail_mass (Jmax : ℕ) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
@@ -46,8 +43,3 @@ theorem original_tail_mass (Jmax : ℕ) :
   rw [he]
   norm_num
   ring
-
-end SevenEighths.InverseMomentGlobalPriorityTail
-end
-
-end OAI

@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.SourceErrorScales
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -92,4 +90,3 @@ theorem exists_zetaSquareLocalMean_le_short_divisor {δ : ℝ} (hδ : 0 < δ) :
   intro T G hT hG hwidth
   exact hT₁ T ((le_max_right _ _).trans hT) G hG hwidth
 
-end MathCollab.Density.Stronger.Atkinson

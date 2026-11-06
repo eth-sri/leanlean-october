@@ -11,7 +11,6 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSectorLocalization
 open CubicEisenstein ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier
-local notation "O" => ActualEisensteinCubic.O
 
 def cutoff (x : ℝ) : ℝ := Real.smoothTransition (2-2*x)
 
@@ -438,9 +437,3 @@ theorem finite_retained_above (R a : ℝ) (ha : 0 < a) :
   · have h : (2:ℝ)^n < (2:ℝ)^(l:ℤ) := by
       simpa only [zpow_natCast,dyadicScale] using hu.trans_lt hl
     exact ((zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp h).le
-
-end SevenEighths.CenteredMomentSectorLocalization
-
-end
-
-end OAI

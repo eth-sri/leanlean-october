@@ -63,5 +63,4 @@ theorem primitive_linear_triple_normalized_congruence {a b c u v w : ℤ}
   have he := primitive_linear_triple_normalized hv hprim hline
   nlinarith only [he]
 
-end TaoTrudgianYang2025
 

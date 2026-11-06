@@ -235,8 +235,3 @@ theorem fullModulusCorrelation_complete_support (D E a b : A)
     (IsCoprime.mul_left_iff.mp ha).2 χD χE j]
   simp only [map_mul, character_unit_inverse, residueUnit_coe, star_mul, star_star]
   ring
-
-end SevenEighths.CenteredMomentCommonSupport
-end
-
-end OAI

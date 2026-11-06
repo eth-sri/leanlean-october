@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentExceptionalPair
-open HeckeFamily CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay
-open CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
 
 theorem idealCoeff_ne_zero_iff (χ : Character) (I : Ideal O) :
     idealCoeff χ I ≠ 0 ↔ I ≠ ⊥ ∧ IsCoprime I χ.modulus := by
@@ -89,9 +86,3 @@ theorem reflectionRatio_modulus (χ ξ : RayCharacter) (Q : Ideal O)
   · exact hQ.trans (Ideal.span_singleton_le_span_singleton.mpr ⟨6,by norm_num⟩)
   · exact hQ.trans (Ideal.span_singleton_le_span_singleton.mpr ⟨6,by norm_num⟩)
   · exact hQ.trans (Ideal.span_singleton_le_span_singleton.mpr ⟨2,by norm_num⟩)
-
-end SevenEighths.CenteredMomentExceptionalPair
-
-end
-
-end OAI

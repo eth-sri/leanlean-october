@@ -10,13 +10,8 @@ open scoped Classical BigOperators ContDiff Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeRowClosure HeckePrimeRay HeckeZeroSupremum
-open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-open CenteredMomentFixedRayInducingTransport CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeRowClosure HeckePrimeRay HeckeZeroSupremum CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentFixedRayInducingTransport CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 lemma natural_relative_twists {η : Character} {z : O} (F : NaturalRow η z) (hz : z≠0)
@@ -94,9 +89,3 @@ theorem natural_character_slot_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   have hQeq : internalQ Q ν.inverse=Q := inf_eq_left.mpr hQν
   have he:=hz P hP hPcap η z hz0 F hcond Q hQM (by simpa only [hQeq] using hex) σ t v hσ hσhi
   simpa only [idealCoeff_inverse_conj,starRingEnd_self_apply] using he
-
-end SevenEighths.CenteredMomentNaturalFixedRaySource
-
-end
-
-end OAI

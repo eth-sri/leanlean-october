@@ -35,4 +35,3 @@ theorem half_loss_short_typeII_count
     _ = (A*B)*(H^(1-2*σ)*H^(1+1/50+ε)) := by ring
     _ = _ := by rw [← Real.rpow_add hn]; congr 2; ring
 
-end GuthMaynard.Improvement

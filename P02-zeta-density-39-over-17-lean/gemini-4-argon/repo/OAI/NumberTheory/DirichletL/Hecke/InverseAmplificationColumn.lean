@@ -88,9 +88,3 @@ theorem prime_column_identity (χ ψ : Character) (P : SmoothMobiusCorrection.Pr
     idealCoeff χ P.val*(N : ℂ)^(-(1/2 : ℂ))*
       ((1/(2*Real.pi) : ℂ)*(∫ t : ℝ, integrand ψ true W (D/N) σ freq (((2-σ : ℝ) : ℂ)+t*I)))
   ring
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

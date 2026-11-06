@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
-open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentReflectionMass
-open CenteredMomentReflectionDeletion UniqueFactorizationMonoid
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentReflectionMass CenteredMomentReflectionDeletion UniqueFactorizationMonoid
 
 lemma product_norm_ge_one (D:Finset (Ideal O))(hD:∀I∈D,Prime I):
     (1:ℝ)≤(∏I∈D,I).absNorm:=by
@@ -146,9 +144,3 @@ theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0
         (Cc*A*Ce^F.card)*(N^(eps/2)*N^(eps/2)) by ring,←Real.rpow_add hN0]
       congr 2
       ring
-
-end SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
-
-end
-
-end OAI

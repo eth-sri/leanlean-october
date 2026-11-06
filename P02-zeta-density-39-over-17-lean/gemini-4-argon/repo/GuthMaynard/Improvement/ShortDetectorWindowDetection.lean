@@ -75,4 +75,3 @@ theorem short_detector_window_fourth :
     (Y^(1/2-ρ.re))^4*(G^3*(∫ t in S,g t*(F t)^4)) at hmul
   nlinarith
 
-end GuthMaynard.Improvement

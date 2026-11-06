@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorActualBoundary
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
-open CenteredMomentDivisorRaw CenteredMomentDivisorWitness CenteredMomentSlotRatios HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorWitness CenteredMomentSlotRatios HeckeFamily
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem selected_log_identity (D : Ideal O)
@@ -77,9 +75,3 @@ theorem original_nonzero_row_formal_boundary (η : Character) (m A z : O) (t : �
       (∑ i,logWindow (lo i) (hi i))/Real.log Z :=
   nonzero_row_formal_boundary η m A z t S hS _ W lo hi P hlo hP hW
     (fun _i _I h => (mul_ne_zero_iff.mp h).2) D hD a W₁ W₂ X₁ X₂ Y₁ Y₂ Z hZ hne
-
-end SevenEighths.CenteredMomentDivisorActualBoundary
-
-end
-
-end OAI

@@ -130,8 +130,3 @@ theorem whole_kernel_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → �
     _ = E * ((1 + R) ^ A * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖) := by ring
     _ ≤ E * C := mul_le_mul_of_nonneg_left hm hE
     _ = _ := mul_comm _ _
-
-end SevenEighths.CenteredMomentCauchy
-end
-
-end OAI

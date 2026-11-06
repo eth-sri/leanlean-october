@@ -45,8 +45,3 @@ theorem physical_scalar_hybrid_shape (F : PrimeFamily φ) (jF : φ→ℕ) (e : �
   dsimp only
   rw [hs]
   convert hbnd using 1 <;> ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

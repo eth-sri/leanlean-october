@@ -86,4 +86,3 @@ theorem robertSargos_ratio_sqrt_gap {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
   have hdouble := mul_le_mul_of_nonneg_left (hm.trans hs) (by norm_num : (0:ℝ) ≤ 2)
   convert hdouble using 1 <;> ring
 
-end TaoTrudgianYang2025

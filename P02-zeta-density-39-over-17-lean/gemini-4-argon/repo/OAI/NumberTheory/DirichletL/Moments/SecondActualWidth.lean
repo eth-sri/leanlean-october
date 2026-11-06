@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondActualWidth
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondRadicalBudget CenteredMomentSecondHeightFamily
-open CenteredMomentSectorLocalization CenteredMomentSupport CenteredMomentDescentLedger
-open CenteredMomentPartitionNorm CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalLedger CenteredMomentSecondRadicalBudget CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization CenteredMomentSupport CenteredMomentDescentLedger CenteredMomentPartitionNorm CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
 
 theorem actual_common_log_ge_unit (C D : Ideal O) (hC : Supported C)
     (U : Finset (CommonIndex C D)) (Z : ℝ) (hZ : 1<Z) :
@@ -24,9 +19,3 @@ theorem actual_common_log_ge_unit (C D : Ideal O) (hC : Supported C)
     (leftExponent C D) (rightExponent C D) (leftExponent_pos C D) (rightExponent_pos C D) U Z hZ
   rw [←commonFrequencyGenerator_span C D hC] at hh
   simpa only [unitIdeal,commonPrime_span C D hC,normValue] using hh
-
-end SevenEighths.CenteredMomentSecondActualWidth
-
-end
-
-end OAI

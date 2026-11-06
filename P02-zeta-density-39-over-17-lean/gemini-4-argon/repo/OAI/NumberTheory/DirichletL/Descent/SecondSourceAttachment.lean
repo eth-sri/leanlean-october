@@ -10,7 +10,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 @[ext] structure SecondParentSource (ι : Type*) (Jo : ℕ) where
@@ -109,8 +108,3 @@ theorem secondExpansionSource_attached
   apply Finset.sum_congr rfl
   intro x hx
   rw [attached_inherited_profile,attached_signed_weight]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

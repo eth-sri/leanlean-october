@@ -12,9 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.GaussianZetaTail
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -176,4 +174,3 @@ theorem exists_abs_zetaSquareGaussianWindow_sub_quadratic_le (ε : ℝ) (hε : 0
   rw [norm_sub_rev] at htail
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

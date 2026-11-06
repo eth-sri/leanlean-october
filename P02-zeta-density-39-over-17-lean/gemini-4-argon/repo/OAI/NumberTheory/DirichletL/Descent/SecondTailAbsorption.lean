@@ -53,8 +53,3 @@ theorem choose_second_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau :
   calc
     _ = ((4*128^4)*B^2*P)*((Z^Lcap)^13/(1+Z^tau)^order) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hdecay (by positivity)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

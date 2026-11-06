@@ -84,4 +84,3 @@ theorem boundedPolynomial_quartic_reproduce {N : ℝ} (hN : 0 < N)
   simp only [← pow_mul] at hsq hh
   nlinarith
 
-end GuthMaynard.Improvement

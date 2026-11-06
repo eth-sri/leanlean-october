@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcreteTraceCRT UniqueFactorizationMonoid
 
 def canonicalLatticeBlock (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
     (C : SupportedIdeal) (k : GramFrequency) (d : O) (W : ℝ→ℂ) (U : SchwartzMap ℝ ℂ)
@@ -51,8 +48,3 @@ theorem canonical_nonexceptional_block (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
     (gramPrime C) (gramPrime_good C) (gramExponent C) (gramExponent_pos C) hf
     p hp.ne_zero hg.1 hg.2 hd.1 hd.2 he U v T hT d N hN
   simpa only [canonicalLatticeBlock,canonicalJoint,hcspan] using hh.2
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

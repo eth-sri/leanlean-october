@@ -99,6 +99,4 @@ theorem wooley_source_two_step_compose
       simp only [wooleyTwoStepWeight, mul_one]
 
 
-end
 
-end GafniTao

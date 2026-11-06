@@ -9,11 +9,8 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialRayAttachment
-open SevenEighths.InverseMoment
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialRayAttachment SevenEighths.InverseMoment
 namespace SevenEighths.InverseInitialEnergyCallerSelector
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem mask_nonzero_coprime (F : Finset (Ideal Eis)) (j : Ideal Eis) (hj : Admissible j)
     (A : Finset (primePool F))
@@ -36,9 +33,3 @@ theorem mask_nonzero_coprime (F : Finset (Ideal Eis)) (j : Ideal Eis) (hj : Admi
   apply hm
   unfold rowCoprimeMask
   exact ite_eq_left ⟨i,hi,hmem⟩
-
-end SevenEighths.InverseInitialEnergyCallerSelector
-
-end
-
-end OAI

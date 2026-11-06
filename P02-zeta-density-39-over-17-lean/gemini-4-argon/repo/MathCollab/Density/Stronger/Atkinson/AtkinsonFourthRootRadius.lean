@@ -113,4 +113,3 @@ theorem exists_atkinsonPowerIntegral_fourthRoot_pair (α : ℝ) :
   exact ⟨hbound T G L (Real.sqrt n) hT hlower hupper hL hwidth hb,
     hbound T G L (-Real.sqrt n) hT hlower hupper hL hwidth (by simpa only [abs_neg])⟩
 
-end MathCollab.Density.Stronger.Atkinson

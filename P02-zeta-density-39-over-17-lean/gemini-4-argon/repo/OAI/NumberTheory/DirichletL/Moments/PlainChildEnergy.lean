@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentPlainChildEnergy
-open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm CenteredMomentPlainEnergy CenteredMomentCauchy
-open CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm CenteredMomentPlainEnergy CenteredMomentCauchy CenteredMomentSmooth
 
 theorem leftColumn_eq_rowPolynomial {α : Type*} (S : Finset α) (a : α → O)
     (c : α → ℂ)
@@ -32,9 +30,3 @@ theorem rightColumn_eq_star_rowPolynomial {α : Type*} (S : Finset α) (a : α �
   apply Finset.sum_congr rfl
   intro i hi
   ring
-
-end SevenEighths.CenteredMomentPlainChildEnergy
-
-end
-
-end OAI

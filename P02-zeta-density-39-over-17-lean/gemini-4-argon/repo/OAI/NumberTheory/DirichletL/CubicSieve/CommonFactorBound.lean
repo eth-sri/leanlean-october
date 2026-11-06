@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def frequencyCost (C ε : ℝ) (hε : 0 < ε) (M N : ℝ) : ℝ :=
   M * (2/N) * (‖paperRadialFourier rowMajorant 0‖ +
@@ -90,8 +88,3 @@ theorem common_factor_uniform_cost {n : Type*} [Fintype n]
     _ ≤ U*((DivisorBlockCauchy.divisorConstant ε hε*N^ε)^2*∑ j, ‖a j‖^2) :=
       mul_le_mul_of_nonneg_left he hU
     _ = _ := by ring
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

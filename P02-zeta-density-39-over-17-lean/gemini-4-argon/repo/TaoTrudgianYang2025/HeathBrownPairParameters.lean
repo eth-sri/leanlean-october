@@ -111,4 +111,3 @@ theorem heathBrownPairRight_lower {r : ℝ} (hr : 3 ≤ r) :
   apply (le_div_iff₀ (show 0 < r+1 by linarith)).mpr
   nlinarith
 
-end TaoTrudgianYang2025

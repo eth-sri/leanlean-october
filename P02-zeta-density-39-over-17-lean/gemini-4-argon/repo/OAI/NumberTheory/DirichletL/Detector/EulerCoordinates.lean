@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
 
 def coordV (Q : ℝ) (z : ℂ) : ℂ := (Q : ℂ) ^ (-6*z)
 def coordR (Q : ℝ) (A x z : ℂ) : ℂ := A * (Q : ℂ) ^ (4-6*x-6*z)
@@ -80,8 +79,3 @@ lemma coordK_norm_le (Q : ℝ) (hQ : 1 ≤ Q) (eta x w : ℂ) (he : ‖eta‖ �
   gcongr
   calc ‖eta‖*(Q-1) ≤ 1*(Q-1) := mul_le_mul_of_nonneg_right he (sub_nonneg.mpr hQ)
        _ ≤ Q := by linarith
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

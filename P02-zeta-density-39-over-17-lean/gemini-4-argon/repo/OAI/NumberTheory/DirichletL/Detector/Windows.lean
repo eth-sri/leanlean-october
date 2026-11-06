@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
 
 theorem elementWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W)
     (R : ℝ) (hR : 0 < R) :
@@ -32,8 +31,3 @@ theorem idealWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W)
   intro I hI
   have hnorm : (Ideal.absNorm I : ℝ) ≤ B * R := (div_le_iff₀ hR).mp (hbound _ hI)
   exact_mod_cast hnorm.trans hM.le
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

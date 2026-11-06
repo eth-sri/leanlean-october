@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalRowCompletion CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalRowCompletion CompletedGauss
 
 def unramifiedFactor (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   if P.val∣Ideal.span {u.val} then 1 else idealUnramifiedCorrection η u P x w z
@@ -48,9 +46,3 @@ theorem unramifiedProduct_multipliable (S : Finset (Ideal O)) (hS : CorrectionTa
   apply Finset.prod_congr rfl
   intro P hP
   exact Complex.exp_log (factor_ne_zero_of_defect _ ((hB P).trans (hS.half P)))
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

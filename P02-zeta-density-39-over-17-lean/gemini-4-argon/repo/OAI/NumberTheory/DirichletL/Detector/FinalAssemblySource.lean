@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical ContDiff
 open Filter Asymptotics
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues
-open ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues ProbePrincipalResidueActual
 
 def normalizedProbe {K : ℕ} (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
     (H : Subgroup (O ⧸ M)ˣ) (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
@@ -66,8 +64,3 @@ theorem actual_source_analytic (S : Finset (Ideal O)) (hS : SourceExclusions S) 
   exact ⟨excludePrimes_mask η S hS.prime,
     (sourceCorrection_differentiable η S hS).analyticOnNhd (Complex.isOpen_re_gt _),
     sourceCorrection_bound η S hS⟩
-
-end SevenEighths.ProbeFinalAssembly
-end
-
-end OAI

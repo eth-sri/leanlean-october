@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
 def activeTupleDyad (tuples : Finset (σ→Ideal Eis)) (H : ℝ)
@@ -49,8 +48,3 @@ lemma slotTupleProduct_norm_bound (L : σ→Finset (Ideal Eis)) (H : σ→ℝ)
   change (Ideal.absNorm (∏ i,p i):ℝ)≤_
   rw [map_prod,Nat.cast_prod]
   exact Finset.prod_le_prod₀ (fun i _ => Nat.cast_nonneg _) (fun i _ => hH i _ (hp i))
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

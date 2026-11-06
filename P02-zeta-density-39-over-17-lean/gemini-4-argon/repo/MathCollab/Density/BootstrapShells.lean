@@ -121,4 +121,3 @@ theorem kernelEnergy_le_dyadic_shells (w : ReflectionCutoff) (L : ℝ)
       · simp_rw [Finset.sum_comm (s := U) (t := shellIndices U)]
         rfl
 
-end MathCollab.Density

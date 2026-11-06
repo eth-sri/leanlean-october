@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CubicEisenstein ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 abbrev NonzeroFrequency := {u : O // u≠0}
 
 def frequencyWeight (z : ℂ) (u : NonzeroFrequency) : ℂ := (elementNorm u.val:ℂ)^(-z)
@@ -78,8 +76,3 @@ theorem fullHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFamily.Char
       · exact norm_nonneg _
       · positivity
     _ = _ := by rw [one_mul]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

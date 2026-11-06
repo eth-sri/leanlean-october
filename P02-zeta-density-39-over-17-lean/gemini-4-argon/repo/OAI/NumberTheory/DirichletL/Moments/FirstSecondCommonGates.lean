@@ -10,12 +10,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondInputGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
-open CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentSectorLocalization
 local instance {α:Type*}:DecidableEq α:=Classical.decEq _
 
 def commonExponent (A D P C q ε ξ:ℝ):ℝ:=
@@ -75,9 +70,3 @@ theorem eventually_common_ready (N:ℕ)(b b₁ b₂ ε:ℝ)
     hτ.trans (hpow h₄),hRC.trans (hpow h₃),nominal_pos _ K hK,
     hc.2.2.1.trans (hpow ((by linarith : 2*A+D+ε≤2*A+D+ε+ξ/2).trans h₂)),
     hc.2.2.2.1,hc.2.2.2.2.trans (hpow h₂)⟩
-
-end SevenEighths.CenteredMomentFirstSecondInputGates
-
-end
-
-end OAI

@@ -91,14 +91,6 @@ noncomputable def typeITailBoundary (Y A : ℕ) (x : ℝ) : ℝ :=
   Real.smoothTransition (x - (Y : ℝ)) *
     Real.smoothTransition (((A + 1 : ℕ) : ℝ) - x)
 
-theorem contDiff_typeITailBoundary (Y A : ℕ) :
-    ContDiff ℝ ∞ (typeITailBoundary Y A) := by
-  unfold typeITailBoundary
-  have hleft : ContDiff ℝ ∞ (fun x : ℝ =>
-      Real.smoothTransition (x - (Y : ℝ))) := by fun_prop
-  have hright : ContDiff ℝ ∞ (fun x : ℝ =>
-      Real.smoothTransition (((A + 1 : ℕ) : ℝ) - x)) := by fun_prop
-  exact hleft.mul hright
 
 theorem typeITailBoundary_natCast (Y A n : ℕ) :
     typeITailBoundary Y A n = if n ∈ Finset.Ioc Y A then 1 else 0 := by
@@ -134,12 +126,6 @@ noncomputable def typeISourceSmoothWeight (Y A r : ℕ) (x : ℝ) : ℝ :=
   typeITailBoundary Y A x *
     typeIDyadicCutoff (x / (2 ^ r * Y : ℕ))
 
-theorem contDiff_typeISourceSmoothWeight (Y A r : ℕ) :
-    ContDiff ℝ ∞ (typeISourceSmoothWeight Y A r) := by
-  unfold typeISourceSmoothWeight
-  exact (contDiff_typeITailBoundary Y A).mul
-    (contDiff_typeIDyadicCutoff.comp
-      (contDiff_id.div_const ((2 ^ r * Y : ℕ) : ℝ)))
 
 /-- Globally smooth source block; the finite index set only records a known
 compact carrier and does not create an analytic edge because the boundary
@@ -342,4 +328,3 @@ theorem exists_common_typeISmoothBlock_large
     simpa only [hscaleEq] using hchosen
   · simpa [W'] using hcard
 
-end GuthMaynard.NativeMoment

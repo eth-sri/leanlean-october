@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open CanonicalQuadraticSieve (idealQuotient totalQuotient gcdPool)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def cubicRow (I : Ideal O) (z : O) : ℂ :=
   eisEmbedding (CubicJacobiGlobal.idealSymbol I z)
@@ -112,8 +111,3 @@ theorem cubic_weighted_energy_eq_gcd_blocks {n : Type*} [Fintype n]
   simp_rw [hp]
   simpa only [Complex.ofReal_pow] using CoprimeSieveOperator.square_norm_sum
     (fun j => cubicRow (cols j) z * a j)
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

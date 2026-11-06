@@ -11,13 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstMixedRoot
-open CanonicalQuadraticSieve CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentCompleteCommon
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily
-open CenteredMomentFirstScale CenteredMomentSupportedCorrelation
-local notation "O"=>HeckeFamily.O
+open CanonicalQuadraticSieve CenteredMomentFirstMixedAllowance CenteredMomentFirstCanonicalAllowance CenteredMomentFirstNonexceptionalPrefactor CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentCompleteCommon CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CenteredMomentFirstScale CenteredMomentSupportedCorrelation
 
 lemma active_span_swap (C D:Ideal O):
     Ideal.span {activeConductor D C}=Ideal.span {activeConductor C D}:=by
@@ -124,9 +118,7 @@ theorem actual_fixed_reference_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D
         (Real.sqrt_nonneg _)
     _=_:=by ring
 
-open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
-open HeckeFamily CenteredMomentSupportedCorrelation
+open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
 
 theorem original_fixed_reference_pair {ι:Type*}[Fintype ι][DecidableEq ι]
     (s:Input ι)(R seed:Ideal O)(a₁ a₂:ℝ)(ha₁:0<a₁)(ha₂:0<a₂)
@@ -154,9 +146,3 @@ theorem original_fixed_reference_pair {ι:Type*}[Fintype ι][DecidableEq ι]
     (fun I hi=>original_column_lower s R seed I a₁ a₂ ha₁.le ha₂.le hs₁ hs₂ hi) hwin hn
   exact actual_fixed_reference_pair C D hC hD hCD E s.η ξ₁ ξ₂ F
     K A₀ B₀ _ _ M Z EL ER hK hA hB ha (volume_pos s.toData) hZ hEL hER hl hr
-
-end SevenEighths.CenteredMomentFirstMixedRoot
-
-end
-
-end OAI

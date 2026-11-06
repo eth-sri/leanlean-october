@@ -11,7 +11,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem full_second_supported_tail (order : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (Ct : ℝ), 0 < Ct ∧
@@ -42,8 +41,3 @@ theorem full_second_supported_tail (order : ℕ) :
   exact (htail p hp hg hinj hc F Ψ m c d Hcol W Y H hY hH K hK).trans
     (secondSourceTailCost_bounded_test p hp hg hinj F Ψ hΨ m c d Hcol B Y H lengthScale
       (Ct*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) order hB hY hH (by positivity) hL hcol hsupp)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -8,12 +8,9 @@ public import Mathlib.Analysis.Normed.Ring.Finite
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
-open scoped ContDiff
-local notation "O" => ActualEisensteinCubic.O
+open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentLattice
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open QuadraticInitialBound
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
 
 theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
     (A : O → ℂ) (B : ℝ) (hB : 0 ≤ B) (hA : ∀ h, ‖A h‖ ≤ B) :
@@ -118,8 +115,3 @@ theorem normPowerProfile_apply (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
   by_cases hx : W x = 0
   · simp only [hx, mul_zero]
   · rw [logPhase_eq_normPower t x (lt_of_lt_of_le ha (hs hx).1)]
-
-end SevenEighths.CenteredMomentLattice
-end
-
-end OAI

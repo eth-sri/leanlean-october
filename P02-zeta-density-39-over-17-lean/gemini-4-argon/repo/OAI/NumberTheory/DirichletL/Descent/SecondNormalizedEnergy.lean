@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open JointLogSeparation IdealMobiusDivisorSum InverseInitialClippedColumns
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss JointLogSeparation IdealMobiusDivisorSum InverseInitialClippedColumns
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma child_ball_neg (R : ℝ) (k : Eis) :
     -k ∈ nonzeroChildFrequencyBall 1 R ↔ k ∈ nonzeroChildFrequencyBall 1 R := by
@@ -96,8 +94,3 @@ theorem normalized_child_energy_radical_puncture
   apply Finset.sum_congr rfl
   intro k hk
   rw [finiteCanonicalMarkedRow_radical_puncture p hp hcop hg pool Ψ m (primaryGenerator f) k slots lists a W X]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

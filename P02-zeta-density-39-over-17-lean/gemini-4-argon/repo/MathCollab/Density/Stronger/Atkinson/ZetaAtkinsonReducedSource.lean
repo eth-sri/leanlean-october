@@ -61,4 +61,3 @@ theorem exists_zetaSquareLocalMean_le_atkinson_reduced {δ : ℝ} (hδ : 0 < δ)
   intro T G hT hlower hupper
   exact hT₁ T ((le_max_right _ _).trans hT) G hlower hupper
 
-end MathCollab.Density.Stronger.Atkinson

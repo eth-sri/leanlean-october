@@ -10,13 +10,10 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentReflectedAnnuli
-open Set EisensteinSchwartzPoisson CenteredMomentSectorLocalization
-open CenteredMomentComparisonReflection LocalLogFourier
+open Set EisensteinSchwartzPoisson CenteredMomentSectorLocalization CenteredMomentComparisonReflection LocalLogFourier
 
 def logWindow (v : ℝ) : ℂ := (annulus (Real.exp v) : ℂ)
 
-theorem logWindow_smooth : ContDiff ℝ ∞ logWindow :=
-  Complex.ofRealCLM.contDiff.comp (annulus_smooth.comp Real.contDiff_exp)
 
 theorem logWindow_support : Function.support logWindow ⊆ Icc (-Real.log 4) 0 := by
   intro v hv
@@ -30,36 +27,12 @@ theorem logWindow_support : Function.support logWindow ⊆ Icc (-Real.log 4) 0 :
   · exact (Real.exp_lt_exp.mp (hl ▸ hlow)).le
   · exact (Real.exp_lt_one_iff.mp hhigh).le
 
-theorem logWindow_compact : HasCompactSupport logWindow :=
-  HasCompactSupport.of_support_subset_isCompact isCompact_Icc logWindow_support
 
-def reflected (W : ℝ→ℂ) (t : ℝ) : ℝ→ℂ :=
-  paperRadialFourier (CompletedHeight.normTwistedSource W t)
 
-theorem reflected_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (t : ℝ) :
-    ContDiffOn ℝ ∞ (reflected W t) (Ioi 0) := by
-  have he : (CompletedHeight.uniformTwistedSchwartz W a b ha hs hW t : ℝ→ℂ)=
-      CompletedHeight.normTwistedSource W t := by
-    funext x
-    exact CompletedHeight.uniformTwistedSchwartz_apply W a b ha hs hW t x
-  unfold reflected
-  rw [←he]
-  exact paperRadialFourier_contDiffOn _
 
 def annularProfile (F : ℝ→ℂ) (s x : ℝ) : ℂ := (annulus x:ℂ)*F (s*x)
 
-def logProfile (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (s : ℝ) (hs0 : 0<s) (t : ℝ) : 𝓢(ℝ,ℂ) :=
-  positiveLogProfile logWindow (reflected W t) s logWindow_compact logWindow_smooth
-    (reflected_smooth W a b ha hs hW t) hs0
 
-@[simp] theorem logProfile_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (s : ℝ) (hs0 : 0<s) (t v : ℝ) :
-    logProfile W a b ha hs hW s hs0 t v =
-      annularProfile (reflected W t) s (Real.exp v) := rfl
 
 theorem normalized_annular_term (η : HeckeFamily.Character) (F : ℝ→ℂ)
     (s Y : ℝ) (hs : 0<s) (hY : 0<Y) :
@@ -156,9 +129,3 @@ theorem annularMass_summable (B : ℕ) (hB : 2≤B) : Summable (annularMass B) :
   apply Summable.of_nat_of_neg
   · simpa only [Nat.add_zero] using (annularMass_upper_tail B 1 0 (by omega) hB).1
   · simpa only [Nat.add_zero] using (annularMass_lower_tail B 0).1
-
-end SevenEighths.CenteredMomentReflectedAnnuli
-
-end
-
-end OAI

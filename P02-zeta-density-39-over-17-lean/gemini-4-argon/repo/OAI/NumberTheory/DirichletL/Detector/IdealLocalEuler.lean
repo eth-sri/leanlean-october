@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
 
 lemma primaryGenerator_prime_power (p : O) (hp : p≠0) (hprimary : goodLambda^2∣p-1) (e : ℕ) :
     primaryGenerator ((Ideal.span {p})^e)=p^e := by
@@ -115,8 +113,3 @@ theorem idealHighLocalFactor_euler_identity (η : HeckeFamily.Character) (p : O)
         unramifiedClosed Q ((actualACube η p)^2) (targetMonoid η p) 1 x w z := by
   rw [idealHighLocalFactor_eq_source η p hp hg hchar hprimary hs]
   exact sourcePrincipalSeries_euler_identity p hp hg hchar _ _ x w z hV hR hW hD
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

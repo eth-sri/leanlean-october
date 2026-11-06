@@ -168,6 +168,4 @@ theorem WooleyPolynomialSystem.Spaced.affine_one_high_coeff_dvd
   ring
 
 
-end
 
-end GafniTao

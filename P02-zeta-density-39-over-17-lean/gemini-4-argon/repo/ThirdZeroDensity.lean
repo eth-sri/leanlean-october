@@ -164,12 +164,24 @@ theorem third_density {σ a p α ε : ℝ}
   have hp : 0 < p+ε := by linarith [hw.p_low]
   exact zetaDensity_bound_of_eventual_slabs hp hC hslab
 
-/-- Complete third orange branch on the literal zeta zero count, with
-both endpoints closed and no unproved analytic premise. -/
+theorem two_term_density_first {σ ε : ℝ}
+    (hσ : 12/17 ≤ σ) (hσ' : σ ≤ 5/7) (hε : 0 < ε) :
+    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
+      (zetaDensityCount σ T:ℝ) ≤ C*T^(6*(1-σ)/(8*σ-3)+ε) := by
+  simpa only [show (3:ℝ)*2*(1-σ) = 6*(1-σ) by ring] using
+    third_density (third_window_first σ hσ hσ') hε
+
+theorem adjacent_density_second {σ ε : ℝ}
+    (hσ : 5/7 ≤ σ) (hσ' : σ ≤ 113/153) (hε : 0 < ε) :
+    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
+      (zetaDensityCount σ T:ℝ) ≤ C*T^(12*(1-σ)/(9*σ-1)+ε) := by
+  simpa only [show (3:ℝ)*4*(1-σ) = 12*(1-σ) by ring] using
+    third_density (third_window_second σ hσ hσ') hε
+
 theorem third_density_segment {σ ε : ℝ}
     (hσ : 113/153 ≤ σ) (hσ' : σ ≤ 3/4) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      (zetaDensityCount σ T:ℝ) ≤ C*T^(255*(1-σ)/(153*σ+7)+ε) :=
-  third_density (third_window_parameters σ hσ hσ') hε
+      (zetaDensityCount σ T:ℝ) ≤ C*T^(255*(1-σ)/(153*σ+7)+ε) := by
+  simpa only [show (3:ℝ)*85*(1-σ) = 255*(1-σ) by ring] using
+    third_density (third_window_parameters σ hσ hσ') hε
 
-end Montgomery.RationalMoment

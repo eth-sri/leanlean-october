@@ -115,4 +115,3 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
         C * T ^ ε * ((M : ℝ) ^ 2 * E ^ (1 / 2 : ℝ)) := by gcongr
     _ = _ := by dsimp only [R, E, P, Z]; ring
 
-end Montgomery.RationalMoment

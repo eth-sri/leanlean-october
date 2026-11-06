@@ -95,4 +95,3 @@ theorem norm_integral_sq_mul_betaQuadraticKernel_le
   have hleft := hUb (-H) (by rw [abs_neg,abs_of_pos hH])
   linarith
 
-end TaoTrudgianYang2025

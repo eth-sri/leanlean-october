@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentRestrictedSource
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentRowNorm
-open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedDomain
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-open CenteredMomentOriginalChildEnergy
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedDomain CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentOriginalChildEnergy
 
 theorem rowPolynomial_allocation {α γ : Type*} [Fintype γ]
     (S : Finset α) (a : α → O) (b : γ → ℂ) (d : γ → α → ℂ) (z : O) :
@@ -64,7 +59,6 @@ theorem smoothed_restricted_allocation {α γ : Type*} [Fintype γ] (keep : O �
         (finite_weighted_le_restricted keep S a ha (d B) W K hK hW rows) (sq_nonneg _)
 
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem original_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
@@ -110,9 +104,3 @@ theorem original_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O
     (allocation_data S C B (Finset.mem_filter.mp B.property).1).1 C R hC
     (Finset.mem_filter.mp B.property).1 (Finset.mem_filter.mp B.property).2
     ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ f keep W K)
-
-end SevenEighths.CenteredMomentRestrictedSource
-
-end
-
-end OAI

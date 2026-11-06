@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstNormalization
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier
-open CenteredMomentGaussEnergy CenteredMomentPrimitive CenteredMomentFirstPoisson
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentGaussEnergy CenteredMomentPrimitive CenteredMomentFirstPoisson
 
 theorem residueGauss_eq_norm_mul_gaussRow (a : O) (ha : Supported (Ideal.span {a})) (h : O) :
     residueGauss a (supported_element_ne_zero a ha) (supportedModulusCharacter a ha) (Ideal.Quotient.mk _ h)=
@@ -60,9 +56,3 @@ theorem normalized_active_coefficient {ι : Type*} [Fintype ι]
   simp only [canonicalNormalizedGauss,map_mul,norm_mul,star_mul,Complex.star_def,
     Complex.conj_ofReal,Complex.ofReal_pow,Complex.ofReal_mul]
   field_simp
-
-end SevenEighths.CenteredMomentFirstNormalization
-
-end
-
-end OAI

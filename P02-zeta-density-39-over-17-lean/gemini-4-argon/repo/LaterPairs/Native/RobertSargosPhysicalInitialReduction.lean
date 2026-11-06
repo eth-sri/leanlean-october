@@ -41,4 +41,3 @@ theorem robertSargos_physical_initial_reduction
     have hkHr : 2*(k:ℝ) ≤ (⌊lam^(-(2:ℝ)/13)⌋₊:ℝ) := by exact_mod_cast hkH
     linarith
 
-end TaoTrudgianYang2025

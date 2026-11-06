@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Fourth.DigammaLog
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Set MeasureTheory MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -159,4 +157,3 @@ theorem norm_zetaGammaHalfShift_digamma_sub_le {t : ℝ} (ht : 4 ≤ t)
     _ = _ := by field_simp; ring
 
 
-end MathCollab.Density.Stronger.Fourth

@@ -82,4 +82,3 @@ theorem eventually_modelPhaseDual_power_windows {σ A δ : ℝ}
     eventually_reflected_power_windows hA hk hδ α] with T hTC hwindow
   exact ⟨hTC,hwindow⟩
 
-end TaoTrudgianYang2025

@@ -279,9 +279,3 @@ theorem series_of_coprime_mask (M : Ideal O) (hM : M ≠ 0)
     rw [deletePrimes_primeSet_apply M hM, hmask]
   rw [heq]
   exact series_deletePrimes _ b hb s hs
-
-end
-
-end SevenEighths.IdealEuler
-
-end OAI

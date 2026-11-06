@@ -6,8 +6,7 @@ public import GenericRestrictedPeakTail
 @[expose] public section
 set_option autoImplicit false
 noncomputable section
-open Filter Finset
-open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
+open Filter Finset MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 namespace TaoTrudgianYang2025
 
 theorem exponentPair_BHB10 : ExponentPair (64/135) (122/243) := by
@@ -25,4 +24,3 @@ theorem exponentPair_BHB7 : ExponentPair (85/189) (41/81) := by
 theorem exponentPair_BHB6 : ExponentPair (13/30) (51/100) := by
   convert (exponentPair_heathBrown (by norm_num : 3 ≤ (6:ℕ))).bProcess using 1 <;> norm_num
 
-end TaoTrudgianYang2025

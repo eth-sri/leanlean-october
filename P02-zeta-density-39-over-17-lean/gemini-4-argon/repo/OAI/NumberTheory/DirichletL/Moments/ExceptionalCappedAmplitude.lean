@@ -11,14 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentExceptionalCappedAmplitude
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentCounting CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentHeight CenteredMomentLattice
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondExceptionalCount
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows
-open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentCounting CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentHeight CenteredMomentLattice CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge UniqueFactorizationMonoid CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 
 theorem rowTwistedSum_absolute (η : Character) (m A z : O) (W : ℝ→ℂ)
     (b M t X : ℝ) (hb : 0≤b) (hM : 0≤M) (hX : 0<X)
@@ -83,9 +76,3 @@ theorem max_raw_reduction (Z Rred r : ℝ) (hZ : 1<Z) (hR : 0<Rred) :
   · rw [max_eq_left h,max_eq_right (Real.one_le_rpow hZ.le h)]
   · rw [max_eq_right (le_of_not_ge h),Real.rpow_zero,
       max_eq_left (Real.rpow_le_one_of_one_le_of_nonpos hZ.le (le_of_not_ge h))]
-
-end SevenEighths.CenteredMomentExceptionalCappedAmplitude
-
-end
-
-end OAI

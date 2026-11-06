@@ -108,8 +108,3 @@ theorem HasCubicExponent.improve {ξ : ℝ} (h : HasCubicExponent ξ)
     _ ≤ C*(M*N)^ε*(3*(M+N^(SevenEighths.HeathBrownIteration.step ξ)+(M*N)^(2/3 : ℝ))) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hp hC.le) (by positivity)
     _ = _ := by ring
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

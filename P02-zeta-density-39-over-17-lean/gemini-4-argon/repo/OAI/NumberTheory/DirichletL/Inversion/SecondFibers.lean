@@ -235,15 +235,3 @@ theorem valid_tuple_card_le_slot_cap {Jo Jn : ℕ} (T : Finset (SecondTuple Jo J
     (pow_le_pow_right₀ (divisor_card_pos γ.q0 hq) (by omega)))
     (pow_le_pow_right₀ (divisor_card_pos γ.quotient ht) ho))
     (pow_le_pow_right₀ (divisor_card_pos γ.residual hr) hn)
-
-def originalSource {Jo Jn : ℕ} (source : Finset (SecondTuple Jo Jn))
-    (oldLists : Fin Jo → Finset SmoothMobiusCorrection.PrimeIdeal)
-    (newLists : Fin Jn → Finset SmoothMobiusCorrection.PrimeIdeal)
-    (keep : SecondTuple Jo Jn → Prop) : Finset (SecondTuple Jo Jn) :=
-  source.filter fun x => (∀ i, x.oldAssigned i ∈ oldLists i) ∧
-    (∀ i, x.newAssigned i ∈ newLists i) ∧ keep x
-
-end
-end SevenEighths.InverseSecondFibers
-
-end OAI

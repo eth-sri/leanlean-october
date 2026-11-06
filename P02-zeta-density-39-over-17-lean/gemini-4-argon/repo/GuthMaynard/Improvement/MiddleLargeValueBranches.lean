@@ -89,4 +89,3 @@ theorem middle_large_values_small {N T V t₀ : ℝ} (hN : 2 ≤ N)
       have hh := mul_le_mul_of_nonneg_left hVs (show 0 ≤ 2*N^2 by positivity)
       simpa only [mul_one] using hh
 
-end GuthMaynard.Improvement

@@ -171,4 +171,3 @@ theorem operator_centered_cubic (μ : Measure ℝ) [IsFiniteMeasure μ]
     exact operator_centered_frequencyKernel ha hi hl hL hs s
   simpa only [hk] using htrace
 
-end GuthMaynard.Improvement

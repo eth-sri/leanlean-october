@@ -9,9 +9,7 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
 abbrev SourceOuter (S : Finset (Ideal O)) := {K : Ideal O // Supported K ∧ ∀P∈S,¬P∣K}
 abbrev CompletedPair := Ideal O×Ideal O
@@ -43,8 +41,3 @@ lemma sourceRawGrouping_preserving (S : Finset (Ideal O))
         ((Measure.count:Measure CompletedPair).prod (Measure.count:Measure NonzeroFrequency))) := by
   rw [count_product,count_product]
   exact count_equiv_preserving _
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

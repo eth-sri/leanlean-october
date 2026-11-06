@@ -92,4 +92,3 @@ theorem normalized_product_phase {N M n q : ℕ} (hN : 0 < N) (hM : 0 < M)
   push_cast
   ring
 
-end MathCollab.Density

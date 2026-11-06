@@ -583,9 +583,3 @@ theorem weighted_region_slot_norm {ι : Type*} (S : Finset ι) (b Q : ι → ℝ
       exact (mul_le_mul_of_nonneg_left he'
         (mul_nonneg (hb i hi) (Real.rpow_nonneg hQi.le _))).trans_eq (mul_comm _ _)
     _ = _ := by rw [Finset.mul_sum]
-
-end SevenEighths.PrincipalSlotEstimate
-
-end
-
-end OAI

@@ -314,6 +314,4 @@ theorem wooleySourceNormalizedMixedMean_initial_twoLoss
     mul_comm (Lambda : ℝ) (H : ℝ)] using halgebra
 
 
-end
 
-end GafniTao

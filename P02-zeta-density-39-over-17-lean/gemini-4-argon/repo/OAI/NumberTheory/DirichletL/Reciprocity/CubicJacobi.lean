@@ -7,77 +7,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace CubicJacobiGlobal
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 abbrev K := ActualEisensteinCubic.K
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 
 def primeValue (P : Ideal O) (x : O) : O :=
   if h : P.IsMaximal ∧ lambda ∉ P then
@@ -117,7 +54,6 @@ theorem idealSymbol_mul (I J : Ideal O) (x : O) :
 def symbol (x y : O) : O := idealSymbol (Ideal.span {y}) x
 
 @[simp] theorem symbol_one (x : O) : symbol x 1 = 1 := by simp [symbol]
-@[simp] theorem symbol_zero (x : O) : symbol x 0 = 0 := by simp [symbol]
 
 theorem symbol_mul_denominator (x y z : O) :
     symbol x (y * z) = symbol x y * symbol x z := by
@@ -235,8 +171,8 @@ end CubicJacobiGlobal
 
 namespace CubicRamified
 
-abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
+protected abbrev O := ActualEisensteinCubic.O
+open CubicJacobiGlobal CompletedGauss
 
 lemma lambda_def : lambda = omega - 1 := rfl
 
@@ -375,7 +311,6 @@ theorem cubicValue_lambda_seven :
   dsimp [sevenPrime]
   linear_combination omega_sq_for_norm
 
-open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
 
 def primaryCoord (A B : ℤ) : O := ActualEisensteinCoordinates.eval (1 + 3 * A) (3 * B)
 
@@ -456,7 +391,6 @@ theorem ramified_comparison_of_factor
     (prime_generator_not_mem_of_ne P Q hne q hQ)
     (prime_generator_not_mem_of_ne Q P hne.symm p hP) hr0 hr hfactor
 
-open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
 
 lemma omega_isUnit : IsUnit omega := omega_primitive.isUnit (by decide)
 lemma omega_four : omega ^ 4 = omega := by
@@ -752,9 +686,3 @@ theorem cubicValue_lambda_primary (P : Ideal O) [P.IsMaximal]
       rw [show 3*(A/3)+2 = A by omega, show 3*(B/3)+2 = B by omega]
       exact hP
     simpa only [ha, Int.reduceToNat] using supplement_case22 P hg (A/3) (B/3) hp
-
-end CubicRamified
-
-end
-
-end OAI

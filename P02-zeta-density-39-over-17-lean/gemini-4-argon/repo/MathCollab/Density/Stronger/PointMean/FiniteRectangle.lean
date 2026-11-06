@@ -15,8 +15,7 @@ public import Mathlib.Analysis.Complex.ExponentialBounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter MathCollab.Density.Contour
 open scoped Topology Interval
 set_option autoImplicit false
 noncomputable section
@@ -197,4 +196,3 @@ theorem heathBrownLemmaThree_rectangle_eq_edges (t : ℝ) :
   ring
 
 
-end MathCollab.Density.Stronger.PointMean

@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalFrequency
-open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondLedger
-open CenteredMomentPartition CenteredMomentSupport CenteredMomentSupportedCorrelation
-open CenteredMomentCorrelation CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentSupport CenteredMomentSupportedCorrelation CenteredMomentCorrelation CenteredMomentUnequal
 
 theorem commonFrequencyGenerator_ne_zero (C D : Ideal O) (hC : Supported C) :
     commonFrequencyGenerator C D≠0 := by
@@ -74,9 +70,3 @@ theorem actual_ideal_partition_scalar (C D : Ideal O) (hC : Supported C) (hD : S
   · simpa only [canonicalPartitionScalar,ite_eq_left hw,div_eq_mul_inv,mul_comm,
       idealCorrelation,commonFrequencyGenerator] using hh
   · simp only [canonicalPartitionScalar,ite_eq_right hw,zero_mul,norm_zero,zero_le_one]
-
-end SevenEighths.CenteredMomentSecondCanonicalFrequency
-
-end
-
-end OAI

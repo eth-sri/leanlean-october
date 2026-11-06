@@ -30,4 +30,3 @@ theorem sargos_character_sub_norm_le (x y : ℝ) :
   simpa only [fordAdditiveCharacter,Real.norm_eq_abs,abs_mul,
     abs_of_nonneg (by positivity : (0 : ℝ) ≤ 2*Real.pi)] using h
 
-end TaoTrudgianYang2025

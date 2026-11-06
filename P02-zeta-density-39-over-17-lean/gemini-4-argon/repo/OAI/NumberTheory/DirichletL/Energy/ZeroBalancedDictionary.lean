@@ -11,29 +11,13 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroBalancedDictionary
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentFiniteProfileExceptional
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentEnergyOriginalSource CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentAmplificationChildInput CenteredMomentFirstSourceReduction
-local notation "O"=>HeckeFamily.O
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentEnergyReferenceState CenteredMomentFiniteProfileExceptional CenteredMomentCommonRadialData CenteredMomentSourceRow CenteredMomentEnergyOriginalSource CenteredMomentEnergyNaturalInputMatches CenteredMomentAmplificationChildInput CenteredMomentFirstSourceReduction
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<a)
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "zeroInput"=>CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂
 
-theorem balanced_eq_positive_empty (η₀:Character)(θ:Fin 0→RayQuotient.Characters M H)
-    (w σ freq:Fin 0→ℝ):
-    zeroInput=CenteredMomentEnergyPositiveHighSource.balancedInput M H hH η₀ θ
-      (fun _=>0) continuous_const 1 1 0 0 (by norm_num)
-      (by simp [Function.support]) w σ freq (fun i=>Fin.elim0 i)
-      s p ha t X₁ X₂ hX₁ hX₂:=by
-  unfold CenteredMomentEnergyZeroReferencePhysical.balancedInput
-    CenteredMomentEnergyPositiveHighSource.balancedInput input naturalInput naturalData completeInput
-  congr 5 <;> exact Subsingleton.elim _ _
 
 variable (η₀:Character)(θ:Fin 0→RayQuotient.Characters M H)(w σ freq:Fin 0→ℝ)
 def positiveEmptyInput : Input (Fin 0):=
@@ -70,9 +54,3 @@ lemma declared_capacity_upper (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
     exact (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le (le_max_left 1 X))).mpr
       (max_le (Real.one_le_rpow hZ.le hL) hcap)
   exact max_le_max hs (by linarith [hlen X₁ hc₁,hlen X₂ hc₂])
-
-end SevenEighths.CenteredMomentEnergyZeroBalancedDictionary
-
-end
-
-end OAI

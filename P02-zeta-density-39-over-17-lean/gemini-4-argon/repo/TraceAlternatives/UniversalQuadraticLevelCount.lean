@@ -212,4 +212,3 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
           show 0≤N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ) by positivity,
           show 0≤N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ) by positivity]
 
-end Montgomery.RationalMoment

@@ -35,4 +35,3 @@ theorem exists_robertSargos_weighted_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left ha hC.le
     _ = _ := by ring
 
-end TaoTrudgianYang2025

@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification Filter IdealMobiusDivisorSum
-open DetectorDictionaryInverseRawInitialGates
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification Filter IdealMobiusDivisorSum DetectorDictionaryInverseRawInitialGates
 
 def shiftedExponent (_data:RowData)(U r:ℝ)(j:Ideal O) : ℝ :=
   r-Real.logb U (j.absNorm:ℝ)
@@ -36,9 +34,3 @@ theorem marked_shift_eventually (data:RowData)(eta:ℝ)(heta:0<eta) :
     (Real.logb_le_iff_le_rpow hU hn0).mpr (hnB.trans ht)
   refine ⟨by dsimp [shiftedExponent];linarith,by dsimp [shiftedExponent];linarith,?_⟩
   rw [shiftedExponent,Real.rpow_sub hU0,Real.rpow_logb hU0 hU.ne' hn0]
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

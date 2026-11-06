@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorTest
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -67,4 +65,3 @@ theorem eventually_zetaSmoothDivisorTest_support_physical {δ : ℝ} (hδ : 0 < 
   have hwidth : 8 * Real.log T ≤ G := by simpa only [pow_one] using hlog.trans hG
   exact ⟨hG0, hlog0, hwidth, support_zetaSmoothDivisorTest_physical hT0 hG0 hlog0 hwidth⟩
 
-end MathCollab.Density.Stronger.Atkinson

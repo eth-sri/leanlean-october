@@ -91,4 +91,3 @@ theorem smooth_l2_contraction {κ g : ℝ → ℝ} {B : ℝ}
         (smooth_square_le hκm hκi hκ0 hκB hmass hgm hg2 hg0)
     _ = ∫ x, g x ^ 2 := smooth_mass hκi hg2 hmass
 
-end GuthMaynard.Improvement

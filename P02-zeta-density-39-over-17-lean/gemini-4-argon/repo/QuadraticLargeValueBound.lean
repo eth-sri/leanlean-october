@@ -86,4 +86,3 @@ theorem finite_quadratic_large_value_second (w : MathCollab.Density.ComparisonCu
   norm_num [adjacentCenteredBudget] at hh
   convert hh using 1; field_simp; ring
 
-end Montgomery.RationalMoment

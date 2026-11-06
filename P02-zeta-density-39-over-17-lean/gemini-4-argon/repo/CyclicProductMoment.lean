@@ -131,4 +131,3 @@ theorem finite_character_parseval {ι τ : Type*} [DecidableEq ι]
       simp only [mul_ite, mul_one, mul_zero, sum_ite_eq, hi, ite_true,
         ← starRingEnd_apply, Complex.mul_conj', Complex.ofReal_pow]
 
-end Montgomery.RationalMoment

@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
 
 def gaussValuationTable (Q G : ℂ) (r n j : ℕ) : ℂ :=
   if 6 ∣ r then (if n+1 ≤ j then Q^(n+1) else 0) - (if n ≤ j then Q^n else 0)
@@ -60,8 +59,3 @@ theorem zero_index_scalar (p : O) (_hp : Prime p)
     have hz : Ideal.Quotient.mk (Ideal.span {p}) (p^j) = 0 :=
       Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (dvd_pow_self p hj))
     rw [hz, MulChar.map_zero]
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

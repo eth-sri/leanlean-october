@@ -162,9 +162,3 @@ theorem completedL_eq_gamma_mul_LFunction (χ : MulChar (O ⧸ Ideal.span {c}) �
   have hπ : (Real.pi : ℂ)^s ≠ 0 := by
     exact (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [Real.pi_ne_zero])
   field_simp
-
-end SevenEighths.HeckePrimitive
-
-end
-
-end OAI

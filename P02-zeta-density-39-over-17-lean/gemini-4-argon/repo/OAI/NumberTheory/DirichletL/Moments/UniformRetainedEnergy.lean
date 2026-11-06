@@ -10,12 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformRetainedEnergy
-open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentScaleSupremum
-open CenteredMomentUniformReflectionChoices CenteredMomentRetainedWeightedSource
-open CenteredMomentReflectionWeightedEnergy CenteredMomentReflectedTruncation
-open CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization
-open CenteredMomentUniformReflectionApproximation CenteredMomentReflectedUniformPair
-open CenteredMomentReflectedNormalization
+open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentScaleSupremum CenteredMomentUniformReflectionChoices CenteredMomentRetainedWeightedSource CenteredMomentReflectionWeightedEnergy CenteredMomentReflectedTruncation CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization CenteredMomentUniformReflectionApproximation CenteredMomentReflectedUniformPair CenteredMomentReflectedNormalization
 
 lemma twisted_zero (W:ℝ→ℂ) : CompletedHeight.normTwistedSource W 0=W := by
   funext x
@@ -80,9 +75,3 @@ theorem actual_retained_uniform_energy (epsilon : ℝ)
   have hfinal := hh.2.2.2
   simp only [retained_zero,P',Nat.mul_zero,pow_zero,mul_one,←mul_assoc] at hfinal
   convert hfinal using 1 ; ring
-
-end SevenEighths.CenteredMomentUniformRetainedEnergy
-
-end
-
-end OAI

@@ -264,4 +264,3 @@ theorem real_digamma_eq_deriv_Gamma_div {x : ℝ} (hx : 0 < x) :
   rw [Complex.digamma_def, logDeriv_apply, Complex.Gamma_ofReal]
   simp [← h]
 
-end DhimanKadiriQuesadaHerrera2026

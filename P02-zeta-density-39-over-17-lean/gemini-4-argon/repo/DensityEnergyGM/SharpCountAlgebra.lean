@@ -39,25 +39,4 @@ theorem sublinear_monomial_domination {S R r c : ℝ}
         (Real.rpow_le_rpow hS.le hSR (by linarith)) (by positivity)
     _ = _ := by rw [← Real.rpow_add hR]; congr 2; ring
 
-/-- Exact fourth-power count absorption for the common gap1/4. -/
-theorem quarter_gap_count_absorption {R S C : ℝ}
-    (hS : 0 < S) (hSR : S ≤ R)
-    (hbound : R^2 ≤ C*S^(1/4:ℝ)*R^(7/4:ℝ)) : R ≤ C^4*S := by
-  have hR : 0 < R := hS.trans_le hSR
-  have he : R^2=R^(1/4:ℝ)*R^(7/4:ℝ) := by
-    rw [← Real.rpow_add hR]
-    norm_num
-  rw [he] at hbound
-  have hh : R^(1/4:ℝ) ≤ C*S^(1/4:ℝ) :=
-    (mul_le_mul_iff_left₀ (by positivity : 0 < R^(7/4:ℝ))).mp (by
-      simpa only [mul_comm,mul_left_comm] using hbound)
-  have hp := pow_le_pow_left₀ (by positivity : 0 ≤ R^(1/4:ℝ)) hh 4
-  have hleft : (R^(1/4:ℝ))^4=R := by
-    rw [← Real.rpow_mul_natCast hR.le]
-    norm_num
-  have hright : (S^(1/4:ℝ))^4=S := by
-    rw [← Real.rpow_mul_natCast hS.le]
-    norm_num
-  simpa only [hleft,mul_pow,hright] using hp
 
-end Montgomery.RationalMoment

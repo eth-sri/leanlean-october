@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceLiveAllocation
-open CenteredMomentRemainingBox CenteredMomentCommonProfile CenteredMomentCommonPuncture
-open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationBox CenteredMomentFirstSectors
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentRemainingBox CenteredMomentCommonProfile CenteredMomentCommonPuncture CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentCommonAllocationBox CenteredMomentFirstSectors
 variable {ι : Type*} [Fintype ι]
 
 omit [Fintype ι] in
@@ -93,9 +90,3 @@ theorem residual_source_profile (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       rw [remaining_box_sum_gate B T hf]
       simp only [remaining_restore,T,mem_residualPool,mul_one]
       rfl
-
-end SevenEighths.CenteredMomentSourceLiveAllocation
-
-end
-
-end OAI

@@ -36,9 +36,3 @@ lemma source_slot_product {Slot : Type*} (slots : Finset Slot) (ell g : Slot→�
   simp_rw [mul_add,Finset.sum_add_distrib]
   rw [←Finset.sum_mul,←Finset.sum_mul,hell]
   ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

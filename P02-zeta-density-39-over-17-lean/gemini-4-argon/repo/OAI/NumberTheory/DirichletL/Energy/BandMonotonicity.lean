@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyBandMonotonicity
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
 
 def widenState {Z B b B' b':ℝ}(s:NaturalState Z B b)(hB:B≤B')(hb:b≤b'):
     NaturalState Z B' b':=
@@ -55,7 +53,6 @@ theorem zeroAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] [DecidableEq α] in
@@ -84,9 +81,3 @@ theorem positiveAt_transport (W:ℝ→ℂ)(bslot a b radial mask L Lslot lo hi M
   have hCnew:0≤C':=hC.trans hCC
   apply hh.trans
   gcongr
-
-end SevenEighths.CenteredMomentEnergyBandMonotonicity
-
-end
-
-end OAI

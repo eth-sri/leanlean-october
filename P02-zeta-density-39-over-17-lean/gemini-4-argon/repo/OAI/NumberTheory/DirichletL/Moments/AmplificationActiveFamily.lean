@@ -9,13 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationActiveFamily
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentAmplificationShortening CenteredMomentAmplificationActiveFactor
-open CenteredMomentAmplificationFamilyEnergy CenteredMomentAmplificationSourceDomain
-open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows
-open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentAmplificationShortening CenteredMomentAmplificationActiveFactor CenteredMomentAmplificationFamilyEnergy CenteredMomentAmplificationSourceDomain CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
 
  theorem actual_error_energy_active (S : Finset (Ideal O)) (p : O) (hp : Prime p)
     (hs : Supported (Ideal.span {p})) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6)
@@ -30,9 +24,3 @@ local notation "O" => ActualEisensteinCubic.O
   funext I
   dsimp only
   rw [residual_column_active S p hp hs n hn I (Finset.mem_filter.mp I.property).1]
-
-end SevenEighths.CenteredMomentAmplificationActiveFamily
-
-end
-
-end OAI

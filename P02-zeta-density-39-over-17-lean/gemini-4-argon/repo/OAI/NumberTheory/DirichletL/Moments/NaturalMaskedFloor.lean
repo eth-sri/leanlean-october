@@ -12,14 +12,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentNaturalMaskedFloor
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentPlainPositiveEnergy CenteredMomentPlainGlobalEnergy
-open CenteredMomentCommonMaskRadialEnergy CenteredMomentOriginalRadialComparison
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredExceptionalProfile
-open CenteredMomentCoreFloor CenteredMomentLattice CenteredMomentTwist
-open CenteredMomentAllocatedNaturalSource HeckeInverseAmplification
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentPlainPositiveEnergy CenteredMomentPlainGlobalEnergy CenteredMomentCommonMaskRadialEnergy CenteredMomentOriginalRadialComparison CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredExceptionalProfile CenteredMomentCoreFloor CenteredMomentLattice CenteredMomentTwist CenteredMomentAllocatedNaturalSource HeckeInverseAmplification
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
 
 theorem excluded_pair (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) :
     ∃ S : Finset (ℕ×ℕ), ∃ C : ℝ, 0<C ∧
@@ -168,9 +162,3 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
     _ = (C*Ct^4*F^4*(R.radical.absNorm:ℝ)^ε*bΦ^4*diagonalControl r.profile*
       (T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₁*T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₂)^2*(1+‖t‖)^(4*n))*(Z^m*(Z^(m+q))^4) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hp (by positivity)
-
-end SevenEighths.CenteredMomentNaturalMaskedFloor
-
-end
-
-end OAI

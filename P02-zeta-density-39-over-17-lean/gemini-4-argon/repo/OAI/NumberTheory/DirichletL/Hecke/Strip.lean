@@ -317,8 +317,3 @@ theorem mellin_uncompleted_exp_bound (a : ℝ) (ha : 0 < a) (f : ℝ → ℂ)
   obtain ⟨C, hC, hb⟩ := VerticalContourShift.mellin_uniform_strip_bound f
     (-(1 / 10)) (11 / 10) (by simpa using hleft) (by simpa using hright)
   exact ⟨C, hC, fun z hz => hb z hz.1 hz.2⟩
-
-end SevenEighths.HeckeStrip
-end
-
-end OAI

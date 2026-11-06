@@ -28,4 +28,3 @@ theorem robertSargos_keys_injective {p q : RobertSargosPoint}
   cases q
   simp_all [robertSargosCoefficientKey,robertSargosFrequencyKey]
 
-end TaoTrudgianYang2025

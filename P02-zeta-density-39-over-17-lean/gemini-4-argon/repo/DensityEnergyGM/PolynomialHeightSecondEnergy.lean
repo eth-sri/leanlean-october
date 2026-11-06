@@ -34,4 +34,3 @@ theorem polynomial_height_log_loss (B δ : ℝ) (hB : 0 < B) (hδ : 0 < δ)
     _ ≤ T ^ δ + ((2 : ℝ) ^ (δ / B) * T ^ δ) / (δ / B) := add_le_add hOne hLog
     _ = _ := by ring
 
-end Montgomery.RationalMoment

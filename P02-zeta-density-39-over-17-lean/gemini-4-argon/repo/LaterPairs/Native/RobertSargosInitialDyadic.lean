@@ -45,4 +45,3 @@ theorem exists_robertSargos_initial_dyadic (f : ℝ → ℝ) (M H : ℕ)
       add_le_add_right (mul_le_mul_of_nonneg_left hs (by positivity)) _
     _ = _ := by ring
 
-end TaoTrudgianYang2025

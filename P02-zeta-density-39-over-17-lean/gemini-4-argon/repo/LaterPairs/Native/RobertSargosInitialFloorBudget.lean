@@ -48,4 +48,3 @@ theorem robertSargos_initial_floor_budget
   dsimp [H] at hall
   convert hall using 1 <;> ring
 
-end TaoTrudgianYang2025

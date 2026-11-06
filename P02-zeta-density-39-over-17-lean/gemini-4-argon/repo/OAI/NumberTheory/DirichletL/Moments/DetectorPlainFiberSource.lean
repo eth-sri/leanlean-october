@@ -12,16 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorPlainFiberSource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource
-open CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow
-open CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
-open CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm
-open CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 
@@ -75,9 +66,3 @@ lemma radialMajorant_nonneg (x:ℝ):0≤(radialMajorant x).re:=
 
 lemma radialMajorant_one (x:ℝ)(hx:x∈Set.Icc (0:ℝ) 1):radialMajorant x=1:=
   (Classical.choose_spec DetectorDictionaryInverseRawRealRadial.exists_real_raw_radial_majorant).2.2.2 x hx
-
-end SevenEighths.CenteredMomentDetectorPlainFiberSource
-
-end
-
-end OAI

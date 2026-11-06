@@ -14,16 +14,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedFourCoefficients
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
-open CenteredMomentFirstMixedExceptionalLow CenteredMomentFirstMixedDiagonal
-open CenteredMomentSuccessorPaidParameters
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationErrorEnergy CenteredMomentFirstMixedAllowance CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedExceptionalLow CenteredMomentFirstMixedDiagonal CenteredMomentSuccessorPaidParameters
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
 def reference (q V C Z allowance:ℝ):ℝ:=q*(V/C)^2*Z^allowance
@@ -537,9 +528,3 @@ theorem actual_power_reference_identity (P:Finset (Ideal O))(mainFactor b V C q 
     rw [error_core_power]
     simp only [Nat.add_sub_cancel]
     ring
-
-end SevenEighths.CenteredMomentFirstAmplifiedFourCoefficients
-
-end
-
-end OAI

@@ -142,4 +142,3 @@ theorem norm_zetaSquareGammaGaussianTransform_sub_quadratic_le {T G r : ℝ}
       zetaGaussianQuadraticIntegral T G (v - Real.log (T / (2 * Real.pi))))
   linarith
 
-end MathCollab.Density.Stronger.Atkinson

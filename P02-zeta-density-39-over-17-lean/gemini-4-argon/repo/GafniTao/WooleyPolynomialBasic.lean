@@ -185,6 +185,4 @@ theorem wooleyPolynomial_equation_3_10
         ac_rfl
 
 
-end
 
-end GafniTao

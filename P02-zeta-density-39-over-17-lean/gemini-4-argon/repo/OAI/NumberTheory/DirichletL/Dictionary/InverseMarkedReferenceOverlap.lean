@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-open InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic CanonicalRowCompletion
-local notation "O"=>HeckeFamily.O
+open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic CanonicalRowCompletion
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 def remainingResidual (S:Finset (Ideal O))(L:ι→Finset (Ideal O))(J:Finset ι)
@@ -69,9 +67,3 @@ theorem original_selected_overlap (S:Finset (Ideal O))
   intro x hx
   rw [assigned_source_eq_remainingResidual S L hprime hdis J x coeff η a W Z r z (G J) hZ u]
   ring
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

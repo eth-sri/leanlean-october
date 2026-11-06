@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalization
-open CenteredMomentDescentLedger CenteredMomentSectorLocalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
 
 theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
     (hZ:1<Z)(hV:0<V)(hC:0<C)(hD:0<D)(hE:0<NE)(hR:0<NR)(hK:0<K)(hQ:0<Q):
@@ -53,9 +51,3 @@ theorem actual_error_weight (p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)(k:ℕ)
     have hu:(normValue p)⁻¹≤1:=inv_le_one_of_one_le₀ hn
     nlinarith
   · simpa [localErrorCost,errorMoving,normValue] using he.ge
-
-end SevenEighths.CenteredMomentFirstMixedNormalization
-
-end
-
-end OAI

@@ -67,4 +67,3 @@ theorem exists_zetaSquareLocalMean_le_atkinson_twoTerm {δ : ℝ} (hδ : 0 < δ)
   have hscaled := mul_le_mul_of_nonneg_left hr (by positivity : 0 ≤ 2 * Real.exp 1)
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonPairedSource
-open HeckeFamily UniqueFactorizationMonoid CanonicalQuadraticSieve
-open CenteredMomentCommonLinearSource CenteredMomentCommonLinearNormalization
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
-local notation "O" => HeckeFamily.O
+open HeckeFamily UniqueFactorizationMonoid CanonicalQuadraticSieve CenteredMomentCommonLinearSource CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
 variable {ι κ:Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
 
 def normalizedColumn (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)(z:O):ℂ:=
@@ -90,9 +86,3 @@ theorem whole_paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported 
       apply Finset.sum_congr rfl
       intro z hz
       ring
-
-end SevenEighths.CenteredMomentCommonPairedSource
-
-end
-
-end OAI

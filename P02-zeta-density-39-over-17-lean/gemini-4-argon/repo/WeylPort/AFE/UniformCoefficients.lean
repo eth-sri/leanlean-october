@@ -88,4 +88,3 @@ theorem minus_coefficients_uniform {M : ℕ} {y : ℝ} (hy : 1 ≤ y)
     simp only [div_eq_mul_inv] at ha hb hc ⊢
     linarith
 
-end WeylPort

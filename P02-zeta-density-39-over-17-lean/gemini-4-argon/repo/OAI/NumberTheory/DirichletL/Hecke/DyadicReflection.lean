@@ -149,9 +149,3 @@ theorem primitive_reflected_bound : ∃ C : ℝ, 0<C ∧
         (norm_nonneg _) (Real.rpow_nonneg (by exact_mod_cast (conductor_ge_one c).trans' zero_le_one) _))
         (norm_nonneg _)
     _ = _ := by ring
-
-end SevenEighths.HeckeDyadicReflection
-
-end
-
-end OAI

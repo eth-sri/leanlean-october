@@ -104,6 +104,4 @@ theorem wooleyWeightedGridMean_one
   split_ifs <;> norm_num
 
 
-end
 
-end GafniTao

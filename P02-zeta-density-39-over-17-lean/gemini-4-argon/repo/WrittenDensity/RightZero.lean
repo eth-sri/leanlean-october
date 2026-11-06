@@ -19,4 +19,3 @@ theorem density_of_actual_zero {σ p ε : ℝ} (hσ : (7/8 : ℝ) < σ) :
   rw [Montgomery.ZeroFreeHatching.actual_density_count_zero hσ,Nat.cast_zero]
   positivity
 
-end Montgomery.WrittenDensity

@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 def SourcePair (rows Pset : Finset (Ideal Eis)) :=
   {x : rows × Pset // IsCoprime x.1.val x.2.val}
@@ -62,8 +60,3 @@ theorem exists_source_pair_templates (F : PrimeFamily φ)
     (∏ i, F.ideal i) (fun x => x.val.1.val) (fun x => x.val.2.val)
   intro x
   rw [PrimeFamily.reflected_product,hprod _ x.val.2.property]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

@@ -44,4 +44,3 @@ theorem norm_atkinsonPhaseExponential_derivatives (T v : ℝ) :
     simp only [norm_mul, norm_pow, hn, Complex.norm_I, Complex.norm_real,
       Real.norm_eq_abs, mul_one, sq_abs]
 
-end TaoTrudgianYang2025

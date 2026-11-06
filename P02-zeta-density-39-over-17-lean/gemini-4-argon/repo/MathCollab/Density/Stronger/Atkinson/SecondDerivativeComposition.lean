@@ -109,4 +109,3 @@ theorem exists_real_profile_derivative_bound {v : ℝ → ℝ} {a b : ℝ}
     exact hb
   exact ⟨M, hM, fun u hu => ⟨hv0 u hu, hv1 u hu, hv2 u hu⟩⟩
 
-end MathCollab.Density.Stronger.Atkinson

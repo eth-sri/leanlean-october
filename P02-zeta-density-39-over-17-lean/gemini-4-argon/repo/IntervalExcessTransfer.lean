@@ -51,4 +51,3 @@ theorem critical_excess_integral_le_two_tails_interval {L U v A D q : ℝ}
   ring
 
 
-end Montgomery.RationalMoment.RightDetector

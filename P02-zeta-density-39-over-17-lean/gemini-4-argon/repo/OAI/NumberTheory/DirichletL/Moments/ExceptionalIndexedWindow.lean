@@ -10,10 +10,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalIndexedWindow
-open CenteredMomentExceptionalWindowPair CenteredMomentPlainWindowEnergy
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentExceptionalWindowPair CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
 
 theorem indexed_plain_window_pair {κ α β:Type*}
     (rows:Finset κ)(row:κ→O)(S:Finset α)(T:Finset β)(a:α→O)(b:β→O)
@@ -68,9 +65,3 @@ theorem indexed_plain_window_pair {κ α β:Type*}
           (E*(1+‖u‖)^J₁*(1+‖v‖)^J₂):=
         mul_le_mul_of_nonneg_left (hpair u v) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
       _=_:=by ring
-
-end SevenEighths.CenteredMomentExceptionalIndexedWindow
-
-end
-
-end OAI

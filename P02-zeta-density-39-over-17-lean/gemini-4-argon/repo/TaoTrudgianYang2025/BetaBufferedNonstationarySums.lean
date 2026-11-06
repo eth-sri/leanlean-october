@@ -93,4 +93,3 @@ theorem norm_bufferedModes_exterior_blocks_le_log
         (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Lplus) (by positivity))
     _ = _ := by ring
 
-end TaoTrudgianYang2025

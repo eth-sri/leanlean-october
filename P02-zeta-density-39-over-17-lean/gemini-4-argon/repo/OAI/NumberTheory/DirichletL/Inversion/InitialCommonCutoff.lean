@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialCommonCutoff
-open InverseMoment InverseInitialCommonProfile InverseInitialCommonRatios
-open InverseInitialOverlapIdealFourier InverseInitialOverlapSource
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialCommonProfile InverseInitialCommonRatios InverseInitialOverlapIdealFourier InverseInitialOverlapSource
 variable {σ:Type*} [DecidableEq σ]
 
 def tupleProfile (I:Finset σ)(L:σ→Finset (Ideal Eis))(a:σ→Ideal Eis→ℂ)
@@ -56,9 +54,3 @@ theorem tupleProfile_insert_fresh
   rw [tupleProfile_gates I L a hcop]
   exact insert_original_fresh I L a (slotRatio Z ell) lo hi W wFresh a₀ b₀ jlo jhi
     hs ha hFresh (activeIndices id I L c) yj yc hj hc
-
-end SevenEighths.InverseInitialCommonCutoff
-
-end
-
-end OAI

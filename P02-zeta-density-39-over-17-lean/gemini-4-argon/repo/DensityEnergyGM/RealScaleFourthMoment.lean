@@ -142,4 +142,3 @@ theorem real_scale_coprime_fourth_min_native (ε : ℝ) (hε : 0 < ε) :
   · rw [min_eq_right (le_of_not_ge h)]
     exact hShort
 
-end Montgomery.RationalMoment

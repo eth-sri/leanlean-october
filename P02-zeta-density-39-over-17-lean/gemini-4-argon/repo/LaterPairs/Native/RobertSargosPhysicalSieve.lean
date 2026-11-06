@@ -590,4 +590,3 @@ theorem exists_robertSargos_fourth_derivative_long_range (ε : ℝ) (hε : 0 < �
     _ ≤ 2*(M:ℝ)^(1+ε)*lam^((1:ℝ)/13) := by nlinarith only [hprod]
     _ ≤ _ := by gcongr; linarith
 
-end TaoTrudgianYang2025

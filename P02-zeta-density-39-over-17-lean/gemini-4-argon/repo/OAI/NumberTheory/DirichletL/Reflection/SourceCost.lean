@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma pool_subset_choices_small_power (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ (J Q Q₀ : Ideal Eis),J≠0 → Q≠0 →
@@ -51,7 +50,3 @@ theorem original_source_cost {χ : Type*} [Fintype χ] (rmax : ℕ) (ε : ℝ) (
       · exact hp J Q Q₀ hJ hQ
       · exact hh H hcard hH
     _ = _ := by dsimp [C];ring
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

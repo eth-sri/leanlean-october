@@ -60,9 +60,3 @@ theorem reflected_scale_exponent (U a e ε m : ℝ) (hU : 0<U) :
   rw [←Real.rpow_mul hU.le,←Real.rpow_add hU]
   congr 1
   ring
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

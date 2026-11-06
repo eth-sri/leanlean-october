@@ -40,4 +40,3 @@ theorem exists_primitive_divisor_bound (ε : ℝ) (hε : 0 < ε) :
     _ = (n.divisors.card:ℝ)*(1+K/n) := by field_simp
     _ ≤ _ := mul_le_mul_of_nonneg_right (hdiv n hn) (by positivity)
 
-end TaoTrudgianYang2025

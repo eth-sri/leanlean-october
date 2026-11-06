@@ -76,4 +76,3 @@ theorem neumannContourKernel_infinite_rectangle {x b : ℝ}
       (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℂ)) atTop (𝓝 0)))
   linear_combination hz
 
-end MathCollab.Density.Stronger.Atkinson

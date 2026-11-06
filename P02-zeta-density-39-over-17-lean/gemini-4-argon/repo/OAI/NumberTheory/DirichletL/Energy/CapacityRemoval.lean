@@ -12,14 +12,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCapacityRemoval
-open HeckeFamily ConcreteTraceCRT CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentWholeSlotDeletion
-open CenteredMomentPrimeSlot
-open CenteredMomentSlotNormalization CenteredMomentRelativeCapacityRemoval
-open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
-open CenteredMomentSecondHeightFamily CenteredMomentEnergyState
-open CenteredExceptionalProfile CenteredMomentFixedRowMask
-local notation "O" => HeckeFamily.O
+open HeckeFamily ConcreteTraceCRT CenteredMomentRetainedEnergy CenteredMomentInductionEnergy CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot CenteredMomentSlotNormalization CenteredMomentRelativeCapacityRemoval CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily CenteredMomentEnergyState CenteredExceptionalProfile CenteredMomentFixedRowMask
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem compact_radial_summable (f : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ))
@@ -102,7 +95,6 @@ lemma state_unit_nonexceptional {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask b�
     (dvd_mul_right _ _) (dvd_mul_left _ _)).mpr hh
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 include hH
 
@@ -227,9 +219,3 @@ theorem actual_relative_state_capacity_removal
     (inf_le_left.trans hQM)
     (fun i=>relativeCharacter_fixedQ M H hH η₀ (θ i) (internalQ Q η₀)
       (inf_le_left.trans hQM) inf_le_right)
-
-end SevenEighths.CenteredMomentEnergyCapacityRemoval
-
-end
-
-end OAI

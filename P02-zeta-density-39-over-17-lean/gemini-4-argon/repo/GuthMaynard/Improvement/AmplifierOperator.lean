@@ -58,4 +58,3 @@ theorem amplifier_operator_norm {η : ℝ} (hη : 0 < η) :
     exact hvec z
   exact ((sq_le_sq₀ (norm_nonneg _) (Real.sqrt_nonneg D)).mpr hop).trans_eq (Real.sq_sqrt hD)
 
-end GuthMaynard.Improvement

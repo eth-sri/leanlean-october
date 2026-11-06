@@ -7,72 +7,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace CoprimeBilinearSieve
 open FiniteSieveOperator CoprimeSieveOperator CoprimeMobiusExtension
 
@@ -179,7 +116,7 @@ theorem coprime_bilinear_operator_bound {ι m n p : Type*} [DecidableEq ι]
 end CoprimeBilinearSieve
 
 namespace IdealCoprimeBilinearSieve
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 open IdealMobiusDivisorSum IdealCoprimeSieveOperator FiniteSieveOperator
 
 theorem support_weighted_energy_bound {n : Type*} [Fintype n]
@@ -234,7 +171,7 @@ theorem ideal_coprime_bilinear_operator_bound {m n p : Type*}
 end IdealCoprimeBilinearSieve
 
 namespace DivisorBlockCauchy
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 open IdealMobiusDivisorSum FiniteSieveOperator IdealCoprimeSieveOperator
 
 theorem divisor_mask_energy {n : Type*} [Fintype n]
@@ -301,7 +238,7 @@ theorem rectangular_cauchy {α β : Type*} (S : Finset α) (T : Finset β)
 end DivisorBlockCauchy
 
 namespace IdealDivisorBilinearBlocks
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 open FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
 
 def blockValue {m n p : Type*} [Fintype m] [Fintype n] [Fintype p]
@@ -477,7 +414,6 @@ theorem submatrix_norm_le {m q : Type*} [Fintype m] [Fintype q]
 
 end FiniteSieveRestriction
 
-open scoped BigOperators
 namespace FiniteSieveOperator
 
 theorem squared_norm_le_of_energy {m n : Type*} [Fintype m] [Fintype n]
@@ -494,10 +430,9 @@ theorem squared_norm_le_of_energy {m n : Type*} [Fintype m] [Fintype n]
 
 end FiniteSieveOperator
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
-abbrev O := ActualEisensteinCubic.O
-open ConcretePrimeRowBridge ActualEisensteinCubic CompletedGauss
+protected abbrev O := ActualEisensteinCubic.O
+open ConcretePrimeRowBridge CompletedGauss
 
 theorem idealSexticRow_ambient
     (F G : Finset (Ideal O)) (hFp : ∀ I ∈ F, I ≠ ⊥) (hGp : ∀ I ∈ G, I ≠ ⊥)
@@ -614,9 +549,3 @@ theorem family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
   have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
   have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (matrix M N)
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
-
-end CanonicalQuadraticSieve
-
-end
-
-end OAI

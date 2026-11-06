@@ -197,8 +197,5 @@ lemma extendByZeroₗᵢ_ae_eq (f : Lp E p (μ.restrict s)) :
   simpa [extendByZeroₗᵢ, extendByZeroₗ] using
     (extendByZeroFun_coe (μ := μ) (p := p) (s := s) hs f)
 
-end
 
-end Lp
 
-end MeasureTheory

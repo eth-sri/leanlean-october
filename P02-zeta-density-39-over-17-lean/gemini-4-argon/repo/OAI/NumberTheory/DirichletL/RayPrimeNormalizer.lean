@@ -12,7 +12,6 @@ open scoped Classical Topology ContDiff
 namespace SevenEighths.RayPrimeNormalizer
 open HeckeFamily
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 def normalizer (S : Finset (Ideal O)) (W : ℝ → ℝ) (x : ℝ) : ℝ :=
@@ -38,9 +37,3 @@ theorem eventually_pos (S : Finset (Ideal O)) (W : ℝ → ℝ)
     (show 0 < (RayQuotient.classNumber M H : ℝ)⁻¹ from inv_pos.mpr (by
       exact_mod_cast RayQuotient.classNumber_pos M H))
     (HeckeRayPrimes.quotientClassCoeff_ratio_tendsto M H hH) W hW hc hp hW0 hWne
-
-end SevenEighths.RayPrimeNormalizer
-
-end
-
-end OAI

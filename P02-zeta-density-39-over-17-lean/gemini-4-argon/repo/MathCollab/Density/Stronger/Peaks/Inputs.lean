@@ -15,9 +15,8 @@ public import WeylPort.GrowthAlgebra
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Set Topology Finset MathCollab.Density MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density MathCollab.Density.Stronger
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow
   eventually_const_height_log_pow_mul_rpow_le_rpow
   eventually_pointValue_sixth_power_source_range)
@@ -46,15 +45,4 @@ def PointMeanInput : Prop :=
           C * Real.log T *
             ((W.card : ℝ) + 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ)))
 
-/-- Explicit, currently unproved physical packet input, with constants
-chosen before height, width, localization interval and finite set. -/
-def LocalMeanPacketInput : Prop :=
-  ∀ δ κ ν : ℝ, 0 < δ → 0 < κ → 0 < ν →
-    ∃ C : ℝ, 0 < C ∧ ∃ D : ℝ, 0 < D ∧ ∃ H₀ : ℝ, 40000 ≤ H₀ ∧
-      ∀ H G A L : ℝ, ∀ W : Finset ℝ, H₀ ≤ H → 0 < G → separatedAt G W →
-      (∀ t ∈ W, H ≤ t ∧ t ≤ 2*H ∧ t^δ ≤ G ∧ G ≤ t^(1/2-δ) ∧ t^(1/4+κ) ≤ G) →
-      (∀ t ∈ W, A ≤ t ∧ t ≤ A+L) →
-      (∑ t ∈ W, atkinsonLocalMeanExcess G t (C*G*Real.log t))^2 ≤
-        D*H^ν*((W.card:ℝ)*H/G+(W.card:ℝ)^2*Real.sqrt (G*L))
 
-end MathCollab.Density.Stronger.Peaks

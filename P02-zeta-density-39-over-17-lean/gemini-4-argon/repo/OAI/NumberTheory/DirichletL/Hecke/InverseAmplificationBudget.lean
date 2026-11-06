@@ -99,9 +99,3 @@ theorem logarithmic_cost_eventually (A b P η : ℝ) (hA : 1≤A)
       mul_le_mul hfirst hsecond (Real.log_nonneg hx) (by positivity)
     _ = K*(Real.log U)^2 := by dsimp [K]; ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hsq hK
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

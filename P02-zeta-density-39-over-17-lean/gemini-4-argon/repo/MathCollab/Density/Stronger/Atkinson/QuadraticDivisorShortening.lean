@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.FrozenWindow
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -61,4 +59,3 @@ theorem exists_norm_zetaFrozenDivisorQuadraticSum_sub_short_le (ε : ℝ) (hε :
       mul_le_mul_of_nonneg_right hm (by positivity)
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

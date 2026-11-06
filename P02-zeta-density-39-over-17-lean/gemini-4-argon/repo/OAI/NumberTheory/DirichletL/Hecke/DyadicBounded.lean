@@ -55,9 +55,3 @@ theorem buffered_polynomial_bound (e ε : ℝ)
     (fun _ hs _ => (hz hs).1) hseries
   dsimp only [K] at hbound
   convert hbound using 1 ; congr 2 <;> ring_nf
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

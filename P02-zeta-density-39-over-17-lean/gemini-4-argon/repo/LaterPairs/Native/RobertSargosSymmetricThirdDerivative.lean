@@ -77,4 +77,3 @@ theorem robertSargos_symmetric_third_derivative_prefix
     (fun x hx => hj 2 (by norm_num) x hx)
     (fun x hx => (hc x hx).1) (fun x hx => (hc x hx).2)
 
-end TaoTrudgianYang2025

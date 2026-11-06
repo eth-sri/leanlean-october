@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceRectangleMask
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentSourceRectangle
-open CenteredMomentDivisorRowEnergy CenteredMomentRectangle CenteredMomentExtraction
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentSourceRectangle CenteredMomentDivisorRowEnergy CenteredMomentRectangle CenteredMomentExtraction
 
 theorem rowWeight_ideal_mask (η : Character) (m A z : O) (t : ℝ)
     (hmLam : goodLambda∣m) (hm2 : (2:O)∣m) (R I : Ideal O) :
@@ -71,9 +68,3 @@ theorem source_polynomial_eq_maskedRectangle {ι : Type*} [Fintype ι] [Decidabl
     W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ h₁ h₂).trans
     (fullMaskedRectangle_eq_maskedRectangle η m A z t hmLam hm2 slots ν _ R L W₁ W₂
       X₁ X₂ Y₁ Y₂ B₁ B₂)
-
-end SevenEighths.CenteredMomentSourceRectangleMask
-
-end
-
-end OAI

@@ -130,4 +130,3 @@ theorem quartic_moment_extraction (q : ℕ) :
   dsimp only [K] at hz
   linarith
 
-end GuthMaynard.Improvement

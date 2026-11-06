@@ -11,7 +11,6 @@ open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeRaySlots
 open HeckeFamily ProbePhysical PrincipalSignalComparison ProbePrincipalResidueActual
-local notation "Id" => Ideal HeckeFamily.O
 
 theorem power_pool_thresholds {ι : Type*} [Fintype ι]
     (C : Set Id) (S : Finset Id) (η : Character) (c d ellMin : ℝ)
@@ -67,7 +66,3 @@ theorem power_ray_mass_and_normalizer {ι : Type*} [Fintype ι]
     (fun j _=>hell j) eps heps
   filter_upwards [hm,hi] with Z hmass hinv
   exact ⟨hmass,hinv⟩
-end SevenEighths.ProbeRaySlots
-end
-
-end OAI

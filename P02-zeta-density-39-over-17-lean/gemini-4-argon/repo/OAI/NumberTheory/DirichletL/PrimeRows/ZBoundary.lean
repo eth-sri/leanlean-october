@@ -11,7 +11,6 @@ open scoped Classical BigOperators Topology
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 private lemma norm_mul_seven_le {a b c d e f g : ℂ} {A B C D E F G : ℝ}
     (ha : ‖a‖≤A) (hb : ‖b‖≤B) (hc : ‖c‖≤C) (hd : ‖d‖≤D)
@@ -108,9 +107,3 @@ theorem continuedPhysicalRowKernel_z_cauchy {K : ℕ}
     _ ≤ A*(D*cauchy t)*C := mul_le_mul (mul_le_mul (hscalar v hv t) hm' (norm_nonneg _) hA)
       hr (norm_nonneg _) (mul_nonneg hA (mul_nonneg hD.le (cauchy_nonneg t)))
     _ = _ := by ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

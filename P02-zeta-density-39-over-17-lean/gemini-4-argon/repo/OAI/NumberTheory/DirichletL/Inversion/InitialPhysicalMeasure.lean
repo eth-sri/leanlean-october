@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseInitialPhysicalMeasure
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialRayAttachment
-open InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns
-open MeasureTheory FourierBridge JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialRayAttachment InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns MeasureTheory FourierBridge JointLogSeparation
 
 @[ext] structure Point (ι : Type*) where
   common : Finset ι
@@ -338,11 +333,3 @@ def BlockSupport (source : Finset (Point ι)) (W₁ W₂ ω₁ ω₂ : ℝ→ℂ
       relativeNorm (coordinates p x) Z D B v θ H 5)≠0 → ω₂ (columnRatio p x.right Z D B v)=1) ∧
   (∀ x∈source,star (ω₁ (columnRatio p x.left Z D B v))≠0 →
     ω₂ (columnRatio p x.right Z D B v)≠0 → ∀ i,V i (relativeLog (coordinates p x) Z D B v θ H i)=1)
-
-open InverseInitialOverlap InverseInitialPoissonBridge CanonicalQuadraticSieve
-
-end SevenEighths.InverseInitialPhysicalMeasure
-
-end
-
-end OAI

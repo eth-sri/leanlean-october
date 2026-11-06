@@ -108,6 +108,4 @@ theorem hasSum_heathBrownTriangularFourierSeries
     rfl
 
 
-end
 
-end GafniTao

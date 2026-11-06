@@ -64,8 +64,3 @@ theorem rowWeightedScalar_step_two (Q eta a G1 C omega X W V rho scalar : ℂ)
   rw [rowWeightedScalar_parameters,rowWeightedScalar_parameters,
     weightedScalar_step_two Q (eta/rho) (a/rho^3) G1 C omega X (rho*W) V scalar hQ hC ho,
     evenRatio_unit Q a X V rho hρ]
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

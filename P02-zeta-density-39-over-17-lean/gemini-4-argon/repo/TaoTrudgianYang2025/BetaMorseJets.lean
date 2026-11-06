@@ -110,4 +110,3 @@ theorem iteratedDeriv_modelPhaseMorseCoordinate_formula
       rw [he.deriv_eq,(morseEval_hasDerivAt hσ hδ hF hv hu (morseDerivativeExpression n)).deriv]
       rfl
 
-end TaoTrudgianYang2025

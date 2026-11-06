@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentExceptionalAllocationShell
-open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
-open CenteredMomentUniformDivisorShell
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
 
 lemma exact_max_cancellation (r r₁ : ℝ) :
     -r₁-max (r-r₁) 0 = -max r r₁ := by
@@ -168,9 +165,3 @@ theorem exceptional_shell_subpower {ι : Type*} [Fintype ι] [DecidableEq ι]
     _≤(C*2^(2*ε)*E)*Z^δ*Z^(-r) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow (by dsimp [E]; positivity)) (by positivity)
     _=(C*2^(2*ε)*E)*Z^(δ-r) := by rw [mul_assoc,←Real.rpow_add hz]; rfl
-
-end SevenEighths.CenteredMomentExceptionalAllocationShell
-
-end
-
-end OAI

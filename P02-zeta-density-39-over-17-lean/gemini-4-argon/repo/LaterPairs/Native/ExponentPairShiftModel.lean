@@ -82,4 +82,3 @@ theorem aProcessShiftPhase_jet_error
       · exact mul_le_mul hscale hR (abs_nonneg _) (by positivity)
     _ = _ := by dsimp [C,J]; ring
 
-end TaoTrudgianYang2025

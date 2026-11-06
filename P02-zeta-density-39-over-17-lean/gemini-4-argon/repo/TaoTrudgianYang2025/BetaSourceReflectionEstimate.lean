@@ -72,4 +72,3 @@ theorem sourceExponentialSum_reflection_estimate
         (mul_le_mul_of_nonneg_right (le_max_left _ _) hX)
     _ = K*((N/Real.sqrt T)*T^(β+ε)+N/Real.sqrt T+T^ε) := by ring
 
-end TaoTrudgianYang2025

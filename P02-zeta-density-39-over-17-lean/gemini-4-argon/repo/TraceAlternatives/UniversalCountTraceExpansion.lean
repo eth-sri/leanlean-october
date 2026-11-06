@@ -71,4 +71,3 @@ theorem universalTraceEnergy_common_bound {T R E C σ a x δ ell η : ℝ}
     _ ≤ ∑ _j : Fin 3, (1+C)*T^η*(5*M) := sum_le_sum (fun j _ => hj j)
     _ = _ := by simp only [sum_const,card_univ,Fintype.card_fin,nsmul_eq_mul]; dsimp [M]; ring
 
-end Montgomery.RationalMoment

@@ -12,13 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentAmplificationChildSourceCaps
-open ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentFirstAmplificationChoice CenteredMomentHeckeColumnWindow
-open CenteredMomentCommonAllocationSum CenteredMomentCommonRawScale
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
-open CenteredMomentAmplificationChildInput CenteredMomentOriginalCommonHarmonic
-open CenteredMomentSourceMass CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentFirstAmplificationChoice CenteredMomentHeckeColumnWindow CenteredMomentCommonAllocationSum CenteredMomentCommonRawScale CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform CenteredMomentAmplificationChildInput CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
 variable {ι : Type*} [Fintype ι]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
@@ -171,9 +165,3 @@ theorem polynomial_caps (G V X H K Z A D ε ξ : ℝ)
   · unfold frequencyRadius
     rw [Real.rpow_add hz]
     exact mul_le_mul_of_nonneg_right ht (Real.rpow_nonneg hz.le _)
-
-end SevenEighths.CenteredMomentAmplificationChildSourceCaps
-
-end
-
-end OAI

@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourceDomain
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
 
 def residualIdeal (p : O) (hp : Prime p) (I : Ideal O) : Ideal O :=
   if hI : Supported I then Ideal.span {(primeRemainder p hp (primaryGenerator I)
@@ -78,9 +74,3 @@ theorem residual_column_sum (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : â
   have hi := residualIdeal_reconstruct p hp I (valuationColumns_supported S p k I hI)
   rw [(Finset.mem_filter.mp hI).2] at hi
   rw [hi]
-
-end SevenEighths.CenteredMomentAmplificationSourceDomain
-
-end
-
-end OAI

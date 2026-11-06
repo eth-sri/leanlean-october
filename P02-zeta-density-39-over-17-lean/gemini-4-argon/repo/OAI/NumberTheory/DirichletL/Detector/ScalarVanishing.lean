@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
-local notation "O" => ActualEisensteinCubic.O
 
 theorem higher_convolution_zero (p : O) (hp : Prime p)
     [(Ideal.span {p} : Ideal O).IsMaximal]
@@ -88,8 +87,3 @@ theorem positiveScalar_kge_two (p : O) (hp : Prime p)
     positiveScalar p hp.ne_zero χ n (m+2) j = 0 := by
   rw [positiveScalar_full_lift p hp χ n (m+2) j (by omega),
     higher_convolution_zero p hp (χ^(m+2)) (χ^(n+1)) n m (p^j), mul_zero]
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

@@ -12,17 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap Topology
 
 namespace SevenEighths.CenteredMomentSecondExceptionalFamily
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentPartitionNorm
-open CenteredMomentSecondHeightFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondRetainedWidth
-open CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalColumns
-open CenteredMomentSecondReducedPredicate CenteredMomentSecondLiveBlock CenteredMomentSecondBlockSupport
-open CenteredMomentSecondPhysicalBlock CenteredMomentHeckeColumnWindow CenteredMomentChildRows
-open CenteredMomentRestrictedEnergy CenteredMomentSectorLocalization RayFourExpansion
-open CenteredExceptionalProfile CenteredMomentReflectedSource
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentPartitionNorm CenteredMomentSecondHeightFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondRetainedWidth CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalColumns CenteredMomentSecondReducedPredicate CenteredMomentSecondLiveBlock CenteredMomentSecondBlockSupport CenteredMomentSecondPhysicalBlock CenteredMomentHeckeColumnWindow CenteredMomentChildRows CenteredMomentRestrictedEnergy CenteredMomentSectorLocalization RayFourExpansion CenteredExceptionalProfile CenteredMomentReflectedSource
 
 theorem span_thirty_six_norm : (Ideal.span {(36:O)}).absNorm=1296 := by
   have h := ActualEisensteinCubic.rational_modulus_card 36 (by norm_num)
@@ -222,9 +212,3 @@ theorem live_norm_le_four_radius (C D:Ideal O)(U:Finset (CommonIndex C D))
   have hprod : 1≤normValue (commonFrequencyGenerator C D)*normValue (nonunitFrequencyGenerator C D U) := by
     nlinarith [mul_nonneg (sub_nonneg.mpr hG) (sub_nonneg.mpr hV)]
   exact hn.trans (div_le_self (by positivity) hprod)
-
-end SevenEighths.CenteredMomentSecondExceptionalFamily
-
-end
-
-end OAI

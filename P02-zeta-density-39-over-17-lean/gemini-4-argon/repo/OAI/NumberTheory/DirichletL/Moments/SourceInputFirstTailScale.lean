@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentSourceInputFirstTailUniform
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstScale
-open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstScale ActualEisensteinCubic
 
 lemma common_subset_product_dvd_right (I J : Ideal O) (E : Finset (CommonIndex I J)) :
     (∏P∈E,P.val)∣commonPart J I := by
@@ -40,9 +38,3 @@ theorem first_nominal_scale_le (I J : Ideal O) (E : Finset (CommonIndex I J))
     (mul_le_mul_of_nonneg_right (mul_le_mul hE hA (by positivity) hD.le) (sq_nonneg X))
     (mul_nonneg (mul_nonneg hK.le hC.le) hD.le)).trans_eq
   field_simp
-
-end SevenEighths.CenteredMomentSourceInputFirstTailUniform
-
-end
-
-end OAI

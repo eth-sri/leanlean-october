@@ -8,8 +8,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 1600000
 set_option maxRecDepth 4096
 noncomputable section
-open Finset
-open GuthMaynard.NativeMoment
+open Finset GuthMaynard.NativeMoment
 
 namespace Montgomery.RationalMoment
 
@@ -200,4 +199,3 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
   · rw [min_eq_right (le_of_not_ge h)]
     exact hShort
 
-end Montgomery.RationalMoment

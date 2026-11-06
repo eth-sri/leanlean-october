@@ -82,4 +82,3 @@ theorem middle_cubic_budget {N T : ℝ} (hn : 0 < N) (ht : 0 < T)
     Real.log_pow,(middle_logs hn ht).2.2]
   linarith
 
-end GuthMaynard.Improvement

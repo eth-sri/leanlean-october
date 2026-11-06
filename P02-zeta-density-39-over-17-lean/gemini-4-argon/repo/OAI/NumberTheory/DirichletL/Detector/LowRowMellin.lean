@@ -10,8 +10,6 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowAdditiveCoefficient (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
     (s : {I : Id // Supported I}) (m : O) (v : ℝ) : ℂ :=
@@ -174,8 +172,3 @@ lemma lowAdditiveCoefficient_eq (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
   unfold lowAdditiveCoefficient lowArithmeticCoefficient
   split_ifs <;> simp only [mul_zero,zero_mul]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

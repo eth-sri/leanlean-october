@@ -8,6 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.HeckeFamily
+open HeckeFamily (O)
 
 def Character.product (χ ψ : Character) : Character :=
   Character.ofResidue (χ.modulus ⊓ ψ.modulus)
@@ -53,9 +54,3 @@ theorem elementCoeff_power_of_unit (χ : Character) (n : ℕ) (z : O)
   obtain ⟨u, hu⟩ := hz
   rw [← hu, MulChar.pow_apply_coe, hu]
   rfl
-
-end SevenEighths.HeckeFamily
-
-end
-
-end OAI

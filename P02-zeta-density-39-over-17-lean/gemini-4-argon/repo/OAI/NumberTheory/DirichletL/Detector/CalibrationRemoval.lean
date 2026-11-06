@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
 
 lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))
     (b h : O) (hcop : IsCoprime b s) :
@@ -28,7 +25,7 @@ lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))
     χ, supportedModulusCharacter_mk] at he
   rw [← residueGauss_supported_mk s hs (b*h), ← residueGauss_supported_mk s hs h]
   simp only [residueGauss, tsum_fintype, map_mul]
-  simpa only [ψ, mul_assoc, mul_comm, mul_left_comm] using he
+  dsimp only [ψ] at he; rw [← he]; congr 1; ext x; ring
 
 lemma movingQuotient_unit_scale (A s : O) (hs : Supported (Ideal.span {s}))
     (b : O) (hcop : IsCoprime b s) (x : Residue (A*s)) :
@@ -103,8 +100,3 @@ theorem actualCongruenceCoefficient_calibration_factor (S : Finset (Ideal O))
   apply mul_left_cancel₀ hn
   rw [he]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

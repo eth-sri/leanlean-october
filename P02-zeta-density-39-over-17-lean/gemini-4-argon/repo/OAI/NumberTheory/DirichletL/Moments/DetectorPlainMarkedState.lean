@@ -13,16 +13,7 @@ open scoped Classical BigOperators SchwartzMap ComplexConjugate Topology ContDif
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainMarkedState
-open HeckeFamily HeckeDyadic HeckeDetectorRawFiber HeckeDetectorBatch HeckePrimeAnnular
-open HeckeInverseAmplification HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentDetectorPlainStateDictionary CenteredMomentDetectorPlainExceptional
-open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorPlainCapacity
-open CenteredMomentDetectorPlainSlotProfile CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
-open ConcretePrimeRowBridge ProbeHighRowFamily
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeDetectorRawFiber HeckeDetectorBatch HeckePrimeAnnular HeckeInverseAmplification HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentDetectorPlainStateDictionary CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorPlainCapacity CenteredMomentDetectorPlainSlotProfile CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentSecondHeightFamily CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge ProbeHighRowFamily
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
@@ -151,9 +142,3 @@ theorem source_batch_marked_initial (S:ProbeFinalAssembly.SourceData D):
     have he:=retained_eq_initial_energy S F hprof hupper η₀ (internalQ (sourceFixedIdeal S) η₀) selected
       (fun s _=>hreal s) radialMajorant bΦ δ hU.le hδ.le hs radialMajorant_nonneg hη j k σ t
     exact hb.trans_eq he
-
-end SevenEighths.CenteredMomentDetectorPlainMarkedState
-
-end
-
-end OAI

@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentEnergyBands
-open HeckeFamily CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot QuadraticInitialBound
 
 def length (Z X:ℝ):ℝ:=Real.logb Z (max 1 X)
 
@@ -29,7 +26,6 @@ def ZeroAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def PositiveAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
@@ -95,8 +91,3 @@ theorem exists_positive_bottom (W:ℝ→ℂ)(aslot bslot:ℝ)(haslot:0<aslot)
   have hpt:=p.control_nonneg (S T)
   apply hh.trans
   gcongr
-end SevenEighths.CenteredMomentEnergyBands
-
-end
-
-end OAI

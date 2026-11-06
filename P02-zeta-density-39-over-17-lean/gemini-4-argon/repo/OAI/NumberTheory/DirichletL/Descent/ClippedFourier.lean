@@ -12,9 +12,7 @@ open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
-open InverseInitialClippedColumns InverseInitialOverlapFourier SecondPassIntegration JointLogSeparation
-open ActualEisensteinCubic FirstPassCubeLabels CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialClippedColumns InverseInitialOverlapFourier SecondPassIntegration JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels CompletedGauss
 
 theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
     (hW:Function.support W⊆Set.Icc lo hi):
@@ -121,9 +119,3 @@ theorem canonical_clipped_fourier
   apply integral_congr_ae
   filter_upwards with t
   ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformNaturalRetained
-open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum CenteredMomentNaturalPrimitive
-open CenteredMomentUniformRetainedEnergy CenteredMomentUniformReflectionApproximation CenteredMomentRetainedWeightedSource
-open CenteredMomentReflectedChoiceEnergy CenteredMomentReflectionWeightedEnergy
-open CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization
+open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum CenteredMomentNaturalPrimitive CenteredMomentUniformRetainedEnergy CenteredMomentUniformReflectionApproximation CenteredMomentRetainedWeightedSource CenteredMomentReflectedChoiceEnergy CenteredMomentReflectionWeightedEnergy CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization
 
 theorem actual_natural_retained_energy (epsilon Cscale xi : ℝ)
      (hepsilon : 0<epsilon) (hscale : 0<Cscale) (hxi : 0<xi)
@@ -62,9 +59,3 @@ theorem actual_natural_retained_energy (epsilon Cscale xi : ℝ)
       have hey : y=bshort*Real.log Z := le_antisymm hy.2 hy.1
       simpa only [hey,hexp] using henergy v j k x hx)
   simpa only [hexp,sub_zero,sub_self,mul_zero,add_zero,mul_one] using hh
-
-end SevenEighths.CenteredMomentUniformNaturalRetained
-
-end
-
-end OAI

@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentRadialPointwiseEnergy
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
@@ -63,9 +60,3 @@ lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
         _=(C₁*C₂)*((Ideal.absNorm D:ℝ)^ε*(Ideal.absNorm D:ℝ)^ε)*
           Z^(s.toSource.allowance Z)*(s.profileFactor*E)/(Ideal.absNorm D:ℝ):=by ring
         _=_:=by rw [he]
-
-end SevenEighths.CenteredMomentRadialPointwiseEnergy
-
-end
-
-end OAI

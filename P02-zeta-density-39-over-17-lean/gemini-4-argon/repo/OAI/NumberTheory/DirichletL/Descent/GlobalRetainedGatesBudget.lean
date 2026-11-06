@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseInitialArithmetic InverseSecondSourceBlocks
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open InverseMoment InverseInitialArithmetic InverseSecondSourceBlocks ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 
  theorem source_cell_exponent_cap {ι : Type*} [DecidableEq ι]
     (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -42,8 +40,3 @@ theorem source_cell_mass_gate {ι : Type*} [DecidableEq ι]
   apply le_trans (mul_le_mul_of_nonneg_left (show
     secondCount ell Ractive j t (secondCellExponent Z d 0) (secondCellExponent Z d 1)+11*eta/2≤
       ell+Ractive/2+t+Lcap+11*eta/2 by unfold secondCount; linarith) heps) hbudget
-
-end SevenEighths.InverseMomentGlobalRetainedGates
-end
-
-end OAI

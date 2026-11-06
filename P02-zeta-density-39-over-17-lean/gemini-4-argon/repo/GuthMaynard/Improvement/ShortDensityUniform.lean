@@ -84,4 +84,3 @@ theorem zetaDensityCount_uniform_of_fixed_sigma {c : ℝ} (hc : 0 < c)
       (Real.rpow_le_rpow_of_exponent_le (by linarith) hexp) (hC j).le
     _ ≤ B*T^(c*(1-σ)+ε) := mul_le_mul_of_nonneg_right hCB (by positivity)
 
-end GuthMaynard.Improvement

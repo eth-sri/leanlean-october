@@ -83,4 +83,3 @@ theorem masked_radial_discard_negligible {a : ℝ → ℂ}
       ring
     _ ≤ _ := by gcongr; exact hn T hT
 
-end GuthMaynard.Improvement

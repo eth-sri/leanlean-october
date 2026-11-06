@@ -10,11 +10,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
 variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 
@@ -53,9 +50,3 @@ theorem first_live_cell_radius_cap (pool:Finset ι)(Q:Finset (ι→₀ℕ))
     (dyadIndex (InverseFirstGlobalCaps.jNorm p x.1))≤_
   rw [←first_dyadic_radius_cell p pool Q _ _ x.1 href]
   exact first_dyadic_original_cap p hp pool Q Z M r ell V eta tau Fmax hZ hbin hM hF hQ x.1 ho
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

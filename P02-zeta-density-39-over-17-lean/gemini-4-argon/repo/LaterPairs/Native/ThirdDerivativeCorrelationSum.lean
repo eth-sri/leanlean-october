@@ -36,4 +36,3 @@ theorem sum_third_derivative_correlation_majorant
       mul_le_mul_of_nonneg_left (add_le_add hs hi) (by norm_num)
     _ = _ := by ring
 
-end TaoTrudgianYang2025

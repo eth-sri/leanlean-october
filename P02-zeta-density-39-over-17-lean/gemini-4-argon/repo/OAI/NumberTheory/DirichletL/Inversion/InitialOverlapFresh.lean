@@ -42,9 +42,3 @@ theorem overlap_column_interval (I : Finset σ) (lo hi y : σ→ℝ)
       _≤yj*yc := mul_le_mul_of_nonneg_right hj.1 hc.le
       _≤b*(∏i∈I,y i) := hsourceHi
       _≤b*(∏i∈I,hi i) := mul_le_mul_of_nonneg_left hhiP (ha.le.trans hab)
-
-end SevenEighths.InverseInitialOverlapFresh
-
-end
-
-end OAI

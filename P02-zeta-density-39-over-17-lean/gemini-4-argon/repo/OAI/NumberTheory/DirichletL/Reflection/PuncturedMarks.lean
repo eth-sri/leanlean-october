@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma markedCompletedT_zero_punctured (Ψ : Eis→*ℂ) (m f z : Eis)
     (P : Ideal Eis) (hP : Prime P) (hm : m∈P)
@@ -24,8 +23,3 @@ lemma markedCompletedT_zero_punctured (Ψ : Eis→*ℂ) (m f z : Eis)
         simp only [summand,hz,mul_zero,zero_mul]
     · rw [hd _ hdiv,mul_zero]
   simp only [markedCompletedT,hz,tsum_zero]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

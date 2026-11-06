@@ -100,4 +100,3 @@ theorem exp_zetaAtkinsonPhase_saddle_neg_sqrt {T : ℝ} (hT : 0 < T) (n : ℕ) :
   push_cast
   ring
 
-end MathCollab.Density.Stronger.Atkinson

@@ -172,6 +172,4 @@ theorem norm_heathBrownCoefficientWeight_succ_sub_le
       exact abs_heathBrownDisplacementPolynomial_succ_sub_le hH hα hqH
 
 
-end
 
-end GafniTao

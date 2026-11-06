@@ -268,4 +268,3 @@ theorem mellinLine_eq_cutoffIntegral (w : ReflectionCutoff) (r : ℝ) :
     ring
   rw [he, mul_comm]
 
-end MathCollab.Density

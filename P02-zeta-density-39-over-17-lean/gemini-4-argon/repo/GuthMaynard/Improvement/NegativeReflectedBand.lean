@@ -25,4 +25,3 @@ theorem boundedPolynomial_norm_reverse (N : ℝ) (a : ℕ → ℂ) (t : ℝ) :
     ‖boundedPolynomial N a t‖ = ‖boundedPolynomial N (fun n => conj (a n)) (-t)‖ := by
   rw [← boundedPolynomial_conjugate_time,RCLike.norm_conj]
 
-end GuthMaynard.Improvement

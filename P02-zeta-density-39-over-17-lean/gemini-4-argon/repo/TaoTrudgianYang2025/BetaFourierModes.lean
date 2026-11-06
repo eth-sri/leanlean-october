@@ -58,4 +58,3 @@ theorem summable_norm_modelPhaseFourierMode
     Summable (fun r : ℤ => ‖modelPhaseFourierMode χ F T N r‖) :=
   (summable_modelPhaseFourierMode hχ hs hF hN T).norm
 
-end TaoTrudgianYang2025

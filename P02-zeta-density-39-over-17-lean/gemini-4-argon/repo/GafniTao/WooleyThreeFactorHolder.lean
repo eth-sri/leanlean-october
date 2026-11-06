@@ -13,9 +13,8 @@ oriented mixed moments.  This file proves the finite nonnegative inequality
 directly, with all three exponents visible.
 -/
 
-open Finset
+open Finset MeasureTheory
 open scoped BigOperators ENNReal
-open MeasureTheory
 
 namespace GafniTao
 
@@ -212,6 +211,4 @@ theorem wooley_three_factor_holder_critical_real
 
 
 
-end
 
-end GafniTao

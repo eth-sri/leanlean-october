@@ -58,4 +58,3 @@ theorem norm_integral_mul_le_of_primitive_bound {a b B : ℝ} (hab : a ≤ b)
       exact mul_le_mul_of_nonneg_left (hB b (Set.right_mem_Icc.mpr hab)) hgpos
     _ = _ := by ring
 
-end DhimanKadiriQuesadaHerrera2026

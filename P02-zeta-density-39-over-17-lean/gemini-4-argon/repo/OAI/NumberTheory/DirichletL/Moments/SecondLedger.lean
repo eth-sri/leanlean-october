@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondLedger
-open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal
-open CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
 
 theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
@@ -218,11 +216,3 @@ theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMa
           (dividedFrequency p c d w i) (local_nonzero_of_global p hp hcop c d w hne i))
       apply Real.logb_nonneg hZ
       exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
-
-end Global
-
-end SevenEighths.CenteredMomentSecondLedger
-
-end
-
-end OAI

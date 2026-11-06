@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalAllocationShell ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalAllocationShell ConcretePrimeRowBridge
 universe u
 structure Profiles (lo hi:ℝ) where
   profile : Fin 2→𝓢(ℝ,ℂ)
@@ -32,9 +29,3 @@ def ProfileAdmissible {ι:Type u} [Fintype ι] (s:Data ι) (p:Profiles lo hi)
   CenteredExceptionalProfile.FixedInducingRow s.η Q s.m s.A z ∧
   s.W₁=p.profile 0 ∧ s.W₂=p.profile 1 ∧
   Z^r≤s.X₁ ∧ Z^r≤s.X₂ ∧ Z^r≤s.Y₁ ∧ Z^r≤s.Y₂
-
-end SevenEighths.CenteredMomentFiniteProfileExceptional
-
-end
-
-end OAI

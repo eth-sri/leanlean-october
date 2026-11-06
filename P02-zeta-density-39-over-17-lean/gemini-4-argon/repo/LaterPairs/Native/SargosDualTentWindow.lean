@@ -95,4 +95,3 @@ theorem sargosNearPairs_card_le_central {ι : Type*}
   convert hd using 1
   field_simp
 
-end TaoTrudgianYang2025

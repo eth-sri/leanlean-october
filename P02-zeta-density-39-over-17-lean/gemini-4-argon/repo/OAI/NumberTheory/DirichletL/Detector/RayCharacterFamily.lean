@@ -14,12 +14,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeRayCharacterFamily
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve CanonicalRowCompletion UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion UniqueFactorizationMonoid
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def fixedTwistSupport : Finset (Ideal O) :=
@@ -127,9 +123,3 @@ theorem source_nonprincipal_maximum_dominates {ι : Type*} [Fintype ι]
     HeckeDetectorZeros.zeroMaximum ψ hψ T≤detectorMaximum (sourceDetectorFamily S hS η u ψ) T := by
   rw [←detectorMaximum_eq_nonprincipal ψ hψ T]
   exact source_maximum_dominates S hS η u ψ T
-
-end SevenEighths.ProbeRayCharacterFamily
-
-end
-
-end OAI

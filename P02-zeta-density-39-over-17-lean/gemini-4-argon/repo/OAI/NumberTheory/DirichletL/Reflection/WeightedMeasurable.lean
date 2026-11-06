@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {Ω φ σ : Type*} [MeasurableSpace Ω] [Fintype φ] [Fintype σ]
 variable {N a c : Eis} {mode : Bool}
 
@@ -40,8 +39,3 @@ lemma weightedReflectedBranchHybridRow_aestronglyMeasurable
   intro b hb
   unfold frozenBranchColumn
   exact (((((hw n hn b hb).const_mul _).mul_const _).mul_const _).mul_const _).mul_const _
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

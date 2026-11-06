@@ -11,10 +11,7 @@ open scoped Classical BigOperators Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily UniqueFactorizationMonoid
-open CenteredMomentDetectorDictionary CenteredExceptionalProfile CenteredExceptionalCount
-open ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily UniqueFactorizationMonoid CenteredMomentDetectorDictionary CenteredExceptionalProfile CenteredExceptionalCount ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
 
 theorem fixed_inducing_free_support (η : Character) (Q : Ideal O)
     (hQ0 : Q≠0) (hQ : Q≠⊤) (hQ72 : Q≤Ideal.span {(72:O)}) (hQη : Q≤η.modulus)
@@ -73,9 +70,3 @@ theorem eventually_source_no_exceptional (F : ProbeFinalAssembly.SourceData D) (
     change ((Ideal.span {u.val}).absNorm:ℝ)≤_
     exact_mod_cast source_exceptional_norm F _ u hex
   exact (not_lt_of_ge (hu.trans hb)) (hz label)
-
-end SevenEighths.CenteredMomentNaturalFixedRaySource
-
-end
-
-end OAI

@@ -143,4 +143,3 @@ theorem modelPhaseBufferedFourierMode_interior_uniform
   exact (mul_le_mul_of_nonneg_left
     (hR l r η d hl hr hη hd F δ (q*N/T) T hδ hF hv hT hleft hright) hN.le).trans_eq (by ring)
 
-end TaoTrudgianYang2025

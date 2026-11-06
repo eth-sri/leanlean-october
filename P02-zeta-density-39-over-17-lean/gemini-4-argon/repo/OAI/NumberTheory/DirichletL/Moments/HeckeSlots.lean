@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeSlots
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentCounting CenteredMomentTwist
-local notation "O" => ActualEisensteinCubic.O
 
 def rowSlot (η : Character) (m A z : O) (S : Finset (Ideal O))
     (β : Ideal O → ℂ) (t : ℝ) : ℂ :=
@@ -97,9 +96,3 @@ def centeredSlotRow (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
     ((rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂-
       rowTwistedSum η m A z W₁ t Y₁*rowTwistedSum η m A z W₂ t Y₂)*
       ∏ i,rowSlot η m A z (S i) (β i) t)
-
-end SevenEighths.CenteredMomentHeckeSlots
-
-end
-
-end OAI

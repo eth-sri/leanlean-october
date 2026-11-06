@@ -5,33 +5,3 @@ public import OAI.NumberTheory.DirichletL.Moments.WholeDivisorShell
 public import OAI.NumberTheory.DirichletL.Moments.SecondMaskedWindow
 public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalColumns
 public import OAI.NumberTheory.DirichletL.Moments.SecondWindowBudget
-
-set_option linter.privateModule false
-
-@[expose] public section
-
-namespace OAI
-
-noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
-
-namespace SevenEighths.CenteredMomentSecondSummedBlock
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound
-local notation "O" => ActualEisensteinCubic.O
-
-open Filter
-
-end SevenEighths.CenteredMomentSecondSummedBlock
-
-end
-
-end OAI

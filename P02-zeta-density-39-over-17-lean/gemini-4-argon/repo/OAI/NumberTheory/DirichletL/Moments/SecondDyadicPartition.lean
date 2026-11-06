@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDyadicPartition
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow
-open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSmooth CenteredMomentLogDyadic CenteredMomentDyadicCount
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization CenteredMomentSmooth CenteredMomentLogDyadic CenteredMomentDyadicCount
 
 abbrev Blocks (a b : Fin 4→ℝ) := ∀ i : Fin 4,↥(indices (a i) (b i))
 
@@ -60,9 +56,3 @@ theorem physical_kernel_dyadic_partition (C D I J : Ideal O)
       intro n hn
       rw [Fin.prod_univ_four]
       exact physical_kernel_dyadic C D I J hC hD hI hJ A h hA hh W K R hK (fun i=>n i)
-
-end SevenEighths.CenteredMomentSecondDyadicPartition
-
-end
-
-end OAI

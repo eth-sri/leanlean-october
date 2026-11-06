@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 
 lemma norm_div_le_twice (A H : ℂ) (hH : 1/2≤‖H‖) : ‖A/H‖≤2*‖A‖ := by
   rw [norm_div]
@@ -63,7 +62,3 @@ theorem ramifiedSelected_central_quotient (eta a rho x w z : ℂ) (alpha eps : �
       _≤Q^(-1:ℝ)*(2*(391*Q^(1/2:ℝ))) := mul_le_mul_of_nonneg_left (hnorm.trans (by linarith)) hqi
       _=782*Q^(-(1/2:ℝ)) := by nlinarith [hpow]
       _≤_ := mul_le_mul_of_nonneg_right (by norm_num) (Real.rpow_nonneg hQ0.le _)
-end SevenEighths.ProbeEuler
-end
-
-end OAI

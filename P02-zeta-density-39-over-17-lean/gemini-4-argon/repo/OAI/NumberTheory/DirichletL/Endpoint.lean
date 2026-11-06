@@ -101,9 +101,3 @@ theorem balanced_endpoint_margin {δ y : ℝ}
     nlinarith only [hcancel, hp]
   have hup := mul_le_mul_of_nonneg_right hJhi (le_of_lt hEpos)
   nlinarith only [hcancel, hup]
-
-end
-
-end SevenEighths.Endpoint
-
-end OAI

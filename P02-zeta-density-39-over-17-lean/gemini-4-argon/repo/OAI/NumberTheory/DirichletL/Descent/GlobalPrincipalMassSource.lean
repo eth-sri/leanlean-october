@@ -8,10 +8,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 lemma active_norm_of_square {ι : Type*} [DecidableEq ι] (p : ι→O)
     (A : Finset ι) (Z R eta : ℝ) (hZ : 0<Z)
@@ -60,8 +58,3 @@ theorem original_weighted_source (Jmax : ℕ) (delta : ℝ) (hdelta : 0<delta) :
     _ = C*Z^(ell+R/2+Bfirst+t+7*eta/2+delta*(3*ell+Bfirst+t+5*eta)+a*(2*ell+Bfirst+t+4*eta)) := by
       rw [weighted_mass_power Z ell R Bfirst t eta delta a hZp]
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)) hC.le
-
-end SevenEighths.InverseMomentGlobalPrincipalMass
-end
-
-end OAI

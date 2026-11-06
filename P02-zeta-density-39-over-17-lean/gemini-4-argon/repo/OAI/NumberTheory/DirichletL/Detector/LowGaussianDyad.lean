@@ -12,8 +12,6 @@ open scoped Classical ContDiff SchwartzMap
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowCommonDyad {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
     (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
@@ -86,8 +84,3 @@ theorem low_central_gaussian_dyad (η : HeckeFamily.Character) (S : Finset Id)
   apply lowCommonDyad_norm_of_bound
   intro t
   simpa only [mul_assoc,mul_left_comm,mul_comm] using hZ.2 T hT hout hdis hnorm J U hU hlo hhi W hW t
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

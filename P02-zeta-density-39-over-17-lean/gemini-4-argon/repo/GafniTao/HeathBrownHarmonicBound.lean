@@ -40,6 +40,4 @@ theorem heathBrownShiftBound_harmonic_le
     (heathBrownShiftBound_le_N N k H lambda) hN
 
 
-end
 
-end GafniTao

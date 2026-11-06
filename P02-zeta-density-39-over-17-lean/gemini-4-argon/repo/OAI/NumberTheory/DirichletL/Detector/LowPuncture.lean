@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeRow ProbeCompleted CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open ProbeRow ProbeCompleted CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass ActualEisensteinCubic
 
 lemma calibration_generator_dvd (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (a : O) (ha : Ideal.span {a}∈S) : a∣(calibrationForSet S hS).generator := by
@@ -82,8 +78,3 @@ lemma calibration_coprime_iff_excluded_span (S : Finset Id) (hS : ∀P∈S,P.IsM
   · intro h P hP ha
     apply h P hP
     exact Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr ha))
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

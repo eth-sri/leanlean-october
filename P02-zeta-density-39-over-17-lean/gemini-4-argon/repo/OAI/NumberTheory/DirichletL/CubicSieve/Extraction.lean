@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem extracted_norm_product (I : Ideal O) (hI : I ≠ 0) :
     (Ideal.absNorm I : ℝ) = (Ideal.absNorm (firstPart I) : ℝ) *
@@ -25,8 +24,3 @@ theorem sieveNorm_mono {M N M' N' : ℝ} (hM : M ≤ M') (hN : N ≤ N') :
     exact ⟨(mem_idealRange.mp I.property).1, (mem_idealRange.mp I.property).2.trans hM⟩
   · intro J
     exact ⟨(mem_idealRange.mp J.property).1, (mem_idealRange.mp J.property).2.trans hN⟩
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

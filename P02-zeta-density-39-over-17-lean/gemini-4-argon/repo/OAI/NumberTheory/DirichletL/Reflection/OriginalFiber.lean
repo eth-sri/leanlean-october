@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
@@ -58,7 +57,3 @@ theorem original_fiber_inactive_sum (S : PrimeFamily σ)
     1-(Ideal.absNorm (E (Sum.inr b)).val.val:ℂ)⁻¹ else 0)=_
   rw [D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b)]
   rfl
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

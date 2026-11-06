@@ -125,6 +125,4 @@ theorem norm_heathBrown_source_average_sub_le
       simp [Nat.card_Icc, pow_two]
 
 
-end
 
-end GafniTao

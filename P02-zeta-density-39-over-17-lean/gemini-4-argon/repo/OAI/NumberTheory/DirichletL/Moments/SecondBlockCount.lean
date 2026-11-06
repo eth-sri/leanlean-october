@@ -11,17 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondBlockCount
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondWholeKernel
-open CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondActiveCount
-open CenteredMomentSecondSectorFrequency CenteredMomentSecondRetainedRows
-open CenteredMomentSectorLocalization CenteredMomentSecondCanonical
-open CenteredMomentSecondSectorColumns CenteredMomentSecondRetainedAggregate
-open CenteredMomentCompleteCommon CenteredMomentRankinRadical CenteredMomentDyadicCount
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentActiveSource
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondWholeKernel CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition CenteredMomentSecondBlockAggregate CenteredMomentSecondActiveCount CenteredMomentSecondSectorFrequency CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentSecondCanonical CenteredMomentSecondSectorColumns CenteredMomentSecondRetainedAggregate CenteredMomentCompleteCommon CenteredMomentRankinRadical CenteredMomentDyadicCount CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentActiveSource
 
 lemma ideal_norm_ge_one (I : Ideal O) (hI : I≠0) : (1:ℝ)≤Ideal.absNorm I := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
@@ -93,9 +83,3 @@ lemma commonSubset_support (C D : Ideal O) (U : Finset (CommonIndex C D)) :
   obtain ⟨Q,hQ,rfl⟩ := Finset.mem_image.mp hP
   rw [commonRadical_support]
   exact Q.property
-
-end SevenEighths.CenteredMomentSecondBlockCount
-
-end
-
-end OAI

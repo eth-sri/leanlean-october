@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.HeckeDetectorFinite
-open HeckeFamily HeckeDetectorWitnessArithmetic HeckeDetectorTail HeckeDetectorPartition
-open CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDetectorWitnessArithmetic HeckeDetectorTail HeckeDetectorPartition CompletedGauss ConcretePrimeRowBridge
 
 def pairSet (U : ℝ) : Finset (Ideal O × Ideal O) :=
   (idealsUpTo ⌈2*U⌉₊) ×ˢ (idealsUpTo ⌈2*U⌉₊)
@@ -134,9 +132,3 @@ theorem nonzero_block_scale_bounds (χ : Character) (V T : ℝ → ℂ) (D Y U :
     hD hU j k hj hk hfirst
   · simpa only [map_mul,Nat.cast_mul] using hproduct
   · simpa only [map_mul,Nat.cast_mul] using hterminal
-
-end SevenEighths.HeckeDetectorFinite
-
-end
-
-end OAI

@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
@@ -98,7 +97,3 @@ theorem exists_global_sector_completion (F : PrimeFamily φ) (rows Pset : Finset
   refine ⟨E,?_⟩
   intro K P hp
   rw [hE]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

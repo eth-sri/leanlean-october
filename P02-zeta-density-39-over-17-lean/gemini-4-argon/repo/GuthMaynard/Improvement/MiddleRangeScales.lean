@@ -74,4 +74,3 @@ theorem middle_threshold_ge_one {N T : ℝ} (hN : 1 ≤ N) (hT : 1 ≤ T) :
   exact one_le_mul_of_one_le_of_one_le
     (Real.one_le_rpow hN (by norm_num)) (Real.one_le_rpow hT (by norm_num))
 
-end GuthMaynard.Improvement

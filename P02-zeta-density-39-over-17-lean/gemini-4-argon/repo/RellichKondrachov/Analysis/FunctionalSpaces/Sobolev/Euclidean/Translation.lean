@@ -38,11 +38,6 @@ namespace Euclidean
 open scoped ENNReal MeasureTheory Topology
 open MeasureTheory
 
-section Topology
-
-variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
-
-end Topology
 
 section Measure
 
@@ -78,10 +73,4 @@ lemma translateL2_ae_eq {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] (
 
 variable [IsFiniteMeasureOnCompacts μ]
 
-end Measure
 
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov

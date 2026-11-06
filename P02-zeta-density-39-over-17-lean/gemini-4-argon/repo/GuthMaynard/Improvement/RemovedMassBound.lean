@@ -168,4 +168,3 @@ theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
         _ = 40*C*K*(N^(ε/2)*N^(ε/2))*(N^2+T*N^4/U^4) := by ring
         _ = _ := by rw [hp]
 
-end GuthMaynard.Improvement

@@ -105,4 +105,3 @@ theorem modelPhaseMorseCoordinate_iteratedDeriv_bound
     (by unfold morseCoordinateDerivativeOrder at hP; omega)).trans
       (morseJetMagnitude_le_budget σ hj)
 
-end TaoTrudgianYang2025

@@ -13,20 +13,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentAmplifiedChildWidth
-open ActualEisensteinCubic
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CenteredMomentSecondRadicalBudget
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop
-open CenteredMomentSecondCanonical CenteredMomentSecondHeightFamily
-open CenteredMomentHeckeColumnWindow CenteredMomentSourceRow
-open CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CenteredMomentSecondRadicalBudget CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock CenteredMomentSecondActualWidth CenteredMomentSecondCanonical CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentSectorLocalization
 
 theorem modulus_pos (η:Character) : 0<(η.modulus.absNorm:ℝ) :=
   norm_pos _ η.modulus_ne_bot
@@ -374,10 +361,3 @@ theorem error_declared_width_drop (θ:Character)(χ₀:RayCharacter)(p:O)(hp:p�
   have hc:=(fixedWidthThreshold_spec b Csec σ hb hCs hσ).2 Z hlarge ξ hξ
   rw [hmask] at hw
   linarith
-
-end ActualSource
-end SevenEighths.CenteredMomentAmplifiedChildWidth
-
-end
-
-end OAI

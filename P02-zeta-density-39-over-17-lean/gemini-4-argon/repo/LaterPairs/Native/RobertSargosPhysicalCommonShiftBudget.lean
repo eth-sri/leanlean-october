@@ -48,4 +48,3 @@ theorem robertSargos_physical_common_shift_budget (M H : ℕ) {lam : ℝ}
   have hm := mul_le_mul_of_nonneg_left hprod (show 0 ≤ 8*(M:ℝ) by positivity)
   nlinarith
 
-end TaoTrudgianYang2025

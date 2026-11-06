@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseSecondChildWindows
-open InverseMoment InverseSecondProfileUniform
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
-local notation "O" => ActualEisensteinCubic.O
+open InverseMoment InverseSecondProfileUniform ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
 
 theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
     ∃ w : 𝓢(ℝ,ℂ), HasCompactSupport (w : ℝ→ℂ) ∧
@@ -226,9 +224,3 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
       (fun k=>?_) hleft hright i
     rw [actualRelativeNorm_outer]
     exact hblock j.1 ((mem_secondProfileIndices source pool _ j).mp hj).1 k
-
-end SevenEighths.InverseSecondChildWindows
-
-end
-
-end OAI

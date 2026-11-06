@@ -189,6 +189,4 @@ theorem wooleySourcePolynomial_iterationChain_contradict_twoLoss
     hterminal hHeta hHepsilon hconstants
 
 
-end
 
-end GafniTao

@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma first_whole_frequency_numeric (K P dn an cn a1 a2 sn tn hn L : ℝ)
     (hK : 0<K) (hP : 0<P) (hdn : 0<dn) (han : 0<an)
@@ -89,8 +88,3 @@ theorem first_ratio_actual_row {ι : Type*} [DecidableEq ι]
   apply hnum.trans_eq
   field_simp
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

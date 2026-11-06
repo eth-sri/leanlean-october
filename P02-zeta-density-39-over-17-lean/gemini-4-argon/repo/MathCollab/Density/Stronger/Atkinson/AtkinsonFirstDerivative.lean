@@ -92,4 +92,3 @@ theorem norm_phaseIntegral_le_of_positive_slope {φ : ℝ → ℝ} {a b lam : �
   simpa only [neg_neg] using h
 
 
-end MathCollab.Density.Stronger.Atkinson

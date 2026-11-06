@@ -326,8 +326,3 @@ theorem poisson_envelope_descendant_le (M N e d δ ξ P Q : ℝ)
   have hs := mul_le_mul_of_nonneg_left
     (secondary_descendant_le M N e d δ ξ hM hN he hed hδ hξ) hQ
   nlinarith [hm, hs]
-
-end
-end SevenEighths.CubicDyadicDecay
-
-end OAI

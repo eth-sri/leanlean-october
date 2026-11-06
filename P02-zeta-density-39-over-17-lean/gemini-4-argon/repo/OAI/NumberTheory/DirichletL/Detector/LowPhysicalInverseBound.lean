@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
@@ -102,8 +100,3 @@ theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset
       calc
         _=((Fintype.card RayRing:ℝ)*Real.sqrt (C*B^2/q)/(2*Real.pi))*(1+|t|)^degree*Z^(507*ε/2) := by ring
         _≤_ := by gcongr ; linarith
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

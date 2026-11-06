@@ -11,14 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyChildState
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentEnergyState CenteredMomentSecondNonexceptionalChosenBlock
-open CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentEnergyState CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
 
 lemma ball_support : Function.support (ballProfile:ℝ→ℂ)⊆Set.Iic (2:ℝ):=by
   intro x hx
@@ -88,10 +81,3 @@ lemma actual_dyad_ge_one : 1≤dyadicScale (n 1):=by
   obtain ⟨z,_,hz,hz0,_⟩:=physicalBlock_live_dyadic_witness η t S β C D hC hD U
     radius rows W K n hne
   exact (normValue_ge_one z hz0).trans (dyadicRows_norm rows n z hz).2.le
-
-end Actual
-end SevenEighths.CenteredMomentEnergyChildState
-
-end
-
-end OAI

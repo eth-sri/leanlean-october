@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def reflectedExponent {φ ρ σ : Type*} (jF : φ → ℕ) : φ ⊕ (ρ ⊕ σ) → ℕ :=
   Sum.elim jF (Sum.elim (fun _ => 1) (fun _ => 0))
@@ -69,9 +68,3 @@ lemma reflected_slot_product {φ σ : Type*} [Fintype φ] [Fintype σ]
   simp only [generator_span, slotIndices]
   rw [Finset.prod_image (Sum.inr_injective.comp Sum.inr_injective).injOn]
   rfl
-end PrimeFamily
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

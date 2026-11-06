@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeExpansion
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist CenteredMomentMask
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist CenteredMomentMask
 
 def rowWeight (η : Character) (m A z : O) (t : ℝ) : Ideal O →*₀ ℂ where
   toFun I := (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A*z)) I)*
@@ -145,9 +143,3 @@ theorem common_extracted_slot_rectangle (η : Character) (m A z : O)
   apply Finset.sum_congr rfl
   intro v hv
   ring
-
-end SevenEighths.CenteredMomentHeckeExpansion
-
-end
-
-end OAI

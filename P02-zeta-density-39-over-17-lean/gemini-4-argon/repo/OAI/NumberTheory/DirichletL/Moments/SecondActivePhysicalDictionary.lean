@@ -10,16 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondActivePhysicalDictionary
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns
-open CenteredMomentSecondSectorFrequency CenteredMomentActiveSource
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentSectorLocalization
-open CenteredMomentSecondWholeKernel CenteredMomentLogDyadic
-open CenteredMomentSecondSectorRetained CenteredMomentSmooth
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns CenteredMomentSecondSectorFrequency CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSectorLocalization CenteredMomentSecondWholeKernel CenteredMomentLogDyadic CenteredMomentSecondSectorRetained CenteredMomentSmooth
 
  theorem sectorPool_active (C:Ideal O)(hC:C≠0)(S:Finset (Ideal O))(β:Ideal O→ℂ):
     sectorPool C hC (activeSource S β)=(sectorPool C hC S).filter (fun I=>β (C*I)≠0):=by
@@ -98,9 +89,3 @@ local notation "O"=>HeckeFamily.O
         (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K)*
         dyadicWeight (n 1) (normValue z)*dyadicWeight (n 2) (I.absNorm:ℝ)*
         dyadicWeight (n 3) (J.absNorm:ℝ):ℝ):ℂ)) _
-
-end SevenEighths.CenteredMomentSecondActivePhysicalDictionary
-
-end
-
-end OAI

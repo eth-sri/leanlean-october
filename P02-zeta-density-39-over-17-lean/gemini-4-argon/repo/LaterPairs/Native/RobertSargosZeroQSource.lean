@@ -76,4 +76,3 @@ theorem robertSargos_zero_q_source_bound
   · rw [Finset.Icc_eq_empty_of_lt (by omega : b < a),Finset.sum_empty,norm_zero]
     positivity
 
-end TaoTrudgianYang2025

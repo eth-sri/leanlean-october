@@ -101,4 +101,3 @@ theorem modelPhaseInverseJet_expanded_reference_error
       intro F δ P _ hpos _ hF hj v hv
       exact hbound F δ P hpos hF (by omega) v hv
 
-end TaoTrudgianYang2025

@@ -592,6 +592,4 @@ theorem wooleyPolynomial_equation_6_9 {Q k : ℕ}
         _ = _ := by rw [hA, hF]; ring
     _ = _ := by rfl
 
-end
 
-end GafniTao

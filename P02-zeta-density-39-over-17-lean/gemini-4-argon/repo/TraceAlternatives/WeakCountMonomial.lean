@@ -54,4 +54,3 @@ theorem weak_count_monomial_bound {R E K M T U mass a b w : ℝ}
     ring
   exact hh.trans_eq hId
 
-end Montgomery.RationalMoment

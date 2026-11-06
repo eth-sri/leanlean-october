@@ -77,9 +77,3 @@ lemma detectorMaximum_eq_nonprincipal (χ : ι→Character) (hχ : ∀i,(χ i).r
     simp only [detectorRealParts,HeckeDetectorZeros.realParts,detectorFamilyZeros,HeckeDetectorZeros.familyZeros,hz]
   unfold detectorMaximum HeckeDetectorZeros.zeroMaximum
   simp only [hr]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

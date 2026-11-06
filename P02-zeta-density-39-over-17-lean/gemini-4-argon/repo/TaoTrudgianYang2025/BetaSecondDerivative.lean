@@ -59,4 +59,3 @@ theorem approximateModelPhase_curvature_deriv_bounds {σ δ : ℝ} {F : ℝ → 
   rw [iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_phaseInterval hcont huClosed] at h
   simpa only [iteratedDeriv_succ, iteratedDeriv_zero] using h
 
-end TaoTrudgianYang2025

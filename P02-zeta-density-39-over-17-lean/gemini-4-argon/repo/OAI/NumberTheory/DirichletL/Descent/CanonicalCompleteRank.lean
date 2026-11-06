@@ -10,11 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
-local notation "O"=>ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
 
 theorem actual_complete_state_from_rank_moments
     (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi)(W:ℝ→ℂ)
@@ -120,9 +116,3 @@ theorem actual_complete_state_from_rank_moments
       (by rw [hbexp]; exact hwin.trans (Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)))
       (hwin.trans (Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith))) hne
       base Ψ hbase m hm hmargin hpuncture le_rfl le_rfl le_rfl slots lists a w21 w22 K degree h21 h22 k.1 k.2.1 k.2.2 false
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

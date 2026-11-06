@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase InverseTerminalWidths
-open CanonicalCubeSeparation CompletedHeight InverseMomentFirstSecondHeightCost
-local notation "O"=>ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase InverseTerminalWidths CanonicalCubeSeparation CompletedHeight InverseMomentFirstSecondHeightCost
 
 theorem rank_energy_exists_succ_of_reference
     (n:ℕ)(L cstar cutoff eta:ℝ)(K:ℕ)
@@ -181,9 +178,3 @@ theorem rank_energy_exists_succ_of_reference
     (mul_le_mul_of_nonneg_left hpow (show 0≤(Cs+Cb)*(1+A) by positivity))
     (Real.rpow_nonneg hZ0.le (N+V+rankLoss (n+1) eta))
   convert hx using 1 ; ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

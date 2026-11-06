@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.CenteredMomentSourceProfileMass
-open ActualEisensteinCubic CenteredMomentPrimary CenteredMomentRectangle
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CenteredMomentPrimary CenteredMomentRectangle CenteredMomentAddedZeroUniform CenteredMomentSourceMass
 
  theorem primary_mod_one (χ : MulChar (O ⧸ Ideal.span {(1:O)}) ℂ) (I : Ideal O) :
     primaryIdealCharacter 1 χ I=1 := by
@@ -43,9 +41,3 @@ def profileCoefficient {ι : Type*} [Fintype ι]
         ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v := by
   rw [originalFiniteCoefficient,idealWeight_mod_one]
   rfl
-
-end SevenEighths.CenteredMomentSourceProfileMass
-
-end
-
-end OAI

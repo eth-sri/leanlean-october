@@ -29,4 +29,3 @@ lemma pigeonhole_real_sum (n : ℕ) (a : ℕ → ℝ) (S : ℝ) (hS : S ≤ ∑ 
     exact mul_div_cancel₀ S hn_real
   rw [h_sum_eq] at h_sum
   linarith
-end GuthMaynard.NativeMoment

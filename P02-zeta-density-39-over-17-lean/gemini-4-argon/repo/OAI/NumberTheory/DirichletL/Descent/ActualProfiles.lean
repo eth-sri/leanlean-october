@@ -47,8 +47,3 @@ def profileMode {ι : Type*} [Fintype ι] (V : ι → ℝ → ℂ)
     (a₁ a₂ ak : ι → ℝ) (y : ι → ℝ) (t : Frequency) : ℂ :=
   ∏ i, V i (y i) * logPhase t.1 (a₁ i * y i) *
     logPhase t.2.1 (a₂ i * y i) * logPhase t.2.2 (ak i * y i)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

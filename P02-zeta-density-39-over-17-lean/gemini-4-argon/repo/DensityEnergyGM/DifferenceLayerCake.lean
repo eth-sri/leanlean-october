@@ -81,4 +81,3 @@ theorem difference_second_moment_le_peak_integral {M : ℕ} (a : ℕ → ℂ)
     _ = ∑ j ∈ S, (differenceFloorCount W j : ℝ) * f j := sum_differenceFloor_values W f
     _ = _ := hLayer'
 
-end Montgomery.RationalMoment

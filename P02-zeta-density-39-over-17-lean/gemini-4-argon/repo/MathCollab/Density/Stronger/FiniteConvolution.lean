@@ -134,4 +134,3 @@ theorem exists_finiteBlock_powered_piece {f : ArithmeticFunction ℂ} {N k : ℕ
   rw [← he] at hb
   linarith
 
-end MathCollab.Density.Stronger

@@ -71,6 +71,4 @@ theorem taylorWithinEval_deriv_eq_heathBrownTaylorDerivativePolynomial
   simp only [smul_eq_mul]
   ring
 
-end
 
-end GafniTao

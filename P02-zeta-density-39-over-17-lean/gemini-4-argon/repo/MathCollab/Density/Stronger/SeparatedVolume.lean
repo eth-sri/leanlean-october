@@ -91,4 +91,3 @@ theorem volume_le_two_mul_of_separated_card_bound
       ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left (hcount W hWS hsep) (by norm_num))
 
 
-end MathCollab.Density.Stronger

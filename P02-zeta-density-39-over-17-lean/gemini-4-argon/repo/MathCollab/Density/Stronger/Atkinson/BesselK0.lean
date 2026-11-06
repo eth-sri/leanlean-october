@@ -108,4 +108,3 @@ theorem abs_dfiBesselK0_le_two_div_sqrt {x : ℝ} (hx : 0 < x) :
   exact hprod
 
 
-end MathCollab.Density.Stronger.Atkinson

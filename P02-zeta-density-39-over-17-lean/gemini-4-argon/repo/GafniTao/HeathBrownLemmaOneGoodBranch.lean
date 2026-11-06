@@ -142,6 +142,4 @@ theorem norm_heathBrownExponentialSum_le_factor_good_of_vmvt
         ring
 
 
-end
 
-end GafniTao

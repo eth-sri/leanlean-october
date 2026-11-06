@@ -24,8 +24,3 @@ theorem principalScalar_ne_zero {ι : Type*} (slots : Finset ι)
   · exact mul_ne_zero (pow_ne_zero _ (by norm_num))
       (ne_of_gt (Real.rpow_pos_of_pos hZ _))
   · exact ne_of_gt (Finset.prod_pos hS)
-
-end
-end SevenEighths.Probe
-
-end OAI

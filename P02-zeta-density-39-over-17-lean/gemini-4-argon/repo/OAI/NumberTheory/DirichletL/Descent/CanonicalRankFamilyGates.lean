@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CanonicalCoefficientClass InverseTerminalWidths
-open ConcretePrimeRowBridge CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalCoefficientClass InverseTerminalWidths ConcretePrimeRowBridge CompletedGauss
 
 theorem actual_rank_family_period (q:ℕ)(base Ψ:O→*ℂ)
     (hbase:FactorsModulo (fixedBaseConductor q) base)
@@ -84,9 +82,3 @@ theorem canonical_rank_subslot_cap {σ:Type*}[DecidableEq σ]
     (hH:∀i∈slots,1≤H i)(hcap:(∏i∈slots,H i)≤Z^z):
     (∏i∈subslots,H i)≤Z^z :=
   (canonical_rank_subslot_product slots subslots H hsub hH).trans hcap
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

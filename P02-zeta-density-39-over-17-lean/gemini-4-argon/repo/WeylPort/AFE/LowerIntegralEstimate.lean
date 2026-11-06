@@ -139,4 +139,3 @@ theorem norm_sum_lower_integral_le_arithmetic {σ t x y : ℝ} (hσ : σ < 1)
     exact mul_le_mul (norm_lower_boundary_two_le hx ht) (norm_alternating_linear_sum_le N)
       (norm_nonneg _) (by positivity)
 
-end DhimanKadiriQuesadaHerrera2026

@@ -49,4 +49,3 @@ theorem compact_masked_transverse (a b : ℝ) (ha : 0 < a) :
     (scaledKernel_nonneg compactKernel_nonneg (mul_pos hq hδ))
     (mul_pos hq hi).le hδ.le ha hav hvb hlower hr hr2 hr0
 
-end GuthMaynard.Improvement

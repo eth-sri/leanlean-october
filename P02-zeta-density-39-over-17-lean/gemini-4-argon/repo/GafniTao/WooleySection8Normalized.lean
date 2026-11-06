@@ -247,6 +247,4 @@ theorem wooleySourcePolynomial_equation_8_5_of_ratio
         phi p B H (wooleyTriangular k) (k - 1) b (k * b) nu Delta gamma) _)))
 
 
-end
 
-end GafniTao

@@ -50,9 +50,3 @@ lemma shifted_height_two (t q : ℝ) :
   have hs := sq_nonneg ((3+|q|)-|t+q|)
   have hm : 0≤((3+|q|)^2-1)*|t+q|^2 := mul_nonneg (by nlinarith) (sq_nonneg _)
   nlinarith
-
-end SevenEighths.Continuation
-
-end
-
-end OAI

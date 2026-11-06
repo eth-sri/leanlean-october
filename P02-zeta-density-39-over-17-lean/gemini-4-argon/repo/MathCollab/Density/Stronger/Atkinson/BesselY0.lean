@@ -71,4 +71,3 @@ theorem integrableOn_dfiBesselY0Tail_integrand {x : ℝ} (hx : 0 < x) :
     rw [abs_of_nonneg (Real.sqrt_nonneg _)]
     exact div_le_self (Real.exp_pos _).le hsqrt
 
-end MathCollab.Density.Stronger.Atkinson

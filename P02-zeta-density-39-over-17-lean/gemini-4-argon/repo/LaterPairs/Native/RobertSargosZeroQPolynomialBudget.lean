@@ -53,4 +53,3 @@ theorem zero_q_physical_polynomial_budgets {T M H Q R lam : ℝ}
   · nlinarith
   constructor <;> nlinarith
 
-end TaoTrudgianYang2025

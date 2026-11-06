@@ -99,12 +99,3 @@ def solutionEquiv (C n₁ n₂ a b k : A) (hC : C≠0) (hn₁ : n₁≠0)
     (hab : a*n₁+b*n₂=1) : ResidueQ C≃Solutions C n₁ n₂ k :=
   Equiv.ofBijective (param C n₁ n₂ a b k hab)
     ⟨param_injective C n₁ n₂ a b k hab hn₁,param_surjective C n₁ n₂ a b k hC hab⟩
-
-@[simp] lemma solutionEquiv_val (C n₁ n₂ a b k : A) (hC : C≠0) (hn₁ : n₁≠0)
-    (hab : a*n₁+b*n₂=1) (t : ResidueQ C) :
-    (solutionEquiv C n₁ n₂ a b k hC hn₁ hab t).val=(leftParam C n₁ b k t,rightParam C n₂ a k t) := rfl
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

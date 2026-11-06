@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def globalNormalization (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
@@ -53,9 +52,3 @@ theorem finite_replacement_normalized (S : Finset (Ideal O)) (hS : ∀P∈S,Prim
       (hbad.trans Finset.subset_union_left) η u x w z hx hw hz).tprod_eq,
     Finset.prod_mul_distrib,globalNormalization]
   ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

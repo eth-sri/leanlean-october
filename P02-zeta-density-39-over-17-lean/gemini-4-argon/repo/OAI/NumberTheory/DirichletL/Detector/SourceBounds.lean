@@ -8,9 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open CubicEisenstein ProbePhase ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein ProbePhase ProbeRow
 
 theorem bareCongruenceCoefficient_norm_le (A s : O) (hA : A≠0) (hs : s≠0) (H : O) :
     ‖bareCongruenceCoefficient A s hA H‖ ≤
@@ -42,8 +40,3 @@ theorem bareSourceCoefficient_norm_le (η : HeckeFamily.Character)
       mul_le_of_le_one_left (norm_nonneg _) hfac
     _ ≤ _ := bareCongruenceCoefficient_norm_le A s (supportedElement_ne_zero A hA)
       (supportedElement_ne_zero s hs) H
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

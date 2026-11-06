@@ -11,7 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily CanonicalQuadraticSieve InverseInitialCommonRatios InverseInitialExcludedPool
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 theorem tuple_supported (L:ι→Finset (Ideal O))(hs:∀i,∀P∈L i,Supported P)(q:Tuple L) :
@@ -83,9 +82,3 @@ theorem remaining_tuple_outside (L:ι→Finset (Ideal O))(E:Finset (Ideal O))(hE
     outside E (assignedIdeal L J x*survivingProduct (Finset.univ\J) t) := by
   rw [←remainingIdeal_fromPi L J t ht,←joinTuple_product]
   exact tuple_outside L E hE hout _
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

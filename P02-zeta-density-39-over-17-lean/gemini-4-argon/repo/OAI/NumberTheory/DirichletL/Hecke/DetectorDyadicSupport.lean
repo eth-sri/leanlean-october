@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorDyadicBridge
-open HeckeFamily HeckeDetectorFinite HeckeDetectorPartition
-open CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDetectorFinite HeckeDetectorPartition CompletedGauss ConcretePrimeRowBridge
 
 def fourierSet (U : ℝ) : Finset (Ideal O) := idealsUpTo ⌈16*U⌉₊
 
@@ -75,9 +73,3 @@ theorem dyadicBlock_eq_fourier_rectangle (χ : Character) (V T : ℝ→ℂ)
       intro p hp hn
       rw [pairCoefficient_support χ V T D Y U hU hT s p hn, zero_mul, zero_mul]
     _ = _ := Finset.sum_product _ _ _
-
-end SevenEighths.HeckeDetectorDyadicBridge
-
-end
-
-end OAI

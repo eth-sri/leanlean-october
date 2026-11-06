@@ -113,4 +113,3 @@ theorem heathBrown_equation44_native :
             ((W.card : ℝ) + 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ))) :=
   heathBrown_equation44_of_lemmaThree heathBrownLemmaThree_native
 
-end MathCollab.Density.Stronger.PointMean

@@ -93,4 +93,3 @@ theorem iteratedDeriv_modelPhaseMorseInverse_formula
         (morseInverseEval_hasDerivAt hσ hδ hF hv hz (inversePhaseDerivativeExpression n)).deriv]
       rfl
 
-end TaoTrudgianYang2025

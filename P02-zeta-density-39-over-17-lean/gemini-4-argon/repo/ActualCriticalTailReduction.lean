@@ -145,4 +145,3 @@ theorem separated_weightedCriticalMean_excess_count {T B : ℝ}
   dsimp only [v] at hs hi
   nlinarith only [hs,hi]
 
-end Montgomery.RationalMoment.RightDetector

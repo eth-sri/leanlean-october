@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
 
 theorem balanced_adaptive_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -83,9 +82,3 @@ theorem high_adaptive_count_from_raw_moments
   intro a ε T allowance Δ C height q i hU ha ha' hε hε' hC hh hf
   rw [cutoff_eq_high (2*a-1) q ha]
   exact hcount a ε T allowance Δ C height i hU ha.le ha' hε hε' hC hh hf
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

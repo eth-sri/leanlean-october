@@ -30,4 +30,3 @@ theorem atkinsonFiniteStationaryMain_eq_quadratic (T G L α b H : ℝ) :
   unfold atkinsonFiniteStationaryMain
   ring
 
-end MathCollab.Density.Stronger.Atkinson

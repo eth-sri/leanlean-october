@@ -131,6 +131,4 @@ theorem heathBrownLemmaOneNormalized_le_core
     _ = _ := by ring
 
 
-end
 
-end GafniTao

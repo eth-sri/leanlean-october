@@ -211,10 +211,3 @@ theorem quotientClassCoeff_ratio_tendsto {F : rayCharacters M → ℂ → ℂ} {
     (quotientRemainder_continuousOn M H hH hF)
   simpa only [quotientClassCoeff, Complex.ofReal_inv, Complex.ofReal_natCast]
     using quotientRemainder_eqOn M H hH hF
-
-end Quotient
-
-end
-end SevenEighths.PNT.RayAsymptotic
-
-end OAI

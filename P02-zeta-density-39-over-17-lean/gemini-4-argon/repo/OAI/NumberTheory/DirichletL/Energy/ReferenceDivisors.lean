@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceDivisors
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-local notation "O"=>HeckeFamily.O
 
 lemma divisor_norm {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (D:Finset (Ideal O))(hD:D∈(CompletedGauss.primeSupport s.puncture).powerset):
@@ -43,9 +42,3 @@ theorem divisor_reflection_range {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (Real.logb_le_iff_le_rpow hZ hp).mpr hcap
   have hlogY:=Real.logb_nonneg hZ hY
   refine ⟨by linarith,by linarith,divided_scale_power Z Y _ hZ (zero_lt_one.trans_le hY) hp⟩
-
-end SevenEighths.CenteredMomentEnergyReferenceDivisors
-
-end
-
-end OAI

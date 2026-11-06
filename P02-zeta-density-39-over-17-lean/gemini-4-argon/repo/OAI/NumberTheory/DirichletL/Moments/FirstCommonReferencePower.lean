@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonReferencePower
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
-open CenteredMomentFirstCommonSourcePowerBudget
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget CenteredMomentFirstCommonSourcePowerBudget
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 def normalizedPower (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ):ℝ:=
@@ -77,9 +72,3 @@ theorem common_energy_reference_powers (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε
       exact (reference_power_identity b (volume s) (C.absNorm:ℝ) (τ.modulus.absNorm:ℝ)
         Z allowance ε (E j) N (α j) (zero_lt_one.trans_le hb) hV hNC hq hZ).symm
     _ = _:=by rw [←Finset.mul_sum];ring
-
-end SevenEighths.CenteredMomentFirstCommonReferencePower
-
-end
-
-end OAI

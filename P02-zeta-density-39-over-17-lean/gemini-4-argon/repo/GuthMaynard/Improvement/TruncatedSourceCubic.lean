@@ -72,4 +72,3 @@ theorem fixed_truncated_source_cubic {ε : ℝ} (hε : 0 < ε) :
   dsimp only [M,μ,H] at *
   nlinarith only [hh]
 
-end GuthMaynard.Improvement

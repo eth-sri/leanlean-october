@@ -109,4 +109,3 @@ theorem reflected_band_raw_budget {ε A p : ℝ} (hε : 0 < ε) (hA : 1 ≤ A) (
       field_simp
       nlinarith [hpow]
 
-end GuthMaynard.Improvement

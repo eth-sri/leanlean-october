@@ -175,6 +175,4 @@ theorem wooley_section9_loss_absorption
   all_goals ring
 
 
-end
 
-end GafniTao

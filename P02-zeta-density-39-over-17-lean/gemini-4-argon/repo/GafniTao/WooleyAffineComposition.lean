@@ -102,6 +102,4 @@ theorem wooleySourceResidueSequence_twist
   simp only [wooleySourceResidueSequence_apply, wooleySourceTwist_apply]
   by_cases hn : (n : ZMod h) = zeta <;> simp [hn]
 
-end
 
-end GafniTao

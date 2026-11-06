@@ -48,4 +48,3 @@ theorem eventually_gamma_envelope_le_one :
     nlinarith [Real.pi_gt_three]
   exact (mul_le_mul_of_nonneg_right he (by positivity)).trans (by simpa only [mul_comm] using hlimt.le)
 
-end WeylPort

@@ -100,4 +100,3 @@ theorem reflection_absolute_shell_bound (w : MathCollab.Density.ReflectionCutoff
       add_le_add (hsingle _ (by simp)) (hsingle _ (by simp))
     _ = _ := by ring
 
-end GuthMaynard.Improvement

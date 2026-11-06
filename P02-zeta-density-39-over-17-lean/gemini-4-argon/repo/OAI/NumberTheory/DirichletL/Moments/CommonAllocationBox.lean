@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonAllocationBox
-open CenteredMomentCommonAllocation CenteredMomentSupport CenteredMomentCommonSectors
-open CenteredMomentFirstSectors IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonAllocation CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentFirstSectors IdealMobiusDivisorSum
 variable {ι : Type*} [Fintype ι]
 
 def sourceFiber (S : ι → Finset (Ideal O)) (C : Ideal O) (B : ι → Ideal O) :
@@ -83,9 +81,3 @@ theorem sourceFiber_product_sum (S : ι → Finset (Ideal O))
   apply Finset.sum_congr rfl
   intro u hu
   simp only [Finset.prod_mul_distrib,hprod,mul_right_inj' hC]
-
-end SevenEighths.CenteredMomentCommonAllocationBox
-
-end
-
-end OAI

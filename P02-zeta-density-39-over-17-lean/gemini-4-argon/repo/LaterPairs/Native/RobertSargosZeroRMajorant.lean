@@ -51,4 +51,3 @@ theorem sum_robertSargos_zero_r_majorant
       add_le_add (add_le_add hc hs) hi
     _ = _ := by ring
 
-end TaoTrudgianYang2025

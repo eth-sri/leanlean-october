@@ -24,11 +24,10 @@ public import LaterPairs.Native.SargosQuarticKernelJets
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth MeasureTheory GafniTao Set FourierTransform SchwartzMap
 
 noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
+open scoped BigOperators ComplexConjugate Convolution ContDiff NNReal ENNReal FourierTransform Matrix
 namespace TaoTrudgianYang2025
 
 theorem parabola_sixth_frequency_gap
@@ -204,11 +203,6 @@ private theorem parabola_block_gap_closed {i j : ℤ} {m : ℕ} {x x' d w ν : �
     have hd : w^2*(m : ℝ) ≤ x-x' := by nlinarith [hx.1,hx'.2]
     exact (hm'.trans hd).trans (le_abs_self _)
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory FourierTransform SchwartzMap Set GafniTao
-open scoped ComplexConjugate Convolution ContDiff
-namespace TaoTrudgianYang2025
 private def cutoffConjReflect (g : 𝓢(ℝ, ℂ)) : 𝓢(ℝ, ℂ) :=
   SchwartzMap.postcompCLM Complex.conjCLE.toContinuousLinearMap
     (SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
@@ -858,11 +852,6 @@ private theorem parabolaRapid_le_source {ι τ : Type*}
   simpa only [parabolaRapidBilinearMoment,parabolaSourceBilinearMoment,
     parabolaMomentFunction,parabolaRapidWeight,mul_assoc] using hb
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ComplexConjugate
-namespace TaoTrudgianYang2025
 theorem parabola_sum_shift {ι : Type*} (S : Finset ι)
     (z : ι → ℂ) (x : ι → ℝ) (β α γ : ℝ) :
     sargosPlanarSum S z x (fun i => (x i)^2) α γ =
@@ -877,11 +866,6 @@ theorem parabola_sum_shift {ι : Type*} (S : Finset ι)
   congr 2
   ring
 
-end TaoTrudgianYang2025
-noncomputable section
-namespace TaoTrudgianYang2025
-open MeasureTheory Set
-open scoped BigOperators
 private theorem sourceWeight_triangle (R r t α γ β δ : ℝ) :
     ‖(((β-r)/R : ℝ) : ℂ)+((δ-t)/R : ℝ)*Complex.I‖ ≤
       ‖(((α-r)/R : ℝ) : ℂ)+((γ-t)/R : ℝ)*Complex.I‖+
@@ -907,11 +891,6 @@ private theorem parabolaSourceWeight_triangle_lower (R r t α γ β δ : ℝ) :
   apply one_div_le_one_div_of_le (by positivity)
   exact pow_le_pow_left₀ (by positivity) (by nlinarith only [h,hm]) _
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators NNReal ENNReal
-namespace TaoTrudgianYang2025
 def parabolaBandGauge (ξ κ : ℝ) : ℝ := max |κ| |κ-2*ξ|
 
 theorem parabolaBandGauge_nonneg (ξ κ : ℝ) : 0 ≤ parabolaBandGauge ξ κ :=
@@ -1267,11 +1246,6 @@ theorem parabolaWeightedBilinearMoment_localization_closed {ι τ : Type*}
   rw [← hsingle]
   exact integral_nonneg (fun p => mul_nonneg (hW.1 p) (sq_nonneg _))
 
-end TaoTrudgianYang2025
-noncomputable section
-namespace TaoTrudgianYang2025
-open MeasureTheory Set
-open scoped BigOperators
 private theorem weighted_integral_cauchy_square
     {α : Type*} [MeasurableSpace α] {μ : Measure α} {W P Q : α → ℝ}
     (hW : ∀ x, 0 ≤ W x)
@@ -1547,12 +1521,7 @@ theorem ParabolaDecouplingBound.rescale {n : ℕ} {D a σ : ℝ}
   apply (mul_le_mul_iff_right₀ hC₂).mp
   nlinarith only [h]
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem add_sixth_le (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     (a+b)^6 ≤ 64*(a^6+b^6) := by
@@ -1713,13 +1682,7 @@ theorem parabolaWeightedSixNorm_bilinear_reduction {ι : Type*}
   simpa only [parabolaWeightedSixNorm_pow_six W hW₀ hW,
     parabolaWeightedBilinearMoment,H,T,Z,X,G,F] using h
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 public  theorem finGrid_sum {k l : ℕ} {A : Type*} [AddCommMonoid A]
     (f : Fin (k*l) → A) :
@@ -1737,13 +1700,7 @@ public  theorem finGrid_cell {k l : ℕ} (hk : 0 < k) (hl : 0 < l)
   simp only [finProdFinEquiv,Equiv.coe_fn_mk,Nat.cast_add,Nat.cast_mul]
   constructor <;> field_simp <;> ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 def ParabolaBilinearSixBound (δ : ℝ) (p q : ℕ) (ν K : ℝ) : Prop :=
   0 ≤ K ∧ ∀ (ι τ : Type u) (W : ℝ × ℝ → ℝ), ParabolaWeightBand δ W →
@@ -1839,12 +1796,7 @@ theorem ParabolaBilinearSixBound.holder_swap {p q : ℕ} {δ ν K B : ℝ}
   rw [he]
   exact hMN.trans hprod
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private def parabolaIntGridIndex (k : ℕ) (hk : 0 < k) (i : ℤ) : Fin k :=
   ⟨i.toNat % k,Nat.mod_lt _ hk⟩
@@ -1933,7 +1885,6 @@ private theorem parabolaWeightedBilinearMoment_fin_localization {k : ℕ}
   rw [hsum] at h
   exact h
 
-universe u
 
 theorem ParabolaBilinearSixBound.localization {k m q : ℕ} {δ ν K : ℝ}
     (hk : 0 < k) (hq : 0 < q) (hδ : 0 < δ)
@@ -2056,12 +2007,7 @@ theorem ParabolaBilinearSixBound.localization_holder {k m q : ℕ} {δ ν K B : 
     ParabolaBilinearSixBound.{u} δ (k*m) q ν ((7/ν)*(Real.sqrt K*B^3)) :=
   (hK.holder_swap hq hδ hB).localization hk hq hδ hν hν₁ hsmall hscale
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem sum_nonneg_powers_le {ι : Type*} (J : Finset ι) (E : ι → ℝ)
     (hE : ∀ i ∈ J, 0 ≤ E i) {n : ℕ} (hn : n ≠ 0) :
@@ -2155,7 +2101,6 @@ private theorem parabola_sixth_budget_to_square {L E A K k : ℝ}
   change (L^2)^3 ≤ ((14*A+2*k*R)^2*E)^3
   convert hc using 1 <;> ring
 
-universe u
 
 set_option maxHeartbeats 1000000 in
 
@@ -2291,13 +2236,7 @@ theorem ParabolaDecouplingBound.of_bilinear_dyadic {n r : ℕ} {A K : ℝ}
     (by positivity : 0 < (2:ℕ)^r) (by positivity : 0 < (2:ℕ)^(n-r)) hA hK'
   simpa only [hcount,Nat.cast_pow,Nat.cast_ofNat] using h
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem dyadic_width_mul_cells {a n : ℕ} (ha : a ≤ n) :
     (1/(2:ℝ)^n)*(2:ℝ)^(n-a) = 1/(2:ℝ)^a := by
@@ -2340,13 +2279,7 @@ theorem ParabolaBilinearSixBound.dyadic_step {n a b r : ℕ} {K B : ℝ}
     (by positivity) (by positivity) hν₁ (by simpa only [Nat.cast_pow,Nat.cast_ofNat] using hsmall) hscale hB
   simpa only [hcount] using h
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 def parabolaDyadicBilinearBudget (D : ℕ → ℝ) (n r : ℕ) : ℕ → ℕ → ℕ → ℝ
   | 0,a,b => (D (n-a))^2*(D (n-b))^4
@@ -2388,11 +2321,7 @@ theorem parabolaDecouplingBound_dyadic_iterate (D : ℕ → ℝ)
   exact ParabolaDecouplingBound.of_bilinear_dyadic hrn (hD (n-r) (by omega))
     (parabolaBilinearSixBound_dyadic_iterate D hr le_rfl le_rfl hn hD)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem two_rpow_product (C x y : ℝ) (m k : ℕ) :
     (C*(2:ℝ)^x)^m*(C*(2:ℝ)^y)^k =
@@ -2489,12 +2418,7 @@ theorem parabolaDyadicBilinearBudget_exponential {C ε : ℝ} (hC : 0 ≤ C)
         conv_rhs =>
           rw [Real.rpow_add (by norm_num),Real.rpow_add (by norm_num)]
         ring
-end TaoTrudgianYang2025
 
-noncomputable section
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 theorem ParabolaDecouplingBound.mono {n : ℕ} {A B : ℝ}
     (hA : ParabolaDecouplingBound.{u} n A) (hAB : A ≤ B) :
@@ -2556,12 +2480,7 @@ private theorem parabola_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C
   have h := mul_le_mul_of_nonneg_left hroot (show 0 ≤ 2*(2:ℝ)^r by positivity)
   linarith
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 theorem exists_parabolaDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ n : ℕ,
@@ -2623,13 +2542,7 @@ theorem exists_parabolaDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
           have h := Real.one_le_rpow (by norm_num : (1:ℝ) ≤ 2)
             (show 0 ≤ ε*(n:ℝ) by positivity)
           nlinarith
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 theorem exists_parabolaBox_dyadic_decoupling {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (R r t : ℝ), 0 < R →
@@ -2676,13 +2589,7 @@ theorem exists_parabolaBox_dyadic_decoupling {ε : ℝ} (hε : 0 < ε) :
         (fun jk => z jk.1 jk.2) (fun jk => x jk.1 jk.2))^6 := by
     simpa only [parabolaRapidBilinearMoment,parabolaWeightedBilinearMoment,W] using hid.symm
   exact hbox.trans (he.le.trans hcube)
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem parabola_sixNorm_weight_comparison {ι : Type*}
     {V W : ℝ × ℝ → ℝ} {C : ℝ} (hC : 0 ≤ C)
@@ -2711,13 +2618,7 @@ private theorem parabola_sixNorm_weight_comparison {ι : Type*}
     parabolaWeightedSixNorm_pow_six W hW₀ hW]
   exact hm
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 theorem exists_parabolaBox_sourceWeight_decoupling {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (R r t : ℝ), 0 < R →
@@ -2761,12 +2662,7 @@ theorem exists_parabolaBox_sourceWeight_decoupling {ε : ℝ} (hε : 0 < ε) :
           (S j) (z j) (x j))^2)^3) :=
       mul_le_mul_of_nonneg_left hcube (by positivity)
     _ = _ := by ring
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem parabola_sourceWeight_horizontal_translate {R : ℝ} (hR : 0 < R)
     (r t α γ u : ℝ) :
@@ -2782,12 +2678,7 @@ private theorem parabola_sourceWeight_horizontal_translate {R : ℝ} (hR : 0 < R
   rw [div_le_iff₀ (by positivity)] at h
   simpa only [mul_comm] using h
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff
-namespace TaoTrudgianYang2025
 
 private def bourgainCubicQuarticCutoff (a b s : ℝ) : ℂ :=
   (modelPhaseBufferedCutoff (-2) 2 (1/2) s : ℂ)*
@@ -2880,12 +2771,7 @@ private theorem bourgainCubicQuarticCutoff_derivative_bound (Q : ℕ) :
     rw [hz,norm_zero]
     exact zero_le_one.trans (le_max_right _ _)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
 
 private theorem bourgainCubicQuarticCutoff_derivative_integrable (a b : ℝ) (j : ℕ) :
     Integrable (fun s : ℝ => ‖iteratedFDeriv ℝ j (bourgainCubicQuarticCutoff a b) s‖) := by
@@ -2938,12 +2824,7 @@ private theorem bourgainCubicQuarticCutoff_fourier_moment (a b ξ : ℝ) (m : �
   simpa only [norm_iteratedFDeriv_zero, Real.norm_eq_abs, Nat.cast_zero, mul_zero, zero_add,
     pow_zero, one_mul, Finset.range_one, Finset.sum_product, Finset.sum_singleton] using h
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
 
 private theorem bourgainCubicQuarticCutoff_fourier_decay (Q : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ a ∈ Icc (-1:ℝ) 1, ∀ b ∈ Icc (-1:ℝ) 1,
@@ -2981,12 +2862,7 @@ private theorem bourgainCubicQuarticCutoff_fourier_decay (Q : ℕ) :
         |ξ|^Q*‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (add_le_add hz hp) (by positivity)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
 
 private theorem bourgainCubicQuarticCutoff_uniform_fourierL1 :
     ∃ C : ℝ, 0 < C ∧ ∀ a ∈ Icc (-1:ℝ) 1, ∀ b ∈ Icc (-1:ℝ) 1,
@@ -3029,12 +2905,7 @@ private theorem bourgainCubicQuarticCutoff_uniform_fourierL1 :
   rw [integral_const_mul,integral_univ_inv_one_add_sq] at hmain
   exact hmain
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators ContDiff FourierTransform
-namespace TaoTrudgianYang2025
 
 theorem exists_bourgainCubicQuartic_multiplier_kernel :
     ∃ C : ℝ, 0 < C ∧ ∀ a ∈ Icc (-1:ℝ) 1, ∀ b ∈ Icc (-1:ℝ) 1,
@@ -3086,12 +2957,7 @@ theorem exists_bourgainCubicQuartic_multiplier_kernel :
           2*(Real.pi:ℂ)*Complex.I*↑(ξ*s) := by push_cast; ring
       rw [he]
       exact mul_comm _ _
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 public  theorem weighted_integral_sixth_power
     {α : Type*} [MeasurableSpace α] {μ : Measure α} {W f : α → ℝ}
@@ -3149,12 +3015,7 @@ public  theorem weighted_integral_sixth_power
       _ = _ := by ring
   simpa only [I,pow_zero,pow_one,mul_one] using hmain
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 public  theorem bourgainRemainderEnvelope_integrable :
     Integrable (fun ξ : ℝ => ((1+|ξ|)^102)⁻¹) := by
@@ -3230,13 +3091,7 @@ theorem bourgain_finite_multiplier_moment {ι : Type*}
       mul_le_mul_of_nonneg_left hmajor (pow_nonneg hC.le 5)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 theorem exists_bourgainCubicQuartic_finite_moment :
     ∃ C : ℝ, 0 < C ∧ ∀ a ∈ Icc (-1:ℝ) 1, ∀ b ∈ Icc (-1:ℝ) 1,
@@ -3279,12 +3134,7 @@ theorem exists_bourgainCubicQuartic_finite_moment :
   rw [he]
   exact bourgain_finite_multiplier_moment S z s hKc hKi hC hmass henv
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem parabola_sum_modulation {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) (ξ α γ : ℝ) :
@@ -3347,20 +3197,8 @@ private theorem parabola_sourceWeight_modulation {ι : Type*}
     (fun p => parabolaSourceWeight_nonneg _ _ _ _ _) hV hW
     (fun p => parabola_sourceWeight_horizontal_translate hR r t p.1 p.2 ξ) S z x
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 private theorem bourgain_modulation_envelope {R : ℝ} (hR : 1 ≤ R) (ξ : ℝ) :
     ((1+|ξ|)^102)⁻¹*(1+|ξ|/R)^100 ≤ (1+ξ^2)⁻¹ := by
   have hRpos : 0 < R := lt_of_lt_of_le zero_lt_one hR
@@ -3379,11 +3217,6 @@ private theorem bourgain_modulation_envelope {R : ℝ} (hR : 1 ≤ R) (ξ : ℝ)
     _ ≤ (1+ξ^2)⁻¹ := inv_anti₀ (by positivity)
       (by nlinarith [sq_abs ξ,abs_nonneg ξ])
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory
-open scoped Matrix
-namespace TaoTrudgianYang2025
 private def bourgainQuadraticFrame (a b : ℝ) : Matrix (Fin 4) (Fin 4) ℝ :=
   !![1,2*a,3*a^2,4*a^3;
      0,1,3*a,6*a^2;
@@ -3427,11 +3260,7 @@ private theorem bourgainQuadraticFrame_integral {a b : ℝ} (hab : a ≠ b)
     ENNReal.toReal_ofReal (by positivity),smul_eq_mul] at hi
   exact hi.symm
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 private def bourgainFourCoordinates :
     (Fin 4 → ℝ) ≃ᵐ (ℝ × ℝ) × (ℝ × ℝ) :=
@@ -3462,12 +3291,7 @@ private theorem bourgainFourCoordinates_integral_product
       simpa only [bourgainFourCoordinates_apply] using h
     _ = _ := integral_prod_mul f g
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
 
 private theorem bourgainQuadraticFrame_cube_bound {a b R : ℝ}
     (ha : |a| ≤ 1) (hb : |b| ≤ 1) (hR : 0 ≤ R)
@@ -3490,12 +3314,7 @@ private theorem bourgainQuadraticFrame_cube_bound {a b R : ℝ}
     _ = (∑ j, |bourgainQuadraticFrame a b i j|)*R := (Finset.sum_mul _ _ _).symm
     _ ≤ 10*R := mul_le_mul_of_nonneg_right (hrow i) hR
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
 
 private theorem bourgainQuadraticFrame_box_product
     {a b R : ℝ} (ha : |a| ≤ 1) (hb : |b| ≤ 1)
@@ -3564,12 +3383,7 @@ private theorem bourgainQuadraticFrame_box_product
         bourgainFourCoordinates_integral_product (B.indicator f) (B.indicator g)]
     _ = _ := by rw [integral_indicator hB,integral_indicator hB]; ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
 
 private theorem bourgainQuartic_remainder_bounds
     {c σ R : ℝ} (hc : |c| ≤ 1) (hσ : 0 ≤ σ) (hσ1 : σ ≤ 1)
@@ -3594,7 +3408,6 @@ private theorem bourgainQuartic_remainder_bounds
       _ ≤ R*σ^3 := mul_le_mul_of_nonneg_left hpow hR
       _ ≤ 1 := by nlinarith [mul_nonneg hR (pow_nonneg hσ 3)]
 
-universe u
 
 theorem exists_bourgainQuartic_scaled_moment :
     ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ),
@@ -3646,12 +3459,7 @@ theorem exists_bourgainQuartic_scaled_moment :
     simp only [Z,mul_assoc,←fordAdditiveCharacter_add]
   simpa only [hr,L,Q] using hmain
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
 
 private theorem bourgainQuadraticFrame_finite_product {ι τ : Type*}
     (S : Finset ι) (V : Finset τ) (z : ι → ℂ) (c : τ → ℂ)
@@ -3682,12 +3490,7 @@ private theorem bourgainQuadraticFrame_finite_product {ι τ : Type*}
   have he (w : ℝ) : w^2*w^4=w^6 := by ring
   simpa only [parabolaBoxBilinearMoment,he,zero_sub,zero_add,neg_mul] using h
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem integrable_bourgain_modulated_box {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (s u : ι → ℝ) (R r t : ℝ) :
@@ -3724,12 +3527,7 @@ private theorem integrable_bourgain_modulated_box {ι : Type*}
   simpa only [integral_const_mul,F,V,B,parabolaBoxBilinearMoment,he] using
     hiF.integral_prod_left
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
 
 public  theorem bourgain_character_six_bound {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (θ : ι → ℝ) :
@@ -3779,7 +3577,6 @@ public  theorem bourgain_kernel_setIntegral_bound
   rw [←hswap] at h
   exact h
 
-universe u
 set_option maxHeartbeats 400000 in
 
 theorem exists_bourgainQuartic_bilinear_reduction :
@@ -3935,10 +3732,7 @@ theorem exists_bourgainQuartic_bilinear_reduction :
       mul_le_mul_of_nonneg_left hmajor (sq_nonneg C)
     _ = _ := by dsimp [W,J,K]; ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-namespace TaoTrudgianYang2025
 
 public  theorem bourgain_source_quartic_phase {t : ℝ} (ht : 0 ≤ t) (x : Fin 4 → ℝ) :
     x 0*t+x 1*t^2+x 2*t^((3:ℝ)/2)+x 3*Real.sqrt t =
@@ -3955,11 +3749,7 @@ public  theorem bourgain_source_quartic_phase {t : ℝ} (ht : 0 ≤ t) (x : Fin 
   rw [Real.sq_sqrt ht,h3,h4]
   ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 public  def bourgainSourcePermutation : (Fin 4 → ℝ) ≃ᵐ (Fin 4 → ℝ) :=
   MeasurableEquiv.piCongrLeft (fun _ : Fin 4 => ℝ)
@@ -4008,13 +3798,7 @@ private theorem bourgainSourcePermutation_cube_integral (R : ℝ)
   rw [integral_indicator measurableSet_Icc] at h
   exact h
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 theorem exists_bourgainSourceCurve_bilinear_reduction :
     ∃ C > (0:ℝ), ∀ (ι τ : Type u) (S : Finset ι) (V : Finset τ)
@@ -4107,13 +3891,7 @@ theorem exists_bourgainSourceCurve_bilinear_reduction :
     _ ≤ _ := by
       simpa only [QS,QV,hsbase,htbase,s,t] using hmain
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_parabolaBox_scaled_rapid_decoupling {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (σ R r t : ℝ), 0 < σ → σ ≤ 1 → 0 < R →
@@ -4204,13 +3982,7 @@ private theorem exists_parabolaBox_scaled_source_decoupling {ε : ℝ} (hε : 0 
           (S j) (z j) (x j))^2)^3) :=
       mul_le_mul_of_nonneg_left hcube (by positivity)
     _ = _ := by ring
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 theorem exists_parabolaBox_scaled_modulation_decoupling {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (σ R r t : ℝ), 0 < σ → σ ≤ 1 → 1 ≤ σ*R →
@@ -4282,13 +4054,7 @@ theorem exists_parabolaBox_scaled_modulation_decoupling {ε : ℝ} (hε : 0 < ε
     _ ≤ _ := hm
     _ = _ := by dsimp [Q]; ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 theorem exists_bourgainSourceCurve_parabolic_cell_bound {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (a b σ R : ℝ),
@@ -4411,13 +4177,7 @@ theorem exists_bourgainSourceCurve_parabolic_cell_bound {ε : ℝ} (hε : 0 < ε
               (V j) (c j) (fun k => Real.sqrt (v j k)-b))^2)^3 := by ring
         _ = _ := by rw [he']
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgainCubicQuartic_inverse_moment :
     ∃ C > (0:ℝ), ∀ a ∈ Icc (-1:ℝ) 1, ∀ b ∈ Icc (-1:ℝ) 1,
@@ -4496,13 +4256,7 @@ private theorem bourgainCurveCellFrame_phase (a c δ s : ℝ) (y : Fin 4 → ℝ
   dsimp
   ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
 
 public  theorem norm_bourgain_character_sum_add {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (θ : ι → ℝ) (k : ℝ) :
@@ -4567,12 +4321,7 @@ private theorem exists_bourgainCurveCell_inverse_pointwise :
       _ = _ := norm_bourgain_character_sum_add S z _ K
   simpa only [he,P] using hm
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
 
 private theorem bourgainCurveCellFrame_norm_bound {a c R : ℝ}
     (ha : |a| ≤ 1) (hc : |c| ≤ 1) (hR : 0 ≤ R)
@@ -4656,12 +4405,7 @@ private theorem bourgainCurveCellFrame_weight_bound {a c R δ : ℝ}
     _ ≤ _ := hp
     _ = _ := by ac_rfl
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
 
 private def bourgainCurveCellMoment {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (u : ι → ℝ) (x : Fin 4 → ℝ) : ℝ :=
@@ -4733,12 +4477,7 @@ private theorem bourgainCurveCellMoment_shift {ι : Type*}
     ring
   rw [he,norm_bourgain_character_sum_add]
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
 
 private def bourgainCurveCellBaseWeight (R : ℝ) (y : Fin 4 → ℝ) : ℝ :=
   parabolaSourceWeight R 0 0 (y 0) (y 1)*
@@ -4822,13 +4561,7 @@ private theorem bourgainCurveCell_inner_bound {ι : Type*}
   rw [he] at hm
   exact hm
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainQuartic_cell_return :
@@ -4952,13 +4685,7 @@ private theorem exists_bourgainQuartic_cell_return :
   change (∫ p : ℝ × ℝ, parabolaSourceWeight R 0 0 p.1 p.2*P p)*R^2 ≤ _
   nlinarith only [hfinal]
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 public  theorem bourgainSourcePermutation_norm (x : Fin 4 → ℝ) :
     ‖bourgainSourcePermutation x‖ = ‖x‖ := by
@@ -5034,13 +4761,7 @@ theorem exists_bourgainSourceCurve_cell_return :
   rw [he] at hmain
   exact hmain
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 
@@ -5186,12 +4907,7 @@ theorem exists_bourgainSourceCurve_local_cell_decoupling {ε : ℝ} (hε : 0 < �
     _ ≤ _ := by simpa only [W,mul_assoc] using hm
     _ = _ := halg _ _
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 public  def bourgainRadialWeight (R : ℝ) (x : Fin 4 → ℝ) : ℝ :=
   ((1+‖R⁻¹ • x‖)^100)⁻¹
@@ -5231,12 +4947,7 @@ private theorem integral_bourgainRadialWeight {R : ℝ} (hR : 0 ≤ R) :
     Finset.card_univ,Fintype.card_fin,smul_eq_mul,Nat.cast_ofNat,mul_one,
     bourgainRadialWeight,inv_one,one_smul] using h
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 public  theorem bourgain_inverse_power_ratio {p q L : ℝ}
     (hp : 0 < p) (hq : 0 < q) (h : q ≤ L*p) :
@@ -5308,12 +5019,7 @@ private theorem bourgain_scalar_weight_product {K R X A B : ℝ}
     _ = (4:ℝ)^100*((1+X/R)^100)⁻¹*((K/R)^4*((1+B/R)^100)⁻¹) := by ac_rfl
     _ ≤ _ := mul_le_mul_of_nonneg_left (le_add_of_nonneg_left (by positivity)) (by positivity)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem bourgainRadialWeight_product {K R : ℝ}
     (hK : 0 < K) (hKR : K ≤ R) (x y : Fin 4 → ℝ) :
@@ -5368,12 +5074,7 @@ private theorem exists_bourgainRadialWeight_convolution :
       apply mul_le_mul_of_nonneg_right _ (pow_nonneg hK.le 4)
       exact mul_le_mul_of_nonneg_left (le_add_of_nonneg_right zero_le_one) (by positivity)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 
 private theorem exists_bourgainRadialWeight_shift_average :
     ∃ C > (0:ℝ), ∀ K R : ℝ, 0 < K → K ≤ R →
@@ -5433,19 +5134,8 @@ private theorem exists_bourgainRadialWeight_shift_average :
       simp only [integral_mul_const]
     _ ≤ _ := hm
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
-end TaoTrudgianYang2025
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
 private theorem bourgain_modulation_envelope_general {L : ℝ} (hL : 0 < L) (ξ : ℝ) :
     ((1+|ξ|)^102)⁻¹*(1+|ξ|/L)^100 ≤
       (1+L⁻¹)^100*(1+ξ^2)⁻¹ := by
@@ -5462,13 +5152,7 @@ private theorem bourgain_modulation_envelope_general {L : ℝ} (hL : 0 < L) (ξ 
     _ = (1+L⁻¹)^100*(((1+|ξ|)^102)⁻¹*(1+|ξ|)^100) := by ac_rfl
     _ ≤ _ := mul_le_mul_of_nonneg_left henv (by positivity)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators Matrix
-namespace TaoTrudgianYang2025
-universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainQuartic_cell_return_quantitative :
@@ -5596,13 +5280,7 @@ private theorem exists_bourgainQuartic_cell_return_quantitative :
     (E*(32:ℝ)^100*Real.pi/4)*L*J
   nlinarith only [hfinal]
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgainSourceCurve_cell_return_quantitative :
     ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ),
@@ -5662,13 +5340,7 @@ private theorem exists_bourgainSourceCurve_cell_return_quantitative :
   rw [he] at hmain
   exact hmain
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem exists_bourgainParabola_unit_average :
     ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ),
@@ -5734,11 +5406,7 @@ private theorem exists_bourgainParabola_unit_average :
   rw [←hJe]
   exact hh.trans_eq (by ring)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 public  theorem bourgain_cube_mass {R : ℝ} (hR : 0 ≤ R) :
     volume.real (Icc (fun _ : Fin 4 => -R) (fun _ => R)) = (2*R)^4 := by
@@ -5796,13 +5464,7 @@ public  theorem bourgain_finite_box_average {K R : ℝ}
   have hswap := integral_integral_swap (f:=fun q y => f (q+y)) hi
   exact hh.trans_eq hswap.symm
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 public  def bourgainSourceSixMoment {ι : Type*} (S : Finset ι)
     (z : ι → ℂ) (w : ι → ℝ) (x : Fin 4 → ℝ) : ℝ :=
@@ -5875,11 +5537,7 @@ private theorem exists_bourgainSourceCurve_small_box :
     _ ≤ _ := hmain
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 private theorem bourgainRadialWeight_translate_large {R : ℝ}
     (hR : 1 ≤ R) {q : Fin 4 → ℝ} (hq : ‖q‖ ≤ 2*R) (x : Fin 4 → ℝ) :
@@ -5925,13 +5583,7 @@ private theorem bourgainRadialWeight_translated_integral {R : ℝ}
       simpa only [add_sub_cancel_right] using he
     _ ≤ _ := hh
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 public  theorem bourgainSourceSixMoment_nonneg {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (x : Fin 4 → ℝ) :
@@ -6050,13 +5702,7 @@ private theorem exists_bourgainSourceCurve_box_base :
     (2*(1/10:ℝ))^4*((D*(2:ℝ)^200*20^4)*R^4*JS*JV)
   exact hfinal.trans_eq (by ring)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 public  theorem integrable_bourgainSource_weighted {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) {R : ℝ} (hR : 0 < R) :
@@ -6164,11 +5810,7 @@ theorem exists_bourgainSourceCurve_polynomial_base :
       dsimp [R]
       field_simp
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory Set
-namespace TaoTrudgianYang2025
 
 public  theorem bourgain_radial_bilinear_fubini
     {K R : ℝ} (hK : 0 < K) (f g : (Fin 4 → ℝ) → ℝ) (Mf Mg : ℝ)
@@ -6242,13 +5884,7 @@ public  theorem bourgain_radial_bilinear_fubini
       hiH.integral_prod_right
     simpa only [heq,B,IntegrableOn] using hiR
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 private theorem integrable_bourgainRadial_shift_average
     {K R : ℝ} (hK : 0 < K) (hR : 0 < R)
@@ -6308,13 +5944,7 @@ private theorem exists_bourgainSource_shift_sum :
     (fun x => bourgain_character_six_bound (S j) (z j)
       (fun i => x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^((3:ℝ)/2)+x 3*Real.sqrt (w j i)))
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 public  theorem bourgainSourceSixMoment_norm_bound {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (x : Fin 4 → ℝ) :
@@ -6442,11 +6072,7 @@ public  theorem exists_bourgainSourceCurve_averaged_local_decoupling {ε : ℝ} 
   change _ ≤ (D*E^2)*K^8*(2:ℝ)^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹*AS*AV
   exact hmain.trans_eq (by dsimp [A]; ring)
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open Set
-namespace TaoTrudgianYang2025
 
 public  theorem bourgain_coarse_center_separation {a b σ ν u v : ℝ}
     (hν : 0 < ν) (hσ : σ ≤ ν/2)
@@ -6471,10 +6097,7 @@ public  theorem bourgain_coarse_center_separation {a b σ ν u v : ℝ}
   exact ⟨hd,hab,inv_anti₀ (by positivity)
     (mul_le_mul_of_nonneg_left hp (by norm_num))⟩
 
-end TaoTrudgianYang2025
 
-noncomputable section
-namespace TaoTrudgianYang2025
 
 public  theorem bourgain_bootstrap_depth {n : ℕ} (hn : 9 ≤ n) :
     let m := (2*n+2)/3+2
@@ -6535,13 +6158,7 @@ public  theorem bourgain_bootstrap_scale_conditions {n m : ℕ}
   · have hp := pow_le_pow_left₀ hM.le hMN 2
     nlinarith
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 public  def BourgainSourceGridBound (N : ℕ) (ν D : ℝ) : Prop :=
   0 ≤ D ∧ ∀ (ι τ : Type u)
@@ -6600,13 +6217,7 @@ public  theorem exists_bourgainSourceGridBound_polynomial :
   have hm := hbase n ι τ S V z c w v hw hv (hunit S w hs) (hunit V v ht)
   simpa only [Nat.cast_pow,Nat.cast_ofNat,bourgainRadialWeight,bourgainSourceSixMoment] using hm
 
-end TaoTrudgianYang2025
 
-noncomputable section
-open MeasureTheory GafniTao Set
-open scoped BigOperators
-namespace TaoTrudgianYang2025
-universe u
 
 public  theorem bourgainSource_grid_coarse_interval {k l : ℕ}
   (hk : 0 < k) (hl : 0 < l) {κ : Type u} (A : Fin (k*l) → Finset κ) (f : Fin (k*l) → κ → ℝ)
@@ -6650,79 +6261,3 @@ public  theorem bourgainSourceSixMoment_grid_reindex {k l : ℕ} {ι : Type*}
     (x 0*w r i+x 1*(w r i)^2+x 2*(w r i)^((3:ℝ)/2)+x 3*Real.sqrt (w r i)))
 
 -- Generated closures: source context is replayed in the next part.
-end TaoTrudgianYang2025
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end
-end

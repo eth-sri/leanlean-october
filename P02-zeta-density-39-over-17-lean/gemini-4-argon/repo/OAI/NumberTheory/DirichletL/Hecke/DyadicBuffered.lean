@@ -69,9 +69,3 @@ theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
   · have hi : (s+shift σ freq).im=s.im-freq := by simp [shift,sub_eq_add_neg]
     rw [hi]
     exact (abs_sub _ _).trans (by linarith)
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

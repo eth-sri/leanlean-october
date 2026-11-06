@@ -86,4 +86,3 @@ theorem zetaDensityCount_le_twice_positive (σ T : ℝ) :
   rw [hc] at hs
   omega
 
-end MathCollab.Density

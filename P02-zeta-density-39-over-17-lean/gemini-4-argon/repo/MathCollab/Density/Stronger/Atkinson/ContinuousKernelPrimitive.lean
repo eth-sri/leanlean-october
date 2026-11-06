@@ -67,4 +67,3 @@ theorem IntervalC1Bound.continuousKernel_of_primitive_bound {f K : ℝ → ℂ}
       (norm_nonneg _) hf.nonneg
   linarith
 
-end MathCollab.Density.Stronger.Atkinson

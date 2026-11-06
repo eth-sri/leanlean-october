@@ -141,4 +141,3 @@ theorem energy_pair_box_fourier (ξ : ℝ) :
     𝓕 energyPairBox ξ=(𝓕 energyBox ξ)^2 := by
   rw [energyPairBox,Real.fourier_mul_convolution_eq energy_box_integrable energy_box_integrable,pow_two]
 
-end Montgomery.RationalMoment

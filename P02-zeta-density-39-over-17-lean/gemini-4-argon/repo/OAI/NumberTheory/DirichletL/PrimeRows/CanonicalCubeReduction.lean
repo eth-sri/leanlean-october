@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem canonical_probe_minus_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
@@ -65,9 +64,3 @@ theorem canonical_probe_minus_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
   apply (norm_sub_le_norm_sub_add_norm_sub _
     (finitePhysicalRows S hmax η R T W (fun i=>Z^(length i)) W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z) _).trans
   exact (add_le_add h0'' h1'').trans_eq (by dsimp [E];ring)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

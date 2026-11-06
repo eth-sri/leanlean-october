@@ -7,9 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT
-open QuadraticAllOddCRT
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT QuadraticAllOddCRT
 
 def G (a : O) : ℂ := fixedGQuotientValue (Ideal.Quotient.mk (Ideal.span {(4 : O)}) a)
 
@@ -73,8 +71,3 @@ theorem G_cube (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a))
   simp only [map_pow, hc, inv_one, one_mul]
   rw [show a ^ 3 = (a * a) * a by ring, residue_mul, residue_mul]
   exact quadraticRayValue_cube (residue a) ha
-
-end SevenEighths.ProbePhase
-end
-
-end OAI

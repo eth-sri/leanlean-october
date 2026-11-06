@@ -49,4 +49,3 @@ theorem robertSargos_source_shift_average (w : ℤ → ℂ) (M N : ℕ) (h q : �
   rw [robertSargos_m_overlap_zero_source]
   exact sum_integer_interval_average w _ _ N hN
 
-end TaoTrudgianYang2025

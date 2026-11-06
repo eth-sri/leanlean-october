@@ -41,4 +41,3 @@ theorem exponentialSumAt_eq_int_sum (F : ℝ → ℝ) (T N : ℝ) (a b : ℕ) :
   · intro n _
     simp only [Int.cast_natCast]
 
-end TaoTrudgianYang2025

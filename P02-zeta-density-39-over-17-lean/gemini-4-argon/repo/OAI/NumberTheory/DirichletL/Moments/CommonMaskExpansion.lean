@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonMaskExpansion
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass UniqueFactorizationMonoid
 
 def naturalSlot (χ : Character) (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) : ℂ :=
   (Real.sqrt P:ℂ)⁻¹ * ∑ I∈pool,idealCoeff χ I*β I
@@ -299,9 +297,3 @@ theorem uniform_mass_subpower (F : Finset α) (b M : α→ℝ) (hM : ∀i∈F,0�
     _≤A*(C₀*(Ideal.absNorm (∏I∈R,I):ℝ)^δ)^n:=
       mul_le_mul_of_nonneg_left (pow_le_pow_left₀ he (hbound R hR) n) hA.le
     _=_:=by rw [mul_pow,hpow];ring
-
-end SevenEighths.CenteredMomentCommonMaskExpansion
-
-end
-
-end OAI

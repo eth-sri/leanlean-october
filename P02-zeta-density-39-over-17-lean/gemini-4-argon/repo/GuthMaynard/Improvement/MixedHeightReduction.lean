@@ -100,4 +100,3 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
           (show b ≤ a+b+c+1 by linarith only [ha,hc]) (by positivity)) hZ)
     _ = _ := by ring
 
-end GuthMaynard.Improvement

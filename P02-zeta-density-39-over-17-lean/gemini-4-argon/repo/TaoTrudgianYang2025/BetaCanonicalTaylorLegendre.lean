@@ -94,4 +94,3 @@ theorem canonicalTaylorLegendrePhase_uniformity
     nlinarith
   exact hbound.trans (by nlinarith)
 
-end TaoTrudgianYang2025

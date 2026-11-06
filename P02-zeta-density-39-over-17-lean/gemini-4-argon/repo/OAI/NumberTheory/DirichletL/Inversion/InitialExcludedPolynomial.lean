@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialExcludedPolynomial
-open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge
-open InverseInitialExcludedSource IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialExcludedSource IdealMobiusDivisorSum UniqueFactorizationMonoid
 
 theorem prime_product_squarefree (S:Finset (Ideal O))(hS:∀P∈S,Prime P):
     Squarefree (∏P∈S,P) := by
@@ -142,9 +140,3 @@ theorem inverse_polynomial_decomposition (χ:Character)(S:Finset (Ideal O))
   dsimp only [V]
   rw [←hn]
   ring
-
-end SevenEighths.InverseInitialExcludedPolynomial
-
-end
-
-end OAI

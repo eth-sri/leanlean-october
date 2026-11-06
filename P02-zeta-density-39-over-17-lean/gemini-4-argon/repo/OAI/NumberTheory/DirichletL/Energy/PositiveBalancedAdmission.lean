@@ -11,23 +11,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyPositiveBalancedAdmission
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceLivePower CenteredMomentEnergyOriginalSource
-open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyOriginalProfileControl
-open CenteredMomentEnergyOriginalHighReflectionSymmetric
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyOriginalSource CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyOriginalProfileControl CenteredMomentEnergyOriginalHighReflectionSymmetric CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry CenteredMomentCommonRadialData CenteredMomentSourceRow CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
 variable {α:Type*}[Fintype α]
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 variable (η₀:Character)(θ:α→ RayQuotient.Characters M H)
 variable (W:ℝ→ ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)(haslot:0<aslot)
@@ -39,8 +25,7 @@ variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "balancedSource" => balancedInput M H hH η₀ θ W hW aslot bslot lo hi haslot hWs
   w σ freq hσ s p ha t X₁ X₂ hX₁ hX₂
 
-open CenteredMomentEnergyPositiveHighParameters
-open CenteredMomentEnergyNaturalInputMatches CenteredMomentAmplificationChildInput
+open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyNaturalInputMatches CenteredMomentAmplificationChildInput
 
 theorem fixed_lower_product (N:ℕ)(hN:Fintype.card α≤N) :
     0<(min 1 aslot)^N*a*a ∧
@@ -70,9 +55,3 @@ theorem four_upper_scales (κ L:ℝ)(hZ:1<Z)(hw:∀i,0≤w i)(hκ:3/4≤κ)
     exact Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith [s.width_nonneg])
   · change X₁*X₂/comparisonFirst Z s.width≤Z^L
     exact (div_le_self (mul_pos hX₁ hX₂).le hY).trans (hxy.trans hv)
-
-end SevenEighths.CenteredMomentEnergyPositiveBalancedAdmission
-
-end
-
-end OAI

@@ -89,4 +89,3 @@ theorem finite_cubic_large_value_general (w : MathCollab.Density.ComparisonCutof
     _ = (A*(1+B+D))*T^η*X := by rw [← hp]; ring
 
 
-end Montgomery.RationalMoment

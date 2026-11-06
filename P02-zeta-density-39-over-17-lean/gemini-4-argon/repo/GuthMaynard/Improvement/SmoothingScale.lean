@@ -36,4 +36,3 @@ theorem scaledKernel_bound {φ : ℝ → ℝ} {δ B : ℝ}
   simp only [scaledKernel, norm_mul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hδ)]
   exact mul_le_mul_of_nonneg_left (hB (x / δ)) (inv_nonneg.mpr hδ.le)
 
-end GuthMaynard.Improvement

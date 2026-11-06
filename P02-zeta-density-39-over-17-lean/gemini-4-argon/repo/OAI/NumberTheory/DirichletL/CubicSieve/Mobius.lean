@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open CanonicalQuadraticSieve (idealQuotient totalQuotient gcdPool)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def elementQuotient (d z : O) : O := if h : d ∣ z then h.choose else 0
 
@@ -131,8 +130,3 @@ theorem cubic_gcd_mobius_descent {n : Type*} [Fintype n]
       rw [sum_divisible_rows]
       exact congrArg ((UniqueFactorizationMonoid.moebius E : ℂ) * ·)
         (sum_dividedRows_residualGram_rescale D cols hcols a R w (idealGenerator E))
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

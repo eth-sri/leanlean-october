@@ -74,4 +74,3 @@ theorem finite_quadratic_amplified_moment (w : MathCollab.Density.ComparisonCuto
     _ ≤ _ := hfinal
     _ = (4*C₀*(D^2+2))*T^η*((N*L)^2+(N^3/L)*Z) := by rw [← he]; ring
 
-end Montgomery.RationalMoment

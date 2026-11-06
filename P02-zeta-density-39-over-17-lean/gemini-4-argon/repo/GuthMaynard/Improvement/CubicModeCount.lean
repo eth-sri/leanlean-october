@@ -44,4 +44,3 @@ theorem mem_cubicModes (U : ℝ) (m : ℤ × (ℤ × ℤ)) :
       exact ⟨by omega,Int.le_floor.mpr hk.2⟩
   simp only [cubicModes,Finset.mem_product,hm]
 
-end GuthMaynard.Improvement

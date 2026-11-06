@@ -122,4 +122,3 @@ theorem atkinsonStationaryMain_pair_eq_zero_after_cutoff {T G L : ℝ}
   have hp : 0 < T * (L / G) ^ 2 := by positivity
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

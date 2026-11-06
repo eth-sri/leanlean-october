@@ -132,9 +132,3 @@ lemma detector_nonzero_above_maximum (χ : ι→Character) (T : ℝ) (i : ι) {s
   intro hz
   exact (not_lt_of_ge (detector_zero_re_le_maximum χ T i
     ((detectorMaximum_bounds χ T).1.trans hs.le) ht hz hpole)) hs
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

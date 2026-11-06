@@ -116,4 +116,3 @@ theorem atkinsonPairPowerTerm_mono_index {C H G L k l : ℝ} {M N : ℕ}
   · exact mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left hMN0 (by positivity)) hh
 
-end TaoTrudgianYang2025

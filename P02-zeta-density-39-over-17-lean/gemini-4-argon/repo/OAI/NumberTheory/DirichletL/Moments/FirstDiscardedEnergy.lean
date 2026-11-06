@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstDiscardedEnergy
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson ConcretePrimeRowBridge
-open CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentCorrelation
-open CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation
-open CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive
-open CenteredMomentCompleteCommon IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson ConcretePrimeRowBridge CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive CenteredMomentCompleteCommon IdealMobiusDivisorSum
 
 theorem tripleRow_norm_le_one (a b r : O) (ha : a≠0) (hb : b≠0)
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
@@ -177,9 +172,3 @@ theorem inactiveSubsets_card (I J : Ideal O) :
     _ ≤ (Finset.univ : Finset (CommonIndex I J)).card := Finset.card_le_card (Finset.subset_univ _)
     _ = (commonSupport I J).card := by simp [CommonIndex]
     _ ≤ _ := Finset.card_le_card Finset.inter_subset_left
-
-end SevenEighths.CenteredMomentFirstDiscardedEnergy
-
-end
-
-end OAI

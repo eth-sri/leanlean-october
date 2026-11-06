@@ -90,4 +90,3 @@ theorem zetaDensityCount_mono {σ σ' T T' : ℝ} (hσ : σ' ≤ σ) (hT : T ≤
     zetaDensityCount σ T ≤ zetaDensityCount σ' T' :=
   zetaSlabCount_mono hσ (neg_le_neg hT) hT
 
-end MathCollab.Density

@@ -118,4 +118,3 @@ theorem IntervalC1Bound.atkinsonRoot {f : ℝ → ℂ} {a c M T : ℝ}
     (fun x hx => norm_atkinsonRootKernel_integral_le_four hT b ha hx.1)
   simpa only [show (2 : ℝ) * 4 = 8 by norm_num] using h
 
-end MathCollab.Density.Stronger.Atkinson

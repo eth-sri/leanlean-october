@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeRow CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open ProbeRow CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass
 
 def calibrationRowModulus (C : CalibrationData) (B : O) (D : GoodMaskRowData B 1 C.generator) : Id :=
   1*Ideal.span {B}*Ideal.span {(72:O)}*Ideal.span {D.numeratorGood}
@@ -116,8 +112,3 @@ lemma lowPeriodicBase_eq_primary (η : HeckeFamily.Character) (C : CalibrationDa
     rayMonoid χ n*((targetMonoid η n*star (C.Xi n))*sexticReciprocityPhase s n)
   rw [periodicCalibrationXi_eq_primary C B D hBL hB2 n hn hpn hc]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -104,4 +104,3 @@ theorem dampedCutoff_uniform_derivatives {ψ : ℝ → ℝ} {a b : ℝ}
     rw [image_eq_zero_of_notMem_tsupport hn, norm_zero]
     exact hC
 
-end MathCollab.Density.Stronger

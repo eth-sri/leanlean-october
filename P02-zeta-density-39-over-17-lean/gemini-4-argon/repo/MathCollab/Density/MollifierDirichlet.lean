@@ -158,4 +158,3 @@ theorem differentiableAt_zetaMollifier (X : ℝ) (s : ℂ) :
     exact_mod_cast (show m ≠ 0 from Nat.ne_zero_of_lt (Finset.mem_Icc.mp hm).1)
   exact differentiableAt_id.neg.const_cpow (Or.inl hmZero)
 
-end MathCollab.Density

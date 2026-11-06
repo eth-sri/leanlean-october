@@ -10,8 +10,6 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : MeasurableSpace FreeRow := ⊤
 local instance : MeasurableSingletonClass FreeRow := ⟨fun _=>trivial⟩
@@ -52,8 +50,3 @@ lemma rowIntegral_summable {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id
     a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ).integral_prod_left
   rw [integrable_count_iff] at hi
   exact hi.of_norm.mul_left _
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

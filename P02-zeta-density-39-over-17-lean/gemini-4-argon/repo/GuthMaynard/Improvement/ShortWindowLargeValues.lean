@@ -102,4 +102,3 @@ theorem short_window_large_values {δ : ℝ} (hδ : 0 < δ) (hδ' : δ ≤ 1/100
     exact (hc.trans hbudget).trans
       (mul_le_mul_of_nonneg_right (by linarith : 102*(1+D) ≤ 2*C+102*(1+D)) hp)
 
-end GuthMaynard.Improvement

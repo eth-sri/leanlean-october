@@ -42,8 +42,3 @@ lemma unramifiedClosed_differentiableAt (Q : ℝ) (hQ : 0 < Q) (A eta v x w z : 
   unfold unramifiedClosed ProbeLocal.continuedCorrection
   dsimp only
   fun_prop (disch := assumption)
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

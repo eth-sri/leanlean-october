@@ -94,6 +94,4 @@ theorem wooleySection7NormalSystem_eval_dilation
   ring
 
 
-end
 
-end GafniTao

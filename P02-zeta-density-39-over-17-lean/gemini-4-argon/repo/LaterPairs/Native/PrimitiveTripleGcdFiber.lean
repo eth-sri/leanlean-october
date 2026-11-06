@@ -97,4 +97,3 @@ theorem primitive_linear_triple_gcd_fiber_card_le
     (S.card:ℝ) ≤ 1+4*(V/(g:ℝ))^2*(β-α)/((c:ℝ)/g) := hb
     _ = 1+4*V^2*(β-α)/((c:ℝ)*g) := by field_simp
 
-end TaoTrudgianYang2025

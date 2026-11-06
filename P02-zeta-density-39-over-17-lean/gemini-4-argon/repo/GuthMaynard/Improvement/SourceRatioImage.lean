@@ -115,4 +115,3 @@ theorem source_actual_ratio_shell {N : ℝ} (hN : 2 ≤ N) {Q : ℝ} (hQ : 1 ≤
     h1 h2 hR hs
   convert hh using 1; ring
 
-end GuthMaynard.Improvement

@@ -395,4 +395,3 @@ theorem dirichletPoly_normalizedSharpMollifiedLineCoeff
   intro n _
   rw [div_mul_eq_mul_div]
 
-end GuthMaynard.NativeMoment

@@ -11,7 +11,6 @@ open scoped Classical BigOperators Topology
 open Set
 namespace SevenEighths.HeckePrimeAnnular
 open HeckeFamily HeckeDyadic ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
 
 def annulusSet (b D : ℝ) : Finset (Ideal O) := idealsUpTo ⌊max 1 b*D⌋₊
 
@@ -127,9 +126,3 @@ theorem extraction_bound (ε : ℝ) (hε : 0<ε) :
       calc
         _ = C*(max 1 b)^(1/2+ε)*(D^(-(1/2 : ℝ))*D^(1/2+ε))*B := by ring
         _ = _ := by rw [he]
-
-end SevenEighths.HeckePrimeAnnular
-
-end
-
-end OAI

@@ -52,9 +52,3 @@ theorem principal_residue_positive (χ : Character) (hχ : χ.residue=1) :
 theorem fixed_principal_residue_positive (M : Ideal O) [NeZero M] :
     ∃ R : ℝ, 0<R ∧ HeckeOrigin.poleRemoved (HeckeRayFamily.character M 1) 1=(R : ℂ) :=
   principal_residue_positive _ rfl
-
-end SevenEighths.HeckePrincipalResidue
-
-end
-
-end OAI

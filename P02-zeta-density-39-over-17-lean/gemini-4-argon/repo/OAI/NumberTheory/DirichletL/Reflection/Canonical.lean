@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 structure PrimeFamily (ι : Type*) where
   ideal : ι → Ideal Eis
@@ -74,10 +72,3 @@ theorem exists_controlled [Fintype ι] (N a c : Eis) (mode : Bool)
   · exact hbase
   · exact hac
   · exact G.generator_coprime_period N hNp
-
-end PrimeFamily
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

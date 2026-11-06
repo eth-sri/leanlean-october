@@ -11,9 +11,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentWholeDivisorShell
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentMobiusRegroup CenteredMomentDyadicCount CenteredMomentSectorLocalization
-local notation "O" => ActualEisensteinCubic.O
+open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMobiusRegroup CenteredMomentDyadicCount CenteredMomentSectorLocalization
 
 lemma moebius_norm_le_one (D : Ideal O) : ‖(moebius D:ℂ)‖≤1 := by
   by_cases hD : Squarefree D
@@ -141,9 +139,3 @@ lemma shell_member_data (Ds : Finset (Ideal O)) (n : ℤ) (D : Ideal O)
   have hh:=(mem_shell_iff Ds n D).mp hD
   have hs:=squarefree_of_moebius_ne_zero D hh.2.1
   exact ⟨hh.1,hh.2.1,hs,hs.ne_zero,hh.2.2⟩
-
-end SevenEighths.CenteredMomentWholeDivisorShell
-
-end
-
-end OAI

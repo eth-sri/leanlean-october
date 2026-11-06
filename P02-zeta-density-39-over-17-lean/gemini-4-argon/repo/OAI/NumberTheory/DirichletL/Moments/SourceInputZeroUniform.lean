@@ -9,15 +9,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceInputZeroUniform
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMass CenteredMomentSourceInputTailUniform
-open CenteredMomentFirstLocalization EisensteinSchwartzPoisson
-open CenteredMomentExceptionalAmplitudePair CenteredMomentAddedZeroUniform
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy CenteredMomentSourceProfileMass CenteredMomentSourceInputTailUniform CenteredMomentFirstLocalization EisensteinSchwartzPoisson CenteredMomentExceptionalAmplitudePair CenteredMomentAddedZeroUniform
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 omit [DecidableEq ι] in
 theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
@@ -138,9 +131,3 @@ theorem first_input_zero_capped (hi:ι→ℝ)(wlo whi B ε:ℝ)
         nlinarith)
   exact (hb s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K hK).trans
     (mul_le_mul_of_nonneg_left hp (by positivity))
-
-end SevenEighths.CenteredMomentSourceInputZeroUniform
-
-end
-
-end OAI

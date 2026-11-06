@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge ProbeEuler ProbePrimePower ProbeRow
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge ProbeEuler ProbePrimePower ProbeRow
 
 lemma highPrimeTerm_summable_norm (η : HeckeFamily.Character) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) (P : PrimeIdeal) :
@@ -45,8 +42,3 @@ theorem highPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (x w z : 
     simp only [highPrimeTerm_zero_of_two_le η x w z P e _ _ _ hh,tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

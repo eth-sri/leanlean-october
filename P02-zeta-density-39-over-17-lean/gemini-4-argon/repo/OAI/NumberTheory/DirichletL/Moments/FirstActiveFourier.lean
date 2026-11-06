@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstActiveFourier
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstMixed CenteredMomentFirstReduced
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstMixed CenteredMomentFirstReduced
 
 theorem shifted_active_fourier {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
@@ -74,9 +71,3 @@ theorem tripleFourier_active {ι : Type*} [Fintype ι]
   dsimp only at hs
   rw [tsum_fintype] at hs
   rw [hs]
-
-end SevenEighths.CenteredMomentFirstActiveFourier
-
-end
-
-end OAI

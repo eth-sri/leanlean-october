@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem finite_inverse_cubic_energy
     (Jset Pset : Finset (Ideal Eis)) (N L : ℝ)
@@ -192,8 +191,3 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
     _ = _ := by
       rw [Real.mul_rpow (show 0 ≤ K * X by positivity) (show 0 ≤ N by linarith)]
       ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

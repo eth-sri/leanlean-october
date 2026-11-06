@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseInitialArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseInitialArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -79,9 +77,3 @@ theorem secondModeBranch_parent_lists_restore
   unfold secondModeBranch secondModeLeft secondModeRight
   rw [secondCanonicalPolynomial_parent_lists_restore p hp hcop hg hpr x hb hE u v deleted₁ hd₁,
     secondCanonicalPolynomial_parent_lists_restore p hp hcop hg hpr x hb hE u v deleted₂ hd₂]
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

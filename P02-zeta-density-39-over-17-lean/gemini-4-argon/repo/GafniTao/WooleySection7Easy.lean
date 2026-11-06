@@ -448,6 +448,4 @@ theorem wooleyPolynomial_section7_easy
   exact hrefine.trans (mul_le_mul_of_nonneg_right hpow hmean)
 
 
-end
 
-end GafniTao

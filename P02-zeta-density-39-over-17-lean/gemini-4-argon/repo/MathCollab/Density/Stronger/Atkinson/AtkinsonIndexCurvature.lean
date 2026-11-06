@@ -32,10 +32,6 @@ noncomputable section
 def atkinsonIndexRealSlope (T x : ℝ) : ℝ :=
   Real.sqrt (2 * Real.pi * T / x + Real.pi ^ (2 : ℕ))
 
-/-- The exact real-index curvature of the Atkinson phase. -/
-def atkinsonIndexRealCurvature (T x : ℝ) : ℝ :=
-  -(Real.pi * T) /
-    (x ^ (2 : ℕ) * atkinsonIndexRealSlope T x)
 
 theorem atkinsonIndexRealSlope_pos
     {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
@@ -44,28 +40,6 @@ theorem atkinsonIndexRealSlope_pos
   apply Real.sqrt_pos.2
   positivity
 
-/-- Exact derivative of the phase slope, hence the second derivative of
-the equation-(11) phase. -/
-theorem hasDerivAt_atkinsonIndexRealSlope
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
-    HasDerivAt (atkinsonIndexRealSlope T)
-      (atkinsonIndexRealCurvature T x) x := by
-  have hdiv : HasDerivAt (fun u : ℝ => 2 * Real.pi * T / u)
-      (-(2 * Real.pi * T) / x ^ (2 : ℕ)) x := by
-    simpa using! (hasDerivAt_const x (2 * Real.pi * T)).div
-      (hasDerivAt_id x) hx.ne'
-  have hradicand : HasDerivAt
-      (fun u : ℝ => 2 * Real.pi * T / u + Real.pi ^ (2 : ℕ))
-      (-(2 * Real.pi * T) / x ^ (2 : ℕ)) x := by
-    simpa only [add_zero] using! hdiv.add
-      (hasDerivAt_const x (Real.pi ^ (2 : ℕ)))
-  have hpos : 0 < 2 * Real.pi * T / x + Real.pi ^ (2 : ℕ) := by
-    positivity
-  have hsqrt := hradicand.sqrt hpos.ne'
-  unfold atkinsonIndexRealSlope atkinsonIndexRealCurvature
-  convert hsqrt using 1
-  simp only [atkinsonIndexRealSlope]
-  ring
 
 /-- Difference of two exact Atkinson phases, with the later height first. -/
 def atkinsonIndexPhaseDifference (t u x : ℝ) : ℝ :=
@@ -81,6 +55,4 @@ theorem hasDerivAt_atkinsonIndexPhaseDifference
   exact (hasDerivAt_atkinsonIndexRealPhase ht hx).sub
     (hasDerivAt_atkinsonIndexRealPhase hu hx)
 
-end
 
-end MathCollab.Density.Stronger.Atkinson

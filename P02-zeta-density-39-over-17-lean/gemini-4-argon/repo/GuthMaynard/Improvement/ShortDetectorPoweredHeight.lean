@@ -98,4 +98,3 @@ theorem exists_shortNormalizedPowered_height {η : ℝ} (hη : 0 < η) :
       exact div_le_div_of_nonneg_right (div_le_div_of_nonneg_left (by positivity) hden hc) (by positivity)
     _ ≤ _ := div_le_div_of_nonneg_right hh (by positivity)
 
-end GuthMaynard.Improvement

@@ -184,4 +184,3 @@ theorem difference_cell_weighted_level_native (ε : ℝ) (hε : 0 < ε) :
       (fun j hj hnot => Nat.cast_nonneg _)
   exact le_min hTrivial hRoot
 
-end Montgomery.RationalMoment

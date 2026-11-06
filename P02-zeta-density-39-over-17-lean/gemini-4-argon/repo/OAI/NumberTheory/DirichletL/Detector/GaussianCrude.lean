@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CompletedGauss CubicEisenstein FourierBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma gaussianAnnulus_norm_le_one (y : ℝ) : ‖gaussianAnnulus y‖≤1 := by
   rw [gaussianAnnulus_norm]
@@ -95,8 +93,3 @@ theorem gaussianFixedWindow_completed_crude :
       ((rowMajorant_summable 2 (by norm_num)).mul_left (4*T^2))
     _ = (4*M)*T^2 := by rw [tsum_mul_left];dsimp only [M];ring
     _ ≤ _ := by nlinarith [sq_nonneg T]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

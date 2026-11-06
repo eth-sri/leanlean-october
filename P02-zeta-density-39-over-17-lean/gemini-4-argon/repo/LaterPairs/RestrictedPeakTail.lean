@@ -5,8 +5,7 @@ public import TaoTrudgianYang2025.AtkinsonPairNativePacket
 @[expose] public section
 set_option autoImplicit false
 noncomputable section
-open Filter Finset
-open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
+open Filter Finset MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 namespace Montgomery.CriticalPeak
 
 /-- Restricted actual critical-line peak count with arbitrary fixed natural log cap. -/
@@ -96,4 +95,3 @@ theorem ExponentPair.restricted_critical_peak_tail_general {k l η ε : ℝ}
     (a := 1+l/k) (g := (2*l-1)/k) (b := 2+2/k)
     (localMeanCount_of_pair_packet hk hpair.localMeanPacket_native) hη hε
   simpa only [hf] using hh
-end TaoTrudgianYang2025

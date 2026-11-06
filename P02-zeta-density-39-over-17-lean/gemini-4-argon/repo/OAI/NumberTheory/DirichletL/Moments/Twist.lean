@@ -7,10 +7,8 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentTwist
-open ActualEisensteinCubic EisensteinSchwartzPoisson
-open CenteredMomentLattice CenteredMomentCounting
+open ActualEisensteinCubic EisensteinSchwartzPoisson CenteredMomentLattice CenteredMomentCounting
 
 lemma normPowerProfile_support (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) (t : ℝ) :
@@ -28,8 +26,3 @@ lemma norm_real_imaginary_power (X t : ℝ) (hX : 0 < X) :
     ‖(X : ℂ) ^ (Complex.I * t)‖ = 1 := by
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hX]
   simp
-
-end SevenEighths.CenteredMomentTwist
-end
-
-end OAI

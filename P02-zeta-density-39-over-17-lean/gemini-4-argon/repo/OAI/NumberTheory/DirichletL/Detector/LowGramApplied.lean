@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (a b M : ℝ) (ha : 0<a) (hab : a<b) (hM : 0≤M)
@@ -53,8 +51,3 @@ theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     _≤∑σ : RayRing,Real.sqrt A*Real.sqrt (∑m∈lowNumeratorRows a₀ b₀ ha₀ hb₀ Q hQ,‖B σ m‖^2) :=
       Finset.sum_le_sum (fun σ _=>mul_le_mul_of_nonneg_right (Real.sqrt_le_sqrt (hbound σ)) (Real.sqrt_nonneg _))
     _=_ := (Finset.mul_sum ..).symm
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

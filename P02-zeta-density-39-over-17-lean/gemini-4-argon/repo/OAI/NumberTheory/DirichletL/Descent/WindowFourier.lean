@@ -134,8 +134,3 @@ theorem pureProfileMode_height (a₁ a₂ ak y : ι → ℝ) (t : Frequency) (u 
   apply Finset.prod_congr rfl
   intro i hi
   simp only [profileHeight, logPhase_add_frequency, logPhase_scaled_coordinate]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

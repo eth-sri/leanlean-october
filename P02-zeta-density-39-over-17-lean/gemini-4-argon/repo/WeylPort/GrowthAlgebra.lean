@@ -94,4 +94,3 @@ theorem eventually_pointValue_sixth_power_source_range
         have hh := mul_le_mul_of_nonneg_right hKL2 (by positivity : 0 ≤ H^r)
         simpa only [one_mul] using hh
 
-end TaoTrudgianYang2025

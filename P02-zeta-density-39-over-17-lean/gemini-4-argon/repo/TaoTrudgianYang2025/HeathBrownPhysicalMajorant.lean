@@ -117,4 +117,3 @@ theorem one_le_heathBrownPowerMajorant {k : ℕ} (hk : 3 ≤ k)
   have hb : 0 ≤ N*T^(-heathBrownInverseExponent k) := by positivity
   linarith
 
-end TaoTrudgianYang2025

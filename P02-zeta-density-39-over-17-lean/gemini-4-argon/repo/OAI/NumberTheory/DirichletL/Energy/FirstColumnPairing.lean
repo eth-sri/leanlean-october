@@ -9,17 +9,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstColumnPairing
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstReferenceSource CenteredMomentFirstReferenceEnergy
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentCanonicalFirst
-open CenteredMomentAmplificationChildInput CenteredMomentGaussEnergy
-open CenteredMomentFirstMixedAllowance CenteredMomentSectorLocalization CenteredMomentLogDyadic
-open CenteredMomentSecondRetainedAggregate CenteredMomentChildAssembly
-open CenteredMomentFirstNonexceptionalWeightSum
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentFirstReferenceSource CenteredMomentFirstReferenceEnergy CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentCanonicalFirst CenteredMomentAmplificationChildInput CenteredMomentGaussEnergy CenteredMomentFirstMixedAllowance CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentSecondRetainedAggregate CenteredMomentChildAssembly CenteredMomentFirstNonexceptionalWeightSum
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 lemma fixed_pair_moduli (η:Character)(C D:Ideal O)(hC:Supported C)
     (E:Finset (CommonIndex C D))(χ:RayCharacter):
@@ -70,9 +61,3 @@ theorem column_bounds_of_reference_sums
     have hh:=hright L hcap hL χ v
     rw [(fixed_pair_moduli s.η p.val.1 p.val.2 (supported s R seed p).1 E χ).2] at hh
     exact hh.trans_eq (reference_sum _ _ _ _ _ _ _)
-
-end SevenEighths.CenteredMomentEnergyFirstColumnPairing
-
-end
-
-end OAI

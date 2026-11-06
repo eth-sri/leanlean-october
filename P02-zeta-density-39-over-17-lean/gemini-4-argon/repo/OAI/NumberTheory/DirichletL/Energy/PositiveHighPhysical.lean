@@ -13,21 +13,9 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighPhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyPositiveHighSourceBound
-open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
-local notation "O"=>HeckeFamily.O
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyPositiveHighSourceBound CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_positive_high_physical
@@ -124,9 +112,3 @@ theorem actual_positive_high_physical
   dsimp only [inp,r] at hh
   have hN1:((1:Ideal O).absNorm:ℝ)=1:=by norm_num
   simpa only [hN1,div_one,mul_assoc] using hh
-
-end SevenEighths.CenteredMomentEnergyPositiveHighPhysical
-
-end
-
-end OAI

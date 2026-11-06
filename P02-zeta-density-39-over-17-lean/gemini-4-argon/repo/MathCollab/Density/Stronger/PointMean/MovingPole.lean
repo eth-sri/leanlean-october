@@ -13,9 +13,7 @@ public import MathCollab.Density.AbelZetaGrowth
 
 @[expose] public section
 
-open Complex Set
-open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MathCollab.Density.Contour MathCollab.Density.ZetaGrowth MathCollab.Density.Stronger.Fourth
 open scoped Topology
 set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
@@ -187,4 +185,3 @@ theorem heathBrown_movingPole_finite_rectangle
   rw [RectangleIntegral'_congr hCongr]
   simpa only [N, p, heathBrownMovingPoleResidue] using hPoleCleared
 
-end MathCollab.Density.Stronger.PointMean

@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CubicEisenstein ProbePhase ConcretePrimeRowBridge ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CubicEisenstein ProbePhase ConcretePrimeRowBridge ConcreteTraceCRT
 
 @[simp] theorem bareIdealHighCoefficient_row_one (η : HeckeFamily.Character) (u : O) :
     bareIdealHighCoefficient η u 1 1 1 1=1 := by
@@ -33,8 +30,3 @@ local notation "Id" => Ideal O
     bareIdealHighSummand η u x w z 1 1 1 1=1 := by
   have hw (t : ℂ) : fullIdealWeight t (1:Ideal O)=1 := (IdealEuler.normWeight t).map_one
   simp only [bareIdealHighSummand,bareIdealHighCoefficient_row_one,hw,one_mul]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

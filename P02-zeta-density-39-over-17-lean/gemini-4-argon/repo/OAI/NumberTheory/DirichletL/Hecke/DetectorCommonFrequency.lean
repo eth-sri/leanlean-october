@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 namespace SevenEighths.HeckeDetectorFrequency
-open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorLower
-open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorPartition
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorLower HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorPartition
 
 def phaseProduct (χ : Character) (D U : ℝ) (s : ℂ) (j k : ℕ) (t : ℝ) : ℂ :=
   phasePolynomial (expandedSet U)
@@ -60,9 +58,3 @@ theorem exists_common_frequency_witness (R θ τ : ℝ) (hR : 0 ≤ R)
   change (625*(Real.logb 2 U)^2)*‖dyadicBlock χ cutoff cutoff D (U^20) (U^21) ρ j k‖ ≤
     (625*(Real.logb 2 U)^2)*((67108864*U^42)*Cn/(U^τ)^n+C₀*‖phaseProduct χ D U ρ j k t‖) at hb'
   nlinarith
-
-end SevenEighths.HeckeDetectorFrequency
-
-end
-
-end OAI

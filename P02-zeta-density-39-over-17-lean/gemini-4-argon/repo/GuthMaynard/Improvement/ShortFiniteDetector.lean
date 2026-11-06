@@ -97,4 +97,3 @@ theorem shortFiniteDetector_decomposition {T : ℝ} (hT : 1 ≤ T)
     (∑' n : ℕ, detectorTerm ρ (2*T^((100:ℝ)⁻¹)) (T^(1/2:ℝ)) (n+shortDetectorCutoff T)) = (∑' n : ℕ, detectorTerm ρ (2*T^((100:ℝ)⁻¹)) (T^(1/2:ℝ)) n) at he
   rwa [hsum, hfull] at he
 
-end GuthMaynard.Improvement

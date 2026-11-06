@@ -9,8 +9,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -79,4 +78,3 @@ theorem exists_norm_zetaAtkinsonBesselPlus_le {k : ℕ} (hk : 2 ≤ k) :
       convert h using 1
       ring
 
-end MathCollab.Density.Stronger.Atkinson

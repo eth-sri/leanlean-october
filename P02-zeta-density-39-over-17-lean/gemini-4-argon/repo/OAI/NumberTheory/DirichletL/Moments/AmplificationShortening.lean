@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationShortening
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentUnequal
-open CenteredMomentAmplification CenteredMomentAmplificationLocal CenteredMomentAmplificationGlobal
-open ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentAmplification CenteredMomentAmplificationLocal CenteredMomentAmplificationGlobal ProbePhysical
 
 def residualCharacter (p : O) (k : ℕ) (u : O) : ℂ :=
   sexticReciprocityPhase p u ^ k * idealRowHom u (Ideal.span {p}) ^ (2*k)
@@ -141,9 +137,3 @@ theorem errorScalar_norms (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
   exact ⟨centralLocal_one_norm_sq p hp hs hg hc h hph,
     centralLocal_six_norm_sq p hp hs hg hc h hph,
     centralLocal_seven_norm_sq p hp hs hg hc h hph⟩
-
-end SevenEighths.CenteredMomentAmplificationShortening
-
-end
-
-end OAI

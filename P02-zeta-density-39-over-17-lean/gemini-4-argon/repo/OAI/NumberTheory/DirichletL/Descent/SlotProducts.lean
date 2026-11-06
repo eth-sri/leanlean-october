@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def slotTupleProduct (p : ι → Ideal Eis) : Ideal Eis := ∏ i, p i
@@ -71,8 +70,3 @@ theorem slotProductCoefficient_at_product
   · intro q hq hqp
     exact ite_eq_right (fun he => hqp (hinj hq hp he))
   · exact fun hn => (hn hp).elim
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

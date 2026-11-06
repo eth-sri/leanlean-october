@@ -81,9 +81,3 @@ theorem reflected_polynomial_bound (e ε : ℝ)
     hV hC₂ hCn hKg hKr hm₂ hmn hcentral (fun _ _ h => Bool.false_ne_true h |>.elim) hseries
   dsimp only [Kg,Kr,Q,R,H] at hb
   convert hb using 1 ; congr 2 <;> ring_nf
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

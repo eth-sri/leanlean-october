@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical Topology
 open Set Metric
 namespace SevenEighths.HeckeDyadicControl
-open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion HeckeDeletionBounds HeckeReciprocalGrowth
 
 theorem original_disk_control (e ε : ℝ)
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
@@ -95,9 +94,3 @@ theorem buffered_original_control (e ε : ℝ)
   exact hbound (χ j) (hχ j) a t (by linarith) ha'
     (fun w hw => HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
       hmax j t ht (ball_subset_closedBall hw)) z hz
-
-end SevenEighths.HeckeDyadicControl
-
-end
-
-end OAI

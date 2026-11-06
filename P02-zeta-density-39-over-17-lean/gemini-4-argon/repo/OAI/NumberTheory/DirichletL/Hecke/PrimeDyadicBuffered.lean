@@ -58,9 +58,3 @@ theorem polynomial_bound_in_bin (e : ℝ) (he : 0<e) (he' : e<1/1000) :
     hm₂ hmn (fun s h => (hs s h).1) (fun s h => by
       simpa only [series, neg_div, norm_neg, logDeriv_apply, binCost] using (hs s h).2)
   convert hh using 1 ; congr 1 ; ring_nf
-
-end SevenEighths.HeckePrimeDyadic
-
-end
-
-end OAI

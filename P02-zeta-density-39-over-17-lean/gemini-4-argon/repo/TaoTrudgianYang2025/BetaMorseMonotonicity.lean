@@ -88,5 +88,4 @@ theorem modelPhaseMorseCoordinate_strictMonoOn
   · intro u hu
     exact modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv (by simpa using hu)
 
-end TaoTrudgianYang2025
 

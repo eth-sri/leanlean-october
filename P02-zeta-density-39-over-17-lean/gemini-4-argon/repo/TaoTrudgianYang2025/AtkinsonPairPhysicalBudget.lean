@@ -103,4 +103,3 @@ theorem atkinsonPairPowerBudget_physical_log_le {C H G L k l : ℝ} {N : ℕ} (R
       mul_le_mul_of_nonneg_right hj (by positivity)
     _ = _ := by ring
 
-end TaoTrudgianYang2025

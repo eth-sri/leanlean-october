@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceWeightedEnergy
-open HeckeFamily ConcreteTraceCRT CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison
-local notation "O"=>HeckeFamily.O
+open HeckeFamily ConcreteTraceCRT CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
 
 lemma finite_weighted_energy {ι κ:Type*}[Fintype ι][Fintype κ]
     (a f:ι→κ→ℂ)(ρ q:κ→ℝ)(hρ:∀j,0≤ρ j)(hq:∀j,0≤q j)
@@ -57,9 +55,3 @@ theorem radial_weighted_energy {κ:Type*}[Fintype κ]
     rw [CenteredMomentOriginalRadialComparison.finite_weighted rows keep (fun z=>f z j) Φ K hΦ]
     exact ((hs j).sum_le_tsum rows (fun z _=>by
       split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)).trans (hf j)
-
-end SevenEighths.CenteredMomentEnergyReferenceWeightedEnergy
-
-end
-
-end OAI

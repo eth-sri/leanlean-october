@@ -71,5 +71,4 @@ theorem robertSargos_zero_image_card_le
           (by linarith) (by positivity) (by positivity)) hN0
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 

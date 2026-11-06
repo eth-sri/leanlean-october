@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedProfile
-open CenteredMomentLattice CenteredMomentTwist CenteredMomentHeckeTwist
-open CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation HeckeFamily
-open EisensteinSchwartzPoisson QuadraticInitialBound
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentLattice CenteredMomentTwist CenteredMomentHeckeTwist CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation HeckeFamily EisensteinSchwartzPoisson QuadraticInitialBound
 
 def dilated (W : ℝ → ℂ) (c : ℝ) : ℝ → ℂ := fun x => W (c * x)
 
@@ -199,9 +196,3 @@ theorem retainedProfile_support (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
   apply (normPowerProfile_support _ _ _ _ _ _ _).trans
   exact dilated_support W a b (max 1 b) (clipDilation S) ha (le_max_left _ _)
     (clipDilation_ge_one S hS) (clipDilation_le b S hS hret) hs
-
-end SevenEighths.CenteredMomentRetainedProfile
-
-end
-
-end OAI

@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentInductionEnergy
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentPositiveSummability
-open CenteredMomentCounting CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
-open CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open QuadraticInitialBound ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentPositiveSummability CenteredMomentCounting CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRetainedEnergy QuadraticInitialBound ConcreteTraceCRT
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 def energy (η:Character) (m A:O) (t:ℝ) (W₁ W₂:ℝ→ℂ)
@@ -21,9 +17,3 @@ def energy (η:Character) (m A:O) (t:ℝ) (W₁ W₂:ℝ→ℂ)
     (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) : ℝ :=
   ∑'z:O,if keep z then ‖positiveSlotRow η m A z W₁ W₂ S β P t X₁ X₂‖^2*
     (Φ (‖eisEmbedding z‖^2/K)).re else 0
-
-end SevenEighths.CenteredMomentInductionEnergy
-
-end
-
-end OAI

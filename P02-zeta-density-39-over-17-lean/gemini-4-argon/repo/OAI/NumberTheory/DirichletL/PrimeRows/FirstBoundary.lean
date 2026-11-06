@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem continuedCorrection_first_boundary_x (eps : ℝ) (heps : 0<eps)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
@@ -54,9 +53,3 @@ theorem continuedCorrection_first_boundary_z (eps : ℝ) (heps : 0<eps)
   exact (ramifiedCorrection_first_analytic_z η u P.val _
     (by exact_mod_cast hS.tail.norm_four P.val (Finset.mem_filter.mp P.property).2)
     x w (by linarith)) z (by change (1/3:ℝ)<z.re; linarith)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

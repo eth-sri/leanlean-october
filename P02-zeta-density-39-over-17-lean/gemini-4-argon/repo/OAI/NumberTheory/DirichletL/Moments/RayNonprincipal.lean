@@ -12,7 +12,6 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentRayNonprincipal
 open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion HeckePrimeRay
-local notation "O" => HeckeFamily.O
 
 theorem product_principal_descent (χ θ:Character)
     (hp:(χ.product θ).residue=1) :
@@ -60,7 +59,6 @@ theorem actual_row_twist_nonprincipal (η χ θ:Character) (Q:Ideal O) (m A z:O)
   exact hex ⟨χ,ψ,hψ,hind,hQ.trans hmod,hrow⟩
 
 variable (M:Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ) (hH:RayOrthogonality.globalUnits M≤H)
 
 theorem all_ray_twists_nonprincipal (η χ:Character) (Q:Ideal O) (m A z:O)
@@ -70,9 +68,3 @@ theorem all_ray_twists_nonprincipal (η χ:Character) (Q:Ideal O) (m A z:O)
   intro θ
   exact actual_row_twist_nonprincipal η χ (HeckeRayQuotient.character M H hH θ)
     Q m A z hrow hQ hex
-
-end SevenEighths.CenteredMomentRayNonprincipal
-
-end
-
-end OAI

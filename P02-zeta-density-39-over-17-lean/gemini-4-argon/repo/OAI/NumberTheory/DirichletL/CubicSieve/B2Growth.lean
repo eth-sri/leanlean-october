@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hε : 0 ≤ ε) (hA : 0 ≤ A) (hM : 1 ≤ M) (hN : 1 ≤ N)
@@ -120,8 +119,3 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
     _ ≤ ((384*128^2 : ℝ)*A)*(D^2*(M*N)^ε)*(M^(1/3 : ℝ)*N+M^ξ) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hprod (by positivity)) (by positivity)
     _ = _ := by ring
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

@@ -195,4 +195,3 @@ theorem source_ratio_log_band {N : ℝ} (hN : 0 ≤ N) {n m : ℕ}
   rw [Real.log_div hn0.ne' hm0.ne']
   linarith
 
-end GuthMaynard.Improvement

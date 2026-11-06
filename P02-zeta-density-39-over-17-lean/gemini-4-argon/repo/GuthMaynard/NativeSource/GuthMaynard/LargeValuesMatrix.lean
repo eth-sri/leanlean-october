@@ -361,4 +361,3 @@ theorem Matrix.IsHermitian.trace_cube_eq_sum_eigenvalues_cube
   rw [← mul_assoc, hunit, one_mul]
   simp [D, pow_succ, Function.comp_def]
 
-end GuthMaynard.NativeMoment

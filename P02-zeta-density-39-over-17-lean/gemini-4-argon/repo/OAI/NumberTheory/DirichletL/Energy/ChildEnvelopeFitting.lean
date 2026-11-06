@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyChildEnvelopeFitting
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentInductionEnergy QuadraticInitialBound
-open CenteredMomentSecondNonexceptionalChosenBlock
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound CenteredMomentSecondNonexceptionalChosenBlock
 
 lemma radical_product_power (R C:Ideal O)(hR:R≠0)(hC:C≠0)
     (Z BR BC ε:ℝ)(hZ:0<Z)(hε:0≤ε)
@@ -80,9 +77,3 @@ theorem paid_rhs_fit {a b:ℝ}(Cc C₀ C₁:ℝ)(p:Profiles a b)(T:Finset (ℕ×
       unfold coefficient
       rw [Real.rpow_add hZ0]
       ring
-
-end SevenEighths.CenteredMomentEnergyChildEnvelopeFitting
-
-end
-
-end OAI

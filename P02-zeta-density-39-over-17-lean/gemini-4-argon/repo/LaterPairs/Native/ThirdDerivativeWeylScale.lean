@@ -40,4 +40,3 @@ theorem third_derivative_weyl_normalize {S N H C μ : ℝ}
     ring
   exact hd.trans_eq hid
 
-end TaoTrudgianYang2025

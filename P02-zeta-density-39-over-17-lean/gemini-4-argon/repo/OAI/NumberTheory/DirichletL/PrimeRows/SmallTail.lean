@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 theorem small_physical_dyads_sum (K : ℕ) (e δ a b B : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2)
@@ -77,8 +76,3 @@ theorem small_physical_dyads_sum (K : ℕ) (e δ a b B : ℝ)
         _ = (C*D)*(η.modulus.absNorm:ℝ)^δ*
             (Z^(HeckeZeroSupremum.beta-11/16-79/800+8*e)*Z^((1/100:ℝ)*2)) := by ring
         _ = _ := by rw [he]
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

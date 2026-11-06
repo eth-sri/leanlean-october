@@ -65,4 +65,3 @@ theorem sum_sargosPrefixMajorant_le_log {N : ℕ} [NeZero N] :
   have hh := harmonic_le_one_add_log N
   linarith
 
-end TaoTrudgianYang2025

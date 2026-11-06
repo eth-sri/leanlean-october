@@ -10,14 +10,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeZeroSupremum QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentInductionEnergy
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeZeroSupremum QuadraticInitialBound CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily CenteredMomentPrimeSlot CenteredMomentInductionEnergy
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
@@ -85,9 +80,3 @@ theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     _ = (C*bΦ^4*diagonalControl s.radial.profile*(p.control S)^2*(1+|t|+T)^J)*
       (Z^(Bmask*e)*Z^(s.rowWidth+4*(ε/16)+ε/4+κ*(∑i,w i))) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hpow (by positivity)
-
-end SevenEighths.CenteredMomentRayMaskedFloor
-
-end
-
-end OAI

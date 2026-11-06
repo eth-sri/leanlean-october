@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def elementCharacter (I : Ideal O) (hI : primaryGenerator I ≠ 0) : O →* ℂ where
   toFun x := eisEmbedding (CubicJacobiGlobal.idealSymbol I x)
@@ -105,8 +104,3 @@ theorem badPart_sector (I : Ideal O) :
     ∃ E : CanonicalQuadraticSieve.fixedBadPrimes.powerset, badPart I = ∏ P ∈ E.val, P := by
   exact ⟨⟨CanonicalQuadraticSieve.badPrimeSupport I,
     Finset.mem_powerset.mpr (CanonicalQuadraticSieve.badPrimeSupport_subset I)⟩, rfl⟩
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

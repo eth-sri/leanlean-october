@@ -109,6 +109,4 @@ theorem wooley_sum_refined_residue_mass
     · rw [ite_eq_left hzxi, ite_eq_right (Ne.symm hzne)]
     · rw [ite_eq_right hzxi]
 
-end
 
-end GafniTao

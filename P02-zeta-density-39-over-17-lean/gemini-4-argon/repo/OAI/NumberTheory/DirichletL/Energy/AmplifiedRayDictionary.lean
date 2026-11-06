@@ -11,14 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyAmplifiedRayDictionary
-open HeckeFamily CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
-open CenteredMomentAmplificationChildSourceCaps CenteredMomentAllocatedRayDictionary
-open CenteredMomentFirstAnnularInput CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentCommonMaskEnergy
-open CenteredMomentEligibleEnergy CenteredMomentCommonHeightEnvelope
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentAllocatedRayDictionary CenteredMomentFirstAnnularInput CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentInductionEnergy CenteredMomentCommonMaskEnergy CenteredMomentEligibleEnergy CenteredMomentCommonHeightEnvelope CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
 variable {α : Type*} [Fintype α]
 local instance {β : Type*} : DecidableEq β := Classical.decEq _
 
@@ -71,7 +64,6 @@ lemma error_source_active (s : Input α) (C R : Ideal O) (B : actualAllocations 
 
 section Ray
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 variable {s : Input α} {η₀ : Character} {θ : α→RayQuotient.Characters M H}
   {w σ freq : α→ℝ} {W : ℝ→ℂ} {bslot Z : ℝ}
@@ -105,10 +97,3 @@ theorem restoredError_matches (h : Matches M H hH s η₀ θ w σ freq W bslot Z
       (fun i=>θ i.val.val) (fun i=>w i.val.val) (fun i=>σ i.val.val)
       (fun i=>freq i.val.val) W bslot Z :=
   matches_twiceChild M H hH h C R B τ t Q k (restoreAllocation (child s C R B τ t) (Q^k) Bp) υ v
-
-end Ray
-end SevenEighths.CenteredMomentEnergyAmplifiedRayDictionary
-
-end
-
-end OAI

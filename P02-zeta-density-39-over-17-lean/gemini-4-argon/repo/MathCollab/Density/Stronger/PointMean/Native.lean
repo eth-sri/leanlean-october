@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.PointMean.Statement
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.ZetaGrowth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.ZetaGrowth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -306,4 +305,3 @@ theorem heathBrownLemmaThree_native : HeathBrownLemmaThree := by
           (mul_le_mul_of_nonneg_left (by linarith) hCnonneg)
           (by linarith) (by norm_num) (mul_nonneg hCnonneg hlogNonneg)
 
-end MathCollab.Density.Stronger.PointMean

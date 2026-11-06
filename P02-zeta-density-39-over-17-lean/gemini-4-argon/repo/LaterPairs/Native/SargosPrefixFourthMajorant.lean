@@ -30,4 +30,3 @@ theorem norm_sargosFinitePrefix_le_fourierMajorant {N H : ℕ} [NeZero N]
       exact mul_le_mul_of_nonneg_right (norm_sargosPrefixKernel_le_majorant hH k)
         (norm_nonneg _)
 
-end TaoTrudgianYang2025

@@ -118,4 +118,3 @@ theorem fixed_scale_factor_eventually_below_height {C c : ℝ} (hc : c < 1) :
     C*T^c ≤ T^(1-c)*T^c := mul_le_mul_of_nonneg_right hlarge (by positivity)
     _ = T := by rw [← Real.rpow_add hT]; norm_num
 
-end MathCollab.Density.Stronger

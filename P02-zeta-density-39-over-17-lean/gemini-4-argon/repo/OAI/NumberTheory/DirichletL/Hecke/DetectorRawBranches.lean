@@ -8,10 +8,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorRawFiber
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorSupportedWitness
-open HeckeDetectorInverseFiberCount HeckeDetectorPlainFiberCount HeckeDetectorNoSlotPlainCount
-variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
-  {U a ε tstar T allowance : ℝ} {i : ℕ}
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorSupportedWitness HeckeDetectorInverseFiberCount HeckeDetectorPlainFiberCount HeckeDetectorNoSlotPlainCount
+variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*} {U a ε tstar T allowance : ℝ} {i : ℕ}
 
 theorem Fiber.lengths (F : Fiber M H Label Slot U a ε tstar T allowance i) (hU : 1<U) :
     tstar-F.r-ε≤F.m ∧ F.r≤tstar+ε ∧ F.m≤1/2+75*ε ∧ tstar-1/2-76*ε≤F.r ∧ 0≤F.m :=
@@ -65,9 +63,3 @@ theorem fiberConstant_bounds (C height K : ℝ) (hC : 0≤C) (hh : 0≤height) (
   calc
     _ = (12*(1+height)*C)*K := by ring
     _ ≤ (192*(1+height)*C)*max 1 K := mul_le_mul h2 (le_max_right _ _) hK h1
-
-end SevenEighths.HeckeDetectorRawFiber
-
-end
-
-end OAI

@@ -14,8 +14,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem neumannTwoTerm_complex_exp (z : ℝ) :
@@ -81,4 +80,3 @@ theorem zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L x : ℝ} (hx : 0 < x)
     (neumannLeadingPlus * hp + neumannLeadingMinus * hm -
       neumannCorrectionPlus / 8 * hcp - neumannCorrectionMinus / 8 * hcm)
 
-end MathCollab.Density.Stronger.Atkinson

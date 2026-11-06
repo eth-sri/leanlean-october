@@ -40,8 +40,3 @@ theorem physicalScales_rpow (Z r : ℝ) (hZ : 1<Z) (k : SourceIndex) (l : ℕ) :
     Real.rpow_logb hz (ne_of_gt hZ) (dyadScale_pos n)
   funext i
   fin_cases i <;> simp [physicalScales,rawScales,he,Real.rpow_sub hz,div_div]
-
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
-
-end OAI

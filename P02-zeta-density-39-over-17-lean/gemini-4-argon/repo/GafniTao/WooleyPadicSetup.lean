@@ -107,6 +107,4 @@ theorem wooleyPadicCount_eq_fordVinogradovMomentNat
     left_inv := fun z => Subtype.ext rfl
     right_inv := fun z => Subtype.ext rfl }
 
-end
 
-end GafniTao

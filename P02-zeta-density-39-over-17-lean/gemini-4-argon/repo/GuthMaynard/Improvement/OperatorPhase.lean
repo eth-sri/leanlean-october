@@ -82,4 +82,3 @@ theorem operator_phase_continuous (ν : Measure ℝ) [IsFiniteMeasure ν] :
     fun_prop
   simpa only [← hid ζ,dist_self] using hc.tendsto ζ
 
-end GuthMaynard.Improvement

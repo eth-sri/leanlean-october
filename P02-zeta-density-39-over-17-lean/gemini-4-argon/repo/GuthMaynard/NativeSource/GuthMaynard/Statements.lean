@@ -62,4 +62,3 @@ theorem guthMaynardLargeValues_neg
     rw [norm_sourceDirichletPoly_conjugateCoeffs]
     exact hValues t ht
 
-end GuthMaynard.NativeMoment

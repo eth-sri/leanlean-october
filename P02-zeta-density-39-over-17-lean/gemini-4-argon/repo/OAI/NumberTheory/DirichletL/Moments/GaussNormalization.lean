@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentGaussNormalization
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentOriginalChildEnergy
-open CenteredMomentDivisorRawEnergy CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentOriginalChildEnergy CenteredMomentDivisorRawEnergy CenteredMomentSourceRow
 
 theorem gaussPolynomial_const_mul {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ) (d : ℂ) (z : O) :
@@ -43,9 +41,3 @@ theorem sourceGaussEnergy_nonneg (Q : Finset (Ideal O)) (c f : Ideal O → ℂ)
   change 0≤(gaussEnergy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) _ W K).re
   rw [←hs.tsum_eq]
   exact tsum_nonneg (fun z => mul_nonneg (sq_nonneg _) (hW z))
-
-end SevenEighths.CenteredMomentGaussNormalization
-
-end
-
-end OAI

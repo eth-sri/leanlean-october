@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def continuedCompensatedRow (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow)
@@ -55,9 +54,3 @@ theorem continuedCompensatedRow_eq_indexed {K : ℕ}
   rw [continuedCompensatedRow_eq_initial _ _ _ _ _ _ _ _ _ _ _ hx hw hz,
     indexedCompensatedHigh_eq_spectral η S P hP
       (fun i=>outside_prime_supported S hS.bad (P i) (hPS i)) u.val x w z]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

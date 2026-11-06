@@ -64,4 +64,3 @@ theorem slope_transition_width_le {f : ℝ → ℝ} {a b c d m lam : ℝ}
   apply (le_div_iff₀ hm).mpr
   nlinarith
 
-end TaoTrudgianYang2025

@@ -51,9 +51,3 @@ theorem exists_gt_supremum_sub_of_insert {S : Set ℝ} {a ε : ℝ}
   · subst x
     exact False.elim ((not_lt_of_ge ha) hlt)
   · exact ⟨x, hxS, hlt⟩
-
-end
-
-end SevenEighths.Supremum
-
-end OAI

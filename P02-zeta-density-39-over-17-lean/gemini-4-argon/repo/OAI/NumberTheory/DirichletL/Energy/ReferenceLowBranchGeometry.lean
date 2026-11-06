@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowBranchGeometry
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceDeletionCapacity
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceDeletionCapacity
 
 lemma length_eq_max_log (Z X:ℝ)(hZ:1<Z)(hX:0<X):
     length Z X=max 0 (Real.logb Z X):=by
@@ -56,9 +54,3 @@ lemma reflected_low_admissible (M xi short reflected z kappa:ℝ)
     (hc:reflected+short+6*kappa*z≤13*M/14+xi):
     reflected+short+z≤5*M/6 ∧ reflected+short+6*kappa*z≤M:=by
   constructor <;> linarith
-
-end SevenEighths.CenteredMomentEnergyReferenceLowBranchGeometry
-
-end
-
-end OAI

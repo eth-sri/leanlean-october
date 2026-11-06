@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonRadialData
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale
-open CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 structure Input (ι:Type*) [Fintype ι] extends Data ι where
@@ -107,9 +101,3 @@ lemma common_profile_le (s:Input ι) (C R:Ideal O) (B:actualAllocations s.pools 
   apply pow_le_pow_left₀ (Finset.prod_nonneg (fun i _=>zero_le_one.trans (s.M_ge_one i)))
   exact Finset.prod_le_prod_of_subset_of_one_le₀ (Finset.subset_univ _)
     (fun i _=>zero_le_one.trans (s.M_ge_one i)) (fun i _ _=>s.M_ge_one i)
-
-end SevenEighths.CenteredMomentCommonRadialData
-
-end
-
-end OAI

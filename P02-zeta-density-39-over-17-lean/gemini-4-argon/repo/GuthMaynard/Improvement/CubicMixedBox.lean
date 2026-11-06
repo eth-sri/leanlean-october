@@ -230,4 +230,3 @@ theorem cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
         hstrip.2.2.trans (mul_le_mul_of_nonneg_left hmasked' (by positivity))
     _ = _ := by rw [Real.sqrt_mul hP.le]; ring
 
-end GuthMaynard.Improvement

@@ -96,4 +96,3 @@ theorem modelPhaseBufferedKernel_uniform_second_derivative
     have hD₀ : 0 ≤ D := by linarith
     positivity
 
-end TaoTrudgianYang2025

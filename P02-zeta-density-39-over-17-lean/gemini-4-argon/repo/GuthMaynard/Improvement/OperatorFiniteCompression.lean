@@ -98,4 +98,3 @@ theorem operator_finite_mixed_trace_tendsto [Countable ι]
   rw [← he]
   exact operator_finite_compressed_trace_tendsto b ν w H hx hy hxy
 
-end GuthMaynard.Improvement

@@ -131,9 +131,3 @@ theorem polynomial_finite_shift (χ : Character) (hχ : χ.residue≠1) (inverse
     (integrand_vertical_integrable χ inverse W a b ha hWs hW D r σ freq hD hr)]
   rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le (by linarith : -T≤T)]
   rw [finite_rectangle χ hχ inverse W a b ha hWs hW D σ freq l r T hD hz]
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

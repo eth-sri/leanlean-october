@@ -154,4 +154,3 @@ theorem neumannContourKernel_finite_rectangle (x : ℝ) {b H : ℝ}
     (by simpa using hd)
   simpa using h
 
-end MathCollab.Density.Stronger.Atkinson

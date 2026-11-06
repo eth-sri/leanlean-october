@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceZeroEnergy
-open ActualEisensteinCubic HeckeFamily CenteredMomentRectangle
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentSupportedZeroEnergy
-open CenteredMomentFirstLocalization CenteredMomentSourceRow
-open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic HeckeFamily CenteredMomentRectangle CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSupportedZeroEnergy CenteredMomentFirstLocalization CenteredMomentSourceRow EisensteinSchwartzPoisson
 
 theorem profileCoefficient_norm_le {ι : Type*} [Fintype ι]
     (R : Ideal O) (ν : ι → Ideal O → ℂ) (hν : ∀ j I,‖ν j I‖≤1)
@@ -105,9 +100,3 @@ theorem zeroEnergy_eq_zero_of_subunit {ι : Type*} [Fintype ι]
     unfold finiteColumnCoefficient
     exact Finset.sum_eq_zero (fun v hv => hb v (Finset.mem_filter.mp hv).1)
   simp only [zeroEnergy,hc,zero_mul,star_zero,mul_zero,Finset.sum_const_zero]
-
-end SevenEighths.CenteredMomentSourceZeroEnergy
-
-end
-
-end OAI

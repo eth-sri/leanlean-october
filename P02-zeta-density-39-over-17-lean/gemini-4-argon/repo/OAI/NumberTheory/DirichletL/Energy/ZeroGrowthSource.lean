@@ -10,14 +10,9 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthSource
-open HeckeFamily QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthHighBound
+open HeckeFamily QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthHighBound
 open CenteredMomentEnergyZeroReferencePhysical (balancedInput)
-open CenteredMomentFirstSourceReduction CenteredMomentEnergyBandMonotonicity
-open CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
+open CenteredMomentFirstSourceReduction CenteredMomentEnergyBandMonotonicity CenteredMomentSecondHeightFamily
 
 def PhysicalGrowthAt (Q:Ideal O)(a b bΦ Bmask L rho Mcap ξ e Z:ℝ)(ha:0<a)
     (Ψ:𝓢(ℝ,ℂ))(S:Finset (ℕ×ℕ))(J:ℕ)(C:ℝ):Prop:=
@@ -29,9 +24,3 @@ def PhysicalGrowthAt (Q:Ideal O)(a b bΦ Bmask L rho Mcap ξ e Z:ℝ)(ha:0<a)
       Z^(s.width/4)≤ inp.Y₁ ∧ Z^(s.width/4)≤ inp.Y₂)→
     physicalMass inp s.puncture 1 fixedBadMask 1 Ψ s.radial.scale Z ξ/(X₁*X₂)≤
       C*(p.control S)^2*(1+|t|)^J*Z^(max s.width (length Z X₁+length Z X₂)+e)
-
-end SevenEighths.CenteredMomentEnergyZeroGrowthSource
-
-end
-
-end OAI

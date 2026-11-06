@@ -98,4 +98,3 @@ theorem modelPhaseBufferedCutoff_uniform_ordered_jets (Q : ℕ) :
       (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hj)
         (sq_nonneg M)) (pow_nonneg (inv_nonneg.mpr hη.le) _))
 
-end TaoTrudgianYang2025

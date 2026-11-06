@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
 open HeckeFamily CompletedGauss UniqueFactorizationMonoid ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
 
 lemma support_prime (R P : Ideal O) (hP : P∈primeSupport R) : Prime P :=
   prime_of_normalized_factor P (Multiset.mem_toFinset.mp hP)
@@ -60,9 +59,3 @@ lemma excluded_element_generator (χ : Character) (hχ0 : elementCoeff χ 0=0)
       if IsCoprime n (idealGenerator R) then elementCoeff χ n else 0 := by
   rw [excluded_element χ hχ0 R hR]
   conv_lhs => rw [←span_idealGenerator R,Ideal.isCoprime_span_singleton_iff]
-
-end SevenEighths.CenteredMomentNaturalRowSource
-
-end
-
-end OAI

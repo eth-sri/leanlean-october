@@ -11,14 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedRightTransport
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
-open ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstMixedRoot
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstMixedCommonRadius CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius CenteredMomentDescentLedger
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive CenteredMomentFirstPhysicalSource CenteredMomentFirstMixedRoot CenteredMomentFirstCanonicalFamily CenteredMomentFirstAmplificationChoice CenteredMomentFirstMixedCommonRadius CenteredMomentFirstMixedAllowance CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius CenteredMomentDescentLedger
 
 def swapIndex (C D : Ideal O) : CommonIndex C D ≃ CommonIndex D C where
   toFun P := ⟨P.val,by rw [commonSupport_comm];exact P.property⟩
@@ -64,9 +57,3 @@ lemma nominal_swap (C D E : Ideal O) (K X : ℝ) :
   rw [active_span_swap]
   congr 1
   ring
-
-end SevenEighths.CenteredMomentFirstMixedRightTransport
-
-end
-
-end OAI

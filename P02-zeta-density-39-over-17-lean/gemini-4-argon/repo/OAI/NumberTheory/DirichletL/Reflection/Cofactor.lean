@@ -7,11 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped BigOperators Classical
-open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT
-open LocalReflectionBrackets FiniteGaussPhase
+open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 noncomputable local instance phaseField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance phaseFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
@@ -63,8 +60,3 @@ theorem controlled_residual_phase [∀ i, (Ideal.span {p i}).IsMaximal]
   rw [residual_local_phase _ _ _ _ _ _ _ hs he]
   simp only [residualPrimeScalar, cofactor, map_prod, Finset.prod_pow,
     MixedCrossSeparation.crossSymbol]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

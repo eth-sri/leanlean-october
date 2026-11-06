@@ -5,20 +5,16 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped BigOperators Topology FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 
 noncomputable section
 
 namespace ActualEisensteinSieve
 
 abbrev K := CyclotomicField 3 ℚ
-abbrev O := NumberField.RingOfIntegers K
+protected abbrev O := NumberField.RingOfIntegers K
+open ActualEisensteinSieve (O)
 
 instance : IsCyclotomicExtension {3} ℚ K :=
   CyclotomicField.isCyclotomicExtension 3 ℚ
@@ -62,9 +58,3 @@ theorem lambda_residue_odd : ringChar (O ⧸ lambdaIdeal) ≠ 2 := by
   have hcard := FiniteField.even_card_of_char_two hchar
   rw [← Nat.card_eq_fintype_card, lambda_card] at hcard
   norm_num at hcard
-
-end ActualEisensteinSieve
-
-end
-
-end OAI

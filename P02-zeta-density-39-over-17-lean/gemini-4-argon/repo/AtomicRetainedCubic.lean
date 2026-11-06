@@ -10,8 +10,7 @@ noncomputable section
 open Finset MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace Montgomery.RationalMoment
-open GuthMaynard.Improvement
-open GuthMaynard.Improvement.AtomicCubic
+open GuthMaynard.Improvement GuthMaynard.Improvement.AtomicCubic
 
 /-- The retained Poisson cubic for the literal atomic time measure. Every
 Fourier moment is supplied by fixed-width box smoothing; the remainder
@@ -144,4 +143,3 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
       nlinarith [mul_nonneg (show 0 ≤ D by dsimp [D]; positivity) (show 0 ≤ T^ε*X by positivity),
         mul_nonneg (show 0 ≤ 2048*Cn*Cs by positivity) (show 0 ≤ T^(-100:ℝ)*R^3 by positivity)]
 
-end Montgomery.RationalMoment

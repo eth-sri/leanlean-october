@@ -10,11 +10,8 @@ noncomputable section
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
-open HeckeDetectorSupportedWitness
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeDetectorSupportedWitness
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 variable (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (η : Character)
 
@@ -50,9 +47,3 @@ theorem supported_witnesses_from_source_cube (dmin dmax τ ε e κ heightCost ma
     (fun u=>by rw [←heq u];exact hnext u)
     (fun u=>by rw [←heq u];exact hcurrent u)
     (fun u=>hcond u.val d (hrow u.val u.property)) tstar ht ht'
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

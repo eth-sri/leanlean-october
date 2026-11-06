@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CubicEisenstein
-open HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CubicEisenstein HeckeInverseAmplification
 
 lemma calibration_sixth_ideal_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
     (L : Ideal O) :
@@ -63,8 +61,3 @@ lemma sixthFrequencyWeight (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal)
   rw [←he]
   congr 1
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeRowNonprincipal
-open HeckeFamily CanonicalRowCompletion CenteredMomentCanonical
-open ConcretePrimeRowBridge hiding O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily CanonicalRowCompletion CenteredMomentCanonical ConcretePrimeRowBridge
 
 theorem nonprincipal_of_local_factor (χ : Character)
     (Q J P : Ideal O) [P.IsMaximal]
@@ -167,9 +165,3 @@ theorem principal_row_fixed_support (η χ : Character) (m f z : O)
     exact hQP (hPJ' ▸ hQJ)
   have hd := principal_row_multiplicity η χ m f z hmLam hm2 u a b r hr hpr hx hχ hprincipal P hP hcop
   exact Nat.not_dvd_of_pos_of_lt (Multiset.count_pos.mpr hP) (hfree P hP) hd
-
-end SevenEighths.HeckeRowNonprincipal
-
-end
-
-end OAI

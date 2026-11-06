@@ -98,4 +98,3 @@ theorem integrable_sargosRealTent {w : ℝ} (hw : 0 < w) :
   (continuous_sargosRealTent w).integrable_of_hasCompactSupport
     (hasCompactSupport_sargosRealTent hw)
 
-end TaoTrudgianYang2025

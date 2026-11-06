@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
-local notation "O" => ActualEisensteinCubic.O
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
 theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (Bρ : Fin 9→ℝ)
     (hm₁ : 0≤m₁) (hm₂ : 0≤m₂)
@@ -66,8 +64,3 @@ theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (leftNorm p) (rightNorm p) (commonNorm p) (activeNorm p)
     (fun x=>divisorElement p x.1) (fun x=>x.2.2)
     (original_source_norms_ge_one p hp pool Q labels Y) k l T₁ T₂ x hx j hn
-
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
-
-end OAI

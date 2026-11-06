@@ -353,4 +353,3 @@ theorem source_large_values_localize_to_matrix
           · simp [gmRestrictedCoeffs, hnS])
         (by intro t ht; exact (Finset.mem_filter.mp ht).2)
 
-end GuthMaynard.NativeMoment

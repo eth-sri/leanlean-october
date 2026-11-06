@@ -9,9 +9,7 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 local instance : MeasurableSpace O := ⊤
 local instance : MeasurableSingletonClass O := ⟨fun _=>trivial⟩
 local instance : MeasurableSpace (Ideal O) := ⊤
@@ -63,8 +61,3 @@ theorem originalRaw_integral_eq_nesting (η : HeckeFamily.Character)
   rw [he']
   apply integral_physical_nesting
   exact hj
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

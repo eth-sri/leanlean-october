@@ -7,33 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 
 namespace ShortDraftHeckeBridge
 
@@ -185,7 +160,7 @@ end NormSplitArithmetic
 
 namespace NormFiberCRT
 
-abbrev O := ActualEisensteinSieve.O
+protected abbrev O := ActualEisensteinSieve.O
 abbrev K := ActualEisensteinSieve.K
 
 private instance : IsCyclotomicExtension {3} ℚ K :=
@@ -246,7 +221,7 @@ end NormFiberCRT
 
 namespace NormFiberMult
 
-abbrev O := ActualEisensteinSieve.O
+protected abbrev O := ActualEisensteinSieve.O
 
 private theorem ideal_sup_span_norm_left (I J : Ideal O) (m n : ℕ)
     (hcop : m.Coprime n) (hI : Ideal.absNorm I = m)
@@ -491,12 +466,3 @@ theorem normFiberCoeff_baseChange_eq_pairInverseCoeff
     (fun p hp => normFiberCoeff_eq_pairAF_prime_sq χ hp) n hn
 
 end ShortDraftHeckeBridge
-open Filter Asymptotics
-
-namespace ShortDraftHeckeBridge
-
-end ShortDraftHeckeBridge
-
-end
-
-end OAI

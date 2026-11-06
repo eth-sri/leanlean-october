@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
-open PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
-local notation "Id" => Ideal HeckeFamily.O
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
 
 theorem physical_principal_residue_remainder {K : ℕ}
     (η : Character) (S : Finset Id) (hS : SourceExclusions S)
@@ -67,7 +65,3 @@ theorem physical_principal_residue_remainder {K : ℕ}
   have htwo : (2*C)/e=2*(C/e) := by ring
   rw [htwo]
   nlinarith
-end SevenEighths.ProbePrincipalPhysical
-end
-
-end OAI

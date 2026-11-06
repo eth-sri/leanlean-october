@@ -187,6 +187,4 @@ theorem wooley_sum_refinement_pairs
         (fun zw => if wooleyResiduesSeparated nu zw.1 zw.2 then
           F zw.1 zw.2 else 0)
 
-end
 
-end GafniTao

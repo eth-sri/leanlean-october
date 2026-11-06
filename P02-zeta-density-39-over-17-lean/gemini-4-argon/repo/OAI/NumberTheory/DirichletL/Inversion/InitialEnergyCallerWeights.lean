@@ -8,11 +8,8 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialRayAttachment
-open SevenEighths.InverseInitialPhysicalMeasure
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialRayAttachment SevenEighths.InverseInitialPhysicalMeasure
 namespace SevenEighths.InverseInitialEnergyCallerWeights
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -58,9 +55,3 @@ theorem outerCoefficient_norm_le
     _ ≤ 1*1*1*‖secondRayCoefficient ρ‖*1*1 := by
       gcongr
     _ = _ := by ring
-
-end SevenEighths.InverseInitialEnergyCallerWeights
-
-end
-
-end OAI

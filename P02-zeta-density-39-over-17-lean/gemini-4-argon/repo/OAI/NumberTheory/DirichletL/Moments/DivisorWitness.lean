@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorWitness
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentHeckeExpansion
-open CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 private theorem exists_tsum_term {α : Type*} (f : α → ℂ) (h : (∑' x,f x) ≠ 0) :
@@ -88,9 +85,3 @@ theorem actualExtracted_norm_boundary (D : Ideal O) (hD : Squarefree D)
     (actualExtracted_ne_zero D a v hv))) (map_dvd Ideal.absNorm (divisor_dvd_actualExtracted D hD a v I J hn))
   simpa only [actualExtracted,map_mul,map_prod,Nat.cast_mul,Nat.cast_prod,selectedNorm] using
     (show (Ideal.absNorm D:ℝ) ≤ Ideal.absNorm (actualExtracted D a v) by exact_mod_cast h)
-
-end SevenEighths.CenteredMomentDivisorWitness
-
-end
-
-end OAI

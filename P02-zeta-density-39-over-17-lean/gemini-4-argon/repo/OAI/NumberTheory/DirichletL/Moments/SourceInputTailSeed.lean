@@ -10,13 +10,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputTailSeed
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
-open CenteredMomentSupportedTailAggregate CenteredMomentSourceMass
-open CenteredMomentExceptionalAmplitudePair
-local notation "O" => HeckeFamily.O
-variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform CenteredMomentSupportedTailAggregate CenteredMomentSourceMass CenteredMomentExceptionalAmplitudePair
 
 lemma paid_seed_power (Z Bseed saving seedNorm : ℝ) (hZ : 0<Z)
     (hs : 0<seedNorm) (hcap : seedNorm≤Z^Bseed) :
@@ -32,9 +26,3 @@ lemma paid_seed_term (Z Bseed saving seedNorm A : ℝ) (hZ : 0<Z)
     A*Z^(-(saving+Bseed))≤A*Z^(-saving)/seedNorm := by
   simpa only [mul_div_assoc] using
     mul_le_mul_of_nonneg_left (paid_seed_power Z Bseed saving seedNorm hZ hs hcap) hA
-
-end SevenEighths.CenteredMomentSourceInputTailSeed
-
-end
-
-end OAI

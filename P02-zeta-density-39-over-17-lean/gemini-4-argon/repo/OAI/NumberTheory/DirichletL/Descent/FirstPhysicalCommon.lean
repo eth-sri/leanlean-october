@@ -10,7 +10,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -92,8 +91,3 @@ theorem actual_first_physical_common
       dsimp only [H]
       rw [firstNormProfile_actual_common p hp D U V hDU hDV]
       simp only [firstCommonCoefficient,R,mul_assoc]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

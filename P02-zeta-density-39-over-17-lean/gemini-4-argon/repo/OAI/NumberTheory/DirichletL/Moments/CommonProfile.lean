@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonProfile
-open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonPrimeSlots CenteredMomentCommonAllocationBox
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationBox
 variable {ι : Type*} [Fintype ι]
 
 def liveIndices (B : Tuple ι) : Finset ι := Finset.univ.filter (fun i => B (Sum.inl i)=1)
@@ -82,9 +80,3 @@ theorem profile_common_allocation (B u : Tuple ι) (C R s : Ideal O)
     by_cases hu : IsCoprime (finiteTupleProduct (remainingTuple B u)) R <;>
     simp_all only [true_and,false_and,ite_true,ite_false,mul_zero,zero_mul,mul_one]
   ring
-
-end SevenEighths.CenteredMomentCommonProfile
-
-end
-
-end OAI

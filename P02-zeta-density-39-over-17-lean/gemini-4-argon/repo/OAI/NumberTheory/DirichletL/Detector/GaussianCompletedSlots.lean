@@ -11,8 +11,6 @@ open scoped Classical ContDiff Topology SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma correctedSummand_normTwisted (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     (W : ℝ→ℂ) (T t : ℝ) (I J : Id) :
@@ -166,8 +164,3 @@ theorem gaussian_selected_completed {ι : Type*} [Fintype ι]
   apply Finset.sum_congr rfl
   intro p hp
   exact gaussian_selected_summand W V hV hsep S D Ψ Z hZ j q hq p.1 p.2
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

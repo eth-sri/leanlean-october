@@ -19,9 +19,8 @@ identity (1.3).  Equation (1.4), shifted domination, and both lower-bound
 terms in (1.5) are then proved from the same exact finite count.
 -/
 
-open Finset
+open Finset MeasureTheory
 open scoped BigOperators ComplexConjugate
-open MeasureTheory
 
 namespace GafniTao
 
@@ -260,6 +259,4 @@ theorem ford_integrable_mFourier_pi_haar {k : ℕ} (h : Fin k → ℤ) :
   exact (UnitAddTorus.mFourier h).continuous.continuousOn.integrableOn_compact
     isCompact_univ
 
-end
 
-end GafniTao

@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeDetectorLower
-open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition
-open GammaZeroDetector
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition GammaZeroDetector
 
 lemma unit_term_lower (U : ℝ) (hU : 2 ≤ U) :
     (3/4 : ℝ) ≤ ‖Complex.exp (-1/((U^20 : ℝ) : ℂ))‖ := by
@@ -103,9 +101,3 @@ theorem exists_dyadic_zero_witness (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) 
     (by linarith) (by positivity) hTzero hVone hVzero ρ j k hbn⟩
   exact hb.trans (mul_le_mul_of_nonneg_right
     (HeckeDetectorBudget.source_pair_count_bound U hU2) (norm_nonneg _))
-
-end SevenEighths.HeckeDetectorLower
-
-end
-
-end OAI

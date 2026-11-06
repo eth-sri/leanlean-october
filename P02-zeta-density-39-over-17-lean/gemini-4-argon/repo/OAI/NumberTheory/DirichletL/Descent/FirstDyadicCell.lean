@@ -10,11 +10,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
 variable (p:ι→O)
 
@@ -49,9 +46,3 @@ theorem first_dyadic_refined_cutoff (pool:Finset ι)(Q:Finset (ι→₀ℕ))
         firstCellRadius Z M r ell V eta tau k j:=by
   intro x hx I
   exact (first_dyadic_radius_cell p pool Q k j x hx Z M r ell V eta tau).le
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

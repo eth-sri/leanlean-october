@@ -115,4 +115,3 @@ theorem exists_intervalC2Bound_atkinsonSlopeQuotient_band (α : ℝ) :
   convert hf.mul hi using 1
   ring
 
-end MathCollab.Density.Stronger.Atkinson

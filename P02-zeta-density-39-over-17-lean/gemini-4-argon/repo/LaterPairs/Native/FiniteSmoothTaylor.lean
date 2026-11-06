@@ -94,4 +94,3 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le_finite
     rw [iteratedDeriv_real_comp_order,show Q-j+1+j = Q+1 by omega]
     exact hb y hy
 
-end TaoTrudgianYang2025

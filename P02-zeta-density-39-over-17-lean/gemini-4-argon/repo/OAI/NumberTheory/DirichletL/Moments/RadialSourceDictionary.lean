@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentRadialSourceDictionary
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentSourceRectangle CenteredMomentSourceRectangleEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentRestrictedSource
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentSourceRectangle CenteredMomentSourceRectangleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow ConcretePrimeRowBridge
 
  theorem actual_source_energy {ι:Type*} [Fintype ι] [DecidableEq ι]
     (s:Data ι) (r:Radial) (S₁ S₂:Finset (Ideal O)) (R L B₁ B₂:Ideal O)
@@ -42,9 +37,3 @@ local notation "O" => ActualEisensteinCubic.O
   dsimp only [Radial.weight]
   rw [hm,hA,hX₁,hX₂,hY₁,hY₂]
   split_ifs <;> ring
-
-end SevenEighths.CenteredMomentRadialSourceDictionary
-
-end
-
-end OAI

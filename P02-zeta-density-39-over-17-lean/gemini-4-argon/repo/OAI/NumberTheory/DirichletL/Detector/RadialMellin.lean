@@ -528,9 +528,3 @@ theorem radial_mellin_inversion (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     (radial_mellin_convergent W σ hσ)
     (radial_mellin_vertical_integrable W a b ha hW σ hσ)
     (radial_continuous W).continuousAt
-
-end SevenEighths.ProbeRadialMellin
-
-end
-
-end OAI

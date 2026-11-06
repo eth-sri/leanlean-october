@@ -41,9 +41,3 @@ theorem row_norm_bound (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
   apply Nat.pos_of_ne_zero
   rw [ne_eq, Ideal.absNorm_eq_zero_iff]
   exact pow_ne_zero _ (Finset.prod_ne_zero_iff.mpr (fun P hP => (hS P hP).ne_zero))
-
-end SevenEighths.HeckeExceptionalRows
-
-end
-
-end OAI

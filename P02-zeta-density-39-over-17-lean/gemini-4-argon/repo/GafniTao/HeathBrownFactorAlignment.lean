@@ -157,6 +157,4 @@ theorem heathBrown_lambda_term_le_third_of_third_le_N
     _ = _ := by rfl
 
 
-end
 
-end GafniTao

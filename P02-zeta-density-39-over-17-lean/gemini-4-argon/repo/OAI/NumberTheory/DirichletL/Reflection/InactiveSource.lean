@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
 lemma supported_inactive_sum_eq (rows : Finset (Ideal Eis))
@@ -64,7 +63,3 @@ theorem supported_inactive_source_energy (rows : Finset (Ideal Eis))
     intro K hK
     rw [supported_inactive_sum_eq rows L T F K w (f K)]
   exact hh.trans_le he
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

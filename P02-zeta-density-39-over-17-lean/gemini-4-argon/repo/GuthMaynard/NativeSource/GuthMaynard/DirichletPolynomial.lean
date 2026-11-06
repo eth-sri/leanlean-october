@@ -99,4 +99,3 @@ theorem norm_phaseShiftCoeffs (c : ℝ) (a : ℕ → ℂ) (n : ℕ) :
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hnPos]
     simp
 
-end GuthMaynard.NativeMoment

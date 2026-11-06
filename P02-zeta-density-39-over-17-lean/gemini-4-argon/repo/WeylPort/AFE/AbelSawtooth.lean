@@ -329,4 +329,3 @@ theorem integral_mul_sawtooth_eq_tsum {μ : Measure ℝ} [NullSingletonClass μ]
   simp_rw [he] at ht
   exact tendsto_nhds_unique hi ht
 
-end DhimanKadiriQuesadaHerrera2026

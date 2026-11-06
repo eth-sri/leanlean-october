@@ -117,6 +117,4 @@ theorem wooleySourcePolynomial_equation_8_5
       hp hbH hscale hupper hloss
 
 
-end
 
-end GafniTao

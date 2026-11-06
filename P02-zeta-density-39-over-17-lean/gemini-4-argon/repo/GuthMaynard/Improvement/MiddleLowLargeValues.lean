@@ -77,4 +77,3 @@ theorem middle_large_values_low {ε : ℝ} (hε : 0 < ε) :
     _ = E*(2+D)*(N^(ε/2)*N^(ε/2))*middleMoment N T/V^4 := by ring
     _ = _ := by rw [hid]
 
-end GuthMaynard.Improvement

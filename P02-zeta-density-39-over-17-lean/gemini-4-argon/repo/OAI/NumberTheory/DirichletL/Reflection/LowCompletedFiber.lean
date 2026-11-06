@@ -13,7 +13,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
@@ -149,7 +148,3 @@ theorem low_completed_fiber_energy (Q : Ideal Eis) (hQ : Q≠0)
       (CompletedHeight.normTwistedSource W θ) (Z^(1+ell0+shift))
       (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0)‖^2)
   exact hs.symm.trans_le (hbound.trans_eq hR)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

@@ -22,6 +22,5 @@ theorem ingham_lower_density : InghamLowerDensity := by
   · subst σ
     exact NativeMoment.ingham_zero_density_at_half_native
   · exact NativeMoment.dyadicToGlobalZeroCount σ (3 * (1 - σ) / (2 - σ)) hp
-      (NativeMoment.ingham_endpoint_positive_slab_native hInterior (by linarith))
+      (NativeMoment.ingham_endpoint_positive_slab_native hInterior hσUpper)
 
-end GuthMaynard.Improvement

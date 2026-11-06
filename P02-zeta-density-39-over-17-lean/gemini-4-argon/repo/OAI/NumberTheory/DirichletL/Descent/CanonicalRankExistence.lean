@@ -28,9 +28,3 @@ theorem canonical_marked_energy_exists
     CanonicalEnergyExists Mcap Fcap c eps (Fcap+1) K W :=
   canonical_energy_exists_of_references actual_rank_reference_cutoffs actual_rank_reference_thresholds
     Mcap Fcap c eps hM hF hc heps K W lo hi hlo hhi hsW
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

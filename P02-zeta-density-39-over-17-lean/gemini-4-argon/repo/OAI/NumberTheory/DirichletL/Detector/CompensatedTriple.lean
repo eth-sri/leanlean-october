@@ -10,8 +10,6 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def compensatedRowSeries {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
     (C : CalibrationData) (p : Fin K→O) (x w z : ℂ) : ℂ :=
@@ -56,8 +54,3 @@ theorem compensatedTuple_eq_row_triple {K : ℕ} (η : HeckeFamily.Character)
       compensatedRowTripleIntegral η S (calibrationForSet S hS) W0 W1 p X Y Z := by
   rw [compensatedTuple_eq_source_triple η S hS hpS hbad hSne W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     p hp X Y Z hX hY hZ,tupleSourceTripleIntegral_eq_rows η S _ W0 W1 p hp]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

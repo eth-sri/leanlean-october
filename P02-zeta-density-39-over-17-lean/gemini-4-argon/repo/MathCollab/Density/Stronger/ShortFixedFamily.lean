@@ -145,4 +145,3 @@ theorem exists_smoothTaylor_powered_piece (X Y t : ℝ) (j : ℤ) (e r : ℕ) {k
   exact exists_finiteBlock_powered_piece (smoothHalfScale_pos j e) hk
     (smoothTaylorArithmetic_support X Y j e r) t
 
-end MathCollab.Density.Stronger

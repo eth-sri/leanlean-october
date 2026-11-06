@@ -368,9 +368,3 @@ theorem source_double_residue (W0 W1 : SchwartzMap ℝ ℂ) (M : Ideal O) [NeZer
     show s+(1/6:ℂ)-1=s-5/6 by ring]
   simp only [sub_self, Complex.cpow_zero, mul_one]
   ring
-
-end SevenEighths.PrincipalMellinResidues
-
-end
-
-end OAI

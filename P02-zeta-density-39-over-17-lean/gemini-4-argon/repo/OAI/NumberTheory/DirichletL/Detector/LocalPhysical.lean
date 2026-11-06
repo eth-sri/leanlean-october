@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion
-open CubicEisenstein GaussianShiftedPartition ProbePrimePower ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion CubicEisenstein GaussianShiftedPartition ProbePrimePower ConcreteTraceCRT
 
 lemma outerQuotient_prime_power (p : O) [(Ideal.span {p}:Ideal O).IsMaximal]
     (hg : goodLambda∉Ideal.span {p}) (k : ℕ) (hk : k≠0) (d : O ⧸ Ideal.span {p^k}) :
@@ -110,8 +108,3 @@ theorem bareCongruenceCoefficient_inner_one (s : O) (hs : s≠0) (H : O) :
   · intro d hd hne
     rw [dite_eq_right ((htest d).not.mpr hne), mul_zero]
   · simp
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -39,9 +39,3 @@ theorem inverseSeries_mul_LFunction (χ : Character) {s : ℂ} (hs : 1 < s.re) :
     IdealEuler.inverseSeries (idealCoeff χ) s * LFunction χ s = 1 := by
   rw [LFunction_eq_series χ hs]
   exact IdealEuler.inverseSeries_mul_series (idealCoeff χ) (idealCoeff_norm_le_one χ) s hs
-
-end SevenEighths.HeckeFamily
-
-end
-
-end OAI

@@ -12,7 +12,6 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 section
 variable {ι:Type*} [DecidableEq ι]
   (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -152,9 +151,3 @@ theorem full_first_tail_from_local (ε:ℝ) (hε:0<ε) :
       calc
         _=(Cb*128^3)*(B^(1+ε)*B*B^2)*L^2*F*Γ*E:=by ring
         _= _:=by rw [he]
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

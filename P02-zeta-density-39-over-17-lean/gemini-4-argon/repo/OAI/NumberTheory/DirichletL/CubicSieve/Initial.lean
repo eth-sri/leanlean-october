@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CompletedGauss ConcretePrimeRowBridge ShortDraftHeckeBridge QuadraticInitialBound
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss ConcretePrimeRowBridge ShortDraftHeckeBridge QuadraticInitialBound
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def cubicFiniteRow {α : Type*} (P : α → Ideal O) [∀ i, (P i).IsMaximal]
     (hg : ∀ i, goodLambda ∉ P i) (S : Finset α) (z : O) : ℂ :=
@@ -345,8 +343,3 @@ theorem ideal_initial_cubic_sieve
   unfold initialSieveConstant
   nlinarith [mul_nonneg hdiag (sq_nonneg (N : ℝ)),
     mul_nonneg hpv (show 0 ≤ M by linarith)]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

@@ -116,4 +116,3 @@ theorem real_signed_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
       constructor <;> omega
   exact h.elim (fun hp => Or.inl (hc hp)) (fun hp => Or.inr (hc hp))
 
-end GuthMaynard.Improvement

@@ -50,4 +50,3 @@ theorem norm_zetaMollifier_le_two_sqrt {X : ℝ} {s : ℂ}
     _ ≤ 2*Real.sqrt (⌊X⌋₊ : ℝ) := sum_inv_sqrt_le _
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt (Nat.floor_le hX)) (by norm_num)
 
-end MathCollab.Density

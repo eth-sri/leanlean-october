@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter MathCollab.Density.Contour
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -509,4 +508,3 @@ theorem exists_eventually_heathBrownLemmaThree_fullMoment :
     _ = C * Real.log t * (1 + heathBrownFullCriticalMoment t) := by
       rw [hdeltaInv]
 
-end MathCollab.Density.Stronger.PointMean

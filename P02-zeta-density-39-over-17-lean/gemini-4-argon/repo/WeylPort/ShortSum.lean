@@ -152,4 +152,3 @@ theorem eventually_mul_norm_critical_sum_le_rpow (C : ℝ) (hC : 0 ≤ C)
       mul_le_mul_of_nonneg_right hcoeff (by positivity)
     _ = t^(1/6+ε:ℝ) := by rw [← Real.rpow_add htpos]; congr 1; ring
 
-end WeylPort

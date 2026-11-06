@@ -98,9 +98,3 @@ open HeckeFamily HeckeDyadic
   apply mul_le_mul_of_nonneg_left ((norm_four_sides _ _ _ _).trans ?_) (by positivity)
   simp only [ofReal_neg] at hlo
   linarith [hlo.trans hj,hhi.trans hj,htail.trans ht]
-
-end SevenEighths.CenteredMomentPlainGlobalBound
-
-end
-
-end OAI

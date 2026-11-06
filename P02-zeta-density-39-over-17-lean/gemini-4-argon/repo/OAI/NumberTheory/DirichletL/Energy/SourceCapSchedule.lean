@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentEnergySourceCapSchedule
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyFirstLiveAdmission
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyFirstLiveAdmission
 
 lemma count_pos (M ε:ℝ):0<count M ε:=by
   unfold count CenteredMomentFirstSecondLossParameters.depth
@@ -27,9 +26,3 @@ lemma readyBudget_le_schedule (M B L ε A P:ℝ)(hM:0≤M)(hB:0≤B)
   have hr:=final_range_large M B L ε hM hB
   unfold readyBudget finalSourceCap sourceCap
   linarith
-
-end SevenEighths.CenteredMomentEnergySourceCapSchedule
-
-end
-
-end OAI

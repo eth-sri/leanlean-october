@@ -7,39 +7,16 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 
-namespace ActualEisensteinCubic
-
-theorem principal_absNorm_pow (p : O) (k : ℕ) :
-    Ideal.absNorm (Ideal.span {p ^ k}) =
-      (Ideal.absNorm (Ideal.span {p})) ^ k := by
-  rw [← Ideal.span_singleton_pow]
-  exact map_pow Ideal.absNorm (Ideal.span {p}) k
-
-end ActualEisensteinCubic
 namespace OscillatoryDeterminant
 
-open Complex
 
 def q (a b : ℂ) : ℂ := a*a-a*b+b*b
 
 end OscillatoryDeterminant
 
-namespace ActualEisensteinCubic
-
-open EisensteinEmbedding ConcreteTraceCRT Complex
-
-end ActualEisensteinCubic
 namespace EisensteinFiberShift
 
 def Q (x y : ℝ) : ℝ := x*x-x*y+y*y
@@ -137,7 +114,7 @@ end EisensteinGaussianPrefactor
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actual_oscillatory_gaussian_coordinate
     (a b m n : ℤ) (hc : ActualEisensteinCoordinates.eval a b ≠ 0)
@@ -198,25 +175,13 @@ theorem complex_eta_times_prefactor (η q : ℝ) (hη : 0 < η) (hq : 0 < q) :
 
 end EisensteinGaussianPrefactor
 
-namespace ActualEisensteinCubic
-
-end ActualEisensteinCubic
-namespace OscillatoryDeterminant
-
-open Complex
-
-noncomputable def r (t a b : ℂ) : ℂ := 1 + 3 * q a b * t^2 / 16
-
-end OscillatoryDeterminant
-open Filter Real Asymptotics
 
 namespace RankTwoLimit
 
 section
 
-open scoped Topology
 
-open RankTwoPoisson RankTwoEisShift Filter
+open RankTwoPoisson RankTwoEisShift
 
 private theorem eisQ_nonneg (z : ℤ × ℤ) : 0 ≤ RankTwoPoisson.eisQ z := by
   have h := RankTwoPoisson.eisQ_lower z
@@ -311,8 +276,6 @@ theorem dual_sum_tendsto_one (x y : ℝ) :
 
 end
 
-open scoped Topology
-open Filter
 
 theorem dual_sum_tendsto_one_small_t (x y : ℝ) :
     Tendsto (fun t : ℝ => ∑' z : ℤ × ℤ, dualTerm (4 / (3 * t)) x y z)
@@ -322,9 +285,3 @@ theorem dual_sum_tendsto_one_small_t (x y : ℝ) :
       tendsto_inv_nhdsGT_zero
   have h := (dual_sum_tendsto_one x y).comp hT
   simpa [Function.comp_def, div_eq_mul_inv, mul_inv_rev, mul_assoc, mul_comm, mul_left_comm] using h
-
-end RankTwoLimit
-
-end
-
-end OAI

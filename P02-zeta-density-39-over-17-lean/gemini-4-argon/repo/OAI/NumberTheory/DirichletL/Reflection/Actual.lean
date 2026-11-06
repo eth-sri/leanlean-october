@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 def actualMixedCoefficient (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
@@ -67,8 +66,3 @@ theorem actualMixedCoefficient_factor (F : PrimeFamily φ) (K : Ideal Eis) (hK :
   rw [hcard,sourceRowPhase_eq_actual,sourceSlotPhase_eq_actual,
     F.reflected_residual_product K hK S,F.reflected_slot_product K hK S] at he
   exact he
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

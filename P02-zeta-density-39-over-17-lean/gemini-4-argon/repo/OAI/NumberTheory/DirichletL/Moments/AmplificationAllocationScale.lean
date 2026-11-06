@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationAllocationScale
-open CenteredMomentAmplificationAllocationCost CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale
-open CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentAmplificationAllocationCost CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform
 variable {ι : Type*} [Fintype ι]
 
  theorem all_slots_live (S : (ι ⊕ Fin 2) → Finset (Ideal O))
@@ -66,9 +63,3 @@ theorem remainingRaw_exact (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   have hn : (Ideal.absNorm P:ℝ)≠0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr hP
   exact (eq_div_iff (pow_ne_zero k hn)).mpr he
-
-end SevenEighths.CenteredMomentAmplificationAllocationScale
-
-end
-
-end OAI

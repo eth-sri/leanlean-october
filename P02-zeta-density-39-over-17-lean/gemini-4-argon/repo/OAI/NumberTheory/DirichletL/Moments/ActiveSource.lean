@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentActiveSource
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentGaussEnergy
-open CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentSecondLocalization
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentGaussEnergy CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentSecondLocalization CenteredMomentFirstSectors CenteredMomentCompleteCommon
 
 def activeSource (S : Finset (Ideal O)) (β : Ideal O → ℂ) : Finset (Ideal O) :=
   S.filter (fun I => β I≠0)
@@ -102,9 +99,3 @@ theorem residualPool_data (S : Finset (Ideal O)) (β : Ideal O → ℂ)
   refine ⟨hm,hβ,hsa,ha0,?_,?_⟩
   · exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ha0)
   · exact (le_div_iff₀ hpos).mpr (by simpa only [mul_comm] using hab)
-
-end SevenEighths.CenteredMomentActiveSource
-
-end
-
-end OAI

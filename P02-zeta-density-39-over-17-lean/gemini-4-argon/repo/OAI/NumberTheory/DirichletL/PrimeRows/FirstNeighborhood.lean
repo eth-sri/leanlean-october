@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalRowCompletion CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalRowCompletion CompletedGauss
 
 theorem unramifiedFactor_first_neighborhood_defect (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hP : 4≤P.val.absNorm) (x w z : ℂ) (eps : ℝ) (heps : 0<eps)
@@ -103,9 +101,3 @@ theorem unramifiedProduct_first_neighborhood_analytic_z (eps : ℝ) (S : Finset 
     exact unramifiedFactor_first_neighborhood_defect η u P.val (hS.norm_four P.val P.property)
       x w z eps hS.positive hx hz.le hw hxw
   · exact hS.half
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

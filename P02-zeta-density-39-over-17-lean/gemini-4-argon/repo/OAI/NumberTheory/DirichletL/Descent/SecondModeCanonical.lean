@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers JointLogSeparation
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -71,8 +69,3 @@ theorem second_inherited_mode_canonical {Jo Jn : ℕ}
   simpa only [secondInheritedProfile,secondModeBranch,secondModeOuter,secondModeLeft,secondModeRight,
     secondCanonicalPolynomial,actualSecondInheritedPuncture,actualSecondChild_neg_frequency,
     Finset.empty_union,Finset.mul_sum,mul_assoc,hq] using he
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

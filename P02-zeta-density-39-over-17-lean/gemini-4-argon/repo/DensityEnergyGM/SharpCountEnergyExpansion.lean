@@ -36,4 +36,3 @@ theorem gmEnergy_fractional_expansion {T N V R E C η d : ℝ}
     (finite_sum_rpow_le_sum_rpow univ (gmEnergyTerm T N V R)
       (fun i _ => gmEnergyTerm_nonneg hT hN hV hR i) hd hd1) (by positivity))
 
-end Montgomery.RationalMoment

@@ -99,4 +99,3 @@ theorem modelPhaseBufferedFourierMode_interior_frequency_uniform
   apply h.trans_eq
   field_simp
 
-end TaoTrudgianYang2025

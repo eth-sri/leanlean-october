@@ -8,9 +8,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume
-open CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
 theorem capped_rectangle_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
     ∃ J : ℕ, ∃ S : Finset (ℕ×ℕ), (0,0)∈S ∧
@@ -72,8 +70,3 @@ theorem capped_rectangle_source_control
       _ ≤ ((C+D)*Z^ε*(1+‖t‖)^J)*(P₁*P₂)*Real.sqrt T := by
         gcongr
       _ = _ := by dsimp [P₁,P₂]; ring
-end SevenEighths.CenteredMomentFiniteProfileExceptional
-
-end
-
-end OAI

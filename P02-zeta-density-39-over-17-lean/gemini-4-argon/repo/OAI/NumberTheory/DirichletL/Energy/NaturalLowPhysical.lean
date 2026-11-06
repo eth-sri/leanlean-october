@@ -13,22 +13,9 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowPhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyPositiveLowBandSource
-open CenteredMomentEnergyNaturalSourceAdmission
-open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
-local notation "O"=>HeckeFamily.O
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyPositiveLowBandSource CenteredMomentEnergyNaturalSourceAdmission CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_natural_low_physical
@@ -132,9 +119,3 @@ theorem actual_natural_low_physical
     w σ freq (fun i=>⟨hσlo i,hσhi i⟩) state p ha t X₁ X₂ hX₁ hX₂):=rfl
   rw [ht,hv0] at hh
   simpa only [map_one,Nat.cast_one,div_one,mul_assoc] using hh
-
-end SevenEighths.CenteredMomentEnergyNaturalLowPhysical
-
-end
-
-end OAI

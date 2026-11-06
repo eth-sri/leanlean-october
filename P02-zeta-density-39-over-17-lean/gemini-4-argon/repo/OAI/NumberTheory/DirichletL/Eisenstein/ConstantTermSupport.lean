@@ -7,78 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
-open MeasureTheory Set Filter
-open scoped BigOperators Classical
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid
+open CubicJacobiGlobal
 
 lemma multiset_cube_remainder {α : Type*} [DecidableEq α] (s : Multiset α) (p : α)
     (hdiv : ∀ q, q ≠ p → 3 ∣ s.count q) :
@@ -151,7 +86,7 @@ theorem constant_coefficient_cube_reduction (c : O) (hc : c ≠ 0)
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open CubicJacobiGlobal CubicRamified
 
 lemma constant_coefficient_ramified_equation (c : O) (hc : c ≠ 0) (hlevel : (3:O) ∣ c)
     (hA : arithmeticResidueSum 0 c ≠ 0) (u : Oˣ) (r : ℕ) (a : O) (ha : a ≠ 0)
@@ -236,7 +171,7 @@ theorem arithmeticResidueSum_ne_zero_implies_cube (c : O) (hc : c ≠ 0)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 
 theorem arithmeticResidueSum_ne_zero_iff_cube (c : O) (hc : c ≠ 0) (hlevel : (3:O) ∣ c) :
     arithmeticResidueSum 0 c ≠ 0 ↔ ∃ a : O,c=a^3 := by
@@ -248,11 +183,10 @@ theorem arithmeticResidueSum_ne_zero_iff_cube (c : O) (hc : c ≠ 0) (hlevel : (
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CompletedGauss ConcretePrimeRowBridge
 
 def idealZeroMask (D : Ideal O) (z : O) : ℂ :=
   if ∃ P ∈ UniqueFactorizationMonoid.normalizedFactors D, z ∈ P then 0 else 1
@@ -345,8 +279,7 @@ theorem gcdMaskPrimes_mask (D : Ideal O) (z : O) :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
-open EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance
+open CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance
 
 theorem canonical_same_ray_pair_poisson
     {α : Type*} [DecidableEq α]
@@ -397,8 +330,7 @@ theorem canonical_same_ray_pair_poisson
     A B hd hr W M hM
   simpa only [hn, hrowI, hrowJ] using ht
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
-open EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance PrimaryIdealUnitReindex
+open PrimaryIdealUnitReindex
 
 theorem canonical_pair_unit_invariant (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hray : columnRay I = columnRay J) (u : Oˣ) (z : O) :
@@ -528,8 +460,7 @@ theorem canonical_mask_lattice_eq_six_all_ideals
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson GaussGeneratorTransport PrimaryIdealUnitReindex
+open CompletedGauss ConcretePrimeRowBridge EisensteinSchwartzPoisson GaussGeneratorTransport PrimaryIdealUnitReindex
 
 theorem badPrime_injective : Function.Injective badPrime := by
   have hgood : lambda ∉ (Ideal.span {(2 : O)} : Ideal O) := by
@@ -571,9 +502,3 @@ theorem supported_span_primaryGenerator_iff (lengthScale : Ideal O) :
 theorem badPrime_mask_primaryGenerator (lengthScale : Ideal O) :
     rowCoprimeMask badPrime Finset.univ (primaryGenerator lengthScale) = if Supported lengthScale then 1 else 0 := by
   rw [badPrime_mask, supported_span_primaryGenerator_iff]
-
-end CanonicalQuadraticSieve
-
-end
-
-end OAI

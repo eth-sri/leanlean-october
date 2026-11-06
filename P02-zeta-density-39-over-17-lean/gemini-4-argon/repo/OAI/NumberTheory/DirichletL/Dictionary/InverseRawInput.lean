@@ -10,13 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseRawInput
-open CompletedGauss
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open ConcreteTraceCRT FirstCauchyArithmetic SecondPassArithmetic IdealMobiusDivisorSum
-open InverseInitialArithmetic InverseInitialRayAttachment InverseInitialConjugateEnergy
-open InverseInitialPoissonBridge InverseInitialExcludedForcing InverseInitialExcludedPool
-open UniqueFactorizationMonoid
-local notation "O"=>HeckeFamily.O
+open CompletedGauss ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge ConcreteTraceCRT FirstCauchyArithmetic SecondPassArithmetic IdealMobiusDivisorSum InverseInitialArithmetic InverseInitialRayAttachment InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialExcludedForcing InverseInitialExcludedPool UniqueFactorizationMonoid
 
 private theorem admissible_one : Admissible (1:Ideal O):=by
   refine ⟨one_ne_zero,squarefree_one,?_⟩
@@ -135,9 +129,3 @@ theorem original_complete_child_norm
   rw [DetectorDictionaryInverseRawConjugateGates.childLogTest_conjugate] at he
   have hn:=congrArg (fun z:ℂ=>‖z‖^2) he
   simpa only [norm_star] using hn
-
-end SevenEighths.DetectorDictionaryInverseRawInput
-
-end
-
-end OAI

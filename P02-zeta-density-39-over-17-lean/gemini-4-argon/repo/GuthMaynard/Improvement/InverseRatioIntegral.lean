@@ -51,4 +51,3 @@ theorem inverse_ratio_integral {q : ℝ → ℝ} (hq : Integrable q)
       (integral_mono_measure Measure.restrict_le_self (Filter.Eventually.of_forall hq0) hq)
       (sq_nonneg b)
 
-end GuthMaynard.Improvement

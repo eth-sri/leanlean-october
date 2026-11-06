@@ -74,8 +74,3 @@ theorem shellProfile_weighted_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) (A : �
       apply mul_le_mul _ hp' (by positivity) (by positivity)
       nlinarith [mul_le_mul hwx hwy (norm_nonneg _) (by positivity : 0≤1+B/a)]
     _ = _ := by ring
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

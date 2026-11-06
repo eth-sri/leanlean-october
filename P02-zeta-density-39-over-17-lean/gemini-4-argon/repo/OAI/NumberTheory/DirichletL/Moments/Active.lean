@@ -8,10 +8,8 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentActive
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-open CanonicalRowCompletion CenteredMomentCanonical
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion CenteredMomentCanonical
 
 def netExponent (c d : ℕ) : ℕ := (c + 5 * d) % 6
 
@@ -100,10 +98,3 @@ theorem activePrimes_pairwise_coprime (P : ι → Ideal O) [∀ i, (P i).IsMaxim
   intro i j hij
   apply Ideal.isCoprime_of_isMaximal
   exact fun he => hij (Subtype.ext (hinj he))
-
-open ConcreteTraceCRT EisensteinSchwartzPoisson
-
-end SevenEighths.CenteredMomentActive
-end
-
-end OAI

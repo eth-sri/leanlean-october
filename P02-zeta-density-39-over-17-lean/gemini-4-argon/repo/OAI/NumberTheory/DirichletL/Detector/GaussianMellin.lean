@@ -53,8 +53,3 @@ lemma gaussian_completed_norm_power (a b Z : ℝ) (ha : 0<a) (hb : 0<b) (hZ : 0<
   rw [hp,Complex.cpow_neg (Z:ℂ),div_inv_eq_mul]
   rw [show (3:ℂ)*(-t)= -(3*t) by ring]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -15,8 +15,7 @@ public import MathCollab.Density.Stronger.PointMean.MellinVertical
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -100,7 +99,7 @@ private theorem tendsto_rectangleIntegral'_vertical_sub
     ring
   simpa only [hVerticalB, hVerticalA] using hRectangle
 
-private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
+theorem verticalIntegral'_sub_eq_of_eventual_rectangle
     {f : ℂ → ℂ} {a b : ℝ} {A : ℂ}
     (hBottom : Tendsto (fun R : ℝ => HIntegral' f a b (-R)) atTop (nhds 0))
     (hTop : Tendsto (fun R : ℝ => HIntegral' f a b R) atTop (nhds 0))
@@ -299,4 +298,3 @@ theorem heathBrown_zetaSquare_eq_smoothed_sub_residue_sub_leftVertical
         VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) (-delta) := by
       ring
 
-end MathCollab.Density.Stronger.PointMean

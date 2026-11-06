@@ -8,9 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
 
 lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :
     Prime (primaryGenerator P.val) := by
@@ -69,8 +67,3 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
   dsimp only at he ⊢
   rw [hspan,actualACube_sq,targetMonoid_primaryGenerator η P.val hs] at he
   simpa only [coordD,coordV,coordW,star_one,mul_one,one_mul,idealClosedCorrection,p] using he
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

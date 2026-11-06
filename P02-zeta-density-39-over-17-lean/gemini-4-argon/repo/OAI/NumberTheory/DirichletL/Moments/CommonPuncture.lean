@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonPuncture
-open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonAllocationBox CenteredMomentFirstSectors
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationBox CenteredMomentFirstSectors
 
  theorem residualBoxes_filter {ι : Type*} [Fintype ι]
     (S : ι → Finset (Ideal O)) (C : Ideal O) (B : ι → Ideal O) (hB : ∀ i,B i≠0) :
@@ -44,9 +42,3 @@ theorem profileCoefficient_puncture {ι : Type*} [Fintype ι]
   rw [IsCoprime.mul_right_iff,show IsCoprime C (finiteTupleProduct v) ↔ IsCoprime (finiteTupleProduct v) C from isCoprime_comm]
   by_cases hC : IsCoprime (finiteTupleProduct v) C <;>
     by_cases hR : IsCoprime (finiteTupleProduct v) R <;> simp [hC,hR]
-
-end SevenEighths.CenteredMomentCommonPuncture
-
-end
-
-end OAI

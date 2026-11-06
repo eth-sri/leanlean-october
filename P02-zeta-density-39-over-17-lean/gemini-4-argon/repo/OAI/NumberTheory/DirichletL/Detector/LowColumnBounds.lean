@@ -10,8 +10,6 @@ open scoped Classical
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowGaussColumns (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) :
     Finset {I : Id // Supported I} :=
@@ -108,8 +106,3 @@ theorem lowGaussColumn_l2_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
       mul_le_mul_of_nonneg_right (lowGaussColumns_card W1 hW1 Y hY a b hW) (sq_nonneg _)
     _ = (128*max 1 b*(B*a^(-(1/2:ℝ)))^2)/Y := by field_simp
     _ ≤ C/Y := div_le_div_of_nonneg_right (by dsimp only [C];linarith) hy.le
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentGaussEnergy EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentGaussEnergy EisensteinSchwartzPoisson
 
 theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (a b M₀ : ℝ) (ha : 0<a) (hab : a<b) (hM₀ : 0≤M₀)
@@ -95,8 +92,3 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
       (mul_le_mul_of_nonneg_left hb₁ hA₁)) (mul_le_mul_of_nonneg_left hb₂ hA₂)
     _≤(1+A₀+A₁+A₂)*B := by nlinarith
     _=_ := by dsimp [B,P];ring
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

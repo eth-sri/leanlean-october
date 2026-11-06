@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 theorem excludedIdealHighSeries_row_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
@@ -33,8 +31,3 @@ theorem excludedIdealHighSeries_row_hasProd (S : Finset Id) (hS : ∀P∈S,Prime
     have hs := bareIdealHighSummand_support η u x w z a.1.1 a.1.2 a.2.1 a.2.2 hh
     exact ⟨hs.2.1.1,hs.2.2.1.1,hs.2.2.2.1.1,hs.2.2.2.2.1⟩
   · exact (markedIdealHighSummand_summable S 1 η u x w z hx hw hz).norm
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

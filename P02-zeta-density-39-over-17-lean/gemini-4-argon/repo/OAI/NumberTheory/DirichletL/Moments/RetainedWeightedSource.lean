@@ -10,13 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentRetainedWeightedSource
-open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentReflectionDeletion
-open CenteredMomentReflectionMass CenteredMomentReflectionWeightedEnergy
-open CenteredMomentOriginalReflectionApproximation CenteredMomentReflectedNormalization
-open CenteredMomentReflectedAnnuli CenteredMomentReflectedTruncation
-open CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
-open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentReflectionWeightedEnergy CenteredMomentOriginalReflectionApproximation CenteredMomentReflectedNormalization CenteredMomentReflectedAnnuli CenteredMomentReflectedTruncation CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization EisensteinSchwartzPoisson
 
 abbrev sourcePrimes (χ ψ : Character) := redundantSet χ.modulus ψ.modulus
 
@@ -160,9 +154,3 @@ theorem actual_retained_weighted_energy (ε : ℝ) (hε : 0<ε) :
       _ = ((1+T)^n)^2*∑i,‖z i‖^2 := by simp only [mul_pow,Finset.mul_sum]
       _ ≤ ((1+T)^n)^2*(C*Rcap^ε*E) := mul_le_mul_of_nonneg_left he.2 (sq_nonneg _)
       _ = C*Rcap^ε*(1+T)^(2*n)*E := by rw [←pow_mul,Nat.mul_comm n 2];ring
-
-end SevenEighths.CenteredMomentRetainedWeightedSource
-
-end
-
-end OAI

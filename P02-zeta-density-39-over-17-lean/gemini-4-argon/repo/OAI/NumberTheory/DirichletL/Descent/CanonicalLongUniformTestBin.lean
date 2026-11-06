@@ -10,11 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation
-local notation "O"=>ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight FourierBridge JointLogSeparation
 
 theorem actual_marked_bin_uniform_test
     (a₀ b₀:ℝ)(ha₀:0<a₀)(hb₀:0≤b₀)
@@ -146,9 +142,3 @@ theorem actual_marked_bin_uniform_test
       try simp only [Real.norm_eq_abs]
       ring
   · dsimp [E,Gamma,moment]
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

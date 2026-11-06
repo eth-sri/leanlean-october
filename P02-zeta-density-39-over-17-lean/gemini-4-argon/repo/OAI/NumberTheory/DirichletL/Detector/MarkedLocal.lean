@@ -11,8 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def idealMarkedLocalFactor (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   ∑e : Fin 2,∑'l,∑'k,∑'m,
@@ -100,8 +98,3 @@ lemma idealMarkedLocalFactor_eq_source (η : HeckeFamily.Character) (P : PrimeId
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z) k m).symm
   · simp only [completedValuationMark,ht,ne_eq,not_false_eq_true,ite_true,one_mul]
     simpa only [hspan] using sourcePrincipalTerm_pos p hp hg.1 (targetMonoid η p) (actualACube η p) x w z e.val l k m ht
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

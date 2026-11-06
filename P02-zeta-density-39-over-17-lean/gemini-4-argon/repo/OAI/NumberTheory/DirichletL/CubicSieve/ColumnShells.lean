@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FiniteSieveRestriction
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve FiniteSieveRestriction
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def cubicColumnLabel {n : Type*} (cols : n → Ideal O) (N : ℝ) (j : n) :
     Fin (columnDyadicLength N + 1) := divisorDyadicLabel N (cols j)
@@ -70,8 +68,3 @@ theorem cubic_energy_column_shells {n : Type*} [Fintype n]
           ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z*a j.val‖^2 :=
       Finset.sum_le_sum (fun z hz => hp z)
     _ = _ := by rw [← Finset.mul_sum, Finset.sum_comm]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

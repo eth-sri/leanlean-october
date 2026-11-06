@@ -415,8 +415,3 @@ theorem twistedDensity_joint_stronglyMeasurable
       (fun V : ℝ → ℂ => U p.2 * CubicReflectionKernel.paperKernel V (R * Real.exp p.2))
       (hlink p.1).symm)
   exact twistedDensity_measurable_of_profile U W R hprofile
-
-end
-end SevenEighths.InverseKernelSourceUniform
-
-end OAI

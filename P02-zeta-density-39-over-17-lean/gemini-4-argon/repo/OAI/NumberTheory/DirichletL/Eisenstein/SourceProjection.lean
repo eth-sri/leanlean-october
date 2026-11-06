@@ -8,81 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CompletedGauss
 
 private theorem finite_tsum_comp_addHom {R S : Type*} [AddGroup R] [AddGroup S]
     [Finite R] [Finite S] (f:R→+S) (hf:Function.Surjective f) (F:S→ℂ) :
@@ -213,8 +145,7 @@ theorem ramified_arithmetic_nine_sum (h k:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CompletedGauss
 
 def ramifiedLinearChar (u:Eisˣ) (n:ℕ):AddChar Eis ℂ where
   toFun x:=eisEmbedding (symbol (u.val*lambda^n) (1+3*x))
@@ -308,10 +239,9 @@ end CubicEisenstein
 
 namespace CubicKubota
 
-open scoped Classical MatrixGroups
+open scoped MatrixGroups
 
 section
-open ActualEisensteinCubic
 open CubicEisenstein
 
 def levelThreeInTwo : Subgroup levelTwo := levelThree.comap levelTwo.subtype
@@ -348,26 +278,15 @@ theorem rationalQuotient_surjective : Function.Surjective rationalQuotient := by
 
 def rationalCongruenceThree : Subgroup (SL(2,ℤ)) := rationalQuotient.ker
 
-instance rationalCongruenceThree_normal : rationalCongruenceThree.Normal := by
-  unfold rationalCongruenceThree
-  infer_instance
 
 theorem mem_rationalCongruenceThree (r : SL(2,ℤ)) :
     r∈rationalCongruenceThree ↔ rationalEmbedding r∈levelThree := by
   change QuotientGroup.mk' levelThreeInTwo (rationalLift r)=1 ↔ _
   exact QuotientGroup.eq_one_iff _
 
-instance rationalCongruenceThree_finiteIndex : rationalCongruenceThree.FiniteIndex := by
-  have he : rationalCongruenceThree=levelThree.comap rationalEmbedding := by
-    ext r
-    exact mem_rationalCongruenceThree r
-  rw [he]
-  let : levelThree.FiniteIndex := levelThree_finiteIndex
-  infer_instance
 
 end
 
-open ActualEisensteinCubic
 
 lemma three_dvd_intCast_iff (a : ℤ) : (3:ActualEisensteinCubic.O)∣(a:ActualEisensteinCubic.O) ↔ (3:ℤ)∣a := by
   constructor
@@ -455,9 +374,8 @@ lemma rationalBruhat_injective : Function.Injective
 
 end CubicKubota
 
-open scoped BigOperators Classical MatrixGroups
+open scoped MatrixGroups
 namespace CubicKubota
-open ActualEisensteinCubic
 open CubicEisenstein
 
 lemma rationalQuotient_eq_iff_reduction (r s : SL(2,ℤ)) :
@@ -548,9 +466,3 @@ theorem sourceProjection_automorphy (f : HyperbolicSpace→ℂ)
   ring
 
 def sourceEisenstein (s : ℂ) : HyperbolicSpace→ℂ := sourceProjection (hyperbolicEisenstein s)
-
-end CubicKubota
-
-end
-
-end OAI

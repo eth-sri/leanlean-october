@@ -55,9 +55,3 @@ theorem select_physical_product {Row Slot : Type*} (rows : Finset Row) (hne : ro
   obtain ⟨selected,hsub,hpositive,hlen,hspike⟩ := common_bin_selection slots w g U δ mesh binWidth
     (weightedMean slots w g) z hU hδ hmesh hbin hw hwm hg hq hqδ hz hzL hm
   exact ⟨selected,hsub,hpositive,hlen,fun u hu => hspike _ (hbins u hu)⟩
-
-end SevenEighths.HeckeDetectorPhysicalSelection
-
-end
-
-end OAI

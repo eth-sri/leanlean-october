@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesUniform
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
-open MeasureTheory
+open MeasureTheory HeckeDetectorProfiles
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
-open HeckeDetectorProfiles
 noncomputable section
 
 theorem uniform_fourier_moment (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
@@ -54,8 +53,3 @@ theorem schwartz_weighted_tail (g : SchwartzMap ℝ ℂ) (J N : ℕ)
     _ ≤ (1+‖t‖)^N*((1+‖t‖)^J*‖(𝓕 g) t‖) :=
       mul_le_mul_of_nonneg_right hp (by positivity)
     _ = _ := by rw [pow_add]; ring
-
-end
-end SevenEighths.HeckeDetectorFourier
-
-end OAI

@@ -74,8 +74,6 @@ theorem cosetTheta_hasSum (a b L : ℝ) (hL : 0 < L) {t : ℝ} (ht : 0 < t) :
   rw [hFC.tsum_prod, tsum_fintype]
   exact (Finset.sum_congr rfl (fun e _ => (hsum e).tsum_eq)).symm
 
-@[simp] theorem parityPair_k (a b L : ℝ) (hL : 0 < L) (e : Fin 2) :
-    (parityPair a b L hL e).k = 1 := rectangularPair_k _ _ _ _ _ _
 
 def cosetConstant (a b L : ℝ) (hL : 0 < L) : ℂ :=
   ∑ e : Fin 2, (parityPair a b L hL e).f₀
@@ -126,9 +124,3 @@ theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
       simp [div_eq_zero_iff, hL.ne']
     simp only [hxiff, and_true]
   · rw [ite_eq_right (fun h => hb (hy0iff.mp h)), mul_zero, ite_eq_right (fun h => hb h.2)]
-
-end SevenEighths.EisensteinTheta
-
-end
-
-end OAI

@@ -148,6 +148,4 @@ theorem wooleySourceNormalizedPolynomialResidueSum_mod_one
   rw [wooleySourceResidueMassSq_mod_one,
     wooleySourcePolynomialResidueSum_mod_one]
 
-end
 
-end GafniTao

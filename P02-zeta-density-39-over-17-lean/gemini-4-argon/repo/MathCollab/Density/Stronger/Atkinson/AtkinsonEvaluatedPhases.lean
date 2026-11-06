@@ -73,4 +73,3 @@ theorem atkinsonStationaryMain_neg_sqrt {T G : ℝ} (hT : 0 < T) (hG : G ≠ 0)
             (Real.sqrt (2 * atkinsonSaddleCurvature T (-Real.sqrt n)) : ℂ) := by ring
     _ = _ := by rw [exp_negative_saddle_mul_fresnel]; ring
 
-end MathCollab.Density.Stronger.Atkinson

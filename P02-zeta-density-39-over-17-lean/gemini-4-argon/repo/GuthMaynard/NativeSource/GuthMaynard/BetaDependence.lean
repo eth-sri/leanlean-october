@@ -79,4 +79,3 @@ lemma localizer_factor_gt_three_fourths (k : ℕ) (H a : ℝ)
     linarith
   exact this.trans_le hBernoulli
 
-end GuthMaynard.NativeMoment

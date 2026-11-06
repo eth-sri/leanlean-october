@@ -62,5 +62,4 @@ theorem robertSargos_normalized_scale_conditions {R H Q : ℝ} {j : ℕ} (k : �
     R/j ≤ (H/2)/j := hm
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 

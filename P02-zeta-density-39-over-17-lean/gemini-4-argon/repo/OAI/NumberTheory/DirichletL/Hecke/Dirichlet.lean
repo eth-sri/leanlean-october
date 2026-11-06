@@ -180,9 +180,3 @@ theorem zeta_seven_eighths_of_hecke
   have h := dirichlet_seven_eighths_of_hecke hH (1 : DirichletCharacter ℂ 1) s hs
     (by simp [h1])
   simpa only [DirichletCharacter.LFunction_modOne_eq] using h
-
-end SevenEighths.HeckeDirichlet
-
-end
-
-end OAI

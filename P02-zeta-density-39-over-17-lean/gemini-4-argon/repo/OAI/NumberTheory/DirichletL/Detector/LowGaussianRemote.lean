@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma slotProduct_subtype {K : ℕ} (p : Fin K→O) (J : Finset (Fin K)) :
     slotProduct p J=∏i : J,p i.val := by rw [Finset.prod_coe_sort];rfl
@@ -126,8 +124,3 @@ theorem low_remote_gaussian_dyads (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     apply tsum_congr
     intro j
     split_ifs with h <;> simp_all only [ite_true, ite_false]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

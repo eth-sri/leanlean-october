@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 lemma shell_windows_one (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
@@ -82,7 +81,3 @@ theorem literalDyadicBlock_eq_shell_source (F : PrimeFamily φ) (K : Ideal Eis) 
   apply Finset.sum_congr rfl
   intro b hb
   exact literalRawSeries_eq_shell_source F K hK S jF D s hc u i n b QK QP hQK hQP hKr hPr W θ X
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

@@ -116,4 +116,3 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
             ((M : ℝ) ^ 4 * U ^ (-4 : ℝ) + (M : ℝ) ^ (36 / 5 : ℝ) * U ^ (-8 : ℝ) +
               T * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)) by ring_nf, hbudget]
 
-end GuthMaynard.NativeMoment

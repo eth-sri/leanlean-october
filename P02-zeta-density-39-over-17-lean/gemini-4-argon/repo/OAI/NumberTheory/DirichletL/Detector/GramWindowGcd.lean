@@ -25,8 +25,3 @@ theorem original_window_gcd (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ)
         if IsCoprime I.val J.val then f (supportedIdealProduct C I) (supportedIdealProduct C J) else 0 := by
   rw [finite_pair_gcd]
   simp_rw [commonColumns_window]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

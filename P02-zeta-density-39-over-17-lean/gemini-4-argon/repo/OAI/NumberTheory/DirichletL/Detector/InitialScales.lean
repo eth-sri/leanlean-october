@@ -66,8 +66,3 @@ lemma sourceMellinWeight_initial_continuous (W0 W1 : SchwartzMap ℝ ℂ)
       (ξ:ℂ)+p.1.2*Complex.I)) by fun_prop)
   simpa only [Function.comp_def,Pi.mul_def,sourceMellinWeight_eq_scale,onLines] using
     hc.mul (onLines_continuous W0 W1 a1 b1 ha1 hW1 σ ξ υ hξ)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

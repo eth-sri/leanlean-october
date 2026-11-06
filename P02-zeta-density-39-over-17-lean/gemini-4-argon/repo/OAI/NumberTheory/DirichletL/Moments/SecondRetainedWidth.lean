@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 
 namespace SevenEighths.CenteredMomentSecondRetainedWidth
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondRadicalBudget CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentCanonicalFirst
-open CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondRadicalBudget CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentCanonicalFirst CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
 
 theorem retained_geometry (R : ℝ) (G V z : O)
     (hne : retainedWeight R (normValue ((G*V)*z))≠0) :
@@ -103,9 +97,3 @@ theorem exists_retained_width_family (η : Character) (χ : RayCharacter)
   obtain ⟨hR,_,_,hne,h1,hrow,_⟩:=retained_geometry R _ _ z hz
   exact ⟨hR,hne,h1,hrow,retained_log_budget η τ _ _ z _ hU hb R Z hZ hz,
     retained_row_log_budget η τ _ _ z _ hU hb R Z hZ hz⟩
-
-end SevenEighths.CenteredMomentSecondRetainedWidth
-
-end
-
-end OAI

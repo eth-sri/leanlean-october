@@ -63,4 +63,3 @@ theorem short_slab_count_of_separated_branch_bounds :
   exact hcount.trans (mul_le_mul_of_nonneg_left hsum
     (mul_nonneg hC.le (Real.log_nonneg (by linarith))))
 
-end GuthMaynard.Improvement

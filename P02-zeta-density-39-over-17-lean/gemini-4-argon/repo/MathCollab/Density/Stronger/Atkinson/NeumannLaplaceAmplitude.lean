@@ -102,4 +102,3 @@ theorem norm_neumannLaplaceAmplitude_sub_linear_le (u : ℝ) :
       _ ≤ _ := by nlinarith [mul_nonneg (sq_nonneg u) (sub_nonneg.mpr hwn)]
   exact le_of_mul_le_mul_left hbound (by positivity : 0 < 2 * ‖w‖)
 
-end MathCollab.Density.Stronger.Atkinson

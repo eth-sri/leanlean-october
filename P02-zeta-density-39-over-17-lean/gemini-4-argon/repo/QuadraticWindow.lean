@@ -89,4 +89,3 @@ theorem quadratic_monomial_budgets {σ a δ T N : ℝ}
   · have hh := mul_nonneg (show 0 ≤ (5/12)*p+(4*σ-3)*x-1/4 by linarith only [hb2]) ht.le
     nlinarith only [hh,hd]
 
-end Montgomery.RationalMoment

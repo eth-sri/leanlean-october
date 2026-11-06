@@ -11,14 +11,9 @@ noncomputable section
 
 open scoped Classical BigOperators Topology SchwartzMap ContDiff
 namespace SevenEighths.ProbeDetectorInverseMarkedField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
-open ProbeHighRowFamily ProbeFinalAssembly Filter
-open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseClippedUniform
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer ProbeHighRowFamily ProbeFinalAssembly Filter DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseClippedUniform
 
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
@@ -106,9 +101,3 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
   have hh:=hfourier F selected hUp (Csum*(Z^d)^(1+D.t)) (by positivity) href
     n hn s hs height t hheight ht
   convert hh using 1 ; ring
-
-end SevenEighths.ProbeDetectorInverseMarkedField
-
-end
-
-end OAI

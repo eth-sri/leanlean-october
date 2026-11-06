@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 lemma rowAmplitudeOnLines_buffered_bound {K : ℕ}
@@ -94,9 +93,3 @@ theorem continuedPhysicalRowKernel_buffered_integrable {K : ℕ}
     · simp only [Set.indicator_of_mem ht,F,A,continuedRowOnLines_eq_amplitude]
     · simp only [Set.indicator_of_notMem ht,F,A,mul_zero]
   exact (integrable_indicator_iff hE).mp (heq ▸ hf)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

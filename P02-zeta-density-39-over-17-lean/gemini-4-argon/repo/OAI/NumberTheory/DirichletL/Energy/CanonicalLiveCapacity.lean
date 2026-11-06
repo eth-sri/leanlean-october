@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalLiveCapacity
-open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyCanonicalLiveBound
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonHeightEnvelope CenteredMomentAllocatedRayDictionary
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentRetainedProfile
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyBands
-open CenteredMomentEnergyDeletedChildCapacity CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
+open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyCanonicalLiveBound CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonHeightEnvelope CenteredMomentAllocatedRayDictionary CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentRetainedProfile CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyBands CenteredMomentEnergyDeletedChildCapacity CenteredMomentRadialEligibleEnergy
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 lemma original_deleted_excess (src:Input α)(C R:Ideal O)(B:actualAllocations src.pools C)
@@ -73,9 +66,3 @@ theorem live_source_paid_cost (src:Input α)(C R:Ideal O)(B:actualAllocations sr
     hZ hκ hP hF₁ hF₂ hchild hp hshift hwidth hu hell hδ₁ hδ₂ hθ hclip
   rw [original_deleted_excess src C R B D alloc J τ v Z X₁ X₂ κ Mactual w hZ hscale F₁ F₂] at hb
   linarith
-
-end SevenEighths.CenteredMomentEnergyCanonicalLiveCapacity
-
-end
-
-end OAI

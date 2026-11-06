@@ -8,7 +8,6 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
 
 abbrev LowUnselectedTuple {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K)) :=
   ∀i : J,↥(slots i.val)
@@ -82,8 +81,3 @@ theorem sum_lowSlotJoin {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K)
     _ = ∑p : LowUnselectedTuple slots J×LowSelectedTuple slots J,F (lowSlotJoin slots J p.1 p.2) :=
       (Equiv.sum_comp (lowSlotTupleEquiv slots J).symm (fun p=>F (fun i=>(p i).val))).symm
     _ = _ := Fintype.sum_prod_type _
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

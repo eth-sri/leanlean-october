@@ -11,8 +11,7 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -182,4 +181,3 @@ theorem hasSum_zetaSquareDivisorContribution (t : ℝ) :
       zetaSquareContourIntegrand t (((1 : ℝ) : ℂ)+(u : ℂ)*I))
   simpa only [Complex.ofReal_one] using h.mul_left (1/(2*Real.pi) : ℂ)
 
-end MathCollab.Density.Stronger.Fourth

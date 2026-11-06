@@ -63,4 +63,3 @@ theorem ordinary_restricted_cubic_of_masked {μ : ℝ → ℝ}
   simpa only [abs_of_nonneg (norm_nonneg H),mul_one,one_mul,
     show (1:ℝ)+2=3 by norm_num,mul_comm Q 3] using hh
 
-end GuthMaynard.Improvement

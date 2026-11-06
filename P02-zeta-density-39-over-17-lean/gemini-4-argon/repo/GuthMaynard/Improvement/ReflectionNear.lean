@@ -51,4 +51,3 @@ theorem centeredKernel_near (w : MathCollab.Density.ReflectionCutoff)
     exact (h L 1 1 hL (by norm_num) le_rfl (by norm_num)).2
   · exact hp v hpv (by simpa only [abs_of_pos hpv] using hv)
 
-end GuthMaynard.Improvement

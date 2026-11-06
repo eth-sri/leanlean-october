@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ K N B L C T : ℝ,
@@ -161,8 +160,3 @@ theorem hybrid_extracted_dyadic_block (ε : ℝ) (hε : 0 < ε) :
       norm_zero, zero_pow (by norm_num : 2 ≠ 0), Finset.sum_const_zero]
     have hs : 0 ≤ CubicSieve.sieveNorm N (2 * L) := sq_nonneg _
     positivity
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

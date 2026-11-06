@@ -49,4 +49,3 @@ theorem ordinary_real_fourier_fourth_integrable {μ : ℝ → ℝ}
     mul_nonneg (sq_nonneg (‖𝓕 (fun x => (μ x : ℂ)) ξ‖))
       (show 0 ≤ (∫ x, μ x)^2 - ‖𝓕 (fun x => (μ x : ℂ)) ξ‖^2 by nlinarith [norm_nonneg (𝓕 (fun x => (μ x : ℂ)) ξ)])]
 
-end GuthMaynard.Improvement

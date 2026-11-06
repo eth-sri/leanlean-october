@@ -94,9 +94,3 @@ theorem uniform_strip_bound (η : Character)
   change ‖LFunction (principalCharacter η) z‖ ≤ _ at h
   rw [LFunction_principalCharacter η hη z] at h
   simpa only [HeckeStripActual.conductor, span_generator] using h
-
-end SevenEighths.HeckePresentation
-
-end
-
-end OAI

@@ -44,5 +44,3 @@ theorem fordAdditiveCharacter_sum
       rw [fordAdditiveCharacter_add, ih]
 
 
-end
-end GafniTao

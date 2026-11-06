@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
 
 lemma supportedIdealProduct_injective (C : SupportedIdeal) : Function.Injective (supportedIdealProduct C) := by
   intro I J h
@@ -64,8 +63,3 @@ theorem finite_pair_gcd (F : Finset SupportedIdeal) (f : SupportedIdeal→Suppor
   apply Finset.sum_congr rfl
   intro C hC
   rw [Finset.sum_filter,Finset.sum_product]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

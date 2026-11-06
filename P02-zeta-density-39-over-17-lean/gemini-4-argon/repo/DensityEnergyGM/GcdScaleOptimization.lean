@@ -63,4 +63,3 @@ theorem gcd_scale_sqrt_min {M H K q : ℝ}
   have hRight : 0 ≤ M * H ^ ((q - 1) / 2) * K ^ ((2 - q) / 2) := by positivity
   nlinarith
 
-end Montgomery.RationalMoment

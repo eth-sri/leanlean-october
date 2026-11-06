@@ -11,15 +11,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedNorm
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstRetainedAssembly CenteredMomentFirstRetainedActive
-open CenteredMomentFirstSectorTransform CenteredMomentFirstSectors CenteredMomentHeckeExpansion
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentLogDyadic
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstRetainedAssembly CenteredMomentFirstRetainedActive CenteredMomentFirstSectorTransform CenteredMomentFirstSectors CenteredMomentHeckeExpansion CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentLogDyadic
 open CenteredMomentActiveSource (activeSource)
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 def sector (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
@@ -97,9 +90,3 @@ theorem original_retained_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad 
       (CenteredMomentFirstTailAggregate.rowWeight_norm_le_one _ _ _ _ _ _
         (commonLabels_supported _ p).2.1)
   exact (mul_le_of_le_one_left (norm_nonneg _) hw).trans (sector_norm s Rbad seed m A t _ _ _ _ _ W K X Z ξ)
-
-end SevenEighths.CenteredMomentFirstRetainedNorm
-
-end
-
-end OAI

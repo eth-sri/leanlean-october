@@ -12,7 +12,6 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem original_first_zero_physical (ε:ℝ)(hε:0<ε):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
@@ -59,9 +58,3 @@ theorem original_first_zero_physical (ε:ℝ)(hε:0<ε):
       rw [←Real.rpow_add hz,←Real.rpow_add hz,←Real.rpow_add hz,←Real.rpow_add hz,←Real.rpow_add hz]
       congr 2
       ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

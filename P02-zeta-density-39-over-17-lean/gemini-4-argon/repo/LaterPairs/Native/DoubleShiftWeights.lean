@@ -57,4 +57,3 @@ theorem signed_shift_weight_real {N : ℕ} {q : ℤ}
       congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs q)
   rw [Nat.cast_sub hqn,habs]
 
-end TaoTrudgianYang2025

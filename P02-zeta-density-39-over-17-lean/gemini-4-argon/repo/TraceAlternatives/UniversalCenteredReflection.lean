@@ -65,4 +65,3 @@ theorem reflection_local_energy_universal {η : ℝ} (hη : 0 < η) :
       exact_mod_cast reflectionBlocks_card_le hLp hH
     _ = _ := by ring
 
-end Montgomery.RationalMoment

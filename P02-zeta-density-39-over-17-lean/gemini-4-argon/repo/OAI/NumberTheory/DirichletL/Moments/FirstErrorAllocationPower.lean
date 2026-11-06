@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstErrorAllocationPower
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentAmplificationChildInput CenteredMomentFirstChildProfileControl
-open CenteredMomentAmplificationAllocationCost CenteredMomentCommonProfile
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentAmplificationChildInput CenteredMomentFirstChildProfileControl CenteredMomentAmplificationAllocationCost CenteredMomentCommonProfile
 variable {ι : Type*} [Fintype ι]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
@@ -50,9 +47,3 @@ theorem budget_sum_le (s : Input ι) (Q : Ideal O) (hQ : Prime Q) (k : ℕ)
     _≤((k:ℝ)+1)*((∑j,a j*(volume s/(Q.absNorm:ℝ)^k)^(α j))*mass s^2) :=
       mul_le_mul_of_nonneg_right hc (mul_nonneg hs (sq_nonneg _))
     _=_ := by push_cast;ring
-
-end SevenEighths.CenteredMomentFirstErrorAllocationPower
-
-end
-
-end OAI

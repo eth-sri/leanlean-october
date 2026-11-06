@@ -137,4 +137,3 @@ theorem sum_differenceFloorCount (W : Finset ℝ) :
   rw [← h]
   simp only [differenceOrdinatePairs, Finset.card_product, pow_two]
 
-end Montgomery.RationalMoment

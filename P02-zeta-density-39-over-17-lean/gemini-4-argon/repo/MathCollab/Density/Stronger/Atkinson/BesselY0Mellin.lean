@@ -1479,4 +1479,3 @@ theorem mellin_dfiBesselY0_mul_sqrt
   rw [hy]
   ring
 
-end MathCollab.Density.Stronger.Atkinson

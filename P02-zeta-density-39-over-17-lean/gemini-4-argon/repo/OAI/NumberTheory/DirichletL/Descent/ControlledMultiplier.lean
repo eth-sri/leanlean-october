@@ -7,11 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota
-open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
+open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 noncomputable local instance controlledField (P : Ideal Eis) [P.IsMaximal] :
     Field (Eis ⧸ P) := Ideal.Quotient.field _
 noncomputable local instance controlledFintype (P : Ideal Eis) [P.IsMaximal] :
@@ -132,8 +129,3 @@ theorem controlled_mixed_multiplier (D : ControlledStratumArithmetic p N a0 c0 m
   apply Finset.prod_congr rfl
   intro i hi
   exact mixedActiveBracket_eq_units hp hg hc j hj S D i x
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

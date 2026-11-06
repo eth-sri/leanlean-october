@@ -204,4 +204,3 @@ theorem upperModeTail_source_bound {a b : ℝ} (hab : a < b)
     (add_le_add (le_refl _) (mul_le_mul_of_nonneg_left (harmonic_tail_square_bound ha hM) (by positivity)))
     (mul_le_mul_of_nonneg_left (harmonic_tail_cube_bound ha hM) (by positivity))
 
-end DhimanKadiriQuesadaHerrera2026

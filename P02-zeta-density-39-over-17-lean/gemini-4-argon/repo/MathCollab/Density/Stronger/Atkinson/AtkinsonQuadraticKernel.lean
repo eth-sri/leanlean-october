@@ -94,4 +94,3 @@ theorem integral_atkinsonRootQuadraticKernel (T b H : ℝ) :
   rw [intervalIntegral.integral_const_mul]
   rfl
 
-end MathCollab.Density.Stronger.Atkinson

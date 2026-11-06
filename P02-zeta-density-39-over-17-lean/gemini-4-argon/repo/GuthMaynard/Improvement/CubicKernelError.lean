@@ -69,4 +69,3 @@ theorem kernelCubic_perturbation (μ : Measure ℝ) [IsFiniteMeasure μ]
   rw [tripleMeasure_mass] at hh
   exact hh
 
-end GuthMaynard.Improvement

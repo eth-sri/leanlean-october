@@ -11,8 +11,6 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeRow ProbeCompleted CompletedGauss CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def gaussianCompletedProfile (y : ℝ) : ℂ := gaussianMellinProfile y/(Real.sqrt y:ℂ)
 
@@ -75,8 +73,3 @@ theorem spectralRow_eq_gaussianCompleted (S : Finset Id) (D : Id) (Ψ : O→*ℂ
   apply tsum_congr
   intro p
   exact gaussian_mellinSummand S D Ψ σ Z hZ p.1 p.2
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

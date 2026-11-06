@@ -7,17 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 
 namespace GaussianMoment
 
@@ -431,9 +422,3 @@ theorem real_positive_definite {η a b : ℝ} (hη : 0 < η) (hq : q a b ≠ 0) 
   obtain ⟨hA, hB, hD⟩ := coefficient_re η a b hq
   rw [hA, hB, hD]
   nlinarith [sq_pos_of_pos hη]
-
-end OscSpecial
-
-end
-
-end OAI

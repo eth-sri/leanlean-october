@@ -9,14 +9,8 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstSectorLocalization
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy CenteredMomentFirstLocalization
 
-open CenteredMomentFirstLocalization
 
 def retainedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=
@@ -93,9 +87,3 @@ theorem finiteHeckeEnergy_sector_localized (η : Character) (m A : O) (t : ℝ)
   rw [finiteHeckeEnergy_reduced_poisson η m A t hmLam hm2 S c W K hK]
   simp_rw [reducedFirstSum_sector_split _ _ _ _ W K X Z ξ hK,mul_add,Finset.sum_add_distrib]
   rfl
-
-end SevenEighths.CenteredMomentFirstSectorLocalization
-
-end
-
-end OAI

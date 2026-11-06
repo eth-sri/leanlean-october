@@ -109,4 +109,3 @@ theorem IntervalC2Bound.deriv_c1 {f : ℝ → ℂ} {a c M R : ℝ}
         rw [intervalIntegral.integral_const, smul_eq_mul]
         nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

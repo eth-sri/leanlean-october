@@ -12,10 +12,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeDetectorInverseRawField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
-open HeckeDetectorInverseFiberCount DetectorDictionaryInverseClippedUniform
-open ProbeHighRowFamily ProbeFinalAssembly
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount DetectorDictionaryInverseClippedUniform ProbeHighRowFamily ProbeFinalAssembly
 
 private theorem raw_mono (data:RowData)(W:ℝ→ℂ)(c κ A B:ℝ)
     (hAB:A≤B)(h:RawMoment data W c κ A):RawMoment data W c κ B:=by
@@ -40,7 +37,6 @@ theorem fixed_raw_profiles (c κ:ℝ)(hc:0<c)(hκ:0<κ):
   exact ⟨A*C,mul_pos hA hC,hfamily data c κ A hA.le href⟩
 
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
@@ -96,9 +92,3 @@ theorem source_batch_inverse_raw
         (by positivity) hC.le
     rw [hd]
     exact ⟨raw_mono _ _ _ _ _ _ hconstant hpair.1,raw_mono _ _ _ _ _ _ hconstant hpair.2⟩
-
-end SevenEighths.ProbeDetectorInverseRawField
-
-end
-
-end OAI

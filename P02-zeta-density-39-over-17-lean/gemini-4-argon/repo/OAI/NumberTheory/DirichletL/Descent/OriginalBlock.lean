@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K X N L A H : ℝ,
@@ -102,8 +101,3 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
       gcongr
       exact sq_nonneg _
     _ = _ := by ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

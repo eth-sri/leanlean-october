@@ -7,11 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss
-open LocalReflectionBrackets FiniteGaussPhase
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 lemma scalar_phase_power (a b : ℂ) (ha : a ≠ 0) (j : ℕ) :
     a⁻¹^2*b⁻¹^(j+2) = a^j*(a⁻¹*b⁻¹)^(j+2) := by
@@ -103,8 +100,3 @@ theorem controlled_frozen_phase [∀ i, (Ideal.span {p i}).IsMaximal]
         MonoidHom.comp_apply,RingHom.toMonoidHom_eq_coe,
         MulChar.coe_toMonoidHom,MulChar.pow_apply' _ (by omega : 2*j+2 ≠ 0)]
       rfl
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

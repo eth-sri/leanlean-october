@@ -9,13 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondRadicalColumns
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction
-open CenteredMomentSecondSixthSource CenteredMomentSecondRadicalFamily CenteredMomentSecondHeightFamily
-open CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
-open CenteredMomentCanonicalFirst
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalFamily CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCanonicalFirst
 
 theorem sixthFactor_span_dvd_right (C D : Ideal O) (hC : Supported C) (hD : Supported D)
     (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D)) :
@@ -37,9 +31,3 @@ theorem residual_sixth_coefficient_right (C D : Ideal O) (hC : Supported C) (hD 
       idealRowHom (reducedNumerator C D U) I := by
   rw [fixed_sixth_coefficient C D U I hI,ite_eq_left
     (hcop.symm.of_isCoprime_of_dvd_right (sixthFactor_span_dvd_right C D hC hD hCD U)),mul_one]
-
-end SevenEighths.CenteredMomentSecondRadicalColumns
-
-end
-
-end OAI

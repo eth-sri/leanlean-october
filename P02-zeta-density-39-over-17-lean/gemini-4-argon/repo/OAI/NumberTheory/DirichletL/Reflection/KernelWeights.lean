@@ -127,8 +127,3 @@ theorem reciprocal_source_window_identity (windows : Fin 4→ℝ→ℂ) (M : Fin
   have hnC : (Real.sqrt n:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hn0
   have hQnC : (Real.sqrt Qn:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hQn0
   convert he using 1 <;> field_simp
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

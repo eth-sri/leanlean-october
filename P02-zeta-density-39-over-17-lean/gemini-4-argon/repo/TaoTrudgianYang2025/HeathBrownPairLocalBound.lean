@@ -75,4 +75,3 @@ theorem heathBrownPairSecant_derivative_max {r τ : ℝ} (hr : 3 ≤ r)
     (max_le (heathBrownPairSecant_second_term hr hl)
       (heathBrownPairSecant_third_term hr hl))
 
-end TaoTrudgianYang2025

@@ -104,4 +104,3 @@ theorem cubicDyadicClasses_subpower {ε : ℝ} (hε : 0 < ε) :
       congr 2
       norm_num
 
-end GuthMaynard.Improvement

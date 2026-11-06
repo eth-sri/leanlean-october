@@ -12,9 +12,8 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density.Stronger
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -162,4 +161,3 @@ theorem exists_norm_fourthRightPiece_sub_cutoff_le {δ : ℝ} (hδ : 0 < δ) :
 
 
 
-end MathCollab.Density.Stronger.Fourth

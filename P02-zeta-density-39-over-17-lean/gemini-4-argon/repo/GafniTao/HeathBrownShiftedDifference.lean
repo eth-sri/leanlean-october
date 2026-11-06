@@ -185,6 +185,4 @@ theorem heathBrown_shiftedDifference_deriv_bounds
     simpa only [hxdiff] using hupper
 
 
-end
 
-end GafniTao

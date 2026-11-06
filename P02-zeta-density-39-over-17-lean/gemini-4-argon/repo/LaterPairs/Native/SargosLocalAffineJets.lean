@@ -38,4 +38,3 @@ theorem sargos_iteratedDeriv_comp_affine_local {f : ℝ → ℝ} {l r c d x : �
       rw [iteratedDeriv_succ,he.deriv_eq,hh.deriv,iteratedDeriv_succ,pow_succ]
       ring
 
-end TaoTrudgianYang2025

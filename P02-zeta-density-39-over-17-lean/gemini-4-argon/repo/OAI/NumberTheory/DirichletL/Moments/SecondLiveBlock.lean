@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondLiveBlock
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorRetained
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondLocalization CenteredMomentActiveSource
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorRetained CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentHeckeColumnWindow CenteredMomentSecondLocalization CenteredMomentActiveSource
 
 def liveLabels (η:Character) (S:Finset (Ideal O)) (β:Ideal O→ℂ):Finset (ActiveLabel S β):=
   Finset.univ.filter (fun p=>idealCoeff η p.val.1≠0 ∧ idealCoeff η p.val.2≠0)
@@ -106,9 +100,3 @@ theorem original_live_blocks (η:Character) (t:ℝ)
     apply Finset.sum_congr rfl
     intro n hn
     exact physicalBlock_live_rows _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-end SevenEighths.CenteredMomentSecondLiveBlock
-
-end
-
-end OAI

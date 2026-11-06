@@ -36,4 +36,3 @@ theorem exists_doubled_block_weighted (a : ℕ → ℂ) (H : ℕ) (hH : 2 ≤ H)
   intro l hl hlH
   exact hmax l (Finset.mem_Icc.mpr ⟨by omega,by omega⟩)
 
-end TaoTrudgianYang2025

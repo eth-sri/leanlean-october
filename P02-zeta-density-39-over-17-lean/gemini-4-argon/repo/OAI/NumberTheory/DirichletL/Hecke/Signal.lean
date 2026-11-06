@@ -249,9 +249,3 @@ theorem signalMellin_eq_amplitude_on_line (χ : Character) (H : ℂ → ℂ)
     (amplitude_integrable_reflected χ H hH hb) (amplitude_continuous_reflected χ H hH)
   intro x hx
   exact normalizedSignal_eq χ H c hx
-
-end SevenEighths.HeckeSignal
-
-end
-
-end OAI

@@ -80,4 +80,3 @@ theorem third_monomial_budgets {σ a p α δ T N : ℝ}
   · have hh := hm _ (show 0 ≤ (49/40)*p+(6*σ-4)*x-1/8-l by linarith only [hb9])
     nlinarith only [hh,hd]
 
-end Montgomery.RationalMoment

@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationErrorPool
-open CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePolynomial
-open CenteredMomentAmplificationSourcePool CenteredMomentSourceRow CenteredMomentLiveDomain
-open CenteredMomentGaussEnergy CenteredMomentFirstSectors CenteredMomentOriginalChildEnergy
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePolynomial CenteredMomentAmplificationSourcePool CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentGaussEnergy CenteredMomentFirstSectors CenteredMomentOriginalChildEnergy
 
  theorem residual_polynomial_eq_punctured (S : Finset (Ideal O)) (c f : Ideal O → ℂ)
     (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
@@ -48,9 +44,3 @@ local notation "O" => ActualEisensteinCubic.O
   apply tsum_congr
   intro h
   rw [residual_polynomial_eq_punctured S c f p hp hs hpp k hk h]
-
-end SevenEighths.CenteredMomentAmplificationErrorPool
-
-end
-
-end OAI

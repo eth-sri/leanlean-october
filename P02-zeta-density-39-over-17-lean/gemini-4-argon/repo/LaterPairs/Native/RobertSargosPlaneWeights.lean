@@ -62,4 +62,3 @@ theorem robertSargos_weighted_correlations_nonneg (a : ℤ → ℤ → ℂ) (M H
   rw [← robertSargos_plane_weighted_gram a M H Q R hQ hR]
   exact Finset.sum_nonneg (fun _ _ => sq_nonneg _)
 
-end TaoTrudgianYang2025

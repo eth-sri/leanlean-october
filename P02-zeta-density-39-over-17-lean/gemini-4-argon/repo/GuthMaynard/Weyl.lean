@@ -508,4 +508,3 @@ theorem integerLogarithmicSum_eq (t : Real) (A N : Nat) :
     push_cast
     rw [htoReal]
 
-end RiemannZeta.GuthMaynard

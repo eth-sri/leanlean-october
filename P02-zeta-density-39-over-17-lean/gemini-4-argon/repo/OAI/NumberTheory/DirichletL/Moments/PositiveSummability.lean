@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentPositiveSummability
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceMass
-open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentDivisorRetained
-open CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation
-open ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentDivisorRetained CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation ConcreteTraceCRT
 
 lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)
     (hs:Function.support W⊆Set.Iic b) (hX:0<X) :
@@ -106,9 +101,3 @@ theorem allocated_positive_summable {ι:Type*} [Fintype ι] [DecidableEq ι]
   unfold allocatedPositiveRow
   exact retained_positive_summable η m A t W₁ W₂ b₁ b₂ _ _ hs₁ hs₂
     (div_pos hX₁ (hN 0)) (div_pos hX₂ (hN 1)) _ _ _ keep Φ K hK
-
-end SevenEighths.CenteredMomentPositiveSummability
-
-end
-
-end OAI

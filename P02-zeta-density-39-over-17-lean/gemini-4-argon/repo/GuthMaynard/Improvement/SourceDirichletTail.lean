@@ -83,4 +83,3 @@ theorem boundedPolynomial_source_tail {χ : ℝ → ℝ} (hχd : ContDiff ℝ �
     _ = (4*D^2)*N^2*T*Real.log (2*N) := by rw [mul_pow,mul_pow,hsqrt]; ring
     _ ≤ _ := by gcongr
 
-end GuthMaynard.Improvement

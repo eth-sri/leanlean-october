@@ -11,7 +11,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -38,8 +37,3 @@ lemma first_unblocked_physical (F : Finset ι) (C₁ C₂ : Finset ι→ℂ)
       firstPhysicalCommonRows p hg F C₁ C₂ W₁ W₂ Φ A₁ A₂ C R K d h := by
   rw [firstPhysicalCommonRows_indexed]
   simp only [firstBlockedPhysicalRows,one_mul]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

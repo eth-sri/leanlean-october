@@ -67,4 +67,3 @@ theorem robertSargos_zero_r_source_positive_bound
       Finset.sum_empty,norm_zero]
     positivity
 
-end TaoTrudgianYang2025

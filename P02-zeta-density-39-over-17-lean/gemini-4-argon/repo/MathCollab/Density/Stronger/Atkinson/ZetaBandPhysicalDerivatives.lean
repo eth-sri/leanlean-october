@@ -124,4 +124,3 @@ theorem exists_intervalC2Bound_zetaDivisorBandCutoff_root :
   rw [he]
   exact hf.mul hg
 
-end MathCollab.Density.Stronger.Atkinson

@@ -10,13 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSectorEnergy
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy
-open CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentRestrictedSource CenteredMomentRestrictedDomain CenteredMomentRestrictedEnergy
-open CenteredMomentLiveDomain CenteredMomentFirstSectors RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm CenteredMomentRestrictedSource CenteredMomentRestrictedDomain CenteredMomentRestrictedEnergy CenteredMomentLiveDomain CenteredMomentFirstSectors RayFourExpansion
 
 theorem sector_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
     (C : Ideal O) (hC : Supported C) (z : O) :
@@ -33,9 +27,3 @@ theorem sector_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
   apply Finset.sum_congr rfl
   intro I hI
   split_ifs <;> simp
-
-end SevenEighths.CenteredMomentSecondSectorEnergy
-
-end
-
-end OAI

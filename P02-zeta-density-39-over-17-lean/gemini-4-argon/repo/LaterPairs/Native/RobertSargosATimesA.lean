@@ -47,4 +47,3 @@ theorem robertSargos_a_times_a (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
       mul_le_mul (by linarith) (by linarith) (by positivity) (by positivity)
     _ = 4*(M:ℝ)*H := by ring
 
-end TaoTrudgianYang2025

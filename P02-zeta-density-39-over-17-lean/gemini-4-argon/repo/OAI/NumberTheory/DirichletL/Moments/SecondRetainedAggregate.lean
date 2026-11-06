@@ -9,13 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst
-open CenteredMomentSecondLocalization CenteredMomentSecondSourceRetained CenteredMomentSecondSourceFrequency
-open CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentHeckeColumnWindow CenteredMomentCompleteCommon
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst CenteredMomentSecondLocalization CenteredMomentSecondSourceRetained CenteredMomentSecondSourceFrequency CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentHeckeColumnWindow CenteredMomentCompleteCommon
 
 theorem commonLabels_supported (S : Finset (Ideal O)) (C D : Ideal O)
     (h : (C,D)∈commonLabels (supportedColumns S) (supportedColumns S)) :
@@ -48,9 +42,3 @@ theorem original_retained_energy_GV (η : Character) (t : ℝ)
   exact original_retained_sector_GV η t S β p.val.1 p.val.2
     (commonLabels_supported S _ _ p.property).1 (commonLabels_supported S _ _ p.property).2
     (commonLabels_data _ _ _ _ p.property).2.2 W K Tsec Z ξ hK
-
-end SevenEighths.CenteredMomentSecondRetainedAggregate
-
-end
-
-end OAI

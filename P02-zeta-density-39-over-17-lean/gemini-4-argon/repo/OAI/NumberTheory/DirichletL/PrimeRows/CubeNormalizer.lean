@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison
-open PrincipalMellinResidues ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues ProbePrincipalResidueActual
 
 theorem actual_ray_normalizer_inverse {K : ℕ}
     (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
@@ -55,9 +53,3 @@ theorem actual_ray_normalizer_inverse {K : ℕ}
     simpa only [hellsum,Real.norm_eq_abs,mul_comm] using
       mul_le_mul_of_nonneg_left hmass.2 (norm_nonneg cs⁻¹)
   exact hb.trans (mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg hZ.le _))
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

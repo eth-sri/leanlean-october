@@ -146,4 +146,3 @@ theorem taylorPastedExtension_eventuallyEq_right_polynomial
   rw [taylorPastedExtension_right_formula f Q hh (show l+2*h ≤ y by linarith),
     taylorRightTransition_zero hh hy.le,zero_mul,add_zero]
 
-end TaoTrudgianYang2025

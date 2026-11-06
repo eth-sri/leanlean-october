@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentSecondHeightFamily CenteredMomentFixedRowMask CenteredExceptionalProfile
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentSecondHeightFamily CenteredMomentFixedRowMask CenteredExceptionalProfile
 
 structure NaturalRow (η : Character) (z : O) where
   character : Character
@@ -85,9 +83,3 @@ theorem NaturalRow.modulus_power_bound {η : Character} {z : O} (F : NaturalRow 
       mul_le_mul (mul_le_mul_of_nonneg_right hη (Nat.cast_nonneg _)) hz
         (Nat.cast_nonneg _) (mul_nonneg (Real.rpow_nonneg hZ.le _) (Nat.cast_nonneg _))
     _=(fixedConductorFactor:ℝ)*Cz*Z^(m+q) := by rw [Real.rpow_add hZ]; ring
-
-end SevenEighths.CenteredMomentNaturalRowSource
-
-end
-
-end OAI

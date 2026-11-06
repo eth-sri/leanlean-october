@@ -68,4 +68,3 @@ theorem robertSargos_physical_nonzero_shifted_triple
   dsimp only [Q,R] at he
   nlinarith
 
-end TaoTrudgianYang2025

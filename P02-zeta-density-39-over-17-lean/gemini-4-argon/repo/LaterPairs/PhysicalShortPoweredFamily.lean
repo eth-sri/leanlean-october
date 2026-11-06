@@ -11,8 +11,7 @@ open scoped BigOperators Topology ComplexConjugate
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector.Physical
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /- This bound is fixed by sigma and delta, before T and any zero. -/
 /- The complete finite powered family, restricted by scale conditions that
@@ -127,4 +126,3 @@ theorem smooth_long_or_short_powered_cover {σ a δ η : ℝ}
     refine Or.inr ⟨(p,k,l), ?_, hh⟩
     exact mem_smoothPoweredIndices.mpr ⟨hp, hk, hkK', Finset.mem_range.mp hl, hklo, hupper⟩
 
-end Montgomery.RationalMoment.RightDetector.Physical

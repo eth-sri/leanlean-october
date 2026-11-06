@@ -131,9 +131,3 @@ theorem primitive_gaussSum_norm_sq (χ : MulChar R ℂ)
   rw [Complex.sq_norm, Complex.normSq_eq_conj_mul_self]
   simpa only [starRingEnd_apply, mul_comm, Complex.ofReal_natCast] using
     primitive_gaussSum_mul_conjugate χ hχ ψ hψ
-
-end
-
-end SevenEighths.FiniteFourier
-
-end OAI

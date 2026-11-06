@@ -74,9 +74,3 @@ theorem source_log_profile_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
       rw [add_mul]
       apply add_le_add (le_refl _)
       exact le_mul_of_one_le_right (by positivity) (Real.one_le_rpow hU hp)
-
-end SevenEighths.HeckePrimeDyadic
-
-end
-
-end OAI

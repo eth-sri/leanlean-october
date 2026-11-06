@@ -43,7 +43,3 @@ theorem cumsum_div_tendsto_zero_of_summable_div {f : ℕ → ℝ}
     intro n hn
     simp [F, Finset.mem_range.mp hn]
   simpa only [heq, tsum_zero] using h
-
-end SevenEighths.PNT
-
-end OAI

@@ -63,4 +63,3 @@ theorem IntervalC1Bound.reflection_source {f : ℝ → ℂ} {T M : ℝ}
   apply (div_le_div_iff₀ hd ht).mpr
   nlinarith [mul_le_mul_of_nonneg_left hs hf.nonneg]
 
-end MathCollab.Density.Stronger.Atkinson

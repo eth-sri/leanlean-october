@@ -8,8 +8,6 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def tuplePhysicalScalar {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
     (J : Finset (Fin K)) : ℂ :=
@@ -48,8 +46,3 @@ lemma compensatedRow_kernel_subsets {K : ℕ} (η : HeckeFamily.Character) (S : 
   intro J hJ
   have he := tuple_scaled_coefficient η p hp J W0 W1 X Y Z hX hY hZ x w z
   linear_combination -a*markedIdealHighSeries S (Ideal.span {∏i∈Finset.univ\J,p i}) η u x w z*he
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

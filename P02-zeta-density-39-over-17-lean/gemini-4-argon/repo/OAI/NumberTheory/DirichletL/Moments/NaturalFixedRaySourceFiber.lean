@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentDetectorDictionary CenteredMomentRetainedEnergy CenteredMomentHeckeSlots
-open CenteredMomentHeckeHeight CenteredMomentPrimeSlot HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open ProbeHighRowFamily ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredMomentDetectorDictionary CenteredMomentRetainedEnergy CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentPrimeSlot HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles ProbeHighRowFamily ConcretePrimeRowBridge
 
 lemma rowMaskElement_eq_fixed : rowMaskElement=fixedBadMask := by
   unfold rowMaskElement fixedBadMask
@@ -37,14 +31,3 @@ lemma natural_unit_mask_positive {ι : Type*} [Fintype ι] [DecidableEq ι]
     positiveSlotRow η (fixedBadMask*idealGenerator 1) 1 z W₁ W₂ S β P t X₁ X₂=
       positiveSlotRow η fixedBadMask 1 z W₁ W₂ S β P t X₁ X₂ := by
   simp only [positiveSlotRow,rowTwistedSum,rowSlot,one_mul,natural_unit_mask_coefficient F]
-
-variable {M : Ideal O} [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable {H : Subgroup (O⧸M)ˣ} (hH : RayOrthogonality.globalUnits M≤H)
-variable {Label Slot : Type*} {U a ε tstar T allowance : ℝ} {i : ℕ}
-
-end SevenEighths.CenteredMomentNaturalFixedRaySource
-
-end
-
-end OAI

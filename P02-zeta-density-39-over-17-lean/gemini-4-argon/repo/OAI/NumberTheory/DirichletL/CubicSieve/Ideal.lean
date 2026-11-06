@@ -12,7 +12,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def Admissible (I : Ideal Eis) : Prop := Squarefree I ∧ primaryGenerator I ≠ 0
 
@@ -165,8 +164,3 @@ theorem family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
   have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
   have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (idealMatrix M N)
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

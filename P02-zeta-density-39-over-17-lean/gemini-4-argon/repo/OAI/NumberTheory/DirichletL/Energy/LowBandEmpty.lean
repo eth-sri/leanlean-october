@@ -9,14 +9,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyLowBandEmpty
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentNaturalFixedRaySource
-open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] [DecidableEq α] in
@@ -49,9 +44,3 @@ theorem positive_low_zero
       Finset.prod_empty,mul_one]
   rw [hid] at hh
   simpa only [add_zero,Real.norm_eq_abs] using hh
-
-end SevenEighths.CenteredMomentEnergyLowBandEmpty
-
-end
-
-end OAI

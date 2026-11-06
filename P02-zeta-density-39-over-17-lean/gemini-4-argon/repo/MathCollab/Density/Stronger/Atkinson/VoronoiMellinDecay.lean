@@ -11,9 +11,8 @@ public import Mathlib.Analysis.Complex.PhragmenLindelof
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory Asymptotics
+open Complex Finset Set Filter Topology MeasureTheory Asymptotics Classical
 open scoped BigOperators Topology
-open Classical
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -310,4 +309,3 @@ theorem DFIVoronoiTestFunction.exists_mellin_weighted_strip_bound
     _ = 2^j * (‖z-3‖^j * ‖mellin g z‖) := by ring
     _ ≤ 2^j * D := mul_le_mul_of_nonneg_left hb (by positivity)
 
-end MathCollab.Density.Stronger.Atkinson

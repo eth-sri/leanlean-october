@@ -26,4 +26,3 @@ theorem hasDerivAt_iteratedDeriv_finite
   have hd := contDiffAt_iteratedDeriv_finite (n := 1) (j := j) hh
   simpa only [iteratedDeriv_succ] using hd.differentiableAt_one.hasDerivAt
 
-end TaoTrudgianYang2025

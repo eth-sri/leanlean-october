@@ -58,4 +58,3 @@ theorem continuous_second_derivative_bound
     (by positivity) (Real.sqrt_pos.mpr hα) hlo' hhi').trans
       (second_derivative_scale_bound (Nat.cast_nonneg N) hC hα hα1)
 
-end TaoTrudgianYang2025

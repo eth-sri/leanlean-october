@@ -11,7 +11,6 @@ open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma physicalRow_w_height_bound {K : ℕ} (eps : ℝ) (heps : 0<eps)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
@@ -47,9 +46,3 @@ theorem nonprincipal_w_integral_eq {K : ℕ}
   exact nonprincipal_w_integral_eq_of_polynomial eps heps S hS hfirst hmax P hPS η u hu
     W0 W1 a b ha hW X Y Z hY x z l r C 2 hC.le hlr (by linarith) (by linarith)
     hz (by linarith) (fun v hv t=>hbound v (hl.trans hv.1) t)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

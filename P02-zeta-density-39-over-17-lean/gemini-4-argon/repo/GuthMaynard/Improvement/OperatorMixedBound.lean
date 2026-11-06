@@ -63,4 +63,3 @@ theorem operator_mixed_bound (w : MathCollab.Density.ReflectionCutoff) :
         _ ≤ L*Q*P*(∫ t, μ t^2)+L*Q*(∫ t, μ t^2) := le_add_of_nonneg_right hn
         _ = _ := by ring
 
-end GuthMaynard.Improvement

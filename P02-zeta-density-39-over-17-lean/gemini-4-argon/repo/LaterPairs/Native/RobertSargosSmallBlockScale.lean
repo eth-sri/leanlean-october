@@ -58,4 +58,3 @@ theorem small_block_third_derivative_budget {M H C lam : ℝ}
     (show 0 ≤ 20*C by positivity)
   nlinarith
 
-end TaoTrudgianYang2025

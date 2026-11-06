@@ -9,9 +9,8 @@ public import MathCollab.Density.ZeroSeparation
 
 @[expose] public section
 
-open Complex Filter Set MeasureTheory
+open Complex Filter Set MeasureTheory MathCollab.Density.ZetaGrowth
 open scoped Topology BigOperators
-open MathCollab.Density.ZetaGrowth
 
 set_option autoImplicit false
 
@@ -19,7 +18,7 @@ noncomputable section
 namespace MathCollab.Density
 
 theorem zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
-    (hσLower : 7 / 10 ≤ σ) (hT : 8 ≤ T) :
+    (hσLower : 3 / 5 ≤ σ) (hT : 8 ≤ T) :
     ((∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter
         (fun ρ => (z : ℝ) ≤ ρ.im ∧ ρ.im < (z : ℝ) + 1),
         zetaMultiplicity ρ : ℕ) : ℝ) ≤
@@ -96,7 +95,7 @@ theorem zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
         obtain ⟨hz, hs, hlo, hhi⟩ := mem_zetaZeroFinset.mp hρData.1
         exact ⟨⟨hs, hz.2.2.le, hlo, hhi⟩, hz.1⟩
       rw [Metric.mem_closedBall, dist_eq_norm]
-      have hreLower : -(13/10 : ℝ) ≤ (ρ - c).re := by
+      have hreLower : -(7/5 : ℝ) ≤ (ρ - c).re := by
         norm_num [c]
         linarith [hσLower, hρRect.1.1]
       have hreUpper : (ρ - c).re ≤ 0 := by
@@ -110,7 +109,7 @@ theorem zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
         linarith [hρData.2.2]
       rw [mul_self_le_mul_self_iff (norm_nonneg _) (by norm_num)]
       rw [Complex.norm_mul_self_eq_normSq, normSq_apply]
-      nlinarith [sq_nonneg ((ρ - c).re + 13/10), sq_nonneg ((ρ - c).im + 1/2),
+      nlinarith [sq_nonneg ((ρ - c).re + 7/5), sq_nonneg ((ρ - c).im + 1/2),
         sq_nonneg ((ρ - c).im - 1/2)]
     let V : Set ℂ := Metric.closedBall c (3/2 : ℝ)
     have hVCompact : IsCompact V := isCompact_closedBall c (3/2 : ℝ)
@@ -158,7 +157,7 @@ theorem zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
 /-- A single logarithmic multiplicity constant for every actual zero bin.
 Both the large-height Jensen estimate and the bounded-height range are proved. -/
 theorem zeta_local_multiplicity_bound :
-    ∃ C : ℝ, 0 < C ∧ ∀ σ T : ℝ, 3/4 ≤ σ → 2 ≤ T → ∀ k : ℤ,
+    ∃ C : ℝ, 0 < C ∧ ∀ σ T : ℝ, 3/5 ≤ σ → 2 ≤ T → ∀ k : ℤ,
       (∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter (fun ρ => ordinateBin ρ = k),
         (zetaMultiplicity ρ : ℝ)) ≤ C*Real.log (2*T) := by
   classical
@@ -168,7 +167,7 @@ theorem zeta_local_multiplicity_bound :
   have hD : 0 < D := by dsimp [D]; apply Real.log_pos; norm_num
   have hK : 0 < K := div_pos (by norm_num) hD
   have hT₀ : 8 ≤ T₀ := le_max_right _ _
-  have hlarge : ∀ σ T : ℝ, 3/4 ≤ σ → T₀ ≤ T → ∀ k : ℤ,
+  have hlarge : ∀ σ T : ℝ, 3/5 ≤ σ → T₀ ≤ T → ∀ k : ℤ,
       (∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter (fun ρ => ordinateBin ρ = k),
         (zetaMultiplicity ρ : ℝ)) ≤ K*Real.log (2*T) := by
     intro σ T hσ hT k
@@ -198,7 +197,7 @@ theorem zeta_local_multiplicity_bound :
       _ = K*Real.log T := by dsimp [K]; ring
       _ ≤ K*Real.log (2*T) := mul_le_mul_of_nonneg_left
         (Real.log_le_log hTpos (by linarith)) hK.le
-  let Q : ℝ := zetaDensityCount (3/4) (2*T₀)
+  let Q : ℝ := zetaDensityCount (3/5) (2*T₀)
   have hQ : 0 ≤ Q := Nat.cast_nonneg _
   have hlog4 : 0 < Real.log 4 := Real.log_pos (by norm_num)
   refine ⟨K+Q/Real.log 4+1, by positivity, ?_⟩
@@ -213,7 +212,7 @@ theorem zeta_local_multiplicity_bound :
         have hq := div_nonneg hQ hlog4.le
         linarith) hlognonneg)
   · have hTupper : T ≤ T₀ := (not_le.mp hlargeT).le
-    have hcount : zetaSlabCount σ T (2*T) ≤ zetaDensityCount (3/4) (2*T₀) :=
+    have hcount : zetaSlabCount σ T (2*T) ≤ zetaDensityCount (3/5) (2*T₀) :=
       zetaSlabCount_mono hσ (by linarith) (by linarith)
     have hfilter :
         (∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter (fun ρ => ordinateBin ρ = k),
@@ -231,4 +230,3 @@ theorem zeta_local_multiplicity_bound :
         mul_le_mul_of_nonneg_left hloglow (div_nonneg hQ hlog4.le)
       _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) hlognonneg
 
-end MathCollab.Density

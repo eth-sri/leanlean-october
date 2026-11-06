@@ -10,7 +10,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
 
 theorem calibrationForSet_coprime_iff (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
     (a : O) : IsCoprime (calibrationForSet S hS).generator a ↔ ∀ P ∈ S, a ∉ P := by
@@ -31,8 +30,3 @@ theorem calibrationForSet_coprime_of_excluded (S : Finset (Ideal O))
   intro P hP ha
   apply hmask P hP
   exact Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr ha))
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

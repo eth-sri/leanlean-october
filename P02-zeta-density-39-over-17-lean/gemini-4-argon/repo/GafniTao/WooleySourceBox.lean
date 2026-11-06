@@ -330,6 +330,4 @@ theorem wooleySourcePolynomialConditionedMean_box_monomial
   · simp_rw [wooleySourceResidueMassSq_box,
       wooleySourceNormalizedPolynomialResidueSum_box_monomial]
 
-end
 
-end GafniTao

@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeEuler ProbeEulerFinsupp
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma source_idealHighLocalFactor_ne_zero (S : Finset Id) (hS : SourceExclusions S)
     (η : HeckeFamily.Character) (P : PrimeIdeal) (hP : P.val∉S) (x w z : ℂ)
@@ -71,8 +69,3 @@ theorem markedIdealHighSeries_eq_product (S : Finset Id) (hS : SourceExclusions 
     funext P
     exact (heq P).symm
   exact (markedIdealHighSeries_hasProd S hS.prime T η x w z hx hw hz).unique he'
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

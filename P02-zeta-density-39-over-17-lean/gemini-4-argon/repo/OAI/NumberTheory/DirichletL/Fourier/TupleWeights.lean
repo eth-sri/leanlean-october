@@ -8,83 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-namespace JointLogSeparation
-
-end JointLogSeparation
+open MeasureTheory ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 
 namespace SecondPassIntegration
 
-section
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
-open SecondPassFiber (OldTuple newLabel newRow Valid)
+open SecondPassArithmetic JointLogSeparation SecondPassFiber
 open FourierBridge (logPhase)
 
 def tupleOuterWeight (V : Fin 7 → ℝ → ℂ) (w : OldTuple → ℂ)
@@ -92,27 +21,10 @@ def tupleOuterWeight (V : Fin 7 → ℝ → ℂ) (w : OldTuple → ℂ)
   w x * outerWindow V (z x) (ud x) (ue x) (uv x) (kap x) *
     logPhase (q.1 + q.2.1) (z x) * logPhase q.2.2 (kap x - ud x - 2 * ue x - 2 * uv x)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
-open SecondPassFiber (OldTuple newLabel newRow Valid)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
 end SecondPassIntegration
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 namespace JointLogSeparation
 
 lemma sqrt_exp_half (s : ℝ) : Real.sqrt (Real.exp s) = Real.exp (s / 2) := by
@@ -123,16 +35,10 @@ lemma sqrt_exp_half (s : ℝ) : Real.sqrt (Real.exp s) = Real.exp (s / 2) := by
 
 end JointLogSeparation
 
-namespace SecondPassIntegration
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels
-
-end SecondPassIntegration
 end
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
-open ActualEisensteinCubic
 
 lemma lambdaIdeal_maximal : (Ideal.span {lambda} : Ideal O).IsMaximal :=
   PrincipalIdealRing.isMaximal_of_irreducible PrimaryIdealUnitReindex.lambda_prime_actual.irreducible
@@ -187,10 +93,6 @@ theorem supported_span_iff (z : O) :
 
 def badPrime (i : Bool) : Ideal O := if i then Ideal.span {(2 : O)} else Ideal.span {lambda}
 
-instance badPrime_maximal (i : Bool) : (badPrime i).IsMaximal := by
-  cases i
-  · exact lambdaIdeal_maximal
-  · exact twoIdeal_maximal
 
 theorem badPrime_mask (z : O) :
     rowCoprimeMask badPrime Finset.univ z = if Supported (Ideal.span {z}) then 1 else 0 := by
@@ -199,7 +101,7 @@ theorem badPrime_mask (z : O) :
     Bool.false_eq_true, ite_false, ite_true, Ideal.mem_span_singleton]
   by_cases hLam : lambda ∣ z <;> by_cases htwo : (2 : O) ∣ z <;> simp [hLam, htwo]
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open CompletedGauss FiniteSieveOperator
 
 theorem highKernelNorm_mono {M N K M' N' K' : ℝ}
     (hM : M ≤ M') (hN : N ≤ N') (hK : K' ≤ K) :
@@ -286,7 +188,7 @@ theorem highKernel_quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fin
       rw [Finset.sum_coe_sort S (fun j : n => ‖a j‖ ^ 2)]
       exact Finset.sum_le_univ_sum_of_nonneg (fun j => sq_nonneg ‖a j‖)
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator
+open IdealCoprimeSieveOperator
 
 def totalQuotient (D I : Ideal O) : Ideal O := if D ∣ I then idealQuotient D I else 1
 
@@ -358,9 +260,3 @@ theorem gcdTerm_eq_quotient {m n : Type*}
       exact hj (he ▸ gcd_dvd_left (cols j) (cols k))
     simp only [gcdTerm, ite_eq_right hg]
     simp [quotientMatrix, hj]
-
-end CanonicalQuadraticSieve
-
-end
-
-end OAI

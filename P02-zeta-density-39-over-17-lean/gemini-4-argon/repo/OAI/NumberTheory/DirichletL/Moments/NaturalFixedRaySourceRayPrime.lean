@@ -10,12 +10,8 @@ open scoped Classical BigOperators ContDiff Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily
-open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalRowSource CenteredExceptionalProfile CenteredMomentSecondHeightFamily CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem natural_ray_slots_uniform (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
@@ -44,9 +40,3 @@ theorem natural_ray_slots_uniform (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (inf_le_left.trans hQM)
     (relativeCharacter_fixedQ M H hH η₀ θ (internalQ Q η₀) (inf_le_left.trans hQM) inf_le_right)
     hex σ t v hσ hσhi
-
-end SevenEighths.CenteredMomentNaturalFixedRaySource
-
-end
-
-end OAI

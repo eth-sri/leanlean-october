@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein
 
 theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character) (u : O) (I J : Ideal O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
@@ -110,8 +107,3 @@ theorem bareIdealHighSummand_row_mul (η : HeckeFamily.Character) (u : O) (x w z
   rw [bareIdealHighCoefficient_row_mul η u I J K L I' J' K' L' hcop,
     fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

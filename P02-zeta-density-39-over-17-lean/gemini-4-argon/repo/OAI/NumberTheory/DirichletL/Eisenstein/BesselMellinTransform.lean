@@ -7,79 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
 
 lemma schlafliBesselK_cubic_scaled_mellin_integrable (s : ℂ) (c : ℝ)
     (hs : 1/3<s.re) (hc : 0<c) :
@@ -126,7 +57,6 @@ theorem source_cubic_bessel_mellin (s freq : ℂ)
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 
 namespace ShortDraftCRT
 
@@ -185,7 +115,7 @@ theorem fixed_completion_congr (M c r r0 a a0 b b0 d d0 : R)
 
 end
 
-open scoped BigOperators Classical Matrix
+open scoped Matrix
 
 variable {R : Type*} [CommRing R] [IsDomain R]
 
@@ -236,12 +166,10 @@ theorem exists_fixed_matrix_completion (M c a0 r0 d0 b0 : R)
 
 end ShortDraftCRT
 
-open scoped BigOperators Classical
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal
 
 def conductorReduction (a b:Eis):
     (Eis⧸Ideal.span {a*b})→+*(Eis⧸Ideal.span {a}):=
@@ -372,8 +300,7 @@ theorem conductorFourier_lift (a b:Eis) (ha:a≠0) (hb:b≠0)
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal
 
 lemma cubicSymbol_pow_denominator (x p:Eis) (n:ℕ):
     symbol x (p^n)=(symbol x p)^n:=by
@@ -483,8 +410,7 @@ theorem cubicUnitGaussSum_prime_power_lift (p:Eis) (hp:Prime p)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal
 
 lemma primeCubicMulChar_cube (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
     primeCubicMulChar p hp hprimary^3=1:=by
@@ -602,9 +528,3 @@ lemma primeCubicGauss_one_eq (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (h:E
     primeCubicGauss p hp hprimary 1 h=cubicUnitGaussSum h p:=by
   have he:=cubicUnitGaussSum_prime_power_lift p hp hprimary 0 h
   simpa only [pow_zero,one_mul,pow_one,Nat.zero_add] using he.symm
-
-end CubicEisenstein
-
-end
-
-end OAI

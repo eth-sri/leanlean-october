@@ -63,4 +63,3 @@ mean-value premise discharged by the project theorem. -/
 theorem halasz_montgomery_lemma_native : HalaszMontgomeryLemma :=
   halasz_montgomery_lemma_of_mean_value montgomery_mean_value_native
 
-end GuthMaynard.NativeMoment

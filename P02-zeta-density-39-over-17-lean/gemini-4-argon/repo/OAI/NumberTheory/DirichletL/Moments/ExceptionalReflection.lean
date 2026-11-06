@@ -8,11 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentExceptionalReflection
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CenteredMomentChildRows
-open CenteredMomentFixedRay CenteredMomentExceptionalPair RayFourExpansion
-open CanonicalRowCompletion CanonicalQuadraticSieve CanonicalUnitEuler
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay CenteredMomentExceptionalPair RayFourExpansion CanonicalRowCompletion CanonicalQuadraticSieve CanonicalUnitEuler
 
 theorem child_rows_zero_off_support (η : Character) (χ ξ : RayCharacter)
     (m A z n : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
@@ -73,9 +69,3 @@ theorem not_fixedInducingRow_reflection_iff (η : Character) (χ ξ : RayCharact
     (¬FixedInducingRow (childCharacter η χ) Q m A z) ↔
       ¬FixedInducingRow (childCharacter η ξ) Q m A (-z) :=
   not_congr (fixedInducingRow_reflection_iff η χ ξ Q hQ m A z hmLam hm2)
-
-end SevenEighths.CenteredMomentExceptionalReflection
-
-end
-
-end OAI

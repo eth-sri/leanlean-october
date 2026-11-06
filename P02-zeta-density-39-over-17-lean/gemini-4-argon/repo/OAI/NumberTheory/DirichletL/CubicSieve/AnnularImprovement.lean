@@ -8,11 +8,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
-open SevenEighths.CubicDyadicDecay
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson SevenEighths.CubicDyadicDecay
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hξ2 : ξ ≤ 2)
@@ -88,8 +85,3 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     _ ≤ U*(Dv*N^θ)^2*∑ j, ‖a j‖^2 := henergy
     _ = (V*Dv^2)*(N^(4*θ)*(N^θ)^2)*S*∑ j, ‖a j‖^2 := by dsimp [U]; ring
     _ = _ := by rw [hp]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

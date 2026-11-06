@@ -109,4 +109,3 @@ theorem modelPhaseMorseInverse_iteratedDeriv_bound
     ((morseInverseJetOrder_le_derivativeOrder hj).trans hP)).trans
       (morseInverseJetMagnitude_le_budget hσ hj)
 
-end TaoTrudgianYang2025

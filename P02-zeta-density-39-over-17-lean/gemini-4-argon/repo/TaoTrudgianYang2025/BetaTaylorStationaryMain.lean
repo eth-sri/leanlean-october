@@ -115,4 +115,3 @@ theorem norm_modelPhaseStationaryBlock_le_taylor_prefixMax
       (fun i hi => hv i (hi.trans hjL)) (fun i hi => hplateau i (hi.trans hjL))]
     exact norm_exponentialSumAt_le_prefixMax _ _ _ a L j hjL
 
-end TaoTrudgianYang2025

@@ -61,9 +61,6 @@ def IsExponentSumBound (α : ℝ≥0) (β : ℝ) : Prop :=
 def exponentSumBounds (α : ℝ≥0) : Set ℝ :=
   {β : ℝ | IsExponentSumBound α β}
 
-@[simp] theorem mem_exponentSumBounds {α : ℝ≥0} {β : ℝ} :
-    β ∈ exponentSumBounds α ↔ IsExponentSumBound α β :=
-  Iff.rfl
 
 /-- The exponential sum growth exponent `β(α)` from the blueprint definition `beta-def`. -/
 def exponentSumGrowthExponent (α : ℝ≥0) : ℝ :=
@@ -202,4 +199,3 @@ theorem exponentSumGrowthExponent_le_iff {α : ℝ≥0} {β : ℝ} :
 
 /-! ## Logarithmic model phase -/
 
-end Expdb

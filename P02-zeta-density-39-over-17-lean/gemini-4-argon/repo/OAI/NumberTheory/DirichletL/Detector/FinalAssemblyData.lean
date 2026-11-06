@@ -12,7 +12,6 @@ open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters
-local notation "O" => HeckeFamily.O
 
 structure SourceData {Δ : ℝ} (D : HighData Δ) where
   S : Finset (Ideal O)
@@ -64,9 +63,3 @@ theorem SourceData.probe_low {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
     (fun _=>F.w) (fun _=>F.smooth) (fun _=>F.compact) (fun _=>F.support)
     (fun _=>F.bounded) (fun _=>F.nonzero) F.W F.W 1 2 1 2 (by norm_num) (by norm_num)
     F.complex_support F.complex_support F.real F.real F.nonnegative F.nonnegative F.complex_nonzero F.complex_nonzero η
-
-end SevenEighths.ProbeFinalAssembly
-
-end
-
-end OAI

@@ -120,4 +120,3 @@ theorem short_detector_ordinate_tail_eventually_small {δ : ℝ} (hδ : 0 < δ) 
     _ ≤ C*(2*H)*(3*H)*Real.exp (-H/4) := by gcongr; linarith
     _ = _ := by ring
 
-end GuthMaynard.Improvement

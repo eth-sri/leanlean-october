@@ -128,4 +128,3 @@ theorem exists_afe_cutoffs_all_heights (t : ℝ) (ht : 200*Real.pi ≤ t) :
     field_simp
   exact ⟨A,M,hx1,hy1,hscale,hxFloor,hfloor,hgaplo,hgaphi,hA,hM,hxlo,hxhi,hylo,hyhi⟩
 
-end WeylPort

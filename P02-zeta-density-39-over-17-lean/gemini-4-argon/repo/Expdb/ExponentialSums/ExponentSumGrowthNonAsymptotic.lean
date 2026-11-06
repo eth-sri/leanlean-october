@@ -270,4 +270,3 @@ theorem exponentSumGrowthExponent_le_iff_nonAsymptotic
   exact ⟨nonAsymptotic_of_isExponentSumBound,
     isExponentSumBound_of_nonAsymptotic⟩
 
-end Expdb

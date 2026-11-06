@@ -100,4 +100,3 @@ theorem centeredKernel_poisson {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   change (L:ℂ)*(∑' m, f m) - (L:ℂ)*(∫ x, logModulated a s x) = _
   rw [he,hzero,mul_add,add_sub_cancel_left]
 
-end GuthMaynard.Improvement

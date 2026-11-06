@@ -265,4 +265,3 @@ theorem robertSargos_physical_polynomial_reduction
   ring
 
 
-end TaoTrudgianYang2025

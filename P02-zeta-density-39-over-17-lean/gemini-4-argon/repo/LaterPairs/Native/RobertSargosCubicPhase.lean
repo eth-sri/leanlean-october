@@ -53,4 +53,3 @@ theorem robertSargos_mixed_taylor_identity (f : ℝ → ℝ) (m r q h n : ℝ) :
     show m+n-(h+r) = m+(n-h-r) by ring]
   ring
 
-end TaoTrudgianYang2025

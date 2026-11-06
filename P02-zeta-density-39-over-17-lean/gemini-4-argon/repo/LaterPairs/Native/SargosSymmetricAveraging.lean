@@ -61,4 +61,3 @@ theorem sargos_even_shift_averaging (a : ℤ → ℂ) (M H : ℕ) :
   rw [hs,hc,RCLike.norm_nsmul ℂ,nsmul_eq_mul] at ht
   simpa only [mul_pow] using ht
 
-end TaoTrudgianYang2025

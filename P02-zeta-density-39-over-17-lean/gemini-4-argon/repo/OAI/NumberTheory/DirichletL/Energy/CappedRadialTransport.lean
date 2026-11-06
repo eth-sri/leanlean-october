@@ -10,12 +10,9 @@ open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedRadialTransport
-open HeckeFamily CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyBandMonotonicity
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyBandMonotonicity
 variable {α : Type*}
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 theorem certified_radial_mono (W : ℝ → ℂ)
@@ -45,9 +42,3 @@ theorem certified_from_max_two (W : ℝ → ℂ)
     CertifiedBand (α := α) M H hH W bslot a b radial Bmask L lo hi Mcap κ ε k :=
   certified_radial_mono (α := α) M H hH W bslot a b (max 2 radial) radial
     Bmask L lo hi Mcap κ ε k (le_max_right _ _) h
-
-end SevenEighths.CenteredMomentEnergyCappedRadialTransport
-
-end
-
-end OAI

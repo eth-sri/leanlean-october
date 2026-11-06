@@ -106,6 +106,4 @@ theorem wooleySourcePolynomialPhase_zero
     wooleySourcePolynomialPhase phi (0 : Fin k → ZMod q) n = 1 := by
   simp [wooleySourcePolynomialPhase]
 
-end
 
-end GafniTao

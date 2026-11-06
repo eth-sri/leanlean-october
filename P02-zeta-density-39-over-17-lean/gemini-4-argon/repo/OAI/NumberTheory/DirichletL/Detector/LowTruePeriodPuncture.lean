@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma physicalRayPeriodicBase_support (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) (σ : RayRing) (χ : RayCharacter)
@@ -113,8 +111,3 @@ lemma physical_markedCompletedT_absorb_true_period (η : HeckeFamily.Character) 
     InverseMoment.markedCompletedT
       (rowTwist (physicalRayPeriodicBase η S hS σ χ) (calibrationForSet S hS).generator f z) W X mark := by
   rw [lowReflectionMask,physical_row_absorb_true_period η S hS hbad σ χ]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

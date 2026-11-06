@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss SevenEighths.InverseSecondFibers IdealMobiusDivisorSum
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 abbrev SecondChild := OuterTriple × Ideal Eis × Eis
 
@@ -23,8 +22,3 @@ def secondDivisorWeight (K : ℕ) (c : SecondChild) : ℝ :=
     ((idealDivisors c.1.q0).card : ℝ) ^ (5 + 2*K) *
     ((idealDivisors c.1.quotient).card : ℝ) ^ (2*K) *
     ((idealDivisors c.1.residual).card : ℝ) ^ (2*K)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

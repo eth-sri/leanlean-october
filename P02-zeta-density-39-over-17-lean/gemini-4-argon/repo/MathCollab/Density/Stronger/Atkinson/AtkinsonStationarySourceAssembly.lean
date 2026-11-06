@@ -59,9 +59,4 @@ theorem localMeanSourceToPrefix_of_stationary (hSource : LocalMeanStationaryInpu
   have hactual := hsource t G htU hlower hupper hquarter
   nlinarith
 
-/-- Native packet estimates require only the remaining actual source approximation. -/
-theorem localMeanPacketInput_of_stationary (hSource : LocalMeanStationaryInput) :
-    Peaks.LocalMeanPacketInput :=
-  localMeanPacketInput_of_sourceToPrefix (localMeanSourceToPrefix_of_stationary hSource)
 
-end MathCollab.Density.Stronger.Atkinson

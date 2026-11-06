@@ -42,4 +42,3 @@ theorem modelPhaseClosedSlope_endpoint_width
     modelPhaseClosedSlope_drop hσ hδ hF
       (u := 1) (v := 2) (by norm_num) (by norm_num) (by norm_num)
 
-end TaoTrudgianYang2025

@@ -9,8 +9,7 @@ public import MathCollab.Density.Stronger.Atkinson.BesselK0SourceIntegral
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -59,4 +58,3 @@ theorem exists_norm_integral_zetaAtkinsonK0_le (k : ℕ) :
       mul_le_mul_of_nonneg_left (hmass T G L hT hG hGT hL hwidth) hfac
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

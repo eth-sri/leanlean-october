@@ -11,15 +11,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalOriginalMask
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstMaskedFamily CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentCommonSupport
-open CenteredMomentFirstRetainedNorm CenteredMomentFirstSourceReduction
-open CenteredMomentCanonicalFirst CenteredMomentFirstSectors
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource CenteredMomentFirstMaskedFamily CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentCommonSupport CenteredMomentFirstRetainedNorm CenteredMomentFirstSourceReduction CenteredMomentCanonicalFirst CenteredMomentFirstSectors
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 omit [DecidableEq ι] in
 lemma original_coefficient (s : Input ι) (R seed C I : Ideal O)
@@ -78,9 +71,3 @@ theorem original_physicalMass (s : Input ι) (R seed : Ideal O)
     physicalMass s R seed fixedBadMask 1 W K Z ξ := by
   unfold physicalMass
   simp_rw [original_sectorMass]
-
-end SevenEighths.CenteredMomentFirstPhysicalOriginalMask
-
-end
-
-end OAI

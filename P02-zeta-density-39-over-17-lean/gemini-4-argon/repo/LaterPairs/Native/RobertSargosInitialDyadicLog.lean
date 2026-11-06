@@ -56,4 +56,3 @@ theorem exists_robertSargos_initial_dyadic_log (f : ℝ → ℝ) (M H : ℕ)
         (mul_le_mul_of_nonneg_right h₂ (by positivity))
     _ = _ := by ring
 
-end TaoTrudgianYang2025

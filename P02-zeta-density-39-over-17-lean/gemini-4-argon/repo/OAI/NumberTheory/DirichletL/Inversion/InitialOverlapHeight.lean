@@ -52,9 +52,3 @@ theorem twisted_polynomial_measure_energy (g:𝓢(ℝ,ℂ))(J:ℕ) :
   exact hh.trans (by
     simpa only [mul_pow,←pow_mul,Nat.mul_comm,mul_assoc,mul_left_comm,mul_comm] using
       mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hb0 hbint 2) hE)
-
-end SevenEighths.InverseInitialOverlapHeight
-
-end
-
-end OAI

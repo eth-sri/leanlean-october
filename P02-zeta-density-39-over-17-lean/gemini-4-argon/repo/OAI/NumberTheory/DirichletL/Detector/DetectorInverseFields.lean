@@ -10,12 +10,8 @@ noncomputable section
 
 open scoped Classical BigOperators Topology
 namespace SevenEighths.ProbeDetectorInverseFields
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
-open ProbeHighRowFamily ProbeFinalAssembly Filter
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer ProbeHighRowFamily ProbeFinalAssembly Filter
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
@@ -85,9 +81,3 @@ theorem source_batch_inverse_fields {Δ:ℝ}{D:Parameters.HighData Δ}
     have hh:=hZ.2 d hd a ε tstar T allowance i B hdata hprofile hupper hwidths hex
       bin label left right hne height hheight selected hselected hfirst hsecond n hn s hs t ht
     exact hh.trans (mul_le_mul_of_nonneg_right hmarked (Real.rpow_nonneg hU.le _))
-
-end SevenEighths.ProbeDetectorInverseFields
-
-end
-
-end OAI

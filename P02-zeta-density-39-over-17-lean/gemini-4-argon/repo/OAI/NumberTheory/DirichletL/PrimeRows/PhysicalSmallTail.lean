@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 theorem small_original_physical_tail (K : ℕ) (e δ a b B : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2)
@@ -56,8 +55,3 @@ theorem small_original_physical_tail (K : ℕ) (e δ a b B : ℝ)
     _ ≤ (1+N)*(C*(η.modulus.absNorm:ℝ)^δ*Z^(HeckeZeroSupremum.beta-11/16-63/800+8*e)) :=
       mul_le_mul_of_nonneg_right (by linarith : N≤1+N) (by positivity)
     _ = _ := by ring
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

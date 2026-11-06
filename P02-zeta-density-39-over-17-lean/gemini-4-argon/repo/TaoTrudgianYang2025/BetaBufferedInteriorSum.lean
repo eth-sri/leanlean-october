@@ -156,4 +156,3 @@ theorem modelPhaseBufferedInteriorBlock_error
     rw [hs,hz,Finset.sum_empty,norm_zero,Nat.cast_zero,Real.log_zero,add_zero,mul_one]
     exact zero_le_one.trans hC
 
-end TaoTrudgianYang2025

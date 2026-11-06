@@ -59,4 +59,3 @@ theorem robertSargos_small_block_parameters {M H lam : ℝ}
     nlinarith [Real.sq_sqrt hlam.le,Real.sqrt_nonneg lam]
   exact ⟨hHM.trans (hHtoM.trans hM),by linarith,hfirst,hsecond⟩
 
-end TaoTrudgianYang2025

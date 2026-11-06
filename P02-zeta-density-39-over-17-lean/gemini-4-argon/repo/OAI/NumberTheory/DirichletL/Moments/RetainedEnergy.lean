@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRetainedEnergy
-open CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentRetainedProfile
-open CenteredMomentDivisorRawEnergy HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentRetainedProfile CenteredMomentDivisorRawEnergy HeckeFamily
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def positiveSlotRow (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
@@ -94,9 +92,3 @@ theorem centered_to_retained_uniform_energy (η : Character) (m A z : O) (W₁ W
     (positiveSlotRow η m A z W₁ W₂ S β P t Y₁ Y₂)) 2
   nlinarith [sq_nonneg (‖positiveSlotRow η m A z W₁ W₂ S β P t X₁ X₂‖-
     ‖positiveSlotRow η m A z W₁ W₂ S β P t Y₁ Y₂‖)]
-
-end SevenEighths.CenteredMomentRetainedEnergy
-
-end
-
-end OAI

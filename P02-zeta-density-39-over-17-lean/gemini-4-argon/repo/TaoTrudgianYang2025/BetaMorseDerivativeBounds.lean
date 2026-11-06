@@ -107,4 +107,3 @@ theorem modelPhaseMorseInverse_deriv_bounds
   · have h' := one_div_le_one_div_of_le (div_pos hc (Real.sqrt_pos.mpr hC)) h.1
     simpa only [one_div,inv_div] using h'
 
-end TaoTrudgianYang2025

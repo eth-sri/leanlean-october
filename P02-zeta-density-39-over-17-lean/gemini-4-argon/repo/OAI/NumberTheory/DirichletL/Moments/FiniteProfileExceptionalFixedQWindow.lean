@@ -13,18 +13,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonExceptionalCost
-open CenteredMomentCommonPairedSource CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentCommonWindowColumn
-open CenteredMomentHeckeColumnWindow CenteredMomentSmooth
-open CenteredMomentSecondHeightFamily CenteredMomentLogDyadic
-open CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost CenteredMomentCommonPairedSource CenteredMomentExceptionalAmplitudePair CenteredMomentCommonWindowColumn CenteredMomentHeckeColumnWindow CenteredMomentSmooth CenteredMomentSecondHeightFamily CenteredMomentLogDyadic CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
@@ -108,9 +97,3 @@ theorem actual_canonical_common_window (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
     _≤F*(mass Sprofile s v p q s.t v.t θ₁ θ₂ J*(1+‖u‖)^J*(1+‖w‖)^J):=
       mul_le_mul_of_nonneg_left hm hF
     _=_:=by ring
-
-end SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
-
-end
-
-end OAI

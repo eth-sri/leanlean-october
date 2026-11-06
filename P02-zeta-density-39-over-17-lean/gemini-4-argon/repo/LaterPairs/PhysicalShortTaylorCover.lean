@@ -11,11 +11,8 @@ open scoped BigOperators Topology ComplexConjugate
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector.Physical
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
-/-- Original smooth scale, half choice, and Taylor index: all chosen from a
-finite set before the zero. -/
 theorem smoothTaylorIndices_card_le_log {a T : ℝ}
     (hD : ((smoothScaleIndices (detectorY a T*(Real.log T)^2)).card : ℝ) ≤ 6*Real.log T)
     (hlog : 1 ≤ Real.log T) :
@@ -107,4 +104,3 @@ theorem smooth_long_or_short_Taylor_cover {σ a δ : ℝ}
     exact Or.inr ⟨p, hp, hp0, hp1, hp2⟩
   · exact Or.inl ⟨j, hj, lt_of_not_ge hs, hh⟩
 
-end Montgomery.RationalMoment.RightDetector.Physical

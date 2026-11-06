@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
-open InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
 universe u v
 
 theorem canonical_short_normalized_generator_energy_uniform_degree
@@ -102,9 +100,3 @@ theorem canonical_short_normalized_generator_energy_uniform_degree
       calc
         _ = (D*(6*C))*(1+‖θ‖)^degree*(Z^(V+cstar/256)*Z^(-V)*Z^(N+V-cstar/128)) := by ring
         _ = _ := by rw [hr]
-
-end SevenEighths.InverseShortCanonicalNormalization
-
-end
-
-end OAI

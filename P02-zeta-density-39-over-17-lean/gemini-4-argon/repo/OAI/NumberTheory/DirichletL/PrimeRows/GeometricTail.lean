@@ -43,8 +43,3 @@ lemma exists_large_tail_line (ζ δ saving : ℝ) (hζ : 0<ζ) :
   refine ⟨r,h1.le,h2,?_⟩
   have hh := (div_lt_iff₀ hζ).mp h3
   nlinarith
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

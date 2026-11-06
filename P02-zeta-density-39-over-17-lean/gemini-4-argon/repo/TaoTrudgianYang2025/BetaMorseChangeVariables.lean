@@ -69,4 +69,3 @@ theorem integral_Ioo_eq_morseIntegral
   refine h.trans (setIntegral_congr_fun hs (fun z hz => ?_))
   rw [abs_of_pos (modelPhaseMorseInverse_deriv_pos hσ hδ hF hv hz),Complex.real_smul]
 
-end TaoTrudgianYang2025

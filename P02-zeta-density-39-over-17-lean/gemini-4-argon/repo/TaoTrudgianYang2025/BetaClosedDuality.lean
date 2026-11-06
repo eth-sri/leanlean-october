@@ -94,4 +94,3 @@ theorem exponentPair_iff_beta_bound {k l : ℝ}
   exact ⟨fun h α hα => exponentSumGrowthExponent_le_exponentPairLine_closed h α hα,
     exponentPair_of_beta_bound htri⟩
 
-end TaoTrudgianYang2025

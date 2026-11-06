@@ -11,7 +11,6 @@ open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.ProbePhysical
 open ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
 
 theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
     (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
@@ -72,8 +71,3 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
       rw [mul_mul_mul_comm,←Real.rpow_add hZ]
       congr 2
       ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -63,4 +63,3 @@ theorem robertSargos_source_centered_third_derivative_bound
     rw [robertSargosSourceCenteredPhase,he,Finset.sum_empty,norm_zero]
     positivity
 
-end TaoTrudgianYang2025

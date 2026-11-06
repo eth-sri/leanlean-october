@@ -41,8 +41,3 @@ theorem exists_central_budget (Δ : ℝ) (hΔ : 0<Δ) :
     nlinarith
   have heps8 : ((N:ℝ)+8)*eps≤t := by nlinarith
   constructor <;> nlinarith
-end SevenEighths.Parameters
-
-end
-
-end OAI

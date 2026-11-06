@@ -48,4 +48,3 @@ theorem atkinsonStationaryMain_neg_sqrt_normalized {T G : ℝ} (hT : 0 < T)
       rw [atkinsonSaddleProfile_div_curvature hT,atkinsonCommonSaddleFactor_neg]
       ring
 
-end MathCollab.Density.Stronger.Atkinson

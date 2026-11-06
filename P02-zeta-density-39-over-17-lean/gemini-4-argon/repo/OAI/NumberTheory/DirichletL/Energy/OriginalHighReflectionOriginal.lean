@@ -11,23 +11,12 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionOriginal
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyOriginalHighReflectionGeometry CenteredMomentEnergyReferenceLowReflectionError
-open CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyOriginalHighReflectionGeometry CenteredMomentEnergyReferenceLowReflectionError CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyOriginalHighReflectionDeleted CenteredMomentEnergyReferenceDeletionEnergy
-open CenteredMomentInductionEnergy
+open CenteredMomentEnergyOriginalHighReflectionDeleted CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentInductionEnergy
 theorem original_high_from_low
     (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
     (Wslot:ℝ→ℂ)(aslot bslot lo hi:ℝ)
@@ -116,9 +105,3 @@ theorem original_high_from_low
     simpa only [Real.rpow_zero,mul_one] using hZ.2 Lslot ε κ η₀ Q K hK hlow
       θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ s hQ hs hxiM
       W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hshort hlarge hcap D₁ hD₁ D₂ hD₂ (Finset.univ\J)
-
-end SevenEighths.CenteredMomentEnergyOriginalHighReflectionOriginal
-
-end
-
-end OAI

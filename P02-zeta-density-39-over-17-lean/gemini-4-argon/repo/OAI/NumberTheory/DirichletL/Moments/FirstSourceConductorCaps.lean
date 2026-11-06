@@ -12,13 +12,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSourceConductorCaps
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily
-open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentAmplificationRadicalFamily CenteredMomentChildRows
-open CenteredMomentSecondHeightFamily
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentAmplificationRadicalFamily CenteredMomentChildRows CenteredMomentSecondHeightFamily
 
 lemma divisor_norm_le (I C : Ideal O) (hC : C≠0) (h : I∣C) :
     (I.absNorm:ℝ)≤C.absNorm := by
@@ -120,9 +114,3 @@ theorem eventually_caps (ε : ℝ) (hε : 0<ε) :
       gcongr
       exact (le_max_right _ _).trans hconst
     _=_ := by rw [←Real.rpow_natCast,←Real.rpow_mul hz.le,←Real.rpow_add hz,←Real.rpow_add hz,←Real.rpow_add hz];congr 1;ring
-
-end SevenEighths.CenteredMomentFirstSourceConductorCaps
-
-end
-
-end OAI

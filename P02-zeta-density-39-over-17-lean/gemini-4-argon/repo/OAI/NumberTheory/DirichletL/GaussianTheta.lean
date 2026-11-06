@@ -12,7 +12,7 @@ open scoped BigOperators Classical FourierTransform
 
 namespace SevenEighths.GaussianTheta
 
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 
 open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT EisensteinSchwartzPoisson
 
@@ -289,9 +289,3 @@ theorem theta_root_nonzero (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   intro hz
   rw [hz, norm_zero] at h
   exact zero_ne_one h
-
-end SevenEighths.GaussianTheta
-
-end
-
-end OAI

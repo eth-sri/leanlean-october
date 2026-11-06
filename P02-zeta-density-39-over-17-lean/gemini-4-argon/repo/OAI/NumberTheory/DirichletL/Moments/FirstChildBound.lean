@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstChildBound
-open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstAssembly
-open CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentReflectedChild
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstAssembly CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentReflectedChild CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion
 
 private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)
     (r : ℝ) (hr : 0 ≤ r) (B : α → ℝ)
@@ -142,9 +139,3 @@ theorem whole_kernel_first_child_bound (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ �
     (fun z hz => by rw [norm_mul];exact (mul_le_of_le_one_left (norm_nonneg _) (hq z hz)).trans hρe)
     hV₀ hV₁ U K hK hU hmajor (B₁ L) (B₂ L) (hB₁ L hL) (hB₂ L hL)
     (hleft L hL χ) (hright L hL (ξ⁻¹))
-
-end SevenEighths.CenteredMomentFirstChildBound
-
-end
-
-end OAI

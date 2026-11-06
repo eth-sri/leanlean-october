@@ -7,9 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Lattice
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
-open scoped ContDiff
-local notation "O" => ActualEisensteinCubic.O
+open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentPrimary
 open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
@@ -31,8 +29,3 @@ theorem primaryIdealCharacter_norm_le_one (c : O) (hc : c ≠ 0)
   let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   exact QuadraticInitialBound.norm_finite_character_le_one χ _
-
-end SevenEighths.CenteredMomentPrimary
-end
-
-end OAI

@@ -74,4 +74,3 @@ theorem robertSargos_symmetric_array_inner (f : ℝ → ℝ) (M H : ℕ) (m h q 
   rw [robertSargos_symmetric_array_product]
   split_ifs <;> rfl
 
-end TaoTrudgianYang2025

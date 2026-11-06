@@ -10,17 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationChildInput
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentSourceRectangle CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform CenteredMomentRemainingBox
-open CenteredMomentAmplificationAllocationCost CenteredMomentAmplificationAllocationScale
-open CenteredMomentHeckeColumnWindow CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationLiveMask CenteredMomentFirstAmplificationChoice
-open CenteredMomentOriginalChildEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentFirstSectors CenteredMomentRectangle CenteredMomentExtraction
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge RayFourExpansion CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceRectangle CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform CenteredMomentRemainingBox CenteredMomentAmplificationAllocationCost CenteredMomentAmplificationAllocationScale CenteredMomentHeckeColumnWindow CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationShortening CenteredMomentAmplificationLiveMask CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy CenteredMomentSecondHeightFamily CenteredMomentFirstSectors CenteredMomentRectangle CenteredMomentExtraction
 variable {ι : Type*} [Fintype ι]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
@@ -80,14 +70,8 @@ def child (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
   lower_le := fun i=>s.lower_le i.val
   upper_ge := fun i=>s.upper_ge i.val
 
-@[simp] theorem child_modulus (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).m=fixedBadMask*idealGenerator (R*C) := rfl
 
-@[simp] theorem child_character (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).η=τ := rfl
 
-@[simp] theorem child_height (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).t=t := rfl
 
 theorem live_slot_one (B : Tuple ι) (i : liveIndices B) : B (Sum.inl i.val)=1 :=
   (Finset.mem_filter.mp i.property).2
@@ -195,9 +179,3 @@ theorem original_childEnergy_eq_inputs (s : Input ι) (R seed : Ideal O)
   unfold childNormalizedGaussSource normalizedGaussSource
   rw [child_volume s (Ideal.span {p}) hQ (n+1) hslot R B (τ χ) t,
     child_gauss_source s ((Ideal.span {p})^(n+1)) R seed B (τ χ) t ballProfile K]
-
-end SevenEighths.CenteredMomentAmplificationChildInput
-
-end
-
-end OAI

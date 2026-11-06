@@ -10,8 +10,6 @@ open scoped Classical ContDiff
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma low_mellin_sqrt_weight_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hW : Function.support W⊆Set.Icc a b) (hWs : ContDiff ℝ ∞ W) (J : ℕ) :
@@ -76,8 +74,3 @@ theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (CM*Real.sqrt K*Real.sqrt A*E)) (Filter.Eventually.of_forall hh)
   rw [integral_const_mul,integral_univ_inv_one_add_sq] at hi
   convert hi using 1 ;ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

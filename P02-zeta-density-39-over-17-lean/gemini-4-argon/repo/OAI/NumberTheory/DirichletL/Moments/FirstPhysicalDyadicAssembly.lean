@@ -12,14 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicAssembly
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
-open CenteredMomentFirstReduced CenteredMomentFirstColumns CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentRowNorm
-open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentDyadicCount CenteredMomentPrimitive
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentRowNorm CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization CenteredMomentDyadicCount CenteredMomentPrimitive
 
 def retainedBlock (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
@@ -252,9 +245,3 @@ theorem original_retained_dyadic
   exact retainedBlock_eq_blocks s.η m A t S _ C D hC hD E _
     (retained_rows_nonzero R) W K R _ hK
     (fun I hI=>(CenteredMomentOriginalCommonHarmonic.original_column_norm s Rbad seed I hz₁ hz₂ hI).2)
-
-end SevenEighths.CenteredMomentFirstPhysicalDyadicAssembly
-
-end
-
-end OAI

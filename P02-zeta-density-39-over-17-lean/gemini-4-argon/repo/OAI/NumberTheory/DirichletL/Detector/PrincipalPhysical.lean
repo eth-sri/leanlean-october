@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds CanonicalQuadraticSieve
-open PrincipalMellinResidues ProbeMellinBoundary ProbePrincipalContours
-local notation "Id" => Ideal HeckeFamily.O
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds CanonicalQuadraticSieve PrincipalMellinResidues ProbeMellinBoundary ProbePrincipalContours
 
 lemma slotMultiplier_as_tuples {K : ℕ} (η : Character) (T : Fin K→Finset PrimeIdeal)
     (b : Fin K→PrimeIdeal→ℂ) (s w z : ℂ) :
@@ -103,8 +101,3 @@ theorem principal_physical_pool_ordered {K : ℕ} (η : Character)
   exact ProbePrincipalTransport.source_initial_joint_ordered_at_a η S hS Finset.univ T b
     (fun i _ p hp=>hT i p hp) W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z a e hX hY hZ ha ha3 hβ he he2
-
-end SevenEighths.ProbePrincipalPhysical
-end
-
-end OAI

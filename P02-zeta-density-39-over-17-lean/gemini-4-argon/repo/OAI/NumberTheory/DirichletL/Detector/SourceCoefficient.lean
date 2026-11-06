@@ -8,9 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbePhase ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbePhase ProbeRow ConcretePrimeRowBridge
 
 def sourceHighCoefficient (C : CalibrationData) (η : HeckeFamily.Character)
     (I : Ideal O) (hI : primaryGenerator I≠0) (A s : O) (hA : A≠0) (u a : O) : ℂ :=
@@ -75,8 +73,3 @@ theorem bareSourceCoefficient_product (η : HeckeFamily.Character) (I J : Ideal 
   unfold bareSourceCoefficient
   rw [he,map_mul,angularFactor_mul,star_mul]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

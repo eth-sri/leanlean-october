@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialExcludedPeriod
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum
-open UniqueFactorizationMonoid HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum UniqueFactorizationMonoid HeckeFamily
 
 def deletedPeriod (q:ℕ):ℕ := 2592*q^2
 
@@ -118,9 +115,3 @@ theorem deleted_base_gates (χ:Character)(q:ℕ)(hq:q≠0)
         (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q))) := by
   exact ⟨deletedPeriod_ne_zero q hq,deleted_excluded_eq q hq,
     HeckeRowClosure.elementHom_norm _,deleted_element_period χ q hq hperiod⟩
-
-end SevenEighths.InverseInitialExcludedPeriod
-
-end
-
-end OAI

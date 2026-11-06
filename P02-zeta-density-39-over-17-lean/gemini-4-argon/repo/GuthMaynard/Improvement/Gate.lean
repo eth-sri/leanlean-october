@@ -21,4 +21,3 @@ theorem inner_sum_bound {ι : Type*} (s : Finset ι) (f g : ι → ℝ)
       Real.sqrt (∑ i ∈ s, f i) * Real.sqrt (∑ i ∈ s, g i) :=
   Real.sum_sqrt_mul_sqrt_le s hf hg
 
-end GuthMaynard.Improvement

@@ -85,4 +85,3 @@ theorem rational_dual_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) 
   intro c
   exact hm H hH T t₀ hT A c hA W hW hsep
 
-end Montgomery.RationalMoment

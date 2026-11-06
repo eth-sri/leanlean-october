@@ -44,4 +44,3 @@ theorem approximateModelPhase_of_interior_bounds
     (by simpa only [hcl] using u.property)
 
 
-end TaoTrudgianYang2025

@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorPlainFiberCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
 variable (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ)
 
 theorem plain_fiber_count {Row Label Slot : Type*}
@@ -70,9 +69,3 @@ theorem plain_fiber_count {Row Label Slot : Type*}
     U (2*a-1) m (weightedMean slots widths g) z (2*ε) ((2*a-1)*mesh) εm
     (192*(1+height)*C) hUp (fun u hu => (hsp u hu).2.2.2) hspike he'
   convert hc using 1; congr 2; ring
-
-end SevenEighths.HeckeDetectorPlainFiberCount
-
-end
-
-end OAI

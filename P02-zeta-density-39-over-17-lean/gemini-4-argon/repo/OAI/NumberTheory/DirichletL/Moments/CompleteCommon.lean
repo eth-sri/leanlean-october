@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentCompleteCommon
-open UniqueFactorizationMonoid IdealMobiusDivisorSum CenteredMomentSupport
-open CenteredExceptionalCount CenteredMomentRankinRadical CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open UniqueFactorizationMonoid IdealMobiusDivisorSum CenteredMomentSupport CenteredExceptionalCount CenteredMomentRankinRadical CanonicalQuadraticSieve
 
 def commonSupport (I J : Ideal O) : Finset (Ideal O) := primeSupport I ∩ primeSupport J
 
@@ -147,9 +145,3 @@ theorem absNorm_commonPart_le (I J : Ideal O) (hI : I ≠ 0) :
     Ideal.absNorm (commonPart I J) ≤ Ideal.absNorm I :=
   Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI))
     (map_dvd Ideal.absNorm (commonPart_dvd I J hI))
-
-end SevenEighths.CenteredMomentCompleteCommon
-
-end
-
-end OAI

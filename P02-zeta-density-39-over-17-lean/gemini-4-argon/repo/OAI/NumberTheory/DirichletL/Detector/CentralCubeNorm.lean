@@ -12,7 +12,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -82,8 +81,3 @@ theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
       rw [integral_mul_const,integral_const_mul]
     _ ≤ ‖((1/(2*Real.pi):ℝ):ℂ)^3‖*(scale*D*mass) := by gcongr;exact hp.2
     _ = _ := by dsimp [scale,mass];ring
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

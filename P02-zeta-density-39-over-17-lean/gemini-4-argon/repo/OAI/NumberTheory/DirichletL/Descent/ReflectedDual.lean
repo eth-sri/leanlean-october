@@ -7,11 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff MatrixGroups
-open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic
-open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
+open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 noncomputable local instance dualQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
@@ -85,8 +82,3 @@ theorem mixed_smoothed_eq_reflected (D : ControlledStratumArithmetic p N a0 c0 m
   simpa only [hchar, hmat, map_mul] using
     controlled_mixed_multiplier D hN hr hbase hp hc0 hcop hg hc j hj S
       (sourceCuspPhaseNumerator s.index (s.upper 0 0) (thetaFullFrequency t))
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

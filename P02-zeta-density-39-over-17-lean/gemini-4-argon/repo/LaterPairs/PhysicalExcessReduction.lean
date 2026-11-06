@@ -90,7 +90,7 @@ theorem smoothLongZeroCount_excess_reduction {σ a δ η : ℝ}
       exact Finset.mem_filter.mpr
         ⟨smoothLongZeroFinset_subset η σ a δ T (Finset.mem_filter.mp hρ).1,(Finset.mem_filter.mp hρ).2⟩
     exact (Finset.sum_le_sum_of_subset_of_nonneg hs (fun _ _ _ => by positivity)).trans
-      (hlocal σ T hw.sigma_low.le hT k)
+      (hlocal σ T (by linarith [hw.sigma_low]) hT k)
   obtain ⟨R,hR,hcard,hsep,hcount⟩ := weighted_separated_extraction
     (smoothLongZeroFinset η σ a δ T) (fun ρ => (zetaMultiplicity ρ:ℝ))
     (by positivity : 0 ≤ Cb*Real.log (2*T)) hbin
@@ -128,4 +128,3 @@ theorem smoothLongZeroCount_excess_reduction {σ a δ η : ℝ}
       dsimp [D]
       nlinarith [mul_nonneg (show 0 ≤ 8*Cb*Real.log T by positivity) hI]
 
-end Montgomery.RationalMoment.RightDetector.Physical

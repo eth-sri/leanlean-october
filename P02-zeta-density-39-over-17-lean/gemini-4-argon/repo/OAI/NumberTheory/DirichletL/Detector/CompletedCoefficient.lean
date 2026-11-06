@@ -9,9 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ProbePhase
 
 lemma supported_completed (c n : O) (hc : Supported (Ideal.span {c}))
     (hn : Supported (Ideal.span {n})) : Supported (Ideal.span {c*n^3}) := by
@@ -84,8 +82,3 @@ theorem correctedFiniteCoefficient_product (I J : Ideal O)
       ((gaussTwo I hI.2 * star (G A) * reciprocityCoefficient A s _ H) *
        (gaussTwo J hJ.2 * star (G B) * reciprocityCoefficient B r _ H)) := by ring
     _ = _ := by rw [hphase,one_mul]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

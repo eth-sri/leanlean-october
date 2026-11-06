@@ -8,14 +8,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid CanonicalRowCompletion
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid CanonicalRowCompletion
 namespace SevenEighths.InverseInitialLargePool
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialCommonTuples
-local notation "Eis"=>ActualEisensteinCubic.O
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialCommonTuples
 theorem selected_conjugate_row_supported (F : Finset (Ideal O))
     (hF : ∀ I ∈ F,Admissible I) (j : Ideal O) (hj : Admissible j)
     (η : Ideal O →* ℂ) (H : Ideal O → ℂ)
@@ -97,11 +92,3 @@ theorem residual_eq_large_input
   by_cases hc : (∏i∈A,i.val)∈columns S P j
   · simp only [hc,hsub hc,ite_true]
   · simp only [hc,ite_false,ite_self]
-
-variable {κ:Type*}
-
-end SevenEighths.InverseInitialLargePool
-
-end
-
-end OAI

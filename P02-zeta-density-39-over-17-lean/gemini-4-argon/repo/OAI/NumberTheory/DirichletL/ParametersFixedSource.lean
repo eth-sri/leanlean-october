@@ -11,7 +11,6 @@ noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.Parameters
 open ProbePhysical ProbeHighRowFamily CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 
 lemma fixed_bad_primes_prime : ∀ P∈fixedBadPrimes,Prime P := by
   intro P hP
@@ -50,8 +49,3 @@ theorem exists_fixed_probe_window : ∃ (w : ℝ→ℝ) (W : SchwartzMap ℝ ℂ
     closure_minimal (hs.trans Set.Ioo_subset_Icc_self) isClosed_Icc
   intro x hx
   exact lt_of_lt_of_le (by norm_num : (0:ℝ)<1) (hcl hx).1
-end SevenEighths.Parameters
-
-end
-
-end OAI

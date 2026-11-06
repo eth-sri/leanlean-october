@@ -78,9 +78,3 @@ theorem vertical_integral_eq_of_polynomial_gaussian_bound (F : ℂ → ℂ)
     (∫ y : ℝ, F ((a : ℂ)+y*I)) = ∫ y : ℝ, F ((b : ℂ)+y*I) :=
   vertical_integral_eq_of_even_envelope F _ (polynomialGaussian_integrable n)
     (polynomialGaussian_even n) (polynomialGaussian_tendsto n) hab hhol hbound
-
-end SevenEighths.Continuation
-
-end
-
-end OAI

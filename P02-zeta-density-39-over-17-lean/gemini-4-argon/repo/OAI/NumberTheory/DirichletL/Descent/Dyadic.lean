@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def hybridSquarePool (S : Finset (Ideal Eis × Ideal Eis)) : Finset (Ideal Eis) :=
   (hybridColumnSupport S).image HybridColumnData.square
@@ -127,8 +126,3 @@ theorem hybrid_square_dyad_energy
       mul_le_mul_of_nonneg_left (Finset.sum_le_sum hF) (Nat.cast_nonneg _)
     _ = (Tset.card : ℝ) ^ 2 * E := by simp; ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (Nat.cast_nonneg _) hc 2) hE
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

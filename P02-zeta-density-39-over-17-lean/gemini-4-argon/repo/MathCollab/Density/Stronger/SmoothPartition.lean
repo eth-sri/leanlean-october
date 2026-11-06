@@ -148,4 +148,3 @@ theorem hasSum_smoothDyadicWeight {x : ℝ} (hx : 0 < x) :
   simpa only [sub_add_cancel] using
     HasSum.of_nat_of_neg_add_one (f := fun j : ℤ => smoothDyadicWeight (x/(2 : ℝ)^j)) hpos hneg
 
-end MathCollab.Density.Stronger

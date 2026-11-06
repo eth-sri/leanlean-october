@@ -163,4 +163,3 @@ theorem inversePhaseEval_difference_le (e : InversePhaseExpression)
           dsimp [inversePhaseSensitivity]
           ring
 
-end TaoTrudgianYang2025

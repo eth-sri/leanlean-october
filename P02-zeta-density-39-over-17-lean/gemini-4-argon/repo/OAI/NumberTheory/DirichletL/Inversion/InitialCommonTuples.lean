@@ -8,13 +8,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic
 namespace SevenEighths.InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialEnergyCallerWindow InverseInitialCommonForcing
 variable {κ ι : Type*} [DecidableEq ι]
 
 theorem input_finset_sum (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -34,9 +30,3 @@ theorem input_finset_sum (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def tupleColumns (S:Finset (Ideal Eis))(T:Finset κ)(P:κ→Ideal Eis)(j:Ideal Eis) :
     Finset (Ideal Eis) := T.biUnion (fun k=>columns S (P k) j)
-
-end SevenEighths.InverseInitialCommonTuples
-
-end
-
-end OAI

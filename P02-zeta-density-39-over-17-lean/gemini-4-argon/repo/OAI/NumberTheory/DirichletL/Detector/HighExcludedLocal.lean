@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma highExclusion_prime (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdeal) :
     highExclusion S hS P.val=if P.val∈S then 0 else 1 := by
@@ -75,8 +73,3 @@ theorem excludedIdealHighSeries_hasProd_outside (S : Finset Id) (hS : ∀P∈S,P
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
   split_ifs <;> simp_all
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

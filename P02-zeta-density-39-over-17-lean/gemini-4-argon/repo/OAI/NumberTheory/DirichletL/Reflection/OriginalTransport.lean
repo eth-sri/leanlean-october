@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 def castControlled {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c : Eis} {mode : Bool}
     (h : p=q) (D : ControlledStratumArithmetic p N a c mode) :
@@ -52,8 +50,3 @@ lemma original_active_marks_eq_slots :
   | inr x => cases x with
     | inl a => simp [slotIndices]
     | inr t => simp [slotIndices]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

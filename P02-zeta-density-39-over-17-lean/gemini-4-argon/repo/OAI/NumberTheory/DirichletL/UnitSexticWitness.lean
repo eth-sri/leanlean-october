@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.UnitSexticWitness
 
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalUnitEuler
-open ConcreteTraceCRT
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalUnitEuler ConcreteTraceCRT
 open scoped Classical
 noncomputable section
 local notation "lambda" => ConcretePrimeRowBridge.goodLambda
@@ -105,8 +104,3 @@ theorem exists_unit_witness (u : Oˣ) (hu : u ≠ 1)
     apply hu
     apply Units.ext
     exact eisEmbedding_injective (by simpa using hh)
-
-end
-end SevenEighths.UnitSexticWitness
-
-end OAI

@@ -10,9 +10,7 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 local instance (S : Finset (Ideal O)) : MeasurableSpace (SourceRawIndex S) := ⊤
 local instance (S : Finset (Ideal O)) : MeasurableSingletonClass (SourceRawIndex S) := ⟨fun _=>trivial⟩
 
@@ -42,8 +40,3 @@ lemma sourceRows_initial_integrable (η : HeckeFamily.Character)
   rw [←he,rawArithmeticSeries_eq_sourceRaw]
   simp only [rawSourceOnLines,initialHighOnLines,Complex.ofReal_ofNat,tsum_mul_right]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

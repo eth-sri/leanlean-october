@@ -134,9 +134,3 @@ theorem exists_primitive_residue_quotient_above_with_norm_and_mask
     exists_primitive_quotient_above_with_bound_and_mask χ J hJ
   refine ⟨I, φ, hJI, hφ, hprimitive, hmaximal, ?_, hmask⟩
   simpa only [absNorm_comap_eq_quotient_card] using hcard
-
-end
-
-end SevenEighths.FiniteConductor
-
-end OAI

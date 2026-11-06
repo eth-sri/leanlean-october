@@ -13,12 +13,8 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open CanonicalCoefficientClass InverseInitialExcludedPeriod CanonicalQuadraticSieve
-open InverseInitialRayAttachment CanonicalRowCompletion
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource CanonicalCoefficientClass InverseInitialExcludedPeriod CanonicalQuadraticSieve InverseInitialRayAttachment CanonicalRowCompletion
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
@@ -51,9 +47,3 @@ theorem sourceMoment_large_eventually (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(
   intro d hd j s
   rw [←Real.rpow_mul (by linarith:0≤Z),mul_div_cancel₀ _ hd.ne']
   exact (sourceMomentConductor_le M H hH S hS η j).trans (ht s)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

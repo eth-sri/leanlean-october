@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondDeletedAllModesUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -138,8 +136,3 @@ theorem actual_second_deleted_all_modes_bound
       simp only [Finset.sum_const,Finset.card_univ,Finset.card_powerset,nsmul_eq_mul,
         second_unit_sector_card,Nat.cast_pow,Nat.cast_ofNat,mass]
       ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

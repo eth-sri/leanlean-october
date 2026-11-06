@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceHomogeneousError
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalReflectionErrorMass CenteredMomentNaturalFixedRaySource
-open CenteredMomentOriginalRadialComparison CenteredMomentUniformReflectionProfile
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentOriginalReflectionErrorMass CenteredMomentNaturalFixedRaySource CenteredMomentOriginalRadialComparison CenteredMomentUniformReflectionProfile CenteredMomentCounting CenteredMomentAbsoluteEnergy QuadraticInitialBound
 
 theorem natural_remaining_homogeneous_bound {α : Type*} (F T : Finset α) (hT : T⊆F)
     (W : ℝ→ℂ) (bshort Bshort : ℝ) (b M : α→ℝ)
@@ -109,9 +104,3 @@ theorem natural_reference_error_homogeneous {α:Type*}(F:Finset α)(bshort:ℝ)(
     _≤(diagonalControl Φ*max 1 K)*V:=mul_le_mul_of_nonneg_right
       (radial_weight_lattice_bound_all Φ K hK) hV
     _=_:=by dsimp [V,A];ring
-
-end SevenEighths.CenteredMomentEnergyReferenceHomogeneousError
-
-end
-
-end OAI

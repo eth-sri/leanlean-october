@@ -11,9 +11,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseCanonicalShortAttachment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
 universe u v
 
 def idealLists {σ : Type u} (F : Finset (Ideal Eis))
@@ -85,9 +83,3 @@ lemma idealLists_prime_data {σ : Type u} (F : Finset (Ideal Eis))
   obtain ⟨i,hi,rfl⟩:=Finset.mem_image.mp hP
   refine ⟨inferInstance,poolGood F hF i,?_,poolOdd F hF i⟩
   exact Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance
-
-end SevenEighths.InverseCanonicalShortAttachment
-
-end
-
-end OAI

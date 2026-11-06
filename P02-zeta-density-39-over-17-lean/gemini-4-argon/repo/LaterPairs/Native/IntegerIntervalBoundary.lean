@@ -82,4 +82,3 @@ theorem norm_integer_interval_endpoint_shift (w : ℤ → ℂ) (S : Finset ℤ)
     simpa only [Int.cast_neg,abs_of_neg (show (r:ℝ) < 0 by exact_mod_cast
       (show r < 0 by omega))] using hs
 
-end TaoTrudgianYang2025

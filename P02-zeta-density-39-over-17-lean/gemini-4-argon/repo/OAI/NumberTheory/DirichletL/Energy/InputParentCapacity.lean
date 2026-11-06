@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyInputParentCapacity
-open CenteredMomentEnergyBands CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput
+open CenteredMomentEnergyBands CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
 variable {ι:Type*} [Fintype ι]
 
 lemma raw_log_le_length (Z X:ℝ)(hZ:1<Z)(hX:0<X):
@@ -69,9 +68,3 @@ theorem original_volume_cap (s:Input ι)(Z κ M:ℝ)(hZ:1<Z)(hk:1/6≤κ)
     Finset.sum_nonneg (fun i _=>Real.logb_nonneg hZ (hP i))
   have hp:0≤(6*κ-1)*(∑i,Real.logb Z (s.P i)):=mul_nonneg (by linarith) hn
   exact (Real.logb_le_iff_le_rpow hZ (volume_pos s)).mp (by linarith)
-
-end SevenEighths.CenteredMomentEnergyInputParentCapacity
-
-end
-
-end OAI

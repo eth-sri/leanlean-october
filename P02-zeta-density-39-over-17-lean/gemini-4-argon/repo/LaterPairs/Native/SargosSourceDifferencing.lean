@@ -35,4 +35,3 @@ theorem sargos_sum_Ico_add_one {A : Type*} [AddCommMonoid A]
   · intro m hm
     rfl
 
-end TaoTrudgianYang2025

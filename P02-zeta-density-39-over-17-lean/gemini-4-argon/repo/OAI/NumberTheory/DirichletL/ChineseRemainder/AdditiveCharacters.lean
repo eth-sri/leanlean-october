@@ -5,17 +5,11 @@ public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped BigOperators Topology FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 
 namespace ShortDraftCRT
 
-open AddChar
 
 variable {K : Type*} [Field K]
 
@@ -53,9 +47,6 @@ variable {R : Type*} [CommRing R]
 
 end ShortDraftCRT
 
-namespace ShortDraftDescent
-
-end ShortDraftDescent
 
 namespace ShortDraftTrace
 
@@ -180,7 +171,3 @@ theorem breveE_div_lam_eq_e (z : ℂ) :
   congr 1
   field_simp
   ring
-
-end ShortDraftTrace
-
-end OAI

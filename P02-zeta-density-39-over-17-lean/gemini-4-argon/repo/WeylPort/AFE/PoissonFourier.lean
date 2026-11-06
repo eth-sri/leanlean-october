@@ -230,4 +230,3 @@ theorem integral_waveDerivative_sawtooth {f g : ℝ → ℝ} {a b : ℝ}
   simp_rw [← intervalIntegral.integral_of_le h.lt.le, integral_waveDerivative_sawtoothMode h] at he
   rw [he, (summable_negativeCoefficient h).tsum_sub (summable_positiveCoefficient h)]
 
-end DhimanKadiriQuesadaHerrera2026

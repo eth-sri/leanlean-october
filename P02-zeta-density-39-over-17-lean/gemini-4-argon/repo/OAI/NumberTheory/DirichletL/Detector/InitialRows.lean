@@ -10,8 +10,6 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def highRowOnLines (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData) (D : Id)
     (σ υ ξ : ℝ) (u : NonzeroFrequency) (t : HeightSpace) : ℂ :=
@@ -84,8 +82,3 @@ lemma highRows_counting_product_integrable {ρ : Type*} [Countable ρ]
     rw [norm_mul]
     exact mul_le_mul_of_nonneg_right
       (highRowOnLines_bound η S C D σ υ ξ hσ hυ (by linarith) (e p.1) p.2) (norm_nonneg _)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

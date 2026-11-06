@@ -114,6 +114,4 @@ theorem heathBrownVMVTMainConjecture_of_wooleyPadic
     (vinogradovCriticalEndpoint_of_wooleyPadic hconc)
 
 
-end
 
-end GafniTao

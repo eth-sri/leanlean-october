@@ -78,9 +78,3 @@ theorem finite_expansion_energy {κ ι : Type*} [DecidableEq ι]
       simp only [Finset.mem_filter]
       exact ⟨fun hi => ⟨hsub k hk hi, hi⟩, And.right⟩
     _ = _ := by rw [Finset.sum_comm]
-
-end
-
-end SevenEighths.InverseMoment
-
-end OAI

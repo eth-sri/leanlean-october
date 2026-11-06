@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -63,8 +62,3 @@ theorem actual_second_full_mode_columns (F : Finset ι) (x : SecondProfileData �
     _ = _ := by
       rw [actual_second_columns_separated]
       simp only [secondSeparatedPair,h,O,mul_assoc]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

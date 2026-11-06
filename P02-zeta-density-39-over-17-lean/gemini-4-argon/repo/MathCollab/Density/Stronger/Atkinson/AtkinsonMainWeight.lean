@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.ZetaQuadraticLogGaussianVaria
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -65,4 +64,3 @@ theorem exists_intervalC1Bound_zetaAtkinsonMainWeight :
   have hl := mul_le_mul_of_nonneg_left (sourceLogWeight_le_three_log hlog) hp
   convert hl using 1 <;> ring
 
-end MathCollab.Density.Stronger.Atkinson

@@ -13,8 +13,7 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.GammaBounds
+open Complex MathCollab.Density.GammaBounds
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
@@ -144,4 +143,3 @@ theorem heathBrown_Gamma_shift_kernel_strong_bound {δ v : ℝ}
   · simpa only [abs_neg, abs_of_pos hδ] using Gamma_displaced_strong_bound
       (a := -δ) (v := v) (by linarith) (by linarith) (neg_ne_zero.mpr hδ.ne')
 
-end MathCollab.Density.Stronger.PointMean

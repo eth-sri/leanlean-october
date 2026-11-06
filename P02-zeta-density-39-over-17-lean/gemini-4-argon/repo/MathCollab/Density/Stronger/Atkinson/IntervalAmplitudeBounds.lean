@@ -174,4 +174,3 @@ theorem IntervalC1Bound.join {f : ℝ → ℂ} {a b c M N : ℝ}
     exact add_le_add hf.variation_le hg.variation_le
 
 
-end MathCollab.Density.Stronger.Atkinson

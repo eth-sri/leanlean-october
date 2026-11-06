@@ -74,9 +74,3 @@ theorem LFunction_ne_zero_of_one_le_re (χ : Character) {s : ℂ}
   rcases eq_or_lt_of_le hs with h | h
   · exact LFunction_ne_zero_of_re_eq_one χ h.symm hpole
   · exact LFunction_ne_zero_of_one_lt_re χ h
-
-end SevenEighths.HeckeFamily
-
-end
-
-end OAI

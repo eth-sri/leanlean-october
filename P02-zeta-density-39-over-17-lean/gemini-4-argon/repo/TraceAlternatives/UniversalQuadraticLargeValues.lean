@@ -64,4 +64,3 @@ theorem finite_quadratic_large_value_universal (w : MathCollab.Density.Compariso
     _ = _ := by rw [← he]; ring
 
 
-end Montgomery.RationalMoment

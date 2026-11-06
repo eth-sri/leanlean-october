@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
-open InverseMomentFirstLabelCell InverseMomentFirstChildWindows InverseFirstGlobalCaps
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve InverseMomentFirstLabelCell InverseMomentFirstChildWindows InverseFirstGlobalCaps
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
 variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -40,9 +38,3 @@ theorem canonical_rank_cap_children
     hZ heta hbin hell hV hb hbt hwindow hd hterminal hsmall hparent hpuncture hQ
     (canonical_rank_restrict p hp hcop hg pool base slots lists a ω₁ Z _ _ _ _ z _ _ eps A K degree hMc hFc hcc h₁)
     (canonical_rank_restrict p hp hcop hg pool base slots lists a ω₂ Z _ _ _ _ z _ _ eps A K degree hMc hFc hcc h₂)
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

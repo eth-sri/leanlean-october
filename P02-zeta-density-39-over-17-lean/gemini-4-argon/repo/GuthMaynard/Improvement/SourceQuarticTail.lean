@@ -67,4 +67,3 @@ theorem source_quartic_polynomial_tail (q : ℕ) :
     _ ≤ (C/R^q)*(16*N^4) := by rw [ht]; exact mul_le_mul_of_nonneg_right (h R hR) (by positivity)
     _ = _ := by ring
 
-end GuthMaynard.Improvement

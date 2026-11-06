@@ -65,4 +65,3 @@ theorem atkinson_saddle_equation_iff {A x : ℝ} (hA : 0 < A) (hx : 0 < x) (b : 
     rw [Real.sqrt_sq hr.le]
     exact he
 
-end MathCollab.Density.Stronger.Atkinson

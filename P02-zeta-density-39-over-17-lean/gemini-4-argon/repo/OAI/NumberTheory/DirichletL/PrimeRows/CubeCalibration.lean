@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma centralCubeIntegral_calibration_zero {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -35,9 +34,3 @@ theorem finiteCentralCubeRows_filter_calibration {K : ℕ}
   by_cases hc : (calibrationForSet S hmax).residueMonoid u.val=0
   · simp [hc,centralCubeIntegral_calibration_zero S hS hmax _ _ η u hc]
   · simp [hc]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

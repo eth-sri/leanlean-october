@@ -11,12 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.DetectorDictionaryInverseMarkedPhysicalRows
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer HeckeDetectorPhysicalSelection
-open InverseInitialPhysicalSlots InverseInitialRawDictionary InverseInitialDetectorSource
-open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseRawInitialGates
-open InverseInitialExcludedPeriod CanonicalRowCompletion IdealMobiusDivisorSum InverseMoment
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer HeckeDetectorPhysicalSelection InverseInitialPhysicalSlots InverseInitialRawDictionary InverseInitialDetectorSource DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod CanonicalRowCompletion IdealMobiusDivisorSum InverseMoment
 
  def actualRow (u:FreeRow):NonzeroElement:=⟨u.val,u.property.1⟩
 
@@ -127,9 +122,3 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
     exact hx (by simp only [childLogTest,hz,zero_mul])
   have hh:=fiber_rows_le_deleted_sources F selected (childLogTest W v) 0 0 bW lower hU hw hV hlarge
   simpa only [oriented_child,orientedFrequency,neg_zero,ite_self] using hh
-
-end SevenEighths.DetectorDictionaryInverseMarkedPhysicalRows
-
-end
-
-end OAI

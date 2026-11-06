@@ -51,8 +51,3 @@ theorem diagonal_recurrence_hasSum (f : ℕ→ℕ→ℂ) (R : ℂ)
   convert hg using 1
   funext r
   exact he r
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

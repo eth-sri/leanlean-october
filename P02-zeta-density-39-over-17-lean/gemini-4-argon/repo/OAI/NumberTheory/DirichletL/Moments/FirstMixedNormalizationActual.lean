@@ -10,15 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalizationActual
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedAllowance
-open CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
-open CenteredMomentFirstScale ConcreteTraceCRT
-open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedAllowance CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
 
 theorem actual_reference_width (η τ:Character)(C D:Ideal O)(hC:Supported C)
     (E:Finset (CommonIndex C D))(K Z:ℝ)(_hK:0<K)(_hZ:1<Z)
@@ -94,9 +86,3 @@ theorem actual_error_reference_le (η τ:Character)(C D:Ideal O)
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   exact mul_le_mul_of_nonneg_left (actual_error_weight p hp Z hZ k hk) (by positivity)
-
-end SevenEighths.CenteredMomentFirstMixedNormalizationActual
-
-end
-
-end OAI

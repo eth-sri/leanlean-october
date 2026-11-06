@@ -220,4 +220,3 @@ theorem masked_transverse_smoothing {κ r : ℝ → ℝ} {A : Set ℝ}
   exact transverse_smoothing_uniform hκ hb hκ0 hC hδ ha hav hvb hlower
     (hr.indicator hA) hmasked (fun y => by by_cases hy : y ∈ A <;> simp [hy, hr0])
 
-end GuthMaynard.Improvement

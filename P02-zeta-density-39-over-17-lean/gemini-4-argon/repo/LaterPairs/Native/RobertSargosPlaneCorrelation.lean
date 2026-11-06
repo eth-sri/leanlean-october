@@ -73,4 +73,3 @@ theorem robertSargos_plane_gram_term (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
     dsimp only [F]
     congr 2 <;> omega
 
-end TaoTrudgianYang2025

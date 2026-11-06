@@ -204,4 +204,3 @@ theorem cpow_neg_div_eq_reverse_cpow
   rw [hbase]
   exact (Complex.inv_cpow (((x / Y : ℝ) : ℂ)) z harg).symm
 
-end MathCollab.Density.GammaMellin

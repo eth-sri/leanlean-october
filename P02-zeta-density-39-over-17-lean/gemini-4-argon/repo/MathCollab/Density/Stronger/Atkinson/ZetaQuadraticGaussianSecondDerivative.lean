@@ -68,4 +68,3 @@ theorem norm_iteratedDeriv_two_zetaGaussianQuadraticIntegral_le {T G : ℝ}
   exact mul_le_mul hp (norm_zetaGaussianQuadraticIntegral_le hT hG hGT v)
     (norm_nonneg _) (by positivity)
 
-end MathCollab.Density.Stronger.Atkinson

@@ -12,11 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyStageMonotonicity
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
-open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyPositiveHighSourceBound CenteredMomentEnergyZeroGrowth
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighSourceBound CenteredMomentEnergyZeroGrowth
 
 theorem zeroLowAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
     (a' b' radial' mask' L' Mcap' eps':ℝ)
@@ -43,7 +39,6 @@ theorem zeroLowAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] [DecidableEq α] in
@@ -99,9 +94,3 @@ theorem positiveHighAt_transport (W:ℝ→ℂ)(bslot a b radial mask L Lslot lo 
   have hCnew:0≤C':=hC.trans hCC
   apply hh.trans
   gcongr
-
-end SevenEighths.CenteredMomentEnergyStageMonotonicity
-
-end
-
-end OAI

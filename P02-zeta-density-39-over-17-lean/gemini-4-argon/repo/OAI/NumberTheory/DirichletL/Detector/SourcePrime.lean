@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ConcreteTraceCRT
-open ProbePhase ProbeEuler ProbePrimePower FiniteGaussPhase QuadraticGaussRay
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ConcreteTraceCRT ProbePhase ProbeEuler ProbePrimePower FiniteGaussPhase QuadraticGaussRay
 
 theorem gaussTwo_prime_localGamma (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
@@ -101,8 +98,3 @@ lemma corrected_prime_cubic_signal (p : O) (hp : p≠0)
         _ = -(angularFactor p*star (angularFactor p))*(G p*star (G p)) := by ring
         _ = _ := by rw [angularFactor_mul_star p hp,hG]; ring
     _ = _ := by rw [mul_neg,mul_inv_cancel₀ hne]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

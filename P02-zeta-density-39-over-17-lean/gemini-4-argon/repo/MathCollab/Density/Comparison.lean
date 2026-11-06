@@ -201,4 +201,3 @@ theorem uniform_comparison (w : ComparisonCutoff) :
   simp only [Finset.sum_add_distrib, mul_add] at hh hext
   nlinarith
 
-end MathCollab.Density

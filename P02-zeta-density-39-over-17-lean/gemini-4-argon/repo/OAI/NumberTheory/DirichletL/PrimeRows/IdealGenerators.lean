@@ -7,56 +7,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
-open scoped BigOperators Classical
 
 namespace ConcretePrimeRowBridge
 
@@ -158,7 +111,6 @@ theorem tsum_rowCoprimeMask_dilations
       by_cases h : ∀ i ∈ E, u ∈ P i <;> simp [h]
     _ = _ := ConcretePrimeRowBridge.tsum_ideal_eq_tsum_generator _ hJ f
 
-open ConcreteTraceCRT
 
 theorem tsum_masked_radial_dilations
     {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
@@ -190,7 +142,7 @@ theorem tsum_masked_radial_dilations
       rw [hr, map_mul, norm_mul, mul_pow, div_div_eq_mul_div]
       ring_nf
 
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem primeSubset_reducedScale_pos {α : Type*}
     (P : α → Ideal O) [∀ i, (P i).IsMaximal] (E : Finset α)
@@ -295,7 +247,6 @@ theorem canonical_masked_radial_poisson_collected
 end ActualEisensteinCubic
 
 namespace GeneralPrimitiveTrace
-open Complex EisensteinEmbedding ConcreteTraceCRT
 open scoped ComplexConjugate
 
 theorem complex_exp_trace_integer {t : ℂ}
@@ -450,7 +401,7 @@ theorem norm_gauss_finite_crt_sq {ι T : Type*} [Fintype ι]
 end IdealGaussCRT
 
 namespace ActualEisensteinCubic
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem norm_canonicalGaussSum {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -572,9 +523,3 @@ theorem finiteSquarefreeRow_smoothed_mean_square_summable
   apply Finset.sum_congr rfl
   intro m hm
   ring
-
-end ActualEisensteinCubic
-
-end
-
-end OAI

@@ -934,4 +934,3 @@ theorem gmAffine_proposition9_1_height_family_native
     hsupp.wideDepthSupported_zero
   exact hdescent hTtwo (by simpa using hjT) f hf hsupp₀ hprofile hM hMT
 
-end RiemannZeta.GuthMaynard

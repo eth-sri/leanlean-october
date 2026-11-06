@@ -58,4 +58,3 @@ theorem atkinsonFullDyadicPhaseBound_le_undamped {T : ℝ} (hT : 0 < T) (G : ℝ
         (atkinsonPhaseBlockMax_nonneg _ _ _)
     _ = _ := by rw [mul_one]
 
-end MathCollab.Density.Stronger.Atkinson

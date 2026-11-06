@@ -132,4 +132,3 @@ theorem exists_robertSargos_taylor_count (ε : ℝ) (hε : 0 < ε) :
     field_simp
   rwa [hcard,hfactor] at ht
 
-end TaoTrudgianYang2025

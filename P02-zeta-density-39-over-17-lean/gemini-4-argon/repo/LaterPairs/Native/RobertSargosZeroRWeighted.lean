@@ -58,4 +58,3 @@ theorem robertSargos_zero_r_weighted_row_bound
         (by intro q _ _; dsimp [B]; positivity)
     _ ≤ _ := sum_robertSargos_zero_r_majorant M H Q hC hlam.le
 
-end TaoTrudgianYang2025

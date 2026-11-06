@@ -470,6 +470,4 @@ theorem wooleySourceInsertedNormalizedRealAverage_eq_mass_mul_raw
   rw [hsum]
   ring
 
-end
 
-end GafniTao

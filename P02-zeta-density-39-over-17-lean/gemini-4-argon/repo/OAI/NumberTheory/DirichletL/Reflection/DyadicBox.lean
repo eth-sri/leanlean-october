@@ -67,7 +67,3 @@ theorem retainedDyadicBox_count_small_power (ε : ℝ) (hε : 0<ε) :
   rw [mul_pow,← Real.rpow_mul_natCast hp.le]
   congr 2
   ring
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

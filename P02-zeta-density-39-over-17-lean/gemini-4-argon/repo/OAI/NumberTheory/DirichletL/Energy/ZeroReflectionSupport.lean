@@ -12,15 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReflectionSupport
-open HeckeFamily Filter CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
-open CenteredMomentReflectionMass CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
-open CenteredMomentReflectionDeletion CenteredMomentReflectionWeightedEnergy
-open CenteredMomentReflectedChoiceEnergy CenteredMomentReflectedTruncation
-open CenteredMomentOriginalReflectionApproximation CenteredMomentUniformReflectionApproximation
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowWindow
-open CenteredMomentEnergyReferenceLowBranchGeometry
-local notation "O" => HeckeFamily.O
+open HeckeFamily Filter CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson CenteredMomentReflectionMass CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial CenteredMomentReflectionDeletion CenteredMomentReflectionWeightedEnergy CenteredMomentReflectedChoiceEnergy CenteredMomentReflectedTruncation CenteredMomentOriginalReflectionApproximation CenteredMomentUniformReflectionApproximation CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowWindow CenteredMomentEnergyReferenceLowBranchGeometry
 
 def naturalDualScale (χ ψ : Character) (X : ℝ)
     (D : Finset (Ideal O)) (H : SmoothIdeal (redundantSet χ.modulus ψ.modulus)) : ℝ :=
@@ -160,9 +152,3 @@ theorem eventually_endpoint_defect (b epsilon : ℝ) (hepsilon : 0<epsilon) :
   apply (div_le_iff₀ (Real.log_pos hZ)).mpr
   have hh := (div_le_iff₀ hepsilon).mp hz
   nlinarith
-
-end SevenEighths.CenteredMomentEnergyZeroReflectionSupport
-
-end
-
-end OAI

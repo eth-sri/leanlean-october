@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorRetained
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentRetainedEnergy CenteredMomentDivisorRowEnergy HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy CenteredMomentRetainedEnergy CenteredMomentDivisorRowEnergy HeckeFamily
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def allocatedPositiveRow (η : Character) (m A z : O) (t : ℝ)
@@ -58,9 +55,3 @@ theorem allocated_to_retained_energy (η : Character) (m A z : O) (t : ℝ)
   have hh := mul_le_mul_of_nonneg_left hc (div_nonneg (sq_nonneg (∏ i∈frozenIndices D a,M i)) hF.le)
   apply hr.trans
   convert hh using 1 <;> simp only [residualCenteredRow,allocatedPositiveRow] ; ring
-
-end SevenEighths.CenteredMomentDivisorRetained
-
-end
-
-end OAI

@@ -11,7 +11,6 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
 
 def nestedMellinPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
     (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z ξ υ : ℝ) : ℂ :=
@@ -53,8 +52,3 @@ theorem markedPhysicalProbe_eq_nested_mellin (η : HeckeFamily.Character)
         (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)) hY]
     ring
   · simp only [mul_zero]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

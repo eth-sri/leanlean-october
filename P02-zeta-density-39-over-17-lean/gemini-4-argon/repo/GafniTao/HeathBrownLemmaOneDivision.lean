@@ -97,6 +97,4 @@ theorem heathBrown_lemma_one_raw_of_source
     H, s, V, mul_comm, mul_left_comm, mul_assoc] using hassembled
 
 
-end
 
-end GafniTao

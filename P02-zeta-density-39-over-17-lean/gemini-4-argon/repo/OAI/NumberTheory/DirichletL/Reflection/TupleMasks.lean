@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
 omit [Fintype σ] in
@@ -41,8 +40,3 @@ lemma slot_choice_mask_split (L : σ→Finset (Ideal Eis)) (T : Finset σ)
       (IsCoprime K (∏ i : T,(a i).val) ∧ ∀ j,∀ i : T,(a i).val≠F j) := by
   rw [slot_choice_coprime_split,slot_choice_fixed_split]
   tauto
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialInputReindex
-open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic InverseMoment
-open InverseInitialArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic InverseMoment InverseInitialArithmetic
 
 theorem input_puncture_span {ι:Type*}[DecidableEq ι](p:ι→O)
     [∀i,(Ideal.span {p i}).IsMaximal]
@@ -26,9 +24,3 @@ theorem input_puncture_span {ι:Type*}[DecidableEq ι](p:ι→O)
   intro A hA
   dsimp only
   rw [rowCoprimeMask_eq_of_span_eq (fun i=>Ideal.span {p i}) A hspan]
-
-end SevenEighths.InverseInitialInputReindex
-
-end
-
-end OAI

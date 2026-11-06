@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralPrimeSum
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve ProbeCentralAllSlots
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve ProbeCentralAllSlots
 
 theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps)
@@ -77,8 +75,3 @@ theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)
         _ = Ca*Cb*(η.modulus.absNorm:ℝ)^(2*eps)*(rowNorm u^(a-1/2+12*e+7*eps)*rowNorm u^(eps*(N+1)))*
           (3+(3*i+2:ℕ)*T0)^(2+4*eps)*(∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j) := by ring
         _ = _ := by rw [hpow]
-end SevenEighths.ProbeCentralPrimeSum
-
-end
-
-end OAI

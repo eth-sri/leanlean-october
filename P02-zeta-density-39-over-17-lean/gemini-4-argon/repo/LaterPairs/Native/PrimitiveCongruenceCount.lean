@@ -67,4 +67,3 @@ theorem primitive_congruence_card_le (S : Finset (ℤ × ℤ))
     (S.card:ℝ) ≤ β/ε-α/ε+1 := hb
     _ = 1+4*V^2*(β-α)/c := by dsimp [ε]; field_simp; ring
 
-end TaoTrudgianYang2025

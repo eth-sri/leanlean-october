@@ -9,9 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeCompleted ProbeRow CubicEisenstein
 
 theorem physical_spectral_coefficient_scale (S : Finset (Ideal O)) (D I J : Ideal O)
     (η : HeckeFamily.Character) (C : CalibrationData) (s : O) (hs : Supported (Ideal.span {s}))
@@ -49,8 +47,3 @@ theorem physical_spectral_coefficient_scale (S : Finset (Ideal O)) (D I J : Idea
     (fullIdealWeight t I*fullIdealWeight (3*t) J)*
     actualCongruenceCoefficient C (completedIndex I J) s hA H) he
   convert hh using 1 <;> ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

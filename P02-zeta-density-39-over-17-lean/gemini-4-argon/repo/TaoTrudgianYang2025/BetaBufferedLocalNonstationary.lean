@@ -110,4 +110,3 @@ theorem modelPhaseMorseInverse_window_slope_gaps
   rw [← mul_div_assoc] at hl' hr'
   constructor <;> nlinarith
 
-end TaoTrudgianYang2025

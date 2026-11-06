@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentComparisonReflection
-open HeckeFamily HeckePrimitive ActualEisensteinCubic ConcreteTraceCRT
-open EisensteinSchwartzPoisson ConcretePrimeRowBridge GaussGeneratorTransport
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckePrimitive ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson ConcretePrimeRowBridge GaussGeneratorTransport
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma residue_nontrivial (c : O) (χ : MulChar (O⧸Ideal.span {c}) ℂ) (hχ : χ≠1) :
@@ -137,9 +135,3 @@ theorem primitive_normalized_reflection (c : O) [NeZero c]
     field_simp
     rw [hsq]
   rw [←mul_assoc,hfac,mul_assoc]
-
-end SevenEighths.CenteredMomentComparisonReflection
-
-end
-
-end OAI

@@ -8,7 +8,6 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
 
 lemma gaussValuationTable_step_six (Q G : ℂ) (r n j : ℕ) :
     gaussValuationTable Q G (r+6) (n+6) (j+6)=Q^6*gaussValuationTable Q G r n j := by
@@ -64,8 +63,3 @@ theorem positiveScalar_zero_below (p : O) (hp : Prime p)
       split_ifs <;> simp_all <;> omega
     rw [hz,mul_zero]
   · rfl
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

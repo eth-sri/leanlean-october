@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 variable {Ω : Type*} [MeasurableSpace Ω] {N a c : Eis} {mode : Bool}
 
@@ -142,8 +140,3 @@ theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0
       actualRowPhaseExtension F jF s u m K*r K‖^2 ≤ 1 := by nlinarith
   rw [weightedReflectedBranchHybridRow,norm_mul,mul_pow]
   exact (mul_le_mul_of_nonneg_right hs (sq_nonneg _)).trans_eq (one_mul _)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
 
 def ramifiedIndices (S : Finset (Ideal O)) (u : FreeRow) : Finset {P : PrimeIdeal // P.val∉S} :=
   (SmoothMobiusCorrection.primeSet (Ideal.span {u.val})).subtype (fun P => P.val∉S)
@@ -84,9 +83,3 @@ theorem continuedCorrection_eq_initial (S : Finset (Ideal O)) (hS : SourceExclus
       (continuedCorrection S hS η u x w z) := by
     simpa only [hlocal,continuedCorrection,unramifiedProduct] using he
   exact hh.tprod_eq.symm
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

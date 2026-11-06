@@ -34,4 +34,3 @@ theorem modelPhaseClosedSlope_model_error {σ δ : ℝ} {P : ℕ} {F : ℝ → �
   change ‖iteratedDerivWithin 1 F phaseInterval u-modelPhase σ u‖ ≤ δ at he
   simpa only [iteratedDerivWithin_one,modelPhaseClosedSlope,modelPhase,Real.norm_eq_abs] using he
 
-end TaoTrudgianYang2025

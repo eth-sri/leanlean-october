@@ -11,15 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
-open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid IdealMobiusDivisorSum
-open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSecondExceptionalPhysicalSaving
-open CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentFirstCanonicalAllowance
-open CenteredMomentRankinRadical
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid IdealMobiusDivisorSum CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentFiniteProfileExceptional CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst CenteredMomentSectorLocalization CenteredMomentFirstCanonicalAllowance CenteredMomentRankinRadical
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
@@ -71,9 +63,3 @@ theorem original_budget_physical_saving_full
       apply div_le_div_of_nonneg_left (mul_nonneg hA hE) hp
       nlinarith
     _= _:=by dsimp [A,E];ring
-
-end SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
-
-end
-
-end OAI

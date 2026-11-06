@@ -10,13 +10,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondMaskedWindow
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondScaled
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedSource
-open CenteredMomentChildAssembly CenteredMomentSmooth CenteredMomentFirstSectors RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSecondHeightFamily CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedSource CenteredMomentChildAssembly CenteredMomentSmooth CenteredMomentFirstSectors RayFourExpansion CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentSourceRow
 
 theorem masked_divisor_coefficient (η τ : Character) (χ : RayCharacter) (A : O)
     (C : Ideal O) (hC : Supported C)
@@ -93,9 +87,3 @@ theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacte
   rw [←masked_child_energy η τ χ A C hC hτ S β L v keep Φ H] at hs
   rw [funext (masked_divisor_coefficient η τ χ A C hC hτ S β L v)] at hs
   simpa only [sectorElement_span] using hs
-
-end SevenEighths.CenteredMomentSecondMaskedWindow
-
-end
-
-end OAI

@@ -152,4 +152,3 @@ theorem exists_pointValue_card_le_with_width
 
 
 
-end Montgomery.CriticalPeak

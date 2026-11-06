@@ -7,83 +7,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
 
 section
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota
-open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CubicKubota CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase LocalReflectionBrackets
 namespace ControlledStratumArithmetic
 variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N a0 c0:Eis} {mode:Bool}
 
@@ -176,11 +108,9 @@ end ControlledStratumArithmetic
 end
 
 section
-open scoped BigOperators Classical ContDiff MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic CubicKubota
-open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CompletedDyadic CubicKubota CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase LocalReflectionBrackets
 namespace ControlledStratumArithmetic
 variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N a0 c0:Eis} {mode:Bool}
 
@@ -241,10 +171,9 @@ end ControlledStratumArithmetic
 end
 
 section
-open scoped Classical BigOperators MatrixGroups
+open scoped MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ShortDraftCusp
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss ShortDraftCusp
 
 structure FixedFourierGeometry (c:Eis) (h:Eis⧸Ideal.span {c}) where
   a0 : Eis
@@ -273,46 +202,24 @@ lemma exists_fixedFourierGeometry (c:Eis) (hc:c≠0) (h:Eis⧸Ideal.span {c}) :
 def fixedFourierGeometry (c:Eis) (hc:c≠0) (h:Eis⧸Ideal.span {c}) :
     FixedFourierGeometry c h := Classical.choice (exists_fixedFourierGeometry c hc h)
 
-namespace FixedFourierGeometry
-variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
 
-abbrev PhaseResidue := Eis⧸Ideal.span {ramifiedTraceLambda^3*G.c0}
 
-instance phaseResidue_finite : Finite G.PhaseResidue :=
-  finite_quotient_span (A4_bad_modulus_ne_zero G.c0 G.denominator_ne_zero)
 
-end FixedFourierGeometry
-
-def FixedReflectionRay (c:Eis) (hc:c≠0) :=
-  Σh:Eis⧸Ideal.span {c},(fixedFourierGeometry c hc h).PhaseResidue×Eisˣ
-
-instance fixedReflectionRay_finite (c:Eis) (hc:c≠0) : Finite (FixedReflectionRay c hc) := by
-  let:Finite (Eis⧸Ideal.span {c}):=finite_quotient_span hc
-  let:Finite Eisˣ:=PrimaryIdealUnitReindex.finite_units
-  unfold FixedReflectionRay
-  infer_instance
-
-noncomputable instance fixedReflectionRay_fintype (c:Eis) (hc:c≠0) :
-    Fintype (FixedReflectionRay c hc) := Fintype.ofFinite _
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped MatrixGroups
 
-open CompletedGauss ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 open CubicEisenstein hiding summand
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma summand_mul_fixed_twist (φ χ:Eis→*ℂ) (W:ℝ→ℂ) (X:ℝ) (I J:Ideal Eis) :
     summand (φ*χ) W X I J=
@@ -325,13 +232,3 @@ lemma summand_mul_fixed_twist (φ χ:Eis→*ℂ) (W:ℝ→ℂ) (X:ℝ) (I J:Idea
   ring
 
 end
-
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open CubicEisenstein hiding summand
-local notation "Eis" => ActualEisensteinCubic.O
-
-end CanonicalRowCompletion
-
-end
-
-end OAI

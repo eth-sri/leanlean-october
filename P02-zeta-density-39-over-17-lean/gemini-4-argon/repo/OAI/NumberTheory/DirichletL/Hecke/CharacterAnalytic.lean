@@ -105,9 +105,3 @@ theorem continuedLattice_entire_nonprincipal (χ : HeckeFamily.Character)
   exact ((differentiable_id.const_cpow (Or.inl
     (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))).mul
       Complex.differentiable_one_div_Gamma).mul (completed_entire_nonprincipal χ hχ)
-
-end SevenEighths.HeckeCharacterAnalytic
-
-end
-
-end OAI

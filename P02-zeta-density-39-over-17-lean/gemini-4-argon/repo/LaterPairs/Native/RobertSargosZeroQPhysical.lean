@@ -41,4 +41,3 @@ theorem robertSargos_zero_q_physical_a_times_a
   exact hm.trans (zero_q_a_times_a_column_budget
     (Nat.cast_nonneg M) (by exact_mod_cast hQ) (by exact_mod_cast hR) hC hdiag herr hroot)
 
-end TaoTrudgianYang2025

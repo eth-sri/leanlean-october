@@ -115,4 +115,3 @@ theorem powered_unit_block_gm_large_values_native
       simpa only [Q, V, Real.rpow_zero, one_mul] using hlarge t ht)
   exact ⟨r, hr, W', hsub, hcard, hbound⟩
 
-end GuthMaynard.NativeMoment

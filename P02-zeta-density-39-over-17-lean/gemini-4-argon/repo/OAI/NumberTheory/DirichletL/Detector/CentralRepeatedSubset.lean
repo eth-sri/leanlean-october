@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedSubset
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve ProbeCentralRepeatedProduct ProbeCentralRepeatedSum
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve ProbeCentralRepeatedProduct ProbeCentralRepeatedSum
 
 theorem actual_repeated_subset (N : ℕ) (e eps c d B : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps)
@@ -64,8 +62,3 @@ theorem actual_repeated_subset (N : ℕ) (e eps c d B : ℝ)
     Fintype.prod_equiv E.symm _ _ (fun _=>rfl)
   rw [hleft,hright] at hb
   exact hb
-end SevenEighths.ProbeCentralRepeatedSubset
-
-end
-
-end OAI

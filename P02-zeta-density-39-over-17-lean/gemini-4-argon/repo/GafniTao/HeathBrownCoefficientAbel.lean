@@ -171,6 +171,4 @@ theorem norm_heathBrown_centerWeyl_le
     _ = _ := by rw [← Finset.mul_sum]
 
 
-end
 
-end GafniTao

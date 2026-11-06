@@ -77,8 +77,3 @@ lemma gaussianAnnulus_partition_norm (x : ℝ) (hx : 1≤x) :
     HasSum (fun j : ℕ=>‖gaussianAnnulus (x/(2:ℝ)^j)‖) 1 := by
   simpa only [gaussianAnnulus_norm,Complex.one_re] using
     Complex.hasSum_re (gaussianAnnulus_partition x hx)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -7,54 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
 namespace ActualEisensteinCubic
 
@@ -120,8 +74,7 @@ end ActualEisensteinCubic
 
 namespace EisensteinSchwartzPoisson
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic MeasureTheory
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
+open scoped RealInnerProductSpace
 
 def paperE (z : ℂ) : ℂ := ShortDraftTrace.breveE (z / eisLam)
 
@@ -294,8 +247,6 @@ theorem actual_eisenstein_paper_poisson_trace (f : 𝓢(ℂ, ℂ)) (c : O) (hc :
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   simpa only [eisTraceModChar_frequency] using actual_eisenstein_paper_poisson f c hc P
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic MeasureTheory
-open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
 
 theorem paperFourier_comp_mul (f : ℂ → ℂ) (a : ℂ) (ha : a ≠ 0) (u : ℂ) :
     paperFourier (fun z => f (a * z)) u =
@@ -448,10 +399,9 @@ theorem actual_compact_radial_paper_poisson_trace (W : ℝ → ℂ)
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace ActualEisensteinCubic
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 def finiteSexticRow {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -695,9 +645,3 @@ theorem finiteSexticRow_radial_summable {ι : Type*} [Fintype ι]
     (Ideal.Quotient.mk (Ideal.span {c}))
     (principalSexticRow P hcop hgood j c (span_finitePrimeModulus P))
   simpa only [principalSexticRow_mk, scaledRadialTest_apply] using hs
-
-end ActualEisensteinCubic
-
-end
-
-end OAI

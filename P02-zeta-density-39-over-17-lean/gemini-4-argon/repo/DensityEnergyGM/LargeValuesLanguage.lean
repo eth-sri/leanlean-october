@@ -130,4 +130,3 @@ theorem floor_injective_on_of_separated (W : Finset ℝ)
     linarith
   exact (not_lt_of_ge hsep) (abs_lt.mpr ⟨hyxlt, hxylt⟩)
 
-end GuthMaynard.NativeMoment

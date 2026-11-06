@@ -152,9 +152,3 @@ lemma long_count_bound {δ r t γ : ℝ} (hδ : δ≤5/6) (_hγ : 0≤γ)
   have hh := mul_le_mul_of_nonneg_left hr (show 0≤5/6-δ by linarith)
   unfold longExponent
   nlinarith
-
-end SevenEighths.HeckeDetectorRowCount
-
-end
-
-end OAI

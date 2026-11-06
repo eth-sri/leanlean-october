@@ -7,9 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT
-open QuadraticAllOddCRT CanonicalRowCompletion CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT QuadraticAllOddCRT CanonicalRowCompletion CanonicalQuadraticSieve
 
 theorem quadraticRayValue_norm_one (r : EisensteinEPrimaryPhase.Coord)
     (hr : EisensteinEPrimaryPhase.odd r) : ‖quadraticRayValue r‖ = 1 := by
@@ -51,8 +49,3 @@ theorem G_conjugate_cancel (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)
   have hs : star (G a) = (G a)⁻¹ := (Complex.inv_eq_conj hn).symm
   rw [hs]
   exact inv_mul_cancel₀ (norm_ne_zero_iff.mp (by rw [hn]; norm_num))
-
-end SevenEighths.ProbePhase
-end
-
-end OAI

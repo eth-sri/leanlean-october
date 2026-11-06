@@ -97,4 +97,3 @@ theorem cubic_scaled_strip (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
       exact cubic_box_epsilon_absorption hT1 hη.le hLp.le hM hbudget
     _ = _ := by ring
 
-end GuthMaynard.Improvement

@@ -33,7 +33,7 @@ theorem maskedSpatialCubicMode_cycle (a : ℝ → ℂ) (μ : ℝ → ℝ) (L : �
       maskedSpatialCubicMode a μ L m A B C x := by
   have he : cycleSpatial x = (x.2.1,x.2.2,x.1) := rfl
   rw [he]
-  unfold maskedSpatialCubicMode spatialCubicMode cycleCubicMode
+  unfold maskedSpatialCubicMode spatialCubicMode AtomicCubic.spatialCubicMode cycleCubicMode
   dsimp only
   have hp : -L*((m.2.1:ℝ)*x.2.1+(m.2.2:ℝ)*x.2.2+(m.1:ℝ)*x.1) =
       -L*((m.1:ℝ)*x.1+(m.2.1:ℝ)*x.2.1+(m.2.2:ℝ)*x.2.2) := by ring
@@ -78,4 +78,3 @@ theorem maskedSpatialCubicMode_sum_cycle (a : ℝ → ℂ) (μ : ℝ → ℝ) (L
   rw [Finset.sum_image (fun _ _ _ _ h => cycleCubicMode_injective h)]
   exact Finset.sum_congr rfl (fun m _ => maskedSpatialCubicMode_integral_cycle a μ L m A B C)
 
-end GuthMaynard.Improvement

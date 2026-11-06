@@ -11,10 +11,7 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open MixedCrossSeparation (columnCoefficient)
-open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers
-open CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers CompletedGauss
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → O) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -216,9 +213,3 @@ theorem initial_poisson_child_normalized
   rw [hchange,hu,primaryGenerator_mul,sourceIdeal_gen p hp hpr V]
   rw [mul_assoc (u:O)]
   exact secondChildColumn_generator_unit p hp hcop hg Ψ u _ _ _ h H N
-
-end SevenEighths.InverseInitialArithmetic
-
-end
-
-end OAI

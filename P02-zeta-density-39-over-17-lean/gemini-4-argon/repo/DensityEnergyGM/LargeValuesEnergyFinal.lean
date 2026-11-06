@@ -2637,4 +2637,3 @@ theorem gmCubicS3_prop11_2_native
             C / T ^ 90 := by gcongr
         _ = _ := by ring
 
-end GuthMaynard.NativeMoment

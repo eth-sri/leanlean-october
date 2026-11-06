@@ -10,10 +10,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowth
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceLowBands QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy CenteredMomentEnergyReferenceLowBands QuadraticInitialBound
 
 def ZeroGrowthAt (Q : Ideal O) (a b bΦ Bmask L M ε Z : ℝ)
     (degree : ℕ) (S : Finset (ℕ × ℕ)) (C : ℝ) : Prop :=
@@ -37,9 +34,3 @@ lemma zeroGrowth_of_zeroAt (Q : Ideal O) (a b bΦ Bmask L M ε Z : ℝ)
     (Real.rpow_le_rpow_of_exponent_le s.base_ge_one he)
   exact mul_nonneg (mul_nonneg (mul_nonneg hC
     (diagonalControl_nonneg _)) (sq_nonneg _)) (pow_nonneg (by positivity) _)
-
-end SevenEighths.CenteredMomentEnergyZeroGrowth
-
-end
-
-end OAI

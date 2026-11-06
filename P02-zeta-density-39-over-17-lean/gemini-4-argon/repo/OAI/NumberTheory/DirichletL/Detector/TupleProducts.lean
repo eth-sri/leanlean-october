@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
 
 lemma tuple_norm_cpow {K : ℕ} (p : Fin K→O) (hp : ∀i,p i≠0)
     (J : Finset (Fin K)) (s : ℂ) :
@@ -51,8 +50,3 @@ lemma tuple_source_scalar {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
   have hc := Finset.prod_sdiff (Finset.subset_univ J) (f:=fun i : Fin K=>(elementNorm (p i):ℂ)^(z-1))
   rw [←hc]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

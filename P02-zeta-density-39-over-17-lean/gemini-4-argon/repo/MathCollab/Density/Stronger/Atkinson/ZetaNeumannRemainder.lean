@@ -142,4 +142,3 @@ theorem exists_norm_integral_zetaNeumannRemainder_le :
             (by positivity))
       simpa only [mul_one] using h
 
-end MathCollab.Density.Stronger.Atkinson

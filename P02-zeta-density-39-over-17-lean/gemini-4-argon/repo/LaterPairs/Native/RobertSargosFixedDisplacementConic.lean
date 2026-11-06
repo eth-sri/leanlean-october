@@ -72,4 +72,3 @@ theorem robertSargos_fixed_displacement_conic_card_le
     have hcard : W.card = S.card := Finset.card_image_of_injective S hinj
     simpa only [hcard,Int.natAbs_neg] using hb
 
-end TaoTrudgianYang2025

@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEulerFinsupp CanonicalRowCompletion
-local notation "O" => HeckeFamily.O
 
 def localNormalization (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   (1-CubicEisenstein.fullIdealWeight (6*z) P.val)*
@@ -47,9 +46,3 @@ theorem localNormalization_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P
     (LFunction_ne_zero_of_one_lt_re (rowCharacter S hS u) hw)
   have hD := targetRow_hasProd S hS hbad η u x hx
   simpa only [localNormalization,inv_inv,div_eq_mul_inv] using (hZ.mul hW).mul hD
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

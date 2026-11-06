@@ -44,4 +44,3 @@ theorem integrableOn_cpow_mul_exp_neg_mul_Ioi
   simp only [f, smul_eq_mul, Complex.ofReal_mul]
 
 
-end RiemannZeta.GuthMaynard

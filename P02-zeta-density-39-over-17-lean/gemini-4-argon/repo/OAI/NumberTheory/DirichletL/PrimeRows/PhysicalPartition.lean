@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CompletedGauss CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
 
 def physicalRowValue {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (T : Fin K→Finset PrimeIdeal) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
@@ -71,9 +70,3 @@ theorem canonical_physical_probe_partition {K : ℕ}
   congr 1
   · dsimp [f,physicalRowValue]
     simp only [rowIntegral_principal]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

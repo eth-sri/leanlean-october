@@ -54,8 +54,3 @@ theorem residual_local_phase {F : Type*} [Field F] [Fintype F]
   calc
     _ = (tau χ (ψ.mulShift (-1)) 1*tau χ ψ 3)*((χ σ)⁻¹^2*(χ ε)⁻¹^3) := by ring
     _ = _ := by rw [hid,hi,hsig]; ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

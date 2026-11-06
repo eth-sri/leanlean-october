@@ -10,7 +10,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def childFrequencyBall (a : Eis) (R : ℝ) : Finset Eis :=
   (secondFrequencyCutoff (‖eisEmbedding a‖^2) R).filter
@@ -52,8 +51,3 @@ lemma nonzeroChildFrequencyBall_empty (a : Eis) (ha : a ≠ 0) (R : ℝ) (hR : R
   have hk0 : k ≠ 0 := by intro hk; simp [hk] at hm
   exact (not_le_of_gt hR) ((EisensteinSchwartzPoisson.one_le_eisenstein_norm_sq
     (a*k) (mul_ne_zero ha hk0)).trans hm.2)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

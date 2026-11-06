@@ -102,4 +102,3 @@ theorem operator_finite_quadratic_comparison [FiniteDimensional ℂ E]
     simp [← Complex.ofReal_pow]
   simpa only [hdiag] using hp
 
-end Montgomery.RationalMoment

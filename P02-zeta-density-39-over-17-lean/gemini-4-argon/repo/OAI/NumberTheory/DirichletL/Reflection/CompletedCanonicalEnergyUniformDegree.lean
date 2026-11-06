@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_completed_fiber_energy_uniform_degree
@@ -175,7 +174,3 @@ theorem canonical_completed_fiber_energy_uniform_degree
       (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat))
       (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0)‖^2)
   exact hs.symm.trans_le (hbound.trans_eq hR)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

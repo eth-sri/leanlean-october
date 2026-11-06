@@ -12,10 +12,7 @@ open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 
 namespace SevenEighths.DetectorDictionaryInverseMarkedUniform
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseRawFourier InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform DetectorDictionaryInverseRawFourier InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
 
 private theorem clipped_one_zero (W : ℝ→ℂ) : clippedTest W 1 0=W := by
   funext x
@@ -58,8 +55,7 @@ theorem logTest_eq_iterate (W : ℝ→ℂ) (n : ℕ) :
   | succ n ih=>rw [logTest,Function.iterate_succ_apply',←ih]
 
 section Fiber
-variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*}
-  {U a ε tstar T allowance : ℝ} {i : ℕ}
+variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*} {U a ε tstar T allowance : ℝ} {i : ℕ}
 
 theorem fiber_inverse_source
     (F : Fiber M H Label Slot U a ε tstar T allowance i) (n : ℕ) (σ t : ℝ) :
@@ -119,9 +115,3 @@ theorem fiber_inverse_height_uniform (J : ℕ) :
   apply (hb F selected hU E hE href n hn σ hσ t).trans
   have hnorm : ‖t‖≤height := by simpa only [Real.norm_eq_abs,abs_le,Set.mem_Icc] using ht
   gcongr
-
-end SevenEighths.DetectorDictionaryInverseMarkedUniform
-
-end
-
-end OAI

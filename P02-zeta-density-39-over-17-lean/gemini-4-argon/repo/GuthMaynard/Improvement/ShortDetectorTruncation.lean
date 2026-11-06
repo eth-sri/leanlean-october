@@ -53,4 +53,3 @@ theorem short_detector_tail_eventually_small {δ : ℝ} (hδ : 0 < δ) :
   intro ρ hρ
   exact (short_norm_detector_tail_le hT hlog hρ).trans_lt hsmall
 
-end GuthMaynard.Improvement

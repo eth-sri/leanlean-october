@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
-open CenteredMomentCommonSupport CenteredMomentFourier
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion CenteredMomentCommonSupport CenteredMomentFourier
 
 def elementFourier (c : O) (hc : c≠0) (f : O → ℂ) (H : O) : ℂ :=
   ∑' x : Residue c, f (representative c x) * quotientTrace c hc (Ideal.Quotient.mk _ H*x)
@@ -93,8 +91,3 @@ theorem actualCongruenceCoefficient_zero_off_calibration (S : Finset (Ideal O))
   have hn : (Ideal.absNorm (Ideal.span {s}):ℂ)≠0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hs)
   exact (mul_eq_zero.mp he).resolve_left hn
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

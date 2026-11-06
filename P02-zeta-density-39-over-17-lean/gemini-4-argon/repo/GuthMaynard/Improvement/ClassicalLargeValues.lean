@@ -170,4 +170,3 @@ theorem classical_large_values {ε : ℝ} (hε : 0 < ε) :
   · rw [Finset.not_nonempty_iff_eq_empty.mp hne,Finset.card_empty,Nat.cast_zero]
     positivity
 
-end GuthMaynard.Improvement

@@ -33,4 +33,3 @@ theorem robertSargos_small_symmetric_block
       (small_block_third_derivative_budget (Nat.cast_nonneg M)
         (by exact_mod_cast hH) hHM' hC hlam hfirst hsecond)
 
-end TaoTrudgianYang2025

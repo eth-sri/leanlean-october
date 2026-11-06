@@ -67,4 +67,3 @@ theorem norm_atkinsonQuadraticWindow_sub_fresnel_le {c H : ℝ}
   rw [← fresnelGaussianValue_eq_phase hc]
   exact norm_atkinsonQuadraticWindow_sub_gaussianValue_le hc hH
 
-end MathCollab.Density.Stronger.Atkinson

@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def cubicDualCoefficient {n : Type*} (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
     (a : n → ℂ) (j : n) : ℂ :=
@@ -79,8 +77,3 @@ lemma cubicRow_zero_of_ne_one (I : Ideal O) (hI : Admissible I) (hI1 : I ≠ 1) 
   have h := idealSymbol_cube_mask I 0 hI.2
   rw [ite_eq_right hcop] at h
   exact eq_zero_of_pow_eq_zero h
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

@@ -200,4 +200,3 @@ theorem norm_afe_pole_le {sigma t a : ℝ} (ht : 0 < t) (ha : 0 < a) :
       rw [sub_eq_add_neg, Real.rpow_add ha, Real.rpow_one]
       ring
 
-end DhimanKadiriQuesadaHerrera2026

@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def pairedSlotAssignment (J₁ J₂ : Finset σ)
@@ -156,8 +155,3 @@ theorem assignedSecondSource_conditions (p : ι → Eis) [∀ i, (Ideal.span {p 
   · exact hs.old_support y hy
   · exact hq
   · exact hs.quotient_nonzero y hy
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

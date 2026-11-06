@@ -62,8 +62,3 @@ theorem choose_first_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau : 
   calc
     _ = (65536*G₁*G₂*P)*((Z^Lcap)^19/(1+Z^tau)^A) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hdecay (by positivity)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

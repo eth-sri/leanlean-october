@@ -71,4 +71,3 @@ theorem abs_dfiBesselY0Tail_le_quarter {x : ℝ} (hx : 0 < x) :
     _ = (1 / x) ^ (1 / 4 : ℝ) * Real.Gamma (1 / 4) := hGammaInt
 
 
-end MathCollab.Density.Stronger.Atkinson

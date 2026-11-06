@@ -195,4 +195,3 @@ theorem dfiComplexLaplace_eq
     (z₀ := (1 : ℂ)) (by simp [U]) hFreq
   exact hEq ha
 
-end RiemannZeta.GuthMaynard

@@ -84,4 +84,3 @@ theorem amplifier_time_density_witness {η : ℝ} (hη : 0 < η) :
     simp only [ENNReal.toReal_ofReal (h0 _),smul_eq_mul]
   simpa only [he] using h N L l u hN hNL hl hu a w ha hw (timeMeasure μ)
 
-end GuthMaynard.Improvement

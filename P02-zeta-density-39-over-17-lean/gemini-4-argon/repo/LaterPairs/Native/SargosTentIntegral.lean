@@ -118,4 +118,3 @@ theorem sargos_integral_symmetric_tent_character_eq_kernel
     rw [htrig]
     field_simp [Real.pi_ne_zero,hw.ne',hξ]
 
-end TaoTrudgianYang2025

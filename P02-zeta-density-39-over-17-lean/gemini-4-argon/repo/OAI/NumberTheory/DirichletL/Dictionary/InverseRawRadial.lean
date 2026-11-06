@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawRadial
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialConjugateEnergy CanonicalQuadraticSieve
-open ConcreteTraceCRT ActualEisensteinCubic
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy CanonicalQuadraticSieve ConcreteTraceCRT ActualEisensteinCubic
 
 theorem exists_raw_radial_majorant :
     ∃Φ : 𝓢(ℝ,ℂ),HasCompactSupport (Φ:ℝ→ℂ) ∧
@@ -41,9 +38,3 @@ theorem exists_raw_radial_majorant :
     change (((f x)^2:ℝ):ℂ)=1
     rw [(hone x).mp hx]
     norm_num
-
-end SevenEighths.DetectorDictionaryInverseRawRadial
-
-end
-
-end OAI

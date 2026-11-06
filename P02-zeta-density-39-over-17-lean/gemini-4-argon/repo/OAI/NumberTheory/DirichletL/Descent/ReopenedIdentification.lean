@@ -9,9 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 
 theorem complete_pool_whole_cube_mark {σ : Type*} [DecidableEq σ]
     (F : Finset (Ideal O)) (hF : ∀ I∈F,Admissible I)
@@ -67,8 +65,3 @@ theorem reopened_marked_global_column {σ : Type*} [DecidableEq σ]
   congr 1
   funext T
   rw [complete_pool_whole_cube_mark F hF slots lists a T v,mul_comm]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

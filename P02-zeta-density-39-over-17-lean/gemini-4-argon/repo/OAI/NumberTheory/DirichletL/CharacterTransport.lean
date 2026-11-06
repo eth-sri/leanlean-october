@@ -33,11 +33,6 @@ def pullback (e : R ≃+* S) (χ : MulChar S ℂ) : MulChar R ℂ where
   intro x
   simp
 
-@[simp] theorem pullback_mul (e : R ≃+* S) (χ ψ : MulChar S ℂ) :
-    pullback e (χ * ψ) = pullback e χ * pullback e ψ := by
-  apply MulChar.ext'
-  intro x
-  rfl
 
 theorem primitive_pullback (e : R ≃+* S) (χ : MulChar S ℂ)
     (hχ : IsPrimitiveOnIdeals χ) : IsPrimitiveOnIdeals (pullback e χ) := by
@@ -61,9 +56,3 @@ theorem primitive_pullback (e : R ≃+* S) (χ : MulChar S ℂ)
     change e.symm ((u : S) - 1) ∈ I at hu
     simpa only [map_sub, map_one] using hu
   · simpa [v, pullback] using hχu
-
-end
-
-end SevenEighths.CharacterTransport
-
-end OAI

@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawRealRadial
 open InverseInitialConjugateEnergy ConcreteTraceCRT
-local notation "O"=>HeckeFamily.O
 
 theorem exists_real_raw_radial_majorant:
     ∃Φ:𝓢(ℝ,ℂ),HasCompactSupport (Φ:ℝ→ℂ) ∧
@@ -51,9 +50,3 @@ theorem smoothedEnergy_eq_complex_norm (Φ:𝓢(ℝ,ℂ))
   rw [real_smoothed_sum_eq Φ (fun x _=>hreal x) hH,
     Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (smoothedEnergy_nonneg Φ (fun x _=>hΦ x) hH f)]
-
-end SevenEighths.DetectorDictionaryInverseRawRealRadial
-
-end
-
-end OAI

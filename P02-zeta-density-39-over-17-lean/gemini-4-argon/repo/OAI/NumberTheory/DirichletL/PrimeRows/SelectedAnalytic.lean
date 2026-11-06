@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CompletedGauss
 
 theorem continuedMarkedLocal_eq_quotient (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (x w z : ℂ) (hV : 1-coordV P.val.absNorm z≠0) :
@@ -26,9 +24,3 @@ theorem selected_V_ne_zero (P : PrimeIdeal) (hQ : (4:ℝ)≤P.val.absNorm) (z : 
   rw [coordV_norm _ (by linarith : (0:ℝ)<P.val.absNorm)]
   apply rpow_le_half _ _ hQ
   linarith
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -50,8 +50,3 @@ lemma gaussianDyadicProfile_factor (Z : ℝ) (j : ℕ) :
   unfold gaussianDyadicProfile gaussianFixedWindow
   rw [show (2:ℝ)^j*y/Z=((2:ℝ)^j/Z)*y by ring]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

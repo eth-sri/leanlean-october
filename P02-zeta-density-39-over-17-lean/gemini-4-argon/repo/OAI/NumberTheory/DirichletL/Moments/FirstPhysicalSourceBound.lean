@@ -9,14 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentFirstReduced
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentFirstChildBound CenteredMomentChildAssembly CenteredMomentMobiusRegroup
-open CenteredMomentSmooth RayFourExpansion IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentFirstReduced CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy CenteredMomentFirstChildBound CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion IdealMobiusDivisorSum
 
 theorem physical_block_child_bound (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
     (M:Fin 4→ℝ)(hM:∀i,0≤M i)(hV:∀i y,V i y≠0→|y|≤M i)(A J₁ J₂:ℕ):
@@ -82,9 +75,3 @@ theorem physical_block_child_bound (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
   rw [block_eq_whole η m 1 t S c C D hC hD hCD E rows hrows W V K K₀ H₀ A₀ B₀ hK hK₀ hH₀ hA₀ hB₀,
     norm_mul]
   convert mul_le_mul_of_nonneg_left hh (norm_nonneg (scalar C D hC E K A₀ B₀)) using 1 <;> ring
-
-end SevenEighths.CenteredMomentFirstPhysicalSource
-
-end
-
-end OAI

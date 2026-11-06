@@ -83,4 +83,3 @@ theorem norm_shortDetectorTaylor_tsum_ge {N : ℕ} (hN : 0 < N) {ρ : ℂ} (hβ 
   have hpow : (1 : ℝ) ≤ (3/2 : ℝ)^ρ.re := Real.one_le_rpow (by norm_num) hβ
   nlinarith [show 0 ≤ (N : ℝ)^ρ.re*‖shortDetectorBlock ρ T N‖ by positivity]
 
-end GuthMaynard.Improvement

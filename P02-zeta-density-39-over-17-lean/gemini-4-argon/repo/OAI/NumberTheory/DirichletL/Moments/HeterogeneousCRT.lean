@@ -70,9 +70,3 @@ theorem fullCorrelation_three_equiv {ι X Y R : Type*} [Fintype ι]
     have hright : eR (right y) = fun i => ri i (eY y i) := funext (hr y)
     rw [hleft, hright]
   simp only [he]
-
-end SevenEighths.CenteredMomentHeterogeneousCRT
-
-end
-
-end OAI

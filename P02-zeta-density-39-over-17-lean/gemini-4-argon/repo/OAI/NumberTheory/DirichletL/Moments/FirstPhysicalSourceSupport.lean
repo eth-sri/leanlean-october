@@ -12,13 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSourceSupport
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCanonicalFirst
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstWholeKernel
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentSourceLowerSupport CenteredMomentExceptionalAmplitudePair
-local notation "O"=>ActualEisensteinCubic.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstPhysicalSource CenteredMomentFirstWholeKernel CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceLowerSupport CenteredMomentExceptionalAmplitudePair
 
 theorem nonzero_columns (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
@@ -107,9 +101,3 @@ lemma reference_sqrt_lower (NC ND A₀ B₀ a T M:ℝ)
     Real.sqrt_mul (mul_nonneg hNC hND),Real.sqrt_sq (Real.exp_pos M).le,
     Real.sqrt_mul hA] at hsqrt
   nlinarith [hsqrt]
-
-end SevenEighths.CenteredMomentFirstPhysicalSourceSupport
-
-end
-
-end OAI

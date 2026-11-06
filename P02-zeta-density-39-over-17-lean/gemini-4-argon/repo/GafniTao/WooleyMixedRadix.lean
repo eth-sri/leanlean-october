@@ -64,6 +64,4 @@ theorem wooley_sum_mixedRadix
   exact Fintype.sum_equiv (wooleyMixedRadixEquiv q₁ q₂) _ _ (fun _ => rfl)
 
 
-end
 
-end GafniTao

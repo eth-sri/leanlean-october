@@ -45,8 +45,3 @@ theorem indexedSlotAssignment_support (I : Finset σ) (L : σ → Finset ι)
     (j : Fin I.card) :
     indexedSlotAssignment I q j ∈ L ((I.equivFin).symm j).val ∩ A :=
   Finset.mem_pi.mp hq _ _
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

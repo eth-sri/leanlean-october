@@ -10,13 +10,8 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentOriginalChildEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-open CenteredMomentLiveSupport CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentLiveSupport CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem original_source_punctured_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
@@ -49,9 +44,3 @@ def sourceGaussEnergy (Q : Finset (Ideal O)) (c f : Ideal O → ℂ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
   gaussEnergy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q)
     (fun I : supportedColumns Q => c I*f I) W K
-
-end SevenEighths.CenteredMomentOriginalChildEnergy
-
-end
-
-end OAI

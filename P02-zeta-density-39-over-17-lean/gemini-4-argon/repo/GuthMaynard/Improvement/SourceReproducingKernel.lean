@@ -94,4 +94,3 @@ theorem boundedPolynomial_reproduce {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ) (w 
     fixedTimeCutoff_one (source_reproducing_frequency hN hn)]
   simp only [Complex.ofReal_one,mul_one]
 
-end GuthMaynard.Improvement

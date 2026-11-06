@@ -7,52 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
 namespace ActualEisensteinCubic
 
@@ -250,22 +206,10 @@ theorem mem_prime_product_iff
 
 end ActualEisensteinCubic
 
-namespace ConcretePrimeRowBridge
-
-section
-
-open ActualEisensteinCubic ShortDraftHeckeBridge
-open scoped BigOperators Classical
-
-end
-
-open ActualEisensteinCubic
-
-end ConcretePrimeRowBridge
 
 namespace EisensteinSchwartzPoisson
-open MeasureTheory Filter LineDeriv
-open scoped FourierTransform SchwartzMap Real RealInnerProductSpace
+open LineDeriv
+open scoped Real RealInnerProductSpace
 abbrev LogPlane := WithLp 2 (ℝ × ℝ)
 
 theorem fourier_prod_eq_iterated (f : LogPlane → ℂ) (hf : Integrable f) (ξ η : ℝ) :
@@ -639,8 +583,6 @@ def verticalSlice (f : 𝓢(ℂ, ℂ)) (x : ℝ) : 𝓢(ℝ, ℂ) :=
   SchwartzMap.compCLMOfAntilipschitz ℂ (vertical_temperate x)
     (vertical_isometry x).antilipschitzWith f
 
-@[simp] theorem verticalSlice_apply (f : 𝓢(ℂ, ℂ)) (x y : ℝ) :
-    verticalSlice f x y = f (complexPoint x y) := rfl
 
 theorem schwartz_poisson_zero (g : 𝓢(ℝ, ℂ)) :
     (∑' n : ℤ, g (n : ℝ)) = ∑' n : ℤ, 𝓕 (g : ℝ → ℂ) (n : ℝ) := by
@@ -684,9 +626,3 @@ theorem integer_pair_poisson (f : 𝓢(ℂ, ℂ)) :
     (plane_lattice_summable f) (plane_lattice_summable (𝓕 f))
     (partialFourier_gaussian_summable f)
     (fun m => vertical_poisson f m) (horizontal_poisson f)
-
-end EisensteinSchwartzPoisson
-
-end
-
-end OAI

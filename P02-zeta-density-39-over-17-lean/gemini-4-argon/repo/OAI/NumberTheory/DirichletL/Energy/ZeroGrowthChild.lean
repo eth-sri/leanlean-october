@@ -10,17 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthChild
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyProfiles CenteredMomentLattice
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroReferenceChild
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceLowChild
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild
-open CenteredMomentEnergyReferenceChildProfiles CenteredMomentInductionEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-open CenteredMomentSectorLocalization CenteredMomentRetainedProfile
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyProfiles CenteredMomentLattice CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroReferenceChild CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceLowChild CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles CenteredMomentInductionEnergy CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentRetainedProfile
 
 theorem independent_from_growth
     (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal O)
@@ -65,9 +55,3 @@ theorem reflected_from_growth
   have he:((annulusSeed a b hlo hhi).profile:ℝ→ℂ)=(fun y:ℝ=>(annulus y:ℂ)):=
     funext annulusTemplate_apply
   simpa only [derivativeChoice_apply,he,reflectionProfiles] using hh
-
-end SevenEighths.CenteredMomentEnergyZeroGrowthChild
-
-end
-
-end OAI

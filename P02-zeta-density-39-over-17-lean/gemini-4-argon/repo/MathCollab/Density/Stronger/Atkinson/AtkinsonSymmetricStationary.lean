@@ -169,4 +169,3 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
   rw [abs_of_nonneg (by linarith : 0 ≤ r+H-(r-H))]
   ring
 
-end MathCollab.Density.Stronger.Atkinson

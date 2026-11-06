@@ -59,9 +59,3 @@ lemma retained_dyadic_sum {A : Type*} [AddCommMonoid A] (rows : Finset FreeRow) 
   apply Finset.sum_biUnion
   intro m hm n hn hmn
   exact (dyadicRows_disjoint 1 (by norm_num) hmn).mono (Finset.inter_subset_right) (Finset.inter_subset_right)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

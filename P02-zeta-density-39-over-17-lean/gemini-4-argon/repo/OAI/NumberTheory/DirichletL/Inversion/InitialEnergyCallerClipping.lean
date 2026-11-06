@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss
 namespace SevenEighths.InverseInitialEnergyCallerClipping
 open InverseMoment InverseInitialClippedColumns InverseInitialProfile
-local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -41,9 +40,3 @@ theorem initial_scalar_le (m D B v θ η δ π ε:ℝ)(hδ:δ≤3*η) :
       ((D-B+θ+δ)+ε)≤m+11*η+π+ε := by
   rw [initial_scalar_identity m D B v θ η δ π ε]
   linarith
-
-end SevenEighths.InverseInitialEnergyCallerClipping
-
-end
-
-end OAI

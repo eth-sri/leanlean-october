@@ -20,9 +20,8 @@ open scoped Expdb NNReal
 noncomputable section
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Expdb
 
-open Expdb
 
 /-- The affine line associated to an exponent-pair candidate. -/
 def exponentPairLine (k l α : ℝ) : ℝ :=
@@ -109,4 +108,3 @@ theorem exponentSumGrowthExponent_le_exponentPairLine
         dsimp [η, exponentPairLine]
         nlinarith)
 
-end TaoTrudgianYang2025

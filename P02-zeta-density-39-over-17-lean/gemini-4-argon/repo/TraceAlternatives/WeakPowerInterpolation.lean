@@ -48,4 +48,3 @@ theorem weak_power_square_mass_bound {A D U p θ mass : ℝ}
     field_simp
   exact hh.trans_eq hId
 
-end Montgomery.RationalMoment

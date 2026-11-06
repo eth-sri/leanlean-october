@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceScalarReserve
-open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
-open CenteredMomentEnergyReferenceScalarBounds
+open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource CenteredMomentEnergyReferenceScalarBounds
 
 theorem ledger_bound (Mcap Bmask bΦ L d saving ε:ℝ)
     (hM:0≤Mcap)(_hB:0≤Bmask)(hL:0≤L)(hd:0<d)
@@ -102,9 +101,3 @@ theorem exists_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
     nlinarith [mul_nonneg hB hd.le,mul_nonneg hM hd.le]
   obtain ⟨C,hC,hledger⟩:=ledger_bound Mcap Bmask bΦ L d saving ε hM hB hL hd hmain herror
   exact ⟨d,xi,saving,L,C,hd,hxi,hsave,hC,le_rfl,by dsimp only [L];linarith,hledger⟩
-
-end SevenEighths.CenteredMomentEnergyReferenceScalarReserve
-
-end
-
-end OAI

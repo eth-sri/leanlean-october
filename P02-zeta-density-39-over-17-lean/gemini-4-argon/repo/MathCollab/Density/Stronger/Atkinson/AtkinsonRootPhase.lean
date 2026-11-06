@@ -106,4 +106,3 @@ theorem two_le_atkinsonRootSlope {T b y : ℝ} (hT : 0 < T) (hy : 0 < y)
   nlinarith [mul_nonneg
     (show 0 ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - y by linarith) hq]
 
-end MathCollab.Density.Stronger.Atkinson

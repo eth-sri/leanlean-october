@@ -56,4 +56,3 @@ theorem robertSargos_weighted_zero_shift_decomposition
       (fun q r => (1-|(q:ℝ)|/Q)*(1-|(r:ℝ)|/R)*
         (robertSargosTrimmedCorrelation f M H q r).re) Q R hQ hR
 
-end TaoTrudgianYang2025

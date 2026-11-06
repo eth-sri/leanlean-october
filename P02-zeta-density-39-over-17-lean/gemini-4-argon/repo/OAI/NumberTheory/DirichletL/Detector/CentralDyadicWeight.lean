@@ -65,8 +65,3 @@ lemma dyad_conductor_margin (Z v margin : ℝ) (hZ : 0<Z) (hmargin : 2≤Z^margi
     rowNorm u≤2*Z^v := hR u hu
     _ ≤ Z^margin*Z^v := mul_le_mul_of_nonneg_right hmargin (Real.rpow_nonneg hZ.le _)
     _ = _ := by rw [←Real.rpow_add hZ]; congr 1; ring
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

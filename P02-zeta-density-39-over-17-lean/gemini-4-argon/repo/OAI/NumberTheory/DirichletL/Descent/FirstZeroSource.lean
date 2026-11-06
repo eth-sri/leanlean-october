@@ -11,7 +11,6 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 section
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -140,9 +139,3 @@ theorem full_variable_first_zero_bound (ε : ℝ) (hε : 0<ε) :
       exact mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hlabel (by positivity)) hQ
     _ = _ := by dsimp [Q];ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

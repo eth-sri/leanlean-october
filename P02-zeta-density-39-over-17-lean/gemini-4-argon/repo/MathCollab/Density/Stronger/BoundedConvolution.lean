@@ -63,4 +63,3 @@ theorem bounded_convolution_eventually_le {η B : ℝ}
     _ ≤ T^(η/2)*T^(η/2) := mul_le_mul_of_nonneg_right hlarge (by positivity)
     _ = T^η := by rw [← Real.rpow_add hTpos]; congr 1; ring
 
-end MathCollab.Density.Stronger

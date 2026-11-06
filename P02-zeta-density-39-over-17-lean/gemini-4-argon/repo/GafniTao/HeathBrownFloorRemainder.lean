@@ -117,6 +117,4 @@ theorem norm_heathBrownExponentialSum_le_fourTerm_open_of_vmvt
         mul_nonneg hP0 hL0, mul_nonneg hP0 hQ0]
 
 
-end
 
-end GafniTao

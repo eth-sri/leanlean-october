@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma weighted_finite_row_energy {ι κ : Type*} (L : Finset ι) (rows : Finset κ)
     (w : ι→ℂ) (f : ι→κ→ℂ) :
@@ -36,8 +35,3 @@ lemma weighted_finite_row_energy_uniform {ι κ : Type*} (L : Finset ι) (rows :
       apply mul_le_mul_of_nonneg_left _ (Finset.sum_nonneg (fun i hi => norm_nonneg _))
       exact Finset.sum_le_sum (fun i hi => mul_le_mul_of_nonneg_left (hf i hi) (norm_nonneg _))
     _ = _ := by rw [← Finset.sum_mul]; ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

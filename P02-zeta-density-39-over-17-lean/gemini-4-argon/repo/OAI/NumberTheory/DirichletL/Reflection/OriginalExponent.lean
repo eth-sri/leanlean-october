@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {a c₀ : Eis} {mode : Bool}
 
 theorem original_surviving_energy_exponent
@@ -72,7 +71,3 @@ theorem original_surviving_energy_exponent
   have he := mul_le_mul_of_nonneg_left hb hε
   dsimp only [G,j] at hs hb he
   linarith
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

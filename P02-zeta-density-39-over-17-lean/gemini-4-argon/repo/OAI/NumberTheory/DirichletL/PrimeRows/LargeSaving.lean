@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 theorem large_physical_tail_arbitrary_saving (K : ℕ) (δ a b B ζ saving : ℝ)
     (hδ : 0<δ) (hδ' : δ≤1) (hζ : 0<ζ)
@@ -39,8 +38,3 @@ theorem large_physical_tail_arbitrary_saving (K : ℕ) (δ a b B ζ saving : ℝ
   obtain ⟨hs,hb⟩ := hmain η Z hZ R hR T hT hdis length hl0 hl W hWS hWB
   refine ⟨hs,hb.trans ?_⟩
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ hpower) (by positivity)
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

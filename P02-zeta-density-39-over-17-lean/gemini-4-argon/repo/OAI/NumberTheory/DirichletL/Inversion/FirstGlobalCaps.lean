@@ -11,13 +11,10 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseFirstGlobalCaps
-open InverseMoment InverseFirstGlobalParents InverseFirstPriorityParents
-open InverseMomentWholePriorityParents InverseMomentFirstChildWindows
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
+open InverseMoment InverseFirstGlobalParents InverseFirstPriorityParents InverseMomentWholePriorityParents InverseMomentFirstChildWindows ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
 open InverseSecondSourceBlocks (dyadIndex dyadScale dyadScale_pos dyadIndex_bounds)
 open ConcreteTraceCRT (eisEmbedding)
 open InverseInitialArithmetic (sourceIdeal)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
 def outerNorms (p : ι→O) (x : FirstOriginalOuter ι) : Fin 5→ℝ :=
@@ -209,9 +206,3 @@ theorem labelParentCell_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   have hd:=dyadIndex_bounds _ hn
   rw [hj] at hd
   exact ⟨hm,dyad_power_bounds Z eta _ hZ h2 j ⟨hd.1,hd.2.le⟩⟩
-
-end SevenEighths.InverseFirstGlobalCaps
-
-end
-
-end OAI

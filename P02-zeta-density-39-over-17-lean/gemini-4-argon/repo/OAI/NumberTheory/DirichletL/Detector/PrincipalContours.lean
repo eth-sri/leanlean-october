@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalContours
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary
-local notation "Id" => Ideal ActualEisensteinCubic.O
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary
 local instance : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : Countable Id := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
@@ -822,8 +819,3 @@ theorem source_ordered_outer {ι : Type*} (η : Character) (S : Finset Id)
   rw [heq]
   simp only [D,E,verticalIntegral,integral_const_mul]
   ring
-
-end SevenEighths.ProbePrincipalContours
-end
-
-end OAI

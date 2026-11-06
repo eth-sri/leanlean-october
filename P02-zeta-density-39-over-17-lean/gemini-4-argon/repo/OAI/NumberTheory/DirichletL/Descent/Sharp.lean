@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ L →
@@ -82,8 +81,3 @@ theorem hybridRow_energy (ε : ℝ) (hε : 0 < ε) :
   have hh := mul_le_mul_of_nonneg_left (hc K N B L hK hN hB hL)
     (show 0 ≤ C0 * (K + N * B) * B by positivity)
   convert hh using 1 <;> ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

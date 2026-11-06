@@ -7,76 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicReflectionKernel
 
 section
-open scoped Classical FourierTransform SchwartzMap ContDiff
-open MeasureTheory
 
 def momentScale : ℝ :=
   2 ^ (volume : Measure ℝ).integrablePower *
@@ -84,8 +20,6 @@ def momentScale : ℝ :=
 
 end
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter Asymptotics
 
 def paperScale : ℝ := (2 * Real.pi) ^ 4 / 27
 
@@ -175,8 +109,6 @@ theorem paperKernel_eq_logFourier (V : ℝ → ℂ) (logSource : SchwartzMap ℝ
 
 end CubicReflectionKernel
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter
 namespace CubicReflectionKernel
 
 theorem paperKernel_contDiffOn (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
@@ -211,8 +143,6 @@ theorem paperKernel_compact_source_smooth
     ContDiffOn ℝ ∞ (paperKernel V) (Set.Ioi 0) :=
   paperKernel_contDiffOn V (logSchwartz V a b ha hsupp hV) (by intro u; rfl)
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter Asymptotics
 
 theorem compact_source_mellin_hasDerivAt
     (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
@@ -278,7 +208,6 @@ theorem kernelMellinIntegrand_differentiableAt
 
 end CubicReflectionKernel
 
-open scoped BigOperators Classical
 
 namespace DescentWeightedCauchy
 
@@ -350,7 +279,7 @@ theorem bounded_energy_pushforward {ι κ : Type*} [DecidableEq κ]
       (fun i hi => hw i (Finset.mem_filter.mp hi).1)
     _ = _ := by simp [mul_comm]
 
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 
 def firstElementRowMap (e : O) (x : Ideal O × O) : O :=
   x.2 * ConcretePrimeRowBridge.idealGenerator x.1 ^ 2 * e
@@ -362,9 +291,3 @@ theorem firstElementRowMap_label_dvd (e : O) (x : Ideal O × O) :
   refine ⟨x.2 * ConcretePrimeRowBridge.idealGenerator x.1 * e, ?_⟩
   simp only [firstElementRowMap]
   ring
-
-end DescentWeightedCauchy
-
-end
-
-end OAI

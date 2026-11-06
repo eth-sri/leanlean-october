@@ -38,4 +38,3 @@ theorem approximateModelPhase_tolerance_nonneg
     0 ≤ δ :=
   (norm_nonneg _).trans (hF.2 0 (Nat.zero_le P) ⟨1, by norm_num [phaseInterval]⟩)
 
-end TaoTrudgianYang2025

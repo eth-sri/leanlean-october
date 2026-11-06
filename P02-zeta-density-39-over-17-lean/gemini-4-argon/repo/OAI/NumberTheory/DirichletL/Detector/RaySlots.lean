@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
-open PrincipalSignalComparison ProbePrincipalResidueActual
-local notation "Id" => Ideal HeckeFamily.O
+open HeckeFamily ProbePhysical PNT.AnnularPrimeMass PrincipalSignalComparison ProbePrincipalResidueActual
 
 def pool (C : Set Id) (S : Finset Id) (a b x : ℝ) : Finset PrimeIdeal :=
   (annularPrimeIdeals C a b x \ S).subtype (fun P=>Prime P)
@@ -80,8 +78,3 @@ theorem ray_pool_mass_eventually_lower_bound (S : Finset Id) (W : ℝ→ℝ)
   filter_upwards [hbound,eventually_gt_atTop (0:ℝ)] with x hx hx0
   rw [pool_mass_eq_deleted _ _ _ ha hab hsupp hx0]
   exact hx
-
-end SevenEighths.ProbeRaySlots
-end
-
-end OAI

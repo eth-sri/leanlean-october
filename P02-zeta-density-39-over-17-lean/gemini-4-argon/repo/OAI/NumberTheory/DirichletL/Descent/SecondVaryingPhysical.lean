@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondVaryingPhysicalUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 universe u₁ u₂
 variable {ι : Type u₁} {σ : Type u₂} [DecidableEq ι] [DecidableEq σ]
@@ -120,8 +118,3 @@ theorem actual_second_varying_balanced_profile_children
       filter_upwards with t
       apply congrArg (fun a : ℂ => density t*a)
       exact hsector pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ ω₁ ω₂ G E V B X t _
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

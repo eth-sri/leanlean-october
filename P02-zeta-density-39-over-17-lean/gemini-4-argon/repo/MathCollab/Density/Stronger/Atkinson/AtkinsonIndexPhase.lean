@@ -258,6 +258,4 @@ theorem hasDerivAt_atkinsonIndexRealPhase
   exact hnorm.congr_of_eventuallyEq hev
 
 
-end
 
-end MathCollab.Density.Stronger.Atkinson

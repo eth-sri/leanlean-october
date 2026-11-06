@@ -117,4 +117,3 @@ theorem norm_modelPhaseBufferedFourierMode_nonstationary
     (norm_modelPhaseBufferedNormalizedMode_nonstationary hσ hδ hF hT hη hl hr hlam hgap)
     hN.le).trans_eq (by ring)
 
-end TaoTrudgianYang2025

@@ -38,9 +38,3 @@ theorem two_pass_scalar (C Cz Ct Γ A Z F M r ell eta tau _pi epsFirst loss Lcap
       _=C*Γ^2*((1+A)*H)*Z^(F+loss+((2*Lcap+15*eta+tau)*epsFirst+epsFirst)):=by simp only [Real.rpow_add hz];ring
       _≤_:=mul_le_mul_of_nonneg_left hR (by positivity)
   nlinarith [add_le_add (add_le_add hp hr) ht]
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

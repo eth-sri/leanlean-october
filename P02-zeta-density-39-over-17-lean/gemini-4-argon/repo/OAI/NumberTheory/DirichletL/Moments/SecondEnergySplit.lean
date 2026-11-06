@@ -11,15 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondEnergySplit
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondLocalization CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentRestrictedEnergy
-open CenteredMomentChildRows RayFourExpansion
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate CenteredMomentSecondPhysicalBlock CenteredMomentSecondRetainedAggregate CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentHeckeColumnWindow CenteredMomentSecondLocalization CenteredMomentActiveSource CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentRestrictedEnergy CenteredMomentChildRows RayFourExpansion
 
 lemma physicalBlock_filter_split (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))
@@ -113,9 +105,3 @@ theorem partEnergy_norm_le (exceptional:Bool)(η:Character)(χ:RayCharacter)(Q:I
   apply Finset.sum_le_sum
   intro U hU
   exact norm_sum_le _ _
-
-end SevenEighths.CenteredMomentSecondEnergySplit
-
-end
-
-end OAI

@@ -375,13 +375,5 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
     isCompact_iff_totallyBounded_isComplete.2 ⟨hTB_closure, hcomplete⟩
   simpa [B, U] using hcompact_closure
 
-end Volume
 
-end
 
-end L2Compactness
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov

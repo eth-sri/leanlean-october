@@ -77,4 +77,3 @@ theorem abs_symmetric_first_jet_remainder_le
     exact hd y hy
   simpa only [← iteratedDeriv_succ] using abs_symmetric_linear_remainder_le hh ha hb hg hgd
 
-end TaoTrudgianYang2025

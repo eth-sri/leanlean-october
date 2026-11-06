@@ -105,4 +105,3 @@ theorem cubic_fourier_moments (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     _ ≤ C*T^ε*(J*Real.sqrt FA)*(T^2*(J*FD)+T*L*(J*Real.sqrt ED)) := by gcongr
     _ = _ := by dsimp only [FA,FD,ED]; ring
 
-end GuthMaynard.Improvement

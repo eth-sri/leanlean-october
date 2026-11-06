@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialExcludedPeriod
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CanonicalCoefficientClass HeckeFamily InverseInitialRayAttachment
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CanonicalCoefficientClass HeckeFamily InverseInitialRayAttachment
 
 theorem elementCharacter_eq_elementHom (χ:Character)(hproper:χ.modulus≠⊤):
     elementCharacter (idealCoeff χ).toMonoidHom=HeckeRowClosure.elementHom χ := by
@@ -53,9 +51,3 @@ theorem deleted_physical_base_gates (χ:Character)(q:ℕ)(hq:q≠0)
         (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q))).toMonoidHom) := by
   rw [deleted_physical_element_eq]
   exact deleted_base_gates χ q hq hperiod
-
-end SevenEighths.InverseInitialExcludedPeriod
-
-end
-
-end OAI

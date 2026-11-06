@@ -89,4 +89,3 @@ theorem sum_int_Ioc_eq_forward_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ 
   · intro n hn
     rfl
 
-end TaoTrudgianYang2025

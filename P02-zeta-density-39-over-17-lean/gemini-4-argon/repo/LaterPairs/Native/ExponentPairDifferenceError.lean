@@ -82,4 +82,3 @@ theorem modelPhase_jet_difference_error
   convert hm using 1
   all_goals first | rfl | (unfold f R; congr 1; ring) | ring
 
-end TaoTrudgianYang2025

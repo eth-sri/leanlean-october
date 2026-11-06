@@ -68,4 +68,3 @@ theorem continuous_third_derivative_negative_bound
     (fun x hx => by linarith [hlo x hx])
   rwa [norm_sum_fordAdditiveCharacter_neg_phase] at hb
 
-end TaoTrudgianYang2025

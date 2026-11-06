@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve InverseTerminalWidths InverseReflectedPhase CompletedHeight
 universe u v
 
 theorem canonical_short_completed_energy_uniform_degree
@@ -86,9 +84,3 @@ theorem canonical_short_completed_energy_uniform_degree
           (u.val*ConcretePrimeRowBridge.idealGenerator I)) (normTwistedSource W θ)
         (Z^N) (Z^hcut) (tupleDivisibilityMark lists w)‖^2)] at hh
   exact hh
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

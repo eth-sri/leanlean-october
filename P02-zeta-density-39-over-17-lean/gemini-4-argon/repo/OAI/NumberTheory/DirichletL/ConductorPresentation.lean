@@ -18,11 +18,6 @@ theorem FactorsThroughIdeal.bot (χ : MulChar R ℂ) : FactorsThroughIdeal χ �
   have hu1 : (u : R) = 1 := sub_eq_zero.mp hu
   rw [hu1, map_one]
 
-theorem FactorsThroughIdeal.pow {χ : MulChar R ℂ} {I : Ideal R}
-    (hχ : FactorsThroughIdeal χ I) (n : ℕ) : FactorsThroughIdeal (χ ^ n) I := by
-  rw [factorsThroughIdeal_iff] at hχ ⊢
-  intro u hu
-  rw [MulChar.pow_apply_coe, hχ u hu, one_pow]
 
 end FiniteConductor
 
@@ -99,11 +94,3 @@ theorem exists_primitive_presentation (M : Ideal A) [Finite (A ⧸ M)]
     exists_primitive_presentation_above_quotient M χ ⊥ (FactorsThroughIdeal.bot χ)
   refine ⟨K, φ, hMK, hK, hprimitive, ?_, hmask⟩
   simpa only [← RingHom.ker_eq_comap_bot, Ideal.mk_ker] using hnorm
-
-end
-
-end ConductorPresentation
-
-end SevenEighths
-
-end OAI

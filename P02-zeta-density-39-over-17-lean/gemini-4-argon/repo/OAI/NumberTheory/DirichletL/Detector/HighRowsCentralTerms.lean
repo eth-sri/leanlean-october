@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
@@ -115,8 +114,3 @@ theorem sourceRowTerm_central_nonstrict (eta a rho x w z : ℂ) (alpha eps : ℝ
           hs.trans (show Q^4≤2*Q^4 by nlinarith [pow_nonneg hQ.le 4])
       · norm_num only [Nat.cast_zero,Nat.cast_one,mul_zero,mul_one,sub_zero]
         linarith
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

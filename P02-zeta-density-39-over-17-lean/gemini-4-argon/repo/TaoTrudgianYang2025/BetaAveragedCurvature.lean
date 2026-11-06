@@ -117,4 +117,3 @@ theorem modelPhaseMorseCoordinate_contDiffOn
     ContDiffOn ℝ ∞ (modelPhaseMorseCoordinate F v) (Ioo (1 : ℝ) 2) :=
   fun _ hu => (modelPhaseMorseCoordinate_contDiffAt hσ hδ hF hv hu).contDiffWithinAt
 
-end TaoTrudgianYang2025

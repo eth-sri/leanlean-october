@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
 def literalDyadicBlock (G : PrimeFamily ι)
@@ -52,8 +51,3 @@ lemma dyadic_kernel_argument_lower (scale rho q : ℝ) (hs : 0≤scale)
     (Nat.cast_nonneg (Ideal.absNorm n.val))
   have hh' := mul_le_mul_of_nonneg_left hh hp
   nlinarith only [hh']
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

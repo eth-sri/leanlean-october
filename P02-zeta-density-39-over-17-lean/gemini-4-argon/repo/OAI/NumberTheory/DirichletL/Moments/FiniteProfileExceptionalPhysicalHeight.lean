@@ -8,9 +8,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentCommonRadialData CenteredMomentHeckeWindowEnergy
-open CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude
+open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon CenteredMomentCommonRadialData CenteredMomentHeckeWindowEnergy CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude
 universe u
 
 theorem heightCost_phase (t θ:ℝ):
@@ -47,8 +45,3 @@ theorem mass_phase {lo hi:ℝ} (R:Finset (ℕ×ℕ))
   rw [show 4*J=2*J+2*J by omega,show 2*J=J+J by omega]
   simp only [pow_add]
   ring
-end SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
-
-end
-
-end OAI

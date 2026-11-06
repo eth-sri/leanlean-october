@@ -9,21 +9,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 
 namespace EisensteinEmbedding
 
 abbrev K := CyclotomicField 3 ℚ
-abbrev O := NumberField.RingOfIntegers K
+protected abbrev O := NumberField.RingOfIntegers K
 
 private instance : IsCyclotomicExtension {3} ℚ K :=
   CyclotomicField.isCyclotomicExtension 3 ℚ
@@ -345,9 +337,7 @@ theorem cubicGauss_normalized_cube_eis (P : Ideal O) [P.IsMaximal]
   rw [div_pow, hg, hq]
   field_simp
 
-open AddChar MulChar
 
-open AddChar MulChar
 
 noncomputable def canonicalSextic (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) : MulChar (O ⧸ P) ℂ :=
@@ -452,7 +442,6 @@ end ActualEisensteinCubic
 
 namespace PrimitiveTrace
 
-open Complex
 open scoped ComplexConjugate
 open EisensteinEmbedding ConcreteTraceCRT
 
@@ -562,9 +551,3 @@ theorem eisTraceModChar_breveE_primitive
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
   exact AddChar.IsPrimitive.of_ne_one
     (eisTraceModChar_breveE_ne_one P p hP hp)
-
-end PrimitiveTrace
-
-end
-
-end OAI

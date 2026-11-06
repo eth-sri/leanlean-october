@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport CenteredMomentSupportedCorrelation ConcretePrimeRowBridge
 
 lemma finite_fourier_invariant_unit {R : Type*} [CommRing R] [Fintype R]
     (F : R→ℂ) (ψ : AddChar R ℂ) (u : Rˣ) (hF : ∀ x,F ((u:R)*x)=F x) (H : R) :
@@ -106,8 +103,3 @@ theorem bareSourceCoefficient_product_frequency (η : HeckeFamily.Character) (I 
   rw [show a^6*b^6=(a*b)^6 by ring] at hj
   rw [hi,hj] at he
   exact he
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

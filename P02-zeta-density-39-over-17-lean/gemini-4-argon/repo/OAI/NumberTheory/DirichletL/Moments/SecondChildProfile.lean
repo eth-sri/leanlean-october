@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondChildProfile
-open HeckeFamily HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeExpansion
-open CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentChildAssembly
-open CenteredMomentSecondScaled CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
-open ConcretePrimeRowBridge CenteredMomentCommonSupport
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentChildAssembly CenteredMomentSecondScaled CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion ConcretePrimeRowBridge CenteredMomentCommonSupport
 
 theorem child_ideal_primary (η : Character) (χ : RayCharacter)
     (I : Ideal O) (hI : Supported I) :
@@ -26,9 +22,3 @@ theorem child_ideal_primary (η : Character) (χ : RayCharacter)
   rw [hs] at hc he
   rw [hc,childCharacter_primary η χ _ (by rw [hs];exact hI)
     (CompletedGauss.primaryGenerator_spec I hn).2,←he]
-
-end SevenEighths.CenteredMomentSecondChildProfile
-
-end
-
-end OAI

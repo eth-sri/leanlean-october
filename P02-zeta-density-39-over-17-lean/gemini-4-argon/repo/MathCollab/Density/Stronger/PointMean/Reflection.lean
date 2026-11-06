@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.PointMean.OffCriticalPositive
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -214,4 +213,3 @@ theorem exists_heathBrown_offCritical_minus_strong_le :
     _ = P * Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) *
           (1 + heathBrownStrongMellinCriticalMoment delta t) := by ring
 
-end MathCollab.Density.Stronger.PointMean

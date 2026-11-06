@@ -11,12 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginal
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyZeroUnbalancedOriginalPower
-open CenteredMomentEnergyZeroUnbalancedOriginalGates
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroUnbalancedOriginalPower CenteredMomentEnergyZeroUnbalancedOriginalGates
 
 theorem original_unbalanced_from_zero_low
     (a b bΦ rho ε Mcap Bmask:ℝ)
@@ -81,9 +76,3 @@ theorem original_unbalanced_from_zero_low
       rw [hh]
     have hh:=hordered p' X₂ X₁ hX₂ hX₁ hshort (by linarith)
     simpa only [hswap,hpcontrol] using hh
-
-end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginal
-
-end
-
-end OAI

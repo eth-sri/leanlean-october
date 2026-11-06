@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff Topology
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeInverseAmplification
-open HeckeFamily HeckeDyadic HeckeDetectorRowwise
-open ConcretePrimeRowBridge hiding O
+open HeckeFamily HeckeDyadic HeckeDetectorRowwise ConcretePrimeRowBridge
 
 def scaleSupport (upper b : ℝ) : Finset (Ideal O) := idealsUpTo ⌈Real.exp upper*b⌉₊
 
@@ -76,9 +75,3 @@ theorem exists_scale_majorant {ι : Type*} (rows : Finset ι) (χ : ι→Charact
       scaleSum_eq_polynomial (χ i) W S (t i) (scaleSupport_cover W a b hi (t i) hb hWs (ht i).2)] at hh
     exact hh
   · exact rowwise_scales rows χ W a b hb hWs hW lo hi E hlh t (fun i hi => ht i) h0 h1
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

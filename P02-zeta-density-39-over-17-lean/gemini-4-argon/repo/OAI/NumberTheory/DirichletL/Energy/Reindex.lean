@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyReindex
 open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
 
 variable {α β:Type*}[Fintype α][Fintype β]
 
@@ -42,9 +41,3 @@ theorem energy_subset_map (e:α↪β)(T:Finset α)(η:Character)(m A:O)(W₁ W�
   energy_reindex (Finset.equivMap e T) η m A W₁ W₂
     (fun i:T.map e=>pool i) (fun i:T.map e=>coeff i) (fun i:T.map e=>P i)
     t X₁ X₂ keep Φ K
-
-end SevenEighths.CenteredMomentEnergyReindex
-
-end
-
-end OAI

@@ -11,7 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1)
@@ -77,8 +76,3 @@ theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
       calc
         _ = (CL*CG)*(η.modulus.absNorm:ℝ)^δ*(N^(3/5+δ/2)*N^(δ/2))*(∏i,(Y i)^r)*(3+|x.im|)^2*(3+|w.im|)^2 := by ring
         _ = _ := by rw [hp]
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

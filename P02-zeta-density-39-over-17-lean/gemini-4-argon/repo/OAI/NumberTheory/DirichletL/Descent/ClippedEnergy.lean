@@ -12,7 +12,6 @@ open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
 open InverseInitialClippedColumns InverseInitialOverlapFourier CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type*}[DecidableEq ι]
   (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -87,9 +86,3 @@ theorem canonical_clipped_energy
   simp_rw [heq] at hh
   rw [normalized_energy_vector p hp hcop hg pool Ψ m slots lists a labels rows D hD] at hh
   simpa only [b,density_norm,g] using hh
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

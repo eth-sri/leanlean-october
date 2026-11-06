@@ -34,6 +34,4 @@ theorem heathBrownKthDerivativeTheorem_native :
     heathBrownVMVTMainConjecture_native
 
 
-end
 
-end GafniTao

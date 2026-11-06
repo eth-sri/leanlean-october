@@ -116,4 +116,3 @@ theorem centeredKernel_uniform_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       exact centeredKernel_count hl hL
     _ = _ := by ring
 
-end GuthMaynard.Improvement

@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open CanonicalQuadraticSieve (columnDyadicLength)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma improved_shape_shell (M N Y ξ : ℝ) (hM : 0 < M) (hN : 0 < N) (hY : 0 ≤ Y)
     (hYN : Y ≤ 2*N) (hξ : 1 ≤ ξ) (hξ2 : ξ ≤ 2) :
@@ -113,8 +112,3 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
   calc
     _ = (64*K*D)*(N^θ*N^(6*θ))*S*∑ j, ‖a j‖^2 := by dsimp [D]; ring
     _ = _ := by rw [hp]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

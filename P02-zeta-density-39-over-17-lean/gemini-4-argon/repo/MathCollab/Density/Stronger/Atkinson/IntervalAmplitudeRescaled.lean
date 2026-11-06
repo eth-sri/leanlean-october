@@ -64,4 +64,3 @@ theorem exists_intervalC1Bound_rescaled {f : ℝ → ℂ}
         _ ≤ T * (C / T) := mul_le_mul_of_nonneg_right (by linarith) hfac
         _ = C := by field_simp
 
-end MathCollab.Density.Stronger.Atkinson

@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
@@ -27,8 +26,3 @@ structure SectorArithmetic (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
     actualCuspColumn (completion K P hp) s hc u m n b=actualCuspColumn referenceArithmetic s hc u m n b
 
 attribute [instance] SectorArithmetic.referenceFintype
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

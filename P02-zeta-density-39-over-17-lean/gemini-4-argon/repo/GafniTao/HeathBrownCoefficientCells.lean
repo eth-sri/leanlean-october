@@ -79,6 +79,4 @@ theorem measure_heathBrownCoefficientCell
   rw [min_eq_right (two_mul_heathBrownCellRadius_le_one hH j)]
 
 
-end
 
-end GafniTao

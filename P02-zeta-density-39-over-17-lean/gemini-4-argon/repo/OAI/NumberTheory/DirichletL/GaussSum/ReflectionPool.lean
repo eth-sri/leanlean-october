@@ -7,94 +7,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
-namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
-local instance poolMaximalCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : P.val.IsMaximal :=
-  completedReflectionPool_maximal I Q P
-noncomputable local instance poolFieldCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Field (Eis⧸P.val) :=
-  Ideal.Quotient.field P.val
-noncomputable local instance poolFintypeCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Fintype (Eis⧸P.val) :=
-  Fintype.ofFinite _
-
-end CompletedGauss
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve
 
 lemma actualSextic_sixth_one (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P) :
     actualSextic P hg^6=1 := by
@@ -145,8 +66,7 @@ lemma primeIndex_pairwise_coprime (I:Ideal Eis) :
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
 
 lemma coprimalityMask_good_part (u:Eisˣ) (a b:ℕ) (r n:Eis)
     (hn:Supported (Ideal.span {n})) :
@@ -211,8 +131,7 @@ lemma fixedNumeratorTwist_periodic (Ψ:Eis→*ℂ) (Q:Ideal Eis)
 end CanonicalRowCompletion
 
 namespace ShortDraftCusp
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicEisenstein FiniteGaussPhase
 noncomputable local instance A4unitsField (P:Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
 
@@ -268,45 +187,12 @@ theorem exists_A4_local_units {ι:Type*} [Fintype ι]
 
 end ShortDraftCusp
 
-section
-open scoped BigOperators Classical MatrixGroups Matrix
 
-namespace ShortDraftCusp
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
-open CompletedGauss CubicKubota CubicJacobiGlobal LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance principalStratumField (P:Ideal Eis) [P.IsMaximal] :
-    Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance principalStratumFintype (P:Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
 
-end ShortDraftCusp
-
-namespace CubicEisenstein
-open ActualEisensteinCubic CubicKubota EisensteinCuspModThree ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
-
-end CubicEisenstein
-end
-
-namespace CubicEisenstein
-open scoped BigOperators Classical ContDiff MatrixGroups Matrix
-
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic
-open CubicKubota CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets FiniteGaussPhase
-local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance smoothingField (P:Ideal Eis) [P.IsMaximal] :
-    Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance smoothingFintype (P:Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
-
-end CubicEisenstein
-
-open scoped Classical BigOperators MatrixGroups
+open scoped MatrixGroups
 
 namespace ShortDraftCRT
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT PrimaryIdealUnitReindex
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss PrimaryIdealUnitReindex
 
 lemma exists_primary_unit_multiple (x:Eis) (hx:¬lambda∣x) :
     ∃u:Eisˣ,lambda^2∣u.val*x-1 := by
@@ -375,9 +261,3 @@ theorem exists_normalized_rational_cusp (a c:Eis) (hc:c≠0) :
     have hf:=eisEmbedding_ne_zero hcp
     have hu0:=eisEmbedding_ne_zero u.ne_zero
     field_simp
-
-end ShortDraftCRT
-
-end
-
-end OAI

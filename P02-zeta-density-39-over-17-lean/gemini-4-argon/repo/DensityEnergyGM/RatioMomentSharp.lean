@@ -37,4 +37,3 @@ theorem ratio_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
   rw [← coefficient_one_difference_eq_ratio_second]
   exact h M T (fun _ => 1) W hM hT hMT (by simp) hSep hBase
 
-end Montgomery.RationalMoment

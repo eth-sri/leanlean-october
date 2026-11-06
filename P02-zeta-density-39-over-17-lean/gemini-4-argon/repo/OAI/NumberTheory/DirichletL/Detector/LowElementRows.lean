@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 def lowElementRowPoint (m : O) : Oˣ×Id :=
@@ -99,8 +97,3 @@ lemma lowNumeratorRows_norm_bound (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (h
 
 lemma low_unit_card : Fintype.card Oˣ=6 := by
   simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

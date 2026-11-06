@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityRapidTail
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseMoment InversePrincipalEnergy InverseSecondPrincipalCaller
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseMoment InversePrincipalEnergy InverseSecondPrincipalCaller
 
 theorem marked_rapid_tail (Lcap tau saving : ℝ) (hLcap : 0≤Lcap) (htau : 0<tau) :
     ∃ (s : Finset (ℕ×ℕ)) (Ct : ℝ),0<Ct ∧
@@ -69,9 +67,3 @@ theorem marked_rapid_tail (Lcap tau saving : ℝ) (hLcap : 0≤Lcap) (htau : 0<t
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-
-end SevenEighths.InverseWholePriorityRapidTail
-
-end
-
-end OAI

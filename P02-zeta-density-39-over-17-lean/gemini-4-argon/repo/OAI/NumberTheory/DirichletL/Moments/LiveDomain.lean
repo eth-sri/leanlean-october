@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentLiveDomain
-open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
-open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
-open CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve CenteredMomentGaussEnergy
 
  theorem finite_column_mem {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))
     (β : Tuple ι → ℂ) (a : Ideal O) (ha : finiteColumnCoefficient S β a≠0) : a∈finiteColumns S := by
@@ -66,7 +62,6 @@ theorem source_gaussPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z :
   rfl
 
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem live_column_sum (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
@@ -133,9 +128,3 @@ theorem live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   exact congrArg (fun x : ℂ => ((‖x‖^2:ℝ):ℂ)*W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K))
     (live_gaussPolynomial S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
       X₁ X₂ Y₁ Y₂ B₁ B₂ f z)
-
-end SevenEighths.CenteredMomentLiveDomain
-
-end
-
-end OAI

@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open HeckeDetectorCoefficientTransfer CenteredMomentRetainedEnergy
-open CenteredMomentPrimeSlot CenteredMomentWholeSlotDeletion
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification HeckeDetectorCoefficientTransfer CenteredMomentRetainedEnergy CenteredMomentPrimeSlot CenteredMomentWholeSlotDeletion
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem source_plain_pair_norm
@@ -65,9 +62,3 @@ theorem momentData_plain_pair_norm
   intro n
   simpa only [ProbeHighRowFamily.momentData,ProbeHighRowFamily.momentElement,one_mul] using
     (ProbeHighRowFamily.momentData η).character_spec (ProbeHighRowFamily.momentElement u) n
-
-end SevenEighths.CenteredMomentDetectorDictionary
-
-end
-
-end OAI

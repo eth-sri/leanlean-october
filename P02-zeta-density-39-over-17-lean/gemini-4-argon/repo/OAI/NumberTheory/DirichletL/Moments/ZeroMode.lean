@@ -9,12 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentZeroMode
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcreteTraceCRT CubicEisenstein
-open CenteredMomentRowNorm CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentFourier
-open UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcreteTraceCRT CubicEisenstein CenteredMomentRowNorm CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentFourier UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
 
 @[simp] theorem pairResidue_mul (a b : O) (ha : Supported (Ideal.span {a}))
     (hb : Supported (Ideal.span {b})) (x y : Residue (a * b)) :
@@ -287,9 +282,3 @@ theorem ideal_zero_energy_bound (ε : ℝ) (hε : 0 < ε) :
     congr 1
     ring
   simpa only [idealZeroEnergy, Fintype.sum_prod_type, hp] using hh
-
-end SevenEighths.CenteredMomentZeroMode
-
-end
-
-end OAI

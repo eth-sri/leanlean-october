@@ -12,7 +12,6 @@ open scoped BigOperators Classical
 open MeasureTheory
 namespace SevenEighths.ProbeRow
 open ActualEisensteinCubic CompletedGauss CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 theorem fullIdealWeight_norm_eq_of_re (s t : ℂ) (h : s.re = t.re) (I : Ideal O) :
     ‖fullIdealWeight s I‖ = ‖fullIdealWeight t I‖ := by
@@ -101,8 +100,3 @@ theorem spectralRow_vertical_integrable (S : Finset (Ideal O)) (D : Ideal O)
       mul_le_mul_of_nonneg_left (spectralRow_vertical_bound S D Ψ hΨ σ hσ y)
         (mul_nonneg (mul_nonneg (Real.rpow_nonneg hZ.le _) (Real.exp_pos _).le) (Real.exp_pos _).le)
     _ = _ := by ring
-
-end SevenEighths.ProbeRow
-end
-
-end OAI

@@ -125,4 +125,3 @@ theorem segmentTaylorAverage_contDiffOn
         by simp,?_⟩
       exact (ih (k+1)).congr (fun x hx => (segmentTaylorAverage_hasDerivAt hf ha hx k).deriv)
 
-end TaoTrudgianYang2025

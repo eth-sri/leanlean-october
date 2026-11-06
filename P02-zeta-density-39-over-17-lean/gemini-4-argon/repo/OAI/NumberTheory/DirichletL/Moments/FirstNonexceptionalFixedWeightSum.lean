@@ -1,28 +1,3 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstNonexceptionalWeightSum
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceFixedFamily
-
-@[expose] public section
-
-namespace OAI
-
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
-
-namespace SevenEighths.CenteredMomentFirstNonexceptionalFixedWeightSum
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve RayFourExpansion
-open CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstPhysicalSource
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentActiveSource CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSupportedCorrelation CenteredMomentSecondRetainedAggregate
-local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
-
-end SevenEighths.CenteredMomentFirstNonexceptionalFixedWeightSum
-
-end
-
-end OAI

@@ -10,10 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentNaturalReflection
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentNaturalPrimitive
-open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
 
 lemma polynomial_coeff_congr (χ ψ : Character)
     (h : ∀I,idealCoeff χ I=idealCoeff ψ I) (W : ℝ→ℂ) (X : ℝ) :
@@ -97,9 +94,3 @@ theorem original_inverse_reflection (χ : Character) (hn : χ.residue≠1) :
   unfold reflectedTerm
   rw [←polynomial_coeff_congr χ.inverse _
     (inverse_deletion_coeff χ ψ _ (redundantSet_prime χ.modulus ψ.modulus) hcoeff)]
-
-end SevenEighths.CenteredMomentNaturalReflection
-
-end
-
-end OAI

@@ -110,4 +110,3 @@ theorem short_density_mean_budget {σ H N : ℝ} (hσ : 9/13 ≤ σ)
       congr 1; ring
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH he
 
-end GuthMaynard.Improvement

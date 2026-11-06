@@ -37,9 +37,3 @@ open HeckeInverseAmplification HeckeDyadic JointLogSeparation
     (hbound (σ,0) hp (t/(2*Real.pi))).trans
     (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (by linarith) n) hB.le)
   exact (mul_le_mul_of_nonneg_left hb hA.le).trans_eq (by ring)
-
-end SevenEighths.CenteredMomentDetectorDictionary
-
-end
-
-end OAI

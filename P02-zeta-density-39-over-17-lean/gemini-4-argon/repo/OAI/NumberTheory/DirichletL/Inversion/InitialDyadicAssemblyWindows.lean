@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.InverseInitialDyadicAssembly
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
-open Filter
+open CenteredMomentSectorLocalization CenteredMomentDyadicCount Filter
 
 theorem cutoff_norm_le (i:Fin 4)(x:ℝ) : ‖cutoff i x‖≤1 := by
   simpa only [cutoff,Complex.norm_real,Real.norm_eq_abs,
@@ -46,9 +45,3 @@ theorem window_exponent_eventual_upper (C η:ℝ)(_hC:0<C)(hη:0<η) :
     _=(4*C)*Z^R:=by ring
     _≤Z^η*Z^R:=mul_le_mul_of_nonneg_right ht (Real.rpow_nonneg (by positivity) _)
     _=Z^R*Z^η:=mul_comm _ _
-
-end SevenEighths.InverseInitialDyadicAssembly
-
-end
-
-end OAI

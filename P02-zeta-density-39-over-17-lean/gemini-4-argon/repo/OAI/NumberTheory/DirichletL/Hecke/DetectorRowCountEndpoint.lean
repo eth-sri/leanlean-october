@@ -87,9 +87,3 @@ theorem high_bin_count {B C U δ r ε γ : ℝ}
     have hh := mul_le_mul_of_nonneg_left hr (show 0≤δ by linarith)
     have hh' := mul_le_mul_of_nonneg_right hδ' hγ
     nlinarith
-
-end SevenEighths.HeckeDetectorRowCount
-
-end
-
-end OAI

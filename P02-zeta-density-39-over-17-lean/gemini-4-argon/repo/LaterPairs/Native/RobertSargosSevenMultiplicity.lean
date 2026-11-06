@@ -67,5 +67,4 @@ theorem robertSargos_count_multiplicity_algebra {N B ε : ℝ}
   rw [Real.mul_rpow hNp.le hB]
   exact mul_le_mul_of_nonneg_right hp (Real.rpow_nonneg hB _)
 
-end TaoTrudgianYang2025
 

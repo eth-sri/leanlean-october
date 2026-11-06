@@ -14,7 +14,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel : Eis}
 
@@ -143,7 +142,3 @@ theorem low_fixed_member_geometry_uniform
   apply (hD θ r aw hqk hqp hKn hPn hr haw).trans
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow_of_exponent_le hz.le (by linarith)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

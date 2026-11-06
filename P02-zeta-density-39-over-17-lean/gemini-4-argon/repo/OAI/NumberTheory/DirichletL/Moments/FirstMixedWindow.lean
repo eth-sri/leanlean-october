@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstMixedWindow
-open CenteredMomentFirstMixedRoot CenteredMomentFirstMixedAllowance CenteredMomentSecondWindowBudget
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
-open CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentCompleteCommon
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFirstScale CenteredMomentFirstNonexceptionalPrefactor
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFirstMixedRoot CenteredMomentFirstMixedAllowance CenteredMomentSecondWindowBudget CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentCompleteCommon HeckeFamily CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstScale CenteredMomentFirstNonexceptionalPrefactor
 
 theorem original_four_budget_reference {ι:Type*}[Fintype ι][DecidableEq ι]
     (s:Input ι)(R seed:Ideal O)(a₁ a₂:ℝ)(ha₁:0<a₁)(ha₂:0<a₂)
@@ -66,9 +59,3 @@ theorem original_four_budget_reference {ι:Type*}[Fintype ι][DecidableEq ι]
     Real.sqrt_mul (hEL i)] at hh'
   unfold windowBudget
   nlinarith only [hh']
-
-end SevenEighths.CenteredMomentFirstMixedWindow
-
-end
-
-end OAI

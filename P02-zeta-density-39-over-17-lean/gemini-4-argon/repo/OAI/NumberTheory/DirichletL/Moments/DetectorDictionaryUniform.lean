@@ -94,9 +94,3 @@ theorem compact_family_frequencyTwist
     gcongr
   exact hb.trans (mul_le_mul hzC
     (pow_le_pow_right₀ (by linarith [norm_nonneg t]) (Finset.le_sup hz)) (by positivity) (by linarith))
-
-end SevenEighths.CenteredMomentDetectorDictionary
-
-end
-
-end OAI

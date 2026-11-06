@@ -1818,11 +1818,6 @@ noncomputable def gmCubicFrequencyOscillation (N : ℕ)
     gmTraceOscillation ((N : ℝ) * (m.2.1 : ℝ)) p.1.2 *
     gmTraceOscillation ((N : ℝ) * (m.2.2 : ℝ)) p.2
 
-@[simp]
-theorem norm_gmCubicFrequencyOscillation (N : ℕ)
-    (m : ℤ × (ℤ × ℤ)) (p : (ℝ × ℝ) × ℝ) :
-    ‖gmCubicFrequencyOscillation N m p‖ = 1 := by
-  simp [gmCubicFrequencyOscillation]
 
 /-- Before changing variables, the finite sum inside a triple mode is the
 common Fourier phase times the cyclic trace-kernel sum. -/
@@ -2226,9 +2221,6 @@ noncomputable def gmCubicCutoffSqSchwartz (cutoff : GMSmoothCutoff) :
   (hasCompactSupport_gmCubicCutoffSq cutoff).toSchwartzMap
     (contDiff_gmCubicCutoffSq cutoff)
 
-@[simp]
-theorem gmCubicCutoffSqSchwartz_apply (cutoff : GMSmoothCutoff) (z : ℝ) :
-    gmCubicCutoffSqSchwartz cutoff z = gmCubicCutoffSq cutoff z := rfl
 
 /-- The unscaled compact factor `z² w(z)²`. -/
 noncomputable def gmCubicBaseWeight (cutoff : GMSmoothCutoff) (z : ℝ) : ℂ :=
@@ -2252,9 +2244,6 @@ noncomputable def gmCubicBaseWeightSchwartz (cutoff : GMSmoothCutoff) :
   (hasCompactSupport_gmCubicBaseWeight cutoff).toSchwartzMap
     (contDiff_gmCubicBaseWeight cutoff)
 
-@[simp]
-theorem gmCubicBaseWeightSchwartz_apply (cutoff : GMSmoothCutoff) (z : ℝ) :
-    gmCubicBaseWeightSchwartz cutoff z = gmCubicBaseWeight cutoff z := rfl
 
 theorem norm_iteratedDeriv_gmCubicBaseWeight_le
     (cutoff : GMSmoothCutoff) (n : ℕ) (z : ℝ) :
@@ -5659,18 +5648,6 @@ theorem gmCubicS3_prop7_2_explicit
 
 /-! ## Lemma 8.3 for the source smoother -/
 
-theorem gmCubicLocalBump_eq_zero_of_two_le_abs
-    {x : ℝ} (hx : 2 ≤ |x|) : gmCubicLocalBump x = 0 := by
-  by_contra hne
-  have hsupp : x / 2 ∈ Function.support dfiUnitRedundantBump := by
-    simpa only [Function.mem_support, gmCubicLocalBump] using hne
-  rw [dfiUnitRedundantBump.support_eq, Metric.mem_ball, Real.dist_eq] at hsupp
-  simp only [sub_zero, show dfiUnitRedundantBump.rOut = (1 : ℝ) by rfl] at hsupp
-  have habs : |x / 2| = |x| / 2 := by
-    rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-  rw [habs] at hsupp
-  linarith
-
 theorem gmR_exp_eq_gmRPhase (W : Finset ℝ) (x : ℝ) :
     gmR W (Real.exp x) = gmRPhase W x := by
   rw [gmR_eq_gmRPhase_log (Real.exp_ne_zero x)]
@@ -6350,4 +6327,3 @@ theorem gmEventuallyLogNatPower_le_rpow
   rw [← Real.rpow_natCast]
   exact hBound
 
-end GuthMaynard.NativeMoment

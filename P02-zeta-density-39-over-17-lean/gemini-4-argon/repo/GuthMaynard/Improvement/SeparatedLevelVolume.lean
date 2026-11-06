@@ -62,4 +62,3 @@ theorem level_volume_of_separated_bound {S : Set ℝ} {a b B : ℝ}
   have hcounts : (K.card:ℝ) ≤ 2*(J.card:ℝ) := by exact_mod_cast hcount
   linarith
 
-end GuthMaynard.Improvement

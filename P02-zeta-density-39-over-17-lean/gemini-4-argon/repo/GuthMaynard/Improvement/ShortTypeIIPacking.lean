@@ -98,4 +98,3 @@ theorem short_typeII_window_packing :
       linarith
     _ = _ := integral_const_mul _ _
 
-end GuthMaynard.Improvement

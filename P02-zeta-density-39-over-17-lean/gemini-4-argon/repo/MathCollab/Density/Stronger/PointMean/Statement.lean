@@ -78,4 +78,3 @@ theorem heathBrownLemmaThreeMoment_le_centered
       (fun v : ℝ ↦ zetaMomentCriticalNorm v ^ (2 : ℕ))
       (continuous_zetaMomentCriticalNorm.pow 2) t (t - L) (t + L)
 
-end MathCollab.Density.Stronger.PointMean

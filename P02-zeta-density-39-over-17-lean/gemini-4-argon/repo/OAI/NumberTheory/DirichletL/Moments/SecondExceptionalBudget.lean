@@ -1,32 +1,3 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalOriginalBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalLedger
-
-set_option linter.privateModule false
-
-@[expose] public section
-
-namespace OAI
-
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open MeasureTheory
-
-namespace SevenEighths.CenteredMomentSecondExceptionalBudget
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentSecondExceptionalOriginalBlock CenteredMomentSecondPhysicalLedger
-open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentCommonExceptionalCost
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentForcing CenteredMomentSecondCanonicalNonunit
-open CenteredMomentHeckeColumnWindow CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-local notation "O"=>HeckeFamily.O
-universe u
-variable {ι:Type u}[Fintype ι][DecidableEq ι]
-
-end SevenEighths.CenteredMomentSecondExceptionalBudget
-
-end
-
-end OAI

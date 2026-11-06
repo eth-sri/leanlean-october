@@ -114,4 +114,3 @@ theorem source_fourier_derivative_interval_l1 {f : ℝ → ℂ}
     _ ≤ 2*Real.sqrt ((2*Real.pi*R)^2*(∫ t, ‖f t‖^2)) := by gcongr
     _ = _ := by rw [Real.sqrt_mul (sq_nonneg _),Real.sqrt_sq (by positivity : 0 ≤ 2*Real.pi*R)]; ring
 
-end GuthMaynard.Improvement

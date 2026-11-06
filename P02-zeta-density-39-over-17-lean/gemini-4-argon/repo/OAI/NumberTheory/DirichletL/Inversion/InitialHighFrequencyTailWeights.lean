@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialEnergyCallerWeights
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialEnergyCallerWeights
 variable {ι σ : Type*} [DecidableEq ι]
 
 theorem marked_support_norm_bound
@@ -51,9 +49,3 @@ theorem initialColumn_mark_norm
   exact (mul_le_mul_of_nonneg_right
     ((initialColumn_norm_le p hp hcop hg hc Ψ j C d h S).trans (hΨ _))
     (norm_nonneg _)).trans_eq (one_mul _)
-
-end SevenEighths.InverseInitialHighFrequencyTail
-
-end
-
-end OAI

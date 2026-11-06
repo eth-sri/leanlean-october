@@ -11,8 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion ActualEisensteinCubic HeckeInverseAmplification CenteredExceptionalCount ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 theorem sixthRow_surjective (H : NonzeroFrequency) :
     ∃p : FreeRow×HeckeInverseAmplification.NonzeroIdeal,rowMap p=H.val := by
@@ -70,8 +68,3 @@ lemma sixthFrequencyEquiv_primary (p : FreeRow×HeckeInverseAmplification.Nonzer
     (hP : CanonicalQuadraticSieve.Supported p.2.val) :
     (sixthFrequencyEquiv p).val=p.1.val*(CompletedGauss.primaryGenerator p.2.val)^6 := by
   rw [sixthFrequencyEquiv_apply,idealGenerator_sixth_eq_primary p.2.val hP]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -108,4 +108,3 @@ theorem sum_truncated_exp_kernel_zeta_sq_le_localSecondMoment
     _ = 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ)) := by
       rfl
 
-end MathCollab.Density.Stronger.PointMean

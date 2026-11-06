@@ -47,4 +47,3 @@ theorem reflection_mellin_integral_bound (w : MathCollab.Density.ReflectionCutof
   · filter_upwards with r
     exact mul_le_mul_of_nonneg_left (hB r) (norm_nonneg _)
 
-end GuthMaynard.Improvement

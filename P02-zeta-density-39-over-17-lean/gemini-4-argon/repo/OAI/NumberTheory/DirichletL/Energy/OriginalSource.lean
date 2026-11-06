@@ -12,18 +12,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalSource
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentEligibleEnergy CenteredMomentCommonRadialData
-open CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow
-open CenteredMomentHeckeExpansion CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open CenteredMomentHeckeHeight
-open CenteredMomentDivisorRowEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceRectangleEnergy
-open CenteredMomentPositiveSummability CenteredMomentPlainEnergy CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentEligibleEnergy CenteredMomentCommonRadialData CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentHeckeHeight CenteredMomentDivisorRowEnergy CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceRectangleEnergy CenteredMomentPositiveSummability CenteredMomentPlainEnergy CenteredMomentRowNorm
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-local instance energyOriginalSourceDecidableSum : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 def completeInput (s : Data ι) (hz₁ : s.W₁ 0=0) (hz₂ : s.W₂ 0=0)
     (hν : ∀i I,‖s.ν i I‖≤1) (hW : ∀i x,‖s.W i x‖≤s.M i)
@@ -247,10 +237,3 @@ def naturalInput : Input ι :=
     (CenteredMomentDetectorPlainSource.support_zero (p.profile 1) a b ha (p.support 1))
     (fun i I=>idealCoeff_norm_le_one (ν i) I) hWslot aslot bslot haslot
     (fun _=>le_refl _) (fun _=>le_refl _)
-
-end Natural
-end SevenEighths.CenteredMomentEnergyOriginalSource
-
-end
-
-end OAI

@@ -163,4 +163,3 @@ theorem dirichlet_product_polynomial {N : ℝ} (hN : 0 ≤ N) (X : ℕ)
   rw [← dirichlet_phase_product hn0 hm0]
   ring
 
-end GuthMaynard.Improvement

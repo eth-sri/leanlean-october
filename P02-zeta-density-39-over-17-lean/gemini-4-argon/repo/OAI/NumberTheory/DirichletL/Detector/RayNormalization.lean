@@ -11,7 +11,6 @@ open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeRayNormalization
 open HeckeFamily ProbePhysical ProbeRaySlots
-local notation "Id" => Ideal HeckeFamily.O
 
 theorem log_power_absorption (c ell d : ℝ) (hc : 0<c) (hell : 0<ell) (hd : 0<d) :
     ∀ᶠZ : ℝ in atTop,Z^(ell/6-d)≤c*(Z^ell)^(1/6:ℝ)/Real.log (Z^ell) := by
@@ -109,8 +108,3 @@ theorem ray_principalScalar_inverse_subpower {ι : Type*} (J : Finset ι)
       (hsupp i hi) (hW i hi) (hc i hi) (hp i hi) (hW0 i hi) (hWne i hi) (ell i) d (hell i hi) hd
   filter_upwards [hm,eventually_ge_atTop (1:ℝ)] with Z hmass hZ
   exact principalScalar_inverse_of_slot_bounds J ell _ Z d eps hZ hd.le hb hmass
-
-end SevenEighths.ProbeRayNormalization
-end
-
-end OAI

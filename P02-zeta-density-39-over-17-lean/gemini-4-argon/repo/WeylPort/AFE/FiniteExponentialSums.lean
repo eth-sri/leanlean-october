@@ -244,4 +244,3 @@ theorem norm_finiteS1_half_integer_le (k : ℤ) {y : ℝ} (hy : 1 ≤ y) :
   have h := (abs_le.mp (finiteS1_half_integer_error k hy)).2
   linarith
 
-end DhimanKadiriQuesadaHerrera2026

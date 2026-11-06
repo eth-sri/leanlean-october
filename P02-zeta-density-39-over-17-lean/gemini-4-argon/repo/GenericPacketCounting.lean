@@ -188,4 +188,3 @@ theorem count_exponent_budget {k l D H G Y ν : ℝ}
       ring_nf at hx hy ⊢
       nlinarith
 
-end Montgomery.CriticalPeak

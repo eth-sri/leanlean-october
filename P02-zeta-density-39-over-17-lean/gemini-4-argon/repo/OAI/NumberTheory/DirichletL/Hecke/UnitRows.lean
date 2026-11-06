@@ -9,12 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeUnitRows
-open HeckeFamily CanonicalUnitEuler CanonicalRowCompletion
-open ActualEisensteinCubic CubicRamified ConcreteTraceCRT
-open CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalUnitEuler CanonicalRowCompletion ActualEisensteinCubic CubicRamified ConcreteTraceCRT CanonicalQuadraticSieve
 local notation "ω" => HeckeFamily.omega
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem supported_unit_thirty_six (n : O) (hn : Supported (Ideal.span {n})) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {(36 : O)}) n) := by
@@ -52,9 +48,3 @@ theorem elementCoeff_character (u : Oˣ) (n : O) :
   · rfl
   · change 0 = if Supported (Ideal.span {n}) then _ else 0
     rw [ite_eq_right (fun hs => hn (supported_unit_thirty_six n hs))]
-
-end SevenEighths.HeckeUnitRows
-
-end
-
-end OAI

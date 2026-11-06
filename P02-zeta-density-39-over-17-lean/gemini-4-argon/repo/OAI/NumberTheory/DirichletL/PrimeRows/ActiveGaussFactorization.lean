@@ -7,66 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
-namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT
 
-end ConcretePrimeRowBridge
-
-open scoped BigOperators Classical
 namespace ActualEisensteinCubic
 
 def activeSupport {α : Type*} [DecidableEq α] (S T : Finset α) : Finset α :=
@@ -151,16 +95,11 @@ theorem finiteSquarefreeRow_pair_activeSupport {α : Type*} [DecidableEq α]
   have hk := finiteSquarefreeRow_pair_kernel P hgood S T u
   simpa only [mul_assoc] using hk
 
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 end ActualEisensteinCubic
 
-namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT EisensteinSchwartzPoisson
 
-end ConcretePrimeRowBridge
-
-open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 
@@ -187,8 +126,8 @@ end IdealGaussCRT
 
 namespace FiniteGaussPhase
 
-abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+protected abbrev O := ActualEisensteinCubic.O
+open EisensteinSchwartzPoisson
 
 def cofactor {ι : Type*} [Fintype ι] (p : ι → O) (i : ι) : O :=
   ∏ k ∈ Finset.univ.erase i, p k
@@ -380,7 +319,6 @@ theorem canonicalProductGauss_constant_power {ι : Type*} [Fintype ι]
   rw [canonicalProductGauss_cross_factors]
   simp only [MulChar.pow_apply' _ hj, Finset.prod_pow]
 
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
 def angularFactor (a : O) : ℂ := eisEmbedding a / (‖eisEmbedding a‖ : ℂ)
 
@@ -519,9 +457,3 @@ theorem norm_canonicalProductGauss {ι : Type*} [Fintype ι]
   rw [norm_div, hnorm, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (norm_nonneg _)]
   exact div_self (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hc))
-
-end FiniteGaussPhase
-
-end
-
-end OAI

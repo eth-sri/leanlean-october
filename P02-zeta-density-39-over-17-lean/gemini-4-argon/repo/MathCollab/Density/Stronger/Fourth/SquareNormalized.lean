@@ -7,9 +7,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareContour
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped ComplexConjugate Interval
 set_option autoImplicit false
 noncomputable section
@@ -309,4 +307,3 @@ theorem norm_zetaFourthKernel_vertical (t c u : ℝ) :
   rw [norm_div, norm_mul, norm_mul, norm_mul, Complex.norm_exp, he,
     norm_gammaSquare_div_zetaSquareGammaNormalization]
 
-end MathCollab.Density.Stronger.Fourth

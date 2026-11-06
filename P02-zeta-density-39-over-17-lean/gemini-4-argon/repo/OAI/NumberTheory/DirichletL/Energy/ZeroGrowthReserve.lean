@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthReserve
-open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
-open CenteredMomentEnergyReferenceScalarBounds
+open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource CenteredMomentEnergyReferenceScalarBounds
 
 theorem ledger_bound (Mcap Bmask bΦ L d loss defect xi saving ε:ℝ)
     (_hM:0≤Mcap)(_hB:0≤Bmask)(hL:0≤L)(hd:0<d)
@@ -63,9 +62,3 @@ theorem ledger_bound (Mcap Bmask bΦ L d loss defect xi saving ε:ℝ)
     _≤A^d*B*Z^(s.width+ε)+A^(2*d)*Z^(s.width+ε):=by
       simpa only [mul_add] using add_le_add hreflect herr
     _=_:=by ring
-
-end SevenEighths.CenteredMomentEnergyZeroGrowthReserve
-
-end
-
-end OAI

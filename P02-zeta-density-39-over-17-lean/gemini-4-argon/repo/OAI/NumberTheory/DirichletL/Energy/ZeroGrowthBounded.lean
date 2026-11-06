@@ -10,16 +10,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthBounded
-open CenteredMomentNaturalRowSource
-open HeckeFamily HeckeDyadic QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth
-open CenteredMomentEnergyZeroGrowthWindow CenteredMomentEnergyZeroReflectionSupport
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentFiniteProfileExceptional
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-local notation "O"=>HeckeFamily.O
+open CenteredMomentNaturalRowSource HeckeFamily HeckeDyadic QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthWindow CenteredMomentEnergyZeroReflectionSupport CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceHomogeneous CenteredMomentFiniteProfileExceptional CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentEnergyZeroGrowthReflection CenteredMomentEnergyZeroGrowthBounds
 
-open CenteredMomentEnergyZeroGrowthReflection CenteredMomentEnergyZeroGrowthBounds
 
 theorem live_deleted_bounded (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
@@ -86,9 +78,3 @@ theorem live_deleted_bounded (a b bΦ epsilon xi defect saving Lreflect:ℝ)
       (show 0≤D*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*epsilon)*
         (sourceControl Slong Wlong)^2*(1+‖t‖)^(2*nlong)*Z^(-2*saving) by positivity)
     convert he using 1 ; ring
-
-end SevenEighths.CenteredMomentEnergyZeroGrowthBounded
-
-end
-
-end OAI

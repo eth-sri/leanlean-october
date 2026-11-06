@@ -5,8 +5,7 @@ public import MathCollab.Density.DetectorEstimates
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -202,4 +201,3 @@ theorem tendsto_smoothDetector_horizontal_integral {ψ : ℝ → ℝ} {a b : ℝ
   have hmul := mul_le_mul_of_nonneg_left hlength (by positivity : 0 ≤ C/(1+R)^2)
   exact (intervalIntegral.norm_integral_le_of_norm_le_const hpoint).trans (by simpa using hmul)
 
-end MathCollab.Density.Stronger

@@ -68,9 +68,3 @@ lemma log_interval (Z L d:ℝ)(hZ:1≤Z)(hL:0≤L)(hd:0<d):
   calc
     _≤Z^d+2*L*(Z^d/d):=by nlinarith
     _=(1+2*L/d)*Z^d:=by ring
-
-end SevenEighths.CenteredMomentEnergyReferenceScalarBounds
-
-end
-
-end OAI

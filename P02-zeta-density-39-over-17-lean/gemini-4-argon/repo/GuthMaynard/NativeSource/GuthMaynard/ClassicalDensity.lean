@@ -73,21 +73,7 @@ noncomputable def inghamZeroDetector (X : ℕ) (s : ℂ) : ℂ :=
   (2 - riemannZeta s * zetaMollifier X s) *
     (riemannZeta s * zetaMollifier X s)
 
-/-- There are no zeta zeros in a rectangle whose real interval is the
-singleton `{1}`. -/
-theorem zerosInRect_one_eq_empty (T₁ T₂ : ℝ) :
-    zerosInRect 1 1 T₁ T₂ = ∅ := by
-  apply Finset.eq_empty_iff_forall_notMem.mpr
-  intro s hs
-  rw [zerosInRect, Set.Finite.mem_toFinset, Set.mem_inter_iff] at hs
-  rcases hs with ⟨hsRect, hsZero⟩
-  rw [mem_ZeroRectangle] at hsRect
-  exact riemannZeta_ne_zero_of_one_le_re hsRect.1 hsZero
 
-/-- The symmetric zeta-zero count vanishes identically at `σ = 1`. -/
-@[simp] theorem N_one (T : ℝ) : N 1 T = 0 := by
-  rw [N, zeroCountRect, zerosInRect_one_eq_empty]
-  simp
 
 /-- All zeta zeros in one unit-height bin of a positive dyadic slab. -/
 noncomputable def zeroUnitBin (σ T : ℝ) (z : ℤ) : Finset ℂ :=
@@ -411,4 +397,3 @@ theorem ingham_zero_density_at_half_native :
   convert global_zero_count_epsilon_one (1 / 2) (by norm_num) using 1
   norm_num
 
-end GuthMaynard.NativeMoment

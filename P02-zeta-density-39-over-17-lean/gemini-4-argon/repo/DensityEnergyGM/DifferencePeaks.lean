@@ -57,4 +57,3 @@ theorem difference_floor_residue_separated {x y : ℝ} {i j : ℤ}
     have h := le_abs_self (x - y)
     linarith
 
-end Montgomery.RationalMoment

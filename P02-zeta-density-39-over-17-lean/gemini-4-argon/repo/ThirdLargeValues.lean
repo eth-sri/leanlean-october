@@ -93,4 +93,3 @@ theorem third_full_window_large_values {σ a p α δ : ℝ}
   · exact (hhi T N t₀ b W hT hN (le_of_not_ge hm) hu hb hloc hsep hlarge).trans
       (mul_le_mul_of_nonneg_right (by linarith : D ≤ C+D) (by positivity))
 
-end Montgomery.RationalMoment

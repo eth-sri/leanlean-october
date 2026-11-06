@@ -110,4 +110,3 @@ theorem first_derivative_test {a b : ℝ} (hab : a ≤ b)
   · exact (first_derivative_test_antitone hab hd hc hg hn hm).trans
       (mul_le_mul_of_nonneg_left (le_max_left _ _) (by norm_num))
 
-end DhimanKadiriQuesadaHerrera2026

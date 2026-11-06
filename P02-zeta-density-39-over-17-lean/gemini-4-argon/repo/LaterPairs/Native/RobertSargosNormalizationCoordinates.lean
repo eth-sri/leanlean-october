@@ -84,4 +84,3 @@ theorem RobertSargosReducedSystem.coefficient_gcd_le {R H Q δ : ℝ}
       congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs p.r)
   exact hc.trans (he.trans_le h.r_bound)
 
-end TaoTrudgianYang2025

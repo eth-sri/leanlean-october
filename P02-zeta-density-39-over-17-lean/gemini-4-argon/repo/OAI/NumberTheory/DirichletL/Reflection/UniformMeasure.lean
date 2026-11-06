@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v w
 variable {N a c : Eis} {mode : Bool}
 
@@ -170,8 +168,3 @@ theorem weighted_finite_physical_row_branch_measure_type_uniform
   congr 1
   exact weightedPhysicalReflectedRow_eq_branches F K hK S jF Pset nset bset hprod D hcop
     G0 D0 s hc hκ hA hbgen _ _ _ unit m
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

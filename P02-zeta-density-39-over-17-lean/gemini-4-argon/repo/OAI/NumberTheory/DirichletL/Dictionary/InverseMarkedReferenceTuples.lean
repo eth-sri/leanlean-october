@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 abbrev Tuple (L:ι→Finset (Ideal O)) := ∀i,↥(L i)
@@ -80,9 +79,3 @@ theorem original_selected_grouped (S:Finset (Ideal O))
   apply Finset.sum_congr rfl
   intro J hJ
   exact sum_tuple_split L J _
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

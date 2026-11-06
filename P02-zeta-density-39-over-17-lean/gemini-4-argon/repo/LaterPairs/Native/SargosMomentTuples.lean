@@ -27,4 +27,3 @@ theorem sargos_character_finset_prod {ι : Type*} (S : Finset ι) (f : ι → �
   | @insert a S ha ih =>
       rw [Finset.prod_insert ha,Finset.sum_insert ha,ih,fordAdditiveCharacter_add]
 
-end TaoTrudgianYang2025

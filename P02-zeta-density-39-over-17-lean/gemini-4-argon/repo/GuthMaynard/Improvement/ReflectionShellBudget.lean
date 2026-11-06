@@ -42,4 +42,3 @@ theorem reflection_signed_shell_budget (w : MathCollab.Density.ReflectionCutoff)
       have hn : 0 ≤ N^ε*L*N*H := by positivity
       nlinarith
 
-end GuthMaynard.Improvement

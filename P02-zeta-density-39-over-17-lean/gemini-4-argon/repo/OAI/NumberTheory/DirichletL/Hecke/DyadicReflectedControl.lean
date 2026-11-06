@@ -87,9 +87,3 @@ theorem original_upper_strip (ε : ℝ) (hε : 0<ε) :
       gcongr
       linarith
     _ = _ := by ring
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

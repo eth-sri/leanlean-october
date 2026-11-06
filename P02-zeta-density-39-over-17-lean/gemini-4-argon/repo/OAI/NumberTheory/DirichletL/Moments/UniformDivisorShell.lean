@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentUniformDivisorShell
-open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentSlotRatios
 
 theorem subset_allowance {ι:Type*} [Fintype ι] [DecidableEq ι]
     (J:Finset ι) (s:Source J) (lo hi:ι→ℝ) (hlo:∀i:J,s.lo i=lo i) (hhi:∀i:J,s.hi i=hi i)
@@ -26,9 +24,3 @@ theorem numerical_allowance (Z H:ℝ) (hZ:1<Z) : Z^(H/Real.log Z)=Real.exp H := 
   rw [Real.rpow_def_of_pos (zero_lt_one.trans hZ)]
   congr 1
   field_simp [(Real.log_pos hZ).ne']
-
-end SevenEighths.CenteredMomentUniformDivisorShell
-
-end
-
-end OAI

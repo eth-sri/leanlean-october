@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def firstPhysicalMultiplier {ι : Type*} (p : ι→O) (S : Finset ι)
     (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool) (f : Ideal O) : O :=
@@ -56,8 +55,3 @@ theorem first_physical_cutoff_raw_tail {ι : Type*} [DecidableEq ι]
   apply hout
   apply (mem_childFrequencyBall _ (firstPhysicalMultiplier_ne_zero p hp S v₁ v₂ ε₁ ε₂ f hf0) _ h).mpr
   simpa only [firstPhysicalMultiplier_row] using hrow
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

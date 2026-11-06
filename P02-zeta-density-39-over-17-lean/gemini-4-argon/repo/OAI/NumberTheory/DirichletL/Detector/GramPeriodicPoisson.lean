@@ -12,17 +12,10 @@ open MeasureTheory Filter
 open scoped BigOperators Classical FourierTransform SchwartzMap RealInnerProductSpace
 
 namespace ProbeGramPeriodicPoisson
-
-abbrev Joint := WithLp 2 (ℂ × ℂ)
-
-def point (x y : ℂ) : Joint := WithLp.toLp 2 (x, y)
+export ProbeGramLatticeDecay (Joint point norm_point_sq)
 
 def embeddingPair (m : ActualEisensteinCubic.O × ActualEisensteinCubic.O) : Joint :=
   point (ConcreteTraceCRT.eisEmbedding m.1) (ConcreteTraceCRT.eisEmbedding m.2)
-
-@[simp] theorem norm_point_sq (x y : ℂ) :
-    ‖point x y‖ ^ 2 = ‖x‖ ^ 2 + ‖y‖ ^ 2 :=
-  WithLp.prod_norm_sq_eq_of_L2 _
 
 def leftInjection : ℂ →L[ℝ] Joint :=
   (((WithLp.linearEquiv 2 ℝ (ℂ × ℂ)).symm.toLinearMap).comp
@@ -168,28 +161,11 @@ theorem fourier_partialFourierSchwartz (W : 𝓢(Joint, ℂ)) (ξ η : ℂ) :
 def productDecayConstant (W : 𝓢(Joint, ℂ)) : ℝ :=
   2 ^ (8:ℕ) * (Finset.Iic (8,0)).sup (schwartzSeminormFamily ℝ Joint ℂ) W
 
-theorem product_decay (W : 𝓢(Joint, ℂ)) (x y : ℂ) :
-    ((1+‖x‖^2)^2 * (1+‖y‖^2)^2) * ‖W (point x y)‖ ≤ productDecayConstant W := by
-  have hx := WithLp.norm_fst_le ℂ (point x y)
-  have hy := WithLp.norm_snd_le ℂ (point x y)
-  change ‖x‖ ≤ ‖point x y‖ at hx
-  change ‖y‖ ≤ ‖point x y‖ at hy
-  have hx2 : 1+‖x‖^2 ≤ (1+‖point x y‖)^2 := by nlinarith [norm_nonneg (point x y), norm_nonneg x, norm_nonneg y]
-  have hy2 : 1+‖y‖^2 ≤ (1+‖point x y‖)^2 := by nlinarith [norm_nonneg (point x y), norm_nonneg x, norm_nonneg y]
-  have hpow : (1+‖x‖^2)^2 * (1+‖y‖^2)^2 ≤ (1+‖point x y‖)^8 := by
-    calc
-      _ ≤ ((1+‖point x y‖)^2)^2 * ((1+‖point x y‖)^2)^2 := by gcongr
-      _ = _ := by ring
-  have h := SchwartzMap.one_add_le_sup_seminorm_apply (𝕜 := ℝ)
-    (m := (8,0)) (k := 8) (n := 0) le_rfl le_rfl W (point x y)
-  simp only [norm_iteratedFDeriv_zero] at h
-  exact (mul_le_mul_of_nonneg_right hpow (norm_nonneg _)).trans h
-
 theorem norm_le_product_majorant (W : 𝓢(Joint, ℂ)) (x y : ℂ) :
     ‖W (point x y)‖ ≤ productDecayConstant W * (planeMajorant x * planeMajorant y) := by
   rw [planeMajorant, planeMajorant, ← mul_inv, ← div_eq_mul_inv]
   apply (le_div_iff₀ (by positivity)).mpr
-  simpa only [mul_comm] using product_decay W x y
+  simpa only [mul_comm, productDecayConstant, ProbeGramLatticeDecay.sourceControl] using ProbeGramLatticeDecay.product_decay W x y
 
 theorem planeMajorant_eisenstein_summable :
     Summable (fun m : ActualEisensteinCubic.O =>
@@ -354,7 +330,7 @@ theorem norm_partialFourier_le (W : 𝓢(Joint, ℂ)) (η x : ℂ) :
   simp only [planeMajorant, div_eq_mul_inv]
   ring
 
-open EisensteinSchwartzPoisson hiding O
+open EisensteinSchwartzPoisson
 
 theorem planeMajorant_cartesian_summable :
     Summable (fun p : ℤ × ℤ => planeMajorant (complexPoint (p.1:ℝ) (p.2:ℝ))) := by
@@ -465,8 +441,6 @@ def blockMap (A : ℂ ≃L[ℝ] ℂ) : Joint ≃L[ℝ] Joint :=
 @[simp] theorem blockMap_apply (A : ℂ ≃L[ℝ] ℂ) (z : Joint) :
     blockMap A z = point (A z.fst) (A z.snd) := rfl
 
-@[simp] theorem blockMap_symm_apply (A : ℂ ≃L[ℝ] ℂ) (z : Joint) :
-    (blockMap A).symm z = point (A.symm z.fst) (A.symm z.snd) := rfl
 
 theorem blockMap_det (A : ℂ ≃L[ℝ] ℂ) :
     LinearMap.det (blockMap A : Joint →ₗ[ℝ] Joint) =
@@ -995,9 +969,3 @@ theorem ideal_annular_periodic_bound (A : ℕ) (hA : 2 < A)
       ConcretePrimeRowBridge.span_idealGenerator r⟩
   subst r
   exact h W hW c hc
-
-end ProbeGramPeriodicPoisson
-
-end
-
-end OAI

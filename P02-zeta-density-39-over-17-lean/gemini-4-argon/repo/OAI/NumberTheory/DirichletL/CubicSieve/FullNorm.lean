@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def elementRange (M : ℝ) : Finset O :=
   (ShortDraftLatticeCount.rowNormBall ⌊M⌋₊).filter
@@ -132,8 +131,3 @@ theorem elementSieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
   simp_rw [hinner] at he
   rw [hea, ← Finset.sum_coe_sort] at he
   exact he
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

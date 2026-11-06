@@ -9,10 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialPoissonBridge
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson
-open UniqueFactorizationMonoid InverseInitialOverlap
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson UniqueFactorizationMonoid InverseInitialOverlap
 
 def rowPolynomial (F : Finset (Ideal Eis)) (A : Ideal Eis → ℂ) (u : Eis) : ℂ :=
   ∑ I ∈ F, A I * idealRowHom u I
@@ -242,9 +239,3 @@ theorem residual_normalized_smoothed_summable
   intro u
   rw [residualNormalizedPolynomial,norm_mul,mul_pow,norm_rpow_half_sq hZ,Complex.ofReal_mul]
   ring
-
-end SevenEighths.InverseInitialPoissonBridge
-
-end
-
-end OAI

@@ -103,4 +103,3 @@ theorem primitive_linear_congruence_ratio_spacing
       div_le_div_of_nonneg_left (by exact_mod_cast hc.le) hprod hprodu
     _ ≤ _ := div_le_div_of_nonneg_right hDr hprod.le
 
-end TaoTrudgianYang2025

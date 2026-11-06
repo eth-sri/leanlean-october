@@ -12,8 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 open Set MeasureTheory
 namespace SevenEighths.CenteredMomentOneReflectionScaleEnergy
-open HeckeFamily HeckeDyadic CenteredMomentSectorLocalization
-open CenteredMomentReflectedUniformPair CenteredMomentReflectedNormalization
+open HeckeFamily HeckeDyadic CenteredMomentSectorLocalization CenteredMomentReflectedUniformPair CenteredMomentReflectedNormalization
 open CenteredMomentScaleSupremum (scaleTest)
 
 lemma annulus_complex_support :
@@ -25,9 +24,3 @@ lemma annulus_complex_support :
 
 lemma annulus_complex_smooth : ContDiff ℝ ∞ (fun x : ℝ=>(annulus x:ℂ)) :=
   Complex.ofRealCLM.contDiff.comp annulus_smooth
-
-end SevenEighths.CenteredMomentOneReflectionScaleEnergy
-
-end
-
-end OAI

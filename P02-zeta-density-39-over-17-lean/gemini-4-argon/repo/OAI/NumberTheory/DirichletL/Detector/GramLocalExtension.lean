@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CenteredMomentCanonical
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CenteredMomentCanonical
 
 lemma finiteField_local_norm {F : Type*} [Field F] [Fintype F]
     (χ : MulChar F ℂ) (u v k : F) (huv : u≠0 ∨ v≠0) :
@@ -97,8 +95,3 @@ theorem primePower_common_extension (P : Ideal O) [P.IsMaximal] (hg : goodLambda
       (primePowerReduction P hc (Ideal.Quotient.mk _ n₁)) (primePowerReduction P hc v)
       (primePowerReduction P hc (Ideal.Quotient.mk _ k))=_
     simp only [hv,primePowerReduction,Ideal.Quotient.factor_mk]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

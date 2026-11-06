@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
-open InverseFirstPriorityParents InverseFirstGlobalParents
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic InverseFirstPriorityParents InverseFirstGlobalParents
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
 
 def originalSubsetSource (outer:Finset (FirstOriginalOuter ι)):Finset (Source ι 0):=
@@ -47,9 +45,3 @@ theorem original_subset_canonical_priority
     originalSelector_ofOriginal_fun selector k
   simp_rw [hs] at he
   simpa only [originalSubsetSource,ofOriginal,originalSelector,toOriginal,eraseFirstQuotient] using he
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

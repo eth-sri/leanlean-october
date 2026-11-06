@@ -48,4 +48,3 @@ theorem smoothLongZeroFinset_eventually_detects_mean {σ a δ η : ℝ}
 from separated long detectors. The right side is the literal physical twelfth
 moment, not a supplied moment bound. -/
 
-end Montgomery.RationalMoment.RightDetector.Physical

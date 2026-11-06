@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
 abbrev FirstOriginalOuter (ι : Type*) := Σ _ : CubeCoordinates ι,Σ _ : Finset ι,Finset ι
@@ -102,8 +101,3 @@ theorem original_retained_global_index
   intro h hh
   simp only [firstOriginalWeight,reopenedPhysicalCutoff]
   ac_rfl
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -10,11 +10,8 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots ProbeCentralAllSlots HeckePrimeAmplitudeBins
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots ProbeCentralAllSlots HeckePrimeAmplitudeBins
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
@@ -79,9 +76,3 @@ theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin 
   have hfun : (fun j : Fin N => (Z^d)^(ell j/d)) = (fun j => Z^(ell j)) := funext heq
   rw [hfun] at hb
   exact hb hdis t ht
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

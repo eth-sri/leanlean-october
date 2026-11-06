@@ -11,9 +11,8 @@ public import Mathlib.Analysis.PSeries
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density.Stronger
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -130,4 +129,3 @@ theorem exists_norm_zetaFourthTail_le {c : ℝ} (hc : 3/2 < c) :
         (summable_norm_zetaFourthTail ht0 hc0 S) (hs.mul_left (K*t^c))
     _ = _ := tsum_mul_left
 
-end MathCollab.Density.Stronger.Fourth

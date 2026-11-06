@@ -134,4 +134,3 @@ theorem exists_normalizedSmoothPowered_height {η : ℝ} (hη : 0 < η) (K : ℕ
       div_le_div_of_nonneg_right (div_le_div_of_nonneg_left (by positivity) hden hc) (by positivity)
     _ ≤ _ := div_le_div_of_nonneg_right hh (by positivity)
 
-end MathCollab.Density.Stronger

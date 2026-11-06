@@ -110,4 +110,3 @@ theorem modelPhase_buffered_source_uniform_error
         (mul_le_mul_of_nonneg_right hMF hy)
     _ = _ := by ring
 
-end TaoTrudgianYang2025

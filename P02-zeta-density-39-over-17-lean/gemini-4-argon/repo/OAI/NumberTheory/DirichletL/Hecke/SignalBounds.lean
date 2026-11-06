@@ -22,9 +22,3 @@ theorem contour_shift_left (χ : Character) (H : ℂ → ℂ)
   obtain ⟨C,hC,hbound⟩ := HeckeReciprocalGrowth.polynomial_reciprocal_bound χ a hβ
   exact HeckeSignalShift.contour_shift_left χ H hH hb c a C 2 ha ha2 hβ hC
     (fun s hs _ => hbound s hs) hx
-
-end SevenEighths.HeckeSignalBounds
-
-end
-
-end OAI

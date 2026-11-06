@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma majorant_radial_summable (P : O → ℂ) (M : ℝ) (hM : 0 < M) :
     Summable (fun z : O => rowMajorant (‖eisEmbedding z‖^2 / M) * P z) := by
@@ -145,8 +143,3 @@ theorem finite_energy_le_compact_descendants {n : Type*} [Fintype n]
       rw [norm_mul]
       exact (mul_le_mul_of_nonneg_right (QuadraticInitialBound.norm_ideal_moebius_le_one E)
         (norm_nonneg _)).trans_eq (one_mul _)
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

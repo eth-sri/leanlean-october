@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 open MeasureTheory
 namespace SevenEighths.ProbeRow
 open ActualEisensteinCubic CompletedGauss CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 theorem spectralSummand_norm_eq_of_re (S : Finset (Ideal O)) (D : Ideal O)
     (Ψ : O →* ℂ) (s t : ℂ) (h : s.re = t.re) (I J : Ideal O) :
@@ -74,8 +73,3 @@ theorem spectralRow_integral_eq_tsum (S : Finset (Ideal O)) (D : Ideal O)
   apply Filter.Eventually.of_forall
   intro y
   simp only [mellinSummand, tsum_mul_left, spectralRow]
-
-end SevenEighths.ProbeRow
-end
-
-end OAI

@@ -59,6 +59,4 @@ theorem heathBrownPositiveShiftFiber_card_le_spacingSet
         (4 * (((H : ℝ) ^ (k - 2))⁻¹))).card :=
   Finset.card_le_card heathBrownPositiveShiftFiber_subset_spacingSet
 
-end
 
-end GafniTao

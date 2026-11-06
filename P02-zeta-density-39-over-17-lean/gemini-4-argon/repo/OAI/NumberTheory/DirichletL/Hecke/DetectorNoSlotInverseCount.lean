@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff ComplexConjugate
 open Set Filter
 namespace SevenEighths.HeckeDetectorNoSlotInverseCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeInverseAmplification
-open HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeInverseAmplification HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount
 
 theorem no_slot_inverse_count
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -89,9 +88,3 @@ theorem no_slot_inverse_count
   have hc' := HeckeDetectorRowCount.card_of_energy rows _ U ((2*a-1)*r-2*ε)
     (sourceExponent r+εm) (12*(1+height)*(C*K₀)) hUp hspike hen'
   convert hc' using 1; congr 2; ring
-
-end SevenEighths.HeckeDetectorNoSlotInverseCount
-
-end
-
-end OAI

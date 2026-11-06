@@ -164,4 +164,3 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
       ring_nf
     _ ≤ _ := by gcongr
 
-end Montgomery.RationalMoment

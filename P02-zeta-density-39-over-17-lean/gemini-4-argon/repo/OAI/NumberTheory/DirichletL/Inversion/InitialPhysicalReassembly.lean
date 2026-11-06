@@ -9,10 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialPhysicalReassembly
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseInitialRayAttachment InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic InverseInitialRayAttachment InverseInitialPhysicalMeasure InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -171,9 +168,3 @@ theorem finite_physical_reassembly
   apply Finset.sum_congr rfl
   intro V hV
   exact rectangle_restore_common p hp hcop hg Ψ j σ (fun x=>star (W x)) W Φ Z D m pool G E V h
-
-end SevenEighths.InverseInitialPhysicalReassembly
-
-end
-
-end OAI

@@ -28,4 +28,3 @@ theorem third_derivative_floor_shift {R μ : ℝ} (N : ℕ)
   exact ⟨hpos,Nat.floor_le_of_le hRN,by linarith,hfloor,
     (mul_le_mul_of_nonneg_right hfloor hμ.le).trans hscale1⟩
 
-end TaoTrudgianYang2025

@@ -10,8 +10,7 @@ public import MathCollab.Density.AbelZetaGrowth
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.GammaBounds MathCollab.Density.ZetaGrowth
+open Complex MathCollab.Density.GammaBounds MathCollab.Density.ZetaGrowth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -142,4 +141,3 @@ theorem norm_riemannZeta_voronoi_strip {σ u : ℝ}
         gcongr
       _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

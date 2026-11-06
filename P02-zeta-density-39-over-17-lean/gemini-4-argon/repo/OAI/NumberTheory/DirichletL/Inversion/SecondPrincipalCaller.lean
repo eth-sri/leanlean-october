@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseSecondPrincipalCaller
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge
-open SecondPassIntegration CompletedHeight
-open InverseMoment InversePrincipalEnergy RayFourExpansion
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge SecondPassIntegration CompletedHeight InverseMoment InversePrincipalEnergy RayFourExpansion
 
 def principalWindow (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t : ℝ) : 𝓢(ℝ,ℂ) :=
@@ -143,11 +140,3 @@ theorem firstCoreTest_coefficient (hinj : Function.Injective (fun i=>Ideal.span 
     rw [firstCoreTest_markedRadial p hp slots lists coeff D U hd hD om a b ha hs negative X t hX]
   · rw [secondInputCoefficient_overlap_zero p hg hinj Ψ m c d _ D U hd,
       secondInputCoefficient_overlap_zero p hg hinj Ψ m c d _ D U hd]
-
-end Arithmetic
-
-end SevenEighths.InverseSecondPrincipalCaller
-
-end
-
-end OAI

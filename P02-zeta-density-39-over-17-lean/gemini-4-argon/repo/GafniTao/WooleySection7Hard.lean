@@ -163,6 +163,4 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
     _ ≤ (C * (p : ℝ) ^ (k ^ 2 * nu)) * fiberSum := by
       simpa only [mul_assoc] using hscaled
 
-end
 
-end GafniTao

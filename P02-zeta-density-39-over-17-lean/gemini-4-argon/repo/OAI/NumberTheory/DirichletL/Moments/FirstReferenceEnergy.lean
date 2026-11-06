@@ -12,22 +12,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstReferenceEnergy
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstReferenceSource CenteredMomentFirstReferenceBlock
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum
-open CenteredMomentFirstSourceReduction CenteredMomentFirstInactiveRadicalMass
-open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors
-open CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic
-open CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical
-open CenteredMomentAmplificationChildInput CenteredMomentGaussEnergy CenteredMomentChildAssembly
-open CenteredMomentCommonSupport CenteredMomentMobiusRegroup CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstMixedAllowance CenteredMomentSecondWindowBudget CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentFirstReferenceSource CenteredMomentFirstReferenceBlock CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum CenteredMomentFirstSourceReduction CenteredMomentFirstInactiveRadicalMass CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical CenteredMomentAmplificationChildInput CenteredMomentGaussEnergy CenteredMomentChildAssembly CenteredMomentCommonSupport CenteredMomentMobiusRegroup CenteredMomentFirstCanonicalFamily CenteredMomentFirstMixedAllowance CenteredMomentSecondWindowBudget CenteredMomentSecondHeightFamily
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 abbrev supported (s:Input ι)(R seed:Ideal O)(p:Labels s R seed):=
   commonLabels_supported (activeSource (finiteColumns (Fintype.piFinset s.pools))
@@ -134,9 +120,3 @@ theorem actual_physical_mass (W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)(hi:ι→ℝ)(b₁ 
       rw [show Z^ε=Z^(ε/2)*Z^(ε/2) by rw [←Real.rpow_add (by linarith [hblock.1]:0<Z)];congr 1;ring]
       dsimp [A]
       ring
-
-end SevenEighths.CenteredMomentFirstReferenceEnergy
-
-end
-
-end OAI

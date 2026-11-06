@@ -70,4 +70,3 @@ theorem exists_robertSargos_primitive_count_large_tolerance (ε : ℝ) (hε : 0 
     _ ≤ (570*((R*H*Q)*(1+δ*Q)))*(C*((4:ℝ)^ε*(R*H*Q)^ε)) := hb
     _ = _ := by rw [Real.rpow_add hB,Real.rpow_one]; ring
 
-end TaoTrudgianYang2025

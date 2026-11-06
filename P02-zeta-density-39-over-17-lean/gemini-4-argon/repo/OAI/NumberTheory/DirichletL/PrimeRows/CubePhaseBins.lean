@@ -10,11 +10,8 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbeRayCharacterFamily
-open HeckePrimeAmplitudeBins ProbeRaySlots
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbeRayCharacterFamily HeckePrimeAmplitudeBins ProbeRaySlots
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_phase_bins_on_cube (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
@@ -60,9 +57,3 @@ theorem actual_phase_bins_on_cube (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     ((17/50:ℂ)+t.1.2*Complex.I) hr hr'
     (by norm_num) (by norm_num) (by simpa using hfreq) (hh i hi d hd)
   exact hb'
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

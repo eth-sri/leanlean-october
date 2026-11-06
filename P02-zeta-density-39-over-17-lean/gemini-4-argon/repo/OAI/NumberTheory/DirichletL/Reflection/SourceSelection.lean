@@ -52,7 +52,3 @@ theorem exists_marked_source_selection (e : α⊕β≃γ)
     (fun q => C q.1 q.2) fallback,?_⟩
   intro B T
   exact sourceDependentExtension_at _ (markedActiveSet_injective e) _ _ (B,T)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

@@ -160,6 +160,4 @@ theorem norm_heathBrownExponentialSum_le_interior_add_two
       ring
 
 
-end
 
-end GafniTao

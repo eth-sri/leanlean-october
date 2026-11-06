@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceProfileMassUniform
-open ActualEisensteinCubic CenteredMomentAddedZeroUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass
 
 theorem profile_mass_explicit {ι : Type*} [Fintype ι]
     (Wslot : ι → ℝ → ℂ) (W₁ W₂ : ℝ → ℂ)
@@ -57,9 +55,3 @@ theorem profile_mass_explicit {ι : Type*} [Fintype ι]
   rw [finite_original_mass_reindex] at hm
   simp_rw [profileCoefficient_eq_original]
   simpa only [sourceMassConstant,e.symm.prod_comp D,e.symm.prod_comp b,e.symm.prod_comp P] using hm
-
-end SevenEighths.CenteredMomentSourceProfileMassUniform
-
-end
-
-end OAI

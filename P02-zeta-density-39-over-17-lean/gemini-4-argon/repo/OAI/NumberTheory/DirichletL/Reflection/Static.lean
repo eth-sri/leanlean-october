@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss ShortDraftCusp
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι κ : Type*} [Fintype ι] [Fintype κ]
   {p : ι → Eis} {p₀ : κ → Eis} {N a c : Eis} {mode : Bool}
 
@@ -52,8 +50,3 @@ theorem controlled_static_array_eq
   have he := congrFun (controlled_bad_phase_eq D D₀ hc hbad hr hd) (s.modelDualNumerator u m I J)
   rw [A4BadPhase_as_fixed_residue,A4BadPhase_as_fixed_residue] at he
   rw [he]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

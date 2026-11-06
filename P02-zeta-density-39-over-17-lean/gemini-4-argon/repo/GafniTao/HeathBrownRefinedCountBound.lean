@@ -98,6 +98,4 @@ theorem heathBrownPairCount_card_cast_le_refined_raw
     (mul_le_mul_of_nonneg_left htwo' (by positivity)))
 
 
-end
 
-end GafniTao

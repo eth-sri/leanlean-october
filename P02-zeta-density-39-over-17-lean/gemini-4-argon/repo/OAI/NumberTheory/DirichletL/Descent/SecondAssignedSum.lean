@@ -105,8 +105,3 @@ theorem assignedSecondCoefficient_norm_le_one {Jo : ℕ}
   rw [assignedSecondCoefficient_attach]
   exact pairedSlotWeight_norm_le_one J₁ J₂ L₁ L₂ a₁ a₂ _ (q₁,q₂)
     (Finset.mem_product.mpr ⟨hq₁,hq₂⟩) ha₁ ha₂
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

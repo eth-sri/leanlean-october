@@ -58,6 +58,4 @@ theorem wooleySection7BPrimeNat_cast
   exact Int.toNat_of_nonneg
     (wooley_section7_BPrimeInt_pos_toNat hBPrime).le
 
-end
 
-end GafniTao

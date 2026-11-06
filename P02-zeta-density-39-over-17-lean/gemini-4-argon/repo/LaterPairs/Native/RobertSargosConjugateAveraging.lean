@@ -57,4 +57,3 @@ theorem robertSargos_conjugate_a_process (a : ℤ → ℂ) (M H : ℕ) (hH : 0 <
   apply (mul_le_mul_iff_right₀ hp).mp
   convert hs using 1 <;> ring
 
-end TaoTrudgianYang2025

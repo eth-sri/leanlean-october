@@ -80,6 +80,4 @@ theorem heathBrownPairCountTwo_source_separation
       field_simp
 
 
-end
 
-end GafniTao

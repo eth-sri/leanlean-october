@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.FrozenDivisorGaussian
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -87,4 +85,3 @@ theorem norm_zetaQuadraticDivisorTerm_off_band_le {T G L : ℝ}
   exact mul_le_mul_of_nonneg_left (norm_zetaGaussianQuadraticIntegral_tail hT hG hGT hL
     (frequency_le_of_not_mem_zetaQuadraticDivisorBand hT hG (Nat.pos_of_ne_zero hn) hnot)) (norm_nonneg _)
 
-end MathCollab.Density.Stronger.Atkinson

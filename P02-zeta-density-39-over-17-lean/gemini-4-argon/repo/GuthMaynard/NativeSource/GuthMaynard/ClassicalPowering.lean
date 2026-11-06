@@ -282,4 +282,3 @@ theorem extract_normalized_finite_powered_block
   exact normalized_finite_powered_wide_lower N k a σ C η t L
     hN hk hL hDenom (hBase t ht)
 
-end GuthMaynard.NativeMoment

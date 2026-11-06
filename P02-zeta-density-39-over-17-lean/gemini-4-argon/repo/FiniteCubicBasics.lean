@@ -77,4 +77,3 @@ theorem finite_cubic_integral (W : Finset ℝ) {K : ℝ → ℂ} (hK : Measurabl
   simp_rw [integral_prod _ (hip _),finite_time_integral]
   rfl
 
-end Montgomery.RationalMoment

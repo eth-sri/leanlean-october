@@ -12,9 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiTest
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -100,4 +98,3 @@ theorem zetaSmoothDivisorTerm_eq_on_band {T G L : ℝ}
   rw [zetaSmoothDivisorTerm_eq_cutoff, zetaDivisorBandCutoff_eq_one hT hG hL hn,
     Complex.ofReal_one, one_mul]
 
-end MathCollab.Density.Stronger.Atkinson

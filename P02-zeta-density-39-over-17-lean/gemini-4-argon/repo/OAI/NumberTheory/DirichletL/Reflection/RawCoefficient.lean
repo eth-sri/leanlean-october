@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
 def literalRawCoefficient (G : PrimeFamily ι)
@@ -46,8 +45,3 @@ lemma literalRawCoefficient_norm (G : PrimeFamily ι)
     exact div_le_self (Nat.cast_nonneg _) hden
   · simp only [norm_zero]
     exact Nat.cast_nonneg _
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

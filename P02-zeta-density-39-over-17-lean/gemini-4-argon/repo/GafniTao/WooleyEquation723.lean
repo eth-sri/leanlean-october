@@ -164,6 +164,4 @@ theorem wooley_equation_7_23_native
       rfl
 
 
-end
 
-end GafniTao

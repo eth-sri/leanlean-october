@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 open MeasureTheory
 namespace SevenEighths.CenteredMomentOneReflectionEnergy
-open HeckeFamily CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
-open CenteredMomentReflectedUniformPair CenteredMomentComparisonReflection
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy CenteredMomentReflectedUniformPair CenteredMomentComparisonReflection EisensteinSchwartzPoisson
 
 lemma polynomial_inverse_plain (χ : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 0<X) :
     HeckeDyadic.polynomial χ.inverse false W X 0 0=
@@ -23,9 +21,3 @@ lemma polynomial_inverse_plain (χ : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 
   apply tsum_congr
   intro I
   rw [map_mul,idealCoeff_inverse_conj,Complex.conj_conj]
-
-end SevenEighths.CenteredMomentOneReflectionEnergy
-
-end
-
-end OAI

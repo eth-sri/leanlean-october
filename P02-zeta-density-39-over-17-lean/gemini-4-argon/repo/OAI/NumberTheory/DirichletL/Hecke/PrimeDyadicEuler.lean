@@ -57,9 +57,3 @@ theorem series_norm_le (χ : Character) {b : ℝ} (hb : 1<b)
 
   have hf := (eulerBound_summable hb).of_nonneg_of_le (fun _ => norm_nonneg _) hbound
   exact (norm_tsum_le_tsum_norm hf).trans (hf.tsum_le_tsum hbound (eulerBound_summable hb))
-
-end SevenEighths.HeckePrimeDyadic
-
-end
-
-end OAI

@@ -112,34 +112,4 @@ theorem smoothPoweredFamily_admissible {σ η : ℝ}
     exact hnorm (detectorX δ T) (detectorY σ T) q.1.1 q.1.2.1 q.1.2.2 q.2.1 hY hkK
       (hsupp.trans (hupper.trans (by nlinarith)))
 
-/-- Complete actual-zero dichotomy: a long smooth detector, or a member of
-the finite normalized powered short family at the original ordinate. -/
-theorem smooth_long_or_short_powered_cover {σ δ η : ℝ}
-    (hσ : 3/4 < σ) (hσ' : σ < 1) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η) :
-    ∀ᶠ T : ℝ in atTop, ∀ ρ : ℂ,
-      σ ≤ ρ.re → ρ.re < 1 → T ≤ |ρ.im| → |ρ.im| ≤ 2*T → riemannZeta ρ = 0 →
-      (∃ j ∈ smoothScaleIndices (detectorY σ T*(Real.log T)^2),
-        T^(smoothingExponent σ/2) < (2 : ℝ)^j ∧
-        (1/(24*Real.log T) : ℝ) ≤ ‖smoothDetectorBlock ρ (detectorX δ T) (detectorY σ T) j‖) ∨
-      (∃ q ∈ smoothPoweredIndices σ δ T,
-        (smoothPoweredFamilyScale q : ℝ)^σ*T^(-2*η) ≤
-          ‖detectingPolynomial (smoothPoweredFamilyScale q) (smoothPoweredFamilyCoefficient η σ δ T q) ρ.im‖) := by
-  have ha : 0 < lowerExponent σ := by unfold lowerExponent; positivity
-  filter_upwards [smooth_long_or_short_Taylor_cover hσ hδ.le hδ',
-    short_scale_bounded_power ha hδ,
-    exists_normalizedSmoothPowered_height hη (smoothPowerBound σ δ)] with T hcover hpower hheight
-  intro ρ hβ hβ' hγ hγ' hzero
-  rcases hcover ρ hβ hβ' hγ hγ' hzero with hlong | ⟨p, hp, hlo, hhi, hdet⟩
-  · exact Or.inl hlong
-  · have hc : smoothingExponent σ/2 = 3*lowerExponent σ/4 := by rw [smoothingExponent_eq]; ring
-    obtain ⟨k, hk, hkK, hklo, hkhi⟩ := hpower (smoothHalfScale p.1 p.2.1)
-      hlo (by rw [← hc]; exact hhi)
-    have hkK' : k ≤ smoothPowerBound σ δ := hkK
-    have hupper : (smoothHalfScale p.1 p.2.1 : ℝ)^k ≤ T^(smoothingExponent σ) := by
-      simpa only [← smoothingExponent_eq] using hkhi
-    obtain ⟨l, hl, hh⟩ := hheight σ (detectorX δ T) (detectorY σ T) ρ.im
-      p.1 p.2.1 p.2.2 k hσ'.le (by omega) hkK' hdet
-    refine Or.inr ⟨(p,k,l), ?_, hh⟩
-    exact mem_smoothPoweredIndices.mpr ⟨hp, hk, hkK', Finset.mem_range.mp hl, hklo, hupper⟩
 
-end MathCollab.Density.Stronger

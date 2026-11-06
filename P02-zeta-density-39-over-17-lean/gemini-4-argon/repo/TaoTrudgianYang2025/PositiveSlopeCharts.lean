@@ -75,4 +75,3 @@ theorem positiveSlopeChart_coordinate {d v : ℝ} {j : ℕ}
     unfold positiveSlopeChartScale
     nlinarith [hv.2,mul_le_mul_of_nonneg_right hjreal hd.le]
 
-end TaoTrudgianYang2025

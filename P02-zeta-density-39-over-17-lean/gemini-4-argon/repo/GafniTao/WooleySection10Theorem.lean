@@ -279,6 +279,4 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
       (by simpa only [D, N, s] using hchain) hterminal hHeta hHepsilon hconstants
 
 
-end
 
-end GafniTao

@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 def centralNormalizedSlot (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (x w z : ℂ) : ℂ :=
@@ -115,7 +114,3 @@ theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIde
     refine ⟨hc.symm ▸ hb.1,?_,?_⟩
     · simpa only [centralRegularError,ite_eq_right hp,centralNormalizedSlot,hc,ite_eq_right hd] using hb.2
     · simp only [centralRepeatedTerm,ite_eq_right hp,norm_zero,le_refl]
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

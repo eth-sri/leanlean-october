@@ -22,10 +22,8 @@ of the two prefix lengths and the same zero-based source block.
 set_option autoImplicit false
 noncomputable section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth RiemannZeta.GuthMaynard
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
 
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -124,4 +122,3 @@ theorem atkinsonBlockCoefficientEnergy_nonneg (m N : ℕ) :
   intro i _
   exact sq_nonneg _
 
-end MathCollab.Density.Stronger.Atkinson

@@ -84,5 +84,4 @@ theorem robertSargos_source_a_times_a (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
   simpa only [robertSargosWeightedCorrelations,
     robertSargos_source_plane_correlation a M H ha] using ht
 
-end TaoTrudgianYang2025
 

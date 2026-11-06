@@ -10,16 +10,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalPhysicalSaving
-open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid IdealMobiusDivisorSum
-open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSecondExceptionalOriginalBlock CenteredMomentSecondExceptionalBudget
-open CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentFirstCanonicalAllowance
-open CenteredMomentRankinRadical
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid IdealMobiusDivisorSum CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst CenteredMomentSectorLocalization CenteredMomentFirstCanonicalAllowance CenteredMomentRankinRadical
 universe u
-variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
 lemma forcingNorm_ge_one (C D:Ideal O)(hC:Supported C)(U:Finset (CommonIndex C D)) :
     1≤forcingNorm C D U := by
@@ -42,9 +34,3 @@ lemma column_cap_ledger (c d r:ℝ)(hc:0≤c)(hd:0≤d) :
   · rw [max_eq_right (le_of_not_ge hr)]
     have hm:0≤max (r-min c d) 0:=le_max_right _ _
     linarith
-
-end SevenEighths.CenteredMomentSecondExceptionalPhysicalSaving
-
-end
-
-end OAI

@@ -92,4 +92,3 @@ theorem integral_weighted_betaQuadraticKernel_taylor
     intervalIntegral.integral_const_mul,intervalIntegral.integral_const_mul,
     integral_betaQuadraticKernel_odd,mul_zero,add_zero]
 
-end TaoTrudgianYang2025

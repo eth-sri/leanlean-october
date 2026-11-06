@@ -12,24 +12,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentFirstAmplifiedPowerBudget
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
-open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
-local notation "O"=>ActualEisensteinCubic.O
-local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentGaussNormalization CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy CenteredMomentFirstScale CenteredMomentChildRows CenteredMomentHeckeExpansion CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSecondHeightFamily CenteredMomentFirstAnnularInput CenteredMomentFirstErrorAllocationPower
 
-open CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData
-open CenteredMomentCommonAllocationSum CenteredMomentSecondHeightFamily
 
-open CenteredMomentFirstAnnularInput CenteredMomentFirstErrorAllocationPower
 theorem eventually_input_power_amplification {ι : Type*} [Fintype ι]
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (hH : RayOrthogonality.globalUnits M≤H)
@@ -199,9 +184,3 @@ theorem eventually_original_subsets_power_amplification {Ω : Type*} [Fintype Ω
   have hf (A:Finset Ω):=(hz A).2.2.2 η
   choose τ hN he using hf
   exact ⟨τ,hN,he⟩
-
-end SevenEighths.CenteredMomentFirstAmplifiedPowerBudget
-
-end
-
-end OAI

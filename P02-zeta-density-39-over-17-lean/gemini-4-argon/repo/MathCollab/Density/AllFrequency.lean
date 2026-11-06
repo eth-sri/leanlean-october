@@ -103,4 +103,3 @@ theorem norm_oscillatoryIntegral_le {a b tau : ℝ} (ha : 0 < a) (hab : a ≤ b)
   simpa only [gmReflectionIntegral, mul_comm I] using
     norm_gmReflectionIntegral_le_six_div_sqrt (tau := tau) ha hab
 
-end MathCollab.Density

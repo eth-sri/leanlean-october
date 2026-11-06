@@ -8,13 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical Topology
 namespace SevenEighths.CenteredMomentSecondRadicalBudget
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondRadicalFamily CenteredMomentSecondMovingSupport
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondHeightFamily
-open CenteredMomentCanonicalFirst CenteredMomentChildRows CenteredMomentPartitionNorm
-open CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCommonSupport CenteredMomentSupport
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondRadicalFamily CenteredMomentSecondMovingSupport CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentChildRows CenteredMomentPartitionNorm CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCommonSupport CenteredMomentSupport
 
 def fixedFactor : ℕ := (Ideal.span {(12:O)}).absNorm*
   (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm
@@ -116,9 +110,3 @@ theorem conductor_log_bound (η τ : Character) (A B : Ideal O) (hA : A≠0) (hB
       (η.modulus.absNorm:ℝ)*fixedFactor*A.absNorm*B.absNorm by exact_mod_cast hN)
   rwa [Real.logb_mul (mul_ne_zero (mul_ne_zero hη hK) ha) hb,
     Real.logb_mul (mul_ne_zero hη hK) ha,Real.logb_mul hη hK] at hh
-
-end SevenEighths.CenteredMomentSecondRadicalBudget
-
-end
-
-end OAI

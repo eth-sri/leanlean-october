@@ -54,5 +54,4 @@ theorem robertSargos_fixed_displacement_safe_card_le
       4*H^2*((A+δ)-(A-δ))/(d.natAbs:ℝ)^2*(∑ g ∈ d.natAbs.divisors, (g:ℝ)) := hb
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 

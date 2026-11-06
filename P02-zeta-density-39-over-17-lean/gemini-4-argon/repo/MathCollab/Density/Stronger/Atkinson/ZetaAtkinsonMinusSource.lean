@@ -44,4 +44,3 @@ theorem exists_zetaSquareLocalMean_le_atkinson_minus {δ : ℝ} (hδ : 0 < δ) :
   simp only [Complex.add_re] at hm
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

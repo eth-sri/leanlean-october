@@ -75,4 +75,3 @@ theorem reciprocal_modelPhase_identity {σ v : ℝ} (hσ : 0 < σ) (hv : 0 ≤ v
     (v^(-σ⁻¹))^(-σ) = v := by
   rw [← Real.rpow_mul hv, neg_mul_neg, inv_mul_cancel₀ hσ.ne', Real.rpow_one]
 
-end TaoTrudgianYang2025

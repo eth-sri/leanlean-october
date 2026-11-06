@@ -56,8 +56,3 @@ theorem reflected_finite_source_uniform
   rw [mul_assoc,he (k j) (p j) (n j) (q j) (hn j hj).1 (hn j hj).2.1 (hn j hj).2.2.1 (hn j hj).2.2.2,
     Complex.ofReal_mul]
   ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

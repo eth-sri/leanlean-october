@@ -44,6 +44,4 @@ theorem norm_heathBrownCoefficientWeight
     ‖heathBrownCoefficientWeight c α q‖ = 1 := by
   exact norm_heathBrownPhase _
 
-end
 
-end GafniTao

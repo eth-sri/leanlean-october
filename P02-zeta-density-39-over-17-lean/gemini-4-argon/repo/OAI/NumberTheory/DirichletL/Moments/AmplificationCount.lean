@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationCount
 open UniqueFactorizationMonoid CenteredExceptionalCount
-local notation "O" => ActualEisensteinCubic.O
 
 theorem primeDivisors_product_dvd (S : Finset (Ideal O))
     (hP : ∀ P ∈ S, Prime P) (I : Ideal O) (hd : ∀ P ∈ S, P ∣ I) :
@@ -97,9 +96,3 @@ theorem positive_pushforward_bound {α β : Type*} [DecidableEq β]
       intro x hx
       rw [(Finset.mem_filter.mp hx).2]
     _ ≤ _ := mul_le_mul_of_nonneg_right (hf y hy) (hg y hy)
-
-end SevenEighths.CenteredMomentAmplificationCount
-
-end
-
-end OAI

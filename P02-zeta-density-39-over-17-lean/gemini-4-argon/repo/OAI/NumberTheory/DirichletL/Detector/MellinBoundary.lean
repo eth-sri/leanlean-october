@@ -788,9 +788,3 @@ theorem profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : �
       integral_const_mul _ _
     _ ≤ A*(K/height T^N) := mul_le_mul_of_nonneg_left hmb hA
     _ = _ := by ring
-
-end SevenEighths.ProbeMellinBoundary
-
-end
-
-end OAI

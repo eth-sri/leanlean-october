@@ -11,7 +11,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem first_family_original_to_second (ε : ℝ) (hε : 0 < ε) :
     ∃ K : ℝ,0 < K ∧ ∀ {ι : Type*} [DecidableEq ι]
@@ -70,8 +69,3 @@ theorem first_family_original_to_second (ε : ℝ) (hε : 0 < ε) :
       apply Finset.sum_congr rfl
       intro core hcore
       ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

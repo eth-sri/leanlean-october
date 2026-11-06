@@ -134,9 +134,3 @@ theorem selected_product_spike {α : Type*} (s : Finset α) (w g : α→ℝ)
     _ ≤ ∏ i∈T, ‖Q i‖^2 := Finset.prod_le_prod₀ (fun i hi => Real.rpow_nonneg hUp.le _)
       (fun i hi => hQ i (hTs hi) (hTpos i hi))
     _ = _ := by rw [norm_prod,Finset.prod_pow]
-
-end SevenEighths.HeckeDetectorSlotSelection
-
-end
-
-end OAI

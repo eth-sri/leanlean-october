@@ -53,4 +53,3 @@ theorem exponentSumGrowthExponent_le_heathBrown_secondRow
     {α : ℝ≥0} (hα : 1/4 ≤ (α : ℝ)) (hα₁ : (α : ℝ) ≤ 890/3277) :
     exponentSumGrowthExponent α ≤ 19/20*(α : ℝ) :=
   exponentSumGrowthExponent_le_heathBrown_secondSegment hα (by linarith)
-end TaoTrudgianYang2025

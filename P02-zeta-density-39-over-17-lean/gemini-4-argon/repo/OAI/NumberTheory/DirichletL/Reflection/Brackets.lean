@@ -8,11 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss
-open LocalReflectionBrackets CanonicalRowCompletion
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets CanonicalRowCompletion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 noncomputable local instance bracketField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance bracketFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
@@ -78,8 +75,3 @@ theorem marked_bracket_hybrid {ι : Type*} [Fintype ι]
       (if IsCoprime (∏ i, P i) b then 1 else 0) := by
   rw [marked_bracket_product,InverseMoment.inverseCubicKernel_eq_inverse_square,
     (primaryGenerator_spec b hb).1]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

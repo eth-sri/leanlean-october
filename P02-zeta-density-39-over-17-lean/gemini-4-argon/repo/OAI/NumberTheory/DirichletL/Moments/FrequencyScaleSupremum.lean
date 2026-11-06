@@ -142,9 +142,3 @@ theorem paired_rowwise_scales {ι : Type*} (rows : Finset ι)
   simp only [norm_mul]
   rw [eqW i 0 (lx i) (hlx i hi),eqV i 0 (ly i) (hly i hi)]
   simp only [scaleTest,ite_true]
-
-end SevenEighths.CenteredMomentFrequencyScaleSupremum
-
-end
-
-end OAI

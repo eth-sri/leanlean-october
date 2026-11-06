@@ -150,4 +150,3 @@ theorem modelPhaseBufferedSharpCore_error {σ : ℝ} (hσ : 0 < σ) :
   rw [heq]
   exact (norm_add_le _ _).trans (add_le_add hc hext)
 
-end TaoTrudgianYang2025

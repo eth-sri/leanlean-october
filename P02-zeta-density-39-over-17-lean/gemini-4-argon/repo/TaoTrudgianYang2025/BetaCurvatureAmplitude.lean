@@ -81,4 +81,3 @@ theorem modelPhaseStationaryPoint_amplitude_scale
   unfold modelPhaseStationaryAmplitude
   field_simp
 
-end TaoTrudgianYang2025

@@ -74,4 +74,3 @@ theorem norm_shortDetectorTaylor_tail_le {T β : ℝ} {N : ℕ}
     _ ≤ ∑' j : ℕ, ‖(detectorTaylorWeight β (j+J) : ℂ)*shortDetectorTaylorPolynomial T N (j+J) t‖ := norm_tsum_le_tsum_norm hn
     _ ≤ _ := (hn.tsum_le_tsum hb hg.summable).trans_eq (by rw [hg.tsum_eq]; norm_num; ring)
 
-end GuthMaynard.Improvement

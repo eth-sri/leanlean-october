@@ -93,4 +93,3 @@ theorem modelPhaseTaylorWidth_source_admissible
   have hη₁ : (Real.sqrt T)⁻¹ < 1 := by linarith
   exact modelPhaseTaylorWidth_admissible hσ hδ hF hη hη₁
 
-end TaoTrudgianYang2025

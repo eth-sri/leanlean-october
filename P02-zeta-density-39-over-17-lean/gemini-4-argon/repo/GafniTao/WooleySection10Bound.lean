@@ -180,6 +180,4 @@ theorem WooleyIterationChain.composed_bound
       · exact hsubstitute.trans_eq hrearrange
 
 
-end
 
-end GafniTao

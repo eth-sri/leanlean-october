@@ -42,8 +42,3 @@ theorem literal_reflectedExponent_le_signed (Z : ℝ) (hZ : 1<Z) (m : ℕ)
     literal_ramified_width_offset]
   rw [add_sub_cancel_right]
   linarith
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

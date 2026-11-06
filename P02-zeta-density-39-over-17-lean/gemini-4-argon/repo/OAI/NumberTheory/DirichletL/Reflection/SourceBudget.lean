@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem original_source_cost_budget {χ : Type*} [Fintype χ]
     (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
@@ -35,7 +34,3 @@ theorem original_source_cost_budget {χ : Type*} [Fintype χ]
       congr 2
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ.le hloss) hC.le
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

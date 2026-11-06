@@ -104,4 +104,3 @@ theorem radial_profile_sum_bound (w : MathCollab.Density.ReflectionCutoff) (n : 
         Ct/H^n*M^3*(99/10:ℝ)^2)) := mul_le_mul_of_nonneg_left (sum_le_sum (fun m _ => hmode m)) (by positivity)
     _ = _ := by rw [sum_add_distrib,← mul_sum]; simp only [sum_const,nsmul_eq_mul]; ring
 
-end GuthMaynard.Improvement.AtomicCubic

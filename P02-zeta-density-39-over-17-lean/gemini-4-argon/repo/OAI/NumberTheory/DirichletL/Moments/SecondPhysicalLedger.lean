@@ -9,17 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalLedger
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSourceBlockWindows CenteredMomentSecondPhysicalCost
-open CenteredMomentSupport CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondCanonicalLedger CenteredMomentForcing
-open CenteredMomentSecondSectorFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentSourceBlockWindows CenteredMomentSecondPhysicalCost CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentSecondCanonicalLedger CenteredMomentForcing CenteredMomentSecondSectorFrequency CenteredMomentFirstWholeKernel CenteredMomentSmooth
 
 theorem physicalBlock_effective_window (η:Character) (t:ℝ)
     (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
@@ -246,9 +236,3 @@ theorem original_block_physical_cost (η:Character) (t:ℝ)
   obtain ⟨z,hz,hpart,hcorr⟩:=physicalBlock_canonical_witness η t S β C D hC hD hCD U R rows hrows W K hK n hne
   exact actual_canonical_physical_cost η t S β C D hC hD hCD U _ hpart hcorr R rows W K n
     hK H a Z hH ha hZ hlower hne
-
-end SevenEighths.CenteredMomentSecondPhysicalLedger
-
-end
-
-end OAI

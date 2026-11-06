@@ -60,6 +60,4 @@ theorem heathBrownPairCount_card_cast_le_at_chosen_scale
     hcoordLast hcoordLastD hraw hrawd hkBounds
 
 
-end
 
-end GafniTao

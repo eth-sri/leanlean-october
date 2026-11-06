@@ -12,7 +12,6 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open ActualEisensteinCubic CompletedGauss
 namespace SevenEighths.InverseInitialEnergyCallerUniform
 open InverseMoment InverseInitialClippedColumns InverseInitialProfile
-local notation "Eis"=>ActualEisensteinCubic.O
 
 theorem initial_height_bound (J:ℕ)(z:JointLogSeparation.Frequency×(Fin 6→ℝ))
     (h:ℝ)(hh:h = -leftHeight z ∨ h=rightHeight z) :
@@ -64,9 +63,3 @@ theorem initial_raw_uniform
       Finset.sum_const_zero,mul_zero,Finset.sum_const_zero]
     dsimp [tripleHeight,coordinateHeight]
     positivity
-
-end SevenEighths.InverseInitialEnergyCallerUniform
-
-end
-
-end OAI

@@ -42,4 +42,3 @@ theorem norm_robertSargos_common_shift_error (w : ℤ → ℂ) (M H Q N : ℕ) (
   intro n hn
   exact norm_robertSargos_shifted_boundary w M H Q N h q n hh hq hn hw
 
-end TaoTrudgianYang2025

@@ -92,7 +92,3 @@ theorem initial_margins {m r z G P delta eta tau Q c₁ c₂ : ℝ}
   have hc₁ := min_le_left c₁ c₂
   have hc₂ := min_le_right c₁ c₂
   constructor <;> linarith
-
-end SevenEighths.InverseMoment
-
-end OAI

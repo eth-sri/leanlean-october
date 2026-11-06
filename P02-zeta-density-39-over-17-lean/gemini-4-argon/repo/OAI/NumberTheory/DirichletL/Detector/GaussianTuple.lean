@@ -11,8 +11,6 @@ open scoped Classical ContDiff Topology SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma gaussian_selected_tuple_sum {ι α : Type*} [Fintype ι]
     (W : ι→ℝ→ℂ) (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
@@ -103,8 +101,3 @@ theorem gaussian_selected_tuple_reassembly {ι α : Type*} [Fintype ι]
       apply tsum_congr
       intro j
       exact gaussian_selected_tuple_sum W V hV hsep F a S D Ψ Z hZ j q hq
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

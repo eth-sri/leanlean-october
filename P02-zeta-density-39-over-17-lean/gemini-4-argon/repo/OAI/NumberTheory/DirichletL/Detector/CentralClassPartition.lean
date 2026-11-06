@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
 
 lemma sum_amplitudeRows {Slot : Type*} (rows : Finset FreeRow) (slots : Finset Slot)
     (U cap mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (Q : FreeRow→Slot→ℂ)
@@ -61,8 +60,3 @@ theorem cubeArithmeticSum_class_uniform {N : ℕ} {Slot : Type*}
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_right _ hA
       exact_mod_cast HeckeDetectorClassBudget.bin_card_le slots cap mesh hcap hm
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

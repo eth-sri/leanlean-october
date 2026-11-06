@@ -12,13 +12,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedPhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseReflectedPhase InverseMoment InverseInitialClippedColumns
-open CanonicalCoefficientClass ConcreteTraceCRT SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum
-open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerModes
-open InverseInitialQuotientGeometry InverseInitialEnergyCallerGeometry InverseInitialCanonicalState
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion InverseReflectedPhase InverseMoment InverseInitialClippedColumns CanonicalCoefficientClass ConcreteTraceCRT SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialQuotientGeometry InverseInitialEnergyCallerGeometry InverseInitialCanonicalState
 
 theorem retained_physical_bound
     (W₁ W₂:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
@@ -148,9 +142,3 @@ theorem retained_physical_bound
       · linarith
       · linarith [norm_nonneg s]
       · dsimp [J]; omega
-
-end SevenEighths.InverseInitialRetainedPhysical
-
-end
-
-end OAI

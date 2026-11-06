@@ -64,4 +64,3 @@ theorem source_removed_mass_dyadic {β : ℝ → ℝ} (hβm : Measurable β)
       intro j _
       rw [integral_const_mul]
 
-end GuthMaynard.Improvement

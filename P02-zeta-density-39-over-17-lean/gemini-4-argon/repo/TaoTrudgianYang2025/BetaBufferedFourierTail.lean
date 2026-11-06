@@ -86,4 +86,3 @@ theorem modelPhase_buffered_poisson_truncated
       abel
     _ ≤ _ := (norm_add_le _ _).trans (add_le_add hsource.2 hdiff)
 
-end TaoTrudgianYang2025

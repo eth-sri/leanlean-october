@@ -9,13 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentSecondDivisorSupport
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentChildAssembly
-open CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSecondExceptionalPairBound RayFourExpansion
-local notation "O"=>HeckeFamily.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSecondExceptionalPairBound RayFourExpansion
 
 theorem live_right_divisor_norm (D I L:Ideal O)(hD:D≠0)(hI:I≠0)
     (β:Ideal O→ℂ)(H:ℝ)(hβ:∀J,β J≠0→(J.absNorm:ℝ)≤H)
@@ -89,9 +83,3 @@ theorem originalPair_filter_right {ι:Type*}[Fintype ι][DecidableEq ι]
     intro z hzr
     apply mul_eq_zero_of_right
     exact norm_eq_zero.mpr (hz _ _)
-
-end SevenEighths.CenteredMomentSecondDivisorSupport
-
-end
-
-end OAI

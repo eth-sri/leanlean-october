@@ -186,4 +186,3 @@ theorem positiveShell_bandContribution_le (w : ReflectionCutoff) {L H : ℝ}
       mul_le_mul_of_nonneg_left hint hcoef
     _ = _ := by ring
 
-end MathCollab.Density

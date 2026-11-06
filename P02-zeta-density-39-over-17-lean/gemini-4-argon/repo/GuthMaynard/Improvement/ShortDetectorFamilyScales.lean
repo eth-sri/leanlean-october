@@ -64,4 +64,3 @@ theorem short_detector_family_scales_eventually :
   apply (div_le_iff₀ hTpos).2
   nlinarith
 
-end GuthMaynard.Improvement

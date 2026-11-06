@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEulerFinsupp
-local notation "O" => HeckeFamily.O
 
 def markExclusions (S : Finset (Ideal O)) (T : Finset PrimeIdeal) : Finset (Ideal O) :=
   S∪T.image Subtype.val
@@ -33,9 +32,3 @@ theorem markExclusions_prime (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   · rintro (h|h)
     · exact Or.inl h
     · exact Or.inr ⟨P,h,rfl⟩
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure CanonicalRowCompletion
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-open HeckeDetectorRelativePrime
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeRowClosure CanonicalRowCompletion CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckeDetectorRelativePrime
 
 def physicalSlotCoefficient (η : Character) (W : ℝ→ℂ) (D : ℝ) (z : ℂ) (P : Ideal O) : ℂ :=
   idealCoeff η.inverse P*conj (W ((P.absNorm:ℝ)/D)*(((P.absNorm:ℝ)/D:ℝ):ℂ)^(z-1))
@@ -53,9 +50,3 @@ theorem physical_slot_conj (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
   · have hn := idealCoeff_ne_zero_of_coprime η P hp.ne_zero (hη P hP' hw)
     simp only [physicalSlotCoefficient,HeckeDetectorRelativePrime.idealCoeff_inverse,map_mul,starRingEnd_self_apply]
     field_simp
-
-end SevenEighths.CenteredMomentDetectorDictionary
-
-end
-
-end OAI

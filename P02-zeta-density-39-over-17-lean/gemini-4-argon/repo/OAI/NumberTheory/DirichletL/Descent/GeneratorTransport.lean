@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -47,8 +46,3 @@ theorem generator_eq_unit_primary (I : Ideal Eis) (e : Eis)
     Ideal.span_singleton_eq_span_singleton.mp ((primaryGenerator_spec I hI).1.trans he.symm)
   obtain ⟨u,hu⟩ := ha
   exact ⟨u,by simpa only [mul_comm] using hu.symm⟩
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

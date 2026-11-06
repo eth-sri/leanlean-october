@@ -139,4 +139,3 @@ theorem modelPhaseBufferedTransition_card_le
   change (S.card : ℝ) ≤ _
   linarith [hb.1,hb.2]
 
-end TaoTrudgianYang2025

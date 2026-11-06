@@ -55,4 +55,3 @@ theorem reflection_local_pair_le_three {H : ℝ} (hH : 0 < H)
       rw [← sum_filter,localIndices_filter_point hH ht]
       simp
 
-end Montgomery.RationalMoment

@@ -59,4 +59,3 @@ theorem sum_signed_inverse_sqrt_le (Q : ℕ) :
     subst Q
     simp
 
-end TaoTrudgianYang2025

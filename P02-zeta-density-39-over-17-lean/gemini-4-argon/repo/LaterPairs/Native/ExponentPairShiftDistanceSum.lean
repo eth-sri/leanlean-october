@@ -89,4 +89,3 @@ theorem sum_shift_distance_row_le (C : ℕ → ℝ) (D : ℝ) {H h : ℕ}
   rw [hdiag]
   linarith [sum_lower_shift_distances_le C hh hC,sum_upper_shift_distances_le (h := h) C hC]
 
-end TaoTrudgianYang2025

@@ -115,4 +115,3 @@ theorem modelPhaseBufferedCutoff_uniform_c2 :
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2)),Complex.norm_real,Real.norm_eq_abs]
     exact hjets l r η x hη 2 le_rfl
 
-end TaoTrudgianYang2025

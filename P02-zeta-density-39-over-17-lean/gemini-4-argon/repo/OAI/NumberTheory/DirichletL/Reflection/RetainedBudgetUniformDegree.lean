@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem original_sector_retained_budget_uniform_degree
@@ -98,7 +97,3 @@ theorem original_sector_retained_budget_uniform_degree
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hz'.le (by nlinarith only [hsmall])) (by positivity)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

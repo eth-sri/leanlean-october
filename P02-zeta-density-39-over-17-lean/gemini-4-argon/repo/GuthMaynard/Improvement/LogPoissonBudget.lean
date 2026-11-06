@@ -77,4 +77,3 @@ theorem poisson_cubic_error_budget {T L C D d M : ℝ}
       have hp : T^(-193:ℝ) ≤ T^(-100:ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by norm_num)
       gcongr
 
-end GuthMaynard.Improvement

@@ -44,9 +44,3 @@ theorem sum_globalParentSource {A:Type*}[AddCommMonoid A]
     simp only [erase_fillFirstQuotient,eraseFirstQuotient_eq _ (houter x hx),
       eraseFirstQuotient_eq _ (houter y hy)] at he'
     exact hxy he'.symm
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

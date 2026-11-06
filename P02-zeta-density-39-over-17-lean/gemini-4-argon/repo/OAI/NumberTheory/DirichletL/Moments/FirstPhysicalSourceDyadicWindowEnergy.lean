@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice
-open CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource CenteredMomentSecondWindowBudget
-open IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentLogDyadic CenteredMomentSecondWindowSource CenteredMomentSecondWindowBudget IdealMobiusDivisorSum
 variable {ι:Type*}[Fintype ι]
 
 theorem column_dyadic_window_energy (s:OriginalData ι)(Q C:Ideal O)(hQ:Q≠0)(hC:Supported C)
@@ -48,9 +43,3 @@ theorem column_star_dyadic_window_energy (s:OriginalData ι)(Q C:Ideal O)(hQ:Q�
       (windowBudget J t E*(1+‖θ‖)^J)^2:=by
   simpa only [star_logAnnulus_column,norm_neg] using
     column_dyadic_window_energy s Q C hQ hC hQC τ t (-θ) X hX L a ha U K hK hU J E hE henergy
-
-end SevenEighths.CenteredMomentFirstPhysicalSource
-
-end
-
-end OAI

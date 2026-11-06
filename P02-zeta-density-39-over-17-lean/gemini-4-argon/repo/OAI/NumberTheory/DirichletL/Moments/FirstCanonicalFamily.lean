@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstCanonicalFamily
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstFamily
-open CenteredMomentFirstColumns CenteredMomentPrimitive CenteredMomentCommonSupport RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstFamily CenteredMomentFirstColumns CenteredMomentPrimitive CenteredMomentCommonSupport RayFourExpansion
 
 theorem supported_of_dvd (A B : Ideal O) (hB : Supported B) (hd : A∣B) : Supported A := by
   obtain ⟨Q,hQ⟩ := hd
@@ -89,9 +85,3 @@ theorem first_displayed_norm (η : Character) (m : O) (I J : Ideal O)
       ((∏ P∈E,P.val).absNorm*(Ideal.span {activeConductor I J}).absNorm) := by
   rw [← Ideal.span_singleton_mul_span_singleton,primeSubsetGenerator,span_idealGenerator]
   simp only [map_mul]
-
-end SevenEighths.CenteredMomentFirstCanonicalFamily
-
-end
-
-end OAI

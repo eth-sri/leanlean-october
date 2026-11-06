@@ -88,4 +88,3 @@ theorem referenceModelPrimitive_scaling_difference
         (A^(s-1)*A^(1-s))*(u^(1-s)/(1-s)-v^(1-s)/(1-s)) := by ring
       _ = _ := by rw [hp,one_mul]
 
-end TaoTrudgianYang2025

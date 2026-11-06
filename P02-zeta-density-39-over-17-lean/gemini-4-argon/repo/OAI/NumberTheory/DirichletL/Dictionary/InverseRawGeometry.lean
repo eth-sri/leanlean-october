@@ -64,9 +64,3 @@ theorem raw_output_budget (H D κ e : ℝ) (hH : 1≤H) (hκ : 0≤κ) (he : e�
   calc
     H^e≤H^κ:=Real.rpow_le_rpow_of_exponent_le hH he
     _≤(H*max 1 D)^κ:=Real.rpow_le_rpow hHp.le (by nlinarith [le_max_left 1 D]) hκ
-
-end SevenEighths.DetectorDictionaryInverseRawGeometry
-
-end
-
-end OAI

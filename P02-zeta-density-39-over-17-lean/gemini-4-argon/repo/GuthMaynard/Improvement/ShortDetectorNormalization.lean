@@ -87,4 +87,3 @@ theorem detectingPolynomial_shortNormalizedPowered (η T t : ℝ) (N j k L : ℕ
   intro n _
   ring
 
-end GuthMaynard.Improvement

@@ -76,4 +76,3 @@ theorem modelPhaseTaylorExtension_uniformity
   exact (hpaste (anchoredLegendreError F σ w) _ _ h v (A*δ)
     hh hh₁ hgap hf hb hdistL hdistR n hn).trans_eq (by ring)
 
-end TaoTrudgianYang2025

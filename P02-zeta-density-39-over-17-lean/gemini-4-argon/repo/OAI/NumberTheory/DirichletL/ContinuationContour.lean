@@ -108,9 +108,3 @@ theorem gaussianContourIntegrand_differentiableOn {G : ℂ → ℂ} {U : Set ℂ
   · exact ((differentiable_id.add_const (c : ℂ)).const_cpow
       (Or.inl (Complex.ofReal_ne_zero.mpr hZ.ne'))).differentiableOn
   · exact (((differentiable_id.sub_const (5 / 6 : ℂ)).pow 2).cexp).differentiableOn
-
-end SevenEighths.Continuation
-
-end
-
-end OAI

@@ -117,9 +117,3 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
       _ = _ := by rw [←Real.rpow_add (by linarith : 0<Z^d)]; congr 1; ring
   exact Detector.simultaneous_saturation hU (by linarith) hε.le (sq_nonneg _) (sq_nonneg _)
     hp (hMu.trans (hbound _)) (hSu.trans (hbound _))
-
-end SevenEighths.HeckeDetectorSaturation
-
-end
-
-end OAI

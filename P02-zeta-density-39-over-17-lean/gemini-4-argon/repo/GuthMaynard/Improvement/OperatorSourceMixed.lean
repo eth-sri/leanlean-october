@@ -39,4 +39,3 @@ theorem operator_source_mixed (w : MathCollab.Density.ReflectionCutoff)
     _ ≤ D*L*(R*N^ε*L*N*T)*(∫ t, μ t^2) := hh
     _ = _ := by ring
 
-end GuthMaynard.Improvement

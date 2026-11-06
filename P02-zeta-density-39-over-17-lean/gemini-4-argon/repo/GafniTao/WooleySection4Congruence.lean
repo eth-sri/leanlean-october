@@ -161,6 +161,4 @@ theorem wooleySection4_exists_dilated_system
   exact (pow_dvd_pow (p : ℤ) hexp).trans hcancel
 
 
-end
 
-end GafniTao

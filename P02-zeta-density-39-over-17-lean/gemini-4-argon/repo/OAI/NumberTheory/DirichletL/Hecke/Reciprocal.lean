@@ -117,9 +117,3 @@ theorem reciprocal_differentiableAt (χ : Character) {s : ℂ}
     rw [heq]
     exact (LFunction_differentiableAt χ h0 (Or.inr hχ)).inv
       (HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt χ hs (Or.inr hχ))
-
-end SevenEighths.HeckeReciprocal
-
-end
-
-end OAI

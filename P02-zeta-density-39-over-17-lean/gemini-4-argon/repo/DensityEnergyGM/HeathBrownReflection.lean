@@ -7807,4 +7807,3 @@ theorem heathBrownDifferenceSetMeanSquare_native :
   heathBrownDifferenceSetMeanSquare_of_coefficientOne
     heathBrownCoefficientOneMeanSquare_native
 
-end GuthMaynard.NativeMoment

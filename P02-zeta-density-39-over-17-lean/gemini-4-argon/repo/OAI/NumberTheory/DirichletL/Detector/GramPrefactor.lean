@@ -41,8 +41,3 @@ lemma supported_exceptional_prefactor (C D : SupportedIdeal) (F P Y Q ε : ℝ)
       (F*gramIdealNorm C)^ε*(P/gramIdealNorm C)^(1/6:ℝ)=
       (Q/Y)*F^ε*P^(1/6:ℝ)*(gramIdealNorm C^(-7/6+ε:ℝ)*gramIdealNorm D^(-2:ℝ)) :=
   exceptional_prefactor _ _ _ _ _ _ _ (gramIdealNorm_pos C) (gramIdealNorm_pos D) hF hP hY
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

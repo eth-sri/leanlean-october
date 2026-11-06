@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
-open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeInverseAmplification
+open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge HeckeInverseAmplification
 
 theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
     (χ : ι→Character) (inv : Bool) (A : ι→ℂ)
@@ -81,9 +80,3 @@ theorem rawMoment_reference (data : RowData)
     simp [clippedTest,childLogTest,logPhase]
   rw [heq] at hh
   simpa only [mul_one,one_mul,norm_zero,add_zero,one_pow,mul_assoc,mul_left_comm,mul_comm] using hh
-
-end SevenEighths.DetectorDictionaryInverseRawFourier
-
-end
-
-end OAI

@@ -8,12 +8,8 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
-open SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
-open SevenEighths.InverseInitialEnergyCallerCanonical
+open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns SevenEighths.InverseInitialEnergyCallerCanonical
 namespace SevenEighths.InverseInitialEnergyCallerOpposite
-local notation "Eis" => ActualEisensteinCubic.O
 
 def negativeChild (c : InitialChild) : InitialChild := (c.1,c.2.1,-c.2.2)
 
@@ -44,9 +40,3 @@ variable {ι σ : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-
-end SevenEighths.InverseInitialEnergyCallerOpposite
-
-end
-
-end OAI

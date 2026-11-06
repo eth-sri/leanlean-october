@@ -95,4 +95,3 @@ theorem sampling_separated_norm {ι : Type*} [Fintype ι]
   convert hh using 1
   field_simp
 
-end GuthMaynard.Improvement

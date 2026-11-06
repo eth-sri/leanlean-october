@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentReflectedChild
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy
-open CenteredMomentSmooth CenteredMomentChildEnergy
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy CenteredMomentSmooth CenteredMomentChildEnergy
 
 theorem finite_reflected_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
@@ -75,9 +73,3 @@ theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4
     _ ≤ (E₁ * (1 + ‖t‖) ^ J₁) * (E₂ * (1 + ‖t‖) ^ J₂) :=
       mul_le_mul hl hr (Real.sqrt_nonneg _) (by positivity)
     _ = _ := by rw [pow_add]; ring
-
-end SevenEighths.CenteredMomentReflectedChild
-
-end
-
-end OAI

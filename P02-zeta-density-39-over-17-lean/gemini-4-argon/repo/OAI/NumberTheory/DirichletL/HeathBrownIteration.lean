@@ -84,9 +84,3 @@ theorem finite_improvement {P : ℝ → Prop} (hstart : P 2)
     | succ n ih => exact himprove _ (exponent_bounds n).1 (exponent_bounds n).2 ih
   obtain ⟨n, hn⟩ := exists_exponent_lt hε
   exact ⟨exponent n, (exponent_bounds n).1, (exponent_bounds n).2, hn, hp n⟩
-
-end
-
-end SevenEighths.HeathBrownIteration
-
-end OAI

@@ -178,4 +178,3 @@ theorem positive_ratio_square_weight_log (S : Finset (ℕ × ℕ)) {Y : ℕ} {X 
   (positive_ratio_square_weight S hX hpos hY w hw0 hw).trans
     (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Y) (by positivity))
 
-end GuthMaynard.Improvement

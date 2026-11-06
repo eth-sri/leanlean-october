@@ -410,9 +410,3 @@ theorem jointProfile_uniform_degree (a b : ℝ) (ha : 0 < a) (hab : a < b)
     exact mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left (by dsimp [A]; linarith :
         amplitudeControl (heightOrder H) (amplitudeSchwartz W a b ha hab hs hW) ≤ 1+A) hC.le) hU)
-
-end ProbeGramJointProfile
-
-end
-
-end OAI

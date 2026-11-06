@@ -63,4 +63,3 @@ theorem smoothTransition_taylor_remainder_uniform_jets (Q : ℕ) :
     _ ≤ _ := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right hmono (zero_le_one.trans hB)) hM
 
-end TaoTrudgianYang2025

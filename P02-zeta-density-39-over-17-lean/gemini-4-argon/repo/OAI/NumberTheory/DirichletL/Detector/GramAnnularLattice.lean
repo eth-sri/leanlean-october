@@ -11,7 +11,6 @@ open scoped BigOperators Classical FourierTransform SchwartzMap RealInnerProduct
 
 namespace ProbeGramAnnularLattice
 open ProbeGramLatticeDecay ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
 def AnnularSupport (a b : ℝ) (W : 𝓢(Joint, ℂ)) : Prop :=
   Function.support W ⊆ {z : Joint | a ≤ ‖z.fst‖^2 ∧ ‖z.fst‖^2 ≤ b ∧
@@ -164,9 +163,3 @@ theorem annular_weighted_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
     _ = B * ∑' m : O × O, ‖W (physicalPoint N m)‖ := tsum_mul_left
     _ ≤ B * (C * sourceControl S W * N^2) := mul_le_mul_of_nonneg_left (hbound W hW N hN) hB
     _ = _ := by ring
-
-end ProbeGramAnnularLattice
-
-end
-
-end OAI

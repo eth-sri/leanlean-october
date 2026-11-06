@@ -57,4 +57,3 @@ theorem exists_robertSargos_primitive_count_coefficient_bound (ε : ℝ) (hε : 
       mul_le_mul_of_nonneg_right hU (by positivity)
     _ = _ := by field_simp
 
-end TaoTrudgianYang2025

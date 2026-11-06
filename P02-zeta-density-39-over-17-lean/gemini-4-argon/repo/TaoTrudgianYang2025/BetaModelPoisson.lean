@@ -126,4 +126,3 @@ theorem modelPhase_weighted_poisson
   simpa only [zero_add,AddCircle.coe_zero,fourier_eval_zero,mul_one,
     modelPhaseWeightedSchwartz_fourier,modelPhaseWeightedSchwartz_apply] using h
 
-end TaoTrudgianYang2025

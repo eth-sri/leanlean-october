@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma poolPrimeFamily_pairwise (R Q Q₀ : Ideal Eis) :
     Pairwise (Function.onFun IsCoprime (poolPrimeFamily R Q Q₀).ideal) := by
@@ -47,8 +46,3 @@ lemma poolPrimeFamily_fiber_exponent (R I F Q Q₀ : Ideal Eis)
     (P : FreeReflection.pool R Q Q₀) :
     completedLocalExponent I F ((poolPrimeFamily R Q Q₀).ideal P)=completedLocalExponent R F P.val :=
   nonresidualPoolEquiv_exponent R I F Q Q₀ hR hI hQ hpow hmask P
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

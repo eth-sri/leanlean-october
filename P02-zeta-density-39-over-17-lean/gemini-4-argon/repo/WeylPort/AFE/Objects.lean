@@ -37,4 +37,3 @@ noncomputable def chi (s : ℂ) : ℂ :=
 noncomputable def afeRemainder (s : ℂ) (x y : ℝ) : ℂ :=
   riemannZeta s - sharpZetaSum s x - chi s * sharpZetaSum (1 - s) y
 
-end DhimanKadiriQuesadaHerrera2026

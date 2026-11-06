@@ -92,4 +92,3 @@ theorem retained_cubic_designated_partition {a : ℝ → ℂ} {μ : ℝ → ℝ}
   rw [maskedRetainedCubic_cycle a μ L U Aᶜ Aᶜ A]
   rw [maskedRetainedCubic_cycle a μ L U Aᶜ A Aᶜ]
 
-end GuthMaynard.Improvement

@@ -11,8 +11,6 @@ noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma gramFrequency_image_sum (E : Finset GramFrequency) (f : O→ℝ) :
     (∑k∈E.image Subtype.val,f k)=∑k∈E,f k.val :=
@@ -89,8 +87,3 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
     _=V*(∑k∈E,(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ)) := (Finset.mul_sum ..).symm
     _≤V*(L*((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val)^ε*H^(1/6:ℝ)) := mul_le_mul_of_nonneg_left hc hV
     _=_ := by dsimp [V];ring
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

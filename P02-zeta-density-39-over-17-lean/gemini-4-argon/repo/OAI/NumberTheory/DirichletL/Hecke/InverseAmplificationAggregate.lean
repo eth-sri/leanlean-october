@@ -104,9 +104,3 @@ theorem averaged_energy (data : RowData) (rows : Finset FreeRow) (primes : Finse
         exact fun p hp q hq h => primeRowMap_injective h
   have hh := mul_le_mul_of_nonneg_left henergy (by norm_num : (0 : ℝ)≤4)
   nlinarith
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

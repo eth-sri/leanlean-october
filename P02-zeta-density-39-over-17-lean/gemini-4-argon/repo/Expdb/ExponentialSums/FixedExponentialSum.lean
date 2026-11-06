@@ -57,6 +57,4 @@ theorem exponentialSumAt_of_lt {a b : ℕ} (hab : b < a) (F : ℝ → ℝ) (T N 
     exponentialSumAt F T N a b = 0 := by
   simp [exponentialSumAt, Finset.Icc_eq_empty (by omega : ¬ a ≤ b)]
 
-end Expdb
 
-end

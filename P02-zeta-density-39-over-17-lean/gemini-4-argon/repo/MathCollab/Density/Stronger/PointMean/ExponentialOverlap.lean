@@ -151,4 +151,3 @@ theorem sum_exp_neg_abs_sub_le_four
       · norm_num
       · norm_num
 
-end MathCollab.Density.Stronger.PointMean

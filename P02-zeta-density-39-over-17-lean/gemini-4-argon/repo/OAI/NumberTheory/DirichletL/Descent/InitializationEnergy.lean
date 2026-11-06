@@ -9,10 +9,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open CompletedGauss CanonicalQuadraticSieve SevenEighths.InverseInitialFibers
-open IdealMobiusDivisorSum
+open CompletedGauss CanonicalQuadraticSieve SevenEighths.InverseInitialFibers IdealMobiusDivisorSum
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 abbrev InitialChild := Ideal Eis × Ideal Eis × Eis
 
@@ -105,8 +103,3 @@ theorem initial_energy_projection {J : ℕ} (source : Finset (InitialTuple J))
   apply Finset.sum_congr rfl
   intro k hk
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

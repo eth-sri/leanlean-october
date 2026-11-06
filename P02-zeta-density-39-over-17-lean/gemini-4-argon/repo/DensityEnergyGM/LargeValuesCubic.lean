@@ -1119,4 +1119,3 @@ theorem gmCubicZeroMode_main_term (cutoff : GMSmoothCutoff)
       gcongr
     _ = 8 * K₀ / T ^ 100 := by field_simp
 
-end GuthMaynard.NativeMoment

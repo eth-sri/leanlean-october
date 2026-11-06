@@ -50,6 +50,4 @@ def wooleyPolynomialSystemLowMatrix {k : ℕ}
     (phi : WooleyPolynomialSystem k) : Matrix (Fin k) (Fin k) ℤ :=
   fun i j => (wooleyPolynomialLowPart (k + 1) (phi j)).coeff ((i : ℕ) + 1)
 
-end
 
-end GafniTao

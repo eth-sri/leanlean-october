@@ -10,8 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 variable {Ω : Type*} [MeasurableSpace Ω] {N a c : Eis} {mode : Bool}
 
@@ -159,8 +157,3 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
   rw [hsum] at hh
   simp only [norm_mul,mul_pow,← Finset.mul_sum]
   simpa only [E,mul_assoc] using hh
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

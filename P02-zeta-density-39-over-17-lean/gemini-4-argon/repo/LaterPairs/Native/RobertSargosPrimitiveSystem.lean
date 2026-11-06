@@ -49,4 +49,3 @@ theorem RobertSargosPrimitiveSystem.displacement_le {R H Q δ : ℝ} {p : Robert
   robertSargos_displacement_same_sign hH hQ h.h₁_support h.h₂_support
     h.q₁_support h.q₂_support (by exact_mod_cast h.same_sign) h.linear_real h.near
 
-end TaoTrudgianYang2025

@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstAnnularInput
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice
-open CenteredMomentCommonRadialData CenteredMomentSecondHeightFamily
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData CenteredMomentSecondHeightFamily
 
 variable {ι:Type*}[Fintype ι]
 
@@ -27,9 +25,3 @@ lemma original_active (s:Input ι)(R seed:Ideal HeckeFamily.O):
   cases j <;> rfl
 
 lemma active_volume (s:Input ι):volume (activeInput s)=volume s:=rfl
-
-end SevenEighths.CenteredMomentFirstAnnularInput
-
-end
-
-end OAI

@@ -49,5 +49,4 @@ theorem exists_robertSargos_primitive_count_wide_frequency (ε : ℝ) (hε : 0 <
         hR hH hQ hδ hε.le hHQ) hC.le
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 

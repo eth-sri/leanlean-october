@@ -10,11 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open InverseInitialClippedColumns FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
-local notation "O"=>ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight InverseInitialClippedColumns FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
 
 theorem actual_complete_normalized_rank_step
     (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi)(W:ℝ→ℂ)
@@ -104,9 +100,3 @@ theorem actual_complete_normalized_rank_step
     Ψ m slots lists a labels (fun I hI=>(hlabels I hI).1) (secondLabelWeight K)
     (normTwistedSource W theta) (Z^N) Z (N+V) (Z^M) (by linarith)] at hh
   exact hh
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

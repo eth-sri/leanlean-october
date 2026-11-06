@@ -9,10 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawInputBound
-open ConcretePrimeRowBridge ActualEisensteinCubic ConcreteTraceCRT CompletedGauss SecondPassArithmetic CanonicalQuadraticSieve CanonicalRowCompletion
-open CanonicalCoefficientClass InverseMoment InverseInitialProfile InverseInitialRayAttachment
-open InverseInitialQuotientGeometry InverseInitialProfileBounds
-local notation "O"=>ActualEisensteinCubic.O
+open ConcretePrimeRowBridge ActualEisensteinCubic ConcreteTraceCRT CompletedGauss SecondPassArithmetic CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialProfile InverseInitialRayAttachment InverseInitialQuotientGeometry InverseInitialProfileBounds
 
 theorem raw_input_bound
     (W:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support W⊆Set.Icc a b)
@@ -64,9 +61,3 @@ theorem raw_input_bound
   rw [hemark] at h
   simpa only [
     Real.rpow_one,←childLogTest_eq_clipped] using h
-
-end SevenEighths.DetectorDictionaryInverseRawInputBound
-
-end
-
-end OAI

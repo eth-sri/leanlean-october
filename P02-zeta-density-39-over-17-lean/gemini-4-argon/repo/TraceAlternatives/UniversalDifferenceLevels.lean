@@ -124,4 +124,3 @@ theorem universal_difference_cell_level_count (ε : ℝ) (hε : 0 < ε) :
     _ = _ := by simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul]; ring
 
 
-end Montgomery.RationalMoment

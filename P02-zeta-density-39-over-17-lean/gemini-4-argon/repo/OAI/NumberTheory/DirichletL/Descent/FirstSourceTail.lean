@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem choose_actual_first_tail_order (Mmax Fmax eta tau saving : ℝ)
     (hMm : 0≤Mmax) (hFm : 0≤Fmax) (heta : 0≤eta) (htau : 0<tau) :
@@ -48,8 +47,3 @@ theorem choose_actual_first_tail_order (Mmax Fmax eta tau saving : ℝ)
     (div_pos (Real.rpow_pos_of_pos hz _) (mul_pos (hapos _) (primeProductNorm_pos p hp _)))
     (div_pos (Real.rpow_pos_of_pos hz _) (mul_pos (hapos _) (primeProductNorm_pos p hp _)))
     hG₁ hG₂ hP hk hki hd ha (hu _) (hu _)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

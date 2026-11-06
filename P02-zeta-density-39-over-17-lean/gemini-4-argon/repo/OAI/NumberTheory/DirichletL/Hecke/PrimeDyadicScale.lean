@@ -48,9 +48,3 @@ theorem binCost_le_power (χ : Character) (B U H η ε : ℝ)
   have hh := mul_le_mul_of_nonneg_left
     (Real.log_le_rpow_div (by linarith : 0≤U) hε) hc
   convert hh using 1 ; ring
-
-end SevenEighths.HeckePrimeDyadic
-
-end
-
-end OAI

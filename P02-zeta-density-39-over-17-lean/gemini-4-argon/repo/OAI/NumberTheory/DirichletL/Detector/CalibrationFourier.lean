@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 def calibrationGauss (C : CalibrationData) (h : O) : ℂ :=
   ∑' d : O ⧸ Ideal.span {C.generator}, C.residue d *
@@ -82,8 +81,3 @@ theorem calibrationForSet_residue_sixth (S : Finset (Ideal O)) (hS : ∀ P ∈ S
     χ (Ideal.Quotient.mk _ a)) (calibrationForSet_pow_six S hS)
   change C.residue (Ideal.Quotient.mk _ a) ^ 6 = 1
   simpa only [MulChar.pow_apply' _ (by decide : (6 : ℕ) ≠ 0), MulChar.one_apply hu] using h6
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

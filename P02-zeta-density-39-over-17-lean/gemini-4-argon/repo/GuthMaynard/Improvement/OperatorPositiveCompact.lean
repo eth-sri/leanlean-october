@@ -78,4 +78,3 @@ theorem operator_countable_hilbertBasis (ν : Measure ℝ) [IsFiniteMeasure ν] 
   obtain ⟨w, b, _⟩ := exists_hilbertBasis ℂ (Lp ℂ 2 ν)
   exact ⟨w, operator_orthonormal_countable b.orthonormal, ⟨b⟩⟩
 
-end GuthMaynard.Improvement

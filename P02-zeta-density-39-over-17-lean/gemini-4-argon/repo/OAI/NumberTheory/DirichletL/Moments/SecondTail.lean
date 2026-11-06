@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondTail
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSupportedCorrelation CenteredMomentSecondWholeKernel
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentSectorLocalization CenteredMomentSupportedCorrelation CenteredMomentSecondWholeKernel
 
 theorem actual_second_kernel_reference (I J : Ideal O) (hI : I≠0) (hJ : J≠0)
     (K X H Tsec : ℝ) (hK : 0<K) (hX : 0<X)
@@ -87,9 +84,3 @@ theorem second_discarded_pair_bound (Adec : ℕ) :
       ((min 1 (kernelReference Tsec H))^2*(1+Z^(ξ/4))^Adec) := by positivity
   have hb' := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hprod hfac) hK.le
   convert hb' using 1 <;> ring
-
-end SevenEighths.CenteredMomentSecondTail
-
-end
-
-end OAI

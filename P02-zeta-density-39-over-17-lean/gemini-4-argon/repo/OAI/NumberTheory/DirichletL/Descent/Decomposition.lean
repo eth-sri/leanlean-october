@@ -9,7 +9,6 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 structure HybridColumnData where
   common : Ideal Eis
@@ -158,8 +157,3 @@ theorem hybrid_finite_column_reindex {A : Type*} [AddCommMonoid A]
   intro p hp hn
   obtain ⟨d, hd⟩ := HybridColumnData.toOriginal_bijective.surjective ⟨p, hS p hp⟩
   exact (hn ⟨d, congrArg Subtype.val hd⟩).elim
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

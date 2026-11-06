@@ -11,7 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss ProbeCompleted ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
 
 lemma supportedElement_ne_zero (s : O) (hs : Supported (Ideal.span {s})) : s≠0 := by
   intro h
@@ -64,8 +63,3 @@ theorem physical_spectral_reopen (η : HeckeFamily.Character) (C : CalibrationDa
       rw [spectralSummand_row_separation]
       unfold calibratedNumerator
       ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

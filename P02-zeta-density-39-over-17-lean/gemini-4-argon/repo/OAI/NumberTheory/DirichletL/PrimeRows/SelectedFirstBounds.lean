@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion
 
 lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
     (hA : 0≤A) (hE : 0≤E) (hV : ‖V‖≤1) (hW : ‖W‖≤A)
@@ -79,9 +78,3 @@ theorem continuedCompensatedLocal_first_bound (η : Character) (u : FreeRow) (P 
     exact Real.rpow_le_rpow_of_exponent_le hQ1 hxR
   exact compensatedReplacement_crude _ _ _ _ _ _ _ _ (by positivity) (by positivity)
     (hV.trans (by norm_num)) hW hD hM hB hq
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

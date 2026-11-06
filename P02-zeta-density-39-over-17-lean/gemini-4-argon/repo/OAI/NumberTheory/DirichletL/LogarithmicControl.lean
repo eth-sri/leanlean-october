@@ -519,9 +519,3 @@ theorem same_height_mem_disk {a e t v x : ℝ} (hev : 8 * e ≤ v)
       ((x - 2 : ℝ) : ℂ) := by push_cast; ring
   rw [heq, Complex.norm_real, Real.norm_eq_abs, abs_of_nonpos (by linarith : x - 2 ≤ 0)]
   linarith
-
-end SevenEighths.LogarithmicControl
-
-end
-
-end OAI

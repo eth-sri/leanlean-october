@@ -10,10 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CompletedGauss ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition
-open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentFirstPoisson
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentFirstPoisson
 
 lemma gaussTwo_eq_elementFourier (I : Ideal O) (hI : CubicSieve.Admissible I) :
     gaussTwo I hI.2 =
@@ -117,8 +114,3 @@ theorem gaussTwo_coprime_product_sextic (I J : Ideal O)
   rw [gaussTwo_coprime_product I J hI hJ hIJ hcop]
   simp only [CubicSieve.cubicRow, ← idealRowHom_square, ProbePhase.sexticPair,
     (primaryGenerator_spec I hI.2).1, (primaryGenerator_spec J hJ.2).1, mul_pow]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

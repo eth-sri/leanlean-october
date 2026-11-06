@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
 open FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
 
 theorem first_whole_extracted_norm {ι:Type*} [DecidableEq ι]
     (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -31,9 +30,3 @@ theorem first_whole_extracted_norm {ι:Type*} [DecidableEq ι]
   apply (primeProductNorm_union_le_mul p hp b.support C).trans
   exact mul_le_mul_of_nonneg_right (cubeCoordinates_radical_bound p hp b B hB h₁ h₂)
     (primeProductNorm_pos p hp C).le
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

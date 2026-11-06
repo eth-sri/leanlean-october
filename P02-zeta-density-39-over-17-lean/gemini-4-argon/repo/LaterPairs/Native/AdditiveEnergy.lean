@@ -87,4 +87,3 @@ theorem oneSeparated_card_cast_le_interval_length_add_one
     sortedList_length_le_interval W hsep L hsorted hsub a b hmemL hab
 
                                                           
-end TaoTrudgianYang2025

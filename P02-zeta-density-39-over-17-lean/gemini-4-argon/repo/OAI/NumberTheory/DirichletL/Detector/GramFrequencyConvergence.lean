@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
 
 lemma actual_correlation_radial_summable (I J : SupportedIdeal) (C : O) (hC : C≠0)
     (U : SchwartzMap ℝ ℂ) (Q : ℝ) (hQ : 0<Q) :
@@ -64,8 +62,3 @@ lemma originalCommonBlock_summable (S : Finset (Ideal O)) (hS : ∀p∈S,p.IsMax
        star (lowGramCoefficient (calibrationForSet S hS) σ (supportedIdealProduct C J)*
         lowGramProfile W v ((Ideal.absNorm (supportedIdealProduct C J).val:ℝ)/Y)))
   · simpa only [hij,ite_false] using (summable_zero : Summable (fun _ : GramFrequency=>(0:ℂ)))
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

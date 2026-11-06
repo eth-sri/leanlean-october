@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def supportedFloorRows (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
     (R : Finset FreeRow) (grid : FreeRow→ℕ) : Finset FreeRow :=
@@ -66,9 +65,3 @@ lemma normalized_nonfloor_error (A F Cfloor Cnon N : ℂ) (E B : ℝ)
     _ = ‖(A/N-F-(Cfloor+Cnon)/N)+Cfloor/N‖ := by congr 1;ring
     _ ≤ ‖A/N-F-(Cfloor+Cnon)/N‖+‖Cfloor/N‖ := norm_add_le _ _
     _ ≤ E+B := add_le_add hE hB
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

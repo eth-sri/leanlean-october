@@ -64,8 +64,3 @@ theorem physical_step_energy_exponent (M r ell V δ A B R j t g θ v η τ π ε
       2*(secondFormalColumn r A B t g v+secondFormalLabel B θ v j+clip) +
       (9/2+18+11/2)*η+τ+π+ε ≤ r+3*ell+V+40*η+τ+π+ε :=
   step_energy_exponent (physical_prefactor_identity M r ell V δ A B R j t g θ v) hclip
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

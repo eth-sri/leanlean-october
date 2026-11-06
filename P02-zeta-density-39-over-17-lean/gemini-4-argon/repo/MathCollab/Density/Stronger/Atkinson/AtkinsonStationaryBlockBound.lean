@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonDampedDyadic
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -81,4 +80,3 @@ theorem exists_atkinsonSourceCutoff_block_bound {δ : ℝ} (hδ : 0 < δ) :
   have hcutR : ((m+N:ℕ):ℝ) ≤ atkinsonSourceCutoff T G (Real.log T) := by exact_mod_cast hcut
   exact hblock T G (Real.log T) hT0 hG hGT (Real.log_pos (by linarith)) m N hm (by linarith)
 
-end MathCollab.Density.Stronger.Atkinson

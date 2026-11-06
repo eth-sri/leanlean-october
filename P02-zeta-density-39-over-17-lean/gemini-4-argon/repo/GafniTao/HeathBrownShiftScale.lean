@@ -149,6 +149,4 @@ theorem heathBrown_b_plus_aD_le
   exact add_le_add hb haD
 
 
-end
 
-end GafniTao

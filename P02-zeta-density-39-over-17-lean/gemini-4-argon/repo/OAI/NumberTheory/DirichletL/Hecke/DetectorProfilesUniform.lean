@@ -67,8 +67,3 @@ theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ
   have hy : |y| ≤ L := abs_le.mpr (hwindow hys)
   exact mul_le_mul (by simpa [Real.norm_eq_abs] using pow_le_pow_left₀ (abs_nonneg y) hy k)
     (hb A B D hA hB hD j hj y hy) (norm_nonneg _) (pow_nonneg hL k)
-
-end
-end SevenEighths.HeckeDetectorProfiles
-
-end OAI

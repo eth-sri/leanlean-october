@@ -115,4 +115,3 @@ theorem norm_critical_chi_product (t : ℝ) :
       Gamma (1-criticalPoint t) * sin ((Real.pi:ℂ)*criticalPoint t/2)‖ = 1 := by
   rw [critical_chi_product_eq_ratio, norm_criticalGammaRatio]
 
-end WeylPort

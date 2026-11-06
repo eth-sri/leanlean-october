@@ -7,11 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
-open InverseMoment
+open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
 noncomputable local instance independentFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
@@ -136,8 +133,3 @@ theorem mixed_coefficient_hybrid_original_exponents [∀ i, (Ideal.span {p i}).I
   obtain ⟨hr,hs,hf⟩ := marked_phases_eq D s hp hg j R S F hd u m
   rw [hr,hs,hf,marked_sourceColumn_eq D s hc hg j S F hd u m n b] at he
   exact he
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

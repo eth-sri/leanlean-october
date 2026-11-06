@@ -86,6 +86,4 @@ theorem norm_heathBrownTaylorPolynomialSum_eq_reduced
   rw [heathBrownTaylorPolynomialSum_eq_phase_mul_reduced hk, norm_mul,
     norm_heathBrownPhase, one_mul]
 
-end
 
-end GafniTao

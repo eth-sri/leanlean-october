@@ -125,9 +125,3 @@ theorem polynomial_bound_of_rectangle (χ : Character) (hχ : χ.residue≠1)
   rw [hnorm]
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact (norm_four_sides _ _ _ _).trans (by linarith)
-
-end SevenEighths.HeckePrimeDyadic
-
-end
-
-end OAI

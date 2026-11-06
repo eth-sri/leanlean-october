@@ -100,4 +100,3 @@ theorem restricted_cubic_of_masked {H Q T L M M₁ A E E₀ Λ c : ℝ}
     mul_nonneg (show 0 ≤ 2*c by positivity) (show 0 ≤ T*L*M₁*A by positivity),
     show 0 ≤ T*L*Λ*M by positivity]
 
-end GuthMaynard.Improvement

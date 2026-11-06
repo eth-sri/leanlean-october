@@ -198,6 +198,4 @@ theorem heathBrown_lemma_one_assembled_of_source
     (fun x hx => hkBounds x (hsub ⟨hx.1.le, hx.2.le⟩))
 
 
-end
 
-end GafniTao

@@ -21,8 +21,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 noncomputable section
 
-open Complex
-open RiemannZeta.GuthMaynard
+open Complex RiemannZeta.GuthMaynard
 
 namespace TaoTrudgianYang2025
 
@@ -38,4 +37,3 @@ theorem norm_sum_mul_le_discrete_parts (w a : ℕ → ℂ) (N : ℕ) :
   rw [norm_mul]
   exact add_le_add le_rfl ((norm_sum_le _ _).trans_eq (by simp only [norm_mul]))
 
-end TaoTrudgianYang2025

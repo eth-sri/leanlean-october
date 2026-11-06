@@ -206,4 +206,3 @@ theorem clipped_radical_integral_log_bound {R K A B Y T : ℝ}
     _ ≤ 2 * R * Q + Real.sqrt K * A * (3 * Real.log T) := by gcongr
     _ = _ := by ring
 
-end Montgomery.RationalMoment

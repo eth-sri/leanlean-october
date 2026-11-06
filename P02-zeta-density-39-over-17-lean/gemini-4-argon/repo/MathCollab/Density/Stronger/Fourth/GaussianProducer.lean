@@ -178,4 +178,3 @@ theorem exists_fourth_dyadic_budget {q : ℝ} (hq : 0 < q) (hq1 : q ≤ 1) :
       mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hH (by nlinarith)) (by positivity)
 
-end MathCollab.Density.Stronger.Fourth

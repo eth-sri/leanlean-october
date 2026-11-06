@@ -95,4 +95,3 @@ theorem modelPhaseMorseWeight_contDiff
       fun h => hz (modelPhaseMorseWeight_tsupport_subset_range hs hσ hδ hF hv h)
     exact contDiffAt_const.congr_of_eventuallyEq (notMem_tsupport_iff_eventuallyEq.mp hn)
 
-end TaoTrudgianYang2025

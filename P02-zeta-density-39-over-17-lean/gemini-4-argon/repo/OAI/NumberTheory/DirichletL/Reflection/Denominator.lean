@@ -80,8 +80,3 @@ theorem extractedOutsideScalar_log_widths (F : PrimeFamily φ) (jF : φ→ℕ) (
   rw [Real.rpow_logb hz0 (ne_of_gt hZ) hr,Real.rpow_logb hz0 (ne_of_gt hZ) hU,
     Real.rpow_logb hz0 (ne_of_gt hZ) hB,Real.rpow_logb hz0 (ne_of_gt hZ) hR,
     Real.rpow_logb hz0 (ne_of_gt hZ) (hn 0),Real.rpow_logb hz0 (ne_of_gt hZ) (hn 2)]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

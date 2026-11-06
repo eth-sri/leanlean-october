@@ -93,9 +93,3 @@ theorem no_slot_endpoint
       dsimp [K]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hpow (mul_nonneg hC hK)
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

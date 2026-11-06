@@ -11,7 +11,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 lemma maximal_prime_level_coprime (P : Ideal Eis) (hP : P.IsMaximal)
@@ -28,8 +27,3 @@ lemma original_powerful_norm_le (J : Ideal Eis) (hJ : J≠0) :
   have hs := QuadraticMainBoundary.norm_one_le (rowSimplePart_ne_zero J)
   have hp : (0:ℝ)≤Ideal.absNorm (rowPowerfulPart J) := Nat.cast_nonneg _
   nlinarith
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

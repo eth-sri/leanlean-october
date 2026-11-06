@@ -34,4 +34,3 @@ theorem actual_density_count_zero {σ T : ℝ} (hσ : (7/8:ℝ)<σ) :
     zetaDensityCount σ T = 0 :=
   actual_slab_count_zero hσ
 
-end Montgomery.ZeroFreeHatching

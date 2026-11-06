@@ -82,4 +82,3 @@ theorem sargosNearPairs_weighted_card_le_tentIntegral {ι : Type*}
   rw [integral_sargosTentPlanarIntegrand_eq_gram S u v ha hb]
   exact sargosNearPairs_weighted_card_le_gram S u v ha hb hA hB
 
-end TaoTrudgianYang2025

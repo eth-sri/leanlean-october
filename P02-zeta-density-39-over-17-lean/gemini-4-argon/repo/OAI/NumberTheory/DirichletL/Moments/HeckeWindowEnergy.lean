@@ -10,9 +10,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentHeckeWindowEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow
-open HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow HeckeFamily FourierBridge
 
 theorem finite_weighted_integral_energy {κ : Type*} [Fintype κ]
     (b : ℝ → ℂ) (φ : κ → ℝ → ℂ) (w : ℝ → ℝ) (hw : ∀ t,0<w t)
@@ -72,9 +70,3 @@ theorem norm_height_shift (t θ w : ℝ) :
       rw [mul_assoc (1+‖t‖+2*Real.pi*‖θ‖) (1+2*Real.pi) (1+‖w‖)]
       apply mul_le_mul_of_nonneg_left _ (le_trans zero_le_one hb)
       nlinarith [norm_nonneg w,Real.pi_pos]
-
-end SevenEighths.CenteredMomentHeckeWindowEnergy
-
-end
-
-end OAI

@@ -145,4 +145,3 @@ theorem rational_coefficient_energy_zero (A : Finset ℚ) {k : ℕ} (hk : 0 < k)
     sum_eq_zero (fun r hr => by rw [hz r hr, zero_mul])
   rw [hsum, norm_zero, zero_pow (by omega : 2*k ≠ 0), mul_zero]
 
-end Montgomery.RationalMoment

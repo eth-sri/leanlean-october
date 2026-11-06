@@ -66,4 +66,3 @@ theorem norm_alternating_sum_le_one (N : ℕ) :
   simpa only [finiteS0, Nat.floor_natCast, hm, show Real.pi * (1 / 2) = Real.pi / 2 by ring,
     Real.sin_pi_div_two, abs_one, div_one] using h
 
-end DhimanKadiriQuesadaHerrera2026

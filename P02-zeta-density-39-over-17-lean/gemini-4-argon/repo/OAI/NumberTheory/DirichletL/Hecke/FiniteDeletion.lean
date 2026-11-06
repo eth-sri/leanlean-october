@@ -146,9 +146,3 @@ theorem exists_primitive_zero (χ : Character) {s : ℂ}
     · exact Or.inr (fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h))
   · rw [LFunction_eq_of_mask_nonpole χ ψ hmask hs hpole, mul_eq_zero] at hz
     exact hz.resolve_right (factors_ne_zero χ.modulus ψ hs)
-
-end SevenEighths.HeckeFiniteDeletion
-
-end
-
-end OAI

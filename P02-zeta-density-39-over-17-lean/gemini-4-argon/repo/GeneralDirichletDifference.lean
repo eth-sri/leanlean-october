@@ -106,4 +106,3 @@ theorem general_dirichlet_difference {K : ℕ} (hK : 1 ≤ K)
   simp only [sum_product,pairRatio,Rat.cast_div,Rat.cast_natCast] at hh
   exact (dirichlet_difference_energy_le A (fun n hn => (hA n hn).1) W a ha).trans hh
 
-end Montgomery.RationalMoment

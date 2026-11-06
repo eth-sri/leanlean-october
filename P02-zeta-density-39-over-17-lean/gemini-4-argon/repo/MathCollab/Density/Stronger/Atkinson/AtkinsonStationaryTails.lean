@@ -148,4 +148,3 @@ theorem IntervalC1Bound.atkinsonRoot_sub_local {f : ℝ → ℂ} {a c M T H : �
   apply (norm_add_le _ _).trans ((add_le_add hlow hhigh).trans_eq ?_)
   ring
 
-end MathCollab.Density.Stronger.Atkinson

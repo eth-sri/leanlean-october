@@ -63,8 +63,3 @@ theorem twistedIdealSum_normalized (S : Finset (ℕ×ℕ)) (hS : (0,0)∈S)
     twistedIdealSum χ W t X = (sourceControl S W:ℂ)*
       twistedIdealSum χ (normalizedProfile S W) t X := by
   rw [←twistedIdealSum_profile_smul,normalizedProfile_reconstruct S hS W]
-end SevenEighths.CenteredMomentFiniteProfileExceptional
-
-end
-
-end OAI

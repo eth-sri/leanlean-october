@@ -356,6 +356,4 @@ theorem hasSum_fordTentFourierSeries
     ring
   · exact (fordTentCircle_coe y w).symm
 
-end
 
-end GafniTao

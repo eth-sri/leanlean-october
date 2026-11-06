@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CubicEisenstein LocalReflectionBrackets CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 section Local
 variable {F : Type*} [Field F] [Fintype F]
@@ -55,8 +54,3 @@ theorem actual_mixed_frequency_units (P : Ideal Eis) [P.IsMaximal]
     exact canonical_frequencyRow_units P hg hc ψ hψ j hj σ ε x
   · simp only [mixedFrequencyRow, ite_true]
     rw [markedFrequencyRow_units, actual_marked_active_formula P hg hc ψ hψ σ ε x]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

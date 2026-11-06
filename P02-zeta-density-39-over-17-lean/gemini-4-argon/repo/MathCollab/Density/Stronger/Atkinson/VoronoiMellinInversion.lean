@@ -10,9 +10,8 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiMellinKernel
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory
+open Complex Finset Set Filter Topology MeasureTheory Classical
 open scoped BigOperators ContDiff FourierTransform SchwartzMap Topology
-open Classical
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -90,4 +89,3 @@ theorem mellin_log_smul_apply_one (g : ℝ → ℂ) :
   simp [mellin, smul_eq_mul]
 
 
-end MathCollab.Density.Stronger.Atkinson

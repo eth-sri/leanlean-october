@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical SchwartzMap
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def gaussianPhysicalScaleMass {α ι : Type*} [Fintype ι]
     (C : CalibrationData) (F : Finset α) (a : α→ℂ) (X Y : α→ℝ)
@@ -68,8 +66,3 @@ theorem gaussianPhysicalFamily_remote_polynomial (V : SchwartzMap ℝ ℂ)
   calc
     _ ≤ C0*(C1*gaussianPhysicalScaleMass (calibrationForSet S hS) F a X Y W q)*Z^2/A^N := by gcongr
     _ = _ := by ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

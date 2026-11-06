@@ -105,4 +105,3 @@ theorem heathBrownPhysicalPhase_signed_derivative_bounds
   · convert hlo using 1 <;> ring
   · convert hhi using 1 <;> ring
 
-end TaoTrudgianYang2025

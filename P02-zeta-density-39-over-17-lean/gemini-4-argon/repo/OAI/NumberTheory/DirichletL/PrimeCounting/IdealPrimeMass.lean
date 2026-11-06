@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.PNT.IdealPrimeMass
 
-open ActualEisensteinCubic ArithmeticFunction Filter
-open SevenEighths.IdealMangoldt
+open ActualEisensteinCubic ArithmeticFunction Filter SevenEighths.IdealMangoldt
 open scoped BigOperators Classical Topology
 
 noncomputable section
@@ -63,8 +62,6 @@ theorem classCoeff_eq_prime_add_higher (C : Set (Ideal O)) (n : ℕ) :
 @[simp] theorem higherClassCoeff_zero (C : Set (Ideal O)) : higherClassCoeff C 0 = 0 :=
   coeff_eq_zero_of_not_primePow not_isPrimePow_zero _
 
-@[simp] theorem primeClassCoeff_zero (C : Set (Ideal O)) : primeClassCoeff C 0 = 0 :=
-  coeff_eq_zero_of_not_primePow not_isPrimePow_zero _
 
 theorem higherClassCoeff_eq_zero_of_prime (C : Set (Ideal O)) {n : ℕ} (hn : n.Prime) :
     higherClassCoeff C n = 0 := by
@@ -151,9 +148,3 @@ theorem primeLogMass_eq_cumsum (C : Set (Ideal O)) (N : ℕ) :
       exact ⟨⟨hC, hP, heq ▸ Finset.mem_range.mp hn⟩, heq⟩
   · intro P hP
     rfl
-
-end
-
-end SevenEighths.PNT.IdealPrimeMass
-
-end OAI

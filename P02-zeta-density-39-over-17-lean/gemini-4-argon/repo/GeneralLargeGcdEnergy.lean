@@ -87,4 +87,3 @@ theorem large_gcd_adjacent_general {η : ℝ} (hη : 0 < η) :
         T^((1:ℝ)/4)*(W.card:ℝ)^((19:ℝ)/12)) := by ring
     _ = _ := by rw [hp]
 
-end Montgomery.RationalMoment

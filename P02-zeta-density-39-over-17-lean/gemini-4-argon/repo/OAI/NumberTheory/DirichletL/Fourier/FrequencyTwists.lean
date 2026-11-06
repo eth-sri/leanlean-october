@@ -8,77 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
 namespace JointLogSeparation
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open FourierBridge
+open MeasureTheory ActualEisensteinCubic UniqueFactorizationMonoid FourierBridge
+open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 
 lemma logPhase_temperate (t : ℝ) : (logPhase t).HasTemperateGrowth := by
   have hl : Function.HasTemperateGrowth (fun x : ℝ => (2 * Real.pi * t) * x) := by
@@ -100,14 +33,7 @@ lemma logPhase_add_frequency (t s x : ℝ) :
   push_cast
   ring
 
-@[simp] lemma frequencyTwist_twice (g : 𝓢(ℝ, ℂ)) (t s : ℝ) :
-    frequencyTwist (frequencyTwist g t) s = frequencyTwist g (t + s) := by
-  ext x
-  simp only [frequencyTwist_apply, logPhase_add_frequency]
-  ring
 
-@[simp] lemma frequencyTwist_norm (g : 𝓢(ℝ, ℂ)) (t x : ℝ) :
-    ‖frequencyTwist g t x‖ = ‖g x‖ := by simp [logPhase_norm]
 
 def phaseDerivative (t : ℝ) : ℂ := ((2 * Real.pi * t : ℝ) : ℂ) * Complex.I
 
@@ -243,52 +169,17 @@ theorem profileSourceBound_frequencyTwist (g : 𝓢(ℝ, ℂ)) (t : ℝ) (K : �
 
 end JointLogSeparation
 
-section
-
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory
-namespace JointLogSeparation
-open FourierBridge
-
-end JointLogSeparation
-
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog)
 open JointLogSeparation (outerWindow fixedColumnTest)
 open FourierBridge (logPhase)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-def fixedSecondTest (V : ℝ → ℂ) (X t s : ℝ) (negative : Bool) (N : Finset ι) : ℂ :=
-  if negative then star (fixedColumnTest V (t-s) (columnLog p X N))
-  else fixedColumnTest V (t-s) (columnLog p X N)
-
-end SecondPassArithmetic
-end
-
-open scoped BigOperators Classical
-namespace SecondPassArithmetic
-
-section
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
-open SecondPassFiber (OldTuple newLabel newRow Valid)
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 open RayFourExpansion (RayCharacter gCoeff crossCoeff)
+
+def fixedSecondTest {ι : Type*} (p : ι → O) (V : ℝ → ℂ) (X t s : ℝ) (negative : Bool) (N : Finset ι) : ℂ :=
+  if negative then star (fixedColumnTest V (t-s) (columnLog p X N))
+  else fixedColumnTest V (t-s) (columnLog p X N)
 
 lemma secondRayMinus_norm_le (Ψ : O →* ℂ) (z : SecondRayIndex) (a : O) :
     ‖secondRayMinus Ψ z a‖ ≤ ‖Ψ a‖ := by
@@ -364,9 +255,3 @@ theorem secondRayCoefficient_mass :
     ring
   rw [heq]
   exact mul_le_mul hQ (pow_le_pow_left₀ (by positivity) hG 2) (by positivity) (by norm_num)
-
-end SecondPassArithmetic
-
-end
-
-end OAI

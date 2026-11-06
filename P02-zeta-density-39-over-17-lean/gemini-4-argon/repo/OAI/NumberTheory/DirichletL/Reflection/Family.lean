@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators MatrixGroups
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase ShortDraftCRT CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → Type*} [∀ x, Fintype (ι x)]
     (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool)
@@ -180,8 +178,3 @@ theorem exists_separate_ray_templates {α : Type*} {ι : α → Type*} [∀ x, F
   refine ⟨E,hlift,hU,hσ,hε,?_⟩
   exact exists_sector_templates p N a c mode E s hc hN hprimary hbase sector hsector
     (fun x y hxy => hmat x y (fun _ => 1) (fun _ => 1) hxy)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

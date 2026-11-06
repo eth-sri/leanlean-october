@@ -11,10 +11,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentPlainWindowEnergy
-open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentPlainEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
-open HeckeFamily FourierBridge CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentPlainEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge CenteredMomentSmooth
 
 theorem plain_column_integral {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i,CanonicalQuadraticSieve.Supported (Ideal.span {a i}))
@@ -60,9 +57,3 @@ theorem plain_column_integrable {α : Type*} (S : Finset α) (a : α → O)
   apply Finset.sum_congr rfl
   intro i hi
   ring
-
-end SevenEighths.CenteredMomentPlainWindowEnergy
-
-end
-
-end OAI

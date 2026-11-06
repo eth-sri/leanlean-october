@@ -71,4 +71,3 @@ theorem shortPoweredDetectorFamily_coefficients {η : ℝ} (hη : 0 < η) :
     exact_mod_cast (Finset.mem_Ioc.mp hn).2
   exact hT (2^p.1.1) p.1.2 p.2.1 n (by positivity) hk (hn'.trans hscale)
 
-end GuthMaynard.Improvement

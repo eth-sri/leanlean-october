@@ -12,8 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff FourierTransform
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open CenteredMomentRetainedProfile CenteredMomentAllocatedNaturalSource
-open EisensteinSchwartzPoisson CenteredMomentLattice
+open CenteredMomentRetainedProfile CenteredMomentAllocatedNaturalSource EisensteinSchwartzPoisson CenteredMomentLattice
 
 def sourcePlain (a b:ℝ) (ha:0<a) (W:𝓢(ℝ,ℂ))
     (hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b) : Plain :=
@@ -53,9 +52,3 @@ theorem scale_source_control (S:Finset (ℕ×ℕ)) :
     ∃T:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧ ∀W:𝓢(ℝ,ℂ),
       sourceControl S (DetectorDictionaryInverseUniform.scaleCLM W)≤C*sourceControl T W :=
   schwartzCLM_finite_seminorm_control DetectorDictionaryInverseUniform.scaleCLM S
-
-end SevenEighths.CenteredMomentFiniteProfileExceptional
-
-end
-
-end OAI

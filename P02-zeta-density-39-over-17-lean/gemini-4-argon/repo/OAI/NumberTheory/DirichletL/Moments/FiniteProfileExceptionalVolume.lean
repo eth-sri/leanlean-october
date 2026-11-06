@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentLattice CenteredMomentHeckeVolume
-open CenteredMomentHeckeCancellation CenteredMomentHeckeHeight
-open CenteredMomentMask
-open QuadraticInitialBound EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentLattice CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeHeight CenteredMomentMask QuadraticInitialBound EisensteinSchwartzPoisson
 
 theorem volumeControl_source_control (a b ε B : ℝ)
     (ha : 0 < a) (hε : 0 < ε) (hB : 0 ≤ B) :
@@ -58,9 +54,3 @@ theorem volumeControl_source_control (a b ε B : ℝ)
     _ ≤ (1+A)*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W*Z^ε*(1+‖t‖)^n := by
       gcongr
       linarith
-
-end SevenEighths.CenteredMomentFiniteProfileExceptional
-
-end
-
-end OAI

@@ -12,7 +12,6 @@ open scoped Topology ContDiff
 namespace SevenEighths.HeckePrimeAmplitudeActual
 open HeckeFamily HeckePrimeRay HeckePrimeAmplitudeBins
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem ray_amplitude_bins (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
@@ -44,9 +43,3 @@ theorem ray_amplitude_bins (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   have hestimate := hbound Z d hZ (hdmin.trans_le hd).le hd' hU hT χ hχ a i
     ha ha' hmax r σ freq (hrmin.trans_le hr).le hr' hσ hσ' (hl d r hd hr) hQ hf ht
   exact hb d hd r (a-1/2) hr (by linarith) _ hestimate
-
-end SevenEighths.HeckePrimeAmplitudeActual
-
-end
-
-end OAI

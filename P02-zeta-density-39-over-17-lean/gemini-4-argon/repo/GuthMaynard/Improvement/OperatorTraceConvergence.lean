@@ -148,4 +148,3 @@ theorem operatorIntegral_compressed_trace_tendsto {β : Type*} {l : Filter β}
     (fun n => operator_compression_word_norm H (P n) (hp n))
     (operator_compression_word_tendsto H hp hP) hx hy hxy
 
-end GuthMaynard.Improvement

@@ -41,9 +41,3 @@ lemma fineMesh_pos (M B L κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε):
     0<fineMesh M B L κ ε:=by
   exact (bounds M (finalSourceCap M B L ε) κ ε hM
     (sourceCap_nonneg M B L hM hB _) hκ hε).2.2.2.2.1
-
-end SevenEighths.CenteredMomentEnergyWidthRanges
-
-end
-
-end OAI

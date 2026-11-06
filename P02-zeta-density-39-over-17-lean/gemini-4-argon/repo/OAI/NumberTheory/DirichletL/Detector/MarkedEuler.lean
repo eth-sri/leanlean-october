@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeEulerFinsupp
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def excludedHighArray (S : Finset Id) (η : HeckeFamily.Character) (x w z : ℂ) (a : HighIdeal) : ℂ :=
   markedIdealHighSummand S 1 η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2
@@ -77,8 +75,3 @@ theorem markedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     refine ⟨highValuationEquiv b,?_⟩
     rw [highIdeals_eq_equiv,highValuationEquiv.symm_apply_apply]
   simpa only [hsum] using he
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

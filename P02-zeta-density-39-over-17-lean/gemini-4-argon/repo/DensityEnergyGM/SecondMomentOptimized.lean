@@ -84,4 +84,3 @@ theorem actual_second_moment_optimized_log (ε : ℝ) (hε : 0 < ε) :
     (sq_pos_of_pos hMpos) hMT (gmSeparated_card_le_two_height hTone hSep hBase) hTtwo
   exact hFirst.trans (hEnlarge.trans hCap)
 
-end Montgomery.RationalMoment

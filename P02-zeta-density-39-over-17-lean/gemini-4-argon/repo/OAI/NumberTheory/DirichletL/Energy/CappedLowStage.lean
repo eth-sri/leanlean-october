@@ -11,17 +11,9 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedLowStage
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
-open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyCappedRequests CenteredMomentEnergySourceCapSchedule
-open CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyCappedRequests CenteredMomentEnergySourceCapSchedule CenteredMomentNaturalFixedRaySource
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_capped_low
@@ -103,9 +95,3 @@ theorem actual_capped_low
       le_rfl le_rfl le_rfl le_rfl hlength le_rfl le_rfl le_rfl (Finset.Subset.refl _)
       hCp.le le_rfl hp
   exact ⟨hs.1,hs.2 (stageLoss Mcap Bs ε k) Cz Cp le_rfl hCz.le hCp.le hz' hp'⟩
-
-end SevenEighths.CenteredMomentEnergyCappedLowStage
-
-end
-
-end OAI

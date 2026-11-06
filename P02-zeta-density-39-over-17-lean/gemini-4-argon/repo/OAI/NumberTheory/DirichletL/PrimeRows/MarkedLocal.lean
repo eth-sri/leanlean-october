@@ -11,8 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open ProbePhysical ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def idealRowMarkedLocalFactor (η : HeckeFamily.Character) (u : O) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   ∑e : Fin 2,∑'l,∑'k,∑'m,
@@ -57,8 +55,3 @@ lemma selectedRowLocal_outside (S : Finset Id) (hS : ∀P∈S,Prime P) (T : Fins
     exact markedRowPrimeTerm_tsum η u P x w z hx hw hz
   · simp only [ite_eq_right hPT,one_mul]
     exact rowHighPrimeTerm_tsum_eq_localFactor η u x w z hx hw hz P
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

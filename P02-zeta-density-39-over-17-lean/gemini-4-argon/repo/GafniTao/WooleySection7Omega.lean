@@ -71,6 +71,4 @@ theorem wooleySection7OmegaMatrix_mod_prime
   exact wooley_taylorOmega_mod_prime hc
     (wooleySection7OmegaEntry_spec (p := p) (c := c) hrk h hh psi i l).2
 
-end
 
-end GafniTao

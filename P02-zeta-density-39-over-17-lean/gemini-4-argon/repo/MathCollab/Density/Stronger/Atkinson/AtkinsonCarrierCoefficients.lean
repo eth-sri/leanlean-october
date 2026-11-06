@@ -33,4 +33,3 @@ theorem atkinsonBesselScale_quarter_normalization (n : ℕ) :
   rw [Real.rpow_neg (by positivity),← Real.sqrt_eq_rpow,hp]
   field_simp
 
-end MathCollab.Density.Stronger.Atkinson

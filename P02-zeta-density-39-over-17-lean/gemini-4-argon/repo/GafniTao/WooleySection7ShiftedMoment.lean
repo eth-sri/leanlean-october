@@ -90,6 +90,4 @@ theorem wooley_exists_uniform_shifted_normalized_identity
     _ _ Psi _ _ _ _ left right hleft hright]
   rw [hrawReal]
 
-end
 
-end GafniTao

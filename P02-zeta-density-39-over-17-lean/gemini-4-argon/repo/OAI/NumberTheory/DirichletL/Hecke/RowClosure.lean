@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeRowClosure
 open HeckeFamily
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem periodic_of_primary (M : Ideal O)
     (hM : M ≤ Ideal.span {λ₀ ^ 2}) (G F : O →* ℂ)
@@ -250,9 +249,3 @@ theorem idealCoeff_eq_row (η χ : Character) (m f z : O)
   change elementCoeff η n * _ = idealCoeff η (Ideal.span {n}) * _
   rw [idealCoeff_span η hn]
   rfl
-
-end SevenEighths.HeckeRowClosure
-
-end
-
-end OAI

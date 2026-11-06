@@ -8,7 +8,6 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentExtraction
 open CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist
 
@@ -31,8 +30,3 @@ theorem idealWeight_norm_le_one (c : O) (hc : c ≠ 0)
   by_cases hcop : IsCoprime I R
   · simpa only [hcop, ite_true, norm_one, one_mul] using primaryIdealCharacter_norm_le_one c hc χ I
   · simp only [hcop, ite_false, norm_zero, zero_mul, zero_le_one]
-
-end SevenEighths.CenteredMomentExtraction
-end
-
-end OAI

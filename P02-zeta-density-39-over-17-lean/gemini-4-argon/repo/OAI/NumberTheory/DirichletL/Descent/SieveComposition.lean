@@ -91,8 +91,3 @@ theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
     calc
       _ ≤ Q * (D * ∑ x ∈ source, ‖a x‖ ^ 2) := mul_le_mul_of_nonneg_left hf' hQ
       _ = _ := by ring)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

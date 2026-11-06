@@ -11,10 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialPhysicalLimit
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseInitialRayAttachment InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialPhysicalReassembly
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic InverseInitialRayAttachment InverseInitialPhysicalMeasure InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialPhysicalReassembly
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -117,9 +114,3 @@ theorem nonzero_frequency_norm_le
     simp only [freqT,Finset.sum_filter,ite_not]
   rw [he,physicalFrequency_finite p hp hcop hg hinj]
   exact hfinite freqT hzero
-
-end SevenEighths.InverseInitialPhysicalLimit
-
-end
-
-end OAI

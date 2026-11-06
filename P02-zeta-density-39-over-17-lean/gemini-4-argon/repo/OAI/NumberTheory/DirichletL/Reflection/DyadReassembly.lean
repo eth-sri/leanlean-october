@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma dependent_sum_filter_partition {α β A : Type*} [Fintype β] [DecidableEq β] [AddCommMonoid A]
     (T : Finset α) (label : α→β) (f : T→A) :
@@ -122,8 +121,3 @@ theorem dyadic_physical_energy (E : ℝ)
   apply (mul_le_mul_of_nonneg_left hb (Nat.cast_nonneg (Fintype.card (Fin (columnDyadicLength Hslot+1))))).trans_eq
   simp only [Finset.sum_const,Finset.card_univ,Fintype.card_fin,nsmul_eq_mul,Nat.cast_add,Nat.cast_one]
   ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

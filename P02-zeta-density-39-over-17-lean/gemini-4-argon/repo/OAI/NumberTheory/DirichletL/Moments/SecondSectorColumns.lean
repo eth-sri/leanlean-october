@@ -11,12 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSectorColumns
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy
-open CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentCommonSectors
-open CenteredMomentSecondScaled CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
-open CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentCommonSectors CenteredMomentSecondScaled CenteredMomentSupportedCorrelation CenteredMomentChildAssembly CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
 
 def sectorPool (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O)) : Finset (Ideal O) :=
   (residualPool C hC (supportedColumns S)).filter (IsCoprime C)
@@ -84,9 +79,3 @@ theorem independent_sector_pools (C D : Ideal O) (hC : C≠0) (hD : D≠0)
       (residualPool_supported D hD S ⟨b,hb⟩).1 hCD
     by_cases hDb : IsCoprime D b <;> simp [hcb,hDb]
   · simp only [hCa,ite_false,false_and,Finset.sum_const_zero]
-
-end SevenEighths.CenteredMomentSecondSectorColumns
-
-end
-
-end OAI

@@ -66,4 +66,3 @@ theorem ExponentPair.bProcess {k l : ℝ} (h : ExponentPair k l) :
   rw [hdouble,hγreal,exponentPairLine_bProcess] at hout
   exact hout
 
-end TaoTrudgianYang2025

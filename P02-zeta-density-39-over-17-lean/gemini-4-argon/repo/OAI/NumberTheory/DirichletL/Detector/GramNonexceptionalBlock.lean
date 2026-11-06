@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcretePrimeRowBridge UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcretePrimeRowBridge UniqueFactorizationMonoid
 local notation "Joint" => ProbeGramPeriodicPoisson.Joint
 
 theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
@@ -66,8 +63,3 @@ theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
   apply pow_le_pow_left₀ (by positivity)
   apply div_le_div_of_nonneg_right _ hN.le
   exact_mod_cast hMN
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

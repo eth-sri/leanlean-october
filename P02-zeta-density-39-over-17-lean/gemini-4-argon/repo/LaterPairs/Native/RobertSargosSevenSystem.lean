@@ -59,4 +59,3 @@ theorem robertSargos_displacement_joint_injective {p q : RobertSargosSevenPoint}
     _ = robertSargosSevenRestore (robertSargosDisplacementPoint q) q.n₂ := by rw [hd,hn]
     _ = q := robertSargos_seven_restore q
 
-end TaoTrudgianYang2025

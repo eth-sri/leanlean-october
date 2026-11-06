@@ -695,4 +695,3 @@ theorem sargos_double_large_sieve_partition {ρ ι κ : Type*}
       dsimp only [C,N]
       ring
 
-end TaoTrudgianYang2025

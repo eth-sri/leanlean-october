@@ -67,4 +67,3 @@ theorem modelPhaseInverseJet_abs_le
       have hd : δ ≤ 1 := hδ.trans (min_le_right _ _)
       linarith
 
-end TaoTrudgianYang2025

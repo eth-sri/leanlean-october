@@ -28,4 +28,3 @@ def CandidateMiddleRangeEstimate : Prop :=
       (W.card : ℝ) ≤ C * N ^ ε *
         (N ^ 2 / V ^ 2 + N ^ (18 / 7 : ℝ) * T ^ (6 / 7 : ℝ) / V ^ 4)
 
-end GuthMaynard.Improvement

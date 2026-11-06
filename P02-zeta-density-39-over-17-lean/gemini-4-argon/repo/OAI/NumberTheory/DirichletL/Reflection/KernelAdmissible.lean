@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open MeasureTheory FourierBridge
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma weightedKernelCoordinate_norm (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
     (hw : ∀ i y, ‖windows i y‖≤1) (hs : ∀ i y, windows i y≠0 → |y|≤M i)
@@ -38,8 +37,3 @@ lemma weightedKernelDual_measurable (windows : Fin 4→ℝ→ℂ) (M : Fin 4→�
       a*kernelDualWeight (reciprocalKernelWindows windows M) Qn Qb t n b) := by
   exact (((kernelCoordinateWeight_continuous _ _ _ _).mul
     (kernelCoordinateWeight_continuous _ _ _ _)).const_mul a).aestronglyMeasurable
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

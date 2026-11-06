@@ -100,4 +100,3 @@ theorem norm_bandContribution_sq_le (w : ReflectionCutoff) {L H : ℝ}
       mul_le_mul_of_nonneg_left hs' (sq_nonneg _)
     _ = _ := by dsimp [W, B]; ring
 
-end MathCollab.Density

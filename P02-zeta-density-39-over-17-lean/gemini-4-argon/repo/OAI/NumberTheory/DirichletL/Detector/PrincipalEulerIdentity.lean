@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 
 lemma evenRatio_eq_coordR (Q : ℝ) (hQ : 0<Q) (a x z : ℂ) :
     evenRatio Q a ((Q:ℂ)^(-x)) (coordV Q z) = coordR Q (a^2) x z := by
@@ -90,8 +89,3 @@ lemma actualACube_sq (eta : HeckeFamily.Character) (p : O) :
     actualACube eta p ^ 2 = actualAPhase eta p := by
   unfold actualACube actualAPhase
   ring
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

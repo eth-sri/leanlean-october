@@ -10,8 +10,7 @@ namespace OAI
 
 namespace SevenEighths.InverseAmbientProfileTower
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
-open SevenEighths.InverseMoment
+open MeasureTheory FourierBridge JointLogSeparation SevenEighths.InverseMoment
 noncomputable section
 
 abbrev Ambient (ι : Type*) := Frequency × (ι → ℝ)
@@ -131,8 +130,3 @@ theorem second_inherited_right_eq (p : Ambient (Fin 6)) :
     inheritedRight 5 p = -profileHeight secondLeftSlope secondRightSlope secondKernelSlope p.1 p.2 5 := by
   simp [inheritedRight, profileHeight, secondLeftSlope, secondRightSlope, secondKernelSlope]
   ring
-
-end
-end SevenEighths.InverseAmbientProfileTower
-
-end OAI

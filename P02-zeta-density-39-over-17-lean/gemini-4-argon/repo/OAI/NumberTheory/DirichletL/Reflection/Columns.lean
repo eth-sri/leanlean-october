@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι φ σ : Type*} [Fintype ι] [Fintype φ] [Fintype σ]
 variable {p : ι → Eis} {N a c : Eis} {mode : Bool}
 
@@ -68,8 +67,3 @@ theorem frozenBranchColumn_norm_le (F : PrimeFamily φ) (jF : φ → ℕ) (e : �
     _ ≤ _ := by
       rw [one_mul]
       exact reflectedBranch_norm_bound _ F.generator_good jF e _ _
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

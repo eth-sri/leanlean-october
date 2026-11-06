@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical Topology
 open Filter
 namespace SevenEighths.HeckeDetectorTail
-open HeckeFamily HeckeDetectorWitnessArithmetic CompletedGauss
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDetectorWitnessArithmetic CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
 
 lemma exponential_cubic_bound (x Y : ℝ) (hx : 0 < x) (hY : 0 < Y) :
     x * Real.exp (-x/Y) ≤ 6*Y^3/x^2 := by
@@ -275,9 +273,3 @@ theorem terminal_sum_identity (χ : Character) (V T : ℝ → ℂ)
   rw [hi,hf.tsum_sub hr]
   rw [show (∑' I, f I) = (∑' I, exponentialTerm χ V D s Y I)-Complex.exp (-1/(Y : ℂ)) from
     exponential_sum_tail_unconditional χ V B D Y hB hVbound hD hY hV hVzero s hs]
-
-end SevenEighths.HeckeDetectorTail
-
-end
-
-end OAI

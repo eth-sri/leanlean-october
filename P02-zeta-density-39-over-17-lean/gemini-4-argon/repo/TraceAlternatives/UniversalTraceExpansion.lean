@@ -33,4 +33,3 @@ theorem universalTraceExpression_eq {T N L R E : ℝ} (hL : 0<L) :
   simp only [Real.rpow_neg_one]
   ring
 
-end Montgomery.RationalMoment

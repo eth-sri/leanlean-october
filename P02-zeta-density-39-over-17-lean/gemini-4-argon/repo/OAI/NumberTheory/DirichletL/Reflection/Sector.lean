@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem separate_product_congruence {A : Type*} [CommRing A]
     (M f r r₀ P P₀ : A) (hr : M^2 ∣ r-r₀) (hP : M^2 ∣ P-P₀) :
@@ -53,8 +52,3 @@ theorem controlled_bad_phase_eq {ι κ : Type*} [Fintype ι] [Fintype κ]
   rw [ShortDraftCusp.A4BadPhase_as_fixed_residue, ShortDraftCusp.A4BadPhase_as_fixed_residue]
   congr 1
   exact Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr he)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

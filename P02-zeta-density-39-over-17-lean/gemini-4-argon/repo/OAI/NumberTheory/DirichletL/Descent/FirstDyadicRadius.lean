@@ -11,10 +11,8 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps
-open InverseSecondSourceBlocks
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
 
 def firstDyadicExponent (Z x:ℝ):ℝ:=dyadicExponent Z (dyadIndex x)
@@ -74,9 +72,3 @@ theorem first_dyadic_radius_global_cap
   unfold firstDyadicRadius firstPhysicalHeight
   apply Real.rpow_le_rpow_of_exponent_le hZ.le
   linarith [hC.1,hj.1]
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

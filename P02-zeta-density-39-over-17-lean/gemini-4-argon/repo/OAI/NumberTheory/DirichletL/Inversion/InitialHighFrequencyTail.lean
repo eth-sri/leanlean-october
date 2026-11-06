@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 
 theorem original_physical_tail (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
@@ -83,9 +81,3 @@ theorem original_physical_tail (A : ℕ) :
     _ ≤ (128*L)^5*(B*(∑ρ : SecondRayIndex,‖secondRayCoefficient ρ‖)) :=
       mul_le_mul_of_nonneg_right (sourceKeys_card p hp hinj pool S L hL hpool hnorm) (by positivity)
     _ = _ := by dsimp [B,R]; ring
-
-end SevenEighths.InverseInitialHighFrequencyTail
-
-end
-
-end OAI

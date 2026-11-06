@@ -12,10 +12,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplification
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical
-open CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical CenteredMomentUnequal
 
 theorem gauss_prime_power_one (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ) :
@@ -78,9 +75,3 @@ theorem gauss_sixth_frequency (a : O) (ha : Supported (Ideal.span {a}))
       sexticGauss a (supportedElement_ne_zero a ha) h := by
   rw [sexticGauss_unit_scale a ha (p^6) h hcop.pow_left,
     supported_sixth_value a p ha hcop.symm,inv_one,one_mul]
-
-end SevenEighths.CenteredMomentAmplification
-
-end
-
-end OAI

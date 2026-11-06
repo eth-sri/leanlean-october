@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentCommonMaskRadialEnergy
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-open CenteredMomentUniformReflectionProfile
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy CenteredMomentUniformReflectionProfile
 
 lemma naturalSlot_bounded (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) :
     ∃B : ℝ,0≤B ∧ ∀χ : Character,‖naturalSlot χ pool β P‖≤B := by
@@ -105,8 +101,3 @@ theorem actual_radial_shared_energy {α : Type*} [DecidableEq α]
       ∏j∈F\J,naturalSlot (χ z) (pool j) (β j) (P j)) Φ K hΦ]
     exact (hsum.sum_le_tsum rows (fun z _=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)).trans
       (hchild D₁ hD₁ D₂ hD₂ J hJ)
-end SevenEighths.CenteredMomentCommonMaskRadialEnergy
-
-end
-
-end OAI

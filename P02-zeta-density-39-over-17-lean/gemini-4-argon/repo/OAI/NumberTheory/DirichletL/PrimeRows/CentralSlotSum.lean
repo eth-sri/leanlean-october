@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
 
 theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
     (hc : 0<c) (hd : 0<d) (hB : 0≤B) :
@@ -69,7 +68,3 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
     rw [←mul_assoc,mul_assoc (W _) ,←Complex.cpow_add _ _ hn]
     rw [show (z - 1 / 2) - 1 + 1 / 2 = z - 1 by ring]
   simpa only [heq] using hb
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

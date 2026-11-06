@@ -33,4 +33,3 @@ theorem third_derivative_rpow_scale {μ : ℝ} (hμ : 0 < μ) (hμ1 : μ ≤ 1) 
   rw [hs,show -(1:ℝ)/6 = -((1:ℝ)/6) by ring,Real.rpow_neg hμ.le]
   simp
 
-end TaoTrudgianYang2025

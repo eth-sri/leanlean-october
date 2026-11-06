@@ -22,4 +22,3 @@ theorem criticalExcess_compact_prefix {B : ℝ} (hB : 0 ≤ B) :
     exact max_eq_right (by linarith)
   rw [intervalIntegral.integral_congr hz]
   simp
-end Montgomery.RationalMoment.RightDetector

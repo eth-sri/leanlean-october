@@ -85,9 +85,3 @@ theorem central_segment_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ
     _ ≤ ∫ t : ℝ, (C*D^(l+σ-1/2)*K)*(1+t^2)⁻¹ :=
       integral_mono_measure Measure.restrict_le_self (by filter_upwards [] with t; positivity) hint
     _ = _ := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 namespace PrimeFamily
 variable {ι κ : Type*}
@@ -95,9 +93,3 @@ lemma reflected_period {φ σ : Type*}
   | inr i => cases i with
     | inl P => exact hK'.of_isCoprime_of_dvd_right (residual_dvd K hK P)
     | inr i => exact hS i
-
-end PrimeFamily
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

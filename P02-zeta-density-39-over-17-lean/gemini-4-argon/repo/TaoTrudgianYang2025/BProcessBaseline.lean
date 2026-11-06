@@ -10,5 +10,3 @@ public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBound
 public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
 public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
 public import MathCollab.Density.Stronger.Fourth.SquareTail
-
-@[expose] public section

@@ -10,15 +10,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSecondBlockRadicalHarmonicMass
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount
-open CenteredMomentSecondActiveCount CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical
-open CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount CenteredMomentSecondActiveCount CenteredMomentActiveSource CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
 open CenteredMomentSecondBlockHarmonicMass (ActiveSubsets ActiveBlocks activeSubsetLabel activeSubsetLabel_injective activeSubsetLabel_mem)
-local notation "O" => ActualEisensteinCubic.O
 
 def radicalWeight (C D:Ideal O):ℝ:=1/(Ideal.absNorm (commonRadical C D):ℝ)
 
@@ -110,9 +103,3 @@ theorem actual_block_radical_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
       calc
         _ = (C₂*C₁)*(Z^(ε/2)*Z^(ε/2))/(seed.absNorm:ℝ) := by ring
         _ = _ := by rw [←Real.rpow_add (by linarith : 0<Z),add_halves]
-
-end SevenEighths.CenteredMomentSecondBlockRadicalHarmonicMass
-
-end
-
-end OAI

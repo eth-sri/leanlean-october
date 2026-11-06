@@ -18,9 +18,6 @@ private instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_
 def coefficient (χ : Character) (I : Ideal O) : ℂ :=
   (IdealMangoldt.value I : ℂ) * idealCoeff χ I
 
-@[simp] theorem coefficient_zero (χ : Character) : coefficient χ 0 = 0 := by
-  unfold coefficient
-  rw [IdealMangoldt.value_zero, Complex.ofReal_zero, zero_mul]
 
 def series (χ : Character) (s : ℂ) : ℂ := -deriv (LFunction χ) s / LFunction χ s
 
@@ -133,9 +130,3 @@ theorem polynomial_mellin (χ : Character) (W : ℝ → ℂ)
         ((D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I)) *
           series χ (((c : ℂ)+t*Complex.I)+shift σ freq) := by ring
     _ = _ := by rw [he]
-
-end SevenEighths.HeckePrimeDyadic
-
-end
-
-end OAI

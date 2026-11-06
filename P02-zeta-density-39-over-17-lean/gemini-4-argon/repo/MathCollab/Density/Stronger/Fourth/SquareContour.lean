@@ -13,9 +13,7 @@ public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -256,4 +254,3 @@ theorem completedZeta_square_eq_vertical_integrals (t : ℝ) {c : ℝ} (hc : 0 <
     ((tendsto_zetaSquare_vertical_integral t hc).add
       (tendsto_zetaSquare_vertical_integral (-t) hc))
 
-end MathCollab.Density.Stronger.Fourth

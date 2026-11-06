@@ -39,4 +39,3 @@ theorem exists_norm_tsum_zetaAtkinsonTwoTerm_sub_leading_le_of_summable :
     hT hG hGT hL hwidth hs, sub_sub_cancel_left, norm_neg]
   exact hbound T G L hT hG hGT hL hwidth
 
-end MathCollab.Density.Stronger.Atkinson

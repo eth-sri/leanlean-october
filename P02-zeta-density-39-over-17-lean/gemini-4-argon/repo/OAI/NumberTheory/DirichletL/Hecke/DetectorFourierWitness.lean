@@ -140,8 +140,3 @@ theorem exists_bounded_frequency {α β : Type*} (S : Finset α) (T : Finset β)
   rw [finite_pair_separation]
   have htail := separated_pair_tail S T a b x y g R hR N
   exact (norm_le_norm_sub_add _ _).trans (add_le_add htail hb)
-
-end
-end SevenEighths.HeckeDetectorFourier
-
-end OAI

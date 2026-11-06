@@ -109,4 +109,3 @@ theorem atkinsonGapSlopeProfile_uniform_finite_jets (P : ℕ)
       subst n
       exact hb' q r x (hq.trans_le (min_le_right _ _)) hr hx
 
-end TaoTrudgianYang2025

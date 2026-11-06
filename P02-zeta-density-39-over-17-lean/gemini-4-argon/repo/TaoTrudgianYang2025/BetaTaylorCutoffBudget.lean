@@ -72,4 +72,3 @@ theorem abs_iteratedDeriv_cutoff_taylor_remainder_le
       rw [← Finset.sum_mul,← Nat.cast_sum,Nat.sum_range_choose,Nat.cast_pow,Nat.cast_ofNat]
       ring
 
-end TaoTrudgianYang2025

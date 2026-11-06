@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 local notation "Grid" => Finset ((Ideal Eis × Ideal Eis) × Ideal Eis)
 
 def quotientGridSupport (r : Ideal Eis) (T : Grid) : Grid :=
@@ -157,8 +156,3 @@ theorem gridDivisorHybridBlock_extract
       _ = _ := by rw [hid]; ring
   · have huc : (p, r * c) ∉ T := (mem_quotientGridSupport r hr T p c).not.mp hu
     simp [hu, hybridColumnCoefficient, extractedGridCoefficient, huc]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

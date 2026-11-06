@@ -102,4 +102,3 @@ theorem isExponentSumBoundNonAsymptotic_reflect_nonnegative
   simpa only [max_eq_right hreflect] using
     isExponentSumBoundNonAsymptotic_reflect_max hα hβ
 
-end TaoTrudgianYang2025

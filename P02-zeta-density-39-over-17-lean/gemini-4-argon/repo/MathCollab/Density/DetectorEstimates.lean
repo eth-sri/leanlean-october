@@ -60,7 +60,7 @@ theorem norm_riemannZeta_critical_le_linear (t : ℝ) :
 
 /-- The right contour is absolutely integrable for independent X and Y. -/
 theorem integrable_detectorKernel_right {ρ : ℂ} {X Y : ℝ}
-    (hY : 0 < Y) (hρ : 3/4 ≤ ρ.re) :
+    (hY : 0 < Y) (hρ : 9/13 ≤ ρ.re) :
     Integrable (fun t : ℝ => detectorKernel ρ X Y (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)) := by
   let line := fun t : ℝ => ((1/2 : ℝ) : ℂ)+(t : ℂ)*I
   have hg : Integrable (fun t : ℝ => Complex.Gamma (line t) *
@@ -88,7 +88,7 @@ theorem integrable_detectorKernel_right {ρ : ℂ} {X Y : ℝ}
 
 /-- The shifted contour is absolutely integrable using only linear zeta growth. -/
 theorem integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
-    (hY : 0 < Y) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
+    (hY : 0 < Y) (hβ : 9/13 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
     Integrable (fun t : ℝ => detectorKernel ρ X Y (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
   let a : ℝ := 1/2-ρ.re
   let line := fun t : ℝ => (a : ℂ)+(t : ℂ)*I
@@ -192,7 +192,7 @@ theorem tendsto_detector_horizontal_majorant (C : ℝ) :
 
 /-- Both horizontal integrals vanish as the independent rectangle height grows. -/
 theorem tendsto_detector_horizontal_integral {ρ : ℂ} {X Y ε : ℝ}
-    (hY : 1 ≤ Y) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1) (hε : |ε| = 1) :
+    (hY : 1 ≤ Y) (hβ : 9/13 ≤ ρ.re) (hβ' : ρ.re ≤ 1) (hε : |ε| = 1) :
     Tendsto (fun R : ℝ => ∫ u in (1/2-ρ.re)..(1/2 : ℝ),
       detectorKernel ρ X Y ((u : ℂ)+((ε*R : ℝ) : ℂ)*I)) atTop (𝓝 0) := by
   let C : ℝ := 60*Y^(1/2 : ℝ)*(⌊X⌋₊ : ℝ)*(2+|ρ.im|)
@@ -217,4 +217,3 @@ theorem tendsto_detector_horizontal_integral {ρ : ℂ} {X Y ε : ℝ}
   have hmul := mul_le_mul_of_nonneg_left hlength hnonneg
   exact (intervalIntegral.norm_integral_le_of_norm_le_const hpoint).trans (by simpa using hmul)
 
-end MathCollab.Density

@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -126,8 +125,3 @@ theorem secondChildSum_marked_fixed_pool
   rw [hlists]
   exact finiteCanonicalMarkedRow_restore_lists p hp hcop hg F V Ψ (m * r)
     (c * e * ∏ i ∈ V, p i) (d * e * k) _ _ _ _ _ hV
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -51,9 +51,3 @@ theorem amplified_norm_dominates (U A b c r : ℝ) (hU : 1≤U) (hbA : 1≤b*A) 
   have hp := Real.rpow_le_rpow_of_exponent_le hU he
   have hconst : (1 : ℝ)≤(b*A)^6 := one_le_pow₀ hbA
   exact hp.trans (le_mul_of_one_le_left (Real.rpow_nonneg hUp.le _) hconst)
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

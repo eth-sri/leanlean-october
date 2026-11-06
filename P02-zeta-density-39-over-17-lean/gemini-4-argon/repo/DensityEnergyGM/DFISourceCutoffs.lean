@@ -42,4 +42,3 @@ noncomputable def dfiUnitRedundantBump : ContDiffBump (0 : ℝ) :=
 
 /-! ## Uniform quotient profile for the canonical equation-(9) family -/
 
-end GuthMaynard.NativeMoment

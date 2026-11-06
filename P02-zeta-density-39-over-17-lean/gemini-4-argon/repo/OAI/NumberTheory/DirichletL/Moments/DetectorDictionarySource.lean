@@ -12,9 +12,7 @@ open scoped Classical BigOperators Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open ProbePhysical CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CenteredMomentPrimeSlot
 
 lemma source_product_le_rowMask (S : Finset (Ideal O))
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) :
@@ -35,7 +33,6 @@ lemma source_product_le_rowMask (S : Finset (Ideal O))
   rwa [he] at hd
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def sourceMomentBase (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) :
@@ -75,9 +72,3 @@ theorem eventually_source_slots_coprime {N : ℕ}
     rw [←Real.rpow_mul hZ,mul_div_cancel₀ _ hd]
   rw [heq]
   exact hz j i W b hs
-
-end SevenEighths.CenteredMomentDetectorDictionary
-
-end
-
-end OAI

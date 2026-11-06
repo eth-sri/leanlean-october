@@ -62,4 +62,3 @@ theorem localMeanStationaryInput_native : LocalMeanStationaryInput := by
   intro δ κ hδ hκ
   exact exists_zetaSquareLocalMean_le_atkinson_stationary hδ hκ
 
-end MathCollab.Density.Stronger.Atkinson

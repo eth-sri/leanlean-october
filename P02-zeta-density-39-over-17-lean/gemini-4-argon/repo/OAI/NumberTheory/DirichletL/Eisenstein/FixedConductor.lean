@@ -7,94 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped Classical
-
 namespace CubicEisenstein
 
-section
-open ActualEisensteinCubic
-local notation "Eis" => ActualEisensteinCubic.O
+open scoped BigOperators Classical MatrixGroups Matrix
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase
 
 def fixedCuspLevelBound (c:Eis) : ℝ :=
   243*(Ideal.absNorm (Ideal.span {c}):ℝ)^2
-
-end
-
-section
-open scoped BigOperators Classical MatrixGroups Matrix
-
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota
-open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma A4_traceLambda_pow_four : ramifiedTraceLambda^4=(9:Eis) := by
   apply eisEmbedding_injective
@@ -102,38 +21,6 @@ lemma A4_traceLambda_pow_four : ramifiedTraceLambda^4=(9:Eis) := by
   calc
     _=(eisLam^2)^2:=by ring
     _=9:=by rw [TraceLambdaPhase.eisLam_sq];norm_num
-
-structure PrincipalStratumArithmetic {ι:Type*} [Fintype ι]
-    (p:ι→Eis) (N a0 c0:Eis) where
-  lift : (∀i,(Eis⧸Ideal.span {p i})ˣ)→ι→Eis
-  lift_period : ∀v i,N^2∣lift v i
-  lift_residue : ∀v i,Ideal.Quotient.mk (Ideal.span {p i}) (lift v i)=(v i:Eis⧸Ideal.span {p i})
-  U : Eis
-  w : Eis
-  bezout : U*(∏i,p i)+(ramifiedTraceLambda^3*w)*c0=1
-  sigma : ∀i,(Eis⧸Ideal.span {p i})ˣ
-  epsilon : ∀i,(Eis⧸Ideal.span {p i})ˣ
-  sigma_value : ∀i,(sigma i:Eis⧸Ideal.span {p i})=
-    Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^2*c0*cofactor p i)
-  epsilon_value : ∀i,Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^3*c0*cofactor p i)*
-    (sigma i:Eis⧸Ideal.span {p i})*(epsilon i:Eis⧸Ideal.span {p i})=-1
-  gamma : (∀i,(Eis⧸Ideal.span {p i})ˣ)→levelThree
-  numerator : ∀v,(gamma v:SL(2,Eis)) 0 0=finiteCrossNumerator a0 c0 ramifiedTraceLambda p (lift v)
-  denominator : ∀v,(gamma v:SL(2,Eis)) 1 0=c0*∏i,p i
-  numerator_fixed : ∀v,(9:Eis)*c0∣(gamma v:SL(2,Eis)) 0 0-(gamma (fun _=>1):SL(2,Eis)) 0 0
-  inverse_fixed : ∀v,ramifiedTraceLambda^3*c0∣(gamma v:SL(2,Eis)) 1 1-(gamma (fun _=>1):SL(2,Eis)) 1 1
-
-end
-
-open scoped BigOperators Classical ContDiff MatrixGroups Matrix
-
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic
-open CubicKubota CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets FiniteGaussPhase
-local notation "Eis" => ActualEisensteinCubic.O
-namespace PrincipalStratumArithmetic
-variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N a0 c0:Eis}
-
-end PrincipalStratumArithmetic
 
 end CubicEisenstein
 
@@ -143,7 +30,6 @@ namespace CanonicalRowCompletion
 
 section
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
 
 abbrev BasePrimeIndex (I Q:Ideal Eis) := {P:PrimeIndex I // Q≤P.val}
 abbrev FreePrimeIndex (I Q:Ideal Eis) := {P:PrimeIndex I // ¬Q≤P.val}
@@ -204,16 +90,8 @@ lemma freePrimeIndex_coprime (I Q:Ideal Eis) (P:FreePrimeIndex I Q) :
   exact P.property (le_sup_left.trans he.symm.le)
 
 end
-section
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
-
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-open ConcretePrimeRowBridge
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid ConcretePrimeRowBridge
 
 def goodMaskMovingIdeal (g r:Eis) : Ideal Eis := (Ideal.span {g})^6*Ideal.span {r}
 
@@ -305,9 +183,3 @@ theorem goodMaskMovingIdeal_exponent (I F:Ideal Eis) (hI:I≠0) (hF:Squarefree F
     squarefree_prime_count_indicator F P hF (Ideal.prime_of_isPrime (NeZero.ne P) inferInstance)]
   unfold completedLocalExponent
   omega
-
-end CanonicalRowCompletion
-
-end
-
-end OAI

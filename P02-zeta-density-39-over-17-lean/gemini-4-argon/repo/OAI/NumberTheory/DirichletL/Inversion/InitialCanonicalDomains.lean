@@ -9,12 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalDomains
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry
-open InverseInitialEnergyCallerSourceMask InverseInitialEnergyCallerRanges
-open InverseInitialEnergyCallerSource CanonicalQuadraticSieve
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerSourceMask InverseInitialEnergyCallerRanges InverseInitialEnergyCallerSource CanonicalQuadraticSieve
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -56,9 +51,3 @@ theorem actual_window_domains
     exact (window_power_bounds p S ψ lo hi hψ Z D B v θ H η hZ hhi (Finset.mem_filter.mp hx).1).2.1
   · intro x hx
     exact (window_power_bounds p S ψ lo hi hψ Z D B v θ H η hZ hhi (Finset.mem_filter.mp hx).1).2.2
-
-end SevenEighths.InverseInitialCanonicalDomains
-
-end
-
-end OAI

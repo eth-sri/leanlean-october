@@ -79,9 +79,3 @@ theorem prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
       exact norm_sub_le _ _
     _ ≤ Cp*U^((a-1/2)*r+ε)+E*U^((a-1/2)*r+ε) := add_le_add hp he'
     _ = _ := by ring
-
-end SevenEighths.HeckePrimeAnnular
-
-end
-
-end OAI

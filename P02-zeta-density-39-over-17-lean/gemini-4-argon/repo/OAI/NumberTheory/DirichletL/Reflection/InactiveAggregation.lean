@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem original_pool_choice_count (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ (R Q Q₀ : Ideal Eis), R≠0 → Q≠0 →
@@ -22,7 +21,3 @@ theorem original_pool_choice_count (ε : ℝ) (hε : 0<ε) :
     Subtype.val_injective (FreeReflection.pool_divides R Q Q₀ hR hQ)
   simpa only [Fintype.card_fun,Fintype.card_fin,Nat.cast_pow,Nat.cast_ofNat,← pow_mul,
     Nat.mul_comm (Fintype.card (FreeReflection.pool R Q Q₀)) 2] using hh
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

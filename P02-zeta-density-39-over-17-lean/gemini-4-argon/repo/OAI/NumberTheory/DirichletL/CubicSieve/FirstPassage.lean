@@ -7,87 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace FirstPassCubeLabels
 
-section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
-open RayFourExpansion (RayCharacter crossCoeff)
-
-open ActualEisensteinCubic
-open RayFourExpansion (RayCharacter crossCoeff)
-open ConcreteTraceCRT (eisEmbedding)
-
-end
-
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge (conjugateIdealRowSum mobiusIdealColumn
   primePool mem_primePool_iff)
 open FirstCauchyArithmetic (supportIdealFamily supportIdealFamily_pos supportIdealFamily_good
@@ -100,8 +25,7 @@ end FirstPassCubeLabels
 namespace SecondPassArithmetic
 
 section
-abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic
+protected abbrev O := ActualEisensteinCubic.O
 open MixedCrossSeparation (columnCoefficient columnG convertedColumnBlock quadraticCrossPhase
   columnPrimeCoprime columnCoefficient_cancel_false columnCoefficient_cancel_true)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
@@ -218,7 +142,6 @@ theorem mobius_second_gauss_restore {ι : Type*} [DecidableEq ι]
 end
 section
 
-open ActualEisensteinCubic
 open MixedCrossSeparation (columnCoefficient)
 open FirstPassCubeLabels (row_union mask_union mask_mul)
 
@@ -313,7 +236,6 @@ theorem secondPreColumn_union
 
 end
 
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -331,9 +253,3 @@ def secondChildSum (F V : Finset ι) (Ψ : O →* ℂ)
   ∑ N ∈ (F \ V).powerset,
     secondChildColumn p hp hcop hg Ψ (m * r) (c * e * ∏ i ∈ V, p i) (d * e * k)
       (fun U => H (V ∪ U)) N
-
-end SecondPassArithmetic
-
-end
-
-end OAI

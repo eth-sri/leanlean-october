@@ -51,4 +51,3 @@ theorem fixedTimeCutoff_support : tsupport fixedTimeCutoff ⊆ Icc (-2:ℝ) 3 :=
 theorem fixedTimeCutoff_compact : HasCompactSupport fixedTimeCutoff :=
   isCompact_Icc.of_isClosed_subset (isClosed_tsupport _) fixedTimeCutoff_support
 
-end GuthMaynard.Improvement

@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
 
@@ -56,8 +55,3 @@ lemma zeroIndexSeries_eq (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
   have hall := HasSum.sum_range_add (f := fun k => ∑' m, zeroIndexTerm p χ W V k m) (k := 1) htail
   simpa only [zeroIndexSeries, Finset.sum_range_one,
     (zeroIndex_inner_zero p χ W V hV).tsum_eq] using hall.tsum_eq
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

@@ -126,4 +126,3 @@ theorem gamma_factor_eq_chi_mul_one_add {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀
   rw [he, ← div_eq_mul_inv]
   exact (eq_div_iff hd).mpr (gamma_factor_mul_one_sub_exp s)
 
-end DhimanKadiriQuesadaHerrera2026

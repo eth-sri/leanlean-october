@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeSelectedPrimeSums
-local notation "O" => ActualEisensteinCubic.O
 
 lemma finite_ideal_count (S : Finset (Ideal O)) (H : ℝ) (hH : 0≤H)
     (hS : ∀I∈S,I≠0) (hN : ∀I∈S,(Ideal.absNorm I:ℝ)≤H) :
@@ -167,8 +166,3 @@ theorem weighted_slot_bound (eps a b r d B K : ℝ) (heps : 0<eps)
     _≤((B*K+1)*C)*(Ideal.absNorm U:ℝ)^eps*P^r := by
       nlinarith [mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg (by positivity : (0:ℝ)≤Ideal.absNorm U) eps))
         (Real.rpow_nonneg hP0.le r)]
-
-end SevenEighths.ProbeSelectedPrimeSums
-end
-
-end OAI

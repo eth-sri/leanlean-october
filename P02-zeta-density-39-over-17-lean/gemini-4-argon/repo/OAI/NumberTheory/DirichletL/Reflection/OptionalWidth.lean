@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem original_optional_terminal_saving
     (J I F B R Q₀ : Ideal O) (hJ : J≠0) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
@@ -61,8 +60,3 @@ theorem original_optional_terminal_saving
   convert hh using 1
   unfold InverseTerminalWidths.reflectedExponent
   ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

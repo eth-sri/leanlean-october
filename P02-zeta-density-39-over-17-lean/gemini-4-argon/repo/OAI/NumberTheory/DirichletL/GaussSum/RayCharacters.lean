@@ -7,76 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace RayFourExpansion
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase QuadraticGaussRay
-open ActualEisensteinCoordinates MixedCrossSeparation
+open FiniteGaussPhase QuadraticGaussRay ActualEisensteinCoordinates MixedCrossSeparation
 
 theorem prime_unit_mod_four (p : O) [(Ideal.span {p}).IsMaximal]
     (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
@@ -156,8 +92,7 @@ theorem quadraticCrossPhase_character_expansion
 end RayFourExpansion
 
 namespace MixedCrossSeparation
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
-open QuadraticGaussRay ActualEisensteinCoordinates GaussGeneratorTransport
+open FiniteGaussPhase MixedGaussConversion QuadraticGaussRay ActualEisensteinCoordinates GaussGeneratorTransport
 
 theorem convertedColumnBlock_image
     {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
@@ -233,8 +168,8 @@ end MixedCrossSeparation
 namespace FirstCauchyArithmetic
 
 section
-abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic CoprimeMobiusExtension
+protected abbrev O := ActualEisensteinCubic.O
+open CoprimeMobiusExtension
 
 def supportMobius {ι : Type*} (P : ι → Ideal O) (S : Finset ι) : ℂ :=
   (UniqueFactorizationMonoid.moebius (∏ i ∈ S, P i) : ℂ)
@@ -258,14 +193,14 @@ theorem star_supportMobius {ι : Type*} (P : ι → Ideal O) (S : Finset ι) :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedCrossSeparation RayFourExpansion
+open FiniteGaussPhase MixedCrossSeparation RayFourExpansion
 
 def supportRay {ι : Type*} (p : ι → O) (χ : RayCharacter) (S : Finset ι) : ℂ :=
   rayCharacter χ (∏ i ∈ S, p i)
 
 end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge
+open ConcretePrimeRowBridge
 
 private theorem family_prime {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (i : ι) :
     Prime (P i) := Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
@@ -388,9 +323,3 @@ theorem supportConjugateSum_eq_conjugateIdealRowSum
   dsimp only [f]
   rw [idealSexticRow_support_product P hinj hg B S hSB h]
   simp only [mobiusIdealColumn, supportMobius, recoveredSupport_product P hinj B S hSB]
-
-end FirstCauchyArithmetic
-
-end
-
-end OAI

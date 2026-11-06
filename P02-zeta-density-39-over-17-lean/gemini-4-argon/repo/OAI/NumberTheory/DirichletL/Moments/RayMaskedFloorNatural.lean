@@ -11,17 +11,10 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
-open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
-open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem natural_pair_slots {α : Type*} [DecidableEq α]
@@ -109,9 +102,3 @@ theorem natural_pair_slots {α : Type*} [DecidableEq α]
   dsimp [B,E,B₁,B₂]
   rw [mul_pow,mul_pow,mul_pow,mul_pow,Real.sq_sqrt hE]
   ring
-
-end SevenEighths.CenteredMomentRayMaskedFloor
-
-end
-
-end OAI

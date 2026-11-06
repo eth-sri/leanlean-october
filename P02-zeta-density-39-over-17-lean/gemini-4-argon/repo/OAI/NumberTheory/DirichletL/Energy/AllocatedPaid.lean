@@ -10,16 +10,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyAllocatedPaid
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyPaidRemoval CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyPaidRemoval CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_allocated_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εremove lo hi κ:ℝ)
@@ -71,9 +64,3 @@ theorem actual_allocated_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εr
     (fun i=>(abs_add_le _ _).trans (add_le_add le_rfl (hfreq i)))
     st hunit hQ hs p X₁ X₂ hX₁ hX₂ hc₁ hc₂
   simpa only [abs_zero,add_zero] using he
-
-end SevenEighths.CenteredMomentEnergyAllocatedPaid
-
-end
-
-end OAI

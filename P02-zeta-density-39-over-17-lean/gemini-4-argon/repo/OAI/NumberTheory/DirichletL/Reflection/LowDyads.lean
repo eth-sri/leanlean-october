@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel : Eis}
 
@@ -144,7 +143,3 @@ theorem low_dyadic_geometry_uniform
     (fun K hK => hr K (divisorDyadicBin_subset rows Hrow i hK))
     (fun p hp => haw p (activeTupleDyad_subset tuples Hslot j hp))
   exact hb
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

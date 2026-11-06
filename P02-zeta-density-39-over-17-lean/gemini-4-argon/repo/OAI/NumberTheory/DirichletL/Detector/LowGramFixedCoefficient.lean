@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def gramFixedModulus (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) : Id :=
   (Ideal.span {(calibrationForSet S hS).generator}*
@@ -59,8 +57,3 @@ theorem gramCoefficientExtension_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMax
   have hm := gramPeriodicMonoid_periodic (calibrationForSet S hS) (calibrationForSet S hS).generator
     (calibrationLowData S hS) x y (Ideal.mul_le_left hxy)
   simp only [gramCoefficientExtension,hr,hm]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

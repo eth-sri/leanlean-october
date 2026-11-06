@@ -8,9 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CubicEisenstein ProbePhase ConcretePrimeRowBridge ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CubicEisenstein ProbePhase ConcretePrimeRowBridge ConcreteTraceCRT
 
 lemma supported_one_ideal : Supported (1 : Ideal O) := by
   refine ⟨one_ne_zero,?_⟩
@@ -54,8 +52,3 @@ lemma angularFactor_one : FiniteGaussPhase.angularFactor (1:O)=1 := by
     bareIdealHighSummand η 1 x w z 1 1 1 1=1 := by
   have hw (t : ℂ) : fullIdealWeight t (1:Ideal O)=1 := (IdealEuler.normWeight t).map_one
   simp only [bareIdealHighSummand,bareIdealHighCoefficient_one,hw,one_mul]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -94,4 +94,3 @@ theorem tsum_negativeCoefficient_eq_upperModes {f g : ℝ → ℝ} {a b : ℝ}
   simp_rw [negativeCoefficient_eq_upperModes h]
   rw [(hg.div_const I).tsum_add (hgf.mul_left _), tsum_div_const, tsum_mul_left]
 
-end DhimanKadiriQuesadaHerrera2026

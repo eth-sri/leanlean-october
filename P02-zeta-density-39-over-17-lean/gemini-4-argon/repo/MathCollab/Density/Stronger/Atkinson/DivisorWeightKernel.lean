@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.LeadingDivisor
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -144,4 +142,3 @@ theorem exists_norm_zetaDivisorWeight_le {B : ℝ} (hB : 0 ≤ B) :
     _ = (M * J / (2 * Real.pi)) * Real.exp (-q.re) := by dsimp [J]; ring
     _ ≤ _ := by nlinarith [Real.exp_pos (-q.re)]
 
-end MathCollab.Density.Stronger.Atkinson

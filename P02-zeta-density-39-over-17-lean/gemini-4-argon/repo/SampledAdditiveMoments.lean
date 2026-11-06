@@ -236,4 +236,3 @@ theorem sampled_character_cubic {ι : Type*} [Fintype ι]
   dsimp [D]
   ring
 
-end Montgomery.RationalMoment

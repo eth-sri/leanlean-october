@@ -11,8 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma fixedPrimeProduct_ne_zero (S : Finset Id) (hS : ∀P∈S,Prime P) :
     (∏P∈S,P)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>(hS P hP).ne_zero)
@@ -80,8 +78,3 @@ theorem excludedTarget_hasProd (η : Character) (S : Finset Id) (hS : ∀P∈S,P
       (1-idealCoeff η P.val.val*CubicEisenstein.fullIdealWeight s P.val.val)⁻¹)
       (LFunction (η.excludePrimes S hS) s) :=
   LFunction_hasProd_outside _ S (idealCoeff η) (excludedTarget_prime η S hS) s hs
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

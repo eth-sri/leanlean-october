@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentRadialEligibleEnergy
-open CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentDivisorRetained CenteredMomentPositiveSummability
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentPositiveSummability
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 structure Radial where
@@ -82,9 +80,3 @@ theorem actual_source_from_children (N:ℕ) (hslots:Fintype.card ι≤N) (ε:ℝ
   intro S
   exact hbound (finiteData s r S) D hD E hE
     (fun a ha=>(finite_child_le s r S D a).trans (hchild a ha))
-
-end SevenEighths.CenteredMomentRadialEligibleEnergy
-
-end
-
-end OAI

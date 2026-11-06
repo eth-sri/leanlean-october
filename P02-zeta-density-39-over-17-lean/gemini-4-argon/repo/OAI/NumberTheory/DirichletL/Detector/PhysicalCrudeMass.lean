@@ -10,8 +10,6 @@ open scoped Classical
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion ConcreteTraceCRT CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma calibration_elementNorm_ge_one (C : CalibrationData) : 1≤elementNorm C.generator := by
   unfold elementNorm
@@ -159,8 +157,3 @@ theorem physicalRowWeight_source_mass (a0 b0 a1 b1 B0 B1 : ℝ)
     _ ≤ (128*max 1 b1*Y)*(256*max 1 (b0*b1)*Q)*(B0*B1/Y) := by gcongr
     _ = (32768*max 1 b1*max 1 (b0*b1)*B0*B1)*Q := by field_simp;ring
     _ ≤ K*Q := mul_le_mul_of_nonneg_right (by dsimp only [K];linarith) (le_trans zero_le_one hQ)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

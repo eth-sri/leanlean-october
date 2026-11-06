@@ -135,12 +135,6 @@ theorem IsEqUpToInfinitesimal.symm
   rw [isEqUpToInfinitesimal_iff_tendsto_sub] at h ⊢
   simpa only [Pi.sub_apply, neg_sub, neg_zero] using h.neg
 
-/-- The relation `=o` is transitive. -/
-theorem IsEqUpToInfinitesimal.trans
-    {X Y Z : VariableObject E} (hXY : X =o Y) (hYZ : Y =o Z) :
-    X =o Z := by
-  rw [isEqUpToInfinitesimal_iff_tendsto_sub] at hXY hYZ ⊢
-  simpa only [sub_add_sub_cancel, zero_add] using hXY.add hYZ
 
 /-- The relation `=o` is preserved by negation. -/
 theorem IsEqUpToInfinitesimal.neg
@@ -224,4 +218,3 @@ theorem isEqUpToInfinitesimal_iff_leUpToInfinitesimal
     rw [abs_lt]
     constructor <;> linarith
 
-end Expdb

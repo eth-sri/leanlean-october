@@ -106,4 +106,3 @@ theorem ratioFourierInput_le_mass {μ : ℝ → ℝ} (h0 : ∀ t, 0 ≤ μ t)
   · rw [ratioFourierInput_off hv]
     exact integral_nonneg h0
 
-end GuthMaynard.Improvement

@@ -12,9 +12,8 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory
+open Complex Finset Set Filter Topology MeasureTheory Classical
 open scoped BigOperators ContDiff FourierTransform SchwartzMap Topology
-open Classical
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -67,11 +66,6 @@ noncomputable def dfiVoronoiMellinKernelSchwartz
   (hg.hasCompactSupport_mellinKernel σ).toSchwartzMap
     (hg.contDiff_mellinKernel σ)
 
-@[simp]
-theorem DFIVoronoiTestFunction.mellinKernelSchwartz_apply
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ u : ℝ) :
-    dfiVoronoiMellinKernelSchwartz hg σ u =
-      dfiVoronoiMellinKernel σ g u := rfl
 
 theorem DFIVoronoiTestFunction.mellin_eq_fourier_mellinKernel
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ u : ℝ) :
@@ -84,7 +78,7 @@ theorem DFIVoronoiTestFunction.mellin_eq_fourier_mellinKernel
     sub_zero, add_zero, zero_add, mul_one, neg_mul]
   apply congrArg (fun f : ℝ → ℂ => 𝓕 f (u / (2 * Real.pi)))
   funext v
-  simp [dfiVoronoiMellinKernel]
+  simp [dfiVoronoiMellinKernelSchwartz, dfiVoronoiMellinKernel]
 
 /-- A compactly supported smooth DFI test function has an integrable Mellin
 transform on every complete vertical line.  This is the exact analytic
@@ -159,4 +153,3 @@ theorem DFIVoronoiTestFunction.integrable_sqWeight_norm_mellin
     mul_le_mul_of_nonneg_right hSq (norm_nonneg (F (u / c)))
 
 
-end MathCollab.Density.Stronger.Atkinson

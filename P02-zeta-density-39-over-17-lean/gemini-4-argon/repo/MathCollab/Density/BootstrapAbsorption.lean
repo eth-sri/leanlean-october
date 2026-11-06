@@ -143,4 +143,3 @@ theorem bootstrap_absorbed (w : ComparisonCutoff) :
   have hi := mul_le_mul_of_nonneg_right hsmall hB
   nlinarith
 
-end MathCollab.Density

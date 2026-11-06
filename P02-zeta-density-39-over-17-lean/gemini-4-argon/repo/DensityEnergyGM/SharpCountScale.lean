@@ -73,4 +73,3 @@ theorem gm_detecting_scale {σ a δ T N : ℝ}
     norm_num
     linarith only [hupper]
 
-end Montgomery.RationalMoment

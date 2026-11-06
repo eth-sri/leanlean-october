@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CenteredExceptionalCount IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowGramRemainders (F : Finset O) : Finset Id :=
   F.image (fun z=>sixthRemainder (Ideal.span {z}))
@@ -84,8 +82,3 @@ theorem lowGramExceptional_count (ε : ℝ) (hε : 0<ε) :
   calc
     _ ≤ 768*(C^3*(Ideal.absNorm G:ℝ)^ε)*H^(1/6:ℝ) := by gcongr
     _ = _ := by ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

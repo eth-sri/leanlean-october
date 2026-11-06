@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ ι : Type*} [Fintype φ] [Fintype σ] [Fintype ι]
 variable {N a c : Eis} {mode : Bool}
 
@@ -59,8 +58,3 @@ theorem weightedPhysicalReflectedRow_eq_branches (F : PrimeFamily φ) (K : Ideal
   intro e he'
   unfold frozenBranchColumn
   ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

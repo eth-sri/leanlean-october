@@ -9,11 +9,8 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationAllocationCost
-open CenteredMomentCommonAllocationSum CenteredMomentSupport IdealMobiusDivisorSum
-open CenteredMomentAddedZeroUniform CenteredMomentCommonSectors
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonAllocationSum CenteredMomentSupport IdealMobiusDivisorSum CenteredMomentAddedZeroUniform CenteredMomentCommonSectors
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
  theorem allocation_slot_one (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (P : Ideal O) (hP : P≠0) (k : ℕ)
@@ -77,9 +74,3 @@ theorem actual_amplification_allocations_card (S : (ι ⊕ Fin 2) → Finset (Id
   have hh := Fintype.card_le_of_injective f hf
   simp only [Fintype.card_coe] at hh
   exact hh.trans (idealDivisors_prime_power_card P hP k)
-
-end SevenEighths.CenteredMomentAmplificationAllocationCost
-
-end
-
-end OAI

@@ -25,4 +25,3 @@ def anchoredLegendreError (F : ℝ → ℝ) (σ w v : ℝ) : ℝ :=
   (modelPhaseLegendreDual F v - referenceModelPrimitive σ⁻¹ v) -
     (modelPhaseLegendreDual F w - referenceModelPrimitive σ⁻¹ w)
 
-end TaoTrudgianYang2025

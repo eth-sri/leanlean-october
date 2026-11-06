@@ -142,9 +142,3 @@ theorem polynomial_continuous (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   apply Continuous.const_cpow _ (Or.inl (Complex.ofReal_ne_zero.mpr hn.ne'))
   unfold HeckeDyadic.shift
   fun_prop
-
-end SevenEighths.HeckeDetectorRowwisePolynomial
-
-end
-
-end OAI

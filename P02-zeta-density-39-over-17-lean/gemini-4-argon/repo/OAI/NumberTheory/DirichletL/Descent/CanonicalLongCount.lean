@@ -31,9 +31,3 @@ theorem actual_cube_bin_count (b L eps:ℝ)(hb:0≤b)(hL:0≤L)(heps:0<eps) :
   have hbnd:=hh X (Z^((L+1)/3)) hX (Real.one_le_rpow hZ (by positivity))
     (by rw [hscale];exact hXL.trans (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)))
   simpa only [hpow] using hbnd
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

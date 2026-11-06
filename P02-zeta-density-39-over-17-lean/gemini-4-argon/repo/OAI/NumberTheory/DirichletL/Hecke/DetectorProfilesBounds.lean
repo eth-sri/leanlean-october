@@ -88,8 +88,3 @@ lemma product_derivative_bound (F G : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
       exact_mod_cast Nat.sum_range_choose j
     _ ≤ _ := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hj) hCF) hCG
-
-end
-end SevenEighths.HeckeDetectorProfiles
-
-end OAI

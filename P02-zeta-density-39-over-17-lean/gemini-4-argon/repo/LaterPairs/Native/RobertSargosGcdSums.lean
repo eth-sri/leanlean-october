@@ -75,4 +75,3 @@ theorem exists_robertSargos_gcd_harmonic_bound (ε : ℝ) (hε : 0 < ε) :
       ring
     _ = _ := by rw [hsq]
 
-end TaoTrudgianYang2025

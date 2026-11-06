@@ -82,4 +82,3 @@ theorem atkinson_center_mem_physical {T : ℝ} (hT : 0 < T) :
   · apply (div_le_iff₀ (by positivity : 0 < 2 * Real.pi)).mpr
     nlinarith [mul_pos hT Real.pi_pos, mul_lt_mul_of_pos_left Real.pi_gt_three hT]
 
-end MathCollab.Density.Stronger.Atkinson

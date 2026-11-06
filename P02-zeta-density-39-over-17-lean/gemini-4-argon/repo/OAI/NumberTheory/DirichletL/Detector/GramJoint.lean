@@ -8,11 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion CenteredMomentSupportedCorrelation
 variable {ι : Type*} [Fintype ι]
 
 def jointExtension (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
@@ -61,8 +57,3 @@ lemma jointExtension_dilation_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaxima
   apply jointExtension_periodic
   · rw [←mul_sub];exact (jointPeriod S hS P r).mul_mem_left d h₁
   · rw [←mul_sub];exact (jointPeriod S hS P r).mul_mem_left d h₂
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

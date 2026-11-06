@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixVectors
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -62,4 +61,3 @@ theorem atkinsonNegativePhaseTerm_eq_conj (T : ℝ) (n : ℕ) :
   congr 2
   ring
 
-end MathCollab.Density.Stronger.Atkinson

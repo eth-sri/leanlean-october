@@ -75,8 +75,3 @@ lemma HasCubicExponent.doubled {ξ : ℝ} (h : HasCubicExponent ξ)
     _ = _ := by
       rw [show (2*X)*N = 2*(X*N) by ring, Real.mul_rpow (by norm_num) (mul_nonneg hX0 hN0)]
       ring
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition ConcreteTraceCRT
-open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition ConcreteTraceCRT EisensteinSchwartzPoisson
 
 lemma sexticGauss_frequency_congr (s : O) (hs : s≠0) (h k : O)
     (he : h-k ∈ (Ideal.span {s}:Ideal O)) : sexticGauss s hs h = sexticGauss s hs k := by
@@ -80,8 +78,3 @@ theorem physical_row_poisson (C : CalibrationData) (A s : O) (hA : A≠0) (hs : 
   rw [hnorm, Complex.ofReal_mul]
   simp only [elementNorm, Complex.ofReal_natCast] at hn ⊢
   field_simp
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

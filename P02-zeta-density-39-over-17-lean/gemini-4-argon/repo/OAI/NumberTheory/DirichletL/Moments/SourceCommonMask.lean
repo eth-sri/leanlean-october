@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceCommonMask
-open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentSourceMass CenteredMomentCompleteCommon
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentCompleteCommon
 variable {ι : Type*} [Fintype ι]
 
  theorem profile_nonzero_masks
@@ -25,9 +23,3 @@ variable {ι : Type*} [Fintype ι]
     exact hne (by simp only [profileCoefficient,hn,ite_false,mul_zero,zero_mul])
   · by_contra hn
     exact hne (by simp only [profileCoefficient,hn,ite_false,mul_zero])
-
-end SevenEighths.CenteredMomentSourceCommonMask
-
-end
-
-end OAI

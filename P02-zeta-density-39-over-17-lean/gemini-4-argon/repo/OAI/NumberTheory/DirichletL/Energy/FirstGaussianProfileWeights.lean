@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstGaussianProfileWeights
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondWindowBudget
-open QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondWindowBudget QuadraticInitialBound
 
 def losses (epsilon delta theta B:ℝ):Fin 4→ℝ:=
   ![2*delta+epsilon,2*epsilon+2*delta+2*(5*B+1)*theta,0,0]
@@ -173,9 +169,3 @@ theorem actual_weights {a b:ℝ}(N:ℕ)(upper b1 b2 Amax loFloor:ℝ)
           _≤D3*(C0+C1+1)*(p.control U)^2:=mul_le_mul_of_nonneg_right
             (le_mul_of_one_le_right hD3 (le_add_of_nonneg_left hC01)) (sq_nonneg _)
           _≤_:=le_mul_of_one_le_right (by positivity) hHone
-
-end SevenEighths.CenteredMomentEnergyFirstGaussianProfileWeights
-
-end
-
-end OAI

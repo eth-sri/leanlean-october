@@ -65,4 +65,3 @@ theorem fourier_constant_mul (f : ℝ → ℂ) (c : ℂ) (ξ : ℝ) :
   simp only [fourier_eq_phase_integral, mul_left_comm (phase (-ξ * _)) c]
   exact integral_const_mul _ _
 
-end GuthMaynard.Improvement

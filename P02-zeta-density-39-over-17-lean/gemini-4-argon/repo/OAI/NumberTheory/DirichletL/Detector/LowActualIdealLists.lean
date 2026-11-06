@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowPrimeIdealList (T : Finset PrimeIdeal) : Finset Id := T.image Subtype.val
 
@@ -23,8 +21,6 @@ def lowPrimeListEquiv (T : Finset PrimeIdeal) : T≃lowPrimeIdealList T :=
       obtain ⟨P,hP,h⟩ := Finset.mem_image.mp I.property
       exact ⟨⟨P,hP⟩,Subtype.ext h⟩)
 
-@[simp] lemma lowPrimeListEquiv_val (T : Finset PrimeIdeal) (p : T) :
-    (lowPrimeListEquiv T p).val=p.val.val := rfl
 
 lemma lowPrimeIdealList_prime (T : Finset PrimeIdeal) (I : Id) (hI : I∈lowPrimeIdealList T) : Prime I := by
   obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hI
@@ -85,8 +81,3 @@ lemma low_actual_ideal_weight_bound (η : HeckeFamily.Character) (W : ℝ→ℂ)
     (hW : ∀x,‖W x‖≤1) (Y t : ℝ) (I : Id) :
     ‖lowSingleSlotWeight η W Y t (primaryGenerator I)‖≤1 :=
   (lowSingleSlotWeight_norm η W Y t _).trans (hW _)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

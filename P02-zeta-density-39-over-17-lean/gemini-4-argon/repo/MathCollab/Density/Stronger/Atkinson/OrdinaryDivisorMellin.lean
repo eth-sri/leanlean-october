@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareSource
 
 @[expose] public section
 
-open Complex Set Filter Topology MeasureTheory
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter Topology MeasureTheory MathCollab.Density.Stronger.Fourth
 open scoped BigOperators
 set_option autoImplicit false
 noncomputable section
@@ -139,4 +138,3 @@ theorem DFIVoronoiTestFunction.ordinaryDivisorSum_eq_zetaSquareMellinIntegral
   unfold LSeries ordinaryDivisorMellinTerm divisorWeight
   rw [tsum_mul_right]
 
-end MathCollab.Density.Stronger.Atkinson

@@ -133,4 +133,3 @@ theorem norm_dfiVoronoiPlusMultiplier_strip_le (q : ℕ) [NeZero q]
     _ ≤ 2*(q:ℝ)*(72*(q:ℝ)*(1+|z.im|))^2 := by gcongr
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

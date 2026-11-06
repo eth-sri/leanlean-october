@@ -40,4 +40,3 @@ theorem sargos_sum_Ioc_eq_range {A : Type*} [AddCommMonoid A]
   · intro j hj
     rfl
 
-end TaoTrudgianYang2025

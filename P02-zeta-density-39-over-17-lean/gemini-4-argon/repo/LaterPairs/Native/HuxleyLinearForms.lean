@@ -5,13 +5,11 @@ public import LaterPairs.Native.HuxleyCore
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open Filter Polynomial Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open Filter Polynomial Set MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 open scoped BigOperators FourierTransform ContDiff Classical NNReal Topology
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
-open Set Expdb TaoTrudgianYang2025
-open scoped BigOperators FourierTransform ContDiff Classical NNReal
+open Expdb TaoTrudgianYang2025
 private theorem uniform_model_sum_of_beta_interval
     {lo hi b c : ℝ} (hlo : 0≤lo) (hlohi : lo≤hi) (hc : 0≤c) (hc₁ : c≤4)
     (hβ : ∀ α : ℝ≥0, (α:ℝ)∈Icc lo hi →
@@ -736,4 +734,3 @@ theorem exponentSumGrowthExponent_le_huxley_thirdPair_upperRange
     (third_pair_local_A_nonAsymptotic hα hα₁)
 
 
-end TaoTrudgianYang2025.HuxleyRationalPhase

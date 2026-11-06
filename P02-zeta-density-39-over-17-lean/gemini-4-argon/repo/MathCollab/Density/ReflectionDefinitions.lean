@@ -233,4 +233,3 @@ theorem uniform_zero_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     _ ≤ L * ((C / L ^ A) * Z) := mul_le_mul_of_nonneg_left hsum hL.le
     _ = (C * Z) * L / L ^ A := by ring
 
-end MathCollab.Density

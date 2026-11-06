@@ -86,4 +86,3 @@ theorem robertSargos_centered_phase_sum (f : ℝ → ℝ) (M : ℕ) (h : ℤ)
   · intro m _
     simp only [Int.cast_add,Int.cast_one]
 
-end TaoTrudgianYang2025

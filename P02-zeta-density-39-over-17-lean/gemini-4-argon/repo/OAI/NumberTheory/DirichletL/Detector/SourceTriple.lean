@@ -11,7 +11,6 @@ open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary ProbeCompleted HeckeInverseAmplification CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 
 def sourceRowSeries (η : HeckeFamily.Character) (S : Finset (Ideal O))
     (C : CalibrationData) (D : Ideal O) (x w z : ℂ) : ℂ :=
@@ -56,8 +55,3 @@ theorem markedPhysicalProbe_eq_source_triple (η : HeckeFamily.Character)
   rw [markedPhysicalProbe_eq_raw_triple η S hS hpS hbad hSne D W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z hX hY hZ]
   exact rawSourceTripleIntegral_eq_source η S hS hpS hbad D W0 W1 X Y Z
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

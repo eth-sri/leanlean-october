@@ -9,15 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedDiagonal
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale
-open CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedExceptionalCap
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentDescentLedger
-open CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentCanonicalFirst CenteredMomentSecondHeightFamily
-open CenteredMomentAmplificationErrorEnergy
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedExceptionalCap CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstExceptionalPrefactor CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentCanonicalFirst CenteredMomentSecondHeightFamily CenteredMomentAmplificationErrorEnergy
 
 theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
@@ -110,9 +102,3 @@ theorem actual_error_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:
   unfold errorCommonRadius
   gcongr
   exact actual_error_weight p hp Z hZ k hk
-
-end SevenEighths.CenteredMomentFirstMixedDiagonal
-
-end
-
-end OAI

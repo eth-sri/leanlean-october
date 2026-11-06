@@ -156,4 +156,3 @@ theorem sourceStationaryChart_bound_of_exponentSumBound
     rw [hempty,Finset.sum_empty,norm_zero]
     positivity
 
-end TaoTrudgianYang2025

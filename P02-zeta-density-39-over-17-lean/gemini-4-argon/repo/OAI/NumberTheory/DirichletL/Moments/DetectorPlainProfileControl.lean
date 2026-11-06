@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainProfileControl
-open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary
-open CenteredMomentFiniteProfileExceptional
+open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary CenteredMomentFiniteProfileExceptional
 
 theorem paired_control (S:Finset (ℕ×ℕ)):
     ∃J:ℕ,∃C:ℝ,0<C ∧ ∀reverse:Bool,∀j k:ℕ,j+k≤2 →
@@ -47,9 +46,3 @@ theorem source_height_factor (S:Finset (ℕ×ℕ)):
     simpa only [Real.norm_eq_abs] using add_le_add le_rfl ht
   simpa only [abs_zero,add_zero,pow_add,mul_assoc] using
     mul_le_mul_of_nonneg_right hb (pow_nonneg (by linarith:0≤1+height) degree)
-
-end SevenEighths.CenteredMomentDetectorPlainProfileControl
-
-end
-
-end OAI

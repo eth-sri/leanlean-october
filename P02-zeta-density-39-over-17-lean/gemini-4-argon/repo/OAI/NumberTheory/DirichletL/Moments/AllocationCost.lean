@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAllocationCost
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
 
  theorem actualAllocations_uniform_small_power (N : ℕ) (ε : ℝ) (hε : 0<ε) :
     ∃ D : ℝ,0<D ∧ ∀ {ι : Type*} [Fintype ι],Fintype.card ι≤N →
@@ -57,9 +55,3 @@ local notation "O" => ActualEisensteinCubic.O
       exact (mul_le_of_le_one_left (norm_nonneg _) (hν i _)).trans (hW i _)
     _ ≤ ∏ i,M i := Finset.prod_le_prod_of_subset_of_one_le₀ (Finset.subset_univ _)
       (fun i _ => zero_le_one.trans (hM i)) (fun i _ _ => hM i)
-
-end SevenEighths.CenteredMomentAllocationCost
-
-end
-
-end OAI

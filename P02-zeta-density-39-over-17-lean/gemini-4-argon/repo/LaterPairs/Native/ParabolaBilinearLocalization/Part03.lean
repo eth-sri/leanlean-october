@@ -6,41 +6,12 @@ public import LaterPairs.Native.ParabolaBilinearLocalization.Part02
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open GafniTao Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open MeasureTheory
-open MeasureTheory FourierTransform SchwartzMap Set GafniTao
-open MeasureTheory GafniTao
-open MeasureTheory GafniTao Set
-open MeasureTheory Set
-open Set
-open scoped BigOperators
-open scoped BigOperators ComplexConjugate
-open scoped BigOperators ContDiff
-open scoped BigOperators ContDiff FourierTransform
-open scoped BigOperators Matrix
-open scoped BigOperators Matrix ContDiff
-open scoped BigOperators NNReal ENNReal
-open scoped ComplexConjugate Convolution ContDiff
-open scoped ContDiff
-open scoped ContDiff BigOperators
-open scoped ContDiff FourierTransform
-open scoped ContDiff Topology
-open scoped Matrix
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth GafniTao Set MeasureTheory FourierTransform SchwartzMap Filter
+open scoped BigOperators ComplexConjugate ContDiff FourierTransform Matrix NNReal ENNReal Convolution Topology
 noncomputable section
-open Set Filter MeasureTheory
-open scoped ContDiff Topology FourierTransform BigOperators
 namespace TaoTrudgianYang2025
-open scoped ComplexConjugate
-open scoped ComplexConjugate
 universe v
 open Expdb
-open Filter Expdb
-open scoped Topology
-open scoped ContDiff
-open Expdb Filter Set
-open scoped ContDiff FourierTransform Topology
 
 
 theorem actual_four_coordinate_constraints
@@ -5078,7 +5049,6 @@ theorem cubic_near_integer_count_power
   change (T.card:ℝ) ≤ 2*∑' r : ℤ, c r*‖Z r‖ at hcount
   exact hcount.trans ((mul_le_mul_of_nonneg_left hupper (by norm_num : (0:ℝ) ≤ 2)).trans_eq (by ring))
 
-end CubicNearCurve
 
 
 
@@ -5105,8 +5075,5 @@ end CubicNearCurve
 
 
 
-end TaoTrudgianYang2025
 
 -- Generated closures: source context is replayed in the next part.
-end
-end

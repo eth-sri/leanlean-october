@@ -69,8 +69,3 @@ theorem unramifiedClosed_open_region_bound (Q : ℝ) (A eta v x w z : ℂ)
       _ ≤ 2*(28*T) := mul_le_mul (by linarith) hE (norm_nonneg _) (by norm_num)
       _ = _ := by ring
   nlinarith
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

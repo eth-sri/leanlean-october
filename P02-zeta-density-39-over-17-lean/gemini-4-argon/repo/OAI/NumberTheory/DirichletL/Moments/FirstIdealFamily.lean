@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstIdealFamily
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentSourceRow
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstColumns
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation RayFourExpansion
 
 theorem rowWeight_one_primary (η : Character) (m : O) (t : ℝ)
     (I : Ideal O) (hI : Supported I) :
@@ -81,9 +77,3 @@ theorem exists_first_ideal_pair (η : Character) (m : O) (hm : m≠0)
     intro n hn hp
     rw [h₂ n hn hp]
     ring
-
-end SevenEighths.CenteredMomentFirstIdealFamily
-
-end
-
-end OAI

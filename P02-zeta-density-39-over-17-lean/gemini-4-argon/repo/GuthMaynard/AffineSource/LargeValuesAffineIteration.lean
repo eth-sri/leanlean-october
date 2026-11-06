@@ -779,21 +779,8 @@ theorem gmAffineTildeSchwartz_supportedOn
       constructor <;> linarith [hut.1, hut.2]
     simp [hsupp (u - t) hut]
 
-/-- The literal finite sequence of fixed-scale smoothings used in the
-natural-number implementation of the Section 9 exponent descent. -/
-noncomputable def gmAffineTildeIterate
-    (S : ℝ) (hS : 0 < S) (f : SchwartzMap ℝ ℝ) (j : ℕ) :
-    SchwartzMap ℝ ℝ :=
-  Nat.rec f (fun _ g => gmAffineTildeSchwartz S hS g) j
 
-@[simp] theorem gmAffineTildeIterate_zero
-    (S : ℝ) (hS : 0 < S) (f : SchwartzMap ℝ ℝ) :
-    gmAffineTildeIterate S hS f 0 = f := rfl
 
-@[simp] theorem gmAffineTildeIterate_succ
-    (S : ℝ) (hS : 0 < S) (f : SchwartzMap ℝ ℝ) (j : ℕ) :
-    gmAffineTildeIterate S hS f (j + 1) =
-      gmAffineTildeSchwartz S hS (gmAffineTildeIterate S hS f j) := rfl
 
 /-- The positive-sign affine subfamily appearing after Cauchy--Schwarz in
 (9.8).  Its shift range is the same finite shell as the project `J`. -/
@@ -7187,4 +7174,3 @@ def GMAffineLemma92MassRecurrenceAt
 
 /-! ### Source Proposition 9.1 by finite natural-number descent -/
 
-end RiemannZeta.GuthMaynard

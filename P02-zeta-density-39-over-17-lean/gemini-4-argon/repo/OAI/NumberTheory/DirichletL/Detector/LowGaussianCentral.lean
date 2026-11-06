@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical ContDiff SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma not_lowRemote_bounds (Z ell ε U : ℝ) (hZ : 0<Z)
     (h : ¬lowRemote Z ell ε U) :
@@ -83,8 +81,3 @@ theorem low_central_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
           apply mul_le_mul_of_nonneg_left _ (mul_pos hC hCm).le
           have hh := lowLength_bounds ell hell hsum J
           exact Real.rpow_le_rpow_of_exponent_le hZ.1.le (by nlinarith)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

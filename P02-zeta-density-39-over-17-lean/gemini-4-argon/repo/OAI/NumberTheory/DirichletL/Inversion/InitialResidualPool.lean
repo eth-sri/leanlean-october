@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialResidualPool
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open InverseInitialExcludedPool InverseInitialCommonTuples InverseInitialEnergyCallerWindow
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion InverseInitialExcludedPool InverseInitialCommonTuples InverseInitialEnergyCallerWindow
 
 theorem exists_original_complete_pool {κ:Type*}
     (q:ℕ)(Z r b cap Btree:ℝ)(hZ:0<Z)(hBtree:0≤Btree)
@@ -26,9 +24,3 @@ theorem exists_original_complete_pool {κ:Type*}
     (reflectionExcludedPrimes q) T P j (reflectionExcludedPrimes_prime q) hP hj hPE
     (originalSource_supported Z r b) Btree (Z^(cap+1)) hBtree (Real.rpow_nonneg hZ.le _)
   exact ⟨D,hsize Btree (Z^(cap+1)) hBtree le_rfl (Real.rpow_nonneg hZ.le _) le_rfl,hcover⟩
-
-end SevenEighths.InverseInitialResidualPool
-
-end
-
-end OAI

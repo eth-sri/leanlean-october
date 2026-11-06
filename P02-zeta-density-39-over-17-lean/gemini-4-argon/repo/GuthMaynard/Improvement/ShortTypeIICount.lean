@@ -41,4 +41,3 @@ theorem short_typeII_count_by_moment :
       hs.trans (mul_le_mul_of_nonneg_left hp (by positivity))
     _ = _ := by ring
 
-end GuthMaynard.Improvement

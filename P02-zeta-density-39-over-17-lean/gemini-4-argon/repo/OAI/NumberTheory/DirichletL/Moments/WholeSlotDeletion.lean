@@ -11,7 +11,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentWholeSlotDeletion
 open HeckeFamily CenteredMomentHeckeSlots CenteredMomentHeckeHeight
-local notation "O" => ActualEisensteinCubic.O
 
 theorem whole_removal {α:Type*} (S:Finset α) (w:α→ℝ) (F κ mesh:ℝ)
     (hF:0≤F) (hκ:0<κ) (hm:0≤mesh)
@@ -59,9 +58,3 @@ theorem selectedProduct_energy_remove {α:Type*} (J R:Finset α) (hR:R⊆J)
   calc
     _≤∏i∈R,B i*Z^(κ*w i):=Finset.prod_le_prod₀ (fun i _=>sq_nonneg _) hslot
     _=_:=by rw [Finset.prod_mul_distrib,←Real.rpow_sum_of_pos hZ,Finset.mul_sum]
-
-end SevenEighths.CenteredMomentWholeSlotDeletion
-
-end
-
-end OAI

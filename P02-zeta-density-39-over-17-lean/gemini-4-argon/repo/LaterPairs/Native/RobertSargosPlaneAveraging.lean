@@ -96,4 +96,3 @@ theorem robertSargos_plane_gram (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
   intro x _
   exact real_inner_comm _ _
 
-end TaoTrudgianYang2025

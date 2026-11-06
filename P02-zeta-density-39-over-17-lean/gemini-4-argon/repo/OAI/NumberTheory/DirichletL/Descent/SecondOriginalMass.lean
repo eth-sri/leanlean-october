@@ -11,7 +11,6 @@ open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassAri
 open InverseInitialArithmetic (sourceIdeal)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → Eis)
@@ -45,8 +44,3 @@ theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
       congr 2
       dsimp only [c]
       ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

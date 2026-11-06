@@ -51,4 +51,3 @@ theorem continuous_third_derivative_weyl
         (Nat.cast_nonneg _)
     _ = _ := by ring
 
-end TaoTrudgianYang2025

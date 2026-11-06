@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRestrictedEnergy
-open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm
-open CenteredMomentPlainEnergy CenteredMomentPlainChildEnergy CenteredMomentCauchy CenteredMomentSmooth
-open ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm CenteredMomentPlainEnergy CenteredMomentPlainChildEnergy CenteredMomentCauchy CenteredMomentSmooth ConcreteTraceCRT
 
 def restrictedEnergy {α : Type*} (keep : O → Prop) (S : Finset α) (a : α → O)
     (c : α → ℂ) (W : 𝓢(ℝ, ℂ)) (K : ℝ) : ℝ :=
@@ -131,9 +128,3 @@ theorem whole_kernel_restricted_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → 
     _ ≤ (E₁ * (1 + ‖t‖) ^ J₁) * (E₂ * (1 + ‖t‖) ^ J₂) :=
       mul_le_mul hl hr (Real.sqrt_nonneg _) (by positivity)
     _ = _ := by rw [pow_add]; ring
-
-end SevenEighths.CenteredMomentRestrictedEnergy
-
-end
-
-end OAI

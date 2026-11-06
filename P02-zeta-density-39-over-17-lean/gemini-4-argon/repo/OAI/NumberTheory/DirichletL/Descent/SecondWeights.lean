@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -72,8 +71,3 @@ theorem secondExpansionSource_signed_profile
           slots₁ slots₂ lists₁ lists₂ a₁ a₂ W₁ W₂ Φ Y X := by
   rw [secondExpansionSource_marked_profile p hp hcop hg hinj hpr (hE := hE)]
   simp only [expansionProfileWeight_eq_signed,Finset.mul_sum,mul_assoc]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

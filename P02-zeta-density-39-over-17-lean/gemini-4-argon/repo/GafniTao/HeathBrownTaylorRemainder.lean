@@ -113,6 +113,4 @@ theorem norm_heathBrown_deriv_taylor_remainder_le_scale
       gcongr
 
 
-end
 
-end GafniTao

@@ -110,4 +110,3 @@ theorem kernelEnergy_le_bootstrapBound (w : ReflectionCutoff) {κ : ℝ} (d : La
   have hi := (div_le_iff₀ hpos).1 hh
   simpa only [bootstrapBound, mul_assoc] using hi
 
-end MathCollab.Density

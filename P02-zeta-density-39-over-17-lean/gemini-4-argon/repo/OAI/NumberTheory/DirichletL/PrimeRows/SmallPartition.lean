@@ -54,9 +54,3 @@ lemma sum_small_dyadicRows (L : ℝ) (f : FreeRow→ℂ) :
     (∑u∈rowBand 1 L,f u)=∑n∈smallDyadicIndices L,∑u∈smallDyadicRows L n,f u := by
   rw [←small_rows_biUnion L]
   exact Finset.sum_biUnion (fun m hm n hn hmn=>smallDyadicRows_disjoint L hmn)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

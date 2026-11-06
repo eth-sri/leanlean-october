@@ -35,4 +35,3 @@ theorem universalShortProfile_scale {D T M R E : ℝ}
   norm_num only [Real.rpow_ofNat] at hb
   nlinarith only [ha,hb,hc,hd]
 
-end Montgomery.RationalMoment

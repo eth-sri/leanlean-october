@@ -12,7 +12,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {a c₀ : Eis} {mode : Bool}
 
 theorem original_surviving_low_exponent
@@ -93,7 +92,3 @@ theorem original_surviving_low_exponent
   · dsimp only [terminalDualWidth] at hwidth
     rw [hNs,←frozenExtracted_eq_ideal,←frozenExtracted_eq_ideal] at hwidth
     linarith
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

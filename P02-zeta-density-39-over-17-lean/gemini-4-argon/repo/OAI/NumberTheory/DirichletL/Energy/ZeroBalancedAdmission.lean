@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroBalancedAdmission
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyReferenceState CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentSourceInputTailUniform
-open CenteredMomentEnergyOriginalProfileControl CenteredMomentFirstReferenceEnergy
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentEnergyReferenceState CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentSourceInputTailUniform CenteredMomentEnergyOriginalProfileControl CenteredMomentFirstReferenceEnergy CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
 variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<a)
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "inp"=>CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂
@@ -41,9 +36,3 @@ theorem four_upper_scales (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
       _≤Z^Lgoal*Z^Lgoal:=mul_le_mul hc₁ hc₂ hX₂.le (Real.rpow_pos_of_pos hp _).le
       _=Z^(2*Lgoal):=by rw [←Real.rpow_add hp];congr 1;ring
       _≤_:=Real.rpow_le_rpow_of_exponent_le hZ.le (le_max_right _ _)
-
-end SevenEighths.CenteredMomentEnergyZeroBalancedAdmission
-
-end
-
-end OAI

@@ -38,9 +38,3 @@ theorem clipped_support_upper (W:ℝ→ℂ)(a b c θ:ℝ)(ha:0<a)(hc:1≤c)
 theorem childLogTest_eq_clipped (W:ℝ→ℂ)(θ:ℝ):childLogTest W θ=clippedSource W 1 θ:=by
   funext x
   simp only [childLogTest,clippedSource,mul_comm,mul_one]
-
-end SevenEighths.InverseInitialProfileBounds
-
-end
-
-end OAI

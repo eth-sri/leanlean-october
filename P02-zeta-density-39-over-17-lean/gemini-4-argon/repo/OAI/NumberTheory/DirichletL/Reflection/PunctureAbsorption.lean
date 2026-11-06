@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem rowTwist_absorb_puncture (Ψ : Eis→*ℂ) (m B f z : Eis)
     (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:Eis)∣m)
@@ -33,8 +32,3 @@ lemma rowResidualPart_coprime_period (I F Q : Ideal Eis) (m : Eis)
     IsCoprime Q (rowResidualPart I (Ideal.span {m}*F)) := by
   exact (squarefreeResidualPart_coprime (rowSimplePart I) (Ideal.span {m}*F)).symm.of_isCoprime_of_dvd_left
     (dvd_mul_of_dvd_left hQ F)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

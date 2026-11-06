@@ -12,7 +12,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth
-local notation "O" => HeckeFamily.O
 
 def centralRemainingScalar (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
@@ -59,9 +58,3 @@ theorem centralRemainingScalar_bound (e eps : ℝ)
     (mul_nonneg (by linarith) (mul_nonneg hCr.le (Real.rpow_nonneg (by
       unfold presentationComplexity HeckeLogarithmic.complexity;positivity) _)))).trans
   exact le_of_eq (by ring)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

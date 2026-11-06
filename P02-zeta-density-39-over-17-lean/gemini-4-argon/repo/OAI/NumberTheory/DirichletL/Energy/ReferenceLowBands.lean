@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowBands
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot QuadraticInitialBound
-open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot QuadraticInitialBound CenteredMomentFiniteProfileExceptional
 
 def ZeroLowAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
@@ -26,7 +22,6 @@ def ZeroLowAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def PositiveLowAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
@@ -45,9 +40,3 @@ def PositiveLowAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:�
       (fun i=>Z^(w i)) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale≤
       C*diagonalControl s.radial.profile*(p.control S)^2*
         (1+|t|+height)^degree*Z^(s.width+ε)
-
-end SevenEighths.CenteredMomentEnergyReferenceLowBands
-
-end
-
-end OAI

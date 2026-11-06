@@ -12,16 +12,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyAllocatedChildren
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial
-open CenteredMomentDetectorDictionary CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeHeight
-open CenteredMomentOriginalRadialComparison CenteredMomentInductionEnergy
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentDetectorDictionary CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentSecondHeightFamily CenteredMomentHeckeHeight CenteredMomentOriginalRadialComparison CenteredMomentInductionEnergy CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O"=>HeckeFamily.O
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 
@@ -86,8 +78,7 @@ lemma natural_subset_radial_eq_energy (η:Character)(r:Radial)(hz:∀z,r.keep z�
   simp_rw [hp] at hh
   exact hh
 
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-open CenteredMomentRetainedProfile CenteredMomentCommonAllocationSum
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentRetainedProfile CenteredMomentCommonAllocationSum
 
 def allocatedEnergy (η:Character)(r:Radial)(D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2))) (V₁ V₂:Plain)
@@ -149,9 +140,3 @@ lemma commonChild_energy (s:Input α)(τ:Character)(v:ℝ)(C R:Ideal O)
       v d.Y₁ d.Y₂ d.Y₁_pos d.Y₂_pos D₁ D₂ J hD₁ hD₂
   · exact child_radial_eq_energy τ r hz D a V₁ V₂ d.slots d.coefficient d.P d.P_pos
       v d.X₁ d.X₂ d.X₁_pos d.X₂_pos D₁ D₂ J hD₁ hD₂
-
-end SevenEighths.CenteredMomentEnergyAllocatedChildren
-
-end
-
-end OAI

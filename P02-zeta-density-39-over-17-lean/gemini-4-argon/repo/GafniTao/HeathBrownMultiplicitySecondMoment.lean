@@ -173,6 +173,4 @@ theorem integral_heathBrownNu_sq_le_overlap_count
       simp [nsmul_eq_mul]
 
 
-end
 
-end GafniTao

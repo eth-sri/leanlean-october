@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightMass
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -130,4 +128,3 @@ theorem exists_norm_zetaSquareSource_sub_frozen_le (ε : ℝ) (hε : 0 < ε) :
   apply (add_le_add (hsource (T + x) hTx) (hfreeze T hT x hx)).trans
   nlinarith [mul_nonneg (abs_nonneg x) (Real.rpow_nonneg (by linarith : 0 ≤ T) (-1 / 2 + ε))]
 
-end MathCollab.Density.Stronger.Atkinson

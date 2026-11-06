@@ -60,4 +60,3 @@ theorem operator_centered_mixed (ν : Measure ℝ) [IsFiniteMeasure ν]
   · funext s
     exact operator_centered_frequencyKernel ha hi hl hL hs s
 
-end GuthMaynard.Improvement

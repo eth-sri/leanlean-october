@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
 
 def calibratedNumerator (C : CalibrationData) (A m : O) : ℂ :=
   C.residueMonoid m * idealRowHom m (Ideal.span {A})
@@ -88,8 +87,3 @@ theorem actualCongruenceCoefficient_norm_le (C : CalibrationData) (A s : O)
     exact calibratedNumerator_norm_le C A _
   · intro d
     exact idealRowHom_norm _ _
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

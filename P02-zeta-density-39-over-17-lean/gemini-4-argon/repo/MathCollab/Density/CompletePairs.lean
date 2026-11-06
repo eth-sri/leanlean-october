@@ -87,4 +87,3 @@ theorem completePairEnergy_coefficient_domination (M : ℕ) (U : Finset ℝ)
     (fun q t => dirichletPhase ((q : ℝ) / M) t) c hc
   simpa only [← dirichletPhase_sub, completePairEnergy, dyadicPolynomial] using hh
 
-end MathCollab.Density

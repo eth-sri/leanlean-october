@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve ProbeRaySlots
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowUnselectedLength {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K)) : ℝ := ∑i∈J,ell i
 
@@ -98,8 +96,3 @@ lemma lowSelectedCaps_product {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell
         ←Real.rpow_sum_of_pos (lt_of_lt_of_le zero_lt_one hZ)]
       rfl
     _≤_ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (le_max_left _ _) hc) (by positivity)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

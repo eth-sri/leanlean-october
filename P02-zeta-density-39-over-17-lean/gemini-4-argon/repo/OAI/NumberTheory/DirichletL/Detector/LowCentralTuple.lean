@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma low_compensated_sqrt_factor (q L : ℝ) (hq : 0≤q) (hL : 0<L) :
     Real.sqrt (3*q/L)=Real.sqrt (3*q)*L^(-(1/2:ℝ)) := by
@@ -127,8 +125,3 @@ theorem low_central_compensated_tuple (η : HeckeFamily.Character) (S : Finset I
   calc
     _≤Cg*((Ci*Real.sqrt (3*q)*(1+‖t‖)^degree*Z^(3/16+254*ε))*Cu) := by gcongr
     _=_ := by dsimp [C0];ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

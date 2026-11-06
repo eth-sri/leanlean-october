@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstDeclaredCapacityLossBudget
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyFirstStageLossBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
 
 lemma lossVector_cap (sigma delta reserveAmp paid es M A saving:ℝ)
     (he:0≤es)(hM:0≤M)(hA:0≤A)(j:Fin 4):
@@ -79,9 +77,3 @@ theorem chosen_declared_four_budget (M A Bcap Bcommon κ ε:ℝ)
   have hj:=hh j
   change losses es (r/4) (r/4) Bcap j+_+es*Bcommon+r/4+r/4+highReflection+zeroReflection≤_
   linarith only [hj,hc]
-
-end SevenEighths.CenteredMomentEnergyFirstDeclaredCapacityLossBudget
-
-end
-
-end OAI

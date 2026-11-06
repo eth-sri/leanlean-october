@@ -109,4 +109,3 @@ theorem norm_neumannRayCoefficient_le_one : ‖neumannRayCoefficient‖ ≤ 1 :=
   norm_num at h ⊢
   linarith
 
-end MathCollab.Density.Stronger.Atkinson

@@ -135,4 +135,3 @@ theorem finite_amplifier_quantitative_witness {η : ℝ} (hη : 0 < η) :
   apply (div_le_iff₀ hD).mpr
   simpa only [finiteCutoffGram,ContinuousLinearMap.comp_apply,mul_comm,B,M] using hb
 
-end Montgomery.RationalMoment

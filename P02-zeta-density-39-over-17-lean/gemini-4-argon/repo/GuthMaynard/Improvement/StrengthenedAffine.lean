@@ -33,4 +33,3 @@ theorem sourceSup_eq_seminorm (f : 𝓢(ℝ, ℝ)) :
     intro x
     simpa only [pow_zero,iteratedDeriv_zero,one_mul,gmAffineComplexify_apply,Complex.norm_real,Real.norm_eq_abs] using hle x
 
-end GuthMaynard.Improvement

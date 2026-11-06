@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonHarmonicMass
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentRankinRadical CenteredMomentRankinLabels
-open CenteredMomentDivisorAllocation CenteredMomentWholeDivisorShell
-open CenteredMomentDyadicCount CenteredMomentSectorLocalization
-local notation "O" => ActualEisensteinCubic.O
+open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentRankinRadical CenteredMomentRankinLabels CenteredMomentDivisorAllocation CenteredMomentWholeDivisorShell CenteredMomentDyadicCount CenteredMomentSectorLocalization
 abbrev Label := (Ideal O × Ideal O) × Finset (Ideal O)
 
 def Valid (s : Ideal O) (v : Label) : Prop :=
@@ -234,9 +230,3 @@ theorem common_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
     _ ≤ (C*D)*Z^δ/(s.absNorm:ℝ) := by
       exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hZ1 hbudget) (mul_pos hC hD).le) hsn.le
-
-end SevenEighths.CenteredMomentCommonHarmonicMass
-
-end
-
-end OAI

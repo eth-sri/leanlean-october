@@ -11,8 +11,7 @@ public import Mathlib.Analysis.Complex.RealDeriv
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory MathCollab.Density.Contour
 open scoped Topology Interval
 set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
@@ -212,4 +211,3 @@ theorem rectangleIntegral'_div_sq_eq_deriv
   unfold RectangleIntegral' at hSimple hDouble ⊢
   rw [hRectAdd, smul_add, hSimple, hDouble, add_zero, hA]
 
-end MathCollab.Density.Stronger.PointMean

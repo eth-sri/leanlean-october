@@ -81,4 +81,3 @@ theorem operator_density_phase_pairing {μ : ℝ → ℝ}
   simp only [ENNReal.toReal_ofReal (h0 _), Complex.real_smul]
   ring
 
-end GuthMaynard.Improvement

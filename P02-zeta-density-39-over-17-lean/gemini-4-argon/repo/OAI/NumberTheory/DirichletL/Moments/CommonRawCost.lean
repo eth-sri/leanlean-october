@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonRawCost
-open CenteredMomentCommonRawScale CenteredMomentAllocationCost CenteredMomentSourceLiveColumn
-open CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonRawScale CenteredMomentAllocationCost CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
 variable {ι : Type*} [Fintype ι]
 
 theorem frozen_normalized_cost (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : C≠0)
@@ -39,9 +37,3 @@ theorem frozen_normalized_cost (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal 
       _ ≤ (∏ i,M i)^2*((max 1 b)^Fintype.card ι/(Ideal.absNorm C:ℝ)) :=
         mul_le_mul_of_nonneg_left hi (sq_nonneg _)
       _ = _ := by ring
-
-end SevenEighths.CenteredMomentCommonRawCost
-
-end
-
-end OAI

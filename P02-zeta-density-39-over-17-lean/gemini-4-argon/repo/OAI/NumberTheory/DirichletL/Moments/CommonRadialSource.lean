@@ -9,15 +9,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonRadialSource
-open CenteredMomentCommonRadialData CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale
-open CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonRadialData CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
  def sourceEnergy (s:Input ι) (r:Radial) (C:Ideal O) (hC:Supported C) (R seed L:Ideal O) : ℝ :=
   let Q:=finiteColumns (Fintype.piFinset s.pools)
@@ -54,9 +47,3 @@ local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
   · simp only [maskedLiveProfile,commonData,one_mul,Input.pools,Sum.elim_inl]
   · dsimp only [remainingRaw,plainNorm,commonData]
     ring
-
-end SevenEighths.CenteredMomentCommonRadialSource
-
-end
-
-end OAI

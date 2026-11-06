@@ -34,4 +34,3 @@ theorem approximateModelPhase_iteratedDeriv_error
   exact he
 
 
-end TaoTrudgianYang2025

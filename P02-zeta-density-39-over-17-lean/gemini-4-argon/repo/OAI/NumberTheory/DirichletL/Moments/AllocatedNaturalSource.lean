@@ -11,12 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentAllocatedNaturalSource
-open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentNaturalRowSource CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentNaturalRowSource CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRaw CenteredMomentDivisorRetained
 
 structure Plain where
   W : ℝ→ℂ
@@ -171,23 +166,6 @@ lemma Slots.controls {b M : α→ℝ} (s : Slots α b M) :
     (∀i I,s.coefficient i I≠0 → (I.absNorm:ℝ)≤b i*s.P i) :=
   slot_controls s.ν s.W s.P b M s.P_pos s.ν_bound s.W_bound s.support
 
-structure Row (α : Type*) (b M : α→ℝ) where
-  η : Character
-  z : O
-  z_ne : z≠0
-  plain₁ : Plain
-  plain₂ : Plain
-  slots : Slots α b M
-  t : ℝ
-  X₁ : ℝ
-  X₂ : ℝ
-  Y₁ : ℝ
-  Y₂ : ℝ
-  X₁_pos : 0<X₁
-  X₂_pos : 0<X₂
-  Y₁_pos : 0<Y₁
-  Y₂_pos : 0<Y₂
-  same_product : X₁*X₂=Y₁*Y₂
 
 def commonSlots (s : CenteredMomentCommonRadialData.Input α) (C : Ideal O)
     (B : CenteredMomentCommonAllocationSum.actualAllocations s.pools C) :
@@ -201,9 +179,3 @@ def commonSlots (s : CenteredMomentCommonRadialData.Input α) (C : Ideal O)
   ν_bound:=fun i=>s.ν_bound i
   W_bound:=fun i=>s.W_bound i
   support:=fun i _ hx=>(s.support i hx).2
-
-end SevenEighths.CenteredMomentAllocatedNaturalSource
-
-end
-
-end OAI

@@ -74,4 +74,3 @@ theorem robertSargos_nonzero_weighted_shift_error (f : ℝ → ℝ) (M H Q R N :
       simp only [mul_add,Finset.sum_add_distrib] at hb ⊢
       exact add_le_add_right hb _
 
-end TaoTrudgianYang2025

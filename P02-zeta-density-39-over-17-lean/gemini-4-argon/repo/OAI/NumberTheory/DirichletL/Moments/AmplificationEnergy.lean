@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationCount
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentAmplificationGlobal CenteredMomentAmplificationCount
 
 def eligiblePairs (rows P : Finset O) (allow : O → O → Prop) : Finset (O × O) :=
   (rows.product P).filter (fun x => allow x.1 x.2)
@@ -124,9 +122,3 @@ theorem gauss_energy_amplification {α : Type*} (S : Finset α) (a : α → O)
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   rw [Finset.sum_add_distrib]
   exact add_le_add hf le_rfl
-
-end SevenEighths.CenteredMomentAmplificationEnergy
-
-end
-
-end OAI

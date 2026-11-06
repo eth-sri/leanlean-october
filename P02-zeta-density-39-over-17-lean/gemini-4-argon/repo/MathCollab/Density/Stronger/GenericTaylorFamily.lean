@@ -206,4 +206,3 @@ theorem exists_genericTaylor_component {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ
   exact (show (N : ℝ)^ρ.re/(8*D) = ((N : ℝ)^ρ.re/(4*D))/2 by ring).trans_le (hh.trans hlarge)
 
 
-end MathCollab.Density.Stronger

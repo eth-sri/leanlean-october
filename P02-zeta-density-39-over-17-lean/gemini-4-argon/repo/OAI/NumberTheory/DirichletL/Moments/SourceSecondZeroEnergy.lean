@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceSecondZeroEnergy
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondDiagonal
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondDiagonal
 
 def sourceSecondZero (S : Finset (Ideal O)) (β : Ideal O→ℂ) (η : Character) (t : ℝ) : ℂ :=
   secondZeroEnergy Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
@@ -240,9 +236,3 @@ theorem profile_second_zero_energy (N : ℕ) (ε : ℝ) (hε : 0<ε) :
       (by linarith) hraw (fun v _ _=>hβ v) s hsz
       (fun v _ hv=>profileCoefficient_dvd R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v hv)
       (fun v _ hv=>(hN v hv).trans (mul_le_mul_of_nonneg_right (by linarith : L≤1+L) hraw.le))).2
-
-end SevenEighths.CenteredMomentSourceSecondZeroEnergy
-
-end
-
-end OAI

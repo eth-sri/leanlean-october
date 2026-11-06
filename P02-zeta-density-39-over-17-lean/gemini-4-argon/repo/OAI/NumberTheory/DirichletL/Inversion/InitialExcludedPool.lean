@@ -12,7 +12,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialExcludedPool
 open InverseInitialOverlap InverseInitialCommonTuples InverseInitialCompletePool InverseInitialPoissonBridge
-local notation "O"=>ActualEisensteinCubic.O
 
 def outside (E:Finset (Ideal O))(I:Ideal O):Prop:=∀P∈E,¬P∣I
 
@@ -64,9 +63,3 @@ theorem exists_excluded_complete_pool {κ:Type*}(A E:Finset (Ideal O))(T:Finset 
     apply (mul_le_mul hbb hXX hX0 hb).trans
     exact (Nat.le_ceil (bmax*Xmax)).trans (by exact_mod_cast (le_max_right
       (A.sup Ideal.absNorm*T.sup (fun k=>(P k).absNorm)) ⌈bmax*Xmax⌉₊))
-
-end SevenEighths.InverseInitialExcludedPool
-
-end
-
-end OAI

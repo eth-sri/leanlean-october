@@ -68,5 +68,4 @@ theorem exists_robertSargos_seven_zero_count (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hpow hC.le) (by positivity)
     _ = _ := by rw [Real.rpow_add hB,Real.rpow_one]; ring
 
-end TaoTrudgianYang2025
 

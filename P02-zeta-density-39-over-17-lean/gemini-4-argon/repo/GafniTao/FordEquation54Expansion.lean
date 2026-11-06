@@ -20,4 +20,3 @@ theorem conj_fordAdditiveCharacter (x : ℝ) :
       ring
 
 
-end GafniTao

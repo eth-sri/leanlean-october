@@ -52,4 +52,3 @@ theorem robertSargos_zero_r_floor_budgets
     hT hM' (by exact_mod_cast hH) hH' hQlo' hQhi' hRlo hlam hscale
   exact ⟨hQ,hR,hb⟩
 
-end TaoTrudgianYang2025

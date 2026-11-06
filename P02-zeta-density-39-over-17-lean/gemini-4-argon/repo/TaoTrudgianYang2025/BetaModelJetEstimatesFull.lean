@@ -37,4 +37,3 @@ theorem iteratedDeriv_modelPhase_lipschitz {σ : ℝ} (hσ : 0 ≤ σ)
     exact iteratedDeriv_modelPhase_abs_le hσ hx (p+1)
   exact Convex.norm_image_sub_le_of_norm_deriv_le hd hb (convex_Ioo 1 2) hw hu
 
-end TaoTrudgianYang2025

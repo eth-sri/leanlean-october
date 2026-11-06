@@ -21,8 +21,6 @@ structure ThirdWindow (σ a p α : ℝ) : Prop where
   a_low : 69/100 ≤ a
   a_high : a ≤ 4/5
   p_low : 1/2 ≤ p
-  alpha_low : a ≤ α
-  alpha_high : α ≤ 1
   p_identity : p=3*a*(1-σ)
   mean_identity : 1+α*(1-2*σ)=p
   typeII : 2-2*σ+1/50 ≤ p
@@ -44,4 +42,3 @@ lemma affine_nonneg_between {a b x q r : ℝ} (ha : a ≤ x) (hb : x ≤ b)
   · have := mul_le_mul_of_nonpos_left hb (le_of_not_ge hq)
     linarith
 
-end Montgomery.RationalMoment

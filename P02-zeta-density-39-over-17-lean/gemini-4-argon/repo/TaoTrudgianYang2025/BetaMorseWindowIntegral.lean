@@ -73,4 +73,3 @@ theorem modelPhaseMorse_window_integral
   rw [modelPhaseMorseWeight_eq hz']
   exact modelPhaseMorse_integrand hσ hδ hF hv hz' T
 
-end TaoTrudgianYang2025

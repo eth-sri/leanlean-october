@@ -70,4 +70,3 @@ theorem RobertSargosPrimitiveSystem.affine_band {R H Q δ : ℝ} {p : RobertSarg
   robertSargos_affine_band hH hQ hδ h.r_bound h.h₁_support h.h₂_support
     h.q₁_support h.q₂_support (by exact_mod_cast h.same_sign) h.linear_real h.near
 
-end TaoTrudgianYang2025

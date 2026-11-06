@@ -12,7 +12,6 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀ i,p i≠0)
 
 include hp in
@@ -41,9 +40,3 @@ theorem cube_whole_support_dyad (b : CubeCoordinates ι) (B : ℝ) (hB : 0≤B)
     (hr : ‖eisEmbedding (primeProduct p b.support b.rightExponent)‖^2≤B) :
     primeProductNorm p b.support≤B^2 :=
   (cube_whole_support_norm p hp b).trans ((mul_le_mul hl hr (sq_nonneg _) hB).trans_eq (pow_two B).symm)
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

@@ -54,9 +54,3 @@ theorem dyadic_cost_eventually (η : ℝ) (hη : 0<η) :
     (dyadicLength U : ℝ)^2 ≤ 625*(Real.logb 2 U)^2 := hd
     _ = K*(Real.log U)^2 := by unfold K Real.logb; ring
     _ ≤ K*U^η := mul_le_mul_of_nonneg_left hs hK
-
-end SevenEighths.HeckeDetectorClassBudget
-
-end
-
-end OAI

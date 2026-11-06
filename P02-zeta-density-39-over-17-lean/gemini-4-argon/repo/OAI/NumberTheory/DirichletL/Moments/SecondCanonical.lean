@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonical
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily
-open CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentSupportedCorrelation
-open CenteredMomentSourceRow UniqueFactorizationMonoid CenteredMomentSupport CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentSupportedCorrelation CenteredMomentSourceRow UniqueFactorizationMonoid CenteredMomentSupport CenteredMomentUnequal
 
 def commonPrime (C D : Ideal O) (P : CommonIndex C D) : O := primaryGenerator P.val
 
@@ -108,9 +104,3 @@ theorem actual_ideal_secondSaving_lower (C D : Ideal O) (hC : Supported C) (hD :
     (leftExponent_pos C D) (rightExponent_pos C D) w Z hZ hn
   rw [left_ideal_product C D hC hCD,right_ideal_product C D hC hD hCD] at hh
   exact hh
-
-end SevenEighths.CenteredMomentSecondCanonical
-
-end
-
-end OAI

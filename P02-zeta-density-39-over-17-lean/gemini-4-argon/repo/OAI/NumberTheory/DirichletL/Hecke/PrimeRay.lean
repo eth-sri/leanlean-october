@@ -13,8 +13,6 @@ open Set
 namespace SevenEighths.HeckePrimeRay
 open HeckeFamily HeckePrimeAnnular
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def twistedFamily (η : Character) (θ : RayQuotient.Characters M H) : Character :=
@@ -107,9 +105,3 @@ theorem ray_prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   intro θ
   exact hbound Z d hZ hd hd' hU hT (twistedFamily M H hH ηrow) hχ a i ha ha' hmax
     r σ freq hr hrR hσmin hσmax hlarge θ (hQ θ) hfreq hheight
-
-end SevenEighths.HeckePrimeRay
-
-end
-
-end OAI

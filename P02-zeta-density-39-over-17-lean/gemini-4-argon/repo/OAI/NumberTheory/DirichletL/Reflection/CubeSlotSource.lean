@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 variable (H : Ideal Eis) (L : σ→Finset (Ideal Eis))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
@@ -79,8 +78,3 @@ theorem original_cube_shifted_tuple_source (w : ∀ i,L i→ℂ)
   rw [Fintype.sum_prod_type]
   simp only [cubeAbsorbedCoefficient,Finset.sum_mul,Finset.mul_sum,mul_assoc]
   rw [Finset.sum_comm]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

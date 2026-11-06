@@ -96,6 +96,4 @@ theorem wooley_section8_weight_complement
   ring
 
 
-end
 
-end GafniTao

@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds
-open ProbeRowRadicalConductor
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds ProbeRowRadicalConductor
 
 lemma presentationComplexity_norm_bound (χ : Character) (H : ℝ) :
     presentationComplexity χ H≤2*(χ.modulus.absNorm:ℝ)^2*(3+|H|)^2 := by
@@ -114,9 +112,3 @@ theorem central_remaining_rowCost_bound (e eps : ℝ)
         (rowNorm u^(3*eps)*rowNorm u^(a-1/2+12*e+4*eps))*
         ((3+H)^(2*eps)*(3+H)^(2+2*eps)) := by ring
     _ = _ := by rw [hnp,hlp]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

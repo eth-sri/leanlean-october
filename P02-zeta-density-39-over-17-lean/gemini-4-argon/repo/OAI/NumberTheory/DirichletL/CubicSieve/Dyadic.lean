@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma extracted_norm_bounds (I : Ideal O) (hI : I ≠ 0) :
     (1 ≤ (Ideal.absNorm (firstPart I) : ℝ) ∧
@@ -168,8 +167,3 @@ theorem full_element_dyadic_extraction {n : Type*} [Fintype n] [DecidableEq n]
     _ = _ := by
       simp only [J, Fintype.card_prod, Fintype.card_fin, Nat.cast_mul, Nat.cast_add, Nat.cast_one]
       ring
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

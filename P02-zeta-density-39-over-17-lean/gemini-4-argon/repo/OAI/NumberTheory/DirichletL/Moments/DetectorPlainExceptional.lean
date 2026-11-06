@@ -12,17 +12,7 @@ open scoped Classical BigOperators SchwartzMap Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainExceptional
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource
-open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorEnergyInitialState
-open CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow
-open CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
-open CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber HeckeDetectorBatch
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm
-open CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorEnergyInitialState CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 
@@ -152,9 +142,3 @@ theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D)(η:Chara
   rw [fiber_plain_energy_eq F η₀ hdataF hMm hU selected j k σ t hη]
   exact retained_positive_energy_le_source _ radialMajorant radialMajorant_nonneg radialMajorant_one
     F η₀ selected j k σ t hU (hret rows hrows d a ε tstar T allowance i B hB bin label J K hne).1
-
-end SevenEighths.CenteredMomentDetectorPlainExceptional
-
-end
-
-end OAI

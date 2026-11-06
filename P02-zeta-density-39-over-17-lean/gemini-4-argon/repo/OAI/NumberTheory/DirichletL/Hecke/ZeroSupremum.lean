@@ -54,9 +54,3 @@ theorem LFunction_ne_zero_of_beta_lt (χ : Character) {s : ℂ}
   intro hz
   have hpos : 0 < s.re := lt_trans (by linarith [half_le_beta]) hs
   exact (not_lt_of_ge (zero_re_le_beta χ hpos hpole hz)) hs
-
-end SevenEighths.HeckeZeroSupremum
-
-end
-
-end OAI

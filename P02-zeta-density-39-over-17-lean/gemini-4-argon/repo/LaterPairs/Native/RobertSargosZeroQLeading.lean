@@ -50,4 +50,3 @@ theorem robertSargos_zero_q_leading_prefix
       (fun x hx => by nlinarith [mul_le_mul_of_nonneg_left (hlo x hx) (neg_nonneg.mpr hrn.le)])
       (fun x hx => by nlinarith [mul_le_mul_of_nonneg_left (hhi x hx) (neg_nonneg.mpr hrn.le)])
 
-end TaoTrudgianYang2025

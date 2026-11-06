@@ -184,9 +184,3 @@ theorem factors_any_re_subpower_bound (ε : ℝ) (hε : 0 < ε) :
     _ ≤ (C*((radical M).absNorm : ℝ)^ε)*((radical M).absNorm : ℝ)^(max (-s.re) 0) :=
       mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hR.le _)
     _ = _ := by rw [Real.rpow_add hR]; ring
-
-end SevenEighths.HeckeDeletionBounds
-
-end
-
-end OAI

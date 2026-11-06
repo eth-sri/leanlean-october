@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.ShortDivisorGeometry
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -55,4 +53,3 @@ theorem contDiffAt_zetaShortDivisorTestFunction (T : ℝ) {G x : ℝ}
   unfold zetaShortDivisorTestFunction
   fun_prop
 
-end MathCollab.Density.Stronger.Atkinson

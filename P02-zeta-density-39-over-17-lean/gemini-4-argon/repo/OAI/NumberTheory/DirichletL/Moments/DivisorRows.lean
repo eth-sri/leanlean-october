@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorRows
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor
-open CenteredMomentDivisorRectangle CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
-open CenteredMomentHeckeSlots CenteredMomentRectangle HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor CenteredMomentDivisorRectangle CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRectangle HeckeFamily
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def allocatedRectangle (η : Character) (m A z : O) (t : ℝ)
@@ -67,9 +64,3 @@ theorem allocatedRectangle_norm_le (η : Character) (m A z : O) (t : ℝ)
   exact row_twisted_coefficient_norm η m A z t _ (mul_ne_zero
     (selectedDivisor_ne_zero D Finset.univ a (Sum.inr 0))
     (selectedDivisor_ne_zero D Finset.univ a (Sum.inr 1)))
-
-end SevenEighths.CenteredMomentDivisorRows
-
-end
-
-end OAI

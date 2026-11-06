@@ -9,10 +9,7 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
-noncomputable local instance ramifiedFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 def ramifiedBlock [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
@@ -61,8 +58,3 @@ theorem modelRowPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
   rw [activePhase_three_blocks D hp hg hcop hprimary R P F hRP hF hu j hRj hPj,
     ramifiedPhase_three_blocks hg R P F hRP hF hu j hRj hPj]
   ring
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

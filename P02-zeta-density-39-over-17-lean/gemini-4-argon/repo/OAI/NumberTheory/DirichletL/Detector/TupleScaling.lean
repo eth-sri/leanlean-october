@@ -25,8 +25,3 @@ lemma tuple_norm_pos {K : ℕ} (p : Fin K→ActualEisensteinCubic.O)
     (hp : ∀i,p i≠0) (J : Finset (Fin K)) : 0<elementNorm (∏i∈J,p i) := by
   apply elementNorm_pos
   exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

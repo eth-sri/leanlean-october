@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 abbrev PrimeIdeal := {P : Id // Prime P}
 
@@ -128,14 +126,3 @@ def highValuationEquiv : ((NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroId
     (Equiv.prodCongr nonzeroIdealValuationEquiv nonzeroIdealValuationEquiv)
     (Equiv.prodCongr nonzeroIdealValuationEquiv nonzeroIdealValuationEquiv)).trans
       ((Equiv.prodCongr finsuppPairEquiv finsuppPairEquiv).trans finsuppPairEquiv)
-
-@[simp] lemma highValuationEquiv_apply
-    (a : (NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroIdeal)) (P : PrimeIdeal) :
-    highValuationEquiv a P =
-      ((primeValuations a.1.1.val P,primeValuations a.1.2.val P),
-        (primeValuations a.2.1.val P,primeValuations a.2.2.val P)) := rfl
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

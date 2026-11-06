@@ -25,9 +25,3 @@ namespace SevenEighths.CenteredMomentLiveCapacity
     have hh:=hm.trans h
     rw [←hs] at hh
     nlinarith
-
-end SevenEighths.CenteredMomentLiveCapacity
-
-end
-
-end OAI

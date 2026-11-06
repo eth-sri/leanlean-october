@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstSecondCapacityLedger
-open CenteredMomentAllocatedChildCapacity CenteredMomentDivisorRaw
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentEligibleEnergy CenteredMomentLiveCapacity
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentAllocatedChildCapacity CenteredMomentDivisorRaw CenteredMomentDivisorAllocation CenteredMomentDivisorRetained CenteredMomentEligibleEnergy CenteredMomentLiveCapacity CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 theorem formal_reduction_pays_slots (D:Ideal O)
@@ -43,9 +39,3 @@ theorem affine_reduction_le_parent (D:Ideal O)
   have hred:=formal_reduction_pays_slots D a Z hZ P hP
   have hrem:=remainingLogs_le D a Z hZ P hP
   nlinarith
-
-end SevenEighths.CenteredMomentFirstSecondCapacityLedger
-
-end
-
-end OAI

@@ -119,9 +119,3 @@ theorem scaled_product_fiber_card
     apply Prod.ext hpq
     apply mul_right_cancel₀ hBm
     rw [hep, hpq, heq]
-
-end
-
-end SevenEighths.InverseMoment
-
-end OAI

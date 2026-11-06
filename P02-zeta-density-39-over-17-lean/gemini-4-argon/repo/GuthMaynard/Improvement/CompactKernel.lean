@@ -49,4 +49,3 @@ theorem compactKernel_schwartz : ∃ ψ : 𝓢(ℝ, ℂ),
     Complex.ofRealCLM.contDiff.comp compactKernel_smooth
   exact ⟨hc.toSchwartzMap hd, rfl⟩
 
-end GuthMaynard.Improvement

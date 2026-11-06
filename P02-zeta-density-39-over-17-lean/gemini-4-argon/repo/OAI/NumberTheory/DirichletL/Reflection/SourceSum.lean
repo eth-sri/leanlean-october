@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ ι : Type*} [Fintype φ] [Fintype σ] [Fintype ι]
 variable {N a c : Eis} {mode : Bool}
 
@@ -43,8 +42,3 @@ theorem masked_actual_coefficient (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
     simp only [ite_eq_left hKP,div_eq_mul_inv]
     ring
   · simp only [dite_eq_right hKP,ite_eq_right hKP,mul_zero,zero_mul,Finset.sum_const_zero]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

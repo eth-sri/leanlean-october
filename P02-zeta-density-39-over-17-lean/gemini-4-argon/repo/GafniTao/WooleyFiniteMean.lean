@@ -311,6 +311,4 @@ theorem wooley_equations_3_5_to_3_7
     wooleyModularCount_primePower_eq_padic]
 
 
-end
 
-end GafniTao

@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters
-open HeckeInverseAmplification
+open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters HeckeInverseAmplification
 
 def SourceMomentBound {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
     (counts : CountParameters F.modulus ⊤ D.t) (η : Character)
@@ -47,9 +46,3 @@ lemma polynomial_height_absorption (C Z τ J t : ℝ)
     _≤(C*2^J)*Z^t := by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       exact Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
-
-end SevenEighths.ProbeFinalAssembly
-
-end
-
-end OAI

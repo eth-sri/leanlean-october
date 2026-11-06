@@ -35,7 +35,6 @@ theorem annular_weighted_card_bound (C : Set (Ideal O)) (S : Finset (Ideal O))
 
 section FixedRay
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 include hH
@@ -97,9 +96,3 @@ theorem eligiblePool_half (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime Q)
     (P.card : ℝ)/2 ≤ (eligiblePool P R).card := by
   have h := eligiblePool_card_lower P hp R hR Z ℓ B hZ hℓ hlower hupper
   linarith
-
-end SevenEighths.CenteredMomentPrimePool
-
-end
-
-end OAI

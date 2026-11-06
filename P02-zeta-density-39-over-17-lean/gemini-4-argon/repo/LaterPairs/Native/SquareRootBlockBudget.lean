@@ -70,4 +70,3 @@ theorem square_root_block_floor {μ : ℝ} (hμ : 0 < μ) (hμ1 : μ ≤ 1) :
     (show -(1:ℝ)/2 ≤ 0 by norm_num)
   simpa only [Real.rpow_zero] using he
 
-end TaoTrudgianYang2025

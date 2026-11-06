@@ -54,8 +54,3 @@ theorem annular_kernel_threshold (Z T tau C r QK QP Qn Qb kn kb D1 D2 : ℝ)
     Real.logb_mul (by positivity) (pow_ne_zero _ hr.ne'),
     Real.logb_mul hv.ne' (pow_ne_zero _ hl.ne'),Real.logb_pow,Real.logb_pow]
   norm_num
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

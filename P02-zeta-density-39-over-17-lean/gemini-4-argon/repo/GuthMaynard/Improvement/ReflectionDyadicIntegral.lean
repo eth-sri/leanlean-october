@@ -76,4 +76,3 @@ theorem reflection_dyadic_integral_bound {F : ℝ → ℝ} (hi : Integrable F)
   rw [source_height_geometric_sum]
   nlinarith
 
-end GuthMaynard.Improvement

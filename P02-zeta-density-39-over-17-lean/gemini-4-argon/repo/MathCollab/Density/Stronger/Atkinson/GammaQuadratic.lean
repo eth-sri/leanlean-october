@@ -223,4 +223,3 @@ theorem norm_integral_zetaSquareGammaPhase_sub_quadratic_le {T r G : ℝ}
       mul_le_mul_of_nonneg_left hw (norm_nonneg _)
     _ ≤ C * r := by rw [mul_one]; exact hp.trans (mul_le_mul_of_nonneg_left hxr hC)
 
-end MathCollab.Density.Stronger.Atkinson

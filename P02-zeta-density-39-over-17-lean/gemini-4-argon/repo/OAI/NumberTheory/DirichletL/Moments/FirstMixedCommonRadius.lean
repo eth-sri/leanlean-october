@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedCommonRadius
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentDescentLedger CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily
-open CenteredMomentRankinRadical ConcreteTraceCRT ActualEisensteinCubic
-open CenteredMomentFirstMixedAllowance CenteredMomentCommonRadiusSaving
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentDescentLedger CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization CenteredMomentCompleteCommon CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical ConcreteTraceCRT ActualEisensteinCubic CenteredMomentFirstMixedAllowance CenteredMomentCommonRadiusSaving
 
 theorem column_saving_gates (η τ : Character) (m : O)
     (I J : Ideal O) (A : Finset (CommonIndex I J)) (Z : ℝ) (hZ : 1<Z)
@@ -91,9 +84,3 @@ theorem actual_error_column_saving (η τ : Character) (m : O)
     (Real.logb Z (normValue p0)) hc hq hB hallow hl hu k hk using 1
   congr 1
   ring
-
-end SevenEighths.CenteredMomentFirstMixedCommonRadius
-
-end
-
-end OAI

@@ -122,7 +122,7 @@ theorem smoothShortZeroCount_bound {σ η : ℝ}
     (fun q => (smoothPoweredFamilyScale q : ℝ)^σ*T^(-2*η))
     (smoothPoweredFamilyCoefficient η σ δ T) (smoothShortZeroFinset η σ δ T)
     (smoothShortZeroFinset_subset η σ δ T) hadm.1 (by positivity) hadm.2.1
-    (hlocal σ T hσ.le hT) hadm.2.2
+    (hlocal σ T (by linarith) hT) hadm.2.2
     (by intro ρ hρ; exact (Finset.mem_filter.mp hρ).2)
   have hh := mul_le_mul_of_nonneg_left hsum (show 0 ≤ Cv*Cb by positivity)
   calc
@@ -139,4 +139,3 @@ theorem smoothShortZeroCount_bound {σ η : ℝ}
       have hp : 0 ≤ (Cv*Cb)*T^(densityExponent σ+12*η) := by positivity
       nlinarith
 
-end MathCollab.Density.Stronger

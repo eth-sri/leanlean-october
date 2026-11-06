@@ -11,8 +11,6 @@ open scoped Classical SchwartzMap
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowGaussColumn (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
     (σ : RayRing) (v : ℝ) (s : {I : Id // Supported I}) : ℂ :=
@@ -34,8 +32,3 @@ lemma lowGaussColumn_row (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
     simp only [div_eq_mul_inv]
     ring
   · simp
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

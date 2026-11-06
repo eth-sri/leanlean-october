@@ -85,4 +85,3 @@ theorem integral_sargosPlanarKernelTerm_eq_zero {a b ξ η : ℝ}
   · rw [sargosRealTent_zero_of_le_abs hb h]
     simp
 
-end TaoTrudgianYang2025

@@ -148,6 +148,4 @@ theorem wooleySource_sum_residueMassSq (gamma : WooleySourceSequence)
     (g := fun n : ℤ => (n : ZMod q))
     (f := fun n : ℤ => ‖gamma n‖ ^ 2)]
 
-end
 
-end GafniTao

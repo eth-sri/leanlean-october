@@ -9,17 +9,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedRatioScalar
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel
-open CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily
-open CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows
-open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow CenteredMomentSecondNonexceptionalScalar
 
-open CenteredMomentSecondNonexceptionalScalar
 
 theorem ratio_penalty_le (r a:ℝ) (hr:0<r) (_ha:0≤a) (ha1:a≤1) :
     r/(1+r)*(max 1 (1/r))^a≤1 := by
@@ -106,9 +97,3 @@ theorem actual_source_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Idea
     (actual_residual_sqrt_cap η t S β C D hC hD U R rows W K n Hsource hsource hne)
     (show 0≤(fixedFactor:ℝ)*η.modulus.absNorm by positivity)
   convert hh using 1 ; ring
-
-end SevenEighths.CenteredMomentSecondRetainedRatioScalar
-
-end
-
-end OAI

@@ -11,12 +11,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentExceptionalWholeSource
-open HeckeFamily UniqueFactorizationMonoid CenteredMomentWholeDivisorShell
-open CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalSourceShell
-open CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open HeckeFamily UniqueFactorizationMonoid CenteredMomentWholeDivisorShell CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalAllocationShell CenteredMomentSectorLocalization
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
@@ -60,9 +55,3 @@ lemma weight_nonneg {α κ:Type u} [Fintype α] [Fintype κ] [DecidableEq α] [D
     _=(Cn*Cs)*Z^(δ-r):=by
       rw [show δ-r=δ/2+(δ/2-r) by ring,Real.rpow_add hz]
       ring
-
-end SevenEighths.CenteredMomentExceptionalWholeSource
-
-end
-
-end OAI

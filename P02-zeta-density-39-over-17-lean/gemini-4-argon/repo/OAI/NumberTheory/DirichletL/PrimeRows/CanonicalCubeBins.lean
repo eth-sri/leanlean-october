@@ -10,7 +10,6 @@ open scoped Classical BigOperators Topology
 open MeasureTheory Set Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem exists_source_cube_bins (e B : ℝ) (he : 0<e) (hB : 2<B)
@@ -55,9 +54,3 @@ theorem source_cube_height_eventually (τ : ℝ) (hτ : 0<τ) :
   filter_upwards [eventually_ge_atTop (1:ℝ),
     (tendsto_rpow_atTop hτ).eventually (eventually_gt_atTop (2:ℝ))] with Z hZ hpow
   exact ⟨hZ,hpow⟩
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

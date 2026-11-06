@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerAssignedCanonical
-open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
-open InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -71,9 +68,3 @@ theorem original_assigned_canonical_pair
       rw [sqrt_pair_mass _ B₁ B₂ (mul_nonneg (Real.rpow_nonneg hZ.le _)
         (Finset.sum_nonneg fun t ht=>by positivity))]
       ring
-
-end SevenEighths.InverseInitialEnergyCallerAssignedCanonical
-
-end
-
-end OAI

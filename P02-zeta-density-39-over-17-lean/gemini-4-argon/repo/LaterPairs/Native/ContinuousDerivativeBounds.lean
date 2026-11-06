@@ -52,4 +52,3 @@ theorem continuous_second_difference_bounds
   have hupp := hhi y (hin y ⟨hy.1.le,hy.2.le⟩)
   constructor <;> linarith
 
-end TaoTrudgianYang2025

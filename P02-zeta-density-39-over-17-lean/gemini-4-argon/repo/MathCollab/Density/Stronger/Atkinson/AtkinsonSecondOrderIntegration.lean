@@ -99,4 +99,3 @@ theorem IntervalC2Bound.atkinsonRoot_secondOrder {f : ℝ → ℂ} {T b a c M R 
   change ‖∫ y in a..c, deriv w y * atkinsonRootKernel T b y‖ ≤ _ at hd
   nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

@@ -120,4 +120,3 @@ theorem amplifier_matrix_energy {η : ℝ} (hη : 0 < η) :
         (mul_le_mul_of_nonneg_left (amplifier_source_card hN.le) hD)
         (sum_nonneg (fun _ _ => sq_nonneg _))
 
-end GuthMaynard.Improvement

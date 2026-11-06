@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeDetectorPhysicalSelection
-open HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
 variable (M : Ideal O)
 variable (H : Subgroup (O ⧸ M)ˣ)
 
@@ -45,9 +43,3 @@ lemma source_amplitude_class_mean {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ
       classMean Finset.univ ((2*a-1)/2) mesh (fun j=>ell j/d) bin := by
   rw [←source_rowMean_eq M H ell W Z d b a mesh z hZ hd u]
   exact rowMean_eq rows Finset.univ (Z^d) ((2*a-1)/2) mesh hm (fun j=>ell j/d) _ bin u hu
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

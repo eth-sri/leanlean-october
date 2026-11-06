@@ -53,4 +53,3 @@ theorem robertSargos_zero_q_full_prefix
     (zero_le_one.trans hC) hD hμ hscale hnc hslow)
   simpa only [Nat.cast_add,add_assoc] using hb'
 
-end TaoTrudgianYang2025

@@ -105,8 +105,3 @@ theorem valid_tuple_card_le_separated {J : ℕ} (T : Finset (InitialTuple J))
 lemma divisor_card_pos (I : Ideal O) (hI : I ≠ 0) : 1 ≤ (idealDivisors I).card := by
   apply Finset.one_le_card.mpr
   exact ⟨1, (mem_idealDivisors hI).mpr (one_dvd I)⟩
-
-end
-end SevenEighths.InverseInitialFibers
-
-end OAI

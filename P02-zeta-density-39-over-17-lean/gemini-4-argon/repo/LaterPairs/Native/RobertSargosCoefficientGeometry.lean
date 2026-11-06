@@ -69,4 +69,3 @@ theorem robertSargos_coefficient_conic_ratio_gap {r q₁ q₂ h₁ h₂ d H Q δ
     _ ≤ δ*(h₂*(q₁*(q₁+d))) := by
       simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hden hδ
 
-end TaoTrudgianYang2025

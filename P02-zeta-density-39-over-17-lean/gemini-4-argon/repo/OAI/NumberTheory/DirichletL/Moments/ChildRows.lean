@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentChildRows
-open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily HeckeRowClosure
-open CenteredMomentFixedRay RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily HeckeRowClosure CenteredMomentFixedRay RayFourExpansion
 
 def childCharacter (η : Character) (χ : RayCharacter) : Character :=
   η.product (primaryRayCharacter χ)
@@ -66,9 +63,3 @@ theorem separated_exceptional_count (η : Character) (χ : RayCharacter)
   obtain ⟨hg,h2,hQP,hPe,hval⟩ := hgood P hP
   exact ⟨hg,h2,hQP,childCharacter_coprime η χ Q P hQ72 hQP
     (old_coefficient_prime_coprime η e he P hPe),hval⟩
-
-end SevenEighths.CenteredMomentChildRows
-
-end
-
-end OAI

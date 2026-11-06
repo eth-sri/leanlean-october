@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentNaturalPrimitive
 open HeckeFamily IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
 
 def redundantSet (M C : Ideal O) : Finset (Ideal O) := primeSupport M\primeSupport C
 
@@ -106,8 +105,3 @@ theorem exists_natural_primitive (χ : Character) :
     idealCoeff_natural_deletion χ ψ hmod hmask⟩
   intro hχ hψ
   exact hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr hψ)
-
-end SevenEighths.CenteredMomentNaturalPrimitive
-end
-
-end OAI

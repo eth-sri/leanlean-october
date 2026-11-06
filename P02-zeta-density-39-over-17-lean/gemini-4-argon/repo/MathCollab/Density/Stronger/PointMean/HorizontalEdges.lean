@@ -15,8 +15,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter
-open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
+open Complex Set MeasureTheory Filter MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
 open scoped Topology Interval
 set_option autoImplicit false
 noncomputable section
@@ -323,4 +322,3 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
       _ ≤ 1 := hAbsorb
 
 
-end MathCollab.Density.Stronger.PointMean

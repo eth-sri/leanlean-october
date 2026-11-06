@@ -9,11 +9,8 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialRayAttachment
-open SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialKernelBridge SevenEighths.InverseInitialEnergyCallerPool
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialRayAttachment SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialKernelBridge
 namespace SevenEighths.InverseInitialEnergyCallerWindow
-local notation "Eis" => ActualEisensteinCubic.O
 
 def originalSource (Z r b : ℝ) : Finset (Ideal Eis) :=
   (idealsUpTo ⌈Z^r*b⌉₊).filter Supported
@@ -45,9 +42,3 @@ theorem reconstructed_mem_originalSource
   refine ⟨InverseInitialRawDictionary.finite_source_cover W (Z^r) b
     (Real.rpow_pos_of_pos hZ r) hW _ hs.1 ?_,hs⟩
   rwa [residual_window_eq W hP.2.1 hj hPc Z r z G hZ] at hlive
-
-end SevenEighths.InverseInitialEnergyCallerWindow
-
-end
-
-end OAI

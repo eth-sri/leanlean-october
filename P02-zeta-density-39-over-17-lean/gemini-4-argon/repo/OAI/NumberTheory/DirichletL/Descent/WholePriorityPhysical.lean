@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMomentWholePriorityPhysical
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
-open InverseMomentWholePriorityParents InversePrioritySecondSource
-open InversePrincipalEnergy InverseSecondPrincipalCaller RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents InversePrioritySecondSource InversePrincipalEnergy InverseSecondPrincipalCaller RayFourExpansion
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ] [Fintype κ]
 variable {Jo : ℕ} (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -91,9 +87,3 @@ theorem whole_signed_source_full
     rw [quotientSupport_attach p hinj];rfl
   exact whole_parent_full p hp hcop hg hinj hc hpr extra pool negative Ψ m slots J lists a
     om lo hi hlo hs X t Y hX hY r core R label (attach p J (x,q)) hquot
-
-end SevenEighths.InverseMomentWholePriorityPhysical
-
-end
-
-end OAI

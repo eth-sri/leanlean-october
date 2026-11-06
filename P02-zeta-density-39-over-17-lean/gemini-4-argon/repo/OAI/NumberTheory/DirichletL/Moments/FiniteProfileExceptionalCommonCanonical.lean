@@ -1,35 +1,3 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonSymmetry
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricCanonical
-
-set_option linter.privateModule false
-
-@[expose] public section
-
-namespace OAI
-
-noncomputable section
-open scoped Classical BigOperators
-open Filter
-
-namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentForcing CenteredMomentChildRows CompletedGauss
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
-open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
-universe u
-variable {ι:Type u} [Fintype ι] [DecidableEq ι]
-
-end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-
-end
-
-end OAI

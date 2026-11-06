@@ -59,9 +59,3 @@ lemma actual_one_time_with_new_cost (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤
   have hh:=one_time_losses M B κ ε hM hB hκ hε df es d theta other A hdf hes hd ht ho he0 hA
   exact ⟨one_time_with_new_cost M B κ ε hM hB hκ hε k _ extra hh.1 hextra,
     one_time_with_new_cost M B κ ε hM hB hκ hε k _ extra hh.2 hextra⟩
-
-end SevenEighths.CenteredMomentEnergyStageReserveSchedule
-
-end
-
-end OAI

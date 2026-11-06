@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 lemma sum_subtype_dite {α : Type*} [Fintype α] (p : α→Prop) (f : ∀ x,p x→ℂ) :
@@ -70,7 +69,3 @@ lemma literalPairEntry_restrict (F : PrimeFamily φ) (rows Pset rows' Pset' : Fi
   by_cases hcop : IsCoprime K P
   · simp only [dite_eq_left hcop,hE]
   · simp only [dite_eq_right hcop]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

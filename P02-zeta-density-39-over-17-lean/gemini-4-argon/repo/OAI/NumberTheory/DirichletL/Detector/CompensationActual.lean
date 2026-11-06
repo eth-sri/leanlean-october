@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeEuler ProbeLocal
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma initialPrime_denominators (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
     (hx : 0<x.re) (hw : 0<w.re) (hz : 0<z.re) :
@@ -104,8 +102,3 @@ theorem spectralCompensatedHigh_continued (S : Finset Id) (hS : SourceExclusions
   apply Finset.prod_congr rfl
   intro P hP
   exact idealCompensatedRatio_eq_continued S hS η P (hT P hP) x w z (B P) (q P) hx hw hz
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

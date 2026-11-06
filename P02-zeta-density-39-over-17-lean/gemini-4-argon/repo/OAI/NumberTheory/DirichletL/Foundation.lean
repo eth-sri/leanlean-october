@@ -285,5 +285,3 @@ public import OAI.NumberTheory.DirichletL.GaussSum.ActiveReindexing
 public import OAI.NumberTheory.DirichletL.RowCompletion.ReflectedFibers
 public import OAI.NumberTheory.DirichletL.RowCompletion.BranchDecoding
 public import OAI.NumberTheory.DirichletL.RowCompletion.ZeroFreeRegion
-
-@[expose] public section

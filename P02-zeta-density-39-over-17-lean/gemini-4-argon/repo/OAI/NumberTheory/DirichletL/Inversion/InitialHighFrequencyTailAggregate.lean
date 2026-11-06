@@ -26,9 +26,3 @@ theorem original_source_norm_fibers
       rw [Finset.sum_comm]
       exact (norm_sum_le _ _).trans (Finset.sum_le_sum (fun r hr=>hb k hk r hr))
     _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]
-
-end SevenEighths.InverseInitialHighFrequencyTail
-
-end
-
-end OAI

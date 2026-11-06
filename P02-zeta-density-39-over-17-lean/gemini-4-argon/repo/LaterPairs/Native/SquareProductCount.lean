@@ -1871,9 +1871,8 @@ end TaoTrudgianYang2025.SquareProductCount
 
 namespace TaoTrudgianYang2025.CubicJointCount
 
-open Set MeasureTheory Expdb Filter GafniTao
-open SquareProductCount.CubicSource
-open scoped Topology ContDiff BigOperators NNReal
+open Expdb Filter SquareProductCount.CubicSource
+open scoped Topology ContDiff NNReal
 
                                                                        
                                                                        
@@ -7508,4 +7507,3 @@ theorem exponentSumGrowthExponent_le_trudgianYang_sixthRow
   unfold exponentPairLine
   ring
 
-end TaoTrudgianYang2025.CubicJointCount

@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstCommonTransport
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive
-open CenteredMomentFirstSectorEnergy CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive CenteredMomentFirstSectorEnergy CompletedGauss
 
 theorem extracted_support (I J:Ideal O):
     commonSupport (commonPart I J) (commonPart J I)=commonSupport I J:=by
@@ -119,9 +116,3 @@ theorem nominal_extracted (I J:Ideal O)(E:Finset (CommonIndex I J))(K X:ℝ):
     (commonPart_ne_zero I J) (commonPart_ne_zero J I) (commonParts_equal_support I J)
   unfold CenteredMomentFirstScale.firstNominalScale
   rw [mappedSubset_product,activeConductor_extracted,hc,hd]
-
-end SevenEighths.CenteredMomentFirstCommonTransport
-
-end
-
-end OAI

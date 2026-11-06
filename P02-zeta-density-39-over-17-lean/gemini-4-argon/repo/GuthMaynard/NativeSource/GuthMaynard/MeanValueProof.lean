@@ -1270,4 +1270,3 @@ theorem montgomery_mean_value_native :
   intro N T W a hN hT hSep hBase
   exact montgomery_mean_value_estimate N T W a hN hT hSep hBase
 
-end GuthMaynard.NativeMoment

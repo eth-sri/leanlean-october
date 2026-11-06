@@ -11,9 +11,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentMobiusHarmonicMass
-open CenteredMomentWholeDivisorShell CenteredMomentSectorLocalization
-open CenteredMomentDivisorBoundary CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentWholeDivisorShell CenteredMomentSectorLocalization CenteredMomentDivisorBoundary CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 
 lemma shell_mass (Ds:Finset (Ideal O)) (n:ℤ) (hn:n∈selectedShells Ds) :
     (∑D∈shell Ds n,‖(moebius D:ℂ)‖/(Ideal.absNorm D:ℝ))≤256 := by
@@ -50,9 +48,3 @@ lemma shell_mass (Ds:Finset (Ideal O)) (n:ℤ) (hn:n∈selectedShells Ds) :
     _=((selectedShells Ds).card:ℝ)*256:=by simp
     _≤(C*Z^δ)*256:=mul_le_mul_of_nonneg_right (hZ.2 Ds hn) (by norm_num)
     _=_:=by ring
-
-end SevenEighths.CenteredMomentMobiusHarmonicMass
-
-end
-
-end OAI

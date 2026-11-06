@@ -10,11 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
-open CenteredMomentOriginalReflectionErrorMass
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection CenteredMomentOriginalReflectionErrorMass
 
 theorem naturalSlot_ideal_bound (χ : Character) (pool : Finset (Ideal O))
     (β : Ideal O→ℂ) (b M P : ℝ) (hM : 0≤M) (hP : 0<P)
@@ -57,9 +53,3 @@ theorem radialEnergy_le_absolute_mass (R : O→ℂ) (keep : O→Prop)
     · simpa only [mul_comm] using mul_le_mul_of_nonneg_left (Complex.re_le_norm (Φ (‖eisEmbedding z‖^2/K))) (sq_nonneg ‖R z‖)
     · positivity
   exact (Summable.of_nonneg_of_le hn hb hs).tsum_le_tsum hb hs
-
-end SevenEighths.CenteredMomentNaturalFixedRaySource
-
-end
-
-end OAI

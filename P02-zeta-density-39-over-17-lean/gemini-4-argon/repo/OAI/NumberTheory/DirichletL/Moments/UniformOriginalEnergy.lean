@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformOriginalEnergy
-open HeckeFamily CenteredMomentUniformReflectionApproximation CenteredMomentNaturalPrimitive
-open CenteredMomentOriginalReflectionEnergy
+open HeckeFamily CenteredMomentUniformReflectionApproximation CenteredMomentNaturalPrimitive CenteredMomentOriginalReflectionEnergy
 
 theorem actual_original_energy_to_retained (xi saving L Cscale ε : ℝ)
      (hxi : 0<xi) (hscale : 0<Cscale) (hε : 0<ε) :
@@ -71,9 +70,3 @@ theorem actual_original_energy_to_retained (xi saving L Cscale ε : ℝ)
     ring
   convert hh using 1
   rw [←mul_assoc,hBeq]
-
-end SevenEighths.CenteredMomentUniformOriginalEnergy
-
-end
-
-end OAI

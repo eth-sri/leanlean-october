@@ -10,11 +10,8 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
@@ -135,9 +132,3 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
       (D+Cp)*(Z^(HeckeZeroSupremum.beta-11/16-17/48000+nu)+Z^(HeckeZeroSupremum.beta-11/16+e-(7/8)*ellMin)) := by
       gcongr
     _ = _ := by ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

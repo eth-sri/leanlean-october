@@ -31,4 +31,3 @@ noncomputable def dfiVoronoiMinusBesselTransform
       (4 * Real.pi * Real.sqrt (x * n) / q) : ℂ)
 
 
-end MathCollab.Density.Stronger.Atkinson

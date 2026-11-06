@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorFiberPartition
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
 
 abbrev BinLabel {Slot : Type*} (slots : Finset Slot) (cap mesh : ℝ) :=
   slots → ↥(HeckePrimeAmplitudeBins.labels cap mesh)
@@ -110,9 +109,3 @@ def toFiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) {Label Slot : Type*}
   supply := hsupply
   fixed_bin := fun u hu s hs => fixed_bin rows χ U a ε tstar T allowance i w slots binWidth hbw widths
     (physical M H (fun u : FreeRow => u.val) profile upper widths external U) bin label J K u hu s hs
-
-end SevenEighths.HeckeDetectorFiberPartition
-
-end
-
-end OAI

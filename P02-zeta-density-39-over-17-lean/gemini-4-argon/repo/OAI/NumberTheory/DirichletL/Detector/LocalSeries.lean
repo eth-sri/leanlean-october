@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
@@ -141,8 +140,3 @@ lemma markedTerm_squarefree_bulk_off (eta a X W V : ℂ) (r m : ℕ) (hm : m < r
   unfold principalMarkedTerm
   rw [ite_eq_right (by omega), show 1+3*(2*r)-1=6*r by omega,
     unramified_squarefree_kone p hp hg hc, ite_eq_right (by omega), weightedScalar_zero]
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

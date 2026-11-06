@@ -102,4 +102,3 @@ theorem rational_coefficient_energy_two_subpower {η : ℝ} (hη : 0 < η) :
   congr 2
   ring
 
-end Montgomery.RationalMoment

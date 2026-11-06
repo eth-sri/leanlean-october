@@ -272,6 +272,4 @@ theorem wooleySourcePolynomial_lemma_9_1_of_scale_hierarchy
   · exact hloss
 
 
-end
 
-end GafniTao

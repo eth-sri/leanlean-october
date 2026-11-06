@@ -9,14 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidReserve
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacitySource
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale
-open CenteredMomentSecondRadicalBudget
-open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacitySource CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale CenteredMomentSecondRadicalBudget CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
 def fixedNumerator (N:ℕ)(lower upper cost0 a0:ℝ):ℝ :=
@@ -139,9 +132,3 @@ theorem eventually_actual_amplified_reserves (N:ℕ)(lower upper cost0 a0 theta:
   have herr:Fintype.card (liveIndices Bp.val)≤N:=(live_card_le Bp.val).trans hchild
   exact hbound Z hZZ s (errorInput s C R B τ t Q k Bp υ v) hn herr hl hu C D hC hD
     delta reserve cost a hd hr hc ha
-
-end SevenEighths.CenteredMomentFirstAmplifiedPaidReserve
-
-end
-
-end OAI

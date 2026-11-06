@@ -114,9 +114,3 @@ theorem source_dyadic_bounds (R dmax τ ε e κ η : ℝ)
     convert hfinish _ ((a-1/2)*(1-r)) (6*e*(2-r)+4*κ+η) href hbP hnormP using 1 ;
       congr 2 ; ring
   exact ⟨hfinalD inverse,min_plain_bound _ C U (2*a-1) r ε (hfinalD false) hfinalP⟩
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

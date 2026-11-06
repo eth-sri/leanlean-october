@@ -10,8 +10,6 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma lowSeparatedIntegrand_finite_sum {α : Type*} (F : Finset α) (c : α→ℂ)
     (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ) (hW1 : HasCompactSupport W1) (hΩ : HasCompactSupport Ω)
@@ -67,8 +65,3 @@ lemma lowSelectedInverseRow_correction {α : Type*} (F : Finset α) (c : α→�
   apply Finset.sum_congr rfl
   intro k hk
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

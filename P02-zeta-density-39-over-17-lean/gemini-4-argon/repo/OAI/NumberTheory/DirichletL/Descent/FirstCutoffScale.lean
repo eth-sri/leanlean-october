@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem first_physical_row_scale_bound
     (Z M r ell V delta B j eta tau dn cn jn : ℝ) (hZ : 0<Z)
@@ -65,8 +64,3 @@ theorem first_ratio_canonical_row {ι : Type*} [DecidableEq ι]
     (‖eisEmbedding (jLabel p S (fun i=>v₁ i+v₂ i) ε₁ ε₂)‖^2) hZ
     (primeProductNorm_pos p hp _).le (primeProductNorm_pos p hp _)
     (SecondPassIntegration.elementNorm_pos _ (primeProduct_ne_zero p hp _ _)) hd hc hj)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

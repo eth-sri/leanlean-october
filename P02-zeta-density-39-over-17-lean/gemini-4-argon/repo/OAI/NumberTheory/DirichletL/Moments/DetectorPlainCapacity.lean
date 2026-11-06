@@ -10,11 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentDetectorPlainCapacity
-open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile
-open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSlotProfile
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckePrimeAnnular CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSlotProfile
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
 theorem physical_annular_all (S:ProbeFinalAssembly.SourceData D)(η₀:Character)
@@ -29,14 +25,3 @@ theorem physical_annular_all (S:ProbeFinalAssembly.SourceData D)(η₀:Character
       norm_num at hs
     simp [physicalSlotCoefficient,annularWeight,hw]
   · exact physicalSlotCoefficient_annular η₀ S.W P ζ I hI hP
-
-variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
-include hH
-
-end SevenEighths.CenteredMomentDetectorPlainCapacity
-
-end
-
-end OAI

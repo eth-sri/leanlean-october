@@ -85,4 +85,3 @@ theorem robertSargos_zero_q_trimmed_correlation_bound
       (robertSargos_zero_q_mixed_correlation_bound f M H r hr hC hlam hsmall hM hH hrmax hf hlo hhi)
       (norm_robertSargos_correlation_endpoint_error f M H 0 r)
 
-end TaoTrudgianYang2025

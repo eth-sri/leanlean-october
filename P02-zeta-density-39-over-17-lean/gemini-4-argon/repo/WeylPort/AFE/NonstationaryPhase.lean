@@ -293,4 +293,3 @@ theorem positive_derivative_amplitude_integral_bound {a b ν : ℝ} (hab : a < b
   convert hb using 1
   ring
 
-end DhimanKadiriQuesadaHerrera2026

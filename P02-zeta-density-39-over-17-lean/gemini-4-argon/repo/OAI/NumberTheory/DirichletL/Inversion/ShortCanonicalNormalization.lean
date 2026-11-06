@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
-open InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
 lemma normalization_norm_sq (Z N V : ℝ) (hZ : 0<Z) (x : ℂ) :
     ‖((Z^(-(N+V)/2):ℝ):ℂ)*((Real.sqrt (Z^N):ℝ):ℂ)*x‖^2 =
       Z^(-V)*‖x‖^2 := by
@@ -76,12 +74,3 @@ lemma label_eq_rowUnit_generator (f : Ideal Eis) (hf : f≠0) (g : Eis)
   have hh := CompletedUnitRows.rowUnit_spec g hgn
   rw [hg] at hh
   exact hh.symm
-
-local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
-universe v
-
-end SevenEighths.InverseShortCanonicalNormalization
-
-end
-
-end OAI

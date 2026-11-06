@@ -9,13 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonRadiusSaving
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentDescentLedger CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily
-open CenteredMomentRankinRadical ConcreteTraceCRT ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentDescentLedger CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization CenteredMomentCompleteCommon CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical ConcreteTraceCRT ActualEisensteinCubic
 
 theorem common_saving_identity (c d x w q wo B sigma branch delta reserve ell : ℝ) :
     firstSaving c (d+x) w q wo B
@@ -83,11 +77,3 @@ theorem error_radius_gain (Z d K0 c sigma delta reserve j : ℝ) (hZ : 1<Z)
         sigma+delta+reserve := by
   rw [errorCommonRadius,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
   ring
-
-open CenteredMomentFirstScale
-
-end SevenEighths.CenteredMomentCommonRadiusSaving
-
-end
-
-end OAI

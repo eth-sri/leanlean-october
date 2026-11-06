@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonAllocationSum
-open CenteredMomentCommonAllocation CenteredMomentCommonAllocationBox CenteredMomentSupport
-open IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonAllocation CenteredMomentCommonAllocationBox CenteredMomentSupport IdealMobiusDivisorSum
 variable {ι : Type*} [Fintype ι]
 
 def allocationLabels (S : ι → Finset (Ideal O)) (C : Ideal O) : Finset (ι → Ideal O) :=
@@ -106,9 +104,3 @@ theorem actualAllocations_small_power [Nonempty ι] (ε : ℝ) (hε : 0<ε) :
     _ ≤ (D*(Ideal.absNorm C:ℝ)^δ)^(Fintype.card ι) :=
       pow_le_pow_left₀ (Nat.cast_nonneg _) (hdiv C hC) _
     _ = _ := by rw [mul_pow,← Real.rpow_mul_natCast (Nat.cast_nonneg _),hd]
-
-end SevenEighths.CenteredMomentCommonAllocationSum
-
-end
-
-end OAI

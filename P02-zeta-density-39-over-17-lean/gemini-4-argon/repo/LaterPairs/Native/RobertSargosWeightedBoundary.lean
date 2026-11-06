@@ -85,4 +85,3 @@ theorem robertSargos_trimmed_a_times_a (f : ℝ → ℝ) (M H Q R : ℕ)
   rw [mul_add,hcancel] at he
   exact hs.trans he
 
-end TaoTrudgianYang2025

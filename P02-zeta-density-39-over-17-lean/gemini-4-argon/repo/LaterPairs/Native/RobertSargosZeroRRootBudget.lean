@@ -74,4 +74,3 @@ theorem zero_r_a_times_a_row_budget {M H Q R C lam : ℝ}
   rw [mul_add,mul_add]
   nlinarith
 
-end TaoTrudgianYang2025

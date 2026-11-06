@@ -10,8 +10,6 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowUnselectedWeight {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
     (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ) (a : LowUnselectedTuple slots J) : ℂ :=
@@ -119,8 +117,3 @@ theorem compensation_tuple_low_polynomial {K : ℕ} (η : HeckeFamily.Character)
         C W0 W1 Ω a0 b0 ha0 hW0 hWs hW1c hΩc hΩ0 (X/L) (Y/L)
         (div_pos hX hL) (div_pos hY hL)]
       rfl
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

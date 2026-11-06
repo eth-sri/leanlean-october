@@ -45,4 +45,3 @@ theorem exists_intervalC1Bound_atkinsonPowerWeight (α : ℝ) :
   · rfl
   · ring
 
-end MathCollab.Density.Stronger.Atkinson

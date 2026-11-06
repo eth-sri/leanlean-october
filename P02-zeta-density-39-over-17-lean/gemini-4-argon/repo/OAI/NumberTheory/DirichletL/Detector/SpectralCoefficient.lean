@@ -8,9 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow ProbePhase ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeCompleted ProbeRow ProbePhase ConcretePrimeRowBridge CubicEisenstein
 
 lemma rayMask_supported (a : O) (ha : Supported (Ideal.span {a})) : RayFourExpansion.rayMask a=1 := by
   let : (Ideal.span {(2:O)}).IsMaximal := by
@@ -83,8 +81,3 @@ theorem spectralSummand_source_coefficient (S : Finset (Ideal O)) (D I J : Ideal
         (baseRowCoefficient η C.Xi s hs (primaryGenerator I)*baseRowCoefficient η C.Xi s hs (primaryGenerator J)^3)) /
       ((Real.sqrt (Ideal.absNorm I):ℂ)*(Ideal.absNorm J:ℂ))*(fullIdealWeight t I*fullIdealWeight (3*t) J) := by ring
     _ = _ := by rw [hm];ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

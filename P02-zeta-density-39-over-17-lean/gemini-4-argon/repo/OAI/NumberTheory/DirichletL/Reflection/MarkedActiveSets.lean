@@ -55,7 +55,3 @@ theorem inactive_weight_three_blocks (e : α⊕β≃γ) (z : γ⊕σ→ℂ)
     · apply congrArg F
       ext x
       simp only [markedActiveSet,Finset.sumEquiv,Equiv.coe_fn_mk,Finset.mem_union,Finset.mem_image]
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

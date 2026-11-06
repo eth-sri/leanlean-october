@@ -151,4 +151,3 @@ theorem exists_smoothShortTaylor_component (X N : ℝ) {Y T : ℝ} {M : ℕ} {ρ
   exists_genericTaylor_component (fun n _ => norm_smoothShortCoefficient_le X N hY n)
     hT hM hM' hβ hβ' hD hsmall hblock
 
-end MathCollab.Density.Stronger

@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-open UniqueFactorizationMonoid CanonicalRowCompletion CanonicalQuadraticSieve
-local notation "O"=>HeckeFamily.O
+open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge UniqueFactorizationMonoid CanonicalRowCompletion CanonicalQuadraticSieve
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 def assignedMass (L:ι→Finset (Ideal O))(J:Finset ι)(x:Assigned L J)
@@ -142,9 +140,3 @@ theorem original_energy_of_remaining (S:Finset (Ideal O))(L:ι→Finset (Ideal O
       apply pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _=>Real.sqrt_nonneg _))
       exact Finset.sum_le_sum (fun J _=>hroot J)
     _=_:=by rw [←Finset.sum_mul,mul_pow,Real.sq_sqrt hE]
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

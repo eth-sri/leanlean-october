@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 lemma physicalCompensatedRow_first_z (eps : ℝ) (heps : 0<eps)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
@@ -63,9 +62,3 @@ theorem continuedPhysicalRowKernel_differentiableAt_z {K : ℕ}
     differentiable_id.neg.const_cpow (Or.inl hNu)
   exact ((hm.mul (hp z)).mul (hfreq z)).mul
     ((physicalCompensatedRow_first_z eps heps S hS hfirst _ (contourTupleOutside S P hPS) η u x w z hx hw hz hxw).const_mul _)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -22,4 +22,3 @@ theorem square_level_inverse_four (U D : ℝ) (hU : 0 < U) (hD : 0 < D) :
   norm_num
   field_simp
 
-end GuthMaynard.NativeMoment

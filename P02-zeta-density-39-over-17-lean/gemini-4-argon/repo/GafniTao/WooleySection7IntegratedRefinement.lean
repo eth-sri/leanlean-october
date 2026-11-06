@@ -195,6 +195,4 @@ theorem wooley_equation_7_22_integrated_native
       rw [Finset.sum_comm]
 
 
-end
 
-end GafniTao

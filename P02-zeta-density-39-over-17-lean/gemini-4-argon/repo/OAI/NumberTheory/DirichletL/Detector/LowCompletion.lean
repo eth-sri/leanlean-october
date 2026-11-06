@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeRow ProbeCompleted CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open RayFourExpansion InitialMeanSquare SecondPassArithmetic ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbeRow ProbeCompleted CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion InitialMeanSquare SecondPassArithmetic ActualEisensteinCubic
 
 lemma summand_zero_completedIndex (Ψ : O→*ℂ) (W : ℝ→ℂ) (X : ℝ) (I J : Id)
     (h : completedIndex I J=0) : summand Ψ W X I J=0 := by
@@ -93,8 +90,3 @@ theorem correctedPhysicalRow_eq_periodic_inverse (η : HeckeFamily.Character)
   intro n hn
   exact (lowPeriodicRow_eq_primary η (calibrationForSet S hS) (calibrationForSet S hS).generator E
     (calibration_generator_bad S hS hbad).1 (calibration_generator_bad S hS hbad).2 s hs χ z n hn).symm
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

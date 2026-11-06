@@ -34,4 +34,3 @@ theorem DFIVoronoiTestFunction.hasCompactSupport
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) : HasCompactSupport g := by
   exact HasCompactSupport.of_support_subset_isCompact isCompact_Icc hg.support_subset
 
-end MathCollab.Density.Stronger.Atkinson

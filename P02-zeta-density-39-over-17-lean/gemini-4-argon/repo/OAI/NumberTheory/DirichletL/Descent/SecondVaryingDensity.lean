@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -70,8 +69,3 @@ theorem actualSecondVaryingFreshRows_normalized_density {κ : Type*}
           (fun z => W₂ (z/(G₀*V₀*X₀))) Φ (fun _ _ => 1) Y
           (secondActualNorms p (x j.1) j.2.1 j.2.2)) := by ring
     _ = _ := by rw [he j hj]; ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

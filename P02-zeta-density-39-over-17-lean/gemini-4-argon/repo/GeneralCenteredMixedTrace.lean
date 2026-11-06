@@ -45,4 +45,3 @@ theorem centered_mixed_trace_general (w : MathCollab.Density.ReflectionCutoff)
       gcongr
       linarith
 
-end Montgomery.RationalMoment

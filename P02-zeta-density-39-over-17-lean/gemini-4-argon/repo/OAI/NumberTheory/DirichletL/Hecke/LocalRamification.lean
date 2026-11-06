@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeLocalRamification
-open CenteredMomentCorrelation CenteredMomentCanonical
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge hiding O
+open CenteredMomentCorrelation CenteredMomentCanonical ActualEisensteinCubic ConcretePrimeRowBridge
 
 theorem primePowerCharacter_eq_one_iff (P : Ideal O) [P.IsMaximal]
     {c : ℕ} (hc : 1 ≤ c) (χ : MulChar (O ⧸ P) ℂ) :
@@ -41,9 +39,3 @@ theorem canonicalPrimePowerCharacter_eq_one_iff (P : Ideal O) [P.IsMaximal]
     {c : ℕ} (hc : 1 ≤ c) : canonicalPrimePowerCharacter P hg hc = 1 ↔ 6 ∣ c := by
   rw [canonicalPrimePowerCharacter, primePowerCharacter_eq_one_iff,
     ← orderOf_dvd_iff_pow_eq_one, actualSextic_order_six P hg hchar]
-
-end SevenEighths.HeckeLocalRamification
-
-end
-
-end OAI

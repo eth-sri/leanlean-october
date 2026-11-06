@@ -12,7 +12,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 def xRowScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y : ℝ) (w z : ℂ) : ℂ :=
@@ -88,9 +87,3 @@ theorem continuedPhysicalRowKernel_x_gaussian {K : ℕ}
     _ ≤ A*(2*(3+|z.im|)^2*(1+|t+z.im|^2))*Real.exp (-((t+z.im)^2)) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (Continuation.shifted_height_two t z.im) hA) (Real.exp_pos _).le
     _ = _ := by unfold Continuation.polynomialGaussian;ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

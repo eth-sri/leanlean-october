@@ -13,14 +13,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentReflectedSource
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CanonicalUnitEuler
-open CenteredMomentHeckeColumnWindow CenteredMomentRowNorm
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonLinearSource CenteredMomentCommonPairedSource
-open CenteredMomentFirstSectors CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSecondHeightFamily CenteredMomentSourceRow
-local notation "O" => HeckeFamily.O
-local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CanonicalUnitEuler CenteredMomentHeckeColumnWindow CenteredMomentRowNorm CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonLinearSource CenteredMomentCommonPairedSource CenteredMomentFirstSectors CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSecondHeightFamily CenteredMomentSourceRow
 
 def reflected (η:Character):Character:=η.product (HeckeUnitRows.character (-1:Oˣ))
 
@@ -62,9 +55,3 @@ theorem reflected_inducing (η:Character)(Q:Ideal O)(m A z:O)
       CenteredExceptionalProfile.FixedInducingRow (reflected η) Q m A z:=by
   unfold CenteredExceptionalProfile.FixedInducingRow
   simp_rw [←reflected_row η m A z _ hmLam hm2]
-
-end SevenEighths.CenteredMomentReflectedSource
-
-end
-
-end OAI

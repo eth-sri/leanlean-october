@@ -113,4 +113,3 @@ theorem modelPhaseFourierMode_morse
   rw [← hq] at h
   rw [h,Complex.real_smul,mul_assoc]
 
-end TaoTrudgianYang2025

@@ -65,4 +65,3 @@ theorem exponentPair_of_beta_bound_half {k l : ℝ}
         rw [hγreal]
         linarith
 
-end TaoTrudgianYang2025

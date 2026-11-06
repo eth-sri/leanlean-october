@@ -125,9 +125,3 @@ theorem nonzero_of_probe_bounds (χ : Character) (H : ℂ → ℂ) (J : ℝ → 
     rw [h] at hρ
     norm_num at hρ
     linarith
-
-end SevenEighths.HeckeSignal
-
-end
-
-end OAI

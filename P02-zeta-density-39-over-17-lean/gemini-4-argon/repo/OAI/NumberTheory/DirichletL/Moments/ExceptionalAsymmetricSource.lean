@@ -10,15 +10,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentExceptionalAsymmetricSource
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentDetectorDictionary
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource
-open CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction
-open CenteredMomentDivisorRectangle
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedDetectorAmplitude CenteredMomentDetectorDictionary CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
 universe u
-variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
 lemma reduction_ge_one {α:Type u} [Fintype α] [DecidableEq α]
     (s:Data α)(hP:∀i,1≤s.P i)(D:Ideal O)
@@ -44,9 +37,3 @@ lemma raw_cap_weight {α κ:Type u} [Fintype α] [Fintype κ] [DecidableEq α] [
   · have h0:r≤0:=le_of_not_ge hr
     rw [max_eq_right h0,max_eq_right (by linarith:r-Real.logb Z (formalReductionFactor D a s.P)≤0),
       max_eq_right (by linarith:0-Real.logb Z (formalReductionFactor D a s.P)≤0)]
-
-end SevenEighths.CenteredMomentExceptionalAsymmetricSource
-
-end
-
-end OAI

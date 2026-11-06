@@ -79,4 +79,3 @@ theorem divisorCountBound_native : DivisorCountBoundProp := by
   obtain ⟨C,hC,h⟩ := MathCollab.Density.divisor_card_subpower hε
   exact ⟨C,by linarith,h⟩
 
-end RiemannZeta.GuthMaynard

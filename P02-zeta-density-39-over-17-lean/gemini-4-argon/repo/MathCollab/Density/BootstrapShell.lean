@@ -151,4 +151,3 @@ theorem bootstrap_one_shell (w : ComparisonCutoff) :
   dsimp [C₀] at *
   nlinarith [mul_nonneg hC₀ hx]
 
-end MathCollab.Density

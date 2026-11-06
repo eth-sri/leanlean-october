@@ -13,13 +13,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap Topology
 open Filter
 namespace SevenEighths.DetectorDictionaryInverseRawInitialGates
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialRayAttachment InverseInitialExcludedPeriod
-open InverseInitialExcludedPool InverseInitialExcludedOverlap InverseInitialExcludedPolynomial
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge UniqueFactorizationMonoid IdealMobiusDivisorSum
-open DetectorDictionaryInverseRawGeometry
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialRayAttachment InverseInitialExcludedPeriod InverseInitialExcludedPool InverseInitialExcludedOverlap InverseInitialExcludedPolynomial CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge UniqueFactorizationMonoid IdealMobiusDivisorSum DetectorDictionaryInverseRawGeometry
 
 def basePeriod (data:RowData):ℕ:=(baseCharacter data).period
 
@@ -193,9 +187,3 @@ theorem raw_complete_pool (data:RowData)(H D c b Btree cap:ℝ)
     exact completeCutoff_columns H b Btree cap D _ hb hD0.le hDH hn
   simpa only [hex] using deleted_row_complete_polynomial data u W H
     (Real.logb H (D/(j.absNorm:ℝ))) sigma freq b hH0 hW _ hbudget
-
-end SevenEighths.DetectorDictionaryInverseRawInitialGates
-
-end
-
-end OAI

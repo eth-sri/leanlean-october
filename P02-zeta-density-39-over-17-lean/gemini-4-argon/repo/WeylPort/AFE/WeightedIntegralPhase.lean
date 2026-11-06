@@ -198,4 +198,3 @@ theorem norm_weightedIntegral_shift_two_source {σ t m x y : ℝ}
     field_simp
   rwa [he] at h
 
-end DhimanKadiriQuesadaHerrera2026

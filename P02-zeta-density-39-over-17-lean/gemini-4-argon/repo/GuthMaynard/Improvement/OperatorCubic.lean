@@ -70,4 +70,3 @@ theorem operator_frequency_cubic (μ ν : Measure ℝ)
   simp only [inner_smul_right,operator_phase_pairing,Q]
   ring
 
-end GuthMaynard.Improvement

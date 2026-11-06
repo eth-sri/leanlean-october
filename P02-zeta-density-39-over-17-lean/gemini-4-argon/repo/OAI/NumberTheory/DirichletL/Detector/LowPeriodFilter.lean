@@ -8,8 +8,6 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
     (T : ι→Finset α) (good : ι→α→Prop) [∀i,DecidablePred (good i)]
@@ -82,8 +80,3 @@ theorem low_canonical_polynomial_period_filter {ι : Type*} [Fintype ι]
     (canonical_prime_calibration_coprime S hS P (hT i P hP) (hout i P hP))
   change ¬IsCoprime (Ideal.span {CompletedGauss.primaryGenerator P.val}) (lowPeriodIdeal η S hS)
   rwa [span_primaryGenerator_of_supported P.val (hT i P hP)]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

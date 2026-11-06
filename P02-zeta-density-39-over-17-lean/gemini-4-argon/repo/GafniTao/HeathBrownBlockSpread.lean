@@ -99,6 +99,4 @@ theorem heathBrown_actualBlock_pair_source_separation
     hk hA hlambda hsmall hg hgd hkBounds hp
 
 
-end
 
-end GafniTao

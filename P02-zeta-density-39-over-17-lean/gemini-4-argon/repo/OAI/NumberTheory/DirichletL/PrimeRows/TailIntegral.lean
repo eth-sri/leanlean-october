@@ -62,9 +62,3 @@ theorem source_profile_arithmetic_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 
   calc
     _ ≤ (E*A)*K/(1+T)^N := hb T hT
     _ = _ := by dsimp [E];ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

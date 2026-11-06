@@ -79,4 +79,3 @@ theorem log_compact_mask_integral {w h : ℝ → ℝ} {a b W : ℝ} {A : Set ℝ
   · intro v hv
     exact hs v (fun hx => by linarith [hx.1])
 
-end GuthMaynard.Improvement

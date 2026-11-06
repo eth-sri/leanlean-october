@@ -10,7 +10,6 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
@@ -62,7 +61,3 @@ theorem ramifiedSelected_central_regular (eta a rho x w z : ℂ) (alpha eps : �
     _=385*Q^(1/2:ℝ) := by
       have ht : Q^x.re*Q^(1/2-x.re)=Q^(1/2:ℝ) := by rw [←Real.rpow_add hQ0];congr 1;ring
       nlinarith [ht]
-end SevenEighths.ProbeEuler
-end
-
-end OAI

@@ -102,4 +102,3 @@ theorem zetaDensity_bound_of_eventual_slabs {σ p C : ℝ}
   have hb := hpos T (by linarith)
   nlinarith
 
-end MathCollab.Density

@@ -100,4 +100,3 @@ theorem operator_subspace_compression_norm (U : Submodule ℂ E) [U.HasOrthogona
   intro v
   exact (U.norm_orthogonalProjectionOnto_apply_le _).trans (T.le_opNorm (v:E))
 
-end GuthMaynard.Improvement

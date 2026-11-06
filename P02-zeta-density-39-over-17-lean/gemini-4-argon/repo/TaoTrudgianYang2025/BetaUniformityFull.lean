@@ -121,4 +121,3 @@ theorem exponentPair_of_beta_bound {k l : ℝ} (htri : InExponentPairTriangle k 
     (isExponentPairEstimateNonAsymptotic_of_beta_bound htri hβ)⟩
 
 
-end TaoTrudgianYang2025

@@ -11,15 +11,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentExceptionalMaskedSource
-open HeckeFamily UniqueFactorizationMonoid CenteredMomentEligibleEnergy
-open CenteredMomentDivisorRowEnergy CenteredMomentActiveAllocation
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentExceptionalWholeSource
-open CenteredMomentSourceRectangle CenteredMomentSourceRectangleEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentHeckeExpansion CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSourceRow CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
+open HeckeFamily UniqueFactorizationMonoid CenteredMomentEligibleEnergy CenteredMomentDivisorRowEnergy CenteredMomentActiveAllocation CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalWholeSource CenteredMomentSourceRectangle CenteredMomentSourceRectangleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSourceRow CenteredMomentRowNorm
 universe u
 variable {ι κ:Type u} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
 
@@ -64,9 +56,3 @@ theorem whole_masked_le (s:Data ι)(v:Data κ)(Ds:Finset (Ideal O))(rows:Finset 
   · apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
     apply paired_masked_le s v D
     exact CenteredMomentWholeDivisorShell.squarefree_of_moebius_ne_zero D hμ
-
-end SevenEighths.CenteredMomentExceptionalMaskedSource
-
-end
-
-end OAI

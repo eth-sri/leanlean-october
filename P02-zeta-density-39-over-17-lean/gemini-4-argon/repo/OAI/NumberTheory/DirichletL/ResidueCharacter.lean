@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.ResidueCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
+open SevenEighths.FiniteFourier SevenEighths.FiniteConductor SevenEighths.ConductorPresentation
 open scoped Classical
 
 noncomputable section
@@ -109,15 +108,3 @@ theorem product_global_units (I J : Ideal A) (χ : MulChar (A ⧸ I) ℂ)
     ∀ u : Aˣ, product I J χ ψ (Ideal.Quotient.mk (I ⊓ J) u) = 1 := by
   intro u
   rw [product_mk, hχ, hψ, one_mul]
-
-section PrimitiveProduct
-
-variable [IsDedekindDomain A] [Infinite A]
-
-end PrimitiveProduct
-
-end
-
-end SevenEighths.ResidueCharacter
-
-end OAI

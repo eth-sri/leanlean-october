@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma nonresidual_prime_product_square_dvd {ι : Type*} [Fintype ι]
     (I Q : Ideal Eis) (hI : I≠0) (P : ι→Ideal Eis) [∀ i,(P i).IsMaximal]
@@ -68,8 +67,3 @@ lemma frozenExtracted_width_le {ι : Type*} [Fintype ι] (G : PrimeFamily ι)
   have hn := QuadraticMainBoundary.norm_le_of_dvd
     (Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (G.ideal i))) hd
   exact Real.logb_le_logb_of_le hZ (actual_ideal_norm_pos _ (frozenExtracted_ne_zero G j e v)) hn
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

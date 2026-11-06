@@ -159,4 +159,3 @@ theorem source_smooth_scaled_cutoff_bounds {μ : ℝ → ℝ} (h1 : Integrable �
   rw [source_cutoff_scaled_fourier_l1 (fun t => (χ t:ℂ)) hT] at hout
   exact hout
 
-end GuthMaynard.Improvement

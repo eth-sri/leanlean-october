@@ -121,6 +121,4 @@ theorem integral_heathBrownNu_sq_le_pairCount
   · exact measureReal_nonneg
 
 
-end
 
-end GafniTao

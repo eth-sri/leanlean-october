@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration
 
 def secondCellColumnExponent (Z X:ℝ) (d:BlockIndex):ℝ :=
   Real.logb Z (X/(scales d 0*scales d 2))
@@ -58,9 +55,3 @@ theorem actual_source_block_ratios {ι:Type*} [DecidableEq ι]
       primeSubsetGenerator_norm_eq_productNorm]
   rw [he]
   exact ⟨hr.1,hr.2.le⟩
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

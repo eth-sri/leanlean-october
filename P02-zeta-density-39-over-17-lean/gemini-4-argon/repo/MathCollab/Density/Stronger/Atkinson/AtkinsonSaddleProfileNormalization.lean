@@ -61,4 +61,3 @@ theorem atkinsonSaddleProfile_div_curvature {T : ℝ} (hT : 0 < T) (G L b : ℝ)
           zetaSquareReflectedGammaPhase T := by ring
     _ = _ := by rw [he]
 
-end MathCollab.Density.Stronger.Atkinson

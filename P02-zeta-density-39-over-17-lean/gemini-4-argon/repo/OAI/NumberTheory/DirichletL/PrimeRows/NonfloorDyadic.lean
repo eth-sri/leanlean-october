@@ -86,9 +86,3 @@ lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
   · unfold sourceDyadConductor;linarith
   · unfold sourceDyadConductor;linarith
   · exact dyad_conductor_margin Z (sourceDyadExponent Z k) margin hZp hmarginZ _ (fun u hu=>(hnorm u hu).2)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

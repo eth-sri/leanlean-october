@@ -81,4 +81,3 @@ theorem norm_modelPhaseCore_le_firstDerivative
     field_simp
   exact hb.trans_eq hconst
 
-end TaoTrudgianYang2025

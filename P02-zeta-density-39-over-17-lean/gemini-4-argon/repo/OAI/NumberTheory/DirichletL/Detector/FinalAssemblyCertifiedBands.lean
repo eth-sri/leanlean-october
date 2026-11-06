@@ -14,14 +14,7 @@ open scoped Classical BigOperators SchwartzMap ComplexConjugate
 open Filter
 
 namespace SevenEighths.ProbeFinalAssemblyCertifiedBands
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
-open ProbeFinalAssembly ProbeHighRowFamily Parameters
-open CenteredMomentEnergyBands CenteredMomentEnergyState
-open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyWidthSchedule CenteredMomentDetectorPlainMomentParameters
-open CenteredMomentDetectorEnergyInitialState CenteredMomentNaturalFixedRaySource
-open ProbeDetectorPlainMarkedFineField ProbeDetectorPlainUnmarkedField
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch ProbeFinalAssembly ProbeHighRowFamily Parameters CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthRanges CenteredMomentEnergyWidthSchedule CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorEnergyInitialState CenteredMomentNaturalFixedRaySource ProbeDetectorPlainMarkedFineField ProbeDetectorPlainUnmarkedField
 
 def detectorMesh (Δ t:ℝ):ℝ:=fineMesh 2 0 1 (3/4+2*Δ) (t/4)
 
@@ -152,9 +145,3 @@ theorem chosen_moments_of_certified (h:DetectorCertifiedBands):ChosenMomentInput
 
 theorem zeta_of_certified (h:DetectorCertifiedBands)(s:ℂ)(hs:(7/8:ℝ)<s.re):riemannZeta s≠0:=
   zeta_of_chosen_moments (chosen_moments_of_certified h) s hs
-
-end SevenEighths.ProbeFinalAssemblyCertifiedBands
-
-end
-
-end OAI

@@ -10,10 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralAllSlots
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve CanonicalRowCompletion ProbeCentralRepeatedProduct
-open ProbeCentralRepeatedSubset ProbeCentralBranchProduct
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion ProbeCentralRepeatedProduct ProbeCentralRepeatedSubset ProbeCentralBranchProduct
 
 def phaseSlot (u : FreeRow) (T : Finset PrimeIdeal) (W : ℝ→ℂ) (Y : ℝ) (z : ℂ) : ℂ :=
   ∑P:T,W ((P.val.val.absNorm:ℝ)/Y)*(P.val.val.absNorm:ℂ)^(z-1)*(-star (idealRowHom u.val P.val.val))
@@ -99,8 +96,3 @@ theorem actual_three_branch_slots (N : ℕ) (e eps c d B : ℝ)
       calc
         _ = Ct*(Cr+2)^N*rowCost S hS u a e eps ((3*i+2:ℕ)*T0)*(U^eps*U^(eps*N))*(∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j) := by ring
         _ = _ := by rw [hh]
-end SevenEighths.ProbeCentralAllSlots
-
-end
-
-end OAI

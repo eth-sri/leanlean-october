@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstChildLower
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonExceptionalGates CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonExceptionalGates CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 variable {ι:Type*}[Fintype ι]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
@@ -30,9 +26,3 @@ theorem child_lower (s:Input ι)(C R:Ideal O)(hC:C≠0)
     extracted_lower s C hC B (Sum.inr 1) Z r s.X₂ hZ hX₂,
     extracted_lower s C hC B (Sum.inr 0) Z r s.Y₁ hZ hY₁,
     extracted_lower s C hC B (Sum.inr 1) Z r s.Y₂ hZ hY₂⟩
-
-end SevenEighths.CenteredMomentFirstChildLower
-
-end
-
-end OAI

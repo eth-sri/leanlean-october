@@ -112,4 +112,3 @@ theorem source_spectral_scale (w : MathCollab.Density.ComparisonCutoff)
     (spectral_raw_scale_budget hη hε hA hp hP hD hR hN hL hLA hT hB
       (integral_nonneg (fun t => sq_nonneg (μ t))) (norm_nonneg _) hexp)
 
-end GuthMaynard.Improvement

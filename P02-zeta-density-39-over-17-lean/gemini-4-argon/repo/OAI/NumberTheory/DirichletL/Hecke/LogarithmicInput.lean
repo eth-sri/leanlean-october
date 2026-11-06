@@ -191,9 +191,3 @@ theorem regular_disk_growth (η : Character)
     _ ≤ uniformConstant*(η.modulus.absNorm : ℝ)^(3/5 : ℝ)*(4*(3+|t|)^2) :=
       mul_le_mul_of_nonneg_left hsq (mul_nonneg uniformConstant_nonneg (Real.rpow_nonneg (by positivity) _))
     _ = _ := by ring
-
-end SevenEighths.HeckeLogarithmicInput
-
-end
-
-end OAI

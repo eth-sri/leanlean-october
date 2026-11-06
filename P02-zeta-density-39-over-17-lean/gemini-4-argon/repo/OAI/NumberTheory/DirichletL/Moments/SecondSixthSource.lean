@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSixthSource
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction
-open CenteredMomentCanonicalFirst
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction CenteredMomentCanonicalFirst
 
 theorem sixthFactor_span_dvd (C D : Ideal O) (hC : Supported C)
     (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D)) :
@@ -68,9 +64,3 @@ theorem reducedNumerator_active_product (C D : Ideal O) (U : Finset (CommonIndex
   have hp : 6∣fixedExponent C D U P := by
     simpa only [fixedActiveSet,Finset.mem_filter,Finset.mem_univ,true_and,not_not] using hn
   simp only [Nat.mod_eq_zero_of_dvd hp,pow_zero]
-
-end SevenEighths.CenteredMomentSecondSixthSource
-
-end
-
-end OAI

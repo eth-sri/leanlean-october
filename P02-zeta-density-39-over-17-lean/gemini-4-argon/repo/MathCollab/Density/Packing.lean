@@ -151,4 +151,3 @@ theorem LargeValueData.local_card_le {κ : ℝ} (d : LargeValueData κ) {U : Fin
   dsimp [localDiameter]
   linarith
 
-end MathCollab.Density

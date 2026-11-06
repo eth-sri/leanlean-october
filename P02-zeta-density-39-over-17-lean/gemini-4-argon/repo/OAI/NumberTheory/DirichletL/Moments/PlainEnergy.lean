@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentPlainEnergy
-open CanonicalQuadraticSieve CenteredMomentRowNorm ConcreteTraceCRT
-open CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentRowNorm ConcreteTraceCRT CanonicalRowCompletion
 
 theorem rowEnergy_summable {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
@@ -22,9 +20,3 @@ theorem rowEnergy_summable {α : Type*} (S : Finset α) (a : α → O)
   simp only [mul_assoc] at hs
   simp only [rowPolynomial_norm_sq,Finset.sum_mul,mul_assoc]
   exact (hasSum_sum (fun i _ => (hasSum_sum (fun j _ => (hs i j).hasSum)))).summable
-
-end SevenEighths.CenteredMomentPlainEnergy
-
-end
-
-end OAI

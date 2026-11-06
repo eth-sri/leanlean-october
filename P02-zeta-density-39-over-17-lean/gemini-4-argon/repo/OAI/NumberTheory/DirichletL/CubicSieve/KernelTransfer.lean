@@ -8,10 +8,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson FourierBridge
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson FourierBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
     (hLr : 0 ≤ Lr) (hLc : 0 ≤ Lc) (A : ℕ) :
@@ -78,8 +76,3 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
       _ = H ^ 2 := by ring
   have ht := htransfer R hR c x (fun p : n × n => y p.1 + y p.2) H hH hx hyy hphase
   simpa only [Fintype.sum_prod_type, c, H] using ht
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

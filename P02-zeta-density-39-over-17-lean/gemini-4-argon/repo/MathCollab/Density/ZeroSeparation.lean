@@ -124,4 +124,3 @@ theorem zetaSlab_separated_representatives (σ a b : ℝ) {B : ℝ} (hB : 0 ≤ 
     weighted_separated_extraction (zetaZeroFinset σ a b) (fun ρ => (zetaMultiplicity ρ : ℝ))
       hB hlocal
 
-end MathCollab.Density

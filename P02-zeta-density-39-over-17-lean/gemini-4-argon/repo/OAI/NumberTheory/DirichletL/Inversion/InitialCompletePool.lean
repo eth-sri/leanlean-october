@@ -9,12 +9,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialCompletePool
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialLargePool
-open InverseInitialCommonTuples InverseInitialEnergyCallerWindow
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialLargePool InverseInitialCommonTuples InverseInitialEnergyCallerWindow
 
 theorem original_column_norm_bound (S:Finset (Ideal Eis)){P j c:Ideal Eis}
     (hP:Admissible P)(hj:j∣P)(hc:c∈columns S P j) :
@@ -32,9 +29,3 @@ theorem original_column_norm_bound (S:Finset (Ideal Eis)){P j c:Ideal Eis}
     c.absNorm≤j.absNorm*c.absNorm := Nat.le_mul_of_pos_left _ hjpos
     _=(reconstruct P j c).absNorm*(residual P j).absNorm := hn.symm
     _≤_ := Nat.mul_le_mul hnn hPN
-
-end SevenEighths.InverseInitialCompletePool
-
-end
-
-end OAI

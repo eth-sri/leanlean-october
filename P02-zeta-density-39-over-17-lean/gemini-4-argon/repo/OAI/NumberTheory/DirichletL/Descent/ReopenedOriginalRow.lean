@@ -8,9 +8,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 
 def markedReopenedCubeBin {σ : Type*} [DecidableEq σ]
     (S : Finset (Ideal O)) (D : ℕ)
@@ -45,8 +43,3 @@ theorem original_marked_split_to_bins {σ : Type*} [DecidableEq σ]
   dsimp only
   rw [sum_outside_cubeIndex S D]
   rfl
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

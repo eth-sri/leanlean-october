@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorFullMask
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
-open CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
 
  theorem annular_hasFiniteSupport (W : ℝ → ℂ) (b X : ℝ) (hX : 0 < X)
     (hs : Function.support W ⊆ Set.Iic b) :
@@ -90,9 +88,3 @@ theorem full_mask_eq_allocated_rectangles (η : Character) (m A z : O) (t : ℝ)
   simp only [Finset.mul_sum]
   rw [Finset.sum_comm]
   rfl
-
-end SevenEighths.CenteredMomentDivisorFullMask
-
-end
-
-end OAI

@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def rowHighPrimeTerm (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
     (P : PrimeIdeal) (b : HighValuation) : ℂ :=
@@ -86,8 +84,3 @@ theorem excludedIdealHighSeries_row_hasProd_outside (S : Finset Id) (hS : ∀P�
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
   split_ifs <;> simp_all
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

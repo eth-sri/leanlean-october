@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstFamily
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentPrimaryCharacter CenteredMomentSupportedCorrelation
-open CenteredMomentFixedRay CenteredMomentCommonSupport RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentPrimaryCharacter CenteredMomentSupportedCorrelation CenteredMomentFixedRay CenteredMomentCommonSupport RayFourExpansion
 
 theorem exists_supported_row_presentation (η : Character) (m z : O)
     (hm : m≠0) (hz : Supported (Ideal.span {z})) (hmLam : λ₀∣m) (hm2 : (2:O)∣m) :
@@ -85,9 +81,3 @@ theorem exists_first_character (η : Character) (m e r : O)
       primaryRayCharacter_primary ξ n hn hpn,rowTwist_extract_sixth_mask _ m 1 (e*r) n hn]
     simp only [one_pow,one_mul]
     rfl
-
-end SevenEighths.CenteredMomentFirstFamily
-
-end
-
-end OAI

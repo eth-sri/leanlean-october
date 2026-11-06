@@ -10,7 +10,6 @@ open scoped BigOperators Classical FourierTransform SchwartzMap RealInnerProduct
 
 namespace ProbeGramLatticeDecay
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
 abbrev Joint := WithLp 2 (ℂ × ℂ)
 
@@ -274,9 +273,3 @@ theorem dual_fourier_lattice_bound (A : ℕ) (hA : 2 < A) :
 theorem sourceControl_mono {S T : Finset (ℕ × ℕ)} (hST : S ⊆ T)
     (W : 𝓢(Joint, ℂ)) : sourceControl S W ≤ sourceControl T W :=
   Seminorm.le_def.mp (Finset.sup_mono hST) W
-
-end ProbeGramLatticeDecay
-
-end
-
-end OAI

@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open SevenEighths.InverseSecondFibers IdealMobiusDivisorSum CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def secondLabelEnergy (K : ℕ) (labels : Finset (Ideal Eis)) (rows : Finset Eis)
     (F : SecondChild → ℂ) (γ : OuterTriple) : ℝ :=
@@ -30,8 +29,3 @@ def secondCanonicalPolynomial {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
     (W : OuterTriple → ℝ → ℂ) (X : ℝ) (c : SecondChild) : ℂ :=
   finiteCanonicalMarkedRow p hp hcop hg pool (Ψ c.1) (puncture c.1)
     (primaryGenerator c.2.1) c.2.2 slots lists a (W c.1) X
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -56,8 +56,3 @@ theorem frequencyMajorant_summable (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) :
     summable_geometric_of_lt_one (by norm_num) (by norm_num)
   exact (hg.mul_left _).of_nonneg_of_le
     (frequencyMajorant_nonneg M N hM.le) (frequencyMajorant_geometric M N hM hN)
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

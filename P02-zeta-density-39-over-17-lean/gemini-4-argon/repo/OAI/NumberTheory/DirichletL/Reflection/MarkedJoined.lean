@@ -9,8 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 lemma joined_whole_prime_mark {ι σ : Type*} [Fintype ι] [Fintype σ]
     (G : PrimeFamily ι) (S : PrimeFamily σ) (A : Ideal Eis) :
@@ -55,8 +53,3 @@ lemma joined_free_pairwise {σ : Type*} [Fintype σ]
   · exact hS
   · intro P i
     exact Ideal.isCoprime_of_isMaximal (hdis P i).symm
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

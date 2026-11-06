@@ -73,4 +73,3 @@ theorem sargosSincKernel_window_rectangle {δ lambda c d α γ : ℝ}
   convert h using 1
   ring
 
-end TaoTrudgianYang2025

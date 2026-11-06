@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 theorem continuedMarkedLocal_first_analyticAt_x (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x w z : ℂ)
@@ -87,9 +85,3 @@ theorem continuedCompensatedLocal_first_differentiableAt_z (η : Character) (u :
   have hV := coordV_differentiable (P.val.absNorm:ℝ) hQ0
   unfold continuedCompensatedLocal ProbeLocal.compensatedReplacement
   fun_prop
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

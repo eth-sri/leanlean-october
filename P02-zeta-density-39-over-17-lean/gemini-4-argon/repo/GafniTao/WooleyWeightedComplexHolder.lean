@@ -89,6 +89,4 @@ theorem wooley_weighted_complex_sum_pow_le
         ∑ i ∈ t, w i * ‖z i‖ ^ (2 * s) := by ring
 
 
-end
 
-end GafniTao

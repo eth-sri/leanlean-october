@@ -238,4 +238,3 @@ theorem afe_zeta_sub_sum_pole_integrals_bound {σ t a : ℝ} (hσ : σ ∈ Set.I
   rw [sum_weightedIntegral_eq_zero_add] at hb
   simpa only [sub_add_eq_sub_sub, Function.comp_apply] using hb
 
-end DhimanKadiriQuesadaHerrera2026

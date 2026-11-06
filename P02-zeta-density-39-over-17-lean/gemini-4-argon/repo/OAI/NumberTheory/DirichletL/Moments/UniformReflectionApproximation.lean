@@ -9,12 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformReflectionApproximation
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentRetainedReflection CenteredMomentOriginalReflectionApproximation
-open CenteredMomentSectorLocalization CenteredMomentNaturalPrimitive
-open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentComparisonReflection CenteredMomentReflectionTailMass CenteredMomentRetainedReflection CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
 
 theorem discarded_bound (A B : ℕ) (hB : 2≤B) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀(G : 𝓢(ℝ,ℂ))(χ : Character)(Y R : ℝ),
@@ -180,9 +175,3 @@ theorem actual_original_approximation (xi saving L Cscale epsilon : ℝ)
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow (Nat.cast_nonneg _) (radical_le_original χ ψ hcap) hepsilon.le
-
-end SevenEighths.CenteredMomentUniformReflectionApproximation
-
-end
-
-end OAI

@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourcePool
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationAllocation CenteredMomentAmplificationSourceDomain
-open CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentFirstSectors
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening CenteredMomentAmplificationAllocation CenteredMomentAmplificationSourceDomain CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentFirstSectors CenteredMomentSupportedCorrelation CenteredMomentUnequal
 
 theorem residualIdeal_coprime (p : O) (hp : Prime p) (I : Ideal O) (hI : Supported I) :
     IsCoprime (Ideal.span {p}) (residualIdeal p hp I) := by
@@ -68,9 +63,3 @@ theorem residualColumns_eq (S : Finset (Ideal O)) (p : O) (hp : Prime p)
     apply mul_left_cancel₀ (pow_ne_zero k hs.1)
     have hh := residualIdeal_reconstruct p hp J hsJ
     simpa only [hv] using hh
-
-end SevenEighths.CenteredMomentAmplificationSourcePool
-
-end
-
-end OAI

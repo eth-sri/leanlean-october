@@ -9,9 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 
 theorem marked_selected_column_sum (F : Finset (Ideal O))
     (hF : ∀I∈F,CanonicalQuadraticSieve.Admissible I)
@@ -96,8 +94,3 @@ theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
   simp only [canonicalSourceCoefficient,secondChildColumn]
   rw [ht]
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

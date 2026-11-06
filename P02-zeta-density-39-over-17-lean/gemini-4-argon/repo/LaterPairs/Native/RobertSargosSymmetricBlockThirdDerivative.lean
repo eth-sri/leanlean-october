@@ -61,4 +61,3 @@ theorem robertSargos_symmetric_block_third_derivative_bound
           Real.sqrt M*(2*(H:ℝ)*lam)^(-(1:ℝ)/6))) := Finset.sum_le_sum hb
     _ = _ := by simp only [Finset.sum_const,hcard,nsmul_eq_mul]
 
-end TaoTrudgianYang2025

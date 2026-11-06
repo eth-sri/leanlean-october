@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
-open RayFourExpansion CanonicalCoefficientClass
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion CanonicalCoefficientClass
 
 abbrev PhysicalRayElement := {s : O // Supported (Ideal.span {s})}
 
@@ -73,8 +70,3 @@ theorem physicalRayRow_eq_periodic_inverse (η : HeckeFamily.Character)
   correctedPhysicalRow_eq_periodic_inverse η S hS hbad
     (physicalRayRepresentative σ).val (physicalRayRepresentative σ).property m D W hW T hT
       (calibrationLowData S hS)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

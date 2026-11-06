@@ -84,6 +84,4 @@ theorem wooley_initial_normalization_algebra
           mul_le_mul_of_nonneg_left hupper (inv_nonneg.mpr hscale.le)
     _ = K := by field_simp
 
-end
 
-end GafniTao

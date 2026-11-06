@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration
 
 def priorityLogWindow (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
     (hs:Function.support om⊆Set.Icc a b) (negative:Bool):𝓢(ℝ,ℂ) :=
@@ -102,9 +99,3 @@ theorem actual_priority_profile_common {ι σ:Type*} [DecidableEq ι] [Decidable
     exact principalWindow_positiveSource om lo hi hlo hs negative t y hy
   · intro y hy
     exact principalWindow_positiveSource om lo hi hlo hs negative t y hy
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

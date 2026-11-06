@@ -162,4 +162,3 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
         convert hh' using 1; ring
       _ ≤ _ := by gcongr
 
-end Montgomery.RationalMoment

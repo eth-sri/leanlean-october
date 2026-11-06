@@ -47,4 +47,3 @@ theorem fixed_truncated_source_mass {N T : ℝ} (hN : 2 ≤ N) (hNT : N ≤ T)
   have hb : 5*T+N*Real.log (2*N) ≤ 6*T*Real.log (2*N) := by linarith
   exact hraw.trans (by nlinarith [mul_le_mul_of_nonneg_left hb (show 0 ≤ 102*N by positivity)])
 
-end GuthMaynard.Improvement

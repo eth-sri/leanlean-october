@@ -156,4 +156,3 @@ theorem weightedIntegral_parts_twice_half_integer {s : ℂ} (hs : s.re < 1)
     exact linear_wave_half_integer k m
   simpa only [Complex.ofReal_natCast, hw] using weightedIntegral_parts_twice hs hx (m : ℝ)
 
-end DhimanKadiriQuesadaHerrera2026

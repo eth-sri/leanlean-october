@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve IdealMobiusDivisorSum
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def hybridDivisorPool (rows : Finset (Ideal Eis)) : Finset (Ideal Eis) :=
   rows.biUnion idealDivisors
@@ -57,8 +56,3 @@ theorem hybrid_divisor_pair_inverse_norm_sum
       intro r hr
       ring
     _ ≤ _ := pow_le_pow_left₀ (Finset.sum_nonneg fun _ _ => by positivity) hsum 2
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentChildEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy
-open CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy CenteredMomentSmooth
 
 theorem leftColumn_eq_gaussPolynomial {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
@@ -32,9 +30,3 @@ theorem rightColumn_eq_star_gaussPolynomial {α : Type*} (S : Finset α) (a : α
   apply Finset.sum_congr rfl
   intro i hi
   ring
-
-end SevenEighths.CenteredMomentChildEnergy
-
-end
-
-end OAI

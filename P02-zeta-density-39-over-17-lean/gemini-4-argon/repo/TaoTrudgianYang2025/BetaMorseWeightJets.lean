@@ -32,4 +32,3 @@ theorem iteratedDeriv_modelPhaseMorseWeight_eq
   filter_upwards [(modelPhaseMorseRange_isOpen hσ hδ hF hv).mem_nhds hz] with x hx
   exact modelPhaseMorseWeight_eq hx
 
-end TaoTrudgianYang2025

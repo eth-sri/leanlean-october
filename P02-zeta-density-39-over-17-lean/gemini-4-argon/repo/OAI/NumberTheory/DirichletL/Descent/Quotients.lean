@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def quotientSupport (D : Ideal Eis) (S : Finset (Ideal Eis)) : Finset (Ideal Eis) :=
   (S.filter (fun I => D ∣ I)).image (idealQuotient D)
@@ -108,8 +107,3 @@ theorem quotient_hybridCubicCoefficient_energy
   · exact quotientSupport_shell R hR S L hS0 hS
   · intro P hP
     exact ha (R * P) ((mem_quotientSupport R P hR S).mp hP)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

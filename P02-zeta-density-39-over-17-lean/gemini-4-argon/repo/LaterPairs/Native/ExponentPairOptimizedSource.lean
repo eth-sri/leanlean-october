@@ -81,4 +81,3 @@ theorem source_exponentialSum_aProcess_bound
         (zero_le_one.trans hC₀)
     _ = _ := by ring
 
-end TaoTrudgianYang2025

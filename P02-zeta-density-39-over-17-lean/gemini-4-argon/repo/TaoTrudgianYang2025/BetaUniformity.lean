@@ -15,4 +15,3 @@ theorem approximateModelPhase_mono {F : ℝ → ℝ} {σ δ₀ δ₁ : ℝ} {P�
   intro p hp u
   exact (h.2 p (hp.trans hP) u).trans hδ
 
-end TaoTrudgianYang2025

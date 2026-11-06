@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def sourceGridCoefficient (beta : Ideal Eis → Ideal Eis → ℂ)
     (t c m h : Ideal Eis) : ℂ := beta (c * m) ((c * h) * t ^ 2)
@@ -160,8 +159,3 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
         (Fintype.card (Fin (columnDyadicLength N + 1)) : ℝ)) ^ 2 * (256 ^ 2 * E) :=
       finite_double_row_energy rows F (256 ^ 2 * E) (by positivity) hlabel
     _ = _ := by simp only [Fintype.card_fin, Nat.cast_add, Nat.cast_one, E]; ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

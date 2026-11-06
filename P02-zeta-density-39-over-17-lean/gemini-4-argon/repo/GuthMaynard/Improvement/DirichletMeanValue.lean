@@ -281,4 +281,3 @@ theorem dirichlet_mean_value (X : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : a �
       exact mul_le_mul_of_nonneg_left (hgram n m hn hm) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ ≤ _ := finite_symmetric_row_bound S (fun n => ‖c n‖) k hk hsym hrow
 
-end GuthMaynard.Improvement

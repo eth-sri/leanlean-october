@@ -9,13 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy
-open CenteredMomentFirstSectorTransform CenteredMomentFirstChildProfile
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCommonSupport
-open CenteredMomentFirstColumns CenteredMomentChildAssembly CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeExpansion RayFourExpansion
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCommonSupport CenteredMomentFirstColumns CenteredMomentChildAssembly CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion RayFourExpansion
 
 theorem original_pool_restriction (C D:Ideal O)(hC:C≠0)(hD:D≠0)
     (S:Finset (Ideal O))(f:Ideal O→Ideal O→ℂ):
@@ -36,9 +30,3 @@ theorem original_pool_restriction (C D:Ideal O)(hC:C≠0)(hD:D≠0)
     intro b hb
     by_cases hcb:IsCoprime C b <;> simp [hcb]
   · simp [hca]
-
-end SevenEighths.CenteredMomentFirstPhysicalSource
-
-end
-
-end OAI

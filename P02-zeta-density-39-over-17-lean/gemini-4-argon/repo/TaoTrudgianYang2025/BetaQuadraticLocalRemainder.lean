@@ -191,4 +191,3 @@ theorem quadraticRemainderConstant_le_inverse_window
   rw [he]
   exact add_le_add le_rfl (div_le_div_of_nonneg_right hb (by positivity))
 
-end TaoTrudgianYang2025

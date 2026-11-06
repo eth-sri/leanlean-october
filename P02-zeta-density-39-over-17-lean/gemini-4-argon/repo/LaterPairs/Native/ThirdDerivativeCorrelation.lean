@@ -59,4 +59,3 @@ theorem continuous_third_derivative_correlation
     rw [he,Finset.sum_range_zero,norm_zero]
     positivity
 
-end TaoTrudgianYang2025

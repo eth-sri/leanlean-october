@@ -124,4 +124,3 @@ theorem intervalC2Bound_atkinsonSlope_reciprocal_band {T G L B : ℝ}
         nlinarith
       _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

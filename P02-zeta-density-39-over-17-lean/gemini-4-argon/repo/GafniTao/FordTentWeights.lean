@@ -24,16 +24,6 @@ noncomputable section
 def fordTent (x w : ℝ) : ℝ :=
   max 0 (1 - ‖(x : UnitAddCircle)‖ / w)
 
-/-- Ford's non-periodic sinc-square weight `f_j`. -/
-def fordSincSquareWeight (r M j : ℕ) (x : ℝ) : ℝ :=
-  (Real.pi / 2 *
-      Real.sinc (Real.pi * x / (2 * ((r * M ^ j : ℕ) : ℝ)))) ^ 2
 
-@[simp]
-theorem fordSincSquareWeight_zero (r M j : ℕ) :
-    fordSincSquareWeight r M j 0 = (Real.pi / 2) ^ 2 := by
-  simp [fordSincSquareWeight]
 
-end
 
-end GafniTao

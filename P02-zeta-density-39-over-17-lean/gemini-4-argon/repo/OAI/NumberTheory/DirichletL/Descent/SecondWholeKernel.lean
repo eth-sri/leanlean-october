@@ -10,7 +10,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma secondSourcePairKernel_mark_factors {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
     (p : ι → Eis) (e k : Eis)
@@ -60,8 +59,3 @@ theorem secondChildKernelPair_whole_profile {ι σ : Type*} [DecidableEq ι] [De
   have hp := secondSourcePairKernel_profile p hp G V N M hVN hVM e k W₁ W₂ Φ Y
   rw [← hp]
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

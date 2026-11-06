@@ -57,4 +57,3 @@ theorem riemannZeta_sq_eq_voronoiMultipliers {z : ℂ} (hz : z.re < 1) (hz0 : z 
         (4 * Complex.cos (Real.pi * (1 - z) / 2) ^ 2) * riemannZeta (1 - z) ^ 2 := by ring
     _ = _ := by rw [hc]; ring
 
-end MathCollab.Density.Stronger.Atkinson

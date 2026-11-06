@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeDetectorWitnessArithmetic
 open HeckeFamily UniqueFactorizationMonoid CompletedGauss
-local notation "O" => HeckeFamily.O
 
 def cutoffCoefficient (V : ℝ → ℂ) (D : ℝ) (I : Ideal O) : ℂ :=
   if I = 0 then 0 else
@@ -105,9 +104,3 @@ theorem exponential_sum_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 
   simp_rw [exponentialTerm_tail χ V D hD hV hVzero s Y]
   rw [hsum.tsum_sub ((hasSum_ite_eq (1 : Ideal O) (Complex.exp (-1 / (Y : ℂ)))).summable)]
   simp only [tsum_ite_eq]
-
-end SevenEighths.HeckeDetectorWitnessArithmetic
-
-end
-
-end OAI

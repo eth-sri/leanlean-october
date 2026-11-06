@@ -7,77 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm columnLog)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -91,7 +26,6 @@ end
 end
 section
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -100,18 +34,16 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 
 theorem bracket_one_eq_quadratic (P : Ideal O) [P.IsMaximal]
     (hg : lambda∉P) (z : O) :
@@ -158,12 +90,7 @@ theorem residual_bracket_cube (P : Ideal O) [P.IsMaximal]
 
 end
 
-section
-open ActualEisensteinCubic CanonicalQuadraticSieve QuadraticSquarefreeKernel
 
-end
-
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 theorem prime_square_dvd_powerful (I P : Ideal O) (hI : PowerfulIdeal I)
     (hP : Prime P) (hd : P∣I) : P^2∣I := by
@@ -219,7 +146,6 @@ theorem nonresidual_gain_product_dvd {ι : Type*} [Fintype ι]
     · rw [nonresidualGain,ite_eq_right hi]
       exact dvd_mul_of_dvd_right ((hp.dvd_mul.mp (hpool i)).resolve_left hi) _
 
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 def completedLocalExponent (I F P : Ideal O) : ℕ :=
   ((normalizedFactors I).count P+4*(if P∣F then 1 else 0))%6
@@ -330,9 +256,3 @@ theorem reflectionConductorCost_bound {ι : Type*} [Fintype ι]
   have hr : (Ideal.absNorm (∏i,nonresidualGain I (P i)):ℝ)≤
       (Ideal.absNorm (rowPowerfulPart I*(rowMaskPart I Q)^2*Q):ℝ) := by exact_mod_cast hb
   simpa only [map_mul,map_pow,Nat.cast_mul,Nat.cast_pow] using hr
-
-end CompletedGauss
-
-end
-
-end OAI

@@ -11,7 +11,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem full_first_physical_tail (order : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (Ct : ℝ),0<Ct ∧
@@ -81,8 +80,3 @@ theorem full_first_physical_tail (order : ℕ) :
           (hcol₂ Q hQ hq) (hcol₁ N hN hn) hout)
   simpa only [Real.exp_log hU₁,Real.exp_log hU₂,one_mul,primeSubsetGenerator_norm_eq_productNorm]
     using hb
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

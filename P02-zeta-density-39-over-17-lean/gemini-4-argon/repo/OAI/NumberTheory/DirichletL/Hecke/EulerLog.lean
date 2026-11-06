@@ -10,8 +10,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical Topology BigOperators
-open Set Metric Filter Complex ActualEisensteinCubic
-open SevenEighths.IdealEuler SevenEighths.IdealCharacter
+open Set Metric Filter Complex ActualEisensteinCubic SevenEighths.IdealEuler SevenEighths.IdealCharacter
 open SmoothMobiusCorrection (PrimeIdeal)
 
 namespace SevenEighths.HeckeEulerLog
@@ -262,9 +261,3 @@ theorem principal_continued_inner_disk (a : Ideal O →*₀ ℂ) (ha : ∀ I, �
   · intro s hs
     exact principalEulerLog_norm_le a ha
       (inner_disk_re (closedBall_subset_closedBall (by norm_num) hs))
-
-end SevenEighths.HeckeEulerLog
-
-end
-
-end OAI

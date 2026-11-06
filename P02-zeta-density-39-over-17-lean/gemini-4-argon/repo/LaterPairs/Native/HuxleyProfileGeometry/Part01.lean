@@ -4738,9 +4738,7 @@ theorem physicalModelPhase_quartic_curvature_source_scale
                                                                    
                                                                          
                                                                         
-open Set
 open Polynomial
-open Set
 open scoped Classical
 noncomputable def quarticCurvatureNumerator
     (μ ν r s μ₁ ν₁ r₁ s₁ : ℝ) : Polynomial ℝ :=
@@ -5223,8 +5221,6 @@ theorem quartic_phase_derivative_variation_on_boundary_cell
                                                                     
                                                                   
                                                                        
-open scoped Classical
-open scoped Classical
 theorem quarticPhase_four_point_curvature
     {μ ν r s μ₁ ν₁ r₁ s₁ a b c d h E A B : ℝ}
     (hμ : μ ≠ 0) (hr : r ≠ 0) (hμ₁ : μ₁ ≠ 0) (hr₁ : r₁ ≠ 0)
@@ -5377,7 +5373,6 @@ theorem physicalModelPhase_quartic_four_point_third_condition
   exact quarticPhase_cubic_ratio_of_curvature (hμ 0) (hμ 1) (hμnew 0) (hμnew 1)
     (hr 0) (hr 1) (hden z hz' 0) (hden z hz' 1) (he 0) (he 1) hcurv
 
-open scoped Classical
 
                                                                     
                                                                         
@@ -5860,8 +5855,6 @@ theorem scaled_paired_C4_nontriangular_resonance_compression
                                                                          
                                                                      
                                                                         
-open Filter
-open scoped Topology
 theorem curvature_fiber_hasDerivAt
     (H : ℝ → ℝ → ℝ) (ρ : ℝ → ℝ) {z hy hx : ℝ} {I : Set ℝ}
     (hI : IsOpen I) (hbase : ρ z ∈ I) (hx0 : hx ≠ 0)
@@ -6963,6 +6956,3 @@ theorem difference_family_dyadic_parameter_geometry {H : ℝ} (hH : 0 < H) :
 open scoped FourierTransform BigOperators
 
 -- Generated closures: source context is replayed in the next part.
-end TaoTrudgianYang2025.HuxleyRationalPhase
-end
-end

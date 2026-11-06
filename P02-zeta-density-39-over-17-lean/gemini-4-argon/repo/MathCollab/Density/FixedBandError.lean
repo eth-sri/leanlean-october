@@ -98,4 +98,3 @@ theorem uniform_fixedBand_and_diagonal_error (w : ReflectionCutoff) {A : ℕ} (h
     exact div_le_div_of_nonneg_right
       (mul_le_mul_of_nonneg_right (le_max_right K₁ K₂) hL.le) (pow_nonneg hL.le A)
 
-end MathCollab.Density

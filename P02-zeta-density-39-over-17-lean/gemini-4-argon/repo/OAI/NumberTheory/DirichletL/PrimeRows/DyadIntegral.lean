@@ -12,7 +12,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 def physicalDyadNorm {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
@@ -96,8 +95,3 @@ theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
   refine ⟨hi,hb.trans_eq ?_⟩
   dsimp [A]
   ring
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

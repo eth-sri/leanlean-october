@@ -10,9 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-noncomputable local instance sectorIndependentFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 theorem frozenCore_transport {ι κ : Type*} [Fintype ι] [Fintype κ]
     {p : ι → Eis} [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -25,8 +22,3 @@ theorem frozenCore_transport {ι κ : Type*} [Fintype ι] [Fintype κ]
   apply Finset.prod_congr rfl
   intro i hi
   rw [← Finset.image_erase hf F i,Finset.prod_image hf.injOn]
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

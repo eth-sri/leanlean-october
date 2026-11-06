@@ -37,4 +37,3 @@ theorem sargos_contDiffOn_iteratedDerivWithin {f : ℝ → ℝ} {s : Set ℝ}
       rw [iteratedDerivWithin_succ]
       exact hn.derivWithin hs (by simp)
 
-end TaoTrudgianYang2025

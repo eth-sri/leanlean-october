@@ -124,6 +124,4 @@ theorem heathBrown_pairCountTwo_index_le_block_length
       exact Nat.cast_div_le
 
 
-end
 
-end GafniTao

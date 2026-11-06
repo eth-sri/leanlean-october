@@ -3850,4 +3850,3 @@ theorem exists_logarithmic_sixth {ε : ℝ} (hε : 0 < ε) :
 
                                                                     
                                                                    
-end TaoTrudgianYang2025.LogarithmicSixth

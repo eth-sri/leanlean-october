@@ -56,4 +56,3 @@ theorem signed_triangular_first_moment (N : ℕ) (hN : 0 < N) :
       rw [← Finset.sum_mul,sum_signed_triangular_weights N hN]
       ring
 
-end TaoTrudgianYang2025

@@ -241,6 +241,4 @@ theorem heathBrown_spacing_card_le_exact
   · intro q hq
     exact heathBrown_spacing_fiber_card_le hmuPos hg hgd hderivLower q
 
-end
 
-end GafniTao

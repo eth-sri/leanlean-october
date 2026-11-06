@@ -208,6 +208,4 @@ theorem wooley_le_ceilDiv_of_mul_le
   exact Nat.le_of_mul_le_mul_left (hB.trans hBceil) (by omega)
 
 
-end
 
-end GafniTao

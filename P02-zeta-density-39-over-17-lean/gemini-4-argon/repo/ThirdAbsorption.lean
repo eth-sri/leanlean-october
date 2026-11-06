@@ -155,4 +155,3 @@ theorem third_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ = _ := by dsimp [Y]; ring
   exact le_of_mul_le_mul_right hh (by positivity)
 
-end Montgomery.RationalMoment

@@ -32,4 +32,3 @@ theorem linear_fraction_modulus {a b c d x y : ℝ}
   rw [← he] at hh
   linarith
 
-end Montgomery.WrittenDensity

@@ -117,6 +117,4 @@ theorem heathBrown_lintegral_mul_le_three_moments
   ring
 
 
-end
 
-end GafniTao

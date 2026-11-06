@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondChildPowerBudget
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEligibleEnergy
-open CenteredMomentFirstChildProfileControl CenteredMomentCommonRadialPointwise
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEligibleEnergy CenteredMomentFirstChildProfileControl CenteredMomentCommonRadialPointwise CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -125,9 +121,3 @@ theorem source_rhs {wlo whi : ℝ} (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ
     (try simp only [coefficients,powers,Fin.sum_univ_succ,Fin.sum_univ_zero,
       Matrix.cons_val_zero,Matrix.cons_val_succ,
       Real.rpow_one,Real.rpow_zero]) <;> ring
-
-end SevenEighths.CenteredMomentSecondChildPowerBudget
-
-end
-
-end OAI

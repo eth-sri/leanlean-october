@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentRestrictedDomain
-open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
-open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
-open CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentLiveDomain
 
 theorem source_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z : O) :
     rowPolynomial Finset.univ (sourceGenerator S)
@@ -27,7 +23,6 @@ theorem source_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z : O
   rw [sourceGenerator,primary_span_supported I (Finset.mem_filter.mp I.property).2]
 
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem live_rowPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
@@ -75,9 +70,3 @@ theorem live_restrictedEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   exact congrArg (fun x : ℂ => if keep z then ‖x‖^2*(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0)
     (live_rowPolynomial S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
       X₁ X₂ Y₁ Y₂ B₁ B₂ f z)
-
-end SevenEighths.CenteredMomentRestrictedDomain
-
-end
-
-end OAI

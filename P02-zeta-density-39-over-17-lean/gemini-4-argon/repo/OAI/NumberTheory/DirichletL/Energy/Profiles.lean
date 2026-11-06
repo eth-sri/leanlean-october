@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentEnergyProfiles
-open CenteredMomentFiniteProfileExceptional CenteredMomentAllocatedNaturalSource
-open CenteredMomentScaleSupremum
+open CenteredMomentFiniteProfileExceptional CenteredMomentAllocatedNaturalSource CenteredMomentScaleSupremum
 
 structure Test (a b:ℝ) where
   profile : 𝓢(ℝ,ℂ)
@@ -64,9 +63,3 @@ def annulusSeed (a b:ℝ)(ha:a≤1/4)(hb:1≤b):Test a b where
   profile:=annulusTemplate.profile
   support:=fun _x hx=>⟨ha.trans (annulusTemplate.support hx).1,
     (annulusTemplate.support hx).2.trans hb⟩
-
-end SevenEighths.CenteredMomentEnergyProfiles
-
-end
-
-end OAI

@@ -7,80 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped Classical BigOperators
 
 namespace ShortDraftCRT
-open ActualEisensteinCubic FiniteGaussPhase ConcreteTraceCRT CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
+open FiniteGaussPhase CubicEisenstein
 variable {ι:Type*} [Fintype ι]
 
 omit [Fintype ι] in
@@ -129,18 +61,8 @@ theorem finiteCrossNumerator_fraction (a c l:Eis) (p h:ι→Eis)
 
 end ShortDraftCRT
 
-open scoped BigOperators Classical
 
-namespace IdealGaussCRT
-open CubicEisenstein
 
-end IdealGaussCRT
-
-namespace FiniteGaussPhase
-open ActualEisensteinCubic CubicEisenstein IdealGaussCRT
-local notation "Eis" => ActualEisensteinCubic.O
-
-end FiniteGaussPhase
 
 namespace FixedRayActiveSet
 
@@ -212,19 +134,9 @@ theorem sum_by_active_strata {ι : Type*} [Fintype ι]
 
 end FixedRayActiveSet
 
-namespace LocalReflectionBrackets
-open ActualEisensteinCubic CubicEisenstein CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance stratumField (P : Ideal Eis) [P.IsMaximal] :
-    Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance stratumFintype (P : Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
-
-end LocalReflectionBrackets
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss
 
 lemma ramifiedTraceLambda_dvd_of_lambda_dvd (h:Eis) (hh:lambda∣h) :
     ramifiedTraceLambda∣h := by
@@ -299,9 +211,7 @@ end CubicEisenstein
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve QuadraticAllOddCRT
-open ConcreteTraceCRT UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve QuadraticAllOddCRT
 
 def cubicTwoSupplement : Eis→*ℂ where
   toFun n:=(actualSextic cubicTwoIdeal cubicTwoIdeal_good ^ 2) (Ideal.Quotient.mk cubicTwoIdeal n)
@@ -412,9 +322,7 @@ theorem idealRowHom_two_formula (n:Eis) (hn:lambda^2∣n-1)
 end
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve
 
 def supportedIdealRow (a:Eis) : Eis→*ℂ where
   toFun n:=if Supported (Ideal.span {n}) then idealRowHom a (Ideal.span {n}) else 0
@@ -478,8 +386,7 @@ lemma supportedIdealRow_lambda_primary (n:Eis) (hs:Supported (Ideal.span {n})) :
 end
 section
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve
 
 lemma negative_two_prime : Prime (-2:Eis) :=
   (Ideal.span_singleton_prime (by norm_num : (-2:Eis)≠0)).mp
@@ -520,8 +427,7 @@ theorem exists_supported_numerator_factorization (x:Eis) (hx:x≠0) :
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
-local notation "Eis" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
 
 lemma idealRowHom_argument_pow (a:Eis) (k:ℕ) (I:Ideal Eis) (hI:Supported I) :
     idealRowHom (a^k) I=(idealRowHom a I)^k := by
@@ -598,9 +504,3 @@ theorem idealRowHom_factor_numerator (u:Eisˣ) (a b:ℕ) (r n:Eis)
     idealRowHom_argument_pow _ _ _ hn,idealRowHom_argument_pow _ _ _ hn,
     hu,supportedIdealRow_lambda_primary n hn,←idealRowHom_two_formula n hpn hn,←hrec]
   ring
-
-end CanonicalRowCompletion
-
-end
-
-end OAI

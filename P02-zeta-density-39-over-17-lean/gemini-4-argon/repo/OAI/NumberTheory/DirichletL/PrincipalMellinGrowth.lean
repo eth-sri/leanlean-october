@@ -122,9 +122,3 @@ theorem source_w_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ)
     (AL:=wAmplitude M cw) hcw hAH (wAmplitude_pos M hcw).le JH 3 hHB hHBbd
   intro x hx t _
   exact fixed_principal_w_growth M hcw hx t
-
-end SevenEighths.PrincipalMellinGrowth
-
-end
-
-end OAI

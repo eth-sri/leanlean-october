@@ -170,4 +170,3 @@ theorem gmMatrix_singularValue_sixth_le_dispersion_max
     Finset.sum_filter, Finset.card_univ, Fintype.card_coe,
     hsquare, hsixth] using hbound
 
-end GuthMaynard.NativeMoment

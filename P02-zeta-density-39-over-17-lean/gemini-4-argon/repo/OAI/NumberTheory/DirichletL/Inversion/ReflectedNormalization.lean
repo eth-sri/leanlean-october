@@ -98,8 +98,3 @@ theorem normalized_hybrid_shape {Z : ℝ} (hZ : 1 ≤ Z)
         _ = _ := by
           rw [← Real.rpow_add hZ0,← Real.rpow_add hZ0,← Real.rpow_add hZ0,
             ← Real.rpow_add hZ0,reflected_exponent_identity]
-
-end
-end SevenEighths.InverseReflectedNormalization
-
-end OAI

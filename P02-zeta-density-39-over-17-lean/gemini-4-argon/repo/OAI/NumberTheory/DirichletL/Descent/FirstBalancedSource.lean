@@ -82,7 +82,6 @@ theorem first_balanced_density_integrable (g : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g�
   exact (full_density_integrable _ _ _ _).const_mul _
 
 open ActualEisensteinCubic FirstPassCubeLabels
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -143,8 +142,3 @@ theorem actual_first_balanced_block (F : Finset ι) (selector : Finset ι → �
     (by simpa [firstCommonNorms] using hω₁ j hj hn)
     (by simpa [firstCommonNorms] using hω₂ j hj hn)
     (by simpa [firstCommonNorms] using hcut j hj hn)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

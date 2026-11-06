@@ -9,10 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentFirstAnnularGeometry
-open CenteredMomentSectorLocalization CenteredMomentFirstAnnularMajorant
-open CenteredMomentFirstAnnularEnergy CenteredMomentGaussEnergy CanonicalQuadraticSieve
+open CenteredMomentSectorLocalization CenteredMomentFirstAnnularMajorant CenteredMomentFirstAnnularEnergy CenteredMomentGaussEnergy CanonicalQuadraticSieve
 
-local notation "O"=>HeckeFamily.O
 
 lemma retained_of_scale_le (j:ℤ)(R:ℝ)(h:dyadicScale j≤R):Retained R j:=by
   refine ⟨dyadicScale j/2, by exact div_pos (dyadicScale_pos j) (by norm_num), by linarith [dyadicScale_pos j], ?_⟩
@@ -57,9 +55,3 @@ theorem common_bound_auto {α:Type*}(S:Finset α)(a:α→O)
   obtain ⟨j,hj⟩:=bands_nonempty H hH
   have hB:0≤B:=(tsum_nonneg (fun z=>mul_nonneg (dyadicWeight_bounds j _).1 (sq_nonneg _))).trans (hb j hj)
   exact common_bound S a ha c H B hH hB hb
-
-end SevenEighths.CenteredMomentFirstAnnularGeometry
-
-end
-
-end OAI

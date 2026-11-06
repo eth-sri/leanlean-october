@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseReflectedPhase InverseTerminalWidths CompletedHeight
-open InverseCanonicalShortAttachment InverseSecondFibers FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve InverseReflectedPhase InverseTerminalWidths CompletedHeight InverseCanonicalShortAttachment InverseSecondFibers FirstPassCubeLabels SecondPassArithmetic
 universe v
 
 theorem actual_complete_state_from_live_bins
@@ -97,9 +94,3 @@ theorem actual_complete_state_from_live_bins
   have hA:0≤(1+‖theta‖)^degree*Z^(N+V-cstar/256):=by positivity
   have hB:0≤Z^eps*E:=by positivity
   nlinarith
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

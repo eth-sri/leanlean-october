@@ -12,85 +12,11 @@ public import MathCollab.Density.Stronger.Atkinson.BesselTransformBridge
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
-
-private theorem tendsto_rectangleIntegral'_vertical_sub
-    {f : ℂ → ℂ} {a b : ℝ}
-    (hBottom : Tendsto (fun R : ℝ => HIntegral' f a b (-R)) atTop (nhds 0))
-    (hTop : Tendsto (fun R : ℝ => HIntegral' f a b R) atTop (nhds 0))
-    (hIntA : Integrable (fun u : ℝ => f ((a : ℂ) + (u : ℂ) * I)))
-    (hIntB : Integrable (fun u : ℝ => f ((b : ℂ) + (u : ℂ) * I))) :
-    Tendsto (fun R : ℝ =>
-      RectangleIntegral' f
-        ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
-      (nhds (VerticalIntegral' f b - VerticalIntegral' f a)) := by
-  let c : ℂ := (((1 / (2 * Real.pi) : ℝ) : ℂ))
-  have hRight : Tendsto (fun R : ℝ =>
-      c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) atTop
-      (nhds (c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I))) :=
-    (intervalIntegral_tendsto_integral hIntB
-      tendsto_neg_atTop_atBot tendsto_id).const_mul c
-  have hLeft : Tendsto (fun R : ℝ =>
-      c * ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I)) atTop
-      (nhds (c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I))) :=
-    (intervalIntegral_tendsto_integral hIntA
-      tendsto_neg_atTop_atBot tendsto_id).const_mul c
-  have hEdges := (hBottom.sub hTop).add (hRight.sub hLeft)
-  have hExpanded : Tendsto (fun R : ℝ =>
-      HIntegral' f a b (-R) - HIntegral' f a b R +
-        ((c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) -
-          c * ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I))) atTop
-      (nhds (c * (∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I)) -
-        c * (∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I)))) := by
-    simpa only [zero_sub, neg_zero, zero_add] using hEdges
-  have hRectangle : Tendsto (fun R : ℝ =>
-      RectangleIntegral' f
-        ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
-      (nhds (c * (∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I)) -
-        c * (∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I)))) := by
-    refine hExpanded.congr' ?_
-    filter_upwards with R
-    rw [pintz2023_RectangleIntegral'_eq_edges]
-    dsimp only [c]
-    ring
-  have hVerticalB : VerticalIntegral' f b =
-      c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I) := by
-    unfold VerticalIntegral' VerticalIntegral
-    dsimp only [c]
-    simp [smul_eq_mul]
-    ring_nf
-    rw [Complex.I_sq]
-    ring
-  have hVerticalA : VerticalIntegral' f a =
-      c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I) := by
-    unfold VerticalIntegral' VerticalIntegral
-    dsimp only [c]
-    simp [smul_eq_mul]
-    ring_nf
-    rw [Complex.I_sq]
-    ring
-  simpa only [hVerticalB, hVerticalA] using hRectangle
-
-private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
-    {f : ℂ → ℂ} {a b : ℝ} {A : ℂ}
-    (hBottom : Tendsto (fun R : ℝ => HIntegral' f a b (-R)) atTop (nhds 0))
-    (hTop : Tendsto (fun R : ℝ => HIntegral' f a b R) atTop (nhds 0))
-    (hIntA : Integrable (fun u : ℝ => f ((a : ℂ) + (u : ℂ) * I)))
-    (hIntB : Integrable (fun u : ℝ => f ((b : ℂ) + (u : ℂ) * I)))
-    (hFinite : ∀ᶠ R : ℝ in atTop,
-      RectangleIntegral' f
-        ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I) = A) :
-    VerticalIntegral' f b - VerticalIntegral' f a = A := by
-  have hLimit := tendsto_rectangleIntegral'_vertical_sub
-    hBottom hTop hIntA hIntB
-  have hConst : Tendsto (fun _R : ℝ => A) atTop (nhds A) := tendsto_const_nhds
-  have hLimitA := hConst.congr' (hFinite.mono fun _ h => h.symm)
-  exact tendsto_nhds_unique hLimit hLimitA
 
 theorem DFIVoronoiTestFunction.minusIntegrand_finite_rectangle (q : ℕ) [NeZero q]
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
@@ -133,4 +59,3 @@ theorem dfiVoronoiMinusTransform_mellin_eq_bessel (q n : ℕ) [NeZero q]
   rw [hg.minusTransform_eq_thirteenSixteenths q hn]
   exact verticalIntegral_dfiVoronoiMinus_mellin_thirteenSixteenths_eq_bessel q n hn hg
 
-end MathCollab.Density.Stronger.Atkinson

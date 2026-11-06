@@ -46,9 +46,3 @@ theorem reopening_twisted_moment_squared (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
   intro theta hT
   have hh:=pow_le_pow_left₀ (integral_nonneg (fun ξ=>by positivity)) (he theta hT) 2
   simpa only [mul_pow,←pow_mul,Nat.mul_comm] using hh
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

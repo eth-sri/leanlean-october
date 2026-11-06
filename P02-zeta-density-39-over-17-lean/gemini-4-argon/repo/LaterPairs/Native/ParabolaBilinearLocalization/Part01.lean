@@ -25,33 +25,11 @@ public import LaterPairs.Native.SargosQuarticKernelJets
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth GafniTao Set MeasureTheory FourierTransform SchwartzMap Filter
 
-open GafniTao Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open MeasureTheory
-open MeasureTheory FourierTransform SchwartzMap Set GafniTao
-open MeasureTheory GafniTao
-open MeasureTheory GafniTao Set
-open MeasureTheory Set
-open Set
-open scoped BigOperators
-open scoped BigOperators ComplexConjugate
-open scoped BigOperators ContDiff
-open scoped BigOperators ContDiff FourierTransform
-open scoped BigOperators Matrix
-open scoped BigOperators Matrix ContDiff
-open scoped BigOperators NNReal ENNReal
-open scoped ComplexConjugate Convolution ContDiff
-open scoped ContDiff
-open scoped ContDiff BigOperators
-open scoped ContDiff FourierTransform
-open scoped ContDiff Topology
-open scoped Matrix
+open scoped BigOperators ComplexConjugate ContDiff FourierTransform Matrix NNReal ENNReal Convolution Topology
 noncomputable section
 
-open Set Filter MeasureTheory
-open scoped ContDiff Topology FourierTransform BigOperators
 
 namespace TaoTrudgianYang2025
 
@@ -281,7 +259,6 @@ private theorem bourgain_two_torsion_card (q : ℕ) [NeZero q] :
     _ ≤ 2 := Finset.card_le_two
 
 
-open scoped ComplexConjugate
 
 private theorem bourgain_gauss_norm_sq (q : ℕ) [NeZero q] (a b : ZMod q) :
     ((‖∑ x : ZMod q, ZMod.stdAddChar (a*x^2+b*x)‖^2 : ℝ) : ℂ) =
@@ -3127,7 +3104,6 @@ theorem exists_bourgain_cubic_C4_source_entry :
   exact (mul_le_mul_of_nonneg_left hb hP0).trans_eq (by ring)
 
 
-open scoped ComplexConjugate
 
 private def bourgainFourSum {ι : Type*} (S : Finset ι) (z : ι → ℂ)
     (u : ι → Fin 4 → ℝ) (p : Fin 4 → ℝ) : ℂ :=
@@ -6963,6 +6939,3 @@ theorem bourgain_C4_two_coordinate_second_spacing
   exact add_le_add hzero hcount
 
 -- Generated closures: source context is replayed in the next part.
-end TaoTrudgianYang2025
-end
-end

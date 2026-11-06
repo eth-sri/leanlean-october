@@ -52,8 +52,3 @@ theorem literal_threshold_error_uniform (C η : ℝ) (hC : 0<C) (hη : 0<η) :
   rw [hid] at hh
   exact hh.trans (reflectedExponent_threshold_error O₀ H S₀ B₀ za v ell
     (InverseTerminalWidths.ramifiedWidth Z m) Td (Real.logb Z (C/81)) η (herr Z hZ))
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

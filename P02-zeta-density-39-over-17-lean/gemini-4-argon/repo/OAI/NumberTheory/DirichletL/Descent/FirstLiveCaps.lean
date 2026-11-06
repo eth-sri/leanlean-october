@@ -12,7 +12,6 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstLiveCaps
 open InverseMoment InverseMomentFirstOriginalProfile ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 lemma factor_four_bound (a b c d L:ℝ)(ha:1≤a)(hb:1≤b)(hc:1≤c)(hd:1≤d)
     (h:a*b*c*d≤L): a≤L ∧ b≤L ∧ c≤L ∧ d≤L:=by
@@ -89,9 +88,3 @@ theorem original_live_profile_caps
     intro hz
     exact hn (by unfold sourceSummand;rw [hz,mul_zero])
   exact first_profile_live_factors W Φ K L _ hq hW hprof
-
-end SevenEighths.InverseMomentFirstLiveCaps
-
-end
-
-end OAI

@@ -66,4 +66,3 @@ theorem exists_intervalC2Bound_zetaQuadraticLogGaussian_root_natural :
   exact (zetaQuadraticLogGaussian_root_rescale hT hy G).symm
 
 
-end MathCollab.Density.Stronger.Atkinson

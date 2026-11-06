@@ -361,4 +361,3 @@ theorem norm_Gamma_compactStrip_le_exp
     nlinarith
   simpa using hbase.trans hshift
 
-end MathCollab.Density.GammaBounds

@@ -55,9 +55,3 @@ theorem canonical_energy_exists_of_references
     (by linarith) hc hcut hcutL hcutc heta heta1 hetac hetad n W lo hi hlo hhi hsW
   exact canonical_energy_of_rank n (Fcap+1) c cutoff eta Mcap Fcap c eps K W
     hrow hcap hmargin hloss.le he
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

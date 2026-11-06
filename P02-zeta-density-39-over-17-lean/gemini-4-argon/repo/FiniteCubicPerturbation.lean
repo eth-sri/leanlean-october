@@ -140,4 +140,3 @@ theorem centered_atomic_cubic_approximation (w : MathCollab.Density.ReflectionCu
     _ = (3*E*(D+E)^2)*(T^(-200:ℝ)*L^2)*(W.card:ℝ)^3 := by ring
     _ ≤ _ := by gcongr
 
-end Montgomery.RationalMoment

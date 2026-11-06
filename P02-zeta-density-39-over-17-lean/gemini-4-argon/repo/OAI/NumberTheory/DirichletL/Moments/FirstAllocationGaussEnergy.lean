@@ -10,15 +10,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAllocationGaussEnergy
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentSourceRow
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform
-open CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplificationChoice CenteredMomentFirstPhysicalSource CenteredMomentSourceRow CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 def commonEnergy (D : OriginalData ι) (C : Ideal O) (hC : Supported C)
     (τ : Character) (t : ℝ) (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
@@ -188,9 +181,3 @@ theorem normalized_common_energy_allocation (D : OriginalData ι)
     (allocation_data D.S C B.val (Finset.mem_filter.mp B.property).1).1 D.lengths hP
   rw [allocated_rawVolume D C L B hB₁ hB₂ hP]
   field_simp
-
-end SevenEighths.CenteredMomentFirstAllocationGaussEnergy
-
-end
-
-end OAI

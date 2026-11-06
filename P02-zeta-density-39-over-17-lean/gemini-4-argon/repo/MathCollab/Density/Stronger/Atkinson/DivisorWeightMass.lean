@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightVariation
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -155,4 +153,3 @@ theorem exists_tsum_divisorCritical_min_height_le (ε : ℝ) (hε : 0 < ε) :
     _ ≤ T ^ (1 / 2 + ε) * S := mul_le_mul_of_nonneg_right hpow hS
     _ ≤ _ := by nlinarith [Real.rpow_nonneg hT0.le (1 / 2 + ε)]
 
-end MathCollab.Density.Stronger.Atkinson

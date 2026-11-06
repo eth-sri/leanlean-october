@@ -170,4 +170,3 @@ theorem robertSargos_mixed_rectangular_norm (f : ℝ → ℝ) (m r Q : ℝ)
 
                                                                         
                                                                                   
-end TaoTrudgianYang2025

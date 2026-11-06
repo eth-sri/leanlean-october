@@ -33,11 +33,7 @@ theorem fullModulusCorrelation_swap (u v h : A)
   · simp only [hc, (not_congr he).mp hc, ite_false, star_zero]
 end Domain
 
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentLocal
-open CenteredMomentProductCRT
-open ConcretePrimeRowBridge hiding O
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentLocal CenteredMomentProductCRT ConcretePrimeRowBridge
 
 theorem actualCorrelation_norm_swap (u v : O)
     (hu : Supported (Ideal.span {u})) (hv : Supported (Ideal.span {v})) (h : O) :
@@ -173,11 +169,3 @@ theorem normalized_partition_norm_le_one (p : ι → O)
     rw [Real.norm_of_nonneg hN.le]
     exact (div_le_one hN).mpr (actual_partition_norm_le p hp hg hchar hcop c d hc hd U w (hpart hw))
   · simp only [ite_eq_right hw, norm_zero, zero_le_one]
-
-end Product
-
-end SevenEighths.CenteredMomentPartition
-
-end
-
-end OAI

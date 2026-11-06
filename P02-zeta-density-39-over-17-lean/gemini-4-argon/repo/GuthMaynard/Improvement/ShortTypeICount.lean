@@ -124,4 +124,3 @@ theorem short_typeI_zero_slab_count {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨hz,hβ,hγ,hγ'⟩ := mem_zetaZeroFinset.mp (hR hρ)
   exact ⟨hβ,hz.2.2.le,⟨hγ,by linarith⟩,hlarge ρ hρ⟩
 
-end GuthMaynard.Improvement

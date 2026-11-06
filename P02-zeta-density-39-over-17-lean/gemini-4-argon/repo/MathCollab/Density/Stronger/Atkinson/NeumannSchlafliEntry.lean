@@ -141,4 +141,3 @@ theorem neumannContourKernel_angular_change (x : ℝ) {a : ℝ}
           (1 + (Real.sin u : ℂ)) ^ (-(1 / 2 : ℂ)))) := by ring
     _ = _ := by rw [hp, mul_one]
 
-end MathCollab.Density.Stronger.Atkinson

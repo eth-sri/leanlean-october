@@ -7,59 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
 namespace EisensteinSchwartzPoisson
 
 section
-open MeasureTheory
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
+open scoped RealInnerProductSpace
 
 def inverseJacobian (A : ℂ ≃L[ℝ] ℂ) : ℝ :=
   |(LinearMap.det (A : ℂ →ₗ[ℝ] ℂ))⁻¹|
@@ -100,8 +54,6 @@ def translateSchwartz (f : 𝓢(ℂ, ℂ)) (b : ℂ) : 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLMOfAntilipschitz ℂ (g := fun z : ℂ => z + b)
     (by fun_prop) (isometry_add_right b).antilipschitzWith f
 
-@[simp] theorem translateSchwartz_apply (f : 𝓢(ℂ, ℂ)) (b z : ℂ) :
-    translateSchwartz f b z = f (z + b) := rfl
 
 theorem fourier_translate (f : ℂ → ℂ) (b w : ℂ) :
     𝓕 (fun z => f (z + b)) w =
@@ -196,8 +148,6 @@ def complexMulEquiv (c : ℂ) (hc : c ≠ 0) : ℂ ≃L[ℝ] ℂ :=
 @[simp] theorem complexMulEquiv_apply (c : ℂ) (hc : c ≠ 0) (z : ℂ) :
     complexMulEquiv c hc z = c * z := rfl
 
-@[simp] theorem complexMulEquiv_symm_apply (c : ℂ) (hc : c ≠ 0) (z : ℂ) :
-    (complexMulEquiv c hc).symm z = c⁻¹ * z := rfl
 
 theorem complexMulEquiv_det (c : ℂ) (hc : c ≠ 0) :
     LinearMap.det ((complexMulEquiv c hc) : ℂ →ₗ[ℝ] ℂ) = Complex.normSq c := by
@@ -222,9 +172,8 @@ theorem scaledBasisEquiv_det (w : ℂ) (hw : w.im ≠ 0) (c : ℂ) (hc : c ≠ 0
 end
 
 section
-open MeasureTheory EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
-abbrev O := ActualEisensteinCubic.O
+open scoped RealInnerProductSpace
+protected abbrev O := ActualEisensteinCubic.O
 
 def eisensteinLatticeMap (c : ℂ) (hc : c ≠ 0) : ℂ ≃L[ℝ] ℂ :=
   scaledBasisEquiv omega3 omega3_im_ne_zero c hc
@@ -397,8 +346,7 @@ theorem actual_eisenstein_periodic_fourier (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c 
 
 end
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
+open scoped RealInnerProductSpace
 
 theorem dualMap_trans (A B : ℂ ≃L[ℝ] ℂ) (z : ℂ) :
     dualMap (A.trans B) z = dualMap B (dualMap A z) := by
@@ -466,8 +414,6 @@ theorem actual_eisenstein_poisson_explicit (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c 
   simpa only [eisensteinDualFrequency_explicit, explicitDualFrequency] using
     actual_eisenstein_periodic_fourier f c hc P
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
 
 def radialTest (W : 𝓢(ℝ, ℂ)) : 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLM ℂ (Function.hasTemperateGrowth_norm_sq ℂ)
@@ -478,17 +424,10 @@ def radialTest (W : 𝓢(ℝ, ℂ)) : 𝓢(ℂ, ℂ) :=
 @[simp] theorem radialTest_apply (W : 𝓢(ℝ, ℂ)) (z : ℂ) :
     radialTest W z = W (‖z‖ ^ 2) := rfl
 
-def compactRadialTest (W : ℝ → ℂ) (hWc : HasCompactSupport W)
-    (hWs : ContDiff ℝ ∞ W) : 𝓢(ℂ, ℂ) :=
-  radialTest (hWc.toSchwartzMap hWs)
 
-@[simp] theorem compactRadialTest_apply (W : ℝ → ℂ) (hWc : HasCompactSupport W)
-    (hWs : ContDiff ℝ ∞ W) (z : ℂ) :
-    compactRadialTest W hWc hWs z = W (‖z‖ ^ 2) := rfl
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 
@@ -593,9 +532,3 @@ noncomputable def quotientProdEquivPi {ι A : Type*} [Fintype ι] [CommRing A]
       Ideal.Quotient.mk (P i) a := by
   simp only [quotientProdEquivPi, RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk]
   rfl
-
-end IdealGaussCRT
-
-end
-
-end OAI

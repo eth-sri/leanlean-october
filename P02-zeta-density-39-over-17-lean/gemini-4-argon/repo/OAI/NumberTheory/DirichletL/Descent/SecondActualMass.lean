@@ -11,7 +11,6 @@ open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassAri
 open InverseInitialArithmetic (sourceIdeal)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma nonzero_ideal_norm_one (I : Ideal Eis) (hI : I ≠ 0) : 1 ≤ (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
@@ -83,8 +82,3 @@ theorem actual_second_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     ring
   rw [he,←Real.rpow_mul hZ.le,←Real.rpow_neg hZ.le] at hm
   exact hm
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

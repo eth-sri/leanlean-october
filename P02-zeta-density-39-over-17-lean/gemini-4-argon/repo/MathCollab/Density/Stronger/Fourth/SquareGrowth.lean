@@ -13,9 +13,7 @@ public import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger.Fourth MathCollab.Density.ZetaGrowth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger.Fourth MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -142,4 +140,3 @@ theorem exists_completedXiNumerator_strip_cubic {c : ℝ} (hc : 0 ≤ c) :
     exact hb.trans ((le_max_right C D).trans (le_mul_of_one_le_right
       (le_trans hC.le (le_max_left _ _)) hp))
 
-end MathCollab.Density.Stronger.Fourth

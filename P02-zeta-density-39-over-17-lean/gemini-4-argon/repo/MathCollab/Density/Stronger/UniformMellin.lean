@@ -349,4 +349,3 @@ theorem dampedCutoff_uniform_mellin_weighted_L1 {ψ : ℝ → ℝ} {a b : ℝ}
     (∫ r : ℝ, F r) ≤ ∫ r : ℝ, B*(1+r^2)⁻¹ := integral_mono hFi hmajor hbound
     _ = B*Real.pi := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
 
-end MathCollab.Density.Stronger

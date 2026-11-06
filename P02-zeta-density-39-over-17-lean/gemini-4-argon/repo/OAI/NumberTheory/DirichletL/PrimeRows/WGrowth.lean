@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem calibrated_physicalRow_w_growth (eps : ℝ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
@@ -81,8 +80,3 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
       exact mul_le_mul_of_nonneg_left hn'' (by positivity)
     _ = C*(3+|w.im|)^2 := by dsimp [C];ring
     _ ≤ (1+C)*(3+|w.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

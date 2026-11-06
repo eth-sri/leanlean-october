@@ -100,4 +100,3 @@ theorem ExponentPair.atkinson_prefixGramMax_bound {k l ε : ℝ}
   · rw [abs_of_pos (sub_pos.mpr hut),← atkinsonPrefixGramMax_swap]
     exact ordered H t u M hH hM hu hu2 hut ht2 hsmall
 
-end TaoTrudgianYang2025

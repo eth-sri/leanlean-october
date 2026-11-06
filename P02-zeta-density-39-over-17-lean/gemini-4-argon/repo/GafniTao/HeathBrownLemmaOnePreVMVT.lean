@@ -94,6 +94,4 @@ theorem heathBrown_centerWeyl_sum_preVMVT
         heathBrownIntegratedMajorant N k H s f := by ring
 
 
-end
 
-end GafniTao

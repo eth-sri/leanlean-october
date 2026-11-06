@@ -26,4 +26,3 @@ theorem exists_norm_tsum_zetaAtkinsonTwoTerm_sub_leading_le :
   exact hbound T G L hT (by linarith) hGT (by linarith) hwidth
     (summable_atkinsonLeadingTerm_of_band hT hG hGT hL hwidth)
 
-end MathCollab.Density.Stronger.Atkinson

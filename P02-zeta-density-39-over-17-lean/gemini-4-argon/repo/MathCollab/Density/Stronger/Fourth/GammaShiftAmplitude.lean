@@ -11,9 +11,7 @@ public import Mathlib.Analysis.ODE.Gronwall
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Set MeasureTheory MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -148,4 +146,3 @@ theorem norm_gammaReal_shift_sq_le_exp {t : ℝ} (ht : 4 ≤ t)
   exact mul_le_mul_of_nonneg_right (by simpa only [mul_one] using h) (by positivity)
 
 
-end MathCollab.Density.Stronger.Fourth

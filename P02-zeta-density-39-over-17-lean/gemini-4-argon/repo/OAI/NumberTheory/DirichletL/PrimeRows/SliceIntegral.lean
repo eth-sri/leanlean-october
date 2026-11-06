@@ -61,9 +61,3 @@ theorem source_profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1
   calc
     _ ≤ (E*A)*K/height T^N := hb
     _ = _ := by dsimp [E];ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

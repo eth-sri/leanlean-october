@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.HeckeMaskDescent
-open HeckeFamily CenteredExceptionalProfile CanonicalQuadraticSieve ConcretePrimeRowBridge
-open UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredExceptionalProfile CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 
 theorem exists_coprime_shift (a c r : O) (hac : IsCoprime a c) (hr : r ≠ 0) :
     ∃ t : O, IsCoprime (a+t*c) r := by
@@ -145,8 +143,3 @@ theorem fixed_inducing_mask_iff (χ χ' : Character) (r : O) (hr : r ≠ 0)
     exact ⟨ρ,hρ,hQ.trans hmod,hindρ⟩
   · rintro ⟨ψ,hprim,hQ,hind⟩
     exact ⟨ψ,hprim,hQ,inducedBy_mask χ χ' ψ r he hind⟩
-end SevenEighths.HeckeMaskDescent
-
-end
-
-end OAI

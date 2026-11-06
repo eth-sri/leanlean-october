@@ -119,4 +119,3 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left hOptimized (by positivity)
     _ = _ := by ring
 
-end Montgomery.RationalMoment

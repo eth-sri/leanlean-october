@@ -10,12 +10,8 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentLiveSupport
-open CenteredMomentSourceLiveColumn CenteredMomentSourceLiveAllocation CenteredMomentRemainingBox
-open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CenteredMomentSourceMass
-open CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentSourceCommonMask
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceLiveColumn CenteredMomentSourceLiveAllocation CenteredMomentRemainingBox CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentSourceCommonMask
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem restore_frozen (B : Tuple ι) (v : Tuple (liveIndices B)) :
     ∀ i,B (Sum.inl i)≠1 → restoreTuple B v (Sum.inl i)=1 := by
@@ -67,9 +63,3 @@ theorem live_column_original_support (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     rw [← he,finiteTupleProduct]
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => hS i _ (Fintype.mem_piFinset.mp hsrc i))
   exact ⟨Finset.mem_image.mpr ⟨_,hsrc,he⟩,right_ne_zero_of_mul hn,hm.1.2.symm⟩
-
-end SevenEighths.CenteredMomentLiveSupport
-
-end
-
-end OAI

@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorRawEnergy
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
-open CenteredMomentDivisorRaw CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem normalized_norm_sq (T : ℝ) (hT : 0 < T) (x : ℂ) :
@@ -76,9 +74,3 @@ theorem allocated_raw_energy (η : Character) (m A z : O) (t : ℝ)
     _ = _ := by
       rw [← raw_scale_identity D a T P,mul_pow]
       field_simp [hraw.ne',hformal.ne']
-
-end SevenEighths.CenteredMomentDivisorRawEnergy
-
-end
-
-end OAI

@@ -244,4 +244,3 @@ theorem abs_re_digamma_sub_log_im_le {z : ℂ} (hz : 0 < z.re)
       exact add_le_add hmain hlogup
     _ = _ := by rw [add_div]
 
-end MathCollab.Density.Stronger.Fourth.Digamma

@@ -7,16 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 
 namespace ActualEisensteinCubic
 
@@ -71,7 +63,6 @@ end ActualEisensteinCubic
 
 namespace ShortDraftLocal
 
-open AddChar MulChar
 
 theorem general_inversion_gauss {F : Type*} [Field F] [Fintype F] [DecidableEq F]
     (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (j : ℕ) (a : F) :
@@ -138,7 +129,6 @@ namespace ActualEisensteinCubic
 
 section
 
-open AddChar MulChar
 
 theorem canonical_A5_nonexceptional (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
@@ -232,7 +222,6 @@ end AnalyticBridge
 
 namespace JacobiQuadratic
 
-open Finset
 
 variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 
@@ -391,9 +380,3 @@ theorem normalized_gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F �
   rw [← hs] at hraw
   field_simp
   linear_combination (gaussSum (χ ^ 2) ψ) * hraw
-
-end JacobiQuadratic
-
-end
-
-end OAI

@@ -69,4 +69,3 @@ theorem ordinary_fourier_integral_sq {f : ℝ → ℂ} (h1 : Integrable f)
         rw [hx]
   exact_mod_cast he
 
-end GuthMaynard.Improvement

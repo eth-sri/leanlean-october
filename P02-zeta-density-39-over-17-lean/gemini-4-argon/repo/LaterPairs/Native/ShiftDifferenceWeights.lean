@@ -94,4 +94,3 @@ theorem sum_signed_shift_differences (N : ℕ) (f : ℤ → ℝ) :
   intro q _
   simp only [Finset.sum_const,nsmul_eq_mul,card_signed_shift_difference]
 
-end TaoTrudgianYang2025

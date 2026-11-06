@@ -198,4 +198,3 @@ theorem actual_typeII_powered_mhh_bounded_uniform_native
     And.intro hCard (And.intro hSep' (And.intro hBase'
       (And.intro hLarge' hBound)))
 
-end GuthMaynard.NativeMoment

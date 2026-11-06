@@ -13,7 +13,6 @@ open scoped Classical BigOperators
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
 lemma radialFourier_vertical_inverse (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     (hW : Function.support W⊆Set.Icc a b) (σ r : ℝ) (hσ : 0<σ) (hr : 0<r) :
@@ -88,8 +87,3 @@ theorem actualFrequency_moment_summable (C : CalibrationData) (A s : O)
   exact mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right (actualCongruenceCoefficient_norm_le C A s hA hs H.val)
       (Real.rpow_nonneg (div_pos hK hd).le _)) (Real.rpow_nonneg (by unfold elementNorm;positivity) _)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

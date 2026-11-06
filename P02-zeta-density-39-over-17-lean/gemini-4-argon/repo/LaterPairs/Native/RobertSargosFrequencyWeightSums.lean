@@ -72,5 +72,4 @@ theorem sum_affine_frequency_rpow_weight_le
           (by norm_num)) (by positivity)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 

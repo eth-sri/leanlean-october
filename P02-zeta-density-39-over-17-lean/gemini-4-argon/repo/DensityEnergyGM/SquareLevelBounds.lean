@@ -58,4 +58,3 @@ theorem square_level_shape_bound {q x U D T K : ℝ}
   have h3' := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right h3 h8) hT
   nlinarith
 
-end GuthMaynard.NativeMoment

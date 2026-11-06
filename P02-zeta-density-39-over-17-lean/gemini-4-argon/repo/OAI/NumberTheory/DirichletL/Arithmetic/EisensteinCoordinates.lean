@@ -209,80 +209,9 @@ theorem eisenstein_norm_nonneg (x : EisensteinCoordinates) :
   dsimp [eisensteinNorm]
   nlinarith [sq_nonneg (2 * a - b), sq_nonneg b]
 
-theorem eisenstein_norm_eq_zero_iff (x : EisensteinCoordinates) :
-    eisensteinNorm x = 0 ↔ x = (0, 0) := by
-  rcases x with ⟨a, b⟩
-  dsimp [eisensteinNorm]
-  constructor
-  · intro h
-    have hb : b = 0 := by
-      nlinarith [sq_nonneg (2 * a - b), sq_nonneg b]
-    have ha : a = 0 := by
-      subst b
-      nlinarith [sq_nonneg a]
-    simp [ha, hb]
-  · intro h
-    simp_all
 
-private lemma square_le_two_squares {x y e : ℝ}
-    (hx : 0 ≤ x) (hy : 0 ≤ y) (he : 0 ≤ e) (h : x ≤ y + e) :
-    x ^ 2 ≤ 2 * y ^ 2 + 2 * e ^ 2 := by
-  have h₁ : 0 ≤ y + e - x := sub_nonneg.mpr h
-  have h₂ : 0 ≤ y + e + x := by nlinarith
-  have h₃ := mul_nonneg h₁ h₂
-  have h₄ := sq_nonneg (y - e)
-  nlinarith
 
-theorem finite_row_extraction {α β : Type*} [DecidableEq α] [DecidableEq β]
-    (rows : Finset α) (primes : Finset β) (row : β → α)
-    (a : α → ℝ) (a₀ error bound : ℝ)
-    (ha₀ : 0 ≤ a₀) (ha : ∀ u, 0 ≤ a u) (herror : 0 ≤ error)
-    (hrows : primes.image row ⊆ rows)
-    (hinj : Set.InjOn row (primes : Set β))
-    (happrox : ∀ p ∈ primes, a₀ ≤ a (row p) + error)
-    (hmean : (∑ u ∈ rows, (a u) ^ 2) ≤ bound) :
-    (primes.card : ℝ) * a₀ ^ 2 ≤
-      2 * bound + 2 * (primes.card : ℝ) * error ^ 2 := by
-  have hselected : (∑ p ∈ primes, (a (row p)) ^ 2) ≤ bound := by
-    calc
-      (∑ p ∈ primes, (a (row p)) ^ 2) =
-          ∑ u ∈ primes.image row, (a u) ^ 2 := by
-            rw [Finset.sum_image hinj]
-      _ ≤ ∑ u ∈ rows, (a u) ^ 2 :=
-        Finset.sum_le_sum_of_subset_of_nonneg hrows (by
-          intro u _ _
-          positivity)
-      _ ≤ bound := hmean
-  have hpoint (p : β) (hp : p ∈ primes) :
-      a₀ ^ 2 ≤ 2 * (a (row p)) ^ 2 + 2 * error ^ 2 :=
-    square_le_two_squares ha₀ (ha _) herror (happrox p hp)
-  have hsum :
-      (∑ p ∈ primes, a₀ ^ 2) ≤
-        ∑ p ∈ primes, (2 * (a (row p)) ^ 2 + 2 * error ^ 2) :=
-    Finset.sum_le_sum hpoint
-  simp only [Finset.sum_add_distrib, ← Finset.mul_sum,
-    Finset.sum_const, nsmul_eq_mul] at hsum
-  nlinarith
 
-theorem complex_row_extraction {α β : Type*} [DecidableEq α] [DecidableEq β]
-    (rows : Finset α) (primes : Finset β) (row : β → α)
-    (A : α → ℂ) (untwisted : α) (error bound : ℝ)
-    (herror : 0 ≤ error)
-    (hrows : primes.image row ⊆ rows)
-    (hinj : Set.InjOn row (primes : Set β))
-    (happrox : ∀ p ∈ primes, ‖A untwisted - A (row p)‖ ≤ error)
-    (hmean : (∑ u ∈ rows, ‖A u‖ ^ 2) ≤ bound) :
-    (primes.card : ℝ) * ‖A untwisted‖ ^ 2 ≤
-      2 * bound + 2 * (primes.card : ℝ) * error ^ 2 := by
-  apply finite_row_extraction rows primes row (fun u ↦ ‖A u‖)
-    ‖A untwisted‖ error bound (norm_nonneg _) (fun u ↦ norm_nonneg _) herror
-    hrows hinj ?_ hmean
-  intro p hp
-  calc
-    ‖A untwisted‖ = ‖(A untwisted - A (row p)) + A (row p)‖ := by
-      rw [sub_add_cancel]
-    _ ≤ ‖A untwisted - A (row p)‖ + ‖A (row p)‖ := norm_add_le _ _
-    _ ≤ ‖A (row p)‖ + error := by linarith [happrox p hp]
 
 end ShortDraft
 
@@ -419,7 +348,3 @@ theorem trivial_fourier_coefficient (ψ : AddChar F ℂ)
       simp only [MulChar.one_apply_coe, one_mul, AddChar.mulShift_apply]
     _ = if h = 0 then (Fintype.card Fˣ : ℂ) else -1 := by
       simpa only [neg_eq_zero] using additive_unit_sum ψ hψ (-h)
-
-end ShortDraftLocal
-
-end OAI

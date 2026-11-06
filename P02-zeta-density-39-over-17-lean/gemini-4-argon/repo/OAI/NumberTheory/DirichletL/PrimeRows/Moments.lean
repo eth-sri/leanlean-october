@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion
-open ProbePhysical
+open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion ProbePhysical
 
 def momentData (η : Character) : RowData where
   η := η
@@ -76,9 +75,3 @@ theorem denominator_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
         excludedTarget_prime,ite_eq_right hP,idealCoeff_inverse_conj,map_mul]
       simp only [starRingEnd_self_apply]
   simpa only [idealCoeff_inverse_conj] using congrArg (fun F : Ideal O→*₀ℂ => F I) he
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -83,4 +83,3 @@ theorem primitive_linear_triple_card_le
     hden hprim hline hratio
   rwa [primitive_divisor_bound_identity hc] at hb
 
-end TaoTrudgianYang2025

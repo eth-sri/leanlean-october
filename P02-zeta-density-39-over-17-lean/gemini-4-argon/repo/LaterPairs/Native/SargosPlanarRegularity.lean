@@ -59,4 +59,3 @@ theorem integrable_sargosPlanarNormSq_window_inner {ι : Type*} (S : Finset ι)
     fun_prop
   exact hc.continuousOn.integrableOn_Icc
 
-end TaoTrudgianYang2025

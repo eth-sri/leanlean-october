@@ -55,4 +55,3 @@ theorem iteratedDeriv_finiteTaylorPolynomial
           rw [he,ih (deriv f) (by omega)]
           simp only [Nat.succ_sub_succ_eq_sub,iteratedDeriv_succ']
 
-end TaoTrudgianYang2025

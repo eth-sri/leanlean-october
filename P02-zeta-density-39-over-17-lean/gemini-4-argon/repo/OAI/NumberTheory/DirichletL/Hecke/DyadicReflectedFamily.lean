@@ -122,9 +122,3 @@ theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
       apply mul_le_mul _ hd (mul_nonneg (norm_nonneg _) (norm_nonneg _)) (by positivity)
       gcongr
     _ = _ := by ring
-
-end SevenEighths.HeckeDyadicReflection
-
-end
-
-end OAI

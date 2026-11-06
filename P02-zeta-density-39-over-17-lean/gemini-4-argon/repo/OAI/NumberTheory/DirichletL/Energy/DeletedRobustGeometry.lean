@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyLiveClippingDefect
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyLiveClippingDefect
 
 theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hZ:1<Z)(hB:0≤Bmask)(Mcap L X₁ X₂ ell z κ xi e:ℝ)
@@ -78,9 +75,3 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     have hh := robust_reflected_low_admissible s.width xi e _ (max 0 (s.width-along+xi)) z κ
       he hreserve hc.2.1 hc.2.2
     simpa only [hd₁.2.2] using hh
-
-end SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
-
-end
-
-end OAI

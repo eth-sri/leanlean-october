@@ -58,4 +58,3 @@ theorem norm_robertSargos_trimmed_shift_error (f : ℝ → ℝ) (M H Q N : ℕ) 
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact_mod_cast robertSargos_h_overlap_card H r
 
-end TaoTrudgianYang2025

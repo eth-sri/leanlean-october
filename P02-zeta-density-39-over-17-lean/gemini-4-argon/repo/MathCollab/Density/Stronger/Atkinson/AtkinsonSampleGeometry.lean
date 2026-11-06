@@ -130,4 +130,3 @@ theorem atkinsonRootSample_mem {T : ℝ} (hT : 0 < T) (m N : ℕ)
     · apply (div_le_iff₀ hs).2
       linarith [hm.2]
 
-end MathCollab.Density.Stronger.Atkinson

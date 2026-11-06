@@ -104,8 +104,3 @@ theorem unramifiedClosed_analytic_z (Q : ℝ) (A eta v x w : ℂ)
   intro z hz
   have hd := open_region_denominators Q A eta v x z hQ hA he hv hx hz.le
   exact (unramifiedClosed_differentiableAt_z Q (by linarith) A eta v x w z hd.1 hd.2.1 hd.2.2).differentiableWithinAt
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

@@ -103,4 +103,3 @@ theorem short_density
   filter_upwards [hslab] with H hh
   exact hh σ hσ hσ'
 
-end GuthMaynard.Improvement

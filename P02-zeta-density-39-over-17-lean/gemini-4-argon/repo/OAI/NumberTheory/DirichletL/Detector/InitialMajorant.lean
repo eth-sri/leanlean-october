@@ -13,7 +13,6 @@ open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CubicEisenstein ProbeRow
 attribute [local fun_prop] fullIdealWeight_continuous
-local notation "O" => ActualEisensteinCubic.O
 abbrev FullHighIndex := NonzeroFrequency×((Ideal O×Ideal O)×(Ideal O×Ideal O))
 
 def initialHighMajorant (σ υ ξ : ℝ) (p : FullHighIndex) : ℝ :=
@@ -79,8 +78,3 @@ lemma fullHighCoefficient_continuous (S : Finset (Ideal O)) (D : Ideal O) (η : 
     (fullIdealWeight_continuous _).comp (by fun_prop)
   exact (continuous_const.mul hc).mul
     (continuous_const.mul ((((continuous_const.mul h1).mul h2).mul h3).mul h4))
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

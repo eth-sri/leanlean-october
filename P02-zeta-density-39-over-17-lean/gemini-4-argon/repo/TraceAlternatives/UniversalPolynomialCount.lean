@@ -144,4 +144,3 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
-end Montgomery.RationalMoment

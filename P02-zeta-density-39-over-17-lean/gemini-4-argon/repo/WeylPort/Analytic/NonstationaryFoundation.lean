@@ -512,4 +512,3 @@ theorem nonstationary_phase_integral_bound {a b : ℝ} (ha : a < b)
   simpa only [e] using
     lemma_aachmonophase ha φ hφ_C1 hφ'_ne0 h g hg hg_cont hg_mon
 
-end ZetaAppendix

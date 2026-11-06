@@ -9,11 +9,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonRadicalHarmonicMass
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentRankinRadical CenteredMomentRankinLabels
-open CenteredMomentWholeDivisorShell CenteredMomentDyadicCount CenteredMomentSectorLocalization
+open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentRankinRadical CenteredMomentRankinLabels CenteredMomentWholeDivisorShell CenteredMomentDyadicCount CenteredMomentSectorLocalization
 open CenteredMomentCommonHarmonicMass (Label Valid commonRadical_norm_le norm_scale_bounds log_square_subpower)
-local notation "O" => ActualEisensteinCubic.O
 
 def weight (v : Label) : ℝ := 1/(Ideal.absNorm (commonRadical v.1.1 v.1.2):ℝ)
 def key (v : Label) : ℤ := normKey (commonRadical v.1.1 v.1.2)
@@ -155,9 +152,3 @@ theorem common_radical_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
     _ ≤ (C*D)*Z^δ/(s.absNorm:ℝ) := by
       exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hZ1 hbudget) (mul_pos hC hD).le) hsn.le
-
-end SevenEighths.CenteredMomentCommonRadicalHarmonicMass
-
-end
-
-end OAI

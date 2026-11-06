@@ -74,6 +74,4 @@ theorem heathBrown_one_add_log_rpow_le
   exact hmain.trans (mul_le_mul_of_nonneg_left hpower (by positivity))
 
 
-end
 
-end GafniTao

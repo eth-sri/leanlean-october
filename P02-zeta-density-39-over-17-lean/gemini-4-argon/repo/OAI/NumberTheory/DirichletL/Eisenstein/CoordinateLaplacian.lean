@@ -8,80 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
+open scoped LineDeriv
 
 def kernelCoordinateLaplacian (f : kernelSmoothTests) (p : EuclideanSpatial) : ℂ :=
   -(p 2:ℂ)^2*(∑j : Fin 3,
@@ -118,8 +51,6 @@ lemma kernelDirichletForm_sum_right {ι : Type*} (f : kernelSmoothTests)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
 
 lemma kernelL2_inner_toLp_smooth (A : KernelQuotient→ℂ)
     (hA : MemLp A 2 (integralQuotientVolume globalKubotaKernel)) (g : kernelSmoothTests) :
@@ -139,10 +70,8 @@ end CubicEisenstein
 
 section
 
-open scoped BigOperators Classical
-open MeasureTheory
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic ConcreteTraceCRT
+open SecondPassArithmetic
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -152,7 +81,7 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 end SecondPassIntegration
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels ConcreteTraceCRT
+open FirstPassCubeLabels
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -160,23 +89,10 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 end SecondPassArithmetic
 end
 
-open scoped BigOperators Classical
-namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct jLabel)
-
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
-
-end SecondPassArithmetic
 
 namespace CanonicalRowCompletion
 
-open MeasureTheory
-open scoped BigOperators Classical
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
+open CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
 
 theorem finite_integral_energy_polynomial {κ : Type*} [Fintype κ]
     (b : ℝ → ℂ) (φ : κ → ℝ → ℂ) (d : ℕ) (E : ℝ) (hE : 0 ≤ E)
@@ -229,11 +145,9 @@ theorem norm_add_sum_sq_le {κ : Type*} (s : Finset κ) (a : ℂ) (b : κ → �
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 namespace CanonicalCoefficientClass
 
 section
-open ActualEisensteinCubic
 open SecondPassArithmetic (rayMonoid conjugateRayMonoid rayMonoid_apply conjugateRayMonoid_apply
   FirstCoreIndex firstCoreTwist sideRayMonoid SecondRayIndex secondRayMinus secondRayPlus)
 open RayFourExpansion (RayCharacter)
@@ -305,7 +219,6 @@ def FactorsModulo (Q : Ideal ActualEisensteinCubic.O) (Ψ : ActualEisensteinCubi
 
 end
 
-open ActualEisensteinCubic
 open ActualEisensteinCoordinates (eval coords eval_coords)
 open ShortDraftLatticeCount (qNat qO_nonneg coords_eval)
 
@@ -357,9 +270,3 @@ lemma fixedBaseConductor_ne_zero (m : ℕ) (hm : m≠0) : fixedBaseConductor m�
   change Ideal.span {((4*m : ℕ) : ActualEisensteinCubic.O)}≠⊥
   rw [ne_eq,Ideal.span_singleton_eq_bot]
   exact_mod_cast Nat.mul_ne_zero (by decide : (4:ℕ)≠0) hm
-
-end CanonicalCoefficientClass
-
-end
-
-end OAI

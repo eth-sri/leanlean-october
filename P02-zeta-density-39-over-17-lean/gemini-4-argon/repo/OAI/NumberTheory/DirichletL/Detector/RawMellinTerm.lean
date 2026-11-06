@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CubicEisenstein
-open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CubicEisenstein EisensteinSchwartzPoisson
 
 def rawPhysicalMellinTerm (η : HeckeFamily.Character) (C : CalibrationData)
     (S : Finset (Ideal O)) (D I J K : Ideal O) (hK : Supported K)
@@ -40,8 +38,3 @@ theorem rawPhysicalMellinTerm_eq_source (η : HeckeFamily.Character)
       (t+1-z) w z,sourceMellinWeight_shear]
   simp only [fullHighCoefficient,frequencyWeight,rawHighEmbedding]
   ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

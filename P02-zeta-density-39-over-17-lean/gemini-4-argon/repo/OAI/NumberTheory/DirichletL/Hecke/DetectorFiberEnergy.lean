@@ -64,9 +64,3 @@ theorem plain_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label�
     (fun u => (w u).frequency) hσ hf hraw
   refine hb.trans ?_
   nlinarith
-
-end SevenEighths.HeckeDetectorFiberEnergy
-
-end
-
-end OAI

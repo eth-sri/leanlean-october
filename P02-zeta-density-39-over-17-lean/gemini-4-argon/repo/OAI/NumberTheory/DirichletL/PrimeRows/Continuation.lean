@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CompletedGauss
 
 lemma actualACube_norm_le (η : Character) (p : O) : ‖actualACube η p‖≤1 := by
   have h := actualAPhase_norm_le_one η p
@@ -26,9 +24,3 @@ def ramifiedProduct (S : Finset (Ideal O)) (hS : SourceExclusions S)
 def continuedCorrection (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
   ramifiedProduct S hS η u x w z*unramifiedProduct S η u x w z
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -112,8 +112,3 @@ lemma poisson_envelope_absorb (M N δ ε ξ H Z P Q : ℝ)
       _ = _ := by rw [hpow]; ring
   have hh := add_le_add hunit htail
   convert hh using 1 <;> dsimp only [S,X,Y] <;> ring
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

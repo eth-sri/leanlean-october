@@ -184,4 +184,3 @@ theorem sum_reciprocals_floor_le {y : ℝ} (hy : 1 ≤ y) :
   simpa only [harmonic_eq_sum_Icc, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast,
     one_div, add_comm] using h
 
-end DhimanKadiriQuesadaHerrera2026

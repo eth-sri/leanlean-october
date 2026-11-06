@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentMobiusRegroup
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMobiusRegroup
 
 lemma divisorPool_supported (G : Finset SupportedIdeal) (D : Id) (hD : D∈divisorPool G Subtype.val) :
     Supported D := by
@@ -59,8 +56,3 @@ theorem finite_pair_mobius_dilation (F G : Finset SupportedIdeal)
     simp only [hf I J h,ite_self])]
   convert supported_divisor_pair_tsum (poolDivisor G D) f using 1
   rw [hd]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

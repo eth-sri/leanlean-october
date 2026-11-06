@@ -42,9 +42,3 @@ theorem prime_column_energy (χ ψ : Character) (P : SmoothMobiusCorrection.Prim
       idealCoeff χ P.val*(P.val.absNorm : ℂ)^(-(1/2 : ℂ))*polynomial ψ true W (D/(P.val.absNorm : ℝ)) σ freq),
     sq_nonneg (‖polynomial ψ true W D σ freq‖-
       ‖polynomial ψ true W (D/(P.val.absNorm : ℝ)) σ freq‖)]
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

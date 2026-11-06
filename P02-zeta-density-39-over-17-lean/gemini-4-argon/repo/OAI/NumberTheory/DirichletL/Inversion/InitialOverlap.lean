@@ -8,12 +8,11 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CanonicalQuadraticSieve IdealMobiusDivisorSum
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic CanonicalQuadraticSieve IdealMobiusDivisorSum UniqueFactorizationMonoid
 
 namespace SevenEighths.InverseInitialOverlap
 
-abbrev O := ActualEisensteinCubic.O
+protected abbrev O := ActualEisensteinCubic.O
 
 def residual (P j : Ideal O) : Ideal O := idealQuotient j P
 
@@ -292,9 +291,3 @@ theorem original_normalized_polynomial (S : Finset (Ideal O)) {P : Ideal O}
   simp only [← mul_assoc] at hf
   rw [hf]
   exact normalized_polynomial_all_overlaps S hP ψ a W hZ r z G
-
-end SevenEighths.InverseInitialOverlap
-
-end
-
-end OAI

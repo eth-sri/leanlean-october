@@ -11,7 +11,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 variable {Nlevel a c₀ : Eis} {mode : Bool}
 
@@ -97,7 +96,3 @@ theorem original_low_member_tuple_full_budget
   intro K hK
   congr 2
   exact (literalWholeRow_eq_member_tuples tuples hmax hgood G K.val (hrows K.val K.property) hne hinj (D K) s hc₀ j W θ X r aw).symm
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

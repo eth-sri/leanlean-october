@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialCanonicalEnergy
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve
-open InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
   (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -79,9 +77,3 @@ theorem initial_child_from_rank (pool:Finset ι)(base Ψ:O→*ℂ)
       rw [←Real.rpow_add (zero_lt_one.trans hZ)]
       congr 3
       ring
-
-end SevenEighths.InverseInitialCanonicalEnergy
-
-end
-
-end OAI

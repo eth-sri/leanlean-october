@@ -116,8 +116,3 @@ theorem integral_physical_nesting {A B C : Type*} [Countable A] [Countable B] [C
   apply integral_congr_ae
   filter_upwards [hb.prod_right_ae] with z hz
   exact integral_count_eq_tsum _ hz
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

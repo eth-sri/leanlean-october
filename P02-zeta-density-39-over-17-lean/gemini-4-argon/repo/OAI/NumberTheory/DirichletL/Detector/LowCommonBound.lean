@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical ContDiff SchwartzMap
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma low_window_log_support (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hW : Function.support W⊆Set.Icc a b) (y : ℝ) (hy : W (Real.exp y)≠0) :
@@ -105,8 +103,3 @@ theorem original_ray_compensatedPhysicalProbe_low (η : HeckeFamily.Character)
   intro i P hP
   have hh := ProbeRaySlots.pool_norm_bounds R S ha.le hab (Real.rpow_pos_of_pos hz _) P hP
   simpa only [mul_comm] using And.intro hh.1.le hh.2
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

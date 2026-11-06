@@ -55,5 +55,4 @@ theorem integerTripleGcd_quotient_primitive {a b c : ℤ} (ha : a ≠ 0) :
   apply Nat.eq_of_mul_eq_mul_left (integerTripleGcd_pos ha)
   simpa only [Nat.mul_one] using he.symm
 
-end TaoTrudgianYang2025
 

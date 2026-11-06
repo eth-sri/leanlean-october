@@ -13,7 +13,6 @@ open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 def actualCellLabelExponent (Z B j eta : ℝ) (d : BlockIndex) : ℝ :=
   secondFormalLabel B (secondCellExponent Z d 1) (secondCellExponent Z d 2) j+4*eta
@@ -119,8 +118,3 @@ theorem actual_cell_child_total_upper {Jo Jn : ℕ}
   rw [actual_cell_total_transition Z r ell V A B t j eta d hZ]
   unfold childF decrease actualCellClipping
   linarith
-
-end SevenEighths.InverseMoment
-end
-
-end OAI

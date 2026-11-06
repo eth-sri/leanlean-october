@@ -252,4 +252,3 @@ theorem caseTwoTests_uniform_stability {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c
     exfalso
     exact hSne ⟨_,hmem v y hv h₅ h₆ hy⟩
 
-end TaoTrudgianYang2025.HuxleyModel

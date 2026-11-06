@@ -12,8 +12,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeEuler CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def globalPrimeDefectBound (P : PrimeIdeal) : ℝ :=
   240*(Ideal.absNorm P.val:ℝ)^(-(17/10:ℝ))
@@ -155,8 +153,3 @@ theorem exists_uniform_global_cutoff :
     exact Summable.tsum_le_tsum_of_inj inc hi
       (fun P _=>globalPrimeDefectBound_nonneg P.val) (fun _=>le_rfl)
       (globalPrimeDefectBound_summable.subtype _) (globalPrimeDefectBound_summable.subtype _)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

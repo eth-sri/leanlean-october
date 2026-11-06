@@ -116,6 +116,4 @@ theorem wooley_padic_separation
     Int.natAbs_mul, Int.natAbs_sign, hd] using hcop
 
 
-end
 
-end GafniTao

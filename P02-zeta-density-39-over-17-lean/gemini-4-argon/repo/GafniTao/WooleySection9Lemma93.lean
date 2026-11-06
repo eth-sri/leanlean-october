@@ -254,6 +254,4 @@ theorem wooleySourcePolynomial_lemma_9_3_of_lemma_9_1
     phi gamma C Lambda delta theta hp hk hrk hC hLambda hdt hb hfirst hsecond
 
 
-end
 
-end GafniTao

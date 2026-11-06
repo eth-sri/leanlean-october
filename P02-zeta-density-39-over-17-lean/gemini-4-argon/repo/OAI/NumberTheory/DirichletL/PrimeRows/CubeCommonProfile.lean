@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 def cubeArithmeticSum {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
@@ -61,9 +60,3 @@ theorem cube_common_profile_integral {K : ℕ} {ι : Type*} [Fintype ι]
     (fun u hu=>⟨ha,ha1,hB,hH,hbin u hu⟩) W Yp W0 W1 a0 b0 a1 b1 ha0 ha1' hW0 hW1 X Y Z hX hY hZ
   dsimp only at hh ⊢
   simpa only [cube_sum_eq_common_profile] using hh
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

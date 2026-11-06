@@ -10,9 +10,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentSmoothedWindowEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
 
 theorem gaussEnergy_hasSum_re {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
@@ -104,9 +102,3 @@ theorem smoothed_window_energy_from_height {α : Type*}
     _ ≤ E*(heightCost t θ*(1+‖w‖))^(2*J) :=
       mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (norm_height_shift t θ w) _) hE
     _ = _ := by rw [mul_pow,mul_assoc]
-
-end SevenEighths.CenteredMomentSmoothedWindowEnergy
-
-end
-
-end OAI

@@ -119,4 +119,3 @@ theorem quartic_good_neighborhood {N T R U w t : ℝ} (hT : 0 < T)
     · apply (div_le_iff₀ hT).mpr
       linarith [htI.2]
 
-end GuthMaynard.Improvement

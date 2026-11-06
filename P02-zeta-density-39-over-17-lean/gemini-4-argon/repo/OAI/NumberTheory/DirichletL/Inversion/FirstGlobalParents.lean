@@ -10,12 +10,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseFirstGlobalParents
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open FirstCauchyArithmetic RayFourExpansion InverseMoment
-open InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource InversePrioritySecondSource
 open InverseInitialArithmetic (sourceIdeal)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def ofOriginal (k : FirstOriginalOuter ι) : Source ι 0 where
@@ -84,13 +80,3 @@ theorem original_fill_valid (p : ι→O) (pool : Finset ι) (Q : Finset (ι→�
   · exact (Finset.mem_powerset.mp hE).trans
       (Finset.union_subset_union_right (Finset.filter_subset _ _))
   · exact fun i=>Fin.elim0 i
-
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
-
-variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-
-end SevenEighths.InverseFirstGlobalParents
-
-end
-
-end OAI

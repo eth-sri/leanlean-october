@@ -82,9 +82,3 @@ theorem eventually_fixed_ray_amplification
       ‖polynomial (data.character ⟨u.val,u.property.1⟩) true W D 0 0‖^2))*Real.log x := by
         field_simp
     _ ≤ _ := mul_le_mul_of_nonneg_right hh hlog.le
-
-end SevenEighths.HeckeInverseAmplification
-
-end
-
-end OAI

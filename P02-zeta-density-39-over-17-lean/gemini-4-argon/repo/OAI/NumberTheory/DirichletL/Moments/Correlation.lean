@@ -239,8 +239,3 @@ theorem fullCorrelation_reduction_unit_left (π : A →+* B)
   rw [fullCorrelation_swap (fun x : B => π v * x) (fun y : B => π u * y) f g (π k)]
   simp only [map_neg, star_mul, star_natCast]
   ring
-
-end
-end SevenEighths.CenteredMomentCorrelation
-
-end OAI

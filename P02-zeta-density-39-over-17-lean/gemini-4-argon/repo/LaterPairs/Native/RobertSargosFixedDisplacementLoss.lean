@@ -53,5 +53,4 @@ theorem exists_robertSargos_fixed_displacement_linear_bound (ε : ℝ) (hε : 0 
   exact (robertSargos_fixed_displacement_linear_card_le S hc hd hR hH hQ hδ hq₁ hq₂ hs
     hh₁ hh₂ hr hp hl hn).trans (hdiv d.natAbs (72*H*R) (Int.natAbs_pos.mpr hd) (by positivity))
 
-end TaoTrudgianYang2025
 

@@ -12,7 +12,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem uniform_original_row_central_error (K : ℕ)
@@ -75,9 +74,3 @@ theorem uniform_original_row_central_error (K : ℕ)
       · exact hj (-H) (by rw [abs_neg,abs_of_nonneg hH0])
       · exact hj H (abs_of_nonneg hH0)
     _ = _ := by dsimp [A];ring
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

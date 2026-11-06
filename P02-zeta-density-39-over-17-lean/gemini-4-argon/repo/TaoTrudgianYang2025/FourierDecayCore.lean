@@ -158,4 +158,3 @@ theorem one_add_abs_fourier_decay_of_support_of_bounds_order
           _ ≤ ((2 : ℝ) ^ p * (D - C)) * (K₀ + Kp) :=
             mul_le_mul_of_nonneg_left hmono (mul_nonneg (by positivity) hLen)
 
-end RiemannZeta.GuthMaynard

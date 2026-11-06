@@ -82,4 +82,3 @@ theorem modelPhaseLegendreDual_expanded_allOrder_uniformity
     iteratedDeriv_modelPhase_expanded_inverseJet_formula hσ hvpos n]
   exact hbound F δ _ hδ hpos hP hF (by omega) v hv
 
-end TaoTrudgianYang2025

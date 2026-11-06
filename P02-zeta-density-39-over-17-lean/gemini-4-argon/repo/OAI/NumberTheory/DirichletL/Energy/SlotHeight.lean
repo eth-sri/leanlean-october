@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergySlotHeight
-open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
-open CenteredMomentHeckeSlots CenteredMomentCommonMaskEnergy
-open HeckePrimeAnnular CenteredMomentPrimeSlotShift
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentHeckeSlots CenteredMomentCommonMaskEnergy HeckePrimeAnnular CenteredMomentPrimeSlotShift
 
 variable {α:Type*}[Fintype α]
 
@@ -80,9 +77,3 @@ theorem inherited_height_energy (η:Character)(m A:O)(W₁ W₂:ℝ→ℂ)
     exact height_coefficient (ν i) (W i) (P i) (σ i) (freq i) t (hP i) I (hpool i I hi)
   · intro i
     simpa using Complex.norm_cpow_eq_rpow_re_of_pos (hP i) (Complex.I*t)
-
-end SevenEighths.CenteredMomentEnergySlotHeight
-
-end
-
-end OAI

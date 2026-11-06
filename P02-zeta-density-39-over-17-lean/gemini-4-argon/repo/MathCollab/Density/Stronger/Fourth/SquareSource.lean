@@ -15,9 +15,7 @@ public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology ArithmeticFunction
-open MathCollab.Density.Contour MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set Topology ArithmeticFunction MathCollab.Density.Contour MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open scoped ArithmeticFunction.zeta ArithmeticFunction.sigma BigOperators Interval
   LSeries.notation ComplexConjugate
 set_option autoImplicit false
@@ -414,4 +412,3 @@ theorem completedZeta_square_eq_norm_mul_gamma (t : ℝ) :
         completedRiemannZeta_eq_zeta_mul_GammaR (by norm_num [afeCriticalPoint])]
     _ = _ := by rw [hnorm]; unfold zetaSquareGammaNormalization; ring
 
-end MathCollab.Density.Stronger.Fourth

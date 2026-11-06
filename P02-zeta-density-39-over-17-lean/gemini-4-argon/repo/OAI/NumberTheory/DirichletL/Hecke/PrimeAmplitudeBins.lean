@@ -141,9 +141,3 @@ theorem common_bin_selection {ι : Type*} (slots : Finset ι) (w g : ι→ℝ)
   intro i hi hgi
   rw [←hQ i hi] at hgi ⊢
   exact squared_spike U (w i) (δ/2) binWidth (Q i) hU (hw i hi) hbin hgi
-
-end SevenEighths.HeckePrimeAmplitudeBins
-
-end
-
-end OAI

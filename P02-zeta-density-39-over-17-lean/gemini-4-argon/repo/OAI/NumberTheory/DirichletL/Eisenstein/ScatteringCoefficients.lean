@@ -10,78 +10,11 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 def cubicEisensteinResidue : KernelQuotientL2 :=
   kernelEisensteinResidueVector 2 3 (by norm_num) (by norm_num)
@@ -136,8 +69,6 @@ lemma cubicEisensteinLocalFamily_initial_ae (S : Set KernelQuotient) (hS : IsCom
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 def whittakerHeight (v : ℝ) : ℝ := max 5 v
 def whittakerBase (p : ℝ × ℂ) : ℝ := whittakerHeight p.1*(1+‖p.2‖^2)
@@ -320,9 +251,7 @@ theorem cuspWhittakerAverage_differentiableAt (freq s : ℂ) (hs : 1<s.re) :
 end
 
 section
-open scoped BigOperators Classical
 
-open ActualEisensteinCubic ConcreteTraceCRT
 
 lemma arithmeticDirichletTerm_differentiable (h : ActualEisensteinCubic.O) (c : LevelLower) :
     Differentiable ℂ (fun s : ℂ => arithmeticDirichletTerm s h c) := by
@@ -380,10 +309,8 @@ theorem scatteringCoefficient_analyticOnNhd (h : ActualEisensteinCubic.O) :
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace ComplexConjugate MatrixGroups ENNReal
+open scoped InnerProductSpace ComplexConjugate MatrixGroups ENNReal
 
-local notation "O" => ActualEisensteinCubic.O
 
 lemma cuspPeriodStrip_measure_ne_top : hyperbolicVolume (cuspPeriodStrip 5 6)≠(⊤:ℝ≥0∞) := by
   have hm := kernelProjection_cuspPeriodStrip_measurePreserving 5 6 (by norm_num)
@@ -509,10 +436,8 @@ lemma kernelCuspFourierFamily_of_initial_overlap (h : ActualEisensteinCubic.O) (
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
-local notation "O" => ActualEisensteinCubic.O
 
 lemma hyperbolicEisenstein_cusp_fourier_average (s : ℂ) (hs : 2<s.re) (h : ActualEisensteinCubic.O) :
     (∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s w*cuspFourierPhase h w∂hyperbolicVolume)=
@@ -573,10 +498,7 @@ lemma kernelCuspFourierFamily_nonzero_of_initial_overlap (h : ActualEisensteinCu
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
-local notation "O" => ActualEisensteinCubic.O
 
 lemma sourceFourierKernel_continuous_freq (s : ℂ) (hs : 1<s.re) :
     Continuous (sourceFourierKernel s) := by
@@ -676,9 +598,3 @@ lemma cuspWhittakerHeightFactor_center_ne_zero (h : ActualEisensteinCubic.O) :
   norm_num only [Complex.ofReal_div,Complex.ofReal_ofNat] at hh
   rw [he,Complex.zero_re] at hh
   exact lt_irrefl 0 hh
-
-end CubicEisenstein
-
-end
-
-end OAI

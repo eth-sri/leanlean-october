@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeBoundary
 
-open ActualEisensteinCubic Complex
-open SevenEighths.IdealEuler SevenEighths.IdealCharacter
+open ActualEisensteinCubic Complex SevenEighths.IdealEuler SevenEighths.IdealCharacter
 open SmoothMobiusCorrection (PrimeIdeal)
 open Asymptotics Filter
 open scoped BigOperators Classical Topology
@@ -555,11 +554,3 @@ theorem residue_boundary_ne_zero_of_series_eq (M : Ideal O) [Finite (O ⧸ M)]
     hEq hEq₂ t
     (series_isBigO_near_one_horizontal _ (norm_ofResidue_le_one M 1 (one_unitInvariant M)))
     hL hL₂
-
-end Quadratic
-
-end
-
-end SevenEighths.HeckeBoundary
-
-end OAI

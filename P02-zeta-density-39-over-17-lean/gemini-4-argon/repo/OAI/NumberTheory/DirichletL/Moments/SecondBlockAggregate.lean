@@ -13,17 +13,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondBlockAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst
-open CenteredMomentSecondLocalization CenteredMomentSecondSectorFrequency
-open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentHeckeColumnWindow
-open CenteredMomentSectorLocalization CenteredMomentActiveSource
-open CenteredMomentSecondRetainedAggregate CenteredMomentSecondRetainedRows
-open CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition
-open CenteredMomentSecondPhysicalWindow CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst CenteredMomentSecondLocalization CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization CenteredMomentActiveSource CenteredMomentSecondRetainedAggregate CenteredMomentSecondRetainedRows CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition CenteredMomentSecondPhysicalWindow CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel
 
 abbrev ActiveLabel (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
   ↥(commonLabels (supportedColumns (activeSource S β)) (supportedColumns (activeSource S β)))
@@ -120,9 +110,3 @@ lemma common_height_norm_le_one (η : Character) (t : ℝ) (C D : Ideal O)
   have hc := CenteredMomentSourceSecondZeroEnergy.heightCoeff_norm_le_one η t C hC
   have hd := CenteredMomentSourceSecondZeroEnergy.heightCoeff_norm_le_one η t D hD
   nlinarith [norm_nonneg (heightCoeff η t C),norm_nonneg (heightCoeff η t D)]
-
-end SevenEighths.CenteredMomentSecondBlockAggregate
-
-end
-
-end OAI

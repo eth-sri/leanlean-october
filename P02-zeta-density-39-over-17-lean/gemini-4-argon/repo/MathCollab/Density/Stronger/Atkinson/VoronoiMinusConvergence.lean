@@ -12,8 +12,7 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -127,4 +126,3 @@ theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits (q : ℕ) [NeZer
   · simpa [HIntegral'] using htop.const_smul (1/(2*Real.pi*I) : ℂ)
   · simpa [HIntegral'] using hbottom.const_smul (1/(2*Real.pi*I) : ℂ)
 
-end MathCollab.Density.Stronger.Atkinson

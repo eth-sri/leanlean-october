@@ -133,6 +133,4 @@ theorem heathBrown_integratedWeyl_le_source_moments
       · exact_mod_cast fordVinogradovMomentNat_mono s (k - 1) hQH
 
 
-end
 
-end GafniTao

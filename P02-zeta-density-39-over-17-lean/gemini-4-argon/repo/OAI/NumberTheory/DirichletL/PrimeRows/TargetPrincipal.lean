@@ -10,8 +10,6 @@ open scoped Classical BigOperators Topology
 open Filter UniqueFactorizationMonoid
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 def targetPrincipalSupport (η : Character) : Finset (Ideal O) :=
   (normalizedFactors (η.modulus*Ideal.span {rowMaskElement}*Ideal.span {(72:O)})).toFinset
@@ -69,9 +67,3 @@ theorem excluded_target_nonprincipal_eventually (η : Character) (d : ℝ) (hd :
   intro hp
   have hp' := (HeckeFiniteDeletion.principal_iff_of_mask _ _ (excludePrimes_mask (targetRow η u) S hS)).mp hp
   exact not_lt_of_ge (principal_target_row_norm_bound η u hs hp') (hZ.trans_le hu)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

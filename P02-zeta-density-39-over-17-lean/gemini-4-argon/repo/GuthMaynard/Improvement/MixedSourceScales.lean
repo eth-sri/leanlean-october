@@ -94,4 +94,3 @@ theorem mixed_source_retained_core {ε T Q Y : ℝ}
       SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual^3*Q^2*(8*Q*((R:ℝ)*K))*H := by gcongr
     _ = _ := by ring
 
-end GuthMaynard.Improvement

@@ -9,10 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers IdealMobiusDivisorSum
 
 theorem actual_complete_energy_from_live_bins (K:ℕ)(b L eps:ℝ)
     (hb:0≤b)(hL:0≤L)(heps:0<eps) :
@@ -62,9 +59,3 @@ theorem actual_complete_energy_from_live_bins (K:ℕ)(b L eps:ℝ)
     · ring
     · rw [←hh];ring
   exact hs.trans (add_le_add (mul_le_mul_of_nonneg_left hshort (by norm_num:0≤(2:ℝ))) ha')
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

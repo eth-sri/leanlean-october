@@ -107,4 +107,3 @@ theorem affine_input_integrals (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) :
       Measure.integral_comp_mul_left (fun x => f x^2) L]
     simp [abs_of_pos hL,smul_eq_mul]
 
-end GuthMaynard.Improvement

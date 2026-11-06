@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def cubicQuotientCharacter (I : Ideal O) (hI : Admissible I) : MulChar (O ⧸ I) ℂ where
   toFun := CompletedGauss.cubicRow I hI.2
@@ -136,8 +135,3 @@ theorem cubicPairGauss_separation (I J : Ideal O) (hI : Admissible I) (hJ : Admi
     simp only [star_div₀, Complex.star_def, Complex.conj_ofReal]
     ring
   exact halg _ _ _ _
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

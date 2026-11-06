@@ -51,4 +51,3 @@ theorem modelPhaseDualParameter_cancel (σ : ℝ) {A : ℝ}
     A^(1-σ⁻¹)*T*A^(σ⁻¹-1) = (A^(1-σ⁻¹)*A^(σ⁻¹-1))*T := by ring
     _ = T := by rw [h,one_mul]
 
-end TaoTrudgianYang2025

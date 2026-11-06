@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonSectors
 open CenteredMomentCompleteCommon CenteredMomentSupport IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
 
 theorem primeSupport_mul (I J : Ideal O) (hI : I≠0) (hJ : J≠0) :
     primeSupport (I*J)=primeSupport I∪primeSupport J := by
@@ -62,9 +61,3 @@ theorem reconstructed_commonParts (C D a b : Ideal O)
   · rw [commonPart_eq_supportExtract,commonSupport_comm (D*b) (C*a),hs,
       supportExtract_mul D b hD hb,
       supportExtract_of_subset D hD _ (by rw [hCD]),supportExtract_of_disjoint b _ h₂.symm,mul_one]
-
-end SevenEighths.CenteredMomentCommonSectors
-
-end
-
-end OAI

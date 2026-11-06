@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve InverseTerminalWidths InverseReflectedPhase CompletedHeight
 universe v
 
 theorem short_harmonic_small_power (L e:ℝ) (hL:0≤L) (he:0<e):
@@ -37,9 +35,3 @@ theorem short_harmonic_small_power (L e:ℝ) (hL:0≤L) (he:0<e):
   apply Real.rpow_le_rpow_of_exponent_le hZ
   have heq:a*(2*(L+1))=e:=by dsimp [a]; field_simp
   nlinarith
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

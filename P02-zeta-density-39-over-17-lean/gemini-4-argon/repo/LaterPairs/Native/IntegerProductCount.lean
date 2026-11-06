@@ -58,5 +58,4 @@ theorem exists_positive_integer_product_pairs_bound (ε : ℝ) (hε : 0 < ε) :
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg _) hM hε.le) hC.le
 
-end TaoTrudgianYang2025
 

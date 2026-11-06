@@ -93,4 +93,3 @@ theorem large_values {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
       T_ge_two := hT, N_pos := hN, V_pos := hV, scale_lower := hlow, scale_upper := hhigh
       height := hheight, coefficients := ha, location := ht₀, separated := hsep, large := hlarge }
 
-end MathCollab.Density

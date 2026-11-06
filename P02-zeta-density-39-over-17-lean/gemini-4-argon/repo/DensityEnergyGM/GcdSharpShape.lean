@@ -93,4 +93,3 @@ theorem sharp_second_shape_sqrt_min {M T R E H K : ℝ}
         add_left_comm, mul_assoc, mul_comm, mul_left_comm] using
         add_le_add (add_le_add hFirst hSecond) hThird
 
-end Montgomery.RationalMoment

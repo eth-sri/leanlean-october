@@ -9,12 +9,8 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
-open SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialKernelBridge
-open SevenEighths.InverseInitialEnergyCallerFamily SevenEighths.InverseInitialProfile
+open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialKernelBridge SevenEighths.InverseInitialEnergyCallerFamily SevenEighths.InverseInitialProfile
 namespace SevenEighths.InverseInitialEnergyCallerModes
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -155,9 +151,3 @@ theorem canonicalPairMode_rectangle
   rw [hleft,hright]
   simp only [markedModeColumn,sourcePoint]
   ring
-
-end SevenEighths.InverseInitialEnergyCallerModes
-
-end
-
-end OAI

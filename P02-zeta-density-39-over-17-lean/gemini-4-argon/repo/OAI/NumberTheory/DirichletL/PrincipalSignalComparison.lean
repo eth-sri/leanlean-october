@@ -466,8 +466,3 @@ theorem exists_normalized_actual_source_bound (E : Finset (Ideal HeckeFamily.O))
       (fun _ p => idealCoeff η p.val) hc hmass hB hbnd.1
   rw [he.2]
   exact hbnd.2
-
-end SevenEighths.PrincipalSignalComparison
-end
-
-end OAI

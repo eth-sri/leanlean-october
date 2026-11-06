@@ -11,10 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalRowSource QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource QuadraticInitialBound
 
 private lemma ledger_loss_mono (Z d ell A B P w:ℝ)(hZ:1≤Z)(hd:0≤d)(hell:0≤ell)
     (hA:0≤A)(hB:0≤B)(hP:0≤P):
@@ -120,9 +117,3 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
       apply hh.trans
       convert mul_le_mul_of_nonneg_left htotal hfront using 1 ; dsimp only [P,A,B,Rcap] ; ring
     _=_:=by rw [Real.norm_eq_abs];ring
-
-end SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
-
-end
-
-end OAI

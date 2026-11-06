@@ -8,9 +8,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 
 def outsideCanonicalMarkedRow {σ : Type*} [DecidableEq σ]
     (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S)
@@ -71,8 +69,3 @@ theorem outsideCanonicalMarkedRow_reopened {σ : Type*} [DecidableEq σ]
   intro B hB
   rw [marked_inner_completed_sum _ W X hX B (outsideIdealsUpTo_ne_bot S D B hB)]
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

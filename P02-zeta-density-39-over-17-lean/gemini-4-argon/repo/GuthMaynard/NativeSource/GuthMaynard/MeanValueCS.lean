@@ -35,4 +35,3 @@ lemma complex_sum_sq_le_card_mul_sum_sq {ι : Type*} (s : Finset ι) (f : ι →
   have h5 : (∑ i ∈ s, ‖f i‖)^2 ≤ (s.card : ℝ) * ∑ i ∈ s, ‖f i‖^2 := sum_sq_le_card_mul_sum_sq s (fun i => ‖f i‖)
   exact le_trans h4 h5
 
-end GuthMaynard.NativeMoment

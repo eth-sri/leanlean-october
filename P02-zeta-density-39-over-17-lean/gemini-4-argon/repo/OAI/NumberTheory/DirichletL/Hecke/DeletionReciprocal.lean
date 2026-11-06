@@ -43,9 +43,3 @@ theorem exists_primitive_reciprocal_reduction (σ ε : ℝ) (hσ : 0 < σ) (hε 
   have hfb : ‖(factors χ.modulus ψ s)⁻¹‖ ≤ C*((radical χ.modulus).absNorm : ℝ)^ε := by
     linarith [norm_nonneg (factors χ.modulus ψ s)]
   simpa only [mul_comm] using mul_le_mul_of_nonneg_left hfb (norm_nonneg (reciprocal ψ s))
-
-end SevenEighths.HeckeDeletionReciprocal
-
-end
-
-end OAI

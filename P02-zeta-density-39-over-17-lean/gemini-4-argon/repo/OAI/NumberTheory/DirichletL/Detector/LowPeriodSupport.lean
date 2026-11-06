@@ -10,9 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 lemma lowCalibrationGood_dvd (C : CalibrationData)
     (D : GoodMaskRowData C.generator 1 C.generator) : D.numeratorGood∣C.generator := by
@@ -60,8 +57,3 @@ theorem lowSingleSlotWeight_zero_of_period (η : HeckeFamily.Character)
     exact hperiod (lowBaseModulus_coprime η _ _ (calibration_generator_bad S hS hbad).1
       (calibration_generator_bad S hS hbad).2 n hcn hh)
   simp [lowSingleSlotWeight,heta]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

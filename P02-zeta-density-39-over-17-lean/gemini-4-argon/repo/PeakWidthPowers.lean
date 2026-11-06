@@ -38,4 +38,3 @@ theorem width_second_term {a g b K P L V H : ℝ}
   have hLb : L^b ≠ 0 := (Real.rpow_pos_of_pos hL _).ne'
   have hPb : (16*P)^b ≠ 0 := (Real.rpow_pos_of_pos (by positivity) _).ne'
   field_simp
-end Montgomery.CriticalPeak

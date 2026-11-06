@@ -10,13 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSectorRetained
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondSectorColumns CenteredMomentSecondSectorFrequency CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondLedger CenteredMomentCanonicalFirst
-open CenteredMomentSecondWholeKernel CenteredMomentFirstLocalization CenteredMomentSectorLocalization
-open CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondSectorColumns CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentSecondLedger CenteredMomentCanonicalFirst CenteredMomentSecondWholeKernel CenteredMomentFirstLocalization CenteredMomentSectorLocalization CenteredMomentSourceRow
 
 def physicalKernel (C D : Ideal O) (W : 𝓢(ℝ,ℂ)) (K R : ℝ)
     (j : O) (I J : Ideal O) : ℂ :=
@@ -76,9 +70,3 @@ theorem actual_retained_sector_GV (η : Character) (t : ℝ)
     ((physical_sector_summable η t S β C D hC hD W K R hK).comp_injective
       (mul_right_injective₀ (commonFrequencyGenerator_ne_zero C D hC)))]
   exact Finset.sum_congr rfl (fun U _=>sectorFrequency_partition_nonunit η t S β C D hC hD U _)
-
-end SevenEighths.CenteredMomentSecondSectorRetained
-
-end
-
-end OAI

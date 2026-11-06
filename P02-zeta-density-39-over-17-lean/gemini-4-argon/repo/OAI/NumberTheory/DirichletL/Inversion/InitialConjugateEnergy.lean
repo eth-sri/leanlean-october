@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseInitialConjugateEnergy
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CompletedGauss ConcreteTraceCRT
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialRayAttachment
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss ConcreteTraceCRT InverseInitialOverlap InverseInitialPoissonBridge InverseInitialRayAttachment UniqueFactorizationMonoid IdealMobiusDivisorSum
 
 def conjugateIdealCharacter (η : Ideal O →* ℂ) : Ideal O →* ℂ where
   toFun I := star (η I)
@@ -250,9 +246,3 @@ theorem real_smoothed_sum_eq (Φ : 𝓢(ℝ,ℂ))
     · rfl
     · simpa only [Complex.ofReal_im] using hΦ _ (div_nonneg (sq_nonneg _) hY.le)
   rw [he,Complex.ofReal_mul]
-
-end SevenEighths.InverseInitialConjugateEnergy
-
-end
-
-end OAI

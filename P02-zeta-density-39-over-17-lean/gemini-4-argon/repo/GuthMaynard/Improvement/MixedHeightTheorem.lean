@@ -103,4 +103,3 @@ theorem mixed_height_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β
           _ ≤ C := le_add_of_nonneg_left (by positivity)
           _ ≤ C*T^ε := le_mul_of_one_le_right hC.le hpow
 
-end GuthMaynard.Improvement

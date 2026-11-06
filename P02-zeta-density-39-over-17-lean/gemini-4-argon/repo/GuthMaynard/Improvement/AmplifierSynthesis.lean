@@ -106,4 +106,3 @@ theorem amplifier_synthesis_column_norm (ν : Measure ℝ) [IsFiniteMeasure ν]
   filter_upwards [amplifier_synthesis_column ν hN hNL hl hu a w hw q] with t ht
   rw [ht,norm_mul,phase_norm,one_mul]
 
-end GuthMaynard.Improvement

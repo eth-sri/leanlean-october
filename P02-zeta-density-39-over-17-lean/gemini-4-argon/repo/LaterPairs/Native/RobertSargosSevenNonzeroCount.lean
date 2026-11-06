@@ -78,5 +78,4 @@ theorem exists_robertSargos_seven_nonzero_count (ε : ℝ) (hε : 0 < ε) :
           (robertSargos_count_multiplicity_algebra hN hB hε.le) hC.le) (by positivity)
     _ = _ := by rw [show N*(R*H*Q) = R*N*H*Q from by ring]
 
-end TaoTrudgianYang2025
 

@@ -10,19 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentAmplificationRadicalChoice
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
-open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
-local notation "O"=>ActualEisensteinCubic.O
-local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentGaussNormalization CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy CenteredMomentFirstScale CenteredMomentChildRows CenteredMomentHeckeExpansion
 
 theorem exists_pool_error_families {ι : Type*} [Fintype ι]
     (P : Finset (Ideal O)) (hP : ∀Q∈P,Prime Q) (hbad : ∀Q∈P,Q∉fixedBadPrimes)
@@ -216,9 +204,3 @@ theorem eventually_original_amplification_common {ι : Type*} [Fintype ι]
     intro i _
     exact child_energy_common D.active (τ p i) p (errorIndex i) t T Z d K0 kdyad cLog sigma
       _ reserve hT.le hZ hδ henclose hsupport.2
-
-end SevenEighths.CenteredMomentAmplificationRadicalChoice
-
-end
-
-end OAI

@@ -74,9 +74,3 @@ theorem plain_requested_capacity (Δ x t r m ε ν : ℝ)
   have heq : 6*(3/4+2*Δ)=9/2+12*Δ := by ring
   rw [heq,mul_sub,mul_div_cancel₀ _ hd.ne']
   nlinarith [mul_nonneg hd.le hν]
-
-end SevenEighths.HeckeDetectorBranchBudget
-
-end
-
-end OAI

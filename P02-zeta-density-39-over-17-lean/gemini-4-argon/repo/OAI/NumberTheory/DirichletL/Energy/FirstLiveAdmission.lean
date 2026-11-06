@@ -17,26 +17,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstLiveAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
-open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
-open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
-open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps
-open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
-open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
-local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily CenteredMomentSourceLiveColumn CenteredMomentActiveSource CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CompletedGauss RayFourExpansion CenteredMomentLogDyadic CenteredMomentRowNorm
 
 theorem first_block_active_rows_nonempty
     (η : Character) (m A : O) (t : ℝ) (S : Finset (Ideal O)) (c : Ideal O → ℂ)
@@ -224,9 +205,3 @@ theorem eventually_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
     hKm hξ hV hKmInv hRN hJN htau
   exact ⟨ready_mono _ _ _ Z ξ _ _ hz.le (common_exponent_le A P ξ hA hP hξ1) hr,
     main_lower_support N l a hl ha s hc hs hW₁ hW₂ (columnIdeal C D side) R seed B τ t⟩
-
-end SevenEighths.CenteredMomentEnergyFirstLiveAdmission
-
-end
-
-end OAI

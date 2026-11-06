@@ -41,4 +41,3 @@ theorem supportIndexMap_term {L : ℕ} (hL : 0 < L) {f g : ℝ → ℝ}
   field_simp [hLr,hqr]
   ring
 
-end GuthMaynard.Improvement

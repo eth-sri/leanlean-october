@@ -133,13 +133,5 @@ We intentionally keep the helper lemmas above in this file so the final proof ca
 only reference re-usable bounds.
 -/
 
-end Volume
 
-end
 
-end L2Compactness
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov

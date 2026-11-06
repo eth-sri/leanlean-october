@@ -43,4 +43,3 @@ theorem second_derivative_scale_bound {N C α : ℝ}
     _ = 12*(C*N*(α/Real.sqrt α)+2/Real.sqrt α) := by ring
     _ = _ := by rw [Real.div_sqrt]
 
-end TaoTrudgianYang2025

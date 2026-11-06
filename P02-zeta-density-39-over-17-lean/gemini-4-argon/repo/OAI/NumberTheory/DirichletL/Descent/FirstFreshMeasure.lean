@@ -12,8 +12,3 @@ open MeasureTheory JointLogSeparation
 noncomputable section
 
 def firstRelativeLog (q s : Fin 9 → ℝ) (i : Fin 9) : ℝ := Real.log (q i/s i)
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

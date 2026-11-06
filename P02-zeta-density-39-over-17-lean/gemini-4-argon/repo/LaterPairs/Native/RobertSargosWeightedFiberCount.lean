@@ -78,4 +78,3 @@ theorem robertSargos_card_le_weighted_frequency_sum
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hs hC
 
-end TaoTrudgianYang2025

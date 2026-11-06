@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 def rowAmplitudeOnLines {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
@@ -113,9 +112,3 @@ theorem continuedPhysicalRowKernel_first_integrable {K : ℕ}
     rw [heq]
     exact hs.aestronglyMeasurable.mul hm.aestronglyMeasurable
   exact hi.mono' hk (Filter.Eventually.of_forall fun t=>by rw [continuedRowOnLines_eq_amplitude,norm_mul])
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

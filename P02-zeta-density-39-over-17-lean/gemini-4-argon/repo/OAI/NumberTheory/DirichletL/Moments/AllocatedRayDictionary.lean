@@ -10,13 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentAllocatedRayDictionary
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation
-open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot HeckePrimeAnnular CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
 
 variable {α : Type*} [Fintype α] [DecidableEq α]
 
@@ -39,7 +33,6 @@ def originalImage (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C)
 
 section RayData
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 structure Matches (s : Input α) (η₀ : Character)
@@ -113,12 +106,3 @@ theorem common_energy (τ : Character) (v : ℝ) (C R : Ideal O)
     (fun i I => idealCoeff (relativeCharacter M H hH η₀ (θ i)) I *
       annularWeight W (Z^(w i)) (σ i) (v+freq i) I)
     (fun i => Z^(w i)) 0 X₁ X₂ keep Φ K
-
-omit h
-
-end RayData
-end SevenEighths.CenteredMomentAllocatedRayDictionary
-
-end
-
-end OAI

@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
 
 def centralRowScalar (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
@@ -88,8 +87,3 @@ theorem calibrated_prime_slots_separate {K : ℕ}
       exact (Fintype.prod_sum (fun i (P:T i)=>W i ((P.val.val.absNorm:ℝ)/Y i)*
         (P.val.val.absNorm:ℂ)^(z-1)*centralNormalizedSlot η u P.val
           (outside_prime_supported S hS.bad P.val (hPS i P.val P.property)) x w z)).symm
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

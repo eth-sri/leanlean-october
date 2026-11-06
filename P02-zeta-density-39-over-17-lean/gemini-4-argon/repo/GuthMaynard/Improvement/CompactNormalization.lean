@@ -80,4 +80,3 @@ theorem compact_smoothing_normalized_fourier {a b : ℝ} (hab : a ≤ b) (j : �
     _ ≤ δ⁻¹^j*C*((b-a+4)*U) := mul_le_mul_of_nonneg_left hm' hp
     _ = _ := by ring
 
-end GuthMaynard.Improvement

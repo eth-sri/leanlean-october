@@ -11,16 +11,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroComparison
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource
-open CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
-open CenteredMomentRetainedProfile CenteredMomentRetainedEnergy
-open CenteredMomentHeckeExpansion CenteredMomentOriginalCommonHarmonic
-open CenteredMomentAmplificationChildInput CenteredMomentSourceRow
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentSourceProfileMass CenteredMomentHeckeHeight CenteredMomentSourceMass
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy CenteredMomentRetainedProfile CenteredMomentRetainedEnergy CenteredMomentHeckeExpansion CenteredMomentOriginalCommonHarmonic CenteredMomentAmplificationChildInput CenteredMomentSourceRow CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSecondHeightFamily CenteredMomentSourceProfileMass CenteredMomentHeckeHeight CenteredMomentSourceMass
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
 def smallScale (b:ℝ):ℝ:=1/(2*max 1 b)
 
@@ -73,9 +65,3 @@ lemma comparison_energy_zero (s:Input ι)(hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)
   unfold CenteredMomentInductionEnergy.energy
   simp only [comparison_row_zero s hz₁ hz₂ R, norm_zero, zero_pow (by decide : (2:ℕ)≠0),
     zero_mul, ite_self, tsum_zero]
-
-end SevenEighths.CenteredMomentEnergyZeroComparison
-
-end
-
-end OAI

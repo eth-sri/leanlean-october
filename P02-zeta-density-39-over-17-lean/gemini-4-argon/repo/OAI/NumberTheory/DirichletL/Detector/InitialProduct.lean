@@ -10,7 +10,6 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
-local notation "O" => ActualEisensteinCubic.O
 
 theorem initialHigh_counting_product_integrable {ι : Type*} [Countable ι]
     [MeasurableSpace ι] [MeasurableSingletonClass ι]
@@ -35,8 +34,3 @@ theorem initialHigh_counting_product_integrable {ι : Type*} [Countable ι]
     rw [norm_mul]
     exact mul_le_mul_of_nonneg_right
       (initialHighOnLines_norm_le S D η mask hm σ υ ξ (e p.1) p.2) (norm_nonneg _)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

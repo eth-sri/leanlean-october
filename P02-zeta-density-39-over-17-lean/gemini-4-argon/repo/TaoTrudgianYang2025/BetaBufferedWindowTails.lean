@@ -97,4 +97,3 @@ theorem norm_bufferedNormalizedMode_sub_window_le
       field_simp
       ring
 
-end TaoTrudgianYang2025

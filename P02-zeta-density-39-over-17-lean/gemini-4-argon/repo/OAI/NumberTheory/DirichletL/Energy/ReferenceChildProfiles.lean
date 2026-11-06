@@ -9,15 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceChildProfiles
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyProfiles
-open CenteredMomentAllocatedNaturalRadial CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentFiniteProfileExceptional
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentLattice CenteredMomentRetainedProfile
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild CenteredMomentEnergyProfiles CenteredMomentAllocatedNaturalRadial CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy CenteredMomentOriginalRadialComparison CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentLattice CenteredMomentRetainedProfile
 
 def reflectionProfiles {a b:ℝ}(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (W:𝓢(ℝ,ℂ))(hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)
@@ -133,9 +125,3 @@ theorem reflected_profile_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
       · positivity
       · exact mul_nonneg hC.le (mul_nonneg hA.le (mul_nonneg hD.le (sourceControl_nonneg _ _)))
     _=_:=by rw [mul_pow];ring
-
-end SevenEighths.CenteredMomentEnergyReferenceChildProfiles
-
-end
-
-end OAI

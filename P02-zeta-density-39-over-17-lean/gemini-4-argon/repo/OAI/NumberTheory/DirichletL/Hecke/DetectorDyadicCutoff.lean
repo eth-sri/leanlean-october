@@ -60,9 +60,3 @@ theorem actual_profile_bounds :
           ((σ : ℂ)+t*Complex.I)‖≤C j) :=
   exists_profile_bounds cutoff positiveAnnular (cutoff.smooth ⊤) positiveAnnular_smooth
     (1/4) (9/4) (by norm_num) positiveAnnular_support (-2) 2
-
-end SevenEighths.HeckeDetectorDyadicProfiles
-
-end
-
-end OAI

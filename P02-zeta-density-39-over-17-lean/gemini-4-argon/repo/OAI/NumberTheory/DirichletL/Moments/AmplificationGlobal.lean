@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationGlobal
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentGaussEnergy
-open CenteredMomentAmplification ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentGaussEnergy CenteredMomentAmplification ProbePhysical
 
 theorem full_column_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
@@ -150,9 +147,3 @@ theorem polynomial_pool_bound {α : Type*} (S : Finset α) (a : α → O)
   let : (Ideal.span {p}).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible (hp p hpP).irreducible
   exact polynomial_amplification_actual S a ha c p (hp p hpP) (hs p hpP)
     (hgood p hpP) (hc p hpP) h (hph p hpP)
-
-end SevenEighths.CenteredMomentAmplificationGlobal
-
-end
-
-end OAI

@@ -44,4 +44,3 @@ theorem harmonic_le_epsilon_rpow
     _ ≤ (1 + ε⁻¹) * max 1 ((L : ℝ) ^ ε) := by
       exact mul_le_mul_of_nonneg_left (le_max_right _ _) (by positivity)
 
-end GuthMaynard.NativeMoment

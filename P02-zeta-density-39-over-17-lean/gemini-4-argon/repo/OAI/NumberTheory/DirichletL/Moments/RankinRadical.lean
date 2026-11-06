@@ -10,7 +10,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRankinRadical
 open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentDivisorAllocation
-local notation "O" => ActualEisensteinCubic.O
 
 def commonRadical (I J : Ideal O) : Ideal O :=
   ∏ P ∈ primeSupport I ∩ primeSupport J,P
@@ -60,9 +59,3 @@ theorem old_mask_radical_count {α : Type*} (S : Finset α) (I J : α → Ideal 
   · intro R hR
     obtain ⟨a,ha,rfl⟩ := Finset.mem_image.mp hR
     exact hN a ha
-
-end SevenEighths.CenteredMomentRankinRadical
-
-end
-
-end OAI

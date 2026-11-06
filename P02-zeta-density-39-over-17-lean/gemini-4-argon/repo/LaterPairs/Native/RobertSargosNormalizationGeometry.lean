@@ -45,4 +45,3 @@ theorem integer_ediv_abs_support {a : ℤ} {g : ℕ} {A B : ℝ}
   exact ⟨div_le_div_of_nonneg_right hab.1 hgR.le,
     div_le_div_of_nonneg_right hab.2 hgR.le⟩
 
-end TaoTrudgianYang2025

@@ -43,4 +43,3 @@ theorem robertSargos_physical_floor_shift
     (show lam ≤ 1 by linarith) (show -(8:ℝ)/13 ≤ -(2:ℝ)/13 by norm_num)).trans hM
   exact ⟨htwo,Nat.floor_le_of_le hRM,by linarith,hfloor⟩
 
-end TaoTrudgianYang2025

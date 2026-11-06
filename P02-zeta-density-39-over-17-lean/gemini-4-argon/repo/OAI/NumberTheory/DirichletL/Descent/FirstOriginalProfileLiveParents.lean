@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-local notation "O" => ActualEisensteinCubic.O
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
 variable {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
 
 lemma refined_parent_source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -56,8 +54,3 @@ theorem refined_child_priority (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.spa
     negative Ψ m slots lists a om X t Y hY
   rw [refined_parent_source] at he
   cases negative <;> simpa [refinedChildEnergy,divisorElement] using he
-
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
-
-end OAI

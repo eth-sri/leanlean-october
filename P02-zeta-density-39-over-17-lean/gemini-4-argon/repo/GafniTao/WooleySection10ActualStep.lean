@@ -516,6 +516,4 @@ theorem wooleySourcePolynomial_iterationChain_of_hierarchy_ledger
   · omega
 
 
-end
 
-end GafniTao

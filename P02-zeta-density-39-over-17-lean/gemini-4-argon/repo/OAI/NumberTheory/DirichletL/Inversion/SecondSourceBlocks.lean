@@ -9,10 +9,8 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseSecondSourceBlocks
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment
-open InverseSecondFibers InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseSecondFibers InversePrioritySecondSource
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 
 abbrev BlockIndex := Fin 4 → ℕ
@@ -183,17 +181,3 @@ theorem cap_bin_bound (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) (Z : ℝ) (hZ :
       rw [Real.logb_rpow_eq_mul_logb_of_pos hZ0,Real.logb]
       ring
     _ ≤ _ := by linarith
-
-omit [DecidableEq ι] in
-@[simp] theorem keys_empty (p : ι → O) (Jo Jn : ℕ) :
-    keys p (∅ : Finset (MarkedSecondSource ι Jo Jn)) = ∅ := by simp [keys]
-
-omit [DecidableEq ι] in
-@[simp] theorem cell_empty (p : ι → O) (Jo Jn : ℕ) (d : BlockIndex) :
-    cell p (∅ : Finset (MarkedSecondSource ι Jo Jn)) d = ∅ := by simp [cell]
-
-end SevenEighths.InverseSecondSourceBlocks
-
-end
-
-end OAI

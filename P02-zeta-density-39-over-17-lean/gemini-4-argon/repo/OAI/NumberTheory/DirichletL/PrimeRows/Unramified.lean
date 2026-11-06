@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 
 theorem localCorrection_coordinates (η : Character) (u : FreeRow) (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (x w z : ℂ) :
@@ -45,9 +43,3 @@ theorem localCorrection_unramified (η : Character) (u : FreeRow) (p : O) (hp : 
   unfold actualUnramifiedClosed
   change _=unramifiedClosed _ _ (targetMonoid η p) _ x w z
   field_simp
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

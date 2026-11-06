@@ -256,6 +256,4 @@ theorem wooley_multigrade_to_monograde
         exact hbound.trans (by simpa only [P, v, hprod] using henv)
 
 
-end
 
-end GafniTao

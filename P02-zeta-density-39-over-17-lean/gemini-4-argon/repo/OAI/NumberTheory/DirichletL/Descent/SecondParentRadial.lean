@@ -11,7 +11,6 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecon
 open InverseInitialArithmetic (sourceIdeal)
 open InversePrincipalEnergy InverseSecondPrincipalCaller
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -63,8 +62,3 @@ theorem first_fresh_parent_radial_truncated
   simp_rw [he]
   exact inputConjugateRow_eq_truncated_add_tail p hp hg hinj hc F Ψ₀ (secondParentPuncture p m parent)
     (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y hY K
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

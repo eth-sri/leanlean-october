@@ -74,4 +74,3 @@ theorem norm_atkinsonRootKernel_integral_outside_band {T G L b c : ℝ}
         exact (atkinsonRootSlope_outside_band hT hG hL hwidth (hmem y hy) hb).2)
       (hmono (-b))
 
-end MathCollab.Density.Stronger.Atkinson

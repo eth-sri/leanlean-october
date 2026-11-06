@@ -56,4 +56,3 @@ theorem zero_q_a_times_a_column_budget {M H Q R C lam : ℝ}
   dsimp only [F] at hm hFM ⊢
   nlinarith
 
-end TaoTrudgianYang2025

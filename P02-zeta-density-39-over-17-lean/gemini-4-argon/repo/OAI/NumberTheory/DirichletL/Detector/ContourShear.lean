@@ -30,8 +30,3 @@ lemma sourceMellinWeight_shear (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (t w 
       (X:ℂ)^(1/2-z)*(Z:ℂ)^t*(Y:ℂ)^(w-1)*Complex.exp (t^2)*
         mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) z*mellin W1 w := by
   simp only [sourceMellinWeight,show t+1-z+z-1=t by ring]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

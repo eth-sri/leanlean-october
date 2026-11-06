@@ -11,9 +11,7 @@ public import MathCollab.Density.AbelZetaGrowth
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.ZetaGrowth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.ZetaGrowth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -204,4 +202,3 @@ theorem exists_zetaSquareGaussian_log_tail_bound (A : ℝ) :
       congr 2
       norm_num
 
-end MathCollab.Density.Stronger.Atkinson

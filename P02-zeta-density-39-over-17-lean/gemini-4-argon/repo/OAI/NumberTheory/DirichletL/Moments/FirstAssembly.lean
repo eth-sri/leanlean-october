@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstAssembly
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFirstColumns CenteredMomentMobiusRegroup CenteredMomentChildAssembly
-open CenteredMomentGaussEnergy RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstColumns CenteredMomentMobiusRegroup CenteredMomentChildAssembly CenteredMomentGaussEnergy RayFourExpansion
 
 def originalPhase (e r : O) (ρ : O → ℂ) (a b : O) : ℂ :=
   (idealRowHom e (Ideal.span {a})*star (idealRowHom e (Ideal.span {b}))*ρ e)*
@@ -88,9 +85,3 @@ theorem finite_first_children {α β : Type*} (S : Finset α) (T : Finset β)
   simp_rw [← Finset.mul_sum (s:=T),← Finset.mul_sum (s:=S)]
   rw [pair_ray_fubini]
   ring
-
-end SevenEighths.CenteredMomentFirstAssembly
-
-end
-
-end OAI

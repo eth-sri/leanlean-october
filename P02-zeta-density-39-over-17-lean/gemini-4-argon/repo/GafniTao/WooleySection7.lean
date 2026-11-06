@@ -118,6 +118,4 @@ theorem wooleySourcePolynomial_lemma_7_1
               (wooleySection7NextB k r b) b nu gamma := by ring
 
 
-end
 
-end GafniTao

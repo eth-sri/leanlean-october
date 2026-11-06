@@ -120,4 +120,3 @@ theorem dfiBesselY0_eq_neumannLaplaceIntegral {x : ℝ} (hx : 0 < x) :
       (Complex.exp (I * (x : ℂ)) * neumannRayCoefficient * neumannLaplaceIntegral x).re := by
   rw [dfiBesselY0_eq_neumannVerticalIntegral hx, neumannVerticalIntegral_one_eq_laplace]
 
-end MathCollab.Density.Stronger.Atkinson

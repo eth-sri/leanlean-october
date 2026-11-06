@@ -32,4 +32,3 @@ theorem native_density_epsilon_bound {σ p : ℝ} (hσ : 0 < σ) (hp : 0 ≤ p)
   simp only [native_N_eq_zetaDensityCount hσ] at hh
   exact zetaDensityCount_bound_of_native_bigO hp hε hh
 
-end GuthMaynard.Improvement

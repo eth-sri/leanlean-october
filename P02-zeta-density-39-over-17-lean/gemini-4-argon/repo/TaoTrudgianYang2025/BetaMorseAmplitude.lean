@@ -43,4 +43,3 @@ theorem modelPhaseMorseAmplitude_zero
   rw [modelPhaseMorseAmplitude,modelPhaseMorseInverse_zero hσ hδ hF hv,
     (modelPhaseMorseInverse_hasDerivAt_zero hσ hδ hF hv).deriv]
 
-end TaoTrudgianYang2025

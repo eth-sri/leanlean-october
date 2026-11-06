@@ -230,6 +230,4 @@ theorem heathBrown_cellwise_center_lintegral_le
   simpa only [c] using hmono
 
 
-end
 
-end GafniTao

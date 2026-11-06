@@ -77,4 +77,3 @@ theorem norm_gaussianValue_sub_fresnelDampedWindow_le {ε c H : ℝ}
     (norm_integral_Ioi_fresnelDampedKernel_le hε hc hH) (by norm_num : (0 : ℝ) ≤ 2)).trans_eq
   ring
 
-end MathCollab.Density.Stronger.Atkinson

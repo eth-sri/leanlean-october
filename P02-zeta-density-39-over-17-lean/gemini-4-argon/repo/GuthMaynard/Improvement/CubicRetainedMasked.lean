@@ -114,4 +114,3 @@ theorem retained_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
         mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTp.le ε)) hX,
         mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTp.le ε)) hY]
 
-end GuthMaynard.Improvement

@@ -70,4 +70,3 @@ theorem norm_prefix_le_doubled_blocks (a : ℕ → ℂ) (H J N : ℕ)
           add_le_add (add_le_add hip (hb k hk h2kH)) htail
         _ = _ := by push_cast; ring
 
-end TaoTrudgianYang2025

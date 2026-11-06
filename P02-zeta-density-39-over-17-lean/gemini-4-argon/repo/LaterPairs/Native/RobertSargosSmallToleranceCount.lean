@@ -82,5 +82,4 @@ theorem exists_robertSargos_primitive_count_small_tolerance (ε : ℝ) (hε : 0 
         exact mul_le_mul_of_nonneg_right (by linarith only [hCw]) hnonneg
       _ = _ := by ring
 
-end TaoTrudgianYang2025
 

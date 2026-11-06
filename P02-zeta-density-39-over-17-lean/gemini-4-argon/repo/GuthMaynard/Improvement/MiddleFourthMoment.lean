@@ -91,4 +91,3 @@ theorem middle_fourth_moment {ε : ℝ} (hε : 0 < ε) :
       _ = _ := by rw [he]
   exact normalized_moment_power_absorption hM hP hQ hn1 hε.le hnorm
 
-end GuthMaynard.Improvement

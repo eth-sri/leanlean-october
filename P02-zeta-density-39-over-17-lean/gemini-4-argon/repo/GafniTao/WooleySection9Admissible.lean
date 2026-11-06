@@ -196,6 +196,4 @@ theorem wooleySourcePolynomial_lemma_7_1_uniform_global
           wooleySourcePolynomialMixedMean phi s r p B
             (wooleyNextB k r b) b nu gamma := by ring
 
-end
 
-end GafniTao

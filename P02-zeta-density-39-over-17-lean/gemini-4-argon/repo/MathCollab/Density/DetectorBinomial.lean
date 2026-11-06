@@ -59,4 +59,3 @@ theorem hasSum_detector_binomial {β x : ℝ} (hx : 1 ≤ x) (hx' : x ≤ 2) :
   have hh : 1+z = 2*x/3 := by dsimp [z]; ring
   simpa only [hc, hh] using h
 
-end MathCollab.Density

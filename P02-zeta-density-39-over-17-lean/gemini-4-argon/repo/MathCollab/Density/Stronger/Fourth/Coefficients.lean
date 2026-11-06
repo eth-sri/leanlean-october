@@ -128,4 +128,3 @@ theorem exists_sum_sq_zetaFourthCoeff_dyadic_le {ε : ℝ} (hε : 0 < ε) :
     _ ≤ D*(2*(N:ℝ))^ε :=
       mul_le_mul_of_nonneg_left (sum_rpow_sub_one_dyadic_le hε.le hN) hD.le
 
-end MathCollab.Density.Stronger.Fourth

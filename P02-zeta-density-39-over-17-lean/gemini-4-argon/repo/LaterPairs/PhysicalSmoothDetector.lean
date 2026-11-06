@@ -69,4 +69,3 @@ theorem smoothDetector_eventually_large {σ a δ : ℝ}
     _ ≤ _ := hheight
 
 
-end Montgomery.RationalMoment.RightDetector.Physical

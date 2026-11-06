@@ -43,4 +43,3 @@ theorem ratioFourierProduct_bound {μ : ℝ → ℝ} (hm : Measurable μ) (h0 : 
     _ ≤ (∫ t, μ t)*(∫ t, μ t)*(∫ t, μ t) := by gcongr <;> exact time_fourier_norm_le_mass hm h0 hi _
     _ = _ := by ring
 
-end GuthMaynard.Improvement

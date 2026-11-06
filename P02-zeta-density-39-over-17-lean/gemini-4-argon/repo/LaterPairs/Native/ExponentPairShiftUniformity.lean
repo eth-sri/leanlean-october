@@ -84,4 +84,3 @@ theorem aProcessShiftPhase_uniform_model {σ : ℝ}
   rw [hδeq] at hb
   exact hb.trans (by dsimp [B] at hprod; linarith)
 
-end TaoTrudgianYang2025

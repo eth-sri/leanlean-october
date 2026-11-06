@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical
 
 namespace SevenEighths.CenteredMomentPrimaryCharacter
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentPrimary CenteredMomentCommonSupport
-local notation "O" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentPrimary CenteredMomentCommonSupport
 
 def rawPrimaryHom (r : O) (χ : MulChar (Residue r) ℂ) : O →* ℂ where
   toFun n := primaryIdealCharacter r χ (Ideal.span {n})
@@ -92,9 +89,3 @@ theorem primaryCharacter_all (r : O) (hr : r≠0) (χ : MulChar (Residue r) ℂ)
     rw [← elementCoeff_unit_mul (primaryCharacter r hr χ) u n,
       ← maskedPrimaryHom_unit_mul r χ u n,primaryCharacter_primary r hr χ _ hp,
       maskedPrimaryHom_primary r χ _ hp]
-
-end SevenEighths.CenteredMomentPrimaryCharacter
-
-end
-
-end OAI

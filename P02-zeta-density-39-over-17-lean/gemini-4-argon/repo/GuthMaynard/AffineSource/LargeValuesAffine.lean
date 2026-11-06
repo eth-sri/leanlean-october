@@ -234,9 +234,6 @@ explicit. -/
 noncomputable def gmAffineLocalBumpDual : SchwartzMap ℝ ℂ :=
   𝓕⁻ gmAffineLocalBumpSchwartz
 
-@[simp]
-theorem gmAffineLocalBumpDual_apply (x : ℝ) :
-    gmAffineLocalBumpDual x = 𝓕⁻ gmAffineLocalBumpSchwartz x := rfl
 
 /-- Arbitrary polynomial decay of the fixed kernel used in the affine
 Poisson expansion. -/
@@ -3496,4 +3493,3 @@ theorem gmAffineJ_le_crude
   rw [← hEq]
   exact gmAffineTransformIntegral_le_crude hf₂ hscale
 
-end RiemannZeta.GuthMaynard

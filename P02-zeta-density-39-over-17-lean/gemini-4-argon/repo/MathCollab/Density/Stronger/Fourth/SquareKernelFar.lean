@@ -10,8 +10,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareNormalized
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -226,4 +225,3 @@ theorem exists_norm_zetaFourthKernel_far_le {c : ℝ} (hc : 0 < c) :
     _ = K*(Real.exp (u^2)*Real.exp (-100*u^2)) := by dsimp [K]; ring
     _ = _ := by rw [hgauss]
 
-end MathCollab.Density.Stronger.Fourth

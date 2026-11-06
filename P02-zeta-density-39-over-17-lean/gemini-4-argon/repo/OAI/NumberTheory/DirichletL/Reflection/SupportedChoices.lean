@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
 def supportedSlotChoices (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) (K : Ideal Eis) :=
@@ -35,8 +34,3 @@ def supportedSlotSplit (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→I
     apply Prod.ext <;> apply Subtype.ext
     · exact congrArg Prod.snd ((slotChoiceSplit L T).apply_symm_apply (q.2.val,q.1.val))
     · exact congrArg Prod.fst ((slotChoiceSplit L T).apply_symm_apply (q.2.val,q.1.val))
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

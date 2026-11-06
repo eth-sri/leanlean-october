@@ -65,9 +65,3 @@ theorem continued_differentiableAt (χ : Character) {s : ℂ}
       simp [continued, hχ]
     rw [heq]
     exact ((HeckeCharacterAnalytic.continuedLattice_entire_nonprincipal χ hχ).div_const 6) s
-
-end SevenEighths.HeckeOrigin
-
-end
-
-end OAI

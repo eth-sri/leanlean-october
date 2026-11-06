@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRankinSubset
 open IdealMobiusDivisorSum CenteredMomentRankinCount
-local notation "O" => ActualEisensteinCubic.O
 
 theorem supported_power_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
     ∃ C : ℝ,0 < C ∧ ∀ (Q : Ideal O),Q ≠ 0 → ∀ S : Finset (Ideal O),
@@ -82,9 +81,3 @@ theorem supported_power_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       mul_le_mul hfst hsnd (Nat.cast_nonneg _) (by positivity)
     _ = C^2*X^a*Y^a*((Ideal.absNorm Q:ℝ)^(ε/2)*(Ideal.absNorm Q:ℝ)^(ε/2)) := by ring
     _ = _ := by rw [← Real.rpow_add hn]; congr 2; ring
-
-end SevenEighths.CenteredMomentRankinSubset
-
-end
-
-end OAI

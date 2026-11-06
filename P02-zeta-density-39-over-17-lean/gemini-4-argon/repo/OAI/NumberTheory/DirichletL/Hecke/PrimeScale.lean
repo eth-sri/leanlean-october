@@ -36,15 +36,8 @@ theorem product_modulus_bound (χ ψ : Character) :
   exact FiniteConductor.absNorm_inf_le_mul χ.modulus ψ.modulus
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem twisted_modulus_bound (χ : Character) (θ : RayQuotient.Characters M H) :
     (HeckePrimeRay.twistedFamily M H hH χ θ).modulus.absNorm≤χ.modulus.absNorm*M.absNorm :=
   product_modulus_bound χ (HeckeRayQuotient.character M H hH θ)
-
-end SevenEighths.HeckePrimeScale
-
-end
-
-end OAI

@@ -47,9 +47,3 @@ theorem marked_active_eq_neg_trivial (χ : MulChar F ℂ)
   intro h hh
   rw [localFourier_zeroMark, localFourier_trivial_nonzero ψ hψ h (Units.ne_zero h)]
   ring
-
-end
-
-end SevenEighths.InverseMoment
-
-end OAI

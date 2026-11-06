@@ -140,6 +140,4 @@ theorem heathBrownPairCountTwo_card_le_restricted_shift_sum
     (heathBrownBlockParameter A lambda N) f
 
 
-end
 
-end GafniTao

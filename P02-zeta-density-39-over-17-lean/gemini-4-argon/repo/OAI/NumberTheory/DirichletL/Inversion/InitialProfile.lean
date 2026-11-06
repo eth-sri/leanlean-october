@@ -9,8 +9,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
-open SevenEighths.InverseMoment
+open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson SevenEighths.InverseMoment
 
 namespace SevenEighths.InverseInitialProfile
 
@@ -425,9 +424,3 @@ theorem clipped_column_source_identity (w : ℝ → ℂ) {Z q : ℝ}
     (ne_of_gt (div_pos hq (Real.rpow_pos_of_pos hZ _))), logPhase_add]
   unfold clippedSource
   ring
-
-end SevenEighths.InverseInitialProfile
-
-end
-
-end OAI

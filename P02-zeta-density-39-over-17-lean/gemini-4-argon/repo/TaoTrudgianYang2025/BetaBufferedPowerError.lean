@@ -122,4 +122,3 @@ theorem modelPhase_source_sharp_comparison
       _ ≤ 5*(N/Real.sqrt T+T^ε) := by nlinarith
       _ ≤ _ := mul_le_mul_of_nonneg_right (le_max_right _ _) (by positivity)
 
-end TaoTrudgianYang2025

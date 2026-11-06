@@ -82,6 +82,4 @@ theorem wooleyMonomialPadicConcentration_of_polynomialCorollary32
     simpa only [Nat.cast_pow, mul_assoc, wooleyTriangular, fordVinogradovKappa] using hmul
 
 
-end
 
-end GafniTao

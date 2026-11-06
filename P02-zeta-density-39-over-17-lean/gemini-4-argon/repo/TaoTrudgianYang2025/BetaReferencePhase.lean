@@ -53,4 +53,3 @@ theorem referenceModelPrimitive_iteratedDeriv (σ : ℝ) {u : ℝ} (hu : 0 < u) 
     exact (referenceModelPrimitive_hasDerivAt σ hw).deriv
   rw [iteratedDeriv_succ', he.iteratedDeriv_eq p]
 
-end TaoTrudgianYang2025

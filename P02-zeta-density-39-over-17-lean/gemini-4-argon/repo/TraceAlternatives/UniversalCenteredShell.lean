@@ -79,4 +79,3 @@ theorem centered_shell_universal (w : MathCollab.Density.ReflectionCutoff)
     linarith
   exact hReflected.trans (add_le_add (hMain.trans hCoeff) le_rfl)
 
-end Montgomery.RationalMoment

@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 theorem low_selected_nominal_energy (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
@@ -43,8 +41,3 @@ theorem low_selected_nominal_energy (η : HeckeFamily.Character) (S : Finset Id)
     R hR T hT hout hdis J (fun i=>max 1 (b*Z^(ell i.val)))
     (fun i=>le_max_left _ _)
     (fun i P hP=>(hnorm i.val P hP).trans (le_max_right _ _)) (hc.2 J) W hW Y t σ
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

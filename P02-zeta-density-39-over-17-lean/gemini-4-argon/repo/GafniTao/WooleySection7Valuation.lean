@@ -96,6 +96,4 @@ theorem wooleySection7LowerSystem_spaced
     (wooleySection7LowerSystem r p d Xi).Spaced p d := by
   exact ⟨Xi, fun _ => rfl⟩
 
-end
 
-end GafniTao

@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily InverseInitialPoissonBridge InverseInitialConjugateEnergy InverseInitialCommonRatios
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 def remainingIndexEquiv (J:Finset ι) : {i:ι // i∉J} ≃ ↥(Finset.univ\J) where
@@ -60,9 +59,3 @@ theorem remainingPolynomial_original_pi (S:Finset (Ideal O))(L:ι→Finset (Idea
   unfold remainingIdeal survivingProduct remainingPi
   rw [remaining_product_attach J (fun i=>star (coeff i.val (q i).val)),
     remaining_product_attach J (fun i=>(q i).val)]
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

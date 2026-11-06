@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -85,4 +84,3 @@ theorem exists_norm_atkinsonStationarySum_le_undamped {δ : ℝ} (hδ : 0 < δ) 
   exact (hbound T G hT hlower hupper).trans (mul_le_mul_of_nonneg_left
     (atkinsonFullDyadicPhaseBound_le_undamped hT0 G _) (by positivity))
 
-end MathCollab.Density.Stronger.Atkinson

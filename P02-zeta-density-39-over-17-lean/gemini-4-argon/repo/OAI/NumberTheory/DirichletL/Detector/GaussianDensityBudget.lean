@@ -82,8 +82,3 @@ theorem gaussianJointMoment_summed (V : SchwartzMap ℝ ℂ)
     _ = B*∑'j : ℕ,CompletedDyadic.kernelTerm Z⁻¹ s (N:ℝ) j := tsum_mul_left
     _ ≤ B*(C*(Z⁻¹)^(-s)) := mul_le_mul_of_nonneg_left hkt hB.le
     _ = (B*C)*Z^s := by rw [Real.inv_rpow hZ.le,Real.rpow_neg hZ.le,inv_inv]; ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

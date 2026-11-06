@@ -60,4 +60,3 @@ theorem norm_poissonBoundary_left_half_integer_le {f g : ℝ → ℝ} {a b : ℝ
     norm_mul, norm_weightedWave hb, Complex.norm_real, Real.norm_eq_abs]
   simpa only [div_eq_mul_inv, one_mul] using mul_le_mul_of_nonneg_left (abs_fract_sub_half_le b) hb
 
-end DhimanKadiriQuesadaHerrera2026

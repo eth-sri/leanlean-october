@@ -103,9 +103,3 @@ theorem primeMark_norm_le_divisor_count (I : Finset σ) (L : σ → Finset ι)
     _ = (2 : ℝ) ^ (∑ i ∈ I, (L i ∩ A).card) :=
       Finset.prod_pow_eq_pow_sum _ _ _
     _ ≤ (2 : ℝ) ^ A.card := pow_le_pow_right₀ (by norm_num) hcard
-
-end
-
-end SevenEighths.InverseMoment
-
-end OAI

@@ -150,4 +150,3 @@ theorem centered_trace_universal (w : MathCollab.Density.ReflectionCutoff)
     abs_of_nonneg (sum_nonneg (fun _ _ => sum_nonneg (fun _ _ => sq_nonneg _)))]
   exact hbound T t₀ L hT hLs W hW hsep
 
-end Montgomery.RationalMoment

@@ -63,4 +63,3 @@ theorem middle_range_large_values : CandidateMiddleRangeEstimate := by
           (mul_le_mul_of_nonneg_right hc hp0) hB)
   exact source_large_values_translation horigin t₀ a W ha hloc hsep hlarge
 
-end GuthMaynard.Improvement

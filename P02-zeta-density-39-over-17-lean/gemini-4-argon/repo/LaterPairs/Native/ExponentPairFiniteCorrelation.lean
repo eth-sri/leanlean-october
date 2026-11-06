@@ -18,8 +18,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 noncomputable section
 
-open Complex Finset
-open RiemannZeta.GuthMaynard
+open Complex Finset RiemannZeta.GuthMaynard
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
@@ -132,4 +131,3 @@ theorem padded_sequence_correlation_reverse (a : ℤ → ℂ) (N H h k : ℕ) :
   rw [star_mul',star_star]
   ring
 
-end TaoTrudgianYang2025

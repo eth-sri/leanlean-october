@@ -161,9 +161,3 @@ theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
       linarith [(abs_le.mp hlogs).1,abs_nonneg (Real.log a),abs_nonneg (Real.log b)]
     exact_mod_cast this.ne'
   field_simp
-
-end SevenEighths.PrimeLogProfile
-
-end
-
-end OAI

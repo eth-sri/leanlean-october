@@ -10,7 +10,6 @@ open scoped Classical BigOperators Topology
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 def rowKernelScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
     (W0 : SchwartzMap ℝ ℂ) (X Z : ℝ) (x z : ℂ) : ℂ :=
@@ -86,9 +85,3 @@ theorem nonprincipal_w_integral_eq_of_polynomial {K : ℕ}
   intro w hw
   exact (continuedPhysicalRowKernel_differentiableAt_w eps heps S hS hfirst hmax P hPS η u hu
     W0 W1 a b ha hW X Y Z hY x w z hx (hl.trans hw.1) hz (by linarith [hw.1])).differentiableWithinAt
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

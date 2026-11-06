@@ -12,7 +12,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 theorem uniform_original_x_height_tail (K : ℕ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -63,9 +62,3 @@ theorem uniform_original_x_height_tail (K : ℕ)
   intro p hp
   have hx : H < |p.1.1| := by simpa using hp
   exact Or.inl hx
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

@@ -250,4 +250,3 @@ theorem finite_matrix_operator_pow (A : Matrix ι ι ℂ) (n : ℕ) :
   | zero => simp only [pow_zero,finite_matrix_operator_one]
   | succ n ih => rw [pow_succ,finite_matrix_operator_mul,ih,pow_succ]
 
-end Montgomery.RationalMoment

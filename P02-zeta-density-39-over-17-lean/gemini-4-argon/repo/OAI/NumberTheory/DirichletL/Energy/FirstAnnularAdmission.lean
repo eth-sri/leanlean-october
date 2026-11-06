@@ -12,16 +12,8 @@ open Filter
 
 universe u
 namespace SevenEighths.CenteredMomentEnergyFirstAnnularAdmission
-open HeckeFamily ActualEisensteinCubic ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum
-open CenteredMomentFirstPhysicalDyadicCount CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentExceptionalAmplitudePair
-open CenteredMomentFirstPhysicalLedger CenteredMomentFirstExtractedLedger
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily ActualEisensteinCubic ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum CenteredMomentFirstPhysicalDyadicCount CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentSectorLocalization CenteredMomentExceptionalAmplitudePair CenteredMomentFirstPhysicalLedger
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 omit [DecidableEq ι] in
 lemma source_dyad_retained (s:Input ι)(R seed:Ideal O)(K Z ξ:ℝ)
@@ -131,9 +123,3 @@ theorem eventually_source_admission (N:ℕ)(upper b₁ b₂ A D ξcap:ℝ)
   intro p E n
   have hh:=source_amplifier_packet A D ξcap Z hZ s R seed K ξ hK hξ hV hKi p E n
   exact ⟨hh.1,source_dyad_gt_one s R seed K Z ξ p E n,hh.2.2⟩
-
-end SevenEighths.CenteredMomentEnergyFirstAnnularAdmission
-
-end
-
-end OAI

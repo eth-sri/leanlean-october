@@ -10,10 +10,8 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseInitialArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseInitialArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 def secondCellExponent (Z:ℝ) (d:BlockIndex) (i:Fin 4):ℝ:=Real.logb Z (scales d i)
 
@@ -116,9 +114,3 @@ theorem second_cell_clipping_width (Z X b eta:ℝ) (d:BlockIndex)
     max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d≤6*eta := by
   exact (Real.rpow_le_rpow_left_iff hZ).mp
     ((second_cell_clipping_ratio Z X b d hZ hX hb hsource).2.trans hthreshold)
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

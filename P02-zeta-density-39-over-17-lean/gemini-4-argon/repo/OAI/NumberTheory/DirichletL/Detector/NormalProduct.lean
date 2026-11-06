@@ -77,8 +77,3 @@ theorem normalProduct_analytic {ι : Type*} (F : ι → ℂ → ℂ) (b : ι →
   apply hd.cexp.congr
   intro s hs
   exact product_eq_exp_log (fun i => F i s) b hb (fun i => hbound i s hs) hhalf
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

@@ -108,4 +108,3 @@ theorem finite_dyadic_weighted_square_bound {ι : Type*} (S : Finset ι)
       · gcongr
     _ = _ := by ring
 
-end Montgomery.RationalMoment

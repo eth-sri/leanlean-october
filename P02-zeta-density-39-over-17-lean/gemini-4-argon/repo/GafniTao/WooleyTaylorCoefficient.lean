@@ -161,6 +161,4 @@ theorem wooley_taylorOmega_mod_prime
   rw [← Int.cast_natCast, ZMod.intCast_eq_intCast_iff]
   exact hOmega.of_dvd hpdiv
 
-end
 
-end GafniTao

@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic
-open InverseSecondPrincipalCaller InversePrioritySecondSource InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InverseMomentGlobalPriorityTail
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic InverseSecondPrincipalCaller InversePrioritySecondSource InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource InverseMomentGlobalPriorityTail
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
 variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal](hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 def globalPriorityOriginalEnergy (hp:∀i,p i≠0)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
@@ -65,8 +62,3 @@ theorem global_priority_three_branches
   dsimp only at hb
   rw [original_paired_tail p hg hp hinj]
   exact (Complex.re_le_norm _).trans hb
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

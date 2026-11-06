@@ -10,10 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseSecondSourceBlocks
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -60,8 +58,3 @@ theorem original_twisted_live_joint_card (pool : Finset ι) (Q : Finset (ι→�
     intro hz
     exact hy (by simp [CompletedHeight.normTwistedSource,hz])
   exact (div_le_iff₀ hX).mp (hW _ hwy)
-
-end SevenEighths.InverseMomentFirstOriginalProfile
-end
-
-end OAI

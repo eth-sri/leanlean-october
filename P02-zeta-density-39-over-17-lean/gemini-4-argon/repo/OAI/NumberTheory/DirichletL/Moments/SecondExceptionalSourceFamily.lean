@@ -11,15 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalSourceFamily
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalKernel
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondHeightFamily
-open CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
-open CenteredExceptionalProfile
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion CenteredExceptionalProfile
 
 lemma exceptional_part_nonzero (η:Character)(χ₀:RayCharacter)(Q:Ideal O)(m:O)
     (C D:Ideal O)(U:Finset (CommonIndex C D))(R:ℝ)(z:O)
@@ -60,9 +52,3 @@ lemma exceptional_part_live (η:Character)(χ₀:RayCharacter)(Q:Ideal O)(m:O)
   apply Finset.filter_eq_self.mpr
   intro z hz
   exact liveRows_weight C D U R _ z (Finset.mem_filter.mp hz).1
-
-end SevenEighths.CenteredMomentSecondExceptionalSourceFamily
-
-end
-
-end OAI

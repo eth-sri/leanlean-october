@@ -268,4 +268,3 @@ theorem afe_finite_poisson_second_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 
   simp only [div_eq_mul_inv] at hp hn ⊢
   nlinarith only [hp, hn]
 
-end DhimanKadiriQuesadaHerrera2026

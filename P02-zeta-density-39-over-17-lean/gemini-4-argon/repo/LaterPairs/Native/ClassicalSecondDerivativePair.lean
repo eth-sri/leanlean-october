@@ -72,4 +72,3 @@ theorem exponentPair_half_half : ExponentPair ((1 : ℝ)/2) ((1 : ℝ)/2) :=
     isExponentPairEstimate_iff_nonAsymptotic.mpr
       isExponentPairEstimateNonAsymptotic_half_half⟩
 
-end TaoTrudgianYang2025

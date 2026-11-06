@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonExceptionalGates
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentExceptionalAmplitudePair
-open CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentExceptionalAmplitudePair CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSecondHeightFamily
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -59,9 +55,3 @@ theorem common_conductor (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C
   simp only [commonData,HeckeRowClosure.rowConductorBound,one_mul,
     ←Ideal.span_singleton_mul_span_singleton,span_idealGenerator,map_mul,Ideal.span_singleton_one,Ideal.absNorm_top,one_pow]
   ring
-
-end SevenEighths.CenteredMomentCommonExceptionalGates
-
-end
-
-end OAI

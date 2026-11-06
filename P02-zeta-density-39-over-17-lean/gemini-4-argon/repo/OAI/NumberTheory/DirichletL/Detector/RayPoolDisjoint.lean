@@ -10,7 +10,6 @@ open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeRaySlots
 open HeckeFamily ProbePhysical
-local notation "Id" => Ideal HeckeFamily.O
 
 lemma annular_power_separation (a b r s : ℝ) (ha : 0<a) (hrs : r<s) :
     ∀ᶠZ : ℝ in atTop,b*Z^r<a*Z^s := by
@@ -62,7 +61,3 @@ theorem power_pool_tuples_eventually_injective {ι : Type*} [Fintype ι]
   by_contra hn
   have hq : (P i).val=(P j).val := heq
   exact Finset.disjoint_left.mp (hZ i j hn) (P i).property (by rw [hq];exact (P j).property)
-end SevenEighths.ProbeRaySlots
-end
-
-end OAI

@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcretePrimeRowBridge CenteredMomentCorrelation
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcretePrimeRowBridge CenteredMomentCorrelation
 variable {ι : Type*} [Fintype ι]
 
 def jointRemainder (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
@@ -69,8 +66,3 @@ theorem jointExtension_mean_zero (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ
   apply jointRemainder_periodic_first
   rw [←mul_sub]
   exact (jointFixedModulus S hS*(∏i,P i)*J).mul_mem_left d hxz
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

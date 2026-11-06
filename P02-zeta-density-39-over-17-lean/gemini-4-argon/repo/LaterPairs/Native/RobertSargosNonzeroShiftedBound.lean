@@ -51,4 +51,3 @@ theorem robertSargos_nonzero_weighted_shifted_re_le (f : ℝ → ℝ) (M H Q R N
       (by simpa only [one_mul] using (mul_le_mul_of_nonneg_right hw
         (norm_nonneg (robertSargosNonzeroShiftedTriple f H Q N r m))))
 
-end TaoTrudgianYang2025

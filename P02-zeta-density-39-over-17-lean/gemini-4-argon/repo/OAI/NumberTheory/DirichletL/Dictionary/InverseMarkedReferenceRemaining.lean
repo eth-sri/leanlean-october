@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-open InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic
-open InverseInitialCommonRatios
-local notation "O"=>HeckeFamily.O
+open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic InverseInitialCommonRatios
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 theorem remaining_injective (L:ι→Finset (Ideal O))
@@ -59,9 +56,3 @@ theorem remainingResidual_eq_polynomial (S:Finset (Ideal O))
   rw [remaining_moebius L hprime hdis]
   simp only [star_mul,star_prod,star_pow,star_neg,star_one,conjugatedResidual]
   ring
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

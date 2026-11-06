@@ -12,13 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondSourceDiagonal
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceSecondZeroEnergy CenteredMomentCommonRadialData
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentExceptionalAmplitudePair CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceSecondZeroEnergy CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair CenteredMomentOriginalCommonHarmonic CenteredMomentFiniteProfileExceptional
 
 theorem actual_second_zero (N:ℕ)(ε:ℝ)(hε:0<ε):
     ∃C:ℝ,0<C ∧ ∀{ι:Type*}[Fintype ι][DecidableEq ι],Fintype.card ι≤N →
@@ -57,9 +51,3 @@ theorem actual_second_zero (N:ℕ)(ε:ℝ)(hε:0<ε):
   simpa only [map_one,Nat.cast_one,mul_one,div_one,coefficient,volume,norm_mul,norm_div,
     Complex.norm_real,Real.norm_eq_abs,abs_of_pos hV,abs_of_pos s.X₁_pos,abs_of_pos s.X₂_pos,
     abs_of_pos (Finset.prod_pos (fun i _=>s.P_pos i)),mul_div_assoc,div_mul_eq_mul_div] using hh
-
-end SevenEighths.CenteredMomentSecondSourceDiagonal
-
-end
-
-end OAI

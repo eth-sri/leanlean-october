@@ -76,4 +76,3 @@ theorem sargosWeightedPlanarIntegrand_nonneg {ι : Type*} (S : Finset ι)
   mul_nonneg (mul_nonneg (sargosSincKernel_nonneg ha _) (sargosSincKernel_nonneg hb _))
     (sq_nonneg _)
 
-end TaoTrudgianYang2025

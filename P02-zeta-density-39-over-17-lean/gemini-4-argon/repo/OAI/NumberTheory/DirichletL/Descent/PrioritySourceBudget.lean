@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-local notation "O"=>ActualEisensteinCubic.O
 
 def priorityCellScalar (Z Y L X ell Ractive j t eta eps epsmass B:ℝ) (ray:ℂ) (d:BlockIndex):ℝ :=
   (Real.exp (6*L)*‖(Y:ℂ)*ray*((scales d 1*scales d 2*Z^(secondCellColumnExponent Z X d):ℝ):ℂ)⁻¹‖)*
@@ -72,9 +71,3 @@ theorem priority_source_scalar_budget (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i)
     _≤ (1+capConstant caps*Real.log Z)^4*(C*‖ray‖*Z^(r+3*ell+V+48*eta+tau+pi+eps)):=
       mul_le_mul_of_nonneg_right hcard (by positivity)
     _= _:=by ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

@@ -7,11 +7,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_injective)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 @[ext] structure MarkedSecondSource (ι : Type*) (Jo Jn : ℕ) where
   cube : CubeCoordinates ι
@@ -123,8 +121,3 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
   have hb := valid_tuple_card_le_slot_cap (S.image encode) γ f k hf hq ht hr hv K ho hn
   rw [Finset.card_image_iff.mpr hi] at hb
   exact hb
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

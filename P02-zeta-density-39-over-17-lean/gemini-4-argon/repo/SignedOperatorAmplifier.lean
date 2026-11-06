@@ -58,4 +58,3 @@ theorem operator_finite_signed_spectral_comparison [FiniteDimensional ℂ E]
   rw [hcubes.1, hcubes.2, Complex.ofReal_re]
   exact hp.trans hd
 
-end Montgomery.RationalMoment

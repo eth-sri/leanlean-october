@@ -55,9 +55,3 @@ theorem marked_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Character)
     · simpa [M] using h1 x hx y hy
     · simpa [M] using h2 x hx y hy
   exact chain_rowwise rows M cm dx dy a b c d E hab hcd σ freq hσ hf he
-
-end SevenEighths.HeckeDetectorRowwiseMarked
-
-end
-
-end OAI

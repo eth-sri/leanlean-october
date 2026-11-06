@@ -339,4 +339,3 @@ theorem integrableOn_cosh_cpow_neg_two_mul_Ioi
 
 
 
-end MathCollab.Density.Stronger.Atkinson

@@ -826,6 +826,4 @@ theorem wooleySection7TransformedPolynomial_exists_lower_equation
   dsimp only [Xi, surplus]
   ring
 
-end
 
-end GafniTao

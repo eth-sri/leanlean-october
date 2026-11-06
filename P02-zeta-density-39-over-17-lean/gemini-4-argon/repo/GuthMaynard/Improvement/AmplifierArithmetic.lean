@@ -173,4 +173,3 @@ theorem amplifier_column_identity {N L l u : ℝ} (hN : 0 < N) (hNL : N ≤ L)
   rw [hh]
   ring
 
-end GuthMaynard.Improvement

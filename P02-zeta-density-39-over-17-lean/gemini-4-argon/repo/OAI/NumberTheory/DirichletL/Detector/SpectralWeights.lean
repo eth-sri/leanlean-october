@@ -74,7 +74,6 @@ theorem sourceWeightedScalar_eq (Q : ℝ) (hQ : 0<Q)
   ring
 
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
 
 lemma firstGauss_eq_gamma_sqrt (p : O) (hp : Prime p)
     [(Ideal.span {p} : Ideal O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p}) :
@@ -114,8 +113,3 @@ theorem sourceWeightedScalar_actual (p : O) (hp : Prime p)
       (star (localGamma p hp.ne_zero hg 3)) (actualSextic (Ideal.span {p}) hg (-1))
       x w z scalar (firstGauss_eq_gamma_sqrt p hp hg)
       (actualSextic_neg_one_sq _ hg) e l k m
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

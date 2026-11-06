@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
@@ -100,8 +99,3 @@ theorem unramified_even_kone (r m : ℕ) :
       rw [ite_eq_right (by omega)]
     · rw [ite_eq_left ⟨rfl, by omega⟩, gaussValuationTable,
         ite_eq_right (by omega : ¬6 ∣ 6*r+5), ite_eq_right (by omega), mul_zero]
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

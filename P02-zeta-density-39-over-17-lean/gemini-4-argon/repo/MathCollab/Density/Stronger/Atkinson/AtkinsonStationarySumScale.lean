@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFiniteStationaryError
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
@@ -77,4 +76,3 @@ theorem atkinsonStationary_cutoff_scale_le {T G L q : ℝ}
     _ ≤ 37*T^(q-1/2)*L^2*1 := by gcongr
     _ = _ := mul_one _
 
-end MathCollab.Density.Stronger.Atkinson

@@ -11,8 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def spectralCompensatedHigh (S : Finset Id) (T : Finset PrimeIdeal)
     (η : HeckeFamily.Character) (x w z : ℂ) (B q : PrimeIdeal→ℂ) : ℂ :=
@@ -45,8 +43,3 @@ theorem spectralCompensatedHigh_L_factorization (S : Finset Id) (hS : SourceExcl
         ∏P∈T,(B P*idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z-q P) := by
   rw [spectralCompensatedHigh_eq_product S hS T hT η x w z B q hx hw hz,
     source_principalHigh_L_factorization S hS η x w z hx hw hz]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

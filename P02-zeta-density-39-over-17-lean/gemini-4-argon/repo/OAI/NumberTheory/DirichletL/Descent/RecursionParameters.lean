@@ -60,9 +60,3 @@ theorem actual_recursion_parameters (Mcap Fcap c eps:ℝ)(_hM:0≤Mcap)(_hF:0≤
   have hn:(depth:ℝ)*eta≤D*eta:=mul_le_mul_of_nonneg_right (by dsimp[D];linarith) he.le
   change (depth:ℝ)*7*eta≤c/2 ∧ (depth:ℝ)*15*eta≤1 ∧ (depth:ℝ)*100*eta≤eps/4
   constructor <;> first | nlinarith | constructor <;> nlinarith
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

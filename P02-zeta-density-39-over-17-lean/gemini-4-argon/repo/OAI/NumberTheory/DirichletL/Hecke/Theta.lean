@@ -220,9 +220,3 @@ theorem regularizedLatticeL_eq {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
   unfold regularizedLatticeL latticeL
   rw [regularizedCompleted_eq w hs₀ hs₁]
   ring
-
-end SevenEighths.HeckeTheta
-
-end
-
-end OAI

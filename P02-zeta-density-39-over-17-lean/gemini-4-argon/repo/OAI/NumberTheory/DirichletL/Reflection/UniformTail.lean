@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u
 variable {N a c : Eis} {mode : Bool}
 
@@ -117,7 +116,3 @@ theorem literal_dyadic_tail_uniform_height_type_uniform (lo hi : ℝ) (hlo : 0<l
         ((Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹) :=
       mul_le_mul_of_nonneg_right hsemi' hrest
     _ = _ := by ring
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

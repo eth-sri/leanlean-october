@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseCanonicalShortAttachment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
 universe u v
 theorem actual_complete_short_finite_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo) (W : ℝ→ℂ)
@@ -103,9 +101,3 @@ theorem actual_complete_short_finite_uniform_degree
   apply Finset.sum_congr rfl
   intros
   ring
-
-end SevenEighths.InverseCanonicalShortAttachment
-
-end
-
-end OAI

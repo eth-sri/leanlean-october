@@ -8,11 +8,9 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation MeasureTheory
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 abbrev FirstCommonIndex (ι : Type*) :=
   (RayCharacter × RayCharacter) × (Σ _ : Finset ι, Finset ι × Finset ι)
@@ -50,8 +48,3 @@ theorem firstPhysicalCommonRows_indexed (F : Finset ι) (C₁ C₂ : Finset ι �
   apply Finset.sum_congr rfl
   intro V hV
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

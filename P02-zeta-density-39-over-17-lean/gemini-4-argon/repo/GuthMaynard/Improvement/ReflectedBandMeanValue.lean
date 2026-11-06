@@ -147,4 +147,3 @@ theorem reflected_band_mean_value {η : ℝ} (hη : 0 < η) :
       mul_le_mul_of_nonneg_left he hfactor
     _ = _ := by ring
 
-end GuthMaynard.Improvement

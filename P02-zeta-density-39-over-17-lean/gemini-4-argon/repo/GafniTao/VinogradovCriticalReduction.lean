@@ -14,9 +14,8 @@ the critical bound in every degree implies every supercritical instance of
 as an unexamined interface.
 -/
 
-open Complex Finset
+open Complex Finset MeasureTheory
 open scoped BigOperators
-open MeasureTheory
 
 namespace GafniTao
 
@@ -141,6 +140,4 @@ theorem heathBrownVMVTMainConjecture_of_critical
   exact ⟨C, hC, hmoment.of_critical hs⟩
 
 
-end
 
-end GafniTao

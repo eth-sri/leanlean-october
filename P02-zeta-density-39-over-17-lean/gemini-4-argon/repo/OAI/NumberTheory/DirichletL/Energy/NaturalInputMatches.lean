@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyNaturalInputMatches
-open HeckeFamily HeckePrimeAnnular CenteredMomentPrimeSlot
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentCommonRadialData CenteredMomentNaturalFixedRaySource
-open CenteredMomentInductionEnergy CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckePrimeAnnular CenteredMomentPrimeSlot CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentCommonRadialData CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
 
 def profile (W : ℝ → ℂ) (σ freq y : ℝ) : ℂ :=
   W y * (y : ℂ)^(-HeckeDyadic.shift σ freq)
@@ -98,10 +94,3 @@ def input : Input ι :=
 
 local notation "inp" => input Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
   w σ freq hσ state p ha t X₁ X₂ Y₁ Y₂ hX₁ hX₂ hY₁ hY₂ hsame
-
-end Input
-end SevenEighths.CenteredMomentEnergyNaturalInputMatches
-
-end
-
-end OAI

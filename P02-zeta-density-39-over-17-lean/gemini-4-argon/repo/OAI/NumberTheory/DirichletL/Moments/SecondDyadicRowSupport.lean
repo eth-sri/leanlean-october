@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDyadicRowSupport
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
 
  def dyadicRows (rows:Finset O) (n:Fin 4→ℤ):Finset O:=
   rows.filter (fun z=>dyadicWeight (n 1) (normValue z)≠0)
@@ -63,9 +59,3 @@ local notation "O"=>HeckeFamily.O
       physicalBlock η t S β C D hC hD U R (dyadicRows (liveRows C D U R rows) n) W K n:=
   (physicalBlock_live_rows η t S β C D hC hD U R rows W K n).trans
     (physicalBlock_dyadic_rows η t S β C D hC hD U R _ W K n)
-
-end SevenEighths.CenteredMomentSecondDyadicRowSupport
-
-end
-
-end OAI

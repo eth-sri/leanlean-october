@@ -29,4 +29,3 @@ theorem continuousOn_deriv_ofReal_cpow_neg (s : ℂ) {a b : ℝ} (ha : 0 < a) :
       (continuousOn_ofReal_cpow (r := -s - 1) ha)).congr fun _ ht =>
     deriv_ofReal_cpow_neg s (lt_of_lt_of_le ha ht.1)
 
-end Complex

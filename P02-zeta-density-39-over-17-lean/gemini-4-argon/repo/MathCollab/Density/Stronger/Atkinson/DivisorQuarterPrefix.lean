@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem norm_divisorDirichletTerm_quarter_le_prefix {ε : ℝ} (hε : 0 < ε)
@@ -60,4 +59,3 @@ theorem exists_sum_norm_divisorDirichletTerm_quarter_le {ε : ℝ} (hε : 0 < ε
     _ ≤ (N:ℝ)^(3/4+ε)*S := mul_le_mul_of_nonneg_left hprefix (by positivity)
     _ ≤ _ := by nlinarith [Real.rpow_nonneg (Nat.cast_nonneg N) (3/4+ε)]
 
-end MathCollab.Density.Stronger.Atkinson

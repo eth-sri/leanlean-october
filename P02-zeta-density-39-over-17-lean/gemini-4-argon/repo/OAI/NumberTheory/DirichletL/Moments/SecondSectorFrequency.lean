@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSectorFrequency
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondSectorColumns CenteredMomentSecondSectorChildren CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondLedger CenteredMomentCanonicalFirst
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondSectorColumns CenteredMomentSecondSectorChildren CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentSecondLedger CenteredMomentCanonicalFirst
 
 def sectorFrequency (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ)
     (C D : Ideal O) (hC : Supported C) (hD : Supported D)
@@ -92,9 +88,3 @@ theorem sectorFrequency_partition_nonunit (η : Character) (t : ℝ)
     exact ⟨h,hh.symm⟩
   have he := (mul_right_injective₀ (nonunitFrequencyGenerator_ne_zero C D hC U)).tsum_eq hs
   simpa only [f,mul_assoc] using he.symm
-
-end SevenEighths.CenteredMomentSecondSectorFrequency
-
-end
-
-end OAI

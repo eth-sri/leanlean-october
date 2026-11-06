@@ -29,6 +29,4 @@ theorem wooley_sqrt_inverse_power_mul
   rw [inv_pow, hpow]
   field_simp
 
-end
 
-end GafniTao

@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiMultiplierBounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 set_option maxHeartbeats 1000000
 noncomputable section
@@ -102,4 +101,3 @@ theorem ordinaryDivisorVoronoi_native {g : ℝ → ℂ} (hg : DFIVoronoiTestFunc
     (integrable_zetaSquare_dualMultiplier hg.integrable_voronoiPlusMultiplier)]
   ring
 
-end MathCollab.Density.Stronger.Atkinson

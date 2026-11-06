@@ -95,7 +95,3 @@ theorem simultaneous_saturation {U δ r m ε A B : ℝ}
     have hpos := Real.rpow_pos_of_pos hU0 (δ * r + ε)
     nlinarith
   exact ⟨hlength, hlowerA, hlowerB⟩
-
-end SevenEighths.Detector
-
-end OAI

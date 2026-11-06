@@ -33,4 +33,3 @@ theorem global_density_coefficient_comparisons {σ : ℝ} :
     apply (div_le_iff₀ (by linarith : 0 < 3+5*σ)).mpr
     nlinarith [mul_nonneg (show 0 ≤ 1-σ by linarith) (show 0 ≤ σ-5/7 by linarith)]
 
-end GuthMaynard.Improvement

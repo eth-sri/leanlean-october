@@ -52,8 +52,3 @@ theorem exists_detector_scales (R rmin mesh dmin loss ellMin allowance J : ℝ)
   · intro eps heps heps1
     have hp := mul_le_mul_of_nonneg_left heps1 ht.le
     nlinarith
-end SevenEighths.Parameters
-
-end
-
-end OAI

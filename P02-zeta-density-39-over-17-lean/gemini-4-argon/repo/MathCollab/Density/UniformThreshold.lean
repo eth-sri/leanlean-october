@@ -122,4 +122,3 @@ theorem uniform_absorbed_kernel (w : ComparisonCutoff) {κ : ℝ} (hκ : 0 < κ)
   · simp only [Finset.not_nonempty_iff_eq_empty.mp hn, kernelEnergy, Finset.sum_empty,
       Finset.card_empty, Nat.cast_zero, mul_zero, zero_mul, le_refl]
 
-end MathCollab.Density

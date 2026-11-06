@@ -2,28 +2,3 @@ module
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceOriginal
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarReserve
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
-
-set_option linter.privateModule false
-
-@[expose] public section
-
-namespace OAI
-
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
-
-namespace SevenEighths.CenteredMomentEnergyZeroReferencePower
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceOriginal CenteredMomentEnergyReferenceScalarReserve
-open CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalRowSource
-open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
-
-end SevenEighths.CenteredMomentEnergyZeroReferencePower
-
-end
-
-end OAI

@@ -37,4 +37,3 @@ theorem zetaGaussianQuadraticIntegral_at_neg_saddle {T G : ℝ} (hT : 0 < T) (hG
     zetaGaussianQuadraticIntegral_neg T hG, atkinson_sqrt_frequency_normalized hT n]
   rfl
 
-end MathCollab.Density.Stronger.Atkinson

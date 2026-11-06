@@ -12,9 +12,7 @@ open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
-open InverseInitialClippedColumns JointLogSeparation InverseAmbientProfileTower
-open InverseSecondSourceBlocks
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialClippedColumns JointLogSeparation InverseAmbientProfileTower InverseSecondSourceBlocks
 
 def secondChildHeight (right:Bool)(t:Ambient (Fin 6)):ℝ :=
   if right then profileHeight secondLeftSlope secondRightSlope secondKernelSlope t.1 t.2 5
@@ -63,9 +61,3 @@ theorem canonical_actual_child_uniform
   exact (hbound p hp hcop hg hpr pool Ψ m slots lists a labels rows D hD
     _ (secondChildHeight right t) _ Z F E hc1 hcb (Real.rpow_pos_of_pos hz _) hE hmoment).trans
       (mul_le_mul_of_nonneg_left (second_child_height_budget (2*J) right t) (mul_nonneg hC.le hE))
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

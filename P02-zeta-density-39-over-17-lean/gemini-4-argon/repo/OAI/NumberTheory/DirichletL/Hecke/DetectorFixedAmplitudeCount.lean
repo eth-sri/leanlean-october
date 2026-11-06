@@ -12,11 +12,9 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorFixedAmplitudeCount
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount
 
-variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
-  {U a ε tstar T allowance : ℝ} {i : ℕ}
+variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*} {U a ε tstar T allowance : ℝ} {i : ℕ}
 
 lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : ℝ)
     (hq : ∀u∈B.rows,rowMean B.slots U ((2*a-1)/2) B.binWidth B.widths
@@ -82,8 +80,3 @@ theorem fixed_amplitude_count_from_raw_moments
       rw [fiber_mean_eq B q hq bin j J K hne] at hc'
       exact hc')
   simpa only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_assoc] using hb
-end SevenEighths.HeckeDetectorFixedAmplitudeCount
-
-end
-
-end OAI

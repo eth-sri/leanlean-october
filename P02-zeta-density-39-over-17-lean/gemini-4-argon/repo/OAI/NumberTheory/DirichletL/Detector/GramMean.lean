@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation CenteredMomentCanonical
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CenteredMomentCanonical
 
 lemma actualSextic_power_nonprincipal (P : Ideal O) [P.IsMaximal]
     (hg : goodLambda∉P) (hchar : ringChar (O⧸P)≠2) (e : ℕ) (he : ¬6∣e) :
@@ -54,8 +52,3 @@ theorem crt_joint_mean_zero (Q P : Ideal O) [P.IsMaximal]
       rw [Fintype.sum_prod_type]
       simp_rw [←Finset.sum_mul,primePower_mean_zero P hg hchar c e hc he d,zero_mul]
       simp
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

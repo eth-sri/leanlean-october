@@ -128,4 +128,3 @@ theorem rational_prime_weight_bound {r : ℚ} (hr : 0 < r) (P : Finset ℕ)
         (subset_union_left.trans hP),
         divisor_product_over_superset _ r.den_nz P (subset_union_right.trans hP)]
 
-end Montgomery.RationalMoment

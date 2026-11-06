@@ -184,13 +184,5 @@ theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationInteg
       (E := E) (K := K) hK hKm hR hA hApprox
   exact (ht.closure).isCompact_of_isClosed isClosed_closure
 
-end Volume
 
-end
 
-end L2Compactness
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov

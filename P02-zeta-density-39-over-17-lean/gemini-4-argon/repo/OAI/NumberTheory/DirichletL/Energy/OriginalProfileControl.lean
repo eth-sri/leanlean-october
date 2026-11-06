@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalProfileControl
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFiniteProfileExceptional
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstReferenceEnergy
-open CenteredMomentEnergyZeroComparison CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyState CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFiniteProfileExceptional CenteredMomentSourceInputTailUniform CenteredMomentFirstReferenceEnergy CenteredMomentEnergyZeroComparison CenteredMomentEnergyNaturalInputMatches CenteredMomentEnergyState CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -56,7 +53,6 @@ lemma lower_product (s:Input ι)(N:ℕ)(a:ℝ)(ha:0<a)
     _=∏_i:ι,min 1 a:=by simp
     _≤∏i,s.lo i:=Finset.prod_le_prod₀ (fun _ _=>hm) (fun i _=>(min_le_right _ _).trans (hlo i))
 
-local notation "O"=>HeckeFamily.O
 section Input
 variable {ι : Type*} [Fintype ι]
 variable (Q : Ideal O) [NeZero Q]
@@ -74,10 +70,3 @@ variable (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂) (hsame : Y₁ * Y₂ = X₁ * X�
 
 local notation "inp" => CenteredMomentEnergyNaturalInputMatches.input Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
   w σ freq hσ state p ha t X₁ X₂ Y₁ Y₂ hX₁ hX₂ hY₁ hY₂ hsame
-
-end Input
-end SevenEighths.CenteredMomentEnergyOriginalProfileControl
-
-end
-
-end OAI

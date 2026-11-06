@@ -8,81 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff MatrixGroups
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped Classical MatrixGroups
 
 namespace EisensteinCuspModThree
 
 section
-local notation "O" => ActualEisensteinCubic.O
 open ActualEisensteinCoordinates (eval coords eval_coords unique_coordinates eval_mul)
 
 abbrev Pair := ZMod 3 × ZMod 3
@@ -180,9 +112,8 @@ theorem primitive_column_three_cusps : ∀a c : Pair, primitive a c →
 
 end
 
-open scoped Classical MatrixGroups Matrix
+open scoped Matrix
 
-local notation "O" => ActualEisensteinCubic.O
 local notation "ζ" => ActualEisensteinCubic.omega
 open CubicKubota CubicEisenstein
 
@@ -294,11 +225,8 @@ theorem three_cusp_decomposition (M : SL(2,ActualEisensteinCubic.O)) :
 end EisensteinCuspModThree
 
 namespace CubicEisenstein
-open MeasureTheory Filter
-open scoped BigOperators Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CubicRamified
 abbrev PrimaryCoprimeDenominator (a : PrimaryLower) := {d:PrimaryLower//IsCoprime a.val d.val}
 
 def primaryDenominatorFromCoprime (a : PrimaryLower) (x : CoprimeElement a.val) :
@@ -333,29 +261,10 @@ def primaryDenominatorEquiv (a : PrimaryLower) : CoprimeElement a.val≃PrimaryC
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical
 
-namespace CubicEisenstein
 
-section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
-
-open Filter MeasureTheory
-open scoped BigOperators Classical MatrixGroups
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
-
-end CubicEisenstein
-
-open scoped Classical MatrixGroups
 namespace CubicKubota
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicEisenstein CubicJacobiGlobal CubicRamified
 
 lemma levelTwo_entry_integer (g : levelTwo) (i j : Fin 2) :
     (3:Eis)∣((g:SL(2,Eis)) i j-((levelTwoRight g) i j:ℤ)) := by
@@ -427,9 +336,3 @@ lemma levelTwoComplexCharacter_primary (g : levelTwo)
   change eisEmbedding (symbol (A 1 0-(c:Eis)*A 0 0) (A 0 0))=_
   congr 1
   exact symbol_congr (x:=A 1 0-(c:Eis)*A 0 0) (y:=A 1 0) (d:=A 0 0) ⟨-(c:Eis),by ring⟩
-
-end CubicKubota
-
-end
-
-end OAI

@@ -39,6 +39,4 @@ theorem wooleyTriangular_zero : wooleyTriangular 0 = 0 := by
 theorem wooleyTriangular_one : wooleyTriangular 1 = 1 := by
   norm_num [wooleyTriangular]
 
-end
 
-end GafniTao

@@ -120,8 +120,3 @@ theorem gaussianLogWindow_fourier_moment (V : SchwartzMap ℝ ℂ) (hV : HasComp
   have hc' : R^(-a)*R^a=1 := by rw [mul_comm,hcancel]
   rw [←mul_assoc,hc',one_mul] at hp
   exact hp.trans (by nlinarith [Real.rpow_pos_of_pos hR (-a)])
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

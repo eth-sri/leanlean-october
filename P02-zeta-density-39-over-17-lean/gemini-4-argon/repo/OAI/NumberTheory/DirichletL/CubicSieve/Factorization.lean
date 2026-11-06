@@ -76,8 +76,3 @@ theorem cubic_factorization (x : M) (hx : x ≠ 0) :
       simp_rw [hper]
       simp only [Finset.prod_mul_distrib, Finset.prod_pow]
       simp only [firstPart, secondPart, cubePart, Finset.prod_filter]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

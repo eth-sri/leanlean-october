@@ -23,11 +23,6 @@ theorem atkinsonSourceCutoff_lower (T G L : ℝ) :
     36 * T * (L / G) ^ 2 ≤ (atkinsonSourceCutoff T G L : ℝ) :=
   Nat.le_ceil _
 
-theorem atkinsonSourceCutoff_pos {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) : 0 < atkinsonSourceCutoff T G L := by
-  have h := (by positivity : 0 < 36 * T * (L / G) ^ 2).trans_le
-    (atkinsonSourceCutoff_lower T G L)
-  exact_mod_cast h
 
 theorem atkinsonSourceCutoff_le_small {T G L : ℝ}
     (hT : 40000 ≤ T) (hG : 0 < G) (hL : 0 ≤ L) (hwidth : 1200 * L ≤ G) :
@@ -87,28 +82,5 @@ theorem exists_atkinsonPhysicalCutoff_prefix_geometry {δ : ℝ} (hδ : 0 < δ) 
   have hcut := hA (2*H) (by linarith) G hwidth
   linarith
 
-theorem atkinson_dyadic_prefix_geometry {H G : ℝ} {j : ℕ}
-    (hcut : 2*(atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ)+2 ≤ H)
-    (hj : j < Nat.clog 2 (atkinsonSourceCutoff (2*H) G (Real.log (2*H)))) :
-    (((2^j)+(2^j)+2:ℕ):ℝ) ≤ H := by
-  have hjN := Nat.pow_lt_of_lt_clog hj
-  have hcast : (((2^j):ℕ):ℝ) ≤
-      (atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ) := by exact_mod_cast hjN.le
-  push_cast at hcast ⊢
-  linarith
 
-theorem exists_atkinsonPhysicalPrefixGramMax_le_gap {δ : ℝ} (hδ : 0 < δ) :
-    ∃ H₀ : ℝ, 40000 ≤ H₀ ∧ ∀ H G : ℝ, H₀ ≤ H → H^δ ≤ G →
-      ∀ j : ℕ, j < Nat.clog 2 (atkinsonSourceCutoff (2*H) G (Real.log (2*H))) →
-      ∀ t u : ℝ, H ≤ t → t ≤ 2*H → H ≤ u → u ≤ 2*H →
-        atkinsonPrefixGramMax (2^j) (2^j) t u ≤ atkinsonPrefixGapMajorant (2^j) (2^j) t u := by
-  obtain ⟨A,hA,hcut⟩ := exists_atkinsonPhysicalCutoff_prefix_geometry hδ
-  refine ⟨A,hA,?_⟩
-  intro H G hH hG j hj t u ht htU hu huU
-  have hH0 : 0 < H := by linarith [hA.trans hH]
-  have hend := atkinson_dyadic_prefix_geometry (hcut H G hH hG) hj
-  exact atkinsonPrefixGramMax_le_gap (lt_min (hH0.trans_le ht) (hH0.trans_le hu))
-    (pow_pos (by norm_num) _) (le_min (hend.trans ht) (hend.trans hu))
-    (max_le (by linarith [le_min ht hu]) (by linarith [le_min ht hu]))
 
-end MathCollab.Density.Stronger.Atkinson

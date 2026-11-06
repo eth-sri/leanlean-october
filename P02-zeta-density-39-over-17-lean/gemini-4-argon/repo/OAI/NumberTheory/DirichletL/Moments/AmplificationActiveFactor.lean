@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationActiveFactor
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationShortening CenteredMomentSupportedCorrelation
-open CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool
-open CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationShortening CenteredMomentSupportedCorrelation CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool CenteredMomentSourceRow
 
 def errorMovingExponent (n : ℕ) : ℕ := if n=5 then 0 else 1
 
@@ -70,9 +66,3 @@ theorem residual_column_active (S : Finset (Ideal O)) (p : O) (hp : Prime p)
   · apply (Ideal.isCoprime_span_singleton_iff _ _).mp
     rw [primary_span_supported I hsI]
     exact residualColumns_coprime S p hp (n+1) I hI
-
-end SevenEighths.CenteredMomentAmplificationActiveFactor
-
-end
-
-end OAI

@@ -42,4 +42,3 @@ theorem universalExpandedTerm_budget {T R σ a x δ ell : ℝ}
     repeat rw [← Real.rpow_add hTp]
     norm_num
 
-end Montgomery.RationalMoment

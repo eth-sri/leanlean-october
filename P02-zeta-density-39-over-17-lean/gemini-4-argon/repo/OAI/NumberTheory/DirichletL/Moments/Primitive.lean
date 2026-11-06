@@ -7,10 +7,8 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentPrimitive
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 
 def primitiveCharacter {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -39,8 +37,3 @@ theorem primitiveCharacter_apply {ι : Type*} [Fintype ι]
 lemma sqrt_absNorm (r : O) :
     Real.sqrt (Ideal.absNorm (Ideal.span {r}) : ℝ) = ‖eisEmbedding r‖ := by
   rw [← eisEmbedding_norm_sq_eq_absNorm_span, Real.sqrt_sq (norm_nonneg _)]
-
-end SevenEighths.CenteredMomentPrimitive
-end
-
-end OAI

@@ -10,8 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem markedCompletedT_twist_congr_primary (Ψ Φ : Eis→*ℂ)
     (h : ∀ n : Eis, λ₀^2∣n-1 → Ψ n=Φ n) (W : ℝ→ℂ) (X : ℝ) (d : Ideal Eis→ℂ) :
@@ -78,8 +76,3 @@ theorem free_row_eq_joined_unmarked {σ : Type*} [Fintype σ]
   ext n
   rw [unmarked_sum_twist]
   rfl
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

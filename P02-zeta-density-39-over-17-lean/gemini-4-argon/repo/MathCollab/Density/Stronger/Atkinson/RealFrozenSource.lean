@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightFreezing
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -38,4 +36,3 @@ theorem exists_abs_zetaSquareNorm_sub_frozen_le (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left (hbound T hT x hx) (by norm_num)
     _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

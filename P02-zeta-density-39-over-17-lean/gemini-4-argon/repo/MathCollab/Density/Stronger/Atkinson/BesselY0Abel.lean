@@ -208,4 +208,3 @@ theorem dfiDampedSineFactor_limit_eq
   rw [hIsq]
   ring
 
-end MathCollab.Density.Stronger.Atkinson

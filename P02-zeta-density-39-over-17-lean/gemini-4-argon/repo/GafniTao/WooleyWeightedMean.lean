@@ -93,6 +93,4 @@ theorem wooley_sum_weightedResidueMassSq {Q q : ℕ} [NeZero q]
     (g := fun n : Fin Q => ((((n : ℕ) + 1 : ℕ) : ZMod q)))
     (f := fun n : Fin Q => ‖gamma n‖ ^ 2)]
 
-end
 
-end GafniTao

@@ -11,10 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion
-open CanonicalQuadraticSieve ProbePhysical
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve ProbePhysical
 
 def rowMaskElement : O := 2*λ₀
 
@@ -105,9 +102,3 @@ theorem target_inverseRow_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   by_cases hP : P.val∈S
   · simp only [ite_eq_left hP]
   · rw [ite_eq_right hP,ite_eq_right hP,rawRow_prime_outside S hS hbad u P hP]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

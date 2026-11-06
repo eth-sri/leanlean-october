@@ -31,4 +31,3 @@ theorem legendreFiniteInputOrder_le {Q n : ℕ} (hn : n ≤ Q) :
     (inversePhaseOrder (inversePhaseDerivativeExpression k)+1))
     (Finset.mem_range.mpr (Nat.lt_succ_iff.mpr hn))
 
-end TaoTrudgianYang2025

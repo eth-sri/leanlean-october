@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 abbrev HighIdeal := (Id×Id)×(Id×Id)
 
@@ -109,8 +107,3 @@ theorem highValuationTerm_summable_norm (η : HeckeFamily.Character) (x w z : �
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     Summable (fun v : PrimeIdeal→₀HighValuation=>‖highValuationTerm η x w z v‖) :=
   (bareIdealHighSummand_summable η 1 x w z hx hw hz).norm.comp_injective highIdeals_injective
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

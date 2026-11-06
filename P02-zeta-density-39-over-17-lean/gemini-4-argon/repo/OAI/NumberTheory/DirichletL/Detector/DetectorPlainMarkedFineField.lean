@@ -14,14 +14,7 @@ open scoped Classical BigOperators SchwartzMap ComplexConjugate
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainMarkedFineField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles ProbeHighRowFamily ProbeFinalAssembly
-open QuadraticInitialBound CenteredMomentDetectorDictionary
-open CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentInductionEnergy
-open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
-open CenteredMomentDetectorPlainMomentParameters CenteredMomentNaturalFixedRaySource
-open CenteredMomentFiniteProfileExceptional CenteredMomentDetectorPlainFiberSource
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles ProbeHighRowFamily ProbeFinalAssembly QuadraticInitialBound CenteredMomentDetectorDictionary CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentInductionEnergy CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState CenteredMomentDetectorPlainMomentParameters CenteredMomentNaturalFixedRaySource CenteredMomentFiniteProfileExceptional CenteredMomentDetectorPlainFiberSource
 
 def PositiveFineSourceInput {Δ:ℝ}{D:Parameters.HighData Δ}(S:SourceData D)(mesh:ℝ):Prop:=
   ∀bΦ:ℝ,0<bΦ→∃degree:ℕ,∃seminorms:Finset (ℕ×ℕ),
@@ -129,8 +122,3 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
           apply mul_le_mul _ hnorm (by positivity) (by positivity)
           exact mul_le_mul (hClabel label) (by linarith) hdiag hCsum.le
         _=_:=by dsimp [Cfinal];ring
-end SevenEighths.ProbeDetectorPlainMarkedFineField
-
-end
-
-end OAI

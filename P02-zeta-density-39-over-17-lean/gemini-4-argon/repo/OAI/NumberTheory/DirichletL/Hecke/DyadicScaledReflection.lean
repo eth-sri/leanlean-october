@@ -89,9 +89,3 @@ theorem scaled_reflected_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
     _ = (2*Cr*Real.pi)*C₂*U^((a-1/2)*(1-r)+6*e*(2-r)+4*κ+η)+
         (6*Cg+E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n := by ring
     _ ≤ _ := by gcongr
-
-end SevenEighths.HeckeDyadic
-
-end
-
-end OAI

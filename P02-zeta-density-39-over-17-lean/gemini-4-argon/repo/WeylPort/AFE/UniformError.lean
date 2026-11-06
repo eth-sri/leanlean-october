@@ -262,4 +262,3 @@ theorem eventually_actual_zeta_short_afe :
   · simpa only [hfy] using hhi
   · exact he
 
-end WeylPort

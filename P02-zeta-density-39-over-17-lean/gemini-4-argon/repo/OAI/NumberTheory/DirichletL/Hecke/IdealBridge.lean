@@ -113,9 +113,3 @@ theorem LFunction_differentiableAt (χ : Character) {s : ℂ}
 theorem LFunction_entire_nonprincipal (χ : Character) (hχ : χ.residue ≠ 1) :
     Differentiable ℂ (LFunction χ) :=
   (HeckeCharacterAnalytic.continuedLattice_entire_nonprincipal χ hχ).div_const 6
-
-end SevenEighths.HeckeFamily
-
-end
-
-end OAI

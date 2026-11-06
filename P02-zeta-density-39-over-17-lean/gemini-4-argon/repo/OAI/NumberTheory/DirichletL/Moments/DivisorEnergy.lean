@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorEnergy
 open IdealMobiusDivisorSum CenteredMomentDivisorAllocation
-local notation "O" => ActualEisensteinCubic.O
 variable {ι α ρ : Type*} [DecidableEq ι]
 
 theorem allocation_card_small_power (N : ℕ) (hN : 0 < N) (ε : ℝ) (hε : 0 < ε) :
@@ -29,9 +28,3 @@ theorem allocation_card_small_power (N : ℕ) (hN : 0 < N) (ε : ℝ) (hε : 0 <
       rw [mul_pow,← Real.rpow_mul_natCast hn]
       congr 2
       field_simp
-
-end SevenEighths.CenteredMomentDivisorEnergy
-
-end
-
-end OAI

@@ -13,13 +13,7 @@ open scoped Classical BigOperators SchwartzMap Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorEnergyInitialState
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy
-open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
-open CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge
-open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorDictionary
-open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorDictionary CenteredMomentFiniteProfileExceptional
 
 def initialKeep (η:Character)(Q:Ideal O)(z:O):Prop:=
   z≠0 ∧ ¬FixedInducingRow η Q (fixedBadMask*idealGenerator 1) 1 z
@@ -103,9 +97,3 @@ lemma source_fixed_gates (F:ProbeFinalAssembly.SourceData D)(η:Character):
   ⟨internalQ_ne_zero _ (sourceFixedIdeal_ne_zero F) η,
     inf_le_left.trans (sourceFixedIdeal_le_modulus F),inf_le_right,
     inf_le_left.trans (sourceFixedIdeal_le_72 F)⟩
-
-end SevenEighths.CenteredMomentDetectorEnergyInitialState
-
-end
-
-end OAI

@@ -9,11 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment InverseInitialProfile
-open InverseInitialOverlapFourier InverseInitialConjugateEnergy InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerWindow InverseInitialPoissonBridge InverseInitialPhysicalMeasure Filter
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment InverseInitialProfile InverseInitialOverlapFourier InverseInitialConjugateEnergy InverseInitialQuotientGeometry InverseInitialEnergyCallerWindow InverseInitialPoissonBridge InverseInitialPhysicalMeasure Filter
 
 theorem padded_source_energy
     (W:ℝ → ℂ)(ao bo:ℝ)(hao:0<ao)(hab:ao≤bo)
@@ -83,9 +79,3 @@ theorem padded_source_energy
   apply mul_le_mul_of_nonneg_left _ hC.le
   apply Real.rpow_le_rpow_of_exponent_le hUone.le
   linarith
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

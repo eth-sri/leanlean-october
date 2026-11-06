@@ -8,9 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeCompleted ProbeRow CubicEisenstein
 
 lemma completedIndex_norm (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
     elementNorm (completedIndex I J)=(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3 := by
@@ -65,8 +63,3 @@ theorem physical_mellin_coefficient (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMa
     bareSourceCoefficient η I (supported_primaryGenerator_ne_zero I hI) (completedIndex I J) s
       (supportedElement_ne_zero _ hA) H) hn
   convert he using 1 <;> ring_nf
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

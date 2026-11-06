@@ -128,4 +128,3 @@ theorem real_scale_ratio_second_sharp_native (ε : ℝ) (hε : 0 < ε) :
       simp only [finiteRatioSecond, Finset.sum_empty]
       positivity
 
-end Montgomery.RationalMoment

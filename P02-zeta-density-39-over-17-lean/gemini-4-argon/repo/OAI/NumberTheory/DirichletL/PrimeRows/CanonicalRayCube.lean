@@ -11,9 +11,7 @@ open scoped Classical BigOperators Topology
 open MeasureTheory Set Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def rayCubeFamily (u : FreeRow) : RayQuotient.Characters M H→Character :=
@@ -79,9 +77,3 @@ theorem canonical_probe_exists_ray_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ
   · intro hnp'
     exact (ProbeRayCharacterFamily.source_nonprincipal_maximum_dominates S hS.prime η u
       (rayCubeFamily M H hH u) hnp' _).trans_lt (hbins u).2.2.2.2.1
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

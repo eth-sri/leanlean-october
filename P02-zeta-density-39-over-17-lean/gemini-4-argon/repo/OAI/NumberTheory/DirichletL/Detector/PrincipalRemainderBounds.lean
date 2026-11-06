@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalRemainderBounds
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
-local notation "Id" => Ideal ActualEisensteinCubic.O
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
 
 lemma active_prime_sum_bound (T : Finset PrimeIdeal) (W : ℝ→ℝ)
     (c d B P ξ : ℝ) (hc : 0<c) (hd : c≤d) (hB : 0≤B) (hP : 0<P)
@@ -619,9 +616,3 @@ theorem source_remainders_strict_saving {ι : Type*}
       (div_nonneg hC.le he.le))
   · exact hh.2.trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hZ (source_z_strict_exponent HeckeZeroSupremum.beta e hehi)) hC.le)
-
-end SevenEighths.ProbePrincipalRemainderBounds
-
-end
-
-end OAI

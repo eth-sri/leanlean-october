@@ -111,4 +111,3 @@ theorem logModulated_global_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     rw [iteratedDeriv_zero_off_interval hz n hx,norm_zero]
     positivity
 
-end GuthMaynard.Improvement

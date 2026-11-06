@@ -75,9 +75,3 @@ open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound
        Cm*B*(HeckeReciprocalBound.bound 2*(Q*V^2))*Real.pi):=
       mul_le_mul_of_nonneg_left (add_le_add_right hCe _) (by positivity)
     _=_:=by ring
-
-end SevenEighths.CenteredMomentPlainGlobalActual
-
-end
-
-end OAI

@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorRectangle
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor
-open CenteredMomentHeckeExpansion CenteredMomentMask CenteredMomentRectangle HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor CenteredMomentHeckeExpansion CenteredMomentMask CenteredMomentRectangle HeckeFamily
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def factorTuple (v : ι → Ideal O) (I J : Ideal O) : (ι ⊕ Fin 2) → Ideal O :=
@@ -120,9 +118,3 @@ theorem allocated_rectangle_reindex (η : Character) (m A z : O) (t : ℝ)
     (fun i I => if selectedSlot D a i∣I then β i I else 0) t
     W₁ W₂ X₁ X₂ Y₁ Y₂ (selectedPlain D a 0) (selectedPlain D a 1)]
   simp only [mul_assoc]
-
-end SevenEighths.CenteredMomentDivisorRectangle
-
-end
-
-end OAI

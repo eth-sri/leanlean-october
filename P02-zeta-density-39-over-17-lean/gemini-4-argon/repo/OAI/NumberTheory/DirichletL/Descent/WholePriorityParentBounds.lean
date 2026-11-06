@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSource
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSource
 
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -108,9 +106,3 @@ theorem priority_tail_parent_uniform (Lcap tau saving:ℝ)(hLcap:0≤Lcap)(htau:
     (secondParentLabel p y) (secondParentDivisor p y) (primeSubsetGenerator_ne_zero _ _)
     (slots\assigned) _ a hpair hcoeff om rowMajorant lo hi hlo hs negative t X M Y Z R
     hX hhi hZ hY hscale hy hyi hx hR
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

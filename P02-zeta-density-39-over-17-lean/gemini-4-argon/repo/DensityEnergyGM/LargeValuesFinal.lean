@@ -2229,4 +2229,3 @@ theorem guthMaynardLargeValues_native : GuthMaynardLargeValues := by
       dsimp only [S] at hS ⊢
       exact mul_le_mul_of_nonneg_right hcoef hS)
 
-end GuthMaynard.NativeMoment

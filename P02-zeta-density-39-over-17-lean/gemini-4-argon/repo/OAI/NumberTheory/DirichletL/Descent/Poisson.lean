@@ -12,9 +12,7 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic
-open FirstPassCubeLabels
-open SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 
 noncomputable local instance markedQuotientField (P : Ideal ActualEisensteinCubic.O)
     [P.IsMaximal] : Field (ActualEisensteinCubic.O ⧸ P) := Ideal.Quotient.field P
@@ -92,9 +90,3 @@ theorem row_slot_product_phase
   intro k hk
   exact row_slot_cross_phase p hcop hg hpr i k (fun h =>
     (Finset.disjoint_left.mp hRP) hi (h.symm ▸ hk))
-
-end
-
-end SevenEighths.InverseMoment
-
-end OAI

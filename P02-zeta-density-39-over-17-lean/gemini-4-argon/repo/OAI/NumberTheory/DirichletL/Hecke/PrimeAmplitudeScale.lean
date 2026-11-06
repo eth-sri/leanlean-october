@@ -55,9 +55,3 @@ theorem actual_bins_eventually (C dmin rmin ε mesh : ℝ)
   exact ⟨hb.1,hb.2,amplitude_mem_labels _ cap mesh Q hmesh,
     amplitude_upper _ cap mesh Q hP hmesh (hQ.trans (hallow d r cap hd' hr')),
     squared_spike (Z^d) r cap mesh Q hU (hr.trans_le hr') hmesh⟩
-
-end SevenEighths.HeckePrimeAmplitudeBins
-
-end
-
-end OAI

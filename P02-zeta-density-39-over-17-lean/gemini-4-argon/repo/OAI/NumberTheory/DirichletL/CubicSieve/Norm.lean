@@ -10,7 +10,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem primaryGenerator_inj_on_cubic_admissible {I J : Ideal O}
     (hI : Admissible I) (hJ : Admissible J)
@@ -88,8 +87,3 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     rfl
   rw [heR, hea] at he
   exact he
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

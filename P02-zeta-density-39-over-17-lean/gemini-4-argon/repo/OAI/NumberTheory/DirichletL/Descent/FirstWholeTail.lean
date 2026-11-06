@@ -10,7 +10,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem full_first_supported_remainder (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ),0<C ∧
@@ -140,8 +139,3 @@ theorem full_first_supported_remainder (A : ℕ) :
       (mul_le_mul (boundedPrimeSupports_card_positive p hp hinj F U₁ hU₁)
         (boundedPrimeSupports_card_positive p hp hinj F U₂ hU₂) (Nat.cast_nonneg _) (by positivity)) hQ
     _ = _ := by dsimp [Q,tail,slow,U₁,U₂,S];ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

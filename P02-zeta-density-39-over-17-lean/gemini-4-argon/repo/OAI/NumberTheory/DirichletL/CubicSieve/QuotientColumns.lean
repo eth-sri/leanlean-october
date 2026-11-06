@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma finite_sum_restrict {n A : Type*} [Fintype n] [AddCommMonoid A]
     (p : n → Prop) (f : n → A) (hf : ∀ j, ¬p j → f j = 0) :
@@ -99,8 +97,3 @@ lemma quotientCoefficient_energy {n : Type*} [Fintype n]
   apply Finset.sum_congr rfl
   intro j hj
   simp only [quotientCoefficient, quotientColumn, descendedCoefficient, totalQuotient, ite_eq_left j.property]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

@@ -176,4 +176,3 @@ theorem fourier_sup_family_to_height_mass (D : ℝ → ℕ → ℝ)
         (T^n*T^2)*(∫ x, f x) := by ring
     _ = _ := by rw [hpow,← pow_add]; rfl
 
-end GuthMaynard.Improvement

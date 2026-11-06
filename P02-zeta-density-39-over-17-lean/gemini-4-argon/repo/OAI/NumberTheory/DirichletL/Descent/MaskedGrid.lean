@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 local notation "Grid" => Finset ((Ideal Eis × Ideal Eis) × Ideal Eis)
 
 def maskedGridHybridRow (T : Grid) (Pset : Finset (Ideal Eis))
@@ -116,8 +115,3 @@ theorem maskedGridHybridRow_divisor_energy (ε : ℝ) (hε : 0 < ε) :
         congr 1
         congr 1
         ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

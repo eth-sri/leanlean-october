@@ -98,4 +98,3 @@ theorem approximateModelPhase_signedJet_bounds
   have hd₁ := hδ.trans (min_le_right _ _)
   constructor <;> linarith
 
-end TaoTrudgianYang2025

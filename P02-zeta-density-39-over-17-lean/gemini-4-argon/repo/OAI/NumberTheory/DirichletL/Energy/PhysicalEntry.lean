@@ -10,15 +10,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPhysicalEntry
-open HeckeFamily CenteredMomentEnergyOriginalSource CenteredMomentEnergyState
-open CenteredMomentFiniteProfileExceptional CenteredMomentCommonRadialData
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentSecondHeightFamily CenteredMomentExceptionalAmplitudePair
-open CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
-variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance physicalEntryDecidableSum : DecidableEq (ι⊕Fin 2) := Classical.decEq _
+open HeckeFamily CenteredMomentEnergyOriginalSource CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentCommonRadialData CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform CenteredMomentSourceRow CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSecondHeightFamily CenteredMomentExceptionalAmplitudePair CenteredMomentInductionEnergy
 
 lemma natural_inverse_scale {Z Bmask bΦ:ℝ} (state:NaturalState Z Bmask bΦ)
     (B:ℝ)(hB:0≤B):state.radial.scale⁻¹≤Z^B:=by
@@ -26,9 +18,3 @@ lemma natural_inverse_scale {Z Bmask bΦ:ℝ} (state:NaturalState Z Bmask bΦ)
     rw [state.scale_eq]
     exact Real.one_le_rpow state.base_ge_one state.row_nonneg
   exact (inv_le_one_of_one_le₀ hscale).trans (Real.one_le_rpow state.base_ge_one hB)
-
-end SevenEighths.CenteredMomentEnergyPhysicalEntry
-
-end
-
-end OAI

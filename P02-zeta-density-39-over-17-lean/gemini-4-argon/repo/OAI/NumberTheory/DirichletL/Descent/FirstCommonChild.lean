@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic FourierBridge
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic FourierBridge
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -91,8 +89,3 @@ theorem firstCommonColumn_original_labels
       (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) t d,
     rayIdealRow_cube_labels p hp hinj hcop hg F D B v ε₁ ε₂ hv]
   rfl
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

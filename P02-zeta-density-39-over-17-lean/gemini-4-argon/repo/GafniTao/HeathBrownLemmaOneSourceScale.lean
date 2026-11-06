@@ -225,6 +225,4 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
   exact hcore.trans (add_le_add hMain le_rfl)
 
 
-end
 
-end GafniTao

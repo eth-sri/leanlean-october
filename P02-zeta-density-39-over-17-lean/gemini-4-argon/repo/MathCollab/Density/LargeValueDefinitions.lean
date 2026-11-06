@@ -75,4 +75,3 @@ theorem kernelEnergy_nonneg (w : ReflectionCutoff) (L : ℝ) (U : Finset ℝ) :
 theorem oneSeparated_subset {U W : Finset ℝ} (hW : oneSeparated W) (hU : U ⊆ W) : oneSeparated U :=
   fun t ht u hu hne => hW t (hU ht) u (hU hu) hne
 
-end MathCollab.Density

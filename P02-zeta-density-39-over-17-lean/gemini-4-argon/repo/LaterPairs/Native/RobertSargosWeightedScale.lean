@@ -38,5 +38,4 @@ theorem robertSargos_weighted_sum_scale
       rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 9) hQ0]
       ring
 
-end TaoTrudgianYang2025
 

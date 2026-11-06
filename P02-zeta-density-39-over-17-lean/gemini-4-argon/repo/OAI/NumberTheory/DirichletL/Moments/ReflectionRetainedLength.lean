@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical
 open Filter
 namespace SevenEighths.CenteredMomentReflectionRetainedLength
-open CenteredMomentComparisonReflection CenteredMomentReflectedTruncation
-open CenteredMomentSectorLocalization
+open CenteredMomentComparisonReflection CenteredMomentReflectedTruncation CenteredMomentSectorLocalization
 
 lemma retained_scale_lower (R Y : ℝ) (hY : 0<Y) (n : ℤ)
     (hn : n∈retainedAnnuli R Y hY) : 1≤dyadicScale n*Y := by
@@ -56,9 +55,3 @@ theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
     _=(box*C)*Z^(M-a+xi/2) :=by ring
     _≤Z^(xi/2)*Z^(M-a+xi/2) :=mul_le_mul_of_nonneg_right hconst (by positivity)
     _=Z^(M-a+xi) :=by rw [←Real.rpow_add hz];congr 1;ring
-
-end SevenEighths.CenteredMomentReflectionRetainedLength
-
-end
-
-end OAI

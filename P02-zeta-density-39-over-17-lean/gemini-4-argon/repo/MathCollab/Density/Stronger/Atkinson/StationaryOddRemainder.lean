@@ -189,4 +189,3 @@ theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
       _ = _ := by ring
   exact (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans (add_le_add hfirst hsecond)
 
-end MathCollab.Density.Stronger.Atkinson

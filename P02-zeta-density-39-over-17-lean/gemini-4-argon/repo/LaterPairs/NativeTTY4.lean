@@ -9,9 +9,8 @@ public import TaoTrudgianYang2025.ExponentPairBProcess
 @[expose] public section
 set_option autoImplicit false
 noncomputable section
-open Expdb Filter Finset
+open Expdb Filter Finset MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 open scoped NNReal
-open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 namespace TaoTrudgianYang2025
 private theorem taoTrudgianYang_fourthNew_half_beta
     {α : ℝ≥0} (hhalf : (α:ℝ)≤1/2) :
@@ -64,4 +63,3 @@ theorem exponentPair_taoTrudgianYang_fourthNew :
 theorem exponentPair_BTTY4 : ExponentPair (3316/8695) (914/1739) := by
   convert exponentPair_taoTrudgianYang_fourthNew.bProcess using 1 <;> norm_num
 
-end TaoTrudgianYang2025

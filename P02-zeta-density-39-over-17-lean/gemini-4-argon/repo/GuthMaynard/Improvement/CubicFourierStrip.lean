@@ -234,4 +234,3 @@ theorem fourier_near_strip_sum {μ : ℝ → ℝ} (hm : Measurable μ)
         Finset.sum_le_sum (fun m _ => (hmode m).2.2)
       _ = _ := by rw [← integral_finsetSum S hi]; simp only [Finset.mul_sum, first, r, r₀]
 
-end GuthMaynard.Improvement

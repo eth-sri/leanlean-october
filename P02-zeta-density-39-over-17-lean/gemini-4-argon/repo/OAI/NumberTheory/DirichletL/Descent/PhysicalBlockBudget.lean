@@ -57,9 +57,3 @@ theorem physical_block_scalar_budget
     (physical_block_rpow_budget Z hZ M r ell V δ A B R j t g θ v η τ π ε εmass hclip hεmass)
     (mul_nonneg hC (norm_nonneg ray))
   convert hh using 1 ; ring
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

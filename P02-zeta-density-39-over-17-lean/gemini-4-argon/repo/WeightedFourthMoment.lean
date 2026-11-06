@@ -198,4 +198,3 @@ theorem tensorize_fourth_bound {ι κ τ υ : Type*}
   change (∑ y ∈ Y, ∑ x ∈ X, wy y*wx x*‖∑ i ∈ A, F i y*χ i x‖^4) ≤ _
   exact (ht.trans hb).trans_eq (congrArg (fun t : ℝ => t^2) he)
 
-end Montgomery.RationalMoment

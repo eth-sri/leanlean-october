@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSectorChildren
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy
-open CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily CenteredMomentSupport
-open CenteredMomentSecondScaled CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
-open CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily CenteredMomentSupport CenteredMomentSecondScaled CenteredMomentSupportedCorrelation CenteredMomentChildAssembly CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
 
 theorem sector_correlation_children (η : Character) (t : ℝ)
     (S : Finset (Ideal O)) (β : Ideal O → ℂ) (C D : Ideal O)
@@ -60,9 +55,3 @@ theorem sector_correlation_children (η : Character) (t : ℝ)
     rw [←Ideal.isCoprime_span_singleton_iff,sectorElement_span,sectorElement_span]
   simp_rw [hcop,sectorElement_span] at he
   simpa only [idealCorrelation,primaryGenerator_mul,sectorElement] using he
-
-end SevenEighths.CenteredMomentSecondSectorChildren
-
-end
-
-end OAI

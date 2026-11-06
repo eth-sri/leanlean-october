@@ -139,4 +139,3 @@ theorem actual_second_moment_universal_log (δ : ℝ) (hδ : 0<δ) :
       _ = _ := sum_differenceFloor_values W (fun j => v j^2)
   exact hOriginal.trans (hDyad.trans_eq (by dsimp only [F]; ring))
 
-end Montgomery.RationalMoment

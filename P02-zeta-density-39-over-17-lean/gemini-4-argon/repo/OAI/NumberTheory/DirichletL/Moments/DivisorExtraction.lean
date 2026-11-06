@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorExtraction
 open IdealMobiusDivisorSum CenteredMomentDivisorAllocation
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
 def selectedPrimes (D : Ideal O) (s : Finset ι) (a : Allocation D s) (i : ι) :
@@ -43,9 +42,3 @@ theorem selectedDivisor_dvd (D : Ideal O) (s : Finset ι) (v : ι → Ideal O)
     exact Ideal.isCoprime_of_isMaximal (fun he => hne (Subtype.ext he))
   · intro P hP
     exact selected_divides_factor D s v a hn P i (Finset.mem_filter.mp hP).2
-
-end SevenEighths.CenteredMomentDivisorExtraction
-
-end
-
-end OAI

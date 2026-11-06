@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_original_inactive_energy_uniform_degree
@@ -128,7 +127,3 @@ theorem canonical_original_inactive_energy_uniform_degree
     hH w hw f (C*(1+‖θ‖)^degree*Z^(N+V-cstar/8-O₀/2)) (by positivity)
   intro b
   exact hDb b θ (fun i : T => w i.val) (fun i P => hw i.val P)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

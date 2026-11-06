@@ -129,4 +129,3 @@ theorem cubic_affine_sqrt_exponent {T : ℝ} (hT : 1 ≤ T) (α : ℝ) :
   congr 1
   ring
 
-end GuthMaynard.Improvement

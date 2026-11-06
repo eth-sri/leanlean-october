@@ -78,4 +78,3 @@ theorem sargos_sum_stdAddChar_mul_sub_one {N : ℕ} [NeZero N]
       (ZMod.stdAddChar k-1) = (ZMod.stdAddChar k)^H-1 := by
   rw [sargos_sum_stdAddChar_eq_geom,geom_sum_mul]
 
-end TaoTrudgianYang2025

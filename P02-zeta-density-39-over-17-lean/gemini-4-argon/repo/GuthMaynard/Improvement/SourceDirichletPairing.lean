@@ -109,4 +109,3 @@ theorem boundedPolynomial_pairing_ratio_bound {N : ℝ} (hN : 0 < N)
   intro m hm
   rw [he n m hn hm]
 
-end GuthMaynard.Improvement

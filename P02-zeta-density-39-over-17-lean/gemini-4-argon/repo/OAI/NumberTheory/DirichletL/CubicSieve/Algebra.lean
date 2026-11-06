@@ -44,8 +44,3 @@ theorem cubic_cube_eq_mask (χ : MulChar R ℂ) (hχ : χ ^ 3 = 1) (x : R) :
   by_cases hx : IsUnit x
   · rw [ite_eq_left hx, MulChar.one_apply hx]
   · rw [ite_eq_right hx, MulChar.map_nonunit _ hx]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

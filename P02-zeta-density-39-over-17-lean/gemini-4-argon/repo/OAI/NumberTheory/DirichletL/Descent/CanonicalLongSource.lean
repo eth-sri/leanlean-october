@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation FourierBridge CompletedHeight
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic JointLogSeparation FourierBridge CompletedHeight
 
 theorem long_frequency_profile
     {ι:Type*}(p:ι→O)(hp:∀i,p i≠0)
@@ -109,9 +106,3 @@ theorem short_sum_zero_of_label_large
       simp
     rw [ite_eq_right (not_lt.mpr (ht.trans (norm_at_least_one I hi)))]
   · exact tsum_zero
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

@@ -63,4 +63,3 @@ theorem finite_weighted_layer_cake {ι : Type*} [Fintype ι]
     _ = ∑ i ∈ (Finset.univ.filter fun i => u ≤ f i), (r i : ℝ) := by
       rw [Finset.sum_filter]
 
-end Montgomery.RationalMoment

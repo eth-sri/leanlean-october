@@ -198,6 +198,4 @@ theorem wooley_section7_hard_triangular_loss
       mul_nonpos_of_nonneg_of_nonpos hR hdNeg.le
     exact this.trans_lt (by positivity)
 
-end
 
-end GafniTao

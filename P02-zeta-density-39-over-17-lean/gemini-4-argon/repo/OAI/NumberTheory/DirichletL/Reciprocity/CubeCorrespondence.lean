@@ -7,82 +7,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicKubota
 
-open scoped Classical MatrixGroups
+open scoped MatrixGroups
 
 section
-open ActualEisensteinCubic CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CubicRamified
 
 def cubeDiagonal (p : Eis) : Matrix (Fin 2) (Fin 2) Eis := !![p^3,0;0,1]
 
@@ -204,8 +137,6 @@ lemma cubeCorrespondence_character (p : Eis) (hp : p ≠ 0) (MN : cubeCorrespond
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
 
 def cubePrincipalLevel (p : Eis) : Subgroup levelThree :=
   ((Matrix.SpecialLinearGroup.map (n:=Fin 2)
@@ -324,8 +255,7 @@ lemma cubeCorrespondence_finite_covers (p : Eis) (hp : p ≠ 0) :
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicEisenstein
 
 def cubeKernelCorrespondence (p : Eis) : Subgroup (cubeCorrespondence p) :=
   (finiteCubicMultiplier.comp (cubeCorrespondenceLeft p)).ker
@@ -433,17 +363,12 @@ lemma cubeKernelGlobal_finite_covers (p : Eis) (hp : p ≠ 0) :
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicEisenstein
 
 end CubicKubota
 
-open Filter MeasureTheory Asymptotics
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
 
 namespace CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 def cuspBarProfile (f : HyperbolicSpace→ℂ) (z : ℂ) (v : ℝ) : ℂ :=
   horizontalWirtingerBar (fun w=>f (cuspCoordinateLift (v,w))) z
@@ -569,9 +494,3 @@ lemma cuspZProfile_conjugate_isBigO (z : ℂ) :
   apply Asymptotics.IsBigO.of_bound C
   filter_upwards [hC] with v hv
   simpa only [cuspZProfile_conjugate_eq,norm_star] using hv
-
-end CubicEisenstein
-
-end
-
-end OAI

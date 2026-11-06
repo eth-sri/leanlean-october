@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
-open ProbeHighRowFamily
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
 
 lemma rawMoment_mono_constant {data : RowData} {W : ℝ→ℂ} {c κ C D : ℝ}
     (h : RawMoment data W c κ C) (hCD : C≤D) : RawMoment data W c κ D := by
@@ -48,9 +47,3 @@ lemma sourceMomentsAt_mono_constant (M : Ideal O) [NeZero M]
   intro q B hrows hdata hrev hslots hwidth hprof hupp hext hmesh hbin hfam bin j J K hne
   exact moments_mono_constant (Real.rpow_nonneg hZ _)
     (h q B hrows hdata hrev hslots hwidth hprof hupp hext hmesh hbin hfam bin j J K hne) hCD
-
-end SevenEighths.ProbeFinalAssembly
-
-end
-
-end OAI

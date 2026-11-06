@@ -75,9 +75,3 @@ theorem contour_shift_left (χ : Character) (H : ℂ → ℂ)
 def infinityConstant (a C : ℝ) (n : ℕ) : ℝ :=
   ‖(1/(2*Real.pi) : ℂ)‖*Real.exp ((a-5/6)^2)*((3/2)*C)*
     ∫ y : ℝ, polynomialGaussian n y
-
-end SevenEighths.HeckeSignalShift
-
-end
-
-end OAI

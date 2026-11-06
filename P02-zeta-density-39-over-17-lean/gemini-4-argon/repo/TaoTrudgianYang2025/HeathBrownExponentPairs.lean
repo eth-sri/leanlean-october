@@ -92,4 +92,3 @@ theorem exponentPair_heathBrown {k : ℕ} (hk : 3 ≤ k) :
   exact exponentPair_of_beta_bound_half (heathBrownPair_inTriangle hkr)
     (heathBrownPair_slope hkr) (fun _ hα => exponentSumGrowthExponent_le_heathBrownPair_half hk hα)
 
-end TaoTrudgianYang2025

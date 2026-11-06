@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeRow ProbePhase
-local notation "O" => ActualEisensteinCubic.O
 
 def calibratedHighCoefficient (C : CalibrationData) (η : HeckeFamily.Character)
     (I : Ideal O) (hI : primaryGenerator I≠0) (A s : O) (hA : A≠0) (H : O) : ℂ :=
@@ -57,8 +56,3 @@ theorem calibratedHighCoefficient_eq_bare (S : Finset (Ideal O)) (hS : ∀P∈S,
       exact fun h=>hH ((CubicEisenstein.isUnit_quotient_span_iff _ _).mp h)
     dsimp only [C] at hξ
     simp only [calibratedHighCoefficient,hz,zero_mul,zero_div,hξ,star_zero]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

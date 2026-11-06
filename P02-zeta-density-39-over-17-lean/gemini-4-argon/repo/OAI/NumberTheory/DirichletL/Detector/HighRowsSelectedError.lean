@@ -67,8 +67,3 @@ lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
   · have hh := mul_le_mul_of_nonneg_left hE' (norm_nonneg B)
     change ‖B‖*‖unramifiedMarked Q A eta v x w z+D‖≤28
     nlinarith
-
-end SevenEighths.ProbeEuler
-end
-
-end OAI

@@ -8,67 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
 namespace EisensteinSchwartzPoisson
 
 section
-open MeasureTheory
-open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
+open scoped RealInnerProductSpace
 
 def radialTestCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLM ℝ (Function.hasTemperateGrowth_norm_sq ℂ)
@@ -163,8 +109,6 @@ theorem paperRadialFourier_source_weighted_bound (A : ℕ) :
 end
 
 section
-open MeasureTheory
-open scoped SchwartzMap ContDiff
 
 def halfEulerCLM : 𝓢(ℝ, ℂ) →L[ℂ] 𝓢(ℝ, ℂ) :=
   (SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => ((x / 2 : ℝ) : ℂ))).comp
@@ -271,8 +215,6 @@ def paperRealRayCLM : 𝓢(ℂ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
   SchwartzMap.compCLM ℝ paperFrequency_real_temperate
     ⟨1, 1, by simpa using paperFrequency_real_growth⟩
 
-@[simp] theorem paperRealRayCLM_apply (g : 𝓢(ℂ, ℂ)) (s : ℝ) :
-    paperRealRayCLM g s = g (paperFrequency (s : ℂ)) := rfl
 
 def halfEulerIterateCLM : ℕ → 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ)
   | 0 => ContinuousLinearMap.id ℝ _
@@ -293,7 +235,7 @@ def paperFourierRayCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
 @[simp] theorem paperFourierRayCLM_apply (W : 𝓢(ℝ, ℂ)) (s : ℝ) :
     paperFourierRayCLM W s =
       (2 / Real.sqrt 3 : ℝ) • radialFourierCLM W (paperFrequency (s : ℂ)) := by
-  simp [paperFourierRayCLM]
+  simp [paperFourierRayCLM, paperRealRayCLM]
 
 theorem paperRadialFourier_eq_ray (W : 𝓢(ℝ, ℂ)) :
     paperRadialFourier W = fun x : ℝ => paperFourierRayCLM W (Real.sqrt x) := by
@@ -382,8 +324,6 @@ theorem paperRadialFourier_euler_bound (W : 𝓢(ℝ, ℂ)) (A K : ℕ) :
 
 end
 
-open ConcreteTraceCRT ActualEisensteinCubic
-open scoped SchwartzMap
 
 theorem inverse_square_le_cauchy_product (a b q : ℝ) (hq : 0 ≤ q)
     (hQ : (a ^ 2 + b ^ 2) / 2 ≤ q) :
@@ -510,10 +450,9 @@ theorem paperRadialFourier_lattice_tail (A : ℕ) :
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge
+open ShortDraftHeckeBridge
 
 theorem idealSupport_injective_on_squarefree
     (F : Finset (Ideal O)) {I J : Ideal O} (hI : I ∈ F) (hJ : J ∈ F)
@@ -538,9 +477,3 @@ theorem idealSupport_injective_on_squarefree
       exact (mem_idealSupport_iff F I p).mp hp
   rw [← Ideal.prod_normalizedFactors_eq_self hsI.ne_zero,
     ← Ideal.prod_normalizedFactors_eq_self hsJ.ne_zero, hfac]
-
-end ConcretePrimeRowBridge
-
-end
-
-end OAI

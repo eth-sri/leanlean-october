@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseTerminalWidths
-open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid
-open InverseMoment CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid InverseMoment CanonicalQuadraticSieve
 
 lemma norm_one_le (I : Ideal O) (hI : I ≠ 0) : (1 : ℝ) ≤ Ideal.absNorm I := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
@@ -372,9 +370,3 @@ theorem actual_terminal_saving {ι : Type*} [Fintype ι]
     (normWidth_nonneg Z hZ _ (reflectionExtractedDivisor_ne_zero P (fun i => NeZero.ne (P i)) _ e 0))
     (normWidth_nonneg Z hZ _ (reflectionExtractedDivisor_ne_zero P (fun i => NeZero.ne (P i)) _ e 2))
     hz hzcap hv hl he hret (by linarith) hT' hc hmargin hd hη hτ hπ
-
-end SevenEighths.InverseTerminalWidths
-
-end
-
-end OAI

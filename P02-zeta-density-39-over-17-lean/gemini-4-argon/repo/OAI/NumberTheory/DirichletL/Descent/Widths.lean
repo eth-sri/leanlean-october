@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma actual_ideal_norm_pos (I : Ideal Eis) (hI : I ≠ 0) : 0 < (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.pos_of_ne_zero (fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz))
@@ -69,8 +68,3 @@ theorem actual_common_width_charge_label_puncture {ι : Type*} [Fintype ι]
     (mul_ne_zero (mul_ne_zero hS hF) hrho) P hcop hpool hres e using 1
   simp only [map_mul, Nat.cast_mul]
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

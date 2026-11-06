@@ -9,82 +9,14 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CompletedGauss
 
 lemma ramifiedFunction_valuation_ne_two (F:Eis→ℂ)
     (hzero:∀(p:Eis),Prime p→lambda^2∣p-1→∀h:Eis,¬p∣h→∀k:ℕ,k%3=2→F (h*p^k)=0)
@@ -165,8 +97,7 @@ theorem ramifiedBesselValue_squarefree_cube_support (side:Bool) (h:Eis) (hh:h≠
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CompletedGauss
 
 lemma onceCuspScale_not_three_dvd (t:Eisˣ) : ¬(3:Eis)∣onceCuspScale t := by
   rintro ⟨z,hz⟩
@@ -201,8 +132,7 @@ theorem ramifiedBesselValue_exact_lambda_valuation (side:Bool) (h:Eis)
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CompletedGauss
 
 lemma sourceResidualFourierCoefficient_prime_norm (p:Eis) (hp:Prime p)
     (hpp:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) :
@@ -310,8 +240,7 @@ theorem three_cusp_coefficients_squarefree_cube_bound :
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CompletedGauss
 
 lemma sourceResidualFourierCoefficient_prime_power_vanish (p:Eis) (hp:Prime p)
     (hpp:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) (k:ℕ) (hk:k%3=2) :
@@ -355,11 +284,9 @@ theorem sourceResidualFourierCoefficient_full_squarefree_cube_support (h:Eis) (h
 end
 
 section
-open scoped Classical BigOperators
 
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
-local notation "Eis" => ActualEisensteinCubic.O
 
 abbrev ThetaPrimaryCubePair :=
   {I:Ideal Eis // Squarefree I ∧ primaryGenerator I≠0} ×
@@ -424,12 +351,9 @@ theorem thetaFullFrequency_injective : Function.Injective thetaFullFrequency := 
 end
 
 section
-open scoped BigOperators Classical MatrixGroups
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped MatrixGroups
 
-open CubicKubota EisensteinCuspModThree ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicKubota EisensteinCuspModThree
 
 structure SourceCuspDatum where
   gamma : levelTwo
@@ -496,11 +420,7 @@ lemma finiteTwistCusp_point (c : Eis) (hc : c≠0) (h : Eis⧸Ideal.span {c}) :
 
 end
 
-open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
 
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma horizontalPhaseMultiplier_scaled_bar (freq : ℂ) (r : ℝ) :
     (1/2:ℂ)*(horizontalPhaseMultiplier freq (1/(r:ℂ))+
@@ -578,11 +498,3 @@ lemma scaledConjugateZTerm_bessel (coeff : SubexponentialBesselCoefficients)
   rw [schlafliBesselK_cubic_real _ hx]
   simp only [star_mul,breveE_star,Complex.star_def,Complex.conj_ofReal,neg_mul]
   ring
-
-end SubexponentialBesselCoefficients
-
-end CubicEisenstein
-
-end
-
-end OAI

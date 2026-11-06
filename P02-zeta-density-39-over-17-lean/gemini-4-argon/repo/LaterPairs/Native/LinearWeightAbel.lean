@@ -55,4 +55,3 @@ theorem norm_linear_weighted_range_le (a : ℕ → ℂ) (H : ℕ) (hH : 0 < H)
       field_simp
       ring
 
-end TaoTrudgianYang2025

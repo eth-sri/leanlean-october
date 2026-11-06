@@ -15,12 +15,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment InverseInitialProfile
-open InverseInitialOverlapFourier InverseInitialConjugateEnergy InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerWindow InverseInitialPoissonBridge InverseInitialPhysicalMeasure
-open InverseInitialMarkedAssignedGeometry DetectorDictionaryInverseRawConjugateGates
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment InverseInitialProfile InverseInitialOverlapFourier InverseInitialConjugateEnergy InverseInitialQuotientGeometry InverseInitialEnergyCallerWindow InverseInitialPoissonBridge InverseInitialPhysicalMeasure InverseInitialMarkedAssignedGeometry DetectorDictionaryInverseRawConjugateGates
 
 private theorem assigned_admissible {ι:Type}[Fintype ι][DecidableEq ι]
     (L:ι→Finset (Ideal O))(hp:∀i,∀P∈L i,Prime P)
@@ -134,9 +129,3 @@ theorem original_source_energy
     coeff hc χ (assigned_admissible L hp hs hdis) (fun J x=>hχ _)
     (childLogTest W θ) r (∑i,ell i) rows (fun _=>1) (fun _=>zero_le_one) E hE hres
   simpa only [one_mul,E,A,mul_assoc] using hb
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

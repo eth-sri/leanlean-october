@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedProduct
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve CompletedGauss ProbeRowReflectedAllocation
-open HeckeDeletionBounds HeckeReciprocalGrowth
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve CompletedGauss ProbeRowReflectedAllocation HeckeDeletionBounds HeckeReciprocalGrowth
 
 def rowCost (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow)
     (a e eps T : ℝ) : ℝ :=
@@ -109,8 +106,3 @@ theorem selected_repeated_product (e eps : ℝ) (he : 0<e) (he1 : e<1/1000)
       mul_le_mul_of_nonneg_left hbc (by positivity)
     _ = _ := by rw [show ((812*B)^k*(∏j,q j^z.re))*(C*rowCost S hS u a e eps ((3*i+2:ℕ)*T)*∏j,q j^(-(1/2:ℝ)))=
       C*(812*B)^k*rowCost S hS u a e eps ((3*i+2:ℕ)*T)*((∏j,q j^z.re)*(∏j,q j^(-(1/2:ℝ)))) by ring,heq]
-end SevenEighths.ProbeCentralRepeatedProduct
-
-end
-
-end OAI

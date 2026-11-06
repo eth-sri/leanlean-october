@@ -53,4 +53,3 @@ theorem quartic_extraction {ε : ℝ} (hε : 0 < ε) (q : ℕ) :
         convert mul_le_mul_of_nonneg_right hBC (show 0 ≤ M*(V^4)⁻¹ by positivity) using 1; ring
     _ = _ := by ring
 
-end GuthMaynard.Improvement

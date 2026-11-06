@@ -59,8 +59,3 @@ theorem surviving_branch_count_small_power (ε : ℝ) (hε : 0<ε) :
   have hcard : ((survivingFrozenBranches F jF A nset bset).card:ℝ)≤Fintype.card (ι→Fin 3) := by
     exact_mod_cast Finset.card_le_univ _
   exact (pow_le_pow_left₀ (Nat.cast_nonneg _) hcard 2).trans (hb F hF)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

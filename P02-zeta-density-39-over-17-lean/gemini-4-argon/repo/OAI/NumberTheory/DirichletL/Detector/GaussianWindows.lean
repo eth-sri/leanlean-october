@@ -20,8 +20,3 @@ lemma gaussianDyadicProfile_Vstar (Z : ℝ) (j : ℕ) (y : ℝ) (hy : 0<y) :
   have h : (Real.sqrt y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hy).ne'
   simp only [Vstar,gaussianDyadicProfile]
   field_simp
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

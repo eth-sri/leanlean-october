@@ -174,6 +174,4 @@ theorem wooley_sum_refinement_tower
     · rw [ite_eq_right hkm]
 
 
-end
 
-end GafniTao

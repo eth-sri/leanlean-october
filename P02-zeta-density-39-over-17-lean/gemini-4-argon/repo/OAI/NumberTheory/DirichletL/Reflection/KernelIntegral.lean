@@ -65,8 +65,3 @@ theorem kernel_finite_contraction {κ : Type*} (source : Finset κ) (coeff value
   rw [← integral_const_mul]
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun t => by dsimp only; ring)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

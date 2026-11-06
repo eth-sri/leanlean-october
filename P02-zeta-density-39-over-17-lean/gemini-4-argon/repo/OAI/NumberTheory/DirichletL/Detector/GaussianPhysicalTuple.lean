@@ -11,8 +11,6 @@ open scoped Classical SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma physicalRows_common_finset {α : Type*} (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
@@ -86,8 +84,3 @@ theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
       intro r hr
       dsimp [A]
       ring
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

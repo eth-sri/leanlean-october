@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem original_member_geometry_uniform_uniform_degree
@@ -128,7 +127,3 @@ theorem original_member_geometry_uniform_uniform_degree
   have hheight : 1≤1+‖θ‖ := by linarith [norm_nonneg θ]
   apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hZpos.le _)
   exact mul_le_mul (hc i) (le_refl _) (by positivity) hCA.le
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

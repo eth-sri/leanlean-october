@@ -86,4 +86,3 @@ theorem rational_log_separation {p q : ℕ × ℕ}
       _ = (1 / H ^ 2) / U := by ring
       _ ≤ _ := (div_le_div_of_nonneg_right hg hU.le).trans hl
 
-end Montgomery.RationalMoment

@@ -10,12 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedReflection
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
-open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
-open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentComparisonReflection CenteredMomentReflectionTailMass CenteredMomentSectorLocalization CenteredMomentReflectedTruncation CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection EisensteinSchwartzPoisson
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma masked_decayTwo (F : ℝ→ℂ) (hF : DecayTwo F) (w : ℝ→ℝ)
@@ -115,9 +110,3 @@ theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
   change coefficient ψ ψ.inverse _ D H*HeckeDyadic.polynomial χ.inverse false
     (paperRadialFourier W) _ 0 0=_
   rw [column_retained_discarded χ.inverse _ hF R _ hY,mul_add]
-
-end SevenEighths.CenteredMomentRetainedReflection
-
-end
-
-end OAI

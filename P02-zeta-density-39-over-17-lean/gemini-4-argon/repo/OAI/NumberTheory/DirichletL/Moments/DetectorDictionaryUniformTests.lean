@@ -10,8 +10,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff Topology
 open Set
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeInverseAmplification HeckeDyadic HeckeDetectorCoefficientTransfer
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open HeckeInverseAmplification HeckeDyadic HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 
 lemma twistProfile_zero (W : ℝ→ℂ) : twistProfile W 0 0=W := by
   funext x
@@ -56,9 +55,3 @@ theorem detectorSchwartz_uniform (S : Finset (ℕ×ℕ)) :
   change S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (detectorSchwartz reverse n σ t)≤_ at he
   exact he.trans (mul_le_mul hCq (pow_le_pow_right₀ (by linarith [norm_nonneg t]) hdegree)
     (by positivity) (by linarith))
-
-end SevenEighths.CenteredMomentDetectorDictionary
-
-end
-
-end OAI

@@ -91,4 +91,3 @@ theorem finite_operator_positive_cube (b : OrthonormalBasis ι ℂ E)
     (fun i => (finiteWitnessWeight_bounds b hv i).2)
     (by rw [finiteWitnessWeight_sum b hv]; exact hk) hwe
 
-end GuthMaynard.Improvement

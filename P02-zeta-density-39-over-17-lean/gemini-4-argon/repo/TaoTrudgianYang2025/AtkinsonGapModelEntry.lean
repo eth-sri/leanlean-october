@@ -53,4 +53,3 @@ theorem atkinsonNormalizedGapPhase_approximate (P : ℕ) {ε : ℝ} (hε : 0 < �
     rw [iteratedDeriv_succ',he.iteratedDeriv_eq p,← hm.iteratedDeriv_eq p]
     exact (hjets p hp (Real.pi*M/(2*u)) (t/u) x hqabs hr ⟨hx.1.le,hx.2.le⟩).le
 
-end TaoTrudgianYang2025

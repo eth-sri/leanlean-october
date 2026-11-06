@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcretePrimeRowBridge UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcretePrimeRowBridge UniqueFactorizationMonoid
 variable {ι : Type*} [Fintype ι]
 
 theorem exists_nonexceptional_residue (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
@@ -66,8 +63,3 @@ theorem exists_nonexceptional_residue (S : Finset Id) (hS : ∀P∈S,P.IsMaximal
       rw [hfac]
       exact jointExtension_norm S hS σ C k u a b r hr P hg c hc _ _
     · exact jointExtension_mean_zero S hS σ C k u a b r hr P hg c J p hgp hchar e he hJ hcop d
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

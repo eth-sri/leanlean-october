@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
@@ -107,7 +106,3 @@ theorem original_family_row_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
   apply mul_le_mul_of_nonneg_right
   · exact_mod_cast (Fintype.card_subtype_le (fun P : Pset => IsCoprime K P.val)).trans_eq (Fintype.card_coe Pset)
   · positivity
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

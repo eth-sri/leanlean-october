@@ -40,9 +40,3 @@ lemma margins (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε)(k:ℕ):
   constructor
   · linarith
   constructor <;> linarith
-
-end SevenEighths.CenteredMomentEnergyStageMargins
-
-end
-
-end OAI

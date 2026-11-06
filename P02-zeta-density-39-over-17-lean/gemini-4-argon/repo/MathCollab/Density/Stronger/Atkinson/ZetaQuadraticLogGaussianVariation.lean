@@ -103,4 +103,3 @@ theorem intervalC1Bound_zetaQuadraticLogGaussian {T G : ℝ}
         mul_le_mul_of_nonneg_left henv.variation_le (by positivity)
       _ = _ := by ring
 
-end MathCollab.Density.Stronger.Atkinson

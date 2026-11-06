@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstDiscarded
-open SevenEighths CenteredMomentFirstScale CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CanonicalQuadraticSieve
-open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFirstReduced
-open CenteredMomentSupportedCorrelation
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open SevenEighths CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFirstReduced CenteredMomentSupportedCorrelation ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
 theorem actual_first_kernel_reference (I J E : Ideal O)
     (hI : I≠0) (hJ : J≠0) (hE : E≠0) (K X HN Tsec : ℝ)
@@ -28,9 +23,3 @@ theorem actual_first_kernel_reference (I J E : Ideal O)
         (Ideal.absNorm (residualPart I J):ℝ)*(Ideal.absNorm (residualPart J I):ℝ)) := by
   simpa only [kernelReference,mul_one] using
     first_kernel_sector_lower I J E hI hJ hE K X 1 HN Tsec hK hX zero_le_one hi hj hsec
-
-end SevenEighths.CenteredMomentFirstDiscarded
-
-end
-
-end OAI

@@ -122,4 +122,3 @@ theorem cyclic_fourth_moment {N : ℕ} [NeZero N] (A : Finset ℤ)
   convert hh using 1
   norm_num
 
-end Montgomery.RationalMoment

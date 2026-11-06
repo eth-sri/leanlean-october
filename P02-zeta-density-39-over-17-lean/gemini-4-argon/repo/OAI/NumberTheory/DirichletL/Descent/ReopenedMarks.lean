@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
   (hinj : Function.Injective (fun i=>Ideal.span {p i}))
@@ -45,8 +44,3 @@ theorem reopened_whole_mark_divisibility (slots : Finset σ) (lists : σ→Finse
       (Ideal.span {∏k∈S,p k})*(Ideal.span {primeProduct p v.support v})^3 then a j i else 0 := by
   unfold primeMark primeSlot
   simp_rw [prime_dvd_reopened_index p hinj]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical SchwartzMap
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
 
 theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
     (W : Fin K→ℝ→ℂ) (M : Fin K→ℝ) (hM : ∀i,0≤M i)
@@ -60,8 +59,3 @@ theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
     exact compensation_subset_common A W (V A) (hV A) (hsep A) η C W0 W1 hW0 hW1 Finset.univ
       (fun p : ((i : Fin K)→{a : O // a∈slotPrimes i})=>fun i=>(p i).val)
       (fun p _ i=>hp i (p i).val (p i).property) P hP X Y Z hX hY hZ
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

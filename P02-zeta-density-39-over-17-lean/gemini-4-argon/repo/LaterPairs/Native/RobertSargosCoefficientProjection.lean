@@ -47,5 +47,4 @@ theorem robertSargos_coefficient_image_card_le
     _ ≤ (3*R)*(2*H)^2 := mul_le_mul (by linarith) hsq (sq_nonneg _) (by linarith)
     _ = _ := by ring
 
-end TaoTrudgianYang2025
 

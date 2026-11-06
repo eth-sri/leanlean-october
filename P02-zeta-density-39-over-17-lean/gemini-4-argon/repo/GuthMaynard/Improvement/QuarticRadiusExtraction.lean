@@ -109,4 +109,3 @@ theorem quartic_extraction_of_moment {ε : ℝ} (hε : 0 < ε) :
     have hh := mul_le_mul_of_nonneg_left hbudget (show 0 ≤ C*N^ε by positivity)
     nlinarith
 
-end GuthMaynard.Improvement

@@ -11,9 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyState
 open HeckeFamily CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-open CenteredMomentFiniteProfileExceptional
-open CenteredMomentInductionEnergy QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
 
 structure NaturalState (Z Bmask bΦ:ℝ) where
   character : Character
@@ -70,9 +68,3 @@ def ZeroBound (Q:Ideal O) (a b bΦ Bmask M ε:ℝ)(degree:ℕ)(S:Finset (ℕ×�
     s.plainEnergy p t X₁ X₂≤
       C*diagonalControl s.radial.profile*(p.control S)^2*(1+‖t‖)^degree*
         Z^(s.width+ε)
-
-end SevenEighths.CenteredMomentEnergyState
-
-end
-
-end OAI

@@ -10,10 +10,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixVectors
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -148,4 +146,3 @@ theorem sum_norm_coefficient_vector_sq_le_gram
   exact hcs.trans (mul_le_mul_of_nonneg_left
     (sum_norm_sq_sum_le_gram s W c e hc) (by positivity))
 
-end MathCollab.Density.Stronger.Atkinson

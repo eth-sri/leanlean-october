@@ -64,4 +64,3 @@ theorem modelPhaseInverseSlope_expanded_model_error
   rw [← Real.rpow_mul hu0.le,neg_mul_neg,mul_inv_cancel₀ hσ.ne',Real.rpow_one] at h
   exact h.trans (mul_le_mul_of_nonneg_left he (zero_le_one.trans hC))
 
-end TaoTrudgianYang2025

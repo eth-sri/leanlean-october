@@ -22,8 +22,7 @@ set_option backward.isDefEq.respectTransparency.types false
 
 noncomputable section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -146,4 +145,3 @@ theorem atkinsonBand_tail_scale_le {T G L : ℝ}
     _ = 2 * G * (Real.sqrt T * T ^ (1 / 4 : ℝ) * T ^ (-(3 / 4 : ℝ))) := by ring
     _ = _ := by rw [hp, mul_one]
 
-end MathCollab.Density.Stronger.Atkinson

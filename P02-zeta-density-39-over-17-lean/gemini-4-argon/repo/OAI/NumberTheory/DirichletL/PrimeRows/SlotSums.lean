@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 
 theorem continued_selected_slot_bound (eps a b r B : ℝ) (heps : 0<eps)
     (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B) :
@@ -47,8 +45,3 @@ theorem continued_selected_slot_bound (eps a b r B : ℝ) (heps : 0<eps)
     · simp only [show P.val.val=f P from rfl,ite_eq_right hp,le_refl]
   exact hmain f hf (Ideal.span {u.val}) (Ideal.span_singleton_eq_bot.not.mpr u.property.1)
     Y hY Finset.univ (fun P _=>P.val.property.ne_zero) W hWS hWB G hg z hz
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

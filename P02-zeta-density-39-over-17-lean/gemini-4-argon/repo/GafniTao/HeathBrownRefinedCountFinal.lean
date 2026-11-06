@@ -242,6 +242,4 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
       ring
 
 
-end
 
-end GafniTao

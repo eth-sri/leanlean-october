@@ -66,19 +66,6 @@ theorem momentDecay_mass_bounds {A : ℕ} (hA : 2 ≤ A) :
         integrable_inv_one_add_sq (momentDecay_le_inv_one_add_sq hA)
       _ = Real.pi := integral_univ_inv_one_add_sq
 
-/-- Weighted Holder with a fixed absolute mass bound; analytic inputs are the
-explicit integrability hypotheses, not a zeta moment estimate. -/
-theorem momentDecay_holder_twelfth {A : ℕ} (hA : 2 ≤ A) {f : ℝ → ℝ}
-    (hf : ∀ t, 0 ≤ f t)
-    (hi : Integrable (fun t => momentDecay A t*f t))
-    (hi12 : Integrable (fun t => momentDecay A t*f t^12)) :
-    (∫ t : ℝ, momentDecay A t*f t)^12 ≤
-      Real.pi^11 * ∫ t : ℝ, momentDecay A t*f t^12 := by
-  have hm := momentDecay_mass_bounds hA
-  apply (integral_weighted_twelfth (fun t => (momentDecay_pos A t).le) hf
-    (integrable_momentDecay hA) hi hi12 hm.1).trans
-  exact mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hm.1.le hm.2 11)
-    (integral_nonneg (fun t => mul_nonneg (momentDecay_pos A t).le (pow_nonneg (hf t) 12)))
 
 /-- One common sampling constant for every separated set and every translate. -/
 theorem separated_momentDecay_row {A : ℕ} (hA : 2 ≤ A) {U : Finset ℝ}
@@ -117,4 +104,3 @@ theorem separated_momentDecay_integral_le {μ : Measure ℝ} {f : ℝ → ℝ}
   rw [← Finset.sum_mul]
   exact mul_le_mul_of_nonneg_right (separated_momentDecay_row hA hU t) (hf0 t)
 
-end MathCollab.Density.Stronger

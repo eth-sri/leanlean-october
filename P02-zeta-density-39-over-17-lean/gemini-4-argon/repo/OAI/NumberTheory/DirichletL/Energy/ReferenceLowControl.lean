@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowControl
-open CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyReferenceChildProfiles CenteredMomentFiniteProfileExceptional
 
 lemma height_product (v t H:ℝ)(hH:0≤H):
     1+‖v‖+‖t‖≤(1+‖v‖)*(1+|t|+H):=by
@@ -40,9 +39,3 @@ theorem reflected_child_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
   rw [pow_add,show (1+|t|+height)^(2*n)=((1+|t|+height)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul],
     show (1+‖v‖)^(2*n)=((1+‖v‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
-
-end SevenEighths.CenteredMomentEnergyReferenceLowControl
-
-end
-
-end OAI

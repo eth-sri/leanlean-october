@@ -11,8 +11,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 open Set
 
 namespace SevenEighths.DetectorDictionaryInverseUniform
-open HeckeInverseAmplification HeckeDetectorCoefficientTransfer HeckeDetectorDyadicProfiles
-open HeckeDetectorRowwisePolynomial CenteredMomentDetectorDictionary
+open HeckeInverseAmplification HeckeDetectorCoefficientTransfer HeckeDetectorDyadicProfiles HeckeDetectorRowwisePolynomial CenteredMomentDetectorDictionary
 
 lemma logTest_apply (W : ℝ→ℂ) (n : ℕ) (x : ℝ) :
     logTest W n x=(Real.log x:ℂ)^n*W x := by
@@ -78,9 +77,3 @@ lemma inverseLogFamily_support (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (a b
     funext (inverseLogFamily_eq reverse n V W p)
   rw [he]
   exact realInterpolatedLog_support _ a b ha ((baseProfile_support reverse n V W p.2).trans hs) p
-
-end SevenEighths.DetectorDictionaryInverseUniform
-
-end
-
-end OAI

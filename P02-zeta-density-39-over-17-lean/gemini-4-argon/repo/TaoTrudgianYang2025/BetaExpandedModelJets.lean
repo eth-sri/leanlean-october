@@ -98,4 +98,3 @@ theorem modelPhaseInverse_iteratedDeriv_expanded_reference_error
       (h.trans (mul_le_mul_of_nonneg_left hd (zero_le_one.trans hB)))
     _ = _ := by ring
 
-end TaoTrudgianYang2025

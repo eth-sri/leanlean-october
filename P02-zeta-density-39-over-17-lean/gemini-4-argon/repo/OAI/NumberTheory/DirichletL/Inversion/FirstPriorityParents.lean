@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseFirstPriorityParents
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic
 
 @[ext] structure Source (ι : Type*) (Jo : ℕ) where
   cube : CubeCoordinates ι
@@ -146,9 +144,3 @@ def priorityOuter (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m 
   (‖RayFourExpansion.crossCoeff r.1 r.2‖*‖selector D‖) *
     ‖firstCoreOuter p hg b.support (fun i=>b.leftExponent i+b.rightExponent i)
       b.leftBit b.rightBit negative Ψ m D core‖
-
-end SevenEighths.InverseFirstPriorityParents
-
-end
-
-end OAI

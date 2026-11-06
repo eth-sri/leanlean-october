@@ -376,4 +376,3 @@ theorem exponentSumGrowthExponent_le_bourgain_short_of_robertSargos
   unfold exponentPairLine at hb
   linarith only [hb,halpha]
 
-end TaoTrudgianYang2025

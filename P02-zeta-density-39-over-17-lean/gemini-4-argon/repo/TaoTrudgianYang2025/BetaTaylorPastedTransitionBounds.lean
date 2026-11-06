@@ -99,4 +99,3 @@ theorem taylorPastedExtension_right_transition_bound (Q : ℕ) :
     iteratedDeriv_fun_add (hp.of_le hN) ((ht.mul ((hf x hxI).sub hp)).of_le hN)]
   exact (abs_add_le _ _).trans ((add_le_add hpoly hrem).trans_eq (by ring))
 
-end TaoTrudgianYang2025

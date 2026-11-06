@@ -572,6 +572,4 @@ theorem wooleyPolynomialMixedGridMean_zero_le_conditioned
         field_simp [ne_of_gt hmassPos]
       _ = _ := by rfl
 
-end
 
-end GafniTao

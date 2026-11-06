@@ -70,4 +70,3 @@ theorem robertSargos_zero_q_weighted_column_bound
       exact mul_le_mul_of_nonneg_right (by exact_mod_cast hcard) hB
     _ = _ := rfl
 
-end TaoTrudgianYang2025

@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {a c : Eis} {mode : Bool}
 
 def survivingFrozenBranches (F : PrimeFamily φ) (jF : φ→ℕ)
@@ -98,8 +97,3 @@ theorem surviving_extracted_scales (F : PrimeFamily φ)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
   exact ⟨max_eq_right ((one_le_div (hp 1)).mpr h.1),
     max_eq_right ((one_le_div (hp 2)).mpr h.2)⟩
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

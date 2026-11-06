@@ -10,8 +10,7 @@ namespace OAI
 
 namespace SevenEighths.PNT.AnnularPrimeMass
 
-open ActualEisensteinCubic ArithmeticFunction Filter MeasureTheory
-open SevenEighths.IdealMangoldt SevenEighths.PNT.IdealPrimeMass
+open ActualEisensteinCubic ArithmeticFunction Filter MeasureTheory SevenEighths.IdealMangoldt SevenEighths.PNT.IdealPrimeMass
 open scoped BigOperators Classical Topology ContDiff
 
 noncomputable section
@@ -595,9 +594,3 @@ theorem weightedPrimeSumDeleted_eventually_pos (C : Set (Ideal O))
   filter_upwards [he, eventually_gt_atTop (1 : ℝ)] with x hx hx1
   exact (div_pos (mul_pos hc0 (Real.rpow_pos_of_pos (zero_lt_one.trans hx1) _))
     (Real.log_pos hx1)).trans_le hx
-
-end
-
-end SevenEighths.PNT.AnnularPrimeMass
-
-end OAI

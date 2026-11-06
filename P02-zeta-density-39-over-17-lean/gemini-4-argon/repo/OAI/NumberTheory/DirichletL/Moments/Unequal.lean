@@ -93,10 +93,7 @@ theorem fullCorrelation_divisor_eq_zero (p v t k : A) (hv : v ≠ 0)
 
 end Domain
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
-open ConcretePrimeRowBridge hiding O
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss ConcretePrimeRowBridge
 
 theorem supported_power (p : O) (hp : Supported (Ideal.span {p})) (i : ℕ) :
     Supported (Ideal.span {p ^ i}) := by
@@ -194,11 +191,3 @@ theorem unequal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
       rw [← Nat.cast_pow, ← map_pow Ideal.absNorm,
         Ideal.span_singleton_pow]
       simp [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
-
-end Eisenstein
-
-end SevenEighths.CenteredMomentUnequal
-
-end
-
-end OAI

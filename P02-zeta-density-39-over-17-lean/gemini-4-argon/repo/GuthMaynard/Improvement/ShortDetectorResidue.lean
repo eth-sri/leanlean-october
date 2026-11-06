@@ -14,14 +14,7 @@ namespace GuthMaynard.Improvement
 
 /-- The crossed pole lies in the same audited compact Gamma strip down to
 beta=9/13. This estimate needs only a nonzero large ordinate. -/
-theorem short_norm_Gamma_one_sub_zero_le {ρ : ℂ} (hβ : 9/13 ≤ ρ.re)
-    (hβ' : ρ.re ≤ 1) (hγ : 1 ≤ |ρ.im|) :
-    ‖Complex.Gamma (1-ρ)‖ ≤ 12*(1+|ρ.im|)*Real.exp (-|ρ.im|) := by
-  have he : 1-ρ = ((1-ρ.re : ℝ) : ℂ)+((-ρ.im : ℝ) : ℂ)*Complex.I := by
-    apply Complex.ext <;> simp
-  rw [he]
-  simpa [GammaBounds.stripPoint] using GammaBounds.norm_Gamma_compactStrip_le_exp
-    (a := 1-ρ.re) (t := -ρ.im) (by linarith) (by linarith) (by simpa using hγ)
+alias short_norm_Gamma_one_sub_zero_le := MathCollab.Density.norm_Gamma_one_sub_zero_le
 
 /-- Uniform exponential majorant for the actual short-mollifier residue.
 Both signs of the ordinate are covered; X and Y have their exact short values. -/
@@ -66,4 +59,3 @@ theorem short_detector_residue_eventually_small {δ : ℝ} (hδ : 0 < δ) :
   intro ρ hβ hβ' hγ hγ'
   exact (short_detector_residue_bound hH hβ hβ' hγ hγ').trans_lt hsmall
 
-end GuthMaynard.Improvement

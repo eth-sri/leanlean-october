@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightReflection
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -89,4 +87,3 @@ theorem exists_norm_source_zetaDivisorWeight_min_le :
     (by rw [zetaDivisorWeightArgument_im, abs_of_pos (by positivity)])
   rwa [exp_neg_zetaDivisorWeightArgument_re ht hn] at h
 
-end MathCollab.Density.Stronger.Atkinson

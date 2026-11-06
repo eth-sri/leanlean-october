@@ -7,83 +7,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
 
 section
-open MeasureTheory Filter
-open scoped BigOperators Classical MatrixGroups
+open scoped MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CubicRamified
 
 def ramifiedOmegaUnit : Eisˣ := (omega_primitive.isUnit (by decide)).unit
 lemma ramifiedOmegaUnit_val : (ramifiedOmegaUnit:Eis)=omega :=
@@ -184,9 +116,7 @@ theorem onceCusp_eisenstein_fourier (u t:Eisˣ) (h:Eis)
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Manifold ContDiff
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped MatrixGroups Manifold
 
 lemma hyperbolicAction_contMDiff (g : SL(2,ℂ)) :
     ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,SpatialCoordinates) ∞
@@ -334,9 +264,7 @@ lemma kernelSourceEnergyPullback_mass (M : CubicKubota.levelTwo) (u : KernelEner
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped MatrixGroups InnerProductSpace
 
 lemma kernelSourceEnergyPullback_inverse (M : CubicKubota.levelTwo) (u : KernelEnergyGraph) :
     kernelSourceEnergyPullback M (kernelSourceEnergyPullback M⁻¹ u)=u := by
@@ -380,10 +308,9 @@ end CubicEisenstein
 
 section
 
-open scoped Classical MatrixGroups BigOperators
+open scoped MatrixGroups
 namespace CubicKubota
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicEisenstein CubicJacobiGlobal
 
 def cubeCuspHeightWeight (p:Eis) (j:Fin 4) : ℂ :=
   (((Ideal.absNorm (Ideal.span {p}):ℝ)^((2*(j.val:ℝ)-3)/3)):ℝ)
@@ -433,8 +360,7 @@ end CubicKubota
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CubicKubota
 
 def cubeDilationRoot (p:Eis) : ℂ :=
   Classical.choose (IsAlgClosed.exists_pow_nat_eq (eisEmbedding p^3) (by decide : 0<2))
@@ -509,8 +435,7 @@ lemma cubeAverage_summand_congr (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
+open CubicJacobiGlobal CubicKubota
 
 lemma cubeAverageMatrix_action (p:Eis) (hp:p≠0) (q:Eis)
     (z:ℂ) (v:ℝ) (hv:0<v) :
@@ -562,12 +487,9 @@ theorem cubeAverage_period_one (p:Eis) (hp:p≠0) (hprimary:lambda^2∣p-1)
 end CubicEisenstein
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped MatrixGroups Pointwise
 
 namespace CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 def integralCoverMap {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K) :
     IntegralOrbitQuotient H→IntegralOrbitQuotient K :=
@@ -695,9 +617,3 @@ theorem integralCoverDomain_isFundamentalDomain {H K : Subgroup (SL(2,ActualEise
   intro w
   obtain ⟨h,hh⟩ := integralCoverDomain_covers hHK w
   exact ⟨h,hh,fun g hg=>integralCoverDomain_unique hHK hK w g h hg hh⟩
-
-end CubicEisenstein
-
-end
-
-end OAI

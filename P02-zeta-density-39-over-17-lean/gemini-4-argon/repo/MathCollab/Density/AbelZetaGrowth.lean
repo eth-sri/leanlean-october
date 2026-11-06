@@ -319,4 +319,3 @@ theorem norm_riemannZeta_le_five_mul_norm {s : ℂ} (hre : (1 / 4 : ℝ) ≤ s.r
       exact div_le_self (norm_nonneg s) hDen
     _ = 5 * ‖s‖ := by ring
 
-end MathCollab.Density.ZetaGrowth

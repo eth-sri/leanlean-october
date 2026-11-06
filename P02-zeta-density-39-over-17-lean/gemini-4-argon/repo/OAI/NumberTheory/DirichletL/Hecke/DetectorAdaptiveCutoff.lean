@@ -29,9 +29,3 @@ theorem cutoff_eq_balanced (δ q : ℝ) (hδ : 0<δ) (hd : δ≤5/6)
 
 theorem cutoff_eq_high (δ q : ℝ) (hδ : 5/6<δ) : cutoff δ q=3/2 := by
   simp only [cutoff,ite_eq_right (not_le_of_gt hδ)]
-
-end SevenEighths.HeckeDetectorAdaptiveCutoff
-
-end
-
-end OAI

@@ -11,14 +11,8 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputFirstRemainder
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentExceptionalAmplitudePair CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceInputZeroUniform CenteredMomentSourceInputFirstSectorTail
-open CenteredMomentFirstEnergy EisensteinSchwartzPoisson
-local notation "O"=>HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentExceptionalAmplitudePair CenteredMomentSourceInputTailUniform CenteredMomentSourceInputZeroUniform CenteredMomentSourceInputFirstSectorTail CenteredMomentFirstEnergy EisensteinSchwartzPoisson
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 omit [DecidableEq ι] in
 theorem original_first_remainder (hi:ι→ℝ)(wlo whi B ε ξ saving:ℝ)
@@ -51,9 +45,3 @@ theorem original_first_remainder (hi:ι→ℝ)(wlo whi B ε ξ saving:ℝ)
   rw [show ∀a b c:ℂ,a+b+c-b=a+c by intros;ring]
   exact ((div_le_div_of_nonneg_right (norm_add_le _ _) (volume_pos s).le).trans_eq
     (add_div _ _ _)).trans (add_le_add hd ht)
-
-end SevenEighths.CenteredMomentSourceInputFirstRemainder
-
-end
-
-end OAI

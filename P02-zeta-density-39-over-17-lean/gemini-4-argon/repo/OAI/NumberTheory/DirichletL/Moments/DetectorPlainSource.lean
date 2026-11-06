@@ -11,16 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainSource
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow
-open CenteredMomentAddedZeroUniform
-open CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeExpansion
-open CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentDivisorRowEnergy
-open CenteredMomentRetainedEnergy CenteredMomentRectangle CenteredMomentSourceRectangleEnergy
-open CenteredMomentHeckeColumnWindow
-open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSecondHeightFamily
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow CenteredMomentAddedZeroUniform CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask CenteredMomentUncenteredTerminal CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentDivisorRowEnergy CenteredMomentRetainedEnergy CenteredMomentRectangle CenteredMomentSourceRectangleEnergy CenteredMomentHeckeColumnWindow CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSecondHeightFamily
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def completePool (slots : ι→Finset (Ideal O)) (b₁ b₂ X₁ X₂ : ℝ) : Finset (Tuple ι) :=
@@ -134,9 +125,3 @@ theorem positive_energy_eq_complete_source (η : Character) (t : ℝ) (keep : O�
       CenteredMomentDivisorRawEnergy.normalized_norm_sq _ htotal]
     ring
   · simp only [ite_eq_right hk,zero_div]
-
-end SevenEighths.CenteredMomentDetectorPlainSource
-
-end
-
-end OAI

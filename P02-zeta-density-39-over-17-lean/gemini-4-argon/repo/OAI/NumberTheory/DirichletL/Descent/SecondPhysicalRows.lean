@@ -12,7 +12,6 @@ open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassAri
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
   (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
 
@@ -60,8 +59,3 @@ theorem actual_second_row_radius_one
   by_contra hR
   have he := nonzeroChildFrequencyBall_empty _ (actualSecondMultiplier_ne_zero p x) R (lt_of_not_ge hR)
   simpa [he] using hrows x hx
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

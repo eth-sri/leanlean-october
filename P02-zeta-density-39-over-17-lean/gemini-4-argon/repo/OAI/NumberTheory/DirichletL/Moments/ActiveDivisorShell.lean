@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentActiveDivisorShell
-open HeckeFamily CenteredMomentActiveAllocation CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentActiveAllocation CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
 
 structure Source (ι:Type*) [Fintype ι] where
   η : Character
@@ -81,9 +79,3 @@ theorem Source.active_pair_weight {κ:Type*} [Fintype κ] [DecidableEq κ]
   have hp:=Real.rpow_le_rpow_of_exponent_le hZ.le he
   rwa [Real.rpow_sub (zero_lt_one.trans hZ),
     Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' hn] at hp
-
-end SevenEighths.CenteredMomentActiveDivisorShell
-
-end
-
-end OAI

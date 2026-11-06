@@ -192,9 +192,3 @@ theorem uniform_strip_bound (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     exact LFunction_norm_le _ (by norm_num : (1 : ℝ) < 11/10) hs.ge
   · intro s hs
     exact LFunction_norm_le _ (by norm_num : (1 : ℝ) < 11/10) hs.ge
-
-end SevenEighths.HeckeStripActual
-
-end
-
-end OAI

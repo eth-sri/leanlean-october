@@ -256,4 +256,3 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
         nlinarith [hBTarget, hScaled]
   exact hGlobal.trans hMain
 
-end GuthMaynard.NativeMoment

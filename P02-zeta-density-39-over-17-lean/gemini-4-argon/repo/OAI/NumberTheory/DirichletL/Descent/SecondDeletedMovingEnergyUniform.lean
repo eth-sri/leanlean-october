@@ -10,11 +10,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local instance inverseSecondDeletedMovingPhysicalUnitsUniform : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 open InverseSecondProfileUniform InverseAmbientProfileTower
 theorem actual_second_deleted_moving_physical_recursive_uniform_types
     (U₀ : Fin 6 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
@@ -116,8 +113,3 @@ theorem actual_second_deleted_moving_physical_recursive_uniform_types
       apply mul_nonneg
       · positivity
       · exact Finset.sum_nonneg (fun γ _ => tripleDivisorWeight_nonneg K γ))) (by positivity))
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

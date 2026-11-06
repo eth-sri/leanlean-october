@@ -102,6 +102,4 @@ theorem wooleySourceNormalizedMixedMean_terminal
       (by exact_mod_cast (show 1 ≤ p by omega)) hexponent) hD
 
 
-end
 
-end GafniTao

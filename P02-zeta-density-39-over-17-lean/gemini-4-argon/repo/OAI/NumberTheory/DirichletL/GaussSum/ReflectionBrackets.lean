@@ -7,74 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace LocalReflectionBrackets
-open scoped Classical BigOperators
-open AddChar MulChar
 
 section
 variable {F : Type*} [Field F] [Fintype F]
@@ -90,8 +26,6 @@ theorem norm_bracket_zero_le (χ : MulChar F ℂ) (x : F) :
   split_ifs <;> simp only [mul_zero, mul_one, le_refl]
   exact inv_nonneg.mpr rootCard_pos.le
 
-open ActualEisensteinCubic
-noncomputable local instance quotientFieldBounds (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance quotientFintypeBounds (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
 
 end
@@ -113,7 +47,6 @@ theorem zeroFourierCoefficient_nontrivial (χ : MulChar F ℂ) (j : ℕ) (hj : �
     zeroFourierCoefficient χ j = 0 := by
   rw [zeroFourierCoefficient, MulChar.sum_eq_zero_of_ne_one hj, mul_zero]
 
-open ActualEisensteinCubic
 noncomputable local instance quotientFieldInactive (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance quotientFintypeInactive (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
 
@@ -130,8 +63,7 @@ theorem canonical_zeroFourierCoefficient (P : Ideal O) [P.IsMaximal]
 end LocalReflectionBrackets
 
 namespace EisensteinSchwartzPoisson
-open MeasureTheory MeasureTheory.Measure Set Real
-open scoped SchwartzMap FourierTransform
+open MeasureTheory.Measure
 
 theorem complex_radial_norm_sq_integral (F : ℝ → ℂ) :
     (∫ z : ℂ, F (‖z‖ ^ 2)) = (Real.pi : ℂ) * ∫ t : ℝ in Ioi 0, F t := by
@@ -211,9 +143,8 @@ theorem quadraticSquareProfile_principal_equal (W : 𝓢(ℝ, ℂ)) :
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical SchwartzMap
 namespace ActualEisensteinCubic
-open ConcreteTraceCRT ConcretePrimeRowBridge ActualEisensteinCoordinates EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge ActualEisensteinCoordinates EisensteinSchwartzPoisson
 
 theorem primeSubsetGenerator_norm_sq {ι : Type*} (P : ι → Ideal O) (E : Finset ι) :
     ‖eisEmbedding (primeSubsetGenerator P E)‖ ^ 2 = (Ideal.absNorm (∏ i ∈ E, P i) : ℝ) := by
@@ -283,10 +214,9 @@ theorem masked_principal_radial_poisson_zero_split {ι : Type*} [DecidableEq ι]
 
 end ActualEisensteinCubic
 
-open scoped BigOperators Classical
 namespace PrimaryIdealUnitReindex
-abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+protected abbrev O := ActualEisensteinCubic.O
+open CompletedGauss ConcretePrimeRowBridge
 
 abbrev GoodIdeal := {I : Ideal O // primaryGenerator I ≠ 0}
 abbrev GoodElement := {z : O // primaryGenerator (Ideal.span {z}) ≠ 0}
@@ -414,11 +344,9 @@ theorem tsum_ramified_mask_unit_invariant (f : O → ℂ) (hf : Summable f)
 
 end PrimaryIdealUnitReindex
 
-open scoped BigOperators Classical
 namespace QuadraticUnitInvariance
-abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
-open GaussGeneratorTransport QuadraticGaussRay
+protected abbrev O := ActualEisensteinCubic.O
+open FiniteGaussPhase ActualEisensteinCoordinates GaussGeneratorTransport QuadraticGaussRay
 
 theorem principalNormalizedGauss_three_eq_quadraticGamma
     {ι : Type*} [Fintype ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -526,9 +454,3 @@ theorem quadratic_pair_unit_invariant
       (finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) z *
         finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) z) := by ring
     _ = _ := by rw [hs, one_mul]
-
-end QuadraticUnitInvariance
-
-end
-
-end OAI

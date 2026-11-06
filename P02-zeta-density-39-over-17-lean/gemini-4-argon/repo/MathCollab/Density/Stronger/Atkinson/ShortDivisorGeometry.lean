@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.ShortDivisorSource
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -44,4 +42,3 @@ theorem zetaQuadraticDivisorTerm_eq_testFunction (T G : ℝ) (n : ℕ) :
     hs, zetaShortDivisorTestFunction, zetaDivisorWeightArgument, Complex.ofReal_natCast]
   ring
 
-end MathCollab.Density.Stronger.Atkinson

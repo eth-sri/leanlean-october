@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalScalar
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentPartition CenteredMomentPartitionNorm
-open CenteredMomentSectorLocalization CenteredMomentSupport
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentPartition CenteredMomentPartitionNorm CenteredMomentSectorLocalization CenteredMomentSupport
 
 def normalizer (C D : Ideal O) (U : Finset (CommonIndex C D)) : ℝ :=
   partitionNormalizer (commonPrime C D) (leftExponent C D) (rightExponent C D) U
@@ -39,9 +35,3 @@ theorem actual_retained_scalar_norm (C D : Ideal O) (hC : Supported C) (hD : Sup
   have hw := retainedWeight_bounds R (normValue ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*h))
   rw [retainedScalar,mul_right_comm,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hw.1]
   exact (mul_le_of_le_one_left hw.1 (by simpa only [mul_assoc] using hs)).trans hw.2
-
-end SevenEighths.CenteredMomentSecondCanonicalScalar
-
-end
-
-end OAI

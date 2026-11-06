@@ -176,4 +176,3 @@ theorem mixed_affine_full_finite (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
     _ ≤ C*((L:ℝ)*T)^ε*((L:ℝ)^6*(R^2*K^4*(∫ x, f x)^2+R*K^3*(∫ x, f x^2))) := by gcongr
     _ = _ := by rw [Real.mul_rpow hLp.le hTp.le]; ring
 
-end GuthMaynard.Improvement

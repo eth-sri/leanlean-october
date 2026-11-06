@@ -72,4 +72,3 @@ theorem robertSargos_symmetric_array_sum (f : ℝ → ℝ) (M H : ℕ) :
       simp only [Finset.mem_filter,Finset.mem_Icc]
       omega
 
-end TaoTrudgianYang2025

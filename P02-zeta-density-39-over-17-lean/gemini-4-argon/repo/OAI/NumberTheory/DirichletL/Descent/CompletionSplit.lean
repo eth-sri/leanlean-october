@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_cube_inverse_finite_support (Ψ : O →* ℂ) (W : ℝ → ℂ)
     (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal O → ℂ) :
@@ -127,8 +126,3 @@ theorem marked_completed_cube_inverse_split (Ψ : O →* ℂ) (W : ℝ → ℂ)
   by_cases h : (Ideal.absNorm H : ℝ)<H₀
   · simp [h,not_le.mpr h]
   · simp [h,le_of_not_gt h]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

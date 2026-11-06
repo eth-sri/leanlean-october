@@ -861,4 +861,3 @@ theorem robertSargos_physical_sample_spacing (f : ℝ → ℝ) (M : ℕ)
   exact robertSargos_sample_pairs_spacing_bound f M hM1 hC hlam
     htheta htheta1 hKM hthetaK hlamK hthetaM hf hlo hhi
 
-end TaoTrudgianYang2025

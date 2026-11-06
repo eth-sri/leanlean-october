@@ -99,8 +99,3 @@ theorem scaledResidue_injective (d a m : A) (hm : m = d * a) (ha : a ≠ 0) :
   change m ∣ a * r - a * s at hd
   rw [hm, ← mul_sub, mul_comm d a] at hd
   exact (mul_dvd_mul_iff_left ha).mp hd
-
-end SevenEighths.CenteredMomentCorrelation
-end
-
-end OAI

@@ -9,6 +9,7 @@ open Complex Finset Filter FourierTransform MeasureTheory Real Set
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment
+open RiemannZeta.GuthMaynard (gmAffineLocalBumpSchwartz ofReal_norm_finset_sum_sq_expand)
 
 /-!
 # Guth--Maynard Section 11: energy estimates
@@ -5602,4 +5603,3 @@ theorem gmSmallGcdThirdMoment_native
           (Real.sqrt_nonneg _))
         (Real.sqrt_nonneg _)
 
-end GuthMaynard.NativeMoment

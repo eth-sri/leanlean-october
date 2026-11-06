@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {φ : Type*} [Fintype φ]
 
 lemma frozenBranchColumn_divisibility (F : PrimeFamily φ)
@@ -69,8 +68,3 @@ theorem frozenBranchColumn_dual_reindex (F : PrimeFamily φ)
   apply Finset.sum_congr rfl
   intro n hn'
   exact sum_quotientSupport _ _ _
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

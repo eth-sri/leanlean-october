@@ -12,17 +12,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyLowFixedRadialEntry
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyZeroComparison
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyOriginalSource
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentEnergyState CenteredMomentEnergyPhysicalEntry
-open CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData CenteredMomentEnergyZeroComparison CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyOriginalSource CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentEnergyState CenteredMomentEnergyPhysicalEntry CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
 omit [DecidableEq ι] in
 lemma zero_control (s:Input ι)(hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)(W₁ W₂:𝓢(ℝ,ℂ)):
@@ -65,9 +56,3 @@ theorem original_low_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
     r.keep r.profile r.scale at hh
   rw [comparison_energy_zero s hz₁ hz₂ R r,mul_zero,add_zero,zeroInput_volume,zero_control] at hh
   exact hh
-
-end SevenEighths.CenteredMomentEnergyLowFixedRadialEntry
-
-end
-
-end OAI

@@ -61,4 +61,3 @@ theorem integrable_exp_sub_mul_sq_mul_add_abs_pow
   intro i _hi
   ring_nf
 
-end MathCollab.Density.Stronger.Atkinson

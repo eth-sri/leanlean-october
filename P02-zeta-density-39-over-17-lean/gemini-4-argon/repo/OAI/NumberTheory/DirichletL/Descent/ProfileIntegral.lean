@@ -66,8 +66,3 @@ theorem full_density_finite_sum {κ : Type*} (s : Finset κ)
   apply Finset.sum_congr rfl
   intro k hk
   ring
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

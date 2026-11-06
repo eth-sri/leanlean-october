@@ -104,4 +104,3 @@ theorem modelPhaseBufferedFourierMode_uniform_curvature {σ : ℝ} (hσ : 0 < σ
   rw [Real.sqrt_mul hT.le] at h
   exact h.trans_eq (by dsimp [C]; ring)
 
-end TaoTrudgianYang2025

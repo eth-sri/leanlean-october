@@ -11,12 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialPhysicalSlots
-open InverseInitialMarkedDictionary
-open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod
-open CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialPhysicalSlots InverseInitialMarkedDictionary DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod CanonicalQuadraticSieve CanonicalRowCompletion
 variable {ι:Type*}[Fintype ι]
 
 theorem deletedBase_zero_unsupported (data:RowData)(I:Ideal O)(hI:¬Supported I) :
@@ -88,9 +83,3 @@ theorem marked_fixed_deletion (data:RowData)(rows:Finset NonzeroElement)
   simpa only [one_mul] using InverseInitialExcludedEnergy.marked_family rows data.character
     (excluded data) (reflectionExcludedPrimes_prime (basePeriod data)) W X σ t bW hX hW mark
     (fun _=>1) (fun _ _=>zero_le_one)
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentCorrelation CenteredMomentCanonical CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentCorrelation CenteredMomentCanonical CenteredMomentSupportedCorrelation
 variable {ι : Type*} [Fintype ι]
 
 def globalExtension (P : ι→Ideal O) [∀i,(P i).IsMaximal]
@@ -92,8 +89,3 @@ theorem actualCommon_eq_globalExtension (C : O) (hC : Supported (Ideal.span {C})
   rw [actualCommon,hchar,fullCorrelation_ringEquiv e]
   simp only [e,Ideal.quotEquivOfEq_mk]
   exact canonical_common_extension P hg c hc hcop n₁ n₂ k hn
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

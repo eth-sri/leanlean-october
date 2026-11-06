@@ -8,11 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedArithmeticHeight
 open scoped Classical BigOperators ContDiff SchwartzMap
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-open InverseReflectedPhase
+open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment InverseReflectedPhase
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v w
 
 theorem actual_reflected_finite_source_arithmetic_uniform
@@ -274,8 +271,3 @@ theorem literal_dyadic_tail_height_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo)
         ((Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹) :=
       mul_le_mul_of_nonneg_right hsemi' hrest
     _ = _ := by ring
-
-end
-end SevenEighths.InverseReflectedArithmeticHeight
-
-end OAI

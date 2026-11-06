@@ -494,84 +494,6 @@ theorem gmNonzeroTailBinMoment_le_reflection
       · exact le_rfl
     _ = _ := by rfl
 
-/-- The native Heath--Brown theorem inserted into the complete dyadic
-prefix majorant.  All logarithmic factors remain explicit at this stage;
-they are absorbed only in the later epsilon-budget theorem. -/
-theorem heathBrownReflectionDyadicMoment_le_native
-    (η : ℝ) (hη : 0 < η) :
-    ∃ C T_min : ℝ, 0 < C ∧ 1 ≤ T_min ∧
-      ∀ {M : ℕ} {T : ℝ} (W : Finset ℝ),
-        0 < M → T_min ≤ T → IsSeparated 1 W → InBaseInterval T W →
-        heathBrownReflectionDyadicMoment W M ≤
-          2 * ((Nat.clog 2 M : ℝ) + 1) *
-            ((W.card : ℝ) ^ 2 +
-              (Nat.clog 2 M : ℝ) * C * T ^ η *
-                ((W.card : ℝ) ^ 2 * M +
-                  (W.card : ℝ) * M ^ 2 +
-                  (W.card : ℝ) ^ (5 / 4 : ℝ) *
-                    T ^ (1 / 2 : ℝ) * M)) := by
-  obtain ⟨C, T_min, hC, hT_min, hHB⟩ :=
-    heathBrownCoefficientOneMeanSquare_native η hη
-  refine ⟨C, T_min, hC, hT_min, ?_⟩
-  intro M T W hM hT hSep hBase
-  have hTOne : 1 ≤ T := hT_min.trans hT
-  have hTNonneg : 0 ≤ T := zero_le_one.trans hTOne
-  let k : ℕ := Nat.clog 2 M
-  let R : ℝ := W.card
-  let B : ℝ := C * T ^ η *
-    (R ^ 2 * M + R * M ^ 2 +
-      R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * M)
-  have hBNonneg : 0 ≤ B := by
-    dsimp only [B, R]
-    positivity
-  have hCTNonneg : 0 ≤ C * T ^ η :=
-    mul_nonneg hC.le (Real.rpow_nonneg hTNonneg η)
-  have hRTailNonneg : 0 ≤
-      R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) := by
-    exact mul_nonneg (Real.rpow_nonneg (by dsimp only [R]; positivity) _)
-      (Real.rpow_nonneg hTNonneg _)
-  have hEach : ∀ r ∈ Finset.range k,
-      heathBrownCoefficientOneMoment (2 ^ r) W ≤ B := by
-    intro r hr
-    have hrk : r < k := Finset.mem_range.mp hr
-    have hScaleNat : 2 ^ r ≤ M :=
-      (Nat.pow_lt_of_lt_clog hrk).le
-    have hScale : ((2 ^ r : ℕ) : ℝ) ≤ M := by exact_mod_cast hScaleNat
-    have hScaleSq : (((2 ^ r : ℕ) : ℝ)) ^ 2 ≤ (M : ℝ) ^ 2 := by
-      exact pow_le_pow_left₀ (by positivity) hScale 2
-    have hAt := hHB (2 ^ r) T W (by positivity) hT hSep hBase
-    calc
-      heathBrownCoefficientOneMoment (2 ^ r) W ≤
-          C * T ^ η *
-            ((R ^ 2 * ((2 ^ r : ℕ) : ℝ)) +
-              (R * (((2 ^ r : ℕ) : ℝ)) ^ 2) +
-              (R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) *
-                ((2 ^ r : ℕ) : ℝ))) := by
-        simpa only [heathBrownCoefficientOneMoment, R] using hAt
-      _ ≤ C * T ^ η *
-            (R ^ 2 * M + R * M ^ 2 +
-              R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * M) := by
-        gcongr
-      _ = B := by rfl
-  have hSum :
-      (∑ r ∈ Finset.range k,
-          heathBrownCoefficientOneMoment (2 ^ r) W) ≤ (k : ℝ) * B := by
-    calc
-      _ ≤ ∑ _r ∈ Finset.range k, B := Finset.sum_le_sum hEach
-      _ = (k : ℝ) * B := by simp
-  rw [heathBrownReflectionDyadicMoment_eq]
-  dsimp only [k] at hSum ⊢
-  calc
-    2 * ((Nat.clog 2 M : ℝ) + 1) *
-        ((W.card : ℝ) ^ 2 +
-          ∑ r ∈ Finset.range (Nat.clog 2 M),
-            heathBrownCoefficientOneMoment (2 ^ r) W) ≤
-      2 * ((Nat.clog 2 M : ℝ) + 1) *
-        ((W.card : ℝ) ^ 2 + (Nat.clog 2 M : ℝ) * B) := by
-          gcongr
-    _ = _ := by
-      dsimp only [B, R]
-      ring
 
 /-! ## The arbitrary-coefficient powering step, equations (6.2)--(6.3) -/
 
@@ -3570,4 +3492,3 @@ theorem gmCubicS2_estimate
       positivity
     simpa [gmCubicS2] using hRhs0
 
-end GuthMaynard.NativeMoment

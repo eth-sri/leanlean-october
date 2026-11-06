@@ -75,6 +75,4 @@ theorem vinogradovCriticalEndpoint_degree_one
   simpa [fordVinogradovKappa] using
     fordVinogradovMomentBound_critical_one hepsilon
 
-end
 
-end GafniTao

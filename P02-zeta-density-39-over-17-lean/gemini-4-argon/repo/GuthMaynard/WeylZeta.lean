@@ -145,4 +145,3 @@ theorem norm_criticalLineWeylBlock_le
   rw [hsimplify] at hweighted
   exact hweighted
 
-end RiemannZeta.GuthMaynard

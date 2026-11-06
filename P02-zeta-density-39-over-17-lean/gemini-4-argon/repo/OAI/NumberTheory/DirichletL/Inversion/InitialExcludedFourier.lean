@@ -8,19 +8,12 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
+open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 namespace SevenEighths.InverseInitialExcludedFourier
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile
-open InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier
-open InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialEnergyCallerWindow
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialEnergyCallerWindow
 variable {σ:Type*} [DecidableEq σ]
 
-open InverseInitialCommonTransform InverseInitialLargePool
-open InverseInitialExcludedPool InverseInitialExcludedForcing
+open InverseInitialCommonTransform InverseInitialLargePool InverseInitialExcludedPool InverseInitialExcludedForcing
 theorem original_tuples_excluded_fourier
     (W wFresh:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
     (hs:Function.support W⊆Set.Icc a₀ b₀)(hW:ContDiff ℝ ∞ W)
@@ -109,9 +102,3 @@ theorem original_tuples_excluded_fourier
   apply Finset.sum_congr rfl
   intro A hA
   ring
-
-end SevenEighths.InverseInitialExcludedFourier
-
-end
-
-end OAI

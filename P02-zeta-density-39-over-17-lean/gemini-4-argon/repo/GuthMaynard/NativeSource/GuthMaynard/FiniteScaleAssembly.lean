@@ -70,14 +70,6 @@ theorem corollary1110Envelope_le_target
     nlinarith
   exact ⟨hTargetFirst, hTargetSecond⟩
 
-/-- The exceptional zeta-polynomial window is either empty or lies in the
-proved Weyl-exclusion range. -/
-def ZetaWindowResolved (σ τ₀ : ℝ) : Prop :=
-  ∀ τ : ℝ, 2 ≤ τ → τ < 4 * τ₀ / 3 → False ∨ τ < 6 * σ - 3
-
-/-- A complete endpoint scale certificate.  Its fields are precisely the
-finite exponent obligations left after the zero-density-from-large-values
-reduction has produced a large-value pattern. -/
 structure EndpointScaleCertificate (σ τ₀ : ℝ) : Prop where
   tau0_pos : 0 < τ₀
   density_base_le_tau0 : 3 - 3 * σ ≤ τ₀
@@ -90,24 +82,18 @@ structure EndpointScaleCertificate (σ τ₀ : ℝ) : Prop where
     4 * τ₀ / 3 ≤ τ → τ ≤ 8 * τ₀ / 3 →
       (2 * τ₀ / 3 ≤ τ / 2 ∧ τ / 2 ≤ τ₀) ∨
         (2 * τ₀ / 3 ≤ τ / 3 ∧ τ / 3 ≤ τ₀)
-  zeta_window : ZetaWindowResolved σ τ₀
+  tau0_le_ingham : τ₀ ≤ 2 - σ
+  tau0_ge_short : 11 / 10 ≤ τ₀
 
-/-- Ingham's choice `τ₀ = 2-σ` satisfies every finite scale and exponent
-obligation in the interior of its range. -/
 theorem ingham_endpoint_scale_certificate
-    {σ : ℝ} (hσLower : 1 / 2 < σ) (hσUpper : σ < 1) :
+    {σ : ℝ} (_hσLower : 1 / 2 < σ) (hσUpper : σ ≤ 9 / 13) :
     EndpointScaleCertificate σ (2 - σ) := by
-  refine ⟨by linarith, by linarith, ?_, ?_, ?_, ?_⟩
+  refine ⟨by linarith, by linarith, ?_, ?_, ?_, le_rfl, by linarith⟩
   · intro τ _hτNonneg hτ
-    apply classicalMHHExponent_le_montgomery_of_tau_le_one
-    linarith
+    exact classicalMHHExponent_le_montgomery_of_tau_le_one (by linarith)
   · intro τ hτLower hτUpper
-    exact corollary1110Envelope_le_target hσUpper.le (by linarith)
+    exact corollary1110Envelope_le_target (by linarith) (by linarith)
       (by linarith) hτLower hτUpper
   · intro τ hτLower hτUpper
     exact exists_two_or_three_scale_reduction hτLower hτUpper
-  · intro τ hτLower hτUpper
-    left
-    exact ingham_zeta_polynomial_range_empty hσLower hτLower hτUpper
 
-end GuthMaynard.NativeMoment

@@ -11,13 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedPhysical
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentSourceRow
-open CenteredMomentFirstRetainedSector CenteredMomentFirstCommonFourierTransport
-open CenteredMomentCanonicalFirst CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSupportedCorrelation CenteredMomentHeckeExpansion CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentFirstReduced
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentSourceRow CenteredMomentFirstRetainedSector CenteredMomentFirstCommonFourierTransport CenteredMomentCanonicalFirst CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentSupportedCorrelation CenteredMomentHeckeExpansion CenteredMomentCompleteCommon CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentFirstReduced
 
  theorem original_sector_columns (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
     (C D:Ideal O)(hC:C≠0)(hD:D≠0)(hCD:primeSupport C=primeSupport D)
@@ -92,9 +86,3 @@ theorem original_sector_fixed (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c
       intro a ha
       exact Finset.sum_comm
     _=fixedRetainedSector η m A t S c C D hC hD W K X Z ξ:=Finset.sum_comm
-
-end SevenEighths.CenteredMomentFirstRetainedPhysical
-
-end
-
-end OAI

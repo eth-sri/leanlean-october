@@ -9,7 +9,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def originalResidualRows (rows : Finset (Ideal Eis)) (R Q : Ideal Eis) : Finset (Ideal Eis) :=
   (representativeRowFiber rows R Q).image (fun I => rowResidualPart I Q)
@@ -48,8 +47,3 @@ theorem original_fiber_energy_reindex (rows : Finset (Ideal Eis)) (R Q : Ideal E
     (∑ I∈representativeRowFiber rows R Q,‖f I‖^2)=
       ∑ K∈originalResidualRows rows R Q,‖f (reconstructFiberRow R Q K)‖^2 :=
   original_fiber_sum_reindex rows R Q hrows (fun I => ‖f I‖^2)
-
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -131,4 +130,3 @@ theorem tsum_divisorWeight_dualTransform {g : ℝ → ℂ} {K : ℂ → ℂ}
   simp_rw [tsum_ordinaryDivisorDualTerm]
   norm_num only [ofReal_div, ofReal_neg, ofReal_one, ofReal_ofNat]
 
-end MathCollab.Density.Stronger.Atkinson

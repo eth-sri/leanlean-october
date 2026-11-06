@@ -11,7 +11,6 @@ open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 variable {ι : Type*} [DecidableEq ι]
 
@@ -48,8 +47,3 @@ theorem canonical_residual_test_nonzero (b : CubeCoordinates ι) (C : Finset ι)
     H (((if negative then b.rightDivisor else b.leftDivisor)∪C)∪N)≠0 := by
   exact originalLabelColumn_core_test_ne_zero p hg b.support b.leftBit b.rightBit negative
     Ψ m (∏i∈C,p i) f _ N hn
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

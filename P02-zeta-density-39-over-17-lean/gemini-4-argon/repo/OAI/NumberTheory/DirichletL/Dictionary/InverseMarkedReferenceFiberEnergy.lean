@@ -10,12 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification HeckeDyadic HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseMoment InverseInitialProfile
-open ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
-open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseMarkedPhysicalRows
-open InverseInitialPhysicalSlots IdealMobiusDivisorSum
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification HeckeDyadic HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer InverseMoment InverseInitialProfile ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseMarkedPhysicalRows InverseInitialPhysicalSlots IdealMobiusDivisorSum
 
 theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     (S:ProbeFinalAssembly.SourceData D)
@@ -127,9 +122,3 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
       dsimp [Ctotal]
       gcongr
       nlinarith [show 0≤(Tbad.card:ℝ) by positivity]
-
-end SevenEighths.DetectorDictionaryInverseMarkedReference
-
-end
-
-end OAI

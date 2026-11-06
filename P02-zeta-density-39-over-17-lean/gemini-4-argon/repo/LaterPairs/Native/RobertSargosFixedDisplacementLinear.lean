@@ -59,5 +59,4 @@ theorem robertSargos_fixed_displacement_linear_card_le
       4*H^2*((A+e)-(A-e))/(d.natAbs:ℝ)^2*(∑ g ∈ d.natAbs.divisors, (g:ℝ)) := hb
     _ = _ := by dsimp [e]; field_simp; ring
 
-end TaoTrudgianYang2025
 

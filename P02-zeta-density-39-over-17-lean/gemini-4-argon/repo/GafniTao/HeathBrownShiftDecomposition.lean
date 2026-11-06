@@ -208,6 +208,4 @@ theorem heathBrownPairCountTwo_card_le_shift_sum
       omega
 
 
-end
 
-end GafniTao

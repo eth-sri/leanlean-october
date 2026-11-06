@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InversePrincipalEnergy
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum
-open InverseMoment
-local notation "Eis" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum InverseMoment
 
 section
 variable {ι : Type*} [DecidableEq ι]
@@ -421,9 +418,3 @@ theorem marked_principal_energy (ε : ℝ) (hε : 0 < ε) :
         (Finset.sum_nonneg (fun G _ => mul_nonneg (Nat.cast_nonneg _) (sq_nonneg _)))
         (mul_nonneg (le_trans zero_le_one hY) (mul_nonneg hCr.le (apply_nonneg _ _)))
     _ = _ := by ring
-
-end SevenEighths.InversePrincipalEnergy
-
-end
-
-end OAI

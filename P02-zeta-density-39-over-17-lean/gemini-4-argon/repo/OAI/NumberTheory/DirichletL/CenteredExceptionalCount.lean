@@ -9,7 +9,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredExceptionalCount
 open UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
 
 def valuation (I P : Ideal O) : ℕ := (normalizedFactors I).count P
 
@@ -269,8 +268,3 @@ theorem element_count_power_scale_family (S : Finset O) (Rs : Finset (Ideal O))
         (fun z hz => (Finset.mem_filter.mp hz).2)
         (fun z hz => hN z (Finset.mem_filter.mp hz).1)
     _ = _ := by rw [Finset.sum_const, nsmul_eq_mul]; ring
-
-end SevenEighths.CenteredExceptionalCount
-end
-
-end OAI

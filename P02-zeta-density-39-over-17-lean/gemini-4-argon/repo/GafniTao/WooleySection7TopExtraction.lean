@@ -165,6 +165,4 @@ theorem wooleySection7_original_implies_top_congruences
   rw [htranslate] at hleft
   exact hleft
 
-end
 
-end GafniTao

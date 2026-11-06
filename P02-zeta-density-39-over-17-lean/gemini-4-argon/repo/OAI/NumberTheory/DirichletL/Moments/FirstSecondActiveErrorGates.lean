@@ -11,12 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondActiveErrorGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
-open CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
 local instance {α : Type*} : DecidableEq α := Classical.decEq _
 variable {ι : Type*} [Fintype ι]
 
@@ -133,9 +128,3 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
     hυ.trans (hpow h₄),hpunct.trans (hpow h₃),nominal_pos d K hK,
     hpoly.2.2.1.trans (hpow ((by linarith : 2*A+D+ε≤2*A+D+ε+ξ/2).trans h₂)),
     hpoly.2.2.2.1,hpoly.2.2.2.2.trans (hpow h₂)⟩
-
-end SevenEighths.CenteredMomentFirstSecondActiveErrorGates
-
-end
-
-end OAI

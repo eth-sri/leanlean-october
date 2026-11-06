@@ -113,4 +113,3 @@ theorem norm_sum_range_succ_mul_le_of_finiteVariation
       _ ≤ M*B := mul_le_mul_of_nonneg_right hw.variation_le hB
   nlinarith
 
-end TaoTrudgianYang2025

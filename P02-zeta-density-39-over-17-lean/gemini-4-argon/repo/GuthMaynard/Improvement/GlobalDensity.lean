@@ -16,4 +16,3 @@ theorem global_density_uniform {ε : ℝ} (hε : 0 < ε) :
       (zetaDensityCount σ T:ℝ) ≤ C*T^((39/17)*(1-σ)+ε) := by
   exact global_density_uniform_of_ingham ingham_lower_density hε
 
-end GuthMaynard.Improvement

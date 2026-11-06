@@ -69,4 +69,3 @@ theorem operator_continuous_pairing (ν : Measure ℝ) [IsFiniteMeasure ν]
   filter_upwards with x
   rw [inner_smul_right]
 
-end GuthMaynard.Improvement

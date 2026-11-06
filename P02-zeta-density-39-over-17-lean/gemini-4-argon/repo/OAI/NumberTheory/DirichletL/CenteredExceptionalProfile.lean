@@ -9,13 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredExceptionalProfile
-open UniqueFactorizationMonoid HeckeFamily CanonicalRowCompletion
-open ConcretePrimeRowBridge hiding O
-open CompletedGauss hiding O
-open ConcreteTraceCRT
-local notation "O" => HeckeFamily.O
-open CenteredExceptionalCount CenteredMomentCanonical
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open UniqueFactorizationMonoid HeckeFamily CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss ConcreteTraceCRT CenteredExceptionalCount CenteredMomentCanonical
 
 theorem split_at_prime (I P : Ideal O) (hI : I ≠ 0) [P.IsMaximal] :
     ∃ J : Ideal O, I = P ^ valuation I P * J ∧ J ≠ 0 ∧ IsCoprime J P := by
@@ -487,9 +481,3 @@ theorem fixed_support_exceptional_count (η : Character) (Q : Ideal O)
   fixed_inducing_row_count η Q hQ hQ72 m A hm hA hmLam hm2
     (normalizedFactors Q).toFinset (outside_fixed_support Q hQ0 hQ72) T hT hex
     D hD hgood Z C M F hZ hC hDnorm hN
-
-end SevenEighths.CenteredExceptionalProfile
-
-end
-
-end OAI

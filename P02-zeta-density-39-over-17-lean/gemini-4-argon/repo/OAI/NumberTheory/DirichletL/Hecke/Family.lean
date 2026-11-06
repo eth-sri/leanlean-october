@@ -14,7 +14,8 @@ open scoped BigOperators
 namespace SevenEighths.HeckeFamily
 
 abbrev K := CyclotomicField 3 ℚ
-abbrev O := NumberField.RingOfIntegers K
+protected abbrev O := NumberField.RingOfIntegers K
+open HeckeFamily (O)
 
 instance : IsCyclotomicExtension {3} ℚ K := CyclotomicField.isCyclotomicExtension 3 ℚ
 
@@ -97,9 +98,3 @@ theorem continuedLattice_differentiableAt (χ : Character) {s : ℂ}
     (hs₀ : s ≠ 0) (hs₁ : s ≠ 1 ∨ ∑ a, (coefficients χ) a = 0) :
     DifferentiableAt ℂ (continuedLattice χ) s :=
   HeckeTheta.latticeL_differentiableAt (coefficients χ) hs₀ hs₁
-
-end SevenEighths.HeckeFamily
-
-end
-
-end OAI

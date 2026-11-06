@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialPhysicalMeasure
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialPhysicalMeasure
 variable {ι : Type*} [DecidableEq ι]
 
 def sourceKey (x : Point ι) : Fin 5→Finset ι :=
@@ -78,9 +76,3 @@ theorem sourceKeys_card
     exact_mod_cast (by simpa using hc)
   exact hcast.trans (pow_le_pow_left₀ (by positivity)
     (boundedPrimeSupports_card p hinj pool L hL) 5)
-
-end SevenEighths.InverseInitialHighFrequencyTail
-
-end
-
-end OAI

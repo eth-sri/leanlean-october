@@ -9,14 +9,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyPaidRemoval
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyPaidBands CenteredMomentEnergyCapacityRemoval
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyPaidBands CenteredMomentEnergyCapacityRemoval CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot QuadraticInitialBound
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εremove lo hi κ:ℝ)
@@ -73,9 +68,3 @@ theorem actual_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εremove lo h
   apply he.trans ((mul_le_mul_of_nonneg_left hb (by positivity)).trans_eq ?_)
   simp only [pow_add,Real.rpow_add hZp]
   ring
-
-end SevenEighths.CenteredMomentEnergyPaidRemoval
-
-end
-
-end OAI

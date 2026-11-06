@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstInactiveRadicalMass
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentFirstDiscardedEnergy
-open CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockRadicalHarmonicMass
-open CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonRadialData CenteredMomentRankinRadical
-open CenteredMomentSecondBlockAggregate CenteredMomentSupportedCorrelation
-open ConcretePrimeRowBridge
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentFirstDiscardedEnergy CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockRadicalHarmonicMass CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentOriginalCommonHarmonic CenteredMomentCommonRadialData CenteredMomentRankinRadical CenteredMomentSecondBlockAggregate CenteredMomentSupportedCorrelation ConcretePrimeRowBridge
 
 def inactiveWeight (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ):ℝ:=
   ‖(UniqueFactorizationMonoid.moebius (∏P∈E,P.val):ℂ)‖/
@@ -63,9 +56,3 @@ theorem actual_inactive_radical_mass (B ε:ℝ)(hB:0≤B)(hε:0<ε):
     _≤∑_E:Finset (CommonIndex p.val.1 p.val.2),radicalWeight p.val.1 p.val.2:=
       Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
         (fun _ _ _=>radicalWeight_nonneg _ _)
-
-end SevenEighths.CenteredMomentFirstInactiveRadicalMass
-
-end
-
-end OAI

@@ -45,37 +45,4 @@ theorem detectorHeight_ge_scale {T L σ η : ℝ}
   rw [sub_eq_add_neg, Real.rpow_add hLp]
   simpa only [neg_mul] using mul_le_mul_of_nonneg_left hp (show 0 ≤ L^σ by positivity)
 
-/-- All large-values admissibility conditions hold for every member of the
-preselected finite family, with the original eta margin. -/
-theorem poweredDetectorFamily_admissible {η κ σ : ℝ}
-    (hη : 0 < η) (hmargin : 3/4+κ ≤ σ-4*η) :
-    ∀ᶠ T : ℝ in atTop, 2 ≤ densityAmbient T ∧ 2*T ≤ T+densityAmbient T ∧
-      ((poweredDetectorIndices T).card : ℝ) ≤ 240*(Real.log T)^2 ∧
-      ∀ p ∈ poweredDetectorIndices T,
-        0 < poweredDetectorScale T p ∧
-        0 < (poweredDetectorScale T p : ℝ)^σ*T^(-2*η) ∧
-        (densityAmbient T)^(1/3 : ℝ) ≤ (poweredDetectorScale T p : ℝ) ∧
-        (poweredDetectorScale T p : ℝ) ≤ densityAmbient T ∧
-        (poweredDetectorScale T p : ℝ)^(3/4+κ) ≤
-          (poweredDetectorScale T p : ℝ)^σ*T^(-2*η) ∧
-        ∀ n ∈ Finset.Ioc (poweredDetectorScale T p) (2*poweredDetectorScale T p),
-          ‖poweredDetectorFamilyCoeff η T p n‖ ≤ 1 := by
-  filter_upwards [detector_family_scales_eventually,
-    densityAmbient_eventually_cubeRoot_le, poweredDetectorFamily_coefficients hη]
-    with T hsc hroot hcoeff
-  obtain ⟨hT, hlog, _, hD, hJ, _⟩ := hsc
-  have hTpos : 0 < T := by linarith
-  have hH : T ≤ densityAmbient T := by
-    unfold densityAmbient
-    nlinarith [sq_nonneg (Real.log T-1)]
-  refine ⟨hT.trans hH, by linarith, poweredDetectorIndices_card_le (by linarith) hD hJ, ?_⟩
-  intro p hp
-  obtain ⟨hN, hlo, hhi⟩ := poweredDetectorFamily_scales (by linarith) hlog hp
-  have hNreal : (0 : ℝ) < poweredDetectorScale T p := by exact_mod_cast hN
-  refine ⟨hN, by positivity, hroot.trans hlo, by linarith, ?_, hcoeff p hp⟩
-  calc
-    _ ≤ (poweredDetectorScale T p : ℝ)^(σ-4*η) :=
-      Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hN) hmargin
-    _ ≤ _ := detectorHeight_ge_scale hTpos hlo hη.le
 
-end MathCollab.Density

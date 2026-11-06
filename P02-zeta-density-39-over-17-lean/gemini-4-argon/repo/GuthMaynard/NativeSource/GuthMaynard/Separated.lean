@@ -632,4 +632,3 @@ theorem weighted_separated_selection : WeightedSeparatedSelectionProp := by
         Nat.mul_le_mul_left 2 (weighted_by_bins S_odd odd_subset)
       _ = 2 * L * (chooseBins S_odd).card := by ring
 
-end GuthMaynard.NativeMoment

@@ -48,4 +48,3 @@ theorem smoothDetectorResidue_eventually_small {ψ : ℝ → ℝ} {a b : ℝ}
       apply (eq_div_iff (pow_ne_zero 100 hTp.ne')).2
       rw [← pow_add]
 
-end MathCollab.Density.Stronger

@@ -52,4 +52,3 @@ theorem norm_robertSargos_zero_r_source_neg (f : ℝ → ℝ) (M : ℕ) (h q : �
     ‖robertSargosZeroRSource f M h (-q)‖ = ‖robertSargosZeroRSource f M h q‖ := by
   rw [robertSargos_zero_r_source_neg,norm_star]
 
-end TaoTrudgianYang2025

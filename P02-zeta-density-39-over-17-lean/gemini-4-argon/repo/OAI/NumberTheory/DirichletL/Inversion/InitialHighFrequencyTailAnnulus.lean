@@ -53,9 +53,3 @@ theorem actual_annulus_high_gate
     Z^τ*(64*b^2)≤Z^τ*Z^η := mul_le_mul_of_nonneg_left hfixed (by positivity)
     _ = Z^(τ+η) := (Real.rpow_add hz τ η).symm
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
-
-end SevenEighths.InverseInitialHighFrequencyTail
-
-end
-
-end OAI

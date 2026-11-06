@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareSource
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter ArithmeticFunction
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MeasureTheory Filter ArithmeticFunction MathCollab.Density.Stronger.Fourth
 open scoped BigOperators Topology LSeries.notation
 set_option autoImplicit false
 noncomputable section
@@ -265,4 +264,3 @@ theorem heathBrown_smoothed_divisor_eq_right_mellin
   filter_upwards with t
   exact tsum_heathBrownDivisorMellinSeriesTerm_eq hs t
 
-end MathCollab.Density.Stronger.PointMean

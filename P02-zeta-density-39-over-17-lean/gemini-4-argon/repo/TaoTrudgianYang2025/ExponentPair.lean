@@ -247,4 +247,3 @@ theorem ExponentPair.estimate {k l : ℝ} (h : ExponentPair k l) :
     IsExponentPairEstimate k l :=
   h.2
 
-end TaoTrudgianYang2025

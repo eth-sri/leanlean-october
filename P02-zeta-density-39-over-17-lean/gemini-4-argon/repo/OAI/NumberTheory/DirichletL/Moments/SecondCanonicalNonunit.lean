@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalNonunit
-open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentCanonicalFirst
-open CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentProductCRT
-open CenteredMomentSupport
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentProductCRT CenteredMomentSupport
 
 def equalActiveSet (C D : Ideal O) : Finset (CommonIndex C D) :=
   Finset.univ.filter (fun P=>leftExponent C D P=rightExponent C D P ∧ ¬6∣leftExponent C D P)
@@ -62,9 +58,3 @@ theorem nonunitFrequencyGenerator_dvd (C D : Ideal O) (hC : Supported C)
   · intro P hP
     rw [nonunitPartitionSet_eq_actual C D U w hpart] at hP
     exact (commonPrime_dividedFrequency_iff C D hC w P).mp (Finset.mem_filter.mp hP).2.2.2
-
-end SevenEighths.CenteredMomentSecondCanonicalNonunit
-
-end
-
-end OAI

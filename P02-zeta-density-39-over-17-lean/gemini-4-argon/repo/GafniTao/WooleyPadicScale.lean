@@ -83,6 +83,4 @@ theorem exists_wooleyPadicScale
     _ ≤ k * h := Nat.mul_le_mul_right h hk
 
 
-end
 
-end GafniTao

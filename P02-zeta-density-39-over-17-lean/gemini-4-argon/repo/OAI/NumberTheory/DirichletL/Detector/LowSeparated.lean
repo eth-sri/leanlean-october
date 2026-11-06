@@ -11,8 +11,6 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowSeparatedIntegrand (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
     (X Y : ℝ) (B : RayRing→O→ℂ) (v : ℝ) : ℂ :=
@@ -62,8 +60,3 @@ theorem physicalRowWeight_low_separated (C : CalibrationData) (W0 W1 : ℝ→ℂ
     (lt_of_lt_of_le (by norm_num) (le_max_left _ _))
   rw [physicalRowWeight_tsum_low_mellin C W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hWs X Y hX hY]
   simp_rw [lowSeparatedIntegrand_eq C W0 W1 _ hW1c hΩ X Y hX hY B]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

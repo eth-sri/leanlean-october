@@ -66,4 +66,3 @@ theorem betaModelSample_firstDifference_bounds
   ring_nf at he hlo hhi ⊢
   constructor <;> linarith
 
-end TaoTrudgianYang2025

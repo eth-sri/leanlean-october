@@ -30,9 +30,3 @@ theorem retained_pair_control (a b:ℝ)(ha:0<a)(S:Finset (ℕ×ℕ)):
   apply (mul_le_mul h₀ h₁ (sourceControl_nonneg _ _) (by positivity)).trans_eq
   simp only [Profiles.control,show 2*n=n+n by omega,pow_add]
   ring
-
-end SevenEighths.CenteredMomentEnergyAllocatedProfiles
-
-end
-
-end OAI

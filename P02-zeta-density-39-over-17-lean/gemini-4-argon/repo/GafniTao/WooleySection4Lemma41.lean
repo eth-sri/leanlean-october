@@ -256,6 +256,4 @@ theorem wooleySourcePolynomial_lemma_4_1
       (lt_of_le_of_ne (wooleySourceMassSq_nonneg gamma) (Ne.symm hmass))
 
 
-end
 
-end GafniTao

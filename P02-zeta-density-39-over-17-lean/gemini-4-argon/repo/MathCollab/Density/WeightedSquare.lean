@@ -57,4 +57,3 @@ theorem norm_integral_mul_sq_le {W g : ℝ → ℂ} (hW : Integrable W)
     simpa only [norm_mul] using norm_integral_le_integral_norm (fun x => W x * g x)
   exact (pow_le_pow_left₀ (norm_nonneg _) hn 2).trans hh
 
-end MathCollab.Density

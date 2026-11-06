@@ -187,6 +187,4 @@ theorem heathBrownPairCountOne_card_le_four_mul_block_mul_pairCountTwo
   nlinarith
 
 
-end
 
-end GafniTao

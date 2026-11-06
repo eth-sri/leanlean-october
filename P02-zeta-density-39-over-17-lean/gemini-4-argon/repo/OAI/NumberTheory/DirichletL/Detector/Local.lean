@@ -66,8 +66,3 @@ theorem continued_ramified_compensation (V Pstar B q : ℂ) :
   simp only [compensatedReplacement, continuedCorrection, mul_zero, sub_zero,
     mul_one, div_one]
   ring
-
-end
-end SevenEighths.ProbeLocal
-
-end OAI

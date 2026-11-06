@@ -42,9 +42,3 @@ theorem exists_uniform_fresh (K:ℕ)(a b:ℝ)(ha:0<a)(hab:a≤b):
     have hup:yc≤b*(2:ℝ)^K:=hh.2.trans (mul_le_mul_of_nonneg_left hp hb.le)
     dsimp [hi]
     linarith
-
-end SevenEighths.InverseInitialUniformFresh
-
-end
-
-end OAI

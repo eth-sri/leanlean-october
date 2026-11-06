@@ -10,7 +10,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorAllocation
 open IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
 def nonemptySelections (s : Finset ι) : Finset (Finset ι) := s.powerset.erase ∅
@@ -114,9 +113,3 @@ theorem allocation_card_bound (D : Ideal O) (s : Finset ι) :
   calc
     _ ≤ (2^s.card)^(primeSupport D).card := Nat.pow_le_pow_left hc _
     _ = _ := by simp only [← pow_mul,Nat.mul_comm]
-
-end SevenEighths.CenteredMomentDivisorAllocation
-
-end
-
-end OAI

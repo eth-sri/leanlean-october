@@ -9,7 +9,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 def cubeBinRows (R : Finset FreeRow) (idx grid : FreeRow→ℕ) (i k : ℕ) : Finset FreeRow :=
   R.filter (fun u=>idx u=i ∧ grid u=k)
@@ -48,9 +47,3 @@ theorem finiteCentralCubeRows_bin_partition {K : ℕ}
   intro u hu
   rcases (mem_cubeBinRows R idx grid i k u).mp hu with ⟨hu,hi,hk⟩
   simp only [hi,hk]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

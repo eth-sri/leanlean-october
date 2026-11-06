@@ -168,4 +168,3 @@ theorem heathBrownStrongGammaConvolutionIntegrand_le
       unfold a b
       ring
 
-end MathCollab.Density.Stronger.PointMean

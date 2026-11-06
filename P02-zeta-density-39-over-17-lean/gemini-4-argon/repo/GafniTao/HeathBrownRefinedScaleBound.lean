@@ -163,6 +163,4 @@ theorem heathBrownPairCount_card_cast_le_chosen_factor
     (mul_le_mul_of_nonneg_left hinside (by positivity))
 
 
-end
 
-end GafniTao

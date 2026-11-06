@@ -10,7 +10,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
 open MeasureTheory JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {κ ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -65,8 +64,3 @@ theorem actual_second_varying_balanced_source (source : Finset κ) (F : Finset �
     (by simpa [secondActualNorms] using h3)
   rw [hsep] at he
   simpa [secondActualNorms] using he
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

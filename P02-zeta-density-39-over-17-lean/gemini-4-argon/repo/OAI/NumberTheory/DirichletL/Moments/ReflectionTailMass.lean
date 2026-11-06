@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.CenteredMomentReflectionTailMass
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentComparisonReflection EisensteinSchwartzPoisson
 
 lemma subset_norm_le (S D : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (hD : D⊆S) :
     (Ideal.absNorm (∏P∈D,P):ℝ)≤(Ideal.absNorm (∏P∈S,P):ℝ) := by
@@ -72,9 +70,3 @@ theorem coefficient_column_bound (ε : ℝ) (hε : 0<ε) :
     _≤_ := by
       rw [←Finset.sum_mul]
       exact mul_le_mul_of_nonneg_right (hbound S hS η ηi).2 hB
-
-end SevenEighths.CenteredMomentReflectionTailMass
-
-end
-
-end OAI

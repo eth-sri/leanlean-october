@@ -94,4 +94,3 @@ theorem ExponentPair.atkinson_pair_gram_double_sum {k l ε : ℝ}
         hH hG hM hsep ht hrange (hdiam t ht) hsmall)
     _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]; ring
 
-end TaoTrudgianYang2025

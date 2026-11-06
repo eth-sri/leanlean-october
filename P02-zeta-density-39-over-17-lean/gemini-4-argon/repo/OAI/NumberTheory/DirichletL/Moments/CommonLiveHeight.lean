@@ -9,17 +9,10 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonLiveHeight
-open HeckeFamily CenteredMomentCommonRadialSource CenteredMomentCommonRadialData
-open CenteredMomentCommonRadialPointwise CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentRestrictedSource
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
-open CenteredMomentCommonAllocationSum CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentCommonAllocationSum CanonicalQuadraticSieve
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-open CenteredMomentCommonHeightEnvelope
-open CenteredMomentSourceLiveColumn
+open CenteredMomentCommonHeightEnvelope CenteredMomentSourceLiveColumn
  theorem actual_height_envelope (lo hi:ι→ℝ) (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
     ∃C0:ℝ,0<C0 ∧ ∀(s:Input ι),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
       ∀(r:Radial) (C:Ideal O) (hC:Supported C) (R seed L:Ideal O),seed∣C → Squarefree L →
@@ -47,9 +40,3 @@ open CenteredMomentSourceLiveColumn
       ((Ideal.absNorm C:ℝ)*Ideal.absNorm L))*(s.X₁*s.X₂*∏i,s.P i)=_
   unfold envelope
   ring
-
-end SevenEighths.CenteredMomentCommonLiveHeight
-
-end
-
-end OAI

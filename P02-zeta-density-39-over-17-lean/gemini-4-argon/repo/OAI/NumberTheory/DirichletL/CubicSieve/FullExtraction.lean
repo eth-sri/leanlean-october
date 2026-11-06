@@ -9,7 +9,6 @@ namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def firstImage (R : Finset O) : Finset (Ideal O) :=
   R.image (fun z => goodPart (firstPart (Ideal.span {z})))
@@ -85,8 +84,3 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
   dsimp only [D] at hcard
   convert hb using 1
   simp only [hcard, Nat.cast_mul, Nat.cast_ofNat, Fintype.card_coe]
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

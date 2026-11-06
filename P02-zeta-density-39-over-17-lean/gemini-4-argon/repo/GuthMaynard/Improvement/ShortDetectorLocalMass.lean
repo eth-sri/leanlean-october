@@ -66,4 +66,3 @@ theorem short_weighted_fourth_holder {g F : ℝ → ℝ} (hg0 : ∀ t, 0 ≤ g t
   simp only [← pow_mul] at hh hs
   nlinarith
 
-end GuthMaynard.Improvement

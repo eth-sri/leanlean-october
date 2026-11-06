@@ -10,7 +10,6 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 namespace SevenEighths.CenteredMomentReflectedPairEnergy
 open HeckeFamily FourierBridge CenteredMomentReflectedProfileMeasure
-local notation "O" => HeckeFamily.O
 
 lemma plain_frequency_control (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X)
     (hV : ∀y,V y≠0 → |y|≤M) (η : Character) :
@@ -59,9 +58,3 @@ lemma plain_density_integrable (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X)
   obtain ⟨hc,K,hK⟩ := plain_frequency_control V M X hX hV η
   exact (density.integrable (μ:=volume)).mul_bdd hc.aestronglyMeasurable
     (Filter.Eventually.of_forall hK)
-
-end SevenEighths.CenteredMomentReflectedPairEnergy
-
-end
-
-end OAI

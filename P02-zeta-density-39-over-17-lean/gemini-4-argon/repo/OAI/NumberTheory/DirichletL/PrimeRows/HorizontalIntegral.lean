@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma continuedRow_horizontal_measurable {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -89,9 +88,3 @@ lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr 
     _ = _ := by
       dsimp [μ]
       rw [setIntegral_const,Real.volume_real_Ioc_of_le hlr,smul_eq_mul]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

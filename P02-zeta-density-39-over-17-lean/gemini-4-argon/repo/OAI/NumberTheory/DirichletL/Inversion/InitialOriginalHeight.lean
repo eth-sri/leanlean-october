@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical SchwartzMap ContDiff FourierTransform
 namespace SevenEighths.InverseInitialOriginalHeight
-open InverseMoment InverseInitialProfile InverseInitialProfileBounds FourierBridge
-open JointLogSeparation CompletedHeight
+open InverseMoment InverseInitialProfile InverseInitialProfileBounds FourierBridge JointLogSeparation CompletedHeight
 
 theorem child_eq_normTwisted (W:ℝ→ℂ)(θ:ℝ):childLogTest W θ=normTwistedSource W θ:=by
   rw [childLogTest_eq_clipped]
@@ -37,9 +36,3 @@ theorem logSchwartz_child (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
   simp only [CubicReflectionKernel.logSchwartz_apply,childLogTest,
     frequencyTwist_apply,Real.log_exp]
   ring
-
-end SevenEighths.InverseInitialOriginalHeight
-
-end
-
-end OAI

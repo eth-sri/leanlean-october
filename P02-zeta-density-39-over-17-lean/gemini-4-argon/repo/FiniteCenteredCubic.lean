@@ -145,4 +145,3 @@ theorem centered_matrix_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
   rw [finite_cubic_trace]
   exact h T L t₀ hT hLl hLu W hW hsep
 
-end Montgomery.RationalMoment

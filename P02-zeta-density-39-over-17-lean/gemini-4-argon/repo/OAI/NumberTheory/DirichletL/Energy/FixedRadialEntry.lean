@@ -10,15 +10,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFixedRadialEntry
-open ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentSourceMass CenteredMomentSourceRectangleMask
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource
-open CenteredMomentEnergyFixedRadialSource CenteredMomentSourceRow
-open CenteredMomentSecondHeightFamily CenteredMomentAmplificationChildInput
-open CenteredMomentOriginalCommonHarmonic CenteredMomentRadialEligibleEnergy
-open CenteredMomentEnergyZeroComparison CanonicalQuadraticSieve
-local notation "O"=>HeckeFamily.O
+open ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentSourceMass CenteredMomentSourceRectangleMask HeckeFamily CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialSource CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentAmplificationChildInput CenteredMomentOriginalCommonHarmonic CenteredMomentRadialEligibleEnergy CenteredMomentEnergyZeroComparison CanonicalQuadraticSieve
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
 theorem original_comparison (b:ℝ)(hb:0<b):
     ∃Ψ:𝓢(ℝ,ℂ),Function.support (Ψ:ℝ→ℂ)⊆Set.Icc (-1) (b+1) ∧
@@ -42,9 +35,3 @@ theorem original_comparison (b:ℝ)(hb:0<b):
       (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R 1) r.scale r.scale_pos)
     (by norm_num : (0:ℝ)≤2)
   simpa only [mul_assoc] using h
-
-end SevenEighths.CenteredMomentEnergyFixedRadialEntry
-
-end
-
-end OAI

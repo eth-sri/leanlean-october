@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentExceptionalAmplitudePair CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentHeckeWindowEnergy
-open HeckeFamily CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
+open CenteredMomentExceptionalAmplitudePair CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentHeckeWindowEnergy HeckeFamily CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
 universe u
 
 def mass {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι][Fintype κ]
@@ -55,8 +53,3 @@ theorem shifted_mass {lo hi:ℝ} (R:Finset (ℕ×ℕ))
     ring
   · simp only [mass,mul_pow]
     ring
-end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-
-end
-
-end OAI

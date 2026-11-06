@@ -83,8 +83,3 @@ theorem sieveNorm_sharp (ε : ℝ) (hε : 0 < ε) :
       _ ≤ C*(N*M)^ε*(2*(M+N+(M*N)^(2/3 : ℝ))) :=
         mul_le_mul_of_nonneg_left hs (by positivity)
       _ = _ := by rw [mul_comm N M]; ring
-
-end
-end SevenEighths.CubicSieve
-
-end OAI

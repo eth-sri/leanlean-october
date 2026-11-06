@@ -32,4 +32,3 @@ theorem robertSargos_symmetric_a_times_a (f : ℝ → ℝ) (M H Q R : ℕ)
   convert hs using 1
   ring
 
-end TaoTrudgianYang2025

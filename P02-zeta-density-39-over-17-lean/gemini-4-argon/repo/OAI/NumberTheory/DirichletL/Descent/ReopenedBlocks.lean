@@ -11,7 +11,6 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 open ConcretePrimeRowBridge (idealGenerator)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 def varyingCanonicalSourceTotal {ι : Type*} [DecidableEq ι]
     (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -72,8 +71,3 @@ theorem varying_reopened_smoothed_source {ι : Type*} [DecidableEq ι]
       apply Finset.sum_congr rfl
       intro A₁ hA₁
       rw [Finset.sum_comm]
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

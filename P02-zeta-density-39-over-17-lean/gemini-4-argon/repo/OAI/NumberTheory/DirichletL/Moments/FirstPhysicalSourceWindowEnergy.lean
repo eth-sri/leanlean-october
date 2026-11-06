@@ -11,14 +11,8 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors
-open CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentSecondSectorColumns CenteredMomentConjugateWindow IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentSecondSectorColumns CenteredMomentConjugateWindow IdealMobiusDivisorSum
 variable {ι:Type*}[Fintype ι]
-local instance firstWindowEnergyDecidableEq : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def commonEnergy (s:OriginalData ι)(C:Ideal O)(hC:Supported C)(τ:Character)
     (t:ℝ)(L:Ideal O)(U:𝓢(ℝ,ℂ))(K:ℝ):ℂ:=
@@ -72,9 +66,3 @@ theorem column_window_energy (s:OriginalData ι)(Q C:Ideal O)(hQ:Q≠0)(hC:Suppo
       rw [column_unwindowed_energy s Q C hQ hC hQC]
       exact henergy v)
   simpa only [ha,element_span,element_norm] using hh
-
-end SevenEighths.CenteredMomentFirstPhysicalSource
-
-end
-
-end OAI

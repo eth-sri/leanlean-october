@@ -10,7 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
@@ -65,9 +64,3 @@ theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       exact div_le_div_of_nonneg_left (Real.rpow_nonneg hZ0.le _) (Real.rpow_pos_of_pos hZ0 _) hden
     _ ≤ _ := mul_le_mul_of_nonneg_left hsave (by positivity)
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

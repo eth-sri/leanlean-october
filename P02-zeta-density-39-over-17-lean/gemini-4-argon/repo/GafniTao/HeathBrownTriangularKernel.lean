@@ -187,6 +187,4 @@ theorem heathBrownPairCountOne_quarter_le_kernel_sum
       · intro p hp _
         exact heathBrownPairKernel_nonneg k H f p
 
-end
 
-end GafniTao

@@ -40,4 +40,3 @@ theorem primitive_linear_triple_card_le_abs_modulus
     intro p hp
     simpa only [hcn] using hline p hp
 
-end TaoTrudgianYang2025

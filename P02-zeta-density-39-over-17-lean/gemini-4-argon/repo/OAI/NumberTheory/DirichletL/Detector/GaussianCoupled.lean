@@ -63,8 +63,3 @@ theorem gaussian_coupled_family {ι : Type*} [Fintype ι]
     refine ⟨C,hC,?_⟩
     intro R hR
     exact ⟨JointLogSeparation.weighted_schwartz_integrable (gaussianJointDensity V hV R) J,hbound R hR⟩
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

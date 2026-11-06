@@ -65,9 +65,3 @@ theorem eventually_canonical_reference_gates (hi Alog window eta : ℝ)
   · apply (Real.exp_le_exp.mpr ?_).trans hpow
     dsimp [R]
     linarith [le_abs_self window, abs_nonneg hi, abs_nonneg Alog]
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

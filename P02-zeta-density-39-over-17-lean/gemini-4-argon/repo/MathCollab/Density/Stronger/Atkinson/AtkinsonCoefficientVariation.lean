@@ -104,4 +104,3 @@ theorem finiteVariationBound_fourthRootCoefficient {T : ℝ} (hT : 0 < T)
       simpa only [Nat.add_zero] using hanti (Nat.zero_le i)⟩)
   exact h.mono (atkinsonFourthRootCoefficient_le_height hT m)
 
-end MathCollab.Density.Stronger.Atkinson

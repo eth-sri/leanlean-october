@@ -46,4 +46,3 @@ theorem modelPhaseCore_card_le
   unfold modelPhaseCoreLower modelPhaseCoreUpper
   linarith
 
-end TaoTrudgianYang2025

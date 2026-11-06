@@ -11,7 +11,6 @@ open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-local notation "O" => HeckeFamily.O
 
 def firstPrimeDefectBound (eps : ℝ) (P : PrimeIdeal) : ℝ :=
   240*(P.val.absNorm : ℝ)^(-1-min eps (1/50:ℝ))
@@ -100,9 +99,3 @@ theorem exists_both_source_exclusions (eps : ℝ) (heps : 0<eps)
   refine ⟨S,Finset.subset_union_left,⟨hpS,hbad.trans Finset.subset_union_left,?_⟩,?_⟩
   · exact hcut₁ S (fun P hP=>hcut P (hP.trans (le_max_left _ _)))
   · exact hcut₂ S (fun P hP=>hcut P (hP.trans (le_max_right _ _)))
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

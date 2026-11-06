@@ -76,7 +76,6 @@ lemma deriv_comp_line {f : E → ℝ} (hf : ContDiff ℝ 1 f) (x a : E) (t : ℝ
 
 /-! ## Pointwise translation bound via the gradient -/
 
-section
 
 variable [CompleteSpace E]
 
@@ -158,12 +157,5 @@ lemma enorm_sub_le_enorm_mul_lintegral_grad (x a : E) {f : E → ℝ} (hf : Cont
       (MeasureTheory.lintegral_const_mul (μ := volume.restrict (Set.Icc (0 : ℝ) 1)) (r := ‖a‖ₑ)
         (f := fun t : ℝ => ‖grad (E := E) f (x + t • a)‖ₑ) hMeas)
 
-end
 
-end
 
-end Euclidean
-end Sobolev
-end FunctionalSpaces
-end Analysis
-end RellichKondrachov

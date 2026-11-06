@@ -138,4 +138,3 @@ theorem sourceFourierSignal_pairing {μ : ℝ → ℝ} (h1 : Integrable μ)
   rw [he,integral_indicator (sourceFourierSet_measurable h1 Λ)]
   norm_cast
 
-end GuthMaynard.Improvement

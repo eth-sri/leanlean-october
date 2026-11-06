@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSourceRetained
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSourceRow CenteredMomentSecondLocalization CenteredMomentSecondSourceEnergy
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorRetained CenteredMomentSecondRetainedPair
-open CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentSectorLocalization
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSourceRow CenteredMomentSecondLocalization CenteredMomentSecondSourceEnergy CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorRetained CenteredMomentSecondRetainedPair CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentSectorLocalization
 
 def retainedKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
   if hI : Supported I then if hJ : Supported J then secondRetainedPair I J hI hJ W K Tsec Z ξ else 0 else 0
@@ -83,9 +78,3 @@ theorem retainedKernel_physical (C D I J : Ideal O) (hI : Supported (C*I)) (hJ :
         physicalKernel C D W K (frequencyRadius Tsec Z ξ) j I J := by
   rw [retainedKernel_eq _ _ hI hJ,retainedPair_positive_frequency]
   simp only [physicalKernel,one_mul]
-
-end SevenEighths.CenteredMomentSecondSourceRetained
-
-end
-
-end OAI

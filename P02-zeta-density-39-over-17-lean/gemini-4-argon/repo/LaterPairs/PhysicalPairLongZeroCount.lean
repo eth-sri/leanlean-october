@@ -8,8 +8,7 @@ set_option autoImplicit false
 noncomputable section
 open Real Filter MeasureTheory Set
 namespace Montgomery.RationalMoment.RightDetector.Physical
-open MathCollab.Density.Stronger MathCollab.Density
-open TaoTrudgianYang2025
+open MathCollab.Density.Stronger MathCollab.Density TaoTrudgianYang2025
 
 /-- The actual complementary zeros obey the two native pair-tail budgets.
 The numerical slack accounts explicitly for the detector denominator and logarithm. -/
@@ -101,4 +100,3 @@ theorem smoothLongZeroCount_pair_tail_general {k l σ a δ η q ε : ℝ}
       calc
         _ = (2*D*A/(4*Real.pi))*((T^(ε/4)*T^(ε/4))*T^(3*a*(1-σ)+ε/2)) := by ring
         _ = _ := by rw [← Real.rpow_add hT0,← Real.rpow_add hT0,he]
-end Montgomery.RationalMoment.RightDetector.Physical

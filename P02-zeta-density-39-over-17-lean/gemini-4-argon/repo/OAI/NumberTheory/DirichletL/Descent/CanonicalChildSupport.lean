@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
-open InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 variable (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
@@ -80,9 +78,3 @@ theorem actual_cell_labels_admissible {Jo Jn:ℕ}(S:Finset (MarkedSecondSource �
   obtain ⟨hm,hs⟩:=Finset.mem_filter.mp hI
   have hh:=actual_cell_labels_supported p hp hg hc S d I hm
   exact ⟨hh.1,hs,hh.2⟩
-
-end SevenEighths.InverseMoment
-
-end
-
-end OAI

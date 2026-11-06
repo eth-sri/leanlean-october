@@ -182,4 +182,3 @@ theorem bufferedMorseWeight_local_window_remainder_inverse
   convert div_le_div_of_nonneg_right hc hT.le using 1
   ring
 
-end TaoTrudgianYang2025

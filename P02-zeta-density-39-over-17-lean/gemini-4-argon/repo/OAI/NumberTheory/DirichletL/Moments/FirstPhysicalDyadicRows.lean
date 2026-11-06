@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicRows
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
-open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentFirstAmplificationChoice CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice CenteredMomentRowNorm
 
 def activeRows (rows : Finset O) (n : Fin 4→ℤ) : Finset O :=
   rows.filter (fun h => h∈dyadRows (n 1))
@@ -73,9 +68,3 @@ theorem block_activeRows (η : Character) (m A : O) (t : ℝ)
       simpa only [mem_dyadRows,not_not] using hd
     simp only [hd,windows,row_log_window,hw,Complex.ofReal_zero,
       mul_zero,zero_mul,ite_self,Finset.sum_const_zero]
-
-end SevenEighths.CenteredMomentFirstPhysicalDyadicRows
-
-end
-
-end OAI

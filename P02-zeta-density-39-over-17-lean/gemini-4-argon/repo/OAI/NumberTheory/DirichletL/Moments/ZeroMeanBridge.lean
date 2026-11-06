@@ -10,13 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentZeroMeanBridge
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentCommonSupport
-open CenteredMomentFourier CenteredMomentCorrelation CenteredMomentSupportedCorrelation
-open CenteredMomentSectorLocalization CenteredMomentFirstReduced CenteredMomentCanonicalFirst
-open CenteredMomentActive CenteredMomentFirstDiscardedEnergy CenteredMomentFirstLocalization
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstReduced CenteredMomentCanonicalFirst CenteredMomentActive CenteredMomentFirstDiscardedEnergy CenteredMomentFirstLocalization
 
 def quotientMean (a : O) (F : Residue a → ℂ) : ℂ :=
   (normValue a : ℂ)⁻¹ * ∑' x : Residue a, F x
@@ -322,9 +316,3 @@ theorem zeroEnergy_eq_original (η : HeckeFamily.Character) (m A : O) (t : ℝ)
   exact canonical_ideal_zero_sum (CenteredMomentSourceRow.supportedColumns S)
     (fun _ h => (Finset.mem_filter.mp h).2)
     (fun I => c I * CenteredMomentHeckeExpansion.rowWeight η m A 1 t I) W K
-
-end SevenEighths.CenteredMomentZeroMeanBridge
-
-end
-
-end OAI

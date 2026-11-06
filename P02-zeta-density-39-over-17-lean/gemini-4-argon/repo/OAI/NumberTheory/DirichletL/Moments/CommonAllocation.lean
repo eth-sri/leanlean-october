@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonAllocation
-open CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentExtraction
-open CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentExtraction CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
 
 theorem extract_coprime_product (C a : Ideal O) (hC : C≠0) (ha : a≠0)
     (hCa : IsCoprime C a) : supportExtract (C*a) (primeSupport C)=C := by
@@ -43,9 +41,3 @@ theorem residual_factor_coprime (C I : Ideal O) (hC : C≠0) :
     IsCoprime C (supportResidual I (primeSupport C)) := by
   have hh := extracted_residual_coprime C I (primeSupport C)
   rwa [supportExtract_of_subset C hC _ (Finset.Subset.refl _)] at hh
-
-end SevenEighths.CenteredMomentCommonAllocation
-
-end
-
-end OAI

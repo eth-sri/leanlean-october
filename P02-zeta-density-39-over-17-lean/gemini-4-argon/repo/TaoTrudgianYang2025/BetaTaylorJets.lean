@@ -99,4 +99,3 @@ theorem abs_iteratedDeriv_modelPhaseAveragedCurvature_le
   simpa only [iteratedDeriv_succ'] using
     approximateModelPhase_iteratedDeriv_abs_le hσ hF hx (k+1) hk
 
-end TaoTrudgianYang2025

@@ -9,8 +9,6 @@ noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def sourceTruncation (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
     (F : Finset SupportedIdeal) (E : Finset GramFrequency) (W : ℝ→ℂ) (hW : HasCompactSupport W)
@@ -57,8 +55,3 @@ lemma sourceCanonicalSum_split (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ :
   apply Finset.sum_congr rfl
   intro D hD
   rw [←mul_add,Finset.sum_filter_add_sum_filter_not]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

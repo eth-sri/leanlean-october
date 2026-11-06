@@ -8,7 +8,6 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 theorem primePowerGauss_at_pow_nonprincipal (p : O) (hp : Prime p)
     [(Ideal.span {p} : Ideal O).IsMaximal]
@@ -61,8 +60,3 @@ theorem primePowerGauss_at_pow_principal (p : O) (hp : Prime p)
       ite_eq_left hle, hcard, pow_succ]
     ring
     exact hψ
-
-end SevenEighths.ProbePrimePower
-end
-
-end OAI

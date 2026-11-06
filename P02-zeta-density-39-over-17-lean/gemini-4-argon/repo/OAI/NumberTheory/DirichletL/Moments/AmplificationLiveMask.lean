@@ -9,12 +9,8 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationLiveMask
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
-open CenteredMomentOriginalChildEnergy CenteredMomentRemainingBox CenteredMomentCommonProfile
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentOriginalChildEnergy CenteredMomentRemainingBox CenteredMomentCommonProfile
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
  theorem profile_mask (R : Ideal O) (ν : ι → Ideal O → ℂ)
     (Wslot : ι → ℝ → ℂ) (P : ι → ℝ) (W₁ W₂ : ℝ → ℂ)
@@ -68,9 +64,3 @@ theorem original_masked_live_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     rw [maskedLiveProfile,column_mask]
     dsimp only [liveProfile]
     ring
-
-end SevenEighths.CenteredMomentAmplificationLiveMask
-
-end
-
-end OAI

@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightKernel
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -246,4 +244,3 @@ theorem exists_norm_zetaDivisorWeight_min_le {B : ℝ} (hB : 0 ≤ B) :
     simp only [norm_one] at hn
     nlinarith
 
-end MathCollab.Density.Stronger.Atkinson

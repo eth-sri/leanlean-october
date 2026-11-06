@@ -8,9 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge ProbePrimePower
 
 lemma row_initial_geometric (η : HeckeFamily.Character) (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
@@ -58,8 +56,3 @@ theorem idealRowHighLocalFactor_unramified (η : HeckeFamily.Character) (p : O) 
     sourceRowSeries_unramified_euler p hp hg hc (targetMonoid η p) (actualACube η p)
       _ x w z (actualSextic_unit_six p b hg hc hb) hd.1 hd.2.1 hd.2.2.1
       (one_sub_ne_zero_of_norm_lt_one _ hd.2.2.2)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

@@ -67,6 +67,4 @@ theorem heathBrown_sourceScale_main_mono
       (mul_le_mul hpow hthree hthreeM0 (by positivity)) hconstant)
 
 
-end
 
-end GafniTao

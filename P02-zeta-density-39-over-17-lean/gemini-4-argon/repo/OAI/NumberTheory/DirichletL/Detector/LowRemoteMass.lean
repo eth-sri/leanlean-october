@@ -11,8 +11,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma canonicalSlot_count (T : Finset PrimeIdeal) (hT : ∀P∈T,Supported P.val)
     (H : ℝ) (hH : 1≤H) (hnorm : ∀P∈T,(Ideal.absNorm P.val:ℝ)≤H) :
@@ -100,8 +98,3 @@ lemma compensation_scale_mass_bound {K : ℕ} (η : HeckeFamily.Character) (C : 
   calc
     _=(elementNorm C.generator*(128*max 1 b)^K)*(Z^(1/6:ℝ)*Z^(5/6:ℝ)) := by ring
     _=_ := by rw [←Real.rpow_add hz];norm_num
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

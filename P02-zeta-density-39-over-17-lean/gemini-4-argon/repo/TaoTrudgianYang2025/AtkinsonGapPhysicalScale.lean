@@ -73,4 +73,3 @@ theorem atkinsonGap_frequency_physical_bounds {H M t u : ℝ}
   exact ⟨div_le_div_of_nonneg_left hgap.le hR hl,
     div_le_div_of_nonneg_right hh hgap.le⟩
 
-end TaoTrudgianYang2025

@@ -194,4 +194,3 @@ theorem source_sampling_scalar_budget (c : ℝ) (hc : 0 ≤ c) :
       (mul_le_mul_of_nonneg_right (by dsimp [C]; linarith [Real.pi_pos]) hZ)
     _ = _ := by dsimp [Z]; ring
 
-end GuthMaynard.Improvement

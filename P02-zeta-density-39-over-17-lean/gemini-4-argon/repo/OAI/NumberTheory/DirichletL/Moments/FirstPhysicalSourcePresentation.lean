@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
 
 def fixedPresentationCost : ℝ:=
   (Ideal.absNorm (Ideal.span {fixedBadMask}):ℝ)*Ideal.absNorm (Ideal.span {(72:O)})
@@ -47,9 +44,3 @@ theorem fixed_pair_presentation_caps (η τ₁ τ₂:Character)(C D:Ideal O)
       ‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2*
       ‖eisEmbedding (activeConductor C D)‖^2:=
   ⟨(fixed_presentation_norm η τ₁ C D E hM₁).le,(fixed_presentation_norm η τ₂ C D E hM₂).le⟩
-
-end SevenEighths.CenteredMomentFirstPhysicalSource
-
-end
-
-end OAI

@@ -71,4 +71,3 @@ theorem norm_exponentialSumAt_le_transition
         (show 0 ≤ 3*modelPhaseSumConstant σ by positivity)
       nlinarith
 
-end TaoTrudgianYang2025

@@ -69,4 +69,3 @@ theorem masked_box_of_energy_bounds {α ι : Type*} [MeasurableSpace α]
       (Real.sqrt_le_sqrt hY) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
     _ = B := Real.mul_self_sqrt hB
 
-end GuthMaynard.Improvement

@@ -9,7 +9,6 @@ namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 section FiniteGrid
 variable {M H C A : Type*} [DecidableEq M] [DecidableEq H] [DecidableEq C] [AddCommMonoid A]
@@ -67,8 +66,3 @@ theorem HybridColumnData.gridIndex_injective_on_square (t : Ideal Eis) :
 
 def hybridGridSupport (D : Finset HybridColumnData) :
     Finset ((Ideal Eis × Ideal Eis) × Ideal Eis) := D.image HybridColumnData.gridIndex
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

@@ -143,6 +143,4 @@ theorem heathBrown_third_lower_of_H_gt_N_sub_two
         lambda ^ (-2 * r / (k : ℝ)) := by rw [hlambdaPower]
 
 
-end
 
-end GafniTao

@@ -101,6 +101,4 @@ theorem integral_heathBrownNu
   rw [Finset.sum_const, card_heathBrownInteriorIndices]
   simp [nsmul_eq_mul]
 
-end
 
-end GafniTao

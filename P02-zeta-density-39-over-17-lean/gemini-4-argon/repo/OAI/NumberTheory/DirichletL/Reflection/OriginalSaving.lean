@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {a c₀ : Eis} {mode : Bool}
 
 theorem original_surviving_terminal_saving
@@ -66,7 +65,3 @@ theorem original_surviving_terminal_saving
     (lt_of_lt_of_le hZ₀ hZ) hCk hCO hCH hCf hk hpow hrow hf hlogH hlogT hinv hF₀ hscale hV hh
     hM hO hz hzcap hv hell hel (by simpa only [add_assoc] using hwidth)
     hc hmargin hd hη hτ hπ
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

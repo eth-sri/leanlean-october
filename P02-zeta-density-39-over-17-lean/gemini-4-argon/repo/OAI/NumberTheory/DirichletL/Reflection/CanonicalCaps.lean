@@ -10,7 +10,6 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma canonical_mask_norm_cap (B F R : Ideal Eis) (Z V Q L : ℝ)
     (hZ : 1≤Z) (hB : (Ideal.absNorm B:ℝ)≤Z)
@@ -58,7 +57,3 @@ theorem canonical_actual_arithmetic_caps (L : ℝ) (hL : 0≤L)
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith)
   · rw [←Real.rpow_neg hZp.le]
     exact Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith)
-end
-end SevenEighths.InverseReflectedPhase
-
-end OAI

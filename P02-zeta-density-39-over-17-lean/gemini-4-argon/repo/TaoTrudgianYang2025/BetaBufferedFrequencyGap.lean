@@ -77,4 +77,3 @@ theorem norm_modelPhaseBufferedFourierMode_of_frequency_gap
   apply h.trans_eq
   field_simp
 
-end TaoTrudgianYang2025

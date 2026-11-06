@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.HeckeDetectorCoefficientBounds
-open HeckeFamily HeckeDetectorFourier HeckeDetectorTail
-open ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeDetectorFourier HeckeDetectorTail ConcretePrimeRowBridge
 
 lemma annular_norm_le_two (V : ℝ → ℂ) (hV : ∀ x, ‖V x‖ ≤ 1) (x : ℝ) :
     ‖DyadicTransfer.annularCutoff V x‖ ≤ 2 := by
@@ -72,9 +70,3 @@ theorem coefficient_mass (χ : Character) (V : ℝ → ℂ) (hV : ∀ x, ‖V x�
     (Finset.sum_nonneg (fun I hI => norm_nonneg _)) (by positivity)
   apply hh.trans_eq
   ring
-
-end SevenEighths.HeckeDetectorCoefficientBounds
-
-end
-
-end OAI

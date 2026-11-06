@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.GammaGaussianTransform
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -146,4 +144,3 @@ theorem norm_zetaFrozenDivisorGaussianMean_sub_quadratic_le {T G r : ℝ}
       Summable.tsum_le_tsum hpoint hnorm ((summable_norm_zetaFrozenDivisorCoefficient hT0).mul_right E)
     _ = _ := tsum_mul_right
 
-end MathCollab.Density.Stronger.Atkinson

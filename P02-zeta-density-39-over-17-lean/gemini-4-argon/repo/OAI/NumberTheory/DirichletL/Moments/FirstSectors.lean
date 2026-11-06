@@ -10,7 +10,6 @@ open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstSectors
 open CenteredMomentCompleteCommon CenteredMomentCommonSectors IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
 
 def residualPool (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O)) : Finset (Ideal O) :=
   S.preimage (fun a => C*a) (by intro a ha b hb he;exact mul_left_cancel₀ hC he)
@@ -104,9 +103,3 @@ theorem sum_common_sectors (S T : Finset (Ideal O)) (F : Ideal O → Ideal O →
     rcases p with ⟨C,D⟩
     congr 1
   · exact (Finset.sum_product S T (fun p : Ideal O × Ideal O => F p.1 p.2)).symm
-
-end SevenEighths.CenteredMomentFirstSectors
-
-end
-
-end OAI

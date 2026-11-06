@@ -9,10 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialRetainedSupport
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CompletedGauss
-open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialKernelBridge SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CompletedGauss InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialKernelBridge SecondPassArithmetic
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -77,9 +74,3 @@ theorem live_ideal_caps (hpr:∀i,goodLambda^2∣p i-1)
   exact ⟨hcp.trans hbig,hdiv.trans (hcp.trans hbig),hsp.trans hbig,
     (le_mul_of_one_le_left (by linarith) hpair).trans h₁,
     (le_mul_of_one_le_left (by linarith) hpair).trans h₂⟩
-
-end SevenEighths.InverseInitialRetainedSupport
-
-end
-
-end OAI

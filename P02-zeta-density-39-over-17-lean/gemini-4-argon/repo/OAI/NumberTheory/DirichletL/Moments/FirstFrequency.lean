@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstFrequency
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentFirstNormalization CenteredMomentFirstReduced CenteredMomentFirstAssembly
-open CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CenteredMomentPrimitive CenteredMomentGaussEnergy CenteredMomentChildAssembly CenteredMomentMobiusRegroup
-open RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentFirstNormalization CenteredMomentFirstReduced CenteredMomentFirstAssembly CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentPrimitive CenteredMomentGaussEnergy CenteredMomentChildAssembly CenteredMomentMobiusRegroup RayFourExpansion
 
 theorem normalized_dilated_frequency {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
@@ -67,9 +62,3 @@ def dilatedFrequency {ι : Type*} [Fintype ι]
     ((k/‖eisEmbedding (a*(b*r))‖^2:ℝ):ℂ)*
     tripleFourier a b r (supported_element_ne_zero a ha) (supported_element_ne_zero b hb)
       (finitePrimeModulus_ne_zero P) (supportedModulusCharacter a ha) (supportedModulusCharacter b hb)⁻¹ G h
-
-end SevenEighths.CenteredMomentFirstFrequency
-
-end
-
-end OAI

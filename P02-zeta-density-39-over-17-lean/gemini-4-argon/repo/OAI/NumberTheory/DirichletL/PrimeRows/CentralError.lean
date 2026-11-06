@@ -10,8 +10,6 @@ open scoped Classical BigOperators
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
-variable {ι : Type*} [Fintype ι]
 
 def centralRowIntegral {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
@@ -25,9 +23,3 @@ lemma scaleBound_eq_rpow_of_one_le {q lo hi : ℝ} (hq : 1≤q) (hl : lo≤hi) :
   unfold scaleBound
   rw [max_eq_right (mul_le_mul_of_nonneg_left hl (Real.log_nonneg hq)),
     Real.rpow_def_of_pos (by linarith)]
-
-end SevenEighths.ProbeHighRowFamily
-
-end
-
-end OAI

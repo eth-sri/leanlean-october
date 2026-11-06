@@ -67,4 +67,3 @@ theorem IntervalC1Bound.fourierChar_of_slope_gap
   convert h using 1
   ring
 
-end TaoTrudgianYang2025

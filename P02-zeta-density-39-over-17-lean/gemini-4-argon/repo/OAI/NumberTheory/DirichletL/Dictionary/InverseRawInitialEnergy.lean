@@ -10,11 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseRawInitialEnergy
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEnergy
-open InverseInitialRawDictionary InverseInitialExcludedPolynomial InverseInitialExcludedEnergy
-open DetectorDictionaryInverseRawInitialGates CanonicalQuadraticSieve ConcreteTraceCRT
-open ActualEisensteinCubic IdealMobiusDivisorSum CanonicalRowCompletion CanonicalCoefficientClass
-local notation "O"=>HeckeFamily.O
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEnergy InverseInitialRawDictionary InverseInitialExcludedPolynomial InverseInitialExcludedEnergy DetectorDictionaryInverseRawInitialGates CanonicalQuadraticSieve ConcreteTraceCRT ActualEisensteinCubic IdealMobiusDivisorSum CanonicalRowCompletion CanonicalCoefficientClass
 
 private theorem admissible_one : Admissible (1:Ideal O) := by
   refine ⟨one_ne_zero,squarefree_one,?_⟩
@@ -86,9 +82,3 @@ theorem raw_rows_le_initial
   intro j hj
   exact deleted_rows_le_initial Φ hΦ hone data W H D c b Btree cap sigma freq
     hH hD hc hcapacity hb hW j hj rows hrows
-
-end SevenEighths.DetectorDictionaryInverseRawInitialEnergy
-
-end
-
-end OAI

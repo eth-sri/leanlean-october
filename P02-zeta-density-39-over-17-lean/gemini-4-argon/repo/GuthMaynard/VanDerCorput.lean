@@ -367,41 +367,6 @@ theorem unitaryPhase_sub_int_mul_two_pi (x : ℝ) (k : ℤ) :
   rw [unitaryPhase_sub, unitaryPhase_int_mul_two_pi]
   simp
 
-/-- Decreasing-increment form of one-period Kusmin--Landau cancellation. -/
-theorem kusminLandau_one_period_decreasing (f : ℕ → ℝ) (N : ℕ) (δ : ℝ)
-    (hδ : 0 < δ)
-    (hlow : ∀ n ≤ N, δ ≤ f (n + 1) - f n)
-    (hhigh : ∀ n ≤ N, f (n + 1) - f n ≤ 2 * Real.pi - δ)
-    (hmono : ∀ n < N, f (n + 2) - f (n + 1) ≤ f (n + 1) - f n) :
-    ‖∑ n ∈ Finset.range (N + 1), unitaryPhase (f n)‖ ≤
-      2 * Real.pi / δ := by
-  let g : ℕ → ℝ := fun n => -f n + (n : ℝ) * (2 * Real.pi)
-  have hdiff (n : ℕ) :
-      g (n + 1) - g n = 2 * Real.pi - (f (n + 1) - f n) := by
-    dsimp only [g]
-    push_cast
-    ring_nf
-  have hphase (n : ℕ) :
-      unitaryPhase (g n) = starRingEnd ℂ (unitaryPhase (f n)) := by
-    rw [show g n = (n : ℝ) * (2 * Real.pi) - f n by dsimp only [g]; ring_nf]
-    rw [unitaryPhase_sub]
-    rw [show unitaryPhase ((n : ℝ) * (2 * Real.pi)) = 1 by
-      simpa only [Int.cast_natCast] using unitaryPhase_int_mul_two_pi (n : ℤ)]
-    simp
-  have hKL := kusminLandau_one_period g N δ hδ
-    (fun n hn => by rw [hdiff]; linarith [hhigh n hn])
-    (fun n hn => by rw [hdiff]; linarith [hlow n hn])
-    (fun n hn => by rw [hdiff, hdiff]; linarith [hmono n hn])
-  have hsum :
-      (∑ n ∈ Finset.range (N + 1), unitaryPhase (g n)) =
-        starRingEnd ℂ (∑ n ∈ Finset.range (N + 1), unitaryPhase (f n)) := by
-    simp_rw [hphase]
-    exact (map_sum (starRingEnd ℂ) _ _).symm
-  rw [hsum] at hKL
-  change ‖star (∑ n ∈ Finset.range (N + 1), unitaryPhase (f n))‖ ≤ _ at hKL
-  rw [norm_star] at hKL
-  exact hKL
-
 /-- Shifted-index and shifted-period form of Kusmin--Landau cancellation. -/
 theorem kusminLandau_interval (f : ℕ → ℝ) (A N : ℕ) (k : ℤ) (δ : ℝ)
     (hδ : 0 < δ)
@@ -612,4 +577,3 @@ theorem interval_weyl_differencing
     norm_cast
   simpa only [Finset.card_range, Nat.cast_add, hcard] using hraw
 
-end RiemannZeta.GuthMaynard

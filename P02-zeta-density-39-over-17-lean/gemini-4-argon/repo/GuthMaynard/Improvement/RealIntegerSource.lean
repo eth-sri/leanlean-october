@@ -99,4 +99,3 @@ theorem detecting_floor_large_value {N V : ℝ} (hN : 2 ≤ N) (hV : 2 ≤ V)
   have hh := boundedPolynomial_le_detecting_floor_add_one hN a ha t
   linarith
 
-end GuthMaynard.Improvement

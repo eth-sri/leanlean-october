@@ -112,9 +112,3 @@ theorem nonzero_on_buffered_disk (χ : ι → Character) (hχ : ∀ j, (χ j).re
   intro hz
   have hle := zero_re_le_maximum χ hχ (3*(i+1 : ℕ)*T) j (by linarith) him hz
   linarith
-
-end SevenEighths.HeckeDetectorZeros
-
-end
-
-end OAI

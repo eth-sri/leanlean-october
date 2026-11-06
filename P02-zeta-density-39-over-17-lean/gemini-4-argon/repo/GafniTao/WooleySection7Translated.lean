@@ -108,6 +108,4 @@ theorem wooleySection7TranslatedTop_coeff_rat
   simp only [wooleySection7OmegaMatrix]
   ring_nf
 
-end
 
-end GafniTao

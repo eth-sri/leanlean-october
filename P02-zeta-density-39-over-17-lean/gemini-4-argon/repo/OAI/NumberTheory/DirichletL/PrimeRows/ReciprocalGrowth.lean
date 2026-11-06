@@ -11,7 +11,6 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem targetRow_reciprocal_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
     (hδ : 0<δ) (hδ' : δ≤2) (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) :
@@ -59,8 +58,3 @@ theorem targetRow_reciprocal_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
       apply mul_le_mul _ hh (Real.rpow_nonneg ht δ) (by positivity)
       gcongr
       linarith
-
-end SevenEighths.ProbeHighRowFamily
-end
-
-end OAI

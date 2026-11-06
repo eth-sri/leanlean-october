@@ -10,8 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CanonicalQuadraticSieve CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 abbrev PhysicalRowIndex := {I : Id // Supported I}×O
 
@@ -122,8 +120,3 @@ theorem markedPhysicalProbe_eq_gaussian_rows (η : HeckeFamily.Character) (C : C
   apply tsum_congr
   intro r
   rw [spectralRow_eq_gaussianCompleted _ _ _ (physicalRowMonoid_norm η C r) 4 (by norm_num) Z hZ]
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

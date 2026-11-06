@@ -10,7 +10,6 @@ noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 def crtCharacter {ι T : Type*} [Fintype ι] [CommRing T]
     (R : ι → Type*) [∀ i, Field (R i)] (e : T ≃+* ∀ i, R i)
@@ -182,8 +181,3 @@ theorem calibrationForSet_tau_norm (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.I
 theorem calibrationForSet_tau_ne_zero (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
     (calibrationForSet S hS).tau ≠ 0 := by
   exact norm_ne_zero_iff.mp (by rw [calibrationForSet_tau_norm]; norm_num)
-
-end SevenEighths.ProbePhysical
-end
-
-end OAI

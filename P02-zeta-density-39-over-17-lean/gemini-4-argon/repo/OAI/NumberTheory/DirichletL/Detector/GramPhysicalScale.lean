@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
 
  def residualScale (C D : SupportedIdeal) (Y : ℝ) : ℝ :=
   Y/((Ideal.absNorm C.val:ℝ)*Ideal.absNorm D.val)
@@ -27,8 +26,3 @@ lemma physicalPoint_second_norm (N : ℝ) (hN : 0<N) (m : O×O) :
     ‖(WithLp.ofLp (ProbeGramLatticeDecay.physicalPoint N m)).2‖^2=‖eisEmbedding m.2‖^2/N := by
   simp only [ProbeGramLatticeDecay.physicalPoint,ProbeGramLatticeDecay.point,WithLp.ofLp_toLp]
   rw [norm_div,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.sqrt_pos.mpr hN),div_pow,Real.sq_sqrt hN.le]
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI

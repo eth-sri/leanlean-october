@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 
 @[expose] public section
 
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -62,4 +61,3 @@ theorem exists_norm_zetaAtkinsonBesselMinus_sub_twoTerm_le :
   rw [zetaAtkinsonBesselMinus_sub_twoTerm hT hG hGT hL hwidth]
   exact hbound T G L hT hG hGT hL hwidth
 
-end MathCollab.Density.Stronger.Atkinson

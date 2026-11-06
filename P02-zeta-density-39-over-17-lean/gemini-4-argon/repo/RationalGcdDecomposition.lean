@@ -164,4 +164,3 @@ theorem pair_energy_le_log (P : Finset (ℕ × ℕ)) {N : ℕ}
   exact (pair_energy_le_harmonic P (fun p hp => (hP p hp).1) W hblock).trans
     (mul_le_mul_of_nonneg_left hsum (mul_nonneg hB hM))
 
-end Montgomery.RationalMoment

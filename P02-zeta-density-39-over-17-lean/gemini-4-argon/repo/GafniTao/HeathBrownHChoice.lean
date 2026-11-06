@@ -167,6 +167,4 @@ theorem heathBrown_width_le_half_of_eight_le
   exact ⟨bound (k - 2) (by omega), bound (k - 1) (by omega)⟩
 
 
-end
 
-end GafniTao

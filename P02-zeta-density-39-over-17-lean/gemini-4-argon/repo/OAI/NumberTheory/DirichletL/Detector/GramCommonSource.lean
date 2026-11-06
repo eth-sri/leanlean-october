@@ -9,12 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
 variable {ι : Type*} [Fintype ι]
 
 def commonResidualScale (C : SupportedIdeal) (Y : ℝ) : ℝ := Y/Ideal.absNorm C.val
@@ -92,8 +87,3 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
     simp only [supported_dilation_generator,shellProfile,star_mul]
     ring
   · rfl
-
-end SevenEighths.ProbeGramCommon
-end
-
-end OAI
