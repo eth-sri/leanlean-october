@@ -1,0 +1,2100 @@
+diff --git a/BN/Basic/Inner.lean b/BN/Basic/Inner.lean
+deleted file mode 100644
+index 8ca86946b..000000000
+--- a/BN/Basic/Inner.lean
++++ /dev/null
+@@ -1,127 +0,0 @@
+-/-
+-Copyright (c) 2026 Shengtong Zhang. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Shengtong Zhang
+--/
+-
+-module
+-public import Mathlib.Algebra.Order.Star.Real
+-public import Mathlib.Analysis.Matrix.PosDef
+-public import Mathlib.LinearAlgebra.Matrix.Hadamard
+-public import Mathlib.LinearAlgebra.Matrix.Symmetric
+-public import Mathlib.LinearAlgebra.Matrix.Trace
+-@[expose] public section
+-
+-/-!
+-# Frobenius pairing, entrywise positive part, and the Schur product
+-
+-This file records the real Frobenius inner product `⟨B, C⟩ = tr(Bᵀ C)`, the
+-entrywise positive part of a matrix, the rank-one Laplacian
+-`vecMulVec (e i - e j) (e i - e j)`, and the Schur product theorem for real
+-positive semidefinite matrices.
+--/
+-
+-namespace BN
+-
+-open Matrix
+-open scoped Matrix
+-
+-variable {m n : Type*}
+-
+-/-! ### N06 — Frobenius pairing -/
+-
+-/-- The real Frobenius pairing `⟨B, C⟩ = tr(Bᵀ C)`. -/
+-def inner [Fintype n] (B C : Matrix n n ℝ) : ℝ :=
+-  (Bᵀ * C).trace
+-
+-section Inner
+-
+-variable [Fintype n]
+-
+-/-- The Frobenius pairing is additive in the first argument. -/
+-lemma inner_add_left (B₁ B₂ C : Matrix n n ℝ) :
+-    inner (B₁ + B₂) C = inner B₁ C + inner B₂ C := by
+-  simp [inner, transpose_add, add_mul, trace_add]
+-
+-/-- The Frobenius pairing is additive in the second argument. -/
+-lemma inner_add_right (B C₁ C₂ : Matrix n n ℝ) :
+-    inner B (C₁ + C₂) = inner B C₁ + inner B C₂ := by
+-  simp [inner, mul_add, trace_add]
+-
+-/-- The Frobenius pairing is homogeneous in the first argument. -/
+-lemma inner_smul_left (r : ℝ) (B C : Matrix n n ℝ) :
+-    inner (r • B) C = r * inner B C := by
+-  simp [inner, transpose_smul, smul_mul, trace_smul, smul_eq_mul]
+-
+-/-- The Frobenius pairing is homogeneous in the second argument. -/
+-lemma inner_smul_right (r : ℝ) (B C : Matrix n n ℝ) :
+-    inner B (r • C) = r * inner B C := by
+-  simp [inner, Matrix.mul_smul, trace_smul, smul_eq_mul]
+-
+-/-- Expanding the Frobenius pairing as an entrywise sum. This identity does not
+-require symmetry of either argument; in particular it yields the
+-Frobenius–Hadamard formula for a symmetric first factor. -/
+-lemma inner_eq_sum (B C : Matrix n n ℝ) :
+-    inner B C = ∑ i, ∑ j, B i j * C i j := by
+-  simp only [inner, trace, diag, mul_apply, transpose_apply]
+-  rw [Finset.sum_comm]
+-
+-/-- The squared Frobenius norm is the sum of squares of entries. -/
+-lemma inner_self (B : Matrix n n ℝ) :
+-    inner B B = ∑ i, ∑ j, B i j ^ 2 := by
+-  simp [inner_eq_sum, pow_two]
+-
+-end Inner
+-
+-/-! ### N08 — Entrywise positive part -/
+-
+-/-- The entrywise positive part `(posPart X) i j = max (X i j) 0`. -/
+-def posPart (X : Matrix m n ℝ) : Matrix m n ℝ :=
+-  of fun i j => max (X i j) 0
+-
+-@[simp]
+-lemma posPart_apply (X : Matrix m n ℝ) (i : m) (j : n) :
+-    posPart X i j = max (X i j) 0 :=
+-  rfl
+-
+-/-! ### N09 — Rank-one Laplacian entries -/
+-
+-/-- The standard basis vector `e k` in `n → ℝ`. -/
+-def e [DecidableEq n] (k : n) : n → ℝ :=
+-  Pi.single k 1
+-
+-/-! ### N10 — Inner product against a rank-one Laplacian -/
+-
+-/-! ### N14 — Schur product of PSD matrices -/
+-
+-lemma mul_diagonal_mul_transpose_apply [Fintype n] [DecidableEq n]
+-    (U : Matrix n n ℝ) (d : n → ℝ) (a b : n) :
+-    (U * diagonal d * Uᵀ) a b = ∑ k, d k * U a k * U b k := by
+-  calc (U * diagonal d * Uᵀ) a b
+-      = ∑ k, (U * diagonal d) a k * Uᵀ k b := by rw [mul_apply]
+-    _ = ∑ k, (U a k * d k) * U b k := by simp [mul_diagonal, transpose_apply]
+-    _ = ∑ k, d k * U a k * U b k :=
+-        Finset.sum_congr rfl fun _ _ => by ring
+-
+-lemma mul_diagonal_mul_transpose_eq_sum_smul_vecMulVec
+-    [Fintype n] [DecidableEq n] (U : Matrix n n ℝ) (d : n → ℝ) :
+-    U * diagonal d * Uᵀ =
+-      ∑ k, d k • vecMulVec (U.col k) (U.col k) := by
+-  ext a b
+-  rw [mul_diagonal_mul_transpose_apply, Matrix.sum_apply]
+-  refine Finset.sum_congr rfl fun k _ => ?_
+-  simp [smul_eq_mul, vecMulVec_apply, col_apply, mul_assoc]
+-
+-/-- The unitary diagonalization of a real Hermitian matrix expands as a sum of
+-real rank-one terms. -/
+-lemma isHermitian_eq_sum_smul_vecMulVec [Fintype n] [DecidableEq n]
+-    {A : Matrix n n ℝ} (hA : A.IsHermitian) :
+-    A = ∑ k, hA.eigenvalues k •
+-      vecMulVec ((hA.eigenvectorUnitary : Matrix n n ℝ).col k)
+-        ((hA.eigenvectorUnitary : Matrix n n ℝ).col k) := by
+-  conv_lhs => rw [hA.spectral_theorem]
+-  rw [Unitary.conjStarAlgAut_apply, RCLike.ofReal_real_eq_id, Function.id_comp]
+-  rw [star_eq_conjTranspose, conjTranspose_eq_transpose_of_trivial]
+-  exact mul_diagonal_mul_transpose_eq_sum_smul_vecMulVec _ _
+-
+-end BN
+diff --git a/BN/Basic/Spectrum.lean b/BN/Basic/Spectrum.lean
+deleted file mode 100644
+index caba9a86c..000000000
+--- a/BN/Basic/Spectrum.lean
++++ /dev/null
+@@ -1,72 +0,0 @@
+-/-
+-Copyright (c) 2026 Shengtong Zhang. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Shengtong Zhang
+--/
+-
+-module
+-public import Mathlib.Analysis.Matrix.Spectrum
+-public import Mathlib.Combinatorics.SimpleGraph.DegreeSum
+-public import Mathlib.Combinatorics.SimpleGraph.LapMatrix
+-public import BN.Basic.Inner
+-@[expose] public section
+-
+-/-!
+-# Ordered spectrum of a Hermitian matrix
+-
+-This file records the ordered real spectrum of a Hermitian matrix, matching the
+-conventions in `docs/sol.tex`. The ordered family is Mathlib's antitone
+-`eigenvalues₀`, which is the paper's `λ₁ ≥ ⋯ ≥ λₙ` with `λ₁` at index `0`.
+-`F` is the sum of squares of the two largest positive eigenvalues, with missing
+-terms replaced by zero.
+--/
+-
+-namespace BN
+-
+-open Matrix
+-
+-variable {n : Type*} [Fintype n] [DecidableEq n]
+-variable {A : Matrix n n ℝ}
+-
+-/-- The eigenvalues of a Hermitian matrix in nonincreasing order. The value at
+-`i` is the paper's `λ_{i+1}`. -/
+-noncomputable def eigs₀ (hA : A.IsHermitian) : Fin (Fintype.card n) → ℝ :=
+-  hA.eigenvalues₀
+-
+-/-- The largest eigenvalue `λ₁(A)`. -/
+-noncomputable def lambdaMax (hA : A.IsHermitian) [Nonempty n] : ℝ :=
+-  eigs₀ hA ⟨0, Fintype.card_pos⟩
+-
+-/-- The second-largest eigenvalue `λ₂(A)`. -/
+-noncomputable def lambdaSecond (hA : A.IsHermitian) [Nontrivial n] : ℝ :=
+-  eigs₀ hA ⟨1, Fintype.one_lt_card⟩
+-
+-/-- The sum of squares of the two largest positive eigenvalues of a Hermitian
+-matrix, with missing terms replaced by zero. -/
+-noncomputable def F (hA : A.IsHermitian) : ℝ :=
+-  if h0 : 0 < Fintype.card n then
+-    let t0 := (max (hA.eigenvalues₀ ⟨0, h0⟩) 0) ^ 2
+-    if h1 : 1 < Fintype.card n then
+-      t0 + (max (hA.eigenvalues₀ ⟨1, h1⟩) 0) ^ 2
+-    else t0
+-  else 0
+-
+-lemma F_eq (hA : A.IsHermitian) [Nontrivial n] :
+-    F hA = (max (lambdaMax hA) 0) ^ 2 + (max (lambdaSecond hA) 0) ^ 2 := by
+-  have h1 : 1 < Fintype.card n := Fintype.one_lt_card
+-  have h0 : 0 < Fintype.card n := Nat.zero_lt_of_lt h1
+-  unfold F lambdaMax lambdaSecond eigs₀
+-  rw [dif_pos h0, dif_pos h1]
+-
+-lemma F_nonneg (hA : A.IsHermitian) : 0 ≤ F hA := by
+-  dsimp [F]
+-  split_ifs <;> positivity
+-
+-/-! ### N11 — Adjacency Frobenius mass -/
+-
+-variable {V : Type*} [Fintype V] [DecidableEq V]
+-variable (G : SimpleGraph V) [DecidableRel G.Adj]
+-
+-set_option linter.unusedSectionVars false
+-
+-end BN
+diff --git a/BN/Definition.lean b/BN/Definition.lean
+deleted file mode 100644
+index 9a52185a9..000000000
+--- a/BN/Definition.lean
++++ /dev/null
+@@ -1,47 +0,0 @@
+-/-
+-Copyright (c) 2026 Shengtong Zhang. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Shengtong Zhang
+--/
+-
+-module
+-public import Mathlib.Combinatorics.SimpleGraph.LapMatrix
+-public import Mathlib.Analysis.Matrix.Spectrum
+-@[expose] public section
+-
+-/-!
+-# Adjacency eigenvalues
+-
+-This file records the spectral conventions used in `docs/sol.tex`. The
+-unordered family is indexed by the vertex type, so algebraic multiplicity is
+-counted automatically. The ordered family is Mathlib's antitone
+-`eigenvalues₀`, which is the paper's `λ₁ ≥ ⋯ ≥ λₙ` with `λ₁` at index `0`.
+--/
+-
+-namespace BN
+-
+-variable {V : Type*} [Fintype V] [DecidableEq V]
+-
+-/-- The adjacency eigenvalues of a finite simple graph, indexed with algebraic
+-multiplicity by its vertex type. -/
+-noncomputable def adjacencyEigenvalues
+-    (G : SimpleGraph V) [DecidableRel G.Adj] : V → ℝ :=
+-  (G.isHermitian_adjMatrix ℝ).eigenvalues
+-
+-/-- The adjacency eigenvalues in nonincreasing order. The value at `i` is the
+-paper's `λ_{i+1}(G)`. -/
+-noncomputable def adjacencyEigenvalues₀
+-    (G : SimpleGraph V) [DecidableRel G.Adj] : Fin (Fintype.card V) → ℝ :=
+-  (G.isHermitian_adjMatrix ℝ).eigenvalues₀
+-
+-/-- The largest adjacency eigenvalue `λ₁(G)`. -/
+-noncomputable def lambda1
+-    (G : SimpleGraph V) [DecidableRel G.Adj] [Nonempty V] : ℝ :=
+-  adjacencyEigenvalues₀ G ⟨0, Fintype.card_pos⟩
+-
+-/-- The second-largest adjacency eigenvalue `λ₂(G)`. -/
+-noncomputable def lambda2
+-    (G : SimpleGraph V) [DecidableRel G.Adj] [Nontrivial V] : ℝ :=
+-  adjacencyEigenvalues₀ G ⟨1, Fintype.one_lt_card⟩
+-
+-end BN
+diff --git a/BN/Spectral/Interlace.lean b/BN/Spectral/Interlace.lean
+deleted file mode 100644
+index 0161cd485..000000000
+--- a/BN/Spectral/Interlace.lean
++++ /dev/null
+@@ -1,337 +0,0 @@
+-/-
+-Copyright (c) 2026 Shengtong Zhang. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Shengtong Zhang
+--/
+-
+-module
+-public import BN.Basic.Spectrum
+-public import BN.Definition
+-public import Mathlib.Analysis.InnerProductSpace.Rayleigh
+-@[expose] public section
+-
+-/-!
+-# Noncomplete graphs and the two largest adjacency eigenvalues
+-
+-A missing edge gives a vanishing 2x2 principal submatrix of the adjacency
+-matrix. Courant-Fischer on that coordinate plane yields `lambda2 G ≥ 0` when `G`
+-is not complete, and therefore `F(A_G) = lambda1 G ^ 2 + lambda2 G ^ 2`. The
+-largest eigenvalue is nonnegative for every finite graph, complete or not.
+--/
+-
+-namespace BN
+-
+-open Matrix Module WithLp
+-
+-set_option linter.unusedSectionVars false
+-
+-variable {V : Type*} [Fintype V] [DecidableEq V]
+-variable (G : SimpleGraph V) [DecidableRel G.Adj]
+-
+-/-! ### SP13 — A nonedge gives a zero principal 2x2 -/
+-
+-/-- The principal 2x2 submatrix of the adjacency matrix on a nonedge is
+-identically zero. -/
+-lemma adjMatrix_eq_zero_on_nonedge_pair {i j : V} (hij : i ≠ j) (hna : ¬ G.Adj i j)
+-    {a b : V} (ha : a ∈ ({i, j} : Finset V)) (hb : b ∈ ({i, j} : Finset V)) :
+-    G.adjMatrix ℝ a b = 0 := by
+-  rw [SimpleGraph.adjMatrix_apply]
+-  split_ifs with hab
+-  · exfalso
+-    have habne : a ≠ b := hab.ne
+-    simp only [Finset.mem_insert, Finset.mem_singleton] at ha hb
+-    rcases ha with rfl | rfl <;> rcases hb with rfl | rfl
+-    · exact habne rfl
+-    · exact hna hab
+-    · exact hna hab.symm
+-    · exact habne rfl
+-  · rfl
+-
+-/-- The adjacency quadratic form vanishes on vectors supported on a nonedge. -/
+-lemma dotProduct_mulVec_adjMatrix_eq_zero_of_supported_on_nonedge
+-    {i j : V} (hij : i ≠ j) (hna : ¬ G.Adj i j) {x : V → ℝ}
+-    (hx : ∀ v, v ∉ ({i, j} : Finset V) → x v = 0) :
+-    x ⬝ᵥ G.adjMatrix ℝ *ᵥ x = 0 := by
+-  rw [dot_mulVec_eq_sum_sum]
+-  refine Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun b _ => ?_
+-  by_cases ha : a ∈ ({i, j} : Finset V)
+-  · by_cases hb : b ∈ ({i, j} : Finset V)
+-    · rw [adjMatrix_eq_zero_on_nonedge_pair G hij hna hb ha]
+-      simp
+-    · simp [hx b hb]
+-  · simp [hx a ha]
+-
+-/-! ### SP14 — Rayleigh on a 2-dimensional coordinate subspace -/
+-
+-variable {n : Type*} [Fintype n] [DecidableEq n]
+-variable {A : Matrix n n ℝ}
+-
+-/-- Euclidean inner product on coordinate space. Avoids the `BN.inner` name clash. -/
+-noncomputable def euclInner (x y : EuclideanSpace ℝ n) : ℝ :=
+-  Inner.inner (𝕜 := ℝ) x y
+-
+-lemma euclInner_smul_right (x y : EuclideanSpace ℝ n) (c : ℝ) :
+-    euclInner x (c • y) = c * euclInner x y :=
+-  real_inner_smul_right x y c
+-
+-/-- The Euclidean quadratic form expands in the ordered eigenbasis. -/
+-lemma dotProduct_mulVec_eq_sum_eigenvalues₀ (hA : A.IsHermitian) (x : n → ℝ) :
+-    x ⬝ᵥ A *ᵥ x =
+-      ∑ i, hA.eigenvalues₀ i *
+-        euclInner ((isSymmetric_toEuclideanLin_iff.mpr hA).eigenvectorBasis
+-          finrank_euclideanSpace i) (toLp 2 x) ^ 2 := by
+-  let hT := (isSymmetric_toEuclideanLin_iff (A := A)).mpr hA
+-  let b := hT.eigenvectorBasis finrank_euclideanSpace
+-  let xE : EuclideanSpace ℝ n := toLp 2 x
+-  have hinter : euclInner xE (A.toEuclideanLin xE) = x ⬝ᵥ A *ᵥ x := by
+-    simp only [euclInner, xE]
+-    change Inner.inner (𝕜 := ℝ) (toLp 2 x) (toLp 2 (A *ᵥ x)) = _
+-    rw [EuclideanSpace.inner_toLp_toLp]
+-    simp [dotProduct_comm]
+-  have hTx : A.toEuclideanLin xE =
+-      ∑ i, (hA.eigenvalues₀ i * Inner.inner (𝕜 := ℝ) (b i) xE) • b i := by
+-    conv_lhs => rw [← b.sum_repr' xE]
+-    rw [map_sum]
+-    refine Finset.sum_congr rfl fun i _ => ?_
+-    rw [map_smul, hT.apply_eigenvectorBasis, smul_smul, mul_comm]
+-    rfl
+-  simp only [euclInner] at hinter ⊢
+-  rw [← hinter, hTx, inner_sum]
+-  refine Finset.sum_congr rfl fun i _ => ?_
+-  rw [real_inner_smul_right xE (b i), real_inner_comm xE]
+-  ring
+-
+-/-- On the orthogonal complement of a top eigenvector, the Rayleigh form is at
+-most `lambdaSecond`. -/
+-lemma dotProduct_mulVec_le_lambdaSecond_of_orthogonal (hA : A.IsHermitian)
+-    [Nontrivial n] {x : n → ℝ} (hx : ∑ k, x k ^ 2 = 1)
+-    (horth :
+-      euclInner ((isSymmetric_toEuclideanLin_iff.mpr hA).eigenvectorBasis finrank_euclideanSpace
+-          ⟨0, Fintype.card_pos⟩)
+-        (toLp 2 x) = 0) :
+-    x ⬝ᵥ A *ᵥ x ≤ lambdaSecond hA := by
+-  rw [dotProduct_mulVec_eq_sum_eigenvalues₀ hA]
+-  let b := (isSymmetric_toEuclideanLin_iff (A := A)).mpr hA |>.eigenvectorBasis
+-    finrank_euclideanSpace
+-  let i0 : Fin (Fintype.card n) := ⟨0, Fintype.card_pos⟩
+-  let i1 : Fin (Fintype.card n) := ⟨1, Fintype.one_lt_card⟩
+-  have hsumc : ∑ i, euclInner (b i) (toLp 2 x) ^ 2 = 1 := by
+-    have hnorm : ‖b.repr (toLp 2 x)‖ = ‖toLp 2 x‖ := b.repr.norm_map _
+-    have hE : ‖toLp 2 x‖ ^ 2 = ∑ k, x k ^ 2 :=
+-      EuclideanSpace.real_norm_sq_eq (toLp 2 x)
+-    have hrepr : ‖b.repr (toLp 2 x)‖ ^ 2 = ∑ i, euclInner (b i) (toLp 2 x) ^ 2 := by
+-      simpa [euclInner, OrthonormalBasis.repr_apply_apply] using
+-        EuclideanSpace.real_norm_sq_eq (b.repr (toLp 2 x))
+-    rw [← hrepr, hnorm, hE, hx]
+-  have hz : euclInner (b i0) (toLp 2 x) ^ 2 = 0 :=
+-    sq_eq_zero_iff.mpr (by simpa [i0, b] using horth)
+-  have hrest : ∑ i ∈ Finset.univ.erase i0, euclInner (b i) (toLp 2 x) ^ 2 = 1 := by
+-    have hsplit := Finset.sum_erase_add Finset.univ
+-      (fun i => euclInner (b i) (toLp 2 x) ^ 2) (Finset.mem_univ i0)
+-    rw [hsumc, hz, add_zero] at hsplit
+-    exact hsplit
+-  have hle : ∀ i ∈ Finset.univ.erase i0,
+-      hA.eigenvalues₀ i * euclInner (b i) (toLp 2 x) ^ 2 ≤
+-        lambdaSecond hA * euclInner (b i) (toLp 2 x) ^ 2 := by
+-    intro i hi
+-    have hi0 : i ≠ i0 := Finset.ne_of_mem_erase hi
+-    have h01 : i1 ≤ i := by
+-      refine Fin.le_iff_val_le_val.mpr ?_
+-      have : i.val ≠ 0 := fun h => hi0 (Fin.ext h)
+-      exact Nat.succ_le_of_lt (Nat.pos_of_ne_zero this)
+-    exact mul_le_mul_of_nonneg_right (hA.eigenvalues₀_antitone h01) (sq_nonneg _)
+-  calc
+-    ∑ i, hA.eigenvalues₀ i * euclInner (b i) (toLp 2 x) ^ 2
+-        = hA.eigenvalues₀ i0 * euclInner (b i0) (toLp 2 x) ^ 2 +
+-            ∑ i ∈ Finset.univ.erase i0,
+-              hA.eigenvalues₀ i * euclInner (b i) (toLp 2 x) ^ 2 := by
+-          rw [add_comm, Finset.sum_erase_add _ _ (Finset.mem_univ i0)]
+-    _ = ∑ i ∈ Finset.univ.erase i0,
+-          hA.eigenvalues₀ i * euclInner (b i) (toLp 2 x) ^ 2 := by
+-          simp [hz]
+-    _ ≤ ∑ i ∈ Finset.univ.erase i0,
+-          lambdaSecond hA * euclInner (b i) (toLp 2 x) ^ 2 :=
+-          Finset.sum_le_sum hle
+-    _ = lambdaSecond hA * ∑ i ∈ Finset.univ.erase i0,
+-          euclInner (b i) (toLp 2 x) ^ 2 := by
+-          rw [Finset.mul_sum]
+-    _ = lambdaSecond hA := by simp [hrest]
+-
+-/-- A unit vector in `span {e i, e j}` orthogonal to a top eigenvector. -/
+-lemma exists_l2_mem_span_single_pair_orthogonal (hA : A.IsHermitian)
+-    [Nontrivial n] {i j : n} (hij : i ≠ j) :
+-    ∃ x : n → ℝ,
+-      x ∈ Submodule.span ℝ ({Pi.single i (1 : ℝ), Pi.single j 1} : Set (n → ℝ)) ∧
+-        ∑ k, x k ^ 2 = 1 ∧
+-        euclInner ((isSymmetric_toEuclideanLin_iff.mpr hA).eigenvectorBasis finrank_euclideanSpace
+-            ⟨0, Fintype.card_pos⟩)
+-          (toLp 2 x) = 0 := by
+-  let b := (isSymmetric_toEuclideanLin_iff (A := A)).mpr hA |>.eigenvectorBasis
+-    finrank_euclideanSpace
+-  let u := ofLp (b ⟨0, Fintype.card_pos⟩)
+-  let y : n → ℝ :=
+-    if u i = 0 ∧ u j = 0 then Pi.single i (1 : ℝ)
+-    else u j • Pi.single i (1 : ℝ) + (-u i) • Pi.single j (1 : ℝ)
+-  have hyW : y ∈ Submodule.span ℝ
+-      ({Pi.single i (1 : ℝ), Pi.single j 1} : Set (n → ℝ)) := by
+-    dsimp [y]
+-    split_ifs
+-    · exact Submodule.subset_span (Set.mem_insert _ _)
+-    · refine Submodule.add_mem _ ?_ ?_
+-      · exact Submodule.smul_mem _ _ (Submodule.subset_span (Set.mem_insert _ _))
+-      · exact Submodule.smul_mem _ _
+-          (Submodule.subset_span (Set.mem_insert_of_mem _ (Set.mem_singleton _)))
+-  have hy0 : y ≠ 0 := by
+-    dsimp [y]
+-    split_ifs with hu
+-    · intro hy
+-      simpa using congrFun hy i
+-    · intro hy
+-      have hi := congrFun hy i
+-      have hj := congrFun hy j
+-      simp [Pi.single_eq_same, Pi.single_eq_of_ne hij, Pi.single_eq_of_ne hij.symm] at hi hj
+-      exact hu ⟨hj, hi⟩
+-  have hysum : ∑ k, y k ^ 2 ≠ 0 := by
+-    intro h
+-    apply hy0
+-    ext k
+-    have hk := (Finset.sum_eq_zero_iff_of_nonneg (fun _ _ => sq_nonneg _)).1 h k
+-      (Finset.mem_univ _)
+-    exact sq_eq_zero_iff.mp hk
+-  have hysum0 : 0 < ∑ k, y k ^ 2 :=
+-    lt_of_le_of_ne (Finset.sum_nonneg fun _ _ => sq_nonneg _) hysum.symm
+-  let s := Real.sqrt (∑ k, y k ^ 2)
+-  let x : n → ℝ := s⁻¹ • y
+-  refine ⟨x, Submodule.smul_mem _ _ hyW, ?_, ?_⟩
+-  · change ∑ k, (s⁻¹ * y k) ^ 2 = 1
+-    simp_rw [mul_pow, ← Finset.mul_sum]
+-    rw [inv_pow, Real.sq_sqrt (le_of_lt hysum0), inv_mul_cancel₀ hysum]
+-  · have hyorth : euclInner (b ⟨0, Fintype.card_pos⟩) (toLp 2 y) = 0 := by
+-      have huE : toLp 2 u = b ⟨0, Fintype.card_pos⟩ := by
+-        simp [u]
+-      have hinner : euclInner (toLp 2 u) (toLp 2 y) = y ⬝ᵥ u :=
+-        EuclideanSpace.inner_toLp_toLp (𝕜 := ℝ) u y
+-      rw [← huE, hinner]
+-      dsimp [y]
+-      split_ifs with hu
+-      · simp [dotProduct, Pi.single_apply, hu.1]
+-      · simp only [dotProduct, Pi.add_apply, Pi.smul_apply, smul_eq_mul, add_mul]
+-        rw [Finset.sum_add_distrib]
+-        simp [Pi.single_apply, mul_ite]
+-        ring
+-    have hxE : toLp 2 x = s⁻¹ • toLp 2 y := by
+-      simp [x]
+-    rw [hxE, euclInner_smul_right, hyorth, mul_zero]
+-
+-/-- Rayleigh values of unit vectors in `span {e i, e j}`. -/
+-def rayleighOnSpanPair (A : Matrix n n ℝ) (i j : n) : Set ℝ :=
+-  { t | ∃ x : n → ℝ,
+-      x ∈ Submodule.span ℝ ({Pi.single i (1 : ℝ), Pi.single j 1} : Set (n → ℝ)) ∧
+-        ∑ k, x k ^ 2 = 1 ∧ t = x ⬝ᵥ A *ᵥ x }
+-
+-lemma nonempty_rayleighOnSpanPair {i j : n} :
+-    (rayleighOnSpanPair A i j).Nonempty := by
+-  refine ⟨Pi.single i (1 : ℝ) ⬝ᵥ A *ᵥ Pi.single i 1,
+-    Pi.single i (1 : ℝ), Submodule.subset_span (Set.mem_insert _ _), ?_, rfl⟩
+-  rw [Fintype.sum_eq_single i]
+-  · simp
+-  · intro k hk
+-    simp [hk]
+-
+-lemma bddBelow_rayleighOnSpanPair {i j : n} :
+-    BddBelow (rayleighOnSpanPair A i j) := by
+-  refine ⟨-∑ a, ∑ b, |A a b|, ?_⟩
+-  rintro _ ⟨x, -, hx, rfl⟩
+-  have hx1 : ∀ k, |x k| ≤ 1 := fun k => by
+-    have : x k ^ 2 ≤ 1 :=
+-      (Finset.single_le_sum (fun _ _ => sq_nonneg _) (Finset.mem_univ k)).trans_eq hx
+-    exact (sq_le_one_iff_abs_le_one (a := x k)).1 this
+-  have habs : |x ⬝ᵥ A *ᵥ x| ≤ ∑ a, ∑ b, |A a b| := by
+-    rw [dot_mulVec_eq_sum_sum]
+-    refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
+-    rw [Finset.sum_comm]
+-    refine Finset.sum_le_sum fun b _ => (Finset.abs_sum_le_sum_abs _ _).trans ?_
+-    refine Finset.sum_le_sum fun a _ => ?_
+-    rw [abs_mul, abs_mul]
+-    calc
+-      |x a| * |A a b| * |x b| ≤ 1 * |A a b| * 1 := by gcongr <;> apply hx1
+-      _ = |A a b| := by simp
+-  exact neg_le_of_abs_le habs
+-
+-/-- **SP14.** Courant-Fischer comparison on a coordinate 2-plane:
+-`lambdaSecond` is at least the infimum of the Rayleigh form on `span {e i, e j}`. -/
+-lemma lambdaSecond_ge_sInf_span_single_pair (hA : A.IsHermitian)
+-    [Nontrivial n] {i j : n} (hij : i ≠ j) :
+-    sInf (rayleighOnSpanPair A i j) ≤ lambdaSecond hA := by
+-  obtain ⟨x, hxW, hx1, horth⟩ := exists_l2_mem_span_single_pair_orthogonal hA hij
+-  have hxle := dotProduct_mulVec_le_lambdaSecond_of_orthogonal hA hx1 horth
+-  have hmem : x ⬝ᵥ A *ᵥ x ∈ rayleighOnSpanPair A i j := ⟨x, hxW, hx1, rfl⟩
+-  exact (csInf_le bddBelow_rayleighOnSpanPair hmem).trans hxle
+-
+-/-- If the Rayleigh form is nonnegative on the coordinate 2-plane, then
+-`0 ≤ lambdaSecond`. -/
+-lemma lambdaSecond_nonneg_of_rayleighOnSpanPair_nonneg (hA : A.IsHermitian)
+-    [Nontrivial n] {i j : n} (hij : i ≠ j)
+-    (hnn : ∀ t ∈ rayleighOnSpanPair A i j, 0 ≤ t) :
+-    0 ≤ lambdaSecond hA :=
+-  (le_csInf nonempty_rayleighOnSpanPair hnn).trans
+-    (lambdaSecond_ge_sInf_span_single_pair hA hij)
+-
+-/-- If the quadratic form vanishes on `span {e i, e j}`, then `0 ≤ lambdaSecond`. -/
+-lemma lambdaSecond_nonneg_of_quadForm_eq_zero_on_span (hA : A.IsHermitian)
+-    [Nontrivial n] {i j : n} (hij : i ≠ j)
+-    (h0 : ∀ x : n → ℝ,
+-      x ∈ Submodule.span ℝ ({Pi.single i (1 : ℝ), Pi.single j 1} : Set (n → ℝ)) →
+-        x ⬝ᵥ A *ᵥ x = 0) :
+-    0 ≤ lambdaSecond hA := by
+-  refine lambdaSecond_nonneg_of_rayleighOnSpanPair_nonneg hA hij ?_
+-  rintro _ ⟨x, hxW, -, rfl⟩
+-  simp [h0 x hxW]
+-
+-lemma mem_span_single_pair_support {i j : n} {x : n → ℝ}
+-    (hx : x ∈ Submodule.span ℝ ({Pi.single i (1 : ℝ), Pi.single j 1} : Set (n → ℝ)))
+-    {v : n} (hvi : v ≠ i) (hvj : v ≠ j) : x v = 0 := by
+-  obtain ⟨a, b, rfl⟩ := Submodule.mem_span_pair.mp hx
+-  simp [hvi, hvj]
+-
+-/-! ### SP15 — `lambda2 G ≥ 0` if `G` is not complete -/
+-
+-lemma lambda2_eq_lambdaSecond [Nontrivial V] :
+-    lambda2 G = lambdaSecond (G.isHermitian_adjMatrix ℝ) :=
+-  rfl
+-
+-lemma lambda1_eq_lambdaMax [Nonempty V] :
+-    lambda1 G = lambdaMax (G.isHermitian_adjMatrix ℝ) :=
+-  rfl
+-
+-/-- **SP15.** A noncomplete graph on at least two vertices has `lambda2 ≥ 0`. -/
+-lemma lambda2_nonneg [Nontrivial V] (hG : G ≠ ⊤) : 0 ≤ lambda2 G := by
+-  obtain ⟨i, j, hij, hna⟩ := SimpleGraph.ne_top_iff_exists_not_adj.mp hG
+-  rw [lambda2_eq_lambdaSecond]
+-  refine lambdaSecond_nonneg_of_quadForm_eq_zero_on_span
+-    (G.isHermitian_adjMatrix ℝ) hij fun x hx => ?_
+-  refine dotProduct_mulVec_adjMatrix_eq_zero_of_supported_on_nonedge G hij hna ?_
+-  intro v hv
+-  simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hv
+-  exact mem_span_single_pair_support hx hv.1 hv.2
+-
+-/-! ### SP17 — `lambda1 G ≥ 0` -/
+-
+-/-! ### SP16 — `F(A_G) = lambda1^2 + lambda2^2` for noncomplete `G` -/
+-
+-lemma lambdaSecond_le_lambdaMax (hA : A.IsHermitian) [Nontrivial n] :
+-    lambdaSecond hA ≤ lambdaMax hA :=
+-  hA.eigenvalues₀_antitone (Fin.zero_le _)
+-
+-/-- **SP16.** On a noncomplete graph the positive-part squares in `F` are
+-`lambda1 ^ 2` and `lambda2 ^ 2`. -/
+-lemma F_adjMatrix_eq [Nontrivial V] (hG : G ≠ ⊤) :
+-    F (G.isHermitian_adjMatrix ℝ) = lambda1 G ^ 2 + lambda2 G ^ 2 := by
+-  let hA := G.isHermitian_adjMatrix ℝ
+-  have h2 : 0 ≤ lambdaSecond hA := by
+-    simpa [lambda2_eq_lambdaSecond] using lambda2_nonneg G hG
+-  have h1 : lambdaSecond hA ≤ lambdaMax hA := lambdaSecond_le_lambdaMax hA
+-  rw [F_eq, lambda1_eq_lambdaMax, lambda2_eq_lambdaSecond, max_eq_left (h2.trans h1),
+-    max_eq_left h2]
+-
+-end BN
+diff --git a/BN/Spectral/Variational.lean b/BN/Spectral/Variational.lean
+deleted file mode 100644
+index d868bac03..000000000
+--- a/BN/Spectral/Variational.lean
++++ /dev/null
+@@ -1,481 +0,0 @@
+-/-
+-Copyright (c) 2026 Shengtong Zhang. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Shengtong Zhang
+--/
+-
+-module
+-public import BN.Basic.Spectrum
+-public import BN.Basic.Inner
+-public import Mathlib.Analysis.InnerProductSpace.PiL2
+-public import Mathlib.Analysis.Real.Sqrt
+-public import Mathlib.LinearAlgebra.Matrix.Rank
+-@[expose] public section
+-
+-/-!
+-# Variational comparison for rank-at-most-two PSD matrices
+-
+-The two-dimensional variational bound on a pair of orthonormal Rayleigh
+-quotients, the rank-two spectral writing of a PSD matrix, and
+-`lem:variational` of `docs/sol.tex`.
+--/
+-
+-namespace BN
+-
+-open Matrix Finset
+-open scoped InnerProductSpace Matrix
+-
+-variable {n : Type*} [Fintype n] [DecidableEq n]
+-variable {B : Matrix n n ℝ}
+-
+-set_option linter.unusedSectionVars false
+-
+-noncomputable section
+-
+-/-! ### Coordinate form of the eigenbasis -/
+-
+-lemma eigenvectorBasis_dotProduct_self (hB : B.IsHermitian) (i : n) :
+-    (hB.eigenvectorBasis i : n → ℝ) ⬝ᵥ (hB.eigenvectorBasis i : n → ℝ) = 1 := by
+-  have hn : ‖hB.eigenvectorBasis i‖ = 1 := hB.eigenvectorBasis.orthonormal.1 i
+-  have hsq := EuclideanSpace.real_norm_sq_eq (hB.eigenvectorBasis i)
+-  simp [dotProduct, pow_two] at hsq ⊢
+-  simpa [hn] using hsq.symm
+-
+-lemma eigenvectorBasis_dotProduct (hB : B.IsHermitian) {i j : n} (hij : i ≠ j) :
+-    (hB.eigenvectorBasis i : n → ℝ) ⬝ᵥ (hB.eigenvectorBasis j : n → ℝ) = 0 := by
+-  have h0 : ⟪hB.eigenvectorBasis i, hB.eigenvectorBasis j⟫_ℝ = 0 :=
+-    hB.eigenvectorBasis.orthonormal.inner_eq_zero hij
+-  rw [EuclideanSpace.inner_eq_star_dotProduct] at h0
+-  simpa [dotProduct_comm] using h0
+-
+-lemma parseval_eigenvectorBasis (hB : B.IsHermitian) (x : n → ℝ) :
+-    ∑ k, ((hB.eigenvectorBasis k : n → ℝ) ⬝ᵥ x) ^ 2 = x ⬝ᵥ x := by
+-  have h := OrthonormalBasis.sum_sq_inner_right (hB.eigenvectorBasis) (WithLp.toLp 2 x)
+-  have hinter (k : n) :
+-      ⟪hB.eigenvectorBasis k, WithLp.toLp 2 x⟫_ℝ =
+-        (hB.eigenvectorBasis k : n → ℝ) ⬝ᵥ x := by
+-    rw [EuclideanSpace.inner_eq_star_dotProduct]
+-    simp [dotProduct_comm]
+-  simp only [hinter] at h
+-  have hnorm : ‖WithLp.toLp 2 x‖ ^ 2 = x ⬝ᵥ x := by
+-    rw [EuclideanSpace.real_norm_sq_eq]
+-    simp [dotProduct, pow_two]
+-  exact h.trans hnorm
+-
+-lemma vecMulVec_mulVec_real (u v x : n → ℝ) :
+-    vecMulVec u v *ᵥ x = (v ⬝ᵥ x) • u := by
+-  rw [vecMulVec_mulVec, op_smul_eq_smul]
+-
+-lemma isHermitian_quadratic (hB : B.IsHermitian) (x : n → ℝ) :
+-    x ⬝ᵥ B *ᵥ x =
+-      ∑ k, hB.eigenvalues k *
+-        ((hB.eigenvectorBasis k : n → ℝ) ⬝ᵥ x) ^ 2 := by
+-  have hx :
+-      B = ∑ k, hB.eigenvalues k •
+-        vecMulVec (hB.eigenvectorBasis k : n → ℝ)
+-          (hB.eigenvectorBasis k : n → ℝ) := by
+-    simpa [IsHermitian.eigenvectorUnitary_col_eq] using
+-      isHermitian_eq_sum_smul_vecMulVec hB
+-  conv_lhs => rw [hx]
+-  rw [sum_mulVec, dotProduct_sum]
+-  refine Finset.sum_congr rfl fun k _ ↦ ?_
+-  rw [smul_mulVec, dotProduct_smul, vecMulVec_mulVec_real, dotProduct_smul]
+-  rw [dotProduct_comm x]
+-  ring
+-
+-lemma eigenvalues_le_lambdaMax [Nonempty n] (hB : B.IsHermitian) (i : n) :
+-    hB.eigenvalues i ≤ lambdaMax hB := by
+-  have : hB.eigenvalues₀ ((Fintype.equivOfCardEq (Fintype.card_fin (Fintype.card n))).symm i) ≤
+-      hB.eigenvalues₀ ⟨0, Fintype.card_pos⟩ :=
+-    hB.eigenvalues₀_antitone (Fin.zero_le _)
+-  simpa [IsHermitian.eigenvalues, lambdaMax, eigs₀] using this
+-
+-lemma rayleigh_le_lambdaMax [Nonempty n] (hB : B.IsHermitian) {u : n → ℝ}
+-    (hu : u ⬝ᵥ u = 1) :
+-    u ⬝ᵥ B *ᵥ u ≤ lambdaMax hB := by
+-  rw [isHermitian_quadratic hB]
+-  have hle :
+-      ∑ k, hB.eigenvalues k * ((hB.eigenvectorBasis k : n → ℝ) ⬝ᵥ u) ^ 2 ≤
+-        ∑ k, lambdaMax hB * ((hB.eigenvectorBasis k : n → ℝ) ⬝ᵥ u) ^ 2 :=
+-    Finset.sum_le_sum fun k _ ↦
+-      mul_le_mul_of_nonneg_right (eigenvalues_le_lambdaMax hB k) (sq_nonneg _)
+-  refine hle.trans_eq ?_
+-  rw [← Finset.mul_sum, parseval_eigenvectorBasis, hu, mul_one]
+-
+-/-! ### CG02: rank-two writing -/
+-
+-lemma exists_rankTwo_writing [Nontrivial n] {X : Matrix n n ℝ}
+-    (hX : X.PosSemidef) (hr : X.rank ≤ 2) :
+-    ∃ (u v : n → ℝ) (α β : ℝ),
+-      0 ≤ β ∧ β ≤ α ∧ u ⬝ᵥ u = 1 ∧ v ⬝ᵥ v = 1 ∧ u ⬝ᵥ v = 0 ∧
+-        X = α • vecMulVec u u + β • vecMulVec v v := by
+-  let hA := hX.isHermitian
+-  let e := Fintype.equivOfCardEq (Fintype.card_fin (Fintype.card n))
+-  let i0 : n := e ⟨0, Fintype.card_pos⟩
+-  let i1 : n := e ⟨1, Fintype.one_lt_card⟩
+-  let u : n → ℝ := hA.eigenvectorBasis i0
+-  let v : n → ℝ := hA.eigenvectorBasis i1
+-  let α := hA.eigenvalues i0
+-  let β := hA.eigenvalues i1
+-  have hne : i0 ≠ i1 := by
+-    intro h
+-    have := congrArg Fin.val (e.injective h)
+-    exact Nat.zero_ne_one this
+-  have hβ : 0 ≤ β := hX.eigenvalues_nonneg i1
+-  have hβα : β ≤ α := by
+-    have : hA.eigenvalues₀ ⟨1, Fintype.one_lt_card⟩ ≤
+-        hA.eigenvalues₀ ⟨0, Fintype.card_pos⟩ :=
+-      hA.eigenvalues₀_antitone (Fin.zero_le _)
+-    simpa [α, β, i0, i1, e, IsHermitian.eigenvalues] using this
+-  have hu : u ⬝ᵥ u = 1 := eigenvectorBasis_dotProduct_self hA i0
+-  have hv : v ⬝ᵥ v = 1 := eigenvectorBasis_dotProduct_self hA i1
+-  have huv : u ⬝ᵥ v = 0 := eigenvectorBasis_dotProduct hA hne
+-  have htail (k : n) (hk0 : k ≠ i0) (hk1 : k ≠ i1) : hA.eigenvalues k = 0 := by
+-    by_contra hnz
+-    have hkpos : 0 < hA.eigenvalues k :=
+-      lt_of_le_of_ne (hX.eigenvalues_nonneg k) (Ne.symm hnz)
+-    have h0 : e.symm k ≠ ⟨0, Fintype.card_pos⟩ := by
+-      intro h
+-      apply hk0
+-      simpa [i0, e] using (e.apply_symm_apply k).symm.trans (congrArg e h)
+-    have h1 : e.symm k ≠ ⟨1, Fintype.one_lt_card⟩ := by
+-      intro h
+-      apply hk1
+-      simpa [i1, e] using (e.apply_symm_apply k).symm.trans (congrArg e h)
+-    have hval : 2 ≤ (e.symm k).val := by
+-      have : (e.symm k).val ≠ 0 ∧ (e.symm k).val ≠ 1 :=
+-        ⟨fun h ↦ h0 (Fin.ext h), fun h ↦ h1 (Fin.ext h)⟩
+-      omega
+-    have h0pos : 0 < hA.eigenvalues i0 := by
+-      have : hA.eigenvalues₀ ⟨0, Fintype.card_pos⟩ ≥ hA.eigenvalues₀ (e.symm k) :=
+-        hA.eigenvalues₀_antitone (Fin.zero_le _)
+-      have : α ≥ hA.eigenvalues k := by
+-        simpa [α, i0, e, IsHermitian.eigenvalues] using this
+-      exact lt_of_lt_of_le hkpos this
+-    have h1pos : 0 < hA.eigenvalues i1 := by
+-      have : hA.eigenvalues₀ ⟨1, Fintype.one_lt_card⟩ ≥ hA.eigenvalues₀ (e.symm k) :=
+-        hA.eigenvalues₀_antitone
+-          (Fin.le_iff_val_le_val.mpr (by
+-            change 1 ≤ (e.symm k).val
+-            omega))
+-      have : β ≥ hA.eigenvalues k := by
+-        simpa [β, i1, e, IsHermitian.eigenvalues] using this
+-      exact lt_of_lt_of_le hkpos this
+-    have hsubset :
+-        ({i0, i1, k} : Finset n) ⊆
+-          univ.filter (fun j ↦ hA.eigenvalues j ≠ 0) := by
+-      intro j hj
+-      simp only [mem_insert, mem_singleton] at hj
+-      simp only [mem_filter, mem_univ, true_and]
+-      rcases hj with rfl | rfl | rfl
+-      · exact h0pos.ne'
+-      · exact h1pos.ne'
+-      · exact hnz
+-    have hcard3 : ({i0, i1, k} : Finset n).card = 3 := by
+-      have h01 : i0 ∉ ({i1, k} : Finset n) := by
+-        simp [mem_insert, mem_singleton, hne, hk0.symm]
+-      have h1k : i1 ∉ ({k} : Finset n) := by
+-        simp [mem_singleton, hk1.symm]
+-      rw [card_insert_of_notMem h01, card_insert_of_notMem h1k, card_singleton]
+-    have hle := card_le_card hsubset
+-    have hfilter :
+-        (univ.filter (fun j ↦ hA.eigenvalues j ≠ 0)).card =
+-          Fintype.card {j // hA.eigenvalues j ≠ 0} :=
+-      (Fintype.card_subtype _).symm
+-    have hrank : Fintype.card {j // hA.eigenvalues j ≠ 0} ≤ 2 := by
+-      rwa [← hA.rank_eq_card_non_zero_eigs]
+-    omega
+-  refine ⟨u, v, α, β, hβ, hβα, hu, hv, huv, ?_⟩
+-  have hx :
+-      X = ∑ k, hA.eigenvalues k •
+-        vecMulVec (hA.eigenvectorBasis k : n → ℝ)
+-          (hA.eigenvectorBasis k : n → ℝ) := by
+-    simpa [IsHermitian.eigenvectorUnitary_col_eq] using
+-      isHermitian_eq_sum_smul_vecMulVec hA
+-  have hdecomp :=
+-    (sum_add_sum_compl ({i0, i1} : Finset n)
+-      (fun k => hA.eigenvalues k •
+-        vecMulVec (hA.eigenvectorBasis k : n → ℝ)
+-          (hA.eigenvectorBasis k : n → ℝ))).symm
+-  have hpair :
+-      ∑ k ∈ ({i0, i1} : Finset n),
+-          hA.eigenvalues k •
+-            vecMulVec (hA.eigenvectorBasis k : n → ℝ)
+-              (hA.eigenvectorBasis k : n → ℝ) =
+-        α • vecMulVec u u + β • vecMulVec v v := by
+-    rw [sum_pair hne]
+-  have hrest :
+-      ∑ k ∈ ({i0, i1} : Finset n)ᶜ,
+-          hA.eigenvalues k •
+-            vecMulVec (hA.eigenvectorBasis k : n → ℝ)
+-              (hA.eigenvectorBasis k : n → ℝ) =
+-        0 := by
+-    refine sum_eq_zero fun k hk ↦ ?_
+-    have hk' : k ≠ i0 ∧ k ≠ i1 := by
+-      simpa [mem_compl, mem_insert, mem_singleton] using hk
+-    simp [htail k hk'.1 hk'.2]
+-  rw [hx, hdecomp, hpair, hrest, add_zero]
+-
+-/-! ### CG01: two-dimensional variational comparison -/
+-
+-lemma bessel_two {u v x : n → ℝ}
+-    (hu : u ⬝ᵥ u = 1) (hv : v ⬝ᵥ v = 1) (huv : u ⬝ᵥ v = 0) :
+-    (u ⬝ᵥ x) ^ 2 + (v ⬝ᵥ x) ^ 2 ≤ x ⬝ᵥ x := by
+-  set a := u ⬝ᵥ x
+-  set b := v ⬝ᵥ x
+-  set w := a • u + b • v
+-  set y := x - w
+-  have hy : 0 ≤ y ⬝ᵥ y := by
+-    simp only [dotProduct]
+-    exact sum_nonneg fun _ _ ↦ mul_self_nonneg _
+-  have hxu : x ⬝ᵥ u = a := by rw [dotProduct_comm]
+-  have hxv : x ⬝ᵥ v = b := by rw [dotProduct_comm]
+-  have hxw : x ⬝ᵥ w = a ^ 2 + b ^ 2 := by
+-    simp [w, dotProduct_add, dotProduct_smul, hxu, hxv, pow_two]
+-  have hvu : v ⬝ᵥ u = 0 := by rw [dotProduct_comm, huv]
+-  have hww : w ⬝ᵥ w = a ^ 2 + b ^ 2 := by
+-    simp [w, dotProduct_add, dotProduct_smul, smul_dotProduct, hu, hv, huv, hvu]
+-    ring
+-  have hexpand : y ⬝ᵥ y = x ⬝ᵥ x - 2 * (x ⬝ᵥ w) + w ⬝ᵥ w := by
+-    simp [y, dotProduct_sub, dotProduct_comm w x]
+-    ring
+-  linarith
+-
+-lemma sum_antitone_le_two_largest {m : ℕ} (hm : 2 ≤ m)
+-    (lam q : Fin m → ℝ) (hlam : Antitone lam)
+-    (hq0 : ∀ i, 0 ≤ q i) (hq1 : ∀ i, q i ≤ 1) (hsum : ∑ i, q i = 2) :
+-    ∑ i, lam i * q i ≤ lam ⟨0, by omega⟩ + lam ⟨1, by omega⟩ := by
+-  set a : Fin m := ⟨0, by omega⟩
+-  set b : Fin m := ⟨1, by omega⟩
+-  have hab : a ≠ b := by
+-    intro h
+-    exact Nat.zero_ne_one (congrArg Fin.val h)
+-  have hdecomp :=
+-    (sum_add_sum_compl ({a, b} : Finset (Fin m)) (fun i ↦ lam i * q i)).symm
+-  rw [hdecomp, sum_pair hab]
+-  have hlamb (i : Fin m) (hi : i ∈ ({a, b} : Finset (Fin m))ᶜ) : lam i ≤ lam b := by
+-    have hib : i ≠ a ∧ i ≠ b := by
+-      simpa [mem_compl, mem_insert, mem_singleton] using hi
+-    have : b ≤ i := Fin.le_iff_val_le_val.mpr (by
+-      change 1 ≤ i.val
+-      have : i.val ≠ 0 ∧ i.val ≠ 1 :=
+-        ⟨fun h ↦ hib.1 (Fin.ext h), fun h ↦ hib.2 (Fin.ext h)⟩
+-      omega)
+-    exact hlam this
+-  have hrest :
+-      ∑ i ∈ ({a, b} : Finset (Fin m))ᶜ, lam i * q i ≤
+-        lam b * ∑ i ∈ ({a, b} : Finset (Fin m))ᶜ, q i := by
+-    rw [mul_sum]
+-    exact sum_le_sum fun i hi ↦ mul_le_mul_of_nonneg_right (hlamb i hi) (hq0 i)
+-  have hsum_rest :
+-      ∑ i ∈ ({a, b} : Finset (Fin m))ᶜ, q i = 2 - q a - q b := by
+-    have := (sum_add_sum_compl ({a, b} : Finset (Fin m)) q).symm
+-    simp only [sum_pair hab] at this
+-    linarith [hsum, this]
+-  have hstep :
+-      lam a * q a + lam b * q b +
+-          lam b * ∑ i ∈ ({a, b} : Finset (Fin m))ᶜ, q i =
+-        2 * lam b + (lam a - lam b) * q a := by
+-    rw [hsum_rest]
+-    ring
+-  have hlamab : lam b ≤ lam a :=
+-    hlam (show a ≤ b from Fin.le_iff_val_le_val.mpr (by simp [a, b]))
+-  have hfinal :
+-      2 * lam b + (lam a - lam b) * q a ≤ lam a + lam b := by
+-    have := mul_le_mul_of_nonneg_left (hq1 a) (sub_nonneg.mpr hlamab)
+-    linarith
+-  linarith [hrest, hstep, hfinal]
+-
+-lemma orthonormal_pair_le_lambdaMax_add_lambdaSecond [Nontrivial n]
+-    (hB : B.IsHermitian) {u v : n → ℝ}
+-    (hu : u ⬝ᵥ u = 1) (hv : v ⬝ᵥ v = 1) (huv : u ⬝ᵥ v = 0) :
+-    u ⬝ᵥ B *ᵥ u + v ⬝ᵥ B *ᵥ v ≤ lambdaMax hB + lambdaSecond hB := by
+-  rw [isHermitian_quadratic hB, isHermitian_quadratic hB, ← sum_add_distrib]
+-  let e := Fintype.equivOfCardEq (Fintype.card_fin (Fintype.card n))
+-  let p : n → ℝ := fun k ↦
+-    ((hB.eigenvectorBasis k : n → ℝ) ⬝ᵥ u) ^ 2 +
+-      ((hB.eigenvectorBasis k : n → ℝ) ⬝ᵥ v) ^ 2
+-  have hterm (k : n) :
+-      hB.eigenvalues k * ((hB.eigenvectorBasis k : n → ℝ) ⬝ᵥ u) ^ 2 +
+-          hB.eigenvalues k * ((hB.eigenvectorBasis k : n → ℝ) ⬝ᵥ v) ^ 2 =
+-        hB.eigenvalues k * p k := by
+-    simp [p]
+-    ring
+-  simp_rw [hterm]
+-  let q : Fin (Fintype.card n) → ℝ := fun i ↦ p (e i)
+-  have hsumq : ∑ i, q i = 2 := by
+-    have hre := Fintype.sum_equiv e (fun i => p (e i)) p (fun _ => rfl)
+-    have hu' := parseval_eigenvectorBasis hB u
+-    have hv' := parseval_eigenvectorBasis hB v
+-    have hsump : ∑ k, p k = 2 := by
+-      simp only [p, sum_add_distrib]
+-      rw [hu', hv', hu, hv]
+-      norm_num
+-    simpa [q] using hre.trans hsump
+-  have hq0 (i : Fin (Fintype.card n)) : 0 ≤ q i :=
+-    add_nonneg (sq_nonneg _) (sq_nonneg _)
+-  have hq1 (i : Fin (Fintype.card n)) : q i ≤ 1 := by
+-    have := bessel_two hu hv huv (x := (hB.eigenvectorBasis (e i) : n → ℝ))
+-    simpa [q, p, eigenvectorBasis_dotProduct_self hB, dotProduct_comm] using this
+-  have hreindex :
+-      ∑ k, hB.eigenvalues k * p k = ∑ i, hB.eigenvalues₀ i * q i := by
+-    have := Fintype.sum_equiv e
+-      (fun i ↦ hB.eigenvalues (e i) * p (e i))
+-      (fun k ↦ hB.eigenvalues k * p k) (fun _ ↦ rfl)
+-    refine this.symm.trans (Finset.sum_congr rfl fun i _ ↦ ?_)
+-    simp [q, IsHermitian.eigenvalues, e]
+-  rw [hreindex]
+-  have htwo : 2 ≤ Fintype.card n := Nat.succ_le_of_lt Fintype.one_lt_card
+-  have hbound :=
+-    sum_antitone_le_two_largest htwo hB.eigenvalues₀ q hB.eigenvalues₀_antitone
+-      hq0 hq1 hsumq
+-  simpa [lambdaMax, lambdaSecond, eigs₀] using hbound
+-
+-/-! ### Inner products against rank-one terms -/
+-
+-lemma inner_vecMulVec (C : Matrix n n ℝ) (u : n → ℝ) :
+-    inner C (vecMulVec u u) = u ⬝ᵥ C *ᵥ u := by
+-  rw [inner_eq_sum]
+-  simp_rw [vecMulVec_apply]
+-  have h : ∑ i, ∑ j, C i j * (u i * u j) = ∑ i, u i * ∑ j, C i j * u j := by
+-    refine Finset.sum_congr rfl fun i _ ↦ ?_
+-    calc
+-      ∑ j, C i j * (u i * u j) = ∑ j, u i * (C i j * u j) := by
+-        refine Finset.sum_congr rfl fun j _ ↦ ?_
+-        ring
+-      _ = u i * ∑ j, C i j * u j := (Finset.mul_sum _ _ _).symm
+-  rw [h]
+-  simp [dotProduct, mulVec]
+-
+-lemma inner_smul_vecMulVec (r : ℝ) (C : Matrix n n ℝ) (u : n → ℝ) :
+-    inner C (r • vecMulVec u u) = r * (u ⬝ᵥ C *ᵥ u) := by
+-  rw [inner_smul_right, inner_vecMulVec]
+-
+-lemma inner_vecMulVec_vecMulVec (u v : n → ℝ) :
+-    inner (vecMulVec u u) (vecMulVec v v) = (u ⬝ᵥ v) ^ 2 := by
+-  rw [inner_vecMulVec, vecMulVec_mulVec_real, dotProduct_smul, smul_eq_mul,
+-    mul_comm, dotProduct_comm, pow_two]
+-
+-lemma inner_rankTwo (C : Matrix n n ℝ) (u v : n → ℝ) (α β : ℝ) :
+-    inner C (α • vecMulVec u u + β • vecMulVec v v) =
+-      α * (u ⬝ᵥ C *ᵥ u) + β * (v ⬝ᵥ C *ᵥ v) := by
+-  simp [inner_add_right, inner_smul_vecMulVec]
+-
+-lemma inner_self_rankTwo {u v : n → ℝ} (hu : u ⬝ᵥ u = 1) (hv : v ⬝ᵥ v = 1)
+-    (huv : u ⬝ᵥ v = 0) (α β : ℝ) :
+-    inner (α • vecMulVec u u + β • vecMulVec v v)
+-        (α • vecMulVec u u + β • vecMulVec v v) =
+-      α ^ 2 + β ^ 2 := by
+-  have hvu : v ⬝ᵥ u = 0 := by rw [dotProduct_comm, huv]
+-  simp only [inner_add_left, inner_add_right, inner_smul_left, inner_smul_right]
+-  simp [inner_vecMulVec_vecMulVec, hu, hv, huv, hvu]
+-  ring
+-
+-lemma cauchySchwarz_two (α β a b : ℝ) :
+-    α * a + β * b ≤
+-      Real.sqrt (α ^ 2 + β ^ 2) * Real.sqrt (a ^ 2 + b ^ 2) := by
+-  have hcs : (α * a + β * b) ^ 2 ≤ (α ^ 2 + β ^ 2) * (a ^ 2 + b ^ 2) := by
+-    nlinarith [sq_nonneg (α * b - β * a)]
+-  have hnn : 0 ≤ α ^ 2 + β ^ 2 := add_nonneg (sq_nonneg _) (sq_nonneg _)
+-  calc
+-    α * a + β * b
+-        ≤ |α * a + β * b| := le_abs_self _
+-    _ = Real.sqrt ((α * a + β * b) ^ 2) := (Real.sqrt_sq_eq_abs _).symm
+-    _ ≤ Real.sqrt ((α ^ 2 + β ^ 2) * (a ^ 2 + b ^ 2)) := Real.sqrt_le_sqrt hcs
+-    _ = Real.sqrt (α ^ 2 + β ^ 2) * Real.sqrt (a ^ 2 + b ^ 2) :=
+-      Real.sqrt_mul hnn _
+-
+-/-! ### Order-one writing -/
+-
+-lemma exists_card_one_writing (hn : Fintype.card n = 1) {X : Matrix n n ℝ}
+-    (hX : X.PosSemidef) :
+-    ∃ (u : n → ℝ) (α : ℝ),
+-      0 ≤ α ∧ u ⬝ᵥ u = 1 ∧ X = α • vecMulVec u u := by
+-  haveI : Nonempty n := Fintype.card_pos_iff.mp (by rw [hn]; norm_num)
+-  let hA := hX.isHermitian
+-  let i0 : n := Classical.arbitrary n
+-  let u : n → ℝ := hA.eigenvectorBasis i0
+-  let α := hA.eigenvalues i0
+-  have huniq : ∀ k : n, k = i0 := fun k ↦
+-    Fintype.card_le_one_iff.mp (by rw [hn]) k i0
+-  refine ⟨u, α, hX.eigenvalues_nonneg i0, eigenvectorBasis_dotProduct_self hA i0, ?_⟩
+-  have hx :
+-      X = ∑ k, hA.eigenvalues k •
+-        vecMulVec (hA.eigenvectorBasis k : n → ℝ)
+-          (hA.eigenvectorBasis k : n → ℝ) := by
+-    simpa [IsHermitian.eigenvectorUnitary_col_eq] using
+-      isHermitian_eq_sum_smul_vecMulVec hA
+-  rw [hx, Fintype.sum_eq_single i0]
+-  intro k hk
+-  exact absurd (huniq k) hk
+-
+-/-! ### CG03: `lem:variational` -/
+-
+-lemma variational_lemma (hB : B.IsHermitian) {X : Matrix n n ℝ}
+-    (hX : X.PosSemidef) (hr : X.rank ≤ 2) :
+-    inner B X ≤ Real.sqrt (F hB) * Real.sqrt (inner X X) := by
+-  by_cases hnt : Nontrivial n
+-  · haveI := hnt
+-    obtain ⟨u, v, α, β, hβ, hβα, hu, hv, huv, hXeq⟩ :=
+-      exists_rankTwo_writing hX hr
+-    have hα : 0 ≤ α := hβ.trans hβα
+-    rw [hXeq, inner_rankTwo, inner_self_rankTwo hu hv huv]
+-    have hcomb :
+-        α * (u ⬝ᵥ B *ᵥ u) + β * (v ⬝ᵥ B *ᵥ v) =
+-          (α - β) * (u ⬝ᵥ B *ᵥ u) +
+-            β * (u ⬝ᵥ B *ᵥ u + v ⬝ᵥ B *ᵥ v) := by ring
+-    rw [hcomb]
+-    have hR := rayleigh_le_lambdaMax hB hu
+-    have h2 := orthonormal_pair_le_lambdaMax_add_lambdaSecond hB hu hv huv
+-    have hle :
+-        (α - β) * (u ⬝ᵥ B *ᵥ u) +
+-            β * (u ⬝ᵥ B *ᵥ u + v ⬝ᵥ B *ᵥ v) ≤
+-          (α - β) * lambdaMax hB + β * (lambdaMax hB + lambdaSecond hB) :=
+-      add_le_add (mul_le_mul_of_nonneg_left hR (sub_nonneg.mpr hβα))
+-        (mul_le_mul_of_nonneg_left h2 hβ)
+-    have hsimp :
+-        (α - β) * lambdaMax hB + β * (lambdaMax hB + lambdaSecond hB) =
+-          α * lambdaMax hB + β * lambdaSecond hB := by ring
+-    refine (hle.trans_eq hsimp).trans ?_
+-    have hpos :
+-        α * lambdaMax hB + β * lambdaSecond hB ≤
+-          α * max (lambdaMax hB) 0 + β * max (lambdaSecond hB) 0 :=
+-      add_le_add (mul_le_mul_of_nonneg_left (le_max_left _ _) hα)
+-        (mul_le_mul_of_nonneg_left (le_max_left _ _) hβ)
+-    refine hpos.trans ?_
+-    have hCS := cauchySchwarz_two α β (max (lambdaMax hB) 0) (max (lambdaSecond hB) 0)
+-    have hF : F hB = (max (lambdaMax hB) 0) ^ 2 + (max (lambdaSecond hB) 0) ^ 2 :=
+-      F_eq hB
+-    simpa [hF, mul_comm] using hCS
+-  · have hcard : Fintype.card n ≤ 1 :=
+-      Nat.not_lt.mp (mt Fintype.one_lt_card_iff_nontrivial.mp hnt)
+-    by_cases hpos : 0 < Fintype.card n
+-    · have hn : Fintype.card n = 1 := le_antisymm hcard hpos
+-      haveI : Nonempty n := Fintype.card_pos_iff.mp hpos
+-      obtain ⟨u, α, hα, hu, hXeq⟩ := exists_card_one_writing hn hX
+-      rw [hXeq, inner_smul_vecMulVec]
+-      have hXX : inner (α • vecMulVec u u) (α • vecMulVec u u) = α ^ 2 := by
+-        simp [inner_smul_left, inner_smul_right, inner_vecMulVec_vecMulVec, hu, pow_two]
+-      rw [hXX]
+-      have hR := rayleigh_le_lambdaMax hB hu
+-      have hle : α * (u ⬝ᵥ B *ᵥ u) ≤ α * max (lambdaMax hB) 0 :=
+-        mul_le_mul_of_nonneg_left (hR.trans (le_max_left _ _)) hα
+-      refine hle.trans ?_
+-      have hF : F hB = (max (lambdaMax hB) 0) ^ 2 := by
+-        unfold F lambdaMax eigs₀
+-        have hz : 0 < Fintype.card n := hpos
+-        have h1 : ¬ 1 < Fintype.card n := by rw [hn]; norm_num
+-        rw [dif_pos hz, dif_neg h1]
+-      have hCS := cauchySchwarz_two α 0 (max (lambdaMax hB) 0) 0
+-      simpa [hF, mul_comm] using hCS
+-    · have hF : F hB = 0 := by
+-        unfold F
+-        rw [dif_neg hpos]
+-      have hinter : inner B X = 0 := by
+-        have : IsEmpty n := Fintype.card_eq_zero_iff.mp (Nat.eq_zero_of_not_pos hpos)
+-        simp [inner_eq_sum]
+-      simp [hF, hinter]
+-
+-end
+-
+-end BN
+diff --git a/KKP/Bridge.lean b/KKP/Bridge.lean
+deleted file mode 100644
+index 57b65330c..000000000
+--- a/KKP/Bridge.lean
++++ /dev/null
+@@ -1,259 +0,0 @@
+-module
+-public import Mathlib
+-public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
+-@[expose] public section
+-
+-/-!
+-# The tripartite graph and clique joined by a bridge
+-
+-The vertices are three classes of size `s`, together with four clique vertices.
+-Only the vertices with zero coordinates are joined across the two components.
+-All forbidden copies mean injective graph homomorphisms, hence need not be induced.
+--/
+-
+-namespace KKP
+-
+-/-- Vertices of the graph `K_{s,s,s}` joined to `K₄`. -/
+-abbrev BridgeVertex (s : ℕ) := (Fin 3 × Fin s) ⊕ Fin 4
+-
+-/-- The literal adjacency relation: tripartite edges, clique edges, and one bridge. -/
+-def bridgeAdj (s : ℕ) : BridgeVertex s → BridgeVertex s → Prop
+-  | .inl (i, _), .inl (j, _) => i ≠ j
+-  | .inr a, .inr b => a ≠ b
+-  | .inl (i, a), .inr b => i.val = 0 ∧ a.val = 0 ∧ b.val = 0
+-  | .inr b, .inl (i, a) => i.val = 0 ∧ a.val = 0 ∧ b.val = 0
+-
+-/-- The connected counterexample family, with a single bridge between its components. -/
+-def bridgeGraph (s : ℕ) : SimpleGraph (BridgeVertex s) where
+-  Adj := bridgeAdj s
+-  symm := ⟨fun v w => match v, w with
+-    | .inl (_, _), .inl (_, _) => fun h => Ne.symm h
+-    | .inr _, .inr _ => fun h => Ne.symm h
+-    | .inl (_, _), .inr _ => fun h => h
+-    | .inr _, .inl (_, _) => fun h => h⟩
+-  loopless := ⟨fun v => match v with
+-    | .inl (_, _) => fun h => h rfl
+-    | .inr _ => fun h => h rfl⟩
+-
+-instance bridgeAdjDecidable (s : ℕ) : DecidableRel (bridgeGraph s).Adj :=
+-  fun v w => match v, w with
+-    | .inl (i, _), .inl (j, _) => inferInstanceAs (Decidable (i ≠ j))
+-    | .inr a, .inr b => inferInstanceAs (Decidable (a ≠ b))
+-    | .inl (i, a), .inr b =>
+-      inferInstanceAs (Decidable (i.val = 0 ∧ a.val = 0 ∧ b.val = 0))
+-    | .inr b, .inl (i, a) =>
+-      inferInstanceAs (Decidable (i.val = 0 ∧ a.val = 0 ∧ b.val = 0))
+-
+-/-- The forbidden graph `K₅` with just the edge between vertices 3 and 4 removed. -/
+-def forbiddenGraph : SimpleGraph (Fin 5) where
+-  Adj i j := i ≠ j ∧ ¬ (3 ≤ i.val ∧ 3 ≤ j.val)
+-  symm := ⟨fun i j h => ⟨Ne.symm h.1, fun hji => h.2 ⟨hji.2, hji.1⟩⟩⟩
+-  loopless := ⟨fun i h => h.1 rfl⟩
+-
+-instance forbiddenAdjDecidable : DecidableRel forbiddenGraph.Adj :=
+-  fun i j => inferInstanceAs (Decidable (i ≠ j ∧ ¬ (3 ≤ i.val ∧ 3 ≤ j.val)))
+-
+-/-- Every edge of the forbidden graph is in a triangle. -/
+-theorem forbidden_edge_triangle {i j : Fin 5} (h : forbiddenGraph.Adj i j) :
+-    ∃ k : Fin 5, forbiddenGraph.Adj i k ∧ forbiddenGraph.Adj j k := by
+-  revert i j
+-  decide +kernel
+-
+-/-- For a positive class size, every vertex can reach clique vertex zero. -/
+-theorem bridgeGraph_connected (s : ℕ) (hs : 0 < s) : (bridgeGraph s).Connected := by
+-  let a : Fin s := ⟨0, hs⟩
+-  apply (SimpleGraph.connected_iff_exists_forall_reachable (bridgeGraph s)).mpr
+-  refine ⟨.inr 0, ?_⟩
+-  intro w
+-  cases w with
+-  | inr b =>
+-    by_cases hb : b = 0
+-    · subst b; exact SimpleGraph.Reachable.rfl
+-    · exact SimpleGraph.Adj.reachable (by simpa [bridgeGraph, bridgeAdj] using Ne.symm hb)
+-  | inl p =>
+-    rcases p with ⟨i, b⟩
+-    have hbridge : (bridgeGraph s).Reachable (.inr 0) (.inl (0, a)) :=
+-      SimpleGraph.Adj.reachable (by simp [bridgeGraph, bridgeAdj, a])
+-    by_cases hi : i = 0
+-    · subst i
+-      have h₁ : (bridgeGraph s).Adj (.inl (0, a)) (.inl (1, a)) := by
+-        simp [bridgeGraph, bridgeAdj]
+-      have h₂ : (bridgeGraph s).Adj (.inl (1, a)) (.inl (0, b)) := by
+-        simp [bridgeGraph, bridgeAdj]
+-      exact hbridge.trans (h₁.reachable.trans h₂.reachable)
+-    · exact hbridge.trans (SimpleGraph.Adj.reachable
+-        (by simpa [bridgeGraph, bridgeAdj] using Ne.symm hi))
+-
+-/-- The first integer witness, equal to one on the tripartite component. -/
+-def witnessU (s : ℕ) : BridgeVertex s → ℝ
+-  | .inl _ => 1
+-  | .inr _ => 0
+-
+-/-- The second integer witness, balanced on the first part and constant on the clique. -/
+-def witnessV (s : ℕ) : BridgeVertex s → ℝ
+-  | .inl (i, a) => if i.val = 0 then (if a.val = 0 then (s : ℝ) - 1 else -1) else 0
+-  | .inr _ => 3 * (s : ℝ)
+-
+-/-- A triangle cannot cross the bridge. -/
+-theorem triangle_same_side {s : ℕ} {x y z : BridgeVertex s}
+-    (hxy : (bridgeGraph s).Adj x y) (hxz : (bridgeGraph s).Adj x z)
+-    (hyz : (bridgeGraph s).Adj y z) : x.isLeft = y.isLeft := by
+-  cases x with
+-  | inl p =>
+-    rcases p with ⟨i, a⟩
+-    cases y with
+-    | inl q => rfl
+-    | inr b =>
+-      cases z with
+-      | inl q =>
+-        rcases q with ⟨j, c⟩
+-        simp only [bridgeGraph, bridgeAdj] at hxy hxz hyz
+-        exact (hxz (Fin.ext (hxy.1.trans hyz.1.symm))).elim
+-      | inr c =>
+-        simp only [bridgeGraph, bridgeAdj] at hxy hxz hyz
+-        exact (hyz (Fin.ext (hxy.2.2.trans hxz.2.2.symm))).elim
+-  | inr b =>
+-    cases y with
+-    | inr c => rfl
+-    | inl p =>
+-      rcases p with ⟨i, a⟩
+-      cases z with
+-      | inl q =>
+-        rcases q with ⟨j, c⟩
+-        simp only [bridgeGraph, bridgeAdj] at hxy hxz hyz
+-        exact (hyz (Fin.ext (hxy.1.trans hxz.1.symm))).elim
+-      | inr c =>
+-        simp only [bridgeGraph, bridgeAdj] at hxy hxz hyz
+-        exact (hxz (Fin.ext (hxy.2.2.trans hyz.2.2.symm))).elim
+-
+-/-- No injective, edge-preserving copy of `K₅−e` exists in the bridge graph. -/
+-theorem bridgeGraph_free (s : ℕ) : forbiddenGraph.Free (bridgeGraph s) := by
+-  classical
+-  rintro ⟨f⟩
+-  have hside (i : Fin 5) : (f i).isLeft = (f 0).isLeft := by
+-    by_cases hi : i = 0
+-    · subst i; rfl
+-    have ha : forbiddenGraph.Adj i 0 := by simp [forbiddenGraph, hi]
+-    obtain ⟨k, hik, h0k⟩ := forbidden_edge_triangle ha
+-    exact triangle_same_side (f.toHom.map_rel ha) (f.toHom.map_rel hik)
+-      (f.toHom.map_rel h0k)
+-  cases hf0 : f 0 with
+-  | inl p =>
+-    have hleft (i : Fin 5) : ∃ p : Fin 3 × Fin s, f i = .inl p := by
+-      cases hfi : f i with
+-      | inl q => exact ⟨q, rfl⟩
+-      | inr b => have h := hside i; simp [hf0, hfi] at h
+-    choose p hp using hleft
+-    let c : Fin 4 → Fin 3 := fun i => (p (i.castLE (by decide))).1
+-    have hc : Function.Injective c := by
+-      intro i j heq
+-      by_contra hne
+-      have hne' : i.castLE (show 4 ≤ 5 by decide) ≠ j.castLE (by decide) := by
+-        intro h; exact hne (Fin.ext (congrArg (fun x : Fin 5 => x.val) h))
+-      have ha : forbiddenGraph.Adj (i.castLE (by decide)) (j.castLE (by decide)) := by
+-        simp only [forbiddenGraph]
+-        exact ⟨hne', by have hi := i.isLt; have hj := j.isLt; simp only [Fin.val_castLE]; omega⟩
+-      have h := f.toHom.map_rel ha
+-      change (bridgeGraph s).Adj (f _) (f _) at h
+-      rw [hp, hp] at h
+-      exact h heq
+-    have hcard := Fintype.card_le_of_injective c hc
+-    norm_num at hcard
+-  | inr b =>
+-    have hright (i : Fin 5) : ∃ b : Fin 4, f i = .inr b := by
+-      cases hfi : f i with
+-      | inr c => exact ⟨c, rfl⟩
+-      | inl p => have h := hside i; simp [hf0, hfi] at h
+-    choose c hc using hright
+-    have hinj : Function.Injective c := by
+-      intro i j heq
+-      apply f.injective
+-      change f i = f j
+-      rw [hc, hc, heq]
+-    have hcard := Fintype.card_le_of_injective c hinj
+-    norm_num at hcard
+-
+-open Matrix
+-
+-lemma sum_zero_coordinate (s : ℕ) (hs : 0 < s) (t : ℝ) :
+-    (∑ a : Fin s, if a.val = 0 then t else 0) = t := by
+-  let a₀ : Fin s := ⟨0, hs⟩
+-  have heq (a : Fin s) : (a.val = 0) ↔ a = a₀ := by
+-    constructor
+-    · intro h; exact Fin.ext h
+-    · intro h; subst a; rfl
+-  simp only [heq]
+-  simp
+-
+-lemma balanced_part_sum (s : ℕ) (hs : 0 < s) :
+-    (∑ a : Fin s, if a.val = 0 then (s : ℝ) - 1 else -1) = 0 := by
+-  have heq (a : Fin s) :
+-      (if a.val = 0 then (s : ℝ) - 1 else -1) =
+-        (if a.val = 0 then (s : ℝ) else 0) - 1 := by split_ifs <;> ring
+-  simp_rw [heq]
+-  rw [Finset.sum_sub_distrib, sum_zero_coordinate s hs]
+-  simp
+-
+-/-- The integer witnesses are perpendicular. -/
+-theorem witnesses_orthogonal (s : ℕ) (hs : 0 < s) :
+-    witnessU s ⬝ᵥ witnessV s = 0 := by
+-  simp [dotProduct, Fintype.sum_sum_type, witnessU, witnessV,
+-    Fintype.sum_prod_type, balanced_part_sum s hs]
+-
+-/-- Squared norm of the first witness. -/
+-theorem witnessU_norm (s : ℕ) : witnessU s ⬝ᵥ witnessU s = 3 * (s : ℝ) := by
+-  simp [dotProduct, Fintype.sum_sum_type, witnessU, Fintype.card_prod]
+-
+-/-- Squared norm of the second witness. -/
+-theorem witnessV_norm (s : ℕ) (hs : 0 < s) :
+-    witnessV s ⬝ᵥ witnessV s = (s : ℝ) * (37 * (s : ℝ) - 1) := by
+-  have heq (a : Fin s) :
+-      (if a.val = 0 then (s : ℝ) - 1 else -1) ^ 2 =
+-        (if a.val = 0 then (s : ℝ) ^ 2 - 2 * (s : ℝ) else 0) + 1 := by
+-    split_ifs <;> ring
+-  have hsum : (∑ a : Fin s, (if a.val = 0 then (s : ℝ) - 1 else -1) ^ 2) =
+-      (s : ℝ) ^ 2 - (s : ℝ) := by
+-    simp_rw [heq]
+-    rw [Finset.sum_add_distrib, sum_zero_coordinate s hs]
+-    simp
+-    ring
+-  have hsum' : (∑ a : Fin s, if a.val = 0 then ((s : ℝ) - 1) ^ 2 else 1) =
+-      (s : ℝ) ^ 2 - (s : ℝ) := by simpa only [ite_pow, neg_one_sq] using hsum
+-  simp only [dotProduct, Fintype.sum_sum_type, Fintype.sum_prod_type, witnessV]
+-  simp only [← pow_two, ite_pow, zero_pow (by decide : 2 ≠ 0)]
+-  norm_num [Fin.sum_univ_succ, hsum']
+-  ring
+-
+-/-- A proper four-coloring of `K₅−e`. -/
+-def forbiddenColoring : forbiddenGraph.Coloring (Fin 4) :=
+-  .mk (fun i => ⟨min i.val 3, by omega⟩) (by decide +kernel)
+-
+-/-- Its chromatic number is exactly four, witnessed by a four-clique and a coloring. -/
+-theorem forbidden_chromaticNumber : forbiddenGraph.chromaticNumber = 4 := by
+-  apply le_antisymm (SimpleGraph.Colorable.chromaticNumber_le ⟨forbiddenColoring⟩)
+-  apply SimpleGraph.le_chromaticNumber_of_pairwise_adj
+-    (ι := Fin 4) (by simp) (fun i => i.castLE (by decide))
+-  intro i j hij
+-  exact ⟨(by intro h; exact hij (Fin.ext (congrArg (fun x : Fin 5 => x.val) h))), by
+-    have hi := i.isLt
+-    have hj := j.isLt
+-    have hne : i.val ≠ j.val := fun h => hij (Fin.ext h)
+-    simp only [Fin.val_castLE]
+-    omega⟩
+-
+-/-- Deleting the core edge `{0,1}` permits a proper three-coloring. -/
+-def forbiddenDeletedColoring :
+-    (forbiddenGraph.deleteEdges {s(0, 1)}).Coloring (Fin 3) :=
+-  .mk (fun i => ⟨if i.val ≤ 1 then 0 else if i.val = 2 then 1 else 2, by
+-    split_ifs <;> omega⟩) (by decide +kernel)
+-
+-/-- The forbidden graph is color-critical in the edge-deletion sense. -/
+-theorem forbidden_color_critical :
+-    ∃ i j : Fin 5, forbiddenGraph.Adj i j ∧
+-      (forbiddenGraph.deleteEdges {s(i, j)}).chromaticNumber < forbiddenGraph.chromaticNumber := by
+-  refine ⟨0, 1, by decide, ?_⟩
+-  rw [forbidden_chromaticNumber]
+-  exact lt_of_le_of_lt
+-    (SimpleGraph.Colorable.chromaticNumber_le ⟨forbiddenDeletedColoring⟩) (by norm_num)
+-
+-end KKP
+diff --git a/KKP/Certificate.lean b/KKP/Certificate.lean
+deleted file mode 100644
+index ff3e029a1..000000000
+--- a/KKP/Certificate.lean
++++ /dev/null
+@@ -1,59 +0,0 @@
+-module
+-public import Mathlib
+-public section
+-
+-namespace CounterexampleCertificate
+-
+-/-- The denominator of the two-vector compression certificate. -/
+-theorem denominator_pos (s : ℝ) (hs : 3 ≤ s) : 0 < 37 * s - 1 := by
+-  linarith
+-
+-/-- Positive numerator of the compression determinant. -/
+-theorem determinant_numerator_pos (s : ℝ) (hs : 3 ≤ s) :
+-    0 < 228 * s ^ 2 - 12 * s - 3 := by
+-  have h₁ : 0 ≤ 228 * (s - 3) ^ 2 := by positivity
+-  have h₂ : 0 ≤ 1356 * (s - 3) := by
+-    have : 0 ≤ s - 3 := by linarith
+-    positivity
+-  nlinarith
+-
+-/-- Positive scalar determinant of the displayed two-vector compression.
+-This declaration does not assert a graph eigenvalue or interlacing theorem. -/
+-theorem compression_determinant_pos (s : ℝ) (hs : 3 ≤ s) :
+-    0 < 2 * s * ((114 * s - 6) / (37 * s - 1)) -
+-      3 / (37 * s - 1) := by
+-  have hd := denominator_pos s hs
+-  have hn := determinant_numerator_pos s hs
+-  have he :
+-      2 * s * ((114 * s - 6) / (37 * s - 1)) -
+-        3 / (37 * s - 1) =
+-      (228 * s ^ 2 - 12 * s - 3) / (37 * s - 1) := by
+-    field_simp [ne_of_gt hd]
+-    <;> ring
+-  rw [he]
+-  exact div_pos hn hd
+-
+-/-- The exact excess numerator is positive throughout the infinite family. -/
+-theorem excess_numerator_pos (s : ℝ) (hs : 3 ≤ s) :
+-    0 < 656 * s ^ 2 - 1366 * s + 62 := by
+-  have h₁ : 0 ≤ 656 * (s - 3) ^ 2 := by positivity
+-  have h₂ : 0 ≤ 2570 * (s - 3) := by
+-    have : 0 ≤ s - 3 := by linarith
+-    positivity
+-  nlinarith
+-
+-/-- Exact rational identity for tr(C_s^2) minus 4m/3. -/
+-theorem compression_gap_identity (s : ℝ) (hd : 37 * s - 1 ≠ 0) :
+-    (4 * s ^ 2 + ((114 * s - 6) / (37 * s - 1)) ^ 2 +
+-      6 / (37 * s - 1)) - (4 / 3 : ℝ) * (3 * s ^ 2 + 7) =
+-    (656 * s ^ 2 - 1366 * s + 62) / (3 * (37 * s - 1) ^ 2) := by
+-  let d := 37 * s - 1
+-  have hd' : d ≠ 0 := hd
+-  change (4 * s ^ 2 + ((114 * s - 6) / d) ^ 2 + 6 / d) -
+-    (4 / 3 : ℝ) * (3 * s ^ 2 + 7) =
+-    (656 * s ^ 2 - 1366 * s + 62) / (3 * d ^ 2)
+-  field_simp
+-  dsimp [d] at *
+-  nlinarith [sq_nonneg (37 * s - 1)]
+-
+-end CounterexampleCertificate
+diff --git a/KKP/Compression.lean b/KKP/Compression.lean
+deleted file mode 100644
+index bb080814f..000000000
+--- a/KKP/Compression.lean
++++ /dev/null
+@@ -1,68 +0,0 @@
+-module
+-public import BN.Spectral.Variational
+-public import BN.Spectral.Interlace
+-@[expose] public section
+-
+-/-!
+-# Positive rank-two compression and the actual ordered spectrum
+-
+-An orthonormal two-column matrix identifies a two-dimensional subspace.
+-For a positive semidefinite compression, its squared Frobenius mass is bounded
+-by the squares of the two largest positive eigenvalues of the ambient matrix.
+-The proof uses the checked rank-two variational theorem of the pinned BN source.
+--/
+-
+-namespace KKP
+-open Matrix
+-
+-variable {n : Type*} [Fintype n] [DecidableEq n]
+-
+-/-- A positive two-dimensional compression is controlled by the actual positive spectrum. -/
+-theorem positive_compression_le (A : Matrix n n ℝ) (hA : A.IsHermitian)
+-    (Q : Matrix n (Fin 2) ℝ) (hQ : Qᵀ * Q = 1)
+-    (hC : (Qᵀ * A * Q).PosSemidef) :
+-    BN.inner (Qᵀ * A * Q) (Qᵀ * A * Q) ≤ BN.F hA := by
+-  let C := Qᵀ * A * Q
+-  let X := Q * C * Qᵀ
+-  have hX : X.PosSemidef := by
+-    simpa only [conjTranspose_eq_transpose_of_trivial] using hC.mul_mul_conjTranspose_same Q
+-  have hr : X.rank ≤ 2 := by
+-    exact (rank_mul_le_left _ _).trans
+-      ((rank_mul_le_left _ _).trans (by simpa using Q.rank_le_card_width))
+-  have hCt : Cᵀ = C := by
+-    simpa only [conjTranspose_eq_transpose_of_trivial] using hC.isHermitian.eq
+-  have hAt : Aᵀ = A := by
+-    simpa only [conjTranspose_eq_transpose_of_trivial] using hA.eq
+-  have hAX : BN.inner A X = BN.inner C C := by
+-    simp only [BN.inner, X, hAt, hCt]
+-    calc
+-      (A * (Q * C * Qᵀ)).trace = (Qᵀ * A * (Q * C)).trace := by
+-        rw [Matrix.mul_assoc Q C Qᵀ, ← Matrix.mul_assoc A Q (C * Qᵀ),
+-          trace_mul_cycle' (A * Q) C Qᵀ]
+-        simp only [Matrix.mul_assoc]
+-      _ = (C * C).trace := by simp only [C, Matrix.mul_assoc]
+-  have hXt : Xᵀ = X := by
+-    simp only [X, transpose_mul, transpose_transpose, hCt, Matrix.mul_assoc]
+-  have hXX : BN.inner X X = BN.inner C C := by
+-    simp only [BN.inner, hXt, hCt, X]
+-    calc
+-      ((Q * C * Qᵀ) * (Q * C * Qᵀ)).trace =
+-          (Q * C * (Qᵀ * Q) * C * Qᵀ).trace := by simp only [Matrix.mul_assoc]
+-      _ = (Q * (C * C) * Qᵀ).trace := by rw [hQ]; simp only [mul_one, Matrix.mul_assoc]
+-      _ = (Qᵀ * Q * (C * C)).trace := trace_mul_cycle _ _ _
+-      _ = (C * C).trace := by rw [hQ, one_mul]
+-  have hn : 0 ≤ BN.inner C C := by
+-    rw [BN.inner_self]
+-    exact Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => sq_nonneg _
+-  have hv := BN.variational_lemma hA hX hr
+-  rw [hAX, hXX] at hv
+-  have hs : (BN.inner C C) ^ 2 ≤ BN.F hA * BN.inner C C := by
+-    have hp := mul_nonneg (BN.F_nonneg hA) hn
+-    rw [← Real.sqrt_mul (BN.F_nonneg hA)] at hv
+-    exact (Real.le_sqrt hn hp).mp hv
+-  by_cases hz : BN.inner C C = 0
+-  · rw [hz]; exact BN.F_nonneg hA
+-  · have hp : 0 < BN.inner C C := lt_of_le_of_ne hn (Ne.symm hz)
+-    exact (mul_le_mul_iff_of_pos_right hp).mp (by simpa [pow_two] using hs)
+-
+-end KKP
+diff --git a/KKP/SpectralWitness.lean b/KKP/SpectralWitness.lean
+deleted file mode 100644
+index f50bf2c65..000000000
+--- a/KKP/SpectralWitness.lean
++++ /dev/null
+@@ -1,209 +0,0 @@
+-module
+-public import KKP.Witness
+-public import KKP.Compression
+-public import KKP.Certificate
+-@[expose] public section
+-
+-/-! # The normalized witness plane and its positive compression -/
+-
+-namespace KKP
+-open Matrix
+-
+-/-- Normalize a nonzero coordinate vector by the square root of its squared norm. -/
+-noncomputable def normalizeVector {n : Type*} [Fintype n] (u : n → ℝ) : n → ℝ :=
+-  (Real.sqrt (u ⬝ᵥ u))⁻¹ • u
+-
+-lemma normalizeVector_norm {n : Type*} [Fintype n] (u : n → ℝ) (hu : 0 < u ⬝ᵥ u) :
+-    normalizeVector u ⬝ᵥ normalizeVector u = 1 := by
+-  simp only [normalizeVector, smul_dotProduct, dotProduct_smul, smul_eq_mul]
+-  rw [← mul_assoc, ← pow_two, inv_pow, Real.sq_sqrt hu.le,
+-    inv_mul_cancel₀ (ne_of_gt hu)]
+-
+-/-- The two columns are the actual normalized integer vectors on the graph. -/
+-noncomputable def witnessPlane (s : ℕ) : Matrix (BridgeVertex s) (Fin 2) ℝ :=
+-  fun v i => if i = 0 then normalizeVector (witnessU s) v else normalizeVector (witnessV s) v
+-
+-/-- Orthogonality and norm identities give an orthonormal two-column matrix. -/
+-theorem witnessPlane_orthonormal (s : ℕ) (hs : 3 ≤ s) :
+-    (witnessPlane s)ᵀ * witnessPlane s = 1 := by
+-  have hs0 : 0 < s := by omega
+-  have hr : (3 : ℝ) ≤ s := by exact_mod_cast hs
+-  have hu : 0 < witnessU s ⬝ᵥ witnessU s := by rw [witnessU_norm]; positivity
+-  have hv : 0 < witnessV s ⬝ᵥ witnessV s := by
+-    rw [witnessV_norm s hs0]
+-    exact mul_pos (by exact_mod_cast hs0) (CounterexampleCertificate.denominator_pos _ hr)
+-  have huv : normalizeVector (witnessU s) ⬝ᵥ normalizeVector (witnessV s) = 0 := by
+-    simp [normalizeVector, smul_dotProduct, dotProduct_smul, witnesses_orthogonal s hs0]
+-  ext i j
+-  fin_cases i <;> fin_cases j
+-  · change normalizeVector (witnessU s) ⬝ᵥ normalizeVector (witnessU s) = 1
+-    exact normalizeVector_norm _ hu
+-  · change normalizeVector (witnessU s) ⬝ᵥ normalizeVector (witnessV s) = 0
+-    exact huv
+-  · change normalizeVector (witnessV s) ⬝ᵥ normalizeVector (witnessU s) = 0
+-    rwa [dotProduct_comm]
+-  · change normalizeVector (witnessV s) ⬝ᵥ normalizeVector (witnessV s) = 1
+-    exact normalizeVector_norm _ hv
+-
+-/-- A real symmetric two-by-two matrix with a positive first diagonal and nonnegative determinant
+-is positive semidefinite. -/
+-theorem positive_two_by_two (a b c : ℝ) (ha : 0 < a) (hd : 0 ≤ a * b - c ^ 2) :
+-    (!![a, c; c, b] : Matrix (Fin 2) (Fin 2) ℝ).PosSemidef := by
+-  apply Matrix.PosSemidef.of_dotProduct_mulVec_nonneg
+-  · ext i j
+-    fin_cases i <;> fin_cases j <;> simp [Matrix.conjTranspose]
+-  · intro x
+-    have h₁ := sq_nonneg (a * x 0 + c * x 1)
+-    have h₂ := mul_nonneg hd (sq_nonneg (x 1))
+-    simp [dotProduct, mulVec, Fin.sum_univ_two]
+-    nlinarith
+-
+-lemma compression_entry {n : Type*} [Fintype n] (A : Matrix n n ℝ)
+-    (Q : Matrix n (Fin 2) ℝ) (i j : Fin 2) :
+-    (Qᵀ * A * Q) i j = (fun k => Q k i) ⬝ᵥ A *ᵥ (fun k => Q k j) := by
+-  rw [Matrix.mul_assoc]
+-  rfl
+-
+-lemma normalizeVector_bilinear {n : Type*} [Fintype n] (A : Matrix n n ℝ)
+-    (u v : n → ℝ) :
+-    normalizeVector u ⬝ᵥ A *ᵥ normalizeVector v =
+-      (u ⬝ᵥ A *ᵥ v) / (Real.sqrt (u ⬝ᵥ u) * Real.sqrt (v ⬝ᵥ v)) := by
+-  simp only [normalizeVector, mulVec_smul, smul_dotProduct, dotProduct_smul, smul_eq_mul,
+-    div_eq_mul_inv, _root_.mul_inv_rev]
+-  ring
+-
+-lemma normalizeVector_quadratic {n : Type*} [Fintype n] (A : Matrix n n ℝ)
+-    (u : n → ℝ) (hu : 0 ≤ u ⬝ᵥ u) :
+-    normalizeVector u ⬝ᵥ A *ᵥ normalizeVector u = (u ⬝ᵥ A *ᵥ u) / (u ⬝ᵥ u) := by
+-  rw [normalizeVector_bilinear, ← pow_two, Real.sq_sqrt hu]
+-
+-/-- The off-diagonal entry obtained directly from the normalized integer witnesses. -/
+-noncomputable def compressionOffDiagonal (s : ℕ) : ℝ :=
+-  3 * (s : ℝ) / (Real.sqrt (3 * (s : ℝ)) * Real.sqrt ((s : ℝ) * (37 * (s : ℝ) - 1)))
+-
+-/-- Exact entries of the compression of the actual adjacency matrix. -/
+-theorem witnessPlane_compression (s : ℕ) (hs : 3 ≤ s) :
+-    (witnessPlane s)ᵀ * (bridgeGraph s).adjMatrix ℝ * witnessPlane s =
+-      !![2 * (s : ℝ), compressionOffDiagonal s;
+-         compressionOffDiagonal s, (114 * (s : ℝ) - 6) / (37 * (s : ℝ) - 1)] := by
+-  have hs0 : 0 < s := by omega
+-  have hsr : 0 < (s : ℝ) := by exact_mod_cast hs0
+-  have hr : (3 : ℝ) ≤ s := by exact_mod_cast hs
+-  have hu : 0 ≤ witnessU s ⬝ᵥ witnessU s := by rw [witnessU_norm]; positivity
+-  have hv : 0 ≤ witnessV s ⬝ᵥ witnessV s := by
+-    rw [witnessV_norm s hs0]
+-    exact mul_nonneg hsr.le (CounterexampleCertificate.denominator_pos _ hr).le
+-  have hsym : (bridgeGraph s).adjMatrix ℝ = ((bridgeGraph s).adjMatrix ℝ)ᵀ :=
+-    (bridgeGraph s).transpose_adjMatrix |>.symm
+-  ext i j
+-  rw [compression_entry]
+-  fin_cases i <;> fin_cases j
+-  · change normalizeVector (witnessU s) ⬝ᵥ (bridgeGraph s).adjMatrix ℝ *ᵥ
+-        normalizeVector (witnessU s) = 2 * (s : ℝ)
+-    rw [normalizeVector_quadratic _ _ hu, witnessU_quadratic s hs0, witnessU_norm]
+-    field_simp
+-    all_goals ring
+-  · change normalizeVector (witnessU s) ⬝ᵥ (bridgeGraph s).adjMatrix ℝ *ᵥ
+-        normalizeVector (witnessV s) = compressionOffDiagonal s
+-    rw [normalizeVector_bilinear, witnesses_mixed s hs0, witnessU_norm, witnessV_norm s hs0]
+-    rfl
+-  · change normalizeVector (witnessV s) ⬝ᵥ (bridgeGraph s).adjMatrix ℝ *ᵥ
+-        normalizeVector (witnessU s) = compressionOffDiagonal s
+-    rw [dotProduct_mulVec, ← mulVec_transpose, ← hsym, dotProduct_comm]
+-    rw [normalizeVector_bilinear, witnesses_mixed s hs0, witnessU_norm, witnessV_norm s hs0]
+-    rfl
+-  · change normalizeVector (witnessV s) ⬝ᵥ (bridgeGraph s).adjMatrix ℝ *ᵥ
+-        normalizeVector (witnessV s) = (114 * (s : ℝ) - 6) / (37 * (s : ℝ) - 1)
+-    rw [normalizeVector_quadratic _ _ hv, witnessV_quadratic s hs0, witnessV_norm s hs0]
+-    field_simp
+-    all_goals ring
+-
+-/-- The square of the off-diagonal compression entry has the displayed rational value. -/
+-theorem compressionOffDiagonal_sq (s : ℕ) (hs : 3 ≤ s) :
+-    compressionOffDiagonal s ^ 2 = 3 / (37 * (s : ℝ) - 1) := by
+-  have hs0 : 0 < (s : ℝ) := by exact_mod_cast (show 0 < s by omega)
+-  have hr : (3 : ℝ) ≤ s := by exact_mod_cast hs
+-  have hd := CounterexampleCertificate.denominator_pos (s : ℝ) hr
+-  have hu : 0 ≤ 3 * (s : ℝ) := by positivity
+-  have hv : 0 ≤ (s : ℝ) * (37 * (s : ℝ) - 1) := mul_nonneg hs0.le hd.le
+-  simp only [compressionOffDiagonal, div_pow, mul_pow, Real.sq_sqrt hu, Real.sq_sqrt hv]
+-  field_simp [ne_of_gt hs0, ne_of_gt hd]
+-
+-/-- Positivity of the actual two-vector compression. -/
+-theorem witnessPlane_compression_posSemidef (s : ℕ) (hs : 3 ≤ s) :
+-    ((witnessPlane s)ᵀ * (bridgeGraph s).adjMatrix ℝ * witnessPlane s).PosSemidef := by
+-  have hr : (3 : ℝ) ≤ s := by exact_mod_cast hs
+-  have hd := CounterexampleCertificate.compression_determinant_pos (s : ℝ) hr
+-  rw [witnessPlane_compression s hs]
+-  apply positive_two_by_two
+-  · have : 0 < (s : ℝ) := by linarith
+-    positivity
+-  · rw [compressionOffDiagonal_sq s hs]
+-    exact hd.le
+-
+-/-- The rational certificate bounds the actual two largest positive adjacency eigenvalues. -/
+-theorem bridgeGraph_spectral_lower_bound (s : ℕ) (hs : 3 ≤ s) :
+-    4 * (s : ℝ) ^ 2 + ((114 * (s : ℝ) - 6) / (37 * (s : ℝ) - 1)) ^ 2 +
+-      6 / (37 * (s : ℝ) - 1) ≤ BN.F ((bridgeGraph s).isHermitian_adjMatrix ℝ) := by
+-  have h := positive_compression_le ((bridgeGraph s).adjMatrix ℝ)
+-    ((bridgeGraph s).isHermitian_adjMatrix ℝ) (witnessPlane s)
+-    (witnessPlane_orthonormal s hs) (witnessPlane_compression_posSemidef s hs)
+-  rw [witnessPlane_compression s hs, BN.inner_self] at h
+-  norm_num [Fin.sum_univ_two] at h
+-  rw [compressionOffDiagonal_sq s hs] at h
+-  convert h using 1 <;> ring
+-
+-/-- The exact excess bound from the manuscript, for every integer class size at least three. -/
+-theorem bridgeGraph_spectral_gap (s : ℕ) (hs : 3 ≤ s) :
+-    (656 * (s : ℝ) ^ 2 - 1366 * (s : ℝ) + 62) /
+-        (3 * (37 * (s : ℝ) - 1) ^ 2) ≤
+-      BN.F ((bridgeGraph s).isHermitian_adjMatrix ℝ) -
+-        (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) := by
+-  have hr : (3 : ℝ) ≤ s := by exact_mod_cast hs
+-  rw [bridgeGraph_edge_count s (by omega)]
+-  push_cast
+-  have h := bridgeGraph_spectral_lower_bound s hs
+-  have hid := CounterexampleCertificate.compression_gap_identity (s : ℝ)
+-    (ne_of_gt (CounterexampleCertificate.denominator_pos _ hr))
+-  linarith
+-
+-/-- The actual graph violates the exact `4m/3` inequality. -/
+-theorem bridgeGraph_spectral_excess (s : ℕ) (hs : 3 ≤ s) :
+-    (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) <
+-      BN.F ((bridgeGraph s).isHermitian_adjMatrix ℝ) := by
+-  have hr : (3 : ℝ) ≤ s := by exact_mod_cast hs
+-  have hn := CounterexampleCertificate.excess_numerator_pos (s : ℝ) hr
+-  have hd := CounterexampleCertificate.denominator_pos (s : ℝ) hr
+-  have hpos : 0 < (656 * (s : ℝ) ^ 2 - 1366 * (s : ℝ) + 62) /
+-      (3 * (37 * (s : ℝ) - 1) ^ 2) := div_pos hn (by positivity)
+-  have hgap := bridgeGraph_spectral_gap s hs
+-  linarith
+-
+-/-- The graph is noncomplete, so the positive-spectrum statistic equals the two ordered squares. -/
+-theorem bridgeGraph_noncomplete (s : ℕ) (hs : 3 ≤ s) : bridgeGraph s ≠ ⊤ := by
+-  intro h
+-  let u : BridgeVertex s := .inl (0, ⟨0, by omega⟩)
+-  let v : BridgeVertex s := .inl (0, ⟨1, by omega⟩)
+-  have huv : u ≠ v := by simp [u, v, Fin.ext_iff]
+-  have ha : (bridgeGraph s).Adj u v := by rw [h]; exact huv
+-  simp [u, v, bridgeGraph, bridgeAdj] at ha
+-
+-/-- The counterexample in the literal ordered-eigenvalue convention of KKP. -/
+-theorem bridgeGraph_ordered_excess (s : ℕ) (hs : 3 ≤ s) :
+-    (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) <
+-      BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2 := by
+-  have h := bridgeGraph_spectral_excess s hs
+-  rwa [BN.F_adjMatrix_eq (bridgeGraph s) (bridgeGraph_noncomplete s hs)] at h
+-
+-/-- Connected forbidden-free counterexamples occur above every prescribed edge threshold. -/
+-theorem unbounded_connected_counterexamples (B : ℕ) :
+-    ∃ s : ℕ, 3 ≤ s ∧ B ≤ (bridgeGraph s).edgeFinset.card ∧
+-      (bridgeGraph s).Connected ∧ forbiddenGraph.Free (bridgeGraph s) ∧
+-      (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) <
+-        BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2 := by
+-  refine ⟨B + 3, by omega, ?_, bridgeGraph_connected _ (by omega), bridgeGraph_free _,
+-    bridgeGraph_ordered_excess _ (by omega)⟩
+-  rw [bridgeGraph_edge_count _ (by omega)]
+-  nlinarith [Nat.zero_le B, Nat.zero_le (B ^ 2)]
+-
+-end KKP
+diff --git a/KKP/Witness.lean b/KKP/Witness.lean
+deleted file mode 100644
+index 4a45c66ac..000000000
+--- a/KKP/Witness.lean
++++ /dev/null
+@@ -1,124 +0,0 @@
+-module
+-public import KKP.Bridge
+-@[expose] public section
+-
+-/-! # Exact adjacency identities for the two integer witnesses -/
+-
+-namespace KKP
+-open Matrix
+-
+-lemma zero_coordinate_card (s : ℕ) (hs : 0 < s) :
+-    ((Finset.univ : Finset (Fin s)).filter fun x => x.val = 0).card = 1 := by
+-  apply Finset.card_eq_one.mpr
+-  refine ⟨⟨0, hs⟩, ?_⟩
+-  ext x
+-  simp [Fin.ext_iff]
+-
+-lemma zero_pair_card (s : ℕ) (hs : 0 < s) :
+-    ((Finset.univ : Finset (Fin 3 × Fin s)).filter fun x =>
+-      x.1 = 0 ∧ x.2.val = 0).card = 1 := by
+-  apply Finset.card_eq_one.mpr
+-  refine ⟨(0, ⟨0, hs⟩), ?_⟩
+-  ext x
+-  simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton,
+-    Prod.mk.injEq, Prod.eta]
+-  constructor
+-  · rintro ⟨h₁, h₂⟩
+-    exact Prod.ext h₁ (Fin.ext h₂)
+-  · intro h
+-    cases h
+-    exact ⟨rfl, rfl⟩
+-
+-/-- The adjacency action on the first integer vector. -/
+-theorem adjacency_witnessU (s : ℕ) (hs : 0 < s) (v : BridgeVertex s) :
+-    ((bridgeGraph s).adjMatrix ℝ *ᵥ witnessU s) v =
+-      match v with
+-      | .inl _ => 2 * (s : ℝ)
+-      | .inr b => if b.val = 0 then 1 else 0 := by
+-  cases v with
+-  | inl p =>
+-    rcases p with ⟨i, a⟩
+-    fin_cases i <;>
+-      simp [mulVec, dotProduct, Fintype.sum_sum_type, Fintype.sum_prod_type,
+-        SimpleGraph.adjMatrix, bridgeGraph, bridgeAdj, witnessU, Fin.sum_univ_succ]
+-    all_goals ring
+-  | inr b =>
+-    by_cases hb : b.val = 0 <;>
+-      simp [mulVec, dotProduct, Fintype.sum_sum_type, Fintype.sum_prod_type,
+-        SimpleGraph.adjMatrix, bridgeGraph, bridgeAdj, witnessU,
+-        Fin.sum_univ_succ, hb, sum_zero_coordinate s hs, zero_pair_card s hs]
+-
+-/-- The adjacency action on the second integer vector. -/
+-theorem adjacency_witnessV (s : ℕ) (hs : 0 < s) (v : BridgeVertex s) :
+-    ((bridgeGraph s).adjMatrix ℝ *ᵥ witnessV s) v =
+-      match v with
+-      | .inl (i, a) => if i.val = 0 ∧ a.val = 0 then 3 * (s : ℝ) else 0
+-      | .inr b => 9 * (s : ℝ) + if b.val = 0 then (s : ℝ) - 1 else 0 := by
+-  cases v with
+-  | inl p =>
+-    rcases p with ⟨i, a⟩
+-    fin_cases i <;> by_cases ha : a.val = 0 <;>
+-      simp [mulVec, dotProduct, Fintype.sum_sum_type, Fintype.sum_prod_type,
+-        SimpleGraph.adjMatrix, bridgeGraph, bridgeAdj, witnessV,
+-        Fin.sum_univ_succ, ha, balanced_part_sum s hs]
+-    all_goals ring
+-  | inr b =>
+-    fin_cases b <;>
+-      simp +contextual [mulVec, dotProduct, Fintype.sum_sum_type, Fintype.sum_prod_type,
+-        SimpleGraph.adjMatrix, bridgeGraph, bridgeAdj, witnessV,
+-        Fin.sum_univ_succ, sum_zero_coordinate s hs]
+-    all_goals ring
+-
+-/-- Raw quadratic form of the first integer witness. -/
+-theorem witnessU_quadratic (s : ℕ) (hs : 0 < s) :
+-    witnessU s ⬝ᵥ (bridgeGraph s).adjMatrix ℝ *ᵥ witnessU s = 6 * (s : ℝ) ^ 2 := by
+-  simp [dotProduct, adjacency_witnessU s hs, Fintype.sum_sum_type,
+-    witnessU, Fintype.card_prod]
+-  ring
+-
+-/-- Raw mixed adjacency form of the two integer witnesses. -/
+-theorem witnesses_mixed (s : ℕ) (hs : 0 < s) :
+-    witnessU s ⬝ᵥ (bridgeGraph s).adjMatrix ℝ *ᵥ witnessV s = 3 * (s : ℝ) := by
+-  simp [dotProduct, adjacency_witnessV s hs, Fintype.sum_sum_type,
+-    Fintype.sum_prod_type, witnessU, Fin.sum_univ_succ, sum_zero_coordinate s hs]
+-
+-/-- Raw quadratic form of the second integer witness. -/
+-theorem witnessV_quadratic (s : ℕ) (hs : 0 < s) :
+-    witnessV s ⬝ᵥ (bridgeGraph s).adjMatrix ℝ *ᵥ witnessV s =
+-      (s : ℝ) * (114 * (s : ℝ) - 6) := by
+-  simp only [dotProduct, adjacency_witnessV s hs, Fintype.sum_sum_type,
+-    Fintype.sum_prod_type, witnessV, Fin.sum_univ_succ, mul_ite, ite_mul,
+-    sum_zero_coordinate s hs, ite_self, ite_true, ite_false]
+-  norm_num
+-  simp +contextual [ite_mul, mul_ite, sum_zero_coordinate s hs]
+-  ring
+-
+-lemma sum_zero_coordinate_nat (s : ℕ) (hs : 0 < s) (t : ℕ) :
+-    (∑ a : Fin s, if a.val = 0 then t else 0) = t := by
+-  let a₀ : Fin s := ⟨0, hs⟩
+-  have heq (a : Fin s) : (a.val = 0) ↔ a = a₀ := by
+-    constructor
+-    · intro h; exact Fin.ext h
+-    · intro h; subst a; rfl
+-  simp only [heq]
+-  simp
+-
+-/-- The graph has exactly `3s²+7` unordered edges. -/
+-theorem bridgeGraph_edge_count (s : ℕ) (hs : 0 < s) :
+-    (bridgeGraph s).edgeFinset.card = 3 * s ^ 2 + 7 := by
+-  have hdegree (v : BridgeVertex s) : (bridgeGraph s).degree v =
+-      ∑ w : BridgeVertex s, if (bridgeGraph s).Adj v w then 1 else 0 := by
+-    rw [← SimpleGraph.card_neighborFinset_eq_degree, SimpleGraph.neighborFinset_eq_filter]
+-    simp
+-  have hsum : (∑ v : BridgeVertex s, ∑ w : BridgeVertex s,
+-      if (bridgeGraph s).Adj v w then (1 : ℕ) else 0) = 6 * s ^ 2 + 14 := by
+-    simp [Fintype.sum_sum_type, Fintype.sum_prod_type, Finset.sum_add_distrib,
+-      bridgeGraph, bridgeAdj, Fin.sum_univ_succ, sum_zero_coordinate_nat s hs]
+-    rw [zero_coordinate_card s hs, zero_pair_card s hs]
+-    ring
+-  have h := (bridgeGraph s).sum_degrees_eq_twice_card_edges
+-  simp_rw [hdegree] at h
+-  rw [hsum] at h
+-  omega
+-
+-end KKP
+diff --git a/Solution.lean b/Solution.lean
+index f9e3044f8..1cfd31fac 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -1,26 +1,237 @@
++/-
++Copyright (c) 2026 Shengtong Zhang. All rights reserved.
++Released under Apache 2.0 license as described in the file LICENSE.
++Authors: Shengtong Zhang
++-/
+ module
+-public import KKP.SpectralWitness
++public import Mathlib
+ @[expose] public section
+ 
+-/-! # The connected counterexample family and its exact positive spectral gap -/
++/-! Connected forbidden-free spectral counterexamples.
++
++The graph and eigenvalue conventions below are the protected definitions. The proof uses
++one finite quotient for freeness and one shared Rayleigh bound for a positive two-dimensional
++compression. All witness identities are calculated together, directly in normalized coordinates.
++-/
++
++namespace BN
++
++variable {V : Type*} [Fintype V] [DecidableEq V]
++  (G : SimpleGraph V) [DecidableRel G.Adj]
++noncomputable def adjacencyEigenvalues := (G.isHermitian_adjMatrix ℝ).eigenvalues
++noncomputable def adjacencyEigenvalues₀ :=
++  (G.isHermitian_adjMatrix ℝ).eigenvalues₀
++noncomputable def lambda1 [Nonempty V] := adjacencyEigenvalues₀ G ⟨0, Fintype.card_pos⟩
++noncomputable def lambda2 [Nontrivial V] := adjacencyEigenvalues₀ G ⟨1, Fintype.one_lt_card⟩
++end BN
+ 
+ namespace KKP
+-/-- The complete graph, forbidden-subgraph, and ordered-spectrum certificate. -/
+-theorem connected_counterexample_family (s : ℕ) (hs : 3 ≤ s) :
++
++/-- Vertices of the graph `K_{s,s,s}` joined to `K₄`. -/
++abbrev BridgeVertex s := (Fin 3 × Fin s) ⊕ Fin 4
++
++/-- The literal adjacency relation: tripartite edges, clique edges, and one bridge. -/
++def bridgeAdj s : BridgeVertex s → BridgeVertex s → Prop
++  | .inl (i, _), .inl (j, _) => i ≠ j
++  | .inr a, .inr b => a ≠ b
++  | .inl (i, a), .inr b | .inr b, .inl (i, a) => i.val = 0 ∧ a.val = 0 ∧ b.val = 0
++
++/-- The connected counterexample family, with a single bridge between its components. -/
++def bridgeGraph s : SimpleGraph (BridgeVertex s) where
++  Adj := bridgeAdj s
++  symm := ⟨fun v w => match v, w with
++    | .inl (_, _), .inl (_, _) | .inr _, .inr _ => fun h => Ne.symm h
++    | .inl (_, _), .inr _ | .inr _, .inl (_, _) => fun h => h⟩
++  loopless := ⟨fun v => match v with
++    | .inl (_, _) | .inr _ => fun h => h rfl⟩
++
++instance bridgeAdjDecidable s : DecidableRel (bridgeGraph s).Adj
++  | .inl (_, _), .inl (_, _) | .inr _, .inr _ => inferInstanceAs (Decidable (_ ≠ _))
++  | .inl (_, _), .inr _ | .inr _, .inl (_, _) => inferInstanceAs (Decidable (_ ∧ _))
++
++/-- The forbidden graph `K₅` with just the edge between vertices 3 and 4 removed. -/
++def forbiddenGraph : SimpleGraph (Fin 5) where
++  Adj i j := i ≠ j ∧ ¬ (3 ≤ i.val ∧ 3 ≤ j.val)
++  symm := ⟨fun i j h => ⟨Ne.symm h.1, fun hji => h.2 ⟨hji.2, hji.1⟩⟩⟩
++  loopless := ⟨fun i h => h.1 rfl⟩
++
++instance forbiddenAdjDecidable : DecidableRel forbiddenGraph.Adj :=
++  fun _ _ => inferInstanceAs (Decidable (_ ∧ _))
++
++set_option maxRecDepth 100000 in
++/-- A finite quotient forces the two nonadjacent forbidden vertices to coincide on the clique. -/
++lemma finite_hom : ∀ g : forbiddenGraph →g bridgeGraph 1, (g 3).isRight ∧ g 3 = g 4 := by
++  rintro ⟨⟩
++  decide +revert +kernel
++
++open Matrix
++
++/-- A positive two-dimensional compression is controlled by the first two ordered eigenvalues. -/
++theorem positive_compression_le {n : Type*} [Fintype n] [DecidableEq n]
++    {B : Matrix n n ℝ} [Nontrivial n] (hA : B.IsHermitian)
++    {Q : Matrix n (Fin 2) ℝ} (hQ : Qᵀ * Q = 1) {a b c}
++    (hComp : Qᵀ * B * Q = !![a, c; c, b])
++    (ha : 0 < a) (hc : 0 < c) (hd : 0 < a * b - c ^ 2) :
++    a ^ 2 + b ^ 2 + 2 * c ^ 2 ≤ hA.eigenvalues₀ 0 ^ 2 + hA.eigenvalues₀ ⟨1,Fintype.one_lt_card⟩ ^ 2 := by
++  -- Parseval in the ordered eigenbasis gives a shared Rayleigh estimate.
++  let basis := (isSymmetric_toEuclideanLin_iff.mpr hA).eigenvectorBasis finrank_euclideanSpace
++  have rayleigh u k
++      (ho : ∀ i < k, basis i ⬝ᵥ u = 0) :
++      (B *ᵥ u) ⬝ᵥ u ≤ hA.eigenvalues₀ k * (u ⬝ᵥ u) := by
++    let x := WithLp.toLp 2 u
++    change inner ℝ x (B.toEuclideanLin x) ≤ hA.eigenvalues₀ k * inner ℝ x x
++    rw [← basis.repr.inner_map_map, ← basis.repr.inner_map_map]
++    simp only [EuclideanSpace.inner_eq_star_dotProduct, dotProduct,
++      basis, LinearMap.IsSymmetric.eigenvectorBasis_apply_self_apply]
++    simp [OrthonormalBasis.repr_apply_apply, EuclideanSpace.inner_eq_star_dotProduct,
++      x, dotProduct_comm u, mul_assoc, ← pow_two, Finset.mul_sum]
++    refine Finset.sum_le_sum fun i _ => ?_
++    by_cases hi : i < k
++    · rw [ho i hi]; simp
++    · gcongr
++      exact hA.eigenvalues₀_antitone (le_of_not_gt hi)
++  have hR z k ho := rayleigh (Q *ᵥ z) k ho
++  simp only [← dotProduct_transpose_mulVec Q, mulVec_mulVec, ← Matrix.mul_assoc,
++    hComp, hQ, one_mulVec] at hR
++  let δ := Real.sqrt ((a - b) ^ 2 + 4 * c ^ 2)
++  set α := (a + b + δ) / 2 with haDef
++  set β := (a + b - δ) / 2 with hbDef
++  have hδ : δ ^ 2 = _ := Real.sq_sqrt (by positivity)
++  have hδ0 : 0 ≤ δ := Real.sqrt_nonneg _
++  have hb : 0 < b := by nlinarith
++  have ⟨hβ,haβ⟩ : 0 ≤ β ∧ 0 < a - β := by
++    constructor <;> nlinarith
++  have htop : α ≤ hA.eigenvalues₀ 0 := by
++    let w := ![c, α - a]
++    have heig : !![a, c; c, b] *ᵥ w = α • w := by
++      ext i
++      fin_cases i <;> simp [w, Matrix.mulVec] <;> nlinarith
++    have hn : 0 < w ⬝ᵥ w := by
++      simp [w, ← pow_two]
++      positivity
++    have h := hR w 0 (by simp)
++    rw [heig, dotProduct_smul, smul_eq_mul] at h
++    nlinarith
++  -- The compression plane meets the orthogonal complement of the top eigenvector.
++  obtain ⟨z, hz, ho⟩ := exists_ne_zero_dotProduct_eq_zero
++    (Qᵀ *ᵥ basis 0)
++  have hp : 0 < z ⬝ᵥ z := dotProduct_self_star_pos_iff.mpr hz
++  have h := hR z ⟨1,Fintype.one_lt_card⟩ (by
++    simpa [Fin.lt_def, ← dotProduct_transpose_mulVec Q] using ho)
++  have hsecond : β ≤ hA.eigenvalues₀ ⟨1,Fintype.one_lt_card⟩ := by
++    apply (mul_le_mul_iff_left₀ hp).mp
++    refine le_trans ?_ h
++    have := sq_nonneg ((a - β) * z 0 + c * z 1)
++    dsimp [β] at *
++    simp [dotProduct, Matrix.mulVec]
++    nlinarith [congr($hδ * z 1 ^ 2)]
++  calc
++    _ = α ^ 2 + β ^ 2 := by nlinarith
++    _ ≤ _ := by gcongr
++
++attribute [local simp] bridgeGraph bridgeAdj Fintype.sum_sum_type Fintype.sum_prod_type Fin.sum_univ_succ SimpleGraph.adjMatrix Matrix.mul_apply
++
++/-- Squared spectral mass in the two largest ordered eigenvalues. -/
++local notation:max "energy " s:max => BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2
++
++/-- The complete combinatorial and ordered-spectral certificate. -/
++theorem connected_counterexample_family s (hs : 3 ≤ s) :
+     forbiddenGraph.chromaticNumber = 4 ∧
+       (∃ i j : Fin 5, forbiddenGraph.Adj i j ∧
+         (forbiddenGraph.deleteEdges {s(i, j)}).chromaticNumber < forbiddenGraph.chromaticNumber) ∧
+       (bridgeGraph s).Connected ∧ forbiddenGraph.Free (bridgeGraph s) ∧
+       (bridgeGraph s).edgeFinset.card = 3 * s ^ 2 + 7 ∧
+-      (656 * (s : ℝ) ^ 2 - 1366 * (s : ℝ) + 62) /
+-          (3 * (37 * (s : ℝ) - 1) ^ 2) ≤
+-        BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2 -
+-          (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) ∧
+-      (4 / 3 : ℝ) * ((bridgeGraph s).edgeFinset.card : ℝ) <
+-        BN.lambda1 (bridgeGraph s) ^ 2 + BN.lambda2 (bridgeGraph s) ^ 2 := by
+-  refine ⟨forbidden_chromaticNumber, forbidden_color_critical,
+-    bridgeGraph_connected s (by omega), bridgeGraph_free s, bridgeGraph_edge_count s (by omega),
+-    ?_, bridgeGraph_ordered_excess s hs⟩
+-  have h := bridgeGraph_spectral_gap s hs
+-  rwa [BN.F_adjMatrix_eq (bridgeGraph s) (bridgeGraph_noncomplete s hs)] at h
++      (656 * ↑s ^ 2 - 1366 * ↑s + 62) /
++          (3 * (37 * ↑s - 1) ^ 2) ≤
++        energy s -
++          4 / 3 * ↑(bridgeGraph s).edgeFinset.card ∧
++      4 / 3 * ↑(bridgeGraph s).edgeFinset.card <
++        energy s := by
++  obtain ⟨t,ht⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : s ≠ 0)
++  have hr : (3 : ℝ) ≤ s := by exact_mod_cast hs
++  have he : (bridgeGraph s).edgeFinset.card = 3 * s ^ 2 + 7 := by
++    subst s
++    have h := (bridgeGraph (t + 1)).sum_degrees_eq_twice_card_edges
++    simp_rw [SimpleGraph.degree, SimpleGraph.neighborFinset_eq_filter, Finset.card_filter] at h
++    conv_lhs at h =>
++      simp [Finset.sum_add_distrib, -Finset.sum_boole]
++    nlinarith
++  have hχ : forbiddenGraph.chromaticNumber = 4 := by
++    refine (SimpleGraph.chromaticNumber_eq_iff_colorable_not_colorable (n := 3)).2 ⟨⟨![(0 : Fin 4), 1, 2, 3, 3], by decide⟩, ?_⟩
++    rintro ⟨c,hc⟩
++    revert c
++    decide +kernel
++  refine ⟨hχ, ?_, ?_, ?_, he, ?_⟩
++  · refine ⟨0, 1, by decide, ?_⟩
++    rw [hχ]
++    exact lt_of_le_of_lt
++      (SimpleGraph.Colorable.chromaticNumber_le ⟨![(0 : Fin 3), 0, 1, 2, 2], by decide⟩) (by norm_num)
++  · let : NeZero s := ⟨by omega⟩
++    rw [SimpleGraph.connected_iff_exists_forall_reachable]
++    refine ⟨.inl (0, 0), ?_⟩
++    rintro (⟨i,b⟩ | j)
++    · apply SimpleGraph.Reachable.trans (v := .inl (if i = 1 then 2 else 1,0)) <;>
++        apply SimpleGraph.Adj.reachable <;> fin_cases i <;> simp
++    · have h : (bridgeGraph s).Reachable (.inl (0,0)) (.inr 0) :=
++        SimpleGraph.Adj.reachable (by simp)
++      by_cases hj : j = 0
++      · subst j; exact h
++      · exact h.trans (SimpleGraph.Adj.reachable (Ne.symm hj))
++  · rintro ⟨f⟩
++    let p : bridgeGraph s →g bridgeGraph 1 := ⟨(fun
++      | .inl (i, _) => .inl (i, 0)
++      | .inr b => .inr b), by
++        intro v w h
++        cases v <;> cases w <;> simp_all⟩
++    have hh := finite_hom (p.comp f.toHom)
++    suffices f 3 = f 4 by have := f.injective this; contradiction
++    cases h3 : f 3 <;> cases h4 : f 4 <;> simp_all [p, -bridgeGraph]
++  · refine (and_iff_left_of_imp fun h => ?_).mpr ?_
++    · exact sub_pos.mp (lt_of_lt_of_le (by apply div_pos <;> nlinarith) h)
++    · set d : ℝ := 37 * s - 1 with hdef
++      have hd : 0 < d := by linarith
++      let x := Real.sqrt (3 * s)
++      let y := Real.sqrt (s * d)
++      let Q := of fun
++        | (.inl (i,a) : BridgeVertex s) => ![x⁻¹, (if i.val = 0 then (if a.val = 0 then (s : ℝ) else 0) - 1 else 0) / y]
++        | .inr _ => ![0, 3 * s / y]
++      let c := 3 * s / (x * y)
++      -- Compute the Gram and adjacency forms together, already normalized.
++      obtain ⟨hQ, hComp, hc⟩ : Qᵀ * Q = 1 ∧
++          Qᵀ * (bridgeGraph s).adjMatrix ℝ * Q =
++            !![2 * (s : ℝ), c; c, (114 * s - 6) / d] ∧
++          c ^ 2 = 3 / d := by
++        and_intros
++        all_goals
++          try
++            subst s
++            ext i j
++            fin_cases i, j
++        all_goals
++          simp [Q, -Finset.sum_boole, c] <;>
++            field_simp (disch := positivity) <;>
++            simp (disch := positivity) only [x, y, Real.sq_sqrt] <;>
++            field_simp (disch := positivity) <;> ring_nf! <;> push_cast <;> ring
++      have h :=
++        positive_compression_le ((bridgeGraph s).isHermitian_adjMatrix ℝ) hQ hComp
++          (by positivity) (by positivity) (by
++            rw [hc]
++            field_simp (disch := positivity)
++            nlinarith)
++      rw [hc] at h
++      rw [he, le_sub_iff_add_le]
++      push_cast
++      convert! h using 1
++      field_simp (disch := linarith)
++      ring!
++
++/-- Connected forbidden-free counterexamples occur above every prescribed edge threshold. -/
++theorem unbounded_connected_counterexamples B :
++    ∃ s : ℕ, 3 ≤ s ∧ B ≤ (bridgeGraph s).edgeFinset.card ∧
++      (bridgeGraph s).Connected ∧ forbiddenGraph.Free (bridgeGraph s) ∧
++      4 / 3 * ↑(bridgeGraph s).edgeFinset.card <
++        energy s := by
++  obtain ⟨_, _, hc, hf, he, _, hg⟩ := connected_counterexample_family (B + 3) (by omega)
++  refine ⟨B + 3, by omega, ?_, hc, hf, hg⟩
++  nlinarith
+ end KKP
