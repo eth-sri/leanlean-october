@@ -14,61 +14,55 @@ open scoped BigOperators
 open Complex
 namespace RoughRegime.Upper
 
+
+variable {n p : ℕ}
 /-- The complete cosine generating series, with its constant term corrected to one. -/
 def cosineKernel (q : ℂ) (t : ℝ) : ℂ :=
-  2 * (∑' k : ℕ, q ^ k * (Real.cos ((k : ℝ) * t) : ℂ)) - 1
-
-lemma cosine_geometric_term (q : ℂ) (t : ℝ) (k : ℕ) :
-    q ^ k * (Real.cos ((k : ℝ) * t) : ℂ) =
-      ((q * Complex.exp ((t : ℂ) * I)) ^ k +
-       (q * Complex.exp ((-t : ℂ) * I)) ^ k) / 2 := by
-  rw [Complex.ofReal_cos, Complex.cos, mul_pow, mul_pow,
-    ← Complex.exp_nat_mul, ← Complex.exp_nat_mul]
-  push_cast
-  rw [show -(↑k * (t : ℂ)) * I = ↑k * ((-t : ℂ) * I) by ring,
-    show ↑k * (t : ℂ) * I = ↑k * ((t : ℂ) * I) by ring]
-  ring
+  2 * (∑' k : ℕ, q ^ k * (Real.cos (↑k * t) : ℂ)) - 1
 
 lemma cosine_geometric_hasSum (q : ℂ) (t : ℝ) (hq : ‖q‖ < 1) :
-    HasSum (fun k : ℕ => q ^ k * (Real.cos ((k : ℝ) * t) : ℂ))
-      (((1 - q * Complex.exp ((t : ℂ) * I))⁻¹ +
+    HasSum (fun k : ℕ => q ^ k * (Real.cos (↑k * t) : ℂ))
+      (((1 - q * Complex.exp (↑t * I))⁻¹ +
         (1 - q * Complex.exp ((-t : ℂ) * I))⁻¹) / 2) := by
-  have ha : ‖q * Complex.exp ((t : ℂ) * I)‖ < 1 := by
+  have ha : ‖q * Complex.exp (↑t * I)‖ < 1 := by
     simpa [norm_mul] using hq
   have hb : ‖q * Complex.exp ((-t : ℂ) * I)‖ < 1 := by
     simpa only [norm_mul, ← Complex.ofReal_neg, Complex.norm_exp_ofReal_mul_I, mul_one] using hq
   convert ((hasSum_geometric_of_norm_lt_one ha).add
     (hasSum_geometric_of_norm_lt_one hb)).div_const 2 using 1
   ext k
-  exact cosine_geometric_term q t k
+  rw [Complex.ofReal_cos, Complex.cos, mul_pow, mul_pow,
+    ← Complex.exp_nat_mul, ← Complex.exp_nat_mul]
+  push_cast
+  rw [show -(↑k * ↑t) * I = ↑k * ((-t : ℂ) * I) by ring,
+    show ↑k * ↑t * I = ↑k * (↑t * I) by ring]
+  ring
 
 /-- Poisson-kernel identity underlying Lemma 4, for complex `q` in the open unit disk. -/
 theorem cosineKernel_eq (q : ℂ) (t : ℝ) (hq : ‖q‖ < 1) :
     cosineKernel q t =
       (1 - q ^ 2) / (1 - 2 * q * (Real.cos t : ℂ) + q ^ 2) := by
-  let E : ℂ := Complex.exp ((t : ℂ) * I)
+  let E : ℂ := Complex.exp (↑t * I)
   let F : ℂ := Complex.exp ((-t : ℂ) * I)
   have hEF : E * F = 1 := by
-    dsimp [E, F]
     rw [← Complex.exp_add]
-    have hz : (t : ℂ) * I + (-t : ℂ) * I = 0 := by push_cast; ring
+    have hz : ↑t * I + (-t : ℂ) * I = 0 := by push_cast; ring
     rw [hz, Complex.exp_zero]
   have hsum : E + F = 2 * (Real.cos t : ℂ) := by
     rw [Complex.ofReal_cos, Complex.cos]
-    dsimp [E, F]
     ring
-  have hE : 1 - q * E ≠ 0 := by
+  have : 1 - q * E ≠ 0 := by
     intro h
     have : q * E = 1 := by linear_combination -h
     have hnorm : ‖q * E‖ < 1 := by simpa [E, norm_mul] using hq
-    simpa [this] using hnorm
-  have hF : 1 - q * F ≠ 0 := by
+    simp [this] at hnorm
+  have : 1 - q * F ≠ 0 := by
     intro h
     have : q * F = 1 := by linear_combination -h
     have hnorm : ‖q * F‖ < 1 := by
       dsimp [F]
       simpa only [norm_mul, ← Complex.ofReal_neg, Complex.norm_exp_ofReal_mul_I, mul_one] using hq
-    simpa [this] using hnorm
+    simp [this] at hnorm
   have hden : 1 - 2 * q * (Real.cos t : ℂ) + q ^ 2 =
       (1 - q * E) * (1 - q * F) := by
     calc
@@ -89,83 +83,15 @@ def intervalRho (lo hi : ℝ) : ℝ :=
 
 lemma intervalRho_pos (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) :
     0 < intervalRho lo hi := by
-  unfold intervalRho
   exact div_pos (sub_pos.mpr (Real.sqrt_lt_sqrt hlo.le hlt))
     (add_pos (Real.sqrt_pos.mpr (lt_trans hlo hlt)) (Real.sqrt_pos.mpr hlo))
 
 lemma intervalRho_lt_one (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) :
     intervalRho lo hi < 1 := by
-  unfold intervalRho
   have hu := Real.sqrt_pos.mpr hlo
   have hv := Real.sqrt_pos.mpr (lt_trans hlo hlt)
   apply (div_lt_one (add_pos hv hu)).mpr
   linarith
-
-/-- The two normalization identities used at `z = 1` in Lemma 4. -/
-lemma interval_normalizations (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi) :
-    (1 - intervalRho lo hi ^ 2) * intervalCenter lo hi =
-      intervalGeometricMean lo hi * (1 + intervalRho lo hi ^ 2) ∧
-    (1 - intervalRho lo hi ^ 2) * intervalHalfWidth lo hi =
-      2 * intervalRho lo hi * intervalGeometricMean lo hi := by
-  have hhi : 0 < hi := lt_trans hlo hlt
-  have hu := Real.sqrt_pos.mpr hlo
-  have hv := Real.sqrt_pos.mpr hhi
-  have hs : Real.sqrt hi + Real.sqrt lo ≠ 0 := ne_of_gt (add_pos hv hu)
-  unfold intervalRho intervalCenter intervalHalfWidth intervalGeometricMean
-  rw [Real.sqrt_mul hlo.le]
-  constructor <;> field_simp <;>
-    nlinarith [Real.sq_sqrt hlo.le, Real.sq_sqrt hhi.le]
-
-lemma interval_angular_pos (lo hi t : ℝ) (hlo : 0 < lo) (hlt : lo < hi) :
-    0 < intervalCenter lo hi + intervalHalfWidth lo hi * Real.cos t := by
-  have hc := Real.neg_one_le_cos t
-  have hd : 0 < intervalHalfWidth lo hi := by unfold intervalHalfWidth; positivity
-  have hm := mul_le_mul_of_nonneg_left hc hd.le
-  unfold intervalCenter intervalHalfWidth at *
-  nlinarith
-
-/-- The normalized reciprocal cosine series in Lemma 4, without any assumed series identity. -/
-theorem interval_reciprocal_angular (lo hi t : ℝ) (hlo : 0 < lo) (hlt : lo < hi) :
-    cosineKernel (-(intervalRho lo hi : ℂ)) t =
-      (intervalGeometricMean lo hi : ℂ) /
-        (intervalCenter lo hi + intervalHalfWidth lo hi * Real.cos t : ℝ) := by
-  let ρ := intervalRho lo hi
-  have hρ := intervalRho_pos lo hi hlo hlt
-  have hρ1 := intervalRho_lt_one lo hi hlo hlt
-  have hq : ‖(-(ρ : ℂ))‖ < 1 := by simpa [ρ, norm_neg, Complex.norm_real, abs_of_pos hρ] using hρ1
-  have hn := interval_normalizations lo hi hlo hlt
-  have hC := hn.1
-  have hD := hn.2
-  have hpositive := interval_angular_pos lo hi t hlo hlt
-  have hnonzero : intervalCenter lo hi + intervalHalfWidth lo hi * Real.cos t ≠ 0 := ne_of_gt hpositive
-  have hgpositive : 0 < intervalGeometricMean lo hi := by
-    unfold intervalGeometricMean
-    exact Real.sqrt_pos.mpr (mul_pos hlo (lt_trans hlo hlt))
-  have hgzero : intervalGeometricMean lo hi ≠ 0 := ne_of_gt hgpositive
-  have hden :
-      (1 - 2 * (-(ρ : ℂ)) * (Real.cos t : ℂ) + (-(ρ : ℂ)) ^ 2) *
-      (intervalGeometricMean lo hi : ℂ) =
-      (1 - (-(ρ : ℂ)) ^ 2) *
-      (intervalCenter lo hi + intervalHalfWidth lo hi * Real.cos t : ℝ) := by
-    have hr : (1 - 2 * (-ρ) * Real.cos t + (-ρ) ^ 2) *
-        intervalGeometricMean lo hi = (1 - (-ρ) ^ 2) *
-        (intervalCenter lo hi + intervalHalfWidth lo hi * Real.cos t) := by
-      dsimp [ρ]
-      linear_combination -hC - Real.cos t * hD
-    exact_mod_cast hr
-  rw [cosineKernel_eq _ _ hq]
-  have hdnonzero : (1 - 2 * (-(ρ : ℂ)) * (Real.cos t : ℂ) + (-(ρ : ℂ)) ^ 2) ≠ 0 := by
-    have hA : (1 - ρ ^ 2 : ℝ) ≠ 0 := by nlinarith
-    have hB : (1 - (-(ρ : ℂ)) ^ 2) ≠ 0 := by
-      simpa only [neg_sq] using (show (1 - (ρ : ℂ) ^ 2) ≠ 0 by exact_mod_cast hA)
-    intro hz
-    rw [hz, zero_mul] at hden
-    have : ((1 - (-(ρ : ℂ)) ^ 2) *
-      (intervalCenter lo hi + intervalHalfWidth lo hi * Real.cos t : ℝ)) ≠ 0 :=
-      mul_ne_zero hB (by exact_mod_cast hnonzero)
-    exact this hden.symm
-  apply (div_eq_div_iff hdnonzero (by exact_mod_cast hnonzero)).mpr
-  simpa only [mul_comm] using hden.symm
 
 open MeasureTheory ProbabilityTheory
 
@@ -182,24 +108,6 @@ def reciprocalSeries (lo hi : ℝ) (z : ℂ) (x : ℝ) : ℂ :=
       (((Polynomial.Chebyshev.T ℝ (k + 1 : ℕ)).eval
         ((x - intervalCenter lo hi) / intervalHalfWidth lo hi) : ℝ) : ℂ)
 
-lemma reciprocalSeries_eq_cosineKernel (lo hi x : ℝ) (z : ℂ) (t : ℝ)
-    (hrep : (x - intervalCenter lo hi) / intervalHalfWidth lo hi = Real.cos t)
-    (hq : ‖(-(intervalRho lo hi : ℂ) * z)‖ < 1) :
-    reciprocalSeries lo hi z x = cosineKernel (-(intervalRho lo hi : ℂ) * z) t := by
-  let q : ℂ := -(intervalRho lo hi : ℂ) * z
-  have hs := (cosine_geometric_hasSum q t hq).summable
-  have heval (k : ℕ) :
-      (Polynomial.Chebyshev.T ℝ (k + 1 : ℕ)).eval (Real.cos t) =
-        Real.cos (((k + 1 : ℕ) : ℝ) * t) := by
-    simpa using Polynomial.Chebyshev.T_real_cos t (k + 1 : ℕ)
-  unfold reciprocalSeries cosineKernel
-  rw [hrep]
-  simp_rw [heval]
-  rw [hs.tsum_eq_zero_add]
-  simp only [pow_zero, Nat.cast_zero, zero_mul, Real.cos_zero, Complex.ofReal_one, mul_one]
-  change 1 + 2 * ∑' k : ℕ, q ^ (k + 1) * (Real.cos (((k + 1 : ℕ) : ℝ) * t) : ℂ) = _
-  ring
-
 lemma interval_argument_mem (lo hi x : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
     (hx : x ∈ Set.Icc lo hi) :
     (x - intervalCenter lo hi) / intervalHalfWidth lo hi ∈ Set.Icc (-1) 1 := by
@@ -212,29 +120,6 @@ lemma interval_argument_mem (lo hi x : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
     unfold intervalCenter intervalHalfWidth
     linarith [hx.2]
 
-/-- The `z = 1` reciprocal identity of Lemma 4, for every point in the interval. -/
-theorem reciprocal_expansion_at_one (lo hi x : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (hx : x ∈ Set.Icc lo hi) :
-    reciprocalSeries lo hi 1 x = (intervalGeometricMean lo hi : ℂ) / (x : ℂ) := by
-  let y := (x - intervalCenter lo hi) / intervalHalfWidth lo hi
-  let t := Real.arccos y
-  have hy := interval_argument_mem lo hi x hlo hlt hx
-  have hcos : Real.cos t = y := Real.cos_arccos hy.1 hy.2
-  have hp := intervalRho_pos lo hi hlo hlt
-  have hlt1 := intervalRho_lt_one lo hi hlo hlt
-  have hq : ‖(-(intervalRho lo hi : ℂ) * (1 : ℂ))‖ < 1 := by
-    simpa [norm_neg, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hp] using hlt1
-  rw [reciprocalSeries_eq_cosineKernel lo hi x 1 t hcos.symm hq]
-  simp only [mul_one]
-  rw [interval_reciprocal_angular lo hi t hlo hlt]
-  congr 1
-  congr 1
-  rw [hcos]
-  dsimp [y]
-  have hd : intervalHalfWidth lo hi ≠ 0 := by unfold intervalHalfWidth; positivity
-  field_simp
-  ring
-
 /-- Slots of an exponent vector: variable `i` occurs `α i` times. -/
 def ExponentSlots {p : ℕ} (α : Fin p →₀ ℕ) := Σ i : Fin p, Fin (α i)
 
@@ -243,18 +128,18 @@ instance {p : ℕ} (α : Fin p →₀ ℕ) : Fintype (ExponentSlots α) := by
   infer_instance
 
 /-- A fixed ordering of the factors of a monomial. -/
-def exponentCoordinates {p : ℕ} (α : Fin p →₀ ℕ) :
+def exponentCoordinates  (α : Fin p →₀ ℕ) :
     Fin (Fintype.card (ExponentSlots α)) → Fin p :=
   fun j => ((Fintype.equivFin (ExponentSlots α)).symm j).1
 
-lemma exponentSlots_card {p : ℕ} (α : Fin p →₀ ℕ) :
+lemma exponentSlots_card  (α : Fin p →₀ ℕ) :
     Fintype.card (ExponentSlots α) = α.sum (fun _ e => e) := by
   unfold ExponentSlots
   rw [Fintype.card_sigma]
   simp only [Fintype.card_fin]
   exact (Finsupp.sum_fintype α (fun _ e => e) (fun _ => rfl)).symm
 
-lemma exponentCoordinates_prod {p : ℕ} (α : Fin p →₀ ℕ) (m : Fin p → ℝ) :
+lemma exponentCoordinates_prod  (α : Fin p →₀ ℕ) (m : Fin p → ℝ) :
     (∏ j, m (exponentCoordinates α j)) = ∏ i : Fin p, m i ^ α i := by
   change (∏ j : Fin (Fintype.card (ExponentSlots α)),
     m (((Fintype.equivFin (ExponentSlots α)).symm j).1)) = _
@@ -266,28 +151,13 @@ lemma exponentCoordinates_prod {p : ℕ} (α : Fin p →₀ ℕ) (m : Fin p → 
   simp
 
 /-- The polynomial lift, explicitly replacing each monomial by its distinct-sample statistic. -/
-def polynomialLift {Ω : Type*} {n p : ℕ} (F : MvPolynomial (Fin p) ℝ)
+def polynomialLift {Ω : Type*}  (F : MvPolynomial (Fin p) ℝ)
     (X : Fin n → Ω → Fin p → ℝ) (ω : Ω) : ℝ :=
   ∑ α ∈ F.support, F.coeff α * monomialLift (exponentCoordinates α) X ω
 
 lemma chebyshev_abs_le_one (y : ℝ) (hy : y ∈ Set.Icc (-1) 1) (k : ℕ) :
-    |(Polynomial.Chebyshev.T ℝ (k : ℕ)).eval y| ≤ 1 := by
-  have hc : Real.cos (Real.arccos y) = y := Real.cos_arccos hy.1 hy.2
-  rw [← hc, Polynomial.Chebyshev.T_real_cos]
+    |(Polynomial.Chebyshev.T ℝ ↑k).eval y| ≤ 1 := by
+  rw [← (Real.cos_arccos hy.1 hy.2), Polynomial.Chebyshev.T_real_cos]
   exact Real.abs_cos_le_one _
-
-/-- Scalar real form of the reciprocal series. -/
-lemma reciprocal_real_series (lo hi x : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (hx : x ∈ Set.Icc lo hi) :
-    1 + 2 * ∑' k : ℕ, (-intervalRho lo hi) ^ (k + 1) *
-      (Polynomial.Chebyshev.T ℝ (k + 1 : ℕ)).eval
-        ((x - intervalCenter lo hi) / intervalHalfWidth lo hi) =
-      intervalGeometricMean lo hi / x := by
-  have h := reciprocal_expansion_at_one lo hi x hlo hlt hx
-  unfold reciprocalSeries at h
-  simp only [mul_one, ← Complex.ofReal_neg, ← Complex.ofReal_pow, ← Complex.ofReal_mul,
-    ← Complex.ofReal_tsum, ← Complex.ofReal_ofNat, ← Complex.ofReal_div] at h
-  apply Complex.ofReal_injective
-  simpa only [Complex.ofReal_add, Complex.ofReal_one] using h
 
 end RoughRegime.Upper

@@ -14,25 +14,25 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
 
-theorem finite_response_density_zero {I J : Type*} [Fintype I] [Fintype J]
+theorem finite_response_density_zero  [Fintype I] [Fintype J]
     (w : I → ℝ) (v : J → ℝ) (hv : ∑ j, v j = 0) (F : I → ℝ) :
     (∑ h : I × J, w h.1 * v h.2 * F h.1) = 0 := by
   rw [Fintype.sum_prod_type]
   apply Finset.sum_eq_zero
   intro i _
-  have he (j : J) : w i * v j * F i = (w i * F i) * v j := by ring
+  have he (j : J) : w i * v j * F i = w i * F i * v j := by ring
   simp only [he, ← Finset.mul_sum, hv, mul_zero]
 
 section Generic
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
   [MeasurableSpace ι] [MeasurableSingletonClass ι]
 
-theorem highPacketAbsoluteLaw_density_observable_zero (σ : Measure Z) [IsFiniteMeasure σ]
+theorem highPacketAbsoluteLaw_density_observable_zero (σ ) [IsFiniteMeasure σ]
     (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
     (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
     (F : Z × HighDensityMarkIndex m r D → ℝ) (hF : Measurable F)
-    (L : ℝ) (hbound : ∀ e, ‖F e‖ ≤ L) :
+    (L ) (hbound : ∀ e, ‖F e‖ ≤ L) :
     (∫ e, highPacketActivation σ a b m r D q C A e * F (e.1,e.2.1)
       ∂highPacketAbsoluteLaw σ a b m r D q C A) = 0 := by
   have hm : Measurable (fun e : Z × HighPacketMarkIndex ι m r D q => F (e.1,e.2.1)) :=
@@ -46,19 +46,17 @@ theorem highPacketAbsoluteLaw_density_observable_zero (σ : Measure Z) [IsFinite
   have he (ζ : Z) : (∑ h : HighPacketMarkIndex ι m r D q,
       highPacketMarkWeight a b m r D q C A (ζ,h) * F (ζ,h.1)) = 0 := by
     dsimp only [highPacketMarkWeight]
-    have hz : (∑ h : HighResponseMarkIndex ι q, highResponseMarkWeight C q (A ζ) h) = 0 := by
-      have hr := highResponseMark_action q C (A ζ) (fun _ => 0) (fun _ => 1)
-      simpa only [mul_one, responseMatrixAction_zero_mass] using hr
+    have hr := highResponseMark_action q C (A ζ) (fun _ => 0) (fun _ => 1)
     exact finite_response_density_zero (densityPacketWeight a b m r D)
-      (highResponseMarkWeight C q (A ζ)) hz (fun h => F (ζ,h))
+      (highResponseMarkWeight C q (A ζ)) (by simpa only [mul_one, responseMatrixAction_zero_mass] using hr) (fun h => F (ζ,h))
   simp only [he, integral_zero]
 
-theorem finePairPacketAbsoluteLaw_density_observable_zero (σ : Measure Z) [IsFiniteMeasure σ]
+theorem finePairPacketAbsoluteLaw_density_observable_zero (σ ) [IsFiniteMeasure σ]
     (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
     (hpos : 0 < finePairPacketMarkMass σ a b M q C A)
     (F : Z × FinePairDensityIndex M → ℝ) (hF : Measurable F)
-    (L : ℝ) (hbound : ∀ e, ‖F e‖ ≤ L) :
+    (L ) (hbound : ∀ e, ‖F e‖ ≤ L) :
     (∫ e, finePairPacketActivation σ a b M q C A e * F (e.1,e.2.1)
       ∂finePairPacketAbsoluteLaw σ a b M q C A) = 0 := by
   have hm : Measurable (fun e : Z × FinePairPacketIndex ι M q => F (e.1,e.2.1)) :=
@@ -72,11 +70,9 @@ theorem finePairPacketAbsoluteLaw_density_observable_zero (σ : Measure Z) [IsFi
   have he (ζ : Z) : (∑ h : FinePairPacketIndex ι M q,
       finePairPacketWeight a b M q C A (ζ,h) * F (ζ,h.1)) = 0 := by
     dsimp only [finePairPacketWeight]
-    have hz : (∑ h : HighResponseMarkIndex ι q, highResponseMarkWeight C q (A ζ) h) = 0 := by
-      have hr := highResponseMark_action q C (A ζ) (fun _ => 0) (fun _ => 1)
-      simpa only [mul_one, responseMatrixAction_zero_mass] using hr
+    have hr := highResponseMark_action q C (A ζ) (fun _ => 0) (fun _ => 1)
     exact finite_response_density_zero (finePairDensityWeight a b M)
-      (highResponseMarkWeight C q (A ζ)) hz (fun h => F (ζ,h))
+      (highResponseMarkWeight C q (A ζ)) (by simpa only [mul_one, responseMatrixAction_zero_mass] using hr) (fun h => F (ζ,h))
   simp only [he, integral_zero]
 
 end Generic

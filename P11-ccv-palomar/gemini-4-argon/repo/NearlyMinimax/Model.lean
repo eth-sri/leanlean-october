@@ -18,6 +18,8 @@ open scoped ENNReal BigOperators
 
 namespace NearlyMinimax
 
+
+variable {d n : ℕ}
 abbrev Covariate (d : ℕ) := Fin d → ℝ
 abbrev Observation (d : ℕ) := Covariate d × ℝ
 
@@ -80,23 +82,16 @@ structure ModelConstants (d : ℕ) where
   fourthBound : ℝ
   fourth_margin : varianceLower ^ 2 < fourthBound
 
-def ModelConstants.alpha {d : ℕ} (C : ModelConstants d) : ℝ :=
+def ModelConstants.alpha  (C : ModelConstants d) : ℝ :=
   C.smoothness - C.order
 
-theorem ModelConstants.order_eq {d : ℕ} (C : ModelConstants d) :
+theorem ModelConstants.order_eq  (C : ModelConstants d) :
     C.order = Nat.ceil C.smoothness - 1 := by
   have hc : Nat.ceil C.smoothness = C.order + 1 := by
     apply (Nat.ceil_eq_iff (Nat.succ_ne_zero C.order)).mpr
     simpa only [Nat.succ_sub_one, Nat.cast_succ, Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one] using
       And.intro C.order_lt C.smoothness_le_order_add_one
   rw [hc, Nat.add_sub_cancel]
-
-theorem ModelConstants.alpha_pos {d : ℕ} (C : ModelConstants d) : 0 < C.alpha := by
-  exact sub_pos.mpr C.order_lt
-
-theorem ModelConstants.alpha_le_one {d : ℕ} (C : ModelConstants d) : C.alpha ≤ 1 := by
-  dsimp [ModelConstants.alpha]
-  linarith [C.smoothness_le_order_add_one]
 
 /-- Kernels are defined on the ambient space; values outside the cube are irrelevant. -/
 structure RegressionParameter (d : ℕ) where
@@ -155,13 +150,13 @@ def minimaxRisk {d : ℕ} (C : ModelConstants d) (n : ℕ) : ℝ≥0∞ :=
 def minimaxRMS {d : ℕ} (C : ModelConstants d) (n : ℕ) : ℝ≥0∞ :=
   (minimaxRisk C n) ^ (1 / 2 : ℝ)
 
-theorem designLaw_isProbability {d : ℕ} (C : ModelConstants d)
+theorem designLaw_isProbability  (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) :
     IsProbabilityMeasure (designLaw θ) := by
   refine ⟨?_⟩
   simpa [designLaw, withDensity_apply] using hθ.2.2.2.1
 
-theorem observationLaw_isProbability {d : ℕ} (C : ModelConstants d)
+theorem observationLaw_isProbability  (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) :
     IsProbabilityMeasure (observationLaw θ) := by
   letI := designLaw_isProbability C θ hθ
@@ -169,16 +164,16 @@ theorem observationLaw_isProbability {d : ℕ} (C : ModelConstants d)
     (measurable_fst.prodMk ((hθ.2.1.comp measurable_fst).add measurable_snd)).aemeasurable).mpr
       inferInstance
 
-theorem sampleLaw_isProbability {d : ℕ} (C : ModelConstants d)
+theorem sampleLaw_isProbability  (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (n : ℕ) :
     IsProbabilityMeasure (sampleLaw θ n) := by
   letI := observationLaw_isProbability C θ hθ
   exact inferInstanceAs (IsProbabilityMeasure (Measure.pi (fun _ : Fin n => observationLaw θ)))
 
-def constantEstimator (d n : ℕ) (v : ℝ) : Estimator d n :=
+def constantEstimator (d n ) (v : ℝ) : Estimator d n :=
   ⟨fun _ => v, measurable_const⟩
 
-theorem constantEstimator_risk_bound {d n : ℕ} (C : ModelConstants d)
+theorem constantEstimator_risk_bound  (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) :
     meanSquaredRisk (constantEstimator d n C.varianceLower) θ ≤
       ENNReal.ofReal ((C.varianceUpper - C.varianceLower) ^ 2) := by
@@ -192,23 +187,21 @@ theorem constantEstimator_risk_bound {d n : ℕ} (C : ModelConstants d)
   simp only [lintegral_const, measure_univ, mul_one]
   exact ENNReal.ofReal_le_ofReal hs
 
-theorem minimaxRisk_le_worstCaseRisk {d n : ℕ} (C : ModelConstants d)
+theorem minimaxRisk_le_worstCaseRisk  (C : ModelConstants d)
     (T : Estimator d n) : minimaxRisk C n ≤ worstCaseRisk C T :=
   iInf_le _ T
 
-theorem meanSquaredRisk_le_worstCaseRisk {d n : ℕ} (C : ModelConstants d)
+theorem meanSquaredRisk_le_worstCaseRisk  (C )
     (T : Estimator d n) (θ : RegressionParameter d) (hθ : Admissible C θ) :
     meanSquaredRisk T θ ≤ worstCaseRisk C T :=
   le_iSup (fun θ : {θ : RegressionParameter d // Admissible C θ} =>
     meanSquaredRisk T θ.val) ⟨θ, hθ⟩
 
-theorem minimaxRisk_finite {d : ℕ} (C : ModelConstants d) (n : ℕ) :
-    minimaxRisk C n < ∞ := by
-  apply lt_of_le_of_lt (minimaxRisk_le_worstCaseRisk C
-    (constantEstimator d n C.varianceLower))
-  unfold worstCaseRisk
-  apply lt_of_le_of_lt (iSup_le fun (θ : {θ : RegressionParameter d // Admissible C θ}) =>
-    constantEstimator_risk_bound (n := n) C θ.val θ.property)
-  exact ENNReal.ofReal_lt_top
+theorem ModelConstants.alpha_pos  (C : ModelConstants d) : 0 < C.alpha := sub_pos.mpr C.order_lt
+
+theorem ModelConstants.alpha_le_one  (C : ModelConstants d) : C.alpha ≤ 1 := by
+  dsimp [ModelConstants.alpha]
+  linarith [C.smoothness_le_order_add_one]
+
 
 end NearlyMinimax

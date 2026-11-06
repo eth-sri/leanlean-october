@@ -23,28 +23,23 @@ set_option backward.isDefEq.respectTransparency false
 
 variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
 
-/-- A centered square-integrable error has variance equal to its second moment. -/
-theorem centered_variance_eq_second_moment [IsProbabilityMeasure μ]
-    {ε : Ω → ℝ} (hε : MemLp ε 2 μ) (hmean : ∫ ω, ε ω ∂μ = 0) :
-    variance ε μ = ∫ ω, ε ω ^ 2 ∂μ := by
-  simpa [hmean] using variance_eq_sub hε
-
 /-- The conditional second-moment identity, on a fixed conditional probability
 space: an error of mean zero and second moment `V` gives `E Y² = f² + V`. -/
 theorem response_second_moment_of_centered_error [IsProbabilityMeasure μ]
     {ε : Ω → ℝ} (hε : MemLp ε 2 μ) (hmean : ∫ ω, ε ω ∂μ = 0)
     {V : ℝ} (hsecond : ∫ ω, ε ω ^ 2 ∂μ = V) (f : ℝ) :
     (∫ ω, (f + ε ω) ^ 2 ∂μ) = f ^ 2 + V := by
-  have hY : MemLp (fun ω => f + ε ω) 2 μ := (memLp_const f).add hε
   have hmY : (∫ ω, f + ε ω ∂μ) = f := by
     rw [integral_add (integrable_const f) (hε.integrable (by norm_num)),
       integral_const, hmean]
     simp
   have hvε : variance ε μ = V := by
-    rw [centered_variance_eq_second_moment hε hmean, hsecond]
+    have h_centered_variance_eq_second_moment : variance ε μ = ∫ ω, ε ω ^ 2 ∂μ := by
+      simpa [hmean] using variance_eq_sub hε
+    rw [h_centered_variance_eq_second_moment, hsecond]
   have hvY : variance (fun ω => f + ε ω) μ = V := by
     rw [variance_const_add hε.aestronglyMeasurable f, hvε]
-  have heq := variance_eq_sub hY
+  have heq := variance_eq_sub ((memLp_const f).add hε)
   change variance (fun ω => f + ε ω) μ =
     (∫ ω, (f + ε ω) ^ 2 ∂μ) - (∫ ω, f + ε ω ∂μ) ^ 2 at heq
   rw [hvY, hmY] at heq

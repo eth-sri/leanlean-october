@@ -1,69 +1,64 @@
 module
-
 public import NearlyMinimax.FinePairRowSource
 public import NearlyMinimax.FinePairRowAnnihilation
-public import NearlyMinimax.HighUnionSourceGeometry
-
 @[expose] public section
-
-/-! Genuine complete fine-pair union mass-indicator annihilation. The
-response coordinates are summed out of the actual signed packets; no
-invariant-law or conditional score equality is assumed. -/
 noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
+set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
-
+section
+variable {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
+  [∀ i, MeasurableSpace (E i)]
+  (R : HighUnionRowData d k F I E)
+variable [NeZero k] [LinearOrder (HighWindowLabels d k)] (C : ModelConstants d)
+theorem highUnionSourceState_append (j h e) :
+    highUnionSourceState C R (historyMarkedAppend
+      (fun i j => j ∈ highNeighborLabels d k i)
+      (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) =
+    highUnionRawUpdate R (highCenterMix C) j e (highUnionSourceState C R h) :=
+  have h_highUnionMarkedState_append (δ) : highUnionMarkedState R (fun i j => j ∈ highNeighborLabels d k i) δ highUnionVacuum
+      (historyMarkedAppend (fun i j => j ∈ highNeighborLabels d k i)
+        (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) =
+      highUnionRawUpdate R δ j e
+        (highUnionMarkedState R (fun i j => j ∈ highNeighborLabels d k i) δ highUnionVacuum h) := highMarkedRawState_patch_append d k (highUnionSlope R)
+    (fun _ e _ => highUnionIntercept R δ e) (fun _ => highUnionResponseReset R) highUnionVacuum j h e
+  (h_highUnionMarkedState_append _)
+theorem highUnionSourceDensity_append_of_not_mem (j h e x) (hx : x ∉ highTorusPatch d k j) :
+    highUnionSourceDensity C R (historyMarkedAppend
+      (fun i j => j ∈ highNeighborLabels d k i)
+      (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) x =
+    highUnionSourceDensity C R h x := by
+  change (highUnionSourceState C R _).1 x = _
+  rw [highUnionSourceState_append R C j h e]
+  have h_highUnionRawUpdate_density_of_not_mem (δ) (θ) : (highUnionRawUpdate R δ j e θ).1 x = θ.1 x := by
+    simp only [highUnionRawUpdate, rawPatchUpdate, affinePatchUpdate, ite_eq_right hx]
+  exact h_highUnionRawUpdate_density_of_not_mem _ _
+end
 abbrev FinePairRowDensityMark (d D M : ℕ) : FinePairRowTag → Type
   | .unit => Unit × HighDensityMarkIndex D 2 D
   | .coarse => (ℝ × FinePairFieldMark d) × HighDensityMarkIndex D 2 D
   | .fine => (ℝ × FinePairFieldMark d) × FinePairDensityIndex M
-
 instance (d D M : ℕ) (i : FinePairRowTag) : MeasurableSpace (FinePairRowDensityMark d D M i) := by
   cases i <;> dsimp only [FinePairRowDensityMark] <;> infer_instance
-
-def finePairRowDensityProj (d D M q : ℕ) (i : FinePairRowTag) :
+def finePairRowDensityProj (d D M q i) :
     FinePairRowMark d D M q i → FinePairRowDensityMark d D M i := by
   cases i <;> exact fun e => (e.1,e.2.1)
-
-def finePairRowWithResponse (d D M q : ℕ) (i : FinePairRowTag)
+def finePairRowWithResponse (d D M q i)
     (r : HighResponseMarkIndex (HighFrameIndex d D) q) :
     FinePairRowDensityMark d D M i → FinePairRowMark d D M q i := by
   cases i <;> exact fun e => (e.1,(e.2,r))
-
-theorem finePairRowWithResponse_measurable (d D M q : ℕ) (i : FinePairRowTag)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q) :
+theorem finePairRowWithResponse_measurable (d D M q i r) :
     Measurable (finePairRowWithResponse d D M q i r) := by
   cases i <;> exact measurable_fst.prodMk (measurable_snd.prodMk measurable_const)
-
-theorem finePairRow_density_observable_zero (d : ℕ) [NeZero d] (D M q : ℕ)
-    (a b C T₀ N : ℝ) (hpos : ∀ i, 0 < finePairRowMass d D M q a b C T₀ N i)
-    (i : FinePairRowTag) (F : FinePairRowDensityMark d D M i → ℝ) (hF : Measurable F)
-    (L : ℝ) (hL : ∀ e, ‖F e‖ ≤ L) :
-    (∫ e, finePairRowActivation d D M q a b C T₀ N i e *
-      F (finePairRowDensityProj d D M q i e) ∂finePairRowLaw d D M q a b C T₀ N i) = 0 := by
-  cases i
-  · exact highPacketAbsoluteLaw_density_observable_zero (Measure.dirac ()) a b D 2 D q C
-      (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _)
-      (hpos .unit) F hF L hL
-  · exact highPacketAbsoluteLaw_density_observable_zero (finePairTimeFieldMeasure d 0 T₀)
-      a b D 2 D q C _ (finePairTimeMatrix_measurable d _)
-      (finePairTimeMatrix_cost_integrable d 0 T₀ _) (hpos .coarse) F hF L hL
-  · exact finePairPacketAbsoluteLaw_density_observable_zero (finePairTimeFieldMeasure d T₀ N)
-      a b M q C _ (finePairTimeMatrix_measurable d _)
-      (finePairTimeMatrix_cost_integrable d T₀ N _) (hpos .fine) F hF L hL
-
-/-- True complete-union action equals the sum of its actual uncentered
-row actions, for any bounded measurable observable. -/
-theorem highUnionSource_bounded_action {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
-    [∀ i, MeasurableSpace (E i)] (C : ModelConstants d)
+theorem highUnionSource_bounded_action   [Fintype I] 
+    [∀ i, MeasurableSpace (E i)] (C )
     (R : HighUnionRowData d k F I E) {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R)
     (hpos : ∀ i, 0 < R.rowMass i)
-    (Fobs : HighUnionMark E → ℝ) (hF : Measurable Fobs)
-    (L : ℝ) (hL : ∀ e, ‖Fobs e‖ ≤ L) :
+    (Fobs ) (hF : Measurable Fobs)
+    (L ) (hL : ∀ e, ‖Fobs e‖ ≤ L) :
     (∫ e, highUnionActivation R (highCenterMix C) e * Fobs e
       ∂highUnionLaw R (highCenterMix C)) =
       ∑ i, ∫ e, R.rowActivation i e * Fobs (Sum.inl ⟨i,e⟩) ∂(R.rowLaw i) := by
@@ -85,10 +80,8 @@ theorem highUnionSource_bounded_action {d k F : ℕ} {I : Type*} [Fintype I] {E 
     (hF.comp measurable_inl) (fun i => (hi i).mul_bdd
       (hF.comp (measurable_inl.comp (rowSigmaMk_measurable i))).aestronglyMeasurable
         (Filter.Eventually.of_forall (fun e => hL (Sum.inl ⟨i,e⟩))))
-
 section
 variable {d k D M q : ℕ} [NeZero k] [NeZero d] [LinearOrder (HighWindowLabels d k)]
     (C : ModelConstants d) (Cfr T₀ N : ℝ)
-
 end
 end NearlyMinimax

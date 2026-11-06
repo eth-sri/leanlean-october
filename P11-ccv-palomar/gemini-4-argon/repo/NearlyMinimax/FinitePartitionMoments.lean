@@ -47,10 +47,10 @@ theorem sameLabelKernel_symmetric (z : X × X) :
     sameLabelKernel label z.swap = sameLabelKernel label z := by
   simp only [sameLabelKernel, Prod.fst_swap, Prod.snd_swap, eq_comm]
 
-theorem sameLabelKernel_row (x : X) :
+theorem sameLabelKernel_row (x ) :
     (∫ y, sameLabelKernel label (x, y) ∂μ) = μ.real (label ⁻¹' {label x}) := by
   have he : (fun y => sameLabelKernel label (x, y)) =
-      (label ⁻¹' {label x}).indicator (fun _ => (1 : ℝ)) := by
+      (label ⁻¹' {label x}).indicator (fun _ => 1) := by
     funext y
     simp [sameLabelKernel, Set.indicator, eq_comm]
   rw [he, integral_indicator ((measurableSet_singleton _).preimage hlabel)]
@@ -82,7 +82,7 @@ theorem sameLabelKernel_row_square_integral :
 
 end Partition
 
-theorem finite_probability_second_moment_le {B : Type*} [Fintype B]
+theorem finite_probability_second_moment_le  [Fintype B]
     (p : B → ℝ) (cap : ℝ) (hp : ∀ c, 0 ≤ p c) (hsum : ∑ c, p c = 1)
     (hcap : ∀ c, p c ≤ cap) : ∑ c, p c ^ 2 ≤ cap := by
   calc
@@ -92,7 +92,7 @@ theorem finite_probability_second_moment_le {B : Type*} [Fintype B]
       nlinarith [mul_le_mul_of_nonneg_right (hcap c) (hp c)]
     _ = cap := by rw [← Finset.mul_sum, hsum, mul_one]
 
-theorem finite_probability_third_moment_le {B : Type*} [Fintype B]
+theorem finite_probability_third_moment_le  [Fintype B]
     (p : B → ℝ) (cap : ℝ) (hp : ∀ c, 0 ≤ p c) (hsum : ∑ c, p c = 1)
     (hcap : ∀ c, p c ≤ cap) (hc : 0 ≤ cap) : ∑ c, p c ^ 3 ≤ cap ^ 2 := by
   calc
@@ -105,30 +105,23 @@ theorem finite_probability_third_moment_le {B : Type*} [Fintype B]
       (finite_probability_second_moment_le p cap hp hsum hcap) hc
     _ = cap ^ 2 := by ring
 
-def regularGridCollisionMass {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) : ℝ :=
+def regularGridCollisionMass  (θ : RegressionParameter d) (k ) (hk : 0 < k) : ℝ :=
   ∑ c, regularGridProbability θ k hk c ^ 2
 
 theorem regularGridCollisionMass_lower {d : ℕ} (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    1 / (k : ℝ) ^ d ≤ regularGridCollisionMass θ k hk := by
-  have hmass := partitionPairMass_lower (regularGridProbability θ k hk)
-    (regularGridProbability_sum C θ hθ k hk)
+    1 / ↑k ^ d ≤ regularGridCollisionMass θ k hk := by
+  have h_partitionPairMass_lower : 1 ≤ partitionPairMass (regularGridProbability θ k hk) := by
+    have hsum  := regularGridProbability_sum C θ hθ k hk
+    simpa [partitionPairMass, hsum] using (sq_sum_le_card_mul_sum_sq (s := Finset.univ) (f := regularGridProbability θ k hk))
+  have hmass := h_partitionPairMass_lower
   simp only [partitionPairMass, Fintype.card_fun, Fintype.card_fin, Nat.cast_pow] at hmass
-  have hkr : 0 < (k : ℝ) := by exact_mod_cast hk
-  exact (div_le_iff₀ (pow_pos hkr d)).2 (by simpa only [mul_comm, regularGridCollisionMass] using hmass)
+  exact (div_le_iff₀ (pow_pos (by exact_mod_cast hk) d)).2 (by simpa only [mul_comm, regularGridCollisionMass] using hmass)
 
-theorem regularGridCollisionMass_upper {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    regularGridCollisionMass θ k hk ≤ C.densityUpper / (k : ℝ) ^ d :=
+theorem regularGridCollisionMass_upper  (C : ModelConstants d)
+    (θ ) (hθ : Admissible C θ) (k hk) :
+    regularGridCollisionMass θ k hk ≤ C.densityUpper / ↑k ^ d :=
   finite_probability_second_moment_le _ _ (regularGridProbability_nonneg θ k hk)
     (regularGridProbability_sum C θ hθ k hk) (regularGridProbability_cap C θ hθ k hk)
-
-theorem regularGridCollisionRowEnergy_upper {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    (∑ c, regularGridProbability θ k hk c ^ 3) ≤
-      (C.densityUpper / (k : ℝ) ^ d) ^ 2 := by
-  apply finite_probability_third_moment_le _ _ (regularGridProbability_nonneg θ k hk)
-    (regularGridProbability_sum C θ hθ k hk) (regularGridProbability_cap C θ hθ k hk)
-  exact div_nonneg (by linarith [C.one_lt_densityUpper]) (pow_nonneg (Nat.cast_nonneg k) d)
 
 end NearlyMinimax
