@@ -1,5 +1,4 @@
-module
-public import ThreeSumApsp.Sec2.Lemma11
-public import ThreeSumApsp.Sec2.Tiling
-public import ThreeSumApsp.Util.Choose
-public import Mathlib.Analysis.Complex.ExponentialBounds
+import ThreeSumApsp.Sec2.Lemma11
+import ThreeSumApsp.Sec2.Tiling
+import ThreeSumApsp.Util.Choose
+import Mathlib.Analysis.Complex.ExponentialBounds

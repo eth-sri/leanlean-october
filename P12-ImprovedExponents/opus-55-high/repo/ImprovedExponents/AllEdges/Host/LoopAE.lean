@@ -1,11 +1,9 @@
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Loop
-public import ThreeSumApsp.Lang.Lib.Copy
-public import ImprovedExponents.AllEdges.Host.ScanPairsAE
-public import ImprovedExponents.AllEdges.Host.Flags
+import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Loop
+import ThreeSumApsp.Lang.Lib.Copy
+import ImprovedExponents.AllEdges.Host.ScanPairsAE
+import ImprovedExponents.AllEdges.Host.Flags
 
-@[expose] public section
 
 /-!
 # The loop over the instances of the all-edges host
@@ -25,7 +23,7 @@ flags.  The specifications of upstream's parts that do not involve the scans (`h
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec HostLocal
+open HostLocal
 
 variable {lim : Limits} {d : ℕ}
 
@@ -100,23 +98,18 @@ theorem HostCtxAE.scanPairsAE_meets
   have hplaces := S.places ht
   have hout := hF.out t ht
   have hfr := hF.fr
-  have hcongr : ∀ i < X.w t, accOf (X.ans t) i = X.acc t i ∧
-      hitOf X.n X.AB X.BC X.AC (X.WI t) (X.WJ t) (X.c0 t) (X.len t) i = X.hit t i ∧
-      idxOf X.n (X.WI t) (X.WJ t) i = X.pairIdx t i :=
+  have hcongr : ∀ i < X.w t, accOf _ i = X.acc t i ∧
+      hitOf X.n X.AB X.BC X.AC _ _ _ _ i = X.hit t i ∧
+      idxOf X.n _ _ i = X.pairIdx t i :=
     fun i hi => ⟨rfl, rfl, (X.pairIdx_eq hi).symm⟩
   have hstep := aeStep_congr (X.flagsAt t) hcongr
   have hexecs := aeExecs_congr (X.flagsAt t) hcongr
   refine Meets.of_body C.scanPairsAE ((scanPairsAE_spec C.scan (S.weights ht) (S.answers ht hans)
-    (Or.inr hout) (Or.inr (by omega)) (Or.inr (by omega))
-    { len := X.length_flagsAt t, seg := hflags, below := by omega
-      apartAB := Or.inr (by omega), apartBC := Or.inr (by omega), apartAC := Or.inr (by omega) }
+    (Or.inr hout) (by omega) (by omega)
+    ⟨X.length_flagsAt t, hflags, by omega, by omega, by omega, by omega⟩
     (by omega) (S.ok.valid.piece_le ht)).mono (le_of_eq ?_) ?_)
-  · rw [hexecs]
-    rfl
-  · rintro σ' ⟨hseg, hsame⟩
-    refine ⟨?_, hsame⟩
-    rw [HostData.flagsAt, HostData.flagsStep_def, ← hstep]
-    exact hseg
+  · aesop
+  aesop
 
 /-- **The four calls for instance t**: the flags of instance `t + 1` are in place. -/
 theorem hostCallsAE_spec
@@ -136,23 +129,23 @@ theorem hostCallsAE_spec
   -- res := writeX(x, rac, n, D, p, c0, len, rho)
   light_call (C.writeX_meets S ht) with r₁ μ₁ ⟨hX, hrest₁⟩
   have S₁ := S.next fun a ha => hrest₁ a (Or.inl ha)
-  replace hflags : Seg μ₁ flg (X.flagsAt t) :=
-    hflags.keep fun b hb => hrest₁ b (Or.inr (by rw [hlen] at hb; omega))
+  replace hflags :=
+    hflags.keep fun b hb => hrest₁ b (by omega)
   -- res := writeY(y, rbc, n, D, p, c0, len)
   light_call (C.writeY_meets S₁ ht) with r₂ μ₂ ⟨hY, hrest₂⟩
-  have S₂ := S₁.next fun a ha => hrest₂ a (Or.inl (by omega))
-  replace hX : Seg μ₂ A.x (X.matX t) :=
+  have S₂ := S₁.next fun a ha => hrest₂ a (by omega)
+  replace hX :=
     hX.keep (by light_keep [X.length_matX t])
-  replace hflags : Seg μ₂ flg (X.flagsAt t) :=
-    hflags.keep fun b hb => hrest₂ b (Or.inr (by rw [hlen] at hb; omega))
+  replace hflags :=
+    hflags.keep fun b hb => hrest₂ b (by omega)
   -- res := solver(n, D, w, 1, x, y, qi + lo, qj + lo, out, fr)
   light_call (C.solver_meets S₂ ht hX hY) with r₃ μ₃ ⟨hans, hkept₃⟩
   have S₃ := S₂.next fun a ha => hkept₃ a (by omega)
-  replace hflags : Seg μ₃ flg (X.flagsAt t) :=
-    hflags.keep fun b hb => hkept₃ b (by rw [hlen] at hb; omega)
+  replace hflags :=
+    hflags.keep fun b hb => hkept₃ b (by omega)
   -- res := scanPairsAE(out, qi + lo, qj + lo, w, flg, ab, bc, ac, n, c0, len)
   light_call (C.scanPairsAE_meets S₃ hF ht hans hflags) with r₄ μ₄ ⟨hflags', hsame⟩
-  exact ⟨r₄, μ₄, rfl, S₃.next fun a ha => hsame a (Or.inl (by omega)), hflags'⟩
+  exact ⟨r₄, μ₄, rfl, S₃.next fun a ha => hsame a (by omega), hflags'⟩
 
 /-! ## The loop -/
 
@@ -172,8 +165,6 @@ theorem hostRoundAE_spec
     Ends lim (P₀ ++ R) d (hostRoundAE pS pWriteX pWriteY pScanPairsAE) σ (tCallsAE Tn X t + 45)
       (HostInvAE lim d X U A flg need μ (t + 1)) := by
   obtain ⟨len, rho, lo, w, res, μ', rfl, S, hflags⟩ := hσ
-  unfold hostRoundAE
-  -- the parameters of the instance
   light_piece (hostParams_spec S ht _ len rho lo w res) with _ rfl
   -- the four calls
   light_piece (hostCallsAE_spec C S hF ht hflags _ res) with _ ⟨res', μ'', rfl, S', hflags'⟩
@@ -197,43 +188,34 @@ theorem hostLoopAE_spec
   have hT : ∑ t ∈ Finset.range X.m, (4 + (tCallsAE Tn X t + 45))
       ≤ ∑ t ∈ Finset.range X.m, (tWrites X.n X.D (X.len t) + Tn [X.n, X.D, X.w t] +
         tScanPairsAE (X.w t) (X.len t) (X.execsAE t)) :=
-    Finset.sum_le_sum fun t _ => by simp [tCallsAE, tWrites]; omega
-  have hflgZ : ((A.fr : ℕ) : ℤ) - (X.n : ℤ) * (X.n : ℤ) = (flg : ℕ) := by
-    rw [← hflg]
-    push_cast
-    ring
+    by grind [tCallsAE, tWrites]
+  have hflgZ : A.fr - X.n * X.n = flg := by
+    omega
   have hx := hF.x
   have hdepth := hlim.depth
   unfold hostLoopAEBody tHostLoopAE hostLoopArgs
   -- t := 0; ch := 0; c0 := 0; fnd := fr - n²
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set (flg : ℕ) using hflgZ
+  light_set 0
+  light_set 0
+  light_set 0
+  light_set flg using hflgZ
   -- fill(fnd, n², 0)
-  light_call (fill_meets (lim := lim) (d := d + 1) (x := (0 : ℤ)) C.fill hw
+  light_call (fill_meets (x := 0) C.fill hw
     (by rw [hflg]; omega)) with r₀ μ₁ ⟨hzero, hsame⟩
   -- while t < m
   refine Ends.next _ (Ends.while (HostInvAE lim d X U A flg need μ) X.m
-    (fun t => tCallsAE Tn X t + 45) ?start ?round ?done)
-    (by simp only [Cond.cost, Expr.cost, List.map, List.sum_cons, List.sum_nil, Nat.reduceAdd]
-        omega)
-  case start =>
+    (fun t => tCallsAE Tn X t + 45) ?_ ?_ ?_)
+    (by grind [Cond.cost, Expr.cost, List.map, Nat.reduceAdd])
+  ·
     refine ⟨0, 0, 0, 0, r₀, μ₁, ?_,
-      ⟨hok, hmem, hlay, hlim, fun a ha => hsame a (Or.inl (by omega))⟩, hzero⟩
-    rw [hostState]
-    simp only [HostData.c0, Nat.zero_div, Nat.zero_mul, Nat.cast_zero, Nat.zero_mod, setLocal]
-  case round =>
+      ⟨hok, hmem, hlay, hlim, fun a ha => hsame a (by omega)⟩, hzero⟩
+    simp_all [hostState, HostData.c0, setLocal]
+  ·
     intro t σ ht hσ
     obtain ⟨len, rho, lo, w, res, μ', rfl, -, -⟩ := id hσ
-    exact ⟨⟨trivial, trivial⟩, by simpa using ht, hostRoundAE_spec C hF ht hσ⟩
-  case done =>
+    exact ⟨by simp, by simp_all, hostRoundAE_spec C hF ht hσ⟩
+  ·
     rintro _ ⟨len, rho, lo, w, res, μ', rfl, S, hflags⟩
     rw [X.flagsAt_m hok.valid] at hflags
     -- return fnd
-    exact ⟨⟨trivial, trivial⟩, by simp, Ends.setTo (flg : ℕ) ⟨by simp, hflags, S.kept⟩
-      (hT := by
-        simp only [Cond.cost, Expr.cost, List.map, List.sum_cons, List.sum_nil, Nat.reduceAdd]
-        omega)⟩
-
-end Light.Sec3
+    exact ⟨by simp, by simp, Ends.setTo flg ⟨by simp, hflags, S.kept⟩⟩

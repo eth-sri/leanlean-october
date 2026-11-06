@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Tactics
+import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 
 /-!
 # Looking up a string in a trie (Section 4.3)
@@ -23,23 +23,18 @@ string ends, and that it stays inside the array (`Spec.WalkOK`); `Lookup.walk_st
 step down does to both facts.  `lookup_spec` is the specification.
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 namespace Lookup
 
-/-- The local variables of lookup: the arguments (the base of the trie area, the root, which becomes
+/- The local variables of lookup: the arguments (the base of the trie area, the root, which becomes
 the current vertex, the address of the string and its length) and the level.  Local 0 also takes the
 result. -/
-abbrev Area : ℕ := 0
-@[inherit_doc Area] abbrev Result : ℕ := 0
-@[inherit_doc Area] abbrev Vertex : ℕ := 1
-@[inherit_doc Area] abbrev Key : ℕ := 2
-@[inherit_doc Area] abbrev Len : ℕ := 3
-@[inherit_doc Area] abbrev Level : ℕ := 4
+slots Area
+slots Result Vertex Key Len Level
 
 end Lookup
 
@@ -59,7 +54,7 @@ variable {T : List ℤ} {kl : List ℕ} {p i : ℕ}
 
 /-- One step down: the current vertex lies inside the array, the pointer for the next symbol is
 positive, and the walk goes on from the child. -/
-private theorem walk_step (hi : i < kl.length) (hok : WalkOK T p (kl.drop i)) :
+theorem walk_step (hi : i < kl.length) (hok : WalkOK T p (kl.drop i)) :
     p + 11 ≤ T.length ∧ 0 < T.getD (p + kl[i]) 0 ∧
       WalkOK T (T.getD (p + kl[i]) 0).toNat (kl.drop (i + 1)) ∧
       trieWalk T p (kl.drop i) = trieWalk T (T.getD (p + kl[i]) 0).toNat (kl.drop (i + 1)) := by
@@ -80,36 +75,31 @@ theorem lookup_spec {lim : Limits} {P : Program} (hP : P[Proc.lookup]? = some lo
     (hs : Std lim) : LookupSpec lim P := by
   rintro tr root key _ T kl μ hT hkey rfl hd hwalk htr hkeyB
   refine fun d _ => ⟨lookupBody, hP, ?_⟩
-  light_facts hs
   unfold tLookup
   -- level := 0
-  light_set (0 : ℕ)
+  light_set 0
   -- while level < len
-  refine Ends.next _ (Ends.whileBlock (Inv tr root key T kl μ) kl.length ?start ?round ?done
+  refine Ends.next _ (Ends.whileBlock (Inv tr root key T kl μ) kl.length ?_ ?_ ?_
     (hT := le_rfl))
-  case start => exact ⟨root, rfl, hwalk, rfl⟩
-  case round =>
+  · exact ⟨root, rfl, hwalk, rfl⟩
+  ·
     rintro i _ hi ⟨p, rfl, hok, hwk⟩
     obtain ⟨hpT, hpos, hok', hstep⟩ := walk_step hi hok
-    have hsym : kl[i] < 11 := hd _ (List.getElem_mem hi)
-    have hcell : μ (key + i) = (kl[i] : ℕ) := hkey.getElem hi
-    have hnext : μ (tr + (p + kl[i])) = T.getD (p + kl[i]) 0 := hT.getD (by omega) 0
-    have haddr : ((tr : ℤ) + p + (kl[i] : ℕ)).toNat = tr + (p + kl[i]) := by omega
+    have hsym := hd _ (List.getElem_mem hi)
+    have hcell := hkey.getElem hi
+    have hnext : μ _ = T.getD (p + kl[i]) 0 := hT.getD (by omega) 0
+    have haddr : ((tr : ℤ) + p + kl[i]).toNat = tr + (p + kl[i]) := by omega
     -- vertex := mem[area + vertex + mem[key + level]]; level := level + 1
     refine ⟨by light_side, by light_side, by light_side [hcell],
-      (T.getD (p + kl[i]) 0).toNat, ?_, hok', hwk.trans hstep⟩
+      (T.getD _ 0).toNat, ?_, hok', hwk.trans hstep⟩
     rw [Int.toNat_of_nonneg hpos.le]
-    simp [update_frame_setLocal, hcell, haddr, hnext]
-  case done =>
+    simp_all [update_frame_setLocal]
+  ·
     rintro _ ⟨p, rfl, hok, hwk⟩
     rw [List.drop_of_length_le le_rfl] at hok hwk
     have hin := hok.2
-    have hread : μ (tr + p) = T.getD p 0 := hT.getD (by omega) 0
+    have hread : μ _ = T.getD p 0 := hT.getD (by omega) 0
     refine ⟨by light_side, by light_side, ?_⟩
     -- return mem[area + vertex]
     light_set (T.getD p 0) using hread
-    refine ⟨?_, rfl⟩
-    rw [trieLookup, hwk]
-    rfl
-
-end Light.Sec4
+    aesop

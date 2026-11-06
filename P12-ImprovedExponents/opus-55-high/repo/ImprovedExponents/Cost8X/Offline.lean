@@ -1,4 +1,3 @@
-module
-public import ImprovedExponents.Pipeline.OfflineWithin
-public import ImprovedExponents.Cost8X.Costs
-public import ImprovedExponents.Cost8X.Dominated
+import ImprovedExponents.Pipeline.OfflineWithin
+import ImprovedExponents.Cost8X.Costs
+import ImprovedExponents.Cost8X.Dominated

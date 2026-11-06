@@ -1,9 +1,7 @@
-module
 
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Offline
-public import ImprovedExponents.PrunedProgram.Pre.Defs
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Offline
+import ImprovedExponents.PrunedProgram.Pre.Defs
 
-@[expose] public section
 
 /-!
 # The time functions of the pruned offline routine
@@ -35,5 +33,3 @@ def tPre31P (c : ℕ) (G : RatParams) (N D₀ : ℕ) : ℕ :=
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Offline.lean (tOffline32)
 def tOffline32P (c : ℕ) (G : RatParams) (N D₀ w : ℕ) : ℕ :=
   tPre31P c G N D₀ + w * (tQuery31 G D₀ + 30) + 20
-
-end Light.Sec4

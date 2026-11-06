@@ -1,12 +1,10 @@
-module
 
-public import ImprovedExponents.Pipeline.Fits
-public import ImprovedExponents.Pipeline.HostBound
-public import ImprovedExponents.Cost8X.Offline
-public import ImprovedExponents.HostMid.AtParameters
-public import ImprovedExponents.ParamRoutines.Rat
+import ImprovedExponents.Pipeline.Fits
+import ImprovedExponents.Pipeline.HostBound
+import ImprovedExponents.Cost8X.Offline
+import ImprovedExponents.HostMid.AtParameters
+import ImprovedExponents.ParamRoutines.Rat
 
-@[expose] public section
 
 /-!
 # The two ingredients as claims about programs
@@ -28,13 +26,11 @@ For the time model `lightModel` of upstream (procedures of programs of its langu
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3 Light.Sec4 ParamRoutines HostMid
+open ThreeSumApsp ThreeSumApsp.Spec Light ParamRoutines HostMid
 
 /-! ## The thin product -/
 
 section thin
-
-variable {a b p q : ℕ}
 
 end thin
 
@@ -74,6 +70,4 @@ def MidHostRat (M : DetTimeModel) : Prop :=
 
 /-- `lightModel` has the host of Theorem 17 at the true size of the middle part. -/
 theorem midHostRat_light : MidHostRat lightModel := fun a b c d hb hd hab hcd =>
-  hostBound_mid_rat a b c d hb hd hab hcd
-
-end ImprovedExponents
+  by grind [hostBound_mid_rat]

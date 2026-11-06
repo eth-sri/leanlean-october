@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.Copy
-public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Spec.Sec3.Problems
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.Copy
+import ThreeSumApsp.Lang.Tactics
+import ThreeSumApsp.Spec.Sec3.Problems
 
 /-!
 # Copying a block of a matrix
@@ -22,11 +22,10 @@ other cell has changed.  The proof is a loop over the rows with the invariant Su
 row i of the block is a piece of row r0 + i of the matrix is SubCopy.row_eq.
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -34,16 +33,9 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 
 namespace SubCopy
 
-/-- The local variables of subCopy: the arguments s (Side), h (Block), src, r0, c0, dst; the row i;
+/- The local variables of subCopy: the arguments s (Side), h (Block), src, r0, c0, dst; the row i;
 and the result of copy, which is not used. -/
-abbrev Side : ℕ := 0
-@[inherit_doc Side] abbrev Block : ℕ := 1
-@[inherit_doc Side] abbrev Source : ℕ := 2
-@[inherit_doc Side] abbrev Row0 : ℕ := 3
-@[inherit_doc Side] abbrev Col0 : ℕ := 4
-@[inherit_doc Side] abbrev Dest : ℕ := 5
-@[inherit_doc Side] abbrev Row : ℕ := 6
-@[inherit_doc Side] abbrev Unused : ℕ := 7
+slots Side Block Source Row0 Col0 Dest Row Unused
 
 end SubCopy
 
@@ -66,11 +58,8 @@ namespace SubCopy
 theorem row_eq {μ : ℕ → ℤ} {s h src r0 c0 i j : ℕ} {L : List ℤ} (hL : Seg μ src L)
     (hlen : L.length = s * s) (hr : r0 + h ≤ s) (hc : c0 + h ≤ s) (hi : i < h) (hj : j < h) :
     μ (src + ((r0 + i) * s + c0) + j) = entry h (subMat s h r0 c0 L) i j := by
-  have hidx : (r0 + i) * s + (c0 + j) < L.length :=
-    hlen ▸ Nat.mul_add_lt_mul (by omega : r0 + i < s) (by omega : c0 + j < s)
-  rw [entry_subMat hi hj, entry, List.getD_eq_getElem _ _ hidx, ← hL _ hidx]
-  congr 1
-  omega
+  rw [entry_subMat hi hj, entry, List.getD_eq_getElem _ _ (hlen ▸ Nat.mul_add_lt_mul (by omega : r0 + i < s) (by omega : c0 + j < s)), ← hL]
+  grind
 
 /-- The state before row i is copied: the first i rows of the block B stand at dst, and no cell
 outside the h² cells from dst has changed. -/
@@ -88,12 +77,12 @@ theorem subCopy_meets {pSub pCopy : ℕ} (hSub : P[pSub]? = some (subCopyBody pC
     (hCopy : P[pCopy]? = some copyBody) {μ : ℕ → ℤ} {s src : ℕ} {L : List ℤ} (h r0 c0 dst : ℕ)
     (hL : Seg μ src L) (hlen : L.length = s * s)
     (hplace : r0 + h ≤ s ∧ c0 + h ≤ s ∧ src + s * s ≤ dst)
-    (hlim : (lim.space : ℤ) ≤ lim.word ∧ dst + h * h ≤ lim.space ∧ d < lim.depth) :
+    (hlim : (lim.space : ℤ) ≤ lim.word ∧ dst + h * h ≤ lim.space ∧ d < lim.depth := by omega) :
     Meets lim P pSub d [(s : ℤ), h, src, r0, c0, dst] μ (subCopyTime h) fun _ μ' =>
       Seg μ' dst (subMat s h r0 c0 L) ∧ SameOutside μ μ' dst (h * h) := by
   obtain ⟨hr, hc, hsrc⟩ := hplace
   obtain ⟨hw, hdst, hd⟩ := hlim
-  have hh : h ≤ h * h := Nat.le_mul_self h
+  have hh := h.le_mul_self
   unfold subCopyTime
   -- for i < h
   refine .of_body hSub (Ends.for (Inv μ s h src r0 c0 dst (subMat s h r0 c0 L)) h (16 * h + 23)
@@ -109,22 +98,20 @@ theorem subCopy_meets {pSub pCopy : ℕ} (hSub : P[pSub]? = some (subCopyBody pC
     -- Row r0 + i of the matrix and row i of the block lie within their arrays.
     have hrowS : (r0 + i) * s + s ≤ s * s := Nat.mul_add_le_mul (by omega) le_rfl
     have hrowZ : 0 ≤ ((r0 : ℤ) + i) * s ∧ ((r0 : ℤ) + i) * s + s ≤ s * s := by
-      exact_mod_cast And.intro (Nat.zero_le _) hrowS
+      grind
     have hrowD : i * h + h ≤ h * h := Nat.mul_add_le_mul hi le_rfl
     -- copy(src + (r0 + i) s + c0, dst + i h, h)
     light_call (copy_meets hCopy (src := src + ((r0 + i) * s + c0)) (dst := dst + i * h)
       (n := h) hw (by omega) (by omega) (.inl (by omega))) with r' μ'' ⟨hcopy, hout⟩
-    refine ⟨by simp, r', μ'', by rw [update_frame_setLocal]; rfl, fun q hq => ?_,
+    refine ⟨by simp, r', μ'', by simp_all [update_frame_setLocal], fun q hq => ?_,
       hrest.trans (hout.mono (by omega) (by omega))⟩
-    rcases Nat.lt_or_ge q (i * h) with hq' | hq'
+    rcases q.lt_or_ge _ with hq' | hq'
     · -- The earlier rows lie below dst + i h and have not been touched.
       exact (hout _ (.inl (by omega))).trans (hrows q hq')
     · -- Row i has just been copied from the matrix, which is as at the start.
       obtain ⟨j, rfl⟩ := Nat.exists_eq_add_of_le hq'
-      have hj : j < h := by rw [Nat.add_mul, Nat.one_mul] at hq; omega
+      have hj : j < h := by linarith
       rw [← Nat.add_assoc, hcopy j hj, hrest _ (.inl (by omega)), row_eq hL hlen hr hc hi hj]
   case done =>
     rintro _ - ⟨r, μ', rfl, hrows, hrest⟩
-    exact ⟨fun q hq => (hrows q (by simpa using hq)).trans (List.getD_eq_getElem _ _ hq), hrest⟩
-
-end Light.Sec3
+    exact ⟨fun q hq => (hrows q (by simp_all)).trans (List.getD_eq_getElem _ _ hq), hrest⟩

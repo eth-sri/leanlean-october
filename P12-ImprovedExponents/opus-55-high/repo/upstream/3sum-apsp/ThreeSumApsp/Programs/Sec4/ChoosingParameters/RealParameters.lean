@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
-public import ThreeSumApsp.Sec4.Corollary31.Limit
-public import ThreeSumApsp.Sec4.Corollary31.RationalParameters
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
+import ThreeSumApsp.Sec4.Corollary31.Limit
+import ThreeSumApsp.Sec4.Corollary31.RationalParameters
 
 /-!
 # Corollaries 31 and 32: the parameters of the program, and where its costs are bounded
@@ -27,13 +26,10 @@ bounds are at least 1 (`one_le_preBound31`, `one_le_queryBound31`), so that addi
 be absorbed.
 -/
 
-@[expose] public section
 
-open ThreeSumApsp
 
 namespace Light.Sec4
 
-open ThreeSumApsp.Spec
 
 /-- The bound on the preprocessing, N² (log D + 1)²/D^γ. -/
 noncomputable def preBound31 (γ : ℝ) (N D₀ : ℕ) : ℝ :=
@@ -43,8 +39,3 @@ noncomputable def queryBound31 (q : ℝ) (D₀ : ℕ) : ℝ := (D₀ : ℝ) ^ q 
 
 section bounds
 
-variable {N D₀ : ℕ}
-
-end bounds
-
-end Light.Sec4

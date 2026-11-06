@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Compiler.Expressions
-public import ThreeSumApsp.Lang.RunsStayInLimits
+import ThreeSumApsp.Lang.Compiler.Expressions
+import ThreeSumApsp.Lang.RunsStayInLimits
 
 /-!
 # The compiler is correct on tests
@@ -22,7 +21,6 @@ is negative (`decides_eq`).  No difference overflows, because words hold twice t
 one more (`inRange_sub`).
 -/
 
-@[expose] public section
 
 open ThreeSumApsp.WordRam
 
@@ -38,7 +36,7 @@ variable {W : ℕ} {Z : Sizes W} {code rest : List Instr} {σ : State} {q pos l 
 /-- What follows the code of two expressions. -/
 theorem codeAt_after_pair (hcode : CodeAt code pos (compileExpr a 0 ++ compileExpr b 1 ++ rest)) :
     CodeAt code (pos + (a.size + b.size)) rest :=
-  hcode.right.cast_pos (by rw [List.length_append, length_compileExpr, length_compileExpr])
+  hcode.right.cast_pos (by grind [List.length_append, length_compileExpr])
 
 /-- The code of two expressions, one after the other, leaves their values in T₀ and T₁ and changes
 scratch cells only. -/
@@ -65,28 +63,30 @@ def Decides (code : List Instr) (F pos size l : ℕ) (m : ℤ → BitVec W) (p :
   ∃ (m' : ℤ → BitVec W) (n : ℕ), n ≤ size ∧ AgreeOutside (Scratch F) m m' ∧
     (p → Steps code n ⟨pos, m⟩ ⟨pos + size, m'⟩) ∧ (¬ p → Steps code n ⟨pos, m⟩ ⟨l, m'⟩)
 
+variable {size F : ℕ} {p : Prop}
+
 /-- The test holds. -/
-theorem Decides.of_holds {F size : ℕ} {p : Prop} (h : Decides code F pos size l m p) (hp : p) :
+theorem Decides.of_holds (h : Decides code F pos size l m p) (hp : p) :
     ∃ (m' : ℤ → BitVec W) (n : ℕ), n ≤ size ∧ AgreeOutside (Scratch F) m m' ∧
       Steps code n ⟨pos, m⟩ ⟨pos + size, m'⟩ :=
   let ⟨m', n, le, A, run, _⟩ := h
-  ⟨m', n, le, A, run hp⟩
+  by grind
 
 /-- The test fails. -/
-theorem Decides.of_fails {F size : ℕ} {p : Prop} (h : Decides code F pos size l m p) (hp : ¬ p) :
+theorem Decides.of_fails (h : Decides code F pos size l m p) (hp : ¬ p) :
     ∃ (m' : ℤ → BitVec W) (n : ℕ), n ≤ size ∧ AgreeOutside (Scratch F) m m' ∧
       Steps code n ⟨pos, m⟩ ⟨l, m'⟩ :=
   let ⟨m', n, le, A, _, run⟩ := h
-  ⟨m', n, le, A, run hp⟩
+  by grind
 
 /-- No overflow: the difference of two values fits in a word, and so does one less. -/
-private theorem inRange_sub (Z : Sizes W) {x y : ℤ} (hx : |x| ≤ Z.lim.word)
+theorem inRange_sub (Z : Sizes W) {x y : ℤ} (hx : |x| ≤ Z.lim.word)
     (hy : |y| ≤ Z.lim.word) : InRange W (x - y) ∧ InRange W (x - y - 1) := by
   obtain ⟨⟨hx₁, hx₂⟩, hy₁, hy₂⟩ := And.intro (abs_le.1 hx) (abs_le.1 hy)
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;> linarith [Z.fits.word]
 
 /-- The test a < b. -/
-private theorem decides_lt (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
+theorem decides_lt (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
     (hcode : CodeAt code pos (compileCond (.lt a b) l)) (hw : (Cond.lt a b).width ≤ Z.F)
     (hs : (Cond.lt a b).Safe Z.lim σ) :
     Decides code Z.F pos (Cond.lt a b).size l m (a.val σ < b.val σ) := by
@@ -97,16 +97,16 @@ private theorem decides_lt (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   -- D := b - a
   have run₂ := run₁.trans (steps_sub restCode vb va)
   -- D := D - 1
-  have run₃ := run₂.trans (steps_sub restCode.tail (Function.update_self _ _ _)
+  have run₃ := run₂.trans (steps_sub restCode.tail (by rfl)
     (by cell_read using (I.rel.same A₁).one))
   -- leave if D < 0
-  have run₄ := run₃.trans (steps_bltz restCode.tail.tail (Function.update_self _ _ _)
+  have run₄ := run₃.trans (steps_bltz restCode.tail.tail (by simp)
     (inRange_sub Z (Expr.abs_val_le hσ b hsb) (Expr.abs_val_le hσ a hsa)).2)
-  exact ⟨_, _, by rw [Cond.size], (A₁.update (by cells) _).update (by cells) _,
-    run₄.branch (by omega) (by rw [Cond.size]; omega)⟩
+  exact ⟨_, _, by rfl, (A₁.update (by cells) _).update (by cells) _,
+    run₄.branch (by omega) (by rfl)⟩
 
 /-- The test a = b. -/
-private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
+theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
     (hcode : CodeAt code pos (compileCond (.eq a b) l)) (hw : (Cond.eq a b).width ≤ Z.F)
     (hs : (Cond.eq a b).Safe Z.lim σ) :
     Decides code Z.F pos (Cond.eq a b).size l m (a.val σ = b.val σ) := by
@@ -120,22 +120,20 @@ private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   have run₂ := run₁.trans (steps_sub restCode va vb)
   have A₂ := A₁.update (a := cD) (by cells) (wd W (a.val σ - b.val σ))
   -- leave if D < 0
-  have run₃ := run₂.trans (steps_bltz restCode.tail (Function.update_self _ _ _)
+  have run₃ := run₂.trans (steps_bltz restCode.tail (by simp)
     (inRange_sub Z ha hb).1)
   by_cases hlt : a.val σ - b.val σ < 0
   · rw [if_pos hlt] at run₃
-    exact ⟨_, _, by rw [Cond.size]; omega, A₂, fun h => absurd h (by omega), fun _ => run₃⟩
+    exact ⟨_, _, by tauto, A₂, by omega, fun _ => run₃⟩
   rw [if_neg hlt] at run₃
   -- D := 0 - D
   have run₄ := run₃.trans (steps_sub restCode.tail.tail
     (by cell_read using (I.rel.same A₁).zero)
-    (Function.update_self _ _ _))
-  rw [zero_sub, neg_sub] at run₄
-  -- leave if D < 0
-  have run₅ := run₄.trans (steps_bltz restCode.tail.tail.tail (Function.update_self _ _ _)
+    (by rfl))
+  have run₅ := run₄.trans (steps_bltz restCode.tail.tail.tail (by simp)
     (inRange_sub Z hb ha).1)
-  exact ⟨_, _, by rw [Cond.size], A₂.update (by cells) _,
-    run₅.branch (by omega) (by rw [Cond.size]; omega)⟩
+  exact ⟨_, _, by rfl, A₂.update (by cells) _,
+    run₅.branch (by omega) (by rfl)⟩
 
 /-- The code of a test decides the test. -/
 theorem decides_compileCond (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim) (c : Cond)
@@ -144,5 +142,3 @@ theorem decides_compileCond (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim) (c : 
   cases c with
   | lt a b => exact decides_lt I hσ hcode hw hs
   | eq a b => exact decides_eq I hσ hcode hw hs
-
-end Light.Compiler

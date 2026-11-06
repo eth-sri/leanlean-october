@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec4.Lemma27_28
+import ThreeSumApsp.Sec4.Lemma27_28
 
 /-!
 # The boxes of an output string, from its leaves of order exactly `t` (Section 4.2)
@@ -25,7 +24,6 @@ the running text of Section 4.2 about them.
   (`existsUnique_starBelow_eq`).
 -/
 
-@[expose] public section
 
 open Finset
 
@@ -41,20 +39,19 @@ def starBelow (η : OutStr L) (τ : Leaf L) : Cube L :=
   Cube.starAt (FV (innerSetO η) (Zof (innerSetO η) τ)) τ
 
 /-- A leaf of order exactly `t` contributing to `η` chooses `P₀` at exactly `m - t` levels. -/
-private lemma card_Zof_eq (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
+lemma card_Zof_eq (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
     (Zof (innerSetO η) τ).card = m - t := by
-  have := order_eq_sub_card_Zof m η τ hτ
-  omega
+  grind [order_eq_sub_card_Zof]
 
 /-- A set `Z` of `m - t` levels needs no padding: `V = Z`. -/
-private lemma Vof_eq_self (Q Z : Finset (Fin L)) (hZ : Z.card = m - t) : Vof m t Q Z = Z := by
-  simp [Vof, lowest, hZ]
+lemma Vof_eq_self (Q Z : Finset (Fin L)) (hZ : Z.card = m - t) : Vof m t Q Z = Z := by
+  grind [Vof, lowest]
 
 /-- For a leaf of order exactly `t` contributing to `η`, the cube of the second description is the
 box of the leaf. -/
 theorem boxOfLeaf_eq_starBelow (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
     boxOfLeaf m t η τ = starBelow η τ := by
-  rw [boxOfLeaf, starBelow, Vof_eq_self _ _ (card_Zof_eq hτ hord)]
+  grind [boxOfLeaf, starBelow, Vof_eq_self, card_Zof_eq]
 
 /-- Section 4.2: "The result is a box of w". -/
 theorem starBelow_mem (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
@@ -62,5 +59,3 @@ theorem starBelow_mem (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
   have hmem := boxOfLeaf_mem_BV m t hτ
   rw [boxOfLeaf_eq_starBelow hτ hord, Vof_eq_self _ _ (card_Zof_eq hτ hord)] at hmem
   exact mem_biUnion.2 ⟨_, mem_powersetCard.2 ⟨filter_subset _ _, card_Zof_eq hτ hord⟩, hmem⟩
-
-end ThreeSumApsp

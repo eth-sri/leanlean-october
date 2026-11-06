@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.LightModel
+import ThreeSumApsp.Programs.LightModel
 
 /-!
 # Theorem 17 as a claim about programs of the light language
@@ -22,7 +21,6 @@ about a host: it turns solvers into solvers and keeps their need (word size, cel
 polynomial, and its time function obeys the bound (`ObeysBound17`, `claim17_of_host`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
@@ -42,5 +40,3 @@ def ObeysBound17 (MM : ℕ → ℝ) (D g : ℕ → ℕ) (time : (List ℕ → �
     (∀ m d w w' : ℕ, 1 ≤ m → 1 ≤ d → w ≤ w' → (Tn [m, d, w] : ℝ) ≤ T m d w') →
     ∀ (n U : ℕ) (κ : ℝ), 16 ≤ D n → D n ≤ n → 1 ≤ g n → (g n : ℝ) ≤ Real.sqrt (D n) → 1 ≤ κ →
       (U : ℝ) ≤ (n : ℝ) ^ κ → (time Tn n U : ℝ) ≤ bound17 MM D g C T n κ
-
-end Light.Sec3

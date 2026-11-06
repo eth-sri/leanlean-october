@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec3.Theorem17.Instances
-public import Mathlib.Combinatorics.Enumerative.DoubleCounting
+import ThreeSumApsp.Sec3.Theorem17.Instances
+import Mathlib.Combinatorics.Enumerative.DoubleCounting
 
 /-!
 # Theorem 17, third step: witnesses
@@ -35,7 +34,6 @@ proof, the number of instances and the counting step `TriangleInstance.card_le_F
 no theorem about programs rests on another lemma of this file.
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp
 
@@ -66,12 +64,9 @@ theorem card_le_F_of_distinct_scans (T : TriangleInstance ℤ n) {σ : Type*} (s
     s.card ≤ T.F p := by
   classical
   refine Finset.card_le_card_of_forall_subsingleton contains (fun x hx => ?_)
-    fun t _ x hx y hy => hdistinct t x hx.1 y hy.1 hx.2 hy.2
-  obtain ⟨t, ht, hfp⟩ := hfalse x hx
-  exact ⟨t, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hfp⟩, ht⟩
+    fun t _ x hx y hy => by grind
+  grind
 
-end TriangleInstance
+
 
 /-! ### The output of the reduction -/
-
-end ThreeSumApsp

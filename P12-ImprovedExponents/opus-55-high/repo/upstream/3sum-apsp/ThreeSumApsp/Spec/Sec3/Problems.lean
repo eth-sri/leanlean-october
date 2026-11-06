@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import PaperStatements
-public import ThreeSumApsp.Util.Index
-public import ThreeSumApsp.Util.List
+import PaperStatements
+import ThreeSumApsp.Util.Index
+import ThreeSumApsp.Util.List
 
 /-!
 # The problems for Section 3.4, read from lists of integers
@@ -23,7 +22,6 @@ An entry of the (min,+)-product is computed as a running minimum.  It is at most
 `A[i,k] + B[k,j]` (`minPlusEntry_le`) and it is one of them (`exists_minPlusEntry_eq`).
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -32,8 +30,10 @@ namespace ThreeSumApsp.Spec
 /-- The entry `(i, j)` of a matrix with `n` columns that is stored in the list `L`, row by row. -/
 abbrev entry (n : ℕ) (L : List ℤ) (i j : ℕ) : ℤ := L.getD (i * n + j) 0
 
+variable {L : List ℤ} {U : ℤ}
+
 /-- A bound on the numbers of the list is a bound on the entries of the matrix. -/
-theorem abs_entry_le (n : ℕ) {L : List ℤ} {U : ℤ} (hU : 0 ≤ U) (hL : AbsLe L U) (i j : ℕ) :
+theorem abs_entry_le (n : ℕ) (hU : 0 ≤ U) (hL : AbsLe L U) (i j : ℕ) :
     |entry n L i j| ≤ U :=
   AbsLe.abs_getD_le hU hL _
 
@@ -53,9 +53,11 @@ cell `i n + j` of `w` if cell `i n + j` of `adj` holds 1, and there is no edge o
 def graphOf (n : ℕ) (adj w : List ℤ) : Fin n → Fin n → WithTop ℤ := fun i j =>
   if adj.getD (i * n + j) 0 = 1 then ((w.getD (i * n + j) 0 : ℤ) : WithTop ℤ) else ⊤
 
+variable {n : ℕ}
+
 /-- The weights of the instance read from three lists are bounded if the numbers of the lists
 are. -/
-theorem triOf_bounded {n U : ℕ} {AB BC AC : List ℤ} (hAB : AbsLe AB U) (hBC : AbsLe BC U)
+theorem triOf_bounded {U : ℕ} {AB BC AC : List ℤ} (hAB : AbsLe AB U) (hBC : AbsLe BC U)
     (hAC : AbsLe AC U) : (triOf n AB BC AC).WeightsBoundedBy (U : ℤ) :=
   ⟨fun _ _ => AbsLe.abs_getD_le (Int.natCast_nonneg U) hAB _,
     fun _ _ => AbsLe.abs_getD_le (Int.natCast_nonneg U) hBC _,
@@ -80,14 +82,16 @@ def subMat (s h r0 c0 : ℕ) (L : List ℤ) : List ℤ :=
     (subMat s h r0 c0 L).length = h * h := by
   simp [subMat]
 
+variable {c0 r0 h s i j : ℕ}
+
 /-- The entry `(i, j)` of a block is the entry `(r0 + i, c0 + j)` of the matrix. -/
-theorem entry_subMat {s h r0 c0 : ℕ} {L : List ℤ} {i j : ℕ} (hi : i < h) (hj : j < h) :
+theorem entry_subMat (hi : i < h) (hj : j < h) :
     entry h (subMat s h r0 c0 L) i j = entry s L (r0 + i) (c0 + j) := by
   rw [entry, subMat, List.getD_map_range _ (Nat.mul_add_lt_mul hi hj), Nat.mul_add_div_of_lt hj,
     Nat.mul_add_mod_of_lt hj]
 
 /-- A bound on the entries of a matrix is a bound on the entries of its blocks. -/
-theorem abs_le_of_mem_subMat {s h r0 c0 : ℕ} {L : List ℤ} {U : ℤ} (hU : 0 ≤ U) (hL : AbsLe L U) :
+theorem abs_le_of_mem_subMat (hU : 0 ≤ U) (hL : AbsLe L U) :
     AbsLe (subMat s h r0 c0 L) U :=
   List.forall_mem_map.2 fun _ _ => AbsLe.abs_getD_le hU hL _
 
@@ -110,30 +114,27 @@ theorem length_minPlusList (n : ℕ) (A B : List ℤ) : (minPlusList n A B).leng
 /-- An entry of the product is at most each of the sums. -/
 theorem minPlusEntry_le (n : ℕ) (A B : List ℤ) (i j : ℕ) {k : ℕ} (hk : k < n) :
     minPlusEntry n A B i j ≤ entry n A i k + entry n B k j :=
-  List.foldl_min_le (fun k => entry n A i k + entry n B k j) (n - 1) (by omega)
+  List.foldl_min_le (fun k => entry n A i k + entry n B k j) _ (by omega)
 
 /-- An entry of the product is one of the sums. -/
-theorem exists_minPlusEntry_eq {n : ℕ} (hn : 1 ≤ n) (A B : List ℤ) (i j : ℕ) :
+theorem exists_minPlusEntry_eq (hn : 1 ≤ n) (A B : List ℤ) (i j : ℕ) :
     ∃ k < n, minPlusEntry n A B i j = entry n A i k + entry n B k j := by
   obtain ⟨k, hk, he⟩ :=
-    List.exists_foldl_min_eq (fun k => entry n A i k + entry n B k j) (n - 1)
+    List.exists_foldl_min_eq (fun k => entry n A i k + entry n B k j) _
   exact ⟨k, by omega, he⟩
 
 /-- The entries of the product of two matrices with entries of absolute value at most `U` have
 absolute value at most `2U`. -/
-theorem abs_minPlusEntry_le {n : ℕ} (hn : 1 ≤ n) {A B : List ℤ} {U : ℤ} (hU : 0 ≤ U)
+theorem abs_minPlusEntry_le (hn : 1 ≤ n) {A B : List ℤ} (hU : 0 ≤ U)
     (hA : AbsLe A U) (hB : AbsLe B U) (i j : ℕ) : |minPlusEntry n A B i j| ≤ 2 * U := by
   obtain ⟨k, -, he⟩ := exists_minPlusEntry_eq hn A B i j
   have ha := AbsLe.abs_getD_le hU hA (i * n + k)
   have hb := AbsLe.abs_getD_le hU hB (k * n + j)
-  rw [he]
-  exact (abs_add_le _ _).trans (by linarith)
+  grind
 
 /-- The entry `(i, j)` of the product stands at the place `i n + j`. -/
-theorem entry_minPlusList {n : ℕ} (A B : List ℤ) {i j : ℕ} (hi : i < n) (hj : j < n) :
+theorem entry_minPlusList (A B : List ℤ) (hi : i < n) (hj : j < n) :
     entry n (minPlusList n A B) i j = minPlusEntry n A B i j := by
   rw [entry, minPlusList, List.getD_map_range _ (Nat.mul_add_lt_mul hi hj),
     Nat.mul_add_div_of_lt hj,
     Nat.mul_add_mod_of_lt hj]
-
-end ThreeSumApsp.Spec

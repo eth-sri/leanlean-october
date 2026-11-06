@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec2.Levels
+import ThreeSumApsp.Sec2.Levels
 
 /-!
 # Definitions for the tiling of the `N × D × N` product
@@ -17,9 +16,7 @@ public import ThreeSumApsp.Sec2.Levels
   tiles.
 -/
 
-@[expose] public section
 
-open Finset
 
 namespace ThreeSumApsp
 
@@ -46,8 +43,7 @@ theorem K0_pos {L m : ℕ} (h : m ≤ L) : 0 < K0 L m := Nat.sqrt_pos.mpr (Nat.c
 Every statement about the tiling holds for every such choice. -/
 structure Layout (L m : ℕ) where
   hmL : m ≤ L
-  rowIdx : Fin (N0 L m) ≃ OuterStr L m
-  colIdx : Fin (N0 L m) ≃ OuterStr L m
+  (rowIdx colIdx : Fin (N0 L m) ≃ OuterStr L m)
   innerIdx : Fin (D m) ≃ InnerStr m
   table : Fin (K0 L m) × Fin (K0 L m) → Finset (Fin L)
   table_card : ∀ gh, (table gh).card = m
@@ -122,8 +118,3 @@ whose row and column are those of (I, J) within that block product". The tile is
 def outStrOfPos {L m : ℕ} (lay : Layout L m) (I J : ℕ) : OutStr L :=
   outStrOf (lay.table (blockOf lay I, blockOf lay J)) (lay.table_card _)
     (lay.rowIdx (offsetOf L m I)) (lay.colIdx (offsetOf L m J))
-
-/-- All the tiles: pairs of a row band and a column band. -/
-def tiles (L m N : ℕ) : Finset (ℕ × ℕ) := range (numBands L m N) ×ˢ range (numBands L m N)
-
-end ThreeSumApsp

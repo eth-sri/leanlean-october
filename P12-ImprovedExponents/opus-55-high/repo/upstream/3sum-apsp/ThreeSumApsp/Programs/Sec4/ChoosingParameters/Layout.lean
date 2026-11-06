@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
 
 /-!
 # Section 4.4, the data structure: the two main procedures for the layout of the statements
@@ -18,30 +18,18 @@ query. Between them the memory satisfies `InputReady31`. The relocatable routine
 their specifications `PreSpec31` and `QuerySpec31`.
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
-
-variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
-  {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
 
 /-! ## The texts -/
 
 namespace Main31
 
-/-- The locals of the two main procedures: the answer, which in a query is at first the row I, and
+/- The locals of the two main procedures: the answer, which in a query is at first the row I, and
 the column J; then N, D, the product N D, the address of Y, the free pointer, and in the
 preprocessing the result of the call. -/
-abbrev Ans : ℕ := 0
-@[inherit_doc Ans] abbrev Col : ℕ := 1
-@[inherit_doc Ans] abbrev Size : ℕ := 2
-@[inherit_doc Ans] abbrev Dim : ℕ := 3
-@[inherit_doc Ans] abbrev Area : ℕ := 4
-@[inherit_doc Ans] abbrev MatY : ℕ := 5
-@[inherit_doc Ans] abbrev Free : ℕ := 6
-@[inherit_doc Ans] abbrev Res : ℕ := 7
+slots Ans Col Size Dim Area MatY Free Res
 
 end Main31
 
@@ -62,5 +50,3 @@ def queryMain31Body : Stmt :=
   .call Proc.query31 [v Ans, v Col, v Size, v Dim, k 2, v MatY, v Free] Ans
 
 /-! ## What they do -/
-
-end Light.Sec4

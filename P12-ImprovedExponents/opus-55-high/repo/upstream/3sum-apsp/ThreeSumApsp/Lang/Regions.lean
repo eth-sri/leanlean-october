@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import Mathlib.Data.Int.Notation
-public import Mathlib.Data.Nat.Notation
-public import Mathlib.Logic.Function.Basic
+import Mathlib.Data.Int.Notation
+import Mathlib.Data.Nat.Notation
+import Mathlib.Logic.Function.Basic
 
 /-!
 # Regions of the memory, and the cells that a step leaves alone
@@ -45,7 +44,6 @@ the step is taken, as `same₂` in `rintro _ μ₂ ⟨sY, same₂⟩`.
 `dst`.
 -/
 
-@[expose] public section
 
 namespace Light
 
@@ -104,7 +102,7 @@ theorem SameOn.trans (h₁ : SameOn K μ μ') (h₂ : SameOn K μ' μ'') : SameO
 
 /-- Fewer cells are kept. -/
 theorem SameOn.mono (h : SameOn K μ μ') (hK : ∀ b, K' b → K b) : SameOn K' μ μ' :=
-  fun b hb => h b (hK b hb)
+  fun b hb => h b (by simp_all)
 
 /-- Two steps that keep different cells. -/
 theorem SameOn.then (h₁ : SameOn K₁ μ μ') (h₂ : SameOn K₂ μ' μ'') (hK : ∀ b, K b → K₁ b ∧ K₂ b) :
@@ -114,7 +112,7 @@ theorem SameOn.then (h₁ : SameOn K₁ μ μ') (h₂ : SameOn K₂ μ' μ'') (h
 /-- Writing a cell that need not be kept. -/
 theorem SameOn.write (h : SameOn K μ μ') (hb : ¬ K b) (x : ℤ) :
     SameOn K μ (Function.update μ' b x) := fun c hc => by
-  rw [Function.update_of_ne (by rintro rfl; exact hb hc)]; exact h c hc
+  rw [Function.update_of_ne (by grind)]; exact h c hc
 
 /-! ## Writing a region cell by cell -/
 
@@ -126,40 +124,26 @@ def wrote (μ : ℕ → ℤ) (dst : ℕ) (f : ℕ → ℤ) (j : ℕ) : ℕ → �
 
 /-- Nothing has been written yet. -/
 theorem wrote_zero : wrote μ dst f 0 = μ := by
-  funext a
-  unfold wrote
-  rw [if_neg (by omega)]
+  grind [wrote]
 
 /-- A cell that has been written. -/
-theorem wrote_done {i : ℕ} (h : i < j) : wrote μ dst f j (dst + i) = f i := by
+theorem wrote_done {i : ℕ} (h : i < j := by omega) : wrote μ dst f j (dst + i) = f i := by
   unfold wrote
-  rw [if_pos (by omega), Nat.add_sub_cancel_left]
+  simp_all
 
 /-- A cell that has not been written (yet). -/
-theorem wrote_rest {a : ℕ} (h : Outside dst j a) : wrote μ dst f j a = μ a := by
+theorem wrote_rest {a : ℕ} (h : Outside dst j a := by omega) : wrote μ dst f j a = μ a := by
   unfold wrote
-  rw [if_neg (by omega)]
+  omega
 
 /-- One more cell is written. -/
 theorem wrote_succ : Function.update (wrote μ dst f j) (dst + j) (f j) = wrote μ dst f (j + 1) := by
-  funext a
-  by_cases h : a = dst + j
-  · subst h
-    rw [Function.update_self, wrote_done (Nat.lt_succ_self j)]
-  · rw [Function.update_of_ne h]
-    unfold wrote
-    by_cases h' : dst ≤ a ∧ a < dst + j
-    · rw [if_pos h', if_pos (by omega)]
-    · rw [if_neg h', if_neg (by omega)]
+  grind [wrote]
 
 /-- A write outside the cells that have been written can be done first. -/
 theorem update_wrote {y : ℕ} (hy : Outside dst j y) (w : ℤ) :
     Function.update (wrote μ dst f j) y w = wrote (Function.update μ y w) dst f j := by
-  funext a
-  by_cases ha : a = y
-  · subst ha
-    rw [Function.update_self, wrote_rest hy, Function.update_self]
-  · simp only [wrote, Function.update_of_ne ha]
+  grind [wrote]
 
 /-- Writing `j ≤ n` cells from `dst` changes no cell outside the `n` cells from `dst`. -/
 theorem sameOutside_wrote {n : ℕ} (h : j ≤ n) : SameOutside μ (wrote μ dst f j) dst n :=
@@ -206,5 +190,3 @@ macro "light_keep" "[" hs:term,* "]" : tactic =>
 /-- `light_order` proves `InOrder top [(a, n), …]` by linear arithmetic from the hypotheses in the
 context, which may be of this form themselves. -/
 macro "light_order" : tactic => `(tactic| (simp only [InOrder]; omega))
-
-end Light

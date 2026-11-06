@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import PaperStatements
-public import ThreeSumApsp.Lang.Lib.Seg
+import PaperStatements
+import ThreeSumApsp.Lang.Lib.Seg
 
 /-!
 # Reading the trusted layout
@@ -15,13 +14,14 @@ Matrices are written row by row (`rowMajor`), and an input is a concatenation of
 says which number is in which cell (`getD_rowMajor`, `seg_memOf`, `matAt_of_seg`).
 -/
 
-public section
 
 namespace Light
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
-private theorem rowMajor_succ {n m : ℕ} (A : Fin (n + 1) → Fin m → ℤ) :
+variable {m n : ℕ}
+
+theorem rowMajor_succ (A : Fin (n + 1) → Fin m → ℤ) :
     rowMajor A = (List.finRange m).map (A 0) ++ rowMajor fun i : Fin n => A i.succ := by
   simp [rowMajor, List.finRange_succ, List.flatMap_map]
 
@@ -48,22 +48,21 @@ theorem getD_rowMajor : ∀ {n m : ℕ} (A : Fin n → Fin m → ℤ) (i : Fin n
       rw [this]
       exact getD_rowMajor (fun i : Fin n => A i.succ) i' j
 
-theorem mem_rowMajor {n m : ℕ} {A : Fin n → Fin m → ℤ} {x : ℤ} (h : x ∈ rowMajor A) :
+theorem mem_rowMajor {A : Fin n → Fin m → ℤ} {x : ℤ} (h : x ∈ rowMajor A) :
     ∃ i j, A i j = x := by
-  simp only [rowMajor, List.mem_flatMap, List.mem_map, List.mem_finRange, true_and] at h
-  exact h
+  grind [rowMajor]
 
 /-- A cell in the first part of a concatenation. -/
 theorem memOf_append_left {l₁ : List ℤ} (l₂ : List ℤ) {a : ℕ} (h : a < l₁.length) :
     memOf (l₁ ++ l₂) a = memOf l₁ a := by
   unfold memOf
-  rw [List.getD_append _ _ _ _ h]
+  grind
 
 /-- A cell after the first part of a concatenation. -/
 theorem memOf_append_right (l₁ l₂ : List ℤ) (a : ℕ) :
     memOf (l₁ ++ l₂) (l₁.length + a) = memOf l₂ a := by
   unfold memOf
-  rw [List.getD_append_right _ _ _ _ (by omega), Nat.add_sub_cancel_left]
+  grind
 
 /-- A part of a concatenation is a segment of the memory. -/
 theorem seg_memOf (l₁ l l₂ : List ℤ) : Seg (memOf (l₁ ++ l ++ l₂)) l₁.length l := by
@@ -79,10 +78,8 @@ theorem seg_first (n : ℤ) (l₁ l₂ : List ℤ) : Seg (memOf (n :: (l₁ ++ l
 theorem seg_second (n : ℤ) (l₁ l₂ : List ℤ) :
     Seg (memOf (n :: (l₁ ++ l₂))) (1 + l₁.length) l₂ := by
   have := seg_memOf (n :: l₁) l₂ []
-  simpa [Nat.add_comm] using this
+  grind
 
 /-- A square matrix written row by row: the two definitions agree. -/
-theorem rowByRow_eq {n : ℕ} (w : Fin n → Fin n → ℤ) : EndStatement.rowByRow w = rowMajor w := by
+theorem rowByRow_eq (w : Fin n → Fin n → ℤ) : EndStatement.rowByRow w = rowMajor w := by
   simp [EndStatement.rowByRow, rowMajor, List.ofFn_eq_map, List.flatMap_def]
-
-end Light

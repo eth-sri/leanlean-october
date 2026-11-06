@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Program
-public import ThreeSumApsp.Programs.Sec4.Corollary26.Regime
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Program
+import ThreeSumApsp.Programs.Sec4.Corollary26.Regime
 
 /-!
 # Corollary 26, the offline form, on all instances
@@ -31,11 +30,9 @@ offline routine offline32 if so and the brute force if not. The texts are `allIn
   the levels of calls are at most 2^11 Q^20 (`word_le`, `cells_le`, `depth_le`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
 
 /-! ## Time and need -/
 
@@ -44,8 +41,6 @@ open ThreeSumApsp ThreeSumApsp.Spec
 /-! ## The limits -/
 
 section need
-
-variable {lim : Limits} {N D₀ w U fr d : ℕ}
 
 end need
 
@@ -57,38 +52,38 @@ def thinMX (x : ThinInst) : Matrix (Fin x.N) (Fin x.D) ℤ := fun i j => x.X.get
 /-- The second matrix of an instance. -/
 def thinMY (x : ThinInst) : Matrix (Fin x.D) (Fin x.N) ℤ := fun i j => x.Y.getD (i * x.N + j) 0
 
-theorem matAt_thinMX {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) : MatAt μ x.x
+variable {x : ThinInst} {μ : ℕ → ℤ}
+
+theorem matAt_thinMX {fr : ℕ} (h : x.Pre μ fr) : MatAt μ x.x
     (thinMX x) := by
   intro i j
-  have hlt : (i : ℕ) * x.D + j < x.X.length := by
+  have hlt : i * x.D + j < x.X.length := by
     rw [h.lenX]
     have := Nat.mul_add_le_mul i.isLt (le_refl x.D)
-    have := j.isLt
     omega
-  rw [Nat.add_assoc, h.segX.getD hlt 0]
+  rw [Nat.add_assoc, h.segX.getD hlt]
   rfl
 
-theorem matAt_thinMY {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) : MatAt μ x.y
+theorem matAt_thinMY {fr : ℕ} (h : x.Pre μ fr) : MatAt μ x.y
     (thinMY x) := by
   intro i j
-  have hlt : (i : ℕ) * x.N + j < x.Y.length := by
+  have hlt : i * x.N + j < x.Y.length := by
     rw [h.lenY]
     have := Nat.mul_add_le_mul i.isLt (le_refl x.N)
-    have := j.isLt
     omega
-  rw [Nat.add_assoc, h.segY.getD hlt 0]
+  rw [Nat.add_assoc, h.segY.getD hlt]
   rfl
 
 /-- The entry of the product of the two matrices is the entry that the task asks for. -/
 theorem entryN_thin (x : ThinInst) {I J : ℕ} (hI : I < x.N) (hJ : J < x.N) :
     entryN (thinMX x) (thinMY x) I J = thinEntry x.N x.D x.X x.Y I J := by
-  rw [entryN, dif_pos ⟨hI, hJ⟩, Matrix.mul_apply, thinEntry, List.sum_map_range, Finset.sum_range]
+  rw [entryN, dif_pos ⟨hI, hJ⟩, thinEntry, List.sum_map_range, Finset.sum_range]
   rfl
 
 /-! ## The routine -/
 
 /-- The answers of the offline routine are those that the task asks for. -/
-theorem map_entryN_thin {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) :
+theorem map_entryN_thin {fr : ℕ} (h : x.Pre μ fr) :
     (x.WI.zip x.WJ).map (fun q => entryN (thinMX x) (thinMY x) q.1 q.2)
       = thinOut x.N x.D x.X x.Y x.WI x.WJ :=
   List.map_congr_left fun _ hq =>
@@ -100,8 +95,3 @@ theorem map_entryN_thin {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre 
 
 section summands
 
-variable {N D U Q : ℕ}
-
-end summands
-
-end Light.Sec4

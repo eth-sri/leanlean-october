@@ -1,7 +1,6 @@
-module
-public import ImprovedExponents.Optimum.GlobalFullCells1
-public import ImprovedExponents.Optimum.GlobalFullCells2
-public import ImprovedExponents.Optimum.GlobalFullCells3
-public import ImprovedExponents.Optimum.GlobalFullCells4
-public import ImprovedExponents.Optimum.GlobalFullCells5
-public import ImprovedExponents.Optimum.GlobalFullCells6
+import ImprovedExponents.Optimum.GlobalFullCells1
+import ImprovedExponents.Optimum.GlobalFullCells2
+import ImprovedExponents.Optimum.GlobalFullCells3
+import ImprovedExponents.Optimum.GlobalFullCells4
+import ImprovedExponents.Optimum.GlobalFullCells5
+import ImprovedExponents.Optimum.GlobalFullCells6

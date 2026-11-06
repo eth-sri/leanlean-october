@@ -1,11 +1,9 @@
-module
 
-public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Programs.Sec4.Theorem30.FillList
-public import ImprovedExponents.PrunedProgram.Tiles.Contracts
-import all ThreeSumApsp.Programs.Sec4.Theorem30.FillList
+import ThreeSumApsp.Lang.Tactics
+import ThreeSumApsp.Programs.Sec4.Theorem30.FillList
+import ImprovedExponents.PrunedProgram.Tiles.Contracts
+import ThreeSumApsp.Programs.Sec4.Theorem30.FillList
 
-@[expose] public section
 
 /-!
 # The boxes with e stars go into the trie of their tile, on pruned encodings
@@ -27,15 +25,15 @@ namespace Light.Sec4
 
 open ThreeSumApsp ThreeSumApsp.Spec
 
-open private fillAt_zero fillAt_length fillAt_succ fillAt_rep length_fillAt_le abs_getD_arrT_le
-  exists_starBox from ThreeSumApsp.Programs.Sec4.Theorem30.FillList
+variable {m L : ℕ}
+
 
 /-! ## The bridge: the cell of the code of a string with few nines -/
 
 /-- The cell of the code of a string of `L` digits with at most `m` nines holds the entry of the
 array of the encoding: the string is the list of digits of a leaf with as many symbols `P₀` as it
 has nines. -/
-theorem SegOn.get_ofDigitList {L m : ℕ} {μ : ℕ → ℤ} {a : ℕ} {enc : Leaf L → ℤ}
+theorem SegOn.get_ofDigitList {μ : ℕ → ℤ} {a : ℕ} {enc : Leaf L → ℤ}
     (h : SegOn m μ a enc) {l : List ℕ} (hl : l.length = L) (hd : ∀ d ∈ l, d < 10)
     (hc : l.count 9 ≤ m) :
     μ (a + ofDigitList 10 l) = (arrT enc).getD (ofDigitList 10 l) 0 := by
@@ -44,9 +42,9 @@ theorem SegOn.get_ofDigitList {L m : ℕ} {μ : ℕ → ℤ} {a : ℕ} {enc : Le
   exact h.get (by rwa [card_P0Levels])
 
 /-- A string of `nineStrs L e (m - t)` has at most `m` nines. -/
-theorem count_nine_le_of_mem_nineStrs {L m t e : ℕ} {l : List ℕ} (hl : l ∈ nineStrs L e (m - t)) :
+theorem count_nine_le_of_mem_nineStrs {t e : ℕ} {l : List ℕ} (hl : l ∈ nineStrs L e (m - t)) :
     l.count 9 ≤ m :=
-  ((mem_nineStrs l).1 hl).2.2.2.trans (Nat.sub_le m t)
+  by grind [mem_nineStrs]
 
 /-! ## The program -/
 
@@ -100,7 +98,7 @@ variable {lim : Limits} {P : Program} {d : ℕ} {μ : ℕ → ℤ} {x : FillList
 
 /-- The end of a round: the box is inserted with its value, and the next leaf is formed. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/FillList.lean (FillList.tail_spec)
-private theorem tail_spec (K : Callees lim P) (H : FillListPreP lim μ x) (hd : d + 2 ≤ lim.depth)
+theorem tail_spec (K : Callees lim P) (H : FillListPreP lim μ x) (hd : d + 2 ≤ lim.depth)
     (R : RoundFactsP μ x i l Ti ν) :
     Ends lim P d fillTailStmt
       ⟨x.locals more star (x.value Ti (starFirst x.e l)) code junk, ν⟩
@@ -116,20 +114,17 @@ private theorem tail_spec (K : Callees lim P) (H : FillListPreP lim μ x) (hd : 
     simp
   -- junk := insert(area, root, box, len, value, free)
   light_call (K.insert
-    { tr := x.tr, root := x.root, key := x.box, L := x.L, val := x.value Ti (starFirst x.e l),
-      fp := x.fp, cap := x.cap, T := Ti, kl := starFirst x.e l } ν
-    { trie := R.trie, seg := R.box, len := hbox_len, digits := hbox_digits
-      walk := R.rep.insertOK x.tile H.root_ne _ hbox_len hbox_digits
-      room := hbox_len ▸ R.room } _ (by omega)) with _ νins ⟨htrie, hins⟩
-  dsimp only at htrie hins
+    ⟨x.tr, x.root, x.box, x.L, x.value Ti (starFirst x.e l), x.fp, x.cap, Ti, starFirst x.e l⟩ ν
+    (Light.Sec4.InsertPre.mk R.trie R.box hbox_len hbox_digits (R.rep.insertOK x.tile H.root_ne _ hbox_len hbox_digits) (hbox_len ▸ R.room)) _ (by omega)) with _ νins ⟨htrie, hins⟩
+  dsimp at htrie hins
   -- more := nineNext(leaf, len, stars, m - t)
-  light_call (K.next x.cur x.L x.e (x.m - x.t) l νins R.leaf.keep R.leaf_mem (by omega) _
+  light_call (K.next x.cur x.L x.e _ l νins R.leaf.keep R.leaf_mem (by omega) _
     (by omega)) with res νnext ⟨hnextLeaf, hres, hnext⟩
   rw [hmore] at hres
   rw [R.next] at hnextLeaf
-  refine ⟨_, _, _, _, νnext, by rw [hres]; rfl, fun h => ?_, ?_, R.segA.keep, R.segB.keep,
+  refine ⟨_, _, _, _, νnext, by tauto, fun h => ?_, ?_, R.segA.keep, R.segB.keep,
     by light_keep⟩
-  · rwa [List.getElem?_eq_getElem h] at hnextLeaf
+  · simp_all
   · rw [R.succ]
     exact htrie.keep
 
@@ -137,7 +132,7 @@ private theorem tail_spec (K : Callees lim P) (H : FillListPreP lim μ x) (hd : 
 at most `m - t ≤ m` nines, which the pruned encodings hold. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/FillList.lean
 -- (FillList.value_zero_spec)
-private theorem value_zero_spec (K : Callees lim P) (H : FillListPreP lim μ x)
+theorem value_zero_spec (K : Callees lim P) (H : FillListPreP lim μ x)
     (hd : d + 2 ≤ lim.depth) (he : x.e = 0) (R : RoundFactsP μ x i l Ti ν) :
     Ends lim P d fillValueZero ⟨x.locals more star value code junk, ν⟩ (tHorner x.L + 14)
       fun σ' => ∃ code' : ℤ,
@@ -152,17 +147,17 @@ private theorem value_zero_spec (K : Callees lim P) (H : FillListPreP lim μ x)
   have hbox := R.box
   have hvalue : x.value Ti (starFirst x.e l)
       = (arrT x.encA).getD (ofDigitList 10 l) 0 * (arrT x.encB).getD (ofDigitList 10 l) 0 := by
-    rw [FillListArgs.value, he, starFirst_zero, boxValue_zero _ _ Ti x.root hdigits, leafProduct]
-  rw [he, starFirst_zero] at hbox
+    simp_all [FillListArgs.value, starFirst.eq_1, boxValue_zero, leafProduct]
+  rw [he, starFirst.eq_1] at hbox
   rw [hvalue]
-  have hcode : ofDigitList 10 l < 10 ^ x.L := hlen ▸ ofDigitList_lt l hdigits
+  have hcode := hlen ▸ ofDigitList_lt l hdigits
   -- the cells of the code hold the encoded numbers: the leaf has at most m symbols P₀
   have hcellA := SegOn.get_ofDigitList R.segA hlen hdigits hnines
   have hcellB := SegOn.get_ofDigitList R.segB hlen hdigits hnines
   -- code := horner(box, len)
   light_call (K.horner x.box x.L l ν hbox hlen hdigits (by omega) C.pow_le _
     (by omega)) with _ ν' ⟨rfl, hν'⟩
-  obtain rfl : ν = ν' := hν'.symm
+  obtain rfl := hν'.symm
   generalize ofDigitList 10 l = c at hcode hcellA hcellB
   -- the product of two encoded numbers fits in a word
   have hprod : |(arrT x.encA).getD c 0 * (arrT x.encB).getD c 0| ≤ lim.word := by
@@ -170,7 +165,7 @@ private theorem value_zero_spec (K : Callees lim P) (H : FillListPreP lim μ x)
     rw [abs_mul]
     calc |(arrT x.encA).getD c 0| * |(arrT x.encB).getD c 0|
         ≤ A * B := mul_le_mul hAc (abs_getD_arrT_le x.encB hB hcode) (abs_nonneg _)
-          ((abs_nonneg _).trans hAc)
+          (by grind)
       _ ≤ 10 ^ x.m * (A * B) := le_mul_of_one_le_left
           (mul_nonneg_of_abs_le hA hB) (one_le_pow₀ (by norm_num))
       _ ≤ lim.word := hword
@@ -178,12 +173,12 @@ private theorem value_zero_spec (K : Callees lim P) (H : FillListPreP lim μ x)
   generalize (arrT x.encB).getD c 0 = z at hcellB hprod
   -- value := mem[encA + code] * mem[encB + code]
   light_set (y * z) using hcellA, hcellB, abs_le.mp hprod
-  exact ⟨c, rfl⟩
+  tauto
 
 /-- The value of a box with stars. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/FillList.lean
 -- (FillList.value_succ_spec)
-private theorem value_succ_spec (K : Callees lim P) (H : FillListPreP lim μ x)
+theorem value_succ_spec (K : Callees lim P) (H : FillListPreP lim μ x)
     (hd : d + 2 ≤ lim.depth) (he : x.e ≠ 0) (R : RoundFactsP μ x i l Ti ν) :
     Ends lim P d (.call Proc.sumTen [v Area, v Root, v BoxAt, v Len, v LastStar] Value)
       ⟨x.locals more ((lastStar (starFirst x.e l)).getD 0 : ℕ) value code junk, ν⟩
@@ -199,33 +194,30 @@ private theorem value_succ_spec (K : Callees lim P) (H : FillListPreP lim μ x)
   have hbox_mem := R.box_mem
   have hbox := R.box
   generalize starFirst x.e l = bx at hbox_mem hbox hbox_len hbox_digits ⊢
-  dsimp only [FillListArgs.stored] at hrep
+  dsimp [FillListArgs.stored] at hrep
   rw [he'] at hrep hbox_mem
   obtain ⟨p, hstar⟩ := exists_starBox hA hB hrep hbox_mem
   have hle := R.trie.le_cap
   have hlayout := C.layout
   -- the partial sums are at most 10^{e'+1} A B ≤ 10^m A B
-  have hbound : (10 : ℤ) ^ (e' + 1) * (A * B) ≤ lim.word :=
+  have hbound : 10 ^ (e' + 1) * (A * B) ≤ lim.word :=
     (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) (by omega))
       (mul_nonneg_of_abs_le hA hB)).trans hword
   have hvalue : x.value Ti bx
       = ((List.range 10).map fun d => trieLookup Ti x.root (bx.set p d)).sum := by
     rw [FillListArgs.value, he']
     exact hstar.value
-  rw [hvalue, hstar.last]
+  rw [hstar.last]
   -- value := sumTen(area, root, box, len, lastStar)
   light_call (K.box
-    { tr := x.tr, root := x.root, box := x.box, L := x.L, p := p, T := Ti, l := bx } ν
-    { area := R.trie.seg, seg := hbox, len := hbox_len, star := hbox_len ▸ hstar.lt
-      digits := hbox_digits, walk := hstar.walk
-      sums := fun j _ => (hstar.sums j).trans hbound } _ (by omega)) with _ ν' ⟨rfl, hν'⟩
-  rw [hν']
-  rfl
+    ⟨x.tr, x.root, x.box, x.L, p, Ti, bx⟩ ν
+    (Light.Sec4.SumTenPre.mk R.trie.seg hbox hbox_len (hbox_len ▸ hstar.lt) hbox_digits hstar.walk (fun j _ => (hstar.sums j).trans hbound)) _ (by omega)) with _ ν' ⟨rfl, hν'⟩
+  aesop
 
 /-- The value of the box. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/FillList.lean
 -- (FillList.fillValue_spec)
-private theorem fillValue_spec (K : Callees lim P) (H : FillListPreP lim μ x)
+theorem fillValue_spec (K : Callees lim P) (H : FillListPreP lim μ x)
     (hd : d + 2 ≤ lim.depth) (R : RoundFactsP μ x i l Ti ν) :
     Ends lim P d fillValue
       ⟨x.locals more ((lastStar (starFirst x.e l)).getD 0 : ℕ) value code junk, ν⟩
@@ -234,13 +226,13 @@ private theorem fillValue_spec (K : Callees lim P) (H : FillListPreP lim μ x)
           (x.value Ti (starFirst x.e l)) code' junk, ν⟩ := by
   have hword := H.ctx.std.const_le
   -- if stars = 0
-  refine Ends.iteLast (fun hz => ?_) (fun hz => ?_)
-  · light_piece (value_zero_spec K H hd (by simpa using hz) R)
-  · exact (value_succ_spec K H hd (by simpa using hz) R).mono (by light_time) fun _ h => ⟨code, h⟩
+  refine Ends.iteLast (fun hz => ?_) fun hz => ?_
+  · light_piece (value_zero_spec K H hd (by simp_all) R)
+  · exact (value_succ_spec K H hd (by simp_all) R).mono (by light_time) fun _ h => by grind
 
 /-- One round of the loop handles leaf number i. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/FillList.lean (FillList.round_spec)
-private theorem round_spec (K : Callees lim P) (H : FillListPreP lim μ x)
+theorem round_spec (K : Callees lim P) (H : FillListPreP lim μ x)
     (hd : d + 2 ≤ lim.depth) (hi : i < x.leaves.length) (I : MemInvP μ x i ν) :
     Ends lim P d fillRound ⟨x.locals more star value code junk, ν⟩ (tFillRound x.L)
       (InvP μ x (i + 1)) := by
@@ -251,9 +243,8 @@ private theorem round_spec (K : Callees lim P) (H : FillListPreP lim μ x)
     have hmul : 11 * x.L * (i + 1) ≤ 11 * x.L * x.leaves.length := Nat.mul_le_mul_left _ hi
     have hcap : x.T.length + 11 * x.L * x.leaves.length ≤ x.cap := by
       have hroom := H.room
-      rwa [FillListArgs.boxes, length_starBoxes_eq_length_nineStrs] at hroom
-    rw [Nat.mul_add_one] at hmul
-    omega
+      grind [length_starBoxes_eq_length_nineStrs]
+    linarith
   have hlayout := C.layout
   have hlen := length_of_mem_nineStrs (List.getElem_mem hi)
   have hsame₀ := I.same
@@ -261,12 +252,8 @@ private theorem round_spec (K : Callees lim P) (H : FillListPreP lim μ x)
   -- lastStar := starFirst(leaf, box, len, stars)
   light_call (K.star x.cur x.box x.L x.e _ ν (I.leaf hi) hlen (by omega) (by omega)
     (by omega) _ (by omega)) with _ νbox ⟨hbox, rfl, hsame⟩
-  have R : RoundFactsP μ x i x.leaves[i] (x.trieAt i) νbox :=
-    { leaf_mem := List.getElem_mem hi, box_mem := starFirst_mem_starBoxes hi
-      next := nineNext_getElem x.L x.e (x.m - x.t) i hi, succ := fillAt_succ x.root hi
-      rep := fillAt_rep H.root_ne H.rep i, room := hroom
-      trie := I.trie.keep, segA := I.segA.keep, segB := I.segB.keep, leaf := (I.leaf hi).keep
-      box := hbox, same := by light_keep }
+  have R : RoundFactsP μ x i _ _ νbox :=
+    ⟨List.getElem_mem hi, starFirst_mem_starBoxes hi, by grind [nineNext_getElem], fillAt_succ x.root hi, fillAt_rep H.root_ne H.rep i, hroom, I.trie.keep, I.segA.keep, I.segB.keep, (I.leaf hi).keep, hbox, by light_keep⟩
   -- fillValue
   light_piece (fillValue_spec K H hd R) with _ ⟨code', rfl⟩
   -- fillTailStmt
@@ -274,36 +261,35 @@ private theorem round_spec (K : Callees lim P) (H : FillListPreP lim μ x)
 
 /-- The whole run. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/FillList.lean (FillList.body_spec)
-private theorem body_spec (K : Callees lim P) (H : FillListPreP lim μ x)
+theorem body_spec (K : Callees lim P) (H : FillListPreP lim μ x)
     (hd : d + 2 ≤ lim.depth) :
     Ends lim P d fillListBody ⟨frame x.vals, μ⟩ (tFillList x.L x.leaves.length) fun σ' =>
         TrieMem σ'.mem x.tr x.cap x.fp (x.trieAt x.leaves.length) ∧
           SameOutsideTile μ σ'.mem x.L x.tr x.cap x.fp x.cur x.box := by
   have C := H.ctx
   have hword := C.std.const_le
-  have heL : x.e ≤ x.L := by have := C.ht; have := C.hmL; have := H.stars_le; omega
+  have heL : x.e ≤ x.L := by have := C.hmL; have := H.stars_le; omega
   have hpos := length_nineStrs_pos heL H.stars_le
-  have hfirst : (nineStrs x.L x.e (x.m - x.t))[0] = nineFirst x.L x.e := getElem_nineStrs hpos
+  have hfirst : (nineStrs x.L x.e _)[0] = nineFirst x.L x.e := getElem_nineStrs hpos
   have hlayout := C.layout
   unfold tFillList
   -- junk := nineFirst(leaf, len, stars)
   light_call (K.first x.cur x.L x.e μ heL (by omega) _ (by omega)) with res ν ⟨hleaf, hsame⟩
   -- more := 1
-  light_set (1 : ℕ)
+  light_set 1
   -- while more = 1
-  refine Ends.whileConst (InvP μ x) x.leaves.length (tFillRound x.L) ?start ?round ?done ?time
-  case start =>
-    refine ⟨0, 0, 0, res, ν, by rw [ite_eq_left hpos]; rfl, fun _ => hfirst ▸ hleaf, ?_,
+  apply Ends.whileConst (InvP μ x) x.leaves.length (tFillRound x.L)
+  ·
+    refine ⟨0, 0, 0, res, ν, by simp_all, by simp_all, ?_,
       H.segA.keep, H.segB.keep, by light_keep⟩
-    rw [FillListArgs.trieAt, fillAt_zero]
     exact H.trie.keep
-  case round =>
+  ·
     rintro i _ hi ⟨star, value, code, junk, ν', rfl, I⟩
-    exact ⟨by simp; omega, by simp [hi], round_spec K H hd hi I⟩
-  case done =>
+    exact ⟨by simp; omega, by simp_all, by grind [round_spec]⟩
+  ·
     rintro _ ⟨star, value, code, junk, ν', rfl, I⟩
     exact ⟨by simp; omega, by simp, I.trie, I.same⟩
-  case time =>
+  ·
     -- the test of the loop and a round are the time of one box
     have hstep : (v More =' k 1).cost + 1 + tFillRound x.L = tFillStep x.L := by
       simp [tFillStep]
@@ -323,7 +309,5 @@ theorem fillListP_meets {lim : Limits} {P : Program} (hP : P[Proc.fillList]? = s
     (hHorner : HornerSpec lim P) (hInsert : InsertSpec lim P) (hBox : SumTenSpec lim P) :
     FillListSpecP lim P := by
   intro x μ pre d hd
-  rw [FillListArgs.boxes, length_starBoxes_eq_length_nineStrs, ← fillAt_length]
+  rw [length_starBoxes_eq_length_nineStrs, ← fillAt_length]
   exact .of_body hP (FillList.body_spec ⟨hFirst, hNext, hStar, hHorner, hInsert, hBox⟩ pre hd)
-
-end Light.Sec4

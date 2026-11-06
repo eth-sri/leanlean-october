@@ -1,2 +1,1 @@
-module
-public import ImprovedExponents.PrunedEncoding.Counts
+import ImprovedExponents.PrunedEncoding.Counts

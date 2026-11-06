@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.NodeMemory
-public import ThreeSumApsp.Programs.Tasks
-public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Sizes
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.NodeMemory
+import ThreeSumApsp.Programs.Tasks
+import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Sizes
 
 /-!
 # The recursion tree of the reduction from 3SUM to Convolution-3SUM
@@ -30,7 +30,6 @@ The text of the procedure is cut into parts, with a lemma for each.
 The parts are put together in `nodesMain_ends`; the time is `tNodes_succ_le`.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -47,12 +46,9 @@ holds of the array. -/
 theorem conv_range_iff (N : ℕ) (y : ℕ → ℤ) :
     Convolution3SUM (vecOf N ((List.range N).map y)) ↔ ConvOne N y := by
   have : vecOf N ((List.range N).map y) = fun i : Fin N => y i := by
-    funext i
     unfold vecOf
-    rw [List.getD_eq_getElem _ _ (by simp)]
     simp
-  rw [this]
-  exact convolution3SUM_iff_convOne N y
+  grind [convolution3SUM_iff_convOne]
 
 /-- One of four answers is yes if and only if their sum is positive. -/
 theorem flag_sum_pos (a b c e : Prop) : 0 < flag a + flag b + flag c + flag e ↔ a ∨ b ∨ c ∨ e := by
@@ -62,7 +58,7 @@ theorem flag_sum_pos (a b c e : Prop) : 0 < flag a + flag b + flag c + flag e �
 /-- The number of binary digits of the labels is at most V + 2. -/
 theorem lam_le (V : ℕ) : Lam V ≤ V + 2 := by
   unfold Lam
-  rcases Nat.eq_zero_or_pos V with rfl | h
+  rcases V.eq_zero_or_pos with rfl | h
   · simp
   · have : Nat.log 2 (2 * V) = Nat.log 2 V + 1 := by
       rw [Nat.mul_comm, Nat.log_mul_base (by norm_num) (by omega)]
@@ -73,37 +69,12 @@ theorem lam_le (V : ℕ) : Lam V ≤ V + 2 := by
 
 namespace NodesLocals
 
-/-- The local variables of nodes: the arguments f, s₁, l₁, s₂, l₂, s₃, l₃, cx, fr; the parameters V,
+/- The local variables of nodes: the arguments f, s₁, l₁, s₂, l₂, s₃, l₃, cx, fr; the parameters V,
 m, Λ, np, pr, cnt, read from the block at cx; the modulus M; the length 8m² of the array; the free
 pointer behind the array; the result of nodeArray, which is not used; the answer of the solver; and
 for each of the three children the number of heavy elements and the answer.  At the end local 0
 receives the result, as in every procedure. -/
-abbrev LEVELS : ℕ := 0
-@[inherit_doc LEVELS] abbrev SET1 : ℕ := 1
-@[inherit_doc LEVELS] abbrev LEN1 : ℕ := 2
-@[inherit_doc LEVELS] abbrev SET2 : ℕ := 3
-@[inherit_doc LEVELS] abbrev LEN2 : ℕ := 4
-@[inherit_doc LEVELS] abbrev SET3 : ℕ := 5
-@[inherit_doc LEVELS] abbrev LEN3 : ℕ := 6
-@[inherit_doc LEVELS] abbrev CTX : ℕ := 7
-@[inherit_doc LEVELS] abbrev FREE : ℕ := 8
-@[inherit_doc LEVELS] abbrev VMAX : ℕ := 9
-@[inherit_doc LEVELS] abbrev MMAX : ℕ := 10
-@[inherit_doc LEVELS] abbrev LAM : ℕ := 11
-@[inherit_doc LEVELS] abbrev NPRIMES : ℕ := 12
-@[inherit_doc LEVELS] abbrev PRIMES : ℕ := 13
-@[inherit_doc LEVELS] abbrev CNT : ℕ := 14
-@[inherit_doc LEVELS] abbrev MOD : ℕ := 15
-@[inherit_doc LEVELS] abbrev LEN : ℕ := 16
-@[inherit_doc LEVELS] abbrev FR2 : ℕ := 17
-@[inherit_doc LEVELS] abbrev RES : ℕ := 18
-@[inherit_doc LEVELS] abbrev ANS0 : ℕ := 19
-@[inherit_doc LEVELS] abbrev HEAVY1 : ℕ := 20
-@[inherit_doc LEVELS] abbrev ANS1 : ℕ := 21
-@[inherit_doc LEVELS] abbrev HEAVY2 : ℕ := 22
-@[inherit_doc LEVELS] abbrev ANS2 : ℕ := 23
-@[inherit_doc LEVELS] abbrev HEAVY3 : ℕ := 24
-@[inherit_doc LEVELS] abbrev ANS3 : ℕ := 25
+slots LEVELS SET1 LEN1 SET2 LEN2 SET3 LEN3 CTX FREE VMAX MMAX LAM NPRIMES PRIMES CNT MOD LEN FR2 RES ANS0 HEAVY1 ANS1 HEAVY2 ANS2 HEAVY3 ANS3
 
 end NodesLocals
 
@@ -186,29 +157,25 @@ structure NodesCtx (lim : Limits) (P₀ R : Program) (p pMod pArr pC3 pHeavy : �
   array : NodeArraySpec lim (P₀ ++ R) pArr
   heavy : HeavySpec lim (P₀ ++ R) pHeavy
 
+variable (Q : Finset ℕ)
+
 /-- The number of calls of the procedure is at most three times the number of nodes, plus one. -/
-theorem treeCalls_le (Q : Finset ℕ) (Λ f : ℕ) (S₁ S₂ S₃ : Finset ℤ) :
+theorem treeCalls_le (Λ f : ℕ) (S₁ S₂ S₃ : Finset ℤ) :
     treeCalls Q Λ f S₁ S₂ S₃ ≤ 3 * (nodes Q Λ f S₁ S₂ S₃).length + 1 := by
   induction f generalizing S₁ S₂ S₃ with
-  | zero => simp [treeCalls]
+  | zero => rfl
   | succ f ih =>
     unfold treeCalls nodes
-    split_ifs with h
-    · simp
-    · simp only [List.length_cons, List.length_append]
-      have a := ih (ChanHe.heavy S₁ (ChanHe.modulus Q Λ S₁ S₂ S₃)) S₂ S₃
-      have b := ih S₁ (ChanHe.heavy S₂ (ChanHe.modulus Q Λ S₁ S₂ S₃)) S₃
-      have c := ih S₁ S₂ (ChanHe.heavy S₃ (ChanHe.modulus Q Λ S₁ S₂ S₃))
-      omega
+    grind
 
 /-- The procedure is called at least once. -/
-theorem one_le_treeCalls (Q : Finset ℕ) (Λ f : ℕ) (S₁ S₂ S₃ : Finset ℤ) :
+theorem one_le_treeCalls (Λ f : ℕ) (S₁ S₂ S₃ : Finset ℤ) :
     1 ≤ treeCalls Q Λ f S₁ S₂ S₃ := by
   cases f with
-  | zero => simp [treeCalls]
+  | zero => rfl
   | succ f =>
     unfold treeCalls
-    split_ifs <;> omega
+    grind
 
 /-! ## Needs and times -/
 
@@ -219,30 +186,30 @@ variable {r : ℕ → ℕ → Need} {fr n V m f l M : ℕ}
 /-- What is allowed at a node covers what modulus needs. -/
 theorem modulusNeed_ok (h : (nodesNeed r n V m (f + 1)).Ok lim fr d) :
     (modulusNeed n V m).Ok lim fr (d + 1) := by
-  refine h.mono ?_ ?_ ?_ <;> simp only [nodesNeed] <;> omega
+  apply h.mono <;> simp only [nodesNeed] <;> omega
 
 /-- What is allowed at a node covers what nodeArray needs behind the array. -/
 theorem nodeArrayNeed_ok (h : (nodesNeed r n V m (f + 1)).Ok lim fr d) :
     (nodeArrayNeed n V m).Ok lim (fr + 8 * m ^ 2) (d + 1) := by
-  refine h.mono ?_ ?_ ?_ <;> simp only [nodesNeed, nodeArrayNeed, modulusNeed] <;> omega
+  apply h.mono <;> simp only [nodesNeed, nodeArrayNeed, modulusNeed] <;> omega
 
 /-- What is allowed at a node covers what the solver needs behind the array. -/
 theorem solverNeed_ok (h : (nodesNeed r n V m (f + 1)).Ok lim fr d) :
     (r (8 * m ^ 2) (60 * V + 40)).Ok lim (fr + 8 * m ^ 2) (d + 1) := by
-  refine h.mono ?_ ?_ ?_ <;> simp only [nodesNeed] <;> omega
+  apply h.mono <;> simp only [nodesNeed] <;> omega
 
 /-- What is allowed at a node covers what heavy needs behind its output. -/
 theorem collNeed_ok (h : (nodesNeed r n V m (f + 1)).Ok lim fr d) (hl : l ≤ n) (hM : M ≤ m * m) :
     (collNeed l V M).Ok lim (fr + l) (d + 1) := by
   have hsucc : (f + 1) * n = f * n + n := by ring
   have hword := wordNeed_mono (V := V) hl hM
-  refine h.mono ?_ ?_ ?_ <;> simp only [nodesNeed, collNeed, modulusNeed] <;> omega
+  apply h.mono <;> simp only [nodesNeed, collNeed, modulusNeed] <;> omega
 
 /-- What is allowed at a node covers what a child needs behind its set of heavy elements. -/
 theorem childNeed_ok (h : (nodesNeed r n V m (f + 1)).Ok lim fr d) (hl : l ≤ n) :
     (nodesNeed r n V m f).Ok lim (fr + l) (d + 1) := by
   have hsucc : (f + 1) * n = f * n + n := by ring
-  refine h.mono ?_ ?_ ?_ <;> simp only [nodesNeed] <;> omega
+  apply h.mono <;> simp only [nodesNeed] <;> omega
 
 /-- The time of resid grows with the lengths of the sets. -/
 theorem tResid_mono {l n : ℕ} (h : l ≤ n) (V : ℕ) : tResid l V ≤ tResid n V := by
@@ -268,19 +235,21 @@ theorem tHeavy_mono {l n : ℕ} (h : l ≤ n) (V : ℕ) : tHeavy l V ≤ tHeavy 
   unfold tHeavy
   omega
 
+variable {l₁ l₃ l₂ : ℕ}
+
 /-- The time of modulus grows with the lengths of the sets. -/
-theorem tModulus_mono {l₁ l₂ l₃ n : ℕ} (h₁ : l₁ ≤ n) (h₂ : l₂ ≤ n) (h₃ : l₃ ≤ n) (np V : ℕ) :
+theorem tModulus_mono {n : ℕ} (h₁ : l₁ ≤ n) (h₂ : l₂ ≤ n) (h₃ : l₃ ≤ n) (np V : ℕ) :
     tModulus np l₁ l₂ l₃ V ≤ tModulus np n n n V := by
   have hcoll₁ := tColl_mono h₁ V
   have hcoll₂ := tColl_mono h₂ V
   have hcoll₃ := tColl_mono h₃ V
   have hsearch : tSearch np l₁ l₂ l₃ V ≤ tSearch np n n n V :=
-    Nat.add_le_add_right (Nat.mul_le_mul_left _ (by omega)) _
+    Nat.add_le_add_right (by nlinarith) _
   unfold tModulus
   omega
 
 /-- The time of nodeArray grows with the lengths of the sets. -/
-theorem tNodeArray_mono {l₁ l₂ l₃ n : ℕ} (h₁ : l₁ ≤ n) (h₂ : l₂ ≤ n) (h₃ : l₃ ≤ n) (m V : ℕ) :
+theorem tNodeArray_mono {n : ℕ} (h₁ : l₁ ≤ n) (h₂ : l₂ ≤ n) (h₃ : l₃ ≤ n) (m V : ℕ) :
     tNodeArray m l₁ l₂ l₃ V ≤ tNodeArray m n n n V := by
   have hresid₁ := tResid_mono h₁ V
   have hresid₂ := tResid_mono h₂ V
@@ -317,18 +286,17 @@ theorem NodesPre.fits (H : NodesPre lim r μ a Λ cx (f + 1) d) (hn : 1 ≤ a.n)
     NodesFits lim d a.fr a.n a.V a.m f := by
   have hcells := H.ok.cells
   have hdepth := H.ok.depth
-  have hword : ((wordNeed a.n a.V (a.m * a.m) : ℕ) : ℤ) ≤ lim.word :=
+  have hword : wordNeed a.n a.V _ ≤ lim.word :=
     le_trans (by exact_mod_cast le_max_left _ _) H.ok.word
-  simp only [nodesNeed] at hcells hdepth
-  have hlevels : f ≤ f * a.n := Nat.le_mul_of_pos_right f hn
+  simp [nodesNeed] at hcells hdepth
+  have hlevels : f ≤ f * a.n := by bound
   have hsucc : (f + 1) * a.n = f * a.n + a.n := by ring
-  have hsq : a.m ^ 2 = a.m * a.m := pow_two a.m
-  have hone : 1 ≤ (a.n + 1) ^ 2 := Nat.one_le_pow _ _ (by omega)
+  have hsq := pow_two a.m
+  have hone : 1 ≤ (a.n + 1) ^ 2 := by grind
   refine ⟨H.ok.space, by omega, by omega, ?_, ?_, by omega⟩
-  · simpa using mul_le_word (x := 1) (y := 1) (z := 64 * (a.V + 1)) hword hone (by omega) le_rfl
-  · have h := mul_le_word (x := 1) (y := a.m * a.m + 1) (z := 64) hword hone le_rfl (by omega)
-    push_cast at h
-    linarith
+  · simpa using mul_le_word (y := 1) hword hone (by omega) le_rfl
+  · have h := mul_le_word (z := 64) hword hone le_rfl (by omega)
+    omega
 
 /-- The first child of a node meets what the procedure assumes, with one level less.  μ₀, μ and μ'
 are the memories when the procedure is called, before heavy, and after heavy. -/
@@ -339,7 +307,7 @@ theorem NodesPre.child₁ (H : NodesPre lim r μ₀ a Λ cx (f + 1) d) (kept : K
   { H with
     mem := (H.mem.kept kept).child₁ hk hs
     ctx := H.ctx.kept H.belowCtx (kept.then hk fun b hb => by omega)
-    belowCtx := H.belowCtx.trans (Nat.le_add_right _ _)
+    belowCtx := H.belowCtx.trans (by simp)
     ok := childNeed_ok H.ok H.mem.set₁.le }
 
 /-- The second child of a node meets what the procedure assumes, with one level less. -/
@@ -350,7 +318,7 @@ theorem NodesPre.child₂ (H : NodesPre lim r μ₀ a Λ cx (f + 1) d) (kept : K
   { H with
     mem := (H.mem.kept kept).child₂ hk hs
     ctx := H.ctx.kept H.belowCtx (kept.then hk fun b hb => by omega)
-    belowCtx := H.belowCtx.trans (Nat.le_add_right _ _)
+    belowCtx := H.belowCtx.trans (by simp)
     ok := childNeed_ok H.ok H.mem.set₂.le }
 
 /-- The third child of a node meets what the procedure assumes, with one level less. -/
@@ -361,7 +329,7 @@ theorem NodesPre.child₃ (H : NodesPre lim r μ₀ a Λ cx (f + 1) d) (kept : K
   { H with
     mem := (H.mem.kept kept).child₃ hk hs
     ctx := H.ctx.kept H.belowCtx (kept.then hk fun b hb => by omega)
-    belowCtx := H.belowCtx.trans (Nat.le_add_right _ _)
+    belowCtx := H.belowCtx.trans (by simp)
     ok := childNeed_ok H.ok H.mem.set₃.le }
 
 /-- The node with the modulus `Mo`. -/
@@ -372,19 +340,21 @@ parameters that are read from the block at cx; and the list t of what has been c
 @[simp] abbrev nodesLocals (x : ℤ) (a : NodeArgs) (Λ cx : ℕ) (t : List ℤ) : List ℤ :=
   x :: a.sets ++ [(cx : ℤ), a.fr, a.V, a.m, Λ, a.np, a.pr, a.cnt] ++ t
 
+variable {x : ℤ}
+
 /-- **The parameters** are read from the block at cx. -/
 theorem nodesParams_ends (hctx : CtxAt μ cx a.V a.m Λ a.np a.pr a.cnt) (hcx : cx + 6 ≤ lim.space)
-    (hw : (lim.space : ℤ) ≤ lim.word) {x : ℤ} :
+    (hw : (lim.space : ℤ) ≤ lim.word) :
     Ends lim P d nodesParams ⟨frame (x :: a.sets ++ [(cx : ℤ), a.fr]), μ⟩ 28 fun σ' =>
       σ' = ⟨frame (nodesLocals x a Λ cx []), μ⟩ := by
   have hV : μ cx = a.V := by simpa using hctx 0 (by simp)
-  have hm : μ (cx + 1) = a.m := by simpa using hctx 1 (by simp)
-  have hΛ : μ (cx + 2) = Λ := by simpa using hctx 2 (by simp)
-  have hnp : μ (cx + 3) = a.np := by simpa using hctx 3 (by simp)
-  have hpr : μ (cx + 4) = a.pr := by simpa using hctx 4 (by simp)
-  have hcnt : μ (cx + 5) = a.cnt := by simpa using hctx 5 (by simp)
+  have hm : μ (cx + 1) = a.m := by aesop
+  have hΛ : μ (cx + 2) = Λ := by aesop
+  have hnp : μ (cx + 3) = a.np := by aesop
+  have hpr : μ (cx + 4) = a.pr := by aesop
+  have hcnt : μ (cx + 5) = a.cnt := by aesop
   -- the address cx + j as a natural number
-  have haddr : ∀ j : ℤ, 0 ≤ j → ((cx : ℤ) + j).toNat = cx + j.toNat := fun j hj => by omega
+  have haddr : ∀ j : ℤ, 0 ≤ j → (cx + j).toNat = cx + j.toNat := by omega
   -- V := mem[cx]; m := mem[cx + 1]; Λ := mem[cx + 2]
   light_set a.V using hV
   light_set a.m using hm
@@ -396,7 +366,7 @@ theorem nodesParams_ends (hctx : CtxAt μ cx a.V a.m Λ a.np a.pr a.cnt) (hcx : 
   rfl
 
 /-- The solver of Convolution-3SUM, called for the array of a node at the free pointer. -/
-theorem c3_meets (hsol : Solves c3Task P₀ pC3 T r) (hV : 1 ≤ a.V) (hm : 1 ≤ a.m)
+theorem c3_meets (hsol : Solves c3Task P₀ pC3 T r) (hm : 1 ≤ a.m)
     (hN : NodeMem μ₀ a) (harr : ∀ u < 8 * a.m ^ 2, μ (a.fr + u) = (a.node Mo).oneArray a.V u)
     (hok : (r (8 * a.m ^ 2) (60 * a.V + 40)).Ok lim (a.fr + 8 * a.m ^ 2) d) :
     Meets lim (P₀ ++ R) pC3 d
@@ -404,61 +374,56 @@ theorem c3_meets (hsol : Solves c3Task P₀ pC3 T r) (hV : 1 ≤ a.V) (hm : 1 �
       (T (8 * a.m ^ 2) (60 * a.V + 40)) fun res μ' =>
         res = flag (ConvOne (8 * a.m ^ 2) ((a.node Mo).oneArray a.V)) ∧
           Kept μ μ' (a.fr + 8 * a.m ^ 2) := by
-  have hpos : 1 ≤ a.m ^ 2 := Nat.one_le_pow _ _ hm
-  refine (hsol.meets R (⟨8 * a.m ^ 2, 60 * a.V + 40, a.fr,
-    (List.range (8 * a.m ^ 2)).map fun u => (a.node Mo).oneArray a.V u⟩ : VecInst)
-    (a.fr + 8 * a.m ^ 2) ⟨?_, ?_, by simp, ?_, ?_, le_rfl⟩ hok).mono le_rfl ?_
+  have hpos : 1 ≤ a.m ^ 2 := by bound
+  refine (hsol.meets R ⟨8 * a.m ^ 2, 60 * a.V + 40, a.fr,
+    (List.range (8 * a.m ^ 2)).map fun u => (a.node Mo).oneArray a.V u⟩
+    _ ⟨?_, ?_, by simp, ?_, ?_, le_rfl⟩ hok).mono le_rfl ?_
   · -- the length is positive
-    change 1 ≤ 8 * a.m ^ 2
-    omega
+    linarith
   · -- the bound is positive
-    change 1 ≤ 60 * a.V + 40
-    omega
+    simp
   · -- the list stands at fr
     intro u hu
-    simp [harr u (by simpa using hu)]
+    grind
   · -- its entries are bounded
     intro e he
     obtain ⟨u, -, rfl⟩ := List.mem_map.1 he
     have := Node.abs_oneArray_le (ν := a.node Mo) hN.set₁.bdd hN.set₂.bdd hN.set₃.bdd u
-    push_cast
-    exact this
+    assumption
   · rintro _ μ' ⟨rfl, kept⟩
-    exact ⟨flag_congr (conv_range_iff _ _), kept⟩
+    grind [flag_congr, conv_range_iff]
 
 /-- **The node itself**: the modulus is computed, the array is written at the free pointer, and the
 solver answers for it. -/
 theorem nodesOwn_ends (C : NodesCtx lim P₀ R p pMod pArr pC3 pHeavy T r)
     (H : NodesPre lim r μ a Λ cx (f + 1) d) (hn : 1 ≤ a.n)
     (hMo : Mo = ChanHe.modulus (Nat.primesLE a.m) Λ a.X₁.set a.X₂.set a.X₃.set) (hM1 : 1 ≤ Mo)
-    (hM : Mo ≤ a.m * a.m) {x : ℤ} :
+    (hM : Mo ≤ a.m * a.m) :
     Ends lim (P₀ ++ R) d (nodesOwn pMod pArr pC3) ⟨frame (nodesLocals x a Λ cx []), μ⟩
       (47 + tModulus a.np a.X₁.len a.X₂.len a.X₃.len a.V +
         tNodeArray a.m a.X₁.len a.X₂.len a.X₃.len a.V + T (8 * a.m ^ 2) (60 * a.V + 40))
       fun σ' => ∃ (y : ℤ) (μ' : ℕ → ℤ), Kept μ μ' a.fr ∧
         σ' = ⟨frame (nodesLocals x a Λ cx [Mo, (8 * a.m ^ 2 : ℕ), (a.fr + 8 * a.m ^ 2 : ℕ), y,
           flag (ConvOne (8 * a.m ^ 2) ((a.node Mo).oneArray a.V))]), μ'⟩ := by
-  have hfits := H.fits hn
-  have hroom := hfits.room
-  light_facts hfits
-  have hsq : a.m ^ 2 = a.m * a.m := pow_two a.m
-  have hnonneg : (0 : ℤ) ≤ (a.m : ℤ) * a.m := by positivity
-  -- M := modulus(s₁, l₁, s₂, l₂, s₃, l₃, Λ, np, pr, cnt, fr)
-  light_call (C.modulus a Λ μ H.mem (H.lam ▸ lam_le a.V) (d + 1) (modulusNeed_ok H.ok))
+  light_facts (H.fits hn)
+  have hsq := pow_two a.m
+  light_call (C.modulus a Λ μ H.mem (H.lam ▸ lam_le a.V) _ (modulusNeed_ok H.ok))
     with _ μ₁ ⟨rfl, kept₁⟩
   rw [← hMo]
   -- len := 8 * (m * m); fr' := fr + len
   light_set (8 * a.m ^ 2 : ℕ) using hsq
   light_set (a.fr + 8 * a.m ^ 2 : ℕ) using hsq
   -- nodeArray(M, s₁, l₁, s₂, l₂, s₃, l₃, V, m, fr, cnt, fr')
-  light_call (C.array (a.push (8 * a.m ^ 2)) Mo a.fr μ₁ ((H.mem.kept kept₁).push .refl) hM1 hM
+  light_call (C.array _ Mo a.fr μ₁ ((H.mem.kept kept₁).push .refl) hM1 hM
     ⟨le_rfl, Or.inr H.mem.set₁.below, Or.inr H.mem.set₂.below, Or.inr H.mem.set₃.below,
-      Or.inr H.mem.envOk.belowCnt⟩ (d + 1) (nodeArrayNeed_ok H.ok))
-    with y μ₂ ⟨harr, (kept₂ : KeptBut μ₁ μ₂ (a.fr + 8 * a.m ^ 2) a.fr (8 * a.m ^ 2))⟩
+      Or.inr H.mem.envOk.belowCnt⟩ _ (nodeArrayNeed_ok H.ok))
+    with y μ₂ ⟨harr, (kept₂ : KeptBut μ₁ μ₂ (a.fr + 8 * a.m ^ 2) a.fr _)⟩
   -- a₀ := c3(len, 60 V + 40, fr, fr')
-  light_call (c3_meets C.solver H.V_pos H.m_pos H.mem harr (solverNeed_ok H.ok))
+  light_call (c3_meets C.solver H.m_pos H.mem harr (solverNeed_ok H.ok))
     with _ μ₃ ⟨rfl, kept₃⟩
   exact ⟨y, μ₃, (kept₁.then kept₂ fun b hb => by omega).then kept₃ fun b hb => by omega, rfl⟩
+
+variable {y a₀ z : ℤ}
 
 /-- **The first child.**  Started in a memory μ that agrees below fr with the memory μ₀ in which the
 procedure was called, the part leaves the number of heavy elements of the first set and the answer
@@ -467,51 +432,49 @@ RES, which are no longer used. -/
 theorem nodesChild₁_ends (C : NodesCtx lim P₀ R p pMod pArr pC3 pHeavy T r)
     (ih : NodesSpecAt lim (P₀ ++ R) p T r f) (H : NodesPre lim r μ₀ a Λ cx (f + 1) d)
     (hn : 1 ≤ a.n) (kept : Kept μ₀ μ a.fr) (hM1 : 1 ≤ Mo) (hM : Mo ≤ a.m * a.m)
-    {x y z a₀ : ℤ} :
+    :
     Ends lim (P₀ ++ R) d (nodesChild₁ p pHeavy)
       ⟨frame (nodesLocals (f + 1 : ℕ) a Λ cx [Mo, x, y, z, a₀]), μ⟩
       (25 + tHeavy a.X₁.len a.V + tNodes T a.n a.V a.m a.np ((a.child₁ Mo).calls Λ f))
       fun σ' => ∃ μ' : ℕ → ℤ, Kept μ₀ μ' a.fr ∧
         σ' = ⟨frame (nodesLocals (f + 1 : ℕ) a Λ cx [Mo, x, y, z, a₀,
           #(ChanHe.heavy a.X₁.set Mo), flag ((a.child₁ Mo).Yes Λ f)]), μ'⟩ := by
-  have hfits := H.fits hn
-  have hroom := hfits.room
   have hX := (H.mem.kept kept).set₁
   have hle := hX.le
-  light_facts hfits
+  light_facts (H.fits hn)
   -- h₁ := heavy(l₁, s₁, M, fr, cnt, fr + l₁)
-  light_call (C.heavy (d + 1) (a.fr + a.X₁.len) _ _ _ _ a.fr _ _ _ μ
+  light_call (C.heavy _ (a.fr + a.X₁.len) _ _ _ _ a.fr _ _ _ μ
     ((hX.push .refl).bucket ((H.mem.kept kept).envOk.push .refl) hM1 hM)
     ⟨le_rfl, Or.inl hX.below, Or.inr H.mem.envOk.belowCnt⟩ (collNeed_ok H.ok hle hM))
     with _ μ₁ ⟨rfl, hset, kept₁⟩
   -- a₁ := nodes(F - 1, fr, h₁, s₂, l₂, s₃, l₃, cx, fr + l₁), where the local LEVELS holds f + 1
-  light_call (ih (a.child₁ Mo) Λ cx μ₁ (d + 1) (H.child₁ kept kept₁ hset))
+  light_call (ih _ Λ cx μ₁ _ (H.child₁ kept kept₁ hset))
     with _ μ₂ ⟨rfl, (kept₂ : Kept μ₁ μ₂ (a.fr + a.X₁.len))⟩
   exact ⟨μ₂, (kept.then kept₁ fun b hb => by omega).then kept₂ fun b hb => by omega, rfl⟩
+
+variable {a₁ h₁ : ℤ}
 
 /-- **The second child**: as for the first, with HEAVY2 and ANS2. -/
 theorem nodesChild₂_ends (C : NodesCtx lim P₀ R p pMod pArr pC3 pHeavy T r)
     (ih : NodesSpecAt lim (P₀ ++ R) p T r f) (H : NodesPre lim r μ₀ a Λ cx (f + 1) d)
     (hn : 1 ≤ a.n) (kept : Kept μ₀ μ a.fr) (hM1 : 1 ≤ Mo) (hM : Mo ≤ a.m * a.m)
-    {x y z a₀ h₁ a₁ : ℤ} :
+    :
     Ends lim (P₀ ++ R) d (nodesChild₂ p pHeavy)
       ⟨frame (nodesLocals (f + 1 : ℕ) a Λ cx [Mo, x, y, z, a₀, h₁, a₁]), μ⟩
       (25 + tHeavy a.X₂.len a.V + tNodes T a.n a.V a.m a.np ((a.child₂ Mo).calls Λ f))
       fun σ' => ∃ μ' : ℕ → ℤ, Kept μ₀ μ' a.fr ∧
         σ' = ⟨frame (nodesLocals (f + 1 : ℕ) a Λ cx [Mo, x, y, z, a₀, h₁, a₁,
           #(ChanHe.heavy a.X₂.set Mo), flag ((a.child₂ Mo).Yes Λ f)]), μ'⟩ := by
-  have hfits := H.fits hn
-  have hroom := hfits.room
   have hX := (H.mem.kept kept).set₂
   have hle := hX.le
-  light_facts hfits
+  light_facts (H.fits hn)
   -- h₂ := heavy(l₂, s₂, M, fr, cnt, fr + l₂)
-  light_call (C.heavy (d + 1) (a.fr + a.X₂.len) _ _ _ _ a.fr _ _ _ μ
+  light_call (C.heavy _ (a.fr + a.X₂.len) _ _ _ _ a.fr _ _ _ μ
     ((hX.push .refl).bucket ((H.mem.kept kept).envOk.push .refl) hM1 hM)
     ⟨le_rfl, Or.inl hX.below, Or.inr H.mem.envOk.belowCnt⟩ (collNeed_ok H.ok hle hM))
     with _ μ₁ ⟨rfl, hset, kept₁⟩
   -- a₂ := nodes(F - 1, s₁, l₁, fr, h₂, s₃, l₃, cx, fr + l₂), where the local LEVELS holds f + 1
-  light_call (ih (a.child₂ Mo) Λ cx μ₁ (d + 1) (H.child₂ kept kept₁ hset))
+  light_call (ih _ Λ cx μ₁ _ (H.child₂ kept kept₁ hset))
     with _ μ₂ ⟨rfl, (kept₂ : Kept μ₁ μ₂ (a.fr + a.X₂.len))⟩
   exact ⟨μ₂, (kept.then kept₁ fun b hb => by omega).then kept₂ fun b hb => by omega, rfl⟩
 
@@ -519,25 +482,23 @@ theorem nodesChild₂_ends (C : NodesCtx lim P₀ R p pMod pArr pC3 pHeavy T r)
 theorem nodesChild₃_ends (C : NodesCtx lim P₀ R p pMod pArr pC3 pHeavy T r)
     (ih : NodesSpecAt lim (P₀ ++ R) p T r f) (H : NodesPre lim r μ₀ a Λ cx (f + 1) d)
     (hn : 1 ≤ a.n) (kept : Kept μ₀ μ a.fr) (hM1 : 1 ≤ Mo) (hM : Mo ≤ a.m * a.m)
-    {x y z a₀ h₁ a₁ h₂ a₂ : ℤ} :
+    {h₂ a₂ : ℤ} :
     Ends lim (P₀ ++ R) d (nodesChild₃ p pHeavy)
       ⟨frame (nodesLocals (f + 1 : ℕ) a Λ cx [Mo, x, y, z, a₀, h₁, a₁, h₂, a₂]), μ⟩
       (25 + tHeavy a.X₃.len a.V + tNodes T a.n a.V a.m a.np ((a.child₃ Mo).calls Λ f))
       fun σ' => ∃ μ' : ℕ → ℤ, Kept μ₀ μ' a.fr ∧
         σ' = ⟨frame (nodesLocals (f + 1 : ℕ) a Λ cx [Mo, x, y, z, a₀, h₁, a₁, h₂, a₂,
           #(ChanHe.heavy a.X₃.set Mo), flag ((a.child₃ Mo).Yes Λ f)]), μ'⟩ := by
-  have hfits := H.fits hn
-  have hroom := hfits.room
   have hX := (H.mem.kept kept).set₃
   have hle := hX.le
-  light_facts hfits
+  light_facts (H.fits hn)
   -- h₃ := heavy(l₃, s₃, M, fr, cnt, fr + l₃)
-  light_call (C.heavy (d + 1) (a.fr + a.X₃.len) _ _ _ _ a.fr _ _ _ μ
+  light_call (C.heavy _ (a.fr + a.X₃.len) _ _ _ _ a.fr _ _ _ μ
     ((hX.push .refl).bucket ((H.mem.kept kept).envOk.push .refl) hM1 hM)
     ⟨le_rfl, Or.inl hX.below, Or.inr H.mem.envOk.belowCnt⟩ (collNeed_ok H.ok hle hM))
     with _ μ₁ ⟨rfl, hset, kept₁⟩
   -- a₃ := nodes(F - 1, s₁, l₁, s₂, l₂, fr, h₃, cx, fr + l₃), where the local LEVELS holds f + 1
-  light_call (ih (a.child₃ Mo) Λ cx μ₁ (d + 1) (H.child₃ kept kept₁ hset))
+  light_call (ih _ Λ cx μ₁ _ (H.child₃ kept kept₁ hset))
     with _ μ₂ ⟨rfl, (kept₂ : Kept μ₁ μ₂ (a.fr + a.X₃.len))⟩
   exact ⟨μ₂, (kept.then kept₁ fun b hb => by omega).then kept₂ fun b hb => by omega, rfl⟩
 
@@ -555,14 +516,9 @@ theorem nodesAnswer_ends {loc : ℕ → ℤ} {R₀ R₁ R₂ R₃ : Prop} (hword
   have f₁ := flag_mem R₁
   have f₂ := flag_mem R₂
   have f₃ := flag_mem R₃
-  unfold nodesAnswer
-  -- if 0 < a₀ + a₁ + a₂ + a₃ then return 1 else return 0
   refine Ends.iteLast (fun hyes => ?_) (fun hno => ?_) (by light_side [e₀, e₁, e₂, e₃])
-  · have hpos : 0 < flag R₀ + flag R₁ + flag R₂ + flag R₃ := by simpa [e₀, e₁, e₂, e₃] using hyes
-    exact Ends.setLast ⟨by simp [flag_of ((flag_sum_pos _ _ _ _).1 hpos)], rfl⟩ (by simp; omega)
-  · have hzero : ¬ 0 < flag R₀ + flag R₁ + flag R₂ + flag R₃ := by
-      simpa [e₀, e₁, e₂, e₃] using hno
-    exact Ends.setLast ⟨by simp [flag_of_not fun h => hzero ((flag_sum_pos _ _ _ _).2 h)], rfl⟩
+  · exact Ends.setLast ⟨by simp_all [flag_of, flag_sum_pos], rfl⟩ (by simp; omega)
+  · exact Ends.setLast ⟨by simp_all [flag_of_not, flag_sum_pos], rfl⟩
       (by simp; omega)
 
 /-- The time of a node: its own work and the three subtrees.  The 178 steps are
@@ -583,28 +539,20 @@ theorem tNodes_succ_le (hN : NodeMem μ a) (hS : ¬ (a.X₁.set = ∅ ∨ a.X₂
   have hheavy₃ := tHeavy_mono hN.set₃.le a.V
   have hcalls : a.calls Λ (f + 1) =
       1 + ((a.child₁ Mo).calls Λ f + (a.child₂ Mo).calls Λ f + (a.child₃ Mo).calls Λ f) := by
-    simp [NodeArgs.calls, treeCalls, if_neg hS, ← hMo]
+    simp_all [treeCalls]
   rw [hcalls]
-  generalize (a.child₁ Mo).calls Λ f = c₁
-  generalize (a.child₂ Mo).calls Λ f = c₂
-  generalize (a.child₃ Mo).calls Λ f = c₃
-  simp only [tNodes]
+  simp [tNodes]
   have hnode : tNode T a.n a.V a.m a.np = tModulus a.np a.n a.n a.n a.V +
-      tNodeArray a.m a.n a.n a.n a.V + T (8 * a.m ^ 2) (60 * a.V + 40) + 3 * tHeavy a.n a.V +
+      tNodeArray a.m a.n a.n a.n a.V + T _ _ + 3 * tHeavy a.n a.V +
       300 := rfl
-  rw [show (1 + (c₁ + c₂ + c₃)) * (tNode T a.n a.V a.m a.np + 60) =
-    (tNode T a.n a.V a.m a.np + 60) + c₁ * (tNode T a.n a.V a.m a.np + 60) +
-    c₂ * (tNode T a.n a.V a.m a.np + 60) + c₃ * (tNode T a.n a.V a.m a.np + 60) by ring]
-  omega
+  linarith
 
 /-- The nodes of a tree with a nonempty root: the root and the nodes of the three subtrees. -/
 theorem NodeArgs.yes_succ (hS : ¬ (a.X₁.set = ∅ ∨ a.X₂.set = ∅ ∨ a.X₃.set = ∅))
     (hMo : Mo = ChanHe.modulus (Nat.primesLE a.m) Λ a.X₁.set a.X₂.set a.X₃.set) :
     a.Yes Λ (f + 1) ↔ ConvOne (8 * a.m ^ 2) ((a.node Mo).oneArray a.V) ∨
       (a.child₁ Mo).Yes Λ f ∨ (a.child₂ Mo).Yes Λ f ∨ (a.child₃ Mo).Yes Λ f := by
-  simp only [NodeArgs.Yes, TreeYes, NodeArgs.child₁, NodeArgs.child₂, NodeArgs.child₃, Slot.heavy,
-    Env.push, nodes, if_neg hS, ← hMo, List.mem_cons, List.mem_append, or_and_right, exists_or,
-    exists_eq_left, or_assoc]
+  grind [TreeYes, NodeArgs.child₁, NodeArgs.child₂, NodeArgs.child₃, Slot.heavy, Env.push, nodes]
 
 /-- **A triple of nonempty sets with at least one level to go**: the parts, one after the other.
 The four tests of nodesBody have taken 16 steps. -/
@@ -616,14 +564,13 @@ theorem nodesMain_ends (C : NodesCtx lim P₀ R p pMod pArr pC3 pHeavy T r)
       (tNodes T a.n a.V a.m a.np (a.calls Λ (f + 1)) - 16) fun σ' =>
       σ'.loc 0 = flag (a.Yes Λ (f + 1)) ∧ Kept μ σ'.mem a.fr := by
   obtain ⟨Mo, hMo⟩ :
-      ∃ Mo, Mo = ChanHe.modulus (Nat.primesLE a.m) Λ a.X₁.set a.X₂.set a.X₃.set := ⟨_, rfl⟩
-  obtain ⟨hM1, hM⟩ : 1 ≤ Mo ∧ Mo ≤ a.m * a.m := by
-    have := modulus_bounds H.primes (fun q hq => Nat.prime_of_mem_primesLE hq)
+      ∃ Mo, Mo = ChanHe.modulus (Nat.primesLE a.m) Λ a.X₁.set a.X₂.set a.X₃.set := by simp
+  obtain ⟨hM1, hM⟩ := by
+    have := modulus_bounds H.primes (by grind [Nat.prime_of_mem_primesLE])
       (fun q hq => Nat.le_of_mem_primesLE hq) H.mem.set₁.bdd H.mem.set₂.bdd H.mem.set₃.bdd
     rwa [← H.lam, ← hMo, pow_two] at this
   have htime := tNodes_succ_le (T := T) (f := f) H.mem hS hMo
   have hfits := H.fits hn
-  have hroom := hfits.room
   light_facts H hfits
   rw [flag_congr (NodeArgs.yes_succ hS hMo)]
   -- the parameters
@@ -636,7 +583,7 @@ theorem nodesMain_ends (C : NodesCtx lim P₀ R p pMod pArr pC3 pHeavy T r)
   light_piece (nodesChild₃_ends C ih H hn kept₃ hM1 hM) with _ ⟨μ₄, kept₄, rfl⟩
   -- the answer
   light_piece (nodesAnswer_ends (by omega)) with _ ⟨hres, hmem⟩
-  exact ⟨hres, hmem ▸ kept₄⟩
+  simp_all
 
 end parts
 
@@ -648,39 +595,37 @@ theorem nodes_spec {P₀ R : Program} {p pMod pArr pC3 pHeavy : ℕ} {T : ℕ �
   induction f with
   | zero =>
     intro a Λ cx μ d H
-    have hzero : (0 : ℤ) ≤ lim.word := le_trans (by positivity) H.ok.space
+    have hzero := le_trans (by positivity) H.ok.space
     -- if f = 0 then return 0
-    refine .of_body C.self (Ends.iteLast (fun _ => ?_) (fun h => absurd h (by simp))
+    refine .of_body C.self (Ends.iteLast (fun _ => ?_) (by simp)
       (hT := by simp [tNodes, treeCalls]))
     exact Ends.setTo 0 ⟨by simp [flag_of_not, TreeYes, nodes], .refl⟩
       (hT := by simp [tNodes, treeCalls])
   | succ f ih =>
     intro a Λ cx μ d H
-    have hzero : (0 : ℤ) ≤ lim.word := le_trans (by positivity) H.ok.space
+    have hzero := le_trans (by positivity) H.ok.space
     have htime : 60 ≤ tNodes T a.n a.V a.m a.np (a.calls Λ (f + 1)) :=
-      le_trans (by omega) (Nat.le_mul_of_pos_left _ (one_le_treeCalls _ _ _ _ _ _))
+      le_trans (by omega) (Nat.le_mul_of_pos_left _ (by grind [one_le_treeCalls]))
     -- A triple with an empty set has no node.
-    have hempty : (a.X₁.set = ∅ ∨ a.X₂.set = ∅ ∨ a.X₃.set = ∅) → ∀ T', 2 ≤ T' →
+    have hempty : a.X₁.set = ∅ ∨ a.X₂.set = ∅ ∨ a.X₃.set = ∅ → ∀ T', 2 ≤ T' →
         Ends lim (P₀ ++ R) d (.set 0 (k 0))
           ⟨frame (((f + 1 : ℕ) : ℤ) :: a.sets ++ [(cx : ℤ), a.fr]), μ⟩ T' fun σ' =>
           σ'.loc 0 = flag (a.Yes Λ (f + 1)) ∧ Kept μ σ'.mem a.fr := fun h T' hT' =>
-      Ends.setTo 0 ⟨by simp [flag_of_not, TreeYes, nodes, h], .refl⟩
+      Ends.setTo 0 ⟨by simp_all [flag_of_not, TreeYes, nodes], .refl⟩
     -- if f = 0, l₁ = 0, l₂ = 0 or l₃ = 0 then return 0
     refine .of_body C.self (Ends.iteLast (fun h => absurd h (by simp; omega)) fun _ => ?_)
     refine Ends.iteLast (fun h => ?_) fun h₁ => ?_
-    · exact hempty (Or.inl (H.mem.set₁.set.eq_empty (by simpa using h))) _ (by light_time)
+    · exact hempty (Or.inl (H.mem.set₁.set.eq_empty (by simp_all))) _ (by light_time)
     refine Ends.iteLast (fun h => ?_) fun h₂ => ?_
-    · exact hempty (Or.inr (Or.inl (H.mem.set₂.set.eq_empty (by simpa using h)))) _
+    · exact hempty (Or.inr (Or.inl (H.mem.set₂.set.eq_empty (by simp_all)))) _
         (by light_time)
     refine Ends.iteLast (fun h => ?_) fun h₃ => ?_
-    · exact hempty (Or.inr (Or.inr (H.mem.set₃.set.eq_empty (by simpa using h)))) _
+    · exact hempty (Or.inr (Or.inr (H.mem.set₃.set.eq_empty (by simp_all)))) _
         (by light_time)
-    have hl₁ : a.X₁.len ≠ 0 := by simpa using h₁
+    have hl₁ : a.X₁.len ≠ 0 := by simp_all
     have hS : ¬ (a.X₁.set = ∅ ∨ a.X₂.set = ∅ ∨ a.X₃.set = ∅) := by
       rintro (h | h | h)
       · exact hl₁ (by rw [← H.mem.set₁.set.card, h, Finset.card_empty])
       · exact h₂ (by simp [← H.mem.set₂.set.card, h])
       · exact h₃ (by simp [← H.mem.set₃.set.card, h])
     light_piece (nodesMain_ends C ih H hS (by have := H.mem.set₁.le; omega))
-
-end Light.Sec3.ChanHe

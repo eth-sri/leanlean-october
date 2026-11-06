@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
+import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
 
 /-!
 # 3SUM from Convolution-3SUM: the time and the need of the host
@@ -21,11 +20,10 @@ definitions and one identity (`tNodes_eq`); the arithmetic (`claim_CH20_Theorem_
 from them.
 -/
 
-@[expose] public section
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp ThreeSumApsp.ChanHe Finset
+open ThreeSumApsp.ChanHe Finset
 
 /-- An upper bound on the number of calls of the recursive procedure for one three-set input. -/
 def callsB (n : ℕ) : ℕ := 2 * 3 ^ fuel n
@@ -85,5 +83,3 @@ def chNeed (κ : ℕ) (r : ℕ → ℕ → Need) (n U : ℕ) : Need :=
   ⟨(coreNeed r n (2 * max U (n ^ κ))).word + 2 * n ^ κ + 2 * U,
     (coreNeed r n (2 * max U (n ^ κ))).cells,
     (coreNeed r n (2 * max U (n ^ κ))).depth + 1⟩
-
-end Light.Sec3.ChanHe

@@ -1,3 +1,2 @@
-module
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
-public import ThreeSumApsp.Sec2.Theorem5
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Sec2.Theorem5

@@ -1,9 +1,7 @@
-module
 
-public import ThreeSumApsp.TimeClaims.Sec3.Theorem19
-public import ImprovedExponents.Pipeline.ThinClaim
+import ThreeSumApsp.TimeClaims.Sec3.Theorem19
+import ImprovedExponents.Pipeline.ThinClaim
 
-@[expose] public section
 
 /-!
 # From the thin product to Exact Triangle: the statements
@@ -24,7 +22,7 @@ time model `M : DetTimeModel`, as upstream's `Claim.Corollary_16`, `Claim.Theore
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Light Light.Sec4
+open ThreeSumApsp Light.Sec4
 
 /-- Lop-AE-SparseTri (detection) is solved by one procedure whose time on the instances with
 `D ≤ n^ε` is at most a constant times `n² (log D + 1)²/D^γ + w D^q (log D + 1)`. -/
@@ -50,5 +48,3 @@ def ExplicitFrom (M : DetTimeModel) (δ : ℝ) (e : ℕ) : Prop :=
   ∃ (n₀ : ℕ) (K : ℝ) (T : ℕ → ℝ → ℝ), M.exactTriangle T ∧
     ∀ (n : ℕ) (κ u : ℝ), n₀ ≤ n → 1 ≤ κ → u ≤ (n : ℝ) ^ κ →
       T n u ≤ K * (κ * ((n : ℝ) ^ (3 - δ) * Real.log n ^ e))
-
-end ImprovedExponents

@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec4.Corollary31
-public import ThreeSumApsp.Util.Ceil
+import ThreeSumApsp.Sec4.Corollary31
+import ThreeSumApsp.Util.Ceil
 
 /-!
 # Rational parameters for Corollary 31
@@ -21,7 +20,6 @@ the numbers `⌈c m⌉` and `⌈θ m⌉` for rational parameters in integer arit
 `switchOf_div`).
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp
 
@@ -29,18 +27,12 @@ namespace ThreeSumApsp
 theorem levelsOf_div (a m : ℕ) {b : ℕ} (hb : 1 ≤ b) :
     levelsOf ((a : ℝ) / b) m = (a * m + b - 1) / b := by
   unfold levelsOf
-  rw [← Nat.ceilDiv_eq_add_pred_div, ← Nat.ceil_div_eq_ceilDiv (a * m) hb]
-  congr 1
-  push_cast
-  ring
+  rw [← Nat.ceilDiv_eq_add_pred_div, ← Nat.ceil_div_eq_ceilDiv _ hb]
+  grind
 
 /-- `t = ⌈θ m⌉` for a rational `θ = p/q`. -/
 theorem switchOf_div (p m : ℕ) {q : ℕ} (hq : 1 ≤ q) :
     switchOf ((p : ℝ) / q) m = (p * m + q - 1) / q := by
   unfold switchOf
-  rw [← Nat.ceilDiv_eq_add_pred_div, ← Nat.ceil_div_eq_ceilDiv (p * m) hq]
-  congr 1
-  push_cast
-  ring
-
-end ThreeSumApsp
+  rw [← Nat.ceilDiv_eq_add_pred_div, ← Nat.ceil_div_eq_ceilDiv _ hq]
+  grind

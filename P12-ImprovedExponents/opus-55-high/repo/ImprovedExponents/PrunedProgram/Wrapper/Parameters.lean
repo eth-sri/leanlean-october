@@ -1,8 +1,6 @@
-module
 
-public import ImprovedExponents.PrunedProgram.Wrapper.Times
+import ImprovedExponents.PrunedProgram.Wrapper.Times
 
-@[expose] public section
 
 /-!
 # Corollary 31 with the pruned encoder: the state of the routines and the query
@@ -20,7 +18,7 @@ Adapted from upstream (Apache-2.0).
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
   {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
@@ -64,8 +62,8 @@ theorem Ready31P.of_query (h : Ready31P G X Y aX aY fr μ) (bX : aX + N * D₀ �
   have hb0 := add_three_le_blockAt N D₀ fr
   obtain ⟨hflag, hbase, -⟩ := h.large hm
   exact ⟨h.matX.congr_below hkept (by omega), h.matY.congr_below hkept (by omega),
-    fun hm' => absurd hm (by omega),
-    fun _ => ⟨(hkept _ (by omega)).trans hflag, (hkept _ (by omega)).trans hbase, hDS⟩⟩
+    by omega,
+    by grind⟩
 
 /-- query31 reads the flag and calls the query of Theorem 30 if it is 1 and the inner product
 otherwise; it returns the entry (XY)[I, J] and keeps the structure ready. -/
@@ -79,24 +77,20 @@ theorem query31P_meets (G : RatParams) (hP : P[Proc.query31]? = some query31Body
   have bY := hin.belowY
   refine fun d hd => ⟨query31Body, hP, ?_⟩
   have hw := hlim.std.space_le
-  have h100 := hlim.std.const_le
   have hU0 := hin.zero_le_U
   have hfr3 := add_three_le_structEnd G N D₀ fr
   have hsp := hlim.space
-  unfold query31Body
-  -- if mem[fr] = 1
   refine Ends.iteLast (fun hflag => ?_) (fun hflag => ?_) (hT := by simp [tQuery31])
   · -- the data structure has been built: return queryAt(I, J, mem[fr + 1])
     have hlarge : G.m₀ ≤ logFour D₀ := by
       by_contra hc
       have hzero := hR.small (by omega)
-      have hone : μ fr = 1 := by simpa using hflag
-      omega
+      simp_all
     obtain ⟨-, hbase, hDS⟩ := hR.large hlarge
     have haddr : ((fr : ℤ) + 1).toNat = fr + 1 := by omega
     refine Ends.callTo
-      (hq (parOf G N D₀) (switchOf31 G D₀) (logFour_le_levels G N D₀) (paddedXAt fr)
-        (paddedYAt N D₀ fr) (blockAt N D₀ fr) _ _ U μ I J (G.t_le _) (hlim.large hlarge)
+      (hq _ (switchOf31 G D₀) (by grind) _
+        _ _ _ _ U μ I J (G.t_le _) (hlim.large hlarge)
         (abs_padInnerCols_le hin.absX hU0) (abs_padInnerRows_le hin.absY hU0) hDS _ (by omega)) ?_
       (by light_side [haddr, hbase])
       (hT := by simp [tQuery31, ite_eq_right (not_lt.mpr hlarge), parOf]; omega)
@@ -117,7 +111,7 @@ theorem query31P_meets (G : RatParams) (hP : P[Proc.query31]? = some query31Body
       (by omega) (by omega) hlim.ip _ (by omega)) ?_
       (hT := by simp [tQuery31, ite_eq_left hsmall]; omega)
     rintro r μ' ⟨hr, rfl⟩
-    exact ⟨hr, hR, .refl⟩
+    tauto
 
 /-! ## The preprocessing: text and interface -/
 
@@ -149,5 +143,3 @@ def PreSpec31P (lim : Limits) (P : Program) (c : ℕ) (G : RatParams) : Prop :=
     ∀ d, d + (G.L (logFour D₀) + 7) ≤ lim.depth → Meets lim P Proc.pre31P d [N, D₀, aX, aY, fr] μ
         (tPre31P c G N D₀) fun _ μ' =>
       Ready31P G X Y aX aY fr μ' ∧ SameOutside μ μ' fr (structEnd G N D₀ fr - fr)
-
-end Light.Sec4

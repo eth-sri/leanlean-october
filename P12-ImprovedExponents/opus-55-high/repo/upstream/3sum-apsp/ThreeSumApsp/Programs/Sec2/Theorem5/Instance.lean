@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.SortedFacts
-public import ThreeSumApsp.Programs.Tasks
+import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.SortedFacts
+import ThreeSumApsp.Programs.Tasks
 
 /-!
 # Theorem 5: an instance of the task, in the terms of Section 2
@@ -15,19 +14,10 @@ An instance of the thin matrix product is given by lists in the memory. This fil
 matrices X and Y and the set W of Section 2, and has the facts that link the two descriptions.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp
 
-/-- The regime of Theorem 5, in terms of the sizes: D = 4^m with m ≥ 1, N ≥ D^18, and at
-most N²/√D wanted positions. -/
-structure Regime (N D w m : ℕ) : Prop where
-  hm : 1 ≤ m
-  hD : D = 4 ^ m
-  hN : D ^ 18 ≤ N
-  hw : w * 2 ^ m ≤ N ^ 2
 
 /-- The row of the wanted position number i. -/
 def thinI (x : ThinInst) (i : ℕ) : ℕ := x.WI.getD i 0
@@ -35,7 +25,7 @@ def thinI (x : ThinInst) (i : ℕ) : ℕ := x.WI.getD i 0
 /-- The column of the wanted position number i. -/
 def thinJ (x : ThinInst) (i : ℕ) : ℕ := x.WJ.getD i 0
 
-variable {x : ThinInst} {m : ℕ} {μ : ℕ → ℤ} {fr : ℕ}
+variable {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ}
 
 section positions
 
@@ -49,10 +39,6 @@ theorem _root_.Light.ThinInst.Pre.lt_lenWI (hpre : x.Pre μ fr) (hi : i < x.w) :
 theorem _root_.Light.ThinInst.Pre.lt_lenWJ (hpre : x.Pre μ fr) (hi : i < x.w) : i < x.WJ.length :=
   hi.trans_eq hpre.lenWJ.symm
 
-/-- A number of a wanted position is an index of the list of the positions. -/
-theorem _root_.Light.ThinInst.Pre.lt_lenZip (hpre : x.Pre μ fr) (hi : i < x.w) :
-    i < (x.WI.zip x.WJ).length := by
-  simp [hpre.lenWI, hpre.lenWJ, hi]
 
 theorem thinI_eq (h : i < x.WI.length) : thinI x i = x.WI[i] := List.getD_eq_getElem _ _ h
 
@@ -70,12 +56,12 @@ theorem thinJ_lt (hpre : x.Pre μ fr) (hi : i < x.w) : thinJ x i < x.N := by
 
 /-- The rows of the wanted positions, in the memory. -/
 theorem mem_thinI (hpre : x.Pre μ fr) (hi : i < x.w) : μ (x.wi + i) = (thinI x i : ℕ) := by
-  rw [thinI_eq (hpre.lt_lenWI hi), hpre.segWI i (by simpa using hpre.lt_lenWI hi),
+  rw [thinI_eq, hpre.segWI i (by simpa using hpre.lt_lenWI hi),
     List.getElem_map]
 
 /-- The columns of the wanted positions, in the memory. -/
 theorem mem_thinJ (hpre : x.Pre μ fr) (hi : i < x.w) : μ (x.wj + i) = (thinJ x i : ℕ) := by
-  rw [thinJ_eq (hpre.lt_lenWJ hi), hpre.segWJ i (by simpa using hpre.lt_lenWJ hi),
+  rw [thinJ_eq, hpre.segWJ i (by simpa using hpre.lt_lenWJ hi),
     List.getElem_map]
 
 end positions
@@ -90,7 +76,4 @@ theorem getD_thinOut (hpre : x.Pre μ fr) {i : ℕ} (hi : i < x.w) :
       = thinEntry x.N x.D x.X x.Y (thinI x i) (thinJ x i) := by
   rw [thinI_eq (hpre.lt_lenWI hi), thinJ_eq (hpre.lt_lenWJ hi)]
   unfold thinOut
-  rw [List.getD_eq_getElem _ _ (by simpa using hpre.lt_lenZip hi), List.getElem_map,
-    List.getElem_zip]
-
-end Light.Sec2
+  grind

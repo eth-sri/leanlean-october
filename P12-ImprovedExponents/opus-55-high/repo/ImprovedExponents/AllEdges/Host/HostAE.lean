@@ -1,10 +1,9 @@
-module
 
-public import ImprovedExponents.AllEdges.Host.LoopAE
-public import ImprovedExponents.AllEdges.Host.BruteAE
-public import ImprovedExponents.HostMid.Correct
+import ImprovedExponents.AllEdges.Host.LoopAE
+import ImprovedExponents.AllEdges.Host.BruteAE
+import ImprovedExponents.HostMid.Correct
+noncomputable section
 
-@[expose] public section
 
 /-!
 # The all-edges host: the program, its time and its need
@@ -22,7 +21,7 @@ and the statement that it solves all-edges Exact Triangle (`ae17_solves`).
 
 namespace ImprovedExponents.AllEdges
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec HostMid
+open Light Light.Sec3 ThreeSumApsp.Spec HostMid
 
 /-! ## The text -/
 
@@ -59,27 +58,27 @@ def aeTopBody (pCore pCopy : ℕ) : Stmt :=
 
 /-- A bound on the time of the all-edges loop: as `hostLoopBound'`, with the all-edges scan of the
 answers, at most `falsePositiveBound + n²` scans, and the filling of the flags. -/
-noncomputable def hostLoopBoundAE (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
+def hostLoopBoundAE (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
   4 * n * g *
       (tWrites n D (pieceSizeNat D g) + supTime Tn n (midSize D g) (queryCapNat n D)
         + tAnswersAE (queryCapNat n D))
     + tScanCallAE (pieceSizeNat D g) * (falsePositiveBound n U D + n * n) + fillTime (n * n) + 40
 
 /-- The time of the core after the tests, if n is not small. -/
-noncomputable def hostMainAE (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
+def hostMainAE (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
   chooseTime n U D + tQueryCapNat n D + tCeilDiv (Nat.sqrt D) g + tCeilDiv n (pieceSizeNat D g)
     + tBitLen U + tDblTable (bitLen U) + 3 * tResidues (n * n) (bitLen U) + tClasses n (Nat.sqrt D)
     + tChunks (Nat.sqrt D) (4 * n * g) + hostLoopBoundAE Tn n U D g + 300
 
 /-- A bound on the time of the core in the worst case. -/
-noncomputable def hostCoreTime (Dfun Gfun tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) (n U : ℕ) : ℕ :=
+def hostCoreTime (Dfun Gfun tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) (n U : ℕ) : ℕ :=
   hostSetup tD tG n (Dfun n) +
     if SmallCase n (Dfun n) (Gfun (Dfun n)) then tBruteAE n + 20
     else hostMainAE Tn n U (Dfun n) (Gfun (Dfun n))
 
 /-- **A bound on the time of the all-edges host in the worst case**, for the parameter functions
 Dfun, Gfun with the times tD, tG, over a solver with the time Tn: the core and the copy. -/
-noncomputable def hostTimeAE (Dfun Gfun tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) (n U : ℕ) : ℕ :=
+def hostTimeAE (Dfun Gfun tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) (n U : ℕ) : ℕ :=
   hostCoreTime Dfun Gfun tD tG Tn n U + copyTime (n * n) + 20
 
 /-- The need of the core of the all-edges host for given parameters D and g: `hostNeedAt'` with
@@ -98,11 +97,13 @@ def hostNeedAE (Dfun Gfun wD wG : ℕ → ℕ) (need : List ℕ → Need) (n U :
   ⟨(hostNeedCore Dfun Gfun wD wG need n U).word, (hostNeedCore Dfun Gfun wD wG need n U).cells,
     (hostNeedCore Dfun Gfun wD wG need n U).depth + 1⟩
 
+variable {a b : ℕ}
+
 /-- The need of the variant host is allowed for when that of the all-edges host is. -/
-theorem hostNeedAt'_ok {lim : Limits} {d a b n U D g : ℕ} {need : List ℕ → Need} {fr : ℕ}
+theorem hostNeedAt'_ok {lim : Limits} {d n U D g : ℕ} {need : List ℕ → Need} {fr : ℕ}
     (hok : (hostNeedCoreAt a b need n U D g).Ok lim fr d) :
     (hostNeedAt' a b need n U D g).Ok lim fr d :=
-  hok.mono le_rfl (by simp only [hostNeedCoreAt]; omega) (by simp only [hostNeedCoreAt]; omega)
+  hok.mono le_rfl (by grind [hostNeedCoreAt]) (by rfl)
 
 /-- The time of the third part in a run of the all-edges host. -/
 def hostRunTimeAE (Tn : List ℕ → ℕ) (X : HostData) (U : ℕ) : ℕ :=
@@ -137,31 +138,24 @@ def hostAddrAE (x : TriInst) (X : HostData) (fr : ℕ) : HostAddr :=
   { hostAddr x X fr with fr := aFr X x.U fr + X.n * X.n }
 
 /-- What the all-edges loop asks of the limits. -/
-theorem hostLimAE_of_ok {a b : ℕ} {x : TriInst} {fr D g : ℕ} (hbig : BigCase x.n D g)
+theorem hostLimAE_of_ok {x : TriInst} {fr D g : ℕ} (hbig : BigCase x.n D g)
     (hok : (hostNeedCoreAt a b need x.n x.U D g).Ok lim fr d) :
     HostLim lim (d + 1) (hostData' x D g) x.U (hostAddrAE x (hostData' x D g) fr) need := by
   have h := hostLim_of_ok' hbig (hostNeedAt'_ok hok)
   have hcells := hok.cells
   have hfr := aFr_le' (x := x) (g := g) hbig.sixteen_le fr
-  simp only [hostNeedCoreAt, hostNeedAt'] at hcells
+  simp [hostNeedCoreAt, hostNeedAt'] at hcells
   exact
-    { space := h.space
-      fr := by change aFr (hostData' x D g) x.U fr + x.n * x.n < lim.space; omega
-      prime := h.prime
-      count := h.count
-      step := h.step
-      weights := h.weights
-      depth := by have := hok.depth; simp only [hostNeedCoreAt, hostNeedAt'] at this; omega
-      solver := fun t ht => by
+    ⟨h.space, by change aFr _ x.U fr + x.n * x.n < lim.space; omega, h.prime, h.count, h.step, h.weights, by have := hok.depth; grind [hostNeedCoreAt, hostNeedAt'], fun t ht => by
         have hs := h.solver t ht
         have hwc : (hostData' x D g).w t ≤ queryCapNat x.n D := (hostData' x D g).w_le_cap ht
         have hscells :
             (need [(hostData' x D g).n, (hostData' x D g).D, (hostData' x D g).w t]).cells
-              ≤ (supNeed need x.n (midSize D g) (queryCapNat x.n D)).cells :=
+              ≤ (supNeed need x.n _ (queryCapNat x.n D)).cells :=
           Finset.le_sup (f := fun v => (need [x.n, midSize D g, v]).cells)
             (Finset.mem_range.2 (by omega))
-        exact ⟨hs.word, by change aFr (hostData' x D g) x.U fr + x.n * x.n + _ ≤ _; omega,
-          hs.space, hs.depth⟩ }
+        exact ⟨hs.word, by change aFr _ x.U fr + x.n * x.n + _ ≤ _; omega,
+          hs.space, hs.depth⟩⟩
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Host/Arrays.lean
 open Et17 in
@@ -175,32 +169,28 @@ theorem et17TablesAE_spec
       (hostRunTimeAE Tn (hostData' x D g) x.U)
       fun σ' => ∃ flg : ℕ, fr ≤ flg ∧ flg + x.n * x.n ≤ lim.space ∧ σ'.loc 0 = flg ∧
         Seg σ'.mem flg (aeFlags x.n x.AB x.BC x.AC) ∧ Kept μ σ'.mem fr := by
-  have hok' := hostNeedAt'_ok hok
-  have hr := ready_of' hpre hbig hok'
+  have hr := ready_of' hpre hbig (hostNeedAt'_ok hok)
   have hlim := hostLimAE_of_ok hbig hok
   have hv := hostData'_valid hpre hbig
   have hdepth := hok.depth
-  simp only [hostNeedCoreAt, hostNeedAt'] at hdepth
+  simp [hostNeedCoreAt, hostNeedAt'] at hdepth
   unfold et17LocB'
   generalize hX : hostData' x D g = X at hr hlim hv ⊢
-  have hn : X.n = x.n := by rw [← hX]; rfl
+  have hn : X.n = x.n := by aesop
   have hfr : fr ≤ aX X x.U fr := by
     have := host_places X x.U fr
     omega
   unfold et17TablesAE hostRunTimeAE
   -- the table of doubles and the residues; the classes and the chunks
-  refine resid_then C.base.hDbl C.base.hResid C.base.hResidues hr (fun r₁ μ₁ hresid => ?_)
-    (by omega)
+  refine resid_then C.base.hDbl C.base.hResid C.base.hResidues hr fun r₁ μ₁ hresid => ?_
+    
   refine classes_then C.base.hClasses C.base.hChunks hr hv.cap_pos hresid.rab
     (fun r₂ μ₂ hclass => ?_) (by omega)
   -- NumInst := NumPieces * NumChunks
   have hcount := hlim.count
-  have hm : (X.m : ℤ) = (X.h : ℤ) * X.chunkCount := by
-    rw [HostData.m]
-    push_cast
+  have hm : X.m = X.h * X.chunkCount := by
     rfl
-  have hpos : (0 : ℤ) ≤ (X.h : ℤ) * X.chunkCount := by positivity
-  light_set (X.m : ℕ) using hm
+  light_set X.m using hm
   -- the result is pLoopAE(…)
   have hlay := hostLay_of hr (hr.chunkCount_le hv.cap_pos)
   have hplaces := host_places X x.U fr
@@ -208,32 +198,21 @@ theorem et17TablesAE_spec
   have hfrA : (hostAddr x X fr).fr = aFr X x.U fr := rfl
   have hfrS : aFr X x.U fr + X.n * X.n < lim.space := hlim.fr
   have hsw := hlim.space
-  have hfrW : (aFr X x.U fr : ℤ) + (X.n : ℤ) * (X.n : ℤ) ≤ lim.word := by
-    have : ((aFr X x.U fr + X.n * X.n : ℕ) : ℤ) ≤ lim.word := by
-      exact_mod_cast (Nat.cast_lt.2 hfrS).le.trans hsw
-    push_cast at this
-    exact this
-  have houtA : (hostAddr x X fr).out = aOut X x.U fr := rfl
-  have hF : FlagsPlace X (hostAddrAE x X fr) (aFr X x.U fr) := ⟨rfl, hx, hlay.ofr⟩
-  have hofr : ∀ t < X.m, (hostAddrAE x X fr).out + X.w t ≤ (hostAddrAE x X fr).fr := fun t ht => by
+  have hF : FlagsPlace X (hostAddrAE x X fr) _ := ⟨rfl, hx, hlay.ofr⟩
+  have hlay' : HostLay X (hostAddrAE x X fr) := { hlay with ofr := (fun t ht => by
     have := hlay.ofr t ht
     change (hostAddr x X fr).out + X.w t ≤ aFr X x.U fr + X.n * X.n
-    omega
-  have hlay' : HostLay X (hostAddrAE x X fr) := { hlay with ofr := hofr }
-  have hargs : ((aFr X x.U fr + X.n * X.n : ℕ) : ℤ) = (aFr X x.U fr : ℤ) + ((X.n * X.n : ℕ) : ℤ) :=
-    by push_cast; rfl
+    omega) }
+  have hargs : aFr X x.U fr + X.n * X.n = aFr X x.U fr + X.n * X.n :=
+    by rfl
   light_call (Meets.of_body (Q := fun r μ' => r = aFr X x.U fr ∧
-      Seg μ' (aFr X x.U fr) (aeFlags X.n X.AB X.BC X.AC) ∧ Kept μ₂ μ' (hostAddrAE x X fr).x)
+      Seg μ' _ _ ∧ Kept μ₂ μ' (hostAddrAE x X fr).x)
     C.loopAE (hostLoopAE_spec C.loop ⟨hv, hr.leAB, hr.leBC, hr.leAC⟩
       { hostMem_of hr hresid hclass with } hlay' hlim hF)) using hostLoopArgs, hostAddrAE, hostAddr,
     hargs with r μ₃ ⟨rfl, hflags, hkept⟩
-  refine ⟨aFr X x.U fr, by omega, by rw [← hn]; omega, rfl, ?_, fun c hc => ?_⟩
-  · have hAB : X.AB = x.AB := by rw [← hX]; rfl
-    have hBC : X.BC = x.BC := by rw [← hX]; rfl
-    have hAC : X.AC = x.AC := by rw [← hX]; rfl
-    rwa [hn, hAB, hBC, hAC] at hflags
-  · have hcls : fr ≤ aCls X x.U fr := by omega
-    exact (hkept c (lt_of_lt_of_le hc hfr)).trans ((hclass.same c (Or.inl (by omega))).trans
+  refine ⟨aFr X x.U fr, by omega, by grind, rfl, ?_, fun c hc => ?_⟩
+  · aesop
+  · exact (hkept c (lt_of_lt_of_le hc hfr)).trans ((hclass.same c (Or.inl (by omega))).trans
       (hresid.same c (Or.inl hc)))
 
 /-! ## The time of a run is within the worst case -/
@@ -248,8 +227,8 @@ theorem instanceAE_le (Tn : List ℕ → ℕ) (n D g execs : ℕ) {len q w cap :
       ≤ tWrites n D q + supTime Tn n (midSize D g) cap + tAnswersAE cap
         + tScanCallAE q * execs := by
   have hwrites := tWrites_le n (midSize_le D g) hlen
-  have hsolver : Tn [n, midSize D g, w] ≤ supTime Tn n (midSize D g) cap :=
-    Finset.le_sup (f := fun w => Tn [n, midSize D g, w]) (Finset.mem_range.2 (by omega))
+  have hsolver : Tn [n, midSize D g, w] ≤ supTime Tn n _ cap :=
+    Finset.le_sup (f := fun w => Tn [n, midSize D g, w]) (by simp_all)
   have hanswers : tAnswersAE w ≤ tAnswersAE cap := by
     unfold tAnswersAE
     gcongr
@@ -272,7 +251,6 @@ theorem sum_execsAE_le_falsePositiveBound (hpre : x.Pre μ fr) (hbig : BigCase x
 /-- The time of the all-edges loop is within its bound. -/
 theorem tHostLoopAE_le (hpre : x.Pre μ fr) (hbig : BigCase x.n D g) (Tn : List ℕ → ℕ) :
     tHostLoopAE Tn (hostData' x D g) ≤ hostLoopBoundAE Tn x.n x.U D g := by
-  unfold tHostLoopAE hostLoopBoundAE
   exact Nat.add_le_add_right (Nat.add_le_add_right (sum_le_mul_add
     (fun _ ht => instanceAE_le Tn x.n D g _ (Nat.min_le_left _ _) ((hostData' x D g).w_le_cap ht))
     (hostData'_m_le hbig) (sum_execsAE_le_falsePositiveBound hpre hbig)) _) _
@@ -284,14 +262,9 @@ theorem hostRunTimeAE_le (hpre : x.Pre μ fr) (hbig : BigCase x.n D g) (Tn : Lis
       ≤ tDblTable (bitLen x.U) + 3 * tResidues (x.n * x.n) (bitLen x.U)
         + tClasses x.n (Nat.sqrt D) + tChunks (Nat.sqrt D) (4 * x.n * g)
         + hostLoopBoundAE Tn x.n x.U D g + 80 := by
-  have hprime : (hostData' x D g).p ≤ Nat.sqrt D := hostData'_p_le x g hbig.sixteen_le
+  have hprime := hostData'_p_le x g hbig.sixteen_le
   have hchunks : (hostData' x D g).chunkCount ≤ 4 * x.n * g :=
-    (chunkCount_le_m (hostData'_valid hpre hbig)).trans (hostData'_m_le hbig)
+    by grind [chunkCount_le_m, hostData'_valid, hostData'_m_le]
   have hloop := tHostLoopAE_le hpre hbig Tn
   have hn : (hostData' x D g).n = x.n := rfl
-  unfold hostRunTimeAE
-  rw [hn]
-  unfold tClasses tChunks
-  omega
-
-end ImprovedExponents.AllEdges
+  grind [hostRunTimeAE, tClasses, tChunks]

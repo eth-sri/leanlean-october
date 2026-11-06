@@ -1,8 +1,7 @@
-module
 
-public import Mathlib.Data.Nat.Notation
+import ThreeSumApsp.Slots
+import Mathlib.Data.Nat.Notation
 
-@[expose] public section
 
 /-!
 # The numbers of the procedures of the pruned solver
@@ -16,20 +15,18 @@ queries, the band arrays and the slices are upstream's and keep their numbers.
 
 namespace ImprovedExponents.Proc
 
-/-- The pruned encoder (`encodePBody`). -/
-abbrev encodeP : ℕ := 77
-/-- The encodings of all bands with the pruned encoder (`encodeBandsPBody`). -/
-abbrev encodeBandsP : ℕ := 78
-/-- The shared stage with the pruned encoder (`sharedPBody`). -/
-abbrev sharedP : ℕ := 79
-/-- The preprocessing of Theorem 30 with the pruned shared stage (`preCorePBody`). -/
-abbrev preCoreP : ℕ := 80
-/-- The preprocessing with rational parameters calling `preCoreP` (`pre31PBody`). -/
-abbrev pre31P : ℕ := 81
-/-- The offline routine calling `pre31P` (`offline32PBody`). -/
-abbrev offline32P : ℕ := 82
-/-- The solver of all instances with the test `D^r ≤ N^s` and the routine `offline32P`
+/- The pruned encoder (`encodePBody`). -/
+slots 77 encodeP
+/- The encodings of all bands with the pruned encoder (`encodeBandsPBody`). -/
+slots 78 encodeBandsP
+/- The shared stage with the pruned encoder (`sharedPBody`). -/
+slots 79 sharedP
+/- The preprocessing of Theorem 30 with the pruned shared stage (`preCorePBody`). -/
+slots 80 preCoreP
+/- The preprocessing with rational parameters calling `preCoreP` (`pre31PBody`). -/
+slots 81 pre31P
+/- The offline routine calling `pre31P` (`offline32PBody`). -/
+slots 82 offline32P
+/- The solver of all instances with the test `D^r ≤ N^s` and the routine `offline32P`
 (`allBody Proc.testRS Proc.offline32P`). -/
-abbrev allP : ℕ := 83
-
-end ImprovedExponents.Proc
+slots 83 allP

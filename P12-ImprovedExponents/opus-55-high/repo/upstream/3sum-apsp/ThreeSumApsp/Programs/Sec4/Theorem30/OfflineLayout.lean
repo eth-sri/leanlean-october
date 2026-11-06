@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Offline
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec4.Theorem30.Offline
 
 /-!
 # Theorem 30, the offline form: the main procedure for the trusted layout
@@ -16,28 +16,17 @@ the output.  The main procedure wantedMain reads the sizes, computes the six add
 wantedCore (`wantedMain_meets`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ThreeSumApsp.WordRam
 
 namespace WantedMain
 
-/-- The locals of wantedMain: the answer (the two arguments are not used), then N, D, |W|, the
+/- The locals of wantedMain: the answer (the two arguments are not used), then N, D, |W|, the
 product N D, the addresses of Y, of the rows, of the columns, of the output and of the block, and
 the result of the call. -/
-abbrev Ans : ℕ := 0
-@[inherit_doc Ans] abbrev Size : ℕ := 2
-@[inherit_doc Ans] abbrev Dim : ℕ := 3
-@[inherit_doc Ans] abbrev Count : ℕ := 4
-@[inherit_doc Ans] abbrev Area : ℕ := 5
-@[inherit_doc Ans] abbrev MatY : ℕ := 6
-@[inherit_doc Ans] abbrev Rows : ℕ := 7
-@[inherit_doc Ans] abbrev Cols : ℕ := 8
-@[inherit_doc Ans] abbrev Out : ℕ := 9
-@[inherit_doc Ans] abbrev Block : ℕ := 10
-@[inherit_doc Ans] abbrev Res : ℕ := 11
+slots Ans
+slots 2 Size Dim Count Area MatY Rows Cols Out Block Res
 
 end WantedMain
 
@@ -50,5 +39,3 @@ def wantedMainBody : Stmt :=
   .call Proc.wantedCore [M (k 4), M (k 3), M (k 5), v Size, v Dim, k 6, v MatY, v Rows, v Cols,
     v Count, v Out, v Block] Res ;;
   .set Ans (k 1)
-
-end Light.Sec4

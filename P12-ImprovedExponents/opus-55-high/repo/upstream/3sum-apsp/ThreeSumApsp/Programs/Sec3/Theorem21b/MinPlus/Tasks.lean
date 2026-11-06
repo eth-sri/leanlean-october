@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Tasks
+import ThreeSumApsp.Programs.Tasks
+noncomputable section
 
 /-!
 # The two tasks between Negative Triangle and the (min,+)-product
@@ -18,7 +18,6 @@ solver of the task below it (isHost_find, isHost_pairs, isHost_mp).  This file f
 in the middle, findTask and pairsTask.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -41,7 +40,7 @@ structure FindInst.Pre (x : FindInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop
 /-- **Finding a negative triangle**: find(n, U, ab, bc, ac, res, fr) returns 1 if there is a
 negative triangle, and then the cells res, res + 1, res + 2 hold the vertices `a`, `b`, `c` of one;
 it returns 0 if there is none. -/
-noncomputable def findTask : Task where
+def findTask : Task where
   Inst := FindInst
   size x := x.n
   bound x := x.U
@@ -55,15 +54,8 @@ noncomputable def findTask : Task where
 
 /-- Three `n × n` matrices, and the place for `n²` flags. -/
 structure PairsInst : Type where
-  n : ℕ
-  U : ℕ
-  x : ℕ
-  y : ℕ
-  v : ℕ
-  out : ℕ
-  X : List ℤ
-  Y : List ℤ
-  V : List ℤ
+  (n U x y v out : ℕ)
+  (X Y V : List ℤ)
 
 /-- The three matrices and the place for the flags lie below the free pointer; the place for the
 flags does not meet the matrices. -/
@@ -95,17 +87,15 @@ theorem PairsInst.Pre.keep {q : PairsInst} {μ μ' : ℕ → ℤ} {fr : ℕ} (h 
 
 /-- The flags: cell `i n + j` holds 1 if `X[i,k] + Y[k,j] < V[i,j]` for some `k < n`, and 0 if
 not. -/
-noncomputable def pairFlags (n : ℕ) (X Y V : List ℤ) : List ℤ :=
+def pairFlags (n : ℕ) (X Y V : List ℤ) : List ℤ :=
   (List.range (n * n)).map fun q =>
     flag (∃ k < n, X.getD (q / n * n + k) 0 + Y.getD (k * n + q % n) 0 < V.getD q 0)
 
 /-- **All pairs**: allPairs(n, U, x, y, v, out, fr) writes the `n²` flags to out. -/
-noncomputable def pairsTask : Task where
+def pairsTask : Task where
   Inst := PairsInst
   size q := q.n
   bound q := q.U
   args q := [q.n, q.U, q.x, q.y, q.v, q.out]
   Pre := PairsInst.Pre
   Post q μ fr _ μ' := Seg μ' q.out (pairFlags q.n q.X q.Y q.V) ∧ KeptBut μ μ' fr q.out (q.n * q.n)
-
-end Light.Sec3

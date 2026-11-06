@@ -1,11 +1,10 @@
-module
 
-public import ThreeSumApsp.Lang.Lib.Pass
-public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Lang.Frames
-public import ThreeSumApsp.Spec.Sec3.Problems
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.Pass
+import ThreeSumApsp.Lang.Tactics
+import ThreeSumApsp.Lang.Frames
+import ThreeSumApsp.Spec.Sec3.Problems
 
-@[expose] public section
 
 /-!
 # Two loops over arrays for the reduction from all pairs to all-edges Exact Triangle
@@ -31,14 +30,14 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 
 namespace OrPass
 
-/-- The number of cells. -/
-abbrev Len : ℕ := 0
-/-- The address of the flags that are read. -/
-abbrev Flags : ℕ := 1
-/-- The address of the flags that are changed. -/
-abbrev Dest : ℕ := 2
-/-- The counter. -/
-abbrev Index : ℕ := 3
+/- The number of cells. -/
+slots Len
+/- The address of the flags that are read. -/
+slots 1 Flags
+/- The address of the flags that are changed. -/
+slots 2 Dest
+/- The counter. -/
+slots 3 Index
 
 end OrPass
 
@@ -55,58 +54,52 @@ def orL (L F : List ℤ) : List ℤ := List.zipWith (fun o f => o + f - o * f) L
 @[simp] theorem length_orL (L F : List ℤ) : (orL L F).length = min L.length F.length := by
   simp [orL]
 
+variable {p : ℕ} {μ : ℕ → ℤ}
+
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem21b/MinPlus/Passes.lean (bump_meets)
 /-- **or** replaces the flags at out by their disjunction with the flags at f, and changes nothing
 else.  All flags are 0 or 1. -/
-theorem or_meets {p : ℕ} (hp : P[p]? = some orBody) {μ : ℕ → ℤ} {fl out len : ℕ} {F L : List ℤ}
+theorem or_meets (hp : P[p]? = some orBody) {fl out len : ℕ} {F L : List ℤ}
     (hF : Seg μ fl F) (hL : Seg μ out L) (hlen : F.length = len ∧ L.length = len)
     (hsep : Apart fl len out len)
     (hlim : (lim.space : ℤ) ≤ lim.word ∧ fl + len ≤ lim.space ∧ out + len ≤ lim.space)
     (hflag : ∀ f ∈ F, f = 0 ∨ f = 1) (hL01 : ∀ o ∈ L, o = 0 ∨ o = 1) (hw : 1 ≤ lim.word) :
     Meets lim P p d [(len : ℤ), fl, out] μ (31 * len + 6) fun _ μ' =>
       Seg μ' out (orL L F) ∧ SameOutside μ μ' out len := by
-  obtain ⟨lF, lL⟩ := hlen
   obtain ⟨hsp, hfl, hout⟩ := hlim
   set f : ℕ → ℤ := fun i => L.getD i 0 + F.getD i 0 - L.getD i 0 * F.getD i 0 with hf
   have hfi : ∀ i (hF : i < F.length) (hL : i < L.length), f i = L[i] + F[i] - L[i] * F[i] :=
-    fun i hF hL => by
-      rw [hf]
-      simp only [List.getD_eq_getElem _ _ hF, List.getD_eq_getElem _ _ hL]
+    by simp_all
   refine .of_body hp (Ends.pass f (fun j hj => ?_) ?_ hsp hout rfl rfl)
   · -- round j reads f[j], which is never written, and out[j], which it then overwrites
     have hreadF : wrote μ out f j (fl + j) = F[j] :=
-      (wrote_rest (by omega)).trans (hF j (by omega))
+      (wrote_rest).trans (by aesop)
     have hreadL : wrote μ out f j (out + j) = L[j] :=
-      (wrote_rest (by omega)).trans (hL j (by omega))
-    rw [update_frame_setLocal]
+      (wrote_rest).trans (by aesop)
     rcases hflag _ (List.getElem_mem (show j < F.length by omega)) with h | h <;>
     rcases hL01 _ (List.getElem_mem (show j < L.length by omega)) with h' | h'
     all_goals
-      simp [Limits.Addr, abs_le, hreadF, hreadL, hfi j (by omega) (by omega), h, h']; omega
-  · dsimp only
-    refine ⟨seg_wrote (by simp [orL, lF, lL]) fun i hi => ?_, sameOutside_wrote le_rfl⟩
-    simp only [orL, List.length_zipWith] at hi ⊢
-    rw [List.getElem_zipWith]
-    exact (hfi i (by omega) (by omega)).symm
+      simp [Limits.Addr, abs_le, hreadF, hfi j (by omega) (by omega), h]; omega
+  grind [seg_wrote, sameOutside_wrote, le_rfl, orL, List.length_zipWith]
 
 /-! ## The transpose -/
 
 namespace Transpose
 
-/-- The side n of the matrix. -/
-abbrev Side : ℕ := 0
-/-- The address of the source. -/
-abbrev Src : ℕ := 1
-/-- The summand c. -/
-abbrev Shift : ℕ := 2
-/-- The address of the destination. -/
-abbrev Dst : ℕ := 3
-/-- The column j of the source. -/
-abbrev Col : ℕ := 4
-/-- The address of the row j of the destination. -/
-abbrev Row : ℕ := 5
-/-- The row i of the source. -/
-abbrev Idx : ℕ := 6
+/- The side n of the matrix. -/
+slots Side
+/- The address of the source. -/
+slots 1 Src
+/- The summand c. -/
+slots 2 Shift
+/- The address of the destination. -/
+slots 3 Dst
+/- The column j of the source. -/
+slots 4 Col
+/- The address of the row j of the destination. -/
+slots 5 Row
+/- The row i of the source. -/
+slots 6 Idx
 
 end Transpose
 
@@ -129,116 +122,90 @@ def transposeL (n : ℕ) (c : ℤ) (Y : List ℤ) : List ℤ :=
     (transposeL n c Y).length = n * n := by
   simp [transposeL]
 
+variable {n j : ℕ}
+
 /-- The entry `(j, k)` of the transpose. -/
-theorem transposeL_getD {n : ℕ} (c : ℤ) (Y : List ℤ) {j k : ℕ} (hj : j < n) (hk : k < n) :
+theorem transposeL_getD (c : ℤ) (Y : List ℤ) {k : ℕ} (hj : j < n) (hk : k < n) :
     (transposeL n c Y).getD (j * n + k) 0 = Y.getD (k * n + j) 0 + c := by
   have hq : j * n + k < n * n := by nlinarith
   have hdiv : (j * n + k) / n = j := by
-    rw [Nat.add_comm, Nat.add_mul_div_right _ _ (by omega), Nat.div_eq_of_lt hk]
-    simp
-  have hmod : (j * n + k) % n = k := by
-    rw [Nat.add_comm, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hk]
-  simp only [transposeL, List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hq,
-    Option.map_some, Option.getD_some, hdiv, hmod]
+    grind [Nat.add_comm, Nat.add_mul_div_right, Nat.div_eq_of_lt]
+  grind [Nat.add_comm, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt, transposeL, List.getElem?_range]
+
+variable {Y : List ℤ}
 
 /-- The entries of the transpose of a matrix with entries in `[-U, U]`, with `c` added, lie in
 `[c - U, c + U]`. -/
-theorem mem_transposeL_bounds {n : ℕ} {Y : List ℤ} {U : ℤ} (hY : AbsLe Y U)
+theorem mem_transposeL_bounds {U : ℤ} (hY : AbsLe Y U)
     (hlen : Y.length = n * n) (c : ℤ) : ∀ z ∈ transposeL n c Y, c - U ≤ z ∧ z ≤ c + U := by
   intro z hz
   simp only [transposeL, List.mem_map, List.mem_range] at hz
   obtain ⟨q, hq, rfl⟩ := hz
-  have hn : 0 < n := by rcases n with _ | n <;> simp_all
+  have hn : 0 < n := by grind
   have hidx : q % n * n + q / n < n * n := by
-    have h1 := Nat.mod_lt q hn
-    have h2 : q / n < n := by rwa [Nat.div_lt_iff_lt_mul hn]
+    have h1 := q.mod_lt hn
+    have h2 : q / n < n := by simp_all [Nat.div_lt_iff_lt_mul]
     nlinarith
   have hmem : Y.getD (q % n * n + q / n) 0 ∈ Y := by
-    rw [List.getD_eq_getElem _ _ (hlen ▸ hidx)]
-    exact List.getElem_mem _
-  have := abs_le.1 (hY _ hmem)
-  constructor <;> omega
+    simp_all
+  have := abs_le.1 (by aesop)
+  omega
 
 /-- The memory after the rows `0, …, j - 1` of the transpose have been written. -/
-private def tMem (μ : ℕ → ℤ) (dst n : ℕ) (c : ℤ) (Y : List ℤ) (j : ℕ) : ℕ → ℤ :=
+def tMem (μ : ℕ → ℤ) (dst n : ℕ) (c : ℤ) (Y : List ℤ) (j : ℕ) : ℕ → ℤ :=
   wrote μ dst (fun q => (transposeL n c Y).getD q 0) (j * n)
 
+variable {dst : ℕ} {c : ℤ}
+
 /-- The row `j` written on top of the rows below it. -/
-private theorem tMem_succ {μ : ℕ → ℤ} {dst n : ℕ} {c : ℤ} {Y : List ℤ} {j : ℕ} (hj : j < n) :
+theorem tMem_succ (hj : j < n) :
     wrote (tMem μ dst n c Y j) (dst + j * n) (fun i => Y.getD (i * n + j) 0 + c) n =
       tMem μ dst n c Y (j + 1) := by
   funext a
   simp only [tMem, wrote, Nat.succ_mul]
-  by_cases h1 : dst + j * n ≤ a ∧ a < dst + j * n + n
-  · rw [ite_eq_left h1, ite_eq_left (by omega)]
-    obtain ⟨i, hi, rfl⟩ : ∃ i, i < n ∧ a = dst + (j * n + i) :=
-      ⟨a - dst - j * n, by omega, by omega⟩
-    rw [show dst + (j * n + i) - (dst + j * n) = i by omega, Nat.add_sub_cancel_left,
-      transposeL_getD c Y hj hi]
-  · rw [ite_eq_right h1]
-    by_cases h2 : dst ≤ a ∧ a < dst + j * n
-    · rw [ite_eq_left h2, ite_eq_left (by omega)]
-    · rw [ite_eq_right h2, ite_eq_right (by omega)]
+  grind [Nat.add_sub_cancel_left, transposeL_getD]
 
 /-- **transpose** writes the transpose of the matrix at src, with c added to every entry, to the n²
 cells from dst, and changes nothing else. -/
-theorem transpose_meets {p : ℕ} (hp : P[p]? = some transposeBody) {μ : ℕ → ℤ} {src dst n : ℕ}
-    {c : ℤ} {Y : List ℤ} (hY : Seg μ src Y) (hlen : Y.length = n * n)
+theorem transpose_meets (hp : P[p]? = some transposeBody) {src : ℕ}
+    (hY : Seg μ src Y) (hlen : Y.length = n * n)
     (hsep : Apart src (n * n) dst (n * n))
     (hlim : (lim.space : ℤ) ≤ lim.word ∧ src + n * n ≤ lim.space ∧ dst + n * n ≤ lim.space)
     (hfits : ∀ y ∈ Y, |y + c| ≤ lim.word) :
     Meets lim P p d [(n : ℤ), src, c, dst] μ (30 * (n * n) + 20 * n + 6) fun _ μ' =>
       Seg μ' dst (transposeL n c Y) ∧ SameOutside μ μ' dst (n * n) := by
   obtain ⟨hsp, hsrc, hdst⟩ := hlim
-  have hn : (n : ℤ) ≤ lim.word :=
+  have hn : n ≤ lim.word :=
     le_trans (by exact_mod_cast (Nat.le_mul_self n).trans (by omega : n * n ≤ lim.space)) hsp
   refine .of_body hp ?_
-  simp only [transposeBody]
-  refine Ends.forShape (fun j (s : ℤ × ℤ) μ' => ⟨frame [n, src, c, dst, j, s.1, s.2], μ'⟩)
+  refine Ends.forShape (fun j s μ' => ⟨frame [n, src, c, dst, j, s.1, s.2], μ'⟩)
     (fun j μ' => μ' = tMem μ dst n c Y j) n (30 * n + 11) (0, 0) (by simp [tMem, wrote_zero])
-    ?round ?done
+    ?_ ?_
     (first := by
       rw [update_frame_setLocal]
       exact congrArg (State.mk · μ) (frame_append_zeros _ 2).symm)
-    (hT := by simp; nlinarith)
-  case round =>
+  ·
     rintro j s μ' hj rfl
     have hjn : j * n + n ≤ n * n := by nlinarith
-    simp only [transposeRow]
-    -- Row := Dst + Col * Side
-    light_set (dst + j * n : ℕ)
+    light_set (dst + j * n)
     refine Ends.pass (fun i => Y.getD (i * n + j) 0 + c) (fun i hi => ?_) ?_ hsp (by omega) rfl rfl
-      (hT := by simp; omega)
     · -- round i reads src[i n + j], which is never written
       have hin : i * n + j < n * n := by nlinarith
       have hread : wrote (tMem μ dst n c Y j) (dst + j * n) (fun i => Y.getD (i * n + j) 0 + c) i
           (src + (i * n + j)) = Y.getD (i * n + j) 0 := by
-        rw [wrote_rest (by omega), tMem, wrote_rest (by omega), hY.getD (hlen ▸ hin)]
+        rw [wrote_rest, tMem, wrote_rest, hY.getD (by omega)]
       have hmem : Y.getD (i * n + j) 0 ∈ Y := by
-        rw [List.getD_eq_getElem _ _ (hlen ▸ hin)]
-        exact List.getElem_mem _
-      have hfit := abs_le.1 (hfits _ hmem)
-      have htoNat : ((src : ℤ) + (i : ℤ) * n + j).toNat = src + (i * n + j) := by omega
-      simp only [List.getD_eq_getElem?_getD] at hread hfit
-      rw [update_frame_setLocal]
-      have hin' : ((i * n + j : ℕ) : ℤ) < ((n * n : ℕ) : ℤ) := by exact_mod_cast hin
-      have hjn' : ((j * n + n : ℕ) : ℤ) ≤ ((n * n : ℕ) : ℤ) := by exact_mod_cast hjn
-      push_cast at hin' hjn'
-      simp only [Expr.Safe, Op.eval, Expr.val, frame, setLocal, Nat.cast_add, Nat.cast_mul,
-        List.getD_eq_getElem?_getD, List.length_cons, List.length_nil, zero_add, Nat.reduceAdd,
-        Nat.lt_add_one, getElem?_pos, List.getElem_cons_succ, List.getElem_cons_zero,
-        Option.getD_some, Nat.ofNat_pos, true_and, Nat.one_lt_ofNat,
-        List.getElem?_cons_succ, Nat.reduceLT, Limits.Addr, abs_le, htoNat, hread]
-      refine ⟨⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩, ?_⟩ <;> first | omega | trivial
-    · refine ⟨((dst + j * n : ℕ), n), tMem μ dst n c Y (j + 1), ?_, rfl⟩
+        simp_all
+      have htoNat : (src + (i : ℤ) * n + j).toNat = src + i * n + j := by omega
+      simp [Expr.Safe, Op.eval, Expr.val, frame, setLocal, Limits.Addr, htoNat]
+      grind
+    · refine ⟨(dst + j * n, n), tMem μ dst n c Y _, ?_, rfl⟩
       rw [update_frame_setLocal, tMem_succ hj]
       rfl
-  case done =>
+  ·
     rintro s μ' rfl
-    refine ⟨fun i hi => ?_, show SameOutside μ (tMem μ dst n c Y n) dst (n * n) from
+    refine ⟨fun i hi => ?_, show SameOutside μ (tMem μ dst n c Y n) dst _ from
       sameOutside_wrote le_rfl⟩
-    simp only [length_transposeL] at hi
-    change wrote μ dst (fun q => (transposeL n c Y).getD q 0) (n * n) (dst + i) = _
-    rw [wrote_done hi, List.getD_eq_getElem _ _ (by simpa using hi)]
-
-end ImprovedExponents.AllEdges
+    simp [length_transposeL] at hi
+    change wrote μ dst (fun q => (transposeL n c Y).getD q 0) _ _ = _
+    grind [wrote_done, List.getD_eq_getElem]

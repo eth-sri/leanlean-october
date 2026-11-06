@@ -3,13 +3,13 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.AllTiles
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Report
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.SortedFacts
-public import ThreeSumApsp.Programs.Tasks
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
+import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.AllTiles
+import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Report
+import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.SortedFacts
+import ThreeSumApsp.Programs.Tasks
 
 /-!
 # Theorem 5: the solver, stage by stage
@@ -29,59 +29,56 @@ writes the output. So each lemma hands on what the earlier stages have left, in 
 with the earlier one below the area just written.
 -/
 
-@[expose] public section
 
-open ThreeSumApsp
 
 namespace Light.Sec2
 
-open ThreeSumApsp.Spec
 
 /-! ## The local variables and the cells of the directory -/
 
 namespace Solver
 
-/-- Local 10 of the solver: m. -/
-abbrev Expo : ℕ := 10
-/-- Local 11 of the solver: a power of four. -/
-abbrev Pow4 : ℕ := 11
-/-- Local 12 of the solver: L = 19 m. -/
-abbrev Levels : ℕ := 12
-/-- Local 13 of the solver: takes the results of the calls. -/
-abbrev Void : ℕ := 13
-/-- Local 14 of the solver: the address of TID. -/
-abbrev AdrTid : ℕ := 14
-/-- Local 16 of the solver: the number of bands. -/
-abbrev Bands : ℕ := 16
-/-- Local 22 of the solver: the address of PERM. -/
-abbrev AdrPerm : ℕ := 22
-/-- Local 23 of the solver: the number of tiles. -/
-abbrev Tiles : ℕ := 23
-/-- Local 26 of the solver: the address of SC. -/
-abbrev AdrSc : ℕ := 26
+/- Local 10 of the solver: m. -/
+slots 10 Expo
+/- Local 11 of the solver: a power of four. -/
+slots 11 Pow4
+/- Local 12 of the solver: L = 19 m. -/
+slots 12 Levels
+/- Local 13 of the solver: takes the results of the calls. -/
+slots 13 Void
+/- Local 14 of the solver: the address of TID. -/
+slots 14 AdrTid
+/- Local 16 of the solver: the number of bands. -/
+slots 16 Bands
+/- Local 22 of the solver: the address of PERM. -/
+slots 22 AdrPerm
+/- Local 23 of the solver: the number of tiles. -/
+slots 23 Tiles
+/- Local 26 of the solver: the address of SC. -/
+slots 26 AdrSc
 
-/-- Cell 4 of the directory: L - m. -/
-abbrev DirOuter : ℕ := 4
-/-- Cell 7 of the directory: K₀. -/
-abbrev DirRoot : ℕ := 7
-/-- Cell 9 of the directory: the number of bands. -/
-abbrev DirBands : ℕ := 9
-/-- Cell 10 of the directory: 10^L. -/
-abbrev DirLeaves : ℕ := 10
-/-- Cell 17 of the directory: the address of the powers of ten. -/
-abbrev DirP10 : ℕ := 17
-/-- Cell 21 of the directory: the address of the table of subsets. -/
-abbrev DirMask : ℕ := 21
-/-- Cell 22 of the directory: the address of the bands of the rows. -/
-abbrev DirBand : ℕ := 22
-/-- Cell 24 of the directory: the address of the base-3 digits. -/
-abbrev DirDig3 : ℕ := 24
-/-- Cell 26 of the directory: the address of the encodings of the row bands. -/
-abbrev DirEncA : ℕ := 26
-/-- Cell 27 of the directory: the address of the encodings of the column bands. -/
-abbrev DirEncB : ℕ := 27
-/-- Cell 30 of the directory: the end of the shared block. -/
-abbrev DirEnd : ℕ := 30
+/- Cell 4 of the directory: L - m. -/
+slots 4 DirOuter
+/- Cell 7 of the directory: K₀. -/
+slots 7 DirRoot
+/- Cell 9 of the directory: the number of bands. -/
+slots 9 DirBands
+/- Cell 10 of the directory: 10^L. -/
+slots 10 DirLeaves
+/- Cell 17 of the directory: the address of the powers of ten. -/
+slots 17 DirP10
+/- Cell 21 of the directory: the address of the table of subsets. -/
+slots 21 DirMask
+/- Cell 22 of the directory: the address of the bands of the rows. -/
+slots 22 DirBand
+/- Cell 24 of the directory: the address of the base-3 digits. -/
+slots 24 DirDig3
+/- Cell 26 of the directory: the address of the encodings of the row bands. -/
+slots 26 DirEncA
+/- Cell 27 of the directory: the address of the encodings of the column bands. -/
+slots 27 DirEncB
+/- Cell 30 of the directory: the end of the shared block. -/
+slots 30 DirEnd
 
 end Solver
 
@@ -131,10 +128,6 @@ def fromShared : Stmt :=
 
 /-! ## The times: each stage with everything that follows it -/
 
-variable {lim : Limits} {P : Program} {c d : ℕ} {p : Par} {hmL : p.m ≤ p.L}
-  {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {w : ℕ}
-  {u e1 e11 : ℤ} {ax ay wi wj out fr : ℕ} {A : ℤ} {I J : ℕ → ℕ} {V : ℕ → ℤ} {μ : ℕ → ℤ}
-
 /-! ## The report -/
 
 /-! ## The pruned recursions -/
@@ -146,5 +139,3 @@ variable {lim : Limits} {P : Program} {c d : ℕ} {p : Par} {hmL : p.m ≤ p.L}
 /-! ## Tiles, codes and digits of the wanted positions -/
 
 /-! ## The shared stage -/
-
-end Light.Sec2

@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import Mathlib.Data.Int.Notation
-public import Mathlib.Data.Nat.Notation
+import Mathlib.Data.Int.Notation
+import Mathlib.Data.Nat.Notation
 
 /-!
 # The instances and the scans (proofs of Theorems 17 and 19), as functions on lists
@@ -23,7 +22,6 @@ lists `RAC` and `RBC` hold the residues of the weights modulo `p`, and
 `S(a,b,c) = w(a,b) + w(b,c) + w(a,c)`.
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -50,5 +48,3 @@ def scanHit (n : ℕ) (AB BC AC : List ℤ) (a b c0 len : ℕ) : Bool :=
 are solved by brute force"). -/
 def hasZero (n : ℕ) (AB BC AC : List ℤ) : Bool :=
   (List.range n).any fun a => (List.range n).any fun b => scanHit n AB BC AC a b 0 n
-
-end ThreeSumApsp.Spec

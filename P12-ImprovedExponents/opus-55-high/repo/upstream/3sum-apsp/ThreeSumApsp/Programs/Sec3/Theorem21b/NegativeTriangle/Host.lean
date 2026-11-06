@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.PolyBounded
-public import ThreeSumApsp.Programs.Sec3.Theorem21b.NegativeTriangle.Passes
-public import ThreeSumApsp.Programs.Tasks
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.PolyBounded
+import ThreeSumApsp.Programs.Sec3.Theorem21b.NegativeTriangle.Passes
+import ThreeSumApsp.Programs.Tasks
 
 /-!
 # Negative Triangle from Exact Triangle, as a host
@@ -28,7 +28,6 @@ The text is cut into parts, and each part has its lemma: `NegHost.init_spec`, `p
 together, and `isHost_nt` is the result.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -40,48 +39,48 @@ open ThreeSumApsp.Spec
 
 namespace NegHost
 
-/-- The number n of vertices. -/
-abbrev Verts : ℕ := 0
-/-- The bound U on the weights. -/
-abbrev Bound : ℕ := 1
-/-- The address of the first matrix. -/
-abbrev MatAB : ℕ := 2
-/-- The address of the second matrix. -/
-abbrev MatBC : ℕ := 3
-/-- The address of the third matrix. -/
-abbrev MatAC : ℕ := 4
-/-- The free pointer, where the array q begins: its first part. -/
-abbrev PreAB : ℕ := 5
-/-- n². -/
-abbrev Cells : ℕ := 6
-/-- 2^L. -/
-abbrev Power : ℕ := 7
-/-- The number L of levels. -/
-abbrev Levels : ℕ := 8
-/-- The number of the round. -/
-abbrev Round : ℕ := 9
-/-- The answer so far. -/
-abbrev Ans : ℕ := 10
-/-- The result of a call. -/
-abbrev Res : ℕ := 11
-/-- 6U. -/
-abbrev Bound6 : ℕ := 12
-/-- The first part of the array r. -/
-abbrev RestAB : ℕ := 14
-/-- The array for the third matrix of a question. -/
-abbrev Third : ℕ := 15
-/-- The free pointer for the solver. -/
-abbrev SolverFree : ℕ := 16
-/-- The third part of the array q. -/
-abbrev PreAC : ℕ := 17
-/-- The second part of the array q. -/
-abbrev PreBC : ℕ := 18
-/-- 3n². -/
-abbrev Cells3 : ℕ := 19
-/-- The second part of the array r. -/
-abbrev RestBC : ℕ := 20
-/-- The third part of the array r. -/
-abbrev RestAC : ℕ := 21
+/- The number n of vertices. -/
+slots Verts
+/- The bound U on the weights. -/
+slots 1 Bound
+/- The address of the first matrix. -/
+slots 2 MatAB
+/- The address of the second matrix. -/
+slots 3 MatBC
+/- The address of the third matrix. -/
+slots 4 MatAC
+/- The free pointer, where the array q begins: its first part. -/
+slots 5 PreAB
+/- n². -/
+slots 6 Cells
+/- 2^L. -/
+slots 7 Power
+/- The number L of levels. -/
+slots 8 Levels
+/- The number of the round. -/
+slots 9 Round
+/- The answer so far. -/
+slots 10 Ans
+/- The result of a call. -/
+slots 11 Res
+/- 6U. -/
+slots 12 Bound6
+/- The first part of the array r. -/
+slots 14 RestAB
+/- The array for the third matrix of a question. -/
+slots 15 Third
+/- The free pointer for the solver. -/
+slots 16 SolverFree
+/- The third part of the array q. -/
+slots 17 PreAC
+/- The second part of the array q. -/
+slots 18 PreBC
+/- 3n². -/
+slots 19 Cells3
+/- The second part of the array r. -/
+slots 20 RestBC
+/- The third part of the array r. -/
+slots 21 RestAC
 
 end NegHost
 
@@ -145,18 +144,13 @@ def ntTime (T : ℕ → ℕ → ℕ) (n U : ℕ) : ℕ :=
   120 * (n * n) + 120 + ntLevels U * (154 * (n * n) + 92 + 2 * T n (6 * U))
 
 /-- The need of nt, if the solver of Exact Triangle needs r n U. -/
-def ntNeed (r : ℕ → ℕ → Need) (n U : ℕ) : Need where
-  word := 24 * U + 8 + (r n (6 * U)).word
-  cells := 7 * (n * n) + (r n (6 * U)).cells
-  depth := (r n (6 * U)).depth + 1
+def ntNeed (r : ℕ → ℕ → Need) (n U : ℕ) : Need := ⟨24 * U + 8 + (r n (6 * U)).word, 7 * (n * n) + (r n (6 * U)).cells, (r n (6 * U)).depth + 1⟩
 
-private theorem lt_two_pow_ntLevels (U : ℕ) : 6 * U < 2 ^ ntLevels U :=
+theorem lt_two_pow_ntLevels (U : ℕ) : 6 * U < 2 ^ ntLevels U :=
   Nat.lt_pow_succ_log_self (by norm_num) _
 
-private theorem two_pow_ntLevels_le {U : ℕ} (hU : 1 ≤ U) : 2 ^ ntLevels U ≤ 12 * U := by
-  have := Nat.pow_log_le_self 2 (show 6 * U ≠ 0 by omega)
-  rw [ntLevels, pow_succ]
-  omega
+theorem two_pow_ntLevels_le {U : ℕ} (hU : 1 ≤ U) : 2 ^ ntLevels U ≤ 12 * U := by
+  grind [Nat.pow_log_le_self, ntLevels]
 
 /-! ## The local variables and the hypotheses -/
 
@@ -186,7 +180,7 @@ variable {P₀ R' : Program} {p pAff pDown : ℕ} {T : ℕ → ℕ → ℕ} {r :
 
 /-- The arithmetic facts of the hypotheses as one conjunction: what the limits allow, and that the
 three matrices have n² ≥ 1 entries each and lie below the free pointer. -/
-private theorem Ctx.places (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
+theorem Ctx.places (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
     ((lim.space : ℤ) ≤ lim.word ∧ 24 * (x.U : ℤ) + 8 + (r x.n (6 * x.U)).word ≤ lim.word ∧
       fr + (7 * (x.n * x.n) + (r x.n (6 * x.U)).cells) ≤ lim.space ∧
       d + ((r x.n (6 * x.U)).depth + 1) ≤ lim.depth) ∧ 1 ≤ x.n * x.n ∧
@@ -196,10 +190,12 @@ private theorem Ctx.places (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
     Nat.mul_pos C.pre.n_pos C.pre.n_pos, ⟨C.pre.lenAB, C.pre.lenBC, C.pre.lenAC⟩, C.pre.belowAB,
     C.pre.belowBC, C.pre.belowAC⟩
 
+variable {μ' : ℕ → ℤ} {l : List ℤ}
+
 /-- **affine** as a procedure, for a source and a destination that lie apart, below the free pointer
 of the solver. -/
-private theorem Ctx.affine_meets (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {μ' : ℕ → ℤ}
-    {l : List ℤ} {src dst : ℕ} {m c : ℤ} (hl : Seg μ' src l)
+theorem Ctx.affine_meets (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr)
+    {src dst : ℕ} {m c : ℤ} (hl : Seg μ' src l)
     (hplace : src + l.length ≤ fr + 7 * (x.n * x.n) ∧ dst + l.length ≤ fr + 7 * (x.n * x.n) ∧
       (src + l.length ≤ dst ∨ dst + l.length ≤ src))
     (hfits : ∀ w ∈ l, |m * w| ≤ lim.word ∧ |m * w + c| ≤ lim.word) :
@@ -211,26 +207,25 @@ private theorem Ctx.affine_meets (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr
 /-! ## The beginning -/
 
 /-- **The beginning of nt** sets the sizes and the addresses. -/
-private theorem init_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
+theorem init_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
     Ends lim (P₀ ++ R') d ntInit ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, fr], μ⟩ ntInit.blockCost
       fun σ' => σ' = ⟨frame (locals x fr 1 0 0 0 0), μ⟩ := by
   have hplaces := C.places
-  have hsquare : (0 : ℤ) ≤ (x.n : ℤ) * x.n := by positivity
   unfold ntInit
   -- Cells := Verts * Verts ; Bound6 := 6 * Bound
-  light_set (x.n * x.n : ℕ)
-  light_set (6 * x.U : ℕ)
+  light_set (x.n * x.n)
+  light_set (6 * x.U)
   -- PreBC := PreAB + Cells ; PreAC := PreBC + Cells
-  light_set (fr + x.n * x.n : ℕ)
-  light_set (fr + 2 * (x.n * x.n) : ℕ)
+  light_set (fr + x.n * x.n)
+  light_set (fr + 2 * (x.n * x.n))
   -- RestAB := PreAC + Cells ; RestBC := RestAB + Cells ; RestAC := RestBC + Cells
-  light_set (fr + 3 * (x.n * x.n) : ℕ)
-  light_set (fr + 4 * (x.n * x.n) : ℕ)
-  light_set (fr + 5 * (x.n * x.n) : ℕ)
+  light_set (fr + 3 * (x.n * x.n))
+  light_set (fr + 4 * (x.n * x.n))
+  light_set (fr + 5 * (x.n * x.n))
   -- Third := RestAC + Cells ; SolverFree := Third + Cells ; Cells3 := 3 * Cells
-  light_set (fr + 6 * (x.n * x.n) : ℕ)
-  light_set (fr + 7 * (x.n * x.n) : ℕ)
-  light_set (3 * (x.n * x.n) : ℕ)
+  light_set (fr + 6 * (x.n * x.n))
+  light_set (fr + 7 * (x.n * x.n))
+  light_set (3 * (x.n * x.n))
   -- Power := 1 ; Levels := 0
   light_set 1
   light_set 0
@@ -241,23 +236,22 @@ def PowInv (x : TriInst) (μ : ℕ → ℤ) (fr i : ℕ) (σ : State) : Prop :=
   σ = ⟨frame (locals x fr (2 ^ i : ℕ) i 0 0 0), μ⟩
 
 /-- **The loop that doubles** computes the number L of levels and 2^L. -/
-private theorem pow_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
+theorem pow_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
     Ends lim (P₀ ++ R') d ntPow ⟨frame (locals x fr 1 0 0 0 0), μ⟩ (14 * ntLevels x.U + 6)
       fun σ' => σ' = ⟨frame (locals x fr (2 ^ ntLevels x.U : ℕ) (ntLevels x.U) 0 0 0), μ⟩ := by
   have hplaces := C.places
   have hL := two_pow_ntLevels_le C.pre.U_pos
   -- while Power ≤ Bound6: Power := 2 * Power ; Levels := Levels + 1
-  refine Ends.whileBlock (PowInv x μ fr) (ntLevels x.U) (by simp [PowInv]) ?round ?done
+  refine Ends.whileBlock (PowInv x μ fr) (ntLevels x.U) (by rfl) ?_ ?_
     (by simp; omega)
-  case round =>
+  ·
     rintro i _ hi rfl
-    have hpow : 2 ^ (i + 1) ≤ 2 ^ ntLevels x.U := Nat.pow_le_pow_right (by norm_num) hi
+    have hpow : 2 ^ (i + 1) ≤ 2 ^ ntLevels x.U := by bound
     have hlt : i + 1 < 2 ^ (i + 1) := Nat.lt_two_pow_self
-    rw [pow_succ'] at hpow hlt
     generalize hpw : 2 ^ i = pw at hpow hlt ⊢
     exact ⟨by light_side, by simp; omega, by light_side,
-      by simp [PowInv, pow_succ', hpw, update_frame_setLocal, locals]⟩
-  case done =>
+      by simp_all [PowInv, pow_succ', update_frame_setLocal, locals]⟩
+  ·
     rintro _ rfl
     have hlt := lt_two_pow_ntLevels x.U
     generalize 2 ^ ntLevels x.U = pw at hL hlt ⊢
@@ -273,41 +267,38 @@ def NtMem (x : TriInst) (μ : ℕ → ℤ) (fr ℓ : ℕ) (μ' : ℕ → ℤ) : 
       ((negStart x.U x.AB x.BC x.AC).map (prefR (ntLevels x.U) ℓ)) ∧
     Kept μ μ' fr
 
-private theorem length_negStart {x : TriInst} {μ : ℕ → ℤ} {fr : ℕ} (hpre : x.Pre μ fr) :
+theorem length_negStart {x : TriInst} {μ : ℕ → ℤ} {fr : ℕ} (hpre : x.Pre μ fr) :
     (negStart x.U x.AB x.BC x.AC).length = 3 * (x.n * x.n) := by
-  simp only [negStart, List.length_append, length_affL, hpre.lenAB, hpre.lenBC, hpre.lenAC]
+  simp [negStart, List.length_append, length_affL, hpre.lenAB, hpre.lenBC, hpre.lenAC]
   omega
 
 /-- The numbers at the start are between 0 and 6U, and below 2^L. -/
-private theorem negStart_range {x : TriInst} {μ : ℕ → ℤ} {fr : ℕ} (hpre : x.Pre μ fr) :
+theorem negStart_range {x : TriInst} {μ : ℕ → ℤ} {fr : ℕ} (hpre : x.Pre μ fr) :
     ∀ z ∈ negStart x.U x.AB x.BC x.AC, 0 ≤ z ∧ z ≤ 6 * (x.U : ℤ) ∧ z < 2 ^ ntLevels x.U := by
   intro z hz
   obtain ⟨h0, h1⟩ := bounds_of_mem_negStart hpre.leAB hpre.leBC hpre.leAC z hz
-  have h2 : ((6 * x.U : ℕ) : ℤ) < ((2 ^ ntLevels x.U : ℕ) : ℤ) := by
+  have h2 : 6 * x.U < 2 ^ ntLevels x.U := by
     exact_mod_cast lt_two_pow_ntLevels x.U
-  push_cast at h2
-  exact ⟨h0, h1, by omega⟩
+  grind
 
 /-- The three shifted and doubled matrices, one after the other, are the array r at the start. -/
-private theorem seg_negStart (hpre : x.Pre μ fr) {μ' : ℕ → ℤ} {a : ℕ}
+theorem seg_negStart (hpre : x.Pre μ fr) {a : ℕ}
     (h1 : Seg μ' (a + 3 * (x.n * x.n)) (affL 2 (2 * x.U) x.AB))
     (h2 : Seg μ' (a + 4 * (x.n * x.n)) (affL 2 (2 * x.U) x.BC))
     (h3 : Seg μ' (a + 5 * (x.n * x.n)) (affL (-2) (4 * x.U) x.AC)) :
     Seg μ' (a + 3 * (x.n * x.n)) (negStart x.U x.AB x.BC x.AC) := by
   rw [negStart, seg_append, seg_append]
-  simp only [length_affL, hpre.lenAB, hpre.lenBC]
-  rw [show a + 3 * (x.n * x.n) + x.n * x.n = a + 4 * (x.n * x.n) by omega,
-    show a + 4 * (x.n * x.n) + x.n * x.n = a + 5 * (x.n * x.n) by omega]
-  exact ⟨h1, h2, h3⟩
+  simp [length_affL, hpre.lenAB, hpre.lenBC]
+  grind
 
 /-- The products and the sums that are formed in the first three calls of affine fit in a word. -/
-private theorem fits_of_absLe {l : List ℤ} {U W : ℤ} (hl : AbsLe l U) (hW : 24 * U + 8 ≤ W) :
+theorem fits_of_absLe {U W : ℤ} (hl : AbsLe l U) (hW : 24 * U + 8 ≤ W) :
     (∀ w ∈ l, |2 * w| ≤ W ∧ |2 * w + 2 * U| ≤ W) ∧
       ∀ w ∈ l, |-2 * w| ≤ W ∧ |-2 * w + 4 * U| ≤ W := by
-  constructor <;> intro w hw <;> have := abs_le.1 (hl w hw) <;> simp only [abs_le] <;> omega
+  constructor <;> intro w hw <;> have := abs_le.1 (by aesop) <;> simp only [abs_le] <;> omega
 
 /-- **The four calls of affine** fill the arrays r and q for the top level. -/
-private theorem fill_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) (pw lv rd ans res : ℤ) :
+theorem fill_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) (pw lv rd ans res : ℤ) :
     Ends lim (P₀ ++ R') d (ntFill pAff) ⟨frame (locals x fr pw lv rd ans res), μ⟩
       (120 * (x.n * x.n) + 60) fun σ' => ∃ res' μ',
         σ' = ⟨frame (locals x fr pw lv rd ans res'), μ'⟩ ∧ NtMem x μ fr (ntLevels x.U) μ' := by
@@ -315,34 +306,27 @@ private theorem fill_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) (pw l
   have hplaces := C.places
   have hlenZ := length_negStart hpre
   have hZ := negStart_range hpre
-  have hW : 24 * (x.U : ℤ) + 8 ≤ lim.word := by omega
-  unfold ntFill
-  -- Res := pAff(Cells, MatAB, 2, 2 * Bound, RestAB)
-  refine Ends.callToThen (C.affine_meets (m := 2) (c := 2 * x.U) (dst := fr + 3 * (x.n * x.n))
-    hpre.segAB (by omega) (fits_of_absLe hpre.leAB hW).1) ?_
-    (ha := by light_side [hpre.lenAB]) (hT := by simp [hpre.lenAB]; omega)
+  have hW : 24 * x.U + 8 ≤ lim.word := by omega
+  apply Ends.callToThen (C.affine_meets (m := 2) (c := 2 * x.U) (dst := fr + 3 * (x.n * x.n))
+    hpre.segAB (by omega) (fits_of_absLe hpre.leAB hW).1)
   rintro r₁ μ₁ ⟨s₁, o₁⟩
   -- Res := pAff(Cells, MatBC, 2, 2 * Bound, RestBC)
-  refine Ends.callToThen (C.affine_meets (m := 2) (c := 2 * x.U) (dst := fr + 4 * (x.n * x.n))
-    hpre.segBC.keep (by omega) (fits_of_absLe hpre.leBC hW).1) ?_
-    (ha := by light_side [hpre.lenBC]) (hT := by simp [hpre.lenAB, hpre.lenBC]; omega)
+  apply Ends.callToThen (C.affine_meets (m := 2) (c := 2 * x.U) (dst := fr + 4 * (x.n * x.n))
+    hpre.segBC.keep (by omega) (fits_of_absLe hpre.leBC hW).1)
   rintro r₂ μ₂ ⟨s₂, o₂⟩
   -- Res := pAff(Cells, MatAC, 0 - 2, 4 * Bound, RestAC)
-  refine Ends.callToThen (C.affine_meets (m := -2) (c := 4 * x.U) (dst := fr + 5 * (x.n * x.n))
-    hpre.segAC.keep (by omega) (fits_of_absLe hpre.leAC hW).2) ?_ (ha := by light_side [hpre.lenAC])
-    (hT := by simp [hpre.lenAB, hpre.lenBC, hpre.lenAC]; omega)
+  apply Ends.callToThen (C.affine_meets (m := -2) (c := 4 * x.U) (dst := fr + 5 * (x.n * x.n))
+    hpre.segAC.keep (by omega) (fits_of_absLe hpre.leAC hW).2)
   rintro r₃ μ₃ ⟨s₃, o₃⟩
-  have sZ : Seg μ₃ (fr + 3 * (x.n * x.n)) (negStart x.U x.AB x.BC x.AC) :=
+  have sZ :=
     seg_negStart hpre s₁.keep s₂.keep s₃
   -- Res := pAff(Cells3, RestAB, 0, 0, PreAB)
-  refine Ends.callTo (C.affine_meets (m := 0) (c := 0) (dst := fr) sZ (by omega)
-    fun w _ => by simp; omega) ?_ (ha := by light_side [hlenZ])
-    (hT := by simp [hpre.lenAB, hpre.lenBC, hpre.lenAC, hlenZ]; omega)
+  apply Ends.callTo (C.affine_meets (m := 0) (c := 0) (dst := fr) sZ (by omega)
+    fun w _ => by simp; omega)
   rintro r₄ μ₄ ⟨s₄, o₄⟩
   refine ⟨r₄, μ₄, rfl, ?_, ?_, fun c hc => ?_⟩
-  · rw [map_prefQ_start fun z hz => ⟨(hZ z hz).1, (hZ z hz).2.2⟩]
-    exact s₄
-  · rw [map_prefR_start fun z hz => ⟨(hZ z hz).1, (hZ z hz).2.2⟩]
+  · grind [map_prefQ_start]
+  · rw [map_prefR_start fun z hz => by simp_all]
     exact sZ.keep
   · light_keep
 
@@ -360,55 +344,39 @@ def NtYes (x : TriInst) (ℓ : ℕ) (e : ℤ) : Prop :=
     (negThird x.U ℓ e x.AC)).HasZeroTriangle
 
 /-- The prefixes are between 0 and 6U. -/
-private theorem prefQ_range (hpre : x.Pre μ fr) (ℓ : ℕ) {z : ℤ}
-    (hz : z ∈ negStart x.U x.AB x.BC x.AC) :
+theorem prefQ_range (hpre : x.Pre μ fr) (ℓ : ℕ) {z : ℤ}
+    (hz : z ∈ negStart x.U x.AB x.BC x.AC := by aesop) :
     0 ≤ prefQ ℓ z ∧ prefQ ℓ z ≤ 6 * (x.U : ℤ) := by
   obtain ⟨h0, h1⟩ := bounds_of_mem_negStart hpre.leAB hpre.leBC hpre.leAC z hz
   exact ⟨prefQ_nonneg h0 ℓ, (prefQ_le h0 ℓ).trans h1⟩
 
+variable {ℓ : ℕ}
+
 /-- The three parts of the array q. -/
-private theorem seg_parts (hpre : x.Pre μ fr) {μ' : ℕ → ℤ} {ℓ : ℕ}
-    (hq : Seg μ' fr ((negStart x.U x.AB x.BC x.AC).map (prefQ ℓ))) :
+theorem seg_parts (hpre : x.Pre μ fr)     (hq : Seg μ' fr ((negStart x.U x.AB x.BC x.AC).map (prefQ ℓ))) :
     Seg μ' fr ((affL 2 (2 * x.U) x.AB).map (prefQ ℓ)) ∧
       Seg μ' (fr + x.n * x.n) ((affL 2 (2 * x.U) x.BC).map (prefQ ℓ)) ∧
       Seg μ' (fr + 2 * (x.n * x.n)) ((affL (-2) (4 * x.U) x.AC).map (prefQ ℓ)) := by
-  simp only [negStart, List.map_append] at hq
+  simp [negStart, List.map_append] at hq
   rw [seg_append, seg_append] at hq
-  simp only [List.length_map, length_affL, hpre.lenAB, hpre.lenBC] at hq
-  rwa [show fr + x.n * x.n + x.n * x.n = fr + 2 * (x.n * x.n) by omega] at hq
+  simp [List.length_map, length_affL, hpre.lenAB, hpre.lenBC] at hq
+  grind
 
 /-- The question is an instance of Exact Triangle as the task prescribes. -/
-private theorem question_pre (hpre : x.Pre μ fr) {μ' : ℕ → ℤ} {ℓ : ℕ} {e : ℤ} (he : e = 2 ∨ e = 3)
+theorem question_pre (hpre : x.Pre μ fr) {e : ℤ} (he : e = 2 ∨ e = 3)
     (hq : Seg μ' fr ((negStart x.U x.AB x.BC x.AC).map (prefQ ℓ)))
     (hthird : Seg μ' (fr + 6 * (x.n * x.n)) (negThird x.U ℓ e x.AC)) :
     (question x fr ℓ e).Pre μ' (fr + 7 * (x.n * x.n)) := by
   obtain ⟨hqX, hqY, -⟩ := seg_parts hpre hq
   have hle : ∀ l : List ℤ, (∀ z ∈ l, z ∈ negStart x.U x.AB x.BC x.AC) →
-      AbsLe (l.map (prefQ ℓ)) ((6 * x.U : ℕ) : ℤ) := by
+      AbsLe (l.map (prefQ ℓ)) (6 * x.U) := by
     intro l hl y hy
     obtain ⟨z, hz, rfl⟩ := List.mem_map.1 hy
-    have := prefQ_range hpre ℓ (hl z hz)
-    push_cast
-    exact abs_le.2 ⟨by omega, by omega⟩
+    have := prefQ_range hpre ℓ
+    grind
   have hU := hpre.U_pos
-  exact {
-    n_pos := hpre.n_pos
-    U_pos := by simp only [question]; omega
-    lenAB := by simp [question, hpre.lenAB]
-    lenBC := by simp [question, hpre.lenBC]
-    lenAC := by simp [question, negThird, hpre.lenAC]
-    segAB := hqX
-    segBC := hqY
-    segAC := hthird
-    leAB := hle _ fun z hz => by simp [negStart, hz]
-    leBC := hle _ fun z hz => by simp [negStart, hz]
-    leAC := fun y hy => by
-      simp only [question]
-      push_cast
-      exact abs_le_of_mem_negThird hpre.U_pos hpre.leAC ℓ he y hy
-    belowAB := by simp only [question]; omega
-    belowBC := by simp only [question]; omega
-    belowAC := by simp only [question]; omega }
+  exact ⟨hpre.n_pos, by grind [question], by simp [question, hpre.lenAB], by simp [question, hpre.lenBC], by simp [question, negThird, hpre.lenAC], hqX, hqY, hthird, hle _ fun z hz => by grind [negStart], hle _ fun z hz => by grind [negStart], fun y hy => by
+      exact abs_le_of_mem_negThird hpre.U_pos hpre.leAC ℓ he y hy, by grind [question], by grind [question], by grind [question]⟩
 
 /-- The state of nt between two steps of a round: the locals, with some result of the last call,
 and the memory at the level ℓ. -/
@@ -418,7 +386,7 @@ def St (x : TriInst) (μ : ℕ → ℤ) (fr : ℕ) (rd ans : ℤ) (ℓ : ℕ) (�
       NtMem x μ fr ℓ μ'
 
 /-- The arrays q and r and the cells below the free pointer survive a question. -/
-private theorem ntMem_of_question (hpre : x.Pre μ fr) {μ₀ μ₁ μ₂ : ℕ → ℤ} {ℓ : ℕ}
+theorem ntMem_of_question (hpre : x.Pre μ fr) {μ₀ μ₁ μ₂ : ℕ → ℤ}
     (hm : NtMem x μ fr ℓ μ₀) (h₁ : SameOutside μ₀ μ₁ (fr + 6 * (x.n * x.n)) (x.n * x.n))
     (h₂ : Kept μ₁ μ₂ (fr + 7 * (x.n * x.n))) : NtMem x μ fr ℓ μ₂ := by
   obtain ⟨hq, hr, hk⟩ := hm
@@ -426,49 +394,42 @@ private theorem ntMem_of_question (hpre : x.Pre μ fr) {μ₀ μ₁ μ₂ : ℕ 
   exact ⟨hq.keep (by light_keep [hlenZ]), hr.keep (by light_keep [hlenZ]),
     fun c hc => by light_keep⟩
 
+variable {rd : ℤ} {σ : State}
+
 /-- **One question** leaves the arrays as they are, and sets Ans to 1 if the instance for the level
 ℓ and the exact value e has a zero triangle. -/
-private theorem probe_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {ℓ e : ℕ}
-    (he : e = 2 ∨ e = 3) {rd : ℤ} {A : Prop} {σ : State} (hσ : St x μ fr rd (flag A) ℓ σ) :
+theorem probe_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {e : ℕ}
+    (he : e = 2 ∨ e = 3) {A : Prop} (hσ : St x μ fr rd (flag A) ℓ σ) :
     Ends lim (P₀ ++ R') d (ntProbe p pAff e) σ (20 * (x.n * x.n) + 29 + T x.n (6 * x.U))
       (St x μ fr rd (flag (A ∨ NtYes x ℓ e)) ℓ) := by
   obtain ⟨res, μ₀, rfl, hm⟩ := hσ
   have hpre := C.pre
   have hplaces := C.places
-  have he' : (e : ℤ) = 2 ∨ (e : ℤ) = 3 := by rcases he with rfl | rfl <;> simp
+  have he' : (e : ℤ) = 2 ∨ (e : ℤ) = 3 := by omega
   have hlenV : ((affL (-2) (4 * x.U) x.AC).map (prefQ ℓ)).length = x.n * x.n := by
-    simp [hpre.lenAC]
-  unfold ntProbe
-  -- Res := pAff(Cells, PreAC, 0 - 1, e, Third)
+    simp_all
   refine Ends.callToThen (C.affine_meets (m := -1) (c := e) (dst := fr + 6 * (x.n * x.n))
     (seg_parts hpre hm.1).2.2 (by omega) fun w hx => ?_) ?_
-    (ha := by light_side [hlenV]) (hT := by simp [hlenV]; omega)
   · obtain ⟨z, hz, rfl⟩ := List.mem_map.1 hx
-    have := prefQ_range hpre ℓ (z := z) (by simp [negStart, hz])
-    simp only [abs_le]
-    omega
+    have := prefQ_range hpre ℓ (z := z) (by grind [negStart])
+    grind
   rintro r₁ μ₁ ⟨hthird, h₁⟩
   rw [hlenV] at h₁
   -- Res := pET(Verts, Bound6, PreAB, PreBC, Third, SolverFree)
-  refine Ends.callToThen (C.solver.meets R' (question x fr ℓ e) (fr + 7 * (x.n * x.n))
+  refine Ends.callToThen (C.solver.meets R' _ _
     (question_pre hpre he' (hm.1.keep (by light_keep [length_negStart hpre])) hthird)
-    { word := by simp only [etTask, question]; omega
-      cells := by simp only [etTask, question]; omega
-      space := C.ok.space
-      depth := by simp only [etTask, question]; omega }) ?_ (by simp [etTask, question])
-    (hT := by simp [etTask, question, hlenV]; omega)
+    ⟨by grind [etTask, question], by grind [etTask, question], C.ok.space, by grind [etTask, question]⟩) ?_ (by aesop)
+    (hT := by simp [etTask, question]; omega)
   rintro r₂ μ₂ ⟨hres, h₂⟩
-  replace hres : r₂ = flag (NtYes x ℓ e) := hres
   have hm₂ := ntMem_of_question hpre hm h₁ h₂
   -- if Res = 1 then Ans := 1
   refine Ends.iteLast (fun hc => ?_) (fun hc => ?_) (by simp; omega)
-    (by simp [etTask, question, hlenV]; omega)
-  · have hc' : r₂ = 1 := by simpa using hc
-    refine Ends.setTo 1 ⟨r₂, μ₂, ?_, hm₂⟩ (by simp; omega)
-      (by simp [etTask, question, hlenV]; omega)
-    rw [flag_of (Or.inr (flag_eq_one_iff.1 (hres ▸ hc')))]
+    (by simp [etTask, question]; omega)
+  · refine Ends.setTo 1 ⟨r₂, μ₂, ?_, hm₂⟩ (by simp; omega)
+      (by simp [etTask, question]; omega)
+    rw [flag_of (Or.inr (flag_eq_one_iff.1 (by aesop)))]
     rfl
-  · have hc' : ¬ r₂ = 1 := by simpa using hc
+  · have hc' : ¬ r₂ = 1 := by assumption
     refine Ends.skip ⟨r₂, μ₂, ?_, hm₂⟩
     rw [flag_congr (show (A ∨ NtYes x ℓ e) ↔ A from
       ⟨fun h => h.resolve_right fun hy => hc' (hres.trans (flag_of hy)), Or.inl⟩)]
@@ -480,7 +441,7 @@ private theorem probe_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {ℓ
 def NtFound (x : TriInst) (L ℓ₀ : ℕ) : Prop :=
   ∃ ℓ, ℓ₀ ≤ ℓ ∧ ℓ < L ∧ ∃ e : ℤ, (e = 2 ∨ e = 3) ∧ NtYes x ℓ e
 
-private theorem ntFound_step (x : TriInst) {L ℓ : ℕ} (h : ℓ < L) :
+theorem ntFound_step (x : TriInst) {L : ℕ} (h : ℓ < L) :
     ((NtFound x L (ℓ + 1) ∨ NtYes x ℓ 2) ∨ NtYes x ℓ 3) ↔ NtFound x L ℓ := by
   constructor
   · rintro ((⟨ℓ', h1, h2, h3⟩ | h2) | h3)
@@ -489,109 +450,93 @@ private theorem ntFound_step (x : TriInst) {L ℓ : ℕ} (h : ℓ < L) :
     · exact ⟨ℓ, le_rfl, h, 3, Or.inr rfl, h3⟩
   · rintro ⟨ℓ', h1, h2, e, he, h3⟩
     by_cases hℓ : ℓ' = ℓ
-    · subst hℓ
-      rcases he with rfl | rfl
-      · exact Or.inl (Or.inr h3)
-      · exact Or.inr h3
+    · grind
     · exact Or.inl (Or.inl ⟨ℓ', by omega, h2, e, he, h3⟩)
 
 /-- The number of the round can be read and changed. -/
-private theorem St.round {rd ans : ℤ} {ℓ : ℕ} {σ : State} (h : St x μ fr rd ans ℓ σ) (rd' : ℤ) :
+theorem St.round {ans : ℤ} (h : St x μ fr rd ans ℓ σ) (rd' : ℤ) :
     σ.loc Round = rd ∧ St x μ fr rd' ans ℓ { σ with loc := Function.update σ.loc Round rd' } := by
   obtain ⟨res, μ', rfl, hm⟩ := h
   exact ⟨rfl, res, μ', by rw [update_frame_setLocal]; rfl, hm⟩
 
 /-- What prefDown needs holds at every level above 0. -/
-private theorem down_pre (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {μ' : ℕ → ℤ} {ℓ : ℕ}
-    (hℓ : ℓ + 1 ≤ ntLevels x.U) (hm : NtMem x μ fr (ℓ + 1) μ') :
+theorem down_pre (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr)     (hℓ : ℓ + 1 ≤ ntLevels x.U) (hm : NtMem x μ fr (ℓ + 1) μ') :
     PrefPre lim μ' fr (fr + 3 * (x.n * x.n)) (2 ^ ntLevels x.U)
       ((negStart x.U x.AB x.BC x.AC).map (prefQ (ℓ + 1)))
       ((negStart x.U x.AB x.BC x.AC).map (prefR (ntLevels x.U) (ℓ + 1))) := by
   have hplaces := C.places
   have hlenZ := length_negStart C.pre
-  have hL : ((2 ^ ntLevels x.U : ℕ) : ℤ) ≤ ((12 * x.U : ℕ) : ℤ) := by
+  have hL : 2 ^ ntLevels x.U ≤ ((12 * x.U : ℕ) : ℤ) := by
     exact_mod_cast two_pow_ntLevels_le C.pre.U_pos
-  push_cast at hL
-  refine ⟨hm.1, hm.2.1, by simp, C.ok.space, by simp [hlenZ]; omega, by simp [hlenZ]; omega,
-    by simp [hlenZ], by omega, fun y hy => ?_, fun y hy => ?_⟩
+  refine ⟨hm.1, hm.2.1, by simp, C.ok.space, by grind, by grind,
+    by simp_all, by omega, fun y hy => ?_, fun y hy => ?_⟩
   · obtain ⟨z, hz, rfl⟩ := List.mem_map.1 hy
     have := prefQ_range C.pre (ℓ + 1) hz
-    simp only [abs_le]
-    omega
+    grind
   · obtain ⟨z, hz, rfl⟩ := List.mem_map.1 hy
     have h0 := prefR_nonneg (ntLevels x.U) (ℓ + 1) z
     have h1 := prefR_lt hℓ z
-    simp only [abs_le]
-    omega
+    grind
 
 /-- **One round**: from the level ℓ + 1 to the level ℓ, and the two questions at the level ℓ. -/
-private theorem round_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {ℓ : ℕ}
-    (hℓ : ℓ + 1 ≤ ntLevels x.U) {rd : ℤ} {σ : State}
-    (hσ : St x μ fr rd (flag (NtFound x (ntLevels x.U) (ℓ + 1))) (ℓ + 1) σ) :
+theorem round_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr)
+    (hℓ : ℓ + 1 ≤ ntLevels x.U)     (hσ : St x μ fr rd (flag (NtFound x (ntLevels x.U) (ℓ + 1))) (ℓ + 1) σ) :
     Ends lim (P₀ ++ R') d (ntRound p pAff pDown) σ (154 * (x.n * x.n) + 70 + 2 * T x.n (6 * x.U))
       (St x μ fr rd (flag (NtFound x (ntLevels x.U) ℓ)) ℓ) := by
   obtain ⟨res, μ₀, rfl, hm⟩ := hσ
   have hplaces := C.places
   have hlenZ := length_negStart C.pre
-  unfold ntRound
-  -- Res := pDown(Cells3, PreAB, RestAB, Power)
-  refine Ends.callToThen (prefDown_meets C.down (down_pre C hℓ hm)) ?_ (by simp [hlenZ])
-    (hT := by simp [hlenZ]; omega)
+  refine Ends.callToThen (prefDown_meets C.down (down_pre C hℓ hm)) ?_ (by simp_all)
   rintro r₁ μ₁ ⟨hq, hr, hrest⟩
   rw [zipWith_shiftQ hℓ] at hq
   rw [map_shiftR hℓ] at hr
-  have hσ₁ : St x μ fr rd (flag (NtFound x (ntLevels x.U) (ℓ + 1))) ℓ
-      ⟨frame (locals x fr (2 ^ ntLevels x.U : ℕ) (ntLevels x.U) rd
+  have hσ₁ : St x μ fr rd _ ℓ
+      ⟨frame (locals x fr (2 ^ ntLevels x.U) (ntLevels x.U) rd
         (flag (NtFound x (ntLevels x.U) (ℓ + 1))) r₁), μ₁⟩ :=
     ⟨r₁, μ₁, rfl, hq, hr,
-      fun c hc => (hrest c (Or.inl hc) (Or.inl (by omega))).trans (hm.2.2 c hc)⟩
+      fun c hc => (hrest c (Or.inl hc) (by omega)).trans (hm.2.2 c hc)⟩
   -- the question for e = 2, then the question for e = 3
   refine Ends.next _ ((probe_spec C (Or.inl rfl) hσ₁).mono le_rfl fun σ₂ hσ₂ => ?_)
-    (by simp [hlenZ]; omega)
-  refine (probe_spec C (Or.inr rfl) hσ₂).mono (by simp [hlenZ]; omega) fun σ₃ hσ₃ => ?_
-  rwa [flag_congr (by simpa using ntFound_step x (Nat.lt_of_succ_le hℓ))] at hσ₃
+    (by simp ; omega)
+  refine (probe_spec C (Or.inr rfl) hσ₂).mono (by simp ; omega) fun σ₃ hσ₃ => ?_
+  grind [flag_congr, ntFound_step, Nat.lt_of_succ_le]
 
 /-- **The L rounds**: in the end Ans says whether one of the questions at the levels below L was
 answered yes. -/
-private theorem rounds_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {res : ℤ} {μ' : ℕ → ℤ}
+theorem rounds_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {res : ℤ}
     (hm : NtMem x μ fr (ntLevels x.U) μ') :
     Ends lim (P₀ ++ R') d (ntRounds p pAff pDown)
       ⟨frame (locals x fr (2 ^ ntLevels x.U : ℕ) (ntLevels x.U) 0 0 res), μ'⟩
       (8 + ntLevels x.U * (154 * (x.n * x.n) + 78 + 2 * T x.n (6 * x.U)))
       (St x μ fr (ntLevels x.U) (flag (NtFound x (ntLevels x.U) 0)) 0) := by
   have hplaces := C.places
-  have hL : ((ntLevels x.U : ℕ) : ℤ) ≤ ((12 * x.U : ℕ) : ℤ) := by
-    exact_mod_cast (Nat.lt_two_pow_self (n := ntLevels x.U)).le.trans
+  have hL : ntLevels x.U ≤ 12 * x.U := by
+    exact_mod_cast Nat.lt_two_pow_self.le.trans
       (two_pow_ntLevels_le C.pre.U_pos)
-  push_cast at hL
-  unfold ntRounds
-  -- Ans := 0
   light_set 0
   -- for Round < Levels: the rounds
   refine Ends.for (fun t σ => St x μ fr t (flag (NtFound x (ntLevels x.U) (ntLevels x.U - t)))
     (ntLevels x.U - t) σ) (ntLevels x.U) (154 * (x.n * x.n) + 70 + 2 * T x.n (6 * x.U))
-    ?start ?round ?done ?bound (by omega) ?time
-  case start =>
+    ?_ ?_ ?_ ?_ (by omega) ?_
+  ·
     refine ⟨res, μ', ?_, hm⟩
     rw [flag_of_not (by rintro ⟨ℓ, h1, h2, -⟩; omega), update_frame_setLocal]
     rfl
-  case round =>
+  ·
     intro t σ ht _ hσ
-    obtain ⟨ℓ, hℓ⟩ : ∃ ℓ, ntLevels x.U - t = ℓ + 1 := ⟨ntLevels x.U - t - 1, by omega⟩
+    obtain ⟨ℓ, hℓ⟩ : ∃ ℓ, ntLevels x.U - t = ℓ + 1 := by simp_all
     rw [show ntLevels x.U - (t + 1) = ℓ by omega]
     rw [hℓ] at hσ
     refine (round_spec C (by omega) hσ).mono le_rfl fun σ' hσ' => ?_
-    exact_mod_cast hσ'.round ((t : ℤ) + 1)
-  case done =>
-    intro σ _ hσ
-    simpa using hσ
-  case bound =>
-    rintro t _ - - ⟨res', μ'', rfl, -⟩
-    exact ⟨trivial, rfl⟩
-  case time =>
+    exact_mod_cast hσ'.round _
+  ·
     simp
-    ring_nf
-    omega
+  ·
+    rintro t _ - - ⟨res', μ'', rfl, -⟩
+    simp
+  ·
+    simp
+    grind
 
 /-! ## The procedure -/
 
@@ -621,11 +566,11 @@ theorem nt_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
   -- the result is Ans
   refine Ends.setTo (flag (NtFound x (ntLevels x.U) 0)) ⟨?_, hm₂.2.2⟩ (hT := by
     simp [ntInit]; omega)
-  have h3 : 3 * x.U < 2 ^ ntLevels x.U := by have := lt_two_pow_ntLevels x.U; omega
-  refine flag_congr ?_
+  have h3 : 3 * x.U < 2 ^ ntLevels x.U := by grind [lt_two_pow_ntLevels]
+  apply flag_congr
   rw [hasNegativeTriangle_iff_exists_level hpre.lenAB hpre.lenBC hpre.lenAC hpre.leAB hpre.leBC
     hpre.leAC h3]
-  exact ⟨fun ⟨ℓ, _, h2, h⟩ => ⟨ℓ, h2, h⟩, fun ⟨ℓ, h2, h⟩ => ⟨ℓ, Nat.zero_le _, h2, h⟩⟩
+  exact ⟨fun ⟨ℓ, _, h2, h⟩ => by aesop, fun ⟨ℓ, h2, h⟩ => ⟨ℓ, Nat.zero_le _, h2, h⟩⟩
 
 end NegHost
 
@@ -642,5 +587,3 @@ theorem isHost_nt : IsHost etTask ntTask ntTime ntNeed := by
     fun r => polyNeed_ntNeed⟩
   rw [List.append_assoc]
   exact NegHost.nt_spec ⟨hsol, by simp, by simp, hpre, hok⟩
-
-end Light.Sec3

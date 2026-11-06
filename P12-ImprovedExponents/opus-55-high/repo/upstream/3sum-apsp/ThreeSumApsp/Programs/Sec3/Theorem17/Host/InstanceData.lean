@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.ScanPairs
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Chunks
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Hashing
+import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.ScanPairs
+import ThreeSumApsp.Spec.Sec3.Theorem17.Chunks
+import ThreeSumApsp.Spec.Sec3.Theorem17.Hashing
 
 /-!
 # The host of Theorem 17: the list of its instances, as pure data
@@ -22,11 +21,10 @@ paper's `W_ϱ`: the pairs `(a, b)` whose weight is congruent to `ϱ` modulo `p`.
 class after class, in the order of the residues, and a chunk is a segment of a class.
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-- The hypotheses of Theorem 17 on its parameters, in natural numbers: "Let 16 ≤ D ≤ n, and let
 1 ≤ g ≤ √D be an integer." -/
@@ -120,7 +118,3 @@ def found : ℕ → Bool
 def execs (t : ℕ) : ℕ := execsUpto (X.acc t) (X.hit t) (X.found t) (X.w t)
 /-- The number of accepted query pairs of instance t whose scan fails or would fail. -/
 def fails (t : ℕ) : ℕ := failsUpto (X.acc t) (X.hit t) (X.w t)
-
-end HostData
-
-end Light.Sec3

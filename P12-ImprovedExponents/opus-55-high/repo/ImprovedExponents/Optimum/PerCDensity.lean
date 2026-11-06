@@ -1,8 +1,6 @@
-module
 
-public import ImprovedExponents.Optimum.PerCSupremum
+import ImprovedExponents.Optimum.PerCSupremum
 
-@[expose] public section
 
 /-!
 # Rational parameters
@@ -31,22 +29,23 @@ theorem continuous_tupleSaving :
   have hσ : Continuous fun p : ℝ × ℝ × ℝ × ℝ => p.2.2.1 := by fun_prop
   have hε : Continuous fun p : ℝ × ℝ × ℝ × ℝ => p.2.2.2 := by fun_prop
   have hu : Continuous fun p : ℝ × ℝ × ℝ × ℝ => 2 * p.2.2.1 - 1 := by fun_prop
-  unfold tupleSaving effGamma
   exact hε.mul (hu.min ((hX.min (hσ.sub hq)).sub hu))
+
+variable {σ θ c ε : ℝ}
 
 /-- An admissible tuple has a positive denominator `A + γX(c, θ) ln 4` in its thinness bound,
 whatever the sign of `A`. -/
-theorem AdmissibleX.den_pos {A c θ σ ε : ℝ} (h : AdmissibleX A c θ σ ε) :
+theorem AdmissibleX.den_pos {A : ℝ} (h : AdmissibleX A c θ σ ε) :
     0 < A + gammaX c θ * log 4 := by
-  have hpos : 0 < thinR A (gammaX c θ) := h.ε_pos.trans h.thin
-  unfold thinR at hpos
-  exact (div_pos_iff_of_pos_left log_four_pos).1 hpos
+  exact (div_pos_iff_of_pos_left log_four_pos).1 (h.ε_pos.trans h.thin)
+
+variable {A : ℝ → ℝ} {s : ℝ}
 
 /-- **Rational parameters are as good as real ones**: let the thinness constant `A` be continuous
 at `c`. Near every admissible real tuple `(c, θ, σ, ε)` whose saving exceeds `s`, there is an
 admissible rational tuple `(c′, θ′, σ′, ε′)` with `c < c′ < c₁`, `σ′ > 1/2`, and saving larger
 than `s`. -/
-theorem exists_rat_tuple_gt {A : ℝ → ℝ} {c θ σ ε s : ℝ} (hA : ContinuousAt A c)
+theorem exists_rat_tuple_gt (hA : ContinuousAt A c)
     (h : AdmissibleX (A c) c θ σ ε) (hs : s < tupleSaving c θ σ ε) (c₁ : ℝ) (hc₁ : c < c₁) :
     ∃ c' θ' σ' ε' : ℚ, c < (c' : ℝ) ∧ (c' : ℝ) < c₁ ∧ (1 / 2 : ℝ) < (σ' : ℝ) ∧
       AdmissibleX (A (c' : ℝ)) (c' : ℝ) (θ' : ℝ) (σ' : ℝ) (ε' : ℝ) ∧
@@ -57,16 +56,14 @@ theorem exists_rat_tuple_gt {A : ℝ → ℝ} {c θ σ ε s : ℝ} (hA : Continu
   have hσc : Continuous fun p : ℝ × ℝ × ℝ × ℝ => p.2.2.1 := by fun_prop
   have hεc : Continuous fun p : ℝ × ℝ × ℝ × ℝ => p.2.2.2 := by fun_prop
   -- the thinness bound is continuous at the given tuple
-  have hAc : ContinuousAt (fun p : ℝ × ℝ × ℝ × ℝ => A p.1) (c, θ, σ, ε) :=
-    ContinuousAt.comp (f := Prod.fst) (x := (c, θ, σ, ε)) hA continuousAt_fst
-  have hR : ContinuousAt (fun p : ℝ × ℝ × ℝ × ℝ => thinR (A p.1) (gammaX p.1 p.2.1))
+  have hAc :=
+    ContinuousAt.comp (x := (c, θ, σ, ε)) hA continuousAt_fst
+  have hR : ContinuousAt (fun p => thinR (A p.1) (gammaX p.1 p.2.1))
       (c, θ, σ, ε) := by
-    unfold thinR
     exact continuousAt_const.div (hAc.add (hX.continuousAt.mul continuousAt_const))
       h.den_pos.ne'
   -- the open conditions hold near the given tuple
-  have e1 : ∀ᶠ p : ℝ × ℝ × ℝ × ℝ in 𝓝 (c, θ, σ, ε),
-      p.2.2.2 < thinR (A p.1) (gammaX p.1 p.2.1) :=
+  have e1 :=
     hεc.continuousAt.eventually_lt hR h.thin
   have e2 : ∀ᶠ p : ℝ × ℝ × ℝ × ℝ in 𝓝 (c, θ, σ, ε),
       s < tupleSaving p.1 p.2.1 p.2.2.1 p.2.2.2 :=
@@ -81,11 +78,9 @@ theorem exists_rat_tuple_gt {A : ℝ → ℝ} {c θ σ ε s : ℝ} (hA : Continu
   obtain ⟨θ', hθ'1, hθ'2⟩ := exists_rat_btwn (lt_add_of_pos_right θ hδ)
   obtain ⟨σ', hσ'1, hσ'2⟩ := exists_rat_btwn (lt_add_of_pos_right σ hδ)
   obtain ⟨ε', hε'1, hε'2⟩ := exists_rat_btwn (lt_add_of_pos_right ε hδ)
-  have hc'3 : (c' : ℝ) < c₁ := hc'2.trans_le (min_le_left _ _)
-  have hc'4 : (c' : ℝ) < c + δ := hc'2.trans_le (min_le_right _ _)
+  have hc'3 : c' < c₁ := by simp_all
   have hdist : dist ((c' : ℝ), (θ' : ℝ), (σ' : ℝ), (ε' : ℝ)) (c, θ, σ, ε) < δ := by
-    simp only [Prod.dist_eq, Real.dist_eq, max_lt_iff, abs_lt]
-    refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩, ⟨?_, ?_⟩, ?_, ?_⟩ <;> linarith
+    grind [Prod.dist_eq, Real.dist_eq, max_lt_iff]
   obtain ⟨h1, h2, h3, h4⟩ := H hdist
   have hc := h.c_gt
   have hθ := h.θ_pos
@@ -97,23 +92,20 @@ theorem exists_rat_tuple_gt {A : ℝ → ℝ} {c θ σ ε s : ℝ} (hA : Continu
 /-- **Rational tuples approach the supremum**: let `A` be continuous and positive on `(10, ∞)`
 and `c > 10`. Every `s < savingF (A c) (Gam c)` is exceeded by the saving of an admissible
 rational tuple `(c′, θ′, σ′, ε′)` with `c < c′ < c₁` and `σ′ > 1/2`. -/
-theorem exists_rat_tuple_of_lt_savingF' {A : ℝ → ℝ} {c : ℝ} (hc : 10 < c)
-    (hA : ContinuousOn A (Ioi 10)) (hApos : ∀ x, 10 < x → 0 < A x) {s : ℝ}
+theorem exists_rat_tuple_of_lt_savingF' (hc : 10 < c)
+    (hA : ContinuousOn A (Ioi 10)) (hApos : ∀ x, 10 < x → 0 < A x)
     (hs : s < savingF (A c) (Gam c)) (c₁ : ℝ) (hc₁ : c < c₁) :
     ∃ c' θ' σ' ε' : ℚ, c < (c' : ℝ) ∧ (c' : ℝ) < c₁ ∧ (1 / 2 : ℝ) < (σ' : ℝ) ∧
       AdmissibleX (A (c' : ℝ)) (c' : ℝ) (θ' : ℝ) (σ' : ℝ) (ε' : ℝ) ∧
       s < tupleSaving (c' : ℝ) (θ' : ℝ) (σ' : ℝ) (ε' : ℝ) := by
-  obtain ⟨θ, σ, ε, h, hgt⟩ := exists_tupleSaving_gt hc (hApos c hc) hs
+  obtain ⟨θ, σ, ε, h, hgt⟩ := exists_tupleSaving_gt hc (by simp_all) hs
   exact exists_rat_tuple_gt (hA.continuousAt (Ioi_mem_nhds hc)) h hgt c₁ hc₁
 
 /-- The case `A = basePruned` (pruned encodings): every `s < savingF (basePruned c) (Gam c)` is
 exceeded by the saving of an admissible rational tuple with `c < c′ < c₁` and `σ′ > 1/2`. -/
-theorem exists_rat_tuple_basePruned {c : ℝ} (hc : 10 < c) {s : ℝ}
+theorem exists_rat_tuple_basePruned (hc : 10 < c)
     (hs : s < savingF (basePruned c) (Gam c)) (c₁ : ℝ) (hc₁ : c < c₁) :
     ∃ c' θ' σ' ε' : ℚ, c < (c' : ℝ) ∧ (c' : ℝ) < c₁ ∧ (1 / 2 : ℝ) < (σ' : ℝ) ∧
       AdmissibleX (basePruned (c' : ℝ)) (c' : ℝ) (θ' : ℝ) (σ' : ℝ) (ε' : ℝ) ∧
       s < tupleSaving (c' : ℝ) (θ' : ℝ) (σ' : ℝ) (ε' : ℝ) :=
-  exists_rat_tuple_of_lt_savingF' hc basePruned_continuousOn
-    (fun _ hx => basePruned_pos (by linarith)) hs c₁ hc₁
-
-end ImprovedExponents
+  by grind [exists_rat_tuple_of_lt_savingF', basePruned_continuousOn, basePruned_pos]

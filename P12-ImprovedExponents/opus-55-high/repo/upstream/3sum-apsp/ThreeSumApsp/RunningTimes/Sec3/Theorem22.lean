@@ -3,17 +3,16 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Machine.PolylogIsLittleO
-public import ThreeSumApsp.Programs.Sec3.Theorem21b.Apsp.TimeBound
-public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.TimeBound
-public import ThreeSumApsp.Programs.Sec3.Theorem21b.NegativeTriangle.TimeBound
-public import ThreeSumApsp.RunningTimes.Sec3.Theorem19
-public import ThreeSumApsp.RunningTimes.Sec3.Theorem22.ApspLayout
-public import ThreeSumApsp.RunningTimes.Sec3.Theorem22.MinPlusLayout
-public import ThreeSumApsp.RunningTimes.Sec3.Theorem22.ThreeSumPolylog
-public import ThreeSumApsp.TimeClaims.Sec3.Theorem21_22
+import ThreeSumApsp.Machine.PolylogIsLittleO
+import ThreeSumApsp.Programs.Sec3.Theorem21b.Apsp.TimeBound
+import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.TimeBound
+import ThreeSumApsp.Programs.Sec3.Theorem21b.NegativeTriangle.TimeBound
+import ThreeSumApsp.RunningTimes.Sec3.Theorem19
+import ThreeSumApsp.RunningTimes.Sec3.Theorem22.ApspLayout
+import ThreeSumApsp.RunningTimes.Sec3.Theorem22.MinPlusLayout
+import ThreeSumApsp.RunningTimes.Sec3.Theorem22.ThreeSumPolylog
+import ThreeSumApsp.TimeClaims.Sec3.Theorem21_22
 
 /-!
 # Theorem 22 on the word RAM
@@ -45,7 +44,6 @@ Corollary 26).  For 3SUM the programs lose polylogarithmic factors only
 (`SolvedInPolylogTime.solvedInLittleOTime`).
 -/
 
-public section
 
 open ThreeSumApsp ThreeSumApsp.WordRam
 
@@ -67,10 +65,12 @@ theorem claim_theorem_21b_minPlus : Claim.Theorem_21b_minPlus lightModel :=
 theorem claim_theorem_21b_apsp : Claim.Theorem_21b_apsp lightModel :=
   Theorem21b.apsp_of_minPlus _ claim_theorem_21b_minPlus claim_apspFromMinPlus
 
+variable {δ : ℝ} {e : ℕ}
+
 /-! ## A bound for Exact Triangle, plugged into Theorem 21 -/
 
 /-- 3SUM in `O(n^a)` time for every `a > 2 − δ/2`. -/
-theorem threeSum_of_uniform {δ : ℝ} {e : ℕ} (hδ : δ ≤ 1)
+theorem threeSum_of_uniform (hδ : δ ≤ 1)
     (hu : Claim.ExactTriangleUniform lightModel δ e) {a : ℝ} (ha : 2 - δ / 2 < a) :
     SolvedInTime EndStatement.ThreeSum a 0 :=
   FromClaims.solvedInTime_of_claim realized_threeSum
@@ -78,14 +78,14 @@ theorem threeSum_of_uniform {δ : ℝ} {e : ℕ} (hδ : δ ≤ 1)
       fun _ hf => hf.upperBigOPow ha)
 
 /-- The (min,+)-product in `O(n^{3−δ/3} (log n)^{O(1)})` time. -/
-theorem minPlus_polylog_of_uniform {δ : ℝ} {e : ℕ} (hδ : δ ≤ 1)
+theorem minPlus_polylog_of_uniform (hδ : δ ≤ 1)
     (hu : Claim.ExactTriangleUniform lightModel δ e) :
     SolvedInPolylogTime EndStatement.MinPlusProduct (3 - δ / 3) :=
   FromClaims.solvedInPolylogTime_of_claim realized_minPlusProduct
     (minPlus_of_uniform_theorem_21b _ e hδ hu claim_theorem_21b_minPlus)
 
 /-- APSP in `O(n^{3−δ/3} (log n)^{O(1)})` time. -/
-theorem apsp_polylog_of_uniform {δ : ℝ} {e : ℕ} (hδ : δ ≤ 1)
+theorem apsp_polylog_of_uniform (hδ : δ ≤ 1)
     (hu : Claim.ExactTriangleUniform lightModel δ e) :
     SolvedInPolylogTime EndStatement.APSP (3 - δ / 3) :=
   FromClaims.solvedInPolylogTime_of_claim realized_apsp
@@ -94,5 +94,3 @@ theorem apsp_polylog_of_uniform {δ : ℝ} {e : ℕ} (hδ : δ ≤ 1)
 end Light.Sec3
 
 namespace ThreeSumApsp
-
-end ThreeSumApsp

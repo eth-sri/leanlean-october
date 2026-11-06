@@ -3,12 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.PowTable
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Places
-public import ThreeSumApsp.Spec.Sec2.Theorem5.Layout
-public import ThreeSumApsp.Spec.Sec2.Theorem5.PrunedList
+import ThreeSumApsp.Lang.Lib.PowTable
+import ThreeSumApsp.Programs.Sec2.Theorem5.Places
+import ThreeSumApsp.Spec.Sec2.Theorem5.Layout
+import ThreeSumApsp.Spec.Sec2.Theorem5.PrunedList
 
 /-!
 # Theorem 5 in the light language: the map
@@ -34,7 +33,6 @@ a routine does not depend on the proofs of the routines that it calls.
   significant (namespace Spec).
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
@@ -49,7 +47,7 @@ def SegB (μ : ℕ → ℤ) (a : ℕ) (l : List Bool) : Prop :=
 /-- A cell of a segment of bits. -/
 theorem SegB.get {μ : ℕ → ℤ} {a : ℕ} {l : List Bool} (h : SegB μ a l) {q : ℕ} (hq : q < l.length) :
     μ (a + q) = if l.getD q false then 1 else 0 :=
-  (Seg.getD h (by rwa [List.length_map]) 0).trans (List.getD_map_of_lt _ hq false 0)
+  (Seg.getD h (by simp_all) 0).trans (by simp_all)
 
 /-! ## The numbers of the procedures
 
@@ -233,26 +231,7 @@ structure EncodePlaces (n Lmax src dst scr tab p7 p10 : ℕ) (μ : ℕ → ℤ) 
   src_le : src + 7 ^ n ≤ scr
   scr_le : scr + 7 ^ n ≤ lim.space
 
-/-- encode(n, src, dst, scr, tab, p7, p10), the procedure of Section 2.4.1, recursive as
-printed, with the coefficients φ: from the array a at src it computes the encoding of a at dst. -/
-def EncodeLSpec : Prop :=
-  ∀ (n Lmax src dst scr tab p7 p10 : ℕ) (μ : ℕ → ℤ) (a : LeftStr n → ℤ) (V : ℤ),
-    EncodePlaces lim n Lmax src dst scr tab p7 p10 μ →
-    Seg μ tab Spec.phiFlat → Seg μ src (Spec.arrL a) → (∀ u, |a u| ≤ V) →
-    7 ^ (n + 1) * V ≤ lim.word →
-    ∀ d, d + (n + 1) ≤ lim.depth →
-    Meets lim P pEncode d [n, src, dst, scr, tab, p7, p10] μ (c * 10 ^ n) fun _ μ' =>
-      Seg μ' dst (Spec.arrT (encodingL a)) ∧ SameOutside2 μ μ' dst (10 ^ n) scr (7 ^ n)
 
-/-- The same procedure with the coefficients ψ. -/
-def EncodeRSpec : Prop :=
-  ∀ (n Lmax src dst scr tab p7 p10 : ℕ) (μ : ℕ → ℤ) (b : RightStr n → ℤ) (V : ℤ),
-    EncodePlaces lim n Lmax src dst scr tab p7 p10 μ →
-    Seg μ tab Spec.psiFlat → Seg μ src (Spec.arrR b) → (∀ v, |b v| ≤ V) →
-    7 ^ (n + 1) * V ≤ lim.word →
-    ∀ d, d + (n + 1) ≤ lim.depth →
-    Meets lim P pEncode d [n, src, dst, scr, tab, p7, p10] μ (c * 10 ^ n) fun _ μ' =>
-      Seg μ' dst (Spec.arrT (encodingR b)) ∧ SameOutside2 μ μ' dst (10 ^ n) scr (7 ^ n)
 
 /-! ## The shared stage -/
 
@@ -278,17 +257,6 @@ structure RowTables (p : Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop where
 structure SharedTables (p : Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop
   extends PowTables p b0 μ, RowTables p b0 μ
 
-/-- What the shared stage leaves behind: the tables, the directory, and the encodings of all bands.
-(Cell 31 of the directory is not used by it.) -/
-structure SharedReady (p : Par) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ)
-    (Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop
-  extends SharedTables p b0 μ where
-  dir : SegN μ (p.aDIR b0) (dirList p aX aY b0)
-  encA : ∀ β < p.nB, Seg μ (p.aENCA b0 + β * p.T)
-    (Spec.arrT (encodingL (bandArrayL (Spec.stdLayout hmL) X β)))
-  encB : ∀ β < p.nB, Seg μ (p.aENCB b0 + β * p.T)
-    (Spec.arrT (encodingR (bandArrayR (Spec.stdLayout hmL) Y β)))
 
 /-- The shape of the running time of the shared stage. -/
 def sharedShape (p : Par) : ℕ :=
@@ -312,73 +280,15 @@ structure SharedPre (p : Par) (aX aY b0 : ℕ) (X : Matrix (Fin p.N) (Fin (Three
 
 /-! ## Theorem 5 -/
 
-/-- What wanted reads, apart from the positions: all of it lies below the area it writes. -/
-structure WantedTables (p : Par) (μ : ℕ → ℤ) (band dig3 mask tid : ℕ) : Prop where
-  hband : ∀ I < p.N, μ (band + I) = (I / (p.K0 * p.N0) : ℕ)
-  hblock : ∀ I < p.N, μ (band + p.N + I) = (I / p.N0 % p.K0 : ℕ)
-  hdig3 : ∀ I < p.N, SegN μ (dig3 + I * p.Lo) (ThreeSumApsp.digitList 3 p.Lo (I % p.N0))
-  hmask : ∀ s < p.KK, SegB μ (mask + s * p.L) (Spec.unrank p.L p.m s)
-  band_le : band + 2 * p.N ≤ tid
-  dig3_le : dig3 + p.N * p.Lo ≤ tid
-  mask_le : mask + p.KK * p.L ≤ tid
 
-/-- What wanted assumes. -/
-structure Wanted.WantedPre (p : Par) (w aWI aWJ band dig3 mask tid : ℕ) (I J : ℕ → ℕ)
-    (μ : ℕ → ℤ) : Prop where
-  hmL : p.m ≤ p.L
-  tab : WantedTables p μ band dig3 mask tid
-  hI : ∀ i < w, μ (aWI + i) = I i ∧ I i < p.N
-  hJ : ∀ i < w, μ (aWJ + i) = J i ∧ J i < p.N
-  hpow : ((10 ^ (p.L + 1) : ℕ) : ℤ) ≤ lim.word
-  hnB : (((p.nB + 1) * (p.nB + 1) : ℕ) : ℤ) ≤ lim.word
-  room : tid + (2 * w + w * p.L) ≤ lim.space := by light_arith
-  hWI : aWI + w ≤ tid := by light_arith
-  hWJ : aWJ + w ≤ tid := by light_arith
 
 namespace SortWanted
 
-/-- The arguments of sortWanted. -/
-structure Args where
-  /-- the number of positions -/
-  w : ℕ
-  /-- the number of digits of a code -/
-  L : ℕ
-  /-- the number of tiles -/
-  nT : ℕ
-  /-- where the numbers of the tiles stand -/
-  tid : ℕ
-  /-- where the digits of the codes stand -/
-  dgt : ℕ
-  /-- where the sorted list goes -/
-  perm : ℕ
 
-/-- The number of cells from perm on that may change. -/
-def Args.room (A : Args) : ℕ := 2 * A.w + (A.nT + 11) + (A.nT + 1)
 
 end SortWanted
 
-/-- The arguments of pick but for the mode, with the data behind them: the list small stands at
-pSub, the list big at pU, the list values at pVal, and pDst is the destination. -/
-structure PickArgs : Type where
-  (pSub pU pVal pDst : ℕ)
-  (small big : List ℕ) (values : List ℤ)
 
-/-- What pick assumes: big is an increasing list, values has a value for each of its numbers, and
-small is an increasing list of numbers of big; all of it lies above the cells that pick writes. -/
-structure PickPre (μ : ℕ → ℤ) (x : PickArgs) : Prop where
-  small : SegN μ x.pSub x.small
-  big : SegN μ x.pU x.big
-  values : Seg μ x.pVal x.values
-  len : x.values.length = x.big.length
-  big_sorted : x.big.Pairwise (· < ·)
-  small_sorted : x.small.Pairwise (· < ·)
-  sub : ∀ c ∈ x.small, c ∈ x.big
-  dst_sub : x.pDst + x.small.length ≤ x.pSub := by light_arith
-  dst_big : x.pDst + x.small.length ≤ x.pU := by light_arith
-  dst_val : x.pDst + x.small.length ≤ x.pVal := by light_arith
-  sub_le : x.pSub + x.small.length ≤ lim.space := by light_arith
-  big_le : x.pU + x.big.length ≤ lim.space := by light_arith
-  val_le : x.pVal + x.big.length ≤ lim.space := by light_arith
 
 /-- The arguments of pruned but for the number n of levels that are left, with the data behind them.
 The two encodings are the lists EA at aEA and EB at aEB, and the parts of them below the current
@@ -388,32 +298,3 @@ the two encodings. -/
 structure PrunedArgs : Type where
   (aEA aEB base l out sp p10 : ℕ)
   (Lmax : ℕ) (EA EB : List ℤ) (codes : List ℕ) (A B : ℤ)
-
-/-- What a call of pruned with n levels left assumes.  The list codes is an increasing list of
-output strings, as numbers below 10^n.  The two encodings and the powers of ten lie below that list;
-then come the cells of out, one for each code; then, from sp on, the stack, n frames of 3 len + 11
-cells.  Sums of 10^n products of a number of EA and a number of EB fit in a word. -/
-structure PrunedPre (μ : ℕ → ℤ) (n : ℕ) (x : PrunedArgs) : Prop where
-  powers : Seg μ x.p10 (powList 10 (x.Lmax + 1))
-  encA : Seg μ x.aEA x.EA
-  encB : Seg μ x.aEB x.EB
-  list : SegN μ x.l x.codes
-  sorted : x.codes.Pairwise (· < ·)
-  lt : ∀ c ∈ x.codes, c < 10 ^ n
-  boundA : AbsLe x.EA x.A
-  boundB : AbsLe x.EB x.B
-  word : 10 ^ n * (x.A * x.B) ≤ lim.word
-  pow : ((10 ^ (n + 1) : ℕ) : ℤ) ≤ lim.word
-  levels : n ≤ x.Lmax := by light_arith
-  partA : x.base + 10 ^ n ≤ x.EA.length := by light_arith
-  partB : x.base + 10 ^ n ≤ x.EB.length := by light_arith
-  belowPowers : x.p10 + (x.Lmax + 1) ≤ x.l := by light_arith
-  belowA : x.aEA + x.EA.length ≤ x.l := by light_arith
-  belowB : x.aEB + x.EB.length ≤ x.l := by light_arith
-  belowOut : x.l + x.codes.length ≤ x.out := by light_arith
-  belowStack : x.out + x.codes.length ≤ x.sp := by light_arith
-  space : x.sp + n * (3 * x.codes.length + 11) ≤ lim.space := by light_arith
-
-end Entries
-
-end Light.Sec2

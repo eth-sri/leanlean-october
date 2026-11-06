@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Calls
-public import ThreeSumApsp.Lang.Lib.Pass
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Calls
+import ThreeSumApsp.Lang.Lib.Pass
 
 /-!
 # Copying and filling a segment
@@ -17,7 +17,6 @@ Both change no other cell (`copy_meets`, `fill_meets`).  Each of the two is one 
 from dst, so `Ends.pass` says what it does, and the proof only says what round i reads.
 -/
 
-@[expose] public section
 
 namespace Light
 
@@ -27,11 +26,8 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 
 namespace Copy
 
-/-- The local variables of copy: the arguments src, dst and n, and the counter. -/
-abbrev Src : ℕ := 0
-@[inherit_doc Src] abbrev Dst : ℕ := 1
-@[inherit_doc Src] abbrev Len : ℕ := 2
-@[inherit_doc Src] abbrev Idx : ℕ := 3
+/- The local variables of copy: the arguments src, dst and n, and the counter. -/
+slots Src Dst Len Idx
 
 end Copy
 
@@ -42,17 +38,18 @@ def copyBody : Stmt := pass Idx (v Len) (v Dst) (M (v Src +' v Idx))
 /-- The time of copy. -/
 @[simp] def copyTime (n : ℕ) : ℕ := 16 * n + 6
 
+variable {p n dst : ℕ} {μ : ℕ → ℤ}
+
 /-- **copy(src, dst, n)** copies the n cells from src to dst and changes nothing else. -/
-theorem copy_meets {p : ℕ} (hp : P[p]? = some copyBody) {μ : ℕ → ℤ} {src dst n : ℕ}
+theorem copy_meets (hp : P[p]? = some copyBody) {src : ℕ}
     (hw : (lim.space : ℤ) ≤ lim.word) (hsrc : src + n ≤ lim.space) (hdst : dst + n ≤ lim.space)
     (hsep : Apart src n dst n) :
     Meets lim P p d [(src : ℤ), dst, n] μ (copyTime n) fun _ μ' =>
       (∀ i < n, μ' (dst + i) = μ (src + i)) ∧ SameOutside μ μ' dst n := by
   refine .of_body hp (Ends.pass (fun i => μ (src + i)) (fun i hi => ?_)
-    ⟨fun i hi => wrote_done (f := fun i => μ (src + i)) hi, by light_keep⟩ hw hdst rfl rfl
-    (hT := by light_time [copyTime]))
+    ⟨by grind [wrote_done], by light_keep⟩ hw hdst rfl rfl)
   -- Round i reads src[i], which no earlier round has written.
-  have hread : wrote μ dst (fun i => μ (src + i)) i (src + i) = μ (src + i) :=
+  have hread : wrote μ dst (fun i => μ (src + i)) i _ = μ (src + i) :=
     wrote_rest (by omega)
   light_side [hread]
 
@@ -60,11 +57,8 @@ theorem copy_meets {p : ℕ} (hp : P[p]? = some copyBody) {μ : ℕ → ℤ} {sr
 
 namespace Fill
 
-/-- The local variables of fill: the arguments dst, n and x, and the counter. -/
-abbrev Dst : ℕ := 0
-@[inherit_doc Dst] abbrev Len : ℕ := 1
-@[inherit_doc Dst] abbrev Val : ℕ := 2
-@[inherit_doc Dst] abbrev Idx : ℕ := 3
+/- The local variables of fill: the arguments dst, n and x, and the counter. -/
+slots Dst Len Val Idx
 
 end Fill
 
@@ -76,12 +70,10 @@ def fillBody : Stmt := pass Idx (v Len) (v Dst) (v Val)
 @[simp] def fillTime (n : ℕ) : ℕ := 13 * n + 6
 
 /-- **fill(dst, n, x)** writes x into the n cells from dst and changes nothing else. -/
-theorem fill_meets {p : ℕ} (hp : P[p]? = some fillBody) {μ : ℕ → ℤ} {dst n : ℕ} {x : ℤ}
+theorem fill_meets (hp : P[p]? = some fillBody) {x : ℤ}
     (hw : (lim.space : ℤ) ≤ lim.word) (hdst : dst + n ≤ lim.space) :
     Meets lim P p d [(dst : ℤ), n, x] μ (fillTime n) fun _ μ' =>
       Seg μ' dst (List.replicate n x) ∧ SameOutside μ μ' dst n :=
-  .of_body hp (Ends.pass (fun _ => x) (fun i hi => by light_side)
+  .of_body hp (Ends.pass _ (by simp)
     ⟨seg_wrote List.length_replicate fun i hi => List.getElem_replicate .., by light_keep⟩
-    hw hdst rfl rfl (hT := by light_time [fillTime]))
-
-end Light
+    hw hdst rfl rfl)

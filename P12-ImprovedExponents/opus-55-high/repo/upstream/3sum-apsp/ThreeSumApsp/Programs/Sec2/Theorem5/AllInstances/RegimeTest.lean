@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Instance
-public import Mathlib.Data.Nat.Log
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Instance
+import Mathlib.Data.Nat.Log
 
 /-!
 # The regime of Theorem 5
@@ -23,36 +23,33 @@ first product, which is D).  regimeTests combines the four tests, the last two o
 regimeSizes.  That the candidate is the only one is RegimeAnswer.zero.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
-
-variable {lim : Limits} {P : Program} {d : ℕ}
 
 /-! ## The local variables -/
 
 namespace RegimeLocal
 
-/-- The argument N. -/
-abbrev Rows : ℕ := 0
-/-- The argument D. -/
-abbrev Cols : ℕ := 1
-/-- The argument w. -/
-abbrev Wanted : ℕ := 2
-/-- The power 4^m. -/
-abbrev PowFour : ℕ := 3
-/-- The power 2^m. -/
-abbrev PowTwo : ℕ := 4
-/-- The exponent m. -/
-abbrev Expo : ℕ := 5
-/-- The result. -/
-abbrev Result : ℕ := 6
-/-- A power of D. -/
-abbrev Power : ℕ := 7
-/-- The exponent of that power. -/
-abbrev Count : ℕ := 8
-/-- 1 as long as no power of D has exceeded N, then 0. -/
-abbrev Fits : ℕ := 9
+/- The argument N. -/
+slots Rows
+/- The argument D. -/
+slots 1 Cols
+/- The argument w. -/
+slots 2 Wanted
+/- The power 4^m. -/
+slots 3 PowFour
+/- The power 2^m. -/
+slots 4 PowTwo
+/- The exponent m. -/
+slots 5 Expo
+/- The result. -/
+slots 6 Result
+/- A power of D. -/
+slots 7 Power
+/- The exponent of that power. -/
+slots 8 Count
+/- 1 as long as no power of D has exceeded N, then 0. -/
+slots 9 Fits
 
 end RegimeLocal
 
@@ -112,5 +109,3 @@ def regimeBody : Stmt :=
 /-! ## The four tests -/
 
 /-! ## The whole procedure -/
-
-end Light.Sec2

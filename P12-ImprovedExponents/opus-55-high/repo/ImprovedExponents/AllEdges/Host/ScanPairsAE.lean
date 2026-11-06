@@ -1,8 +1,7 @@
-module
 
-public import ImprovedExponents.AllEdges.Host.Flags
+import ThreeSumApsp.Slots
+import ImprovedExponents.AllEdges.Host.Flags
 
-@[expose] public section
 
 /-!
 # Reading the answers of one instance and scanning for witnesses, with flags
@@ -20,30 +19,17 @@ the result in the flag (`scanPairsAE_spec`).  The pure side is `aeStep` and `aeE
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
 namespace ScanPairsAE
 
-/-- The locals of `scanPairsAE`.  The arguments: the addresses of the answers and of the rows and
+/- The locals of `scanPairsAE`.  The arguments: the addresses of the answers and of the rows and
 the columns of the query pairs, their number `w`, the address of the flags, the addresses of the
 three arrays of weights, `n`, and the first vertex and the number of vertices of the piece.  Then
 the counter, the address of the flag of the current pair, and the result of its scan. -/
-abbrev Out : ℕ := 0
-@[inherit_doc Out] abbrev Rows : ℕ := 1
-@[inherit_doc Out] abbrev Cols : ℕ := 2
-@[inherit_doc Out] abbrev Num : ℕ := 3
-@[inherit_doc Out] abbrev Flg : ℕ := 4
-@[inherit_doc Out] abbrev AdrAB : ℕ := 5
-@[inherit_doc Out] abbrev AdrBC : ℕ := 6
-@[inherit_doc Out] abbrev AdrAC : ℕ := 7
-@[inherit_doc Out] abbrev Size : ℕ := 8
-@[inherit_doc Out] abbrev First : ℕ := 9
-@[inherit_doc Out] abbrev Len : ℕ := 10
-@[inherit_doc Out] abbrev Cnt : ℕ := 11
-@[inherit_doc Out] abbrev Idx : ℕ := 12
-@[inherit_doc Out] abbrev Res : ℕ := 13
+slots Out Rows Cols Num Flg AdrAB AdrBC AdrAC Size First Len Cnt Idx Res
 
 end ScanPairsAE
 
@@ -108,7 +94,7 @@ theorem seg_aeStep (G : FlagsAt lim μ flg ab bc ac n F) (i : ℕ) :
       (n * n)) flg (aeStep (accOf OUT) (hitOf n AB BC AC QA QB c0 len) (idxOf n QA QB) F i) := by
   intro q hq
   rw [length_aeStep, G.len] at hq
-  rw [wrote_done hq, List.getD_eq_getElem]
+  grind [wrote_done, List.getD_eq_getElem]
 
 /-- The weights are not touched by the flags. -/
 theorem weights_wrote (C : Weights lim μ ab bc ac n U AB BC AC)
@@ -117,9 +103,9 @@ theorem weights_wrote (C : Weights lim μ ab bc ac n U AB BC AC)
   light_facts C C.arrAB C.arrBC C.arrAC G
   exact
     { C with
-      arrAB := C.arrAB.keep fun b hb => wrote_rest (by omega)
-      arrBC := C.arrBC.keep fun b hb => wrote_rest (by omega)
-      arrAC := C.arrAC.keep fun b hb => wrote_rest (by omega) }
+      arrAB := C.arrAB.keep fun b hb => wrote_rest
+      arrBC := C.arrBC.keep fun b hb => wrote_rest
+      arrAC := C.arrAC.keep fun b hb => wrote_rest }
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Witnesses/ScanPairs.lean
 /-- One query pair: a scan is made if the pair is accepted and its flag is 0. -/
@@ -141,70 +127,63 @@ theorem scanPairsAEStep_spec (hp : P[pScan]? = some scanBody)
     (fun q => (aeStep (accOf OUT) (hitOf n AB BC AC QA QB c0 len) (idxOf n QA QB) F i).getD q 0)
     (n * n) with hμ₁
   have hreadOUT : μ₁ (out + i) = OUT.getD i 0 := by
-    rw [hμ₁, wrote_rest (by omega)]; exact A.arrOUT.read hi
-  have hreadQA : μ₁ (qa + i) = (QA.getD i 0 : ℕ) := by
-    rw [hμ₁, wrote_rest (by omega)]; exact A.arrQA.read hi
-  have hreadQB : μ₁ (qb + i) = (QB.getD i 0 : ℕ) := by
-    rw [hμ₁, wrote_rest (by omega)]; exact A.arrQB.read hi
+    rw [hμ₁, wrote_rest]; exact A.arrOUT.read hi
+  have hreadQA : μ₁ (qa + i) = QA.getD i 0 := by
+    rw [hμ₁, wrote_rest]; exact A.arrQA.read hi
+  have hreadQB : μ₁ (qb + i) = QB.getD i 0 := by
+    rw [hμ₁, wrote_rest]; exact A.arrQB.read hi
   have ha := A.arrQA.getD_lt hi
   have hb := A.arrQB.getD_lt hi
   have hidx : idxOf n QA QB i < n * n := Nat.mul_add_lt_mul ha hb
   have hlenS : idxOf n QA QB i <
       (aeStep (accOf OUT) (hitOf n AB BC AC QA QB c0 len) (idxOf n QA QB) F i).length := by
-    rw [length_aeStep, G.len]; exact hidx
+    simp_all
   have hreadF : μ₁ (flg + idxOf n QA QB i) =
       (aeStep (accOf OUT) (hitOf n AB BC AC QA QB c0 len) (idxOf n QA QB) F i).getD
         (idxOf n QA QB i) 0 := by
-    rw [hμ₁, wrote_done hidx]
-  have C₁ := weights_wrote C G (fun q => (aeStep (accOf OUT) (hitOf n AB BC AC QA QB c0 len)
-    (idxOf n QA QB) F i).getD q 0)
+    grind [wrote_done]
   unfold scanPairsAEStep scanPairsAEState
   rw [← hμ₁, aeStep_succ, aePair, aeExec, accOf, hitOf]
-  generalize hS : aeStep (accOf OUT) (hitOf n AB BC AC QA QB c0 len) (idxOf n QA QB) F i = S
+  generalize hS : aeStep _ _ _ F i = S
     at hreadF hμ₁ hlenS ⊢
-  generalize hcell : S.getD (idxOf n QA QB i) 0 = cell at hreadF ⊢
+  generalize hcell : S.getD _ 0 = cell at hreadF ⊢
   generalize OUT.getD i 0 = answer at hreadOUT ⊢
   unfold idxOf at hidx hreadF hlenS ⊢
   generalize QA.getD i 0 = a at hreadQA ha hidx hreadF hlenS ⊢
   generalize QB.getD i 0 = b at hreadQB hb hidx hreadF hlenS ⊢
-  have haddr : ((flg : ℤ) + ((a : ℤ) * (n : ℤ) + (b : ℤ))).toNat = flg + (a * n + b) := by
-    rw [show (flg : ℤ) + ((a : ℤ) * (n : ℤ) + (b : ℤ)) = ((flg + (a * n + b) : ℕ) : ℤ) by
-      push_cast; ring, Int.toNat_natCast]
+  have haddr : (flg + (a * n + (b : ℤ))).toNat = flg + (a * n + b) := by
+    rfl
   -- if out[i] = 0
   by_cases hz : answer = 0
   · refine Ends.iteLast (fun _ => Ends.skip ⟨idx, res, ?_⟩)
-      (fun h => absurd (by simp [hreadOUT, hz]) h) (by light_side)
-    rw [hμ₁]
-    simp [hz]
-  refine Ends.iteLast (fun h => absurd h (by simp [hreadOUT, hz])) (fun _ => ?_) (by light_side)
+      (by simp_all) (by light_side)
+    simp_all
+  refine Ends.iteLast (by simp_all) (fun _ => ?_) (by light_side)
   -- idx := flg + qa[i] n + qb[i]
-  light_set (flg + (a * n + b) : ℕ) using hreadQA, hreadQB
+  light_set (flg + (a * n + b)) using hreadQA, hreadQB
   -- if M idx = 0
   by_cases hcell0 : cell = 0
-  · refine Ends.iteLast (fun _ => ?_) fun h => absurd (by simp [haddr, hreadF, hcell0]) h
+  · refine Ends.iteLast (fun _ => ?_) fun h => by simp_all
     -- res := scan(ab, bc, ac, n, qa[i], qb[i], c0, len); M idx := res
-    light_call (scan_meets hp C₁ ha hb hc) using hreadQA, hreadQB, hz, hcell0, tScanCallAE with
+    light_call (scan_meets hp (weights_wrote C G fun q => (aeStep (accOf OUT) (hitOf n AB BC AC QA QB c0 len)
+    (idxOf n QA QB) F i).getD q 0) ha hb hc) using hreadQA, hreadQB, hz, hcell0, tScanCallAE with
       _ _ ⟨rfl, rfl⟩
     rw [flag_eq_bit]
-    light_store (flg + (a * n + b) : ℕ) (bit (scanHit n AB BC AC a b c0 len)) using hz, hcell0,
+    light_store (flg + (a * n + b)) (bit (scanHit n AB BC AC a b c0 len)) using hz, hcell0,
       tScanCallAE
-    refine ⟨(flg + (a * n + b) : ℕ), bit (scanHit n AB BC AC a b c0 len), ?_⟩
-    rw [ite_eq_left ⟨decide_eq_true hz, hcell0⟩]
+    refine ⟨flg + (a * n + b), bit (scanHit n AB BC AC a b c0 len), ?_⟩
     congr 1
     funext y
     by_cases hy : y = flg + (a * n + b)
-    · subst hy
-      rw [Function.update_self, wrote_done hidx, getD_set_self _ hlenS]
+    · simp_all [Function.update_self, wrote_done]
     · rw [Function.update_of_ne hy, hμ₁]
       by_cases hin : Inside flg (n * n) y
       · obtain ⟨q, rfl⟩ : ∃ q, y = flg + q := ⟨y - flg, by omega⟩
-        rw [wrote_done (by omega), wrote_done (by omega), getD_set_ne _ (by omega)]
-      · have hout : Outside flg (n * n) y := by simp only [Inside, Outside] at hin ⊢; omega
-        rw [wrote_rest hout, wrote_rest hout]
-  · refine Ends.iteLast (fun h => absurd h (by simp [haddr, hreadF, hcell0])) fun _ =>
-      Ends.skip ⟨(flg + (a * n + b) : ℕ), res, ?_⟩
-    rw [hμ₁]
-    simp [hcell0]
+        grind [wrote_done, getD_set_ne]
+      grind [wrote_rest]
+  · refine Ends.iteLast (by simp_all) fun _ =>
+      Ends.skip ⟨flg + (a * n + b), res, ?_⟩
+    simp_all
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Witnesses/ScanPairs.lean
 /-- The time of the rounds, added up. -/
@@ -212,10 +191,9 @@ theorem sum_scanPairsAE_rounds (acc hit : ℕ → Bool) (idx : ℕ → ℕ) (F :
     ∑ i ∈ Finset.range w, (4 + (64 + if aeExec acc hit idx F i then tScanCallAE len else 0))
       = 68 * w + tScanCallAE len * aeExecs acc hit idx F w := by
   induction w with
-  | zero => simp [aeExecs]
+  | zero => rfl
   | succ w ih =>
-    rw [Finset.sum_range_succ, ih, aeExecs_succ]
-    split_ifs <;> ring
+    grind [Finset.sum_range_succ, aeExecs_succ]
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Witnesses/ScanPairs.lean
 /-- **scanPairsAE** treats the `w` query pairs of an instance: the flags become
@@ -237,39 +215,34 @@ theorem scanPairsAE_spec (hp : P[pScan]? = some scanBody)
     F len w
   unfold tScanPairsAE tAnswersAE
   -- i := 0
-  light_set (0 : ℕ)
+  light_set 0
   -- while i < w
   refine (Ends.while (fun i σ => ∃ idx res, σ = scanPairsAEState μ out qa qb w flg ab bc ac n c0
     len OUT AB BC AC F QA QB i i idx res) w
     (fun i => 64 + if aeExec (accOf OUT) (hitOf n AB BC AC QA QB c0 len) (idxOf n QA QB) F i then
-      tScanCallAE len else 0) ?start ?round ?done).mono
-    (by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega) fun _ h => h
-  case start =>
+      tScanCallAE len else 0) ?_ ?_ ?_).mono
+    (by grind [Cond.cost, Expr.cost, Nat.reduceAdd]) fun _ h => h
+  ·
     have hmem : μ = wrote μ flg (fun q => F.getD q 0) (n * n) := by
       funext y
       by_cases hin : Inside flg (n * n) y
       · obtain ⟨q, rfl⟩ : ∃ q, y = flg + q := ⟨y - flg, by omega⟩
-        rw [wrote_done (by omega), G.seg.getD (by rw [G.len]; omega)]
-      · rw [wrote_rest (by simp only [Inside, Outside] at hin ⊢; omega)]
+        rw [wrote_done, G.seg.getD (by omega)]
+      grind [wrote_rest]
     refine ⟨0, 0, ?_⟩
     simp only [scanPairsAEState, aeStep_zero, ← hmem]
-    simpa using (frame_append_zeros [(out : ℤ), qa, qb, w, flg, ab, bc, ac, n, c0, len, 0] 2).symm
-  case round =>
+    simpa using (frame_append_zeros [out, qa, qb, w, flg, ab, bc, ac, n, c0, len, 0] 2).symm
+  ·
     rintro i _ hi ⟨idx, res, rfl⟩
-    refine ⟨by simp, by simp [scanPairsAEState]; omega, ?_⟩
+    refine ⟨by simp, by simp_all [scanPairsAEState], ?_⟩
     -- the query pair number i; then i := i + 1
     refine Ends.next _ ((scanPairsAEStep_spec hp C A hA hQA hQB G hd hc hi idx res).mono le_rfl
       ?_) (by omega)
     rintro _ ⟨idx', res', rfl⟩
-    unfold scanPairsAEState
-    light_set (i + 1 : ℕ)
+    light_set (i + 1)
     exact ⟨idx', res', rfl⟩
-  case done =>
+  ·
     rintro _ ⟨idx, res, rfl⟩
-    refine ⟨by simp, by simp [scanPairsAEState], seg_aeStep G w, ?_⟩
-    simp only [scanPairsAEState]
+    refine ⟨by simp, by aesop, seg_aeStep G w, ?_⟩
+    simp [scanPairsAEState]
     exact sameOutside_wrote le_rfl
-
-end
-
-end Light.Sec3

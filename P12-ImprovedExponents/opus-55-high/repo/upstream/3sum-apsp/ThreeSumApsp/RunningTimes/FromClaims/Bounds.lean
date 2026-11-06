@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Machine.Realized
-public import ThreeSumApsp.TimeClaims.Sec3.Definitions
+import ThreeSumApsp.Machine.Realized
+import ThreeSumApsp.TimeClaims.Sec3.Definitions
 
 /-!
 # From a realized running time to a program with the paper's bound
@@ -23,63 +22,55 @@ A claim gives a running time `T` with `T ≤ C X`, where `X` is the bound that t
   (`solvedInTime_of_one_le`).
 -/
 
-public section
 
 namespace ThreeSumApsp.FromClaims
 
 open ThreeSumApsp.WordRam
 open EndStatement (Instr)
 
+variable {Q : EndStatement.Problem} {a : ℝ}
+
 /-! ## Bounds on a domain -/
 
-/-- The bound `U = N^c` on the numbers, as a real number. -/
-theorem cast_pow_eq (N c : ℕ) : ((N ^ c : ℕ) : ℝ) = (N : ℝ) ^ ((c : ℕ) : ℝ) := by
-  rw [Real.rpow_natCast]
-  push_cast
-  rfl
 
 /-! ## Bounds in one size, for all large sizes -/
 
 /-- From a realized running time with a bound for all large sizes to a program with that bound. -/
-theorem solvedAt_of_realized {Q : EndStatement.Problem} (T : ℕ → ℝ → ℝ) (κ : ℕ)
-    (hR : Realized Q T) {C a : ℝ} {e : ℕ}
+theorem solvedAt_of_realized (T : ℕ → ℝ → ℝ) (κ : ℕ)
+    (hR : Realized Q T) {C : ℝ} {e : ℕ}
     (hev : ∀ᶠ n : ℕ in Filter.atTop,
       T n ((n : ℝ) ^ ((κ : ℕ) : ℝ)) ≤ C * ((n : ℝ) ^ a * Real.log n ^ e)) :
     SolvedInTimeAt Q κ a e := by
   obtain ⟨P, b, c, hc, hS⟩ := hR κ
-  have hg : ∀ n : ℕ, 0 ≤ (n : ℝ) ^ a * Real.log n ^ e := fun n =>
-    mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _) (pow_nonneg (Real.log_natCast_nonneg _) _)
+  have hg : ∀ n : ℕ, 0 ≤ n ^ a * Real.log n ^ e := fun n =>
+    by positivity
   -- a bound for all large `n` gives a bound for all `n`
   obtain ⟨C', hC', hb⟩ := Dominated.of_eventually_add_one hev hg
-  refine solvedInTimeAt_iff.2 ⟨P, b, c * C' + c, hS.mono le_rfl (fun x hx => hx) fun x hx => ?_⟩
-  have hU : ((x.U : ℕ) : ℝ) = (x.n : ℝ) ^ ((κ : ℕ) : ℝ) := by
-    rw [hx]
-    exact cast_pow_eq _ _
-  change c * max (T x.n ((x.U : ℕ) : ℝ)) 0 + c ≤ _
+  refine solvedInTimeAt_iff.2 ⟨P, b, c * C' + c, hS.mono le_rfl (by omega) fun x hx => ?_⟩
+  have hU : x.U = (x.n : ℝ) ^ κ := by
+    simp_all
   rw [hU]
   -- `c max(T, 0) + c ≤ c C' (X + 1) + c ≤ (c C' + c) (X + 1)`, where `X = n^a (log n)^e ≥ 0`
-  have hcT : c * max (T x.n ((x.n : ℝ) ^ ((κ : ℕ) : ℝ))) 0 ≤
-      c * (C' * ((x.n : ℝ) ^ a * Real.log x.n ^ e + 1)) :=
-    mul_le_mul_of_nonneg_left (max_le (hb x.n trivial) (mul_nonneg hC' (by linarith [hg x.n]))) hc
+  have hcT : c * max (T x.n (x.n ^ κ)) 0 ≤
+      c * (C' * (x.n ^ a * Real.log x.n ^ e + 1)) :=
+    mul_le_mul_of_nonneg_left (max_le (by simp_all) (by positivity)) hc
   linarith [mul_nonneg hc (hg x.n)]
+
+variable {S : (ℕ → ℝ → ℝ) → Prop}
 
 /-- A claim "solved in `O(n^a)` time on numbers of absolute value at most `n^κ`, for every `κ`", in
 a reading `S` of "is solved in time T" that is realized, gives programs. -/
-theorem solvedInTime_of_claim {S : (ℕ → ℝ → ℝ) → Prop} {Q : EndStatement.Problem}
-    (hR : ∀ T, S T → Realized Q T) {a : ℝ} (h : Claim.SolvedAlongPow S UpperBigOPow a) :
+theorem solvedInTime_of_claim     (hR : ∀ T, S T → Realized Q T) (h : Claim.SolvedAlongPow S UpperBigOPow a) :
     SolvedInTime Q a 0 := by
   intro κ
   obtain ⟨T, hT, C, hb⟩ := h κ (Nat.cast_nonneg κ)
-  exact solvedAt_of_realized T κ (hR T hT) (C := C)
-    (by simpa only [pow_zero, mul_one] using hb)
+  exact solvedAt_of_realized T κ (by simp_all) (C := C)
+    (by simp_all)
 
 /-- A claim "solved in `O(n^a (log n)^{O(1)})` time on numbers of absolute value at most `n^κ`, for
 every `κ`", in a reading `S` of "is solved in time T" that is realized, gives programs. -/
-theorem solvedInPolylogTime_of_claim {S : (ℕ → ℝ → ℝ) → Prop} {Q : EndStatement.Problem}
-    (hR : ∀ T, S T → Realized Q T) {a : ℝ} (h : Claim.SolvedAlongPow S UpperPowPolylog a) :
+theorem solvedInPolylogTime_of_claim     (hR : ∀ T, S T → Realized Q T) (h : Claim.SolvedAlongPow S UpperPowPolylog a) :
     SolvedInPolylogTime Q a := by
   intro κ
   obtain ⟨T, hT, C, e, hb⟩ := h κ (Nat.cast_nonneg κ)
-  exact ⟨e, solvedAt_of_realized T κ (hR T hT) hb⟩
-
-end ThreeSumApsp.FromClaims
+  exact ⟨e, solvedAt_of_realized T κ (by simp_all) hb⟩

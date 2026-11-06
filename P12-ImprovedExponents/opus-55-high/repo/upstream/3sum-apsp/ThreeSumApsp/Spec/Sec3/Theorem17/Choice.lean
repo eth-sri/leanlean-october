@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Strassen
-public import Mathlib.Data.List.MinMax
+import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
+import ThreeSumApsp.Spec.Sec3.Theorem17.Strassen
+import Mathlib.Data.List.MinMax
 
 /-!
 # The prime that is chosen (proof of Theorem 17)
@@ -29,7 +28,6 @@ computed with Strassen's algorithm from the three lists of weights, is smallest.
   the chosen prime (`F_chosenPrime_le`).
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -57,23 +55,18 @@ theorem chosenPrime_isSelected (hD : 16 ≤ D) :
       (List.ne_nil_of_mem hp₀))
   -- The computed count is the count of the proof of Theorem 17 at every prime of the window.
   have hcount : ∀ q ∈ primesList D,
-      (triOf n AB BC AC).countZeroMod q = (countOf n q AB BC AC).toNat := fun q hq => by
-    rw [countOf_eq n AB BC AC (mem_primesList.1 hq).1.ne_zero, Int.toNat_natCast]
-  rw [chosenPrime, hm, Option.getD_some, TriangleInstance.IsSelectedPrime, primesInRange_eq]
-  refine ⟨List.mem_toFinset.2 (List.argmin_mem hm), fun q hq => ?_⟩
-  rw [hcount m (List.argmin_mem hm), hcount q (List.mem_toFinset.1 hq)]
-  exact List.le_of_mem_argmin (f := fun p => (countOf n p AB BC AC).toNat)
-    (List.mem_toFinset.1 hq) hm
+      (triOf n AB BC AC).countZeroMod q = (countOf n q AB BC AC).toNat := by grind [countOf_eq, mem_primesList, Int.toNat_natCast]
+  grind [chosenPrime, TriangleInstance.IsSelectedPrime, primesInRange_eq, List.mem_toFinset, List.argmin_mem, List.le_of_mem_argmin, countOf]
 
 /-- The chosen prime is a prime of the window. -/
 theorem chosenPrime_mem (hD : 16 ≤ D) : chosenPrime n D AB BC AC ∈ primesInRange D :=
   (chosenPrime_isSelected AB BC AC hD).1
 
 /-- The chosen number is in the list of the primes of the window. -/
-private theorem chosenPrime_mem_primesList (hD : 16 ≤ D) :
+theorem chosenPrime_mem_primesList (hD : 16 ≤ D) :
     chosenPrime n D AB BC AC ∈ primesList D := by
   have hmem := chosenPrime_mem (n := n) AB BC AC hD
-  rwa [primesInRange_eq, List.mem_toFinset] at hmem
+  grind [primesInRange_eq, List.mem_toFinset]
 
 /-- The chosen prime is at least 2. -/
 theorem two_le_chosenPrime (hD : 16 ≤ D) : 2 ≤ chosenPrime n D AB BC AC :=
@@ -81,7 +74,7 @@ theorem two_le_chosenPrime (hD : 16 ≤ D) : 2 ≤ chosenPrime n D AB BC AC :=
 
 /-- The chosen prime is at most `⌊√D⌋`. -/
 theorem chosenPrime_le_sqrt (hD : 16 ≤ D) : chosenPrime n D AB BC AC ≤ Nat.sqrt D :=
-  le_sqrt_of_mem_primesList (chosenPrime_mem_primesList AB BC AC hD)
+  by simp_all [le_sqrt_of_mem_primesList, chosenPrime_mem_primesList]
 
 end Chosen
 
@@ -90,21 +83,23 @@ end Chosen
 /-- The first of the first `i` elements of a list at which `f` is smallest; 0 for `i = 0`. -/
 def bestOf (f : ℕ → ℕ) (L : List ℕ) (i : ℕ) : ℕ := ((L.take i).argmin f).getD 0
 
+variable (f : ℕ → ℕ) (L : List ℕ)
+
 /-- The first element is the best of one. -/
-theorem bestOf_one (f : ℕ → ℕ) (L : List ℕ) : bestOf f L 1 = L.getD 0 0 := by
+theorem bestOf_one : bestOf f L 1 = L.getD 0 0 := by
   cases L <;> simp [bestOf]
 
 /-- One more element: it is the best so far exactly if `f` is smaller there. -/
-theorem bestOf_succ (f : ℕ → ℕ) (L : List ℕ) {i : ℕ} (hi : 1 ≤ i) (hiL : i < L.length) :
+theorem bestOf_succ {i : ℕ} (hi : 1 ≤ i) (hiL : i < L.length) :
     bestOf f L (i + 1) = if f L[i] < f (bestOf f L i) then L[i] else bestOf f L i := by
   rw [bestOf, bestOf, List.take_succ_eq_append_getElem hiL, List.argmin_concat]
   cases h : (L.take i).argmin f with
-  | none => exact absurd (List.argmin_eq_none.1 h) (List.ne_nil_of_length_pos (by simp; omega))
-  | some c => simp only [Option.getD_some]; split_ifs <;> rfl
+  | none => exact absurd (List.argmin_eq_none.1 h) (by aesop)
+  | some c => grind
 
 /-- The best of all the elements is what `List.argmin` returns. -/
-theorem bestOf_length (f : ℕ → ℕ) (L : List ℕ) : (L.argmin f).getD 0 = bestOf f L L.length := by
-  rw [bestOf, List.take_length]
+theorem bestOf_length : (L.argmin f).getD 0 = bestOf f L L.length := by
+  grind [bestOf]
 
 /-! ## False positives, in terms of a bound on the weights -/
 
@@ -114,40 +109,39 @@ noncomputable def kappaOf (n U : ℕ) : ℝ := max 1 (Real.log U / Real.log n)
 /-- The exponent is at least 1. -/
 theorem one_le_kappaOf (n U : ℕ) : 1 ≤ kappaOf n U := le_max_left _ _
 
+variable {U : ℕ}
+
 /-- `U ≤ n^κ` for this exponent. -/
-theorem le_rpow_kappaOf {n U : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) :
+theorem le_rpow_kappaOf {n : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) :
     (U : ℝ) ≤ (n : ℝ) ^ kappaOf n U := by
-  have hn1 : (1 : ℝ) < (n : ℝ) := by exact_mod_cast hn
-  have hU0 : (0 : ℝ) < (U : ℝ) := by exact_mod_cast hU
-  calc (U : ℝ) = (n : ℝ) ^ Real.logb n U := (Real.rpow_logb (by linarith) hn1.ne' hU0).symm
-    _ ≤ (n : ℝ) ^ kappaOf n U := Real.rpow_le_rpow_of_exponent_le hn1.le (le_max_right _ _)
+  have hn1 : 1 < (n : ℝ) := by aesop
+  have hU0 : 0 < (U : ℝ) := by positivity
+  calc U = (n : ℝ) ^ Real.logb n U := by grind [Real.rpow_logb]
+    _ ≤ n ^ kappaOf n U := Real.rpow_le_rpow_of_exponent_le hn1.le (le_max_right _ _)
 
 /-- It is the least such exponent. -/
-theorem kappaOf_le {n U : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) {κ' : ℝ} (h1 : 1 ≤ κ')
+theorem kappaOf_le {n : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) {κ' : ℝ} (h1 : 1 ≤ κ')
     (h : (U : ℝ) ≤ (n : ℝ) ^ κ') : kappaOf n U ≤ κ' := by
-  have hn1 : (1 : ℝ) < (n : ℝ) := by exact_mod_cast hn
-  have hU0 : (0 : ℝ) < (U : ℝ) := by exact_mod_cast hU
-  refine max_le h1 ?_
+  have hn1 : 1 < (n : ℝ) := by aesop
+  have hU0 : 0 < (U : ℝ) := by positivity
+  apply max_le h1
   rw [div_le_iff₀ (Real.log_pos hn1), ← Real.log_rpow (by linarith)]
   exact Real.log_le_log hU0 h
 
 /-- Weights of absolute value at most `U` are at most `n^κ`. -/
-theorem weightsPolyBounded_kappaOf {n U : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) {AB BC AC : List ℤ}
+theorem weightsPolyBounded_kappaOf {n : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) {AB BC AC : List ℤ}
     (hAB : AbsLe AB U) (hBC : AbsLe BC U) (hAC : AbsLe AC U) :
     (triOf n AB BC AC).WeightsPolyBounded (kappaOf n U) := by
   have key : ∀ l : List ℤ, AbsLe l U → ∀ i,
-      ((|l.getD i 0| : ℤ) : ℝ) ≤ (n : ℝ) ^ kappaOf n U := fun l hl i =>
+      |l.getD i 0| ≤ (n : ℝ) ^ kappaOf n U := fun l hl i =>
     le_trans (by exact_mod_cast AbsLe.abs_getD_le (Int.natCast_nonneg U) hl i)
       (le_rpow_kappaOf hn hU)
-  exact ⟨fun a b => key AB hAB _, fun b c => key BC hBC _, fun a c => key AC hAC _⟩
+  exact ⟨by aesop, by aesop, by aesop⟩
 
 /-- **The number of false positives of the chosen prime** (proof of Theorem 17:
 "F(p) = O(n³ log(3n^ν)/√D) = O(ν n³ log n/√D)"), with the constant `Hashing.falsePositiveConst`. -/
-theorem F_chosenPrime_le {n D U : ℕ} (hD : 16 ≤ D) (hDn : D ≤ n) (hU : 1 ≤ U) {AB BC AC : List ℤ}
+theorem F_chosenPrime_le {n D : ℕ} (hD : 16 ≤ D) (hDn : D ≤ n) (hU : 1 ≤ U) {AB BC AC : List ℤ}
     (hAB : AbsLe AB U) (hBC : AbsLe BC U) (hAC : AbsLe AC U) :
     ((triOf n AB BC AC).F (chosenPrime n D AB BC AC) : ℝ) ≤
       Hashing.falsePositiveConst * (kappaOf n U * (n : ℝ) ^ 3 * Real.log n / Real.sqrt D) :=
-  Hashing.F_le_falsePositiveConst_mul hD hDn (one_le_kappaOf n U) _
-    (weightsPolyBounded_kappaOf (by omega) hU hAB hBC hAC) (chosenPrime_isSelected AB BC AC hD)
-
-end ThreeSumApsp.Spec
+  by grind [Hashing.F_le_falsePositiveConst_mul, one_le_kappaOf, weightsPolyBounded_kappaOf, chosenPrime_isSelected]

@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.FromNumbers
-public import ThreeSumApsp.Util.Asymptotics.SoftOSqrtPow
+import ThreeSumApsp.Sec3.Theorem21a.ChanHe.FromNumbers
+import ThreeSumApsp.Util.Asymptotics.SoftOSqrtPow
 
 /-!
 # Theorem 21(a), the reduction of Chan and He: inputs of absolute value at most n ^ κ
@@ -28,13 +27,11 @@ of a running time.
   definitions of the parameters through the calculus `SoftOSqrtPow`.
 -/
 
-public section
 
 namespace ThreeSumApsp
 
 namespace ChanHe
 
-open Finset
 
 /-! ## The parameters -/
 
@@ -61,8 +58,6 @@ theorem one_le_lenOf (κ n : ℕ) : 1 ≤ lenOf κ n :=
 
 section input
 
-variable {κ n : ℕ} {x : Fin n → ℤ}
-
 /-- `Convolution3SUM` on the first `N` cells of an array `y : ℕ → ℤ` is the problem
 `ConvOne N y`. -/
 theorem convolution3SUM_iff_convOne (N : ℕ) (y : ℕ → ℤ) :
@@ -76,7 +71,3 @@ end input
 /-- The length of the instances is `n` times a polylogarithm. -/
 theorem isPowPolylog_lenOf (κ : ℕ) : IsPowPolylog (fun n => (lenOf κ n : ℝ)) 1 :=
   SoftOSqrtPow.isPowPolylog (i := 2) (by unfold lenOf; growth_sqrt [softO_mPar κ]) (by norm_num)
-
-end ChanHe
-
-end ThreeSumApsp

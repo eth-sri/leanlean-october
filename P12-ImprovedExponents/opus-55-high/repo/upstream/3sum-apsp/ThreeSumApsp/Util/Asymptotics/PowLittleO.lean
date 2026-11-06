@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Util.Asymptotics.PowPolylog
+import ThreeSumApsp.Util.Asymptotics.PowPolylog
 
 /-!
 # Calculating with `n^{a+o(1)}`
@@ -24,9 +23,8 @@ rules for `O`:
   `IsPowPolylog.isPowLittleO`).
 -/
 
-public section
 
-open Filter Asymptotics
+open Filter
 
 namespace ThreeSumApsp
 
@@ -41,7 +39,7 @@ theorem IsPowLittleO.eventually_abs_le (h : IsPowLittleO f a) (hab : a < b) :
   obtain ⟨ε, hε, hf⟩ := h
   filter_upwards [hf, hε.eventually_lt_const (sub_pos.2 hab), eventually_ge_atTop 1]
     with n hfn hεn hn
-  exact hfn.trans (Real.rpow_le_rpow_of_exponent_le (Nat.one_le_cast.2 hn) (by linarith))
+  exact hfn.trans (by grind [Real.rpow_le_rpow_of_exponent_le, Nat.one_le_cast])
 
 /-- If for every `η > 0`, `|f(n)| ≤ n^{a+η}` for all large `n`, then `f(n) = n^{a+o(1)}`. For
 `ε(n)` take the excess of the exponent that is needed at `n`: the number with
@@ -49,36 +47,31 @@ theorem IsPowLittleO.eventually_abs_le (h : IsPowLittleO f a) (hab : a < b) :
 theorem IsPowLittleO.of_eventually_abs_le
     (h : ∀ η : ℝ, 0 < η → ∀ᶠ n : ℕ in atTop, |f n| ≤ (n : ℝ) ^ (a + η)) : IsPowLittleO f a := by
   -- All three claims are about `n ≥ 2`, where `n > 1` and the maximum is positive.
-  have hbase : ∀ n : ℕ, 2 ≤ n → (1 : ℝ) < n ∧ 0 < max |f n| ((n : ℝ) ^ a) := fun n hn =>
-    ⟨by exact_mod_cast hn, lt_max_of_lt_right (Real.rpow_pos_of_pos (by positivity) a)⟩
-  refine ⟨fun n => Real.logb n (max |f n| ((n : ℝ) ^ a)) - a,
+  have hbase : ∀ n : ℕ, 2 ≤ n → (1 : ℝ) < n ∧ 0 < max |f n| n ^ a := fun n hn =>
+    ⟨by aesop, by positivity⟩
+  refine ⟨fun n => Real.logb n (max |f n| (n ^ a)) - a,
     tendsto_order.2 ⟨fun δ hδ => ?_, fun δ hδ => ?_⟩, ?_⟩
   · -- `ε(n) ≥ 0`, because the maximum is at least `n^a`.
     filter_upwards [eventually_ge_atTop 2] with n hn
-    obtain ⟨hn1, hpos⟩ := hbase n hn
-    have hge : a ≤ Real.logb n (max |f n| ((n : ℝ) ^ a)) :=
-      (Real.le_logb_iff_rpow_le hn1 hpos).2 (le_max_right _ _)
-    linarith [hδ, hge]
+    have hge : a ≤ Real.logb n (max |f n| (n ^ a)) :=
+      by grind [Real.le_logb_iff_rpow_le]
+    linarith
   · -- `ε(n) ≤ δ/2` as soon as `|f(n)| ≤ n^{a+δ/2}`.
-    filter_upwards [h (δ / 2) (half_pos hδ), eventually_ge_atTop 2] with n hfn hn
-    obtain ⟨hn1, hpos⟩ := hbase n hn
-    have hle : Real.logb n (max |f n| ((n : ℝ) ^ a)) ≤ a + δ / 2 :=
-      (Real.logb_le_iff_le_rpow hn1 hpos).2
-        (max_le hfn (Real.rpow_le_rpow_of_exponent_le hn1.le (by linarith)))
-    linarith [hδ, hle]
+    filter_upwards [h _ (half_pos hδ), eventually_ge_atTop 2] with n hfn hn
+    have hle : Real.logb n (max |f n| (n ^ a)) ≤ a + δ / 2 :=
+      by grind [Real.logb_le_iff_le_rpow, max_le, Real.rpow_le_rpow_of_exponent_le]
+    linarith
   · -- `n^{a+ε(n)}` is the maximum.
     filter_upwards [eventually_ge_atTop 2] with n hn
-    obtain ⟨hn1, hpos⟩ := hbase n hn
-    rw [add_sub_cancel, Real.rpow_logb (zero_lt_one.trans hn1) hn1.ne' hpos]
-    exact le_max_left _ _
+    grind [add_sub_cancel, Real.rpow_logb, zero_lt_one]
 
 /-- `f(n) = n^{a+o(1)}` if and only if `f(n) = O(n^{a+η})` for every `η > 0`. -/
 theorem isPowLittleO_iff : IsPowLittleO f a ↔ ∀ η : ℝ, 0 < η → IsBigOPow f (a + η) :=
-  ⟨fun h η hη => (isBigOPow_rpow (a + η)).mono_left
+  ⟨fun h η hη => (isBigOPow_rpow _).mono_left
       ((h.eventually_abs_le (lt_add_of_pos_right a hη)).mono
-        fun _ hfn => hfn.trans (le_abs_self _)),
+        fun _ hfn => by grind),
     fun h => .of_eventually_abs_le fun η hη =>
-      (h (η / 2) (half_pos hη)).eventually_abs_le (by linarith)⟩
+      (h _ (half_pos hη)).eventually_abs_le (by linarith)⟩
 
 /-! ### The rules -/
 
@@ -88,7 +81,7 @@ protected theorem IsPowLittleO.mono (h : IsPowLittleO f a) (hab : a ≤ b) : IsP
 
 /-- `n^{a+o(1)} ⊆ O(n^b)` for `a < b`. -/
 theorem IsPowLittleO.isBigOPow (h : IsPowLittleO f a) (hab : a < b) : IsBigOPow f b :=
-  (isPowLittleO_iff.1 h (b - a) (sub_pos.2 hab)).mono (by linarith)
+  (isPowLittleO_iff.1 h _ (sub_pos.2 hab)).mono (by linarith)
 
 /-- `O(n^a) ⊆ n^{a+o(1)}`. -/
 theorem IsBigOPow.isPowLittleO (h : IsBigOPow f a) : IsPowLittleO f a :=
@@ -117,16 +110,16 @@ theorem IsPowLittleO.const_mul (hf : IsPowLittleO f a) (c : ℝ) :
 /-! ### Composition -/
 
 /-- For `c, d ≥ 0` and `η > 0` there is `t > 0` with `(c + t)(d + t) ≤ cd + η`. -/
-private theorem exists_pos_add_mul_add_le (hc : 0 ≤ c) (hd : 0 ≤ d) (hη : 0 < η) :
+theorem exists_pos_add_mul_add_le (hc : 0 ≤ c) (hd : 0 ≤ d) (hη : 0 < η) :
     ∃ t : ℝ, 0 < t ∧ (c + t) * (d + t) ≤ c * d + η := by
   have hcd : 0 < c + d + 1 := by linarith
-  have ht : 0 < min 1 (η / (c + d + 1)) := lt_min one_pos (div_pos hη hcd)
-  refine ⟨min 1 (η / (c + d + 1)), ht, ?_⟩
+  have ht : 0 < min 1 (η / (c + d + 1)) := by simp_all
+  refine ⟨min 1 _, ht, ?_⟩
   set t := min 1 (η / (c + d + 1))
-  have hsq : t * t ≤ t * 1 := mul_le_mul_of_nonneg_left (min_le_left _ _) ht.le
-  have hlin : t * (c + d + 1) ≤ η := (le_div_iff₀ hcd).1 (min_le_right _ _)
+  have hsq : t * t ≤ t * 1 := mul_le_mul_of_nonneg_left (by grind) ht.le
+  have hlin : t * (c + d + 1) ≤ η := (le_div_iff₀ hcd).1 (by grind)
   -- `(c + t)(d + t) = cd + t(c + d) + t² ≤ cd + t(c + d + 1) ≤ cd + η`
-  linarith [hsq, hlin]
+  linarith
 
 /-- `(n^{d+o(1)})^{c+o(1)} = n^{cd+o(1)}`: if `T(s) = s^{c+o(1)}` and `size(n) = n^{d+o(1)}` then
 `T(size(n)) = n^{cd+o(1)}`, for `c, d ≥ 0`. The sizes need not tend to infinity. -/
@@ -137,5 +130,3 @@ protected theorem IsPowLittleO.comp (hT : IsPowLittleO T c)
   obtain ⟨t, ht, hexp⟩ := exists_pos_add_mul_add_le hc hd hη
   exact ((isPowLittleO_iff.1 hT t ht).comp (isPowLittleO_iff.1 hs t ht) (by linarith)
     (by linarith)).mono hexp
-
-end ThreeSumApsp

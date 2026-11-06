@@ -1,3 +1,2 @@
-module
-public import ThreeSumApsp.Util.CountingSort
-public import Mathlib.Data.List.GetD
+import ThreeSumApsp.Util.CountingSort
+import Mathlib.Data.List.GetD

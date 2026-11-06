@@ -3,12 +3,12 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import PaperStatements
-public import ThreeSumApsp.Util.Ceil
-public import ThreeSumApsp.Util.Log
-public import Mathlib.Analysis.SpecialFunctions.Log.Base
+import PaperStatements
+import ThreeSumApsp.Util.Ceil
+import ThreeSumApsp.Util.Log
+import Mathlib.Analysis.SpecialFunctions.Log.Base
+noncomputable section
 
 /-!
 # The parameters and model running times of Sections 3.1 to 3.4
@@ -27,12 +27,11 @@ None of them mentions a claim or a machine.
   weights.  (The number of vertices `n^{1/3}` of Theorem 21(b) is `cbrtCeil n`.)
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp
 
 /-- Proof of Theorem 17: the number of chunks "in all", summed over the residues `ϱ`. -/
-noncomputable def TriangleInstance.totalChunks {n : ℕ} (T : TriangleInstance ℤ n) (D p : ℕ) : ℕ :=
+def TriangleInstance.totalChunks {n : ℕ} (T : TriangleInstance ℤ n) (D p : ℕ) : ℕ :=
   ∑ ϱ : Fin p, numChunks (T.residueClass p ϱ) (queryCap n D)
 
 /-- Theorem 21(b): "with T(s)/s nondecreasing". -/
@@ -53,23 +52,21 @@ def GoodTime (T : ℕ → ℝ → ℝ) : Prop :=
 
 /-- The running time `K s^{3−δ} (log s + 1)^e (1 + log u)²` for Exact Triangle on `s` vertices per
 part with weights of absolute value at most `u`, as a function of both arguments. -/
-noncomputable def uniformTime (K δ : ℝ) (e : ℕ) (s : ℕ) (u : ℝ) : ℝ :=
+def uniformTime (K δ : ℝ) (e : ℕ) (s : ℕ) (u : ℝ) : ℝ :=
   K * ((s : ℝ) ^ (3 - δ) * (Real.log s + 1) ^ e * (1 + logU u) ^ 2)
 
 /-- **Theorem 17**, the first term of the additional time, "ν n³ log n/g".  It pays for the scans.
 `κ` is the paper's ν. -/
-noncomputable def termScans (n g : ℕ) (κ : ℝ) : ℝ := κ * (n : ℝ) ^ 3 * Real.log n / (g : ℝ)
+def termScans (n g : ℕ) (κ : ℝ) : ℝ := κ * (n : ℝ) ^ 3 * Real.log n / (g : ℝ)
 
 /-- **Theorem 17**, the second term of the additional time, "n^{ω+o(1)} D^{3/2}".  It pays for the
 choice of the prime.  `MM n` stands for the number of ring operations of the matrix multiplication,
 the paper's `n^{ω+o(1)}`. -/
-noncomputable def termPrime (MM : ℕ → ℝ) (n D : ℕ) : ℝ := MM n * (D : ℝ) ^ (3 / 2 : ℝ)
+def termPrime (MM : ℕ → ℝ) (n D : ℕ) : ℝ := MM n * (D : ℝ) ^ (3 / 2 : ℝ)
 
 /-- **Theorem 17**, the third term of the additional time, "n² D g".  It pays for building the
 instances. -/
-noncomputable def termBuild (n D g : ℕ) : ℝ := (n : ℝ) ^ 2 * (D : ℝ) * (g : ℝ)
+def termBuild (n D g : ℕ) : ℝ := (n : ℝ) ^ 2 * (D : ℝ) * (g : ℝ)
 
 /-- Strassen's number of ring operations, up to a constant: `n^{log₂ 7}`. -/
-noncomputable def strassen (n : ℕ) : ℝ := (n : ℝ) ^ Real.logb 2 7
-
-end ThreeSumApsp
+def strassen (n : ℕ) : ℝ := (n : ℝ) ^ Real.logb 2 7

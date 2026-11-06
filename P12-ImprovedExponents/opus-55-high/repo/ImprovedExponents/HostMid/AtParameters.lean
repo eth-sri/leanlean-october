@@ -1,9 +1,7 @@
-module
 
-public import ImprovedExponents.HostMid.Total
-import all ThreeSumApsp.Programs.Sec3.Theorem17.ClaimAtParameters
+import ImprovedExponents.HostMid.Total
+import ThreeSumApsp.Programs.Sec3.Theorem17.ClaimAtParameters
 
-@[expose] public section
 
 /-!
 # `Claim17Mid` for programs of the light language, over parameter routines
@@ -20,7 +18,9 @@ feed to `host_of_paramProcs`, `hostNeed_poly` and `obeysBound17_hostTime`.
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp
+
+variable {procs : ℕ → Program} {tG tD Gfun wD wG Dfun : ℕ → ℕ} {i j : ℕ}
 
 /-! ## The host with parameter routines -/
 
@@ -28,8 +28,7 @@ open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
 /-- The variant host over two parameter routines, at the places `i` and `j` of a list `procs o` of
 routines that stands behind a program of length `o`, turns a solver of Lop-AE-SparseTri into a
 solver of Exact Triangle and keeps the need polynomial. -/
-theorem host_of_paramProcs' {procs : ℕ → Program} {Dfun Gfun tD tG wD wG : ℕ → ℕ} {i j : ℕ}
-    (hD : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + i) Dfun tD wD)
+theorem host_of_paramProcs'     (hD : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + i) Dfun tD wD)
     (hG : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + j) Gfun tG wG)
     (hpos : ∀ n, 1 ≤ n → 1 ≤ Dfun n)
     (hpoly : ∀ r, PolyNeedN r → PolyNeed (hostNeed' Dfun Gfun wD wG r)) :
@@ -38,9 +37,8 @@ theorem host_of_paramProcs' {procs : ℕ → Program} {Dfun Gfun tD tG wD wG : �
       ∃ (R : Program) (p' : ℕ), Solves etTask (Q ++ R) p' (hostTime' Dfun Gfun tD tG Tn)
         (hostNeed' Dfun Gfun wD wG r) ∧ PolyNeed (hostNeed' Dfun Gfun wD wG r) := by
   intro Q pS Tn r hr hs
-  have h := et17_solves' (P₀ := Q ++ procs Q.length) (hs.append _) (hD Q) (hG Q) hpos
-  rw [List.append_assoc] at h
-  exact ⟨_, _, h, hpoly r hr⟩
+  have h := et17_solves' (hs.append _) (hD Q) (hG Q) hpos
+  grind
 
 /-- **`Claim17Mid` from parameter routines.**  `procs o` is a list of routines to be placed behind a
 program of length `o`; its routines number `i` and `j` compute `Dfun n` from `n` and `Gfun D` from
@@ -48,9 +46,8 @@ program of length `o`; its routines number `i` and `j` compute `Dfun n` from `n`
 words are polynomially bounded, the routines agree with the parameters `D` and `g` of the claim, and
 their times are within the budget of Theorem 17, then the variant host proves `Claim17Mid` for `D`
 and `g`. -/
-theorem claim17Mid_of_paramProcs (D g : ℕ → ℕ) {procs : ℕ → Program}
-    {Dfun Gfun tD tG wD wG : ℕ → ℕ} {i j : ℕ}
-    (hD : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + i) Dfun tD wD)
+theorem claim17Mid_of_paramProcs (D g : ℕ → ℕ)
+        (hD : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + i) Dfun tD wD)
     (hG : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + j) Gfun tG wG)
     (hpos : ∀ n, 1 ≤ n → 1 ≤ Dfun n)
     (hpolyD : PolyBounded fun n _ => Dfun n) (hpolyG : PolyBounded fun n _ => Gfun (Dfun n))
@@ -60,8 +57,6 @@ theorem claim17Mid_of_paramProcs (D g : ℕ → ℕ) {procs : ℕ → Program}
     Claim17Mid lightModel strassen D g :=
   claim17Mid_of_host strassen D g _ _
     (host_of_paramProcs' hD hG hpos fun _ => hostNeed_poly' hpolyD hpolyG hpolyWD hpolyWG)
-    (obeysBound17Mid_hostTime D g hDf hGf hstepsD hstepsG)
+    (by grind [obeysBound17Mid_hostTime])
 
 /-! ## The parameters of Section 3.3 -/
-
-end ImprovedExponents.HostMid

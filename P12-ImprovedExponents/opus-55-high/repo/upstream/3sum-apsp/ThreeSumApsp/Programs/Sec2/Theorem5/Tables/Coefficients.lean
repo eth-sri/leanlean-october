@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
 /-!
 # The tables of the coefficients of Schönhage's identity
@@ -19,7 +19,6 @@ such a line of stores by induction on the list, and `coef_entry`, the specificat
 of the procedure assume, applies it to the two tables.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
@@ -30,8 +29,8 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 /-- A coefficient as an expression: 1, 0, or 0 - 1. -/
 def signExpr (x : ℤ) : Expr := if x = 1 then k 1 else if x = 0 then k 0 else k 0 -' k 1
 
-/-- The only local variable of coef: its argument phi. -/
-abbrev Coef.Dest : ℕ := 0
+/- The only local variable of coef: its argument phi. -/
+slots Coef.Dest
 
 open Coef in
 /-- Stores the numbers of the list l, each of them 1, 0 or -1, into the cells from phi + i on. -/
@@ -43,14 +42,14 @@ def storeSigns : ℕ → List ℤ → Stmt
 def coefBody : Stmt := storeSigns 0 (Spec.phiFlat ++ Spec.psiFlat)
 
 /-- A coefficient's expression stays within the limits and gives the coefficient. -/
-private theorem signExpr_gives (h1 : (1 : ℤ) ≤ lim.word) {x : ℤ} (hx : x = 1 ∨ x = 0 ∨ x = -1)
+theorem signExpr_gives (h1 : (1 : ℤ) ≤ lim.word) {x : ℤ} (hx : x = 1 ∨ x = 0 ∨ x = -1)
     (σ : State) : (signExpr x).Gives lim σ x := by
   rcases hx with rfl | rfl | rfl <;> simp [signExpr] <;> omega
 
 /-- A coefficient's expression costs at most 3 steps. -/
-private theorem signExpr_cost (x : ℤ) : (signExpr x).cost ≤ 3 := by
+theorem signExpr_cost (x : ℤ) : (signExpr x).cost ≤ 3 := by
   unfold signExpr
-  split_ifs <;> simp
+  aesop
 
 /-- **storeSigns** writes the list to the cells from base + i on, changes nothing else, and takes
 at most 7 steps for each number. -/
@@ -66,31 +65,24 @@ theorem storeSigns_spec (std : Std lim) {base : ℕ} (l : List ℤ) (i : ℕ) (�
     have hcost := signExpr_cost x
     -- mem[phi + i] := x, in at most 7 steps, and then the rest of the list
     refine Ends.storeToThen (base + i) x
-      ((ih (i + 1) _ (fun y hy => hl y (List.mem_cons_of_mem _ hy)) (by omega)).mono
+      ((ih _ _ (by simp_all) (by omega)).mono
         (by simp; omega) ?_)
-      (he := ⟨by light_side, signExpr_gives (by omega) (hl x List.mem_cons_self) _, by omega⟩)
-      (hT := by simp; omega)
+      (he := ⟨by light_side, signExpr_gives (by omega) (by simp_all) _, by omega⟩)
     rintro σ' ⟨hrest, same⟩
-    refine ⟨seg_cons.2 ⟨?_, by rwa [Nat.add_assoc]⟩, fun b hb => ?_⟩
-    · rw [same (base + i) (Or.inl (by omega)), Function.update_self]
+    refine ⟨seg_cons.2 ⟨?_, by assumption⟩, fun b hb => ?_⟩
+    · rw [same _ (by omega), Function.update_self]
     · rw [same b (by omega), Function.update_of_ne (by omega)]
 
 /-- All coefficients are 1, 0 or -1. -/
-private theorem coef_signs :
+theorem coef_signs :
     ∀ x ∈ Spec.phiFlat ++ Spec.psiFlat, x = 1 ∨ x = 0 ∨ x = -1 := by
   simp [Spec.phiFlat, Spec.psiFlat, Spec.phiTable, Spec.psiTable]
 
 /-- **coef** writes the two tables and changes nothing else, in 7 · 140 steps: the specification
 that its callers assume. -/
-theorem coef_entry (std : Std lim) (hP : P[pCoef]? = some coefBody) {c : ℕ} (hc : 980 ≤ c) :
+theorem coef_entry (std : Std lim) (hP : P[pCoef]? = some coefBody) {c : ℕ} (hc : 980 ≤ c := by decide) :
     CoefSpec lim P c := by
   intro phi μ hsp d _
   have hlen : (Spec.phiFlat ++ Spec.psiFlat).length = 140 := by simp
-  have hphi := Spec.length_phiFlat
   refine ⟨coefBody, hP, (storeSigns_spec std _ 0 μ coef_signs (by omega)).mono (by omega) ?_⟩
-  rintro σ' ⟨hcells, same⟩
-  rw [Nat.add_zero] at hcells same
-  obtain ⟨hphiCells, hpsiCells⟩ := seg_append.1 hcells
-  exact ⟨hphiCells, hphi ▸ hpsiCells, hlen ▸ same⟩
-
-end Light.Sec2
+  simp_all [seg_append]

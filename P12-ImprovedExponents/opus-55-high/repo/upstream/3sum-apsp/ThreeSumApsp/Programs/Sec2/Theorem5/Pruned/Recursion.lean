@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.Memory
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.Memory
 
 /-!
 # The pruned recursion (Section 2.4.2), recursive as printed
@@ -31,56 +31,54 @@ One round of the loop over the ten terms is `prunedRound_ends`; the case n ≥ 1
 on n.  What the calls do to the memory is proved in Pruned/Memory.lean; here each call is one step.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.Spec
 
 /-! ## The program -/
 
 namespace PrunedLocal
 
-/-- The number n of levels that are left. -/
-abbrev NN : ℕ := 0
-/-- Where the part of the first encoding below the current vertex begins. -/
-abbrev PA : ℕ := 1
-/-- Where the part of the second encoding below the current vertex begins. -/
-abbrev PB : ℕ := 2
-/-- The list of the codes that are passed to the call. -/
-abbrev PL : ℕ := 3
-/-- The length of that list. -/
-abbrev LEN : ℕ := 4
-/-- Where the values are written. -/
-abbrev OUT : ℕ := 5
-/-- The frame of the call; it begins with the bounds of the ten slices. -/
-abbrev SP : ℕ := 6
-/-- The table of the powers of ten. -/
-abbrev P10 : ℕ := 7
-/-- 10^(n-1); for n = 0 the product of the two numbers looked up. -/
-abbrev PW : ℕ := 8
-/-- Results of calls that are not used. -/
-abbrev RES : ℕ := 9
-/-- The codes without their first digits. -/
-abbrev COD : ℕ := 10
-/-- The list of the child. -/
-abbrev CH : ℕ := 11
-/-- The values of the child. -/
-abbrev VAL : ℕ := 12
-/-- The frame of the child. -/
-abbrev NXT : ℕ := 13
-/-- The position of the slice at z₀. -/
-abbrev Z0 : ℕ := 14
-/-- The length of the slice at z₀. -/
-abbrev NZ0 : ℕ := 15
-/-- The term λ. -/
-abbrev LAM : ℕ := 16
-/-- The position of the slice at the output variable of λ. -/
-abbrev POS : ℕ := 17
-/-- The length of that slice (0 for λ = P₀). -/
-abbrev NPOS : ℕ := 18
-/-- The length of the list of the child. -/
-abbrev NCH : ℕ := 19
+/- The number n of levels that are left. -/
+slots NN
+/- Where the part of the first encoding below the current vertex begins. -/
+slots 1 PA
+/- Where the part of the second encoding below the current vertex begins. -/
+slots 2 PB
+/- The list of the codes that are passed to the call. -/
+slots 3 PL
+/- The length of that list. -/
+slots 4 LEN
+/- Where the values are written. -/
+slots 5 OUT
+/- The frame of the call; it begins with the bounds of the ten slices. -/
+slots 6 SP
+/- The table of the powers of ten. -/
+slots 7 P10
+/- 10^(n-1); for n = 0 the product of the two numbers looked up. -/
+slots 8 PW
+/- Results of calls that are not used. -/
+slots 9 RES
+/- The codes without their first digits. -/
+slots 10 COD
+/- The list of the child. -/
+slots 11 CH
+/- The values of the child. -/
+slots 12 VAL
+/- The frame of the child. -/
+slots 13 NXT
+/- The position of the slice at z₀. -/
+slots 14 Z0
+/- The length of the slice at z₀. -/
+slots 15 NZ0
+/- The term λ. -/
+slots 16 LAM
+/- The position of the slice at the output variable of λ. -/
+slots 17 POS
+/- The length of that slice (0 for λ = P₀). -/
+slots 18 NPOS
+/- The length of the list of the child. -/
+slots 19 NCH
 
 end PrunedLocal
 
@@ -129,8 +127,6 @@ def prunedBody : Stmt :=
 
 /-! ## What the proofs assume -/
 
-variable {lim : Limits} {P : Program} {h d n t : ℕ} {x : PrunedArgs} {μ μ' : ℕ → ℤ}
-
 /-! ## Step (1) -/
 
 /-! ## One round of the loop -/
@@ -138,5 +134,3 @@ variable {lim : Limits} {P : Program} {h d n t : ℕ} {x : PrunedArgs} {μ μ' :
 /-! ## The case n ≥ 1 -/
 
 /-! ## The recursion -/
-
-end Light.Sec2

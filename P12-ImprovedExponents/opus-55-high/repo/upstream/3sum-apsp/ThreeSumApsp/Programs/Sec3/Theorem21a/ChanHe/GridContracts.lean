@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
+import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
 
 /-!
 # 3SUM from Convolution-3SUM: the loop over the splittings.  Specifications
@@ -15,13 +14,12 @@ row runs through `β'` and `v` for a fixed `β`, and grid runs through `β`.  Th
 specifications.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp.ChanHe Finset
+open ThreeSumApsp.ChanHe
 
 /-- What the routines that run through the splittings are given, besides what the routines below
 the recursion tree share: the number `Λ` of binary digits, the number `nd` of the distinct values
@@ -123,5 +121,3 @@ def GridSpec (lim : Limits) (P : Program) (p : ℕ) (T : ℕ → ℕ → ℕ) (r
     Meets lim P p d (a.vals f) μ (tGrid T a.n a.V a.m a.np f a.Λ) fun res μ' =>
       res = flag (∃ β < a.Λ, ∃ β' < a.Λ, ∃ v, a.Yes f β β' v) ∧
         KeptBut μ μ' a.fr a.A (3 * a.n)
-
-end Light.Sec3.ChanHe

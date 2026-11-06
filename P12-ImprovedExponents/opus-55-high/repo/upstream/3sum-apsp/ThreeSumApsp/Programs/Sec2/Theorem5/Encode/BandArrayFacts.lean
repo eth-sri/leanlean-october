@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
 /-!
 # The input array of a band: what the loops compute
@@ -26,7 +25,6 @@ them.
   list, so that a cell that is right stays right.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -47,7 +45,7 @@ theorem codeUpTo_succ (hl : l < bs.length) :
     codeUpTo bs o i (l + 1) = codeUpTo bs o i l * 7 +
       if bs.getD l false then (i.map (3 + ·)).getD ((bs.take l).count true) 0
       else o.getD ((bs.take l).count false) 0 := by
-  rw [codeUpTo, ThreeSumApsp.ofDigitList_take_succ 7 _ (by rwa [Spec.length_gluedDigits]),
+  rw [codeUpTo, ThreeSumApsp.ofDigitList_take_succ 7 _ (by simp_all),
     Spec.gluedDigits, ThreeSumApsp.getD_weaveList, if_pos hl]
   rfl
 
@@ -56,7 +54,7 @@ theorem codeUpTo_lt (ho : ∀ x ∈ o, x < 3) (hi : ∀ x ∈ i, x < 4) (hl : l 
     codeUpTo bs o i l < 7 ^ l := by
   have hlt := ThreeSumApsp.ofDigitList_lt ((Spec.gluedDigits bs o i).take l) fun d hd =>
     Spec.lt_of_mem_gluedDigits ho hi d (List.mem_of_mem_take hd)
-  rwa [List.length_take, Spec.length_gluedDigits, Nat.min_eq_left hl] at hlt
+  aesop
 
 end code
 
@@ -66,17 +64,17 @@ theorem codeUpTo_unrank (L m s r k : ℕ) :
     codeUpTo (Spec.unrank L m s) (ThreeSumApsp.digitList 3 (L - m) r) (ThreeSumApsp.digitList 4 m k)
         L
       = Spec.gluedCode L m (Spec.unrank L m s) r k := by
-  rw [codeUpTo, List.take_of_length_le (by simp [Spec.length_unrank]), Spec.gluedCode]
+  simp_all [codeUpTo, List.take_of_length_le, Spec.gluedCode]
 
 /-! ## Sizes -/
 
 /-- A band has at most 7^L rows. -/
-private theorem bandSize_le (L m : ℕ) : bandSize L m ≤ 7 ^ L := by
+theorem bandSize_le (L m : ℕ) : bandSize L m ≤ 7 ^ L := by
   have hK0 : ThreeSumApsp.K0 L m ≤ 2 ^ L := (Nat.sqrt_le_self _).trans (Nat.choose_le_two_pow _ _)
-  have hN0 : ThreeSumApsp.N0 L m ≤ 3 ^ L := Nat.pow_le_pow_right (by omega) (Nat.sub_le _ _)
+  have hN0 : ThreeSumApsp.N0 L m ≤ 3 ^ L := Nat.pow_le_pow_right (by omega) (by omega)
   calc bandSize L m ≤ 2 ^ L * 3 ^ L := Nat.mul_le_mul hK0 hN0
     _ = 6 ^ L := by rw [← Nat.mul_pow]
-    _ ≤ 7 ^ L := Nat.pow_le_pow_left (by omega) _
+    _ ≤ 7 ^ L := by simp_all [Nat.pow_le_pow_left]
 
 /-- The arguments of bandArray. -/
 structure BandArgs where
@@ -125,13 +123,15 @@ theorem code_lt (g h r k : ℕ) : A.code g h r k < A.p.S7 :=
 
 variable {A}
 
+variable {r : ℕ}
+
 /-- The numbers of the rows, and of the blocks, of the padded matrix stay small. -/
-theorem rowNo_lt {g h r : ℕ} (hβ : A.β < A.p.nB) (hg : g < A.p.K0) (hh : h < A.p.K0)
+theorem rowNo_lt {g h : ℕ} (hβ : A.β < A.p.nB) (hg : g < A.p.K0) (hh : h < A.p.K0)
     (hr : r < A.p.N0) :
     A.rowNo g h r < A.p.N + A.p.S7 ∧ A.blockNo g h * A.p.N0 < A.p.N + A.p.S7 ∧
       A.blockNo g h < A.p.N + A.p.S7 ∧ A.β * A.p.K0 < A.p.N + A.p.S7 := by
   -- row < nB K₀ N₀ ≤ N + K₀ N₀ - 1 < N + 7^L, and the other three numbers are at most the row.
-  have hposition : (if A.side = 0 then g else h) < A.p.K0 := by split <;> assumption
+  have hposition : (if A.side = 0 then g else h) < A.p.K0 := by grind
   have hblock : A.β * A.p.K0 + A.p.K0 ≤ A.p.nB * A.p.K0 := Nat.mul_add_le_mul hβ le_rfl
   have hrow : A.blockNo g h * A.p.N0 + A.p.N0 ≤ A.p.nB * A.p.K0 * A.p.N0 :=
     Nat.mul_add_le_mul (show A.blockNo g h < A.p.nB * A.p.K0 by unfold blockNo; omega) le_rfl
@@ -141,8 +141,6 @@ theorem rowNo_lt {g h r : ℕ} (hβ : A.β < A.p.nB) (hg : g < A.p.K0) (hh : h <
   have hpad : numBands A.p.L A.p.m A.p.N * bandSize A.p.L A.p.m
       ≤ A.p.N + bandSize A.p.L A.p.m - 1 := Nat.div_mul_le_self _ _
   have hsize := bandSize_le A.p.L A.p.m
-  have hsize_pos : 0 < bandSize A.p.L A.p.m :=
-    Nat.mul_pos (by change 0 < A.p.K0; omega) (N0_pos _ _)
   have hle : A.blockNo g h ≤ A.blockNo g h * A.p.N0 := Nat.le_mul_of_pos_right _ (by omega)
   have hS7 : A.p.S7 = 7 ^ A.p.L := rfl
   have hfirst : A.β * A.p.K0 ≤ A.blockNo g h := Nat.le_add_right ..
@@ -150,9 +148,8 @@ theorem rowNo_lt {g h r : ℕ} (hβ : A.β < A.p.nB) (hg : g < A.p.K0) (hh : h <
   omega
 
 /-- The offset of a row in its block. -/
-theorem rowNo_mod (g h : ℕ) {r : ℕ} (hr : r < A.p.N0) : A.rowNo g h r % A.p.N0 = r := by
-  unfold rowNo
-  rw [Nat.mul_add_mod_self_right, Nat.mod_eq_of_lt hr]
+theorem rowNo_mod (g h : ℕ) (hr : r < A.p.N0) : A.rowNo g h r % A.p.N0 = r := by
+  grind [rowNo, Nat.mul_add_mod_self_right, Nat.mod_eq_of_lt]
 
 end BandArgs
 
@@ -165,10 +162,10 @@ theorem subsetIndex_lt (p : Par) {g h : ℕ} (hg : g < p.K0) (hh : h < p.K0) :
 theorem Par.sizes_le_S7 (p : Par) :
     p.L.choose p.m ≤ p.S7 ∧ p.K0 ≤ p.S7 ∧ p.N0 ≤ p.S7 ∧ p.L < p.S7 := by
   have hchoose : p.L.choose p.m ≤ 2 ^ p.L := Nat.choose_le_two_pow _ _
-  have hpow : 2 ^ p.L ≤ 7 ^ p.L := Nat.pow_le_pow_left (by omega) _
+  have hpow : 2 ^ p.L ≤ 7 ^ p.L := by simp_all [Nat.pow_le_pow_left]
   have hK0 : p.K0 ≤ p.L.choose p.m := Nat.sqrt_le_self _
   have hN0 : p.N0 ≤ 7 ^ p.L :=
-    (Nat.pow_le_pow_right (by omega) (Nat.sub_le _ _)).trans (Nat.pow_le_pow_left (by omega) _)
+    (Nat.pow_le_pow_right (by omega) (by omega)).trans (Nat.pow_le_pow_left (by omega) _)
   have hL : p.L < 7 ^ p.L := Nat.lt_pow_self (by omega)
   have hS7 : p.S7 = 7 ^ p.L := rfl
   omega
@@ -184,7 +181,7 @@ def OverwrittenWith (T : List ℤ) (arr n : ℕ) (μ μ' : ℕ → ℤ) : Prop :
   SameOutside μ μ' arr n ∧ ∀ c < n, μ' (arr + c) = μ (arr + c) ∨ μ' (arr + c) = T.getD c 0
 
 /-- Nothing has been written. -/
-theorem OverwrittenWith.refl : OverwrittenWith T arr n μ μ := ⟨.refl, fun _ _ => Or.inl rfl⟩
+theorem OverwrittenWith.refl : OverwrittenWith T arr n μ μ := ⟨.refl, by omega⟩
 
 /-- First some writes, then more. -/
 theorem OverwrittenWith.trans (h₁ : OverwrittenWith T arr n μ μ')
@@ -192,22 +189,18 @@ theorem OverwrittenWith.trans (h₁ : OverwrittenWith T arr n μ μ')
   refine ⟨h₁.1.trans h₂.1, fun c hc => ?_⟩
   rcases h₂.2 c hc with h | h
   · exact (h₁.2 c hc).imp h.trans h.trans
-  · exact Or.inr h
+  omega
+
+variable {c : ℕ}
 
 /-- One write of an entry of the target. -/
-theorem OverwrittenWith.write {c : ℕ} (hc : c < n) :
+theorem OverwrittenWith.write (hc : c < n) :
     OverwrittenWith T arr n μ (Function.update μ (arr + c) (T.getD c 0)) := by
   refine ⟨SameOutside.refl.update ⟨by omega, by omega⟩ _, fun x _ => ?_⟩
-  by_cases hx : x = c
-  · exact Or.inr (hx ▸ Function.update_self ..)
-  · exact Or.inl (Function.update_of_ne (by omega) _ _)
+  grind
 
 /-- A cell that is right stays right. -/
-theorem OverwrittenWith.keep (h : OverwrittenWith T arr n μ μ') {c : ℕ} (hc : c < n)
+theorem OverwrittenWith.keep (h : OverwrittenWith T arr n μ μ') (hc : c < n)
     (hr : μ (arr + c) = T.getD c 0) :
     μ' (arr + c) = T.getD c 0 :=
   (h.2 c hc).elim (·.trans hr) id
-
-end ext
-
-end Light.Sec2

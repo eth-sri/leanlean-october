@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Syntax
-public import ThreeSumApsp.Machine.Steps
-public import Mathlib.Data.Nat.Digits.Defs
+import ThreeSumApsp.Lang.Syntax
+import ThreeSumApsp.Machine.Steps
+import Mathlib.Data.Nat.Digits.Defs
 
 /-!
 # The compiler from the light language to the word RAM: cells, and the code of statements
@@ -51,7 +50,6 @@ defined on the text (`Expr.size`, `Cond.size`, `Stmt.size`) and then shown to be
 code (`length_compileExpr`, `length_compileCond`, `length_compileStmt`).
 -/
 
-@[expose] public section
 
 namespace Light.Compiler
 
@@ -226,12 +224,11 @@ def dispatcher (n : ℕ) : List Instr :=
 
 /-! ## Lengths -/
 
-private theorem length_digitsCode (c : ℤ) (L : List ℕ) : (digitsCode c L).length = digitsLen L := by
+theorem length_digitsCode (c : ℤ) (L : List ℕ) : (digitsCode c L).length = digitsLen L := by
   induction L with
   | nil => rfl
   | cons d L ih =>
-    simp only [digitsCode, digitsLen, List.length_append, ih, List.length_singleton]
-    split_ifs <;> rfl
+    grind [digitsCode, digitsLen]
 
 /-- The code of an expression has the length defined on the text. -/
 theorem length_compileExpr (e : Expr) (k : ℕ) : (compileExpr e k).length = e.size := by
@@ -239,7 +236,7 @@ theorem length_compileExpr (e : Expr) (k : ℕ) : (compileExpr e k).length = e.s
   | const n => exact length_digitsCode _ _
   | var x => rfl
   | op o a b iha ihb => simp +arith [compileExpr, Expr.size, iha, ihb]
-  | load a ih => simp [compileExpr, Expr.size, ih]
+  | load a ih => grind [compileExpr, Expr.size]
 
 /-- The code of a test has the length defined on the text. -/
 theorem length_compileCond (c : Cond) (l : ℕ) : (compileCond c l).length = c.size := by
@@ -249,31 +246,33 @@ theorem length_compileCond (c : Cond) (l : ℕ) : (compileCond c l).length = c.s
 theorem length_argsCode (es : List Expr) (k : ℕ) : (argsCode es k).length = argsSize es := by
   induction es generalizing k with
   | nil => rfl
-  | cons e es ih => simp [argsCode, argsSize, length_compileExpr, ih]
+  | cons e es ih => grind [argsCode, argsSize, length_compileExpr]
 
 /-- Two instructions for each local variable of the new frame. -/
-private theorem length_frameInit (F n : ℕ) : (frameInit F n).length = 2 * F := by
-  simp [frameInit, List.length_flatMap, Nat.mul_comm]
+theorem length_frameInit (F n : ℕ) : (frameInit F n).length = 2 * F := by
+  simp [frameInit, Nat.mul_comm]
 
 /-- The code between the arguments and the jump has 2 F + 4 instructions. -/
 theorem length_newFrame (F n ret : ℕ) : (newFrame F n ret).length = 2 * F + 4 := by
   simp +arith [newFrame, length_frameInit]
 
+variable (G : CodeLayout)
+
 /-- A call up to its jump has the length defined on the text. -/
-private theorem length_callCode (G : CodeLayout) (p : ℕ) (args : List Expr) (ret : ℕ) :
+theorem length_callCode (p : ℕ) (args : List Expr) (ret : ℕ) :
     (callCode G p args ret).length = callSize G.F args := by
   simp +arith [callCode, callSize, length_argsCode, length_newFrame]
 
-theorem length_epilogue (G : CodeLayout) : (epilogue G).length = epilogueSize := rfl
+theorem length_epilogue : (epilogue G).length = epilogueSize := rfl
 
 /-- The code of a statement has the length defined on the text. -/
-theorem length_compileStmt (G : CodeLayout) (s : Stmt) (pos : ℕ) :
+theorem length_compileStmt (s : Stmt) (pos : ℕ) :
     (compileStmt G s pos).length = s.size G.F := by
   induction s generalizing pos with
   | skip => rfl
   | set x e => simp [compileStmt, Stmt.size, length_compileExpr]
   | store a e => simp +arith [compileStmt, Stmt.size, length_compileExpr]
-  | seq s t ihs iht => simp [compileStmt, Stmt.size, ihs, iht]
+  | seq s t ihs iht => grind [compileStmt, Stmt.size]
   | ite c s t ihs iht => simp +arith [compileStmt, Stmt.size, ihs, iht, length_compileCond]
   | «while» c s ih => simp +arith [compileStmt, Stmt.size, ih, length_compileCond]
   | call p args x => simp [compileStmt, Stmt.size, length_callCode]
@@ -350,15 +349,11 @@ theorem Stmt.width_seq_le_iff : (Stmt.seq s t).width ≤ F ↔ s.width ≤ F ∧
 
 theorem Stmt.width_ite_le_iff :
     (Stmt.ite c s t).width ≤ F ↔ c.width ≤ F ∧ s.width ≤ F ∧ t.width ≤ F := by
-  simp only [Stmt.width, max_le_iff]
+  simp [Stmt.width]
 
 theorem Stmt.width_while_le_iff : (Stmt.while c s).width ≤ F ↔ c.width ≤ F ∧ s.width ≤ F :=
   max_le_iff
 
 theorem Stmt.width_call_le_iff :
     (Stmt.call p args x).width ≤ F ↔ x < F ∧ args.length ≤ F ∧ ∀ e ∈ args, e.width ≤ F := by
-  simp only [Stmt.width, max_le_iff, maxOf_le_iff, Nat.succ_le_iff]
-
-end width
-
-end Light
+  simp [Stmt.width, maxOf_le_iff, Nat.succ_le_iff]

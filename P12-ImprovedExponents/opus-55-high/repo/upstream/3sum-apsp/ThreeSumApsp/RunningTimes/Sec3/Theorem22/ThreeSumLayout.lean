@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.TopProcedure
-public import ThreeSumApsp.Programs.Tasks
+import ThreeSumApsp.Lang.TopProcedure
+import ThreeSumApsp.Programs.Tasks
 
 /-!
 # 3SUM: from a solver of the task to a program for the layout of the end statement
@@ -20,7 +19,6 @@ the vector of the instance (`vecOf_ofFn`).  So the input meets the task's precon
 (`pre_threeSum`), and the result of a solver is the right verdict (`post_threeSum`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
@@ -28,25 +26,20 @@ open ThreeSumApsp ThreeSumApsp.WordRam ThreeSumApsp.Spec
 
 /-- The numbers of a list made from a function are the values of the function. -/
 theorem vecOf_ofFn {n : ℕ} (x : Fin n → ℤ) : vecOf n (List.ofFn x) = x := by
-  funext i
-  simp [vecOf, List.getD_eq_getElem?_getD]
+  grind [vecOf]
 
 /-- The instance of the task: the numbers stand from cell 1 on. -/
 def threeSumInst (x : Bounded EndStatement.ThreeSum) : s3Task.Inst := ⟨x.n, x.U, 1, List.ofFn x.x⟩
 
+variable (x : Bounded EndStatement.ThreeSum)
+
 /-- The input of the end statement meets the precondition of the task. -/
-theorem pre_threeSum (x : Bounded EndStatement.ThreeSum) (hn : 1 ≤ x.n) (hU : 1 ≤ x.U) :
-    s3Task.Pre (threeSumInst x) (memOf ((ofEnd EndStatement.ThreeSum).input x)) (x.n + 1) where
-  N_pos := hn
-  U_pos := hU
-  len := List.length_ofFn (f := x.x)
-  seg := by
-    simpa [EndStatement.ThreeSum, threeSumInst] using seg_memOf [(x.n : ℤ)] (List.ofFn x.x) []
-  le := fun _ ha => Bounded.abs_le ha
-  below := (Nat.add_comm 1 x.n).le
+theorem pre_threeSum (hn : 1 ≤ x.n) (hU : 1 ≤ x.U) :
+    s3Task.Pre (threeSumInst x) (memOf ((ofEnd EndStatement.ThreeSum).input x)) (x.n + 1) := ⟨hn, hU, List.length_ofFn, by
+    simpa [EndStatement.ThreeSum, threeSumInst] using seg_memOf [x.n] _ [], fun _ ha => Bounded.abs_le ha, (Nat.add_comm 1 x.n).le⟩
 
 /-- The result of a solver of the task is the right verdict of the end statement's 3SUM. -/
-theorem post_threeSum (x : Bounded EndStatement.ThreeSum) (r : ℤ) (μ' : ℕ → ℤ)
+theorem post_threeSum (r : ℤ) (μ' : ℕ → ℤ)
     (h : s3Task.Post (threeSumInst x) (memOf ((ofEnd EndStatement.ThreeSum).input x)) (x.n + 1) r
       μ') :
     (ofEnd EndStatement.ThreeSum).IsAnswer x (verdictOf true r) fun i =>
@@ -80,5 +73,3 @@ times T. -/
 theorem realized_threeSum (T : ℕ → ℝ → ℝ) (h : SolvedIn s3Task T) :
     Realized EndStatement.ThreeSum T :=
   wrap3Sum.realized h
-
-end Light.Sec3

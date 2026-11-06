@@ -1,16 +1,14 @@
-module
 
-public import ThreeSumApsp.Statements.Exponents
-public import ImprovedExponents.Pipeline.General
-public import ImprovedExponents.Pipeline.PrunedClaim
-public import ImprovedExponents.Optimum.NumValues
-public import ImprovedExponents.Optimum.NumWitness
-public import ImprovedExponents.Optimum.Global
-public import ImprovedExponents.Optimum.GlobalFull
-public import ImprovedExponents.AllEdges.Pairs.TimeBound
-public import ImprovedExponents.AllEdges.Host.ClaimAE
+import ThreeSumApsp.Statements.Exponents
+import ImprovedExponents.Pipeline.General
+import ImprovedExponents.Pipeline.PrunedClaim
+import ImprovedExponents.Optimum.NumValues
+import ImprovedExponents.Optimum.NumWitness
+import ImprovedExponents.Optimum.Global
+import ImprovedExponents.Optimum.GlobalFull
+import ImprovedExponents.AllEdges.Pairs.TimeBound
+import ImprovedExponents.AllEdges.Host.ClaimAE
 
-@[expose] public section
 
 /-!
 # The improved bounds for 3SUM, Exact Triangle, the (min,+)-product and APSP
@@ -49,12 +47,14 @@ behind them are `allSolved_paper`, `allSolved_exact`, `allSolved_full`
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.WordRam Light Real
+open ThreeSumApsp.WordRam
+
+variable {δ : ℝ} {rM : ℚ}
 
 /-! ## From a saving to the end statements -/
 
 /-- The four end statements at rational exponents above the bounds of a saving `δ`. -/
-theorem AllSolved.endStatements {δ : ℝ} (h : AllSolved δ) {r₃ rE rM : ℚ}
+theorem AllSolved.endStatements (h : AllSolved δ) {r₃ rE : ℚ}
     (h₃ : 2 - δ / 2 < (r₃ : ℝ)) (hE : 3 - δ < (rE : ℝ)) (hM : 3 - δ / 3 < (rM : ℝ))
     (h₃0 : 0 ≤ r₃) (hE0 : 0 ≤ rE) (hM0 : 0 ≤ rM) :
     EndStatement.ThreeSum.SolvedInTime r₃ ∧ EndStatement.ExactTriangle.SolvedInTime rE ∧
@@ -90,7 +90,7 @@ theorem endStatements_pruned :
       EndStatement.MinPlusProduct.SolvedInTime 2.99931 ∧
       EndStatement.APSP.SolvedInTime 2.99931 := by
   obtain ⟨δ, hδ, h⟩ := allSolved_pruned_num
-  exact h.endStatements (by norm_num; linarith) (by norm_num; linarith) (by norm_num; linarith)
+  exact h.endStatements (by linarith) (by linarith) (by linarith)
     (by norm_num) (by norm_num) (by norm_num)
 
 /-- **3SUM in `O(n^1.99896)` steps on the word RAM**: the exact count, the true middle size and
@@ -115,7 +115,7 @@ Triangle:
 the exponent is `3 - δ` instead of `3 - δ/3`. -/
 
 /-- The two end statements at a rational exponent above `3 - δ`. -/
-theorem AllEdges.MinPlusSolved.endStatements {δ : ℝ} (h : AllEdges.MinPlusSolved δ) {rM : ℚ}
+theorem AllEdges.MinPlusSolved.endStatements (h : AllEdges.MinPlusSolved δ)
     (hM : 3 - δ < (rM : ℝ)) (hM0 : 0 ≤ rM) :
     EndStatement.MinPlusProduct.SolvedInTime rM ∧ EndStatement.APSP.SolvedInTime rM :=
   ⟨SolvedInTime.endStatement (h.minPlus _ hM) rfl hM0,
@@ -123,10 +123,10 @@ theorem AllEdges.MinPlusSolved.endStatements {δ : ℝ} (h : AllEdges.MinPlusSol
 
 /-- **The (min,+)-product and APSP with pruned encodings**: every saving below
 `R'_c(Γ(c)) Γ(c)/2`, for every `c ≥ 21`, with the whole saving. No hypothesis. -/
-theorem minPlusSolved_pruned {c δ : ℝ} (hc : 21 ≤ c) (hδ0 : 0 ≤ δ)
+theorem minPlusSolved_pruned {c : ℝ} (hc : 21 ≤ c) (hδ0 : 0 ≤ δ)
     (hδ : δ < savingF (basePruned c) (Gam c)) : AllEdges.MinPlusSolved δ := by
   have hhalf : savingF (basePruned c) (Gam c) ≤ 1 / 2 :=
-    savingF_le_half (basePruned_pos (by linarith)).le (Gam_pos (by linarith)).le
+    savingF_le_half (basePruned_pos).le (Gam_pos).le
   exact AllEdges.minPlusSolved_of_explicitFrom AllEdges.CA_nonneg AllEdges.pairsFromAllEdges
     (by linarith)
     (explicitFrom_pruned hc hδ0 hδ AllEdges.lightModelAE rfl AllEdges.midHostRat_ae)
@@ -147,5 +147,3 @@ theorem minPlus_allEdges_pruned :
 theorem apsp_allEdges_pruned :
     EndStatement.APSP.SolvedInTime 2.99791 :=
   endStatements_allEdges_pruned.2
-
-end ImprovedExponents

@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Calls
-public import ThreeSumApsp.Lang.Lib.Seg
-public import ThreeSumApsp.Lang.WordSize
+import ThreeSumApsp.Lang.Calls
+import ThreeSumApsp.Lang.Lib.Seg
+import ThreeSumApsp.Lang.WordSize
 
 /-!
 # Problems, solvers, and the interpretation of "is solved in time T" in the light language
@@ -32,20 +31,16 @@ A `Task` is a problem whose time and need depend on a size and a bound.  `TaskN`
 the same notions with a list of parameters.
 -/
 
-@[expose] public section
 
 namespace Light
 
-open ThreeSumApsp
 
 /-! ## Limits -/
 
 /-- What a run needs: the largest absolute value it forms, the number of cells it uses from the free
 pointer on, and the number of levels of calls below the procedure. -/
 structure Need : Type where
-  word : ℕ
-  cells : ℕ
-  depth : ℕ
+  (word cells depth : ℕ)
 
 /-- The limits allow for the need of a procedure that is called at depth `d` with the free pointer
 `fr`.  An address always fits in a word. -/
@@ -55,12 +50,14 @@ structure Need.Ok (r : Need) (lim : Limits) (fr d : ℕ) : Prop where
   space : (lim.space : ℤ) ≤ lim.word
   depth : d + r.depth ≤ lim.depth
 
+variable {lim : Limits} {d fr : ℕ}
+
 /-- A smaller need is allowed for if a larger one is, also with a larger free pointer and at a
 larger depth if the sums are not larger. -/
-theorem Need.Ok.mono {r r' : Need} {lim : Limits} {fr fr' d d' : ℕ} (h : r.Ok lim fr d)
+theorem Need.Ok.mono {r r' : Need} {fr' d' : ℕ} (h : r.Ok lim fr d)
     (hw : r'.word ≤ r.word) (hc : fr' + r'.cells ≤ fr + r.cells)
     (hd : d' + r'.depth ≤ d + r.depth) : r'.Ok lim fr' d' :=
-  ⟨le_trans (by exact_mod_cast hw) h.word, hc.trans h.cells, h.space, hd.trans h.depth⟩
+  ⟨le_trans (by omega) h.word, hc.trans h.cells, h.space, hd.trans h.depth⟩
 
 /-- A need that depends on a size and a bound is polynomially bounded in the two: by
 `2^s ((n + 1) (U + 1))^k`. -/
@@ -99,23 +96,26 @@ def Solves (task : Task) (P : Program) (p : ℕ) (T : ℕ → ℕ → ℕ) (need
         (T (task.size x) (task.bound x))
         fun σ' => task.Post x μ fr (σ'.loc 0) σ'.mem
 
+variable {task : Task} {P : Program} {p : ℕ} {need : ℕ → ℕ → Need}
+
 /-- A solver stays a solver when procedures are appended to its program. -/
-theorem Solves.append {task : Task} {P : Program} {p : ℕ} {T : ℕ → ℕ → ℕ} {need : ℕ → ℕ → Need}
+theorem Solves.append {T : ℕ → ℕ → ℕ}
     (h : Solves task P p T need) (R : Program) : Solves task (P ++ R) p T need := by
   obtain ⟨body, hp, hb⟩ := h
-  refine ⟨body, getElem?_append_of_eq_some hp R, fun R' lim d x μ fr hpre hok => ?_⟩
-  rw [List.append_assoc]
-  exact hb (R ++ R') lim d x μ fr hpre hok
+  refine ⟨body, by grind, fun R' lim d x μ fr hpre hok => ?_⟩
+  simp_all
+
+variable {P₀ : Program} {μ : ℕ → ℤ}
 
 /-- **A solver meets the specification that its task prescribes**, in every program that begins with
 its program. -/
-theorem Solves.meets {task : Task} {P₀ : Program} {p : ℕ} {T₀ : ℕ → ℕ → ℕ} {need : ℕ → ℕ → Need}
-    (h : Solves task P₀ p T₀ need) (R : Program) {lim : Limits} {d : ℕ} (x : task.Inst) {μ : ℕ → ℤ}
+theorem Solves.meets {T₀ : ℕ → ℕ → ℕ}
+    (h : Solves task P₀ p T₀ need) (R : Program) (x : task.Inst)
     (fr : ℕ) (hpre : task.Pre x μ fr) (hok : (need (task.size x) (task.bound x)).Ok lim fr d) :
     Meets lim (P₀ ++ R) p d (task.args x ++ [(fr : ℤ)]) μ (T₀ (task.size x) (task.bound x))
       (task.Post x μ fr) := by
   obtain ⟨body, hp, hb⟩ := h
-  exact ⟨body, getElem?_append_of_eq_some hp R, hb R lim d x μ fr hpre hok⟩
+  exact ⟨body, by grind, by simp_all⟩
 
 /-- "The task is solved in time `T`", for a real-valued `T` whose second argument is an upper bound
 on the numbers: some solver with a polynomially bounded need takes at most `T n u` steps on every
@@ -125,40 +125,43 @@ def SolvedIn (task : Task) (T : ℕ → ℝ → ℝ) : Prop :=
     Solves task P p Tn need ∧
     ∀ (n U : ℕ) (u : ℝ), 1 ≤ n → 1 ≤ U → (U : ℝ) ≤ u → (Tn n U : ℝ) ≤ T n u
 
+variable {T' T : ℕ → ℝ → ℝ}
+
 /-- A larger bound on the running time is still a bound on the running time. -/
-theorem SolvedIn.mono {task : Task} {T T' : ℕ → ℝ → ℝ} (h : SolvedIn task T)
+theorem SolvedIn.mono (h : SolvedIn task T)
     (hT : ∀ (n : ℕ) (u : ℝ), 1 ≤ n → 1 ≤ u → T n u ≤ T' n u) : SolvedIn task T' := by
   obtain ⟨P, p, Tn, need, h1, h2, h3⟩ := h
   refine ⟨P, p, Tn, need, h1, h2, fun n U u hn hU hu => (h3 n U u hn hU hu).trans (hT n u hn ?_)⟩
-  exact le_trans (by exact_mod_cast hU) hu
+  exact le_trans (by simp_all) hu
 
 /-- The largest time `Tn n U` for a bound `U ≤ u`.  A program has a natural number as the bound on
 its numbers, and a claim on running times a real number. -/
 noncomputable def timeUpTo (Tn : ℕ → ℕ → ℕ) (n : ℕ) (u : ℝ) : ℝ :=
   ((Finset.range (⌊u⌋₊ + 1)).sup (Tn n) : ℕ)
 
-theorem le_timeUpTo (Tn : ℕ → ℕ → ℕ) (n : ℕ) {U : ℕ} {u : ℝ} (hu : (U : ℝ) ≤ u) :
+variable {u : ℝ}
+
+theorem le_timeUpTo (Tn : ℕ → ℕ → ℕ) (n : ℕ) {U : ℕ} (hu : (U : ℝ) ≤ u) :
     (Tn n U : ℝ) ≤ timeUpTo Tn n u :=
-  Nat.cast_le.2 (Finset.le_sup (f := Tn n)
-    (Finset.mem_range.2 (Nat.lt_succ_of_le (Nat.le_floor hu))))
+  Nat.cast_le.2 (by simp_all [Finset.le_sup, Finset.mem_range, Nat.le_floor])
+
+variable {Tn : ℕ → ℕ → ℕ}
 
 /-- What bounds the time for every natural number `U ≤ u` bounds `timeUpTo`.  For a negative `u`
 there is still `U = 0`. -/
-theorem timeUpTo_le {Tn : ℕ → ℕ → ℕ} {n : ℕ} {u B : ℝ}
+theorem timeUpTo_le {n : ℕ} {B : ℝ}
     (h : ∀ U : ℕ, (U : ℝ) ≤ max u 0 → (Tn n U : ℝ) ≤ B) : timeUpTo Tn n u ≤ B := by
   obtain ⟨U, hU, hsup⟩ := Finset.exists_mem_eq_sup (Finset.range (⌊u⌋₊ + 1))
-    ⟨0, Finset.mem_range.2 (Nat.succ_pos _)⟩ (Tn n)
+    ⟨0, by simp⟩ (Tn n)
   rw [timeUpTo, hsup]
-  refine h U ((Nat.cast_le.2 (Nat.lt_succ_iff.1 (Finset.mem_range.1 hU))).trans ?_)
+  refine h U ((Nat.cast_le.2 (by aesop)).trans ?_)
   rcases le_total 0 u with hu | hu
-  · exact (Nat.floor_le hu).trans (le_max_left u 0)
-  · rw [Nat.floor_of_nonpos hu, Nat.cast_zero]
-    exact le_max_right u 0
+  · grind [Nat.floor_le]
+  simp_all [Nat.floor_of_nonpos]
 
 /-- A solver with a polynomially bounded need solves its task in its own time. -/
-theorem Solves.solvedIn {task : Task} {P : Program} {p : ℕ} {Tn : ℕ → ℕ → ℕ} {need : ℕ → ℕ → Need}
-    (hs : Solves task P p Tn need) (hp : PolyNeed need) : SolvedIn task (timeUpTo Tn) :=
-  ⟨P, p, Tn, need, hp, hs, fun n _ _ _ _ hu => le_timeUpTo Tn n hu⟩
+theorem Solves.solvedIn     (hs : Solves task P p Tn need) (hp : PolyNeed need) : SolvedIn task (timeUpTo Tn) :=
+  ⟨P, p, Tn, need, hp, hs, by grind [le_timeUpTo]⟩
 
 /-! ## Hosts -/
 
@@ -174,14 +177,14 @@ def IsHost (lower upper : Task) (time : (ℕ → ℕ → ℕ) → ℕ → ℕ �
 /-- From a host to a transfer of running times.  What remains is arithmetic: a bound for the host's
 time function, given a bound for the solver's. -/
 theorem IsHost.solvedIn {lower upper : Task} {time : (ℕ → ℕ → ℕ) → ℕ → ℕ → ℕ}
-    {need : (ℕ → ℕ → Need) → ℕ → ℕ → Need} (h : IsHost lower upper time need) {T T' : ℕ → ℝ → ℝ}
+    {need : (ℕ → ℕ → Need) → ℕ → ℕ → Need} (h : IsHost lower upper time need)
     (hs : SolvedIn lower T)
     (hb : ∀ Tn : ℕ → ℕ → ℕ, (∀ (n U : ℕ) (u : ℝ), 1 ≤ n → 1 ≤ U → (U : ℝ) ≤ u → (Tn n U : ℝ) ≤
     T n u) → ∀ (n U : ℕ) (u : ℝ), 1 ≤ n → 1 ≤ U → (U : ℝ) ≤ u → (time Tn n U : ℝ) ≤ T' n u) :
     SolvedIn upper T' := by
   obtain ⟨P, p, Tn, r, hr, hsol, hT⟩ := hs
   obtain ⟨R, p', hsol'⟩ := h.1 P p Tn r hsol
-  exact ⟨P ++ R, p', time Tn, need r, h.2 r hr, hsol', hb Tn hT⟩
+  exact ⟨P ++ R, p', time Tn, need r, h.2 r hr, hsol', by simp_all⟩
 
 /-! ## Tasks with a list of parameters -/
 
@@ -208,26 +211,22 @@ def SolvesN (task : TaskN) (P : Program) (p : ℕ) (T : List ℕ → ℕ) (need 
         fun σ' => task.Post x μ fr (σ'.loc 0) σ'.mem
 
 /-- A solver stays a solver when procedures are appended to its program. -/
-theorem SolvesN.append {task : TaskN} {P : Program} {p : ℕ} {T : List ℕ → ℕ} {need : List ℕ → Need}
+theorem SolvesN.append {task : TaskN} {T : List ℕ → ℕ} {need : List ℕ → Need}
     (h : SolvesN task P p T need) (R : Program) : SolvesN task (P ++ R) p T need := by
   obtain ⟨body, hp, hb⟩ := h
-  refine ⟨body, getElem?_append_of_eq_some hp R, fun R' lim d x μ fr hpre hok => ?_⟩
-  rw [List.append_assoc]
-  exact hb (R ++ R') lim d x μ fr hpre hok
+  refine ⟨body, by grind, fun R' lim d x μ fr hpre hok => ?_⟩
+  simp_all
 
 /-- A solver meets the specification of its task, at the depth d at which it runs. -/
-theorem SolvesN.meets {task : TaskN} {P₀ : Program} {p : ℕ} {T₀ : List ℕ → ℕ}
-    {need : List ℕ → Need} (h : SolvesN task P₀ p T₀ need) (R : Program) {lim : Limits} {d : ℕ}
-    (x : task.Inst) {μ : ℕ → ℤ} {fr : ℕ} (hpre : task.Pre x μ fr)
+theorem SolvesN.meets {task : TaskN} {T₀ : List ℕ → ℕ}
+    {need : List ℕ → Need} (h : SolvesN task P₀ p T₀ need) (R : Program)     (x : task.Inst) (hpre : task.Pre x μ fr)
     (hok : (need (task.pars x)).Ok lim fr d) :
     Meets lim (P₀ ++ R) p d (task.args x ++ [(fr : ℤ)]) μ (T₀ (task.pars x))
       (task.Post x μ fr) := by
   obtain ⟨body, hp, hb⟩ := h
-  exact ⟨body, getElem?_append_of_eq_some hp R, hb R lim d x μ fr hpre hok⟩
+  exact ⟨body, by grind, by simp_all⟩
 
 /-- A need that is polynomially bounded in the parameters. -/
 def PolyNeedN (need : List ℕ → Need) : Prop :=
   ∃ s k : ℕ, ∀ ps : List ℕ, (need ps).word ≤ polyBound s k ps ∧ (need ps).cells ≤ polyBound s k ps ∧
     (need ps).depth ≤ polyBound s k ps
-
-end Light

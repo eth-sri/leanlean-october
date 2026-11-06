@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Spec.Sec3.Problems
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Chunks
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
+import ThreeSumApsp.Spec.Sec3.Problems
+import ThreeSumApsp.Spec.Sec3.Theorem17.Chunks
+import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
 
 /-!
 # The number of chunks, on lists and on sets of pairs (proof of Theorem 17)
@@ -20,7 +19,6 @@ as there are chunks "in all" (`length_chunkTab_eq_totalChunks`).  The instance i
 `triOf n AB BC AC`, whose weights `w(a,b)` are read from the list `AB`, row by row.
 -/
 
-public section
 
 namespace ThreeSumApsp.Spec
 
@@ -31,16 +29,16 @@ theorem length_classIdx_eq_card (hp : p ≠ 0) (ϱ : Fin p) :
     (classIdx n (residList p AB) ϱ).length = ((triOf n AB BC AC).residueClass p ϱ).card := by
   have hnodup : (classIdx n (residList p AB) ϱ).Nodup := List.nodup_range.filter _
   have hmem : ∀ q : Fin n × Fin n,
-      pairIndex q ∈ (classIdx n (residList p AB) ϱ).toFinset ↔
+      pairIndex q ∈ (classIdx n _ ϱ).toFinset ↔
         q ∈ (triOf n AB BC AC).residueClass p ϱ := fun q => by
     rw [List.mem_toFinset, mem_classIdx, getD_residList, TriangleInstance.residueClass,
       Finset.mem_filter, ← resid_eq_iff hp _ ϱ.isLt, and_iff_right (Finset.mem_univ q)]
     exact and_iff_right (Nat.mul_add_lt_mul q.1.isLt q.2.isLt)
   rw [← List.toFinset_card_of_nodup hnodup]
-  refine (Finset.card_bij (fun q _ => pairIndex q) (fun q hq => (hmem q).2 hq)
+  refine (Finset.card_bij (fun q _ => pairIndex q) (by simp_all)
     (fun q _ q' _ h => ?_) fun x hx => ?_).symm
   · obtain ⟨hrow, hcol⟩ := Nat.mul_add_inj_of_lt q.2.isLt q'.2.isLt h
-    exact Prod.ext (Fin.ext hrow) (Fin.ext hcol)
+    grind
   · obtain ⟨a, ha, b, hb, rfl⟩ :=
     Nat.exists_eq_mul_add_of_lt_mul (mem_classIdx.1 (List.mem_toFinset.1 hx)).1
     exact ⟨(⟨a, ha⟩, ⟨b, hb⟩), (hmem _).1 hx, rfl⟩
@@ -50,8 +48,6 @@ theorem length_chunkTab_eq_totalChunks (hp : p ≠ 0) {D : ℕ} (hD : 1 ≤ D)
     (hcap : 1 ≤ queryCapNat n D) :
     (chunkTab n p (queryCapNat n D) (residList p AB)).length =
       (triOf n AB BC AC).totalChunks D p := by
-  rw [length_chunkTab, List.sum_map_range, Finset.sum_range, TriangleInstance.totalChunks]
+  rw [length_chunkTab, List.sum_map_range, Finset.sum_range]
   refine Finset.sum_congr rfl fun ϱ _ => ?_
-  rw [← queryCapNat_eq n hD, numChunks_eq _ hcap, ← length_classIdx_eq_card n AB BC AC hp ϱ]
-
-end ThreeSumApsp.Spec
+  grind [queryCapNat_eq, numChunks_eq, length_classIdx_eq_card]

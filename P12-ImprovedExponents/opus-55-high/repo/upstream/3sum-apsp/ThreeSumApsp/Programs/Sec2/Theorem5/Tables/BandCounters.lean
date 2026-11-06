@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
-public import ThreeSumApsp.Spec.Sec2.Theorem5.Counters
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Spec.Sec2.Theorem5.Counters
 
 /-!
 # Band and block of every row, by counting (Section 2.3.4)
@@ -22,7 +22,6 @@ A round writes two cells (`Counted.step`) and steps the counters (`countersRound
 the procedure assume.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
@@ -32,16 +31,9 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 
 namespace Counters
 
-/-- The local variables of counters: Total = N, Blocks = K0, Width = N0, Dest = dst (the arguments);
+/- The local variables of counters: Total = N, Blocks = K0, Width = N0, Dest = dst (the arguments);
 Row is the current row, and Band, Block, Offset are its band, its block and its offset. -/
-abbrev Total : ℕ := 0
-@[inherit_doc Total] abbrev Blocks : ℕ := 1
-@[inherit_doc Total] abbrev Width : ℕ := 2
-@[inherit_doc Total] abbrev Dest : ℕ := 3
-@[inherit_doc Total] abbrev Row : ℕ := 4
-@[inherit_doc Total] abbrev Band : ℕ := 5
-@[inherit_doc Total] abbrev Block : ℕ := 6
-@[inherit_doc Total] abbrev Offset : ℕ := 7
+slots Total Blocks Width Dest Row Band Block Offset
 
 end Counters
 
@@ -84,8 +76,8 @@ theorem Counted.step (h : Counted μ N K0 N0 dst i μ') (hi : i < N) :
   · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega),
       Function.update_of_ne (by omega), Function.update_of_ne (by omega)]
     exact h.1 I hI
-  · rw [Function.update_of_ne (by omega), Function.update_self, Function.update_self]
-    exact ⟨rfl, rfl⟩
+  · rw [Function.update_of_ne (by omega), Function.update_self]
+    aesop
 
 /-- The state before round i: the counters are those of row i. -/
 def Inv (μ : ℕ → ℤ) (N K0 N0 dst i : ℕ) (σ : State) : Prop :=
@@ -105,8 +97,6 @@ theorem countersRound_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK
     (h : Inv μ N K0 N0 dst i σ) :
     Ends lim P d countersRound σ countersRound.blockCost (Inv μ N K0 N0 dst (i + 1)) := by
   obtain ⟨μ', rfl, hI⟩ := h
-  light_facts std
-  push_cast at hw
   have hnext := Spec.ctrAt_succ hK hN0 i
   have hstep := hI.step hi
   have hband : (Spec.ctrAt K0 N0 i).band ≤ i := Nat.div_le_self _ _
@@ -118,8 +108,8 @@ theorem countersRound_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK
   -- mem[dst + Row] := Band; mem[dst + N + Row] := Block; Row := Row + 1; Offset := Offset + 1
   light_store (dst + i) c.band
   light_store (dst + N + i) c.block
-  light_set (i + 1 : ℕ)
-  light_set (c.off + 1 : ℕ)
+  light_set (i + 1)
+  light_set (c.off + 1)
   -- if Offset < N0
   refine Ends.iteLast (fun hc => Ends.skip ⟨_, ?_, hstep⟩) fun hc => ?_
   · -- The next row of the same block.
@@ -127,13 +117,13 @@ theorem countersRound_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK
     rfl
   -- Offset := 0; Block := Block + 1; if Block < K0
   light_set 0
-  light_set (c.block + 1 : ℕ)
+  light_set (c.block + 1)
   refine Ends.iteLast (fun hc' => Ends.skip ⟨_, ?_, hstep⟩) fun hc' => ?_
   · -- The first row of the next block of the same band.
     rw [hnext, if_neg (by simp at hc; omega), if_pos (by simp at hc'; omega)]
     rfl
   · -- The first row of the first block of the next band: Block := 0; Band := Band + 1
-    refine Ends.setToThen 0 (Ends.setTo ((c.band + 1 : ℕ) : ℤ) ⟨_, ?_, hstep⟩)
+    refine Ends.setToThen 0 (Ends.setTo (c.band + 1) ⟨_, ?_, hstep⟩)
     rw [hnext, if_neg (by simp at hc; omega), if_neg (by simp at hc'; omega)]
     rfl
 
@@ -143,27 +133,23 @@ theorem counters_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK : 0 
     Ends lim P d countersBody ⟨frame [N, K0, N0, dst], μ⟩ (44 * (N + 1)) fun σ' =>
       (∀ I < N, σ'.mem (dst + I) = (I / (K0 * N0) : ℕ) ∧
         σ'.mem (dst + N + I) = (I / N0 % K0 : ℕ)) ∧ SameOutside μ σ'.mem dst (2 * N) := by
-  have hspace := std.space_le
-  -- while Row < N; a round takes at most 40 steps
-  refine Ends.whileConst (Inv μ N K0 N0 dst) N countersRound.blockCost ?start ?round ?done
+  refine Ends.whileConst (Inv μ N K0 N0 dst) N countersRound.blockCost ?_ ?_ ?_
     (by simp [countersRound]; omega)
-  case start =>
-    refine ⟨μ, ?_, fun I hI => absurd hI (by omega), .refl⟩
+  ·
+    refine ⟨μ, ?_, by omega, .refl⟩
     -- The row and the three counters start at 0.
     rw [← frame_append_zeros _ 4]
     simp [Spec.ctrAt]
-  case round =>
+  ·
     intro i σ hi h
     have hround := countersRound_spec (P := P) (d := d) std hsp hK hN0 hw hi h
     obtain ⟨μ', rfl, -⟩ := h
-    exact ⟨by light_side, by light_side, hround⟩
-  case done =>
+    simp_all
+  ·
     rintro _ ⟨μ', rfl, hcells, same⟩
-    exact ⟨by light_side, by light_side, hcells, same⟩
+    simp_all
 
 /-- **The specification that the callers of counters assume.** -/
 theorem counters_entry (std : Std lim) (hP : P[pCounters]? = some countersBody) {c : ℕ}
-    (hc : 44 ≤ c) : CountersSpec lim P c :=
-  fun _ _ _ _ _ hsp hK hN0 hw _ _ => .mono_const (.of_body hP (counters_spec std hsp hK hN0 hw)) hc
-
-end Light.Sec2
+    (hc : 44 ≤ c := by decide) : CountersSpec lim P c :=
+  fun _ _ _ _ _ hsp hK hN0 hw _ _ => .mono_const (.of_body hP (by grind [counters_spec])) hc

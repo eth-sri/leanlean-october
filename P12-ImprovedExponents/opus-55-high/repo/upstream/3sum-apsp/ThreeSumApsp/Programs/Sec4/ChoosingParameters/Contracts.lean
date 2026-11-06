@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.Copy
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.Copy
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 
 /-!
 # Corollaries 26 and 31 in the light language: procedure numbers, time functions and interfaces
@@ -27,24 +27,16 @@ flag = 0 that m is below the threshold m₀ (a constant of the program text) and
 inner products. Nothing is assumed about the cells from fr on.
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 namespace Proc
-abbrev copy : ℕ := 58
-abbrev fill : ℕ := 59
-abbrev log4 : ℕ := 60
-abbrev padX : ℕ := 62
-abbrev ipAt : ℕ := 63
-abbrev pre31 : ℕ := 64
-abbrev query31 : ℕ := 65
-abbrev offline32 : ℕ := 68
-abbrev regimeTest26 : ℕ := 71
-abbrev levels31 : ℕ := 72
-abbrev switch31 : ℕ := 73
+slots 58 copy fill log4
+slots 62 padX ipAt pre31 query31
+slots 68 offline32
+slots 71 regimeTest26 levels31 switch31
 end Proc
 
 /-! ## Time functions -/
@@ -97,30 +89,29 @@ def IpAtSpec (lim : Limits) (P : Program) : Prop :=
     Meets lim P Proc.ipAt d [(I : ℕ), (J : ℕ), N, D₀, aX, aY] μ (tIpAt D₀) fun r μ' =>
         r = (X * Y) I J ∧ μ' = μ
 
+variable {lim : Limits} {P : Program}
+
 /-! ### copy and fill are those of the library -/
 
-theorem copy_ok {lim : Limits} {P : Program} (hP : P[Proc.copy]? = some copyBody)
+theorem copy_ok (hP : P[Proc.copy]? = some copyBody)
     (hstd : Std lim) : CopySpec lim P := by
   intro src dst n μ h1 h2 _ h4 d _
   exact copy_meets hP hstd.space_le h1 h2 h4
 
-theorem fill_ok {lim : Limits} {P : Program} (hP : P[Proc.fill]? = some fillBody)
+theorem fill_ok (hP : P[Proc.fill]? = some fillBody)
     (hstd : Std lim) : FillSpec lim P := by
   intro dst n x μ h1 _ d _
   refine (fill_meets hP hstd.space_le h1).mono le_rfl fun _ μ' h => ⟨fun i hi => ?_, h.2⟩
-  have := h.1 i (by simpa using hi)
-  simpa using this
+  have := h.1 i (by simp_all)
+  simp_all
 
 /-! ### ⌈log₄ D⌉ -/
 
 namespace Log4
 
-/-- The locals of log4: the argument D, which the result replaces; the address a; the power of 4;
+/- The locals of log4: the argument D, which the result replaces; the address a; the power of 4;
 and its exponent. -/
-abbrev Dim : ℕ := 0
-@[inherit_doc Dim] abbrev Cell : ℕ := 1
-@[inherit_doc Dim] abbrev Power : ℕ := 2
-@[inherit_doc Dim] abbrev Exp : ℕ := 3
+slots Dim Cell Power Exp
 
 end Log4
 
@@ -131,37 +122,33 @@ def log4Body : Stmt :=
   .while (v Power <' v Dim) (.set Power (v Power *' k 4) ;; .set Exp (v Exp +' k 1)) ;;
   .store (v Cell) (v Power) ;; .set Dim (v Exp)
 
-theorem log4_meets {lim : Limits} {P : Program} (hP : P[Proc.log4]? = some log4Body)
+theorem log4_meets (hP : P[Proc.log4]? = some log4Body)
     (hstd : Std lim) : Log4Spec lim P := by
   intro D₀ a μ ha hw hmw
   refine fun d _ => ⟨log4Body, hP, ?_⟩
-  have h100 := hstd.const_le
-  obtain ⟨F, hF⟩ : ∃ F, F = 4 ^ Nat.clog 4 D₀ := ⟨_, rfl⟩
-  have hge : D₀ ≤ F := hF ▸ Nat.le_pow_clog (by norm_num) D₀
-  rw [← hF] at hw ⊢
+  obtain ⟨F, hF⟩ : ∃ F, F = 4 ^ Nat.clog 4 D₀ := by simp
+  have hge : D₀ ≤ F := by grind [Nat.le_pow_clog]
   unfold log4Body tLog4
   -- pow := 1 ; exp := 0
   light_set 1
   light_set 0
   -- while pow < D: pow := pow * 4 ; exp := exp + 1.  Before round i, pow = 4^i and exp = i.
-  refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [D₀, a, ((4 ^ i : ℕ) : ℤ), i], μ⟩)
-    (Nat.clog 4 D₀) rfl ?round ?done (hT := le_rfl))
-  case round =>
+  refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [D₀, a, (4 ^ i : ℕ), i], μ⟩)
+    (Nat.clog 4 D₀) rfl ?_ ?_ (hT := le_rfl))
+  ·
     rintro i _ hi rfl
     have hlt := (Nat.lt_clog_iff_pow_lt (by norm_num)).1 hi
     have hpow : 4 ^ i * 4 ≤ F := by
       rw [hF, ← pow_succ]
-      exact Nat.pow_le_pow_right (by norm_num) hi
+      simp_all [Nat.pow_le_pow_right]
     rw [pow_succ]
     generalize 4 ^ i = p at hlt hpow ⊢
-    exact ⟨by light_side, by simp; omega, by light_side, by simp [update_frame_setLocal]⟩
-  case done =>
+    exact ⟨by light_side, by simp_all, by light_side, by simp [update_frame_setLocal]⟩
+  ·
     rintro _ rfl
     rw [← hF]
     refine ⟨by light_side, by simp; omega, ?_⟩
     -- mem[a] := pow ; return exp
     light_store a F
-    light_set (Nat.clog 4 D₀ : ℤ)
-    exact ⟨rfl, rfl⟩
-
-end Light.Sec4
+    light_set (Nat.clog 4 D₀)
+    simp

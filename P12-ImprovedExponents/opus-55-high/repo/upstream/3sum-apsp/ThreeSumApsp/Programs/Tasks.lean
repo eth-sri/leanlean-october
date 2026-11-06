@@ -3,13 +3,14 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.ArrayAt
-public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Lang.Tasks
-public import ThreeSumApsp.Spec.Sec3.Problems
-public import ThreeSumApsp.Util.Flag
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.ArrayAt
+import ThreeSumApsp.Lang.Tactics
+import ThreeSumApsp.Lang.Tasks
+import ThreeSumApsp.Spec.Sec3.Problems
+import ThreeSumApsp.Util.Flag
+noncomputable section
 
 /-!
 # The problems of the paper as tasks
@@ -24,7 +25,6 @@ public import ThreeSumApsp.Util.Flag
 * What "solved in time `T`" means for them: `ThinSolvedIn`, `LopSolvedIn`.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -36,14 +36,8 @@ open ThreeSumApsp.Spec
 
 /-- Three `n × n` matrices of weights in the memory. -/
 structure TriInst : Type where
-  n : ℕ
-  U : ℕ
-  ab : ℕ
-  bc : ℕ
-  ac : ℕ
-  AB : List ℤ
-  BC : List ℤ
-  AC : List ℤ
+  (n U ab bc ac : ℕ)
+  (AB BC AC : List ℤ)
 
 /-- The three matrices lie below the free pointer, and their entries are bounded by `U`. -/
 structure TriInst.Pre (x : TriInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
@@ -62,14 +56,16 @@ structure TriInst.Pre (x : TriInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
   belowBC : x.bc + x.n * x.n ≤ fr
   belowAC : x.ac + x.n * x.n ≤ fr
 
+variable {x : TriInst} {μ : ℕ → ℤ} {fr : ℕ}
+
 /-- An instance stays where it is if no cell below the free pointer changes. -/
-theorem TriInst.Pre.keep {x : TriInst} {μ μ' : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr)
+theorem TriInst.Pre.keep {μ' : ℕ → ℤ} (h : x.Pre μ fr)
     (hs : Kept μ μ' fr := by light_keep) : x.Pre μ' fr := by
   light_facts h
   exact { h with segAB := h.segAB.keep, segBC := h.segBC.keep, segAC := h.segAC.keep }
 
 /-- The free pointer may grow. -/
-theorem TriInst.Pre.mono {x : TriInst} {μ : ℕ → ℤ} {fr fr' : ℕ} (h : x.Pre μ fr) (hfr : fr ≤ fr') :
+theorem TriInst.Pre.mono {fr' : ℕ} (h : x.Pre μ fr) (hfr : fr ≤ fr') :
     x.Pre μ fr' :=
   { h with
     belowAB := h.belowAB.trans hfr
@@ -77,7 +73,7 @@ theorem TriInst.Pre.mono {x : TriInst} {μ : ℕ → ℤ} {fr fr' : ℕ} (h : x.
     belowAC := h.belowAC.trans hfr }
 
 /-- Three matrices one after the other, with the free pointer behind them, are an instance. -/
-theorem triPre_of_arrays {n U base : ℕ} {AB BC AC : List ℤ} {μ : ℕ → ℤ} (hn : 1 ≤ n) (hU : 1 ≤ U)
+theorem triPre_of_arrays {n U base : ℕ} {AB BC AC : List ℤ} (hn : 1 ≤ n) (hU : 1 ≤ U)
     (hAB : ArrayAt μ base AB (n * n) U (base + 3 * (n * n)))
     (hBC : ArrayAt μ (base + n * n) BC (n * n) U (base + 3 * (n * n)))
     (hAC : ArrayAt μ (base + 2 * (n * n)) AC (n * n) U (base + 3 * (n * n))) :
@@ -88,7 +84,7 @@ theorem triPre_of_arrays {n U base : ℕ} {AB BC AC : List ℤ} {μ : ℕ → �
 
 /-- **Exact Triangle**: et(n, U, ab, bc, ac, fr) returns 1 if there is a zero triangle and 0 if not.
 -/
-noncomputable def etTask : Task where
+def etTask : Task where
   Inst := TriInst
   size x := x.n
   bound x := x.U
@@ -98,7 +94,7 @@ noncomputable def etTask : Task where
 
 /-- **Negative Triangle**: nt(n, U, ab, bc, ac, fr) returns 1 if there is a negative triangle and 0
 if not. -/
-noncomputable def ntTask : Task where
+def ntTask : Task where
   Inst := TriInst
   size x := x.n
   bound x := x.U
@@ -108,9 +104,7 @@ noncomputable def ntTask : Task where
 
 /-- A list of `N` numbers in the memory. -/
 structure VecInst : Type where
-  N : ℕ
-  U : ℕ
-  a : ℕ
+  (N U a : ℕ)
   X : List ℤ
 
 /-- The list lies below the free pointer, and its entries are bounded by `U`. -/
@@ -124,7 +118,7 @@ structure VecInst.Pre (x : VecInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
 
 /-- **Convolution-3SUM**: c3(N, U, x, fr) returns 1 if `x_i + x_j = x_{i+j}` for some `i`, `j`, and
 0 if not. -/
-noncomputable def c3Task : Task where
+def c3Task : Task where
   Inst := VecInst
   size x := x.N
   bound x := x.U
@@ -134,7 +128,7 @@ noncomputable def c3Task : Task where
 
 /-- **3SUM**: s3(n, U, x, fr) returns 1 if three of the numbers, at different positions, sum to 0,
 and 0 if not. -/
-noncomputable def s3Task : Task where
+def s3Task : Task where
   Inst := VecInst
   size x := x.N
   bound x := x.U
@@ -144,13 +138,8 @@ noncomputable def s3Task : Task where
 
 /-- Two `n × n` matrices in the memory, and the place for a third. -/
 structure MatInst : Type where
-  n : ℕ
-  U : ℕ
-  a : ℕ
-  b : ℕ
-  c : ℕ
-  A : List ℤ
-  B : List ℤ
+  (n U a b c : ℕ)
+  (A B : List ℤ)
 
 /-- The two matrices and the place for the product lie below the free pointer; the place for the
 product does not meet the two matrices. -/
@@ -182,13 +171,8 @@ def mpTask : Task where
 /-- A directed graph in the memory: adjacency matrix and weights, and the place for the `2n²` cells
 of the answer. -/
 structure GraphInst : Type where
-  n : ℕ
-  U : ℕ
-  adj : ℕ
-  w : ℕ
-  out : ℕ
-  ADJ : List ℤ
-  W : List ℤ
+  (n U adj w out : ℕ)
+  (ADJ W : List ℤ)
 
 /-- The graph and the place for the answer lie below the free pointer; the graph has no negative
 cycle. -/
@@ -291,26 +275,26 @@ structure ThinInst.Pre (x : ThinInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
 
 namespace ThinArg
 
-/-- N. -/
-abbrev Rows : ℕ := 0
-/-- D. -/
-abbrev Cols : ℕ := 1
-/-- The number w of wanted positions. -/
-abbrev Wanted : ℕ := 2
-/-- The bound U on the entries. -/
-abbrev Bound : ℕ := 3
-/-- The address of X. -/
-abbrev AdrX : ℕ := 4
-/-- The address of Y. -/
-abbrev AdrY : ℕ := 5
-/-- The address of the rows of the wanted positions. -/
-abbrev AdrWI : ℕ := 6
-/-- The address of their columns. -/
-abbrev AdrWJ : ℕ := 7
-/-- The address of the output. -/
-abbrev AdrOut : ℕ := 8
-/-- The free pointer. -/
-abbrev Free : ℕ := 9
+/- N. -/
+slots Rows
+/- D. -/
+slots 1 Cols
+/- The number w of wanted positions. -/
+slots 2 Wanted
+/- The bound U on the entries. -/
+slots 3 Bound
+/- The address of X. -/
+slots 4 AdrX
+/- The address of Y. -/
+slots 5 AdrY
+/- The address of the rows of the wanted positions. -/
+slots 6 AdrWI
+/- The address of their columns. -/
+slots 7 AdrWJ
+/- The address of the output. -/
+slots 8 AdrOut
+/- The free pointer. -/
+slots 9 Free
 
 end ThinArg
 
@@ -369,5 +353,3 @@ def LopSolvedIn (task : TaskN) (T : ℕ → ℕ → ℕ → ℝ) : Prop :=
   ∃ (P : Program) (p : ℕ) (Tn : List ℕ → ℕ) (need : List ℕ → Need), PolyNeedN need ∧
     SolvesN task P p Tn need ∧
     ∀ (n D w w' : ℕ), 1 ≤ n → 1 ≤ D → w ≤ w' → (Tn [n, D, w] : ℝ) ≤ T n D w'
-
-end Light

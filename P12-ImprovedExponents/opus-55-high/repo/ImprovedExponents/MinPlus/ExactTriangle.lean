@@ -1,15 +1,13 @@
-module
 
-public import ImprovedExponents.MinPlus.Comparison
-public import Mathlib.Data.Finset.Lattice.Fold
-public import Mathlib.Data.Finset.Prod
-public import Mathlib.Data.Fintype.Basic
-public import Mathlib.Data.Nat.Log
-public import Mathlib.Tactic.Linarith.Frontend
-public import Mathlib.Tactic.NormNum
-public import Mathlib.Tactic.Ring.RingNF
+import ImprovedExponents.MinPlus.Comparison
+import Mathlib.Data.Finset.Lattice.Fold
+import Mathlib.Data.Finset.Prod
+import Mathlib.Data.Fintype.Basic
+import Mathlib.Data.Nat.Log
+import Mathlib.Tactic.Linarith.Frontend
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Ring.RingNF
 
-@[expose] public section
 
 /-!
 # Min-plus products by Exact Triangle, through comparisons as equalities
@@ -53,53 +51,41 @@ def lemmaFInstances (b : ℕ) : Finset (ℕ × ℤ) := insert (0, 1) (range (b +
 theorem exists_mem_lemmaFInstances_iff (b : ℕ) (f : ℕ → ℤ) :
     (∃ c ∈ lemmaFInstances b, f c.1 = c.2) ↔ f 0 = 1 ∨ ∃ ℓ ≤ b, f ℓ = 2 ∨ f ℓ = 3 := by
   constructor
-  · rintro ⟨⟨ℓ, r⟩, hc, hf⟩
-    simp only [lemmaFInstances, mem_insert, Prod.mk.injEq, mem_product, mem_range,
-      mem_singleton] at hc
-    rcases hc with ⟨rfl, rfl⟩ | ⟨hℓ, rfl | rfl⟩
-    · exact Or.inl hf
-    · exact Or.inr ⟨ℓ, by omega, Or.inl hf⟩
-    · exact Or.inr ⟨ℓ, by omega, Or.inr hf⟩
+  · grind [lemmaFInstances]
   · rintro (h | ⟨ℓ, hℓ, h | h⟩)
     · exact ⟨(0, 1), mem_insert_self _ _, h⟩
-    · exact ⟨(ℓ, 2), mem_insert_of_mem (mem_product.mpr ⟨mem_range.mpr (by omega), by simp⟩), h⟩
-    · exact ⟨(ℓ, 3), mem_insert_of_mem (mem_product.mpr ⟨mem_range.mpr (by omega), by simp⟩), h⟩
+    · exact ⟨(ℓ, 2), mem_insert_of_mem (by grind), h⟩
+    · exact ⟨(ℓ, 3), mem_insert_of_mem (by grind), h⟩
+
+variable {W b : ℕ}
 
 /-- Lemma F for integers `p, q` of absolute value at most `W` and a threshold `t` with
 `0 ≤ t + 2W < 2^b`, where `2W < 2^b`. -/
-theorem lt_iff_exists_instance {b W : ℕ} {p q t : ℤ} (hp : |p| ≤ W) (hq : |q| ≤ W)
+theorem lt_iff_exists_instance {p q t : ℤ} (hp : |p| ≤ W) (hq : |q| ≤ W)
     (hW : 2 * W < 2 ^ b) (ht : -(2 * W : ℤ) ≤ t) (ht' : t + 2 * W < 2 ^ b) :
     p + q < t ↔ ∃ c ∈ lemmaFInstances b,
       (p + W) / 2 ^ c.1 + (q + W) / 2 ^ c.1 + (c.2 - (t + 2 * W) / 2 ^ c.1) = 0 := by
   have hp' := abs_le.mp hp
   have hq' := abs_le.mp hq
-  have hW' : (2 * W : ℤ) < 2 ^ b := by exact_mod_cast hW
   obtain ⟨x, hx⟩ := Int.eq_ofNat_of_zero_le (by linarith : 0 ≤ p + W)
   obtain ⟨y, hy⟩ := Int.eq_ofNat_of_zero_le (by linarith : 0 ≤ q + W)
   obtain ⟨u, hu⟩ := Int.eq_ofNat_of_zero_le (by linarith : 0 ≤ t + 2 * W)
   have hxb : x < 2 ^ b := by
-    have : (x : ℤ) < 2 ^ b := by rw [← hx]; linarith
-    exact_mod_cast this
+    omega
   have hyb : y < 2 ^ b := by
-    have : (y : ℤ) < 2 ^ b := by rw [← hy]; linarith
-    exact_mod_cast this
+    omega
   have hub : u < 2 ^ b := by
-    have : (u : ℤ) < 2 ^ b := by rw [← hu]; exact ht'
-    exact_mod_cast this
-  have hdiv : ∀ z ℓ : ℕ, (z : ℤ) / 2 ^ ℓ = ((z / 2 ^ ℓ : ℕ) : ℤ) := fun z ℓ => by norm_cast
+    linarith
   have hlt : p + q < t ↔ x + y < u := by omega
   rw [hlt, add_lt_iff_shiftDiff hxb hyb hub, ← exists_mem_lemmaFInstances_iff, hx, hy, hu]
-  refine exists_congr fun c => and_congr_right fun _ => ?_
-  rw [hdiv, hdiv, hdiv]
-  unfold shiftDiff
-  constructor <;> intro h <;> linarith
+  grind [shiftDiff]
 
 /-- **Lemma F for matrices: threshold questions as Exact Triangle instances.** Let `A`, `B` have
 entries of absolute value at most `W`, let `2W < 2^b`, and let the thresholds satisfy
 `-2W ≤ t i j` and `t i j + 2W < 2^b`. Then there is a `k` with `A i k + B k j < t i j` if and only
 if, in one of the `2b + 3` instances `(ℓ, r)`, there is a `k` whose triangle `i, k, j` has weight
 `0`. The weights of an instance depend on `(A, ℓ)`, `(B, ℓ)` and `(t, ℓ, r)` only. -/
-theorem exists_lt_iff_exists_exactTriangle (A B t : Fin n → Fin n → ℤ) {W b : ℕ}
+theorem exists_lt_iff_exists_exactTriangle (A B t : Fin n → Fin n → ℤ)
     (hA : ∀ i k, |A i k| ≤ W) (hB : ∀ k j, |B k j| ≤ W) (hW : 2 * W < 2 ^ b)
     (ht : ∀ i j, -(2 * W : ℤ) ≤ t i j ∧ t i j + 2 * W < 2 ^ b) (i j : Fin n) :
     (∃ k, A i k + B k j < t i j) ↔ ∃ c ∈ lemmaFInstances b,
@@ -107,12 +93,10 @@ theorem exists_lt_iff_exists_exactTriangle (A B t : Fin n → Fin n → ℤ) {W 
   constructor
   · rintro ⟨k, hk⟩
     obtain ⟨c, hc, h⟩ :=
-      (lt_iff_exists_instance (hA i k) (hB k j) hW (ht i j).1 (ht i j).2).mp hk
-    exact ⟨c, hc, k, h⟩
+      (lt_iff_exists_instance (by simp_all) (by simp_all) hW (ht i j).1 (ht i j).2).mp hk
+    aesop
   · rintro ⟨c, hc, k, h⟩
-    exact ⟨k, (lt_iff_exists_instance (hA i k) (hB k j) hW (ht i j).1 (ht i j).2).mpr
+    exact ⟨k, (lt_iff_exists_instance (by simp_all) (by simp_all) hW (ht i j).1 (ht i j).2).mpr
       ⟨c, hc, h⟩⟩
 
 /-! ### The min-plus product and the binary search -/
-
-end ImprovedExponents

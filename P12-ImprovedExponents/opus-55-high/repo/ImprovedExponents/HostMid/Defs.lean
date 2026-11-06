@@ -1,8 +1,7 @@
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.ClaimAtParameters
+import ThreeSumApsp.Programs.Sec3.Theorem17.ClaimAtParameters
+noncomputable section
 
-@[expose] public section
 
 /-!
 # The host of Theorem 17 with a smaller inner dimension: the program, its time and its need
@@ -22,7 +21,7 @@ parameters are rewritten by `midArgs` (`hostTime'_eq`, `hostNeed'_eq`).
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp.Spec
 
 /-! ## The inner dimension -/
 
@@ -30,15 +29,17 @@ open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
 vertices of a piece times the largest possible prime. -/
 def midSize (D g : ℕ) : ℕ := pieceSizeNat D g * Nat.sqrt D
 
+variable (D g : ℕ)
+
 /-- A piece has at most `⌊√D⌋` vertices, for every `g`. -/
-theorem pieceSizeNat_le_sqrt (D g : ℕ) : pieceSizeNat D g ≤ Nat.sqrt D := by
+theorem pieceSizeNat_le_sqrt : pieceSizeNat D g ≤ Nat.sqrt D := by
   unfold pieceSizeNat
-  rcases Nat.eq_zero_or_pos g with rfl | hg
+  rcases g.eq_zero_or_pos with rfl | hg
   · simp
-  · exact (ceilDiv_le_iff_le_smul hg).2 (by simpa using Nat.le_mul_of_pos_left _ hg)
+  simp_all [ceilDiv_le_iff_le_smul, Nat.le_mul_of_pos_left]
 
 /-- The inner dimension of the variant is at most `D`, for every `g`. -/
-theorem midSize_le (D g : ℕ) : midSize D g ≤ D :=
+theorem midSize_le : midSize D g ≤ D :=
   (Nat.mul_le_mul_right _ (pieceSizeNat_le_sqrt D g)).trans (Nat.sqrt_le D)
 
 /-- The inner dimension of the variant is positive under the hypotheses of Theorem 17. -/
@@ -53,23 +54,23 @@ def midArgs (G : ℕ → ℕ) : List ℕ → List ℕ
   | [n, D, w] => [n, midSize D (G D), w]
   | ps => ps
 
+variable (G : ℕ → ℕ)
+
 /-- Rewriting the parameters does not increase a polynomial bound. -/
-theorem polyBound_midArgs_le (G : ℕ → ℕ) (s k : ℕ) (ps : List ℕ) :
+theorem polyBound_midArgs_le (s k : ℕ) (ps : List ℕ) :
     polyBound s k (midArgs G ps) ≤ polyBound s k ps := by
   unfold midArgs
   split
-  · simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
+  · simp [polyBound, List.map_cons, List.prod_cons, List.prod_nil]
     gcongr
     exact midSize_le _ _
-  · exact le_rfl
+  rfl
 
 /-- A polynomially bounded need stays so when the parameters are rewritten. -/
-theorem polyNeedN_midArgs {need : List ℕ → Need} (G : ℕ → ℕ) (h : PolyNeedN need) :
+theorem polyNeedN_midArgs {need : List ℕ → Need} (h : PolyNeedN need) :
     PolyNeedN fun ps => need (midArgs G ps) := by
   obtain ⟨s, k, hle⟩ := h
-  exact ⟨s, k, fun ps => ⟨(hle _).1.trans (polyBound_midArgs_le G s k ps),
-    (hle _).2.1.trans (polyBound_midArgs_le G s k ps),
-    (hle _).2.2.trans (polyBound_midArgs_le G s k ps)⟩⟩
+  exact ⟨s, k, by grind [polyBound_midArgs_le]⟩
 
 /-! ## The procedure -/
 
@@ -97,21 +98,21 @@ def et17Body' (ν : Et17Nums) : Stmt :=
 
 /-- A bound on the time of the loop over the instances of the variant: as upstream's
 `hostLoopBound`, with the solver at the inner dimension `midSize D g`. -/
-noncomputable def hostLoopBound' (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
+def hostLoopBound' (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
   4 * n * g *
       (tWrites n D (pieceSizeNat D g) + supTime Tn n (midSize D g) (queryCapNat n D)
         + tAnswers (queryCapNat n D))
     + tScanCall (pieceSizeNat D g) * (falsePositiveBound n U D + 1) + 14
 
 /-- The time of the variant after the tests, if n is not small. -/
-noncomputable def hostMain' (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
+def hostMain' (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
   chooseTime n U D + tQueryCapNat n D + tCeilDiv (Nat.sqrt D) g + tCeilDiv n (pieceSizeNat D g)
     + tBitLen U + tDblTable (bitLen U) + 3 * tResidues (n * n) (bitLen U) + tClasses n (Nat.sqrt D)
     + tChunks (Nat.sqrt D) (4 * n * g) + hostLoopBound' Tn n U D g + 300
 
 /-- **A bound on the time of the variant host in the worst case**, for the parameter functions
 Dfun, Gfun with the times tD, tG, over a solver with the time Tn. -/
-noncomputable def hostTime' (Dfun Gfun tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) (n U : ℕ) : ℕ :=
+def hostTime' (Dfun Gfun tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) (n U : ℕ) : ℕ :=
   hostSetup tD tG n (Dfun n) +
     if SmallCase n (Dfun n) (Gfun (Dfun n)) then tBrute n + 20
     else hostMain' Tn n U (Dfun n) (Gfun (Dfun n))
@@ -129,11 +130,6 @@ numbers that the parameter procedures form. -/
 def hostNeed' (Dfun Gfun wD wG : ℕ → ℕ) (need : List ℕ → Need) (n U : ℕ) : Need :=
   hostNeedAt' (wD n) (wG (Dfun n)) need n U (Dfun n) (Gfun (Dfun n))
 
-/-- The time of the variant is upstream's time over a solver with rewritten parameters. -/
-theorem hostTime'_eq (Dfun Gfun tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) (n U : ℕ) :
-    hostTime' Dfun Gfun tD tG Tn n U
-      = hostTime Dfun Gfun tD tG (fun ps => Tn (midArgs Gfun ps)) n U :=
-  rfl
 
 /-! ## The data and the local variables of a run -/
 
@@ -146,5 +142,3 @@ def hostData' (x : TriInst) (D g : ℕ) : HostData :=
 /-- The locals after the second part of the variant (n is not small, so the flag is 0). -/
 def et17LocB' (x : TriInst) (fr D g : ℕ) : List ℤ :=
   Et17.locals x (hostData' x D g) fr g (Nat.sqrt D : ℕ) 0 0
-
-end ImprovedExponents.HostMid

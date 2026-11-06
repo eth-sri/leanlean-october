@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec3.Corollary15_16
-public import ThreeSumApsp.TimeClaims.Sec3.Definitions
+import ThreeSumApsp.Sec3.Corollary15_16
+import ThreeSumApsp.TimeClaims.Sec3.Definitions
 
 /-!
 # The arithmetic behind the running-time claims of Section 3
@@ -20,7 +19,6 @@ Elementary inequalities that the deductions between running-time claims use sile
 * The pieces into which Corollary 15 splits `W` have at most `n² / √D` query pairs (`splitCap_le`).
 -/
 
-public section
 
 namespace ThreeSumApsp
 
@@ -28,7 +26,7 @@ namespace ThreeSumApsp
 
 /-- `⌈n^{1/3}⌉ ≥ 1` for `n ≥ 1`. -/
 theorem one_le_cbrtCeil {n : ℕ} (hn : 1 ≤ n) : 1 ≤ cbrtCeil n :=
-  Nat.ceil_pos.2 (Real.rpow_pos_of_pos (Nat.cast_pos.2 hn) _)
+  Nat.ceil_pos.2 (by positivity)
 
 /-- `(log s + 1)^e ≥ 1`. -/
 theorem one_le_log_add_one_pow (s e : ℕ) : 1 ≤ (Real.log s + 1) ^ e :=
@@ -37,5 +35,3 @@ theorem one_le_log_add_one_pow (s e : ℕ) : 1 ≤ (Real.log s + 1) ^ e :=
 /-! ## Thin instances: `n ≥ D^18` -/
 
 /-! ## The pieces of Corollary 15 -/
-
-end ThreeSumApsp

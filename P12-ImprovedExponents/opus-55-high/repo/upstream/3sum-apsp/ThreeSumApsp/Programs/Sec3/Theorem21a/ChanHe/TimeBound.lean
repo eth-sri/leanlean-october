@@ -3,12 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.PolyBounded
-public import ThreeSumApsp.Programs.LightModel
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Time
-public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Sizes
+import ThreeSumApsp.Lang.PolyBounded
+import ThreeSumApsp.Programs.LightModel
+import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Time
+import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Sizes
 
 /-!
 # The arithmetic of the reduction from 3SUM to Convolution-3SUM
@@ -29,7 +28,6 @@ Both are proved by following the expressions, in the calculus `Scale.SoftO` of o
 that F(n, U) is at most a polynomial in (n + 1)(U + 1).
 -/
 
-@[expose] public section
 
 namespace Light.Sec3.ChanHe
 
@@ -53,7 +51,7 @@ def magAt (k n : ℕ) : ℕ := 60 * boundAt k n + 40
 and with one bound. -/
 theorem chTime_eq {k n U : ℕ} (hU : U ≤ n ^ k) (Tn : ℕ → ℕ → ℕ) :
     chTime k Tn n U = ownAt k n + callsAt k n * Tn (lenOf k n) (magAt k n) := by
-  simp only [chTime, coreTime, lenOf, ownAt, callsAt, magAt, boundAt, max_eq_right hU]
+  simp [chTime, coreTime, lenOf, ownAt, callsAt, magAt, boundAt, max_eq_right hU]
   omega
 
 namespace ClaimF
@@ -151,9 +149,7 @@ binary digits and the number of levels of the recursion are at most linear. -/
 theorem polyNeed_chNeed (κ : ℕ) (r : ℕ → ℕ → Need) (hr : PolyNeed r) : PolyNeed (chNeed κ r) := by
   have hfuel : ∀ n, fuel n ≤ 3 * (n + 2) := fun n => by
     have h1 : height n ≤ Nat.log 2 n + 2 := Nat.clog_le_of_le_pow Nat.lt_two_pow_self.le
-    have h2 : Nat.log 2 n ≤ n := Nat.log_le_self _ _
-    unfold fuel
-    omega
+    grind [Nat.log, Nat.log_le_self, fuel]
   have hm : PolyBounded fun n U => mPar n (2 * max U (n ^ κ)) := by
     unfold mPar wPar Lam
     growth_poly []
@@ -166,30 +162,25 @@ Convolution-3SUM.  For inputs of absolute value at most `n^κ` the host is taken
 theorem claim_CH20_Theorem_5_1_of_host (h : ∀ κ : ℕ, IsHost c3Task s3Task (chTime κ) (chNeed κ)) :
     Claim.CH20_Theorem_5_1 lightModel := by
   intro κ _
-  have hκ : κ ≤ ⌈κ⌉₊ := Nat.le_ceil κ
+  have hκ := Nat.le_ceil κ
   generalize ⌈κ⌉₊ = k at hκ
   refine ⟨fun n => ownAt k n, fun n => callsAt k n, fun n => magAt k n, lenOf k, 160, k,
     (ClaimF.softO_ownAt k).isPowPolylog (by norm_num),
     (ClaimF.softO_callsAt k).isPowPolylog (by norm_num), isPowPolylog_lenOf k,
     fun n hn => ⟨one_le_lenOf k n, ?_, ?_⟩, ?_⟩
   · exact Nat.one_le_cast.2 (by unfold magAt boundAt; omega)
-  · have hpow : 1 ≤ n ^ k := Nat.one_le_pow _ _ hn
+  · have hpow : 1 ≤ n ^ k := by grind
     have hmag : magAt k n ≤ 160 * n ^ k := by unfold magAt boundAt; omega
-    rw [Real.rpow_natCast]
     change (magAt k n : ℝ) ≤ _
     exact_mod_cast hmag
   rintro T ⟨P, p, Tn, r, hr, hsol, hT⟩
   obtain ⟨R, p', hsol'⟩ := (h k).1 P p Tn r hsol
-  refine ⟨timeUpTo (chTime k Tn), hsol'.solvedIn ((h k).2 r hr), fun n hn =>
+  refine ⟨timeUpTo _, hsol'.solvedIn ((h k).2 r hr), fun n hn =>
     timeUpTo_le fun U hU => ?_⟩
   have hUk : U ≤ n ^ k := by
-    have hle : (U : ℝ) ≤ (n : ℝ) ^ (k : ℝ) := (hU.trans_eq (max_eq_left (by positivity))).trans
-      (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn) hκ)
-    rw [Real.rpow_natCast] at hle
-    exact_mod_cast hle
+    exact_mod_cast (hU.trans_eq (max_eq_left (by positivity))).trans
+      (Real.rpow_le_rpow_of_exponent_le (by simp_all) hκ)
   rw [chTime_eq hUk]
   push_cast
   gcongr
-  exact hT _ _ _ (one_le_lenOf k n) (by unfold magAt boundAt; omega) le_rfl
-
-end Light.Sec3.ChanHe
+  simp_all [one_le_lenOf, magAt, boundAt]

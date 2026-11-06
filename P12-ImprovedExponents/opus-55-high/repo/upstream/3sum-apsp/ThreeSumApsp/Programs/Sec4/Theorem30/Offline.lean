@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Memory
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec4.Theorem30.Memory
 
 /-!
 # Theorem 30, the offline form (9): preprocess, then one query for each wanted position
@@ -20,11 +20,9 @@ that meets those of preCore and queryAt (`wantedCore_spec`): one call of preCore
 round asks one query and stores the answer (`wantedAsk_ends`), with the invariant `Answered`.
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
 
 /-! ## One query for each wanted position: the invariant -/
 
@@ -47,13 +45,12 @@ theorem Answered.step (h : Answered Ready Kept out ans μ i μ') (hi : i < ans.l
     (hquery : SameOn Quiet μ' μ'') (hout : ∀ j < i, Quiet (out + j)) (hkept : ∀ a, Kept a → Quiet a)
     (hready : Ready (Function.update μ'' (out + i) ans[i])) :
     Answered Ready Kept out ans μ (i + 1) (Function.update μ'' (out + i) ans[i]) := by
-  have hlen : (ans.take i).length = i := by rw [List.length_take, Nat.min_eq_left hi.le]
+  have hlen : (ans.take i).length = i := by grind
   refine ⟨hready, ?_, ?_⟩
-  · have hsnoc := (h.answers.of_sameOn hquery fun j hj => hout j (hlen ▸ hj)).snoc ans[i]
-    rw [hlen] at hsnoc
-    rwa [List.take_add_one, List.getElem?_eq_getElem hi]
-  · exact ((h.same.mono fun a ha => ⟨by have := ha.1; omega, ha.2⟩).then hquery
-      fun a ha => ⟨ha, hkept a ha.2⟩).write (by omega) _
+  · have hsnoc := (h.answers.of_sameOn hquery fun j hj => by simp_all).snoc ans[i]
+    simp_all
+  · exact ((h.same.mono fun a ha => by grind).then hquery
+      fun a ha => ⟨ha, by simp_all⟩).write (by omega) _
 
 /-- A cell of a list that stood in the memory at the start, away from the answers and in Kept, still
 holds its entry. -/
@@ -70,28 +67,15 @@ end
 
 /-! ## The routine -/
 
-abbrev Proc.wantedCore : ℕ := 56
+slots 56 Proc.wantedCore
 
 namespace WantedCore
 
-/-- The locals of wantedCore. The first twelve are its arguments: L, m, t, N, D, the addresses of X,
+/- The locals of wantedCore. The first twelve are its arguments: L, m, t, N, D, the addresses of X,
 of Y, of the rows and of the columns of the wanted positions, the number of positions, and the
 addresses of the output and of the free block. Then come the number of the current position and the
 result of a call. -/
-abbrev Levels : ℕ := 0
-@[inherit_doc Levels] abbrev Inner : ℕ := 1
-@[inherit_doc Levels] abbrev Switch : ℕ := 2
-@[inherit_doc Levels] abbrev Size : ℕ := 3
-@[inherit_doc Levels] abbrev Dim : ℕ := 4
-@[inherit_doc Levels] abbrev MatX : ℕ := 5
-@[inherit_doc Levels] abbrev MatY : ℕ := 6
-@[inherit_doc Levels] abbrev Rows : ℕ := 7
-@[inherit_doc Levels] abbrev Cols : ℕ := 8
-@[inherit_doc Levels] abbrev Count : ℕ := 9
-@[inherit_doc Levels] abbrev Out : ℕ := 10
-@[inherit_doc Levels] abbrev Block : ℕ := 11
-@[inherit_doc Levels] abbrev Pos : ℕ := 12
-@[inherit_doc Levels] abbrev Res : ℕ := 13
+slots Levels Inner Switch Size Dim MatX MatY Rows Cols Count Out Block Pos Res
 
 end WantedCore
 
@@ -109,27 +93,3 @@ def wantedCoreBody : Stmt :=
   .for Pos (v Count) wantedAsk
 
 section
-variable {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY aI aJ out b0 : ℕ}
-  {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
-  {W : List (Fin p.N × Fin p.N)} {μ μ' μ'' : ℕ → ℤ}
-
-/-- Where the input of wantedCore stands: the two matrices, the rows and the columns of the wanted
-positions and the output all lie below the free block, and the output does not meet the two lists.
--/
-structure WantedInput (p : Sec2.Par) (aX aY aI aJ out b0 : ℕ) (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (W : List (Fin p.N × Fin p.N)) (μ : ℕ → ℤ) : Prop where
-  matX : MatAt μ aX X
-  matY : MatAt μ aY Y
-  rows : Seg μ aI (W.map fun q => ((q.1 : ℕ) : ℤ))
-  cols : Seg μ aJ (W.map fun q => ((q.2 : ℕ) : ℤ))
-  matX_le : aX + p.N * p.D ≤ b0
-  matY_le : aY + p.D * p.N ≤ b0
-  rows_le : aI + W.length ≤ b0
-  cols_le : aJ + W.length ≤ b0
-  out_le : out + W.length ≤ b0
-  out_rows : Apart out W.length aI W.length
-  out_cols : Apart out W.length aJ W.length
-
-end
-
-end Light.Sec4

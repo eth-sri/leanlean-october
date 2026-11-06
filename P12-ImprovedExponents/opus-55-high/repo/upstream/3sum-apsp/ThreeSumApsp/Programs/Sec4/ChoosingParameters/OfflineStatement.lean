@@ -1,4 +1,3 @@
-module
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.OfflineLayout
-public import ThreeSumApsp.Programs.Sec4.Theorem30.OfflineStatement
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.OfflineLayout
+import ThreeSumApsp.Programs.Sec4.Theorem30.OfflineStatement

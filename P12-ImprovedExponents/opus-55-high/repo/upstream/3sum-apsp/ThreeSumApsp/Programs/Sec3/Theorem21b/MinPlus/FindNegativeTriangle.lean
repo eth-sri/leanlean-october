@@ -3,12 +3,12 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.PolyBounded
-public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.CopyBlock
-public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Tasks
-public import ThreeSumApsp.Spec.Sec3.Theorem21b.FindNegativeTriangle
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.PolyBounded
+import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.CopyBlock
+import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Tasks
+import ThreeSumApsp.Spec.Sec3.Theorem21b.FindNegativeTriangle
 
 /-!
 # Finding a negative triangle with an algorithm that decides whether there is one
@@ -28,7 +28,6 @@ one of the eight answers is yes is NegAt.split); the rounds (loop_spec, with the
 the search and the host (search_spec, find_spec).
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -42,20 +41,9 @@ variable {lim : Limits} {d : ℕ}
 
 namespace Probe
 
-/-- The local variables of probe: the arguments n, U, ab, bc, ac, the offsets a0, b0, c0, the side
+/- The local variables of probe: the arguments n, U, ab, bc, ac, the offsets a0, b0, c0, the side
 h and fr (Free); then h² (Area), and the results of subCopy, which are not used. -/
-abbrev N : ℕ := 0
-@[inherit_doc N] abbrev U : ℕ := 1
-@[inherit_doc N] abbrev AB : ℕ := 2
-@[inherit_doc N] abbrev BC : ℕ := 3
-@[inherit_doc N] abbrev AC : ℕ := 4
-@[inherit_doc N] abbrev OffA : ℕ := 5
-@[inherit_doc N] abbrev OffB : ℕ := 6
-@[inherit_doc N] abbrev OffC : ℕ := 7
-@[inherit_doc N] abbrev Side : ℕ := 8
-@[inherit_doc N] abbrev Free : ℕ := 9
-@[inherit_doc N] abbrev Area : ℕ := 10
-@[inherit_doc N] abbrev Unused : ℕ := 11
+slots N U AB BC AC OffA OffB OffC Side Free Area Unused
 
 end Probe
 
@@ -73,27 +61,11 @@ def probeBody (pNT pSub : ℕ) : Stmt :=
 
 namespace Find
 
-/-- The local variables of find: the arguments n, U, ab, bc, ac, res (Answer), fr (Free); the
+/- The local variables of find: the arguments n, U, ab, bc, ac, res (Answer), fr (Free); the
 offsets a0, b0, c0 and the side length h of the current sub-instance; the next side length h' (Half)
 and δ = h - h' (Shift); the offsets na, nb, nc of the last sub-instance with the answer yes; the
 last answer of probe or of the solver (Reply). -/
-abbrev N : ℕ := 0
-@[inherit_doc N] abbrev U : ℕ := 1
-@[inherit_doc N] abbrev AB : ℕ := 2
-@[inherit_doc N] abbrev BC : ℕ := 3
-@[inherit_doc N] abbrev AC : ℕ := 4
-@[inherit_doc N] abbrev Answer : ℕ := 5
-@[inherit_doc N] abbrev Free : ℕ := 6
-@[inherit_doc N] abbrev OffA : ℕ := 7
-@[inherit_doc N] abbrev OffB : ℕ := 8
-@[inherit_doc N] abbrev OffC : ℕ := 9
-@[inherit_doc N] abbrev Side : ℕ := 10
-@[inherit_doc N] abbrev Half : ℕ := 11
-@[inherit_doc N] abbrev Shift : ℕ := 12
-@[inherit_doc N] abbrev NewA : ℕ := 13
-@[inherit_doc N] abbrev NewB : ℕ := 14
-@[inherit_doc N] abbrev NewC : ℕ := 15
-@[inherit_doc N] abbrev Reply : ℕ := 16
+slots N U AB BC AC Answer Free OffA OffB OffC Side Half Shift NewA NewB NewC Reply
 
 end Find
 
@@ -167,10 +139,7 @@ def findTime (T : ℕ → ℕ → ℕ) (n U : ℕ) : ℕ :=
 
 /-- **What find needs**, if the solver needs r: room for three blocks, three more levels of calls,
 and what the solver needs at any size up to n. -/
-def findNeed (r : ℕ → ℕ → Need) (n U : ℕ) : Need where
-  word := n + 2 + (Finset.range (n + 1)).sup fun h => (r h U).word
-  cells := (Finset.range (n + 1)).sup fun h => 3 * (h * h) + (r h U).cells
-  depth := 3 + (Finset.range (n + 1)).sup fun h => (r h U).depth
+def findNeed (r : ℕ → ℕ → Need) (n U : ℕ) : Need := ⟨n + 2 + (Finset.range (n + 1)).sup fun h => (r h U).word, (Finset.range (n + 1)).sup fun h => 3 * (h * h) + (r h U).cells, 3 + (Finset.range (n + 1)).sup fun h => (r h U).depth⟩
 
 /-- The procedures that the host appends to the program of a solver whose program has o procedures
 and whose procedure number is p: copy, subCopy, probe, find, with the numbers o, o + 1, o + 2,
@@ -193,23 +162,24 @@ structure Ctx (P₀ R : Program) (p pProbe pSub pCopy : ℕ) (T : ℕ → ℕ �
   sub : (P₀ ++ R)[pSub]? = some (subCopyBody pCopy)
   copy : (P₀ ++ R)[pCopy]? = some copyBody
 
+variable {n U h fr : ℕ}
+
 /-- What find needs covers what the solver needs at a size h ≤ n, behind three blocks and up to
 three levels further down. -/
-theorem ok_sub {n U fr h : ℕ} (hok : (findNeed r n U).Ok lim fr d) (hh : h ≤ n) {fr' d' : ℕ}
-    (hfr : fr' ≤ fr + 3 * (h * h)) (hd : d' ≤ d + 3) : (r h U).Ok lim fr' d' := by
-  have hm : h ∈ Finset.range (n + 1) := Finset.mem_range.2 (by omega)
+theorem ok_sub (hok : (findNeed r n U).Ok lim fr d) (hh : h ≤ n) {fr' d' : ℕ}
+    (hfr : fr' ≤ fr + 3 * (h * h)) (hd : d' ≤ d + 3 := by omega) : (r h U).Ok lim fr' d' := by
+  have hm : h ∈ Finset.range (n + 1) := by simp_all
   have hword := Finset.le_sup (f := fun h => (r h U).word) hm
   have hcells := Finset.le_sup (f := fun h => 3 * (h * h) + (r h U).cells) hm
   have hdepth := Finset.le_sup (f := fun h => (r h U).depth) hm
-  refine hok.mono ?_ ?_ ?_ <;> simp only [findNeed] <;> omega
+  apply hok.mono <;> simp only [findNeed] <;> omega
 
 /-- What find needs covers the numbers up to n + 2 and three levels of calls. -/
-private theorem word_depth_of_ok {n U fr : ℕ} (hok : (findNeed r n U).Ok lim fr d) :
+theorem word_depth_of_ok (hok : (findNeed r n U).Ok lim fr d) :
     (n : ℤ) + 2 ≤ lim.word ∧ d + 3 ≤ lim.depth := by
   have hword := hok.word
   have hdepth := hok.depth
-  simp only [findNeed] at hword hdepth
-  omega
+  grind [findNeed]
 
 /-! ## One question -/
 
@@ -219,25 +189,25 @@ def subInst (x : TriInst) (fr a0 b0 c0 h : ℕ) : TriInst :=
   ⟨h, x.U, fr, fr + h * h, fr + 2 * (h * h), subMat x.n h a0 b0 x.AB, subMat x.n h b0 c0 x.BC,
     subMat x.n h a0 c0 x.AC⟩
 
+variable {μ μ' : ℕ → ℤ} {b0 a0 c0 : ℕ}
+
 /-- The sub-instance is an instance, once its three blocks stand at their places. -/
-theorem subInst_pre {x : TriInst} {μ μ' : ℕ → ℤ} {fr a0 b0 c0 h : ℕ} (hpre : x.Pre μ fr)
+theorem subInst_pre {x : TriInst} (hpre : x.Pre μ fr)
     (hh : 1 ≤ h) (sAB : Seg μ' fr (subMat x.n h a0 b0 x.AB))
     (sBC : Seg μ' (fr + h * h) (subMat x.n h b0 c0 x.BC))
     (sAC : Seg μ' (fr + h * h + h * h) (subMat x.n h a0 c0 x.AC)) :
     (subInst x fr a0 b0 c0 h).Pre μ' (fr + 3 * (h * h)) :=
-  have hU : (0 : ℤ) ≤ (x.U : ℤ) := by positivity
+  have hU : 0 ≤ (x.U : ℤ) := by positivity
   triPre_of_arrays hh hpre.U_pos
-    { len := length_subMat .., seg := sAB, bound := abs_le_of_mem_subMat hU hpre.leAB }
-    { len := length_subMat .., seg := sBC, bound := abs_le_of_mem_subMat hU hpre.leBC }
-    { len := length_subMat .., bound := abs_le_of_mem_subMat hU hpre.leAC
-      seg := (show fr + 2 * (h * h) = fr + h * h + h * h by omega) ▸ sAC }
+    (Light.ArrayAt.mk (length_subMat ..) sAB (abs_le_of_mem_subMat hU hpre.leAB))
+    (Light.ArrayAt.mk (length_subMat ..) sBC (abs_le_of_mem_subMat hU hpre.leBC))
+    (Light.ArrayAt.mk (length_subMat ..) (by grind) (abs_le_of_mem_subMat hU hpre.leAC))
 
 /-- **probe** returns 1 if the sub-instance of side h at the offsets a0, b0, c0 has a negative
 triangle, and 0 if not, and changes no cell below the free pointer. -/
-theorem probe_meets (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : TriInst} {μ : ℕ → ℤ} {fr : ℕ}
-    (a0 b0 c0 h : ℕ) (hpre : x.Pre μ fr) (hh : 1 ≤ h)
+theorem probe_meets (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : TriInst}     (a0 b0 c0 h : ℕ) (hpre : x.Pre μ fr) (hh : 1 ≤ h)
     (hin : a0 + h ≤ x.n ∧ b0 + h ≤ x.n ∧ c0 + h ≤ x.n)
-    (hok : (r h x.U).Ok lim (fr + 3 * (h * h)) (d + 1)) (hd : d + 1 < lim.depth) :
+    (hok : (r h x.U).Ok lim (fr + 3 * (h * h)) (d + 1)) (hd : d + 1 < lim.depth := by omega) :
     Meets lim (P₀ ++ R) pProbe d [(x.n : ℤ), x.U, x.ab, x.bc, x.ac, a0, b0, c0, h, fr] μ
       (probeTime T h x.U) fun res μ' =>
         res = flag (NegAt x.n x.AB x.BC x.AC a0 b0 c0 h) ∧ Kept μ μ' fr := by
@@ -247,13 +217,13 @@ theorem probe_meets (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : TriInst} {μ :
   refine .of_body C.probe ?_
   unfold probeBody probeTime
   -- area := h * h
-  light_set (h * h : ℕ)
+  light_set (h * h)
   -- subCopy(n, h, ab, a0, b0, fr)
   light_call (subCopy_meets C.sub C.copy h a0 b0 fr hpre.segAB hpre.lenAB (by omega)
-    (by omega)) with _ μ₁ ⟨sAB, same₁⟩
+    ) with _ μ₁ ⟨sAB, same₁⟩
   -- subCopy(n, h, bc, b0, c0, fr + area)
   light_call (subCopy_meets C.sub C.copy h b0 c0 (fr + h * h) hpre.segBC.keep hpre.lenBC
-    (by omega) (by omega)) with _ μ₂ ⟨sBC, same₂⟩
+    (by omega)) with _ μ₂ ⟨sBC, same₂⟩
   -- subCopy(n, h, ac, a0, c0, fr + area + area)
   light_call (subCopy_meets C.sub C.copy h a0 c0 (fr + h * h + h * h) hpre.segAC.keep
     hpre.lenAC (by omega) (by omega)) with _ μ₃ ⟨sAC, same₃⟩
@@ -275,11 +245,13 @@ def TryInv (x : FindInst) (μ : ℕ → ℤ) (fr a0 b0 c0 h h' : ℕ) (Done : Pr
     Kept μ μ' fr ∧ (na + h' ≤ x.n ∧ nb + h' ≤ x.n ∧ nc + h' ≤ x.n) ∧
     (Done → NegAt x.n x.AB x.BC x.AC na nb nc h')
 
-private theorem TryInv.imp {x : FindInst} {μ : ℕ → ℤ} {fr a0 b0 c0 h h' : ℕ} {Done Done' : Prop}
-    {σ : State} (H : TryInv x μ fr a0 b0 c0 h h' Done σ) (hD : Done' → Done) :
+variable {x : FindInst} {h' : ℕ} {Done : Prop} {σ : State}
+
+theorem TryInv.imp {Done' : Prop}
+    (H : TryInv x μ fr a0 b0 c0 h h' Done σ) (hD : Done' → Done) :
     TryInv x μ fr a0 b0 c0 h h' Done' σ := by
   obtain ⟨na, nb, nc, reply, μ', hσ, hk, hin, hneg⟩ := H
-  exact ⟨na, nb, nc, reply, μ', hσ, hk, hin, fun hd => hneg (hD hd)⟩
+  exact ⟨na, nb, nc, reply, μ', hσ, hk, hin, by simp_all⟩
 
 /-- The sub-instance that the triple t stands for has a negative triangle. -/
 def NegOct (x : FindInst) (a0 b0 c0 h h' : ℕ) (t : ℕ × ℕ × ℕ) : Prop :=
@@ -287,11 +259,9 @@ def NegOct (x : FindInst) (a0 b0 c0 h h' : ℕ) (t : ℕ × ℕ × ℕ) : Prop :
 
 /-- **One question** keeps the invariant, and notes the offsets of its sub-instance if the answer is
 yes. -/
-theorem try_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ : ℕ → ℤ}
-    {fr a0 b0 c0 h h' : ℕ} (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d)
+theorem try_spec (C : Ctx P₀ R p pProbe pSub pCopy T r)     (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d)
     (hh : 1 ≤ h' ∧ h' ≤ h) (hin : a0 + h ≤ x.n ∧ b0 + h ≤ x.n ∧ c0 + h ≤ x.n) {t : ℕ × ℕ × ℕ}
-    (ht : t.1 ≤ 1 ∧ t.2.1 ≤ 1 ∧ t.2.2 ≤ 1) {Done : Prop} {σ : State}
-    (hI : TryInv x μ fr a0 b0 c0 h h' Done σ) :
+    (ht : t.1 ≤ 1 ∧ t.2.1 ≤ 1 ∧ t.2.2 ≤ 1)     (hI : TryInv x μ fr a0 b0 c0 h h' Done σ) :
     Ends lim (P₀ ++ R) d (tryStmt pProbe t) σ (tryTime T h' x.U)
       (TryInv x μ fr a0 b0 c0 h h' (Done ∨ NegOct x a0 b0 c0 h h' t)) := by
   obtain ⟨na, nb, nc, reply, μ', rfl, hk, hcand, hneg⟩ := hI
@@ -299,45 +269,43 @@ theorem try_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ : �
   obtain ⟨hword, hdepth⟩ := word_depth_of_ok hok
   -- Each offset moves by 0 or by δ = h - h'.
   obtain ⟨ht₁, ht₂, ht₃⟩ : t₁ ≤ 1 ∧ t₂ ≤ 1 ∧ t₃ ≤ 1 := ht
-  have hδ₁ : t₁ * (h - h') ≤ h - h' := by simpa using Nat.mul_le_mul_right (h - h') ht₁
-  have hδ₂ : t₂ * (h - h') ≤ h - h' := by simpa using Nat.mul_le_mul_right (h - h') ht₂
-  have hδ₃ : t₃ * (h - h') ≤ h - h' := by simpa using Nat.mul_le_mul_right (h - h') ht₃
+  have hδ₁ : t₁ * (h - h') ≤ h - h' := by simpa using Nat.mul_le_mul_right _ ht₁
+  have hδ₂ : t₂ * (h - h') ≤ h - h' := by simpa using Nat.mul_le_mul_right _ ht₂
+  have hδ₃ : t₃ * (h - h') ≤ h - h' := by simpa using Nat.mul_le_mul_right _ ht₃
   unfold tryStmt tryTime
   -- reply := probe(n, U, ab, bc, ac, a0 + t₁ δ, b0 + t₂ δ, c0 + t₃ δ, h', fr)
   light_call (probe_meets C (a0 + t₁ * (h - h')) (b0 + t₂ * (h - h'))
     (c0 + t₃ * (h - h')) h' hpre.toPre.keep hh.1 (by omega)
-    (ok_sub hok (by omega) le_rfl (by omega)) (by omega)) with _ μ'' ⟨rfl, hk'⟩
+    (ok_sub hok (by omega) le_rfl)) with _ μ'' ⟨rfl, hk'⟩
   -- if reply = 1
-  refine Ends.iteLast (fun hyes => ?_) (fun hno => ?_)
+  refine Ends.iteLast (fun hyes => ?_) fun hno => ?_
   · -- na := a0 + t₁ δ; nb := b0 + t₂ δ; nc := c0 + t₃ δ
-    refine Ends.setToThen (a0 + t₁ * (h - h') : ℕ) ?_
-    refine Ends.setToThen (b0 + t₂ * (h - h') : ℕ) ?_
-    refine Ends.setTo (c0 + t₃ * (h - h') : ℕ) ?_
+    apply Ends.setToThen (a0 + t₁ * (h - h') : ℕ)
+    apply Ends.setToThen (b0 + t₂ * (h - h') : ℕ)
+    apply Ends.setTo (c0 + t₃ * (h - h') : ℕ)
     exact ⟨_, _, _, _, μ'', rfl, hk.trans hk', by omega,
-      fun _ => flag_eq_one_iff.1 (by simpa using hyes)⟩
+      by simp_all [flag_eq_one_iff]⟩
   · refine Ends.skip ⟨na, nb, nc, _, μ'', rfl, hk.trans hk', hcand, ?_⟩
     rintro (hD | hD)
-    · exact hneg hD
-    · exact absurd (by simpa [NegOct] using flag_of hD) hno
+    · simp_all
+    simp_all [NegOct, flag_of]
 
 /-- The questions for a list of triples keep the invariant: afterwards na, nb, nc are the offsets of
 a sub-instance with a negative triangle, if one of the triples stands for such a sub-instance. -/
-theorem tries_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ : ℕ → ℤ}
-    {fr a0 b0 c0 h h' : ℕ} (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d)
+theorem tries_spec (C : Ctx P₀ R p pProbe pSub pCopy T r)     (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d)
     (hh : 1 ≤ h' ∧ h' ≤ h) (hin : a0 + h ≤ x.n ∧ b0 + h ≤ x.n ∧ c0 + h ≤ x.n)
-    (ts : List (ℕ × ℕ × ℕ)) (hts : ∀ t ∈ ts, t.1 ≤ 1 ∧ t.2.1 ≤ 1 ∧ t.2.2 ≤ 1) {Done : Prop}
-    {σ : State} (hI : TryInv x μ fr a0 b0 c0 h h' Done σ) :
+    (ts : List (ℕ × ℕ × ℕ)) (hts : ∀ t ∈ ts, t.1 ≤ 1 ∧ t.2.1 ≤ 1 ∧ t.2.2 ≤ 1)
+    (hI : TryInv x μ fr a0 b0 c0 h h' Done σ) :
     Ends lim (P₀ ++ R) d (triesStmt pProbe ts) σ (ts.length * tryTime T h' x.U)
       (TryInv x μ fr a0 b0 c0 h h' (Done ∨ ∃ t ∈ ts, NegOct x a0 b0 c0 h h' t)) := by
   induction ts generalizing Done σ with
-  | nil => exact Ends.skip (hI.imp (by simp))
+  | nil => exact Ends.skip (by simp_all)
   | cons t ts ih =>
-    refine Ends.seq (tryTime T h' x.U) (ts.length * tryTime T h' x.U) ?_
-      (by simp only [List.length_cons]; ring_nf; omega)
-    refine (try_spec C hpre hok hh hin (hts t (by simp)) hI).mono le_rfl fun σ' hσ' => ?_
-    refine (ih (fun t' ht' => hts t' (by simp [ht'])) hσ').mono le_rfl fun σ'' hσ'' => hσ''.imp ?_
-    simp only [List.mem_cons, exists_eq_or_imp]
-    tauto
+    refine Ends.seq _ (ts.length * tryTime T h' x.U) ?_
+      (by simp [List.length_cons]; linarith)
+    refine (try_spec C hpre hok hh hin (by simp_all) hI).mono le_rfl fun σ' hσ' => ?_
+    refine (ih (by grind) hσ').mono le_rfl fun σ'' hσ'' => hσ''.imp ?_
+    grind
 
 /-! ## A round, and the search -/
 
@@ -351,28 +319,24 @@ def LoopInv (x : FindInst) (μ : ℕ → ℤ) (fr h : ℕ) (σ : State) : Prop :
     Kept μ μ' fr ∧ (a0 + h ≤ x.n ∧ b0 + h ≤ x.n ∧ c0 + h ≤ x.n) ∧
     NegAt x.n x.AB x.BC x.AC a0 b0 c0 h
 
-private theorem LoopInv.loc_side {x : FindInst} {μ : ℕ → ℤ} {fr h : ℕ} {σ : State}
-    (hI : LoopInv x μ fr h σ) : σ.loc Side = h := by
+theorem LoopInv.loc_side     (hI : LoopInv x μ fr h σ) : σ.loc Side = h := by
   obtain ⟨_, _, _, _, _, _, _, _, _, _, rfl, -⟩ := hI
   rfl
 
 /-- halfStmt puts ⌈h/2⌉ into h' and changes nothing else. -/
-theorem half_spec {P : Program} {loc μ : ℕ → ℤ} {h : ℕ} (hside : loc Side = h)
+theorem half_spec {P : Program} {loc : ℕ → ℤ} (hside : loc Side = h)
     (hword : (h : ℤ) + 2 ≤ lim.word) :
     Ends lim P d halfStmt ⟨loc, μ⟩ (10 * ((h + 1) / 2) + 8) fun σ' =>
       σ' = ⟨Function.update loc Half ((h + 1) / 2 : ℕ), μ⟩ := by
-  unfold halfStmt
-  -- h' := 0
   refine Ends.setThen ?_
   -- while h' + h' < h: h' := h' + 1
-  refine Ends.whileBlock (fun j σ => σ = ⟨Function.update loc Half j, μ⟩) ((h + 1) / 2) (by simp)
-    ?round ?done
-  case round =>
+  apply Ends.whileBlock (fun j σ => σ = ⟨Function.update loc Half j, μ⟩) ((h + 1) / 2) (by simp)
+  ·
     rintro j _ hj rfl
     exact ⟨by light_norm [Side, Half, hside, abs_le]; omega,
       by light_norm [Side, Half, hside]; omega, by light_norm [Stmt.BlockSafe, abs_le]; omega,
       by simp⟩
-  case done =>
+  ·
     rintro _ rfl
     exact ⟨by light_norm [Side, Half, hside, abs_le]; omega,
       by light_norm [Side, Half, hside]; omega, rfl⟩
@@ -380,18 +344,14 @@ theorem half_spec {P : Program} {loc μ : ℕ → ℤ} {h : ℕ} (hside : loc Si
 /-- The number of steps of the round that goes to the side length h'. -/
 def roundTime (T : ℕ → ℕ → ℕ) (h' U : ℕ) : ℕ := 8 * tryTime T h' U + 10 * h' + 26
 
-private theorem roundTime_le (T : ℕ → ℕ → ℕ) (h' U : ℕ) :
+theorem roundTime_le (T : ℕ → ℕ → ℕ) (h' U : ℕ) :
     roundTime T h' U + 4 ≤ roundBound T h' U := by
-  have hsq : h' ≤ h' ^ 2 := Nat.le_self_pow (by norm_num) h'
-  have hcopy : h' * (16 * h' + 31) = 16 * h' ^ 2 + 31 * h' := by ring
-  unfold roundTime roundBound tryTime probeTime subCopyTime
-  rw [hcopy]
-  omega
+  have hsq : h' ≤ h' ^ 2 := by nlinarith
+  grind [roundTime, roundBound, tryTime, probeTime, subCopyTime]
 
 /-- **One round** goes from a sub-instance of side h ≥ 2 with a negative triangle to one of side
 ⌈h/2⌉. -/
-theorem round_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ : ℕ → ℤ} {fr h : ℕ}
-    (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d) (hh : 2 ≤ h) {σ : State}
+theorem round_spec (C : Ctx P₀ R p pProbe pSub pCopy T r)     (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d) (hh : 2 ≤ h)
     (hI : LoopInv x μ fr h σ) :
     Ends lim (P₀ ++ R) d (roundStmt pProbe) σ (roundTime T ((h + 1) / 2) x.U)
       (LoopInv x μ fr ((h + 1) / 2)) := by
@@ -410,8 +370,8 @@ theorem round_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ :
   light_set c0
   -- The eight questions: one of them has the answer yes.
   refine Ends.next (8 * tryTime T h' x.U) ((tries_spec C hpre hok (h := h) (h' := h')
-    ⟨by omega, by omega⟩ hin octants (fun _ => le_one_of_mem_octants) (Done := False)
-    ⟨a0, b0, c0, z₆, μ', rfl, hk, by omega, False.elim⟩).mono (by simp [octants]) ?_)
+    ⟨by omega, by omega⟩ hin octants (by decide) (Done := False)
+    ⟨a0, b0, c0, z₆, μ', rfl, hk, by omega, False.elim⟩).mono (by rfl) ?_)
   rintro _ ⟨na, nb, nc, reply, μ'', rfl, hk', hcand, hneg'⟩
   -- a0 := na; b0 := nb; c0 := nc; h := h'
   light_set na
@@ -419,34 +379,30 @@ theorem round_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ :
   light_set nc
   light_set h'
   exact ⟨na, nb, nc, _, _, _, _, _, _, μ'', rfl, hk', hcand,
-    hneg' (.inr (hneg.split (by omega) (by omega)))⟩
+    hneg' (.inr (hneg.split (by omega)))⟩
 
 /-- The number of steps of the search from the side length h on. -/
 def loopTime (T : ℕ → ℕ → ℕ) (h U : ℕ) : ℕ :=
   ((halvingChain h).map fun h' => roundBound T h' U).sum + 4
 
 /-- The rounds end with a sub-instance of side 1 that has a negative triangle. -/
-theorem loop_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ : ℕ → ℤ} {fr : ℕ}
-    (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d) :
+theorem loop_spec (C : Ctx P₀ R p pProbe pSub pCopy T r)     (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d) :
     ∀ (h : ℕ) (σ : State), 1 ≤ h → LoopInv x μ fr h σ →
       Ends lim (P₀ ++ R) d (.while (k 1 <' v Side) (roundStmt pProbe)) σ (loopTime T h x.U)
         (LoopInv x μ fr 1) := by
   obtain ⟨hword, -⟩ := word_depth_of_ok hok
-  have one : ((1 : ℕ) : ℤ) ≤ lim.word := by push_cast; omega
+  have one : 1 ≤ lim.word := by omega
   intro h
   induction h using Nat.strong_induction_on with
   | _ h ih =>
     intro σ h1 hI
     by_cases hh : 2 ≤ h
     · -- One round, and then the rounds from ⌈h/2⌉ on.
-      refine Ends.whileStep (roundTime T ((h + 1) / 2) x.U) (loopTime T ((h + 1) / 2) x.U)
+      refine Ends.whileStep _ (loopTime T ((h + 1) / 2) x.U)
         ⟨one, trivial⟩ (by light_norm [hI.loc_side]; omega)
-        ((round_spec C hpre hok hh hI).mono le_rfl fun σ' hσ' => ih _ (by omega) σ' (by omega) hσ')
+        ((round_spec C hpre hok hh hI).mono le_rfl fun σ' hσ' => by grind)
         ?_
-      have := roundTime_le T ((h + 1) / 2) x.U
-      simp only [loopTime, halvingChain_of_le hh, List.map_cons, List.sum_cons, Cond.cost,
-        Expr.cost]
-      omega
+      grind [roundTime_le, loopTime, Cond.cost, Expr.cost, halvingChain_of_le]
     · obtain rfl : h = 1 := by omega
       exact Ends.whileDone ⟨one, trivial⟩ (by light_norm [hI.loc_side]; omega) hI
         (by simp [loopTime])
@@ -454,25 +410,20 @@ theorem loop_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ : 
 /-! ## The host -/
 
 /-- **The search** finds a negative triangle if there is one. -/
-theorem search_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ μ' : ℕ → ℤ} {fr : ℕ}
-    (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d) (hk : Kept μ μ' fr)
+theorem search_spec (C : Ctx P₀ R p pProbe pSub pCopy T r)     (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d) (hk : Kept μ μ' fr)
     (hyes : (triOf x.n x.AB x.BC x.AC).HasNegativeTriangle) (reply : ℤ) :
     Ends lim (P₀ ++ R) d (searchStmt pProbe)
       ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, x.res, fr, 0, 0, 0, 0, 0, 0, 0, 0, 0, reply], μ'⟩
       (loopTime T x.n x.U + 23) fun σ' => findTask.Post x μ fr (σ'.loc 0) σ'.mem := by
-  obtain ⟨hword, -⟩ := word_depth_of_ok hok
-  have hcells := hok.cells
   light_facts hok hpre
-  unfold searchStmt
-  -- a0 := 0; b0 := 0; c0 := 0; h := n
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
+  light_set 0
+  light_set 0
+  light_set 0
   light_set x.n
   -- The rounds.
   light_piece (loop_spec C hpre hok x.n _ hpre.n_pos
     ⟨0, 0, 0, _, _, _, _, _, _, μ', rfl, hk, by omega,
-      (hasNegativeTriangle_iff_negAt ..).1 hyes⟩)
+      by grind [hasNegativeTriangle_iff_negAt]⟩)
     with _ ⟨a0, b0, c0, z₁, z₂, z₃, z₄, z₅, z₆, μ'', rfl, hk', hin, hneg⟩
   -- res[0] := a0; res[1] := b0; res[2] := c0; the result is 1
   light_store x.res a0
@@ -483,30 +434,29 @@ theorem search_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ 
     hneg.triangle ..⟩, by light_keep⟩
   · simp
   · simp
-  · simp
+  simp
 
 /-- **find** returns 1 and writes a negative triangle to the cells from `res` if there is one, and
 returns 0 if there is none (`findTask`), within `findTime` steps. -/
-theorem find_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ : ℕ → ℤ} {fr : ℕ}
-    (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d) :
+theorem find_spec (C : Ctx P₀ R p pProbe pSub pCopy T r)     (hpre : x.Pre μ fr) (hok : (findNeed r x.n x.U).Ok lim fr d) :
     Ends lim (P₀ ++ R) d (findBody p pProbe) ⟨frame (findTask.args x ++ [(fr : ℤ)]), μ⟩
       (findTime T x.n x.U) fun σ' => findTask.Post x μ fr (σ'.loc 0) σ'.mem := by
   obtain ⟨hword, hdepth⟩ := word_depth_of_ok hok
-  change Ends _ _ _ _ ⟨frame [(x.n : ℤ), x.U, x.ab, x.bc, x.ac, x.res, fr], μ⟩ _ _
+  change Ends _ _ _ _ ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, x.res, fr], μ⟩ _ _
   unfold findBody findTime
   -- reply := solver(n, U, ab, bc, ac, fr)
   refine Ends.callToThen (T' := T x.n x.U) (C.sol.meets R x.toTriInst fr hpre.toPre
-    (ok_sub hok le_rfl (by omega) (by omega))) ?_ (by simp [ntTask])
+    (ok_sub hok le_rfl (by omega))) ?_ (by aesop)
   rintro _ μ₀ ⟨rfl, hk⟩
   -- if reply = 0
-  refine Ends.iteLast (fun hno => ?_) (fun hyes => ?_)
+  refine Ends.iteLast (fun hno => ?_) fun hyes => ?_
   · -- There is no negative triangle: the result is 0.
-    refine Ends.setTo 0 ⟨?_, fun h01 => absurd h01 (by norm_num), by light_keep⟩
-    simpa using hno.symm
+    refine Ends.setTo 0 ⟨?_, by simp, by light_keep⟩
+    simp_all
   · -- There is one: the search finds it.
     refine (search_spec C hpre hok hk (by_contra fun hcon => hyes ?_) _).mono ?_ fun _ h => h
     · simpa using flag_of_not hcon
-    · simp only [loopTime]
+    · simp [loopTime]
       light_time
 
 /-! ## The need -/
@@ -515,17 +465,16 @@ theorem find_spec (C : Ctx P₀ R p pProbe pSub pCopy T r) {x : FindInst} {μ : 
 theorem polyNeed_find (hr : PolyNeed r) : PolyNeed (findNeed r) := by
   obtain ⟨s, e, hse⟩ := hr
   have hpoly := PolyBounded.polyBound PolyBounded.fst PolyBounded.snd s e
-  have hle : ∀ {n h : ℕ}, h ∈ Finset.range (n + 1) → h ≤ n := fun hh =>
-    Nat.le_of_lt_succ (Finset.mem_range.1 hh)
-  refine PolyBounded.polyNeed ?_ ?_ ?_
-  · refine PolyBounded.of_le (G := fun n U => n + 2 + _) (by growth_poly [hpoly]) fun n U =>
+  have hle : ∀ {n h : ℕ}, h ∈ Finset.range (n + 1) → h ≤ n := by simp
+  apply PolyBounded.polyNeed
+  · refine PolyBounded.of_le (by growth_poly [hpoly]) fun n U =>
       Nat.add_le_add_left
         (Finset.sup_le fun h hh => (hse h U).1.trans (polyBound_cons_le (hle hh) ..)) _
   · refine PolyBounded.of_le (G := fun n U => 3 * (n * n) + _) (by growth_poly [hpoly]) fun n U =>
       Finset.sup_le fun h hh => Nat.add_le_add
-        (Nat.mul_le_mul_left 3 (Nat.mul_le_mul (hle hh) (hle hh)))
+        (by simp_all [Nat.mul_le_mul])
         ((hse h U).2.1.trans (polyBound_cons_le (hle hh) ..))
-  · refine PolyBounded.of_le (G := fun n U => 3 + _) (by growth_poly [hpoly]) fun n U =>
+  · refine PolyBounded.of_le (by growth_poly [hpoly]) fun n U =>
       Nat.add_le_add_left
         (Finset.sup_le fun h hh => (hse h U).2.2.trans (polyBound_cons_le (hle hh) ..)) _
 
@@ -536,11 +485,9 @@ open Find
 /-- **[VW18, Lemma 4.1]: finding a negative triangle from deciding whether there is one.** -/
 theorem isHost_find : IsHost ntTask findTask findTime findNeed := by
   refine ⟨fun P p T r hsol => ⟨findProcs P.length p, P.length + 3, ?_⟩,
-    fun r hr => polyNeed_find hr⟩
+    by grind [polyNeed_find]⟩
   refine ⟨findBody p (P.length + 2), by simp [findProcs], fun R' lim d x μ fr hpre hok => ?_⟩
   rw [List.append_assoc]
   have C : Ctx P (findProcs P.length p ++ R') p (P.length + 2) (P.length + 1) P.length T r :=
     ⟨hsol, by simp [findProcs], by simp [findProcs], by simp [findProcs]⟩
   exact find_spec C hpre hok
-
-end Light.Sec3

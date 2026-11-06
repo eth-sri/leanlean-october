@@ -1,11 +1,9 @@
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
-public import ImprovedExponents.PrunedProgram.SegOn
-public import ImprovedExponents.PrunedProgram.Work
-public import ImprovedExponents.PrunedProgram.Procs
+import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
+import ImprovedExponents.PrunedProgram.SegOn
+import ImprovedExponents.PrunedProgram.Work
+import ImprovedExponents.PrunedProgram.Procs
 
-@[expose] public section
 
 /-!
 # The shared stage with the pruned encoder: what it leaves behind, its shape and its specification
@@ -24,7 +22,7 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec2/Theorem5/Contracts.lean` and
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 variable {p : Par} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
   {X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ}
@@ -53,21 +51,19 @@ theorem SharedReadyP.congr (h : SharedReadyP p hmL aX aY b0 X Y μ)
     SharedReadyP p hmL aX aY b0 X Y μ' := by
   have hplaces := p.places b0
   have tb : SharedTables p b0 μ' :=
-    h.toSharedTables.congr fun x hlo hx => hag x (by omega) (by omega) (by omega)
+    h.toSharedTables.congr fun x hlo hx => by grind
   have henc : ∀ {a β i : ℕ}, p.aENCA b0 ≤ a → a + p.nB * p.T ≤ p.sharedEnd b0 → β < p.nB →
       i < p.T → μ' (a + β * p.T + i) = μ (a + β * p.T + i) := fun ha hend hβ hi => by
     have := Nat.mul_add_lt_mul hβ hi
-    exact hag _ (by omega) (by omega) (by omega)
+    grind
   have hT : p.T = 10 ^ p.L := rfl
   refine
     { tb with
       dir := h.dir.congr fun i hi => ?_
-      encA := fun β hβ => (h.encA β hβ).congr fun i hi => henc le_rfl (by omega) hβ (hT ▸ hi)
+      encA := fun β hβ => (h.encA β hβ).congr fun i hi => henc le_rfl (by omega) hβ (by omega)
       encB := fun β hβ => (h.encB β hβ).congr fun i hi =>
-        henc (by omega) (by omega) hβ (hT ▸ hi) }
-  simp only [dirList, List.length_map, List.length_cons, List.length_nil] at hi
-  simp only [Par.aDIR]
-  exact hag _ (by omega) (by omega) (by omega)
+        henc (by omega) (by omega) hβ (by omega) }
+  grind [dirList, List.length_cons]
 
 /-- What the pruned shared stage leaves behind is kept by a memory that agrees on all cells below
 the end of the shared block, but for cell 31 of the directory. -/
@@ -95,5 +91,3 @@ def SharedSpecP (lim : Limits) (P : Program) (c : ℕ) : Prop :=
     ∀ d, d + (p.L + 3) ≤ lim.depth →
     Meets lim P Proc.sharedP d [p.L, p.m, p.N, p.D, aX, aY, b0] μ (c * sharedShapeP p) fun _ μ' =>
       SharedReadyP p hmL aX aY b0 X Y μ' ∧ SameOutside μ μ' b0 (p.sharedEnd b0 - b0)
-
-end Light.Sec2

@@ -1,8 +1,6 @@
-module
 
-public import ImprovedExponents.Optimum.NumLog
+import ImprovedExponents.Optimum.NumLog
 
-@[expose] public section
 
 /-!
 # Certified values of the constants at `c = 107/5`, `c = 108/5` and `c = 22`
@@ -24,7 +22,7 @@ inequality between rational numbers.
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Real Set
+open Set
 
 /-! ### The thinness constants -/
 
@@ -47,5 +45,3 @@ theorem Gam_22_mem : Gam 22 ∈ Icc (0.076207 : ℝ) 0.076209 :=
 (it is `0.00209529…`). -/
 theorem savingF_pruned_gt : (0.002095 : ℝ) < savingF (basePruned 22) (Gam 22) :=
   lt_savingF (basePruned_pos (by norm_num)) basePruned_22_mem.2 Gam_22_mem.1
-
-end ImprovedExponents

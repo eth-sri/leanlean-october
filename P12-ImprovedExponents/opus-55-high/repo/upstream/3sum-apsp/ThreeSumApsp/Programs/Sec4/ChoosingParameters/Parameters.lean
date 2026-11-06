@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Setup
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Time
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Setup
+import ThreeSumApsp.Programs.Sec4.Theorem30.Time
 
 /-!
 # Corollaries 26 and 31 in the light language: rational parameters in the program text
@@ -23,22 +23,17 @@ proof (`QuerySpec31`, `query31_meets`), and the text and the specification of th
 (`pre31Body`, `PreSpec31`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 /-! ## Parameters -/
 
 /-- The parameters in the program text: c = a/b > 10, θ = p/q in (0, 0.9), and the threshold m₀ ≥ 1
 below which queries compute inner products. -/
 structure RatParams where
-  a : ℕ
-  b : ℕ
-  p : ℕ
-  q : ℕ
-  m₀ : ℕ
+  (a b p q m₀ : ℕ)
   hb : 1 ≤ b
   hq : 1 ≤ q
   hc : 10 * b < a
@@ -69,11 +64,7 @@ theorem RatParams.t_le (G : RatParams) (m : ℕ) : G.t m ≤ m := by
   have hq := G.hq
   rw [Nat.div_le_iff_le_mul_add_pred (by omega)]
   have h1 : 10 * G.p * m ≤ 9 * G.q * m := Nat.mul_le_mul_right _ G.hθ.le
-  have h2 : G.p * m ≤ G.q * m := by
-    have e1 : 10 * G.p * m = 10 * (G.p * m) := by ring
-    have e2 : 9 * G.q * m = 9 * (G.q * m) := by ring
-    omega
-  omega
+  grind
 
 /-- a m ≤ b L. -/
 theorem RatParams.am_le (G : RatParams) (m : ℕ) : G.a * m ≤ G.b * G.L m := by
@@ -136,14 +127,11 @@ theorem RatParams.scratch_in_block (G : RatParams) (N D₀ fr : ℕ) :
 theorem add_three_le_structEnd (G : RatParams) (N D₀ fr : ℕ) : fr + 3 ≤ structEnd G N D₀ fr := by
   have hblock := add_three_le_blockAt N D₀ fr
   have hend := G.blockAt_lt_blockEnd N D₀ fr
-  by_cases h : logFour D₀ < G.m₀
-  · rw [structEnd_small h]
-  · rw [structEnd_large (not_lt.1 h)]
-    omega
+  grind [structEnd_small, structEnd_large, not_lt]
 
 /-- m ≤ L. -/
 theorem logFour_le_levels (G : RatParams) (N D₀ : ℕ) : (parOf G N D₀).m ≤ (parOf G N D₀).L := by
-  change logFour D₀ ≤ G.L (logFour D₀)
+  change logFour D₀ ≤ G.L _
   have := G.ten_le_L (logFour D₀)
   omega
 
@@ -160,13 +148,11 @@ structure Lim31 (lim : Limits) (G : RatParams) (N D₀ fr : ℕ) (U : ℤ) : Pro
 
 /-- The numbers formed on the way to L fit in a word. -/
 theorem Lim31.wordL (h : Lim31 lim G N D₀ fr U) : ((G.a * logFour D₀ + G.b : ℕ) : ℤ) ≤ lim.word :=
-  le_trans (by exact_mod_cast (by omega :
-    G.a * logFour D₀ + G.b ≤ G.a * logFour D₀ + G.b + G.p * logFour D₀ + G.q)) h.mword
+  le_trans (by omega) h.mword
 
 /-- The numbers formed on the way to t fit in a word. -/
 theorem Lim31.wordT (h : Lim31 lim G N D₀ fr U) : ((G.p * logFour D₀ + G.q : ℕ) : ℤ) ≤ lim.word :=
-  le_trans (by exact_mod_cast (by omega :
-    G.p * logFour D₀ + G.q ≤ G.a * logFour D₀ + G.b + G.p * logFour D₀ + G.q)) h.mword
+  le_trans (by omega) h.mword
 
 /-- **What both routines are given**: matrices X and Y with entries bounded by U, the addresses aX
 and aY of their cells, which lie below the free pointer fr, and limits that suffice. -/
@@ -202,23 +188,10 @@ def CeilMulSpec (lim : Limits) (P : Program) (pn a b : ℕ) : Prop :=
 
 namespace Pre31
 
-/-- The locals of pre31. The first five are its arguments N, D, aX, aY, fr. Then come m, 4^m, L, t,
+/- The locals of pre31. The first five are its arguments N, D, aX, aY, fr. Then come m, 4^m, L, t,
 the addresses of the padded matrices, the base address b0 of the block of Theorem 30, a result that
 is not used, and the product N 4^m. -/
-abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Dim : ℕ := 1
-@[inherit_doc Size] abbrev MatX : ℕ := 2
-@[inherit_doc Size] abbrev MatY : ℕ := 3
-@[inherit_doc Size] abbrev Free : ℕ := 4
-@[inherit_doc Size] abbrev Log : ℕ := 5
-@[inherit_doc Size] abbrev Padded : ℕ := 6
-@[inherit_doc Size] abbrev Levels : ℕ := 7
-@[inherit_doc Size] abbrev Switch : ℕ := 8
-@[inherit_doc Size] abbrev PadX : ℕ := 9
-@[inherit_doc Size] abbrev PadY : ℕ := 10
-@[inherit_doc Size] abbrev Block : ℕ := 11
-@[inherit_doc Size] abbrev Res : ℕ := 12
-@[inherit_doc Size] abbrev Area : ℕ := 13
+slots Size Dim MatX MatY Free Log Padded Levels Switch PadX PadY Block Res Area
 
 end Pre31
 
@@ -259,5 +232,3 @@ def tPre31 (c : ℕ) (G : RatParams) (N D₀ : ℕ) : ℕ :=
       tCeilMul G.a (logFour D₀) + tCeilMul G.p (logFour D₀) + tPadX N (D (logFour D₀))
         + tCopy (D₀ * N) + tFill ((D (logFour D₀) - D₀) * N)
         + tPreCore c (parOf G N D₀) (switchOf31 G D₀) + 120
-
-end Light.Sec4

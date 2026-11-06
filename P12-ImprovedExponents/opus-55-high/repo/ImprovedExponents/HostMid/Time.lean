@@ -1,8 +1,6 @@
-module
 
-public import ImprovedExponents.HostMid.Arrays
+import ImprovedExponents.HostMid.Arrays
 
-@[expose] public section
 
 /-!
 # The variant host: the time of a run is within the worst case
@@ -16,7 +14,7 @@ is called with; writing the matrices is charged at `D`, which is more.
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp.Spec
 
 /-- Writing the two matrices of an instance takes longer for a larger inner dimension and for a
 longer piece. -/
@@ -33,8 +31,8 @@ theorem instance_le' (Tn : List ℕ → ℕ) (n D g execs : ℕ) {len q w cap : 
     tWrites n (midSize D g) len + Tn [n, midSize D g, w] + tScanPairs w len execs
       ≤ tWrites n D q + supTime Tn n (midSize D g) cap + tAnswers cap + tScanCall q * execs := by
   have hwrites := tWrites_le n (midSize_le D g) hlen
-  have hsolver : Tn [n, midSize D g, w] ≤ supTime Tn n (midSize D g) cap :=
-    Finset.le_sup (f := fun w => Tn [n, midSize D g, w]) (Finset.mem_range.2 (by omega))
+  have hsolver : Tn [n, midSize D g, w] ≤ supTime Tn n _ cap :=
+    Finset.le_sup (f := fun w => Tn [n, midSize D g, w]) (by simp_all)
   have hanswers : tAnswers w ≤ tAnswers cap := by
     unfold tAnswers
     gcongr
@@ -51,11 +49,11 @@ theorem sum_le_mul_add {m M A B E : ℕ} {f e : ℕ → ℕ} (hf : ∀ t < m, f 
     (hm : m ≤ M) (he : ∑ t ∈ Finset.range m, e t ≤ E) :
     ∑ t ∈ Finset.range m, f t ≤ M * A + B * E :=
   calc ∑ t ∈ Finset.range m, f t ≤ ∑ t ∈ Finset.range m, (A + B * e t) :=
-        Finset.sum_le_sum fun t ht => hf t (Finset.mem_range.1 ht)
+        by simp_all [Finset.sum_le_sum]
     _ = m * A + B * ∑ t ∈ Finset.range m, e t := by
         rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_range, smul_eq_mul,
           Finset.mul_sum]
-    _ ≤ M * A + B * E := Nat.add_le_add (Nat.mul_le_mul_right _ hm) (Nat.mul_le_mul_left _ he)
+    _ ≤ M * A + B * E := by simp_all [Nat.add_le_add, Nat.mul_le_mul_right, Nat.mul_le_mul_left]
 
 variable {x : TriInst} {μ : ℕ → ℤ} {fr D g : ℕ}
 
@@ -67,7 +65,6 @@ theorem chunkCount_le_m {X : HostData} (hv : X.Valid) : X.chunkCount ≤ X.m := 
   have hpieces : 1 ≤ X.h := by
     rw [HostData.h, Nat.ceilDiv_eq_add_pred_div, Nat.le_div_iff_mul_le (by omega)]
     omega
-  rw [HostData.m]
   exact Nat.le_mul_of_pos_left _ hpieces
 
 /-- All scans but one fail, and there are at most `falsePositiveBound` failed scans. -/
@@ -91,14 +88,9 @@ theorem hostRunTime_le' (hpre : x.Pre μ fr) (hbig : BigCase x.n D g) (Tn : List
       ≤ tDblTable (bitLen x.U) + 3 * tResidues (x.n * x.n) (bitLen x.U)
         + tClasses x.n (Nat.sqrt D) + tChunks (Nat.sqrt D) (4 * x.n * g)
         + hostLoopBound' Tn x.n x.U D g + 80 := by
-  have hprime : (hostData' x D g).p ≤ Nat.sqrt D := hostData'_p_le x g hbig.sixteen_le
+  have hprime := hostData'_p_le x g hbig.sixteen_le
   have hchunks : (hostData' x D g).chunkCount ≤ 4 * x.n * g :=
-    (chunkCount_le_m (hostData'_valid hpre hbig)).trans (hostData'_m_le hbig)
+    by grind [chunkCount_le_m, hostData'_valid, hostData'_m_le]
   have hloop := tHostLoop_le' hpre hbig Tn
   have hn : (hostData' x D g).n = x.n := rfl
-  unfold hostRunTime
-  rw [hn]
-  unfold tClasses tChunks
-  omega
-
-end ImprovedExponents.HostMid
+  grind [hostRunTime, tClasses, tChunks]

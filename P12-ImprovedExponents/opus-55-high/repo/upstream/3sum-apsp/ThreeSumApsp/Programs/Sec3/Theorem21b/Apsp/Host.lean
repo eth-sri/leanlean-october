@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.PolyBounded
-public import ThreeSumApsp.Programs.Sec3.Theorem21b.Apsp.Passes
-public import ThreeSumApsp.Programs.Tasks
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.PolyBounded
+import ThreeSumApsp.Programs.Sec3.Theorem21b.Apsp.Passes
+import ThreeSumApsp.Programs.Tasks
 
 /-!
 # APSP from the (min,+)-product
@@ -28,7 +28,6 @@ writes the answer (`ApspHost.out_spec`, `ApspHost.answer_correct`), and `ap_spec
 together.  The result is `isHost_ap : IsHost mpTask apTask apTime apNeed`.
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
@@ -36,32 +35,32 @@ open ThreeSumApsp ThreeSumApsp.Spec
 
 namespace ApspHost
 
-/-- The number n of vertices. -/
-abbrev Verts : ℕ := 0
-/-- The bound U on the weights. -/
-abbrev Bound : ℕ := 1
-/-- The address of the adjacency matrix. -/
-abbrev AdjAt : ℕ := 2
-/-- The address of the weights. -/
-abbrev WtsAt : ℕ := 3
-/-- The address of the answer. -/
-abbrev Out : ℕ := 4
-/-- The free pointer, where the current matrix is kept. -/
-abbrev Free : ℕ := 5
-/-- n². -/
-abbrev Cells : ℕ := 6
-/-- nU. -/
-abbrev Thresh : ℕ := 7
-/-- 3nU, which stands for +∞. -/
-abbrev Big : ℕ := 8
-/-- fr + n², where the product is written. -/
-abbrev ProdAt : ℕ := 10
-/-- fr + 2n², the free pointer of the solver. -/
-abbrev SolverFree : ℕ := 11
-/-- The power of two that counts the rounds. -/
-abbrev Power : ℕ := 12
-/-- Takes the results of the calls. -/
-abbrev Res : ℕ := 13
+/- The number n of vertices. -/
+slots Verts
+/- The bound U on the weights. -/
+slots 1 Bound
+/- The address of the adjacency matrix. -/
+slots 2 AdjAt
+/- The address of the weights. -/
+slots 3 WtsAt
+/- The address of the answer. -/
+slots 4 Out
+/- The free pointer, where the current matrix is kept. -/
+slots 5 Free
+/- n². -/
+slots 6 Cells
+/- nU. -/
+slots 7 Thresh
+/- 3nU, which stands for +∞. -/
+slots 8 Big
+/- fr + n², where the product is written. -/
+slots 10 ProdAt
+/- fr + 2n², the free pointer of the solver. -/
+slots 11 SolverFree
+/- The power of two that counts the rounds. -/
+slots 12 Power
+/- Takes the results of the calls. -/
+slots 13 Res
 
 end ApspHost
 
@@ -92,10 +91,7 @@ def apTime (T : ℕ → ℕ → ℕ) (n U : ℕ) : ℕ :=
   Nat.clog 2 n * (T n (3 * (n * U)) + 23 * (n * n) + 29) + 53 * (n * n) + 17 * n + 65
 
 /-- The need of the host, given the need of the solver. -/
-def apNeed (r : ℕ → ℕ → Need) (n U : ℕ) : Need where
-  word := max (r n (3 * (n * U))).word (3 * (n * U))
-  cells := 2 * (n * n) + (r n (3 * (n * U))).cells
-  depth := (r n (3 * (n * U))).depth + 1
+def apNeed (r : ℕ → ℕ → Need) (n U : ℕ) : Need := ⟨max (r n (3 * (n * U))).word (3 * (n * U)), 2 * (n * n) + (r n (3 * (n * U))).cells, (r n (3 * (n * U))).depth + 1⟩
 
 namespace ApspHost
 
@@ -127,7 +123,7 @@ variable {P₀ R₀ : Program} {pMP pInit pClip pOut : ℕ} {T : ℕ → ℕ →
 
 /-- The arithmetic facts of the hypotheses as one conjunction: what the limits allow and what the
 instance satisfies. -/
-private theorem Ctx.places (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr) :
+theorem Ctx.places (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr) :
     ((lim.space : ℤ) ≤ lim.word ∧ 3 * ((x.n : ℤ) * x.U) ≤ lim.word ∧
       ((r x.n (3 * (x.n * x.U))).word : ℤ) ≤ lim.word ∧
       fr + (2 * (x.n * x.n) + (r x.n (3 * (x.n * x.U))).cells) ≤ lim.space ∧
@@ -140,7 +136,7 @@ private theorem Ctx.places (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x �
     C.pre.belowW, C.pre.belowOut⟩
 
 /-- The pairs that apOut writes for the matrix after ⌈log₂ n⌉ squarings are the answer. -/
-private theorem answer_correct (hpre : x.Pre μ fr) {μ' : ℕ → ℤ}
+theorem answer_correct (hpre : x.Pre μ fr) {μ' : ℕ → ℤ}
     (hans : PairsAt μ' x.out (3 * (x.n * x.U : ℕ))
       (squareList x.n x.U x.ADJ x.W (Nat.clog 2 x.n))) :
     ∃ dist : Fin x.n → Fin x.n → WithTop ℤ, IsDistanceMatrix (graphOf x.n x.ADJ x.W) dist ∧
@@ -151,73 +147,63 @@ private theorem answer_correct (hpre : x.Pre μ fr) {μ' : ℕ → ℤ}
     squareList_distances hpre.n_pos hpre.U_pos hpre.leW hpre.noNegativeCycle
   refine ⟨dist, hdist, fun i j => ?_⟩
   have hq : i.val * x.n + j.val < (squareList x.n x.U x.ADJ x.W (Nat.clog 2 x.n)).length := by
-    rw [length_squareList]
-    exact Nat.mul_add_lt_mul i.isLt j.isLt
+    simp_all [length_squareList, Nat.mul_add_lt_mul]
   obtain ⟨htop, hfin⟩ := hentries i j
-  rw [entry, List.getD_eq_getElem _ _ hq] at htop hfin
   obtain ⟨hzero, hone⟩ := hans _ hq
-  refine ⟨fun h => hzero (htop h), fun z hz => ?_⟩
-  obtain ⟨hval, hne⟩ := hfin z hz
-  exact hval ▸ hone (hval ▸ hne)
+  simp_all
+
+variable {σ : State}
 
 /-- **One round of the host** squares the matrix at the free pointer: a (min,+)-product, the
 clipping of the large entries, and the doubling of Power. -/
-private theorem round_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr) {t : ℕ}
-    (ht : 2 ^ t < x.n) {σ : State} (hσ : Inv x μ fr t σ) :
+theorem round_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr) {t : ℕ}
+    (ht : 2 ^ t < x.n) (hσ : Inv x μ fr t σ) :
     Ends lim (P₀ ++ R₀) d (apRound pMP pClip) σ (T x.n (3 * (x.n * x.U)) + 23 * (x.n * x.n) + 25)
       (Inv x μ fr (t + 1)) := by
   obtain ⟨res, μ', rfl, hseg, hkept⟩ := hσ
   have hplaces := C.places
   have hw := C.ok.space
   set L := squareList x.n x.U x.ADJ x.W t
-  have hlen : L.length = x.n * x.n := length_squareList _ _ _ _ _
+  have hlen : L.length = x.n * x.n := by grind [length_squareList]
   have hlenP : (minPlusList x.n L L).length = x.n * x.n := length_minPlusList _ _ _
-  have hle : AbsLe L ((3 * (x.n * x.U) : ℕ) : ℤ) :=
+  have hle :=
     abs_squareList_le C.pre.n_pos C.pre.U_pos C.pre.leW C.pre.noNegativeCycle t
-  unfold apRound
-  -- Res := pMP(Verts, Big, Free, Free, ProdAt, SolverFree)
   refine Ends.callToThen (C.solver.meets R₀
-    (⟨x.n, 3 * (x.n * x.U), fr, fr, fr + x.n * x.n, L, L⟩ : MatInst) (fr + 2 * (x.n * x.n))
-    ⟨C.pre.n_pos, by simp only; omega, hlen, hlen, hseg, hseg, hle, hle, by simp only; omega,
-      by simp only; omega, by simp only; omega, Or.inl le_rfl, Or.inl le_rfl⟩
-    { word := by simp only [mpTask]; omega
-      cells := by simp only [mpTask]; omega
-      space := hw
-      depth := by simp only [mpTask]; omega }) ?_ (by simp [mpTask]) (by omega)
+    ⟨x.n, 3 * (x.n * x.U), fr, fr, fr + x.n * x.n, L, L⟩ (fr + 2 * (x.n * x.n))
+    ⟨C.pre.n_pos, by linarith, hlen, hlen, hseg, hseg, hle, hle, by linarith,
+      by linarith, by linarith, Or.inl le_rfl, Or.inl le_rfl⟩
+    ⟨by aesop, by grind [mpTask], hw, by grind [mpTask]⟩) ?_ (by aesop) (by omega)
         (by simp [mpTask]; omega)
   rintro r₁ μ₁ ⟨hprod, hkept₁⟩
-  simp only at hprod hkept₁
+  simp at hprod hkept₁
   -- Res := pClip(Cells, Thresh, Big, ProdAt, Free)
-  refine Ends.callToThen (clip_meets C.clip (thr := (x.n * x.U : ℕ)) (INF := 3 * (x.n * x.U : ℕ))
-    (dst := fr) hprod hw (by omega) (by omega) (Or.inr (by omega))) ?_ (by simp [hlenP])
-    (by omega) (by simp [mpTask, hlenP]; omega)
+  refine Ends.callToThen (clip_meets C.clip (thr := (x.n * x.U)) (INF := 3 * (x.n * x.U))
+    (dst := fr) hprod hw (by omega) (by omega) (by omega)) ?_ (by simp_all)
+    (by omega) (by simp [mpTask]; omega)
   rintro r₂ μ₂ ⟨hseg₂, hsame₂⟩
-  rw [hlenP] at hsame₂
-  -- Power := Power + Power
-  refine Ends.setTo (2 ^ (t + 1) : ℕ) ⟨r₂, μ₂, rfl, hseg₂, fun a ha => ?_⟩ ?_
-    (by simp [mpTask, hlenP]; omega)
+  refine Ends.setTo _ ⟨r₂, μ₂, rfl, hseg₂, fun a ha => ?_⟩ ?_
+    (by simp [mpTask]; omega)
   · light_keep
-  · have hpow : (2 : ℤ) ^ t < x.n := by exact_mod_cast ht
+  · have hpow : (2 : ℤ) ^ t < x.n := by linarith
     have hpos : (0 : ℤ) ≤ 2 ^ t := by positivity
-    simp [abs_le, pow_succ]
+    simp [abs_le]
     omega
 
 /-- **The end of the host**: the answer is written. -/
-private theorem out_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr) {σ : State}
+theorem out_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr)
     (hσ : Inv x μ fr (Nat.clog 2 x.n) σ) :
     Ends lim (P₀ ++ R₀) d (.call pOut [v Cells, v Big, v Free, v Out] Res) σ (30 * (x.n * x.n) + 14)
       fun σ' => apTask.Post x μ fr (σ'.loc 0) σ'.mem := by
   obtain ⟨res, μ', rfl, hseg, hkept⟩ := hσ
   have hplaces := C.places
-  have hw := C.ok.space
   have hlen : (squareList x.n x.U x.ADJ x.W (Nat.clog 2 x.n)).length = x.n * x.n :=
-    length_squareList _ _ _ _ _
+    by grind [length_squareList]
   -- Res := pOut(Cells, Big, Free, Out)
-  refine Ends.callTo (apOut_meets C.out (INF := 3 * (x.n * x.U : ℕ)) (out := x.out) hseg hw
-    (by omega) (by omega) (Or.inr (by omega))) ?_ (by simp [hlen]) (hT := by rw [hlen]; light_time)
+  refine Ends.callTo (apOut_meets C.out (INF := 3 * (x.n * x.U)) (out := x.out) hseg C.ok.space
+    (by omega) (by omega) (by omega)) ?_ (by simp_all)
   rintro r₂ μ₂ ⟨hans, hsame₂⟩
   rw [hlen] at hsame₂
-  exact ⟨answer_correct C.pre hans, fun a ⟨ha, hout⟩ => (hsame₂ a hout).trans (hkept a ha)⟩
+  exact ⟨answer_correct C.pre hans, fun a ⟨ha, hout⟩ => (hsame₂ a hout).trans (by aesop)⟩
 
 end ApspHost
 
@@ -230,42 +216,39 @@ theorem ap_spec {P₀ R₀ : Program} {pMP pInit pClip pOut : ℕ} {T : ℕ → 
     Ends lim (P₀ ++ R₀) d (apBody pMP pInit pClip pOut) ⟨frame (apTask.args x ++ [(fr : ℤ)]), μ⟩
       (apTime T x.n x.U) fun σ' => apTask.Post x μ fr (σ'.loc 0) σ'.mem := by
   have hplaces := C.places
-  have hw := C.ok.space
   have hpre := C.pre
-  have hsquare : (0 : ℤ) ≤ (x.n : ℤ) * x.n := by positivity
-  have hthresh : (0 : ℤ) ≤ (x.n : ℤ) * x.U := by positivity
   unfold apBody apTime
-  change Ends _ _ _ _ ⟨frame [(x.n : ℤ), x.U, x.adj, x.w, x.out, fr], μ⟩ _ _
+  change Ends _ _ _ _ ⟨frame [x.n, x.U, x.adj, x.w, x.out, fr], μ⟩ _ _
   -- Cells := Verts * Verts ; Thresh := Verts * Bound ; Big := 3 * Thresh
-  light_set (x.n * x.n : ℕ)
-  light_set (x.n * x.U : ℕ)
-  light_set (3 * (x.n * x.U : ℕ))
+  light_set (x.n * x.n)
+  light_set (x.n * x.U)
+  light_set (3 * (x.n * x.U))
   -- ProdAt := Free + Cells ; SolverFree := ProdAt + Cells
-  light_set (fr + x.n * x.n : ℕ)
-  light_set (fr + 2 * (x.n * x.n) : ℕ)
+  light_set (fr + x.n * x.n)
+  light_set (fr + 2 * (x.n * x.n))
   -- Res := pInit(Verts, Big, AdjAt, WtsAt, Free)
-  light_call (apInit_meets C.init (INF := 3 * (x.n * x.U : ℕ)) (A := fr) hpre.n_pos
-    hpre.lenADJ hpre.lenW hpre.segADJ hpre.segW hw (by omega) (by omega) (by omega)
+  light_call (apInit_meets C.init (INF := 3 * (x.n * x.U)) hpre.n_pos
+    hpre.lenADJ hpre.lenW hpre.segADJ hpre.segW C.ok.space (by omega) (by omega) (by omega)
     (Or.inl hpre.belowADJ) (Or.inl hpre.belowW)) with r₁ μ₁ ⟨hseg₁, hsame₁⟩
   -- Power := 1
-  light_set (2 ^ 0 : ℕ)
+  light_set (2 ^ 0)
   -- while Power < Verts: the rounds
   refine Ends.next _ (Ends.whileConst (Inv x μ fr) (Nat.clog 2 x.n)
     (T x.n (3 * (x.n * x.U)) + 23 * (x.n * x.n) + 25)
-    ⟨r₁, μ₁, rfl, hseg₁, fun a ha => hsame₁ a (Or.inl ha)⟩ ?round ?done le_rfl)
-  case round =>
+    ⟨r₁, μ₁, rfl, hseg₁, fun a ha => hsame₁ a (Or.inl ha)⟩ ?_ ?_ le_rfl)
+  ·
     rintro t σ ht hσ
-    have hpow : 2 ^ t < x.n := Nat.pow_lt_of_lt_clog ht
+    have hpow := Nat.pow_lt_of_lt_clog ht
     refine ⟨?_, ?_, round_spec C hpow hσ⟩ <;> obtain ⟨res, μ', rfl, -, -⟩ := hσ
-    · exact ⟨trivial, trivial⟩
-    · simpa using (by exact_mod_cast hpow : ((2 : ℤ) ^ t < x.n))
-  case done =>
+    · simp
+    · simpa using (by linarith : (2 : ℤ) ^ t < x.n)
+  ·
     intro σ hσ
     have hpow : x.n ≤ 2 ^ Nat.clog 2 x.n := Nat.le_pow_clog (by norm_num) x.n
     refine ⟨?_, ?_, (out_spec C hσ).mono (by light_time) fun _ h => h⟩ <;>
       obtain ⟨res, μ', rfl, -, -⟩ := hσ
-    · exact ⟨trivial, trivial⟩
-    · simpa using (by exact_mod_cast hpow : ((x.n : ℤ) ≤ 2 ^ Nat.clog 2 x.n))
+    · simp
+    · simpa using (by linarith : (x.n : ℤ) ≤ 2 ^ Nat.clog 2 x.n)
 
 /-- The need of the host is polynomially bounded if the need of the solver is. -/
 theorem polyNeed_apNeed {r : ℕ → ℕ → Need} (hr : PolyNeed r) : PolyNeed (apNeed r) := by
@@ -274,11 +257,9 @@ theorem polyNeed_apNeed {r : ℕ → ℕ → Need} (hr : PolyNeed r) : PolyNeed 
 
 /-- **APSP from the (min,+)-product**, as a host. -/
 theorem isHost_ap : IsHost mpTask apTask apTime apNeed := by
-  refine ⟨fun P p T r hs => ?_, fun r hr => polyNeed_apNeed hr⟩
+  refine ⟨fun P p T r hs => ?_, by grind [polyNeed_apNeed]⟩
   refine ⟨[apInitBody, clipBody, apOutBody, apBody p P.length (P.length + 1) (P.length + 2)],
     P.length + 3, apBody p P.length (P.length + 1) (P.length + 2), by simp,
     fun R lim d x μ fr hpre hok => ?_⟩
   rw [List.append_assoc]
   exact ap_spec ⟨hs, by simp, by simp, by simp, hpre, hok⟩
-
-end Light.Sec3

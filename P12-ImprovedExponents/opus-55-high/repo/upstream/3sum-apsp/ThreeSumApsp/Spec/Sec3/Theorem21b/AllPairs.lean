@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Spec.Sec3.Problems
-public import ThreeSumApsp.Util.Ceil
-public import ThreeSumApsp.Util.Flag
+import ThreeSumApsp.Spec.Sec3.Problems
+import ThreeSumApsp.Util.Ceil
+import ThreeSumApsp.Util.Flag
 
 /-!
 # All pairs with a witness, by marking
@@ -31,7 +30,6 @@ Given three `n × n` matrices `X`, `Y`, `V`, the task is to mark all pairs `(i, 
 * `tripleIdx p I K J` is the position of a triple in the order in which the triples are visited.
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -43,40 +41,44 @@ def blockOff (n s I : ℕ) : ℕ := if I * s + s ≤ n then I * s else n - s
 /-- The number of blocks: `⌈n/s⌉`. -/
 def blockCount (n s : ℕ) : ℕ := (n + s - 1) / s
 
+variable {s n : ℕ}
+
 /-- A block ends at `n` or before. -/
-theorem blockOff_add_le {n s : ℕ} (hs : s ≤ n) (I : ℕ) : blockOff n s I + s ≤ n := by
+theorem blockOff_add_le (hs : s ≤ n) (I : ℕ) : blockOff n s I + s ≤ n := by
   unfold blockOff
-  split_ifs <;> omega
+  grind
 
 /-- `i` blocks do not cover the range exactly if `i` is less than the number of blocks. -/
-theorem lt_blockCount_iff {n s : ℕ} (hs : 1 ≤ s) (i : ℕ) : i < blockCount n s ↔ i * s < n :=
+theorem lt_blockCount_iff (hs : 1 ≤ s) (i : ℕ) : i < blockCount n s ↔ i * s < n :=
   Nat.lt_ceilDiv_iff hs
 
 /-- The blocks overshoot the range by less than one block. -/
-theorem blockCount_mul_lt {n s : ℕ} (hs : 1 ≤ s) : blockCount n s * s < n + s :=
+theorem blockCount_mul_lt (hs : 1 ≤ s) : blockCount n s * s < n + s :=
   Nat.ceilDiv_mul_lt hs
 
 /-- The blocks cover the range. -/
-theorem le_blockCount_mul {n s : ℕ} (hs : 1 ≤ s) : n ≤ blockCount n s * s :=
+theorem le_blockCount_mul (hs : 1 ≤ s) : n ≤ blockCount n s * s :=
   Nat.le_ceilDiv_mul hs
 
 /-- A range that is not empty has a block. -/
-theorem blockCount_pos {n s : ℕ} (hs : 1 ≤ s) (hn : 1 ≤ n) : 1 ≤ blockCount n s :=
+theorem blockCount_pos (hs : 1 ≤ s) (hn : 1 ≤ n) : 1 ≤ blockCount n s :=
   (lt_blockCount_iff hs 0).2 (by omega)
 
 /-- There are at most `n` blocks. -/
-theorem blockCount_le {n s : ℕ} (hs : 1 ≤ s) : blockCount n s ≤ n :=
+theorem blockCount_le (hs : 1 ≤ s) : blockCount n s ≤ n :=
   (Nat.ceilDiv_le_iff hs).2 (Nat.le_mul_of_pos_right n hs)
 
+variable {i : ℕ}
+
 /-- Every index lies in a block. -/
-theorem exists_block {n s i : ℕ} (hs1 : 1 ≤ s) (hs : s ≤ n) (hi : i < n) :
+theorem exists_block (hs1 : 1 ≤ s) (hs : s ≤ n) (hi : i < n) :
     ∃ I < blockCount n s, ∃ a < s, i = blockOff n s I + a := by
-  have hdiv : i / s * s + i % s = i := Nat.div_add_mod' i s
+  have hdiv := i.div_add_mod' s
   have hmod : i % s < s := Nat.mod_lt _ hs1
   refine ⟨i / s, (lt_blockCount_iff hs1 _).2 (by omega), ?_⟩
   unfold blockOff
   split_ifs with h
-  · exact ⟨i % s, hmod, hdiv.symm⟩
+  · aesop
   · exact ⟨i - (n - s), by omega, by omega⟩
 
 /-! ## The order of the triples -/
@@ -84,20 +86,19 @@ theorem exists_block {n s i : ℕ} (hs1 : 1 ≤ s) (hs : s ≤ n) (hi : i < n) :
 /-- The position of the triple `(I, K, J)` of numbers below `p` in the lexicographic order. -/
 def tripleIdx (p I K J : ℕ) : ℕ := (I * p + K) * p + J
 
+variable {p J I K : ℕ}
+
 /-- The position determines the triple. -/
-theorem tripleIdx_inj {p I K J I' K' J' : ℕ} (hK : K < p) (hJ : J < p) (hK' : K' < p)
+theorem tripleIdx_inj {I' K' J' : ℕ} (hK : K < p) (hJ : J < p) (hK' : K' < p)
     (hJ' : J' < p) (h : tripleIdx p I K J = tripleIdx p I' K' J') : I = I' ∧ K = K' ∧ J = J' := by
   obtain ⟨hIK, hJJ⟩ := Nat.mul_add_inj_of_lt hJ hJ' h
-  obtain ⟨hII, hKK⟩ := Nat.mul_add_inj_of_lt hK hK' hIK
-  exact ⟨hII, hKK, hJJ⟩
+  grind [Nat.mul_add_inj_of_lt]
 
 /-- The positions are below `p³`. -/
-theorem tripleIdx_lt {p I K J : ℕ} (hI : I < p) (hK : K < p) (hJ : J < p) :
+theorem tripleIdx_lt (hI : I < p) (hK : K < p) (hJ : J < p) :
     tripleIdx p I K J < p * p * p :=
   Nat.mul_add_lt_mul (Nat.mul_add_lt_mul hI hK) hJ
 
-/-- The next triple, when only `J` moves. -/
-theorem tripleIdx_succ_J (p I K J : ℕ) : tripleIdx p I K (J + 1) = tripleIdx p I K J + 1 := rfl
 
 /-- The next triple, when `J` starts again and `K` moves. -/
 theorem tripleIdx_succ_K (p I K : ℕ) :
@@ -113,7 +114,7 @@ theorem tripleIdx_succ_I (p I : ℕ) :
 
 /-- The position after the last triple. -/
 theorem tripleIdx_top (p : ℕ) : tripleIdx p p 0 0 = p * p * p := by
-  simp [tripleIdx]
+  rfl
 
 /-! ## The third matrix of a block instance -/
 
@@ -125,31 +126,26 @@ def maskNeg (F : ℤ) (O V : List ℤ) : List ℤ := List.zipWith (fun o v => if
     (maskNeg F O V).length = min O.length V.length := by
   simp [maskNeg]
 
+variable {F : ℤ} {V O : List ℤ}
+
 /-- An entry of the third matrix. -/
-theorem getElem_maskNeg {F : ℤ} {O V : List ℤ} {i : ℕ} (hO : i < O.length) (hV : i < V.length)
+theorem getElem_maskNeg (hO : i < O.length) (hV : i < V.length)
     (h : i < (maskNeg F O V).length) : (maskNeg F O V)[i] = if O[i] = 1 then F else -V[i] := by
   simp [maskNeg]
 
 /-- An entry of the third matrix, read with a default. -/
-theorem getD_maskNeg {F : ℤ} {O V : List ℤ} {i : ℕ} (hO : i < O.length) (hV : i < V.length) :
+theorem getD_maskNeg (hO : i < O.length) (hV : i < V.length) :
     (maskNeg F O V).getD i 0 = if O.getD i 0 = 1 then F else -V.getD i 0 := by
-  have h : i < (maskNeg F O V).length := by
-    rw [length_maskNeg]
-    omega
-  rw [List.getD_eq_getElem _ _ h, List.getD_eq_getElem _ _ hO, List.getD_eq_getElem _ _ hV,
-    getElem_maskNeg hO hV]
+  grind [maskNeg]
 
 /-- A bound on `F` and on the entries of `V` is a bound on the entries of the third matrix. -/
-theorem abs_le_of_mem_maskNeg {F U : ℤ} {O V : List ℤ} (hF : |F| ≤ U) (hV : AbsLe V U) :
+theorem abs_le_of_mem_maskNeg {U : ℤ} (hF : |F| ≤ U) (hV : AbsLe V U) :
     AbsLe (maskNeg F O V) U := by
   intro x hx
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hx
-  have hi' : i < O.length ∧ i < V.length := by simpa using hi
+  have hi' : i < O.length ∧ i < V.length := by aesop
   rw [getElem_maskNeg hi'.1 hi'.2]
-  split_ifs
-  · exact hF
-  · rw [abs_neg]
-    exact hV _ (List.getElem_mem _)
+  aesop
 
 /-! ## Marks -/
 
@@ -182,25 +178,22 @@ theorem blockTri_S (n s : ℕ) (F : ℤ) (X Y V O : List ℤ) (oI oK oJ : ℕ) (
     (blockTri n s F X Y V O oI oK oJ).S a b c =
       entry n X (oI + a) (oK + b) + entry n Y (oK + b) (oJ + c) +
         if entry n O (oI + a) (oJ + c) = 1 then F else -entry n V (oI + a) (oJ + c) := by
-  have h : a.val * s + c.val < s * s := Nat.mul_add_lt_mul a.2 c.2
-  simp only [blockTri, TriangleInstance.S, triOf, entry_subMat a.2 b.2, entry_subMat b.2 c.2,
-    getD_maskNeg (O := subMat n s oI oJ O) (V := subMat n s oI oJ V) (by simpa using h)
-      (by simpa using h), entry_subMat a.2 c.2]
+  grind [Nat.mul_add_lt_mul, blockTri, TriangleInstance.S, triOf, entry_subMat, getD_maskNeg, subMat]
+
+variable {Y X : List ℤ} {oI oJ oK : ℕ}
 
 /-- If the instance of a triple of blocks has no negative triangle, then the triple is done. -/
-theorem blockDone_of_not {n s : ℕ} {F : ℤ} {X Y V O : List ℤ} {oI oK oJ : ℕ}
-    (h : ¬ (blockTri n s F X Y V O oI oK oJ).HasNegativeTriangle) :
+theorem blockDone_of_not     (h : ¬ (blockTri n s F X Y V O oI oK oJ).HasNegativeTriangle) :
     BlockDone n s X Y V O oI oK oJ := by
   intro a ha b hb c hc hlt
   by_contra hO
   refine h ⟨⟨a, ha⟩, ⟨b, hb⟩, ⟨c, hc⟩, ?_⟩
-  rw [blockTri_S, if_neg hO]
-  exact Int.sub_neg_of_lt hlt
+  rw [blockTri_S]
+  aesop
 
 /-- A negative triangle of the instance of a triple of blocks is an unmarked pair with a
 witness. -/
-theorem unmarked_of_neg {n s : ℕ} {U : ℕ} {X Y V O : List ℤ} {oI oK oJ : ℕ}
-    (hX : AbsLe X U) (hY : AbsLe Y U) {a b c : Fin s}
+theorem unmarked_of_neg {U : ℕ}     (hX : AbsLe X U) (hY : AbsLe Y U) {a b c : Fin s}
     (h : (blockTri n s (2 * U + 1) X Y V O oI oK oJ).S a b c < 0) :
     entry n O (oI + a) (oJ + c) ≠ 1 ∧ Witness n X Y V (oI + a) (oK + b) (oJ + c) := by
   have hx := abs_le.1 (abs_entry_le n (Int.natCast_nonneg U) hX (oI + a) (oK + b))
@@ -209,43 +202,39 @@ theorem unmarked_of_neg {n s : ℕ} {U : ℕ} {X Y V O : List ℤ} {oI oK oJ : �
   split_ifs at h with hO
   · -- a marked pair: `X + Y ≥ -2U` and `F = 2U + 1`, so the weight would be positive
     omega
-  · -- an unmarked pair: the weight is `X + Y - V < 0`
-    exact ⟨hO, by unfold Witness; omega⟩
+  aesop
+
+variable {j : ℕ}
 
 /-- Marking a pair that has a witness keeps the marks right. -/
-theorem Marks.set {n : ℕ} {X Y V O : List ℤ} (h : Marks n X Y V O) {i j : ℕ} (hi : i < n)
+theorem Marks.set (h : Marks n X Y V O) (hi : i < n)
     (hj : j < n) (hit : PairHit n X Y V i j) : Marks n X Y V (O.set (i * n + j) 1) := by
   refine ⟨by simp [h.len], fun i' hi' j' hj' => ?_⟩
   rw [entry, List.getD_set_of_lt (h.len ▸ Nat.mul_add_lt_mul hi hj)]
   split_ifs with e
-  · obtain ⟨rfl, rfl⟩ := Nat.mul_add_inj_of_lt hj' hj e
-    exact Or.inr ⟨rfl, hit⟩
+  · grind [Nat.mul_add_inj_of_lt]
   · exact h.sound i' hi' j' hj'
 
+variable {q : ℕ}
+
 /-- Marking an unmarked pair makes the number of unmarked pairs smaller. -/
-theorem count_set_one {O : List ℤ} {q : ℕ} (hq : q < O.length) (h0 : O.getD q 0 = 0) :
+theorem count_set_one (hq : q < O.length) (h0 : O.getD q 0 = 0) :
     (O.set q 1).count 0 + 1 = O.count 0 := by
-  rw [List.getD_eq_getElem _ _ hq] at h0
-  have hpos : 0 < O.count 0 := List.count_pos_iff.2 (h0 ▸ List.getElem_mem hq)
-  rw [List.count_set hq, h0, if_pos (by decide), if_neg (by decide)]
-  omega
+  grind
 
 /-- A triple of blocks that is done stays so when another pair is marked. -/
-theorem BlockDone.set {n s : ℕ} {X Y V O : List ℤ} {oI oK oJ : ℕ}
-    (h : BlockDone n s X Y V O oI oK oJ) {q : ℕ} (hq : q < O.length) :
+theorem BlockDone.set     (h : BlockDone n s X Y V O oI oK oJ) (hq : q < O.length) :
     BlockDone n s X Y V (O.set q 1) oI oK oJ := by
   intro a ha b hb c hc hlt
   rw [entry, List.getD_set_of_lt hq]
-  split_ifs
-  · rfl
-  · exact h a ha b hb c hc hlt
+  aesop
 
 /-- **When all triples of blocks are done, the marks are the answer.** -/
-theorem Marks.complete {n s : ℕ} {X Y V O : List ℤ} (h : Marks n X Y V O) (hs1 : 1 ≤ s)
+theorem Marks.complete (h : Marks n X Y V O) (hs1 : 1 ≤ s)
     (hs : s ≤ n)
     (hdone : ∀ I < blockCount n s, ∀ K < blockCount n s, ∀ J < blockCount n s,
       BlockDone n s X Y V O (blockOff n s I) (blockOff n s K) (blockOff n s J))
-    {i j : ℕ} (hi : i < n) (hj : j < n) :
+    (hi : i < n) (hj : j < n) :
     entry n O i j = flag (PairHit n X Y V i j) := by
   by_cases hit : PairHit n X Y V i j
   · rw [flag_of hit]
@@ -253,12 +242,10 @@ theorem Marks.complete {n s : ℕ} {X Y V O : List ℤ} (h : Marks n X Y V O) (h
     obtain ⟨I, hI, a, ha, rfl⟩ := exists_block hs1 hs hi
     obtain ⟨K, hK, b, hb, rfl⟩ := exists_block hs1 hs hk
     obtain ⟨J, hJ, c, hc, rfl⟩ := exists_block hs1 hs hj
-    exact hdone I hI K hK J hJ a ha b hb c hc hlt
+    aesop
   · rw [flag_of_not hit]
     exact (h.sound i hi j hj).resolve_right fun hmark => hit hmark.2
 
 /-- At the beginning no pair is marked. -/
 theorem marks_replicate (n : ℕ) (X Y V : List ℤ) : Marks n X Y V (List.replicate (n * n) 0) :=
-  ⟨List.length_replicate, fun _ _ _ _ => Or.inl (by simp)⟩
-
-end ThreeSumApsp.Spec
+  ⟨List.length_replicate, by simp⟩

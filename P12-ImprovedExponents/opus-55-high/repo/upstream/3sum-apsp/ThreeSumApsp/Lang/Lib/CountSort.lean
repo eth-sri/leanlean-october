@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.Seg
-public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Util.CountingSort
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.Seg
+import ThreeSumApsp.Lang.Tactics
+import ThreeSumApsp.Util.CountingSort
 
 /-!
 # Counting sort of a list of items by a key that is read through the item
@@ -35,32 +35,18 @@ What is assumed is `CountSort.Pre`, what is achieved is `CountSort.Post`, and th
 `countSort_meets`.
 -/
 
-@[expose] public section
 
-open ThreeSumApsp
 
 namespace Light
-
-variable {lim : Limits} {P : Program} {d : ℕ}
 
 /-! ## The program -/
 
 namespace CountSort
 
-/-- The local variables of countSort: the arguments n (Len), src, dst, key (Keys), stride, off
+/- The local variables of countSort: the arguments n (Len), src, dst, key (Keys), stride, off
 (Offset), nb (Buckets), cnt; the counter of the loops (Idx); the address of a cell of cnt (Cell); a
 place in dst (Place). -/
-abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Dst : ℕ := 2
-@[inherit_doc Len] abbrev Keys : ℕ := 3
-@[inherit_doc Len] abbrev Stride : ℕ := 4
-@[inherit_doc Len] abbrev Offset : ℕ := 5
-@[inherit_doc Len] abbrev Buckets : ℕ := 6
-@[inherit_doc Len] abbrev Cnt : ℕ := 7
-@[inherit_doc Len] abbrev Idx : ℕ := 8
-@[inherit_doc Len] abbrev Cell : ℕ := 9
-@[inherit_doc Len] abbrev Place : ℕ := 10
+slots Len Src Dst Keys Stride Offset Buckets Cnt Idx Cell Place
 
 end CountSort
 
@@ -69,7 +55,6 @@ open CountSort in
 mem[key + src[i] · stride + off]. -/
 def csKey : Expr := M (v Keys +' M (v Src +' v Idx) *' v Stride +' v Offset)
 
-@[simp] theorem csKey_cost : csKey.cost = 11 := rfl
 
 open CountSort in
 /-- cnt[t] := 0 for t ≤ nb. -/
@@ -111,56 +96,12 @@ def countSortBody : Stmt := csZero ;; csCount ;; csPrefix ;; csPlace ;; csShift
 
 namespace CountSort
 
-/-- The arguments of countSort. -/
-structure Args where
-  /-- the number of items -/
-  n : ℕ
-  /-- where the items stand -/
-  src : ℕ
-  /-- where the sorted items go -/
-  dst : ℕ
-  /-- the key of the item x is in the cell key + x · stride + off -/
-  key : ℕ
-  /-- see key -/
-  stride : ℕ
-  /-- see key -/
-  off : ℕ
-  /-- all keys are below nb -/
-  nb : ℕ
-  /-- nb + 1 cells of scratch space -/
-  cnt : ℕ
 
-/-- A state of countSort: the arguments, the counter i, the scratch variables c and p, and the
-memory. -/
-abbrev Args.state (A : Args) (i c p : ℤ) (μ' : ℕ → ℤ) : State :=
-  ⟨frame [A.n, A.src, A.dst, A.key, A.stride, A.off, A.nb, A.cnt, i, c, p], μ'⟩
 
-/-- Only dst and cnt have changed. -/
-abbrev Args.Same (A : Args) (μ μ' : ℕ → ℤ) : Prop := SameOutside2 μ μ' A.dst A.n A.cnt (A.nb + 1)
 
 end CountSort
 
-open CountSort
 
-/-- What countSort achieves: item number j stands at dst[sortPos kf n j], cnt[t] is the number of
-items with a key below t, and nothing else has changed. -/
-structure CountSort.Post (μ : ℕ → ℤ) (A : Args) (it kf : ℕ → ℕ) (μ' : ℕ → ℤ) : Prop where
-  placed : ∀ j < A.n, μ' (A.dst + sortPos kf A.n j) = it j
-  starts : ∀ t ≤ A.nb, μ' (A.cnt + t) = cntLt kf t A.n
-  same : A.Same μ μ'
-
-variable {μ μ' : ℕ → ℤ} {A : Args} {it kf : ℕ → ℕ} {σ : State}
-
-/-- The state between two phases, and before a round of a phase: the counter is i, only dst and cnt
-have changed since the start, and R holds of the memory. -/
-def CsState (μ : ℕ → ℤ) (A : Args) (i : ℤ) (R : (ℕ → ℤ) → Prop) (σ : State) : Prop :=
-  ∃ (c p : ℤ) (μ' : ℕ → ℤ), σ = A.state i c p μ' ∧ A.Same μ μ' ∧ R μ'
-
-/-- A weaker fact about the memory. -/
-theorem CsState.imp {entry : ℤ} {R R' : (ℕ → ℤ) → Prop} (h : CsState μ A entry R σ)
-    (hR : ∀ μ', R μ' → R' μ') : CsState μ A entry R' σ := by
-  obtain ⟨c, p, μ', rfl, same, h⟩ := h
-  exact ⟨c, p, μ', rfl, same, hR _ h⟩
 
 /-! ## The first phase: the counters are set to 0 -/
 
@@ -174,7 +115,3 @@ theorem CsState.imp {entry : ℤ} {R R' : (ℕ → ℤ) → Prop} (h : CsState �
 
 /-! ## The routine -/
 
-/-- The time of countSort, for n items and keys below nb. -/
-@[simp] def countSortTime (n nb : ℕ) : ℕ := 68 * n + 58 * nb + 52
-
-end Light

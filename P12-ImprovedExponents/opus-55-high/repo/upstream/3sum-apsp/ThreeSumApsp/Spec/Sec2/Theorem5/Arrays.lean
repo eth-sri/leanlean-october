@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Spec.Sec2.Theorem5.Alphabets
-public import Mathlib.Data.List.GetD
+import ThreeSumApsp.Spec.Sec2.Theorem5.Alphabets
+import Mathlib.Data.List.GetD
 
 /-!
 # Arrays on strings as lists
@@ -20,7 +19,6 @@ a left string of length L."  In a program such an array is a list: an array on t
 `arrL`, `arrR` and `arrT`.
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -38,23 +36,21 @@ def arrStr : List ℤ :=
 theorem length_arrStr : (arrStr e a).length = b ^ n := by
   simp [arrStr]
 
+variable {c : ℕ}
+
 /-- The entry of the list at a number below `b^n`. -/
-theorem getD_arrStr_of_lt {c : ℕ} (hc : c < b ^ n) :
+theorem getD_arrStr_of_lt (hc : c < b ^ n) :
     (arrStr e a).getD c 0 = a (decodeStr e n c) := by
-  rw [List.getD_eq_getElem _ _ (by rwa [length_arrStr])]
-  simp [arrStr]
+  grind [arrStr]
 
 /-- The entry at a string is the entry of the list at its code. -/
 theorem getD_arrStr (u : Fin n → α) : (arrStr e a).getD (codeStr e u) 0 = a u := by
-  rw [getD_arrStr_of_lt e a (codeStr_lt e u), decodeStr_codeStr]
+  grind [getD_arrStr_of_lt, codeStr_lt, decodeStr_codeStr]
 
 /-- The entry of the list at `c` is 0 if the array is 0 at every string with the code `c`. -/
-theorem getD_arrStr_eq_zero {c : ℕ} (h : ∀ u, codeStr e u = c → a u = 0) :
+theorem getD_arrStr_eq_zero (h : ∀ u, codeStr e u = c → a u = 0) :
     (arrStr e a).getD c 0 = 0 := by
-  rcases Nat.lt_or_ge c (b ^ n) with hlt | hge
-  · rw [getD_arrStr_of_lt e a hlt]
-    exact h _ (codeStr_decodeStr e hlt)
-  · exact List.getD_eq_default _ _ (by rwa [length_arrStr])
+  grind [Nat.lt_or_ge, getD_arrStr_of_lt, codeStr_decodeStr, List.getD_eq_default, length_arrStr]
 
 end
 
@@ -77,9 +73,6 @@ theorem length_arrL {n : ℕ} (a : LeftStr n → ℤ) : (arrL a).length = 7 ^ n 
 theorem length_arrR {n : ℕ} (b : RightStr n → ℤ) : (arrR b).length = 7 ^ n :=
   length_arrStr rightEquiv b
 
-/-- The list of an array on the leaves has `10^n` entries. -/
-theorem length_arrT {n : ℕ} (enc : Leaf n → ℤ) : (arrT enc).length = 10 ^ n :=
-  length_arrStr termEquiv enc
 
 /-- The entry at a left string is the entry of the list at its code. -/
 theorem getD_arrL {n : ℕ} (a : LeftStr n → ℤ) (u : LeftStr n) : (arrL a).getD (codeL u) 0 = a u :=
@@ -94,5 +87,3 @@ theorem getD_arrR {n : ℕ} (b : RightStr n → ℤ) (v : RightStr n) :
 theorem getD_arrT {n : ℕ} (enc : Leaf n → ℤ) (τ : Leaf n) :
     (arrT enc).getD (codeT τ) 0 = enc τ :=
   getD_arrStr termEquiv enc τ
-
-end ThreeSumApsp.Spec

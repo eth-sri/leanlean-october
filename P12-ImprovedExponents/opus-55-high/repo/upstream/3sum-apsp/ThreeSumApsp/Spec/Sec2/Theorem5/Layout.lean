@@ -3,14 +3,13 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec2.Tiling
-public import ThreeSumApsp.Spec.Sec2.Theorem5.Arrays
-public import ThreeSumApsp.Spec.Sec2.Theorem5.Subsets
-public import ThreeSumApsp.Util.Counting
-public import ThreeSumApsp.Util.Index
-public import ThreeSumApsp.Util.Weave
+import ThreeSumApsp.Sec2.Tiling
+import ThreeSumApsp.Spec.Sec2.Theorem5.Arrays
+import ThreeSumApsp.Spec.Sec2.Theorem5.Subsets
+import ThreeSumApsp.Util.Counting
+import ThreeSumApsp.Util.Index
+import ThreeSumApsp.Util.Weave
 
 /-!
 # One computable layout of the tiling
@@ -34,7 +33,6 @@ at the other levels.  Their codes are formed digit by digit:
    and 0 elsewhere (`bandArrayL_at`, `bandArrayL_eq_zero`, and the same for `R`).
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -48,51 +46,46 @@ theorem tableIndex_lt (L m : ℕ) (gh : Fin (K0 L m) × Fin (K0 L m)) :
 /-- The computable layout: the rows and columns of a block are numbered by the base-3 codes of their
 strings, the columns of `X` by base-4 codes, and the block product `(g, h)` of a tile gets the
 subset number `g K₀ + h` of the enumeration `unrank`. -/
-def stdLayout {L m : ℕ} (hmL : m ≤ L) : Layout L m where
-  hmL := hmL
-  rowIdx := (codeEquiv 3 (L - m)).symm
-  colIdx := (codeEquiv 3 (L - m)).symm
-  innerIdx := (strEquiv pairEquiv m).symm
-  table gh := maskSet L (unrank L m (gh.1 * K0 L m + gh.2))
-  table_card gh := card_maskSet_unrank (tableIndex_lt L m gh)
-  table_injective gh gh' h := by
+def stdLayout {L m : ℕ} (hmL : m ≤ L) : Layout L m := ⟨hmL, (codeEquiv 3 (L - m)).symm, (codeEquiv 3 (L - m)).symm, (strEquiv pairEquiv m).symm, fun gh => maskSet L (unrank L m (gh.1 * K0 L m + gh.2)), fun gh => card_maskSet_unrank (tableIndex_lt L m gh), fun gh gh' h => by
     obtain ⟨hg, hh⟩ := Nat.mul_add_inj_of_lt gh.2.isLt gh'.2.isLt
       (eq_of_maskSet_unrank_eq (tableIndex_lt L m gh) (tableIndex_lt L m gh') h)
-    exact Prod.ext (Fin.ext hg) (Fin.ext hh)
+    exact Prod.ext (Fin.ext hg) (Fin.ext hh)⟩
 
 section
 variable {L m : ℕ} (hmL : m ≤ L)
 
+variable (k : Fin (N0 L m))
+
 /-- The row with number `k` of a block is indexed by the string with code `k`. -/
-private theorem codeOuter_rowIdx (k : Fin (N0 L m)) : codeOuter ((stdLayout hmL).rowIdx k) = k :=
+theorem codeOuter_rowIdx : codeOuter ((stdLayout hmL).rowIdx k) = k :=
   congrArg Fin.val ((codeEquiv 3 (L - m)).apply_symm_apply k)
 
 /-- The column with number `k` of a block is indexed by the string with code `k`. -/
-private theorem codeOuter_colIdx (k : Fin (N0 L m)) : codeOuter ((stdLayout hmL).colIdx k) = k :=
+theorem codeOuter_colIdx : codeOuter ((stdLayout hmL).colIdx k) = k :=
   codeOuter_rowIdx hmL k
 
 /-- The string that indexes the row with number `k` of a block consists of the base-3 digits of
 `k`. -/
-private theorem ofFn_rowIdx (k : Fin (N0 L m)) :
+theorem ofFn_rowIdx :
     (List.ofFn fun ℓ => ((stdLayout hmL).rowIdx k ℓ : ℕ)) = digitList 3 (L - m) k :=
-  (digitList_codeStr (Equiv.refl (Fin 3)) _).symm.trans
+  (digitList_codeStr _ _).symm.trans
     (congrArg (digitList 3 (L - m)) (codeOuter_rowIdx hmL k))
 
 /-- The string that indexes the column with number `k` of a block consists of the base-3 digits of
 `k`. -/
-private theorem ofFn_colIdx (k : Fin (N0 L m)) :
+theorem ofFn_colIdx :
     (List.ofFn fun ℓ => ((stdLayout hmL).colIdx k ℓ : ℕ)) = digitList 3 (L - m) k :=
   ofFn_rowIdx hmL k
 
 /-- The column with number `k` of `X` is indexed by the string with code `k`. -/
-private theorem codeInner_innerIdx (k : Fin (D m)) : codeInner ((stdLayout hmL).innerIdx k) = k :=
+theorem codeInner_innerIdx (k : Fin (D m)) : codeInner ((stdLayout hmL).innerIdx k) = k :=
   -- The number that `strEquiv` gives to a string is its code, by definition.
   congrArg Fin.val ((strEquiv pairEquiv m).apply_symm_apply k)
 
 /-- The mask of the subset of a block product. -/
-private theorem maskOf_table (gh : Fin (K0 L m) × Fin (K0 L m)) :
+theorem maskOf_table (gh : Fin (K0 L m) × Fin (K0 L m)) :
     maskOf ((stdLayout hmL).table gh) = unrank L m (gh.1 * K0 L m + gh.2) :=
-  maskOf_maskSet _ (length_unrank _ _ _)
+  maskOf_maskSet _ (by simp)
 
 end
 
@@ -100,7 +93,7 @@ end
 
 /-- The entries `true` (and `false`) among the first `n` entries of the mask of `Q` count the levels
 of `Q` (and outside `Q`) below `n`. -/
-private theorem count_take_maskOf {L : ℕ} (Q : Finset (Fin L)) (n : ℕ) :
+theorem count_take_maskOf {L : ℕ} (Q : Finset (Fin L)) (n : ℕ) :
     ((maskOf Q).take n).count true = (Q.filter fun x : Fin L => (x : ℕ) < n).card ∧
       ((maskOf Q).take n).count false = (Qᶜ.filter fun x : Fin L => (x : ℕ) < n).card := by
   constructor <;> rw [maskOf, List.count_take_ofFn] <;> congr 1 <;> ext x <;> simp [and_comm]
@@ -114,24 +107,24 @@ theorem ofFn_glue {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m) (inner : Fi
     List.ofFn (glue Q hQ inner outer)
       = weaveList (maskOf Q) (List.ofFn outer) (List.ofFn inner) := by
   refine List.ext_getElem (by simp [length_maskOf]) fun n hn hweave => ?_
-  replace hn : n < L := by simpa using hn
+  replace hn : n < L := by simp_all
   obtain ⟨htrue, hfalse⟩ := count_take_maskOf Q n
-  rw [List.getElem_ofFn, ← List.getD_eq_getElem _ 0 hweave, getD_weaveList,
-    if_pos (by rwa [length_maskOf]), htrue, hfalse, getD_maskOf Q hn]
-  by_cases hmem : (⟨n, hn⟩ : Fin L) ∈ Q
+  rw [List.getElem_ofFn, ← List.getD_eq_getElem _, getD_weaveList,
+    getD_maskOf Q hn]
+  by_cases hmem : ⟨n, hn⟩ ∈ Q
   · -- Level `n` is the `k`-th level of `Q`, and `k` levels of `Q` lie below it.
     obtain ⟨k, hk⟩ := exists_innerLevel Q hQ hmem
-    have hcount := Finset.card_filter_lt_orderEmbOfFin Q hQ k
-    rw [show ((Q.orderEmbOfFin hQ k : Fin L) : ℕ) = n from congrArg Fin.val hk] at hcount
-    rw [← hk, glue_innerLevel, hk, hcount]
-    simp [hmem]
+    have hcount := Q.card_filter_lt_orderEmbOfFin hQ k
+    rw [show Q.orderEmbOfFin hQ k = n from congrArg Fin.val hk] at hcount
+    rw [← hk, glue_innerLevel, hk]
+    simp_all
   · -- Level `n` is the `k`-th level outside `Q`, and `k` levels outside `Q` lie below it.
     obtain ⟨k, hk⟩ := exists_outerLevel Q hQ hmem
     have hcount := Finset.card_filter_lt_orderEmbOfFin Qᶜ (card_compl_of_card_eq Q hQ) k
-    rw [show ((Qᶜ.orderEmbOfFin (card_compl_of_card_eq Q hQ) k : Fin L) : ℕ) = n from
+    rw [show Qᶜ.orderEmbOfFin _ k = n from
       congrArg Fin.val hk] at hcount
-    rw [← hk, glue_outerLevel, hk, hcount]
-    simp [hmem]
+    rw [← hk, glue_outerLevel, hk]
+    simp_all
 
 /-- The code of a string of digits glued from `inner` at the levels of `Q` and `outer` at the other
 levels, by Horner's rule on the interleaved digits. -/
@@ -161,7 +154,7 @@ theorem getD_outDigits_of_true (hm : mask.count true = m) (hℓ : ℓ < mask.len
     (hb : mask.getD ℓ false = true) : (outDigits m mask rI rJ).getD ℓ 0 = 9 := by
   have hlt := List.count_take_lt hℓ false hb
   rw [outDigits, getD_weaveList, if_pos hℓ, if_pos hb,
-    List.getD_eq_getElem _ _ (by rw [List.length_replicate]; omega), List.getElem_replicate]
+    List.getD_eq_getElem _ _ (by simp_all), List.getElem_replicate]
 
 /-- The digit at a level outside the inner set is `3 x + y` for the next digits `x` of the row and
 `y` of the column. -/
@@ -170,22 +163,16 @@ theorem getD_outDigits_of_false (hI : rI.length = mask.count false)
     (outDigits m mask rI rJ).getD ℓ 0
       = 3 * rI.getD ((mask.take ℓ).count false) 0 + rJ.getD ((mask.take ℓ).count false) 0 := by
   have hlt := List.count_take_lt hℓ false hb
-  rw [outDigits, getD_weaveList, if_pos hℓ, if_neg (by rw [hb]; exact Bool.false_ne_true),
-    List.getD_eq_getElem _ _ (by rw [List.length_zipWith]; omega), List.getElem_zipWith,
-    List.getD_eq_getElem _ _ (by omega), List.getD_eq_getElem _ _ (by omega)]
+  rw [outDigits, getD_weaveList, if_pos hℓ, if_neg (by simp_all),
+    List.getD_eq_getElem _ _ (by simp_all), List.getElem_zipWith,
+    List.getD_eq_getElem _, List.getD_eq_getElem _]
 
 /-- The digits of an output string are below 10. -/
 theorem lt_of_mem_outDigits (hI : ∀ x ∈ rI, x < 3) (hJ : ∀ y ∈ rJ, y < 3) :
     ∀ d ∈ outDigits m mask rI rJ, d < 10 := by
   refine lt_of_mem_weaveList (by norm_num) (fun d hd => ?_) fun d hd => ?_
-  · obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hd
-    rw [List.length_zipWith, lt_min_iff] at hi
-    have hx := hI _ (List.getElem_mem hi.1)
-    have hy := hJ _ (List.getElem_mem hi.2)
-    rw [List.getElem_zipWith]
-    omega
-  · rw [List.eq_of_mem_replicate hd]
-    norm_num
+  · grind [List.getElem_of_mem, List.length_zipWith, lt_min_iff, List.getElem_mem]
+  simp_all
 
 end outDigits
 
@@ -195,9 +182,8 @@ theorem codeO_outStrOf {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m) (r c :
       = ofDigitList 10 (outDigits m (maskOf Q) (List.ofFn fun k => (r k : ℕ))
           (List.ofFn fun k => (c k : ℕ))) := by
   rw [outStrOf, codeO, codeStr,
-    map_glue Q hQ (fun z => ((outEquiv z : Fin 10) : ℕ)), code_glue, outDigits,
-    ← List.ofFn_const]
-  simp only [outEquiv_apply, outIdx_z, outIdx_z0]
+    map_glue Q hQ fun z => ((outEquiv z : Fin 10) : ℕ), code_glue, outDigits]
+  simp [outEquiv_apply, outIdx_z]
   congr 2
   exact List.ext_getElem (by simp) fun n _ _ => by simp
 
@@ -216,7 +202,7 @@ def outCodeOfPos (L m I J : ℕ) : ℕ := ofDigitList 10 (outDigitsOfPos L m I J
 
 /-- The output string of a position has `L` digits. -/
 @[simp] theorem length_outDigitsOfPos (L m I J : ℕ) : (outDigitsOfPos L m I J).length = L := by
-  rw [outDigitsOfPos, length_outDigits, length_unrank]
+  simp_all [outDigitsOfPos]
 
 /-- The digits of the code of the output string of a position. -/
 theorem digitList_outCodeOfPos (L m I J : ℕ) :
@@ -224,13 +210,13 @@ theorem digitList_outCodeOfPos (L m I J : ℕ) :
   have hdigits := digitList_ofDigitList (outDigitsOfPos L m I J)
     (lt_of_mem_outDigits (fun _ => lt_of_mem_digitList (by norm_num))
       fun _ => lt_of_mem_digitList (by norm_num))
-  rwa [length_outDigitsOfPos] at hdigits
+  aesop
 
 /-- `outCodeOfPos` computes the code of the output string of a position, for the computable layout.
 -/
 theorem codeO_outStrOfPos {L m : ℕ} (hmL : m ≤ L) (I J : ℕ) :
     codeO (outStrOfPos (stdLayout hmL) I J) = outCodeOfPos L m I J := by
-  rw [outStrOfPos, codeO_outStrOf, outCodeOfPos, outDigitsOfPos, maskOf_table, ofFn_rowIdx,
+  rw [outStrOfPos, codeO_outStrOf, maskOf_table, ofFn_rowIdx,
     ofFn_colIdx]
   -- By definition the block of `I` is `I / N₀ % K₀`, and its offset is `I % N₀`.
   rfl
@@ -250,11 +236,9 @@ def gluedDigits (mask : List Bool) (o i : List ℕ) : List ℕ := weaveList mask
 /-- The digits of a left or right string are below 7. -/
 theorem lt_of_mem_gluedDigits {mask : List Bool} {o i : List ℕ} (ho : ∀ x ∈ o, x < 3)
     (hi : ∀ x ∈ i, x < 4) : ∀ d ∈ gluedDigits mask o i, d < 7 := by
-  refine lt_of_mem_weaveList (by norm_num) (fun d hd => (ho d hd).trans (by norm_num))
+  refine lt_of_mem_weaveList (by norm_num) (by grind)
     fun d hd => ?_
-  obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hd
-  have hlt := hi x hx
-  omega
+  grind
 
 /-- The code of the left string, and of the right string, with inner set given by `mask`, outer part
 with code `r` and inner part with code `k`. -/
@@ -267,42 +251,43 @@ theorem gluedCode_lt {L : ℕ} (m : ℕ) {mask : List Bool} (hmask : mask.length
   have hlt := ofDigitList_lt (gluedDigits mask (digitList 3 (L - m) r) (digitList 4 m k))
     (lt_of_mem_gluedDigits (fun _ => lt_of_mem_digitList (by norm_num))
       fun _ => lt_of_mem_digitList (by norm_num))
-  rwa [length_gluedDigits, hmask] at hlt
+  aesop
 
 /-- Left and right strings at once: over an alphabet of seven letters in which the outer letter
 number `i` has the digit `i` and the inner letter of the pair `p` the digit 3 plus the digit of `p`,
 the string glued from the inner letters of `π` and the outer letters of `r` has the code
 `gluedCode`. -/
-private theorem codeStr_glue {α : Type} (e : α ≃ Fin 7) {inner : Fin 2 × Fin 2 → α}
+theorem codeStr_glue {α : Type} (e : α ≃ Fin 7) {inner : Fin 2 × Fin 2 → α}
     {outer : Fin 3 → α} (hinner : ∀ p, (e (inner p) : ℕ) = 3 + pairIdx p)
     (houter : ∀ i, (e (outer i) : ℕ) = i) {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m)
     (r : OuterStr L m) (π : InnerStr m) :
     codeStr e (glue Q hQ (fun k => inner (π k)) fun k => outer (r k))
       = gluedCode L m (maskOf Q) (codeOuter r) (codeInner π) := by
-  rw [gluedCode, gluedDigits, codeOuter, codeInner, digitList_codeStr, digitList_codeStr,
-    List.map_ofFn, codeStr, map_glue Q hQ (fun s => ((e s : Fin 7) : ℕ)), code_glue]
-  simp only [hinner, houter, pairEquiv_apply, Equiv.refl_apply, Function.comp_def]
+  rw [gluedCode, gluedDigits, codeOuter, codeInner, codeStr, map_glue Q hQ fun s => ((e s : Fin 7) : ℕ), code_glue]
+  simp [hinner, houter, pairEquiv_apply, Equiv.refl_apply, Function.comp_def]
 
 /-- The code of the left string with inner set `Q`, outer part `r` and inner part `π`. -/
 theorem codeL_leftStrOf {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m) (r : OuterStr L m)
     (π : InnerStr m) :
     codeL (leftStrOf Q hQ r π) = gluedCode L m (maskOf Q) (codeOuter r) (codeInner π) :=
-  codeStr_glue leftEquiv (inner := fun p => .p p.1 p.2) (fun p => leftIdx_p p.1 p.2)
-    (fun _ => rfl) Q hQ r π
+  codeStr_glue leftEquiv (inner := fun p => .p p.1 p.2) (by decide)
+    (by decide) Q hQ r π
 
 /-- The code of the right string with inner set `Q`, inner part `π` and outer part `c`. -/
 theorem codeR_rightStrOf {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m) (π : InnerStr m)
     (c : OuterStr L m) :
     codeR (rightStrOf Q hQ π c) = gluedCode L m (maskOf Q) (codeOuter c) (codeInner π) :=
-  codeStr_glue rightEquiv (inner := fun p => .q p.1 p.2) (fun p => rightIdx_q p.1 p.2)
-    (fun _ => rfl) Q hQ c π
+  codeStr_glue rightEquiv (inner := fun p => .q p.1 p.2) (by decide)
+    (by decide) Q hQ c π
 
 section
 variable {L m N : ℕ} (hmL : m ≤ L)
 
+variable (gh : Fin (K0 L m) × Fin (K0 L m))
+
 /-- `gluedCode` at the subset of the block product `(g, h)`, a row number and a column number is the
 code of a left string. -/
-private theorem gluedCode_table_left (gh : Fin (K0 L m) × Fin (K0 L m)) (r : Fin (N0 L m))
+theorem gluedCode_table_left (r : Fin (N0 L m))
     (k : Fin (D m)) :
     gluedCode L m (unrank L m (gh.1 * K0 L m + gh.2)) r k
       = codeL (leftStrOf ((stdLayout hmL).table gh) ((stdLayout hmL).table_card gh)
@@ -311,7 +296,7 @@ private theorem gluedCode_table_left (gh : Fin (K0 L m) × Fin (K0 L m)) (r : Fi
 
 /-- `gluedCode` at the subset of the block product `(g, h)`, a column number of the block and a row
 number of `Y` is the code of a right string. -/
-private theorem gluedCode_table_right (gh : Fin (K0 L m) × Fin (K0 L m)) (c : Fin (N0 L m))
+theorem gluedCode_table_right (c : Fin (N0 L m))
     (k : Fin (D m)) :
     gluedCode L m (unrank L m (gh.1 * K0 L m + gh.2)) c k
       = codeR (rightStrOf ((stdLayout hmL).table gh) ((stdLayout hmL).table_card gh)
@@ -326,7 +311,7 @@ theorem bandArrayL_at (X : Matrix (Fin N) (Fin (D m)) ℤ) (β : ℕ) (g h : Fin
     (arrL (bandArrayL (stdLayout hmL) X β)).getD
         (gluedCode L m (unrank L m (g * K0 L m + h)) r k) 0
       = padRows X ((β * K0 L m + g) * N0 L m + r) k := by
-  rw [gluedCode_table_left hmL (g, h) r k, getD_arrL, bandArrayL, arrayL_leftStrOf,
+  rw [gluedCode_table_left hmL (g, h), getD_arrL, bandArrayL, arrayL_leftStrOf,
     bandFamilyL_table, rowBlock, Equiv.symm_apply_apply, Equiv.symm_apply_apply]
 
 /-- The input array of a column band, entry by entry: at the code `gluedCode` of the subset of the
@@ -337,13 +322,13 @@ theorem bandArrayR_at (Y : Matrix (Fin (D m)) (Fin N) ℤ) (β : ℕ) (g h : Fin
     (arrR (bandArrayR (stdLayout hmL) Y β)).getD
         (gluedCode L m (unrank L m (g * K0 L m + h)) c k) 0
       = padCols Y k ((β * K0 L m + h) * N0 L m + c) := by
-  rw [gluedCode_table_right hmL (g, h) c k, getD_arrR, bandArrayR, arrayR_rightStrOf,
+  rw [gluedCode_table_right hmL (g, h), getD_arrR, bandArrayR, arrayR_rightStrOf,
     bandFamilyR_table, colBlock, Equiv.symm_apply_apply, Equiv.symm_apply_apply]
 
 end
 
 /-- The input array of a row band is 0 at every left string whose inner set is not in the table. -/
-private theorem bandArrayL_apply_eq_zero {L m N : ℕ} (lay : Layout L m)
+theorem bandArrayL_apply_eq_zero {L m N : ℕ} (lay : Layout L m)
     (X : Matrix (Fin N) (Fin (D m)) ℤ) (β : ℕ) (u : LeftStr L)
     (hu : ∀ gh r π, u ≠ leftStrOf (lay.table gh) (lay.table_card gh) r π) :
     bandArrayL lay X β u = 0 := by
@@ -353,11 +338,11 @@ private theorem bandArrayL_apply_eq_zero {L m N : ℕ} (lay : Layout L m)
     rw [bandFamilyL_eq_zero lay X β fun gh hgh =>
       hu gh _ _ (leftStr_eq_leftStrOf (lay.table_card gh) hgh.symm hcard)]
     rfl
-  · rfl
+  rfl
 
 /-- The input array of a column band is 0 at every right string whose inner set is not in the
 table. -/
-private theorem bandArrayR_apply_eq_zero {L m N : ℕ} (lay : Layout L m)
+theorem bandArrayR_apply_eq_zero {L m N : ℕ} (lay : Layout L m)
     (Y : Matrix (Fin (D m)) (Fin N) ℤ) (β : ℕ) (v : RightStr L)
     (hv : ∀ gh π c, v ≠ rightStrOf (lay.table gh) (lay.table_card gh) π c) :
     bandArrayR lay Y β v = 0 := by
@@ -367,7 +352,7 @@ private theorem bandArrayR_apply_eq_zero {L m N : ℕ} (lay : Layout L m)
     rw [bandFamilyR_eq_zero lay Y β fun gh hgh =>
       hv gh _ _ (rightStr_eq_rightStrOf (lay.table_card gh) hgh.symm hcard)]
     rfl
-  · rfl
+  rfl
 
 /-- The input array of a row band is 0 at every place that is not a code `gluedCode` as in
 `bandArrayL_at`. -/
@@ -378,8 +363,8 @@ theorem bandArrayL_eq_zero {L m N : ℕ} (hmL : m ≤ L) (X : Matrix (Fin N) (Fi
   refine getD_arrStr_eq_zero leftEquiv _ fun u hcode =>
     bandArrayL_apply_eq_zero _ X β u fun gh r π hu =>
       hpos gh.1 gh.2 ((stdLayout hmL).rowIdx.symm r) ((stdLayout hmL).innerIdx.symm π) ?_
-  rw [gluedCode_table_left hmL gh, Equiv.apply_symm_apply, Equiv.apply_symm_apply, ← hu]
-  exact hcode.symm
+  rw [gluedCode_table_left, Equiv.apply_symm_apply]
+  aesop
 
 /-- The input array of a column band is 0 at every place that is not a code `gluedCode` as in
 `bandArrayR_at`. -/
@@ -390,7 +375,5 @@ theorem bandArrayR_eq_zero {L m N : ℕ} (hmL : m ≤ L) (Y : Matrix (Fin (D m))
   refine getD_arrStr_eq_zero rightEquiv _ fun v hcode =>
     bandArrayR_apply_eq_zero _ Y β v fun gh π c hv =>
       hpos gh.1 gh.2 ((stdLayout hmL).colIdx.symm c) ((stdLayout hmL).innerIdx.symm π) ?_
-  rw [gluedCode_table_right hmL gh, Equiv.apply_symm_apply, Equiv.apply_symm_apply, ← hv]
-  exact hcode.symm
-
-end ThreeSumApsp.Spec
+  rw [gluedCode_table_right, Equiv.apply_symm_apply]
+  aesop

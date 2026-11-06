@@ -1,9 +1,7 @@
-module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
-public import ImprovedExponents.PrunedProgram.SegOn
+import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+import ImprovedExponents.PrunedProgram.SegOn
 
-@[expose] public section
 
 /-!
 # The specification of `queryCore` on pruned encodings
@@ -67,7 +65,7 @@ def QueryCoreSpecP (lim : Limits) (P : Program) : Prop :=
         r = trieQuery x.m x.t (arrT x.encA) (arrT x.encB) x.T x.root (digitsO x.η) ∧
           SameOutside2 μ μ' x.ss x.m x.box x.L
 
-variable {lim : Limits} {μ μ₁ : ℕ → ℤ} {x : QueryCoreArgs}
+variable {μ μ₁ : ℕ → ℤ}
 
 /-- A pruned encoding that meets neither scratch string is kept. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.seg_of_same)
@@ -75,5 +73,3 @@ theorem segOn_of_same {ss m box L a k L' : ℕ} {enc : Leaf L' → ℤ}
     (h : SameOutside2 μ μ₁ ss m box L) (hl : SegOn k μ a enc)
     (h1 : Apart ss m a (10 ^ L')) (h2 : Apart box L a (10 ^ L')) : SegOn k μ₁ a enc :=
   hl.congr fun i hi => h _ ⟨by omega, by omega⟩
-
-end Light.Sec4

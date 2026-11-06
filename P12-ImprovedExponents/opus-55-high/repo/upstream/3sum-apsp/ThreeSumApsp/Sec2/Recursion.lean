@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec2.Lemma6
+import ThreeSumApsp.Sec2.Lemma6
 
 /-!
 # Strings, vertices and the coefficients of the encoding
@@ -19,26 +18,18 @@ the sentence that each form has at most three nonzero coefficients (`card_suppor
 `figure_3`.
 -/
 
-public section
 
-open Finset
 
 namespace ThreeSumApsp
 
-/-- Section 2.3.1: an array on the left strings of length `L` "has 7^L entries in total". -/
-theorem card_leftStr (L : ℕ) : Fintype.card (LeftStr L) = 7 ^ L := by
-  rw [Fintype.card_fun, card_leftVar, Fintype.card_fin]
+variable (lam : Term)
 
-/-- Section 2.3.1: an array on the right strings of length `L` has `7^L` entries. -/
-theorem card_rightStr (L : ℕ) : Fintype.card (RightStr L) = 7 ^ L := by
-  rw [Fintype.card_fun, card_rightVar, Fintype.card_fin]
+
 
 /-- Section 2.3.1: "φ_λ(s) ∈ {0, ±1}". -/
-theorem abs_phi_le_one (lam : Term) (s : LeftVar) : |phi lam s| ≤ 1 := by
+theorem abs_phi_le_one (s : LeftVar) : |phi lam s| ≤ 1 := by
   decide +revert
 
 /-- Section 2.3.1: `ψ_λ(t) ∈ {0, ±1}`. -/
-theorem abs_psi_le_one (lam : Term) (t : RightVar) : |psi lam t| ≤ 1 := by
+theorem abs_psi_le_one (t : RightVar) : |psi lam t| ≤ 1 := by
   decide +revert
-
-end ThreeSumApsp

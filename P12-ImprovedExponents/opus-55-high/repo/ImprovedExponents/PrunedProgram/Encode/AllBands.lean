@@ -1,12 +1,10 @@
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.AllBands
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Contract
-public import ImprovedExponents.PrunedProgram.Encode.Meaning
-public import ImprovedExponents.PrunedProgram.Procs
-import all ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Contract
+import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.AllBands
+import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Contract
+import ImprovedExponents.PrunedProgram.Encode.Meaning
+import ImprovedExponents.PrunedProgram.Procs
+import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Contract
 
-@[expose] public section
 
 /-!
 # The encodings of all bands of one matrix with the pruned encoder
@@ -31,11 +29,12 @@ open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
 
 variable {lim : Limits} {P : Program}
 
-open private scrSize_le pow_of_seg from ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Contract
 
 /-! ## The specification of the pruned encoder that its callers assume -/
 
 variable {n Lmax j src dst scr tab p7 p10 : ℕ} {μ : ℕ → ℤ}
+
+variable {d : ℕ}
 
 /-- **The specification that the callers of encodeP assume**, for any alphabet of seven variables.
 The callers allow `7^n` cells of scratch area, more than the `scrSize n` that `encodeP` uses. -/
@@ -45,17 +44,15 @@ theorem encodeP_entry {α : Type} [Fintype α] (e : α ≃ Fin 7) (coef : Term �
     (hcoef : ∀ lam s, T.getD (7 * (termIdx lam : ℕ) + (e s : ℕ)) 0 = coef lam s) (std : Std lim)
     (hS : P[pEncStep]? = some encStepBody)
     (hE : P[Proc.encodeP]? = some (encodePBody pEncStep Proc.encodeP))
-    {d : ℕ} (hd : d + (n + 1) ≤ lim.depth) (hpl : EncodePlaces lim n Lmax src dst scr tab p7 p10 μ)
+    (hd : d + (n + 1) ≤ lim.depth) (hpl : EncodePlaces lim n Lmax src dst scr tab p7 p10 μ)
     (htab : Seg μ tab T) (A : (Fin n → α) → ℤ) (hsrc : Seg μ src (arrStr e A)) {V : ℤ}
     (hV : ∀ u, |A u| ≤ V) (hVB : 7 ^ (n + 1) * V ≤ lim.word) (hj : (j : ℤ) ≤ lim.word) :
     Meets lim P Proc.encodeP d [n, j, src, dst, scr, tab, p7, p10] μ (cEncP * encWorkP n j)
       fun _ μ' => SegOn j μ' dst (computeEncoding coef n A) ∧
         SameOutside2 μ μ' dst (10 ^ n) scr (7 ^ n) := by
-  have hV0 : 0 ≤ V := (abs_nonneg _).trans (hV fun _ => e.symm 0)
-  have hVB' : ((7 ^ n : ℕ) : ℤ) * V ≤ lim.word := by
+  have hVB' : 7 ^ n * V ≤ lim.word := by
     refine le_trans ?_ hVB
-    push_cast
-    exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) (Nat.le_succ n)) hV0
+    exact mul_le_mul_of_nonneg_right (by grind) ((abs_nonneg _).trans (hV fun _ => e.symm 0))
   have hscr := scrSize_le n
   refine .of_body hE ((encodeP_str e coef hT hc hcoef hS hE (hpl.layout std) A hsrc hV htab
     (pow_of_seg hpl.hp7 hpl.n_le) (pow_of_seg hpl.hp10 hpl.n_le) hVB' (by omega) hj).mono le_rfl
@@ -80,17 +77,14 @@ def encodeBandsPBody : Stmt :=
 theorem encodeBandsP_time (p : Par) (cB cE : ℕ) :
     p.nB * (cB * bandArrayShape p + cE * encWorkP p.L p.m + 51) + 6
       ≤ (cB + cE + 51) * (p.nB * (encWorkP p.L p.m + bandArrayShape p) + 1) := by
-  have hW : 1 ≤ encWorkP p.L p.m :=
+  have hW :=
     (Nat.one_le_pow _ _ (by norm_num)).trans (pow_seven_le_encWorkP p.L p.m)
-  have hfifty : p.nB * 51 ≤ p.nB * (51 * encWorkP p.L p.m) := Nat.mul_le_mul_left _ (by omega)
-  generalize encWorkP p.L p.m = W at hW hfifty ⊢
-  calc p.nB * (cB * bandArrayShape p + cE * W + 51) + 6
-      = p.nB * (cB * bandArrayShape p) + p.nB * (cE * W) + p.nB * 51 + 6 := by ring
-    _ ≤ p.nB * (cB * bandArrayShape p) + p.nB * (cE * W) + p.nB * (51 * W) + 6
-        + (p.nB * (cB * W) + p.nB * ((cE + 51) * bandArrayShape p) + (cB + cE + 45)) := by omega
-    _ = (cB + cE + 51) * (p.nB * (W + bandArrayShape p) + 1) := by ring
+  have hfifty : p.nB * 51 ≤ p.nB * (51 * encWorkP p.L p.m) := by simp_all [Nat.mul_le_mul_left]
+  grind
 
 variable {p : Par} {x : BandsArgs} {coefs : List ℤ} {V : ℤ} {μ' : ℕ → ℤ}
+
+variable {cB : ℕ}
 
 /-- **encodeBandsP**, at the sizes of `p`, for callees described by what they do here: `HB` says
 that `bandArray` leaves the list `A β` at `arr`, within `cB bandArrayShape` steps, `HE` that
@@ -99,7 +93,7 @@ symbols `P₀` from `enc + β T`, within `cE encWorkP L m` steps; both in any me
 `μ` below `enc`.  Then the encodings `E β` stand from `enc` on. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Encode/AllBands.lean (encodeBands_proc)
 theorem encodeBandsP_proc (std : Std lim) (hP : P[Proc.encodeBandsP]? = some encodeBandsPBody)
-    {d side aA sI sK cB cE : ℕ} {A : ℕ → List ℤ} {E : ℕ → Leaf p.L → ℤ}
+    {side aA sI sK cE : ℕ} {A : ℕ → List ℤ} {E : ℕ → Leaf p.L → ℤ}
     (pre : BandsPre lim p μ x coefs V) (hd : d < lim.depth)
     (HB : ∀ β < p.nB, ∀ μ' : ℕ → ℤ, Kept μ μ' x.enc →
       Meets lim P pBandArray (d + 1)
@@ -129,8 +123,8 @@ theorem encodeBandsP_proc (std : Std lim) (hP : P[Proc.encodeBandsP]? = some enc
     (fun β μ' => (∀ β' < β, SegOn p.m μ' (x.enc + β' * p.T) (E β')) ∧
       SameOutside μ μ' x.enc (x.zs + p.S7 - x.enc))
     p.nB (cB * bandArrayShape p + cE * encWorkP p.L p.m + 43) 0
-    ⟨fun β' h => absurd h (by omega), .refl⟩
-    ?round (fun _ _ h => h) (by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl)
+    ⟨by omega, .refl⟩
+    ?round (by simp) (by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl)
   rintro β r μ' hβ ⟨hdone, same⟩
   have hβT : β * p.T + p.T ≤ p.nB * p.T := Nat.mul_add_le_mul hβ le_rfl
   -- bandArray(L, m, N, D, K0, N0, S7, β, side, aA, sI, sK, mask, dig3, dig4, arr)
@@ -138,12 +132,11 @@ theorem encodeBandsP_proc (std : Std lim) (hP : P[Proc.encodeBandsP]? = some enc
   -- encodeP(L, m, arr, enc + β T, zs, tab, p7, p10)
   light_call (HE β hβ μ₁ (by light_keep) hA) with r₂ μ₂ ⟨hEβ, same₂⟩
   refine ⟨r₂, μ₂, rfl, fun β' hβ' => ?_, by light_keep⟩
-  rcases Nat.lt_or_ge β' β with h | h
+  rcases β'.lt_or_ge β with h | h
   · -- The encodings of the earlier bands lie below enc + β T and have not been touched.
     have hβ'T : β' * p.T + p.T ≤ β * p.T := Nat.mul_add_le_mul h le_rfl
     exact (hdone β' h).keep
-  · obtain rfl : β' = β := by omega
-    exact hEβ
+  grind
 
 /-! ## The two entries -/
 
@@ -163,11 +156,13 @@ def EncodeBandsLSpecP (lim : Limits) (P : Program) (c : ℕ) : Prop :=
 
 /-- The budget `m ≤ L` fits in a word, since the table of powers of 7 has `L + 1` cells below the
 encodings. -/
-private theorem BandsPre.m_le_word (std : Std lim) (pre : BandsPre lim p μ x coefs V)
+theorem BandsPre.m_le_word (std : Std lim) (pre : BandsPre lim p μ x coefs V)
     (hmL : p.m ≤ p.L) : (p.m : ℤ) ≤ lim.word := by
   light_facts pre
   have := std.space_le
   omega
+
+variable {c : ℕ}
 
 /-- **encodeBandsP** meets this entry, with every constant from cB + cEncP + 51 on. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Encode/AllBands.lean
@@ -175,14 +170,13 @@ private theorem BandsPre.m_le_word (std : Std lim) (pre : BandsPre lim p μ x co
 theorem encodeBandsPL_entry (std : Std lim) (hP : P[Proc.encodeBandsP]? = some encodeBandsPBody)
     (hS : P[pEncStep]? = some encStepBody)
     (hE : P[Proc.encodeP]? = some (encodePBody pEncStep Proc.encodeP))
-    {cB c : ℕ} (hB : BandArrayLSpec lim P cB) (hc : cB + cEncP + 51 ≤ c) :
+    (hB : BandArrayLSpec lim P cB) (hc : cB + cEncP + 51 ≤ c) :
     EncodeBandsLSpecP lim P c := by
   intro p hmL x aX μ X V pre hM hMle hV d hd
   light_facts pre
   refine .mono_const ?_ hc
   refine encodeBandsP_proc std hP pre (by omega)
     (A := fun β => Spec.arrL (bandArrayL (Spec.stdLayout hmL) X β))
-    (E := fun β => encodingL (bandArrayL (Spec.stdLayout hmL) X β))
     (fun β hβ μ' hlow => ?_) fun β hβ μ' hlow hA => ?_
   · simpa using hB p hmL β aX x.mask x.dig3 x.dig4 x.arr μ' X (by omega)
       (hM.congr_below hlow hMle) (by omega) ((pre.tables.congr_below hlow).mono (by omega)) hβ
@@ -190,9 +184,8 @@ theorem encodeBandsPL_entry (std : Std lim) (hP : P[Proc.encodeBandsP]? = some e
   · exact computeEncoding_phi _ ▸ encodeP_entry leftEquiv phi (by decide) (by decide) phiFlat_spec
       std hS hE (by omega) (pre.encodePlaces hβ hlow)
       (pre.coef.congr fun i hi => hlow _ (by
-        have := Spec.length_phiFlat
-        omega))
-      _ hA (abs_bandArrayL_le (Spec.stdLayout hmL) pre.V_nonneg hV β) pre.word
+        grind [Spec.length_phiFlat]))
+      _ hA (by simp_all [abs_bandArrayL_le, Spec.stdLayout]) pre.word
       (pre.m_le_word std hmL)
 
 /-- encodeBandsP for the column bands of Y: side = 1, the coefficients ψ at tab. -/
@@ -214,14 +207,13 @@ def EncodeBandsRSpecP (lim : Limits) (P : Program) (c : ℕ) : Prop :=
 theorem encodeBandsPR_entry (std : Std lim) (hP : P[Proc.encodeBandsP]? = some encodeBandsPBody)
     (hS : P[pEncStep]? = some encStepBody)
     (hE : P[Proc.encodeP]? = some (encodePBody pEncStep Proc.encodeP))
-    {cB c : ℕ} (hB : BandArrayRSpec lim P cB) (hc : cB + cEncP + 51 ≤ c) :
+    (hB : BandArrayRSpec lim P cB) (hc : cB + cEncP + 51 ≤ c) :
     EncodeBandsRSpecP lim P c := by
   intro p hmL x aY μ Y V pre hM hMle hV d hd
   light_facts pre
   refine .mono_const ?_ hc
   refine encodeBandsP_proc std hP pre (by omega)
     (A := fun β => Spec.arrR (bandArrayR (Spec.stdLayout hmL) Y β))
-    (E := fun β => encodingR (bandArrayR (Spec.stdLayout hmL) Y β))
     (fun β hβ μ' hlow => ?_) fun β hβ μ' hlow hA => ?_
   · simpa using hB p hmL β aY x.mask x.dig3 x.dig4 x.arr μ' Y (by omega)
       (hM.congr_below hlow hMle) (by omega) ((pre.tables.congr_below hlow).mono (by omega)) hβ
@@ -229,9 +221,6 @@ theorem encodeBandsPR_entry (std : Std lim) (hP : P[Proc.encodeBandsP]? = some e
   · exact computeEncoding_psi _ ▸ encodeP_entry rightEquiv psi (by decide) (by decide)
       psiFlat_spec std hS hE (by omega) (pre.encodePlaces hβ hlow)
       (pre.coef.congr fun i hi => hlow _ (by
-        have := Spec.length_psiFlat
-        omega))
-      _ hA (abs_bandArrayR_le (Spec.stdLayout hmL) pre.V_nonneg hV β) pre.word
+        grind [Spec.length_psiFlat]))
+      _ hA (by simp_all [abs_bandArrayR_le, Spec.stdLayout]) pre.word
       (pre.m_le_word std hmL)
-
-end Light.Sec2

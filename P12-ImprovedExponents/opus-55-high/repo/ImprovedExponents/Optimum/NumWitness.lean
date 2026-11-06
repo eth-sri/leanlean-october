@@ -1,2 +1,1 @@
-module
-public import ImprovedExponents.Optimum.NumLog
+import ImprovedExponents.Optimum.NumLog

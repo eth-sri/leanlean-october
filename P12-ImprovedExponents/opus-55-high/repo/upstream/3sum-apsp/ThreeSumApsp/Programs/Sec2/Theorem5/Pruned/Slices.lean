@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
 /-!
 # Cutting an increasing list of codes into its ten slices (step (2) of Pruned, Section 2.4.2)
@@ -25,32 +25,30 @@ z are consecutive; it notes where they start, and writes every code without its 
   slice at z stands at bnd + 11 + segStart n codes z, and no other cell has changed.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp
 
 /-! ## The program -/
 
 namespace SegLocal
 
-/-- The list of the codes. -/
-abbrev PL : ℕ := 0
-/-- The length of the list. -/
-abbrev LEN : ℕ := 1
-/-- 10^n. -/
-abbrev PW : ℕ := 2
-/-- Where the bounds are written; the codes without first digits follow 11 cells later. -/
-abbrev BND : ℕ := 3
-/-- The position i in the list. -/
-abbrev CI : ℕ := 4
-/-- The first digit z. -/
-abbrev CZ : ℕ := 5
-/-- z 10^n. -/
-abbrev LO : ℕ := 6
-/-- (z + 1) 10^n. -/
-abbrev HI : ℕ := 7
+/- The list of the codes. -/
+slots PL
+/- The length of the list. -/
+slots 1 LEN
+/- 10^n. -/
+slots 2 PW
+/- Where the bounds are written; the codes without first digits follow 11 cells later. -/
+slots 3 BND
+/- The position i in the list. -/
+slots 4 CI
+/- The first digit z. -/
+slots 5 CZ
+/- z 10^n. -/
+slots 6 LO
+/- (z + 1) 10^n. -/
+slots 7 HI
 
 end SegLocal
 
@@ -82,12 +80,7 @@ def segBoundsBody : Stmt :=
 
 /-! ## The list -/
 
-variable {n pw l bnd i z lo : ℕ} {codes : List ℕ} {μ μ' : ℕ → ℤ}
-
 /-! ## The memory -/
 
 /-! ## The pass -/
 
-variable {lim : Limits} {P : Program} {d : ℕ}
-
-end Light.Sec2

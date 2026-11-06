@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Areas
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Offline
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
+import ThreeSumApsp.Programs.Sec4.Theorem30.Areas
+import ThreeSumApsp.Programs.Sec4.Theorem30.Offline
 
 /-!
 # Section 4.4, the offline form: preprocess, then one query for each wanted position
@@ -29,14 +29,12 @@ of Theorem 30 uses too, and the routine meets its specification `OfflineSpec32` 
 (`offline32_meets`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
 
-variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
-  {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
+variable {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
+  {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {μ : ℕ → ℤ}
 
 /-! ## The text -/
 
@@ -47,21 +45,12 @@ def entryN {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ) (Y : Matrix (Fin D
 
 namespace Offline32
 
-/-- The locals of offline32. The first ten are its arguments: N, D, the number of positions, a bound
+/- The locals of offline32. The first ten are its arguments: N, D, the number of positions, a bound
 that is not used, the addresses of X, of Y, of the rows and of the columns of the wanted positions
 and of the output, and the free pointer. Then come the number of the current position and the result
 of a call. -/
-abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Dim : ℕ := 1
-@[inherit_doc Size] abbrev Count : ℕ := 2
-@[inherit_doc Size] abbrev MatX : ℕ := 4
-@[inherit_doc Size] abbrev MatY : ℕ := 5
-@[inherit_doc Size] abbrev Rows : ℕ := 6
-@[inherit_doc Size] abbrev Cols : ℕ := 7
-@[inherit_doc Size] abbrev Out : ℕ := 8
-@[inherit_doc Size] abbrev Free : ℕ := 9
-@[inherit_doc Size] abbrev Pos : ℕ := 10
-@[inherit_doc Size] abbrev Res : ℕ := 11
+slots Size Dim Count
+slots 4 MatX MatY Rows Cols Out Free Pos Res
 
 end Offline32
 
@@ -100,5 +89,3 @@ structure OfflineInput32 {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ) (Y :
   out_matY : Apart out WI.length aY (D₀ * N)
   out_rows : Apart out WI.length aI WI.length
   out_cols : Apart out WI.length aJ WI.length
-
-end Light.Sec4

@@ -1,8 +1,6 @@
-module
 
-public import ImprovedExponents.Optimum.PerCCrossing
+import ImprovedExponents.Optimum.PerCCrossing
 
-@[expose] public section
 
 /-!
 # The supremum of the savings for a fixed `c`
@@ -22,7 +20,7 @@ parameters `(θ, σ, ε)` have the least upper bound `savingF A (Gam c) = R(Γ) 
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Real Set
+open ThreeSumApsp
 
 variable {A c θ σ ε : ℝ}
 
@@ -30,13 +28,8 @@ variable {A c θ σ ε : ℝ}
 `ε Γ/2`. -/
 theorem tupleSaving_crossing (hX : gammaX c θ = Gam c) (hQ : gammaQ θ = Gam c) (ε : ℝ) :
     tupleSaving c θ (1 / 2 + Gam c / 4) ε = ε * (Gam c / 2) := by
-  have hq : qOf θ = 1 / 2 - 3 * Gam c / 4 := gammaQ_eq_iff.1 hQ
-  have e1 : 1 / 2 + Gam c / 4 - qOf θ = Gam c := by
-    rw [hq]
-    ring
-  have e2 : 2 * (1 / 2 + Gam c / 4) - 1 = Gam c / 2 := by ring
-  have e3 : Gam c - Gam c / 2 = Gam c / 2 := by ring
-  rw [tupleSaving, effGamma, hX, e1, e2, min_self, e3, min_self]
+  have hq := gammaQ_eq_iff.1 hQ
+  grind [Gam, qOf, tupleSaving, effGamma]
 
 /-- **The bound `R(Γ) Γ/2` is approached**: every smaller number is exceeded by the saving of an
 admissible tuple. -/
@@ -46,17 +39,12 @@ theorem exists_tupleSaving_gt (hc : 10 < c) (hA : 0 < A) {s : ℝ}
   obtain ⟨θ, hθ, hX, hQ⟩ := exists_crossing_eq_Gam hc
   have hΓ := Gam_pos hc
   have hΓ' := Gam_lt_two_thirds hc
-  have hR : 0 < thinR A (Gam c) := thinR_pos hA hΓ.le
   have hs' : s / (Gam c / 2) < thinR A (Gam c) := by
     rw [div_lt_iff₀ (by linarith)]
-    unfold savingF at hs
-    linarith
-  obtain ⟨ε, hε1, hε2⟩ := exists_between (max_lt hs' hR)
-  have hε0 : 0 < ε := (le_max_right _ _).trans_lt hε1
-  have hεs : s / (Gam c / 2) < ε := (le_max_left _ _).trans_lt hε1
+    grind [savingF]
+  obtain ⟨ε, hε1, hε2⟩ := exists_between (max_lt hs' (thinR_pos hA hΓ.le))
+  have hε0 : 0 < ε := by simp_all
   refine ⟨θ, 1 / 2 + Gam c / 4, ε, ⟨hc, hθ.1, hθ.2, by linarith, by linarith, hε0, ?_⟩, ?_⟩
-  · rwa [hX]
+  · simp_all
   · rw [tupleSaving_crossing hX hQ]
-    rwa [div_lt_iff₀ (by linarith)] at hεs
-
-end ImprovedExponents
+    simp_all [div_lt_iff₀]

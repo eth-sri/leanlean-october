@@ -1,9 +1,7 @@
-module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
-public import ImprovedExponents.PrunedProgram.SegOn
+import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+import ImprovedExponents.PrunedProgram.SegOn
 
-@[expose] public section
 
 /-!
 # The tile preprocessing of Theorem 30 on pruned encodings: specifications
@@ -98,5 +96,3 @@ def AllTilesSpecP (lim : Limits) (P : Program) : Prop :=
     Meets lim P Proc.allTiles d [x.aENCA, x.aENCB, x.nB, (10 ^ x.L : ℕ), x.aR, x.tr, x.fp,
       x.cur, x.box, x.L, (x.m - x.t : ℕ)] μ (tAllTiles x.L x.m x.t x.nB) fun _ μ' =>
         TrieMem μ' x.tr x.cap x.fp x.tries.cells ∧ SegN μ' x.aR x.tries.roots ∧ SameOn x.Kept μ μ'
-
-end Light.Sec4

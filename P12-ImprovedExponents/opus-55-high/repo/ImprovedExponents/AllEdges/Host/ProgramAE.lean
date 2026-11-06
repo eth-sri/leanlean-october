@@ -1,9 +1,7 @@
-module
 
-public import ImprovedExponents.AllEdges.Host.HostAE
-public import ImprovedExponents.HostMid.NeedPolynomial
+import ImprovedExponents.AllEdges.Host.HostAE
+import ImprovedExponents.HostMid.NeedPolynomial
 
-@[expose] public section
 
 /-!
 # The all-edges host solves all-edges Exact Triangle; the program, assembled
@@ -17,7 +15,7 @@ two parameter procedures, the program solves `aeTask` with the time `hostTimeAE`
 
 namespace ImprovedExponents.AllEdges
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec HostMid
+open Light Light.Sec3 HostMid
 
 variable {P₀ R : Program} {ν : Et17Nums} {pScanPairsAE pFill pBruteAE pLoopAE : ℕ}
   {Tn : List ℕ → ℕ} {need : List ℕ → Need} {Dfun Gfun tD tG wD wG : ℕ → ℕ} {lim : Limits} {d : ℕ}
@@ -38,15 +36,15 @@ theorem aeSmall_spec
         Seg σ'.mem flg (aeFlags x.n x.AB x.BC x.AC) ∧ Kept μ σ'.mem fr := by
   have hok' := hostNeedAt'_ok hok
   have hbrute : (bruteNeed x.n x.U).Ok lim fr (d + 1) :=
-    hok'.mono (by simp only [bruteNeed, hostNeedAt', hostWord]; omega)
-      (by simp only [bruteNeed]; omega) (by simp only [bruteNeed, hostNeedAt']; omega)
+    hok'.mono (by grind [bruteNeed, hostNeedAt', hostWord])
+      (by grind [bruteNeed]) (by grind [bruteNeed, hostNeedAt'])
   have hdepth := hok.depth
   have hcells := hok.cells
-  simp only [hostNeedCoreAt, hostNeedAt'] at hdepth hcells
-  refine Ends.callTo (bruteAE_meets C.bruteAE C.base.loop.scan x μ fr hpre hbrute (by omega)) ?_
-    (by simp [et17LocA])
+  simp [hostNeedCoreAt, hostNeedAt'] at hdepth hcells
+  refine Ends.callTo (bruteAE_meets C.bruteAE C.base.loop.scan x μ fr hpre hbrute) ?_
+    (by aesop)
   rintro _ _ ⟨rfl, hseg, hkept⟩
-  exact ⟨fr, le_rfl, by omega, by simp [et17LocA], hseg, hkept⟩
+  exact ⟨fr, le_rfl, by omega, by rfl, hseg, hkept⟩
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Host/Correct.lean
 /-- **The core of the all-edges host**: within `hostCoreTime`, it returns the address of the flags
@@ -60,13 +58,11 @@ theorem aeCore_spec
       (hostCoreTime Dfun Gfun tD tG Tn x.n x.U)
       fun σ' => ∃ flg : ℕ, fr ≤ flg ∧ flg + x.n * x.n ≤ lim.space ∧ σ'.loc 0 = flg ∧
         Seg σ'.mem flg (aeFlags x.n x.AB x.BC x.AC) ∧ Kept μ σ'.mem fr := by
-  have hok' : (hostNeed' Dfun Gfun wD wG need x.n x.U).Ok lim fr d := hostNeedAt'_ok hok
-  have hparams := et17Params_spec' C.base x μ fr hpre hok'
-  have hone : (1 : ℤ) ≤ lim.word := by
+  have hparams := et17Params_spec' C.base x μ fr hpre (hostNeedAt'_ok hok)
+  have hone : 1 ≤ lim.word := by
     have hword := hok.word
-    simp only [hostNeedCore, hostNeedCoreAt, hostNeedAt', hostWord] at hword
-    omega
-  rw [← frame_append_zeros [(x.n : ℤ), x.U, x.ab, x.bc, x.ac, fr] 29]
+    grind [hostNeedCore, hostNeedCoreAt, hostNeedAt', hostWord]
+  rw [← frame_append_zeros _ 29]
   unfold hostNeedCore at hok
   unfold aeCoreBody hostCoreTime hostSetup
   generalize Dfun x.n = D at *
@@ -78,19 +74,19 @@ theorem aeCore_spec
   by_cases hs : SmallCase x.n D g
   · rw [ite_eq_left hs]
     exact Ends.iteLast (fun _ => (aeSmall_spec C x μ fr D g _ _ hpre hok).mono
-      (by simp; omega) fun _ h => h) (fun h => absurd (by simp [et17LocA, hs]) h) (by simp; omega)
+      (by simp; omega) fun _ h => h) (by simp_all [et17LocA]) (by simp_all)
   rw [ite_eq_right hs]
-  refine Ends.iteLast (fun h => absurd h (by simp [et17LocA, hs])) (fun _ => ?_) (by simp; omega)
+  refine Ends.iteLast (by simp_all [et17LocA]) (fun _ => ?_) (by simp_all)
   -- otherwise: the sizes, then the tables and the loop over the instances
   have hbig := not_smallCase_iff.1 hs
   have htime := hostRunTimeAE_le hpre hbig Tn
   refine Ends.next _ ((et17Sizes_spec' C.base x μ fr D g _ _ hpre hbig (hostNeedAt'_ok hok)).mono
     le_rfl ?_) (by unfold hostMainAE; simp; omega)
   rintro _ ⟨μ', rfl, hk⟩
-  refine (et17TablesAE_spec C x μ' fr D g _ _ (hpre.keep hk) hbig hok).mono
-    (by unfold hostMainAE; simp; omega) ?_
+  apply (et17TablesAE_spec C x μ' fr D g _ _ (hpre.keep hk) hbig hok).mono
+    (by unfold hostMainAE; simp; omega)
   rintro σ'' ⟨flg, hfr, hsp, hres, hseg, hk'⟩
-  exact ⟨flg, hfr, hsp, hres, hseg, fun a ha => (hk' a ha).trans (hk a ha)⟩
+  exact ⟨flg, hfr, hsp, hres, hseg, fun a ha => (hk' a ha).trans (by aesop)⟩
 
 /-! ## The top procedure -/
 
@@ -110,33 +106,29 @@ theorem aeTop_spec {pCore pCopy : ℕ}
   have hdepth := hok.depth
   have hcells := hok.cells
   have hw := hok.space
-  simp only [hostNeedAE, hostNeedCore, hostNeedCoreAt, hostNeedAt'] at hdepth hcells
+  simp [hostNeedAE] at hdepth hcells
   have hok₁ : (hostNeedCore Dfun Gfun wD wG need x.n x.U).Ok lim fr (d + 1) :=
-    hok.mono le_rfl le_rfl (by simp only [hostNeedAE]; omega)
-  have hlay : 3 * (x.n * x.n) ≤ hostLayout x.n x.U (Dfun x.n) := by unfold hostLayout; omega
+    hok.mono le_rfl le_rfl (by grind [hostNeedAE])
   have hout := hpre.belowOut
   unfold aeTopBody hostTimeAE
   -- flg := aeCore(n, U, ab, bc, ac, fr)
-  have hcore : Ends lim (P₀ ++ R) (d + 1) (aeCoreBody ν pBruteAE pLoopAE)
+  have hcore : Ends lim _ _ _
       ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, fr], μ⟩ (hostCoreTime Dfun Gfun tD tG Tn x.n x.U)
-      fun σ' => ∃ flg : ℕ, fr ≤ flg ∧ flg + x.n * x.n ≤ lim.space ∧ σ'.loc 0 = flg ∧
-        Seg σ'.mem flg (aeFlags x.n x.AB x.BC x.AC) ∧ Kept μ σ'.mem fr :=
+      _ :=
     aeCore_spec C x.tri μ fr hpre.tri hok₁
   light_call (Meets.of_body (Q := fun r μ' => ∃ flg : ℕ, fr ≤ flg ∧ flg + x.n * x.n ≤ lim.space ∧
-      r = flg ∧ Seg μ' flg (aeFlags x.n x.AB x.BC x.AC) ∧ Kept μ μ' fr) hCore hcore)
+      r = flg ∧ Seg μ' flg _ ∧ Kept μ μ' fr) hCore hcore)
     with r μ₁ ⟨flg, hfr, hsp, rfl, hseg, hkept⟩
   -- flg := copy(flg, out, n * n)
-  have hn : ((x.n * x.n : ℕ) : ℤ) = (x.n : ℤ) * (x.n : ℤ) := by push_cast; rfl
-  have hsep : Apart flg (x.n * x.n) x.out (x.n * x.n) := Or.inr (by omega)
+  have hn : x.n * x.n = x.n * x.n := by rfl
+  have hsep : Apart flg (x.n * x.n) x.out (x.n * x.n) := by omega
   refine Ends.callTo (copy_meets hCopy hw hsp (by omega) hsep)
     ?_ (by light_side [hn])
   rintro _ μ₂ ⟨hcopy, hsame⟩
   refine ⟨fun i hi => ?_, fun c hc => ?_⟩
   · rw [length_aeFlags] at hi
-    change μ₂ (x.out + i) = _
-    rw [hcopy i hi]
-    exact hseg i (by rw [length_aeFlags]; exact hi)
-  · exact (hsame c hc.2).trans (hkept c hc.1)
+    aesop
+  · exact (hsame c hc.2).trans (by aesop)
 
 /-! ## The program -/
 
@@ -168,15 +160,9 @@ theorem aeCtx_assembled (hsol : SolvesN lopDetectTask P₀ pS Tn need)
       wD wG := by
   have L : ∀ {i : ℕ} {body : Stmt}, (aeProcs pS pD pG P₀.length)[i]? = some body →
       (P₀ ++ (aeProcs pS pD pG P₀.length ++ R))[P₀.length + i]? = some body :=
-    fun h => getElem?_append_append R h
-  have hbase := et17Ctx_assembled' hsol hD hG hpos (aeExtra pS pD pG P₀.length ++ R)
-  rw [aeProcs, List.append_assoc]
+    by grind
   exact
-    { base := hbase
-      scanPairsAE := L (i := 29) rfl
-      fill := L (i := 14) rfl
-      bruteAE := L (i := 30) rfl
-      loopAE := L (i := 31) rfl }
+    ⟨et17Ctx_assembled' hsol hD hG hpos _, by aesop, by aesop, by aesop, by aesop⟩
 
 /-- **The all-edges host as a solver of all-edges Exact Triangle**: from a solver of
 Lop-AE-SparseTri and two procedures that compute the parameters, in one program `P₀`, the appended
@@ -189,10 +175,9 @@ theorem ae17_solves (hsol : SolvesN lopDetectTask P₀ pS Tn need)
   refine ⟨aeTopBody (P₀.length + 32) (P₀.length + 34), ?_, fun R lim d x μ fr hpre hok => ?_⟩
   · have htop := getElem?_append_append (P₀ := P₀) (B := aeProcs pS pD pG P₀.length) []
       (i := 33) rfl
-    rwa [List.append_nil] at htop
+    assumption
   · rw [List.append_assoc]
-    have C := aeCtx_assembled hsol hD hG hpos R
-    exact aeTop_spec C (getElem?_append_append R (i := 32) rfl)
+    exact aeTop_spec (aeCtx_assembled hsol hD hG hpos R) (getElem?_append_append R (i := 32) rfl)
       (getElem?_append_append R (i := 34) rfl) x μ fr hpre hok
 
 /-! ## The need stays polynomial -/
@@ -204,19 +189,14 @@ theorem hostNeedAE_poly (hD : PolyBounded fun n _ => Dfun n)
     (hwG : PolyBounded fun n _ => wG (Dfun n)) (h : PolyNeedN need) :
     PolyNeed (hostNeedAE Dfun Gfun wD wG need) := by
   obtain ⟨s, k, hle⟩ := hostNeed_poly' hD hG hwD hwG h
-  refine ⟨1 + (s + 0), k + 2, fun n U => ?_⟩
+  refine ⟨1 + s + 0, k + 2, fun n U => ?_⟩
   obtain ⟨hw, hc, hd⟩ := hle n U
   have hsq : n * n ≤ polyBound 0 2 [n, U] := by
-    simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one,
-      pow_zero, one_mul]
-    calc n * n ≤ (n + 1) * (n + 1) := Nat.mul_le_mul (Nat.le_succ n) (Nat.le_succ n)
-      _ ≤ ((n + 1) * (U + 1)) * ((n + 1) * (U + 1)) := Nat.mul_le_mul
-          (Nat.le_mul_of_pos_right _ (Nat.succ_pos U)) (Nat.le_mul_of_pos_right _ (Nat.succ_pos U))
-      _ = ((n + 1) * (U + 1)) ^ 2 := (sq _).symm
-  have hone : 1 ≤ polyBound 0 2 [n, U] := one_le_polyBound 0 2 [n, U]
-  have hmono := polyBound_mono (Nat.le_add_right s 0 |>.trans (Nat.le_add_left _ 1))
-    (Nat.le_add_right k 2) [n, U]
-  refine ⟨hw.trans hmono, ?_, ?_⟩
+    simp [polyBound, List.map_cons, List.prod_cons, pow_zero]
+    grind
+  have hone : 1 ≤ polyBound 0 2 [n, U] := by grind [one_le_polyBound]
+  refine ⟨hw.trans (polyBound_mono (Nat.le_add_right s 0 |>.trans (Nat.le_add_left _ 1))
+    (Nat.le_add_right k 2) [n, U]), ?_, ?_⟩
   · exact add_le_polyBound hc hsq
   · exact (Nat.add_le_add hd hone).trans (add_le_polyBound le_rfl le_rfl)
 
@@ -237,8 +217,5 @@ theorem hostAE_of_paramProcs {procs : ℕ → Program} {i j : ℕ}
       ∃ (R : Program) (p' : ℕ), Solves aeTask (Q ++ R) p' (hostTimeAE Dfun Gfun tD tG Tn)
         (hostNeedAE Dfun Gfun wD wG r) ∧ PolyNeed (hostNeedAE Dfun Gfun wD wG r) := by
   intro Q pS Tn r hr hs
-  have h := ae17_solves (P₀ := Q ++ procs Q.length) (hs.append _) (hD Q) (hG Q) hpos
-  rw [List.append_assoc] at h
-  exact ⟨_, _, h, hpoly r hr⟩
-
-end ImprovedExponents.AllEdges
+  have h := ae17_solves (hs.append _) (hD Q) (hG Q) hpos
+  grind

@@ -1,8 +1,6 @@
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
-@[expose] public section
 
 /-!
 # Encodings held at the leaves with few symbols `P₀` only
@@ -23,16 +21,18 @@ namespace Light
 
 open ThreeSumApsp ThreeSumApsp.Spec Finset
 
-variable {L m m' : ℕ} {μ μ' : ℕ → ℤ} {a : ℕ} {enc : Leaf L → ℤ}
+variable {L m : ℕ} {μ μ' : ℕ → ℤ} {a : ℕ} {enc : Leaf L → ℤ}
 
 /-- The cells from `a` on hold the encoding `enc` at every leaf with at most `m` symbols `P₀`: the
 cell `a + codeT τ` holds `enc τ`.  Nothing is said about the other cells. -/
 def SegOn (m : ℕ) (μ : ℕ → ℤ) (a : ℕ) (enc : Leaf L → ℤ) : Prop :=
   ∀ τ : Leaf L, (P0Levels τ).card ≤ m → μ (a + codeT τ) = enc τ
 
+variable {τ : Leaf L}
+
 /-- Reading the cell of a leaf with at most `m` symbols `P₀`. -/
-theorem SegOn.get (h : SegOn m μ a enc) {τ : Leaf L} (hτ : (P0Levels τ).card ≤ m) :
-    μ (a + codeT τ) = enc τ := h τ hτ
+theorem SegOn.get (h : SegOn m μ a enc) (hτ : (P0Levels τ).card ≤ m) :
+    μ (a + codeT τ) = enc τ := by aesop
 
 /-- The predicate only depends on the `10^L` cells of the array. -/
 theorem SegOn.congr (h : SegOn m μ a enc) (he : ∀ i < 10 ^ L, μ' (a + i) = μ (a + i)) :
@@ -43,28 +43,27 @@ the term `h.keep` carries `h` to a later memory across the steps whose promises 
 context. -/
 theorem SegOn.keep (h : SegOn m μ a enc) (hs : SameOn (Inside a (10 ^ L)) μ μ' := by light_keep) :
     SegOn m μ' a enc :=
-  h.congr fun i hi => hs _ ⟨by omega, by omega⟩
+  h.congr fun i hi => by aesop
+
+variable {η : OutStr L}
 
 /-- A leaf that contributes to an output string has the term `P₀` only at the inner levels of the
 string, since only `P_ij` contributes to `z_ij` (`Term.contributes_iff`). -/
-theorem P0Levels_subset_innerSetO {η : OutStr L} {τ : Leaf L} (h : τ.Contributes η) :
+theorem P0Levels_subset_innerSetO (h : τ.Contributes η) :
     P0Levels τ ⊆ innerSetO η := by
   intro ℓ hℓ
   rw [P0Levels, mem_filter] at hℓ
   rw [innerSetO, mem_filter]
   refine ⟨mem_univ _, ?_⟩
-  have hc := (Term.contributes_iff _ _).1 (h ℓ)
-  rcases hc with hin | hpriv
-  · exact hin
+  rcases ((Term.contributes_iff _ _).1 (h ℓ)) with hin | hpriv
+  · assumption
   · rw [hℓ.2] at hpriv
     cases hz : η ℓ with
-    | z i j => rw [hz] at hpriv; exact absurd hpriv (by simp [OutVar.privateTerm])
+    | z i j => rw [hz] at hpriv; tauto
     | z0 => trivial
 
 /-- A leaf that contributes to an output string with `m` inner levels has at most `m` symbols
 `P₀`. -/
-theorem card_P0Levels_le_of_contributes {η : OutStr L} {τ : Leaf L} (h : τ.Contributes η) :
+theorem card_P0Levels_le_of_contributes (h : τ.Contributes η) :
     (P0Levels τ).card ≤ (innerSetO η).card :=
   card_le_card (P0Levels_subset_innerSetO h)
-
-end Light

@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Compiler.Dispatcher
+import ThreeSumApsp.Lang.Compiler.Dispatcher
 
 /-!
 # The code of a whole program
@@ -32,7 +31,6 @@ The facts proved here are about positions only: each part is where the table say
 (`codeAt_headCode`, …, `codeAt_startCode`), and every body is at its entry (`codeAt_bodies`).
 -/
 
-@[expose] public section
 
 open ThreeSumApsp.WordRam
 
@@ -143,7 +141,7 @@ def _root_.Light.compileProgram (P : Program) (p0 : ℕ) (dec : Bool) : List Ins
 
 /-! ## Lengths and positions -/
 
-private theorem le_endPos (F : ℕ) : ∀ (bs : List Stmt) (pos : ℕ), pos ≤ endPos F bs pos
+theorem le_endPos (F : ℕ) : ∀ (bs : List Stmt) (pos : ℕ), pos ≤ endPos F bs pos
   | [], _ => le_rfl
   | b :: bs, pos => le_trans (by omega) (le_endPos F bs (pos + b.size F + epilogueSize))
 
@@ -154,9 +152,9 @@ theorem size_mainStmt (p0 F : ℕ) : (mainStmt p0).size F = 2 * F + 11 := by
 /-- The outermost statement uses the local variables 0, 1, 2. -/
 theorem width_mainStmt (p0 : ℕ) : (mainStmt p0).width = 3 := rfl
 
-private theorem length_tailCode (dec : Bool) (pos : ℕ) :
+theorem length_tailCode (dec : Bool) (pos : ℕ) :
     (tailCode dec pos).length = if dec then 5 else 2 := by
-  cases dec <;> rfl
+  aesop
 
 /-- The dispatcher comes after four instructions, the 2 F + 11 instructions of the outermost
 statement and at least two for the verdict.  So the pool also holds the distance 2 (F + 1) between
@@ -164,12 +162,9 @@ two frames and the number 2 · `mainFrame` from which the start-up code forms th
 pointer, and it reaches further down than the 2 F + 1 temporaries. -/
 theorem two_mul_frameSize_add_le_dispPos (P : Program) (dec : Bool) :
     2 * frameSize P + 17 ≤ dispPos P dec := by
-  have : firstBody (frameSize P) dec ≤ dispPos P dec := le_endPos _ _ _
-  have htail : 2 ≤ if dec then 5 else 2 := by split_ifs <;> omega
-  simp only [firstBody, tailPos, mainPos, size_mainStmt, length_tailCode] at this
-  omega
+  grind [firstBody, frameSize, dispPos, le_endPos, tailPos, mainPos, size_mainStmt, length_tailCode]
 
-private theorem length_bodiesCode (G : CodeLayout) :
+theorem length_bodiesCode (G : CodeLayout) :
     ∀ (bs : List Stmt) (pos : ℕ), pos + (bodiesCode G bs pos).length = endPos G.F bs pos
   | [], _ => rfl
   | b :: bs, pos => by
@@ -181,31 +176,27 @@ section parts
 
 variable (P : Program) (p0 : ℕ) (dec : Bool)
 
-private theorem length_through_mainCode :
+theorem length_through_mainCode :
     (headCode P dec ++ mainCode P p0 dec).length = firstBody (frameSize P) dec := by
-  simp only [headCode, headStraight, mainCode, List.length_append, length_compileStmt,
-    size_mainStmt, length_tailCode, firstBody, tailPos, mainPos, codeLayout, List.length_cons,
-    List.length_nil]
-  omega
+  grind [headCode, headStraight, mainCode, List.length_append, length_compileStmt, size_mainStmt, length_tailCode, firstBody, tailPos, mainPos, codeLayout, List.length_cons]
 
-private theorem length_through_bodiesCode :
+theorem length_through_bodiesCode :
     (headCode P dec ++ mainCode P p0 dec ++
       bodiesCode (codeLayout P dec) P (firstBody (frameSize P) dec)).length = dispPos P dec := by
   rw [List.length_append, length_through_mainCode]
-  exact length_bodiesCode (codeLayout P dec) P _
+  exact length_bodiesCode _ P _
 
-private theorem length_through_dispatcher :
+theorem length_through_dispatcher :
     (headCode P dec ++ mainCode P p0 dec ++
       bodiesCode (codeLayout P dec) P (firstBody (frameSize P) dec) ++
       dispatcher (dispPos P dec)).length = 3 * dispPos P dec := by
-  rw [List.length_append, length_through_bodiesCode, length_dispatcher]
-  omega
+  grind [List.length_append, length_through_bodiesCode, length_dispatcher]
 
 /-- The first part is at position 0. -/
 theorem codeAt_headCode : CodeAt (compileProgram P p0 dec) 0 (headCode P dec) :=
   (codeAt_self _).left.left.left.left
 
-private theorem codeAt_mainCode : CodeAt (compileProgram P p0 dec) mainPos (mainCode P p0 dec) :=
+theorem codeAt_mainCode : CodeAt (compileProgram P p0 dec) mainPos (mainCode P p0 dec) :=
   (codeAt_self _).left.left.left.right
 
 /-- The outermost statement is at `mainPos`. -/
@@ -219,7 +210,7 @@ theorem codeAt_tailCode :
     CodeAt (compileProgram P p0 dec) (tailPos (frameSize P))
       (tailCode dec (tailPos (frameSize P))) :=
   (codeAt_mainCode P p0 dec).right.cast_pos (by
-    simp only [length_compileStmt, size_mainStmt, tailPos, codeLayout])
+    simp [length_compileStmt, size_mainStmt, tailPos, codeLayout])
 
 /-- The bodies begin at `firstBody`. -/
 theorem codeAt_bodiesCode :
@@ -255,5 +246,3 @@ theorem codeAt_bodies {code : List Instr} (G : CodeLayout) :
       (hc.right.cast_pos (by
         rw [List.length_append, length_compileStmt, length_epilogue, Nat.add_assoc])) p b
       (by simpa using h)
-
-end Light.Compiler

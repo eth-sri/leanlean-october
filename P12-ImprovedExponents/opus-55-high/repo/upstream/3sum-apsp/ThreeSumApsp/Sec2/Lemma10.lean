@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec2.Lemma7_8
+import ThreeSumApsp.Sec2.Lemma7_8
 
 /-!
 # Sections 2.4.1 and 2.4.2: the encodings, the recursion `Pruned`, and Lemma 10
@@ -33,9 +32,7 @@ Which calls `Pruned` makes depends only on the set passed to it, so the second a
 are proved for any two arrays in place of the two encodings.
 -/
 
-@[expose] public section
 
-open Finset
 
 namespace ThreeSumApsp
 
@@ -51,38 +48,29 @@ def computeEncoding {α : Type} [Fintype α] (c : Term → α → ℤ) :
   | 0, a, _ => a Fin.elim0
   | L + 1, a, τ => computeEncoding c L (fun u' => ∑ s, c (τ 0) s * sliceAt a s u') (Fin.tail τ)
 
+variable {L : ℕ}
+
 /-- At the leaf `τ` the procedure of Section 2.4.1 stores `∑_u a[u] ∏_ℓ c_{τ_ℓ}(u_ℓ)`. -/
-theorem computeEncoding_eq_encodeWith {α : Type} [Fintype α] (c : Term → α → ℤ) {L : ℕ}
+theorem computeEncoding_eq_encodeWith {α : Type} [Fintype α] (c : Term → α → ℤ)
     (a : (Fin L → α) → ℤ) (τ : Leaf L) : computeEncoding c L a τ = encodeWith c τ a := by
   induction L with
   | zero => rw [computeEncoding, encodeWith_zero]
-  | succ n ih => rw [computeEncoding, ih, ← encodeWith_cons, Fin.cons_self_tail]
+  | succ n ih => grind [computeEncoding, encodeWith_cons, Fin.cons_self_tail]
 
 /-- The procedure of Section 2.4.1 computes the encoding of `a`. -/
-theorem computeEncoding_phi {L : ℕ} (a : LeftStr L → ℤ) : computeEncoding phi L a = encodingL a :=
+theorem computeEncoding_phi (a : LeftStr L → ℤ) : computeEncoding phi L a = encodingL a :=
   funext (computeEncoding_eq_encodeWith phi a)
 
 /-- The procedure of Section 2.4.1 computes the encoding of `b`. -/
-theorem computeEncoding_psi {L : ℕ} (b : RightStr L → ℤ) : computeEncoding psi L b = encodingR b :=
+theorem computeEncoding_psi (b : RightStr L → ℤ) : computeEncoding psi L b = encodingR b :=
   funext (computeEncoding_eq_encodeWith psi b)
 
 /-! ### Section 2.4.2: the sets `S_λ` of step (2) -/
 
-/-- Membership in a slice of a set of output strings. -/
-@[simp]
-theorem mem_sliceSet {n : ℕ} (S : Finset (OutStr (n + 1))) (z : OutVar) (w' : OutStr n) :
-    w' ∈ sliceSet S z ↔ (Fin.cons z w' : OutStr (n + 1)) ∈ S := by
-  simp [sliceSet]
 
 /-! ### Lemma 10, first claim: the values -/
 
-/-- An array restricted to the empty set is the zero array. -/
-@[simp]
-theorem restrictTo_empty {n : ℕ} (c : OutStr n → ℤ) : restrictTo ∅ c = 0 :=
-  rfl
 
 /-! ### Lemma 10, second claim: the calls that are made and the sets passed to them -/
 
 /-! ### Lemma 10, third claim: the total size of the sets passed -/
-
-end ThreeSumApsp

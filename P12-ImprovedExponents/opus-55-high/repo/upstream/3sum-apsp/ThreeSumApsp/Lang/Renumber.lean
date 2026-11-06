@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Logic
+import ThreeSumApsp.Lang.Logic
 
 /-!
 # Two programs in one: relocation of procedures
@@ -20,7 +19,6 @@ anything to do: `Program.getElem?_behind_right`).  So everything proved with `En
 (`Ends.shift`, `Ends.shift_append`).
 -/
 
-@[expose] public section
 
 namespace Light
 
@@ -43,22 +41,20 @@ def Program.behind (Q P : Program) : Program := Q ++ P.map (Stmt.shift Q.length)
 shifted. -/
 theorem Program.getElem?_behind_right (Q : Program) {p : ℕ} {body : Stmt} (h : P[p]? = some body) :
     (Program.behind Q P)[p + Q.length]? = some (body.shift Q.length) := by
-  rw [Program.behind, List.getElem?_append_right (Nat.le_add_left _ _), Nat.add_sub_cancel,
-    List.getElem?_map, h]
-  rfl
+  grind [Program.behind]
 
 /-- **Relocation.**  A run in P is a run, with the same states and the same number of steps, of
 the shifted statement in P placed behind Q. -/
 theorem Exec.shift {s : Stmt} {σ σ' : State} {c : ℕ} (h : Exec lim P d s σ σ' c) (Q : Program) :
     Exec lim (Program.behind Q P) d (s.shift Q.length) σ σ' c := by
   induction h with
-  | skip => exact .skip
-  | set h => exact .set h
-  | store h₁ h₂ h₃ => exact .store h₁ h₂ h₃
-  | seq _ _ ih₁ ih₂ => exact .seq ih₁ ih₂
-  | iteTrue h₁ h₂ _ ih => exact .iteTrue h₁ h₂ ih
+  | skip => tauto
+  | set h => tauto
+  | store h₁ h₂ h₃ => tauto
+  | seq _ _ ih₁ ih₂ => tauto
+  | iteTrue h₁ h₂ _ ih => tauto
   | iteFalse h₁ h₂ _ ih => exact .iteFalse h₁ h₂ ih
-  | whileFalse h₁ h₂ => exact .whileFalse h₁ h₂
+  | whileFalse h₁ h₂ => tauto
   | whileTrue h₁ h₂ _ _ ih₁ ih₂ => exact .whileTrue h₁ h₂ ih₁ ih₂
   | call h₁ h₂ h₃ _ ih => exact .call h₁ (Program.getElem?_behind_right Q h₂) h₃ ih
 
@@ -73,5 +69,3 @@ theorem Ends.shift {s σ T post} (h : Ends lim P d s σ T post) (Q : Program) :
 theorem Ends.shift_append {s σ T post} (h : Ends lim P d s σ T post) (Q R : Program) :
     Ends lim (Program.behind Q P ++ R) d (s.shift Q.length) σ T post :=
   (h.shift Q).append R
-
-end Light

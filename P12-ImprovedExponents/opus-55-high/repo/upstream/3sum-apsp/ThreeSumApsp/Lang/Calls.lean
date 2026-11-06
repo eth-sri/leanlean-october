@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Frames
+import ThreeSumApsp.Lang.Frames
 
 /-!
 # Calls
@@ -28,7 +27,6 @@ for a state ⟨frame l, μ⟩; Ends.callLast and Ends.callThen are the same for 
 not given as a list.
 -/
 
-@[expose] public section
 
 namespace Light
 
@@ -50,13 +48,13 @@ theorem Meets.of_body {args : List ℤ} {Q : ℤ → (ℕ → ℤ) → Prop} {bo
     (hp : P[p]? = some body)
     (h : Ends lim P d body ⟨frame args, μ⟩ T fun σ' => Q (σ'.loc 0) σ'.mem) :
     Meets lim P p d args μ T Q :=
-  ⟨body, hp, h⟩
+  by tauto
 
 /-- More time and a weaker conclusion. -/
 theorem Meets.mono (h : Meets lim P p d vals μ T R) (hT : T ≤ T') (hR : ∀ r μ', R r μ' → R' r μ') :
     Meets lim P p d vals μ T' R' := by
   obtain ⟨body, hp, he⟩ := h
-  exact ⟨body, hp, he.mono hT fun _ => hR _ _⟩
+  exact ⟨body, hp, he.mono hT fun _ => by simp_all⟩
 
 /-- A specification holds with every larger bound on the time. -/
 theorem Meets.mono_time (h : Meets lim P p d vals μ T R) (hT : T ≤ T' := by omega) :
@@ -72,7 +70,7 @@ theorem Meets.mono_const {c c' S : ℕ} (h : Meets lim P p d vals μ (c * S) R) 
 theorem Meets.append (h : Meets lim P p d vals μ T R) (P' : Program) :
     Meets lim (P ++ P') p d vals μ T R := by
   obtain ⟨body, hp, he⟩ := h
-  exact ⟨body, getElem?_append_of_eq_some hp P', he.append P'⟩
+  exact ⟨body, by grind, he.append P'⟩
 
 end
 
@@ -91,7 +89,7 @@ theorem Ends.callLast (hp : Meets lim P p (d + 1) vals μ T' R)
     Ends lim P d (.call p args x) ⟨loc, μ⟩ T Q := by
   obtain ⟨body, hb, he⟩ := hp
   obtain ⟨hs, rfl⟩ := ha
-  exact Ends.call T' hs hb hd (he.mono le_rfl fun _ hR => h _ _ hR) hT
+  exact Ends.call T' hs hb hd (he.mono le_rfl fun _ hR => by simp_all) hT
 
 /-- `x := p(args) ; s`.  The rest s of the text gets the steps that are left. -/
 theorem Ends.callThen (hp : Meets lim P p (d + 1) vals μ T' R)
@@ -111,7 +109,7 @@ theorem Ends.callTo (hp : Meets lim P p (d + 1) vals μ T' R)
     (hd : d < lim.depth := by omega)
     (hT : (args.map Expr.cost).sum + 2 + T' ≤ T := by light_time) :
     Ends lim P d (.call p args x) ⟨frame l, μ⟩ T Q :=
-  Ends.callLast hp (fun r μ' hR => update_frame_setLocal l x r ▸ h r μ' hR) ha hd hT
+  by grind [Ends.callLast, update_frame_setLocal]
 
 /-- `x := p(args) ; s`, with the local variables as a list.  The procedure runs at depth d + 1. -/
 theorem Ends.callToThen (hp : Meets lim P p (d + 1) vals μ T' R)
@@ -123,7 +121,3 @@ theorem Ends.callToThen (hp : Meets lim P p (d + 1) vals μ T' R)
     (hT : (args.map Expr.cost).sum + 2 + T' ≤ T := by light_time) :
     Ends lim P d (.call p args x ;; s) ⟨frame l, μ⟩ T Q :=
   Ends.next _ (Ends.callTo hp h ha hd le_rfl) hT
-
-end
-
-end Light

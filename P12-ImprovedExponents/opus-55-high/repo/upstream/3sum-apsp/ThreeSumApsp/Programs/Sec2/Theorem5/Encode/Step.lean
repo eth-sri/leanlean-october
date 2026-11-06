@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.Pass
-public import ThreeSumApsp.Lang.Tactics
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.Pass
+import ThreeSumApsp.Lang.Tactics
 
 /-!
 # One encoding step (step (2) of Full, Section 2.3.1)
@@ -22,24 +22,16 @@ formed by the same procedure, from the array b and the table of the coefficients
 cells.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open Finset ThreeSumApsp
+open Finset
 
 namespace EncStep
 
-/-- The local variables of encStep: the arguments src, dst, n, lam, tab; the cell j of dst; the sum;
+/- The local variables of encStep: the arguments src, dst, n, lam, tab; the cell j of dst; the sum;
 the number s of the summand. -/
-abbrev Src : ℕ := 0
-@[inherit_doc Src] abbrev Dest : ℕ := 1
-@[inherit_doc Src] abbrev Len : ℕ := 2
-@[inherit_doc Src] abbrev TermNo : ℕ := 3
-@[inherit_doc Src] abbrev Table : ℕ := 4
-@[inherit_doc Src] abbrev Cell : ℕ := 5
-@[inherit_doc Src] abbrev Acc : ℕ := 6
-@[inherit_doc Src] abbrev Var : ℕ := 7
+slots Src Dest Len TermNo Table Cell Acc Var
 
 end EncStep
 
@@ -69,7 +61,7 @@ def encStepVal (μ : ℕ → ℤ) (src lam tab n j s : ℕ) : ℤ :=
 abbrev encStepOut (μ : ℕ → ℤ) (src lam tab n : ℕ) : ℕ → ℤ := fun c => encStepVal μ src lam tab n c 7
 
 /-- One more summand. -/
-private theorem encStepVal_succ (μ : ℕ → ℤ) (src lam tab n j s : ℕ) :
+theorem encStepVal_succ (μ : ℕ → ℤ) (src lam tab n j s : ℕ) :
     encStepVal μ src lam tab n j (s + 1)
       = encStepVal μ src lam tab n j s + μ (tab + 7 * lam + s) * μ (src + s * n + j) :=
   Finset.sum_range_succ ..
@@ -92,7 +84,7 @@ variable {lim : Limits} {P : Program} {d : ℕ} {μ μ' : ℕ → ℤ} {src dst 
 theorem enc_coef_mul_bound {x y V : ℤ} (hx : -1 ≤ x ∧ x ≤ 1) (hy : -V ≤ y ∧ y ≤ V) :
     -V ≤ x * y ∧ x * y ≤ V := by
   have h : x = -1 ∨ x = 0 ∨ x = 1 := by omega
-  rcases h with rfl | rfl | rfl <;> constructor <;> omega
+  grind
 
 /-- A sum of `s` numbers of absolute value at most `V` is at most `s V` in absolute value. -/
 theorem enc_sum_bound {f : ℕ → ℤ} {V : ℤ} (s : ℕ) (h : ∀ i < s, -V ≤ f i ∧ f i ≤ V) :
@@ -100,23 +92,23 @@ theorem enc_sum_bound {f : ℕ → ℤ} {V : ℤ} (s : ℕ) (h : ∀ i < s, -V �
   induction s with
   | zero => simp
   | succ s ih =>
-    have hsum := ih fun i hi => h i (by omega)
-    have hnew := h s (by omega)
-    rw [Finset.sum_range_succ, Nat.cast_succ, add_mul, one_mul]
-    omega
+    have hsum := ih fun i hi => by grind
+    grind [Finset.sum_range_succ, Nat.cast_succ, add_mul]
 
 namespace EncStepPre
 
+variable {s : ℕ}
+
 /-- One summand is at most `V` in absolute value. -/
-private theorem summand_bounds (pre : EncStepPre lim μ src dst n lam tab V) (hj : j < n) {s : ℕ}
+theorem summand_bounds (pre : EncStepPre lim μ src dst n lam tab V) (hj : j < n)
     (hs : s < 7) : -V ≤ μ (tab + 7 * lam + s) * μ (src + s * n + j) ∧
       μ (tab + 7 * lam + s) * μ (src + s * n + j) ≤ V := by
-  have hval := pre.vals (s * n + j) (Nat.mul_add_lt_mul hs hj)
+  have hval := pre.vals _ (Nat.mul_add_lt_mul hs hj)
   rw [← Nat.add_assoc] at hval
   exact enc_coef_mul_bound (pre.coef s hs) hval
 
 /-- The sum of `s` summands is at most `s V` in absolute value. -/
-private theorem val_bounds (pre : EncStepPre lim μ src dst n lam tab V) (hj : j < n) {s : ℕ}
+theorem val_bounds (pre : EncStepPre lim μ src dst n lam tab V) (hj : j < n)
     (hs : s ≤ 7) :
     -(s * V) ≤ encStepVal μ src lam tab n j s ∧ encStepVal μ src lam tab n j s ≤ s * V :=
   enc_sum_bound s fun _ hi => pre.summand_bounds hj (by omega)
@@ -126,17 +118,17 @@ theorem keep (pre : EncStepPre lim μ src dst n lam tab V) (same : SameOutside �
     EncStepPre lim μ' src dst n lam tab V := by
   light_facts pre
   exact { pre with
-    coef := fun i hi => by rw [same _ (by omega)]; exact pre.coef i hi
-    vals := fun i hi => by rw [same _ (by omega)]; exact pre.vals i hi }
+    coef := fun i hi => by rw [same _ (by omega)]; simp_all
+    vals := fun i hi => by rw [same _ (by omega)]; simp_all }
 
 /-- The sums do not change when cells of `dst` are written. -/
-private theorem val_congr (pre : EncStepPre lim μ src dst n lam tab V)
+theorem val_congr (pre : EncStepPre lim μ src dst n lam tab V)
     (same : SameOutside μ μ' dst n) (hj : j < n) :
     encStepVal μ' src lam tab n j 7 = encStepVal μ src lam tab n j 7 := by
   light_facts pre
   refine Finset.sum_congr rfl fun i hi => ?_
-  have hi7 : i < 7 := Finset.mem_range.mp hi
-  have hlt : i * n + j < 7 * n := Nat.mul_add_lt_mul hi7 hj
+  have hi7 := Finset.mem_range.mp hi
+  have hlt := Nat.mul_add_lt_mul hi7 hj
   rw [same _ (by omega), same _ (by omega)]
 
 end EncStepPre
@@ -154,25 +146,22 @@ theorem encStepSum_spec (pre : EncStepPre lim μ src dst n lam tab V) (hj : j < 
   -- for Var < 7
   refine Ends.for (fun s σ => σ =
       ⟨frame [src, dst, n, lam, tab, j, encStepVal μ src lam tab n j s, s], μ⟩) 7
-    encStepAdd.blockCost ?start ?round ?done ?bound (by omega) (by simp [encStepAdd]; omega)
+    encStepAdd.blockCost ?start ?round ?done ?bound (by omega) (by assumption)
   case start => simp [update_frame_setLocal, encStepVal]
-  case done => exact fun _ _ h => h ▸ done
+  case done => simp_all
   case bound => exact fun s _ _ _ h => h ▸ by light_side
   case round =>
     rintro s _ hs - rfl
     -- The two cells that are read, and the sizes of the numbers.
-    have hlt : s * n + j < 7 * n := Nat.mul_add_lt_mul hs hj
-    have hsum := pre.val_bounds hj (show s ≤ 7 by omega)
+    have hlt := Nat.mul_add_lt_mul hs hj
     have hnew := pre.summand_bounds hj hs
     have hnext := pre.val_bounds hj (show s + 1 ≤ 7 by omega)
-    have hsV : ((s + 1 : ℕ) : ℤ) * V ≤ 7 * V := by
-      have hV : 0 ≤ V := by have := pre.vals 0 (by omega); omega
-      exact mul_le_mul_of_nonneg_right (by exact_mod_cast hs) hV
+    have hsV : (s + 1 : ℕ) * V ≤ 7 * V := by
+      have hV : 0 ≤ V := by omega
+      exact mul_le_mul_of_nonneg_right (by omega) hV
     have hcoef : ((tab : ℤ) + 7 * lam + s).toNat = tab + 7 * lam + s := by omega
     have hcell : ((src : ℤ) + s * n + j).toNat = src + s * n + j := by
-      rw [← Nat.cast_mul, ← Nat.cast_add, ← Nat.cast_add, Int.toNat_natCast]
-    have hprod : ((s * n : ℕ) : ℤ) = s * n := Nat.cast_mul s n
-    -- Acc := Acc + tab[7 lam + Var] * src[Var n + Cell]
+      rfl
     unfold encStepAdd
     refine Ends.setTo (encStepVal μ src lam tab n j (s + 1)) ⟨by simp, ?_⟩ ?_
     · simp [update_frame_setLocal]
@@ -193,24 +182,18 @@ theorem encStep_meets {p : ℕ} (hp : P[p]? = some encStepBody)
   light_facts pre pre.std
   -- for Cell < n: the first Cell cells of dst have been written
   refine Ends.forShape
-    (fun j (s : ℤ × ℤ) μ' => ⟨frame [src, dst, n, lam, tab, j, s.1, s.2], μ'⟩)
+    (fun j s μ' => ⟨frame [src, dst, n, lam, tab, j, s.1, s.2], μ'⟩)
     (fun j μ' => μ' = wrote μ dst (encStepOut μ src lam tab n) j) n 209 (0, 0) wrote_zero.symm
     ?round ?done (by rw [update_frame_setLocal, ← frame_append_zeros _ 2]; rfl)
     (hT := by simp [tEncStep]; omega)
   case done =>
-    rintro s _ rfl
-    exact ⟨fun j hj => wrote_done (f := encStepOut μ src lam tab n) hj,
-      sameOutside_wrote (f := encStepOut μ src lam tab n) le_rfl⟩
+    simp_all [wrote_done, encStepOut, sameOutside_wrote]
   case round =>
     rintro j s _ hj rfl
     have same : SameOutside μ (wrote μ dst (encStepOut μ src lam tab n) j) dst n :=
       sameOutside_wrote hj.le
-    unfold encStepCell
-    -- Acc := 0; the sum; mem[dst + Cell] := Acc
     light_set 0
     refine Ends.next _ (encStepSum_spec (pre.keep same) hj ?_ le_rfl)
     rw [pre.val_congr same hj]
     light_store (dst + j) (encStepVal μ src lam tab n j 7)
-    exact ⟨(encStepVal μ src lam tab n j 7, (7 : ℕ)), _, rfl, wrote_succ⟩
-
-end Light.Sec2
+    exact ⟨(encStepVal μ src lam tab n j 7, 7), _, rfl, wrote_succ⟩

@@ -3,12 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
 /-! Claims of the paper «Truly Subquadratic 3SUM and Truly Subcubic APSP via Triangles in Sparse Lopsided Graphs» (Josh
 Alman, Virginia Vassilevska Williams), about programs of a word RAM defined here. Imports nothing, proves nothing. -/
 
-@[expose] public section
 
 namespace EndStatement
 
@@ -105,5 +103,3 @@ def APSP : Problem where
     let flag := out (2 * (i.val * n + j.val))
     let dist := out (2 * (i.val * n + j.val) + 1)
     (flag = 1 ∧ Path w i j dist ∧ ∀ e, Path w i j e → dist ≤ e) ∨ (flag = 0 ∧ ∀ e, ¬ Path w i j e)
-
-end EndStatement

@@ -1,8 +1,6 @@
-module
 
-public import ImprovedExponents.HostMid.Correct
+import ImprovedExponents.HostMid.Correct
 
-@[expose] public section
 
 /-!
 # The variant host: the program, assembled
@@ -15,7 +13,7 @@ Exact Triangle with the time `hostTime'` and the need `hostNeed'` (`et17_solves'
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3
 
 /-- The procedures of the variant host: procedure number `i` of this list gets the number `o + i`.
 The top procedure `et17Body'` has the number `o + 27`; everything else is as in upstream's
@@ -66,29 +64,13 @@ theorem et17Ctx_assembled' (hsol : SolvesN lopDetectTask P₀ pS Tn need)
   -- Procedure number `i` of the list.
   have L : ∀ {i : ℕ} {body : Stmt}, (et17Procs' pS pD pG P₀.length)[i]? = some body →
       (P₀ ++ (et17Procs' pS pD pG P₀.length ++ R))[P₀.length + i]? = some body :=
-    fun h => getElem?_append_append R h
+    by grind
   exact
-    { loop := ⟨hsol, L rfl, L rfl, L rfl, L rfl⟩
-      hLoop := L rfl
-      hSqrt := L (i := 0) rfl
-      hBrute := L rfl
-      hChoose := L rfl
-      ch := ⟨L rfl, L rfl, L rfl,
+    ⟨⟨hsol, L rfl, L rfl, L rfl, L rfl⟩, L rfl, L (i := 0) rfl, L rfl, L rfl, ⟨L rfl, L rfl, L rfl,
         ⟨L rfl, L rfl, L rfl, L rfl, L rfl,
           L rfl, L rfl,
           ⟨L rfl, L rfl, L rfl, L rfl, L rfl⟩⟩,
-        ⟨L (i := 0) rfl, L rfl⟩⟩
-      hCap := L rfl
-      hCeil := L rfl
-      hBitLen := L rfl
-      hDbl := L rfl
-      hResid := L rfl
-      hResidues := L rfl
-      hClasses := L rfl
-      hChunks := L rfl
-      dProc := hD _
-      gProc := hG _
-      D_pos := hpos }
+        ⟨L (i := 0) rfl, L rfl⟩⟩, L rfl, L rfl, L rfl, L rfl, L rfl, L rfl, L rfl, L rfl, hD _, hG _, hpos⟩
 
 /-- **The variant host of Theorem 17 as a solver of Exact Triangle**: from a solver of
 Lop-AE-SparseTri and two procedures that compute the parameters, in one program `P₀`, the appended
@@ -102,8 +84,6 @@ theorem et17_solves' (hsol : SolvesN lopDetectTask P₀ pS Tn need)
   refine ⟨et17Body' (et17NumsAt pS pD pG P₀.length), ?_, fun R lim d x μ fr hpre hok => ?_⟩
   · have htop := getElem?_append_append (P₀ := P₀) (B := et17Procs' pS pD pG P₀.length) []
       (i := 27) rfl
-    rwa [List.append_nil] at htop
+    assumption
   · rw [List.append_assoc]
-    exact et17_spec' (et17Ctx_assembled' hsol hD hG hpos R) x μ fr hpre hok
-
-end ImprovedExponents.HostMid
+    exact et17_spec' (by grind [et17Ctx_assembled']) x μ fr hpre hok

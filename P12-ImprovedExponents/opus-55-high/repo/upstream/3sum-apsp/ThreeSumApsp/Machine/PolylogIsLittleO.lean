@@ -1,3 +1,2 @@
-module
-public import ThreeSumApsp.Machine.Solving
-public import ThreeSumApsp.Util.Asymptotics.LogExponent
+import ThreeSumApsp.Machine.Solving
+import ThreeSumApsp.Util.Asymptotics.LogExponent

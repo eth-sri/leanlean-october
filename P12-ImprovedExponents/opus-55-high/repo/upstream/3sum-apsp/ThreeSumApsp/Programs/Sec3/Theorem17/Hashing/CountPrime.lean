@@ -3,12 +3,12 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.Count
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.StrassenTime
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.ZOrder
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Parameters.Residues
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.Count
+import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.StrassenTime
+import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.ZOrder
+import ThreeSumApsp.Programs.Sec3.Theorem17.Parameters.Residues
 
 /-!
 # The count for one prime (proof of Theorem 17, "Hashing modulo a prime")
@@ -37,7 +37,6 @@ The routine has three parts.
 `countPrime_spec` puts the three parts together.
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
@@ -49,13 +48,7 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 
 /-- The numbers of the procedures that countPrime calls. -/
 structure CpNums : Type where
-  pDbl : ℕ
-  pResid : ℕ
-  pResidues : ℕ
-  pSpread : ℕ
-  pSz : ℕ
-  pBuild : ℕ
-  pCount : ℕ
+  (pDbl pResid pResidues pSpread pSz pBuild pCount : ℕ)
   str : StrNums
 
 /-- The program holds the procedures that countPrime calls. -/
@@ -71,33 +64,13 @@ structure CpCtx (P : Program) (ν : CpNums) : Prop where
 
 namespace CountPrime
 
-/-- The local variables of countPrime.  The arguments n, ab, bc, ac, p, len, K, N2, w: N2 = 2^K is
+/- The local variables of countPrime.  The arguments n, ab, bc, ac, p, len, K, N2, w: N2 = 2^K is
 the number of rows and columns of the padded matrices, and w, the address of the work area, is also
 the address of the table of doubles.  Then n²; the addresses of the residues of the lists ab, bc and
 ac, of the table of places and of the table of sizes; the size 4^K p of a matrix; the addresses
 of P, Q, PQ and of the scratch space of Strassen's algorithm; a local that takes the results of the
 calls, except the last one, whose result (the count) goes to local 0 and is returned. -/
-abbrev Num : ℕ := 0
-@[inherit_doc Num] abbrev ListAB : ℕ := 1
-@[inherit_doc Num] abbrev ListBC : ℕ := 2
-@[inherit_doc Num] abbrev ListAC : ℕ := 3
-@[inherit_doc Num] abbrev Prime : ℕ := 4
-@[inherit_doc Num] abbrev Len : ℕ := 5
-@[inherit_doc Num] abbrev Level : ℕ := 6
-@[inherit_doc Num] abbrev Rows : ℕ := 7
-@[inherit_doc Num] abbrev Work : ℕ := 8
-@[inherit_doc Num] abbrev Square : ℕ := 9
-@[inherit_doc Num] abbrev ResAB : ℕ := 10
-@[inherit_doc Num] abbrev ResBC : ℕ := 11
-@[inherit_doc Num] abbrev ResAC : ℕ := 12
-@[inherit_doc Num] abbrev Places : ℕ := 13
-@[inherit_doc Num] abbrev Sizes : ℕ := 14
-@[inherit_doc Num] abbrev Size : ℕ := 15
-@[inherit_doc Num] abbrev MatP : ℕ := 16
-@[inherit_doc Num] abbrev MatQ : ℕ := 17
-@[inherit_doc Num] abbrev MatR : ℕ := 18
-@[inherit_doc Num] abbrev Scr : ℕ := 19
-@[inherit_doc Num] abbrev Res : ℕ := 20
+slots Num ListAB ListBC ListAC Prime Len Level Rows Work Square ResAB ResBC ResAC Places Sizes Size MatP MatQ MatR Scr Res
 
 end CountPrime
 
@@ -186,9 +159,7 @@ theorem cp_places (w len n K p : ℕ) :
       cpRm w len n K p = cpQm w len n K p + 4 ^ K * p ∧
       cpScr w len n K p = cpRm w len n K p + 4 ^ K * p ∧
       w + countCells n p len K = cpScr w len n K p + strScr p K + (8 * (4 ^ K * p) + 1) := by
-  refine ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, ?_⟩
-  simp only [cpScr, cpRm, cpQm, cpPm, cpSzt, cpMort, cpRac, cpRbc, cpRab, countCells]
-  omega
+  grind [cpScr, cpRm, cpQm, cpPm, cpSzt, cpMort, cpRac, cpRbc, cpRab, countCells]
 
 /-- The local variables of countPrime after its first part. -/
 @[simp] def cpFrame (n ab bc ac p len K w : ℕ) : List ℤ :=
@@ -202,21 +173,21 @@ theorem cpAddr_spec {μ : ℕ → ℤ} {n ab bc ac p len K w : ℕ} (hw : (lim.s
     Ends lim P d cpAddr ⟨frame [n, ab, bc, ac, p, len, K, (2 ^ K : ℕ), w], μ⟩ 50 fun σ' =>
       σ' = ⟨frame (cpFrame n ab bc ac p len K w), μ⟩ := by
   have hplaces := cp_places w len n K p
-  have hsq : ((2 ^ K : ℕ) : ℤ) * ((2 ^ K : ℕ) : ℤ) = ((4 ^ K : ℕ) : ℤ) := by
+  have hsq : (2 ^ K : ℕ) * (2 ^ K : ℕ) = ((4 ^ K : ℕ) : ℤ) := by
     rw [← Nat.cast_mul, ← mul_pow]
     norm_num
-  have hsize : ((4 ^ K : ℕ) : ℤ) * p = ((4 ^ K * p : ℕ) : ℤ) := by push_cast; ring
-  have hle : 4 ^ K ≤ 4 ^ K * p := Nat.le_mul_of_pos_right _ hp
+  have hsize : (4 ^ K : ℕ) * p = ((4 ^ K * p : ℕ) : ℤ) := by rfl
+  have hle : 4 ^ K ≤ 4 ^ K * p := by simp_all
   rw [cpFrame]
   generalize 4 ^ K * p = size at *
   generalize 4 ^ K = F at *
   generalize 2 ^ K = N2 at *
-  refine Ends.setToThen (n * n : ℕ) <| Ends.setToThen (cpRab w len) <|
-    Ends.setToThen (cpRbc w len n) <| Ends.setToThen (cpRac w len n) <|
-    Ends.setToThen (cpMort w len n) <| Ends.setToThen (cpSzt w len n K) <|
+  refine Ends.setToThen _ <| Ends.setToThen _ <|
+    Ends.setToThen _ <| Ends.setToThen _ <|
+    Ends.setToThen _ <| Ends.setToThen _ <|
     Ends.setToThen size (he := by light_side [hsq, hsize]) <|
-    Ends.setToThen (cpPm w len n K) <| Ends.setToThen (cpQm w len n K p) <|
-    Ends.setToThen (cpRm w len n K p) <| Ends.setTo (cpScr w len n K p) rfl
+    Ends.setToThen _ <| Ends.setToThen _ <|
+    Ends.setToThen _ <| Ends.setTo _ rfl
 
 /-! ## What countPrime assumes -/
 
@@ -255,13 +226,13 @@ theorem CountPrimePre.four_le_word (pre : CountPrimePre lim d μ x p len K w) :
     (4 : ℤ) ≤ lim.word := by
   refine le_trans ?_ pre.wordStr
   have : 1 ≤ 16 ^ K * p := Nat.mul_pos (by positivity) pre.p_pos
-  exact_mod_cast (by omega : 4 ≤ 4 * (16 ^ K * p))
+  omega
 
 /-- The size of a matrix fits in a word. -/
 theorem CountPrimePre.size_le_word (pre : CountPrimePre lim d μ x p len K w) :
     ((4 ^ K * p : ℕ) : ℤ) ≤ lim.word := by
-  have hle : 4 ^ K * p ≤ 16 ^ K * p := Nat.mul_le_mul_right _ (Nat.pow_le_pow_left (by norm_num) K)
-  exact le_trans (by exact_mod_cast (by omega : 4 ^ K * p ≤ 4 * (16 ^ K * p))) pre.wordStr
+  have hle : 4 ^ K * p ≤ 16 ^ K * p := by bound
+  exact le_trans (by omega) pre.wordStr
 
 /-- The number of entries of a matrix fits in a word. -/
 theorem CountPrimePre.sq_le_word (pre : CountPrimePre lim d μ x p len K w) :
@@ -273,7 +244,7 @@ theorem CountPrimePre.sq_le_word (pre : CountPrimePre lim d μ x p len K w) :
 theorem CountPrimePre.dbl_le_word (pre : CountPrimePre lim d μ x p len K w) :
     ((p * 2 ^ len : ℕ) : ℤ) ≤ lim.word := by
   refine le_trans ?_ pre.wordDbl
-  exact_mod_cast Nat.mul_le_mul_left p (Nat.pow_le_pow_right (by norm_num) (Nat.le_succ len))
+  exact_mod_cast by bound
 
 end Premise
 
@@ -289,7 +260,7 @@ theorem dblTable_meets {q dst p len : ℕ} (hP : P[q]? = some dblTableBody)
     (hp : ((p * 2 ^ len : ℕ) : ℤ) ≤ lim.word) :
     Meets lim P q d [dst, p, len] μ (tDblTable len) fun _ μ' =>
       Seg μ' dst (dblList p len) ∧ SameOutside μ μ' dst (len + 1) :=
-  Meets.of_body hP (dblTable_spec hw hdst hp)
+  by grind [Meets.of_body, dblTable_spec]
 
 /-- **residues** as a procedure. -/
 theorem residues_meets {q pResid src dst m dbl p len U : ℕ} {l : List ℤ}
@@ -297,7 +268,7 @@ theorem residues_meets {q pResid src dst m dbl p len U : ℕ} {l : List ℤ}
     (hd : d < lim.depth) (pre : ResiduesPre lim μ src dst m dbl p len U l) :
     Meets lim P q d [src, dst, m, dbl, len] μ (tResidues m len) fun _ μ' =>
       SegN μ' dst (residList p l) ∧ SameOutside μ μ' dst m :=
-  Meets.of_body hP (residues_spec hR hd pre)
+  by grind [Meets.of_body, residues_spec]
 
 end meets
 
@@ -320,7 +291,6 @@ variable {ν : CpNums} {μ₀ μ μ' : ℕ → ℤ} {x : TriInst} {p len K w : �
 theorem CpTabs.keep (tabs : CpTabs μ x p len K w) (pre : CountPrimePre lim d μ₀ x p len K w)
     (hs : Kept μ μ' (cpPm w len x.n K) := by light_keep) : CpTabs μ' x p len K w := by
   have hplaces := cp_places w len x.n K p
-  have hrows := Nat.one_le_two_pow (n := K)
   have lenM := length_spreadList (2 ^ K)
   light_facts pre.inst
   exact ⟨tabs.dbl.keep, tabs.rab.keep, tabs.rbc.keep, tabs.rac.keep, tabs.mort.keep,
@@ -333,11 +303,9 @@ theorem CountPrimePre.residuesPre (pre : CountPrimePre lim d μ₀ x p len K w)
     (hlen : l.length = x.n * x.n) (hle : AbsLe l x.U) (hsrc : src + x.n * x.n ≤ w)
     (hdst : w + (len + 1) ≤ dst) (hend : dst + x.n * x.n ≤ lim.space) :
     ResiduesPre lim μ src dst (x.n * x.n) w p len x.U l := by
-  have cells := pre.cells
   exact ⟨pre.space_le, pre.p_pos, segDbl, segSrc, hlen, hle, pre.hU, by omega, by omega, hend,
-    by omega, Or.inr (by omega), Or.inr (by omega), pre.wordDbl⟩
+    by omega, by omega, by omega, pre.wordDbl⟩
 
-open CountPrime in
 /-- **The second part of countPrime** writes the six tables. -/
 theorem cpTables_spec (ctx : CpCtx P ν) (pre : CountPrimePre lim d μ x p len K w) :
     Ends lim P d (cpTables ν) ⟨frame (cpFrame x.n x.ab x.bc x.ac p len K w), μ⟩
@@ -346,7 +314,6 @@ theorem cpTables_spec (ctx : CpCtx P ν) (pre : CountPrimePre lim d μ x p len K
         σ' = ⟨frame (cpFrame x.n x.ab x.bc x.ac p len K w ++ [r]), μ'⟩ ∧
           CpTabs μ' x p len K w ∧ SameOutside μ μ' w (countCells x.n p len K) := by
   have hplaces := cp_places w len x.n K p
-  have hrows := Nat.one_le_two_pow (n := K)
   have lenM := length_spreadList (2 ^ K)
   have cells := pre.cells
   have depth := pre.depth
@@ -389,14 +356,8 @@ theorem CountPrimePre.buildZPre (pre : CountPrimePre lim d μ₀ x p len K w)
   have hrows := Nat.one_le_two_pow (n := K)
   have cells := pre.cells
   exact
-    { space_le := pre.space_le
-      res :=
-        { len := by simp [hlen], seg := segR, lt := fun _ h => lt_of_mem_residList pre.p_pos h }
-      table := { len := length_spreadList _, seg := tabs.mort }
-      n_le := pre.hK ▸ Nat.le_pow_clog (by norm_num) x.n, p_pos := pre.p_pos, dst_le := by omega
-      apartR := Or.inr (by omega), apartM := Or.inr (by omega) }
+    ⟨pre.space_le, Light.IndexAt.mk (by simp_all) segR fun _ h => lt_of_mem_residList pre.p_pos h, Light.ListAt.mk (length_spreadList _) tabs.mort, pre.hK ▸ by grind [Nat.le_pow_clog], pre.p_pos, by omega, by omega, by omega⟩
 
-open CountPrime in
 /-- **The third part of countPrime** returns the count. -/
 theorem cpProduct_spec (ctx : CpCtx P ν) (pre : CountPrimePre lim d μ₀ x p len K w)
     (tabs : CpTabs μ x p len K w) (r : ℤ) :
@@ -406,7 +367,6 @@ theorem cpProduct_spec (ctx : CpCtx P ν) (pre : CountPrimePre lim d μ₀ x p l
           SameOutside μ σ'.mem w (countCells x.n p len K) := by
   have hplaces := cp_places w len x.n K p
   have hrows := Nat.one_le_two_pow (n := K)
-  have h4 := pre.four_le_word
   have hw := pre.space_le
   have cells := pre.cells
   have depth := pre.depth
@@ -414,36 +374,31 @@ theorem cpProduct_spec (ctx : CpCtx P ν) (pre : CountPrimePre lim d μ₀ x p l
   -- the matrix P
   light_call (buildZ_P_meets ctx.hBuild (pre.buildZPre tabs (dst := cpPm w len x.n K) tabs.rac
     pre.inst.lenAC (by omega) le_rfl (by omega))) with _ μ₁ ⟨segP, rest₁⟩
-  have tabs₁ : CpTabs μ₁ x p len K w := tabs.keep pre
+  have tabs₁ := tabs.keep pre
   -- the matrix Q
   light_call (buildZ_Q_meets ctx.hBuild (pre.buildZPre tabs₁ (dst := cpQm w len x.n K p) tabs₁.rbc
     pre.inst.lenBC (by omega) (by omega) (by omega))) with _ μ₂ ⟨segQ, rest₂⟩
-  have tabs₂ : CpTabs μ₂ x p len K w := tabs₁.keep pre
+  have tabs₂ := tabs₁.keep pre
   -- the product
   light_call (strassen_spec ctx.str pre.space_le K
-    { dst := cpRm w len x.n K p, a := cpPm w len x.n K, b := cpQm w len x.n K p
-      szt := cpSzt w len x.n K, p := p, scr := cpScr w len x.n K p, len := 4 ^ K * p, J := K
-      A := matPList x.n p K (residList p x.AC), B := matQList x.n p K (residList p x.BC)
-      α := 1, β := 1 } μ₂
+    ⟨cpRm w len x.n K p, cpPm w len x.n K, cpQm w len x.n K p, cpSzt w len x.n K, p, cpScr w len x.n K p, 4 ^ K * p, K, matPList x.n p K (residList p x.AC), matQList x.n p K (residList p x.BC), 1, 1⟩ μ₂
     { size := rfl, prime := pre.p_pos
-      opA := { len := lenP, bound := absLe_matPList _ _ _ _, seg := segP.keep }
-      opB := { len := length_matQList _ _ _ _, bound := absLe_matQList _ _ _ _, seg := segQ }
-      table := { len := length_szList _ _, seg := tabs₂.szt }
+      opA := Light.ArrayAt.mk lenP segP.keep (absLe_matPList _ _ _ _)
+      opB := Light.ArrayAt.mk (length_matQList _ _ _ _) segQ (absLe_matQList _ _ _ _)
+      table := Light.ListAt.mk (length_szList _ _) tabs₂.szt
       word := by rw [strassenBound_one_one]; exact_mod_cast pre.wordStr } _ (by omega))
     with _ μ₃ ⟨segR, rest₃⟩
-  dsimp only at segR rest₃
-  have tabs₃ : CpTabs μ₃ x p len K w := tabs₂.keep pre
+  dsimp at segR rest₃
+  have tabs₃ := tabs₂.keep pre
   -- the count
-  light_call (countZero_meets ctx.hCount (V := strassenBound p K 1 1)
+  light_call (countZero_meets ctx.hCount
     { space_le := pre.space_le
       mat :=
-        { len := length_strassenList p K _ _ lenP (length_matQList _ _ _ _), seg := segR
-          bound := absLe_strassenList p K _ _ 1 1 (absLe_matPList _ _ _ _) (absLe_matQList _ _ _ _)
-            (by norm_num) (by norm_num) }
+        Light.ArrayAt.mk (length_strassenList p K _ _ lenP (length_matQList _ _ _ _)) segR (absLe_strassenList p K _ _ 1 1 (absLe_matPList _ _ _ _) (absLe_matQList _ _ _ _)
+            (by norm_num) (by norm_num))
       res :=
-        { len := by simp [pre.inst.lenAB], seg := tabs₃.rab
-          lt := fun _ h => lt_of_mem_residList pre.p_pos h }
-      table := { len := length_spreadList _, seg := tabs₃.mort }
+        Light.IndexAt.mk (by simp [pre.inst.lenAB]) tabs₃.rab (fun _ h => lt_of_mem_residList pre.p_pos h)
+      table := Light.ListAt.mk (length_spreadList _) tabs₃.mort
       n_le := pre.hK ▸ Nat.le_pow_clog (by norm_num) x.n, rm_lt := by omega
       sum_le := by rw [strassenBound_one_one]; exact_mod_cast pre.wordSum })
     with _ μ₄ ⟨rfl, rfl⟩
@@ -480,7 +435,7 @@ end parts
 /-- The work area grows with p. -/
 theorem countCells_mono {p q : ℕ} (h : p ≤ q) (n len K : ℕ) :
     countCells n p len K ≤ countCells n q len K := by
-  have hsize : 4 ^ K * p ≤ 4 ^ K * q := Nat.mul_le_mul_left _ h
+  have hsize : 4 ^ K * p ≤ 4 ^ K * q := by simp_all
   have hscr := strScr_mono h K
   unfold countCells
   omega
@@ -488,9 +443,7 @@ theorem countCells_mono {p q : ℕ} (h : p ≤ q) (n len K : ℕ) :
 /-- The time grows with p. -/
 theorem countTime_mono {p q : ℕ} (h : p ≤ q) (n len K : ℕ) :
     countTime n p len K ≤ countTime n q len K := by
-  have hsize : 2 ^ K * 2 ^ K * p ≤ 2 ^ K * 2 ^ K * q := Nat.mul_le_mul_left _ h
+  have hsize : 2 ^ K * 2 ^ K * p ≤ 2 ^ K * 2 ^ K * q := by simp_all
   have hsteps := strSteps_mono h K
   unfold countTime buildZTime
   omega
-
-end Light.Sec3

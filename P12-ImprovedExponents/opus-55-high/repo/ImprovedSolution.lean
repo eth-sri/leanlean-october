@@ -1,6 +1,5 @@
-module
 
-public import ImprovedExponents.Statements
+import ImprovedExponents.Statements
 import ImprovedExponents.AllEdges.Host.Flags
 import ImprovedExponents.AllEdges.Host.ProgramAE
 import ImprovedExponents.AllEdges.Host.ScanPairsAE

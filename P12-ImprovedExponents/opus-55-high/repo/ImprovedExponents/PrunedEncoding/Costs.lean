@@ -1,12 +1,10 @@
-module
 
-public import ImprovedExponents.Cost8X.Dominated
-public import ImprovedExponents.Optimum.PerCBasic
-public import ImprovedExponents.Pipeline.Fits
-public import ImprovedExponents.PrunedEncoding.Pruned
-import all ThreeSumApsp.Sec4.Corollary31
+import ImprovedExponents.Cost8X.Dominated
+import ImprovedExponents.Optimum.PerCBasic
+import ImprovedExponents.Pipeline.Fits
+import ImprovedExponents.PrunedEncoding.Pruned
+import ThreeSumApsp.Sec4.Corollary31
 
-@[expose] public section
 
 /-!
 # The cost of the method with pruned encodings
@@ -31,9 +29,8 @@ paper's: `R_c(γ) ≤ R'_c(γ)` (`Rc_le_RcP`), because `A(c) ≤ ln Λ` at `γ =
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Real Finset
+open ThreeSumApsp Real
 
-open private levelsOf_le from ThreeSumApsp.Sec4.Corollary31
 
 /-! ### The cost -/
 
@@ -46,14 +43,12 @@ noncomputable def cost8P (L m t N : ℕ) : ℝ :=
     + (N : ℝ) * (L : ℝ) * (27 / 2 * (M L m : ℝ) / (1 - rho L m)) / sqrtKN0 L m
 
 /-- The second summand of `cost8P` is `(27/2) N L √K N₀/(1 - ρ)`, because `M = (√K N₀)²`. -/
-theorem encodingP_eq {L m : ℕ} (hmL : m ≤ L) (N : ℕ) :
+theorem encodingP_eq {L m : ℕ} (N : ℕ) :
     (N : ℝ) * (L : ℝ) * (27 / 2 * (M L m : ℝ) / (1 - rho L m)) / sqrtKN0 L m
       = 27 / 2 * (N : ℝ) * ((L : ℝ) * sqrtKN0 L m) / (1 - rho L m) := by
-  have hs := (sqrtKN0_pos hmL).ne'
-  have h : sqrtKN0 L m ^ 2 * (sqrtKN0 L m)⁻¹ = sqrtKN0 L m := by field_simp
-  rw [← sqrtKN0_sq]
-  simp only [div_eq_mul_inv]
-  linear_combination ((N : ℝ) * (L : ℝ) * (27 / 2) * (1 - rho L m)⁻¹) * h
+  grind [sqrtKN0_sq]
+
+variable {c ε γ : ℝ}
 
 /-! ### The two thinness bounds -/
 
@@ -62,156 +57,139 @@ theorem encodingP_eq {L m : ℕ} (hmL : m ≤ L) (N : ℕ) :
 /-- The analogue of inequality (10) for pruned encodings: `D^γ · L √K N₀ ≤ N` at `L = ⌈cm⌉`, for
 every exponent `γ ≥ 0` and `0 < ε < R'_c(γ)`, once `m` exceeds a constant. Here `D₀` is the
 original inner dimension with `4^{m-1} < D₀ ≤ N^ε`, and `D` is the padded `4^m`. -/
-theorem eq_10P {c γ ε : ℝ} (hc : 10 < c) (hγ : 0 ≤ γ) (hε0 : 0 < ε) (hε : ε < RcP c γ) :
+theorem eq_10P (hc : 10 < c) (hγ : 0 ≤ γ) (hε0 : 0 < ε) (hε : ε < RcP c γ) :
     ∃ m₀ : ℕ, ∀ m : ℕ, m₀ ≤ m → ∀ D₀ N : ℕ, 4 ^ (m - 1) < D₀ → (D₀ : ℝ) ≤ (N : ℝ) ^ ε →
       (D m : ℝ) ^ γ * ((levelsOf c m : ℝ) * sqrtKN0 (levelsOf c m) m) ≤ (N : ℝ) := by
-  have hlog4 := log_four_pos
-  have hA : 0 < basePruned c := basePruned_pos (by linarith)
-  have hden : 0 < basePruned c + γ * log 4 := thinR_den_pos hA hγ
-  have hε' : ε < log 4 / (basePruned c + γ * log 4) := hε
-  -- `ε < R'_c(γ)` says that `A(c) + γ ln 4 < ln 4/ε =: G`
+  have hA : 0 < basePruned c := basePruned_pos
+  have hden : 0 < basePruned c + γ * log 4 := by positivity
   set G : ℝ := log 4 / ε with hGdef
   have hG : basePruned c + γ * log 4 < G := by
-    rw [hGdef, lt_div_iff₀ hε0]
-    have := (lt_div_iff₀ hden).1 hε'
+    rw [lt_div_iff₀ hε0]
+    have := (lt_div_iff₀ hden).1 hε
     linarith
   -- a constant `B > A(c)` with `B + γ ln 4 < G`, and the room `η` that is left
   set B : ℝ := (basePruned c + (G - γ * log 4)) / 2 with hBdef
-  have hB1 : basePruned c < B := by rw [hBdef]; linarith
+  have hB1 : basePruned c < B := by linarith
   set η : ℝ := G - γ * log 4 - B with hηdef
-  have hη : 0 < η := by rw [hηdef, hBdef]; linarith
+  have hη : 0 < η := by linarith
   -- near `c` the constant stays below `B`
-  have hcont : ContinuousAt basePruned c :=
+  have hcont :=
     basePruned_continuousOn.continuousAt (Ioi_mem_nhds hc)
   obtain ⟨δ₀, hδ₀, hnear⟩ := Metric.eventually_nhds_iff.1
     (hcont.eventually (gt_mem_nhds hB1))
   refine ⟨max 1 (max ⌈1 / δ₀⌉₊ ⌈2 * (c + 1) * exp G / η ^ 2⌉₊),
     fun m hm D₀ N hgt hthin => ?_⟩
-  have hm1 : 1 ≤ m := (le_max_left _ _).trans hm
-  have hm0 : (0 : ℝ) < m := by exact_mod_cast hm1
-  have hmδ : 1 / δ₀ ≤ (m : ℝ) := (Nat.le_ceil _).trans
-    (by exact_mod_cast (le_max_left _ _).trans ((le_max_right _ _).trans hm))
-  have hmη : 2 * (c + 1) * exp G / η ^ 2 ≤ (m : ℝ) := (Nat.le_ceil _).trans
-    (by exact_mod_cast (le_max_right _ _).trans ((le_max_right _ _).trans hm))
+  have hm1 : 1 ≤ m := by omega
+  have hm0 : (0 : ℝ) < m := by positivity
+  have hmδ : 1 / δ₀ ≤ m := by simp_all
+  have hmη : 2 * (c + 1) * exp G / η ^ 2 ≤ m := by simp_all
   -- the levels: `c ≤ L/m < c + δ₀`
   -- adapted from `ImprovedExponents/Pipeline/Fits.lean` (`exists_fits18`)
-  have hLge : c * m ≤ (levelsOf c m : ℝ) := Nat.le_ceil _
-  have hLlt : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one (by positivity)
+  have hLge : c * m ≤ levelsOf c m := Nat.le_ceil _
+  have hLlt : levelsOf c m < c * m + 1 := Nat.ceil_lt_add_one (by positivity)
   have hmL : m < levelsOf c m := by
-    have h : (m : ℝ) < (levelsOf c m : ℝ) := by nlinarith
-    exact_mod_cast h
-  have hratio1 : c ≤ (levelsOf c m : ℝ) / m := by rwa [le_div_iff₀ hm0]
-  have hratio2 : (levelsOf c m : ℝ) / m < c + δ₀ := by
+    have h : m < (levelsOf c m : ℝ) := by nlinarith
+    simp_all
+  have hratio1 : c ≤ levelsOf c m / m := by simp_all [le_div_iff₀]
+  have hratio2 : levelsOf c m / m < c + δ₀ := by
     rw [div_lt_iff₀ hm0]
     have : 1 ≤ δ₀ * m := by
       have := (div_le_iff₀ hδ₀).1 hmδ
       linarith
     nlinarith
-  have hbase : basePruned ((levelsOf c m : ℝ) / m) < B := by
-    refine hnear ?_
-    rw [Real.dist_eq, abs_lt]
-    constructor <;> linarith
-  have hLle : (levelsOf c m : ℝ) ≤ (c + 1) * m := levelsOf_le hc hm1
-  have hsqrt : sqrtKN0 (levelsOf c m) m ≤ exp ((m : ℝ) * B) :=
+  have hbase : basePruned ((levelsOf c m) / m) < B := by
+    grind [Real.dist_eq]
+  have hLle := levelsOf_le hc hm1
+  have hsqrt :=
     (sqrtKN0_le_exp hm1 hmL).trans (exp_le_exp.2 (mul_le_mul_of_nonneg_left hbase.le hm0.le))
   -- `N ≥ 4^{(m-1)/ε} = e^{(m-1) G}`
-  have hN : exp (((m : ℝ) - 1) * G) ≤ (N : ℝ) := by
+  have hN : exp ((m - 1) * G) ≤ N := by
     have h := Corollary31.hypothesis hm1 hε0 hgt hthin
-    rwa [rpow_def_of_pos (by norm_num),
-      show log 4 * (((m : ℝ) - 1) / ε) = ((m : ℝ) - 1) * (log 4 / ε) by ring] at h
+    grind [rpow_def_of_pos]
   -- the room `η` pays for the factor `L ≤ (c + 1) m` and for `e^G`
-  have hexp : (c + 1) * m * exp G ≤ exp ((m : ℝ) * η) := by
+  have hexp : (c + 1) * m * exp G ≤ exp (m * η) := by
     have hq := quadratic_le_exp_of_nonneg (mul_nonneg hm0.le hη.le)
-    have h1 : 2 * (c + 1) * exp G ≤ (m : ℝ) * η ^ 2 := by
-      have := (div_le_iff₀ (pow_pos hη 2)).1 hmη
-      linarith
+    have h1 : 2 * (c + 1) * exp G ≤ m * η ^ 2 := by
+      simp_all [div_le_iff₀]
     have h2 := mul_le_mul_of_nonneg_left h1 hm0.le
-    have h3 : 0 ≤ (m : ℝ) * η := mul_nonneg hm0.le hη.le
+    have h3 : 0 ≤ m * η := by positivity
     linarith
-  have hE : exp (γ * ((m : ℝ) * log 4)) * exp ((m : ℝ) * B)
-      = exp G * exp ((m : ℝ) * (B + γ * log 4) - G) := by
+  have hE : exp (γ * (m * log 4)) * exp (m * B)
+      = exp G * exp (m * (B + γ * log 4) - G) := by
     rw [← exp_add, ← exp_add]
-    congr 1
-    ring
-  calc (D m : ℝ) ^ γ * ((levelsOf c m : ℝ) * sqrtKN0 (levelsOf c m) m)
-      ≤ exp (γ * ((m : ℝ) * log 4)) * ((c + 1) * m * exp ((m : ℝ) * B)) := by
-        rw [cast_D_rpow]
-        exact mul_le_mul_of_nonneg_left
-          (mul_le_mul hLle hsqrt (sqrtKN0_pos hmL.le).le (by positivity)) (exp_pos _).le
-    _ = (c + 1) * m * (exp (γ * ((m : ℝ) * log 4)) * exp ((m : ℝ) * B)) := by ring
-    _ = (c + 1) * m * exp G * exp ((m : ℝ) * (B + γ * log 4) - G) := by
-        rw [hE]
-        ring
-    _ ≤ exp ((m : ℝ) * η) * exp ((m : ℝ) * (B + γ * log 4) - G) :=
+    grind
+  calc D m ^ γ * ((levelsOf c m) * sqrtKN0 _ m)
+      ≤ exp (γ * (m * log 4)) * ((c + 1) * m * exp (m * B)) := by
+        grind [cast_D_rpow, mul_le_mul_of_nonneg_left, mul_le_mul, sqrtKN0_pos, exp_pos]
+    _ = (c + 1) * m * (exp _ * exp (m * B)) := by ring
+    _ = (c + 1) * m * exp G * exp _ := by
+        grind
+    _ ≤ exp _ * exp (m * (B + γ * log 4) - G) :=
         mul_le_mul_of_nonneg_right hexp (exp_pos _).le
-    _ = exp (((m : ℝ) - 1) * G) := by
-        rw [← exp_add, hηdef]
-        congr 1
-        ring
-    _ ≤ (N : ℝ) := hN
+    _ = exp _ := by
+        rw [← exp_add]
+        grind
+    _ ≤ N := hN
+
+variable {θ : ℝ}
 
 /-! ### The two terms together -/
 
 /-- `cost8P` is `O(N² log² D/D^γ)`, in the given `D`, wherever `D^γ L √K N₀ ≤ N` holds with the
 exponent `γ < γX(c, θ)`. This takes the place of `dominated_cost8X`. -/
-theorem dominated_cost8P {c θ γ : ℝ} (hc : 10 < c) (hθ0 : 0 ≤ θ) (hθ1 : θ ≤ 1)
+theorem dominated_cost8P (hc : 10 < c) (hθ0 : 0 ≤ θ) (hθ1 : θ ≤ 1)
     (hγ : γ < gammaX c θ) {dom : Sizes → Prop} (hset : ∀ p, dom p → p.SetUp)
     (h10 : ∀ p, dom p →
       (D p.m : ℝ) ^ γ * ((levelsOf c p.m : ℝ) * sqrtKN0 (levelsOf c p.m) p.m) ≤ p.N) :
     Dominated dom (fun p => cost8P (levelsOf c p.m) p.m (switchOf θ p.m) p.N)
       fun p => (p.N : ℝ) ^ 2 * Real.log p.D₀ ^ 2 / (p.D₀ : ℝ) ^ γ := by
-  have hρ : rhoC c < 1 := rhoC_lt_one hc
+  have hρ := rhoC_lt_one hc
   -- the first term, with its factor `N²`
-  have hboxes : Dominated dom
-      (fun p => (levelsOf c p.m : ℝ) * p.m * tailX (levelsOf c p.m) p.m (switchOf θ p.m)
-        * (p.N : ℝ) ^ 2)
-      fun p => (D p.m : ℝ) ^ (-γ) * Real.log (D p.m) ^ 2 * (p.N : ℝ) ^ 2 :=
+  have hboxes :=
     ((first_termX hc hθ0 hθ1 hγ).comp Sizes.m fun p hp => (hset p hp).m_pos).mul_right
-      (k := fun p => (p.N : ℝ) ^ 2) fun _ _ => sq_nonneg _
+      (k := fun p => p.N ^ 2) fun _ _ => sq_nonneg _
   -- the encodings
   have hencodings : Dominated dom
-      (fun p => (p.N : ℝ) * (levelsOf c p.m : ℝ)
-        * (27 / 2 * (M (levelsOf c p.m) p.m : ℝ) / (1 - rho (levelsOf c p.m) p.m))
+      (fun p => p.N * (levelsOf c p.m)
+        * (27 / 2 * (M (levelsOf c p.m) p.m) / (1 - rho (levelsOf c p.m) p.m))
         / sqrtKN0 (levelsOf c p.m) p.m)
-      fun p => (D p.m : ℝ) ^ (-γ) * Real.log (D p.m) ^ 2 * (p.N : ℝ) ^ 2 := by
+      fun p => D p.m ^ (-γ) * Real.log (D p.m) ^ 2 * p.N ^ 2 := by
     refine .of_le_const_mul (C := 27 / 2 / (1 - rhoC c))
-      (div_nonneg (by norm_num) (sub_pos.2 hρ).le) fun p hp => ?_
-    have hm1 : 1 ≤ p.m := (hset p hp).m_pos
-    have hmL : p.m ≤ levelsOf c p.m := by have := ten_mul_le_levelsOf hc p.m; omega
-    have hrho : rho (levelsOf c p.m) p.m < rhoC c := Corollary31.rho_lt hc p.m
-    have hDγ : 0 < (D p.m : ℝ) ^ γ := rpow_pos_of_pos (cast_D_pos p.m) γ
-    have hLs0 : 0 ≤ (levelsOf c p.m : ℝ) * sqrtKN0 (levelsOf c p.m) p.m :=
-      mul_nonneg (Nat.cast_nonneg _) (sqrtKN0_pos hmL).le
-    have hLs : (levelsOf c p.m : ℝ) * sqrtKN0 (levelsOf c p.m) p.m
-        ≤ (D p.m : ℝ) ^ (-γ) * p.N := by
-      rw [rpow_neg (cast_D_pos p.m).le, inv_mul_eq_div, le_div_iff₀ hDγ, mul_comm]
-      exact h10 p hp
-    have hlog : (1 : ℝ) ≤ Real.log (D p.m) ^ 2 :=
-      one_le_pow₀ ((Nat.one_le_cast.2 hm1).trans (cast_le_log_cast_D p.m))
-    have hpow : (0 : ℝ) ≤ (D p.m : ℝ) ^ (-γ) := rpow_nonneg (Nat.cast_nonneg _) _
-    rw [encodingP_eq hmL]
-    calc 27 / 2 * (p.N : ℝ) * ((levelsOf c p.m : ℝ) * sqrtKN0 (levelsOf c p.m) p.m)
-          / (1 - rho (levelsOf c p.m) p.m)
-        ≤ 27 / 2 * (p.N : ℝ) * ((levelsOf c p.m : ℝ) * sqrtKN0 (levelsOf c p.m) p.m)
+      (by positivity) fun p hp => ?_
+    have hm1 := (hset p hp).m_pos
+    have hmL : p.m ≤ levelsOf c p.m := by grind [ten_mul_le_levelsOf]
+    have hrho := Corollary31.rho_lt hc p.m
+    have hLs0 : 0 ≤ levelsOf c p.m * sqrtKN0 (levelsOf c p.m) p.m :=
+      by grind [mul_nonneg, Nat.cast_nonneg, sqrtKN0_pos]
+    have hLs : levelsOf c p.m * sqrtKN0 (levelsOf c p.m) p.m
+        ≤ D p.m ^ (-γ) * p.N := by
+      rw [rpow_neg (cast_D_pos p.m).le, inv_mul_eq_div, le_div_iff₀ (rpow_pos_of_pos (cast_D_pos p.m) γ), mul_comm]
+      simp_all
+    have hlog : 1 ≤ Real.log (D p.m) ^ 2 :=
+      by grind [one_le_pow₀, Nat.one_le_cast, cast_le_log_cast_D]
+    have hpow : 0 ≤ (D p.m : ℝ) ^ (-γ) := by positivity
+    rw [encodingP_eq]
+    calc 27 / 2 * p.N * ((levelsOf c p.m) * sqrtKN0 _ p.m)
+          / (1 - rho _ p.m)
+        ≤ 27 / 2 * p.N * ((levelsOf c p.m) * sqrtKN0 _ p.m)
           / (1 - rhoC c) :=
-          div_le_div_of_nonneg_left (mul_nonneg (by positivity) hLs0) (sub_pos.2 hρ)
+          div_le_div_of_nonneg_left (by positivity) (sub_pos.2 hρ)
             (by linarith)
-      _ ≤ 27 / 2 * (p.N : ℝ) * ((D p.m : ℝ) ^ (-γ) * p.N) / (1 - rhoC c) :=
-          div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hLs (by positivity))
+      _ ≤ 27 / 2 * p.N * ((D p.m) ^ (-γ) * p.N) / (1 - rhoC c) :=
+          div_le_div_of_nonneg_right (by grind [mul_le_mul_of_nonneg_left])
             (sub_pos.2 hρ).le
-      _ = 27 / 2 / (1 - rhoC c) * ((D p.m : ℝ) ^ (-γ) * 1 * (p.N : ℝ) ^ 2) := by ring
+      _ = 27 / 2 / (1 - rhoC c) * ((D p.m) ^ (-γ) * 1 * p.N ^ 2) := by ring
       _ ≤ 27 / 2 / (1 - rhoC c)
-            * ((D p.m : ℝ) ^ (-γ) * Real.log (D p.m) ^ 2 * (p.N : ℝ) ^ 2) :=
+            * ((D p.m) ^ (-γ) * Real.log _ ^ 2 * p.N ^ 2) :=
           mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right
             (mul_le_mul_of_nonneg_left hlog hpow) (sq_nonneg _))
-            (div_nonneg (by norm_num) (sub_pos.2 hρ).le)
+            (by positivity)
   have hpadded : Dominated dom (fun p => cost8P (levelsOf c p.m) p.m (switchOf θ p.m) p.N)
-      fun p => (D p.m : ℝ) ^ (-γ) * Real.log (D p.m) ^ 2 * (p.N : ℝ) ^ 2 :=
+      _ :=
     hboxes.add hencodings
   refine (hpadded.trans (((padded_le (-γ) 2).mono_dom hset).mul_right
-    fun _ _ => sq_nonneg _)).congr (fun _ _ => rfl) fun p _ => ?_
-  rw [Real.rpow_neg (Nat.cast_nonneg _)]
-  ring
+    fun _ _ => sq_nonneg _)).congr (by simp) fun p _ => ?_
+  grind [Real.rpow_neg, Nat.cast_nonneg]
 
 /-- **The cost bounds with pruned encodings**, for all large `m`. For `c > 10`, `0 < θ < 0.9`,
 `0 ≤ γ < γX(c, θ)` and `0 < ε < R'_c(γ)` there are a constant `C` and a threshold `m₀` such that
@@ -219,7 +197,7 @@ for all `2 ≤ D ≤ N^ε` with `m = ⌈log_4 D⌉ ≥ m₀`, `L = ⌈cm⌉`, `t
 `N ≥ √K N₀` of Theorem 30 holds, `cost8P` is at most `C N² log² D/D^γ`, and the query cost is at
 most `C D^q log D`. This is `costsX` with pruned encodings: `cost8P` in the place of `cost8X` and
 the thinness bound `R'_c` in the place of `R_c`. -/
-theorem costsP {c θ γ ε : ℝ} (hc : 10 < c) (hθ0 : 0 < θ) (hθ1 : θ < 0.9) (hγ0 : 0 ≤ γ)
+theorem costsP (hc : 10 < c) (hθ0 : 0 < θ) (hθ1 : θ < 0.9) (hγ0 : 0 ≤ γ)
     (hγ : γ < gammaX c θ) (hε0 : 0 < ε) (hε : ε < RcP c γ) :
     ∃ (C : ℝ) (m₀ : ℕ), 0 ≤ C ∧ ∀ D₀ N m : ℕ, 2 ≤ D₀ → (D₀ : ℝ) ≤ (N : ℝ) ^ ε →
       m = ⌈Real.logb 4 (D₀ : ℝ)⌉₊ → m₀ ≤ m →
@@ -230,34 +208,29 @@ theorem costsP {c θ γ ε : ℝ} (hc : 10 < c) (hθ0 : 0 < θ) (hθ1 : θ < 0.9
   obtain ⟨m₀, heq10⟩ := eq_10P hc hγ0 hε0 hε
   -- the encodings fit for the instances from the threshold on
   have h10 : ∀ p : Sizes, p.Corollary31 ε m₀ →
-      (D p.m : ℝ) ^ γ * ((levelsOf c p.m : ℝ) * sqrtKN0 (levelsOf c p.m) p.m) ≤ p.N :=
+      D p.m ^ γ * ((levelsOf c p.m) * sqrtKN0 _ p.m) ≤ p.N :=
     fun p hp => heq10 p.m hp.large p.D₀ p.N hp.setUp.gt hp.thin
   have hpre := dominated_cost8P hc hθ0.le (by linarith) hγ
-    (fun p (hp : p.Corollary31 ε m₀) => hp.setUp) h10
+    (fun p hp => hp.setUp) h10
   have hquery : Dominated (Sizes.Corollary31 ε m₀)
-      (fun p => costQuery (levelsOf c p.m) p.m (switchOf θ p.m))
-      fun p => (p.D₀ : ℝ) ^ qOf θ * Real.log p.D₀ :=
-    (((Corollary31.query_cost hc hθ0 hθ1).comp Sizes.m fun _ (hp : Sizes.SetUp _) => hp.m_pos).trans
-      (by simpa only [pow_one] using padded_le (qOf θ) 1)).mono_dom fun p hp => hp.setUp
+      _
+      _ :=
+    (((Corollary31.query_cost hc hθ0 hθ1).comp Sizes.m fun _ hp => hp.m_pos).trans
+      (by simpa [pow_one] using padded_le _ 1)).mono_dom fun p hp => hp.setUp
   obtain ⟨C, hC, hboth⟩ := hpre.exists_const_and hquery
-    (fun p _ => div_nonneg (mul_nonneg (sq_nonneg _) (sq_nonneg _))
-      (Real.rpow_nonneg (Nat.cast_nonneg _) _))
-    fun p hp => mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _)
-      (Real.log_nonneg (Nat.one_le_cast.2 (one_le_two.trans hp.setUp.two_le)))
+    fun p _ => by positivity
+    fun p hp => by positivity
   refine ⟨C, m₀, hC, fun D₀ N m hD hDN hm hm₀ => ?_⟩
-  have hp : Sizes.Corollary31 ε m₀ ⟨D₀, N, m⟩ := ⟨⟨hD, hm⟩, hDN, hm₀⟩
+  have hp : Sizes.Corollary31 ε m₀ ⟨D₀, N, m⟩ := ⟨by tauto, hDN, hm₀⟩
   have hm1 : 1 ≤ m := hp.setUp.m_pos
-  have hL10 : 10 * m ≤ levelsOf c m := ten_mul_le_levelsOf hc m
+  have hL10 := ten_mul_le_levelsOf hc m
   -- `√K N₀ ≤ D^γ L √K N₀ ≤ N`
-  have hD1 : (1 : ℝ) ≤ (D m : ℝ) ^ γ := Real.one_le_rpow (one_le_cast_D m) hγ0
-  have hL1 : (1 : ℝ) ≤ (levelsOf c m : ℝ) := Nat.one_le_cast.2 (by omega)
-  have hs : 0 ≤ sqrtKN0 (levelsOf c m) m := (sqrtKN0_pos (by omega)).le
-  have hfit : sqrtKN0 (levelsOf c m) m ≤ N :=
-    calc sqrtKN0 (levelsOf c m) m
-        ≤ (levelsOf c m : ℝ) * sqrtKN0 (levelsOf c m) m := le_mul_of_one_le_left hs hL1
-      _ ≤ (D m : ℝ) ^ γ * ((levelsOf c m : ℝ) * sqrtKN0 (levelsOf c m) m) :=
-          le_mul_of_one_le_left (mul_nonneg (by positivity) hs) hD1
-      _ ≤ N := h10 ⟨D₀, N, m⟩ hp
-  exact ⟨hfit, hboth ⟨D₀, N, m⟩ hp⟩
-
-end ImprovedExponents
+  have hL1 : 1 ≤ (levelsOf c m : ℝ) := Nat.one_le_cast.2 (by omega)
+  have hs : 0 ≤ sqrtKN0 (levelsOf c m) m := (sqrtKN0_pos).le
+  have hfit :=
+    calc sqrtKN0 _ m
+        ≤ levelsOf c m * sqrtKN0 _ m := le_mul_of_one_le_left hs hL1
+      _ ≤ D m ^ γ * ((levelsOf c m) * sqrtKN0 _ m) :=
+          le_mul_of_one_le_left (by positivity) (Real.one_le_rpow (one_le_cast_D m) hγ0)
+      _ ≤ N := by grind
+  grind

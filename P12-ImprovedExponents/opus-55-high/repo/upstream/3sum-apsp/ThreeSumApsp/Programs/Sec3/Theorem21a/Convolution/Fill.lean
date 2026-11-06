@@ -3,12 +3,12 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.NextPair
-public import ThreeSumApsp.Lang.Lib.Pass
-public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Spec.Sec3.Theorem21a.Convolution
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.NextPair
+import ThreeSumApsp.Lang.Lib.Pass
+import ThreeSumApsp.Lang.Tactics
+import ThreeSumApsp.Spec.Sec3.Theorem21a.Convolution
 
 /-!
 # Convolution-3SUM from Exact Triangle: writing one instance
@@ -26,7 +26,6 @@ cells of each matrix have been written (`filled_succ` is one round).  The result
 `convFill_meets`.
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
@@ -38,25 +37,11 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 
 namespace ConvFill
 
-/-- The local variables of convFill: the arguments t (Side), N (Len), s (Inst), F (Filler), x
+/- The local variables of convFill: the arguments t (Side), N (Len), s (Inst), F (Filler), x
 (Input), ab, bc, ac (MatAB, MatBC, MatAC); the row, the column and the number of the current cell
 (Row, Col, Cell); an index into x and what is picked there (Index, Value); -F (NegFiller) and t²
 (Area). -/
-abbrev Side : ℕ := 0
-@[inherit_doc Side] abbrev Len : ℕ := 1
-@[inherit_doc Side] abbrev Inst : ℕ := 2
-@[inherit_doc Side] abbrev Filler : ℕ := 3
-@[inherit_doc Side] abbrev Input : ℕ := 4
-@[inherit_doc Side] abbrev MatAB : ℕ := 5
-@[inherit_doc Side] abbrev MatBC : ℕ := 6
-@[inherit_doc Side] abbrev MatAC : ℕ := 7
-@[inherit_doc Side] abbrev Row : ℕ := 8
-@[inherit_doc Side] abbrev Col : ℕ := 9
-@[inherit_doc Side] abbrev Cell : ℕ := 10
-@[inherit_doc Side] abbrev Index : ℕ := 11
-@[inherit_doc Side] abbrev Value : ℕ := 12
-@[inherit_doc Side] abbrev NegFiller : ℕ := 13
-@[inherit_doc Side] abbrev Area : ℕ := 14
+slots Side Len Inst Filler Input MatAB MatBC MatAC Row Col Cell Index Value NegFiller Area
 
 end ConvFill
 
@@ -113,33 +98,32 @@ structure InputAt (lim : Limits) (μ : ℕ → ℤ) (x N : ℕ) (X : List ℤ) :
   space : x + N ≤ lim.space
   addr : (lim.space : ℤ) ≤ lim.word
 
+variable {f : ℕ} (z : ℤ)
+
 /-- pickStmt puts `cellOr N F X z` into Value and changes nothing else. -/
-private theorem pick_runs {loc : ℕ → ℤ} {f : ℕ} (z : ℤ)
-    (h : R ⟨Function.update loc Value (cellOr N F X z), μ⟩) (hX : InputAt lim μ x N X)
+theorem pick_runs {loc : ℕ → ℤ}     (h : R ⟨Function.update loc Value (cellOr N F X z), μ⟩) (hX : InputAt lim μ x N X)
     (hz : loc Index = z) (hN : loc Len = N) (hx : loc Input = x) (hf : loc f = F) :
     (pickStmt f).Runs lim ⟨loc, μ⟩ R := by
   obtain ⟨hseg, hlen, hspace, haddr⟩ := hX
-  unfold pickStmt
-  -- Value := f
   refine .seq ⟨trivial, ?_⟩
   by_cases hneg : z < 0
   · -- if Index < 0
-    rw [cellOr_of_not (by omega)] at h
-    exact .ite_pos ⟨trivial, by simpa [hf] using h⟩ (by simpa [hz] using hneg) (by simp; omega)
-  refine .ite_neg ?_ (by simpa [hz] using hneg) (by simp; omega)
+    rw [cellOr_of_not] at h
+    exact .ite_pos ⟨trivial, by simp_all⟩ (by simp_all) (by simp; omega)
+  refine .ite_neg ?_ (by simp_all) (by simp; omega)
   by_cases hlt : z < N
   · -- if Index < N: Value := x[Index]
     obtain ⟨i, rfl⟩ := Int.eq_ofNat_of_zero_le (not_lt.1 hneg)
-    rw [cellOr_of_lt rfl (by omega), ← hseg.getD (by omega)] at h
-    refine .ite_pos ⟨?_, by simpa [hz, hx] using h⟩ (by simpa [hz, hN] using hlt) (by simp)
-    simp [hz, hx, Limits.Addr, abs_le]
+    rw [cellOr_of_lt rfl, ← hseg.getD (by omega)] at h
+    refine .ite_pos ⟨?_, by simp_all⟩ (by simp_all) (by simp)
+    simp [Limits.Addr, abs_le]
     omega
-  · rw [cellOr_of_not (by omega)] at h
-    exact .ite_neg ⟨trivial, by simpa [hf] using h⟩ (by simpa [hz, hN] using hlt) (by simp)
+  · rw [cellOr_of_not] at h
+    exact .ite_neg ⟨trivial, by simp_all⟩ (by simp_all) (by simp)
 
 /-- putStmt stores `cellOr N F X z`, or minus it, into cell q of the matrix at D.  Of the locals it
 changes only Index and Value. -/
-private theorem put_runs {l : List ℤ} {ze : Expr} {f dst : ℕ} {neg : Bool} (z : ℤ) (D q : ℕ)
+theorem put_runs {l : List ℤ} {ze : Expr} {dst : ℕ} {neg : Bool} (D q : ℕ)
     (h : R ⟨frame (setLocal (setLocal l Index z) Value (cellOr N F X z)),
       Function.update μ (D + q) (if neg then -cellOr N F X z else cellOr N F X z)⟩)
     (hX : InputAt lim μ x N X) (hD : D + q < lim.space) (hV : |cellOr N F X z| ≤ lim.word)
@@ -154,20 +138,18 @@ private theorem put_runs {l : List ℤ} {ze : Expr} {f dst : ℕ} {neg : Bool} (
   obtain ⟨hfI, hdI, hdV⟩ := hne
   obtain ⟨hsafe, hval⟩ := hze
   have haddr := hX.addr
-  unfold putStmt
-  -- Index := ze
   refine .seq ⟨hsafe, ?_⟩
   -- Value := x[Index] or the filler
-  refine .seq (pick_runs z ?_ hX (by simp [hval]) (by simpa using hN) (by simpa using hx)
+  refine .seq (pick_runs z ?_ hX (by assumption) (by assumption) (by assumption)
     (by simpa [hfI] using hf))
   -- dst[Cell] := Value or -Value
   cases neg
-  · refine ⟨?_, by simpa [hval, hdI, hdV, hdst, hq] using h⟩
-    simp [hdI, hdV, hdst, hq, Limits.Addr, abs_le]
+  · refine ⟨?_, by simp_all⟩
+    simp [hdI, hdV, Limits.Addr, abs_le]
     omega
-  · refine ⟨?_, by simpa [hval, hdI, hdV, hdst, hq] using h⟩
+  · refine ⟨?_, by simp_all⟩
     rw [abs_le] at hV
-    simp [hdI, hdV, hdst, hq, Limits.Addr, abs_le]
+    simp [hdI, hdV, Limits.Addr, abs_le]
     omega
 
 end parts
@@ -176,14 +158,9 @@ end parts
 
 /-- The arguments of convFill, with the list X that stands at x. -/
 structure Args : Type where
-  t : ℕ
-  N : ℕ
-  s : ℕ
+  (t N s : ℕ)
   F : ℤ
-  x : ℕ
-  ab : ℕ
-  bc : ℕ
-  ac : ℕ
+  (x ab bc ac : ℕ)
   X : List ℤ
 
 /-- What convFill assumes: there is at least one row; the input lies below the three matrices, which
@@ -234,38 +211,34 @@ section memory
 variable {μ : ℕ → ℤ} {A : Args} {V q : ℕ}
 
 /-- One round writes cell q of each matrix. -/
-private theorem filled_succ (C : Ctx lim μ A V) (hq : q < A.t * A.t) :
+theorem filled_succ (C : Ctx lim μ A V) (hq : q < A.t * A.t) :
     Function.update (Function.update (Function.update (A.filled μ q)
       (A.ab + q) (cellOr A.N A.F A.X q)) (A.bc + q) (cellOr A.N A.F A.X (A.idxBC q)))
       (A.ac + q) (-cellOr A.N (-A.F) A.X (A.idxAC q)) = A.filled μ (q + 1) := by
   obtain ⟨hBC, hAC⟩ := And.intro C.belowBC C.belowAC
   have offBC : A.ab + q < A.bc ∨ A.bc + q ≤ A.ab + q := by omega
-  have offAC (y : ℕ) (hy : y ≤ A.bc + q) : y < A.ac ∨ A.ac + q ≤ y := by omega
   unfold Args.filled
-  rw [update_wrote (offAC _ (by omega)), update_wrote offBC, wrote_succ,
-    update_wrote (offAC _ le_rfl), wrote_succ, wrote_succ]
+  rw [update_wrote (by omega), update_wrote offBC, wrote_succ,
+    update_wrote (by omega), wrote_succ, wrote_succ]
 
 /-- No cell before the first matrix or after the last one changes. -/
-private theorem sameOutside_filled (C : Ctx lim μ A V) (hq : q ≤ A.t * A.t) :
+theorem sameOutside_filled (C : Ctx lim μ A V) (hq : q ≤ A.t * A.t) :
     SameOutside μ (A.filled μ q) A.ab (A.ac + A.t * A.t - A.ab) := fun b hb => by
   obtain ⟨hBC, hAC⟩ := And.intro C.belowBC C.belowAC
-  have off (dst : ℕ) (h₁ : A.ab ≤ dst) (h₂ : dst ≤ A.ac) : b < dst ∨ dst + q ≤ b := by
-    unfold Outside at hb
-    omega
-  rw [Args.filled, wrote_rest (off _ (by omega) le_rfl), wrote_rest (off _ (by omega) (by omega)),
-    wrote_rest (off _ le_rfl (by omega))]
+  rw [Args.filled, wrote_rest, wrote_rest,
+    wrote_rest (by omega)]
 
 /-- At the end the three matrices stand in the memory. -/
-private theorem post_filled (C : Ctx lim μ A V) : Post A μ (A.filled μ (A.t * A.t)) where
+theorem post_filled (C : Ctx lim μ A V) : Post A μ (A.filled μ (A.t * A.t)) where
   segAB i hi := by
     obtain ⟨hBC, hAC⟩ := And.intro C.belowBC C.belowAC
     rw [length_convAB] at hi
-    rw [Args.filled, wrote_rest (by omega), wrote_rest (by omega), wrote_done hi]
+    rw [Args.filled, wrote_rest, wrote_rest, wrote_done hi]
     simp [convAB]
   segBC i hi := by
     have hAC := C.belowAC
     rw [length_convBC] at hi
-    rw [Args.filled, wrote_rest (by omega), wrote_done hi]
+    rw [Args.filled, wrote_rest, wrote_done hi]
     simp [convBC, Args.idxBC]
   segAC i hi := by
     rw [length_convAC] at hi
@@ -274,25 +247,21 @@ private theorem post_filled (C : Ctx lim μ A V) : Post A μ (A.filled μ (A.t *
   same := sameOutside_filled C le_rfl
 
 /-- The input is still there after q rounds. -/
-private theorem inputAt_filled (C : Ctx lim μ A V) (hq : q ≤ A.t * A.t) :
-    InputAt lim (A.filled μ q) A.x A.N A.X where
-  seg := C.input.keep (by light_keep [sameOutside_filled C hq, C.len, C.belowAB])
-  len := C.len
-  space := by
+theorem inputAt_filled (C : Ctx lim μ A V) (hq : q ≤ A.t * A.t) :
+    InputAt lim (A.filled μ q) A.x A.N A.X := ⟨C.input.keep (by light_keep [sameOutside_filled C hq, C.len, C.belowAB]), C.len, by
     have hAB := C.belowAB
     have hBC := C.belowBC
     have hAC := C.belowAC
     have hspace := C.space
-    omega
-  addr := C.addr
+    omega, C.addr⟩
 
 /-- A write to a cell of the matrices leaves the input alone. -/
-private theorem InputAt.write {μ' : ℕ → ℤ} (hX : InputAt lim μ' A.x A.N A.X) (C : Ctx lim μ A V)
+theorem InputAt.write {μ' : ℕ → ℤ} (hX : InputAt lim μ' A.x A.N A.X) (C : Ctx lim μ A V)
     {b : ℕ} (hb : A.ab ≤ b) (w : ℤ) : InputAt lim (Function.update μ' b w) A.x A.N A.X :=
   { hX with seg := hX.seg.update_out (Or.inr (by have := C.len; have := C.belowAB; omega)) w }
 
 /-- What is picked fits in a word. -/
-private theorem abs_cellOr_le_word (C : Ctx lim μ A V) (z : ℤ) :
+theorem abs_cellOr_le_word (C : Ctx lim μ A V) (z : ℤ) :
     |cellOr A.N A.F A.X z| ≤ lim.word ∧ |cellOr A.N (-A.F) A.X z| ≤ lim.word :=
   ⟨(abs_cellOr_le C.inputLe C.fillerLe z).trans C.valueLe,
     (abs_cellOr_le C.inputLe (by rw [abs_neg]; exact C.fillerLe) z).trans C.valueLe⟩
@@ -307,25 +276,25 @@ variable {μ : ℕ → ℤ} {A : Args} {V q : ℕ}
 
 /-- The row and the column of a cell q < t² are below t, so the products that the two index
 expressions form lie between 0 and 2t². -/
-private structure IndexBounds (t q : ℕ) : Prop where
+structure IndexBounds (t q : ℕ) : Prop where
   row : 0 ≤ (q : ℤ) / t ∧ (q : ℤ) / t < t
   col : 0 ≤ (q : ℤ) % t ∧ (q : ℤ) % t < t
   colSide : 0 ≤ (q : ℤ) % t * t ∧ (q : ℤ) % t * t ≤ t * t
   sumSide : 0 ≤ ((q : ℤ) / t + (q : ℤ) % t) * t ∧ ((q : ℤ) / t + (q : ℤ) % t) * t ≤ 2 * (t * t)
   side : (t : ℤ) ≤ t * t
 
-private theorem indexBounds {t : ℕ} (hq : q < t * t) : IndexBounds t q := by
-  have hrow : q / t < t := Nat.div_lt_of_lt_mul hq
-  have hcol : q % t < t := Nat.mod_lt _ (Nat.pos_of_ne_zero fun h => by simp [h] at hq)
-  exact ⟨by exact_mod_cast And.intro (Nat.zero_le _) hrow,
-    by exact_mod_cast And.intro (Nat.zero_le _) hcol,
+theorem indexBounds {t : ℕ} (hq : q < t * t) : IndexBounds t q := by
+  have hrow := Nat.div_lt_of_lt_mul hq
+  have hcol : q % t < t := Nat.mod_lt _ (by grind)
+  exact ⟨by grind,
+    by omega,
     by exact_mod_cast And.intro (Nat.zero_le _) (Nat.mul_le_mul_right t hcol.le),
     by exact_mod_cast And.intro (Nat.zero_le _) ((Nat.mul_le_mul_right t
       (show q / t + q % t ≤ 2 * t by omega)).trans_eq (Nat.mul_assoc ..)),
-    by exact_mod_cast Nat.le_mul_self t⟩
+    by exact_mod_cast t.le_mul_self⟩
 
 /-- fillCells writes cell q of each matrix. -/
-private theorem cells_runs {R : State → Prop} (C : Ctx lim μ A V) (hq : q < A.t * A.t) (z w : ℤ)
+theorem cells_runs {R : State → Prop} (C : Ctx lim μ A V) (hq : q < A.t * A.t) (z w : ℤ)
     (h : R ⟨frame (A.locals q (A.idxAC q) (cellOr A.N (-A.F) A.X (A.idxAC q))),
       A.filled μ (q + 1)⟩) :
     fillCells.Runs lim ⟨frame (A.locals q z w), A.filled μ q⟩ R := by
@@ -334,14 +303,12 @@ private theorem cells_runs {R : State → Prop} (C : Ctx lim μ A V) (hq : q < A
   have hidx := C.indexLe
   have hX := inputAt_filled C hq.le
   rw [← filled_succ C hq] at h
-  unfold fillCells
-  -- ab[q] := x[q] or F
-  refine .seq (put_runs (q : ℤ) A.ab q ?_ hX (by omega) (abs_cellOr_le_word C _).1)
+  refine .seq (put_runs q A.ab q ?_ hX (by omega) (abs_cellOr_le_word C _).1)
   -- bc[q] := x[c t + s - b] or F, for row b and column c
   refine .seq (put_runs (A.idxBC q) A.bc q ?_ (hX.write C (by omega) _) (by omega)
     (abs_cellOr_le_word C _).1 (by light_side [Args.idxBC]))
   -- ac[q] := -(x[(a + c) t + s] or -F), for row a and column c
-  exact put_runs (A.idxAC q) A.ac q h ((hX.write C (by omega) _).write C (by omega) _) (by omega)
+  exact put_runs _ A.ac q h ((hX.write C (by omega) _).write C (by omega) _) (by omega)
     (abs_cellOr_le_word C _).2 (by light_side [Args.idxAC])
 
 /-- The invariant of the loop: before round q the counters stand at cell q, and the first q cells of
@@ -350,7 +317,7 @@ def LoopInv (A : Args) (μ : ℕ → ℤ) (q : ℕ) (σ : State) : Prop :=
   ∃ z w : ℤ, σ = ⟨frame (A.locals q z w), A.filled μ q⟩
 
 /-- Round q: cell q of each matrix is written, and the counters move on to cell q + 1. -/
-private theorem round_spec (C : Ctx lim μ A V) (hq : q < A.t * A.t) (z w : ℤ) :
+theorem round_spec (C : Ctx lim μ A V) (hq : q < A.t * A.t) (z w : ℤ) :
     Ends lim P d fillRound ⟨frame (A.locals q z w), A.filled μ q⟩ fillRound.blockCost
       (LoopInv A μ (q + 1)) := by
   have hidx := C.indexLe
@@ -359,10 +326,10 @@ private theorem round_spec (C : Ctx lim μ A V) (hq : q < A.t * A.t) (z w : ℤ)
   -- the three cells
   refine Ends.next _ (Ends.block (cells_runs C hq z w ?_) le_rfl)
   -- Cell := Cell + 1
-  refine Ends.setToThen ((q + 1 : ℕ) : ℤ) ?_ (by light_side) (by simp [nextPair])
+  refine Ends.setToThen (q + 1) ?_ (by light_side) (by decide)
   -- on to the next row and column
   exact Ends.nextPair ⟨_, _, rfl⟩ C.side (by omega) (by omega) rfl rfl rfl
-    (hT := by simp [nextPair])
+    (hT := by rfl)
 
 end loop
 
@@ -380,20 +347,18 @@ theorem convFill_meets {p : ℕ} (hp : P[p]? = some convFillBody) {μ : ℕ → 
   unfold convFillBody convFillTime
   -- NegFiller := 0 - Filler; Area := Side * Side
   light_set (-A.F)
-  light_set (A.t * A.t : ℕ)
+  light_set (A.t * A.t)
   -- Row := 0; Col := 0; Cell := 0
   light_set 0
   light_set 0
   light_set 0
   -- while Cell < Area
-  refine Ends.whileConst (LoopInv A μ) (A.t * A.t) fillRound.blockCost ?start ?round ?done
+  refine Ends.whileConst (LoopInv A μ) (A.t * A.t) fillRound.blockCost ?_ ?_ ?_
     (by simp [fillRound, fillCells, putStmt, pickStmt, nextPair]; omega)
-  case start => exact ⟨0, 0, by simp [Args.filled, wrote_zero, Args.locals]⟩
-  case round =>
+  · exact ⟨0, 0, by simp [Args.filled, wrote_zero, Args.locals]⟩
+  ·
     rintro q _ hq ⟨z, w, rfl⟩
     exact ⟨by light_side, by light_side, round_spec C hq z w⟩
-  case done =>
+  ·
     rintro _ ⟨z, w, rfl⟩
     exact ⟨by light_side, by light_side, post_filled C⟩
-
-end Light.Sec3

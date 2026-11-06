@@ -3,12 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Spec.Sec4.Theorem30.QueryLists
-public import ThreeSumApsp.Spec.Sec4.Theorem30.StarBoxes
-public import ThreeSumApsp.Spec.Sec4.Theorem30.Trie
-public import ThreeSumApsp.Util.Index
+import ThreeSumApsp.Spec.Sec4.Theorem30.QueryLists
+import ThreeSumApsp.Spec.Sec4.Theorem30.StarBoxes
+import ThreeSumApsp.Spec.Sec4.Theorem30.Trie
+import ThreeSumApsp.Util.Index
 
 /-!
 # The trie of a tile, and the tries of all tiles (Lemma 29)
@@ -53,7 +52,6 @@ Two ladders lead from the arrays to the paper.
   (`lemma_29_values`).  `lookup_allTries_eq_val` is the whole ladder; no other proof rests on it.
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -61,8 +59,7 @@ namespace ThreeSumApsp.Spec
 
 /-- A tile, given by the arrays of its two encodings. -/
 structure TileEnc where
-  encA : List ℤ
-  encB : List ℤ
+  (encA encB : List ℤ)
 
 /-- The tries of some tiles in one array: the array, and the addresses of the roots.  The trie of
 tile number i has the root number i. -/
@@ -107,10 +104,12 @@ def boxValue (encA encB T : List ℤ) (root : ℕ) : ℕ → List ℕ → ℤ
   | 0, l => leafProduct encA encB (starsToNines l)
   | _ + 1, l => sumAtLastStar (trieLookup T root) l
 
+variable {l : List ℕ}
+
 /-- The value of a box without stars is the product at the leaf with its digits. -/
-theorem boxValue_zero (encA encB T : List ℤ) (root : ℕ) {l : List ℕ} (hl : ∀ d ∈ l, d < 10) :
+theorem boxValue_zero (encA encB T : List ℤ) (root : ℕ) (hl : ∀ d ∈ l, d < 10) :
     boxValue encA encB T root 0 l = leafProduct encA encB l := by
-  rw [boxValue, starsToNines_of_notMem fun h => absurd (hl 10 h) (lt_irrefl 10)]
+  grind [boxValue, starsToNines_of_notMem]
 
 /-- "Generating the boxes with e stars and inserting them into the trie": the array after some boxes
 with e stars have been inserted into the trie of the tile, which has the given root, each with its
@@ -145,7 +144,7 @@ of the tile", which has the given root. -/
 def trieQuery (m t : ℕ) (encA encB T : List ℤ) (root : ℕ) (w : List ℕ) : ℤ :=
   (queryTerms m t encA encB (trieLookup T root) w).sum
 
-private theorem fillTrie_cons (encA encB : List ℤ) (root e : ℕ) (l : List ℕ)
+theorem fillTrie_cons (encA encB : List ℤ) (root e : ℕ) (l : List ℕ)
     (boxes : List (List ℕ)) (T : List ℤ) :
     fillTrie encA encB root e (l :: boxes) T
       = fillTrie encA encB root e boxes (trieInsert T root l (boxValue encA encB T root e l)) := rfl
@@ -153,15 +152,13 @@ private theorem fillTrie_cons (encA encB : List ℤ) (root e : ℕ) (l : List �
 /-- The trie of one more tile is built on top of the tries of the tiles before it. -/
 theorem allTries_snoc (L m t : ℕ) (tiles : List TileEnc) (ab : TileEnc) :
     allTries L m t (tiles ++ [ab]) = tileTrie ab.encA ab.encB L m t (allTries L m t tiles) := by
-  simp [allTries, List.foldl_append]
+  simp [allTries]
 
 /-- Every box that a query reads is a box of the tile. -/
-private theorem boxesOf_mem_starBoxes {L : ℕ} (m t : ℕ) (ht : t ≤ m) (η : OutStr L)
+theorem boxesOf_mem_starBoxes {L : ℕ} (m t : ℕ) (ht : t ≤ m) (η : OutStr L)
     (hη : (innerSetO η).card = m) (l : List ℕ) (hl : l ∈ boxesOf m t (digitsO η)) :
     IsBoxDigits L m t l := by
-  obtain ⟨π, hπ, rfl⟩ := exists_of_mem_boxesOf ht hη l hl
-  obtain ⟨V, hV, hπ⟩ := Finset.mem_biUnion.mp hπ
-  exact (isBoxDigits_digitsC m t π).mpr (Theorem30.lookup hV hπ)
+  grind [exists_of_mem_boxesOf, isBoxDigits_digitsC, Theorem30.lookup]
 
 /-! ## What the tries hold -/
 
@@ -187,36 +184,29 @@ section
 
 variable {old : ℕ × List ℕ → Option ℤ} {i : ℕ} {encA encB : List ℤ} {L m t : ℕ}
 
+variable {l : List ℕ}
+
 /-- The boxes with fewer than k stars are stored with the values of the dynamic program. -/
-theorem storedUpTo_of_lt {k e : ℕ} (pre : List (List ℕ)) {l : List ℕ} (he : e < k)
+theorem storedUpTo_of_lt {k e : ℕ} (pre : List (List ℕ)) (he : e < k)
     (hl : l ∈ starBoxes L m t e) :
     storedUpTo old i encA encB L m t k pre (i, l) = some (dpValueD encA encB e l) := by
-  obtain rfl := starCount_of_mem_starBoxes hl
-  simp [storedUpTo, storedD, he, hl]
+  grind [starCount_of_mem_starBoxes, storedUpTo, storedD]
 
 /-- Before the first box, there are the old entries only. -/
-private theorem storedUpTo_zero (x : ℕ × List ℕ) (v : ℤ)
+theorem storedUpTo_zero (x : ℕ × List ℕ) (v : ℤ)
     (h : storedUpTo old i encA encB L m t 0 [] x = some v) : old x = some v := by
-  simpa [storedUpTo] using h
+  grind [storedUpTo]
 
 /-- One more box is one more entry. -/
-private theorem storedUpTo_snoc {e : ℕ} (pre : List (List ℕ)) {l : List ℕ}
+theorem storedUpTo_snoc {e : ℕ} (pre : List (List ℕ))
     (hl : l ∈ starBoxes L m t e) :
     storedUpTo old i encA encB L m t e (pre ++ [l]) =
       Function.update (storedUpTo old i encA encB L m t e pre) (i, l)
         (some (dpValueD encA encB e l)) := by
-  funext ⟨n, l'⟩
-  by_cases hx : (n, l') = (i, l)
-  · obtain ⟨rfl, rfl⟩ := Prod.mk.inj hx
-    simp [storedUpTo, storedD, starCount_of_mem_starBoxes hl]
-  · rw [Function.update_of_ne hx]
-    have hne : ¬ (n = i ∧ l' = l) := fun ⟨hn, hl'⟩ => hx (by rw [hn, hl'])
-    simp only [storedUpTo, List.mem_append, List.mem_singleton]
-    -- the two conditions differ only at the key (i, l)
-    exact if_congr (by tauto) rfl rfl
+  grind [Prod.mk.inj, storedUpTo, storedD, starCount_of_mem_starBoxes, Function.update_of_ne]
 
 /-- The state after all boxes with k stars is the state before the first box with k + 1 stars. -/
-private theorem storedUpTo_succ (k : ℕ) :
+theorem storedUpTo_succ (k : ℕ) :
     storedUpTo old i encA encB L m t (k + 1) [] =
       storedUpTo old i encA encB L m t k (starBoxes L m t k) := by
   funext ⟨n, l⟩
@@ -224,18 +214,18 @@ private theorem storedUpTo_succ (k : ℕ) :
   refine if_congr (and_congr_right fun _ => ?_) rfl rfl
   rw [Nat.lt_succ_iff_lt_or_eq, or_and_right]
   exact or_congr_right
-    ⟨fun h => h.1 ▸ h.2, fun h => ⟨starCount_of_mem_starBoxes h, isBoxDigits_of_mem_starBoxes h⟩⟩
+    ⟨by grind, by grind [starCount_of_mem_starBoxes, isBoxDigits_of_mem_starBoxes]⟩
 
 end
 
 /-- The boxes of tile number i are stored with the values of its dynamic program. -/
-private theorem storedAll_of_mem {L m t : ℕ} {tiles : List TileEnc} {i : ℕ} {ab : TileEnc}
-    {l : List ℕ} (hi : tiles[i]? = some ab) (hl : IsBoxDigits L m t l) :
+theorem storedAll_of_mem {L m t : ℕ} {tiles : List TileEnc} {i : ℕ} {ab : TileEnc}
+    (hi : tiles[i]? = some ab) (hl : IsBoxDigits L m t l) :
     storedAll L m t tiles (i, l) = some (storedD ab.encA ab.encB l) := by
-  simp [storedAll, hl, hi]
+  grind [storedAll]
 
 /-- One more tile: what is stored then was stored before or belongs to the new tile. -/
-private theorem storedAll_snoc {L m t : ℕ} (tiles : List TileEnc) (ab : TileEnc)
+theorem storedAll_snoc {L m t : ℕ} (tiles : List TileEnc) (ab : TileEnc)
     (x : ℕ × List ℕ) (v : ℤ) (h : storedAll L m t (tiles ++ [ab]) x = some v) :
     storedUpTo (storedAll L m t tiles) tiles.length ab.encA ab.encB L m t (m - t + 1) [] x
       = some v := by
@@ -243,16 +233,14 @@ private theorem storedAll_snoc {L m t : ℕ} (tiles : List TileEnc) (ab : TileEn
   simp only [storedAll] at h
   split_ifs at h with hl
   simp only [storedUpTo]
-  rcases Nat.lt_trichotomy n tiles.length with hn | hn | hn
+  rcases n.lt_trichotomy tiles.length with hn | hn | hn
   · -- an older tile
     rw [if_neg (by omega), ← h, List.getElem?_append_left hn]
     exact if_pos hl
   · -- the new tile
     rw [if_pos ⟨hn, Or.inl ⟨Nat.lt_succ_of_le (le_of_mem_starBoxes hl), hl⟩⟩, ← h, hn]
     simp
-  · -- there is no such tile
-    rw [List.getElem?_eq_none (by simp; omega)] at h
-    simp at h
+  simp_all
 
 /-! ## The array represents what it should hold -/
 
@@ -263,15 +251,15 @@ variable {old : ℕ × List ℕ → Option ℤ} {i : ℕ} {encA encB : List ℤ}
 
 /-- With the boxes with fewer stars stored, the value computed for a box is the value of the dynamic
 program. -/
-private theorem boxValue_eq {T : List ℤ} {pre : List (List ℕ)} {l : List ℕ}
+theorem boxValue_eq {T : List ℤ} {pre : List (List ℕ)} {l : List ℕ}
     (h : TrieRep L lo T roots (storedUpTo old i encA encB L m t e pre))
     (hl : l ∈ starBoxes L m t e) : boxValue encA encB T (roots i) e l = dpValueD encA encB e l := by
   cases e with
   | zero => rfl
   | succ e =>
     obtain ⟨p, hp, hset⟩ := exists_lastStar_of_mem_starBoxes hl
-    exact sumAtLastStar_congr hp fun d hd => h.lookup i _ (starBoxes_digits (hset d hd)).2 _
-      (storedUpTo_of_lt pre (Nat.lt_succ_self e) (hset d hd))
+    exact sumAtLastStar_congr hp fun d hd => h.lookup i _ (starBoxes_digits).2 _
+      (storedUpTo_of_lt pre (Nat.lt_succ_self e) (by simp_all))
 
 /-- Inserting boxes with e stars into the trie of the tile: if the array represents the state after
 the boxes of pre, then after inserting the boxes of rest it represents the state after
@@ -282,14 +270,13 @@ theorem fillTrie_rep (hi : roots i ≠ 0) (rest pre : List (List ℕ)) (T : List
     TrieRep L lo (fillTrie encA encB (roots i) e rest T) roots
       (storedUpTo old i encA encB L m t e (pre ++ rest)) := by
   induction rest generalizing pre T with
-  | nil => rwa [List.append_nil]
+  | nil => aesop
   | cons l rest ih =>
-    have hl : l ∈ starBoxes L m t e := hmem l (by simp)
+    have hl : l ∈ starBoxes L m t e := by simp_all
     have hins := hrep.insert i hi l (starBoxes_digits hl).1 (starBoxes_digits hl).2
       (boxValue encA encB T (roots i) e l)
     rw [boxValue_eq hrep hl, ← storedUpTo_snoc pre hl] at hins
-    rw [fillTrie_cons, List.append_cons, boxValue_eq hrep hl]
-    exact ih (pre ++ [l]) _ (fun x hx => hmem x (by simp [hx])) hins
+    grind [fillTrie_cons, boxValue_eq]
 
 end
 
@@ -303,7 +290,7 @@ theorem fillUpTo_rep {old : ℕ × List ℕ → Option ℤ} (encA encB : List �
   | zero => exact hs.new.mono storedUpTo_zero
   | succ k ih =>
     have hfill := fillTrie_rep (roots := s.new.root) (by rw [s.root_new]; exact hs.length_pos.ne')
-      (starBoxes L m t k) [] _ (fun _ hl => hl) ih
+      (starBoxes L m t k) [] _ (by simp) ih
     rw [storedUpTo_succ]
     rwa [s.root_new] at hfill
 
@@ -317,14 +304,14 @@ theorem length_roots_allTries (tiles : List TileEnc) :
   induction tiles using List.reverseRecOn with
   | nil => rfl
   | append_singleton tiles ab ih =>
-    rw [allTries_snoc, List.length_append, List.length_singleton, ← ih]
+    rw [allTries_snoc, List.length_append, ← ih]
     exact List.length_append
 
 /-- The tries of all tiles hold the values of the dynamic programs of the tiles. -/
 theorem allTries_rep (tiles : List TileEnc) :
     (allTries L m t tiles).Holds L 1 (storedAll L m t tiles) := by
   induction tiles using List.reverseRecOn with
-  | nil => exact (TrieRep.empty L [0] (by simp)).mono fun x v hx => by simp [storedAll] at hx
+  | nil => exact (TrieRep.empty L [0]).mono fun x v hx => by grind [storedAll]
   | append_singleton tiles ab ih =>
     have h := fillUpTo_rep ab.encA ab.encB m t _ ih (m - t + 1)
     rw [length_roots_allTries] at h
@@ -351,14 +338,9 @@ theorem length_fillTrie_le (root e L : ℕ) (boxes : List (List ℕ))
     (hb : ∀ l ∈ boxes, l.length = L) (T : List ℤ) :
     (fillTrie encA encB root e boxes T).length ≤ T.length + 11 * L * boxes.length := by
   induction boxes generalizing T with
-  | nil => exact le_rfl
+  | nil => rfl
   | cons l boxes ih =>
-    have hrest := ih (fun x hx => hb x (by simp [hx]))
-      (trieInsert T root l (boxValue encA encB T root e l))
-    have hins := length_trieInsert_le T root l (boxValue encA encB T root e l)
-    rw [hb l (by simp)] at hins
-    rw [fillTrie_cons, List.length_cons, Nat.mul_add_one]
-    omega
+    grind [length_trieInsert_le, fillTrie_cons, List.length_cons, Nat.mul_add_one]
 
 variable (L m t : ℕ)
 
@@ -367,11 +349,11 @@ theorem length_fillUpTo_le_sum (root k : ℕ) (T : List ℤ) :
     (fillUpTo encA encB L m t root k T).length
       ≤ T.length + 11 * L * ((List.range k).map fun e => (starBoxes L m t e).length).sum := by
   induction k with
-  | zero => exact le_rfl
+  | zero => rfl
   | succ k ih =>
-    rw [fillUpTo, List.sum_range_succ, Nat.mul_add (11 * L)]
+    rw [fillUpTo, List.sum_range_succ, Nat.mul_add]
     have hfill := length_fillTrie_le encA encB root k L (starBoxes L m t k)
-      (fun l hl => (starBoxes_digits hl).1) (fillUpTo encA encB L m t root k T)
+      (by grind [starBoxes_digits]) (fillUpTo encA encB L m t root k T)
     omega
 
 /-- Lemma 29, space: "O(L) […] space per box"; eleven cells more for the root. -/
@@ -387,12 +369,9 @@ theorem length_allTries_le (tiles : List TileEnc) :
     (allTries L m t tiles).cells.length
       ≤ 1 + tiles.length * (11 * (1 + L * (boxes L m t).card)) := by
   induction tiles using List.reverseRecOn with
-  | nil => simp [allTries]
+  | nil => aesop
   | append_singleton tiles ab ih =>
-    rw [allTries_snoc]
-    refine (length_tileTrie_le _ _ L m t _).trans ?_
-    rw [List.length_append, List.length_singleton, Nat.add_mul, Nat.one_mul]
-    omega
+    grind [allTries_snoc, length_tileTrie_le, List.length_append, List.length_singleton, Nat.add_mul]
 
 end
 
@@ -415,18 +394,15 @@ theorem length_tileList : (tileList nB encA encB).length = nB * nB :=
 theorem getElem?_tileList {β β' : ℕ} (hβ : β < nB) (hβ' : β' < nB) :
     (tileList nB encA encB)[β * nB + β']? = some ⟨arrT (encA β), arrT (encB β')⟩ := by
   have hlt : β * nB + β' < (tileList nB encA encB).length :=
-    (Nat.mul_add_lt_mul hβ hβ').trans_eq (length_tileList nB encA encB).symm
-  rw [List.getElem?_eq_getElem hlt, ← List.getD_eq_getElem _ ⟨[], []⟩ hlt, tileList,
-    List.getD_flatMap_range _ (fun _ _ => by simp) hβ hβ', List.getD_map_range _ hβ']
+    by simp_all [Nat.mul_add_lt_mul, length_tileList]
+  rw [List.getElem?_eq_getElem hlt, ← List.getD_eq_getElem _ ⟨[], []⟩, tileList,
+    List.getD_flatMap_range _ (by simp) hβ hβ', List.getD_map_range _ hβ']
 
 /-- The tiles before the tile (β, β'), in row-major order. -/
 def tilesBefore (β β' : ℕ) : List TileEnc :=
   ((List.range β).flatMap fun b => (List.range nB).map fun b' => ⟨arrT (encA b), arrT (encB b')⟩) ++
     (List.range β').map fun b' => ⟨arrT (encA β), arrT (encB b')⟩
 
-/-- No tile stands before the first one. -/
-theorem tilesBefore_zero : tilesBefore nB encA encB 0 0 = [] := by
-  simp [tilesBefore]
 
 /-- The tiles before the next tile of the row are the tiles before the tile, and the tile. -/
 theorem tilesBefore_succ (β β' : ℕ) :
@@ -437,7 +413,7 @@ theorem tilesBefore_succ (β β' : ℕ) :
 /-- The end of a row is the beginning of the next one. -/
 theorem tilesBefore_row (β : ℕ) :
     tilesBefore nB encA encB β nB = tilesBefore nB encA encB (β + 1) 0 := by
-  simp [tilesBefore, List.range_succ, List.flatMap_append]
+  simp [tilesBefore, List.range_succ]
 
 /-- After the last row all tiles have been taken. -/
 theorem tilesBefore_all : tilesBefore nB encA encB nB 0 = tileList nB encA encB := by
@@ -446,7 +422,7 @@ theorem tilesBefore_all : tilesBefore nB encA encB nB 0 = tileList nB encA encB 
 /-- β nB + β' tiles stand before the tile (β, β'). -/
 theorem length_tilesBefore (β β' : ℕ) :
     (tilesBefore nB encA encB β β').length = β * nB + β' := by
-  simp [tilesBefore, List.length_flatMap]
+  simp [tilesBefore]
 
 end
 
@@ -472,7 +448,7 @@ theorem queryTerms_allTries :
     queryTerms m t ab.encA ab.encB ((allTries L m t tiles).lookup i) (digitsO η)
       = queryTerms m t ab.encA ab.encB (storedD ab.encA ab.encB) (digitsO η) :=
   congrArg _ (List.map_congr_left fun l hl =>
-    lookup_allTries hi (boxesOf_mem_starBoxes m t ht η hη l hl))
+    by grind [lookup_allTries, boxesOf_mem_starBoxes])
 
 end Query
 
@@ -486,5 +462,3 @@ theorem trieQuery_allTries {L m t : ℕ} (ht : t ≤ m) {tiles : List TileEnc} {
       = queryValue m t encA encB η :=
   (congrArg List.sum (queryTerms_allTries ht hi hη)).trans
     (sum_queryTerms_storedD ht encA encB hη)
-
-end ThreeSumApsp.Spec

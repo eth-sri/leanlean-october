@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
 /-!
 # Theorem 5 as a program: the report
@@ -19,24 +19,22 @@ invariant `ReportInv`; the places PERM[i] are different, so no value is overwrit
 (`ReportInv.write`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp
 
 namespace ReportLocal
 
-/-- The number w of wanted positions. -/
-abbrev LEN : ℕ := 0
-/-- The permutation, sorted order to given order. -/
-abbrev PERM : ℕ := 1
-/-- The values, in sorted order. -/
-abbrev VALS : ℕ := 2
-/-- The output. -/
-abbrev OUT : ℕ := 3
-/-- The place i in the sorted order. -/
-abbrev POS : ℕ := 4
+/- The number w of wanted positions. -/
+slots LEN
+/- The permutation, sorted order to given order. -/
+slots 1 PERM
+/- The values, in sorted order. -/
+slots 2 VALS
+/- The output. -/
+slots 3 OUT
+/- The place i in the sorted order. -/
+slots 4 POS
 
 end ReportLocal
 
@@ -45,8 +43,4 @@ open ReportLocal in
 def reportBody : Stmt :=
   .for POS (v LEN) (.store (v OUT +' M (v PERM +' v POS)) (M (v VALS +' v POS)))
 
-variable {lim : Limits} {P : Program} {c i : ℕ} {μ μ' : ℕ → ℤ}
-
 /-! ## The report -/
-
-end Light.Sec2

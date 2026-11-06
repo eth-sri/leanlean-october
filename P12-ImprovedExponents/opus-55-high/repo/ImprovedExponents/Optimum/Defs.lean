@@ -1,8 +1,7 @@
-module
 
-public import ImprovedExponents.ExactCount.Tail
+import ImprovedExponents.ExactCount.Tail
+noncomputable section
 
-@[expose] public section
 
 /-!
 # The parameters of the method and its saving: definitions
@@ -33,33 +32,33 @@ open ThreeSumApsp
 
 /-- `γ_Q(θ) := (2 - 4 q(θ))/3`: the largest `γ` with `γ ≤ σ - q(θ)` at the balanced prime size
 `σ = 1/2 + γ/4`. -/
-noncomputable def gammaQ (θ : ℝ) : ℝ := (2 - 4 * qOf θ) / 3
+def gammaQ (θ : ℝ) : ℝ := (2 - 4 * qOf θ) / 3
 
 /-- `Γ(c) := sup_{0 < θ < 0.9} min(γX(c, θ), γ_Q(θ))`, the best exponent of a thin product. -/
-noncomputable def Gam (c : ℝ) : ℝ :=
+def Gam (c : ℝ) : ℝ :=
   sSup ((fun θ => min (gammaX c θ) (gammaQ θ)) '' Set.Ioo 0 (9 / 10))
 
 /-- The thinness bound `R(γ) = ln 4/(A + γ ln 4)`: a thin product needs `D ≤ N^ε` with
 `ε < R(γ)`. -/
-noncomputable def thinR (A γ : ℝ) : ℝ := Real.log 4 / (A + γ * Real.log 4)
+def thinR (A γ : ℝ) : ℝ := Real.log 4 / (A + γ * Real.log 4)
 
 /-- The constant `A` of the thinness bound with pruned encodings (leaves with at most `m` symbols
 `P₀`): `(c/2) H(1/c) + (c - 1) ln 3`, the exponential rate of `√K N₀`. -/
-noncomputable def basePruned (c : ℝ) : ℝ := c / 2 * entropy (1 / c) + (c - 1) * Real.log 3
+def basePruned (c : ℝ) : ℝ := c / 2 * entropy (1 / c) + (c - 1) * Real.log 3
 
 /-- The thinness bound with pruned encodings, `R'_c(γ)`. -/
-noncomputable def RcP (c γ : ℝ) : ℝ := thinR (basePruned c) γ
+def RcP (c γ : ℝ) : ℝ := thinR (basePruned c) γ
 
 /-- The saving at the exponent `γ` when everything is balanced: `R(γ) γ/2`. -/
-noncomputable def savingF (A γ : ℝ) : ℝ := thinR A γ * γ / 2
+def savingF (A γ : ℝ) : ℝ := thinR A γ * γ / 2
 
 /-- The exponent of a thin product at inner dimension `D` with at most `N²/D^σ` wanted entries:
 `min(γX(c, θ), σ - q(θ))`. -/
-noncomputable def effGamma (c θ σ : ℝ) : ℝ := min (gammaX c θ) (σ - qOf θ)
+def effGamma (c θ σ : ℝ) : ℝ := min (gammaX c θ) (σ - qOf θ)
 
 /-- The saving of Exact Triangle at the parameters `(c, θ, σ, ε)`:
 `ε min(2σ - 1, γ - (2σ - 1))`. -/
-noncomputable def tupleSaving (c θ σ ε : ℝ) : ℝ :=
+def tupleSaving (c θ σ ε : ℝ) : ℝ :=
   ε * min (2 * σ - 1) (effGamma c θ σ - (2 * σ - 1))
 
 /-- The parameters that the method allows, for the thinness constant `A`. -/
@@ -71,5 +70,3 @@ structure AdmissibleX (A c θ σ ε : ℝ) : Prop where
   σ_lt : σ < 1
   ε_pos : 0 < ε
   thin : ε < thinR A (gammaX c θ)
-
-end ImprovedExponents

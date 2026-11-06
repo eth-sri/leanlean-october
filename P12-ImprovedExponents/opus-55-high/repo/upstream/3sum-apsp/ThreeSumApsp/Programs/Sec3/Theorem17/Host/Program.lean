@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Correct
+import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Correct
 
 /-!
 # The host of Theorem 17: the program, assembled
@@ -17,11 +16,9 @@ obtained is the context that the top procedure assumes (`et17Ctx_assembled`), an
 result: the host solves Exact Triangle (`et17_solves`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
 
 /-- The numbers of the procedures of Strassen's algorithm, if the list of the procedures of the host
 starts at the number `o`. -/
@@ -35,29 +32,5 @@ def chNumsAt (o : ℕ) : ChNums := ⟨o + 3, o + 4, o + 17, cpNumsAt o, o, o + 2
 
 /-- The numbers of the procedures that the top procedure calls: `pS` is the solver, `pD` and `pG`
 compute the parameters. -/
-def et17NumsAt (pS pD pG o : ℕ) : Et17Nums where
-  pD := pD
-  pG := pG
-  pSqrt := o
-  pBrute := o + 2
-  pScan := o + 1
-  pChoose := o + 18
-  pCap := o + 19
-  pCeil := o + 20
-  pBitLen := o + 4
-  pDbl := o + 5
-  pResid := o + 6
-  pResidues := o + 7
-  pClasses := o + 21
-  pChunks := o + 22
-  pLoop := o + 26
-  pS := pS
-  pWriteX := o + 23
-  pWriteY := o + 24
-  pScanPairs := o + 25
-  ch := chNumsAt o
+def et17NumsAt (pS pD pG o : ℕ) : Et17Nums := ⟨pD, pG, o, o + 2, o + 1, o + 18, o + 19, o + 20, o + 4, o + 5, o + 6, o + 7, o + 21, o + 22, o + 26, pS, o + 23, o + 24, o + 25, chNumsAt o⟩
 
-variable {P₀ : Program} {pS pD pG : ℕ} {Tn : List ℕ → ℕ} {need : List ℕ → Need}
-  {Dfun Gfun tD tG wD wG : ℕ → ℕ}
-
-end Light.Sec3

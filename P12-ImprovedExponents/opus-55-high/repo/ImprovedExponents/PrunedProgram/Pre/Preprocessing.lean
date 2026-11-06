@@ -1,12 +1,10 @@
-module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Program
-public import ImprovedExponents.PrunedProgram.Pre.Defs
-public import ImprovedExponents.PrunedProgram.Tiles.FillList
-public import ImprovedExponents.PrunedProgram.Tiles.Tile
-public import ImprovedExponents.PrunedProgram.Tiles.AllTiles
+import ThreeSumApsp.Programs.Sec4.Theorem30.Program
+import ImprovedExponents.PrunedProgram.Pre.Defs
+import ImprovedExponents.PrunedProgram.Tiles.FillList
+import ImprovedExponents.PrunedProgram.Tiles.Tile
+import ImprovedExponents.PrunedProgram.Tiles.AllTiles
 
-@[expose] public section
 
 /-!
 # The preprocessing of Theorem 30 with the pruned shared stage
@@ -32,7 +30,7 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/Directory.lean`, `Ar
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L}
   {aX aY b0 : ℕ} {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
@@ -65,23 +63,16 @@ theorem preCoreAddrP_spec (ht : t ≤ p.m) (hlim : Lim30 lim p t b0 U)
   obtain ⟨⟩ := areas p t b0
   unfold preLocals preShared
   -- the product nB², in the integers
-  have hsq : ((p.nB * p.nB : ℕ) : ℤ) ≤ lim.space := by
-    exact_mod_cast (by omega : p.nB * p.nB ≤ lim.space)
-  have htr : ((aROOTS p b0 + p.nB * p.nB : ℕ) : ℤ) = aTR p b0 := by
-    exact_mod_cast (by omega : aROOTS p b0 + p.nB * p.nB = aTR p b0)
-  have hsq0 : (0 : ℤ) ≤ (p.nB : ℤ) * p.nB := by positivity
-  push_cast at hsq htr
-  -- digits := dir[30]; bands := dir[9]
-  light_set (aWD p b0 : ℕ) using dir.sharedEnd
-  light_set (p.nB : ℕ) using dir.bands
+  light_set (aWD p b0) using dir.sharedEnd
+  light_set p.nB using dir.bands
   -- cur := digits + L; box := cur + L; free := box + L + m; roots := free + 1
-  light_set (aCUR p b0 : ℕ)
-  light_set (aBOX p b0 : ℕ)
-  light_set (aFP p b0 : ℕ)
-  light_set (aROOTS p b0 : ℕ)
+  light_set (aCUR p b0)
+  light_set (aBOX p b0)
+  light_set (aFP p b0)
+  light_set (aROOTS p b0)
   -- last := m - t; tries := roots + nB nB
   light_set (p.m - t : ℕ)
-  light_set (aTR p b0 : ℕ)
+  light_set (aTR p b0)
   rfl
 
 /-! ## The tries -/
@@ -98,25 +89,16 @@ theorem allArgsP_pre (h : Lim30 lim p t b0 U) (ht : t ≤ p.m) (hX : ∀ i j, |X
       (∀ i j, |Y i j| ≤ U') ∧ 10 ^ p.m * ((7 ^ p.L * U') * (7 ^ p.L * U')) ≤ lim.word := by
     rcases le_or_gt 0 U with h0 | h0
     · exact ⟨U, h0, hX, hY, h.value⟩
-    · have hword : (0 : ℤ) ≤ lim.word := le_trans (by norm_num) h.std.const_le
-      exact ⟨0, le_rfl, fun i j => absurd ((abs_nonneg _).trans (hX i j)) (not_le.mpr h0),
-        fun i j => absurd ((abs_nonneg _).trans (hY i j)) (not_le.mpr h0), by simpa using hword⟩
+    · have hword : 0 ≤ lim.word := le_trans (by norm_num) h.std.const_le
+      exact ⟨0, le_rfl, by grind,
+        by grind, by assumption⟩
   have hsp := h.space
   have hT : 10 ^ p.L = p.T := rfl
   obtain ⟨⟩ := areas p t b0
   exact
-    { std := h.std
-      t_le := ht
-      m_le := hmL
-      value_le := ⟨7 ^ p.L * U', 7 ^ p.L * U',
+    ⟨h.std, ht, hmL, ⟨7 ^ p.L * U', 7 ^ p.L * U',
         fun β τ => (abs_enc_le hmL X Y U' hU0 hX' hY' β β).1 τ,
-        fun β τ => (abs_enc_le hmL X Y U' hU0 hX' hY' β β).2 τ, hvalue⟩
-      pow_le := h.pow_le
-      cap_ge := le_rfl
-      order := by simp only [allArgs]; rw [hT]; omega
-      segA := fun β hβ => hSR.encA β hβ
-      segB := fun β hβ => hSR.encB β hβ
-      trie := hTM }
+        fun β τ => (abs_enc_le hmL X Y U' hU0 hX' hY' β β).2 τ, hvalue⟩, h.pow_le, le_rfl, by grind [allArgs], fun β hβ => hSR.encA β hβ, fun β hβ => hSR.encB β hβ, hTM⟩
 
 /-- After the pruned shared stage, the last part completes the data structure; it changes only
 cells from CUR to the end of the block. -/
@@ -140,24 +122,26 @@ theorem preCoreFinishP_spec (hAll : AllTilesSpecP lim P) (hlim : Lim30 lim p t b
   have same : SameOutside μ (Function.update (Function.update μ (aTR p b0) 0) (aFP p b0) 1)
       (aCUR p b0) (top p t b0 - aCUR p b0) :=
     (SameOutside.refl.update (by omega) 0).update (by omega) 1
-  generalize Function.update (Function.update μ (aTR p b0) 0) (aFP p b0) 1 = μ₁ at *
-  have hSR₁ : Sec2.SharedReadyP p hmL aX aY b0 X Y μ₁ :=
-    hSR.of_agree fun b hb _ => same b (Or.inl (by omega))
+  generalize Function.update (Function.update μ (aTR p b0) 0) _ 1 = μ₁ at *
+  have hSR₁ :=
+    hSR.of_agree fun b hb _ => same b (by omega)
   have dir := hSR₁.dirCells
   -- the tries of all tiles
   light_call (hAll _ μ₁ (allArgsP_pre hlim ht hX hY hSR₁ hTM))
     using allArgs, dir.encA, dir.encB, dir.leaves, Sec2.Par.T with r' μ₂ ⟨hTM₂, hroots, same₂⟩
-  have same' : SameOutside μ μ₂ (aCUR p b0) (top p t b0 - aCUR p b0) :=
+  have same' :=
     same.then same₂ fun b hb =>
       ⟨hb, by change b < aCUR p b0 ∨ aTR p b0 + trieCap p t ≤ b; omega⟩
-  exact ⟨⟨hSR.of_agree fun b hb _ => same' b (Or.inl (by omega)),
-    (same' _ (Or.inl (by omega))).trans hcellT, hroots, hTM₂.seg⟩, same'⟩
+  exact ⟨⟨hSR.of_agree fun b hb _ => same' b (by omega),
+    (same' _ (by omega)).trans hcellT, hroots, hTM₂.seg⟩, same'⟩
+
+variable {c : ℕ}
 
 /-! ## The routine -/
 
 /-- **preCoreP** meets its specification: the pruned shared stage, then upstream's own parts. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Preprocessing.lean (preCore_spec)
-theorem preCoreP_spec {c : ℕ} (hP : P[Proc.preCoreP]? = some preCorePBody)
+theorem preCoreP_spec (hP : P[Proc.preCoreP]? = some preCorePBody)
     (hShared : Sec2.SharedSpecP lim P c) (hAll : AllTilesSpecP lim P) :
     PreCoreSpecP lim P c := by
   intro p t hmL aX aY b0 X Y U μ ht hlim hX hY hMX hMY haX haY
@@ -168,17 +152,16 @@ theorem preCoreP_spec {c : ℕ} (hP : P[Proc.preCoreP]? = some preCorePBody)
   unfold tPreCoreP
   -- the pruned shared stage
   light_call (hShared p hmL aX aY b0 μ X Y U
-    { space := by omega, matX := hMX, matY := hMY, belowX := haX, belowY := haY, absX := hX
-      absY := hY, seven := hlim.enc, ten := hlim.pow }) with r μ₁ ⟨hSR₁, same₁⟩
+    ⟨by omega, hMX, hMY, haX, haY, hX, hY, hlim.enc, hlim.pow⟩) with r μ₁ ⟨hSR₁, same₁⟩
   -- dir[31] := t
   light_store (b0 + 31) t
   have hSR₂ : Sec2.SharedReadyP p hmL aX aY b0 X Y (Function.update μ₁ (b0 + 31) t) :=
-    hSR₁.of_agree fun b _ hb => Function.update_of_ne hb ..
+    hSR₁.of_agree fun b _ hb => by simp_all
   -- the addresses
   light_piece (preCoreAddrP_spec ht hlim hSR₂ r) with _ rfl
   -- the tries
-  refine (preCoreFinishP_spec hAll hlim ht hX hY (by omega) r hSR₂
-    (Function.update_self ..)).mono (by simp; omega) ?_
+  apply (preCoreFinishP_spec hAll hlim ht hX hY (by omega) r hSR₂
+    (Function.update_self ..)).mono (by simp; omega)
   rintro σ' ⟨hDS, same₂⟩
   refine ⟨hDS, fun b hb => ?_⟩
   rw [same₂ b (by omega), Function.update_of_ne (by omega), same₁ b (by omega)]
@@ -191,17 +174,10 @@ pruned shared stage.  The routines 40 to 48 are upstream's (`specs40`), and so a
 `fillList`, `tile` and `allTiles`, which are re-verified on pruned encodings. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Routines.lean (preCoreSpec_of,
 -- preCoreSpec_all) and Program.lean (preCore_base58)
-theorem preCoreP_of_base58 {P R : Program} {c : ℕ} (hP : P = base58 ++ R)
+theorem preCoreP_of_base58 {P R : Program} (hP : P = base58 ++ R)
     (hpre : P[Proc.preCoreP]? = some preCorePBody) (hsh : Sec2.SharedSpecP lim P c) :
     PreCoreSpecP lim P c := by
   intro p t hmL aX aY b0 X Y U μ ht hlim
-  have h40 : Has40 P := hP ▸ has40_base58 R
-  have S := specs40 h40 hlim.std
-  have hFill : FillListSpecP lim P :=
-    fillListP_meets (h40 9 (by omega)) S.nineFirst S.nineNext S.starFirst S.horner S.insert
-      S.sumTen
-  have hTile : TileSpecP lim P := tileP_spec (h40 10 (by omega)) S.newRoot hFill
-  have hAll : AllTilesSpecP lim P := allTilesP_spec (h40 11 (by omega)) hTile
-  exact preCoreP_spec hpre hsh hAll p t hmL aX aY b0 X Y U μ ht hlim
-
-end Light.Sec4
+  have S := specs40 (hP ▸ has40_base58 R) hlim.std
+  exact preCoreP_spec hpre hsh (allTilesP_spec (by aesop) (tileP_spec (by aesop) S.newRoot (fillListP_meets (by aesop) S.nineFirst S.nineNext S.starFirst S.horner S.insert
+      S.sumTen))) p t hmL aX aY b0 X Y U μ ht hlim

@@ -3,14 +3,13 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import PaperStatements
-public import Mathlib.Algebra.MvPolynomial.CommRing
-public import Mathlib.LinearAlgebra.Finsupp.LinearCombination
-public import Mathlib.Tactic.LinearCombination
-public import Mathlib.Tactic.NoncommRing
-public import Mathlib.Tactic.Ring
+import PaperStatements
+import Mathlib.Algebra.MvPolynomial.CommRing
+import Mathlib.LinearAlgebra.Finsupp.LinearCombination
+import Mathlib.Tactic.LinearCombination
+import Mathlib.Tactic.NoncommRing
+import Mathlib.Tactic.Ring
 
 /-!
 # Lemma 6: Schönhage's identity
@@ -35,7 +34,6 @@ The later files on Section 2 use the second observation and the coefficients of 
 their proofs uses `lemma_6`.
 -/
 
-@[expose] public section
 
 open Finset
 
@@ -43,50 +41,16 @@ namespace ThreeSumApsp
 
 /-! ### The alphabets -/
 
-/-- The left variables, listed: `x i` is `.inl i`, and `p i j` is `.inr (i, j)`. -/
-def LeftVar.equiv : LeftVar ≃ Fin 3 ⊕ Fin 2 × Fin 2 where
-  toFun
-    | .x i => .inl i
-    | .p i j => .inr (i, j)
-  invFun
-    | .inl i => .x i
-    | .inr (i, j) => .p i j
-  left_inv s := by cases s <;> rfl
-  right_inv s := by rcases s with _ | ⟨_, _⟩ <;> rfl
 
-/-- The right variables, listed: `y j` is `.inl j`, and `q i j` is `.inr (i, j)`. -/
-def RightVar.equiv : RightVar ≃ Fin 3 ⊕ Fin 2 × Fin 2 where
-  toFun
-    | .y j => .inl j
-    | .q i j => .inr (i, j)
-  invFun
-    | .inl j => .y j
-    | .inr (i, j) => .q i j
-  left_inv t := by cases t <;> rfl
-  right_inv t := by rcases t with _ | ⟨_, _⟩ <;> rfl
 
-/-- The terms, listed: `P i j` is `some (i, j)`, and `P0` is `none`. -/
-def Term.equiv : Term ≃ Option (Fin 3 × Fin 3) where
-  toFun
-    | .P i j => some (i, j)
-    | .P0 => none
-  invFun
-    | some (i, j) => .P i j
-    | none => .P0
-  left_inv t := by cases t <;> rfl
-  right_inv t := by rcases t with _ | ⟨_, _⟩ <;> rfl
 
-/-- Section 2.2: there are "seven left variables". -/
-theorem card_leftVar : Fintype.card LeftVar = 7 := by
-  simp [Fintype.card_congr LeftVar.equiv]
 
-/-- Section 2.2: there are "seven right variables". -/
-theorem card_rightVar : Fintype.card RightVar = 7 := by
-  simp [Fintype.card_congr RightVar.equiv]
 
 /-- Section 2.2: "Schönhage's identity has ten terms". -/
 theorem card_term : Fintype.card Term = 10 := by
-  simp [Fintype.card_congr Term.equiv]
+  rfl
+
+variable (lam : Term)
 
 /-! ### Linear forms as polynomials -/
 
@@ -96,19 +60,19 @@ theorem card_term : Fintype.card Term = 10 := by
 
 /-- Section 2.2, second observation: "every term contributes to z₀". -/
 @[simp]
-theorem Term.contributes_z0 (lam : Term) : lam.Contributes .z0 := by
+theorem Term.contributes_z0 : lam.Contributes .z0 := by
   cases lam <;> simp [Term.Contributes, chi, zForm, z0Form]
 
 /-- Section 2.2, second observation: "only P_ij contributes to z_ij". -/
 @[simp]
-theorem Term.contributes_z_iff (lam : Term) (i j : Fin 3) :
+theorem Term.contributes_z_iff (i j : Fin 3) :
     lam.Contributes (.z i j) ↔ lam = .P i j := by
   cases lam <;> simp [Term.Contributes, chi, zForm, z0Form, Pi.single_apply, eq_comm]
 
 /-- The second observation in one statement: a term contributes to `z` if and only if `z` is inner,
 that is `z₀`, or the term is `z.privateTerm`, which is `P_ij` for `z = z_ij`. (This is the term that
 the private leaf of Section 2.4.3 has at a level with the variable `z`.) -/
-theorem Term.contributes_iff (lam : Term) (z : OutVar) :
+theorem Term.contributes_iff (z : OutVar) :
     lam.Contributes z ↔ z.IsInner ∨ lam = z.privateTerm := by
   decide +revert
 
@@ -122,5 +86,3 @@ theorem Term.sum_contributes {A : Type*} [AddCommMonoid A] (c : Term → A) (z :
   cases z with
   | z i j => simp [filter_eq']
   | z0 => simp
-
-end ThreeSumApsp

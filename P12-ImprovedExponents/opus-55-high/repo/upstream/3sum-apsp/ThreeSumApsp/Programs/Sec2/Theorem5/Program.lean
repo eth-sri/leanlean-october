@@ -3,21 +3,20 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.BandArray
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Contract
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.Contract
-public import ThreeSumApsp.Programs.Sec2.Theorem5.SharedStage
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Solver
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.BandCounters
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Binomials
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Coefficients
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Digits
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Subsets
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Codes
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Gather
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Sort
+import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.BandArray
+import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Contract
+import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.Contract
+import ThreeSumApsp.Programs.Sec2.Theorem5.SharedStage
+import ThreeSumApsp.Programs.Sec2.Theorem5.Solver
+import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.BandCounters
+import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Binomials
+import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Coefficients
+import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Digits
+import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Subsets
+import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Codes
+import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Gather
+import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Sort
 
 /-!
 # Theorem 5: the program
@@ -29,11 +28,9 @@ with the constant cShared5 (sharedCallees_of_prefix), and those that the solver 
 constant cMain5 (mainCallees_of_prefix).
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.WordRam
 
 /-- The program of Theorem 5.  The numbers of the procedures begin with 1; number 0 is empty. -/
 def program5 : Program :=
@@ -46,7 +43,7 @@ def program5 : Program :=
 program5. -/
 theorem at_prefix {p : ℕ} {body : Stmt} (h : program5[p]? = some body) (R : Program) :
     (program5 ++ R)[p]? = some body :=
-  getElem?_append_of_eq_some h R
+  by grind
 
 /-! ## All entries -/
 
@@ -55,17 +52,4 @@ def cShared5 : ℕ := 2000
 
 /-- The procedures that the shared stage calls meet their entries. -/
 theorem sharedCallees_of_prefix (R : Program) (lim : Limits) (std : Std lim) :
-    SharedCallees lim (program5 ++ R) cShared5 where
-  pow := pow_entry std (at_prefix rfl R) (by decide)
-  binom := binom_entry std (at_prefix rfl R) (by decide)
-  sqrt := sqrt_entry (at_prefix rfl R) (by decide)
-  coef := coef_entry std (at_prefix rfl R) (by decide)
-  subsets := subsets_entry std (at_prefix rfl R) (by decide)
-  counters := counters_entry std (at_prefix rfl R) (by decide)
-  digits := digits_entry std (at_prefix rfl R) (by decide)
-  bandsL := encodeBandsL_entry std (at_prefix rfl R) (bandArrayL_entry std (at_prefix rfl R))
-    (encodeL_entry std (at_prefix rfl R) (at_prefix rfl R)) (by decide)
-  bandsR := encodeBandsR_entry std (at_prefix rfl R) (bandArrayR_entry std (at_prefix rfl R))
-    (encodeR_entry std (at_prefix rfl R) (at_prefix rfl R)) (by decide)
-
-end Light.Sec2
+    SharedCallees lim (program5 ++ R) cShared5 := ⟨pow_entry std (at_prefix rfl R), binom_entry std (at_prefix rfl R), sqrt_entry (at_prefix rfl R), coef_entry std (at_prefix rfl R), subsets_entry std (at_prefix rfl R), counters_entry std (at_prefix rfl R), digits_entry std (at_prefix rfl R)⟩

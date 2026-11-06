@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec2.Tiling.Definitions
-public import Mathlib.Data.Nat.Choose.Bounds
+import ThreeSumApsp.Sec2.Tiling.Definitions
+import Mathlib.Data.Nat.Choose.Bounds
 
 /-!
 # Theorem 5 in the light language: sizes and places
@@ -23,7 +22,6 @@ and ends. `Par.sizes` collects the inequalities between the sizes, each of which
 own.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
@@ -57,8 +55,6 @@ def K0 (p : Par) : ℕ := ThreeSumApsp.K0 p.L p.m
 def KK (p : Par) : ℕ := p.K0 * p.K0
 /-- The number of row bands, and of column bands. -/
 def nB (p : Par) : ℕ := numBands p.L p.m p.N
-/-- The number of tiles. -/
-def nT (p : Par) : ℕ := p.nB * p.nB
 /-- The number `10^L` of leaves: the length of an encoding. -/
 def T (p : Par) : ℕ := 10 ^ p.L
 /-- The number `7^L` of left strings: the length of an input array. -/
@@ -143,7 +139,7 @@ theorem Par.places (p : Par) (b0 : ℕ) :
       ∧ p.aDIG4 b0 = p.aDIG3 b0 + p.N * p.Lo ∧ p.aENCA b0 = p.aDIG4 b0 + p.D * p.m
       ∧ p.aENCB b0 = p.aENCA b0 + p.nB * p.T ∧ p.aARR b0 = p.aENCB b0 + p.nB * p.T
       ∧ p.aZS b0 = p.aARR b0 + p.S7 ∧ p.sharedEnd b0 = p.aZS b0 + p.S7 :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+  by aesop
 
 namespace Par
 variable (p : Par)
@@ -158,7 +154,7 @@ theorem two_pow_le_T : 2 ^ p.L ≤ p.T := Nat.pow_le_pow_left (by omega) _
 theorem K_le_T : p.K ≤ p.T := (Nat.choose_le_two_pow _ _).trans p.two_pow_le_T
 
 theorem N0_le_T : p.N0 ≤ p.T :=
-  (Nat.pow_le_pow_left (by omega) _).trans (Nat.pow_le_pow_right (by omega) (Nat.sub_le _ _))
+  (Nat.pow_le_pow_left (by omega) _).trans (Nat.pow_le_pow_right (by omega) (by omega))
 
 theorem D_le_T (hmL : p.m ≤ p.L) : p.D ≤ p.T :=
   (Nat.pow_le_pow_left (by omega) _).trans (Nat.pow_le_pow_right (by omega) hmL)
@@ -175,7 +171,3 @@ theorem sizes (hmL : p.m ≤ p.L) :
       ∧ p.KK ≤ p.K ∧ 0 < p.K0 ∧ 0 < p.N0 ∧ p.Lo = p.L - p.m :=
   ⟨p.one_le_T, p.L_lt_T, p.two_pow_le_T, p.K_le_T, p.N0_le_T, p.D_le_T hmL, p.K0_le_K, p.KK_le_K,
     ThreeSumApsp.K0_pos hmL, ThreeSumApsp.N0_pos _ _, rfl⟩
-
-end Par
-
-end Light.Sec2

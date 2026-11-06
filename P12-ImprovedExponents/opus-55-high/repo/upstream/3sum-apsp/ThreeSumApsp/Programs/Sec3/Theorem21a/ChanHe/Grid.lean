@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Round
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Round
 
 /-!
 # The reduction from 3SUM to Convolution-3SUM: the loop over the splittings.  row and grid
@@ -23,13 +23,12 @@ gridRound and in their lemmas.
   `gridRound_ends`).
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp.ChanHe ThreeSumApsp.Spec Finset
+open ThreeSumApsp.ChanHe
 
 variable {lim : Limits} {P : Program}
 
@@ -37,22 +36,10 @@ variable {lim : Limits} {P : Program}
 
 namespace Row
 
-/-- The local variables of row: the arguments β, nd, val, bt, Λ, A, n, f, cx, fr; the sum; β'; and
+/- The local variables of row: the arguments β, nd, val, bt, Λ, A, n, f, cx, fr; the sum; β'; and
 the last answer.  Local 0 also takes the result. -/
-abbrev Beta : ℕ := 0
-@[inherit_doc Beta] abbrev Result : ℕ := 0
-@[inherit_doc Beta] abbrev NumValues : ℕ := 1
-@[inherit_doc Beta] abbrev Val : ℕ := 2
-@[inherit_doc Beta] abbrev Table : ℕ := 3
-@[inherit_doc Beta] abbrev Digits : ℕ := 4
-@[inherit_doc Beta] abbrev Out0 : ℕ := 5
-@[inherit_doc Beta] abbrev MaxLen : ℕ := 6
-@[inherit_doc Beta] abbrev Levels : ℕ := 7
-@[inherit_doc Beta] abbrev Params : ℕ := 8
-@[inherit_doc Beta] abbrev Free : ℕ := 9
-@[inherit_doc Beta] abbrev Total : ℕ := 10
-@[inherit_doc Beta] abbrev Beta' : ℕ := 11
-@[inherit_doc Beta] abbrev Ans : ℕ := 12
+slots Beta
+slots Result NumValues Val Table Digits Out0 MaxLen Levels Params Free Total Beta' Ans
 
 end Row
 
@@ -77,21 +64,10 @@ def rowBody (pRound : ℕ) : Stmt :=
 
 namespace Grid
 
-/-- The local variables of grid: the arguments nd, val, bt, Λ, A, n, f, cx, fr; the answer so far;
+/- The local variables of grid: the arguments nd, val, bt, Λ, A, n, f, cx, fr; the answer so far;
 β; and the sum of the last row.  Local 0 also takes the result. -/
-abbrev NumValues : ℕ := 0
-@[inherit_doc NumValues] abbrev Result : ℕ := 0
-@[inherit_doc NumValues] abbrev Val : ℕ := 1
-@[inherit_doc NumValues] abbrev Table : ℕ := 2
-@[inherit_doc NumValues] abbrev Digits : ℕ := 3
-@[inherit_doc NumValues] abbrev Out0 : ℕ := 4
-@[inherit_doc NumValues] abbrev MaxLen : ℕ := 5
-@[inherit_doc NumValues] abbrev Levels : ℕ := 6
-@[inherit_doc NumValues] abbrev Params : ℕ := 7
-@[inherit_doc NumValues] abbrev Free : ℕ := 8
-@[inherit_doc NumValues] abbrev Ans : ℕ := 9
-@[inherit_doc NumValues] abbrev Beta : ℕ := 10
-@[inherit_doc NumValues] abbrev Total : ℕ := 11
+slots NumValues
+slots Result Val Table Digits Out0 MaxLen Levels Params Free Ans Beta Total
 
 end Grid
 
@@ -122,11 +98,10 @@ theorem GridPre.down {r : ℕ → ℕ → Need} {a : FrontArgs} {d f e : ℕ}
   have hword := H.ok.word
   have hdepth := H.ok.depth
   have hlog := Nat.log_lt_self 2 (x := 2 * a.V) (by omega)
-  simp only [gridNeed] at hword hdepth
-  push_cast at hword
+  simp [gridNeed] at hword hdepth
   have hlam : a.Λ ≤ 2 * a.V := by rw [H.lam, Lam]; omega
   exact ⟨by omega, by omega, H.V_pos, H.m_pos, H.lam, H.primes,
-    H.ok.mono (by simp [gridNeed]) (by simp [gridNeed]) (by simp only [gridNeed]; omega)⟩
+    H.ok.mono (by rfl) (by rfl) (by grind [gridNeed])⟩
 
 /-! ## row -/
 
@@ -146,10 +121,9 @@ theorem RowSum.succ {S : ℕ → Bool → Prop} {i : ℕ} {acc : ℤ} (h : RowSu
   have htrue := flag_mem (S i true)
   have hsplit : (∃ β' < i + 1, ∃ v, S β' v) ↔ (∃ β' < i, ∃ v, S β' v) ∨ S i false ∨ S i true := by
     rw [Nat.exists_lt_succ_right, Bool.exists_bool]
-  refine ⟨by omega, by push_cast; omega, ?_⟩
+  refine ⟨by omega, by omega, ?_⟩
   rw [hsplit, ← h.pos_iff]
-  by_cases hf : S i false <;> by_cases ht : S i true <;>
-    simp [flag_of, flag_of_not, hf, ht] <;> omega
+  grind [flag_of, flag_of_not]
 
 section row
 
@@ -175,12 +149,12 @@ theorem rowRound_ends (hRound : RoundSpec lim P pRound T r) (hmem : FrontMem μ 
   have hlow := hsum.nonneg
   have hhigh := hsum.le
   -- x := round(β, β', 0, nd, val, bt, Λ, A, n, f, cx, fr)
-  light_call (hRound a f β i false μ' (hmem.keptBut kept) hβ hi (d + 1) H')
+  light_call (hRound a f β i false μ' (hmem.keptBut kept) hβ hi _ H')
     with _ μ₁ ⟨rfl, kept₁⟩
   -- sum := sum + x
   light_set (acc + flag (a.Yes f β i false))
   -- x := round(β, β', 1, nd, val, bt, Λ, A, n, f, cx, fr)
-  light_call (hRound a f β i true μ₁ (hmem.keptBut (kept.trans kept₁)) hβ hi (d + 1) H')
+  light_call (hRound a f β i true μ₁ (hmem.keptBut (kept.trans kept₁)) hβ hi _ H')
     with _ μ₂ ⟨rfl, kept₂⟩
   -- sum := sum + x
   light_set (acc + flag (a.Yes f β i false) + flag (a.Yes f β i true))
@@ -197,19 +171,19 @@ theorem row_spec {p : ℕ} (hP : P[p]? = some (rowBody pRound))
   refine Ends.setToThen 0 ?_ (hT := by simp [tRow])
   -- for β' < Λ
   refine Ends.next _ (Ends.for (RowInv μ a f β) a.Λ (2 * tRound T a.n a.V a.m a.np f + 36)
-    ?start ?round ?done ?bound (hT := le_rfl)) (by simp [tRow]; ring_nf; omega)
-  case start =>
+    ?_ ?_ ?_ ?_ (hT := le_rfl)) (by simp [tRow]; linarith)
+  ·
     -- The last local has not been written yet and is 0.
     exact ⟨0, 0, μ, ⟨le_rfl, by simp, by simp⟩, .refl,
       by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl⟩
-  case round => exact fun i σ hi _ hσ => rowRound_ends hRound hmem hβ H hi hσ
-  case done =>
+  · grind [rowRound_ends]
+  ·
     rintro _ - ⟨acc, x, μ', hsum, kept, rfl⟩
     -- return the sum
     exact Ends.setTo acc
       ⟨by simpa using hsum.nonneg, by simpa using hsum.le, by simpa using hsum.pos_iff, kept⟩
-      (hT := by simp [tRow]; ring_nf; omega)
-  case bound =>
+      (hT := by simp [tRow]; grind)
+  ·
     rintro i _ - - ⟨acc, x, μ', -, -, rfl⟩
     simp
 
@@ -240,13 +214,13 @@ theorem gridRound_ends (hRow : RowSpec lim P pRow T r) (hmem : FrontMem μ a)
   obtain ⟨x, μ', kept, rfl⟩ := hσ
   obtain ⟨hword, hd, H'⟩ := H.down
   -- sum := row(β, nd, val, bt, Λ, A, n, f, cx, fr)
-  light_call (hRow a f i μ' (hmem.keptBut kept) hi (d + 1) H') with sum μ₁ ⟨-, -, hpos, kept₁⟩
+  light_call (hRow a f i μ' (hmem.keptBut kept) hi _ H') with sum μ₁ ⟨-, -, hpos, kept₁⟩
   -- if 0 < sum then answer := 1
-  refine Ends.iteLast (fun hyes => ?_) (fun hno => ?_)
-  · have hrow := hpos.1 (by simpa using hyes)
+  refine Ends.iteLast (fun hyes => ?_) fun hno => ?_
+  · have hrow := hpos.1 (by assumption)
     exact Ends.setTo 1 ⟨by simp, sum, μ₁, kept.trans kept₁, by
       rw [update_frame_setLocal, flag_of (Nat.exists_lt_succ_right.2 (Or.inr hrow))]; rfl⟩
-  · have hrow : ¬ a.RowYes f i := fun h => hno (by simpa using hpos.2 h)
+  · have hrow : ¬ a.RowYes f i := by simp_all
     refine Ends.skip ⟨by simp, sum, μ₁, kept.trans kept₁, ?_⟩
     rw [update_frame_setLocal, flag_congr (Nat.exists_lt_succ_right.trans (or_iff_left hrow))]
     rfl
@@ -261,20 +235,16 @@ theorem grid_spec {p : ℕ} (hP : P[p]? = some (gridBody pRow)) (hRow : RowSpec 
   refine Ends.setToThen 0 ?_ (hT := by simp [tGrid])
   -- for β < Λ
   refine Ends.next _ (Ends.for (GridInv μ a f) a.Λ (tRow T a.n a.V a.m a.np f a.Λ + 18)
-    ?start ?round ?done ?bound (hT := le_rfl)) (by simp [tGrid]; ring_nf; omega)
-  case start =>
+    ?_ ?_ ?_ ?_ (hT := le_rfl)) (by simp [tGrid]; linarith)
+  ·
     exact ⟨0, μ, .refl, by
-      rw [update_frame_setLocal, ← frame_append_zeros _ 1, flag_of_not (by simp)]; rfl⟩
-  case round => exact fun i σ hi _ hσ => gridRound_ends hRow hmem H hi hσ
-  case done =>
+      rw [update_frame_setLocal, ← frame_append_zeros _ 1, flag_of_not]; rfl⟩
+  · grind [gridRound_ends]
+  ·
     rintro _ - ⟨x, μ', kept, rfl⟩
     -- return the answer
     exact Ends.setTo (flag (∃ β < a.Λ, a.RowYes f β)) ⟨rfl, kept⟩
-      (hT := by simp [tGrid]; ring_nf; omega)
-  case bound =>
+      (hT := by simp [tGrid]; grind)
+  ·
     rintro i _ - - ⟨x, μ', -, rfl⟩
     simp
-
-end grid
-
-end Light.Sec3.ChanHe

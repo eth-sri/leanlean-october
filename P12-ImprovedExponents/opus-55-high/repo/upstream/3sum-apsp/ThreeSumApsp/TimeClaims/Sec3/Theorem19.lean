@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec3.Theorem19
-public import ThreeSumApsp.TimeClaims.Sec3.Arithmetic
-public import ThreeSumApsp.Util.Asymptotics.LogU
+import ThreeSumApsp.Sec3.Theorem19
+import ThreeSumApsp.TimeClaims.Sec3.Arithmetic
+import ThreeSumApsp.Util.Asymptotics.LogU
 
 /-!
 # Theorem 19 from Theorem 17 and Corollaries 15 and 16
@@ -30,7 +29,6 @@ brute force (`dominated_bruteForce`), large sizes by the explicit bound with
 `κ = max 1 (log u / log s)` (`dominated_explicit`).
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp
 
@@ -44,5 +42,3 @@ structure SizeBound where
   s : ℕ
   /-- The bound on the absolute values of the weights. -/
   u : ℝ
-
-end ThreeSumApsp

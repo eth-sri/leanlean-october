@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.Copy
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.SizeTable
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.StrassenFacts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.Copy
+import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.SizeTable
+import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.StrassenFacts
 
 /-!
 # Strassen's algorithm for matrices over ℤ[x]/(x^p - 1) in Z-order
@@ -30,7 +30,6 @@ segment.  szt is the address of the table of the sizes 4^i p, and scr is scratch
   The recursion `strSteps` is bounded where the running times are added up.
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
@@ -40,32 +39,13 @@ open ThreeSumApsp ThreeSumApsp.Spec
 
 /-- The numbers of the procedures that Strassen's algorithm consists of. -/
 structure StrNums : Type where
-  pVlin : ℕ
-  pCconv : ℕ
-  pFill : ℕ
-  pPhase : ℕ
-  pStr : ℕ
+  (pVlin pCconv pFill pPhase pStr : ℕ)
 
 namespace Phase
 
-/-- The local variables of phase: the arguments a1, a2, sA, b1, b2, sB, c1, s1, c2, s2, j, szt, p,
+/- The local variables of phase: the arguments a1, a2, sA, b1, b2, sB, c1, s1, c2, s2, j, szt, p,
 scr, q, and a local that takes the results of the calls. -/
-abbrev OpA1 : ℕ := 0
-@[inherit_doc OpA1] abbrev OpA2 : ℕ := 1
-@[inherit_doc OpA1] abbrev SignA : ℕ := 2
-@[inherit_doc OpA1] abbrev OpB1 : ℕ := 3
-@[inherit_doc OpA1] abbrev OpB2 : ℕ := 4
-@[inherit_doc OpA1] abbrev SignB : ℕ := 5
-@[inherit_doc OpA1] abbrev Out1 : ℕ := 6
-@[inherit_doc OpA1] abbrev Sign1 : ℕ := 7
-@[inherit_doc OpA1] abbrev Out2 : ℕ := 8
-@[inherit_doc OpA1] abbrev Sign2 : ℕ := 9
-@[inherit_doc OpA1] abbrev Level : ℕ := 10
-@[inherit_doc OpA1] abbrev Sizes : ℕ := 11
-@[inherit_doc OpA1] abbrev Prime : ℕ := 12
-@[inherit_doc OpA1] abbrev Scr : ℕ := 13
-@[inherit_doc OpA1] abbrev Size : ℕ := 14
-@[inherit_doc OpA1] abbrev Res : ℕ := 15
+slots OpA1 OpA2 SignA OpB1 OpB2 SignB Out1 Sign1 Out2 Sign2 Level Sizes Prime Scr Size Res
 
 end Phase
 
@@ -92,21 +72,11 @@ def phaseBody (ν : StrNums) : Stmt :=
 
 namespace Str
 
-/-- The local variables of strassen: the arguments dst, a, b, j, szt, p, scr; the numbers q, 2q, 3q,
+/- The local variables of strassen: the arguments dst, a, b, j, szt, p, scr; the numbers q, 2q, 3q,
 where q is the size of a quarter; j - 1; a local that is not used; a local that takes the results of
 the calls. -/
-abbrev Dst : ℕ := 0
-@[inherit_doc Dst] abbrev ArgA : ℕ := 1
-@[inherit_doc Dst] abbrev ArgB : ℕ := 2
-@[inherit_doc Dst] abbrev Level : ℕ := 3
-@[inherit_doc Dst] abbrev Sizes : ℕ := 4
-@[inherit_doc Dst] abbrev Prime : ℕ := 5
-@[inherit_doc Dst] abbrev Scr : ℕ := 6
-@[inherit_doc Dst] abbrev Size1 : ℕ := 7
-@[inherit_doc Dst] abbrev Size2 : ℕ := 8
-@[inherit_doc Dst] abbrev Size3 : ℕ := 9
-@[inherit_doc Dst] abbrev Below : ℕ := 10
-@[inherit_doc Dst] abbrev Res : ℕ := 12
+slots Dst ArgA ArgB Level Sizes Prime Scr Size1 Size2 Size3 Below
+slots 12 Res
 
 end Str
 
@@ -251,9 +221,7 @@ abbrev prod : List ℤ := phaseM x.p j x.sA x.A1 x.A2 x.sB x.B1 x.B2
 /-- The arguments of the recursive call: S stands at scr, T at scr + q, the product goes to
 scr + 2 q, and the scratch space begins at scr + 3 q. -/
 @[simp] def inner : StrArgs :=
-  { dst := x.scr + x.q + x.q, a := x.scr, b := x.scr + x.q, szt := x.szt, p := x.p
-    scr := x.scr + x.q + x.q + x.q, len := x.q, J := x.J, A := x.S, B := x.T
-    α := 2 * x.α, β := 2 * x.β }
+  ⟨x.scr + x.q + x.q, x.scr, x.scr + x.q, x.szt, x.p, x.scr + x.q + x.q + x.q, x.q, x.J, x.S, x.T, 2 * x.α, 2 * x.β⟩
 
 end PhaseArgs
 
@@ -311,7 +279,7 @@ theorem absLe_prod (pre : PhasePre lim μ j x) :
     AbsLe (x.prod j) (strassenBound x.p j (2 * x.α) (2 * x.β)) := by
   have hα := pre.oneA
   have hβ := pre.oneB
-  exact absLe_strassenList x.p j _ _ (2 * x.α) (2 * x.β)
+  exact absLe_strassenList x.p j _ _ _ _
     ((pre.opA1.bound.vlinList pre.opA2.bound pre.signA).trans_le (by omega))
     ((pre.opB1.bound.vlinList pre.opB2.bound pre.signB).trans_le (by omega)) (by omega) (by omega)
 
@@ -335,9 +303,7 @@ theorem inner (pre : PhasePre lim μ j x) (segS : Seg μ x.scr x.S)
   have space := pre.space_inner
   light_facts pre
   exact
-    { size := pre.size, prime := pre.prime, table := pre.table.mono
-      opA := pre.opA1.vlinList pre.opA2.len pre.opA2.bound pre.signA segS
-      opB := pre.opB1.vlinList pre.opB2.len pre.opB2.bound pre.signB segT }
+    Light.Sec3.StrPre.mk pre.size pre.prime (pre.opA1.vlinList pre.opA2.len pre.opA2.bound pre.signA segS) (pre.opB1.vlinList pre.opB2.len pre.opB2.bound pre.signB segT) pre.table.mono
 
 end PhasePre
 
@@ -356,11 +322,11 @@ theorem phaseOpnds_spec (pre : PhasePre lim μ j x) (hd : d < lim.depth) :
   have lenS := length_vlinList x.sA pre.opA1.len pre.opA2.len
   light_facts pre.opA1 pre.opA2 pre.opB1 pre.opB2
   -- S := a1 + sA a2
-  light_call (vlin_meets prog.vlin hw (dst := x.scr) (V := x.α)
-    { opA := pre.opA1.mono, opB := pre.opA2.mono, sign := pre.signA }) with _ μ₁ ⟨segS, rest₁⟩
+  light_call (vlin_meets prog.vlin hw (dst := x.scr)
+    (Light.Sec3.VlinPre.mk pre.opA1.mono pre.opA2.mono pre.signA)) with _ μ₁ ⟨segS, rest₁⟩
   -- T := b1 + sB b2
-  light_call (vlin_meets prog.vlin hw (dst := x.scr + x.q) (V := x.β)
-    { opA := pre.opB1.keep.mono, opB := pre.opB2.keep.mono, sign := pre.signB })
+  light_call (vlin_meets prog.vlin hw (dst := x.scr + x.q)
+    (Light.Sec3.VlinPre.mk pre.opB1.keep.mono pre.opB2.keep.mono pre.signB))
     with r μ₂ ⟨segT, rest₂⟩
   exact ⟨r, μ₂, rfl, segS.keep, segT, by light_keep⟩
 
@@ -378,15 +344,15 @@ theorem phaseAccum_spec (pre : PhasePre lim μ j x) (segM : Seg μ (x.scr + x.q 
   have hB0 := pre.bound_nonneg
   have len1 := length_vlinList x.s1 pre.out1.len pre.length_prod
   light_facts pre.out1 pre.out2
-  have opM : ArrayAt μ (x.scr + x.q + x.q) (x.prod j) x.q (2 * strassenBound x.p (j + 1) x.α x.β)
+  have opM : ArrayAt μ _ _ x.q (2 * strassenBound x.p (j + 1) x.α x.β)
       lim.space :=
-    { len := pre.length_prod, seg := segM, bound := pre.absLe_prod.trans_le (by omega) }
+    Light.ArrayAt.mk pre.length_prod segM pre.absLe_prod.trans_le
   -- c1 := c1 + s1 M
   light_call (vlin_meets prog.vlin hw (dst := x.c1)
-    { opA := pre.out1.mono, opB := opM, sign := pre.sign1 }) with _ μ₁ ⟨seg1, rest₁⟩
+    (Light.Sec3.VlinPre.mk pre.out1.mono opM pre.sign1)) with _ μ₁ ⟨seg1, rest₁⟩
   -- c2 := c2 + s2 M
   light_call (vlin_meets prog.vlin hw (dst := x.c2)
-    { opA := pre.out2.keep.mono, opB := opM.keep, sign := pre.sign2 }) with _ μ₂ ⟨seg2, rest₂⟩
+    (Light.Sec3.VlinPre.mk pre.out2.keep.mono opM.keep pre.sign2)) with _ μ₂ ⟨seg2, rest₂⟩
   exact ⟨seg1.keep, seg2, by light_keep⟩
 
 /-- **A phase** adds s1 M to c1 and s2 M to c2, where M = (a1 + sA a2) · (b1 + sB b2), and changes
@@ -397,12 +363,12 @@ theorem phase_meets (H : StrSpec lim P ν j) (pre : PhasePre lim μ j x)
       PhasePost μ j x := by
   have space := pre.space_inner
   have hscr : strScr x.p (j + 1) = 3 * x.q + strScr x.p j := by rw [strScr, pre.size]
-  refine Meets.of_body prog.phase ?_
+  apply Meets.of_body prog.phase
   -- S := a1 + sA a2; T := b1 + sB b2
   light_piece (phaseOpnds_spec prog hw pre (by omega)) with _ ⟨r, μ₁, rfl, segS, segT, rest₁⟩
   -- M := S · T
   light_call (H x.inner μ₁ (pre.keep.inner segS segT) _ (by omega)) with r' μ₂ ⟨segM, rest₂⟩
-  dsimp only [PhaseArgs.inner] at segM rest₂
+  dsimp [PhaseArgs.inner] at segM rest₂
   -- c1 := c1 + s1 M; c2 := c2 + s2 M
   light_piece (phaseAccum_spec prog hw pre.keep segM (by omega) r') with σ' ⟨seg1, seg2, rest₃⟩
   exact ⟨seg1, seg2, by light_keep⟩
@@ -435,13 +401,7 @@ structure PhaseRow.Ok (row : PhaseRow) : Prop where
 /-- The arguments of the phase of a row, called from strassen with the arguments x, when a
 quarter has q numbers and the four quarters of dst hold the lists L 0, …, L 3. -/
 @[simp] def StrArgs.phase (x : StrArgs) (q : ℕ) (L : ℕ → List ℤ) (row : PhaseRow) : PhaseArgs :=
-  { a1 := x.a + row.a1 * q, a2 := x.a + row.a2 * q, sA := row.sA
-    b1 := x.b + row.b1 * q, b2 := x.b + row.b2 * q, sB := row.sB
-    c1 := x.dst + row.c1 * q, s1 := row.s1, c2 := x.dst + row.c2 * q, s2 := row.s2
-    szt := x.szt, p := x.p, scr := x.scr, q := q, J := x.J
-    A1 := quarter q row.a1 x.A, A2 := quarter q row.a2 x.A
-    B1 := quarter q row.b1 x.B, B2 := quarter q row.b2 x.B
-    C1 := L row.c1, C2 := L row.c2, α := x.α, β := x.β }
+  ⟨x.a + row.a1 * q, x.a + row.a2 * q, row.sA, x.b + row.b1 * q, x.b + row.b2 * q, row.sB, x.dst + row.c1 * q, row.s1, x.dst + row.c2 * q, row.s2, x.szt, x.p, x.scr, q, x.J, quarter q row.a1 x.A, quarter q row.a2 x.A, quarter q row.b1 x.B, quarter q row.b2 x.B, L row.c1, L row.c2, x.α, x.β⟩
 
 /-- The four lists after the phase of a row. -/
 def StrArgs.after (x : StrArgs) (j q : ℕ) (L : ℕ → List ℤ) (row : PhaseRow) : ℕ → List ℤ :=
@@ -460,22 +420,14 @@ structure StrInv (lim : Limits) (μ : ℕ → ℤ) (j q : ℕ) (x : StrArgs) (L 
 /-- Two different quarters do not meet. -/
 theorem quarter_apart {t t' : ℕ} (q : ℕ) (h : t ≠ t') :
     t * q + q ≤ t' * q ∨ t' * q + q ≤ t * q :=
-  (Nat.lt_or_gt_of_ne h).imp (fun h' => Nat.mul_add_le_mul h' le_rfl)
-    fun h' => Nat.mul_add_le_mul h' le_rfl
+  (Nat.lt_or_gt_of_ne h).imp fun h' => by nlinarith
+    fun h' => by nlinarith
 
 /-- A property of the four lists after two of them have been replaced. -/
 theorem forall_update_update {Φ : ℕ → List ℤ → Prop} {L : ℕ → List ℤ} {t₁ t₂ : ℕ}
     {X₁ X₂ : List ℤ} (h : ∀ t < 4, t ≠ t₁ → t ≠ t₂ → Φ t (L t)) (h₁ : Φ t₁ X₁) (h₂ : Φ t₂ X₂) :
     ∀ t < 4, Φ t (Function.update (Function.update L t₁ X₁) t₂ X₂ t) := by
-  intro t ht
-  by_cases e₂ : t = t₂
-  · rw [e₂, Function.update_self]
-    exact h₂
-  by_cases e₁ : t = t₁
-  · rw [Function.update_of_ne e₂, e₁, Function.update_self]
-    exact h₁
-  · rw [Function.update_of_ne e₂, Function.update_of_ne e₁]
-    exact h t ht e₁ e₂
+  grind
 
 section step
 
@@ -493,25 +445,20 @@ theorem phasePre (inv : StrInv lim μ j q x L κ) (hκ : κ ≤ 7) (hr : row.Ok)
     PhasePre lim μ j (x.phase q L row) := by
   have hB0 : 0 ≤ strassenBound x.p j (2 * x.α) (2 * x.β) :=
     strassenBound_nonneg (by have := inv.oneA; omega) (by have := inv.oneB; omega)
-  have hbound : (κ : ℤ) * strassenBound x.p j (2 * x.α) (2 * x.β) ≤
+  have hbound : κ * strassenBound x.p j (2 * x.α) (2 * x.β) ≤
       2 * strassenBound x.p (j + 1) x.α x.β := by
     rw [strassenBound_succ]
-    calc (κ : ℤ) * strassenBound x.p j (2 * x.α) (2 * x.β)
+    calc κ * strassenBound x.p j _ _
         ≤ 8 * strassenBound x.p j (2 * x.α) (2 * x.β) :=
-          mul_le_mul_of_nonneg_right (by exact_mod_cast hκ.trans (by norm_num)) hB0
-      _ = 2 * (4 * strassenBound x.p j (2 * x.α) (2 * x.β)) := by ring
+          by bound
+      _ = 2 * (4 * strassenBound x.p j _ _) := by ring
   have hq := inv.size_eq
-  have opA := (hq ▸ inv.opA).mono le_rfl (Nat.le_of_add_right_le inv.dstBelow)
-  have opB := (hq ▸ inv.opB).mono le_rfl (Nat.le_of_add_right_le inv.dstBelow)
+  have opA := hq ▸ inv.opA.mono le_rfl (Nat.le_of_add_right_le inv.dstBelow)
+  have opB := hq ▸ inv.opB.mono le_rfl (Nat.le_of_add_right_le inv.dstBelow)
   have hapart := quarter_apart q hr.ne
   light_facts inv.toStrPre
   exact
-    { size := inv.quarterLen, prime := inv.prime, table := inv.table.mono
-      opA1 := opA.quarter hr.a1, opA2 := opA.quarter hr.a2
-      opB1 := opB.quarter hr.b1, opB2 := opB.quarter hr.b2
-      out1 := (inv.out _ hr.c1).mono hbound le_rfl, out2 := (inv.out _ hr.c2).mono hbound le_rfl
-      signA := hr.sA, signB := hr.sB, sign1 := hr.s1, sign2 := hr.s2
-      oneA := inv.oneA, oneB := inv.oneB, word := inv.word, space := inv.space }
+    Light.Sec3.PhasePre.mk inv.quarterLen inv.prime (opA.quarter hr.a1) (opA.quarter hr.a2) (opB.quarter hr.b1) (opB.quarter hr.b2) ((inv.out _ hr.c1).mono hbound le_rfl) ((inv.out _ hr.c2).mono hbound le_rfl) inv.table.mono hr.sA hr.sB hr.s1 hr.s2 inv.oneA inv.oneB inv.word inv.space
 
 /-- The state after a phase: two of the four lists are replaced, the rest is as before. -/
 theorem step (inv : StrInv lim μ j q x L κ) (hκ : κ ≤ 7) (hr : row.Ok)
@@ -519,27 +466,21 @@ theorem step (inv : StrInv lim μ j q x L κ) (hκ : κ ≤ 7) (hr : row.Ok)
     StrInv lim μ' j q x (x.after j q L row) (κ + 1) := by
   have pre := inv.phasePre hκ hr
   have hB0 : 0 ≤ strassenBound x.p j (2 * x.α) (2 * x.β) := pre.bound_nonneg
-  have hsucc : ((κ + 1 : ℕ) : ℤ) * strassenBound x.p j (2 * x.α) (2 * x.β) =
+  have hsucc : (κ + 1) * strassenBound x.p j (2 * x.α) (2 * x.β) =
       κ * strassenBound x.p j (2 * x.α) (2 * x.β) + strassenBound x.p j (2 * x.α) (2 * x.β) := by
-    push_cast
-    ring
-  have hq := inv.size_eq
+    grind
   have dstBelow := inv.dstBelow
   have same : SameOutside3 μ μ' (x.dst + row.c1 * q) q (x.dst + row.c2 * q) q x.scr
-      (strScr x.p (j + 1)) := post.same
-  have pre' : StrPre lim μ' (j + 1) x := inv.toStrPre.keep
+      _ := post.same
   refine
-    { toStrPre := pre'
-      quarterLen := inv.quarterLen
-      out := forall_update_update
-        (Φ := fun t X => ArrayAt μ' (x.dst + t * q) X q _ x.scr) (fun t ht e₁ e₂ => ?_)
+    ⟨inv.toStrPre.keep, inv.quarterLen, forall_update_update
+        (Φ := fun t X => ArrayAt μ' _ X q _ x.scr) (fun t ht e₁ e₂ => ?_)
         ((inv.out _ hr.c1).vlinList pre.length_prod pre.absLe_prod hr.s1 post.out1 hsucc.ge
           pre.out1.below)
         ((inv.out _ hr.c2).vlinList pre.length_prod pre.absLe_prod hr.s2 post.out2 hsucc.ge
-          pre.out2.below) }
+          pre.out2.below)⟩
   · have hapart₁ := quarter_apart q e₁
     have hapart₂ := quarter_apart q e₂
-    have hin : t * q + q ≤ 4 * q := Nat.mul_add_le_mul ht le_rfl
     exact (inv.out t ht).keep.mono
 
 end StrInv
@@ -566,25 +507,15 @@ end step
 theorem seg_of_quarters {μ : ℕ → ℤ} {dst q : ℕ} {L : ℕ → List ℤ}
     (seg : ∀ t < 4, Seg μ (dst + t * q) (L t)) (len : ∀ t < 4, (L t).length = q) :
     Seg μ dst (L 0 ++ L 1 ++ L 2 ++ L 3) := by
-  rw [seg_append, seg_append, seg_append]
-  simp only [List.length_append, len 0 (by omega), len 1 (by omega), len 2 (by omega)]
-  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
-  · simpa using seg 0 (by omega)
-  · simpa using seg 1 (by omega)
-  · rw [show dst + (q + q) = dst + 2 * q by ring]
-    exact seg 2 (by omega)
-  · rw [show dst + (q + q + q) = dst + 3 * q by ring]
-    exact seg 3 (by omega)
+  grind [seg_append]
 
 /-- A quarter of a cleared segment is cleared. -/
 theorem seg_zeros_quarter {μ : ℕ → ℤ} {dst q t : ℕ} (h : Seg μ dst (List.replicate (4 * q) 0))
     (ht : t < 4) : Seg μ (dst + t * q) (zeros q) := by
   intro i hi
-  have hi' : i < q := by simpa [zeros] using hi
-  have hin : t * q + q ≤ 4 * q := Nat.mul_add_le_mul ht le_rfl
-  have hcell := h (t * q + i) (by simp; omega)
-  rw [List.getElem_replicate, ← Nat.add_assoc] at hcell
-  simpa [zeros] using hcell
+  have hin : t * q + q ≤ 4 * q := by nlinarith
+  have hcell := h (t * q + i) (by grind)
+  grind
 
 /-! ## The seven phases -/
 
@@ -607,42 +538,32 @@ theorem sevenPhases_spec (H : StrSpec lim P ν j)
   have hd' : d + 1 + 2 * j + 2 ≤ lim.depth := by omega
   light_facts inv.toStrPre inv.opA inv.opB
   -- M₁ = (a₀ + a₃) (b₀ + b₃) goes to the quarters 0 and 3
-  refine Ends.callToThen (phase_step prog hw H inv hd' ⟨0, 3, 1, 0, 3, 1, 0, 1, 3, 1⟩) ?_
-    (hT := by simp; omega)
+  apply Ends.callToThen (phase_step prog hw H inv hd' ⟨0, 3, 1, 0, 3, 1, 0, 1, 3, 1⟩)
   rintro _ μ₁ ⟨inv₁, rest₁⟩
   -- M₂ = (a₂ + a₃) b₀ goes to 2 and, with the sign -1, to 3
-  refine Ends.callToThen (phase_step prog hw H inv₁ hd' ⟨2, 3, 1, 0, 0, 0, 2, 1, 3, -1⟩) ?_
-    (hT := by simp; omega)
+  apply Ends.callToThen (phase_step prog hw H inv₁ hd' ⟨2, 3, 1, 0, 0, 0, 2, 1, 3, -1⟩)
   rintro _ μ₂ ⟨inv₂, rest₂⟩
   -- M₃ = a₀ (b₁ - b₃) goes to 1 and 3
-  refine Ends.callToThen (phase_step prog hw H inv₂ hd' ⟨0, 0, 0, 1, 3, -1, 1, 1, 3, 1⟩) ?_
-    (hT := by simp; omega)
+  apply Ends.callToThen (phase_step prog hw H inv₂ hd' ⟨0, 0, 0, 1, 3, -1, 1, 1, 3, 1⟩)
   rintro _ μ₃ ⟨inv₃, rest₃⟩
   -- M₄ = a₃ (b₂ - b₀) goes to 0 and 2
-  refine Ends.callToThen (phase_step prog hw H inv₃ hd' ⟨3, 3, 0, 2, 0, -1, 0, 1, 2, 1⟩) ?_
-    (hT := by simp; omega)
+  apply Ends.callToThen (phase_step prog hw H inv₃ hd' ⟨3, 3, 0, 2, 0, -1, 0, 1, 2, 1⟩)
   rintro _ μ₄ ⟨inv₄, rest₄⟩
   -- M₅ = (a₀ + a₁) b₃ goes, with the sign -1, to 0, and to 1
-  refine Ends.callToThen (phase_step prog hw H inv₄ hd' ⟨0, 1, 1, 3, 3, 0, 0, -1, 1, 1⟩) ?_
-    (hT := by simp; omega)
+  apply Ends.callToThen (phase_step prog hw H inv₄ hd' ⟨0, 1, 1, 3, 3, 0, 0, -1, 1, 1⟩)
   rintro _ μ₅ ⟨inv₅, rest₅⟩
   -- M₆ = (a₂ - a₀) (b₀ + b₁) goes to 3
-  refine Ends.callToThen (phase_step prog hw H inv₅ hd' ⟨2, 0, -1, 0, 1, 1, 3, 1, 0, 0⟩) ?_
-    (hT := by simp; omega)
+  apply Ends.callToThen (phase_step prog hw H inv₅ hd' ⟨2, 0, -1, 0, 1, 1, 3, 1, 0, 0⟩)
   rintro _ μ₆ ⟨inv₆, rest₆⟩
   -- M₇ = (a₁ - a₃) (b₂ + b₃) goes to 0
-  refine Ends.callTo (phase_step prog hw H inv₆ hd' ⟨1, 3, -1, 2, 3, 1, 0, 1, 3, 0⟩) ?_
-    (hT := by simp; omega)
+  apply Ends.callTo (phase_step prog hw H inv₆ hd' ⟨1, 3, -1, 2, 3, 1, 0, 1, 3, 0⟩)
   rintro _ μ₇ ⟨inv₇, rest₇⟩
   -- The four lists are the four quadrants of the product.
   have hseg := seg_of_quarters (fun t ht => (inv₇.out t ht).seg) fun t ht => (inv₇.out t ht).len
-  simp only [StrArgs.after, StrArgs.phase, Function.update_apply, Nat.reduceEqDiff, reduceIte,
-    OfNat.zero_ne_ofNat, OfNat.ofNat_ne_zero, OfNat.one_ne_ofNat, OfNat.ofNat_ne_one, zero_ne_one,
-    one_ne_zero] at hseg
   have key := strassenList_succ_eq_phases x.p j x.A x.B (inv.opA.len.trans inv.size)
     (inv.opB.len.trans inv.size)
-  simp only [← inv.quarterLen] at key
-  exact ⟨key ▸ hseg, by light_keep⟩
+  simp [← inv.quarterLen] at key
+  exact ⟨by aesop, by light_keep⟩
 
 /-! ## The two cases and the induction -/
 
@@ -650,17 +571,15 @@ theorem sevenPhases_spec (H : StrSpec lim P ν j)
 theorem strassen_zero : StrSpec lim P ν 0 := by
   intro x μ pre d hd
   have hq : x.len = x.p := by simpa using pre.size
-  have hword : (x.p : ℤ) * (x.α * x.β) ≤ lim.word := by
+  have hword : x.p * (x.α * x.β) ≤ lim.word := by
     have h := pre.word
-    have h0 : (0 : ℤ) ≤ x.p * (x.α * x.β) := by have := pre.oneA; have := pre.oneB; positivity
-    rw [strassenBound, pow_zero, one_mul, mul_assoc] at h
-    omega
+    grind [strassenBound]
   light_facts pre pre.opA pre.opB
-  refine Meets.of_body prog.str ?_
+  apply Meets.of_body prog.str
   -- if j = 0 then cconv(dst, a, b, p)
-  refine Ends.iteLast (fun _ => ?_) (fun hc => absurd (by simp) hc) (hT := by simp [strSteps])
+  refine Ends.iteLast (fun _ => ?_) (by simp) (hT := by simp [strSteps])
   refine Ends.callTo (cconv_meets prog.cconv hw (dst := x.dst)
-    { opA := (hq ▸ pre.opA).mono, opB := (hq ▸ pre.opB).mono, word := hword }) ?_
+    (Light.Sec3.CconvPre.mk (hq ▸ pre.opA).mono (hq ▸ pre.opB).mono hword)) ?_
     (hT := by simp [strSteps]; omega)
   rintro _ μ' ⟨seg, rest⟩
   exact ⟨seg, by light_keep⟩
@@ -668,31 +587,27 @@ theorem strassen_zero : StrSpec lim P ν 0 := by
 /-- **Level j + 1**: clear the result, then the seven phases. -/
 theorem strassen_succ (H : StrSpec lim P ν j) : StrSpec lim P ν (j + 1) := by
   intro x μ pre d hd
-  obtain ⟨q, hq⟩ : ∃ q, q = 4 ^ j * x.p := ⟨_, rfl⟩
+  obtain ⟨q, hq⟩ : ∃ q, q = 4 ^ j * x.p := by simp
   have hsize : x.len = 4 * q := by rw [pre.size, hq]; ring
   light_facts pre pre.opA pre.opB pre.table
   have hread : μ (x.szt + j) = q := by
     rw [pre.table.read (by omega), hq]
-    simp [szList, show j < x.J + 1 by omega]
-  refine Meets.of_body prog.str ?_
-  rw [show strSteps x.p (j + 1) = 7 * strSteps x.p j + 696 * q + 900 by rw [strSteps, hq]]
+    grind [szList]
+  apply Meets.of_body prog.str
+  rw [show strSteps x.p _ = 7 * strSteps x.p j + 696 * q + 900 by aesop]
   -- if level = 0 … else; the level is j + 1
   refine Ends.iteLast (fun hc => absurd hc (by simp; omega)) fun _ => ?_
   -- below := level - 1, which is j; q := szt[below]; q2 := q + q; q3 := q2 + q
   light_set j
   light_set q using hread
-  light_set (2 * q : ℕ)
-  light_set (3 * q : ℕ)
+  light_set (2 * q)
+  light_set (3 * q)
   -- fill(dst, 4 q, 0)
   light_call (fill_meets prog.fill (dst := x.dst) (n := 4 * q) (x := 0) hw (by omega))
     with r μ₁ ⟨segF, rest⟩
-  have inv : StrInv lim μ₁ j q x (fun _ => zeros q) 0 :=
-    { toStrPre := pre.keep
-      quarterLen := hq
-      out := fun t ht =>
-        { len := by simp [zeros], seg := seg_zeros_quarter segF ht
-          bound := by simpa using absLe_zeros q
-          below := by have := Nat.mul_add_le_mul ht (le_refl q); omega } }
+  have inv : StrInv lim μ₁ j q x _ 0 :=
+    ⟨pre.keep, hq, fun t ht =>
+        ⟨by simp, seg_zeros_quarter segF ht, by simpa using absLe_zeros q, by have := Nat.mul_add_le_mul ht (le_refl q); omega⟩⟩
   -- the seven phases
   light_piece (sevenPhases_spec prog hw H inv (by omega) _ _ _) with σ' ⟨seg, rest'⟩
   exact ⟨seg, by light_keep⟩
@@ -701,7 +616,3 @@ theorem strassen_succ (H : StrSpec lim P ν j) : StrSpec lim P ν (j + 1) := by
 theorem strassen_spec : ∀ j, StrSpec lim P ν j
   | 0 => strassen_zero prog hw
   | j + 1 => strassen_succ prog hw (strassen_spec j)
-
-end levels
-
-end Light.Sec3

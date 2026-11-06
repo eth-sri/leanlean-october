@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.SliceFacts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.SliceFacts
 
 /-!
 # Theorem 5 as a program: the pruned recursion on every tile
@@ -24,11 +24,9 @@ the row band β and of the column band β', and the values land in the same cell
   `runBand_ends` a row band, and `runTiles_entry` all of them.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp
 
 /-! ## What the callers may assume
 
@@ -42,69 +40,43 @@ structure TilesArgs : Type where
   (nB L enca encb start sc sv sp p10 : ℕ)
   (w : ℕ) (EA EB : ℕ → List ℤ) (s : ℕ → ℕ) (codes : ℕ → List ℕ) (A B : ℤ)
 
-/-- What runTiles assumes.  Everything that is read lies below SV; then come the w cells of SV and,
-from sp on, the stack of the pruned recursion. -/
-structure TilesPre (lim : Limits) (μ : ℕ → ℤ) (x : TilesArgs) : Prop where
-  hp10 : Seg μ x.p10 (powList 10 (x.L + 1))
-  hea : ∀ β < x.nB, Seg μ (x.enca + β * 10 ^ x.L) (x.EA β)
-  heb : ∀ β < x.nB, Seg μ (x.encb + β * 10 ^ x.L) (x.EB β)
-  lea : ∀ β < x.nB, (x.EA β).length = 10 ^ x.L
-  leb : ∀ β < x.nB, (x.EB β).length = 10 ^ x.L
-  hstart : ∀ t ≤ x.nB * x.nB, μ (x.start + t) = x.s t
-  mono : ∀ t < x.nB * x.nB, x.s t ≤ x.s (t + 1)
-  s_le : x.s (x.nB * x.nB) ≤ x.w
-  hcodes : ∀ t < x.nB * x.nB, SegN μ (x.sc + x.s t) (x.codes t)
-  lcodes : ∀ t < x.nB * x.nB, (x.codes t).length = x.s (t + 1) - x.s t
-  sorted : ∀ t < x.nB * x.nB, (x.codes t).Pairwise (· < ·)
-  small : ∀ t < x.nB * x.nB, ∀ c ∈ x.codes t, c < 10 ^ x.L
-  boundA : ∀ β < x.nB, AbsLe (x.EA β) x.A
-  boundB : ∀ β < x.nB, AbsLe (x.EB β) x.B
-  room : 10 ^ x.L * (x.A * x.B) ≤ lim.word
-  ten : ((10 ^ (x.L + 1) : ℕ) : ℤ) ≤ lim.word
-  p10_le : x.p10 + (x.L + 1) ≤ x.sc := by light_arith
-  enca_le : x.enca + x.nB * 10 ^ x.L ≤ x.sc := by light_arith
-  encb_le : x.encb + x.nB * 10 ^ x.L ≤ x.sc := by light_arith
-  start_le : x.start + (x.nB * x.nB + 1) ≤ x.sc := by light_arith
-  sc_le : x.sc + x.w ≤ x.sv := by light_arith
-  sv_le : x.sv + x.w ≤ x.sp := by light_arith
-  sp_le : x.sp + x.L * (3 * x.w + 11) ≤ lim.space := by light_arith
 
 /-! ## The program -/
 
 namespace TilesLocal
 
-/-- The number nB of bands. -/
-abbrev NB : ℕ := 0
-/-- The number L of levels. -/
-abbrev LL : ℕ := 1
-/-- T = 10^L, the length of an encoding. -/
-abbrev TT : ℕ := 2
-/-- The encoding of the row band β. -/
-abbrev PEA : ℕ := 3
-/-- The encodings of the column bands. -/
-abbrev ENCB : ℕ := 4
-/-- The address of START[t]. -/
-abbrev PST : ℕ := 5
-/-- The codes, sorted. -/
-abbrev SC : ℕ := 6
-/-- The values. -/
-abbrev SV : ℕ := 7
-/-- The stack of the pruned recursion. -/
-abbrev SP : ℕ := 8
-/-- The table of the powers of ten. -/
-abbrev P10 : ℕ := 9
-/-- The row band β. -/
-abbrev CB : ℕ := 10
-/-- The column band β'. -/
-abbrev CC : ℕ := 11
-/-- The encoding of the column band β'. -/
-abbrev PEB : ℕ := 12
-/-- START[t]. -/
-abbrev S0 : ℕ := 13
-/-- START[t + 1]. -/
-abbrev S1 : ℕ := 14
-/-- A result that is not used. -/
-abbrev RES : ℕ := 15
+/- The number nB of bands. -/
+slots NB
+/- The number L of levels. -/
+slots 1 LL
+/- T = 10^L, the length of an encoding. -/
+slots 2 TT
+/- The encoding of the row band β. -/
+slots 3 PEA
+/- The encodings of the column bands. -/
+slots 4 ENCB
+/- The address of START[t]. -/
+slots 5 PST
+/- The codes, sorted. -/
+slots 6 SC
+/- The values. -/
+slots 7 SV
+/- The stack of the pruned recursion. -/
+slots 8 SP
+/- The table of the powers of ten. -/
+slots 9 P10
+/- The row band β. -/
+slots 10 CB
+/- The column band β'. -/
+slots 11 CC
+/- The encoding of the column band β'. -/
+slots 12 PEB
+/- START[t]. -/
+slots 13 S0
+/- START[t + 1]. -/
+slots 14 S1
+/- A result that is not used. -/
+slots 15 RES
 
 end TilesLocal
 
@@ -135,7 +107,7 @@ def runTilesBody : Stmt :=
 
 /-! ## The memory -/
 
-variable {lim : Limits} {x : TilesArgs} {μ μ' : ℕ → ℤ} {β i : ℕ}
+variable {x : TilesArgs} {β i : ℕ}
 
 namespace TilesPre
 
@@ -143,32 +115,15 @@ end TilesPre
 
 /-- The arguments of the call of pruned for the tile (β, i). -/
 @[simp]
-def TilesArgs.tile (x : TilesArgs) (β i : ℕ) : PrunedArgs where
-  aEA := x.enca + β * 10 ^ x.L
-  aEB := x.encb + i * 10 ^ x.L
-  base := 0
-  l := x.sc + x.s (β * x.nB + i)
-  out := x.sv + x.s (β * x.nB + i)
-  sp := x.sp
-  p10 := x.p10
-  Lmax := x.L
-  EA := x.EA β
-  EB := x.EB i
-  codes := x.codes (β * x.nB + i)
-  A := x.A
-  B := x.B
+def TilesArgs.tile (x : TilesArgs) (β i : ℕ) : PrunedArgs := ⟨x.enca + β * 10 ^ x.L, x.encb + i * 10 ^ x.L, 0, x.sc + x.s (β * x.nB + i), x.sv + x.s (β * x.nB + i), x.sp, x.p10, x.L, x.EA β, x.EB i, x.codes (β * x.nB + i), x.A, x.B⟩
 
 section Tile
 
-variable (pre : TilesPre lim μ x) (hβ : β < x.nB) (hi : i < x.nB)
-include pre hβ hi
+variable (hβ : β < x.nB) (hi : i < x.nB)
+include hβ hi
 
 end Tile
 
 /-! ## One tile -/
 
-variable {P : Program} {c e : ℕ}
-
 /-! ## The two loops -/
-
-end Light.Sec2

@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Instance
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Stages
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Time
+import ThreeSumApsp.Programs.Sec2.Theorem5.Instance
+import ThreeSumApsp.Programs.Sec2.Theorem5.Stages
+import ThreeSumApsp.Programs.Sec2.Theorem5.Time
 
 /-!
 # Theorem 5: the solver
@@ -27,11 +26,9 @@ time of the pruned recursions, whatever the sorting permutation, and thm5_time c
 the times with the shape.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp
 
 open ThinArg Solver
 
@@ -49,6 +46,3 @@ def thm5Body : Stmt :=
   findM ;;
   fromShared
 
-variable {lim : Limits} {P : Program} {c d : ℕ}
-
-end Light.Sec2

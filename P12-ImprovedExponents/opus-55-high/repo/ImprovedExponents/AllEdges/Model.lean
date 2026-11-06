@@ -1,9 +1,7 @@
-module
 
-public import ImprovedExponents.AllEdges.Task
-public import ImprovedExponents.HostMid.Claim
+import ImprovedExponents.AllEdges.Task
+import ImprovedExponents.HostMid.Claim
 
-@[expose] public section
 
 /-!
 # The time model in which "Exact Triangle" is the all-edges version
@@ -23,24 +21,16 @@ So a host that solves `aeTask` from a solver of Lop-AE-SparseTri within the boun
 
 namespace ImprovedExponents.AllEdges
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec HostMid
+open Light ThreeSumApsp HostMid
 
 /-- Upstream's `lightModel`, with "Exact Triangle" read as all-edges Exact Triangle. -/
 noncomputable def lightModelAE : DetTimeModel :=
   { lightModel with exactTriangle := SolvedIn aeTask }
 
-@[simp] theorem lightModelAE_exactTriangle :
-    lightModelAE.exactTriangle = SolvedIn aeTask := rfl
 
-@[simp] theorem lightModelAE_lopDetect : lightModelAE.lopDetect = lightModel.lopDetect := rfl
 
-@[simp] theorem lightModelAE_thinProduct :
-    lightModelAE.thinProduct = lightModel.thinProduct := rfl
 
-@[simp] theorem lightModelAE_minPlusProduct :
-    lightModelAE.minPlusProduct = lightModel.minPlusProduct := rfl
 
-@[simp] theorem lightModelAE_apsp : lightModelAE.apsp = lightModel.apsp := rfl
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Claim.lean
 /-- **From an all-edges host to the claim**, as `ImprovedExponents.HostMid.claim17Mid_of_host`:
@@ -56,8 +46,6 @@ theorem claim17MidAE_of_host (MM : ℕ → ℝ) (D g : ℕ → ℕ) (time : (Lis
   refine ⟨C, hC, fun T hT => ?_⟩
   obtain ⟨Q, pS, Tn, r, hpoly, hsolves, hle⟩ := hT
   obtain ⟨R, p', hs, hp⟩ := host Q pS Tn r hpoly hsolves
-  exact ⟨timeUpTo (time Tn), hs.solvedIn hp, fun n κ u h16 hDn hg1 hg hκ hu =>
+  exact ⟨timeUpTo _, hs.solvedIn hp, fun n κ u h16 hDn hg1 hg hκ hu =>
     timeUpTo_le fun U hU =>
       bound Tn T hle n U κ h16 hDn hg1 hg hκ (hU.trans (max_le hu (by positivity)))⟩
-
-end ImprovedExponents.AllEdges

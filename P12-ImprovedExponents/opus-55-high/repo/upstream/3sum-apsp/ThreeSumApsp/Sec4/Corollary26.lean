@@ -1,4 +1,3 @@
-module
-public import ThreeSumApsp.Sec4.ParameterSteps
-public import ThreeSumApsp.Sec4.Table2
-public import ThreeSumApsp.Util.Asymptotics.Logarithms
+import ThreeSumApsp.Sec4.ParameterSteps
+import ThreeSumApsp.Sec4.Table2
+import ThreeSumApsp.Util.Asymptotics.Logarithms

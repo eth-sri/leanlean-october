@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
 /-!
 # Restricting an array on a set of codes to a subset (step (4) of Pruned, Section 2.4.2)
@@ -25,32 +25,30 @@ the second list, or adds them to what is there.
   `cPick` steps for each entry of the two lists.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp
 
 /-! ## The program -/
 
 namespace PickLocal
 
-/-- The small list. -/
-abbrev PSUB : ℕ := 0
-/-- The length of the small list. -/
-abbrev NSUB : ℕ := 1
-/-- The large list. -/
-abbrev PU : ℕ := 2
-/-- The values of the codes of the large list. -/
-abbrev PVAL : ℕ := 4
-/-- The destination. -/
-abbrev PDST : ℕ := 5
-/-- The mode: 0 for writing, otherwise adding. -/
-abbrev ADD : ℕ := 6
-/-- The position i in the small list. -/
-abbrev CI : ℕ := 7
-/-- The position j in the large list. -/
-abbrev CJ : ℕ := 8
+/- The small list. -/
+slots PSUB
+/- The length of the small list. -/
+slots 1 NSUB
+/- The large list. -/
+slots 2 PU
+/- The values of the codes of the large list. -/
+slots 4 PVAL
+/- The destination. -/
+slots 5 PDST
+/- The mode: 0 for writing, otherwise adding. -/
+slots 6 ADD
+/- The position i in the small list. -/
+slots 7 CI
+/- The position j in the large list. -/
+slots 8 CJ
 
 end PickLocal
 
@@ -76,17 +74,10 @@ def pickBody : Stmt :=
 
 section Lists
 
-variable {big small : List ℕ} {vals : List ℤ} {i j : ℕ}
-
 end Lists
 
 /-! ## The memory -/
 
-variable {lim : Limits} {P : Program} {d pDst add i j n : ℕ} {res : List ℤ} {μ μ' : ℕ → ℤ}
-  {x : PickArgs}
-
 /-! ## The walk -/
 
 /-! ## The two results for the callers -/
-
-end Light.Sec2

@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Compiler.StatementCode
+import ThreeSumApsp.Lang.Compiler.StatementCode
 
 /-!
 # The cells of the compiled code, and the memories that represent a state
@@ -43,7 +42,6 @@ the machine (`Steps`).  val, va, vb say which number a cell holds.  hcode and na
 say where a piece of code is (`CodeAt`).
 -/
 
-@[expose] public section
 
 open ThreeSumApsp.WordRam
 
@@ -62,10 +60,12 @@ structure Fits (W : ℕ) (lim : Limits) (N Q : ℕ) : Prop where
   stack : 2 * (2 * (Q : ℤ)) < (2 : ℤ) ^ W
   pool_lt : 2 * (N : ℤ) < (2 : ℤ) ^ W
 
+variable {Q N : ℕ}
+
 /-- A number within the limit on words is in the range of words. -/
-theorem Fits.inRange {W : ℕ} {lim : Limits} {N Q : ℕ} (hfit : Fits W lim N Q) {v : ℤ}
+theorem Fits.inRange {W : ℕ} {lim : Limits} (hfit : Fits W lim N Q) {v : ℤ}
     (h : |v| ≤ lim.word) : InRange W v :=
-  inRange_of_abs_le (by have := hfit.word; have := (abs_nonneg v).trans h; omega) h
+  inRange_of_abs_le (by have := hfit.word; grind) h
 
 /-- The numbers on which the proofs about compiled code depend: the layout of the code, the limits
 on the runs of the light program, and the number of stack cells.  The pool holds the numbers from 0
@@ -108,31 +108,30 @@ cells from q on, and the memory cells within the limits. -/
 def Writable {W : ℕ} (Z : Sizes W) (q : ℕ) : Set ℤ :=
   Scratch Z.F ∪ {cFP} ∪ Stack q Z.Q ∪ {a | 0 ≤ a ∧ a < Z.lim.space}
 
+variable {k : ℕ} {a : ℤ}
+
 /-! The temporaries, the stack and the pool are arithmetic progressions of cells. -/
 
-theorem mem_temps_iff {k F : ℕ} {a : ℤ} :
+theorem mem_temps_iff {F : ℕ} :
     a ∈ Temps k F ↔ a = cADDR ∨ cT (2 * F) ≤ a ∧ a ≤ cT k ∧ 4 ∣ cT 0 - a := by
-  simp only [Temps, cT, Set.mem_ofPred_eq]
+  simp [Temps, cT]
   refine or_congr_right ⟨?_, fun h => ⟨((-23 - a) / 4).toNat, ?_⟩⟩
-  · rintro ⟨j, hk, hj, rfl⟩
-    omega
   · omega
+  omega
 
-theorem mem_stack_iff {q Q : ℕ} {a : ℤ} :
+theorem mem_stack_iff {q : ℕ} :
     a ∈ Stack q Q ↔ cStack Q < a ∧ a ≤ cStack q ∧ 2 ∣ a := by
-  simp only [Stack, cStack, Set.mem_ofPred_eq]
+  simp [Stack, cStack, Set.mem_ofPred_eq]
   refine ⟨?_, fun h => ⟨(-a / 2).toNat, ?_⟩⟩
-  · rintro ⟨j, hq, hj, rfl⟩
-    omega
   · omega
+  omega
 
-theorem mem_pool_iff {N : ℕ} {a : ℤ} :
+theorem mem_pool_iff :
     a ∈ Pool N ↔ cPool N ≤ a ∧ a ≤ cPool 0 ∧ 4 ∣ cPool 0 - a := by
-  simp only [Pool, cPool, Set.mem_ofPred_eq]
+  simp [Pool, cPool, Set.mem_ofPred_eq]
   refine ⟨?_, fun h => ⟨((-25 - a) / 4).toNat, ?_⟩⟩
-  · rintro ⟨n, hn, rfl⟩
-    omega
   · omega
+  omega
 
 /-- Proves that two cells of the compiled code are different, that a cell is or is not in one of the
 sets above, or that one of these sets lies in another or in its complement.  A cell is given by its
@@ -159,53 +158,48 @@ macro "cell_read" " using " h:term : tactic => `(tactic| (cell_read; exact $h))
 variable {W : ℕ} {Z : Sizes W} {F : ℕ}
 
 /-- What an expression may change is scratch. -/
-theorem temps_subset_scratch {k : ℕ} : Temps k F ⊆ Scratch F := by cells
+theorem temps_subset_scratch : Temps k F ⊆ Scratch F := by cells
 
 /-- A statement may change scratch cells. -/
 theorem scratch_subset_writable {q : ℕ} : Scratch Z.F ⊆ Writable Z q :=
-  (Set.subset_union_left.trans Set.subset_union_left).trans Set.subset_union_left
+  by tauto
 
 /-- A statement may change the stack from its frame on. -/
 theorem stack_subset_writable {q : ℕ} : Stack q Z.Q ⊆ Writable Z q :=
   Set.subset_union_right.trans Set.subset_union_left
 
 /-- A statement in a later frame may change less. -/
-theorem writable_subset_writable {q q' : ℕ} (h : q ≤ q') : Writable Z q' ⊆ Writable Z q :=
+theorem writable_subset_writable {q q' : ℕ} (h : q ≤ q' := by omega) : Writable Z q' ⊆ Writable Z q :=
   Set.union_subset_union_left _ (Set.union_subset_union_right _ (by cells))
 
 /-- A statement may change the memory cells within the limits. -/
-theorem mem_writable_of_addr {q : ℕ} {a : ℤ} (h : Z.lim.Addr a) : a ∈ Writable Z q :=
-  Set.mem_union_right _ h
+theorem mem_writable_of_addr {q : ℕ} (h : Z.lim.Addr a) : a ∈ Writable Z q :=
+  by tauto
 
 /-! ## Addresses, and numbers that fit in a word -/
 
 /-- The cell of the local variable x of the frame q, computed from FP and the pool. -/
 theorem cStack_sub (q x : ℕ) : cStack q - ((2 * x : ℕ) : ℤ) = cStack (q + x) := by
-  simp only [cStack]
-  push_cast
-  ring
+  grind [cStack]
 
 /-- Back from the frame q + x to the frame q. -/
 theorem cStack_add (q x : ℕ) : cStack (q + x) + ((2 * x : ℕ) : ℤ) = cStack q := by
-  simp only [cStack]
-  push_cast
-  ring
+  grind [cStack]
 
 /-- The stack cell before the cell q + 1. -/
 theorem cStack_succ_add (q : ℕ) : cStack (q + 1) + ((2 : ℕ) : ℤ) = cStack q := cStack_add q 1
 
 /-- The addresses of the stack fit in a word. -/
-theorem Sizes.inRange_stack (Z : Sizes W) {j : ℕ} (hj : j ≤ Z.Q) : InRange W (cStack j) := by
-  have hjQ : (j : ℤ) ≤ Z.Q := by exact_mod_cast hj
+theorem Sizes.inRange_stack (Z : Sizes W) {j : ℕ} (hj : j ≤ Z.Q := by omega) : InRange W (cStack j) := by
   constructor <;> simp only [cStack] <;> linarith [Z.fits.stack]
 
 /-- The addresses of the memory fit in a word. -/
-theorem Sizes.inRange_addr (Z : Sizes W) {a : ℤ} (h : Z.lim.Addr a) : InRange W a := by
+theorem Sizes.inRange_addr (Z : Sizes W) (h : Z.lim.Addr a) : InRange W a := by
   constructor <;> linarith [Z.fits.space, h.1, h.2]
 
 /-- The number -1, on which every jump branches, fits in a word. -/
 theorem Sizes.inRange_neg_one (Z : Sizes W) : InRange W (-1) := by
-  have hN : (2 : ℤ) ≤ Z.disp := by
+  have hN : 2 ≤ Z.disp := by
     exact_mod_cast (Nat.le_mul_of_pos_right 2 Z.F.succ_pos).trans Z.offsets_le
   constructor <;> linarith [Z.fits.pool_lt]
 
@@ -231,15 +225,8 @@ theorem Rel.of_agreeOutside {s : Set ℤ} (R : Rel Z σ q m) (A : AgreeOutside s
     (hs : s ⊆ (Constants Z.disp)ᶜ) (hfp : m' cFP = wd W (cStack q'))
     (hloc : ∀ x < Z.F, m' (cStack (q' + x)) = wd W (σ'.loc x))
     (hmem : ∀ a < Z.lim.space, m' (a : ℤ) = wd W (σ'.mem a)) : Rel Z σ' q' m' := by
-  have keep {a : ℤ} (ha : a ∈ Constants Z.disp) : m' a = m a := A.cell fun h => hs h ha
-  exact {
-    one := (keep (by cells)).trans R.one
-    zero := (keep (by cells)).trans R.zero
-    neg := (keep (by cells)).trans R.neg
-    pool := fun n hn => (keep (by cells)).trans (R.pool n hn)
-    fp := hfp
-    loc := hloc
-    mem := hmem }
+  have keep {a : ℤ} (ha : a ∈ Constants Z.disp) : m' a = m a := by aesop
+  exact ⟨(keep (by cells)).trans R.one, (keep (by cells)).trans R.zero, (keep (by cells)).trans R.neg, fun n hn => (keep (by cells)).trans (R.pool n hn), hfp, hloc, hmem⟩
 
 /-- A memory that differs only in scratch cells represents the same state. -/
 theorem Rel.same (R : Rel Z σ q m) (A : AgreeOutside (Scratch Z.F) m m') : Rel Z σ q m' :=
@@ -254,7 +241,7 @@ theorem Rel.beyond (R : Rel Z σ q m) (hq : 1 ≤ q)
     (fun x hx => A.read (by cells) (R.loc x hx)) fun a ha => A.read (by cells) (R.mem a ha)
 
 /-- Writing a local variable. -/
-private theorem Rel.setLoc (R : Rel Z σ q m) (hq : 1 ≤ q) (x : ℕ) (v : ℤ) :
+theorem Rel.setLoc (R : Rel Z σ q m) (hq : 1 ≤ q) (x : ℕ) (v : ℤ) :
     Rel Z { σ with loc := Function.update σ.loc x v } q
       (Function.update m (cStack (q + x)) (wd W v)) := by
   refine R.of_agreeOutside ((AgreeOutside.refl {cStack (q + x)} m).update rfl _) (by cells)
@@ -262,22 +249,24 @@ private theorem Rel.setLoc (R : Rel Z σ q m) (hq : 1 ≤ q) (x : ℕ) (v : ℤ)
   obtain rfl | hxy := eq_or_ne y x
   · simp
   · rw [Function.update_of_ne (by cells)]
-    exact (R.loc y hy).trans (by simp [hxy])
+    exact (R.loc y hy).trans (by simp_all)
+
+variable {a : ℤ}
 
 /-- Writing a memory cell. -/
-theorem Rel.setMem (R : Rel Z σ q m) (hq : 1 ≤ q) {a : ℤ} (ha : Z.lim.Addr a) (v : ℤ) :
+theorem Rel.setMem (R : Rel Z σ q m) (hq : 1 ≤ q) (ha : Z.lim.Addr a) (v : ℤ) :
     Rel Z { σ with mem := Function.update σ.mem a.toNat v } q (Function.update m a (wd W v)) := by
   -- the address is not negative, so it is no register and no stack cell of the frame
-  have hnonneg : 0 ≤ a := ha.1
+  have hnonneg := ha.1
   refine R.of_agreeOutside ((AgreeOutside.refl {a} m).update rfl _) (by cells)
     (by cell_read using R.fp) (fun x hx => by cell_read using R.loc x hx) fun b hb => ?_
   obtain rfl | hab := eq_or_ne b a.toNat
-  · simp [Int.toNat_of_nonneg hnonneg]
+  · simp_all
   · rw [Function.update_of_ne (by omega)]
-    exact (R.mem b hb).trans (by simp [hab])
+    exact (R.mem b hb).trans (by simp_all)
 
 /-- Reading a memory cell. -/
-theorem Rel.read (R : Rel Z σ q m) {a : ℤ} (ha : Z.lim.Addr a) : m a = wd W (σ.mem a.toNat) := by
+theorem Rel.read (R : Rel Z σ q m) (ha : Z.lim.Addr a) : m a = wd W (σ.mem a.toNat) := by
   have := R.mem a.toNat (by have := ha.1; have := ha.2; omega)
   rwa [Int.toNat_of_nonneg ha.1] at this
 
@@ -307,7 +296,7 @@ theorem Framed.same (I : Framed Z σ q m) (A : AgreeOutside (Scratch Z.F) m m') 
 /-- An unconditional jump. -/
 theorem steps_jump {l : ℕ} (hcode : CodeAt code pos (.bltz cNEG l :: rest))
     (hneg : m cNEG = wd W (-1)) (hr : InRange W (-1)) : Steps code 1 ⟨pos, m⟩ ⟨l, m⟩ := by
-  simpa using steps_bltz hcode hneg hr
+  grind [steps_bltz]
 
 /-- The two instructions that put the content v of the cell c into the local variable x. -/
 theorem steps_setVar {x : ℕ} {c v : ℤ} (I : Framed Z σ q m) (hx : x < Z.F)
@@ -319,17 +308,13 @@ theorem steps_setVar {x : ℕ} {c v : ℤ} (I : Framed Z σ q m) (hx : x < Z.F)
   have hN := Z.offsets_le
   have hQ := I.high
   -- ADDR := FP - 2 x
-  have run₁ := steps_sub (i := cADDR) hcode I.rel.fp (I.rel.pool (2 * x) (by omega))
+  have run₁ := steps_sub hcode I.rel.fp (I.rel.pool _ (by omega))
   rw [cStack_sub] at run₁
   have A₁ := (AgreeOutside.refl (Scratch Z.F) m).update (a := cADDR) (by cells)
     (wd W (cStack (q + x)))
   -- the cell at ADDR := c
-  have run₂ := run₁.trans (steps_store hcode.tail (Function.update_self _ _ _)
-    (Z.inRange_stack (by omega)))
+  have run₂ := run₁.trans (steps_store hcode.tail (by rfl)
+    (Z.inRange_stack))
   rw [Function.update_of_ne hne, hc] at run₂
   exact ⟨_, run₂, (I.rel.same A₁).setLoc I.low x v,
     (A₁.mono scratch_subset_writable).update (by cells) _⟩
-
-end code
-
-end Light.Compiler

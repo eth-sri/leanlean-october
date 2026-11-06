@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Tasks
-public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Definitions
-public import ThreeSumApsp.Util.Flag
+import ThreeSumApsp.Lang.Tasks
+import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Definitions
+import ThreeSumApsp.Util.Flag
 
 /-!
 # The reduction from 3SUM to Convolution-3SUM after Chan and He, as a program.  Specifications
@@ -34,7 +33,6 @@ proof of a routine uses only the specifications of the routines that it calls.
   hypotheses of the routine.
 -/
 
-@[expose] public section
 
 namespace Light.Sec3.ChanHe
 
@@ -515,5 +513,3 @@ def PickSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
     Meets lim P p d [L.length, s, bt, Λ, β, x, β', x', two, out] μ (tPick L.length) fun r μ' =>
       r = ((pickList Λ β β' x x' two L BT).length : ℤ) ∧
         Seg μ' out (pickList Λ β β' x x' two L BT) ∧ SameOutside μ μ' out L.length
-
-end Light.Sec3.ChanHe

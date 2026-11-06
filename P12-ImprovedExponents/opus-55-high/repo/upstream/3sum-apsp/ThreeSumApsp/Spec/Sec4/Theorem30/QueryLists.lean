@@ -3,12 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec4.BoxesFromLeaves
-public import ThreeSumApsp.Sec4.Theorem30
-public import ThreeSumApsp.Spec.Sec4.Theorem30.Cubes
-public import ThreeSumApsp.Spec.Sec4.Theorem30.NineStrings
+import ThreeSumApsp.Sec4.BoxesFromLeaves
+import ThreeSumApsp.Sec4.Theorem30
+import ThreeSumApsp.Spec.Sec4.Theorem30.Cubes
+import ThreeSumApsp.Spec.Sec4.Theorem30.NineStrings
 
 /-!
 # What a query reads (proof of Theorem 30, "Query")
@@ -53,7 +52,6 @@ query of the paper). Each list is compared with its set by counting
    sets, by the last line of Lemma 28 (`lemma_28_counts`).
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -88,54 +86,58 @@ of `lowList`, read from the two encodings, then the stored values of the boxes o
 def queryTerms (m t : ℕ) (encA encB : List ℤ) (stored : List ℕ → ℤ) (w : List ℕ) : List ℤ :=
   (lowList m t w).map (leafProduct encA encB) ++ (boxesOf m t w).map stored
 
+variable (w : List ℕ)
+
 /-! ## Putting a string at the positions of the nines -/
 
-private theorem scatter_nil_right (w : List ℕ) : scatter w [] = w := by
+theorem scatter_nil_right : scatter w [] = w := by
   cases w <;> rfl
 
 /-- A digit other than 9 is kept. -/
 theorem scatter_cons_of_ne {x : ℕ} (hx : x ≠ 9) (w s : List ℕ) :
     scatter (x :: w) s = x :: scatter w s := by
   cases s with
-  | nil => rw [scatter_nil_right, scatter_nil_right]
-  | cons d s => simp [scatter, hx]
+  | nil => grind [scatter_nil_right]
+  | cons d s => grind [scatter]
 
 /-- A digit 9 is replaced by the next digit of the string. -/
-theorem scatter_nine_cons (w : List ℕ) (d : ℕ) (s : List ℕ) :
+theorem scatter_nine_cons (d : ℕ) (s : List ℕ) :
     scatter (9 :: w) (d :: s) = d :: scatter w s := by
-  simp [scatter]
+  rfl
 
 /-- The string has the length of w. -/
-theorem length_scatter (w s : List ℕ) : (scatter w s).length = w.length := by
+theorem length_scatter (s : List ℕ) : (scatter w s).length = w.length := by
   fun_induction scatter w s <;> simp_all
 
+variable {s : List ℕ} {d : ℕ}
+
 /-- Every digit of `scatter w s` is a digit of w or of s. -/
-private theorem mem_of_mem_scatter {w s : List ℕ} {d : ℕ} (h : d ∈ scatter w s) :
+theorem mem_of_mem_scatter {w : List ℕ} (h : d ∈ scatter w s) :
     d ∈ w ∨ d ∈ s := by
   fun_induction scatter w s <;> grind
 
 /-- At a position where w has no 9, its digit is kept. -/
-private theorem getD_scatter_of_ne (w s : List ℕ) (i : ℕ) (h : w.getD i 0 ≠ 9) :
+theorem getD_scatter_of_ne (s : List ℕ) (i : ℕ) (h : w.getD i 0 ≠ 9) :
     (scatter w s).getD i 0 = w.getD i 0 := by
   fun_induction scatter w s generalizing i <;> cases i <;> simp_all
 
 /-- `scatter w s` has as many nines as s. -/
-private theorem count_nine_scatter (w s : List ℕ) (hs : s.length = w.count 9) :
+theorem count_nine_scatter (s : List ℕ) (hs : s.length = w.count 9) :
     (scatter w s).count 9 = s.count 9 := by
   fun_induction scatter w s <;> grind
 
 /-- Strings of the right length are determined by what `scatter w` makes of them. -/
-private theorem scatter_inj (w s s' : List ℕ) (hs : s.length = w.count 9)
+theorem scatter_inj (s s' : List ℕ) (hs : s.length = w.count 9)
     (hs' : s'.length = w.count 9) (h : scatter w s = scatter w s') : s = s' := by
   fun_induction scatter w s generalizing s' <;> cases s' <;> grind [scatter]
 
 /-! ## The leading nines turned into stars -/
 
-private theorem length_starRun (s : List ℕ) : (starRun s).length = s.length := by
+theorem length_starRun (s : List ℕ) : (starRun s).length = s.length := by
   fun_induction starRun s <;> simp_all
 
 /-- Turning the stars back into nines undoes `starRun`. -/
-private theorem starsToNines_starRun {s : List ℕ} (h : 10 ∉ s) : starsToNines (starRun s) = s := by
+theorem starsToNines_starRun (h : 10 ∉ s) : starsToNines (starRun s) = s := by
   fun_induction starRun s with
   | case1 => rfl
   | case2 l ih => simp_all [starsToNines]
@@ -146,40 +148,39 @@ digits read so far were nines, so the run of stars goes on; otherwise the rest i
 def starRunIf (flag : Bool) (s : List ℕ) : List ℕ := if flag then starRun s else s
 
 /-- A digit other than 9 ends the run. -/
-theorem starRunIf_cons_of_ne {d : ℕ} (hd : d ≠ 9) (flag : Bool) (s : List ℕ) :
+theorem starRunIf_cons_of_ne (hd : d ≠ 9) (flag : Bool) (s : List ℕ) :
     starRunIf flag (d :: s) = d :: starRunIf false s := by
-  cases flag <;> simp [starRunIf, starRun, hd]
+  grind [starRunIf, starRun]
 
 /-- A digit 9 becomes a star while the run goes on, and the run goes on. -/
 theorem starRunIf_nine_cons (flag : Bool) (s : List ℕ) :
     starRunIf flag (9 :: s) = (if flag then 10 else 9) :: starRunIf flag s := by
-  cases flag <;> simp [starRunIf, starRun]
+  aesop
 
 /-- Position i is one of "the levels that we have not reached" (F_V, Section 4.2).  Here w is the
 list of digits of the output string, so its nines are the levels of Q, and u is the list of digits
 of a leaf, whose nines among them are the levels of V: i is a level of Q below every level of Q ∖ V.
 -/
-private def Unreached (w u : List ℕ) (i : ℕ) : Prop :=
+def Unreached (w u : List ℕ) (i : ℕ) : Prop :=
   w.getD i 0 = 9 ∧ ∀ j, w.getD j 0 = 9 → u.getD j 0 ≠ 9 → i < j
 
+variable (x : ℕ)
+
 /-- The first position is not reached if it is a level of V. -/
-private theorem unreached_cons_zero (x y : ℕ) (w u : List ℕ) :
+theorem unreached_cons_zero (y : ℕ) (w u : List ℕ) :
     Unreached (x :: w) (y :: u) 0 ↔ x = 9 ∧ y = 9 := by
-  rw [Unreached, ← Nat.and_forall_add_one]
-  simp only [List.getD_cons_zero, lt_irrefl, Nat.zero_lt_succ, implies_true, and_true]
-  tauto
+  grind [Unreached]
 
 /-- A later position is not reached if the first position is no level of Q ∖ V and the position is
 not reached in the rest. -/
-private theorem unreached_cons_succ (x y : ℕ) (w u : List ℕ) (i : ℕ) :
+theorem unreached_cons_succ (y : ℕ) (w u : List ℕ) (i : ℕ) :
     Unreached (x :: w) (y :: u) (i + 1) ↔ (x = 9 → y = 9) ∧ Unreached w u i := by
   rw [Unreached, Unreached, ← Nat.and_forall_add_one]
-  simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.not_lt_zero, Nat.add_lt_add_iff_right]
-  tauto
+  grind
 
 /-- Turning the leading nines of s into stars puts stars at the positions given by the formula for
 F_V, and changes nothing else. -/
-private theorem getD_scatter_starRun (w s : List ℕ) (hs : s.length = w.count 9) (i : ℕ) :
+theorem getD_scatter_starRun (s : List ℕ) (hs : s.length = w.count 9) (i : ℕ) :
     (Unreached w (scatter w s) i → (scatter w (starRun s)).getD i 0 = 10) ∧
       (¬ Unreached w (scatter w s) i →
         (scatter w (starRun s)).getD i 0 = (scatter w s).getD i 0) := by
@@ -195,14 +196,13 @@ private theorem getD_scatter_starRun (w s : List ℕ) (hs : s.length = w.count 9
         rw [starRun, if_pos rfl, scatter_nine_cons, scatter_nine_cons]
         cases i with
         | zero => simp [unreached_cons_zero]
-        | succ i => simpa [unreached_cons_succ] using ih s (by simpa using hs) i
-      · rw [starRun, if_neg hd, scatter_nine_cons]
-        exact ⟨fun h => absurd (h.2 0 rfl hd) (Nat.not_lt_zero i), fun _ => rfl⟩
-    · rw [List.count_cons_of_ne hx] at hs
-      rw [scatter_cons_of_ne hx, scatter_cons_of_ne hx]
+        | succ i => grind [unreached_cons_succ]
+      · rw [starRun, if_neg hd]
+        exact ⟨fun h => absurd (h.2 0 rfl hd) (Nat.not_lt_zero i), by omega⟩
+    · rw [scatter_cons_of_ne hx, scatter_cons_of_ne hx]
       cases i with
-      | zero => simp [unreached_cons_zero, hx]
-      | succ i => simpa [unreached_cons_succ, hx] using ih s hs i
+      | zero => grind [unreached_cons_zero]
+      | succ i => grind [unreached_cons_succ]
 
 /-! ## The leaves of order below t -/
 
@@ -211,25 +211,25 @@ section
 variable {L m t : ℕ} {η : OutStr L}
 
 /-- The output string has m nines. -/
-private theorem count_nine_digitsO (hη : (innerSetO η).card = m) :
+theorem count_nine_digitsO (hη : (innerSetO η).card = m) :
     (digitsO η).count 9 = m := by
-  rw [← card_innerSetO, hη]
+  grind [card_innerSetO]
+
+variable {s : List ℕ}
 
 /-- A string of digits below 10, put at the levels of Q, gives a leaf contributing to η that
 chooses P₀ as often as the string has a nine. -/
-private theorem exists_leaf_scatter {s : List ℕ} (hlen : s.length = (digitsO η).count 9)
+theorem exists_leaf_scatter (hlen : s.length = (digitsO η).count 9)
     (hdig : ∀ d ∈ s, d < 10) :
     ∃ τ : Leaf L, digitsT τ = scatter (digitsO η) s ∧ Leaf.Contributes τ η ∧
       (P0Levels τ).card = s.count 9 := by
-  obtain ⟨τ, hτ⟩ := exists_digitsT (L := L) (scatter (digitsO η) s)
+  obtain ⟨τ, hτ⟩ := exists_digitsT _
     (by rw [length_scatter, length_digitsO])
     fun d hd => (mem_of_mem_scatter hd).elim (digitsO_lt η d) (hdig d)
   refine ⟨τ, hτ, fun ℓ => ?_, ?_⟩
   · rw [contributes_iff, ← getD_digitsO, ← getD_digitsT, hτ]
-    by_cases h9 : (digitsO η).getD ℓ 0 = 9
-    · exact Or.inl h9
-    · exact Or.inr (getD_scatter_of_ne _ _ _ h9)
-  · rw [card_P0Levels, hτ, count_nine_scatter _ _ hlen]
+    grind [getD_scatter_of_ne]
+  grind [card_P0Levels, count_nine_scatter]
 
 /-- Every member of the list is the list of digits of a leaf of order below t contributing to η. -/
 theorem exists_of_mem_lowList (hη : (innerSetO η).card = m) (l : List ℕ)
@@ -240,13 +240,12 @@ theorem exists_of_mem_lowList (hη : (innerSetO η).card = m) (l : List ℕ)
     exists_leaf_scatter (hlen.trans (count_nine_digitsO hη).symm) hdig
   refine ⟨τ, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hcontr, ?_⟩, hτ⟩
   -- the order is m minus the number of nines, of which there are at least m - t + 1 (hlo)
-  rw [order, hcard]
-  omega
+  grind [order]
 
-private theorem lowList_nodup (hη : (innerSetO η).card = m) : (lowList m t (digitsO η)).Nodup := by
+theorem lowList_nodup (hη : (innerSetO η).card = m) : (lowList m t (digitsO η)).Nodup := by
   have hcount := count_nine_digitsO hη
   exact (nineStrs_nodup _ _ _).map_on fun s hs s' hs' h => scatter_inj _ s s'
-    (by rw [length_of_mem_nineStrs hs, hcount]) (by rw [length_of_mem_nineStrs hs', hcount]) h
+    (by grind [length_of_mem_nineStrs]) (by grind [length_of_mem_nineStrs]) h
 
 /-- There are ∑_{d < t} α_d such leaves. -/
 theorem length_lowList (ht : t ≤ m) (w : List ℕ) :
@@ -254,11 +253,9 @@ theorem length_lowList (ht : t ≤ m) (w : List ℕ) :
   rw [lowList, List.length_map, length_nineStrs]
   -- a string with f nines gives a leaf of order d = m - f: reflect the sum
   refine Finset.sum_nbij' (fun f => m - f) (fun d => m - d) ?_ ?_ ?_ ?_
-    fun f hf => by rw [alpha, Nat.choose_symm (Finset.mem_Icc.mp hf).2]
+    fun f hf => by simp_all [alpha]
   all_goals
-    simp only [Finset.mem_Icc, Finset.mem_range]
-    intro a ha
-    omega
+    grind
 
 /-- **The first sum of a query**: a sum over the list is the sum over the leaves of order below t
 contributing to η. -/
@@ -266,76 +263,66 @@ theorem sum_lowList (ht : t ≤ m) (hη : (innerSetO η).card = m) (F : List ℕ
     ((lowList m t (digitsO η)).map F).sum = ∑ τ ∈ lowLeaves m t η, F (digitsT τ) :=
   List.sum_map_eq_sum_of_length_eq_card _ (lowList_nodup hη) _ digitsT (digitsT_injective L)
     (exists_of_mem_lowList hη)
-    ((length_lowList ht _).trans (lemma_28_counts m t ht η hη).1.symm) F
+    (by grind [length_lowList, lemma_28_counts]) F
 
 /-! ## The boxes -/
 
 /-- The formula for F_V on digits is the formula of the paper, for V = Z. -/
-private theorem unreached_iff_mem_FV (τ : Leaf L) (ℓ : Fin L) :
+theorem unreached_iff_mem_FV (τ : Leaf L) (ℓ : Fin L) :
     Unreached (digitsO η) (digitsT τ) ℓ ↔ ℓ ∈ FV (innerSetO η) (Zof (innerSetO η) τ) := by
   rw [Unreached, getD_digitsO_eq_nine, FV, Finset.mem_filter,
-    forall_nine_digitsO η fun j => (digitsT τ).getD j 0 ≠ 9 → (ℓ : ℕ) < j]
+    forall_nine_digitsO]
   refine and_congr_right fun _ => ⟨fun h ℓ' hℓ' => ?_, fun h ℓ' hℓ' h9 => ?_⟩
   · obtain ⟨hQ, hZ⟩ := Finset.mem_sdiff.mp hℓ'
     refine h ℓ' hQ fun h9 => hZ (Finset.mem_filter.mpr ⟨hQ, ?_⟩)
-    rwa [getD_digitsT, termIdx_eq_nine] at h9
+    grind [getD_digitsT, termIdx_eq_nine]
   · refine h ℓ' (Finset.mem_sdiff.mpr ⟨hℓ', fun hZ => h9 ?_⟩)
     rw [getD_digitsT, termIdx_eq_nine]
     exact (Finset.mem_filter.mp hZ).2
 
 /-- The cube of the second description of the boxes (Section 4.2): its digits are those of the leaf,
 with the leading nines of the string at the levels of Q turned into stars. -/
-private theorem digitsC_starBelow {τ : Leaf L} {s : List ℕ} (hs : s.length = (digitsO η).count 9)
+theorem digitsC_starBelow {τ : Leaf L} (hs : s.length = (digitsO η).count 9)
     (hτ : digitsT τ = scatter (digitsO η) s) :
     digitsC (starBelow η τ) = scatter (digitsO η) (starRun s) := by
   refine digitsC_eq_of_getD _ (by rw [length_scatter, length_digitsO]) fun ℓ => ?_
-  obtain ⟨hstar, hterm⟩ := getD_scatter_starRun (digitsO η) s hs ℓ
+  obtain ⟨hstar, hterm⟩ := getD_scatter_starRun _ s hs ℓ
   rw [← hτ, unreached_iff_mem_FV] at hstar hterm
   rw [starBelow, Cube.starAt]
   split_ifs with h
-  · exact hstar h
-  · rw [hterm h, getD_digitsT, cubeIdx_term]
+  · aesop
+  grind [getD_digitsT, cubeIdx_term]
 
 /-- Every member of the list arises, as in the second description of the boxes, from a leaf of order
 exactly t contributing to η. -/
-private theorem exists_leaf_of_mem_boxesOf (ht : t ≤ m) (hη : (innerSetO η).card = m) (l : List ℕ)
+theorem exists_leaf_of_mem_boxesOf (ht : t ≤ m) (hη : (innerSetO η).card = m) (l : List ℕ)
     (h : l ∈ boxesOf m t (digitsO η)) :
     ∃ τ : Leaf L, (Leaf.Contributes τ η ∧ order m τ = t) ∧ digitsC (starBelow η τ) = l := by
   obtain ⟨s, hs, rfl⟩ := List.mem_map.mp h
   obtain ⟨hlen, hdig, hlo, hhi⟩ := (mem_nineStrs s).mp hs
-  have hlen' : s.length = (digitsO η).count 9 := hlen.trans (count_nine_digitsO hη).symm
-  obtain ⟨τ, hτ, hcontr, hcard⟩ := exists_leaf_scatter hlen' hdig
-  refine ⟨τ, ⟨hcontr, ?_⟩, digitsC_starBelow hlen' hτ⟩
-  -- exactly m - t nines (hlo, hhi): the order is t
-  rw [order, hcard]
-  omega
+  have hlen' : s.length = (digitsO η).count 9 := by simp_all [count_nine_digitsO]
+  grind [exists_leaf_scatter, digitsC_starBelow, order]
 
 /-- Every member of the list is the list of digits of a box of η: "The result is a box of w". -/
 theorem exists_of_mem_boxesOf (ht : t ≤ m) (hη : (innerSetO η).card = m) (l : List ℕ)
     (h : l ∈ boxesOf m t (digitsO η)) : ∃ π ∈ (Vsets m t η).biUnion (BV η), digitsC π = l := by
-  obtain ⟨τ, ⟨hcontr, hord⟩, hl⟩ := exists_leaf_of_mem_boxesOf ht hη l h
-  exact ⟨starBelow η τ, starBelow_mem hcontr hord, hl⟩
+  grind [exists_leaf_of_mem_boxesOf, starBelow_mem]
 
-private theorem boxesOf_nodup (hη : (innerSetO η).card = m) : (boxesOf m t (digitsO η)).Nodup := by
+theorem boxesOf_nodup (hη : (innerSetO η).card = m) : (boxesOf m t (digitsO η)).Nodup := by
   have hcount := count_nine_digitsO hη
   refine (nineStrs_nodup _ _ _).map_on fun s hs s' hs' h => ?_
-  have hrun := scatter_inj _ (starRun s) (starRun s')
-    (by rw [length_starRun, length_of_mem_nineStrs hs, hcount])
-    (by rw [length_starRun, length_of_mem_nineStrs hs', hcount]) h
-  rw [← starsToNines_starRun (ten_notMem_of_mem_nineStrs hs), hrun,
-    starsToNines_starRun (ten_notMem_of_mem_nineStrs hs')]
+  grind [scatter_inj, length_starRun, length_of_mem_nineStrs, starsToNines_starRun, ten_notMem_of_mem_nineStrs]
 
 /-- "This means that w has exactly α_t boxes." -/
 theorem length_boxesOf (ht : t ≤ m) (w : List ℕ) : (boxesOf m t w).length = alpha m t := by
-  rw [boxesOf, List.length_map, length_nineStrs, Finset.Icc_self, Finset.sum_singleton, alpha,
-    Nat.choose_symm ht, Nat.sub_sub_self ht]
+  grind [boxesOf, List.length_map, length_nineStrs, Finset.Icc_self, Finset.sum_singleton, alpha, Nat.choose_symm, Nat.sub_sub_self]
 
 /-- **The second sum of a query**: a sum over the list is the sum over the boxes of η. -/
 theorem sum_boxesOf (ht : t ≤ m) (hη : (innerSetO η).card = m) (F : List ℕ → ℤ) :
     ((boxesOf m t (digitsO η)).map F).sum = ∑ π ∈ (Vsets m t η).biUnion (BV η), F (digitsC π) :=
   List.sum_map_eq_sum_of_length_eq_card _ (boxesOf_nodup hη) _ digitsC (digitsC_injective L)
     (exists_of_mem_boxesOf ht hη)
-    ((length_boxesOf ht _).trans (lemma_28_counts m t ht η hη).2.2.symm) F
+    (by simp_all [length_boxesOf, lemma_28_counts]) F
 
 end
 
@@ -347,10 +334,8 @@ theorem sum_queryTerms_storedD {L m t : ℕ} (ht : t ≤ m) (encA encB : Leaf L 
     (hη : (innerSetO η).card = m) :
     (queryTerms m t (arrT encA) (arrT encB) (storedD (arrT encA) (arrT encB)) (digitsO η)).sum
       = queryValue m t encA encB η := by
-  rw [queryTerms, List.sum_append, queryValue, sum_lowList ht hη, sum_boxesOf ht hη,
+  rw [queryTerms, List.sum_append, sum_lowList ht hη, sum_boxesOf ht hη,
     Finset.sum_biUnion (BV_pairwiseDisjoint η _)]
-  refine congrArg₂ (· + ·) (Finset.sum_congr rfl fun τ _ => leafProduct_digitsT encA encB τ)
+  refine congrArg₂ _ (Finset.sum_congr rfl fun τ _ => leafProduct_digitsT encA encB τ)
     (Finset.sum_congr rfl fun V hV => Finset.sum_congr rfl fun π hπ => ?_)
   rw [storedD, dpValueD_digitsC, card_starLevels]
-
-end ThreeSumApsp.Spec

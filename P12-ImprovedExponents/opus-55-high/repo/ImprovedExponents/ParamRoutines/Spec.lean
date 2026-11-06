@@ -1,8 +1,7 @@
-module
 
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
+import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
+noncomputable section
 
-@[expose] public section
 
 /-!
 # The parameters of Theorem 17 at rational exponents
@@ -28,18 +27,18 @@ Upstream instantiates the reduction of Theorem 17 with `D := ⌊n^{1/18}⌋` and
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## The parameters, with real powers -/
 
 /-- `D := ⌊n^{a/b}⌋`. -/
-noncomputable def paramDRat (a b n : ℕ) : ℕ := ⌊(n : ℝ) ^ ((a : ℝ) / b)⌋₊
+def paramDRat (a b n : ℕ) : ℕ := ⌊(n : ℝ) ^ ((a : ℝ) / b)⌋₊
 
 /-- `g := ⌈D^{c/d}⌉`, as a function of `D`. -/
-noncomputable def paramGRat (c d D : ℕ) : ℕ := ⌈(D : ℝ) ^ ((c : ℝ) / d)⌉₊
+def paramGRat (c d D : ℕ) : ℕ := ⌈(D : ℝ) ^ ((c : ℝ) / d)⌉₊
 
 /-- `g := ⌈D^{c/d}⌉` for `D := ⌊n^{a/b}⌋`, as a function of `n`. -/
-noncomputable def paramGRatOf (a b c d n : ℕ) : ℕ := paramGRat c d (paramDRat a b n)
+def paramGRatOf (a b c d n : ℕ) : ℕ := paramGRat c d (paramDRat a b n)
 
 /-! ## The parameters, in integer arithmetic -/
 
@@ -52,19 +51,25 @@ def paramGRatNat (c d D : ℕ) : ℕ := rootCeil d (D ^ c)
 /-- `n^{a/b}` is the `b`-th root of `n^a`. -/
 theorem rpow_natCast_div (n a b : ℕ) :
     (n : ℝ) ^ ((a : ℝ) / b) = ((n ^ a : ℕ) : ℝ) ^ ((b : ℝ)⁻¹) := by
-  rw [Nat.cast_pow, ← Real.rpow_natCast, ← Real.rpow_mul n.cast_nonneg, div_eq_mul_inv]
+  grind [Nat.cast_pow, Real.rpow_natCast, Real.rpow_mul, div_eq_mul_inv]
+
+variable {b : ℕ}
 
 /-- `rootFloor b (n^a)` is `⌊n^{a/b}⌋`. -/
-theorem paramDRatNat_eq {b : ℕ} (hb : b ≠ 0) (a n : ℕ) : paramDRatNat a b n = paramDRat a b n := by
+theorem paramDRatNat_eq (hb : b ≠ 0) (a n : ℕ) : paramDRatNat a b n = paramDRat a b n := by
   rw [paramDRatNat, paramDRat, rpow_natCast_div, floor_rpow_inv hb]
 
+variable {d D : ℕ}
+
 /-- `rootCeil d (D^c)` is `⌈D^{c/d}⌉`, for `D ≥ 1`. -/
-theorem paramGRatNat_eq {d : ℕ} (hd : d ≠ 0) (c : ℕ) {D : ℕ} (hD : 1 ≤ D) :
+theorem paramGRatNat_eq (hd : d ≠ 0) (c : ℕ) (hD : 1 ≤ D) :
     paramGRatNat c d D = paramGRat c d D := by
-  rw [paramGRatNat, paramGRat, rpow_natCast_div, ceil_rpow_inv hd (Nat.one_le_pow _ _ hD)]
+  rw [paramGRatNat, paramGRat, rpow_natCast_div, ceil_rpow_inv hd]
+
+variable {n : ℕ}
 
 /-- `⌈D^{c/d}⌉` for `D = ⌊n^{a/b}⌋`, as the claim of Theorem 17 takes it. -/
-theorem paramGRatNat_paramDRat {d : ℕ} (hd : d ≠ 0) (a b c : ℕ) {n : ℕ}
+theorem paramGRatNat_paramDRat (hd : d ≠ 0) (a b c : ℕ)
     (hD : 1 ≤ paramDRat a b n) :
     paramGRatNat c d (paramDRat a b n) = paramGRatOf a b c d n :=
   paramGRatNat_eq hd c hD
@@ -72,12 +77,12 @@ theorem paramGRatNat_paramDRat {d : ℕ} (hd : d ≠ 0) (a b c : ℕ) {n : ℕ}
 /-! ## Bounds -/
 
 /-- `⌊n^{a/b}⌋ ≥ 1` for `n ≥ 1`. -/
-theorem one_le_paramDRatNat {b : ℕ} (hb : b ≠ 0) (a : ℕ) {n : ℕ} (hn : 1 ≤ n) :
+theorem one_le_paramDRatNat (hb : b ≠ 0) (a : ℕ) (hn : 1 ≤ n) :
     1 ≤ paramDRatNat a b n :=
-  le_rootFloor hb (by simpa using Nat.one_le_pow a n hn)
+  le_rootFloor hb (by grind)
 
 /-- `⌊n^{a/b}⌋ ≥ 1` for `n ≥ 1`, with the real power. -/
-theorem one_le_paramDRat {b : ℕ} (hb : b ≠ 0) (a : ℕ) {n : ℕ} (hn : 1 ≤ n) :
+theorem one_le_paramDRat (hb : b ≠ 0) (a : ℕ) (hn : 1 ≤ n) :
     1 ≤ paramDRat a b n :=
   paramDRatNat_eq hb a n ▸ one_le_paramDRatNat hb a hn
 
@@ -91,22 +96,22 @@ theorem paramDRatNat_le (a b n : ℕ) : paramDRatNat a b n ≤ n ^ a := Nat.find
 theorem paramGRatNat_le (c d D : ℕ) : paramGRatNat c d D ≤ D ^ c + 1 :=
   Nat.succ_le_succ (Nat.findGreatest_le _)
 
+variable {k : ℕ}
+
 /-- `⌊n^{a/b}⌋ ≤ n^k` if `a/b ≤ k`, for `n ≥ 1`. -/
-theorem paramDRatNat_le_pow {a b k : ℕ} (hb : b ≠ 0) (h : a ≤ k * b) {n : ℕ} (hn : 1 ≤ n) :
+theorem paramDRatNat_le_pow {a : ℕ} (hb : b ≠ 0) (h : a ≤ k * b) (hn : 1 ≤ n) :
     paramDRatNat a b n ≤ n ^ k := by
   refine (Nat.pow_le_pow_iff_left hb).1 ((rootFloor_pow_le hb _).trans ?_)
   rw [← pow_mul]
   exact Nat.pow_le_pow_right hn h
 
 /-- `⌈D^{c/d}⌉ ≤ D^k` if `c/d ≤ k`, for `D ≥ 1`. -/
-theorem paramGRatNat_le_pow {c d k : ℕ} (hd : d ≠ 0) (h : c ≤ k * d) {D : ℕ} (hD : 1 ≤ D) :
+theorem paramGRatNat_le_pow {c : ℕ} (hd : d ≠ 0) (h : c ≤ k * d) (hD : 1 ≤ D) :
     paramGRatNat c d D ≤ D ^ k := by
-  refine rootCeil_le hd (Nat.one_le_pow _ _ hD) ?_
+  apply rootCeil_le hd (by grind)
   rw [← pow_mul]
   exact Nat.pow_le_pow_right hD h
 
 /-! ## The exponent zero -/
 
 /-! ## Upstream's choice -/
-
-end ImprovedExponents.ParamRoutines

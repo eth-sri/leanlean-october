@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.FrontFacts
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.GridContracts
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Time
+import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.FrontFacts
+import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.GridContracts
+import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Time
 
 /-!
 # 3SUM from Convolution-3SUM: the memory map of core; specifications of params, prep, core
@@ -19,7 +18,6 @@ other from a base address `b`.  This file fixes their layout (`Map`) and the spe
 params, prep and core.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -72,7 +70,7 @@ map. -/
 theorem layout : a.cx = a.b ∧ a.pr = a.cx + 6 ∧ a.cnt = a.pr + a.m ∧ a.srt = a.cnt + a.m * a.m ∧
     a.val = a.srt + a.n ∧ a.mul = a.val + a.n ∧ a.bt = a.mul + a.n ∧ a.A = a.bt + a.n * a.Λ ∧
     a.tw = a.A + 3 * a.n ∧ a.one = a.tw + a.n ∧ a.top = a.one + 1 :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+  by aesop
 
 end Map
 
@@ -149,5 +147,3 @@ def CoreSpec (lim : Limits) (P : Program) (p : ℕ) (T : ℕ → ℕ → ℕ) (r
     1 ≤ n → 1 ≤ U → (coreNeed r n (2 * U)).Ok lim b d →
     Meets lim P p d [n, ((2 * U : ℕ) : ℤ), x, b] μ (coreTime T n (2 * U)) fun res μ' =>
       res = flag (ThreeSum (vecOf n X)) ∧ Kept μ μ' b
-
-end Light.Sec3.ChanHe

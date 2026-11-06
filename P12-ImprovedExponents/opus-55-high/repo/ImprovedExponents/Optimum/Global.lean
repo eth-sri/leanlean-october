@@ -1,3 +1,2 @@
-module
-public import ImprovedExponents.Optimum.GlobalCells
-public import ImprovedExponents.Optimum.NumValues
+import ImprovedExponents.Optimum.GlobalCells
+import ImprovedExponents.Optimum.NumValues

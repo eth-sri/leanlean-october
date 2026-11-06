@@ -1,8 +1,6 @@
-module
 
-public import ImprovedExponents.HostMid.Time
+import ImprovedExponents.HostMid.Time
 
-@[expose] public section
 
 /-!
 # The variant host decides Exact Triangle
@@ -13,7 +11,7 @@ its three parts and of the small case, as upstream's `et17_spec`.
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Host/Correct.lean
 /-- **The variant of et17 decides Exact Triangle.**  In every program `P₀ ++ R` that satisfies the
@@ -27,11 +25,10 @@ theorem et17_spec' {P₀ R : Program} {ν : Et17Nums} {Tn : List ℕ → ℕ} {n
     Ends lim (P₀ ++ R) d (et17Body' ν) ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, fr], μ⟩
       (hostTime' Dfun Gfun tD tG Tn x.n x.U) fun σ' => etTask.Post x μ fr (σ'.loc 0) σ'.mem := by
   have hparams := et17Params_spec' C x μ fr hpre hok
-  have hone : (1 : ℤ) ≤ lim.word := by
+  have hone : 1 ≤ lim.word := by
     have hword := hok.word
-    simp only [hostNeed', hostNeedAt', hostWord] at hword
-    omega
-  rw [← frame_append_zeros [(x.n : ℤ), x.U, x.ab, x.bc, x.ac, fr] 29]
+    grind [hostNeed', hostNeedAt', hostWord]
+  rw [← frame_append_zeros _ 29]
   unfold hostNeed' at hok
   unfold et17Body' hostTime' hostSetup
   generalize Dfun x.n = D at *
@@ -43,20 +40,18 @@ theorem et17_spec' {P₀ R : Program} {ν : Et17Nums} {Tn : List ℕ → ℕ} {n
   by_cases hs : SmallCase x.n D g
   · rw [ite_eq_left hs]
     exact Ends.iteLast (fun _ => (et17Small_spec' C x μ fr D g _ _ hpre hok).mono
-      (by simp; omega) fun _ h => h) (fun h => absurd (by simp [et17LocA, hs]) h) (by simp; omega)
+      (by simp; omega) fun _ h => h) (by simp_all [et17LocA]) (by simp_all)
   rw [ite_eq_right hs]
-  refine Ends.iteLast (fun h => absurd h (by simp [et17LocA, hs])) (fun _ => ?_) (by simp; omega)
+  refine Ends.iteLast (by simp_all [et17LocA]) (fun _ => ?_) (by simp_all)
   -- otherwise: the sizes, then the tables and the loop over the instances
   have hbig := not_smallCase_iff.1 hs
   have htime := hostRunTime_le' hpre hbig Tn
   refine Ends.next _ ((et17Sizes_spec' C x μ fr D g _ _ hpre hbig hok).mono le_rfl ?_)
     (by unfold hostMain'; simp; omega)
   rintro _ ⟨μ', rfl, hk⟩
-  refine (et17Tables_spec' C x μ' fr D g _ _ (hpre.keep hk) hbig hok).mono
-    (by unfold hostMain'; simp; omega) ?_
+  apply (et17Tables_spec' C x μ' fr D g _ _ (hpre.keep hk) hbig hok).mono
+    (by unfold hostMain'; simp; omega)
   rintro σ'' ⟨hresult, hk'⟩
-  refine ⟨?_, fun a ha => (hk' a ha).trans (hk a ha)⟩
+  refine ⟨?_, fun a ha => (hk' a ha).trans (by aesop)⟩
   rw [hresult, HostData.found_m (hostData'_valid hpre hbig), ← flag_eq_bit]
   exact flag_congr (hasZero_iff x.n x.AB x.BC x.AC)
-
-end ImprovedExponents.HostMid

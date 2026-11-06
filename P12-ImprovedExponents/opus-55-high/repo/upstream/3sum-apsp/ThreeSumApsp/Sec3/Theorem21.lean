@@ -1,3 +1,2 @@
-module
-public import ThreeSumApsp.Util.Asymptotics.PowLittleO
-public import Mathlib.Analysis.Complex.ExponentialBounds
+import ThreeSumApsp.Util.Asymptotics.PowLittleO
+import Mathlib.Analysis.Complex.ExponentialBounds

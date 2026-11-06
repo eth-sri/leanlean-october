@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Machine.Solving
+import ThreeSumApsp.Machine.Solving
 
 /-!
 # A running time that is realized on the word RAM
@@ -15,7 +14,6 @@ The deductions between running-time claims are made for an arbitrary reading `M 
 problem is solved on the word RAM, in its input layout, within `c T + c` steps.
 -/
 
-@[expose] public section
 
 open EndStatement (Instr)
 
@@ -28,5 +26,3 @@ bounded by `U = n^κ`, within `c max(T, 0) + c` steps. (A running time `T n U` s
 def Realized (Q : EndStatement.Problem) (T : ℕ → ℝ → ℝ) : Prop :=
   ∀ κ : ℕ, ∃ (P : List Instr) (b : ℕ) (c : ℝ), 0 ≤ c ∧
     Solves (ofEnd Q) P b (fun x => x.U = x.n ^ κ) (fun x => c * max (T x.n x.U) 0 + c)
-
-end ThreeSumApsp.WordRam

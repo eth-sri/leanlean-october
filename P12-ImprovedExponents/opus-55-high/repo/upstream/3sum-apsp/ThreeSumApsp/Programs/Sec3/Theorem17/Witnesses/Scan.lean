@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Tasks
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Instances
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Tasks
+import ThreeSumApsp.Spec.Sec3.Theorem17.Instances
 
 /-!
 # Scanning a piece (the proof of Theorem 17)
@@ -16,7 +16,6 @@ S(a,b,c) = 0".  The procedure scan (`scanBody`) goes through an interval of vert
 pair `(a, b)` (`scan_spec`, `scan_meets`).
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -30,9 +29,7 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 def bit (b : Bool) : ℤ := if b then 1 else 0
 
 theorem flag_eq_bit (b : Bool) : flag (b = true) = bit b := by
-  cases b
-  · simp [bit, flag_of_not]
-  · simp [bit, flag_of]
+  grind [bit, flag_of_not, flag_of]
 
 /-! ## The three arrays of weights -/
 
@@ -49,22 +46,10 @@ structure Weights (lim : Limits) (μ : ℕ → ℤ) (ab bc ac n U : ℕ) (AB BC 
 
 namespace Scan
 
-/-- The locals of `scan`.  The arguments: the addresses of the three arrays, `n`, the pair `(a, b)`,
+/- The locals of `scan`.  The arguments: the addresses of the three arrays, `n`, the pair `(a, b)`,
 the first vertex `c0` and the number `len` of vertices of the interval.  Then the counter `c`, the
 result so far, the weight `w(a,b)`, and the addresses of `w(b, c0)` and of `w(a, c0)`. -/
-abbrev AdrAB : ℕ := 0
-@[inherit_doc AdrAB] abbrev AdrBC : ℕ := 1
-@[inherit_doc AdrAB] abbrev AdrAC : ℕ := 2
-@[inherit_doc AdrAB] abbrev Size : ℕ := 3
-@[inherit_doc AdrAB] abbrev VtxA : ℕ := 4
-@[inherit_doc AdrAB] abbrev VtxB : ℕ := 5
-@[inherit_doc AdrAB] abbrev First : ℕ := 6
-@[inherit_doc AdrAB] abbrev Len : ℕ := 7
-@[inherit_doc AdrAB] abbrev Cnt : ℕ := 8
-@[inherit_doc AdrAB] abbrev Hit : ℕ := 9
-@[inherit_doc AdrAB] abbrev Wab : ℕ := 10
-@[inherit_doc AdrAB] abbrev RowB : ℕ := 11
-@[inherit_doc AdrAB] abbrev RowA : ℕ := 12
+slots AdrAB AdrBC AdrAC Size VtxA VtxB First Len Cnt Hit Wab RowB RowA
 
 end Scan
 
@@ -92,10 +77,12 @@ def tScan (len : ℕ) : ℕ := 24 * len + 35
 theorem scanHit_succ (n : ℕ) (AB BC AC : List ℤ) (a b c0 c : ℕ) :
     scanHit n AB BC AC a b c0 (c + 1) = (scanHit n AB BC AC a b c0 c || decide
       (AB.getD (a * n + b) 0 + BC.getD (b * n + c0 + c) 0 + AC.getD (a * n + c0 + c) 0 = 0)) := by
-  simp [scanHit, List.range_succ, List.any_append]
+  grind [scanHit]
+
+variable {μ : ℕ → ℤ} {ac a n bc U b ab len c0 : ℕ}
 
 /-- One round of `scan`, for the weights `wbc` and `wac` that it reads. -/
-theorem scanRound_runs {μ : ℕ → ℤ} {ab bc ac n a b c0 len c rowB rowA U : ℕ} {wab wbc wac : ℤ}
+theorem scanRound_runs {c rowB rowA : ℕ} {wab wbc wac : ℤ}
     {hit : Bool} (hw : (lim.space : ℤ) ≤ lim.word) (hU : 3 * (U : ℤ) + 1 ≤ lim.word)
     (hreadB : μ (rowB + c) = wbc) (hreadA : μ (rowA + c) = wac) (hB : rowB + c < lim.space)
     (hA : rowA + c < lim.space) (leAB : |wab| ≤ U) (leBC : |wbc| ≤ U) (leAC : |wac| ≤ U) :
@@ -105,63 +92,60 @@ theorem scanRound_runs {μ : ℕ → ℤ} {ab bc ac n a b c0 len c rowB rowA U :
   rw [abs_le] at leAB leBC leAC
   by_cases hz : wab + wbc + wac = 0 <;>
     exact ⟨by
-      simp [scanRound, Limits.Addr, abs_le, update_frame_setLocal, hreadB, hreadA, hz]; omega,
-      by simp [scanRound, update_frame_setLocal, hreadB, hreadA, hz, bit]⟩
+      simp [scanRound, Limits.Addr, abs_le, hreadB, hreadA, hz]; omega,
+      by simp_all [scanRound, update_frame_setLocal, bit]⟩
+
+variable {BC AB AC : List ℤ}
 
 /-- **scan** returns 1 if some `c` in the interval has `S(a,b,c) = 0`, and 0 if not; it changes no
 cell. -/
-theorem scan_spec {μ : ℕ → ℤ} {ab bc ac n a b c0 len U : ℕ} {AB BC AC : List ℤ}
-    (C : Weights lim μ ab bc ac n U AB BC AC) (ha : a < n) (hb : b < n) (hc : c0 + len ≤ n) :
+theorem scan_spec     (C : Weights lim μ ab bc ac n U AB BC AC) (ha : a < n) (hb : b < n) (hc : c0 + len ≤ n) :
     Ends lim P d scanBody ⟨frame [ab, bc, ac, n, a, b, c0, len], μ⟩ (tScan len) fun σ' =>
       σ'.loc 0 = flag (scanHit n AB BC AC a b c0 len = true) ∧ σ'.mem = μ := by
   light_facts C C.arrAB C.arrBC C.arrAC
-  have iab : a * n + b < n * n := Nat.mul_add_lt_mul ha hb
-  have ibc : b * n + (c0 + len) ≤ n * n := Nat.mul_add_le_mul hb hc
-  have iac : a * n + (c0 + len) ≤ n * n := Nat.mul_add_le_mul ha hc
+  have iab := Nat.mul_add_lt_mul ha hb
+  have ibc := Nat.mul_add_le_mul hb hc
+  have iac := Nat.mul_add_le_mul ha hc
   -- The weight `w(a,b)` and the addresses of `w(b,c0)` and `w(a,c0)`.
-  obtain ⟨wab, hwab⟩ : ∃ z, z = AB.getD (a * n + b) 0 := ⟨_, rfl⟩
-  obtain ⟨rowB, hrowB⟩ : ∃ r, r = bc + b * n + c0 := ⟨_, rfl⟩
-  obtain ⟨rowA, hrowA⟩ : ∃ r, r = ac + a * n + c0 := ⟨_, rfl⟩
-  have hreadAB : μ (ab + (a * n + b)) = wab := (C.arrAB.read iab).trans hwab.symm
-  have haddrAB : ((ab : ℤ) + (a : ℤ) * (n : ℤ) + (b : ℤ)).toNat = ab + (a * n + b) := by
-    rw [show (ab : ℤ) + (a : ℤ) * (n : ℤ) + (b : ℤ) = ((ab + (a * n + b) : ℕ) : ℤ) by
-      push_cast; ring, Int.toNat_natCast]
-  have leAB : |wab| ≤ U := hwab ▸ AbsLe.abs_getD_le (Int.natCast_nonneg U) C.arrAB.bound _
+  obtain ⟨wab, hwab⟩ : ∃ z, z = AB.getD (a * n + b) 0 := by simp
+  obtain ⟨rowB, hrowB⟩ : ∃ r, r = bc + b * n + c0 := by simp
+  obtain ⟨rowA, hrowA⟩ : ∃ r, r = ac + a * n + c0 := by simp
+  have hreadAB : μ (ab + (a * n + b)) = wab := by aesop
+  have haddrAB : (ab + a * n + (b : ℤ)).toNat = ab + (a * n + b) := by
+    omega
+  have leAB : |wab| ≤ U := by aesop
   unfold scanBody tScan
   -- hit := 0; wab := ab[a n + b]; rowB := bc + b n + c0; rowA := ac + a n + c0; c := 0
-  light_set (0 : ℕ)
+  light_set 0
   light_set wab using haddrAB, hreadAB
   light_set rowB
   light_set rowA
-  light_set (0 : ℕ)
+  light_set 0
   -- while c < len
   refine Ends.next _ (Ends.whileBlock (fun c σ => σ = ⟨frame [ab, bc, ac, n, a, b, c0, len, c,
-    bit (scanHit n AB BC AC a b c0 c), wab, rowB, rowA], μ⟩) len ?start ?round ?done le_rfl)
+    bit (scanHit n AB BC AC a b c0 c), wab, rowB, rowA], μ⟩) len ?_ ?_ ?_ le_rfl)
     (by simp [scanRound]; omega)
-  case start => simp [scanHit, bit]
-  case round =>
+  · rfl
+  ·
     rintro c _ hcl rfl
     have hreadBC : μ (rowB + c) = BC.getD (b * n + c0 + c) 0 := by
-      rw [← C.arrBC.read (by omega), hrowB, Nat.add_assoc bc, Nat.add_assoc bc]
+      rw [← C.arrBC.read (by omega), hrowB, bc.add_assoc, Nat.add_assoc]
     have hreadAC : μ (rowA + c) = AC.getD (a * n + c0 + c) 0 := by
-      rw [← C.arrAC.read (by omega), hrowA, Nat.add_assoc ac, Nat.add_assoc ac]
+      rw [← C.arrAC.read (by omega), hrowA, ac.add_assoc, Nat.add_assoc]
     refine ⟨by light_side, by light_side, ?_⟩
     rw [scanHit_succ, ← hwab]
     exact scanRound_runs C.hw C.hU hreadBC hreadAC (by omega) (by omega) leAB
       (AbsLe.abs_getD_le (Int.natCast_nonneg U) C.arrBC.bound _)
       (AbsLe.abs_getD_le (Int.natCast_nonneg U) C.arrAC.bound _)
-  case done =>
+  ·
     rintro _ rfl
     -- return hit
     exact ⟨by light_side, by light_side, Ends.setTo (bit (scanHit n AB BC AC a b c0 len))
       ⟨(flag_eq_bit _).symm, rfl⟩ (hT := by simp [scanRound]; omega)⟩
 
 /-- The specification of `scan`, for its callers. -/
-theorem scan_meets {p : ℕ} {μ : ℕ → ℤ} {ab bc ac n a b c0 len U : ℕ} {AB BC AC : List ℤ}
-    (hP : P[p]? = some scanBody) (C : Weights lim μ ab bc ac n U AB BC AC) (ha : a < n) (hb : b < n)
+theorem scan_meets {p : ℕ}     (hP : P[p]? = some scanBody) (C : Weights lim μ ab bc ac n U AB BC AC) (ha : a < n) (hb : b < n)
     (hc : c0 + len ≤ n) :
     Meets lim P p d [ab, bc, ac, n, a, b, c0, len] μ (tScan len) fun r μ' =>
       r = flag (scanHit n AB BC AC a b c0 len = true) ∧ μ' = μ :=
-  Meets.of_body hP (scan_spec C ha hb hc)
-
-end Light.Sec3
+  by grind [Meets.of_body, scan_spec]

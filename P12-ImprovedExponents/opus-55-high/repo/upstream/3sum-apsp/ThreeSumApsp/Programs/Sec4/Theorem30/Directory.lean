@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Areas
+import ThreeSumApsp.Programs.Sec4.Theorem30.Areas
 
 /-!
 # The cells of the directory, by name
@@ -17,11 +16,9 @@ A proof that treats `x := mem[b0 + Dir.bands]` names the equation `bands`.  The 
 establishes all of them (`SharedReady.dirCells`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp
 
 /-- What the cells of the directory that the routines of Section 4 read hold. -/
 structure DirCells (p : Sec2.Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop where
@@ -38,5 +35,3 @@ structure DirCells (p : Sec2.Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop where
   encA : μ ((b0 : ℤ) + 26).toNat = (p.aENCA b0 : ℕ)
   encB : μ ((b0 : ℤ) + 27).toNat = (p.aENCB b0 : ℕ)
   sharedEnd : μ ((b0 : ℤ) + 30).toNat = (aWD p b0 : ℕ)
-
-end Light.Sec4

@@ -3,12 +3,12 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Calls
-public import ThreeSumApsp.Lang.Lib.Seg
-public import ThreeSumApsp.Spec.Sec2.Theorem5.Layout
-public import ThreeSumApsp.Spec.Sec4.Theorem30.TileTries
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Calls
+import ThreeSumApsp.Lang.Lib.Seg
+import ThreeSumApsp.Spec.Sec2.Theorem5.Layout
+import ThreeSumApsp.Spec.Sec4.Theorem30.TileTries
 
 /-!
 # Theorem 30 in the light language: procedure numbers, time functions, specifications
@@ -65,7 +65,6 @@ The last line of the table continues with `Theorem30.correct`. The model `boxVal
 part of `fillList`, which calls `sumTen` for a box with stars.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -100,21 +99,8 @@ The numbers 0 to 39 belong to Section 2, the numbers from 40 on to Section 4. Th
 53; the files of the other routines of Section 4 fix theirs. -/
 
 namespace Proc
-/-- The numbers of the fourteen routines, in the order in which they call each other. -/
-abbrev nineFirst : ℕ := 40
-@[inherit_doc nineFirst] abbrev nineNext : ℕ := 41
-@[inherit_doc nineFirst] abbrev scatter : ℕ := 42
-@[inherit_doc nineFirst] abbrev starFirst : ℕ := 43
-@[inherit_doc nineFirst] abbrev horner : ℕ := 44
-@[inherit_doc nineFirst] abbrev lookup : ℕ := 45
-@[inherit_doc nineFirst] abbrev insert : ℕ := 46
-@[inherit_doc nineFirst] abbrev newRoot : ℕ := 47
-@[inherit_doc nineFirst] abbrev sumTen : ℕ := 48
-@[inherit_doc nineFirst] abbrev fillList : ℕ := 49
-@[inherit_doc nineFirst] abbrev tile : ℕ := 50
-@[inherit_doc nineFirst] abbrev allTiles : ℕ := 51
-@[inherit_doc nineFirst] abbrev outDigits : ℕ := 52
-@[inherit_doc nineFirst] abbrev queryCore : ℕ := 53
+/- The numbers of the fourteen routines, in the order in which they call each other. -/
+slots 40 nineFirst nineNext scatter starFirst horner lookup insert newRoot sumTen fillList tile allTiles outDigits queryCore
 end Proc
 
 /-! ## Time functions -/
@@ -342,27 +328,7 @@ abbrev stored (pre : List (List ℕ)) : ℕ × List ℕ → Option ℤ :=
 
 end FillListArgs
 
-/-- What `fillList` assumes: the surroundings of a tile, a trie that holds the boxes with fewer
-stars, the tries and the two encodings in the memory, and room for L vertices for each box. -/
-structure FillListPre (lim : Limits) (μ : ℕ → ℤ) (x : FillListArgs) : Prop where
-  ctx : TileCtx lim x.L x.m x.t x.encA x.encB x.aA x.aB x.tr x.cap x.fp x.cur x.box
-  stars_le : x.e ≤ x.m - x.t
-  root_ne : x.root ≠ 0
-  rep : TrieRep x.L x.lo x.T x.roots (x.stored [])
-  trie : TrieMem μ x.tr x.cap x.fp x.T
-  segA : Seg μ x.aA (arrT x.encA)
-  segB : Seg μ x.aB (arrT x.encB)
-  room : x.T.length + 11 * x.L * x.boxes.length ≤ x.cap
 
-/-- fillList(e, root, aA, aB, tr, fp, cur, box, L, mt), with mt = m - t, inserts the boxes with e
-stars, with their values, into the trie of the tile, which has the given root and holds the boxes
-with fewer stars; for e ≥ 1 the values are sums of ten values looked up in it. -/
-def FillListSpec (lim : Limits) (P : Program) : Prop :=
-  ∀ (x : FillListArgs) (μ : ℕ → ℤ), FillListPre lim μ x →
-    ∀ d, d + 2 ≤ lim.depth →
-    Meets lim P Proc.fillList d x.vals μ (tFillList x.L x.boxes.length) fun _ μ' =>
-      TrieMem μ' x.tr x.cap x.fp (fillTrie (arrT x.encA) (arrT x.encB) x.root x.e x.boxes x.T) ∧
-        SameOutsideTile μ μ' x.L x.tr x.cap x.fp x.cur x.box
 
 /-- The arguments of tile(aA, aB, ra, tr, fp, cur, box, L, mt), with mt = m - t, and the data behind
 them: the encodings encA and encB of the tile are at aA and aB; the trie area of cap cells at tr
@@ -391,28 +357,7 @@ abbrev TileArgs.Kept (x : TileArgs) (b : ℕ) : Prop :=
   Outside x.tr x.cap b ∧ b ≠ x.fp ∧ Outside x.cur x.L b ∧ Outside x.box x.L b ∧
     b ≠ x.aR + x.s.roots.length
 
-/-- What `tile` assumes: the surroundings of a tile, the older tries and roots and the two encodings
-in the memory, room for the new trie, and the place of the cells of the roots. -/
-structure TilePre (lim : Limits) (μ : ℕ → ℤ) (x : TileArgs) : Prop where
-  ctx : TileCtx lim x.L x.m x.t x.encA x.encB x.aA x.aB x.tr x.cap x.fp x.cur x.box
-  rep : x.s.Holds x.L x.lo x.old
-  trie : TrieMem μ x.tr x.cap x.fp x.s.cells
-  roots : SegN μ x.aR x.s.roots
-  segA : Seg μ x.aA (arrT x.encA)
-  segB : Seg μ x.aB (arrT x.encB)
-  room : x.s.cells.length + 11 * (1 + x.L * (boxes x.L x.m x.t).card) ≤ x.cap
-  /-- The cells of the roots lie between the cell fp and the trie area. -/
-  rootsPlace : x.fp < x.aR ∧ x.aR + x.cells ≤ x.tr
 
-/-- `tile` builds the trie of one tile, with the values of all its boxes, on top of the older tries,
-and writes its root into the cell behind the older roots. It changes only the trie area, the cell
-fp, the two scratch strings and this cell. -/
-def TileSpec (lim : Limits) (P : Program) : Prop :=
-  ∀ (x : TileArgs) (μ : ℕ → ℤ), TilePre lim μ x →
-    ∀ d, d + 3 ≤ lim.depth → Meets lim P Proc.tile d
-      [x.aA, x.aB, (x.aR + x.s.roots.length : ℕ), x.tr, x.fp, x.cur, x.box, x.L, (x.m - x.t : ℕ)] μ
-      (tTile x.L x.m x.t) fun _ μ' =>
-        TrieMem μ' x.tr x.cap x.fp x.tries.cells ∧ SegN μ' x.aR x.tries.roots ∧ SameOn x.Kept μ μ'
 
 /-- The arguments of allTiles(aENCA, aENCB, nB, T, aR, tr, fp, cur, box, L, mt), with T = 10^L and
 mt = m - t, and the data behind them: the encodings of the nB row bands from aENCA and of the nB
@@ -431,33 +376,7 @@ def AllTilesArgs.tries (x : AllTilesArgs) : TrieStore :=
 /-- The cells that `allTiles` keeps: those below cur and those behind the trie area. -/
 abbrev AllTilesArgs.Kept (x : AllTilesArgs) (b : ℕ) : Prop := b < x.cur ∨ x.tr + x.cap ≤ b
 
-/-- What `allTiles` assumes: the limits, room in the trie area for the tries of all tiles, the order
-of the areas, the encodings in the memory, and the trie array [0]. -/
-structure AllTilesPre (lim : Limits) (μ : ℕ → ℤ) (x : AllTilesArgs) : Prop where
-  std : Std lim
-  t_le : x.t ≤ x.m
-  m_le : x.m ≤ x.L
-  /-- Every value and every partial sum fits in a word. -/
-  value_le : ∃ A B : ℤ, (∀ β τ, |x.encA β τ| ≤ A) ∧ (∀ β τ, |x.encB β τ| ≤ B) ∧
-    10 ^ x.m * (A * B) ≤ lim.word
-  pow_le : (10 : ℤ) ^ x.L ≤ lim.word
-  cap_ge : 1 + x.nB * x.nB * (11 * (1 + x.L * (boxes x.L x.m x.t).card)) ≤ x.cap
-  /-- The areas lie in this order, without overlap, below the end of the memory. -/
-  order : x.aENCA + x.nB * 10 ^ x.L ≤ x.aENCB ∧ x.aENCB + x.nB * 10 ^ x.L ≤ x.cur ∧
-    x.cur + x.L ≤ x.box ∧ x.box + x.L ≤ x.fp ∧ x.fp < x.aR ∧
-    x.aR + x.nB * x.nB ≤ x.tr ∧ x.tr + x.cap < lim.space
-  segA : ∀ β < x.nB, Seg μ (x.aENCA + β * 10 ^ x.L) (arrT (x.encA β))
-  segB : ∀ β < x.nB, Seg μ (x.aENCB + β * 10 ^ x.L) (arrT (x.encB β))
-  trie : TrieMem μ x.tr x.cap x.fp [0]
 
-/-- `allTiles` builds the tries of all tiles, starting from the trie array [0], and changes nothing
-below cur or behind the trie area. -/
-def AllTilesSpec (lim : Limits) (P : Program) : Prop :=
-  ∀ (x : AllTilesArgs) (μ : ℕ → ℤ), AllTilesPre lim μ x →
-    ∀ d, d + 4 ≤ lim.depth →
-    Meets lim P Proc.allTiles d [x.aENCA, x.aENCB, x.nB, (10 ^ x.L : ℕ), x.aR, x.tr, x.fp,
-      x.cur, x.box, x.L, (x.m - x.t : ℕ)] μ (tAllTiles x.L x.m x.t x.nB) fun _ μ' =>
-        TrieMem μ' x.tr x.cap x.fp x.tries.cells ∧ SegN μ' x.aR x.tries.roots ∧ SameOn x.Kept μ μ'
 
 /-! ## A query -/
 
@@ -531,47 +450,4 @@ structure QueryCoreArgs where
 def QueryCoreArgs.terms (x : QueryCoreArgs) : List ℤ :=
   queryTerms x.m x.t (arrT x.encA) (arrT x.encB) (trieLookup x.T x.root) (digitsO x.η)
 
-/-- What `queryCore` assumes: the data stand in the memory, every box of the query is found in the
-trie of the tile, all partial sums fit in a word, and the two scratch strings are apart from each
-other and from the data. -/
-structure QueryCorePre (lim : Limits) (μ : ℕ → ℤ) (x : QueryCoreArgs) : Prop where
-  std : Std lim
-  t_le : x.t ≤ x.m
-  card : (innerSetO x.η).card = x.m
-  segA : Seg μ x.aA (arrT x.encA)
-  segB : Seg μ x.aB (arrT x.encB)
-  segT : Seg μ x.tr x.T
-  segDigits : SegN μ x.wd (digitsO x.η)
-  walk : ∀ l ∈ boxesOf x.m x.t (digitsO x.η), WalkOK x.T x.root l
-  sums : ∀ j, |(x.terms.take j).sum| ≤ lim.word
-  prod : ∀ τ, |x.encA τ * x.encB τ| ≤ lim.word
-  pow : (10 : ℤ) ^ x.L ≤ lim.word
-  ss_wd : Apart x.ss x.m x.wd x.L
-  box_wd : Apart x.box x.L x.wd x.L
-  ss_box : Apart x.ss x.m x.box x.L
-  ss_aA : Apart x.ss x.m x.aA (10 ^ x.L)
-  ss_aB : Apart x.ss x.m x.aB (10 ^ x.L)
-  box_aA : Apart x.box x.L x.aA (10 ^ x.L)
-  box_aB : Apart x.box x.L x.aB (10 ^ x.L)
-  ss_tr : Apart x.ss x.m x.tr x.T.length
-  box_tr : Apart x.box x.L x.tr x.T.length
-  aA_lt : x.aA + 10 ^ x.L < lim.space
-  aB_lt : x.aB + 10 ^ x.L < lim.space
-  tr_lt : x.tr + x.T.length < lim.space
-  wd_lt : x.wd + x.L < lim.space
-  ss_lt : x.ss + x.m < lim.space
-  box_lt : x.box + x.L < lim.space
 
-/-- `queryCore` returns the sum `trieQuery` for the output string whose digits are at wd: the
-products at its leaves of order below t, read from the two encodings, and what the trie with the
-given root holds for its boxes. This is the sum of Lemma 28 if the trie holds the values of the
-boxes (`trieQuery_allTries`). The routine changes only the two scratch strings. -/
-def QueryCoreSpec (lim : Limits) (P : Program) : Prop :=
-  ∀ (x : QueryCoreArgs) (μ : ℕ → ℤ), QueryCorePre lim μ x →
-    ∀ d, d + 1 ≤ lim.depth →
-    Meets lim P Proc.queryCore d [x.aA, x.aB, x.tr, x.root, x.wd, x.ss, x.box, x.L, x.m, x.t] μ
-      (tQueryCore x.L x.m x.t) fun r μ' =>
-        r = trieQuery x.m x.t (arrT x.encA) (arrT x.encB) x.T x.root (digitsO x.η) ∧
-          SameOutside2 μ μ' x.ss x.m x.box x.L
-
-end Light.Sec4

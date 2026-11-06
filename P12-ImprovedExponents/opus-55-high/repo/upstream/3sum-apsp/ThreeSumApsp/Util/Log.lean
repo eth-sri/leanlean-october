@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import Mathlib.Analysis.Complex.ExponentialBounds
-public import Mathlib.Analysis.SpecialFunctions.Log.Base
+import Mathlib.Analysis.Complex.ExponentialBounds
+import Mathlib.Analysis.SpecialFunctions.Log.Base
 
 /-!
 # Logarithms and real powers
@@ -22,7 +21,6 @@ of the paper use silently.
 * The definition `logU u = log (max u 2)`, the paper's `log U`.
 -/
 
-@[expose] public section
 
 namespace Real
 
@@ -48,21 +46,25 @@ theorem log_nine : log 9 = 2 * log 3 := by
 theorem one_le_log_four : 1 ≤ log 4 := by
   linarith [log_four, one_half_lt_log_two]
 
+variable {x : ℝ}
+
 /-- `1 ≤ log x` for `x ≥ 3`. -/
-theorem one_le_log_of_three_le {x : ℝ} (hx : 3 ≤ x) : 1 ≤ log x :=
-  (le_log_iff_exp_le (by linarith)).2 (exp_one_lt_three.le.trans hx)
+theorem one_le_log_of_three_le (hx : 3 ≤ x := by linarith) : 1 ≤ log x :=
+  by grind [le_log_iff_exp_le, exp_one_lt_three]
+
+variable {n : ℕ}
 
 /-- `1 ≤ log n` for a natural number `n ≥ 3`. -/
-theorem one_le_log_natCast_of_three_le {n : ℕ} (hn : 3 ≤ n) : 1 ≤ log n :=
-  one_le_log_of_three_le (by exact_mod_cast hn)
+theorem one_le_log_natCast_of_three_le (hn : 3 ≤ n) : 1 ≤ log n :=
+  one_le_log_of_three_le (by simp_all)
 
 /-- `1 / 2 ≤ log x` for `x ≥ 2`. -/
-theorem one_half_le_log_of_two_le {x : ℝ} (hx : 2 ≤ x) : 1 / 2 ≤ log x :=
+theorem one_half_le_log_of_two_le (hx : 2 ≤ x := by simp_all) : 1 / 2 ≤ log x :=
   one_half_lt_log_two.le.trans (log_le_log two_pos hx)
 
 /-- `4 ≤ √D` for a natural number `D ≥ 16`. -/
 theorem four_le_sqrt_natCast_of_sixteen_le {D : ℕ} (hD : 16 ≤ D) : 4 ≤ √(D : ℝ) :=
-  le_sqrt_of_sq_le (by norm_num; exact_mod_cast hD)
+  le_sqrt_of_sq_le (by norm_num; assumption)
 
 /-! ### The rounded logarithm `Nat.clog` -/
 
@@ -74,16 +76,14 @@ theorem natCast_clog_lt_logb_add_one (b n : ℕ) : (Nat.clog b n : ℝ) < logb b
 
 /-- `c ^ ⌈log_b n⌉ ≤ c * n ^ (log_b c)`, for natural numbers `b` and `n ≥ 1` and a real number
 `c ≥ 1`. -/
-theorem pow_clog_le_mul_rpow_logb (b : ℕ) {n : ℕ} {c : ℝ} (hn : 1 ≤ n) (hc : 1 ≤ c) :
+theorem pow_clog_le_mul_rpow_logb (b : ℕ) {c : ℝ} (hn : 1 ≤ n) (hc : 1 ≤ c) :
     c ^ Nat.clog b n ≤ c * (n : ℝ) ^ logb b c := by
-  have hc0 : 0 < c := zero_lt_one.trans_le hc
-  have hswap : c ^ logb b n = (n : ℝ) ^ logb b c := by
-    rw [rpow_def_of_pos hc0, rpow_def_of_pos (Nat.cast_pos.2 hn), logb, logb]
-    ring_nf
-  calc c ^ Nat.clog b n = c ^ (Nat.clog b n : ℝ) := (rpow_natCast c _).symm
+  have hswap : c ^ logb b n = n ^ logb b c := by
+    grind [rpow_def_of_pos, Nat.cast_pos, logb]
+  calc c ^ b.clog n = c ^ (Nat.clog b n : ℝ) := by simp
     _ ≤ c ^ (logb b n + 1) :=
-        rpow_le_rpow_of_exponent_le hc (natCast_clog_lt_logb_add_one b n).le
-    _ = c * (n : ℝ) ^ logb b c := by rw [rpow_add_one hc0.ne', hswap, mul_comm]
+        by grind [rpow_le_rpow_of_exponent_le, natCast_clog_lt_logb_add_one]
+    _ = c * n ^ logb b c := by grind [rpow_add_one, mul_comm]
 
 end Real
 
@@ -93,5 +93,3 @@ namespace ThreeSumApsp
 well. It occurs in the bounds of Theorem 21(b) and in the overhead for copying in
 `ConditionalTimes.Claim.RectMinPlusFromSquare`. -/
 noncomputable def logU (u : ℝ) : ℝ := Real.log (max u 2)
-
-end ThreeSumApsp

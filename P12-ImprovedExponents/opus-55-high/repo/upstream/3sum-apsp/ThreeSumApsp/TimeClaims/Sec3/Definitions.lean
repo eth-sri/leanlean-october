@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec3.Parameters
-public import ThreeSumApsp.Util.Asymptotics.UpperBounds
+import ThreeSumApsp.Sec3.Parameters
+import ThreeSumApsp.Util.Asymptotics.UpperBounds
 
 /-!
 # Running-time claims of Sections 2 to 4, for an abstract notion of "solved in time T"
@@ -63,7 +62,6 @@ Conventions.
   bounded from above.
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp
 
@@ -278,7 +276,3 @@ negative cycles is solved deterministically in `O(n^a (log n)^{O(1)})` time, for
 `κ ≥ 0`. -/
 abbrev ApspInPolylog (M : DetTimeModel) (a : ℝ) : Prop :=
   SolvedAlongPow M.apsp UpperPowPolylog a
-
-end Claim
-
-end ThreeSumApsp

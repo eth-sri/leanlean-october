@@ -3,12 +3,12 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Spec.Sec3.Problems
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Hashing
-public import ThreeSumApsp.Spec.Sec3.Theorem17.ZOrder
-public import ThreeSumApsp.Util.Sum
+import ThreeSumApsp.Spec.Sec3.Problems
+import ThreeSumApsp.Spec.Sec3.Theorem17.Hashing
+import ThreeSumApsp.Spec.Sec3.Theorem17.ZOrder
+import ThreeSumApsp.Util.Sum
+noncomputable section
 
 /-!
 # Strassen's algorithm on lists, and the count of the proof of Theorem 17
@@ -30,7 +30,6 @@ and `countOf` reads the number of triples `(a,b,c)` with `S(a,b,c) = w(a,b) + w(
 4. `countOf_eq`: the count is the count of the proof of Theorem 17.
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -43,31 +42,29 @@ section Ring
 variable {p : ℕ} (hp : p ≠ 0) (K : ℕ)
 
 /-- A matrix over the ring as a list in Z-order. -/
-noncomputable def zRing (α : ℕ → ℕ → CyclicRing p) : List ℤ :=
+def zRing (α : ℕ → ℕ → CyclicRing p) : List ℤ :=
   zList K fun a c => cycVec hp (α a c)
 
+variable (α : ℕ → ℕ → CyclicRing p)
+
 /-- The list of a sum of matrices. -/
-theorem zRing_add (α β : ℕ → ℕ → CyclicRing p) :
+theorem zRing_add (β : ℕ → ℕ → CyclicRing p) :
     vadd (zRing hp K α) (zRing hp K β) = zRing hp K fun a c => α a c + β a c := by
-  unfold zRing zList vadd
-  rw [List.zipWith_flatMap_range _ _ _ _ (fun _ => length_cycVec hp _) fun _ => length_cycVec hp _]
-  exact List.flatMap_congr fun z _ => (cycVec_add hp _ _).symm
+  simp_all [zRing, zList, vadd, List.zipWith_flatMap_range, length_cycVec, cycVec_add]
 
 /-- The list of a difference of matrices. -/
-theorem zRing_sub (α β : ℕ → ℕ → CyclicRing p) :
+theorem zRing_sub (β : ℕ → ℕ → CyclicRing p) :
     vsub (zRing hp K α) (zRing hp K β) = zRing hp K fun a c => α a c - β a c := by
-  unfold zRing zList vsub
-  rw [List.zipWith_flatMap_range _ _ _ _ (fun _ => length_cycVec hp _) fun _ => length_cycVec hp _]
-  exact List.flatMap_congr fun z _ => (cycVec_sub hp _ _).symm
+  simp_all [zRing, zList, vsub, List.zipWith_flatMap_range, length_cycVec, cycVec_sub]
 
 /-- The quadrants of a matrix are the quarters of its list. -/
-theorem quarter_zRing (α : ℕ → ℕ → CyclicRing p) {t : ℕ} (ht : t < 4) :
+theorem quarter_zRing {t : ℕ} (ht : t < 4) :
     quarter (4 ^ K * p) t (zRing hp (K + 1) α) =
       zRing hp K fun a c => α (a + t / 2 * 2 ^ K) (c + t % 2 * 2 ^ K) :=
-  quarter_zList _ (fun _ _ => length_cycVec hp _) ht
+  quarter_zList _ (by grind [length_cycVec]) ht
 
 /-- A matrix is put together from its four quadrants. -/
-theorem zRing_succ (α : ℕ → ℕ → CyclicRing p) :
+theorem zRing_succ :
     zRing hp (K + 1) α =
       zRing hp K (fun a c => α a c) ++ zRing hp K (fun a c => α a (c + 2 ^ K)) ++
       zRing hp K (fun a c => α (a + 2 ^ K) c) ++ zRing hp K fun a c => α (a + 2 ^ K) (c + 2 ^ K) :=
@@ -96,11 +93,11 @@ def strassenList (p : ℕ) : ℕ → List ℤ → List ℤ → List ℤ
     vadd (vsub (vadd m1 m4) m5) m7 ++ vadd m3 m5 ++ vadd m2 m4 ++ vadd (vadd (vsub m1 m2) m3) m6
 
 /-- A sum over twice as many indices. -/
-private theorem sum_range_two_pow_succ {R : Type} [AddCommMonoid R] (K : ℕ) (f : ℕ → R) :
+theorem sum_range_two_pow_succ {R : Type} [AddCommMonoid R] (K : ℕ) (f : ℕ → R) :
     ∑ c ∈ range (2 ^ (K + 1)), f c =
       ∑ c ∈ range (2 ^ K), f c + ∑ c ∈ range (2 ^ K), f (c + 2 ^ K) := by
   rw [pow_succ, Nat.mul_two, Finset.sum_range_add]
-  simp only [Nat.add_comm]
+  grind
 
 /-- **Strassen's algorithm computes the product**, for matrices over the ring. -/
 theorem strassenList_zRing {p : ℕ} (hp : p ≠ 0) (K : ℕ) (α β : ℕ → ℕ → CyclicRing p) :
@@ -110,26 +107,20 @@ theorem strassenList_zRing {p : ℕ} (hp : p ≠ 0) (K : ℕ) (α β : ℕ → �
   | zero => simp [strassenList, zRing, zList, zRow_zero, zCol_zero, cycVec_mul]
   | succ K ih =>
     -- The quarters of the two lists are the quadrants, and the seven products are products.
-    have hq0 := fun γ => quarter_zRing hp K γ (show 0 < 4 by norm_num)
-    have hq1 := fun γ => quarter_zRing hp K γ (show 1 < 4 by norm_num)
-    have hq2 := fun γ => quarter_zRing hp K γ (show 2 < 4 by norm_num)
-    have hq3 := fun γ => quarter_zRing hp K γ (show 3 < 4 by norm_num)
-    simp only [Nat.reduceDiv, Nat.reduceMod, Nat.zero_mul, Nat.one_mul, Nat.add_zero]
-      at hq0 hq1 hq2 hq3
-    simp only [strassenList, hq0, hq1, hq2, hq3, zRing_add, zRing_sub, ih]
+    simp only [strassenList, (fun γ => quarter_zRing hp K γ (show 0 < 4 by norm_num)), (fun γ => quarter_zRing hp K γ (show 1 < 4 by norm_num)), (fun γ => quarter_zRing hp K γ (show 2 < 4 by norm_num)), (fun γ => quarter_zRing hp K γ (show 3 < 4 by norm_num)), zRing_add, zRing_sub, ih]
     -- Strassen's identities, one for each quadrant of the product, summand by summand.
     rw [zRing_succ]
-    refine congrArg₂ (· ++ ·) (congrArg₂ (· ++ ·) (congrArg₂ (· ++ ·) ?_ ?_) ?_) ?_ <;>
-      refine congrArg (zRing hp K) (funext₂ fun a b => ?_) <;>
+    apply congrArg₂ _ (congrArg₂ (· ++ ·) (congrArg₂ (· ++ ·) ?_ ?_) ?_) <;>
+      refine congrArg _ (funext₂ fun a b => ?_) <;>
       rw [sum_range_two_pow_succ] <;>
       simp only [← Finset.sum_add_distrib, ← Finset.sum_sub_distrib] <;>
-      exact Finset.sum_congr rfl fun c _ => by ring
+      exact by grind
 
 /-- `strassenList p K` calls `cconv` seven times per level, `7^K` times in all.  For `K = ⌈log₂ n⌉`
 this is the `O(n^{log₂ 7})` of the proof of Theorem 17: `7^{⌈log₂ n⌉} ≤ 7 n^{log₂ 7}`. -/
 theorem seven_pow_clog_le {n : ℕ} (hn : 1 ≤ n) :
     (7 : ℝ) ^ Nat.clog 2 n ≤ 7 * (n : ℝ) ^ Real.logb 2 7 := by
-  simpa using Real.pow_clog_le_mul_rpow_logb 2 hn (c := 7) (by norm_num)
+  grind [Real.pow_clog_le_mul_rpow_logb]
 
 /-! ## The count of the proof of Theorem 17 -/
 
@@ -163,11 +154,11 @@ section Count
 variable {n : ℕ} (T : TriangleInstance ℤ n) {p : ℕ}
 
 /-- The matrix `P` of the proof of Theorem 17, padded with zeros. -/
-noncomputable def padP (p : ℕ) (a c : ℕ) : CyclicRing p :=
+def padP (p : ℕ) (a c : ℕ) : CyclicRing p :=
   if h : a < n ∧ c < n then T.matP p ⟨a, h.1⟩ ⟨c, h.2⟩ else 0
 
 /-- The matrix `Q` of the proof of Theorem 17, padded with zeros. -/
-noncomputable def padQ (p : ℕ) (c b : ℕ) : CyclicRing p :=
+def padQ (p : ℕ) (c b : ℕ) : CyclicRing p :=
   if h : c < n ∧ b < n then T.matQ p ⟨c, h.1⟩ ⟨b, h.2⟩ else 0
 
 /-- The padding does not change the entries of the product. -/
@@ -175,8 +166,8 @@ theorem sum_padP_mul_padQ (p : ℕ) {N : ℕ} (hN : n ≤ N) (a b : Fin n) :
     ∑ c ∈ range N, padP T p a c * padQ T p c b = (T.matP p * T.matQ p) a b := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le hN
   have hpad : ∑ x ∈ range k, padP T p a (n + x) * padQ T p (n + x) b = 0 :=
-    Finset.sum_eq_zero fun x _ => by simp [padP]
-  rw [Finset.sum_range_add, hpad, add_zero, Matrix.mul_apply, Finset.sum_range]
+    by simp_all [padP]
+  rw [Finset.sum_range_add, hpad, add_zero, Finset.sum_range]
   exact Finset.sum_congr rfl fun c _ => by simp [padP, padQ]
 
 variable (n) (AB BC AC : List ℤ)
@@ -184,31 +175,31 @@ variable (n) (AB BC AC : List ℤ)
 /-- The first list that the routine fills is the matrix `P`, padded. -/
 theorem matPList_eq_zRing (hp : p ≠ 0) (K : ℕ) :
     matPList n p K (residList p AC) = zRing hp K (padP (triOf n AB BC AC) p) := by
-  refine congrArg (zList K) (funext₂ fun a c => ?_)
+  refine congrArg _ (funext₂ fun a c => ?_)
   rw [padP]
   split_ifs with h
   · rw [cycVec_matP, getD_residList]
     rfl
-  · exact (cycVec_zero hp).symm
+  grind [cycVec_zero]
 
 /-- The second list that the routine fills is the matrix `Q`, padded. -/
 theorem matQList_eq_zRing (hp : p ≠ 0) (K : ℕ) :
     matQList n p K (residList p BC) = zRing hp K (padQ (triOf n AB BC AC) p) := by
-  refine congrArg (zList K) (funext₂ fun c b => ?_)
+  refine congrArg _ (funext₂ fun c b => ?_)
   rw [padQ]
   split_ifs with h
   · rw [cycVec_matQ, getD_residList]
     rfl
-  · exact (cycVec_zero hp).symm
+  grind [cycVec_zero]
 
 /-- **The count of the proof of Theorem 17**: `countOf`, computed with Strassen's algorithm from the
 three lists of weights, is the number of triples `(a,b,c)` with `S(a,b,c) ≡ 0 (mod p)`. -/
 theorem countOf_eq (hp : p ≠ 0) :
     countOf n p AB BC AC = (triOf n AB BC AC).countZeroMod p := by
-  have hnK : n ≤ 2 ^ Nat.clog 2 n := Nat.le_pow_clog (by norm_num) n
+  have hnK : n ≤ 2 ^ Nat.clog 2 n := by grind [Nat.le_pow_clog]
   -- The two lists are `P` and `Q`, padded (step 3), and Strassen's algorithm gives their product
   -- (step 2); both sides become sums over the pairs `(a, b)`.
-  rw [countZeroMod_eq _ hp, countOf, matPList_eq_zRing n AB BC AC hp,
+  rw [countZeroMod_eq, countOf, matPList_eq_zRing n AB BC AC hp,
     matQList_eq_zRing n AB BC AC hp, strassenList_zRing, countBy, List.sum_map_range, sum_range_mul,
     Finset.sum_range]
   refine Finset.sum_congr rfl fun a _ => ?_
@@ -218,11 +209,7 @@ theorem countOf_eq (hp : p ≠ 0) :
   -- number read from the list is that coefficient of `(PQ)[a,b]`.
   rw [Nat.mul_add_div_of_lt b.isLt, Nat.mul_add_mod_of_lt b.isLt, getD_residList, ← resid_neg hp,
     zRing,
-    getD_zList _ (fun _ _ => length_cycVec hp _) (a.isLt.trans_le hnK) (b.isLt.trans_le hnK)
+    getD_zList _ (by grind [length_cycVec]) (a.isLt.trans_le hnK) (b.isLt.trans_le hnK)
       (resid_lt hp _),
-    sum_padP_mul_padQ _ p hnK a b]
+    sum_padP_mul_padQ _ p hnK]
   rfl
-
-end Count
-
-end ThreeSumApsp.Spec

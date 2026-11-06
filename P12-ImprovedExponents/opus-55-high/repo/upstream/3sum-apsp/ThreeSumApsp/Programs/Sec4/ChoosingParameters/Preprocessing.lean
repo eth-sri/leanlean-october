@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
 
 /-!
 # Corollaries 26 and 31 in the light language: the preprocessing, with rational parameters
@@ -22,13 +21,12 @@ addresses, pads X, and pads Y by a copy and a fill with zeros (`prePad31_ends`,
 the flag 1 (`preBuild31_ends`, `PreInput31.ready_large`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
-variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
+variable {lim : Limits} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
   {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
 
 /-! ## What the routine is given, and what it leaves -/
@@ -47,13 +45,13 @@ theorem matAt_padInnerRows {F a : ℕ} (mY : MatAt μ aY Y)
     (hzero : ∀ i < (F - D₀) * N, μ' (a + D₀ * N + i) = 0) : MatAt μ' a (padInnerRows F Y) := by
   intro i j
   unfold padInnerRows
-  by_cases hi : (i : ℕ) < D₀
-  · rw [dif_pos hi, Nat.add_assoc, hcopy _ (Nat.mul_add_lt_mul hi j.isLt), ← Nat.add_assoc]
+  by_cases hi : i < D₀
+  · rw [dif_pos, Nat.add_assoc, hcopy _ (Nat.mul_add_lt_mul hi j.isLt), ← Nat.add_assoc]
     exact mY ⟨i, hi⟩ j
-  · have hrow : (i : ℕ) * N = D₀ * N + ((i : ℕ) - D₀) * N := by
-      rw [← Nat.add_mul, Nat.add_sub_cancel' (not_lt.mp hi)]
-    have hidx := Nat.mul_add_lt_mul (by have := i.isLt; omega : (i : ℕ) - D₀ < F - D₀) j.isLt
-    rw [dif_neg hi, hrow, ← Nat.add_assoc, Nat.add_assoc (a + D₀ * N), hzero _ hidx]
+  · have hrow : i * N = D₀ * N + (i - D₀) * N := by
+      grind [Nat.add_mul, Nat.add_sub_cancel', not_lt]
+    have hidx := Nat.mul_add_lt_mul (by omega : i - D₀ < F - D₀) j.isLt
+    grind
 
 /-! ## From the threshold on -/
 
@@ -69,14 +67,7 @@ structure Areas31 (lim : Limits) (N D₀ fr F R : ℕ) : Prop where
   F_le : F ≤ N * F
 
 theorem PreInput31.areas (h : PreInput31 lim G X Y aX aY fr U μ) (hm : G.m₀ ≤ logFour D₀) :
-    Areas31 lim N D₀ fr (D (logFour D₀)) ((D (logFour D₀) - D₀) * N) where
-  F_eq := rfl
-  R_eq := rfl
-  base := rfl
-  base_lt := (G.blockAt_lt_blockEnd N D₀ fr).trans_le (structEnd_large hm N fr ▸ h.lim.space)
-  D_le := le_D_logFour D₀
-  rows := by rw [← Nat.add_mul, Nat.add_sub_cancel' (le_D_logFour D₀), Nat.mul_comm]
-  F_le := Nat.le_mul_of_pos_left _ h.one_le_N
+    Areas31 lim N D₀ fr (D (logFour D₀)) ((D (logFour D₀) - D₀) * N) := ⟨rfl, rfl, rfl, (G.blockAt_lt_blockEnd N D₀ fr).trans_le (structEnd_large hm N fr ▸ h.lim.space), le_D_logFour D₀, by grind [Nat.add_mul, Nat.add_sub_cancel', le_D_logFour, Nat.mul_comm], Nat.le_mul_of_pos_left _ h.one_le_N⟩
 
 /-- The time of prePad31. -/
 def tPrePad31 (G : RatParams) (N D₀ : ℕ) : ℕ :=
@@ -97,5 +88,3 @@ def Padded31 (G : RatParams) {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ)
     SameOutside μ μ' fr (blockAt N D₀ fr - fr)
 
 /-! ## The routine -/
-
-end Light.Sec4

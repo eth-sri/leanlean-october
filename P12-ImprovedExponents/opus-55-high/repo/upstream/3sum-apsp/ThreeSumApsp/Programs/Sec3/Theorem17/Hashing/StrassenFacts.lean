@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.RingOps
-public import ThreeSumApsp.Spec.Sec3.Theorem17.Strassen
+import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.RingOps
+import ThreeSumApsp.Spec.Sec3.Theorem17.Strassen
 
 /-!
 # Strassen's algorithm in seven uniform phases: the pure side
@@ -24,81 +23,86 @@ about lists that the proof about the routine uses:
 * the seven phases give `strassenList` (`strassenList_succ_eq_phases`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
 open ThreeSumApsp ThreeSumApsp.Spec
 
+variable {B A : List ℤ} {n : ℕ}
+
 /-- The list that vlin writes is as long as its operands. -/
-theorem length_vlinList (s : ℤ) {A B : List ℤ} {n : ℕ} (hA : A.length = n) (hB : B.length = n) :
+theorem length_vlinList (s : ℤ) (hA : A.length = n) (hB : B.length = n) :
     (vlinList s A B).length = n := by
-  simp [vlinList, hA, hB]
+  grind [vlinList]
 
 /-- With the sign 0 the first operand is kept. -/
-theorem vlinList_zero {A B : List ℤ} (h : A.length = B.length) : vlinList 0 A B = A := by
+theorem vlinList_zero (h : A.length = B.length) : vlinList 0 A B = A := by
   apply List.ext_getElem
-  · simp [vlinList, h]
-  · intro i h1 h2
-    simp [vlinList]
+  · grind [vlinList]
+  grind [vlinList]
 
 /-- With the sign 0 and twice the same operand, the operand is kept. -/
 theorem vlinList_zero_self (A : List ℤ) : vlinList 0 A A = A := vlinList_zero rfl
 
+variable {q : ℕ}
+
 /-- Adding a list to zeros gives the list. -/
-theorem vlinList_zeros_left {q : ℕ} {B : List ℤ} (h : B.length = q) :
+theorem vlinList_zeros_left (h : B.length = q) :
     vlinList 1 (zeros q) B = B := by
   apply List.ext_getElem
-  · simp [vlinList, zeros, h]
-  · intro i h1 h2
-    simp [vlinList, zeros]
+  · grind [vlinList]
+  grind [vlinList]
+
+variable {a s b : ℤ}
 
 /-- The bounds of the two operands add up. -/
-theorem _root_.ThreeSumApsp.AbsLe.vlinList {s a b : ℤ} {A B : List ℤ} (hA : AbsLe A a)
+theorem _root_.ThreeSumApsp.AbsLe.vlinList (hA : AbsLe A a)
     (hB : AbsLe B b)
     (hs : |s| ≤ 1) : AbsLe (vlinList s A B) (a + b) := by
   intro x hx
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hx
-  have hiA : i < A.length := by simp only [Sec3.vlinList, List.length_zipWith] at hi; omega
-  have hiB : i < B.length := by simp only [Sec3.vlinList, List.length_zipWith] at hi; omega
-  simp only [Sec3.vlinList, List.getElem_zipWith]
+  have hiA : i < A.length := by grind [Sec3.vlinList]
+  have hiB : i < B.length := by grind [Sec3.vlinList]
+  simp [Sec3.vlinList]
   have hsy : |s * B[i]| ≤ b := by
     rw [abs_mul]
     exact (mul_le_of_le_one_left (abs_nonneg _) hs).trans (hB.getElem hiB)
-  exact le_trans (abs_add_le _ _) (add_le_add (hA.getElem hiA) hsy)
+  exact le_trans (by grind) (add_le_add (hA.getElem hiA) hsy)
+
+variable {l : List ℤ}
 
 /-- A larger bound. -/
-theorem _root_.ThreeSumApsp.AbsLe.trans_le {l : List ℤ} {a b : ℤ} (h : AbsLe l a) (hab : a ≤ b) :
+theorem _root_.ThreeSumApsp.AbsLe.trans_le (h : AbsLe l a) (hab : a ≤ b := by omega) :
     AbsLe l b := fun x hx => (h x hx).trans hab
 
 /-- Zeros are bounded by 0. -/
 theorem absLe_zeros (q : ℕ) : AbsLe (zeros q) 0 := by
   intro x hx
-  simp only [zeros, List.mem_replicate] at hx
-  simp [hx.2]
+  simp_all
+
+variable {t : ℕ}
 
 /-- A quarter of a list of 4 q numbers has q numbers. -/
-theorem length_quarter {q t : ℕ} {l : List ℤ} (h : l.length = 4 * q) (ht : t < 4) :
+theorem length_quarter (h : l.length = 4 * q) (ht : t < 4) :
     (quarter q t l).length = q := by
-  have h1 : (t + 1) * q ≤ 4 * q := Nat.mul_le_mul_right q (by omega)
-  have h2 : (t + 1) * q = t * q + q := by ring
-  rw [quarter, List.length_take, List.length_drop, h]
-  omega
+  have h1 : (t + 1) * q ≤ 4 * q := by simp_all [Nat.mul_le_mul_right]
+  grind [quarter]
 
 /-- A bound for a list is a bound for its quarters. -/
-theorem _root_.ThreeSumApsp.AbsLe.quarter {q t : ℕ} {l : List ℤ} {a : ℤ} (h : AbsLe l a) :
+theorem _root_.ThreeSumApsp.AbsLe.quarter (h : AbsLe l a) :
     AbsLe (quarter q t l) a :=
   fun x hx => h x (List.mem_of_mem_drop (List.mem_of_mem_take hx))
 
+variable {μ : ℕ → ℤ} {top : ℕ} {U : ℤ}
+
 /-- A quarter of an array of 4 q numbers is an array of q numbers. -/
-theorem _root_.Light.ArrayAt.quarter {μ : ℕ → ℤ} {a q t top : ℕ} {l : List ℤ} {U : ℤ}
-    (h : ArrayAt μ a l (4 * q) U top) (ht : t < 4) :
+theorem _root_.Light.ArrayAt.quarter {a : ℕ}     (h : ArrayAt μ a l (4 * q) U top) (ht : t < 4) :
     ArrayAt μ (a + t * q) (quarter q t l) q U top :=
   h.drop_take (Nat.mul_add_le_mul ht le_rfl)
 
 /-- The list A + s B, once it stands at dst, is an array, and the bounds of A and B add up. -/
-theorem _root_.Light.ArrayAt.vlinList {μ μ' : ℕ → ℤ} {a dst n top top' : ℕ} {A B : List ℤ}
-    {s U V W : ℤ} (hA : ArrayAt μ a A n U top) (lenB : B.length = n) (leB : AbsLe B V)
+theorem _root_.Light.ArrayAt.vlinList {μ' : ℕ → ℤ} {a dst top' : ℕ}
+    {V W : ℤ} (hA : ArrayAt μ a A n U top) (lenB : B.length = n) (leB : AbsLe B V)
     (hs : |s| ≤ 1) (seg : Seg μ' dst (vlinList s A B)) (hW : U + V ≤ W := by light_arith)
     (below : dst + n ≤ top' := by light_arith) : ArrayAt μ' dst (vlinList s A B) n W top' :=
   { len := length_vlinList s hA.len lenB, seg, bound := (hA.bound.vlinList leB hs).trans_le hW
@@ -142,8 +146,10 @@ def phaseM (p j : ℕ) (sA : ℤ) (A1 A2 : List ℤ) (sB : ℤ) (B1 B2 : List �
 and `β`. -/
 def strassenBound (p j : ℕ) (α β : ℤ) : ℤ := 16 ^ j * (p * α * β)
 
+variable {p j : ℕ} {α β : ℤ}
+
 /-- The bound is not negative. -/
-theorem strassenBound_nonneg {p j : ℕ} {α β : ℤ} (hα : 0 ≤ α) (hβ : 0 ≤ β) :
+theorem strassenBound_nonneg (hα : 0 ≤ α) (hβ : 0 ≤ β) :
     0 ≤ strassenBound p j α β := by
   unfold strassenBound
   positivity
@@ -157,56 +163,57 @@ theorem strassenBound_succ (p j : ℕ) (α β : ℤ) :
 /-- The bound on the entries of the product of two matrices of zeros and ones. -/
 theorem strassenBound_one_one (p K : ℕ) : strassenBound p K 1 1 = ((16 ^ K * p : ℕ) : ℤ) := by
   unfold strassenBound
-  push_cast
-  ring
+  simp
 
 /-- The bound is at least the bound α for the first operand. -/
-theorem le_strassenBound_left {p j : ℕ} {α β : ℤ} (hp : 1 ≤ p) (hα : 1 ≤ α) (hβ : 1 ≤ β) :
+theorem le_strassenBound_left (hp : 1 ≤ p) (hα : 1 ≤ α) (hβ : 1 ≤ β) :
     α ≤ strassenBound p j α β := by
   have hpow : (1 : ℤ) ≤ 16 ^ j := one_le_pow₀ (by norm_num)
-  have hpZ : (1 : ℤ) ≤ p := by exact_mod_cast hp
-  have hα0 : 0 ≤ α := by omega
+  have hpZ : (1 : ℤ) ≤ p := by omega
   calc α = 1 * (1 * α * 1) := by ring
     _ ≤ 16 ^ j * (p * α * β) := by gcongr
 
 /-- The bound is at least the bound β for the second operand. -/
-theorem le_strassenBound_right {p j : ℕ} {α β : ℤ} (hp : 1 ≤ p) (hα : 1 ≤ α) (hβ : 1 ≤ β) :
+theorem le_strassenBound_right (hp : 1 ≤ p) (hα : 1 ≤ α) (hβ : 1 ≤ β) :
     β ≤ strassenBound p j α β := by
   have hpow : (1 : ℤ) ≤ 16 ^ j := one_le_pow₀ (by norm_num)
-  have hpZ : (1 : ℤ) ≤ p := by exact_mod_cast hp
-  have hβ0 : 0 ≤ β := by omega
+  have hpZ : (1 : ℤ) ≤ p := by omega
   calc β = 1 * (1 * 1 * β) := by ring
     _ ≤ 16 ^ j * (p * α * β) := by gcongr
 
 /-- A product in the ring is bounded by p α β. -/
-theorem absLe_cconv {p : ℕ} {A B : List ℤ} {α β : ℤ} (leA : AbsLe A α) (leB : AbsLe B β)
+theorem absLe_cconv (leA : AbsLe A α) (leB : AbsLe B β)
     (hα : 0 ≤ α) (hβ : 0 ≤ β) : AbsLe (cconv p A B) (p * α * β) := by
   intro x hx
   rw [cconv_eq_map_convPartialSum] at hx
   obtain ⟨r, -, rfl⟩ := List.mem_map.mp hx
   have := abs_convPartialSum_le (p := p) leA leB hα hβ r p
-  rwa [← mul_assoc] at this
+  linarith
+
+variable {X Y : List ℤ} {y x : ℤ}
 
 /-- The entries of a sum. -/
-theorem _root_.ThreeSumApsp.AbsLe.vadd {X Y : List ℤ} {x y : ℤ} (hX : AbsLe X x) (hY : AbsLe Y y) :
+theorem _root_.ThreeSumApsp.AbsLe.vadd (hX : AbsLe X x) (hY : AbsLe Y y) :
     AbsLe (vadd X Y) (x + y) := by
   rw [← vlinList_one]
   exact hX.vlinList hY (by simp)
 
 /-- The entries of a difference. -/
-theorem _root_.ThreeSumApsp.AbsLe.vsub {X Y : List ℤ} {x y : ℤ} (hX : AbsLe X x) (hY : AbsLe Y y) :
+theorem _root_.ThreeSumApsp.AbsLe.vsub (hX : AbsLe X x) (hY : AbsLe Y y) :
     AbsLe (vsub X Y) (x + y) := by
   rw [← vlinList_neg_one]
   exact hX.vlinList hY (by simp)
 
+variable {c : ℤ}
+
 /-- The entries of a sum of two lists with the same bound. -/
-theorem _root_.ThreeSumApsp.AbsLe.vadd_self {X Y : List ℤ} {c : ℤ} (hX : AbsLe X c)
+theorem _root_.ThreeSumApsp.AbsLe.vadd_self (hX : AbsLe X c)
     (hY : AbsLe Y c) :
     AbsLe (vadd X Y) (2 * c) :=
   (hX.vadd hY).trans_le (by omega)
 
 /-- The entries of a difference of two lists with the same bound. -/
-theorem _root_.ThreeSumApsp.AbsLe.vsub_self {X Y : List ℤ} {c : ℤ} (hX : AbsLe X c)
+theorem _root_.ThreeSumApsp.AbsLe.vsub_self (hX : AbsLe X c)
     (hY : AbsLe Y c) :
     AbsLe (vsub X Y) (2 * c) :=
   (hX.vsub hY).trans_le (by omega)
@@ -247,15 +254,14 @@ theorem absLe_strassenList (p : ℕ) :
     · exact (((m1.vsub m2).vadd m3).vadd m6).trans_le (by omega) x hx
 
 /-- The product of a phase on quarters of the operands has the length of a quarter. -/
-theorem length_phaseM_quarter {p j : ℕ} {A B : List ℤ} (hA : A.length = 4 * (4 ^ j * p))
+theorem length_phaseM_quarter (hA : A.length = 4 * (4 ^ j * p))
     (hB : B.length = 4 * (4 ^ j * p)) (sA sB : ℤ) {t1 t2 t3 t4 : ℕ}
     (ht : t1 < 4 ∧ t2 < 4 ∧ t3 < 4 ∧ t4 < 4 := by omega) :
     (phaseM p j sA (quarter (4 ^ j * p) t1 A) (quarter (4 ^ j * p) t2 A) sB
       (quarter (4 ^ j * p) t3 B) (quarter (4 ^ j * p) t4 B)).length = 4 ^ j * p := by
-  obtain ⟨h1, h2, h3, h4⟩ := ht
   exact length_strassenList p j _ _
-    (length_vlinList _ (length_quarter hA h1) (length_quarter hA h2))
-    (length_vlinList _ (length_quarter hB h3) (length_quarter hB h4))
+    (by simp_all [length_vlinList, length_quarter])
+    (by simp_all [length_vlinList, length_quarter])
 
 /-- **The seven phases give Strassen's algorithm.** -/
 theorem strassenList_succ_eq_phases (p j : ℕ) (A B : List ℤ) (hA : A.length = 4 ^ (j + 1) * p)
@@ -277,8 +283,8 @@ theorem strassenList_succ_eq_phases (p j : ℕ) (A B : List ℤ) (hA : A.length 
         ++ vlinList 0 (vlinList 1 (vlinList 1 (vlinList (-1) (vlinList 1 (zeros q) m1) m2) m3) m6)
           m7 := by
   intro q a b m1 m2 m3 m4 m5 m6 m7
-  have hA' : A.length = 4 * q := by rw [hA]; ring
-  have hB' : B.length = 4 * q := by rw [hB]; ring
+  have hA' : A.length = 4 * q := by grind
+  have hB' : B.length = 4 * q := by omega
   have len1 : m1.length = q := length_phaseM_quarter hA' hB' _ _
   have len2 : m2.length = q := length_phaseM_quarter hA' hB' _ _
   have len3 : m3.length = q := length_phaseM_quarter hA' hB' _ _
@@ -287,11 +293,9 @@ theorem strassenList_succ_eq_phases (p j : ℕ) (A B : List ℤ) (hA : A.length 
   have len6 : m6.length = q := length_phaseM_quarter hA' hB' _ _
   have len7 : m7.length = q := length_phaseM_quarter hA' hB' _ _
   rw [vlinList_zeros_left len1, vlinList_zeros_left len3, vlinList_zeros_left len2,
-    vlinList_zero (A := vlinList (-1) (vlinList 1 m1 m4) m5) (B := m6)
-      (by rw [length_vlinList _ (length_vlinList _ len1 len4) len5, len6]),
-    vlinList_zero (A := vlinList 1 (vlinList 1 (vlinList (-1) m1 m2) m3) m6) (B := m7)
-      (by rw [length_vlinList _ (length_vlinList _ (length_vlinList _ len1 len2) len3) len6, len7])]
+    vlinList_zero
+      (by simp_all [length_vlinList]),
+    vlinList_zero
+      (by rw [length_vlinList _ (by simp_all [length_vlinList]) len6, len7])]
   simp only [m1, m2, m3, m4, m5, m6, m7, phaseM, vlinList_one, vlinList_neg_one, vlinList_zero_self]
   rfl
-
-end Light.Sec3

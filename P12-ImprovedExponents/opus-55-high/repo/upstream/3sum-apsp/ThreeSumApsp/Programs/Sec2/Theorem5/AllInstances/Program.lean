@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.Solver
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Program
+import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.Solver
+import ThreeSumApsp.Programs.Sec2.Theorem5.Program
 
 /-!
 # The running-time claim "Theorem 5" for the light model, for the program of Theorem 5
@@ -18,13 +17,9 @@ for all instances). claim_theorem_5: it solves the thin matrix product on all in
 times N² log² D / D^{1/18}. This is thin_claim for the program and the solver of Theorem 5.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp
 
 /-- The program of the thin matrix product on all instances. -/
 def programThin : Program := program5 ++ [regimeBody, thinBruteBody, thinBody]
-
-end Light.Sec2

@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Calls
+import ThreeSumApsp.Lang.Calls
 
 /-!
 # Tactics for proofs about programs
@@ -41,7 +40,6 @@ A program that is a definition is replaced by its text when a single statement i
 definition that stands at the head of a sequence stays closed: it is a piece, for `light_piece`.
 -/
 
-@[expose] public section
 
 namespace Light
 
@@ -170,5 +168,3 @@ macro "light_piece " fact:term:max " with" pats:(ppSpace colGt rintroPat)+ : tac
 `fact : Ends lim P d s σ T₁ Q` says that the piece does what is to be shown. -/
 macro "light_piece " fact:term:max : tactic =>
   `(tactic| focus (refine Ends.pieceLast $fact (fun _ h => h) ?_; on_goal -1 => light_time))
-
-end Light

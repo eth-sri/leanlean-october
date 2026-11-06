@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Util.Index
+import ThreeSumApsp.Util.Index
 
 /-!
 # Quotients and remainders by counters
@@ -16,7 +15,6 @@ can still know, for each row, its band, its block within the band and its offset
 steps them (`stepCtr`, `ctrAt_succ`).
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp.Spec
 
@@ -42,20 +40,7 @@ def stepCtr (k₀ n₀ : ℕ) (s : Ctr) : Ctr :=
 /-- Stepping the counters of row `I` gives the counters of row `I + 1`. -/
 theorem ctrAt_succ {k₀ n₀ : ℕ} (hk : 0 < k₀) (hn : 0 < n₀) (I : ℕ) :
     ctrAt k₀ n₀ (I + 1) = stepCtr k₀ n₀ (ctrAt k₀ n₀ I) := by
-  have hoff_lt : I % n₀ < n₀ := Nat.mod_lt I hn
+  have hoff_lt := I.mod_lt hn
   have hblock_lt : I / n₀ % k₀ < k₀ := Nat.mod_lt _ hk
-  simp only [ctrAt, stepCtr, Nat.mul_comm k₀ n₀, ← Nat.div_div_eq_div_mul]
-  split_ifs with hoff hlt
-  · -- The next row of the same block.
-    obtain ⟨hdiv, hmod⟩ := Nat.succ_div_mod_of_lt hoff
-    rw [hdiv, hmod]
-  · -- The first row of the next block of the same band.
-    obtain ⟨hdiv, hmod⟩ := Nat.succ_div_mod_of_eq (show I % n₀ + 1 = n₀ by omega)
-    obtain ⟨hband, hblock⟩ := Nat.succ_div_mod_of_lt hlt
-    rw [hdiv, hmod, hband, hblock]
-  · -- The first row of the first block of the next band.
-    obtain ⟨hdiv, hmod⟩ := Nat.succ_div_mod_of_eq (show I % n₀ + 1 = n₀ by omega)
-    obtain ⟨hband, hblock⟩ := Nat.succ_div_mod_of_eq (show I / n₀ % k₀ + 1 = k₀ by omega)
-    rw [hdiv, hmod, hband, hblock]
-
-end ThreeSumApsp.Spec
+  simp [ctrAt, stepCtr, k₀.mul_comm, ← Nat.div_div_eq_div_mul]
+  grind [Nat.succ_div_mod_of_lt, Nat.succ_div_mod_of_eq]

@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Frames
-public import ThreeSumApsp.Util.Index
+import ThreeSumApsp.Lang.Frames
+import ThreeSumApsp.Util.Index
 
 /-!
 # From a pair to the next pair
@@ -16,7 +15,6 @@ keeps a = t / n and b = t % n in two local variables, so that no division is nee
 `nextPair A B N` is the step from one pair to the next, and `Ends.nextPair` is its rule.
 -/
 
-@[expose] public section
 
 namespace Light
 
@@ -33,8 +31,8 @@ theorem Ends.nextPair {A B N n t T : ℕ} {l : List ℤ} {μ : ℕ → ℤ} {Q :
     (hA : frame l A = (t / n : ℕ)) (hB : frame l B = (t % n : ℕ)) (hN : frame l N = n)
     (hAB : A ≠ B := by decide) (hBN : N ≠ B := by decide) (hT : 14 ≤ T := by light_time) :
     Ends lim P d (nextPair A B N) ⟨frame l, μ⟩ T Q := by
-  have hmod := Nat.mod_lt t hn
-  have hdiv := Nat.div_le_self t n
+  have hmod := t.mod_lt hn
+  have hdiv := t.div_le_self n
   have hlast := Nat.succ_div_mod_of_eq (n := n) (i := t)
   have hinner := Nat.succ_div_mod_of_ne (i := t) hn
   generalize t / n = a at *
@@ -47,27 +45,15 @@ theorem Ends.nextPair {A B N n t T : ℕ} {l : List ℤ} {μ : ℕ → ℤ} {Q :
   · have he : b + 1 = n := by
       have : ((b + 1 : ℕ) : ℤ) = n := by
         simpa only [Cond.Holds, Expr.val, frame_setLocal, if_pos, if_neg hBN, hN] using he
-      exact_mod_cast this
-    rw [(hlast he).1, (hlast he).2] at h
-    refine Ends.setToThen (0 : ℕ) (Ends.setTo (a + 1 : ℕ) ?_
+      omega
+    refine Ends.setToThen 0 (Ends.setTo (a + 1) ?_
       (by light_norm [Expr.Gives, frame_setLocal, if_neg hAB, hA, abs_le]; omega)
       (by simp; omega)) (by light_norm [Expr.Gives]; omega) (by simp; omega)
     convert h using 2
-    funext y
-    simp only [frame_setLocal]
-    split_ifs <;> rfl
-  · have he : b + 1 ≠ n := fun e => he (by
-      simp only [Cond.Holds, Expr.val, frame_setLocal, if_pos, if_neg hBN, hN]
-      exact_mod_cast e)
-    rw [(hinner he).1, (hinner he).2] at h
-    refine Ends.skip ?_
+    grind [frame_setLocal]
+  · have he := fun e => he (by
+      simp only [Cond.Holds, Expr.val, frame_setLocal, if_pos]
+      omega)
+    apply Ends.skip
     convert h using 2
-    funext y
-    simp only [frame_setLocal]
-    split_ifs with h1 h2 h2
-    · exact absurd (h2.symm.trans h1) hAB
-    · rfl
-    · rw [h2, hA]
-    · rfl
-
-end Light
+    grind [frame_setLocal]

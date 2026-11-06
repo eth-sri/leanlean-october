@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Contracts
 
 /-!
 # Padding X with zero columns
@@ -16,23 +16,16 @@ padded matrix have been written; `PadX.Rows.succ` is what a round does to the me
 `padX_meets` the specification.
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 namespace PadX
 
-/-- The local variables of padX: the arguments N, D, D', aX, aX', the row, and a result that is not
+/- The local variables of padX: the arguments N, D, D', aX, aX', the row, and a result that is not
 used. -/
-abbrev Height : ℕ := 0
-@[inherit_doc Height] abbrev Width : ℕ := 1
-@[inherit_doc Height] abbrev Padded : ℕ := 2
-@[inherit_doc Height] abbrev Source : ℕ := 3
-@[inherit_doc Height] abbrev Dest : ℕ := 4
-@[inherit_doc Height] abbrev Row : ℕ := 5
-@[inherit_doc Height] abbrev Unused : ℕ := 6
+slots Height Width Padded Source Dest Row Unused
 
 end PadX
 
@@ -66,17 +59,17 @@ theorem Rows.succ (h : Rows μ aX' D' X i μ') (hX : MatAt μ aX X) (hsep : aX +
   · rcases Nat.lt_succ_iff_lt_or_eq.mp hr with hlt | heq
     · -- an earlier row lies below the cells that the round has written
       have := Nat.mul_add_lt_mul hlt j.isLt
-      rw [hout₂ _ (.inl (by omega)), hout₁ _ (.inl (by omega))]
+      rw [hout₂ _ (by omega), hout₁ _ (by omega)]
       exact h.1 r j hlt
-    · by_cases hj : (j : ℕ) < D₀
+    · by_cases hj : j < D₀
       · -- an entry of X, which is as at the start
-        rw [heq, hout₂ _ (.inl (by omega)), hcopy _ hj, h.2 _ (.inl (by omega)), padInnerCols,
-          dif_pos hj, ← heq]
+        rw [heq, hout₂ _ (by omega), hcopy _ hj, h.2 _ (by omega), padInnerCols,
+          dif_pos, ← heq]
         exact hX r ⟨j, hj⟩
       · -- a zero
-        have hcell : aX' + (r : ℕ) * D' + (j : ℕ) = aX' + i * D' + D₀ + ((j : ℕ) - D₀) := by
-          rw [heq]; omega
-        rw [hcell, hfill _ (by have := j.isLt; omega), padInnerCols, dif_neg hj]
+        have hcell : aX' + r * D' + j = aX' + i * D' + D₀ + (j - D₀) := by
+          simp_all
+        rw [hcell, hfill _ (by omega), padInnerCols, dif_neg hj]
   · rw [Nat.succ_mul] at hb
     rw [hout₂ b (by omega), hout₁ b (by omega), h.2 b (by omega)]
 
@@ -88,9 +81,8 @@ theorem padX_meets {lim : Limits} {P : Program} (hP : P[Proc.padX]? = some padXB
   intro N D₀ D' aX aX' X μ hDD hD1 hX hsep hsp
   refine fun d hd => ⟨padXBody, hP, ?_⟩
   have hw := hstd.space_le
-  have h100 := hstd.const_le
   have hN : N ≤ N * D' := Nat.le_mul_of_pos_right _ hD1
-  have hsub : (D' : ℤ) - D₀ = ((D' - D₀ : ℕ) : ℤ) := (Nat.cast_sub hDD).symm
+  have hsub : D' - D₀ = ((D' - D₀ : ℕ) : ℤ) := (Nat.cast_sub hDD).symm
   unfold padXBody tPadX
   -- for i < N
   refine Ends.for (fun i σ => ∃ (r : ℤ) (μ' : ℕ → ℤ),
@@ -100,11 +92,10 @@ theorem padX_meets {lim : Limits} {P : Program} (hP : P[Proc.padX]? = some padXB
     exact ⟨0, μ, by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl,
       fun r j hr => absurd hr (Nat.not_lt_zero _), fun _ _ => rfl⟩
   case bound =>
-    rintro i _ - - ⟨r, μ', rfl, -⟩
-    simp
+    simp_all
   case done =>
     rintro _ - ⟨r, μ', rfl, hrows, hout⟩
-    exact ⟨fun r j => hrows r j r.isLt, hout⟩
+    aesop
   case round =>
     rintro i _ hi - ⟨r, μ', rfl, hrows⟩
     -- row i of X and row i of the padded matrix lie within their arrays
@@ -118,7 +109,5 @@ theorem padX_meets {lim : Limits} {P : Program} (hP : P[Proc.padX]? = some padXB
     refine Ends.callTo (hfill (aX' + i * D' + D₀) (D' - D₀) 0 μ₁ (by omega) (by omega) _
       (by omega)) ?_ (by light_side [hsub]) (hT := by simp [tCopy, tFill]; omega)
     rintro r' μ₂ ⟨hf, hout₂⟩
-    exact ⟨by simp, r', μ₂, by rw [update_frame_setLocal]; rfl,
+    exact ⟨by simp, r', μ₂, by simp_all [update_frame_setLocal],
       hrows.succ hX hsep hi hc hout₁ hf hout₂ hDD⟩
-
-end Light.Sec4

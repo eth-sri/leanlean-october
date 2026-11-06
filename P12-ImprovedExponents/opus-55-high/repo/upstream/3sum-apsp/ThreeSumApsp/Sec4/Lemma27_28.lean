@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Sec4.Boxes
+import ThreeSumApsp.Sec4.Boxes
 
 /-!
 # Lemmas 27 and 28: the boxes of an output string (Section 4.2)
@@ -35,7 +34,6 @@ the paper's order, except that Figure 10 comes after the definitions that it ill
   numbers of terms are `∑_{d < t} α_d` and `α_t` (`lemma_28_counts`).
 -/
 
-@[expose] public section
 
 open Finset
 
@@ -51,57 +49,54 @@ def Zof (Q : Finset (Fin L)) (τ : Leaf L) : Finset (Fin L) :=
 
 /-- Section 2.4.3: a leaf contributes to `η` exactly if it agrees with the private leaf of `η`
 outside the inner set. -/
-private lemma contributes_iff_eq_privateLeaf (η : OutStr L) (τ : Leaf L) :
+lemma contributes_iff_eq_privateLeaf (η : OutStr L) (τ : Leaf L) :
     Leaf.Contributes τ η ↔ ∀ ℓ, ℓ ∉ innerSetO η → τ ℓ = privateLeaf η ℓ := by
   refine forall_congr' fun ℓ => ?_
   rw [Term.contributes_iff, mem_innerSetO]
-  exact or_iff_not_imp_left
+  tauto
 
 /-- Outside the inner set the private leaf does not choose `P₀`. -/
-private lemma privateLeaf_ne_P0 {η : OutStr L} {ℓ : Fin L} (hℓ : ℓ ∉ innerSetO η) :
+lemma privateLeaf_ne_P0 {η : OutStr L} {ℓ : Fin L} (hℓ : ℓ ∉ innerSetO η) :
     privateLeaf η ℓ ≠ Term.P0 :=
   fun h => hℓ (mem_innerSetO.2 ((OutVar.privateTerm_eq_P0_iff _).1 h))
 
 /-- `Z` is a set of levels of `Q`. -/
-private lemma Zof_subset (Q : Finset (Fin L)) (τ : Leaf L) : Zof Q τ ⊆ Q :=
+lemma Zof_subset (Q : Finset (Fin L)) (τ : Leaf L) : Zof Q τ ⊆ Q :=
   filter_subset _ _
 
 /-- A leaf contributing to `η` chooses `P₀` exactly at the levels of `Z`. -/
-private lemma P0Levels_eq_Zof (η : OutStr L) (τ : Leaf L) (hτ : Leaf.Contributes τ η) :
+lemma P0Levels_eq_Zof (η : OutStr L) (τ : Leaf L) (hτ : Leaf.Contributes τ η) :
     P0Levels τ = Zof (innerSetO η) τ := by
   ext ℓ
   rw [Zof, mem_filter, mem_P0Levels]
-  exact ⟨fun h => ⟨P0Levels_subset hτ (mem_P0Levels.2 h), h⟩, fun h => h.2⟩
+  exact ⟨fun h => ⟨P0Levels_subset hτ (mem_P0Levels.2 h), h⟩, by simp⟩
 
 /-- Section 4.2: "the order of τ is m - |Z|", for a leaf `τ` contributing to an output string `η`
 with inner set `Q`. -/
 theorem order_eq_sub_card_Zof (m : ℕ) (η : OutStr L) (τ : Leaf L)
     (hτ : Leaf.Contributes τ η) :
     order m τ = (m : ℤ) - ((Zof (innerSetO η) τ).card : ℤ) := by
-  rw [order, P0Levels_eq_Zof η τ hτ]
+  grind [order, P0Levels_eq_Zof]
+
+variable {m t : ℕ} {τ : Leaf L}
 
 /-- A leaf of order at least `t` contributing to `η` chooses `P₀` at most `m - t` times. -/
-private lemma card_Zof_le {m t : ℕ} {η : OutStr L} {τ : Leaf L} (hτ : Leaf.Contributes τ η)
+lemma card_Zof_le {η : OutStr L} (hτ : Leaf.Contributes τ η)
     (hord : (t : ℤ) ≤ order m τ) : (Zof (innerSetO η) τ).card ≤ m - t := by
-  have := order_eq_sub_card_Zof m η τ hτ
-  omega
+  grind [order_eq_sub_card_Zof]
 
 /-- `V` is a set of levels of `Q`. -/
 theorem Vof_subset (m t : ℕ) {Q Z : Finset (Fin L)} (hZ : Z ⊆ Q) : Vof m t Q Z ⊆ Q :=
   union_subset hZ ((lowest_subset _ _).trans sdiff_subset)
 
 /-- Section 4.2: "the set V has exactly m - t levels". -/
-theorem card_Vof {m t : ℕ} (ht : t ≤ m) {Q Z : Finset (Fin L)} (hQ : Q.card = m) (hZ : Z ⊆ Q)
+theorem card_Vof (ht : t ≤ m) {Q Z : Finset (Fin L)} (hQ : Q.card = m) (hZ : Z ⊆ Q)
     (hZc : Z.card ≤ m - t) : (Vof m t Q Z).card = m - t := by
-  have hdisj : Disjoint Z (lowest (m - t - Z.card) (Q \ Z)) :=
-    disjoint_of_subset_right (lowest_subset _ _) disjoint_sdiff
-  rw [Vof, card_union_of_disjoint hdisj, card_lowest, card_sdiff_of_subset hZ, hQ]
-  -- `|Z| + min (m - t - |Z|) (m - |Z|) = m - t`, because `|Z| ≤ m - t ≤ m`
-  omega
+  grind [Disjoint, lowest, disjoint_of_subset_right, lowest_subset, disjoint_sdiff, Vof, card_union_of_disjoint, card_lowest, card_sdiff_of_subset]
 
 /-- `V` is `Z` "padded from the bottom" (Section 4.2): the levels added to `Z` are below the levels
 of `Q` that are left out. -/
-private lemma Vof_sdiff_lt (m t : ℕ) (Q Z : Finset (Fin L)) :
+lemma Vof_sdiff_lt (m t : ℕ) (Q Z : Finset (Fin L)) :
     ∀ ℓ ∈ Vof m t Q Z \ Z, ∀ ℓ' ∈ Q \ Vof m t Q Z, ℓ < ℓ' := by
   intro ℓ hℓ ℓ' hℓ'
   obtain ⟨hV, hZ⟩ := mem_sdiff.1 hℓ
@@ -109,7 +104,7 @@ private lemma Vof_sdiff_lt (m t : ℕ) (Q Z : Finset (Fin L)) :
   obtain ⟨hZ', hlow'⟩ := not_or.1 (mt mem_union.2 hV')
   -- `ℓ` is one of the lowest levels of `Q ∖ Z`, and `ℓ'` is another level of `Q ∖ Z`
   exact lowest_lt ((mem_union.1 hV).resolve_left hZ)
-    (mem_sdiff.2 ⟨mem_sdiff.2 ⟨hQ', hZ'⟩, hlow'⟩)
+    (by simp_all)
 
 /-- Section 4.2: `F_V` "is the longest initial segment of Q contained in V". Here: it is contained
 in `V`. -/
@@ -120,26 +115,16 @@ theorem FV_subset (Q V : Finset (Fin L)) : FV Q V ⊆ V := by
 
 /-- Section 4.2: `F_V` "is the longest initial segment of Q contained in V". Here: it is an initial
 segment of `Q`. -/
-private lemma mem_FV_of_le {Q V : Finset (Fin L)} {ℓ ℓ' : Fin L} (hℓ : ℓ ∈ FV Q V)
+lemma mem_FV_of_le {Q V : Finset (Fin L)} {ℓ ℓ' : Fin L} (hℓ : ℓ ∈ FV Q V)
     (hℓ' : ℓ' ∈ Q) (hle : ℓ' ≤ ℓ) : ℓ' ∈ FV Q V :=
   mem_filter.2 ⟨hℓ', fun x hx => hle.trans_lt ((mem_filter.1 hℓ).2 x hx)⟩
 
 /-- The core of the proof of Lemma 27: "V ∖ F_V ⊆ Z says that every level of V ∖ Z is below" the
 lowest level, that is every level, of `Q ∖ V`. The paper's case `V = Q` needs no separate treatment:
 then `Q ∖ V` is empty. -/
-private lemma sdiff_FV_subset_iff {Q V Z : Finset (Fin L)} (hV : V ⊆ Q) :
+lemma sdiff_FV_subset_iff {Q V Z : Finset (Fin L)} (hV : V ⊆ Q) :
     V \ FV Q V ⊆ Z ↔ ∀ ℓ ∈ V \ Z, ∀ ℓ' ∈ Q \ V, ℓ < ℓ' := by
-  constructor
-  · intro h ℓ hℓ ℓ' hℓ'
-    obtain ⟨hℓV, hℓZ⟩ := mem_sdiff.1 hℓ
-    have hℓF : ℓ ∈ FV Q V := by
-      by_contra hF
-      exact hℓZ (h (mem_sdiff.2 ⟨hℓV, hF⟩))
-    exact (mem_filter.1 hℓF).2 ℓ' hℓ'
-  · intro h ℓ hℓ
-    obtain ⟨hℓV, hℓF⟩ := mem_sdiff.1 hℓ
-    by_contra hZ
-    exact hℓF (mem_filter.2 ⟨hV hℓV, h ℓ (mem_sdiff.2 ⟨hℓV, hZ⟩)⟩)
+  grind [FV]
 
 /-! ### The sets `𝓑_V` (Section 4.2) -/
 
@@ -148,40 +133,38 @@ section BV
 variable {η : OutStr L} {V : Finset (Fin L)} {π : Cube L} {ℓ : Fin L}
 
 /-- A cube of `𝓑_V` has a star at each level of `F_V`. -/
-private lemma BV_star (hπ : π ∈ BV η V) (hℓ : ℓ ∈ FV (innerSetO η) V) : π ℓ = CubeSymbol.star :=
+lemma BV_star (hπ : π ∈ BV η V) (hℓ : ℓ ∈ FV (innerSetO η) V) : π ℓ = CubeSymbol.star :=
   ((mem_filter.1 hπ).2 ℓ).1 hℓ
 
 /-- A cube of `𝓑_V` has `P₀` at each level of `V ∖ F_V`. -/
-private lemma BV_P0 (hπ : π ∈ BV η V) (hℓ : ℓ ∈ V \ FV (innerSetO η) V) :
+lemma BV_P0 (hπ : π ∈ BV η V) (hℓ : ℓ ∈ V \ FV (innerSetO η) V) :
     π ℓ = CubeSymbol.term Term.P0 :=
   ((mem_filter.1 hπ).2 ℓ).2.1 hℓ
 
 /-- A cube of `𝓑_V` has one of the nine terms `P_ij` at each level of `Q ∖ V`. -/
-private lemma BV_nine (hπ : π ∈ BV η V) (hℓ : ℓ ∈ innerSetO η \ V) :
+lemma BV_nine (hπ : π ∈ BV η V) (hℓ : ℓ ∈ innerSetO η \ V) :
     ∃ i j, π ℓ = CubeSymbol.term (Term.P i j) :=
   ((mem_filter.1 hπ).2 ℓ).2.2.1 hℓ
 
 /-- A cube of `𝓑_V` has the term of the private leaf of `η` at each level outside `Q`. -/
-private lemma BV_outside (hπ : π ∈ BV η V) (hℓ : ℓ ∉ innerSetO η) :
+lemma BV_outside (hπ : π ∈ BV η V) (hℓ : ℓ ∉ innerSetO η) :
     π ℓ = CubeSymbol.term (privateLeaf η ℓ) :=
   ((mem_filter.1 hπ).2 ℓ).2.2.2 hℓ
 
 /-- Every level is of one of the four kinds in the definition of `𝓑_V`. -/
-private lemma level_cases (Q V : Finset (Fin L)) (ℓ : Fin L) :
+lemma level_cases (Q V : Finset (Fin L)) (ℓ : Fin L) :
     ℓ ∈ FV Q V ∨ ℓ ∈ V \ FV Q V ∨ ℓ ∈ Q \ V ∨ ℓ ∉ Q := by
-  simp only [mem_sdiff]
-  tauto
+  grind
 
 /-- The stars of a cube of `𝓑_V` are at the levels of `F_V`. -/
 theorem BV_starLevels (hπ : π ∈ BV η V) : Cube.starLevels π = FV (innerSetO η) V := by
   ext ℓ
   rw [Cube.mem_starLevels]
   refine ⟨fun h => ?_, BV_star hπ⟩
-  rcases level_cases (innerSetO η) V ℓ with hℓ | hℓ | hℓ | hℓ
-  · exact hℓ
-  · simp [BV_P0 hπ hℓ] at h
-  · obtain ⟨i, j, hij⟩ := BV_nine hπ hℓ
-    simp [hij] at h
+  rcases level_cases _ V ℓ with hℓ | hℓ | hℓ | hℓ
+  · assumption
+  · grind [BV_P0]
+  · grind [BV_nine]
   · simp [BV_outside hπ hℓ] at h
 
 /-- The symbols `P₀` of a cube of `𝓑_V` are at the levels of `V ∖ F_V`. -/
@@ -190,12 +173,11 @@ theorem BV_P0Levels (hπ : π ∈ BV η V) : Cube.P0Levels π = V \ FV (innerSet
   rw [Cube.mem_P0Levels]
   refine ⟨fun h => ?_, BV_P0 hπ⟩
   rcases level_cases (innerSetO η) V ℓ with hℓ | hℓ | hℓ | hℓ
-  · simp [BV_star hπ hℓ] at h
-  · exact hℓ
-  · obtain ⟨i, j, hij⟩ := BV_nine hπ hℓ
-    simp [hij] at h
+  · grind [BV_star]
+  · assumption
+  · grind [BV_nine]
   · rw [BV_outside hπ hℓ] at h
-    exact absurd (CubeSymbol.term.inj h) (privateLeaf_ne_P0 hℓ)
+    grind [CubeSymbol.term.inj, privateLeaf_ne_P0]
 
 /-- The levels at which a cube of `𝓑_V` has a star or `P₀` are those of `V`. -/
 theorem BV_starLevels_union_P0Levels (hπ : π ∈ BV η V) :
@@ -203,17 +185,17 @@ theorem BV_starLevels_union_P0Levels (hπ : π ∈ BV η V) :
   rw [BV_starLevels hπ, BV_P0Levels hπ, union_sdiff_of_subset (FV_subset _ _)]
 
 /-- Two cubes of `𝓑_V` with the same symbols at the levels of `Q ∖ V` are equal. -/
-private lemma BV_ext {π' : Cube L} (hπ : π ∈ BV η V) (hπ' : π' ∈ BV η V)
+lemma BV_ext {π' : Cube L} (hπ : π ∈ BV η V) (hπ' : π' ∈ BV η V)
     (h : ∀ ℓ ∈ innerSetO η \ V, π ℓ = π' ℓ) : π = π' := by
   funext ℓ
   rcases level_cases (innerSetO η) V ℓ with hℓ | hℓ | hℓ | hℓ
-  · rw [BV_star hπ hℓ, BV_star hπ' hℓ]
-  · rw [BV_P0 hπ hℓ, BV_P0 hπ' hℓ]
-  · exact h ℓ hℓ
+  · grind [BV_star]
+  · grind [BV_P0]
+  · simp_all
   · rw [BV_outside hπ hℓ, BV_outside hπ' hℓ]
 
 /-- At a level of `Q ∖ V`, a cube of `𝓑_V` has the term of each of its leaves. -/
-private lemma BV_eq_term_of_leaf (hπ : π ∈ BV η V) {τ : Leaf L} (hτ : τ ∈ Cube.leaves π)
+lemma BV_eq_term_of_leaf (hπ : π ∈ BV η V) {τ : Leaf L} (hτ : τ ∈ Cube.leaves π)
     (hℓ : ℓ ∈ innerSetO η \ V) : π ℓ = CubeSymbol.term (τ ℓ) := by
   obtain ⟨i, j, hij⟩ := BV_nine hπ hℓ
   rw [hij, Cube.eq_of_mem_leaves hτ hij]
@@ -221,7 +203,7 @@ private lemma BV_eq_term_of_leaf (hπ : π ∈ BV η V) {τ : Leaf L} (hτ : τ 
 end BV
 
 /-- The symbols allowed at level `ℓ` in a cube of `𝓑_V`. -/
-private def allowed (η : OutStr L) (V : Finset (Fin L)) (ℓ : Fin L) : Finset CubeSymbol :=
+def allowed (η : OutStr L) (V : Finset (Fin L)) (ℓ : Fin L) : Finset CubeSymbol :=
   univ.filter fun s =>
     (ℓ ∈ FV (innerSetO η) V → s = CubeSymbol.star) ∧
     (ℓ ∈ V \ FV (innerSetO η) V → s = CubeSymbol.term Term.P0) ∧
@@ -229,33 +211,33 @@ private def allowed (η : OutStr L) (V : Finset (Fin L)) (ℓ : Fin L) : Finset 
     (ℓ ∉ innerSetO η → s = CubeSymbol.term (privateLeaf η ℓ))
 
 /-- `𝓑_V` is the set of all cubes with an allowed symbol at every level. -/
-private lemma BV_eq_piFinset (η : OutStr L) (V : Finset (Fin L)) :
+lemma BV_eq_piFinset (η : OutStr L) (V : Finset (Fin L)) :
     BV η V = Fintype.piFinset (allowed η V) := by
   ext π
-  simp [BV, allowed, Fintype.mem_piFinset]
+  simp [BV, allowed]
 
 /-- Nine symbols are allowed at a level of `Q ∖ V`, and one at every other level. -/
-private lemma card_allowed (η : OutStr L) (V : Finset (Fin L)) (hV : V ⊆ innerSetO η)
+lemma card_allowed (η : OutStr L) (V : Finset (Fin L)) (hV : V ⊆ innerSetO η)
     (ℓ : Fin L) : (allowed η V ℓ).card = if ℓ ∈ innerSetO η \ V then 9 else 1 := by
   have hnine :
-      (univ.filter fun s : CubeSymbol => ∃ i j, s = CubeSymbol.term (Term.P i j)).card = 9 := by
+      (univ.filter fun s => ∃ i j, s = CubeSymbol.term (Term.P i j)).card = 9 := by
     decide
   have hFV := @FV_subset L (innerSetO η) V ℓ
   have hVQ := @hV ℓ
   unfold allowed
   by_cases hF : ℓ ∈ FV (innerSetO η) V
-  · simp [hF, hFV hF, hVQ (hFV hF), filter_eq']
+  · aesop
   by_cases hℓV : ℓ ∈ V
-  · simp [hF, hℓV, hVQ hℓV, filter_eq']
+  · aesop
   by_cases hℓQ : ℓ ∈ innerSetO η
-  · simp [hF, hℓV, hℓQ, hnine]
-  · simp [hF, hℓV, hℓQ, filter_eq']
+  · simp_all
+  simp_all [filter_eq']
 
 /-- Section 4.2: `𝓑_V` is "the set of the 9^t cubes π with" the symbols above. -/
 theorem card_BV (m t : ℕ) (ht : t ≤ m) (η : OutStr L) (hη : (innerSetO η).card = m)
     (V : Finset (Fin L)) (hV : V ∈ Vsets m t η) : (BV η V).card = 9 ^ t := by
   obtain ⟨hVQ, hVc⟩ := mem_powersetCard.1 hV
-  rw [BV_eq_piFinset η V, Fintype.card_piFinset]
+  rw [BV_eq_piFinset, Fintype.card_piFinset]
   simp only [card_allowed η V hVQ]
   rw [prod_ite_mem_const, one_pow, mul_one, card_sdiff_of_subset hVQ, hη, hVc,
     Nat.sub_sub_self ht]
@@ -263,16 +245,12 @@ theorem card_BV (m t : ℕ) (ht : t ≤ m) (η : OutStr L) (hη : (innerSetO η)
 /-- Section 4.2: "Every cube in 𝓑_V is a box: it satisfies condition (i) of the definition because
 it has |V| = m - t symbols P₀ or stars, and condition (ii) because its stars are below its symbols
 P₀, since F_V is an initial segment of Q." -/
-theorem BV_isBox {m t : ℕ} {η : OutStr L} {V : Finset (Fin L)} (hV : V ∈ Vsets m t η) {π : Cube L}
+theorem BV_isBox {η : OutStr L} {V : Finset (Fin L)} (hV : V ∈ Vsets m t η) {π : Cube L}
     (hπ : π ∈ BV η V) : IsBox m t π := by
   obtain ⟨hVQ, hVc⟩ := mem_powersetCard.1 hV
   rw [IsBox, BV_starLevels hπ, BV_P0Levels hπ, add_comm,
     card_sdiff_add_card_eq_card (FV_subset _ _)]
-  refine ⟨hVc.le, fun ℓ hℓ ℓ' hℓ' => ?_⟩
-  -- otherwise `ℓ' ≤ ℓ` would be a level of the initial segment `F_V`
-  obtain ⟨hℓ'V, hℓ'F⟩ := mem_sdiff.1 hℓ'
-  by_contra hlt
-  exact hℓ'F (mem_FV_of_le hℓ (hVQ hℓ'V) (not_lt.1 hlt))
+  grind [mem_FV_of_le, not_lt]
 
 /-- The sets `𝓑_V` for different `V` are disjoint, so that the double sum `∑_V ∑_{π ∈ 𝓑_V}` of Lemma
 28 runs over each box of `⋃_V 𝓑_V` once. -/
@@ -284,7 +262,7 @@ theorem BV_pairwiseDisjoint (η : OutStr L) (s : Set (Finset (Fin L))) :
 
 /-- If `τ` contributes to `η` and `V ∖ F_V ⊆ Z ⊆ V`, then `τ` with stars at the levels of `F_V` is a
 cube of `𝓑_V`. -/
-private lemma starAt_mem_BV {η : OutStr L} {V : Finset (Fin L)} {τ : Leaf L}
+lemma starAt_mem_BV {η : OutStr L} {V : Finset (Fin L)}
     (hτ : Leaf.Contributes τ η) (hVZ : V \ FV (innerSetO η) V ⊆ Zof (innerSetO η) τ)
     (hZV : Zof (innerSetO η) τ ⊆ V) : Cube.starAt (FV (innerSetO η) V) τ ∈ BV η V := by
   refine mem_filter.2
@@ -293,13 +271,11 @@ private lemma starAt_mem_BV {η : OutStr L} {V : Finset (Fin L)} {τ : Leaf L}
     rw [Cube.starAt, if_neg (mem_sdiff.1 hVF).2, (mem_filter.1 (hVZ hVF)).2]
   · -- at a level of `Q ∖ V`, which is not a level of `Z`, the leaf chooses another term
     obtain ⟨hQ, hV⟩ := mem_sdiff.1 hQV
-    rw [Cube.starAt, if_neg fun hF => hV (FV_subset _ _ hF)]
+    rw [Cube.starAt, if_neg fun hF => by grind [FV_subset]]
     cases hterm : τ ℓ with
-    | P i j => exact ⟨i, j, rfl⟩
+    | P i j => simp
     | P0 => exact absurd (hZV (mem_filter.2 ⟨hQ, hterm⟩)) hV
-  · -- outside `Q` the leaf agrees with the private leaf
-    rw [Cube.starAt, if_neg fun hF : ℓ ∈ FV (innerSetO η) V => hQ (mem_filter.1 hF).1,
-      (contributes_iff_eq_privateLeaf η τ).1 hτ ℓ hQ]
+  simp_all [Cube.starAt, FV, innerSetO, mem_filter, contributes_iff_eq_privateLeaf]
 
 /-- Section 4.2: the box of a leaf `τ` of order at least `t` contributing to `η`: "The box of τ then
 agrees with τ everywhere, except that it has a star at every level of Q below the level where we
@@ -314,36 +290,35 @@ theorem mem_leaves_boxOfLeaf (m t : ℕ) (η : OutStr L) (τ : Leaf L) :
 
 /-- Section 4.2: "When V is the set defined above from a leaf τ, the box of τ is the one in 𝓑_V with
 the terms of τ at the levels of Q ∖ V": it is a cube of `𝓑_V`, for the set `V` of `τ`. -/
-theorem boxOfLeaf_mem_BV (m t : ℕ) {η : OutStr L} {τ : Leaf L} (hτ : Leaf.Contributes τ η) :
+theorem boxOfLeaf_mem_BV (m t : ℕ) {η : OutStr L} (hτ : Leaf.Contributes τ η) :
     boxOfLeaf m t η τ ∈ BV η (Vof m t (innerSetO η) (Zof (innerSetO η) τ)) :=
   starAt_mem_BV hτ
-    ((sdiff_FV_subset_iff (Vof_subset m t (Zof_subset _ τ))).2 (Vof_sdiff_lt m t _ _))
+    (by grind [sdiff_FV_subset_iff, Vof_subset, Zof_subset, Vof_sdiff_lt])
     subset_union_left
 
 /-- Section 4.2: "A leaf contributing to w that chooses P₀ at the set Z of levels is a leaf of a box
 of 𝓑_V if and only if it chooses P₀ at every level of V ∖ F_V and at no level of Q ∖ V, that is, V ∖
 F_V ⊆ Z ⊆ V". -/
 theorem exists_mem_BV_leaf_iff {η : OutStr L} {V : Finset (Fin L)} (hV : V ⊆ innerSetO η)
-    {τ : Leaf L} (hτ : Leaf.Contributes τ η) :
+    (hτ : Leaf.Contributes τ η) :
     (∃ π ∈ BV η V, τ ∈ Cube.leaves π) ↔
       V \ FV (innerSetO η) V ⊆ Zof (innerSetO η) τ ∧ Zof (innerSetO η) τ ⊆ V := by
   constructor
   · rintro ⟨π, hπ, hτπ⟩
-    refine ⟨fun ℓ hℓ => mem_filter.2 ⟨hV (mem_sdiff.1 hℓ).1, ?_⟩, fun ℓ hℓ => ?_⟩
+    refine ⟨fun ℓ hℓ => mem_filter.2 ⟨by grind, ?_⟩, fun ℓ hℓ => ?_⟩
     · exact Cube.eq_of_mem_leaves hτπ (BV_P0 hπ hℓ)
     · by_contra hℓV
       obtain ⟨hℓQ, hterm⟩ := mem_filter.1 hℓ
-      obtain ⟨i, j, hij⟩ := BV_nine hπ (mem_sdiff.2 ⟨hℓQ, hℓV⟩)
+      obtain ⟨i, j, hij⟩ := BV_nine hπ (by aesop)
       simp [Cube.eq_of_mem_leaves hτπ hij] at hterm
   · exact fun ⟨hVZ, hZV⟩ => ⟨_, starAt_mem_BV hτ hVZ hZV, Cube.mem_leaves_starAt _ τ⟩
 
 /-- Section 4.2: "Furthermore, it is a leaf of exactly one of these boxes, namely, the one with its
 terms at the levels of Q ∖ V." -/
-theorem BV_leaf_unique {η : OutStr L} {V : Finset (Fin L)} {τ : Leaf L} {π π' : Cube L}
+theorem BV_leaf_unique {η : OutStr L} {V : Finset (Fin L)} {π π' : Cube L}
     (hπ : π ∈ BV η V) (hτπ : τ ∈ Cube.leaves π) (hπ' : π' ∈ BV η V) (hτπ' : τ ∈ Cube.leaves π') :
     π = π' :=
-  BV_ext hπ hπ' fun _ hℓ =>
-    (BV_eq_term_of_leaf hπ hτπ hℓ).trans (BV_eq_term_of_leaf hπ' hτπ' hℓ).symm
+  by grind [BV_ext, BV_eq_term_of_leaf]
 
 /-! ### Figure 10 -/
 
@@ -360,13 +335,12 @@ theorem lemma_27 {L : ℕ} (m t : ℕ) (ht : t ≤ m) (Q Z : Finset (Fin L)) (hQ
     -- "Q ∖ Z is the disjoint union of V ∖ Z and Q ∖ V", and `V ∖ Z` lies below `Q ∖ V`,
     -- so "V ∖ Z consists of the lowest levels of Q ∖ Z".
     have hrest : (Q \ Z) \ (V \ Z) = Q \ V := sdiff_sdiff_sdiff_cancel_right hZV
-    have hlow := eq_lowest_of_lt (sdiff_subset_sdiff hVQ (le_refl Z))
+    have hlow := eq_lowest_of_lt (by simp_all)
       (hrest ▸ (sdiff_FV_subset_iff hVQ).1 hVZ)
-    rw [card_sdiff_of_subset hZV, hVc] at hlow
-    rw [Vof, ← hlow, union_sdiff_of_subset hZV]
+    grind [Vof]
   · rintro rfl
     have hVQ := Vof_subset m t hZ
-    exact ⟨hVQ, card_Vof ht hQ hZ hZc, (sdiff_FV_subset_iff hVQ).2 (Vof_sdiff_lt m t Q Z),
+    exact ⟨hVQ, card_Vof ht hQ hZ hZc, by grind [sdiff_FV_subset_iff, Vof_sdiff_lt],
       subset_union_left⟩
 
 /-! ### Lemma 28 -/
@@ -383,8 +357,7 @@ theorem lemma_28_leaves {L : ℕ} (m t : ℕ) (ht : t ≤ m) (η : OutStr L) (h�
     rintro ⟨hτ, hord⟩
     refine ⟨boxOfLeaf m t η τ, mem_biUnion.2 ⟨_, mem_powersetCard.2 ?_, boxOfLeaf_mem_BV m t hτ⟩,
       mem_leaves_boxOfLeaf m t η τ⟩
-    exact ⟨Vof_subset m t (Zof_subset _ τ),
-      card_Vof ht hη (Zof_subset _ τ) (card_Zof_le hτ hord)⟩
+    grind [Vof_subset, Zof_subset, card_Vof, card_Zof_le]
   · -- "Every leaf of a box of 𝓑_V agrees with the private leaf of w outside Q, so it contributes
     -- to w", and a box only contains leaves of order at least `t`.
     rintro ⟨π, hπ, hτπ⟩
@@ -395,14 +368,14 @@ theorem lemma_28_leaves {L : ℕ} (m t : ℕ) (ht : t ≤ m) (η : OutStr L) (h�
 
 /-- Proof of Lemma 28: "By Lemma 27, exactly one V satisfies this condition": if a leaf of order at
 least `t` contributing to `η` is a leaf of a box of `𝓑_V`, then `V` is the set of the leaf. -/
-private lemma eq_Vof_of_mem_leaves {m t : ℕ} (ht : t ≤ m) {η : OutStr L}
-    (hη : (innerSetO η).card = m) {τ : Leaf L} (hτ : Leaf.Contributes τ η)
+lemma eq_Vof_of_mem_leaves (ht : t ≤ m) {η : OutStr L}
+    (hη : (innerSetO η).card = m) (hτ : Leaf.Contributes τ η)
     (hord : (t : ℤ) ≤ order m τ) {V : Finset (Fin L)} (hV : V ∈ Vsets m t η) {π : Cube L}
     (hπ : π ∈ BV η V) (hτπ : τ ∈ Cube.leaves π) :
     V = Vof m t (innerSetO η) (Zof (innerSetO η) τ) := by
   obtain ⟨hVQ, hVc⟩ := mem_powersetCard.1 hV
   obtain ⟨hVZ, hZV⟩ := (exists_mem_BV_leaf_iff hVQ hτ).1 ⟨π, hπ, hτπ⟩
-  exact (lemma_27 m t ht _ _ hη (Zof_subset _ τ) (card_Zof_le hτ hord) V).1 ⟨hVQ, hVc, hVZ, hZV⟩
+  grind [lemma_27, card_Zof_le]
 
 /-- **Lemma 28**, first sentence, second half: "and each of them is a leaf of exactly one
 of these boxes." -/
@@ -410,14 +383,14 @@ theorem lemma_28_unique {L : ℕ} (m t : ℕ) (ht : t ≤ m) (η : OutStr L) (h�
     (τ : Leaf L) (hτ : Leaf.Contributes τ η) (hord : (t : ℤ) ≤ order m τ) :
     ∃! π : Cube L, π ∈ (Vsets m t η).biUnion (BV η) ∧ τ ∈ Cube.leaves π := by
   obtain ⟨π, hπ, hτπ⟩ := (lemma_28_leaves m t ht η hη τ).1 ⟨hτ, hord⟩
-  refine ⟨π, ⟨hπ, hτπ⟩, ?_⟩
+  refine ⟨π, by simp_all, ?_⟩
   rintro π' ⟨hπ', hτπ'⟩
   -- the two boxes belong to the same `V`, and `𝓑_V` has only one box with the leaf `τ`
   obtain ⟨V, hV, hπV⟩ := mem_biUnion.1 hπ
   obtain ⟨V', hV', hπV'⟩ := mem_biUnion.1 hπ'
-  obtain rfl : V' = V := (eq_Vof_of_mem_leaves ht hη hτ hord hV' hπV' hτπ').trans
+  obtain rfl := (eq_Vof_of_mem_leaves ht hη hτ hord hV' hπV' hτπ').trans
     (eq_Vof_of_mem_leaves ht hη hτ hord hV hπV hτπ).symm
-  exact BV_leaf_unique hπV' hτπ' hπV hτπ
+  grind [BV_leaf_unique]
 
 /-- The equation of Lemma 28 for an arbitrary function `g` of the leaves in the place of the
 products: the sum of `g` over the leaves contributing to `η` is the sum over the leaves of order
@@ -427,7 +400,7 @@ theorem Lemma28.sum_contributing {G : Type*} [AddCommMonoid G] (m t : ℕ) (ht :
     ∑ τ : Leaf L with Leaf.Contributes τ η, g τ =
       ∑ τ ∈ lowLeaves m t η, g τ + ∑ V ∈ Vsets m t η, ∑ π ∈ BV η V, ∑ τ ∈ Cube.leaves π, g τ := by
   have hdisjoint :
-      (((Vsets m t η).biUnion (BV η) : Finset (Cube L)) : Set (Cube L)).PairwiseDisjoint
+      (((Vsets m t η).biUnion (BV η) : Finset _) : Set (Cube L)).PairwiseDisjoint
         Cube.leaves := by
     intro π hπ π' hπ' hne
     rw [Function.onFun, disjoint_left]
@@ -435,10 +408,8 @@ theorem Lemma28.sum_contributing {G : Type*} [AddCommMonoid G] (m t : ℕ) (ht :
     obtain ⟨hc, hord⟩ := (lemma_28_leaves m t ht η hη τ).2 ⟨π, hπ, hτ⟩
     exact hne ((lemma_28_unique m t ht η hη τ hc hord).unique ⟨hπ, hτ⟩ ⟨hπ', hτ'⟩)
   have hhigh : ((Vsets m t η).biUnion (BV η)).biUnion Cube.leaves =
-      univ.filter fun τ : Leaf L => Leaf.Contributes τ η ∧ ¬ order m τ < (t : ℤ) := by
-    ext τ
-    rw [mem_biUnion, mem_filter, not_lt, ← lemma_28_leaves m t ht η hη τ]
-    simp
+      univ.filter fun τ => Leaf.Contributes τ η ∧ ¬ order m τ < t := by
+    grind [lemma_28_leaves]
   -- The sums over the sets `V`, the boxes and their leaves are one sum over the contributing leaves
   -- of order at least `t`; the contributing leaves split into those of order below `t` and these.
   rw [← sum_biUnion (BV_pairwiseDisjoint η _), ← sum_biUnion hdisjoint, hhigh, lowLeaves,
@@ -450,7 +421,7 @@ leaves contributing to `η`, which is `Mult(a, b)[η]`, equals the sum over the 
 left. -/
 theorem Lemma28.Mult_eq_querySum (m t : ℕ) (ht : t ≤ m) (a : LeftStr L → ℤ) (b : RightStr L → ℤ)
     (η : OutStr L) (hη : (innerSetO η).card = m) : Mult a b η = querySum m t a b η :=
-  Lemma28.sum_contributing m t ht η hη fun τ => Phi τ a * Psi τ b
+  Lemma28.sum_contributing m t ht η hη _
 
 /-- The terms of the sum of Lemma 28 stand for the `10^m` leaves contributing to `η`, each of them
 once: one leaf for each product, and its leaves for each box. The bound on the partial sums of a
@@ -458,24 +429,20 @@ query (word size, the proof of Theorem 30) rests on this count. -/
 theorem Lemma28.card_leaves (m t : ℕ) (ht : t ≤ m) (η : OutStr L)
     (hη : (innerSetO η).card = m) :
     (lowLeaves m t η).card + ∑ π ∈ (Vsets m t η).biUnion (BV η), (Cube.leaves π).card = 10 ^ m := by
-  have hsplit := Lemma28.sum_contributing m t ht η hη fun _ => 1
-  rw [← card_eq_sum_ones, card_filter_contributes η hη] at hsplit
-  rw [hsplit, sum_biUnion (BV_pairwiseDisjoint η _)]
-  simp
+  grind [Lemma28.sum_contributing, card_eq_sum_ones, card_filter_contributes, sum_biUnion, BV_pairwiseDisjoint]
 
 /-- The leaves of order below `t` contributing to `η`, sorted by their order, which is at least 0.
 -/
-private lemma lowLeaves_eq_biUnion (m t : ℕ) (η : OutStr L) (hη : (innerSetO η).card = m) :
+lemma lowLeaves_eq_biUnion (m t : ℕ) (η : OutStr L) (hη : (innerSetO η).card = m) :
     lowLeaves m t η = (range t).biUnion fun d =>
       univ.filter fun τ : Leaf L => Leaf.Contributes τ η ∧ order m τ = d := by
   ext τ
-  simp only [lowLeaves, mem_filter, mem_univ, true_and, mem_biUnion, mem_range]
+  simp [lowLeaves, mem_filter, mem_univ, true_and, mem_biUnion, mem_range]
   constructor
   · rintro ⟨hτ, hlt⟩
     have hnonneg := order_nonneg hη hτ
-    exact ⟨(order m τ).toNat, by omega, hτ, (Int.toNat_of_nonneg hnonneg).symm⟩
-  · rintro ⟨d, hd, hτ, heq⟩
-    exact ⟨hτ, by omega⟩
+    exact ⟨(order m τ).toNat, by omega, hτ, by omega⟩
+  simp_all
 
 /-- **Lemma 28**, last line: "a sum of ∑_{d=0}^{t-1} α_d products and α_t values of
 boxes."  The third clause says that these α_t cubes are different, that is, that the sets 𝓑_V are
@@ -492,11 +459,7 @@ theorem lemma_28_counts {L : ℕ} (m t : ℕ) (ht : t ≤ m) (η : OutStr L)
   refine ⟨?_, hsum, ?_⟩
   · -- "α_d leaves of order d contribute to w"
     rw [lowLeaves_eq_biUnion m t η hη, card_biUnion]
-    · exact sum_congr rfl fun d _ => sec2_card_contributing_of_order η hη d
+    · grind [sum_congr, sec2_card_contributing_of_order]
     · intro d _ d' _ hne
-      rw [Function.onFun, disjoint_left]
-      intro τ hd hd'
-      exact hne (by exact_mod_cast (mem_filter.1 hd).2.2.symm.trans (mem_filter.1 hd').2.2)
-  · rw [card_biUnion (BV_pairwiseDisjoint η _), hsum]
-
-end ThreeSumApsp
+      grind [disjoint_left]
+  grind [card_biUnion, BV_pairwiseDisjoint]

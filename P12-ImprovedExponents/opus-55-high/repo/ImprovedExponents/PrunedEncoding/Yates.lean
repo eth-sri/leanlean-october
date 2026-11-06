@@ -1,8 +1,6 @@
-module
 
-public import ImprovedExponents.PrunedEncoding.Card
+import ImprovedExponents.PrunedEncoding.Card
 
-@[expose] public section
 
 /-!
 # Pruned encodings: Yates' algorithm, stage by stage
@@ -29,19 +27,6 @@ shape (`IsStage k`).
 
 namespace ImprovedExponents
 
-open Finset ThreeSumApsp
 
-/-- A mixed string of length `L`: at each level, a term or a left variable. -/
-abbrev MixStr (L : ℕ) : Type := Fin L → Term ⊕ LeftVar
 
-/-- The shape of the indices of stage `k`: terms at the levels below `k`, left variables at the
-levels from `k` on. -/
-def IsStage {L : ℕ} (k : ℕ) (s : MixStr L) : Prop :=
-  ∀ ℓ : Fin L, (ℓ.val < k → (s ℓ).isLeft) ∧ (k ≤ ℓ.val → (s ℓ).isRight)
 
-/-- The shape of stage `k` is decidable. -/
-instance {L : ℕ} (k : ℕ) : DecidablePred (IsStage (L := L) k) := fun s =>
-  inferInstanceAs
-    (Decidable (∀ ℓ : Fin L, (ℓ.val < k → (s ℓ).isLeft) ∧ (k ≤ ℓ.val → (s ℓ).isRight)))
-
-end ImprovedExponents

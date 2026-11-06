@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import PaperStatements
+import PaperStatements
 
 /-!
 # Theorem 21(a), the reduction of Chan and He: the problems on three sets and on arrays
@@ -17,13 +16,11 @@ arrays of a node of the recursion tree) and on one array (`ConvOne`).  An array 
 have absolute value at most `U`.
 -/
 
-@[expose] public section
 
 namespace ThreeSumApsp
 
 namespace ChanHe
 
-open Finset
 
 /-- 3SUM on three sets (Definition 2.1 of [CH20], without the requirement that the sets have the
 same size). -/
@@ -44,7 +41,3 @@ def Node.Conv (ν : Node) (U N : ℕ) : Prop :=
 
 /-- All elements of `S` have absolute value at most `U`. -/
 def Bdd (U : ℕ) (S : Finset ℤ) : Prop := ∀ x ∈ S, |x| ≤ (U : ℤ)
-
-end ChanHe
-
-end ThreeSumApsp

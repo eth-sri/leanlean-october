@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.RadixPass
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
-public import Mathlib.Tactic.Linarith
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.RadixPass
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import Mathlib.Tactic.Linarith
 
 /-!
 # Theorem 5 in the light language: sorting the wanted positions
@@ -22,30 +22,19 @@ sortWantedBody_ends puts the parts together, and sortWanted_entry is the specifi
 SortWantedSpec that the callers use.
 -/
 
-@[expose] public section
 
-open ThreeSumApsp
 
 namespace Light.Sec2
-
-variable {lim : Limits} {P : Program} {d : ℕ}
 
 /-! ## The program -/
 
 namespace SortWanted
 
-/-- The local variables of sortWanted: the arguments w (Num), L (Levels), nT (Tiles), tid (TileOf),
+/- The local variables of sortWanted: the arguments w (Num), L (Levels), nT (Tiles), tid (TileOf),
 dgt (Digits), perm (Perm); a counter (Idx); the unused results of the calls (Res).  A pass
 (radixPass) reads w and perm from the locals 0 and 5 and writes to local 7, which are Num, Perm and
 Res. -/
-abbrev Num : ℕ := 0
-@[inherit_doc Num] abbrev Levels : ℕ := 1
-@[inherit_doc Num] abbrev Tiles : ℕ := 2
-@[inherit_doc Num] abbrev TileOf : ℕ := 3
-@[inherit_doc Num] abbrev Digits : ℕ := 4
-@[inherit_doc Num] abbrev Perm : ℕ := 5
-@[inherit_doc Num] abbrev Idx : ℕ := 6
-@[inherit_doc Num] abbrev Res : ℕ := 7
+slots Num Levels Tiles TileOf Digits Perm Idx Res
 
 end SortWanted
 
@@ -78,8 +67,6 @@ namespace SortWanted
 
 end SortWanted
 
-variable {μ μ' : ℕ → ℤ} {A : Args} {t x g : ℕ → ℕ} {π : List ℕ} {σ : State}
-
 /-! ## The list 0, …, w - 1 -/
 
 /-! ## The passes on the digits -/
@@ -87,5 +74,3 @@ variable {μ μ' : ℕ → ℤ} {A : Args} {t x g : ℕ → ℕ} {π : List ℕ}
 /-! ## The pass on the tiles -/
 
 /-! ## The routine -/
-
-end Light.Sec2

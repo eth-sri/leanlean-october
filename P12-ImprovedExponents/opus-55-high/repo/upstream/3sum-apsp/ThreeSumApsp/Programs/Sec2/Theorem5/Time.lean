@@ -1,3 +1,2 @@
-module
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.AllTiles
-public import ThreeSumApsp.Programs.Sec2.Theorem5.WordSize
+import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.AllTiles
+import ThreeSumApsp.Programs.Sec2.Theorem5.WordSize

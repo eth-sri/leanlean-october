@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Tasks
-public import ThreeSumApsp.TimeClaims.Sec3.Definitions
+import ThreeSumApsp.Programs.Tasks
+import ThreeSumApsp.TimeClaims.Sec3.Definitions
 
 /-!
 # "Is solved in time T", read as a statement about programs of the light language
@@ -22,22 +21,10 @@ procedure of some program of the light language solves the task within that many
 polynomially bounded.
 -/
 
-@[expose] public section
 
 namespace Light
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp
 
 /-- The reading of "is solved in time T" by programs of the light language. -/
-noncomputable def lightModel : DetTimeModel where
-  thinProduct := ThinSolvedIn
-  lopCount := LopSolvedIn lopCountTask
-  lopDetect := LopSolvedIn lopDetectTask
-  exactTriangle := SolvedIn etTask
-  negativeTriangle := SolvedIn ntTask
-  convolution3SUM := SolvedIn c3Task
-  threeSum := SolvedIn s3Task
-  minPlusProduct := SolvedIn mpTask
-  apsp := SolvedIn apTask
-
-end Light
+noncomputable def lightModel : DetTimeModel := ⟨ThinSolvedIn, LopSolvedIn lopCountTask, LopSolvedIn lopDetectTask, SolvedIn etTask, SolvedIn ntTask, SolvedIn c3Task, SolvedIn s3Task, SolvedIn mpTask, SolvedIn apTask⟩

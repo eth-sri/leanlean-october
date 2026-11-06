@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.Scan
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.Scan
 
 /-!
 # Brute force (the proof of Theorem 19)
@@ -15,7 +15,6 @@ In the proof of Theorem 19, "smaller instances are solved by brute force": the p
 most `100 n³ + 100` steps (`brute_solves`).
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -29,12 +28,11 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 theorem hasZero_iff (n : ℕ) (AB BC AC : List ℤ) :
     hasZero n AB BC AC = true ↔ (triOf n AB BC AC).HasZeroTriangle := by
   unfold hasZero TriangleInstance.HasZeroTriangle TriangleInstance.IsZeroTriangle TriangleInstance.S
-  simp only [List.any_eq_true, List.mem_range, scanHit, decide_eq_true_eq]
+  simp [List.any_eq_true, List.mem_range, scanHit, decide_eq_true_eq]
   constructor
   · rintro ⟨a, ha, b, hb, c, hc, h⟩
-    exact ⟨⟨a, ha⟩, ⟨b, hb⟩, ⟨c, hc⟩, by simpa [triOf] using h⟩
-  · rintro ⟨a, b, c, h⟩
-    exact ⟨a, a.2, b, b.2, c, c.2, by simpa [triOf] using h⟩
+    exact ⟨⟨a, ha⟩, ⟨b, hb⟩, ⟨c, hc⟩, by assumption⟩
+  aesop
 
 /-- Some `b` below `b'` gives a zero triangle with `a`. -/
 def bruteRow (n : ℕ) (AB BC AC : List ℤ) (a b' : ℕ) : Bool :=
@@ -46,26 +44,17 @@ def bruteAll (n : ℕ) (AB BC AC : List ℤ) (a' : ℕ) : Bool :=
 
 theorem bruteRow_succ (n : ℕ) (AB BC AC : List ℤ) (a b : ℕ) :
     bruteRow n AB BC AC a (b + 1) = (bruteRow n AB BC AC a b || scanHit n AB BC AC a b 0 n) := by
-  simp [bruteRow, List.range_succ, List.any_append]
+  grind [bruteRow]
 
 theorem bruteAll_succ (n : ℕ) (AB BC AC : List ℤ) (a : ℕ) :
     bruteAll n AB BC AC (a + 1) = (bruteAll n AB BC AC a || bruteRow n AB BC AC a n) := by
-  simp [bruteAll, List.range_succ, List.any_append]
+  grind [bruteAll]
 
 namespace Brute
 
-/-- The locals of `brute`.  The arguments: `n`, `U`, the addresses of the three arrays, and the free
+/- The locals of `brute`.  The arguments: `n`, `U`, the addresses of the three arrays, and the free
 pointer.  Then the vertices `a` and `b`, the result so far, and the result of a scan. -/
-abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Bound : ℕ := 1
-@[inherit_doc Size] abbrev AdrAB : ℕ := 2
-@[inherit_doc Size] abbrev AdrBC : ℕ := 3
-@[inherit_doc Size] abbrev AdrAC : ℕ := 4
-@[inherit_doc Size] abbrev Free : ℕ := 5
-@[inherit_doc Size] abbrev VtxA : ℕ := 6
-@[inherit_doc Size] abbrev VtxB : ℕ := 7
-@[inherit_doc Size] abbrev Hit : ℕ := 8
-@[inherit_doc Size] abbrev Res : ℕ := 9
+slots Size Bound AdrAB AdrBC AdrAC Free VtxA VtxB Hit Res
 
 end Brute
 
@@ -93,12 +82,7 @@ def bruteNeed (_n U : ℕ) : Need := ⟨3 * U + 1, 0, 1⟩
 /-- An instance of Exact Triangle gives `scan` what it assumes. -/
 theorem _root_.Light.TriInst.Pre.weights {x : TriInst} {μ : ℕ → ℤ} {fr : ℕ} (hpre : x.Pre μ fr)
     (hok : (bruteNeed x.n x.U).Ok lim fr d) :
-    Weights lim μ x.ab x.bc x.ac x.n x.U x.AB x.BC x.AC where
-  hw := hok.space
-  hU := by exact_mod_cast hok.word
-  arrAB := ⟨hpre.lenAB, hpre.segAB, hpre.leAB, hpre.belowAB.trans hok.cells⟩
-  arrBC := ⟨hpre.lenBC, hpre.segBC, hpre.leBC, hpre.belowBC.trans hok.cells⟩
-  arrAC := ⟨hpre.lenAC, hpre.segAC, hpre.leAC, hpre.belowAC.trans hok.cells⟩
+    Weights lim μ x.ab x.bc x.ac x.n x.U x.AB x.BC x.AC := ⟨hok.space, by exact_mod_cast hok.word, ⟨hpre.lenAB, hpre.segAB, hpre.leAB, hpre.belowAB.trans hok.cells⟩, ⟨hpre.lenBC, hpre.segBC, hpre.leBC, hpre.belowBC.trans hok.cells⟩, ⟨hpre.lenAC, hpre.segAC, hpre.leAC, hpre.belowAC.trans hok.cells⟩⟩
 
 section
 
@@ -116,9 +100,9 @@ theorem brutePair_spec {b : ℕ} {hit : Bool} {r : ℤ} (hP : P[pScan]? = some s
   rw [flag_eq_bit]
   -- if res = 1 then hit := 1
   cases hscan : scanHit n AB BC AC a b 0 n
-  · exact Ends.iteLast (fun h => absurd h (by simp [bit])) fun _ => Ends.skip ⟨bit false, by simp⟩
-  · exact Ends.iteLast (fun _ => Ends.setTo 1 ⟨bit true, by simp [bit]⟩)
-      fun h => absurd h (by simp [bit])
+  · exact Ends.iteLast (by simp_all [bit]) fun _ => Ends.skip ⟨bit false, by simp⟩
+  · exact Ends.iteLast (fun _ => Ends.setTo 1 ⟨bit true, by simp_all⟩)
+      fun h => by tauto
 
 /-- The inner loop: all `b` for one `a`. -/
 theorem bruteInner_spec {b₀ r₀ : ℤ} (hP : P[pScan]? = some scanBody)
@@ -132,31 +116,25 @@ theorem bruteInner_spec {b₀ r₀ : ℤ} (hP : P[pScan]? = some scanBody)
   -- for b < n
   refine Ends.for (fun b σ => ∃ r, σ = ⟨frame [n, U, ab, bc, ac, fr, a, b,
     bit (bruteAll n AB BC AC a || bruteRow n AB BC AC a b), r], μ⟩) n (tScan n + 16)
-    ?start ?round ?done ?bound (hT := by simp [tScan]; ring_nf; omega)
+    ?start ?round ?done ?bound (hT := by simp [tScan]; linarith)
   case start => exact ⟨r₀, by simp [update_frame_setLocal, bruteRow]⟩
   case bound =>
-    rintro b _ - - ⟨r, rfl⟩
-    simp
+    simp_all
   case round =>
     rintro b _ hb - ⟨r, rfl⟩
-    refine (brutePair_spec hP C hd ha hb).mono le_rfl ?_
+    apply (brutePair_spec hP C hd ha hb).mono le_rfl
     rintro _ ⟨r', rfl⟩
     exact ⟨by simp, r', by simp [update_frame_setLocal, bruteRow_succ, Bool.or_assoc]⟩
-  case done =>
-    rintro _ - ⟨r, rfl⟩
-    exact ⟨r, by rw [bruteAll_succ]⟩
+  grind [bruteAll_succ]
 
 end
 
 /-- The steps of the two loops of brute are within its time. -/
 theorem tBrute_ge (n : ℕ) : n * (1 + (n * (24 * n + 59) + 6) + 7) + 10 ≤ tBrute n := by
-  rcases Nat.eq_zero_or_pos n with rfl | hn
-  · simp [tBrute]
-  · have hsq : n ^ 2 ≤ n ^ 3 := Nat.pow_le_pow_right hn (by omega)
-    have hlin : n ≤ n ^ 3 := Nat.le_self_pow (by omega) n
-    rw [show n * (1 + (n * (24 * n + 59) + 6) + 7) = 24 * n ^ 3 + 59 * n ^ 2 + 14 * n by ring,
-      tBrute]
-    omega
+  rcases n.eq_zero_or_pos with rfl | hn
+  · decide
+  · have hsq : n ^ 2 ≤ n ^ 3 := by simp_all [Nat.pow_le_pow_right]
+    grind [Nat.le_self_pow, tBrute]
 
 /-- **The brute force.**  In any program that holds `scanBody` as its procedure number `pScan`,
 `bruteBody pScan` ends within `tBrute n` steps, decides whether the instance has a zero triangle,
@@ -167,33 +145,31 @@ theorem brute_spec {pScan : ℕ} (hP : P[pScan]? = some scanBody) (x : TriInst) 
       fun σ' => σ'.loc 0 = flag (triOf x.n x.AB x.BC x.AC).HasZeroTriangle ∧ σ'.mem = μ := by
   have C := hpre.weights hok
   have hw := C.hw
-  have hd : d < lim.depth := hok.depth
-  have hn : x.n ≤ lim.space :=
+  have hn :=
     (Nat.le_mul_of_pos_left _ hpre.n_pos).trans ((Nat.le_add_left _ _).trans C.arrAB.below)
   have htime := tBrute_ge x.n
   -- hit := 0
-  light_set (0 : ℕ)
+  light_set 0
   -- for a < n
   refine Ends.next _ (Ends.for (fun a σ => ∃ b r, σ = ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, fr, a, b,
     bit (bruteAll x.n x.AB x.BC x.AC a), r], μ⟩) x.n (x.n * (24 * x.n + 59) + 6)
     ?start ?round ?done ?bound (hT := le_rfl)) (by simp; omega)
   case start =>
     exact ⟨0, 0, by simpa [update_frame_setLocal, bruteAll, bit] using
-      (frame_append_zeros [(x.n : ℤ), x.U, x.ab, x.bc, x.ac, fr, 0, 0, 0] 1).symm⟩
+      (frame_append_zeros [x.n, x.U, x.ab, x.bc, x.ac, fr, 0, 0, 0] 1).symm⟩
   case bound =>
-    rintro a _ - - ⟨b, r, rfl⟩
-    simp
+    simp_all
   case round =>
     rintro a _ ha - ⟨b, r, rfl⟩
-    refine (bruteInner_spec hP C hd hn ha).mono le_rfl ?_
+    apply (bruteInner_spec hP C hok.depth hn ha).mono le_rfl
     rintro _ ⟨r', rfl⟩
     exact ⟨by simp, x.n, r', by simp [update_frame_setLocal]⟩
   case done =>
     rintro _ - ⟨b, r, rfl⟩
     -- return hit
     refine Ends.setTo (bit (hasZero x.n x.AB x.BC x.AC)) ⟨?_, rfl⟩
-      (by simp [bruteAll, hasZero, bruteRow]) (by simp; omega)
-    exact (flag_eq_bit _).symm.trans (flag_congr (hasZero_iff x.n x.AB x.BC x.AC))
+      (by aesop) (by simp; omega)
+    exact (flag_eq_bit _).symm.trans (by grind [flag_congr, hasZero_iff])
 
 /-- The specification of `brute`, for its callers. -/
 theorem brute_meets {p pScan : ℕ} (hB : P[p]? = some (bruteBody pScan))
@@ -201,11 +177,9 @@ theorem brute_meets {p pScan : ℕ} (hB : P[p]? = some (bruteBody pScan))
     (hok : (bruteNeed x.n x.U).Ok lim fr d) :
     Meets lim P p d [x.n, x.U, x.ab, x.bc, x.ac, fr] μ (tBrute x.n) fun r μ' =>
       r = flag (triOf x.n x.AB x.BC x.AC).HasZeroTriangle ∧ μ' = μ :=
-  Meets.of_body hB (brute_spec hP x μ fr hpre hok)
+  by grind [Meets.of_body, brute_spec]
 
 /-- **brute** solves Exact Triangle. -/
 theorem brute_solves : Solves etTask [bruteBody 1, scanBody] 0 (fun n _ => tBrute n) bruteNeed :=
   ⟨bruteBody 1, rfl, fun _ _ _ x μ fr hpre hok =>
-    (brute_spec rfl x μ fr hpre hok).mono le_rfl fun _ h => ⟨h.1, fun y _ => by rw [h.2]⟩⟩
-
-end Light.Sec3
+    (brute_spec rfl x μ fr hpre hok).mono le_rfl fun _ h => ⟨h.1, by tauto⟩⟩

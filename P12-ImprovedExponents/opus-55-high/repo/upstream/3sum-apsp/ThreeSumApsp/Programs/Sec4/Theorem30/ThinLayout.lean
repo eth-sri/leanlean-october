@@ -1,2 +1,1 @@
-module
-public import ThreeSumApsp.Lang.RowMajor
+import ThreeSumApsp.Lang.RowMajor

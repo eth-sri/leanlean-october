@@ -1,10 +1,8 @@
-module
 
-public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Tile
-public import ImprovedExponents.PrunedProgram.Tiles.Contracts
+import ThreeSumApsp.Lang.Tactics
+import ThreeSumApsp.Programs.Sec4.Theorem30.Tile
+import ImprovedExponents.PrunedProgram.Tiles.Contracts
 
-@[expose] public section
 
 /-!
 # The trie of one tile, on pruned encodings
@@ -22,7 +20,7 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/Tile.lean` (Apache-2
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 namespace TileP
 
@@ -49,11 +47,7 @@ theorem Mem.newRoot (C : TilePreP lim μ x) (hs : SameOutsideTrie μ μ₁ x.tr 
   have hlayout := C.ctx.layout
   have hroots := C.rootsPlace
   exact
-    { trie := ht.keep
-      roots := SegN.snoc C.roots.keep _
-      segA := C.segA.keep
-      segB := C.segB.keep
-      same := by light_keep }
+    ⟨ht.keep, C.roots.keep.snoc _, C.segA.keep, C.segB.keep, by light_keep⟩
 
 /-- After the boxes with some number of stars have been put into the trie. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Tile.lean (Tile.Mem.fill)
@@ -64,8 +58,7 @@ theorem Mem.fill (C : TilePreP lim μ x) (h : Mem μ μ₁ x T)
   have hlayout := C.ctx.layout
   have hroots := C.rootsPlace
   have hsame := h.same
-  exact { trie := ht, roots := h.roots.keep, segA := h.segA.keep, segB := h.segB.keep
-          same := by light_keep }
+  exact ⟨ht, h.roots.keep, h.segA.keep, h.segB.keep, by light_keep⟩
 
 /-- The state before the boxes with e stars: the root is in its local and in its cell, and the
 trie holds the boxes with fewer stars. -/
@@ -83,22 +76,18 @@ theorem round (hFill : FillListSpecP lim P) (C : TilePreP lim μ x) (hd : d + 3 
     Ends lim P d tileRound σ (tFillList x.L (starBoxes x.L x.m x.t e).length + 30)
       (Inv μ x (e + 1)) := by
   obtain ⟨void, μ₁, rfl, hM⟩ := h
-  have hlayout := C.ctx.layout
   light_facts C.ctx C.ctx.std
   -- the trie of the tile has the number s.roots.length, and its root is the last one
   have hroot := x.s.root_new
   have hfill := hFill (Tile.fillArgs x e) μ₁
-    { ctx := C.ctx, stars_le := he, root_ne := hroot.trans_ne C.rep.length_pos.ne'
-      rep := fillUpTo_rep (arrT x.encA) (arrT x.encB) x.m x.t x.s C.rep e
-      trie := hM.trie, segA := hM.segA, segB := hM.segB
-      room := (Tile.room (arrT x.encA) (arrT x.encB) x.L x.m x.t x.s.cells.length x.s.cells
-        he).trans C.room }
-  simp only [Tile.fillArgs, FillListArgs.vals, FillListArgs.root, FillListArgs.boxes, hroot]
+    ⟨C.ctx, he, hroot.trans_ne C.rep.length_pos.ne', fillUpTo_rep (arrT x.encA) (arrT x.encB) x.m x.t x.s C.rep e, hM.trie, hM.segA, hM.segB, (Tile.room (arrT x.encA) (arrT x.encB) x.L x.m x.t x.s.cells.length x.s.cells
+        he).trans C.room⟩
+  simp [Tile.fillArgs, FillListArgs.vals, FillListArgs.root, FillListArgs.boxes]
     at hfill
   -- fillList(e, root, …)
-  light_call (hfill _ (by omega)) with void' μ₂ ⟨htrie, same⟩
+  light_call (by aesop) with void' μ₂ ⟨htrie, same⟩
   -- e := e + 1
-  light_set (e + 1 : ℕ)
+  light_set (e + 1)
   exact ⟨void', μ₂, rfl, hM.fill C same htrie⟩
 
 end TileP
@@ -110,10 +99,8 @@ theorem tileP_spec {lim : Limits} {P : Program} (hP : P[Proc.tile]? = some tileB
     (hNew : NewRootSpec lim P) (hFill : FillListSpecP lim P) : TileSpecP lim P := by
   intro x μ C
   refine fun d hd => ⟨tileBody, hP, ?_⟩
-  have hlayout := C.ctx.layout
   light_facts C C.ctx C.ctx.std
   have hcells : x.cells = x.s.roots.length + 1 := rfl
-  have hroom := C.room
   unfold tTile
   -- root := newRoot(tr, fp)
   light_call (hNew x.tr x.cap x.fp x.s.cells μ C.trie (by omega) (by omega) (by omega) _
@@ -123,22 +110,18 @@ theorem tileP_spec {lim : Limits} {P : Program} (hP : P[Proc.tile]? = some tileB
   -- while e ≤ mt
   refine (Ends.while (Inv μ x) (x.m - x.t + 1)
     (fun e => tFillList x.L (starBoxes x.L x.m x.t e).length + 30)
-    ?start ?round ?done).mono ?time fun _ h => h
-  case start => exact ⟨0, _, congrArg (State.mk · _) (frame_append_zeros _ 1).symm,
+    ?_ ?_ ?_).mono ?_ fun _ h => h
+  · exact ⟨0, _, congrArg (State.mk · _) (frame_append_zeros _ 1).symm,
     Mem.newRoot C same htrie⟩
-  case round =>
+  ·
     rintro e σ he hI
     have hround := round hFill C hd (by omega) hI
     obtain ⟨void, μ', rfl, -⟩ := hI
     exact ⟨by light_side, by simp; omega, hround⟩
-  case done =>
+  ·
     rintro _ ⟨void, μ', rfl, hM'⟩
     exact ⟨by light_side, by simp, hM'.trie, hM'.roots, hM'.same⟩
-  case time =>
+  ·
     have hsum := Tile.time_le x.L x.m x.t (x.m - x.t + 1)
     -- the test of the loop and the jump cost 6 steps
-    have htest : ∀ y : ℕ, 1 + (1 + 1 + 1) + 1 + 1 + y = 6 + y := fun y => by omega
-    simp only [Cond.cost, Expr.cost, htest]
-    light_time
-
-end Light.Sec4
+    grind [Cond.cost, Expr.cost]

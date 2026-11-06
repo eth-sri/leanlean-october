@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import Mathlib.Algebra.Group.Int.Defs
-public import Mathlib.Algebra.GroupWithZero.Nat
-public import Mathlib.Algebra.Order.Group.Unbundled.Abs
+import Mathlib.Algebra.Group.Int.Defs
+import Mathlib.Algebra.GroupWithZero.Nat
+import Mathlib.Algebra.Order.Group.Unbundled.Abs
 
 /-!
 # The light language
@@ -29,7 +28,6 @@ and, up to a constant factor that depends on the program text only, step counts.
   not exist.
 -/
 
-@[expose] public section
 
 namespace Light
 
@@ -76,15 +74,13 @@ abbrev Program : Type := List Stmt
 
 /-- What a running procedure sees: its local variables and the memory. -/
 structure State : Type where
-  loc : ℕ → ℤ
-  mem : ℕ → ℤ
+  (loc mem : ℕ → ℤ)
 
 /-- The limits on a run: largest absolute value of a word, number of memory cells, nesting depth of
 calls. -/
 structure Limits : Type where
   word : ℤ
-  space : ℕ
-  depth : ℕ
+  (space depth : ℕ)
 
 /-- The value of an expression. -/
 def Expr.val (s : State) : Expr → ℤ
@@ -160,5 +156,3 @@ inductive Exec (lim : Limits) (P : Program) : ℕ → Stmt → State → State �
 /-- Everything held in a variable or in a cell fits in a word. -/
 def State.Bounded (lim : Limits) (σ : State) : Prop :=
   (∀ x, |σ.loc x| ≤ lim.word) ∧ ∀ a, |σ.mem a| ≤ lim.word
-
-end Light

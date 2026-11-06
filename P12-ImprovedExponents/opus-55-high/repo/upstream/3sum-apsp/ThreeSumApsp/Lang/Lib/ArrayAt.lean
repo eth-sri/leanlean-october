@@ -3,10 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.Seg
-public import ThreeSumApsp.Lang.Rules
+import ThreeSumApsp.Lang.Lib.Seg
+import ThreeSumApsp.Lang.Rules
 
 /-!
 # Arrays in the memory
@@ -25,7 +24,6 @@ field for each array.
 * `IndexAt.keep`, `IndexAt.read`, `IndexAt.getD_lt`: the same for natural numbers.
 -/
 
-@[expose] public section
 
 namespace Light
 
@@ -65,10 +63,7 @@ theorem read (h : ListAt μ a l N top) (hi : i < N) : μ (a + i) = l.getD i 0 :=
 
 /-- The `n` entries from place `k` on. -/
 theorem drop_take (h : ListAt μ a l N top) (hk : k + n ≤ N) :
-    ListAt μ (a + k) ((l.drop k).take n) n top where
-  len := by rw [List.length_take, List.length_drop, h.len]; omega
-  seg := (h.seg.drop k).take n
-  below := by have := h.below; omega
+    ListAt μ (a + k) ((l.drop k).take n) n top := ⟨by rw [List.length_take, List.length_drop, h.len]; omega, (h.seg.drop k).take n, by have := h.below; omega⟩
 
 end ListAt
 
@@ -100,7 +95,7 @@ theorem abs_read_le (h : ArrayAt μ a l N U top) (hi : i < N) : |μ (a + i)| ≤
 theorem drop_take (h : ArrayAt μ a l N U top) (hk : k + n ≤ N) :
     ArrayAt μ (a + k) ((l.drop k).take n) n U top :=
   { h.listAt.drop_take hk with
-    bound := fun x hx => h.bound x (List.mem_of_mem_drop (List.mem_of_mem_take hx)) }
+    bound := fun x hx => h.bound x (by grind) }
 
 end ArrayAt
 
@@ -121,11 +116,10 @@ theorem keep (h : IndexAt μ a l N p top)
     (hs : SameOn (fun b => Inside a N b ∧ b < top) μ μ' := by light_keep) :
     IndexAt μ' a l N p top :=
   { h with
-    seg := Seg.congr h.seg fun i hi => hs _ (by
+    seg := h.seg.congr fun i hi => hs _ (by
       have := h.len
       have := h.below
-      rw [List.length_map] at hi
-      omega) }
+      grind) }
 
 /-- Reading a cell. -/
 theorem read (h : IndexAt μ a l N p top) (hi : i < N) : μ (a + i) = (l.getD i 0 : ℕ) :=
@@ -133,10 +127,6 @@ theorem read (h : IndexAt μ a l N p top) (hi : i < N) : μ (a + i) = (l.getD i 
 
 /-- An entry is below `p`. -/
 theorem getD_lt (h : IndexAt μ a l N p top) (hi : i < N) : l.getD i 0 < p := by
-  have hl : i < l.length := h.len ▸ hi
+  have hl := h.len ▸ hi
   rw [List.getD_eq_getElem _ 0 hl]
   exact h.lt _ (List.getElem_mem hl)
-
-end IndexAt
-
-end Light

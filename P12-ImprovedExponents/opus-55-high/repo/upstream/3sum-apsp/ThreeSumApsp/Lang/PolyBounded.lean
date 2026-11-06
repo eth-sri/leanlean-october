@@ -3,11 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Tasks
-public import ThreeSumApsp.Util.Asymptotics.SoftOSqrtPow
-public import Mathlib.Data.Nat.Size
+import ThreeSumApsp.Lang.Tasks
+import ThreeSumApsp.Util.Asymptotics.SoftOSqrtPow
+import Mathlib.Data.Nat.Size
 
 /-!
 # Polynomially bounded needs
@@ -23,7 +22,6 @@ So the need of a host is polynomially bounded if the need of its solver is; the 
 proves this from the definition of the need of the host.
 -/
 
-@[expose] public section
 
 namespace Light
 
@@ -50,23 +48,23 @@ variable {F : ℕ → ℕ → ℕ}
 /-- The size `n` is polynomially bounded. -/
 theorem fst : PolyBounded (fun n _ => n) :=
   (Scale.SoftO.of_le_hidden fun p _ => Nat.cast_le.2 <|
-    (Nat.le_succ _).trans (Nat.le_mul_of_pos_right _ p.2.succ_pos)).mono (by decide)
+    by grind).mono (by decide)
 
 /-- The bound `U` is polynomially bounded. -/
 theorem snd : PolyBounded (fun _ U => U) :=
   (Scale.SoftO.of_le_hidden fun p _ => Nat.cast_le.2 <|
-    (Nat.le_succ _).trans (Nat.le_mul_of_pos_left _ p.1.succ_pos)).mono (by decide)
+    by grind).mono (by decide)
 
 /-- A smaller function has the same bound. -/
 theorem of_le {G : ℕ → ℕ → ℕ} (h : PolyBounded G) (hle : ∀ n U, F n U ≤ G n U) : PolyBounded F :=
-  Scale.SoftO.of_le h fun _ _ => hle _ _
+  by grind [Scale.SoftO.of_le]
 
 /-- The bound with natural numbers. -/
 theorem exists_nat_le (h : PolyBounded F) :
     ∃ K e : ℕ, ∀ n U, F n U ≤ K * ((n + 1) * (U + 1)) ^ e := by
   obtain ⟨C, e, hC, hle⟩ := h.exists_le
   refine ⟨⌈C⌉₊, e, fun n U => ?_⟩
-  have hceil : (F n U : ℝ) ≤ ⌈C⌉₊ * (((n + 1) * (U + 1) : ℕ) : ℝ) ^ e := by
+  have hceil : F n U ≤ ⌈C⌉₊ * (((n + 1) * (U + 1) : ℕ) : ℝ) ^ e := by
     simpa [polyScale, Scale.mon] using (hle (n, U) trivial).trans
       (mul_le_mul_of_nonneg_right (Nat.le_ceil C) (by simp [polyScale, Scale.mon]; positivity))
   exact_mod_cast hceil
@@ -92,12 +90,12 @@ theorem polyNeed {need : ℕ → ℕ → Need} (hw : PolyBounded fun n U => (nee
     PolyNeed need := by
   obtain ⟨K, e, hK⟩ := exists_nat_le (F := fun n U => (need n U).word + (need n U).cells +
     (need n U).depth) (by growth_poly [hw, hc, hd])
-  refine ⟨Nat.size K, e, fun n U => ?_⟩
+  refine ⟨K.size, e, fun n U => ?_⟩
   have hsum := hK n U
   have hpoly : K * ((n + 1) * (U + 1)) ^ e ≤ Light.polyBound (Nat.size K) e [n, U] := by
     simp only [Light.polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
     exact Nat.mul_le_mul_right _ (Nat.lt_size_self K).le
-  exact ⟨by omega, by omega, by omega⟩
+  omega
 
 end PolyBounded
 
@@ -110,30 +108,30 @@ namespace PolyNeed
 
 variable {need : ℕ → ℕ → Need} {A B : ℕ × ℕ → ℕ} {a b : Fin 0 → ℕ}
 
-private theorem part (h : PolyNeed need) (hA : polyScale.SoftO A a) (hB : polyScale.SoftO B b) :
+theorem part (h : PolyNeed need) (hA : polyScale.SoftO A a) (hB : polyScale.SoftO B b) :
     ∃ R : ℕ → ℕ → ℕ, PolyBounded R ∧ ∀ n U, (need (A (n, U)) (B (n, U))).word ≤ R n U ∧
       (need (A (n, U)) (B (n, U))).cells ≤ R n U ∧ (need (A (n, U)) (B (n, U))).depth ≤ R n U :=
   let ⟨s, k, hle⟩ := h
   ⟨_, PolyBounded.polyBound (A := fun n U => A (n, U)) (B := fun n U => B (n, U))
-    (hA.mono isEmptyElim) (hB.mono isEmptyElim) s k, fun _ _ => hle _ _⟩
+    (hA.mono isEmptyElim) (hB.mono isEmptyElim) s k, by simp_all⟩
 
 /-- The numbers of the solver. -/
 theorem word (h : PolyNeed need) (hA : polyScale.SoftO A a) (hB : polyScale.SoftO B b) :
     polyScale.SoftO (fun p => (need (A p) (B p)).word) ![] :=
   let ⟨_, hR, hle⟩ := h.part hA hB
-  Scale.SoftO.of_le hR fun p _ => (hle p.1 p.2).1
+  by grind [Scale.SoftO.of_le]
 
 /-- The cells of the solver. -/
 theorem cells (h : PolyNeed need) (hA : polyScale.SoftO A a) (hB : polyScale.SoftO B b) :
     polyScale.SoftO (fun p => (need (A p) (B p)).cells) ![] :=
   let ⟨_, hR, hle⟩ := h.part hA hB
-  Scale.SoftO.of_le hR fun p _ => (hle p.1 p.2).2.1
+  by grind [Scale.SoftO.of_le]
 
 /-- The depth of the calls of the solver. -/
 theorem depth (h : PolyNeed need) (hA : polyScale.SoftO A a) (hB : polyScale.SoftO B b) :
     polyScale.SoftO (fun p => (need (A p) (B p)).depth) ![] :=
   let ⟨_, hR, hle⟩ := h.part hA hB
-  Scale.SoftO.of_le hR fun p _ => (hle p.1 p.2).2.2
+  by grind [Scale.SoftO.of_le]
 
 end PolyNeed
 
@@ -143,5 +141,3 @@ that occur, other than `n` and `U`; for a solver whose need `r` occurs, with `hr
 are `hr.word`, `hr.cells` and `hr.depth`. -/
 macro "poly_need" "[" hs:term,* "]" : tactic =>
   `(tactic| (refine PolyBounded.polyNeed ?_ ?_ ?_ <;> dsimp only <;> growth_poly [$hs,*]))
-
-end Light

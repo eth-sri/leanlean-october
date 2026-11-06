@@ -3,9 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Util.Asymptotics.PowLittleO
+import ThreeSumApsp.Util.Asymptotics.PowLittleO
 
 /-!
 # One-sided bounds `O(n^a)`, `Õ(n^a)` and `n^{a+o(1)}`
@@ -25,7 +24,6 @@ Logarithms and the `o(1)` are absorbed by a strictly larger exponent
 (`UpperPowPolylog.upperBigOPow`, `UpperPowLittleO.upperBigOPow`).
 -/
 
-@[expose] public section
 
 open Filter Asymptotics
 
@@ -51,10 +49,9 @@ variable {f f' g : ℕ → ℝ} {a b : ℝ}
 
 /-- `f = O(n^a)` is in particular an upper bound on `f`. -/
 theorem IsBigOPow.upperBigOPow (hf : IsBigOPow f a) : UpperBigOPow f a := by
-  obtain ⟨C, hC⟩ := IsBigO.bound hf
+  obtain ⟨C, hC⟩ := hf.bound
   refine ⟨C, hC.mono fun n hn => ?_⟩
-  rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg n.cast_nonneg a)] at hn
-  exact (le_abs_self _).trans hn
+  grind [Real.norm_eq_abs, abs_of_nonneg, Real.rpow_nonneg]
 
 namespace UpperBigOPow
 
@@ -72,10 +69,10 @@ theorem IsPowPolylog.upperPowPolylog (hf : IsPowPolylog f a) : UpperPowPolylog f
   obtain ⟨e, hf⟩ := hf
   obtain ⟨C, hC⟩ := hf.bound
   refine ⟨C, e, hC.mono fun n hn => ?_⟩
-  have hnonneg : 0 ≤ (n : ℝ) ^ a * Real.log n ^ e :=
-    mul_nonneg (Real.rpow_nonneg n.cast_nonneg a) (pow_nonneg (Real.log_natCast_nonneg n) e)
+  have hnonneg : 0 ≤ n ^ a * Real.log n ^ e :=
+    by positivity
   rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg hnonneg] at hn
-  exact (le_abs_self _).trans hn
+  grind
 
 namespace UpperPowPolylog
 
@@ -89,21 +86,11 @@ theorem mono_left (h : UpperPowPolylog f a) (hle : ∀ᶠ n in atTop, f' n ≤ f
 theorem exists_isPowPolylog (h : UpperPowPolylog f a) :
     ∃ g : ℕ → ℝ, (∀ n, 0 ≤ g n) ∧ IsPowPolylog g a ∧ ∀ᶠ n in atTop, f n ≤ g n := by
   obtain ⟨C, e, hC⟩ := h
-  exact ⟨fun n => |C * ((n : ℝ) ^ a * Real.log n ^ e)|, fun n => abs_nonneg _,
+  exact ⟨fun n => |C * (n ^ a * Real.log n ^ e)|, by grind,
     ((isPowPolylog_rpow_mul_log_pow a e).const_mul C).abs,
-    hC.mono fun n hn => hn.trans (le_abs_self _)⟩
+    hC.mono fun n hn => by grind⟩
 
-/-- The exponent may be raised. -/
-protected theorem mono (h : UpperPowPolylog f a) (hab : a ≤ b) : UpperPowPolylog f b := by
-  obtain ⟨g, -, hg, hfg⟩ := h.exists_isPowPolylog
-  exact (hg.mono hab).upperPowPolylog.mono_left hfg
 
-/-- Nonnegative constant factors are absorbed. -/
-theorem const_mul (hf : UpperPowPolylog f a) {c : ℝ} (hc : 0 ≤ c) :
-    UpperPowPolylog (fun n => c * f n) a := by
-  obtain ⟨F, -, hF, hfF⟩ := hf.exists_isPowPolylog
-  exact (hF.const_mul c).upperPowPolylog.mono_left
-    (hfF.mono fun n hn => mul_le_mul_of_nonneg_left hn hc)
 
 /-- Logarithms are absorbed: `Õ(n^a) ⊆ O(n^b)` for `a < b`, from above. -/
 theorem upperBigOPow (h : UpperPowPolylog f a) (hab : a < b) : UpperBigOPow f b := by
@@ -117,7 +104,7 @@ end UpperPowPolylog
 /-- `f = n^{a+o(1)}` is in particular an upper bound on `f`. -/
 theorem IsPowLittleO.upperPowLittleO (hf : IsPowLittleO f a) : UpperPowLittleO f a := by
   obtain ⟨ε, hε, hf⟩ := hf
-  exact ⟨ε, hε, hf.mono fun n hn => (le_abs_self _).trans hn⟩
+  exact ⟨ε, hε, hf.mono fun n hn => by grind⟩
 
 namespace UpperPowLittleO
 
@@ -131,15 +118,11 @@ theorem mono_left (h : UpperPowLittleO f a) (hle : ∀ᶠ n in atTop, f' n ≤ f
 theorem exists_isPowLittleO (h : UpperPowLittleO f a) :
     ∃ g : ℕ → ℝ, (∀ n, 0 ≤ g n) ∧ IsPowLittleO g a ∧ ∀ᶠ n in atTop, f n ≤ g n := by
   obtain ⟨ε, hε, hf⟩ := h
-  exact ⟨fun n => (n : ℝ) ^ (a + ε n), fun n => Real.rpow_nonneg n.cast_nonneg _,
-    ⟨ε, hε, Eventually.of_forall fun n => (abs_of_nonneg (Real.rpow_nonneg n.cast_nonneg _)).le⟩,
+  exact ⟨fun n => n ^ (a + ε n), fun n => by positivity,
+    ⟨ε, hε, Eventually.of_forall fun n => (abs_of_nonneg (by positivity)).le⟩,
     hf⟩
 
 /-- The `o(1)` is absorbed: `n^{a+o(1)} ⊆ O(n^b)` for `a < b`, from above. -/
 theorem upperBigOPow (h : UpperPowLittleO f a) (hab : a < b) : UpperBigOPow f b := by
   obtain ⟨g, -, hg, hfg⟩ := h.exists_isPowLittleO
   exact (hg.isBigOPow hab).upperBigOPow.mono_left hfg
-
-end UpperPowLittleO
-
-end ThreeSumApsp

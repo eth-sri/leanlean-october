@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.Scan
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.Scan
 
 /-!
 # Reading the answers of one instance and scanning for witnesses
@@ -20,11 +20,10 @@ pair `(qa[i], qb[i])`, as long as none has been found (`f = 0`).  The result is 
 most the number of failed scans plus one (`execsUpto_le`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -46,54 +45,39 @@ def execsUpto (acc hit : ℕ → Bool) (f : Bool) (w : ℕ) : ℕ :=
 def failsUpto (acc hit : ℕ → Bool) (w : ℕ) : ℕ :=
   ((List.range w).filter fun i => acc i && !hit i).length
 
-theorem foundAt_zero (acc hit : ℕ → Bool) (f : Bool) : foundAt acc hit f 0 = f := by simp [foundAt]
+variable (acc hit : ℕ → Bool)
 
-theorem foundAt_succ (acc hit : ℕ → Bool) (f : Bool) (i : ℕ) :
+theorem foundAt_zero (f : Bool) : foundAt acc hit f 0 = f := by simp [foundAt]
+
+theorem foundAt_succ (f : Bool) (i : ℕ) :
     foundAt acc hit f (i + 1) = (foundAt acc hit f i || (acc i && hit i)) := by
-  simp [foundAt, List.range_succ, Bool.or_assoc]
+  grind [foundAt]
 
-theorem execsUpto_succ (acc hit : ℕ → Bool) (f : Bool) (w : ℕ) :
+theorem execsUpto_succ (f : Bool) (w : ℕ) :
     execsUpto acc hit f (w + 1) =
       execsUpto acc hit f w + (if execAt acc hit f w then 1 else 0) := by
-  simp only [execsUpto, List.range_succ, List.filter_append, List.length_append, List.filter_cons,
-    List.filter_nil]
-  split_ifs <;> rfl
+  grind [execsUpto, List.range_succ]
 
-theorem failsUpto_succ (acc hit : ℕ → Bool) (w : ℕ) :
+theorem failsUpto_succ (w : ℕ) :
     failsUpto acc hit (w + 1) = failsUpto acc hit w + (if acc w && !hit w then 1 else 0) := by
-  simp only [failsUpto, List.range_succ, List.filter_append, List.length_append, List.filter_cons,
-    List.filter_nil]
-  split_ifs <;> rfl
+  grind [failsUpto, List.range_succ]
 
 /-- **All scans but one fail.** -/
-theorem execsUpto_le (acc hit : ℕ → Bool) (f : Bool) (w : ℕ) :
+theorem execsUpto_le (f : Bool) (w : ℕ) :
     execsUpto acc hit f w + f.toNat ≤ failsUpto acc hit w + (foundAt acc hit f w).toNat := by
   induction w with
-  | zero => simp [execsUpto, failsUpto, foundAt_zero]
+  | zero => simp [execsUpto, foundAt_zero]
   | succ w ih =>
-    rw [execsUpto_succ, failsUpto_succ, foundAt_succ, execAt]
-    rcases ha : acc w <;> rcases hh : hit w <;> rcases hf : foundAt acc hit f w <;>
-      simp [hf] at ih ⊢ <;> omega
+    grind [execsUpto_succ, failsUpto_succ, foundAt_succ, execAt]
 
 /-! ## The routine -/
 
 namespace ScanPairs
 
-/-- The locals of `scanPairs`.  The arguments: the addresses of the answers and of the rows and the
+/- The locals of `scanPairs`.  The arguments: the addresses of the answers and of the rows and the
 columns of the query pairs, their number `w`, the flag `f`, the addresses of the three arrays of
 weights, `n`, and the first vertex and the number of vertices of the piece.  Then the counter. -/
-abbrev Out : ℕ := 0
-@[inherit_doc Out] abbrev Rows : ℕ := 1
-@[inherit_doc Out] abbrev Cols : ℕ := 2
-@[inherit_doc Out] abbrev Num : ℕ := 3
-@[inherit_doc Out] abbrev Found : ℕ := 4
-@[inherit_doc Out] abbrev AdrAB : ℕ := 5
-@[inherit_doc Out] abbrev AdrBC : ℕ := 6
-@[inherit_doc Out] abbrev AdrAC : ℕ := 7
-@[inherit_doc Out] abbrev Size : ℕ := 8
-@[inherit_doc Out] abbrev First : ℕ := 9
-@[inherit_doc Out] abbrev Len : ℕ := 10
-@[inherit_doc Out] abbrev Cnt : ℕ := 11
+slots Out Rows Cols Num Found AdrAB AdrBC AdrAC Size First Len Cnt
 
 end ScanPairs
 
@@ -160,43 +144,34 @@ theorem scanPairsStep_spec (hp : P[pScan]? = some scanBody)
   light_facts C C.arrAB C.arrBC C.arrAC
   light_facts A A.arrOUT A.arrQA A.arrQB
   have hreadOUT := A.arrOUT.read hi
-  have hreadQA := A.arrQA.read hi
-  have hreadQB := A.arrQB.read hi
-  have ha := A.arrQA.getD_lt hi
-  have hb := A.arrQB.getD_lt hi
   unfold scanPairsStep scanPairsState
   rw [foundAt_succ, execAt, accOf, hitOf]
   -- The answer, the pair, and whether a zero triangle has been found before.
-  generalize foundAt (accOf OUT) (hitOf n AB BC AC QA QB c0 len) f i = found
+  generalize foundAt _ _ f i = found
   generalize OUT.getD i 0 = answer at hreadOUT ⊢
-  generalize QA.getD i 0 = a at hreadQA ha ⊢
-  generalize QB.getD i 0 = b at hreadQB hb ⊢
-  -- if out[i] = 0
   by_cases hz : answer = 0
-  · exact Ends.iteLast (fun _ => Ends.skip (by simp [hz]))
-      (fun h => absurd (by simp [hreadOUT, hz]) h) (by light_side)
-  refine Ends.iteLast (fun h => absurd h (by simp [hreadOUT, hz])) (fun _ => ?_)
+  · exact Ends.iteLast (by grind [Ends.skip])
+      (by simp_all) (by light_side)
+  refine Ends.iteLast (by simp_all) (fun _ => ?_)
     (by light_side)
   -- if f = 0
   cases found
-  · refine Ends.iteLast (fun _ => ?_) fun h => absurd (by simp [bit]) h
+  · refine Ends.iteLast (fun _ => ?_) fun h => by tauto
     -- f := scan(ab, bc, ac, n, qa[i], qb[i], c0, len)
-    refine Ends.callTo (scan_meets hp C ha hb hc) ?_
-      (by light_side [hreadQA, hreadQB])
+    refine Ends.callTo (scan_meets hp C (A.arrQA.getD_lt hi) (A.arrQB.getD_lt hi) hc) ?_
+      (by light_side [A.arrQA.read hi, A.arrQB.read hi])
       (hT := by simp [hz, tScanCall]; omega)
-    rintro _ _ ⟨rfl, rfl⟩
-    simp [hz, flag_eq_bit]
-  · exact Ends.iteLast (fun h => absurd h (by simp [bit])) fun _ => Ends.skip (by simp)
+    simp_all [flag_eq_bit]
+  · exact Ends.iteLast (by simp_all [bit]) fun _ => Ends.skip (by simp)
 
 /-- The time of the rounds, added up: 19 steps for each query pair, and the scans. -/
 theorem sum_scanPairs_rounds (acc hit : ℕ → Bool) (f : Bool) (len w : ℕ) :
     ∑ i ∈ Finset.range w, (4 + (15 + if execAt acc hit f i then tScanCall len else 0))
       = 19 * w + tScanCall len * execsUpto acc hit f w := by
   induction w with
-  | zero => simp [execsUpto]
+  | zero => rfl
   | succ w ih =>
-    rw [Finset.sum_range_succ, ih, execsUpto_succ]
-    split_ifs <;> ring
+    grind [Finset.sum_range_succ, execsUpto_succ]
 
 /-- **scanPairs** returns the new value of `f`; no cell changes; the time depends on the number of
 scans that are made. -/
@@ -210,28 +185,24 @@ theorem scanPairs_spec (hp : P[pScan]? = some scanBody) (C : Weights lim μ ab b
   have hsum := sum_scanPairs_rounds (accOf OUT) (hitOf n AB BC AC QA QB c0 len) f len w
   unfold tScanPairs tAnswers
   -- i := 0
-  light_set (0 : ℕ)
+  light_set 0
   -- while i < w
   refine Ends.next _ (Ends.while
     (fun i σ => σ = scanPairsState μ out qa qb w ab bc ac n c0 len OUT AB BC AC QA QB f i i) w
     (fun i => 15 + if execAt (accOf OUT) (hitOf n AB BC AC QA QB c0 len) f i then tScanCall len
-      else 0) ?start ?round ?done) (by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega)
-  case start => simp [scanPairsState, foundAt_zero]
-  case round =>
+      else 0) ?_ ?_ ?_) (by grind [Cond.cost, Expr.cost, Nat.reduceAdd])
+  · simp [scanPairsState, foundAt_zero]
+  ·
     rintro i _ hi rfl
-    refine ⟨by simp, by simp [scanPairsState]; omega, ?_⟩
+    refine ⟨by simp, by simp_all [scanPairsState], ?_⟩
     -- the query pair number i; then i := i + 1
     refine Ends.next _ ((scanPairsStep_spec hp C A hd hc hi).mono le_rfl ?_) (by omega)
     rintro _ rfl
-    light_set (i + 1 : ℕ)
-    exact by simp [scanPairsState]
-  case done =>
+    light_set (i + 1)
+    rfl
+  ·
     rintro _ rfl
     -- return f
-    exact ⟨by simp, by simp [scanPairsState],
+    exact ⟨by simp, by aesop,
       Ends.setTo (bit (foundAt (accOf OUT) (hitOf n AB BC AC QA QB c0 len) f w)) ⟨rfl, rfl⟩
-        (by simp) (by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega)⟩
-
-end
-
-end Light.Sec3
+        (by simp) (by grind [Cond.cost, Expr.cost, Nat.reduceAdd])⟩

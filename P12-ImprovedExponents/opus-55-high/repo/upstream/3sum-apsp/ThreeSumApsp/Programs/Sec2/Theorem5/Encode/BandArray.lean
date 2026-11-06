@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.Pass
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.BandArrayFacts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Lang.Lib.Pass
+import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.BandArrayFacts
 
 /-!
 # The input array of a band (Section 2.3.4)
@@ -31,7 +31,6 @@ four cases of one lemma, `coverLoop`.  `bandArrayL_entry` and `bandArrayR_entry`
 of Y, are the specifications that the callers of the procedure assume.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -41,7 +40,7 @@ namespace Light.Sec2
 
 namespace Band
 
-/-- The local variables of bandArray.  The arguments: `Levels` = L, `Size` = m, `Rows` = N, `Cols` =
+/- The local variables of bandArray.  The arguments: `Levels` = L, `Size` = m, `Rows` = N, `Cols` =
 D, `NumBlocks` = K0, `Width` = N0, `Cells` = S7, `BandNo` = β, `Side` = side; `Source` is the
 address of the matrix, `StepRow` and `StepCol` the steps from row to row and from column to column;
 `MaskTable`, `Digits3`, `Digits4` and `Dest` are the addresses of the table of subsets, of the two
@@ -50,33 +49,7 @@ the counter of the clearing loop); `PosH` = h, `BlockIdx` the number of the bloc
 address of the mask of the subset; `Offset` = r, `Row` the number of the row of the matrix; `Col` =
 k, `CodeAcc` the code, `Outer` and `Inner` the addresses of the next outer and of the next inner
 digit, `CurLevel` the level. -/
-abbrev Levels : ℕ := 0
-@[inherit_doc Levels] abbrev Size : ℕ := 1
-@[inherit_doc Levels] abbrev Rows : ℕ := 2
-@[inherit_doc Levels] abbrev Cols : ℕ := 3
-@[inherit_doc Levels] abbrev NumBlocks : ℕ := 4
-@[inherit_doc Levels] abbrev Width : ℕ := 5
-@[inherit_doc Levels] abbrev Cells : ℕ := 6
-@[inherit_doc Levels] abbrev BandNo : ℕ := 7
-@[inherit_doc Levels] abbrev Side : ℕ := 8
-@[inherit_doc Levels] abbrev Source : ℕ := 9
-@[inherit_doc Levels] abbrev StepRow : ℕ := 10
-@[inherit_doc Levels] abbrev StepCol : ℕ := 11
-@[inherit_doc Levels] abbrev MaskTable : ℕ := 12
-@[inherit_doc Levels] abbrev Digits3 : ℕ := 13
-@[inherit_doc Levels] abbrev Digits4 : ℕ := 14
-@[inherit_doc Levels] abbrev Dest : ℕ := 15
-@[inherit_doc Levels] abbrev PosG : ℕ := 16
-@[inherit_doc Levels] abbrev PosH : ℕ := 17
-@[inherit_doc Levels] abbrev BlockIdx : ℕ := 18
-@[inherit_doc Levels] abbrev MaskRow : ℕ := 19
-@[inherit_doc Levels] abbrev Offset : ℕ := 20
-@[inherit_doc Levels] abbrev Row : ℕ := 21
-@[inherit_doc Levels] abbrev Col : ℕ := 22
-@[inherit_doc Levels] abbrev CodeAcc : ℕ := 23
-@[inherit_doc Levels] abbrev Outer : ℕ := 24
-@[inherit_doc Levels] abbrev Inner : ℕ := 25
-@[inherit_doc Levels] abbrev CurLevel : ℕ := 26
+slots Levels Size Rows Cols NumBlocks Width Cells BandNo Side Source StepRow StepCol MaskTable Digits3 Digits4 Dest PosG PosH BlockIdx MaskRow Offset Row Col CodeAcc Outer Inner CurLevel
 
 end Band
 
@@ -227,40 +200,37 @@ theorem bandLevel_spec (ctx : CodeCtx lim μ A.p.L mrow d3 d4 bs o i) {l : ℕ} 
   light_facts ctx.std
   have hplaces := And.intro ctx.spaceB <| And.intro ctx.spaceO <| And.intro ctx.spaceI <|
     And.intro ctx.space7 <| And.intro ctx.outer ctx.inner
-  have hlen : l < bs.length := ctx.length ▸ hl
+  have hlen := ctx.length ▸ hl
   have hbit := ctx.segB.get hlen
   have hcode := codeUpTo_succ (o := o) (i := i) hlen
   have hlt := codeUpTo_lt ctx.outer_lt ctx.inner_lt (show l + 1 ≤ bs.length from hlen)
-  have hpow : 7 ^ (l + 1) ≤ 7 ^ A.p.L := Nat.pow_le_pow_right (by omega) hl
-  have hfalse := List.count_take_succ_getD bs false hlen false
-  have htrue := List.count_take_succ_getD bs true hlen false
+  have hpow : 7 ^ (l + 1) ≤ 7 ^ A.p.L := by bound
+  have hfalse := bs.count_take_succ_getD false hlen false
+  have htrue := bs.count_take_succ_getD true hlen false
   unfold bandLevel
   cases hb : bs.getD l false
   · -- A level outside the set: the next outer digit.
     have hroom := List.count_take_lt hlen false hb
     have hcell := ctx.segO.read (ctx.outer ▸ hroom)
     rw [hb] at hbit hcode hfalse htrue
-    simp only [Bool.false_eq_true, if_false, if_true] at hbit hcode hfalse htrue
-    rw [hcode] at hlt
-    generalize o.getD ((bs.take l).count false) 0 = digit at hcell hcode hlt
-    refine Ends.iteLast (fun _ => ?_) (fun hc => absurd (by simp [hbit]) hc)
+    simp only [Bool.false_eq_true, if_false] at hbit hcode hfalse htrue
+    generalize o.getD _ 0 = digit at hcell hcode hlt
+    refine Ends.iteLast (fun _ => ?_) (by simp_all)
     -- CodeAcc := CodeAcc * 7 + mem[Outer]; Outer := Outer + 1
-    light_set (codeUpTo bs o i (l + 1) : ℕ) using hcell, hcode
-    light_set (d3 + (bs.take (l + 1)).count false : ℕ) using hfalse
-    simp only [locals, setLocal, htrue, Nat.add_zero]
+    light_set (codeUpTo bs o i (l + 1)) using hcell, hcode
+    light_set (d3 + (bs.take (l + 1)).count false) using hfalse
+    simp_all [locals, setLocal]
   · -- A level of the set: 3 plus the next inner digit.
     have hroom := List.count_take_lt hlen false hb
-    have hcell := ctx.segI.read (ctx.inner ▸ hroom)
+    have hcell := ctx.segI.read (by linarith)
     rw [hb] at hbit hcode hfalse htrue
-    simp only [if_true, reduceCtorEq, if_false,
-      List.getD_map_of_lt (3 + ·) (ctx.inner ▸ hroom) 0 0] at hbit hcode hfalse htrue
-    rw [hcode] at hlt
-    generalize i.getD ((bs.take l).count true) 0 = digit at hcell hcode hlt
-    refine Ends.iteLast (fun hc => absurd hc (by simp [hbit])) (fun _ => ?_)
+    simp only [if_true, List.getD_map_of_lt _ (ctx.inner ▸ hroom) 0] at hbit hcode hfalse htrue
+    generalize i.getD _ 0 = digit at hcell hcode hlt
+    refine Ends.iteLast (by simp_all) fun _ => ?_
     -- CodeAcc := CodeAcc * 7 + 3 + mem[Inner]; Inner := Inner + 1
-    light_set (codeUpTo bs o i (l + 1) : ℕ) using hcell, hcode
-    light_set (d4 + (bs.take (l + 1)).count true : ℕ) using htrue
-    simp only [locals, setLocal, hfalse, Nat.add_zero]
+    light_set (codeUpTo bs o i (l + 1)) using hcell, hcode
+    light_set (d4 + (bs.take (l + 1)).count true) using htrue
+    simp_all [locals, setLocal]
 
 /-- **The loop over the levels** leaves the code of the string in the local `CodeAcc` and changes no
 cell. -/
@@ -276,14 +246,13 @@ theorem bandCodeLoop_spec (ctx : CodeCtx lim μ A.p.L mrow d3 d4 bs o i) {lev₀
   refine Ends.for (fun l σ =>
       σ = ⟨frame (locals A g ⟨h, blk, mrow⟩ R (codeTmp k bs o i d3 d4 l l)), μ⟩) A.p.L
     bandLevel.blockCost ?start ?round ?done ?bound (by omega) (by simp [bandLevel]; omega)
-  case start => simp [update_frame_setLocal, locals, codeUpTo, ThreeSumApsp.ofDigitList]
-  case done => exact fun _ _ hσ => hσ ▸ done _ rfl rfl
-  case bound => exact fun l _ _ _ hσ => hσ ▸ by light_side
+  case start => simp [update_frame_setLocal, locals, codeUpTo]
+  case done => simp_all
+  case bound => simp_all
   case round =>
     rintro l _ hl - rfl
-    refine (bandLevel_spec ctx hl).mono le_rfl ?_
-    rintro _ rfl
-    exact ⟨by simp, by simp [update_frame_setLocal, locals]⟩
+    apply (bandLevel_spec ctx hl).mono le_rfl
+    simp_all [update_frame_setLocal, locals]
 
 end levels
 
@@ -330,7 +299,7 @@ theorem places (C : BandCtx lim A μ₀ T) :
 
 /-- What the loop over the levels reads for the tuple (g, h, r, k), in a memory in which only cells
 of the array have changed. -/
-private theorem codeCtx (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ A.arr A.p.S7)
+theorem codeCtx (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ A.arr A.p.S7)
     {g h r k : ℕ} (hg : g < A.p.K0) (hh : h < A.p.K0) (hr : r < A.p.N0)
     (hrow : A.rowNo g h r < A.p.N) (hk : k < A.p.D) :
     CodeCtx lim μ A.p.L (A.maskRow g h)
@@ -342,7 +311,6 @@ private theorem codeCtx (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ
   have hmask := Nat.mul_add_le_mul hKK (le_refl A.p.L)
   have hdig3 := Nat.mul_add_le_mul hrow (le_refl A.p.Lo)
   have hdig4 := Nat.mul_add_le_mul hk (le_refl A.p.m)
-  have hLo : A.p.Lo = A.p.L - A.p.m := rfl
   have hS7 : A.p.S7 = 7 ^ A.p.L := rfl
   have hmaskRow : A.maskRow g h = A.mask + (g * A.p.K0 + h) * A.p.L := rfl
   -- The table of digits in base 3 is indexed by the row of the matrix and holds the digits of the
@@ -350,19 +318,7 @@ private theorem codeCtx (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ
   have hdigits := C.tabs.hdig3 _ hrow
   rw [BandArgs.rowNo_mod g h hr] at hdigits
   exact
-    { std := C.std
-      length := Spec.length_unrank ..
-      outer := by rw [Spec.count_false_unrank hchoose, ThreeSumApsp.length_digitList]
-      inner := by rw [Spec.count_unrank hchoose, ThreeSumApsp.length_digitList]
-      outer_lt := fun _ => ThreeSumApsp.lt_of_mem_digitList (by omega)
-      inner_lt := fun _ => ThreeSumApsp.lt_of_mem_digitList (by omega)
-      segB := (C.tabs.hmask _ hKK).keep
-      segO := hdigits.keep
-      segI := (C.tabs.hdig4 k hk).keep
-      spaceB := by omega
-      spaceO := by rw [ThreeSumApsp.length_digitList]; omega
-      spaceI := by rw [ThreeSumApsp.length_digitList]; omega
-      space7 := by omega }
+    ⟨C.std, Spec.length_unrank .., by grind [Spec.count_false_unrank, ThreeSumApsp.length_digitList], by grind [Spec.count_unrank, ThreeSumApsp.length_digitList], fun _ => ThreeSumApsp.lt_of_mem_digitList (by omega), fun _ => ThreeSumApsp.lt_of_mem_digitList (by omega), (C.tabs.hmask _ hKK).keep, hdigits.keep, (C.tabs.hdig4 k hk).keep, by omega, by grind [ThreeSumApsp.length_digitList], by grind [ThreeSumApsp.length_digitList], by omega⟩
 
 end BandCtx
 
@@ -389,17 +345,15 @@ theorem coverLoop {X : Type} {arr n rounds b cnt T' : ℕ} {hi : Expr} {body : S
         ∀ j < rounds, fact j μ' := by
   refine Ends.forShape (fun j x μ' => ⟨frame (shape j x), μ'⟩)
     (fun j μ' => OverwrittenWith T arr n μ μ' ∧ ∀ j' < j, fact j' μ') rounds b x₀
-    ⟨.refl, fun j' hj' => absurd hj' (by omega)⟩ ?round (fun x μ' h => ⟨x, μ', rfl, h⟩)
-    (by simp only [update_frame_setLocal, hset, Nat.cast_zero]) (fun _ _ _ _ _ => hbound _ _ _)
-    (fun _ _ _ => hat _ _)
-    (fun _ _ _ => by simp only [update_frame_setLocal, hset, Nat.cast_add, Nat.cast_one]) hrounds hT
+    ⟨.refl, by omega⟩ ?round (by grind)
+    (by grind [update_frame_setLocal]) (by simp_all)
+    (by simp_all)
+    (by grind [update_frame_setLocal, Nat.cast_add, Nat.cast_one]) hrounds hT
   rintro j x μ' hj ⟨hext, hcov⟩
-  refine (round j hj x μ' hext).mono le_rfl ?_
+  apply (round j hj x μ' hext).mono le_rfl
   rintro _ ⟨x', μ'', rfl, hext', hnew⟩
   refine ⟨x', μ'', rfl, hext.trans hext', fun j' hj' => ?_⟩
-  rcases Nat.lt_succ_iff_lt_or_eq.1 hj' with hj' | rfl
-  · exact keep j' _ _ (hcov j' hj') hext'
-  · exact hnew
+  grind
 
 /-! ## The loop over the columns -/
 
@@ -427,27 +381,26 @@ theorem bandCell_spec (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ A
   have hval : μ (A.aA + (A.rowNo g h r * A.sI + k * A.sK))
       = T.getD (A.code g h r k) 0 := by
     rw [C.entry g hg h hh r hr k hk, if_pos hrow]
-    exact same _ (Or.inl (by omega))
+    exact by bound
   have ctx := C.codeCtx same hg hh hr hrow hk
   unfold rowTmp
   generalize A.rowNo g h r = row at *
-  have houter : (row : ℤ) * ((A.p.L : ℤ) - A.p.m) = ((row * A.p.Lo : ℕ) : ℤ) := by
+  have houter : row * (A.p.L - A.p.m) = ((row * A.p.Lo : ℕ) : ℤ) := by
     rw [Nat.cast_mul, show A.p.Lo = A.p.L - A.p.m from rfl, Nat.cast_sub C.hmL]
   have haddr : ((A.aA : ℤ) + row * A.sI + k * A.sK).toNat = A.aA + (row * A.sI + k * A.sK) := by
-    rw [← Nat.cast_mul, ← Nat.cast_mul, ← Nat.cast_add, ← Nat.cast_add, Int.toNat_natCast,
-      Nat.add_assoc]
+    omega
   unfold bandCell tBandCell
   -- CodeAcc := 0; Outer := dig3 + Row (L - m); Inner := dig4 + Col m
   light_set 0
-  light_set (A.dig3 + row * A.p.Lo : ℕ) using houter
-  light_set (A.dig4 + k * A.p.m : ℕ)
+  light_set (A.dig3 + row * A.p.Lo) using houter
+  light_set (A.dig4 + k * A.p.m)
   -- The code.
   refine Ends.next _ (bandCodeLoop_spec ctx ?_ le_rfl)
   rintro ⟨_, _, outer, inner, lev⟩ rfl rfl
   rw [show codeUpTo _ _ _ A.p.L = A.code g h r k from codeUpTo_unrank ..]
   -- mem[arr + CodeAcc] := mem[aA + Row sI + Col sK]
   light_store (A.arr + A.code g h r k) (T.getD (A.code g h r k) 0) using haddr, hval
-  exact ⟨⟨k, (A.code g h r k : ℕ), outer, inner, lev⟩, rfl⟩
+  exact ⟨⟨k, A.code g h r k, outer, inner, lev⟩, rfl⟩
 
 /-- The time of the loop over the columns. -/
 def tBandCol (p : Par) : ℕ := p.D * (tBandCell p + 8) + 6
@@ -463,13 +416,13 @@ theorem bandColLoop_spec (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ �
   have hplaces := C.places
   have hD : A.p.D ≤ A.p.N * A.p.D := Nat.le_mul_of_pos_left _ (by omega)
   -- for Col < D
-  refine (coverLoop (b := tBandCell A.p) (rounds := A.p.D)
-    (shape := fun z (c : CellTmp) => locals A g (blockTmp A g h) (rowTmp A g h r) { c with k := z })
+  refine coverLoop (rounds := A.p.D)
+    (shape := fun z (c : CellTmp) => locals A g _ _ { c with k := z })
     (fact := fun k μ' => Covered A T μ' g h r k) (keep := fun _ _ _ hc => hc.keep) (round := ?_)
-    c.k c (hT := by simp [tBandCol]; ring_nf; omega)).mono le_rfl
-    fun σ' ⟨c', μ', hσ, hfacts⟩ => ⟨_, μ', hσ, hfacts⟩
+    c.k c (hT := by simp [tBandCol]; linarith).mono le_rfl
+    fun σ' ⟨c', μ', hσ, hfacts⟩ => by aesop
   intro k hk c' μ' hext
-  refine (bandCell_spec C (same.trans hext.1) hg hh hr hrow hk c').mono le_rfl ?_
+  apply (bandCell_spec C (same.trans hext.1) hg hh hr hrow hk c').mono le_rfl
   rintro _ ⟨c'', rfl⟩
   exact ⟨c'', _, rfl, .write (BandArgs.code_lt ..), Function.update_self ..⟩
 
@@ -503,13 +456,13 @@ theorem bandRow_spec (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ A.
   have hrowNo : A.rowNo g h r = A.blockNo g h * A.p.N0 + r := rfl
   unfold bandRow tBandRow
   -- Row := BlockIdx N0 + Offset
-  light_set (A.rowNo g h r : ℕ) using hrowNo
+  light_set (A.rowNo g h r) using hrowNo
   -- if Row < N
   refine Ends.iteLast (fun hc => ?_) fun hc => Ends.skip ?_
   · have hrow : A.rowNo g h r < A.p.N := by simp at hc; omega
-    refine (bandColLoop_spec C same hg hh hr hrow c).mono (by simp) ?_
+    apply (bandColLoop_spec C same hg hh hr hrow c).mono (by simp)
     rintro _ ⟨c', μ', rfl, hext, hcov⟩
-    exact ⟨(rowTmp A g h r, c'), μ', rfl, hext, fun _ => hcov⟩
+    exact ⟨(rowTmp A g h r, c'), μ', rfl, hext, by tauto⟩
   · exact ⟨(rowTmp A g h r, c), μ, rfl, .refl,
       fun hrow => absurd hrow (by simp at hc; omega)⟩
 
@@ -523,14 +476,14 @@ theorem bandRowLoop_spec (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ �
         OverwrittenWith T A.arr A.p.S7 μ μ' ∧ ∀ r < A.p.N0, CoveredRow A T μ' g h r := by
   have hplaces := C.places
   -- for Offset < N0
-  exact (coverLoop (b := tBandRow A.p) (rounds := A.p.N0)
+  exact coverLoop
     (shape := fun z (x : RowTmp × CellTmp) =>
-      locals A g (blockTmp A g h) { x.1 with r := z } x.2)
+      locals A g _ { x.1 with r := z } x.2)
     (fact := fun r μ' => CoveredRow A T μ' g h r)
     (keep := fun _ _ _ hc hext hrow k hk => (hc hrow k hk).keep hext)
     (round := fun r hr x μ' hext => bandRow_spec C (same.trans hext.1) hg hh hr x.1 x.2)
-    R.r (R, c) (hT := by simp [tBandRows]; ring_nf; omega)).mono le_rfl
-    fun σ' ⟨x, μ', hσ, hfacts⟩ => ⟨(_, x.2), μ', hσ, hfacts⟩
+    R.r (R, c) (hT := by simp [tBandRows]; linarith).mono le_rfl
+    fun σ' ⟨x, μ', hσ, hfacts⟩ => by aesop
 
 end rows
 
@@ -561,12 +514,11 @@ theorem bandRows_spec (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ A
   -- The address of the mask fits in a word.
   obtain ⟨hKK, hchoose⟩ := subsetIndex_lt A.p hg hh
   have hmask := Nat.mul_add_le_mul hKK (le_refl A.p.L)
-  have hprod : (((g * A.p.K0 + h) * A.p.L : ℕ) : ℤ) = ((g : ℤ) * A.p.K0 + h) * A.p.L := by
-    push_cast
+  have hprod : ((g * A.p.K0 + h) * A.p.L : ℕ) = ((g : ℤ) * A.p.K0 + h) * A.p.L := by
     rfl
   -- MaskRow := mask + (g K0 + h) L
-  light_set (A.maskRow g h : ℕ) using BandArgs.maskRow
-  refine (bandRowLoop_spec C same hg hh R c).mono (by simp; omega) ?_
+  light_set (A.maskRow g h) using BandArgs.maskRow
+  apply (bandRowLoop_spec C same hg hh R c).mono (by simp; omega)
   rintro _ ⟨x, μ', rfl, hfacts⟩
   exact ⟨⟨blockTmp A g h, x.1, x.2⟩, μ', rfl, hfacts⟩
 
@@ -584,11 +536,11 @@ theorem bandBlock_spec (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ 
   unfold bandBlock tBandBlock
   -- if side = 0 then BlockIdx := β K0 + g else BlockIdx := β K0 + h
   refine Ends.iteThen (fun hc => ?_) fun hc => ?_
-  · have hside : A.side = 0 := by simpa using hc
-    exact Ends.setToThen _ (hrows _ (by simp))
+  · have hside : A.side = 0 := by simp_all
+    exact Ends.setToThen _ (by tauto)
       (by simp [abs_le, BandArgs.blockNo, hside] at hsmall ⊢; omega)
-  · have hside : ¬ A.side = 0 := by simpa using hc
-    exact Ends.setToThen _ (hrows _ (by simp))
+  · have hside : ¬ A.side = 0 := by simp_all
+    exact Ends.setToThen _ (by aesop)
       (by simp [abs_le, BandArgs.blockNo, hside] at hsmall ⊢; omega)
 
 /-- **The loop over `h`** fills the cells of the tuples `(g, h, r, k)`, `h < K₀`, whose row lies in
@@ -602,13 +554,13 @@ theorem bandHLoop_spec (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ 
         ∀ h < A.p.K0, ∀ r < A.p.N0, CoveredRow A T μ' g h r := by
   have hplaces := C.places
   -- for PosH < K0
-  exact (coverLoop (b := tBandBlock A.p) (rounds := A.p.K0)
+  exact coverLoop
     (shape := fun z (x : InnerTmp) =>
       locals A g { x.block with h := z } x.row x.cell)
     (fact := fun h μ' => ∀ r < A.p.N0, CoveredRow A T μ' g h r)
     (keep := fun _ _ _ hc hext r hr hrow k hk => (hc r hr hrow k hk).keep hext)
     (round := fun h hh x μ' hext => bandBlock_spec C (same.trans hext.1) hg hh x.block x.row x.cell)
-    x.block.h x (hT := by simp [tBandH]; ring_nf; omega)).mono le_rfl
+    x.block.h x (hT := by simp [tBandH]; linarith).mono le_rfl
     fun σ' ⟨x', μ', hσ, hfacts⟩ => ⟨⟨_, x'.row, x'.cell⟩, μ', hσ, hfacts⟩
 
 /-- **The loop over `g`** fills the cells of all tuples `(g, h, r, k)` whose row lies in the
@@ -620,27 +572,26 @@ theorem bandGLoop_spec (C : BandCtx lim A μ₀ T) (same : SameOutside μ₀ μ 
         ∀ g < A.p.K0, ∀ h < A.p.K0, ∀ r < A.p.N0, CoveredRow A T σ'.mem g h r := by
   have hplaces := C.places
   -- for PosG < K0
-  refine (coverLoop (b := tBandH A.p) (rounds := A.p.K0)
-    (shape := fun z (x : InnerTmp) => locals A z x.block x.row x.cell)
+  apply coverLoop
+    (shape := fun z x => locals A z x.block x.row x.cell)
     (fact := fun g μ' => ∀ h < A.p.K0, ∀ r < A.p.N0, CoveredRow A T μ' g h r)
     (keep := fun _ _ _ hc hext h hh r hr hrow k hk => (hc h hh r hr hrow k hk).keep hext)
     (round := fun g hg x μ' hext => bandHLoop_spec C (same.trans hext.1) hg x)
-    g₀ x (hT := by simp [tBandG]; ring_nf; omega)).mono le_rfl ?_
-  rintro _ ⟨x', μ', rfl, hfacts⟩
-  exact hfacts
+    g₀ x (hT := by simp [tBandG]; linarith).mono le_rfl
+  simp_all
 
 end blocks
 
 /-! ## The whole procedure -/
 
 /-- The time of the whole procedure is within the bound that its callers assume. -/
-private theorem bandArray_time (p : Par) :
+theorem bandArray_time (p : Par) :
     p.S7 * 13 + 6 + tBandG p ≤ cBandArray * bandArrayShape p := by
   have hD : 1 ≤ p.D := Nat.pow_pos (by omega)
   have hN0 : 1 ≤ p.N0 := N0_pos _ _
   have hK0 : p.K0 ≤ p.K0 * p.K0 := Nat.le_mul_self _
-  have hKK : p.K0 * p.K0 ≤ p.K0 * p.K0 * p.N0 := Nat.le_mul_of_pos_right _ hN0
-  have hrows : p.K0 * p.K0 * p.N0 ≤ p.K0 * p.K0 * p.N0 * p.D := Nat.le_mul_of_pos_right _ hD
+  have hKK : p.K0 * p.K0 ≤ p.K0 * p.K0 * p.N0 := by bound
+  have hrows : p.K0 * p.K0 * p.N0 ≤ p.K0 * p.K0 * p.N0 * p.D := by bound
   have htime : tBandG p = 28 * (p.K0 * p.K0 * p.N0 * p.D * p.L) + 44 * (p.K0 * p.K0 * p.N0 * p.D)
       + 24 * (p.K0 * p.K0 * p.N0) + 34 * (p.K0 * p.K0) + 14 * p.K0 + 6 := by
     unfold tBandG tBandH tBandBlock tBandRows tBandRow tBandCol tBandCell
@@ -666,90 +617,73 @@ theorem bandArray_spec (C : BandCtx lim A μ₀ T) :
   have hcleared : SameOutside μ₀ (wrote μ₀ A.arr (fun _ => 0) A.p.S7) A.arr A.p.S7 :=
     sameOutside_wrote le_rfl
   -- The array is cleared.
-  refine Ends.next _ (Ends.pass (x := Cells) (y := Dest) (dst := A.arr) (n := A.p.S7) (fun _ => 0)
-    (fun j _ => by light_side) ?_ C.std.space_le C.space rfl rfl (hT := le_rfl)) (by simp; omega)
+  refine Ends.next _ (Ends.pass (fun _ => 0)
+    fun j _ => by light_side ?_ C.std.space_le C.space rfl rfl (hT := le_rfl)) (by simp; omega)
   -- The loops over the tuples (g, h, r, k); the ten local variables of the inner loops start at 0.
   rw [update_frame_setLocal, ← frame_append_zeros _ 10]
-  refine (bandGLoop_spec C hcleared A.p.S7 ⟨⟨0, 0, 0⟩, ⟨0, 0⟩, ⟨0, 0, 0, 0, 0⟩⟩).mono
-    (by simp; omega) ?_
+  apply (bandGLoop_spec C hcleared A.p.S7 ⟨⟨0, 0, 0⟩, ⟨0, 0⟩, ⟨0, 0, 0, 0, 0⟩⟩).mono
+    (by simp; omega)
   rintro ⟨_, μ'⟩ ⟨hext, hcov⟩
-  dsimp only at hext hcov ⊢
   refine ⟨fun c hc => ?_, hcleared.trans hext.1⟩
-  have hc7 : c < A.p.S7 := C.T_len ▸ hc
-  rw [← List.getD_eq_getElem T 0 hc]
+  have hc7 := C.T_len ▸ hc
+  rw [← T.getD_eq_getElem 0 hc]
   -- A cell whose entry is 0 is right, whether it has been overwritten or not.
-  have hzero : T.getD c 0 = 0 → μ' (A.arr + c) = T.getD c 0 := fun h0 =>
-    (hext.2 c hc7).elim (fun h => by rw [h, wrote_done hc7, h0]) id
+  have hzero : T.getD c 0 = 0 → μ' _ = T.getD c 0 := fun h0 =>
+    (hext.2 c hc7).elim (by simp_all [wrote_done]) id
   by_cases hx : ∃ g < A.p.K0, ∃ h < A.p.K0, ∃ r < A.p.N0, ∃ k < A.p.D, c = A.code g h r k
   · obtain ⟨g, hg, h, hh, r, hr, k, hk, rfl⟩ := hx
     by_cases hrow : A.rowNo g h r < A.p.N
-    · exact hcov g hg h hh r hr hrow k hk
+    · exact by bound
     · exact hzero (by rw [C.entry g hg h hh r hr k hk, if_neg hrow])
-  · exact hzero (C.zero c fun g hg h hh r hr k hk hce => hx ⟨g, hg, h, hh, r, hr, k, hk, hce⟩)
+  · exact hzero (C.zero c fun g hg h hh r hr k hk hce => by grind)
 
 /-! ## What the callers assume -/
 
 /-- The arguments of `bandArray` for the row band `β` of `X`, which stands at `aX` row by row. -/
 abbrev BandArgs.ofX (p : Par) (β aX mask dig3 dig4 arr : ℕ) : BandArgs :=
-  { p := p, β := β, side := 0, aA := aX, sI := p.D, sK := 1, mask := mask, dig3 := dig3,
-    dig4 := dig4, arr := arr }
+  ⟨p, β, 0, aX, p.D, 1, mask, dig3, dig4, arr⟩
 
 /-- The arguments of `bandArray` for the column band `β` of `Y`, which stands at `aY` row by row. -/
 abbrev BandArgs.ofY (p : Par) (β aY mask dig3 dig4 arr : ℕ) : BandArgs :=
-  { p := p, β := β, side := 1, aA := aY, sI := 1, sK := p.N, mask := mask, dig3 := dig3,
-    dig4 := dig4, arr := arr }
+  ⟨p, β, 1, aY, 1, p.N, mask, dig3, dig4, arr⟩
 
 /-- **The specification that the callers of bandArray assume, for a row band of X.** -/
 theorem bandArrayL_entry (std : Std lim) (hP : P[pBandArray]? = some bandArrayBody) :
     BandArrayLSpec lim P cBandArray := by
   intro p hmL β aX mask dig3 dig4 arr μ X hsp hX hXle htab hβ d _
   refine ⟨bandArrayBody, hP, bandArray_spec (A := .ofX p β aX mask dig3 dig4 arr)
-    { std := std, hmL := hmL, space := hsp, aA_le := hXle, tabs := htab, β_lt := hβ
-      T_len := Spec.length_arrL _
-      idx := fun row hrow k hk => ?_
-      entry := fun g hg h hh r hr k hk => ?_
-      zero := fun c hc =>
-        Spec.bandArrayL_eq_zero hmL X β c fun g h r k => hc g g.2 h h.2 r r.2 k k.2 }⟩
+    ⟨std, hmL, hsp, hXle, htab, hβ, fun row hrow k hk => ?_, Spec.length_arrL _, fun g hg h hh r hr k hk => ?_, fun c hc =>
+        Spec.bandArrayL_eq_zero hmL X β c fun g h r k => hc g g.2 h h.2 r r.2 k k.2⟩⟩
   · -- The entry (row, k) of X stands at row D + k.
-    dsimp only at hrow hk ⊢
+    dsimp at hrow hk ⊢
     have hroom := Nat.mul_add_le_mul hrow (le_refl p.D)
     omega
-  · refine (Spec.bandArrayL_at hmL X β ⟨g, hg⟩ ⟨h, hh⟩ ⟨r, hr⟩ ⟨k, hk⟩).trans ?_
-    change padRows X ((BandArgs.ofX p β aX mask dig3 dig4 arr).rowNo g h r) ⟨k, hk⟩ = _
+  · apply (Spec.bandArrayL_at hmL X β ⟨g, hg⟩ ⟨h, hh⟩ ⟨r, hr⟩ ⟨k, hk⟩).trans
+    change padRows X ((BandArgs.ofX p β aX mask dig3 dig4 arr).rowNo g h r) _ = _
     generalize (BandArgs.ofX p β aX mask dig3 dig4 arr).rowNo g h r = row
     unfold padRows
     by_cases hrow : row < p.N
-    · rw [dif_pos hrow, if_pos hrow, ← hX ⟨_, hrow⟩ ⟨k, hk⟩]
-      refine congrArg μ ?_
+    · rw [dif_pos hrow, if_pos hrow, ← hX]
+      apply congrArg μ
       change aX + row * p.D + k = aX + (row * p.D + k * 1)
       omega
-    · rw [dif_neg hrow, if_neg hrow]
+    grind
 
 /-- **The specification that the callers of bandArray assume, for a column band of Y.** -/
 theorem bandArrayR_entry (std : Std lim) (hP : P[pBandArray]? = some bandArrayBody) :
     BandArrayRSpec lim P cBandArray := by
   intro p hmL β aY mask dig3 dig4 arr μ Y hsp hY hYle htab hβ d _
   refine ⟨bandArrayBody, hP, bandArray_spec (A := .ofY p β aY mask dig3 dig4 arr)
-    { std := std, hmL := hmL, space := hsp, aA_le := by rwa [Nat.mul_comm], tabs := htab
-      β_lt := hβ, T_len := Spec.length_arrR _
-      idx := fun row hrow k hk => ?_
-      entry := fun g hg h hh r hr k hk => ?_
-      zero := fun c hc =>
-        Spec.bandArrayR_eq_zero hmL Y β c fun g h r k => hc g g.2 h h.2 r r.2 k k.2 }⟩
+    ⟨std, hmL, hsp, by linarith, htab, hβ, fun row hrow k hk => ?_, Spec.length_arrR _, fun g hg h hh r hr k hk => ?_, fun c hc =>
+        Spec.bandArrayR_eq_zero hmL Y β c fun g h r k => hc g g.2 h h.2 r r.2 k k.2⟩⟩
   · -- The entry (k, row) of Y stands at k N + row.
-    dsimp only at hrow hk ⊢
     have hroom := Nat.mul_add_le_mul hk (le_refl p.N)
-    rw [Nat.mul_comm p.N p.D]
-    omega
-  · refine (Spec.bandArrayR_at hmL Y β ⟨g, hg⟩ ⟨h, hh⟩ ⟨r, hr⟩ ⟨k, hk⟩).trans ?_
-    change padCols Y ⟨k, hk⟩ ((BandArgs.ofY p β aY mask dig3 dig4 arr).rowNo g h r) = _
+    linarith
+  · apply (Spec.bandArrayR_at hmL Y β ⟨g, hg⟩ ⟨h, hh⟩ ⟨r, hr⟩ ⟨k, hk⟩).trans
+    change padCols Y _ ((BandArgs.ofY p β aY mask dig3 dig4 arr).rowNo g h r) = _
     generalize (BandArgs.ofY p β aY mask dig3 dig4 arr).rowNo g h r = row
     unfold padCols
     by_cases hrow : row < p.N
-    · rw [dif_pos hrow, if_pos hrow, ← hY ⟨k, hk⟩ ⟨_, hrow⟩]
-      refine congrArg μ ?_
-      change aY + k * p.N + row = aY + (row * 1 + k * p.N)
-      omega
-    · rw [dif_neg hrow, if_neg hrow]
-
-end Light.Sec2
+    · rw [dif_pos hrow, ← hY]
+      grind
+    grind

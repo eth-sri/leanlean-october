@@ -1,10 +1,8 @@
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Meaning
-public import ImprovedExponents.PrunedProgram.Encode.Recursion
-import all ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Meaning
+import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Meaning
+import ImprovedExponents.PrunedProgram.Encode.Recursion
+import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Meaning
 
-@[expose] public section
 
 /-!
 # What the pruned encoder computes, in the paper's terms
@@ -23,10 +21,8 @@ open ThreeSumApsp
 
 namespace Light.Sec2
 
-open Finset ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp.Spec ImprovedExponents
 
-open private encIdx_eq_computeEncoding EncodePre.of_seg
-  from ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Meaning
 
 variable {lim : Limits} {P : Program} {d : ℕ} {μ : ℕ → ℤ} {src out scr tab p7 p10 L j : ℕ}
   {V : ℤ}
@@ -51,13 +47,10 @@ theorem encodeP_str {α : Type} [Fintype α] (e : α ≃ Fin 7) (coef : Term →
         SameOutside2 μ σ'.mem out (10 ^ L) scr (scrSize L) := by
   have hbound : ∀ x ∈ arrStr e A, -V ≤ x ∧ x ≤ V := fun x hx => by
     obtain ⟨c, -, rfl⟩ := List.mem_map.1 hx
-    exact abs_le.1 (hV _)
-  have pre := EncodePre.of_seg lay (length_arrStr e A) hsrc hbound hT htab hc h7 h10 hVB
-  refine (encodeP_spec hS hE hd hj pre).mono (tEncP_le L j) fun σ' h => ⟨?_, h.2⟩
+    grind
+  refine (encodeP_spec hS hE hd hj (EncodePre.of_seg lay (length_arrStr e A) hsrc hbound hT htab hc h7 h10 hVB)).mono (tEncP_le L j) fun σ' h => ⟨?_, h.2⟩
   intro τ hτ
   rw [h.1 τ hτ,
-    encIdx_eq_computeEncoding e coef hcoef L A (fun i hi => getD_arrStr_of_lt e A hi) (codeT_lt τ)]
+    encIdx_eq_computeEncoding e coef hcoef L A (by grind [getD_arrStr_of_lt]) (codeT_lt τ)]
   congr 1
   exact decodeStr_codeStr termEquiv τ
-
-end Light.Sec2

@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
 /-!
 # The merge of two lists (Section 2.4.4: "a union of slices is a merge")
@@ -20,38 +20,34 @@ union_emit.  The three bodies are unionBoth_ends, unionLeft_ends and unionRight_
 union_entry treats the two loops.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp
-
-variable {lim : Limits} {P : Program} {d : ℕ}
 
 /-! ## The program -/
 
 namespace UnionLocal
 
-/-- The first list, A in the comments of the proofs. -/
-abbrev ListA : ℕ := 0
-/-- The length na of the first list. -/
-abbrev LenA : ℕ := 1
-/-- The second list, B in the comments of the proofs. -/
-abbrev ListB : ℕ := 2
-/-- The length nb of the second list. -/
-abbrev LenB : ℕ := 3
-/-- Where the merge is written, C in the comments of the proofs. -/
-abbrev Dest : ℕ := 4
-/-- The number i of entries taken from the first list. -/
-abbrev TakenA : ℕ := 5
-/-- The number j of entries taken from the second list. -/
-abbrev TakenB : ℕ := 6
-/-- The number len of entries written. -/
-abbrev Written : ℕ := 7
-/-- The head a of what is left of the first list. -/
-abbrev HeadA : ℕ := 8
-/-- The head b of what is left of the second list. -/
-abbrev HeadB : ℕ := 9
+/- The first list, A in the comments of the proofs. -/
+slots ListA
+/- The length na of the first list. -/
+slots 1 LenA
+/- The second list, B in the comments of the proofs. -/
+slots 2 ListB
+/- The length nb of the second list. -/
+slots 3 LenB
+/- Where the merge is written, C in the comments of the proofs. -/
+slots 4 Dest
+/- The number i of entries taken from the first list. -/
+slots 5 TakenA
+/- The number j of entries taken from the second list. -/
+slots 6 TakenB
+/- The number len of entries written. -/
+slots 7 Written
+/- The head a of what is left of the first list. -/
+slots 8 HeadA
+/- The head b of what is left of the second list. -/
+slots 9 HeadB
 
 end UnionLocal
 
@@ -89,21 +85,7 @@ def unionBody : Stmt :=
 
 /-! ## The invariant -/
 
-/-- What both loops keep: i and j numbers of the two lists have been taken; the list done has been
-written to pc; together with the merge of what is left it is the merge of the two lists; no cell
-outside the output has changed. -/
-structure UnionInv (μ μ' : ℕ → ℤ) (pc : ℕ) (la lb : List ℕ) (i j : ℕ) (done : List ℕ) : Prop where
-  hi : i ≤ la.length
-  hj : j ≤ lb.length
-  len_le : done.length ≤ i + j
-  merged : done ++ Spec.mergeUnion (la.drop i) (lb.drop j) = Spec.mergeUnion la lb
-  written : SegN μ' pc done
-  rest : SameOutside μ μ' pc (la.length + lb.length)
-
-variable {μ μ' : ℕ → ℤ} {pa pb pc : ℕ} {la lb : List ℕ} {i j : ℕ} {done : List ℕ}
 
 /-! ## The three bodies -/
 
 /-! ## The procedure -/
-
-end Light.Sec2

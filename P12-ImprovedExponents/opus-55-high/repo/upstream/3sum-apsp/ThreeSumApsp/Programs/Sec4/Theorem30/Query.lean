@@ -3,11 +3,11 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Directory
-public import ThreeSumApsp.Programs.Sec4.Theorem30.RoutineFacts
-public import ThreeSumApsp.Spec.Sec4.Theorem30.PartialSums
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec4.Theorem30.Directory
+import ThreeSumApsp.Programs.Sec4.Theorem30.RoutineFacts
+import ThreeSumApsp.Spec.Sec4.Theorem30.PartialSums
 
 /-!
 # A query, from the block that holds the data structure (proof of Theorem 30, "Query")
@@ -23,7 +23,6 @@ holds the arguments (outArgs, coreArgs) and a lemma says that the block holds wh
 assumes (outArgs_pre, coreArgs_pre). queryAt_spec puts the four parts together.
 -/
 
-@[expose] public section
 
 open ThreeSumApsp
 
@@ -35,31 +34,11 @@ open ThreeSumApsp.Spec
 
 namespace QueryAt
 
-/-- The local variables of queryAt: the arguments I, J, b0; the sizes L, m, t, L - m, K₀, nB, 10^L;
+/- The local variables of queryAt: the arguments I, J, b0; the sizes L, m, t, L - m, K₀, nB, 10^L;
 the addresses of the tables BAND, BLOCK, DIG3 and of the area WD; the bands of I and J; the
 addresses of the areas BOX, SS, ROOTS, TR; and a local for the result of outDigits, which is not
 used. -/
-abbrev Row : ℕ := 0
-@[inherit_doc Row] abbrev Col : ℕ := 1
-@[inherit_doc Row] abbrev Base : ℕ := 2
-@[inherit_doc Row] abbrev Levels : ℕ := 3
-@[inherit_doc Row] abbrev Inner : ℕ := 4
-@[inherit_doc Row] abbrev Switch : ℕ := 5
-@[inherit_doc Row] abbrev Outer : ℕ := 6
-@[inherit_doc Row] abbrev Blocks : ℕ := 7
-@[inherit_doc Row] abbrev Bands : ℕ := 8
-@[inherit_doc Row] abbrev Leaves : ℕ := 9
-@[inherit_doc Row] abbrev BandTab : ℕ := 10
-@[inherit_doc Row] abbrev BlockTab : ℕ := 11
-@[inherit_doc Row] abbrev DigitTab : ℕ := 12
-@[inherit_doc Row] abbrev Digits : ℕ := 13
-@[inherit_doc Row] abbrev BandI : ℕ := 14
-@[inherit_doc Row] abbrev BandJ : ℕ := 15
-@[inherit_doc Row] abbrev Box : ℕ := 16
-@[inherit_doc Row] abbrev Str : ℕ := 17
-@[inherit_doc Row] abbrev Roots : ℕ := 18
-@[inherit_doc Row] abbrev Tries : ℕ := 19
-@[inherit_doc Row] abbrev Void : ℕ := 20
+slots Row Col Base Levels Inner Switch Outer Blocks Bands Leaves BandTab BlockTab DigitTab Digits BandI BandJ Box Str Roots Tries Void
 
 end QueryAt
 
@@ -120,7 +99,7 @@ def queryAtLocals (p : Sec2.Par) (t b0 I J : ℕ) : List ℤ :=
 section Proof
 
 variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L}
-  {aX aY b0 : ℕ} {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
+  {b0 : ℕ} {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
   {U : ℤ} {μ : ℕ → ℤ}
 
 /-! ## The first two parts -/
@@ -133,16 +112,11 @@ theorem queryAtAreas_spec (hlim : Lim30 lim p t b0 U) (I J : ℕ) :
   obtain ⟨⟩ := areas p t b0
   unfold queryAtLocals queryAtRead
   -- the product nB², in the integers
-  have htr : ((aROOTS p b0 + p.nB * p.nB : ℕ) : ℤ) = aTR p b0 := by
-    exact_mod_cast (by omega : aROOTS p b0 + p.nB * p.nB = aTR p b0)
-  have hsq0 : (0 : ℤ) ≤ (p.nB : ℤ) * p.nB := by positivity
-  push_cast at htr
-  -- box := digits + L + L; str := box + L; roots := str + m + 1
-  light_set (aBOX p b0 : ℕ)
-  light_set (aSS p b0 : ℕ)
-  light_set (aROOTS p b0 : ℕ)
+  light_set (aBOX p b0)
+  light_set (aSS p b0)
+  light_set (aROOTS p b0)
   -- tries := roots + nB nB
-  light_set (aTR p b0 : ℕ)
+  light_set (aTR p b0)
   rfl
 
 /-! ## The call of outDigits -/
@@ -154,8 +128,7 @@ theorem segN_of_segB {μ : ℕ → ℤ} {a : ℕ} {l : List Bool} (h : Sec2.SegB
   unfold SegN
   rw [List.map_map]
   convert h using 2
-  funext b
-  cases b <;> simp
+  decide
 
 /-- The arguments of the call of outDigits, and the data behind them. -/
 def outArgs (p : Sec2.Par) (b0 I J : ℕ) : OutDigitsArgs :=
@@ -170,21 +143,7 @@ def tileOf (p : Sec2.Par) (I J : ℕ) : ℕ := I / (p.K0 * p.N0) * p.nB + J / (p
 /-- The arguments of the call of queryCore, and the data behind them. -/
 def coreArgs (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (b0 : ℕ)
     (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ) (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (I J : ℕ) :
-    QueryCoreArgs where
-  L := p.L
-  m := p.m
-  t := t
-  encA := encRow p hmL X (I / (p.K0 * p.N0))
-  encB := encCol p hmL Y (J / (p.K0 * p.N0))
-  η := outStrOfPos (stdLayout hmL) I J
-  aA := p.aENCA b0 + I / (p.K0 * p.N0) * p.T
-  aB := p.aENCB b0 + J / (p.K0 * p.N0) * p.T
-  tr := aTR p b0
-  root := (dsTries p t hmL X Y).root (tileOf p I J)
-  wd := aWD p b0
-  ss := aSS p b0
-  box := aBOX p b0
-  T := (dsTries p t hmL X Y).cells
+    QueryCoreArgs := ⟨p.L, p.m, t, encRow p hmL X (I / (p.K0 * p.N0)), encCol p hmL Y (J / (p.K0 * p.N0)), outStrOfPos (stdLayout hmL) I J, p.aENCA b0 + I / (p.K0 * p.N0) * p.T, p.aENCB b0 + J / (p.K0 * p.N0) * p.T, aTR p b0, (dsTries p t hmL X Y).root (tileOf p I J), aWD p b0, aSS p b0, aBOX p b0, (dsTries p t hmL X Y).cells⟩
 
 /-- Every product of two encoded numbers fits in a word. -/
 theorem abs_enc_mul_le (hlim : Lim30 lim p t b0 U) (hU : 0 ≤ U) (hX : ∀ i j, |X i j| ≤ U)
@@ -192,10 +151,10 @@ theorem abs_enc_mul_le (hlim : Lim30 lim p t b0 U) (hU : 0 ≤ U) (hX : ∀ i j,
     |encRow p hmL X β τ * encCol p hmL Y β' τ| ≤ lim.word := by
   obtain ⟨hrow, hcol⟩ := abs_enc_le hmL X Y U hU hX hY β β'
   rw [abs_mul]
-  calc |encRow p hmL X β τ| * |encCol p hmL Y β' τ| ≤ (7 ^ p.L * U) * (7 ^ p.L * U) :=
-        mul_le_mul (hrow τ) (hcol τ) (abs_nonneg _) ((abs_nonneg _).trans (hrow τ))
+  calc |encRow p hmL X β τ| * |encCol p hmL Y β' τ| ≤ 7 ^ p.L * U * (7 ^ p.L * U) :=
+        mul_le_mul (hrow τ) (hcol τ) (abs_nonneg _) (by simp_all)
     _ ≤ 10 ^ p.m * ((7 ^ p.L * U) * (7 ^ p.L * U)) :=
-        le_mul_of_one_le_left (mul_self_nonneg _) (one_le_pow₀ (by norm_num))
+        by simp_all [le_mul_of_one_le_left, mul_self_nonneg, one_le_pow₀]
     _ ≤ lim.word := hlim.value
 
 section Tile
@@ -228,13 +187,11 @@ theorem coreArgs_walk (l : List ℕ)
 theorem coreArgs_sums (hlim : Lim30 lim p t b0 U) (hU : 0 ≤ U) (hX : ∀ i j, |X i j| ≤ U)
     (hY : ∀ i j, |Y i j| ≤ U) (j : ℕ) :
     |((coreArgs p t hmL b0 X Y I J).terms.take j).sum| ≤ lim.word := by
-  obtain ⟨hrow, hcol⟩ := abs_enc_le hmL X Y U hU hX hY ((I : ℕ) / (p.K0 * p.N0))
-    ((J : ℕ) / (p.K0 * p.N0))
+  obtain ⟨hrow, hcol⟩ := abs_enc_le hmL X Y U hU hX hY _
+    _
   have hcard := card_innerSetO_outStrOfPos (stdLayout hmL) I J
-  have hterms := queryTerms_allTries ht
-    (getElem?_tileOf (t := t) (hmL := hmL) (b0 := b0) (X := X) (Y := Y) I J) hcard
-  rw [QueryCoreArgs.terms]
-  exact (congrArg (fun l => |(l.take j).sum|) hterms).trans_le
+  exact (congrArg (fun l => |(l.take j).sum|) (queryTerms_allTries ht
+    (getElem?_tileOf (t := t) (hmL := hmL) (b0 := b0) (X := X) (Y := Y) I J) hcard)).trans_le
     ((abs_query_partial_sum_le hrow hcol ht hcard j).trans hlim.value)
 
 /-- What queryCore returns for the tile of (I, J) is (XY)[I, J], by Theorem 30. -/
@@ -246,10 +203,6 @@ theorem coreArgs_value :
     (card_innerSetO_outStrOfPos (stdLayout hmL) I J)).trans
     (Theorem30.correct t ht (stdLayout hmL) X Y I J)
 
-end Tile
+
 
 /-! ## The routine -/
-
-end Proof
-
-end Light.Sec4

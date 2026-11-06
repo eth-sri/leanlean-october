@@ -3,12 +3,12 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.LightModel
-public import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.BruteForce
-public import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.RegimeTest
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Solver
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.LightModel
+import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.BruteForce
+import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.RegimeTest
+import ThreeSumApsp.Programs.Sec2.Theorem5.Solver
 
 /-!
 # The thin matrix product, on all instances
@@ -27,14 +27,12 @@ in the parameters (thinNeed_poly) and covers what the solver of Theorem 5 asks o
 light model (thin_claim).
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp
 
-/-- Local 10 of thin: the result of the test of the regime. -/
-abbrev Thin.Expo : ℕ := 10
+/- Local 10 of thin: the result of the test of the regime. -/
+slots 10 Thin.Expo
 
 open ThinArg Thin in
 /-- thin(N, D, w, U, x, y, wi, wj, out, fr). -/
@@ -53,5 +51,3 @@ def thinBody : Stmt :=
 /-! ## The time -/
 
 /-! ## The solver of Theorem 5 may be called -/
-
-end Light.Sec2

@@ -1,10 +1,8 @@
-module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Program
-public import ImprovedExponents.PrunedProgram.Pre.Defs
-public import ImprovedExponents.PrunedProgram.Query.QuerySum
+import ThreeSumApsp.Programs.Sec4.Theorem30.Program
+import ImprovedExponents.PrunedProgram.Pre.Defs
+import ImprovedExponents.PrunedProgram.Query.QuerySum
 
-@[expose] public section
 
 /-!
 # A query, from the block that holds the data structure on pruned encodings
@@ -40,12 +38,14 @@ variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : 
   {aX aY b0 : ℕ} {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
   {U : ℤ} {μ : ℕ → ℤ}
 
+variable {J I : ℕ}
+
 /-! ## The first part -/
 
 /-- The first part reads the sizes, the addresses of the tables, and the two bands. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (queryAtReads_spec)
 theorem queryAtReadsP_spec (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL aX aY b0 X Y μ)
-    {I J : ℕ} (hI : I < p.N) (hJ : J < p.N) :
+    (hI : I < p.N) (hJ : J < p.N) :
     Ends lim P d queryAtReads ⟨frame [(I : ℤ), (J : ℤ), (b0 : ℤ)], μ⟩ 90
       (· = ⟨frame (queryAtRead p t b0 I J), μ⟩) := by
   have hw := hlim.std.space_le
@@ -54,27 +54,24 @@ theorem queryAtReadsP_spec (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL a
     obtain ⟨⟩ := areas p t b0
     omega
   have dir := hds.shared.dirCells
-  have cellT : μ ((b0 : ℤ) + 31).toNat = (t : ℕ) :=
-    (congrArg μ (toNat_natCast_add_natCast b0 31)).trans hds.cellT
-  have bandI := hds.shared.band I hI
-  have bandJ := hds.shared.band J hJ
-  -- levels := dir[0]; inner := dir[1]; switch := dir[31]; outer := dir[4]
-  light_set (p.L : ℕ) using dir.levels
-  light_set (p.m : ℕ) using dir.inner
-  light_set (t : ℕ) using cellT
-  light_set (p.Lo : ℕ) using dir.outer
+  have cellT : μ ((b0 : ℤ) + 31).toNat = t :=
+    (congrArg μ (by omega)).trans hds.cellT
+  light_set p.L using dir.levels
+  light_set p.m using dir.inner
+  light_set t using cellT
+  light_set p.Lo using dir.outer
   -- blocks := dir[7]; bands := dir[9]; leaves := dir[10]
-  light_set (p.K0 : ℕ) using dir.blocks
-  light_set (p.nB : ℕ) using dir.bands
-  light_set (p.T : ℕ) using dir.leaves
+  light_set p.K0 using dir.blocks
+  light_set p.nB using dir.bands
+  light_set p.T using dir.leaves
   -- bandTab := dir[22]; blockTab := dir[23]; digitTab := dir[24]; digits := dir[30]
-  light_set (p.aBAND b0 : ℕ) using dir.band
-  light_set (p.aBLOCK b0 : ℕ) using dir.block
-  light_set (p.aDIG3 b0 : ℕ) using dir.digits
-  light_set (aWD p b0 : ℕ) using dir.sharedEnd
+  light_set (p.aBAND b0) using dir.band
+  light_set (p.aBLOCK b0) using dir.block
+  light_set (p.aDIG3 b0) using dir.digits
+  light_set (aWD p b0) using dir.sharedEnd
   -- bandI := bandTab[I]; bandJ := bandTab[J]
-  light_set (I / (p.K0 * p.N0) : ℕ) using bandI
-  light_set (J / (p.K0 * p.N0) : ℕ) using bandJ
+  light_set (I / (p.K0 * p.N0)) using hds.shared.band I hI
+  light_set (J / (p.K0 * p.N0)) using hds.shared.band J hJ
   rfl
 
 /-! ## The call of outDigits -/
@@ -82,7 +79,7 @@ theorem queryAtReadsP_spec (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL a
 /-- The block holds what outDigits assumes. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (outArgs_pre)
 theorem outArgsP_pre (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL aX aY b0 X Y μ)
-    {I J : ℕ} (hI : I < p.N) (hJ : J < p.N) : OutDigitsPre lim μ (outArgs p b0 I J) := by
+    (hI : I < p.N) (hJ : J < p.N) : OutDigitsPre lim μ (outArgs p b0 I J) := by
   have hgI : I / p.N0 % p.K0 < p.K0 := Nat.mod_lt _ (K0_pos hmL)
   have hgJ : J / p.N0 % p.K0 < p.K0 := Nat.mod_lt _ (K0_pos hmL)
   have hidx : I / p.N0 % p.K0 * p.K0 + J / p.N0 % p.K0 < p.KK := Nat.mul_add_lt_mul hgI hgJ
@@ -94,43 +91,21 @@ theorem outArgsP_pre (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL aX aY b
   have hLo : p.L - p.m = p.Lo := rfl
   obtain ⟨⟩ := areas p t b0
   refine
-    { std := hlim.std
-      m_le := hmL
-      gI_lt := hgI
-      gJ_lt := hgJ
-      index_lt := tableIndex_lt p.L p.m (⟨_, hgI⟩, ⟨_, hgJ⟩)
-      segMask := segN_of_segB (hds.shared.mask _ hidx)
-      segI := hds.shared.dig3 I hI
-      segJ := hds.shared.dig3 J hJ
-      lenI := length_digitList ..
-      lenJ := length_digitList ..
-      ltI := fun _ => lt_of_mem_digitList (by norm_num)
-      ltJ := fun _ => lt_of_mem_digitList (by norm_num)
-      spaceMasks := by change p.aMASK b0 + p.KK * p.L < lim.space; omega
-      apartMask := ?_
-      apartI := ?_
-      apartJ := ?_
-      spaceI := ?_
-      spaceJ := ?_
-      spaceDest := ?_ }
+    ⟨hlim.std, hmL, hgI, hgJ, tableIndex_lt p.L p.m (⟨_, hgI⟩, ⟨_, hgJ⟩), segN_of_segB (hds.shared.mask _ hidx), hds.shared.dig3 I hI, hds.shared.dig3 J hJ, length_digitList .., length_digitList .., fun _ => lt_of_mem_digitList (by norm_num), fun _ => lt_of_mem_digitList (by norm_num), ?_, ?_, ?_, by change p.aMASK b0 + p.KK * p.L < lim.space; omega, ?_, ?_, ?_⟩
   -- the six fields that are left: the tables lie apart from WD, and all within the memory
   all_goals
-    simp only [outArgs, OutDigitsArgs.base]
-    omega
+    grind [outArgs, OutDigitsArgs.base]
 
 /-- The third part writes the digits of the output string of (I, J) at WD. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (queryAtOut_spec)
 theorem queryAtOutP_spec (hOut : OutDigitsSpec lim P) (hlim : Lim30 lim p t b0 U)
-    (hds : DSReadyP p t hmL aX aY b0 X Y μ) {I J : ℕ} (hI : I < p.N) (hJ : J < p.N)
-    (hd : d + 1 ≤ lim.depth) :
+    (hds : DSReadyP p t hmL aX aY b0 X Y μ) (hI : I < p.N) (hJ : J < p.N)
+    (hd : d + 1 ≤ lim.depth := by omega) :
     Ends lim P d queryAtOut ⟨frame (queryAtLocals p t b0 I J), μ⟩ (tOutDigits p.L + 40) fun σ' =>
       ∃ (r : ℤ) (μ' : ℕ → ℤ), σ' = ⟨frame (queryAtLocals p t b0 I J ++ [r]), μ'⟩ ∧
         SegN μ' (aWD p b0) (digitsO (outStrOfPos (stdLayout hmL) I J)) ∧
         SameOutside μ μ' (aWD p b0) p.L := by
   have hw := hlim.std.space_le
-  have hpre := outArgsP_pre hlim hds hI hJ
-  have blockI := hds.shared.block I hI
-  have blockJ := hds.shared.block J hJ
   have hsp := hlim.space
   have hrowI := Nat.mul_add_le_mul hI (le_refl p.Lo)
   have hrowJ := Nat.mul_add_le_mul hJ (le_refl p.Lo)
@@ -138,19 +113,10 @@ theorem queryAtOutP_spec (hOut : OutDigitsSpec lim P) (hlim : Lim30 lim p t b0 U
       p.aDIG3 b0 + p.N * p.Lo ≤ lim.space := by
     obtain ⟨⟩ := areas p t b0
     omega
-  have hprodI : ((p.aDIG3 b0 + I * p.Lo : ℕ) : ℤ) ≤ lim.space := by
-    exact_mod_cast (by omega : p.aDIG3 b0 + I * p.Lo ≤ lim.space)
-  have hprodJ : ((p.aDIG3 b0 + J * p.Lo : ℕ) : ℤ) ≤ lim.space := by
-    exact_mod_cast (by omega : p.aDIG3 b0 + J * p.Lo ≤ lim.space)
-  have hI0 : (0 : ℤ) ≤ (I : ℤ) * p.Lo := by positivity
-  have hJ0 : (0 : ℤ) ≤ (J : ℤ) * p.Lo := by positivity
-  push_cast at hprodI hprodJ
-  -- outDigits(blockTab[I], blockTab[J], digitTab + I (L - m), digitTab + J (L - m), dir[21], …)
-  light_call (hOut _ μ hpre) using queryAtLocals, queryAtRead, outArgs, blockI, blockJ,
+  light_call (hOut _ μ (outArgsP_pre hlim hds hI hJ)) using queryAtLocals, queryAtRead, outArgs, hds.shared.block I hI, hds.shared.block J hJ,
     hds.shared.dirCells.mask with r μ' h
-  refine ⟨r, μ', rfl, ?_, h.2⟩
   rw [digitsO_outStrOfPos]
-  exact h.1
+  aesop
 
 /-! ## The call of queryCore -/
 
@@ -161,9 +127,9 @@ theorem coreArgsP_pre (ht : t ≤ p.m) (hlim : Lim30 lim p t b0 U) (hX : ∀ i j
     (hY : ∀ i j, |Y i j| ≤ U) (hds : DSReadyP p t hmL aX aY b0 X Y μ) (I J : Fin p.N)
     (hwd : SegN μ (aWD p b0) (digitsO (outStrOfPos (stdLayout hmL) I J))) :
     QueryCorePreP lim μ (coreArgs p t hmL b0 X Y I J) := by
-  have hU : 0 ≤ U := (abs_nonneg _).trans (hX I ⟨0, Nat.pow_pos (by norm_num)⟩)
-  have hβ : (I : ℕ) / (p.K0 * p.N0) < p.nB := bandOf_lt_numBands hmL p.N I I.isLt
-  have hβ' : (J : ℕ) / (p.K0 * p.N0) < p.nB := bandOf_lt_numBands hmL p.N J J.isLt
+  have hU := (abs_nonneg _).trans (hX I ⟨0, Nat.pow_pos (by norm_num)⟩)
+  have hβ : I / (p.K0 * p.N0) < p.nB := bandOf_lt_numBands hmL p.N I I.isLt
+  have hβ' : J / (p.K0 * p.N0) < p.nB := bandOf_lt_numBands hmL p.N J J.isLt
   -- the encodings lie below WD, the tries behind the scratch strings
   have hsp := hlim.space
   have hlen := length_dsTries_le p t hmL X Y
@@ -172,36 +138,10 @@ theorem coreArgsP_pre (ht : t ≤ p.m) (hlim : Lim30 lim p t b0 U) (hX : ∀ i j
   have hT : 10 ^ p.L = p.T := rfl
   obtain ⟨⟩ := areas p t b0
   refine
-    { std := hlim.std
-      t_le := ht
-      card := card_innerSetO_outStrOfPos (stdLayout hmL) I J
-      segA := hds.shared.encA _ hβ
-      segB := hds.shared.encB _ hβ'
-      segT := hds.trie
-      segDigits := hwd
-      walk := coreArgs_walk I J ht
-      sums := coreArgs_sums I J ht hlim hU hX hY
-      prod := abs_enc_mul_le hlim hU hX hY _ _
-      pow := hlim.pow_le
-      ss_wd := ?_
-      box_wd := ?_
-      ss_box := ?_
-      ss_aA := ?_
-      ss_aB := ?_
-      box_aA := ?_
-      box_aB := ?_
-      ss_tr := ?_
-      box_tr := ?_
-      aA_lt := ?_
-      aB_lt := ?_
-      tr_lt := ?_
-      wd_lt := ?_
-      ss_lt := ?_
-      box_lt := ?_ }
+    ⟨hlim.std, ht, card_innerSetO_outStrOfPos _ I J, hds.shared.encA _ hβ, hds.shared.encB _ hβ', hds.trie, hwd, coreArgs_walk I J ht, coreArgs_sums I J ht hlim hU hX hY, abs_enc_mul_le hlim hU hX hY _ _, hlim.pow_le, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   -- the fifteen fields that are left: the areas lie apart from each other and within the memory
   all_goals
-    simp only [coreArgs]
-    omega
+    grind [coreArgs]
 
 /-- The fourth part returns (XY)[I, J] and changes the scratch strings BOX and SS only. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (queryAtCore_spec)
@@ -217,38 +157,26 @@ theorem queryAtCoreP_spec (hCore : QueryCoreSpecP lim P) (ht : t ≤ p.m)
   have hvalue := coreArgs_value (hmL := hmL) (b0 := b0) (X := X) (Y := Y) I J ht
   have dir := hds.shared.dirCells
   have htile := tileOf_lt I J hmL
-  have cellRoot : μ (aROOTS p b0 + tileOf p I J)
-      = ((dsTries p t hmL X Y).root (tileOf p I J) : ℕ) :=
-    hds.roots.read (by rw [length_dsTries_roots]; exact htile)
+  have cellRoot : μ _
+      = (dsTries p t hmL X Y).root (tileOf p I J) :=
+    hds.roots.read (by grind [length_dsTries_roots])
   have hdir : b0 + 31 < lim.space ∧ aROOTS p b0 + p.nB * p.nB < lim.space := by
     have hsp := hlim.space
     obtain ⟨⟩ := areas p t b0
     omega
-  have hmeets := (hCore _ μ hpre _ (by omega))
+  have hmeets := hCore _ μ hpre _ (by omega)
   have hencA := hpre.aA_lt
   have hencB := hpre.aB_lt
   simp only [coreArgs, tileOf] at hmeets hvalue hencA hencB htile cellRoot
   unfold queryAtLocals queryAtRead
   -- the bands, the root and 10^L become variables; the products in the arguments, in the integers
   generalize 10 ^ p.L = leaves at hencA hencB
-  generalize (I : ℕ) / (p.K0 * p.N0) = β at *
-  generalize (J : ℕ) / (p.K0 * p.N0) = β' at *
-  generalize (dsTries p t hmL X Y).root (β * p.nB + β') = root at *
-  have hencA' : ((p.aENCA b0 + β * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega)
-  have hencB' : ((p.aENCB b0 + β' * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega)
-  have hroot' : ((aROOTS p b0 + (β * p.nB + β') : ℕ) : ℤ) < lim.space := by
-    exact_mod_cast (by omega)
-  have hrow0 : (0 : ℤ) ≤ (β : ℤ) * p.T := by positivity
-  have hcol0 : (0 : ℤ) ≤ (β' : ℤ) * p.T := by positivity
-  have hband0 : (0 : ℤ) ≤ (β : ℤ) * p.nB := by positivity
-  have haddr : ((aROOTS p b0 : ℤ) + ((β : ℤ) * p.nB + β')).toNat
-      = aROOTS p b0 + (β * p.nB + β') := by exact_mod_cast Int.toNat_natCast _
-  push_cast at hencA' hencB' hroot'
-  -- queryCore(dir[26] + bandI 10^L, dir[27] + bandJ 10^L, tries, roots[bandI nB + bandJ], …)
+  generalize I / (p.K0 * p.N0) = β at *
+  generalize J / (p.K0 * p.N0) = β' at *
+  have haddr : (aROOTS p b0 + ((β : ℤ) * p.nB + β')).toNat
+      = aROOTS p b0 + (β * p.nB + β') := by rfl
   light_call hmeets using dir.encA, dir.encB, haddr, cellRoot with r' μ' h
-  refine ⟨?_, h.2⟩
-  simp only [setLocal, List.cons_append, frame, List.getD_cons_zero]
-  rw [h.1, hvalue]
+  simp_all
 
 /-! ## The routine -/
 
@@ -266,15 +194,15 @@ theorem queryAtP_spec (hP : P[Proc.queryAt]? = some queryAtBody) (hOut : OutDigi
   -- the areas
   light_piece (queryAtAreas_spec hlim I J) with _ rfl
   -- the digits of the output string, which change WD only
-  light_piece (queryAtOutP_spec hOut hlim hds I.isLt J.isLt (by omega))
+  light_piece (queryAtOutP_spec hOut hlim hds I.isLt J.isLt)
     with _ ⟨r, μ₁, rfl, hwd, same₁⟩
-  have same₁' : SameOutside μ μ₁ (aWD p b0) (3 * p.L + p.m) := same₁.mono le_rfl (by omega)
+  have same₁' : SameOutside μ μ₁ _ (3 * p.L + p.m) := same₁.mono le_rfl (by omega)
   -- the sum of Lemma 28, which changes BOX and SS only
   light_piece (queryAtCoreP_spec hCore ht hlim hX hY (hds.of_same same₁') I J (by omega) r hwd)
     with ⟨loc₂, μ₂⟩ ⟨hr, same₂⟩
   have same₂' : SameOutside μ μ₂ (aWD p b0) (3 * p.L + p.m) := by
     obtain ⟨⟩ := areas p t b0
-    exact same₁'.then same₂ fun b hb => ⟨hb, by omega, by omega⟩
+    exact same₁'.then same₂ fun b hb => by omega
   exact ⟨hr, hds.of_same same₂', same₂'⟩
 
 end Proof
@@ -303,6 +231,4 @@ with upstream's 58 procedures. -/
 theorem queryAtP_of_base58 {lim : Limits} {P R : Program} (hP : P = base58 ++ R) :
     QueryAtSpecP lim P := by
   subst hP
-  exact queryAtSpecP_all (has40_base58 R) (at_base58 rfl R) lim
-
-end Light.Sec4
+  exact queryAtSpecP_all (has40_base58 R) (by rfl) lim

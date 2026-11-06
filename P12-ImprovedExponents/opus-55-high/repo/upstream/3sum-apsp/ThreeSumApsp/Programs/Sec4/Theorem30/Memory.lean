@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
+import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 
 /-!
 # Theorem 30 in the light language: the memory map and the invariant of the data structure
@@ -38,7 +38,6 @@ array (trie), and the table roots has the root of the trie of each tile. The inv
 on the cells from b0 on, without the scratch strings (`DSReady.congr`).
 -/
 
-@[expose] public section
 
 namespace Light.Sec4
 
@@ -128,24 +127,17 @@ theorem scratch_in_block (p : Sec2.Par) (t b0 : ℕ) :
 
 namespace Dir
 
-/-- The cells of the directory, the first 32 cells of the block, that the routines of Section 4 use.
+/- The cells of the directory, the first 32 cells of the block, that the routines of Section 4 use.
 They hold L, m, L - m, K₀, nB, 10^L, the addresses of the tables MASK, BAND, BLOCK, DIG3 and of the
 encodings ENCA, ENCB, the end of the shared block (which is the address of WD), and t. All but the
 last are written by the shared stage. -/
-abbrev levels : ℕ := 0
-@[inherit_doc levels] abbrev inner : ℕ := 1
-@[inherit_doc levels] abbrev outer : ℕ := 4
-@[inherit_doc levels] abbrev blocks : ℕ := 7
-@[inherit_doc levels] abbrev bands : ℕ := 9
-@[inherit_doc levels] abbrev leaves : ℕ := 10
-@[inherit_doc levels] abbrev mask : ℕ := 21
-@[inherit_doc levels] abbrev band : ℕ := 22
-@[inherit_doc levels] abbrev block : ℕ := 23
-@[inherit_doc levels] abbrev digits : ℕ := 24
-@[inherit_doc levels] abbrev encA : ℕ := 26
-@[inherit_doc levels] abbrev encB : ℕ := 27
-@[inherit_doc levels] abbrev sharedEnd : ℕ := 30
-@[inherit_doc levels] abbrev switch : ℕ := 31
+slots levels inner
+slots 4 outer
+slots 7 blocks
+slots 9 bands leaves
+slots 21 mask band block digits
+slots 26 encA encB
+slots 30 sharedEnd switch
 
 end Dir
 
@@ -167,20 +159,8 @@ def dsTries (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (X : Matrix (Fin p.N) (
     TrieStore :=
   allTries p.L p.m t (tileList p.nB (encRow p hmL X) (encCol p hmL Y))
 
-/-- **The block from b0 on holds the data structure for X and Y.** The preprocessing establishes
-this, and every query needs it and keeps it. -/
-structure DSReady (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop where
-  shared : Sec2.SharedReady p hmL aX aY b0 X Y μ
-  cellT : μ (b0 + 31) = t
-  roots : SegN μ (aROOTS p b0) (dsTries p t hmL X Y).roots
-  trie : Seg μ (aTR p b0) (dsTries p t hmL X Y).cells
 
 section
-
-variable {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
-  {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {μ μ' : ℕ → ℤ}
 
 end
 
@@ -197,9 +177,8 @@ structure Lim30 (lim : Limits) (p : Sec2.Par) (t b0 : ℕ) (U : ℤ) : Prop wher
 
 /-! ## The two routines that know the map -/
 
-/-- The numbers of the two routines. -/
-abbrev Proc.preCore : ℕ := 54
-@[inherit_doc Proc.preCore] abbrev Proc.queryAt : ℕ := 55
+/- The numbers of the two routines. -/
+slots 54 Proc.preCore Proc.queryAt
 
 /-- The time of `queryAt`. -/
 def tQueryAt (L m t : ℕ) : ℕ := tOutDigits L + tQueryCore L m t + 400
@@ -207,5 +186,3 @@ def tQueryAt (L m t : ℕ) : ℕ := tOutDigits L + tQueryCore L m t + 400
 /-- The time of `preCore`; c is the constant of the shared stage (`Sec2.SharedSpec`). -/
 def tPreCore (c : ℕ) (p : Sec2.Par) (t : ℕ) : ℕ :=
   c * Sec2.sharedShape p + tAllTiles p.L p.m t p.nB + 300
-
-end Light.Sec4

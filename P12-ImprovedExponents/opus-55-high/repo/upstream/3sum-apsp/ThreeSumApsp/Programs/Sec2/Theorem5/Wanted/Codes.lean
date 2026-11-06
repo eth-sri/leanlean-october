@@ -3,9 +3,9 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
 /-!
 # The tile and the output string of each wanted position
@@ -29,64 +29,60 @@ puts them together, `wantedBody_ends` is the loop, and `wanted_entry` is the res
 a call of procedure `pWanted` does what `WantedSpec` says.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2.Wanted
 
-open ThreeSumApsp
-
-variable {lim : Limits} {P : Program} {d : ℕ}
 
 /-! ## The program -/
 
 namespace Local
 
-/-- The number w of wanted positions. -/
-abbrev WW : ℕ := 0
-/-- The number L of levels. -/
-abbrev LL : ℕ := 1
-/-- Lo = L - m, the number of base-3 digits of an offset. -/
-abbrev LO : ℕ := 2
-/-- The size N. -/
-abbrev NN : ℕ := 3
-/-- K₀, the number of blocks along the side of a tile. -/
-abbrev KK : ℕ := 4
-/-- The number nB of bands. -/
-abbrev NB : ℕ := 5
-/-- The rows of the wanted positions. -/
-abbrev AWI : ℕ := 6
-/-- The columns of the wanted positions. -/
-abbrev AWJ : ℕ := 7
-/-- The table BAND, followed by the table BLOCK. -/
-abbrev BAND : ℕ := 8
-/-- The base-3 digits of the offsets. -/
-abbrev DIG3 : ℕ := 9
-/-- The masks of the subsets. -/
-abbrev MASK : ℕ := 10
-/-- Where the numbers of the tiles, the codes and the digits are written. -/
-abbrev TID : ℕ := 11
-/-- The number i of the position. -/
-abbrev CI : ℕ := 12
-/-- The row I. -/
-abbrev PI : ℕ := 13
-/-- The column J. -/
-abbrev PJ : ℕ := 14
-/-- The address of the mask. -/
-abbrev AM : ℕ := 15
-/-- The address of the next digit of the offset of I. -/
-abbrev AI : ℕ := 16
-/-- The address of the next digit of the offset of J. -/
-abbrev AJ : ℕ := 17
-/-- The number formed so far. -/
-abbrev ACC : ℕ := 18
-/-- The level. -/
-abbrev LEV : ℕ := 19
-/-- The address of the row of digits. -/
-abbrev ROW : ℕ := 20
-/-- The digit. -/
-abbrev DIG : ℕ := 21
-/-- The number of the tile. -/
-abbrev TILE : ℕ := 22
+/- The number w of wanted positions. -/
+slots WW
+/- The number L of levels. -/
+slots 1 LL
+/- Lo = L - m, the number of base-3 digits of an offset. -/
+slots 2 LO
+/- The size N. -/
+slots 3 NN
+/- K₀, the number of blocks along the side of a tile. -/
+slots 4 KK
+/- The number nB of bands. -/
+slots 5 NB
+/- The rows of the wanted positions. -/
+slots 6 AWI
+/- The columns of the wanted positions. -/
+slots 7 AWJ
+/- The table BAND, followed by the table BLOCK. -/
+slots 8 BAND
+/- The base-3 digits of the offsets. -/
+slots 9 DIG3
+/- The masks of the subsets. -/
+slots 10 MASK
+/- Where the numbers of the tiles, the codes and the digits are written. -/
+slots 11 TID
+/- The number i of the position. -/
+slots 12 CI
+/- The row I. -/
+slots 13 PI
+/- The column J. -/
+slots 14 PJ
+/- The address of the mask. -/
+slots 15 AM
+/- The address of the next digit of the offset of I. -/
+slots 16 AI
+/- The address of the next digit of the offset of J. -/
+slots 17 AJ
+/- The number formed so far. -/
+slots 18 ACC
+/- The level. -/
+slots 19 LEV
+/- The address of the row of digits. -/
+slots 20 ROW
+/- The digit. -/
+slots 21 DIG
+/- The number of the tile. -/
+slots 22 TILE
 
 end Local
 
@@ -132,81 +128,28 @@ def wantedBody : Stmt :=
   .set CI (k 0) ;; .set ROW (v TID +' v WW +' v WW) ;;
   .while (v CI <' v WW) (prepBlock ;; levelLoop ;; finishBlock)
 
-/-- The twelve arguments of wanted. -/
-structure Args where
-  /-- The number of wanted positions. -/
-  w : ℕ
-  /-- The number of levels. -/
-  L : ℕ
-  /-- The number of base-3 digits of an offset. -/
-  Lo : ℕ
-  /-- The size. -/
-  N : ℕ
-  /-- The number of blocks along the side of a tile. -/
-  K₀ : ℕ
-  /-- The number of bands. -/
-  nB : ℕ
-  /-- The rows of the wanted positions. -/
-  aWI : ℕ
-  /-- The columns of the wanted positions. -/
-  aWJ : ℕ
-  /-- The tables BAND and BLOCK. -/
-  band : ℕ
-  /-- The base-3 digits of the offsets. -/
-  dig3 : ℕ
-  /-- The masks. -/
-  mask : ℕ
-  /-- The output. -/
-  tid : ℕ
 
 /-! ## The walk along one mask -/
 
-variable {μ μ' : ℕ → ℤ} {m : ℕ} {mk : List Bool} {rI rJ : List ℕ} {L Lo am aI aJ row l : ℕ}
-
-variable {a : Args} {i : ℕ} {pI pJ tile : ℤ}
+variable {i : ℕ}
 
 /-! ## Before and after the walk -/
 
-/-- What the block before the walk needs: the values it reads, and room for the numbers it forms.
-(In, Jn) is the position, bI and bJ are its bands, gI and gJ its blocks. -/
-structure PrepPre (lim : Limits) (μ : ℕ → ℤ) (a : Args) (i In Jn bI bJ gI gJ : ℕ) : Prop where
-  vI : μ (a.aWI + i) = In
-  vJ : μ (a.aWJ + i) = Jn
-  vbI : μ (a.band + In) = bI
-  vbJ : μ (a.band + Jn) = bJ
-  vgI : μ (a.band + a.N + In) = gI
-  vgJ : μ (a.band + a.N + Jn) = gJ
-  hWI : a.aWI + i < lim.space
-  hWJ : a.aWJ + i < lim.space
-  hbI : a.band + a.N + In < lim.space
-  hbJ : a.band + a.N + Jn < lim.space
-  htile : ((bI * a.nB + bJ : ℕ) : ℤ) ≤ lim.word
-  hsub : ((gI * a.K₀ + gJ : ℕ) : ℤ) ≤ lim.word
-  hmask : ((a.mask + (gI * a.K₀ + gJ) * a.L : ℕ) : ℤ) ≤ lim.space
-  hdI : ((a.dig3 + In * a.Lo : ℕ) : ℤ) ≤ lim.space
-  hdJ : ((a.dig3 + Jn * a.Lo : ℕ) : ℤ) ≤ lim.space
 
 /-! ## One position -/
 
 section Position
 
-variable {p : Par} {w aWI aWJ band dig3 mask tid : ℕ} {I J : ℕ → ℕ}
-  (pre : WantedPre lim p w aWI aWJ band dig3 mask tid I J μ)
+variable {w : ℕ}
   (hi : i < w)
-include pre
+
 
 include hi
 
 end Position
 
-variable {p : Par} {w aWI aWJ band dig3 mask tid : ℕ} {I J : ℕ → ℕ}
-
 end Light.Sec2.Wanted
 
 namespace Light.Sec2
 
-open ThreeSumApsp Wanted
 
-variable {lim : Limits} {P : Program}
-
-end Light.Sec2

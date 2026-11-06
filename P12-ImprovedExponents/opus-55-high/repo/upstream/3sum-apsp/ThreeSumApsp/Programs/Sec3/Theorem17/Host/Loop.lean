@@ -3,10 +3,10 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.InstanceFacts
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.WriteMatrices
+import ThreeSumApsp.Slots
+import ThreeSumApsp.Programs.Sec3.Theorem17.Host.InstanceFacts
+import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.WriteMatrices
 
 /-!
 # The host of Theorem 17: the loop over the instances
@@ -31,7 +31,6 @@ structure `HostOk`.
   `tHostLoop` steps, the sum over the instances of the times of the four calls.
 -/
 
-@[expose] public section
 
 namespace Light.Sec3
 
@@ -43,64 +42,64 @@ variable {lim : Limits} {d : ℕ}
 
 namespace HostLocal
 
-/-- The number n of vertices of a part. -/
-abbrev Size : ℕ := 0
-/-- The inner dimension D. -/
-abbrev ParD : ℕ := 1
-/-- The prime p. -/
-abbrev ThePrime : ℕ := 2
-/-- The number q of vertices of a piece. -/
-abbrev PieceLen : ℕ := 3
-/-- The number chunkCount of chunks. -/
-abbrev NumChunks : ℕ := 4
-/-- The number m of instances. -/
-abbrev NumInst : ℕ := 5
-/-- The weights w(a,b). -/
-abbrev AdrAB : ℕ := 6
-/-- The weights w(b,c). -/
-abbrev AdrBC : ℕ := 7
-/-- The weights w(a,c). -/
-abbrev AdrAC : ℕ := 8
-/-- The residues of the weights w(a,c). -/
-abbrev ResAC : ℕ := 9
-/-- The residues of the weights w(b,c). -/
-abbrev ResBC : ℕ := 10
-/-- The rows of the sorted query pairs. -/
-abbrev Rows : ℕ := 11
-/-- The columns of the sorted query pairs. -/
-abbrev Cols : ℕ := 12
-/-- The classes of the chunks. -/
-abbrev TabR : ℕ := 13
-/-- The first places of the chunks. -/
-abbrev TabL : ℕ := 14
-/-- The numbers of query pairs of the chunks. -/
-abbrev TabW : ℕ := 15
-/-- The matrix X. -/
-abbrev MatX : ℕ := 16
-/-- The matrix Y. -/
-abbrev MatY : ℕ := 17
-/-- The answers of the solver. -/
-abbrev AdrOut : ℕ := 18
-/-- The free pointer. -/
-abbrev SolverFree : ℕ := 19
-/-- The number t of the instance. -/
-abbrev Inst : ℕ := 20
-/-- The number ch of its chunk. -/
-abbrev ChunkNo : ℕ := 21
-/-- The first vertex c0 of its piece. -/
-abbrev PieceStart : ℕ := 22
-/-- 1 if a zero triangle has been found. -/
-abbrev Found : ℕ := 23
-/-- The number len of vertices of the piece. -/
-abbrev Len : ℕ := 24
-/-- The class rho of the chunk. -/
-abbrev Residue : ℕ := 25
-/-- The first place lo of the chunk. -/
-abbrev Start : ℕ := 26
-/-- The number w of query pairs of the chunk. -/
-abbrev NumPairs : ℕ := 27
-/-- Results that are not used. -/
-abbrev Unused : ℕ := 28
+/- The number n of vertices of a part. -/
+slots Size
+/- The inner dimension D. -/
+slots 1 ParD
+/- The prime p. -/
+slots 2 ThePrime
+/- The number q of vertices of a piece. -/
+slots 3 PieceLen
+/- The number chunkCount of chunks. -/
+slots 4 NumChunks
+/- The number m of instances. -/
+slots 5 NumInst
+/- The weights w(a,b). -/
+slots 6 AdrAB
+/- The weights w(b,c). -/
+slots 7 AdrBC
+/- The weights w(a,c). -/
+slots 8 AdrAC
+/- The residues of the weights w(a,c). -/
+slots 9 ResAC
+/- The residues of the weights w(b,c). -/
+slots 10 ResBC
+/- The rows of the sorted query pairs. -/
+slots 11 Rows
+/- The columns of the sorted query pairs. -/
+slots 12 Cols
+/- The classes of the chunks. -/
+slots 13 TabR
+/- The first places of the chunks. -/
+slots 14 TabL
+/- The numbers of query pairs of the chunks. -/
+slots 15 TabW
+/- The matrix X. -/
+slots 16 MatX
+/- The matrix Y. -/
+slots 17 MatY
+/- The answers of the solver. -/
+slots 18 AdrOut
+/- The free pointer. -/
+slots 19 SolverFree
+/- The number t of the instance. -/
+slots 20 Inst
+/- The number ch of its chunk. -/
+slots 21 ChunkNo
+/- The first vertex c0 of its piece. -/
+slots 22 PieceStart
+/- 1 if a zero triangle has been found. -/
+slots 23 Found
+/- The number len of vertices of the piece. -/
+slots 24 Len
+/- The class rho of the chunk. -/
+slots 25 Residue
+/- The first place lo of the chunk. -/
+slots 26 Start
+/- The number w of query pairs of the chunk. -/
+slots 27 NumPairs
+/- Results that are not used. -/
+slots 28 Unused
 
 end HostLocal
 
@@ -164,20 +163,7 @@ structure HostOk (X : HostData) (U : ℕ) : Prop where
 
 /-- The addresses of the arrays. -/
 structure HostAddr : Type where
-  ab : ℕ
-  bc : ℕ
-  ac : ℕ
-  rac : ℕ
-  rbc : ℕ
-  qi : ℕ
-  qj : ℕ
-  cr : ℕ
-  cl : ℕ
-  cw : ℕ
-  x : ℕ
-  y : ℕ
-  out : ℕ
-  fr : ℕ
+  (ab bc ac rac rbc qi qj cr cl cw x y out fr : ℕ)
 
 /-- What the memory holds: the weights, the residues of w(a,c) and w(b,c), the sorted query pairs,
 and the three components of the table of chunks. -/
@@ -250,10 +236,10 @@ structure HostSetting (lim : Limits) (d : ℕ) (X : HostData) (U : ℕ) (A : Hos
   kept : Kept μ μ' A.x
 
 /-- Entries 0 and 1 have absolute value at most 1. -/
-private theorem absLe_one_of_zero_or_one {L : List ℤ} (h : ∀ e ∈ L, e = 0 ∨ e = 1) :
+theorem absLe_one_of_zero_or_one {L : List ℤ} (h : ∀ e ∈ L, e = 0 ∨ e = 1) :
     AbsLe L ((1 : ℕ) : ℤ) := by
   intro e he
-  rcases h e he with rfl | rfl <;> simp
+  grind
 
 namespace HostSetting
 
@@ -297,58 +283,38 @@ theorem mem' (S : HostSetting lim d X U A need μ μ') : HostMem X A μ' := by
   have lenCT : X.CT.length = X.chunkCount := rfl
   have h := S.mem
   exact
-    { segAB := h.segAB.keep
-      segBC := h.segBC.keep
-      segAC := h.segAC.keep
-      segRAC := h.segRAC.keep
-      segRBC := h.segRBC.keep
-      segQI := h.segQI.keep
-      segQJ := h.segQJ.keep
-      segCR := h.segCR.keep
-      segCL := h.segCL.keep
-      segCW := h.segCW.keep }
+    ⟨h.segAB.keep, h.segBC.keep, h.segAC.keep, h.segRAC.keep, h.segRBC.keep, h.segQI.keep, h.segQJ.keep, h.segCR.keep, h.segCL.keep, h.segCW.keep⟩
 
 /-- Reading an entry of a component of the table of chunks. -/
 theorem read_tab {a : ℕ} (f : Chunk → ℕ) (h : SegN μ a (X.CT.map f)) {i : ℕ}
     (hi : i < X.chunkCount) : μ (a + i) = (f (X.CT.getD i ⟨0, 0, 0⟩) : ℤ) := by
   have hi' : i < X.CT.length := hi
-  rw [h i (by simpa using hi'), List.getD_eq_getElem _ _ hi']
+  rw [h i (by simp_all), List.getD_eq_getElem _ _ hi']
   simp
 
 /-- The three parameters of the chunk of instance t, in the memory. -/
 theorem read_chunk (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) :
     μ' (A.cr + t % X.chunkCount) = X.rho t ∧ μ' (A.cl + t % X.chunkCount) = X.lo t ∧
       μ' (A.cw + t % X.chunkCount) = X.w t :=
-  ⟨read_tab (fun c => c.residue) S.mem'.segCR (HostData.mod_chunkCount_lt ht),
-    read_tab (fun c => c.start) S.mem'.segCL (HostData.mod_chunkCount_lt ht),
-    read_tab (fun c => c.len) S.mem'.segCW (HostData.mod_chunkCount_lt ht)⟩
+  ⟨read_tab _ S.mem'.segCR (HostData.mod_chunkCount_lt ht),
+    read_tab _ S.mem'.segCL (HostData.mod_chunkCount_lt ht),
+    read_tab _ S.mem'.segCW (HostData.mod_chunkCount_lt ht)⟩
 
 /-- What writeX and writeY assume, for a matrix of size cells at dst and the residues of a list of
 weights at r. -/
-private theorem write (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) {dst size r : ℕ}
+theorem write (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) {dst size r : ℕ}
     {weights : List ℤ} (seg : SegN μ' r (residList X.p weights))
     (length : (residList X.p weights).length = X.n * X.n) (hsize : size = X.D * X.n)
     (hdst : dst + size < lim.space) (hr : r + X.n * X.n ≤ dst) :
-    WritePre lim μ' dst size r X.n X.D X.p (X.c0 t) (X.len t) (residList X.p weights) where
-  hw := S.fits.space
-  seg := seg
-  length := length
-  lt := fun x hx => by
+    WritePre lim μ' dst size r X.n X.D X.p (X.c0 t) (X.len t) (residList X.p weights) := ⟨S.fits.space, seg, length, fun x hx => by
     obtain ⟨z, -, rfl⟩ := List.mem_map.1 hx
-    exact resid_lt S.ok.valid.p_ne z
-  fits := S.ok.valid.len_mul_le t
-  piece := S.ok.valid.piece_le ht
-  size := hsize
-  spaceM := hdst
-  spaceR := by omega
-  spaceP := S.fits.prime
-  apart := Or.inr hr
+    exact resid_lt S.ok.valid.p_ne z, S.ok.valid.len_mul_le t, S.ok.valid.piece_le ht, hsize, hdst, by omega, S.fits.prime, Or.inr hr⟩
 
 /-- The precondition of writeX holds. -/
 theorem writeX (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) :
     WritePre lim μ' A.x (X.n * X.D) A.rac X.n X.D X.p (X.c0 t) (X.len t) X.RAC := by
   have hplaces := S.places ht
-  exact S.write ht S.mem'.segRAC S.length_RAC (Nat.mul_comm _ _) (by omega) (by omega)
+  exact S.write ht S.mem'.segRAC S.length_RAC (by grind) (by omega) (by omega)
 
 /-- The precondition of writeY holds. -/
 theorem writeY (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) :
@@ -358,8 +324,7 @@ theorem writeY (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) :
 
 /-- The instance number t, as the solver gets it. -/
 def inst (X : HostData) (A : HostAddr) (t : ℕ) : ThinInst :=
-  { N := X.n, D := X.D, w := X.w t, U := 1, x := A.x, y := A.y, wi := A.qi + X.lo t,
-    wj := A.qj + X.lo t, out := A.out, X := X.matX t, Y := X.matY t, WI := X.WI t, WJ := X.WJ t }
+  ⟨X.n, X.D, X.w t, 1, A.x, A.y, A.qi + X.lo t, A.qj + X.lo t, A.out, X.matX t, X.matY t, X.WI t, X.WJ t⟩
 
 /-- The precondition of the solver holds, once the two matrices are written. -/
 theorem solver (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) (hX : Seg μ' A.x (X.matX t))
@@ -368,31 +333,7 @@ theorem solver (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) (hX : Se
   have hv := S.ok.valid
   refine ⟨?_, ⟨X.matX_zero_or_one t, X.matY_zero_or_one t⟩, rfl⟩
   exact
-    { N_pos := hv.n_pos
-      D_pos := le_trans (Nat.mul_pos hv.q_pos hv.p_pos) hv.qp_le
-      U_pos := le_rfl
-      lenX := X.length_matX t
-      lenY := X.length_matY t
-      lenWI := hv.length_WI ht
-      lenWJ := hv.length_WJ ht
-      segX := hX
-      segY := hY
-      segWI := SegN.drop_take S.mem'.segQI _ _
-      segWJ := SegN.drop_take S.mem'.segQJ _ _
-      leX := absLe_one_of_zero_or_one (X.matX_zero_or_one t)
-      leY := absLe_one_of_zero_or_one (X.matY_zero_or_one t)
-      ltWI := fun _ => HostData.lt_of_mem_WI
-      ltWJ := fun _ => HostData.lt_of_mem_WJ
-      nodup := X.nodup_zip t
-      belowX := by simp only [inst]; omega
-      belowY := by simp only [inst]; omega
-      belowWI := by simp only [inst]; omega
-      belowWJ := by simp only [inst]; omega
-      belowOut := by simp only [inst]; omega
-      apartX := by simp only [inst]; omega
-      apartY := by simp only [inst]; omega
-      apartWI := by simp only [inst]; omega
-      apartWJ := by simp only [inst]; omega }
+    ⟨hv.n_pos, le_trans (Nat.mul_pos hv.q_pos hv.p_pos) hv.qp_le, le_rfl, X.length_matX t, X.length_matY t, hv.length_WI ht, hv.length_WJ ht, hX, hY, S.mem'.segQI.drop_take _ _, S.mem'.segQJ.drop_take _ _, absLe_one_of_zero_or_one (X.matX_zero_or_one t), absLe_one_of_zero_or_one (X.matY_zero_or_one t), fun _ => HostData.lt_of_mem_WI, fun _ => HostData.lt_of_mem_WJ, X.nodup_zip t, by grind [inst], by grind [inst], by grind [inst], by grind [inst], by aesop, by grind [inst], by aesop, by grind [inst], by grind [inst]⟩
 
 /-- The weights are where the scans read them. -/
 theorem weights (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) :
@@ -401,11 +342,7 @@ theorem weights (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) :
   have hm := S.mem'
   have hv := S.ok.valid
   exact
-    { hw := S.fits.space
-      hU := by exact_mod_cast S.fits.weights
-      arrAB := { len := hv.lenAB, seg := hm.segAB, bound := S.ok.leAB }
-      arrBC := { len := hv.lenBC, seg := hm.segBC, bound := S.ok.leBC }
-      arrAC := { len := hv.lenAC, seg := hm.segAC, bound := S.ok.leAC } }
+    ⟨S.fits.space, by exact_mod_cast S.fits.weights, Light.ArrayAt.mk hv.lenAB hm.segAB S.ok.leAB, Light.ArrayAt.mk hv.lenBC hm.segBC S.ok.leBC, Light.ArrayAt.mk hv.lenAC hm.segAC S.ok.leAC⟩
 
 /-- The answers of the solver and the query pairs of the chunk are where the scans read them. -/
 theorem answers (S : HostSetting lim d X U A need μ μ') (ht : t < X.m)
@@ -416,13 +353,11 @@ theorem answers (S : HostSetting lim d X U A need μ μ') (ht : t < X.m)
   have hv := S.ok.valid
   exact
     { arrOUT :=
-        { len := by simp [HostData.ans, thinOut, hv.length_WI ht, hv.length_WJ ht], seg := hans }
+        Light.ListAt.mk (by simp [HostData.ans, thinOut, hv.length_WI ht, hv.length_WJ ht]) hans
       arrQA :=
-        { len := hv.length_WI ht, seg := SegN.drop_take S.mem'.segQI _ _
-          lt := fun _ => HostData.lt_of_mem_WI }
+        Light.IndexAt.mk (hv.length_WI ht) (SegN.drop_take S.mem'.segQI _ _) fun _ => HostData.lt_of_mem_WI
       arrQB :=
-        { len := hv.length_WJ ht, seg := SegN.drop_take S.mem'.segQJ _ _
-          lt := fun _ => HostData.lt_of_mem_WJ }
+        Light.IndexAt.mk (hv.length_WJ ht) (SegN.drop_take S.mem'.segQJ _ _) fun _ => HostData.lt_of_mem_WJ
       w_lt := by omega }
 
 end HostSetting
@@ -439,15 +374,17 @@ abbrev hostState (X : HostData) (A : HostAddr) (t ch c0 : ℕ) (fnd len rho lo w
   ⟨frame [X.n, X.D, X.p, X.q, X.chunkCount, X.m, A.ab, A.bc, A.ac, A.rac, A.rbc, A.qi, A.qj, A.cr,
     A.cl, A.cw, A.x, A.y, A.out, A.fr, t, ch, c0, fnd, len, rho, lo, w, res], μ'⟩
 
+variable {P : Program}
+
 /-- **The parameters of instance t.** -/
-theorem hostParams_spec {P : Program} (S : HostSetting lim d X U A need μ μ') (ht : t < X.m)
+theorem hostParams_spec (S : HostSetting lim d X U A need μ μ') (ht : t < X.m)
     (fnd len rho lo w res : ℤ) :
     Ends lim P d hostParams (hostState X A t (t % X.chunkCount) (X.c0 t) fnd len rho lo w res μ') 27
       (· = hostState X A t (t % X.chunkCount) (X.c0 t) fnd (X.len t) (X.rho t) (X.lo t) (X.w t) res
         μ') := by
   have hplaces := S.places ht
   obtain ⟨hrho, hlo, hw⟩ := S.read_chunk ht
-  have hlen : X.len t = min X.q (X.n - X.c0 t) := rfl
+  have hlen : X.len t = min X.q _ := rfl
   generalize t % X.chunkCount = ch at *
   -- rho := mem[cr + ch]; lo := mem[cl + ch]; w := mem[cw + ch]
   have htail : ∀ len' : ℤ, len' = X.len t → Ends lim P d
@@ -456,17 +393,15 @@ theorem hostParams_spec {P : Program} (S : HostSetting lim d X U A need μ μ') 
       (hostState X A t ch (X.c0 t) fnd len' rho lo w res μ') 15
       (· = hostState X A t ch (X.c0 t) fnd (X.len t) (X.rho t) (X.lo t) (X.w t) res μ') := by
     rintro _ rfl
-    refine Ends.setToThen (X.rho t : ℤ) ?_ (by light_side [hrho])
-    refine Ends.setToThen (X.lo t : ℤ) ?_ (by light_side [hlo])
-    exact Ends.setTo (X.w t : ℤ) rfl (by light_side [hw])
-  unfold hostParams
-  -- len := q
+    refine Ends.setToThen (X.rho t) ?_ (by light_side [hrho])
+    refine Ends.setToThen (X.lo t) ?_ (by light_side [hlo])
+    exact Ends.setTo _ rfl (by light_side [hw])
   light_set X.q
   -- if n - c0 < q then len := n - c0
-  refine Ends.iteThen (fun hc => ?_) (fun hc => ?_)
-  · replace hc : (X.n : ℤ) - X.c0 t < X.q := by simpa using hc
-    exact Ends.setToThen (X.len t : ℤ) ((htail _ rfl).mono (by light_time) fun _ h => h)
-  · replace hc : ¬ (X.n : ℤ) - X.c0 t < X.q := by simpa using hc
+  refine Ends.iteThen (fun hc => ?_) fun hc => ?_
+  · replace hc : (X.n : ℤ) - X.c0 t < X.q := by assumption
+    exact Ends.setToThen (X.len t) (by simp_all)
+  · replace hc : ¬ (X.n : ℤ) - X.c0 t < X.q := by assumption
     refine Ends.next 0 (Ends.skip ?_)
     exact (htail _ (by omega)).mono (by light_time) fun _ h => h
 
@@ -499,7 +434,7 @@ theorem HostCtx.solver_meets (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs p
       [(X.n : ℤ), X.D, X.w t, (1 : ℕ), A.x, A.y, (A.qi + X.lo t : ℕ), (A.qj + X.lo t : ℕ), A.out,
         A.fr] μ' (Tn [X.n, X.D, X.w t])
       fun _ μ₁ => Seg μ₁ A.out (X.ans t) ∧ KeptBut μ' μ₁ A.fr A.out (X.w t) :=
-  C.sol.meets R (HostSetting.inst X A t) (S.solver ht hX hY) (S.fits.solver t ht)
+  C.sol.meets R _ (S.solver ht hX hY) (S.fits.solver t ht)
 
 /-- The call of scanPairs for instance t, once the solver has answered. -/
 theorem HostCtx.scanPairs_meets (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan Tn need)
@@ -509,7 +444,7 @@ theorem HostCtx.scanPairs_meets (C : HostCtx P₀ R pS pWriteX pWriteY pScanPair
         A.ac, X.n, X.c0 t, X.len t] μ' (tScanPairs (X.w t) (X.len t) (X.execs t))
       fun r μ₁ => r = bit (X.found (t + 1)) ∧ μ₁ = μ' := by
   have hplaces := S.places ht
-  exact Meets.of_body C.scanPairs (scanPairs_spec (f := X.found t) C.scan (S.weights ht)
+  exact Meets.of_body C.scanPairs (scanPairs_spec C.scan (S.weights ht)
     (S.answers ht hans) (by omega) (S.ok.valid.piece_le ht))
 
 /-- **The four calls for instance t.** -/
@@ -527,18 +462,18 @@ theorem hostCalls_spec (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan T
   have S₁ := S.next fun a ha => hrest₁ a (Or.inl ha)
   -- res := writeY(y, rbc, n, D, p, c0, len)
   light_call (C.writeY_meets S₁ ht) with r₂ μ₂ ⟨hY, hrest₂⟩
-  have S₂ := S₁.next fun a ha => hrest₂ a (Or.inl (by omega))
-  replace hX : Seg μ₂ A.x (X.matX t) :=
+  have S₂ := S₁.next fun a ha => hrest₂ a (by omega)
+  replace hX :=
     hX.keep (by light_keep [X.length_matX t])
   -- res := solver(n, D, w, 1, x, y, qi + lo, qj + lo, out, fr)
   light_call (C.solver_meets S₂ ht hX hY) with r₃ μ₃ ⟨hans, hkept₃⟩
   have S₃ := S₂.next fun a ha => hkept₃ a (by omega)
   -- fnd := scanPairs(out, qi + lo, qj + lo, w, fnd, ab, bc, ac, n, c0, len)
   light_call (C.scanPairs_meets S₃ ht hans) with _ μ₄ ⟨rfl, rfl⟩
-  exact ⟨r₃, μ₄, rfl, S₃⟩
+  aesop
 
 /-- **The counters**: from instance t to instance t + 1. -/
-theorem hostNext_spec {P : Program} (S : HostSetting lim d X U A need μ μ') (ht : t < X.m)
+theorem hostNext_spec (S : HostSetting lim d X U A need μ μ') (ht : t < X.m)
     (fnd len rho lo w res : ℤ) :
     Ends lim P d hostNext (hostState X A t (t % X.chunkCount) (X.c0 t) fnd len rho lo w res μ') 18
       (· = hostState X A (t + 1) ((t + 1) % X.chunkCount) (X.c0 (t + 1)) fnd len rho lo w res
@@ -547,36 +482,32 @@ theorem hostNext_spec {P : Program} (S : HostSetting lim d X U A need μ μ') (h
   have hlast := Nat.succ_div_mod_of_eq (n := X.chunkCount) (i := t)
   have hinner := Nat.succ_div_mod_of_ne (n := X.chunkCount) (i := t) (by omega)
   have hc0 : X.c0 t = t / X.chunkCount * X.q := rfl
-  have hc0' : X.c0 (t + 1) = (t + 1) / X.chunkCount * X.q := rfl
+  have hc0' : X.c0 _ = (t + 1) / X.chunkCount * X.q := rfl
   generalize t % X.chunkCount = ch at *
   generalize (t + 1) % X.chunkCount = ch' at *
   -- t := t + 1
   have htail : Ends lim P d (.set Inst (v Inst +' k 1))
       (hostState X A t ch' (X.c0 (t + 1)) fnd len rho lo w res μ') 4
       (· = hostState X A (t + 1) ch' (X.c0 (t + 1)) fnd len rho lo w res μ') :=
-    Ends.setTo (t + 1 : ℕ) rfl
-  unfold hostNext
-  -- ch := ch + 1
+    Ends.setTo _ rfl
   light_set (ch + 1 : ℕ)
   -- if ch = chunkCount
-  refine Ends.iteThen (fun hc => ?_) (fun hc => ?_)
+  refine Ends.iteThen (fun hc => ?_) fun hc => ?_
   · replace hc : ch + 1 = X.chunkCount := by
-      have : ((ch + 1 : ℕ) : ℤ) = X.chunkCount := by simpa using hc
-      exact_mod_cast this
-    obtain ⟨hdiv, rfl⟩ := hlast hc
-    have hstep : X.c0 (t + 1) = X.c0 t + X.q := by rw [hc0', hc0, hdiv, Nat.succ_mul]
+      have : ((ch + 1 : ℕ) : ℤ) = X.chunkCount := by assumption
+      omega
+    have hstep : X.c0 (t + 1) = X.c0 t + X.q := by grind
     -- ch := 0; c0 := c0 + q
     have hwrap : Ends lim P d (.set ChunkNo (k 0) ;; .set PieceStart (v PieceStart +' v PieceLen))
         (hostState X A t (ch + 1) (X.c0 t) fnd len rho lo w res μ') 6
         (· = hostState X A t 0 (X.c0 (t + 1)) fnd len rho lo w res μ') :=
-      Ends.setToThen ((0 : ℕ) : ℤ)
-        (Ends.setTo (X.c0 (t + 1) : ℕ) rfl (by light_side [hstep]))
+      Ends.setToThen 0
+        (Ends.setTo _ rfl (by light_side [hstep]))
     refine Ends.next _ (hwrap.mono le_rfl ?_)
-    rintro _ rfl
-    exact htail.mono (by light_time) fun _ h => h
-  · replace hc : ch + 1 ≠ X.chunkCount := fun h => hc (by simp; exact_mod_cast h)
+    simp_all
+  · replace hc : ch + 1 ≠ X.chunkCount := fun h => by simp_all
     obtain ⟨hdiv, rfl⟩ := hinner hc
-    have hstep : X.c0 (t + 1) = X.c0 t := by rw [hc0', hc0, hdiv]
+    have hstep : X.c0 (t + 1) = X.c0 t := by simp_all
     -- skip
     refine Ends.next 0 (Ends.skip ?_)
     rw [← hstep]
@@ -597,8 +528,6 @@ theorem hostRound_spec (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan T
     Ends lim (P₀ ++ R) d (hostRound pS pWriteX pWriteY pScanPairs) σ (tCalls Tn X t + 45)
       (HostInv lim d X U A need μ (t + 1)) := by
   obtain ⟨len, rho, lo, w, res, μ', rfl, S⟩ := hσ
-  unfold hostRound
-  -- the parameters of the instance
   light_piece (hostParams_spec S ht _ len rho lo w res) with _ rfl
   -- the four calls
   light_piece (hostCalls_spec C S ht _ res) with _ ⟨res', μ'', rfl, S'⟩
@@ -618,28 +547,25 @@ theorem hostLoop_spec (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan Tn
   have hT : ∑ t ∈ Finset.range X.m, (4 + (tCalls Tn X t + 45))
       ≤ ∑ t ∈ Finset.range X.m, (tWrites X.n X.D (X.len t) + Tn [X.n, X.D, X.w t] +
         tScanPairs (X.w t) (X.len t) (X.execs t)) :=
-    Finset.sum_le_sum fun t _ => by simp [tCalls, tWrites]; omega
+    by grind [tCalls, tWrites]
   unfold hostLoopBody tHostLoop hostLoopArgs
   -- t := 0; ch := 0; c0 := 0; fnd := 0
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
+  light_set 0
+  light_set 0
+  light_set 0
+  light_set 0
   -- while t < m
   refine Ends.next _ (Ends.while (HostInv lim d X U A need μ) X.m (fun t => tCalls Tn X t + 45)
-    ?start ?round ?done) (by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega)
-  case start =>
-    refine ⟨0, 0, 0, 0, 0, μ, ?_, hok, hmem, hlay, hlim, fun _ _ => rfl⟩
-    rw [hostState, ← frame_append_zeros _ 5]
+    ?_ ?_ ?_) (by grind [Cond.cost, Expr.cost, Nat.reduceAdd])
+  ·
+    refine ⟨0, 0, 0, 0, 0, μ, ?_, hok, hmem, hlay, hlim, by tauto⟩
+    rw [← frame_append_zeros _ 5]
     simp [HostData.c0, HostData.found, bit]
-  case round =>
+  ·
     intro t σ ht hσ
     obtain ⟨len, rho, lo, w, res, μ', rfl, -⟩ := id hσ
-    exact ⟨⟨trivial, trivial⟩, by simpa using ht, hostRound_spec C ht hσ⟩
-  case done =>
+    exact ⟨by simp, by simp_all, hostRound_spec C ht hσ⟩
+  ·
     rintro _ ⟨len, rho, lo, w, res, μ', rfl, S⟩
     -- return fnd
-    exact ⟨⟨trivial, trivial⟩, by simp, Ends.setTo (bit (X.found X.m)) ⟨by simp, S.kept⟩
-      (hT := by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega)⟩
-
-end Light.Sec3
+    exact ⟨by simp, by simp, Ends.setTo (bit (X.found X.m)) ⟨by simp, S.kept⟩⟩
