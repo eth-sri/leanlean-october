@@ -45,7 +45,7 @@ theorem zero_class
         (fun s => if s < τ then u s else v (s - τ))) →
       Φ (τ + t) w = T t (Φ τ u) + Φ t v) :
     Tendsto (fun t => ‖Φ t‖) (𝓝[≥] 0) (𝓝 0) := by
-  let S : ALCS 𝕜 X U ∞ :=
+  let S : ALCS 𝕜 X U :=
     { T := T, T_zero := hT_zero, T_add := hT_semigroup, T_cont := hT_cont,
       Φ := Φ, composition := hΦ_concat }
   exact S.zero_class
@@ -68,7 +68,7 @@ theorem continuousOn_Phi
       Φ (τ + t) w = T t (Φ τ u) + Φ t v)
     (u : L∞(ℝ₊; U)) :
     ContinuousOn (fun t => Φ t u) (Set.Ici 0) := by
-  let S : ALCS 𝕜 X U ∞ :=
+  let S : ALCS 𝕜 X U :=
     { T := T, T_zero := hT_zero, T_add := hT_semigroup, T_cont := hT_cont,
       Φ := Φ, composition := hΦ_concat }
   exact S.continuousOn_Phi u
